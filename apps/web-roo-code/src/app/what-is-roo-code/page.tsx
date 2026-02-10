@@ -4,7 +4,6 @@ import {
 	ArrowRight,
 	Brain,
 	Bug,
-	CheckCircle,
 	Cloud,
 	Code,
 	Download,
@@ -131,65 +130,6 @@ const faqData = [
 	{
 		question: "Can it handle large, enterprise-scale projects?",
 		answer: "Yes. Roo Code uses efficient strategies like partial-file analysis, summarization, and configurable semantic search to handle large codebases. Enterprises can use on-premises or self-hosted models for compliance and security needs. SOC 2 Type II compliant.",
-	},
-]
-
-const comparisons = [
-	{
-		name: "Open Source",
-		rooCode: true,
-		copilot: false,
-		cursor: false,
-		windsurf: false,
-	},
-	{
-		name: "Model-Agnostic",
-		rooCode: true,
-		copilot: false,
-		cursor: false,
-		windsurf: false,
-	},
-	{
-		name: "Multi-File Agentic Editing",
-		rooCode: true,
-		copilot: false,
-		cursor: true,
-		windsurf: true,
-	},
-	{
-		name: "Custom Modes",
-		rooCode: true,
-		copilot: false,
-		cursor: false,
-		windsurf: false,
-	},
-	{
-		name: "Permission-Based Control",
-		rooCode: true,
-		copilot: false,
-		cursor: false,
-		windsurf: false,
-	},
-	{
-		name: "Autonomous Cloud Agents",
-		rooCode: true,
-		copilot: false,
-		cursor: false,
-		windsurf: false,
-	},
-	{
-		name: "Works in VS Code (any fork)",
-		rooCode: true,
-		copilot: true,
-		cursor: false,
-		windsurf: false,
-	},
-	{
-		name: "Bring Your Own API Key",
-		rooCode: true,
-		copilot: false,
-		cursor: true,
-		windsurf: false,
 	},
 ]
 
@@ -509,69 +449,6 @@ export default function WhatIsRooCodePage() {
 								controls, and audit trails. Self-host AI models or use trusted providers for compliance.
 							</p>
 						</div>
-					</div>
-				</div>
-			</section>
-
-			{/* Comparison Table */}
-			<section className="py-16 md:py-24 bg-muted/30 border-t border-border">
-				<div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
-					<h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 text-center">
-						How Roo Code compares
-					</h2>
-					<p className="text-xl text-muted-foreground text-center max-w-2xl mx-auto mb-12">
-						A factual comparison with other popular AI coding tools.
-					</p>
-
-					<div className="overflow-x-auto rounded-xl border border-border bg-card">
-						<table className="w-full text-sm">
-							<thead>
-								<tr className="border-b border-border">
-									<th className="text-left p-4 font-semibold">Feature</th>
-									<th className="text-center p-4 font-semibold text-violet-600 dark:text-violet-400">
-										Roo Code
-									</th>
-									<th className="text-center p-4 font-semibold">GitHub Copilot</th>
-									<th className="text-center p-4 font-semibold">Cursor</th>
-									<th className="text-center p-4 font-semibold">Windsurf</th>
-								</tr>
-							</thead>
-							<tbody>
-								{comparisons.map((row) => (
-									<tr key={row.name} className="border-b border-border/50 last:border-0">
-										<td className="p-4 font-medium">{row.name}</td>
-										<td className="text-center p-4">
-											{row.rooCode ? (
-												<CheckCircle className="h-5 w-5 text-green-500 mx-auto" />
-											) : (
-												<span className="text-muted-foreground">&#8212;</span>
-											)}
-										</td>
-										<td className="text-center p-4">
-											{row.copilot ? (
-												<CheckCircle className="h-5 w-5 text-green-500 mx-auto" />
-											) : (
-												<span className="text-muted-foreground">&#8212;</span>
-											)}
-										</td>
-										<td className="text-center p-4">
-											{row.cursor ? (
-												<CheckCircle className="h-5 w-5 text-green-500 mx-auto" />
-											) : (
-												<span className="text-muted-foreground">&#8212;</span>
-											)}
-										</td>
-										<td className="text-center p-4">
-											{row.windsurf ? (
-												<CheckCircle className="h-5 w-5 text-green-500 mx-auto" />
-											) : (
-												<span className="text-muted-foreground">&#8212;</span>
-											)}
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
 					</div>
 				</div>
 			</section>
