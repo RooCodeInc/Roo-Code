@@ -137,7 +137,7 @@ describe("NativeOllamaHandler", () => {
 
 			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.objectContaining({
-					providerOptions: { ollama: { num_ctx: 8192 } },
+					providerOptions: { ollama: { options: { num_ctx: 8192 } } },
 				}),
 			)
 		})
@@ -170,6 +170,12 @@ describe("NativeOllamaHandler", () => {
 
 			expect(results.some((r) => r.type === "reasoning")).toBe(true)
 			expect(results.some((r) => r.type === "text")).toBe(true)
+
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					providerOptions: { ollama: { think: true } },
+				}),
+			)
 		})
 	})
 
@@ -222,7 +228,7 @@ describe("NativeOllamaHandler", () => {
 
 			expect(mockGenerateText).toHaveBeenCalledWith(
 				expect.objectContaining({
-					providerOptions: { ollama: { num_ctx: 4096 } },
+					providerOptions: { ollama: { options: { num_ctx: 4096 } } },
 				}),
 			)
 		})

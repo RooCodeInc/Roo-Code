@@ -58,6 +58,29 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 		return this.provider(id)
 	}
 
+	/**
+	 * Build ollama-specific providerOptions based on model settings.
+	 * The ollama-ai-provider-v2 schema expects:
+	 *   { ollama: { think?: boolean, options?: { num_ctx?: number, ... } } }
+	 */
+	private buildProviderOptions(useR1Format: boolean): Record<string, any> | undefined {
+		const ollamaOpts: Record<string, any> = {}
+
+		if (useR1Format) {
+			ollamaOpts.think = true
+		}
+
+		if (this.options.ollamaNumCtx !== undefined) {
+			ollamaOpts.options = { num_ctx: this.options.ollamaNumCtx }
+		}
+
+		if (Object.keys(ollamaOpts).length === 0) {
+			return undefined
+		}
+
+		return { ollama: ollamaOpts }
+	}
+
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
@@ -75,6 +98,8 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
 
+		const providerOptions = this.buildProviderOptions(useR1Format)
+
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
 			system: systemPrompt,
@@ -82,9 +107,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 			temperature,
 			tools: aiSdkTools,
 			toolChoice: mapToolChoice(metadata?.tool_choice),
-			...(this.options.ollamaNumCtx !== undefined && {
-				providerOptions: { ollama: { num_ctx: this.options.ollamaNumCtx } } as any,
-			}),
+			...(providerOptions && { providerOptions }),
 		}
 
 		const result = streamText(requestOptions)
@@ -118,13 +141,13 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 			const languageModel = this.getLanguageModel()
 
+			const providerOptions = this.buildProviderOptions(useR1Format)
+
 			const { text } = await generateText({
 				model: languageModel,
 				prompt,
 				temperature,
-				...(this.options.ollamaNumCtx !== undefined && {
-					providerOptions: { ollama: { num_ctx: this.options.ollamaNumCtx } } as any,
-				}),
+				...(providerOptions && { providerOptions }),
 			})
 
 			return text
