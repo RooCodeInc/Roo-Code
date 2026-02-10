@@ -129,51 +129,51 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 		try {
 			const result = streamText(requestOptions as Parameters<typeof streamText>[0])
 	
-				let lastStreamError: string | undefined
-	
-				for await (const part of result.fullStream) {
-					const anthropicMetadata = (
-						part as {
-							providerMetadata?: {
-								anthropic?: {
-									signature?: string
-									redactedData?: string
-								}
+			let lastStreamError: string | undefined
+
+			for await (const part of result.fullStream) {
+				const anthropicMetadata = (
+					part as {
+						providerMetadata?: {
+							anthropic?: {
+								signature?: string
+								redactedData?: string
 							}
 						}
-					).providerMetadata?.anthropic
-	
-					if (anthropicMetadata?.signature) {
-						this.lastThoughtSignature = anthropicMetadata.signature
 					}
-	
-					if (anthropicMetadata?.redactedData) {
-						this.lastRedactedThinkingBlocks.push({
-							type: "redacted_thinking",
-							data: anthropicMetadata.redactedData,
-						})
-					}
-	
-					for (const chunk of processAiSdkStreamPart(part)) {
-						if (chunk.type === "error") {
-							lastStreamError = chunk.message
-						}
-						yield chunk
-					}
+				).providerMetadata?.anthropic
+
+				if (anthropicMetadata?.signature) {
+					this.lastThoughtSignature = anthropicMetadata.signature
 				}
-	
-				try {
-					const usage = await result.usage
-					const providerMetadata = await result.providerMetadata
-					if (usage) {
-						yield this.processUsageMetrics(usage, modelConfig.info, providerMetadata)
-					}
-				} catch (usageError) {
-					if (lastStreamError) {
-						throw new Error(lastStreamError)
-					}
-					throw usageError
+
+				if (anthropicMetadata?.redactedData) {
+					this.lastRedactedThinkingBlocks.push({
+						type: "redacted_thinking",
+						data: anthropicMetadata.redactedData,
+					})
 				}
+
+				for (const chunk of processAiSdkStreamPart(part)) {
+					if (chunk.type === "error") {
+						lastStreamError = chunk.message
+					}
+					yield chunk
+				}
+			}
+
+			try {
+				const usage = await result.usage
+				const providerMetadata = await result.providerMetadata
+				if (usage) {
+					yield this.processUsageMetrics(usage, modelConfig.info, providerMetadata)
+				}
+			} catch (usageError) {
+				if (lastStreamError) {
+					throw new Error(lastStreamError)
+				}
+				throw usageError
+			}
 		} catch (error) {
 			throw handleAiSdkError(error, this.providerName)
 		}
