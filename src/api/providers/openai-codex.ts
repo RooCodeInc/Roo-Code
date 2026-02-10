@@ -653,22 +653,27 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 								continue
 							}
 
-							// Handle complete response
+							// Handle complete response (avoid re-emitting if streaming already produced content)
 							if (parsed.response && parsed.response.output && Array.isArray(parsed.response.output)) {
-								for (const outputItem of parsed.response.output) {
-									if (outputItem.type === "text" && outputItem.content) {
-										for (const content of outputItem.content) {
-											if (content.type === "text" && content.text) {
-												hasContent = true
-												yield { type: "text", text: content.text }
+								if (!hasContent) {
+									for (const outputItem of parsed.response.output) {
+										if (outputItem.type === "text" && outputItem.content) {
+											for (const content of outputItem.content) {
+												if (content.type === "text" && content.text) {
+													hasContent = true
+													yield { type: "text", text: content.text }
+												}
 											}
 										}
-									}
-									if (outputItem.type === "reasoning" && Array.isArray(outputItem.summary)) {
-										for (const summary of outputItem.summary) {
-											if (summary?.type === "summary_text" && typeof summary.text === "string") {
-												hasContent = true
-												yield { type: "reasoning", text: summary.text }
+										if (outputItem.type === "reasoning" && Array.isArray(outputItem.summary)) {
+											for (const summary of outputItem.summary) {
+												if (
+													summary?.type === "summary_text" &&
+													typeof summary.text === "string"
+												) {
+													hasContent = true
+													yield { type: "reasoning", text: summary.text }
+												}
 											}
 										}
 									}
