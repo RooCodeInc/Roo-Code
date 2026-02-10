@@ -102,6 +102,17 @@ export const globalSettingsSchema = z.object({
 	alwaysAllowWriteOutsideWorkspace: z.boolean().optional(),
 	alwaysAllowWriteProtected: z.boolean().optional(),
 	writeDelayMs: z.number().min(0).optional(),
+	/**
+	 * Fuzzy match threshold for diff operations.
+	 * Controls how strictly the search content must match the original file content.
+	 * Value between 0 and 1 where:
+	 * - 1.0 (100%) = exact match required (default)
+	 * - 0.9 (90%) = allows minor differences (recommended for some models)
+	 * - 0.8 (80%) = more lenient matching
+	 * Lower values allow more flexibility but may increase false positives.
+	 * @default 1.0
+	 */
+	fuzzyMatchThreshold: z.number().min(0).max(1).optional(),
 	alwaysAllowBrowser: z.boolean().optional(),
 	requestDelaySeconds: z.number().optional(),
 	alwaysAllowMcp: z.boolean().optional(),
