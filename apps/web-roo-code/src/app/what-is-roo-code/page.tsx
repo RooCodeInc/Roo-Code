@@ -124,8 +124,8 @@ const faqData = [
 		answer: "Yes. Cloud Agents run in isolated containers with access only to the repositories you explicitly authorize. The VS Code extension runs locally, so your code never leaves your machine unless you choose. Roo Code is SOC 2 Type II compliant, fully open source and auditable, and supports enterprise governance features like model allow-lists and data residency controls.",
 	},
 	{
-		question: "How does Roo Code differ from Copilot, Cursor, or Windsurf?",
-		answer: "Roo Code is the only platform that combines autonomous cloud agents with a local IDE extension. Unlike Copilot, Cursor, or Windsurf, Roo Code is open source, model-agnostic, and offers specialized modes for different tasks. Cloud Agents can review PRs, fix code from GitHub comments, and be triggered from Slack or Linear -- capabilities the others do not offer.",
+		question: "What integrations does Roo Code Cloud support?",
+		answer: "Roo Code Cloud integrates with GitHub for PR reviews, code fixes, and repository access. You can trigger agents from Slack by mentioning @Roomote in any channel, or assign work directly from Linear issues. Tasks can also be created from the Roo Code Cloud web UI. All integrations work with the same model-agnostic, bring-your-own-key approach.",
 	},
 	{
 		question: "Can it handle large, enterprise-scale projects?",
