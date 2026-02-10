@@ -68,7 +68,7 @@ Roo Code supports a wide range of programming languages including Python, Java, 
 
 ### Model Context Protocol (MCP)
 
-Roo Code supports the Model Context Protocol, allowing it to connect to any model that follows the MCP standard. This provides maximum flexibility in choosing AI providers.
+Roo Code supports the Model Context Protocol, allowing it to connect to external tools and data sources via MCP servers. This provides maximum flexibility in extending Roo Code's capabilities beyond built-in features.
 
 ---
 
