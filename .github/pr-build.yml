@@ -37,7 +37,7 @@ jobs:
       - name: Upload Regular VSIX
         uses: actions/upload-artifact@v4
         with:
-          name: roo-code-regular
+          name: roo-code
           path: bin/*.vsix
           retention-days: 14
 
@@ -107,7 +107,7 @@ jobs:
               ``,
               `| Variant | Artifact |`,
               `|---------|----------|`,
-              `| **Regular** | \`roo-code-regular\` |`,
+              `| **Regular** | \`roo-code\` |`,
               `| **Nightly** | \`roo-code-nightly\` |`,
               ``,
               `[Download artifacts from this workflow run](${runUrl}#artifacts)`,
