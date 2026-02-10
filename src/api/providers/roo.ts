@@ -15,6 +15,7 @@ import {
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	handleAiSdkError,
+	mapToolChoice,
 } from "../transform/ai-sdk"
 import { type ReasoningDetail } from "../transform/openai-format"
 import type { RooReasoningParams } from "../transform/reasoning"
@@ -131,6 +132,7 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 		const tools = convertToolsForAiSdk(this.convertToolsForOpenAI(metadata?.tools))
 
 		let accumulatedReasoningText = ""
+		let lastStreamError: string | undefined
 
 		try {
 			const result = streamText({
@@ -140,14 +142,19 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 				maxOutputTokens: maxTokens && maxTokens > 0 ? maxTokens : undefined,
 				temperature,
 				tools,
-				toolChoice: metadata?.tool_choice as any,
+				toolChoice: mapToolChoice(metadata?.tool_choice),
 			})
 
 			for await (const part of result.fullStream) {
 				if (part.type === "reasoning-delta" && part.text !== "[REDACTED]") {
 					accumulatedReasoningText += part.text
 				}
-				yield* processAiSdkStreamPart(part)
+				for (const chunk of processAiSdkStreamPart(part)) {
+					if (chunk.type === "error") {
+						lastStreamError = chunk.message
+					}
+					yield chunk
+				}
 			}
 
 			// Build reasoning details from accumulated text
@@ -206,6 +213,10 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 				totalCost,
 			}
 		} catch (error) {
+			if (lastStreamError) {
+				throw new Error(lastStreamError)
+			}
+
 			const errorContext = {
 				error: error instanceof Error ? error.message : String(error),
 				stack: error instanceof Error ? error.stack : undefined,
