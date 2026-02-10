@@ -466,17 +466,17 @@ export default function WhatIsRooCodePage() {
 							<div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 font-bold mb-4">
 								1
 							</div>
-							<h3 className="font-bold mb-2">Install the extension</h3>
+							<h3 className="font-bold mb-2">Sign up for free</h3>
 							<p className="text-sm text-muted-foreground">
-								Get Roo Code from the{" "}
+								Create your{" "}
 								<a
-									href={EXTERNAL_LINKS.MARKETPLACE}
+									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_HOME}
 									target="_blank"
 									rel="noopener noreferrer"
 									className="text-primary underline-offset-4 hover:underline">
-									VS Code Marketplace
+									Roo Code Cloud
 								</a>{" "}
-								or search &ldquo;Roo Code&rdquo; in VS Code extensions.
+								account. No credit card needed.
 							</p>
 						</div>
 
@@ -484,13 +484,14 @@ export default function WhatIsRooCodePage() {
 							<div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 font-bold mb-4">
 								2
 							</div>
-							<h3 className="font-bold mb-2">Add your API key</h3>
+							<h3 className="font-bold mb-2">Connect GitHub</h3>
 							<p className="text-sm text-muted-foreground">
-								Connect OpenAI, Anthropic, or any supported provider. Or use the{" "}
+								Pick which repos your agents can work with, choose your model, and configure your agent
+								team. Use the{" "}
 								<Link href="/provider" className="text-primary underline-offset-4 hover:underline">
 									Roo Code Router
 								</Link>{" "}
-								for curated models at cost.
+								or bring your own API key.
 							</p>
 						</div>
 
@@ -498,17 +499,17 @@ export default function WhatIsRooCodePage() {
 							<div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 font-bold mb-4">
 								3
 							</div>
-							<h3 className="font-bold mb-2">Start building</h3>
+							<h3 className="font-bold mb-2">Start delegating</h3>
 							<p className="text-sm text-muted-foreground">
-								Open the Roo panel in VS Code and describe what you want in plain English. Check out the{" "}
+								Give tasks to your agents from the web, Slack, or Linear. Or{" "}
 								<a
-									href={EXTERNAL_LINKS.TUTORIALS}
+									href={EXTERNAL_LINKS.MARKETPLACE}
 									target="_blank"
 									rel="noopener noreferrer"
 									className="text-primary underline-offset-4 hover:underline">
-									tutorial videos
+									install the VS Code extension
 								</a>{" "}
-								to get started.
+								for hands-on coding.
 							</p>
 						</div>
 					</div>
