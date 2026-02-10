@@ -456,7 +456,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							// Clear button state when a new API request starts
 							// This fixes buttons persisting when the task continues
 							setSendingDisabled(true)
-							setSelectedImages([])
+							// Note: Do NOT clear selectedImages here. This handler fires
+							// every time the backend starts an API call, which would wipe
+							// images the user has pasted while the chat is in progress.
+							// Images are already cleared in the appropriate user-action
+							// handlers (handleSendMessage, handlePrimaryButtonClick, etc.).
 							setClineAsk(undefined)
 							setEnableButtons(false)
 							setPrimaryButtonText(undefined)
