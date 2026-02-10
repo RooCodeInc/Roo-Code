@@ -35,6 +35,7 @@
 		"checkpoint_diff_with_next": "次のチェックポイントと比較した変更点",
 		"checkpoint_diff_since_first": "最初のチェックポイントからの変更点",
 		"checkpoint_diff_to_current": "現在のワークスペースへの変更点",
+		"nested_git_repos_excluded": "チェックポイントが有効です。{{count}} 個のネストされたgitリポジトリを除外しました: {{paths}}。",
 		"nested_git_repos_warning": "{{path}} でネストされたgitリポジトリが検出されたため、チェックポイントが無効になっています。チェックポイントを使用するには、このネストされたgitリポジトリを削除または移動してください。",
 		"no_workspace": "まずプロジェクトフォルダを開いてください",
 		"update_support_prompt": "サポートメッセージの更新に失敗しました",

@@ -35,6 +35,7 @@
 		"checkpoint_diff_with_next": "Zmiany w porównaniu z następnym punktem kontrolnym",
 		"checkpoint_diff_since_first": "Zmiany od pierwszego punktu kontrolnego",
 		"checkpoint_diff_to_current": "Zmiany w bieżącym obszarze roboczym",
+		"nested_git_repos_excluded": "Punkty kontrolne włączone. Wykluczono {{count}} zagnieżdżonych repozytoriów git: {{paths}}.",
 		"nested_git_repos_warning": "Punkty kontrolne są wyłączone, ponieważ wykryto zagnieżdżone repozytorium git w: {{path}}. Aby używać punktów kontrolnych, usuń lub przenieś to zagnieżdżone repozytorium git.",
 		"no_workspace": "Najpierw otwórz folder projektu",
 		"update_support_prompt": "Nie udało się zaktualizować komunikatu wsparcia",

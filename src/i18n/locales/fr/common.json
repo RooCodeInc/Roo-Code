@@ -35,6 +35,7 @@
 		"checkpoint_diff_with_next": "Modifications comparées au prochain point de contrôle",
 		"checkpoint_diff_since_first": "Modifications depuis le premier point de contrôle",
 		"checkpoint_diff_to_current": "Modifications de l'espace de travail actuel",
+		"nested_git_repos_excluded": "Points de contrôle activés. {{count}} dépôts git imbriqués exclus : {{paths}}.",
 		"nested_git_repos_warning": "Les points de contrôle sont désactivés car un dépôt git imbriqué a été détecté à : {{path}}. Pour utiliser les points de contrôle, veuillez supprimer ou déplacer ce dépôt git imbriqué.",
 		"no_workspace": "Veuillez d'abord ouvrir un espace de travail",
 		"update_support_prompt": "Erreur lors de la mise à jour du prompt de support",

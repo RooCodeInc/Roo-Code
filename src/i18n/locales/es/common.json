@@ -35,6 +35,7 @@
 		"checkpoint_diff_with_next": "Cambios comparados con el siguiente punto de control",
 		"checkpoint_diff_since_first": "Cambios desde el primer punto de control",
 		"checkpoint_diff_to_current": "Cambios en el espacio de trabajo actual",
+		"nested_git_repos_excluded": "Puntos de control habilitados. Se excluyeron {{count}} repositorios git anidados: {{paths}}.",
 		"nested_git_repos_warning": "Los puntos de control están deshabilitados porque se detectó un repositorio git anidado en: {{path}}. Para usar puntos de control, por favor elimina o reubica este repositorio git anidado.",
 		"no_workspace": "Por favor, abre primero una carpeta de proyecto",
 		"update_support_prompt": "Error al actualizar el mensaje de soporte",

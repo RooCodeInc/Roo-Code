@@ -35,6 +35,7 @@
 		"checkpoint_diff_with_next": "Các thay đổi được so sánh với điểm kiểm tra tiếp theo",
 		"checkpoint_diff_since_first": "Các thay đổi kể từ điểm kiểm tra đầu tiên",
 		"checkpoint_diff_to_current": "Các thay đổi đối với không gian làm việc hiện tại",
+		"nested_git_repos_excluded": "Điểm kiểm tra đã bật. Đã loại trừ {{count}} kho git lồng nhau: {{paths}}.",
 		"nested_git_repos_warning": "Điểm kiểm tra bị vô hiệu hóa vì phát hiện kho git lồng nhau tại: {{path}}. Để sử dụng điểm kiểm tra, vui lòng xóa hoặc di chuyển kho git lồng nhau này.",
 		"no_workspace": "Vui lòng mở thư mục dự án trước",
 		"update_support_prompt": "Không thể cập nhật lời nhắc hỗ trợ",

@@ -40,6 +40,7 @@
 		"checkpoint_diff_with_next": "与下一个存档点比较的更改",
 		"checkpoint_diff_since_first": "自第一个存档点以来的更改",
 		"checkpoint_diff_to_current": "对当前工作区的更改",
+		"nested_git_repos_excluded": "存档点已启用。已排除 {{count}} 个嵌套的 git 仓库：{{paths}}。",
 		"nested_git_repos_warning": "存档点已禁用，因为在 {{path}} 检测到嵌套的 git 仓库。要使用存档点，请移除或重新定位此嵌套的 git 仓库。",
 		"no_workspace": "请先打开项目文件夹",
 		"update_support_prompt": "更新支持消息失败",

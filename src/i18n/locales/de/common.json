@@ -35,6 +35,7 @@
 		"checkpoint_diff_with_next": "Änderungen im Vergleich zum nächsten Checkpoint",
 		"checkpoint_diff_since_first": "Änderungen seit dem ersten Checkpoint",
 		"checkpoint_diff_to_current": "Änderungen am aktuellen Arbeitsbereich",
+		"nested_git_repos_excluded": "Checkpoints aktiviert. {{count}} verschachtelte Git-Repositorys ausgeschlossen: {{paths}}.",
 		"nested_git_repos_warning": "Checkpoints sind deaktiviert, da ein verschachteltes Git-Repository erkannt wurde unter: {{path}}. Um Checkpoints zu verwenden, entferne oder verschiebe bitte dieses verschachtelte Git-Repository.",
 		"no_workspace": "Bitte öffne zuerst einen Projektordner",
 		"update_support_prompt": "Fehler beim Aktualisieren der Support-Nachricht",

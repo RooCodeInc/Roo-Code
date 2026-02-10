@@ -39,6 +39,7 @@
 		"checkpoint_diff_with_next": "Alterações comparadas com o próximo ponto de verificação",
 		"checkpoint_diff_since_first": "Alterações desde o primeiro ponto de verificação",
 		"checkpoint_diff_to_current": "Alterações no espaço de trabalho atual",
+		"nested_git_repos_excluded": "Checkpoints habilitados. {{count}} repositórios git aninhados excluídos: {{paths}}.",
 		"nested_git_repos_warning": "Os checkpoints estão desabilitados porque um repositório git aninhado foi detectado em: {{path}}. Para usar checkpoints, por favor remova ou realoque este repositório git aninhado.",
 		"no_workspace": "Por favor, abra primeiro uma pasta de projeto",
 		"update_support_prompt": "Falha ao atualizar o prompt de suporte",

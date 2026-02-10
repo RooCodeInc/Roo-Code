@@ -35,6 +35,7 @@
 		"checkpoint_diff_with_next": "Wijzigingen vergeleken met volgend checkpoint",
 		"checkpoint_diff_since_first": "Wijzigingen sinds eerste checkpoint",
 		"checkpoint_diff_to_current": "Wijzigingen in huidige werkruimte",
+		"nested_git_repos_excluded": "Checkpoints ingeschakeld. {{count}} geneste git-repositories uitgesloten: {{paths}}.",
 		"nested_git_repos_warning": "Checkpoints zijn uitgeschakeld omdat een geneste git-repository is gedetecteerd op: {{path}}. Om checkpoints te gebruiken, verwijder of verplaats deze geneste git-repository.",
 		"no_workspace": "Open eerst een projectmap",
 		"update_support_prompt": "Bijwerken van ondersteuningsprompt mislukt",

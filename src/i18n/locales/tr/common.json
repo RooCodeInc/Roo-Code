@@ -35,6 +35,7 @@
 		"checkpoint_diff_with_next": "Sonraki kontrol noktasıyla karşılaştırılan değişiklikler",
 		"checkpoint_diff_since_first": "İlk kontrol noktasından bu yana yapılan değişiklikler",
 		"checkpoint_diff_to_current": "Mevcut çalışma alanındaki değişiklikler",
+		"nested_git_repos_excluded": "Kontrol noktaları etkinleştirildi. {{count}} iç içe git deposu hariç tutuldu: {{paths}}.",
 		"nested_git_repos_warning": "{{path}} konumunda iç içe git deposu tespit edildiği için kontrol noktaları devre dışı bırakıldı. Kontrol noktalarını kullanmak için lütfen bu iç içe git deposunu kaldırın veya taşıyın.",
 		"no_workspace": "Lütfen önce bir proje klasörü açın",
 		"update_support_prompt": "Destek istemi güncellenemedi",

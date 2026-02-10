@@ -35,6 +35,7 @@
 		"checkpoint_diff_with_next": "Modifiche confrontate con il checkpoint successivo",
 		"checkpoint_diff_since_first": "Modifiche dal primo checkpoint",
 		"checkpoint_diff_to_current": "Modifiche all'area di lavoro corrente",
+		"nested_git_repos_excluded": "Checkpoint abilitati. Esclusi {{count}} repository git annidati: {{paths}}.",
 		"nested_git_repos_warning": "I checkpoint sono disabilitati perché è stato rilevato un repository git annidato in: {{path}}. Per utilizzare i checkpoint, rimuovi o sposta questo repository git annidato.",
 		"no_workspace": "Per favore, apri prima una cartella di progetto",
 		"update_support_prompt": "Errore durante l'aggiornamento del messaggio di supporto",

@@ -35,6 +35,7 @@
 		"checkpoint_diff_with_next": "Perubahan dibandingkan dengan checkpoint berikutnya",
 		"checkpoint_diff_since_first": "Perubahan sejak checkpoint pertama",
 		"checkpoint_diff_to_current": "Perubahan ke ruang kerja saat ini",
+		"nested_git_repos_excluded": "Checkpoint diaktifkan. {{count}} repositori git bersarang dikecualikan: {{paths}}.",
 		"nested_git_repos_warning": "Checkpoint dinonaktifkan karena repositori git bersarang terdeteksi di: {{path}}. Untuk menggunakan checkpoint, silakan hapus atau pindahkan repositori git bersarang ini.",
 		"no_workspace": "Silakan buka folder proyek terlebih dahulu",
 		"update_support_prompt": "Gagal memperbarui support prompt",

@@ -35,6 +35,7 @@
 		"checkpoint_diff_with_next": "與下一個存檔點比較的變更",
 		"checkpoint_diff_since_first": "自第一個存檔點以來的變更",
 		"checkpoint_diff_to_current": "對目前工作區的變更",
+		"nested_git_repos_excluded": "存檔點已啟用。已排除 {{count}} 個巢狀的 git 儲存庫：{{paths}}。",
 		"nested_git_repos_warning": "存檔點已停用，因為在 {{path}} 偵測到巢狀的 git 儲存庫。要使用存檔點，請移除或重新配置此巢狀的 git 儲存庫。",
 		"no_workspace": "請先開啟專案資料夾",
 		"update_support_prompt": "更新支援訊息失敗",
