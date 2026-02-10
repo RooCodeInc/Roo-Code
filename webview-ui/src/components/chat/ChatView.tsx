@@ -525,11 +525,17 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		// initialTopMostItemIndex fires at mount but the message data may
 		// arrive asynchronously, so we also engage sticky follow and
 		// explicitly scroll after a frame to handle the race.
+		let rafId: number | undefined
 		if (task?.ts) {
 			stickyFollowRef.current = true
-			requestAnimationFrame(() => {
+			rafId = requestAnimationFrame(() => {
 				virtuosoRef.current?.scrollTo({ top: Number.MAX_SAFE_INTEGER, behavior: "auto" })
 			})
+		}
+		return () => {
+			if (rafId !== undefined) {
+				cancelAnimationFrame(rafId)
+			}
 		}
 	}, [task?.ts])
 
