@@ -136,10 +136,10 @@ export class EditTool extends BaseTool<"edit"> {
 			if (replaceAll) {
 				// Replace all occurrences
 				const searchPattern = new RegExp(escapeRegExp(normalizedOld), "g")
-				newContent = fileContent.replace(searchPattern, normalizedNew)
+				newContent = fileContent.replace(searchPattern, () => normalizedNew)
 			} else {
 				// Replace single occurrence (already verified uniqueness above)
-				newContent = fileContent.replace(normalizedOld, normalizedNew)
+				newContent = fileContent.replace(normalizedOld, () => normalizedNew)
 			}
 
 			// Check if any changes were made

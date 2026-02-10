@@ -54,7 +54,9 @@ describe("ApplyPatchTool.handlePartial", () => {
 			ask: askSpy,
 		}
 
-		mockedIsPathOutsideWorkspace.mockImplementation((absolutePath) => absolutePath.includes("/outside/"))
+		mockedIsPathOutsideWorkspace.mockImplementation((absolutePath) =>
+			absolutePath.replace(/\\/g, "/").includes("/outside/"),
+		)
 		tool = new ApplyPatchTool()
 	})
 
