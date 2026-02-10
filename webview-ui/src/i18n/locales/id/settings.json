@@ -1028,7 +1028,7 @@
 		},
 		"showQuestionsOneByOne": {
 			"label": "Tampilkan pertanyaan satu per satu",
-			"description": "Jika diaktifkan, pertanyaan từ model akan ditampilkan satu per satu."
+			"description": "Jika diaktifkan, pertanyaan dari model akan ditampilkan satu per satu."
 		},
 		"taskHeaderHighlight": {
 			"label": "Sorot header tugas",
