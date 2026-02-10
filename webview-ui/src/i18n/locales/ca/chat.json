@@ -408,7 +408,6 @@
 			"copy_code": "Copiar codi"
 		}
 	},
-	"systemPromptWarning": "ADVERTÈNCIA: S'ha activat una substitució personalitzada d'instruccions del sistema. Això pot trencar greument la funcionalitat i causar un comportament impredictible.",
 	"profileViolationWarning": "El perfil actual no és compatible amb la configuració de la teva organització",
 	"shellIntegration": {
 		"title": "Advertència d'execució d'ordres",

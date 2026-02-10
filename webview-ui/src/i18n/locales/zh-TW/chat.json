@@ -438,7 +438,6 @@
 			"copy_code": "複製程式碼"
 		}
 	},
-	"systemPromptWarning": "警告：自訂系統提示詞覆寫已啟用。這可能嚴重破壞功能並導致不可預測的行為。",
 	"profileViolationWarning": "目前設定檔與您的組織設定不相容",
 	"shellIntegration": {
 		"title": "命令執行警告",

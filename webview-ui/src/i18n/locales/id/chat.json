@@ -445,7 +445,6 @@
 			"copy_code": "Salin kode"
 		}
 	},
-	"systemPromptWarning": "PERINGATAN: Override system prompt kustom aktif. Ini dapat merusak fungsionalitas secara serius dan menyebabkan perilaku yang tidak terduga.",
 	"profileViolationWarning": "Profil saat ini tidak kompatibel dengan pengaturan organisasi kamu",
 	"shellIntegration": {
 		"title": "Peringatan Eksekusi Perintah",

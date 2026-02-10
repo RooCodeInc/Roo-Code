@@ -408,7 +408,6 @@
 			"copy_code": "Copiar código"
 		}
 	},
-	"systemPromptWarning": "ADVERTENCIA: Anulación de instrucciones del sistema personalizada activa. Esto puede romper gravemente la funcionalidad y causar un comportamiento impredecible.",
 	"profileViolationWarning": "El perfil actual no es compatible con la configuración de tu organización",
 	"shellIntegration": {
 		"title": "Advertencia de ejecución de comandos",

@@ -408,7 +408,6 @@
 			"copy_code": "Code kopieren"
 		}
 	},
-	"systemPromptWarning": "WARNUNG: Benutzerdefinierte Systemaufforderung aktiv. Dies kann die Funktionalität erheblich beeinträchtigen und zu unvorhersehbarem Verhalten führen.",
 	"profileViolationWarning": "Das aktuelle Profil ist nicht kompatibel mit den Einstellungen deiner Organisation",
 	"shellIntegration": {
 		"title": "Befehlsausführungswarnung",

@@ -1,5 +1,4 @@
 import * as vscode from "vscode"
-import * as os from "os"
 
 import { type ModeConfig, type PromptComponent, type CustomModePrompts, type TodoItem } from "@roo-code/types"
 
@@ -11,8 +10,6 @@ import { isEmpty } from "../../utils/object"
 import { McpHub } from "../../services/mcp/McpHub"
 import { CodeIndexManager } from "../../services/code-index/manager"
 import { SkillsManager } from "../../services/skills/SkillsManager"
-
-import { PromptVariables, loadSystemPromptFile } from "./sections/custom-system-prompt"
 
 import type { SystemPromptSettings } from "./types"
 import {
@@ -136,49 +133,11 @@ export const SYSTEM_PROMPT = async (
 		throw new Error("Extension context is required for generating system prompt")
 	}
 
-	// Try to load custom system prompt from file
-	const variablesForPrompt: PromptVariables = {
-		workspace: cwd,
-		mode: mode,
-		language: language ?? formatLanguage(vscode.env.language),
-		shell: vscode.env.shell,
-		operatingSystem: os.type(),
-	}
-	const fileCustomSystemPrompt = await loadSystemPromptFile(cwd, mode, variablesForPrompt)
-
 	// Check if it's a custom mode
 	const promptComponent = getPromptComponent(customModePrompts, mode)
 
 	// Get full mode config from custom modes or fall back to built-in modes
 	const currentMode = getModeBySlug(mode, customModes) || modes.find((m) => m.slug === mode) || modes[0]
-
-	// If a file-based custom system prompt exists, use it
-	if (fileCustomSystemPrompt) {
-		const { roleDefinition, baseInstructions: baseInstructionsForFile } = getModeSelection(
-			mode,
-			promptComponent,
-			customModes,
-		)
-
-		const customInstructions = await addCustomInstructions(
-			baseInstructionsForFile,
-			globalCustomInstructions || "",
-			cwd,
-			mode,
-			{
-				language: language ?? formatLanguage(vscode.env.language),
-				rooIgnoreInstructions,
-				settings,
-			},
-		)
-
-		// For file-based prompts, don't include the tool sections
-		return `${roleDefinition}
-
-${fileCustomSystemPrompt}
-
-${customInstructions}`
-	}
 
 	return generatePrompt(
 		context,
