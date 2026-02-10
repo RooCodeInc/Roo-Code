@@ -13,7 +13,7 @@ import { parseCommand } from "../../shared/parse-command"
  * - ${var=value} with escape sequences - Can embed commands via \140 (backtick), \x60, or \u0060
  * - ${!var} - Indirect variable references
  * - <<<$(...) or <<<`...` - Here-strings with command substitution
- * - =(...) - Zsh process substitution that executes commands
+ * - =(...) - Zsh process substitution that executes commands (array assignments like `var=(...)` are excluded)
  * - *(e:...:) or similar - Zsh glob qualifiers with code execution
  *
  * @param source - The command string to analyze
@@ -46,7 +46,7 @@ export function containsDangerousSubstitution(source: string): boolean {
 
 	// Check for zsh process substitution =(...) which executes commands
 	// =(...) creates a temporary file containing the output of the command, but executes it
-	const zshProcessSubstitution = /=\([^)]+\)/.test(source)
+	const zshProcessSubstitution = /(?<![a-zA-Z0-9_])=\([^)]+\)/.test(source)
 
 	// Check for zsh glob qualifiers with code execution (e:...:)
 	// Patterns like *(e:whoami:) or ?(e:rm -rf /:) execute commands during glob expansion
