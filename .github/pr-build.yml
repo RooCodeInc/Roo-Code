@@ -1,0 +1,145 @@
+name: PR Build VSIX
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, synchronize]
+    branches: [main]
+
+# Cancel in-flight builds for the same PR when a new push arrives.
+concurrency:
+  group: pr-build-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build-regular:
+    name: Build Regular VSIX
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          install-args: '--frozen-lockfile'
+
+      - name: Build VSIX
+        run: pnpm vsix
+
+      - name: Determine VSIX filename
+        id: vsix
+        run: |
+          VSIX_FILE=$(ls bin/*.vsix | head -n1)
+          VSIX_NAME=$(basename "$VSIX_FILE")
+          echo "file=$VSIX_FILE" >> "$GITHUB_OUTPUT"
+          echo "name=$VSIX_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Regular VSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: roo-code-regular
+          path: bin/*.vsix
+          retention-days: 14
+
+  build-nightly:
+    name: Build Nightly VSIX
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          install-args: '--frozen-lockfile'
+
+      - name: Forge numeric Nightly version
+        id: version
+        env:
+          RUN_NUMBER: ${{ github.run_number }}
+        run: echo "number=$(( 5500 + ${RUN_NUMBER} ))" >> "$GITHUB_OUTPUT"
+
+      - name: Patch package.json version
+        env:
+          VERSION_NUMBER: ${{ steps.version.outputs.number }}
+        run: |
+          node <<'EOF'
+            const fs = require('fs');
+            const path = require('path');
+            const pkgPath = path.join(__dirname, 'apps', 'vscode-nightly', 'package.nightly.json');
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+            const [maj, min] = pkg.version.split('.');
+            pkg.version = `${maj}.${min}.${process.env.VERSION_NUMBER}`;
+            fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+            console.log(`Nightly version set to ${pkg.version}`);
+          EOF
+
+      - name: Build Nightly VSIX
+        run: pnpm vsix:nightly
+
+      - name: Upload Nightly VSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: roo-code-nightly
+          path: bin/*.vsix
+          retention-days: 14
+
+  comment:
+    name: Post PR Comment
+    runs-on: ubuntu-latest
+    needs: [build-regular, build-nightly]
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Post or update PR comment with build links
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const sha = context.payload.pull_request.head.sha.substring(0, 7);
+
+            const body = [
+              `### VSIX Build Artifacts`,
+              ``,
+              `Build artifacts for commit \`${sha}\` are ready for review:`,
+              ``,
+              `| Variant | Artifact |`,
+              `|---------|----------|`,
+              `| **Regular** | \`roo-code-regular\` |`,
+              `| **Nightly** | \`roo-code-nightly\` |`,
+              ``,
+              `[Download artifacts from this workflow run](${runUrl}#artifacts)`,
+              ``,
+              `> Install with: \`code --install-extension path/to/file.vsix\``,
+            ].join('\n');
+
+            // Look for an existing comment from this workflow so we update
+            // instead of creating a new one on every push.
+            const marker = '### VSIX Build Artifacts';
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(
+              (c) => c.user.type === 'Bot' && c.body.startsWith(marker),
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
