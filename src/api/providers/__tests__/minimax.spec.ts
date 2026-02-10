@@ -51,20 +51,13 @@ vi.mock("../../transform/ai-sdk", async (importOriginal) => {
 	}
 })
 
-type HandlerOptions = Partial<ApiHandlerOptions> & {
-	apiConfiguration?: {
-		apiKey?: string
-		baseUrl?: string
-		apiModelId?: string
-	}
+type HandlerOptions = Omit<Partial<ApiHandlerOptions>, "minimaxBaseUrl"> & {
+	minimaxBaseUrl?: string
 }
 
 function createHandler(options: HandlerOptions = {}) {
 	return new MiniMaxHandler({
-		apiConfiguration: {
-			apiKey: "test-api-key",
-			...options.apiConfiguration,
-		},
+		minimaxApiKey: "test-api-key",
 		...options,
 	} as ApiHandlerOptions)
 }
@@ -134,10 +127,7 @@ describe("MiniMaxHandler", () => {
 
 		it("converts /v1 base URL to /anthropic/v1", () => {
 			createHandler({
-				apiConfiguration: {
-					apiKey: "test-api-key",
-					baseUrl: "https://api.minimax.io/v1",
-				},
+				minimaxBaseUrl: "https://api.minimax.io/v1",
 			})
 
 			expect(mockCreateAnthropic).toHaveBeenCalledWith(
@@ -149,10 +139,7 @@ describe("MiniMaxHandler", () => {
 
 		it("appends /v1 for base URL already ending with /anthropic", () => {
 			createHandler({
-				apiConfiguration: {
-					apiKey: "test-api-key",
-					baseUrl: "https://api.minimax.io/anthropic",
-				},
+				minimaxBaseUrl: "https://api.minimax.io/anthropic",
 			})
 
 			expect(mockCreateAnthropic).toHaveBeenCalledWith(
@@ -164,10 +151,7 @@ describe("MiniMaxHandler", () => {
 
 		it("appends /anthropic/v1 when base URL has no suffix", () => {
 			createHandler({
-				apiConfiguration: {
-					apiKey: "test-api-key",
-					baseUrl: "https://api.minimax.io/custom",
-				},
+				minimaxBaseUrl: "https://api.minimax.io/custom",
 			})
 
 			expect(mockCreateAnthropic).toHaveBeenCalledWith(
@@ -179,10 +163,7 @@ describe("MiniMaxHandler", () => {
 
 		it("supports the China endpoint", () => {
 			createHandler({
-				apiConfiguration: {
-					apiKey: "test-api-key",
-					baseUrl: "https://api.minimaxi.com/anthropic",
-				},
+				minimaxBaseUrl: "https://api.minimaxi.com/anthropic",
 			})
 
 			expect(mockCreateAnthropic).toHaveBeenCalledWith(
@@ -194,10 +175,7 @@ describe("MiniMaxHandler", () => {
 
 		it("treats empty baseUrl as falsy and falls back to default", () => {
 			createHandler({
-				apiConfiguration: {
-					apiKey: "test-api-key",
-					baseUrl: "",
-				},
+				minimaxBaseUrl: "",
 			})
 
 			expect(mockCreateAnthropic).toHaveBeenCalledWith(
@@ -209,9 +187,7 @@ describe("MiniMaxHandler", () => {
 
 		it("passes API key through to createAnthropic", () => {
 			createHandler({
-				apiConfiguration: {
-					apiKey: "minimax-key-123",
-				},
+				minimaxApiKey: "minimax-key-123",
 			})
 
 			expect(mockCreateAnthropic).toHaveBeenCalledWith(
@@ -232,10 +208,7 @@ describe("MiniMaxHandler", () => {
 
 		it("returns specified model when valid model ID is provided", () => {
 			const handler = createHandler({
-				apiConfiguration: {
-					apiKey: "test-api-key",
-					apiModelId: "MiniMax-M2-Stable",
-				},
+				apiModelId: "MiniMax-M2-Stable",
 			})
 			const model = handler.getModel()
 			expect(model.id).toBe("MiniMax-M2-Stable")
@@ -243,10 +216,7 @@ describe("MiniMaxHandler", () => {
 
 		it("falls back to default model when unknown model ID is provided", () => {
 			const handler = createHandler({
-				apiConfiguration: {
-					apiKey: "test-api-key",
-					apiModelId: "unknown-model",
-				},
+				apiModelId: "unknown-model",
 			})
 			const model = handler.getModel()
 			expect(model.id).toBe(minimaxDefaultModelId)

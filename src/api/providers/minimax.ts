@@ -21,12 +21,6 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
-type LegacyApiConfiguration = {
-	apiKey?: string
-	baseUrl?: string
-	apiModelId?: string
-}
-
 export class MiniMaxHandler extends BaseProvider implements SingleCompletionHandler {
 	private client: ReturnType<typeof createAnthropic>
 	private options: ApiHandlerOptions
@@ -38,8 +32,7 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 		super()
 		this.options = options
 
-		const legacyConfig = this.getLegacyApiConfiguration()
-		const rawBaseUrl = legacyConfig?.baseUrl ?? this.options.minimaxBaseUrl
+		const rawBaseUrl = this.options.minimaxBaseUrl
 		let resolvedBaseUrl: string | undefined
 
 		if (rawBaseUrl) {
@@ -58,7 +51,7 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 
 		this.client = createAnthropic({
 			baseURL: resolvedBaseUrl,
-			apiKey: legacyConfig?.apiKey ?? this.options.minimaxApiKey ?? "",
+			apiKey: this.options.minimaxApiKey ?? "",
 			headers: DEFAULT_HEADERS,
 		})
 	}
@@ -84,7 +77,8 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 
 		const mergedMessages = mergeEnvironmentDetailsForMiniMax(messages)
 		const aiSdkMessages = convertToAiSdkMessages(mergedMessages)
-		const aiSdkTools = convertToolsForAiSdk(metadata?.tools) as ToolSet | undefined
+		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
+		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
 
 		const anthropicProviderOptions: Record<string, unknown> = {}
 
@@ -262,8 +256,7 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 	}
 
 	getModel() {
-		const legacyConfig = this.getLegacyApiConfiguration()
-		const modelId = legacyConfig?.apiModelId ?? this.options.apiModelId
+		const modelId = this.options.apiModelId
 
 		const id = modelId && modelId in minimaxModels ? (modelId as keyof typeof minimaxModels) : minimaxDefaultModelId
 		const info = minimaxModels[id]
@@ -310,9 +303,5 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 
 	override isAiSdkProvider(): boolean {
 		return true
-	}
-
-	private getLegacyApiConfiguration(): LegacyApiConfiguration | undefined {
-		return (this.options as ApiHandlerOptions & { apiConfiguration?: LegacyApiConfiguration }).apiConfiguration
 	}
 }
