@@ -18,6 +18,7 @@ import {
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
+	handleAiSdkError,
 } from "../transform/ai-sdk"
 import { t } from "i18next"
 import type { ApiStream, ApiStreamUsageChunk, GroundingSource } from "../transform/stream"
@@ -216,15 +217,14 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 			}
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error)
-			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage")
-			TelemetryService.instance.captureException(apiError)
-
-			if (error instanceof Error) {
-				throw new Error(t("common:errors.gemini.generate_stream", { error: error.message }))
-			}
-
-			throw error
+			throw handleAiSdkError(error, this.providerName, {
+				onError: (msg) => {
+					TelemetryService.instance.captureException(
+						new ApiProviderError(msg, this.providerName, modelId, "createMessage"),
+					)
+				},
+				formatMessage: (msg) => t("common:errors.gemini.generate_stream", { error: msg }),
+			})
 		}
 	}
 
@@ -364,15 +364,14 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 			return text
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error)
-			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "completePrompt")
-			TelemetryService.instance.captureException(apiError)
-
-			if (error instanceof Error) {
-				throw new Error(t("common:errors.gemini.generate_complete_prompt", { error: error.message }))
-			}
-
-			throw error
+			throw handleAiSdkError(error, this.providerName, {
+				onError: (msg) => {
+					TelemetryService.instance.captureException(
+						new ApiProviderError(msg, this.providerName, modelId, "completePrompt"),
+					)
+				},
+				formatMessage: (msg) => t("common:errors.gemini.generate_complete_prompt", { error: msg }),
+			})
 		}
 	}
 

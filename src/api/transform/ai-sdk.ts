@@ -736,16 +736,52 @@ function getStatusCode(obj: unknown): number | undefined {
 }
 
 /**
+ * Optional configuration for `handleAiSdkError()` to support telemetry
+ * capture and custom (e.g. i18n) message formatting without adding
+ * direct dependencies to the shared transform layer.
+ */
+export interface HandleAiSdkErrorOptions {
+	/**
+	 * Called with the extracted error message and the original error before
+	 * throwing.  Use this to report to telemetry or structured logging.
+	 *
+	 * @example
+	 * onError: (msg) => {
+	 *   TelemetryService.instance.captureException(
+	 *     new ApiProviderError(msg, providerName, modelId, "createMessage"),
+	 *   )
+	 * }
+	 */
+	onError?: (message: string, originalError: unknown) => void
+
+	/**
+	 * Custom message formatter.  When provided, the returned string is used
+	 * as the thrown Error's message instead of the default
+	 * `${providerName}: ${extractedMessage}` format.
+	 *
+	 * @example
+	 * formatMessage: (msg) => t("common:errors.gemini.generate_stream", { error: msg })
+	 */
+	formatMessage?: (message: string) => string
+}
+
+/**
  * Handle AI SDK errors by extracting the message and preserving status codes.
  * Returns an Error object with proper status preserved for retry logic.
  *
  * @param error - The AI SDK error to handle
  * @param providerName - The name of the provider for context
+ * @param options - Optional telemetry / i18n hooks (see {@link HandleAiSdkErrorOptions})
  * @returns An Error with preserved status code
  */
-export function handleAiSdkError(error: unknown, providerName: string): Error {
+export function handleAiSdkError(error: unknown, providerName: string, options?: HandleAiSdkErrorOptions): Error {
 	const message = extractAiSdkErrorMessage(error)
-	const wrappedError = new Error(`${providerName}: ${message}`)
+
+	// Fire telemetry / logging callback before constructing the thrown error
+	options?.onError?.(message, error)
+
+	const displayMessage = options?.formatMessage ? options.formatMessage(message) : `${providerName}: ${message}`
+	const wrappedError = new Error(displayMessage)
 
 	// Preserve status code for retry logic
 	const anyError = error as any
