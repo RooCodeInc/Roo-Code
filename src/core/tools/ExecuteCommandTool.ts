@@ -12,6 +12,7 @@ import { Task } from "../task/Task"
 import { ToolUse, ToolResponse } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
 import { unescapeHtmlEntities } from "../../utils/text-normalization"
+import { validateCommandQuotes } from "../../shared/parse-command"
 import { ExitCodeDetails, RooTerminalCallbacks, RooTerminalProcess } from "../../integrations/terminal/types"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { Terminal } from "../../integrations/terminal/Terminal"
@@ -54,6 +55,21 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 			task.consecutiveMistakeCount = 0
 
 			const unescapedCommand = unescapeHtmlEntities(command)
+
+			// Validate quotes before executing the command to prevent terminal from getting stuck
+			const quoteValidation = validateCommandQuotes(unescapedCommand)
+			if (!quoteValidation.valid) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("execute_command")
+				const errorMessage =
+					`Command has unbalanced ${quoteValidation.quoteType} quotes at position ${quoteValidation.position}. ` +
+					`Context: "${quoteValidation.context}". ` +
+					`This would cause the terminal to hang waiting for the closing quote. ` +
+					`Please fix the command and try again.`
+				pushToolResult(errorMessage)
+				return
+			}
+
 			const didApprove = await askApproval("command", unescapedCommand)
 
 			if (!didApprove) {
