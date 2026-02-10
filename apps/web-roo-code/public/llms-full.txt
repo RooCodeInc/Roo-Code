@@ -1,0 +1,354 @@
+# Roo Code - Complete Product Information
+
+> Roo Code is an AI-powered software development platform with two core products: a free, open-source VS Code extension for interactive AI-assisted coding, and Roo Code Cloud for autonomous AI agents that work in the background. Built by Roo Code, Inc.
+
+## Table of Contents
+
+- What is Roo Code
+- Roo Code VS Code Extension
+- Roo Code Cloud
+- Cloud Agents
+- Roo Code for Slack
+- Roo Code for Linear
+- PR Reviewer Agent
+- PR Fixer Agent
+- Roo Code Enterprise
+- Roo Code Router
+- Pricing
+- How Roo Code Compares to Alternatives
+- Frequently Asked Questions
+
+---
+
+## What is Roo Code
+
+Roo Code is an AI-powered software development platform that puts an entire AI dev team at your disposal. It goes beyond simple code autocompletion by reading and writing across multiple files, executing commands, running tests, and adapting to your workflow.
+
+Roo Code has two form factors:
+
+1. **Roo Code VS Code Extension** -- for individual, interactive work. Run Roo directly in VS Code (or any fork, including Cursor), stay close to the code, and control everything. Ideal for real-time debugging, quick iteration, and hands-on development.
+
+2. **Roo Code Cloud** -- for team work with autonomous agents. Create your agent team in the cloud, give them access to GitHub, and start delegating tasks from the web, Slack, Linear, and more. Ideal for parallelizing execution, kicking off projects, and looping in the rest of your team.
+
+The VS Code extension is completely free and open source. Roo Code Cloud offers free and paid tiers.
+
+### Key Principles
+
+- **Model-agnostic by design**: "The best model in the world" changes every other week. Roo Code works with dozens of models from frontier to open weight. Use the curated Roo Code Router selection at cost, or bring your own API key from any provider.
+- **Custom modes for focused work**: Specialized modes -- Architect, Code, Ask, Debug, Test, Orchestrator -- stay on task and deliver. They know when to hand off work to other modes. You can create your own modes or download from the marketplace.
+- **Permission-based control**: You approve every file change and command execution. Configure granular auto-approval rules to make Roo as autonomous as you want as you build confidence.
+- **Open source and auditable**: Community-driven with no throttling or surprises about what is happening behind the scenes. SOC 2 Type II compliant.
+
+---
+
+## Roo Code VS Code Extension
+
+The Roo Code VS Code extension is the #1 most-installed open-source AI coding extension. It is free, open source, and available on the VS Code Marketplace.
+
+**Website**: https://roocode.com/extension
+**Install**: https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline
+**Source code**: https://github.com/RooCodeInc/Roo-Code
+
+### Key Features
+
+- **Specialized modes**: Architect (plans complex changes without making changes), Code (implements, refactors, and optimizes), Ask (explains functionality and program behavior), Debug (diagnoses issues, traces failures, and proposes targeted fixes), Test (creates and improves tests without changing actual functionality), Orchestrator (coordinates large tasks across other agents). Users can also create custom modes.
+- **Model-agnostic**: Supports OpenAI (GPT-4o, GPT-4, o1), Anthropic Claude (Claude 3.5 Sonnet and later), Google Gemini, Grok, DeepSeek, Mistral, Qwen, Kimi, Moonshot, local LLMs via Ollama, and any provider via OpenRouter. Dozens of providers supported.
+- **Multi-file editing**: Reads, refactors, and updates multiple files at once for holistic code changes.
+- **Agentic command execution**: Runs terminal commands like npm install, executes test suites, and can open a web browser for integration testing -- all with your approval.
+- **Granular auto-approval**: Control each action individually. Make Roo as autonomous as you want as you build confidence.
+- **Large task coordination**: Orchestrator mode handles large tasks by coordinating subtasks for other agents, running for hours and delivering.
+- **Performant with large codebases**: Configurable integrated semantic search for quicker retrieval in large codebases.
+- **Highly customizable**: Fine-tune settings for inference context, model properties, slash commands, and more. Most settings can be global or serialized in your repository.
+- **Open source**: Community-driven and fully auditable.
+- **Secure and private by design**: Client-only architecture means no code leaves your machine unless you say so. SOC 2 Type II compliant. Use .rooignore to exclude sensitive files. Run with offline/local models for full privacy.
+
+### Supported Languages
+
+Roo Code supports a wide range of programming languages including Python, Java, C#, JavaScript, TypeScript, Go, Rust, and many more. Since it leverages AI model capabilities, new or lesser-known languages may also work depending on model support.
+
+### Model Context Protocol (MCP)
+
+Roo Code supports the Model Context Protocol, allowing it to connect to any model that follows the MCP standard. This provides maximum flexibility in choosing AI providers.
+
+---
+
+## Roo Code Cloud
+
+Roo Code Cloud lets you create an AI agent team that runs autonomously in isolated cloud containers. Agents can be triggered from the web UI, Slack, Linear, or GitHub.
+
+**Website**: https://roocode.com/cloud
+**Sign up**: https://app.roocode.com/sign-up
+
+### How It Works
+
+1. **Connect your GitHub account**: Pick which repos the agents can work with in their isolated containers and choose what model you want to power each of them.
+2. **Set up your agent team**: Choose the roles you want filled -- Explainer, Planner, Coder, PR Reviewer, PR Fixer. They know how to act in each situation and stay on-task.
+3. **Start giving them tasks**: Describe what you want from the web UI, get the Reviewer automatically reviewing PRs, and much more.
+
+### Cloud Features
+
+- **Autonomous Cloud Agents**: Delegate work to specialized agents that run 24/7.
+- **Model Agnostic**: Bring your own keys or use the Roo Code Router with access to all top models with no markup.
+- **GitHub PR Reviews**: Agents can automatically review pull requests, provide feedback, and push fixes directly to your repository.
+- **Slack Integration**: Start tasks, get updates, and collaborate with agents directly from Slack channels.
+- **Linear Integration**: Assign issues to Roo Code directly from Linear. Get PRs back without switching tools.
+- **Team Collaboration**: Manage your team and their access to tasks and resources, with centralized billing and configuration.
+- **Usage Analytics**: Detailed token analytics to help optimize costs and usage across your team.
+- **Task History**: Access all tasks from anywhere, from the cloud and the extension.
+- **Task Sharing**: Share tasks with friends and coworkers and let them follow your work in real-time.
+
+---
+
+## Cloud Agents
+
+Roo Code Cloud provides several specialized agent types:
+
+### Planner Agent
+Plans complex changes and creates detailed implementation specs. Can be invoked from Slack or the web UI.
+
+### Coder Agent
+Implements features, refactors code, and creates PRs. Works in isolated containers with full repository access.
+
+### Explainer Agent
+Explains code, architecture, and program behavior. Useful for onboarding, code reviews, and knowledge sharing.
+
+### PR Reviewer Agent
+Provides comprehensive AI-powered code reviews. See the dedicated PR Reviewer section below.
+
+### PR Fixer Agent
+Automatically applies fixes based on review comments. See the dedicated PR Fixer section below.
+
+---
+
+## Roo Code for Slack
+
+**Website**: https://roocode.com/slack
+
+Mention @Roomote in any Slack channel to explain code, plan features, or ship a PR -- all without leaving the conversation.
+
+### Key Capabilities
+
+- **Discussion to PR**: Your team discusses a feature in Slack. @Roomote turns the discussion into a plan, then builds it.
+- **Thread-aware**: @Roomote reads the full thread before responding. It understands context from the conversation.
+- **Chain agents**: Start with a Planner to spec it out, then call the Coder to build it. Multi-step workflows in one Slack thread.
+- **Open to all**: Anyone on your team can ask @Roomote to fix bugs, build features, or investigate issues.
+- **Safe by design**: Agents never touch main/master directly. They produce branches and PRs. You approve.
+
+### Slack Workflow
+
+1. Turn the discussion into a plan -- your team discusses a feature, then summon the Planner agent.
+2. Refine the plan in the thread -- the team reviews, suggests changes, asks questions. Mention @Roomote to refine.
+3. Build the plan -- hand it off to the Coder agent to implement.
+4. Review and ship -- the Coder creates a branch and opens a PR. The team reviews and ships.
+
+### Setup
+
+Slack integration requires a Team plan. Connect via Roo Code Cloud settings, authorize the app, and add @Roomote to channels.
+
+---
+
+## Roo Code for Linear
+
+**Website**: https://roocode.com/linear
+
+Assign development work to @Roo Code directly from Linear. Get PRs back without switching tools.
+
+### Key Capabilities
+
+- **Work where you already work**: Assign development work directly from Linear. No new tools to learn.
+- **Progress is visible**: Watch progress in real-time. Roo Code posts updates as comments.
+- **Mention for refinement**: Comment "@Roo Code also add dark mode support" and the agent picks up where it left off.
+- **Full traceability**: Every PR links back to the originating issue. Your audit trail stays clean.
+- **Organization-level setup**: Connect once, use everywhere.
+- **Safe by design**: Agents produce branches and PRs. You review and approve before merge.
+
+### Setup
+
+Linear integration requires a Team plan. Connect GitHub, authorize Linear via OAuth, map your Linear project to a repo, then assign or mention @Roo Code.
+
+---
+
+## PR Reviewer Agent
+
+**Website**: https://roocode.com/reviewer
+
+AI-powered code reviews that catch what other AI tools and most humans miss.
+
+### How It Differs
+
+- **Bring your own key, get uncompromised reviews**: Most AI review tools use fixed pricing, which means they skimp on tokens to protect margins. With Roo, you bring your own API key. Reviews focus on real problems like business logic, security vulnerabilities, and architectural issues.
+- **Advanced reasoning**: Leverages state-of-the-art reasoning models with sophisticated workflows: diff analysis, context gathering, impact mapping, and contract validation. Catches subtle bugs that surface-level tools miss.
+- **Repository-aware, not snippet-aware**: Analyzes your entire codebase context -- dependency graphs, code ownership, team conventions, and historical patterns. Understands how changes interact with existing systems.
+
+### How It Works
+
+1. Connect your GitHub repository and configure which branches and pull requests should be reviewed.
+2. Provide your AI provider API key and set review preferences, custom rules, and quality standards.
+3. Every pull request gets detailed GitHub comments in minutes highlighting issues and suggesting improvements.
+
+---
+
+## PR Fixer Agent
+
+**Website**: https://roocode.com/pr-fixer
+
+Automatically apply high-quality fixes to pull requests based on review comments.
+
+### How It Differs
+
+- **Comment-history aware**: Understands the entire conversation on the PR -- previous reviews, replies, follow-ups -- and uses that context to produce accurate fixes.
+- **Bring your own key**: Use preferred models at full strength. Prompts are optimized for depth, not cost-cutting.
+- **Repository- and diff-aware**: Analyzes the full repo context and latest diff to ensure fixes align with project conventions and pass checks.
+
+### How It Works
+
+1. Connect your GitHub repositories.
+2. Invoke from a PR comment (e.g., "@roomote: fix these review comments"). The agent reads the entire comment history and latest diffs.
+3. The agent proposes targeted changes and pushes concise commits you can review and merge quickly.
+
+---
+
+## Roo Code Enterprise
+
+**Website**: https://roocode.com/enterprise
+
+The control-plane for AI-powered software development. Gain visibility, governance, and control over your AI coding initiatives.
+
+### Enterprise Features
+
+- **Centralized AI Management Hub**: Manage Roo Code deployments enterprise-wide. Centralized token management, multi-model support, extensible architecture.
+- **Real-Time Usage Visibility**: Track usage across teams with detailed analytics. Token consumption tracking, cost attribution by team, AI adoption insights.
+- **Enterprise-Grade Governance**: Implement security policies aligned with your governance framework. Model allow-lists, data residency controls, audit trail compliance.
+- **5-Minute Control-Plane Setup**: Deploy instantly with SaaS solution. SAML/SCIM integration, REST API access. No infrastructure required.
+- **Manage AI Development Costs**: Unified cost visibility, department chargebacks, usage optimization.
+- **Zero Friction for Developers**: Seamless access with automatic token refresh, local sidecar architecture, no workflow disruption.
+
+---
+
+## Roo Code Router
+
+**Website**: https://roocode.com/provider
+
+The Roo Code Router is a model router optimized to work seamlessly with Roo Code products. It provides curated access to top AI models with no markup on inference costs. You do not have to use it -- you can bring your own provider key.
+
+### Key Facts
+
+- Pricing is based on token usage for input and output, measured per million tokens.
+- The Router does not keep any of your data; the service only aims to make it easier to use Roo Code.
+- Available models include the latest from Anthropic, OpenAI, Google, and other top providers.
+
+---
+
+## Pricing
+
+**Website**: https://roocode.com/pricing
+
+### VS Code Extension
+- **Price**: Free forever
+- **Features**: Unlimited local use, bring your own model, powerful extensible modes, community support
+
+### Cloud Free
+- **Price**: $0/month + credits for usage
+- **Features**: Access to Cloud Agents (fully autonomous development from GitHub and web), Access to Roo Code Router, task history and sharing, token usage analytics, professional support
+- **Credit cost**: Cloud Agents at $5/hour; inference via Roo Provider pricing or BYOM
+
+### Cloud Team
+- **Price**: $99/month + credits for usage
+- **Trial**: Free for 14 days
+- **Features**: Everything in Free plus unlimited users (no per-seat cost), shared configuration and policies, centralized billing, Slack and Linear integrations
+- **Credit cost**: Cloud Agents at $5/hour; inference via Roo Provider pricing or BYOM
+
+### Enterprise
+- Custom pricing. Contact sales for a demo.
+
+### Credits
+Credits are pre-paid in dollars and deducted with usage for inference and Cloud Agent runs. You are always in control of your spend with no surprises.
+
+---
+
+## How Roo Code Compares to Alternatives
+
+### vs GitHub Copilot
+- Roo Code is open source; Copilot is proprietary
+- Roo Code is model-agnostic; Copilot is locked to OpenAI/GitHub models
+- Roo Code supports multi-file agentic editing and command execution; Copilot focuses on inline completions and chat
+- Roo Code has custom modes for different tasks; Copilot has a single assistant
+- Roo Code offers autonomous cloud agents; Copilot is IDE-only
+
+### vs Cursor
+- Roo Code is a VS Code extension (works in any VS Code fork including Cursor); Cursor is a standalone IDE
+- Roo Code is open source; Cursor is proprietary
+- Roo Code is model-agnostic with no lock-in; Cursor bundles its own model access
+- Roo Code has permission-based control for every action; Cursor applies changes more automatically
+- Roo Code Cloud extends to autonomous agents; Cursor is IDE-only
+
+### vs Windsurf
+- Roo Code is open source; Windsurf is proprietary
+- Roo Code is a VS Code extension; Windsurf is a standalone IDE
+- Roo Code supports any AI model; Windsurf bundles specific models
+- Roo Code has specialized modes for different tasks; Windsurf has a single AI assistant
+- Roo Code Cloud provides autonomous agents and team features; Windsurf is individual-only
+
+### vs Cline
+- Roo Code was forked from Cline and has since diverged significantly
+- Roo Code adds custom modes, Orchestrator mode, MCP marketplace, cloud agents, Slack/Linear integrations, and enterprise features
+- Roo Code is backed by Roo Code, Inc. with dedicated development team and enterprise support
+- Roo Code Cloud provides autonomous agents that run 24/7; Cline is extension-only
+
+---
+
+## Frequently Asked Questions
+
+### What exactly is Roo Code?
+Roo Code is an open-source, AI-powered coding assistant that runs in VS Code. It goes beyond simple autocompletion by reading and writing across multiple files, executing commands, and adapting to your workflow -- like having a whole dev team right inside your editor.
+
+### How does Roo Code differ from Copilot, Cursor, or Windsurf?
+Roo Code is open-source and fully customizable, letting you integrate any AI model you choose (e.g., OpenAI, Anthropic, local LLMs). It is built for multi-file edits, so it can read, refactor, and update multiple files at once. Its agentic abilities go beyond typical AI autocomplete, enabling it to run tests, open a browser, and handle deeper tasks. You are always in control: Roo Code is permission-based, meaning you control and approve any file changes or command executions.
+
+### Is Roo Code really free?
+Yes! Roo Code is completely free and open-source. You only pay for AI model usage if you use a paid API (like OpenAI). If you choose free or self-hosted models, there is no cost at all. Roo Code Cloud has free and paid tiers.
+
+### Will my code stay private?
+Yes. The Roo Code extension runs locally in VS Code, so your code never leaves your machine unless you connect to an external AI API. Even then, you control exactly what is sent. You can use .rooignore to exclude sensitive files, and you can run with offline/local models for full privacy.
+
+### Which AI models does Roo Code support?
+Roo Code is fully model-agnostic. It supports OpenAI models (GPT-4o, GPT-4, o1), Anthropic Claude (including Claude 3.5 Sonnet), Google Gemini models, local LLMs via Ollama, and any model accessible through OpenRouter or compatible APIs.
+
+### Does Roo Code support my programming language?
+Likely yes. Roo Code supports Python, Java, C#, JavaScript, TypeScript, Go, Rust, and many more. Since it leverages AI model understanding, new or lesser-known languages may also work depending on model support.
+
+### How do I install and get started?
+Install Roo Code from the VS Code Marketplace or GitHub. Add your AI keys (OpenAI, Anthropic, or other) in the extension settings. Open the Roo panel in VS Code and start typing commands in plain English. Tutorial videos are available at https://docs.roocode.com/tutorial-videos.
+
+### Can it handle large, enterprise-scale projects?
+Yes. Roo Code uses efficient strategies like partial-file analysis, summarization, and user-specified context to handle large codebases. Enterprises can use on-premises or self-hosted models for compliance and security needs.
+
+### Is it safe for enterprise use?
+Yes. Roo Code was built for enterprise environments. You can self-host AI models or use your own trusted provider. All file changes and commands go through permission gating. Because Roo Code is fully open-source, it is auditable. SOC 2 Type II compliant.
+
+### Can Roo Code run commands and tests automatically?
+Yes. Roo Code can execute terminal commands, run test suites, and open a web browser for integration testing -- always optional and fully permission-based.
+
+### Can I contribute to Roo Code?
+Yes! Roo Code is open-source on GitHub at https://github.com/RooCodeInc/Roo-Code. Submit issues, suggest features, or open a pull request. There is an active community on Discord (https://discord.gg/roocode) and Reddit (https://reddit.com/r/RooCode).
+
+### Where can I learn more or get help?
+Check the official documentation at https://docs.roocode.com for quick-start guides and advanced documentation. Community support is available on Discord, Reddit, YouTube (https://www.youtube.com/@RooCodeYT), and the blog (https://blog.roocode.com).
+
+---
+
+## Links
+
+- Website: https://roocode.com
+- Documentation: https://docs.roocode.com
+- GitHub: https://github.com/RooCodeInc/Roo-Code
+- VS Code Marketplace: https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline
+- Cloud App: https://app.roocode.com
+- Discord: https://discord.gg/roocode
+- Reddit: https://reddit.com/r/RooCode
+- X/Twitter: https://x.com/roocode
+- LinkedIn: https://www.linkedin.com/company/roo-code
+- YouTube: https://www.youtube.com/@RooCodeYT
+- Blog: https://blog.roocode.com
+- Trust Center: https://trust.roocode.com
+- Careers: https://careers.roocode.com
