@@ -357,7 +357,9 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		},
 	): ApiStream {
 		const modelConfig = this.getModel()
-		const usePromptCache = Boolean(this.options.awsUsePromptCache && this.supportsAwsPromptCache(modelConfig))
+		const usePromptCache = Boolean(
+			(this.options.awsUsePromptCache ?? true) && this.supportsAwsPromptCache(modelConfig),
+		)
 
 		const conversationId =
 			messages.length > 0
