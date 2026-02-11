@@ -72,6 +72,7 @@ export const toolParamNames = [
 	"file_path", // search_replace and edit_file parameter
 	"old_string", // search_replace and edit_file parameter
 	"new_string", // search_replace and edit_file parameter
+	"replace_all", // edit tool parameter for replacing all occurrences
 	"expected_replacements", // edit_file parameter for multiple occurrences
 	"artifact_id", // read_command_output parameter
 	"search", // read_command_output parameter for grep-like search
@@ -92,7 +93,8 @@ export type NativeToolArgs = {
 	attempt_completion: { result: string }
 	execute_command: { command: string; cwd?: string }
 	apply_diff: { path: string; diff: string }
-	search_and_replace: { path: string; operations: Array<{ search: string; replace: string }> }
+	edit: { file_path: string; old_string: string; new_string: string; replace_all?: boolean }
+	search_and_replace: { file_path: string; old_string: string; new_string: string; replace_all?: boolean }
 	search_replace: { file_path: string; old_string: string; new_string: string }
 	edit_file: { file_path: string; old_string: string; new_string: string; expected_replacements?: number }
 	apply_patch: { patch: string }
@@ -251,6 +253,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	read_command_output: "read command output",
 	write_to_file: "write files",
 	apply_diff: "apply changes",
+	edit: "edit files",
 	search_and_replace: "apply changes using search and replace",
 	search_replace: "apply single search and replace",
 	edit_file: "edit files using search and replace",
@@ -279,7 +282,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 	},
 	edit: {
 		tools: ["apply_diff", "write_to_file", "generate_image"],
-		customTools: ["search_and_replace", "search_replace", "edit_file", "apply_patch"],
+		customTools: ["edit", "search_replace", "edit_file", "apply_patch"],
 	},
 	browser: {
 		tools: ["browser_action"],
@@ -319,6 +322,7 @@ export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
  */
 export const TOOL_ALIASES: Record<string, ToolName> = {
 	write_file: "write_to_file",
+	search_and_replace: "edit",
 } as const
 
 export type DiffResult =
