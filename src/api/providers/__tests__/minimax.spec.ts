@@ -368,37 +368,6 @@ describe("MiniMaxHandler", () => {
 		})
 	})
 
-	describe("thinking signature", () => {
-		it("returns undefined thought signature before any request", () => {
-			const handler = createHandler()
-			expect(handler.getThoughtSignature()).toBeUndefined()
-		})
-
-		it("captures thought signature from stream providerMetadata", async () => {
-			const signature = "test-thinking-signature"
-			mockStreamText.mockReturnValue(
-				createMockStream([
-					{
-						type: "reasoning-delta",
-						text: "thinking...",
-						providerMetadata: { anthropic: { signature } },
-					},
-					{ type: "text-delta", text: "Answer" },
-				]),
-			)
-
-			const handler = createHandler()
-			await collectChunks(handler.createMessage(systemPrompt, messages))
-
-			expect(handler.getThoughtSignature()).toBe(signature)
-		})
-
-		it("returns undefined redacted thinking blocks before any request", () => {
-			const handler = createHandler()
-			expect(handler.getRedactedThinkingBlocks()).toBeUndefined()
-		})
-	})
-
 	describe("completePrompt", () => {
 		it("calls generateText with model and prompt and returns text", async () => {
 			mockGenerateText.mockResolvedValue({ text: "response" })

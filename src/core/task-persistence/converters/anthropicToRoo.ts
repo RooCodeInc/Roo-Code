@@ -290,6 +290,19 @@ export function convertAnthropicToRooMessages(messages: ApiMessage[]): RooMessag
 					}
 					continue
 				}
+
+				// Redacted thinking blocks (Anthropic safety filter)
+				// Convert to AI SDK reasoning part with redactedData in providerOptions
+				if (partAny.type === "redacted_thinking") {
+					content.push({
+						type: "reasoning",
+						text: "",
+						providerOptions: {
+							anthropic: { redactedData: partAny.data as string },
+						},
+					} as ReasoningPart)
+					continue
+				}
 			}
 
 			const assistantMsg: RooAssistantMessage = {

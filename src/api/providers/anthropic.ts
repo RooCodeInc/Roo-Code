@@ -1,4 +1,3 @@
-import type { Anthropic } from "@anthropic-ai/sdk"
 import { createAnthropic } from "@ai-sdk/anthropic"
 import { streamText, generateText, ToolSet, ModelMessage } from "ai"
 
@@ -23,6 +22,7 @@ import {
 	processAiSdkStreamPart,
 	mapToolChoice,
 	handleAiSdkError,
+	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { calculateApiCostAnthropic } from "../../shared/cost"
 
@@ -35,8 +35,6 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 	private options: ApiHandlerOptions
 	private provider: ReturnType<typeof createAnthropic>
 	private readonly providerName = "Anthropic"
-	private lastThoughtSignature: string | undefined
-	private lastRedactedThinkingBlocks: Array<{ type: "redacted_thinking"; data: string }> = []
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -77,10 +75,6 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const modelConfig = this.getModel()
-
-		// Reset thinking state for this request
-		this.lastThoughtSignature = undefined
-		this.lastRedactedThinkingBlocks = []
 
 		// Convert messages to AI SDK format
 		const aiSdkMessages = messages as ModelMessage[]
@@ -154,22 +148,6 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 			let lastStreamError: string | undefined
 			for await (const part of result.fullStream) {
-				// Capture thinking signature from stream events
-				// The AI SDK's @ai-sdk/anthropic emits the signature as a reasoning-delta
-				// event with providerMetadata.anthropic.signature
-				const partAny = part as any
-				if (partAny.providerMetadata?.anthropic?.signature) {
-					this.lastThoughtSignature = partAny.providerMetadata.anthropic.signature
-				}
-
-				// Capture redacted thinking blocks from stream events
-				if (partAny.providerMetadata?.anthropic?.redactedData) {
-					this.lastRedactedThinkingBlocks.push({
-						type: "redacted_thinking",
-						data: partAny.providerMetadata.anthropic.redactedData,
-					})
-				}
-
 				for (const chunk of processAiSdkStreamPart(part)) {
 					if (chunk.type === "error") {
 						lastStreamError = chunk.message
@@ -191,6 +169,8 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 				}
 				throw usageError
 			}
+
+			yield* yieldResponseMessage(result)
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
 			TelemetryService.instance.captureException(
@@ -324,23 +304,6 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			)
 			throw handleAiSdkError(error, this.providerName)
 		}
-	}
-
-	/**
-	 * Returns the thinking signature captured from the last Anthropic response.
-	 * Claude models with extended thinking return a cryptographic signature
-	 * which must be round-tripped back for multi-turn conversations with tool use.
-	 */
-	getThoughtSignature(): string | undefined {
-		return this.lastThoughtSignature
-	}
-
-	/**
-	 * Returns any redacted thinking blocks captured from the last Anthropic response.
-	 * Anthropic returns these when safety filters trigger on reasoning content.
-	 */
-	getRedactedThinkingBlocks(): Array<{ type: "redacted_thinking"; data: string }> | undefined {
-		return this.lastRedactedThinkingBlocks.length > 0 ? this.lastRedactedThinkingBlocks : undefined
 	}
 
 	override isAiSdkProvider(): boolean {

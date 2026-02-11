@@ -12,6 +12,7 @@ import {
 	processAiSdkStreamPart,
 	mapToolChoice,
 	handleAiSdkError,
+	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { ApiStream } from "../transform/stream"
 
@@ -128,6 +129,8 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 					outputTokens: usage.outputTokens || 0,
 				}
 			}
+
+			yield* yieldResponseMessage(result)
 		} catch (error) {
 			this.handleOllamaError(error, modelId)
 		}

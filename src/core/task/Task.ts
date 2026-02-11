@@ -60,6 +60,7 @@ import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
 
 // api
 import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "../../api"
+import type { AssistantModelMessage } from "ai"
 import { ApiStream, GroundingSource } from "../../api/transform/stream"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 
@@ -1040,7 +1041,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		return readRooMessages({ taskId: this.taskId, globalStoragePath: this.globalStoragePath })
 	}
 
-	private async addToApiConversationHistory(message: RooMessage, reasoning?: string) {
+	private async addToApiConversationHistory(message: RooMessage) {
 		// Handle RooReasoningMessage (has `type` instead of `role`)
 		if (!("role" in message)) {
 			this.apiConversationHistory.push({ ...message, ts: message.ts ?? Date.now() })
@@ -1048,94 +1049,46 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			return
 		}
 
-		// Capture the encrypted_content / thought signatures from the provider (e.g., OpenAI Responses API, Google GenAI) if present.
-		// We only persist data reported by the current response body.
 		const handler = this.api as ApiHandler & {
 			getResponseId?: () => string | undefined
 			getEncryptedContent?: () => { encrypted_content: string; id?: string } | undefined
-			getThoughtSignature?: () => string | undefined
-			getSummary?: () => any[] | undefined
-			getReasoningDetails?: () => any[] | undefined
-			getRedactedThinkingBlocks?: () => Array<{ type: "redacted_thinking"; data: string }> | undefined
 		}
 
 		if (message.role === "assistant") {
 			const responseId = handler.getResponseId?.()
+
+			// Check if the message is already in native AI SDK format (from result.response.messages).
+			// These messages have providerOptions on content parts (reasoning signatures, etc.)
+			// and don't need manual block injection.
+			const hasNativeFormat =
+				Array.isArray(message.content) &&
+				(message.content as Array<{ providerOptions?: unknown }>).some((p) => p.providerOptions)
+
+			if (hasNativeFormat) {
+				// Store directly — the AI SDK response message already has reasoning parts
+				// with providerOptions (signatures, redactedData, etc.) in the correct format.
+				this.apiConversationHistory.push({
+					...message,
+					...(responseId ? { id: responseId } : {}),
+					ts: message.ts ?? Date.now(),
+				})
+				await this.saveApiConversationHistory()
+				return
+			}
+
+			// Fallback path: store the manually-constructed message with responseId and timestamp.
+			// This handles non-AI-SDK providers and AI SDK responses without reasoning
+			// (text-only or text + tool calls where no content parts carry providerOptions).
 			const reasoningData = handler.getEncryptedContent?.()
-			const thoughtSignature = handler.getThoughtSignature?.()
-			const reasoningSummary = handler.getSummary?.()
-			const reasoningDetails = handler.getReasoningDetails?.()
 
-			// Only Anthropic's API expects/validates the special `thinking` content block signature.
-			// Other providers (notably Gemini 3) use different signature semantics (e.g. `thoughtSignature`)
-			// and require round-tripping the signature in their own format.
-			const modelId = getModelId(this.apiConfiguration)
-			const apiProvider = this.apiConfiguration.apiProvider
-			const apiProtocol = getApiProtocol(
-				apiProvider && !isRetiredProvider(apiProvider) ? apiProvider : undefined,
-				modelId,
-			)
-			const isAnthropicProtocol = apiProtocol === "anthropic"
-
-			// Start from the original assistant message.
-			// Use `any` for the content type because we store custom block types
-			// (thinking, redacted_thinking, thoughtSignature) that aren't part of the AI SDK's AssistantContent.
-			const messageWithTs: RooAssistantMessage & { reasoning_details?: any[]; content: any } = {
+			const messageWithTs: RooAssistantMessage & { content: any } = {
 				...message,
 				...(responseId ? { id: responseId } : {}),
 				ts: Date.now(),
 			}
 
-			// Store reasoning_details array if present (for models like Gemini 3)
-			if (reasoningDetails) {
-				messageWithTs.reasoning_details = reasoningDetails
-			}
-
-			// Store reasoning: Anthropic thinking (with signature), plain text (most providers), or encrypted (OpenAI Native)
-			// Skip if reasoning_details already contains the reasoning (to avoid duplication)
-			if (isAnthropicProtocol && reasoning && thoughtSignature && !reasoningDetails) {
-				// Anthropic provider with extended thinking: Store as proper `thinking` block
-				// This format passes through anthropic-filter.ts and is properly round-tripped
-				// for interleaved thinking with tool use (required by Anthropic API)
-				const thinkingBlock = {
-					type: "thinking",
-					thinking: reasoning,
-					signature: thoughtSignature,
-				}
-
-				if (typeof messageWithTs.content === "string") {
-					messageWithTs.content = [thinkingBlock, { type: "text", text: messageWithTs.content } as TextPart]
-				} else if (Array.isArray(messageWithTs.content)) {
-					messageWithTs.content = [thinkingBlock, ...messageWithTs.content]
-				} else if (!messageWithTs.content) {
-					messageWithTs.content = [thinkingBlock]
-				}
-
-				// Also insert any redacted_thinking blocks after the thinking block.
-				// Anthropic returns these when safety filters trigger on reasoning content.
-				// They must be passed back verbatim for proper reasoning continuity.
-				const redactedBlocks = handler.getRedactedThinkingBlocks?.()
-				if (redactedBlocks && Array.isArray(messageWithTs.content)) {
-					// Insert after the thinking block (index 1, right after thinking at index 0)
-					messageWithTs.content.splice(1, 0, ...redactedBlocks)
-				}
-			} else if (reasoning && !reasoningDetails) {
-				// Other providers (non-Anthropic): Store as generic reasoning block
-				const reasoningBlock = {
-					type: "reasoning",
-					text: reasoning,
-					summary: reasoningSummary ?? ([] as any[]),
-				}
-
-				if (typeof messageWithTs.content === "string") {
-					messageWithTs.content = [reasoningBlock, { type: "text", text: messageWithTs.content } as TextPart]
-				} else if (Array.isArray(messageWithTs.content)) {
-					messageWithTs.content = [reasoningBlock, ...messageWithTs.content]
-				} else if (!messageWithTs.content) {
-					messageWithTs.content = [reasoningBlock]
-				}
-			} else if (reasoningData?.encrypted_content) {
-				// OpenAI Native encrypted reasoning
+			// OpenAI Native encrypted reasoning — the only non-AI-SDK reasoning format still needed
+			if (reasoningData?.encrypted_content) {
 				const reasoningBlock = {
 					type: "reasoning",
 					summary: [] as any[],
@@ -1149,27 +1102,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					messageWithTs.content = [reasoningBlock, ...messageWithTs.content]
 				} else if (!messageWithTs.content) {
 					messageWithTs.content = [reasoningBlock]
-				}
-			}
-
-			// For non-Anthropic providers (e.g., Gemini 3), persist the thought signature as its own
-			// content block so converters can attach it back to the correct provider-specific fields.
-			// Note: For Anthropic extended thinking, the signature is already included in the thinking block above.
-			if (thoughtSignature && !isAnthropicProtocol) {
-				const thoughtSignatureBlock = {
-					type: "thoughtSignature",
-					thoughtSignature,
-				}
-
-				if (typeof messageWithTs.content === "string") {
-					messageWithTs.content = [
-						{ type: "text", text: messageWithTs.content } as TextPart,
-						thoughtSignatureBlock,
-					]
-				} else if (Array.isArray(messageWithTs.content)) {
-					messageWithTs.content = [...messageWithTs.content, thoughtSignatureBlock]
-				} else if (!messageWithTs.content) {
-					messageWithTs.content = [thoughtSignatureBlock]
 				}
 			}
 
@@ -3063,6 +2995,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				const stream = this.attemptApiRequest(currentItem.retryAttempt ?? 0, { skipProviderRateLimit: true })
 				let assistantMessage = ""
 				let reasoningMessage = ""
+				let responseAssistantMessage: AssistantModelMessage | undefined
 				let pendingGroundingSources: GroundingSource[] = []
 				this.isStreaming = true
 
@@ -3205,6 +3138,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								presentAssistantMessage(this)
 								break
 							}
+							case "response_message":
+								responseAssistantMessage = chunk.message
+								break
 						}
 
 						if (this.abort) {
@@ -3730,10 +3666,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// This is critical for new_task: when it triggers delegation, flushPendingToolResultsToHistory()
 					// will save the user message with tool_results. The assistant message must already be in history
 					// so that tool_result blocks appear AFTER their corresponding tool_use blocks.
-					await this.addToApiConversationHistory(
-						{ role: "assistant", content: assistantContent } as RooMessage,
-						reasoningMessage || undefined,
-					)
+					if (responseAssistantMessage) {
+						// AI SDK response message is already in native format with providerOptions —
+						// store directly without manual reasoning/signature reconstruction
+						await this.addToApiConversationHistory({
+							...responseAssistantMessage,
+							ts: Date.now(),
+						} as RooMessage)
+					} else {
+						// Fallback: manual construction for non-AI-SDK providers
+						await this.addToApiConversationHistory({
+							role: "assistant",
+							content: assistantContent,
+						} as RooMessage)
+					}
 					this.assistantMessageSavedToHistory = true
 
 					TelemetryService.instance.captureConversationMessage(this.taskId, "assistant")
@@ -3796,6 +3742,23 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					} else {
 						// Reset counter when tools are used successfully
 						this.consecutiveNoToolUseCount = 0
+					}
+
+					// Save pending tool results to conversation history as a RooToolMessage.
+					// After the RooMessage migration, tool results are in pendingToolResults
+					// (separate from userMessageContent) and must be explicitly saved.
+					// We don't use flushPendingToolResultsToHistory() here because that also
+					// flushes userMessageContent — which should instead go via the stack to
+					// become part of the next iteration's user message.
+					if (this.pendingToolResults.length > 0) {
+						const toolMessage: RooToolMessage = {
+							role: "tool",
+							content: [...this.pendingToolResults],
+							ts: Date.now(),
+						}
+						this.apiConversationHistory.push(toolMessage)
+						await this.saveApiConversationHistory()
+						this.pendingToolResults = []
 					}
 
 					// Push to stack if there's content OR if we're paused waiting for a subtask.
@@ -4645,48 +4608,163 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	/**
-	 * Prepares conversation history for the API request.
+	 * Prepares conversation history for the API request by sanitizing stored
+	 * RooMessage items into valid AI SDK ModelMessage format.
 	 *
-	 * With the AI SDK architecture, RooMessage already stores content in
-	 * ModelMessage format. Condense/truncation filtering is handled upstream
-	 * by getEffectiveApiHistory. This method:
+	 * Condense/truncation filtering is handled upstream by getEffectiveApiHistory.
+	 * This method:
 	 *
-	 * - Passes through RooReasoningMessage items (encrypted reasoning for OpenAI Native)
-	 * - Passes through RooAssistantMessage items with providerOptions (reasoning_details)
-	 * - Strips plain-text reasoning parts from assistant messages when the provider
-	 *   does not support them (defensive; currently all providers are AI SDK)
-	 * - Passes through all other messages unchanged
+	 * - Removes RooReasoningMessage items (standalone encrypted reasoning with no `role`)
+	 * - Converts custom content blocks in assistant messages to valid AI SDK parts:
+	 *   - `thinking` (Anthropic) → `reasoning` part with signature in providerOptions
+	 *   - `redacted_thinking` (Anthropic) → stripped (no AI SDK equivalent)
+	 *   - `thoughtSignature` (Gemini) → extracted and attached to first tool-call providerOptions
+	 *   - `reasoning` with `encrypted_content` but no `text` → stripped (invalid reasoning part)
+	 * - Carries `reasoning_details` (OpenRouter) through to providerOptions
+	 * - Strips all reasoning when the provider does not support it
 	 */
 	private buildCleanConversationHistory(messages: RooMessage[]): RooMessage[] {
 		const preserveReasoning = this.api.getModel().info.preserveReasoning === true || this.api.isAiSdkProvider()
 
-		// Fast path: when reasoning is preserved, no transformation needed
-		if (preserveReasoning) {
-			return messages
-		}
-
-		// Defensive path for non-AI SDK providers: strip reasoning
 		return messages
 			.filter((msg) => {
-				// Remove standalone encrypted reasoning items
+				// Always remove standalone RooReasoningMessage items (no `role` field → invalid ModelMessage)
 				if (isRooReasoningMessage(msg)) {
 					return false
 				}
 				return true
 			})
 			.map((msg) => {
-				// Strip reasoning parts from assistant message content
-				if (isRooAssistantMessage(msg) && Array.isArray(msg.content)) {
-					const hasReasoning = msg.content.some((part) => part.type === "reasoning")
-					if (hasReasoning) {
-						const filtered = msg.content.filter((part) => part.type !== "reasoning")
+				if (!isRooAssistantMessage(msg) || !Array.isArray(msg.content)) {
+					return msg
+				}
+
+				// Detect native AI SDK format: content parts already have providerOptions
+				// (stored directly from result.response.messages). These don't need legacy sanitization.
+				const isNativeFormat = (msg.content as Array<{ providerOptions?: unknown }>).some(
+					(p) => p.providerOptions,
+				)
+
+				if (isNativeFormat) {
+					// Native format: only strip reasoning if the provider doesn't support it
+					if (!preserveReasoning) {
+						const filtered = (msg.content as Array<{ type: string }>).filter((p) => p.type !== "reasoning")
 						return {
 							...msg,
 							content: filtered.length > 0 ? filtered : [{ type: "text" as const, text: "" }],
-						}
+						} as unknown as RooMessage
+					}
+					// Pass through unchanged — already in valid AI SDK format
+					return msg
+				}
+
+				// Legacy path: sanitize old-format messages with custom block types
+				// (thinking, redacted_thinking, thoughtSignature)
+
+				// Extract thoughtSignature block (Gemini 3) before filtering
+				let thoughtSignature: string | undefined
+				for (const part of msg.content) {
+					const partAny = part as unknown as { type?: string; thoughtSignature?: string }
+					if (partAny.type === "thoughtSignature" && partAny.thoughtSignature) {
+						thoughtSignature = partAny.thoughtSignature
 					}
 				}
-				return msg
+
+				const sanitized: Array<{ type: string; [key: string]: unknown }> = []
+				let appliedThoughtSignature = false
+
+				for (const part of msg.content) {
+					const partType = (part as { type: string }).type
+
+					if (partType === "thinking") {
+						// Anthropic extended thinking → AI SDK reasoning part
+						if (!preserveReasoning) continue
+						const thinkingPart = part as unknown as { thinking?: string; signature?: string }
+						if (typeof thinkingPart.thinking === "string" && thinkingPart.thinking.length > 0) {
+							const reasoningPart: Record<string, unknown> = {
+								type: "reasoning",
+								text: thinkingPart.thinking,
+							}
+							if (thinkingPart.signature) {
+								reasoningPart.providerOptions = {
+									anthropic: { signature: thinkingPart.signature },
+									bedrock: { signature: thinkingPart.signature },
+								}
+							}
+							sanitized.push(reasoningPart as (typeof sanitized)[number])
+						}
+						continue
+					}
+
+					if (partType === "redacted_thinking") {
+						// No AI SDK equivalent — strip
+						continue
+					}
+
+					if (partType === "thoughtSignature") {
+						// Extracted above, will be attached to first tool-call — strip block
+						continue
+					}
+
+					if (partType === "reasoning") {
+						if (!preserveReasoning) continue
+						const reasoningPart = part as unknown as { text?: string; encrypted_content?: string }
+						// Only valid if it has a `text` field (AI SDK schema requires it)
+						if (typeof reasoningPart.text === "string" && reasoningPart.text.length > 0) {
+							sanitized.push(part as (typeof sanitized)[number])
+						}
+						// Blocks with encrypted_content but no text are invalid → skip
+						continue
+					}
+
+					if (partType === "tool-call" && thoughtSignature && !appliedThoughtSignature) {
+						// Attach Gemini thoughtSignature to the first tool-call
+						const toolCall = { ...(part as object) } as Record<string, unknown>
+						toolCall.providerOptions = {
+							...((toolCall.providerOptions as Record<string, unknown>) ?? {}),
+							google: { thoughtSignature },
+							vertex: { thoughtSignature },
+						}
+						sanitized.push(toolCall as (typeof sanitized)[number])
+						appliedThoughtSignature = true
+						continue
+					}
+
+					// text, tool-call, tool-result, file — pass through
+					sanitized.push(part as (typeof sanitized)[number])
+				}
+
+				const content = sanitized.length > 0 ? sanitized : [{ type: "text" as const, text: "" }]
+
+				// Carry reasoning_details through to providerOptions for OpenRouter round-tripping
+				const rawReasoningDetails = (msg as unknown as { reasoning_details?: Record<string, unknown>[] })
+					.reasoning_details
+				const validReasoningDetails = rawReasoningDetails?.filter((detail) => {
+					switch (detail.type) {
+						case "reasoning.encrypted":
+							return typeof detail.data === "string" && detail.data.length > 0
+						case "reasoning.text":
+							return typeof detail.text === "string"
+						case "reasoning.summary":
+							return typeof detail.summary === "string"
+						default:
+							return false
+					}
+				})
+
+				const result: Record<string, unknown> = {
+					...msg,
+					content,
+				}
+
+				if (validReasoningDetails && validReasoningDetails.length > 0) {
+					result.providerOptions = {
+						...((msg as unknown as { providerOptions?: Record<string, unknown> }).providerOptions ?? {}),
+						openrouter: { reasoning_details: validReasoningDetails },
+					}
+				}
+
+				return result as unknown as RooMessage
 			})
 	}
 	public async checkpointRestore(options: CheckpointRestoreOptions) {

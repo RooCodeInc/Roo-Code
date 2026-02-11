@@ -17,6 +17,7 @@ import {
 	processAiSdkStreamPart,
 	mapToolChoice,
 	handleAiSdkError,
+	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 
@@ -158,6 +159,8 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 				}
 				throw usageError
 			}
+
+			yield* yieldResponseMessage(result)
 		} catch (error) {
 			throw handleAiSdkError(error, "Vercel AI Gateway")
 		}

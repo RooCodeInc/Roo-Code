@@ -14,6 +14,7 @@ import {
 	processAiSdkStreamPart,
 	mapToolChoice,
 	handleAiSdkError,
+	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { calculateApiCostAnthropic } from "../../shared/cost"
 
@@ -26,8 +27,6 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 	private client: ReturnType<typeof createAnthropic>
 	private options: ApiHandlerOptions
 	private readonly providerName = "MiniMax"
-	private lastThoughtSignature: string | undefined
-	private lastRedactedThinkingBlocks: Array<{ type: "redacted_thinking"; data: string }> = []
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -63,10 +62,6 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const modelConfig = this.getModel()
-
-		// Reset thinking state for this request
-		this.lastThoughtSignature = undefined
-		this.lastRedactedThinkingBlocks = []
 
 		const modelParams = getModelParams({
 			format: "anthropic",
@@ -133,28 +128,6 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 			let lastStreamError: string | undefined
 
 			for await (const part of result.fullStream) {
-				const anthropicMetadata = (
-					part as {
-						providerMetadata?: {
-							anthropic?: {
-								signature?: string
-								redactedData?: string
-							}
-						}
-					}
-				).providerMetadata?.anthropic
-
-				if (anthropicMetadata?.signature) {
-					this.lastThoughtSignature = anthropicMetadata.signature
-				}
-
-				if (anthropicMetadata?.redactedData) {
-					this.lastRedactedThinkingBlocks.push({
-						type: "redacted_thinking",
-						data: anthropicMetadata.redactedData,
-					})
-				}
-
 				for (const chunk of processAiSdkStreamPart(part)) {
 					if (chunk.type === "error") {
 						lastStreamError = chunk.message
@@ -175,6 +148,8 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 				}
 				throw usageError
 			}
+
+			yield* yieldResponseMessage(result)
 		} catch (error) {
 			throw handleAiSdkError(error, this.providerName)
 		}
@@ -263,14 +238,6 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 		} catch (error) {
 			throw handleAiSdkError(error, this.providerName)
 		}
-	}
-
-	getThoughtSignature(): string | undefined {
-		return this.lastThoughtSignature
-	}
-
-	getRedactedThinkingBlocks(): Array<{ type: "redacted_thinking"; data: string }> | undefined {
-		return this.lastRedactedThinkingBlocks.length > 0 ? this.lastRedactedThinkingBlocks : undefined
 	}
 
 	override isAiSdkProvider(): boolean {

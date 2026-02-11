@@ -6,6 +6,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 import { tool as createTool, jsonSchema, type ModelMessage, type TextStreamPart } from "ai"
+import type { AssistantModelMessage } from "ai"
 import type { ApiStreamChunk, ApiStream } from "./stream"
 
 /**
@@ -512,6 +513,7 @@ export async function* consumeAiSdkStream(
 	result: {
 		fullStream: AsyncIterable<ExtendedStreamPart>
 		usage: PromiseLike<{ inputTokens?: number; outputTokens?: number }>
+		response?: PromiseLike<{ messages?: Array<{ role: string; content: unknown; providerOptions?: unknown }> }>
 	},
 	usageHandler?: () => AsyncGenerator<ApiStreamChunk>,
 ): ApiStream {
@@ -544,6 +546,31 @@ export async function* consumeAiSdkStream(
 			throw new Error(lastStreamError)
 		}
 		throw usageError
+	}
+
+	// Yield the AI SDK's fully-formed assistant message for direct storage
+	yield* yieldResponseMessage(result)
+}
+
+/**
+ * Await `result.response` and yield the assistant message from `response.messages`.
+ * Used by both `consumeAiSdkStream` and providers with manual `fullStream` iteration.
+ */
+export async function* yieldResponseMessage(result: {
+	response?: PromiseLike<{ messages?: Array<{ role: string; content: unknown; providerOptions?: unknown }> }>
+}): ApiStream {
+	if (!result.response) return
+	try {
+		const response = await result.response
+		if (response.messages && response.messages.length > 0) {
+			const assistantMsg = response.messages.find((m) => m.role === "assistant")
+			if (assistantMsg) {
+				yield { type: "response_message", message: assistantMsg as AssistantModelMessage }
+			}
+		}
+	} catch {
+		// response resolution can fail if the stream errored — ignore silently
+		// since the stream error is already surfaced via lastStreamError
 	}
 }
 

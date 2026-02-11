@@ -10,8 +10,13 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
-import { convertToolsForAiSdk, processAiSdkStreamPart, handleAiSdkError, mapToolChoice } from "../transform/ai-sdk"
-import { type ReasoningDetail } from "../transform/openai-format"
+import {
+	convertToolsForAiSdk,
+	processAiSdkStreamPart,
+	handleAiSdkError,
+	mapToolChoice,
+	yieldResponseMessage,
+} from "../transform/ai-sdk"
 import type { RooReasoningParams } from "../transform/reasoning"
 import { getRooReasoning } from "../transform/reasoning"
 
@@ -30,7 +35,6 @@ function getSessionToken(): string {
 export class RooHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private fetcherBaseURL: string
-	private currentReasoningDetails: ReasoningDetail[] = []
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -84,18 +88,11 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 		return true as const
 	}
 
-	getReasoningDetails(): ReasoningDetail[] | undefined {
-		return this.currentReasoningDetails.length > 0 ? this.currentReasoningDetails : undefined
-	}
-
 	override async *createMessage(
 		systemPrompt: string,
 		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		// Reset reasoning_details accumulator for this request
-		this.currentReasoningDetails = []
-
 		const model = this.getModel()
 		const { id: modelId, info } = model
 
@@ -126,7 +123,6 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 		const aiSdkMessages = messages as ModelMessage[]
 		const tools = convertToolsForAiSdk(this.convertToolsForOpenAI(metadata?.tools))
 
-		let accumulatedReasoningText = ""
 		let lastStreamError: string | undefined
 
 		try {
@@ -141,9 +137,6 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 			})
 
 			for await (const part of result.fullStream) {
-				if (part.type === "reasoning-delta" && part.text !== "[REDACTED]") {
-					accumulatedReasoningText += part.text
-				}
 				for (const chunk of processAiSdkStreamPart(part)) {
 					if (chunk.type === "error") {
 						lastStreamError = chunk.message
@@ -152,24 +145,10 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 				}
 			}
 
-			// Build reasoning details from accumulated text
-			if (accumulatedReasoningText) {
-				this.currentReasoningDetails.push({
-					type: "reasoning.text",
-					text: accumulatedReasoningText,
-					index: 0,
-				})
-			}
-
-			// Check provider metadata for reasoning_details (override if present)
+			// Check provider metadata for usage details
 			const providerMetadata =
 				(await result.providerMetadata) ?? (await (result as any).experimental_providerMetadata)
 			const rooMeta = providerMetadata?.roo as Record<string, any> | undefined
-
-			const providerReasoningDetails = rooMeta?.reasoning_details as ReasoningDetail[] | undefined
-			if (providerReasoningDetails && providerReasoningDetails.length > 0) {
-				this.currentReasoningDetails = providerReasoningDetails
-			}
 
 			// Process usage with protocol-aware normalization
 			const usage = await result.usage
@@ -207,6 +186,8 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 				cacheReadTokens: cacheRead,
 				totalCost,
 			}
+
+			yield* yieldResponseMessage(result)
 		} catch (error) {
 			if (lastStreamError) {
 				throw new Error(lastStreamError)

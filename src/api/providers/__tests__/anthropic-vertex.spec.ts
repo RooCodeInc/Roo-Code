@@ -55,6 +55,7 @@ vitest.mock("../../transform/ai-sdk", () => ({
 	}),
 	mapToolChoice: vitest.fn().mockReturnValue(undefined),
 	handleAiSdkError: vitest.fn().mockImplementation((error: any) => error),
+	yieldResponseMessage: vitest.fn().mockImplementation(function* () {}),
 }))
 
 // Import mocked modules
@@ -369,55 +370,6 @@ describe("AnthropicVertexHandler", () => {
 			expect(textChunks[0].text).toBe("Here's my answer:")
 		})
 
-		it("should capture thought signature from stream events", async () => {
-			const streamParts = [
-				{
-					type: "reasoning-delta",
-					text: "thinking...",
-					providerMetadata: {
-						anthropic: { signature: "test-signature-abc123" },
-					},
-				},
-				{ type: "text-delta", text: "answer" },
-			]
-
-			mockStreamText.mockReturnValue(createMockStreamResult(streamParts))
-
-			const stream = handler.createMessage(systemPrompt, mockMessages)
-			for await (const _chunk of stream) {
-				// consume
-			}
-
-			expect(handler.getThoughtSignature()).toBe("test-signature-abc123")
-		})
-
-		it("should capture redacted thinking blocks from stream events", async () => {
-			const streamParts = [
-				{
-					type: "reasoning-delta",
-					text: "",
-					providerMetadata: {
-						anthropic: { redactedData: "encrypted-redacted-data" },
-					},
-				},
-				{ type: "text-delta", text: "answer" },
-			]
-
-			mockStreamText.mockReturnValue(createMockStreamResult(streamParts))
-
-			const stream = handler.createMessage(systemPrompt, mockMessages)
-			for await (const _chunk of stream) {
-				// consume
-			}
-
-			const redactedBlocks = handler.getRedactedThinkingBlocks()
-			expect(redactedBlocks).toHaveLength(1)
-			expect(redactedBlocks![0]).toEqual({
-				type: "redacted_thinking",
-				data: "encrypted-redacted-data",
-			})
-		})
-
 		it("should configure thinking providerOptions for thinking models", async () => {
 			const thinkingHandler = new AnthropicVertexHandler({
 				apiModelId: "claude-3-7-sonnet@20250219:thinking",
@@ -678,52 +630,6 @@ describe("AnthropicVertexHandler", () => {
 			})
 
 			expect(handler.isAiSdkProvider()).toBe(true)
-		})
-	})
-
-	describe("thought signature and redacted thinking", () => {
-		beforeEach(() => {
-			handler = new AnthropicVertexHandler({
-				apiModelId: "claude-3-5-sonnet-v2@20241022",
-				vertexProjectId: "test-project",
-				vertexRegion: "us-central1",
-			})
-		})
-
-		it("should return undefined for thought signature before any request", () => {
-			expect(handler.getThoughtSignature()).toBeUndefined()
-		})
-
-		it("should return undefined for redacted thinking blocks before any request", () => {
-			expect(handler.getRedactedThinkingBlocks()).toBeUndefined()
-		})
-
-		it("should reset thought signature on each createMessage call", async () => {
-			// First call with signature
-			mockStreamText.mockReturnValue(
-				createMockStreamResult([
-					{
-						type: "reasoning-delta",
-						text: "thinking",
-						providerMetadata: { anthropic: { signature: "sig-1" } },
-					},
-				]),
-			)
-
-			const stream1 = handler.createMessage("test", [{ role: "user", content: "Hello" }])
-			for await (const _chunk of stream1) {
-				// consume
-			}
-			expect(handler.getThoughtSignature()).toBe("sig-1")
-
-			// Second call without signature
-			mockStreamText.mockReturnValue(createMockStreamResult([{ type: "text-delta", text: "just text" }]))
-
-			const stream2 = handler.createMessage("test", [{ role: "user", content: "Hello again" }])
-			for await (const _chunk of stream2) {
-				// consume
-			}
-			expect(handler.getThoughtSignature()).toBeUndefined()
 		})
 	})
 })

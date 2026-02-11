@@ -21,6 +21,7 @@ import {
 	processAiSdkStreamPart,
 	mapToolChoice,
 	handleAiSdkError,
+	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -276,6 +277,8 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 					}
 					throw usageError
 				}
+
+				yield* yieldResponseMessage(result)
 
 				// Success — exit the retry loop
 				return
