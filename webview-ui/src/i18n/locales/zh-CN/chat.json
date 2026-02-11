@@ -405,7 +405,6 @@
 			"copy_code": "复制代码"
 		}
 	},
-	"systemPromptWarning": "警告：自定义系统提示词覆盖已激活。这可能严重破坏功能并导致不可预测的行为。",
 	"profileViolationWarning": "当前配置文件与您的组织设置不兼容",
 	"shellIntegration": {
 		"title": "命令执行警告",

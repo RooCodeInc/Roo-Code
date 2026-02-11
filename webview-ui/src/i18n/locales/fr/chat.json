@@ -404,7 +404,6 @@
 			"copy_code": "Copier le code"
 		}
 	},
-	"systemPromptWarning": "AVERTISSEMENT : Remplacement d'instructions système personnalisées actif. Cela peut gravement perturber la fonctionnalité et provoquer un comportement imprévisible.",
 	"profileViolationWarning": "Le profil actuel n'est pas compatible avec les paramètres de votre organisation",
 	"shellIntegration": {
 		"title": "Avertissement d'exécution de commande",

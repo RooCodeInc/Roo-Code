@@ -397,7 +397,6 @@ export type ExtensionState = Pick<
 	lastShownAnnouncementId?: string
 	apiModelId?: string
 	mcpServers?: McpServer[]
-	hasSystemPromptOverride?: boolean
 	mdmCompliant?: boolean
 	remoteControlEnabled: boolean
 	taskSyncEnabled: boolean
@@ -644,7 +643,6 @@ export interface WebviewMessage {
 	source?: "global" | "project"
 	requestId?: string
 	ids?: string[]
-	hasSystemPromptOverride?: boolean
 	terminalOperation?: "continue" | "abort"
 	messageTs?: number
 	restoreCheckpoint?: boolean

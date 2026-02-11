@@ -156,14 +156,14 @@
 		"rateLimitWait": "Rate limiting",
 		"errorTitle": "Provider Error {{code}}",
 		"errorMessage": {
-			"docs": "Docs",
-			"goToSettings": "Settings",
 			"400": "The provider couldn't process the request as made. Stop the task and try a different approach.",
 			"401": "Couldn't authenticate with provider. Please check your API key configuration.",
 			"402": "You seem to have run out of funds/credits in your account. Go to your provider and add more to continue.",
 			"403": "Unauthorized. Your API key is valid, but the provider refused to complete this request.",
 			"429": "Too many requests. You're being rate-limited by the provider. Please wait a bit before your next API call.",
 			"500": "Provider server error. Something is wrong on the provider side, there's nothing wrong with your request.",
+			"docs": "Docs",
+			"goToSettings": "Settings",
 			"connection": "Connection error. Make sure you have a working internet connection.",
 			"unknown": "Unknown API error. Please contact Roo Code support.",
 			"claudeCodeNotAuthenticated": "You need to sign in to use Claude Code. Go to Settings and click \"Sign in to Claude Code\" to authenticate."
@@ -415,7 +415,6 @@
 			"copy_code": "Copy code"
 		}
 	},
-	"systemPromptWarning": "WARNING: Custom system prompt override active. This can severely break functionality and cause unpredictable behavior.",
 	"profileViolationWarning": "The current profile isn't compatible with your organization's settings",
 	"shellIntegration": {
 		"title": "Command Execution Warning",

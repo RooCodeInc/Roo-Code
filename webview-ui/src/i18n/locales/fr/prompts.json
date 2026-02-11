@@ -71,9 +71,6 @@
 			"description": "Disponible uniquement dans cet espace de travail. Si le mode exporté contenait des fichiers de règles, ils seront recréés dans le dossier .roo/rules-{slug}/."
 		}
 	},
-	"advanced": {
-		"title": "Avancé"
-	},
 	"globalCustomInstructions": {
 		"title": "Instructions personnalisées pour tous les modes",
 		"description": "Ces instructions s'appliquent à tous les modes. Elles fournissent un ensemble de comportements de base qui peuvent être améliorés par des instructions spécifiques au mode ci-dessous. <0>En savoir plus</0>",
@@ -145,10 +142,6 @@
 				"description": "Démarre une nouvelle tâche avec ton entrée. Disponible dans la palette de commandes."
 			}
 		}
-	},
-	"advancedSystemPrompt": {
-		"title": "Avancé : Remplacer le prompt système",
-		"description": "<2>⚠️ Attention :</2> Cette fonctionnalité avancée contourne les mesures de protection. <1>LISEZ CECI AVANT UTILISATION !</1>Remplacez le prompt système par défaut en créant un fichier à l'emplacement <span>.roo/system-prompt-{{slug}}</span>."
 	},
 	"createModeDialog": {
 		"title": "Créer un nouveau mode",
