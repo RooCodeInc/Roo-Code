@@ -98,11 +98,17 @@ import { Task } from "../task/Task"
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import type { ClineMessage, TodoItem } from "@roo-code/types"
 import {
-	readApiMessages,
 	readRooMessages,
-	saveApiMessages,
+	saveRooMessages,
 	saveTaskMessages,
 	type RooMessage,
+	isRooAssistantMessage,
+	isRooToolMessage,
+	isAnyToolCallBlock,
+	isAnyToolResultBlock,
+	getToolCallId,
+	getToolCallName,
+	getToolResultCallId,
 } from "../task-persistence"
 import { readTaskMessages } from "../task-persistence/taskMessages"
 import { getNonce } from "./getNonce"
@@ -3411,12 +3417,12 @@ export class ClineProvider
 			parentClineMessages = []
 		}
 
-		let parentApiMessages: any[] = []
+		let parentApiMessages: RooMessage[] = []
 		try {
-			parentApiMessages = (await readApiMessages({
+			parentApiMessages = await readRooMessages({
 				taskId: parentTaskId,
 				globalStoragePath,
-			})) as any[]
+			})
 		} catch {
 			parentApiMessages = []
 		}
@@ -3437,14 +3443,15 @@ export class ClineProvider
 		parentClineMessages.push(subtaskUiMessage)
 		await saveTaskMessages({ messages: parentClineMessages, taskId: parentTaskId, globalStoragePath })
 
-		// Find the tool_use_id from the last assistant message's new_task tool_use
+		// Find the tool call ID from the last assistant message's new_task tool call
 		let toolUseId: string | undefined
 		for (let i = parentApiMessages.length - 1; i >= 0; i--) {
 			const msg = parentApiMessages[i]
-			if (msg.role === "assistant" && Array.isArray(msg.content)) {
+			if (isRooAssistantMessage(msg) && Array.isArray(msg.content)) {
 				for (const block of msg.content) {
-					if (block.type === "tool_use" && block.name === "new_task") {
-						toolUseId = block.id
+					const typedBlock = block as unknown as { type: string }
+					if (isAnyToolCallBlock(typedBlock) && getToolCallName(typedBlock) === "new_task") {
+						toolUseId = getToolCallId(typedBlock)
 						break
 					}
 				}
@@ -3452,51 +3459,63 @@ export class ClineProvider
 			}
 		}
 
-		// Preferred: if the parent history contains the native tool_use for new_task,
-		// inject a matching tool_result for the Anthropic message contract:
-		// user → assistant (tool_use) → user (tool_result)
+		// Preferred: if the parent history contains a new_task tool call,
+		// inject a matching tool result for the model message contract.
 		if (toolUseId) {
-			// Check if the last message is already a user message with a tool_result for this tool_use_id
+			// Check if the last message already contains a tool result for this tool call ID
 			// (in case this is a retry or the history was already updated)
 			const lastMsg = parentApiMessages[parentApiMessages.length - 1]
 			let alreadyHasToolResult = false
-			if (lastMsg?.role === "user" && Array.isArray(lastMsg.content)) {
+			if (lastMsg && "role" in lastMsg && Array.isArray(lastMsg.content)) {
 				for (const block of lastMsg.content) {
-					if (block.type === "tool_result" && block.tool_use_id === toolUseId) {
-						// Update the existing tool_result content
-						block.content = `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`
+					const typedBlock = block as unknown as { type: string }
+					if (isAnyToolResultBlock(typedBlock) && getToolResultCallId(typedBlock) === toolUseId) {
+						const updatedText = `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`
+						if (typedBlock.type === "tool-result") {
+							;(typedBlock as { output: { type: "text"; value: string } }).output = {
+								type: "text",
+								value: updatedText,
+							}
+						} else {
+							;(typedBlock as { content: string }).content = updatedText
+						}
 						alreadyHasToolResult = true
 						break
 					}
 				}
 			}
 
-			// If no existing tool_result found, create a NEW user message with the tool_result
+			// If no existing tool result found, create a NEW tool message with the tool result
 			if (!alreadyHasToolResult) {
 				parentApiMessages.push({
-					role: "user",
+					role: "tool",
 					content: [
 						{
-							type: "tool_result" as const,
-							tool_use_id: toolUseId,
-							content: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
+							type: "tool-result" as const,
+							toolCallId: toolUseId,
+							toolName: "new_task",
+							output: {
+								type: "text" as const,
+								value: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
+							},
 						},
 					],
 					ts,
 				})
 			}
 
-			// Validate the newly injected tool_result against the preceding assistant message.
-			// This ensures the tool_result's tool_use_id matches a tool_use in the immediately
-			// preceding assistant message (Anthropic API requirement).
+			// Validate the newly injected/updated tool result against the preceding assistant message.
 			const lastMessage = parentApiMessages[parentApiMessages.length - 1]
-			if (lastMessage?.role === "user") {
+			if (
+				lastMessage &&
+				(isRooToolMessage(lastMessage) || ("role" in lastMessage && lastMessage.role === "user"))
+			) {
 				const validatedMessage = validateAndFixToolResultIds(lastMessage, parentApiMessages.slice(0, -1))
-				parentApiMessages[parentApiMessages.length - 1] = validatedMessage
+				parentApiMessages[parentApiMessages.length - 1] = validatedMessage as RooMessage
 			}
 		} else {
-			// If there is no corresponding tool_use in the parent API history, we cannot emit a
-			// tool_result. Fall back to a plain user text note so the parent can still resume.
+			// If there is no corresponding tool call in the parent API history, we cannot emit a
+			// tool result. Fall back to a plain user text note so the parent can still resume.
 			parentApiMessages.push({
 				role: "user",
 				content: [
@@ -3509,7 +3528,7 @@ export class ClineProvider
 			})
 		}
 
-		await saveApiMessages({ messages: parentApiMessages as any, taskId: parentTaskId, globalStoragePath })
+		await saveRooMessages({ messages: parentApiMessages, taskId: parentTaskId, globalStoragePath })
 
 		// 3) Close child instance if still open (single-open-task invariant).
 		//    This MUST happen BEFORE updating the child's status to "completed" because

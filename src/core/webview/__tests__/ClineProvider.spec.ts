@@ -213,6 +213,7 @@ vi.mock("../../task/Task", () => ({
 	Task: vi.fn().mockImplementation((options: any) => ({
 		api: undefined,
 		abortTask: vi.fn(),
+		resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
 		handleWebviewAskResponse: vi.fn(),
 		clineMessages: [],
 		apiConversationHistory: [],
@@ -347,6 +348,7 @@ describe("ClineProvider", () => {
 			const task: any = {
 				api: undefined,
 				abortTask: vi.fn(),
+				resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
 				handleWebviewAskResponse: vi.fn(),
 				clineMessages: [],
 				apiConversationHistory: [],
@@ -3867,6 +3869,119 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 			expect(result.apiConversationHistory).toEqual([{ role: "user", content: "hello from v2" }])
 
 			vi.mocked(fsUtils.fileExistsAtPath).mockRestore()
+		})
+	})
+
+	describe("reopenParentFromDelegation", () => {
+		it("reads/writes Roo messages and appends a tool result for new_task tool-call", async () => {
+			const parentTaskId = "parent-task"
+			const childTaskId = "child-task"
+			const completionResultSummary = "child completed work"
+
+			vi.spyOn(provider, "getTaskWithId").mockImplementation(async (taskId: string) => {
+				if (taskId === parentTaskId) {
+					return {
+						historyItem: { id: parentTaskId, childIds: [] },
+					} as any
+				}
+				return {
+					historyItem: { id: childTaskId, status: "active" },
+				} as any
+			})
+
+			vi.spyOn(provider, "getCurrentTask").mockReturnValue(undefined as any)
+			vi.spyOn(provider, "updateTaskHistory").mockResolvedValue(undefined as any)
+
+			const taskMessages = await import("../../task-persistence/taskMessages")
+			vi.spyOn(taskMessages, "readTaskMessages").mockResolvedValue([])
+			vi.spyOn(taskMessages, "saveTaskMessages").mockResolvedValue(undefined)
+
+			const persistence = await import("../../task-persistence")
+			vi.spyOn(persistence, "readRooMessages").mockResolvedValue([
+				{
+					role: "assistant",
+					content: [{ type: "tool-call", toolCallId: "call_new_task_1", toolName: "new_task", input: {} }],
+					ts: 1,
+				},
+				{ role: "user", content: [{ type: "text", text: "continuation" }], ts: 2 },
+			] as any)
+			const saveRooMessagesSpy = vi.spyOn(persistence, "saveRooMessages").mockResolvedValue(true)
+
+			await provider.reopenParentFromDelegation({ parentTaskId, childTaskId, completionResultSummary })
+
+			expect(persistence.readRooMessages).toHaveBeenCalledWith({
+				taskId: parentTaskId,
+				globalStoragePath: "/test/storage/path",
+			})
+			expect(saveRooMessagesSpy).toHaveBeenCalledTimes(1)
+
+			const savedPayload = saveRooMessagesSpy.mock.calls[0][0]
+			expect(savedPayload.taskId).toBe(parentTaskId)
+			expect(savedPayload.globalStoragePath).toBe("/test/storage/path")
+			expect(savedPayload.messages).toHaveLength(3)
+			const last = savedPayload.messages[2] as any
+			expect(last.role).toBe("tool")
+			expect(last.content[0]).toMatchObject({
+				type: "tool-result",
+				toolCallId: "call_new_task_1",
+				toolName: "new_task",
+			})
+			expect(last.content[0].output.value).toContain(completionResultSummary)
+		})
+
+		it("updates existing trailing tool result instead of appending a duplicate", async () => {
+			const parentTaskId = "parent-task"
+			const childTaskId = "child-task"
+			const completionResultSummary = "updated child summary"
+
+			vi.spyOn(provider, "getTaskWithId").mockImplementation(async (taskId: string) => {
+				if (taskId === parentTaskId) {
+					return {
+						historyItem: { id: parentTaskId, childIds: [] },
+					} as any
+				}
+				return {
+					historyItem: { id: childTaskId, status: "active" },
+				} as any
+			})
+
+			vi.spyOn(provider, "getCurrentTask").mockReturnValue(undefined as any)
+			vi.spyOn(provider, "updateTaskHistory").mockResolvedValue(undefined as any)
+
+			const taskMessages = await import("../../task-persistence/taskMessages")
+			vi.spyOn(taskMessages, "readTaskMessages").mockResolvedValue([])
+			vi.spyOn(taskMessages, "saveTaskMessages").mockResolvedValue(undefined)
+
+			const persistence = await import("../../task-persistence")
+			vi.spyOn(persistence, "readRooMessages").mockResolvedValue([
+				{
+					role: "assistant",
+					content: [{ type: "tool-call", toolCallId: "call_new_task_2", toolName: "new_task", input: {} }],
+					ts: 1,
+				},
+				{
+					role: "tool",
+					content: [
+						{
+							type: "tool-result",
+							toolCallId: "call_new_task_2",
+							toolName: "new_task",
+							output: { type: "text", value: "old summary" },
+						},
+					],
+					ts: 2,
+				},
+			] as any)
+			const saveRooMessagesSpy = vi.spyOn(persistence, "saveRooMessages").mockResolvedValue(true)
+
+			await provider.reopenParentFromDelegation({ parentTaskId, childTaskId, completionResultSummary })
+
+			const savedPayload = saveRooMessagesSpy.mock.calls[0][0]
+			expect(savedPayload.messages).toHaveLength(2)
+			const last = savedPayload.messages[1] as any
+			expect(last.role).toBe("tool")
+			expect(last.content[0].toolCallId).toBe("call_new_task_2")
+			expect(last.content[0].output.value).toContain(completionResultSummary)
 		})
 	})
 })
