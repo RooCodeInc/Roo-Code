@@ -76,8 +76,8 @@ describe("consolidateTokenUsage", () => {
 
 			const result = consolidateTokenUsage(messages)
 
-			// Context tokens = tokensIn + tokensOut from last message
-			expect(result.contextTokens).toBe(300) // 200 + 100
+			// Context tokens = tokensIn from last message (input tokens only)
+			expect(result.contextTokens).toBe(200)
 		})
 
 		it("should handle condense_context messages for context tokens", () => {

@@ -216,20 +216,53 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 			throw result.error
 		}
 
-		const fullText = textChunks.join("")
+		let fullText = textChunks.join("")
 
-		// Update state AFTER a successful send
+		// Handle empty response — retry once with a fresh session + full prompt.
+		// If still empty, return an empty stream so Task can apply its graceful retry logic.
+		if (!fullText.trim()) {
+			console.debug("[ClaudeCodeAcpHandler] Empty response from ACP, retrying with fresh session")
+
+			manager.closeSession(session.sessionId)
+			this.sessionId = null
+			this.lastSentMessageCount = 0
+			this.isSessionInitialized = false
+			this.cachedToolNames = []
+
+			session = await manager.getOrCreateSession(workingDirectory, model.id)
+			if (this.sessionId !== session.sessionId) {
+				this.lastSentMessageCount = 0
+				this.isSessionInitialized = false
+				this.cachedToolNames = []
+			}
+			this.sessionId = session.sessionId
+
+			const retryPrompt = buildProxyPrompt(maxPromptChars, true)
+			textChunks.length = 0
+			totalInputChars += retryPrompt.length
+			const retryResult = await this.sendPromptStreaming(session.sessionId, retryPrompt, (text) => {
+				textChunks.push(text)
+			})
+
+			if (retryResult.error) {
+				this.isSessionInitialized = false
+				this.lastSentMessageCount = 0
+				throw retryResult.error
+			}
+
+			fullText = textChunks.join("")
+
+			if (!fullText.trim()) {
+				console.debug("[ClaudeCodeAcpHandler] Empty response on retry; returning empty stream")
+				this.isSessionInitialized = false
+				this.lastSentMessageCount = 0
+				return
+			}
+		}
+
+		// Update state AFTER a successful, non-empty send
 		this.lastSentMessageCount = messages.length
 		this.isSessionInitialized = true
-
-		// Handle empty response — reset session so next call sends full prompt
-		// This triggers Roo Code's task loop to retry, which will send a fresh full prompt
-		if (!fullText.trim()) {
-			console.debug("[ClaudeCodeAcpHandler] Empty response from ACP, resetting session")
-			this.isSessionInitialized = false
-			this.lastSentMessageCount = 0
-			throw new Error("Empty response from ACP session — no assistant messages received")
-		}
 
 		// Parse response for text and tool calls
 		let parsed = this.parseProxyResponse(fullText)

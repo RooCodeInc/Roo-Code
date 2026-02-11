@@ -70,8 +70,10 @@ export function consolidateTokenUsage(messages: ClineMessage[]): TokenUsage {
 		}
 	})
 
-	// Calculate context tokens, from the last API request started or condense
-	// context message.
+	// Calculate context tokens from the last API request started or condense
+	// context message. Context tokens represent the INPUT tokens used for the
+	// request (output tokens are reserved separately in the UI and should not
+	// be double-counted here).
 	result.contextTokens = 0
 
 	for (let i = messages.length - 1; i >= 0; i--) {
@@ -86,7 +88,14 @@ export function consolidateTokenUsage(messages: ClineMessage[]): TokenUsage {
 				// Since tokensIn now stores TOTAL input tokens (including cache tokens),
 				// we no longer need to add cacheWrites and cacheReads separately.
 				// This applies to both Anthropic and OpenAI protocols.
-				result.contextTokens = (tokensIn || 0) + (tokensOut || 0)
+				if (typeof tokensIn === "number" && Number.isFinite(tokensIn)) {
+					result.contextTokens = tokensIn
+				} else if (typeof tokensOut === "number" && Number.isFinite(tokensOut)) {
+					// Fallback if input tokens are unavailable.
+					result.contextTokens = tokensOut
+				} else {
+					result.contextTokens = 0
+				}
 			} catch {
 				// Ignore JSON parse errors
 				continue
