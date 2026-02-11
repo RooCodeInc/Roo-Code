@@ -87,6 +87,8 @@ describe("listFiles limit handling for large projects", () => {
 						dataCallback = callback
 					}
 				}),
+				pause: vi.fn(),
+				resume: vi.fn(),
 			},
 			stderr: {
 				on: vi.fn(),
@@ -299,6 +301,8 @@ describe("listFiles limit handling for large projects", () => {
 						dataCallback = callback
 					}
 				}),
+				pause: vi.fn(),
+				resume: vi.fn(),
 			},
 			stderr: {
 				on: vi.fn(),

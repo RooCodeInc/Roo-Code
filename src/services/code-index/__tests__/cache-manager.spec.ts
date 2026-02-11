@@ -99,7 +99,7 @@ describe("CacheManager", () => {
 			cacheManager.initialize()
 
 			expect(mockDatabaseConstructor).toHaveBeenCalledWith(mockCachePath.fsPath)
-			expect(mockDb.exec).toHaveBeenCalledWith("PRAGMA journal_mode = WAL2")
+			expect(mockDb.exec).toHaveBeenCalledWith("PRAGMA journal_mode = WAL")
 			expect(mockDb.exec).toHaveBeenCalledWith("PRAGMA synchronous = OFF")
 			expect(mockDb.exec).toHaveBeenCalledWith(expect.stringContaining("CREATE TABLE IF NOT EXISTS file_hashes"))
 		})
@@ -381,16 +381,16 @@ describe("CacheManager", () => {
 			const result = cacheManager.deleteHashesNotIn(filePaths)
 
 			expect(result).toEqual(deletedPaths)
-			expect(mockDb.all).toHaveBeenCalledWith(
-				"SELECT file_path FROM file_hashes WHERE file_path NOT IN (?,?)",
-				"file1.ts",
-				"file2.ts",
-			)
+			expect(mockDb.exec).toHaveBeenCalledWith("BEGIN TRANSACTION")
+			expect(mockDb.exec).toHaveBeenCalledWith(expect.stringContaining("CREATE TEMPORARY TABLE paths_to_keep"))
 			expect(mockDb.run).toHaveBeenCalledWith(
-				"DELETE FROM file_hashes WHERE file_path NOT IN (?,?)",
-				"file1.ts",
-				"file2.ts",
+				expect.stringContaining("INSERT INTO paths_to_keep (file_path) VALUES"),
+				...filePaths,
 			)
+			expect(mockDb.all).toHaveBeenCalledWith(expect.stringContaining("SELECT file_path FROM file_hashes"))
+			expect(mockDb.exec).toHaveBeenCalledWith(expect.stringContaining("DELETE FROM file_hashes"))
+			expect(mockDb.exec).toHaveBeenCalledWith("DROP TABLE paths_to_keep")
+			expect(mockDb.exec).toHaveBeenCalledWith("COMMIT")
 		})
 
 		it("should delete all hashes when provided empty array", () => {
@@ -423,10 +423,16 @@ describe("CacheManager", () => {
 			expect(() => cacheManager.deleteHashesNotIn(["file1.ts"])).toThrow("Select failed")
 		})
 
-		it("should handle delete errors", () => {
+		it("should handle delete errors and cleanup temp table", () => {
 			mockDb.all.mockReturnValueOnce([{ file_path: "oldfile.ts" }])
-			mockDb.run.mockImplementation(() => {
-				throw new Error("Delete failed")
+			let callCount = 0
+			mockDb.exec.mockImplementation((sql: string) => {
+				callCount++
+				// Throw on the DELETE FROM file_hashes statement (after BEGIN, CREATE TEMP, INSERT)
+				if (sql.includes("DELETE FROM file_hashes")) {
+					throw new Error("Delete failed")
+				}
+				return undefined
 			})
 
 			const consoleErrorSpy = vitest.spyOn(console, "error").mockImplementation(() => {})
@@ -434,8 +440,37 @@ describe("CacheManager", () => {
 			expect(() => cacheManager.deleteHashesNotIn(["file1.ts"])).toThrow("Delete failed")
 
 			expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to delete hashes not in list:", expect.any(Error))
+			// Verify temp table cleanup was attempted
+			expect(mockDb.exec).toHaveBeenCalledWith("DROP TABLE IF EXISTS paths_to_keep")
 
 			consoleErrorSpy.mockRestore()
+		})
+
+		it("should insert paths to keep in batches", () => {
+			// Create a large list of paths (more than BATCH_SIZE of 1000)
+			const filePaths = Array.from({ length: 2500 }, (_, i) => `file${i}.ts`)
+			const deletedPaths = ["oldfile1.ts", "oldfile2.ts"]
+
+			mockDb.all.mockReturnValueOnce(deletedPaths.map((path) => ({ file_path: path })))
+
+			cacheManager.deleteHashesNotIn(filePaths)
+
+			// Should have multiple INSERT calls (batches of 1000)
+			// First batch: 1000 paths
+			expect(mockDb.run).toHaveBeenCalledWith(
+				expect.stringContaining("INSERT INTO paths_to_keep (file_path) VALUES"),
+				...filePaths.slice(0, 1000),
+			)
+			// Second batch: next 1000 paths
+			expect(mockDb.run).toHaveBeenCalledWith(
+				expect.stringContaining("INSERT INTO paths_to_keep (file_path) VALUES"),
+				...filePaths.slice(1000, 2000),
+			)
+			// Third batch: remaining 500 paths
+			expect(mockDb.run).toHaveBeenCalledWith(
+				expect.stringContaining("INSERT INTO paths_to_keep (file_path) VALUES"),
+				...filePaths.slice(2000, 2500),
+			)
 		})
 	})
 

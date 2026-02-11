@@ -76,6 +76,8 @@ describe("list-files gitignore integration", () => {
 						setTimeout(() => callback(files), 10)
 					}
 				}),
+				pause: vi.fn(),
+				resume: vi.fn(),
 			},
 			stderr: {
 				on: vi.fn(),
@@ -131,6 +133,8 @@ describe("list-files gitignore integration", () => {
 						setTimeout(() => callback(""), 10)
 					}
 				}),
+				pause: vi.fn(),
+				resume: vi.fn(),
 			},
 			stderr: {
 				on: vi.fn(),
@@ -183,6 +187,8 @@ describe("list-files gitignore integration", () => {
 						setTimeout(() => callback(files), 10)
 					}
 				}),
+				pause: vi.fn(),
+				resume: vi.fn(),
 			},
 			stderr: {
 				on: vi.fn(),

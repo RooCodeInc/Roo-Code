@@ -88,6 +88,8 @@ describe("list-files symlink support", () => {
 						dataCallback = callback
 					}
 				}),
+				pause: vi.fn(),
+				resume: vi.fn(),
 			},
 			stderr: {
 				on: vi.fn(),
@@ -160,6 +162,8 @@ describe("list-files symlink support", () => {
 						dataCallback = callback
 					}
 				}),
+				pause: vi.fn(),
+				resume: vi.fn(),
 			},
 			stderr: {
 				on: vi.fn(),
@@ -245,6 +249,8 @@ describe("list-files symlink support", () => {
 						dataCallback = callback
 					}
 				}),
+				pause: vi.fn(),
+				resume: vi.fn(),
 			},
 			stderr: {
 				on: vi.fn(),
@@ -496,6 +502,8 @@ describe("hidden directory exclusion", () => {
 						dataCallback = callback
 					}
 				}),
+				pause: vi.fn(),
+				resume: vi.fn(),
 			},
 			stderr: {
 				on: vi.fn(),
@@ -583,6 +591,8 @@ describe("buildRecursiveArgs edge cases", () => {
 						dataCallback = callback
 					}
 				}),
+				pause: vi.fn(),
+				resume: vi.fn(),
 			},
 			stderr: {
 				on: vi.fn(),
@@ -645,6 +655,8 @@ describe("buildRecursiveArgs edge cases", () => {
 						dataCallback = callback
 					}
 				}),
+				pause: vi.fn(),
+				resume: vi.fn(),
 			},
 			stderr: {
 				on: vi.fn(),
@@ -707,6 +719,8 @@ describe("buildRecursiveArgs edge cases", () => {
 						dataCallback = callback
 					}
 				}),
+				pause: vi.fn(),
+				resume: vi.fn(),
 			},
 			stderr: {
 				on: vi.fn(),
@@ -769,6 +783,8 @@ describe("buildRecursiveArgs edge cases", () => {
 						dataCallback = callback
 					}
 				}),
+				pause: vi.fn(),
+				resume: vi.fn(),
 			},
 			stderr: {
 				on: vi.fn(),

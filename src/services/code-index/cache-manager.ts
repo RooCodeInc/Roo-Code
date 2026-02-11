@@ -11,6 +11,7 @@ import { TelemetryEventName } from "@roo-code/types"
 export class CacheManager implements ICacheManager {
 	private dbPath: vscode.Uri
 	private db: Database | null = null
+	private static readonly BATCH_SIZE = 1000
 
 	/**
 	 * Creates a new cache manager
@@ -38,7 +39,7 @@ export class CacheManager implements ICacheManager {
 		try {
 			this.db = new Database(this.dbPath.fsPath)
 			// Changing the journal mode to "Write-Ahead Log" is known to bring significantly better performance in most case
-			this.db.exec("PRAGMA journal_mode = WAL2")
+			this.db.exec("PRAGMA journal_mode = WAL")
 			// Disable synchronous mode for better performance,
 			// as we don't need to ensure the database file is safely written to disk at every transaction
 			this.db.exec("PRAGMA synchronous = OFF")
@@ -211,16 +212,55 @@ export class CacheManager implements ICacheManager {
 				deletedPaths = rows.map((row) => row.file_path)
 				this.db.exec("DELETE FROM file_hashes")
 			} else {
-				// Build the NOT IN query
-				const placeholders = filePaths.map(() => "?").join(",")
-				const rows = this.db.all(
-					`SELECT file_path FROM file_hashes WHERE file_path NOT IN (${placeholders})`,
-					...filePaths,
-				) as { file_path: string }[]
-				deletedPaths = rows.map((row) => row.file_path)
+				this.db.exec("BEGIN TRANSACTION")
+				try {
+					// Create a temporary table with the file paths to keep
+					this.db.exec(`
+						CREATE TEMPORARY TABLE paths_to_keep (
+							file_path TEXT PRIMARY KEY
+						)
+					`)
 
-				// Delete the rows
-				this.db.run(`DELETE FROM file_hashes WHERE file_path NOT IN (${placeholders})`, ...filePaths)
+					// Insert paths to keep in batches
+					for (let i = 0; i < filePaths.length; i += CacheManager.BATCH_SIZE) {
+						const batch = filePaths.slice(i, i + CacheManager.BATCH_SIZE)
+						const placeholders = batch.map(() => "(?)").join(",")
+						this.db.run(`INSERT INTO paths_to_keep (file_path) VALUES ${placeholders}`, ...batch)
+					}
+
+					// Get all paths that will be deleted (using NOT EXISTS with temp table)
+					const rows = this.db.all(`
+						SELECT file_path FROM file_hashes
+						WHERE NOT EXISTS (
+							SELECT 1 FROM paths_to_keep WHERE paths_to_keep.file_path = file_hashes.file_path
+						)
+					`) as { file_path: string }[]
+					deletedPaths = rows.map((row) => row.file_path)
+
+					// Delete using the temp table
+					this.db.exec(`
+						DELETE FROM file_hashes
+						WHERE NOT EXISTS (
+							SELECT 1 FROM paths_to_keep WHERE paths_to_keep.file_path = file_hashes.file_path
+						)
+					`)
+
+					// Drop the temporary table
+					this.db.exec("DROP TABLE paths_to_keep")
+
+					this.db.exec("COMMIT")
+				} catch (err) {
+					if (this.db.inTransaction) {
+						this.db.exec("ROLLBACK")
+					}
+					// Clean up temp table if it exists
+					try {
+						this.db.exec("DROP TABLE IF EXISTS paths_to_keep")
+					} catch {
+						// Ignore cleanup errors
+					}
+					throw err
+				}
 			}
 
 			return deletedPaths

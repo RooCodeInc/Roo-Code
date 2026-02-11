@@ -14,6 +14,7 @@ import pLimit from "p-limit"
 import { Mutex } from "async-mutex"
 import { CacheManager } from "../cache-manager"
 import { t } from "../../../i18n"
+import { SelfCleaningPromiseHolder } from "../../../utils/selfCleaningPromiseHolder"
 import {
 	QDRANT_CODE_BLOCK_NAMESPACE,
 	MAX_FILE_SIZE_BYTES,
@@ -102,7 +103,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 		let currentBatchFileInfos: { filePath: string; fileHash: string; isNew: boolean }[] = []
 		// Track block count per file in the current batch
 		let currentBatchFileBlockCounts: Map<string, number> = new Map()
-		const activeBatchPromises = new Set<Promise<unknown>>()
+		const activeBatchPromises = new SelfCleaningPromiseHolder()
 		let pendingBatchCount = 0
 
 		// Initialize block counter
@@ -149,7 +150,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 							// Report file discovery
 							onFileDiscovered?.()
 							// Queue file for processing
-							fileQueue.enqueue(filePath)
+							await fileQueue.enqueue(filePath)
 						}
 					}
 				}
@@ -227,7 +228,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 											// Wait if we've reached the maximum pending batches
 											while (pendingBatchCount >= MAX_PENDING_BATCHES) {
 												// Wait for at least one batch to complete
-												await Promise.race(activeBatchPromises)
+												await activeBatchPromises.waitForOne()
 											}
 
 											// Copy current batch data and clear accumulators
@@ -239,9 +240,6 @@ export class DirectoryScanner implements IDirectoryScanner {
 											currentBatchTexts = []
 											currentBatchFileInfos = []
 											currentBatchFileBlockCounts.clear()
-
-											// Increment pending batch count
-											pendingBatchCount++
 
 											// Queue batch processing
 											const batchPromise = batchLimiter(() =>
@@ -259,9 +257,9 @@ export class DirectoryScanner implements IDirectoryScanner {
 											activeBatchPromises.add(batchPromise)
 											fileBlocksPromises.push(batchPromise)
 
-											// Clean up completed promises to prevent memory accumulation
+											// Increment pending batch count and decrement after completion
+											pendingBatchCount++
 											batchPromise.finally(() => {
-												activeBatchPromises.delete(batchPromise)
 												pendingBatchCount--
 											})
 										}
@@ -273,11 +271,8 @@ export class DirectoryScanner implements IDirectoryScanner {
 
 							// Add file info once per file (outside the block loop)
 							if (addedBlocksFromFile) {
-								let fileProcessedPromise = Promise.all(fileBlocksPromises)
+								const fileProcessedPromise = Promise.all(fileBlocksPromises)
 								activeBatchPromises.add(fileProcessedPromise)
-								fileProcessedPromise.finally(() => {
-									activeBatchPromises.delete(fileProcessedPromise)
-								})
 
 								const release = await mutex.acquire()
 								try {
@@ -329,9 +324,11 @@ export class DirectoryScanner implements IDirectoryScanner {
 			for (let promise; (promise = processingPromises.values().next().value); ) {
 				await promise
 			}
-
-			progressQueue.complete()
 		})()
+
+		processTask.finally(() => {
+			progressQueue.complete()
+		})
 
 		for await (const update of progressQueue) {
 			yield update
@@ -353,9 +350,6 @@ export class DirectoryScanner implements IDirectoryScanner {
 				currentBatchFileInfos = []
 				currentBatchFileBlockCounts.clear()
 
-				// Increment pending batch count for final batch
-				pendingBatchCount++
-
 				// Queue final batch processing
 				const batchPromise = batchLimiter(() =>
 					this.processBatch(
@@ -371,9 +365,9 @@ export class DirectoryScanner implements IDirectoryScanner {
 				)
 				activeBatchPromises.add(batchPromise)
 
-				// Clean up completed promises to prevent memory accumulation
+				// Increment pending batch count and decrement after completion
+				pendingBatchCount++
 				batchPromise.finally(() => {
-					activeBatchPromises.delete(batchPromise)
 					pendingBatchCount--
 				})
 			} finally {
@@ -383,7 +377,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 
 		// Wait for all batch processing to complete
 		// This should be okay, as we don't expect a huge number of batches at this point of time
-		await Promise.all(activeBatchPromises)
+		await activeBatchPromises.waitForAll()
 
 		// Handle deleted files
 		if (this.qdrantClient) {

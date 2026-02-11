@@ -8,6 +8,7 @@ import { arePathsEqual } from "../../utils/path"
 import { getBinPath } from "../../services/ripgrep"
 import { DIRS_TO_IGNORE } from "./constants"
 import { createAsyncQueue } from "../../utils/asyncQueue"
+import { SelfCleaningPromiseHolder } from "../../utils/selfCleaningPromiseHolder"
 
 /**
  * Context object for directory scanning operations
@@ -660,6 +661,7 @@ function formatAndCombineResults(files: string[], directories: string[], limit: 
  */
 async function* execRipgrep(rgPath: string, args: string[], limit: number): AsyncGenerator<string> {
 	const rgProcess = childProcess.spawn(rgPath, args)
+	const promiseHolder = new SelfCleaningPromiseHolder()
 	let output = ""
 
 	const asyncQueue = createAsyncQueue<string>({
@@ -673,8 +675,16 @@ async function* execRipgrep(rgPath: string, args: string[], limit: number): Asyn
 
 	// Process stdout data as it comes in
 	rgProcess.stdout.on("data", (data) => {
+		// Pause stdout to prevent more data events until we finish processing
+		rgProcess.stdout.pause()
 		output += data.toString()
-		processRipgrepOutput()
+		promiseHolder.add(
+			(async () => {
+				await processRipgrepOutput()
+				// Resume stdout after processing is complete
+				rgProcess.stdout.resume()
+			})(),
+		)
 	})
 
 	// Process stderr but don't fail on non-zero exit codes
@@ -684,15 +694,19 @@ async function* execRipgrep(rgPath: string, args: string[], limit: number): Asyn
 
 	// Handle process completion
 	rgProcess.on("close", (code) => {
-		// Process any remaining output
-		processRipgrepOutput(true)
+		let closePromise = (async () => {
+			// Process any remaining output
+			await processRipgrepOutput(true)
 
-		// Log non-zero exit codes but don't fail
-		if (code !== 0 && code !== null && code !== 143 /* SIGTERM */) {
-			console.warn(`ripgrep process exited with code ${code}, returning partial results`)
-		}
+			// Log non-zero exit codes but don't fail
+			if (code !== 0 && code !== null && code !== 143 /* SIGTERM */) {
+				console.warn(`ripgrep process exited with code ${code}, returning partial results`)
+			}
 
-		asyncQueue.complete()
+			asyncQueue.complete()
+		})()
+
+		promiseHolder.add(Promise.all([promiseHolder.waitForAll(), closePromise]))
 	})
 
 	// Handle process errors
@@ -701,7 +715,7 @@ async function* execRipgrep(rgPath: string, args: string[], limit: number): Asyn
 	})
 
 	// Helper function to process output buffer
-	function processRipgrepOutput(isFinal = false) {
+	async function processRipgrepOutput(isFinal = false) {
 		const lines = output.split("\n")
 
 		// Keep the last incomplete line unless this is the final processing
@@ -715,10 +729,11 @@ async function* execRipgrep(rgPath: string, args: string[], limit: number): Asyn
 		for (const line of lines) {
 			if (line.trim()) {
 				// Keep the relative path as returned by ripgrep
-				asyncQueue.enqueue(line)
+				await asyncQueue.enqueue(line)
 			}
 		}
 	}
 
 	yield* asyncQueue
+	await promiseHolder.waitForAll()
 }

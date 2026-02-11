@@ -73,6 +73,8 @@ describe("list-files gitignore support", () => {
 						setTimeout(() => callback(`${path.join(tempDir, "src", "index.ts")}\n`), 10)
 					}
 				}),
+				pause: vi.fn(),
+				resume: vi.fn(),
 			},
 			stderr: {
 				on: vi.fn(),
@@ -125,6 +127,8 @@ describe("list-files gitignore support", () => {
 						setTimeout(() => callback(""), 10)
 					}
 				}),
+				pause: vi.fn(),
+				resume: vi.fn(),
 			},
 			stderr: {
 				on: vi.fn(),
