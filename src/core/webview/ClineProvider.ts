@@ -3528,7 +3528,14 @@ export class ClineProvider
 			})
 		}
 
-		await saveRooMessages({ messages: parentApiMessages, taskId: parentTaskId, globalStoragePath })
+		const savedApiMessages = await saveRooMessages({
+			messages: parentApiMessages,
+			taskId: parentTaskId,
+			globalStoragePath,
+		})
+		if (savedApiMessages === false) {
+			this.log(`[reopenParentFromDelegation] Failed to save API messages for parent ${parentTaskId}`)
+		}
 
 		// 3) Close child instance if still open (single-open-task invariant).
 		//    This MUST happen BEFORE updating the child's status to "completed" because
