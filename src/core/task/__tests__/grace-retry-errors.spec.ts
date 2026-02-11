@@ -277,7 +277,7 @@ describe("Grace Retry Error Handling", () => {
 		})
 	})
 
-	describe("Grace Retry Pattern", () => {
+	describe("Grace Retry Pattern (via production helper)", () => {
 		it("should not show error on first failure (grace retry)", async () => {
 			const task = new Task({
 				provider: mockProvider,
@@ -288,17 +288,10 @@ describe("Grace Retry Error Handling", () => {
 
 			const saySpy = vi.spyOn(task, "say").mockResolvedValue(undefined)
 
-			// Simulate first empty response - should NOT show error
-			task.consecutiveNoAssistantMessagesCount = 0
-			task.consecutiveNoAssistantMessagesCount++
+			// First call to the production helper — grace retry (silent)
+			await (task as any).onEmptyAssistantOutput()
+
 			expect(task.consecutiveNoAssistantMessagesCount).toBe(1)
-
-			// First failure: grace retry (silent)
-			if (task.consecutiveNoAssistantMessagesCount >= 2) {
-				await task.say("error", "MODEL_NO_ASSISTANT_MESSAGES")
-			}
-
-			// Verify error was NOT called (grace retry on first failure)
 			expect(saySpy).not.toHaveBeenCalledWith("error", "MODEL_NO_ASSISTANT_MESSAGES")
 		})
 
@@ -312,17 +305,11 @@ describe("Grace Retry Error Handling", () => {
 
 			const saySpy = vi.spyOn(task, "say").mockResolvedValue(undefined)
 
-			// Simulate second consecutive empty response
-			task.consecutiveNoAssistantMessagesCount = 1
-			task.consecutiveNoAssistantMessagesCount++
+			// Two consecutive calls to the production helper
+			await (task as any).onEmptyAssistantOutput()
+			await (task as any).onEmptyAssistantOutput()
+
 			expect(task.consecutiveNoAssistantMessagesCount).toBe(2)
-
-			// Second failure: should show error
-			if (task.consecutiveNoAssistantMessagesCount >= 2) {
-				await task.say("error", "MODEL_NO_ASSISTANT_MESSAGES")
-			}
-
-			// Verify error was called (after 2 consecutive failures)
 			expect(saySpy).toHaveBeenCalledWith("error", "MODEL_NO_ASSISTANT_MESSAGES")
 		})
 
@@ -336,17 +323,14 @@ describe("Grace Retry Error Handling", () => {
 
 			const saySpy = vi.spyOn(task, "say").mockResolvedValue(undefined)
 
-			// Simulate third consecutive empty response
-			task.consecutiveNoAssistantMessagesCount = 2
-			task.consecutiveNoAssistantMessagesCount++
+			// Three consecutive calls
+			await (task as any).onEmptyAssistantOutput()
+			await (task as any).onEmptyAssistantOutput()
+			await (task as any).onEmptyAssistantOutput()
+
 			expect(task.consecutiveNoAssistantMessagesCount).toBe(3)
-
-			// Third failure: should also show error
-			if (task.consecutiveNoAssistantMessagesCount >= 2) {
-				await task.say("error", "MODEL_NO_ASSISTANT_MESSAGES")
-			}
-
-			// Verify error was called
+			// Error called on 2nd and 3rd invocations
+			expect(saySpy).toHaveBeenCalledTimes(2)
 			expect(saySpy).toHaveBeenCalledWith("error", "MODEL_NO_ASSISTANT_MESSAGES")
 		})
 	})
@@ -408,12 +392,9 @@ describe("Grace Retry Error Handling", () => {
 
 			const saySpy = vi.spyOn(task, "say").mockResolvedValue(undefined)
 
-			// Simulate the error condition (2 consecutive failures)
-			task.consecutiveNoAssistantMessagesCount = 2
-
-			if (task.consecutiveNoAssistantMessagesCount >= 2) {
-				await task.say("error", "MODEL_NO_ASSISTANT_MESSAGES")
-			}
+			// Call production helper twice to trigger error path
+			await (task as any).onEmptyAssistantOutput()
+			await (task as any).onEmptyAssistantOutput()
 
 			// Verify the exact marker is used
 			expect(saySpy).toHaveBeenCalledWith("error", "MODEL_NO_ASSISTANT_MESSAGES")
@@ -439,6 +420,66 @@ describe("Grace Retry Error Handling", () => {
 
 			task.consecutiveNoAssistantMessagesCount = 2
 			expect(task.consecutiveNoToolUseCount).toBe(3)
+		})
+	})
+
+	describe("Empty-response mistake limit bounding", () => {
+		it("should increment consecutiveMistakeCount after 2 consecutive empty responses", async () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			vi.spyOn(task, "say").mockResolvedValue(undefined)
+			expect(task.consecutiveMistakeCount).toBe(0)
+
+			// Two calls to the production helper — second triggers mistake count
+			await (task as any).onEmptyAssistantOutput()
+			expect(task.consecutiveMistakeCount).toBe(0) // grace retry: no increment yet
+
+			await (task as any).onEmptyAssistantOutput()
+			expect(task.consecutiveMistakeCount).toBe(1)
+		})
+
+		it("should NOT increment consecutiveMistakeCount on first empty response (grace retry)", async () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			const saySpy = vi.spyOn(task, "say").mockResolvedValue(undefined)
+
+			// Single call — grace retry, no error, no mistake count
+			await (task as any).onEmptyAssistantOutput()
+
+			expect(task.consecutiveMistakeCount).toBe(0)
+			expect(saySpy).not.toHaveBeenCalled()
+		})
+
+		it("should confirm no-tool-use path increments consecutiveMistakeCount independently", async () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			const saySpy = vi.spyOn(task, "say").mockResolvedValue(undefined)
+			expect(task.consecutiveMistakeCount).toBe(0)
+
+			// Two calls to the no-tool-use production helper
+			await (task as any).onNoToolUse()
+			await (task as any).onNoToolUse()
+
+			expect(saySpy).toHaveBeenCalledWith("error", "MODEL_NO_TOOLS_USED")
+			expect(task.consecutiveMistakeCount).toBe(1)
+
+			// Empty-response counter is unaffected
+			expect(task.consecutiveNoAssistantMessagesCount).toBe(0)
 		})
 	})
 })

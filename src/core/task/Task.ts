@@ -3691,15 +3691,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					)
 
 					if (!didToolUse) {
-						// Increment consecutive no-tool-use counter
-						this.consecutiveNoToolUseCount++
-
-						// Only show error and count toward mistake limit after 2 consecutive failures
-						if (this.consecutiveNoToolUseCount >= 2) {
-							await this.say("error", "MODEL_NO_TOOLS_USED")
-							// Only count toward mistake limit after second consecutive failure
-							this.consecutiveMistakeCount++
-						}
+						await this.onNoToolUse()
 
 						// Use the task's locked protocol for consistent behavior
 						this.userMessageContent.push({
@@ -3729,14 +3721,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// or tool_use content blocks from API which we should assume is
 					// an error.
 
-					// Increment consecutive no-assistant-messages counter
-					this.consecutiveNoAssistantMessagesCount++
-
-					// Only show error and count toward mistake limit after 2 consecutive failures
-					// This provides a "grace retry" - first failure retries silently
-					if (this.consecutiveNoAssistantMessagesCount >= 2) {
-						await this.say("error", "MODEL_NO_ASSISTANT_MESSAGES")
-					}
+					await this.onEmptyAssistantOutput()
 
 					// IMPORTANT: We already added the user message to
 					// apiConversationHistory at line 1876. Since the assistant failed to respond,
@@ -4486,6 +4471,28 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// effectively passes along all subsequent chunks from the original
 		// stream.
 		yield* iterator
+	}
+
+	// Increment counters and show error when the model returns no text and no tool calls.
+	// The first empty response is a silent "grace retry"; from the second onward we show
+	// an error and feed into the mistake-limit machinery so auto-retry is bounded.
+	private async onEmptyAssistantOutput(): Promise<void> {
+		this.consecutiveNoAssistantMessagesCount++
+		if (this.consecutiveNoAssistantMessagesCount >= 2) {
+			await this.say("error", "MODEL_NO_ASSISTANT_MESSAGES")
+			this.consecutiveMistakeCount++
+		}
+	}
+
+	// Increment counters and show error when the model returns text but no tool calls.
+	// Same grace-retry pattern: first occurrence is silent, second onward triggers error
+	// and feeds into the mistake-limit machinery.
+	private async onNoToolUse(): Promise<void> {
+		this.consecutiveNoToolUseCount++
+		if (this.consecutiveNoToolUseCount >= 2) {
+			await this.say("error", "MODEL_NO_TOOLS_USED")
+			this.consecutiveMistakeCount++
+		}
 	}
 
 	// Shared exponential backoff for retries (first-chunk and mid-stream)
