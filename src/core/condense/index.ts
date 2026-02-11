@@ -81,6 +81,9 @@ export function toolResultToText(block: AnyToolResultBlock): string {
 			})
 			.join("\n")
 		return `[Tool Result${errorSuffix}]\n${contentText}`
+	} else if (rawContent && typeof rawContent === "object" && "value" in rawContent) {
+		// AI SDK ToolResultPart.output has shape { type: "text", value: string }
+		return `[Tool Result${errorSuffix}]\n${String((rawContent as { value: unknown }).value)}`
 	}
 	return `[Tool Result${errorSuffix}]`
 }

@@ -3,6 +3,17 @@ import os from "os"
 import * as path from "path"
 import * as vscode from "vscode"
 
+import {
+	type AnyToolCallBlock,
+	type AnyToolResultBlock,
+	isAnyToolCallBlock,
+	isAnyToolResultBlock,
+	getToolCallName,
+	getToolCallInput,
+	getToolResultContent,
+	getToolResultIsError,
+} from "../../core/task-persistence/rooMessage"
+
 // Extended content block types to support new Anthropic API features
 interface ReasoningBlock {
 	type: "reasoning"
@@ -64,44 +75,52 @@ export async function downloadTask(
 }
 
 export function formatContentBlockToMarkdown(block: ExtendedContentBlock): string {
+	// Handle AI SDK tool-call format (alongside legacy tool_use below)
+	if (isAnyToolCallBlock(block as { type: string })) {
+		const tcBlock = block as unknown as AnyToolCallBlock
+		const name = getToolCallName(tcBlock)
+		const rawInput = getToolCallInput(tcBlock)
+		let input: string
+		if (typeof rawInput === "object" && rawInput !== null) {
+			input = Object.entries(rawInput)
+				.map(([key, value]) => {
+					const formattedKey = key.charAt(0).toUpperCase() + key.slice(1)
+					const formattedValue =
+						typeof value === "object" && value !== null ? JSON.stringify(value, null, 2) : String(value)
+					return `${formattedKey}: ${formattedValue}`
+				})
+				.join("\n")
+		} else {
+			input = String(rawInput)
+		}
+		return `[Tool Use: ${name}]\n${input}`
+	}
+
+	// Handle AI SDK tool-result format (alongside legacy tool_result below)
+	if (isAnyToolResultBlock(block as { type: string })) {
+		const trBlock = block as unknown as AnyToolResultBlock
+		const isError = getToolResultIsError(trBlock)
+		const errorSuffix = isError ? " (Error)" : ""
+		const rawContent = getToolResultContent(trBlock)
+		if (typeof rawContent === "string") {
+			return `[Tool${errorSuffix}]\n${rawContent}`
+		} else if (Array.isArray(rawContent)) {
+			return `[Tool${errorSuffix}]\n${rawContent
+				.map((contentBlock: ExtendedContentBlock) => formatContentBlockToMarkdown(contentBlock))
+				.join("\n")}`
+		} else if (rawContent && typeof rawContent === "object" && "value" in rawContent) {
+			return `[Tool${errorSuffix}]\n${String((rawContent as { value: unknown }).value)}`
+		}
+		return `[Tool${errorSuffix}]`
+	}
+
 	switch (block.type) {
 		case "text":
 			return block.text
 		case "image":
 			return `[Image]`
-		case "tool_use": {
-			let input: string
-			if (typeof block.input === "object" && block.input !== null) {
-				input = Object.entries(block.input)
-					.map(([key, value]) => {
-						const formattedKey = key.charAt(0).toUpperCase() + key.slice(1)
-						// Handle nested objects/arrays by JSON stringifying them
-						const formattedValue =
-							typeof value === "object" && value !== null ? JSON.stringify(value, null, 2) : String(value)
-						return `${formattedKey}: ${formattedValue}`
-					})
-					.join("\n")
-			} else {
-				input = String(block.input)
-			}
-			return `[Tool Use: ${block.name}]\n${input}`
-		}
-		case "tool_result": {
-			// For now we're not doing tool name lookup since we don't use tools anymore
-			// const toolName = findToolName(block.tool_use_id, messages)
-			const toolName = "Tool"
-			if (typeof block.content === "string") {
-				return `[${toolName}${block.is_error ? " (Error)" : ""}]\n${block.content}`
-			} else if (Array.isArray(block.content)) {
-				return `[${toolName}${block.is_error ? " (Error)" : ""}]\n${block.content
-					.map((contentBlock) => formatContentBlockToMarkdown(contentBlock))
-					.join("\n")}`
-			} else {
-				return `[${toolName}${block.is_error ? " (Error)" : ""}]`
-			}
-		}
 		case "reasoning":
-			return `[Reasoning]\n${block.text}`
+			return `[Reasoning]\n${(block as ReasoningBlock).text}`
 		case "thoughtSignature":
 			// Not relevant for human-readable exports
 			return ""
