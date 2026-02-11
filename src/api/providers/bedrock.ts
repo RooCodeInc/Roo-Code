@@ -32,6 +32,7 @@ import {
 	handleAiSdkError,
 } from "../transform/ai-sdk"
 import { getModelParams } from "../transform/model-params"
+import { applyCacheBreakpoints } from "../transform/cache-breakpoints"
 import { shouldUseReasoningBudget } from "../../shared/api"
 import { BaseProvider } from "./base-provider"
 import { DEFAULT_HEADERS } from "./constants"
@@ -276,46 +277,12 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 		if (usePromptCache) {
 			const cachePointOption = { bedrock: { cachePoint: { type: "default" as const } } }
-
-			// Find all user message indices in the original (pre-conversion) message array.
-			const originalUserIndices = filteredMessages.reduce<number[]>(
-				(acc, msg, idx) => ("role" in msg && msg.role === "user" ? [...acc, idx] : acc),
-				[],
-			)
-
-			// Select up to 3 user messages for cache points (system prompt uses the 4th):
-			// - Last user message: write to cache for next request
-			// - Second-to-last user message: read from cache for current request
-			// - An "anchor" message earlier in the conversation for 20-block window coverage
-			const targetOriginalIndices = new Set<number>()
-			const numUserMsgs = originalUserIndices.length
-
-			if (numUserMsgs >= 1) {
-				// Always cache the last user message
-				targetOriginalIndices.add(originalUserIndices[numUserMsgs - 1])
-			}
-			if (numUserMsgs >= 2) {
-				// Cache the second-to-last user message
-				targetOriginalIndices.add(originalUserIndices[numUserMsgs - 2])
-			}
-			if (numUserMsgs >= 5) {
-				// Add an anchor cache point roughly in the first third of user messages.
-				// This ensures that the 20-block lookback from the second-to-last breakpoint
-				// can find a stable cache entry, covering all the assistant and tool messages
-				// in the middle of the conversation. We pick the user message at ~1/3 position.
-				const anchorIdx = Math.floor(numUserMsgs / 3)
-				// Only add if it's not already one of the last-2 targets
-				if (!targetOriginalIndices.has(originalUserIndices[anchorIdx])) {
-					targetOriginalIndices.add(originalUserIndices[anchorIdx])
-				}
-			}
-
-			// Apply cachePoint to the correct AI SDK messages by walking both arrays in parallel.
-			// A single original user message with tool_results becomes [tool-role msg, user-role msg]
-			// in the AI SDK array, while a plain user message becomes [user-role msg].
-			if (targetOriginalIndices.size > 0) {
-				this.applyCachePointsToAiSdkMessages(aiSdkMessages, targetOriginalIndices, cachePointOption)
-			}
+			applyCacheBreakpoints(aiSdkMessages as RooMessage[], {
+				cacheProviderOption: cachePointOption,
+				maxMessageBreakpoints: 3,
+				useAnchor: true,
+				anchorThreshold: 5,
+			})
 		}
 
 		// Build streamText request
@@ -732,29 +699,6 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			(modelConfig?.info as any)?.cachableFields &&
 			(modelConfig?.info as any)?.cachableFields?.length > 0
 		)
-	}
-
-	/**
-	 * Apply cachePoint providerOptions to the correct AI SDK messages by walking
-	 * the original Anthropic messages and converted AI SDK messages in parallel.
-	 *
-	 * convertToAiSdkMessages() can split a single Anthropic user message (containing
-	 * tool_results + text) into 2 AI SDK messages (tool role + user role). This method
-	 * accounts for that split so cache points land on the right message.
-	 */
-	private applyCachePointsToAiSdkMessages(
-		aiSdkMessages: { role: string; providerOptions?: Record<string, Record<string, unknown>> }[],
-		targetIndices: Set<number>,
-		cachePointOption: Record<string, Record<string, unknown>>,
-	): void {
-		for (const idx of targetIndices) {
-			if (idx >= 0 && idx < aiSdkMessages.length) {
-				aiSdkMessages[idx].providerOptions = {
-					...aiSdkMessages[idx].providerOptions,
-					...cachePointOption,
-				}
-			}
-		}
 	}
 
 	/************************************************************************************
