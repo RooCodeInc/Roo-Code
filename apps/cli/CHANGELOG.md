@@ -67,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Skip onboarding flow when a provider is explicitly specified via `--provider` flag or saved in settings
-- Unified permission flags: Combined `-y`, `--yes`, and `--dangerously-skip-permissions` into a single option for Claude Code-like CLI compatibility
+- Unified permission flags: Combined approval-skipping flags into a single option for Claude Code-like CLI compatibility
 - Improved Roo Code Router authentication flow and error messaging
 
 ### Fixed
