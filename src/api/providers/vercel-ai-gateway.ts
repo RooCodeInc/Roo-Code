@@ -1,5 +1,5 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import { createGateway, streamText, generateText, ToolSet } from "ai"
+import { createGateway, streamText, generateText, ToolSet, ModelMessage } from "ai"
 
 import {
 	vercelAiGatewayDefaultModelId,
@@ -17,6 +17,7 @@ import {
 	processAiSdkStreamPart,
 	mapToolChoice,
 	handleAiSdkError,
+	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 
@@ -24,6 +25,7 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 /**
  * Vercel AI Gateway provider using the built-in AI SDK gateway support.
@@ -108,13 +110,13 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { id: modelId, info } = await this.fetchModel()
 		const languageModel = this.getLanguageModel(modelId)
 
-		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const aiSdkMessages = messages as ModelMessage[]
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
@@ -157,6 +159,8 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 				}
 				throw usageError
 			}
+
+			yield* yieldResponseMessage(result)
 		} catch (error) {
 			throw handleAiSdkError(error, "Vercel AI Gateway")
 		}

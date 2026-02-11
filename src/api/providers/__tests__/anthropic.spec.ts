@@ -50,6 +50,7 @@ vitest.mock("../../transform/ai-sdk", () => ({
 	}),
 	mapToolChoice: vitest.fn().mockReturnValue(undefined),
 	handleAiSdkError: vitest.fn().mockImplementation((error: any) => error),
+	yieldResponseMessage: vitest.fn().mockImplementation(function* () {}),
 }))
 
 // Import mocked modules
@@ -398,85 +399,6 @@ describe("AnthropicHandler", () => {
 			expect(endChunk).toBeDefined()
 		})
 
-		it("should capture thinking signature from stream events", async () => {
-			const testSignature = "test-thinking-signature"
-			setupStreamTextMock([
-				{
-					type: "reasoning-delta",
-					text: "thinking...",
-					providerMetadata: { anthropic: { signature: testSignature } },
-				},
-				{ type: "text-delta", text: "Answer" },
-			])
-
-			const stream = handler.createMessage(systemPrompt, [
-				{ role: "user", content: [{ type: "text" as const, text: "test" }] },
-			])
-
-			for await (const _chunk of stream) {
-				// Consume stream
-			}
-
-			expect(handler.getThoughtSignature()).toBe(testSignature)
-		})
-
-		it("should capture redacted thinking blocks from stream events", async () => {
-			setupStreamTextMock([
-				{
-					type: "reasoning-delta",
-					text: "",
-					providerMetadata: { anthropic: { redactedData: "redacted-data-base64" } },
-				},
-				{ type: "text-delta", text: "Answer" },
-			])
-
-			const stream = handler.createMessage(systemPrompt, [
-				{ role: "user", content: [{ type: "text" as const, text: "test" }] },
-			])
-
-			for await (const _chunk of stream) {
-				// Consume stream
-			}
-
-			const redactedBlocks = handler.getRedactedThinkingBlocks()
-			expect(redactedBlocks).toBeDefined()
-			expect(redactedBlocks).toHaveLength(1)
-			expect(redactedBlocks![0]).toEqual({
-				type: "redacted_thinking",
-				data: "redacted-data-base64",
-			})
-		})
-
-		it("should reset thinking state between requests", async () => {
-			// First request with signature
-			setupStreamTextMock([
-				{
-					type: "reasoning-delta",
-					text: "thinking...",
-					providerMetadata: { anthropic: { signature: "sig-1" } },
-				},
-			])
-
-			const stream1 = handler.createMessage(systemPrompt, [
-				{ role: "user", content: [{ type: "text" as const, text: "test 1" }] },
-			])
-			for await (const _chunk of stream1) {
-				// Consume
-			}
-			expect(handler.getThoughtSignature()).toBe("sig-1")
-
-			// Second request without signature
-			setupStreamTextMock([{ type: "text-delta", text: "plain answer" }])
-
-			const stream2 = handler.createMessage(systemPrompt, [
-				{ role: "user", content: [{ type: "text" as const, text: "test 2" }] },
-			])
-			for await (const _chunk of stream2) {
-				// Consume
-			}
-			expect(handler.getThoughtSignature()).toBeUndefined()
-		})
-
 		it("should pass system prompt via system param with systemProviderOptions for cache control", async () => {
 			setupStreamTextMock([{ type: "text-delta", text: "test" }])
 
@@ -608,16 +530,6 @@ describe("AnthropicHandler", () => {
 	describe("isAiSdkProvider", () => {
 		it("should return true", () => {
 			expect(handler.isAiSdkProvider()).toBe(true)
-		})
-	})
-
-	describe("thinking signature", () => {
-		it("should return undefined when no signature captured", () => {
-			expect(handler.getThoughtSignature()).toBeUndefined()
-		})
-
-		it("should return undefined for redacted blocks when none captured", () => {
-			expect(handler.getRedactedThinkingBlocks()).toBeUndefined()
 		})
 	})
 })

@@ -1,3 +1,4 @@
+import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // npx vitest run api/providers/__tests__/openai-native-usage.spec.ts
 
 const { mockStreamText, mockGenerateText } = vi.hoisted(() => ({
@@ -38,7 +39,7 @@ import type { ApiHandlerOptions } from "../../../shared/api"
 describe("OpenAiNativeHandler - usage metrics", () => {
 	let handler: OpenAiNativeHandler
 	const systemPrompt = "You are a helpful assistant."
-	const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello!" }]
+	const messages: RooMessage[] = [{ role: "user", content: "Hello!" }]
 
 	beforeEach(() => {
 		handler = new OpenAiNativeHandler({

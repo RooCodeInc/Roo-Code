@@ -1,5 +1,13 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import { streamText, generateText, ToolSet, wrapLanguageModel, extractReasoningMiddleware, LanguageModel } from "ai"
+import {
+	streamText,
+	generateText,
+	ToolSet,
+	wrapLanguageModel,
+	extractReasoningMiddleware,
+	LanguageModel,
+	ModelMessage,
+} from "ai"
 
 import { type ModelInfo, openAiModelInfoSaneDefaults, LMSTUDIO_DEFAULT_TEMPERATURE } from "@roo-code/types"
 
@@ -17,6 +25,7 @@ import { ApiStream } from "../transform/stream"
 import { OpenAICompatibleHandler, OpenAICompatibleConfig } from "./openai-compatible"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { getModelsFromCache } from "./fetchers/modelCache"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 export class LmStudioHandler extends OpenAICompatibleHandler implements SingleCompletionHandler {
 	constructor(options: ApiHandlerOptions) {
@@ -49,13 +58,13 @@ export class LmStudioHandler extends OpenAICompatibleHandler implements SingleCo
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const model = this.getModel()
 		const languageModel = this.getLanguageModel()
 
-		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const aiSdkMessages = messages as ModelMessage[]
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined

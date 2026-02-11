@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createFireworks } from "@ai-sdk/fireworks"
-import { streamText, generateText, ToolSet } from "ai"
+import { streamText, generateText, ToolSet, ModelMessage } from "ai"
 
 import { fireworksModels, fireworksDefaultModelId, type ModelInfo } from "@roo-code/types"
 
@@ -19,6 +19,7 @@ import { getModelParams } from "../transform/model-params"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 const FIREWORKS_DEFAULT_TEMPERATURE = 0.5
 
@@ -109,14 +110,14 @@ export class FireworksHandler extends BaseProvider implements SingleCompletionHa
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { temperature } = this.getModel()
 		const languageModel = this.getLanguageModel()
 
 		// Convert messages to AI SDK format
-		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const aiSdkMessages = messages as ModelMessage[]
 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)

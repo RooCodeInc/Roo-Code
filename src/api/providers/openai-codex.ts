@@ -2,7 +2,7 @@ import * as os from "os"
 import { v7 as uuidv7 } from "uuid"
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createOpenAI } from "@ai-sdk/openai"
-import { streamText, generateText, ToolSet } from "ai"
+import { streamText, generateText, ToolSet, ModelMessage } from "ai"
 
 import { Package } from "../../shared/package"
 import {
@@ -21,6 +21,7 @@ import {
 	processAiSdkStreamPart,
 	mapToolChoice,
 	handleAiSdkError,
+	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -28,6 +29,7 @@ import { getModelParams } from "../transform/model-params"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { openAiCodexOAuthManager } from "../../integrations/openai-codex/oauth"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 import {
 	stripPlainTextReasoningBlocks,
 	collectEncryptedReasoningItems,
@@ -143,7 +145,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const model = this.getModel()
@@ -177,11 +179,11 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 				const cleanedMessages = stripPlainTextReasoningBlocks(standardMessages)
 
 				// Step 4: Convert to AI SDK messages.
-				const aiSdkMessages = convertToAiSdkMessages(cleanedMessages)
+				const aiSdkMessages = cleanedMessages as ModelMessage[]
 
 				// Step 5: Re-inject encrypted reasoning as properly-formed AI SDK reasoning parts.
 				if (encryptedReasoningItems.length > 0) {
-					injectEncryptedReasoning(aiSdkMessages, encryptedReasoningItems, messages)
+					injectEncryptedReasoning(aiSdkMessages, encryptedReasoningItems, messages as RooMessage[])
 				}
 
 				// Convert tools to OpenAI format first, then to AI SDK format
@@ -275,6 +277,8 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 					}
 					throw usageError
 				}
+
+				yield* yieldResponseMessage(result)
 
 				// Success — exit the retry loop
 				return

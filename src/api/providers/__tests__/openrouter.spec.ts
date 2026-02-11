@@ -1,3 +1,4 @@
+import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // pnpm --filter roo-cline test api/providers/__tests__/openrouter.spec.ts
 
 vitest.mock("vscode", () => ({}))
@@ -268,7 +269,7 @@ describe("OpenRouterHandler", () => {
 			})
 
 			const systemPrompt = "test system prompt"
-			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user" as const, content: "test message" }]
+			const messages: RooMessage[] = [{ role: "user" as const, content: "test message" }]
 
 			const generator = handler.createMessage(systemPrompt, messages)
 			const chunks = []
@@ -473,36 +474,6 @@ describe("OpenRouterHandler", () => {
 
 			expect(chunks[0]).toEqual({ type: "reasoning", text: "thinking..." })
 			expect(chunks[1]).toEqual({ type: "text", text: "result" })
-		})
-
-		it("accumulates reasoning details for getReasoningDetails()", async () => {
-			const handler = new OpenRouterHandler(mockOptions)
-
-			const mockFullStream = (async function* () {
-				yield { type: "reasoning-delta", text: "step 1...", id: "1" }
-				yield { type: "reasoning-delta", text: "step 2...", id: "2" }
-				yield { type: "text-delta", text: "result", id: "3" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-			})
-
-			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
-
-			for await (const _ of generator) {
-				// consume all chunks
-			}
-
-			// After streaming, getReasoningDetails should return accumulated reasoning
-			const reasoningDetails = handler.getReasoningDetails()
-			expect(reasoningDetails).toBeDefined()
-			expect(reasoningDetails).toHaveLength(1)
-			expect(reasoningDetails![0].type).toBe("reasoning.text")
-			expect(reasoningDetails![0].text).toBe("step 1...step 2...")
-			expect(reasoningDetails![0].index).toBe(0)
 		})
 
 		it("handles tool call streaming", async () => {
@@ -903,87 +874,6 @@ describe("OpenRouterHandler", () => {
 					baseURL: "https://openrouter.ai/api/v1",
 				}),
 			)
-		})
-	})
-
-	describe("getReasoningDetails", () => {
-		it("returns undefined when no reasoning was captured", async () => {
-			const handler = new OpenRouterHandler(mockOptions)
-
-			// Stream with no reasoning
-			const mockFullStream = (async function* () {
-				yield { type: "text-delta", text: "just text", id: "1" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-			})
-
-			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
-
-			for await (const _ of generator) {
-				// consume all chunks
-			}
-
-			// No reasoning was captured, should return undefined
-			const reasoningDetails = handler.getReasoningDetails()
-			expect(reasoningDetails).toBeUndefined()
-		})
-
-		it("resets reasoning details between requests", async () => {
-			const handler = new OpenRouterHandler(mockOptions)
-
-			// First request with reasoning
-			const mockFullStream1 = (async function* () {
-				yield { type: "reasoning-delta", text: "first request reasoning", id: "1" }
-				yield { type: "text-delta", text: "result 1", id: "2" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream1,
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-			})
-
-			const generator1 = handler.createMessage("test", [{ role: "user", content: "test" }])
-			for await (const _ of generator1) {
-				// consume
-			}
-
-			// Verify first request captured reasoning
-			let reasoningDetails = handler.getReasoningDetails()
-			expect(reasoningDetails).toBeDefined()
-			expect(reasoningDetails![0].text).toBe("first request reasoning")
-
-			// Second request without reasoning
-			const mockFullStream2 = (async function* () {
-				yield { type: "text-delta", text: "result 2", id: "1" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream2,
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-			})
-
-			const generator2 = handler.createMessage("test", [{ role: "user", content: "test" }])
-			for await (const _ of generator2) {
-				// consume
-			}
-
-			// Reasoning details should be reset (undefined since second request had no reasoning)
-			reasoningDetails = handler.getReasoningDetails()
-			expect(reasoningDetails).toBeUndefined()
-		})
-
-		it("returns undefined before any streaming occurs", () => {
-			const handler = new OpenRouterHandler(mockOptions)
-
-			// getReasoningDetails before any createMessage call
-			const reasoningDetails = handler.getReasoningDetails()
-			expect(reasoningDetails).toBeUndefined()
 		})
 	})
 

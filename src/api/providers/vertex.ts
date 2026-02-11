@@ -1,6 +1,6 @@
 import type { Anthropic } from "@anthropic-ai/sdk"
 import { createVertex, type GoogleVertexProvider } from "@ai-sdk/google-vertex"
-import { streamText, generateText, ToolSet } from "ai"
+import { streamText, generateText, ToolSet, ModelMessage } from "ai"
 
 import {
 	type ModelInfo,
@@ -19,6 +19,7 @@ import {
 	processAiSdkStreamPart,
 	mapToolChoice,
 	handleAiSdkError,
+	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { t } from "i18next"
 import type { ApiStream, ApiStreamUsageChunk, GroundingSource } from "../transform/stream"
@@ -27,6 +28,7 @@ import { getModelParams } from "../transform/model-params"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseProvider } from "./base-provider"
 import { DEFAULT_HEADERS } from "./constants"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 /**
  * Vertex AI provider using the dedicated @ai-sdk/google-vertex package.
@@ -36,7 +38,6 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 	protected options: ApiHandlerOptions
 	protected provider: GoogleVertexProvider
 	private readonly providerName = "Vertex"
-	private lastThoughtSignature: string | undefined
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -65,7 +66,7 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 
 	async *createMessage(
 		systemInstruction: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { id: modelId, info, reasoning: thinkingConfig, maxTokens } = this.getModel()
@@ -95,7 +96,7 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 		// Anthropic.MessageParam values and will cause failures.
 		type ReasoningMetaLike = { type?: string }
 
-		const filteredMessages = messages.filter((message): message is Anthropic.Messages.MessageParam => {
+		const filteredMessages = messages.filter((message) => {
 			const meta = message as ReasoningMetaLike
 			if (meta.type === "reasoning") {
 				return false
@@ -104,7 +105,7 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 		})
 
 		// Convert messages to AI SDK format
-		const aiSdkMessages = convertToAiSdkMessages(filteredMessages)
+		const aiSdkMessages = filteredMessages as ModelMessage[]
 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		let openAiTools = this.convertToolsForOpenAI(metadata?.tools)
@@ -140,27 +141,12 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 		}
 
 		try {
-			// Reset thought signature for this request
-			this.lastThoughtSignature = undefined
-
 			// Use streamText for streaming responses
 			const result = streamText(requestOptions)
 
 			// Process the full stream to get all events including reasoning
 			let lastStreamError: string | undefined
 			for await (const part of result.fullStream) {
-				// Capture thoughtSignature from tool-call events (Gemini 3 thought signatures)
-				// The AI SDK's tool-call event includes providerMetadata with the signature
-				// Vertex AI stores it under the "vertex" key in providerMetadata
-				if (part.type === "tool-call") {
-					const vertexMeta = (part as any).providerMetadata?.vertex
-					const googleMeta = (part as any).providerMetadata?.google
-					const sig = vertexMeta?.thoughtSignature ?? googleMeta?.thoughtSignature
-					if (sig) {
-						this.lastThoughtSignature = sig
-					}
-				}
-
 				for (const chunk of processAiSdkStreamPart(part)) {
 					if (chunk.type === "error") {
 						lastStreamError = chunk.message
@@ -200,6 +186,8 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 				}
 				throw usageError
 			}
+
+			yield* yieldResponseMessage(result)
 		} catch (error) {
 			throw handleAiSdkError(error, this.providerName, {
 				onError: (msg) => {
@@ -416,14 +404,5 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 
 	override isAiSdkProvider(): boolean {
 		return true
-	}
-
-	/**
-	 * Returns the thought signature captured from the last Vertex AI response.
-	 * Gemini 3 models return thoughtSignature on function call parts,
-	 * which must be round-tripped back for tool use continuations.
-	 */
-	getThoughtSignature(): string | undefined {
-		return this.lastThoughtSignature
 	}
 }

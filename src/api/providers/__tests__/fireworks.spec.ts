@@ -1,3 +1,4 @@
+import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // npx vitest run src/api/providers/__tests__/fireworks.spec.ts
 
 // Use vi.hoisted to define mock functions that can be referenced in hoisted vi.mock() calls
@@ -363,7 +364,7 @@ describe("FireworksHandler", () => {
 
 	describe("createMessage", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: RooMessage[] = [
 			{
 				role: "user",
 				content: [
@@ -730,7 +731,7 @@ describe("FireworksHandler", () => {
 
 	describe("tool handling", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: RooMessage[] = [
 			{
 				role: "user",
 				content: [{ type: "text" as const, text: "Hello!" }],

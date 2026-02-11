@@ -1,6 +1,6 @@
 import type { Anthropic } from "@anthropic-ai/sdk"
 import { createAnthropic } from "@ai-sdk/anthropic"
-import { streamText, generateText, ToolSet } from "ai"
+import { streamText, generateText, ToolSet, ModelMessage } from "ai"
 
 import { type ModelInfo, minimaxDefaultModelId, minimaxModels } from "@roo-code/types"
 
@@ -14,19 +14,19 @@ import {
 	processAiSdkStreamPart,
 	mapToolChoice,
 	handleAiSdkError,
+	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { calculateApiCostAnthropic } from "../../shared/cost"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 export class MiniMaxHandler extends BaseProvider implements SingleCompletionHandler {
 	private client: ReturnType<typeof createAnthropic>
 	private options: ApiHandlerOptions
 	private readonly providerName = "MiniMax"
-	private lastThoughtSignature: string | undefined
-	private lastRedactedThinkingBlocks: Array<{ type: "redacted_thinking"; data: string }> = []
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -58,14 +58,10 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const modelConfig = this.getModel()
-
-		// Reset thinking state for this request
-		this.lastThoughtSignature = undefined
-		this.lastRedactedThinkingBlocks = []
 
 		const modelParams = getModelParams({
 			format: "anthropic",
@@ -75,8 +71,8 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 			defaultTemperature: 1.0,
 		})
 
-		const mergedMessages = mergeEnvironmentDetailsForMiniMax(messages)
-		const aiSdkMessages = convertToAiSdkMessages(mergedMessages)
+		const mergedMessages = mergeEnvironmentDetailsForMiniMax(messages as any)
+		const aiSdkMessages = mergedMessages as ModelMessage[]
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
 
@@ -107,7 +103,7 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 		if (secondLastUserMsgIndex >= 0) targetIndices.add(secondLastUserMsgIndex)
 
 		if (targetIndices.size > 0) {
-			this.applyCacheControlToAiSdkMessages(mergedMessages, aiSdkMessages, targetIndices, cacheProviderOption)
+			this.applyCacheControlToAiSdkMessages(aiSdkMessages, targetIndices, cacheProviderOption)
 		}
 
 		const requestOptions = {
@@ -128,32 +124,10 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 
 		try {
 			const result = streamText(requestOptions as Parameters<typeof streamText>[0])
-	
+
 			let lastStreamError: string | undefined
 
 			for await (const part of result.fullStream) {
-				const anthropicMetadata = (
-					part as {
-						providerMetadata?: {
-							anthropic?: {
-								signature?: string
-								redactedData?: string
-							}
-						}
-					}
-				).providerMetadata?.anthropic
-
-				if (anthropicMetadata?.signature) {
-					this.lastThoughtSignature = anthropicMetadata.signature
-				}
-
-				if (anthropicMetadata?.redactedData) {
-					this.lastRedactedThinkingBlocks.push({
-						type: "redacted_thinking",
-						data: anthropicMetadata.redactedData,
-					})
-				}
-
 				for (const chunk of processAiSdkStreamPart(part)) {
 					if (chunk.type === "error") {
 						lastStreamError = chunk.message
@@ -174,6 +148,8 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 				}
 				throw usageError
 			}
+
+			yield* yieldResponseMessage(result)
 		} catch (error) {
 			throw handleAiSdkError(error, this.providerName)
 		}
@@ -212,57 +188,16 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 	}
 
 	private applyCacheControlToAiSdkMessages(
-		originalMessages: Anthropic.Messages.MessageParam[],
 		aiSdkMessages: { role: string; providerOptions?: Record<string, Record<string, unknown>> }[],
-		targetOriginalIndices: Set<number>,
+		targetIndices: Set<number>,
 		cacheProviderOption: Record<string, Record<string, unknown>>,
 	): void {
-		let aiSdkIdx = 0
-		for (let origIdx = 0; origIdx < originalMessages.length; origIdx++) {
-			const origMsg = originalMessages[origIdx]
-
-			if (typeof origMsg.content === "string") {
-				if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
-					aiSdkMessages[aiSdkIdx].providerOptions = {
-						...aiSdkMessages[aiSdkIdx].providerOptions,
-						...cacheProviderOption,
-					}
+		for (const idx of targetIndices) {
+			if (idx >= 0 && idx < aiSdkMessages.length) {
+				aiSdkMessages[idx].providerOptions = {
+					...aiSdkMessages[idx].providerOptions,
+					...cacheProviderOption,
 				}
-				aiSdkIdx++
-			} else if (origMsg.role === "user") {
-				const hasToolResults = origMsg.content.some((part) => (part as { type: string }).type === "tool_result")
-				const hasNonToolContent = origMsg.content.some(
-					(part) => (part as { type: string }).type === "text" || (part as { type: string }).type === "image",
-				)
-
-				if (hasToolResults && hasNonToolContent) {
-					const userMsgIdx = aiSdkIdx + 1
-					if (targetOriginalIndices.has(origIdx) && userMsgIdx < aiSdkMessages.length) {
-						aiSdkMessages[userMsgIdx].providerOptions = {
-							...aiSdkMessages[userMsgIdx].providerOptions,
-							...cacheProviderOption,
-						}
-					}
-					aiSdkIdx += 2
-				} else if (hasToolResults) {
-					if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
-						aiSdkMessages[aiSdkIdx].providerOptions = {
-							...aiSdkMessages[aiSdkIdx].providerOptions,
-							...cacheProviderOption,
-						}
-					}
-					aiSdkIdx++
-				} else {
-					if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
-						aiSdkMessages[aiSdkIdx].providerOptions = {
-							...aiSdkMessages[aiSdkIdx].providerOptions,
-							...cacheProviderOption,
-						}
-					}
-					aiSdkIdx++
-				}
-			} else {
-				aiSdkIdx++
 			}
 		}
 	}
@@ -303,14 +238,6 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 		} catch (error) {
 			throw handleAiSdkError(error, this.providerName)
 		}
-	}
-
-	getThoughtSignature(): string | undefined {
-		return this.lastThoughtSignature
-	}
-
-	getRedactedThinkingBlocks(): Array<{ type: "redacted_thinking"; data: string }> | undefined {
-		return this.lastRedactedThinkingBlocks.length > 0 ? this.lastRedactedThinkingBlocks : undefined
 	}
 
 	override isAiSdkProvider(): boolean {

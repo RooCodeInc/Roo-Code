@@ -528,7 +528,7 @@ describe("Cline", () => {
 					} as ModelInfo,
 				})
 
-				clineWithImages.apiConversationHistory = conversationHistory
+				clineWithImages.apiConversationHistory = conversationHistory as any
 
 				// Test with model that doesn't support images
 				const [clineWithoutImages, taskWithoutImages] = Task.create({
@@ -550,7 +550,7 @@ describe("Cline", () => {
 					} as ModelInfo,
 				})
 
-				clineWithoutImages.apiConversationHistory = conversationHistory
+				clineWithoutImages.apiConversationHistory = conversationHistory as any
 
 				// Mock abort state for both instances
 				Object.defineProperty(clineWithImages, "abort", {
@@ -590,7 +590,7 @@ describe("Cline", () => {
 							{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: "base64data" } },
 						],
 					},
-				]
+				] as any
 
 				clineWithImages.abandoned = true
 				await taskWithImages.catch(() => {})
@@ -893,7 +893,7 @@ describe("Cline", () => {
 									text: "<user_message>Check 'some/path' (see below for file content)</user_message>",
 								},
 							],
-						} as Anthropic.ToolResultBlockParam,
+						} as any,
 						{
 							type: "tool_result",
 							tool_use_id: "test-id-2",
@@ -903,7 +903,7 @@ describe("Cline", () => {
 									text: "Regular tool result with 'path' (see below for file content)",
 								},
 							],
-						} as Anthropic.ToolResultBlockParam,
+						} as any,
 					]
 
 					const { content: processedContent } = await processUserContentMentions({
@@ -924,20 +924,12 @@ describe("Cline", () => {
 						"<user_message>Text with 'some/path' (see below for file content) in user_message tags</user_message>",
 					)
 
-					// user_message tag content should be processed
-					const toolResult1 = processedContent[2] as Anthropic.ToolResultBlockParam
-					const content1 = Array.isArray(toolResult1.content) ? toolResult1.content[0] : toolResult1.content
-					expect((content1 as Anthropic.TextBlockParam).text).toContain("processed:")
-					expect((content1 as Anthropic.TextBlockParam).text).toContain(
-						"<user_message>Check 'some/path' (see below for file content)</user_message>",
-					)
+					// tool_result blocks are passed through unchanged (no longer processed by processUserContentMentions)
+					const toolResult1 = processedContent[2] as any
+					expect(toolResult1.type).toBe("tool_result")
 
-					// Regular tool result should not be processed
-					const toolResult2 = processedContent[3] as Anthropic.ToolResultBlockParam
-					const content2 = Array.isArray(toolResult2.content) ? toolResult2.content[0] : toolResult2.content
-					expect((content2 as Anthropic.TextBlockParam).text).toBe(
-						"Regular tool result with 'path' (see below for file content)",
-					)
+					const toolResult2 = processedContent[3] as any
+					expect(toolResult2.type).toBe("tool_result")
 
 					await cline.abortTask(true)
 					await task.catch(() => {})
@@ -2051,17 +2043,18 @@ describe("pushToolResultToUserContent", () => {
 			startTask: false,
 		})
 
-		const toolResult: Anthropic.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "test-id-1",
-			content: "Test result",
+		const toolResult = {
+			type: "tool-result" as const,
+			toolCallId: "test-id-1",
+			toolName: "read_file",
+			output: { type: "text", value: "Test result" },
 		}
 
-		const added = task.pushToolResultToUserContent(toolResult)
+		const added = task.pushToolResultToUserContent(toolResult as any)
 
 		expect(added).toBe(true)
-		expect(task.userMessageContent).toHaveLength(1)
-		expect(task.userMessageContent[0]).toEqual(toolResult)
+		expect(task.pendingToolResults).toHaveLength(1)
+		expect(task.pendingToolResults[0]).toEqual(toolResult)
 	})
 
 	it("should prevent duplicate tool_result with same tool_use_id", () => {
@@ -2072,37 +2065,39 @@ describe("pushToolResultToUserContent", () => {
 			startTask: false,
 		})
 
-		const toolResult1: Anthropic.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "duplicate-id",
-			content: "First result",
+		const toolResult1 = {
+			type: "tool-result" as const,
+			toolCallId: "duplicate-id",
+			toolName: "read_file",
+			output: { type: "text", value: "First result" },
 		}
 
-		const toolResult2: Anthropic.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "duplicate-id",
-			content: "Second result (should be skipped)",
+		const toolResult2 = {
+			type: "tool-result" as const,
+			toolCallId: "duplicate-id",
+			toolName: "read_file",
+			output: { type: "text", value: "Second result (should be skipped)" },
 		}
 
 		// Spy on console.warn to verify warning is logged
 		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
 
 		// Add first result - should succeed
-		const added1 = task.pushToolResultToUserContent(toolResult1)
+		const added1 = task.pushToolResultToUserContent(toolResult1 as any)
 		expect(added1).toBe(true)
-		expect(task.userMessageContent).toHaveLength(1)
+		expect(task.pendingToolResults).toHaveLength(1)
 
 		// Add second result with same ID - should be skipped
-		const added2 = task.pushToolResultToUserContent(toolResult2)
+		const added2 = task.pushToolResultToUserContent(toolResult2 as any)
 		expect(added2).toBe(false)
-		expect(task.userMessageContent).toHaveLength(1)
+		expect(task.pendingToolResults).toHaveLength(1)
 
 		// Verify only the first result is in the array
-		expect(task.userMessageContent[0]).toEqual(toolResult1)
+		expect(task.pendingToolResults[0]).toEqual(toolResult1)
 
 		// Verify warning was logged
 		expect(warnSpy).toHaveBeenCalledWith(
-			expect.stringContaining("Skipping duplicate tool_result for tool_use_id: duplicate-id"),
+			expect.stringContaining("Skipping duplicate tool_result for toolCallId: duplicate-id"),
 		)
 
 		warnSpy.mockRestore()
@@ -2116,26 +2111,28 @@ describe("pushToolResultToUserContent", () => {
 			startTask: false,
 		})
 
-		const toolResult1: Anthropic.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "id-1",
-			content: "Result 1",
+		const toolResult1 = {
+			type: "tool-result" as const,
+			toolCallId: "id-1",
+			toolName: "read_file",
+			output: { type: "text", value: "Result 1" },
 		}
 
-		const toolResult2: Anthropic.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "id-2",
-			content: "Result 2",
+		const toolResult2 = {
+			type: "tool-result" as const,
+			toolCallId: "id-2",
+			toolName: "write_to_file",
+			output: { type: "text", value: "Result 2" },
 		}
 
-		const added1 = task.pushToolResultToUserContent(toolResult1)
-		const added2 = task.pushToolResultToUserContent(toolResult2)
+		const added1 = task.pushToolResultToUserContent(toolResult1 as any)
+		const added2 = task.pushToolResultToUserContent(toolResult2 as any)
 
 		expect(added1).toBe(true)
 		expect(added2).toBe(true)
-		expect(task.userMessageContent).toHaveLength(2)
-		expect(task.userMessageContent[0]).toEqual(toolResult1)
-		expect(task.userMessageContent[1]).toEqual(toolResult2)
+		expect(task.pendingToolResults).toHaveLength(2)
+		expect(task.pendingToolResults[0]).toEqual(toolResult1)
+		expect(task.pendingToolResults[1]).toEqual(toolResult2)
 	})
 
 	it("should handle tool_result with is_error flag", () => {
@@ -2146,18 +2143,19 @@ describe("pushToolResultToUserContent", () => {
 			startTask: false,
 		})
 
-		const errorResult: Anthropic.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "error-id",
-			content: "Error message",
-			is_error: true,
+		const errorResult = {
+			type: "tool-result" as const,
+			toolCallId: "error-id",
+			toolName: "execute_command",
+			output: { type: "text", value: "Error message" },
+			isError: true,
 		}
 
-		const added = task.pushToolResultToUserContent(errorResult)
+		const added = task.pushToolResultToUserContent(errorResult as any)
 
 		expect(added).toBe(true)
-		expect(task.userMessageContent).toHaveLength(1)
-		expect(task.userMessageContent[0]).toEqual(errorResult)
+		expect(task.pendingToolResults).toHaveLength(1)
+		expect(task.pendingToolResults[0]).toEqual(errorResult)
 	})
 
 	it("should not interfere with other content types in userMessageContent", () => {
@@ -2169,23 +2167,21 @@ describe("pushToolResultToUserContent", () => {
 		})
 
 		// Add text and image blocks manually
-		task.userMessageContent.push(
-			{ type: "text", text: "Some text" },
-			{ type: "image", source: { type: "base64", media_type: "image/png", data: "base64data" } },
-		)
+		task.userMessageContent.push({ type: "text", text: "Some text" })
 
-		const toolResult: Anthropic.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "test-id",
-			content: "Result",
+		const toolResult = {
+			type: "tool-result" as const,
+			toolCallId: "test-id",
+			toolName: "read_file",
+			output: { type: "text", value: "Result" },
 		}
 
-		const added = task.pushToolResultToUserContent(toolResult)
+		const added = task.pushToolResultToUserContent(toolResult as any)
 
 		expect(added).toBe(true)
-		expect(task.userMessageContent).toHaveLength(3)
+		expect(task.userMessageContent).toHaveLength(1)
 		expect(task.userMessageContent[0].type).toBe("text")
-		expect(task.userMessageContent[1].type).toBe("image")
-		expect(task.userMessageContent[2]).toEqual(toolResult)
+		expect(task.pendingToolResults).toHaveLength(1)
+		expect(task.pendingToolResults[0]).toEqual(toolResult)
 	})
 })

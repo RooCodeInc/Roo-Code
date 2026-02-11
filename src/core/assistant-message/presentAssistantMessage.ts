@@ -1,6 +1,7 @@
 import { serializeError } from "serialize-error"
 import { Anthropic } from "@anthropic-ai/sdk"
 
+import type { ImagePart, ToolResultPart } from "../task-persistence"
 import type { ToolName, ClineAsk, ToolProgressStatus } from "@roo-code/types"
 import { ConsecutiveMistakeError, TelemetryEventName } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -118,10 +119,10 @@ export async function presentAssistantMessage(cline: Task) {
 
 				if (toolCallId) {
 					cline.pushToolResultToUserContent({
-						type: "tool_result",
-						tool_use_id: sanitizeToolUseId(toolCallId),
-						content: errorMessage,
-						is_error: true,
+						type: "tool-result",
+						toolCallId: sanitizeToolUseId(toolCallId),
+						toolName: mcpBlock.name,
+						output: { type: "text", value: `[ERROR] ${errorMessage}` },
 					})
 				}
 				break
@@ -143,13 +144,13 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 
 				let resultContent: string
-				let imageBlocks: Anthropic.ImageBlockParam[] = []
+				let imageBlocks: ImagePart[] = []
 
 				if (typeof content === "string") {
 					resultContent = content || "(tool did not return anything)"
 				} else {
 					const textBlocks = content.filter((item) => item.type === "text")
-					imageBlocks = content.filter((item) => item.type === "image") as Anthropic.ImageBlockParam[]
+					imageBlocks = content.filter((item) => item.type === "image") as ImagePart[]
 					resultContent =
 						textBlocks.map((item) => (item as Anthropic.TextBlockParam).text).join("\n") ||
 						"(tool did not return anything)"
@@ -169,9 +170,10 @@ export async function presentAssistantMessage(cline: Task) {
 
 				if (toolCallId) {
 					cline.pushToolResultToUserContent({
-						type: "tool_result",
-						tool_use_id: sanitizeToolUseId(toolCallId),
-						content: resultContent,
+						type: "tool-result",
+						toolCallId: sanitizeToolUseId(toolCallId),
+						toolName: mcpBlock.name,
+						output: { type: "text", value: resultContent },
 					})
 
 					if (imageBlocks.length > 0) {
@@ -399,10 +401,10 @@ export async function presentAssistantMessage(cline: Task) {
 					: `Tool ${toolDescription()} was interrupted and not executed due to user rejecting a previous tool.`
 
 				cline.pushToolResultToUserContent({
-					type: "tool_result",
-					tool_use_id: sanitizeToolUseId(toolCallId),
-					content: errorMessage,
-					is_error: true,
+					type: "tool-result",
+					toolCallId: sanitizeToolUseId(toolCallId),
+					toolName: block.name,
+					output: { type: "text", value: `[ERROR] ${errorMessage}` },
 				})
 
 				break
@@ -436,10 +438,10 @@ export async function presentAssistantMessage(cline: Task) {
 					// Push tool_result directly without setting didAlreadyUseTool so streaming can
 					// continue gracefully.
 					cline.pushToolResultToUserContent({
-						type: "tool_result",
-						tool_use_id: sanitizeToolUseId(toolCallId),
-						content: formatResponse.toolError(errorMessage),
-						is_error: true,
+						type: "tool-result",
+						toolCallId: sanitizeToolUseId(toolCallId),
+						toolName: block.name,
+						output: { type: "text", value: `[ERROR] ${formatResponse.toolError(errorMessage)}` },
 					})
 
 					break
@@ -459,13 +461,13 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 
 				let resultContent: string
-				let imageBlocks: Anthropic.ImageBlockParam[] = []
+				let imageBlocks: ImagePart[] = []
 
 				if (typeof content === "string") {
 					resultContent = content || "(tool did not return anything)"
 				} else {
 					const textBlocks = content.filter((item) => item.type === "text")
-					imageBlocks = content.filter((item) => item.type === "image") as Anthropic.ImageBlockParam[]
+					imageBlocks = content.filter((item) => item.type === "image") as ImagePart[]
 					resultContent =
 						textBlocks.map((item) => (item as Anthropic.TextBlockParam).text).join("\n") ||
 						"(tool did not return anything)"
@@ -482,9 +484,10 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 
 				cline.pushToolResultToUserContent({
-					type: "tool_result",
-					tool_use_id: sanitizeToolUseId(toolCallId),
-					content: resultContent,
+					type: "tool-result",
+					toolCallId: sanitizeToolUseId(toolCallId),
+					toolName: block.name,
+					output: { type: "text", value: resultContent },
 				})
 
 				if (imageBlocks.length > 0) {
@@ -644,10 +647,13 @@ export async function presentAssistantMessage(cline: Task) {
 					const errorContent = formatResponse.toolError(error.message)
 					// Push tool_result directly without setting didAlreadyUseTool
 					cline.pushToolResultToUserContent({
-						type: "tool_result",
-						tool_use_id: sanitizeToolUseId(toolCallId),
-						content: typeof errorContent === "string" ? errorContent : "(validation error)",
-						is_error: true,
+						type: "tool-result",
+						toolCallId: sanitizeToolUseId(toolCallId),
+						toolName: block.name,
+						output: {
+							type: "text",
+							value: `[ERROR] ${typeof errorContent === "string" ? errorContent : "(validation error)"}`,
+						},
 					})
 
 					break
@@ -948,10 +954,10 @@ export async function presentAssistantMessage(cline: Task) {
 					// Push tool_result directly WITHOUT setting didAlreadyUseTool
 					// This prevents the stream from being interrupted with "Response interrupted by tool use result"
 					cline.pushToolResultToUserContent({
-						type: "tool_result",
-						tool_use_id: sanitizeToolUseId(toolCallId),
-						content: formatResponse.toolError(errorMessage),
-						is_error: true,
+						type: "tool-result",
+						toolCallId: sanitizeToolUseId(toolCallId),
+						toolName: block.name,
+						output: { type: "text", value: `[ERROR] ${formatResponse.toolError(errorMessage)}` },
 					})
 					break
 				}

@@ -15,6 +15,7 @@ import { ContextProxy } from "../../config/ContextProxy"
 
 const {
 	mockSaveApiMessages,
+	mockSaveRooMessages,
 	mockSaveTaskMessages,
 	mockReadApiMessages,
 	mockReadTaskMessages,
@@ -22,6 +23,7 @@ const {
 	mockPWaitFor,
 } = vi.hoisted(() => ({
 	mockSaveApiMessages: vi.fn().mockResolvedValue(undefined),
+	mockSaveRooMessages: vi.fn().mockResolvedValue(undefined),
 	mockSaveTaskMessages: vi.fn().mockResolvedValue(undefined),
 	mockReadApiMessages: vi.fn().mockResolvedValue([]),
 	mockReadTaskMessages: vi.fn().mockResolvedValue([]),
@@ -75,6 +77,7 @@ vi.mock("p-wait-for", () => ({
 
 vi.mock("../../task-persistence", () => ({
 	saveApiMessages: mockSaveApiMessages,
+	saveRooMessages: mockSaveRooMessages,
 	saveTaskMessages: mockSaveTaskMessages,
 	readApiMessages: mockReadApiMessages,
 	readTaskMessages: mockReadTaskMessages,
@@ -251,7 +254,7 @@ describe("Task persistence", () => {
 
 	describe("saveApiConversationHistory", () => {
 		it("returns true on success", async () => {
-			mockSaveApiMessages.mockResolvedValueOnce(undefined)
+			mockSaveRooMessages.mockResolvedValueOnce(undefined)
 
 			const task = new Task({
 				provider: mockProvider,
@@ -273,7 +276,7 @@ describe("Task persistence", () => {
 			vi.useFakeTimers()
 
 			// All 3 retry attempts must fail for retrySaveApiConversationHistory to return false
-			mockSaveApiMessages
+			mockSaveRooMessages
 				.mockRejectedValueOnce(new Error("fail 1"))
 				.mockRejectedValueOnce(new Error("fail 2"))
 				.mockRejectedValueOnce(new Error("fail 3"))
@@ -290,7 +293,29 @@ describe("Task persistence", () => {
 			const result = await promise
 
 			expect(result).toBe(false)
-			expect(mockSaveApiMessages).toHaveBeenCalledTimes(3)
+			expect(mockSaveRooMessages).toHaveBeenCalledTimes(3)
+
+			vi.useRealTimers()
+		})
+
+		it("returns false when saveRooMessages resolves false", async () => {
+			vi.useFakeTimers()
+
+			mockSaveRooMessages.mockResolvedValue(false)
+
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			const promise = task.retrySaveApiConversationHistory()
+			await vi.runAllTimersAsync()
+			const result = await promise
+
+			expect(result).toBe(false)
+			expect(mockSaveRooMessages).toHaveBeenCalledTimes(3)
 
 			vi.useRealTimers()
 		})
@@ -298,7 +323,7 @@ describe("Task persistence", () => {
 		it("succeeds on 2nd retry attempt", async () => {
 			vi.useFakeTimers()
 
-			mockSaveApiMessages.mockRejectedValueOnce(new Error("fail 1")).mockResolvedValueOnce(undefined) // succeeds on 2nd try
+			mockSaveRooMessages.mockRejectedValueOnce(new Error("fail 1")).mockResolvedValueOnce(undefined) // succeeds on 2nd try
 
 			const task = new Task({
 				provider: mockProvider,
@@ -312,13 +337,13 @@ describe("Task persistence", () => {
 			const result = await promise
 
 			expect(result).toBe(true)
-			expect(mockSaveApiMessages).toHaveBeenCalledTimes(2)
+			expect(mockSaveRooMessages).toHaveBeenCalledTimes(2)
 
 			vi.useRealTimers()
 		})
 
 		it("snapshots the array before passing to saveApiMessages", async () => {
-			mockSaveApiMessages.mockResolvedValueOnce(undefined)
+			mockSaveRooMessages.mockResolvedValueOnce(undefined)
 
 			const task = new Task({
 				provider: mockProvider,
@@ -335,9 +360,9 @@ describe("Task persistence", () => {
 
 			await task.retrySaveApiConversationHistory()
 
-			expect(mockSaveApiMessages).toHaveBeenCalledTimes(1)
+			expect(mockSaveRooMessages).toHaveBeenCalledTimes(1)
 
-			const callArgs = mockSaveApiMessages.mock.calls[0][0]
+			const callArgs = mockSaveRooMessages.mock.calls[0][0]
 			// The messages passed should be a COPY, not the live reference
 			expect(callArgs.messages).not.toBe(task.apiConversationHistory)
 			// But the content should be the same
@@ -409,7 +434,7 @@ describe("Task persistence", () => {
 
 	describe("flushPendingToolResultsToHistory persistence", () => {
 		it("retains userMessageContent on save failure", async () => {
-			mockSaveApiMessages.mockRejectedValueOnce(new Error("disk full"))
+			mockSaveRooMessages.mockRejectedValueOnce(new Error("disk full"))
 
 			const task = new Task({
 				provider: mockProvider,
@@ -421,27 +446,28 @@ describe("Task persistence", () => {
 			// Skip waiting for assistant message
 			task.assistantMessageSavedToHistory = true
 
-			task.userMessageContent = [
+			task.pendingToolResults = [
 				{
-					type: "tool_result",
-					tool_use_id: "tool-fail",
-					content: "Result that should be retained",
+					type: "tool-result",
+					toolCallId: "tool-fail",
+					toolName: "read_file",
+					output: { type: "text", value: "Result that should be retained" },
 				},
 			]
 
 			const saved = await task.flushPendingToolResultsToHistory()
 
 			expect(saved).toBe(false)
-			// userMessageContent should NOT be cleared on failure
-			expect(task.userMessageContent.length).toBeGreaterThan(0)
-			expect(task.userMessageContent[0]).toMatchObject({
-				type: "tool_result",
-				tool_use_id: "tool-fail",
+			// pendingToolResults should NOT be cleared on failure
+			expect(task.pendingToolResults.length).toBeGreaterThan(0)
+			expect(task.pendingToolResults[0]).toMatchObject({
+				type: "tool-result",
+				toolCallId: "tool-fail",
 			})
 		})
 
 		it("clears userMessageContent on save success", async () => {
-			mockSaveApiMessages.mockResolvedValueOnce(undefined)
+			mockSaveRooMessages.mockResolvedValueOnce(undefined)
 
 			const task = new Task({
 				provider: mockProvider,
@@ -453,19 +479,20 @@ describe("Task persistence", () => {
 			// Skip waiting for assistant message
 			task.assistantMessageSavedToHistory = true
 
-			task.userMessageContent = [
+			task.pendingToolResults = [
 				{
-					type: "tool_result",
-					tool_use_id: "tool-ok",
-					content: "Result that should be cleared",
+					type: "tool-result",
+					toolCallId: "tool-ok",
+					toolName: "read_file",
+					output: { type: "text", value: "Result that should be cleared" },
 				},
 			]
 
 			const saved = await task.flushPendingToolResultsToHistory()
 
 			expect(saved).toBe(true)
-			// userMessageContent should be cleared on success
-			expect(task.userMessageContent).toEqual([])
+			// pendingToolResults should be cleared on success
+			expect(task.pendingToolResults).toEqual([])
 		})
 	})
 })

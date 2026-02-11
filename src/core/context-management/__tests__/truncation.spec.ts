@@ -2,10 +2,9 @@ import { describe, it, expect, beforeEach } from "vitest"
 import { TelemetryService } from "@roo-code/telemetry"
 import { truncateConversation } from "../index"
 import { getEffectiveApiHistory, cleanupAfterTruncation } from "../../condense"
-import { ApiMessage } from "../../task-persistence/apiMessages"
 
 describe("Non-Destructive Sliding Window Truncation", () => {
-	let messages: ApiMessage[]
+	let messages: any[]
 
 	beforeEach(() => {
 		// Initialize TelemetryService for tests
@@ -66,8 +65,8 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 			expect(marker!.isTruncationMarker).toBe(true)
 			expect(marker!.truncationId).toBeDefined()
 			expect(marker!.truncationId).toBe(result.truncationId)
-			expect(marker!.role).toBe("user")
-			expect(marker!.content).toContain("Sliding window truncation")
+			expect((marker as any).role).toBe("user")
+			expect((marker as any).content).toContain("Sliding window truncation")
 		})
 
 		it("should return truncationId and messagesRemoved", () => {
@@ -80,7 +79,7 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 
 		it("should round messagesToRemove to an even number", () => {
 			// Test with 12 messages (1 initial + 11 conversation)
-			const manyMessages: ApiMessage[] = [
+			const manyMessages: any[] = [
 				{ role: "user", content: "Initial", ts: 1000 },
 				...Array.from({ length: 11 }, (_, i) => ({
 					role: (i % 2 === 0 ? "assistant" : "user") as "assistant" | "user",
@@ -99,7 +98,7 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 	describe("getEffectiveApiHistory()", () => {
 		it("should filter out truncated messages when truncation marker exists", () => {
 			const truncationResult = truncateConversation(messages, 0.5, "test-task-id")
-			const effective = getEffectiveApiHistory(truncationResult.messages)
+			const effective = getEffectiveApiHistory(truncationResult.messages as any)
 
 			// Should exclude 4 truncated messages but keep the first message and truncation marker
 			// Original: 11 messages
@@ -108,7 +107,7 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 			expect(effective.length).toBe(8)
 
 			// First message should be present
-			expect(effective[0].content).toBe("Initial task")
+			expect((effective[0] as any).content).toBe("Initial task")
 
 			// Truncation marker should be present
 			expect(effective[1].isTruncationMarker).toBe(true)
@@ -127,19 +126,19 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 			// Remove the truncation marker (simulate rewind past truncation)
 			const messagesWithoutMarker = truncationResult.messages.filter((msg) => !msg.isTruncationMarker)
 
-			const effective = getEffectiveApiHistory(messagesWithoutMarker)
+			const effective = getEffectiveApiHistory(messagesWithoutMarker as any)
 
 			// All messages should be visible now
 			expect(effective.length).toBe(messages.length)
 
 			// Verify first and last messages are present
-			expect(effective[0].content).toBe("Initial task")
-			expect(effective[effective.length - 1].content).toBe("Message 6")
+			expect((effective[0] as any).content).toBe("Initial task")
+			expect((effective[effective.length - 1] as any).content).toBe("Message 6")
 		})
 
 		it("should handle both condenseParent and truncationParent filtering", () => {
 			// Create a scenario with both condensing and truncation
-			const messagesWithCondense: ApiMessage[] = [
+			const messagesWithCondense: any[] = [
 				{ role: "user", content: "Initial", ts: 1000 },
 				{ role: "assistant", content: "Msg 1", ts: 1100, condenseParent: "condense-1" },
 				{ role: "user", content: "Msg 2", ts: 1200, condenseParent: "condense-1" },
@@ -155,7 +154,7 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 			]
 
 			const truncationResult = truncateConversation(messagesWithCondense, 0.5, "test-task-id")
-			const effective = getEffectiveApiHistory(truncationResult.messages)
+			const effective = getEffectiveApiHistory(truncationResult.messages as any)
 
 			// Should filter both condensed messages and truncated messages
 			// Messages with condenseParent="condense-1" should be filtered (summary exists)
@@ -199,7 +198,7 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 		})
 
 		it("should handle both condenseParent and truncationParent cleanup", () => {
-			const messagesWithBoth: ApiMessage[] = [
+			const messagesWithBoth: any[] = [
 				{ role: "user", content: "Initial", ts: 1000 },
 				{ role: "assistant", content: "Msg 1", ts: 1100, condenseParent: "orphan-condense" },
 				{ role: "user", content: "Msg 2", ts: 1200, truncationParent: "orphan-truncation" },
@@ -214,7 +213,7 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 		})
 
 		it("should preserve valid parent references", () => {
-			const messagesWithValidParents: ApiMessage[] = [
+			const messagesWithValidParents: any[] = [
 				{ role: "user", content: "Initial", ts: 1000 },
 				{ role: "assistant", content: "Msg 1", ts: 1100, condenseParent: "valid-condense" },
 				{
@@ -248,7 +247,7 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 			const truncationResult = truncateConversation(messages, 0.5, "test-task-id")
 
 			// Step 2: Verify messages are hidden initially
-			const effectiveBeforeRewind = getEffectiveApiHistory(truncationResult.messages)
+			const effectiveBeforeRewind = getEffectiveApiHistory(truncationResult.messages as any)
 			expect(effectiveBeforeRewind.length).toBeLessThan(messages.length)
 
 			// Step 3: Simulate rewind by removing truncation marker and subsequent messages
@@ -260,7 +259,7 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 			const cleanedAfterRewind = cleanupAfterTruncation(messagesAfterRewind)
 
 			// Step 5: Get effective history after cleanup
-			const effectiveAfterRewind = getEffectiveApiHistory(cleanedAfterRewind)
+			const effectiveAfterRewind = getEffectiveApiHistory(cleanedAfterRewind as any)
 
 			// All original messages before the marker should be restored
 			expect(effectiveAfterRewind.length).toBe(markerIndex)
@@ -276,8 +275,8 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 			const firstTruncation = truncateConversation(messages, 0.5, "task-1")
 
 			// Step 2: Get effective history and simulate more messages being added
-			const effectiveAfterFirst = getEffectiveApiHistory(firstTruncation.messages)
-			const moreMessages: ApiMessage[] = [
+			const effectiveAfterFirst = getEffectiveApiHistory(firstTruncation.messages as any)
+			const moreMessages: any[] = [
 				...firstTruncation.messages,
 				{ role: "user", content: "New message 1", ts: 3000 },
 				{ role: "assistant", content: "New response 1", ts: 3100 },
@@ -289,7 +288,7 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 			const secondTruncation = truncateConversation(moreMessages, 0.5, "task-1")
 
 			// Step 4: Get effective history after second truncation
-			const effectiveAfterSecond = getEffectiveApiHistory(secondTruncation.messages)
+			const effectiveAfterSecond = getEffectiveApiHistory(secondTruncation.messages as any)
 
 			// Should have messages hidden by both truncations filtered out
 			const firstMarker = secondTruncation.messages.find(
@@ -319,8 +318,8 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 
 			// Step 2: Add more messages AFTER getting effective history
 			// This simulates real usage where we only send effective messages to API
-			const effectiveAfterFirst = getEffectiveApiHistory(firstTruncation.messages)
-			const moreMessages: ApiMessage[] = [
+			const effectiveAfterFirst = getEffectiveApiHistory(firstTruncation.messages as any)
+			const moreMessages: any[] = [
 				...firstTruncation.messages, // Keep full history with tagged messages
 				{ role: "user", content: "New message 1", ts: 3000 },
 				{ role: "assistant", content: "New response 1", ts: 3100 },
@@ -341,7 +340,7 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 			const cleaned = cleanupAfterTruncation(afterSecondRewind)
 
 			// Step 6: Get effective history
-			const effective = getEffectiveApiHistory(cleaned)
+			const effective = getEffectiveApiHistory(cleaned as any)
 
 			// The second truncation marker should be removed
 			const hasSecondTruncationMarker = effective.some(
@@ -376,7 +375,7 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 		})
 
 		it("should handle truncateConversation with very few messages", () => {
-			const fewMessages: ApiMessage[] = [
+			const fewMessages: any[] = [
 				{ role: "user", content: "Initial", ts: 1000 },
 				{ role: "assistant", content: "Response", ts: 1100 },
 			]
@@ -392,7 +391,7 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 		it("should handle truncating all visible messages except first", () => {
 			// This tests the edge case where visibleIndices[messagesToRemove + 1] would be undefined
 			// 3 messages total: first is preserved, 2 others can be truncated
-			const threeMessages: ApiMessage[] = [
+			const threeMessages: any[] = [
 				{ role: "user", content: "Initial", ts: 1000 },
 				{ role: "assistant", content: "Response 1", ts: 1100 },
 				{ role: "user", content: "Message 2", ts: 1200 },
@@ -411,7 +410,7 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 
 			// First message should be untouched
 			expect(result.messages[0].truncationParent).toBeUndefined()
-			expect(result.messages[0].content).toBe("Initial")
+			expect((result.messages[0] as any).content).toBe("Initial")
 
 			// Messages at indices 1 and 2 should be tagged
 			expect(result.messages[1].truncationParent).toBe(result.truncationId)
@@ -419,11 +418,11 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 
 			// Marker should be at the end (index 3)
 			expect(result.messages[3].isTruncationMarker).toBe(true)
-			expect(result.messages[3].role).toBe("user")
+			expect((result.messages[3] as any).role).toBe("user")
 		})
 
 		it("should handle empty condenseParent and truncationParent gracefully", () => {
-			const messagesWithoutTags: ApiMessage[] = [
+			const messagesWithoutTags: any[] = [
 				{ role: "user", content: "Message 1", ts: 1000 },
 				{ role: "assistant", content: "Response 1", ts: 1100 },
 			]

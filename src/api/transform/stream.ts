@@ -1,3 +1,5 @@
+import type { AssistantModelMessage } from "ai"
+
 export type ApiStream = AsyncGenerator<ApiStreamChunk>
 
 export type ApiStreamChunk =
@@ -11,6 +13,7 @@ export type ApiStreamChunk =
 	| ApiStreamToolCallDeltaChunk
 	| ApiStreamToolCallEndChunk
 	| ApiStreamToolCallPartialChunk
+	| ApiStreamResponseMessageChunk
 	| ApiStreamError
 
 export interface ApiStreamError {
@@ -105,6 +108,15 @@ export interface ApiStreamToolCallPartialChunk {
 	id?: string
 	name?: string
 	arguments?: string
+}
+
+/**
+ * Carries the fully-formed assistant message from the AI SDK's `result.response.messages`.
+ * Yielded after streaming completes so Task.ts can store it directly without manual reconstruction.
+ */
+export interface ApiStreamResponseMessageChunk {
+	type: "response_message"
+	message: AssistantModelMessage
 }
 
 export interface GroundingSource {

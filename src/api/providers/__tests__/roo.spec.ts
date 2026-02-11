@@ -4,6 +4,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { rooDefaultModelId } from "@roo-code/types"
 
 import { ApiHandlerOptions } from "../../../shared/api"
+import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 
 // Mock the AI SDK
 const mockStreamText = vitest.fn()
@@ -138,7 +139,7 @@ describe("RooHandler", () => {
 	let handler: RooHandler
 	let mockOptions: ApiHandlerOptions
 	const systemPrompt = "You are a helpful assistant."
-	const messages: Anthropic.Messages.MessageParam[] = [
+	const messages: RooMessage[] = [
 		{
 			role: "user",
 			content: "Hello!",
@@ -297,7 +298,7 @@ describe("RooHandler", () => {
 		it("should handle multiple messages in conversation", async () => {
 			mockStreamText.mockReturnValue(createMockStreamResult())
 
-			const multipleMessages: Anthropic.Messages.MessageParam[] = [
+			const multipleMessages: RooMessage[] = [
 				{ role: "user", content: "First message" },
 				{ role: "assistant", content: "First response" },
 				{ role: "user", content: "Second message" },
@@ -685,77 +686,6 @@ describe("RooHandler", () => {
 			const transformed = getTransformedBody()
 			expect(transformed).toBeDefined()
 			expect(transformed!.reasoning).toEqual({ enabled: false })
-		})
-	})
-
-	describe("reasoning details accumulation", () => {
-		beforeEach(() => {
-			handler = new RooHandler(mockOptions)
-		})
-
-		it("should accumulate reasoning text from reasoning-delta parts", async () => {
-			mockStreamText.mockReturnValue(
-				createMockStreamResult({
-					reasoningChunks: ["thinking ", "about ", "this"],
-					textChunks: ["answer"],
-				}),
-			)
-
-			const stream = handler.createMessage(systemPrompt, messages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
-			expect(reasoningChunks).toHaveLength(3)
-			expect(reasoningChunks[0].text).toBe("thinking ")
-			expect(reasoningChunks[1].text).toBe("about ")
-			expect(reasoningChunks[2].text).toBe("this")
-
-			const details = handler.getReasoningDetails()
-			expect(details).toBeDefined()
-			expect(details![0].type).toBe("reasoning.text")
-			expect(details![0].text).toBe("thinking about this")
-		})
-
-		it("should override reasoning details from providerMetadata", async () => {
-			const providerReasoningDetails = [{ type: "reasoning.summary", summary: "Server summary", index: 0 }]
-
-			mockStreamText.mockReturnValue(
-				createMockStreamResult({
-					reasoningChunks: ["local thinking"],
-					textChunks: ["answer"],
-					providerMetadata: {
-						roo: { reasoning_details: providerReasoningDetails },
-					},
-				}),
-			)
-
-			const stream = handler.createMessage(systemPrompt, messages)
-			for await (const _chunk of stream) {
-				// consume
-			}
-
-			const details = handler.getReasoningDetails()
-			expect(details).toBeDefined()
-			expect(details).toEqual(providerReasoningDetails)
-		})
-
-		it("should return undefined when no reasoning details", async () => {
-			mockStreamText.mockReturnValue(
-				createMockStreamResult({
-					reasoningChunks: [],
-					textChunks: ["just text"],
-				}),
-			)
-
-			const stream = handler.createMessage(systemPrompt, messages)
-			for await (const _chunk of stream) {
-				// consume
-			}
-
-			expect(handler.getReasoningDetails()).toBeUndefined()
 		})
 	})
 

@@ -1,3 +1,4 @@
+import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 import { describe, it, expect, beforeEach } from "vitest"
 
 import type { Anthropic } from "@anthropic-ai/sdk"
@@ -22,7 +23,7 @@ const {
 		mockGenerateText: vi.fn(),
 		mockCreateAnthropic: vi.fn().mockReturnValue(mockModel),
 		mockModel,
-		mockMergeEnvironmentDetailsForMiniMax: vi.fn((messages: Anthropic.Messages.MessageParam[]) => messages),
+		mockMergeEnvironmentDetailsForMiniMax: vi.fn((messages: RooMessage[]) => messages),
 		mockHandleAiSdkError: vi.fn((error: unknown, providerName: string) => {
 			const message = error instanceof Error ? error.message : String(error)
 			return new Error(`${providerName}: ${message}`)
@@ -96,7 +97,7 @@ async function collectChunks(stream: ApiStream): Promise<ApiStreamChunk[]> {
 
 describe("MiniMaxHandler", () => {
 	const systemPrompt = "You are a helpful assistant."
-	const messages: Anthropic.Messages.MessageParam[] = [
+	const messages: RooMessage[] = [
 		{
 			role: "user",
 			content: [{ type: "text", text: "Hello" }],
@@ -106,9 +107,7 @@ describe("MiniMaxHandler", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 		mockCreateAnthropic.mockReturnValue(mockModel)
-		mockMergeEnvironmentDetailsForMiniMax.mockImplementation(
-			(inputMessages: Anthropic.Messages.MessageParam[]) => inputMessages,
-		)
+		mockMergeEnvironmentDetailsForMiniMax.mockImplementation((inputMessages: RooMessage[]) => inputMessages)
 		mockHandleAiSdkError.mockImplementation((error: unknown, providerName: string) => {
 			const message = error instanceof Error ? error.message : String(error)
 			return new Error(`${providerName}: ${message}`)
@@ -325,7 +324,7 @@ describe("MiniMaxHandler", () => {
 		})
 
 		it("calls mergeEnvironmentDetailsForMiniMax before conversion", async () => {
-			const mergedMessages: Anthropic.Messages.MessageParam[] = [
+			const mergedMessages: RooMessage[] = [
 				{
 					role: "user",
 					content: [{ type: "text", text: "Merged message" }],
@@ -366,37 +365,6 @@ describe("MiniMaxHandler", () => {
 				await collectChunks(stream)
 			}).rejects.toThrow("MiniMax: API Error")
 			expect(mockHandleAiSdkError).toHaveBeenCalledWith(expect.any(Error), "MiniMax")
-		})
-	})
-
-	describe("thinking signature", () => {
-		it("returns undefined thought signature before any request", () => {
-			const handler = createHandler()
-			expect(handler.getThoughtSignature()).toBeUndefined()
-		})
-
-		it("captures thought signature from stream providerMetadata", async () => {
-			const signature = "test-thinking-signature"
-			mockStreamText.mockReturnValue(
-				createMockStream([
-					{
-						type: "reasoning-delta",
-						text: "thinking...",
-						providerMetadata: { anthropic: { signature } },
-					},
-					{ type: "text-delta", text: "Answer" },
-				]),
-			)
-
-			const handler = createHandler()
-			await collectChunks(handler.createMessage(systemPrompt, messages))
-
-			expect(handler.getThoughtSignature()).toBe(signature)
-		})
-
-		it("returns undefined redacted thinking blocks before any request", () => {
-			const handler = createHandler()
-			expect(handler.getRedactedThinkingBlocks()).toBeUndefined()
 		})
 	})
 

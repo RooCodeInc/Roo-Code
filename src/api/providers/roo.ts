@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
-import { streamText, generateText } from "ai"
+import { streamText, generateText, type ModelMessage } from "ai"
 
 import { rooDefaultModelId, getApiProtocol, type ImageGenerationApiMethod } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
@@ -11,13 +11,12 @@ import { calculateApiCostOpenAI } from "../../shared/cost"
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 import {
-	convertToAiSdkMessages,
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	handleAiSdkError,
 	mapToolChoice,
+	yieldResponseMessage,
 } from "../transform/ai-sdk"
-import { type ReasoningDetail } from "../transform/openai-format"
 import type { RooReasoningParams } from "../transform/reasoning"
 import { getRooReasoning } from "../transform/reasoning"
 
@@ -26,6 +25,7 @@ import { BaseProvider } from "./base-provider"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
 import { generateImageWithProvider, generateImageWithImagesApi, ImageGenerationResult } from "./utils/image-generation"
 import { t } from "../../i18n"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 function getSessionToken(): string {
 	const token = CloudService.hasInstance() ? CloudService.instance.authService?.getSessionToken() : undefined
@@ -35,7 +35,6 @@ function getSessionToken(): string {
 export class RooHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private fetcherBaseURL: string
-	private currentReasoningDetails: ReasoningDetail[] = []
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -89,18 +88,11 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 		return true as const
 	}
 
-	getReasoningDetails(): ReasoningDetail[] | undefined {
-		return this.currentReasoningDetails.length > 0 ? this.currentReasoningDetails : undefined
-	}
-
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		// Reset reasoning_details accumulator for this request
-		this.currentReasoningDetails = []
-
 		const model = this.getModel()
 		const { id: modelId, info } = model
 
@@ -127,11 +119,10 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 		// Create per-request provider with fresh session token
 		const provider = this.createRooProvider({ reasoning, taskId: metadata?.taskId })
 
-		// Convert messages and tools to AI SDK format
-		const aiSdkMessages = convertToAiSdkMessages(messages)
+		// RooMessage[] is already AI SDK-compatible, cast directly
+		const aiSdkMessages = messages as ModelMessage[]
 		const tools = convertToolsForAiSdk(this.convertToolsForOpenAI(metadata?.tools))
 
-		let accumulatedReasoningText = ""
 		let lastStreamError: string | undefined
 
 		try {
@@ -146,9 +137,6 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 			})
 
 			for await (const part of result.fullStream) {
-				if (part.type === "reasoning-delta" && part.text !== "[REDACTED]") {
-					accumulatedReasoningText += part.text
-				}
 				for (const chunk of processAiSdkStreamPart(part)) {
 					if (chunk.type === "error") {
 						lastStreamError = chunk.message
@@ -157,24 +145,10 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 				}
 			}
 
-			// Build reasoning details from accumulated text
-			if (accumulatedReasoningText) {
-				this.currentReasoningDetails.push({
-					type: "reasoning.text",
-					text: accumulatedReasoningText,
-					index: 0,
-				})
-			}
-
-			// Check provider metadata for reasoning_details (override if present)
+			// Check provider metadata for usage details
 			const providerMetadata =
 				(await result.providerMetadata) ?? (await (result as any).experimental_providerMetadata)
 			const rooMeta = providerMetadata?.roo as Record<string, any> | undefined
-
-			const providerReasoningDetails = rooMeta?.reasoning_details as ReasoningDetail[] | undefined
-			if (providerReasoningDetails && providerReasoningDetails.length > 0) {
-				this.currentReasoningDetails = providerReasoningDetails
-			}
 
 			// Process usage with protocol-aware normalization
 			const usage = await result.usage
@@ -212,6 +186,8 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 				cacheReadTokens: cacheRead,
 				totalCost,
 			}
+
+			yield* yieldResponseMessage(result)
 		} catch (error) {
 			if (lastStreamError) {
 				throw new Error(lastStreamError)

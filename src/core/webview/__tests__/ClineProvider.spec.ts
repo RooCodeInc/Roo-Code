@@ -1220,7 +1220,7 @@ describe("ClineProvider", () => {
 			// Setup Task instance with auto-mock from the top of the file
 			const mockCline = new Task(defaultTaskOptions) // Create a new mocked instance
 			mockCline.clineMessages = mockMessages // Set test-specific messages
-			mockCline.apiConversationHistory = mockApiHistory // Set API history
+			mockCline.apiConversationHistory = mockApiHistory as any // Set API history
 			await provider.addClineToStack(mockCline) // Add the mocked instance to the stack
 
 			// Mock getTaskWithId
@@ -1308,7 +1308,7 @@ describe("ClineProvider", () => {
 			// Setup Task instance with auto-mock from the top of the file
 			const mockCline = new Task(defaultTaskOptions) // Create a new mocked instance
 			mockCline.clineMessages = mockMessages // Set test-specific messages
-			mockCline.apiConversationHistory = mockApiHistory // Set API history
+			mockCline.apiConversationHistory = mockApiHistory as any // Set API history
 
 			// Explicitly mock the overwrite methods since they're not being called in the tests
 			mockCline.overwriteClineMessages = vi.fn()
@@ -3838,6 +3838,34 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 			expect(deleteTaskSpy).not.toHaveBeenCalled()
 
 			// Restore the spy
+			vi.mocked(fsUtils.fileExistsAtPath).mockRestore()
+		})
+
+		it("reads v2 envelope format via readRooMessages", async () => {
+			const historyItem = { id: "v2-envelope-task", task: "test task", ts: Date.now() }
+			vi.mocked(mockContext.globalState.get).mockImplementation((key: string) => {
+				if (key === "taskHistory") {
+					return [historyItem]
+				}
+				return undefined
+			})
+
+			const fsUtils = await import("../../../utils/fs")
+			vi.spyOn(fsUtils, "fileExistsAtPath").mockResolvedValue(true)
+
+			const fsp = await import("fs/promises")
+			vi.mocked(fsp.readFile).mockResolvedValueOnce(
+				JSON.stringify({
+					version: 2,
+					messages: [{ role: "user", content: "hello from v2" }],
+				}) as never,
+			)
+
+			const result = await (provider as any).getTaskWithId("v2-envelope-task")
+
+			expect(result.historyItem).toEqual(historyItem)
+			expect(result.apiConversationHistory).toEqual([{ role: "user", content: "hello from v2" }])
+
 			vi.mocked(fsUtils.fileExistsAtPath).mockRestore()
 		})
 	})

@@ -1,9 +1,22 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import { TelemetryService } from "@roo-code/telemetry"
 import { findLastIndex } from "../../shared/array"
-import { getToolResultLikeId, getToolUseLikeId, isToolResultLikeBlock, isToolUseLikeBlock } from "./toolBlockFormat"
-
-type AnyContentBlock = Anthropic.Messages.ContentBlockParam | (Record<string, unknown> & { type: string })
+import type {
+	RooMessage,
+	RooRoleMessage,
+	ToolCallPart,
+	ToolResultPart,
+	AnyToolCallBlock,
+	AnyToolResultBlock,
+} from "../task-persistence/rooMessage"
+import {
+	isRooRoleMessage,
+	isAnyToolCallBlock,
+	isAnyToolResultBlock,
+	getToolCallId as sharedGetToolCallId,
+	getToolCallName,
+	getToolResultCallId as sharedGetToolResultCallId,
+	setToolResultCallId as sharedSetToolResultCallId,
+} from "../task-persistence/rooMessage"
 
 /**
  * Custom error class for tool result ID mismatches.
@@ -22,8 +35,8 @@ export class ToolResultIdMismatchError extends Error {
 
 /**
  * Custom error class for missing tool results.
- * Used for structured error tracking via PostHog when tool_use blocks
- * don't have corresponding tool_result blocks.
+ * Used for structured error tracking via PostHog when tool-call blocks
+ * don't have corresponding tool-result blocks.
  */
 export class MissingToolResultError extends Error {
 	constructor(
@@ -36,130 +49,117 @@ export class MissingToolResultError extends Error {
 	}
 }
 
+/** Local aliases for shared dual-format helpers. */
+const isToolCallBlock = isAnyToolCallBlock
+const isToolResultBlock = isAnyToolResultBlock
+const getToolCallId = sharedGetToolCallId
+const getToolResultCallId = sharedGetToolResultCallId
+const setToolResultCallId = sharedSetToolResultCallId
+
 /**
- * Validates and fixes tool_result IDs in a user message against the previous assistant message.
+ * Validates and fixes tool result IDs in a user/tool message against the previous assistant message.
  *
- * This is a centralized validation that catches all tool_use/tool_result issues
+ * This is a centralized validation that catches all tool-call/tool-result issues
  * before messages are added to the API conversation history. It handles scenarios like:
  * - Race conditions during streaming
  * - Message editing scenarios
  * - Resume/delegation scenarios
- * - Missing tool_result blocks for tool_use calls
+ * - Missing tool-result blocks for tool-call calls
  *
- * @param userMessage - The user message being added to history
+ * @param userMessage - The user or tool message being added to history
  * @param apiConversationHistory - The conversation history to find the previous assistant message from
- * @returns The validated user message with corrected tool_use_ids and any missing tool_results added
+ * @returns The validated message with corrected tool call IDs and any missing tool results added
  */
-export function validateAndFixToolResultIds(
-	userMessage: Anthropic.MessageParam,
-	apiConversationHistory: Anthropic.MessageParam[],
-): Anthropic.MessageParam {
-	const userContent = userMessage.content as AnyContentBlock[]
-
-	// Only process user messages with array content
-	if (userMessage.role !== "user" || !Array.isArray(userContent)) {
+export function validateAndFixToolResultIds(userMessage: RooMessage, apiConversationHistory: RooMessage[]): RooMessage {
+	// Only process messages with array content that have a role
+	if (!isRooRoleMessage(userMessage) || !Array.isArray(userMessage.content)) {
 		return userMessage
 	}
 
 	// Find the previous assistant message from conversation history
-	const prevAssistantIdx = findLastIndex(apiConversationHistory, (msg) => msg.role === "assistant")
+	const prevAssistantIdx = findLastIndex(apiConversationHistory, (msg) => "role" in msg && msg.role === "assistant")
 	if (prevAssistantIdx === -1) {
 		return userMessage
 	}
 
 	const previousAssistantMessage = apiConversationHistory[prevAssistantIdx]
 
-	// Get tool_use blocks from the assistant message
+	// Get tool-call blocks from the assistant message
+	if (!isRooRoleMessage(previousAssistantMessage)) {
+		return userMessage
+	}
 	const assistantContent = previousAssistantMessage.content
 	if (!Array.isArray(assistantContent)) {
 		return userMessage
 	}
 
-	const toolUseBlocks = (assistantContent as AnyContentBlock[]).filter(isToolUseLikeBlock)
+	const toolCallBlocks = (assistantContent as Array<{ type: string }>).filter(isToolCallBlock)
 
-	// No tool_use blocks to match against - no validation needed
-	if (toolUseBlocks.length === 0) {
+	// No tool-call blocks to match against - no validation needed
+	if (toolCallBlocks.length === 0) {
 		return userMessage
 	}
 
-	// Find tool_result blocks in the user message
-	let toolResults = userContent.filter(isToolResultLikeBlock)
+	// Find tool-result blocks in the user/tool message
+	const contentArray = userMessage.content as Array<{ type: string }>
+	let toolResults = contentArray.filter(isToolResultBlock)
 
-	// Deduplicate tool_result blocks to prevent API protocol violations (GitHub #10465)
-	// This serves as a safety net for any potential race conditions that could generate
-	// duplicate tool_results with the same tool_use_id. The root cause (approval feedback
-	// creating duplicate results) has been fixed in presentAssistantMessage.ts, but this
-	// deduplication remains as a defensive measure for unknown edge cases.
+	// Deduplicate tool-result blocks to prevent API protocol violations (GitHub #10465)
 	const seenToolResultIds = new Set<string>()
-	const deduplicatedContent = userContent.filter((block) => {
-		if (!isToolResultLikeBlock(block)) {
+	const deduplicatedContent = contentArray.filter((block) => {
+		if (!isToolResultBlock(block)) {
 			return true
 		}
-		const id = getToolResultLikeId(block)
-		if (!id) {
-			return false
-		}
-		if (seenToolResultIds.has(id)) {
+		const callId = getToolResultCallId(block)
+		if (seenToolResultIds.has(callId)) {
 			return false // Duplicate - filter out
 		}
-		seenToolResultIds.add(id)
+		seenToolResultIds.add(callId)
 		return true
 	})
 
 	userMessage = {
 		...userMessage,
-		content: deduplicatedContent as Anthropic.Messages.ContentBlockParam[],
-	}
+		content: deduplicatedContent,
+	} as RooMessage
 
-	toolResults = deduplicatedContent.filter(isToolResultLikeBlock)
+	toolResults = deduplicatedContent.filter(isToolResultBlock)
 
-	// Build a set of valid tool_use IDs
-	const validToolUseIds = new Set(
-		toolUseBlocks.map((block) => getToolUseLikeId(block)).filter((id): id is string => Boolean(id)),
-	)
+	// Build a set of valid tool-call IDs
+	const validToolCallIds = new Set(toolCallBlocks.map(getToolCallId))
 
-	// Build a set of existing tool_result IDs
-	const existingToolResultIds = new Set(
-		toolResults.map((result) => getToolResultLikeId(result)).filter((id): id is string => Boolean(id)),
-	)
+	// Build a set of existing tool-result IDs
+	const existingToolResultIds = new Set(toolResults.map(getToolResultCallId))
 
-	// Check for missing tool_results (tool_use IDs that don't have corresponding tool_results)
-	const missingToolUseIds = toolUseBlocks
-		.map((block) => getToolUseLikeId(block))
-		.filter((id): id is string => Boolean(id))
-		.filter((id) => !existingToolResultIds.has(id))
+	// Check for missing tool-results (tool-call IDs that don't have corresponding tool-results)
+	const missingToolCallIds = toolCallBlocks
+		.filter((tc) => !existingToolResultIds.has(getToolCallId(tc)))
+		.map(getToolCallId)
 
-	// Check if any tool_result has an invalid ID
-	const hasInvalidIds = toolResults.some((result) => {
-		const id = getToolResultLikeId(result)
-		return !id || !validToolUseIds.has(id)
-	})
+	// Check if any tool-result has an invalid ID
+	const hasInvalidIds = toolResults.some((result) => !validToolCallIds.has(getToolResultCallId(result)))
 
-	// If no missing tool_results and no invalid IDs, no changes needed
-	if (missingToolUseIds.length === 0 && !hasInvalidIds) {
+	// If no missing tool-results and no invalid IDs, no changes needed
+	if (missingToolCallIds.length === 0 && !hasInvalidIds) {
 		return userMessage
 	}
 
 	// We have issues - need to fix them
-	const toolResultIdList = toolResults
-		.map((result) => getToolResultLikeId(result))
-		.filter((id): id is string => Boolean(id))
-	const toolUseIdList = toolUseBlocks
-		.map((toolUse) => getToolUseLikeId(toolUse))
-		.filter((id): id is string => Boolean(id))
+	const toolResultIdList = toolResults.map(getToolResultCallId)
+	const toolCallIdList = toolCallBlocks.map(getToolCallId)
 
-	// Report missing tool_results to PostHog error tracking
-	if (missingToolUseIds.length > 0 && TelemetryService.hasInstance()) {
+	// Report missing tool-results to PostHog error tracking
+	if (missingToolCallIds.length > 0 && TelemetryService.hasInstance()) {
 		TelemetryService.instance.captureException(
 			new MissingToolResultError(
-				`Detected missing tool_result blocks. Missing tool_use IDs: [${missingToolUseIds.join(", ")}], existing tool_result IDs: [${toolResultIdList.join(", ")}]`,
-				missingToolUseIds,
+				`Detected missing tool_result blocks. Missing tool_use IDs: [${missingToolCallIds.join(", ")}], existing tool_result IDs: [${toolResultIdList.join(", ")}]`,
+				missingToolCallIds,
 				toolResultIdList,
 			),
 			{
-				missingToolUseIds,
+				missingToolUseIds: missingToolCallIds,
 				existingToolResultIds: toolResultIdList,
-				toolUseCount: toolUseBlocks.length,
+				toolUseCount: toolCallBlocks.length,
 				toolResultCount: toolResults.length,
 			},
 		)
@@ -169,105 +169,75 @@ export function validateAndFixToolResultIds(
 	if (hasInvalidIds && TelemetryService.hasInstance()) {
 		TelemetryService.instance.captureException(
 			new ToolResultIdMismatchError(
-				`Detected tool_result ID mismatch. tool_result IDs: [${toolResultIdList.join(", ")}], tool_use IDs: [${toolUseIdList.join(", ")}]`,
+				`Detected tool_result ID mismatch. tool_result IDs: [${toolResultIdList.join(", ")}], tool_use IDs: [${toolCallIdList.join(", ")}]`,
 				toolResultIdList,
-				toolUseIdList,
+				toolCallIdList,
 			),
 			{
 				toolResultIds: toolResultIdList,
-				toolUseIds: toolUseIdList,
+				toolUseIds: toolCallIdList,
 				toolResultCount: toolResults.length,
-				toolUseCount: toolUseBlocks.length,
+				toolUseCount: toolCallBlocks.length,
 			},
 		)
 	}
 
-	// Match tool_results to tool_uses by position and fix incorrect IDs
-	const usedToolUseIds = new Set<string>()
-	const contentArray = userMessage.content as AnyContentBlock[]
+	// Match tool-results to tool-calls by position and fix incorrect IDs
+	const usedToolCallIds = new Set<string>()
+	// userMessage was reassigned above with deduplicatedContent, so we know it has array content
+	const correctedContentArray = (userMessage as RooRoleMessage).content as Array<{ type: string }>
 
-	const correctedContent = contentArray
-		.map((block: AnyContentBlock) => {
-			if (!isToolResultLikeBlock(block)) {
+	const correctedContent = correctedContentArray
+		.map((block) => {
+			if (!isToolResultBlock(block)) {
 				return block
 			}
-			const currentId = getToolResultLikeId(block)
+
+			const callId = getToolResultCallId(block)
 
 			// If the ID is already valid and not yet used, keep it
-			if (currentId && validToolUseIds.has(currentId) && !usedToolUseIds.has(currentId)) {
-				usedToolUseIds.add(currentId)
+			if (validToolCallIds.has(callId) && !usedToolCallIds.has(callId)) {
+				usedToolCallIds.add(callId)
 				return block
 			}
 
-			// Find which tool_result index this block is by comparing references.
-			// This correctly handles duplicate tool_use_ids - we find the actual block's
-			// position among all tool_results, not the first block with a matching ID.
+			// Find which tool-result index this block is by comparing references.
 			const toolResultIndex = toolResults.indexOf(block)
 
-			// Try to match by position - only fix if there's a corresponding tool_use
-			if (toolResultIndex !== -1 && toolResultIndex < toolUseBlocks.length) {
-				const correctId = getToolUseLikeId(toolUseBlocks[toolResultIndex])
-				if (!correctId) {
-					return null
-				}
+			// Try to match by position - only fix if there's a corresponding tool-call
+			if (toolResultIndex !== -1 && toolResultIndex < toolCallBlocks.length) {
+				const correctId = getToolCallId(toolCallBlocks[toolResultIndex])
 				// Only use this ID if it hasn't been used yet
-				if (!usedToolUseIds.has(correctId)) {
-					usedToolUseIds.add(correctId)
-					if (block.type === "tool_result") {
-						return {
-							...block,
-							tool_use_id: correctId,
-						}
-					}
-					return {
-						...block,
-						toolCallId: correctId,
-					}
+				if (!usedToolCallIds.has(correctId)) {
+					usedToolCallIds.add(correctId)
+					return setToolResultCallId(block, correctId)
 				}
 			}
 
-			// No corresponding tool_use for this tool_result, or the ID is already used
+			// No corresponding tool-call for this tool-result, or the ID is already used
 			return null
 		})
 		.filter((block): block is NonNullable<typeof block> => block !== null)
 
-	// Add missing tool_result blocks for any tool_use that doesn't have one
-	const coveredToolUseIds = new Set(
-		correctedContent
-			.filter(isToolResultLikeBlock)
-			.map((result) => getToolResultLikeId(result))
-			.filter((id): id is string => Boolean(id)),
-	)
+	// Add missing tool-result blocks for any tool-call that doesn't have one
+	const coveredToolCallIds = new Set(correctedContent.filter(isToolResultBlock).map(getToolResultCallId))
 
-	const stillMissingToolUseIds = toolUseBlocks
-		.map((toolUse) => getToolUseLikeId(toolUse))
-		.filter((id): id is string => Boolean(id))
-		.filter((id) => !coveredToolUseIds.has(id))
+	const stillMissingToolCalls = toolCallBlocks.filter((tc) => !coveredToolCallIds.has(getToolCallId(tc)))
 
-	// Build final content: add missing tool_results at the beginning if any
-	const prefersAiSdkToolResultFormat =
-		toolResults.some((result) => result.type === "tool-result") ||
-		toolUseBlocks.some((toolUse) => toolUse.type === "tool-call")
-	const missingToolResults = stillMissingToolUseIds.map((toolUseId) =>
-		prefersAiSdkToolResultFormat
-			? ({
-					type: "tool-result" as const,
-					toolCallId: toolUseId,
-					output: "Tool execution was interrupted before completion.",
-				} satisfies AnyContentBlock)
-			: ({
-					type: "tool_result" as const,
-					tool_use_id: toolUseId,
-					content: "Tool execution was interrupted before completion.",
-				} satisfies AnyContentBlock),
-	)
+	// Build final content: add missing tool-results at the beginning if any
+	// Create as AI SDK ToolResultPart format
+	const missingToolResults: ToolResultPart[] = stillMissingToolCalls.map((tc) => ({
+		type: "tool-result" as const,
+		toolCallId: getToolCallId(tc),
+		toolName: getToolCallName(tc),
+		output: { type: "text" as const, value: "Tool execution was interrupted before completion." },
+	}))
 
-	// Insert missing tool_results at the beginning of the content array
-	// This ensures they come before any text blocks that may summarize the results
+	// Insert missing tool-results at the beginning of the content array
 	const finalContent = missingToolResults.length > 0 ? [...missingToolResults, ...correctedContent] : correctedContent
 
 	return {
 		...userMessage,
-		content: finalContent as Anthropic.Messages.ContentBlockParam[],
-	}
+		content: finalContent,
+	} as RooMessage
 }

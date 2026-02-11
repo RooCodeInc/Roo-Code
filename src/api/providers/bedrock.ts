@@ -1,6 +1,6 @@
 import type { Anthropic } from "@anthropic-ai/sdk"
 import { createAmazonBedrock, type AmazonBedrockProvider } from "@ai-sdk/amazon-bedrock"
-import { streamText, generateText, ToolSet } from "ai"
+import { streamText, generateText, ToolSet, ModelMessage } from "ai"
 import { fromIni } from "@aws-sdk/credential-providers"
 import OpenAI from "openai"
 
@@ -30,6 +30,7 @@ import {
 	processAiSdkStreamPart,
 	mapToolChoice,
 	handleAiSdkError,
+	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { getModelParams } from "../transform/model-params"
 import { shouldUseReasoningBudget } from "../../shared/api"
@@ -38,6 +39,7 @@ import { DEFAULT_HEADERS } from "./constants"
 import { logger } from "../../utils/logging"
 import { Package } from "../../shared/package"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 /************************************************************************************
  *
@@ -50,8 +52,6 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	protected provider: AmazonBedrockProvider
 	private arnInfo: any
 	private readonly providerName = "Bedrock"
-	private lastThoughtSignature: string | undefined
-	private lastRedactedThinkingBlocks: Array<{ type: "redacted_thinking"; data: string }> = []
 
 	constructor(options: ProviderSettings) {
 		super()
@@ -188,19 +188,15 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const modelConfig = this.getModel()
 
-		// Reset thinking state for this request
-		this.lastThoughtSignature = undefined
-		this.lastRedactedThinkingBlocks = []
-
 		// Filter out provider-specific meta entries (e.g., { type: "reasoning" })
 		// that are not valid Anthropic MessageParam values
 		type ReasoningMetaLike = { type?: string }
-		const filteredMessages = messages.filter((message): message is Anthropic.Messages.MessageParam => {
+		const filteredMessages = messages.filter((message) => {
 			const meta = message as ReasoningMetaLike
 			if (meta.type === "reasoning") {
 				return false
@@ -209,7 +205,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		})
 
 		// Convert messages to AI SDK format
-		const aiSdkMessages = convertToAiSdkMessages(filteredMessages)
+		const aiSdkMessages = filteredMessages as ModelMessage[]
 
 		// Convert tools to AI SDK format
 		let openAiTools = this.convertToolsForOpenAI(metadata?.tools)
@@ -278,7 +274,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 			// Find all user message indices in the original (pre-conversion) message array.
 			const originalUserIndices = filteredMessages.reduce<number[]>(
-				(acc, msg, idx) => (msg.role === "user" ? [...acc, idx] : acc),
+				(acc, msg, idx) => ("role" in msg && msg.role === "user" ? [...acc, idx] : acc),
 				[],
 			)
 
@@ -313,12 +309,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			// A single original user message with tool_results becomes [tool-role msg, user-role msg]
 			// in the AI SDK array, while a plain user message becomes [user-role msg].
 			if (targetOriginalIndices.size > 0) {
-				this.applyCachePointsToAiSdkMessages(
-					filteredMessages,
-					aiSdkMessages,
-					targetOriginalIndices,
-					cachePointOption,
-				)
+				this.applyCachePointsToAiSdkMessages(aiSdkMessages, targetOriginalIndices, cachePointOption)
 			}
 		}
 
@@ -347,31 +338,6 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 			// Process the full stream
 			for await (const part of result.fullStream) {
-				// Capture thinking signature from stream events.
-				// The AI SDK's @ai-sdk/amazon-bedrock emits the signature as a reasoning-delta
-				// event with providerMetadata.bedrock.signature (empty delta text, signature in metadata).
-				// Also check tool-call events for thoughtSignature (Gemini pattern).
-				const partAny = part as any
-				if (partAny.providerMetadata?.bedrock?.signature) {
-					this.lastThoughtSignature = partAny.providerMetadata.bedrock.signature
-					logger.info("Captured thinking signature from stream", {
-						ctx: "bedrock",
-						signatureLength: this.lastThoughtSignature?.length,
-					})
-				} else if (partAny.providerMetadata?.bedrock?.thoughtSignature) {
-					this.lastThoughtSignature = partAny.providerMetadata.bedrock.thoughtSignature
-				} else if (partAny.providerMetadata?.anthropic?.thoughtSignature) {
-					this.lastThoughtSignature = partAny.providerMetadata.anthropic.thoughtSignature
-				}
-
-				// Capture redacted reasoning data from stream events
-				if (partAny.providerMetadata?.bedrock?.redactedData) {
-					this.lastRedactedThinkingBlocks.push({
-						type: "redacted_thinking",
-						data: partAny.providerMetadata.bedrock.redactedData,
-					})
-				}
-
 				for (const chunk of processAiSdkStreamPart(part)) {
 					if (chunk.type === "error") {
 						lastStreamError = chunk.message
@@ -393,6 +359,8 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				}
 				throw usageError
 			}
+
+			yield* yieldResponseMessage(result)
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
 			const apiError = new ApiProviderError(errorMessage, this.providerName, modelConfig.id, "createMessage")
@@ -747,63 +715,16 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	 * accounts for that split so cache points land on the right message.
 	 */
 	private applyCachePointsToAiSdkMessages(
-		originalMessages: Anthropic.Messages.MessageParam[],
 		aiSdkMessages: { role: string; providerOptions?: Record<string, Record<string, unknown>> }[],
-		targetOriginalIndices: Set<number>,
+		targetIndices: Set<number>,
 		cachePointOption: Record<string, Record<string, unknown>>,
 	): void {
-		let aiSdkIdx = 0
-		for (let origIdx = 0; origIdx < originalMessages.length; origIdx++) {
-			const origMsg = originalMessages[origIdx]
-
-			if (typeof origMsg.content === "string") {
-				// Simple string content → 1 AI SDK message
-				if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
-					aiSdkMessages[aiSdkIdx].providerOptions = {
-						...aiSdkMessages[aiSdkIdx].providerOptions,
-						...cachePointOption,
-					}
+		for (const idx of targetIndices) {
+			if (idx >= 0 && idx < aiSdkMessages.length) {
+				aiSdkMessages[idx].providerOptions = {
+					...aiSdkMessages[idx].providerOptions,
+					...cachePointOption,
 				}
-				aiSdkIdx++
-			} else if (origMsg.role === "user") {
-				// User message with array content may split into tool + user messages.
-				const hasToolResults = origMsg.content.some((part) => (part as { type: string }).type === "tool_result")
-				const hasNonToolContent = origMsg.content.some(
-					(part) => (part as { type: string }).type === "text" || (part as { type: string }).type === "image",
-				)
-
-				if (hasToolResults && hasNonToolContent) {
-					// Split into tool msg + user msg — cache the user msg (the second one)
-					const userMsgIdx = aiSdkIdx + 1
-					if (targetOriginalIndices.has(origIdx) && userMsgIdx < aiSdkMessages.length) {
-						aiSdkMessages[userMsgIdx].providerOptions = {
-							...aiSdkMessages[userMsgIdx].providerOptions,
-							...cachePointOption,
-						}
-					}
-					aiSdkIdx += 2
-				} else if (hasToolResults) {
-					// Only tool results → 1 tool msg
-					if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
-						aiSdkMessages[aiSdkIdx].providerOptions = {
-							...aiSdkMessages[aiSdkIdx].providerOptions,
-							...cachePointOption,
-						}
-					}
-					aiSdkIdx++
-				} else {
-					// Only text/image content → 1 user msg
-					if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
-						aiSdkMessages[aiSdkIdx].providerOptions = {
-							...aiSdkMessages[aiSdkIdx].providerOptions,
-							...cachePointOption,
-						}
-					}
-					aiSdkIdx++
-				}
-			} else {
-				// Assistant message → 1 AI SDK message
-				aiSdkIdx++
 			}
 		}
 	}
@@ -867,29 +788,6 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		const outputTokensCost = outputPrice * (billedOutputTokens / 1_000_000)
 
 		return inputTokensCost + outputTokensCost + cacheWriteCost + cacheReadCost
-	}
-
-	/************************************************************************************
-	 *
-	 *     THINKING SIGNATURE ROUND-TRIP
-	 *
-	 *************************************************************************************/
-
-	/**
-	 * Returns the thinking signature captured from the last Bedrock response.
-	 * Claude models with extended thinking return a cryptographic signature
-	 * which must be round-tripped back for multi-turn conversations with tool use.
-	 */
-	getThoughtSignature(): string | undefined {
-		return this.lastThoughtSignature
-	}
-
-	/**
-	 * Returns any redacted thinking blocks captured from the last Bedrock response.
-	 * Anthropic returns these when safety filters trigger on reasoning content.
-	 */
-	getRedactedThinkingBlocks(): Array<{ type: "redacted_thinking"; data: string }> | undefined {
-		return this.lastRedactedThinkingBlocks.length > 0 ? this.lastRedactedThinkingBlocks : undefined
 	}
 
 	override isAiSdkProvider(): boolean {

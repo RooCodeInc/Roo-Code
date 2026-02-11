@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createOpenRouter } from "@openrouter/ai-sdk-provider"
-import { streamText, generateText } from "ai"
+import { streamText, generateText, ModelMessage } from "ai"
 
 import {
 	type ModelRecord,
@@ -16,9 +16,13 @@ import { TelemetryService } from "@roo-code/telemetry"
 import type { ApiHandlerOptions } from "../../shared/api"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 
-import { type ReasoningDetail } from "../transform/openai-format"
 import { getModelParams } from "../transform/model-params"
-import { convertToAiSdkMessages, convertToolsForAiSdk, processAiSdkStreamPart } from "../transform/ai-sdk"
+import {
+	convertToAiSdkMessages,
+	convertToolsForAiSdk,
+	processAiSdkStreamPart,
+	yieldResponseMessage,
+} from "../transform/ai-sdk"
 
 import { BaseProvider } from "./base-provider"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
@@ -28,13 +32,13 @@ import { generateImageWithProvider, ImageGenerationResult } from "./utils/image-
 
 import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from "../index"
 import type { ApiStreamChunk, ApiStreamUsageChunk } from "../transform/stream"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 export class OpenRouterHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	protected models: ModelRecord = {}
 	protected endpoints: ModelRecord = {}
 	private readonly providerName = "OpenRouter"
-	private currentReasoningDetails: ReasoningDetail[] = []
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -82,10 +86,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		})
 	}
 
-	getReasoningDetails(): ReasoningDetail[] | undefined {
-		return this.currentReasoningDetails.length > 0 ? this.currentReasoningDetails : undefined
-	}
-
 	private normalizeUsage(
 		usage: { inputTokens: number; outputTokens: number },
 		providerMetadata: Record<string, any> | undefined,
@@ -130,10 +130,9 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): AsyncGenerator<ApiStreamChunk> {
-		this.currentReasoningDetails = []
 		const model = await this.fetchModel()
 		let { id: modelId, maxTokens, temperature, topP, reasoning } = model
 
@@ -149,7 +148,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			? { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" }
 			: undefined
 
-		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const aiSdkMessages = messages as ModelMessage[]
 
 		const openrouter = this.createOpenRouterProvider({ reasoning, headers })
 
@@ -175,8 +174,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 					}
 				: undefined
 
-		let accumulatedReasoningText = ""
-
 		try {
 			const result = streamText({
 				model: openrouter.chat(modelId),
@@ -191,30 +188,11 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			})
 
 			for await (const part of result.fullStream) {
-				if (part.type === "reasoning-delta" && part.text !== "[REDACTED]") {
-					accumulatedReasoningText += part.text
-				}
 				yield* processAiSdkStreamPart(part)
-			}
-
-			if (accumulatedReasoningText) {
-				this.currentReasoningDetails.push({
-					type: "reasoning.text",
-					text: accumulatedReasoningText,
-					index: 0,
-				})
 			}
 
 			const providerMetadata =
 				(await result.providerMetadata) ?? (await (result as any).experimental_providerMetadata)
-
-			const providerReasoningDetails = providerMetadata?.openrouter?.reasoning_details as
-				| ReasoningDetail[]
-				| undefined
-
-			if (providerReasoningDetails && providerReasoningDetails.length > 0) {
-				this.currentReasoningDetails = providerReasoningDetails
-			}
 
 			const usage = await result.usage
 			const totalUsage = await result.totalUsage
@@ -227,6 +205,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				model.info,
 			)
 			yield usageChunk
+
+			yield* yieldResponseMessage(result)
 		} catch (error: any) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
 			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage")
