@@ -220,7 +220,6 @@ describe("SettingsView - Change Detection Fix", () => {
 		maxOpenTabsContext: 10,
 		maxWorkspaceFiles: 200,
 		mcpEnabled: false,
-		screenshotQuality: 75,
 		soundEnabled: false,
 		ttsEnabled: false,
 		ttsSpeed: 1.0,

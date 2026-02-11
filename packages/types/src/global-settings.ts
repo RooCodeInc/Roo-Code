@@ -147,9 +147,6 @@ export const globalSettingsSchema = z.object({
 	 */
 	maxDiagnosticMessages: z.number().optional(),
 
-	screenshotQuality: z.number().optional(),
-	cachedChromeHostUrl: z.string().optional(),
-
 	enableCheckpoints: z.boolean().optional(),
 	checkpointTimeout: z
 		.number()
@@ -344,8 +341,6 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	commandExecutionTimeout: 20,
 	commandTimeoutAllowlist: [],
 	preventCompletionWithOpenTodos: false,
-
-	screenshotQuality: 75,
 
 	ttsEnabled: false,
 	ttsSpeed: 1,

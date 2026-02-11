@@ -266,8 +266,6 @@ export type ExtensionState = Pick<
 	| "deniedCommands"
 	| "allowedMaxRequests"
 	| "allowedMaxCost"
-	| "screenshotQuality"
-	| "cachedChromeHostUrl"
 	| "ttsEnabled"
 	| "ttsSpeed"
 	| "soundEnabled"
