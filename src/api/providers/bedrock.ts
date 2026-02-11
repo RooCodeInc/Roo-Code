@@ -205,7 +205,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		})
 
 		// Convert messages to AI SDK format
-		const aiSdkMessages = filteredMessages as ModelMessage[] as ModelMessage[]
+		const aiSdkMessages = filteredMessages as ModelMessage[]
 
 		// Convert tools to AI SDK format
 		let openAiTools = this.convertToolsForOpenAI(metadata?.tools)

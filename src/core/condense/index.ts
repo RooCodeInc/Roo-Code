@@ -605,8 +605,8 @@ export function getEffectiveApiHistory(messages: RooMessage[]): RooMessage[] {
 		for (const msg of messagesFromSummary) {
 			if (isRooAssistantMessage(msg) && Array.isArray(msg.content)) {
 				for (const part of msg.content) {
-					if (part.type === "tool-call") {
-						toolCallIds.add((part as ToolCallPart).toolCallId)
+					if (isAnyToolCallBlock(part as { type: string })) {
+						toolCallIds.add(getToolCallId(part as AnyToolCallBlock))
 					}
 				}
 			}

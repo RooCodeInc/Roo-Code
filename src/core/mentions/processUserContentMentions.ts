@@ -101,12 +101,8 @@ export async function processUserContentMentions({
 					return block
 				}
 
-				// Legacy backward compat: filter out any tool_result / tool-result blocks
-				// that may still exist in persisted data from older formats.
-				if ((block as any).type === "tool_result" || (block as any).type === "tool-result") {
-					return block
-				}
-
+				// Legacy backward compat: tool_result / tool-result blocks from older formats
+				// are passed through unchanged (tool results are now in separate RooToolMessages).
 				return block
 			}),
 		)
