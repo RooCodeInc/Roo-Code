@@ -12,6 +12,34 @@ import { TelemetryEventName } from "@roo-code/types"
 import { sanitizeErrorMessage } from "../shared/validation-helpers"
 
 /**
+ * Synthetic queue item used when expanding a large node's children.
+ * Allows accumulating small sibling text (e.g. signature tokens) into
+ * adjacent larger siblings without mutating tree-sitter Node objects.
+ */
+type QueueItem = {
+	kind: "queue_item"
+	text: string
+	startRow: number
+	endRow: number
+}
+
+function isQueueItem(x: unknown): x is QueueItem {
+	return !!x && typeof x === "object" && (x as Record<string, unknown>).kind === "queue_item"
+}
+
+function getNodeText(n: Node | QueueItem): string {
+	return isQueueItem(n) ? n.text : (n.text ?? "")
+}
+
+function getStartRow(n: Node | QueueItem): number {
+	return isQueueItem(n) ? n.startRow : n.startPosition.row
+}
+
+function getEndRow(n: Node | QueueItem): number {
+	return isQueueItem(n) ? n.endRow : n.endPosition.row
+}
+
+/**
  * Implementation of the code parser interface
  */
 export class CodeParser implements ICodeParser {
@@ -170,23 +198,41 @@ export class CodeParser implements ICodeParser {
 		const results: CodeBlock[] = []
 
 		// Process captures if not empty
-		const queue: Node[] = Array.from(captures).map((capture) => capture.node)
+		const queue: Array<Node | QueueItem> = Array.from(captures).map((capture) => capture.node)
 
 		while (queue.length > 0) {
-			const currentNode = queue.shift()!
-			// const lineSpan = currentNode.endPosition.row - currentNode.startPosition.row + 1 // Removed as per lint error
+			const currentItem = queue.shift()!
+			const currentText = getNodeText(currentItem)
 
 			// Check if the node meets the minimum character requirement
-			if (currentNode.text.length >= MIN_BLOCK_CHARS) {
+			if (currentText.length >= MIN_BLOCK_CHARS) {
 				// If it also exceeds the maximum character limit, try to break it down
-				if (currentNode.text.length > MAX_BLOCK_CHARS * MAX_CHARS_TOLERANCE_FACTOR) {
-					if (currentNode.children.filter((child) => child !== null).length > 0) {
-						// If it has children, process them instead
-						queue.push(...currentNode.children.filter((child) => child !== null))
+				if (currentText.length > MAX_BLOCK_CHARS * MAX_CHARS_TOLERANCE_FACTOR) {
+					// QueueItems are synthetic wrappers -- they have no children to split
+					if (!isQueueItem(currentItem)) {
+						const children = currentItem.children.filter((child) => child !== null)
+						if (children.length > 0) {
+							// Expand children with split-local accumulator to preserve
+							// small signature tokens (class name, export keyword, etc.)
+							this._expandChildrenWithAccumulator(children, queue)
+							continue
+						}
+					}
+					// Leaf node (or QueueItem too large): chunk by lines
+					if (isQueueItem(currentItem)) {
+						const lines = currentItem.text.split("\n")
+						const chunkedBlocks = this._chunkTextByLines(
+							lines,
+							filePath,
+							fileHash,
+							"accumulated_chunk",
+							seenSegmentHashes,
+							currentItem.startRow + 1,
+						)
+						results.push(...chunkedBlocks)
 					} else {
-						// If it's a leaf node, chunk it
 						const chunkedBlocks = this._chunkLeafNodeByLines(
-							currentNode,
+							currentItem,
 							filePath,
 							fileHash,
 							seenSegmentHashes,
@@ -195,14 +241,22 @@ export class CodeParser implements ICodeParser {
 					}
 				} else {
 					// Node meets min chars and is within max chars, create a block
-					const identifier =
-						currentNode.childForFieldName("name")?.text ||
-						currentNode.children.find((c) => c?.type === "identifier")?.text ||
-						null
-					const type = currentNode.type
-					const start_line = currentNode.startPosition.row + 1
-					const end_line = currentNode.endPosition.row + 1
-					const content = currentNode.text
+					let identifier: string | null = null
+					let type: string
+
+					if (isQueueItem(currentItem)) {
+						type = "accumulated_chunk"
+					} else {
+						identifier =
+							currentItem.childForFieldName("name")?.text ||
+							currentItem.children.find((c) => c?.type === "identifier")?.text ||
+							null
+						type = currentItem.type
+					}
+
+					const start_line = getStartRow(currentItem) + 1
+					const end_line = getEndRow(currentItem) + 1
+					const content = currentText
 					const contentPreview = content.slice(0, 100)
 					const segmentHash = createHash("sha256")
 						.update(`${filePath}-${start_line}-${end_line}-${content.length}-${contentPreview}`)
@@ -223,10 +277,90 @@ export class CodeParser implements ICodeParser {
 					}
 				}
 			}
-			// Nodes smaller than minBlockChars are ignored
+			// Nodes smaller than minBlockChars are ignored (only in the main queue;
+			// small children from split nodes are accumulated by _expandChildrenWithAccumulator)
 		}
 
 		return results
+	}
+
+	/**
+	 * Expands a split node's children into the queue, accumulating adjacent
+	 * small siblings (< MIN_BLOCK_CHARS) and prepending them to the next
+	 * large sibling as a synthetic QueueItem. Trailing small siblings are
+	 * appended to the last queued sibling to avoid emitting tiny chunks.
+	 *
+	 * This preserves class/function signature tokens (export, class keyword,
+	 * identifier) that would otherwise be discarded by the MIN_BLOCK_CHARS
+	 * threshold in the main loop.
+	 */
+	private _expandChildrenWithAccumulator(children: Node[], queue: Array<Node | QueueItem>): void {
+		const pendingParts: string[] = []
+		let pendingStartRow: number | null = null
+		let pendingEndRow: number | null = null
+		let lastQueued: QueueItem | null = null
+		// Track the last raw Node pushed (and its queue index) so we can
+		// convert it to a QueueItem if trailing small siblings need appending.
+		let lastNodeIndex: number = -1
+
+		for (const child of children) {
+			const text = child.text ?? ""
+			const startRow = child.startPosition.row
+			const endRow = child.endPosition.row
+
+			if (text.length < MIN_BLOCK_CHARS) {
+				pendingParts.push(text)
+				if (pendingStartRow === null) {
+					pendingStartRow = startRow
+				}
+				pendingEndRow = endRow
+				continue
+			}
+
+			// Large child: prepend any accumulated pending text
+			if (pendingParts.length > 0) {
+				const combined: QueueItem = {
+					kind: "queue_item",
+					text: pendingParts.join(" ") + " " + text,
+					startRow: pendingStartRow!,
+					endRow: endRow,
+				}
+				queue.push(combined)
+				lastQueued = combined
+				lastNodeIndex = -1
+				pendingParts.length = 0
+				pendingStartRow = null
+				pendingEndRow = null
+			} else {
+				// No pending parts -- push the raw Node so the main loop
+				// can still recurse into its children for deeper splitting.
+				queue.push(child)
+				lastQueued = null
+				lastNodeIndex = queue.length - 1
+			}
+		}
+
+		// Tail handling: append remaining small siblings to last queued sibling
+		if (pendingParts.length > 0) {
+			const tail = pendingParts.join(" ")
+			if (lastQueued) {
+				lastQueued.text += " " + tail
+				lastQueued.endRow = pendingEndRow!
+			} else if (lastNodeIndex >= 0) {
+				// Last pushed was a raw Node. Converting it to a QueueItem
+				// would block recursive splitting of its children, so we
+				// drop the trailing tokens (typically closing delimiters
+				// like "}" with no semantic value for the search index).
+			} else {
+				// All children were small -- emit one unavoidable small wrapper
+				queue.push({
+					kind: "queue_item",
+					text: tail,
+					startRow: pendingStartRow!,
+					endRow: pendingEndRow!,
+				})
+			}
+		}
 	}
 
 	/**

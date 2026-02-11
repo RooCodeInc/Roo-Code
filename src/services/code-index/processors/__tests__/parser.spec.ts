@@ -5,6 +5,7 @@ import { loadRequiredLanguageParsers } from "../../../tree-sitter/languageParser
 import { parseMarkdown } from "../../../tree-sitter/markdownParser"
 import { readFile } from "fs/promises"
 import { Node } from "web-tree-sitter"
+import { MAX_BLOCK_CHARS, MIN_BLOCK_CHARS, MAX_CHARS_TOLERANCE_FACTOR } from "../../constants"
 
 // Mock TelemetryService
 vi.mock("../../../../../packages/telemetry/src/TelemetryService", () => ({
@@ -240,6 +241,387 @@ describe("CodeParser", () => {
 			const longResult = await parser["parseContent"]("test.js", longContent, "hash3")
 			expect(longResult.length).toBe(1)
 			expect(longResult[0].content).toBe(longContent)
+		})
+	})
+
+	describe("split-path signature accumulation (#10715)", () => {
+		it("should preserve class/function identifier when splitting a large node", async () => {
+			// Simulate a large class node whose children are:
+			// - "export" (7 chars, < MIN_BLOCK_CHARS)
+			// - "class" (5 chars, < MIN_BLOCK_CHARS)
+			// - "TestParser" (10 chars, < MIN_BLOCK_CHARS)
+			// - class body (large, > MIN_BLOCK_CHARS)
+			// Total must exceed the split threshold to trigger the split path.
+			const splitThreshold = MAX_BLOCK_CHARS * MAX_CHARS_TOLERANCE_FACTOR
+			const bodyText = "x".repeat(Math.ceil(splitThreshold) + 100)
+			const mockCapture = {
+				node: {
+					text: `export class TestParser ${bodyText}`,
+					startPosition: { row: 0 },
+					endPosition: { row: 10 },
+					type: "class_declaration",
+					childForFieldName: vi.fn().mockReturnValue({ text: "TestParser" }),
+					children: [
+						{
+							text: "export",
+							startPosition: { row: 0 },
+							endPosition: { row: 0 },
+							type: "export",
+							childForFieldName: vi.fn().mockReturnValue(null),
+							children: [],
+						},
+						{
+							text: "class",
+							startPosition: { row: 0 },
+							endPosition: { row: 0 },
+							type: "class",
+							childForFieldName: vi.fn().mockReturnValue(null),
+							children: [],
+						},
+						{
+							text: "TestParser",
+							startPosition: { row: 0 },
+							endPosition: { row: 0 },
+							type: "identifier",
+							childForFieldName: vi.fn().mockReturnValue(null),
+							children: [],
+						},
+						{
+							text: bodyText,
+							startPosition: { row: 1 },
+							endPosition: { row: 10 },
+							type: "class_body",
+							childForFieldName: vi.fn().mockReturnValue(null),
+							children: [],
+						},
+					],
+				},
+				name: "definition.class",
+			}
+
+			const totalText = mockCapture.node.text
+			expect(totalText.length).toBeGreaterThan(splitThreshold)
+
+			mockLanguageParser.js.query.captures.mockReturnValue([mockCapture])
+			const result = await parser["parseContent"]("test.js", totalText, "hash-sig")
+
+			// At least one emitted chunk must contain the class name "TestParser"
+			const hasIdentifier = result.some((block) => block.content.includes("TestParser"))
+			expect(hasIdentifier).toBe(true)
+			// Verify whitespace separation: tokens should not be garbled together
+			const chunkWithId = result.find((block) => block.content.includes("TestParser"))!
+			expect(chunkWithId.content).not.toContain("exportclassTestParser")
+			expect(chunkWithId.content).toContain("export class TestParser")
+			// No chunks should be empty
+			result.forEach((block) => {
+				expect(block.content.length).toBeGreaterThan(0)
+			})
+		})
+
+		it("should not contaminate across unrelated parent nodes", async () => {
+			// Two separate captures: a small standalone comment, then a large class.
+			// The comment should NOT appear inside the class's chunks.
+			const splitThreshold = MAX_BLOCK_CHARS * MAX_CHARS_TOLERANCE_FACTOR
+			const bodyText = "y".repeat(Math.ceil(splitThreshold) + 100)
+			const commentText = "// standalone comment that is small"
+			const classText = `export class Foo { ${bodyText} }`
+
+			const commentCapture = {
+				node: {
+					text: commentText,
+					startPosition: { row: 0 },
+					endPosition: { row: 0 },
+					type: "comment",
+					childForFieldName: vi.fn().mockReturnValue(null),
+					children: [],
+				},
+				name: "definition.comment",
+			}
+
+			const classCapture = {
+				node: {
+					text: classText,
+					startPosition: { row: 2 },
+					endPosition: { row: 20 },
+					type: "class_declaration",
+					childForFieldName: vi.fn().mockReturnValue({ text: "Foo" }),
+					children: [
+						{
+							text: "export",
+							startPosition: { row: 2 },
+							endPosition: { row: 2 },
+							type: "export",
+							childForFieldName: vi.fn().mockReturnValue(null),
+							children: [],
+						},
+						{
+							text: "class",
+							startPosition: { row: 2 },
+							endPosition: { row: 2 },
+							type: "class",
+							childForFieldName: vi.fn().mockReturnValue(null),
+							children: [],
+						},
+						{
+							text: "Foo",
+							startPosition: { row: 2 },
+							endPosition: { row: 2 },
+							type: "identifier",
+							childForFieldName: vi.fn().mockReturnValue(null),
+							children: [],
+						},
+						{
+							text: `{ ${bodyText} }`,
+							startPosition: { row: 2 },
+							endPosition: { row: 20 },
+							type: "class_body",
+							childForFieldName: vi.fn().mockReturnValue(null),
+							children: [],
+						},
+					],
+				},
+				name: "definition.class",
+			}
+
+			mockLanguageParser.js.query.captures.mockReturnValue([commentCapture, classCapture])
+			const result = await parser["parseContent"]("test.js", commentText + "\n\n" + classText, "hash-contam")
+
+			// The comment is < MIN_BLOCK_CHARS so it should be discarded by the main loop
+			// (not accumulated -- accumulation only happens within split children).
+			// No class chunk should contain "standalone comment".
+			const classChunks = result.filter(
+				(block) => block.content.includes("Foo") || block.content.includes(bodyText.slice(0, 20)),
+			)
+			classChunks.forEach((block) => {
+				expect(block.content).not.toContain("standalone comment")
+			})
+		})
+
+		it("should allow recursive splitting of large children with no pending parts", async () => {
+			// A class_body child that is large and has its own children (methods).
+			// When there are no pending small siblings, the raw Node should be
+			// pushed so the main loop can recurse into the class_body's children.
+			const splitThreshold = MAX_BLOCK_CHARS * MAX_CHARS_TOLERANCE_FACTOR
+			const method1Body = "a".repeat(Math.ceil(splitThreshold / 2))
+			const method2Body = "b".repeat(Math.ceil(splitThreshold / 2))
+			const classBodyText = `{ method1() { ${method1Body} } method2() { ${method2Body} } }`
+
+			const mockCapture = {
+				node: {
+					text: `class Deep ${classBodyText}`,
+					startPosition: { row: 0 },
+					endPosition: { row: 20 },
+					type: "class_declaration",
+					childForFieldName: vi.fn().mockReturnValue({ text: "Deep" }),
+					children: [
+						{
+							text: "class",
+							startPosition: { row: 0 },
+							endPosition: { row: 0 },
+							type: "class",
+							childForFieldName: vi.fn().mockReturnValue(null),
+							children: [],
+						},
+						{
+							text: "Deep",
+							startPosition: { row: 0 },
+							endPosition: { row: 0 },
+							type: "identifier",
+							childForFieldName: vi.fn().mockReturnValue(null),
+							children: [],
+						},
+						{
+							// class_body is large, has its own children (two methods)
+							text: classBodyText,
+							startPosition: { row: 1 },
+							endPosition: { row: 20 },
+							type: "class_body",
+							childForFieldName: vi.fn().mockReturnValue(null),
+							children: [
+								{
+									text: `method1() { ${method1Body} }`,
+									startPosition: { row: 2 },
+									endPosition: { row: 10 },
+									type: "method_definition",
+									childForFieldName: vi.fn().mockReturnValue({ text: "method1" }),
+									children: [],
+								},
+								{
+									text: `method2() { ${method2Body} }`,
+									startPosition: { row: 11 },
+									endPosition: { row: 19 },
+									type: "method_definition",
+									childForFieldName: vi.fn().mockReturnValue({ text: "method2" }),
+									children: [],
+								},
+							],
+						},
+					],
+				},
+				name: "definition.class",
+			}
+
+			const totalText = mockCapture.node.text
+			expect(totalText.length).toBeGreaterThan(splitThreshold)
+
+			mockLanguageParser.js.query.captures.mockReturnValue([mockCapture])
+			const result = await parser["parseContent"]("test.js", totalText, "hash-recurse")
+
+			// Both method bodies should appear in the output (proving recursive splitting worked)
+			const allContent = result.map((block) => block.content).join("")
+			expect(allContent).toContain(method1Body.slice(0, 50))
+			expect(allContent).toContain(method2Body.slice(0, 50))
+
+			// The class keyword and identifier should be preserved via accumulation
+			const hasClassId = result.some((block) => block.content.includes("Deep"))
+			expect(hasClassId).toBe(true)
+		})
+
+		it("should preserve recursive splitting even with trailing small siblings", async () => {
+			// Edge case: a parent whose FIRST child is a large node with its own
+			// children (no preceding small siblings -> pushed as raw Node), followed
+			// by a trailing small sibling. Recursion must be preserved; the trailing
+			// token is dropped rather than converting the raw Node to a QueueItem.
+			const splitThreshold = MAX_BLOCK_CHARS * MAX_CHARS_TOLERANCE_FACTOR
+			const method1Body = "r".repeat(Math.ceil(splitThreshold / 2))
+			const method2Body = "s".repeat(Math.ceil(splitThreshold / 2))
+			const blockText = `{ method1() { ${method1Body} } method2() { ${method2Body} } }`
+			const tailToken = "/*END*/"
+
+			const mockCapture = {
+				node: {
+					// Parent has only two children: one large block and one small tail
+					text: `${blockText} ${tailToken}`,
+					startPosition: { row: 0 },
+					endPosition: { row: 25 },
+					type: "statement_block",
+					childForFieldName: vi.fn().mockReturnValue(null),
+					children: [
+						{
+							// Large child with its own children -- pushed as raw Node
+							// (no preceding small siblings, so no pending parts)
+							text: blockText,
+							startPosition: { row: 0 },
+							endPosition: { row: 22 },
+							type: "class_body",
+							childForFieldName: vi.fn().mockReturnValue(null),
+							children: [
+								{
+									text: `method1() { ${method1Body} }`,
+									startPosition: { row: 2 },
+									endPosition: { row: 10 },
+									type: "method_definition",
+									childForFieldName: vi.fn().mockReturnValue({ text: "method1" }),
+									children: [],
+								},
+								{
+									text: `method2() { ${method2Body} }`,
+									startPosition: { row: 11 },
+									endPosition: { row: 20 },
+									type: "method_definition",
+									childForFieldName: vi.fn().mockReturnValue({ text: "method2" }),
+									children: [],
+								},
+							],
+						},
+						{
+							// Trailing small sibling
+							text: tailToken,
+							startPosition: { row: 25 },
+							endPosition: { row: 25 },
+							type: "comment",
+							childForFieldName: vi.fn().mockReturnValue(null),
+							children: [],
+						},
+					],
+				},
+				name: "definition.block",
+			}
+
+			const totalText = mockCapture.node.text
+			expect(totalText.length).toBeGreaterThan(splitThreshold)
+
+			mockLanguageParser.js.query.captures.mockReturnValue([mockCapture])
+			const result = await parser["parseContent"]("test.js", totalText, "hash-combined")
+
+			// Recursive splitting must still work: both method bodies should appear
+			const allContent = result.map((block) => block.content).join("")
+			expect(allContent).toContain(method1Body.slice(0, 50))
+			expect(allContent).toContain(method2Body.slice(0, 50))
+
+			// The tail token is intentionally dropped to preserve recursion:
+			// converting the raw Node to a QueueItem would block recursive splitting.
+			// Assert it is absent from all output (not just "not standalone").
+			expect(allContent).not.toContain(tailToken)
+		})
+
+		it("should append trailing small siblings to the last large sibling", async () => {
+			// A split node with: large body, then a small unique trailing token.
+			// Use a unique token that does NOT appear in the body text.
+			const splitThreshold = MAX_BLOCK_CHARS * MAX_CHARS_TOLERANCE_FACTOR
+			const bodyText = "z".repeat(Math.ceil(splitThreshold) + 100)
+			const tailToken = "/*TAIL*/"
+
+			const parentCapture = {
+				node: {
+					text: `function bar() { ${bodyText} ${tailToken}`,
+					startPosition: { row: 0 },
+					endPosition: { row: 10 },
+					type: "function_declaration",
+					childForFieldName: vi.fn().mockReturnValue({ text: "bar" }),
+					children: [
+						{
+							text: "function",
+							startPosition: { row: 0 },
+							endPosition: { row: 0 },
+							type: "function",
+							childForFieldName: vi.fn().mockReturnValue(null),
+							children: [],
+						},
+						{
+							text: "bar",
+							startPosition: { row: 0 },
+							endPosition: { row: 0 },
+							type: "identifier",
+							childForFieldName: vi.fn().mockReturnValue(null),
+							children: [],
+						},
+						{
+							text: `{ ${bodyText} }`,
+							startPosition: { row: 1 },
+							endPosition: { row: 9 },
+							type: "statement_block",
+							childForFieldName: vi.fn().mockReturnValue(null),
+							children: [],
+						},
+						{
+							text: tailToken,
+							startPosition: { row: 10 },
+							endPosition: { row: 10 },
+							type: "comment",
+							childForFieldName: vi.fn().mockReturnValue(null),
+							children: [],
+						},
+					],
+				},
+				name: "definition.function",
+			}
+
+			const fullText = parentCapture.node.text
+			expect(fullText.length).toBeGreaterThan(splitThreshold)
+			// Verify the tail token is unique -- not in the body
+			expect(bodyText).not.toContain(tailToken)
+
+			mockLanguageParser.js.query.captures.mockReturnValue([parentCapture])
+			const result = await parser["parseContent"]("test.js", fullText, "hash-tail")
+
+			// The tail token should be present in some chunk (appended to the last large sibling)
+			const allContent = result.map((block) => block.content).join("")
+			expect(allContent).toContain(tailToken)
+
+			// There should be no chunk that is just the tail token by itself
+			const tinyChunks = result.filter((block) => block.content === tailToken)
+			expect(tinyChunks).toHaveLength(0)
 		})
 	})
 
