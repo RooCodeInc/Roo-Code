@@ -439,8 +439,6 @@
 		"pretest": "turbo run bundle --cwd ..",
 		"test": "vitest run",
 		"format": "prettier --write .",
-		"generate:skills": "tsx services/skills/generate-built-in-skills.ts",
-		"prebundle": "pnpm generate:skills",
 		"bundle": "node esbuild.mjs",
 		"vscode:prepublish": "pnpm bundle --production",
 		"vsix": "mkdirp ../bin && vsce package --no-dependencies --out ../bin",
