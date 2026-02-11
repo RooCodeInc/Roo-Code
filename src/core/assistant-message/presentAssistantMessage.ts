@@ -144,13 +144,13 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 
 				let resultContent: string
-				let imageBlocks: Anthropic.ImageBlockParam[] = []
+				let imageBlocks: ImagePart[] = []
 
 				if (typeof content === "string") {
 					resultContent = content || "(tool did not return anything)"
 				} else {
 					const textBlocks = content.filter((item) => item.type === "text")
-					imageBlocks = content.filter((item) => item.type === "image") as Anthropic.ImageBlockParam[]
+					imageBlocks = content.filter((item) => item.type === "image") as ImagePart[]
 					resultContent =
 						textBlocks.map((item) => (item as Anthropic.TextBlockParam).text).join("\n") ||
 						"(tool did not return anything)"
@@ -177,15 +177,7 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 
 					if (imageBlocks.length > 0) {
-						cline.userMessageContent.push(
-							...imageBlocks.map(
-								(img): ImagePart => ({
-									type: "image",
-									image: img.source.data,
-									mediaType: img.source.media_type,
-								}),
-							),
-						)
+						cline.userMessageContent.push(...imageBlocks)
 					}
 				}
 
@@ -469,13 +461,13 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 
 				let resultContent: string
-				let imageBlocks: Anthropic.ImageBlockParam[] = []
+				let imageBlocks: ImagePart[] = []
 
 				if (typeof content === "string") {
 					resultContent = content || "(tool did not return anything)"
 				} else {
 					const textBlocks = content.filter((item) => item.type === "text")
-					imageBlocks = content.filter((item) => item.type === "image") as Anthropic.ImageBlockParam[]
+					imageBlocks = content.filter((item) => item.type === "image") as ImagePart[]
 					resultContent =
 						textBlocks.map((item) => (item as Anthropic.TextBlockParam).text).join("\n") ||
 						"(tool did not return anything)"
@@ -499,15 +491,7 @@ export async function presentAssistantMessage(cline: Task) {
 				})
 
 				if (imageBlocks.length > 0) {
-					cline.userMessageContent.push(
-						...imageBlocks.map(
-							(img): ImagePart => ({
-								type: "image",
-								image: img.source.data,
-								mediaType: img.source.media_type,
-							}),
-						),
-					)
+					cline.userMessageContent.push(...imageBlocks)
 				}
 
 				hasToolResult = true
@@ -697,13 +681,7 @@ export async function presentAssistantMessage(cline: Task) {
 								type: "text" as const,
 								text: `Tool repetition limit reached. User feedback: ${text}`,
 							},
-							...formatResponse.imageBlocks(images).map(
-								(img): ImagePart => ({
-									type: "image",
-									image: img.source.data,
-									mediaType: img.source.media_type,
-								}),
-							),
+							...formatResponse.imageBlocks(images),
 						)
 
 						// Add user feedback to chat.

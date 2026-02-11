@@ -2,10 +2,9 @@ import { describe, it, expect, beforeEach } from "vitest"
 import { TelemetryService } from "@roo-code/telemetry"
 import { truncateConversation } from "../index"
 import { getEffectiveApiHistory, cleanupAfterTruncation } from "../../condense"
-import { ApiMessage } from "../../task-persistence/apiMessages"
 
 describe("Non-Destructive Sliding Window Truncation", () => {
-	let messages: ApiMessage[]
+	let messages: any[]
 
 	beforeEach(() => {
 		// Initialize TelemetryService for tests
@@ -66,8 +65,8 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 			expect(marker!.isTruncationMarker).toBe(true)
 			expect(marker!.truncationId).toBeDefined()
 			expect(marker!.truncationId).toBe(result.truncationId)
-			expect(marker!.role).toBe("user")
-			expect(marker!.content).toContain("Sliding window truncation")
+			expect((marker as any).role).toBe("user")
+			expect((marker as any).content).toContain("Sliding window truncation")
 		})
 
 		it("should return truncationId and messagesRemoved", () => {
@@ -411,7 +410,7 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 
 			// First message should be untouched
 			expect(result.messages[0].truncationParent).toBeUndefined()
-			expect(result.messages[0].content).toBe("Initial")
+			expect((result.messages[0] as any).content).toBe("Initial")
 
 			// Messages at indices 1 and 2 should be tagged
 			expect(result.messages[1].truncationParent).toBe(result.truncationId)
@@ -419,7 +418,7 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 
 			// Marker should be at the end (index 3)
 			expect(result.messages[3].isTruncationMarker).toBe(true)
-			expect(result.messages[3].role).toBe("user")
+			expect((result.messages[3] as any).role).toBe("user")
 		})
 
 		it("should handle empty condenseParent and truncationParent gracefully", () => {

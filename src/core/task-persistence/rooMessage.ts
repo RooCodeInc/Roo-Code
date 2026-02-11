@@ -13,6 +13,13 @@ import type { UserModelMessage, AssistantModelMessage, ToolModelMessage, Assista
 // Re-export AI SDK content part types for convenience
 export type { TextPart, ImagePart, FilePart, ToolCallPart, ToolResultPart } from "ai"
 
+import type { TextPart, ImagePart, FilePart, ToolCallPart, ToolResultPart } from "ai"
+
+/**
+ * Union of content parts that can appear in a user message's content array.
+ */
+export type UserContentPart = TextPart | ImagePart | FilePart
+
 /**
  * `ReasoningPart` is used by the AI SDK in `AssistantContent` but is not directly
  * exported from `"ai"`. We extract it from the `AssistantContent` union to get the
@@ -149,4 +156,28 @@ export function isRooToolMessage(msg: RooMessage): msg is RooToolMessage {
  */
 export function isRooReasoningMessage(msg: RooMessage): msg is RooReasoningMessage {
 	return "type" in msg && (msg as RooReasoningMessage).type === "reasoning" && !("role" in msg)
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Content Part Type Guards
+// ────────────────────────────────────────────────────────────────────────────
+
+/** Type guard for AI SDK `TextPart` content blocks. */
+export function isTextPart(part: { type: string }): part is TextPart {
+	return part.type === "text"
+}
+
+/** Type guard for AI SDK `ToolCallPart` content blocks. */
+export function isToolCallPart(part: { type: string }): part is ToolCallPart {
+	return part.type === "tool-call"
+}
+
+/** Type guard for AI SDK `ToolResultPart` content blocks. */
+export function isToolResultPart(part: { type: string }): part is ToolResultPart {
+	return part.type === "tool-result"
+}
+
+/** Type guard for AI SDK `ImagePart` content blocks. */
+export function isImagePart(part: { type: string }): part is ImagePart {
+	return part.type === "image"
 }

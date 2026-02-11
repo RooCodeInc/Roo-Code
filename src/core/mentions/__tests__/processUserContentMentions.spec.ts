@@ -74,81 +74,7 @@ describe("processUserContentMentions", () => {
 			expect(result.mode).toBeUndefined()
 		})
 
-		it("should process tool_result blocks with string content", async () => {
-			const userContent = [
-				{
-					type: "tool_result" as const,
-					tool_use_id: "123",
-					content: "<user_message>Tool feedback</user_message>",
-				},
-			]
-
-			const result = await processUserContentMentions({
-				userContent,
-				cwd: "/test",
-				urlContentFetcher: mockUrlContentFetcher,
-				fileContextTracker: mockFileContextTracker,
-			})
-
-			expect(parseMentions).toHaveBeenCalled()
-			// String content is now converted to array format to support content blocks
-			expect(result.content[0]).toEqual({
-				type: "tool_result",
-				tool_use_id: "123",
-				content: [
-					{
-						type: "text",
-						text: "parsed: <user_message>Tool feedback</user_message>",
-					},
-				],
-			})
-			expect(result.mode).toBeUndefined()
-		})
-
-		it("should process tool_result blocks with array content", async () => {
-			const userContent = [
-				{
-					type: "tool_result" as const,
-					tool_use_id: "123",
-					content: [
-						{
-							type: "text" as const,
-							text: "<user_message>Array task</user_message>",
-						},
-						{
-							type: "text" as const,
-							text: "Regular text",
-						},
-					],
-				},
-			]
-
-			const result = await processUserContentMentions({
-				userContent,
-				cwd: "/test",
-				urlContentFetcher: mockUrlContentFetcher,
-				fileContextTracker: mockFileContextTracker,
-			})
-
-			expect(parseMentions).toHaveBeenCalledTimes(1)
-			expect(result.content[0]).toEqual({
-				type: "tool_result",
-				tool_use_id: "123",
-				content: [
-					{
-						type: "text",
-						text: "parsed: <user_message>Array task</user_message>",
-					},
-					{
-						type: "text",
-						text: "Regular text",
-					},
-				],
-			})
-			expect(result.mode).toBeUndefined()
-		})
-
-		it("should handle mixed content types", async () => {
+		it("should handle mixed content types (text + image)", async () => {
 			const userContent = [
 				{
 					type: "text" as const,
@@ -156,44 +82,25 @@ describe("processUserContentMentions", () => {
 				},
 				{
 					type: "image" as const,
-					source: {
-						type: "base64" as const,
-						media_type: "image/png" as const,
-						data: "base64data",
-					},
-				},
-				{
-					type: "tool_result" as const,
-					tool_use_id: "456",
-					content: "<user_message>Feedback</user_message>",
+					image: "base64data",
+					mediaType: "image/png",
 				},
 			]
 
 			const result = await processUserContentMentions({
-				userContent,
+				userContent: userContent as any,
 				cwd: "/test",
 				urlContentFetcher: mockUrlContentFetcher,
 				fileContextTracker: mockFileContextTracker,
 			})
 
-			expect(parseMentions).toHaveBeenCalledTimes(2)
-			expect(result.content).toHaveLength(3)
+			expect(parseMentions).toHaveBeenCalledTimes(1)
+			expect(result.content).toHaveLength(2)
 			expect(result.content[0]).toEqual({
 				type: "text",
 				text: "parsed: <user_message>First task</user_message>",
 			})
 			expect(result.content[1]).toEqual(userContent[1]) // Image block unchanged
-			// String content is now converted to array format to support content blocks
-			expect(result.content[2]).toEqual({
-				type: "tool_result",
-				tool_use_id: "456",
-				content: [
-					{
-						type: "text",
-						text: "parsed: <user_message>Feedback</user_message>",
-					},
-				],
-			})
 			expect(result.mode).toBeUndefined()
 		})
 	})
@@ -286,91 +193,6 @@ describe("processUserContentMentions", () => {
 			expect(result.content[1]).toEqual({
 				type: "text",
 				text: "command help",
-			})
-		})
-
-		it("should include slash command content in tool_result string content", async () => {
-			vi.mocked(parseMentions).mockResolvedValueOnce({
-				text: "parsed tool output",
-				slashCommandHelp: "command help",
-				mode: undefined,
-				contentBlocks: [],
-			})
-
-			const userContent = [
-				{
-					type: "tool_result" as const,
-					tool_use_id: "123",
-					content: "<user_message>Tool output</user_message>",
-				},
-			]
-
-			const result = await processUserContentMentions({
-				userContent,
-				cwd: "/test",
-				urlContentFetcher: mockUrlContentFetcher,
-				fileContextTracker: mockFileContextTracker,
-			})
-
-			expect(result.content).toHaveLength(1)
-			expect(result.content[0]).toEqual({
-				type: "tool_result",
-				tool_use_id: "123",
-				content: [
-					{
-						type: "text",
-						text: "parsed tool output",
-					},
-					{
-						type: "text",
-						text: "command help",
-					},
-				],
-			})
-		})
-
-		it("should include slash command content in tool_result array content", async () => {
-			vi.mocked(parseMentions).mockResolvedValueOnce({
-				text: "parsed array item",
-				slashCommandHelp: "command help",
-				mode: undefined,
-				contentBlocks: [],
-			})
-
-			const userContent = [
-				{
-					type: "tool_result" as const,
-					tool_use_id: "123",
-					content: [
-						{
-							type: "text" as const,
-							text: "<user_message>Array item</user_message>",
-						},
-					],
-				},
-			]
-
-			const result = await processUserContentMentions({
-				userContent,
-				cwd: "/test",
-				urlContentFetcher: mockUrlContentFetcher,
-				fileContextTracker: mockFileContextTracker,
-			})
-
-			expect(result.content).toHaveLength(1)
-			expect(result.content[0]).toEqual({
-				type: "tool_result",
-				tool_use_id: "123",
-				content: [
-					{
-						type: "text",
-						text: "parsed array item",
-					},
-					{
-						type: "text",
-						text: "command help",
-					},
-				],
 			})
 		})
 	})

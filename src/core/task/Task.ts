@@ -7,6 +7,7 @@ import EventEmitter from "events"
 
 import { AskIgnoredError } from "./AskIgnoredError"
 
+// Note: Anthropic SDK import retained for types used by the API handler interface
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 import debounce from "lodash.debounce"
@@ -125,6 +126,7 @@ import {
 	type ImagePart,
 	type ToolCallPart,
 	type ToolResultPart,
+	type UserContentPart,
 	isRooUserMessage,
 	isRooAssistantMessage,
 	isRooToolMessage,
@@ -1068,8 +1070,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			)
 			const isAnthropicProtocol = apiProtocol === "anthropic"
 
-			// Start from the original assistant message
-			const messageWithTs: any = {
+			// Start from the original assistant message.
+			// Use `any` for the content type because we store custom block types
+			// (thinking, redacted_thinking, thoughtSignature) that aren't part of the AI SDK's AssistantContent.
+			const messageWithTs: RooAssistantMessage & { reasoning_details?: any[]; content: any } = {
 				...message,
 				...(responseId ? { id: responseId } : {}),
 				ts: Date.now(),
@@ -1093,10 +1097,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 
 				if (typeof messageWithTs.content === "string") {
-					messageWithTs.content = [
-						thinkingBlock,
-						{ type: "text", text: messageWithTs.content } satisfies Anthropic.Messages.TextBlockParam,
-					]
+					messageWithTs.content = [thinkingBlock, { type: "text", text: messageWithTs.content } as TextPart]
 				} else if (Array.isArray(messageWithTs.content)) {
 					messageWithTs.content = [thinkingBlock, ...messageWithTs.content]
 				} else if (!messageWithTs.content) {
@@ -1120,10 +1121,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 
 				if (typeof messageWithTs.content === "string") {
-					messageWithTs.content = [
-						reasoningBlock,
-						{ type: "text", text: messageWithTs.content } satisfies Anthropic.Messages.TextBlockParam,
-					]
+					messageWithTs.content = [reasoningBlock, { type: "text", text: messageWithTs.content } as TextPart]
 				} else if (Array.isArray(messageWithTs.content)) {
 					messageWithTs.content = [reasoningBlock, ...messageWithTs.content]
 				} else if (!messageWithTs.content) {
@@ -1139,10 +1137,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 
 				if (typeof messageWithTs.content === "string") {
-					messageWithTs.content = [
-						reasoningBlock,
-						{ type: "text", text: messageWithTs.content } satisfies Anthropic.Messages.TextBlockParam,
-					]
+					messageWithTs.content = [reasoningBlock, { type: "text", text: messageWithTs.content } as TextPart]
 				} else if (Array.isArray(messageWithTs.content)) {
 					messageWithTs.content = [reasoningBlock, ...messageWithTs.content]
 				} else if (!messageWithTs.content) {
@@ -1161,7 +1156,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				if (typeof messageWithTs.content === "string") {
 					messageWithTs.content = [
-						{ type: "text", text: messageWithTs.content } satisfies Anthropic.Messages.TextBlockParam,
+						{ type: "text", text: messageWithTs.content } as TextPart,
 						thoughtSignatureBlock,
 					]
 				} else if (Array.isArray(messageWithTs.content)) {
@@ -1175,33 +1170,28 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} else {
 			// For user/tool messages, validate tool_result IDs ONLY when the immediately previous
 			// *effective* message is an assistant message.
-			const msg = message as any
 			const effectiveHistoryForValidation = getEffectiveApiHistory(this.apiConversationHistory)
 			const lastEffective = effectiveHistoryForValidation[effectiveHistoryForValidation.length - 1]
 			const lastIsAssistant = lastEffective ? isRooAssistantMessage(lastEffective) : false
 			const historyForValidation = lastIsAssistant ? effectiveHistoryForValidation : []
 
 			// If the previous effective message is NOT an assistant, convert tool_result blocks to text blocks.
-			let messageToAdd = msg
-			if (!lastIsAssistant && Array.isArray(msg.content)) {
+			let messageToAdd: RooMessage = message
+			if (!lastIsAssistant && "role" in message && Array.isArray(message.content)) {
 				messageToAdd = {
-					...msg,
-					content: (msg.content as any[]).map((block: any) =>
+					...message,
+					content: (message.content as any[]).map((block: any) =>
 						block.type === "tool_result" || block.type === "tool-result"
 							? {
 									type: "text" as const,
-									text: `Tool result:\n${typeof block.content === "string" ? block.content : typeof block.output?.value === "string" ? block.output.value : JSON.stringify(block.content ?? block.output)}`,
+									text: `Tool result:\n${typeof block.content === "string" ? block.content : typeof block.result === "string" ? block.result : typeof block.output?.value === "string" ? block.output.value : JSON.stringify(block.content ?? block.result ?? block.output)}`,
 								}
 							: block,
 					),
-				}
+				} as RooMessage
 			}
 
-			// Cast: validateAndFixToolResultIds still expects MessageParam[]; will be migrated in Task D.
-			const validatedMessage = validateAndFixToolResultIds(
-				messageToAdd,
-				historyForValidation as unknown as Anthropic.Messages.MessageParam[],
-			)
+			const validatedMessage = validateAndFixToolResultIds(messageToAdd, historyForValidation)
 			const messageWithTs = { ...validatedMessage, ts: Date.now() }
 			this.apiConversationHistory.push(messageWithTs as RooMessage)
 		}
@@ -1891,7 +1881,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			errorDetails,
 			condenseId,
 		} = await summarizeConversation({
-			messages: this.apiConversationHistory as ApiMessage[],
+			messages: this.apiConversationHistory,
 			apiHandler: this.api,
 			systemPrompt,
 			taskId: this.taskId,
@@ -2173,7 +2163,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 			this.isInitialized = true
 
-			const imageBlocks: Anthropic.ImageBlockParam[] = formatResponse.imageBlocks(images)
+			const imageBlocks: ImagePart[] = formatResponse.imageBlocks(images)
 
 			// Task starting
 			await this.initiateTaskLoop([
@@ -2298,7 +2288,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// unmatched tool calls and fill in missing tool results.
 		// In RooMessage format, tool results live in RooToolMessage (not in user messages).
 
-		let modifiedOldUserContent: Anthropic.Messages.ContentBlockParam[]
+		let modifiedOldUserContent: UserContentPart[]
 		let modifiedApiConversationHistory: RooMessage[]
 
 		if (existingApiConversationHistory.length > 0) {
@@ -2347,10 +2337,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				const previousAssistantMessage =
 					prevAssistantIndex >= 0 ? existingApiConversationHistory[prevAssistantIndex] : undefined
 
-				// Extract existing user content as Anthropic blocks for initiateTaskLoop compatibility
-				const existingUserContent: Anthropic.Messages.ContentBlockParam[] = Array.isArray(lastMessage.content)
-					? (lastMessage.content as unknown as Anthropic.Messages.ContentBlockParam[])
-					: [{ type: "text", text: String(lastMessage.content) }]
+				// Extract existing user content for initiateTaskLoop
+				const existingUserContent: UserContentPart[] = Array.isArray(lastMessage.content)
+					? (lastMessage.content as UserContentPart[])
+					: [{ type: "text" as const, text: String(lastMessage.content) }]
 
 				if (previousAssistantMessage && isRooAssistantMessage(previousAssistantMessage)) {
 					const assistantContent = Array.isArray(previousAssistantMessage.content)
@@ -2418,7 +2408,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			throw new Error("Unexpected: No existing API conversation history")
 		}
 
-		let newUserContent: Anthropic.Messages.ContentBlockParam[] = [...modifiedOldUserContent]
+		let newUserContent: UserContentPart[] = [...modifiedOldUserContent]
 
 		const agoText = ((): string => {
 			const timestamp = lastClineMessage?.ts ?? Date.now()
@@ -2735,7 +2725,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	// Task Loop
 
-	private async initiateTaskLoop(userContent: Anthropic.Messages.ContentBlockParam[]): Promise<void> {
+	private async initiateTaskLoop(userContent: UserContentPart[]): Promise<void> {
 		// Kicks off the checkpoints initialization process in the background.
 		getCheckpointService(this)
 
@@ -2770,11 +2760,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	public async recursivelyMakeClineRequests(
-		userContent: Anthropic.Messages.ContentBlockParam[],
+		userContent: UserContentPart[],
 		includeFileDetails: boolean = false,
 	): Promise<boolean> {
 		interface StackItem {
-			userContent: Anthropic.Messages.ContentBlockParam[]
+			userContent: UserContentPart[]
 			includeFileDetails: boolean
 			retryAttempt?: number
 			userMessageWasRemoved?: boolean // Track if user message was removed due to empty response
@@ -2865,7 +2855,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			} = (await this.providerRef.deref()?.getState()) ?? {}
 
 			const { content: parsedUserContent, mode: slashCommandMode } = await processUserContentMentions({
-				userContent: currentUserContent,
+				userContent: currentUserContent as Array<TextPart | ImagePart>,
 				cwd: this.cwd,
 				urlContentFetcher: this.urlContentFetcher,
 				fileContextTracker: this.fileContextTracker,
@@ -3602,7 +3592,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}
 
 					// Build the assistant message content array
-					const assistantContent: Array<Anthropic.TextBlockParam | Anthropic.ToolUseBlockParam> = []
+					const assistantContent: Array<TextPart | ToolCallPart> = []
 
 					// Add text content if present
 					if (assistantMessage) {
@@ -3637,9 +3627,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								}
 								seenToolUseIds.add(sanitizedId)
 								assistantContent.push({
-									type: "tool_use" as const,
-									id: sanitizedId,
-									name: mcpBlock.name, // Original dynamic name
+									type: "tool-call" as const,
+									toolCallId: sanitizedId,
+									toolName: mcpBlock.name, // Original dynamic name
 									input: mcpBlock.arguments, // Direct tool arguments
 								})
 							}
@@ -3667,9 +3657,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								const toolNameForHistory = toolUse.originalName ?? toolUse.name
 
 								assistantContent.push({
-									type: "tool_use" as const,
-									id: sanitizedId,
-									name: toolNameForHistory,
+									type: "tool-call" as const,
+									toolCallId: sanitizedId,
+									toolName: toolNameForHistory,
 									input,
 								})
 							}
@@ -3680,7 +3670,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// truncate any tools that come after it and inject error tool_results.
 					// This prevents orphaned tools when delegation disposes the parent task.
 					const newTaskIndex = assistantContent.findIndex(
-						(block) => block.type === "tool_use" && block.name === "new_task",
+						(block) => block.type === "tool-call" && (block as ToolCallPart).toolName === "new_task",
 					)
 
 					if (newTaskIndex !== -1 && newTaskIndex < assistantContent.length - 1) {
@@ -3701,11 +3691,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 						// Pre-inject error tool_results for truncated tools
 						for (const tool of truncatedTools) {
-							if (tool.type === "tool_use" && (tool as Anthropic.ToolUseBlockParam).id) {
+							const toolCallId = (tool as any).toolCallId ?? (tool as any).id
+							const toolName = (tool as any).toolName ?? (tool as any).name
+							if (tool.type === "tool-call" && toolCallId) {
 								this.pushToolResultToUserContent({
 									type: "tool-result",
-									toolCallId: sanitizeToolUseId((tool as Anthropic.ToolUseBlockParam).id),
-									toolName: (tool as Anthropic.ToolUseBlockParam).name,
+									toolCallId: sanitizeToolUseId(toolCallId),
+									toolName,
 									output: {
 										type: "text",
 										value: "[ERROR] This tool was not executed because new_task was called in the same message turn. The new_task tool must be the last tool in a message.",
@@ -3791,7 +3783,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// When paused, we push an empty item so the loop continues to the pause check.
 					if (this.userMessageContent.length > 0 || this.isPaused) {
 						stack.push({
-							userContent: [...this.userMessageContent] as Anthropic.Messages.ContentBlockParam[], // Create a copy to avoid mutation issues
+							userContent: [...this.userMessageContent] as UserContentPart[], // Create a copy to avoid mutation issues
 							includeFileDetails: false, // Subsequent iterations don't need file details
 						})
 
@@ -4076,7 +4068,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// Force aggressive truncation by keeping only 75% of the conversation history
 			const truncateResult = await manageContext({
-				messages: this.apiConversationHistory as ApiMessage[],
+				messages: this.apiConversationHistory,
 				totalTokens: contextTokens || 0,
 				maxTokens,
 				contextWindow,
@@ -4301,7 +4293,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			try {
 				const truncateResult = await manageContext({
-					messages: this.apiConversationHistory as ApiMessage[],
+					messages: this.apiConversationHistory,
 					totalTokens: contextTokens,
 					maxTokens,
 					contextWindow,
@@ -4384,11 +4376,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// For API only: merge consecutive user messages (excludes summary messages per
 		// mergeConsecutiveApiMessages implementation) without mutating stored history.
 		const mergedForApi = mergeConsecutiveApiMessages(messagesSinceLastSummary, { roles: ["user"] })
-		// Cast: maybeRemoveImageBlocks still works with ApiMessage[]; will be migrated in Task D.
-		const messagesWithoutImages = maybeRemoveImageBlocks(mergedForApi as unknown as ApiMessage[], this.api)
-		const cleanConversationHistory = this.buildCleanConversationHistory(
-			messagesWithoutImages as unknown as RooMessage[],
-		)
+		const messagesWithoutImages = maybeRemoveImageBlocks(mergedForApi, this.api)
+		const cleanConversationHistory = this.buildCleanConversationHistory(messagesWithoutImages)
 
 		// Check auto-approval limits
 		const approvalResult = await this.autoApprovalHandler.checkAutoApprovalLimits(

@@ -5,6 +5,14 @@ export { taskMetadata } from "./taskMetadata"
 export type { RooMessage, RooMessageHistory, RooMessageMetadata } from "./rooMessage"
 export type { RooUserMessage, RooAssistantMessage, RooToolMessage, RooReasoningMessage } from "./rooMessage"
 export { isRooUserMessage, isRooAssistantMessage, isRooToolMessage, isRooReasoningMessage } from "./rooMessage"
-export type { TextPart, ImagePart, FilePart, ToolCallPart, ToolResultPart, ReasoningPart } from "./rooMessage"
+export type {
+	TextPart,
+	ImagePart,
+	FilePart,
+	ToolCallPart,
+	ToolResultPart,
+	ReasoningPart,
+	UserContentPart,
+} from "./rooMessage"
 export { convertAnthropicToRooMessages } from "./converters/anthropicToRoo"
 export { flattenModelMessagesToStringContent } from "./messageUtils"

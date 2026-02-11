@@ -2,11 +2,10 @@
 
 import type { Mock } from "vitest"
 
-import { Anthropic } from "@anthropic-ai/sdk"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { ApiHandler } from "../../../api"
-import { ApiMessage } from "../../task-persistence/apiMessages"
+import { RooMessage } from "../../task-persistence/rooMessage"
 import { maybeRemoveImageBlocks } from "../../../api/transform/image-cleaning"
 import {
 	summarizeConversation,
@@ -22,7 +21,7 @@ import {
 } from "../index"
 
 vi.mock("../../../api/transform/image-cleaning", () => ({
-	maybeRemoveImageBlocks: vi.fn((messages: ApiMessage[], _apiHandler: ApiHandler) => [...messages]),
+	maybeRemoveImageBlocks: vi.fn((messages: RooMessage[], _apiHandler: ApiHandler) => [...messages]),
 }))
 
 vi.mock("@roo-code/telemetry", () => ({
@@ -37,7 +36,7 @@ const taskId = "test-task-id"
 
 describe("extractCommandBlocks", () => {
 	it("should extract command blocks from string content", () => {
-		const message: ApiMessage = {
+		const message: any = {
 			role: "user",
 			content: 'Some text <command name="prr">/prr #123</command> more text',
 		}
@@ -47,7 +46,7 @@ describe("extractCommandBlocks", () => {
 	})
 
 	it("should extract multiple command blocks", () => {
-		const message: ApiMessage = {
+		const message: any = {
 			role: "user",
 			content: '<command name="prr">/prr #123</command> text <command name="mode">/mode code</command>',
 		}
@@ -57,7 +56,7 @@ describe("extractCommandBlocks", () => {
 	})
 
 	it("should extract command blocks from array content", () => {
-		const message: ApiMessage = {
+		const message: any = {
 			role: "user",
 			content: [
 				{ type: "text", text: "Some user text" },
@@ -70,7 +69,7 @@ describe("extractCommandBlocks", () => {
 	})
 
 	it("should return empty string when no command blocks found", () => {
-		const message: ApiMessage = {
+		const message: any = {
 			role: "user",
 			content: "Just regular text without commands",
 		}
@@ -80,7 +79,7 @@ describe("extractCommandBlocks", () => {
 	})
 
 	it("should handle multiline command blocks", () => {
-		const message: ApiMessage = {
+		const message: any = {
 			role: "user",
 			content: `<command name="prr">
 Line 1
@@ -94,7 +93,7 @@ Line 2
 	})
 
 	it("should handle command blocks with attributes", () => {
-		const message: ApiMessage = {
+		const message: any = {
 			role: "user",
 			content: '<command name="test" attr1="value1" attr2="value2">content</command>',
 		}
@@ -141,13 +140,13 @@ describe("injectSyntheticToolResults", () => {
 		const result = injectSyntheticToolResults(messages)
 
 		expect(result.length).toBe(3)
-		expect(result[2].role).toBe("user")
+		expect((result[2] as any).role).toBe("tool")
 
-		const content = result[2].content as any[]
+		const content = (result[2] as any).content as any[]
 		expect(content.length).toBe(1)
-		expect(content[0].type).toBe("tool_result")
-		expect(content[0].tool_use_id).toBe("tool-orphan")
-		expect(content[0].content).toBe("Context condensation triggered. Tool execution deferred.")
+		expect(content[0].type).toBe("tool-result")
+		expect(content[0].toolCallId).toBe("tool-orphan")
+		expect(content[0].output.value).toBe("Context condensation triggered. Tool execution deferred.")
 	})
 
 	it("should inject synthetic tool_results for multiple orphan tool_calls", () => {
@@ -167,10 +166,10 @@ describe("injectSyntheticToolResults", () => {
 		const result = injectSyntheticToolResults(messages)
 
 		expect(result.length).toBe(3)
-		const content = result[2].content as any[]
+		const content = (result[2] as any).content as any[]
 		expect(content.length).toBe(2)
-		expect(content[0].tool_use_id).toBe("tool-1")
-		expect(content[1].tool_use_id).toBe("tool-2")
+		expect(content[0].toolCallId).toBe("tool-1")
+		expect(content[1].toolCallId).toBe("tool-2")
 	})
 
 	it("should only inject for orphan tool_calls, not matched ones", () => {
@@ -195,9 +194,9 @@ describe("injectSyntheticToolResults", () => {
 		const result = injectSyntheticToolResults(messages)
 
 		expect(result.length).toBe(4)
-		const syntheticContent = result[3].content as any[]
+		const syntheticContent = (result[3] as any).content as any[]
 		expect(syntheticContent.length).toBe(1)
-		expect(syntheticContent[0].tool_use_id).toBe("orphan-tool")
+		expect(syntheticContent[0].toolCallId).toBe("orphan-tool")
 	})
 
 	it("should handle messages with string content (no tool_use/tool_result)", () => {
@@ -772,9 +771,9 @@ describe("summarizeConversation", () => {
 		}
 
 		// Summary message is a user message with just text (fresh start model)
-		expect(summaryMessage!.role).toBe("user")
-		expect(Array.isArray(summaryMessage!.content)).toBe(true)
-		const content = summaryMessage!.content as any[]
+		expect((summaryMessage! as any).role).toBe("user")
+		expect(Array.isArray((summaryMessage as any).content)).toBe(true)
+		const content = (summaryMessage as any).content as any[]
 		expect(content).toHaveLength(1)
 		expect(content[0].type).toBe("text")
 		expect(content[0].text).toContain("## Conversation Summary")
@@ -817,7 +816,7 @@ describe("summarizeConversation", () => {
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
 
-		const content = summaryMessage!.content as any[]
+		const content = (summaryMessage as any).content as any[]
 		// Summary content is now split into separate text blocks
 		expect(content).toHaveLength(2)
 		expect(content[0].text).toContain("## Conversation Summary")
@@ -845,7 +844,7 @@ describe("summarizeConversation", () => {
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
 
-		const content = summaryMessage!.content as any[]
+		const content = (summaryMessage as any).content as any[]
 		expect(content[0].text).not.toContain("<system-reminder>")
 		expect(content[0].text).not.toContain("Active Workflows")
 	})
@@ -1134,7 +1133,7 @@ describe("summarizeConversation", () => {
 		// Summary should be the last message
 		const lastMessage = result.messages[result.messages.length - 1]
 		expect(lastMessage.isSummary).toBe(true)
-		expect(lastMessage.role).toBe("user")
+		expect((lastMessage as any).role).toBe("user")
 	})
 })
 
@@ -1298,7 +1297,7 @@ describe("summarizeConversation with custom settings", () => {
 
 describe("toolUseToText", () => {
 	it("should convert tool_use block with object input to text", () => {
-		const block: Anthropic.Messages.ToolUseBlockParam = {
+		const block: any = {
 			type: "tool_use",
 			id: "tool-123",
 			name: "read_file",
@@ -1311,7 +1310,7 @@ describe("toolUseToText", () => {
 	})
 
 	it("should convert tool_use block with nested object input to text", () => {
-		const block: Anthropic.Messages.ToolUseBlockParam = {
+		const block: any = {
 			type: "tool_use",
 			id: "tool-456",
 			name: "write_file",
@@ -1331,7 +1330,7 @@ describe("toolUseToText", () => {
 	})
 
 	it("should convert tool_use block with string input to text", () => {
-		const block: Anthropic.Messages.ToolUseBlockParam = {
+		const block: any = {
 			type: "tool_use",
 			id: "tool-789",
 			name: "execute_command",
@@ -1344,7 +1343,7 @@ describe("toolUseToText", () => {
 	})
 
 	it("should handle empty object input", () => {
-		const block: Anthropic.Messages.ToolUseBlockParam = {
+		const block: any = {
 			type: "tool_use",
 			id: "tool-empty",
 			name: "some_tool",
@@ -1359,7 +1358,7 @@ describe("toolUseToText", () => {
 
 describe("toolResultToText", () => {
 	it("should convert tool_result with string content to text", () => {
-		const block: Anthropic.Messages.ToolResultBlockParam = {
+		const block: any = {
 			type: "tool_result",
 			tool_use_id: "tool-123",
 			content: "File contents here",
@@ -1371,7 +1370,7 @@ describe("toolResultToText", () => {
 	})
 
 	it("should convert tool_result with error flag to text", () => {
-		const block: Anthropic.Messages.ToolResultBlockParam = {
+		const block: any = {
 			type: "tool_result",
 			tool_use_id: "tool-456",
 			content: "File not found",
@@ -1384,7 +1383,7 @@ describe("toolResultToText", () => {
 	})
 
 	it("should convert tool_result with array content to text", () => {
-		const block: Anthropic.Messages.ToolResultBlockParam = {
+		const block: any = {
 			type: "tool_result",
 			tool_use_id: "tool-789",
 			content: [
@@ -1399,7 +1398,7 @@ describe("toolResultToText", () => {
 	})
 
 	it("should handle tool_result with image in array content", () => {
-		const block: Anthropic.Messages.ToolResultBlockParam = {
+		const block: any = {
 			type: "tool_result",
 			tool_use_id: "tool-img",
 			content: [
@@ -1414,7 +1413,7 @@ describe("toolResultToText", () => {
 	})
 
 	it("should handle tool_result with no content", () => {
-		const block: Anthropic.Messages.ToolResultBlockParam = {
+		const block: any = {
 			type: "tool_result",
 			tool_use_id: "tool-empty",
 		}
@@ -1435,7 +1434,7 @@ describe("convertToolBlocksToText", () => {
 	})
 
 	it("should convert tool_use blocks to text blocks", () => {
-		const content: Anthropic.Messages.ContentBlockParam[] = [
+		const content: any[] = [
 			{
 				type: "tool_use",
 				id: "tool-123",
@@ -1447,12 +1446,12 @@ describe("convertToolBlocksToText", () => {
 		const result = convertToolBlocksToText(content)
 
 		expect(Array.isArray(result)).toBe(true)
-		expect((result as Anthropic.Messages.ContentBlockParam[])[0].type).toBe("text")
-		expect((result as Anthropic.Messages.TextBlockParam[])[0].text).toContain("[Tool Use: read_file]")
+		expect((result as any[])[0].type).toBe("text")
+		expect((result as any[])[0].text).toContain("[Tool Use: read_file]")
 	})
 
 	it("should convert tool_result blocks to text blocks", () => {
-		const content: Anthropic.Messages.ContentBlockParam[] = [
+		const content: any[] = [
 			{
 				type: "tool_result",
 				tool_use_id: "tool-123",
@@ -1463,12 +1462,12 @@ describe("convertToolBlocksToText", () => {
 		const result = convertToolBlocksToText(content)
 
 		expect(Array.isArray(result)).toBe(true)
-		expect((result as Anthropic.Messages.ContentBlockParam[])[0].type).toBe("text")
-		expect((result as Anthropic.Messages.TextBlockParam[])[0].text).toContain("[Tool Result]")
+		expect((result as any[])[0].type).toBe("text")
+		expect((result as any[])[0].text).toContain("[Tool Result]")
 	})
 
 	it("should preserve non-tool blocks unchanged", () => {
-		const content: Anthropic.Messages.ContentBlockParam[] = [
+		const content: any[] = [
 			{ type: "text", text: "Hello" },
 			{
 				type: "tool_use",
@@ -1482,16 +1481,16 @@ describe("convertToolBlocksToText", () => {
 		const result = convertToolBlocksToText(content)
 
 		expect(Array.isArray(result)).toBe(true)
-		const resultArray = result as Anthropic.Messages.ContentBlockParam[]
+		const resultArray = result as any[]
 		expect(resultArray).toHaveLength(3)
 		expect(resultArray[0]).toEqual({ type: "text", text: "Hello" })
 		expect(resultArray[1].type).toBe("text")
-		expect((resultArray[1] as Anthropic.Messages.TextBlockParam).text).toContain("[Tool Use: read_file]")
+		expect((resultArray[1] as any).text).toContain("[Tool Use: read_file]")
 		expect(resultArray[2]).toEqual({ type: "text", text: "World" })
 	})
 
 	it("should handle mixed content with multiple tool blocks", () => {
-		const content: Anthropic.Messages.ContentBlockParam[] = [
+		const content: any[] = [
 			{
 				type: "tool_use",
 				id: "tool-1",
@@ -1508,11 +1507,11 @@ describe("convertToolBlocksToText", () => {
 		const result = convertToolBlocksToText(content)
 
 		expect(Array.isArray(result)).toBe(true)
-		const resultArray = result as Anthropic.Messages.ContentBlockParam[]
+		const resultArray = result as any[]
 		expect(resultArray).toHaveLength(2)
-		expect((resultArray[0] as Anthropic.Messages.TextBlockParam).text).toContain("[Tool Use: read_file]")
-		expect((resultArray[1] as Anthropic.Messages.TextBlockParam).text).toContain("[Tool Result]")
-		expect((resultArray[1] as Anthropic.Messages.TextBlockParam).text).toContain("contents of a.ts")
+		expect((resultArray[0] as any).text).toContain("[Tool Use: read_file]")
+		expect((resultArray[1] as any).text).toContain("[Tool Result]")
+		expect((resultArray[1] as any).text).toContain("contents of a.ts")
 	})
 })
 

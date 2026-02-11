@@ -207,7 +207,7 @@ export class MessageManager {
 
 		// Step 5: Cleanup orphaned tags (unless skipped)
 		if (!skipCleanup) {
-			apiHistory = cleanupAfterTruncation(apiHistory as any) as typeof apiHistory
+			apiHistory = cleanupAfterTruncation(apiHistory)
 		}
 
 		// Step 6: Cleanup orphaned command output artifacts

@@ -893,7 +893,7 @@ describe("Cline", () => {
 									text: "<user_message>Check 'some/path' (see below for file content)</user_message>",
 								},
 							],
-						} as Anthropic.ToolResultBlockParam,
+						} as any,
 						{
 							type: "tool_result",
 							tool_use_id: "test-id-2",
@@ -903,7 +903,7 @@ describe("Cline", () => {
 									text: "Regular tool result with 'path' (see below for file content)",
 								},
 							],
-						} as Anthropic.ToolResultBlockParam,
+						} as any,
 					]
 
 					const { content: processedContent } = await processUserContentMentions({
@@ -924,20 +924,12 @@ describe("Cline", () => {
 						"<user_message>Text with 'some/path' (see below for file content) in user_message tags</user_message>",
 					)
 
-					// user_message tag content should be processed
-					const toolResult1 = processedContent[2] as Anthropic.ToolResultBlockParam
-					const content1 = Array.isArray(toolResult1.content) ? toolResult1.content[0] : toolResult1.content
-					expect((content1 as Anthropic.TextBlockParam).text).toContain("processed:")
-					expect((content1 as Anthropic.TextBlockParam).text).toContain(
-						"<user_message>Check 'some/path' (see below for file content)</user_message>",
-					)
+					// tool_result blocks are passed through unchanged (no longer processed by processUserContentMentions)
+					const toolResult1 = processedContent[2] as any
+					expect(toolResult1.type).toBe("tool_result")
 
-					// Regular tool result should not be processed
-					const toolResult2 = processedContent[3] as Anthropic.ToolResultBlockParam
-					const content2 = Array.isArray(toolResult2.content) ? toolResult2.content[0] : toolResult2.content
-					expect((content2 as Anthropic.TextBlockParam).text).toBe(
-						"Regular tool result with 'path' (see below for file content)",
-					)
+					const toolResult2 = processedContent[3] as any
+					expect(toolResult2.type).toBe("tool_result")
 
 					await cline.abortTask(true)
 					await task.catch(() => {})

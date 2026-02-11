@@ -1,11 +1,9 @@
 // npx vitest src/core/condense/__tests__/condense.spec.ts
 
-import { Anthropic } from "@anthropic-ai/sdk"
 import type { ModelInfo } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { BaseProvider } from "../../../api/providers/base-provider"
-import { ApiMessage } from "../../task-persistence/apiMessages"
 import {
 	summarizeConversation,
 	getMessagesSinceLastSummary,
@@ -41,7 +39,7 @@ class MockApiHandler extends BaseProvider {
 		}
 	}
 
-	override async countTokens(content: Array<Anthropic.Messages.ContentBlockParam>): Promise<number> {
+	override async countTokens(content: Array<any>): Promise<number> {
 		// Simple token counting for testing
 		let tokens = 0
 		for (const block of content) {
@@ -65,7 +63,7 @@ describe("Condense", () => {
 
 	describe("extractCommandBlocks", () => {
 		it("should extract command blocks from string content", () => {
-			const message: ApiMessage = {
+			const message: any = {
 				role: "user",
 				content: 'Some text <command name="prr">/prr #123</command> more text',
 			}
@@ -75,7 +73,7 @@ describe("Condense", () => {
 		})
 
 		it("should extract multiple command blocks", () => {
-			const message: ApiMessage = {
+			const message: any = {
 				role: "user",
 				content: '<command name="prr">/prr #123</command> text <command name="mode">/mode code</command>',
 			}
@@ -85,7 +83,7 @@ describe("Condense", () => {
 		})
 
 		it("should extract command blocks from array content", () => {
-			const message: ApiMessage = {
+			const message: any = {
 				role: "user",
 				content: [
 					{ type: "text", text: "Some user text" },
@@ -98,7 +96,7 @@ describe("Condense", () => {
 		})
 
 		it("should return empty string when no command blocks found", () => {
-			const message: ApiMessage = {
+			const message: any = {
 				role: "user",
 				content: "Just regular text without commands",
 			}
@@ -108,7 +106,7 @@ describe("Condense", () => {
 		})
 
 		it("should handle multiline command blocks", () => {
-			const message: ApiMessage = {
+			const message: any = {
 				role: "user",
 				content: `<command name="prr">
 Line 1
@@ -147,9 +145,9 @@ Line 2
 			// Verify we have a summary message with role "user" (fresh start model)
 			const summaryMessage = result.messages.find((msg) => msg.isSummary)
 			expect(summaryMessage).toBeTruthy()
-			expect(summaryMessage!.role).toBe("user")
-			expect(Array.isArray(summaryMessage!.content)).toBe(true)
-			const contentArray = summaryMessage!.content as any[]
+			expect((summaryMessage as any).role).toBe("user")
+			expect(Array.isArray((summaryMessage as any).content)).toBe(true)
+			const contentArray = (summaryMessage as any).content as any[]
 			expect(contentArray.some((b) => b.type === "text")).toBe(true)
 			// Should NOT have reasoning blocks (no longer needed for user messages)
 			expect(contentArray.some((b) => b.type === "reasoning")).toBe(false)
@@ -216,7 +214,7 @@ Line 2
 			const summaryMessage = result.messages.find((msg) => msg.isSummary)
 			expect(summaryMessage).toBeTruthy()
 
-			const contentArray = summaryMessage!.content as any[]
+			const contentArray = (summaryMessage as any).content as any[]
 			// Summary content is split into separate text blocks:
 			// - First block: "## Conversation Summary\n..."
 			// - Second block: "<system-reminder>..." with command blocks
@@ -228,7 +226,7 @@ Line 2
 		})
 
 		it("should handle complex first message content", async () => {
-			const complexContent: Anthropic.Messages.ContentBlockParam[] = [
+			const complexContent: any[] = [
 				{ type: "text", text: "/mode code" },
 				{ type: "text", text: "Additional context from the user" },
 			]
