@@ -23,6 +23,35 @@ interface ApplyPatchParams {
 export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 	readonly name = "apply_patch" as const
 
+	private static readonly FILE_HEADER_MARKERS = ["*** Add File: ", "*** Delete File: ", "*** Update File: "] as const
+
+	private extractFirstPathFromPatch(patch: string | undefined): string | undefined {
+		if (!patch) {
+			return undefined
+		}
+
+		const lines = patch.split("\n")
+		const hasTrailingNewline = patch.endsWith("\n")
+		const completeLines = hasTrailingNewline ? lines : lines.slice(0, -1)
+
+		for (const rawLine of completeLines) {
+			const line = rawLine.trim()
+
+			for (const marker of ApplyPatchTool.FILE_HEADER_MARKERS) {
+				if (!line.startsWith(marker)) {
+					continue
+				}
+
+				const candidatePath = line.substring(marker.length).trim()
+				if (candidatePath.length > 0) {
+					return candidatePath
+				}
+			}
+		}
+
+		return undefined
+	}
+
 	async execute(params: ApplyPatchParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { patch } = params
 		const { askApproval, handleError, pushToolResult } = callbacks
@@ -422,6 +451,11 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 
 	override async handlePartial(task: Task, block: ToolUse<"apply_patch">): Promise<void> {
 		const patch: string | undefined = block.params.patch
+		const candidateRelPath = this.extractFirstPathFromPatch(patch)
+		const fallbackDisplayPath = path.basename(task.cwd) || "workspace"
+		const resolvedRelPath = candidateRelPath ?? ""
+		const absolutePath = path.resolve(task.cwd, resolvedRelPath)
+		const displayPath = candidateRelPath ? getReadablePath(task.cwd, candidateRelPath) : fallbackDisplayPath
 
 		let patchPreview: string | undefined
 		if (patch) {
@@ -432,9 +466,9 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 
 		const sharedMessageProps: ClineSayTool = {
 			tool: "appliedDiff",
-			path: "",
+			path: displayPath || path.basename(task.cwd) || "workspace",
 			diff: patchPreview || "Parsing patch...",
-			isOutsideWorkspace: false,
+			isOutsideWorkspace: isPathOutsideWorkspace(absolutePath),
 		}
 
 		await task.ask("tool", JSON.stringify(sharedMessageProps), block.partial).catch(() => {})
