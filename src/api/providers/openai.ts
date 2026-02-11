@@ -81,6 +81,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				baseURL,
 				apiKey,
 				headers,
+				fetch: createThinkingAwareFetch(),
 			})
 			this.languageModelFactory = (modelId: string) => provider.chat(modelId)
 		}
@@ -370,6 +371,34 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	protected _isAzureAiInference(baseUrl?: string): boolean {
 		const urlHost = this._getUrlHost(baseUrl)
 		return urlHost.endsWith(".services.ai.azure.com")
+	}
+}
+
+/**
+ * Creates a fetch wrapper that injects `thinking: { type: "enabled" }` into
+ * request bodies that already contain `reasoning_effort`. This fixes
+ * OpenAI-compatible APIs (e.g. VolcEngine) that default `thinking` to
+ * `disabled` when it's not explicitly provided, causing a 400 error when
+ * combined with `reasoning_effort`.
+ *
+ * Standard OpenAI endpoints silently ignore unrecognised body fields,
+ * so this is safe for all OpenAI-compatible providers.
+ */
+/** @internal Exported for testing. */
+export function createThinkingAwareFetch(): typeof globalThis.fetch {
+	return async (input: RequestInfo | URL, init?: RequestInit) => {
+		if (init?.body && typeof init.body === "string") {
+			try {
+				const json = JSON.parse(init.body)
+				if (json.reasoning_effort && !json.thinking) {
+					json.thinking = { type: "enabled" }
+					init = { ...init, body: JSON.stringify(json) }
+				}
+			} catch {
+				// Not JSON – pass through untouched.
+			}
+		}
+		return globalThis.fetch(input, init)
 	}
 }
 
