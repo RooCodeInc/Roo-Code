@@ -105,26 +105,6 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			anthropicProviderOptions.disableParallelToolUse = true
 		}
 
-		// Apply cache control to user messages
-		// Strategy: cache the last 2 user messages (write-to-cache + read-from-cache)
-		const cacheProviderOption = { anthropic: { cacheControl: { type: "ephemeral" as const } } }
-
-		const userMsgIndices = messages.reduce(
-			(acc, msg, index) => ("role" in msg && msg.role === "user" ? [...acc, index] : acc),
-			[] as number[],
-		)
-
-		const targetIndices = new Set<number>()
-		const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
-		const secondLastUserMsgIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
-
-		if (lastUserMsgIndex >= 0) targetIndices.add(lastUserMsgIndex)
-		if (secondLastUserMsgIndex >= 0) targetIndices.add(secondLastUserMsgIndex)
-
-		if (targetIndices.size > 0) {
-			this.applyCacheControlToAiSdkMessages(messages as ModelMessage[], targetIndices, cacheProviderOption)
-		}
-
 		// Build streamText request
 		// Cast providerOptions to any to bypass strict JSONObject typing — the AI SDK accepts the correct runtime values
 		const requestOptions: Parameters<typeof streamText>[0] = {
@@ -213,29 +193,6 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			cacheWriteTokens: cacheWriteTokens > 0 ? cacheWriteTokens : undefined,
 			cacheReadTokens: cacheReadTokens > 0 ? cacheReadTokens : undefined,
 			totalCost,
-		}
-	}
-
-	/**
-	 * Apply cacheControl providerOptions to the correct AI SDK messages by walking
-	 * the original Anthropic messages and converted AI SDK messages in parallel.
-	 *
-	 * convertToAiSdkMessages() can split a single Anthropic user message (containing
-	 * tool_results + text) into 2 AI SDK messages (tool role + user role). This method
-	 * accounts for that split so cache control lands on the right message.
-	 */
-	private applyCacheControlToAiSdkMessages(
-		aiSdkMessages: { role: string; providerOptions?: Record<string, Record<string, unknown>> }[],
-		targetIndices: Set<number>,
-		cacheProviderOption: Record<string, Record<string, unknown>>,
-	): void {
-		for (const idx of targetIndices) {
-			if (idx >= 0 && idx < aiSdkMessages.length) {
-				aiSdkMessages[idx].providerOptions = {
-					...aiSdkMessages[idx].providerOptions,
-					...cacheProviderOption,
-				}
-			}
 		}
 	}
 

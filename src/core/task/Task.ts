@@ -63,6 +63,7 @@ import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "..
 import type { AssistantModelMessage } from "ai"
 import { ApiStream, GroundingSource } from "../../api/transform/stream"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
+import { resolveCacheProviderOptions, applyCacheBreakpoints } from "../../api/transform/prompt-cache"
 
 // shared
 import { findLastIndex } from "../../shared/array"
@@ -4471,6 +4472,23 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const abortSignal = this.currentRequestAbortController.signal
 		// Reset the flag after using it
 		this.skipPrevResponseIdOnce = false
+
+		// Apply cache breakpoints if the provider/model supports it
+		const cacheOptions = resolveCacheProviderOptions({
+			providerName: apiConfiguration?.apiProvider ?? "",
+			modelInfo,
+			providerSettings: apiConfiguration as Record<string, unknown>,
+		})
+		if (cacheOptions) {
+			const isBedrock = apiConfiguration?.apiProvider === "bedrock"
+			applyCacheBreakpoints(
+				cleanConversationHistory,
+				cacheOptions,
+				isBedrock ? 3 : 2,
+				isBedrock, // useAnchor
+				5, // anchorThreshold
+			)
+		}
 
 		const stream = this.api.createMessage(systemPrompt, cleanConversationHistory, metadata)
 		const iterator = stream[Symbol.asyncIterator]()

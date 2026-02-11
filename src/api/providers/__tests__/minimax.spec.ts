@@ -343,11 +343,6 @@ describe("MiniMaxHandler", () => {
 					expect.objectContaining({
 						role: "user",
 						content: [{ type: "text", text: "Merged message" }],
-						providerOptions: {
-							anthropic: {
-								cacheControl: { type: "ephemeral" },
-							},
-						},
 					}),
 				]),
 			)
