@@ -231,6 +231,58 @@ describe("validateAndFixToolResultIds", () => {
 		})
 	})
 
+	describe("AI SDK tool-call/tool-result format", () => {
+		it("should keep matching toolCallId unchanged", () => {
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [{ type: "tool-call", toolCallId: "call-1", toolName: "read_file", input: {} }] as any,
+			}
+
+			const userMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [{ type: "tool-result", toolCallId: "call-1", output: "ok" }] as any,
+			}
+
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			expect(result).toEqual(userMessage)
+		})
+
+		it("should fix mismatched toolCallId by position", () => {
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [{ type: "tool-call", toolCallId: "call-correct", toolName: "read_file", input: {} }] as any,
+			}
+
+			const userMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [{ type: "tool-result", toolCallId: "call-wrong", output: "ok" }] as any,
+			}
+
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const resultContent = result.content as any[]
+			expect(resultContent[0].type).toBe("tool-result")
+			expect(resultContent[0].toolCallId).toBe("call-correct")
+		})
+
+		it("should inject missing tool-result in AI SDK format when assistant used tool-call", () => {
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [{ type: "tool-call", toolCallId: "call-1", toolName: "read_file", input: {} }] as any,
+			}
+
+			const userMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [{ type: "text", text: "No tool result yet" }],
+			}
+
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const resultContent = result.content as any[]
+			expect(resultContent[0].type).toBe("tool-result")
+			expect(resultContent[0].toolCallId).toBe("call-1")
+			expect(resultContent[0].output).toBe("Tool execution was interrupted before completion.")
+		})
+	})
+
 	describe("when user message has non-tool_result content", () => {
 		it("should preserve text blocks alongside tool_result blocks", () => {
 			const assistantMessage: Anthropic.MessageParam = {

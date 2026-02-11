@@ -242,6 +242,53 @@ describe("injectSyntheticToolResults", () => {
 		// Both tool_uses have matching tool_results, no injection needed
 		expect(result).toEqual(messages)
 	})
+
+	it("should support AI SDK tool-call/tool-result blocks", () => {
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Hello", ts: 1 },
+			{
+				role: "assistant",
+				content: [
+					{
+						type: "tool-call",
+						toolCallId: "tool-1",
+						toolName: "read_file",
+						input: { path: "test.ts" },
+					},
+				] as any,
+				ts: 2,
+			},
+			{
+				role: "user",
+				content: [{ type: "tool-result", toolCallId: "tool-1", output: "file contents" }] as any,
+				ts: 3,
+			},
+		]
+
+		const result = injectSyntheticToolResults(messages)
+		expect(result).toEqual(messages)
+	})
+
+	it("should inject synthetic tool_result for orphan AI SDK tool-call", () => {
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Hello", ts: 1 },
+			{
+				role: "assistant",
+				content: [
+					{ type: "tool-call", toolCallId: "tool-orphan", toolName: "attempt_completion", input: {} },
+				] as any,
+				ts: 2,
+			},
+		]
+
+		const result = injectSyntheticToolResults(messages)
+
+		expect(result).toHaveLength(3)
+		const content = result[2].content as any[]
+		expect(content).toHaveLength(1)
+		expect(content[0].type).toBe("tool_result")
+		expect(content[0].tool_use_id).toBe("tool-orphan")
+	})
 })
 
 describe("getMessagesSinceLastSummary", () => {
@@ -584,6 +631,58 @@ describe("getEffectiveApiHistory", () => {
 		expect(userContent).toHaveLength(1)
 		expect(userContent[0].type).toBe("text")
 		expect(userContent[0].text).toBe("User added some text")
+	})
+
+	it("should keep AI SDK tool-result blocks that have matching tool-call after summary", () => {
+		const condenseId = "cond-1"
+		const messages: ApiMessage[] = [
+			{
+				role: "user",
+				content: [{ type: "text", text: "Summary content" }],
+				isSummary: true,
+				condenseId,
+			},
+			{
+				role: "assistant",
+				content: [{ type: "tool-call", toolCallId: "tool-valid", toolName: "read_file", input: {} }] as any,
+			},
+			{
+				role: "user",
+				content: [{ type: "tool-result", toolCallId: "tool-valid", output: "ok" }] as any,
+			},
+		]
+
+		const result = getEffectiveApiHistory(messages)
+
+		expect(result).toHaveLength(3)
+		expect((result[2].content as any[])[0].toolCallId).toBe("tool-valid")
+	})
+
+	it("should filter orphan AI SDK tool-result blocks after fresh start condensation", () => {
+		const condenseId = "cond-1"
+		const messages: ApiMessage[] = [
+			{
+				role: "assistant",
+				content: [
+					{ type: "tool-call", toolCallId: "tool-orphan", toolName: "attempt_completion", input: {} },
+				] as any,
+				condenseParent: condenseId,
+			},
+			{
+				role: "user",
+				content: [{ type: "text", text: "Summary content" }],
+				isSummary: true,
+				condenseId,
+			},
+			{
+				role: "user",
+				content: [{ type: "tool-result", toolCallId: "tool-orphan", output: "Rejected by user" }] as any,
+			},
+		]
+
+		const result = getEffectiveApiHistory(messages)
+		expect(result).toHaveLength(1)
+		expect(result[0].isSummary).toBe(true)
 	})
 })
 
@@ -1495,6 +1594,31 @@ describe("convertToolBlocksToText", () => {
 				content: "contents of a.ts",
 			},
 		]
+
+		const result = convertToolBlocksToText(content)
+
+		expect(Array.isArray(result)).toBe(true)
+		const resultArray = result as Anthropic.Messages.ContentBlockParam[]
+		expect(resultArray).toHaveLength(2)
+		expect((resultArray[0] as Anthropic.Messages.TextBlockParam).text).toContain("[Tool Use: read_file]")
+		expect((resultArray[1] as Anthropic.Messages.TextBlockParam).text).toContain("[Tool Result]")
+		expect((resultArray[1] as Anthropic.Messages.TextBlockParam).text).toContain("contents of a.ts")
+	})
+
+	it("should convert AI SDK tool-call and tool-result blocks to text blocks", () => {
+		const content = [
+			{
+				type: "tool-call",
+				toolCallId: "tool-1",
+				toolName: "read_file",
+				input: { path: "a.ts" },
+			},
+			{
+				type: "tool-result",
+				toolCallId: "tool-1",
+				output: [{ type: "text", text: "contents of a.ts" }],
+			},
+		] as any
 
 		const result = convertToolBlocksToText(content)
 

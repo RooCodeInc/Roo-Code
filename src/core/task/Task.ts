@@ -134,11 +134,24 @@ import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
 import { MessageManager } from "../message-manager"
 import { validateAndFixToolResultIds } from "./validateToolResultIds"
 import { mergeConsecutiveApiMessages } from "./mergeConsecutiveApiMessages"
+import {
+	type ToolResultLikeBlock,
+	getToolResultLikeId,
+	getToolResultLikePayload,
+	getToolUseLikeId,
+	isToolResultLikeBlock,
+	isToolUseLikeBlock,
+	stringifyUnknown,
+} from "./toolBlockFormat"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
 const FORCED_CONTEXT_REDUCTION_PERCENT = 75 // Keep 75% of context (remove 25%) on context window errors
 const MAX_CONTEXT_WINDOW_RETRIES = 3 // Maximum retries for context window errors
+
+function toolResultPayloadToString(block: ToolResultLikeBlock): string {
+	return stringifyUnknown(getToolResultLikePayload(block))
+}
 
 export interface TaskOptions extends CreateTaskOptions {
 	provider: ClineProvider
@@ -1168,10 +1181,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				messageToAdd = {
 					...message,
 					content: message.content.map((block) =>
-						block.type === "tool_result"
+						isToolResultLikeBlock(block)
 							? {
 									type: "text" as const,
-									text: `Tool result:\n${typeof block.content === "string" ? block.content : JSON.stringify(block.content)}`,
+									text: `Tool result:\n${toolResultPayloadToString(block)}`,
 								}
 							: block,
 					),
@@ -2279,17 +2292,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				const content = Array.isArray(lastMessage.content)
 					? lastMessage.content
 					: [{ type: "text", text: lastMessage.content }]
-				const hasToolUse = content.some((block) => block.type === "tool_use")
+				const hasToolUse = content.some(isToolUseLikeBlock)
 
 				if (hasToolUse) {
-					const toolUseBlocks = content.filter(
-						(block) => block.type === "tool_use",
-					) as Anthropic.Messages.ToolUseBlock[]
-					const toolResponses: Anthropic.ToolResultBlockParam[] = toolUseBlocks.map((block) => ({
-						type: "tool_result",
-						tool_use_id: block.id,
-						content: "Task was interrupted before this tool call could be completed.",
-					}))
+					const toolResponses: Anthropic.ToolResultBlockParam[] = content
+						.map((block) => (isToolUseLikeBlock(block) ? getToolUseLikeId(block) : undefined))
+						.filter((id): id is string => Boolean(id))
+						.map((toolUseId) => ({
+							type: "tool_result",
+							tool_use_id: toolUseId,
+							content: "Task was interrupted before this tool call could be completed.",
+						}))
 					modifiedApiConversationHistory = [...existingApiConversationHistory] // no changes
 					modifiedOldUserContent = [...toolResponses]
 				} else {
@@ -2308,22 +2321,22 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						? previousAssistantMessage.content
 						: [{ type: "text", text: previousAssistantMessage.content }]
 
-					const toolUseBlocks = assistantContent.filter(
-						(block) => block.type === "tool_use",
-					) as Anthropic.Messages.ToolUseBlock[]
+					const toolUseIds = assistantContent
+						.map((block) => (isToolUseLikeBlock(block) ? getToolUseLikeId(block) : undefined))
+						.filter((id): id is string => Boolean(id))
 
-					if (toolUseBlocks.length > 0) {
-						const existingToolResults = existingUserContent.filter(
-							(block) => block.type === "tool_result",
-						) as Anthropic.ToolResultBlockParam[]
+					if (toolUseIds.length > 0) {
+						const existingToolResultIds = new Set(
+							existingUserContent
+								.map((block) => (isToolResultLikeBlock(block) ? getToolResultLikeId(block) : undefined))
+								.filter((id): id is string => Boolean(id)),
+						)
 
-						const missingToolResponses: Anthropic.ToolResultBlockParam[] = toolUseBlocks
-							.filter(
-								(toolUse) => !existingToolResults.some((result) => result.tool_use_id === toolUse.id),
-							)
-							.map((toolUse) => ({
+						const missingToolResponses: Anthropic.ToolResultBlockParam[] = toolUseIds
+							.filter((toolUseId) => !existingToolResultIds.has(toolUseId))
+							.map((toolUseId) => ({
 								type: "tool_result",
-								tool_use_id: toolUse.id,
+								tool_use_id: toolUseId,
 								content: "Task was interrupted before this tool call could be completed.",
 							}))
 

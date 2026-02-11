@@ -10,18 +10,55 @@ import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
+import {
+	type ToolResultLikeBlock,
+	type ToolUseLikeBlock,
+	getToolResultLikeId,
+	getToolResultLikePayload,
+	getToolUseLikeId,
+	getToolUseLikeName,
+	isToolResultLikeBlock,
+	isToolUseLikeBlock,
+	stringifyUnknown,
+} from "../task/toolBlockFormat"
 import { generateFoldedFileContext } from "./foldedFileContext"
 
 export type { FoldedFileContextResult, FoldedFileContextOptions } from "./foldedFileContext"
+
+function toolResultPayloadToText(payload: unknown): string {
+	if (typeof payload === "string") {
+		return payload
+	}
+	if (Array.isArray(payload)) {
+		return payload
+			.map((contentBlock: unknown) => {
+				if (!contentBlock || typeof contentBlock !== "object") {
+					return stringifyUnknown(contentBlock)
+				}
+				const block = contentBlock as { type?: string; text?: string; value?: unknown }
+				if (block.type === "text") {
+					return typeof block.text === "string" ? block.text : stringifyUnknown(block.value)
+				}
+				if (block.type === "image") {
+					return "[Image]"
+				}
+				return `[${block.type ?? "unknown"}]`
+			})
+			.join("\n")
+	}
+	return stringifyUnknown(payload)
+}
 
 /**
  * Converts a tool_use block to a text representation.
  * This allows the conversation to be summarized without requiring the tools parameter.
  */
-export function toolUseToText(block: Anthropic.Messages.ToolUseBlockParam): string {
+export function toolUseToText(block: Anthropic.Messages.ToolUseBlockParam | ToolUseLikeBlock): string {
+	const toolName = getToolUseLikeName(block as ToolUseLikeBlock)
+	const toolInput = (block as ToolUseLikeBlock).input
 	let input: string
-	if (typeof block.input === "object" && block.input !== null) {
-		input = Object.entries(block.input)
+	if (typeof toolInput === "object" && toolInput !== null) {
+		input = Object.entries(toolInput)
 			.map(([key, value]) => {
 				const formattedValue =
 					typeof value === "object" && value !== null ? JSON.stringify(value, null, 2) : String(value)
@@ -29,35 +66,21 @@ export function toolUseToText(block: Anthropic.Messages.ToolUseBlockParam): stri
 			})
 			.join("\n")
 	} else {
-		input = String(block.input)
+		input = String(toolInput)
 	}
-	return `[Tool Use: ${block.name}]\n${input}`
+	return `[Tool Use: ${toolName}]\n${input}`
 }
 
 /**
  * Converts a tool_result block to a text representation.
  * This allows the conversation to be summarized without requiring the tools parameter.
  */
-export function toolResultToText(block: Anthropic.Messages.ToolResultBlockParam): string {
-	const errorSuffix = block.is_error ? " (Error)" : ""
-	if (typeof block.content === "string") {
-		return `[Tool Result${errorSuffix}]\n${block.content}`
-	} else if (Array.isArray(block.content)) {
-		const contentText = block.content
-			.map((contentBlock) => {
-				if (contentBlock.type === "text") {
-					return contentBlock.text
-				}
-				if (contentBlock.type === "image") {
-					return "[Image]"
-				}
-				// Handle any other content block types
-				return `[${(contentBlock as { type: string }).type}]`
-			})
-			.join("\n")
-		return `[Tool Result${errorSuffix}]\n${contentText}`
-	}
-	return `[Tool Result${errorSuffix}]`
+export function toolResultToText(block: Anthropic.Messages.ToolResultBlockParam | ToolResultLikeBlock): string {
+	const isError = (block as ToolResultLikeBlock).is_error || (block as ToolResultLikeBlock).isError
+	const errorSuffix = isError ? " (Error)" : ""
+	const payload = getToolResultLikePayload(block as ToolResultLikeBlock)
+	const text = toolResultPayloadToText(payload)
+	return text ? `[Tool Result${errorSuffix}]\n${text}` : `[Tool Result${errorSuffix}]`
 }
 
 /**
@@ -76,13 +99,13 @@ export function convertToolBlocksToText(
 	}
 
 	return content.map((block) => {
-		if (block.type === "tool_use") {
+		if (isToolUseLikeBlock(block)) {
 			return {
 				type: "text" as const,
 				text: toolUseToText(block),
 			}
 		}
-		if (block.type === "tool_result") {
+		if (isToolResultLikeBlock(block)) {
 			return {
 				type: "text" as const,
 				text: toolResultToText(block),
@@ -140,15 +163,21 @@ export function injectSyntheticToolResults(messages: ApiMessage[]): ApiMessage[]
 	for (const msg of messages) {
 		if (msg.role === "assistant" && Array.isArray(msg.content)) {
 			for (const block of msg.content) {
-				if (block.type === "tool_use") {
-					toolCallIds.add(block.id)
+				if (isToolUseLikeBlock(block)) {
+					const id = getToolUseLikeId(block)
+					if (id) {
+						toolCallIds.add(id)
+					}
 				}
 			}
 		}
 		if (msg.role === "user" && Array.isArray(msg.content)) {
 			for (const block of msg.content) {
-				if (block.type === "tool_result") {
-					toolResultIds.add(block.tool_use_id)
+				if (isToolResultLikeBlock(block)) {
+					const id = getToolResultLikeId(block)
+					if (id) {
+						toolResultIds.add(id)
+					}
 				}
 			}
 		}
@@ -559,8 +588,11 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 		for (const msg of messagesFromSummary) {
 			if (msg.role === "assistant" && Array.isArray(msg.content)) {
 				for (const block of msg.content) {
-					if (block.type === "tool_use" && (block as Anthropic.Messages.ToolUseBlockParam).id) {
-						toolUseIds.add((block as Anthropic.Messages.ToolUseBlockParam).id)
+					if (isToolUseLikeBlock(block)) {
+						const id = getToolUseLikeId(block)
+						if (id) {
+							toolUseIds.add(id)
+						}
 					}
 				}
 			}
@@ -571,8 +603,9 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 			.map((msg) => {
 				if (msg.role === "user" && Array.isArray(msg.content)) {
 					const filteredContent = msg.content.filter((block) => {
-						if (block.type === "tool_result") {
-							return toolUseIds.has((block as Anthropic.Messages.ToolResultBlockParam).tool_use_id)
+						if (isToolResultLikeBlock(block)) {
+							const id = getToolResultLikeId(block)
+							return id ? toolUseIds.has(id) : false
 						}
 						return true
 					})
