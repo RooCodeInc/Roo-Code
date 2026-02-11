@@ -269,7 +269,13 @@
 		"goToSubtask": "Afficher la tâche"
 	},
 	"questions": {
-		"hasQuestion": "Roo a une question"
+		"hasQuestion": "Roo a une question",
+		"questionNumber": "Question {{number}}",
+		"questionNumberOfTotal": "Question {{current}} sur {{total}}",
+		"typeAnswer": "Tapez votre réponse ici...",
+		"previous": "Précédent",
+		"next": "Suivant",
+		"finish": "Terminer"
 	},
 	"taskCompleted": "Tâche terminée",
 	"modelResponseIncomplete": "Réponse du modèle incomplète",

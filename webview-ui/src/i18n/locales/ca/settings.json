@@ -1025,6 +1025,14 @@
 		"requireCtrlEnterToSend": {
 			"label": "Requereix {{primaryMod}}+Intro per enviar missatges",
 			"description": "Quan estigui activat, has de prémer {{primaryMod}}+Intro per enviar missatges en lloc de només Intro"
+		},
+		"showQuestionsOneByOne": {
+			"label": "Mostra les preguntes d'una en una",
+			"description": "Quan està activat, les preguntes del model es mostraran una a una."
+		},
+		"taskHeaderHighlight": {
+			"label": "Destaca l'encapçalament de la tasca",
+			"description": "Quan està activat, l'encapçalament de la tasca es destacarà per ajudar-te a centrar-te en la tasca actual."
 		}
 	},
 	"skills": {

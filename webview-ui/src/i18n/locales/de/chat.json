@@ -269,7 +269,13 @@
 		"goToSubtask": "Aufgabe anzeigen"
 	},
 	"questions": {
-		"hasQuestion": "Roo hat eine Frage"
+		"hasQuestion": "Roo hat eine Frage",
+		"questionNumber": "Frage {{number}}",
+		"questionNumberOfTotal": "Frage {{current}} von {{total}}",
+		"typeAnswer": "Gib deine Antwort hier ein...",
+		"previous": "Zurück",
+		"next": "Weiter",
+		"finish": "Beenden"
 	},
 	"taskCompleted": "Aufgabe abgeschlossen",
 	"modelResponseIncomplete": "Modellantwort unvollständig",

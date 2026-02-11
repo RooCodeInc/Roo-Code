@@ -1025,6 +1025,14 @@
 		"requireCtrlEnterToSend": {
 			"label": "需要 {{primaryMod}}+Enter 发送消息",
 			"description": "启用后，必须按 {{primaryMod}}+Enter 发送消息，而不仅仅是 Enter"
+		},
+		"showQuestionsOneByOne": {
+			"label": "逐个显示问题",
+			"description": "启用后，模型的问题将逐个显示。"
+		},
+		"taskHeaderHighlight": {
+			"label": "高亮任务页眉",
+			"description": "启用后，任务页眉将被高亮显示，以帮助您专注于当前任务。"
 		}
 	},
 	"skills": {

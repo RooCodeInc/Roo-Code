@@ -1025,6 +1025,14 @@
 		"requireCtrlEnterToSend": {
 			"label": "{{primaryMod}}+Enter zum Senden erfordern",
 			"description": "Wenn aktiviert, musst du {{primaryMod}}+Enter drücken, um Nachrichten zu senden, anstatt nur Enter"
+		},
+		"showQuestionsOneByOne": {
+			"label": "Fragen einzeln anzeigen",
+			"description": "Wenn aktiviert, werden Fragen des Modells nacheinander angezeigt."
+		},
+		"taskHeaderHighlight": {
+			"label": "Task-Header hervorheben",
+			"description": "Wenn aktiviert, wird der Task-Header hervorgehoben, um dich auf die aktuelle Aufgabe zu konzentrieren."
 		}
 	},
 	"skills": {

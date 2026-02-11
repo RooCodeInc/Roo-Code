@@ -1025,6 +1025,14 @@
 		"requireCtrlEnterToSend": {
 			"label": "Vereist {{primaryMod}}+Enter om berichten te versturen",
 			"description": "Wanneer ingeschakeld, moet je {{primaryMod}}+Enter indrukken om berichten te versturen in plaats van alleen Enter"
+		},
+		"showQuestionsOneByOne": {
+			"label": "Vragen één voor één weergeven",
+			"description": "Indien ingeschakeld, worden vragen van het model één voor één weergegeven."
+		},
+		"taskHeaderHighlight": {
+			"label": "Taakkoptekst markeren",
+			"description": "Indien ingeschakeld, wordt de taakkoptekst gemarkeerd om je te helpen focussen op de huidige taak."
 		}
 	},
 	"skills": {

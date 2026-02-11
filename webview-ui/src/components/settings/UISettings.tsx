@@ -1,4 +1,5 @@
 import { HTMLAttributes, useMemo } from "react"
+import { ExtensionStateContextType } from "@/context/ExtensionStateContext"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { telemetryClient } from "@/utils/TelemetryClient"
@@ -7,17 +8,20 @@ import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
 import { SearchableSetting } from "./SearchableSetting"
-import { ExtensionStateContextType } from "@/context/ExtensionStateContext"
 
 interface UISettingsProps extends HTMLAttributes<HTMLDivElement> {
 	reasoningBlockCollapsed: boolean
 	enterBehavior: "send" | "newline"
+	showQuestionsOneByOne: boolean
+	taskHeaderHighlightEnabled: boolean
 	setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType>
 }
 
 export const UISettings = ({
 	reasoningBlockCollapsed,
 	enterBehavior,
+	showQuestionsOneByOne,
+	taskHeaderHighlightEnabled,
 	setCachedStateField,
 	...props
 }: UISettingsProps) => {
@@ -46,6 +50,19 @@ export const UISettings = ({
 		telemetryClient.capture("ui_settings_enter_behavior_changed", {
 			behavior: newBehavior,
 		})
+	}
+
+	const handleShowQuestionsOneByOneChange = (value: boolean) => {
+		setCachedStateField("showQuestionsOneByOne", value)
+
+		// Track telemetry event
+		telemetryClient.capture("ui_settings_show_questions_one_by_one_changed", {
+			enabled: value,
+		})
+	}
+
+	const handleTaskHeaderHighlightChange = (enabled: boolean) => {
+		setCachedStateField("taskHeaderHighlightEnabled", enabled)
 	}
 
 	return (
@@ -88,6 +105,42 @@ export const UISettings = ({
 							</VSCodeCheckbox>
 							<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
 								{t("settings:ui.requireCtrlEnterToSend.description", { primaryMod })}
+							</div>
+						</div>
+					</SearchableSetting>
+
+					{/* Show Questions One By One Setting */}
+					<SearchableSetting
+						settingId="ui-show-questions-one-by-one"
+						section="ui"
+						label={t("settings:ui.showQuestionsOneByOne.label")}>
+						<div className="flex flex-col gap-1">
+							<VSCodeCheckbox
+								checked={showQuestionsOneByOne}
+								onChange={(e: any) => handleShowQuestionsOneByOneChange(e.target.checked)}
+								data-testid="show-questions-one-by-one-checkbox">
+								<span className="font-medium">{t("settings:ui.showQuestionsOneByOne.label")}</span>
+							</VSCodeCheckbox>
+							<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
+								{t("settings:ui.showQuestionsOneByOne.description")}
+							</div>
+						</div>
+					</SearchableSetting>
+
+					{/* Task Header Highlight Setting */}
+					<SearchableSetting
+						settingId="ui-task-header-highlight"
+						section="ui"
+						label={t("settings:ui.taskHeaderHighlight.label")}>
+						<div className="flex flex-col gap-1">
+							<VSCodeCheckbox
+								checked={taskHeaderHighlightEnabled}
+								onChange={(e: any) => handleTaskHeaderHighlightChange(e.target.checked)}
+								data-testid="task-header-highlight-checkbox">
+								<span className="font-medium">{t("settings:ui.taskHeaderHighlight.label")}</span>
+							</VSCodeCheckbox>
+							<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
+								{t("settings:ui.taskHeaderHighlight.description")}
 							</div>
 						</div>
 					</SearchableSetting>

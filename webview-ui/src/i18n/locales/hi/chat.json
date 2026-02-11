@@ -269,7 +269,13 @@
 		"goToSubtask": "कार्य देखें"
 	},
 	"questions": {
-		"hasQuestion": "Roo का एक प्रश्न है"
+		"hasQuestion": "Roo का एक प्रश्न है",
+		"questionNumber": "प्रश्न {{number}}",
+		"questionNumberOfTotal": "{{total}} में से प्रश्न {{current}}",
+		"typeAnswer": "अपना उत्तर यहाँ टाइप करें...",
+		"previous": "पिछला",
+		"next": "अगला",
+		"finish": "समाप्त"
 	},
 	"taskCompleted": "कार्य पूरा हुआ",
 	"modelResponseIncomplete": "मॉडल प्रतिक्रिया अपूर्ण",

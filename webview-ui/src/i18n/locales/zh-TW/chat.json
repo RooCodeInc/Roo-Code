@@ -314,7 +314,13 @@
 		"goToSubtask": "查看工作"
 	},
 	"questions": {
-		"hasQuestion": "Roo 有一個問題"
+		"hasQuestion": "Roo 有一個問題",
+		"questionNumber": "問題 {{number}}",
+		"questionNumberOfTotal": "第 {{current}} / {{total}} 個問題",
+		"typeAnswer": "在此輸入您的回答...",
+		"previous": "上一個",
+		"next": "下一個",
+		"finish": "完成"
 	},
 	"taskCompleted": "工作完成",
 	"error": "錯誤",

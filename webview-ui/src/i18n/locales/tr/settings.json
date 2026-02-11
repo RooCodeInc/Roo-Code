@@ -1025,6 +1025,14 @@
 		"requireCtrlEnterToSend": {
 			"label": "Mesaj göndermek için {{primaryMod}}+Enter gerekli",
 			"description": "Etkinleştirildiğinde, sadece Enter yerine mesaj göndermek için {{primaryMod}}+Enter'a basmalısınız"
+		},
+		"showQuestionsOneByOne": {
+			"label": "Soruları tek tek göster",
+			"description": "Etkinleştirildiğinde, modelden gelen sorular tek tek görüntülenecektir."
+		},
+		"taskHeaderHighlight": {
+			"label": "Görev başlığını vurgula",
+			"description": "Etkinleştirildiğinde, mevcut göreve odaklanmanıza yardımcı olmak için görev başlığı vurgulanacaktır."
 		}
 	},
 	"skills": {

@@ -264,7 +264,13 @@
 		"goToSubtask": "Taak weergeven"
 	},
 	"questions": {
-		"hasQuestion": "Roo heeft een vraag"
+		"hasQuestion": "Roo heeft een vraag",
+		"questionNumber": "Vraag {{number}}",
+		"questionNumberOfTotal": "Vraag {{current}} van {{total}}",
+		"typeAnswer": "Typ hier je antwoord...",
+		"previous": "Vorige",
+		"next": "Volgende",
+		"finish": "Voltooien"
 	},
 	"taskCompleted": "Taak voltooid",
 	"error": "Fout",

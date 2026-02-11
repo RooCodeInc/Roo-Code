@@ -320,7 +320,13 @@
 		"goToSubtask": "Lihat tugas"
 	},
 	"questions": {
-		"hasQuestion": "Roo punya pertanyaan"
+		"hasQuestion": "Roo punya pertanyaan",
+		"questionNumber": "Pertanyaan {{number}}",
+		"questionNumberOfTotal": "Pertanyaan {{current}} dari {{total}}",
+		"typeAnswer": "Ketik jawaban Anda di sini...",
+		"previous": "Sebelumnya",
+		"next": "Berikutnya",
+		"finish": "Selesai"
 	},
 	"taskCompleted": "Tugas Selesai",
 	"error": "Error",

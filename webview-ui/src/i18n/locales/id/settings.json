@@ -1025,6 +1025,14 @@
 		"requireCtrlEnterToSend": {
 			"label": "Memerlukan {{primaryMod}}+Enter untuk mengirim pesan",
 			"description": "Ketika diaktifkan, kamu harus menekan {{primaryMod}}+Enter untuk mengirim pesan alih-alih hanya Enter"
+		},
+		"showQuestionsOneByOne": {
+			"label": "Tampilkan pertanyaan satu per satu",
+			"description": "Jika diaktifkan, pertanyaan dari model akan ditampilkan satu per satu."
+		},
+		"taskHeaderHighlight": {
+			"label": "Sorot header tugas",
+			"description": "Jika diaktifkan, header tugas akan disorot untuk membantu Anda fokus pada tugas saat ini."
 		}
 	},
 	"skills": {

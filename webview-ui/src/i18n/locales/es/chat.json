@@ -269,7 +269,13 @@
 		"goToSubtask": "Ver tarea"
 	},
 	"questions": {
-		"hasQuestion": "Roo tiene una pregunta"
+		"hasQuestion": "Roo tiene una pregunta",
+		"questionNumber": "Pregunta {{number}}",
+		"questionNumberOfTotal": "Pregunta {{current}} de {{total}}",
+		"typeAnswer": "Escribe tu respuesta aquí...",
+		"previous": "Anterior",
+		"next": "Siguiente",
+		"finish": "Finalizar"
 	},
 	"taskCompleted": "Tarea completada",
 	"modelResponseIncomplete": "Respuesta del modelo incompleta",

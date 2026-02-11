@@ -270,7 +270,13 @@
 		"goToSubtask": "Görevi görüntüle"
 	},
 	"questions": {
-		"hasQuestion": "Roo'nun bir sorusu var"
+		"hasQuestion": "Roo'nun bir sorusu var",
+		"questionNumber": "Soru {{number}}",
+		"questionNumberOfTotal": "{{total}} sorudan {{current}}. soru",
+		"typeAnswer": "Cevabınızı buraya yazın...",
+		"previous": "Önceki",
+		"next": "Sonraki",
+		"finish": "Bitir"
 	},
 	"taskCompleted": "Görev Tamamlandı",
 	"modelResponseIncomplete": "Model yanıtı eksik",

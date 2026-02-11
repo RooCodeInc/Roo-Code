@@ -1025,6 +1025,14 @@
 		"requireCtrlEnterToSend": {
 			"label": "Yêu cầu {{primaryMod}}+Enter để gửi tin nhắn",
 			"description": "Khi được bật, bạn phải nhấn {{primaryMod}}+Enter để gửi tin nhắn thay vì chỉ nhấn Enter"
+		},
+		"showQuestionsOneByOne": {
+			"label": "Hiển thị từng câu hỏi một",
+			"description": "Khi được bật, các câu hỏi từ mô hình sẽ được hiển thị từng câu một."
+		},
+		"taskHeaderHighlight": {
+			"label": "Làm nổi bật tiêu đề nhiệm vụ",
+			"description": "Khi được bật, tiêu đề nhiệm vụ sẽ được làm nổi bật để giúp bạn tập trung vào nhiệm vụ hiện tại."
 		}
 	},
 	"skills": {

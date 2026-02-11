@@ -473,9 +473,9 @@ export class NativeToolCallParser {
 				break
 
 			case "ask_followup_question":
-				if (partialArgs.question !== undefined || partialArgs.follow_up !== undefined) {
+				if (partialArgs.questions !== undefined || partialArgs.follow_up !== undefined) {
 					nativeArgs = {
-						question: partialArgs.question,
+						questions: Array.isArray(partialArgs.questions) ? partialArgs.questions : undefined,
 						follow_up: Array.isArray(partialArgs.follow_up) ? partialArgs.follow_up : undefined,
 					}
 				}
@@ -830,9 +830,9 @@ export class NativeToolCallParser {
 					break
 
 				case "ask_followup_question":
-					if (args.question !== undefined && args.follow_up !== undefined) {
+					if (args.questions !== undefined || args.follow_up !== undefined) {
 						nativeArgs = {
-							question: args.question,
+							questions: Array.isArray(args.questions) ? args.questions : undefined,
 							follow_up: args.follow_up,
 						} as NativeArgsFor<TName>
 					}

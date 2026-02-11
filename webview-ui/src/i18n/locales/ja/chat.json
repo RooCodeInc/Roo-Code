@@ -269,7 +269,13 @@
 		"goToSubtask": "タスクを表示"
 	},
 	"questions": {
-		"hasQuestion": "Rooは質問があります"
+		"hasQuestion": "Rooは質問があります",
+		"questionNumber": "質問 {{number}}",
+		"questionNumberOfTotal": "質問 {{current}} / {{total}}",
+		"typeAnswer": "ここに回答を入力してください...",
+		"previous": "前へ",
+		"next": "次へ",
+		"finish": "完了"
 	},
 	"taskCompleted": "タスク完了",
 	"modelResponseIncomplete": "モデルの応答が不完全",

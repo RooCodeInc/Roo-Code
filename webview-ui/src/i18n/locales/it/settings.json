@@ -1025,6 +1025,14 @@
 		"requireCtrlEnterToSend": {
 			"label": "Richiedi {{primaryMod}}+Invio per inviare messaggi",
 			"description": "Quando abilitato, devi premere {{primaryMod}}+Invio per inviare messaggi invece di solo Invio"
+		},
+		"showQuestionsOneByOne": {
+			"label": "Mostra domande una per una",
+			"description": "Se abilitato, le domande del modello verranno visualizzate una alla volta."
+		},
+		"taskHeaderHighlight": {
+			"label": "Evidenzia intestazione attività",
+			"description": "Se abilitato, l'intestazione dell'attività verrà evidenziata per aiutarti a concentrarti sull'attività corrente."
 		}
 	},
 	"skills": {

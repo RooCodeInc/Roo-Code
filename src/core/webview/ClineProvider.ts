@@ -2100,6 +2100,7 @@ export class ClineProvider
 			checkpointTimeout,
 			taskHistory,
 			soundVolume,
+			taskHeaderHighlightEnabled,
 			browserViewportSize,
 			screenshotQuality,
 			remoteBrowserHost,
@@ -2164,6 +2165,7 @@ export class ClineProvider
 			featureRoomoteControlEnabled,
 			isBrowserSessionActive,
 			lockApiConfigAcrossModes,
+			showQuestionsOneByOne,
 		} = await this.getState()
 
 		let cloudOrganizations: CloudOrganizationMembership[] = []
@@ -2277,6 +2279,7 @@ export class ClineProvider
 			historyPreviewCollapsed: historyPreviewCollapsed ?? false,
 			reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
 			enterBehavior: enterBehavior ?? "send",
+			taskHeaderHighlightEnabled: taskHeaderHighlightEnabled ?? false,
 			cloudUserInfo,
 			cloudIsAuthenticated: cloudIsAuthenticated ?? false,
 			cloudAuthSkipModel: this.context.globalState.get<boolean>("roo-auth-skip-model") ?? false,
@@ -2315,6 +2318,7 @@ export class ClineProvider
 			includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
 			includeCurrentTime: includeCurrentTime ?? true,
 			includeCurrentCost: includeCurrentCost ?? true,
+			showQuestionsOneByOne: showQuestionsOneByOne ?? false,
 			maxGitStatusFiles: maxGitStatusFiles ?? 0,
 			taskSyncEnabled,
 			remoteControlEnabled,
@@ -2513,6 +2517,8 @@ export class ClineProvider
 			historyPreviewCollapsed: stateValues.historyPreviewCollapsed ?? false,
 			reasoningBlockCollapsed: stateValues.reasoningBlockCollapsed ?? true,
 			enterBehavior: stateValues.enterBehavior ?? "send",
+			taskHeaderHighlightEnabled: stateValues.taskHeaderHighlightEnabled ?? false,
+			showQuestionsOneByOne: stateValues.showQuestionsOneByOne ?? false,
 			cloudUserInfo,
 			cloudIsAuthenticated,
 			sharingEnabled,
