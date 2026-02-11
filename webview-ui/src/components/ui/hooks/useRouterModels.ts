@@ -12,7 +12,9 @@ type UseRouterModelsOptions = {
 const getRouterModels = async (provider?: string) =>
 	new Promise<RouterModels>((resolve, reject) => {
 		const cleanup = () => {
-			window.removeEventListener("message", handler)
+			if (typeof window !== "undefined") {
+				window.removeEventListener("message", handler)
+			}
 		}
 
 		const timeout = setTimeout(() => {
