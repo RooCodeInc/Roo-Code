@@ -48,6 +48,7 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({ content, classNa
 			return converter.toHtml(content)
 		} catch {
 			// Fallback: if conversion fails, show raw text (stripped of ANSI)
+			// eslint-disable-next-line no-control-regex
 			return content.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, "")
 		}
 	}, [content])

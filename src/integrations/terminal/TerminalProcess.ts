@@ -244,10 +244,7 @@ export class TerminalProcess extends BaseTerminalProcess {
 		// command is finished, we still want to consider it 'hot' in case
 		// so that api request stalls to let diagnostics catch up").
 		this.stopHotTimer()
-		this.emit(
-			"completed",
-			this.stripCursorSequences(this.removeVSCodeShellIntegration(this.fullOutput)),
-		)
+		this.emit("completed", this.stripCursorSequences(this.removeVSCodeShellIntegration(this.fullOutput)))
 		this.emit("continue")
 	}
 
@@ -391,19 +388,31 @@ export class TerminalProcess extends BaseTerminalProcess {
 	private removeVSCodeShellIntegration(text: string): string {
 		// Remove OSC 633 sequences: \x1B]633;....\x07 or \x1B]633;....\x1B\\
 		// Remove OSC 133 sequences: \x1B]133;....\x07 or \x1B]133;....\x1B\\
-		return text
-			.replace(/\x1B\]633;[^\x07\x1B]*(?:\x07|\x1B\\)/g, "")
-			.replace(/\x1B\]133;[^\x07\x1B]*(?:\x07|\x1B\\)/g, "")
-			.replace(/\x1B\][0-9]+;[^\x07\x1B]*(?:\x07|\x1B\\)/g, "") // Also remove other common OSC sequences that aren't color-related
+		return (
+			text
+				// eslint-disable-next-line no-control-regex
+				.replace(/\x1B\]633;[^\x07\x1B]*(?:\x07|\x1B\\)/g, "")
+				// eslint-disable-next-line no-control-regex
+				.replace(/\x1B\]133;[^\x07\x1B]*(?:\x07|\x1B\\)/g, "")
+				// eslint-disable-next-line no-control-regex
+				.replace(/\x1B\][0-9]+;[^\x07\x1B]*(?:\x07|\x1B\\)/g, "")
+		) // Also remove other common OSC sequences that aren't color-related
 	}
 
 	private stripCursorSequences(text: string): string {
-		return text
-			.replace(/\x1B\[\d*[ABCDEFGHJ]/g, "") // Remove cursor movement: up, down, forward, back
-			.replace(/\x1B\[su/g, "") // Remove cursor position save/restore
-			.replace(/\x1B\[\d*[KJ]/g, "") // Remove erase in line/display
-			.replace(/\x1B\[\?25[hl]/g, "") // Remove cursor show/hide
-			.replace(/\x1B\[\d*;\d*r/g, "") // Remove scroll region
+		return (
+			text
+				// eslint-disable-next-line no-control-regex
+				.replace(/\x1B\[\d*[ABCDEFGHJ]/g, "") // Remove cursor movement: up, down, forward, back
+				// eslint-disable-next-line no-control-regex
+				.replace(/\x1B\[su/g, "") // Remove cursor position save/restore
+				// eslint-disable-next-line no-control-regex
+				.replace(/\x1B\[\d*[KJ]/g, "") // Remove erase in line/display
+				// eslint-disable-next-line no-control-regex
+				.replace(/\x1B\[\?25[hl]/g, "") // Remove cursor show/hide
+				// eslint-disable-next-line no-control-regex
+				.replace(/\x1B\[\d*;\d*r/g, "") // Remove scroll region
+		)
 	}
 
 	/**
