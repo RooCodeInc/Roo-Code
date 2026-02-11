@@ -93,7 +93,6 @@ import { ContextProxy } from "../config/ContextProxy"
 import { ProviderSettingsManager } from "../config/ProviderSettingsManager"
 import { CustomModesManager } from "../config/CustomModesManager"
 import { Task } from "../task/Task"
-import { getSystemPromptFilePath } from "../prompts/sections/custom-system-prompt"
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import type { ClineMessage, TodoItem } from "@roo-code/types"
@@ -1950,14 +1949,6 @@ export class ClineProvider
 	}
 
 	/**
-	 * Checks if there is a file-based system prompt override for the given mode
-	 */
-	async hasFileBasedSystemPromptOverride(mode: Mode): Promise<boolean> {
-		const promptFilePath = getSystemPromptFilePath(this.cwd, mode)
-		return await fileExistsAtPath(promptFilePath)
-	}
-
-	/**
 	 * Merges allowed commands from global state and workspace configuration
 	 * with proper validation and deduplication
 	 */
@@ -2135,10 +2126,6 @@ export class ClineProvider
 		const mergedDeniedCommands = this.mergeDeniedCommands(deniedCommands)
 		const cwd = this.cwd
 
-		// Check if there's a system prompt override for the current mode
-		const currentMode = mode ?? defaultModeSlug
-		const hasSystemPromptOverride = await this.hasFileBasedSystemPromptOverride(currentMode)
-
 		return {
 			version: this.context.extension?.packageJSON?.version ?? "",
 			apiConfiguration,
@@ -2220,7 +2207,6 @@ export class ClineProvider
 			maxTotalImageSize: maxTotalImageSize ?? 20,
 			maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
 			settingsImportedAt: this.settingsImportedAt,
-			hasSystemPromptOverride,
 			historyPreviewCollapsed: historyPreviewCollapsed ?? false,
 			reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
 			enterBehavior: enterBehavior ?? "send",
@@ -2289,12 +2275,7 @@ export class ClineProvider
 	async getState(): Promise<
 		Omit<
 			ExtensionState,
-			| "clineMessages"
-			| "renderContext"
-			| "hasOpenedModeSelector"
-			| "version"
-			| "shouldShowAnnouncement"
-			| "hasSystemPromptOverride"
+			"clineMessages" | "renderContext" | "hasOpenedModeSelector" | "version" | "shouldShowAnnouncement"
 		>
 	> {
 		const stateValues = this.contextProxy.getValues()

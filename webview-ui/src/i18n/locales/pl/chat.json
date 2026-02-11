@@ -404,7 +404,6 @@
 			"copy_code": "Kopiuj kod"
 		}
 	},
-	"systemPromptWarning": "OSTRZEŻENIE: Aktywne niestandardowe zastąpienie instrukcji systemowych. Może to poważnie zakłócić funkcjonalność i powodować nieprzewidywalne zachowanie.",
 	"profileViolationWarning": "Bieżący profil nie jest kompatybilny z ustawieniami Twojej organizacji",
 	"shellIntegration": {
 		"title": "Ostrzeżenie wykonania polecenia",
