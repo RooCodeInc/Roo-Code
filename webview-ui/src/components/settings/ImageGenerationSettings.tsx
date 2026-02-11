@@ -7,7 +7,7 @@ interface ImageGenerationSettingsProps {
 	enabled: boolean
 	onChange: (enabled: boolean) => void
 	imageGenerationProvider?: ImageGenerationProvider
-	openRouterImageApiKey?: string
+	hasOpenRouterImageApiKey?: boolean
 	openRouterImageGenerationSelectedModel?: string
 	setImageGenerationProvider: (provider: ImageGenerationProvider) => void
 	setOpenRouterImageApiKey: (apiKey: string) => void
@@ -18,7 +18,7 @@ export const ImageGenerationSettings = ({
 	enabled,
 	onChange,
 	imageGenerationProvider,
-	openRouterImageApiKey,
+	hasOpenRouterImageApiKey,
 	openRouterImageGenerationSelectedModel,
 	setImageGenerationProvider,
 	setOpenRouterImageApiKey,
@@ -88,7 +88,7 @@ export const ImageGenerationSettings = ({
 	}
 
 	const requiresApiKey = currentProvider === "openrouter"
-	const isConfigured = !requiresApiKey || (requiresApiKey && openRouterImageApiKey)
+	const isConfigured = !requiresApiKey || (requiresApiKey && hasOpenRouterImageApiKey)
 
 	return (
 		<div className="space-y-4">
@@ -133,9 +133,12 @@ export const ImageGenerationSettings = ({
 								{t("settings:experimental.IMAGE_GENERATION.openRouterApiKeyLabel")}
 							</label>
 							<VSCodeTextField
-								value={openRouterImageApiKey || ""}
 								onInput={(e: any) => handleApiKeyChange(e.target.value)}
-								placeholder={t("settings:experimental.IMAGE_GENERATION.openRouterApiKeyPlaceholder")}
+								placeholder={
+									hasOpenRouterImageApiKey
+										? t("settings:experimental.IMAGE_GENERATION.openRouterApiKeyConfigured", { defaultValue: "Key configured (enter new value to replace)" })
+										: t("settings:experimental.IMAGE_GENERATION.openRouterApiKeyPlaceholder")
+								}
 								className="w-full"
 								type="password"
 							/>

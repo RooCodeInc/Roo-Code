@@ -586,7 +586,7 @@ describe("ClineProvider", () => {
 			profileThresholds: {},
 			hasOpenedModeSelector: false,
 			diagnosticsEnabled: true,
-			openRouterImageApiKey: undefined,
+			hasOpenRouterImageApiKey: false,
 			openRouterImageGenerationSelectedModel: undefined,
 			remoteControlEnabled: false,
 			taskSyncEnabled: false,
@@ -807,6 +807,22 @@ describe("ClineProvider", () => {
 		expect(state).toHaveProperty("soundEnabled")
 		expect(state).toHaveProperty("ttsEnabled")
 		expect(state).toHaveProperty("writeDelayMs")
+	})
+
+	test("getStateToPostToWebview does not expose openRouterImageApiKey", async () => {
+		// Store a sentinel API key value via contextProxy (which caches secrets internally)
+		const sentinelKey = "sk-or-v1-SENTINEL-KEY-VALUE"
+		// @ts-ignore - Access private property for testing
+		await provider.contextProxy.storeSecret("openRouterImageApiKey", sentinelKey)
+
+		const state = await provider.getStateToPostToWebview()
+
+		// Must expose only a boolean flag, not the raw key
+		expect(state).toHaveProperty("hasOpenRouterImageApiKey", true)
+		// The raw key value must never appear in the serialized webview state
+		expect(JSON.stringify(state)).not.toContain(sentinelKey)
+		// The property name "openRouterImageApiKey" must not be a direct key in the state
+		expect(state).not.toHaveProperty("openRouterImageApiKey")
 	})
 
 	test("language is set to VSCode language", async () => {

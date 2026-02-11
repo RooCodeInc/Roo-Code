@@ -19,7 +19,7 @@ describe("ImageGenerationSettings", () => {
 		enabled: false,
 		onChange: mockOnChange,
 		imageGenerationProvider: undefined,
-		openRouterImageApiKey: undefined,
+		hasOpenRouterImageApiKey: false,
 		openRouterImageGenerationSelectedModel: undefined,
 		setImageGenerationProvider: mockSetImageGenerationProvider,
 		setOpenRouterImageApiKey: mockSetOpenRouterImageApiKey,
@@ -44,7 +44,7 @@ describe("ImageGenerationSettings", () => {
 			render(
 				<ImageGenerationSettings
 					{...defaultProps}
-					openRouterImageApiKey="existing-key"
+					hasOpenRouterImageApiKey={true}
 					openRouterImageGenerationSelectedModel="google/gemini-2.5-flash-image"
 				/>,
 			)

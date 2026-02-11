@@ -2320,7 +2320,7 @@ export class ClineProvider
 			taskSyncEnabled,
 			remoteControlEnabled,
 			imageGenerationProvider,
-			openRouterImageApiKey,
+			hasOpenRouterImageApiKey: Boolean(openRouterImageApiKey?.trim()),
 			openRouterImageGenerationSelectedModel,
 			featureRoomoteControlEnabled,
 			openAiCodexIsAuthenticated: await (async () => {
@@ -2563,6 +2563,7 @@ export class ClineProvider
 			})(),
 			imageGenerationProvider: stateValues.imageGenerationProvider,
 			openRouterImageApiKey: stateValues.openRouterImageApiKey,
+			hasOpenRouterImageApiKey: Boolean(stateValues.openRouterImageApiKey?.trim()),
 			openRouterImageGenerationSelectedModel: stateValues.openRouterImageGenerationSelectedModel,
 			featureRoomoteControlEnabled: (() => {
 				try {

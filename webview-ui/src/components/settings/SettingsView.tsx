@@ -205,7 +205,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		maxDiagnosticMessages,
 		includeTaskHistoryInEnhance,
 		imageGenerationProvider,
-		openRouterImageApiKey,
+		hasOpenRouterImageApiKey,
 		openRouterImageGenerationSelectedModel,
 		reasoningBlockCollapsed,
 		enterBehavior,
@@ -331,14 +331,11 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		})
 	}, [])
 
-	const setOpenRouterImageApiKey = useCallback((apiKey: string) => {
-		setCachedState((prevState) => {
-			if (prevState.openRouterImageApiKey !== apiKey) {
-				setChangeDetected(true)
-			}
+	const [pendingImageApiKey, setPendingImageApiKey] = useState<string | null>(null)
 
-			return { ...prevState, openRouterImageApiKey: apiKey }
-		})
+	const setOpenRouterImageApiKey = useCallback((apiKey: string) => {
+		setPendingImageApiKey(apiKey)
+		setChangeDetected(true)
 	}, [])
 
 	const setImageGenerationSelectedModel = useCallback((model: string) => {
@@ -433,7 +430,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					maxGitStatusFiles: maxGitStatusFiles ?? 0,
 					profileThresholds,
 					imageGenerationProvider,
-					openRouterImageApiKey,
+					...(pendingImageApiKey !== null ? { openRouterImageApiKey: pendingImageApiKey } : {}),
 					openRouterImageGenerationSelectedModel,
 					experiments,
 					customSupportPrompts,
@@ -446,6 +443,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			vscode.postMessage({ type: "telemetrySetting", text: telemetrySetting })
 			vscode.postMessage({ type: "debugSetting", bool: cachedState.debug })
 
+			setPendingImageApiKey(null)
 			setChangeDetected(false)
 		}
 	}
@@ -933,7 +931,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								apiConfiguration={apiConfiguration}
 								setApiConfigurationField={setApiConfigurationField}
 								imageGenerationProvider={imageGenerationProvider}
-								openRouterImageApiKey={openRouterImageApiKey as string | undefined}
+								hasOpenRouterImageApiKey={!!hasOpenRouterImageApiKey}
 								openRouterImageGenerationSelectedModel={
 									openRouterImageGenerationSelectedModel as string | undefined
 								}

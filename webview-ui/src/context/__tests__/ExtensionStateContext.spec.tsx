@@ -214,6 +214,7 @@ describe("mergeExtensionState", () => {
 			hasOpenedModeSelector: false, // Add the new required property
 			maxImageFileSize: 5,
 			maxTotalImageSize: 20,
+			hasOpenRouterImageApiKey: false,
 			remoteControlEnabled: false,
 			taskSyncEnabled: false,
 			featureRoomoteControlEnabled: false,
@@ -285,6 +286,7 @@ describe("mergeExtensionState", () => {
 			hasOpenedModeSelector: false,
 			maxImageFileSize: 5,
 			maxTotalImageSize: 20,
+			hasOpenRouterImageApiKey: false,
 			remoteControlEnabled: false,
 			taskSyncEnabled: false,
 			featureRoomoteControlEnabled: false,
