@@ -473,10 +473,25 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 			}
 			break
 
+		// Emit tool-call as a complete tool_call chunk.
+		// Some AI SDK providers (e.g., @openrouter/ai-sdk-provider) may not emit
+		// tool-input-end for incrementally streamed tool calls, or may emit only
+		// tool-call with no tool-input-* events at all (flush path). Emitting
+		// tool-call ensures the tool is always delivered. Task.ts deduplicates
+		// against tools already finalized via the streaming (start/delta/end) path.
+		case "tool-call": {
+			const toolCallPart = part as { toolCallId: string; toolName: string; input: unknown }
+			const input = toolCallPart.input
+			yield {
+				type: "tool_call",
+				id: toolCallPart.toolCallId,
+				name: toolCallPart.toolName,
+				arguments: typeof input === "string" ? input : JSON.stringify(input ?? {}),
+			}
+			break
+		}
+
 		// Ignore lifecycle events that don't need to yield chunks.
-		// Note: tool-call is intentionally ignored because tool-input-start/delta/end already
-		// provide complete tool call information. Emitting tool-call would cause duplicate
-		// tools in the UI for AI SDK providers (e.g., DeepSeek, Moonshot).
 		case "text-start":
 		case "text-end":
 		case "reasoning-start":
@@ -489,7 +504,6 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 		case "file":
 		case "tool-result":
 		case "tool-error":
-		case "tool-call":
 		case "raw":
 			break
 	}

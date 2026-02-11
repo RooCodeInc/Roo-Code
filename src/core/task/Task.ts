@@ -3097,8 +3097,33 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								break
 
 							case "tool_call": {
-								// Legacy: Handle complete tool calls (for backward compatibility)
-								// Convert native tool call to ToolUse format
+								// Handle complete tool calls from AI SDK's tool-call event.
+								// This is the safety net for providers (e.g., OpenRouter) that
+								// may not emit tool-input-end for streamed tool calls, or that
+								// emit only tool-call with no tool-input-* events (flush path).
+
+								// Deduplicate: skip if this tool was already finalized via
+								// the streaming path (tool_call_start/delta/end).
+								const alreadyPresent = this.assistantMessageContent.some(
+									(block) =>
+										block.type === "tool_use" &&
+										!block.partial &&
+										(block as any).id === chunk.id,
+								)
+								if (alreadyPresent) {
+									break
+								}
+
+								// Check if this tool is currently being streamed (started but
+								// not yet finalized due to missing tool-input-end).
+								const streamingIndex = this.streamingToolCallIndices.get(chunk.id)
+								if (streamingIndex !== undefined) {
+									// Clean up parser state for the incomplete streaming call
+									NativeToolCallParser.finalizeStreamingToolCall(chunk.id)
+									this.streamingToolCallIndices.delete(chunk.id)
+								}
+
+								// Convert complete tool call to ToolUse format
 								const toolUse = NativeToolCallParser.parseToolCall({
 									id: chunk.id,
 									name: chunk.name as ToolName,
@@ -3111,11 +3136,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								}
 
 								// Store the tool call ID on the ToolUse object for later reference
-								// This is needed to create tool_result blocks that reference the correct tool_use_id
 								toolUse.id = chunk.id
 
-								// Add the tool use to assistant message content
-								this.assistantMessageContent.push(toolUse)
+								if (streamingIndex !== undefined) {
+									// Replace the partial tool_use block in-place
+									this.assistantMessageContent[streamingIndex] = toolUse
+								} else {
+									// Add the tool use to assistant message content
+									this.assistantMessageContent.push(toolUse)
+								}
 
 								// Mark that we have new content to process
 								this.userMessageContentReady = false

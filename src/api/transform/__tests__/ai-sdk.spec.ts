@@ -748,10 +748,10 @@ describe("AI SDK conversion utilities", () => {
 			expect(chunks[0]).toEqual({ type: "tool_call_end", id: "call_1" })
 		})
 
-		it("ignores tool-call chunks to prevent duplicate tools in UI", () => {
-			// tool-call is intentionally ignored because tool-input-start/delta/end already
-			// provide complete tool call information. Emitting tool-call would cause duplicate
-			// tools in the UI for AI SDK providers (e.g., DeepSeek, Moonshot).
+		it("emits tool-call as complete tool_call chunk", () => {
+			// tool-call is emitted as a safety net for providers (e.g., OpenRouter)
+			// that may not emit tool-input-end. Task.ts deduplicates against tools
+			// already finalized via the streaming (start/delta/end) path.
 			const part = {
 				type: "tool-call" as const,
 				toolCallId: "call_1",
@@ -760,7 +760,51 @@ describe("AI SDK conversion utilities", () => {
 			}
 			const chunks = [...processAiSdkStreamPart(part)]
 
-			expect(chunks).toHaveLength(0)
+			expect(chunks).toHaveLength(1)
+			expect(chunks[0]).toEqual({
+				type: "tool_call",
+				id: "call_1",
+				name: "read_file",
+				arguments: '{"path":"test.ts"}',
+			})
+		})
+
+		it("emits tool-call with undefined input as empty object", () => {
+			const part = {
+				type: "tool-call" as const,
+				toolCallId: "call_2",
+				toolName: "attempt_completion",
+				input: undefined,
+			}
+			const chunks = [...processAiSdkStreamPart(part as any)]
+
+			expect(chunks).toHaveLength(1)
+			expect(chunks[0]).toEqual({
+				type: "tool_call",
+				id: "call_2",
+				name: "attempt_completion",
+				arguments: "{}",
+			})
+		})
+
+		it("passes through string input unchanged to avoid double-encoding", () => {
+			// If safeParseJSON fails in the AI SDK, input is the raw string.
+			// Passing it through avoids JSON.stringify turning it into a quoted literal.
+			const part = {
+				type: "tool-call" as const,
+				toolCallId: "call_3",
+				toolName: "execute_command",
+				input: '{"command":"ls -la"}',
+			}
+			const chunks = [...processAiSdkStreamPart(part as any)]
+
+			expect(chunks).toHaveLength(1)
+			expect(chunks[0]).toEqual({
+				type: "tool_call",
+				id: "call_3",
+				name: "execute_command",
+				arguments: '{"command":"ls -la"}',
+			})
 		})
 
 		it("processes source chunks with URL", () => {

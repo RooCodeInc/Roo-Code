@@ -259,4 +259,159 @@ describe("Duplicate tool_use ID Prevention", () => {
 			expect(ids).toEqual(uniqueIds) // All IDs are unique
 		})
 	})
+
+	describe("tool_call deduplication against streaming path", () => {
+		/**
+		 * Simulates the deduplication logic in the tool_call handler (Task.ts).
+		 * When AI SDK providers emit both streaming events (start/delta/end)
+		 * AND a final tool-call event, the tool_call handler must not create
+		 * a duplicate tool_use block.
+		 *
+		 * This is the safety net for providers like @openrouter/ai-sdk-provider
+		 * that may not emit tool-input-end for incrementally streamed tool calls,
+		 * or may emit only tool-call with no tool-input-* events (flush path).
+		 */
+
+		interface ToolBlock {
+			type: string
+			id: string
+			name: string
+			partial: boolean
+		}
+
+		const simulateToolCallHandler = (
+			assistantMessageContent: ToolBlock[],
+			streamingToolCallIndices: Map<string, number>,
+			chunk: { id: string; name: string },
+		) => {
+			// Deduplicate: skip if already finalized via streaming path
+			const alreadyPresent = assistantMessageContent.some(
+				(block) => block.type === "tool_use" && !block.partial && block.id === chunk.id,
+			)
+			if (alreadyPresent) {
+				return "skipped"
+			}
+
+			// Check if currently being streamed
+			const streamingIndex = streamingToolCallIndices.get(chunk.id)
+			if (streamingIndex !== undefined) {
+				streamingToolCallIndices.delete(chunk.id)
+			}
+
+			const toolUse: ToolBlock = {
+				type: "tool_use",
+				id: chunk.id,
+				name: chunk.name,
+				partial: false,
+			}
+
+			if (streamingIndex !== undefined) {
+				// Replace partial block in-place
+				assistantMessageContent[streamingIndex] = toolUse
+			} else {
+				// Push new block
+				assistantMessageContent.push(toolUse)
+			}
+
+			return "processed"
+		}
+
+		it("should skip tool_call when streaming path already finalized the tool", () => {
+			// Scenario: tool_call_end arrives first, then tool_call arrives
+			const content: ToolBlock[] = [
+				{ type: "tool_use", id: "call_1", name: "read_file", partial: false },
+			]
+			const indices = new Map<string, number>()
+
+			const result = simulateToolCallHandler(content, indices, {
+				id: "call_1",
+				name: "read_file",
+			})
+
+			expect(result).toBe("skipped")
+			expect(content).toHaveLength(1) // No duplicate added
+		})
+
+		it("should replace partial block when tool-input-end was never emitted", () => {
+			// Scenario: tool-input-start + tool-input-delta, but NO tool-input-end
+			// The partial block exists in content, the index is in the map
+			const content: ToolBlock[] = [
+				{ type: "tool_use", id: "call_1", name: "read_file", partial: true },
+			]
+			const indices = new Map<string, number>([["call_1", 0]])
+
+			const result = simulateToolCallHandler(content, indices, {
+				id: "call_1",
+				name: "read_file",
+			})
+
+			expect(result).toBe("processed")
+			expect(content).toHaveLength(1) // Replaced in-place, not pushed
+			expect(content[0].partial).toBe(false) // Now finalized
+			expect(indices.has("call_1")).toBe(false) // Cleaned up
+		})
+
+		it("should push new block for flush-only tool_call (no streaming events)", () => {
+			// Scenario: provider emits ONLY tool-call, no tool-input-* events
+			const content: ToolBlock[] = []
+			const indices = new Map<string, number>()
+
+			const result = simulateToolCallHandler(content, indices, {
+				id: "call_1",
+				name: "read_file",
+			})
+
+			expect(result).toBe("processed")
+			expect(content).toHaveLength(1)
+			expect(content[0]).toEqual({
+				type: "tool_use",
+				id: "call_1",
+				name: "read_file",
+				partial: false,
+			})
+		})
+
+		it("should handle tool_call arriving before tool_call_end", () => {
+			// Scenario: tool_call arrives while tool is still streaming (partial)
+			// Then tool_call_end arrives later -- should be a no-op
+			const content: ToolBlock[] = [
+				{ type: "tool_use", id: "call_1", name: "read_file", partial: true },
+			]
+			const indices = new Map<string, number>([["call_1", 0]])
+
+			// tool_call arrives first
+			simulateToolCallHandler(content, indices, { id: "call_1", name: "read_file" })
+			expect(content).toHaveLength(1)
+			expect(content[0].partial).toBe(false)
+
+			// Simulate tool_call_end arriving later
+			// streamingToolCallIndices no longer has the ID, so end handler is a no-op
+			expect(indices.has("call_1")).toBe(false)
+		})
+
+		it("should handle multiple tools with mixed paths", () => {
+			// Tool 1: streamed normally (start/delta/end -- already finalized)
+			// Tool 2: streamed but missing end (partial in content)
+			// Tool 3: flush-only (no streaming events)
+			const content: ToolBlock[] = [
+				{ type: "tool_use", id: "call_1", name: "read_file", partial: false },
+				{ type: "tool_use", id: "call_2", name: "write_to_file", partial: true },
+			]
+			const indices = new Map<string, number>([["call_2", 1]])
+
+			// tool_call for call_1 -- should be skipped (already finalized)
+			expect(simulateToolCallHandler(content, indices, { id: "call_1", name: "read_file" })).toBe("skipped")
+			expect(content).toHaveLength(2)
+
+			// tool_call for call_2 -- should replace partial
+			expect(simulateToolCallHandler(content, indices, { id: "call_2", name: "write_to_file" })).toBe("processed")
+			expect(content).toHaveLength(2)
+			expect(content[1].partial).toBe(false)
+
+			// tool_call for call_3 -- flush-only, should push
+			expect(simulateToolCallHandler(content, indices, { id: "call_3", name: "execute_command" })).toBe("processed")
+			expect(content).toHaveLength(3)
+			expect(content[2].id).toBe("call_3")
+		})
+	})
 })
