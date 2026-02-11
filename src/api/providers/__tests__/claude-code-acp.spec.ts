@@ -99,4 +99,74 @@ describe("ClaudeCodeAcpHandler", () => {
 
 		expect((handler as any).extractTextFromUpdate(update)).toBe("Fallback text")
 	})
+
+	it("parses tool call with closing tag", () => {
+		const handler = new ClaudeCodeAcpHandler({} as any)
+
+		const text =
+			'before <roo_tool_call>{"name":"read_file","arguments":{"path":"package.json"}}</roo_tool_call> after'
+
+		const chunks = (handler as any).parseProxyResponse(text)
+		const toolCall = chunks.find((chunk: any) => chunk.type === "tool_call")
+
+		expect(toolCall).toBeTruthy()
+		expect(toolCall.name).toBe("read_file")
+		expect(toolCall.arguments).toContain("package.json")
+
+		const combinedText = chunks
+			.filter((chunk: any) => chunk.type === "text")
+			.map((chunk: any) => chunk.text)
+			.join(" ")
+		expect(combinedText).toContain("before")
+		expect(combinedText).toContain("after")
+	})
+
+	it("recovers tool call when closing tag is missing", () => {
+		const handler = new ClaudeCodeAcpHandler({} as any)
+
+		const text = 'before <roo_tool_call>{"name":"read_file","arguments":{"path":"package.json"}}'
+
+		const chunks = (handler as any).parseProxyResponse(text)
+		const toolCall = chunks.find((chunk: any) => chunk.type === "tool_call")
+
+		expect(toolCall).toBeTruthy()
+		expect(toolCall.name).toBe("read_file")
+		expect(toolCall.arguments).toContain("package.json")
+
+		const combinedText = chunks
+			.filter((chunk: any) => chunk.type === "text")
+			.map((chunk: any) => chunk.text)
+			.join(" ")
+		expect(combinedText).toContain("before")
+	})
+
+	it("recovers tool call with trailing text inside block", () => {
+		const handler = new ClaudeCodeAcpHandler({} as any)
+
+		const text = '<roo_tool_call>{"name":"read_file","arguments":{"path":"package.json"}} trailing</roo_tool_call>'
+
+		const chunks = (handler as any).parseProxyResponse(text)
+		const toolCall = chunks.find((chunk: any) => chunk.type === "tool_call")
+
+		expect(toolCall).toBeTruthy()
+		expect(toolCall.name).toBe("read_file")
+		expect(toolCall.arguments).toContain("package.json")
+
+		const combinedText = chunks
+			.filter((chunk: any) => chunk.type === "text")
+			.map((chunk: any) => chunk.text)
+			.join(" ")
+		expect(combinedText).toContain("trailing")
+	})
+
+	it("preserves text when tool call payload is unrecoverable", () => {
+		const handler = new ClaudeCodeAcpHandler({} as any)
+
+		const text = "<roo_tool_call>{not json}</roo_tool_call>"
+		const chunks = (handler as any).parseProxyResponse(text)
+
+		const textChunk = chunks.find((chunk: any) => chunk.type === "text")
+		expect(textChunk).toBeTruthy()
+		expect(textChunk.text).toContain("<roo_tool_call>")
+	})
 })

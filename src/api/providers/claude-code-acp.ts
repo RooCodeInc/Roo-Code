@@ -502,6 +502,7 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		const continuationBlock = [
 			`[CONTINUE]`,
 			toolChoiceInstruction,
+			`Closing tag is mandatory. JSON strings must escape newlines as \\n.`,
 			`Tool call format example:`,
 			concreteExample,
 			toolNamesReminder,
@@ -575,6 +576,7 @@ Your previous response was REJECTED because it contained only text without any t
 "${truncatedResponse}"
 
 This system REQUIRES at least one tool call in every response. Text-only responses are not accepted.
+Closing tag is mandatory. JSON strings must escape newlines as \\n.
 ${toolNamesReminder}
 
 ${suggestedTool.suggestion}
@@ -699,6 +701,7 @@ ${TOOL_CALL_CLOSE_TAG}
 
 You can mix text and tool calls freely. Each tool call must be in its own tag block.
 The "arguments" field must be a JSON object matching the tool's parameter schema.
+The closing tag is mandatory. JSON strings must escape newlines as \\n.
 
 If you have completed the task, use the attempt_completion tool.
 If you need to delegate work, use the new_task tool.
@@ -1054,6 +1057,90 @@ Current time: ${new Date().toISOString()}`
 		return text.replace(/<environment_details>[\s\S]*?<\/environment_details>/g, "")
 	}
 
+	private extractFirstJsonObject(text: string): { json: string; start: number; end: number } | null {
+		let inString = false
+		let escaped = false
+		let depth = 0
+		let start = -1
+
+		for (let i = 0; i < text.length; i++) {
+			const ch = text[i]
+
+			if (escaped) {
+				escaped = false
+				continue
+			}
+
+			if (inString) {
+				if (ch === "\\") {
+					escaped = true
+					continue
+				}
+				if (ch === '"') {
+					inString = false
+				}
+				continue
+			}
+
+			if (ch === '"') {
+				inString = true
+				continue
+			}
+
+			if (ch === "{") {
+				if (depth === 0) {
+					start = i
+				}
+				depth++
+				continue
+			}
+
+			if (ch === "}") {
+				if (depth > 0) {
+					depth--
+					if (depth === 0 && start >= 0) {
+						return { json: text.slice(start, i + 1), start, end: i + 1 }
+					}
+				}
+			}
+		}
+
+		return null
+	}
+
+	private parseToolCallContent(
+		raw: string,
+	): { toolName: string; toolArgs: unknown; beforeText?: string; afterText?: string } | null {
+		const trimmed = raw.trim()
+		try {
+			const toolCall = JSON.parse(trimmed)
+			const toolName = toolCall?.name as string | undefined
+			if (toolName) {
+				return { toolName, toolArgs: toolCall.arguments }
+			}
+		} catch {
+			// Fall back to extracting the first JSON object below
+		}
+
+		const extracted = this.extractFirstJsonObject(raw)
+		if (!extracted) return null
+
+		try {
+			const toolCall = JSON.parse(extracted.json)
+			const toolName = toolCall?.name as string | undefined
+			if (!toolName) return null
+
+			return {
+				toolName,
+				toolArgs: toolCall.arguments,
+				beforeText: raw.slice(0, extracted.start),
+				afterText: raw.slice(extracted.end),
+			}
+		} catch {
+			return null
+		}
+	}
+
 	// ─── Response Parsing ────────────────────────────────────────────────
 
 	/**
@@ -1080,25 +1167,27 @@ Current time: ${new Date().toISOString()}`
 				chunks.push({ type: "text", text: textBefore })
 			}
 
-			// Parse the tool call JSON
-			try {
-				const toolCall = JSON.parse(match[1])
-				const toolName = toolCall.name as string
-				const toolArgs = toolCall.arguments
-
-				if (toolName) {
-					chunks.push({
-						type: "tool_call",
-						id: `acp_proxy_${Date.now()}_${toolCallIndex++}`,
-						name: toolName,
-						arguments: typeof toolArgs === "string" ? toolArgs : JSON.stringify(toolArgs ?? {}),
-					})
-				} else {
-					// Invalid tool call format — yield as text
-					chunks.push({ type: "text", text: match[0] })
+			const parsedTool = this.parseToolCallContent(match[1])
+			if (parsedTool) {
+				const beforeText = parsedTool.beforeText?.trim()
+				if (beforeText) {
+					chunks.push({ type: "text", text: beforeText })
 				}
-			} catch {
-				// JSON parse error — yield raw text
+
+				const toolArgs = parsedTool.toolArgs
+				chunks.push({
+					type: "tool_call",
+					id: `acp_proxy_${Date.now()}_${toolCallIndex++}`,
+					name: parsedTool.toolName,
+					arguments: typeof toolArgs === "string" ? toolArgs : JSON.stringify(toolArgs ?? {}),
+				})
+
+				const afterText = parsedTool.afterText?.trim()
+				if (afterText) {
+					chunks.push({ type: "text", text: afterText })
+				}
+			} else {
+				// Invalid tool call format — yield as text
 				console.debug("[ClaudeCodeAcpHandler] Failed to parse tool call JSON:", match[1].slice(0, 200))
 				chunks.push({ type: "text", text: match[0] })
 			}
@@ -1107,9 +1196,45 @@ Current time: ${new Date().toISOString()}`
 		}
 
 		// Remaining text after last tool call
-		const remaining = text.slice(lastIndex).trim()
-		if (remaining) {
-			chunks.push({ type: "text", text: remaining })
+		const remaining = text.slice(lastIndex)
+		const trailingOpenIndex = remaining.indexOf(TOOL_CALL_OPEN_TAG)
+		if (trailingOpenIndex !== -1) {
+			const beforeTrailing = remaining.slice(0, trailingOpenIndex).trim()
+			if (beforeTrailing) {
+				chunks.push({ type: "text", text: beforeTrailing })
+			}
+
+			const trailingPayload = remaining.slice(trailingOpenIndex + TOOL_CALL_OPEN_TAG.length)
+			const parsedTrailing = this.parseToolCallContent(trailingPayload)
+			if (parsedTrailing) {
+				const beforeText = parsedTrailing.beforeText?.trim()
+				if (beforeText) {
+					chunks.push({ type: "text", text: beforeText })
+				}
+
+				const toolArgs = parsedTrailing.toolArgs
+				chunks.push({
+					type: "tool_call",
+					id: `acp_proxy_${Date.now()}_${toolCallIndex++}`,
+					name: parsedTrailing.toolName,
+					arguments: typeof toolArgs === "string" ? toolArgs : JSON.stringify(toolArgs ?? {}),
+				})
+
+				const afterText = parsedTrailing.afterText?.trim()
+				if (afterText) {
+					chunks.push({ type: "text", text: afterText })
+				}
+			} else {
+				const trailingRaw = remaining.slice(trailingOpenIndex).trim()
+				if (trailingRaw) {
+					chunks.push({ type: "text", text: trailingRaw })
+				}
+			}
+		} else {
+			const remainingTrimmed = remaining.trim()
+			if (remainingTrimmed) {
+				chunks.push({ type: "text", text: remainingTrimmed })
+			}
 		}
 
 		return chunks
@@ -1122,7 +1247,7 @@ Current time: ${new Date().toISOString()}`
 		return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 	}
 
-	// ─── ACP Update Extraction ───────────────────────────────────────────
+	// --- ACP Update Extraction ---
 
 	/**
 	 * Extract text from an ACP session update.

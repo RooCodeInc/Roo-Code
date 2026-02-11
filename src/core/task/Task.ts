@@ -4271,6 +4271,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		const shouldIncludeTools = allTools.length > 0
+		const toolChoice = apiConfiguration?.apiProvider === "claude-code-acp" ? "required" : "auto"
 
 		const metadata: ApiHandlerCreateMessageMetadata = {
 			mode: mode,
@@ -4280,7 +4281,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			...(shouldIncludeTools
 				? {
 						tools: allTools,
-						tool_choice: "auto",
+						tool_choice: toolChoice,
 						parallelToolCalls: true,
 						// When mode restricts tools, provide allowedFunctionNames so providers
 						// like Gemini can see all tools in history but only call allowed ones
