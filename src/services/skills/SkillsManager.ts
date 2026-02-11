@@ -1,5 +1,6 @@
 import * as fs from "fs/promises"
 import * as path from "path"
+import * as os from "os"
 import * as vscode from "vscode"
 import matter from "gray-matter"
 
@@ -8,7 +9,12 @@ import { getGlobalRooDirectory, getGlobalAgentsDirectory, getProjectAgentsDirect
 import { directoryExists, fileExists } from "../roo-config"
 import { SkillMetadata, SkillContent } from "../../shared/skills"
 import { modes, getAllModes } from "../../shared/modes"
-import { getBuiltInSkills, getBuiltInSkillContent } from "./built-in-skills"
+import {
+	validateSkillName as validateSkillNameShared,
+	SkillNameValidationError,
+	SKILL_NAME_MAX_LENGTH,
+} from "@roo-code/types"
+import { t } from "../../i18n"
 
 // Re-export for convenience
 export type { SkillMetadata, SkillContent }
@@ -117,23 +123,11 @@ export class SkillsManager {
 				return
 			}
 
-			// Strict spec validation (https://agentskills.io/specification)
-			// Name constraints:
-			// - 1-64 chars
-			// - lowercase letters/numbers/hyphens only
-			// - must not start/end with hyphen
-			// - must not contain consecutive hyphens
-			if (effectiveSkillName.length < 1 || effectiveSkillName.length > 64) {
-				console.error(
-					`Skill name "${effectiveSkillName}" is invalid: name must be 1-64 characters (got ${effectiveSkillName.length})`,
-				)
-				return
-			}
-			const nameFormat = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-			if (!nameFormat.test(effectiveSkillName)) {
-				console.error(
-					`Skill name "${effectiveSkillName}" is invalid: must be lowercase letters/numbers/hyphens only (no leading/trailing hyphen, no consecutive hyphens)`,
-				)
+			// Validate skill name per agentskills.io spec using shared validation
+			const nameValidation = validateSkillNameShared(effectiveSkillName)
+			if (!nameValidation.valid) {
+				const errorMessage = this.getSkillNameErrorMessage(effectiveSkillName, nameValidation.error!)
+				console.error(`Skill name "${effectiveSkillName}" is invalid: ${errorMessage}`)
 				return
 			}
 
@@ -184,19 +178,13 @@ export class SkillsManager {
 
 	/**
 	 * Get skills available for the current mode.
-	 * Resolves overrides: project > global > built-in, mode-specific > generic.
+	 * Resolves overrides: project > global, mode-specific > generic.
 	 *
 	 * @param currentMode - The current mode slug (e.g., 'code', 'architect')
 	 */
 	getSkillsForMode(currentMode: string): SkillMetadata[] {
 		const resolvedSkills = new Map<string, SkillMetadata>()
 
-		// First, add built-in skills (lowest priority)
-		for (const skill of getBuiltInSkills()) {
-			resolvedSkills.set(skill.name, skill)
-		}
-
-		// Then, add discovered skills (will override built-in skills with same name)
 		for (const skill of this.skills.values()) {
 			// Check if skill is available in current mode:
 			// - modeSlugs undefined or empty = available in all modes ("Any mode")
@@ -237,14 +225,13 @@ export class SkillsManager {
 
 	/**
 	 * Determine if newSkill should override existingSkill based on priority rules.
-	 * Priority: project > global > built-in, mode-specific > generic
+	 * Priority: project > global, mode-specific > generic
 	 */
 	private shouldOverrideSkill(existing: SkillMetadata, newSkill: SkillMetadata): boolean {
-		// Define source priority: project > global > built-in
+		// Define source priority: project > global
 		const sourcePriority: Record<string, number> = {
-			project: 3,
-			global: 2,
-			"built-in": 1,
+			project: 2,
+			global: 1,
 		}
 
 		const existingPriority = sourcePriority[existing.source] ?? 0
@@ -280,21 +267,13 @@ export class SkillsManager {
 			const modeSkills = this.getSkillsForMode(currentMode)
 			skill = modeSkills.find((s) => s.name === name)
 		} else {
-			// Fall back to any skill with this name (check discovered skills first, then built-in)
+			// Fall back to any skill with this name
 			skill = Array.from(this.skills.values()).find((s) => s.name === name)
-			if (!skill) {
-				skill = getBuiltInSkills().find((s) => s.name === name)
-			}
 		}
 
 		if (!skill) return null
 
-		// For built-in skills, use the built-in content
-		if (skill.source === "built-in") {
-			return getBuiltInSkillContent(name)
-		}
-
-		// For file-based skills, read from disk
+		// Read skill content from disk
 		const fileContent = await fs.readFile(skill.path, "utf-8")
 		const { content: body } = matter(fileContent)
 
@@ -604,7 +583,7 @@ Add your skill instructions here.
 		const modesList = await this.getAvailableModes()
 
 		// Priority rules for skills with the same name:
-		// 1. Source level: project > global > built-in (handled by shouldOverrideSkill in getSkillsForMode)
+		// 1. Source level: project > global (handled by shouldOverrideSkill in getSkillsForMode)
 		// 2. Within the same source level: later-processed directories override earlier ones
 		//    (via Map.set replacement during discovery - same source+mode+name key gets replaced)
 		//

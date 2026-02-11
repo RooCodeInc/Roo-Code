@@ -92,13 +92,6 @@ const mockSkillWithMode: SkillMetadata = {
 	mode: "architect",
 }
 
-const mockBuiltInSkill: SkillMetadata = {
-	name: "built-in-skill",
-	description: "A built-in skill",
-	path: "<built-in:test>",
-	source: "built-in",
-}
-
 describe("SkillItem", () => {
 	const mockOnEdit = vi.fn()
 	const mockOnDelete = vi.fn()
@@ -119,7 +112,7 @@ describe("SkillItem", () => {
 		expect(screen.getByText("A test skill description")).toBeInTheDocument()
 	})
 
-	it("renders mode dropdown for non-built-in skills", () => {
+	it("renders mode dropdown", () => {
 		render(<SkillItem skill={mockSkill} onEdit={mockOnEdit} onDelete={mockOnDelete} />)
 
 		expect(screen.getByTestId("select")).toBeInTheDocument()
@@ -139,15 +132,6 @@ describe("SkillItem", () => {
 		expect(select).toHaveAttribute("data-value", "__any__")
 	})
 
-	it("does not render mode dropdown for built-in skills", () => {
-		render(<SkillItem skill={mockBuiltInSkill} onEdit={mockOnEdit} onDelete={mockOnDelete} />)
-
-		// Should not have a select element
-		expect(screen.queryByTestId("select")).not.toBeInTheDocument()
-		// Should have a static badge instead
-		expect(screen.getByText("Any mode")).toBeInTheDocument()
-	})
-
 	it("calls onEdit when edit button is clicked", () => {
 		render(<SkillItem skill={mockSkill} onEdit={mockOnEdit} onDelete={mockOnDelete} />)
 
@@ -158,22 +142,14 @@ describe("SkillItem", () => {
 		expect(mockOnEdit).toHaveBeenCalledTimes(1)
 	})
 
-	it("calls onDelete when delete button is clicked for non-built-in skills", () => {
+	it("calls onDelete when delete button is clicked", () => {
 		render(<SkillItem skill={mockSkill} onEdit={mockOnEdit} onDelete={mockOnDelete} />)
 
 		const buttons = screen.getAllByTestId("button")
-		// Find the delete button (second one for non-built-in)
+		// Find the delete button (second one)
 		fireEvent.click(buttons[1])
 
 		expect(mockOnDelete).toHaveBeenCalledTimes(1)
-	})
-
-	it("does not render delete button for built-in skills", () => {
-		render(<SkillItem skill={mockBuiltInSkill} onEdit={mockOnEdit} onDelete={mockOnDelete} />)
-
-		// Should only have 1 button (edit) for built-in skills
-		const buttons = screen.getAllByTestId("button")
-		expect(buttons).toHaveLength(1)
 	})
 
 	it("calls onEdit when clicking on skill name area", () => {
@@ -239,7 +215,7 @@ describe("SkillItem", () => {
 		expect(itemDiv).toHaveClass("hover:bg-vscode-list-hoverBackground")
 	})
 
-	it("renders edit and delete buttons for non-built-in skills", () => {
+	it("renders edit and delete buttons", () => {
 		render(<SkillItem skill={mockSkill} onEdit={mockOnEdit} onDelete={mockOnDelete} />)
 
 		const buttons = screen.getAllByTestId("button")

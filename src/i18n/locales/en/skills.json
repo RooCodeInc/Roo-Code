@@ -11,8 +11,6 @@
 		"missing_update_modes_fields": "Missing required fields: skillName or source",
 		"manager_unavailable": "Skills manager not available",
 		"missing_delete_fields": "Missing required fields: skillName or source",
-		"skill_not_found": "Skill \"{{name}}\" not found",
-		"cannot_modify_builtin": "Built-in skills cannot be created, deleted, or moved",
-		"cannot_open_builtin": "Built-in skills cannot be opened as files"
+		"skill_not_found": "Skill \"{{name}}\" not found"
 	}
 }

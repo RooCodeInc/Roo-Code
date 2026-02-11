@@ -93,12 +93,20 @@ vi.mock("../../roo-config", () => ({
 	fileExists: mockFileExists,
 }))
 
-// Mock built-in skills to isolate tests from actual built-in skills
-vi.mock("../built-in-skills", () => ({
-	getBuiltInSkills: () => [],
-	getBuiltInSkillContent: () => null,
-	isBuiltInSkill: () => false,
-	getBuiltInSkillNames: () => [],
+// Mock i18n
+vi.mock("../../../i18n", () => ({
+	t: (key: string, params?: Record<string, any>) => {
+		const translations: Record<string, string> = {
+			"skills:errors.name_length": `Skill name must be 1-${params?.maxLength} characters (got ${params?.length})`,
+			"skills:errors.name_format":
+				"Skill name must be lowercase letters/numbers/hyphens only (no leading/trailing hyphen, no consecutive hyphens)",
+			"skills:errors.description_length": `Skill description must be 1-1024 characters (got ${params?.length})`,
+			"skills:errors.no_workspace": "Cannot create project skill: no workspace folder is open",
+			"skills:errors.already_exists": `Skill "${params?.name}" already exists at ${params?.path}`,
+			"skills:errors.not_found": `Skill "${params?.name}" not found in ${params?.source}${params?.modeInfo}`,
+		}
+		return translations[key] || key
+	},
 }))
 
 import { SkillsManager } from "../SkillsManager"
