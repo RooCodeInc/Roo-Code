@@ -364,44 +364,6 @@
 		"total": "Общая стоимость: ${{cost}}",
 		"includesSubtasks": "Включает стоимость подзадач"
 	},
-	"browser": {
-		"session": "Сеанс браузера",
-		"active": "Активен",
-		"rooWantsToUse": "Roo хочет использовать браузер",
-		"consoleLogs": "Логи консоли",
-		"noNewLogs": "(Новых логов нет)",
-		"screenshot": "Скриншот браузера",
-		"cursor": "курсор",
-		"navigation": {
-			"step": "Шаг {{current}} из {{total}}",
-			"previous": "Предыдущий",
-			"next": "Следующий"
-		},
-		"sessionStarted": "Сессия браузера запущена",
-		"actions": {
-			"title": "Действие браузера: ",
-			"launched": "Браузер открыт",
-			"launch": "Открыть браузер по адресу {{url}}",
-			"clicked": "Клик в: {{coordinate}}",
-			"click": "Клик ({{coordinate}})",
-			"typed": "Введено: {{text}}",
-			"type": "Ввести \"{{text}}\"",
-			"pressed": "Нажато: {{key}}",
-			"press": "Нажать {{key}}",
-			"scrolledDown": "Прокручено вниз",
-			"scrollDown": "Прокрутить вниз",
-			"scrolledUp": "Прокручено вверх",
-			"scrollUp": "Прокрутить вверх",
-			"hovered": "Наведено в: {{coordinate}}",
-			"hover": "Навести ({{coordinate}})",
-			"resized": "Размер изменен на: {{size}}",
-			"resize": "Изменить размер на {{size}}",
-			"screenshotSaved": "Снимок экрана сохранён",
-			"screenshot": "Сохранить снимок экрана в {{path}}",
-			"closed": "Браузер закрыт",
-			"close": "Закрыть браузер"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Развернуть блок кода",

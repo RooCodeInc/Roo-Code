@@ -363,44 +363,6 @@
 		"total": "Costo totale: ${{cost}}",
 		"includesSubtasks": "Include i costi delle sottoattività"
 	},
-	"browser": {
-		"session": "Sessione del browser",
-		"active": "Attivo",
-		"rooWantsToUse": "Roo vuole utilizzare il browser",
-		"consoleLogs": "Log della console",
-		"noNewLogs": "(Nessun nuovo log)",
-		"screenshot": "Screenshot del browser",
-		"cursor": "cursore",
-		"navigation": {
-			"step": "Passo {{current}} di {{total}}",
-			"previous": "Precedente",
-			"next": "Successivo"
-		},
-		"sessionStarted": "Sessione browser avviata",
-		"actions": {
-			"title": "Azione browser: ",
-			"launched": "Browser avviato",
-			"launch": "Avvia browser su {{url}}",
-			"clicked": "Cliccato su: {{coordinate}}",
-			"click": "Clic ({{coordinate}})",
-			"typed": "Digitato: {{text}}",
-			"type": "Digita \"{{text}}\"",
-			"pressed": "Premuto: {{key}}",
-			"press": "Premi {{key}}",
-			"scrolledDown": "Scorso verso il basso",
-			"scrollDown": "Scorri verso il basso",
-			"scrolledUp": "Scorso verso l'alto",
-			"scrollUp": "Scorri verso l'alto",
-			"hovered": "Passato il mouse su: {{coordinate}}",
-			"hover": "Passa il mouse ({{coordinate}})",
-			"resized": "Ridimensionato a: {{size}}",
-			"resize": "Ridimensiona a {{size}}",
-			"screenshotSaved": "Screenshot salvato",
-			"screenshot": "Salva screenshot in {{path}}",
-			"closed": "Browser chiuso",
-			"close": "Chiudi browser"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Espandi blocco di codice",

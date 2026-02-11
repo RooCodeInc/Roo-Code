@@ -363,44 +363,6 @@
 		"total": "Costo total: ${{cost}}",
 		"includesSubtasks": "Incluye costos de subtareas"
 	},
-	"browser": {
-		"session": "Sesión del navegador",
-		"active": "Activo",
-		"rooWantsToUse": "Roo quiere usar el navegador",
-		"consoleLogs": "Registros de la consola",
-		"noNewLogs": "(No hay nuevos registros)",
-		"screenshot": "Captura de pantalla del navegador",
-		"cursor": "cursor",
-		"navigation": {
-			"step": "Paso {{current}} de {{total}}",
-			"previous": "Anterior",
-			"next": "Siguiente"
-		},
-		"sessionStarted": "Sesión de navegador iniciada",
-		"actions": {
-			"title": "Acción del navegador: ",
-			"launched": "Navegador iniciado",
-			"launch": "Iniciar navegador en {{url}}",
-			"clicked": "Clic en: {{coordinate}}",
-			"click": "Clic ({{coordinate}})",
-			"typed": "Escrito: {{text}}",
-			"type": "Escribir \"{{text}}\"",
-			"pressed": "Pulsado: {{key}}",
-			"press": "Pulsar {{key}}",
-			"scrolledDown": "Desplazado hacia abajo",
-			"scrollDown": "Desplazar hacia abajo",
-			"scrolledUp": "Desplazado hacia arriba",
-			"scrollUp": "Desplazar hacia arriba",
-			"hovered": "Flotado en: {{coordinate}}",
-			"hover": "Flotar ({{coordinate}})",
-			"resized": "Tamaño cambiado a: {{size}}",
-			"resize": "Cambiar tamaño a {{size}}",
-			"screenshotSaved": "Captura de pantalla guardada",
-			"screenshot": "Guardar captura de pantalla en {{path}}",
-			"closed": "Navegador cerrado",
-			"close": "Cerrar navegador"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Expandir bloque de código",

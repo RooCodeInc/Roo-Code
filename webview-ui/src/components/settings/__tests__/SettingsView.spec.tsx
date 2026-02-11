@@ -625,23 +625,6 @@ describe("SettingsView - Allowed Commands", () => {
 			// Check that unsaved changes dialog is shown
 			expect(screen.getByText("settings:unsavedChangesDialog.title")).toBeInTheDocument()
 		})
-
-		it("renders with targetSection prop", () => {
-			// Render with a specific target section
-			render(
-				<ExtensionStateContextProvider>
-					<QueryClientProvider client={new QueryClient()}>
-						<SettingsView onDone={vi.fn()} targetSection="browser" />
-					</QueryClientProvider>
-				</ExtensionStateContextProvider>,
-			)
-
-			// Hydrate initial state
-			mockPostMessage({})
-
-			// Verify browser-related content is visible and API config is not
-			expect(screen.queryByTestId("api-config-management")).not.toBeInTheDocument()
-		})
 	})
 })
 

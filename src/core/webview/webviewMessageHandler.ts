@@ -29,7 +29,6 @@ import { type ApiMessage } from "../task-persistence/apiMessages"
 import { saveTaskMessages } from "../task-persistence"
 
 import { ClineProvider } from "./ClineProvider"
-import { BrowserSessionPanelManager } from "./BrowserSessionPanelManager"
 import { handleCheckpointRestoreOperation } from "./checkpointRestoreHandler"
 import { generateErrorDiagnostics } from "./diagnosticsHandler"
 import {
@@ -52,7 +51,6 @@ import { openFile } from "../../integrations/misc/open-file"
 import { openImage, saveImage } from "../../integrations/misc/image-handler"
 import { selectImages } from "../../integrations/misc/process-images"
 import { getTheme } from "../../integrations/theme/getTheme"
-import { discoverChromeHostUrl, tryChromeHostUrl } from "../../services/browser/browserDiscovery"
 import { searchWorkspaceFiles } from "../../services/search/file-search"
 import { fileExistsAtPath } from "../../utils/fs"
 import { playTts, setTtsEnabled, setTtsSpeed, stopTts } from "../../utils/tts"
@@ -1185,69 +1183,6 @@ export const webviewMessageHandler = async (
 			// Cancel any pending auto-approval timeout for the current task
 			provider.getCurrentTask()?.cancelAutoApprovalTimeout()
 			break
-		case "killBrowserSession":
-			{
-				const task = provider.getCurrentTask()
-				if (task?.browserSession) {
-					await task.browserSession.closeBrowser()
-					await provider.postStateToWebview()
-				}
-			}
-			break
-		case "openBrowserSessionPanel":
-			{
-				// Toggle the Browser Session panel (open if closed, close if open)
-				const panelManager = BrowserSessionPanelManager.getInstance(provider)
-				await panelManager.toggle()
-			}
-			break
-		case "showBrowserSessionPanelAtStep":
-			{
-				const panelManager = BrowserSessionPanelManager.getInstance(provider)
-
-				// If this is a launch action, reset the manual close flag
-				if (message.isLaunchAction) {
-					panelManager.resetManualCloseFlag()
-				}
-
-				// Show panel if:
-				// 1. Manual click (forceShow) - always show
-				// 2. Launch action - always show and reset flag
-				// 3. Auto-open for non-launch action - only if user hasn't manually closed
-				if (message.forceShow || message.isLaunchAction || panelManager.shouldAllowAutoOpen()) {
-					// Ensure panel is shown and populated
-					await panelManager.show()
-
-					// Navigate to a specific step if provided
-					// For launch actions: navigate to step 0
-					// For manual clicks: navigate to the clicked step
-					// For auto-opens of regular actions: don't navigate, let BrowserSessionRow's
-					// internal auto-advance logic handle it (only advances if user is on most recent step)
-					if (typeof message.stepIndex === "number" && message.stepIndex >= 0) {
-						await panelManager.navigateToStep(message.stepIndex)
-					}
-				}
-			}
-			break
-		case "refreshBrowserSessionPanel":
-			{
-				// Re-send the latest browser session snapshot to the panel
-				const panelManager = BrowserSessionPanelManager.getInstance(provider)
-				const task = provider.getCurrentTask()
-				if (task) {
-					const messages = task.clineMessages || []
-					const browserSessionStartIndex = messages.findIndex(
-						(m) =>
-							m.ask === "browser_action_launch" ||
-							(m.say === "browser_session_status" && m.text?.includes("opened")),
-					)
-					const browserSessionMessages =
-						browserSessionStartIndex !== -1 ? messages.slice(browserSessionStartIndex) : []
-					const isBrowserSessionActive = task.browserSession?.isSessionActive() ?? false
-					await panelManager.updateBrowserSession(browserSessionMessages, isBrowserSessionActive)
-				}
-			}
-			break
 		case "allowedCommands": {
 			// Validate and sanitize the commands array
 			const commands = message.commands ?? []
@@ -1474,43 +1409,6 @@ export const webviewMessageHandler = async (
 			break
 		case "stopTts":
 			stopTts()
-			break
-
-		case "testBrowserConnection":
-			// If no text is provided, try auto-discovery
-			if (!message.text) {
-				// Use testBrowserConnection for auto-discovery
-				const chromeHostUrl = await discoverChromeHostUrl()
-
-				if (chromeHostUrl) {
-					// Send the result back to the webview
-					await provider.postMessageToWebview({
-						type: "browserConnectionResult",
-						success: !!chromeHostUrl,
-						text: `Auto-discovered and tested connection to Chrome: ${chromeHostUrl}`,
-						values: { endpoint: chromeHostUrl },
-					})
-				} else {
-					await provider.postMessageToWebview({
-						type: "browserConnectionResult",
-						success: false,
-						text: "No Chrome instances found on the network. Make sure Chrome is running with remote debugging enabled (--remote-debugging-port=9222).",
-					})
-				}
-			} else {
-				// Test the provided URL
-				const customHostUrl = message.text
-				const hostIsValid = await tryChromeHostUrl(message.text)
-
-				// Send the result back to the webview
-				await provider.postMessageToWebview({
-					type: "browserConnectionResult",
-					success: hostIsValid,
-					text: hostIsValid
-						? `Successfully connected to Chrome: ${customHostUrl}`
-						: "Failed to connect to Chrome",
-				})
-			}
 			break
 
 		case "updateVSCodeSetting": {

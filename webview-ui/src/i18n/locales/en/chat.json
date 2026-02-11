@@ -390,44 +390,6 @@
 		"total": "Total Cost: ${{cost}}",
 		"includesSubtasks": "Includes subtask costs"
 	},
-	"browser": {
-		"session": "Browser Session",
-		"active": "Active",
-		"rooWantsToUse": "Roo wants to use the browser",
-		"consoleLogs": "Console Logs",
-		"noNewLogs": "(No new logs)",
-		"screenshot": "Browser screenshot",
-		"cursor": "cursor",
-		"navigation": {
-			"step": "Step {{current}} of {{total}}",
-			"previous": "Previous",
-			"next": "Next"
-		},
-		"sessionStarted": "Browser Session Started",
-		"actions": {
-			"title": "Browser Action: ",
-			"launched": "Launched browser",
-			"launch": "Launch browser at {{url}}",
-			"clicked": "Clicked at: {{coordinate}}",
-			"click": "Click ({{coordinate}})",
-			"typed": "Typed: {{text}}",
-			"type": "Type \"{{text}}\"",
-			"pressed": "Pressed key: {{key}}",
-			"press": "Press {{key}}",
-			"scrolledDown": "Scrolled down",
-			"scrollDown": "Scroll down",
-			"scrolledUp": "Scrolled up",
-			"scrollUp": "Scroll up",
-			"hovered": "Hovered at: {{coordinate}}",
-			"hover": "Hover ({{coordinate}})",
-			"resized": "Resized to: {{size}}",
-			"resize": "Resize to {{size}}",
-			"screenshotSaved": "Screenshot saved",
-			"screenshot": "Save screenshot to {{path}}",
-			"closed": "Closed browser",
-			"close": "Close browser"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Expand code block",

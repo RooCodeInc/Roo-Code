@@ -25,7 +25,6 @@
 		"toolNames": {
 			"read": "Dosyaları Oku",
 			"edit": "Dosyaları Düzenle",
-			"browser": "Tarayıcı Kullan",
 			"command": "Komutları Çalıştır",
 			"mcp": "MCP Kullan"
 		},

@@ -1,10 +1,9 @@
-import type { TextPart, ImagePart } from "../task-persistence/rooMessage"
+import type { TextPart, ImagePart, LegacyToolResultBlock } from "../task-persistence/rooMessage"
 import { parseMentions, ParseMentionsResult, MentionContentBlock } from "./index"
-import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher"
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
 
 export interface ProcessUserContentMentionsResult {
-	content: Array<TextPart | ImagePart>
+	content: Array<TextPart | ImagePart | LegacyToolResultBlock>
 	mode?: string // Mode from the first slash command that has one
 }
 
@@ -30,16 +29,14 @@ function contentBlocksToTextParts(contentBlocks: MentionContentBlock[]): TextPar
 export async function processUserContentMentions({
 	userContent,
 	cwd,
-	urlContentFetcher,
 	fileContextTracker,
 	rooIgnoreController,
 	showRooIgnoredFiles = false,
 	includeDiagnosticMessages = true,
 	maxDiagnosticMessages = 50,
 }: {
-	userContent: Array<TextPart | ImagePart>
+	userContent: Array<TextPart | ImagePart | LegacyToolResultBlock>
 	cwd: string
-	urlContentFetcher: UrlContentFetcher
 	fileContextTracker: FileContextTracker
 	rooIgnoreController?: any
 	showRooIgnoredFiles?: boolean
@@ -61,7 +58,6 @@ export async function processUserContentMentions({
 						const result = await parseMentions(
 							block.text,
 							cwd,
-							urlContentFetcher,
 							fileContextTracker,
 							rooIgnoreController,
 							showRooIgnoredFiles,
@@ -99,6 +95,106 @@ export async function processUserContentMentions({
 					}
 
 					return block
+				} else if (block.type === "tool_result") {
+					if (typeof block.content === "string") {
+						if (shouldProcessMentions(block.content)) {
+							const result = await parseMentions(
+								block.content,
+								cwd,
+								fileContextTracker,
+								rooIgnoreController,
+								showRooIgnoredFiles,
+								includeDiagnosticMessages,
+								maxDiagnosticMessages,
+							)
+							// Capture the first mode found
+							if (!commandMode && result.mode) {
+								commandMode = result.mode
+							}
+
+							// Build content array with file blocks included
+							const contentParts: Array<{ type: "text"; text: string }> = [
+								{
+									type: "text" as const,
+									text: result.text,
+								},
+							]
+
+							// Add file/folder content blocks
+							for (const contentBlock of result.contentBlocks) {
+								contentParts.push({
+									type: "text" as const,
+									text: contentBlock.content,
+								})
+							}
+
+							if (result.slashCommandHelp) {
+								contentParts.push({
+									type: "text" as const,
+									text: result.slashCommandHelp,
+								})
+							}
+
+							return {
+								...block,
+								content: contentParts,
+							}
+						}
+
+						return block
+					} else if (Array.isArray(block.content)) {
+						const parsedContent = (
+							await Promise.all(
+								block.content.map(async (contentBlock) => {
+									if (contentBlock.type === "text" && shouldProcessMentions(contentBlock.text)) {
+										const result = await parseMentions(
+											contentBlock.text,
+											cwd,
+											fileContextTracker,
+											rooIgnoreController,
+											showRooIgnoredFiles,
+											includeDiagnosticMessages,
+											maxDiagnosticMessages,
+										)
+										// Capture the first mode found
+										if (!commandMode && result.mode) {
+											commandMode = result.mode
+										}
+
+										// Build blocks array with file content
+										const blocks: Array<{ type: "text"; text: string }> = [
+											{
+												...contentBlock,
+												text: result.text,
+											},
+										]
+
+										// Add file/folder content blocks
+										for (const cb of result.contentBlocks) {
+											blocks.push({
+												type: "text" as const,
+												text: cb.content,
+											})
+										}
+
+										if (result.slashCommandHelp) {
+											blocks.push({
+												type: "text" as const,
+												text: result.slashCommandHelp,
+											})
+										}
+										return blocks
+									}
+
+									return contentBlock
+								}),
+							)
+						).flat()
+
+						return { ...block, content: parsedContent }
+					}
+
+					return block
 				}
 
 				// Legacy backward compat: tool_result / tool-result blocks from older formats
@@ -108,5 +204,5 @@ export async function processUserContentMentions({
 		)
 	).flat()
 
-	return { content: content as Array<TextPart | ImagePart>, mode: commandMode }
+	return { content: content as Array<TextPart | ImagePart | LegacyToolResultBlock>, mode: commandMode }
 }

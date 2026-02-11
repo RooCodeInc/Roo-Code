@@ -17,8 +17,10 @@ import type { TextPart, ImagePart, FilePart, ToolCallPart, ToolResultPart } from
 
 /**
  * Union of content parts that can appear in a user message's content array.
+ * Includes `LegacyToolResultBlock` for backward compatibility with persisted
+ * data that stores Anthropic-format tool_result blocks inline in user messages.
  */
-export type UserContentPart = TextPart | ImagePart | FilePart
+export type UserContentPart = TextPart | ImagePart | FilePart | LegacyToolResultBlock
 
 /**
  * A minimal content block with a type discriminator and optional text.
@@ -73,9 +75,14 @@ export interface RooMessageMetadata {
 
 /**
  * A user-authored message. Content may be a plain string or an array of
- * text, image, and file parts. Extends AI SDK `UserModelMessage` with metadata.
+ * text, image, file, and legacy tool-result parts.
+ * Overrides the AI SDK `content` field to include `LegacyToolResultBlock`
+ * for backward compatibility with persisted data.
  */
-export type RooUserMessage = UserModelMessage & RooMessageMetadata
+export type RooUserMessage = Omit<UserModelMessage, "content"> &
+	RooMessageMetadata & {
+		content: string | UserContentPart[]
+	}
 
 /**
  * An assistant-authored message. Content may be a plain string or an array of
@@ -215,11 +222,17 @@ export interface LegacyToolUseBlock {
 	input: unknown
 }
 
+/** A text content block within a legacy Anthropic tool result. */
+export interface LegacyToolResultTextBlock {
+	type: "text"
+	text: string
+}
+
 /** Legacy Anthropic `tool_result` content block shape (persisted data from older versions). */
 export interface LegacyToolResultBlock {
 	type: "tool_result"
 	tool_use_id: string
-	content?: string | ContentBlockParam[]
+	content?: string | LegacyToolResultTextBlock[]
 	is_error?: boolean
 }
 

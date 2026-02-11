@@ -14,8 +14,6 @@ vi.mock("../../../integrations/terminal/TerminalRegistry", () => ({
 vi.mock("../../ignore/RooIgnoreController")
 vi.mock("../../protect/RooProtectedController")
 vi.mock("../../context-tracking/FileContextTracker")
-vi.mock("../../../services/browser/UrlContentFetcher")
-vi.mock("../../../services/browser/BrowserSession")
 vi.mock("../../../integrations/editor/DiffViewProvider")
 vi.mock("../../tools/ToolRepetitionDetector")
 vi.mock("../../../api", () => ({

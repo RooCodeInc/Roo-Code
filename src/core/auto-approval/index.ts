@@ -13,11 +13,10 @@ import { isWriteToolAction, isReadOnlyToolAction } from "./tools"
 import { isMcpToolAlwaysAllowed } from "./mcp"
 import { getCommandDecision } from "./commands"
 
-// We have 10 different actions that can be auto-approved.
+// We have auto-approval actions for different categories.
 export type AutoApprovalState =
 	| "alwaysAllowReadOnly"
 	| "alwaysAllowWrite"
-	| "alwaysAllowBrowser"
 	| "alwaysAllowMcp"
 	| "alwaysAllowModeSwitch"
 	| "alwaysAllowSubtasks"
@@ -88,10 +87,6 @@ export async function checkAutoApproval({
 		} else {
 			return { decision: "ask" }
 		}
-	}
-
-	if (ask === "browser_action_launch") {
-		return state.alwaysAllowBrowser === true ? { decision: "approve" } : { decision: "ask" }
 	}
 
 	if (ask === "use_mcp_server") {

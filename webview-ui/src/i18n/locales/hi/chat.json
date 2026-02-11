@@ -363,44 +363,6 @@
 		"total": "कुल लागत: ${{cost}}",
 		"includesSubtasks": "उप-कार्यों की लागत शामिल है"
 	},
-	"browser": {
-		"session": "ब्राउज़र सत्र",
-		"active": "सक्रिय",
-		"rooWantsToUse": "Roo ब्राउज़र का उपयोग करना चाहता है",
-		"consoleLogs": "कंसोल लॉग",
-		"noNewLogs": "(कोई नया लॉग नहीं)",
-		"screenshot": "ब्राउज़र स्क्रीनशॉट",
-		"cursor": "कर्सर",
-		"navigation": {
-			"step": "चरण {{current}} / {{total}}",
-			"previous": "पिछला",
-			"next": "अगला"
-		},
-		"sessionStarted": "ब्राउज़र सत्र शुरू हुआ",
-		"actions": {
-			"title": "ब्राउज़र क्रिया: ",
-			"launched": "ब्राउज़र लॉन्च हुआ",
-			"launch": "{{url}} पर ब्राउज़र लॉन्च करें",
-			"clicked": "क्लिक किया गया ({{coordinate}})",
-			"click": "क्लिक करें ({{coordinate}})",
-			"typed": "टाइप किया गया: {{text}}",
-			"type": "टाइप करें \"{{text}}\"",
-			"pressed": "दबाया गया: {{key}}",
-			"press": "{{key}} दबाएँ",
-			"scrolledDown": "नीचे स्क्रॉल किया गया",
-			"scrollDown": "नीचे स्क्रॉल करें",
-			"scrolledUp": "ऊपर स्क्रॉल किया गया",
-			"scrollUp": "ऊपर स्क्रॉल करें",
-			"hovered": "होवर किया गया ({{coordinate}})",
-			"hover": "होवर करें ({{coordinate}})",
-			"resized": "आकार बदला गया: {{size}}",
-			"resize": "आकार बदलें {{size}}",
-			"screenshotSaved": "स्क्रीनशॉट सहेजा गया",
-			"screenshot": "स्क्रीनशॉट को {{path}} में सहेजें",
-			"closed": "ब्राउज़र बंद किया गया",
-			"close": "ब्राउज़र बंद करें"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "कोड ब्लॉक का विस्तार करें",

@@ -102,7 +102,6 @@ export const globalSettingsSchema = z.object({
 	alwaysAllowWriteOutsideWorkspace: z.boolean().optional(),
 	alwaysAllowWriteProtected: z.boolean().optional(),
 	writeDelayMs: z.number().min(0).optional(),
-	alwaysAllowBrowser: z.boolean().optional(),
 	requestDelaySeconds: z.number().optional(),
 	alwaysAllowMcp: z.boolean().optional(),
 	alwaysAllowModeSwitch: z.boolean().optional(),
@@ -148,11 +147,7 @@ export const globalSettingsSchema = z.object({
 	 */
 	maxDiagnosticMessages: z.number().optional(),
 
-	browserToolEnabled: z.boolean().optional(),
-	browserViewportSize: z.string().optional(),
 	screenshotQuality: z.number().optional(),
-	remoteBrowserEnabled: z.boolean().optional(),
-	remoteBrowserHost: z.string().optional(),
 	cachedChromeHostUrl: z.string().optional(),
 
 	enableCheckpoints: z.boolean().optional(),
@@ -338,7 +333,6 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	alwaysAllowWriteOutsideWorkspace: false,
 	alwaysAllowWriteProtected: false,
 	writeDelayMs: 1000,
-	alwaysAllowBrowser: true,
 	requestDelaySeconds: 10,
 	alwaysAllowMcp: true,
 	alwaysAllowModeSwitch: true,
@@ -351,10 +345,7 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	commandTimeoutAllowlist: [],
 	preventCompletionWithOpenTodos: false,
 
-	browserToolEnabled: false,
-	browserViewportSize: "900x600",
 	screenshotQuality: 75,
-	remoteBrowserEnabled: false,
 
 	ttsEnabled: false,
 	ttsSpeed: 1,

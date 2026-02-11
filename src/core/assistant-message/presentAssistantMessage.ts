@@ -24,7 +24,6 @@ import { searchReplaceTool } from "../tools/SearchReplaceTool"
 import { editFileTool } from "../tools/EditFileTool"
 import { applyPatchTool } from "../tools/ApplyPatchTool"
 import { searchFilesTool } from "../tools/SearchFilesTool"
-import { browserActionTool } from "../tools/BrowserActionTool"
 import { executeCommandTool } from "../tools/ExecuteCommandTool"
 import { useMcpToolTool } from "../tools/UseMcpToolTool"
 import { accessMcpResourceTool } from "../tools/accessMcpResourceTool"
@@ -358,8 +357,6 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name}]`
 					case "list_files":
 						return `[${block.name} for '${block.params.path}']`
-					case "browser_action":
-						return `[${block.name} for '${block.params.action}']`
 					case "use_mcp_tool":
 						return `[${block.name} for '${block.params.server_name}']`
 					case "access_mcp_resource":
@@ -557,34 +554,6 @@ export async function presentAssistantMessage(cline: Task) {
 				)
 
 				pushToolResult(formatResponse.toolError(errorString))
-			}
-
-			// Keep browser open during an active session so other tools can run.
-			// Session is active if we've seen any browser_action_result and the last browser_action is not "close".
-			try {
-				const messages = cline.clineMessages || []
-				const hasStarted = messages.some((m: any) => m.say === "browser_action_result")
-				let isClosed = false
-				for (let i = messages.length - 1; i >= 0; i--) {
-					const m = messages[i]
-					if (m.say === "browser_action") {
-						try {
-							const act = JSON.parse(m.text || "{}")
-							isClosed = act.action === "close"
-						} catch {}
-						break
-					}
-				}
-				const sessionActive = hasStarted && !isClosed
-				// Only auto-close when no active browser session is present, and this isn't a browser_action
-				if (!sessionActive && block.name !== "browser_action") {
-					await cline.browserSession.closeBrowser()
-				}
-			} catch {
-				// On any unexpected error, fall back to conservative behavior
-				if (block.name !== "browser_action") {
-					await cline.browserSession.closeBrowser()
-				}
 			}
 
 			if (!block.partial) {
@@ -797,15 +766,6 @@ export async function presentAssistantMessage(cline: Task) {
 						handleError,
 						pushToolResult,
 					})
-					break
-				case "browser_action":
-					await browserActionTool(
-						cline,
-						block as ToolUse<"browser_action">,
-						askApproval,
-						handleError,
-						pushToolResult,
-					)
 					break
 				case "execute_command":
 					await executeCommandTool.handle(cline, block as ToolUse<"execute_command">, {
@@ -1037,4 +997,47 @@ async function checkpointSaveAndMark(task: Task) {
 	} catch (error) {
 		console.error(`[Task#presentAssistantMessage] Error saving checkpoint: ${error.message}`, error)
 	}
+}
+
+function containsXmlToolMarkup(text: string): boolean {
+	// Keep this intentionally narrow: only reject XML-style tool tags matching our tool names.
+	// Avoid regex so we don't keep legacy XML parsing artifacts around.
+	// Note: This is a best-effort safeguard; tool_use blocks without an id are rejected elsewhere.
+
+	// First, strip out content inside markdown code fences to avoid false positives
+	// when users paste documentation or examples containing tool tag references.
+	// This handles both fenced code blocks (```) and inline code (`).
+	const textWithoutCodeBlocks = text
+		.replace(/```[\s\S]*?```/g, "") // Remove fenced code blocks
+		.replace(/`[^`]+`/g, "") // Remove inline code
+
+	const lower = textWithoutCodeBlocks.toLowerCase()
+	if (!lower.includes("<") || !lower.includes(">")) {
+		return false
+	}
+
+	const toolNames = [
+		"access_mcp_resource",
+		"apply_diff",
+		"apply_patch",
+		"ask_followup_question",
+		"attempt_completion",
+		"codebase_search",
+		"edit_file",
+		"execute_command",
+		"generate_image",
+		"list_files",
+		"new_task",
+		"read_command_output",
+		"read_file",
+		"search_and_replace",
+		"search_files",
+		"search_replace",
+		"switch_mode",
+		"update_todo_list",
+		"use_mcp_tool",
+		"write_to_file",
+	] as const
+
+	return toolNames.some((name) => lower.includes(`<${name}`) || lower.includes(`</${name}`))
 }
