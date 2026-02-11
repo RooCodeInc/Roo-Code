@@ -1053,6 +1053,183 @@ describe("McpHub", () => {
 		})
 	})
 
+	describe("allowedTools whitelist", () => {
+		it("should enable only whitelisted tools when allowedTools is specified", async () => {
+			const mockConfig = {
+				mcpServers: {
+					"test-server": {
+						type: "stdio",
+						command: "node",
+						args: ["test.js"],
+						allowedTools: ["tool1", "tool3"],
+					},
+				},
+			}
+
+			vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockConfig))
+
+			const mockConnection: ConnectedMcpConnection = {
+				type: "connected",
+				server: {
+					name: "test-server",
+					type: "stdio",
+					command: "node",
+					args: ["test.js"],
+					source: "global",
+				} as any,
+				client: {
+					request: vi.fn().mockResolvedValue({
+						tools: [
+							{ name: "tool1", description: "Tool 1" },
+							{ name: "tool2", description: "Tool 2" },
+							{ name: "tool3", description: "Tool 3" },
+						],
+					}),
+				} as any,
+				transport: {} as any,
+			}
+			mcpHub.connections = [mockConnection]
+
+			const tools = await mcpHub["fetchToolsList"]("test-server", "global")
+
+			expect(tools.length).toBe(3)
+			expect(tools[0].enabledForPrompt).toBe(true) // tool1 is whitelisted
+			expect(tools[1].enabledForPrompt).toBe(false) // tool2 is NOT whitelisted
+			expect(tools[2].enabledForPrompt).toBe(true) // tool3 is whitelisted
+		})
+
+		it("should allow all tools when allowedTools is not specified (backward compatibility)", async () => {
+			const mockConfig = {
+				mcpServers: {
+					"test-server": {
+						type: "stdio",
+						command: "node",
+						args: ["test.js"],
+						// no allowedTools field
+					},
+				},
+			}
+
+			vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockConfig))
+
+			const mockConnection: ConnectedMcpConnection = {
+				type: "connected",
+				server: {
+					name: "test-server",
+					type: "stdio",
+					command: "node",
+					args: ["test.js"],
+					source: "global",
+				} as any,
+				client: {
+					request: vi.fn().mockResolvedValue({
+						tools: [
+							{ name: "tool1", description: "Tool 1" },
+							{ name: "tool2", description: "Tool 2" },
+						],
+					}),
+				} as any,
+				transport: {} as any,
+			}
+			mcpHub.connections = [mockConnection]
+
+			const tools = await mcpHub["fetchToolsList"]("test-server", "global")
+
+			expect(tools.length).toBe(2)
+			expect(tools[0].enabledForPrompt).toBe(true) // all tools allowed
+			expect(tools[1].enabledForPrompt).toBe(true) // all tools allowed
+		})
+
+		it("should apply disabledTools on top of allowedTools whitelist", async () => {
+			const mockConfig = {
+				mcpServers: {
+					"test-server": {
+						type: "stdio",
+						command: "node",
+						args: ["test.js"],
+						allowedTools: ["tool1", "tool2", "tool3"],
+						disabledTools: ["tool2"],
+					},
+				},
+			}
+
+			vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockConfig))
+
+			const mockConnection: ConnectedMcpConnection = {
+				type: "connected",
+				server: {
+					name: "test-server",
+					type: "stdio",
+					command: "node",
+					args: ["test.js"],
+					source: "global",
+				} as any,
+				client: {
+					request: vi.fn().mockResolvedValue({
+						tools: [
+							{ name: "tool1", description: "Tool 1" },
+							{ name: "tool2", description: "Tool 2" },
+							{ name: "tool3", description: "Tool 3" },
+							{ name: "tool4", description: "Tool 4" },
+						],
+					}),
+				} as any,
+				transport: {} as any,
+			}
+			mcpHub.connections = [mockConnection]
+
+			const tools = await mcpHub["fetchToolsList"]("test-server", "global")
+
+			expect(tools.length).toBe(4)
+			expect(tools[0].enabledForPrompt).toBe(true) // tool1: whitelisted, not blacklisted
+			expect(tools[1].enabledForPrompt).toBe(false) // tool2: whitelisted but blacklisted
+			expect(tools[2].enabledForPrompt).toBe(true) // tool3: whitelisted, not blacklisted
+			expect(tools[3].enabledForPrompt).toBe(false) // tool4: not whitelisted
+		})
+
+		it("should disable all tools when allowedTools is an empty array", async () => {
+			const mockConfig = {
+				mcpServers: {
+					"test-server": {
+						type: "stdio",
+						command: "node",
+						args: ["test.js"],
+						allowedTools: [],
+					},
+				},
+			}
+
+			vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockConfig))
+
+			const mockConnection: ConnectedMcpConnection = {
+				type: "connected",
+				server: {
+					name: "test-server",
+					type: "stdio",
+					command: "node",
+					args: ["test.js"],
+					source: "global",
+				} as any,
+				client: {
+					request: vi.fn().mockResolvedValue({
+						tools: [
+							{ name: "tool1", description: "Tool 1" },
+							{ name: "tool2", description: "Tool 2" },
+						],
+					}),
+				} as any,
+				transport: {} as any,
+			}
+			mcpHub.connections = [mockConnection]
+
+			const tools = await mcpHub["fetchToolsList"]("test-server", "global")
+
+			expect(tools.length).toBe(2)
+			expect(tools[0].enabledForPrompt).toBe(false) // empty whitelist means nothing allowed
+			expect(tools[1].enabledForPrompt).toBe(false) // empty whitelist means nothing allowed
+		})
+	})
+
 	describe("toggleToolEnabledForPrompt", () => {
 		it("should add tool to disabledTools list when enabling", async () => {
 			const mockConfig = {
