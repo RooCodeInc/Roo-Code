@@ -293,6 +293,73 @@ describe("NativeToolCallParser", () => {
 		})
 	})
 
+	describe("parseToolCall - attempt_completion", () => {
+		it("should produce nativeArgs when result is an empty string", () => {
+			const toolCall = {
+				id: "toolu_empty_result",
+				name: "attempt_completion" as const,
+				arguments: JSON.stringify({ result: "" }),
+			}
+
+			const result = NativeToolCallParser.parseToolCall(toolCall)
+
+			expect(result).not.toBeNull()
+			expect(result?.type).toBe("tool_use")
+			if (result?.type === "tool_use") {
+				expect(result.nativeArgs).toBeDefined()
+				const nativeArgs = result.nativeArgs as { result: string }
+				expect(nativeArgs.result).toBe("")
+			}
+		})
+
+		it("should produce nativeArgs when result is a non-empty string", () => {
+			const toolCall = {
+				id: "toolu_normal_result",
+				name: "attempt_completion" as const,
+				arguments: JSON.stringify({ result: "Task completed successfully." }),
+			}
+
+			const result = NativeToolCallParser.parseToolCall(toolCall)
+
+			expect(result).not.toBeNull()
+			expect(result?.type).toBe("tool_use")
+			if (result?.type === "tool_use") {
+				expect(result.nativeArgs).toBeDefined()
+				const nativeArgs = result.nativeArgs as { result: string }
+				expect(nativeArgs.result).toBe("Task completed successfully.")
+			}
+		})
+
+		it("should return null when result is missing entirely", () => {
+			const toolCall = {
+				id: "toolu_no_result",
+				name: "attempt_completion" as const,
+				arguments: JSON.stringify({}),
+			}
+
+			const result = NativeToolCallParser.parseToolCall(toolCall)
+
+			expect(result).toBeNull()
+		})
+	})
+
+	describe("processStreamingChunk - attempt_completion", () => {
+		it("should produce nativeArgs during streaming when result is an empty string", () => {
+			const id = "toolu_stream_empty_completion"
+			NativeToolCallParser.startStreamingToolCall(id, "attempt_completion")
+
+			const result = NativeToolCallParser.processStreamingChunk(
+				id,
+				JSON.stringify({ result: "" }),
+			)
+
+			expect(result).not.toBeNull()
+			expect(result?.nativeArgs).toBeDefined()
+			const nativeArgs = result?.nativeArgs as { result: string }
+			expect(nativeArgs.result).toBe("")
+		})
+	})
+
 	describe("processStreamingChunk", () => {
 		describe("read_file tool", () => {
 			it("should emit a partial ToolUse with nativeArgs.path during streaming", () => {
