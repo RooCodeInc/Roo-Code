@@ -4,7 +4,6 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { rooDefaultModelId } from "@roo-code/types"
 
 import { ApiHandlerOptions } from "../../../shared/api"
-import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 
 // Mock the AI SDK
 const mockStreamText = vitest.fn()
@@ -139,7 +138,7 @@ describe("RooHandler", () => {
 	let handler: RooHandler
 	let mockOptions: ApiHandlerOptions
 	const systemPrompt = "You are a helpful assistant."
-	const messages: RooMessage[] = [
+	const messages: Anthropic.Messages.MessageParam[] = [
 		{
 			role: "user",
 			content: "Hello!",
@@ -298,7 +297,7 @@ describe("RooHandler", () => {
 		it("should handle multiple messages in conversation", async () => {
 			mockStreamText.mockReturnValue(createMockStreamResult())
 
-			const multipleMessages: RooMessage[] = [
+			const multipleMessages: Anthropic.Messages.MessageParam[] = [
 				{ role: "user", content: "First message" },
 				{ role: "assistant", content: "First response" },
 				{ role: "user", content: "Second message" },

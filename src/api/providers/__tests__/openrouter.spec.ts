@@ -1,4 +1,3 @@
-import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // pnpm --filter roo-cline test api/providers/__tests__/openrouter.spec.ts
 
 vitest.mock("vscode", () => ({}))
@@ -269,7 +268,7 @@ describe("OpenRouterHandler", () => {
 			})
 
 			const systemPrompt = "test system prompt"
-			const messages: RooMessage[] = [{ role: "user" as const, content: "test message" }]
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user" as const, content: "test message" }]
 
 			const generator = handler.createMessage(systemPrompt, messages)
 			const chunks = []

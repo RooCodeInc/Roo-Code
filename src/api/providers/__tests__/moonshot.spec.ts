@@ -1,4 +1,3 @@
-import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // Use vi.hoisted to define mock functions that can be referenced in hoisted vi.mock() calls
 const { mockStreamText, mockGenerateText } = vi.hoisted(() => ({
 	mockStreamText: vi.fn(),
@@ -122,7 +121,7 @@ describe("MoonshotHandler", () => {
 
 	describe("createMessage", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: RooMessage[] = [
+		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: [
@@ -345,7 +344,7 @@ describe("MoonshotHandler", () => {
 
 	describe("tool handling", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: RooMessage[] = [
+		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: [{ type: "text" as const, text: "Hello!" }],

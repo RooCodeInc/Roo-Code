@@ -18,7 +18,6 @@ import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { OpenAICompatibleHandler } from "./openai-compatible"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 export class LiteLLMHandler extends OpenAICompatibleHandler implements SingleCompletionHandler {
 	private models: ModelRecord = {}
@@ -81,7 +80,7 @@ export class LiteLLMHandler extends OpenAICompatibleHandler implements SingleCom
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: RooMessage[],
+		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		await this.fetchModel()

@@ -1,4 +1,3 @@
-import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 const { mockStreamText, mockGenerateText } = vi.hoisted(() => ({
 	mockStreamText: vi.fn(),
 	mockGenerateText: vi.fn(),
@@ -258,7 +257,7 @@ describe("LiteLLMHandler", () => {
 			})
 
 			const systemPrompt = "You are a helpful assistant"
-			const messages: RooMessage[] = [{ role: "user", content: "Hello" }]
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
 
 			const generator = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of generator) {

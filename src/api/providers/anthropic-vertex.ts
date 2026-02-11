@@ -1,6 +1,6 @@
 import type { Anthropic } from "@anthropic-ai/sdk"
 import { createVertexAnthropic } from "@ai-sdk/google-vertex/anthropic"
-import { streamText, generateText, ToolSet, ModelMessage } from "ai"
+import { streamText, generateText, ToolSet } from "ai"
 
 import {
 	type ModelInfo,
@@ -30,7 +30,6 @@ import { calculateApiCostAnthropic } from "../../shared/cost"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 // https://docs.anthropic.com/en/api/claude-on-vertex-ai
 export class AnthropicVertexHandler extends BaseProvider implements SingleCompletionHandler {
@@ -86,7 +85,7 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: RooMessage[],
+		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const modelConfig = this.getModel()
@@ -96,7 +95,7 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 		this.lastRedactedThinkingBlocks = []
 
 		// Convert messages to AI SDK format
-		const aiSdkMessages = messages as ModelMessage[]
+		const aiSdkMessages = convertToAiSdkMessages(messages)
 
 		// Convert tools to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
@@ -140,7 +139,7 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 		const cacheProviderOption = { anthropic: { cacheControl: { type: "ephemeral" as const } } }
 
 		const userMsgIndices = messages.reduce(
-			(acc, msg, index) => ("role" in msg && msg.role === "user" ? [...acc, index] : acc),
+			(acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc),
 			[] as number[],
 		)
 
@@ -152,7 +151,7 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 		if (secondLastUserMsgIndex >= 0) targetIndices.add(secondLastUserMsgIndex)
 
 		if (targetIndices.size > 0) {
-			this.applyCacheControlToAiSdkMessages(messages as ModelMessage[], targetIndices, cacheProviderOption)
+			this.applyCacheControlToAiSdkMessages(messages, aiSdkMessages, targetIndices, cacheProviderOption)
 		}
 
 		// Build streamText request
@@ -269,16 +268,57 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 	 * accounts for that split so cache control lands on the right message.
 	 */
 	private applyCacheControlToAiSdkMessages(
+		originalMessages: Anthropic.Messages.MessageParam[],
 		aiSdkMessages: { role: string; providerOptions?: Record<string, Record<string, unknown>> }[],
-		targetIndices: Set<number>,
+		targetOriginalIndices: Set<number>,
 		cacheProviderOption: Record<string, Record<string, unknown>>,
 	): void {
-		for (const idx of targetIndices) {
-			if (idx >= 0 && idx < aiSdkMessages.length) {
-				aiSdkMessages[idx].providerOptions = {
-					...aiSdkMessages[idx].providerOptions,
-					...cacheProviderOption,
+		let aiSdkIdx = 0
+		for (let origIdx = 0; origIdx < originalMessages.length; origIdx++) {
+			const origMsg = originalMessages[origIdx]
+
+			if (typeof origMsg.content === "string") {
+				if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
+					aiSdkMessages[aiSdkIdx].providerOptions = {
+						...aiSdkMessages[aiSdkIdx].providerOptions,
+						...cacheProviderOption,
+					}
 				}
+				aiSdkIdx++
+			} else if (origMsg.role === "user") {
+				const hasToolResults = origMsg.content.some((part) => (part as { type: string }).type === "tool_result")
+				const hasNonToolContent = origMsg.content.some(
+					(part) => (part as { type: string }).type === "text" || (part as { type: string }).type === "image",
+				)
+
+				if (hasToolResults && hasNonToolContent) {
+					const userMsgIdx = aiSdkIdx + 1
+					if (targetOriginalIndices.has(origIdx) && userMsgIdx < aiSdkMessages.length) {
+						aiSdkMessages[userMsgIdx].providerOptions = {
+							...aiSdkMessages[userMsgIdx].providerOptions,
+							...cacheProviderOption,
+						}
+					}
+					aiSdkIdx += 2
+				} else if (hasToolResults) {
+					if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
+						aiSdkMessages[aiSdkIdx].providerOptions = {
+							...aiSdkMessages[aiSdkIdx].providerOptions,
+							...cacheProviderOption,
+						}
+					}
+					aiSdkIdx++
+				} else {
+					if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
+						aiSdkMessages[aiSdkIdx].providerOptions = {
+							...aiSdkMessages[aiSdkIdx].providerOptions,
+							...cacheProviderOption,
+						}
+					}
+					aiSdkIdx++
+				}
+			} else {
+				aiSdkIdx++
 			}
 		}
 	}

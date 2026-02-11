@@ -16,7 +16,6 @@ import { ApiStream } from "../transform/stream"
 import { DEFAULT_HEADERS } from "./constants"
 import { OpenAICompatibleHandler, OpenAICompatibleConfig } from "./openai-compatible"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 const QWEN_OAUTH_BASE_URL = "https://chat.qwen.ai"
 const QWEN_OAUTH_TOKEN_ENDPOINT = `${QWEN_OAUTH_BASE_URL}/api/v1/oauth2/token`
@@ -275,7 +274,7 @@ export class QwenCodeHandler extends OpenAICompatibleHandler implements SingleCo
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: RooMessage[],
+		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		await this.ensureAuthenticated()

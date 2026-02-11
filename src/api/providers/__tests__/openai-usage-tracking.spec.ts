@@ -1,4 +1,3 @@
-import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // npx vitest run api/providers/__tests__/openai-usage-tracking.spec.ts
 
 import { Anthropic } from "@anthropic-ai/sdk"
@@ -54,7 +53,7 @@ describe("OpenAiHandler with usage tracking fix", () => {
 
 	describe("usage metrics with streaming", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: RooMessage[] = [
+		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: [

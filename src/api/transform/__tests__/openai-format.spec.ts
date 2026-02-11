@@ -1,7 +1,7 @@
 // npx vitest run api/transform/__tests__/openai-format.spec.ts
 
+import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
-import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 
 import {
 	convertToOpenAiMessages,
@@ -13,7 +13,7 @@ import { normalizeMistralToolCallId } from "../mistral-format"
 
 describe("convertToOpenAiMessages", () => {
 	it("should convert simple text messages", () => {
-		const anthropicMessages: any[] = [
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: "Hello",
@@ -37,7 +37,7 @@ describe("convertToOpenAiMessages", () => {
 	})
 
 	it("should handle messages with image content", () => {
-		const anthropicMessages: any[] = [
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: [
@@ -77,7 +77,7 @@ describe("convertToOpenAiMessages", () => {
 	})
 
 	it("should handle assistant messages with tool use (no normalization without normalizeToolCallId)", () => {
-		const anthropicMessages: any[] = [
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "assistant",
 				content: [
@@ -113,7 +113,7 @@ describe("convertToOpenAiMessages", () => {
 	})
 
 	it("should handle user messages with tool results (no normalization without normalizeToolCallId)", () => {
-		const anthropicMessages: any[] = [
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: [
@@ -136,7 +136,7 @@ describe("convertToOpenAiMessages", () => {
 	})
 
 	it("should normalize tool call IDs when normalizeToolCallId function is provided", () => {
-		const anthropicMessages: any[] = [
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "assistant",
 				content: [
@@ -173,7 +173,7 @@ describe("convertToOpenAiMessages", () => {
 	})
 
 	it("should not normalize tool call IDs when normalizeToolCallId function is not provided", () => {
-		const anthropicMessages: any[] = [
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "assistant",
 				content: [
@@ -208,7 +208,7 @@ describe("convertToOpenAiMessages", () => {
 	})
 
 	it("should use custom normalization function when provided", () => {
-		const anthropicMessages: any[] = [
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "assistant",
 				content: [
@@ -235,7 +235,7 @@ describe("convertToOpenAiMessages", () => {
 		// have content set to "" instead of undefined. Gemini (via OpenRouter) requires
 		// every message to have at least one "parts" field, which fails if content is undefined.
 		// See: ROO-425
-		const anthropicMessages: any[] = [
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "assistant",
 				content: [
@@ -265,7 +265,7 @@ describe("convertToOpenAiMessages", () => {
 		// of an empty string. Gemini (via OpenRouter) requires function responses to have
 		// non-empty content in the "parts" field, and an empty string causes validation failure
 		// with error: "Unable to submit request because it must include at least one parts field"
-		const anthropicMessages: any[] = [
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: [
@@ -289,7 +289,7 @@ describe("convertToOpenAiMessages", () => {
 	})
 
 	it('should use "(empty)" placeholder for tool result with undefined content (Gemini compatibility)', () => {
-		const anthropicMessages: any[] = [
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: [
@@ -297,7 +297,7 @@ describe("convertToOpenAiMessages", () => {
 						type: "tool_result",
 						tool_use_id: "tool-456",
 						// content is undefined/not provided
-					},
+					} as Anthropic.ToolResultBlockParam,
 				],
 			},
 		]
@@ -311,7 +311,7 @@ describe("convertToOpenAiMessages", () => {
 	})
 
 	it('should use "(empty)" placeholder for tool result with empty array content (Gemini compatibility)', () => {
-		const anthropicMessages: any[] = [
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: [
@@ -319,7 +319,7 @@ describe("convertToOpenAiMessages", () => {
 						type: "tool_result",
 						tool_use_id: "tool-789",
 						content: [], // Empty array
-					},
+					} as Anthropic.ToolResultBlockParam,
 				],
 			},
 		]
@@ -337,7 +337,7 @@ describe("convertToOpenAiMessages", () => {
 			// This test ensures that user messages with empty text blocks are filtered out
 			// to prevent "must include at least one parts field" error from Gemini (via OpenRouter).
 			// Empty text blocks can occur in edge cases during message construction.
-			const anthropicMessages: any[] = [
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: [
@@ -365,7 +365,7 @@ describe("convertToOpenAiMessages", () => {
 
 		it("should not create user message when all text blocks are empty (Gemini compatibility)", () => {
 			// If all text blocks are empty, no user message should be created
-			const anthropicMessages: any[] = [
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: [
@@ -387,7 +387,7 @@ describe("convertToOpenAiMessages", () => {
 		})
 
 		it("should preserve image blocks when filtering empty text blocks", () => {
-			const anthropicMessages: any[] = [
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: [
@@ -426,7 +426,7 @@ describe("convertToOpenAiMessages", () => {
 
 	describe("mergeToolResultText option", () => {
 		it("should merge text content into last tool message when mergeToolResultText is true", () => {
-			const anthropicMessages: any[] = [
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: [
@@ -456,7 +456,7 @@ describe("convertToOpenAiMessages", () => {
 		})
 
 		it("should merge text into last tool message when multiple tool results exist", () => {
-			const anthropicMessages: any[] = [
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: [
@@ -489,7 +489,7 @@ describe("convertToOpenAiMessages", () => {
 		})
 
 		it("should NOT merge text when images are present (fall back to user message)", () => {
-			const anthropicMessages: any[] = [
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: [
@@ -519,7 +519,7 @@ describe("convertToOpenAiMessages", () => {
 		})
 
 		it("should create separate user message when mergeToolResultText is false", () => {
-			const anthropicMessages: any[] = [
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: [
@@ -548,7 +548,7 @@ describe("convertToOpenAiMessages", () => {
 		})
 
 		it("should work with normalizeToolCallId when mergeToolResultText is true", () => {
-			const anthropicMessages: any[] = [
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: [
@@ -581,7 +581,7 @@ describe("convertToOpenAiMessages", () => {
 		})
 
 		it("should handle user messages with only text content (no tool results)", () => {
-			const anthropicMessages: any[] = [
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: [
@@ -906,7 +906,7 @@ describe("convertToOpenAiMessages", () => {
 		})
 
 		it("should handle messages without reasoning_details", () => {
-			const anthropicMessages: any[] = [
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "assistant",
 					content: [{ type: "text", text: "Simple response" }],

@@ -3,8 +3,6 @@ import OpenAI from "openai"
 
 import { isRetiredProvider, type ProviderSettings, type ModelInfo } from "@roo-code/types"
 
-import type { RooMessage } from "../core/task-persistence/rooMessage"
-
 import { ApiStream } from "./transform/stream"
 
 import {
@@ -91,7 +89,11 @@ export interface ApiHandlerCreateMessageMetadata {
 }
 
 export interface ApiHandler {
-	createMessage(systemPrompt: string, messages: RooMessage[], metadata?: ApiHandlerCreateMessageMetadata): ApiStream
+	createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream
 
 	getModel(): { id: string; info: ModelInfo }
 

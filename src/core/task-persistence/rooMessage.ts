@@ -13,20 +13,6 @@ import type { UserModelMessage, AssistantModelMessage, ToolModelMessage, Assista
 // Re-export AI SDK content part types for convenience
 export type { TextPart, ImagePart, FilePart, ToolCallPart, ToolResultPart } from "ai"
 
-import type { TextPart, ImagePart, FilePart, ToolCallPart, ToolResultPart } from "ai"
-
-/**
- * Union of content parts that can appear in a user message's content array.
- */
-export type UserContentPart = TextPart | ImagePart | FilePart
-
-/**
- * A minimal content block with a type discriminator and optional text.
- * Structurally compatible with Anthropic's `TextBlockParam` (which `countTokens` accepts)
- * without importing provider-specific types.
- */
-export type ContentBlockParam = { type: string; text?: string }
-
 /**
  * `ReasoningPart` is used by the AI SDK in `AssistantContent` but is not directly
  * exported from `"ai"`. We extract it from the `AssistantContent` union to get the
@@ -115,12 +101,6 @@ export interface RooReasoningMessage extends RooMessageMetadata {
  */
 export type RooMessage = RooUserMessage | RooAssistantMessage | RooToolMessage | RooReasoningMessage
 
-/**
- * Union of RooMessage types that have a `role` property (i.e. everything except
- * {@link RooReasoningMessage}). Useful for narrowing before accessing `.role` or `.content`.
- */
-export type RooRoleMessage = RooUserMessage | RooAssistantMessage | RooToolMessage
-
 // ────────────────────────────────────────────────────────────────────────────
 // Storage Wrapper
 // ────────────────────────────────────────────────────────────────────────────
@@ -169,124 +149,4 @@ export function isRooToolMessage(msg: RooMessage): msg is RooToolMessage {
  */
 export function isRooReasoningMessage(msg: RooMessage): msg is RooReasoningMessage {
 	return "type" in msg && (msg as RooReasoningMessage).type === "reasoning" && !("role" in msg)
-}
-
-/**
- * Type guard that checks whether a message is a {@link RooRoleMessage}
- * (i.e. any message with a `role` property — user, assistant, or tool).
- */
-export function isRooRoleMessage(msg: RooMessage): msg is RooRoleMessage {
-	return "role" in msg
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-// Content Part Type Guards
-// ────────────────────────────────────────────────────────────────────────────
-
-/** Type guard for AI SDK `TextPart` content blocks. */
-export function isTextPart(part: { type: string }): part is TextPart {
-	return part.type === "text"
-}
-
-/** Type guard for AI SDK `ToolCallPart` content blocks. */
-export function isToolCallPart(part: { type: string }): part is ToolCallPart {
-	return part.type === "tool-call"
-}
-
-/** Type guard for AI SDK `ToolResultPart` content blocks. */
-export function isToolResultPart(part: { type: string }): part is ToolResultPart {
-	return part.type === "tool-result"
-}
-
-/** Type guard for AI SDK `ImagePart` content blocks. */
-export function isImagePart(part: { type: string }): part is ImagePart {
-	return part.type === "image"
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-// Legacy (Anthropic) Block Types — for dual-format backward compatibility
-// ────────────────────────────────────────────────────────────────────────────
-
-/** Legacy Anthropic `tool_use` content block shape (persisted data from older versions). */
-export interface LegacyToolUseBlock {
-	type: "tool_use"
-	id: string
-	name: string
-	input: unknown
-}
-
-/** Legacy Anthropic `tool_result` content block shape (persisted data from older versions). */
-export interface LegacyToolResultBlock {
-	type: "tool_result"
-	tool_use_id: string
-	content?: string | ContentBlockParam[]
-	is_error?: boolean
-}
-
-/** Union of AI SDK `ToolCallPart` and legacy Anthropic `tool_use` block. */
-export type AnyToolCallBlock = ToolCallPart | LegacyToolUseBlock
-
-/** Union of AI SDK `ToolResultPart` and legacy Anthropic `tool_result` block. */
-export type AnyToolResultBlock = ToolResultPart | LegacyToolResultBlock
-
-// ────────────────────────────────────────────────────────────────────────────
-// Dual-Format Type Guards
-// ────────────────────────────────────────────────────────────────────────────
-
-/** Type guard matching both AI SDK `tool-call` and legacy Anthropic `tool_use` blocks. */
-export function isAnyToolCallBlock(block: { type: string }): block is AnyToolCallBlock {
-	return block.type === "tool-call" || block.type === "tool_use"
-}
-
-/** Type guard matching both AI SDK `tool-result` and legacy Anthropic `tool_result` blocks. */
-export function isAnyToolResultBlock(block: { type: string }): block is AnyToolResultBlock {
-	return block.type === "tool-result" || block.type === "tool_result"
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-// Dual-Format Accessor Helpers
-// ────────────────────────────────────────────────────────────────────────────
-
-/** Get the tool call ID from either format. */
-export function getToolCallId(block: AnyToolCallBlock): string {
-	return block.type === "tool-call" ? block.toolCallId : block.id
-}
-
-/** Get the tool name from either format. */
-export function getToolCallName(block: AnyToolCallBlock): string {
-	return block.type === "tool-call" ? block.toolName : block.name
-}
-
-/** Get the tool call arguments/input from either format. */
-export function getToolCallInput(block: AnyToolCallBlock): unknown {
-	return block.input
-}
-
-/** Get the referenced tool call ID from a tool result in either format. */
-export function getToolResultCallId(block: AnyToolResultBlock): string {
-	return block.type === "tool-result" ? block.toolCallId : block.tool_use_id
-}
-
-/** Get the tool result content/output from either format. */
-export function getToolResultContent(block: AnyToolResultBlock): unknown {
-	if (block.type === "tool-result") {
-		return block.output
-	}
-	return block.content
-}
-
-/** Get the error flag from a tool result in either format. */
-export function getToolResultIsError(block: AnyToolResultBlock): boolean | undefined {
-	if (block.type === "tool-result") {
-		return undefined // AI SDK ToolResultPart has no isError field
-	}
-	return block.is_error
-}
-
-/** Set the tool result's reference to a tool call ID, returning a new block. */
-export function setToolResultCallId(block: AnyToolResultBlock, id: string): AnyToolResultBlock {
-	if (block.type === "tool-result") {
-		return { ...block, toolCallId: id }
-	}
-	return { ...block, tool_use_id: id }
 }

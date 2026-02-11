@@ -238,8 +238,8 @@ describe("Task reasoning preservation", () => {
 
 		// Verify the API conversation history contains the message with reasoning block
 		expect(task.apiConversationHistory).toHaveLength(1)
-		expect((task.apiConversationHistory[0] as any).role).toBe("assistant")
-		expect((task.apiConversationHistory[0] as any).content).toEqual([
+		expect(task.apiConversationHistory[0].role).toBe("assistant")
+		expect(task.apiConversationHistory[0].content).toEqual([
 			{ type: "reasoning", text: reasoningMessage, summary: [] },
 			{ type: "text", text: assistantMessage },
 		])
@@ -285,8 +285,8 @@ describe("Task reasoning preservation", () => {
 
 		// Verify the API conversation history contains a reasoning block (storage is unconditional)
 		expect(task.apiConversationHistory).toHaveLength(1)
-		expect((task.apiConversationHistory[0] as any).role).toBe("assistant")
-		expect((task.apiConversationHistory[0] as any).content).toEqual([
+		expect(task.apiConversationHistory[0].role).toBe("assistant")
+		expect(task.apiConversationHistory[0].content).toEqual([
 			{ type: "reasoning", text: reasoningMessage, summary: [] },
 			{ type: "text", text: assistantMessage },
 		])
@@ -330,9 +330,7 @@ describe("Task reasoning preservation", () => {
 		)
 
 		// Verify no reasoning blocks were added when reasoning is empty
-		expect((task.apiConversationHistory[0] as any).content).toEqual([
-			{ type: "text", text: "Here is my response." },
-		])
+		expect(task.apiConversationHistory[0].content).toEqual([{ type: "text", text: "Here is my response." }])
 	})
 
 	it("should handle undefined preserveReasoning (defaults to false)", async () => {
@@ -373,7 +371,7 @@ describe("Task reasoning preservation", () => {
 		)
 
 		// Verify reasoning is stored even when preserveReasoning is undefined
-		expect((task.apiConversationHistory[0] as any).content).toEqual([
+		expect(task.apiConversationHistory[0].content).toEqual([
 			{ type: "reasoning", text: reasoningMessage, summary: [] },
 			{ type: "text", text: assistantMessage },
 		])

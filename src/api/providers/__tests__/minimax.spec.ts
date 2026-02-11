@@ -1,4 +1,3 @@
-import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 import { describe, it, expect, beforeEach } from "vitest"
 
 import type { Anthropic } from "@anthropic-ai/sdk"
@@ -23,7 +22,7 @@ const {
 		mockGenerateText: vi.fn(),
 		mockCreateAnthropic: vi.fn().mockReturnValue(mockModel),
 		mockModel,
-		mockMergeEnvironmentDetailsForMiniMax: vi.fn((messages: RooMessage[]) => messages),
+		mockMergeEnvironmentDetailsForMiniMax: vi.fn((messages: Anthropic.Messages.MessageParam[]) => messages),
 		mockHandleAiSdkError: vi.fn((error: unknown, providerName: string) => {
 			const message = error instanceof Error ? error.message : String(error)
 			return new Error(`${providerName}: ${message}`)
@@ -97,7 +96,7 @@ async function collectChunks(stream: ApiStream): Promise<ApiStreamChunk[]> {
 
 describe("MiniMaxHandler", () => {
 	const systemPrompt = "You are a helpful assistant."
-	const messages: RooMessage[] = [
+	const messages: Anthropic.Messages.MessageParam[] = [
 		{
 			role: "user",
 			content: [{ type: "text", text: "Hello" }],
@@ -107,7 +106,9 @@ describe("MiniMaxHandler", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 		mockCreateAnthropic.mockReturnValue(mockModel)
-		mockMergeEnvironmentDetailsForMiniMax.mockImplementation((inputMessages: RooMessage[]) => inputMessages)
+		mockMergeEnvironmentDetailsForMiniMax.mockImplementation(
+			(inputMessages: Anthropic.Messages.MessageParam[]) => inputMessages,
+		)
 		mockHandleAiSdkError.mockImplementation((error: unknown, providerName: string) => {
 			const message = error instanceof Error ? error.message : String(error)
 			return new Error(`${providerName}: ${message}`)
@@ -324,7 +325,7 @@ describe("MiniMaxHandler", () => {
 		})
 
 		it("calls mergeEnvironmentDetailsForMiniMax before conversion", async () => {
-			const mergedMessages: RooMessage[] = [
+			const mergedMessages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: [{ type: "text", text: "Merged message" }],

@@ -384,7 +384,9 @@ export const webviewMessageHandler = async (
 					// Align API history truncation to the same user message timestamp if present
 					const userTs = m.ts
 					if (typeof userTs === "number") {
-						const apiIdx = currentCline.apiConversationHistory.findIndex((am) => (am as any).ts === userTs)
+						const apiIdx = currentCline.apiConversationHistory.findIndex(
+							(am: ApiMessage) => am.ts === userTs,
+						)
 						if (apiIdx !== -1) {
 							deleteFromApiIndex = apiIdx
 						}

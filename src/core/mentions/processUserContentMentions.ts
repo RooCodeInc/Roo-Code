@@ -1,19 +1,19 @@
-import type { TextPart, ImagePart } from "../task-persistence/rooMessage"
+import { Anthropic } from "@anthropic-ai/sdk"
 import { parseMentions, ParseMentionsResult, MentionContentBlock } from "./index"
 import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher"
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
 
 export interface ProcessUserContentMentionsResult {
-	content: Array<TextPart | ImagePart>
+	content: Anthropic.Messages.ContentBlockParam[]
 	mode?: string // Mode from the first slash command that has one
 }
 
 /**
- * Converts MentionContentBlocks to TextPart blocks.
+ * Converts MentionContentBlocks to Anthropic text blocks.
  * Each file/folder mention becomes a separate text block formatted
  * to look like a read_file tool result.
  */
-function contentBlocksToTextParts(contentBlocks: MentionContentBlock[]): TextPart[] {
+function contentBlocksToAnthropicBlocks(contentBlocks: MentionContentBlock[]): Anthropic.Messages.TextBlockParam[] {
 	return contentBlocks.map((block) => ({
 		type: "text" as const,
 		text: block.content,
@@ -37,7 +37,7 @@ export async function processUserContentMentions({
 	includeDiagnosticMessages = true,
 	maxDiagnosticMessages = 50,
 }: {
-	userContent: Array<TextPart | ImagePart>
+	userContent: Anthropic.Messages.ContentBlockParam[]
 	cwd: string
 	urlContentFetcher: UrlContentFetcher
 	fileContextTracker: FileContextTracker
@@ -49,8 +49,13 @@ export async function processUserContentMentions({
 	// Track the first mode found from slash commands
 	let commandMode: string | undefined
 
-	// Process userContent array, which contains text and image parts.
-	// We need to apply parseMentions() to TextPart's text that contains "<user_message>".
+	// Process userContent array, which contains various block types:
+	// TextBlockParam, ImageBlockParam, ToolUseBlockParam, and ToolResultBlockParam.
+	// We need to apply parseMentions() to:
+	// 1. All TextBlockParam's text (first user message)
+	// 2. ToolResultBlockParam's content/context text arrays if it contains
+	// "<user_message>" - we place all user generated content in this tag
+	// so it can effectively be used as a marker for when we should parse mentions.
 	const content = (
 		await Promise.all(
 			userContent.map(async (block) => {
@@ -77,7 +82,7 @@ export async function processUserContentMentions({
 						// 1. User's text (with @ mentions replaced by clean paths)
 						// 2. File/folder content blocks (formatted like read_file results)
 						// 3. Slash command help (if any)
-						const blocks: Array<TextPart | ImagePart> = [
+						const blocks: Anthropic.Messages.ContentBlockParam[] = [
 							{
 								...block,
 								text: result.text,
@@ -86,7 +91,7 @@ export async function processUserContentMentions({
 
 						// Add file/folder content as separate blocks
 						if (result.contentBlocks.length > 0) {
-							blocks.push(...contentBlocksToTextParts(result.contentBlocks))
+							blocks.push(...contentBlocksToAnthropicBlocks(result.contentBlocks))
 						}
 
 						if (result.slashCommandHelp) {
@@ -99,11 +104,107 @@ export async function processUserContentMentions({
 					}
 
 					return block
-				}
+				} else if (block.type === "tool_result") {
+					if (typeof block.content === "string") {
+						if (shouldProcessMentions(block.content)) {
+							const result = await parseMentions(
+								block.content,
+								cwd,
+								urlContentFetcher,
+								fileContextTracker,
+								rooIgnoreController,
+								showRooIgnoredFiles,
+								includeDiagnosticMessages,
+								maxDiagnosticMessages,
+							)
+							// Capture the first mode found
+							if (!commandMode && result.mode) {
+								commandMode = result.mode
+							}
 
-				// Legacy backward compat: filter out any tool_result / tool-result blocks
-				// that may still exist in persisted data from older formats.
-				if ((block as any).type === "tool_result" || (block as any).type === "tool-result") {
+							// Build content array with file blocks included
+							const contentParts: Array<{ type: "text"; text: string }> = [
+								{
+									type: "text" as const,
+									text: result.text,
+								},
+							]
+
+							// Add file/folder content blocks
+							for (const contentBlock of result.contentBlocks) {
+								contentParts.push({
+									type: "text" as const,
+									text: contentBlock.content,
+								})
+							}
+
+							if (result.slashCommandHelp) {
+								contentParts.push({
+									type: "text" as const,
+									text: result.slashCommandHelp,
+								})
+							}
+
+							return {
+								...block,
+								content: contentParts,
+							}
+						}
+
+						return block
+					} else if (Array.isArray(block.content)) {
+						const parsedContent = (
+							await Promise.all(
+								block.content.map(async (contentBlock) => {
+									if (contentBlock.type === "text" && shouldProcessMentions(contentBlock.text)) {
+										const result = await parseMentions(
+											contentBlock.text,
+											cwd,
+											urlContentFetcher,
+											fileContextTracker,
+											rooIgnoreController,
+											showRooIgnoredFiles,
+											includeDiagnosticMessages,
+											maxDiagnosticMessages,
+										)
+										// Capture the first mode found
+										if (!commandMode && result.mode) {
+											commandMode = result.mode
+										}
+
+										// Build blocks array with file content
+										const blocks: Array<{ type: "text"; text: string }> = [
+											{
+												...contentBlock,
+												text: result.text,
+											},
+										]
+
+										// Add file/folder content blocks
+										for (const cb of result.contentBlocks) {
+											blocks.push({
+												type: "text" as const,
+												text: cb.content,
+											})
+										}
+
+										if (result.slashCommandHelp) {
+											blocks.push({
+												type: "text" as const,
+												text: result.slashCommandHelp,
+											})
+										}
+										return blocks
+									}
+
+									return contentBlock
+								}),
+							)
+						).flat()
+
+						return { ...block, content: parsedContent }
+					}
+
 					return block
 				}
 
@@ -112,5 +213,5 @@ export async function processUserContentMentions({
 		)
 	).flat()
 
-	return { content: content as Array<TextPart | ImagePart>, mode: commandMode }
+	return { content, mode: commandMode }
 }

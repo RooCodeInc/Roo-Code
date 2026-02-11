@@ -2,7 +2,7 @@ import * as os from "os"
 import { v7 as uuidv7 } from "uuid"
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createOpenAI } from "@ai-sdk/openai"
-import { streamText, generateText, ToolSet, ModelMessage } from "ai"
+import { streamText, generateText, ToolSet } from "ai"
 
 import { Package } from "../../shared/package"
 import {
@@ -28,7 +28,6 @@ import { getModelParams } from "../transform/model-params"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { openAiCodexOAuthManager } from "../../integrations/openai-codex/oauth"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
 import {
 	stripPlainTextReasoningBlocks,
 	collectEncryptedReasoningItems,
@@ -144,7 +143,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: RooMessage[],
+		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const model = this.getModel()
@@ -178,11 +177,11 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 				const cleanedMessages = stripPlainTextReasoningBlocks(standardMessages)
 
 				// Step 4: Convert to AI SDK messages.
-				const aiSdkMessages = cleanedMessages as ModelMessage[]
+				const aiSdkMessages = convertToAiSdkMessages(cleanedMessages)
 
 				// Step 5: Re-inject encrypted reasoning as properly-formed AI SDK reasoning parts.
 				if (encryptedReasoningItems.length > 0) {
-					injectEncryptedReasoning(aiSdkMessages, encryptedReasoningItems, messages as RooMessage[])
+					injectEncryptedReasoning(aiSdkMessages, encryptedReasoningItems, messages)
 				}
 
 				// Convert tools to OpenAI format first, then to AI SDK format

@@ -1,6 +1,6 @@
 import type { Anthropic } from "@anthropic-ai/sdk"
 import { createVertex, type GoogleVertexProvider } from "@ai-sdk/google-vertex"
-import { streamText, generateText, ToolSet, ModelMessage } from "ai"
+import { streamText, generateText, ToolSet } from "ai"
 
 import {
 	type ModelInfo,
@@ -27,7 +27,6 @@ import { getModelParams } from "../transform/model-params"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseProvider } from "./base-provider"
 import { DEFAULT_HEADERS } from "./constants"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 /**
  * Vertex AI provider using the dedicated @ai-sdk/google-vertex package.
@@ -66,7 +65,7 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 
 	async *createMessage(
 		systemInstruction: string,
-		messages: RooMessage[],
+		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { id: modelId, info, reasoning: thinkingConfig, maxTokens } = this.getModel()
@@ -96,7 +95,7 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 		// Anthropic.MessageParam values and will cause failures.
 		type ReasoningMetaLike = { type?: string }
 
-		const filteredMessages = messages.filter((message) => {
+		const filteredMessages = messages.filter((message): message is Anthropic.Messages.MessageParam => {
 			const meta = message as ReasoningMetaLike
 			if (meta.type === "reasoning") {
 				return false
@@ -105,7 +104,7 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 		})
 
 		// Convert messages to AI SDK format
-		const aiSdkMessages = filteredMessages as ModelMessage[]
+		const aiSdkMessages = convertToAiSdkMessages(filteredMessages)
 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		let openAiTools = this.convertToolsForOpenAI(metadata?.tools)

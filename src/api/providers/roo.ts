@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
-import { streamText, generateText, type ModelMessage } from "ai"
+import { streamText, generateText } from "ai"
 
 import { rooDefaultModelId, getApiProtocol, type ImageGenerationApiMethod } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
@@ -10,7 +10,13 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
-import { convertToolsForAiSdk, processAiSdkStreamPart, handleAiSdkError, mapToolChoice } from "../transform/ai-sdk"
+import {
+	convertToAiSdkMessages,
+	convertToolsForAiSdk,
+	processAiSdkStreamPart,
+	handleAiSdkError,
+	mapToolChoice,
+} from "../transform/ai-sdk"
 import { type ReasoningDetail } from "../transform/openai-format"
 import type { RooReasoningParams } from "../transform/reasoning"
 import { getRooReasoning } from "../transform/reasoning"
@@ -20,7 +26,6 @@ import { BaseProvider } from "./base-provider"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
 import { generateImageWithProvider, generateImageWithImagesApi, ImageGenerationResult } from "./utils/image-generation"
 import { t } from "../../i18n"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 function getSessionToken(): string {
 	const token = CloudService.hasInstance() ? CloudService.instance.authService?.getSessionToken() : undefined
@@ -90,7 +95,7 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: RooMessage[],
+		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		// Reset reasoning_details accumulator for this request
@@ -122,8 +127,8 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 		// Create per-request provider with fresh session token
 		const provider = this.createRooProvider({ reasoning, taskId: metadata?.taskId })
 
-		// RooMessage[] is already AI SDK-compatible, cast directly
-		const aiSdkMessages = messages as ModelMessage[]
+		// Convert messages and tools to AI SDK format
+		const aiSdkMessages = convertToAiSdkMessages(messages)
 		const tools = convertToolsForAiSdk(this.convertToolsForOpenAI(metadata?.tools))
 
 		let accumulatedReasoningText = ""

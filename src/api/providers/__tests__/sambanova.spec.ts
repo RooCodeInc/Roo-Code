@@ -1,4 +1,3 @@
-import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // npx vitest run src/api/providers/__tests__/sambanova.spec.ts
 
 // Use vi.hoisted to define mock functions that can be referenced in hoisted vi.mock() calls
@@ -117,7 +116,7 @@ describe("SambaNovaHandler", () => {
 
 	describe("createMessage", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: RooMessage[] = [
+		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: [
@@ -455,7 +454,7 @@ describe("SambaNovaHandler", () => {
 
 	describe("tool handling", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: RooMessage[] = [
+		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: [{ type: "text" as const, text: "Hello!" }],
@@ -570,7 +569,7 @@ describe("SambaNovaHandler", () => {
 
 	describe("error handling", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: RooMessage[] = [
+		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: [{ type: "text" as const, text: "Hello!" }],

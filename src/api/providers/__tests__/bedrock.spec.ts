@@ -1,4 +1,3 @@
-import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // Mock TelemetryService before other imports
 const mockCaptureException = vi.fn()
 
@@ -491,14 +490,17 @@ describe("AwsBedrockHandler", () => {
 		it("should properly pass image content through to streamText via AI SDK messages", async () => {
 			setupMockStreamText()
 
-			const messages: any[] = [
+			const messages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: [
 						{
 							type: "image",
-							image: `data:image/jpeg;base64,${mockImageData}`,
-							mimeType: "image/jpeg",
+							source: {
+								type: "base64",
+								data: mockImageData,
+								media_type: "image/jpeg",
+							},
 						},
 						{
 							type: "text",
@@ -528,7 +530,7 @@ describe("AwsBedrockHandler", () => {
 			expect(userMsg).toBeDefined()
 			expect(Array.isArray(userMsg.content)).toBe(true)
 
-			// Messages are already in AI SDK ImagePart format
+			// The AI SDK convertToAiSdkMessages converts images to { type: "image", image: "data:...", mimeType: "..." }
 			const imagePart = userMsg.content.find((p: { type: string }) => p.type === "image")
 			expect(imagePart).toBeDefined()
 			expect(imagePart.image).toContain("data:image/jpeg;base64,")
@@ -542,14 +544,17 @@ describe("AwsBedrockHandler", () => {
 		it("should handle multiple images in a single message", async () => {
 			setupMockStreamText()
 
-			const messages: any[] = [
+			const messages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: [
 						{
 							type: "image",
-							image: `data:image/jpeg;base64,${mockImageData}`,
-							mimeType: "image/jpeg",
+							source: {
+								type: "base64",
+								data: mockImageData,
+								media_type: "image/jpeg",
+							},
 						},
 						{
 							type: "text",
@@ -557,8 +562,11 @@ describe("AwsBedrockHandler", () => {
 						},
 						{
 							type: "image",
-							image: `data:image/png;base64,${mockImageData}`,
-							mimeType: "image/png",
+							source: {
+								type: "base64",
+								data: mockImageData,
+								media_type: "image/png",
+							},
 						},
 						{
 							type: "text",
@@ -753,7 +761,7 @@ describe("AwsBedrockHandler", () => {
 				awsBedrock1MContext: true,
 			})
 
-			const messages: RooMessage[] = [
+			const messages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: "Test message",
@@ -786,7 +794,7 @@ describe("AwsBedrockHandler", () => {
 				awsBedrock1MContext: false,
 			})
 
-			const messages: RooMessage[] = [
+			const messages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: "Test message",
@@ -820,7 +828,7 @@ describe("AwsBedrockHandler", () => {
 				awsBedrock1MContext: true,
 			})
 
-			const messages: RooMessage[] = [
+			const messages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: "Test message",
@@ -873,7 +881,7 @@ describe("AwsBedrockHandler", () => {
 				awsBedrock1MContext: true,
 			})
 
-			const messages: RooMessage[] = [
+			const messages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: "Test message",
@@ -1005,7 +1013,7 @@ describe("AwsBedrockHandler", () => {
 					awsBedrockServiceTier: "PRIORITY",
 				})
 
-				const messages: RooMessage[] = [
+				const messages: Anthropic.Messages.MessageParam[] = [
 					{
 						role: "user",
 						content: "Test message",
@@ -1042,7 +1050,7 @@ describe("AwsBedrockHandler", () => {
 					awsBedrockServiceTier: "FLEX",
 				})
 
-				const messages: RooMessage[] = [
+				const messages: Anthropic.Messages.MessageParam[] = [
 					{
 						role: "user",
 						content: "Test message",
@@ -1079,7 +1087,7 @@ describe("AwsBedrockHandler", () => {
 					awsBedrockServiceTier: "PRIORITY", // Try to apply PRIORITY tier
 				})
 
-				const messages: RooMessage[] = [
+				const messages: Anthropic.Messages.MessageParam[] = [
 					{
 						role: "user",
 						content: "Test message",
@@ -1114,7 +1122,7 @@ describe("AwsBedrockHandler", () => {
 					// No awsBedrockServiceTier specified
 				})
 
-				const messages: RooMessage[] = [
+				const messages: Anthropic.Messages.MessageParam[] = [
 					{
 						role: "user",
 						content: "Test message",
@@ -1184,7 +1192,7 @@ describe("AwsBedrockHandler", () => {
 				awsRegion: "us-east-1",
 			})
 
-			const messages: RooMessage[] = [
+			const messages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: "Hello",
@@ -1259,7 +1267,7 @@ describe("AwsBedrockHandler", () => {
 				awsRegion: "us-east-1",
 			})
 
-			const messages: RooMessage[] = [
+			const messages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
 					content: "Hello",

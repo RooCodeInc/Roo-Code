@@ -6,7 +6,7 @@ import type { ModelInfo } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { BaseProvider } from "../../../api/providers/base-provider"
-
+import { ApiMessage } from "../../task-persistence/apiMessages"
 import * as condenseModule from "../../condense"
 
 import {
@@ -61,7 +61,7 @@ describe("Context Management", () => {
 	 */
 	describe("truncateConversation", () => {
 		it("should retain the first message", () => {
-			const messages: any[] = [
+			const messages: ApiMessage[] = [
 				{ role: "user", content: "First message" },
 				{ role: "assistant", content: "Second message" },
 				{ role: "user", content: "Third message" },
@@ -80,7 +80,7 @@ describe("Context Management", () => {
 		})
 
 		it("should remove the specified fraction of messages (rounded to even number)", () => {
-			const messages: any[] = [
+			const messages: ApiMessage[] = [
 				{ role: "user", content: "First message" },
 				{ role: "assistant", content: "Second message" },
 				{ role: "user", content: "Third message" },
@@ -103,7 +103,7 @@ describe("Context Management", () => {
 
 			// Marker should be at index 3 (at the boundary, after truncated messages)
 			expect(result.messages[3].isTruncationMarker).toBe(true)
-			expect((result.messages[3] as any).role).toBe("user")
+			expect(result.messages[3].role).toBe("user")
 
 			// Messages at indices 3 and 4 from original should NOT be tagged (now at indices 4 and 5)
 			expect(result.messages[4].truncationParent).toBeUndefined()
@@ -111,7 +111,7 @@ describe("Context Management", () => {
 		})
 
 		it("should round to an even number of messages to remove", () => {
-			const messages: any[] = [
+			const messages: ApiMessage[] = [
 				{ role: "user", content: "First message" },
 				{ role: "assistant", content: "Second message" },
 				{ role: "user", content: "Third message" },
@@ -131,7 +131,7 @@ describe("Context Management", () => {
 		})
 
 		it("should handle edge case with fracToRemove = 0", () => {
-			const messages: any[] = [
+			const messages: ApiMessage[] = [
 				{ role: "user", content: "First message" },
 				{ role: "assistant", content: "Second message" },
 				{ role: "user", content: "Third message" },
@@ -145,7 +145,7 @@ describe("Context Management", () => {
 		})
 
 		it("should handle edge case with fracToRemove = 1", () => {
-			const messages: any[] = [
+			const messages: ApiMessage[] = [
 				{ role: "user", content: "First message" },
 				{ role: "assistant", content: "Second message" },
 				{ role: "user", content: "Third message" },
@@ -167,7 +167,7 @@ describe("Context Management", () => {
 
 			// Marker should be at index 3 (at the boundary)
 			expect(result.messages[3].isTruncationMarker).toBe(true)
-			expect((result.messages[3] as any).role).toBe("user")
+			expect(result.messages[3].role).toBe("user")
 
 			// Last message should NOT be tagged (now at index 4)
 			expect(result.messages[4].truncationParent).toBeUndefined()
@@ -273,7 +273,7 @@ describe("Context Management", () => {
 			maxTokens,
 		})
 
-		const messages: any[] = [
+		const messages: ApiMessage[] = [
 			{ role: "user", content: "First message" },
 			{ role: "assistant", content: "Second message" },
 			{ role: "user", content: "Third message" },
@@ -446,7 +446,7 @@ describe("Context Management", () => {
 			// Test case 1: Small content that won't push us over the threshold
 			const smallContent = [{ type: "text" as const, text: "Small content" }]
 			const smallContentTokens = await estimateTokenCount(smallContent, mockApiHandler)
-			const messagesWithSmallContent: any[] = [
+			const messagesWithSmallContent: ApiMessage[] = [
 				...messages.slice(0, -1),
 				{ role: messages[messages.length - 1].role, content: smallContent },
 			]
@@ -482,7 +482,7 @@ describe("Context Management", () => {
 				},
 			]
 			const largeContentTokens = await estimateTokenCount(largeContent, mockApiHandler)
-			const messagesWithLargeContent: any[] = [
+			const messagesWithLargeContent: ApiMessage[] = [
 				...messages.slice(0, -1),
 				{ role: messages[messages.length - 1].role, content: largeContent },
 			]
@@ -510,7 +510,7 @@ describe("Context Management", () => {
 			// Test case 3: Very large content that will definitely exceed threshold
 			const veryLargeContent = [{ type: "text" as const, text: "X".repeat(1000) }]
 			const veryLargeContentTokens = await estimateTokenCount(veryLargeContent, mockApiHandler)
-			const messagesWithVeryLargeContent: any[] = [
+			const messagesWithVeryLargeContent: ApiMessage[] = [
 				...messages.slice(0, -1),
 				{ role: messages[messages.length - 1].role, content: veryLargeContent },
 			]
@@ -858,7 +858,7 @@ describe("Context Management", () => {
 			maxTokens,
 		})
 
-		const messages: any[] = [
+		const messages: ApiMessage[] = [
 			{ role: "user", content: "First message" },
 			{ role: "assistant", content: "Second message" },
 			{ role: "user", content: "Third message" },
@@ -1067,7 +1067,7 @@ describe("Context Management", () => {
 			maxTokens,
 		})
 
-		const messages: any[] = [
+		const messages: ApiMessage[] = [
 			{ role: "user", content: "First message" },
 			{ role: "assistant", content: "Second message" },
 			{ role: "user", content: "Third message" },
@@ -1275,7 +1275,7 @@ describe("Context Management", () => {
 		})
 
 		// Reuse across tests for consistency
-		const messages: any[] = [
+		const messages: ApiMessage[] = [
 			{ role: "user", content: "First message" },
 			{ role: "assistant", content: "Second message" },
 			{ role: "user", content: "Third message" },
@@ -1623,7 +1623,7 @@ describe("Context Management", () => {
 			const modelInfo = createModelInfo(100000, 30000)
 			const totalTokens = 70001 // Above threshold to trigger truncation
 
-			const messages: any[] = [
+			const messages: ApiMessage[] = [
 				{ role: "user", content: "First message" },
 				{ role: "assistant", content: "Second message" },
 				{ role: "user", content: "Third message" },
@@ -1665,7 +1665,7 @@ describe("Context Management", () => {
 			const modelInfo = createModelInfo(100000, 30000)
 			const totalTokens = 70001 // Above threshold to trigger truncation
 
-			const messages: any[] = [
+			const messages: ApiMessage[] = [
 				{ role: "user", content: "First message" },
 				{ role: "assistant", content: "Second message" },
 				{ role: "user", content: "Third message" },

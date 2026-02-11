@@ -1,4 +1,3 @@
-import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // npx vitest run src/api/providers/__tests__/gemini.spec.ts
 
 import { NoOutputGeneratedError } from "ai"
@@ -103,7 +102,7 @@ describe("GeminiHandler", () => {
 	})
 
 	describe("createMessage", () => {
-		const mockMessages: RooMessage[] = [
+		const mockMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: "Hello",
@@ -378,7 +377,7 @@ describe("GeminiHandler", () => {
 	})
 
 	describe("error telemetry", () => {
-		const mockMessages: RooMessage[] = [
+		const mockMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: "Hello",

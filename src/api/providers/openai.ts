@@ -2,7 +2,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { createOpenAI } from "@ai-sdk/openai"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
 import { createAzure } from "@ai-sdk/azure"
-import { streamText, generateText, ToolSet, LanguageModel, ModelMessage } from "ai"
+import { streamText, generateText, ToolSet, LanguageModel } from "ai"
 import axios from "axios"
 
 import {
@@ -29,7 +29,6 @@ import { getModelParams } from "../transform/model-params"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 // TODO: Rename this to OpenAICompatibleHandler. Also, I think the
 // `OpenAINativeHandler` can subclass from this, since it's obviously
@@ -94,7 +93,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: RooMessage[],
+		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { info: modelInfo, temperature, reasoning } = this.getModel()
@@ -105,7 +104,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 		const languageModel = this.getLanguageModel()
 
-		const aiSdkMessages = messages as ModelMessage[]
+		const aiSdkMessages = convertToAiSdkMessages(messages)
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
@@ -171,7 +170,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	private async *handleStreaming(
 		languageModel: LanguageModel,
 		systemPrompt: string | undefined,
-		messages: ModelMessage[],
+		messages: ReturnType<typeof convertToAiSdkMessages>,
 		temperature: number | undefined,
 		tools: ToolSet | undefined,
 		metadata: ApiHandlerCreateMessageMetadata | undefined,
@@ -240,7 +239,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	private async *handleNonStreaming(
 		languageModel: LanguageModel,
 		systemPrompt: string | undefined,
-		messages: ModelMessage[],
+		messages: ReturnType<typeof convertToAiSdkMessages>,
 		temperature: number | undefined,
 		tools: ToolSet | undefined,
 		metadata: ApiHandlerCreateMessageMetadata | undefined,

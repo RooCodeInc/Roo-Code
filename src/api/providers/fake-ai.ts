@@ -5,7 +5,6 @@ import type { ModelInfo } from "@roo-code/types"
 import type { ApiHandler, SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import type { ApiHandlerOptions } from "../../shared/api"
 import { ApiStream } from "../transform/stream"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 interface FakeAI {
 	/**
@@ -22,7 +21,11 @@ interface FakeAI {
 	 */
 	removeFromCache?: () => void
 
-	createMessage(systemPrompt: string, messages: RooMessage[], metadata?: ApiHandlerCreateMessageMetadata): ApiStream
+	createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream
 	getModel(): { id: string; info: ModelInfo }
 	countTokens(content: Array<Anthropic.Messages.ContentBlockParam>): Promise<number>
 	completePrompt(prompt: string): Promise<string>
@@ -58,7 +61,7 @@ export class FakeAIHandler implements ApiHandler, SingleCompletionHandler {
 
 	async *createMessage(
 		systemPrompt: string,
-		messages: RooMessage[],
+		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		yield* this.ai.createMessage(systemPrompt, messages, metadata)

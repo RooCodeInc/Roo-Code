@@ -31,7 +31,6 @@ import { getModelParams } from "../transform/model-params"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
 
@@ -58,14 +57,16 @@ export interface EncryptedReasoningItem {
  * This function removes them BEFORE conversion. If an assistant message's
  * content becomes empty after filtering, the message is removed entirely.
  */
-export function stripPlainTextReasoningBlocks(messages: RooMessage[]): RooMessage[] {
-	return messages.reduce<RooMessage[]>((acc, msg) => {
-		if (!("role" in msg) || msg.role !== "assistant" || typeof msg.content === "string") {
+export function stripPlainTextReasoningBlocks(
+	messages: Anthropic.Messages.MessageParam[],
+): Anthropic.Messages.MessageParam[] {
+	return messages.reduce<Anthropic.Messages.MessageParam[]>((acc, msg) => {
+		if (msg.role !== "assistant" || typeof msg.content === "string") {
 			acc.push(msg)
 			return acc
 		}
 
-		const filteredContent = (msg.content as any[]).filter((block: any) => {
+		const filteredContent = msg.content.filter((block) => {
 			const b = block as unknown as Record<string, unknown>
 			// Remove blocks that are plain-text reasoning:
 			// type === "reasoning" AND has "text" AND does NOT have "encrypted_content"
@@ -77,7 +78,7 @@ export function stripPlainTextReasoningBlocks(messages: RooMessage[]): RooMessag
 
 		// Only include the message if it still has content
 		if (filteredContent.length > 0) {
-			acc.push({ ...msg, content: filteredContent } as RooMessage)
+			acc.push({ ...msg, content: filteredContent })
 		}
 
 		return acc
@@ -91,10 +92,10 @@ export function stripPlainTextReasoningBlocks(messages: RooMessage[]): RooMessag
  * injected by `buildCleanConversationHistory` for OpenAI Responses API
  * reasoning continuity.
  */
-export function collectEncryptedReasoningItems(messages: RooMessage[]): EncryptedReasoningItem[] {
+export function collectEncryptedReasoningItems(messages: Anthropic.Messages.MessageParam[]): EncryptedReasoningItem[] {
 	const items: EncryptedReasoningItem[] = []
 	messages.forEach((msg, index) => {
-		const m = msg as any
+		const m = msg as unknown as Record<string, unknown>
 		if (m.type === "reasoning" && m.encrypted_content) {
 			items.push({
 				id: m.id as string,
@@ -123,7 +124,7 @@ export function collectEncryptedReasoningItems(messages: RooMessage[]): Encrypte
 export function injectEncryptedReasoning(
 	aiSdkMessages: ModelMessage[],
 	encryptedItems: EncryptedReasoningItem[],
-	originalMessages: RooMessage[],
+	originalMessages: Anthropic.Messages.MessageParam[],
 ): void {
 	if (encryptedItems.length === 0) return
 
@@ -134,7 +135,7 @@ export function injectEncryptedReasoning(
 		// Walk forward from the encrypted item to find its corresponding assistant message,
 		// skipping over any other encrypted reasoning items.
 		for (let i = item.originalIndex + 1; i < originalMessages.length; i++) {
-			const msg = originalMessages[i] as any
+			const msg = originalMessages[i] as unknown as Record<string, unknown>
 			if (msg.type === "reasoning" && msg.encrypted_content) continue
 			if ((msg as { role?: string }).role === "assistant") {
 				const existing = itemsByAssistantOrigIdx.get(i) || []
@@ -152,7 +153,7 @@ export function injectEncryptedReasoning(
 	// encrypted reasoning items have been filtered out (order preserved).
 	const standardAssistantOriginalIndices: number[] = []
 	for (let i = 0; i < originalMessages.length; i++) {
-		const msg = originalMessages[i] as any
+		const msg = originalMessages[i] as unknown as Record<string, unknown>
 		if (msg.type === "reasoning" && msg.encrypted_content) continue
 		if ((msg as { role?: string }).role === "assistant") {
 			standardAssistantOriginalIndices.push(i)
@@ -397,7 +398,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: RooMessage[],
+		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const model = this.getModel()
@@ -415,7 +416,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Step 2: Filter out standalone encrypted reasoning items (they lack role
 		// and would break convertToAiSdkMessages which expects user/assistant/tool).
 		const standardMessages = messages.filter(
-			(msg) => (msg as any).type !== "reasoning" || !(msg as any).encrypted_content,
+			(msg) =>
+				(msg as unknown as Record<string, unknown>).type !== "reasoning" ||
+				!(msg as unknown as Record<string, unknown>).encrypted_content,
 		)
 
 		// Step 3: Strip plain-text reasoning blocks from assistant content arrays.
@@ -424,12 +427,12 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		const cleanedMessages = stripPlainTextReasoningBlocks(standardMessages)
 
 		// Step 4: Convert to AI SDK messages.
-		const aiSdkMessages = cleanedMessages as ModelMessage[]
+		const aiSdkMessages = convertToAiSdkMessages(cleanedMessages)
 
 		// Step 5: Re-inject encrypted reasoning as properly-formed AI SDK reasoning
 		// parts with providerOptions.openai.itemId and reasoningEncryptedContent.
 		if (encryptedReasoningItems.length > 0) {
-			injectEncryptedReasoning(aiSdkMessages, encryptedReasoningItems, messages as RooMessage[])
+			injectEncryptedReasoning(aiSdkMessages, encryptedReasoningItems, messages)
 		}
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)

@@ -1,4 +1,3 @@
-import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // npx vitest run api/providers/__tests__/requesty.spec.ts
 
 // Use vi.hoisted to define mock functions that can be referenced in hoisted vi.mock() calls
@@ -135,7 +134,7 @@ describe("RequestyHandler", () => {
 
 	describe("createMessage", () => {
 		const systemPrompt = "test system prompt"
-		const messages: RooMessage[] = [{ role: "user" as const, content: "test message" }]
+		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user" as const, content: "test message" }]
 
 		it("generates correct stream chunks", async () => {
 			async function* mockFullStream() {
@@ -266,7 +265,9 @@ describe("RequestyHandler", () => {
 		})
 
 		describe("native tool support", () => {
-			const toolMessages: RooMessage[] = [{ role: "user" as const, content: "What's the weather?" }]
+			const toolMessages: Anthropic.Messages.MessageParam[] = [
+				{ role: "user" as const, content: "What's the weather?" },
+			]
 
 			it("should include tools in request when tools are provided", async () => {
 				const mockTools = [

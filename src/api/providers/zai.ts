@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createZhipu } from "zhipu-ai-provider"
-import { streamText, generateText, ToolSet, ModelMessage } from "ai"
+import { streamText, generateText, ToolSet } from "ai"
 
 import {
 	internationalZAiModels,
@@ -27,7 +27,6 @@ import { getModelParams } from "../transform/model-params"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 /**
  * Z.ai provider using the dedicated zhipu-ai-provider package.
@@ -92,13 +91,13 @@ export class ZAiHandler extends BaseProvider implements SingleCompletionHandler 
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: RooMessage[],
+		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { id: modelId, info, temperature } = this.getModel()
 		const languageModel = this.getLanguageModel()
 
-		const aiSdkMessages = messages as ModelMessage[]
+		const aiSdkMessages = convertToAiSdkMessages(messages)
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined

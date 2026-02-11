@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createOllama } from "ollama-ai-provider-v2"
-import { streamText, generateText, ToolSet, ModelMessage } from "ai"
+import { streamText, generateText, ToolSet } from "ai"
 
 import { ModelInfo, openAiModelInfoSaneDefaults, DEEP_SEEK_DEFAULT_TEMPERATURE } from "@roo-code/types"
 
@@ -18,7 +18,6 @@ import { ApiStream } from "../transform/stream"
 import { BaseProvider } from "./base-provider"
 import { getOllamaModels } from "./fetchers/ollama"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 /**
  * NativeOllamaHandler using the ollama-ai-provider-v2 AI SDK community provider.
@@ -84,7 +83,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: RooMessage[],
+		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		await this.fetchModel()
@@ -94,7 +93,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 		const languageModel = this.getLanguageModel()
 
-		const aiSdkMessages = messages as ModelMessage[]
+		const aiSdkMessages = convertToAiSdkMessages(messages)
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined

@@ -97,7 +97,7 @@ import { Task } from "../task/Task"
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import type { ClineMessage, TodoItem } from "@roo-code/types"
-import { readApiMessages, saveApiMessages, saveTaskMessages, type RooMessage } from "../task-persistence"
+import { readApiMessages, saveApiMessages, saveTaskMessages } from "../task-persistence"
 import { readTaskMessages } from "../task-persistence/taskMessages"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
@@ -1721,7 +1721,7 @@ export class ClineProvider
 		taskDirPath: string
 		apiConversationHistoryFilePath: string
 		uiMessagesFilePath: string
-		apiConversationHistory: RooMessage[]
+		apiConversationHistory: Anthropic.MessageParam[]
 	}> {
 		const history = this.getGlobalState("taskHistory") ?? []
 		const historyItem = history.find((item) => item.id === id)
@@ -1737,7 +1737,7 @@ export class ClineProvider
 		const uiMessagesFilePath = path.join(taskDirPath, GlobalFileNames.uiMessages)
 		const fileExists = await fileExistsAtPath(apiConversationHistoryFilePath)
 
-		let apiConversationHistory: RooMessage[] = []
+		let apiConversationHistory: Anthropic.MessageParam[] = []
 
 		if (fileExists) {
 			try {
@@ -1793,7 +1793,7 @@ export class ClineProvider
 			useWorkspace: false,
 			fallbackDir: path.join(os.homedir(), "Downloads"),
 		})
-		const saveUri = await downloadTask(historyItem.ts, apiConversationHistory as any, defaultUri)
+		const saveUri = await downloadTask(historyItem.ts, apiConversationHistory, defaultUri)
 
 		if (saveUri) {
 			await saveLastExportPath(this.contextProxy, "lastTaskExportPath", saveUri)

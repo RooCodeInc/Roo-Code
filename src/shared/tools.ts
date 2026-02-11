@@ -1,4 +1,4 @@
-import type { TextPart, ImagePart } from "../core/task-persistence/rooMessage"
+import { Anthropic } from "@anthropic-ai/sdk"
 
 import type {
 	ClineAsk,
@@ -9,7 +9,7 @@ import type {
 	GenerateImageParams,
 } from "@roo-code/types"
 
-export type ToolResponse = string | Array<TextPart | ImagePart>
+export type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
 
 export type AskApproval = (
 	type: ClineAsk,
