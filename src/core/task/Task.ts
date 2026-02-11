@@ -1245,11 +1245,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	private async saveApiConversationHistory(): Promise<boolean> {
 		try {
-			await saveRooMessages({
+			const saved = await saveRooMessages({
 				messages: structuredClone(this.apiConversationHistory),
 				taskId: this.taskId,
 				globalStoragePath: this.globalStoragePath,
 			})
+			// saveRooMessages historically returned void in some tests/mocks; treat only explicit false as failure.
+			if (saved === false) {
+				console.error("Failed to save API conversation history: saveRooMessages returned false")
+				return false
+			}
 			return true
 		} catch (error) {
 			console.error("Failed to save API conversation history:", error)
@@ -3777,9 +3782,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							content: [...this.pendingToolResults],
 							ts: Date.now(),
 						}
+						const previousHistoryLength = this.apiConversationHistory.length
 						this.apiConversationHistory.push(toolMessage)
-						await this.saveApiConversationHistory()
-						this.pendingToolResults = []
+						const saved = await this.saveApiConversationHistory()
+						if (saved) {
+							this.pendingToolResults = []
+						} else {
+							// Keep pending results for retry and roll back in-memory insertion to avoid duplicates.
+							this.apiConversationHistory = this.apiConversationHistory.slice(0, previousHistoryLength)
+							console.warn(
+								`[Task#${this.taskId}] Failed to persist pending tool results in main loop; keeping pending results for retry`,
+							)
+						}
 					}
 
 					// Push to stack if there's content OR if we're paused waiting for a subtask.

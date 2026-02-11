@@ -76,6 +76,50 @@ describe("convertToOpenAiMessages", () => {
 		})
 	})
 
+	it("should preserve AI SDK image data URLs without double-prefixing", () => {
+		const messages: any[] = [
+			{
+				role: "user",
+				content: [
+					{
+						type: "image",
+						image: "data:image/png;base64,already_encoded",
+						mediaType: "image/png",
+					},
+				],
+			},
+		]
+
+		const openAiMessages = convertToOpenAiMessages(messages)
+		const content = openAiMessages[0].content as Array<{ type: string; image_url?: { url: string } }>
+		expect(content[0]).toEqual({
+			type: "image_url",
+			image_url: { url: "data:image/png;base64,already_encoded" },
+		})
+	})
+
+	it("should preserve AI SDK image http URLs without converting to data URLs", () => {
+		const messages: any[] = [
+			{
+				role: "user",
+				content: [
+					{
+						type: "image",
+						image: "https://example.com/image.png",
+						mediaType: "image/png",
+					},
+				],
+			},
+		]
+
+		const openAiMessages = convertToOpenAiMessages(messages)
+		const content = openAiMessages[0].content as Array<{ type: string; image_url?: { url: string } }>
+		expect(content[0]).toEqual({
+			type: "image_url",
+			image_url: { url: "https://example.com/image.png" },
+		})
+	})
+
 	it("should handle assistant messages with tool use (no normalization without normalizeToolCallId)", () => {
 		const anthropicMessages: any[] = [
 			{

@@ -331,9 +331,17 @@ export function convertToOpenAiMessages(
 		mediaType?: string
 		source?: { media_type?: string; data?: string }
 	}): string => {
-		// AI SDK format: { type: "image", image: base64, mediaType: mimeType }
-		if (part.image && part.mediaType) {
-			return `data:${part.mediaType};base64,${part.image}`
+		// AI SDK format:
+		// - raw base64 + mediaType: construct data URL
+		// - existing data/http(s) URL in image: pass through unchanged
+		if (part.image) {
+			const image = part.image.trim()
+			if (image.startsWith("data:") || /^https?:\/\//i.test(image)) {
+				return image
+			}
+			if (part.mediaType) {
+				return `data:${part.mediaType};base64,${image}`
+			}
 		}
 		// Legacy Anthropic format: { type: "image", source: { media_type, data } }
 		if (part.source?.media_type && part.source?.data) {

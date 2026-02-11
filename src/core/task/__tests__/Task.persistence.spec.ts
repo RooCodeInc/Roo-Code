@@ -298,6 +298,28 @@ describe("Task persistence", () => {
 			vi.useRealTimers()
 		})
 
+		it("returns false when saveRooMessages resolves false", async () => {
+			vi.useFakeTimers()
+
+			mockSaveRooMessages.mockResolvedValue(false)
+
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			const promise = task.retrySaveApiConversationHistory()
+			await vi.runAllTimersAsync()
+			const result = await promise
+
+			expect(result).toBe(false)
+			expect(mockSaveRooMessages).toHaveBeenCalledTimes(3)
+
+			vi.useRealTimers()
+		})
+
 		it("succeeds on 2nd retry attempt", async () => {
 			vi.useFakeTimers()
 
