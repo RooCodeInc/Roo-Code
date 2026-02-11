@@ -4,10 +4,14 @@ import * as path from "path"
 import * as vscode from "vscode"
 
 import {
+	type RooMessage,
+	isRooReasoningMessage,
+	isRooRoleMessage,
 	type AnyToolCallBlock,
 	type AnyToolResultBlock,
 	isAnyToolCallBlock,
 	isAnyToolResultBlock,
+	getToolCallId,
 	getToolCallName,
 	getToolCallInput,
 	getToolResultContent,
@@ -42,7 +46,7 @@ export function getTaskFileName(dateTs: number): string {
 
 export async function downloadTask(
 	dateTs: number,
-	conversationHistory: Anthropic.MessageParam[],
+	conversationHistory: RooMessage[],
 	defaultUri: vscode.Uri,
 ): Promise<vscode.Uri | undefined> {
 	// File name
@@ -51,10 +55,22 @@ export async function downloadTask(
 	// Generate markdown
 	const markdownContent = conversationHistory
 		.map((message) => {
-			const role = message.role === "user" ? "**User:**" : "**Assistant:**"
+			if (isRooReasoningMessage(message)) {
+				const summaryText =
+					Array.isArray(message.summary) && message.summary.length > 0
+						? message.summary.map((item) => item.text).join("\n")
+						: "[Encrypted reasoning content]"
+				return `**Reasoning:**\n\n${summaryText}\n\n`
+			}
+			if (!isRooRoleMessage(message)) {
+				return `**Unknown:**\n\n[Unsupported message format]\n\n`
+			}
+
+			const role =
+				message.role === "user" ? "**User:**" : message.role === "assistant" ? "**Assistant:**" : "**Tool:**"
 			const content = Array.isArray(message.content)
 				? message.content.map((block) => formatContentBlockToMarkdown(block as ExtendedContentBlock)).join("\n")
-				: message.content
+				: String(message.content ?? "")
 			return `${role}\n\n${content}\n\n`
 		})
 		.join("---\n\n")
@@ -129,12 +145,13 @@ export function formatContentBlockToMarkdown(block: ExtendedContentBlock): strin
 	}
 }
 
-export function findToolName(toolCallId: string, messages: Anthropic.MessageParam[]): string {
+export function findToolName(toolCallId: string, messages: RooMessage[]): string {
 	for (const message of messages) {
-		if (Array.isArray(message.content)) {
+		if (isRooRoleMessage(message) && Array.isArray(message.content)) {
 			for (const block of message.content) {
-				if (block.type === "tool_use" && block.id === toolCallId) {
-					return block.name
+				const typedBlock = block as unknown as { type: string }
+				if (isAnyToolCallBlock(typedBlock) && getToolCallId(typedBlock) === toolCallId) {
+					return getToolCallName(typedBlock)
 				}
 			}
 		}

@@ -1116,34 +1116,34 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// If the previous effective message is NOT an assistant, convert tool_result blocks to text blocks.
 			let messageToAdd: RooMessage = message
-			if (!lastIsAssistant && isRooRoleMessage(message) && Array.isArray(message.content)) {
+			if (!lastIsAssistant && isRooUserMessage(message) && Array.isArray(message.content)) {
+				const normalizedUserContent = message.content.map((block) => {
+					const typedBlock = block as unknown as { type: string }
+					if (!isAnyToolResultBlock(typedBlock)) {
+						return block
+					}
+					const raw = getToolResultContent(typedBlock)
+					const textValue = (() => {
+						if (typeof raw === "string") return raw
+						if (raw && typeof raw === "object" && "value" in raw && typeof raw.value === "string") {
+							return raw.value
+						}
+						return JSON.stringify(raw)
+					})()
+					return {
+						type: "text" as const,
+						text: `Tool result:\n${textValue}`,
+					}
+				})
 				messageToAdd = {
 					...message,
-					content: (message.content as Array<{ type: string }>).map((block) =>
-						isAnyToolResultBlock(block)
-							? {
-									type: "text" as const,
-									text: `Tool result:\n${(() => {
-										const raw = getToolResultContent(block)
-										if (typeof raw === "string") return raw
-										if (
-											raw &&
-											typeof raw === "object" &&
-											"value" in raw &&
-											typeof (raw as { value: unknown }).value === "string"
-										)
-											return (raw as { value: string }).value
-										return JSON.stringify(raw)
-									})()}`,
-								}
-							: block,
-					),
-				} as RooMessage
+					content: normalizedUserContent,
+				}
 			}
 
 			const validatedMessage = validateAndFixToolResultIds(messageToAdd, historyForValidation)
-			const messageWithTs = { ...validatedMessage, ts: Date.now() }
-			this.apiConversationHistory.push(messageWithTs as RooMessage)
+			const messageWithTs: RooMessage = { ...validatedMessage, ts: Date.now() }
+			this.apiConversationHistory.push(messageWithTs)
 		}
 
 		await this.saveApiConversationHistory()
@@ -2859,7 +2859,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const shouldAddUserMessage =
 				((currentItem.retryAttempt ?? 0) === 0 && !isEmptyUserContent) || currentItem.userMessageWasRemoved
 			if (shouldAddUserMessage) {
-				await this.addToApiConversationHistory({ role: "user", content: finalUserContent } as RooMessage)
+				const userMessage: RooUserMessage = { role: "user", content: finalUserContent }
+				await this.addToApiConversationHistory(userMessage)
 				TelemetryService.instance.captureConversationMessage(this.taskId, "user")
 			}
 
@@ -3666,20 +3667,40 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// This is critical for new_task: when it triggers delegation, flushPendingToolResultsToHistory()
 					// will save the user message with tool_results. The assistant message must already be in history
 					// so that tool_result blocks appear AFTER their corresponding tool_use blocks.
+					let assistantMessageForHistory: RooAssistantMessage
 					if (responseAssistantMessage) {
 						// AI SDK response message is already in native format with providerOptions —
-						// store directly without manual reasoning/signature reconstruction
-						await this.addToApiConversationHistory({
-							...responseAssistantMessage,
+						// store directly without manual reasoning/signature reconstruction.
+						// If new_task isolation truncated local tool-calls, apply the same truncation
+						// to the native response message so persisted history stays consistent.
+						let normalizedResponseMessage = responseAssistantMessage
+						if (Array.isArray(normalizedResponseMessage.content)) {
+							const responseNewTaskIndex = normalizedResponseMessage.content.findIndex(
+								(part) => part.type === "tool-call" && part.toolName === "new_task",
+							)
+							if (
+								responseNewTaskIndex !== -1 &&
+								responseNewTaskIndex < normalizedResponseMessage.content.length - 1
+							) {
+								normalizedResponseMessage = {
+									...normalizedResponseMessage,
+									content: normalizedResponseMessage.content.slice(0, responseNewTaskIndex + 1),
+								}
+							}
+						}
+						assistantMessageForHistory = {
+							...normalizedResponseMessage,
 							ts: Date.now(),
-						} as RooMessage)
+						}
 					} else {
 						// Fallback: manual construction for non-AI-SDK providers
-						await this.addToApiConversationHistory({
+						assistantMessageForHistory = {
 							role: "assistant",
 							content: assistantContent,
-						} as RooMessage)
+							ts: Date.now(),
+						}
 					}
+					await this.addToApiConversationHistory(assistantMessageForHistory)
 					this.assistantMessageSavedToHistory = true
 
 					TelemetryService.instance.captureConversationMessage(this.taskId, "assistant")

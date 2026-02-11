@@ -97,7 +97,13 @@ import { Task } from "../task/Task"
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import type { ClineMessage, TodoItem } from "@roo-code/types"
-import { readApiMessages, saveApiMessages, saveTaskMessages, type RooMessage } from "../task-persistence"
+import {
+	readApiMessages,
+	readRooMessages,
+	saveApiMessages,
+	saveTaskMessages,
+	type RooMessage,
+} from "../task-persistence"
 import { readTaskMessages } from "../task-persistence/taskMessages"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
@@ -1736,22 +1742,15 @@ export class ClineProvider
 		const apiConversationHistoryFilePath = path.join(taskDirPath, GlobalFileNames.apiConversationHistory)
 		const uiMessagesFilePath = path.join(taskDirPath, GlobalFileNames.uiMessages)
 		const fileExists = await fileExistsAtPath(apiConversationHistoryFilePath)
-
-		let apiConversationHistory: RooMessage[] = []
-
-		if (fileExists) {
-			try {
-				apiConversationHistory = JSON.parse(await fs.readFile(apiConversationHistoryFilePath, "utf8"))
-			} catch (error) {
-				console.warn(
-					`[getTaskWithId] api_conversation_history.json corrupted for task ${id}, returning empty history: ${error instanceof Error ? error.message : String(error)}`,
-				)
-			}
-		} else {
+		if (!fileExists) {
 			console.warn(
 				`[getTaskWithId] api_conversation_history.json missing for task ${id}, returning empty history`,
 			)
 		}
+		const apiConversationHistory = await readRooMessages({
+			taskId: id,
+			globalStoragePath,
+		})
 
 		return {
 			historyItem,
@@ -1793,7 +1792,7 @@ export class ClineProvider
 			useWorkspace: false,
 			fallbackDir: path.join(os.homedir(), "Downloads"),
 		})
-		const saveUri = await downloadTask(historyItem.ts, apiConversationHistory as any, defaultUri)
+		const saveUri = await downloadTask(historyItem.ts, apiConversationHistory, defaultUri)
 
 		if (saveUri) {
 			await saveLastExportPath(this.contextProxy, "lastTaskExportPath", saveUri)

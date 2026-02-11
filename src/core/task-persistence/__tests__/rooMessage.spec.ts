@@ -17,6 +17,7 @@ import {
 	type ReasoningPart,
 	type RooMessageMetadata,
 	type RooMessageHistory,
+	getToolResultIsError,
 } from "../rooMessage"
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -225,5 +226,37 @@ describe("RooMessageHistory", () => {
 
 		expect(history.version).toBe(ROO_MESSAGE_VERSION)
 		expect(history.messages).toHaveLength(4)
+	})
+})
+
+describe("getToolResultIsError", () => {
+	it("returns legacy is_error for tool_result blocks", () => {
+		const block = {
+			type: "tool_result" as const,
+			tool_use_id: "tool-1",
+			content: "failed",
+			is_error: true,
+		}
+		expect(getToolResultIsError(block)).toBe(true)
+	})
+
+	it("detects [ERROR] prefix in AI SDK tool-result string output", () => {
+		const block = {
+			type: "tool-result" as const,
+			toolCallId: "tool-1",
+			toolName: "read_file",
+			output: { type: "text" as const, value: "[ERROR] failed to read file" },
+		}
+		expect(getToolResultIsError(block)).toBe(true)
+	})
+
+	it("detects [ERROR] prefix in AI SDK tool-result text object output", () => {
+		const block = {
+			type: "tool-result" as const,
+			toolCallId: "tool-1",
+			toolName: "read_file",
+			output: { type: "text" as const, value: "[ERROR] permission denied" },
+		}
+		expect(getToolResultIsError(block)).toBe(true)
 	})
 })

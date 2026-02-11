@@ -278,7 +278,33 @@ export function getToolResultContent(block: AnyToolResultBlock): unknown {
 /** Get the error flag from a tool result in either format. */
 export function getToolResultIsError(block: AnyToolResultBlock): boolean | undefined {
 	if (block.type === "tool-result") {
-		return undefined // AI SDK ToolResultPart has no isError field
+		// AI SDK ToolResultPart has no dedicated error field.
+		// We use the established "[ERROR]" prefix convention in text output.
+		const output: unknown = block.output
+		if (typeof output === "string") {
+			return output.trimStart().startsWith("[ERROR]")
+		}
+		if (Array.isArray(output)) {
+			return output.some(
+				(item) =>
+					typeof item === "object" &&
+					item !== null &&
+					"type" in item &&
+					(item as { type?: string }).type === "text" &&
+					"value" in item &&
+					typeof (item as { value?: unknown }).value === "string" &&
+					(item as { value: string }).value.trimStart().startsWith("[ERROR]"),
+			)
+		}
+		if (
+			output &&
+			typeof output === "object" &&
+			"value" in output &&
+			typeof (output as { value: unknown }).value === "string"
+		) {
+			return (output as { value: string }).value.trimStart().startsWith("[ERROR]")
+		}
+		return undefined
 	}
 	return block.is_error
 }
