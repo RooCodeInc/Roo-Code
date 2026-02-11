@@ -33,6 +33,7 @@ import { ContextWindowProgress } from "./ContextWindowProgress"
 import { Mention } from "./Mention"
 import { TodoListDisplay } from "./TodoListDisplay"
 import { LucideIconButton } from "./LucideIconButton"
+import { useDiffStats } from "./hooks/useDiffStats"
 
 export interface TaskHeaderProps {
 	task: ClineMessage
@@ -69,6 +70,8 @@ const TaskHeader = ({
 }: TaskHeaderProps) => {
 	const { t } = useTranslation()
 	const { apiConfiguration, currentTaskItem, clineMessages, isBrowserSessionActive } = useExtensionState()
+	const diffStats = useDiffStats(clineMessages)
+	const hasDiffStats = diffStats.totalAdded > 0 || diffStats.totalRemoved > 0
 	const { id: modelId, info: model } = useSelectedModel(apiConfiguration)
 	const [isTaskExpanded, setIsTaskExpanded] = useState(false)
 	const [showLongRunningTaskMessage, setShowLongRunningTaskMessage] = useState(false)
@@ -335,6 +338,15 @@ const TaskHeader = ({
 									</StandardTooltip>
 								</>
 							)}
+							{hasDiffStats && (
+								<>
+									<span>·</span>
+									<span className="flex items-center gap-1.5" data-testid="compact-diff-stats">
+										<span className="text-vscode-charts-green">+{diffStats.totalAdded}</span>
+										<span className="text-vscode-charts-red">-{diffStats.totalRemoved}</span>
+									</span>
+								</>
+							)}
 						</div>
 						{showBrowserGlobe && (
 							<div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
@@ -496,6 +508,27 @@ const TaskHeader = ({
 														)}
 													</span>
 												</StandardTooltip>
+											</td>
+										</tr>
+									)}
+
+									{/* Lines changed display */}
+									{hasDiffStats && (
+										<tr>
+											<th
+												className="font-medium text-left align-top w-1 whitespace-nowrap pr-3 h-[24px]"
+												data-testid="lines-changed-label">
+												{t("chat:task.linesChanged")}
+											</th>
+											<td className="font-light align-top" data-testid="lines-changed-value">
+												<div className="flex items-center gap-2">
+													<span className="text-vscode-charts-green">
+														+{diffStats.totalAdded}
+													</span>
+													<span className="text-vscode-charts-red">
+														-{diffStats.totalRemoved}
+													</span>
+												</div>
 											</td>
 										</tr>
 									)}
