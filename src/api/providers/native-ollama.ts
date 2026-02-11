@@ -95,8 +95,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 		const aiSdkMessages = convertToAiSdkMessages(messages)
 
-		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		const aiSdkTools = convertToolsForAiSdk(metadata?.tools) as ToolSet | undefined
 
 		const providerOptions = this.buildProviderOptions(useR1Format)
 

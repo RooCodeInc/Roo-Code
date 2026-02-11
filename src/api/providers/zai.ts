@@ -99,8 +99,7 @@ export class ZAiHandler extends BaseProvider implements SingleCompletionHandler 
 
 		const aiSdkMessages = convertToAiSdkMessages(messages)
 
-		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		const aiSdkTools = convertToolsForAiSdk(metadata?.tools) as ToolSet | undefined
 
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
