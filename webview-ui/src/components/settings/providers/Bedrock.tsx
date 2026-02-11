@@ -4,7 +4,6 @@ import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
 import {
 	type ProviderSettings,
-	type ModelInfo,
 	type BedrockServiceTier,
 	BEDROCK_REGIONS,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
@@ -13,18 +12,17 @@ import {
 } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, StandardTooltip } from "@src/components/ui"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@src/components/ui"
 
-import { inputEventTransform, noTransform } from "../transforms"
+import { inputEventTransform } from "../transforms"
 
 type BedrockProps = {
 	apiConfiguration: ProviderSettings
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
-	selectedModelInfo?: ModelInfo
 	simplifySettings?: boolean
 }
 
-export const Bedrock = ({ apiConfiguration, setApiConfigurationField, selectedModelInfo }: BedrockProps) => {
+export const Bedrock = ({ apiConfiguration, setApiConfigurationField }: BedrockProps) => {
 	const { t } = useAppTranslation()
 	const [awsEndpointSelected, setAwsEndpointSelected] = useState(!!apiConfiguration?.awsBedrockEndpointEnabled)
 
@@ -195,26 +193,6 @@ export const Bedrock = ({ apiConfiguration, setApiConfigurationField, selectedMo
 				}}>
 				{t("settings:providers.awsCrossRegion")}
 			</Checkbox>
-			{selectedModelInfo?.supportsPromptCache && (
-				<>
-					<Checkbox
-						checked={apiConfiguration?.awsUsePromptCache || false}
-						onChange={handleInputChange("awsUsePromptCache", noTransform)}>
-						<div className="flex items-center gap-1">
-							<span>{t("settings:providers.enablePromptCaching")}</span>
-							<StandardTooltip content={t("settings:providers.enablePromptCachingTitle")}>
-								<i
-									className="codicon codicon-info text-vscode-descriptionForeground"
-									style={{ fontSize: "12px" }}
-								/>
-							</StandardTooltip>
-						</div>
-					</Checkbox>
-					<div className="text-sm text-vscode-descriptionForeground ml-6 mt-1">
-						{t("settings:providers.cacheUsageNote")}
-					</div>
-				</>
-			)}
 			{supports1MContextBeta && (
 				<div>
 					<Checkbox

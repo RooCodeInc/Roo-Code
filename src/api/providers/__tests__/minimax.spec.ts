@@ -366,6 +366,19 @@ describe("MiniMaxHandler", () => {
 			}).rejects.toThrow("MiniMax: API Error")
 			expect(mockHandleAiSdkError).toHaveBeenCalledWith(expect.any(Error), "MiniMax")
 		})
+
+		it("disables prompt caching when globally disabled", async () => {
+			mockStreamText.mockReturnValue(createMockStream([{ type: "text-delta", text: "OK" }]))
+
+			const handler = createHandler({
+				promptCachingEnabled: false,
+			})
+			await collectChunks(handler.createMessage(systemPrompt, messages))
+
+			const callArgs = mockStreamText.mock.calls[0]?.[0]
+			expect(callArgs.systemProviderOptions).toBeUndefined()
+			expect(callArgs.messages[0]?.providerOptions).toBeUndefined()
+		})
 	})
 
 	describe("completePrompt", () => {

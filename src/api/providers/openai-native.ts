@@ -19,13 +19,8 @@ import {
 import type { ApiHandlerOptions } from "../../shared/api"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 
-import {
-	convertToAiSdkMessages,
-	convertToolsForAiSdk,
-	consumeAiSdkStream,
-	mapToolChoice,
-	handleAiSdkError,
-} from "../transform/ai-sdk"
+import { convertToolsForAiSdk, consumeAiSdkStream, mapToolChoice, handleAiSdkError } from "../transform/ai-sdk"
+import { applyPromptCacheToMessages } from "../transform/prompt-cache"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -266,15 +261,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	}
 
 	/**
-	 * Returns the appropriate prompt cache retention policy for the given model, if any.
-	 */
-	private getPromptCacheRetention(model: OpenAiNativeModel): "24h" | undefined {
-		if (!model.info.supportsPromptCache) return undefined
-		if (model.info.promptCacheRetention === "24h") return "24h"
-		return undefined
-	}
-
-	/**
 	 * Returns a shallow-cloned ModelInfo with pricing overridden for the given tier, if available.
 	 */
 	private applyServiceTierPricing(info: ModelInfo, tier?: ServiceTier): ModelInfo {
@@ -301,7 +287,16 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		systemPrompt?: string,
 	): Record<string, any> {
 		const reasoningEffort = this.getReasoningEffort(model)
-		const promptCacheRetention = this.getPromptCacheRetention(model)
+		const promptCache = applyPromptCacheToMessages({
+			adapter: "openai-native",
+			overrideKey: "openai-native",
+			messages: [],
+			modelInfo: {
+				supportsPromptCache: model.info.supportsPromptCache,
+				promptCacheRetention: model.info.promptCacheRetention,
+			},
+			settings: this.options,
+		})
 
 		const requestedTier = (this.options.openAiNativeServiceTier as ServiceTier | undefined) || undefined
 		const allowedTierNames = new Set(model.info.tiers?.map((t) => t.name).filter(Boolean) || [])
@@ -329,8 +324,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			openaiOptions.serviceTier = requestedTier
 		}
 
-		if (promptCacheRetention) {
-			openaiOptions.promptCacheRetention = promptCacheRetention
+		if (promptCache.providerOptionsPatch?.openai?.promptCacheRetention) {
+			openaiOptions.promptCacheRetention = promptCache.providerOptionsPatch.openai.promptCacheRetention
 		}
 
 		return { openai: openaiOptions }

@@ -3,6 +3,7 @@ import { convertHeadersToObject } from "./utils/headers"
 import { useDebounce } from "react-use"
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { ExternalLinkIcon } from "@radix-ui/react-icons"
+import { Checkbox } from "vscrui"
 
 import {
 	type ProviderName,
@@ -573,7 +574,6 @@ const ApiOptions = ({
 						<Bedrock
 							apiConfiguration={apiConfiguration}
 							setApiConfigurationField={setApiConfigurationField}
-							selectedModelInfo={selectedModelInfo}
 							simplifySettings={fromWelcomeView}
 						/>
 					)}
@@ -794,6 +794,40 @@ const ApiOptions = ({
 									}
 									onChange={(value) => setApiConfigurationField("consecutiveMistakeLimit", value)}
 								/>
+								<Checkbox
+									checked={apiConfiguration.promptCachingEnabled ?? true}
+									onChange={(checked: boolean) =>
+										setApiConfigurationField("promptCachingEnabled", checked)
+									}>
+									<div className="flex items-center gap-1">
+										<span>{t("settings:providers.enablePromptCaching")}</span>
+									</div>
+								</Checkbox>
+								<div className="text-sm text-vscode-descriptionForeground ml-6 -mt-2">
+									{t("settings:providers.enablePromptCachingTitle")}
+								</div>
+								{(apiConfiguration.promptCachingEnabled ?? true) && (
+									<div>
+										<label className="block font-medium mb-1">Prompt caching strategy</label>
+										<Select
+											value={apiConfiguration.promptCachingStrategy || "aggressive"}
+											onValueChange={(value) =>
+												setApiConfigurationField(
+													"promptCachingStrategy",
+													value as ProviderSettings["promptCachingStrategy"],
+												)
+											}>
+											<SelectTrigger className="w-full">
+												<SelectValue placeholder={t("settings:common.select")} />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="conservative">Conservative</SelectItem>
+												<SelectItem value="balanced">Balanced</SelectItem>
+												<SelectItem value="aggressive">Aggressive</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
+								)}
 								{selectedProvider === "openrouter" &&
 									openRouterModelProviders &&
 									Object.keys(openRouterModelProviders).length > 0 && (

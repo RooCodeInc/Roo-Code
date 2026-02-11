@@ -9,13 +9,13 @@ import type { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 import { mergeEnvironmentDetailsForMiniMax } from "../transform/minimax-format"
 import {
-	convertToAiSdkMessages,
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyPromptCacheToMessages } from "../transform/prompt-cache"
 import { calculateApiCostAnthropic } from "../../shared/cost"
 
 import { DEFAULT_HEADERS } from "./constants"
@@ -72,7 +72,7 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 		})
 
 		const mergedMessages = mergeEnvironmentDetailsForMiniMax(messages as any)
-		const aiSdkMessages = mergedMessages as ModelMessage[]
+		const aiSdkMessages = (mergedMessages as ModelMessage[]).map((message) => ({ ...message }))
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
 
@@ -89,29 +89,23 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 			anthropicProviderOptions.disableParallelToolUse = true
 		}
 
-		const cacheProviderOption = { anthropic: { cacheControl: { type: "ephemeral" as const } } }
-		const userMsgIndices = mergedMessages.reduce(
-			(acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc),
-			[] as number[],
-		)
-
-		const targetIndices = new Set<number>()
-		const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
-		const secondLastUserMsgIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
-
-		if (lastUserMsgIndex >= 0) targetIndices.add(lastUserMsgIndex)
-		if (secondLastUserMsgIndex >= 0) targetIndices.add(secondLastUserMsgIndex)
-
-		if (targetIndices.size > 0) {
-			this.applyCacheControlToAiSdkMessages(aiSdkMessages, targetIndices, cacheProviderOption)
-		}
+		const promptCache = applyPromptCacheToMessages({
+			adapter: "anthropic",
+			overrideKey: "minimax",
+			messages: aiSdkMessages,
+			modelInfo: {
+				supportsPromptCache: modelConfig.info.supportsPromptCache,
+				promptCacheRetention: (modelConfig.info as ModelInfo).promptCacheRetention,
+			},
+			settings: this.options,
+		})
 
 		const requestOptions = {
 			model: this.client(modelConfig.id),
 			system: systemPrompt,
-			...({
-				systemProviderOptions: { anthropic: { cacheControl: { type: "ephemeral" } } },
-			} as Record<string, unknown>),
+			...(promptCache.systemProviderOptions
+				? ({ systemProviderOptions: promptCache.systemProviderOptions } as Record<string, unknown>)
+				: {}),
 			messages: aiSdkMessages,
 			temperature: modelParams.temperature,
 			maxOutputTokens: modelParams.maxTokens ?? modelConfig.info.maxTokens,
@@ -184,21 +178,6 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 			cacheWriteTokens: cacheWriteTokens > 0 ? cacheWriteTokens : undefined,
 			cacheReadTokens: cacheReadTokens > 0 ? cacheReadTokens : undefined,
 			totalCost,
-		}
-	}
-
-	private applyCacheControlToAiSdkMessages(
-		aiSdkMessages: { role: string; providerOptions?: Record<string, Record<string, unknown>> }[],
-		targetIndices: Set<number>,
-		cacheProviderOption: Record<string, Record<string, unknown>>,
-	): void {
-		for (const idx of targetIndices) {
-			if (idx >= 0 && idx < aiSdkMessages.length) {
-				aiSdkMessages[idx].providerOptions = {
-					...aiSdkMessages[idx].providerOptions,
-					...cacheProviderOption,
-				}
-			}
 		}
 	}
 

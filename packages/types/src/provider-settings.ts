@@ -180,6 +180,9 @@ const baseProviderSettingsSchema = z.object({
 	modelTemperature: z.number().nullish(),
 	rateLimitSeconds: z.number().optional(),
 	consecutiveMistakeLimit: z.number().min(0).optional(),
+	promptCachingEnabled: z.boolean().optional(),
+	promptCachingStrategy: z.enum(["conservative", "balanced", "aggressive"]).optional(),
+	promptCachingProviderOverrides: z.record(z.string(), z.boolean()).optional(),
 
 	// Model reasoning.
 	enableReasoningEffort: z.boolean().optional(),
@@ -217,7 +220,6 @@ const bedrockSchema = apiModelIdProviderModelSchema.extend({
 	awsRegion: z.string().optional(),
 	awsUseCrossRegionInference: z.boolean().optional(),
 	awsUseGlobalInference: z.boolean().optional(), // Enable Global Inference profile routing when supported
-	awsUsePromptCache: z.boolean().optional(),
 	awsProfile: z.string().optional(),
 	awsUseProfile: z.boolean().optional(),
 	awsApiKey: z.string().optional(),
@@ -340,7 +342,6 @@ const litellmSchema = baseProviderSettingsSchema.extend({
 	litellmBaseUrl: z.string().optional(),
 	litellmApiKey: z.string().optional(),
 	litellmModelId: z.string().optional(),
-	litellmUsePromptCache: z.boolean().optional(),
 })
 
 const sambaNovaSchema = apiModelIdProviderModelSchema.extend({
