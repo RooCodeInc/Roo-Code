@@ -513,6 +513,10 @@
 				"title": "Маршрутизация провайдера OpenRouter",
 				"description": "OpenRouter направляет запросы к лучшим доступным провайдерам для вашей модели. По умолчанию запросы балансируются между топовыми провайдерами для максимальной доступности. Однако вы можете выбрать конкретного провайдера для этой модели.",
 				"learnMore": "Подробнее о маршрутизации провайдеров"
+			},
+			"excludeLowQuantization": {
+				"label": "Exclude low-bit quantization (FP4/FP6/Int4)",
+				"description": "Only allow higher precision providers (FP8/FP16/BF16/Int8). Helps prevent broken CJK (Korean/Chinese/Japanese) encoding from aggressively quantized models."
 			}
 		},
 		"customModel": {

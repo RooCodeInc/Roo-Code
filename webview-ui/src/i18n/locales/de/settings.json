@@ -513,6 +513,10 @@
 				"title": "OpenRouter Anbieter-Routing",
 				"description": "OpenRouter leitet Anfragen an die besten verfügbaren Anbieter für dein Modell weiter. Standardmäßig werden Anfragen über die Top-Anbieter lastverteilt, um maximale Verfügbarkeit zu gewährleisten. Du kannst jedoch einen bestimmten Anbieter für dieses Modell auswählen.",
 				"learnMore": "Mehr über Anbieter-Routing erfahren"
+			},
+			"excludeLowQuantization": {
+				"label": "Exclude low-bit quantization (FP4/FP6/Int4)",
+				"description": "Only allow higher precision providers (FP8/FP16/BF16/Int8). Helps prevent broken CJK (Korean/Chinese/Japanese) encoding from aggressively quantized models."
 			}
 		},
 		"customModel": {

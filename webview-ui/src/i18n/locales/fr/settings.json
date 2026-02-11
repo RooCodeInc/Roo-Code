@@ -513,6 +513,10 @@
 				"title": "Routage des fournisseurs OpenRouter",
 				"description": "OpenRouter dirige les requêtes vers les meilleurs fournisseurs disponibles pour votre modèle. Par défaut, les requêtes sont équilibrées entre les principaux fournisseurs pour maximiser la disponibilité. Cependant, vous pouvez choisir un fournisseur spécifique à utiliser pour ce modèle.",
 				"learnMore": "En savoir plus sur le routage des fournisseurs"
+			},
+			"excludeLowQuantization": {
+				"label": "Exclude low-bit quantization (FP4/FP6/Int4)",
+				"description": "Only allow higher precision providers (FP8/FP16/BF16/Int8). Helps prevent broken CJK (Korean/Chinese/Japanese) encoding from aggressively quantized models."
 			}
 		},
 		"customModel": {
