@@ -483,7 +483,7 @@ export function extractApiProviderErrorProperties(error: ApiProviderError): Reco
 /**
  * Reason why the consecutive mistake limit was reached.
  */
-export type ConsecutiveMistakeReason = "no_tools_used" | "tool_repetition" | "unknown"
+export type ConsecutiveMistakeReason = "no_tools_used" | "tool_repetition" | "no_assistant_messages" | "unknown"
 
 /**
  * Error class for "Roo is having trouble" consecutive mistake scenarios.

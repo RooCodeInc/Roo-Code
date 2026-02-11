@@ -51,6 +51,7 @@ import {
 	MAX_CHECKPOINT_TIMEOUT_SECONDS,
 	MIN_CHECKPOINT_TIMEOUT_SECONDS,
 	ConsecutiveMistakeError,
+	type ConsecutiveMistakeReason,
 	MAX_MCP_TOOLS_THRESHOLD,
 	countEnabledMcpTools,
 } from "@roo-code/types"
@@ -325,7 +326,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	// Tool Use
 	consecutiveMistakeCount: number = 0
-	consecutiveMistakeReason: "no_tools_used" | "no_assistant_messages" | "unknown" = "unknown"
+	consecutiveMistakeReason: ConsecutiveMistakeReason = "unknown"
 	consecutiveMistakeLimit: number
 	consecutiveMistakeCountForApplyDiff: Map<string, number> = new Map()
 	consecutiveMistakeCountForEditFile: Map<string, number> = new Map()
