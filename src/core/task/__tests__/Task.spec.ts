@@ -394,6 +394,82 @@ describe("Cline", () => {
 				new Task({ provider: mockProvider, apiConfiguration: mockApiConfig })
 			}).toThrow("Either historyItem or task/images must be provided")
 		})
+
+		it("should ignore cancelled background resumeTaskFromHistory errors", async () => {
+			const resumeSpy = vi
+				.spyOn(Task.prototype as any, "resumeTaskFromHistory")
+				.mockImplementationOnce(async function (this: Task) {
+					this.abort = true
+					throw new Error("resume aborted")
+				})
+			const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+
+			new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				historyItem: {
+					id: "history-task-id",
+					number: 1,
+					ts: Date.now(),
+					task: "historical task",
+					tokensIn: 0,
+					tokensOut: 0,
+					cacheWrites: 0,
+					cacheReads: 0,
+					totalCost: 0,
+				} as any,
+				startTask: true,
+			})
+
+			await Promise.resolve()
+			await Promise.resolve()
+
+			const lifecycleErrors = consoleErrorSpy.mock.calls.filter(
+				([message]) => typeof message === "string" && message.includes("[Task#resumeTaskFromHistory]"),
+			)
+			expect(lifecycleErrors).toHaveLength(0)
+
+			resumeSpy.mockRestore()
+			consoleErrorSpy.mockRestore()
+		})
+
+		it("should log unexpected background resumeTaskFromHistory errors", async () => {
+			const resumeSpy = vi
+				.spyOn(Task.prototype as any, "resumeTaskFromHistory")
+				.mockRejectedValueOnce(new Error("unexpected resume failure"))
+			const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+
+			new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				historyItem: {
+					id: "history-task-id",
+					number: 1,
+					ts: Date.now(),
+					task: "historical task",
+					tokensIn: 0,
+					tokensOut: 0,
+					cacheWrites: 0,
+					cacheReads: 0,
+					totalCost: 0,
+				} as any,
+				startTask: true,
+			})
+
+			await Promise.resolve()
+			await Promise.resolve()
+
+			const lifecycleErrors = consoleErrorSpy.mock.calls.filter(
+				([message]) =>
+					typeof message === "string" &&
+					message.includes("[Task#resumeTaskFromHistory]") &&
+					message.includes("unexpected resume failure"),
+			)
+			expect(lifecycleErrors).toHaveLength(1)
+
+			resumeSpy.mockRestore()
+			consoleErrorSpy.mockRestore()
+		})
 	})
 
 	describe("getEnvironmentDetails", () => {
