@@ -335,7 +335,7 @@ describe("ContextManagementSettings", () => {
 
 		// Should render the profile select dropdown
 		const selects = screen.getAllByRole("combobox")
-		expect(selects).toHaveLength(1)
+		expect(selects).toHaveLength(2)
 	})
 
 	describe("Auto Condense Context functionality", () => {
@@ -369,7 +369,7 @@ describe("ContextManagementSettings", () => {
 			// Threshold settings should be visible
 			expect(screen.getByTestId("condense-threshold-slider")).toBeInTheDocument()
 			// One combobox for profile selection
-			expect(screen.getAllByRole("combobox")).toHaveLength(1)
+			expect(screen.getAllByRole("combobox")).toHaveLength(2)
 		})
 
 		it("updates auto condense context percent", () => {

@@ -1750,30 +1750,43 @@ export class ClineProvider
 	// If the task has subtasks (childIds), they will also be deleted recursively
 	async deleteTaskWithId(id: string, cascadeSubtasks: boolean = true) {
 		try {
-			// get the task directory full path and history item
-			const { taskDirPath, historyItem } = await this.getTaskWithId(id)
+			// Ensure the task exists (or clean up stale state if not).
+			await this.getTaskWithId(id)
+
+			const taskHistory = this.getGlobalState("taskHistory") ?? []
+
+			// Build quick lookup maps for relationship traversal.
+			const taskMap = new Map<string, HistoryItem>()
+			const childrenByParent = new Map<string, string[]>()
+
+			for (const task of taskHistory) {
+				taskMap.set(task.id, task)
+				if (task.parentTaskId) {
+					const siblings = childrenByParent.get(task.parentTaskId) || []
+					siblings.push(task.id)
+					childrenByParent.set(task.parentTaskId, siblings)
+				}
+			}
 
 			// Collect all task IDs to delete (parent + all subtasks)
-			const allIdsToDelete: string[] = [id]
+			const allIdsToDelete = new Set<string>([id])
 
 			if (cascadeSubtasks) {
-				// Recursively collect all child IDs
-				const collectChildIds = async (taskId: string): Promise<void> => {
-					try {
-						const { historyItem: item } = await this.getTaskWithId(taskId)
-						if (item.childIds && item.childIds.length > 0) {
-							for (const childId of item.childIds) {
-								allIdsToDelete.push(childId)
-								await collectChildIds(childId)
-							}
+				const queue = [id]
+
+				while (queue.length > 0) {
+					const taskId = queue.shift()!
+					const historyItem = taskMap.get(taskId)
+					const childrenFromParentLink = childrenByParent.get(taskId) || []
+					const childrenFromChildIds = historyItem?.childIds || []
+
+					for (const childId of new Set([...childrenFromParentLink, ...childrenFromChildIds])) {
+						if (!allIdsToDelete.has(childId)) {
+							allIdsToDelete.add(childId)
+							queue.push(childId)
 						}
-					} catch (error) {
-						// Child task may already be deleted or not found, continue
-						console.log(`[deleteTaskWithId] child task ${taskId} not found, skipping`)
 					}
 				}
-
-				await collectChildIds(id)
 			}
 
 			// Remove from stack if any of the tasks to delete are in the current task stack
@@ -1786,8 +1799,7 @@ export class ClineProvider
 			}
 
 			// Delete all tasks from state in one batch
-			const taskHistory = this.getGlobalState("taskHistory") ?? []
-			const updatedTaskHistory = taskHistory.filter((task) => !allIdsToDelete.includes(task.id))
+			const updatedTaskHistory = taskHistory.filter((task) => !allIdsToDelete.has(task.id))
 			await this.updateGlobalState("taskHistory", updatedTaskHistory)
 			this.recentTasksCache = undefined
 
@@ -2026,6 +2038,7 @@ export class ClineProvider
 			mcpEnabled,
 			rpiAutopilotEnabled,
 			rpiCouncilEngineEnabled,
+			rpiCouncilApiConfigId,
 			currentApiConfigName,
 			listApiConfigMeta,
 			pinnedApiConfigs,
@@ -2167,6 +2180,7 @@ export class ClineProvider
 			mcpEnabled: mcpEnabled ?? true,
 			rpiAutopilotEnabled: rpiAutopilotEnabled ?? true,
 			rpiCouncilEngineEnabled: rpiCouncilEngineEnabled ?? true,
+			rpiCouncilApiConfigId: rpiCouncilApiConfigId ?? "",
 			currentApiConfigName: currentApiConfigName ?? "default",
 			listApiConfigMeta: listApiConfigMeta ?? [],
 			pinnedApiConfigs: pinnedApiConfigs ?? {},
@@ -2417,6 +2431,7 @@ export class ClineProvider
 			mcpEnabled: stateValues.mcpEnabled ?? true,
 			rpiAutopilotEnabled: stateValues.rpiAutopilotEnabled ?? true,
 			rpiCouncilEngineEnabled: stateValues.rpiCouncilEngineEnabled ?? true,
+			rpiCouncilApiConfigId: stateValues.rpiCouncilApiConfigId ?? "",
 			mcpServers: this.mcpHub?.getAllServers() ?? [],
 			currentApiConfigName: stateValues.currentApiConfigName ?? "default",
 			listApiConfigMeta: stateValues.listApiConfigMeta ?? [],

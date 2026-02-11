@@ -178,6 +178,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		mcpEnabled,
 		rpiAutopilotEnabled,
 		rpiCouncilEngineEnabled,
+		rpiCouncilApiConfigId,
 		remoteBrowserHost,
 		screenshotQuality,
 		soundEnabled,
@@ -447,6 +448,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					mcpEnabled,
 					rpiAutopilotEnabled: rpiAutopilotEnabled ?? true,
 					rpiCouncilEngineEnabled: rpiCouncilEngineEnabled ?? true,
+					rpiCouncilApiConfigId: rpiCouncilApiConfigId ?? "",
 					maxOpenTabsContext: Math.min(Math.max(0, maxOpenTabsContext ?? 20), 500),
 					maxWorkspaceFiles: Math.min(Math.max(0, maxWorkspaceFiles ?? 200), 500),
 					showRooIgnoredFiles: showRooIgnoredFiles ?? true,
@@ -913,6 +915,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								maxGitStatusFiles={maxGitStatusFiles}
 								rpiAutopilotEnabled={rpiAutopilotEnabled}
 								rpiCouncilEngineEnabled={rpiCouncilEngineEnabled}
+								rpiCouncilApiConfigId={rpiCouncilApiConfigId}
 								preventCompletionWithEslintProblems={preventCompletionWithEslintProblems}
 								customSupportPrompts={customSupportPrompts || {}}
 								setCustomSupportPrompts={setCustomSupportPromptsField}

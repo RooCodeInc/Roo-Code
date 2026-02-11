@@ -57,7 +57,7 @@ describe("RpiAutopilot council engine integration", () => {
 				cwd,
 				getMode: async () => mode,
 				getTaskText: () => taskText,
-				getApiConfiguration: () => apiConfiguration,
+				getApiConfiguration: async () => apiConfiguration,
 				isCouncilEngineEnabled: () => councilEnabled,
 			},
 			mockEngine as any,

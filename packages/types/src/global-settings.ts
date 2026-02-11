@@ -206,6 +206,7 @@ export const globalSettingsSchema = z.object({
 	mcpEnabled: z.boolean().optional(),
 	rpiAutopilotEnabled: z.boolean().optional(),
 	rpiCouncilEngineEnabled: z.boolean().optional(),
+	rpiCouncilApiConfigId: z.string().optional(),
 
 	mode: z.string().optional(),
 	modeApiConfigs: z.record(z.string(), z.string()).optional(),

@@ -36,7 +36,7 @@ interface RpiAutopilotContext {
 	cwd: string
 	getMode: () => Promise<string>
 	getTaskText: () => string | undefined
-	getApiConfiguration: () => ProviderSettings | undefined
+	getApiConfiguration: () => Promise<ProviderSettings | undefined>
 	isCouncilEngineEnabled: () => boolean
 	onCouncilEvent?: (event: {
 		phase: RpiCouncilPhase
@@ -121,7 +121,13 @@ export class RpiAutopilot {
 			if (fromDisk && fromDisk.taskId === this.context.taskId) {
 				this.state = this.normalizeState(fromDisk)
 			} else {
-				this.state = this.createInitialState(mode, taskText)
+				const legacyState = await this.readLegacyStateFile()
+				if (legacyState && legacyState.taskId === this.context.taskId) {
+					this.state = this.normalizeState(legacyState)
+					await this.maybeMigrateLegacyArtifacts()
+				} else {
+					this.state = this.createInitialState(mode, taskText)
+				}
 			}
 
 			await this.syncArtifacts()
@@ -317,7 +323,15 @@ export class RpiAutopilot {
 		})
 	}
 
+	private get taskDirName(): string {
+		return this.context.taskId.replace(/[^a-zA-Z0-9._-]/g, "_")
+	}
+
 	private get baseDir(): string {
+		return path.join(this.context.cwd, ".roo", "rpi", this.taskDirName)
+	}
+
+	private get legacyBaseDir(): string {
 		return path.join(this.context.cwd, ".roo", "rpi")
 	}
 
@@ -325,28 +339,48 @@ export class RpiAutopilot {
 		return path.join(this.baseDir, "state.json")
 	}
 
+	private get legacyStatePath(): string {
+		return path.join(this.legacyBaseDir, "state.json")
+	}
+
 	private get taskPlanPath(): string {
 		return path.join(this.baseDir, "task_plan.md")
+	}
+
+	private get legacyTaskPlanPath(): string {
+		return path.join(this.legacyBaseDir, "task_plan.md")
 	}
 
 	private get findingsPath(): string {
 		return path.join(this.baseDir, "findings.md")
 	}
 
+	private get legacyFindingsPath(): string {
+		return path.join(this.legacyBaseDir, "findings.md")
+	}
+
 	private get progressPath(): string {
 		return path.join(this.baseDir, "progress.md")
 	}
 
+	private get legacyProgressPath(): string {
+		return path.join(this.legacyBaseDir, "progress.md")
+	}
+
+	private get relativeBaseDir(): string {
+		return path.posix.join(".roo", "rpi", this.taskDirName)
+	}
+
 	private get relativeTaskPlanPath(): string {
-		return ".roo/rpi/task_plan.md"
+		return path.posix.join(this.relativeBaseDir, "task_plan.md")
 	}
 
 	private get relativeFindingsPath(): string {
-		return ".roo/rpi/findings.md"
+		return path.posix.join(this.relativeBaseDir, "findings.md")
 	}
 
 	private get relativeProgressPath(): string {
-		return ".roo/rpi/progress.md"
+		return path.posix.join(this.relativeBaseDir, "progress.md")
 	}
 
 	private queueWrite(operation: () => Promise<void>): Promise<void> {
@@ -525,7 +559,7 @@ export class RpiAutopilot {
 			return
 		}
 
-		const apiConfiguration = this.context.getApiConfiguration()
+		const apiConfiguration = await this.context.getApiConfiguration()
 		if (!apiConfiguration?.apiProvider) {
 			return
 		}
@@ -767,6 +801,45 @@ export class RpiAutopilot {
 		} catch {
 			return undefined
 		}
+	}
+
+	private async readLegacyStateFile(): Promise<RpiState | undefined> {
+		try {
+			const content = await fs.readFile(this.legacyStatePath, "utf-8")
+			const parsed = JSON.parse(content) as Partial<RpiState>
+			if (!parsed || typeof parsed !== "object") {
+				return undefined
+			}
+			if (parsed.version !== 1 || !parsed.taskId || !parsed.strategy || !parsed.phase) {
+				return undefined
+			}
+			return parsed as RpiState
+		} catch {
+			return undefined
+		}
+	}
+
+	private async maybeMigrateLegacyArtifacts(): Promise<void> {
+		const copyIfMissing = async (source: string, destination: string) => {
+			try {
+				await fs.access(destination)
+				return
+			} catch {
+				// destination missing, continue
+			}
+
+			try {
+				await fs.copyFile(source, destination)
+			} catch {
+				// ignore missing legacy artifacts
+			}
+		}
+
+		await Promise.all([
+			copyIfMissing(this.legacyTaskPlanPath, this.taskPlanPath),
+			copyIfMissing(this.legacyFindingsPath, this.findingsPath),
+			copyIfMissing(this.legacyProgressPath, this.progressPath),
+		])
 	}
 
 	private async appendFinding(level: RpiEventLevel, message: string): Promise<void> {

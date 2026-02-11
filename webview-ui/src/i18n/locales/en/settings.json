@@ -805,6 +805,11 @@
 			"label": "Enable RPI council engine",
 			"description": "When enabled, Roo runs the internal council analysis automatically during discovery, planning, and verification using the active mode provider."
 		},
+		"rpiCouncilApiConfig": {
+			"label": "RPI council API configuration",
+			"description": "Choose which provider profile the RPI council engine uses. Default uses the currently selected API configuration.",
+			"useCurrentConfig": "Use currently selected API configuration"
+		},
 		"maxGitStatusFiles": {
 			"label": "Git status max files",
 			"description": "Maximum number of file entries to include in git status context. Set to 0 to disable. Branch info is always shown when > 0."

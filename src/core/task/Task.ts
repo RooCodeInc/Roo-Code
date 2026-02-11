@@ -4711,7 +4711,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				cwd: this.cwd,
 				getMode: async () => this.getTaskMode(),
 				getTaskText: () => this.metadata.task,
-				getApiConfiguration: () => this.apiConfiguration,
+				getApiConfiguration: () => this.getRpiCouncilApiConfiguration(),
 				isCouncilEngineEnabled: () => this.isRpiCouncilEngineEnabled(),
 				onCouncilEvent: (event) => {
 					void this.handleRpiCouncilEvent(event)
@@ -4722,6 +4722,38 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			})
 		}
 		return this.rpiAutopilot
+	}
+
+	private async getRpiCouncilApiConfiguration(): Promise<ProviderSettings | undefined> {
+		const provider = this.providerRef.deref()
+		if (!provider) {
+			return this.apiConfiguration
+		}
+
+		const rpiCouncilApiConfigId = provider.contextProxy.getValue("rpiCouncilApiConfigId")
+		if (!rpiCouncilApiConfigId) {
+			return this.apiConfiguration
+		}
+
+		const listApiConfigMeta = provider.contextProxy.getValue("listApiConfigMeta") ?? []
+		if (!listApiConfigMeta.find(({ id }) => id === rpiCouncilApiConfigId)) {
+			return this.apiConfiguration
+		}
+
+		try {
+			const { name: _name, ...providerSettings } = await provider.providerSettingsManager.getProfile({
+				id: rpiCouncilApiConfigId,
+			})
+			if (providerSettings.apiProvider) {
+				return providerSettings
+			}
+		} catch (error) {
+			console.error(
+				`[Task#getRpiCouncilApiConfiguration] Failed: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+
+		return this.apiConfiguration
 	}
 
 	public async initializeRpiAutopilot(): Promise<void> {

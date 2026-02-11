@@ -51,6 +51,8 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 	const [isSelectionMode, setIsSelectionMode] = useState(false)
 	const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([])
 	const [showBatchDeleteDialog, setShowBatchDeleteDialog] = useState<boolean>(false)
+	const [showDeleteAllDialog, setShowDeleteAllDialog] = useState<boolean>(false)
+	const [deleteAllTaskIds, setDeleteAllTaskIds] = useState<string[]>([])
 
 	// Get subtask count for a task
 	const getSubtaskCount = useMemo(() => {
@@ -60,6 +62,8 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		}
 		return (taskId: string) => countMap.get(taskId) || 0
 	}, [groups])
+
+	const filteredTaskIds = useMemo(() => Array.from(new Set(tasks.map((task) => task.id))), [tasks])
 
 	// Handle delete with subtask count
 	const handleDelete = (taskId: string) => {
@@ -100,6 +104,13 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		}
 	}
 
+	const handleDeleteAllFiltered = () => {
+		if (filteredTaskIds.length > 0) {
+			setDeleteAllTaskIds(filteredTaskIds)
+			setShowDeleteAllDialog(true)
+		}
+	}
+
 	return (
 		<Tab>
 			<TabHeader className="flex flex-col gap-2">
@@ -116,20 +127,36 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 						</Button>
 						<h3 className="text-vscode-foreground m-0">{t("history:history")}</h3>
 					</div>
-					<StandardTooltip
-						content={
-							isSelectionMode ? `${t("history:exitSelectionMode")}` : `${t("history:enterSelectionMode")}`
-						}>
-						<Button
-							variant={isSelectionMode ? "primary" : "secondary"}
-							onClick={toggleSelectionMode}
-							data-testid="toggle-selection-mode-button">
-							<span
-								className={`codicon ${isSelectionMode ? "codicon-check-all" : "codicon-checklist"} mr-1`}
-							/>
-							{isSelectionMode ? t("history:exitSelection") : t("history:selectionMode")}
-						</Button>
-					</StandardTooltip>
+					<div className="flex items-center gap-2">
+						<StandardTooltip
+							content={
+								isSelectionMode
+									? `${t("history:exitSelectionMode")}`
+									: `${t("history:enterSelectionMode")}`
+							}>
+							<Button
+								variant={isSelectionMode ? "primary" : "secondary"}
+								onClick={toggleSelectionMode}
+								data-testid="toggle-selection-mode-button">
+								<span
+									className={`codicon ${isSelectionMode ? "codicon-check-all" : "codicon-checklist"} mr-1`}
+								/>
+								{isSelectionMode ? t("history:exitSelection") : t("history:selectionMode")}
+							</Button>
+						</StandardTooltip>
+						{!isSelectionMode && (
+							<StandardTooltip content={t("history:deleteTasks")}>
+								<Button
+									variant="destructive"
+									onClick={handleDeleteAllFiltered}
+									disabled={filteredTaskIds.length === 0}
+									data-testid="delete-all-filtered-tasks-button">
+									<span className="codicon codicon-trash mr-1" />
+									{`${t("history:deleteTasks")} (${filteredTaskIds.length})`}
+								</Button>
+							</StandardTooltip>
+						)}
+					</div>
 				</div>
 				<div className="flex flex-col gap-2">
 					<VSCodeTextField
@@ -349,6 +376,20 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							setShowBatchDeleteDialog(false)
 							setSelectedTaskIds([])
 							setIsSelectionMode(false)
+						}
+					}}
+				/>
+			)}
+
+			{/* Delete all filtered dialog */}
+			{showDeleteAllDialog && (
+				<BatchDeleteTaskDialog
+					taskIds={deleteAllTaskIds}
+					open={showDeleteAllDialog}
+					onOpenChange={(open) => {
+						if (!open) {
+							setShowDeleteAllDialog(false)
+							setDeleteAllTaskIds([])
 						}
 					}}
 				/>

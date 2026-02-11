@@ -44,6 +44,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	maxGitStatusFiles?: number
 	rpiAutopilotEnabled?: boolean
 	rpiCouncilEngineEnabled?: boolean
+	rpiCouncilApiConfigId?: string
 	preventCompletionWithEslintProblems?: boolean
 	customSupportPrompts: Record<string, string | undefined>
 	setCustomSupportPrompts: (prompts: Record<string, string | undefined>) => void
@@ -65,6 +66,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "maxGitStatusFiles"
 		| "rpiAutopilotEnabled"
 		| "rpiCouncilEngineEnabled"
+		| "rpiCouncilApiConfigId"
 		| "preventCompletionWithEslintProblems"
 	>
 }
@@ -89,6 +91,7 @@ export const ContextManagementSettings = ({
 	maxGitStatusFiles,
 	rpiAutopilotEnabled,
 	rpiCouncilEngineEnabled,
+	rpiCouncilApiConfigId,
 	preventCompletionWithEslintProblems,
 	customSupportPrompts,
 	setCustomSupportPrompts,
@@ -465,6 +468,39 @@ export const ContextManagementSettings = ({
 					</VSCodeCheckbox>
 					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
 						{t("settings:contextManagement.rpiCouncilEngine.description")}
+					</div>
+				</SearchableSetting>
+
+				<SearchableSetting
+					settingId="context-rpi-council-api-config"
+					section="contextManagement"
+					label={t("settings:contextManagement.rpiCouncilApiConfig.label")}>
+					<label className="block font-medium mb-1">
+						{t("settings:contextManagement.rpiCouncilApiConfig.label")}
+					</label>
+					<Select
+						value={rpiCouncilApiConfigId || "-"}
+						onValueChange={(value) => {
+							const newConfigId = value === "-" ? "" : value
+							setCachedStateField("rpiCouncilApiConfigId", newConfigId)
+						}}
+						disabled={!rpiCouncilEngineEnabled}>
+						<SelectTrigger className="w-full">
+							<SelectValue placeholder={t("settings:common.select")} />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="-">
+								{t("settings:contextManagement.rpiCouncilApiConfig.useCurrentConfig")}
+							</SelectItem>
+							{(listApiConfigMeta || []).map((config) => (
+								<SelectItem key={config.id} value={config.id}>
+									{config.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+						{t("settings:contextManagement.rpiCouncilApiConfig.description")}
 					</div>
 				</SearchableSetting>
 
