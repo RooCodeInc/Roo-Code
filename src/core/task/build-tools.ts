@@ -114,6 +114,7 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 	// Build native tools with dynamic read_file tool based on settings.
 	const nativeTools = getNativeTools({
 		supportsImages,
+		maxReadFileLine: apiConfiguration?.maxReadFileLine,
 	})
 
 	// Filter native tools based on mode restrictions.

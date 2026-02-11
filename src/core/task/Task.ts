@@ -2800,6 +2800,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				showRooIgnoredFiles,
 				includeDiagnosticMessages,
 				maxDiagnosticMessages,
+				maxReadFileLine: this.apiConfiguration?.maxReadFileLine,
 			})
 
 			// Switch mode if specified in a slash command's frontmatter
