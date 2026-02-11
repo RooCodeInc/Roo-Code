@@ -420,6 +420,27 @@ describe("AnthropicHandler", () => {
 			const systemMessages = callArgs.messages.filter((m: any) => m.role === "system")
 			expect(systemMessages).toHaveLength(0)
 		})
+
+		it("should disable prompt caching when globally disabled", async () => {
+			setupStreamTextMock([{ type: "text-delta", text: "test" }])
+
+			const cacheDisabledHandler = new AnthropicHandler({
+				...mockOptions,
+				promptCachingEnabled: false,
+			})
+
+			const stream = cacheDisabledHandler.createMessage(systemPrompt, [
+				{ role: "user", content: [{ type: "text" as const, text: "hello" }] },
+			])
+
+			for await (const _chunk of stream) {
+				// Consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0]![0]
+			expect(callArgs.systemProviderOptions).toBeUndefined()
+			expect(callArgs.messages[0].providerOptions).toBeUndefined()
+		})
 	})
 
 	describe("completePrompt", () => {

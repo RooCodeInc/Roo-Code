@@ -591,6 +591,76 @@ describe("AwsBedrockHandler", () => {
 		})
 	})
 
+	describe("prompt caching policy", () => {
+		function setupMockStreamText() {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Response" }
+			}
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({}),
+			})
+		}
+
+		it("disables cache markers when global prompt caching is off", async () => {
+			setupMockStreamText()
+			const cacheDisabledHandler = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test-access-key",
+				awsSecretKey: "test-secret-key",
+				awsRegion: "us-east-1",
+				promptCachingEnabled: false,
+			})
+
+			const generator = cacheDisabledHandler.createMessage("", [
+				{
+					role: "user",
+					content: "Test prompt",
+				},
+			])
+			for await (const _chunk of generator) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.systemProviderOptions).toBeUndefined()
+			expect(callArgs.messages[0].providerOptions).toBeUndefined()
+		})
+
+		it("allows provider override to re-enable cache markers", async () => {
+			setupMockStreamText()
+			const overrideEnabledHandler = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test-access-key",
+				awsSecretKey: "test-secret-key",
+				awsRegion: "us-east-1",
+				promptCachingEnabled: false,
+				promptCachingProviderOverrides: {
+					bedrock: true,
+				},
+			})
+
+			const generator = overrideEnabledHandler.createMessage("", [
+				{
+					role: "user",
+					content: "Test prompt",
+				},
+			])
+			for await (const _chunk of generator) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.systemProviderOptions).toEqual({
+				bedrock: { cachePoint: { type: "default" } },
+			})
+			expect(callArgs.messages[0].providerOptions).toEqual({
+				bedrock: { cachePoint: { type: "default" } },
+			})
+		})
+	})
+
 	describe("error handling and validation", () => {
 		it("should handle invalid regions gracefully", () => {
 			expect(() => {

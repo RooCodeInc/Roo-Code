@@ -879,6 +879,63 @@ describe("OpenAiNativeHandler", () => {
 			const callArgs = mockStreamText.mock.calls[0][0]
 			expect(callArgs.providerOptions.openai.promptCacheRetention).toBeUndefined()
 		})
+
+		it("should not pass promptCacheRetention when globally disabled", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({}),
+				content: Promise.resolve([]),
+			})
+
+			const h = new OpenAiNativeHandler({
+				...mockOptions,
+				apiModelId: "gpt-5.1",
+				promptCachingEnabled: false,
+			})
+
+			const stream = h.createMessage(systemPrompt, messages)
+			for await (const _ of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.providerOptions.openai.promptCacheRetention).toBeUndefined()
+		})
+
+		it("should pass promptCacheRetention when provider override enables it", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({}),
+				content: Promise.resolve([]),
+			})
+
+			const h = new OpenAiNativeHandler({
+				...mockOptions,
+				apiModelId: "gpt-5.1",
+				promptCachingEnabled: false,
+				promptCachingProviderOverrides: {
+					"openai-native": true,
+				},
+			})
+
+			const stream = h.createMessage(systemPrompt, messages)
+			for await (const _ of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.providerOptions.openai.promptCacheRetention).toBe("24h")
+		})
 	})
 
 	describe("completePrompt", () => {

@@ -260,6 +260,22 @@ describe("Bedrock Component", () => {
 
 	// Test Scenario 3: UI Elements Tests
 	describe("UI Elements", () => {
+		it("does not render legacy provider-level prompt caching controls", () => {
+			const apiConfiguration: Partial<ProviderSettings> = {
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsUseProfile: true,
+			}
+
+			render(
+				<Bedrock
+					apiConfiguration={apiConfiguration as ProviderSettings}
+					setApiConfigurationField={mockSetApiConfigurationField}
+				/>,
+			)
+
+			expect(screen.queryByText("settings:providers.cacheUsageNote")).not.toBeInTheDocument()
+		})
+
 		it("should display example URLs when VPC endpoint checkbox is checked", () => {
 			const apiConfiguration: Partial<ProviderSettings> = {
 				awsBedrockEndpoint: "https://example.com",

@@ -70,16 +70,20 @@ describe("ContextProxy", () => {
 
 	describe("constructor", () => {
 		it("should initialize state cache with all global state keys", () => {
-			// +3 for the migration checks:
+			// +5 for the migration checks:
 			// 1. openRouterImageGenerationSettings
-			// 2. customCondensingPrompt
-			// 3. customSupportPrompts (for migrateOldDefaultCondensingPrompt)
-			expect(mockGlobalState.get).toHaveBeenCalledTimes(GLOBAL_STATE_KEYS.length + 3)
+			// 2. awsUsePromptCache
+			// 3. litellmUsePromptCache
+			// 4. customCondensingPrompt
+			// 5. customSupportPrompts (for migrateOldDefaultCondensingPrompt)
+			expect(mockGlobalState.get).toHaveBeenCalledTimes(GLOBAL_STATE_KEYS.length + 5)
 			for (const key of GLOBAL_STATE_KEYS) {
 				expect(mockGlobalState.get).toHaveBeenCalledWith(key)
 			}
 			// Also check for migration calls
 			expect(mockGlobalState.get).toHaveBeenCalledWith("openRouterImageGenerationSettings")
+			expect(mockGlobalState.get).toHaveBeenCalledWith("awsUsePromptCache")
+			expect(mockGlobalState.get).toHaveBeenCalledWith("litellmUsePromptCache")
 			expect(mockGlobalState.get).toHaveBeenCalledWith("customCondensingPrompt")
 			expect(mockGlobalState.get).toHaveBeenCalledWith("customSupportPrompts")
 		})
@@ -104,8 +108,8 @@ describe("ContextProxy", () => {
 			const result = proxy.getGlobalState("apiProvider")
 			expect(result).toBe("deepseek")
 
-			// Original context should be called once during updateGlobalState (+3 for migration checks)
-			expect(mockGlobalState.get).toHaveBeenCalledTimes(GLOBAL_STATE_KEYS.length + 3) // From initialization + migration checks
+			// Original context should be called once during updateGlobalState (+5 for migration checks)
+			expect(mockGlobalState.get).toHaveBeenCalledTimes(GLOBAL_STATE_KEYS.length + 5) // From initialization + migration checks
 		})
 
 		it("should handle default values correctly", async () => {
@@ -552,6 +556,23 @@ describe("ContextProxy", () => {
 
 			// Should not throw and should return undefined
 			expect(settings.apiProvider).toBeUndefined()
+		})
+
+		it("should migrate legacy prompt cache toggles to provider overrides", async () => {
+			await proxy.setValues({
+				apiProvider: "bedrock",
+				awsUsePromptCache: false as any,
+				litellmUsePromptCache: false as any,
+			} as any)
+
+			const settings = proxy.getProviderSettings()
+
+			expect((settings as any).awsUsePromptCache).toBeUndefined()
+			expect((settings as any).litellmUsePromptCache).toBeUndefined()
+			expect(settings.promptCachingProviderOverrides).toEqual({
+				bedrock: false,
+				litellm: false,
+			})
 		})
 	})
 

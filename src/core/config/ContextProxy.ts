@@ -22,6 +22,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 
 import { logger } from "../../utils/logging"
 import { supportPrompt } from "../../shared/support-prompt"
+import { migrateLegacyPromptCacheSettings } from "./migrateLegacyPromptCacheSettings"
 
 type GlobalStateKey = keyof GlobalState
 type SecretStateKey = keyof SecretState
@@ -94,6 +95,9 @@ export class ContextProxy {
 		// Migration: Sanitize invalid/removed API providers
 		await this.migrateInvalidApiProvider()
 
+		// Migration: one-time read of removed provider-level prompt cache keys.
+		await this.migrateLegacyPromptCacheKeys()
+
 		// Migration: Move legacy customCondensingPrompt to customSupportPrompts
 		await this.migrateLegacyCondensingPrompt()
 
@@ -101,6 +105,45 @@ export class ContextProxy {
 		await this.migrateOldDefaultCondensingPrompt()
 
 		this._isInitialized = true
+	}
+
+	/**
+	 * Migrates removed provider-level prompt cache toggles to the unified
+	 * `promptCachingProviderOverrides` map and clears the legacy keys.
+	 */
+	private async migrateLegacyPromptCacheKeys() {
+		try {
+			const rawAwsToggle = this.originalContext.globalState.get<unknown>("awsUsePromptCache" as any)
+			const rawLiteLlmToggle = this.originalContext.globalState.get<unknown>("litellmUsePromptCache" as any)
+
+			if (rawAwsToggle === undefined && rawLiteLlmToggle === undefined) {
+				return
+			}
+
+			const migrationInput: Record<string, unknown> = {
+				...this.stateCache,
+				awsUsePromptCache: rawAwsToggle,
+				litellmUsePromptCache: rawLiteLlmToggle,
+			}
+
+			const migration = migrateLegacyPromptCacheSettings(migrationInput)
+			if (!migration.changed) {
+				return
+			}
+
+			const overrides = migration.config.promptCachingProviderOverrides as Record<string, boolean> | undefined
+			await this.originalContext.globalState.update("promptCachingProviderOverrides", overrides)
+			this.stateCache.promptCachingProviderOverrides = overrides
+
+			await this.originalContext.globalState.update("awsUsePromptCache" as any, undefined)
+			await this.originalContext.globalState.update("litellmUsePromptCache" as any, undefined)
+			delete (this.stateCache as Record<string, unknown>).awsUsePromptCache
+			delete (this.stateCache as Record<string, unknown>).litellmUsePromptCache
+		} catch (error) {
+			logger.error(
+				`Error during legacy prompt cache migration: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
 	}
 
 	/**
@@ -458,6 +501,13 @@ export class ContextProxy {
 				sanitizedValues = copy as RooCodeSettings
 			}
 		}
+
+		const promptCacheMigration = migrateLegacyPromptCacheSettings({
+			...(sanitizedValues as unknown as Record<string, unknown>),
+			awsUsePromptCache: (this.stateCache as Record<string, unknown>).awsUsePromptCache,
+			litellmUsePromptCache: (this.stateCache as Record<string, unknown>).litellmUsePromptCache,
+		})
+		sanitizedValues = promptCacheMigration.config as RooCodeSettings
 
 		const isKnownProvider =
 			typeof values.apiProvider === "string" &&
