@@ -325,6 +325,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	// Tool Use
 	consecutiveMistakeCount: number = 0
+	consecutiveMistakeReason: "no_tools_used" | "no_assistant_messages" | "unknown" = "unknown"
 	consecutiveMistakeLimit: number
 	consecutiveMistakeCountForApplyDiff: Map<string, number> = new Map()
 	consecutiveMistakeCountForEditFile: Map<string, number> = new Map()
@@ -2720,8 +2721,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			if (this.consecutiveMistakeLimit > 0 && this.consecutiveMistakeCount >= this.consecutiveMistakeLimit) {
 				// Track consecutive mistake errors in telemetry via event and PostHog exception tracking.
-				// The reason is "no_tools_used" because this limit is reached via initiateTaskLoop
-				// which increments consecutiveMistakeCount when the model doesn't use any tools.
 				TelemetryService.instance.captureConsecutiveMistakeError(this.taskId)
 				TelemetryService.instance.captureException(
 					new ConsecutiveMistakeError(
@@ -2729,7 +2728,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						this.taskId,
 						this.consecutiveMistakeCount,
 						this.consecutiveMistakeLimit,
-						"no_tools_used",
+						this.consecutiveMistakeReason,
 						this.apiConfiguration.apiProvider,
 						getModelId(this.apiConfiguration),
 					),
@@ -2752,6 +2751,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 
 				this.consecutiveMistakeCount = 0
+				this.consecutiveMistakeReason = "unknown"
 			}
 
 			// Getting verbose details is an expensive operation, it uses ripgrep to
@@ -4480,6 +4480,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.consecutiveNoAssistantMessagesCount++
 		if (this.consecutiveNoAssistantMessagesCount >= 2) {
 			await this.say("error", "MODEL_NO_ASSISTANT_MESSAGES")
+			this.consecutiveMistakeReason = "no_assistant_messages"
 			this.consecutiveMistakeCount++
 		}
 	}
@@ -4491,6 +4492,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.consecutiveNoToolUseCount++
 		if (this.consecutiveNoToolUseCount >= 2) {
 			await this.say("error", "MODEL_NO_TOOLS_USED")
+			this.consecutiveMistakeReason = "no_tools_used"
 			this.consecutiveMistakeCount++
 		}
 	}

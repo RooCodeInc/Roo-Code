@@ -481,5 +481,41 @@ describe("Grace Retry Error Handling", () => {
 			// Empty-response counter is unaffected
 			expect(task.consecutiveNoAssistantMessagesCount).toBe(0)
 		})
+
+		it("should set consecutiveMistakeReason to no_assistant_messages after empty-output threshold", async () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			vi.spyOn(task, "say").mockResolvedValue(undefined)
+			expect(task.consecutiveMistakeReason).toBe("unknown")
+
+			// First call — grace retry, reason stays unknown
+			await (task as any).onEmptyAssistantOutput()
+			expect(task.consecutiveMistakeReason).toBe("unknown")
+
+			// Second call — reason set
+			await (task as any).onEmptyAssistantOutput()
+			expect(task.consecutiveMistakeReason).toBe("no_assistant_messages")
+		})
+
+		it("should set consecutiveMistakeReason to no_tools_used after no-tool-use threshold", async () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			vi.spyOn(task, "say").mockResolvedValue(undefined)
+			expect(task.consecutiveMistakeReason).toBe("unknown")
+
+			await (task as any).onNoToolUse()
+			await (task as any).onNoToolUse()
+			expect(task.consecutiveMistakeReason).toBe("no_tools_used")
+		})
 	})
 })
