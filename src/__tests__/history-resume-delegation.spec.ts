@@ -288,7 +288,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 		expect(apiCall.messages).toHaveLength(3)
 
 		// Verify the injected message is a tool message with tool-result type
-		const injectedMsg = apiCall.messages[2]
+		const injectedMsg = apiCall.messages[2] as any
 		expect(injectedMsg.role).toBe("tool")
 		expect((injectedMsg.content[0] as any).type).toBe("tool-result")
 		expect((injectedMsg.content[0] as any).toolCallId).toBe("toolu_abc123")
@@ -338,7 +338,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 		const apiCall = vi.mocked(saveRooMessages).mock.calls[0][0]
 		// Should append a user text note
 		expect(apiCall.messages).toHaveLength(2)
-		const injected = apiCall.messages[1]
+		const injected = apiCall.messages[1] as any
 		expect(injected.role).toBe("user")
 		expect((injected.content[0] as any).type).toBe("text")
 		expect((injected.content[0] as any).text).toContain("Subtask c-no-tool completed")
