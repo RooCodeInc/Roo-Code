@@ -1,6 +1,22 @@
 import { TelemetryService } from "@roo-code/telemetry"
 import { findLastIndex } from "../../shared/array"
-import type { RooMessage, ToolCallPart, ToolResultPart } from "../task-persistence/rooMessage"
+import type {
+	RooMessage,
+	RooRoleMessage,
+	ToolCallPart,
+	ToolResultPart,
+	AnyToolCallBlock,
+	AnyToolResultBlock,
+} from "../task-persistence/rooMessage"
+import {
+	isRooRoleMessage,
+	isAnyToolCallBlock,
+	isAnyToolResultBlock,
+	getToolCallId as sharedGetToolCallId,
+	getToolCallName,
+	getToolResultCallId as sharedGetToolResultCallId,
+	setToolResultCallId as sharedSetToolResultCallId,
+} from "../task-persistence/rooMessage"
 
 /**
  * Custom error class for tool result ID mismatches.
@@ -33,35 +49,12 @@ export class MissingToolResultError extends Error {
 	}
 }
 
-/** Check both AI SDK (`tool-call`) and legacy Anthropic (`tool_use`) discriminators. */
-function isToolCallBlock(block: {
-	type: string
-}): block is ToolCallPart & { id?: string; name?: string; input?: unknown } {
-	return block.type === "tool-call" || block.type === "tool_use"
-}
-
-/** Check both AI SDK (`tool-result`) and legacy Anthropic (`tool_result`) discriminators. */
-function isToolResultBlock(block: { type: string }): block is ToolResultPart & { tool_use_id?: string } {
-	return block.type === "tool-result" || block.type === "tool_result"
-}
-
-/** Get the tool call ID regardless of format (AI SDK or legacy Anthropic). */
-function getToolCallId(block: any): string {
-	return block.toolCallId ?? block.id ?? ""
-}
-
-/** Get the tool result's reference to a tool call ID, regardless of format. */
-function getToolResultCallId(block: any): string {
-	return block.toolCallId ?? block.tool_use_id ?? ""
-}
-
-/** Set the tool result's reference to a tool call ID, returning a new block. */
-function setToolResultCallId(block: any, id: string): any {
-	if ("toolCallId" in block) {
-		return { ...block, toolCallId: id }
-	}
-	return { ...block, tool_use_id: id }
-}
+/** Local aliases for shared dual-format helpers. */
+const isToolCallBlock = isAnyToolCallBlock
+const isToolResultBlock = isAnyToolResultBlock
+const getToolCallId = sharedGetToolCallId
+const getToolResultCallId = sharedGetToolResultCallId
+const setToolResultCallId = sharedSetToolResultCallId
 
 /**
  * Validates and fixes tool result IDs in a user/tool message against the previous assistant message.
@@ -79,7 +72,7 @@ function setToolResultCallId(block: any, id: string): any {
  */
 export function validateAndFixToolResultIds(userMessage: RooMessage, apiConversationHistory: RooMessage[]): RooMessage {
 	// Only process messages with array content that have a role
-	if (!("role" in userMessage) || !Array.isArray(userMessage.content)) {
+	if (!isRooRoleMessage(userMessage) || !Array.isArray(userMessage.content)) {
 		return userMessage
 	}
 
@@ -92,7 +85,7 @@ export function validateAndFixToolResultIds(userMessage: RooMessage, apiConversa
 	const previousAssistantMessage = apiConversationHistory[prevAssistantIdx]
 
 	// Get tool-call blocks from the assistant message
-	if (!("role" in previousAssistantMessage)) {
+	if (!isRooRoleMessage(previousAssistantMessage)) {
 		return userMessage
 	}
 	const assistantContent = previousAssistantMessage.content
@@ -100,7 +93,7 @@ export function validateAndFixToolResultIds(userMessage: RooMessage, apiConversa
 		return userMessage
 	}
 
-	const toolCallBlocks = assistantContent.filter(isToolCallBlock)
+	const toolCallBlocks = (assistantContent as Array<{ type: string }>).filter(isToolCallBlock)
 
 	// No tool-call blocks to match against - no validation needed
 	if (toolCallBlocks.length === 0) {
@@ -108,11 +101,12 @@ export function validateAndFixToolResultIds(userMessage: RooMessage, apiConversa
 	}
 
 	// Find tool-result blocks in the user/tool message
-	let toolResults = (userMessage.content as any[]).filter(isToolResultBlock)
+	const contentArray = userMessage.content as Array<{ type: string }>
+	let toolResults = contentArray.filter(isToolResultBlock)
 
 	// Deduplicate tool-result blocks to prevent API protocol violations (GitHub #10465)
 	const seenToolResultIds = new Set<string>()
-	const deduplicatedContent = (userMessage.content as any[]).filter((block) => {
+	const deduplicatedContent = contentArray.filter((block) => {
 		if (!isToolResultBlock(block)) {
 			return true
 		}
@@ -190,10 +184,11 @@ export function validateAndFixToolResultIds(userMessage: RooMessage, apiConversa
 
 	// Match tool-results to tool-calls by position and fix incorrect IDs
 	const usedToolCallIds = new Set<string>()
-	const contentArray = (userMessage as any).content as any[]
+	// userMessage was reassigned above with deduplicatedContent, so we know it has array content
+	const correctedContentArray = (userMessage as RooRoleMessage).content as Array<{ type: string }>
 
-	const correctedContent = contentArray
-		.map((block: any) => {
+	const correctedContent = correctedContentArray
+		.map((block) => {
 			if (!isToolResultBlock(block)) {
 				return block
 			}
@@ -222,7 +217,7 @@ export function validateAndFixToolResultIds(userMessage: RooMessage, apiConversa
 			// No corresponding tool-call for this tool-result, or the ID is already used
 			return null
 		})
-		.filter((block: any): block is NonNullable<typeof block> => block !== null)
+		.filter((block): block is NonNullable<typeof block> => block !== null)
 
 	// Add missing tool-result blocks for any tool-call that doesn't have one
 	const coveredToolCallIds = new Set(correctedContent.filter(isToolResultBlock).map(getToolResultCallId))
@@ -234,7 +229,7 @@ export function validateAndFixToolResultIds(userMessage: RooMessage, apiConversa
 	const missingToolResults: ToolResultPart[] = stillMissingToolCalls.map((tc) => ({
 		type: "tool-result" as const,
 		toolCallId: getToolCallId(tc),
-		toolName: (tc as any).toolName ?? (tc as any).name ?? "unknown",
+		toolName: getToolCallName(tc),
 		output: { type: "text" as const, value: "Tool execution was interrupted before completion." },
 	}))
 

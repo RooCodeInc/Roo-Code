@@ -1,5 +1,18 @@
 import OpenAI from "openai"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
+import {
+	type RooMessage,
+	type RooRoleMessage,
+	type AnyToolCallBlock,
+	type AnyToolResultBlock,
+	isRooRoleMessage,
+	isAnyToolCallBlock,
+	isAnyToolResultBlock,
+	getToolCallId,
+	getToolCallName,
+	getToolCallInput,
+	getToolResultCallId,
+	getToolResultContent,
+} from "../../core/task-persistence/rooMessage"
 
 /**
  * Type for OpenRouter's reasoning detail elements.
@@ -144,6 +157,12 @@ export function consolidateReasoningDetails(reasoningDetails: ReasoningDetail[])
 
 	return consolidated
 }
+
+/**
+ * A RooRoleMessage that may carry `reasoning_details` from OpenAI/OpenRouter providers.
+ * Used to type-narrow instead of `as any` when accessing reasoning metadata.
+ */
+type MessageWithReasoningDetails = RooRoleMessage & { reasoning_details?: ReasoningDetail[] }
 
 /**
  * Sanitizes OpenAI messages for Gemini models by filtering reasoning_details
@@ -305,23 +324,13 @@ export function convertToOpenAiMessages(
 	// Use provided normalization function or identity function
 	const normalizeId = options?.normalizeToolCallId ?? ((id: string) => id)
 
-	/** Check both AI SDK and legacy format for tool-call blocks. */
-	const isToolCall = (part: any) => part.type === "tool-call" || part.type === "tool_use"
-	/** Check both AI SDK and legacy format for tool-result blocks. */
-	const isToolResult = (part: any) => part.type === "tool-result" || part.type === "tool_result"
-	/** Get tool call ID from either format. */
-	const getToolCallId = (part: any): string => part.toolCallId ?? part.id ?? ""
-	/** Get tool result's reference to a tool call ID from either format. */
-	const getToolResultCallId = (part: any): string => part.toolCallId ?? part.tool_use_id ?? ""
-	/** Get tool call name from either format. */
-	const getToolName = (part: any): string => part.toolName ?? part.name ?? ""
-	/** Get tool call args from either format. */
-	const getToolArgs = (part: any): unknown => part.input ?? part.args
-	/** Get tool result content from either format. */
-	const getToolResultContent = (part: any): any => part.result ?? part.content
-
 	/** Get image data URL from either AI SDK or legacy format. */
-	const getImageDataUrl = (part: any): string => {
+	const getImageDataUrl = (part: {
+		type: string
+		image?: string
+		mediaType?: string
+		source?: { media_type?: string; data?: string }
+	}): string => {
 		// AI SDK format: { type: "image", image: base64, mediaType: mimeType }
 		if (part.image && part.mediaType) {
 			return `data:${part.mediaType};base64,${part.image}`
@@ -341,7 +350,7 @@ export function convertToOpenAiMessages(
 
 		if (typeof message.content === "string") {
 			// String content: simple text message
-			const messageWithDetails = message as any
+			const messageWithDetails = message as MessageWithReasoningDetails
 			const baseMessage: OpenAI.Chat.ChatCompletionMessageParam & { reasoning_details?: any[] } = {
 				role: message.role as "user" | "assistant",
 				content: message.content,
@@ -350,7 +359,7 @@ export function convertToOpenAiMessages(
 			if (message.role === "assistant") {
 				const mapped = mapReasoningDetails(messageWithDetails.reasoning_details)
 				if (mapped) {
-					;(baseMessage as any).reasoning_details = mapped
+					baseMessage.reasoning_details = mapped
 				}
 			}
 
@@ -359,19 +368,20 @@ export function convertToOpenAiMessages(
 			// RooToolMessage: each tool-result → OpenAI tool message
 			if (Array.isArray(message.content)) {
 				for (const part of message.content) {
-					if (isToolResult(part)) {
-						const rawContent = getToolResultContent(part)
+					if (isAnyToolResultBlock(part as { type: string })) {
+						const resultBlock = part as AnyToolResultBlock
+						const rawContent = getToolResultContent(resultBlock)
 						let content: string
 						if (typeof rawContent === "string") {
 							content = rawContent
-						} else if (rawContent && typeof rawContent === "object" && rawContent.value) {
-							content = String(rawContent.value)
+						} else if (rawContent && typeof rawContent === "object" && "value" in rawContent) {
+							content = String((rawContent as { value: unknown }).value)
 						} else {
 							content = rawContent ? JSON.stringify(rawContent) : ""
 						}
 						openAiMessages.push({
 							role: "tool",
-							tool_call_id: normalizeId(getToolResultCallId(part)),
+							tool_call_id: normalizeId(getToolResultCallId(resultBlock)),
 							content: content || "(empty)",
 						})
 					}
@@ -379,21 +389,25 @@ export function convertToOpenAiMessages(
 			}
 		} else if (message.role === "user") {
 			// User message: separate tool results from text/image content
-			const contentArray = Array.isArray(message.content) ? message.content : []
+			// Persisted data may contain legacy Anthropic tool_result blocks alongside AI SDK parts,
+			// so we widen the element type to handle all possible block shapes.
+			const contentArray: Array<{ type: string }> = Array.isArray(message.content)
+				? (message.content as unknown as Array<{ type: string }>)
+				: []
 
-			const nonToolMessages: any[] = []
-			const toolMessages: any[] = []
+			const nonToolMessages: Array<{ type: string; text?: unknown; [k: string]: unknown }> = []
+			const toolMessages: AnyToolResultBlock[] = []
 
 			for (const part of contentArray) {
-				if (isToolResult(part)) {
+				if (isAnyToolResultBlock(part)) {
 					toolMessages.push(part)
 				} else if (part.type === "text" || part.type === "image") {
-					nonToolMessages.push(part)
+					nonToolMessages.push(part as { type: string; text?: unknown; [k: string]: unknown })
 				}
 			}
 
 			// Process tool result messages FIRST
-			toolMessages.forEach((toolMessage: any) => {
+			toolMessages.forEach((toolMessage) => {
 				const rawContent = getToolResultContent(toolMessage)
 				let content: string
 
@@ -402,15 +416,15 @@ export function convertToOpenAiMessages(
 				} else if (Array.isArray(rawContent)) {
 					content =
 						rawContent
-							.map((part: any) => {
+							.map((part: { type: string; text?: string }) => {
 								if (part.type === "image") {
 									return "(see following user message for image)"
 								}
 								return part.text
 							})
 							.join("\n") ?? ""
-				} else if (rawContent && typeof rawContent === "object" && rawContent.value) {
-					content = String(rawContent.value)
+				} else if (rawContent && typeof rawContent === "object" && "value" in rawContent) {
+					content = String((rawContent as { value: unknown }).value)
 				} else {
 					content = rawContent ? JSON.stringify(rawContent) : ""
 				}
@@ -425,11 +439,11 @@ export function convertToOpenAiMessages(
 			// Process non-tool messages
 			// Filter out empty text blocks to prevent "must include at least one parts field" error
 			const filteredNonToolMessages = nonToolMessages.filter(
-				(part: any) => part.type === "image" || (part.type === "text" && part.text),
+				(part) => part.type === "image" || (part.type === "text" && part.text),
 			)
 
 			if (filteredNonToolMessages.length > 0) {
-				const hasOnlyTextContent = filteredNonToolMessages.every((part: any) => part.type === "text")
+				const hasOnlyTextContent = filteredNonToolMessages.every((part) => part.type === "text")
 				const hasToolMessages = toolMessages.length > 0
 				const shouldMergeIntoToolMessage = options?.mergeToolResultText && hasToolMessages && hasOnlyTextContent
 
@@ -438,36 +452,49 @@ export function convertToOpenAiMessages(
 						openAiMessages.length - 1
 					] as OpenAI.Chat.ChatCompletionToolMessageParam
 					if (lastToolMessage?.role === "tool") {
-						const additionalText = filteredNonToolMessages.map((part: any) => part.text).join("\n")
+						const additionalText = filteredNonToolMessages.map((part) => String(part.text ?? "")).join("\n")
 						lastToolMessage.content = `${lastToolMessage.content}\n\n${additionalText}`
 					}
 				} else {
 					openAiMessages.push({
 						role: "user",
-						content: filteredNonToolMessages.map((part: any) => {
+						content: filteredNonToolMessages.map((part) => {
 							if (part.type === "image") {
 								return {
 									type: "image_url",
-									image_url: { url: getImageDataUrl(part) },
+									image_url: {
+										url: getImageDataUrl(
+											part as {
+												type: string
+												image?: string
+												mediaType?: string
+												source?: { media_type?: string; data?: string }
+											},
+										),
+									},
 								}
 							}
-							return { type: "text", text: part.text }
+							return { type: "text", text: String(part.text ?? "") }
 						}),
 					})
 				}
 			}
 		} else if (message.role === "assistant") {
 			// Assistant message: separate tool calls from text content
-			const contentArray: any[] = Array.isArray(message.content) ? message.content : []
+			// Persisted data may contain legacy Anthropic tool_use blocks, so we widen
+			// the element type to accommodate both AI SDK and legacy block shapes.
+			const contentArray: Array<{ type: string }> = Array.isArray(message.content)
+				? (message.content as unknown as Array<{ type: string }>)
+				: []
 
-			const nonToolMessages: any[] = []
-			const toolCallMessages: any[] = []
+			const nonToolMessages: Array<{ type: string; text?: unknown }> = []
+			const toolCallMessages: AnyToolCallBlock[] = []
 
 			for (const part of contentArray) {
-				if (isToolCall(part)) {
+				if (isAnyToolCallBlock(part)) {
 					toolCallMessages.push(part)
 				} else if (part.type === "text" || part.type === "image") {
-					nonToolMessages.push(part)
+					nonToolMessages.push(part as { type: string; text?: unknown })
 				}
 			}
 
@@ -475,26 +502,26 @@ export function convertToOpenAiMessages(
 			let content: string | undefined
 			if (nonToolMessages.length > 0) {
 				content = nonToolMessages
-					.map((part: any) => {
+					.map((part) => {
 						if (part.type === "image") {
 							return ""
 						}
-						return part.text
+						return part.text as string
 					})
 					.join("\n")
 			}
 
 			// Process tool call messages
-			let tool_calls: OpenAI.Chat.ChatCompletionMessageToolCall[] = toolCallMessages.map((tc: any) => ({
+			let tool_calls: OpenAI.Chat.ChatCompletionMessageToolCall[] = toolCallMessages.map((tc) => ({
 				id: normalizeId(getToolCallId(tc)),
 				type: "function" as const,
 				function: {
-					name: getToolName(tc),
-					arguments: JSON.stringify(getToolArgs(tc)),
+					name: getToolCallName(tc),
+					arguments: JSON.stringify(getToolCallInput(tc)),
 				},
 			}))
 
-			const messageWithDetails = message as any
+			const messageWithDetails = message as MessageWithReasoningDetails
 
 			const baseMessage: OpenAI.Chat.ChatCompletionAssistantMessageParam & {
 				reasoning_details?: any[]

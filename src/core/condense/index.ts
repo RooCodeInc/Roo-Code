@@ -8,12 +8,24 @@ import {
 	type RooMessage,
 	type RooUserMessage,
 	type RooToolMessage,
+	type RooRoleMessage,
 	isRooAssistantMessage,
 	isRooToolMessage,
 	isRooUserMessage,
+	isRooRoleMessage,
 	type ToolCallPart,
 	type ToolResultPart,
 	type TextPart,
+	type AnyToolCallBlock,
+	type AnyToolResultBlock,
+	isAnyToolCallBlock,
+	isAnyToolResultBlock,
+	getToolCallId,
+	getToolCallName,
+	getToolCallInput,
+	getToolResultCallId,
+	getToolResultContent,
+	getToolResultIsError,
 } from "../task-persistence/rooMessage"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { findLast } from "../../shared/array"
@@ -25,11 +37,11 @@ export type { FoldedFileContextResult, FoldedFileContextOptions } from "./folded
 
 /**
  * Converts a tool-call / tool_use block to a text representation.
- * Accepts both AI SDK ToolCallPart (toolName, args) and legacy Anthropic format (name, input).
+ * Accepts both AI SDK ToolCallPart (toolName, input) and legacy Anthropic format (name, input).
  */
-export function toolUseToText(block: { type: string; [k: string]: unknown }): string {
-	const name = (block as any).toolName ?? (block as any).name ?? "unknown"
-	const rawInput = (block as any).args ?? (block as any).input
+export function toolUseToText(block: AnyToolCallBlock): string {
+	const name = getToolCallName(block)
+	const rawInput = getToolCallInput(block)
 	let input: string
 	if (typeof rawInput === "object" && rawInput !== null) {
 		input = Object.entries(rawInput)
@@ -49,16 +61,16 @@ export function toolUseToText(block: { type: string; [k: string]: unknown }): st
  * Converts a tool-result / tool_result block to a text representation.
  * Accepts both AI SDK ToolResultPart and legacy Anthropic format.
  */
-export function toolResultToText(block: { type: string; [k: string]: unknown }): string {
-	const isError = (block as any).isError ?? (block as any).is_error
+export function toolResultToText(block: AnyToolResultBlock): string {
+	const isError = getToolResultIsError(block)
 	const errorSuffix = isError ? " (Error)" : ""
-	// AI SDK uses `result`, legacy uses `content`
-	const rawContent = (block as any).result ?? (block as any).content
+	// AI SDK uses `output`, legacy uses `content`
+	const rawContent = getToolResultContent(block)
 	if (typeof rawContent === "string") {
 		return `[Tool Result${errorSuffix}]\n${rawContent}`
 	} else if (Array.isArray(rawContent)) {
 		const contentText = rawContent
-			.map((contentBlock: any) => {
+			.map((contentBlock: { type: string; text?: string }) => {
 				if (contentBlock.type === "text") {
 					return contentBlock.text
 				}
@@ -81,23 +93,21 @@ export function toolResultToText(block: { type: string; [k: string]: unknown }):
  * @param content - The message content (string or array of content blocks)
  * @returns The transformed content with tool blocks converted to text blocks
  */
-export function convertToolBlocksToText(
-	content: string | Array<{ type: string; [k: string]: unknown }>,
-): string | Array<{ type: string; [k: string]: unknown }> {
+export function convertToolBlocksToText(content: string | Array<{ type: string }>): string | Array<{ type: string }> {
 	if (typeof content === "string") {
 		return content
 	}
 
 	return content.map((block) => {
 		// Check both AI SDK (`tool-call`) and legacy (`tool_use`) discriminators
-		if (block.type === "tool-call" || block.type === "tool_use") {
+		if (isAnyToolCallBlock(block)) {
 			return {
 				type: "text" as const,
 				text: toolUseToText(block),
 			}
 		}
 		// Check both AI SDK (`tool-result`) and legacy (`tool_result`) discriminators
-		if (block.type === "tool-result" || block.type === "tool_result") {
+		if (isAnyToolResultBlock(block)) {
 			return {
 				type: "text" as const,
 				text: toolResultToText(block),
@@ -114,7 +124,9 @@ export function convertToolBlocksToText(
  * @param messages - The messages to transform
  * @returns The transformed messages with tool blocks converted to text
  */
-export function transformMessagesForCondensing<T extends { role: string; content: any }>(messages: T[]): T[] {
+export function transformMessagesForCondensing<T extends { role: string; content: string | Array<{ type: string }> }>(
+	messages: T[],
+): T[] {
 	return messages.map((msg) => ({
 		...msg,
 		content: convertToolBlocksToText(msg.content),
@@ -153,27 +165,24 @@ export function injectSyntheticToolResults(messages: RooMessage[]): RooMessage[]
 	for (const msg of messages) {
 		if (isRooAssistantMessage(msg) && Array.isArray(msg.content)) {
 			for (const block of msg.content) {
-				const blockType = (block as any).type
-				// Check both AI SDK and legacy discriminators
-				if (blockType === "tool-call") {
-					toolCallIds.add((block as ToolCallPart).toolCallId)
-				} else if (blockType === "tool_use") {
-					toolCallIds.add((block as any).id)
+				if (isAnyToolCallBlock(block as { type: string })) {
+					toolCallIds.add(getToolCallId(block as AnyToolCallBlock))
 				}
 			}
 		}
 		if (isRooToolMessage(msg) && Array.isArray(msg.content)) {
 			for (const block of msg.content) {
-				if (block.type === "tool-result") {
-					toolResultIds.add((block as ToolResultPart).toolCallId)
+				if (isAnyToolResultBlock(block as { type: string })) {
+					toolResultIds.add(getToolResultCallId(block as AnyToolResultBlock))
 				}
 			}
 		}
 		// Also check legacy user messages with tool_result blocks
 		if (isRooUserMessage(msg) && Array.isArray(msg.content)) {
 			for (const block of msg.content) {
-				if ((block as any).type === "tool_result") {
-					toolResultIds.add((block as any).tool_use_id)
+				const typedBlock = block as unknown as { type: string }
+				if (isAnyToolResultBlock(typedBlock)) {
+					toolResultIds.add(getToolResultCallId(typedBlock))
 				}
 			}
 		}
@@ -211,7 +220,7 @@ export function injectSyntheticToolResults(messages: RooMessage[]): RooMessage[]
  * @returns A string containing all command blocks found, or empty string if none
  */
 export function extractCommandBlocks(message: RooMessage): string {
-	if (!("role" in message)) {
+	if (!isRooRoleMessage(message)) {
 		return ""
 	}
 	const content = message.content
@@ -222,7 +231,7 @@ export function extractCommandBlocks(message: RooMessage): string {
 	} else if (Array.isArray(content)) {
 		// Concatenate all text blocks
 		text = content
-			.filter((block: any): block is TextPart => block.type === "text")
+			.filter((block): block is TextPart => (block as { type: string }).type === "text")
 			.map((block) => block.text)
 			.join("\n")
 	} else {
@@ -345,7 +354,10 @@ export async function summarizeConversation(options: SummarizeConversationOption
 		(msg): msg is Exclude<RooMessage, { type: "reasoning" }> => "role" in msg,
 	)
 	const messagesWithTextToolBlocks = transformMessagesForCondensing(
-		maybeRemoveImageBlocks(messagesForApi, apiHandler) as any[],
+		maybeRemoveImageBlocks(messagesForApi, apiHandler) as Array<{
+			role: string
+			content: string | Array<{ type: string }>
+		}>,
 	)
 
 	const requestMessages = messagesWithTextToolBlocks.map(({ role, content }) => ({ role, content }))
@@ -365,7 +377,7 @@ export async function summarizeConversation(options: SummarizeConversationOption
 	let outputTokens = 0
 
 	try {
-		const stream = apiHandler.createMessage(promptToUse, requestMessages as any, metadata)
+		const stream = apiHandler.createMessage(promptToUse, requestMessages as RooMessage[], metadata)
 
 		for await (const chunk of stream) {
 			if (chunk.type === "text") {
@@ -527,7 +539,7 @@ ${commandBlocks}
 		typeof message.content === "string" ? [{ text: message.content, type: "text" as const }] : message.content,
 	)
 
-	const messageTokens = await apiHandler.countTokens(contextBlocks as any)
+	const messageTokens = await apiHandler.countTokens(contextBlocks as Parameters<typeof apiHandler.countTokens>[0])
 
 	// Count tool definition tokens if tools are provided
 	let toolTokens = 0
@@ -617,8 +629,9 @@ export function getEffectiveApiHistory(messages: RooMessage[]): RooMessage[] {
 				// Also handle legacy user messages that may contain tool_result blocks
 				if (isRooUserMessage(msg) && Array.isArray(msg.content)) {
 					const filteredContent = msg.content.filter((block) => {
-						if ((block as any).type === "tool_result") {
-							return toolCallIds.has((block as any).tool_use_id)
+						const typedBlock = block as unknown as { type: string }
+						if (isAnyToolResultBlock(typedBlock)) {
+							return toolCallIds.has(getToolResultCallId(typedBlock))
 						}
 						return true
 					})

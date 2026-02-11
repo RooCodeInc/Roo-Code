@@ -4,7 +4,8 @@ import { TelemetryService } from "@roo-code/telemetry"
 
 import { ApiHandler, ApiHandlerCreateMessageMetadata } from "../../api"
 import { MAX_CONDENSE_THRESHOLD, MIN_CONDENSE_THRESHOLD, summarizeConversation, SummarizeResponse } from "../condense"
-import type { RooMessage } from "../task-persistence/rooMessage"
+import type { RooMessage, ContentBlockParam } from "../task-persistence/rooMessage"
+import { isRooRoleMessage } from "../task-persistence/rooMessage"
 import { ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
 
@@ -31,9 +32,11 @@ export const TOKEN_BUFFER_PERCENTAGE = 0.1
  * @param apiHandler - The API handler to use for token counting
  * @returns A promise resolving to the token count
  */
-export async function estimateTokenCount(content: any[], apiHandler: ApiHandler): Promise<number> {
+export async function estimateTokenCount(content: ContentBlockParam[], apiHandler: ApiHandler): Promise<number> {
 	if (!content || content.length === 0) return 0
-	return apiHandler.countTokens(content as any)
+	// countTokens accepts Anthropic.Messages.ContentBlockParam[] — our { type, text? }
+	// blocks are structurally compatible with TextBlockParam.
+	return apiHandler.countTokens(content as Parameters<typeof apiHandler.countTokens>[0])
 }
 
 /**
@@ -267,9 +270,9 @@ export async function manageContext({
 
 	// Estimate tokens for the last message (which is always a user message)
 	const lastMessage = messages[messages.length - 1]
-	const lastMessageContent = "role" in lastMessage ? lastMessage.content : ""
+	const lastMessageContent = isRooRoleMessage(lastMessage) ? lastMessage.content : ""
 	const lastMessageTokens = Array.isArray(lastMessageContent)
-		? await estimateTokenCount(lastMessageContent as any[], apiHandler)
+		? await estimateTokenCount(lastMessageContent as ContentBlockParam[], apiHandler)
 		: await estimateTokenCount([{ type: "text", text: lastMessageContent as string }], apiHandler)
 
 	// Calculate total effective tokens (totalTokens never includes the last message)
@@ -344,9 +347,9 @@ export async function manageContext({
 		)
 
 		for (const msg of effectiveMessages) {
-			const content = "role" in msg ? msg.content : undefined
+			const content = isRooRoleMessage(msg) ? msg.content : undefined
 			if (Array.isArray(content)) {
-				newContextTokensAfterTruncation += await estimateTokenCount(content as any[], apiHandler)
+				newContextTokensAfterTruncation += await estimateTokenCount(content as ContentBlockParam[], apiHandler)
 			} else if (typeof content === "string") {
 				newContextTokensAfterTruncation += await estimateTokenCount(
 					[{ type: "text", text: content }],

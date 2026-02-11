@@ -127,10 +127,17 @@ import {
 	type ToolCallPart,
 	type ToolResultPart,
 	type UserContentPart,
+	type AnyToolCallBlock,
+	type AnyToolResultBlock,
 	isRooUserMessage,
 	isRooAssistantMessage,
 	isRooToolMessage,
 	isRooReasoningMessage,
+	isRooRoleMessage,
+	isAnyToolResultBlock,
+	getToolCallId,
+	getToolCallName,
+	getToolResultContent,
 	readRooMessages,
 	saveRooMessages,
 } from "../task-persistence"
@@ -1177,14 +1184,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// If the previous effective message is NOT an assistant, convert tool_result blocks to text blocks.
 			let messageToAdd: RooMessage = message
-			if (!lastIsAssistant && "role" in message && Array.isArray(message.content)) {
+			if (!lastIsAssistant && isRooRoleMessage(message) && Array.isArray(message.content)) {
 				messageToAdd = {
 					...message,
-					content: (message.content as any[]).map((block: any) =>
-						block.type === "tool_result" || block.type === "tool-result"
+					content: (message.content as Array<{ type: string }>).map((block) =>
+						isAnyToolResultBlock(block)
 							? {
 									type: "text" as const,
-									text: `Tool result:\n${typeof block.content === "string" ? block.content : typeof block.result === "string" ? block.result : typeof block.output?.value === "string" ? block.output.value : JSON.stringify(block.content ?? block.result ?? block.output)}`,
+									text: `Tool result:\n${(() => {
+										const raw = getToolResultContent(block)
+										if (typeof raw === "string") return raw
+										if (
+											raw &&
+											typeof raw === "object" &&
+											"value" in raw &&
+											typeof (raw as { value: unknown }).value === "string"
+										)
+											return (raw as { value: string }).value
+										return JSON.stringify(raw)
+									})()}`,
 								}
 							: block,
 					),
@@ -2387,7 +2405,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 						// Strip any legacy tool_result / tool-result blocks from old user content
 						modifiedOldUserContent = existingUserContent.filter(
-							(block) => (block as any).type !== "tool_result" && (block as any).type !== "tool-result",
+							(block) => !isAnyToolResultBlock(block as { type: string }),
 						)
 					} else {
 						modifiedApiConversationHistory = existingApiConversationHistory.slice(0, lastMsgIndex)
@@ -3691,9 +3709,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 						// Pre-inject error tool_results for truncated tools
 						for (const tool of truncatedTools) {
-							const toolCallId = (tool as any).toolCallId ?? (tool as any).id
-							const toolName = (tool as any).toolName ?? (tool as any).name
-							if (tool.type === "tool-call" && toolCallId) {
+							if (tool.type !== "tool-call") continue
+							const toolCallId = getToolCallId(tool as AnyToolCallBlock)
+							const toolName = getToolCallName(tool as AnyToolCallBlock)
+							if (toolCallId) {
 								this.pushToolResultToUserContent({
 									type: "tool-result",
 									toolCallId: sanitizeToolUseId(toolCallId),
@@ -4215,11 +4234,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// This allows us to show an in-progress indicator to the user
 			// We use the centralized willManageContext helper to avoid duplicating threshold logic
 			const lastMessage = this.apiConversationHistory[this.apiConversationHistory.length - 1]
-			const lastMessageContent = ("role" in lastMessage ? lastMessage.content : undefined) as any
+			const lastMessageContent = isRooRoleMessage(lastMessage) ? lastMessage.content : undefined
 			let lastMessageTokens = 0
 			if (lastMessageContent) {
 				lastMessageTokens = Array.isArray(lastMessageContent)
-					? await this.api.countTokens(lastMessageContent)
+					? await this.api.countTokens(lastMessageContent as Parameters<typeof this.api.countTokens>[0])
 					: await this.api.countTokens([{ type: "text", text: lastMessageContent as string }])
 			}
 
