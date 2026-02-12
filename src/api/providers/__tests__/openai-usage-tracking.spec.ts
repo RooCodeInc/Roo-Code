@@ -98,6 +98,11 @@ describe("OpenAiHandler with usage tracking fix", () => {
 				type: "usage",
 				inputTokens: 10,
 				outputTokens: 5,
+				cacheReadTokens: undefined,
+				cacheWriteTokens: undefined,
+				nonCachedInputTokens: 10,
+				reasoningTokens: undefined,
+				totalCost: 0,
 			})
 
 			const lastChunk = chunks[chunks.length - 1]
@@ -133,6 +138,11 @@ describe("OpenAiHandler with usage tracking fix", () => {
 				type: "usage",
 				inputTokens: 10,
 				outputTokens: 5,
+				cacheReadTokens: undefined,
+				cacheWriteTokens: undefined,
+				nonCachedInputTokens: 10,
+				reasoningTokens: undefined,
+				totalCost: 0,
 			})
 		})
 
