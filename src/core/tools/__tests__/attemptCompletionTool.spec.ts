@@ -407,6 +407,172 @@ describe("attemptCompletionTool", () => {
 			)
 		})
 
+		describe("orchestrator completion guard", () => {
+			it("should reject completion in orchestrator mode when no todo list exists", async () => {
+				const block: AttemptCompletionToolUse = {
+					type: "tool_use",
+					name: "attempt_completion",
+					params: { result: "Task completed successfully" },
+					nativeArgs: { result: "Task completed successfully" },
+					partial: false,
+				}
+
+				mockTask.taskMode = "orchestrator" as any
+				mockTask.todoList = undefined
+
+				const callbacks: AttemptCompletionCallbacks = {
+					askApproval: mockAskApproval,
+					handleError: mockHandleError,
+					pushToolResult: mockPushToolResult,
+					askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+					toolDescription: mockToolDescription,
+				}
+				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+				expect(mockTask.consecutiveMistakeCount).toBe(1)
+				expect(mockTask.recordToolError).toHaveBeenCalledWith("attempt_completion")
+				expect(mockPushToolResult).toHaveBeenCalledWith(
+					expect.stringContaining("Orchestrator tasks require a todo list"),
+				)
+				expect(mockTask.ask).not.toHaveBeenCalled()
+			})
+
+			it("should reject completion in orchestrator mode when todo list is empty", async () => {
+				const block: AttemptCompletionToolUse = {
+					type: "tool_use",
+					name: "attempt_completion",
+					params: { result: "Task completed successfully" },
+					nativeArgs: { result: "Task completed successfully" },
+					partial: false,
+				}
+
+				mockTask.taskMode = "orchestrator" as any
+				mockTask.todoList = []
+
+				const callbacks: AttemptCompletionCallbacks = {
+					askApproval: mockAskApproval,
+					handleError: mockHandleError,
+					pushToolResult: mockPushToolResult,
+					askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+					toolDescription: mockToolDescription,
+				}
+				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+				expect(mockTask.consecutiveMistakeCount).toBe(1)
+				expect(mockTask.recordToolError).toHaveBeenCalledWith("attempt_completion")
+				expect(mockPushToolResult).toHaveBeenCalledWith(
+					expect.stringContaining("Orchestrator tasks require a todo list"),
+				)
+				expect(mockTask.ask).not.toHaveBeenCalled()
+			})
+
+			it("should reject completion in orchestrator mode with incomplete todos regardless of setting", async () => {
+				const block: AttemptCompletionToolUse = {
+					type: "tool_use",
+					name: "attempt_completion",
+					params: { result: "Task completed successfully" },
+					nativeArgs: { result: "Task completed successfully" },
+					partial: false,
+				}
+
+				mockTask.taskMode = "orchestrator" as any
+				mockTask.todoList = [
+					{ id: "1", content: "First task", status: "completed" },
+					{ id: "2", content: "Second task", status: "pending" },
+				]
+
+				// Setting is disabled, but orchestrator should still enforce
+				mockGetConfiguration.mockReturnValue({
+					get: vi.fn((key: string, defaultValue: any) => {
+						if (key === "preventCompletionWithOpenTodos") {
+							return false
+						}
+						return defaultValue
+					}),
+				})
+
+				const callbacks: AttemptCompletionCallbacks = {
+					askApproval: mockAskApproval,
+					handleError: mockHandleError,
+					pushToolResult: mockPushToolResult,
+					askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+					toolDescription: mockToolDescription,
+				}
+				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+				expect(mockTask.consecutiveMistakeCount).toBe(1)
+				expect(mockTask.recordToolError).toHaveBeenCalledWith("attempt_completion")
+				expect(mockPushToolResult).toHaveBeenCalledWith(
+					expect.stringContaining("Cannot complete task while there are incomplete todos"),
+				)
+				expect(mockTask.ask).not.toHaveBeenCalled()
+			})
+
+			it("should allow completion in orchestrator mode when all todos are completed", async () => {
+				const block: AttemptCompletionToolUse = {
+					type: "tool_use",
+					name: "attempt_completion",
+					params: { result: "Task completed successfully" },
+					nativeArgs: { result: "Task completed successfully" },
+					partial: false,
+				}
+
+				mockTask.taskMode = "orchestrator" as any
+				mockTask.todoList = [
+					{ id: "1", content: "First task", status: "completed" },
+					{ id: "2", content: "Second task", status: "completed" },
+				]
+
+				const callbacks: AttemptCompletionCallbacks = {
+					askApproval: mockAskApproval,
+					handleError: mockHandleError,
+					pushToolResult: mockPushToolResult,
+					askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+					toolDescription: mockToolDescription,
+				}
+				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+				expect(mockTask.consecutiveMistakeCount).toBe(0)
+				expect(mockTask.recordToolError).not.toHaveBeenCalled()
+			})
+
+			it("should not apply orchestrator guard to non-orchestrator modes", async () => {
+				const block: AttemptCompletionToolUse = {
+					type: "tool_use",
+					name: "attempt_completion",
+					params: { result: "Task completed successfully" },
+					nativeArgs: { result: "Task completed successfully" },
+					partial: false,
+				}
+
+				mockTask.taskMode = "code" as any
+				mockTask.todoList = undefined
+
+				// Setting is disabled
+				mockGetConfiguration.mockReturnValue({
+					get: vi.fn((key: string, defaultValue: any) => {
+						if (key === "preventCompletionWithOpenTodos") {
+							return false
+						}
+						return defaultValue
+					}),
+				})
+
+				const callbacks: AttemptCompletionCallbacks = {
+					askApproval: mockAskApproval,
+					handleError: mockHandleError,
+					pushToolResult: mockPushToolResult,
+					askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+					toolDescription: mockToolDescription,
+				}
+				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+				// Non-orchestrator with no todos and setting disabled should succeed
+				expect(mockTask.consecutiveMistakeCount).toBe(0)
+				expect(mockTask.recordToolError).not.toHaveBeenCalled()
+			})
+		})
+
 		describe("tool failure guardrail", () => {
 			it("should prevent completion when a previous tool failed in the current turn", async () => {
 				const block: AttemptCompletionToolUse = {

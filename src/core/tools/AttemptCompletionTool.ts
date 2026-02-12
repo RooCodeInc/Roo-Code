@@ -49,9 +49,25 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			return
 		}
 
-		const preventCompletionWithOpenTodos = vscode.workspace
-			.getConfiguration(Package.name)
-			.get<boolean>("preventCompletionWithOpenTodos", false)
+		const isOrchestratorMode = task.taskMode === "orchestrator"
+
+		const preventCompletionWithOpenTodos =
+			isOrchestratorMode ||
+			vscode.workspace.getConfiguration(Package.name).get<boolean>("preventCompletionWithOpenTodos", false)
+
+		// Orchestrator must have a todo list to complete — completion without a plan is premature.
+		if (isOrchestratorMode && (!task.todoList || task.todoList.length === 0)) {
+			task.consecutiveMistakeCount++
+			task.recordToolError("attempt_completion")
+
+			pushToolResult(
+				formatResponse.toolError(
+					"Orchestrator tasks require a todo list before completion. Use update_todo_list to create a plan and track progress before attempting completion.",
+				),
+			)
+
+			return
+		}
 
 		const hasIncompleteTodos = task.todoList && task.todoList.some((todo) => todo.status !== "completed")
 
