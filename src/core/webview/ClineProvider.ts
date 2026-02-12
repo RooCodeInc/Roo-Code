@@ -3233,6 +3233,14 @@ export class ClineProvider
 			)
 		}
 
+		// 2.1) Capture the parent's original mode BEFORE the mode switch.
+		//      handleModeSwitch() modifies the current task's history mode. If
+		//      removeClineFromStack() fails (non-fatal) and the parent is still
+		//      on the stack, handleModeSwitch would overwrite the parent's mode
+		//      with the child's mode, corrupting the parent's saved state.
+		//      We'll restore the parent's mode in step 6 if needed.
+		const parentOriginalMode = parent.taskMode
+
 		// 3) Enforce single-open invariant by closing/disposing the parent first
 		//    This ensures we never have >1 tasks open at any time during delegation.
 		//    Await abort completion to ensure clean disposal and prevent unhandled rejections.
@@ -3247,7 +3255,7 @@ export class ClineProvider
 			// Non-fatal: proceed with child creation even if parent cleanup had issues
 		}
 
-		// 3) Switch provider mode to child's requested mode BEFORE creating the child task
+		// 4) Switch provider mode to child's requested mode BEFORE creating the child task
 		//    This ensures the child's system prompt and configuration are based on the correct mode.
 		//    The mode switch must happen before createTask() because the Task constructor
 		//    initializes its mode from provider.getState() during initializeTaskMode().
@@ -3261,7 +3269,7 @@ export class ClineProvider
 			)
 		}
 
-		// 4) Create child as sole active (parent reference preserved for lineage)
+		// 5) Create child as sole active (parent reference preserved for lineage)
 		// Pass initialStatus: "active" to ensure the child task's historyItem is created
 		// with status from the start, avoiding race conditions where the task might
 		// call attempt_completion before status is persisted separately.
@@ -3270,9 +3278,21 @@ export class ClineProvider
 			initialStatus: "active",
 		})
 
-		// 5) Persist parent delegation metadata
+		// 6) Persist parent delegation metadata
 		try {
 			const { historyItem } = await this.getTaskWithId(parentTaskId)
+
+			// Restore the parent's original mode if handleModeSwitch() corrupted it.
+			// This can happen when removeClineFromStack() fails non-fatally and the
+			// parent was still the current task when handleModeSwitch() ran, causing
+			// it to overwrite the parent's history mode with the child's mode.
+			if (parentOriginalMode && historyItem.mode !== parentOriginalMode) {
+				this.log(
+					`[delegateParentAndOpenChild] Restoring parent mode from '${historyItem.mode}' to '${parentOriginalMode}'`,
+				)
+				historyItem.mode = parentOriginalMode
+			}
+
 			const childIds = Array.from(new Set([...(historyItem.childIds ?? []), child.taskId]))
 			const updatedHistory: typeof historyItem = {
 				...historyItem,
@@ -3290,7 +3310,7 @@ export class ClineProvider
 			)
 		}
 
-		// 6) Emit TaskDelegated (provider-level)
+		// 7) Emit TaskDelegated (provider-level)
 		try {
 			this.emit(RooCodeEventName.TaskDelegated, parentTaskId, child.taskId)
 		} catch {
@@ -3480,6 +3500,14 @@ export class ClineProvider
 			} catch {
 				// non-fatal
 			}
+
+			// 8.1) Immediately push the restored state (including parent's mode) to the webview.
+			//      Without this, the UI mode selector continues to show the child's mode
+			//      (e.g., "Code") until the parent's first say() call in the task loop,
+			//      which only happens after the API request is set up. This ensures the
+			//      mode selector reflects "Orchestrator" (or the parent's actual mode)
+			//      as soon as the parent task is restored.
+			await this.postStateToWebview()
 
 			// Auto-resume parent without ask("resume_task")
 			await parentInstance.resumeAfterDelegation()
