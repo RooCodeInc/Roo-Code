@@ -378,7 +378,7 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 		[filteredCandidates, selectedLanguage, maxCost, maxTime],
 	)
 
-	const chartHeight = Math.max(300, chartData.length * 60 + 80)
+	const chartHeight = Math.max(400, chartData.length * 100)
 
 	// Providers that actually appear in data
 	const activeProviders = useMemo(() => {
@@ -655,6 +655,8 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 									<BarChart
 										data={chartData}
 										layout="vertical"
+										barCategoryGap="30%"
+										barGap={4}
 										margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
 										<XAxis
 											type="number"
@@ -692,28 +694,28 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 											}
 											fill={DIMENSION_COLORS.composite}
 											radius={[0, 4, 4, 0]}
-											barSize={12}
+											barSize={10}
 										/>
 										<Bar
 											dataKey="success"
 											name="Success Rate"
 											fill={DIMENSION_COLORS.success}
 											radius={[0, 4, 4, 0]}
-											barSize={12}
+											barSize={10}
 										/>
 										<Bar
 											dataKey="costEfficiency"
 											name="Cost Efficiency"
 											fill={DIMENSION_COLORS.cost}
 											radius={[0, 4, 4, 0]}
-											barSize={12}
+											barSize={10}
 										/>
 										<Bar
 											dataKey="speed"
 											name="Speed"
 											fill={DIMENSION_COLORS.speed}
 											radius={[0, 4, 4, 0]}
-											barSize={12}
+											barSize={10}
 										/>
 									</BarChart>
 								</ResponsiveContainer>
