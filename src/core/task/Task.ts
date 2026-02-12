@@ -3106,7 +3106,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								// the streaming path (tool_call_start/delta/end).
 								const alreadyPresent = this.assistantMessageContent.some(
 									(block) =>
-										block.type === "tool_use" &&
+										(block.type === "tool_use" || block.type === "mcp_tool_use") &&
 										!block.partial &&
 										(block as any).id === chunk.id,
 								)
@@ -3121,6 +3121,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									// Clean up parser state for the incomplete streaming call
 									NativeToolCallParser.finalizeStreamingToolCall(chunk.id)
 									this.streamingToolCallIndices.delete(chunk.id)
+								}
+
+								// Before adding a new tool in the flush-only path,
+								// finalize any preceding partial text block to prevent
+								// it from blocking tool presentation (mirrors tool_call_start)
+								if (streamingIndex === undefined) {
+									const lastBlock = this.assistantMessageContent[this.assistantMessageContent.length - 1]
+									if (lastBlock?.type === "text" && lastBlock.partial) {
+										lastBlock.partial = false
+									}
 								}
 
 								// Convert complete tool call to ToolUse format

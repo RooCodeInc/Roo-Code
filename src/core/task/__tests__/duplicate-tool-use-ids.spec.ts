@@ -286,7 +286,10 @@ describe("Duplicate tool_use ID Prevention", () => {
 		) => {
 			// Deduplicate: skip if already finalized via streaming path
 			const alreadyPresent = assistantMessageContent.some(
-				(block) => block.type === "tool_use" && !block.partial && block.id === chunk.id,
+				(block) =>
+					(block.type === "tool_use" || block.type === "mcp_tool_use") &&
+					!block.partial &&
+					block.id === chunk.id,
 			)
 			if (alreadyPresent) {
 				return "skipped"
@@ -296,6 +299,14 @@ describe("Duplicate tool_use ID Prevention", () => {
 			const streamingIndex = streamingToolCallIndices.get(chunk.id)
 			if (streamingIndex !== undefined) {
 				streamingToolCallIndices.delete(chunk.id)
+			}
+
+			// Finalize preceding partial text block in flush-only path
+			if (streamingIndex === undefined) {
+				const lastBlock = assistantMessageContent[assistantMessageContent.length - 1]
+				if (lastBlock?.type === "text" && lastBlock.partial) {
+					lastBlock.partial = false
+				}
 			}
 
 			const toolUse: ToolBlock = {
@@ -412,6 +423,48 @@ describe("Duplicate tool_use ID Prevention", () => {
 			expect(simulateToolCallHandler(content, indices, { id: "call_3", name: "execute_command" })).toBe("processed")
 			expect(content).toHaveLength(3)
 			expect(content[2].id).toBe("call_3")
+		})
+
+		it("should skip tool_call when MCP tool was already finalized via streaming path", () => {
+			// Scenario: MCP tool finalized via streaming has type "mcp_tool_use"
+			const content: ToolBlock[] = [
+				{ type: "mcp_tool_use", id: "call_1", name: "mcp--server--tool", partial: false },
+			]
+			const indices = new Map<string, number>()
+
+			const result = simulateToolCallHandler(content, indices, {
+				id: "call_1",
+				name: "mcp--server--tool",
+			})
+
+			expect(result).toBe("skipped")
+			expect(content).toHaveLength(1) // No duplicate added
+		})
+
+		it("should finalize preceding partial text block in flush-only path", () => {
+			// Scenario: assistant is streaming text, then a flush-only tool_call arrives
+			// The partial text block must be finalized to prevent blocking tool presentation
+			const content: ToolBlock[] = [
+				{ type: "text", id: "", name: "", partial: true },
+			]
+			const indices = new Map<string, number>()
+
+			const result = simulateToolCallHandler(content, indices, {
+				id: "call_1",
+				name: "read_file",
+			})
+
+			expect(result).toBe("processed")
+			expect(content).toHaveLength(2)
+			// Text block should be finalized
+			expect(content[0].partial).toBe(false)
+			// Tool block should be appended after
+			expect(content[1]).toEqual({
+				type: "tool_use",
+				id: "call_1",
+				name: "read_file",
+				partial: false,
+			})
 		})
 	})
 })
