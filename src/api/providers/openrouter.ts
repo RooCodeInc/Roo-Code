@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createOpenRouter } from "@openrouter/ai-sdk-provider"
-import { streamText, generateText, ModelMessage } from "ai"
+import { streamText, generateText } from "ai"
 
 import {
 	type ModelRecord,
@@ -34,6 +34,7 @@ import { generateImageWithProvider, ImageGenerationResult } from "./utils/image-
 import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from "../index"
 import type { ApiStreamChunk, ApiStreamUsageChunk } from "../transform/stream"
 import type { RooMessage } from "../../core/task-persistence/rooMessage"
+import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 
 export class OpenRouterHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
@@ -149,11 +150,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			? { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" }
 			: undefined
 
-		// Strip extra fields from legacy ApiMessage objects that survive JSON
-		// deserialization (e.g. reasoning_details causes provider 400 errors).
-		const aiSdkMessages = messages.map(
-			({ reasoning_details, reasoning_content, ...rest }: any) => rest,
-		) as ModelMessage[]
+		// Sanitize messages for the provider API (allowlist: role, content, providerOptions).
+		const aiSdkMessages = sanitizeMessagesForProvider(messages)
 
 		const openrouter = this.createOpenRouterProvider({ reasoning, headers })
 

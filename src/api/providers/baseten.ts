@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createBaseten } from "@ai-sdk/baseten"
-import { streamText, generateText, ToolSet, ModelMessage } from "ai"
+import { streamText, generateText, ToolSet } from "ai"
 
 import { basetenModels, basetenDefaultModelId, type ModelInfo } from "@roo-code/types"
 
@@ -21,6 +21,7 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import type { RooMessage } from "../../core/task-persistence/rooMessage"
+import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 
 const BASETEN_DEFAULT_TEMPERATURE = 0.5
 
@@ -102,7 +103,7 @@ export class BasetenHandler extends BaseProvider implements SingleCompletionHand
 		const { temperature } = this.getModel()
 		const languageModel = this.getLanguageModel()
 
-		const aiSdkMessages = messages as ModelMessage[]
+		const aiSdkMessages = sanitizeMessagesForProvider(messages)
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined

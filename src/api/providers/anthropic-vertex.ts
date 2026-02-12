@@ -1,6 +1,6 @@
 import type { Anthropic } from "@anthropic-ai/sdk"
 import { createVertexAnthropic } from "@ai-sdk/google-vertex/anthropic"
-import { streamText, generateText, ToolSet, ModelMessage } from "ai"
+import { streamText, generateText, ToolSet } from "ai"
 
 import {
 	type ModelInfo,
@@ -28,6 +28,7 @@ import {
 } from "../transform/ai-sdk"
 import { applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
 import { calculateApiCostAnthropic } from "../../shared/cost"
+import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
@@ -91,8 +92,8 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 	): ApiStream {
 		const modelConfig = this.getModel()
 
-		// Convert messages to AI SDK format
-		const aiSdkMessages = messages as ModelMessage[]
+		// Sanitize messages for the provider API (allowlist: role, content, providerOptions).
+		const aiSdkMessages = sanitizeMessagesForProvider(messages)
 
 		// Convert tools to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)

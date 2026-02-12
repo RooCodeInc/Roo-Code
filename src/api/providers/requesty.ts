@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createRequesty, type RequestyProviderMetadata } from "@requesty/ai-sdk"
-import { streamText, generateText, ToolSet, ModelMessage } from "ai"
+import { streamText, generateText, ToolSet } from "ai"
 
 import { type ModelInfo, type ModelRecord, requestyDefaultModelId, requestyDefaultModelInfo } from "@roo-code/types"
 
@@ -25,6 +25,7 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { toRequestyServiceUrl } from "../../shared/utils/requesty"
 import { applyRouterToolPreferences } from "./utils/router-tool-preferences"
 import type { RooMessage } from "../../core/task-persistence/rooMessage"
+import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 
 /**
  * Requesty provider using the dedicated @requesty/ai-sdk package.
@@ -180,7 +181,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 		const { info, temperature } = await this.fetchModel()
 		const languageModel = this.getLanguageModel()
 
-		const aiSdkMessages = messages as ModelMessage[]
+		const aiSdkMessages = sanitizeMessagesForProvider(messages)
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined

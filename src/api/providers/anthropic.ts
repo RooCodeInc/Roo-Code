@@ -1,5 +1,5 @@
 import { createAnthropic } from "@ai-sdk/anthropic"
-import { streamText, generateText, ToolSet, ModelMessage } from "ai"
+import { streamText, generateText, ToolSet } from "ai"
 
 import {
 	type ModelInfo,
@@ -26,6 +26,7 @@ import {
 } from "../transform/ai-sdk"
 import { applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
 import { calculateApiCostAnthropic } from "../../shared/cost"
+import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
@@ -77,12 +78,8 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 	): ApiStream {
 		const modelConfig = this.getModel()
 
-		// Convert messages to AI SDK format, stripping extra fields from legacy
-		// ApiMessage objects that survive JSON deserialization (e.g. reasoning_details
-		// causes Anthropic 400: "Extra inputs are not permitted").
-		const aiSdkMessages = messages.map(
-			({ reasoning_details, reasoning_content, ...rest }: any) => rest,
-		) as ModelMessage[]
+		// Sanitize messages for the provider API (allowlist: role, content, providerOptions).
+		const aiSdkMessages = sanitizeMessagesForProvider(messages)
 
 		// Convert tools to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)

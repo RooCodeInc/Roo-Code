@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createDeepSeek } from "@ai-sdk/deepseek"
-import { streamText, generateText, ToolSet, ModelMessage } from "ai"
+import { streamText, generateText, ToolSet } from "ai"
 
 import { deepSeekModels, deepSeekDefaultModelId, DEEP_SEEK_DEFAULT_TEMPERATURE, type ModelInfo } from "@roo-code/types"
 
@@ -21,6 +21,7 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import type { RooMessage } from "../../core/task-persistence/rooMessage"
+import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 
 /**
  * DeepSeek provider using the dedicated @ai-sdk/deepseek package.
@@ -117,8 +118,8 @@ export class DeepSeekHandler extends BaseProvider implements SingleCompletionHan
 		const { temperature } = this.getModel()
 		const languageModel = this.getLanguageModel()
 
-		// Convert messages to AI SDK format
-		const aiSdkMessages = messages as ModelMessage[]
+		// Sanitize messages for the provider API (allowlist: role, content, providerOptions).
+		const aiSdkMessages = sanitizeMessagesForProvider(messages)
 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
