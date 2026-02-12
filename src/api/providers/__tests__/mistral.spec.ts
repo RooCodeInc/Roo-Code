@@ -403,10 +403,9 @@ describe("MistralHandler", () => {
 			expect(toolCallEndChunks[0].id).toBe("tool-call-1")
 		})
 
-		it("should ignore tool-call events to prevent duplicate tools in UI", async () => {
-			// tool-call events are intentionally ignored because tool-input-start/delta/end
-			// already provide complete tool call information. Emitting tool-call would cause
-			// duplicate tools in the UI for AI SDK providers.
+		it("should emit tool-call events as tool_call chunks", async () => {
+			// tool-call events are now emitted as tool_call chunks for provider compatibility.
+			// Task.ts deduplicates against tools already finalized via the streaming path.
 			async function* mockFullStream() {
 				yield {
 					type: "tool-call",
@@ -449,9 +448,14 @@ describe("MistralHandler", () => {
 				chunks.push(chunk)
 			}
 
-			// tool-call events are ignored, so no tool_call chunks should be emitted
+			// tool-call events now emit tool_call chunks for provider compatibility
 			const toolCallChunks = chunks.filter((c) => c.type === "tool_call")
-			expect(toolCallChunks.length).toBe(0)
+			expect(toolCallChunks.length).toBe(1)
+			expect(toolCallChunks[0]).toMatchObject({
+				type: "tool_call",
+				id: "tool-call-1",
+				name: "read_file",
+			})
 		})
 	})
 

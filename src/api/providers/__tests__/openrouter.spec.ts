@@ -505,7 +505,7 @@ describe("OpenRouterHandler", () => {
 			expect(chunks[3]).toEqual({ type: "tool_call_end", id: "call_1" })
 		})
 
-		it("ignores tool-call events (handled by tool-input-start/delta/end)", async () => {
+		it("emits tool-call events as tool_call chunks", async () => {
 			const handler = new OpenRouterHandler(mockOptions)
 
 			const mockFullStream = (async function* () {
@@ -530,10 +530,14 @@ describe("OpenRouterHandler", () => {
 				chunks.push(chunk)
 			}
 
-			// tool-call is intentionally ignored by processAiSdkStreamPart,
-			// only usage chunk should be present
-			expect(chunks).toHaveLength(1)
-			expect(chunks[0]).toMatchObject({ type: "usage" })
+			// tool-call now emits a tool_call chunk for provider compatibility
+			expect(chunks).toHaveLength(2)
+			expect(chunks[0]).toMatchObject({
+				type: "tool_call",
+				id: "call_1",
+				name: "read_file",
+			})
+			expect(chunks[1]).toMatchObject({ type: "usage" })
 		})
 
 		it("handles API errors gracefully", async () => {
