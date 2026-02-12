@@ -7,7 +7,7 @@ import { MethodologyContent } from "./methodology-content"
 
 // ── SEO Metadata ────────────────────────────────────────────────────────────
 
-const TITLE = "How We Interview AI Models | Roo Code Evals"
+const TITLE = "Methodology | Roo Code Evals"
 const DESCRIPTION = "Our methodology for evaluating AI coding models. Transparent, reproducible, evidence-based."
 const OG_DESCRIPTION = "Our methodology for evaluating AI coding models"
 const PATH = "/evals/methodology"
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
 		"model benchmarking",
 		"coding evals",
 		"methodology",
-		"interview process",
+		"evaluation process",
 		"transparent evaluation",
 	],
 }

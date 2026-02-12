@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { motion } from "framer-motion"
 import {
 	Code,
@@ -20,10 +20,12 @@ import {
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import Link from "next/link"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts"
 
 import type { EngineerRole, RoleRecommendation } from "@/lib/mock-recommendations"
 import { TASKS_PER_DAY, MODEL_TIMELINE } from "@/lib/mock-recommendations"
+import { EVAL_OUTCOMES, isEvalOutcomeId, type EvalOutcomeId } from "@/lib/eval-outcomes"
 
 // ── Icon Mapping ────────────────────────────────────────────────────────────
 
@@ -138,6 +140,37 @@ const ROLE_THEMES: Record<string, RoleTheme> = {
 }
 
 const DEFAULT_THEME = ROLE_THEMES.senior!
+
+// ── Outcome Layer: Optimization Modes ──────────────────────────────────────
+
+type EvalOptimizationMode = "best" | "fastest" | "cost"
+
+const OPTIMIZATION_MODES: Array<{
+	id: EvalOptimizationMode
+	label: string
+	description: string
+}> = [
+	{ id: "best", label: "Best", description: "Best overall quality across our eval suite." },
+	{ id: "fastest", label: "Fastest", description: "Lower latency per task when speed matters." },
+	{ id: "cost", label: "Most cost-effective", description: "Lower cost per task for high-volume work." },
+]
+
+function isEvalOptimizationMode(value: string): value is EvalOptimizationMode {
+	return value === "best" || value === "fastest" || value === "cost"
+}
+
+function getModeCandidate(rec: RoleRecommendation | undefined, mode: EvalOptimizationMode) {
+	if (!rec) return null
+	if (mode === "fastest") return rec.speedHire ?? rec.best[0] ?? null
+	if (mode === "cost") return rec.budgetHire ?? rec.best[0] ?? null
+	return rec.best[0] ?? null
+}
+
+function getModeLabel(mode: EvalOptimizationMode) {
+	if (mode === "fastest") return "Fastest"
+	if (mode === "cost") return "Most cost-effective"
+	return "Best"
+}
 
 // ── Framer Motion Variants ──────────────────────────────────────────────────
 
@@ -284,6 +317,10 @@ type WorkersContentProps = {
 	totalExercises: number
 	totalModels: number
 	lastUpdated: string | undefined
+	workersRootPath?: string
+	enableOutcomeLayer?: boolean
+	alternateVersionHref?: string
+	alternateVersionLabel?: string
 }
 
 export function WorkersContent({
@@ -293,8 +330,91 @@ export function WorkersContent({
 	totalExercises,
 	totalModels,
 	lastUpdated,
+	workersRootPath = "/evals/workers",
+	enableOutcomeLayer = false,
+	alternateVersionHref,
+	alternateVersionLabel,
 }: WorkersContentProps) {
+	const router = useRouter()
+	const pathname = usePathname()
+	const searchParams = useSearchParams()
+
+	const selectedOutcomeId = useMemo(() => {
+		const outcome = searchParams.get("outcome")
+		if (!outcome) return null
+		return isEvalOutcomeId(outcome) ? outcome : null
+	}, [searchParams])
+
+	const selectedMode = useMemo((): EvalOptimizationMode => {
+		const mode = searchParams.get("mode")
+		if (!mode) return "best"
+		return isEvalOptimizationMode(mode) ? mode : "best"
+	}, [searchParams])
+
+	const setOutcome = useCallback(
+		(nextOutcomeId: EvalOutcomeId | null) => {
+			const params = new URLSearchParams(searchParams.toString())
+			if (nextOutcomeId) params.set("outcome", nextOutcomeId)
+			else params.delete("outcome")
+
+			const query = params.toString()
+			router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
+		},
+		[pathname, router, searchParams],
+	)
+
+	const setMode = useCallback(
+		(nextMode: EvalOptimizationMode) => {
+			const params = new URLSearchParams(searchParams.toString())
+			params.set("mode", nextMode)
+
+			const query = params.toString()
+			router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
+		},
+		[pathname, router, searchParams],
+	)
+
 	const recByRole = new Map(recommendations.map((r) => [r.roleId, r]))
+	const roleById = useMemo(() => new Map(roles.map((r) => [r.id, r])), [roles])
+
+	const selectedOutcome = useMemo(() => {
+		if (!selectedOutcomeId) return null
+		return EVAL_OUTCOMES.find((o) => o.id === selectedOutcomeId) ?? null
+	}, [selectedOutcomeId])
+
+	const setupQuery = useMemo(() => {
+		if (!enableOutcomeLayer || !selectedOutcomeId) return ""
+		const params = new URLSearchParams()
+		params.set("outcome", selectedOutcomeId)
+		params.set("mode", selectedMode)
+		const query = params.toString()
+		return query ? `?${query}` : ""
+	}, [enableOutcomeLayer, selectedOutcomeId, selectedMode])
+
+	const profileTitle = selectedOutcome?.builderProfile?.title ?? "Your Builder Profile"
+	const profileDescription =
+		selectedOutcome?.builderProfile?.description ??
+		"A default setup built from our eval signals. It’s a baseline, not a guarantee."
+	const profileHowItWorks = selectedOutcome?.builderProfile?.howItWorks ?? selectedOutcome?.whyItWorks ?? []
+
+	const profileCapabilities = useMemo(() => {
+		if (!selectedOutcome) return []
+		const fromProfile = selectedOutcome.builderProfile?.capabilities
+		if (fromProfile && fromProfile.length > 0) return fromProfile
+		return selectedOutcome.recommendedRoleIds.map((roleId) => {
+			const role = roleById.get(roleId)
+			return {
+				id: roleId,
+				name: role?.name ?? roleId,
+				description: role?.salaryRange ?? "",
+				roleId,
+			}
+		})
+	}, [selectedOutcome, roleById])
+
+	const agentCapabilities = useMemo(() => profileCapabilities.filter((c) => Boolean(c.roleId)), [profileCapabilities])
+
+	const builtInCapabilities = useMemo(() => profileCapabilities.filter((c) => !c.roleId), [profileCapabilities])
 
 	// ── Timeline scatter data ──────────────────────────────────────────────
 	const timelineData = useMemo(() => {
@@ -340,6 +460,21 @@ export function WorkersContent({
 					</div>
 				</motion.div>
 
+				{/* Blueprint grid overlay (V2) */}
+				{enableOutcomeLayer ? (
+					<div
+						aria-hidden
+						className="pointer-events-none absolute inset-0 opacity-[0.14] mix-blend-multiply dark:opacity-[0.10] dark:mix-blend-screen"
+						style={{
+							backgroundImage:
+								"linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)",
+							backgroundSize: "72px 72px",
+							maskImage: "radial-gradient(circle at 50% 35%, black 10%, transparent 65%)",
+							WebkitMaskImage: "radial-gradient(circle at 50% 35%, black 10%, transparent 65%)",
+						}}
+					/>
+				) : null}
+
 				{/* Gradient fade from hero atmosphere to cards */}
 				<div className="absolute inset-x-0 bottom-0 z-[1] h-48 bg-gradient-to-b from-transparent via-background/60 to-background" />
 
@@ -351,32 +486,90 @@ export function WorkersContent({
 						variants={containerVariants}>
 						{/* Badge */}
 						<motion.div variants={fadeUpVariants}>
-							<Link
-								href="/evals/methodology"
-								className="group mb-6 inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/50 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-300 hover:border-border hover:text-foreground">
-								<Beaker className="size-4" />
-								How we interview AI models
-								<ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
-							</Link>
+							<div className="mb-6 flex flex-wrap items-center justify-center gap-3">
+								<Link
+									href="/evals/methodology"
+									className="group inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/50 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-300 hover:border-border hover:text-foreground">
+									<Beaker className="size-4" />
+									How we run evals
+									<ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+								</Link>
+								{alternateVersionHref && alternateVersionLabel ? (
+									<Link
+										href={alternateVersionHref}
+										className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/70 px-4 py-2 text-sm font-medium text-foreground/80 backdrop-blur-sm transition-colors hover:border-border hover:text-foreground">
+										{alternateVersionLabel}
+									</Link>
+								) : null}
+							</div>
 						</motion.div>
+
+						{enableOutcomeLayer ? (
+							<motion.p
+								className="mt-2 text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground/70"
+								variants={fadeUpVariants}>
+								Outcomes over artifacts
+							</motion.p>
+						) : null}
 
 						{/* Heading */}
 						<motion.h1
-							className="mt-6 text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl"
+							className="mt-6 text-5xl font-semibold tracking-tight md:text-6xl lg:text-7xl [font-family:var(--font-display)]"
 							variants={fadeUpVariants}>
-							Hire an{" "}
-							<span className="bg-gradient-to-r from-emerald-500 via-blue-500 to-amber-500 bg-clip-text text-transparent">
-								AI Engineer
-							</span>
+							{enableOutcomeLayer ? (
+								<>
+									Build from outcomes.
+									<br className="hidden sm:block" /> Ship{" "}
+									<span className="bg-gradient-to-r from-emerald-500 via-blue-500 to-amber-500 bg-clip-text text-transparent">
+										real code
+									</span>
+									.
+								</>
+							) : (
+								<>
+									Build with{" "}
+									<span className="bg-gradient-to-r from-emerald-500 via-blue-500 to-amber-500 bg-clip-text text-transparent">
+										Roo Code Cloud
+									</span>
+								</>
+							)}
 						</motion.h1>
 
 						{/* Subheading */}
 						<motion.p
 							className="mt-6 text-lg leading-relaxed text-muted-foreground md:text-xl"
 							variants={fadeUpVariants}>
-							Every model runs the same coding tasks, same tools, same time limit. Pick the right
-							candidate for your team and budget.
+							{enableOutcomeLayer ? (
+								<>
+									Pick what you&apos;re trying to ship. We assemble a Builder Profile: the
+									capabilities you need, plus a default model recommendation backed by eval data.
+								</>
+							) : (
+								<>
+									Outcomes over artifacts: start from the production codebase and ship as a reviewable
+									PR. Every model runs the same tasks, same tools, and the same time limit. Your repo
+									will differ—treat this as a baseline.
+								</>
+							)}
 						</motion.p>
+
+						{enableOutcomeLayer ? (
+							<motion.div
+								className="mt-8 flex flex-wrap items-center justify-center gap-3"
+								variants={fadeUpVariants}>
+								<Link
+									href={`${workersRootPath}?outcome=prototype_to_pr&mode=${selectedMode}`}
+									className="inline-flex items-center gap-2 rounded-full border border-foreground/20 bg-foreground/5 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-foreground/10">
+									Start with Prototype → PR
+									<ArrowRight className="size-4" />
+								</Link>
+								<a
+									href="#outcomes"
+									className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/40 px-5 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:border-border hover:text-foreground">
+									Browse outcomes
+								</a>
+							</motion.div>
+						) : null}
 
 						{/* Stats bar */}
 						<motion.div
@@ -394,171 +587,417 @@ export function WorkersContent({
 				</div>
 			</section>
 
-			{/* ── Role Cards Grid ────────────────────────────────────────── */}
-			<section className="relative -mt-12 overflow-hidden pb-24">
-				{/* Subtle section background */}
-				<motion.div
-					className="absolute inset-0"
-					initial="hidden"
-					whileInView="visible"
-					viewport={{ once: true }}
-					variants={backgroundVariants}>
-					<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1200px] -translate-x-1/2">
-						<div className="absolute left-1/2 top-1/2 h-[800px] w-full -translate-x-1/2 -translate-y-1/2 rounded-[100%] bg-foreground/[0.02] dark:bg-foreground/[0.03] blur-[100px]" />
-					</div>
-				</motion.div>
+			{/* ── Outcomes Overlay ───────────────────────────────────────── */}
+			{enableOutcomeLayer ? (
+				<section id="outcomes" className="relative -mt-24 overflow-hidden pb-14 scroll-mt-24">
+					<div className="container relative z-10 mx-auto max-w-screen-lg px-4 sm:px-6 lg:px-8">
+						<motion.div
+							className="mx-auto max-w-4xl"
+							initial="hidden"
+							whileInView="visible"
+							viewport={{ once: true }}
+							variants={containerVariants}>
+							<motion.div className="text-center" variants={fadeUpVariants}>
+								<h2 className="text-2xl font-semibold tracking-tight md:text-3xl [font-family:var(--font-display)]">
+									Start with an outcome
+								</h2>
+								<p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-base">
+									Pick what you&apos;re trying to ship. We assemble a Builder Profile: capabilities
+									plus a default model recommendation. It&apos;s a baseline, not a guarantee.
+								</p>
+							</motion.div>
 
-				<div className="container relative z-10 mx-auto max-w-screen-lg px-4 sm:px-6 lg:px-8">
-					{/* Section connector */}
-					<motion.div
-						className="mb-10 flex flex-col items-center gap-2"
-						initial="hidden"
-						whileInView="visible"
-						viewport={{ once: true }}
-						variants={fadeUpVariants}>
-						<p className="text-sm font-medium uppercase tracking-widest text-muted-foreground/70">
-							Choose your agentic team members
-						</p>
-						<ChevronDown className="size-4 text-muted-foreground/40" />
-					</motion.div>
+							<motion.div
+								className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+								variants={containerVariants}>
+								{EVAL_OUTCOMES.map((outcome) => {
+									const Icon = outcome.icon
+									const isSelected = outcome.id === selectedOutcomeId
+									const isFeatured = outcome.id === "prototype_to_pr"
 
-					<motion.div
-						className="grid grid-cols-1 gap-6 md:grid-cols-3 md:grid-rows-[repeat(7,auto)] md:gap-x-6 md:gap-y-10 lg:gap-x-8"
-						variants={containerVariants}
-						initial="hidden"
-						whileInView="visible"
-						viewport={{ once: true }}>
-						{roles.map((role) => {
-							const rec = recByRole.get(role.id)
-							const IconComponent = ICON_MAP[role.icon] ?? Code
-							const candidateCount = rec?.allCandidates.length ?? 0
-							const exerciseCount = rec?.totalExercises ?? 0
-							const theme = ROLE_THEMES[role.id] ?? DEFAULT_THEME
-							const topModel = rec?.best[0]
-
-							return (
-								<motion.div
-									key={role.id}
-									variants={cardVariants}
-									className="md:row-span-7 md:grid md:grid-rows-subgrid">
-									<div
-										className={`group relative flex h-full flex-col rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 md:row-span-7 md:grid md:grid-rows-subgrid ${theme.borderHover} ${theme.shadowHover} hover:shadow-xl`}>
-										{/* Subtle glow on hover */}
-										<div
-											className={`absolute inset-0 rounded-2xl ${theme.glowColor} opacity-0 transition-opacity duration-300 group-hover:opacity-100`}
-										/>
-
-										<div className="relative z-10 flex h-full flex-col p-6 lg:p-7 md:row-span-7 md:grid md:grid-rows-subgrid">
-											{/* Header: Icon + role badge */}
-											<div className="flex items-start justify-between">
-												<div
-													className={`flex size-12 items-center justify-center rounded-xl ${theme.iconBg} ${theme.iconText}`}>
-													<IconComponent className="size-6" />
+									return (
+										<motion.button
+											key={outcome.id}
+											type="button"
+											variants={cardVariants}
+											aria-pressed={isSelected}
+											onClick={() => setOutcome(isSelected ? null : outcome.id)}
+											className={[
+												"group rounded-2xl border bg-card/40 p-5 text-left backdrop-blur-sm transition-all duration-200 hover:bg-card/60",
+												isSelected
+													? "border-foreground/20 ring-1 ring-foreground/15"
+													: "border-border/50 hover:border-border",
+												isFeatured ? "lg:col-span-2" : "",
+											].join(" ")}>
+											<div className="flex items-start gap-3">
+												<div className="flex size-10 items-center justify-center rounded-xl border border-border/50 bg-background/30">
+													<Icon className="size-5 text-foreground/70" />
 												</div>
-												{topModel && (
-													<span
-														className={`rounded-full ${theme.badgeBg} ${theme.badgeText} px-3 py-1 text-xs font-medium`}>
-														Top: {topModel.displayName}
-													</span>
-												)}
-											</div>
-
-											{/* Role name + salary */}
-											<h2 className="mt-5 text-2xl font-bold tracking-tight">{role.name}</h2>
-											<p
-												className={`mt-1 font-mono text-lg font-semibold ${theme.accentLight} ${theme.accentDark}`}>
-												{role.salaryRange}
-											</p>
-
-											{/* Description */}
-											<p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-												{role.description}
-											</p>
-
-											{/* Best for */}
-											<div className="mt-5">
-												<h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-													Best for
-												</h3>
-												<div className="mt-2 flex flex-wrap gap-1.5">
-													{role.bestFor.map((item) => (
-														<span
-															key={item}
-															className="rounded-md border border-border/50 bg-muted/50 px-2 py-0.5 text-xs text-foreground/70">
-															{item}
+												<div className="min-w-0 flex-1">
+													{isFeatured ? (
+														<span className="mb-1 inline-flex items-center rounded-full border border-foreground/15 bg-foreground/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-foreground/70">
+															Recommended starting point
 														</span>
-													))}
+													) : null}
+													<p className="text-sm font-semibold text-foreground">
+														{outcome.name}
+													</p>
+													<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+														{outcome.description}
+													</p>
 												</div>
 											</div>
+										</motion.button>
+									)
+								})}
+							</motion.div>
 
-											{/* Strengths & Weaknesses side by side */}
-											<div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
-												{/* Strengths */}
-												<div>
-													<h3
-														className={`text-xs font-semibold uppercase tracking-wider ${theme.strengthColor}`}>
-														Strengths
-													</h3>
-													<ul className="mt-2 space-y-1.5">
-														{role.strengths.map((item) => (
-															<li
-																key={item}
-																className="flex items-start gap-1.5 text-xs text-foreground/75">
-																<CheckCircle2
-																	className={`mt-0.5 size-3 shrink-0 ${theme.strengthColor}`}
-																/>
-																{item}
+							{selectedOutcome ? (
+								<motion.div
+									className="mt-6 rounded-2xl border border-border/50 bg-card/30 p-5 backdrop-blur-sm"
+									variants={fadeUpVariants}>
+									<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+										<div className="min-w-0 md:max-w-[44%]">
+											<p className="text-xs font-medium uppercase tracking-widest text-muted-foreground/70">
+												{profileTitle}
+											</p>
+											<p className="mt-2 text-sm font-semibold text-foreground">
+												{selectedOutcome.name}
+											</p>
+											<p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+												{profileDescription}
+											</p>
+
+											{profileHowItWorks.length > 0 ? (
+												<div className="mt-4">
+													<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+														{selectedOutcome.builderProfile
+															? "How it works"
+															: "Why it works"}
+													</p>
+													<ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+														{profileHowItWorks.map((line) => (
+															<li key={line} className="flex items-start gap-2">
+																<span className="mt-1 size-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
+																<span className="min-w-0">{line}</span>
 															</li>
 														))}
 													</ul>
 												</div>
+											) : null}
 
-												{/* Weaknesses */}
-												<div>
-													<h3 className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-														Trade-offs
-													</h3>
-													<ul className="mt-2 space-y-1.5">
-														{role.weaknesses.map((item) => (
-															<li
-																key={item}
-																className="flex items-start gap-1.5 text-xs text-foreground/60">
-																<AlertTriangle className="mt-0.5 size-3 shrink-0 text-amber-600/70 dark:text-amber-400/70" />
-																{item}
+											{selectedOutcome.builderProfile?.howItWorks ? (
+												<div className="mt-4">
+													<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+														Why it works
+													</p>
+													<ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+														{selectedOutcome.whyItWorks.map((line) => (
+															<li key={line} className="flex items-start gap-2">
+																<span className="mt-1 size-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
+																<span className="min-w-0">{line}</span>
 															</li>
 														))}
 													</ul>
 												</div>
-											</div>
+											) : null}
+										</div>
 
-											{/* Bottom stats + CTA */}
-											<div className="mt-auto pt-6">
-												<div className="mb-4 flex items-center gap-4 border-t border-border/30 pt-4 text-xs text-muted-foreground">
-													<span className="inline-flex items-center gap-1.5">
-														<Users className="size-3.5" />
-														{candidateCount} candidates
+										<div className="flex flex-1 flex-col gap-4">
+											<div className="flex flex-wrap items-center justify-between gap-3">
+												<div className="flex flex-wrap items-center gap-2">
+													<span className="text-xs font-medium text-muted-foreground">
+														Optimize for
 													</span>
-													<span className="inline-flex items-center gap-1.5">
-														<FlaskConical className="size-3.5" />
-														{exerciseCount.toLocaleString()} exercises
-													</span>
+													{OPTIMIZATION_MODES.map((mode) => {
+														const isSelected = mode.id === selectedMode
+														return (
+															<button
+																key={mode.id}
+																type="button"
+																aria-pressed={isSelected}
+																title={mode.description}
+																onClick={() => setMode(mode.id)}
+																className={[
+																	"inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
+																	isSelected
+																		? "border-foreground/20 bg-foreground/5 text-foreground"
+																		: "border-border/50 bg-background/20 text-foreground/75 hover:border-border hover:text-foreground",
+																].join(" ")}>
+																{mode.label}
+															</button>
+														)
+													})}
 												</div>
-
-												<Link
-													href={`/evals/workers/${role.id}`}
-													className={`inline-flex w-full items-center justify-center gap-2 rounded-xl ${theme.buttonBg} ${theme.buttonHover} px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]`}>
-													View Candidates
-													<ArrowRight className="size-4" />
-												</Link>
+												<span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+													Capability set
+												</span>
 											</div>
+
+											<div>
+												<div className="flex items-end justify-between gap-3">
+													<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+														Agents
+													</p>
+													<p className="text-xs text-muted-foreground">
+														Click for candidates &amp; settings
+													</p>
+												</div>
+												<div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+													{agentCapabilities.map((capability) => {
+														const roleId = capability.roleId!
+														const rec = recByRole.get(roleId)
+														const candidate = getModeCandidate(rec, selectedMode)
+
+														return (
+															<Link
+																key={capability.id}
+																href={`${workersRootPath}/${roleId}${setupQuery}`}
+																className="group rounded-xl border border-border/50 bg-background/20 p-3 text-left transition-colors hover:border-border hover:bg-background/30">
+																<div className="flex items-start justify-between gap-3">
+																	<div className="min-w-0">
+																		<p className="text-xs font-semibold text-foreground">
+																			{capability.name}
+																		</p>
+																		{capability.description ? (
+																			<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+																				{capability.description}
+																			</p>
+																		) : null}
+																		<p className="mt-1 text-xs text-muted-foreground">
+																			{candidate ? (
+																				<>
+																					<span className="font-medium text-foreground/80">
+																						{getModeLabel(selectedMode)}:
+																					</span>{" "}
+																					{candidate.displayName}
+																				</>
+																			) : (
+																				<span className="font-medium text-foreground/80">
+																					View models
+																				</span>
+																			)}
+																		</p>
+																	</div>
+																	<ArrowRight className="mt-0.5 size-3.5 shrink-0 text-muted-foreground/70 transition-transform group-hover:translate-x-0.5" />
+																</div>
+															</Link>
+														)
+													})}
+												</div>
+											</div>
+
+											{builtInCapabilities.length > 0 ? (
+												<div>
+													<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+														Built-ins
+													</p>
+													<div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+														{builtInCapabilities.map((capability) => (
+															<div
+																key={capability.id}
+																className="rounded-xl border border-border/50 bg-background/20 p-3">
+																<div className="flex items-start gap-2">
+																	<CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-foreground/60" />
+																	<div className="min-w-0">
+																		<div className="flex flex-wrap items-center gap-2">
+																			<p className="text-xs font-semibold text-foreground">
+																				{capability.name}
+																			</p>
+																			<span className="rounded-full border border-border/50 bg-background/30 px-2 py-0.5 text-[10px] font-semibold text-foreground/70">
+																				Built-in
+																			</span>
+																		</div>
+																		<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+																			{capability.description}
+																		</p>
+																	</div>
+																</div>
+															</div>
+														))}
+													</div>
+												</div>
+											) : null}
 										</div>
 									</div>
 								</motion.div>
-							)
-						})}
+							) : null}
+						</motion.div>
+					</div>
+				</section>
+			) : null}
+
+			{/* ── Role Cards Grid (baseline only) ────────────────────────── */}
+			{!enableOutcomeLayer ? (
+				<section className="relative -mt-12 overflow-hidden pb-24">
+					{/* Subtle section background */}
+					<motion.div
+						className="absolute inset-0"
+						initial="hidden"
+						whileInView="visible"
+						viewport={{ once: true }}
+						variants={backgroundVariants}>
+						<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1200px] -translate-x-1/2">
+							<div className="absolute left-1/2 top-1/2 h-[800px] w-full -translate-x-1/2 -translate-y-1/2 rounded-[100%] bg-foreground/[0.02] dark:bg-foreground/[0.03] blur-[100px]" />
+						</div>
 					</motion.div>
-				</div>
-			</section>
+
+					<div className="container relative z-10 mx-auto max-w-screen-lg px-4 sm:px-6 lg:px-8">
+						{/* Section connector */}
+						<motion.div
+							className="mb-10 flex flex-col items-center gap-2"
+							initial="hidden"
+							whileInView="visible"
+							viewport={{ once: true }}
+							variants={fadeUpVariants}>
+							<p className="text-sm font-medium uppercase tracking-widest text-muted-foreground/70">
+								Choose a setup for the work
+							</p>
+							<ChevronDown className="size-4 text-muted-foreground/40" />
+						</motion.div>
+
+						<motion.div
+							className="grid grid-cols-1 gap-6 md:grid-cols-3 md:grid-rows-[repeat(7,auto)] md:gap-x-6 md:gap-y-10 lg:gap-x-8"
+							variants={containerVariants}
+							initial="hidden"
+							whileInView="visible"
+							viewport={{ once: true }}>
+							{roles.map((role) => {
+								const rec = recByRole.get(role.id)
+								const IconComponent = ICON_MAP[role.icon] ?? Code
+								const candidateCount = rec?.allCandidates.length ?? 0
+								const exerciseCount = rec?.totalExercises ?? 0
+								const theme = ROLE_THEMES[role.id] ?? DEFAULT_THEME
+								const topModel = rec?.best[0] ?? null
+
+								return (
+									<motion.div
+										key={role.id}
+										variants={cardVariants}
+										className="md:row-span-7 md:grid md:grid-rows-subgrid">
+										<div
+											className={[
+												"group relative flex h-full flex-col rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 md:row-span-7 md:grid md:grid-rows-subgrid hover:shadow-xl",
+												theme.borderHover,
+												theme.shadowHover,
+											].join(" ")}>
+											{/* Subtle glow on hover */}
+											<div
+												className={`absolute inset-0 rounded-2xl ${theme.glowColor} opacity-0 transition-opacity duration-300 group-hover:opacity-100`}
+											/>
+
+											<div className="relative z-10 flex h-full flex-col p-6 lg:p-7 md:row-span-7 md:grid md:grid-rows-subgrid">
+												{/* Header: Icon + role badge */}
+												<div className="flex items-start justify-between">
+													<div
+														className={`flex size-12 items-center justify-center rounded-xl ${theme.iconBg} ${theme.iconText}`}>
+														<IconComponent className="size-6" />
+													</div>
+													{topModel && (
+														<span
+															className={`rounded-full ${theme.badgeBg} ${theme.badgeText} px-3 py-1 text-xs font-medium`}>
+															Top: {topModel.displayName}
+														</span>
+													)}
+												</div>
+
+												{/* Profile name + descriptor */}
+												<h2 className="mt-5 text-2xl font-bold tracking-tight">{role.name}</h2>
+												<p
+													className={`mt-1 font-mono text-lg font-semibold ${theme.accentLight} ${theme.accentDark}`}>
+													{role.salaryRange}
+												</p>
+
+												{/* Description */}
+												<p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+													{role.description}
+												</p>
+
+												{/* Best for */}
+												<div className="mt-5">
+													<h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+														Best for
+													</h3>
+													<div className="mt-2 flex flex-wrap gap-1.5">
+														{role.bestFor.map((item) => (
+															<span
+																key={item}
+																className="rounded-md border border-border/50 bg-muted/50 px-2 py-0.5 text-xs text-foreground/70">
+																{item}
+															</span>
+														))}
+													</div>
+												</div>
+
+												{/* Strengths & Weaknesses side by side */}
+												<div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
+													{/* Strengths */}
+													<div>
+														<h3
+															className={`text-xs font-semibold uppercase tracking-wider ${theme.strengthColor}`}>
+															Strengths
+														</h3>
+														<ul className="mt-2 space-y-1.5">
+															{role.strengths.map((item) => (
+																<li
+																	key={item}
+																	className="flex items-start gap-1.5 text-xs text-foreground/75">
+																	<CheckCircle2
+																		className={`mt-0.5 size-3 shrink-0 ${theme.strengthColor}`}
+																	/>
+																	{item}
+																</li>
+															))}
+														</ul>
+													</div>
+
+													{/* Weaknesses */}
+													<div>
+														<h3 className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+															Trade-offs
+														</h3>
+														<ul className="mt-2 space-y-1.5">
+															{role.weaknesses.map((item) => (
+																<li
+																	key={item}
+																	className="flex items-start gap-1.5 text-xs text-foreground/60">
+																	<AlertTriangle className="mt-0.5 size-3 shrink-0 text-amber-600/70 dark:text-amber-400/70" />
+																	{item}
+																</li>
+															))}
+														</ul>
+													</div>
+												</div>
+
+												{/* Bottom stats + CTA */}
+												<div className="mt-auto pt-6">
+													<div className="mb-4 flex items-center gap-4 border-t border-border/30 pt-4 text-xs text-muted-foreground">
+														<span className="inline-flex items-center gap-1.5">
+															<Users className="size-3.5" />
+															{candidateCount} models
+														</span>
+														<span className="inline-flex items-center gap-1.5">
+															<FlaskConical className="size-3.5" />
+															{exerciseCount.toLocaleString()} exercises
+														</span>
+													</div>
+
+													<Link
+														href={`${workersRootPath}/${role.id}${setupQuery}`}
+														className={`inline-flex w-full items-center justify-center gap-2 rounded-xl ${theme.buttonBg} ${theme.buttonHover} px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]`}>
+														View models
+														<ArrowRight className="size-4" />
+													</Link>
+												</div>
+											</div>
+										</div>
+									</motion.div>
+								)
+							})}
+						</motion.div>
+					</div>
+				</section>
+			) : null}
 
 			{/* ── AI Coding Capability Over Time ─────────────────────────── */}
 			<section className="relative overflow-hidden pb-24 pt-8">
@@ -582,7 +1021,7 @@ export function WorkersContent({
 						variants={containerVariants}>
 						{/* Section header */}
 						<motion.div className="mb-8 text-center" variants={fadeUpVariants}>
-							<h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+							<h2 className="text-3xl font-semibold tracking-tight md:text-4xl [font-family:var(--font-display)]">
 								AI Coding Capability{" "}
 								<span className="bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">
 									Over Time

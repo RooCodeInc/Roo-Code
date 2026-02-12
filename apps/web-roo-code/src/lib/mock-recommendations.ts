@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // Eval Recommendations: Types + Mock Data (S1.1a)
 // ---------------------------------------------------------------------------
-// This file defines the API contract for the AI Engineer Talent Marketplace.
+// This file defines the API contract for the /evals/workers recommendation pages.
 // The backend (Sprint 3-4) will produce data matching these exact types.
 // ---------------------------------------------------------------------------
 
@@ -16,11 +16,11 @@ export const TASKS_PER_DAY = 80
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-/** Engineer role definition: maps task complexity to a hiring tier. */
+/** Engineer role definition: maps task complexity to a recommendation tier. */
 export type EngineerRole = {
 	id: string
 	name: string
-	/** Daily salary range string, e.g. "$3–38/day" */
+	/** Short descriptor shown under the profile name (scope, mode, etc.). */
 	salaryRange: string
 	description: string
 	bestFor: string[]
@@ -80,51 +80,51 @@ export type RoleRecommendation = {
 const ENGINEER_ROLES: EngineerRole[] = [
 	{
 		id: "junior",
-		name: "Junior Engineer",
-		salaryRange: "$2–10/day",
+		name: "Single-file Builder",
+		salaryRange: "Scope: single-file",
 		description:
-			"Handles well-scoped, single-file tasks: boilerplate, simple bug fixes, and test generation at the lowest cost per task.",
-		bestFor: ["Single-file fixes", "Boilerplate generation", "Test generation", "Simple implementations"],
-		strengths: ["Cheap", "High throughput", "Best cost-to-quality ratio on simple tasks"],
-		weaknesses: ["Struggles with multi-file changes", "Limited reasoning depth", "May miss edge cases"],
+			"Best for tight diffs: boilerplate, small fixes, and test updates. Great when the work is clear and bounded.",
+		bestFor: ["Small fixes", "Boilerplate", "Test updates", "Simple implementations"],
+		strengths: ["Fast iteration", "Stays close to the requested change", "Great for well-scoped diffs"],
+		weaknesses: ["Not ideal for cross-cutting work", "Can miss edge cases in complex systems"],
 		icon: "Code",
 	},
 	{
 		id: "senior",
-		name: "Senior Engineer",
-		salaryRange: "$10–26/day",
+		name: "Multi-file Builder",
+		salaryRange: "Scope: multi-file",
 		description:
-			"The sweet spot for most engineering work. Senior-tier models balance cost and quality across multi-file refactors, feature development, and debugging.",
-		bestFor: ["Multi-file refactors", "Feature development", "Debugging", "Code review"],
+			"For most day-to-day shipping: feature work across a few files, refactors, and debugging with solid consistency.",
+		bestFor: ["Feature work", "Multi-file refactors", "Debugging", "Integrations"],
 		strengths: [
-			"Balanced cost/quality",
-			"Handles multi-file changes and cross-cutting refactors",
-			"Consistent pass rates across all five languages",
+			"Reliable for common product work",
+			"Handles multi-file changes and dependencies",
+			"Consistent across all five languages",
 		],
-		weaknesses: ["More expensive than junior", "Overkill for trivial tasks"],
+		weaknesses: ["Overkill for trivial diffs", "May need help on cross-cutting architecture"],
 		icon: "GitBranch",
 	},
 	{
 		id: "staff",
-		name: "Staff Engineer",
-		salaryRange: "$8–34/day",
+		name: "Architecture & Refactor",
+		salaryRange: "Scope: cross-cutting",
 		description:
-			"For architecture decisions, system design, and complex refactors. Staff-tier models handle ambiguous requirements and cross-cutting changes where other tiers fail.",
-		bestFor: ["Architecture decisions", "Complex features", "System design", "Ambiguous requirements"],
+			"For ambiguity and cross-cutting changes: architecture decisions, complex refactors, and work where correctness matters more than speed.",
+		bestFor: ["Complex refactors", "Architecture changes", "Ambiguous requirements", "System design"],
 		strengths: [
-			"Handles multi-step reasoning and ambiguous specs",
-			"Passes existing test suites consistently",
-			"Resolves underspecified requirements",
+			"Strong multi-step reasoning",
+			"Good at navigating bigger codebases",
+			"Better at making safe, coherent changes",
 		],
-		weaknesses: ["Most expensive", "Overkill for simple tasks", "Diminishing returns on easy work"],
+		weaknesses: ["Overkill for simple diffs", "Still needs human review before merge"],
 		icon: "Building2",
 	},
 	{
 		id: "reviewer",
-		name: "Architecture Reviewer",
-		salaryRange: "$15–40/day",
+		name: "Reviewer & Guardrails",
+		salaryRange: "Mode: review",
 		description:
-			"For code review, PR feedback, security analysis, and design critique. Reviewer-tier models catch issues other models miss and provide actionable, context-aware suggestions.",
+			"For PR feedback, security review, and design critique. Use this to improve quality and reduce surprises before merge.",
 		bestFor: ["Code review", "PR feedback", "Security analysis", "Design critique", "Refactor guidance"],
 		strengths: [
 			"Catches subtle bugs and logic errors",
@@ -132,18 +132,18 @@ const ENGINEER_ROLES: EngineerRole[] = [
 			"Understands cross-file impact of changes",
 		],
 		weaknesses: [
-			"Not for writing code from scratch",
-			"More expensive than running linters",
+			"Not for writing features end-to-end",
+			"Not a replacement for CI and linters",
 			"Review quality varies by codebase size",
 		],
 		icon: "Search",
 	},
 	{
 		id: "autonomous",
-		name: "Autonomous Agent",
-		salaryRange: "$5–30/day",
+		name: "Autonomous Delivery",
+		salaryRange: "Mode: end-to-end",
 		description:
-			"For issue-to-PR workflows, long-running tasks, and multi-step debugging with minimal supervision. Autonomous-tier models complete tasks end-to-end and recover from errors without human intervention.",
+			"For issue-to-PR workflows and long-running tasks. Best when you want an agent to run, iterate, and bring back a reviewable result.",
 		bestFor: [
 			"Issue-to-PR workflows",
 			"Multi-step debugging",

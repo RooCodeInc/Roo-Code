@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
 import {
 	ArrowLeft,
@@ -409,12 +410,12 @@ function ScatterTooltip({
 				</div>
 				<div className="flex items-center gap-2.5 text-xs">
 					<span className="size-2.5 rounded-full bg-amber-400 ring-1 ring-white/10" />
-					<span className="text-muted-foreground">Daily Salary:</span>
+					<span className="text-muted-foreground">Daily Spend:</span>
 					<span className="font-semibold tabular-nums">${data.dailyCost}/day</span>
 				</div>
 				<div className="flex items-center gap-2.5 text-xs">
 					<span className="size-2.5 rounded-full bg-blue-400 ring-1 ring-white/10" />
-					<span className="text-muted-foreground">Interview Score:</span>
+					<span className="text-muted-foreground">Eval Score:</span>
 					<span className="font-semibold tabular-nums">{data.score}</span>
 				</div>
 				<div className="flex items-center gap-2.5 text-xs">
@@ -433,11 +434,29 @@ interface ComparisonChartProps {
 	recommendation: RoleRecommendation
 	role: EngineerRole
 	roleId: string
+	workersRootPath?: string
 }
 
-export function ComparisonChart({ recommendation, role, roleId }: ComparisonChartProps) {
+export function ComparisonChart({
+	recommendation,
+	role,
+	roleId,
+	workersRootPath = "/evals/workers",
+}: ComparisonChartProps) {
+	const searchParams = useSearchParams()
 	const { allCandidates } = recommendation
 	const theme = ROLE_THEMES[roleId] ?? DEFAULT_THEME
+	const alternateWorkersRootPath = workersRootPath === "/evals/workers-v2" ? "/evals/workers" : "/evals/workers-v2"
+	const alternateVersionLabel = workersRootPath === "/evals/workers-v2" ? "View baseline" : "View V2 preview"
+	const setupQuery = (() => {
+		const outcome = searchParams.get("outcome")
+		if (!outcome) return ""
+		const params = new URLSearchParams()
+		params.set("outcome", outcome)
+		const mode = searchParams.get("mode")
+		if (mode) params.set("mode", mode)
+		return `?${params.toString()}`
+	})()
 
 	// ── State ───────────────────────────────────────────────────────────────
 	const [selectedLanguage, setSelectedLanguage] = useState<keyof LanguageScores | "all">("all")
@@ -561,15 +580,25 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 								Evals
 							</Link>
 							<span className="text-border">/</span>
-							<Link href="/evals/workers" className="transition-colors hover:text-foreground">
-								Hire an AI Engineer
+							<Link
+								href={`${workersRootPath}${setupQuery}`}
+								className="transition-colors hover:text-foreground">
+								Build with Roo Code Cloud
 							</Link>
 							<span className="text-border">/</span>
-							<Link href={`/evals/workers/${roleId}`} className="transition-colors hover:text-foreground">
+							<Link
+								href={`${workersRootPath}/${roleId}${setupQuery}`}
+								className="transition-colors hover:text-foreground">
 								{role.name}
 							</Link>
 							<span className="text-border">/</span>
-							<span className="font-medium text-foreground">Compare Candidates</span>
+							<span className="font-medium text-foreground">Compare Models</span>
+							<span className="text-border">/</span>
+							<Link
+								href={`${alternateWorkersRootPath}/${roleId}/compare${setupQuery}`}
+								className="font-medium text-muted-foreground transition-colors hover:text-foreground">
+								{alternateVersionLabel}
+							</Link>
 						</motion.nav>
 
 						{/* Title row */}
@@ -579,7 +608,7 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 								<BarChart3 className="size-7" />
 							</div>
 							<div className="flex-1">
-								<h1 className="text-4xl font-bold tracking-tight md:text-5xl">Compare Candidates</h1>
+								<h1 className="text-4xl font-bold tracking-tight md:text-5xl">Compare Models</h1>
 								<p className={`mt-1 font-semibold ${theme.accentLight} ${theme.accentDark}`}>
 									{role.name}
 								</p>
@@ -599,7 +628,7 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 								<span className="font-mono font-semibold text-foreground">
 									{filteredCandidates.length}
 								</span>
-								of {allCandidates.length} candidates shown
+								of {allCandidates.length} models shown
 							</span>
 							<div className="hidden h-4 w-px bg-border sm:block" />
 							<span className="text-sm text-muted-foreground">
@@ -731,10 +760,10 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 						className="rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm"
 						variants={fadeUpVariants}>
 						<div className="mb-1 flex items-center gap-2.5">
-							<h2 className="text-lg font-bold tracking-tight">Value Map: Salary vs Interview Score</h2>
+							<h2 className="text-lg font-bold tracking-tight">Value Map: Spend vs Eval Score</h2>
 						</div>
 						<p className="mb-4 text-xs leading-relaxed text-muted-foreground/80">
-							Upper-left = best value. Each dot is a candidate model. Size reflects success rate.
+							Upper-left = higher score at lower spend. Each dot is a model. Size reflects success rate.
 						</p>
 
 						{/* Tier legend */}
@@ -753,7 +782,7 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 						{scatterData.length === 0 ? (
 							<div className="flex h-48 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/50 text-muted-foreground">
 								<SlidersHorizontal className="size-6 text-muted-foreground/50" />
-								<p className="text-sm">No candidates match the current filters.</p>
+								<p className="text-sm">No models match the current filters.</p>
 								<p className="text-xs text-muted-foreground/60">
 									Try adjusting the provider or success rate filters.
 								</p>
@@ -765,7 +794,7 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 										<XAxis
 											type="number"
 											dataKey="dailyCost"
-											name="Daily Salary"
+											name="Daily Spend"
 											domain={[0, Math.ceil(scatterMaxCost * 1.1)]}
 											tickFormatter={(v: number) => `$${v}`}
 											stroke="hsl(var(--muted-foreground))"
@@ -773,7 +802,7 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 											tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
 											axisLine={false}
 											label={{
-												value: "Daily Salary ($)",
+												value: "Daily Spend ($)",
 												position: "insideBottom",
 												offset: -10,
 												style: { fontSize: 11, fill: "hsl(var(--muted-foreground))" },
@@ -782,14 +811,14 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 										<YAxis
 											type="number"
 											dataKey="score"
-											name="Interview Score"
+											name="Eval Score"
 											domain={[Math.max(0, scatterMinScore - 10), 100]}
 											stroke="hsl(var(--muted-foreground))"
 											strokeOpacity={0.3}
 											tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
 											axisLine={false}
 											label={{
-												value: "Interview Score",
+												value: "Eval Score",
 												angle: -90,
 												position: "insideLeft",
 												offset: 10,
@@ -826,7 +855,7 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 												strokeOpacity: 0.3,
 											}}
 										/>
-										<Scatter data={scatterData} name="Candidates">
+										<Scatter data={scatterData} name="Models">
 											{scatterData.map((entry, index) => (
 												<Cell
 													key={`scatter-cell-${index}`}
@@ -864,7 +893,7 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 						{chartData.length === 0 ? (
 							<div className="flex h-48 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/50 text-muted-foreground">
 								<SlidersHorizontal className="size-6 text-muted-foreground/50" />
-								<p className="text-sm">No candidates match the current filters.</p>
+								<p className="text-sm">No models match the current filters.</p>
 								<p className="text-xs text-muted-foreground/60">
 									Try adjusting the provider or success rate filters.
 								</p>
@@ -993,15 +1022,15 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 						<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 							<div>
 								<Link
-									href={`/evals/workers/${roleId}`}
+									href={`${workersRootPath}/${roleId}${setupQuery}`}
 									className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/50 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-200 hover:border-border hover:text-foreground">
 									<ArrowLeft className="size-4" />
-									Back to {role.name} candidates
+									Back to {role.name} models
 								</Link>
 							</div>
 							<div className="flex flex-wrap gap-3">
 								<Link
-									href="/evals/workers"
+									href={`${workersRootPath}${setupQuery}`}
 									className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/50 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-200 hover:border-border hover:text-foreground">
 									<ArrowLeft className="size-3.5" />
 									All roles

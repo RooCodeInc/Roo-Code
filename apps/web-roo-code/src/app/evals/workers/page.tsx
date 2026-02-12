@@ -8,10 +8,10 @@ import { WorkersContent } from "./workers-content"
 
 // ── SEO Metadata ────────────────────────────────────────────────────────────
 
-const TITLE = "Hire an AI Engineer | Roo Code Evals"
+const TITLE = "Build with Roo Code Cloud | Roo Code Evals"
 const DESCRIPTION =
-	"Find the right AI coding model for your team. Compare interview results across Junior, Senior, and Staff Engineer roles."
-const OG_DESCRIPTION = "Find the right AI coding model for your team"
+	"Eval-backed model recommendations for shipping production code. Pick a setup based on the work you're doing: single-file fixes, multi-file changes, review, and autonomous runs."
+const OG_DESCRIPTION = "Eval-backed model recommendations for shipping production code"
 const PATH = "/evals/workers"
 
 export const metadata: Metadata = {
@@ -44,18 +44,20 @@ export const metadata: Metadata = {
 	},
 	keywords: [
 		...SEO.keywords,
-		"AI engineer",
+		"AI coding",
+		"coding agents",
+		"roo code cloud",
 		"model recommendations",
 		"coding evals",
 		"model comparison",
-		"hire AI",
-		"talent marketplace",
+		"shipping code",
+		"prototype",
 	],
 }
 
 // ── Page Component ──────────────────────────────────────────────────────────
 
-export default function HireAnAIEngineerPage() {
+export default function WorkersPage() {
 	const roles = getEngineerRoles()
 	const recommendations = getAllRecommendations()
 
@@ -80,6 +82,10 @@ export default function HireAnAIEngineerPage() {
 			totalExercises={totalExercises}
 			totalModels={totalModels}
 			lastUpdated={lastUpdated}
+			workersRootPath="/evals/workers"
+			enableOutcomeLayer={false}
+			alternateVersionHref="/evals/workers-v2"
+			alternateVersionLabel="View V2 preview"
 		/>
 	)
 }

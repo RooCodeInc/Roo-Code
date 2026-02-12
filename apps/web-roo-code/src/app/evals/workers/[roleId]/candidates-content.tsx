@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 
 import type { ModelCandidate, LanguageScores, EngineerRole } from "@/lib/mock-recommendations"
 
@@ -485,7 +486,7 @@ function CandidateCard({
 						target="_blank"
 						rel="noopener noreferrer"
 						className={`inline-flex w-full items-center justify-center gap-2 rounded-xl ${theme.buttonBg} ${theme.buttonHover} px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg`}>
-						☁️ Hire This Engineer
+						☁️ Open in Roo Code Cloud
 						<ExternalLink className="size-3.5" />
 					</a>
 					<CopySettingsButton settings={copySettings} />
@@ -620,7 +621,7 @@ function CompactCard({
 						target="_blank"
 						rel="noopener noreferrer"
 						className={`inline-flex w-full items-center justify-center gap-2 rounded-xl ${theme.buttonBg} ${theme.buttonHover} px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg`}>
-						☁️ Hire This Engineer
+						☁️ Open in Roo Code Cloud
 						<ExternalLink className="size-3.5" />
 					</a>
 					<CopySettingsButton settings={copySettings} />
@@ -643,6 +644,7 @@ export type CandidatesContentProps = {
 	totalExercises: number
 	lastUpdated: string
 	cloudUrls: Record<string, string>
+	workersRootPath?: string
 }
 
 // ── Main Content Component ──────────────────────────────────────────────────
@@ -658,9 +660,22 @@ export function CandidatesContent({
 	totalExercises,
 	lastUpdated,
 	cloudUrls,
+	workersRootPath = "/evals/workers",
 }: CandidatesContentProps) {
+	const searchParams = useSearchParams()
 	const theme = ROLE_THEMES[roleId] ?? DEFAULT_THEME
 	const IconComponent = ICON_MAP[role.icon] ?? Code
+	const alternateWorkersRootPath = workersRootPath === "/evals/workers-v2" ? "/evals/workers" : "/evals/workers-v2"
+	const alternateVersionLabel = workersRootPath === "/evals/workers-v2" ? "View baseline" : "View V2 preview"
+	const setupQuery = (() => {
+		const outcome = searchParams.get("outcome")
+		if (!outcome) return ""
+		const params = new URLSearchParams()
+		params.set("outcome", outcome)
+		const mode = searchParams.get("mode")
+		if (mode) params.set("mode", mode)
+		return `?${params.toString()}`
+	})()
 
 	return (
 		<>
@@ -693,8 +708,10 @@ export function CandidatesContent({
 								Evals
 							</Link>
 							<span className="text-border">/</span>
-							<Link href="/evals/workers" className="transition-colors hover:text-foreground">
-								Hire an AI Engineer
+							<Link
+								href={`${workersRootPath}${setupQuery}`}
+								className="transition-colors hover:text-foreground">
+								Build with Roo Code Cloud
 							</Link>
 							<span className="text-border">/</span>
 							<span className="font-medium text-foreground">{role.name}</span>
@@ -753,8 +770,14 @@ export function CandidatesContent({
 								href="/evals/methodology"
 								className="group inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
 								<Beaker className="size-3.5" />
-								How we interview
+								Methodology
 								<ArrowRight className="size-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+							</Link>
+							<div className="hidden h-4 w-px bg-border sm:block" />
+							<Link
+								href={`${alternateWorkersRootPath}/${roleId}${setupQuery}`}
+								className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+								{alternateVersionLabel}
 							</Link>
 						</motion.div>
 
@@ -792,7 +815,7 @@ export function CandidatesContent({
 				</div>
 			</section>
 
-			{/* ── Top Candidates: Best Overall ────────────────────────────── */}
+			{/* ── Top Models: Best Overall ────────────────────────────────── */}
 			<section className="relative overflow-hidden pb-16">
 				<div className="container relative z-10 mx-auto max-w-screen-lg px-4 sm:px-6 lg:px-8">
 					<motion.div
@@ -804,7 +827,7 @@ export function CandidatesContent({
 							className="mb-8 flex items-center gap-3 text-3xl font-bold tracking-tight"
 							variants={fadeUpVariants}>
 							<Trophy className="size-7 text-yellow-500" />
-							Top Candidates
+							Top Models
 						</motion.h2>
 
 						<motion.div className="grid grid-cols-1 gap-6 md:grid-cols-3" variants={containerVariants}>
@@ -835,7 +858,7 @@ export function CandidatesContent({
 							{budgetHire && (
 								<CompactCard
 									candidate={budgetHire}
-									label="💰 Budget Hire"
+									label="💰 Best value"
 									icon={DollarSign}
 									highlight="cost"
 									theme={theme}
@@ -845,7 +868,7 @@ export function CandidatesContent({
 							{speedHire && (
 								<CompactCard
 									candidate={speedHire}
-									label="⚡ Speed Hire"
+									label="⚡ Fastest"
 									icon={Zap}
 									highlight="speed"
 									theme={theme}
@@ -857,7 +880,7 @@ export function CandidatesContent({
 				</section>
 			)}
 
-			{/* ── All Candidates Table ────────────────────────────────────── */}
+			{/* ── All Models Table ────────────────────────────────────────── */}
 			<section className="relative overflow-hidden pb-16">
 				{/* Subtle background */}
 				<motion.div
@@ -878,7 +901,7 @@ export function CandidatesContent({
 						viewport={{ once: true }}
 						variants={containerVariants}>
 						<motion.h2 className="mb-8 text-3xl font-bold tracking-tight" variants={fadeUpVariants}>
-							All Candidates
+							All Models
 						</motion.h2>
 
 						<motion.div
@@ -962,7 +985,7 @@ export function CandidatesContent({
 						{/* Compare link */}
 						<motion.div className="mt-6 text-center" variants={fadeUpVariants}>
 							<Link
-								href={`/evals/workers/${roleId}/compare`}
+								href={`${workersRootPath}/${roleId}/compare${setupQuery}`}
 								className={`group inline-flex items-center gap-2 rounded-full border ${theme.methodologyBorder} bg-card/50 px-5 py-2.5 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-300 hover:text-foreground`}>
 								📊 Compare all candidates
 								<ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -983,7 +1006,7 @@ export function CandidatesContent({
 						variants={containerVariants}>
 						<motion.div variants={fadeUpVariants}>
 							<Link
-								href="/evals/workers"
+								href={`${workersRootPath}${setupQuery}`}
 								className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/50 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-200 hover:border-border hover:text-foreground">
 								<ArrowLeft className="size-4" />
 								Back to all roles
@@ -991,7 +1014,7 @@ export function CandidatesContent({
 						</motion.div>
 						<motion.div className="flex flex-wrap gap-3" variants={fadeUpVariants}>
 							<Link
-								href={`/evals/workers/${roleId}/compare`}
+								href={`${workersRootPath}/${roleId}/compare${setupQuery}`}
 								className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/50 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-200 hover:border-border hover:text-foreground">
 								📊 Compare candidates
 							</Link>

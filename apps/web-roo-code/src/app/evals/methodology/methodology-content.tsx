@@ -198,19 +198,19 @@ export function MethodologyContent() {
 							</Link>
 							<span className="text-border">/</span>
 							<Link href="/evals/workers" className="transition-colors hover:text-foreground">
-								Hire an AI Engineer
+								Build with Roo Code Cloud
 							</Link>
 							<span className="text-border">/</span>
-							<span className="font-medium text-foreground">How We Interview</span>
+							<span className="font-medium text-foreground">Methodology</span>
 						</motion.nav>
 
 						{/* Heading */}
 						<motion.h1
 							className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl"
 							variants={fadeUpVariants}>
-							How We Interview{" "}
+							How We Run{" "}
 							<span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 bg-clip-text text-transparent">
-								AI Models
+								Evals
 							</span>
 						</motion.h1>
 
@@ -262,7 +262,7 @@ export function MethodologyContent() {
 					<motion.h2
 						className="-mt-3 text-3xl font-bold tracking-tight md:text-4xl"
 						variants={fadeUpVariants}>
-						The Interview Process
+						The Eval Process
 					</motion.h2>
 
 					<motion.div
@@ -293,7 +293,7 @@ export function MethodologyContent() {
 							},
 							{
 								title: "No Cherry-Picking",
-								desc: "Every model gets the exact same interview. No curated demos, no special treatment.",
+								desc: "Every model gets the exact same eval run. No curated demos, no special treatment.",
 							},
 							{
 								title: "Real Metrics",
@@ -313,7 +313,7 @@ export function MethodologyContent() {
 			</motion.section>
 
 			{/* ════════════════════════════════════════════════════════════════
-			    SECTION 02: THE INTERVIEW SUITE
+			    SECTION 02: THE EVAL SUITE
 			    ════════════════════════════════════════════════════════════════ */}
 			<motion.section
 				className="relative overflow-hidden border-t border-border/30 py-20"
@@ -336,7 +336,7 @@ export function MethodologyContent() {
 					<motion.h2
 						className="-mt-3 text-3xl font-bold tracking-tight md:text-4xl"
 						variants={fadeUpVariants}>
-						The Interview Suite
+						The Eval Suite
 					</motion.h2>
 
 					<motion.p
@@ -751,7 +751,7 @@ export function MethodologyContent() {
 			</motion.section>
 
 			{/* ════════════════════════════════════════════════════════════════
-			    SECTION 05: RUN YOUR OWN INTERVIEWS
+			    SECTION 05: RUN YOUR OWN EVALS
 			    ════════════════════════════════════════════════════════════════ */}
 			<motion.section
 				className="relative overflow-hidden border-t border-border/30 py-20"
@@ -767,13 +767,13 @@ export function MethodologyContent() {
 					<motion.h2
 						className="-mt-3 text-3xl font-bold tracking-tight md:text-4xl"
 						variants={fadeUpVariants}>
-						Run Your Own Interviews
+						Run Your Own Evals
 					</motion.h2>
 
 					<motion.p
 						className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg"
 						variants={fadeUpVariants}>
-						Our evaluation framework is fully open source. Run the exact same interviews on your own
+						Our evaluation framework is fully open source. Run the exact same evals on your own
 						infrastructure, with your own API keys, against any model.
 					</motion.p>
 
