@@ -73,6 +73,7 @@ import {
 	Split,
 	ArrowRight,
 	Check,
+	Clock,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PathTooltip } from "../ui/PathTooltip"
@@ -109,6 +110,40 @@ function getPreviousTodos(messages: ClineMessage[], currentMessageTs: number): a
 
 	// If no previous updateTodoList message, return empty array
 	return []
+}
+
+interface RpiElapsedTimerProps {
+	startTs: number
+	isActive: boolean
+}
+
+function RpiElapsedTimer({ startTs, isActive }: RpiElapsedTimerProps) {
+	const [elapsed, setElapsed] = useState(0)
+
+	useEffect(() => {
+		if (!isActive) {
+			setElapsed(Date.now() - startTs)
+			return
+		}
+		const tick = () => setElapsed(Date.now() - startTs)
+		tick()
+		const id = setInterval(tick, 1000)
+		return () => clearInterval(id)
+	}, [isActive, startTs])
+
+	const totalSeconds = Math.floor(elapsed / 1000)
+	if (totalSeconds <= 0) return null
+
+	const minutes = Math.floor(totalSeconds / 60)
+	const seconds = totalSeconds % 60
+	const label = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`
+
+	return (
+		<span className="flex items-center gap-1 text-xs text-vscode-descriptionForeground whitespace-nowrap">
+			<Clock className="w-3 h-3" />
+			{label}
+		</span>
+	)
 }
 
 interface ChatRowProps {
@@ -1245,6 +1280,10 @@ export const ChatRowContent = ({
 							<div style={headerStyle}>
 								{icon}
 								{title}
+								<RpiElapsedTimer
+									startTs={message.ts}
+									isActive={!!message.partial || (isLast && isStreaming)}
+								/>
 								<div style={{ flexGrow: 1 }} />
 								<OpenMarkdownPreviewButton markdown={message.text} />
 							</div>

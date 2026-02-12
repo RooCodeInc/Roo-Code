@@ -98,6 +98,74 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 			.replace(/^\\:start_line:/gm, ":start_line:")
 	}
 
+	/**
+	 * Normalizes diff content to handle common AI model formatting issues:
+	 * - Normalizes CRLF to LF
+	 * - Trims trailing whitespace from marker lines only (not content lines)
+	 * - Removes truly empty lines adjacent to markers (but preserves whitespace-only content lines)
+	 */
+	private normalizeDiffContent(diffContent: string): string {
+		const MARKER_SEARCH = /^<<<<<<< SEARCH>?\s*$/
+		const MARKER_SEP = /^=======\s*$/
+		const MARKER_REPLACE = /^>>>>>>> REPLACE\s*$/
+		const MARKER_LINE_START = /^:start_line:\s*\d+/
+		const MARKER_LINE_END = /^:end_line:\s*\d+/
+		const MARKER_DASHES = /^-------\s*$/
+
+		const isMarkerLine = (trimmed: string): boolean =>
+			MARKER_SEARCH.test(trimmed) ||
+			MARKER_SEP.test(trimmed) ||
+			MARKER_REPLACE.test(trimmed) ||
+			MARKER_LINE_START.test(trimmed) ||
+			MARKER_LINE_END.test(trimmed) ||
+			MARKER_DASHES.test(trimmed)
+
+		// Normalize line endings
+		const lines = diffContent.replace(/\r\n/g, "\n").split("\n")
+
+		// Process lines: trim only marker lines, remove truly empty lines adjacent to markers
+		const result: string[] = []
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i]
+			const trimmed = line.trim()
+
+			// If this line is a marker, push the trimmed version (removes trailing whitespace from markers)
+			if (isMarkerLine(trimmed)) {
+				result.push(trimmed)
+				continue
+			}
+
+			// Only consider truly empty lines (no content at all) for removal
+			// Lines with whitespace only (e.g., "     ") are content and must be preserved
+			const isTrulyEmpty = line === ""
+
+			if (isTrulyEmpty) {
+				// Check if previous line (in result) is a marker
+				const prevTrimmed = result.length > 0 ? result[result.length - 1].trim() : ""
+				const prevIsMarker = result.length > 0 && isMarkerLine(prevTrimmed)
+
+				// Check if next non-empty line is a marker
+				let nextNonEmpty = ""
+				for (let j = i + 1; j < lines.length; j++) {
+					if (lines[j] !== "") {
+						nextNonEmpty = lines[j].trim()
+						break
+					}
+				}
+				const nextIsMarker = nextNonEmpty !== "" && isMarkerLine(nextNonEmpty)
+
+				// Skip truly empty line only if it's adjacent to a marker
+				if (prevIsMarker || nextIsMarker) {
+					continue
+				}
+			}
+
+			result.push(line)
+		}
+
+		return result.join("\n")
+	}
+
 	private validateMarkerSequencing(diffContent: string): { success: boolean; error?: string } {
 		enum State {
 			START,
@@ -248,56 +316,64 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 		_paramStartLine?: number,
 		_paramEndLine?: number,
 	): Promise<DiffResult> {
-		const validseq = this.validateMarkerSequencing(diffContent)
+		// Layer 1: Normalize diff content to handle common AI model formatting issues
+		// (trailing whitespace on markers, blank lines adjacent to markers, CRLF)
+		// This is safe for well-formed diffs (no-op) and fixes most malformed ones.
+		const normalizedDiff = this.normalizeDiffContent(diffContent)
+
+		// Validate marker sequencing on normalized content first, fall back to raw if needed
+		let workingDiff = normalizedDiff
+		const validseq = this.validateMarkerSequencing(normalizedDiff)
 		if (!validseq.success) {
-			return {
-				success: false,
-				error: validseq.error!,
+			// Try raw content validation (in case normalization broke something)
+			const rawValidseq = this.validateMarkerSequencing(diffContent)
+			if (rawValidseq.success) {
+				workingDiff = diffContent
+			} else {
+				// Both failed — try Layer 2 fallback before returning error
+				return this.applyDiffWithFallbackParser(originalContent, diffContent)
 			}
 		}
 
 		/*
 			Regex parts:
-			
-			1. (?:^|\n)  
+
+			1. (?:^|\n)
 			  Ensures the first marker starts at the beginning of the file or right after a newline.
 
-			2. (?<!\\)<<<<<<< SEARCH\s*\n  
+			2. (?<!\\)<<<<<<< SEARCH\s*\n
 			  Matches the line "<<<<<<< SEARCH" (ignoring any trailing spaces) – the negative lookbehind makes sure it isn't escaped.
 
-			3. ((?:\:start_line:\s*(\d+)\s*\n))?  
+			3. ((?:\:start_line:\s*(\d+)\s*\n))?
 			  Optionally matches a ":start_line:" line. The outer capturing group is group 1 and the inner (\d+) is group 2.
 
-			4. ((?:\:end_line:\s*(\d+)\s*\n))?  
+			4. ((?:\:end_line:\s*(\d+)\s*\n))?
 			  Optionally matches a ":end_line:" line. Group 3 is the whole match and group 4 is the digits.
 
-			5. ((?<!\\)-------\s*\n)?  
+			5. ((?<!\\)-------\s*\n)?
 			  Optionally matches the "-------" marker line (group 5).
 
-			6. ([\s\S]*?)(?:\n)?  
+			6. ([\s\S]*?)(?:\n)?
 			  Non‐greedy match for the "search content" (group 6) up to the next marker.
 
-			7. (?:(?<=\n)(?<!\\)=======\s*\n)  
+			7. (?:(?<=\n)(?<!\\)=======\s*\n)
 			  Matches the "=======" marker on its own line.
 
-			8. ([\s\S]*?)(?:\n)?  
+			8. ([\s\S]*?)(?:\n)?
 			  Non‐greedy match for the "replace content" (group 7).
 
-			9. (?:(?<=\n)(?<!\\)>>>>>>> REPLACE)(?=\n|$)  
+			9. (?:(?<=\n)(?<!\\)>>>>>>> REPLACE)(?=\n|$)
 			  Matches the final ">>>>>>> REPLACE" marker on its own line (and requires a following newline or the end of file).
 		*/
 
-		let matches = [
-			...diffContent.matchAll(
-				/(?:^|\n)(?<!\\)<<<<<<< SEARCH>?\s*\n((?:\:start_line:\s*(\d+)\s*\n))?((?:\:end_line:\s*(\d+)\s*\n))?((?<!\\)-------\s*\n)?([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)=======\s*\n)([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)>>>>>>> REPLACE)(?=\n|$)/g,
-			),
-		]
+		const STRICT_REGEX =
+			/(?:^|\n)(?<!\\)<<<<<<< SEARCH>?\s*\n((?:\:start_line:\s*(\d+)\s*\n))?((?:\:end_line:\s*(\d+)\s*\n))?((?<!\\)-------\s*\n)?([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)=======\s*\n)([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)>>>>>>> REPLACE)(?=\n|$)/g
 
+		let matches = [...workingDiff.matchAll(STRICT_REGEX)]
+
+		// Layer 2: If regex fails, try the line-by-line fallback parser
 		if (matches.length === 0) {
-			return {
-				success: false,
-				error: `Invalid diff format - missing required sections\n\nDebug Info:\n- Expected Format: <<<<<<< SEARCH\\n:start_line: start line\\n-------\\n[search content]\\n=======\\n[replace content]\\n>>>>>>> REPLACE\n- Tip: Make sure to include start_line/SEARCH/=======/REPLACE sections with correct markers on new lines`,
-			}
+			return this.applyDiffWithFallbackParser(originalContent, diffContent)
 		}
 		// Detect line ending from original content
 		const lineEnding = originalContent.includes("\r\n") ? "\r\n" : "\n"
@@ -517,6 +593,298 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 			success: true,
 			content: finalContent,
 			failParts: diffResults,
+		}
+	}
+
+	/**
+	 * Line-by-line parser that extracts SEARCH/REPLACE blocks from malformed diff content.
+	 * More tolerant than the regex parser — uses trimmed line matching for markers.
+	 */
+	private parseSearchReplaceBlocks(
+		diffContent: string,
+	): Array<{ startLine: number; searchContent: string; replaceContent: string }> {
+		enum State {
+			OUTSIDE,
+			IN_SEARCH_HEADER,
+			IN_SEARCH,
+			IN_REPLACE,
+		}
+
+		const SEARCH_PATTERN = /^<<<<<<< SEARCH>?\s*$/
+		const SEP = "======="
+		const REPLACE_MARKER = ">>>>>>> REPLACE"
+
+		const lines = diffContent.replace(/\r\n/g, "\n").split("\n")
+		const blocks: Array<{ startLine: number; searchContent: string; replaceContent: string }> = []
+
+		let state = State.OUTSIDE
+		let startLine = 0
+		let searchLines: string[] = []
+		let replaceLines: string[] = []
+
+		for (const line of lines) {
+			const trimmed = line.trim()
+
+			switch (state) {
+				case State.OUTSIDE:
+					if (SEARCH_PATTERN.test(trimmed)) {
+						state = State.IN_SEARCH_HEADER
+						startLine = 0
+						searchLines = []
+						replaceLines = []
+					}
+					break
+
+				case State.IN_SEARCH_HEADER: {
+					const startLineMatch = trimmed.match(/^:start_line:\s*(\d+)/)
+					if (startLineMatch) {
+						startLine = parseInt(startLineMatch[1])
+					} else if (/^:end_line:\s*\d+/.test(trimmed)) {
+						// Skip end_line marker
+					} else if (trimmed === "-------") {
+						// Skip separator, next lines are search content
+						state = State.IN_SEARCH
+					} else if (trimmed === SEP) {
+						// Empty search section, transition to replace
+						state = State.IN_REPLACE
+					} else {
+						// Content line — transition to search
+						state = State.IN_SEARCH
+						searchLines.push(line)
+					}
+					break
+				}
+
+				case State.IN_SEARCH:
+					if (trimmed === SEP && !line.trimEnd().startsWith("\\=======")) {
+						state = State.IN_REPLACE
+					} else {
+						searchLines.push(line)
+					}
+					break
+
+				case State.IN_REPLACE:
+					if (/^>>>>>>> REPLACE\s*$/.test(trimmed) && !line.trimEnd().startsWith("\\>>>>>>>")) {
+						blocks.push({
+							startLine,
+							searchContent: searchLines.join("\n"),
+							replaceContent: replaceLines.join("\n"),
+						})
+						state = State.OUTSIDE
+					} else {
+						replaceLines.push(line)
+					}
+					break
+			}
+		}
+
+		return blocks
+	}
+
+	/**
+	 * Whitespace-flexible matching inspired by EditFileTool's matching tiers.
+	 * Tries whitespace-tolerant regex, then token-based regex.
+	 * Only applies if exactly 1 match is found (avoids ambiguity).
+	 */
+	private whitespaceFlexibleMatch(
+		resultLines: string[],
+		searchContent: string,
+		replaceContent: string,
+	): string[] | null {
+		const currentContent = resultLines.join("\n")
+		const searchLF = searchContent.replace(/\r\n/g, "\n")
+		const replaceLF = replaceContent.replace(/\r\n/g, "\n")
+
+		// Tier 1: Whitespace-tolerant regex
+		const parts = searchLF.match(/(\s+|\S+)/g) ?? []
+		const wsPattern = parts
+			.map((part) => {
+				if (/^\s+$/.test(part)) {
+					return part.includes("\n") ? "\\s+" : "[\\t ]+"
+				}
+				return part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+			})
+			.join("")
+
+		if (wsPattern) {
+			const wsRegex = new RegExp(wsPattern, "g")
+			const wsMatches = Array.from(currentContent.matchAll(wsRegex))
+			if (wsMatches.length === 1) {
+				const newContent = currentContent.replace(wsRegex, () => replaceLF)
+				return newContent.split(/\r?\n/)
+			}
+		}
+
+		// Tier 2: Token-based regex
+		const tokens = searchLF.split(/\s+/).filter(Boolean)
+		if (tokens.length > 0) {
+			const tokenPattern = tokens.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("\\s+")
+			const tokenRegex = new RegExp(tokenPattern, "g")
+			const tokenMatches = Array.from(currentContent.matchAll(tokenRegex))
+			if (tokenMatches.length === 1) {
+				const newContent = currentContent.replace(tokenRegex, () => replaceLF)
+				return newContent.split(/\r?\n/)
+			}
+		}
+
+		return null
+	}
+
+	/**
+	 * Fallback diff application using the line-by-line parser and flexible matching.
+	 * Called when the strict regex fails to extract any blocks.
+	 */
+	private async applyDiffWithFallbackParser(originalContent: string, diffContent: string): Promise<DiffResult> {
+		const blocks = this.parseSearchReplaceBlocks(diffContent)
+
+		if (blocks.length === 0) {
+			return {
+				success: false,
+				error: `Invalid diff format - missing required sections\n\nDebug Info:\n- Expected Format: <<<<<<< SEARCH\\n:start_line: start line\\n-------\\n[search content]\\n=======\\n[replace content]\\n>>>>>>> REPLACE\n- Tip: Make sure to include start_line/SEARCH/=======/REPLACE sections with correct markers on new lines`,
+			}
+		}
+
+		const lineEnding = originalContent.includes("\r\n") ? "\r\n" : "\n"
+		let resultLines = originalContent.split(/\r?\n/)
+		let delta = 0
+		let appliedCount = 0
+		const diffResults: DiffResult[] = []
+
+		const sortedBlocks = [...blocks].sort((a, b) => a.startLine - b.startLine)
+
+		for (const block of sortedBlocks) {
+			let { searchContent, replaceContent } = block
+			let startLine = block.startLine + (block.startLine === 0 ? 0 : delta)
+
+			// Unescape markers
+			searchContent = this.unescapeMarkers(searchContent)
+			replaceContent = this.unescapeMarkers(replaceContent)
+
+			// Handle line-numbered content
+			const hasAllLineNumbers =
+				(everyLineHasLineNumbers(searchContent) && everyLineHasLineNumbers(replaceContent)) ||
+				(everyLineHasLineNumbers(searchContent) && replaceContent.trim() === "")
+
+			if (hasAllLineNumbers && startLine === 0) {
+				startLine = parseInt(searchContent.split("\n")[0].split("|")[0])
+			}
+			if (hasAllLineNumbers) {
+				searchContent = stripLineNumbers(searchContent)
+				replaceContent = stripLineNumbers(replaceContent)
+			}
+
+			if (searchContent === replaceContent) {
+				diffResults.push({
+					success: false,
+					error: "Search and replace content are identical - no changes would be made",
+				})
+				continue
+			}
+
+			const searchLines = searchContent === "" ? [] : searchContent.split(/\r?\n/)
+			const replaceLines = replaceContent === "" ? [] : replaceContent.split(/\r?\n/)
+
+			if (searchLines.length === 0) {
+				diffResults.push({
+					success: false,
+					error: "Empty search content is not allowed",
+				})
+				continue
+			}
+
+			// Strategy 1: Exact literal match
+			const currentContent = resultLines.join("\n")
+			const exactIndex = currentContent.indexOf(searchContent)
+			if (exactIndex !== -1) {
+				const beforeMatch = currentContent.substring(0, exactIndex)
+				const matchLineIndex = beforeMatch.split("\n").length - 1
+				const beforeLines = resultLines.slice(0, matchLineIndex)
+				const afterLines = resultLines.slice(matchLineIndex + searchLines.length)
+				resultLines = [...beforeLines, ...replaceLines, ...afterLines]
+				delta = delta - searchLines.length + replaceLines.length
+				appliedCount++
+				continue
+			}
+
+			// Strategy 2: Fuzzy search (reuse existing logic)
+			let searchStartIndex = 0
+			let searchEndIndex = resultLines.length
+			if (startLine > 0) {
+				searchStartIndex = Math.max(0, startLine - (this.bufferLines + 1))
+				searchEndIndex = Math.min(resultLines.length, startLine + searchLines.length + this.bufferLines)
+			}
+
+			const searchChunk = searchLines.join("\n")
+			const { bestScore, bestMatchIndex } = fuzzySearch(
+				resultLines,
+				searchChunk,
+				searchStartIndex,
+				searchEndIndex,
+			)
+
+			if (bestMatchIndex !== -1 && bestScore >= this.fuzzyThreshold) {
+				const matchedLines = resultLines.slice(bestMatchIndex, bestMatchIndex + searchLines.length)
+				// Preserve indentation (same as main path)
+				const originalIndents = matchedLines.map((line) => {
+					const m = line.match(/^[\t ]*/)
+					return m ? m[0] : ""
+				})
+				const searchIndents = searchLines.map((line) => {
+					const m = line.match(/^[\t ]*/)
+					return m ? m[0] : ""
+				})
+				const indentedReplaceLines = replaceLines.map((line) => {
+					const matchedIndent = originalIndents[0] || ""
+					const currentIndentMatch = line.match(/^[\t ]*/)
+					const currentIndent = currentIndentMatch ? currentIndentMatch[0] : ""
+					const searchBaseIndent = searchIndents[0] || ""
+					const searchBaseLevel = searchBaseIndent.length
+					const currentLevel = currentIndent.length
+					const relativeLevel = currentLevel - searchBaseLevel
+					const finalIndent =
+						relativeLevel < 0
+							? matchedIndent.slice(0, Math.max(0, matchedIndent.length + relativeLevel))
+							: matchedIndent + currentIndent.slice(searchBaseLevel)
+					return finalIndent + line.trim()
+				})
+				const beforeLines = resultLines.slice(0, bestMatchIndex)
+				const afterLines = resultLines.slice(bestMatchIndex + searchLines.length)
+				resultLines = [...beforeLines, ...indentedReplaceLines, ...afterLines]
+				delta = delta - searchLines.length + replaceLines.length
+				appliedCount++
+				continue
+			}
+
+			// Strategy 3: Whitespace-flexible matching
+			const wsResult = this.whitespaceFlexibleMatch(resultLines, searchContent, replaceContent)
+			if (wsResult !== null) {
+				resultLines = wsResult
+				// Approximate delta (exact count may vary due to whitespace normalization)
+				delta = delta - searchLines.length + replaceLines.length
+				appliedCount++
+				continue
+			}
+
+			// This block failed
+			diffResults.push({
+				success: false,
+				error: `Fallback parser: no sufficiently similar match found for search block`,
+			})
+		}
+
+		if (appliedCount === 0) {
+			return {
+				success: false,
+				error: `Invalid diff format - could not apply any blocks\n\nDebug Info:\n- Fallback parser extracted ${blocks.length} block(s) but none could be matched in the file\n- Tip: Use the read_file tool to verify the latest file contents before retrying`,
+				failParts: diffResults.length > 0 ? diffResults : undefined,
+			}
+		}
+
+		const finalContent = resultLines.join(lineEnding)
+		return {
+			success: true,
+			content: finalContent,
+			failParts: diffResults.length > 0 ? diffResults : undefined,
 		}
 	}
 
