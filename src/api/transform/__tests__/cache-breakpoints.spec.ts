@@ -20,42 +20,42 @@ describe("UNIVERSAL_CACHE_OPTIONS", () => {
 describe("applyCacheBreakpoints", () => {
 	it("is a no-op for empty message array", () => {
 		const messages: TestMessage[] = []
-		applyCacheBreakpoints(messages)
-		expect(messages).toEqual([])
+		const result = applyCacheBreakpoints(messages)
+		expect(result).toEqual([])
 	})
 
 	it("is a no-op when all messages are assistant or system", () => {
 		const messages: TestMessage[] = [{ role: "system" }, { role: "assistant" }, { role: "assistant" }]
-		applyCacheBreakpoints(messages)
-		expect(messages[0].providerOptions).toBeUndefined()
-		expect(messages[1].providerOptions).toBeUndefined()
-		expect(messages[2].providerOptions).toBeUndefined()
+		const result = applyCacheBreakpoints(messages)
+		expect(result[0].providerOptions).toBeUndefined()
+		expect(result[1].providerOptions).toBeUndefined()
+		expect(result[2].providerOptions).toBeUndefined()
 	})
 
 	it("places 1 breakpoint on a single user message", () => {
 		const messages: TestMessage[] = [{ role: "user" }]
-		applyCacheBreakpoints(messages)
-		expect(messages[0].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		const result = applyCacheBreakpoints(messages)
+		expect(result[0].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 	})
 
 	it("places 1 breakpoint on a single tool message", () => {
 		const messages: TestMessage[] = [{ role: "tool" }]
-		applyCacheBreakpoints(messages)
-		expect(messages[0].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		const result = applyCacheBreakpoints(messages)
+		expect(result[0].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 	})
 
 	it("places 2 breakpoints on 2 user messages", () => {
 		const messages: TestMessage[] = [{ role: "user" }, { role: "user" }]
-		applyCacheBreakpoints(messages)
-		expect(messages[0].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
-		expect(messages[1].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		const result = applyCacheBreakpoints(messages)
+		expect(result[0].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		expect(result[1].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 	})
 
 	it("places 2 breakpoints on 2 tool messages", () => {
 		const messages: TestMessage[] = [{ role: "tool" }, { role: "tool" }]
-		applyCacheBreakpoints(messages)
-		expect(messages[0].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
-		expect(messages[1].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		const result = applyCacheBreakpoints(messages)
+		expect(result[0].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		expect(result[1].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 	})
 
 	it("targets last 2 non-assistant messages in a mixed conversation", () => {
@@ -66,13 +66,13 @@ describe("applyCacheBreakpoints", () => {
 			{ role: "assistant" },
 			{ role: "tool" },
 		]
-		applyCacheBreakpoints(messages)
+		const result = applyCacheBreakpoints(messages)
 		// Last 2 non-assistant: index 2 (user) and index 4 (tool)
-		expect(messages[0].providerOptions).toBeUndefined()
-		expect(messages[1].providerOptions).toBeUndefined()
-		expect(messages[2].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
-		expect(messages[3].providerOptions).toBeUndefined()
-		expect(messages[4].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		expect(result[0].providerOptions).toBeUndefined()
+		expect(result[1].providerOptions).toBeUndefined()
+		expect(result[2].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		expect(result[3].providerOptions).toBeUndefined()
+		expect(result[4].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 	})
 
 	it("targets indices 3 and 5 in [user, assistant, tool, user, assistant, tool]", () => {
@@ -84,21 +84,21 @@ describe("applyCacheBreakpoints", () => {
 			{ role: "assistant" },
 			{ role: "tool" },
 		]
-		applyCacheBreakpoints(messages)
-		expect(messages[0].providerOptions).toBeUndefined()
-		expect(messages[1].providerOptions).toBeUndefined()
-		expect(messages[2].providerOptions).toBeUndefined()
-		expect(messages[3].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
-		expect(messages[4].providerOptions).toBeUndefined()
-		expect(messages[5].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		const result = applyCacheBreakpoints(messages)
+		expect(result[0].providerOptions).toBeUndefined()
+		expect(result[1].providerOptions).toBeUndefined()
+		expect(result[2].providerOptions).toBeUndefined()
+		expect(result[3].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		expect(result[4].providerOptions).toBeUndefined()
+		expect(result[5].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 	})
 
 	it("never targets system messages", () => {
 		const messages: TestMessage[] = [{ role: "system" }, { role: "user" }, { role: "assistant" }, { role: "user" }]
-		applyCacheBreakpoints(messages)
-		expect(messages[0].providerOptions).toBeUndefined()
-		expect(messages[1].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
-		expect(messages[3].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		const result = applyCacheBreakpoints(messages)
+		expect(result[0].providerOptions).toBeUndefined()
+		expect(result[1].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		expect(result[3].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 	})
 
 	it("never targets assistant messages", () => {
@@ -108,9 +108,9 @@ describe("applyCacheBreakpoints", () => {
 			{ role: "assistant" },
 			{ role: "user" },
 		]
-		applyCacheBreakpoints(messages)
-		expect(messages[1].providerOptions).toBeUndefined()
-		expect(messages[2].providerOptions).toBeUndefined()
+		const result = applyCacheBreakpoints(messages)
+		expect(result[1].providerOptions).toBeUndefined()
+		expect(result[2].providerOptions).toBeUndefined()
 	})
 
 	it("preserves existing providerOptions via spread", () => {
@@ -122,8 +122,8 @@ describe("applyCacheBreakpoints", () => {
 				},
 			},
 		]
-		applyCacheBreakpoints(messages)
-		expect(messages[0].providerOptions).toEqual({
+		const result = applyCacheBreakpoints(messages)
+		expect(result[0].providerOptions).toEqual({
 			openai: { customField: "keep-me" },
 			...UNIVERSAL_CACHE_OPTIONS,
 		})
@@ -146,17 +146,17 @@ describe("applyCacheBreakpoints", () => {
 			{ role: "assistant" }, // 9
 			{ role: "user" }, // 10 - nonAssistant[5] <- last 2
 		]
-		applyCacheBreakpoints(messages, { useAnchor: true })
+		const result = applyCacheBreakpoints(messages, { useAnchor: true })
 
 		// Should have 3 breakpoints: indices 4, 8, 10
-		expect(messages[4].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
-		expect(messages[8].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
-		expect(messages[10].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		expect(result[4].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		expect(result[8].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		expect(result[10].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 
 		// Others should NOT have breakpoints
-		expect(messages[0].providerOptions).toBeUndefined()
-		expect(messages[2].providerOptions).toBeUndefined()
-		expect(messages[6].providerOptions).toBeUndefined()
+		expect(result[0].providerOptions).toBeUndefined()
+		expect(result[2].providerOptions).toBeUndefined()
+		expect(result[6].providerOptions).toBeUndefined()
 	})
 
 	it("does not add anchor when below anchorThreshold", () => {
@@ -168,19 +168,37 @@ describe("applyCacheBreakpoints", () => {
 			{ role: "user" },
 		]
 		// 3 non-assistant messages, below default threshold of 5
-		applyCacheBreakpoints(messages, { useAnchor: true })
+		const result = applyCacheBreakpoints(messages, { useAnchor: true })
 
 		// Last 2 only: indices 2 and 4
-		expect(messages[0].providerOptions).toBeUndefined()
-		expect(messages[2].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
-		expect(messages[4].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		expect(result[0].providerOptions).toBeUndefined()
+		expect(result[2].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		expect(result[4].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 	})
 
 	it("universal options include both anthropic and bedrock namespaces", () => {
 		const messages: TestMessage[] = [{ role: "user" }]
-		applyCacheBreakpoints(messages)
-		expect(messages[0].providerOptions).toHaveProperty("anthropic")
-		expect(messages[0].providerOptions).toHaveProperty("bedrock")
+		const result = applyCacheBreakpoints(messages)
+		expect(result[0].providerOptions).toHaveProperty("anthropic")
+		expect(result[0].providerOptions).toHaveProperty("bedrock")
+	})
+
+	it("should not mutate original messages", () => {
+		const messages: TestMessage[] = [{ role: "user" }, { role: "assistant" }, { role: "user" }]
+		const originalFirstUser = messages[0]
+		const originalSecondUser = messages[2]
+		const result = applyCacheBreakpoints(messages)
+		// Original objects should not have providerOptions added
+		expect(messages[0].providerOptions).toBeUndefined()
+		expect(messages[2].providerOptions).toBeUndefined()
+		// Original references should be unchanged
+		expect(messages[0]).toBe(originalFirstUser)
+		expect(messages[2]).toBe(originalSecondUser)
+		// Result should have the cache options
+		expect(result[0].providerOptions).toEqual(expect.objectContaining(UNIVERSAL_CACHE_OPTIONS))
+		expect(result[2].providerOptions).toEqual(expect.objectContaining(UNIVERSAL_CACHE_OPTIONS))
+		// Non-targeted messages should keep same references
+		expect(result[1]).toBe(messages[1])
 	})
 })
 

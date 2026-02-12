@@ -4412,7 +4412,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const cleanConversationHistory = this.buildCleanConversationHistory(messagesWithoutImages)
 
 		// Breakpoints 3-4: Apply cache breakpoints to the last 2 non-assistant messages
-		applyCacheBreakpoints(cleanConversationHistory.filter(isRooRoleMessage))
+		const messagesForApi = applyCacheBreakpoints(cleanConversationHistory.filter(isRooRoleMessage))
 
 		// Check auto-approval limits
 		const approvalResult = await this.autoApprovalHandler.checkAutoApprovalLimits(
@@ -4495,7 +4495,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Reset the flag after using it
 		this.skipPrevResponseIdOnce = false
 
-		const stream = this.api.createMessage(systemPrompt, cleanConversationHistory, metadata)
+		const stream = this.api.createMessage(systemPrompt, messagesForApi, metadata)
 		const iterator = stream[Symbol.asyncIterator]()
 
 		// Set up abort handling - when the signal is aborted, clean up the controller reference

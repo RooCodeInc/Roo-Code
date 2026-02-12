@@ -23,18 +23,22 @@ export interface CacheBreakpointTargeting {
 /**
  * Apply cache breakpoints to AI SDK messages with ALL provider namespaces.
  *
+ * Returns a **new** array — original messages are never mutated.
+ * Only targeted messages are shallow-cloned; non-targeted messages keep
+ * their original object references.
+ *
  * 4-breakpoint strategy:
  *   1. System prompt — passed as first message in messages[] with providerOptions
  *   2. Tool definitions — handled externally via `toolProviderOptions` in `streamText()`
  *   3-4. Last 2 non-assistant messages — this function handles these
  *
- * @param messages - The AI SDK message array (mutated in place)
+ * @param messages - The AI SDK message array (NOT mutated)
  * @param targeting - Optional targeting options (defaults: 2 breakpoints, no anchor)
+ * @returns A new array with cache breakpoints applied to targeted messages
  */
-export function applyCacheBreakpoints(
-	messages: { role: string; providerOptions?: Record<string, Record<string, unknown>> }[],
-	targeting: CacheBreakpointTargeting = {},
-): void {
+export function applyCacheBreakpoints<
+	T extends { role: string; providerOptions?: Record<string, Record<string, unknown>> },
+>(messages: readonly T[], targeting: CacheBreakpointTargeting = {}): T[] {
 	const { maxBreakpoints = 2, useAnchor = false, anchorThreshold = 5 } = targeting
 
 	// 1. Collect non-assistant message indices (user | tool roles)
@@ -45,7 +49,7 @@ export function applyCacheBreakpoints(
 		}
 	}
 
-	if (nonAssistantIndices.length === 0) return
+	if (nonAssistantIndices.length === 0) return [...messages]
 
 	// 2. Target last N non-assistant messages
 	const targetIndices = new Set<number>()
@@ -59,15 +63,21 @@ export function applyCacheBreakpoints(
 		targetIndices.add(nonAssistantIndices[anchorIdx])
 	}
 
-	// 4. Apply UNIVERSAL cache options to targeted messages
+	// 4. Shallow-copy the array, cloning ONLY targeted messages with cache options
+	const result = [...messages]
 	for (const idx of targetIndices) {
 		if (idx >= 0 && idx < messages.length) {
-			messages[idx].providerOptions = {
-				...messages[idx].providerOptions,
-				...UNIVERSAL_CACHE_OPTIONS,
+			result[idx] = {
+				...messages[idx],
+				providerOptions: {
+					...messages[idx].providerOptions,
+					...UNIVERSAL_CACHE_OPTIONS,
+				},
 			}
 		}
 	}
+
+	return result
 }
 
 /**
