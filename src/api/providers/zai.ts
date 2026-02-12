@@ -115,8 +115,8 @@ export class ZAiHandler extends BaseProvider implements SingleCompletionHandler 
 			toolChoice: mapToolChoice(metadata?.tool_choice),
 		}
 
-		// GLM-4.7 thinking mode: pass thinking parameter via providerOptions
-		const isThinkingModel = modelId === "glm-4.7" && Array.isArray(info.supportsReasoningEffort)
+		// Thinking mode: pass thinking parameter via providerOptions for models that support it (e.g. GLM-4.7, GLM-5)
+		const isThinkingModel = Array.isArray(info.supportsReasoningEffort)
 
 		if (isThinkingModel) {
 			const useReasoning = shouldUseReasoningEffort({ model: info, settings: this.options })

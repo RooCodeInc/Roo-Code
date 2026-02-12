@@ -121,6 +121,22 @@ describe("ZAiHandler", () => {
 			expect(model.info.preserveReasoning).toBe(true)
 		})
 
+		it("should return GLM-5 international model with thinking support", () => {
+			const testModelId: InternationalZAiModelId = "glm-5"
+			const handlerWithModel = new ZAiHandler({
+				apiModelId: testModelId,
+				zaiApiKey: "test-zai-api-key",
+				zaiApiLine: "international_coding",
+			})
+			const model = handlerWithModel.getModel()
+			expect(model.id).toBe(testModelId)
+			expect(model.info).toEqual(internationalZAiModels[testModelId])
+			expect(model.info.contextWindow).toBe(202_752)
+			expect(model.info.supportsReasoningEffort).toEqual(["disable", "medium"])
+			expect(model.info.reasoningEffort).toBe("medium")
+			expect(model.info.preserveReasoning).toBe(true)
+		})
+
 		it("should return GLM-4.5v international model with vision support", () => {
 			const testModelId: InternationalZAiModelId = "glm-4.5v"
 			const handlerWithModel = new ZAiHandler({
@@ -199,6 +215,22 @@ describe("ZAiHandler", () => {
 			expect(model.id).toBe(testModelId)
 			expect(model.info).toEqual(mainlandZAiModels[testModelId])
 			expect(model.info.contextWindow).toBe(204_800)
+			expect(model.info.supportsReasoningEffort).toEqual(["disable", "medium"])
+			expect(model.info.reasoningEffort).toBe("medium")
+			expect(model.info.preserveReasoning).toBe(true)
+		})
+
+		it("should return GLM-5 China model with thinking support", () => {
+			const testModelId: MainlandZAiModelId = "glm-5"
+			const handlerWithModel = new ZAiHandler({
+				apiModelId: testModelId,
+				zaiApiKey: "test-zai-api-key",
+				zaiApiLine: "china_coding",
+			})
+			const model = handlerWithModel.getModel()
+			expect(model.id).toBe(testModelId)
+			expect(model.info).toEqual(mainlandZAiModels[testModelId])
+			expect(model.info.contextWindow).toBe(202_752)
 			expect(model.info.supportsReasoningEffort).toEqual(["disable", "medium"])
 			expect(model.info.reasoningEffort).toBe("medium")
 			expect(model.info.preserveReasoning).toBe(true)
@@ -505,6 +537,74 @@ describe("ZAiHandler", () => {
 			const textChunks = chunks.filter((chunk) => chunk.type === "text")
 			expect(textChunks).toHaveLength(1)
 			expect(textChunks[0].text).toBe("Here is my answer")
+		})
+	})
+
+	describe("GLM-5 Thinking Mode", () => {
+		it("should enable thinking by default for GLM-5 (default reasoningEffort is medium)", async () => {
+			const handlerWithModel = new ZAiHandler({
+				apiModelId: "glm-5",
+				zaiApiKey: "test-zai-api-key",
+				zaiApiLine: "international_coding",
+			})
+
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
+			})
+
+			const stream = handlerWithModel.createMessage("system prompt", [])
+			for await (const _chunk of stream) {
+				// drain
+			}
+
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					providerOptions: {
+						zhipu: {
+							thinking: { type: "enabled" },
+						},
+					},
+				}),
+			)
+		})
+
+		it("should disable thinking for GLM-5 when reasoningEffort is set to disable", async () => {
+			const handlerWithModel = new ZAiHandler({
+				apiModelId: "glm-5",
+				zaiApiKey: "test-zai-api-key",
+				zaiApiLine: "international_coding",
+				enableReasoningEffort: true,
+				reasoningEffort: "disable",
+			})
+
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
+			})
+
+			const stream = handlerWithModel.createMessage("system prompt", [])
+			for await (const _chunk of stream) {
+				// drain
+			}
+
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					providerOptions: {
+						zhipu: {
+							thinking: { type: "disabled" },
+						},
+					},
+				}),
+			)
 		})
 	})
 
