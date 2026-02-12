@@ -53,6 +53,21 @@ describe("formatTodoListSection", () => {
 		expect(pipeParts.length).toBe(5) // empty + # + content + status + empty
 	})
 
+	it("escapes backslashes before pipes to prevent table breakage", () => {
+		// Content with literal \| sequence — without backslash-first escaping,
+		// the \ passes through and \| becomes a raw pipe that breaks the table.
+		const todos: TodoItem[] = [{ id: "1", content: "foo\\|bar", status: "pending" }]
+		const result = formatTodoListSection(todos)
+		// Expected: backslash escaped to \\, then pipe escaped to \|, yielding \\\|
+		expect(result).toContain("foo" + "\\\\" + "\\|" + "bar")
+		// Table structure must remain intact
+		const lines = result.split("\n")
+		const dataRow = lines.find((l) => l.includes("foo"))
+		expect(dataRow).toBeDefined()
+		const pipeParts = dataRow!.split(/(?<!\\)\|/)
+		expect(pipeParts.length).toBe(5)
+	})
+
 	it("normalizes newlines in content to spaces", () => {
 		const todos: TodoItem[] = [{ id: "1", content: "Fix the\nbroken parser", status: "pending" }]
 		const result = formatTodoListSection(todos)

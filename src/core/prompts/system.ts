@@ -67,6 +67,7 @@ export function formatTodoListSection(todoList?: TodoItem[]): string {
 		const item = todoList[idx]
 		const normalizedContent = item.content
 			.replace(/\r?\n/g, " ")
+			.replace(/\\/g, "\\\\")
 			.replace(/\|/g, "\\|")
 			.replace(/\s+/g, " ")
 			.trim()
