@@ -24,7 +24,7 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
-import { applyToolCacheOptions } from "../transform/cache-breakpoints"
+import { applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
 import { calculateApiCostAnthropic } from "../../shared/cost"
 
 import { DEFAULT_HEADERS } from "./constants"
@@ -107,11 +107,20 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			anthropicProviderOptions.disableParallelToolUse = true
 		}
 
+		// Breakpoint 1: System prompt caching — inject as cached system message
+		// AI SDK v6 does not support providerOptions on the system string parameter,
+		// so cache-aware providers convert it to a system message with providerOptions.
+		const effectiveSystemPrompt = applySystemPromptCaching(
+			systemPrompt,
+			aiSdkMessages,
+			metadata?.systemProviderOptions,
+		)
+
 		// Build streamText request
 		// Cast providerOptions to any to bypass strict JSONObject typing — the AI SDK accepts the correct runtime values
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: this.provider(modelConfig.id),
-			system: systemPrompt || undefined,
+			system: effectiveSystemPrompt,
 			messages: aiSdkMessages,
 			temperature: modelConfig.temperature,
 			maxOutputTokens: modelConfig.maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,

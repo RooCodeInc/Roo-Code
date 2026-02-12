@@ -120,16 +120,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const providerOptions: Record<string, any> = {}
 
 		if (isO3Family) {
-			if (!systemPrompt && aiSdkMessages.length > 0 && aiSdkMessages[0].role === "system") {
-				// System prompt was passed as messages[0] instead of the systemPrompt parameter.
-				// Prepend the formatting prefix directly to the message content to avoid
-				// sending a duplicate via the `system:` parameter.
-				const sysMsg = aiSdkMessages[0] as { role: string; content: string }
-				sysMsg.content = `Formatting re-enabled\n${sysMsg.content}`
-				effectiveSystemPrompt = undefined
-			} else {
-				effectiveSystemPrompt = `Formatting re-enabled\n${systemPrompt}`
-			}
+			effectiveSystemPrompt = `Formatting re-enabled\n${systemPrompt}`
 			effectiveTemperature = undefined
 
 			const openaiOpts: Record<string, unknown> = {
@@ -154,14 +145,6 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			effectiveSystemPrompt = undefined
 			if (systemPrompt) {
 				aiSdkMessages.unshift({ role: "user", content: systemPrompt })
-			} else if (aiSdkMessages.length > 0 && aiSdkMessages[0].role === "system") {
-				// System prompt was passed as messages[0] instead of the systemPrompt parameter.
-				// Extract system content and convert to a user message for DeepSeek Reasoner.
-				const sysContent = (aiSdkMessages[0] as { role: string; content: string }).content
-				aiSdkMessages.shift()
-				if (sysContent) {
-					aiSdkMessages.unshift({ role: "user", content: sysContent })
-				}
 			}
 		}
 

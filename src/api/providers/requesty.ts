@@ -14,7 +14,7 @@ import {
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
-import { applyToolCacheOptions } from "../transform/cache-breakpoints"
+import { applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -188,9 +188,17 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 
 		const requestyOptions = this.getRequestyProviderOptions(metadata)
 
+		// Breakpoint 1: System prompt caching — inject as cached system message
+		// Requesty routes to Anthropic models that benefit from cache annotations
+		const effectiveSystemPrompt = applySystemPromptCaching(
+			systemPrompt,
+			aiSdkMessages,
+			metadata?.systemProviderOptions,
+		)
+
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt || undefined,
+			system: effectiveSystemPrompt,
 			messages: aiSdkMessages,
 			temperature: this.options.modelTemperature ?? temperature ?? 0,
 			maxOutputTokens: this.getMaxOutputTokens(),

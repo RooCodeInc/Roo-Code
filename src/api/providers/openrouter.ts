@@ -23,7 +23,7 @@ import {
 	processAiSdkStreamPart,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
-import { applyToolCacheOptions } from "../transform/cache-breakpoints"
+import { applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
 
 import { BaseProvider } from "./base-provider"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
@@ -176,10 +176,18 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 					}
 				: undefined
 
+		// Breakpoint 1: System prompt caching — inject as cached system message
+		// OpenRouter routes to Anthropic models that benefit from cache annotations
+		const effectiveSystemPrompt = applySystemPromptCaching(
+			systemPrompt,
+			aiSdkMessages,
+			metadata?.systemProviderOptions,
+		)
+
 		try {
 			const result = streamText({
 				model: openrouter.chat(modelId),
-				system: systemPrompt || undefined,
+				system: effectiveSystemPrompt,
 				messages: aiSdkMessages,
 				maxOutputTokens: maxTokens && maxTokens > 0 ? maxTokens : undefined,
 				temperature,

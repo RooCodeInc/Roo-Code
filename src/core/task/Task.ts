@@ -4348,17 +4348,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const messagesWithoutImages = maybeRemoveImageBlocks(mergedForApi, this.api)
 		const cleanConversationHistory = this.buildCleanConversationHistory(messagesWithoutImages)
 
-		// Breakpoint 1: System prompt caching — prepend as cached system message
-		// AI SDK v6 does not support systemProviderOptions on the system string parameter.
-		// Instead, we pass the system prompt as a system message in the messages array
-		// with providerOptions for cache control. Providers receive "" for systemPrompt
-		// and use the system message in messages[] instead.
-		cleanConversationHistory.unshift({
-			role: "system",
-			content: systemPrompt,
-			providerOptions: UNIVERSAL_CACHE_OPTIONS,
-		} as unknown as RooMessage)
-
 		// Breakpoints 3-4: Apply cache breakpoints to the last 2 non-assistant messages
 		applyCacheBreakpoints(cleanConversationHistory.filter(isRooRoleMessage))
 
@@ -4419,6 +4408,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			taskId: this.taskId,
 			suppressPreviousResponseId: this.skipPrevResponseIdOnce,
 			toolProviderOptions: UNIVERSAL_CACHE_OPTIONS,
+			// Breakpoint 1: System prompt caching — cache-aware providers use this
+			// to inject the system prompt as a cached system message via
+			// applySystemPromptCaching(), since AI SDK v6 does not support
+			// providerOptions on the `system` string parameter.
+			systemProviderOptions: UNIVERSAL_CACHE_OPTIONS,
 			// Include tools whenever they are present.
 			...(shouldIncludeTools
 				? {
@@ -4438,7 +4432,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Reset the flag after using it
 		this.skipPrevResponseIdOnce = false
 
-		const stream = this.api.createMessage("", cleanConversationHistory, metadata)
+		const stream = this.api.createMessage(systemPrompt, cleanConversationHistory, metadata)
 		const iterator = stream[Symbol.asyncIterator]()
 
 		// Set up abort handling - when the signal is aborted, clean up the controller reference

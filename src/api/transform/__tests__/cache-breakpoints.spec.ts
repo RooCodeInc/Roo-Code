@@ -1,4 +1,9 @@
-import { applyCacheBreakpoints, applyToolCacheOptions, UNIVERSAL_CACHE_OPTIONS } from "../cache-breakpoints"
+import {
+	applyCacheBreakpoints,
+	applyToolCacheOptions,
+	applySystemPromptCaching,
+	UNIVERSAL_CACHE_OPTIONS,
+} from "../cache-breakpoints"
 
 type TestMessage = { role: string; providerOptions?: Record<string, Record<string, unknown>> }
 
@@ -222,5 +227,48 @@ describe("applyToolCacheOptions", () => {
 		> = {}
 		applyToolCacheOptions(tools, { anthropic: { cacheControl: { type: "ephemeral" } } })
 		expect(tools).toEqual({})
+	})
+})
+
+describe("applySystemPromptCaching", () => {
+	it("injects system prompt as cached system message and returns undefined", () => {
+		const messages: TestMessage[] = [{ role: "user" }]
+		const result = applySystemPromptCaching("You are helpful", messages, UNIVERSAL_CACHE_OPTIONS)
+		expect(result).toBeUndefined()
+		expect(messages).toHaveLength(2)
+		expect(messages[0]).toEqual({
+			role: "system",
+			content: "You are helpful",
+			providerOptions: UNIVERSAL_CACHE_OPTIONS,
+		})
+	})
+
+	it("returns undefined (no system prompt) when systemPrompt is empty string", () => {
+		const messages: TestMessage[] = [{ role: "user" }]
+		const result = applySystemPromptCaching("", messages, UNIVERSAL_CACHE_OPTIONS)
+		expect(result).toBeUndefined()
+		expect(messages).toHaveLength(1) // no message injected
+	})
+
+	it("returns undefined when systemPrompt is undefined", () => {
+		const messages: TestMessage[] = [{ role: "user" }]
+		const result = applySystemPromptCaching(undefined, messages, UNIVERSAL_CACHE_OPTIONS)
+		expect(result).toBeUndefined()
+		expect(messages).toHaveLength(1) // no message injected
+	})
+
+	it("returns systemPrompt unchanged when cacheOptions is undefined", () => {
+		const messages: TestMessage[] = [{ role: "user" }]
+		const result = applySystemPromptCaching("You are helpful", messages, undefined)
+		expect(result).toBe("You are helpful")
+		expect(messages).toHaveLength(1) // no message injected
+	})
+
+	it("prepends system message before existing messages", () => {
+		const messages: TestMessage[] = [{ role: "user" }, { role: "assistant" }, { role: "user" }]
+		applySystemPromptCaching("System prompt", messages, UNIVERSAL_CACHE_OPTIONS)
+		expect(messages).toHaveLength(4)
+		expect(messages[0].role).toBe("system")
+		expect(messages[1].role).toBe("user")
 	})
 })

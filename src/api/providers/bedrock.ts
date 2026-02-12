@@ -32,7 +32,7 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
-import { applyToolCacheOptions } from "../transform/cache-breakpoints"
+import { applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
 import { getModelParams } from "../transform/model-params"
 import { shouldUseReasoningBudget } from "../../shared/api"
 import { BaseProvider } from "./base-provider"
@@ -253,10 +253,18 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 		}
 
-		// Prompt caching
+		// Prompt caching — only apply cache annotations when caching is enabled.
+		// This avoids the need to strip annotations after the fact, and keeps
+		// Bedrock decoupled from knowledge of what Task.ts stamps universally.
 		const usePromptCache = Boolean(this.options.awsUsePromptCache && this.supportsAwsPromptCache(modelConfig))
 
-		// Strip cache annotations when caching is disabled
+		// Breakpoint 1: System prompt caching — only when Bedrock prompt cache is enabled
+		const effectiveSystemPrompt = usePromptCache
+			? applySystemPromptCaching(systemPrompt, aiSdkMessages, metadata?.systemProviderOptions)
+			: systemPrompt || undefined
+
+		// Strip non-Bedrock cache annotations from messages when caching is disabled,
+		// and strip Bedrock-specific annotations when caching is disabled.
 		if (!usePromptCache) {
 			for (const msg of aiSdkMessages) {
 				if (msg.providerOptions?.bedrock) {
@@ -280,7 +288,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		// Cast providerOptions to any to bypass strict JSONObject typing — the AI SDK accepts the correct runtime values
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: this.provider(modelConfig.id),
-			system: systemPrompt || undefined,
+			system: effectiveSystemPrompt,
 			messages: aiSdkMessages,
 			temperature: modelConfig.temperature ?? (this.options.modelTemperature as number),
 			maxOutputTokens: modelConfig.maxTokens || (modelConfig.info.maxTokens as number),
