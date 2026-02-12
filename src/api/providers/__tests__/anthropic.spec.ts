@@ -438,6 +438,47 @@ describe("AnthropicHandler", () => {
 			expect(callArgs.messages[1].content).toEqual([{ type: "text", text: "Hi" }])
 		})
 
+		it("should apply cache control providerOptions to mapped message copies (not originals)", async () => {
+			setupStreamTextMock([{ type: "text-delta", text: "test" }])
+
+			// Messages with extra legacy fields — .map() creates new objects to strip them
+			const messagesWithExtraFields = [
+				{
+					role: "user",
+					content: [{ type: "text" as const, text: "Hello" }],
+				},
+				{
+					role: "assistant",
+					content: [{ type: "text" as const, text: "Hi" }],
+					reasoning_details: [{ type: "thinking", thinking: "deep thoughts" }],
+				},
+				{
+					role: "user",
+					content: [{ type: "text" as const, text: "Follow up" }],
+				},
+			] as any
+
+			const stream = handler.createMessage(systemPrompt, messagesWithExtraFields)
+
+			for await (const _chunk of stream) {
+				// Consume stream
+			}
+
+			expect(mockStreamText).toHaveBeenCalledTimes(1)
+			const callArgs = mockStreamText.mock.calls[0]![0]
+
+			// The last user message (index 2) should have cache control applied
+			const lastUserMsg = callArgs.messages[2]
+			expect(lastUserMsg.role).toBe("user")
+			expect(lastUserMsg.providerOptions).toBeDefined()
+			expect(lastUserMsg.providerOptions.anthropic).toEqual({
+				cacheControl: { type: "ephemeral" },
+			})
+
+			// And it should still NOT have reasoning_details (stripped by .map())
+			expect(lastUserMsg).not.toHaveProperty("reasoning_details")
+		})
+
 		it("should pass system prompt via system param with systemProviderOptions for cache control", async () => {
 			setupStreamTextMock([{ type: "text-delta", text: "test" }])
 
