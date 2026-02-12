@@ -5,6 +5,29 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.53] - 2026-02-12
+
+### Changed
+
+- **Auto-Approve by Default**: The CLI now auto-approves all actions (tools, commands, browser, MCP) by default. Followup questions auto-select the first suggestion after a 60-second timeout.
+- **New `--require-approval` Flag**: Replaced `-y`/`--yes`/`--dangerously-skip-permissions` flags with a new `-a, --require-approval` flag for users who want manual approval prompts before actions execute.
+
+### Fixed
+
+- Spamming the escape key to cancel a running task no longer crashes the cli.
+
+## [0.0.52] - 2026-02-09
+
+### Added
+
+- **Linux Support**: Added support for `linux-arm64`.
+
+## [0.0.51] - 2026-02-06
+
+### Changed
+
+- **Default Model Update**: Changed the default model from Opus 4.5 to Opus 4.6 for improved performance and capabilities
+
 ## [0.0.50] - 2026-02-05
 
 ### Added
