@@ -754,7 +754,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							(msg) => msg.ask === "completion_result" || msg.say === "completion_result",
 						)
 					if (isCompletedSubtaskForClick) {
-						startNewTask()
+						// Let the backend decide: return to parent or clear
+						vscode.postMessage({ type: "askResponse", askResponse: "yesButtonClicked" })
 					} else {
 						// Only send text/images if they exist
 						if (trimmedInput || (images && images.length > 0)) {
@@ -773,9 +774,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					}
 					break
 				case "completion_result":
-				case "resume_completed_task":
-					// Waiting for feedback, but we can just present a new task button
+					// Non-resume completion: start a new task
 					startNewTask()
+					break
+				case "resume_completed_task":
+					// Let the backend decide: return to parent or clear
+					vscode.postMessage({ type: "askResponse", askResponse: "yesButtonClicked" })
 					break
 				case "command_output":
 					vscode.postMessage({ type: "terminalOperation", terminalOperation: "continue" })

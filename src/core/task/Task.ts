@@ -2173,10 +2173,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// the task first.
 		this.apiConversationHistory = await this.getSavedApiConversationHistory()
 
+		// Non-interactive say messages (e.g. rpi_autopilot, rpi_council) can appear after
+		// completion_result and should not prevent detection of the completed state.
+		const NON_INTERACTIVE_SAYS = new Set(["rpi_autopilot", "rpi_council"])
 		const lastClineMessage = this.clineMessages
 			.slice()
 			.reverse()
-			.find((m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task")) // Could be multiple resume tasks.
+			.find(
+				(m) =>
+					!(m.ask === "resume_task" || m.ask === "resume_completed_task") &&
+					!(m.type === "say" && m.say && NON_INTERACTIVE_SAYS.has(m.say)),
+			) // Could be multiple resume tasks.
 
 		let askType: ClineAsk
 		if (lastClineMessage?.ask === "completion_result") {
@@ -2197,6 +2204,43 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			await this.say("user_feedback", text, images)
 			responseText = text
 			responseImages = images
+		}
+
+		// If this is a completed subtask being resumed, try to return to the parent
+		// instead of restarting the task loop (which would cause an unnecessary API call).
+		if (askType === "resume_completed_task" && this.parentTaskId) {
+			const provider = this.providerRef.deref()
+			if (provider) {
+				try {
+					const { historyItem: parentHistory } = await provider.getTaskWithId(this.parentTaskId)
+
+					if (parentHistory.status === "delegated" || parentHistory.awaitingChildId === this.taskId) {
+						// Parent is still waiting for this subtask — resume via delegation
+						const completionMsg = this.clineMessages
+							.slice()
+							.reverse()
+							.find((m) => m.ask === "completion_result" || m.say === "completion_result")
+
+						await provider.reopenParentFromDelegation({
+							parentTaskId: this.parentTaskId,
+							childTaskId: this.taskId,
+							completionResultSummary: completionMsg?.text ?? "Subtask completed.",
+						})
+						return // Parent resumed — don't restart the loop
+					} else {
+						// Parent was already resumed — just clear this subtask
+						await provider.clearTask()
+						return
+					}
+				} catch (error) {
+					console.error(
+						`[resumeTaskFromHistory] Failed to reopen parent: ${
+							error instanceof Error ? error.message : String(error)
+						}`,
+					)
+					// Fallthrough: if it fails, restart the loop normally
+				}
+			}
 		}
 
 		// Make sure that the api conversation history can be resumed by the API,
