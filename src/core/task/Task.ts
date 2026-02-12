@@ -158,7 +158,7 @@ import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
 import { MessageManager } from "../message-manager"
 import { validateAndFixToolResultIds } from "./validateToolResultIds"
 import { mergeConsecutiveApiMessages } from "./mergeConsecutiveApiMessages"
-import { appendEnvironmentDetails, removeEnvironmentDetailsBlocks } from "./appendEnvironmentDetails"
+import { appendEnvironmentDetails, stripAppendedEnvironmentDetails } from "./appendEnvironmentDetails"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -2628,7 +2628,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// then append env details to the last text or tool_result block.
 				// This avoids creating standalone trailing text blocks which can break
 				// interleaved-thinking models like DeepSeek reasoner.
-				const contentWithoutEnvDetails = removeEnvironmentDetailsBlocks(lastUserMsg.content)
+				const contentWithoutEnvDetails = stripAppendedEnvironmentDetails(lastUserMsg.content)
 				lastUserMsg.content = appendEnvironmentDetails(contentWithoutEnvDetails, environmentDetails)
 			}
 		}
@@ -2799,7 +2799,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Remove any existing environment_details blocks before adding fresh ones.
 			// This prevents duplicate environment details when resuming tasks,
 			// where the old user message content may already contain environment details from the previous session.
-			const contentWithoutEnvDetails = removeEnvironmentDetailsBlocks(parsedUserContent)
+			const contentWithoutEnvDetails = stripAppendedEnvironmentDetails(parsedUserContent)
 
 			// Append environment details to the last text or tool_result block.
 			// This avoids creating standalone trailing text blocks which can break
