@@ -810,6 +810,11 @@
 			"description": "Choose which provider profile the RPI council engine uses. Default uses the currently selected API configuration.",
 			"useCurrentConfig": "Use currently selected API configuration"
 		},
+		"condensingApiConfig": {
+			"label": "Condensing API configuration",
+			"description": "Choose which provider profile to use for context condensing. Default uses the currently selected API configuration. Useful for using a cheaper or faster model for condensing.",
+			"useCurrentConfig": "Use currently selected API configuration"
+		},
 		"maxGitStatusFiles": {
 			"label": "Git status max files",
 			"description": "Maximum number of file entries to include in git status context. Set to 0 to disable. Branch info is always shown when > 0."

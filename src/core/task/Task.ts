@@ -1814,6 +1814,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		const filesReadByRoo = await this.getFilesReadByRooSafely("condenseContext")
 
+		const condensingApiHandler = await this.getCondensingApiHandler()
+
 		const {
 			messages,
 			summary,
@@ -1824,7 +1826,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			condenseId,
 		} = await summarizeConversation({
 			messages: this.apiConversationHistory,
-			apiHandler: this.api,
+			apiHandler: condensingApiHandler,
 			systemPrompt,
 			taskId: this.taskId,
 			isAutomaticTrigger: false,
@@ -3923,13 +3925,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Generate environment details to include in the condensed summary
 			const environmentDetails = await getEnvironmentDetails(this, true)
 
+			const condensingApiHandler = await this.getCondensingApiHandler()
+
 			// Force aggressive truncation by keeping only 75% of the conversation history
 			const truncateResult = await manageContext({
 				messages: this.apiConversationHistory,
 				totalTokens: contextTokens || 0,
 				maxTokens,
 				contextWindow,
-				apiHandler: this.api,
+				apiHandler: condensingApiHandler,
 				autoCondenseContext: true,
 				autoCondenseContextPercent: FORCED_CONTEXT_REDUCTION_PERCENT,
 				systemPrompt: await this.getSystemPrompt(),
@@ -4148,12 +4152,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					: undefined
 
 			try {
+				const condensingApiHandler = await this.getCondensingApiHandler()
+
 				const truncateResult = await manageContext({
 					messages: this.apiConversationHistory,
 					totalTokens: contextTokens,
 					maxTokens,
 					contextWindow,
-					apiHandler: this.api,
+					apiHandler: condensingApiHandler,
 					autoCondenseContext,
 					autoCondenseContextPercent,
 					systemPrompt,
@@ -4769,6 +4775,38 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		return this.apiConfiguration
+	}
+
+	private async getCondensingApiHandler(): Promise<ApiHandler> {
+		const provider = this.providerRef.deref()
+		if (!provider) {
+			return this.api
+		}
+
+		const condensingApiConfigId = provider.contextProxy.getValue("condensingApiConfigId")
+		if (!condensingApiConfigId) {
+			return this.api
+		}
+
+		const listApiConfigMeta = provider.contextProxy.getValue("listApiConfigMeta") ?? []
+		if (!listApiConfigMeta.find(({ id }) => id === condensingApiConfigId)) {
+			return this.api
+		}
+
+		try {
+			const { name: _name, ...providerSettings } = await provider.providerSettingsManager.getProfile({
+				id: condensingApiConfigId,
+			})
+			if (providerSettings.apiProvider) {
+				return buildApiHandler(providerSettings)
+			}
+		} catch (error) {
+			console.error(
+				`[Task#getCondensingApiHandler] Failed: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+
+		return this.api
 	}
 
 	public async initializeRpiAutopilot(): Promise<void> {

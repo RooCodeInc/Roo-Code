@@ -213,6 +213,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		rpiAutopilotEnabled: true,
 		rpiCouncilEngineEnabled: true,
 		rpiCouncilApiConfigId: "",
+		condensingApiConfigId: "",
 		remoteControlEnabled: false,
 		taskSyncEnabled: false,
 		featureRoomoteControlEnabled: false,

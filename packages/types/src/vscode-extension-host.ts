@@ -341,6 +341,7 @@ export type ExtensionState = Pick<
 	| "rpiAutopilotEnabled"
 	| "rpiCouncilEngineEnabled"
 	| "rpiCouncilApiConfigId"
+	| "condensingApiConfigId"
 > & {
 	version: string
 	clineMessages: ClineMessage[]
