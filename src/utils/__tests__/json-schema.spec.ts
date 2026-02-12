@@ -585,4 +585,105 @@ describe("normalizeToolSchema", () => {
 			})
 		})
 	})
+
+	describe("$ref stripping", () => {
+		it("should strip $ref at the top level", () => {
+			const input = {
+				$ref: "#/components/schemas/Foo",
+				type: "object",
+				properties: {
+					name: { type: "string" },
+				},
+			}
+
+			const result = normalizeToolSchema(input)
+
+			expect(result.$ref).toBeUndefined()
+			expect(result.type).toBe("object")
+			expect(result.properties).toBeDefined()
+		})
+
+		it("should strip $ref in nested properties", () => {
+			const input = {
+				type: "object",
+				properties: {
+					response: {
+						$ref: "#/components/schemas/PlanningLogResponse",
+						type: "object",
+						properties: {
+							status: { type: "string" },
+						},
+					},
+				},
+			}
+
+			const result = normalizeToolSchema(input)
+
+			const props = result.properties as Record<string, Record<string, unknown>>
+			expect(props.response.$ref).toBeUndefined()
+			expect(props.response.type).toBe("object")
+		})
+
+		it("should strip $ref in deeply nested array items", () => {
+			const input = {
+				type: "object",
+				properties: {
+					items: {
+						type: "array",
+						items: {
+							type: "object",
+							properties: {
+								ref_field: {
+									$ref: "#/components/schemas/Nested",
+									type: "string",
+								},
+							},
+						},
+					},
+				},
+			}
+
+			const result = normalizeToolSchema(input)
+
+			const props = result.properties as Record<string, Record<string, unknown>>
+			const itemsSchema = props.items.items as Record<string, unknown>
+			const nestedProps = itemsSchema.properties as Record<string, Record<string, unknown>>
+			expect(nestedProps.ref_field.$ref).toBeUndefined()
+			expect(nestedProps.ref_field.type).toBe("string")
+		})
+
+		it("should handle $ref-only schema without crashing", () => {
+			const input = {
+				$ref: "#/components/schemas/Foo",
+			}
+
+			const result = normalizeToolSchema(input)
+
+			expect(result.$ref).toBeUndefined()
+			// Result is an empty schema (permissive) — acceptable for tool inputs
+			expect(result).not.toBeNull()
+			expect(result).toEqual({})
+		})
+
+		it("should strip $ref inside anyOf variants", () => {
+			const input = {
+				type: "object",
+				properties: {
+					field: {
+						anyOf: [
+							{ $ref: "#/components/schemas/TypeA", type: "string" },
+							{ type: "null" },
+						],
+					},
+				},
+			}
+
+			const result = normalizeToolSchema(input)
+
+			const props = result.properties as Record<string, Record<string, unknown>>
+			const anyOf = props.field.anyOf as Record<string, unknown>[]
+			expect(anyOf[0].$ref).toBeUndefined()
+			expect(anyOf[0].type).toBe("string")
+		})
+	})
 })

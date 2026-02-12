@@ -148,7 +148,11 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			? { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" }
 			: undefined
 
-		const aiSdkMessages = messages as ModelMessage[]
+		// Strip extra fields from legacy ApiMessage objects that survive JSON
+		// deserialization (e.g. reasoning_details causes provider 400 errors).
+		const aiSdkMessages = messages.map(
+			({ reasoning_details, reasoning_content, ...rest }: any) => rest,
+		) as ModelMessage[]
 
 		const openrouter = this.createOpenRouterProvider({ reasoning, headers })
 
