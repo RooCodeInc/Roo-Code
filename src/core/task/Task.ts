@@ -3959,7 +3959,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						.get<boolean>("newTaskRequireTodos", false),
 					isStealthModel: modelInfo?.isStealthModel,
 				},
-				undefined, // todoList
+				this.todoList,
 				this.api.getModel().id,
 				provider.getSkillsManager(),
 			)

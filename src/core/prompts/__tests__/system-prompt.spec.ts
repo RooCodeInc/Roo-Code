@@ -575,6 +575,82 @@ describe("SYSTEM_PROMPT", () => {
 		expect(prompt).toContain("OBJECTIVE")
 	})
 
+	it("should include CURRENT TODO LIST section when todoList is provided", async () => {
+		const todoList = [
+			{ id: "1", content: "Fix authentication bug", status: "completed" as const },
+			{ id: "2", content: "Write integration tests", status: "in_progress" as const },
+			{ id: "3", content: "Update documentation", status: "pending" as const },
+		]
+
+		const prompt = await SYSTEM_PROMPT(
+			mockContext,
+			"/test/path",
+			false,
+			undefined, // mcpHub
+			undefined, // diffStrategy
+			defaultModeSlug, // mode
+			undefined, // customModePrompts
+			undefined, // customModes
+			undefined, // globalCustomInstructions
+			experiments,
+			undefined, // language
+			undefined, // rooIgnoreInstructions
+			undefined, // settings
+			todoList,
+		)
+
+		expect(prompt).toContain("CURRENT TODO LIST")
+		expect(prompt).toContain("Fix authentication bug")
+		expect(prompt).toContain("Completed")
+		expect(prompt).toContain("Write integration tests")
+		expect(prompt).toContain("In Progress")
+		expect(prompt).toContain("Update documentation")
+		expect(prompt).toContain("Pending")
+		expect(prompt).toContain("Do not use attempt_completion until all items are completed.")
+	})
+
+	it("should not include CURRENT TODO LIST section when todoList is empty", async () => {
+		const prompt = await SYSTEM_PROMPT(
+			mockContext,
+			"/test/path",
+			false,
+			undefined, // mcpHub
+			undefined, // diffStrategy
+			defaultModeSlug, // mode
+			undefined, // customModePrompts
+			undefined, // customModes
+			undefined, // globalCustomInstructions
+			experiments,
+			undefined, // language
+			undefined, // rooIgnoreInstructions
+			undefined, // settings
+			[], // empty todoList
+		)
+
+		expect(prompt).not.toContain("CURRENT TODO LIST")
+	})
+
+	it("should not include CURRENT TODO LIST section when todoList is undefined", async () => {
+		const prompt = await SYSTEM_PROMPT(
+			mockContext,
+			"/test/path",
+			false,
+			undefined, // mcpHub
+			undefined, // diffStrategy
+			defaultModeSlug, // mode
+			undefined, // customModePrompts
+			undefined, // customModes
+			undefined, // globalCustomInstructions
+			experiments,
+			undefined, // language
+			undefined, // rooIgnoreInstructions
+			undefined, // settings
+			undefined, // no todoList
+		)
+
+		expect(prompt).not.toContain("CURRENT TODO LIST")
+	})
+
 	afterAll(() => {
 		vi.restoreAllMocks()
 	})

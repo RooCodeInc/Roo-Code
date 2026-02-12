@@ -61,7 +61,7 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 				.get<boolean>("newTaskRequireTodos", false),
 			isStealthModel: modelInfo?.isStealthModel,
 		},
-		undefined, // todoList
+		provider.getCurrentTask()?.todoList,
 		undefined, // modelId
 		provider.getSkillsManager(),
 	)
