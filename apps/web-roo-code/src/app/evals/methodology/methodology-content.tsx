@@ -5,8 +5,6 @@ import {
 	ArrowRight,
 	FlaskConical,
 	Code,
-	GitBranch,
-	Building2,
 	AlertTriangle,
 	BarChart3,
 	Terminal,
@@ -17,6 +15,7 @@ import {
 	DollarSign,
 	Zap,
 	Trophy,
+	Scale,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -476,126 +475,112 @@ export function MethodologyContent() {
 						Engineer Roles
 					</motion.h2>
 
-					<motion.p
+					<motion.div
 						className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg"
 						variants={fadeUpVariants}>
-						Not every task needs the same level of engineering. Three role tiers, each with different
-						exercise difficulty and scoring weights.
-					</motion.p>
+						<p>
+							Each role represents a different engineering seniority level. We test models against
+							exercises matched to that role&apos;s complexity, then score using role-specific weights.
+						</p>
+					</motion.div>
 
-					{/* Role cards */}
-					<motion.div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-3" variants={containerVariants}>
-						{/* Junior */}
+					{/* How weights differ */}
+					<motion.div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2" variants={containerVariants}>
 						<motion.div
-							className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-emerald-500/40 dark:hover:border-emerald-400/30 hover:shadow-xl hover:shadow-emerald-500/5"
+							className="rounded-xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm"
 							variants={cardVariants}>
-							<div className="absolute inset-0 rounded-2xl bg-emerald-500/[0.03] dark:bg-emerald-600/[0.05] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-							<div className="relative z-10 p-6">
-								<div className="flex size-11 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/30">
-									<Code className="size-5 text-emerald-700 dark:text-emerald-300" />
+							<p className="text-sm font-semibold text-foreground">Different Roles, Different Weights</p>
+							<p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+								Each role has its own scoring weights. A model that&apos;s great for simple tasks might
+								not rank for architecture decisions.
+							</p>
+						</motion.div>
+						<motion.div
+							className="rounded-xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm"
+							variants={cardVariants}>
+							<p className="text-sm font-semibold text-foreground">Matched Exercises</p>
+							<p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+								Budget roles get simpler exercises. Complex roles get harder ones. The difficulty and
+								scoring shift together so recommendations stay relevant.
+							</p>
+						</motion.div>
+					</motion.div>
+
+					{/* Budget vs Complex comparison */}
+					<motion.div className="mt-8" variants={fadeUpVariants}>
+						<h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+							How Scoring Weights Shift
+						</h3>
+						<div className="overflow-hidden rounded-xl border border-border/50 backdrop-blur-sm">
+							{/* Budget roles */}
+							<div className="flex items-center gap-4 border-b border-border/30 bg-card/50 p-4 sm:p-5">
+								<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 dark:bg-emerald-500/15">
+									<DollarSign className="size-5 text-emerald-600 dark:text-emerald-400" />
 								</div>
-								<h3 className="mt-4 text-lg font-bold">Junior Engineer</h3>
-								<p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-									Easy + Medium exercises. Boilerplate, simple bug fixes, test generation. Scoring
-									emphasizes{" "}
-									<strong className="text-emerald-600 dark:text-emerald-400">cost efficiency</strong>.
-								</p>
-								{/* Weight breakdown */}
-								<div className="mt-5 space-y-2">
-									<p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-										Scoring Weights
+								<div className="min-w-0 flex-1">
+									<p className="text-sm font-semibold text-foreground">Budget Roles</p>
+									<p className="mt-0.5 text-xs text-muted-foreground">
+										Cost and speed matter most. Simpler exercises where many models succeed, so
+										efficiency breaks the tie.
 									</p>
-									<div className="flex h-3 overflow-hidden rounded-full">
-										<div className="bg-green-500" style={{ width: "35%" }} title="Success 35%" />
-										<div className="bg-blue-500" style={{ width: "15%" }} title="Quality 15%" />
-										<div className="bg-amber-500" style={{ width: "35%" }} title="Cost 35%" />
-										<div className="bg-purple-500" style={{ width: "15%" }} title="Speed 15%" />
+								</div>
+								<div className="hidden shrink-0 sm:block">
+									<div className="flex h-3 w-40 overflow-hidden rounded-full">
+										<div className="bg-green-500/70" style={{ width: "30%" }} title="Success" />
+										<div className="bg-blue-500/70" style={{ width: "10%" }} title="Quality" />
+										<div className="bg-amber-500" style={{ width: "40%" }} title="Cost" />
+										<div className="bg-purple-500" style={{ width: "20%" }} title="Speed" />
 									</div>
-									<div className="flex justify-between text-[10px] text-muted-foreground">
-										<span>Success 35%</span>
-										<span>Quality 15%</span>
-										<span>Cost 35%</span>
-										<span>Speed 15%</span>
+									<div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
+										<span>Success</span>
+										<span>Quality</span>
+										<span className="font-semibold text-amber-600 dark:text-amber-400">Cost ↑</span>
+										<span>Speed</span>
 									</div>
 								</div>
 							</div>
-						</motion.div>
-
-						{/* Senior */}
-						<motion.div
-							className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-blue-500/40 dark:hover:border-blue-400/30 hover:shadow-xl hover:shadow-blue-500/5"
-							variants={cardVariants}>
-							<div className="absolute inset-0 rounded-2xl bg-blue-500/[0.03] dark:bg-blue-600/[0.05] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-							<div className="relative z-10 p-6">
-								<div className="flex size-11 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30">
-									<GitBranch className="size-5 text-blue-700 dark:text-blue-300" />
+							{/* Complex roles */}
+							<div className="flex items-center gap-4 bg-card/30 p-4 sm:p-5">
+								<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 dark:bg-violet-500/15">
+									<Scale className="size-5 text-violet-600 dark:text-violet-400" />
 								</div>
-								<h3 className="mt-4 text-lg font-bold">Senior Engineer</h3>
-								<p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-									Medium exercises. Feature development, debugging, code review. Balanced scoring with
-									emphasis on{" "}
-									<strong className="text-blue-600 dark:text-blue-400">success rate + quality</strong>
-									.
-								</p>
-								{/* Weight breakdown */}
-								<div className="mt-5 space-y-2">
-									<p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-										Scoring Weights
+								<div className="min-w-0 flex-1">
+									<p className="text-sm font-semibold text-foreground">Complex Roles</p>
+									<p className="mt-0.5 text-xs text-muted-foreground">
+										Reasoning quality and success rate matter most. Harder exercises where only the
+										best models deliver.
 									</p>
-									<div className="flex h-3 overflow-hidden rounded-full">
-										<div className="bg-green-500" style={{ width: "40%" }} title="Success 40%" />
-										<div className="bg-blue-500" style={{ width: "25%" }} title="Quality 25%" />
-										<div className="bg-amber-500" style={{ width: "20%" }} title="Cost 20%" />
-										<div className="bg-purple-500" style={{ width: "15%" }} title="Speed 15%" />
+								</div>
+								<div className="hidden shrink-0 sm:block">
+									<div className="flex h-3 w-40 overflow-hidden rounded-full">
+										<div className="bg-green-500" style={{ width: "40%" }} title="Success" />
+										<div className="bg-blue-500" style={{ width: "30%" }} title="Quality" />
+										<div className="bg-amber-500/70" style={{ width: "15%" }} title="Cost" />
+										<div className="bg-purple-500/70" style={{ width: "15%" }} title="Speed" />
 									</div>
-									<div className="flex justify-between text-[10px] text-muted-foreground">
-										<span>Success 40%</span>
-										<span>Quality 25%</span>
-										<span>Cost 20%</span>
-										<span>Speed 15%</span>
+									<div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
+										<span className="font-semibold text-green-600 dark:text-green-400">
+											Success ↑
+										</span>
+										<span className="font-semibold text-blue-600 dark:text-blue-400">
+											Quality ↑
+										</span>
+										<span>Cost</span>
+										<span>Speed</span>
 									</div>
 								</div>
 							</div>
-						</motion.div>
+						</div>
+					</motion.div>
 
-						{/* Staff */}
-						<motion.div
-							className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-amber-500/40 dark:hover:border-amber-400/30 hover:shadow-xl hover:shadow-amber-500/5"
-							variants={cardVariants}>
-							<div className="absolute inset-0 rounded-2xl bg-amber-500/[0.03] dark:bg-amber-600/[0.05] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-							<div className="relative z-10 p-6">
-								<div className="flex size-11 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/30">
-									<Building2 className="size-5 text-amber-700 dark:text-amber-300" />
-								</div>
-								<h3 className="mt-4 text-lg font-bold">Staff Engineer</h3>
-								<p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-									Hard exercises. Architecture, ambiguous requirements, system design. Scoring
-									prioritizes{" "}
-									<strong className="text-amber-600 dark:text-amber-400">
-										reasoning quality + correctness
-									</strong>
-									.
-								</p>
-								{/* Weight breakdown */}
-								<div className="mt-5 space-y-2">
-									<p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-										Scoring Weights
-									</p>
-									<div className="flex h-3 overflow-hidden rounded-full">
-										<div className="bg-green-500" style={{ width: "45%" }} title="Success 45%" />
-										<div className="bg-blue-500" style={{ width: "30%" }} title="Quality 30%" />
-										<div className="bg-amber-500" style={{ width: "10%" }} title="Cost 10%" />
-										<div className="bg-purple-500" style={{ width: "15%" }} title="Speed 15%" />
-									</div>
-									<div className="flex justify-between text-[10px] text-muted-foreground">
-										<span>Success 45%</span>
-										<span>Quality 30%</span>
-										<span>Cost 10%</span>
-										<span>Speed 15%</span>
-									</div>
-								</div>
-							</div>
-						</motion.div>
+					{/* Link to roles page */}
+					<motion.div className="mt-8" variants={fadeUpVariants}>
+						<Link
+							href="/evals/workers"
+							className="group inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+							Browse all engineer roles
+							<ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+						</Link>
 					</motion.div>
 				</div>
 			</motion.section>
