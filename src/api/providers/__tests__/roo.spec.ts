@@ -930,6 +930,47 @@ describe("RooHandler", () => {
 			expect(usageChunk.cacheWriteTokens).toBe(489)
 			expect(usageChunk.cacheReadTokens).toBe(12_572)
 		})
+
+		it("parses anthropic cache metrics from usage.raw.prompt_tokens_details when metadata cache fields are absent", async () => {
+			const anthropicHandler = new RooHandler({
+				apiModelId: "anthropic/claude-haiku-4.5",
+			})
+
+			mockStreamText.mockReturnValue(
+				createMockStreamResult({
+					usage: {
+						inputTokens: 13_026,
+						outputTokens: 147,
+						raw: {
+							prompt_tokens_details: {
+								cached_tokens: 12_547,
+								cache_write_tokens: 470,
+							},
+						},
+					} as any,
+					providerMetadata: {
+						gateway: {
+							cost: "0.01157975",
+						},
+					},
+				}),
+			)
+
+			const stream = anthropicHandler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toBeDefined()
+			expect(usageChunk.inputTokens).toBe(13_026)
+			expect(usageChunk.outputTokens).toBe(147)
+			expect(usageChunk.nonCachedInputTokens).toBe(9)
+			expect(usageChunk.cacheWriteTokens).toBe(470)
+			expect(usageChunk.cacheReadTokens).toBe(12_547)
+			expect(usageChunk.totalCost).toBe(0.01157975)
+		})
 	})
 
 	describe("isAiSdkProvider", () => {

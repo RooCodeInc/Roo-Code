@@ -179,10 +179,45 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 			const usage = await result.usage
 			const totalUsage = await result.totalUsage
+			const rawUsage = (usage as any)?.raw as Record<string, unknown> | undefined
+			const toFiniteNumber = (value: unknown): number | undefined => {
+				if (typeof value === "number" && Number.isFinite(value)) {
+					return value
+				}
+				if (typeof value === "string") {
+					const parsed = Number(value)
+					return Number.isFinite(parsed) ? parsed : undefined
+				}
+				return undefined
+			}
+			const firstFiniteNumber = (...values: unknown[]): number | undefined => {
+				for (const value of values) {
+					const parsed = toFiniteNumber(value)
+					if (parsed !== undefined) {
+						return parsed
+					}
+				}
+				return undefined
+			}
+
 			const usageRecord = {
 				...(usage as any),
-				inputTokens: totalUsage.inputTokens ?? usage.inputTokens ?? 0,
-				outputTokens: totalUsage.outputTokens ?? usage.outputTokens ?? 0,
+				inputTokens: firstFiniteNumber(
+					totalUsage.inputTokens,
+					(usage as any).inputTokens,
+					(usage as any).promptTokens,
+					(usage as any).prompt_tokens,
+					rawUsage?.prompt_tokens,
+					rawUsage?.input_tokens,
+				),
+				outputTokens: firstFiniteNumber(
+					totalUsage.outputTokens,
+					(usage as any).outputTokens,
+					(usage as any).completionTokens,
+					(usage as any).completion_tokens,
+					rawUsage?.completion_tokens,
+					rawUsage?.output_tokens,
+				),
 			}
 			const { chunk } = normalizeProviderUsage({
 				provider: "openrouter",

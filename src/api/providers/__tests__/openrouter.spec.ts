@@ -414,6 +414,88 @@ describe("OpenRouterHandler", () => {
 			})
 		})
 
+		it("includes cache metrics from usage.raw.prompt_tokens_details when metadata is absent", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "test", id: "1" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({
+					inputTokens: 13_026,
+					outputTokens: 147,
+					totalTokens: 13_173,
+					raw: {
+						prompt_tokens_details: {
+							cached_tokens: 12_547,
+							cache_write_tokens: 470,
+						},
+					},
+				}),
+				totalUsage: Promise.resolve({ inputTokens: 13_026, outputTokens: 147, totalTokens: 13_173 }),
+				providerMetadata: Promise.resolve(undefined),
+			})
+
+			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
+			const chunks = []
+
+			for await (const chunk of generator) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toMatchObject({
+				type: "usage",
+				inputTokens: 13_026,
+				outputTokens: 147,
+				cacheReadTokens: 12_547,
+				cacheWriteTokens: 470,
+			})
+		})
+
+		it("derives input/output totals from raw prompt/completion tokens when top-level usage totals are missing", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "test", id: "1" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({
+					raw: {
+						prompt_tokens: 13_026,
+						completion_tokens: 147,
+						prompt_tokens_details: {
+							cached_tokens: 12_547,
+							cache_write_tokens: 470,
+						},
+					},
+				}),
+				totalUsage: Promise.resolve({}),
+				providerMetadata: Promise.resolve(undefined),
+			})
+
+			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
+			const chunks = []
+
+			for await (const chunk of generator) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toMatchObject({
+				type: "usage",
+				inputTokens: 13_026,
+				outputTokens: 147,
+				cacheReadTokens: 12_547,
+				cacheWriteTokens: 470,
+				nonCachedInputTokens: 9,
+			})
+		})
+
 		it("handles experimental_providerMetadata fallback", async () => {
 			const handler = new OpenRouterHandler(mockOptions)
 

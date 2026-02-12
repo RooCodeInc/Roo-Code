@@ -340,6 +340,46 @@ describe("VercelAiGatewayHandler", () => {
 			})
 		})
 
+		it("parses anthropic cache metrics from usage.raw.prompt_tokens_details when metadata cache fields are absent", async () => {
+			mockStreamText.mockReturnValue(
+				createMockStreamResult({
+					usage: {
+						inputTokens: 13_026,
+						outputTokens: 147,
+						raw: {
+							prompt_tokens_details: {
+								cached_tokens: 12_547,
+								cache_write_tokens: 470,
+							},
+						},
+					} as any,
+					providerMetadata: {},
+				}),
+			)
+
+			const handler = new VercelAiGatewayHandler(mockOptions)
+			const systemPrompt = "You are a helpful assistant."
+			const messages: RooMessage[] = [{ role: "user", content: "Hello" }]
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((chunk) => chunk.type === "usage")
+			expect(usageChunk).toEqual({
+				type: "usage",
+				inputTokens: 13_026,
+				nonCachedInputTokens: 9,
+				outputTokens: 147,
+				cacheWriteTokens: 470,
+				cacheReadTokens: 12_547,
+				totalCost: undefined,
+				reasoningTokens: undefined,
+			})
+		})
+
 		describe("native tool calling", () => {
 			const testTools = [
 				{

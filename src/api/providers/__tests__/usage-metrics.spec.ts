@@ -153,4 +153,110 @@ describe("normalizeProviderUsage", () => {
 		expect(normalized.chunk.cacheReadTokens).toBeUndefined()
 		expect(normalized.chunk.cacheWriteTokens).toBeUndefined()
 	})
+
+	it("parses OpenRouter-style prompt_tokens_details from raw usage", () => {
+		const normalized = normalizeProviderUsage({
+			provider: "openrouter",
+			apiProtocol: "openai",
+			usage: {
+				inputTokens: 13_026,
+				outputTokens: 147,
+				raw: {
+					prompt_tokens_details: {
+						cached_tokens: 12_547,
+						cache_write_tokens: 470,
+					},
+				},
+			},
+			modelInfo: baseModelInfo,
+		})
+
+		expect(normalized.chunk.inputTokens).toBe(13_026)
+		expect(normalized.chunk.cacheReadTokens).toBe(12_547)
+		expect(normalized.chunk.cacheWriteTokens).toBe(470)
+		expect(normalized.chunk.nonCachedInputTokens).toBe(9)
+	})
+
+	it("parses cache write/read tokens from prompt_tokens_details for anthropic protocol", () => {
+		const normalized = normalizeProviderUsage({
+			provider: "anthropic",
+			apiProtocol: "anthropic",
+			usage: {
+				inputTokens: 13_026,
+				outputTokens: 147,
+				raw: {
+					prompt_tokens_details: {
+						cached_tokens: 12_547,
+						cache_write_tokens: 470,
+					},
+				},
+			},
+			modelInfo: baseModelInfo,
+		})
+
+		expect(normalized.chunk.cacheReadTokens).toBe(12_547)
+		expect(normalized.chunk.cacheWriteTokens).toBe(470)
+		expect(normalized.chunk.nonCachedInputTokens).toBe(9)
+	})
+
+	it("parses reasoning tokens from completion_tokens_details", () => {
+		const normalized = normalizeProviderUsage({
+			provider: "openrouter",
+			apiProtocol: "openai",
+			usage: {
+				inputTokens: 100,
+				outputTokens: 30,
+				raw: {
+					completion_tokens_details: {
+						reasoning_tokens: 7,
+					},
+				},
+			},
+			modelInfo: baseModelInfo,
+		})
+
+		expect(normalized.chunk.reasoningTokens).toBe(7)
+	})
+
+	it("uses usage/raw cost candidates when provider metadata cost is absent", () => {
+		const normalized = normalizeProviderUsage({
+			provider: "openrouter",
+			apiProtocol: "openai",
+			usage: {
+				inputTokens: 100,
+				outputTokens: 20,
+				cost: 0.12345 as any,
+				raw: {
+					cost: 0.98765,
+				},
+			} as any,
+			modelInfo: baseModelInfo,
+		})
+
+		expect(normalized.chunk.totalCost).toBe(0.12345)
+	})
+
+	it("falls back to prompt/completion token totals from raw usage", () => {
+		const normalized = normalizeProviderUsage({
+			provider: "openrouter",
+			apiProtocol: "openai",
+			usage: {
+				raw: {
+					prompt_tokens: 200,
+					completion_tokens: 30,
+					prompt_tokens_details: {
+						cached_tokens: 100,
+						cache_write_tokens: 50,
+					},
+				},
+			},
+			modelInfo: baseModelInfo,
+		})
+
+		expect(normalized.chunk.inputTokens).toBe(200)
+		expect(normalized.chunk.outputTokens).toBe(30)
+		expect(normalized.chunk.cacheReadTokens).toBe(100)
+		expect(normalized.chunk.cacheWriteTokens).toBe(50)
+		expect(normalized.chunk.nonCachedInputTokens).toBe(50)
+	})
 })

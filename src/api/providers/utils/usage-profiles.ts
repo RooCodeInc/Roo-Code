@@ -29,14 +29,20 @@ const OPENAI_BASE_PROFILE: UsageProfile = {
 	deriveNonCachedInputFromTotalMinusCache: true,
 	metrics: {
 		inputTokensTotal: {
-			usage: ["inputTokens"],
+			usage: ["inputTokens", "promptTokens", "prompt_tokens"],
+			raw: ["input_tokens", "prompt_tokens"],
 		},
 		outputTokens: {
-			usage: ["outputTokens"],
+			usage: ["outputTokens", "completionTokens", "completion_tokens"],
+			raw: ["output_tokens", "completion_tokens"],
 		},
 		cacheWriteTokens: {
 			usage: ["inputTokenDetails.cacheWriteTokens", "cacheCreationInputTokens", "cache_creation_input_tokens"],
-			raw: ["cache_creation_input_tokens", "cacheCreationInputTokens"],
+			raw: [
+				"cache_creation_input_tokens",
+				"cacheCreationInputTokens",
+				"prompt_tokens_details.cache_write_tokens",
+			],
 		},
 		cacheReadTokens: {
 			usage: [
@@ -47,6 +53,7 @@ const OPENAI_BASE_PROFILE: UsageProfile = {
 			],
 			raw: [
 				"input_tokens_details.cached_tokens",
+				"prompt_tokens_details.cached_tokens",
 				"cache_read_input_tokens",
 				"cacheReadInputTokens",
 				"cached_tokens",
@@ -54,10 +61,12 @@ const OPENAI_BASE_PROFILE: UsageProfile = {
 		},
 		reasoningTokens: {
 			usage: ["outputTokenDetails.reasoningTokens", "reasoningTokens", "details.reasoningTokens"],
-			raw: ["output_tokens_details.reasoning_tokens"],
+			raw: ["output_tokens_details.reasoning_tokens", "completion_tokens_details.reasoning_tokens"],
 		},
 		totalCostCandidate: {
 			providerMetadata: ["gateway.cost"],
+			usage: ["cost"],
+			raw: ["cost"],
 		},
 	},
 }
@@ -69,7 +78,8 @@ const ANTHROPIC_BASE_PROFILE: UsageProfile = {
 	deriveNonCachedInputFromTotalMinusCache: true,
 	metrics: {
 		inputTokensTotal: {
-			usage: ["inputTokens"],
+			usage: ["inputTokens", "promptTokens", "prompt_tokens"],
+			raw: ["input_tokens", "prompt_tokens"],
 		},
 		inputTokensNonCached: {
 			usage: ["inputTokenDetails.noCacheTokens"],
@@ -77,14 +87,14 @@ const ANTHROPIC_BASE_PROFILE: UsageProfile = {
 			raw: ["input_tokens"],
 		},
 		outputTokens: {
-			usage: ["outputTokens"],
+			usage: ["outputTokens", "completionTokens", "completion_tokens"],
 			providerMetadata: ["anthropic.usage.output_tokens"],
-			raw: ["output_tokens"],
+			raw: ["output_tokens", "completion_tokens"],
 		},
 		cacheWriteTokens: {
 			providerMetadata: ["anthropic.usage.cache_creation_input_tokens", "anthropic.cacheCreationInputTokens"],
 			usage: ["inputTokenDetails.cacheWriteTokens", "cacheCreationInputTokens", "cache_creation_input_tokens"],
-			raw: ["cache_creation_input_tokens", "cacheCreationInputTokens"],
+			raw: ["cache_creation_input_tokens", "cacheCreationInputTokens", "prompt_tokens_details.cache_write_tokens"],
 		},
 		cacheReadTokens: {
 			providerMetadata: [
@@ -98,19 +108,22 @@ const ANTHROPIC_BASE_PROFILE: UsageProfile = {
 				"details.cachedInputTokens",
 				"cached_tokens",
 			],
-			raw: [
-				"cache_read_input_tokens",
-				"cacheReadInputTokens",
-				"input_tokens_details.cached_tokens",
-				"cached_tokens",
-			],
+				raw: [
+					"cache_read_input_tokens",
+					"cacheReadInputTokens",
+					"input_tokens_details.cached_tokens",
+					"prompt_tokens_details.cached_tokens",
+					"cached_tokens",
+				],
 		},
 		reasoningTokens: {
 			usage: ["outputTokenDetails.reasoningTokens", "reasoningTokens", "details.reasoningTokens"],
-			raw: ["output_tokens_details.reasoning_tokens"],
+			raw: ["output_tokens_details.reasoning_tokens", "completion_tokens_details.reasoning_tokens"],
 		},
 		totalCostCandidate: {
 			providerMetadata: ["gateway.cost"],
+			usage: ["cost"],
+			raw: ["cost"],
 		},
 	},
 }
@@ -144,7 +157,7 @@ const PROFILES: Record<string, Partial<UsageProfile>> = {
 					"details.cachedInputTokens",
 					"cached_tokens",
 				],
-				raw: ["input_tokens_details.cached_tokens", "cache_read_input_tokens", "cached_tokens"],
+				raw: ["input_tokens_details.cached_tokens", "prompt_tokens_details.cached_tokens", "cache_read_input_tokens", "cached_tokens"],
 			},
 		},
 	},
@@ -200,12 +213,12 @@ const PROFILES: Record<string, Partial<UsageProfile>> = {
 					"details.cachedInputTokens",
 					"cached_tokens",
 				],
-				raw: ["input_tokens_details.cached_tokens", "cached_tokens"],
+				raw: ["input_tokens_details.cached_tokens", "prompt_tokens_details.cached_tokens", "cached_tokens"],
 			},
 			reasoningTokens: {
 				providerMetadata: ["openai.reasoningTokens"],
 				usage: ["outputTokenDetails.reasoningTokens", "reasoningTokens", "details.reasoningTokens"],
-				raw: ["output_tokens_details.reasoning_tokens"],
+				raw: ["output_tokens_details.reasoning_tokens", "completion_tokens_details.reasoning_tokens"],
 			},
 		},
 	},
@@ -216,12 +229,12 @@ const PROFILES: Record<string, Partial<UsageProfile>> = {
 			cacheReadTokens: {
 				providerMetadata: ["openai.cachedPromptTokens"],
 				usage: ["inputTokenDetails.cacheReadTokens", "cachedInputTokens", "details.cachedInputTokens"],
-				raw: ["input_tokens_details.cached_tokens", "cached_tokens"],
+				raw: ["input_tokens_details.cached_tokens", "prompt_tokens_details.cached_tokens", "cached_tokens"],
 			},
 			reasoningTokens: {
 				providerMetadata: ["openai.reasoningTokens"],
 				usage: ["outputTokenDetails.reasoningTokens", "reasoningTokens", "details.reasoningTokens"],
-				raw: ["output_tokens_details.reasoning_tokens"],
+				raw: ["output_tokens_details.reasoning_tokens", "completion_tokens_details.reasoning_tokens"],
 			},
 		},
 	},
@@ -232,12 +245,12 @@ const PROFILES: Record<string, Partial<UsageProfile>> = {
 			cacheReadTokens: {
 				providerMetadata: ["openai.cachedPromptTokens"],
 				usage: ["inputTokenDetails.cacheReadTokens", "cachedInputTokens", "details.cachedInputTokens"],
-				raw: ["input_tokens_details.cached_tokens", "cached_tokens"],
+				raw: ["input_tokens_details.cached_tokens", "prompt_tokens_details.cached_tokens", "cached_tokens"],
 			},
 			reasoningTokens: {
 				providerMetadata: ["openai.reasoningTokens"],
 				usage: ["outputTokenDetails.reasoningTokens", "reasoningTokens", "details.reasoningTokens"],
-				raw: ["output_tokens_details.reasoning_tokens"],
+				raw: ["output_tokens_details.reasoning_tokens", "completion_tokens_details.reasoning_tokens"],
 			},
 		},
 	},
@@ -270,7 +283,7 @@ const PROFILES: Record<string, Partial<UsageProfile>> = {
 					"details.cachedInputTokens",
 					"cached_tokens",
 				],
-				raw: ["input_tokens_details.cached_tokens", "cached_tokens"],
+				raw: ["input_tokens_details.cached_tokens", "prompt_tokens_details.cached_tokens", "cached_tokens"],
 			},
 			reasoningTokens: {
 				providerMetadata: [
@@ -279,7 +292,7 @@ const PROFILES: Record<string, Partial<UsageProfile>> = {
 					"openrouter.output_tokens_details.reasoning_tokens",
 				],
 				usage: ["outputTokenDetails.reasoningTokens", "reasoningTokens", "details.reasoningTokens"],
-				raw: ["output_tokens_details.reasoning_tokens"],
+				raw: ["output_tokens_details.reasoning_tokens", "completion_tokens_details.reasoning_tokens"],
 			},
 		},
 	},
@@ -298,7 +311,7 @@ const PROFILES: Record<string, Partial<UsageProfile>> = {
 			cacheReadTokens: {
 				providerMetadata: ["requesty.usage.cachedTokens"],
 				usage: ["inputTokenDetails.cacheReadTokens", "cachedInputTokens", "details.cachedInputTokens"],
-				raw: ["input_tokens_details.cached_tokens", "cached_tokens"],
+				raw: ["input_tokens_details.cached_tokens", "prompt_tokens_details.cached_tokens", "cached_tokens"],
 			},
 		},
 	},
@@ -317,7 +330,7 @@ const PROFILES: Record<string, Partial<UsageProfile>> = {
 			cacheReadTokens: {
 				providerMetadata: ["fireworks.promptCacheHitTokens"],
 				usage: ["inputTokenDetails.cacheReadTokens", "cachedInputTokens", "details.cachedInputTokens"],
-				raw: ["input_tokens_details.cached_tokens", "cached_tokens"],
+				raw: ["input_tokens_details.cached_tokens", "prompt_tokens_details.cached_tokens", "cached_tokens"],
 			},
 		},
 	},
@@ -336,7 +349,7 @@ const PROFILES: Record<string, Partial<UsageProfile>> = {
 			cacheReadTokens: {
 				providerMetadata: ["deepseek.promptCacheHitTokens"],
 				usage: ["inputTokenDetails.cacheReadTokens", "cachedInputTokens", "details.cachedInputTokens"],
-				raw: ["input_tokens_details.cached_tokens", "cached_tokens"],
+				raw: ["input_tokens_details.cached_tokens", "prompt_tokens_details.cached_tokens", "cached_tokens"],
 			},
 		},
 	},
@@ -347,7 +360,7 @@ const PROFILES: Record<string, Partial<UsageProfile>> = {
 			cacheReadTokens: {
 				providerMetadata: ["xai.cachedPromptTokens"],
 				usage: ["inputTokenDetails.cacheReadTokens", "cachedInputTokens", "details.cachedInputTokens"],
-				raw: ["input_tokens_details.cached_tokens", "cached_tokens"],
+				raw: ["input_tokens_details.cached_tokens", "prompt_tokens_details.cached_tokens", "cached_tokens"],
 			},
 		},
 	},
@@ -358,7 +371,7 @@ const PROFILES: Record<string, Partial<UsageProfile>> = {
 			cacheReadTokens: {
 				providerMetadata: ["azure.promptCacheHitTokens"],
 				usage: ["inputTokenDetails.cacheReadTokens", "cachedInputTokens", "details.cachedInputTokens"],
-				raw: ["input_tokens_details.cached_tokens", "cached_tokens"],
+				raw: ["input_tokens_details.cached_tokens", "prompt_tokens_details.cached_tokens", "cached_tokens"],
 			},
 			cacheWriteTokens: {
 				usage: ["inputTokenDetails.cacheWriteTokens"],
@@ -380,7 +393,7 @@ const PROFILES: Record<string, Partial<UsageProfile>> = {
 			cacheReadTokens: {
 				providerMetadata: ["sambanova.promptCacheHitTokens"],
 				usage: ["inputTokenDetails.cacheReadTokens", "cachedInputTokens", "details.cachedInputTokens"],
-				raw: ["input_tokens_details.cached_tokens", "cached_tokens"],
+				raw: ["input_tokens_details.cached_tokens", "prompt_tokens_details.cached_tokens", "cached_tokens"],
 			},
 		},
 	},
@@ -451,7 +464,12 @@ const PROFILES: Record<string, Partial<UsageProfile>> = {
 					"details.cachedInputTokens",
 					"cached_tokens",
 				],
-				raw: ["input_tokens_details.cached_tokens", "cache_read_input_tokens", "cached_tokens"],
+				raw: [
+					"input_tokens_details.cached_tokens",
+					"prompt_tokens_details.cached_tokens",
+					"cache_read_input_tokens",
+					"cached_tokens",
+				],
 			},
 			totalCostCandidate: {
 				providerMetadata: ["roo.cost", "gateway.cost"],
@@ -490,7 +508,12 @@ const PROFILES: Record<string, Partial<UsageProfile>> = {
 					"details.cachedInputTokens",
 					"cached_tokens",
 				],
-				raw: ["input_tokens_details.cached_tokens", "cache_read_input_tokens", "cached_tokens"],
+				raw: [
+					"input_tokens_details.cached_tokens",
+					"prompt_tokens_details.cached_tokens",
+					"cache_read_input_tokens",
+					"cached_tokens",
+				],
 			},
 			totalCostCandidate: {
 				providerMetadata: ["gateway.cost"],
