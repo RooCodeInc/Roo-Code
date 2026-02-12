@@ -43,7 +43,6 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 		promptSourcePath,
 		"--workspace",
 		workspacePath,
-		"--yes",
 		"--reasoning-effort",
 		"disabled",
 		"--oneshot",
