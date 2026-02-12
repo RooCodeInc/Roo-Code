@@ -864,3 +864,27 @@ export function getCloudSetupUrl(candidate: ModelCandidate): string {
 	})
 	return `https://app.roocode.com/sign-up?${params.toString()}`
 }
+
+// ── Model Timeline Data ────────────────────────────────────────────────────
+// Historical model performance over time for the landing page chart.
+
+export type ModelTimelineEntry = {
+	modelName: string
+	provider: string
+	releaseDate: string // ISO date
+	score: number // our eval score (total %)
+	costPerRun: number // total cost for the full eval run
+}
+
+export const MODEL_TIMELINE: ModelTimelineEntry[] = [
+	{ modelName: "Claude 3.5 Sonnet", provider: "anthropic", releaseDate: "2025-06-20", score: 90, costPerRun: 24.98 },
+	{ modelName: "GPT-4.1", provider: "openai", releaseDate: "2025-08-14", score: 91, costPerRun: 38.64 },
+	{ modelName: "Claude 3.7 Sonnet", provider: "anthropic", releaseDate: "2025-09-15", score: 95, costPerRun: 37.58 },
+	{ modelName: "Gemini 2.5 Pro", provider: "google", releaseDate: "2025-10-01", score: 96, costPerRun: 57.8 },
+	{ modelName: "Claude Sonnet 4", provider: "anthropic", releaseDate: "2025-11-01", score: 98, costPerRun: 39.61 },
+	{ modelName: "GPT-5 Mini", provider: "openai", releaseDate: "2025-12-01", score: 99, costPerRun: 3.34 },
+	{ modelName: "Claude Sonnet 4.5", provider: "anthropic", releaseDate: "2026-01-15", score: 100, costPerRun: 38.43 },
+	{ modelName: "GPT 5.2 (Med)", provider: "openai", releaseDate: "2026-01-20", score: 100, costPerRun: 12.5 },
+	{ modelName: "Claude Opus 4.6", provider: "anthropic", releaseDate: "2026-02-01", score: 100, costPerRun: 49.48 },
+	{ modelName: "Gemini 3 Pro", provider: "google", releaseDate: "2026-02-05", score: 100, costPerRun: 33.06 },
+]

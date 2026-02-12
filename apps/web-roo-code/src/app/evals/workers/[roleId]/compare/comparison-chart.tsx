@@ -15,7 +15,20 @@ import {
 	Download,
 	FlaskConical,
 } from "lucide-react"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts"
+import {
+	BarChart,
+	Bar,
+	XAxis,
+	YAxis,
+	Tooltip,
+	ResponsiveContainer,
+	Legend,
+	ScatterChart,
+	Scatter,
+	ZAxis,
+	Cell,
+	ReferenceArea,
+} from "recharts"
 
 import type { ModelCandidate, LanguageScores, EngineerRole, RoleRecommendation } from "@/lib/mock-recommendations"
 import { TASKS_PER_DAY } from "@/lib/mock-recommendations"
@@ -225,6 +238,20 @@ const DIMENSION_COLORS = {
 	speed: "#a855f7", // purple
 }
 
+const TIER_COLORS: Record<string, string> = {
+	best: "#22c55e", // green
+	recommended: "#3b82f6", // blue
+	situational: "#eab308", // yellow
+	"not-recommended": "#ef4444", // red
+}
+
+const TIER_LABELS: Record<string, string> = {
+	best: "Best",
+	recommended: "Recommended",
+	situational: "Situational",
+	"not-recommended": "Not Recommended",
+}
+
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 /** Normalize cost: lower cost → higher bar (0–100). */
@@ -344,6 +371,62 @@ function CustomTooltip({
 	)
 }
 
+// ── Scatter Tooltip ─────────────────────────────────────────────────────────
+
+function ScatterTooltip({
+	active,
+	payload,
+}: {
+	active?: boolean
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	payload?: any[]
+}) {
+	if (!active || !payload || !payload.length) return null
+
+	const data = payload[0]?.payload as
+		| {
+				name?: string
+				dailyCost?: number
+				score?: number
+				successRate?: number
+				tier?: string
+		  }
+		| undefined
+
+	if (!data) return null
+
+	return (
+		<div className="rounded-xl border border-border/50 bg-card/95 p-4 shadow-2xl backdrop-blur-md">
+			<p className="mb-2.5 text-sm font-bold tracking-tight">{data.name}</p>
+			<div className="space-y-1.5">
+				<div className="flex items-center gap-2.5 text-xs">
+					<span
+						className="size-2.5 rounded-full ring-1 ring-white/10"
+						style={{ backgroundColor: TIER_COLORS[data.tier ?? "situational"] }}
+					/>
+					<span className="text-muted-foreground">Tier:</span>
+					<span className="font-semibold">{TIER_LABELS[data.tier ?? "situational"]}</span>
+				</div>
+				<div className="flex items-center gap-2.5 text-xs">
+					<span className="size-2.5 rounded-full bg-amber-400 ring-1 ring-white/10" />
+					<span className="text-muted-foreground">Daily Salary:</span>
+					<span className="font-semibold tabular-nums">${data.dailyCost}/day</span>
+				</div>
+				<div className="flex items-center gap-2.5 text-xs">
+					<span className="size-2.5 rounded-full bg-blue-400 ring-1 ring-white/10" />
+					<span className="text-muted-foreground">Interview Score:</span>
+					<span className="font-semibold tabular-nums">{data.score}</span>
+				</div>
+				<div className="flex items-center gap-2.5 text-xs">
+					<span className="size-2.5 rounded-full bg-green-400 ring-1 ring-white/10" />
+					<span className="text-muted-foreground">Success Rate:</span>
+					<span className="font-semibold tabular-nums">{data.successRate}%</span>
+				</div>
+			</div>
+		</div>
+	)
+}
+
 // ── Main Component ──────────────────────────────────────────────────────────
 
 interface ComparisonChartProps {
@@ -379,6 +462,25 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 	)
 
 	const chartHeight = Math.max(400, chartData.length * 100)
+
+	// Scatter plot data: value map of daily cost vs composite score
+	const scatterData = useMemo(
+		() =>
+			filteredCandidates.map((c) => ({
+				name: c.displayName,
+				dailyCost: Math.round(c.estimatedDailyCost),
+				score: c.compositeScore,
+				successRate: c.successRate,
+				tier: c.tier,
+				// ZAxis size: map success rate to dot size (60–400 range)
+				dotSize: Math.round(60 + (c.successRate / 100) * 340),
+			})),
+		[filteredCandidates],
+	)
+
+	// Determine axis domains for scatter plot
+	const scatterMaxCost = useMemo(() => Math.max(...scatterData.map((d) => d.dailyCost), 10), [scatterData])
+	const scatterMinScore = useMemo(() => Math.min(...scatterData.map((d) => d.score), 50), [scatterData])
 
 	// Providers that actually appear in data
 	const activeProviders = useMemo(() => {
@@ -622,6 +724,124 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 								))}
 							</div>
 						</div>
+					</motion.section>
+
+					{/* ── Value Map Scatter Chart ────────────────────────────── */}
+					<motion.section
+						className="rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm"
+						variants={fadeUpVariants}>
+						<div className="mb-1 flex items-center gap-2.5">
+							<h2 className="text-lg font-bold tracking-tight">Value Map: Salary vs Interview Score</h2>
+						</div>
+						<p className="mb-4 text-xs leading-relaxed text-muted-foreground/80">
+							Upper-left = best value. Each dot is a candidate model. Size reflects success rate.
+						</p>
+
+						{/* Tier legend */}
+						<div className="mb-4 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+							{Object.entries(TIER_COLORS).map(([tier, color]) => (
+								<div key={tier} className="flex items-center gap-1.5">
+									<span
+										className="size-2.5 rounded-full ring-1 ring-white/10"
+										style={{ backgroundColor: color }}
+									/>
+									<span>{TIER_LABELS[tier]}</span>
+								</div>
+							))}
+						</div>
+
+						{scatterData.length === 0 ? (
+							<div className="flex h-48 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/50 text-muted-foreground">
+								<SlidersHorizontal className="size-6 text-muted-foreground/50" />
+								<p className="text-sm">No candidates match the current filters.</p>
+								<p className="text-xs text-muted-foreground/60">
+									Try adjusting the provider or success rate filters.
+								</p>
+							</div>
+						) : (
+							<div className="rounded-xl bg-background/30 p-2">
+								<ResponsiveContainer width="100%" height={420}>
+									<ScatterChart margin={{ top: 20, right: 30, bottom: 20, left: 10 }}>
+										<XAxis
+											type="number"
+											dataKey="dailyCost"
+											name="Daily Salary"
+											domain={[0, Math.ceil(scatterMaxCost * 1.1)]}
+											tickFormatter={(v: number) => `$${v}`}
+											stroke="hsl(var(--muted-foreground))"
+											strokeOpacity={0.3}
+											tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+											axisLine={false}
+											label={{
+												value: "Daily Salary ($)",
+												position: "insideBottom",
+												offset: -10,
+												style: { fontSize: 11, fill: "hsl(var(--muted-foreground))" },
+											}}
+										/>
+										<YAxis
+											type="number"
+											dataKey="score"
+											name="Interview Score"
+											domain={[Math.max(0, scatterMinScore - 10), 100]}
+											stroke="hsl(var(--muted-foreground))"
+											strokeOpacity={0.3}
+											tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+											axisLine={false}
+											label={{
+												value: "Interview Score",
+												angle: -90,
+												position: "insideLeft",
+												offset: 10,
+												style: { fontSize: 11, fill: "hsl(var(--muted-foreground))" },
+											}}
+										/>
+										<ZAxis type="number" dataKey="dotSize" range={[60, 400]} />
+										{/* Sweet spot reference zone: upper-left quadrant */}
+										<ReferenceArea
+											x1={0}
+											x2={Math.ceil(scatterMaxCost * 0.4)}
+											y1={80}
+											y2={100}
+											fill="hsl(var(--foreground))"
+											fillOpacity={0.03}
+											stroke="hsl(var(--foreground))"
+											strokeOpacity={0.08}
+											strokeDasharray="4 4"
+											label={{
+												value: "Sweet Spot",
+												position: "insideTopLeft",
+												style: {
+													fontSize: 10,
+													fill: "hsl(var(--muted-foreground))",
+													fontWeight: 500,
+												},
+											}}
+										/>
+										<Tooltip
+											content={<ScatterTooltip />}
+											cursor={{
+												strokeDasharray: "3 3",
+												stroke: "hsl(var(--muted-foreground))",
+												strokeOpacity: 0.3,
+											}}
+										/>
+										<Scatter data={scatterData} name="Candidates">
+											{scatterData.map((entry, index) => (
+												<Cell
+													key={`scatter-cell-${index}`}
+													fill={TIER_COLORS[entry.tier] ?? "#94a3b8"}
+													fillOpacity={0.85}
+													stroke={TIER_COLORS[entry.tier] ?? "#94a3b8"}
+													strokeWidth={1}
+													strokeOpacity={0.4}
+												/>
+											))}
+										</Scatter>
+									</ScatterChart>
+								</ResponsiveContainer>
+							</div>
+						)}
 					</motion.section>
 
 					{/* ── Chart Section ──────────────────────────────────────── */}

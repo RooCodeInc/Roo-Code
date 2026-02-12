@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import { motion } from "framer-motion"
 import {
 	Code,
@@ -19,9 +20,10 @@ import {
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import Link from "next/link"
+import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts"
 
 import type { EngineerRole, RoleRecommendation } from "@/lib/mock-recommendations"
-import { TASKS_PER_DAY } from "@/lib/mock-recommendations"
+import { TASKS_PER_DAY, MODEL_TIMELINE } from "@/lib/mock-recommendations"
 
 // ── Icon Mapping ────────────────────────────────────────────────────────────
 
@@ -185,6 +187,82 @@ const backgroundVariants = {
 	},
 }
 
+// ── Provider Colors ─────────────────────────────────────────────────────────
+
+const PROVIDER_COLORS: Record<string, string> = {
+	anthropic: "#fb923c", // orange-400
+	openai: "#4ade80", // green-400
+	google: "#60a5fa", // blue-400
+	xai: "#c084fc", // purple-400
+	deepseek: "#22d3ee", // cyan-400
+	moonshot: "#f472b6", // pink-400
+}
+
+const PROVIDER_DISPLAY: Record<string, string> = {
+	anthropic: "Anthropic",
+	openai: "OpenAI",
+	google: "Google",
+	xai: "xAI",
+	deepseek: "DeepSeek",
+	moonshot: "Moonshot",
+}
+
+// ── Timeline Tooltip ────────────────────────────────────────────────────────
+
+function TimelineTooltip({
+	active,
+	payload,
+}: {
+	active?: boolean
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	payload?: any[]
+}) {
+	if (!active || !payload || !payload.length) return null
+
+	const data = payload[0]?.payload as
+		| {
+				modelName?: string
+				provider?: string
+				score?: number
+				costPerRun?: number
+				dateLabel?: string
+		  }
+		| undefined
+
+	if (!data) return null
+
+	return (
+		<div className="rounded-xl border border-border/50 bg-card/95 p-4 shadow-2xl backdrop-blur-md">
+			<p className="mb-2.5 text-sm font-bold tracking-tight">{data.modelName}</p>
+			<div className="space-y-1.5">
+				<div className="flex items-center gap-2.5 text-xs">
+					<span
+						className="size-2.5 rounded-full ring-1 ring-white/10"
+						style={{ backgroundColor: PROVIDER_COLORS[data.provider ?? ""] ?? "#94a3b8" }}
+					/>
+					<span className="text-muted-foreground">Provider:</span>
+					<span className="font-semibold">{PROVIDER_DISPLAY[data.provider ?? ""] ?? data.provider}</span>
+				</div>
+				<div className="flex items-center gap-2.5 text-xs">
+					<span className="size-2.5 rounded-full bg-blue-400 ring-1 ring-white/10" />
+					<span className="text-muted-foreground">Release:</span>
+					<span className="font-semibold">{data.dateLabel}</span>
+				</div>
+				<div className="flex items-center gap-2.5 text-xs">
+					<span className="size-2.5 rounded-full bg-emerald-400 ring-1 ring-white/10" />
+					<span className="text-muted-foreground">Eval Score:</span>
+					<span className="font-semibold tabular-nums">{data.score}%</span>
+				</div>
+				<div className="flex items-center gap-2.5 text-xs">
+					<span className="size-2.5 rounded-full bg-amber-400 ring-1 ring-white/10" />
+					<span className="text-muted-foreground">Cost per Run:</span>
+					<span className="font-semibold tabular-nums">${data.costPerRun?.toFixed(2)}</span>
+				</div>
+			</div>
+		</div>
+	)
+}
+
 // ── Sub-Components ──────────────────────────────────────────────────────────
 
 function StatPill({ icon: Icon, value, label }: { icon: LucideIcon; value: string; label: string }) {
@@ -217,6 +295,33 @@ export function WorkersContent({
 	lastUpdated,
 }: WorkersContentProps) {
 	const recByRole = new Map(recommendations.map((r) => [r.roleId, r]))
+
+	// ── Timeline scatter data ──────────────────────────────────────────────
+	const timelineData = useMemo(() => {
+		const maxCost = Math.max(...MODEL_TIMELINE.map((m) => m.costPerRun))
+		return MODEL_TIMELINE.map((m) => {
+			const date = new Date(m.releaseDate)
+			return {
+				modelName: m.modelName,
+				provider: m.provider,
+				score: m.score,
+				costPerRun: m.costPerRun,
+				// numeric X for scatter: days since epoch
+				dateNum: date.getTime(),
+				dateLabel: date.toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+				// Dot size: inversely proportional to cost (cheaper = bigger dot)
+				dotSize: Math.round(60 + (1 - m.costPerRun / maxCost) * 340),
+			}
+		}).sort((a, b) => a.dateNum - b.dateNum)
+	}, [])
+
+	// Trend line endpoints for the timeline
+	const trendLine = useMemo(() => {
+		if (timelineData.length < 2) return null
+		const first = timelineData[0]!
+		const last = timelineData[timelineData.length - 1]!
+		return { x1: first.dateNum, y1: first.score, x2: last.dateNum, y2: last.score }
+	}, [timelineData])
 
 	return (
 		<>
@@ -451,6 +556,164 @@ export function WorkersContent({
 								</motion.div>
 							)
 						})}
+					</motion.div>
+				</div>
+			</section>
+
+			{/* ── AI Coding Capability Over Time ─────────────────────────── */}
+			<section className="relative overflow-hidden pb-24 pt-8">
+				{/* Subtle atmospheric background */}
+				<motion.div
+					className="absolute inset-0"
+					initial="hidden"
+					whileInView="visible"
+					viewport={{ once: true }}
+					variants={backgroundVariants}>
+					<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1200px] -translate-x-1/2">
+						<div className="absolute left-1/2 top-1/2 h-[600px] w-full -translate-x-1/2 -translate-y-1/2 rounded-[100%] bg-emerald-500/5 dark:bg-emerald-600/8 blur-[120px]" />
+					</div>
+				</motion.div>
+
+				<div className="container relative z-10 mx-auto max-w-screen-lg px-4 sm:px-6 lg:px-8">
+					<motion.div
+						initial="hidden"
+						whileInView="visible"
+						viewport={{ once: true }}
+						variants={containerVariants}>
+						{/* Section header */}
+						<motion.div className="mb-8 text-center" variants={fadeUpVariants}>
+							<h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+								AI Coding Capability{" "}
+								<span className="bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">
+									Over Time
+								</span>
+							</h2>
+							<p className="mt-3 text-base leading-relaxed text-muted-foreground md:text-lg">
+								Pass rates on our eval suite, by model release date. The best ones now score 100%.
+							</p>
+						</motion.div>
+
+						{/* Chart container */}
+						<motion.div
+							className="rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm"
+							variants={fadeUpVariants}>
+							{/* Provider legend */}
+							<div className="mb-4 flex flex-wrap items-center justify-center gap-5 text-xs text-muted-foreground">
+								{Object.entries(PROVIDER_COLORS)
+									.filter(([provider]) => MODEL_TIMELINE.some((m) => m.provider === provider))
+									.map(([provider, color]) => (
+										<div key={provider} className="flex items-center gap-1.5">
+											<span
+												className="size-2.5 rounded-full ring-1 ring-white/10"
+												style={{ backgroundColor: color }}
+											/>
+											<span>{PROVIDER_DISPLAY[provider] ?? provider}</span>
+										</div>
+									))}
+								<div className="flex items-center gap-1.5 text-muted-foreground/60">
+									<span className="text-[10px]">●</span>
+									<span>Bigger dot = lower cost</span>
+								</div>
+							</div>
+
+							<div className="rounded-xl bg-background/30 p-2">
+								<ResponsiveContainer width="100%" height={420}>
+									<ScatterChart margin={{ top: 20, right: 30, bottom: 20, left: 10 }}>
+										<XAxis
+											type="number"
+											dataKey="dateNum"
+											name="Release Date"
+											domain={["dataMin", "dataMax"]}
+											tickFormatter={(v: number) => {
+												const d = new Date(v)
+												return d.toLocaleDateString("en-US", {
+													month: "short",
+													year: "2-digit",
+												})
+											}}
+											stroke="hsl(var(--muted-foreground))"
+											strokeOpacity={0.3}
+											tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+											axisLine={false}
+											label={{
+												value: "Release Date",
+												position: "insideBottom",
+												offset: -10,
+												style: { fontSize: 11, fill: "hsl(var(--muted-foreground))" },
+											}}
+										/>
+										<YAxis
+											type="number"
+											dataKey="score"
+											name="Eval Score"
+											domain={[85, 102]}
+											tickFormatter={(v: number) => `${v}%`}
+											stroke="hsl(var(--muted-foreground))"
+											strokeOpacity={0.3}
+											tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+											axisLine={false}
+											label={{
+												value: "Eval Score (%)",
+												angle: -90,
+												position: "insideLeft",
+												offset: 10,
+												style: { fontSize: 11, fill: "hsl(var(--muted-foreground))" },
+											}}
+										/>
+										<ZAxis type="number" dataKey="dotSize" range={[60, 400]} />
+										{/* Trend line: dashed line from first to last */}
+										{trendLine && (
+											<ReferenceLine
+												segment={[
+													{ x: trendLine.x1, y: trendLine.y1 },
+													{ x: trendLine.x2, y: trendLine.y2 },
+												]}
+												stroke="hsl(var(--muted-foreground))"
+												strokeOpacity={0.25}
+												strokeDasharray="6 4"
+												strokeWidth={1.5}
+											/>
+										)}
+										{/* 100% reference line */}
+										<ReferenceLine
+											y={100}
+											stroke="hsl(var(--muted-foreground))"
+											strokeOpacity={0.15}
+											strokeDasharray="3 3"
+											label={{
+												value: "Perfect Score",
+												position: "right",
+												style: {
+													fontSize: 10,
+													fill: "hsl(var(--muted-foreground))",
+													fillOpacity: 0.5,
+												},
+											}}
+										/>
+										<Tooltip
+											content={<TimelineTooltip />}
+											cursor={{
+												strokeDasharray: "3 3",
+												stroke: "hsl(var(--muted-foreground))",
+												strokeOpacity: 0.3,
+											}}
+										/>
+										<Scatter data={timelineData} name="Models">
+											{timelineData.map((entry, index) => (
+												<Cell
+													key={`timeline-cell-${index}`}
+													fill={PROVIDER_COLORS[entry.provider] ?? "#94a3b8"}
+													fillOpacity={0.85}
+													stroke={PROVIDER_COLORS[entry.provider] ?? "#94a3b8"}
+													strokeWidth={1}
+													strokeOpacity={0.4}
+												/>
+											))}
+										</Scatter>
+									</ScatterChart>
+								</ResponsiveContainer>
+							</div>
+						</motion.div>
 					</motion.div>
 				</div>
 			</section>
