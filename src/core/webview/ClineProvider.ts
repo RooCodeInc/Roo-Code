@@ -3508,7 +3508,14 @@ export class ClineProvider
 				await saveDelegationMeta({
 					taskId: parentTaskId,
 					globalStoragePath,
-					meta: { status: "delegated", delegatedToId: child.taskId, awaitingChildId: child.taskId, childIds },
+					meta: {
+						status: "delegated",
+						delegatedToId: child.taskId,
+						awaitingChildId: child.taskId,
+						childIds,
+						completedByChildId: parentHistory.completedByChildId ?? null,
+						completionResultSummary: parentHistory.completionResultSummary ?? null,
+					},
 				})
 				await saveDelegationMeta({
 					taskId: child.taskId,
@@ -3545,6 +3552,8 @@ export class ClineProvider
 								awaitingChildId: null,
 								delegatedToId: parentHistory.delegatedToId,
 								childIds: parentHistory.childIds,
+								completedByChildId: parentHistory.completedByChildId ?? null,
+								completionResultSummary: parentHistory.completionResultSummary ?? null,
 							},
 						})
 					} catch (repairErr) {
@@ -3776,6 +3785,7 @@ export class ClineProvider
 					completionResultSummary,
 					awaitingChildId: null,
 					childIds,
+					delegatedToId: freshParent.delegatedToId ?? null,
 				},
 			})
 
