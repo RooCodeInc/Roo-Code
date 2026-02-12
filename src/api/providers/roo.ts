@@ -29,6 +29,40 @@ import { t } from "../../i18n"
 import type { RooMessage } from "../../core/task-persistence/rooMessage"
 import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 
+type RooProviderMetadata = {
+	cost?: number
+	cache_creation_input_tokens?: number
+	cache_read_input_tokens?: number
+	cached_tokens?: number
+}
+
+type AnthropicProviderMetadata = {
+	cacheCreationInputTokens?: number
+	cacheReadInputTokens?: number
+	usage?: {
+		cache_read_input_tokens?: number
+	}
+}
+
+type GatewayProviderMetadata = {
+	cost?: number
+	cache_creation_input_tokens?: number
+	cached_tokens?: number
+}
+
+type UsageWithCache = {
+	inputTokens?: number
+	outputTokens?: number
+	cachedInputTokens?: number
+	inputTokenDetails?: {
+		cacheReadTokens?: number
+		cacheWriteTokens?: number
+	}
+	details?: {
+		cachedInputTokens?: number
+	}
+}
+
 function getSessionToken(): string {
 	const token = CloudService.hasInstance() ? CloudService.instance.authService?.getSessionToken() : undefined
 	return token ?? "unauthenticated"
@@ -95,40 +129,6 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		type RooProviderMetadata = {
-			cost?: number
-			cache_creation_input_tokens?: number
-			cache_read_input_tokens?: number
-			cached_tokens?: number
-		}
-
-		type AnthropicProviderMetadata = {
-			cacheCreationInputTokens?: number
-			cacheReadInputTokens?: number
-			usage?: {
-				cache_read_input_tokens?: number
-			}
-		}
-
-		type GatewayProviderMetadata = {
-			cost?: number
-			cache_creation_input_tokens?: number
-			cached_tokens?: number
-		}
-
-		type UsageWithCache = {
-			inputTokens?: number
-			outputTokens?: number
-			cachedInputTokens?: number
-			inputTokenDetails?: {
-				cacheReadTokens?: number
-				cacheWriteTokens?: number
-			}
-			details?: {
-				cachedInputTokens?: number
-			}
-		}
-
 		const firstNumber = (...values: Array<number | undefined>) => values.find((value) => typeof value === "number")
 
 		const model = this.getModel()
@@ -217,7 +217,6 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 					gatewayMeta?.cached_tokens,
 					usage.cachedInputTokens,
 					usage.inputTokenDetails?.cacheReadTokens,
-					usage.inputTokenDetails?.cacheWriteTokens,
 					usage.details?.cachedInputTokens,
 				) ?? 0
 

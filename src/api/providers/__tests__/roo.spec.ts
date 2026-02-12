@@ -695,10 +695,10 @@ describe("RooHandler", () => {
 		})
 	})
 
-		describe("usage and cost processing", () => {
-			beforeEach(() => {
-				handler = new RooHandler(mockOptions)
-			})
+	describe("usage and cost processing", () => {
+		beforeEach(() => {
+			handler = new RooHandler(mockOptions)
+		})
 
 		it("should use server-side cost from providerMetadata when available", async () => {
 			mockStreamText.mockReturnValue(
@@ -749,9 +749,9 @@ describe("RooHandler", () => {
 			expect(usageChunk.totalCost).toBe(0.005)
 		})
 
-			it("should include cache tokens from providerMetadata", async () => {
-				mockStreamText.mockReturnValue(
-					createMockStreamResult({
+		it("should include cache tokens from providerMetadata", async () => {
+			mockStreamText.mockReturnValue(
+				createMockStreamResult({
 					inputTokens: 100,
 					outputTokens: 50,
 					providerMetadata: {
@@ -769,71 +769,71 @@ describe("RooHandler", () => {
 				chunks.push(chunk)
 			}
 
-				const usageChunk = chunks.find((c) => c.type === "usage")
-				expect(usageChunk).toBeDefined()
-				expect(usageChunk.cacheWriteTokens).toBe(20)
-				expect(usageChunk.cacheReadTokens).toBe(30)
-				expect(usageChunk.totalInputTokens).toBe(100)
-			})
-
-			it("should fall back to anthropic metadata when roo metadata is missing", async () => {
-				mockStreamText.mockReturnValue(
-					createMockStreamResult({
-						inputTokens: 120,
-						outputTokens: 40,
-						providerMetadata: {
-							anthropic: {
-								cacheCreationInputTokens: 25,
-								usage: {
-									cache_read_input_tokens: 35,
-								},
-							},
-						},
-					}),
-				)
-
-				const stream = handler.createMessage(systemPrompt, messages)
-				const chunks: any[] = []
-				for await (const chunk of stream) {
-					chunks.push(chunk)
-				}
-
-				const usageChunk = chunks.find((c) => c.type === "usage")
-				expect(usageChunk).toBeDefined()
-				expect(usageChunk.inputTokens).toBe(120)
-				expect(usageChunk.cacheWriteTokens).toBe(25)
-				expect(usageChunk.cacheReadTokens).toBe(35)
-				expect(usageChunk.totalInputTokens).toBe(120)
-			})
-
-			it("should fall back to AI SDK usage cache fields when provider metadata is missing", async () => {
-				mockStreamText.mockReturnValue(
-					createMockStreamResult({
-						inputTokens: 140,
-						outputTokens: 30,
-						usage: {
-							cachedInputTokens: 22,
-							inputTokenDetails: {
-								cacheWriteTokens: 11,
-							},
-						},
-					}),
-				)
-
-				const stream = handler.createMessage(systemPrompt, messages)
-				const chunks: any[] = []
-				for await (const chunk of stream) {
-					chunks.push(chunk)
-				}
-
-				const usageChunk = chunks.find((c) => c.type === "usage")
-				expect(usageChunk).toBeDefined()
-				expect(usageChunk.inputTokens).toBe(140)
-				expect(usageChunk.cacheWriteTokens).toBe(11)
-				expect(usageChunk.cacheReadTokens).toBe(22)
-				expect(usageChunk.totalInputTokens).toBe(140)
-			})
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toBeDefined()
+			expect(usageChunk.cacheWriteTokens).toBe(20)
+			expect(usageChunk.cacheReadTokens).toBe(30)
+			expect(usageChunk.totalInputTokens).toBe(100)
 		})
+
+		it("should fall back to anthropic metadata when roo metadata is missing", async () => {
+			mockStreamText.mockReturnValue(
+				createMockStreamResult({
+					inputTokens: 120,
+					outputTokens: 40,
+					providerMetadata: {
+						anthropic: {
+							cacheCreationInputTokens: 25,
+							usage: {
+								cache_read_input_tokens: 35,
+							},
+						},
+					},
+				}),
+			)
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toBeDefined()
+			expect(usageChunk.inputTokens).toBe(120)
+			expect(usageChunk.cacheWriteTokens).toBe(25)
+			expect(usageChunk.cacheReadTokens).toBe(35)
+			expect(usageChunk.totalInputTokens).toBe(120)
+		})
+
+		it("should fall back to AI SDK usage cache fields when provider metadata is missing", async () => {
+			mockStreamText.mockReturnValue(
+				createMockStreamResult({
+					inputTokens: 140,
+					outputTokens: 30,
+					usage: {
+						cachedInputTokens: 22,
+						inputTokenDetails: {
+							cacheWriteTokens: 11,
+						},
+					},
+				}),
+			)
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toBeDefined()
+			expect(usageChunk.inputTokens).toBe(140)
+			expect(usageChunk.cacheWriteTokens).toBe(11)
+			expect(usageChunk.cacheReadTokens).toBe(22)
+			expect(usageChunk.totalInputTokens).toBe(140)
+		})
+	})
 
 	describe("isAiSdkProvider", () => {
 		it("should return true", () => {

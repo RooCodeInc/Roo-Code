@@ -2917,7 +2917,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						tokensOut: totalOutputTokensAccum || outputTokens,
 						cacheWrites: cacheWriteTokens,
 						cacheReads: cacheReadTokens,
-						cost: totalCost,
+						cost: totalCost ?? existingData.cost,
 						cancelReason,
 						streamingFailedMessage,
 					} satisfies ClineApiReqInfo)
@@ -3046,7 +3046,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								outputTokens += chunk.outputTokens
 								cacheWriteTokens += chunk.cacheWriteTokens ?? 0
 								cacheReadTokens += chunk.cacheReadTokens ?? 0
-								totalCost = chunk.totalCost
+								totalCost = chunk.totalCost ?? totalCost
 								totalInputTokensAccum += chunk.totalInputTokens ?? 0
 								totalOutputTokensAccum += chunk.totalOutputTokens ?? 0
 								break
@@ -3223,7 +3223,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								outputTokens = tokens.output
 								cacheWriteTokens = tokens.cacheWrite
 								cacheReadTokens = tokens.cacheRead
-								totalCost = tokens.total
+								totalCost = tokens.total ?? totalCost
 								totalInputTokensAccum = tokens.totalIn
 								totalOutputTokensAccum = tokens.totalOut
 
@@ -3237,13 +3237,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									await this.updateClineMessage(apiReqMessage)
 								}
 
+								const messageData = JSON.parse(
+									this.clineMessages[messageIndex]?.text || "{}",
+								) as ClineApiReqInfo
+								const telemetryCost =
+									tokens.total ??
+									(typeof messageData.cost === "number" ? messageData.cost : undefined)
+
 								// Use provider-computed totals for telemetry, falling back to raw counts
 								TelemetryService.instance.captureLlmCompletion(this.taskId, {
 									inputTokens: tokens.totalIn || tokens.input,
 									outputTokens: tokens.totalOut || tokens.output,
 									cacheWriteTokens: tokens.cacheWrite,
 									cacheReadTokens: tokens.cacheRead,
-									cost: tokens.total,
+									cost: telemetryCost,
 								})
 							}
 						}
@@ -3277,7 +3284,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									bgOutputTokens += chunk.outputTokens
 									bgCacheWriteTokens += chunk.cacheWriteTokens ?? 0
 									bgCacheReadTokens += chunk.cacheReadTokens ?? 0
-									bgTotalCost = chunk.totalCost
+									bgTotalCost = chunk.totalCost ?? bgTotalCost
 									bgTotalInputTokens += chunk.totalInputTokens ?? 0
 									bgTotalOutputTokens += chunk.totalOutputTokens ?? 0
 								}
