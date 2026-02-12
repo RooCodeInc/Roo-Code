@@ -489,7 +489,7 @@ describe("AwsBedrockHandler", () => {
 			})
 		}
 
-		it("uses non-cached input tokens from AI SDK v6 usage details", async () => {
+		it("emits total inputTokens (not noCacheTokens) from AI SDK v6 usage details", async () => {
 			async function* mockFullStream() {
 				yield { type: "text-delta", text: "Hello" }
 			}
@@ -520,9 +520,12 @@ describe("AwsBedrockHandler", () => {
 			}
 
 			const usageChunk = chunks.find((chunk) => chunk.type === "usage")
+			// inputTokens must be the total (13,071) per ApiStreamUsageChunk contract,
+			// with non-cached count in a separate field.
 			expect(usageChunk).toMatchObject({
 				type: "usage",
-				inputTokens: 10,
+				inputTokens: 13_071,
+				nonCachedInputTokens: 10,
 				outputTokens: 93,
 				cacheWriteTokens: 489,
 				cacheReadTokens: 12_572,
