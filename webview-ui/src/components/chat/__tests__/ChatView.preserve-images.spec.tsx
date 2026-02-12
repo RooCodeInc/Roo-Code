@@ -44,12 +44,6 @@ vi.mock("use-sound", () => ({
 }))
 
 // Mock components that use ESM dependencies
-vi.mock("../BrowserSessionRow", () => ({
-	default: function MockBrowserSessionRow({ messages }: { messages: ClineMessage[] }) {
-		return <div data-testid="browser-session">{JSON.stringify(messages)}</div>
-	},
-}))
-
 vi.mock("../ChatRow", () => ({
 	default: function MockChatRow({ message }: { message: ClineMessage }) {
 		return <div data-testid="chat-row">{JSON.stringify(message)}</div>

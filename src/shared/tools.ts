@@ -1,13 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 
-import type {
-	ClineAsk,
-	ToolProgressStatus,
-	ToolGroup,
-	ToolName,
-	BrowserActionParams,
-	GenerateImageParams,
-} from "@roo-code/types"
+import type { ClineAsk, ToolProgressStatus, ToolGroup, ToolName, GenerateImageParams } from "@roo-code/types"
 
 export type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
 
@@ -113,7 +106,6 @@ export type NativeToolArgs = {
 		question: string
 		follow_up: Array<{ text: string; mode?: string }>
 	}
-	browser_action: BrowserActionParams
 	codebase_search: { query: string; path?: string }
 	generate_image: GenerateImageParams
 	run_slash_command: { command: string; args?: string }
@@ -220,11 +212,6 @@ export interface ListFilesToolUse extends ToolUse<"list_files"> {
 	params: Partial<Pick<Record<ToolParamName, string>, "path" | "recursive">>
 }
 
-export interface BrowserActionToolUse extends ToolUse<"browser_action"> {
-	name: "browser_action"
-	params: Partial<Pick<Record<ToolParamName, string>, "action" | "url" | "coordinate" | "text" | "size" | "path">>
-}
-
 export interface UseMcpToolToolUse extends ToolUse<"use_mcp_tool"> {
 	name: "use_mcp_tool"
 	params: Partial<Pick<Record<ToolParamName, string>, "server_name" | "tool_name" | "arguments">>
@@ -290,7 +277,6 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	apply_patch: "apply patches using codex format",
 	search_files: "search files",
 	list_files: "list files",
-	browser_action: "use a browser",
 	use_mcp_tool: "use mcp tools",
 	access_mcp_resource: "access mcp resources",
 	ask_followup_question: "ask questions",
@@ -313,9 +299,6 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 	edit: {
 		tools: ["apply_diff", "write_to_file", "generate_image"],
 		customTools: ["edit", "search_replace", "edit_file", "apply_patch"],
-	},
-	browser: {
-		tools: ["browser_action"],
 	},
 	command: {
 		tools: ["execute_command", "read_command_output"],

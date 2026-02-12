@@ -909,7 +909,6 @@ describe("Cline", () => {
 					const { content: processedContent } = await processUserContentMentions({
 						userContent,
 						cwd: cline.cwd,
-						urlContentFetcher: cline.urlContentFetcher,
 						fileContextTracker: cline.fileContextTracker,
 					})
 

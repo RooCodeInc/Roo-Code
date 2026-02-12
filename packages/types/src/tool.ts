@@ -4,9 +4,16 @@ import { z } from "zod"
  * ToolGroup
  */
 
-export const toolGroups = ["read", "edit", "browser", "command", "mcp", "modes"] as const
+export const toolGroups = ["read", "edit", "command", "mcp", "modes"] as const
 
 export const toolGroupsSchema = z.enum(toolGroups)
+
+/**
+ * Tool groups that have been removed but may still exist in user config files.
+ * Used by schema preprocessing to silently strip these before validation,
+ * preventing errors for users with older configs.
+ */
+export const deprecatedToolGroups: readonly string[] = ["browser"]
 
 export type ToolGroup = z.infer<typeof toolGroupsSchema>
 
@@ -27,7 +34,6 @@ export const toolNames = [
 	"apply_patch",
 	"search_files",
 	"list_files",
-	"browser_action",
 	"use_mcp_tool",
 	"access_mcp_resource",
 	"ask_followup_question",

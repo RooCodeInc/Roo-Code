@@ -67,18 +67,6 @@ vi.mock("@modelcontextprotocol/sdk/types.js", () => ({
 	},
 }))
 
-vi.mock("../../../services/browser/BrowserSession", () => ({
-	BrowserSession: vi.fn().mockImplementation(() => ({
-		testConnection: vi.fn().mockResolvedValue({ success: false }),
-	})),
-}))
-
-vi.mock("../../../services/browser/browserDiscovery", () => ({
-	discoverChromeHostUrl: vi.fn().mockResolvedValue("http://localhost:9222"),
-	tryChromeHostUrl: vi.fn().mockResolvedValue(false),
-	testBrowserConnection: vi.fn(),
-}))
-
 vi.mock("@modelcontextprotocol/sdk/client/index.js", () => ({
 	Client: vi.fn().mockImplementation(() => ({
 		connect: vi.fn().mockResolvedValue(undefined),

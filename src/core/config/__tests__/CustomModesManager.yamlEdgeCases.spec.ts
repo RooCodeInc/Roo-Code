@@ -227,11 +227,7 @@ describe("CustomModesManager - YAML Edge Cases", () => {
 						slug: "test-mode",
 						name: "Test Mode",
 						roleDefinition: "Test role",
-						groups: [
-							"read",
-							["edit", { fileRegex: "\\.md$", description: "Markdown files only" }],
-							"browser",
-						],
+						groups: ["read", ["edit", { fileRegex: "\\.md$", description: "Markdown files only" }]],
 					},
 				],
 			})
@@ -245,20 +241,19 @@ describe("CustomModesManager - YAML Edge Cases", () => {
 
 			// Should successfully parse the complex fileRegex syntax
 			expect(modes).toHaveLength(1)
-			expect(modes[0].groups).toHaveLength(3)
+			expect(modes[0].groups).toHaveLength(2)
 			expect(modes[0].groups[1]).toEqual(["edit", { fileRegex: "\\.md$", description: "Markdown files only" }])
 		})
 
 		it("should handle invalid fileRegex syntax with clear error", async () => {
 			// This YAML has invalid structure that might cause parsing issues
 			const invalidYaml = `customModes:
-	 - slug: "test-mode"
-	   name: "Test Mode"
-	   roleDefinition: "Test role"
-	   groups:
-	     - read
-	     - ["edit", { fileRegex: "\\.md$" }]  # This line has invalid YAML syntax
-	     - browser`
+		- slug: "test-mode"
+			 name: "Test Mode"
+			 roleDefinition: "Test role"
+			 groups:
+			   - read
+			   - ["edit", { fileRegex: "\\.md$" }]  # This line has invalid YAML syntax`
 
 			mockFsReadFile({
 				[mockRoomodes]: invalidYaml,
@@ -433,13 +428,6 @@ describe("CustomModesManager - YAML Edge Cases", () => {
 									description: "Markdown files with \u2018special\u2019 chars",
 								},
 							],
-							[
-								"browser",
-								{
-									fileRegex: "\\.html?$",
-									description: "HTML files\u00A0only",
-								},
-							],
 						],
 					},
 				],
@@ -460,13 +448,6 @@ describe("CustomModesManager - YAML Edge Cases", () => {
 				{
 					fileRegex: "\\.md$",
 					description: "Markdown files with 'special' chars",
-				},
-			])
-			expect(modes[0].groups[2]).toEqual([
-				"browser",
-				{
-					fileRegex: "\\.html?$",
-					description: "HTML files only",
 				},
 			])
 		})

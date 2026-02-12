@@ -59,9 +59,6 @@ export interface ExtensionMessage {
 		| "deleteCustomModeCheck"
 		| "currentCheckpointUpdated"
 		| "checkpointInitWarning"
-		| "browserToolEnabled"
-		| "browserConnectionResult"
-		| "remoteBrowserEnabled"
 		| "ttsStart"
 		| "ttsStop"
 		| "fileSearchResults"
@@ -92,8 +89,6 @@ export interface ExtensionMessage {
 		| "dismissedUpsells"
 		| "organizationSwitchResult"
 		| "interactionRequired"
-		| "browserSessionUpdate"
-		| "browserSessionNavigate"
 		| "customToolsResult"
 		| "modes"
 		| "taskWithAggregatedCosts"
@@ -196,9 +191,6 @@ export interface ExtensionMessage {
 	queuedMessages?: QueuedMessage[]
 	list?: string[] // For dismissedUpsells
 	organizationId?: string | null // For organizationSwitchResult
-	browserSessionMessages?: ClineMessage[] // For browser session panel updates
-	isBrowserSessionActive?: boolean // For browser session panel updates
-	stepIndex?: number // For browserSessionNavigate: the target step index to display
 	tools?: SerializedCustomToolDefinition[] // For customToolsResult
 	modes?: { slug: string; name: string }[] // For modes response
 	aggregatedCosts?: {
@@ -279,7 +271,6 @@ export type ExtensionState = Pick<
 	| "alwaysAllowWrite"
 	| "alwaysAllowWriteOutsideWorkspace"
 	| "alwaysAllowWriteProtected"
-	| "alwaysAllowBrowser"
 	| "alwaysAllowMcp"
 	| "alwaysAllowModeSwitch"
 	| "alwaysAllowSubtasks"
@@ -290,12 +281,6 @@ export type ExtensionState = Pick<
 	| "deniedCommands"
 	| "allowedMaxRequests"
 	| "allowedMaxCost"
-	| "browserToolEnabled"
-	| "browserViewportSize"
-	| "screenshotQuality"
-	| "remoteBrowserEnabled"
-	| "cachedChromeHostUrl"
-	| "remoteBrowserHost"
 	| "ttsEnabled"
 	| "ttsSpeed"
 	| "soundEnabled"
@@ -382,8 +367,6 @@ export type ExtensionState = Pick<
 	publicSharingEnabled: boolean
 	organizationAllowList: OrganizationAllowList
 	organizationSettingsVersion?: number
-
-	isBrowserSessionActive: boolean // Actual browser session state
 
 	autoCondenseContext: boolean
 	autoCondenseContextPercent: number
@@ -525,8 +508,6 @@ export interface WebviewMessage {
 		| "deleteMcpServer"
 		| "codebaseIndexEnabled"
 		| "telemetrySetting"
-		| "testBrowserConnection"
-		| "browserConnectionResult"
 		| "searchFiles"
 		| "toggleApiConfigPin"
 		| "hasOpenedModeSelector"
@@ -583,11 +564,6 @@ export interface WebviewMessage {
 		| "allowedCommands"
 		| "getTaskWithAggregatedCosts"
 		| "deniedCommands"
-		| "killBrowserSession"
-		| "openBrowserSessionPanel"
-		| "showBrowserSessionPanelAtStep"
-		| "refreshBrowserSessionPanel"
-		| "browserPanelDidLaunch"
 		| "openDebugApiHistory"
 		| "openDebugUiHistory"
 		| "downloadErrorDiagnostics"
@@ -867,39 +843,6 @@ export interface ClineSayTool {
 	description?: string
 	// Properties for skill tool
 	skill?: string
-}
-
-// Must keep in sync with system prompt.
-export const browserActions = [
-	"launch",
-	"click",
-	"hover",
-	"type",
-	"press",
-	"scroll_down",
-	"scroll_up",
-	"resize",
-	"close",
-	"screenshot",
-] as const
-
-export type BrowserAction = (typeof browserActions)[number]
-
-export interface ClineSayBrowserAction {
-	action: BrowserAction
-	coordinate?: string
-	size?: string
-	text?: string
-	executedCoordinate?: string
-}
-
-export type BrowserActionResult = {
-	screenshot?: string
-	logs?: string
-	currentUrl?: string
-	currentMousePosition?: string
-	viewportWidth?: number
-	viewportHeight?: number
 }
 
 export interface ClineAskUseMcpServer {

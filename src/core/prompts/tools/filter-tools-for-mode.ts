@@ -291,11 +291,6 @@ export function filterNativeToolsForMode(
 		allowedToolNames.delete("run_slash_command")
 	}
 
-	// Conditionally exclude browser_action if disabled in settings
-	if (settings?.browserToolEnabled === false) {
-		allowedToolNames.delete("browser_action")
-	}
-
 	// Remove tools that are explicitly disabled via the disabledTools setting
 	if (settings?.disabledTools?.length) {
 		for (const toolName of settings.disabledTools) {
@@ -385,11 +380,6 @@ export function isToolAllowedInMode(
 			return experiments?.runSlashCommand === true
 		}
 		return true
-	}
-
-	// Check for browser_action being disabled by user settings
-	if (toolName === "browser_action" && settings?.browserToolEnabled === false) {
-		return false
 	}
 
 	// Check if the tool is allowed by the mode's groups

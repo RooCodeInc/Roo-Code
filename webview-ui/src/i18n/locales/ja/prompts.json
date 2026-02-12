@@ -25,7 +25,6 @@
 		"toolNames": {
 			"read": "ファイルを読み込む",
 			"edit": "ファイルを編集",
-			"browser": "ブラウザを使用",
 			"command": "コマンドを実行",
 			"mcp": "MCP を使用"
 		},

@@ -25,7 +25,6 @@
 		"toolNames": {
 			"read": "Baca File",
 			"edit": "Edit File",
-			"browser": "Gunakan Browser",
 			"command": "Jalankan Perintah",
 			"mcp": "Gunakan MCP"
 		},

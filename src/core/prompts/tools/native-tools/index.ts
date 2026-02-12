@@ -4,7 +4,6 @@ import { apply_diff } from "./apply_diff"
 import applyPatch from "./apply_patch"
 import askFollowupQuestion from "./ask_followup_question"
 import attemptCompletion from "./attempt_completion"
-import browserAction from "./browser_action"
 import codebaseSearch from "./codebase_search"
 import editTool from "./edit"
 import executeCommand from "./execute_command"
@@ -53,7 +52,6 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 		applyPatch,
 		askFollowupQuestion,
 		attemptCompletion,
-		browserAction,
 		codebaseSearch,
 		executeCommand,
 		generateImage,

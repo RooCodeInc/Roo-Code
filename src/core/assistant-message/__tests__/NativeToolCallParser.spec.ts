@@ -246,7 +246,7 @@ describe("NativeToolCallParser", () => {
 						name: "read_file" as const,
 						arguments: JSON.stringify({
 							files: JSON.stringify([
-								{ path: "src/services/browser/browserDiscovery.ts" },
+								{ path: "src/services/example/service.ts" },
 								{ path: "src/services/mcp/McpServerManager.ts" },
 							]),
 						}),
@@ -264,7 +264,7 @@ describe("NativeToolCallParser", () => {
 						}
 						expect(nativeArgs._legacyFormat).toBe(true)
 						expect(nativeArgs.files).toHaveLength(2)
-						expect(nativeArgs.files[0].path).toBe("src/services/browser/browserDiscovery.ts")
+						expect(nativeArgs.files[0].path).toBe("src/services/example/service.ts")
 						expect(nativeArgs.files[1].path).toBe("src/services/mcp/McpServerManager.ts")
 					}
 				})
