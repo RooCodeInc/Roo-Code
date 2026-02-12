@@ -77,8 +77,12 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 	): ApiStream {
 		const modelConfig = this.getModel()
 
-		// Convert messages to AI SDK format
-		const aiSdkMessages = messages as ModelMessage[]
+		// Convert messages to AI SDK format, stripping extra fields from legacy
+		// ApiMessage objects that survive JSON deserialization (e.g. reasoning_details
+		// causes Anthropic 400: "Extra inputs are not permitted").
+		const aiSdkMessages = messages.map(
+			({ reasoning_details, reasoning_content, ...rest }: any) => rest,
+		) as ModelMessage[]
 
 		// Convert tools to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)

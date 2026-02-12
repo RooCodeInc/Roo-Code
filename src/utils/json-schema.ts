@@ -165,6 +165,7 @@ const NormalizedToolSchemaInternal: z.ZodType<Record<string, unknown>, z.ZodType
 					minItems,
 					maxItems,
 					uniqueItems,
+					$ref: _ref, // Strip $ref — unresolvable references break provider APIs (e.g. Gemini 400)
 					...rest
 				} = schema
 				const result: Record<string, unknown> = { ...rest }
