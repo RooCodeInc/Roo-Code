@@ -295,6 +295,12 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -309,9 +315,17 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		},
 	): ApiStreamUsageChunk {
 		// Extract cache and reasoning metrics from OpenAI's providerMetadata when available,
-		// falling back to usage.details for standard AI SDK fields.
-		const cacheReadTokens = providerMetadata?.openai?.cachedPromptTokens ?? usage.details?.cachedInputTokens
-		const reasoningTokens = providerMetadata?.openai?.reasoningTokens ?? usage.details?.reasoningTokens
+		// then v6 fields, then legacy usage.details.
+		const cacheReadTokens =
+			providerMetadata?.openai?.cachedPromptTokens ??
+			usage.cachedInputTokens ??
+			usage.inputTokenDetails?.cacheReadTokens ??
+			usage.details?.cachedInputTokens
+		const reasoningTokens =
+			providerMetadata?.openai?.reasoningTokens ??
+			usage.reasoningTokens ??
+			usage.outputTokenDetails?.reasoningTokens ??
+			usage.details?.reasoningTokens
 
 		const inputTokens = usage.inputTokens || 0
 		const outputTokens = usage.outputTokens || 0

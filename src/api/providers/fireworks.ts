@@ -73,6 +73,12 @@ export class FireworksHandler extends BaseProvider implements SingleCompletionHa
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -85,9 +91,14 @@ export class FireworksHandler extends BaseProvider implements SingleCompletionHa
 			}
 		},
 	): ApiStreamUsageChunk {
-		// Extract cache metrics from Fireworks' providerMetadata if available
-		const cacheReadTokens = providerMetadata?.fireworks?.promptCacheHitTokens ?? usage.details?.cachedInputTokens
-		const cacheWriteTokens = providerMetadata?.fireworks?.promptCacheMissTokens
+		// Extract cache metrics from Fireworks' providerMetadata, then v6 fields, then legacy
+		const cacheReadTokens =
+			providerMetadata?.fireworks?.promptCacheHitTokens ??
+			usage.cachedInputTokens ??
+			usage.inputTokenDetails?.cacheReadTokens ??
+			usage.details?.cachedInputTokens
+		const cacheWriteTokens =
+			providerMetadata?.fireworks?.promptCacheMissTokens ?? usage.inputTokenDetails?.cacheWriteTokens
 
 		const inputTokens = usage.inputTokens || 0
 		const outputTokens = usage.outputTokens || 0
@@ -97,7 +108,8 @@ export class FireworksHandler extends BaseProvider implements SingleCompletionHa
 			outputTokens,
 			cacheReadTokens,
 			cacheWriteTokens,
-			reasoningTokens: usage.details?.reasoningTokens,
+			reasoningTokens:
+				usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
 			totalInputTokens: inputTokens,
 			totalOutputTokens: outputTokens,
 		}

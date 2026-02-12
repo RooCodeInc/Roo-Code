@@ -71,3 +71,45 @@ All 5464 tests pass (365 files, 46 skipped, 0 failures)
 
 ## Remaining
 - Nothing blocking. All acceptance criteria met.
+
+---
+
+## Session 2: AI SDK v6 Cache Token Extraction Fix
+Date: 2026-02-12
+
+### Goal
+Fix cache token extraction across all AI SDK-based providers. In AI SDK v6,
+`cachedInputTokens` is a top-level field on `usage`, not nested under `usage.details`.
+
+### Changes Made
+- Updated 18 provider files with AI SDK v6 fallback chains for cache and reasoning tokens
+- Updated type signatures to include v6 fields (cachedInputTokens, reasoningTokens, inputTokenDetails, outputTokenDetails)
+- Added 30 new test cases across 4 test files for v6 field path coverage
+- Cleaned up `as any` casts in bedrock.ts
+- Added missing cacheReadTokens extraction to baseten.ts
+
+### Fallback Chain (all providers now use)
+1. `usage.cachedInputTokens` (AI SDK v6 top-level)
+2. `usage.inputTokenDetails?.cacheReadTokens` (AI SDK v6 structured)
+3. `usage.details?.cachedInputTokens` (legacy fallback)
+(With providerMetadata as P0 where the provider has custom metadata)
+
+### Files Modified (18 providers + 4 test files)
+Providers: azure.ts, baseten.ts, bedrock.ts, deepseek.ts, fireworks.ts, gemini.ts,
+lite-llm.ts, mistral.ts, moonshot.ts, openai-codex.ts, openai-compatible.ts,
+openai-native.ts, openai.ts, requesty.ts, sambanova.ts, vercel-ai-gateway.ts,
+vertex.ts, xai.ts
+
+Tests: bedrock.spec.ts, gemini.spec.ts, openai-native-usage.spec.ts,
+openai-usage-tracking.spec.ts
+
+### Test Results
+5,494 tests passed, 0 failures, 0 regressions
+
+### Providers NOT modified (handle cache differently)
+- anthropic.ts — reads from providerMetadata.anthropic (correct)
+- anthropic-vertex.ts — reads from providerMetadata.anthropic (correct)
+- bedrock.ts — was already v6-aware, cleaned up `as any` casts
+- minimax.ts — reads from providerMetadata.anthropic (correct)
+- roo.ts — reads from custom metadata (correct)
+- native-ollama.ts — no cache/reasoning support (correct)

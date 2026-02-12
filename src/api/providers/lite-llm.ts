@@ -96,6 +96,12 @@ export class LiteLLMHandler extends OpenAICompatibleHandler implements SingleCom
 	protected override processUsageMetrics(usage: {
 		inputTokens?: number
 		outputTokens?: number
+		totalInputTokens?: number
+		totalOutputTokens?: number
+		cachedInputTokens?: number
+		reasoningTokens?: number
+		inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+		outputTokenDetails?: { reasoningTokens?: number }
 		details?: {
 			cachedInputTokens?: number
 			reasoningTokens?: number
@@ -108,8 +114,10 @@ export class LiteLLMHandler extends OpenAICompatibleHandler implements SingleCom
 			type: "usage",
 			inputTokens,
 			outputTokens,
-			cacheReadTokens: usage.details?.cachedInputTokens,
-			reasoningTokens: usage.details?.reasoningTokens,
+			cacheReadTokens:
+				usage.cachedInputTokens ?? usage.inputTokenDetails?.cacheReadTokens ?? usage.details?.cachedInputTokens,
+			reasoningTokens:
+				usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
 			totalInputTokens: inputTokens,
 			totalOutputTokens: outputTokens,
 		}

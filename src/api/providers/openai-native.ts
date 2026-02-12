@@ -345,6 +345,12 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -356,11 +362,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		const inputTokens = usage.inputTokens || 0
 		const outputTokens = usage.outputTokens || 0
 
-		const cacheReadTokens = usage.details?.cachedInputTokens ?? 0
+		const cacheReadTokens =
+			usage.cachedInputTokens ?? usage.inputTokenDetails?.cacheReadTokens ?? usage.details?.cachedInputTokens ?? 0
 		// The OpenAI Responses API does not report cache write tokens separately;
 		// only cached (read) tokens are available via usage.details.cachedInputTokens.
-		const cacheWriteTokens = 0
-		const reasoningTokens = usage.details?.reasoningTokens
+		const cacheWriteTokens = usage.inputTokenDetails?.cacheWriteTokens ?? 0
+		const reasoningTokens =
+			usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens
 
 		const effectiveTier =
 			this.lastServiceTier || (this.options.openAiNativeServiceTier as ServiceTier | undefined) || undefined

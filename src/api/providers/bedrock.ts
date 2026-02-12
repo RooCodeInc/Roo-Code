@@ -351,7 +351,20 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	 * Process usage metrics from the AI SDK response.
 	 */
 	private processUsageMetrics(
-		usage: { inputTokens?: number; outputTokens?: number },
+		usage: {
+			inputTokens?: number
+			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
+			details?: {
+				cachedInputTokens?: number
+				reasoningTokens?: number
+			}
+		},
 		info: ModelInfo,
 		providerMetadata?: Record<string, Record<string, unknown>>,
 	): ApiStreamUsageChunk {
@@ -360,8 +373,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 		// The AI SDK exposes reasoningTokens as a top-level field on usage, and also
 		// under outputTokenDetails.reasoningTokens — there is no .details property.
-		const reasoningTokens =
-			(usage as any).reasoningTokens ?? (usage as any).outputTokenDetails?.reasoningTokens ?? 0
+		const reasoningTokens = usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? 0
 
 		// Extract cache metrics primarily from usage (AI SDK standard locations),
 		// falling back to providerMetadata.bedrock.usage for provider-specific fields.
@@ -369,12 +381,11 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			| { cacheReadInputTokens?: number; cacheWriteInputTokens?: number }
 			| undefined
 		const cacheReadTokens =
-			(usage as any).inputTokenDetails?.cacheReadTokens ??
-			(usage as any).cachedInputTokens ??
+			usage.cachedInputTokens ??
+			usage.inputTokenDetails?.cacheReadTokens ??
 			bedrockUsage?.cacheReadInputTokens ??
 			0
-		const cacheWriteTokens =
-			(usage as any).inputTokenDetails?.cacheWriteTokens ?? bedrockUsage?.cacheWriteInputTokens ?? 0
+		const cacheWriteTokens = usage.inputTokenDetails?.cacheWriteTokens ?? bedrockUsage?.cacheWriteInputTokens ?? 0
 
 		// For prompt routers, the AI SDK surfaces the invoked model ID in
 		// providerMetadata.bedrock.trace.promptRouter.invokedModelId.

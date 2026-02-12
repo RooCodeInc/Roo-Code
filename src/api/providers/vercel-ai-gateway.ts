@@ -87,6 +87,12 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -96,8 +102,16 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 	): ApiStreamUsageChunk {
 		const gatewayMeta = providerMetadata?.gateway as Record<string, unknown> | undefined
 
-		const cacheWriteTokens = (gatewayMeta?.cache_creation_input_tokens as number) ?? undefined
-		const cacheReadTokens = usage.details?.cachedInputTokens ?? (gatewayMeta?.cached_tokens as number) ?? undefined
+		const cacheWriteTokens =
+			(gatewayMeta?.cache_creation_input_tokens as number) ??
+			usage.inputTokenDetails?.cacheWriteTokens ??
+			undefined
+		const cacheReadTokens =
+			usage.cachedInputTokens ??
+			usage.inputTokenDetails?.cacheReadTokens ??
+			usage.details?.cachedInputTokens ??
+			(gatewayMeta?.cached_tokens as number) ??
+			undefined
 		const totalCost = (gatewayMeta?.cost as number) ?? 0
 
 		const inputTokens = usage.inputTokens || 0

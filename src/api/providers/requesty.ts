@@ -142,6 +142,12 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -152,8 +158,14 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 	): ApiStreamUsageChunk {
 		const inputTokens = usage.inputTokens || 0
 		const outputTokens = usage.outputTokens || 0
-		const cacheWriteTokens = providerMetadata?.requesty?.usage?.cachingTokens ?? 0
-		const cacheReadTokens = providerMetadata?.requesty?.usage?.cachedTokens ?? usage.details?.cachedInputTokens ?? 0
+		const cacheWriteTokens =
+			providerMetadata?.requesty?.usage?.cachingTokens ?? usage.inputTokenDetails?.cacheWriteTokens ?? 0
+		const cacheReadTokens =
+			providerMetadata?.requesty?.usage?.cachedTokens ??
+			usage.cachedInputTokens ??
+			usage.inputTokenDetails?.cacheReadTokens ??
+			usage.details?.cachedInputTokens ??
+			0
 
 		const { totalCost } = modelInfo
 			? calculateApiCostOpenAI(modelInfo, inputTokens, outputTokens, cacheWriteTokens, cacheReadTokens)
@@ -165,7 +177,8 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			outputTokens,
 			cacheWriteTokens,
 			cacheReadTokens,
-			reasoningTokens: usage.details?.reasoningTokens,
+			reasoningTokens:
+				usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
 			totalCost,
 			totalInputTokens: inputTokens,
 			totalOutputTokens: outputTokens,

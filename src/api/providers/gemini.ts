@@ -248,6 +248,12 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -258,8 +264,10 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 	): ApiStreamUsageChunk {
 		const inputTokens = usage.inputTokens || 0
 		const outputTokens = usage.outputTokens || 0
-		const cacheReadTokens = usage.details?.cachedInputTokens
-		const reasoningTokens = usage.details?.reasoningTokens
+		const cacheReadTokens =
+			usage.cachedInputTokens ?? usage.inputTokenDetails?.cacheReadTokens ?? usage.details?.cachedInputTokens
+		const reasoningTokens =
+			usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens
 
 		return {
 			type: "usage",

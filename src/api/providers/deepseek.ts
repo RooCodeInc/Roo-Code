@@ -72,6 +72,12 @@ export class DeepSeekHandler extends BaseProvider implements SingleCompletionHan
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -84,9 +90,14 @@ export class DeepSeekHandler extends BaseProvider implements SingleCompletionHan
 			}
 		},
 	): ApiStreamUsageChunk {
-		// Extract cache metrics from DeepSeek's providerMetadata
-		const cacheReadTokens = providerMetadata?.deepseek?.promptCacheHitTokens ?? usage.details?.cachedInputTokens
-		const cacheWriteTokens = providerMetadata?.deepseek?.promptCacheMissTokens
+		// Extract cache metrics from DeepSeek's providerMetadata, then v6 fields, then legacy
+		const cacheReadTokens =
+			providerMetadata?.deepseek?.promptCacheHitTokens ??
+			usage.cachedInputTokens ??
+			usage.inputTokenDetails?.cacheReadTokens ??
+			usage.details?.cachedInputTokens
+		const cacheWriteTokens =
+			providerMetadata?.deepseek?.promptCacheMissTokens ?? usage.inputTokenDetails?.cacheWriteTokens
 
 		const inputTokens = usage.inputTokens || 0
 		const outputTokens = usage.outputTokens || 0
@@ -96,7 +107,8 @@ export class DeepSeekHandler extends BaseProvider implements SingleCompletionHan
 			outputTokens,
 			cacheReadTokens,
 			cacheWriteTokens,
-			reasoningTokens: usage.details?.reasoningTokens,
+			reasoningTokens:
+				usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
 			totalInputTokens: inputTokens,
 			totalOutputTokens: outputTokens,
 		}

@@ -1279,4 +1279,165 @@ describe("AwsBedrockHandler", () => {
 			expect(mockCaptureException).toHaveBeenCalled()
 		})
 	})
+
+	describe("AI SDK v6 usage field paths", () => {
+		const systemPrompt = "You are a helpful assistant"
+		const messages: RooMessage[] = [
+			{
+				role: "user",
+				content: "Hello",
+			},
+		]
+
+		function setupStream(usage: Record<string, unknown>, providerMetadata: Record<string, unknown> = {}) {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "reply" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve(usage),
+				providerMetadata: Promise.resolve(providerMetadata),
+			})
+		}
+
+		describe("cache tokens", () => {
+			it("should read cache tokens from v6 top-level cachedInputTokens", async () => {
+				setupStream({ inputTokens: 100, outputTokens: 50, cachedInputTokens: 30 })
+
+				const generator = handler.createMessage(systemPrompt, messages)
+				const chunks: unknown[] = []
+				for await (const chunk of generator) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c: any) => c.type === "usage") as any
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk.cacheReadTokens).toBe(30)
+			})
+
+			it("should read cache tokens from v6 inputTokenDetails.cacheReadTokens", async () => {
+				setupStream({
+					inputTokens: 100,
+					outputTokens: 50,
+					inputTokenDetails: { cacheReadTokens: 25 },
+				})
+
+				const generator = handler.createMessage(systemPrompt, messages)
+				const chunks: unknown[] = []
+				for await (const chunk of generator) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c: any) => c.type === "usage") as any
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk.cacheReadTokens).toBe(25)
+			})
+
+			it("should prefer v6 top-level cachedInputTokens over providerMetadata.bedrock", async () => {
+				setupStream(
+					{ inputTokens: 100, outputTokens: 50, cachedInputTokens: 30 },
+					{ bedrock: { usage: { cacheReadInputTokens: 20 } } },
+				)
+
+				const generator = handler.createMessage(systemPrompt, messages)
+				const chunks: unknown[] = []
+				for await (const chunk of generator) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c: any) => c.type === "usage") as any
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk.cacheReadTokens).toBe(30)
+			})
+
+			it("should fall back to providerMetadata.bedrock.usage.cacheReadInputTokens", async () => {
+				setupStream(
+					{ inputTokens: 100, outputTokens: 50 },
+					{ bedrock: { usage: { cacheReadInputTokens: 20 } } },
+				)
+
+				const generator = handler.createMessage(systemPrompt, messages)
+				const chunks: unknown[] = []
+				for await (const chunk of generator) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c: any) => c.type === "usage") as any
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk.cacheReadTokens).toBe(20)
+			})
+
+			it("should read cacheWriteTokens from v6 inputTokenDetails.cacheWriteTokens", async () => {
+				setupStream({
+					inputTokens: 100,
+					outputTokens: 50,
+					inputTokenDetails: { cacheWriteTokens: 15 },
+				})
+
+				const generator = handler.createMessage(systemPrompt, messages)
+				const chunks: unknown[] = []
+				for await (const chunk of generator) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c: any) => c.type === "usage") as any
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk.cacheWriteTokens).toBe(15)
+			})
+		})
+
+		describe("reasoning tokens", () => {
+			it("should read reasoning tokens from v6 top-level reasoningTokens", async () => {
+				setupStream({ inputTokens: 100, outputTokens: 50, reasoningTokens: 40 })
+
+				const generator = handler.createMessage(systemPrompt, messages)
+				const chunks: unknown[] = []
+				for await (const chunk of generator) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c: any) => c.type === "usage") as any
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk.reasoningTokens).toBe(40)
+			})
+
+			it("should read reasoning tokens from v6 outputTokenDetails.reasoningTokens", async () => {
+				setupStream({
+					inputTokens: 100,
+					outputTokens: 50,
+					outputTokenDetails: { reasoningTokens: 35 },
+				})
+
+				const generator = handler.createMessage(systemPrompt, messages)
+				const chunks: unknown[] = []
+				for await (const chunk of generator) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c: any) => c.type === "usage") as any
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk.reasoningTokens).toBe(35)
+			})
+
+			it("should prefer v6 top-level reasoningTokens over outputTokenDetails", async () => {
+				setupStream({
+					inputTokens: 100,
+					outputTokens: 50,
+					reasoningTokens: 40,
+					outputTokenDetails: { reasoningTokens: 15 },
+				})
+
+				const generator = handler.createMessage(systemPrompt, messages)
+				const chunks: unknown[] = []
+				for await (const chunk of generator) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c: any) => c.type === "usage") as any
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk.reasoningTokens).toBe(40)
+			})
+		})
+	})
 })

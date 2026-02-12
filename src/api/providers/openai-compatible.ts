@@ -97,6 +97,10 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 	protected processUsageMetrics(usage: {
 		inputTokens?: number
 		outputTokens?: number
+		totalInputTokens?: number
+		totalOutputTokens?: number
+		cachedInputTokens?: number
+		reasoningTokens?: number
 		inputTokenDetails?: {
 			cacheReadTokens?: number
 			cacheWriteTokens?: number
@@ -117,11 +121,14 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 			type: "usage",
 			inputTokens,
 			outputTokens,
-			// P1: AI SDK v6 standard (LanguageModelInputTokenDetails)
-			// P2: Legacy AI SDK standard (usage.details)
-			cacheReadTokens: usage.inputTokenDetails?.cacheReadTokens ?? usage.details?.cachedInputTokens,
+			// P1: AI SDK v6 top-level
+			// P2: AI SDK v6 structured (LanguageModelInputTokenDetails)
+			// P3: Legacy AI SDK standard (usage.details)
+			cacheReadTokens:
+				usage.cachedInputTokens ?? usage.inputTokenDetails?.cacheReadTokens ?? usage.details?.cachedInputTokens,
 			cacheWriteTokens: usage.inputTokenDetails?.cacheWriteTokens,
-			reasoningTokens: usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
+			reasoningTokens:
+				usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
 			totalInputTokens: inputTokens,
 			totalOutputTokens: outputTokens,
 		}

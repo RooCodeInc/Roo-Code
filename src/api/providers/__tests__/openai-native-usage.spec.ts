@@ -353,4 +353,201 @@ describe("OpenAiNativeHandler - usage metrics", () => {
 			expect(callArgs.providerOptions.openai.promptCacheRetention).toBeUndefined()
 		})
 	})
+
+	describe("AI SDK v6 usage field paths", () => {
+		describe("cache tokens", () => {
+			it("should read cache tokens from v6 top-level cachedInputTokens", async () => {
+				async function* mockFullStream() {
+					yield { type: "text-delta", text: "Test" }
+				}
+
+				mockStreamText.mockReturnValue({
+					fullStream: mockFullStream(),
+					usage: Promise.resolve({
+						inputTokens: 100,
+						outputTokens: 50,
+						cachedInputTokens: 30,
+					}),
+					providerMetadata: Promise.resolve({}),
+					content: Promise.resolve([]),
+				})
+
+				const stream = handler.createMessage(systemPrompt, messages)
+				const chunks: any[] = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				const usageChunks = chunks.filter((c) => c.type === "usage")
+				expect(usageChunks).toHaveLength(1)
+				expect(usageChunks[0].cacheReadTokens).toBe(30)
+			})
+
+			it("should read cache tokens from v6 inputTokenDetails.cacheReadTokens", async () => {
+				async function* mockFullStream() {
+					yield { type: "text-delta", text: "Test" }
+				}
+
+				mockStreamText.mockReturnValue({
+					fullStream: mockFullStream(),
+					usage: Promise.resolve({
+						inputTokens: 100,
+						outputTokens: 50,
+						inputTokenDetails: { cacheReadTokens: 25 },
+					}),
+					providerMetadata: Promise.resolve({}),
+					content: Promise.resolve([]),
+				})
+
+				const stream = handler.createMessage(systemPrompt, messages)
+				const chunks: any[] = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				const usageChunks = chunks.filter((c) => c.type === "usage")
+				expect(usageChunks).toHaveLength(1)
+				expect(usageChunks[0].cacheReadTokens).toBe(25)
+			})
+
+			it("should prefer v6 top-level cachedInputTokens over legacy details", async () => {
+				async function* mockFullStream() {
+					yield { type: "text-delta", text: "Test" }
+				}
+
+				mockStreamText.mockReturnValue({
+					fullStream: mockFullStream(),
+					usage: Promise.resolve({
+						inputTokens: 100,
+						outputTokens: 50,
+						cachedInputTokens: 30,
+						details: { cachedInputTokens: 20 },
+					}),
+					providerMetadata: Promise.resolve({}),
+					content: Promise.resolve([]),
+				})
+
+				const stream = handler.createMessage(systemPrompt, messages)
+				const chunks: any[] = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				const usageChunks = chunks.filter((c) => c.type === "usage")
+				expect(usageChunks).toHaveLength(1)
+				expect(usageChunks[0].cacheReadTokens).toBe(30)
+			})
+
+			it("should read cacheWriteTokens from v6 inputTokenDetails.cacheWriteTokens", async () => {
+				async function* mockFullStream() {
+					yield { type: "text-delta", text: "Test" }
+				}
+
+				mockStreamText.mockReturnValue({
+					fullStream: mockFullStream(),
+					usage: Promise.resolve({
+						inputTokens: 100,
+						outputTokens: 50,
+						inputTokenDetails: { cacheWriteTokens: 15 },
+					}),
+					providerMetadata: Promise.resolve({}),
+					content: Promise.resolve([]),
+				})
+
+				const stream = handler.createMessage(systemPrompt, messages)
+				const chunks: any[] = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				const usageChunks = chunks.filter((c) => c.type === "usage")
+				expect(usageChunks).toHaveLength(1)
+				expect(usageChunks[0].cacheWriteTokens).toBe(15)
+			})
+		})
+
+		describe("reasoning tokens", () => {
+			it("should read reasoning tokens from v6 top-level reasoningTokens", async () => {
+				async function* mockFullStream() {
+					yield { type: "text-delta", text: "Test" }
+				}
+
+				mockStreamText.mockReturnValue({
+					fullStream: mockFullStream(),
+					usage: Promise.resolve({
+						inputTokens: 100,
+						outputTokens: 50,
+						reasoningTokens: 40,
+					}),
+					providerMetadata: Promise.resolve({}),
+					content: Promise.resolve([]),
+				})
+
+				const stream = handler.createMessage(systemPrompt, messages)
+				const chunks: any[] = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				const usageChunks = chunks.filter((c) => c.type === "usage")
+				expect(usageChunks).toHaveLength(1)
+				expect(usageChunks[0].reasoningTokens).toBe(40)
+			})
+
+			it("should read reasoning tokens from v6 outputTokenDetails.reasoningTokens", async () => {
+				async function* mockFullStream() {
+					yield { type: "text-delta", text: "Test" }
+				}
+
+				mockStreamText.mockReturnValue({
+					fullStream: mockFullStream(),
+					usage: Promise.resolve({
+						inputTokens: 100,
+						outputTokens: 50,
+						outputTokenDetails: { reasoningTokens: 35 },
+					}),
+					providerMetadata: Promise.resolve({}),
+					content: Promise.resolve([]),
+				})
+
+				const stream = handler.createMessage(systemPrompt, messages)
+				const chunks: any[] = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				const usageChunks = chunks.filter((c) => c.type === "usage")
+				expect(usageChunks).toHaveLength(1)
+				expect(usageChunks[0].reasoningTokens).toBe(35)
+			})
+
+			it("should prefer v6 top-level reasoningTokens over legacy details", async () => {
+				async function* mockFullStream() {
+					yield { type: "text-delta", text: "Test" }
+				}
+
+				mockStreamText.mockReturnValue({
+					fullStream: mockFullStream(),
+					usage: Promise.resolve({
+						inputTokens: 100,
+						outputTokens: 50,
+						reasoningTokens: 40,
+						details: { reasoningTokens: 15 },
+					}),
+					providerMetadata: Promise.resolve({}),
+					content: Promise.resolve([]),
+				})
+
+				const stream = handler.createMessage(systemPrompt, messages)
+				const chunks: any[] = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				const usageChunks = chunks.filter((c) => c.type === "usage")
+				expect(usageChunks).toHaveLength(1)
+				expect(usageChunks[0].reasoningTokens).toBe(40)
+			})
+		})
+	})
 })
