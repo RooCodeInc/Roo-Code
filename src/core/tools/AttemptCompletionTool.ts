@@ -5,6 +5,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
+import type { DelegationMeta } from "../task-persistence/delegationMeta"
 import { Package } from "../../shared/package"
 import type { ToolUse } from "../../shared/tools"
 import { t } from "../../i18n"
@@ -31,6 +32,9 @@ interface DelegationProvider {
 		childTaskId: string
 		completionResultSummary: string
 	}): Promise<void>
+	updateTaskHistory(item: HistoryItem, options?: { broadcast?: boolean }): Promise<HistoryItem[]>
+	persistDelegationMeta(taskId: string, meta: DelegationMeta): Promise<void>
+	readDelegationMeta(taskId: string): Promise<DelegationMeta | null>
 }
 
 export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
@@ -124,10 +128,8 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 							// Fall through to normal completion ask flow
 						}
 					} catch (err) {
-						// If we can't get the history, log error and skip delegation
 						console.error(
-							`[AttemptCompletionTool] Failed to get history for task ${task.taskId}: ${(err as Error)?.message ?? String(err)}. ` +
-								`Skipping delegation.`,
+							`[AttemptCompletionTool] Delegation failed for task ${task.taskId}: ${err instanceof Error ? err.message : String(err)}. Falling through to standalone completion.`,
 						)
 						// Fall through to normal completion ask flow
 					}
@@ -168,15 +170,89 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			return true
 		}
 
-		pushToolResult("")
+		const parentTaskId = task.parentTaskId!
+		const childTaskId = task.taskId
 
-		await provider.reopenParentFromDelegation({
-			parentTaskId: task.parentTaskId!,
-			childTaskId: task.taskId,
-			completionResultSummary: result,
-		})
+		const attemptDelegation = async (): Promise<void> => {
+			await provider.reopenParentFromDelegation({
+				parentTaskId,
+				childTaskId,
+				completionResultSummary: result,
+			})
+		}
 
-		return true
+		try {
+			await attemptDelegation()
+			pushToolResult("")
+			return true
+		} catch (error) {
+			// Delegation failed — repair parent status so it doesn't stay "delegated"
+			console.error(
+				`[AttemptCompletionTool] Delegation failed for task ${childTaskId}: ${
+					error instanceof Error ? error.message : String(error)
+				}. Repairing parent and falling through to standalone completion.`,
+			)
+
+			try {
+				const { historyItem: parentHistory } = await provider.getTaskWithId(parentTaskId)
+				const childIds = Array.from(new Set([...(parentHistory.childIds ?? []), childTaskId]))
+				await provider.updateTaskHistory({
+					...parentHistory,
+					status: "active",
+					awaitingChildId: undefined,
+					childIds,
+				})
+				await provider.persistDelegationMeta(parentTaskId, {
+					status: "active",
+					awaitingChildId: null,
+					delegatedToId: parentHistory.delegatedToId,
+					childIds,
+					completedByChildId: parentHistory.completedByChildId ?? null,
+					completionResultSummary: parentHistory.completionResultSummary ?? null,
+				})
+			} catch (repairError) {
+				// Disk-only fallback when parent is missing from globalState.
+				// Uses read-merge-write to preserve fields like completedByChildId
+				// and completionResultSummary that may exist from prior delegations.
+				if (repairError instanceof Error && repairError.message === "Task not found") {
+					try {
+						const existingMeta = await provider.readDelegationMeta(parentTaskId)
+						await provider.persistDelegationMeta(parentTaskId, {
+							status: "active",
+							awaitingChildId: null,
+							delegatedToId: existingMeta?.delegatedToId ?? null,
+							childIds: existingMeta?.childIds
+								? Array.from(new Set([...existingMeta.childIds, childTaskId]))
+								: [childTaskId],
+							completedByChildId: existingMeta?.completedByChildId ?? null,
+							completionResultSummary: existingMeta?.completionResultSummary ?? null,
+						})
+						console.warn(
+							`[AttemptCompletionTool] Repaired parent ${parentTaskId} via disk fallback (not in globalState)`,
+						)
+					} catch (diskErr) {
+						console.error(
+							`[AttemptCompletionTool] Disk fallback repair also failed for ${parentTaskId}: ${
+								diskErr instanceof Error ? diskErr.message : String(diskErr)
+							}`,
+						)
+					}
+				} else {
+					console.error(
+						`[AttemptCompletionTool] Failed to repair parent ${parentTaskId} after delegation failure: ${
+							repairError instanceof Error ? repairError.message : String(repairError)
+						}`,
+					)
+				}
+			}
+
+			pushToolResult(
+				formatResponse.toolError(
+					`Delegation to parent task failed: ${error instanceof Error ? error.message : String(error)}. Completing as standalone task.`,
+				),
+			)
+			return true
+		}
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"attempt_completion">): Promise<void> {

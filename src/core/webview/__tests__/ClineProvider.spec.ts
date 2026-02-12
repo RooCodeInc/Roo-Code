@@ -3686,6 +3686,9 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 			vi.spyOn(fsUtils, "fileExistsAtPath").mockResolvedValue(true)
 
 			const fsp = await import("fs/promises")
+			// First readFile call is consumed by readDelegationMeta (delegation_metadata.json)
+			vi.mocked(fsp.readFile).mockResolvedValueOnce("null" as never)
+			// Second readFile call is consumed by readRooMessages (api_conversation_history.json)
 			vi.mocked(fsp.readFile).mockResolvedValueOnce(
 				JSON.stringify({
 					version: 2,

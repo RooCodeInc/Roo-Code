@@ -60,7 +60,7 @@ import { sanitizeToolUseId } from "../../utils/tool-id"
  */
 
 export async function presentAssistantMessage(cline: Task) {
-	if (cline.abort) {
+	if (cline.abort || cline.abandoned) {
 		throw new Error(`[Task#presentAssistantMessage] task ${cline.taskId}.${cline.instanceId} aborted`)
 	}
 
@@ -938,6 +938,15 @@ export async function presentAssistantMessage(cline: Task) {
 	// locked.
 	cline.presentAssistantMessageLocked = false
 
+	// Early exit if task was aborted/abandoned during tool execution (e.g., new_task delegation).
+	// Prevents unhandled promise rejections from recursive calls hitting the abort check.
+	if (cline.abort || cline.abandoned) {
+		if (cline.didCompleteReadingStream) {
+			cline.userMessageContentReady = true
+		}
+		return
+	}
+
 	// NOTE: When tool is rejected, iterator stream is interrupted and it waits
 	// for `userMessageContentReady` to be true. Future calls to present will
 	// skip execution since `didRejectTool` and iterate until `contentIndex` is
@@ -965,7 +974,11 @@ export async function presentAssistantMessage(cline: Task) {
 		if (cline.currentStreamingContentIndex < cline.assistantMessageContent.length) {
 			// There are already more content blocks to stream, so we'll call
 			// this function ourselves.
-			presentAssistantMessage(cline)
+			presentAssistantMessage(cline).catch((err) => {
+				if (!cline.abort) {
+					console.error("[presentAssistantMessage] Unhandled error:", err)
+				}
+			})
 			return
 		} else {
 			// CRITICAL FIX: If we're out of bounds and the stream is complete, set userMessageContentReady
@@ -978,7 +991,11 @@ export async function presentAssistantMessage(cline: Task) {
 
 	// Block is partial, but the read stream may have finished.
 	if (cline.presentAssistantMessageHasPendingUpdates) {
-		presentAssistantMessage(cline)
+		presentAssistantMessage(cline).catch((err) => {
+			if (!cline.abort) {
+				console.error("[presentAssistantMessage] Unhandled error:", err)
+			}
+		})
 	}
 }
 

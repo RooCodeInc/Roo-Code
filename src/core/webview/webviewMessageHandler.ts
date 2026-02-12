@@ -545,10 +545,14 @@ export const webviewMessageHandler = async (
 			provider.isViewLaunched = true
 			break
 		case "newTask":
-			// Initializing new instance of Cline will make sure that any
-			// agentically running promises in old instance don't affect our new
-			// task. This essentially creates a fresh slate for the new task.
+			if (provider.isTaskCreationInProgress) {
+				break
+			}
+			provider.isTaskCreationInProgress = true
 			try {
+				// Initializing new instance of Cline will make sure that any
+				// agentically running promises in old instance don't affect our new
+				// task. This essentially creates a fresh slate for the new task.
 				const resolved = await resolveIncomingImages({ text: message.text, images: message.images })
 				await provider.createTask(resolved.text, resolved.images)
 				// Task created successfully - notify the UI to reset
@@ -560,6 +564,8 @@ export const webviewMessageHandler = async (
 				vscode.window.showErrorMessage(
 					`Failed to create task: ${error instanceof Error ? error.message : String(error)}`,
 				)
+			} finally {
+				provider.isTaskCreationInProgress = false
 			}
 			break
 		case "customInstructions":
