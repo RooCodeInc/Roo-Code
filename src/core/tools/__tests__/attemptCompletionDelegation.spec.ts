@@ -120,71 +120,30 @@ function createCallbacks(overrides: Record<string, unknown> = {}) {
 	}
 }
 
-describe("AttemptCompletionTool delegation retry and parent-repair", () => {
+describe("AttemptCompletionTool delegation and parent-repair", () => {
 	let tool: AttemptCompletionTool
 
 	beforeEach(() => {
-		vi.useFakeTimers()
 		tool = new AttemptCompletionTool()
 	})
 
-	afterEach(() => {
-		vi.useRealTimers()
-	})
-
-	it("should succeed on retry when first delegation attempt fails", async () => {
+	it("should repair parent to active when delegation attempt fails", async () => {
 		const provider = createMockProvider()
 		const task = createMockTask(provider)
 		const callbacks = createCallbacks()
 
-		// First call fails, second succeeds
-		provider.reopenParentFromDelegation
-			.mockRejectedValueOnce(new Error("transient race"))
-			.mockResolvedValueOnce(undefined)
-
-		// Child task status is "active"
-		provider.getTaskWithId.mockResolvedValue({
-			historyItem: childHistoryItem(),
-		})
-
-		const executePromise = tool.execute({ result: "completed work" }, task as any, callbacks as any)
-
-		// Advance past the 500ms retry delay
-		await vi.advanceTimersByTimeAsync(600)
-		await executePromise
-
-		// Verify retry happened (2 calls to reopenParentFromDelegation)
-		expect(provider.reopenParentFromDelegation).toHaveBeenCalledTimes(2)
-
-		// Verify delegation succeeded — pushToolResult called with empty string
-		expect(callbacks.pushToolResult).toHaveBeenCalledWith("")
-
-		// Verify no parent repair was attempted
-		expect(provider.updateTaskHistory).not.toHaveBeenCalled()
-	})
-
-	it("should repair parent to active when both delegation attempts fail", async () => {
-		const provider = createMockProvider()
-		const task = createMockTask(provider)
-		const callbacks = createCallbacks()
-
-		// Both delegation calls fail
-		provider.reopenParentFromDelegation
-			.mockRejectedValueOnce(new Error("first failure"))
-			.mockRejectedValueOnce(new Error("second failure"))
+		// Delegation call fails
+		provider.reopenParentFromDelegation.mockRejectedValueOnce(new Error("delegation failure"))
 
 		// First call: child status lookup; second call: parent lookup for repair
 		provider.getTaskWithId
 			.mockResolvedValueOnce({ historyItem: childHistoryItem() })
 			.mockResolvedValueOnce({ historyItem: parentHistoryItem() })
 
-		const executePromise = tool.execute({ result: "completed work" }, task as any, callbacks as any)
+		await tool.execute({ result: "completed work" }, task as any, callbacks as any)
 
-		await vi.advanceTimersByTimeAsync(600)
-		await executePromise
-
-		// Both attempts were made
-		expect(provider.reopenParentFromDelegation).toHaveBeenCalledTimes(2)
+		// Single attempt was made (no retry)
+		expect(provider.reopenParentFromDelegation).toHaveBeenCalledTimes(1)
 
 		// Parent was repaired: updateTaskHistory called with status: "active"
 		expect(provider.updateTaskHistory).toHaveBeenCalledWith(
@@ -217,10 +176,8 @@ describe("AttemptCompletionTool delegation retry and parent-repair", () => {
 		const task = createMockTask(provider)
 		const callbacks = createCallbacks()
 
-		// Both delegation attempts fail
-		provider.reopenParentFromDelegation
-			.mockRejectedValueOnce(new Error("first failure"))
-			.mockRejectedValueOnce(new Error("second failure"))
+		// Delegation attempt fails
+		provider.reopenParentFromDelegation.mockRejectedValueOnce(new Error("delegation failure"))
 
 		// Child status lookup succeeds, parent lookup fails (not in globalState)
 		provider.getTaskWithId
@@ -238,10 +195,7 @@ describe("AttemptCompletionTool delegation retry and parent-repair", () => {
 		}
 		provider.readDelegationMeta.mockResolvedValue(existingMeta)
 
-		const executePromise = tool.execute({ result: "completed work" }, task as any, callbacks as any)
-
-		await vi.advanceTimersByTimeAsync(600)
-		await executePromise
+		await tool.execute({ result: "completed work" }, task as any, callbacks as any)
 
 		// readDelegationMeta was called for the parent
 		expect(provider.readDelegationMeta).toHaveBeenCalledWith("parent-1")
@@ -262,10 +216,8 @@ describe("AttemptCompletionTool delegation retry and parent-repair", () => {
 		const task = createMockTask(provider)
 		const callbacks = createCallbacks()
 
-		// Both delegation attempts fail
-		provider.reopenParentFromDelegation
-			.mockRejectedValueOnce(new Error("first failure"))
-			.mockRejectedValueOnce(new Error("second failure"))
+		// Delegation attempt fails
+		provider.reopenParentFromDelegation.mockRejectedValueOnce(new Error("delegation failure"))
 
 		// Child status lookup succeeds, parent lookup fails
 		provider.getTaskWithId
@@ -275,10 +227,7 @@ describe("AttemptCompletionTool delegation retry and parent-repair", () => {
 		// No existing delegation meta on disk
 		provider.readDelegationMeta.mockResolvedValue(null)
 
-		const executePromise = tool.execute({ result: "completed work" }, task as any, callbacks as any)
-
-		await vi.advanceTimersByTimeAsync(600)
-		await executePromise
+		await tool.execute({ result: "completed work" }, task as any, callbacks as any)
 
 		// persistDelegationMeta uses null defaults when no existing meta
 		expect(provider.persistDelegationMeta).toHaveBeenCalledWith("parent-1", {
