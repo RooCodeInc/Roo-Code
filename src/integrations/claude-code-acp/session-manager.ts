@@ -10,6 +10,12 @@ import type {
 	AcpPermissionResult,
 	AcpContentBlock,
 	AcpTextContent,
+	AcpSessionNewMeta,
+	AcpSessionListResult,
+	AcpSessionListEntry,
+	AcpAvailableCommand,
+	AcpAvailableModel,
+	AcpPermissionMode,
 } from "./types"
 
 /**
@@ -25,6 +31,13 @@ export class ClaudeCodeAcpSessionManager {
 	private permissionHandler?: (request: AcpPermissionRequestParams) => Promise<AcpPermissionResult>
 	private maxIdleTime = 5 * 60 * 1000 // 5 minutes
 	private cleanupInterval: NodeJS.Timeout | null = null
+
+	/** Available commands received from the agent (per upstream v0.14+) */
+	private availableCommands = new Map<string, AcpAvailableCommand[]>()
+	/** Available models received from the agent (per upstream v0.16+) */
+	private availableModels = new Map<string, AcpAvailableModel[]>()
+	/** Current mode per session (per upstream v0.14+) */
+	private sessionModes = new Map<string, string>()
 
 	constructor(executablePath?: string) {
 		this.client = getSharedAcpClient(executablePath)
@@ -55,6 +68,18 @@ export class ClaudeCodeAcpSessionManager {
 			}
 			// Default: grant permission
 			return { outcome: "approved" as const }
+		})
+
+		this.client.on("availableCommandsUpdate", (sessionId: string, commands: AcpAvailableCommand[]) => {
+			this.availableCommands.set(sessionId, commands)
+		})
+
+		this.client.on("availableModelsUpdate", (sessionId: string, models: AcpAvailableModel[]) => {
+			this.availableModels.set(sessionId, models)
+		})
+
+		this.client.on("currentModeUpdate", (sessionId: string, modeId: string) => {
+			this.sessionModes.set(sessionId, modeId)
 		})
 
 		this.client.on("disconnected", () => {
@@ -102,7 +127,11 @@ export class ClaudeCodeAcpSessionManager {
 	/**
 	 * Get or create a session for a working directory
 	 */
-	async getOrCreateSession(workingDirectory: string, modelId: string): Promise<ClaudeCodeAcpSession> {
+	async getOrCreateSession(
+		workingDirectory: string,
+		modelId: string,
+		meta?: AcpSessionNewMeta,
+	): Promise<ClaudeCodeAcpSession> {
 		await this.ensureConnected()
 
 		// Look for an existing session with the same working directory
@@ -113,10 +142,11 @@ export class ClaudeCodeAcpSessionManager {
 			}
 		}
 
-		// Create a new session (per ACP spec: cwd + mcpServers)
+		// Create a new session (per ACP spec: cwd + mcpServers + optional _meta)
 		const acpSession = await this.client.createSession({
 			cwd: workingDirectory,
 			mcpServers: [],
+			...(meta ? { _meta: meta } : {}),
 		})
 		const session: ClaudeCodeAcpSession = {
 			sessionId: acpSession.sessionId,
@@ -129,6 +159,104 @@ export class ClaudeCodeAcpSessionManager {
 
 		this.sessions.set(session.sessionId, session)
 		return session
+	}
+
+	/**
+	 * Resume a previous session (unstable, per upstream v0.12.5+)
+	 */
+	async resumeSession(
+		sessionId: string,
+		workingDirectory: string,
+		modelId: string,
+		meta?: AcpSessionNewMeta,
+	): Promise<ClaudeCodeAcpSession> {
+		await this.ensureConnected()
+
+		const result = await this.client.resumeSession({
+			sessionId,
+			cwd: workingDirectory,
+			...(meta ? { _meta: meta } : {}),
+		})
+
+		const session: ClaudeCodeAcpSession = {
+			sessionId: result.sessionId,
+			workingDirectory,
+			isActive: true,
+			createdAt: Date.now(),
+			lastActivityAt: Date.now(),
+			modelId,
+		}
+
+		this.sessions.set(session.sessionId, session)
+		return session
+	}
+
+	/**
+	 * Load a previous session by replaying its history (per upstream v0.14+)
+	 */
+	async loadSession(
+		sessionId: string,
+		workingDirectory: string,
+		modelId: string,
+		meta?: AcpSessionNewMeta,
+	): Promise<ClaudeCodeAcpSession> {
+		await this.ensureConnected()
+
+		const result = await this.client.loadSession({
+			sessionId,
+			cwd: workingDirectory,
+			...(meta ? { _meta: meta } : {}),
+		})
+
+		const session: ClaudeCodeAcpSession = {
+			sessionId: result.sessionId,
+			workingDirectory,
+			isActive: true,
+			createdAt: Date.now(),
+			lastActivityAt: Date.now(),
+			modelId,
+		}
+
+		this.sessions.set(session.sessionId, session)
+		return session
+	}
+
+	/**
+	 * List available sessions (unstable, per upstream v0.14+)
+	 */
+	async listSessions(cwd?: string): Promise<AcpSessionListResult> {
+		await this.ensureConnected()
+		return this.client.listSessions({ cwd })
+	}
+
+	/**
+	 * Set session permission mode (per upstream v0.14+)
+	 */
+	async setSessionMode(sessionId: string, mode: AcpPermissionMode): Promise<void> {
+		await this.ensureConnected()
+		await this.client.setSessionMode(sessionId, mode)
+		this.sessionModes.set(sessionId, mode)
+	}
+
+	/**
+	 * Get available commands for a session
+	 */
+	getAvailableCommands(sessionId: string): AcpAvailableCommand[] {
+		return this.availableCommands.get(sessionId) ?? []
+	}
+
+	/**
+	 * Get available models for a session
+	 */
+	getAvailableModels(sessionId: string): AcpAvailableModel[] {
+		return this.availableModels.get(sessionId) ?? []
+	}
+
+	/**
+	 * Get current mode for a session
+	 */
+	getSessionMode(sessionId: string): string | undefined {
+		return this.sessionModes.get(sessionId)
 	}
 
 	/**
@@ -250,6 +378,9 @@ export class ClaudeCodeAcpSessionManager {
 		if (session) {
 			session.isActive = false
 			this.sessionUpdateCallbacks.delete(sessionId)
+			this.availableCommands.delete(sessionId)
+			this.availableModels.delete(sessionId)
+			this.sessionModes.delete(sessionId)
 		}
 	}
 
@@ -268,6 +399,9 @@ export class ClaudeCodeAcpSessionManager {
 
 		this.sessions.clear()
 		this.sessionUpdateCallbacks.clear()
+		this.availableCommands.clear()
+		this.availableModels.clear()
+		this.sessionModes.clear()
 	}
 }
 

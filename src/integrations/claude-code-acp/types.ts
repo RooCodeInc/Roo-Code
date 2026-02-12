@@ -123,7 +123,118 @@ export interface AcpMcpServer {
 export interface AcpSessionNewParams {
 	cwd: string
 	mcpServers: AcpMcpServer[]
+	_meta?: AcpSessionNewMeta
 }
+
+/**
+ * Session creation metadata (per upstream v0.14+)
+ *
+ * Allows configuring agent behavior at session creation time.
+ * Maps to NewSessionMeta in the upstream claude-code-acp.
+ */
+export interface AcpSessionNewMeta {
+	claudeCode?: {
+		options?: {
+			/** Tools the agent should not use */
+			disallowedTools?: string[]
+			/** Additional MCP servers to connect */
+			mcpServers?: AcpMcpServer[]
+			/** Custom system prompt override */
+			systemPrompt?: string
+			/** Maximum thinking/reasoning budget tokens */
+			thinkingBudgetTokens?: number
+			/** Pre/post tool use hooks */
+			hooks?: Record<string, unknown>
+		}
+	}
+}
+
+/**
+ * ACP Session Load Parameters (per upstream v0.14+)
+ */
+export interface AcpSessionLoadParams {
+	sessionId: string
+	cwd: string
+	_meta?: AcpSessionNewMeta
+}
+
+/**
+ * ACP Session Load Response
+ */
+export interface AcpSessionLoadResult {
+	sessionId: string
+}
+
+/**
+ * ACP Session Resume Parameters (unstable, per upstream v0.12.5+)
+ */
+export interface AcpSessionResumeParams {
+	sessionId: string
+	cwd: string
+	_meta?: AcpSessionNewMeta
+}
+
+/**
+ * ACP Session Resume Response
+ */
+export interface AcpSessionResumeResult {
+	sessionId: string
+}
+
+/**
+ * ACP Session Fork Parameters (unstable, per upstream v0.12.4+)
+ */
+export interface AcpSessionForkParams {
+	sessionId: string
+	cwd: string
+	_meta?: AcpSessionNewMeta
+}
+
+/**
+ * ACP Session Fork Response
+ */
+export interface AcpSessionForkResult {
+	sessionId: string
+}
+
+/**
+ * ACP Session List Parameters (unstable, per upstream v0.14+)
+ */
+export interface AcpSessionListParams {
+	cwd?: string
+	cursor?: string
+}
+
+/**
+ * ACP Session List Response
+ */
+export interface AcpSessionListResult {
+	sessions: AcpSessionListEntry[]
+	nextCursor?: string
+}
+
+/**
+ * A session entry from the list endpoint
+ */
+export interface AcpSessionListEntry {
+	sessionId: string
+	title?: string
+	cwd?: string
+	updatedAt?: string
+}
+
+/**
+ * ACP Set Session Mode Parameters (per upstream v0.14+)
+ */
+export interface AcpSetSessionModeParams {
+	sessionId: string
+	mode: AcpPermissionMode
+}
+
+/**
+ * ACP Permission Modes
+ */
+export type AcpPermissionMode = "default" | "acceptEdits" | "bypassPermissions" | "plan" | "dontAsk"
 
 /**
  * ACP Session
@@ -203,6 +314,9 @@ export type AcpSessionUpdate =
 	| AcpToolCallUpdate
 	| AcpToolCallStatusUpdate
 	| AcpPlanUpdate
+	| AcpAvailableCommandsUpdate
+	| AcpAvailableModelsUpdate
+	| AcpCurrentModeUpdate
 
 /**
  * Agent message chunk - streamed text from the agent
@@ -251,6 +365,50 @@ export interface AcpToolCallStatusUpdate {
 export interface AcpPlanUpdate {
 	sessionUpdate: "plan"
 	entries: unknown[]
+}
+
+/**
+ * Available commands update (per upstream v0.14+)
+ * Sent by the agent after session creation/loading to inform the client of slash commands.
+ */
+export interface AcpAvailableCommandsUpdate {
+	sessionUpdate: "available_commands_update"
+	commands: AcpAvailableCommand[]
+}
+
+/**
+ * Available models update (per upstream v0.16+)
+ * Sent by the agent to inform the client of available models.
+ */
+export interface AcpAvailableModelsUpdate {
+	sessionUpdate: "available_models_update"
+	models: AcpAvailableModel[]
+}
+
+/**
+ * Current mode update (per upstream v0.14+)
+ * Sent when the agent enters plan mode or changes permission mode.
+ */
+export interface AcpCurrentModeUpdate {
+	sessionUpdate: "current_mode_update"
+	currentModeId: string
+}
+
+/**
+ * An available slash command from the agent
+ */
+export interface AcpAvailableCommand {
+	name: string
+	description?: string
+}
+
+/**
+ * An available model from the agent
+ */
+export interface AcpAvailableModel {
+	id: string
+	name?: string
+	isDefault?: boolean
 }
 
 export type AcpToolKind =
@@ -324,4 +482,7 @@ export interface AcpClientEvents {
 	error: (error: Error) => void
 	sessionUpdate: (update: AcpSessionUpdateParams) => void
 	permissionRequest: (request: AcpPermissionRequestParams) => Promise<AcpPermissionResult>
+	availableCommandsUpdate: (sessionId: string, commands: AcpAvailableCommand[]) => void
+	availableModelsUpdate: (sessionId: string, models: AcpAvailableModel[]) => void
+	currentModeUpdate: (sessionId: string, modeId: string) => void
 }

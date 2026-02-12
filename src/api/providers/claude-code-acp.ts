@@ -1330,10 +1330,21 @@ Current time: ${new Date().toISOString()}`
 			if (updateType === "agent_thought_chunk" || updateType === "AgentThoughtChunk") {
 				return this.extractTextFromContent(update.content)
 			}
+
+			// Informational updates from upstream v0.14+ — silently skip in proxy mode
+			if (
+				updateType === "available_commands_update" ||
+				updateType === "available_models_update" ||
+				updateType === "current_mode_update" ||
+				updateType === "tool_call" ||
+				updateType === "tool_call_update" ||
+				updateType === "plan"
+			) {
+				return null
+			}
 		}
 
-		// In proxy mode, skip tool_call and tool_call_update events
-		// (if the agent uses its own tools despite our instructions, we ignore them)
+		// Unknown update types — attempt to extract text as fallback
 		const fallbackText = this.extractTextFromContent(update.content)
 		if (fallbackText) return fallbackText
 

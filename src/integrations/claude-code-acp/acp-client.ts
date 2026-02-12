@@ -17,6 +17,19 @@ import type {
 	AcpSessionUpdateParams,
 	AcpPermissionRequestParams,
 	AcpPermissionResult,
+	AcpSessionLoadParams,
+	AcpSessionLoadResult,
+	AcpSessionResumeParams,
+	AcpSessionResumeResult,
+	AcpSessionForkParams,
+	AcpSessionForkResult,
+	AcpSessionListParams,
+	AcpSessionListResult,
+	AcpSetSessionModeParams,
+	AcpPermissionMode,
+	AcpAvailableCommandsUpdate,
+	AcpAvailableModelsUpdate,
+	AcpCurrentModeUpdate,
 } from "./types"
 
 const ACP_PROTOCOL_VERSION = 1
@@ -82,6 +95,10 @@ export class AcpClient extends EventEmitter {
 					shell: process.platform === "win32",
 					env: {
 						...process.env,
+						// Pass config dir if set (upstream v0.14+)
+						...(process.env.CLAUDE_CONFIG_DIR ? { CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR } : {}),
+						// IS_SANDBOX bypasses permission prompts in root mode (upstream v0.14+)
+						...(process.env.IS_SANDBOX ? { IS_SANDBOX: process.env.IS_SANDBOX } : {}),
 					},
 				})
 
@@ -206,6 +223,43 @@ export class AcpClient extends EventEmitter {
 	}
 
 	/**
+	 * Load a previous session (per upstream v0.14+)
+	 * Replays the session history from stored JSONL files.
+	 */
+	async loadSession(params: AcpSessionLoadParams): Promise<AcpSessionLoadResult> {
+		return this.sendRequest<AcpSessionLoadResult>("session/load", params)
+	}
+
+	/**
+	 * Resume a previous session (unstable, per upstream v0.12.5+)
+	 */
+	async resumeSession(params: AcpSessionResumeParams): Promise<AcpSessionResumeResult> {
+		return this.sendRequest<AcpSessionResumeResult>("unstable/session/resume", params)
+	}
+
+	/**
+	 * Fork an existing session (unstable, per upstream v0.12.4+)
+	 */
+	async forkSession(params: AcpSessionForkParams): Promise<AcpSessionForkResult> {
+		return this.sendRequest<AcpSessionForkResult>("unstable/session/fork", params)
+	}
+
+	/**
+	 * List available sessions (unstable, per upstream v0.14+)
+	 */
+	async listSessions(params?: AcpSessionListParams): Promise<AcpSessionListResult> {
+		return this.sendRequest<AcpSessionListResult>("unstable/session/list", params)
+	}
+
+	/**
+	 * Set session permission mode (per upstream v0.14+)
+	 */
+	async setSessionMode(sessionId: string, mode: AcpPermissionMode): Promise<void> {
+		const params: AcpSetSessionModeParams = { sessionId, mode }
+		await this.sendRequest<void>("session/set_mode", params)
+	}
+
+	/**
 	 * Send a JSON-RPC request and wait for response
 	 */
 	private sendRequest<T>(method: string, params?: unknown): Promise<T> {
@@ -319,11 +373,29 @@ export class AcpClient extends EventEmitter {
 	 */
 	private handleNotification(notification: JsonRpcNotification): void {
 		switch (notification.method) {
-			case "session/update":
-				this.emit("sessionUpdate", notification.params as AcpSessionUpdateParams)
+			case "session/update": {
+				const params = notification.params as AcpSessionUpdateParams
+				this.emit("sessionUpdate", params)
+
+				// Also emit typed events for specific update types
+				const update = params.update as unknown as Record<string, unknown>
+				const updateType = update?.sessionUpdate as string | undefined
+
+				if (updateType === "available_commands_update") {
+					const typedUpdate = update as unknown as AcpAvailableCommandsUpdate
+					this.emit("availableCommandsUpdate", params.sessionId, typedUpdate.commands)
+				} else if (updateType === "available_models_update") {
+					const typedUpdate = update as unknown as AcpAvailableModelsUpdate
+					this.emit("availableModelsUpdate", params.sessionId, typedUpdate.models)
+				} else if (updateType === "current_mode_update") {
+					const typedUpdate = update as unknown as AcpCurrentModeUpdate
+					this.emit("currentModeUpdate", params.sessionId, typedUpdate.currentModeId)
+				}
 				break
+			}
 			default:
-				console.debug("[AcpClient] Unknown notification:", notification.method)
+				// Gracefully ignore known informational notifications
+				console.debug("[AcpClient] Unhandled notification:", notification.method)
 		}
 	}
 
