@@ -194,7 +194,7 @@ export function firstNumberFromPaths(source: unknown, paths: string[]): number |
 	return undefined
 }
 
-function firstNumber(values: NumberLike[]): number | undefined {
+export function firstNumber(values: NumberLike[]): number | undefined {
 	for (const value of values) {
 		const asNumber = toFiniteNumber(value)
 		if (asNumber !== undefined) {
