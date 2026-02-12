@@ -417,13 +417,13 @@ export function WorkersContent({
 						viewport={{ once: true }}
 						variants={fadeUpVariants}>
 						<p className="text-sm font-medium uppercase tracking-widest text-muted-foreground/70">
-							Choose your agentic team member
+							Choose your agentic team members
 						</p>
 						<ChevronDown className="size-4 text-muted-foreground/40" />
 					</motion.div>
 
 					<motion.div
-						className="grid grid-cols-1 gap-6 md:grid-cols-3 md:grid-rows-[repeat(7,auto)] md:gap-x-6 md:gap-y-0 lg:gap-x-8"
+						className="grid grid-cols-1 gap-6 md:grid-cols-3 md:grid-rows-[repeat(7,auto)] md:gap-x-6 md:gap-y-10 lg:gap-x-8"
 						variants={containerVariants}
 						initial="hidden"
 						whileInView="visible"
