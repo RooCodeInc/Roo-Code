@@ -2,11 +2,187 @@
 
 import { useState, useMemo, useCallback } from "react"
 import Link from "next/link"
-import { ArrowLeft, Copy, Check, FileJson, FileSpreadsheet } from "lucide-react"
+import { motion } from "framer-motion"
+import {
+	ArrowLeft,
+	ArrowRight,
+	Copy,
+	Check,
+	FileJson,
+	FileSpreadsheet,
+	BarChart3,
+	SlidersHorizontal,
+	Download,
+	FlaskConical,
+} from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts"
 
 import type { ModelCandidate, LanguageScores, EngineerRole, RoleRecommendation } from "@/lib/mock-recommendations"
 import { TASKS_PER_DAY } from "@/lib/mock-recommendations"
+
+// ── Role Color Themes (matching candidates-content.tsx) ─────────────────────
+
+type RoleTheme = {
+	accent: string
+	accentLight: string
+	accentDark: string
+	iconBg: string
+	iconText: string
+	buttonBg: string
+	buttonHover: string
+	glowColor: string
+	blurBg1: string
+	blurBg2: string
+	borderHover: string
+	shadowHover: string
+	methodologyBorder: string
+	scoreText: string
+	pillActive: string
+	pillActiveBg: string
+	checkboxAccent: string
+	sliderAccent: string
+}
+
+const ROLE_THEMES: Record<string, RoleTheme> = {
+	junior: {
+		accent: "emerald",
+		accentLight: "text-emerald-600",
+		accentDark: "dark:text-emerald-400",
+		iconBg: "bg-emerald-100 dark:bg-emerald-900/30",
+		iconText: "text-emerald-700 dark:text-emerald-300",
+		buttonBg: "bg-emerald-600 dark:bg-emerald-600",
+		buttonHover: "hover:bg-emerald-700 dark:hover:bg-emerald-500",
+		glowColor: "bg-emerald-500/8 dark:bg-emerald-600/15",
+		blurBg1: "bg-emerald-500/10 dark:bg-emerald-600/20",
+		blurBg2: "bg-emerald-400/5 dark:bg-emerald-500/10",
+		borderHover: "hover:border-emerald-500/40 dark:hover:border-emerald-400/30",
+		shadowHover: "hover:shadow-emerald-500/10 dark:hover:shadow-emerald-400/10",
+		methodologyBorder: "border-emerald-500/30 hover:border-emerald-500/50",
+		scoreText: "text-emerald-400",
+		pillActive: "bg-emerald-600 text-white shadow-lg shadow-emerald-600/25",
+		pillActiveBg: "bg-emerald-600",
+		checkboxAccent: "accent-emerald-600",
+		sliderAccent: "accent-emerald-600",
+	},
+	senior: {
+		accent: "blue",
+		accentLight: "text-blue-600",
+		accentDark: "dark:text-blue-400",
+		iconBg: "bg-blue-100 dark:bg-blue-900/30",
+		iconText: "text-blue-700 dark:text-blue-300",
+		buttonBg: "bg-blue-600 dark:bg-blue-600",
+		buttonHover: "hover:bg-blue-700 dark:hover:bg-blue-500",
+		glowColor: "bg-blue-500/8 dark:bg-blue-600/15",
+		blurBg1: "bg-blue-500/10 dark:bg-blue-600/20",
+		blurBg2: "bg-blue-400/5 dark:bg-blue-500/10",
+		borderHover: "hover:border-blue-500/40 dark:hover:border-blue-400/30",
+		shadowHover: "hover:shadow-blue-500/10 dark:hover:shadow-blue-400/10",
+		methodologyBorder: "border-blue-500/30 hover:border-blue-500/50",
+		scoreText: "text-blue-400",
+		pillActive: "bg-blue-600 text-white shadow-lg shadow-blue-600/25",
+		pillActiveBg: "bg-blue-600",
+		checkboxAccent: "accent-blue-600",
+		sliderAccent: "accent-blue-600",
+	},
+	staff: {
+		accent: "amber",
+		accentLight: "text-amber-600",
+		accentDark: "dark:text-amber-400",
+		iconBg: "bg-amber-100 dark:bg-amber-900/30",
+		iconText: "text-amber-700 dark:text-amber-300",
+		buttonBg: "bg-amber-600 dark:bg-amber-600",
+		buttonHover: "hover:bg-amber-700 dark:hover:bg-amber-500",
+		glowColor: "bg-amber-500/8 dark:bg-amber-600/15",
+		blurBg1: "bg-amber-500/10 dark:bg-amber-600/20",
+		blurBg2: "bg-amber-400/5 dark:bg-amber-500/10",
+		borderHover: "hover:border-amber-500/40 dark:hover:border-amber-400/30",
+		shadowHover: "hover:shadow-amber-500/10 dark:hover:shadow-amber-400/10",
+		methodologyBorder: "border-amber-500/30 hover:border-amber-500/50",
+		scoreText: "text-amber-400",
+		pillActive: "bg-amber-600 text-white shadow-lg shadow-amber-600/25",
+		pillActiveBg: "bg-amber-600",
+		checkboxAccent: "accent-amber-600",
+		sliderAccent: "accent-amber-600",
+	},
+	reviewer: {
+		accent: "violet",
+		accentLight: "text-violet-600",
+		accentDark: "dark:text-violet-400",
+		iconBg: "bg-violet-100 dark:bg-violet-900/30",
+		iconText: "text-violet-700 dark:text-violet-300",
+		buttonBg: "bg-violet-600 dark:bg-violet-600",
+		buttonHover: "hover:bg-violet-700 dark:hover:bg-violet-500",
+		glowColor: "bg-violet-500/8 dark:bg-violet-600/15",
+		blurBg1: "bg-violet-500/10 dark:bg-violet-600/20",
+		blurBg2: "bg-violet-400/5 dark:bg-violet-500/10",
+		borderHover: "hover:border-violet-500/40 dark:hover:border-violet-400/30",
+		shadowHover: "hover:shadow-violet-500/10 dark:hover:shadow-violet-400/10",
+		methodologyBorder: "border-violet-500/30 hover:border-violet-500/50",
+		scoreText: "text-violet-400",
+		pillActive: "bg-violet-600 text-white shadow-lg shadow-violet-600/25",
+		pillActiveBg: "bg-violet-600",
+		checkboxAccent: "accent-violet-600",
+		sliderAccent: "accent-violet-600",
+	},
+	autonomous: {
+		accent: "cyan",
+		accentLight: "text-cyan-600",
+		accentDark: "dark:text-cyan-400",
+		iconBg: "bg-cyan-100 dark:bg-cyan-900/30",
+		iconText: "text-cyan-700 dark:text-cyan-300",
+		buttonBg: "bg-cyan-600 dark:bg-cyan-600",
+		buttonHover: "hover:bg-cyan-700 dark:hover:bg-cyan-500",
+		glowColor: "bg-cyan-500/8 dark:bg-cyan-600/15",
+		blurBg1: "bg-cyan-500/10 dark:bg-cyan-600/20",
+		blurBg2: "bg-cyan-400/5 dark:bg-cyan-500/10",
+		borderHover: "hover:border-cyan-500/40 dark:hover:border-cyan-400/30",
+		shadowHover: "hover:shadow-cyan-500/10 dark:hover:shadow-cyan-400/10",
+		methodologyBorder: "border-cyan-500/30 hover:border-cyan-500/50",
+		scoreText: "text-cyan-400",
+		pillActive: "bg-cyan-600 text-white shadow-lg shadow-cyan-600/25",
+		pillActiveBg: "bg-cyan-600",
+		checkboxAccent: "accent-cyan-600",
+		sliderAccent: "accent-cyan-600",
+	},
+}
+
+const DEFAULT_THEME = ROLE_THEMES.senior!
+
+// ── Framer Motion Variants ──────────────────────────────────────────────────
+
+const containerVariants = {
+	hidden: { opacity: 0 },
+	visible: {
+		opacity: 1,
+		transition: {
+			staggerChildren: 0.12,
+			delayChildren: 0.1,
+		},
+	},
+}
+
+const fadeUpVariants = {
+	hidden: { opacity: 0, y: 20 },
+	visible: {
+		opacity: 1,
+		y: 0,
+		transition: {
+			duration: 0.6,
+			ease: [0.21, 0.45, 0.27, 0.9] as const,
+		},
+	},
+}
+
+const backgroundVariants = {
+	hidden: { opacity: 0 },
+	visible: {
+		opacity: 1,
+		transition: {
+			duration: 1.2,
+			ease: "easeOut" as const,
+		},
+	},
+}
 
 // ── Constants ───────────────────────────────────────────────────────────────
 
@@ -18,7 +194,17 @@ const LANGUAGES: { key: keyof LanguageScores; label: string }[] = [
 	{ key: "rust", label: "Rust" },
 ]
 
-const PROVIDERS = ["anthropic", "openai", "google", "deepseek", "groq", "alibaba", "mistral"] as const
+const PROVIDERS = [
+	"anthropic",
+	"openai",
+	"google",
+	"deepseek",
+	"groq",
+	"alibaba",
+	"mistral",
+	"xai",
+	"moonshot",
+] as const
 
 const PROVIDER_LABELS: Record<string, string> = {
 	anthropic: "Anthropic",
@@ -28,6 +214,8 @@ const PROVIDER_LABELS: Record<string, string> = {
 	groq: "Meta/Groq",
 	alibaba: "Alibaba",
 	mistral: "Mistral",
+	xai: "xAI",
+	moonshot: "Moonshot",
 }
 
 const DIMENSION_COLORS = {
@@ -124,29 +312,34 @@ function CustomTooltip({
 	const costPerTask = rawData?.costPerTask
 
 	return (
-		<div className="rounded-lg border border-border bg-card p-3 shadow-lg">
-			<p className="mb-2 font-semibold text-sm">{label}</p>
-			{payload.map(
-				(
-					entry: {
-						name: string
-						value: number
-						color: string
-						dataKey: string
-					},
-					index: number,
-				) => (
-					<div key={index} className="flex items-center gap-2 text-xs">
-						<span className="size-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
-						<span className="text-muted-foreground">{entry.name}:</span>
-						<span className="font-medium tabular-nums">
-							{entry.dataKey === "costEfficiency" && dailyCost !== undefined
-								? `${entry.value} (~$${dailyCost}/day · $${costPerTask?.toFixed(3)}/task)`
-								: entry.value}
-						</span>
-					</div>
-				),
-			)}
+		<div className="rounded-xl border border-border/50 bg-card/95 p-4 shadow-2xl backdrop-blur-md">
+			<p className="mb-2.5 text-sm font-bold tracking-tight">{label}</p>
+			<div className="space-y-1.5">
+				{payload.map(
+					(
+						entry: {
+							name: string
+							value: number
+							color: string
+							dataKey: string
+						},
+						index: number,
+					) => (
+						<div key={index} className="flex items-center gap-2.5 text-xs">
+							<span
+								className="size-2.5 rounded-full ring-1 ring-white/10"
+								style={{ backgroundColor: entry.color }}
+							/>
+							<span className="text-muted-foreground">{entry.name}:</span>
+							<span className="font-semibold tabular-nums">
+								{entry.dataKey === "costEfficiency" && dailyCost !== undefined
+									? `${entry.value} (~$${dailyCost}/day · $${costPerTask?.toFixed(3)}/task)`
+									: entry.value}
+							</span>
+						</div>
+					),
+				)}
+			</div>
 		</div>
 	)
 }
@@ -161,6 +354,7 @@ interface ComparisonChartProps {
 
 export function ComparisonChart({ recommendation, role, roleId }: ComparisonChartProps) {
 	const { allCandidates } = recommendation
+	const theme = ROLE_THEMES[roleId] ?? DEFAULT_THEME
 
 	// ── State ───────────────────────────────────────────────────────────────
 	const [selectedLanguage, setSelectedLanguage] = useState<keyof LanguageScores | "all">("all")
@@ -185,6 +379,12 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 	)
 
 	const chartHeight = Math.max(300, chartData.length * 60 + 80)
+
+	// Providers that actually appear in data
+	const activeProviders = useMemo(() => {
+		const providers = new Set(allCandidates.map((c) => c.provider))
+		return PROVIDERS.filter((p) => providers.has(p))
+	}, [allCandidates])
 
 	// ── Handlers ────────────────────────────────────────────────────────────
 
@@ -229,215 +429,372 @@ export function ComparisonChart({ recommendation, role, roleId }: ComparisonChar
 	// ── Render ──────────────────────────────────────────────────────────────
 
 	return (
-		<div className="mx-auto flex max-w-screen-lg flex-col gap-10 px-4 pt-28 pb-16 sm:px-6 lg:px-8">
-			{/* ── Breadcrumb ─────────────────────────────────────────────── */}
-			<nav className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-				<Link href="/evals" className="transition-colors hover:text-foreground">
-					Evals
-				</Link>
-				<span>/</span>
-				<Link href="/evals/workers" className="transition-colors hover:text-foreground">
-					Hire an AI Engineer
-				</Link>
-				<span>/</span>
-				<Link href={`/evals/workers/${roleId}`} className="transition-colors hover:text-foreground">
-					{role.name}
-				</Link>
-				<span>/</span>
-				<span className="font-medium text-foreground">Compare Candidates</span>
-			</nav>
-
-			{/* ── Page Header ────────────────────────────────────────────── */}
-			<section>
-				<h1 className="text-3xl font-bold tracking-tight md:text-4xl">Compare Candidates — {role.name}</h1>
-				<p className="mt-2 text-base text-muted-foreground">
-					Interactive comparison across composite score, success rate, cost efficiency, and speed.
-				</p>
-			</section>
-
-			{/* ── Language Toggle ─────────────────────────────────────────── */}
-			<section>
-				<h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-					Score View
-				</h2>
-				<div className="flex flex-wrap gap-2">
-					<button
-						onClick={() => setSelectedLanguage("all")}
-						className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-							selectedLanguage === "all"
-								? "bg-blue-600 text-white"
-								: "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-						}`}>
-						All Languages
-					</button>
-					{LANGUAGES.map(({ key, label }) => (
-						<button
-							key={key}
-							onClick={() => setSelectedLanguage(key)}
-							className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-								selectedLanguage === key
-									? "bg-blue-600 text-white"
-									: "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-							}`}>
-							{label}
-						</button>
-					))}
-				</div>
-			</section>
-
-			{/* ── Filters ────────────────────────────────────────────────── */}
-			<section className="flex flex-col gap-6 rounded-xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm sm:flex-row sm:items-start sm:gap-10">
-				{/* Provider checkboxes */}
-				<div className="flex-1">
-					<h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-						Providers
-					</h3>
-					<div className="flex flex-wrap gap-x-4 gap-y-2">
-						{PROVIDERS.map((p) => (
-							<label key={p} className="inline-flex cursor-pointer items-center gap-2 text-sm">
-								<input
-									type="checkbox"
-									checked={enabledProviders.has(p)}
-									onChange={() => toggleProvider(p)}
-									className="size-4 rounded border-border accent-blue-600"
-								/>
-								{PROVIDER_LABELS[p]}
-							</label>
-						))}
-					</div>
-				</div>
-
-				{/* Min success rate slider */}
-				<div className="w-full sm:w-52">
-					<h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-						Min Success Rate
-					</h3>
-					<div className="flex items-center gap-3">
-						<input
-							type="range"
-							min={0}
-							max={100}
-							value={minSuccessRate}
-							onChange={(e) => setMinSuccessRate(Number(e.target.value))}
-							className="h-2 flex-1 cursor-pointer accent-blue-600"
+		<>
+			{/* ── Atmospheric Header ────────────────────────────────────── */}
+			<section className="relative overflow-hidden pt-24 pb-10">
+				{/* Blur gradient background in role color */}
+				<motion.div
+					className="absolute inset-0"
+					initial="hidden"
+					animate="visible"
+					variants={backgroundVariants}>
+					<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1400px] -translate-x-1/2">
+						<div
+							className={`absolute left-[40%] top-[30%] h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full ${theme.blurBg1} blur-[120px]`}
 						/>
-						<span className="w-10 text-right text-sm font-medium tabular-nums">{minSuccessRate}%</span>
+						<div
+							className={`absolute left-[60%] top-[60%] h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full ${theme.blurBg2} blur-[140px]`}
+						/>
+						<div className="absolute left-[20%] top-[70%] h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground/[0.02] dark:bg-foreground/[0.03] blur-[100px]" />
 					</div>
+				</motion.div>
+
+				<div className="container relative z-10 mx-auto max-w-screen-lg px-4 sm:px-6 lg:px-8">
+					<motion.div initial="hidden" animate="visible" variants={containerVariants}>
+						{/* Breadcrumb */}
+						<motion.nav
+							className="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted-foreground"
+							variants={fadeUpVariants}>
+							<Link href="/evals" className="transition-colors hover:text-foreground">
+								Evals
+							</Link>
+							<span className="text-border">/</span>
+							<Link href="/evals/workers" className="transition-colors hover:text-foreground">
+								Hire an AI Engineer
+							</Link>
+							<span className="text-border">/</span>
+							<Link href={`/evals/workers/${roleId}`} className="transition-colors hover:text-foreground">
+								{role.name}
+							</Link>
+							<span className="text-border">/</span>
+							<span className="font-medium text-foreground">Compare Candidates</span>
+						</motion.nav>
+
+						{/* Title row */}
+						<motion.div className="flex items-start gap-5" variants={fadeUpVariants}>
+							<div
+								className={`flex size-14 shrink-0 items-center justify-center rounded-2xl ${theme.iconBg} ${theme.iconText} shadow-lg`}>
+								<BarChart3 className="size-7" />
+							</div>
+							<div className="flex-1">
+								<h1 className="text-4xl font-bold tracking-tight md:text-5xl">Compare Candidates</h1>
+								<p className={`mt-1 font-semibold ${theme.accentLight} ${theme.accentDark}`}>
+									{role.name}
+								</p>
+								<p className="mt-2 text-base leading-relaxed text-muted-foreground md:text-lg">
+									Interactive comparison across composite score, success rate, cost efficiency, and
+									speed. Filter by provider, language, and minimum success rate.
+								</p>
+							</div>
+						</motion.div>
+
+						{/* Stats bar */}
+						<motion.div
+							className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border border-border/30 bg-card/30 px-5 py-3 backdrop-blur-sm"
+							variants={fadeUpVariants}>
+							<span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+								<FlaskConical className="size-4 text-foreground/60" />
+								<span className="font-mono font-semibold text-foreground">
+									{filteredCandidates.length}
+								</span>
+								of {allCandidates.length} candidates shown
+							</span>
+							<div className="hidden h-4 w-px bg-border sm:block" />
+							<span className="text-sm text-muted-foreground">
+								Viewing{" "}
+								<span className="font-medium text-foreground/80">
+									{selectedLanguage === "all"
+										? "All Languages"
+										: LANGUAGES.find((l) => l.key === selectedLanguage)?.label}
+								</span>
+							</span>
+							{minSuccessRate > 0 && (
+								<>
+									<div className="hidden h-4 w-px bg-border sm:block" />
+									<span className="text-sm text-muted-foreground">
+										Min success{" "}
+										<span className="font-mono font-semibold text-foreground/80">
+											{minSuccessRate}%
+										</span>
+									</span>
+								</>
+							)}
+						</motion.div>
+					</motion.div>
 				</div>
 			</section>
 
-			{/* ── Chart ──────────────────────────────────────────────────── */}
-			<section className="rounded-xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm">
-				<h2 className="mb-1 text-lg font-semibold">
-					{selectedLanguage === "all"
-						? "Composite Score"
-						: `${LANGUAGES.find((l) => l.key === selectedLanguage)?.label} Score`}{" "}
-					Comparison
-				</h2>
-				<p className="mb-6 text-xs text-muted-foreground">
-					Cost Efficiency and Speed are inverted — higher bars mean cheaper / faster. Daily costs assume ~
-					{TASKS_PER_DAY} tasks per agent per day (~6 productive hours).
-				</p>
+			{/* ── Main Content ──────────────────────────────────────────── */}
+			<div className="container mx-auto max-w-screen-lg px-4 pb-20 sm:px-6 lg:px-8">
+				<motion.div
+					className="flex flex-col gap-8"
+					initial="hidden"
+					whileInView="visible"
+					viewport={{ once: true }}
+					variants={containerVariants}>
+					{/* ── Filters Section ────────────────────────────────────── */}
+					<motion.section
+						className="rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm"
+						variants={fadeUpVariants}>
+						<div className="mb-5 flex items-center gap-2.5">
+							<div
+								className={`flex size-8 items-center justify-center rounded-lg ${theme.iconBg} ${theme.iconText}`}>
+								<SlidersHorizontal className="size-4" />
+							</div>
+							<h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+								Filters
+							</h2>
+						</div>
 
-				{chartData.length === 0 ? (
-					<div className="flex h-48 items-center justify-center text-muted-foreground">
-						No candidates match the current filters.
-					</div>
-				) : (
-					<ResponsiveContainer width="100%" height={chartHeight}>
-						<BarChart
-							data={chartData}
-							layout="vertical"
-							margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-							<XAxis type="number" domain={[0, 100]} tickFormatter={(v: number) => `${v}`} />
-							<YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 12 }} />
-							<Tooltip content={<CustomTooltip />} />
-							<Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
-							<Bar
-								dataKey="composite"
-								name={
-									selectedLanguage === "all"
-										? "Composite"
-										: `${LANGUAGES.find((l) => l.key === selectedLanguage)?.label ?? "Language"} Score`
-								}
-								fill={DIMENSION_COLORS.composite}
-								radius={[0, 4, 4, 0]}
-								barSize={12}
-							/>
-							<Bar
-								dataKey="success"
-								name="Success Rate"
-								fill={DIMENSION_COLORS.success}
-								radius={[0, 4, 4, 0]}
-								barSize={12}
-							/>
-							<Bar
-								dataKey="costEfficiency"
-								name="Cost Efficiency"
-								fill={DIMENSION_COLORS.cost}
-								radius={[0, 4, 4, 0]}
-								barSize={12}
-							/>
-							<Bar
-								dataKey="speed"
-								name="Speed"
-								fill={DIMENSION_COLORS.speed}
-								radius={[0, 4, 4, 0]}
-								barSize={12}
-							/>
-						</BarChart>
-					</ResponsiveContainer>
-				)}
-			</section>
+						<div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-10">
+							{/* Language toggle pills */}
+							<div className="flex-1">
+								<h3 className="mb-3 text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">
+									Score View
+								</h3>
+								<div className="flex flex-wrap gap-2">
+									<button
+										onClick={() => setSelectedLanguage("all")}
+										className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
+											selectedLanguage === "all"
+												? theme.pillActive
+												: "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+										}`}>
+										All Languages
+									</button>
+									{LANGUAGES.map(({ key, label }) => (
+										<button
+											key={key}
+											onClick={() => setSelectedLanguage(key)}
+											className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
+												selectedLanguage === key
+													? theme.pillActive
+													: "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+											}`}>
+											{label}
+										</button>
+									))}
+								</div>
+							</div>
 
-			{/* ── Export Buttons ──────────────────────────────────────────── */}
-			<section className="flex flex-wrap gap-3">
-				<button
-					onClick={handleCopySettings}
-					className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
-					{copiedSettings ? (
-						<>
-							<Check className="size-4 text-green-500" />
-							Copied!
-						</>
-					) : (
-						<>
-							<Copy className="size-4" />
-							📋 Copy Settings
-						</>
-					)}
-				</button>
-				<button
-					onClick={handleExportCsv}
-					className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
-					<FileSpreadsheet className="size-4" />
-					📄 Export CSV
-				</button>
-				<button
-					onClick={handleExportJson}
-					className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
-					<FileJson className="size-4" />
-					📦 Export JSON
-				</button>
-			</section>
+							{/* Min success rate slider */}
+							<div className="w-full lg:w-56">
+								<h3 className="mb-3 text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">
+									Min Success Rate
+								</h3>
+								<div className="flex items-center gap-3">
+									<input
+										type="range"
+										min={0}
+										max={100}
+										value={minSuccessRate}
+										onChange={(e) => setMinSuccessRate(Number(e.target.value))}
+										className={`h-2 flex-1 cursor-pointer appearance-none rounded-full bg-muted/50 ${theme.sliderAccent}`}
+									/>
+									<span
+										className={`inline-flex min-w-[3.5rem] items-center justify-center rounded-lg border border-border/50 bg-muted/30 px-2.5 py-1 text-center text-sm font-bold tabular-nums ${theme.accentLight} ${theme.accentDark}`}>
+										{minSuccessRate}%
+									</span>
+								</div>
+							</div>
+						</div>
 
-			{/* ── Bottom Navigation ───────────────────────────────────────── */}
-			<nav className="flex flex-col gap-3 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
-				<div className="flex flex-col gap-2">
-					<Link
-						href={`/evals/workers/${roleId}`}
-						className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-						<ArrowLeft className="size-4" />
-						Back to {role.name} candidates
-					</Link>
-					<Link
-						href="/evals/workers"
-						className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-						<ArrowLeft className="size-4" />
-						Back to all roles
-					</Link>
-				</div>
-			</nav>
-		</div>
+						{/* Provider checkboxes */}
+						<div className="mt-5 border-t border-border/30 pt-5">
+							<h3 className="mb-3 text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">
+								Providers
+							</h3>
+							<div className="flex flex-wrap gap-x-5 gap-y-2.5">
+								{activeProviders.map((p) => (
+									<label
+										key={p}
+										className="group inline-flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1 text-sm transition-colors hover:bg-muted/30">
+										<input
+											type="checkbox"
+											checked={enabledProviders.has(p)}
+											onChange={() => toggleProvider(p)}
+											className={`size-4 rounded border-border ${theme.checkboxAccent}`}
+										/>
+										<span className="font-medium text-foreground/80 transition-colors group-hover:text-foreground">
+											{PROVIDER_LABELS[p] ?? p}
+										</span>
+									</label>
+								))}
+							</div>
+						</div>
+					</motion.section>
+
+					{/* ── Chart Section ──────────────────────────────────────── */}
+					<motion.section
+						className="rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm"
+						variants={fadeUpVariants}>
+						<div className="mb-1 flex items-center gap-2.5">
+							<h2 className="text-lg font-bold tracking-tight">
+								{selectedLanguage === "all"
+									? "Composite Score"
+									: `${LANGUAGES.find((l) => l.key === selectedLanguage)?.label} Score`}{" "}
+								Comparison
+							</h2>
+						</div>
+						<p className="mb-6 text-xs leading-relaxed text-muted-foreground/80">
+							Cost Efficiency and Speed are inverted — higher bars mean cheaper / faster. Daily costs
+							assume ~{TASKS_PER_DAY} tasks per agent per day (~6 productive hours).
+						</p>
+
+						{chartData.length === 0 ? (
+							<div className="flex h-48 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/50 text-muted-foreground">
+								<SlidersHorizontal className="size-6 text-muted-foreground/50" />
+								<p className="text-sm">No candidates match the current filters.</p>
+								<p className="text-xs text-muted-foreground/60">
+									Try adjusting the provider or success rate filters.
+								</p>
+							</div>
+						) : (
+							<div className="rounded-xl bg-background/30 p-2">
+								<ResponsiveContainer width="100%" height={chartHeight}>
+									<BarChart
+										data={chartData}
+										layout="vertical"
+										margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+										<XAxis
+											type="number"
+											domain={[0, 100]}
+											tickFormatter={(v: number) => `${v}`}
+											stroke="hsl(var(--muted-foreground))"
+											strokeOpacity={0.3}
+											tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+											axisLine={false}
+										/>
+										<YAxis
+											type="category"
+											dataKey="name"
+											width={150}
+											tick={{ fontSize: 12, fill: "hsl(var(--foreground))", fontWeight: 500 }}
+											axisLine={false}
+											tickLine={false}
+										/>
+										<Tooltip
+											content={<CustomTooltip />}
+											cursor={{ fill: "hsl(var(--muted))", fillOpacity: 0.15 }}
+										/>
+										<Legend
+											wrapperStyle={{
+												fontSize: 12,
+												paddingTop: 12,
+											}}
+										/>
+										<Bar
+											dataKey="composite"
+											name={
+												selectedLanguage === "all"
+													? "Composite"
+													: `${LANGUAGES.find((l) => l.key === selectedLanguage)?.label ?? "Language"} Score`
+											}
+											fill={DIMENSION_COLORS.composite}
+											radius={[0, 4, 4, 0]}
+											barSize={12}
+										/>
+										<Bar
+											dataKey="success"
+											name="Success Rate"
+											fill={DIMENSION_COLORS.success}
+											radius={[0, 4, 4, 0]}
+											barSize={12}
+										/>
+										<Bar
+											dataKey="costEfficiency"
+											name="Cost Efficiency"
+											fill={DIMENSION_COLORS.cost}
+											radius={[0, 4, 4, 0]}
+											barSize={12}
+										/>
+										<Bar
+											dataKey="speed"
+											name="Speed"
+											fill={DIMENSION_COLORS.speed}
+											radius={[0, 4, 4, 0]}
+											barSize={12}
+										/>
+									</BarChart>
+								</ResponsiveContainer>
+							</div>
+						)}
+					</motion.section>
+
+					{/* ── Export Section ──────────────────────────────────────── */}
+					<motion.section
+						className="rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm"
+						variants={fadeUpVariants}>
+						<div className="mb-5 flex items-center gap-2.5">
+							<div
+								className={`flex size-8 items-center justify-center rounded-lg ${theme.iconBg} ${theme.iconText}`}>
+								<Download className="size-4" />
+							</div>
+							<h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+								Export Data
+							</h2>
+						</div>
+
+						<div className="flex flex-wrap gap-3">
+							<button
+								onClick={handleCopySettings}
+								className={`group inline-flex items-center gap-2.5 rounded-xl border border-border/50 bg-card/80 px-5 py-3 text-sm font-medium text-foreground/80 backdrop-blur-sm transition-all duration-200 hover:border-border hover:bg-card hover:text-foreground hover:shadow-lg active:scale-[0.98]`}>
+								{copiedSettings ? (
+									<>
+										<Check className="size-4 text-green-500" />
+										<span className="text-green-500">Copied!</span>
+									</>
+								) : (
+									<>
+										<Copy className="size-4" />
+										Copy Settings JSON
+									</>
+								)}
+							</button>
+							<button
+								onClick={handleExportCsv}
+								className="group inline-flex items-center gap-2.5 rounded-xl border border-border/50 bg-card/80 px-5 py-3 text-sm font-medium text-foreground/80 backdrop-blur-sm transition-all duration-200 hover:border-border hover:bg-card hover:text-foreground hover:shadow-lg active:scale-[0.98]">
+								<FileSpreadsheet className="size-4" />
+								Export CSV
+							</button>
+							<button
+								onClick={handleExportJson}
+								className="group inline-flex items-center gap-2.5 rounded-xl border border-border/50 bg-card/80 px-5 py-3 text-sm font-medium text-foreground/80 backdrop-blur-sm transition-all duration-200 hover:border-border hover:bg-card hover:text-foreground hover:shadow-lg active:scale-[0.98]">
+								<FileJson className="size-4" />
+								Export JSON
+							</button>
+						</div>
+					</motion.section>
+
+					{/* ── Bottom Navigation ───────────────────────────────────── */}
+					<motion.section className="border-t border-border/50 pt-10" variants={fadeUpVariants}>
+						<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+							<div>
+								<Link
+									href={`/evals/workers/${roleId}`}
+									className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/50 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-200 hover:border-border hover:text-foreground">
+									<ArrowLeft className="size-4" />
+									Back to {role.name} candidates
+								</Link>
+							</div>
+							<div className="flex flex-wrap gap-3">
+								<Link
+									href="/evals/workers"
+									className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/50 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-200 hover:border-border hover:text-foreground">
+									<ArrowLeft className="size-3.5" />
+									All roles
+								</Link>
+								<Link
+									href="/evals"
+									className={`inline-flex items-center gap-2 rounded-full border ${theme.methodologyBorder} bg-card/50 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-300 hover:text-foreground`}>
+									📋 Raw eval data
+									<ArrowRight className="size-3.5" />
+								</Link>
+							</div>
+						</div>
+					</motion.section>
+				</motion.div>
+			</div>
+		</>
 	)
 }
