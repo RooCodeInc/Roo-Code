@@ -1550,10 +1550,16 @@ export const webviewMessageHandler = async (
 			await provider.postStateToWebview()
 			break
 
-		case "autoApprovalEnabled":
-			await updateGlobalState("autoApprovalEnabled", message.bool ?? false)
+		case "autoApprovalEnabled": {
+			const enabled = message.bool ?? false
+			await updateGlobalState("autoApprovalEnabled", enabled)
+			// Cancel any pending auto-approval timeout when auto-approve is disabled
+			if (!enabled) {
+				provider.getCurrentTask()?.cancelAutoApprovalTimeout()
+			}
 			await provider.postStateToWebview()
 			break
+		}
 		case "enhancePrompt":
 			if (message.text) {
 				try {

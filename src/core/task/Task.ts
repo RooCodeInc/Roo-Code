@@ -1526,11 +1526,26 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} else if (approval.decision === "deny") {
 			this.denyAsk()
 		} else if (approval.decision === "timeout") {
+			// Capture the ask timestamp to detect stale callbacks (askTs === this.lastMessageTs at this point)
+			const scheduledAskTs = askTs
 			// Store the auto-approval timeout so it can be cancelled if user interacts
-			this.autoApprovalTimeoutRef = setTimeout(() => {
-				const { askResponse, text, images } = approval.fn()
-				this.handleWebviewAskResponse(askResponse, text, images)
+			this.autoApprovalTimeoutRef = setTimeout(async () => {
 				this.autoApprovalTimeoutRef = undefined
+				try {
+					// Defensive gate: re-check that auto-approval is still enabled and
+					// this is still the active ask (not superseded by a new message).
+					const currentProvider = this.providerRef.deref()
+					const currentState = currentProvider ? await currentProvider.getState() : undefined
+					if (!currentState?.autoApprovalEnabled || this.lastMessageTs !== scheduledAskTs) {
+						return
+					}
+					const { askResponse, text, images } = approval.fn()
+					this.handleWebviewAskResponse(askResponse, text, images)
+				} catch {
+					// If anything fails (state read, approval fn, or response handling),
+					// do not auto-commit.
+					return
+				}
 			}, approval.timeout)
 			timeouts.push(this.autoApprovalTimeoutRef)
 		}
