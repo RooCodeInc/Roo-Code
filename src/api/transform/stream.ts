@@ -60,7 +60,10 @@ export interface ApiStreamThinkingCompleteChunk {
 
 export interface ApiStreamUsageChunk {
 	type: "usage"
+	/** Total input tokens (cached + non-cached). */
 	inputTokens: number
+	/** Non-cached input tokens, when available/derivable from provider usage. */
+	nonCachedInputTokens?: number
 	outputTokens: number
 	cacheWriteTokens?: number
 	cacheReadTokens?: number

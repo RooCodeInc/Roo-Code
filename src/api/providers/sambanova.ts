@@ -14,8 +14,10 @@ import {
 	handleAiSdkError,
 	flattenAiSdkMessagesToStringContent,
 } from "../transform/ai-sdk"
+import { applyPromptCacheToMessages, mergeProviderOptions } from "../transform/prompt-cache"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { normalizeProviderUsage } from "./utils/normalize-provider-usage"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
@@ -84,18 +86,14 @@ export class SambaNovaHandler extends BaseProvider implements SingleCompletionHa
 			}
 		},
 	): ApiStreamUsageChunk {
-		// Extract cache metrics from SambaNova's providerMetadata if available
-		const cacheReadTokens = providerMetadata?.sambanova?.promptCacheHitTokens ?? usage.details?.cachedInputTokens
-		const cacheWriteTokens = providerMetadata?.sambanova?.promptCacheMissTokens
-
-		return {
-			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
-			cacheReadTokens,
-			cacheWriteTokens,
-			reasoningTokens: usage.details?.reasoningTokens,
-		}
+		const { chunk } = normalizeProviderUsage({
+			provider: "sambanova",
+			apiProtocol: "openai",
+			usage: usage as any,
+			providerMetadata: providerMetadata as Record<string, unknown> | undefined,
+			modelInfo: this.getModel().info,
+		})
+		return chunk
 	}
 
 	/**
@@ -122,19 +120,37 @@ export class SambaNovaHandler extends BaseProvider implements SingleCompletionHa
 		const castMessages = messages as ModelMessage[]
 		const aiSdkMessages = info.supportsImages ? castMessages : flattenAiSdkMessagesToStringContent(castMessages)
 
+		const promptCache = applyPromptCacheToMessages({
+			adapter: "ai-sdk",
+			overrideKey: "sambanova",
+			messages: aiSdkMessages,
+			modelInfo: {
+				supportsPromptCache: info.supportsPromptCache,
+				promptCacheRetention: info.promptCacheRetention,
+			},
+			settings: this.options,
+		})
+
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		const aiSdkTools = convertToolsForAiSdk(openAiTools, {
+			functionToolProviderOptions: promptCache.toolProviderOptions,
+		}) as ToolSet | undefined
+
+		const providerOptions = mergeProviderOptions(undefined, promptCache.providerOptionsPatch)
 
 		// Build the request options
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: promptCache.systemProviderOptions
+				? ({ role: "system", content: systemPrompt, providerOptions: promptCache.systemProviderOptions } as any)
+				: systemPrompt,
 			messages: aiSdkMessages,
 			temperature: this.options.modelTemperature ?? temperature ?? SAMBANOVA_DEFAULT_TEMPERATURE,
 			maxOutputTokens: this.getMaxOutputTokens(),
 			tools: aiSdkTools,
 			toolChoice: mapToolChoice(metadata?.tool_choice),
+			...(providerOptions ? ({ providerOptions } as Record<string, unknown>) : {}),
 		}
 
 		// Use streamText for streaming responses

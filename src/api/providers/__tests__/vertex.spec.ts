@@ -191,10 +191,48 @@ describe("VertexHandler", () => {
 
 			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.objectContaining({
-					system: systemPrompt,
+					system: expect.objectContaining({
+						role: "system",
+						content: systemPrompt,
+					}),
 					temperature: 1,
 				}),
 			)
+		})
+
+		it("maps cache read tokens from Google usageMetadata fallback", async () => {
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "Hello" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({
+					inputTokens: 11847,
+					outputTokens: 102,
+				}),
+				providerMetadata: Promise.resolve({
+					google: {
+						usageMetadata: {
+							cachedContentTokenCount: 8245,
+						},
+					},
+				}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks: ApiStreamChunk[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((chunk) => chunk.type === "usage")
+			expect(usageChunk).toMatchObject({
+				type: "usage",
+				inputTokens: 11847,
+				outputTokens: 102,
+				cacheReadTokens: 8245,
+			})
 		})
 	})
 

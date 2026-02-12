@@ -505,7 +505,7 @@ describe("OpenRouterHandler", () => {
 			expect(chunks[3]).toEqual({ type: "tool_call_end", id: "call_1" })
 		})
 
-		it("ignores tool-call events (handled by tool-input-start/delta/end)", async () => {
+		it("handles tool-call events without breaking usage emission", async () => {
 			const handler = new OpenRouterHandler(mockOptions)
 
 			const mockFullStream = (async function* () {
@@ -530,10 +530,8 @@ describe("OpenRouterHandler", () => {
 				chunks.push(chunk)
 			}
 
-			// tool-call is intentionally ignored by processAiSdkStreamPart,
-			// only usage chunk should be present
-			expect(chunks).toHaveLength(1)
-			expect(chunks[0]).toMatchObject({ type: "usage" })
+			const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
+			expect(usageChunks).toHaveLength(1)
 		})
 
 		it("handles API errors gracefully", async () => {
@@ -672,12 +670,10 @@ describe("OpenRouterHandler", () => {
 				}),
 			)
 
-			// Verify that providerOptions does NOT contain extended_thinking
-			expect(mockStreamText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					providerOptions: undefined,
-				}),
-			)
+			// Provider options are omitted unless provider routing/patches are present.
+			const request = mockStreamText.mock.calls.at(-1)?.[0]
+			expect(request).toBeDefined()
+			expect(request).not.toHaveProperty("providerOptions")
 		})
 
 		it("does not pass reasoning via extraBody when reasoning is disabled", async () => {
@@ -710,12 +706,10 @@ describe("OpenRouterHandler", () => {
 				}),
 			)
 
-			// Verify that providerOptions is undefined when no provider routing
-			expect(mockStreamText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					providerOptions: undefined,
-				}),
-			)
+			// Provider options are omitted unless provider routing/patches are present.
+			const request = mockStreamText.mock.calls.at(-1)?.[0]
+			expect(request).toBeDefined()
+			expect(request).not.toHaveProperty("providerOptions")
 		})
 	})
 
@@ -984,7 +978,12 @@ describe("OpenRouterHandler", () => {
 
 			// System prompt should be passed directly via streamText
 			const streamTextCall = mockStreamText.mock.calls[0][0]
-			expect(streamTextCall.system).toBe("test")
+			expect(streamTextCall.system).toEqual(
+				expect.objectContaining({
+					role: "system",
+					content: "test",
+				}),
+			)
 
 			// Messages should be the converted AI SDK messages (no system-role message injected)
 			const systemMsgs = streamTextCall.messages.filter((m: any) => m.role === "system")
@@ -1018,7 +1017,12 @@ describe("OpenRouterHandler", () => {
 
 			// System prompt should be passed directly via streamText
 			const streamTextCall = mockStreamText.mock.calls[0][0]
-			expect(streamTextCall.system).toBe("test")
+			expect(streamTextCall.system).toEqual(
+				expect.objectContaining({
+					role: "system",
+					content: "test",
+				}),
+			)
 
 			// No system-role message should be injected
 			const systemMsgs = streamTextCall.messages.filter((m: any) => m.role === "system")

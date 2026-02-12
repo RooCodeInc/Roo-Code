@@ -39,6 +39,7 @@ vi.mock("@ai-sdk/amazon-bedrock", () => ({
 }))
 
 import { AwsBedrockHandler } from "../bedrock"
+import * as aiSdkTransform from "../../transform/ai-sdk"
 import {
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	BEDROCK_SERVICE_TIER_MODEL_IDS,
@@ -488,6 +489,46 @@ describe("AwsBedrockHandler", () => {
 			})
 		}
 
+		it("uses non-cached input tokens from AI SDK v6 usage details", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Hello" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 13_071,
+					outputTokens: 93,
+					inputTokenDetails: {
+						noCacheTokens: 10,
+						cacheWriteTokens: 489,
+						cacheReadTokens: 12_572,
+					},
+				}),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const generator = handler.createMessage("", [
+				{
+					role: "user",
+					content: [{ type: "text", text: "Test prompt" }],
+				},
+			] as any)
+			const chunks: any[] = []
+			for await (const chunk of generator) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((chunk) => chunk.type === "usage")
+			expect(usageChunk).toMatchObject({
+				type: "usage",
+				inputTokens: 10,
+				outputTokens: 93,
+				cacheWriteTokens: 489,
+				cacheReadTokens: 12_572,
+			})
+		})
+
 		it("should properly pass image content through to streamText via AI SDK messages", async () => {
 			setupMockStreamText()
 
@@ -652,12 +693,56 @@ describe("AwsBedrockHandler", () => {
 			}
 
 			const callArgs = mockStreamText.mock.calls[0][0]
-			expect(callArgs.systemProviderOptions).toEqual({
-				bedrock: { cachePoint: { type: "default" } },
+			expect(callArgs.system).toEqual({
+				role: "system",
+				content: "",
+				providerOptions: {
+					bedrock: { cachePoint: { type: "default" } },
+				},
 			})
 			expect(callArgs.messages[0].providerOptions).toEqual({
 				bedrock: { cachePoint: { type: "default" } },
 			})
+		})
+
+		it("keeps standard tool conversion path without tool cache provider overrides", async () => {
+			setupMockStreamText()
+			const convertToolsSpy = vi.spyOn(aiSdkTransform, "convertToolsForAiSdk").mockReturnValue(undefined)
+
+			const generator = handler.createMessage(
+				"",
+				[
+					{
+						role: "user",
+						content: "Test prompt",
+					},
+				],
+				{
+					taskId: "test-task",
+					tools: [
+						{
+							type: "function",
+							function: {
+								name: "get_weather",
+								description: "Get weather",
+								parameters: {
+									type: "object",
+									properties: { location: { type: "string" } },
+									required: ["location"],
+								},
+							},
+						},
+					] as any,
+				},
+			)
+			for await (const _chunk of generator) {
+				// consume
+			}
+
+			expect(convertToolsSpy).toHaveBeenCalledWith(expect.any(Array))
+			const firstCallArgs = convertToolsSpy.mock.calls[0] ?? []
+			expect(firstCallArgs).toHaveLength(1)
+			convertToolsSpy.mockRestore()
 		})
 	})
 

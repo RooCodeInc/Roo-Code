@@ -21,9 +21,11 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyPromptCacheToMessages, mergeProviderOptions } from "../transform/prompt-cache"
 import { t } from "i18next"
 import type { ApiStream, ApiStreamUsageChunk, GroundingSource } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { normalizeProviderUsage } from "./utils/normalize-provider-usage"
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseProvider } from "./base-provider"
@@ -107,6 +109,17 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 		// Convert messages to AI SDK format
 		const aiSdkMessages = filteredMessages as ModelMessage[]
 
+		const promptCache = applyPromptCacheToMessages({
+			adapter: "ai-sdk",
+			overrideKey: "vertex",
+			messages: aiSdkMessages,
+			modelInfo: {
+				supportsPromptCache: info.supportsPromptCache,
+				promptCacheRetention: info.promptCacheRetention,
+			},
+			settings: this.options,
+		})
+
 		// Convert tools to OpenAI format first, then to AI SDK format
 		let openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 
@@ -116,7 +129,9 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 			openAiTools = openAiTools.filter((tool) => tool.type === "function" && allowedSet.has(tool.function.name))
 		}
 
-		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		const aiSdkTools = convertToolsForAiSdk(openAiTools, {
+			functionToolProviderOptions: promptCache.toolProviderOptions,
+		}) as ToolSet | undefined
 
 		// Build tool choice - use 'required' when allowedFunctionNames restricts available tools
 		const toolChoice =
@@ -125,19 +140,26 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 				: mapToolChoice(metadata?.tool_choice)
 
 		// Build the request options
+		const providerOptions = mergeProviderOptions(
+			thinkingConfig ? ({ vertex: { thinkingConfig } } as Record<string, unknown>) : undefined,
+			promptCache.providerOptionsPatch,
+		)
+
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: this.provider(modelId),
-			system: systemInstruction,
+			system: promptCache.systemProviderOptions
+				? ({
+						role: "system",
+						content: systemInstruction,
+						providerOptions: promptCache.systemProviderOptions,
+					} as any)
+				: systemInstruction,
 			messages: aiSdkMessages,
 			temperature: temperatureConfig,
 			maxOutputTokens,
 			tools: aiSdkTools,
 			toolChoice,
-			// Add thinking/reasoning configuration if present
-			// Cast to any to bypass strict JSONObject typing - the AI SDK accepts the correct runtime values
-			...(thinkingConfig && {
-				providerOptions: { vertex: { thinkingConfig } } as any,
-			}),
+			...(providerOptions ? ({ providerOptions } as Record<string, unknown>) : {}),
 		}
 
 		try {
@@ -227,6 +249,14 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: {
+				cacheReadTokens?: number
+			}
+			outputTokenDetails?: {
+				reasoningTokens?: number
+			}
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -235,23 +265,22 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 		info: ModelInfo,
 		providerMetadata?: Record<string, unknown>,
 	): ApiStreamUsageChunk {
-		const inputTokens = usage.inputTokens || 0
-		const outputTokens = usage.outputTokens || 0
-		const cacheReadTokens = usage.details?.cachedInputTokens
-		const reasoningTokens = usage.details?.reasoningTokens
+		const normalized = normalizeProviderUsage({
+			provider: "vertex",
+			apiProtocol: "openai",
+			usage: usage as any,
+			providerMetadata,
+			modelInfo: info,
+		})
 
 		return {
-			type: "usage",
-			inputTokens,
-			outputTokens,
-			cacheReadTokens,
-			reasoningTokens,
+			...normalized.chunk,
 			totalCost: this.calculateCost({
 				info,
-				inputTokens,
-				outputTokens,
-				cacheReadTokens,
-				reasoningTokens,
+				inputTokens: normalized.canonical.inputTokensTotal,
+				outputTokens: normalized.canonical.outputTokens,
+				cacheReadTokens: normalized.canonical.cacheReadTokens,
+				reasoningTokens: normalized.canonical.reasoningTokens ?? 0,
 			}),
 		}
 	}

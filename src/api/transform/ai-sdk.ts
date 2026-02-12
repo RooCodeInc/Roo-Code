@@ -377,6 +377,9 @@ export function flattenAiSdkMessagesToStringContent(
  */
 export function convertToolsForAiSdk(
 	tools: OpenAI.Chat.ChatCompletionTool[] | undefined,
+	options?: {
+		functionToolProviderOptions?: Record<string, unknown>
+	},
 ): Record<string, ReturnType<typeof createTool>> | undefined {
 	if (!tools || tools.length === 0) {
 		return undefined
@@ -389,6 +392,9 @@ export function convertToolsForAiSdk(
 			toolSet[t.function.name] = createTool({
 				description: t.function.description,
 				inputSchema: jsonSchema(t.function.parameters as any),
+				...(options?.functionToolProviderOptions
+					? { providerOptions: options.functionToolProviderOptions as any }
+					: {}),
 			})
 		}
 	}
@@ -473,10 +479,28 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 			}
 			break
 
+		case "tool-call": {
+			// Some providers emit only a complete tool-call event (without
+			// tool-input-start/delta/end). Convert it into a legacy tool_call chunk so
+			// Task.ts can parse and execute it. Task.ts deduplicates by tool call ID to
+			// avoid duplicate execution when both formats are emitted.
+			const toolCallId = (part as any).toolCallId ?? (part as any).id
+			const toolName = (part as any).toolName ?? (part as any).name
+			const input = (part as any).input ?? (part as any).arguments
+			const serializedArguments = typeof input === "string" ? input : JSON.stringify(input ?? {})
+
+			if (toolCallId && toolName) {
+				yield {
+					type: "tool_call",
+					id: toolCallId,
+					name: toolName,
+					arguments: serializedArguments,
+				}
+			}
+			break
+		}
+
 		// Ignore lifecycle events that don't need to yield chunks.
-		// Note: tool-call is intentionally ignored because tool-input-start/delta/end already
-		// provide complete tool call information. Emitting tool-call would cause duplicate
-		// tools in the UI for AI SDK providers (e.g., DeepSeek, Moonshot).
 		case "text-start":
 		case "text-end":
 		case "reasoning-start":
@@ -489,7 +513,6 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 		case "file":
 		case "tool-result":
 		case "tool-error":
-		case "tool-call":
 		case "raw":
 			break
 	}

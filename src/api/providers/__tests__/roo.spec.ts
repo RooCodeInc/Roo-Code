@@ -10,10 +10,12 @@ import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 const mockStreamText = vitest.fn()
 const mockGenerateText = vitest.fn()
 const mockCreateOpenAICompatible = vitest.fn()
+const mockCreateGateway = vitest.fn()
 
 vitest.mock("ai", () => ({
 	streamText: (...args: unknown[]) => mockStreamText(...args),
 	generateText: (...args: unknown[]) => mockGenerateText(...args),
+	createGateway: (...args: unknown[]) => mockCreateGateway(...args),
 	tool: vitest.fn((t) => t),
 	jsonSchema: vitest.fn((s) => s),
 }))
@@ -96,6 +98,8 @@ vitest.mock("../../providers/fetchers/modelCache", () => ({
 import { RooHandler } from "../roo"
 import { CloudService } from "@roo-code/cloud"
 
+const mockGatewayProvider = vitest.fn((modelId: string) => ({ modelId, provider: "roo-gateway" }))
+
 /**
  * Helper to create a mock stream result for streamText.
  */
@@ -105,6 +109,15 @@ function createMockStreamResult(options?: {
 	toolCallParts?: Array<{ type: string; id?: string; toolName?: string; delta?: string }>
 	inputTokens?: number
 	outputTokens?: number
+	usage?: {
+		inputTokens?: number
+		outputTokens?: number
+		inputTokenDetails?: {
+			noCacheTokens?: number
+			cacheReadTokens?: number
+			cacheWriteTokens?: number
+		}
+	}
 	providerMetadata?: Record<string, any>
 }) {
 	const {
@@ -130,7 +143,7 @@ function createMockStreamResult(options?: {
 
 	return {
 		fullStream,
-		usage: Promise.resolve({ inputTokens, outputTokens }),
+		usage: Promise.resolve(options?.usage ?? { inputTokens, outputTokens }),
 		providerMetadata: Promise.resolve(providerMetadata),
 	}
 }
@@ -156,6 +169,8 @@ describe("RooHandler", () => {
 		mockStreamText.mockClear()
 		mockGenerateText.mockClear()
 		mockCreateOpenAICompatible.mockClear()
+		mockCreateGateway.mockClear()
+		mockCreateGateway.mockReturnValue(mockGatewayProvider)
 		vitest.clearAllMocks()
 	})
 
@@ -313,7 +328,10 @@ describe("RooHandler", () => {
 			// Verify streamText was called with system prompt and converted messages
 			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.objectContaining({
-					system: systemPrompt,
+					system: expect.objectContaining({
+						role: "system",
+						content: systemPrompt,
+					}),
 					messages: expect.any(Array),
 				}),
 			)
@@ -352,6 +370,32 @@ describe("RooHandler", () => {
 					}),
 				}),
 			)
+		})
+
+		it("uses ai-sdk gateway provider when ROO_CODE_ROUTER_USE_GATEWAY_SDK is enabled", async () => {
+			process.env.ROO_CODE_ROUTER_USE_GATEWAY_SDK = "true"
+
+			mockStreamText.mockReturnValue(createMockStreamResult())
+
+			const gatewayHandler = new RooHandler(mockOptions)
+			const stream = gatewayHandler.createMessage(systemPrompt, messages, { taskId: "gw-task-1" })
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			expect(mockCreateGateway).toHaveBeenCalledWith(
+				expect.objectContaining({
+					apiKey: "test-session-token",
+					baseURL: "https://api.roocode.com/proxy/v3/ai",
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+						"X-Roo-Task-ID": "gw-task-1",
+					}),
+				}),
+			)
+			expect(mockCreateOpenAICompatible).not.toHaveBeenCalled()
+
+			delete process.env.ROO_CODE_ROUTER_USE_GATEWAY_SDK
 		})
 	})
 
@@ -767,6 +811,124 @@ describe("RooHandler", () => {
 			expect(usageChunk).toBeDefined()
 			expect(usageChunk.cacheWriteTokens).toBe(20)
 			expect(usageChunk.cacheReadTokens).toBe(30)
+		})
+
+		it("should read anthropic/gateway usage metadata when roo metadata is absent", async () => {
+			const anthropicHandler = new RooHandler({
+				apiModelId: "anthropic/claude-haiku-4.5",
+			})
+
+			mockStreamText.mockReturnValue(
+				createMockStreamResult({
+					usage: {
+						inputTokens: 12_582,
+						outputTokens: 100,
+					},
+					providerMetadata: {
+						anthropic: {
+							usage: {
+								cache_creation_input_tokens: 12_572,
+								cache_read_input_tokens: 0,
+							},
+						},
+						gateway: {
+							cost: "0.081125",
+						},
+					},
+				}),
+			)
+
+			const stream = anthropicHandler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toBeDefined()
+			expect(usageChunk.inputTokens).toBe(12_582)
+			expect(usageChunk.nonCachedInputTokens).toBe(10)
+			expect(usageChunk.outputTokens).toBe(100)
+			expect(usageChunk.cacheWriteTokens).toBe(12_572)
+			expect(usageChunk.cacheReadTokens).toBe(0)
+			expect(usageChunk.totalCost).toBe(0.081125)
+		})
+
+		it("should fall back to gateway cache metadata when anthropic/roo cache fields are absent", async () => {
+			const anthropicHandler = new RooHandler({
+				apiModelId: "anthropic/claude-haiku-4.5",
+			})
+
+			mockStreamText.mockReturnValue(
+				createMockStreamResult({
+					usage: {
+						inputTokens: 12_592,
+						outputTokens: 100,
+					},
+					providerMetadata: {
+						gateway: {
+							cache_creation_input_tokens: 459,
+							cached_tokens: 12_572,
+							cost: "0.01157975",
+						},
+					},
+				}),
+			)
+
+			const stream = anthropicHandler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toBeDefined()
+			expect(usageChunk.inputTokens).toBe(12_592)
+			expect(usageChunk.nonCachedInputTokens).toBe(0)
+			expect(usageChunk.outputTokens).toBe(100)
+			expect(usageChunk.cacheWriteTokens).toBe(459)
+			expect(usageChunk.cacheReadTokens).toBe(12_572)
+			expect(usageChunk.totalCost).toBe(0.01157975)
+		})
+
+		it("uses non-cached input tokens for anthropic protocol models", async () => {
+			const anthropicHandler = new RooHandler({
+				apiModelId: "anthropic/claude-haiku-4.5",
+			})
+
+			mockStreamText.mockReturnValue(
+				createMockStreamResult({
+					usage: {
+						inputTokens: 13_071,
+						outputTokens: 93,
+						inputTokenDetails: {
+							noCacheTokens: 10,
+							cacheWriteTokens: 489,
+							cacheReadTokens: 12_572,
+						},
+					},
+					providerMetadata: {
+						roo: {
+							cache_creation_input_tokens: 489,
+							cache_read_input_tokens: 12_572,
+						},
+					},
+				}),
+			)
+
+			const stream = anthropicHandler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toBeDefined()
+			expect(usageChunk.inputTokens).toBe(13_071)
+			expect(usageChunk.nonCachedInputTokens).toBe(10)
+			expect(usageChunk.outputTokens).toBe(93)
+			expect(usageChunk.cacheWriteTokens).toBe(489)
+			expect(usageChunk.cacheReadTokens).toBe(12_572)
 		})
 	})
 

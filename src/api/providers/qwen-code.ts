@@ -80,6 +80,7 @@ export class QwenCodeHandler extends OpenAICompatibleHandler implements SingleCo
 			modelInfo,
 			modelMaxTokens: options.modelMaxTokens ?? undefined,
 			temperature: options.modelTemperature ?? undefined,
+			cacheOverrideKey: "qwen-code",
 		}
 
 		super(options, config)

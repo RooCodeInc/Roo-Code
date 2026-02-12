@@ -219,7 +219,7 @@ describe("MoonshotHandler", () => {
 
 			const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
 			expect(usageChunks.length).toBeGreaterThan(0)
-			expect(usageChunks[0].cacheWriteTokens).toBe(0)
+			expect(usageChunks[0].cacheWriteTokens).toBeUndefined()
 			expect(usageChunks[0].cacheReadTokens).toBe(2)
 		})
 	})
@@ -266,7 +266,7 @@ describe("MoonshotHandler", () => {
 			expect(result.type).toBe("usage")
 			expect(result.inputTokens).toBe(100)
 			expect(result.outputTokens).toBe(50)
-			expect(result.cacheWriteTokens).toBe(0)
+			expect(result.cacheWriteTokens).toBeUndefined()
 			expect(result.cacheReadTokens).toBe(20)
 		})
 
@@ -291,7 +291,7 @@ describe("MoonshotHandler", () => {
 			expect(result.type).toBe("usage")
 			expect(result.inputTokens).toBe(100)
 			expect(result.outputTokens).toBe(50)
-			expect(result.cacheWriteTokens).toBe(0)
+			expect(result.cacheWriteTokens).toBeUndefined()
 			expect(result.cacheReadTokens).toBeUndefined()
 		})
 	})
@@ -468,9 +468,9 @@ describe("MoonshotHandler", () => {
 				chunks.push(chunk)
 			}
 
-			// tool-call events are ignored, so no tool_call chunks should be emitted
+			// tool-call events may be surfaced by the shared AI SDK stream processor.
 			const toolCallChunks = chunks.filter((c) => c.type === "tool_call")
-			expect(toolCallChunks.length).toBe(0)
+			expect(toolCallChunks.length).toBeGreaterThanOrEqual(1)
 		})
 	})
 })

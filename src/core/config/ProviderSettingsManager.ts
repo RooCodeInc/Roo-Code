@@ -18,7 +18,6 @@ import { TelemetryService } from "@roo-code/telemetry"
 
 import { Mode, modes } from "../../shared/modes"
 import { buildApiHandler } from "../../api"
-import { migrateLegacyPromptCacheSettings } from "./migrateLegacyPromptCacheSettings"
 
 // Type-safe model migrations mapping
 type ModelMigrations = {
@@ -126,10 +125,6 @@ export class ProviderSettingsManager {
 
 				// Apply model migrations for all providers
 				if (this.applyModelMigrations(providerProfiles)) {
-					isDirty = true
-				}
-
-				if (this.applyLegacyPromptCacheMigration(providerProfiles)) {
 					isDirty = true
 				}
 
@@ -313,22 +308,6 @@ export class ProviderSettingsManager {
 			}
 		} catch (error) {
 			console.error(`[ModelMigration] Failed to apply model migrations:`, error)
-		}
-
-		return migrated
-	}
-
-	private applyLegacyPromptCacheMigration(providerProfiles: ProviderProfiles): boolean {
-		let migrated = false
-
-		for (const [name, apiConfig] of Object.entries(providerProfiles.apiConfigs)) {
-			const migrationResult = migrateLegacyPromptCacheSettings(apiConfig as unknown as Record<string, unknown>)
-			if (!migrationResult.changed) {
-				continue
-			}
-
-			providerProfiles.apiConfigs[name] = migrationResult.config as ProviderSettingsWithId
-			migrated = true
 		}
 
 		return migrated
@@ -666,9 +645,7 @@ export class ProviderSettingsManager {
 			return apiConfig
 		}
 
-		const migrationResult = migrateLegacyPromptCacheSettings(apiConfig as Record<string, unknown>)
-		const config = migrationResult.config as Record<string, unknown>
-
+		const config = apiConfig as Record<string, unknown>
 		const apiProvider = config.apiProvider
 
 		// Check if apiProvider is set and if it's still recognized (active or retired)

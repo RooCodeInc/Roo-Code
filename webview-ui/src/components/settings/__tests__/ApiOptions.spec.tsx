@@ -310,10 +310,10 @@ describe("ApiOptions", () => {
 		})
 
 		expect(screen.getByText("settings:providers.enablePromptCaching")).toBeInTheDocument()
-		expect(screen.getByText("Prompt caching strategy")).toBeInTheDocument()
+		expect(screen.queryByText("Prompt caching strategy")).not.toBeInTheDocument()
 	})
 
-	it("updates prompt caching fields from advanced settings controls", () => {
+	it("updates prompt caching toggle from advanced settings controls", () => {
 		const mockSetApiConfigurationField = vi.fn()
 		renderApiOptions({
 			apiConfiguration: {},
@@ -324,21 +324,6 @@ describe("ApiOptions", () => {
 		const enablePromptCachingInput = enablePromptCachingLabel?.querySelector("input") as HTMLInputElement
 		fireEvent.click(enablePromptCachingInput)
 		expect(mockSetApiConfigurationField).toHaveBeenCalledWith("promptCachingEnabled", false)
-
-		const conservativeOption = screen.getByText("Conservative")
-		const strategySelect = conservativeOption.closest("select") as HTMLSelectElement
-		fireEvent.change(strategySelect, { target: { value: "conservative" } })
-		expect(mockSetApiConfigurationField).toHaveBeenCalledWith("promptCachingStrategy", expect.any(String))
-	})
-
-	it("hides prompt caching strategy selector when prompt caching is disabled", () => {
-		renderApiOptions({
-			apiConfiguration: {
-				promptCachingEnabled: false,
-			},
-		})
-
-		expect(screen.queryByText("Prompt caching strategy")).not.toBeInTheDocument()
 	})
 
 	it("hides all controls when fromWelcomeView is true", () => {

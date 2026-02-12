@@ -13,7 +13,7 @@ import { litellmDefaultModelId, litellmDefaultModelInfo, type ModelInfo, type Mo
 
 import { type ApiHandlerOptions, getModelMaxOutputTokens } from "../../shared/api"
 
-import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
+import { ApiStream } from "../transform/stream"
 
 import { OpenAICompatibleHandler } from "./openai-compatible"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
@@ -34,6 +34,7 @@ export class LiteLLMHandler extends OpenAICompatibleHandler implements SingleCom
 			modelInfo: litellmDefaultModelInfo,
 			temperature: options.modelTemperature ?? 0,
 			modelMaxTokens: options.modelMaxTokens,
+			cacheOverrideKey: "litellm",
 		})
 	}
 
@@ -91,23 +92,5 @@ export class LiteLLMHandler extends OpenAICompatibleHandler implements SingleCom
 	override async completePrompt(prompt: string): Promise<string> {
 		await this.fetchModel()
 		return super.completePrompt(prompt)
-	}
-
-	protected override processUsageMetrics(usage: {
-		inputTokens?: number
-		outputTokens?: number
-		details?: {
-			cachedInputTokens?: number
-			reasoningTokens?: number
-		}
-		raw?: Record<string, unknown>
-	}): ApiStreamUsageChunk {
-		return {
-			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
-			cacheReadTokens: usage.details?.cachedInputTokens,
-			reasoningTokens: usage.details?.reasoningTokens,
-		}
 	}
 }

@@ -21,6 +21,7 @@ import {
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
+import { applyPromptCacheToMessages, mergeProviderOptions } from "../transform/prompt-cache"
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -100,12 +101,27 @@ export class ZAiHandler extends BaseProvider implements SingleCompletionHandler 
 
 		const aiSdkMessages = messages as ModelMessage[]
 
+		const promptCache = applyPromptCacheToMessages({
+			adapter: "ai-sdk",
+			overrideKey: "zai",
+			messages: aiSdkMessages,
+			modelInfo: {
+				supportsPromptCache: info.supportsPromptCache,
+				promptCacheRetention: info.promptCacheRetention,
+			},
+			settings: this.options,
+		})
+
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		const aiSdkTools = convertToolsForAiSdk(openAiTools, {
+			functionToolProviderOptions: promptCache.toolProviderOptions,
+		}) as ToolSet | undefined
 
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: promptCache.systemProviderOptions
+				? ({ role: "system", content: systemPrompt, providerOptions: promptCache.systemProviderOptions } as any)
+				: systemPrompt,
 			messages: aiSdkMessages,
 			temperature: this.options.modelTemperature ?? temperature ?? ZAI_DEFAULT_TEMPERATURE,
 			maxOutputTokens: this.getMaxOutputTokens(),
@@ -124,6 +140,11 @@ export class ZAiHandler extends BaseProvider implements SingleCompletionHandler 
 				},
 			}
 		}
+
+		requestOptions.providerOptions = mergeProviderOptions(
+			requestOptions.providerOptions as Record<string, unknown> | undefined,
+			promptCache.providerOptionsPatch,
+		) as any
 
 		const result = streamText(requestOptions)
 

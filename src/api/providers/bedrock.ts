@@ -36,6 +36,7 @@ import { applyPromptCacheToMessages } from "../transform/prompt-cache"
 import { shouldUseReasoningBudget } from "../../shared/api"
 import { BaseProvider } from "./base-provider"
 import { DEFAULT_HEADERS } from "./constants"
+import { normalizeProviderUsage } from "./utils/normalize-provider-usage"
 import { logger } from "../../utils/logging"
 import { Package } from "../../shared/package"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -266,10 +267,9 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		// Cast providerOptions to any to bypass strict JSONObject typing — the AI SDK accepts the correct runtime values
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: this.provider(modelConfig.id),
-			system: systemPrompt,
-			...(promptCache.systemProviderOptions
-				? ({ systemProviderOptions: promptCache.systemProviderOptions } as Record<string, unknown>)
-				: {}),
+			system: promptCache.systemProviderOptions
+				? ({ role: "system", content: systemPrompt, providerOptions: promptCache.systemProviderOptions } as any)
+				: systemPrompt,
 			messages: aiSdkMessages,
 			temperature: modelConfig.temperature ?? (this.options.modelTemperature as number),
 			maxOutputTokens: modelConfig.maxTokens || (modelConfig.info.maxTokens as number),
@@ -332,17 +332,29 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	 * Process usage metrics from the AI SDK response.
 	 */
 	private processUsageMetrics(
-		usage: { inputTokens?: number; outputTokens?: number },
+		usage: {
+			inputTokens?: number
+			outputTokens?: number
+			inputTokenDetails?: {
+				noCacheTokens?: number
+				cacheReadTokens?: number
+				cacheWriteTokens?: number
+			}
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			outputTokenDetails?: {
+				reasoningTokens?: number
+			}
+		},
 		info: ModelInfo,
 		providerMetadata?: Record<string, Record<string, unknown>>,
 	): ApiStreamUsageChunk {
-		const inputTokens = usage.inputTokens ?? 0
+		const inputTokens = usage.inputTokenDetails?.noCacheTokens ?? usage.inputTokens ?? 0
 		const outputTokens = usage.outputTokens ?? 0
 
 		// The AI SDK exposes reasoningTokens as a top-level field on usage, and also
 		// under outputTokenDetails.reasoningTokens — there is no .details property.
-		const reasoningTokens =
-			(usage as any).reasoningTokens ?? (usage as any).outputTokenDetails?.reasoningTokens ?? 0
+		const reasoningTokens = usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? 0
 
 		// Extract cache metrics primarily from usage (AI SDK standard locations),
 		// falling back to providerMetadata.bedrock.usage for provider-specific fields.
@@ -350,12 +362,11 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			| { cacheReadInputTokens?: number; cacheWriteInputTokens?: number }
 			| undefined
 		const cacheReadTokens =
-			(usage as any).inputTokenDetails?.cacheReadTokens ??
-			(usage as any).cachedInputTokens ??
+			usage.inputTokenDetails?.cacheReadTokens ??
+			usage.cachedInputTokens ??
 			bedrockUsage?.cacheReadInputTokens ??
 			0
-		const cacheWriteTokens =
-			(usage as any).inputTokenDetails?.cacheWriteTokens ?? bedrockUsage?.cacheWriteInputTokens ?? 0
+		const cacheWriteTokens = usage.inputTokenDetails?.cacheWriteTokens ?? bedrockUsage?.cacheWriteInputTokens ?? 0
 
 		// For prompt routers, the AI SDK surfaces the invoked model ID in
 		// providerMetadata.bedrock.trace.promptRouter.invokedModelId.
@@ -383,19 +394,27 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 		}
 
-		return {
-			type: "usage",
-			inputTokens,
-			outputTokens,
-			cacheReadTokens: cacheReadTokens > 0 ? cacheReadTokens : undefined,
-			cacheWriteTokens: cacheWriteTokens > 0 ? cacheWriteTokens : undefined,
-			reasoningTokens: reasoningTokens > 0 ? reasoningTokens : undefined,
-			totalCost: this.calculateCost({
+		const normalized = normalizeProviderUsage({
+			provider: "bedrock",
+			apiProtocol: "anthropic",
+			usage: {
+				...(usage as any),
 				inputTokens,
 				outputTokens,
-				cacheWriteTokens,
-				cacheReadTokens,
 				reasoningTokens,
+			} as any,
+			providerMetadata: providerMetadata as Record<string, unknown> | undefined,
+			modelInfo: costInfo,
+		})
+
+		return {
+			...normalized.chunk,
+			totalCost: this.calculateCost({
+				inputTokens: normalized.canonical.inputTokensNonCached ?? inputTokens,
+				outputTokens: normalized.canonical.outputTokens,
+				cacheWriteTokens: normalized.canonical.cacheWriteTokens,
+				cacheReadTokens: normalized.canonical.cacheReadTokens,
+				reasoningTokens: normalized.canonical.reasoningTokens ?? 0,
 				info: costInfo,
 			}),
 		}

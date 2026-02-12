@@ -43,7 +43,10 @@ describe("GeminiHandler backend support", () => {
 		// Verify streamText was called
 		expect(mockStreamText).toHaveBeenCalledWith(
 			expect.objectContaining({
-				system: "instr",
+				system: expect.objectContaining({
+					role: "system",
+					content: "instr",
+				}),
 			}),
 		)
 	})

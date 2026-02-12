@@ -1,12 +1,10 @@
 import type { ModelInfo, ProviderSettings } from "@roo-code/types"
 import type { ModelMessage } from "ai"
 
-export type PromptCachingStrategy = NonNullable<ProviderSettings["promptCachingStrategy"]>
-export type PromptCacheAdapter = "anthropic" | "bedrock" | "openai-native"
+export type PromptCacheAdapter = "anthropic" | "anthropic-vertex" | "minimax" | "bedrock" | "openai-native" | "ai-sdk"
 
 export interface PromptCachePolicy {
 	enabled: boolean
-	strategy: PromptCachingStrategy
 }
 
 export interface ApplyPromptCacheArgs {
@@ -14,20 +12,15 @@ export interface ApplyPromptCacheArgs {
 	overrideKey: string
 	messages: ModelMessage[]
 	modelInfo: Pick<ModelInfo, "supportsPromptCache" | "promptCacheRetention">
-	settings?: Pick<
-		ProviderSettings,
-		"promptCachingEnabled" | "promptCachingStrategy" | "promptCachingProviderOverrides"
-	>
+	settings?: Pick<ProviderSettings, "promptCachingEnabled" | "promptCachingProviderOverrides">
 }
 
 export interface AppliedPromptCache {
 	enabled: boolean
-	strategy: PromptCachingStrategy
 	systemProviderOptions?: Record<string, unknown>
 	providerOptionsPatch?: Record<string, Record<string, unknown>>
+	toolProviderOptions?: Record<string, unknown>
 }
-
-const DEFAULT_PROMPT_CACHING_STRATEGY: PromptCachingStrategy = "aggressive"
 
 export function resolvePromptCachePolicy({
 	overrideKey,
@@ -35,22 +28,18 @@ export function resolvePromptCachePolicy({
 	supportsPromptCache,
 }: {
 	overrideKey: string
-	settings?: Pick<
-		ProviderSettings,
-		"promptCachingEnabled" | "promptCachingStrategy" | "promptCachingProviderOverrides"
-	>
+	settings?: Pick<ProviderSettings, "promptCachingEnabled" | "promptCachingProviderOverrides">
 	supportsPromptCache: boolean
 }): PromptCachePolicy {
-	const strategy = settings?.promptCachingStrategy ?? DEFAULT_PROMPT_CACHING_STRATEGY
 	if (!supportsPromptCache) {
-		return { enabled: false, strategy }
+		return { enabled: false }
 	}
 
 	const globalEnabled = settings?.promptCachingEnabled ?? true
 	const providerOverride = settings?.promptCachingProviderOverrides?.[overrideKey]
 	const enabled = providerOverride ?? globalEnabled
 
-	return { enabled, strategy }
+	return { enabled }
 }
 
 export function applyPromptCacheToMessages({
@@ -69,51 +58,44 @@ export function applyPromptCacheToMessages({
 	if (!policy.enabled) {
 		return {
 			enabled: false,
-			strategy: policy.strategy,
 		}
 	}
 
 	if (adapter === "openai-native") {
-		if (modelInfo.promptCacheRetention === "24h") {
-			return {
-				enabled: true,
-				strategy: policy.strategy,
-				providerOptionsPatch: {
-					openai: {
-						promptCacheRetention: "24h",
-					},
-				},
-			}
-		}
+		const providerOptionsPatch =
+			modelInfo.promptCacheRetention === "24h"
+				? ({
+						openai: {
+							promptCacheRetention: "24h",
+						},
+					} as const)
+				: undefined
 
 		return {
 			enabled: true,
-			strategy: policy.strategy,
+			providerOptionsPatch,
 		}
 	}
 
 	const adapterConfig = getMessageAdapterConfig(adapter)
-	const checkpointCount = resolveCheckpointCount(policy.strategy, adapterConfig.maxUserCheckpoints)
-	const userIndices = getUserMessageIndices(messages)
-	const targetIndices = userIndices.slice(-checkpointCount)
+	const targetIndices = getNonAssistantMessageIndices(messages).slice(-2)
 
 	applyProviderOptionAtIndices(messages, targetIndices, adapterConfig.messageProviderOption)
 
 	return {
 		enabled: true,
-		strategy: policy.strategy,
 		systemProviderOptions: adapterConfig.systemProviderOptions,
+		toolProviderOptions: adapterConfig.toolProviderOptions,
 	}
 }
 
 function getMessageAdapterConfig(adapter: Exclude<PromptCacheAdapter, "openai-native">): {
-	maxUserCheckpoints: number
 	systemProviderOptions: Record<string, unknown>
 	messageProviderOption: Record<string, Record<string, unknown>>
+	toolProviderOptions?: Record<string, unknown>
 } {
 	if (adapter === "bedrock") {
 		return {
-			maxUserCheckpoints: 3,
 			systemProviderOptions: {
 				bedrock: { cachePoint: { type: "default" } },
 			},
@@ -123,37 +105,57 @@ function getMessageAdapterConfig(adapter: Exclude<PromptCacheAdapter, "openai-na
 		}
 	}
 
+	// Unified AI SDK marker payload:
+	// - Anthropic markers for providers that honor `anthropic.cacheControl`
+	// - Bedrock markers for providers that honor `bedrock.cachePoint`
+	// Providers are expected to ignore unknown provider namespaces.
+	const unifiedProviderMarkers = {
+		anthropic: { cacheControl: { type: "ephemeral" } },
+		bedrock: { cachePoint: { type: "default" } },
+	}
+
 	return {
-		maxUserCheckpoints: 2,
-		systemProviderOptions: {
-			anthropic: { cacheControl: { type: "ephemeral" } },
-		},
-		messageProviderOption: {
+		systemProviderOptions: unifiedProviderMarkers,
+		messageProviderOption: unifiedProviderMarkers,
+		toolProviderOptions: {
 			anthropic: { cacheControl: { type: "ephemeral" } },
 		},
 	}
 }
 
-function resolveCheckpointCount(strategy: PromptCachingStrategy, maxUserCheckpoints: number): number {
-	if (maxUserCheckpoints <= 0) {
-		return 0
+export function mergeProviderOptions(
+	base: Record<string, unknown> | undefined,
+	patch: Record<string, Record<string, unknown>> | undefined,
+): Record<string, unknown> | undefined {
+	if (!patch) {
+		return base
 	}
 
-	if (strategy === "conservative") {
-		return 1
+	const next: Record<string, unknown> = { ...(base ?? {}) }
+
+	for (const [providerName, providerPatch] of Object.entries(patch)) {
+		const existingProviderOptions = next[providerName]
+		if (
+			typeof existingProviderOptions === "object" &&
+			existingProviderOptions !== null &&
+			!Array.isArray(existingProviderOptions)
+		) {
+			next[providerName] = {
+				...(existingProviderOptions as Record<string, unknown>),
+				...providerPatch,
+			}
+		} else {
+			next[providerName] = providerPatch
+		}
 	}
 
-	if (strategy === "balanced") {
-		return Math.max(1, Math.ceil(maxUserCheckpoints / 2))
-	}
-
-	return maxUserCheckpoints
+	return Object.keys(next).length > 0 ? next : undefined
 }
 
-function getUserMessageIndices(messages: ModelMessage[]): number[] {
+function getNonAssistantMessageIndices(messages: ModelMessage[]): number[] {
 	const indices: number[] = []
 	for (let i = 0; i < messages.length; i++) {
-		if (messages[i].role === "user") {
+		if (messages[i].role !== "assistant") {
 			indices.push(i)
 		}
 	}

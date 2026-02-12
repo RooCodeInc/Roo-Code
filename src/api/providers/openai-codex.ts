@@ -23,8 +23,10 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyPromptCacheToMessages, mergeProviderOptions } from "../transform/prompt-cache"
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { normalizeProviderUsage } from "./utils/normalize-provider-usage"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -186,19 +188,42 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 					injectEncryptedReasoning(aiSdkMessages, encryptedReasoningItems, messages as RooMessage[])
 				}
 
+				const promptCache = applyPromptCacheToMessages({
+					adapter: "ai-sdk",
+					overrideKey: "openai-codex",
+					messages: aiSdkMessages,
+					modelInfo: {
+						supportsPromptCache: model.info.supportsPromptCache,
+						promptCacheRetention: model.info.promptCacheRetention,
+					},
+					settings: this.options,
+				})
+
 				// Convert tools to OpenAI format first, then to AI SDK format
 				const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-				const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+				const aiSdkTools = convertToolsForAiSdk(openAiTools, {
+					functionToolProviderOptions: promptCache.toolProviderOptions,
+				}) as ToolSet | undefined
 
-				const providerOptions = this.buildProviderOptions(model, metadata, systemPrompt)
+				const providerOptions = mergeProviderOptions(
+					this.buildProviderOptions(model, metadata, systemPrompt),
+					promptCache.providerOptionsPatch,
+				)
 
 				// Note: maxOutputTokens is intentionally omitted — Codex backend rejects it.
 				const result = streamText({
 					model: languageModel,
+					system: promptCache.systemProviderOptions
+						? ({
+								role: "system",
+								content: systemPrompt,
+								providerOptions: promptCache.systemProviderOptions,
+							} as any)
+						: systemPrompt,
 					messages: aiSdkMessages,
 					tools: aiSdkTools,
 					toolChoice: mapToolChoice(metadata?.tool_choice),
-					providerOptions,
+					...(providerOptions ? ({ providerOptions } as Record<string, unknown>) : {}),
 					...(model.info.supportsTemperature !== false && {
 						temperature: this.options.modelTemperature ?? 0,
 					}),
@@ -250,26 +275,15 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 					// Yield usage — subscription pricing means totalCost is always 0
 					const usage = await result.usage
 					if (usage) {
-						const inputTokens = usage.inputTokens || 0
-						const outputTokens = usage.outputTokens || 0
-						const details = (usage as any).details as
-							| { cachedInputTokens?: number; reasoningTokens?: number }
-							| undefined
-						const cacheReadTokens = details?.cachedInputTokens ?? 0
-						// The OpenAI Responses API does not report cache write tokens separately;
-						// only cached (read) tokens are available via usage.details.cachedInputTokens.
-						const cacheWriteTokens = 0
-						const reasoningTokens = details?.reasoningTokens
-
-						yield {
-							type: "usage",
-							inputTokens,
-							outputTokens,
-							cacheWriteTokens: cacheWriteTokens || undefined,
-							cacheReadTokens: cacheReadTokens || undefined,
-							...(typeof reasoningTokens === "number" ? { reasoningTokens } : {}),
-							totalCost: 0, // Subscription-based pricing
-						}
+						const { chunk } = normalizeProviderUsage({
+							provider: "openai-codex",
+							apiProtocol: "openai",
+							usage: usage as any,
+							providerMetadata: providerMeta as Record<string, unknown> | undefined,
+							modelInfo: model.info,
+							totalCostOverride: 0, // Subscription-based pricing
+						})
+						yield chunk
 					}
 				} catch (usageError) {
 					if (lastStreamError) {

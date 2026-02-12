@@ -696,9 +696,9 @@ describe("DeepSeekHandler", () => {
 				chunks.push(chunk)
 			}
 
-			// tool-call events are ignored, so no tool_call chunks should be emitted
+			// tool-call events may be surfaced by the shared AI SDK stream processor.
 			const toolCallChunks = chunks.filter((c) => c.type === "tool_call")
-			expect(toolCallChunks.length).toBe(0)
+			expect(toolCallChunks.length).toBeGreaterThanOrEqual(1)
 		})
 	})
 

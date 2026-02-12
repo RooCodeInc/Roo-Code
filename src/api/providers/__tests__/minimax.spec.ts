@@ -8,6 +8,7 @@ import { minimaxDefaultModelId } from "@roo-code/types"
 import type { ApiHandlerOptions } from "../../../shared/api"
 import type { ApiStream, ApiStreamChunk } from "../../transform/stream"
 import { MiniMaxHandler } from "../minimax"
+import * as aiSdkTransform from "../../transform/ai-sdk"
 
 const {
 	mockStreamText,
@@ -65,7 +66,15 @@ function createHandler(options: HandlerOptions = {}) {
 
 function createMockStream(
 	chunks: Array<Record<string, unknown>>,
-	usage: { inputTokens?: number; outputTokens?: number } = { inputTokens: 10, outputTokens: 5 },
+	usage: {
+		inputTokens?: number
+		outputTokens?: number
+		inputTokenDetails?: {
+			noCacheTokens?: number
+			cacheReadTokens?: number
+			cacheWriteTokens?: number
+		}
+	} = { inputTokens: 10, outputTokens: 5 },
 	providerMetadata: Record<string, Record<string, unknown>> = {
 		anthropic: {
 			cacheReadInputTokens: 0,
@@ -238,7 +247,14 @@ describe("MiniMaxHandler", () => {
 			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.objectContaining({
 					model: "mock-model-instance",
-					system: systemPrompt,
+					system: {
+						role: "system",
+						content: systemPrompt,
+						providerOptions: {
+							anthropic: { cacheControl: { type: "ephemeral" } },
+							bedrock: { cachePoint: { type: "default" } },
+						},
+					},
 					temperature: 1,
 					messages: expect.any(Array),
 				}),
@@ -323,6 +339,42 @@ describe("MiniMaxHandler", () => {
 			expect(typeof usageChunk?.totalCost).toBe("number")
 		})
 
+		it("uses non-cached input tokens from AI SDK v6 usage details", async () => {
+			mockStreamText.mockReturnValue(
+				createMockStream(
+					[{ type: "text-delta", text: "Done" }],
+					{
+						inputTokens: 13_071,
+						outputTokens: 93,
+						inputTokenDetails: {
+							noCacheTokens: 10,
+							cacheWriteTokens: 489,
+							cacheReadTokens: 12_572,
+						},
+					},
+					{
+						anthropic: {
+							cacheCreationInputTokens: 489,
+							cacheReadInputTokens: 12_572,
+						},
+					},
+				),
+			)
+
+			const handler = createHandler()
+			const chunks = await collectChunks(handler.createMessage(systemPrompt, messages))
+			const usageChunk = chunks.find((chunk) => chunk.type === "usage")
+
+			expect(usageChunk).toMatchObject({
+				type: "usage",
+				inputTokens: 13_071,
+				nonCachedInputTokens: 10,
+				outputTokens: 93,
+				cacheWriteTokens: 489,
+				cacheReadTokens: 12_572,
+			})
+		})
+
 		it("calls mergeEnvironmentDetailsForMiniMax before conversion", async () => {
 			const mergedMessages: RooMessage[] = [
 				{
@@ -347,10 +399,46 @@ describe("MiniMaxHandler", () => {
 							anthropic: {
 								cacheControl: { type: "ephemeral" },
 							},
+							bedrock: {
+								cachePoint: { type: "default" },
+							},
 						},
 					}),
 				]),
 			)
+		})
+
+		it("passes anthropic tool cache provider options to function-tool conversion when caching is enabled", async () => {
+			const convertToolsSpy = vi.spyOn(aiSdkTransform, "convertToolsForAiSdk").mockReturnValue(undefined)
+			mockStreamText.mockReturnValue(createMockStream([{ type: "text-delta", text: "OK" }]))
+
+			const handler = createHandler()
+			await collectChunks(
+				handler.createMessage(systemPrompt, messages, {
+					taskId: "test-task",
+					tools: [
+						{
+							type: "function",
+							function: {
+								name: "get_weather",
+								description: "Get weather",
+								parameters: {
+									type: "object",
+									properties: { location: { type: "string" } },
+									required: ["location"],
+								},
+							},
+						},
+					] as any,
+				}),
+			)
+
+			expect(convertToolsSpy).toHaveBeenCalledWith(expect.any(Array), {
+				functionToolProviderOptions: {
+					anthropic: { cacheControl: { type: "ephemeral" } },
+				},
+			})
+			convertToolsSpy.mockRestore()
 		})
 
 		it("handles errors via handleAiSdkError", async () => {

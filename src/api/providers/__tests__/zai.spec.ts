@@ -342,7 +342,10 @@ describe("ZAiHandler", () => {
 
 			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.objectContaining({
-					system: systemPrompt,
+					system: expect.objectContaining({
+						role: "system",
+						content: systemPrompt,
+					}),
 					temperature: expect.any(Number),
 				}),
 			)

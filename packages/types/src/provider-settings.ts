@@ -181,7 +181,6 @@ const baseProviderSettingsSchema = z.object({
 	rateLimitSeconds: z.number().optional(),
 	consecutiveMistakeLimit: z.number().min(0).optional(),
 	promptCachingEnabled: z.boolean().optional(),
-	promptCachingStrategy: z.enum(["conservative", "balanced", "aggressive"]).optional(),
 	promptCachingProviderOverrides: z.record(z.string(), z.boolean()).optional(),
 
 	// Model reasoning.

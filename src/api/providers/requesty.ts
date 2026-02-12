@@ -5,7 +5,6 @@ import { streamText, generateText, ToolSet, ModelMessage } from "ai"
 import { type ModelInfo, type ModelRecord, requestyDefaultModelId, requestyDefaultModelInfo } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
-import { calculateApiCostOpenAI } from "../../shared/cost"
 
 import {
 	convertToAiSdkMessages,
@@ -14,6 +13,7 @@ import {
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
+import { applyPromptCacheToMessages, mergeProviderOptions } from "../transform/prompt-cache"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -23,6 +23,7 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { toRequestyServiceUrl } from "../../shared/utils/requesty"
 import { applyRouterToolPreferences } from "./utils/router-tool-preferences"
+import { normalizeProviderUsage } from "./utils/normalize-provider-usage"
 import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 /**
@@ -148,24 +149,14 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 		modelInfo?: ModelInfo,
 		providerMetadata?: RequestyProviderMetadata,
 	): ApiStreamUsageChunk {
-		const inputTokens = usage.inputTokens || 0
-		const outputTokens = usage.outputTokens || 0
-		const cacheWriteTokens = providerMetadata?.requesty?.usage?.cachingTokens ?? 0
-		const cacheReadTokens = providerMetadata?.requesty?.usage?.cachedTokens ?? usage.details?.cachedInputTokens ?? 0
-
-		const { totalCost } = modelInfo
-			? calculateApiCostOpenAI(modelInfo, inputTokens, outputTokens, cacheWriteTokens, cacheReadTokens)
-			: { totalCost: 0 }
-
-		return {
-			type: "usage",
-			inputTokens,
-			outputTokens,
-			cacheWriteTokens,
-			cacheReadTokens,
-			reasoningTokens: usage.details?.reasoningTokens,
-			totalCost,
-		}
+		const { chunk } = normalizeProviderUsage({
+			provider: "requesty",
+			apiProtocol: "openai",
+			usage: usage as any,
+			providerMetadata: providerMetadata as Record<string, unknown> | undefined,
+			modelInfo,
+		})
+		return chunk
 	}
 
 	/**
@@ -181,20 +172,39 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 
 		const aiSdkMessages = messages as ModelMessage[]
 
+		const promptCache = applyPromptCacheToMessages({
+			adapter: "ai-sdk",
+			overrideKey: "requesty",
+			messages: aiSdkMessages,
+			modelInfo: {
+				supportsPromptCache: info.supportsPromptCache,
+				promptCacheRetention: info.promptCacheRetention,
+			},
+			settings: this.options,
+		})
+
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		const aiSdkTools = convertToolsForAiSdk(openAiTools, {
+			functionToolProviderOptions: promptCache.toolProviderOptions,
+		}) as ToolSet | undefined
 
 		const requestyOptions = this.getRequestyProviderOptions(metadata)
+		const providerOptions = mergeProviderOptions(
+			requestyOptions ? ({ requesty: requestyOptions } as Record<string, unknown>) : undefined,
+			promptCache.providerOptionsPatch,
+		)
 
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: promptCache.systemProviderOptions
+				? ({ role: "system", content: systemPrompt, providerOptions: promptCache.systemProviderOptions } as any)
+				: systemPrompt,
 			messages: aiSdkMessages,
 			temperature: this.options.modelTemperature ?? temperature ?? 0,
 			maxOutputTokens: this.getMaxOutputTokens(),
 			tools: aiSdkTools,
 			toolChoice: mapToolChoice(metadata?.tool_choice),
-			...(requestyOptions ? { providerOptions: { requesty: requestyOptions } } : {}),
+			...(providerOptions ? ({ providerOptions } as Record<string, unknown>) : {}),
 		}
 
 		const result = streamText(requestOptions)

@@ -24,8 +24,10 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyPromptCacheToMessages, mergeProviderOptions } from "../transform/prompt-cache"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { normalizeProviderUsage } from "./utils/normalize-provider-usage"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
@@ -109,7 +111,6 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const aiSdkMessages = messages as ModelMessage[]
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
 
 		let effectiveSystemPrompt: string | undefined = systemPrompt
 		let effectiveTemperature: number | undefined =
@@ -144,26 +145,43 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			aiSdkMessages.unshift({ role: "user", content: systemPrompt })
 		}
 
+		const promptCache = applyPromptCacheToMessages({
+			adapter: "ai-sdk",
+			overrideKey: "openai",
+			messages: aiSdkMessages,
+			modelInfo: {
+				supportsPromptCache: modelInfo.supportsPromptCache,
+				promptCacheRetention: modelInfo.promptCacheRetention,
+			},
+			settings: this.options,
+		})
+
+		const mergedProviderOptions = mergeProviderOptions(providerOptions, promptCache.providerOptionsPatch)
+
 		if (this.options.openAiStreamingEnabled ?? true) {
 			yield* this.handleStreaming(
 				languageModel,
-				effectiveSystemPrompt,
+				this.buildSystemPromptWithProviderOptions(effectiveSystemPrompt, promptCache.systemProviderOptions),
 				aiSdkMessages,
 				effectiveTemperature,
-				aiSdkTools,
+				convertToolsForAiSdk(openAiTools, {
+					functionToolProviderOptions: promptCache.toolProviderOptions,
+				}) as ToolSet | undefined,
 				metadata,
-				providerOptions,
+				(mergedProviderOptions as Record<string, any>) ?? {},
 				modelInfo,
 			)
 		} else {
 			yield* this.handleNonStreaming(
 				languageModel,
-				effectiveSystemPrompt,
+				this.buildSystemPromptWithProviderOptions(effectiveSystemPrompt, promptCache.systemProviderOptions),
 				aiSdkMessages,
 				effectiveTemperature,
-				aiSdkTools,
+				convertToolsForAiSdk(openAiTools, {
+					functionToolProviderOptions: promptCache.toolProviderOptions,
+				}) as ToolSet | undefined,
 				metadata,
-				providerOptions,
+				(mergedProviderOptions as Record<string, any>) ?? {},
 				modelInfo,
 			)
 		}
@@ -171,7 +189,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 	private async *handleStreaming(
 		languageModel: LanguageModel,
-		systemPrompt: string | undefined,
+		system: string | Record<string, unknown> | undefined,
 		messages: ModelMessage[],
 		temperature: number | undefined,
 		tools: ToolSet | undefined,
@@ -181,7 +199,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	): ApiStream {
 		const result = streamText({
 			model: languageModel,
-			system: systemPrompt,
+			system: system as any,
 			messages,
 			temperature,
 			maxOutputTokens: this.getMaxOutputTokens(),
@@ -242,7 +260,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 	private async *handleNonStreaming(
 		languageModel: LanguageModel,
-		systemPrompt: string | undefined,
+		system: string | Record<string, unknown> | undefined,
 		messages: ModelMessage[],
 		temperature: number | undefined,
 		tools: ToolSet | undefined,
@@ -253,7 +271,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		try {
 			const { text, toolCalls, usage, providerMetadata } = await generateText({
 				model: languageModel,
-				system: systemPrompt,
+				system: system as any,
 				messages,
 				temperature,
 				maxOutputTokens: this.getMaxOutputTokens(),
@@ -286,10 +304,31 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 	}
 
+	private buildSystemPromptWithProviderOptions(
+		systemPrompt: string | undefined,
+		systemProviderOptions: Record<string, unknown> | undefined,
+	): string | Record<string, unknown> | undefined {
+		if (!systemPrompt) {
+			return systemPrompt
+		}
+
+		return systemProviderOptions
+			? ({ role: "system", content: systemPrompt, providerOptions: systemProviderOptions } as const)
+			: systemPrompt
+	}
+
 	protected processUsageMetrics(
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			inputTokenDetails?: {
+				cacheReadTokens?: number
+			}
+			outputTokenDetails?: {
+				reasoningTokens?: number
+			}
+			cachedInputTokens?: number
+			reasoningTokens?: number
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -303,18 +342,15 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 		},
 	): ApiStreamUsageChunk {
-		// Extract cache and reasoning metrics from OpenAI's providerMetadata when available,
-		// falling back to usage.details for standard AI SDK fields.
-		const cacheReadTokens = providerMetadata?.openai?.cachedPromptTokens ?? usage.details?.cachedInputTokens
-		const reasoningTokens = providerMetadata?.openai?.reasoningTokens ?? usage.details?.reasoningTokens
-
-		return {
-			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
-			cacheReadTokens,
-			reasoningTokens,
-		}
+		const providerKey = this.isAzureAiInference || this.isAzureOpenAi ? "azure" : "openai"
+		const { chunk } = normalizeProviderUsage({
+			provider: providerKey,
+			apiProtocol: "openai",
+			usage: usage as any,
+			providerMetadata: providerMetadata as Record<string, unknown> | undefined,
+			modelInfo: this.getModel().info,
+		})
+		return chunk
 	}
 
 	override getModel() {
