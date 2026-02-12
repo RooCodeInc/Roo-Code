@@ -56,11 +56,8 @@
 			"label": "Has descobert una vulnerabilitat?",
 			"link": "Segueix el nostre procés de divulgació"
 		},
-		"contact": {
-			"label": "Necessites parlar amb nosaltres? Escriu"
-		},
 		"community": "Vols consells o simplement passar l'estona amb altres usuaris de Roo Code? Uneix-te a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
-		"contactAndCommunity": "Contacte i Comunitat",
+		"communityHeader": "Comunitat",
 		"manageSettings": "Gestionar Configuració",
 		"debugMode": {
 			"label": "Activa el mode de depuració",

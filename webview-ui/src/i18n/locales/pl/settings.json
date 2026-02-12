@@ -56,11 +56,8 @@
 			"label": "Odkryłeś lukę w zabezpieczeniach?",
 			"link": "Postępuj zgodnie z naszym procesem ujawniania"
 		},
-		"contact": {
-			"label": "Musisz z nami porozmawiać? Napisz"
-		},
 		"community": "Chcesz wskazówek lub po prostu porozmawiać z innymi użytkownikami Roo Code? Dołącz do <redditLink>reddit.com/r/RooCode</redditLink> lub <discordLink>discord.gg/roocode</discordLink>",
-		"contactAndCommunity": "Kontakt i Społeczność",
+		"communityHeader": "Społeczność",
 		"manageSettings": "Zarządzaj Ustawieniami",
 		"debugMode": {
 			"label": "Włącz tryb debugowania",

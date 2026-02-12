@@ -183,7 +183,7 @@
 			"docs": "說明文件",
 			"goToSettings": "設定",
 			"connection": "連線錯誤。請確保您有可用的網際網路連線。",
-			"unknown": "未知 API 錯誤。請聯絡 Roo Code 技術支援。",
+			"unknown": "未知 API 錯誤。",
 			"claudeCodeNotAuthenticated": "您需要登入才能使用 Claude Code。前往設定並點選「登入 Claude Code」以進行驗證。"
 		}
 	},
