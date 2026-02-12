@@ -68,7 +68,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 	const legacyRequireApprovalFromSettings =
 		settings.requireApproval ??
 		(settings.dangerouslySkipPermissions === undefined ? undefined : !settings.dangerouslySkipPermissions)
-	const effectiveRequireApproval = flagOptions.requireApproval ?? legacyRequireApprovalFromSettings ?? false
+	const effectiveRequireApproval = flagOptions.requireApproval || legacyRequireApprovalFromSettings || false
 	const effectiveExitOnComplete = flagOptions.print || flagOptions.oneshot || settings.oneshot || false
 
 	const extensionHostOptions: ExtensionHostOptions = {
