@@ -248,4 +248,46 @@ describe("CustomModeSchema", () => {
 			expect(() => modeConfigSchema.parse(modeWithUndefined)).toThrow()
 		})
 	})
+
+	describe("deprecated tool group migration", () => {
+		it("should strip deprecated 'browser' string group from mode config", () => {
+			const result = modeConfigSchema.parse({
+				slug: "test-mode",
+				name: "Test Mode",
+				roleDefinition: "Test role",
+				groups: ["read", "browser", "edit"],
+			})
+			expect(result.groups).toEqual(["read", "edit"])
+		})
+
+		it("should strip deprecated 'browser' tuple group from mode config", () => {
+			const result = modeConfigSchema.parse({
+				slug: "test-mode",
+				name: "Test Mode",
+				roleDefinition: "Test role",
+				groups: ["read", ["browser", { fileRegex: ".*", description: "test" }], "edit"],
+			})
+			expect(result.groups).toEqual(["read", "edit"])
+		})
+
+		it("should handle mode config where all groups are deprecated", () => {
+			const result = modeConfigSchema.parse({
+				slug: "test-mode",
+				name: "Test Mode",
+				roleDefinition: "Test role",
+				groups: ["browser"],
+			})
+			expect(result.groups).toEqual([])
+		})
+
+		it("should still reject other invalid group names", () => {
+			const result = modeConfigSchema.safeParse({
+				slug: "test-mode",
+				name: "Test Mode",
+				roleDefinition: "Test role",
+				groups: ["read", "nonexistent"],
+			})
+			expect(result.success).toBe(false)
+		})
+	})
 })

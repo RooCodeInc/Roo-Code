@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { toolGroupsSchema } from "./tool.js"
+import { deprecatedToolGroups, toolGroupsSchema } from "./tool.js"
 
 /**
  * GroupOptions
@@ -42,7 +42,24 @@ export type GroupEntry = z.infer<typeof groupEntrySchema>
  * ModeConfig
  */
 
-const groupEntryArraySchema = z.array(groupEntrySchema).refine(
+/**
+ * Checks if a group entry references a deprecated tool group.
+ * Handles both string entries ("browser") and tuple entries (["browser", { ... }]).
+ */
+function isDeprecatedGroupEntry(entry: unknown): boolean {
+	if (typeof entry === "string") {
+		return deprecatedToolGroups.includes(entry)
+	}
+	if (Array.isArray(entry) && entry.length >= 1 && typeof entry[0] === "string") {
+		return deprecatedToolGroups.includes(entry[0])
+	}
+	return false
+}
+
+/**
+ * Raw schema for validating group entries after deprecated groups are stripped.
+ */
+const rawGroupEntryArraySchema = z.array(groupEntrySchema).refine(
 	(groups) => {
 		const seen = new Set()
 
@@ -60,6 +77,16 @@ const groupEntryArraySchema = z.array(groupEntrySchema).refine(
 	},
 	{ message: "Duplicate groups are not allowed" },
 )
+
+/**
+ * Schema for mode group entries. Preprocesses the input to strip deprecated
+ * tool groups (e.g., "browser") before validation, ensuring backward compatibility
+ * with older user configs.
+ */
+export const groupEntryArraySchema = z.preprocess((val) => {
+	if (!Array.isArray(val)) return val
+	return val.filter((entry) => !isDeprecatedGroupEntry(entry))
+}, rawGroupEntryArraySchema)
 
 export const modeConfigSchema = z.object({
 	slug: z.string().regex(/^[a-zA-Z0-9-]+$/, "Slug must contain only letters numbers and dashes"),

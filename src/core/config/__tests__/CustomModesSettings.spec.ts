@@ -168,4 +168,41 @@ describe("CustomModesSettings", () => {
 			expect(settings.customModes[0].customInstructions).toBeDefined()
 		})
 	})
+
+	describe("deprecated tool group migration", () => {
+		it("should strip deprecated 'browser' group when validating custom modes settings", () => {
+			const result = customModesSettingsSchema.parse({
+				customModes: [
+					{
+						slug: "test-mode",
+						name: "Test Mode",
+						roleDefinition: "Test role",
+						groups: ["read", "browser", "edit"],
+					},
+				],
+			})
+			expect(result.customModes[0].groups).toEqual(["read", "edit"])
+		})
+
+		it("should strip deprecated 'browser' from multiple modes in settings", () => {
+			const result = customModesSettingsSchema.parse({
+				customModes: [
+					{
+						slug: "mode-a",
+						name: "Mode A",
+						roleDefinition: "Role A",
+						groups: ["read", "browser"],
+					},
+					{
+						slug: "mode-b",
+						name: "Mode B",
+						roleDefinition: "Role B",
+						groups: ["browser", "edit", "command"],
+					},
+				],
+			})
+			expect(result.customModes[0].groups).toEqual(["read"])
+			expect(result.customModes[1].groups).toEqual(["edit", "command"])
+		})
+	})
 })
