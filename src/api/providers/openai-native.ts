@@ -382,6 +382,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			cacheReadTokens: cacheReadTokens || undefined,
 			...(typeof reasoningTokens === "number" ? { reasoningTokens } : {}),
 			totalCost,
+			// OpenAI: inputTokens is already total
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 

@@ -417,6 +417,9 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				reasoningTokens,
 				info: costInfo,
 			}),
+			// AI SDK normalizes inputTokens to total (OpenAI convention) for Bedrock
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 

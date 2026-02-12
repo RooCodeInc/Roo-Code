@@ -100,13 +100,17 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 		const cacheReadTokens = usage.details?.cachedInputTokens ?? (gatewayMeta?.cached_tokens as number) ?? undefined
 		const totalCost = (gatewayMeta?.cost as number) ?? 0
 
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
+			inputTokens,
+			outputTokens,
 			cacheWriteTokens,
 			cacheReadTokens,
 			totalCost,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 

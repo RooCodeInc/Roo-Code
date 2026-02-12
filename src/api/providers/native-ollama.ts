@@ -126,10 +126,14 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 			const usage = await result.usage
 			if (usage) {
+				const inputTokens = usage.inputTokens || 0
+				const outputTokens = usage.outputTokens || 0
 				yield {
 					type: "usage",
-					inputTokens: usage.inputTokens || 0,
-					outputTokens: usage.outputTokens || 0,
+					inputTokens,
+					outputTokens,
+					totalInputTokens: inputTokens,
+					totalOutputTokens: outputTokens,
 				}
 			}
 

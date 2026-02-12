@@ -313,12 +313,16 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const cacheReadTokens = providerMetadata?.openai?.cachedPromptTokens ?? usage.details?.cachedInputTokens
 		const reasoningTokens = providerMetadata?.openai?.reasoningTokens ?? usage.details?.reasoningTokens
 
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
+			inputTokens,
+			outputTokens,
 			cacheReadTokens,
 			reasoningTokens,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 

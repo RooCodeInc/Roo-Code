@@ -167,6 +167,9 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 			cacheWriteTokens: cacheWriteTokens > 0 ? cacheWriteTokens : undefined,
 			cacheReadTokens: cacheReadTokens > 0 ? cacheReadTokens : undefined,
 			totalCost,
+			// MiniMax uses Anthropic SDK: inputTokens is non-cached only
+			totalInputTokens: inputTokens + (cacheWriteTokens ?? 0) + (cacheReadTokens ?? 0),
+			totalOutputTokens: outputTokens,
 		}
 	}
 

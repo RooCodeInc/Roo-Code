@@ -108,13 +108,17 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 		// promptCacheMissTokens represents tokens NOT found in cache (processed from scratch), not tokens written to cache.
 		const cacheWriteTokens = undefined
 
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
+			inputTokens,
+			outputTokens,
 			cacheReadTokens,
 			cacheWriteTokens,
 			reasoningTokens: usage.details?.reasoningTokens,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 

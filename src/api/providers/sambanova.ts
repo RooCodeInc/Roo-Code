@@ -90,13 +90,17 @@ export class SambaNovaHandler extends BaseProvider implements SingleCompletionHa
 		const cacheReadTokens = providerMetadata?.sambanova?.promptCacheHitTokens ?? usage.details?.cachedInputTokens
 		const cacheWriteTokens = providerMetadata?.sambanova?.promptCacheMissTokens
 
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
+			inputTokens,
+			outputTokens,
 			cacheReadTokens,
 			cacheWriteTokens,
 			reasoningTokens: usage.details?.reasoningTokens,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 

@@ -167,6 +167,8 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			cacheReadTokens,
 			reasoningTokens: usage.details?.reasoningTokens,
 			totalCost,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 

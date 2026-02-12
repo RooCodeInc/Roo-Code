@@ -111,15 +111,19 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 		}
 		raw?: Record<string, unknown>
 	}): ApiStreamUsageChunk {
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
+			inputTokens,
+			outputTokens,
 			// P1: AI SDK v6 standard (LanguageModelInputTokenDetails)
 			// P2: Legacy AI SDK standard (usage.details)
 			cacheReadTokens: usage.inputTokenDetails?.cacheReadTokens ?? usage.details?.cachedInputTokens,
 			cacheWriteTokens: usage.inputTokenDetails?.cacheWriteTokens,
 			reasoningTokens: usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 

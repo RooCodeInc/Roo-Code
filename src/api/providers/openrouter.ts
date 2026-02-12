@@ -127,6 +127,9 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			...(cacheReadTokens > 0 ? { cacheReadTokens } : {}),
 			...(typeof reasoningTokens === "number" && reasoningTokens > 0 ? { reasoningTokens } : {}),
 			totalCost,
+			// OpenRouter uses OpenAI convention: inputTokens is already total
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 

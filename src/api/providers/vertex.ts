@@ -255,6 +255,9 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 				cacheReadTokens,
 				reasoningTokens,
 			}),
+			// Vertex: inputTokens is already total
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 

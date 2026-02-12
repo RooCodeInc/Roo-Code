@@ -98,6 +98,8 @@ describe("OpenAiHandler with usage tracking fix", () => {
 				type: "usage",
 				inputTokens: 10,
 				outputTokens: 5,
+				totalInputTokens: 10,
+				totalOutputTokens: 5,
 			})
 
 			const lastChunk = chunks[chunks.length - 1]
@@ -133,6 +135,8 @@ describe("OpenAiHandler with usage tracking fix", () => {
 				type: "usage",
 				inputTokens: 10,
 				outputTokens: 5,
+				totalInputTokens: 10,
+				totalOutputTokens: 5,
 			})
 		})
 

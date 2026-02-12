@@ -88,13 +88,17 @@ export class DeepSeekHandler extends BaseProvider implements SingleCompletionHan
 		const cacheReadTokens = providerMetadata?.deepseek?.promptCacheHitTokens ?? usage.details?.cachedInputTokens
 		const cacheWriteTokens = providerMetadata?.deepseek?.promptCacheMissTokens
 
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
+			inputTokens,
+			outputTokens,
 			cacheReadTokens,
 			cacheWriteTokens,
 			reasoningTokens: usage.details?.reasoningTokens,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 

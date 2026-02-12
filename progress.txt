@@ -1,0 +1,73 @@
+# Bedrock Token Double-Counting Fix — Progress Summary
+
+## Problem
+The UI showed ~2x actual input token count for Bedrock (and potentially other AI SDK providers).
+Root cause: Task.ts used calculateApiCostAnthropic()/calculateApiCostOpenAI() to derive display
+token counts (tokensIn/tokensOut), but these functions make protocol-specific assumptions about
+whether inputTokens includes cache tokens. For Bedrock, the AI SDK normalizes inputTokens to
+total (OpenAI convention), but getApiProtocol("bedrock") returns "anthropic", causing
+calculateApiCostAnthropic() to add cache tokens a second time.
+
+## Solution
+Each provider now computes totalInputTokens and totalOutputTokens directly, since each provider
+knows its own semantics. Task.ts uses these provider-computed values instead of re-deriving them.
+
+## Changes Made
+
+### Interface (1 file)
+- src/api/transform/stream.ts — Added optional totalInputTokens/totalOutputTokens to ApiStreamUsageChunk
+
+### Providers (25 files)
+Anthropic-convention (inputTokens excludes cache):
+- src/api/providers/anthropic.ts
+- src/api/providers/anthropic-vertex.ts
+- src/api/providers/minimax.ts
+
+OpenAI-convention (inputTokens is already total):
+- src/api/providers/bedrock.ts
+- src/api/providers/openai-native.ts
+- src/api/providers/openrouter.ts
+- src/api/providers/gemini.ts
+- src/api/providers/vertex.ts
+- src/api/providers/vscode-lm.ts
+- src/api/providers/openai.ts
+- src/api/providers/openai-compatible.ts
+- src/api/providers/openai-codex.ts
+- src/api/providers/azure.ts
+- src/api/providers/mistral.ts
+- src/api/providers/deepseek.ts
+- src/api/providers/xai.ts
+- src/api/providers/fireworks.ts
+- src/api/providers/sambanova.ts
+- src/api/providers/moonshot.ts
+- src/api/providers/requesty.ts
+- src/api/providers/baseten.ts
+- src/api/providers/native-ollama.ts
+- src/api/providers/lite-llm.ts
+- src/api/providers/vercel-ai-gateway.ts
+
+Protocol-aware:
+- src/api/providers/roo.ts — Uses promptTokens (server-reported total) directly
+
+### Task.ts (1 file)
+- src/core/task/Task.ts — Removed calculateApiCostAnthropic/calculateApiCostOpenAI calls;
+  uses provider-computed totalInputTokens/totalOutputTokens for tokensIn/tokensOut display
+
+### Tests (4 files)
+- src/api/providers/__tests__/openai-usage-tracking.spec.ts
+- src/api/providers/__tests__/requesty.spec.ts
+- src/api/providers/__tests__/vercel-ai-gateway.spec.ts
+- src/api/providers/__tests__/native-ollama.spec.ts
+
+## Constraints Learned
+- roo.ts uses promptTokens (pre-normalization total) for totalInputTokens
+- captureUsageData in Task.ts has two call sites (success + error) — both updated
+- Fallback pattern: totalInputTokensAccum || inputTokens handles providers not yet updated
+- Tests using .toEqual() need new fields; .toMatchObject() passes without changes
+- calculateApiCostAnthropic/calculateApiCostOpenAI remain in src/shared/cost.ts for provider use
+
+## Test Results
+All 5464 tests pass (365 files, 46 skipped, 0 failures)
+
+## Remaining
+- Nothing blocking. All acceptance criteria met.

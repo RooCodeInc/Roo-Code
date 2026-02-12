@@ -274,6 +274,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				cacheReadTokens,
 				reasoningTokens,
 			}),
+			// Gemini: inputTokens is already total
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 

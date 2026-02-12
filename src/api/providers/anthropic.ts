@@ -209,6 +209,9 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			cacheWriteTokens: cacheWriteTokens > 0 ? cacheWriteTokens : undefined,
 			cacheReadTokens: cacheReadTokens > 0 ? cacheReadTokens : undefined,
 			totalCost,
+			// Anthropic: inputTokens is non-cached only; total = input + cache write + cache read
+			totalInputTokens: inputTokens + (cacheWriteTokens ?? 0) + (cacheReadTokens ?? 0),
+			totalOutputTokens: outputTokens,
 		}
 	}
 

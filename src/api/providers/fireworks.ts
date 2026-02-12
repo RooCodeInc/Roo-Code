@@ -89,13 +89,17 @@ export class FireworksHandler extends BaseProvider implements SingleCompletionHa
 		const cacheReadTokens = providerMetadata?.fireworks?.promptCacheHitTokens ?? usage.details?.cachedInputTokens
 		const cacheWriteTokens = providerMetadata?.fireworks?.promptCacheMissTokens
 
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
+			inputTokens,
+			outputTokens,
 			cacheReadTokens,
 			cacheWriteTokens,
 			reasoningTokens: usage.details?.reasoningTokens,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 

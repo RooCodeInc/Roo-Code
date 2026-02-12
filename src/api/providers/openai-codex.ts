@@ -269,6 +269,8 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 							cacheReadTokens: cacheReadTokens || undefined,
 							...(typeof reasoningTokens === "number" ? { reasoningTokens } : {}),
 							totalCost: 0, // Subscription-based pricing
+							totalInputTokens: inputTokens,
+							totalOutputTokens: outputTokens,
 						}
 					}
 				} catch (usageError) {

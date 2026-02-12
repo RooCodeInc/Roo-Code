@@ -475,6 +475,8 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 				type: "usage",
 				inputTokens: totalInputTokens,
 				outputTokens: totalOutputTokens,
+				totalInputTokens,
+				totalOutputTokens,
 			}
 		} catch (error: unknown) {
 			this.ensureCleanState()

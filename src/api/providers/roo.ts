@@ -188,6 +188,9 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 				cacheWriteTokens: cacheCreation,
 				cacheReadTokens: cacheRead,
 				totalCost,
+				// Roo: promptTokens is always the server-reported total regardless of protocol normalization
+				totalInputTokens: promptTokens,
+				totalOutputTokens: completionTokens,
 			}
 
 			yield* yieldResponseMessage(result)
