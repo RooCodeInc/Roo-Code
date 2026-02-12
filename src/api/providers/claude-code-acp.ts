@@ -103,6 +103,13 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 	 */
 	private cachedToolNames: string[] = []
 
+	/**
+	 * Estimated total context tokens accumulated in the ACP session.
+	 * Needed because ACP uses delta prompts, so per-request inputTokens are not
+	 * representative of the full context length.
+	 */
+	private sessionContextTokens = 0
+
 	constructor(options: ClaudeCodeAcpHandlerOptions) {
 		super()
 		this.options = options
@@ -141,6 +148,7 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 			this.lastSentMessageCount = 0
 			this.isSessionInitialized = false
 			this.cachedToolNames = []
+			this.sessionContextTokens = 0
 		}
 		this.sessionId = session.sessionId
 
@@ -178,6 +186,7 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 			this.lastSentMessageCount = 0
 			this.isSessionInitialized = false
 			this.cachedToolNames = []
+			this.sessionContextTokens = 0
 
 			const retryBudgets = [
 				Math.min(60_000, Math.floor(maxPromptChars * 0.5)),
@@ -190,6 +199,7 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 					this.lastSentMessageCount = 0
 					this.isSessionInitialized = false
 					this.cachedToolNames = []
+					this.sessionContextTokens = 0
 				}
 				this.sessionId = session.sessionId
 
@@ -213,10 +223,12 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 			// On error, reset session state so next call sends full prompt
 			this.isSessionInitialized = false
 			this.lastSentMessageCount = 0
+			this.sessionContextTokens = 0
 			throw result.error
 		}
 
 		let fullText = textChunks.join("")
+		let promptTokens = Math.ceil(totalInputChars / 4)
 
 		// Handle empty response — retry once with a fresh session + full prompt.
 		// If still empty, return an empty stream so Task can apply its graceful retry logic.
@@ -228,12 +240,14 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 			this.lastSentMessageCount = 0
 			this.isSessionInitialized = false
 			this.cachedToolNames = []
+			this.sessionContextTokens = 0
 
 			session = await manager.getOrCreateSession(workingDirectory, model.id)
 			if (this.sessionId !== session.sessionId) {
 				this.lastSentMessageCount = 0
 				this.isSessionInitialized = false
 				this.cachedToolNames = []
+				this.sessionContextTokens = 0
 			}
 			this.sessionId = session.sessionId
 
@@ -247,15 +261,18 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 			if (retryResult.error) {
 				this.isSessionInitialized = false
 				this.lastSentMessageCount = 0
+				this.sessionContextTokens = 0
 				throw retryResult.error
 			}
 
 			fullText = textChunks.join("")
+			promptTokens = Math.ceil(totalInputChars / 4)
 
 			if (!fullText.trim()) {
 				console.debug("[ClaudeCodeAcpHandler] Empty response on retry; returning empty stream")
 				this.isSessionInitialized = false
 				this.lastSentMessageCount = 0
+				this.sessionContextTokens = 0
 				return
 			}
 		}
@@ -293,10 +310,15 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 					// Retry succeeded — use the retry response instead
 					parsed = retryParsed
 					// Add retry tokens to usage estimate
+					const retryPromptTokens = Math.ceil(retryInputChars / 4)
+					const retryOutputTokens = Math.ceil(retryFullText.length / 4)
+					this.sessionContextTokens +=
+						promptTokens + Math.ceil(fullText.length / 4) + retryPromptTokens + retryOutputTokens
 					yield {
 						type: "usage",
 						inputTokens: Math.ceil((totalInputChars + retryInputChars) / 4),
 						outputTokens: Math.ceil((fullText.length + retryFullText.length) / 4),
+						contextTokens: this.sessionContextTokens,
 					}
 
 					for (const chunk of parsed) {
@@ -315,6 +337,7 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 			)
 			this.isSessionInitialized = false
 			this.lastSentMessageCount = 0
+			this.sessionContextTokens = 0
 			// Fall through to yield original response — Roo Code's task loop will
 			// see "no tools used" and retry, which will now get a fresh full prompt
 		}
@@ -325,10 +348,12 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		}
 
 		// Emit usage estimate
+		this.sessionContextTokens += promptTokens + Math.ceil(fullText.length / 4)
 		yield {
 			type: "usage",
 			inputTokens: Math.ceil(totalInputChars / 4),
 			outputTokens: Math.ceil(fullText.length / 4),
+			contextTokens: this.sessionContextTokens,
 		}
 	}
 

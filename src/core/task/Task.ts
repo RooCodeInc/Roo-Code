@@ -2791,6 +2791,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				let inputTokens = 0
 				let outputTokens = 0
 				let totalCost: number | undefined
+				let contextTokensForRequest: number | undefined
 
 				// We can't use `api_req_finished` anymore since it's a unique case
 				// where it could come after a streaming message (i.e. in the middle
@@ -2834,6 +2835,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						cacheWrites: cacheWriteTokens,
 						cacheReads: cacheReadTokens,
 						cost: totalCost ?? costResult.totalCost,
+						contextTokens: contextTokensForRequest ?? (existingData as any).contextTokens,
 						cancelReason,
 						streamingFailedMessage,
 					} satisfies ClineApiReqInfo)
@@ -2961,6 +2963,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								cacheWriteTokens += chunk.cacheWriteTokens ?? 0
 								cacheReadTokens += chunk.cacheReadTokens ?? 0
 								totalCost = chunk.totalCost
+								if (typeof chunk.contextTokens === "number" && Number.isFinite(chunk.contextTokens)) {
+									contextTokensForRequest = chunk.contextTokens
+								}
 								break
 							case "grounding":
 								// Handle grounding sources separately from regular content
@@ -3095,6 +3100,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						let bgCacheWriteTokens = currentTokens.cacheWrite
 						let bgCacheReadTokens = currentTokens.cacheRead
 						let bgTotalCost = currentTokens.total
+						let bgContextTokens = contextTokensForRequest
 
 						// Helper function to capture telemetry and update messages
 						const captureUsageData = async (
@@ -3119,6 +3125,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								cacheWriteTokens = tokens.cacheWrite
 								cacheReadTokens = tokens.cacheRead
 								totalCost = tokens.total
+								if (typeof bgContextTokens === "number" && Number.isFinite(bgContextTokens)) {
+									contextTokensForRequest = bgContextTokens
+								}
 
 								// Update the API request message with the latest usage data
 								updateApiReqMsg()
@@ -3192,6 +3201,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									bgCacheWriteTokens += chunk.cacheWriteTokens ?? 0
 									bgCacheReadTokens += chunk.cacheReadTokens ?? 0
 									bgTotalCost = chunk.totalCost
+									if (
+										typeof chunk.contextTokens === "number" &&
+										Number.isFinite(chunk.contextTokens)
+									) {
+										bgContextTokens = chunk.contextTokens
+									}
 								}
 							}
 

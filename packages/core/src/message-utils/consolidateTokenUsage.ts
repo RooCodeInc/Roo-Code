@@ -7,6 +7,7 @@ export type ParsedApiReqStartedTextType = {
 	cacheReads: number
 	cost?: number // Only present if consolidateApiRequests has been called
 	apiProtocol?: "anthropic" | "openai"
+	contextTokens?: number
 }
 
 /**
@@ -83,12 +84,14 @@ export function consolidateTokenUsage(messages: ClineMessage[]): TokenUsage {
 		if (message.type === "say" && message.say === "api_req_started" && message.text) {
 			try {
 				const parsedText: ParsedApiReqStartedTextType = JSON.parse(message.text)
-				const { tokensIn, tokensOut } = parsedText
+				const { tokensIn, tokensOut, contextTokens } = parsedText
 
 				// Since tokensIn now stores TOTAL input tokens (including cache tokens),
 				// we no longer need to add cacheWrites and cacheReads separately.
 				// This applies to both Anthropic and OpenAI protocols.
-				if (typeof tokensIn === "number" && Number.isFinite(tokensIn)) {
+				if (typeof contextTokens === "number" && Number.isFinite(contextTokens)) {
+					result.contextTokens = contextTokens
+				} else if (typeof tokensIn === "number" && Number.isFinite(tokensIn)) {
 					result.contextTokens = tokensIn
 				} else if (typeof tokensOut === "number" && Number.isFinite(tokensOut)) {
 					// Fallback if input tokens are unavailable.

@@ -63,6 +63,12 @@ export interface ApiStreamUsageChunk {
 	cacheReadTokens?: number
 	reasoningTokens?: number
 	totalCost?: number
+	/**
+	 * Optional context token estimate for the full conversation window.
+	 * Useful for providers that stream delta prompts (e.g., ACP) where inputTokens
+	 * are not the full context size.
+	 */
+	contextTokens?: number
 }
 
 export interface ApiStreamGroundingChunk {
