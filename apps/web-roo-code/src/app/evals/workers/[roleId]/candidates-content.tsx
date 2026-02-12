@@ -436,7 +436,7 @@ function CandidateCard({
 							Daily Cost
 						</p>
 						<p className="mt-0.5 text-base font-bold tabular-nums">
-							~${Math.round(candidate.estimatedDailyCost)}/day
+							${Math.round(candidate.estimatedDailyCost)}/day
 						</p>
 						<p className="text-[9px] text-muted-foreground/70 tabular-nums">
 							(${candidate.avgCostPerTask.toFixed(3)}/task)
@@ -569,7 +569,7 @@ function CompactCard({
 						</p>
 						<p className="mt-1 text-2xl font-bold tabular-nums">
 							{highlight === "cost"
-								? `~$${Math.round(candidate.estimatedDailyCost)}/day`
+								? `$${Math.round(candidate.estimatedDailyCost)}/day`
 								: `${candidate.avgTimePerTask.toFixed(1)}s`}
 						</p>
 						{highlight === "cost" && (
@@ -591,7 +591,7 @@ function CompactCard({
 							Daily Cost
 						</p>
 						<p className="mt-0.5 text-sm font-bold tabular-nums">
-							~${Math.round(candidate.estimatedDailyCost)}
+							${Math.round(candidate.estimatedDailyCost)}
 						</p>
 						<p className="text-[9px] text-muted-foreground/70 tabular-nums">
 							(${candidate.avgCostPerTask.toFixed(3)}/task)
@@ -944,7 +944,7 @@ export function CandidatesContent({
 													{candidate.successRate}%
 												</td>
 												<td className="px-5 py-4 text-right font-mono tabular-nums">
-													<span>~${Math.round(candidate.estimatedDailyCost)}</span>
+													<span>${Math.round(candidate.estimatedDailyCost)}</span>
 													<span className="ml-1 text-[10px] text-muted-foreground">
 														(${candidate.avgCostPerTask.toFixed(3)})
 													</span>

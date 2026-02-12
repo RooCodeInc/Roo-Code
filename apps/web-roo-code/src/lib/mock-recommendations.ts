@@ -20,7 +20,7 @@ export const TASKS_PER_DAY = 80
 export type EngineerRole = {
 	id: string
 	name: string
-	/** Daily salary range string, e.g. "~$3–38/day" */
+	/** Daily salary range string, e.g. "$3–38/day" */
 	salaryRange: string
 	description: string
 	bestFor: string[]
@@ -81,7 +81,7 @@ const ENGINEER_ROLES: EngineerRole[] = [
 	{
 		id: "junior",
 		name: "Junior Engineer",
-		salaryRange: "~$2–10/day",
+		salaryRange: "$2–10/day",
 		description:
 			"Handles well-scoped, single-file tasks: boilerplate, simple bug fixes, and test generation at the lowest cost per task.",
 		bestFor: ["Single-file fixes", "Boilerplate generation", "Test generation", "Simple implementations"],
@@ -92,7 +92,7 @@ const ENGINEER_ROLES: EngineerRole[] = [
 	{
 		id: "senior",
 		name: "Senior Engineer",
-		salaryRange: "~$10–26/day",
+		salaryRange: "$10–26/day",
 		description:
 			"The sweet spot for most engineering work. Senior-tier models balance cost and quality across multi-file refactors, feature development, and debugging.",
 		bestFor: ["Multi-file refactors", "Feature development", "Debugging", "Code review"],
@@ -107,7 +107,7 @@ const ENGINEER_ROLES: EngineerRole[] = [
 	{
 		id: "staff",
 		name: "Staff Engineer",
-		salaryRange: "~$8–34/day",
+		salaryRange: "$8–34/day",
 		description:
 			"For architecture decisions, system design, and complex refactors. Staff-tier models handle ambiguous requirements and cross-cutting changes where other tiers fail.",
 		bestFor: ["Architecture decisions", "Complex features", "System design", "Ambiguous requirements"],
@@ -122,7 +122,7 @@ const ENGINEER_ROLES: EngineerRole[] = [
 	{
 		id: "reviewer",
 		name: "Architecture Reviewer",
-		salaryRange: "~$15–40/day",
+		salaryRange: "$15–40/day",
 		description:
 			"For code review, PR feedback, security analysis, and design critique. Reviewer-tier models catch issues other models miss and provide actionable, context-aware suggestions.",
 		bestFor: ["Code review", "PR feedback", "Security analysis", "Design critique", "Refactor guidance"],
@@ -141,7 +141,7 @@ const ENGINEER_ROLES: EngineerRole[] = [
 	{
 		id: "autonomous",
 		name: "Autonomous Agent",
-		salaryRange: "~$5–30/day",
+		salaryRange: "$5–30/day",
 		description:
 			"For issue-to-PR workflows, long-running tasks, and multi-step debugging with minimal supervision. Autonomous-tier models complete tasks end-to-end and recover from errors without human intervention.",
 		bestFor: [
@@ -414,7 +414,7 @@ const seniorCandidates: ModelCandidate[] = [
 		avgTimePerTask: 188.5,
 		languageScores: { go: 97, java: 91, javascript: 96, python: 100, rust: 97 },
 		settings: { temperature: 0 },
-		caveats: ["Most expensive in this tier: ~$39/day ($0.48/task)"],
+		caveats: ["Most expensive in this tier: $39/day ($0.48/task)"],
 	},
 ]
 
@@ -434,7 +434,7 @@ const staffCandidates: ModelCandidate[] = [
 		avgTimePerTask: 105.5,
 		languageScores: { go: 100, java: 100, javascript: 100, python: 100, rust: 100 },
 		settings: { temperature: 0, reasoningEffort: "medium" },
-		caveats: ["100% pass rate at ~$8/day ($0.10/task): best cost-to-quality ratio in this role"],
+		caveats: ["100% pass rate at $8/day ($0.10/task): best cost-to-quality ratio in this role"],
 	},
 	{
 		provider: "anthropic",
@@ -505,7 +505,7 @@ const staffCandidates: ModelCandidate[] = [
 		avgTimePerTask: 211.5,
 		languageScores: { go: 97, java: 96, javascript: 98, python: 100, rust: 100 },
 		settings: { temperature: 0 },
-		caveats: ["~$93/day ($1.17/task), 11× the cost of the top pick"],
+		caveats: ["$93/day ($1.17/task), 11× the cost of the top pick"],
 	},
 	{
 		provider: "openai",
@@ -536,7 +536,7 @@ const staffCandidates: ModelCandidate[] = [
 		languageScores: { go: 92, java: 91, javascript: 94, python: 94, rust: 100 },
 		settings: { temperature: 0 },
 		caveats: [
-			"Most expensive model tested: ~$115/day ($1.44/task)",
+			"Most expensive model tested: $115/day ($1.44/task)",
 			"Lower success rate (94%) despite highest cost",
 		],
 	},
@@ -560,7 +560,7 @@ const reviewerCandidates: ModelCandidate[] = [
 		avgTimePerTask: 105.5,
 		languageScores: { go: 100, java: 100, javascript: 100, python: 100, rust: 100 },
 		settings: { temperature: 0, reasoningEffort: "medium" },
-		caveats: ["100% consistency across all languages: ideal reviewer at ~$8/day"],
+		caveats: ["100% consistency across all languages: ideal reviewer at $8/day"],
 	},
 	{
 		provider: "anthropic",
@@ -646,7 +646,7 @@ const reviewerCandidates: ModelCandidate[] = [
 		avgTimePerTask: 188.5,
 		languageScores: { go: 97, java: 91, javascript: 96, python: 100, rust: 97 },
 		settings: { temperature: 0 },
-		caveats: ["Most expensive reviewer: ~$39/day ($0.48/task)", "More variable across languages than top picks"],
+		caveats: ["Most expensive reviewer: $39/day ($0.48/task)", "More variable across languages than top picks"],
 	},
 	{
 		provider: "openai",
@@ -683,7 +683,7 @@ const autonomousCandidates: ModelCandidate[] = [
 		avgTimePerTask: 105.5,
 		languageScores: { go: 100, java: 100, javascript: 100, python: 100, rust: 100 },
 		settings: { temperature: 0, reasoningEffort: "medium" },
-		caveats: ["Perfect success rate + fast completion: ideal autonomous agent at ~$8/day"],
+		caveats: ["Perfect success rate + fast completion: ideal autonomous agent at $8/day"],
 	},
 	{
 		provider: "openai",
@@ -698,7 +698,7 @@ const autonomousCandidates: ModelCandidate[] = [
 		avgTimePerTask: 173.0,
 		languageScores: { go: 100, java: 98, javascript: 100, python: 100, rust: 97 },
 		settings: { temperature: 0 },
-		caveats: ["Cheapest autonomous option at ~$2/day with near-perfect success"],
+		caveats: ["Cheapest autonomous option at $2/day with near-perfect success"],
 	},
 	{
 		provider: "xai",

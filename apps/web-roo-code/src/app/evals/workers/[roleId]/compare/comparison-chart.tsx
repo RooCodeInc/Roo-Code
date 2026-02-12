@@ -360,7 +360,7 @@ function CustomTooltip({
 							<span className="text-muted-foreground">{entry.name}:</span>
 							<span className="font-semibold tabular-nums">
 								{entry.dataKey === "costEfficiency" && dailyCost !== undefined
-									? `${entry.value} (~$${dailyCost}/day · $${costPerTask?.toFixed(3)}/task)`
+									? `${entry.value} ($${dailyCost}/day · $${costPerTask?.toFixed(3)}/task)`
 									: entry.value}
 							</span>
 						</div>
