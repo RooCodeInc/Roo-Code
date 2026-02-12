@@ -82,11 +82,16 @@ const rawGroupEntryArraySchema = z.array(groupEntrySchema).refine(
  * Schema for mode group entries. Preprocesses the input to strip deprecated
  * tool groups (e.g., "browser") before validation, ensuring backward compatibility
  * with older user configs.
+ *
+ * The type assertion to `z.ZodType<GroupEntry[], z.ZodTypeDef, GroupEntry[]>` is
+ * required because `z.preprocess` erases the input type to `unknown`, which
+ * propagates through `modeConfigSchema → rooCodeSettingsSchema → createRunSchema`
+ * and breaks `zodResolver` generic inference in downstream consumers (e.g., web-evals).
  */
 export const groupEntryArraySchema = z.preprocess((val) => {
 	if (!Array.isArray(val)) return val
 	return val.filter((entry) => !isDeprecatedGroupEntry(entry))
-}, rawGroupEntryArraySchema)
+}, rawGroupEntryArraySchema) as z.ZodType<GroupEntry[], z.ZodTypeDef, GroupEntry[]>
 
 export const modeConfigSchema = z.object({
 	slug: z.string().regex(/^[a-zA-Z0-9-]+$/, "Slug must contain only letters numbers and dashes"),
