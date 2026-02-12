@@ -1786,7 +1786,8 @@ export const webviewMessageHandler = async (
 		case "loadApiConfiguration":
 			if (message.text) {
 				try {
-					await provider.activateProviderProfile({ name: message.text })
+					const scope = message.scope || "global"
+					await provider.activateProviderProfile({ name: message.text }, { scope })
 				} catch (error) {
 					provider.log(
 						`Error load api configuration: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
@@ -1798,7 +1799,8 @@ export const webviewMessageHandler = async (
 		case "loadApiConfigurationById":
 			if (message.text) {
 				try {
-					await provider.activateProviderProfile({ id: message.text })
+					const scope = message.scope || "global"
+					await provider.activateProviderProfile({ id: message.text }, { scope })
 				} catch (error) {
 					provider.log(
 						`Error load api configuration by ID: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,

@@ -1628,24 +1628,35 @@ export class ClineProvider
 
 	async activateProviderProfile(
 		args: { name: string } | { id: string },
-		options?: { persistModeConfig?: boolean; persistTaskHistory?: boolean },
+		options?: { persistModeConfig?: boolean; persistTaskHistory?: boolean; scope?: "global" | "workspace" },
 	) {
-		const { name, id, ...providerSettings } = await this.providerSettingsManager.activateProfile(args)
+		const scope = options?.scope ?? "global"
+		const { name, id, ...providerSettings } = await this.providerSettingsManager.activateProfile(args, scope)
 
 		const persistModeConfig = options?.persistModeConfig ?? true
 		const persistTaskHistory = options?.persistTaskHistory ?? true
 
 		// See `upsertProviderProfile` for a description of what this is doing.
-		await Promise.all([
-			this.contextProxy.setValue("listApiConfigMeta", await this.providerSettingsManager.listConfig()),
-			this.contextProxy.setValue("currentApiConfigName", name),
-			this.contextProxy.setProviderSettings(providerSettings),
-		])
+		// When scope is "workspace", only update the local cache for currentApiConfigName
+		// to avoid leaking the selection to other VS Code windows via shared globalState.
+		if (scope === "workspace") {
+			await Promise.all([
+				this.contextProxy.setValue("listApiConfigMeta", await this.providerSettingsManager.listConfig()),
+				this.contextProxy.setProviderSettings(providerSettings),
+			])
+			this.contextProxy.setLocalValue("currentApiConfigName", name)
+		} else {
+			await Promise.all([
+				this.contextProxy.setValue("listApiConfigMeta", await this.providerSettingsManager.listConfig()),
+				this.contextProxy.setValue("currentApiConfigName", name),
+				this.contextProxy.setProviderSettings(providerSettings),
+			])
+		}
 
 		const { mode } = await this.getState()
 
 		if (id && persistModeConfig) {
-			await this.providerSettingsManager.setModeConfig(mode, id)
+			await this.providerSettingsManager.setModeConfig(mode, id, scope)
 		}
 
 		// Change the provider for the current task.
@@ -2276,6 +2287,7 @@ export class ClineProvider
 			terminalZdotdir: terminalZdotdir ?? false,
 			mcpEnabled: mcpEnabled ?? true,
 			currentApiConfigName: currentApiConfigName ?? "default",
+			currentConfigScope: await this.providerSettingsManager.getConfigScope(),
 			listApiConfigMeta: listApiConfigMeta ?? [],
 			pinnedApiConfigs: pinnedApiConfigs ?? {},
 			mode: mode ?? defaultModeSlug,
