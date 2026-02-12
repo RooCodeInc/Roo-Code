@@ -71,7 +71,7 @@ export class LmStudioHandler extends OpenAICompatibleHandler implements SingleCo
 
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
 			temperature: model.temperature ?? this.config.temperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
 			maxOutputTokens: this.getMaxOutputTokens(),

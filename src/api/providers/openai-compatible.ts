@@ -20,6 +20,7 @@ import {
 	handleAiSdkError,
 } from "../transform/ai-sdk"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
@@ -95,6 +96,14 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 	protected processUsageMetrics(usage: {
 		inputTokens?: number
 		outputTokens?: number
+		inputTokenDetails?: {
+			cacheReadTokens?: number
+			cacheWriteTokens?: number
+			noCacheTokens?: number
+		}
+		outputTokenDetails?: {
+			reasoningTokens?: number
+		}
 		details?: {
 			cachedInputTokens?: number
 			reasoningTokens?: number
@@ -105,8 +114,11 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 			type: "usage",
 			inputTokens: usage.inputTokens || 0,
 			outputTokens: usage.outputTokens || 0,
-			cacheReadTokens: usage.details?.cachedInputTokens,
-			reasoningTokens: usage.details?.reasoningTokens,
+			// P1: AI SDK v6 standard (LanguageModelInputTokenDetails)
+			// P2: Legacy AI SDK standard (usage.details)
+			cacheReadTokens: usage.inputTokenDetails?.cacheReadTokens ?? usage.details?.cachedInputTokens,
+			cacheWriteTokens: usage.inputTokenDetails?.cacheWriteTokens,
+			reasoningTokens: usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
 		}
 	}
 
@@ -137,11 +149,12 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		// Build the request options
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
 			temperature: model.temperature ?? this.config.temperature ?? 0,
 			maxOutputTokens: this.getMaxOutputTokens(),

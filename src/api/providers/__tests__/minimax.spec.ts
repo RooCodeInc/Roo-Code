@@ -338,16 +338,12 @@ describe("MiniMaxHandler", () => {
 
 			expect(mockMergeEnvironmentDetailsForMiniMax).toHaveBeenCalledWith(messages)
 			const callArgs = mockStreamText.mock.calls[0]?.[0]
+			// Cache control is now applied centrally in Task.ts, not per-provider
 			expect(callArgs.messages).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
 						role: "user",
 						content: [{ type: "text", text: "Merged message" }],
-						providerOptions: {
-							anthropic: {
-								cacheControl: { type: "ephemeral" },
-							},
-						},
 					}),
 				]),
 			)

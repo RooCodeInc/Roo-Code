@@ -24,6 +24,7 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -110,6 +111,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		let effectiveSystemPrompt: string | undefined = systemPrompt
 		let effectiveTemperature: number | undefined =
@@ -118,7 +120,16 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const providerOptions: Record<string, any> = {}
 
 		if (isO3Family) {
-			effectiveSystemPrompt = `Formatting re-enabled\n${systemPrompt}`
+			if (!systemPrompt && aiSdkMessages.length > 0 && aiSdkMessages[0].role === "system") {
+				// System prompt was passed as messages[0] instead of the systemPrompt parameter.
+				// Prepend the formatting prefix directly to the message content to avoid
+				// sending a duplicate via the `system:` parameter.
+				const sysMsg = aiSdkMessages[0] as { role: string; content: string }
+				sysMsg.content = `Formatting re-enabled\n${sysMsg.content}`
+				effectiveSystemPrompt = undefined
+			} else {
+				effectiveSystemPrompt = `Formatting re-enabled\n${systemPrompt}`
+			}
 			effectiveTemperature = undefined
 
 			const openaiOpts: Record<string, unknown> = {
@@ -141,7 +152,17 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 		if (deepseekReasoner) {
 			effectiveSystemPrompt = undefined
-			aiSdkMessages.unshift({ role: "user", content: systemPrompt })
+			if (systemPrompt) {
+				aiSdkMessages.unshift({ role: "user", content: systemPrompt })
+			} else if (aiSdkMessages.length > 0 && aiSdkMessages[0].role === "system") {
+				// System prompt was passed as messages[0] instead of the systemPrompt parameter.
+				// Extract system content and convert to a user message for DeepSeek Reasoner.
+				const sysContent = (aiSdkMessages[0] as { role: string; content: string }).content
+				aiSdkMessages.shift()
+				if (sysContent) {
+					aiSdkMessages.unshift({ role: "user", content: sysContent })
+				}
+			}
 		}
 
 		if (this.options.openAiStreamingEnabled ?? true) {
@@ -181,7 +202,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	): ApiStream {
 		const result = streamText({
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages,
 			temperature,
 			maxOutputTokens: this.getMaxOutputTokens(),
@@ -253,7 +274,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		try {
 			const { text, toolCalls, usage, providerMetadata } = await generateText({
 				model: languageModel,
-				system: systemPrompt,
+				system: systemPrompt || undefined,
 				messages,
 				temperature,
 				maxOutputTokens: this.getMaxOutputTokens(),

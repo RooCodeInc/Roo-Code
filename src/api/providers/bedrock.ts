@@ -32,6 +32,7 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { getModelParams } from "../transform/model-params"
 import { shouldUseReasoningBudget } from "../../shared/api"
 import { BaseProvider } from "./base-provider"
@@ -210,6 +211,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		// Convert tools to AI SDK format
 		let openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 		const toolChoice = mapToolChoice(metadata?.tool_choice)
 
 		// Build provider options for reasoning, betas, etc.
@@ -251,65 +253,16 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 		}
 
-		// Prompt caching: use AI SDK's cachePoint mechanism
-		// The AI SDK's @ai-sdk/amazon-bedrock supports cachePoint in providerOptions per message.
-		//
-		// Strategy: Bedrock allows up to 4 cache checkpoints. We use them as:
-		//   1. System prompt (via systemProviderOptions below)
-		//   2-4. Up to 3 user messages in the conversation history
-		//
-		// For the message cache points, we target the last 2 user messages (matching
-		// Anthropic's strategy: write-to-cache + read-from-cache) PLUS an earlier "anchor"
-		// user message near the middle of the conversation. This anchor ensures the 20-block
-		// lookback window has a stable cache entry to hit, covering all assistant/tool messages
-		// between the anchor and the recent messages.
-		//
-		// We identify targets in the ORIGINAL Anthropic messages (before AI SDK conversion)
-		// because convertToAiSdkMessages() splits user messages containing tool_results into
-		// separate "tool" + "user" role messages, which would skew naive counting.
+		// Prompt caching
 		const usePromptCache = Boolean(this.options.awsUsePromptCache && this.supportsAwsPromptCache(modelConfig))
 
-		if (usePromptCache) {
-			const cachePointOption = { bedrock: { cachePoint: { type: "default" as const } } }
-
-			// Find all user message indices in the original (pre-conversion) message array.
-			const originalUserIndices = filteredMessages.reduce<number[]>(
-				(acc, msg, idx) => ("role" in msg && msg.role === "user" ? [...acc, idx] : acc),
-				[],
-			)
-
-			// Select up to 3 user messages for cache points (system prompt uses the 4th):
-			// - Last user message: write to cache for next request
-			// - Second-to-last user message: read from cache for current request
-			// - An "anchor" message earlier in the conversation for 20-block window coverage
-			const targetOriginalIndices = new Set<number>()
-			const numUserMsgs = originalUserIndices.length
-
-			if (numUserMsgs >= 1) {
-				// Always cache the last user message
-				targetOriginalIndices.add(originalUserIndices[numUserMsgs - 1])
-			}
-			if (numUserMsgs >= 2) {
-				// Cache the second-to-last user message
-				targetOriginalIndices.add(originalUserIndices[numUserMsgs - 2])
-			}
-			if (numUserMsgs >= 5) {
-				// Add an anchor cache point roughly in the first third of user messages.
-				// This ensures that the 20-block lookback from the second-to-last breakpoint
-				// can find a stable cache entry, covering all the assistant and tool messages
-				// in the middle of the conversation. We pick the user message at ~1/3 position.
-				const anchorIdx = Math.floor(numUserMsgs / 3)
-				// Only add if it's not already one of the last-2 targets
-				if (!targetOriginalIndices.has(originalUserIndices[anchorIdx])) {
-					targetOriginalIndices.add(originalUserIndices[anchorIdx])
+		// Strip cache annotations when caching is disabled
+		if (!usePromptCache) {
+			for (const msg of aiSdkMessages) {
+				if (msg.providerOptions?.bedrock) {
+					const { bedrock: _, ...rest } = msg.providerOptions
+					msg.providerOptions = Object.keys(rest).length > 0 ? rest : undefined
 				}
-			}
-
-			// Apply cachePoint to the correct AI SDK messages by walking both arrays in parallel.
-			// A single original user message with tool_results becomes [tool-role msg, user-role msg]
-			// in the AI SDK array, while a plain user message becomes [user-role msg].
-			if (targetOriginalIndices.size > 0) {
-				this.applyCachePointsToAiSdkMessages(aiSdkMessages, targetOriginalIndices, cachePointOption)
 			}
 		}
 
@@ -317,10 +270,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		// Cast providerOptions to any to bypass strict JSONObject typing — the AI SDK accepts the correct runtime values
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: this.provider(modelConfig.id),
-			system: systemPrompt,
-			...(usePromptCache && {
-				systemProviderOptions: { bedrock: { cachePoint: { type: "default" } } } as Record<string, unknown>,
-			}),
+			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
 			temperature: modelConfig.temperature ?? (this.options.modelTemperature as number),
 			maxOutputTokens: modelConfig.maxTokens || (modelConfig.info.maxTokens as number),
@@ -704,29 +654,6 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			(modelConfig?.info as any)?.cachableFields &&
 			(modelConfig?.info as any)?.cachableFields?.length > 0
 		)
-	}
-
-	/**
-	 * Apply cachePoint providerOptions to the correct AI SDK messages by walking
-	 * the original Anthropic messages and converted AI SDK messages in parallel.
-	 *
-	 * convertToAiSdkMessages() can split a single Anthropic user message (containing
-	 * tool_results + text) into 2 AI SDK messages (tool role + user role). This method
-	 * accounts for that split so cache points land on the right message.
-	 */
-	private applyCachePointsToAiSdkMessages(
-		aiSdkMessages: { role: string; providerOptions?: Record<string, Record<string, unknown>> }[],
-		targetIndices: Set<number>,
-		cachePointOption: Record<string, Record<string, unknown>>,
-	): void {
-		for (const idx of targetIndices) {
-			if (idx >= 0 && idx < aiSdkMessages.length) {
-				aiSdkMessages[idx].providerOptions = {
-					...aiSdkMessages[idx].providerOptions,
-					...cachePointOption,
-				}
-			}
-		}
 	}
 
 	/************************************************************************************

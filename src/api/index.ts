@@ -88,6 +88,8 @@ export interface ApiHandlerCreateMessageMetadata {
 	 * Only applies to providers that support function calling restrictions (e.g., Gemini).
 	 */
 	allowedFunctionNames?: string[]
+	/** Provider-specific options for tool definitions (e.g. cache control). */
+	toolProviderOptions?: Record<string, Record<string, unknown>>
 }
 
 export interface ApiHandler {

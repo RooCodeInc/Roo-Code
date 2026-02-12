@@ -19,6 +19,7 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 
 import { DEFAULT_HEADERS } from "./constants"
@@ -120,6 +121,7 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		const temperature = this.supportsTemperature(modelId)
 			? (this.options.modelTemperature ?? VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE)
@@ -127,7 +129,7 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 
 		const result = streamText({
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
 			temperature,
 			maxOutputTokens: info.maxTokens ?? undefined,

@@ -23,6 +23,7 @@ import {
 	processAiSdkStreamPart,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 
 import { BaseProvider } from "./base-provider"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
@@ -153,6 +154,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		const openrouter = this.createOpenRouterProvider({ reasoning, headers })
 
 		const tools = convertToolsForAiSdk(metadata?.tools)
+		applyToolCacheOptions(tools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		const providerOptions:
 			| {
@@ -177,7 +179,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		try {
 			const result = streamText({
 				model: openrouter.chat(modelId),
-				system: systemPrompt,
+				system: systemPrompt || undefined,
 				messages: aiSdkMessages,
 				maxOutputTokens: maxTokens && maxTokens > 0 ? maxTokens : undefined,
 				temperature,

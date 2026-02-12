@@ -13,6 +13,7 @@ import {
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import { convertToAiSdkMessages, convertToolsForAiSdk, consumeAiSdkStream, handleAiSdkError } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -149,12 +150,13 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		// Build the request options
 		// Use MISTRAL_DEFAULT_TEMPERATURE (1) as fallback to match original behavior
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
 			temperature: this.options.modelTemperature ?? MISTRAL_DEFAULT_TEMPERATURE,
 			maxOutputTokens: this.getMaxOutputTokens(),

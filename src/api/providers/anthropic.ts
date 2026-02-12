@@ -24,6 +24,7 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { calculateApiCostAnthropic } from "../../shared/cost"
 
 import { DEFAULT_HEADERS } from "./constants"
@@ -82,6 +83,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		// Convert tools to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		// Build Anthropic provider options
 		const anthropicProviderOptions: Record<string, unknown> = {}
@@ -105,34 +107,11 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			anthropicProviderOptions.disableParallelToolUse = true
 		}
 
-		// Apply cache control to user messages
-		// Strategy: cache the last 2 user messages (write-to-cache + read-from-cache)
-		const cacheProviderOption = { anthropic: { cacheControl: { type: "ephemeral" as const } } }
-
-		const userMsgIndices = messages.reduce(
-			(acc, msg, index) => ("role" in msg && msg.role === "user" ? [...acc, index] : acc),
-			[] as number[],
-		)
-
-		const targetIndices = new Set<number>()
-		const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
-		const secondLastUserMsgIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
-
-		if (lastUserMsgIndex >= 0) targetIndices.add(lastUserMsgIndex)
-		if (secondLastUserMsgIndex >= 0) targetIndices.add(secondLastUserMsgIndex)
-
-		if (targetIndices.size > 0) {
-			this.applyCacheControlToAiSdkMessages(messages as ModelMessage[], targetIndices, cacheProviderOption)
-		}
-
 		// Build streamText request
 		// Cast providerOptions to any to bypass strict JSONObject typing — the AI SDK accepts the correct runtime values
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: this.provider(modelConfig.id),
-			system: systemPrompt,
-			...({
-				systemProviderOptions: { anthropic: { cacheControl: { type: "ephemeral" } } },
-			} as Record<string, unknown>),
+			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
 			temperature: modelConfig.temperature,
 			maxOutputTokens: modelConfig.maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
@@ -191,12 +170,19 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		const inputTokens = usage.inputTokens ?? 0
 		const outputTokens = usage.outputTokens ?? 0
 
-		// Extract cache metrics from Anthropic's providerMetadata
+		// Extract cache metrics from Anthropic's providerMetadata.
+		// In @ai-sdk/anthropic v3.0.38+, cacheReadInputTokens may only exist at
+		// usage.cache_read_input_tokens rather than the top-level property.
 		const anthropicMeta = providerMetadata?.anthropic as
-			| { cacheCreationInputTokens?: number; cacheReadInputTokens?: number }
+			| {
+					cacheCreationInputTokens?: number
+					cacheReadInputTokens?: number
+					usage?: { cache_read_input_tokens?: number }
+			  }
 			| undefined
 		const cacheWriteTokens = anthropicMeta?.cacheCreationInputTokens ?? 0
-		const cacheReadTokens = anthropicMeta?.cacheReadInputTokens ?? 0
+		const cacheReadTokens =
+			(anthropicMeta?.cacheReadInputTokens || anthropicMeta?.usage?.cache_read_input_tokens) ?? 0
 
 		const { totalCost } = calculateApiCostAnthropic(
 			info,
@@ -213,29 +199,6 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			cacheWriteTokens: cacheWriteTokens > 0 ? cacheWriteTokens : undefined,
 			cacheReadTokens: cacheReadTokens > 0 ? cacheReadTokens : undefined,
 			totalCost,
-		}
-	}
-
-	/**
-	 * Apply cacheControl providerOptions to the correct AI SDK messages by walking
-	 * the original Anthropic messages and converted AI SDK messages in parallel.
-	 *
-	 * convertToAiSdkMessages() can split a single Anthropic user message (containing
-	 * tool_results + text) into 2 AI SDK messages (tool role + user role). This method
-	 * accounts for that split so cache control lands on the right message.
-	 */
-	private applyCacheControlToAiSdkMessages(
-		aiSdkMessages: { role: string; providerOptions?: Record<string, Record<string, unknown>> }[],
-		targetIndices: Set<number>,
-		cacheProviderOption: Record<string, Record<string, unknown>>,
-	): void {
-		for (const idx of targetIndices) {
-			if (idx >= 0 && idx < aiSdkMessages.length) {
-				aiSdkMessages[idx].providerOptions = {
-					...aiSdkMessages[idx].providerOptions,
-					...cacheProviderOption,
-				}
-			}
 		}
 	}
 

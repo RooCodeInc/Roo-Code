@@ -399,7 +399,7 @@ describe("AnthropicHandler", () => {
 			expect(endChunk).toBeDefined()
 		})
 
-		it("should pass system prompt via system param with systemProviderOptions for cache control", async () => {
+		it("should pass system prompt via system param (not as a message)", async () => {
 			setupStreamTextMock([{ type: "text-delta", text: "test" }])
 
 			const stream = handler.createMessage(systemPrompt, [
@@ -410,12 +410,11 @@ describe("AnthropicHandler", () => {
 				// Consume
 			}
 
-			// Verify streamText was called with system + systemProviderOptions (not as a message)
+			// Verify streamText was called with system (not as a message)
 			const callArgs = mockStreamText.mock.calls[0]![0]
 			expect(callArgs.system).toBe(systemPrompt)
-			expect(callArgs.systemProviderOptions).toEqual({
-				anthropic: { cacheControl: { type: "ephemeral" } },
-			})
+			// Cache control is now applied centrally in Task.ts, not per-provider
+			expect(callArgs.systemProviderOptions).toBeUndefined()
 			// System prompt should NOT be in the messages array
 			const systemMessages = callArgs.messages.filter((m: any) => m.role === "system")
 			expect(systemMessages).toHaveLength(0)

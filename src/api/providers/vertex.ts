@@ -21,6 +21,7 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { t } from "i18next"
 import type { ApiStream, ApiStreamUsageChunk, GroundingSource } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -117,6 +118,7 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 		}
 
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		// Build tool choice - use 'required' when allowedFunctionNames restricts available tools
 		const toolChoice =
@@ -127,7 +129,7 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 		// Build the request options
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: this.provider(modelId),
-			system: systemInstruction,
+			system: systemInstruction || undefined,
 			messages: aiSdkMessages,
 			temperature: temperatureConfig,
 			maxOutputTokens,
