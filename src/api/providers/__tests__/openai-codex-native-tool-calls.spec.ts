@@ -192,4 +192,98 @@ describe("OpenAiCodexHandler native tool calls", () => {
 			totalCost: 0,
 		})
 	})
+
+	it("extracts cached and reasoning tokens from OpenAI responses usage shapes", async () => {
+		vi.spyOn(openAiCodexOAuthManager, "getAccessToken").mockResolvedValue("test-token")
+		vi.spyOn(openAiCodexOAuthManager, "getAccountId").mockResolvedValue("acct_test")
+
+		async function* mockFullStream() {
+			yield { type: "text-delta", text: "response" }
+		}
+
+		mockStreamText.mockReturnValue({
+			fullStream: mockFullStream(),
+			usage: Promise.resolve({
+				inputTokens: 120,
+				outputTokens: 30,
+				raw: {
+					input_tokens_details: { cached_tokens: 40 },
+					output_tokens_details: { reasoning_tokens: 12 },
+				},
+			}),
+			providerMetadata: Promise.resolve({
+				openai: {
+					responseId: "resp_usage_shape",
+					cachedPromptTokens: 40,
+					reasoningTokens: 12,
+				},
+			}),
+			content: Promise.resolve([]),
+		})
+
+		const stream = handler.createMessage("system", [{ role: "user", content: "hello" } as any], {
+			taskId: "t",
+			tools: [],
+		})
+
+		const chunks: any[] = []
+		for await (const chunk of stream) {
+			chunks.push(chunk)
+		}
+
+		const usageChunks = chunks.filter((c) => c.type === "usage")
+		expect(usageChunks.length).toBe(1)
+		expect(usageChunks[0]).toMatchObject({
+			type: "usage",
+			inputTokens: 120,
+			outputTokens: 30,
+			cacheReadTokens: 40,
+			reasoningTokens: 12,
+			totalCost: 0,
+		})
+	})
+
+	it("extracts cached and reasoning tokens from AI SDK detail fields", async () => {
+		vi.spyOn(openAiCodexOAuthManager, "getAccessToken").mockResolvedValue("test-token")
+		vi.spyOn(openAiCodexOAuthManager, "getAccountId").mockResolvedValue("acct_test")
+
+		async function* mockFullStream() {
+			yield { type: "text-delta", text: "response" }
+		}
+
+		mockStreamText.mockReturnValue({
+			fullStream: mockFullStream(),
+			usage: Promise.resolve({
+				inputTokens: 90,
+				outputTokens: 20,
+				inputTokenDetails: { cacheReadTokens: 25 },
+				outputTokenDetails: { reasoningTokens: 8 },
+			}),
+			providerMetadata: Promise.resolve({
+				openai: { responseId: "resp_usage_details" },
+			}),
+			content: Promise.resolve([]),
+		})
+
+		const stream = handler.createMessage("system", [{ role: "user", content: "hello" } as any], {
+			taskId: "t",
+			tools: [],
+		})
+
+		const chunks: any[] = []
+		for await (const chunk of stream) {
+			chunks.push(chunk)
+		}
+
+		const usageChunks = chunks.filter((c) => c.type === "usage")
+		expect(usageChunks.length).toBe(1)
+		expect(usageChunks[0]).toMatchObject({
+			type: "usage",
+			inputTokens: 90,
+			outputTokens: 20,
+			cacheReadTokens: 25,
+			reasoningTokens: 8,
+			totalCost: 0,
+		})
+	})
 })

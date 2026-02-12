@@ -100,6 +100,35 @@ describe("OpenAiNativeHandler - usage metrics", () => {
 	})
 
 	describe("cache metrics", () => {
+		it("should handle cached input tokens from AI SDK v6 inputTokenDetails", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 100,
+					outputTokens: 50,
+					inputTokenDetails: {
+						cacheReadTokens: 30,
+					},
+				}),
+				providerMetadata: Promise.resolve({}),
+				content: Promise.resolve([]),
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunks = chunks.filter((c) => c.type === "usage")
+			expect(usageChunks).toHaveLength(1)
+			expect(usageChunks[0].cacheReadTokens).toBe(30)
+		})
+
 		it("should handle cached input tokens from usage details", async () => {
 			async function* mockFullStream() {
 				yield { type: "text-delta", text: "Test" }

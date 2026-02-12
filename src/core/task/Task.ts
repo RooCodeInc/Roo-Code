@@ -2852,6 +2852,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				let cacheWriteTokens = 0
 				let cacheReadTokens = 0
 				let inputTokens = 0
+				let nonCachedInputTokens: number | undefined
 				let outputTokens = 0
 				let totalCost: number | undefined
 
@@ -2881,7 +2882,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						apiProtocol === "anthropic"
 							? calculateApiCostAnthropic(
 									streamModelInfo,
-									inputTokens,
+									nonCachedInputTokens ??
+										Math.max(0, inputTokens - cacheWriteTokens - cacheReadTokens),
 									outputTokens,
 									cacheWriteTokens,
 									cacheReadTokens,
@@ -3026,6 +3028,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							}
 							case "usage":
 								inputTokens += chunk.inputTokens
+								if (typeof chunk.nonCachedInputTokens === "number") {
+									nonCachedInputTokens = (nonCachedInputTokens ?? 0) + chunk.nonCachedInputTokens
+								}
 								outputTokens += chunk.outputTokens
 								cacheWriteTokens += chunk.cacheWriteTokens ?? 0
 								cacheReadTokens += chunk.cacheReadTokens ?? 0
@@ -3064,6 +3069,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 							case "tool_call": {
 								// Legacy: Handle complete tool calls (for backward compatibility)
+								// Skip duplicate complete tool calls when start/delta/end flow already
+								// constructed a tool_use with the same ID.
+								const alreadyProcessed = this.assistantMessageContent.some(
+									(block) =>
+										(block.type === "tool_use" || block.type === "mcp_tool_use") &&
+										block.id === chunk.id,
+								)
+								if (alreadyProcessed) {
+									console.debug(
+										`[Task#${this.taskId}] Ignoring duplicate tool_call for ID: ${chunk.id}`,
+									)
+									break
+								}
+
 								// Convert native tool call to ToolUse format
 								const toolUse = NativeToolCallParser.parseToolCall({
 									id: chunk.id,
@@ -3150,6 +3169,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// Create a copy of current token values to avoid race conditions
 					const currentTokens = {
 						input: inputTokens,
+						nonCachedInput: nonCachedInputTokens,
 						output: outputTokens,
 						cacheWrite: cacheWriteTokens,
 						cacheRead: cacheReadTokens,
@@ -3163,6 +3183,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 						// Local variables to accumulate usage data without affecting the main flow
 						let bgInputTokens = currentTokens.input
+						let bgNonCachedInputTokens = currentTokens.nonCachedInput
 						let bgOutputTokens = currentTokens.output
 						let bgCacheWriteTokens = currentTokens.cacheWrite
 						let bgCacheReadTokens = currentTokens.cacheRead
@@ -3172,6 +3193,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						const captureUsageData = async (
 							tokens: {
 								input: number
+								nonCachedInput?: number
 								output: number
 								cacheWrite: number
 								cacheRead: number
@@ -3181,12 +3203,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						) => {
 							if (
 								tokens.input > 0 ||
+								(tokens.nonCachedInput ?? 0) > 0 ||
 								tokens.output > 0 ||
 								tokens.cacheWrite > 0 ||
 								tokens.cacheRead > 0
 							) {
 								// Update the shared variables atomically
 								inputTokens = tokens.input
+								nonCachedInputTokens = tokens.nonCachedInput
 								outputTokens = tokens.output
 								cacheWriteTokens = tokens.cacheWrite
 								cacheReadTokens = tokens.cacheRead
@@ -3215,7 +3239,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									apiProtocol === "anthropic"
 										? calculateApiCostAnthropic(
 												streamModelInfo,
-												tokens.input,
+												tokens.nonCachedInput ??
+													Math.max(0, tokens.input - tokens.cacheWrite - tokens.cacheRead),
 												tokens.output,
 												tokens.cacheWrite,
 												tokens.cacheRead,
@@ -3264,6 +3289,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								if (chunk && chunk.type === "usage") {
 									usageFound = true
 									bgInputTokens += chunk.inputTokens
+									if (typeof chunk.nonCachedInputTokens === "number") {
+										bgNonCachedInputTokens =
+											(bgNonCachedInputTokens ?? 0) + chunk.nonCachedInputTokens
+									}
 									bgOutputTokens += chunk.outputTokens
 									bgCacheWriteTokens += chunk.cacheWriteTokens ?? 0
 									bgCacheReadTokens += chunk.cacheReadTokens ?? 0
@@ -3282,6 +3311,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								await captureUsageData(
 									{
 										input: bgInputTokens,
+										nonCachedInput: bgNonCachedInputTokens,
 										output: bgOutputTokens,
 										cacheWrite: bgCacheWriteTokens,
 										cacheRead: bgCacheReadTokens,
@@ -3306,6 +3336,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								await captureUsageData(
 									{
 										input: bgInputTokens,
+										nonCachedInput: bgNonCachedInputTokens,
 										output: bgOutputTokens,
 										cacheWrite: bgCacheWriteTokens,
 										cacheRead: bgCacheReadTokens,

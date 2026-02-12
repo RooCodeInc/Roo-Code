@@ -8,7 +8,7 @@ import OpenAI from "openai"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
 import { streamText, generateText, LanguageModel, ToolSet, ModelMessage } from "ai"
 
-import type { ModelInfo } from "@roo-code/types"
+import type { ModelInfo, ProviderName } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
@@ -19,7 +19,9 @@ import {
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
+import { applyPromptCacheToMessages, mergeProviderOptions } from "../transform/prompt-cache"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
+import { normalizeProviderUsage } from "./utils/normalize-provider-usage"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
@@ -48,6 +50,10 @@ export interface OpenAICompatibleConfig {
 	modelMaxTokens?: number
 	/** Temperature setting */
 	temperature?: number
+	/** Canonical provider key used for prompt caching overrides. */
+	cacheOverrideKey: ProviderName
+	/** Optional usage profile key for shared usage normalization. Defaults to cacheOverrideKey. */
+	usageProfileKey?: string
 }
 
 /**
@@ -92,22 +98,34 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 	 * Process usage metrics from the AI SDK response.
 	 * Can be overridden by subclasses to handle provider-specific usage formats.
 	 */
-	protected processUsageMetrics(usage: {
-		inputTokens?: number
-		outputTokens?: number
-		details?: {
+	protected processUsageMetrics(
+		usage: {
+			inputTokens?: number
+			outputTokens?: number
+			inputTokenDetails?: {
+				cacheReadTokens?: number
+			}
+			outputTokenDetails?: {
+				reasoningTokens?: number
+			}
 			cachedInputTokens?: number
 			reasoningTokens?: number
-		}
-		raw?: Record<string, unknown>
-	}): ApiStreamUsageChunk {
-		return {
-			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
-			cacheReadTokens: usage.details?.cachedInputTokens,
-			reasoningTokens: usage.details?.reasoningTokens,
-		}
+			details?: {
+				cachedInputTokens?: number
+				reasoningTokens?: number
+			}
+			raw?: Record<string, unknown>
+		},
+		providerMetadata?: Record<string, unknown>,
+	): ApiStreamUsageChunk {
+		const { chunk } = normalizeProviderUsage({
+			provider: this.config.usageProfileKey ?? this.config.cacheOverrideKey ?? "openai-compatible",
+			apiProtocol: "openai",
+			usage: usage as any,
+			providerMetadata,
+			modelInfo: this.getModel().info,
+		})
+		return chunk
 	}
 
 	/**
@@ -134,19 +152,37 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 		// Convert messages to AI SDK format
 		const aiSdkMessages = messages as ModelMessage[]
 
+		const promptCache = applyPromptCacheToMessages({
+			adapter: "ai-sdk",
+			overrideKey: this.config.cacheOverrideKey,
+			messages: aiSdkMessages,
+			modelInfo: {
+				supportsPromptCache: model.info.supportsPromptCache,
+				promptCacheRetention: model.info.promptCacheRetention,
+			},
+			settings: this.options,
+		})
+
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		const aiSdkTools = convertToolsForAiSdk(openAiTools, {
+			functionToolProviderOptions: promptCache.toolProviderOptions,
+		}) as ToolSet | undefined
+
+		const providerOptions = mergeProviderOptions(undefined, promptCache.providerOptionsPatch)
 
 		// Build the request options
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: promptCache.systemProviderOptions
+				? ({ role: "system", content: systemPrompt, providerOptions: promptCache.systemProviderOptions } as any)
+				: systemPrompt,
 			messages: aiSdkMessages,
 			temperature: model.temperature ?? this.config.temperature ?? 0,
 			maxOutputTokens: this.getMaxOutputTokens(),
 			tools: aiSdkTools,
 			toolChoice: mapToolChoice(metadata?.tool_choice),
+			...(providerOptions ? ({ providerOptions } as Record<string, unknown>) : {}),
 		}
 
 		// Use streamText for streaming responses
@@ -155,8 +191,8 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 		try {
 			const processUsage = this.processUsageMetrics.bind(this)
 			yield* consumeAiSdkStream(result, async function* () {
-				const usage = await result.usage
-				yield processUsage(usage)
+				const [usage, providerMetadata] = await Promise.all([result.usage, result.providerMetadata])
+				yield processUsage(usage, providerMetadata as Record<string, unknown> | undefined)
 			})
 		} catch (error) {
 			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)

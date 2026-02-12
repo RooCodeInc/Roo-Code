@@ -274,6 +274,49 @@ describe("AnthropicHandler", () => {
 			expect(mockStreamText).toHaveBeenCalled()
 		})
 
+		it("uses non-cached input tokens from AI SDK v6 usage details", async () => {
+			setupStreamTextMock(
+				[{ type: "text-delta", text: "Hello" }],
+				{
+					inputTokens: 13_071,
+					outputTokens: 93,
+					inputTokenDetails: {
+						noCacheTokens: 10,
+						cacheWriteTokens: 489,
+						cacheReadTokens: 12_572,
+					},
+				},
+				{
+					anthropic: {
+						cacheCreationInputTokens: 489,
+						cacheReadInputTokens: 12_572,
+					},
+				},
+			)
+
+			const stream = handler.createMessage(systemPrompt, [
+				{
+					role: "user",
+					content: [{ type: "text" as const, text: "First message" }],
+				},
+			])
+
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((chunk) => chunk.type === "usage")
+			expect(usageChunk).toMatchObject({
+				type: "usage",
+				inputTokens: 13_071,
+				nonCachedInputTokens: 10,
+				outputTokens: 93,
+				cacheWriteTokens: 489,
+				cacheReadTokens: 12_572,
+			})
+		})
+
 		it("should pass tools via AI SDK when tools are provided", async () => {
 			const mockTools = [
 				{
@@ -305,8 +348,49 @@ describe("AnthropicHandler", () => {
 			}
 
 			// Verify tools were converted
-			expect(convertToolsForAiSdk).toHaveBeenCalled()
+			expect(convertToolsForAiSdk).toHaveBeenCalledWith(expect.any(Array), {
+				functionToolProviderOptions: {
+					anthropic: { cacheControl: { type: "ephemeral" } },
+				},
+			})
 			expect(mockStreamText).toHaveBeenCalled()
+		})
+
+		it("does not apply tool cache provider options when prompt caching is disabled", async () => {
+			const cacheDisabledHandler = new AnthropicHandler({
+				...mockOptions,
+				promptCachingEnabled: false,
+			})
+			setupStreamTextMock([{ type: "text-delta", text: "test" }])
+
+			const mockTools = [
+				{
+					type: "function" as const,
+					function: {
+						name: "get_weather",
+						description: "Get the current weather",
+						parameters: {
+							type: "object",
+							properties: { location: { type: "string" } },
+							required: ["location"],
+						},
+					},
+				},
+			]
+
+			const stream = cacheDisabledHandler.createMessage(
+				systemPrompt,
+				[{ role: "user", content: [{ type: "text" as const, text: "What's the weather?" }] }],
+				{ taskId: "test-task", tools: mockTools },
+			)
+
+			for await (const _chunk of stream) {
+				// Consume stream
+			}
+
+			expect(convertToolsForAiSdk).toHaveBeenCalledWith(expect.any(Array), {
+				functionToolProviderOptions: undefined,
+			})
 		})
 
 		it("should handle tool_choice mapping", async () => {
@@ -399,7 +483,7 @@ describe("AnthropicHandler", () => {
 			expect(endChunk).toBeDefined()
 		})
 
-		it("should pass system prompt via system param with systemProviderOptions for cache control", async () => {
+		it("should pass system prompt as a system message with providerOptions for cache control", async () => {
 			setupStreamTextMock([{ type: "text-delta", text: "test" }])
 
 			const stream = handler.createMessage(systemPrompt, [
@@ -410,11 +494,15 @@ describe("AnthropicHandler", () => {
 				// Consume
 			}
 
-			// Verify streamText was called with system + systemProviderOptions (not as a message)
+			// Verify streamText was called with system providerOptions for cache control.
 			const callArgs = mockStreamText.mock.calls[0]![0]
-			expect(callArgs.system).toBe(systemPrompt)
-			expect(callArgs.systemProviderOptions).toEqual({
-				anthropic: { cacheControl: { type: "ephemeral" } },
+			expect(callArgs.system).toEqual({
+				role: "system",
+				content: systemPrompt,
+				providerOptions: {
+					anthropic: { cacheControl: { type: "ephemeral" } },
+					bedrock: { cachePoint: { type: "default" } },
+				},
 			})
 			// System prompt should NOT be in the messages array
 			const systemMessages = callArgs.messages.filter((m: any) => m.role === "system")

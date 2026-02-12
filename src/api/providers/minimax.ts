@@ -16,7 +16,7 @@ import {
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { applyPromptCacheToMessages } from "../transform/prompt-cache"
-import { calculateApiCostAnthropic } from "../../shared/cost"
+import { normalizeProviderUsage } from "./utils/normalize-provider-usage"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
@@ -73,8 +73,22 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 
 		const mergedMessages = mergeEnvironmentDetailsForMiniMax(messages as any)
 		const aiSdkMessages = (mergedMessages as ModelMessage[]).map((message) => ({ ...message }))
+
+		const promptCache = applyPromptCacheToMessages({
+			adapter: "minimax",
+			overrideKey: "minimax",
+			messages: aiSdkMessages,
+			modelInfo: {
+				supportsPromptCache: modelConfig.info.supportsPromptCache,
+				promptCacheRetention: (modelConfig.info as ModelInfo).promptCacheRetention,
+			},
+			settings: this.options,
+		})
+
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		const aiSdkTools = convertToolsForAiSdk(openAiTools, {
+			functionToolProviderOptions: promptCache.toolProviderOptions,
+		}) as ToolSet | undefined
 
 		const anthropicProviderOptions: Record<string, unknown> = {}
 
@@ -89,23 +103,11 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 			anthropicProviderOptions.disableParallelToolUse = true
 		}
 
-		const promptCache = applyPromptCacheToMessages({
-			adapter: "anthropic",
-			overrideKey: "minimax",
-			messages: aiSdkMessages,
-			modelInfo: {
-				supportsPromptCache: modelConfig.info.supportsPromptCache,
-				promptCacheRetention: (modelConfig.info as ModelInfo).promptCacheRetention,
-			},
-			settings: this.options,
-		})
-
 		const requestOptions = {
 			model: this.client(modelConfig.id),
-			system: systemPrompt,
-			...(promptCache.systemProviderOptions
-				? ({ systemProviderOptions: promptCache.systemProviderOptions } as Record<string, unknown>)
-				: {}),
+			system: promptCache.systemProviderOptions
+				? ({ role: "system", content: systemPrompt, providerOptions: promptCache.systemProviderOptions } as any)
+				: systemPrompt,
 			messages: aiSdkMessages,
 			temperature: modelParams.temperature,
 			maxOutputTokens: modelParams.maxTokens ?? modelConfig.info.maxTokens,
@@ -150,35 +152,27 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 	}
 
 	private processUsageMetrics(
-		usage: { inputTokens?: number; outputTokens?: number },
+		usage: {
+			inputTokens?: number
+			outputTokens?: number
+			inputTokenDetails?: {
+				noCacheTokens?: number
+				cacheReadTokens?: number
+				cacheWriteTokens?: number
+			}
+			cachedInputTokens?: number
+		},
 		info: ModelInfo,
 		providerMetadata?: Record<string, Record<string, unknown>>,
 	): ApiStreamUsageChunk {
-		const inputTokens = usage.inputTokens ?? 0
-		const outputTokens = usage.outputTokens ?? 0
-
-		const anthropicMeta = providerMetadata?.anthropic as
-			| { cacheCreationInputTokens?: number; cacheReadInputTokens?: number }
-			| undefined
-		const cacheWriteTokens = anthropicMeta?.cacheCreationInputTokens ?? 0
-		const cacheReadTokens = anthropicMeta?.cacheReadInputTokens ?? 0
-
-		const { totalCost } = calculateApiCostAnthropic(
-			info,
-			inputTokens,
-			outputTokens,
-			cacheWriteTokens,
-			cacheReadTokens,
-		)
-
-		return {
-			type: "usage",
-			inputTokens,
-			outputTokens,
-			cacheWriteTokens: cacheWriteTokens > 0 ? cacheWriteTokens : undefined,
-			cacheReadTokens: cacheReadTokens > 0 ? cacheReadTokens : undefined,
-			totalCost,
-		}
+		const { chunk } = normalizeProviderUsage({
+			provider: "minimax",
+			apiProtocol: "anthropic",
+			usage: usage as any,
+			providerMetadata: providerMetadata as Record<string, unknown> | undefined,
+			modelInfo: info,
+		})
+		return chunk
 	}
 
 	getModel() {

@@ -173,6 +173,7 @@ describe("RequestyHandler", () => {
 			expect(chunks[1]).toEqual({
 				type: "usage",
 				inputTokens: 10,
+				nonCachedInputTokens: 3,
 				outputTokens: 20,
 				cacheWriteTokens: 5,
 				cacheReadTokens: 2,
@@ -200,7 +201,10 @@ describe("RequestyHandler", () => {
 
 			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.objectContaining({
-					system: "test system prompt",
+					system: expect.objectContaining({
+						role: "system",
+						content: "test system prompt",
+					}),
 					temperature: 0,
 					maxOutputTokens: 8192,
 				}),
@@ -468,7 +472,7 @@ describe("RequestyHandler", () => {
 			expect(result.type).toBe("usage")
 			expect(result.inputTokens).toBe(100)
 			expect(result.outputTokens).toBe(50)
-			expect(result.cacheWriteTokens).toBe(0)
+			expect(result.cacheWriteTokens).toBeUndefined()
 			expect(result.cacheReadTokens).toBe(15)
 			expect(result.reasoningTokens).toBe(25)
 		})
@@ -492,9 +496,9 @@ describe("RequestyHandler", () => {
 			expect(result.type).toBe("usage")
 			expect(result.inputTokens).toBe(100)
 			expect(result.outputTokens).toBe(50)
-			expect(result.cacheWriteTokens).toBe(0)
-			expect(result.cacheReadTokens).toBe(0)
-			expect(result.totalCost).toBe(0)
+			expect(result.cacheWriteTokens).toBeUndefined()
+			expect(result.cacheReadTokens).toBeUndefined()
+			expect(result.totalCost).toBeUndefined()
 		})
 	})
 

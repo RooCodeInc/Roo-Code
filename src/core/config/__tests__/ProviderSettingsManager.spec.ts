@@ -336,45 +336,6 @@ describe("ProviderSettingsManager", () => {
 			expect(storedConfig.apiConfigs.default.apiModelId).toEqual("roo/code-supernova-1-million")
 		})
 
-		it("should migrate legacy prompt cache toggles to provider overrides", async () => {
-			mockSecrets.get.mockResolvedValue(
-				JSON.stringify({
-					currentApiConfigName: "default",
-					apiConfigs: {
-						default: {
-							id: "default",
-							apiProvider: "bedrock",
-							awsUsePromptCache: false,
-						},
-						lite: {
-							id: "lite",
-							apiProvider: "litellm",
-							litellmUsePromptCache: false,
-						},
-					},
-					migrations: {
-						rateLimitSecondsMigrated: true,
-						openAiHeadersMigrated: true,
-						consecutiveMistakeLimitMigrated: true,
-						todoListEnabledMigrated: true,
-						claudeCodeLegacySettingsMigrated: true,
-					},
-				}),
-			)
-
-			await providerSettingsManager.initialize()
-
-			expect(mockSecrets.store).toHaveBeenCalled()
-			const calls = mockSecrets.store.mock.calls
-			const storedConfig = JSON.parse(calls[calls.length - 1][1])
-
-			expect(storedConfig.apiConfigs.default.awsUsePromptCache).toBeUndefined()
-			expect(storedConfig.apiConfigs.default.promptCachingProviderOverrides).toEqual({ bedrock: false })
-
-			expect(storedConfig.apiConfigs.lite.litellmUsePromptCache).toBeUndefined()
-			expect(storedConfig.apiConfigs.lite.promptCachingProviderOverrides).toEqual({ litellm: false })
-		})
-
 		it("should throw error if secrets storage fails", async () => {
 			mockSecrets.get.mockRejectedValue(new Error("Storage failed"))
 

@@ -260,7 +260,7 @@ describe("Bedrock Component", () => {
 
 	// Test Scenario 3: UI Elements Tests
 	describe("UI Elements", () => {
-		it("does not render legacy provider-level prompt caching controls", () => {
+		it("renders provider-level prompt caching controls for models that support caching", () => {
 			const apiConfiguration: Partial<ProviderSettings> = {
 				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
 				awsUseProfile: true,
@@ -270,10 +270,82 @@ describe("Bedrock Component", () => {
 				<Bedrock
 					apiConfiguration={apiConfiguration as ProviderSettings}
 					setApiConfigurationField={mockSetApiConfigurationField}
+					selectedModelInfo={{ supportsPromptCache: true } as any}
 				/>,
 			)
 
+			expect(screen.getByText("settings:providers.enablePromptCaching")).toBeInTheDocument()
+			expect(screen.getByText("settings:providers.cacheUsageNote")).toBeInTheDocument()
+		})
+
+		it("does not render provider-level prompt caching controls for unsupported models", () => {
+			const apiConfiguration: Partial<ProviderSettings> = {
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsUseProfile: true,
+			}
+
+			render(
+				<Bedrock
+					apiConfiguration={apiConfiguration as ProviderSettings}
+					setApiConfigurationField={mockSetApiConfigurationField}
+					selectedModelInfo={{ supportsPromptCache: false } as any}
+				/>,
+			)
+
+			expect(screen.queryByText("settings:providers.enablePromptCaching")).not.toBeInTheDocument()
 			expect(screen.queryByText("settings:providers.cacheUsageNote")).not.toBeInTheDocument()
+		})
+
+		it("writes bedrock override when provider toggle diverges from global", () => {
+			const apiConfiguration: Partial<ProviderSettings> = {
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsUseProfile: true,
+				promptCachingEnabled: true,
+			}
+
+			render(
+				<Bedrock
+					apiConfiguration={apiConfiguration as ProviderSettings}
+					setApiConfigurationField={mockSetApiConfigurationField}
+					selectedModelInfo={{ supportsPromptCache: true } as any}
+				/>,
+			)
+
+			const cacheLabel = screen.getByText("settings:providers.enablePromptCaching").closest("label")
+			const cacheInput = cacheLabel?.querySelector("input") as HTMLInputElement
+			fireEvent.click(cacheInput)
+
+			expect(mockSetApiConfigurationField).toHaveBeenCalledWith("promptCachingProviderOverrides", {
+				bedrock: false,
+			})
+		})
+
+		it("removes bedrock override when provider toggle matches global", () => {
+			const apiConfiguration: Partial<ProviderSettings> = {
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsUseProfile: true,
+				promptCachingEnabled: false,
+				promptCachingProviderOverrides: {
+					bedrock: true,
+					litellm: true,
+				},
+			}
+
+			render(
+				<Bedrock
+					apiConfiguration={apiConfiguration as ProviderSettings}
+					setApiConfigurationField={mockSetApiConfigurationField}
+					selectedModelInfo={{ supportsPromptCache: true } as any}
+				/>,
+			)
+
+			const cacheLabel = screen.getByText("settings:providers.enablePromptCaching").closest("label")
+			const cacheInput = cacheLabel?.querySelector("input") as HTMLInputElement
+			fireEvent.click(cacheInput)
+
+			expect(mockSetApiConfigurationField).toHaveBeenCalledWith("promptCachingProviderOverrides", {
+				litellm: true,
+			})
 		})
 
 		it("should display example URLs when VPC endpoint checkbox is checked", () => {

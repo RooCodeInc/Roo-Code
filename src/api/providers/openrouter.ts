@@ -14,7 +14,6 @@ import {
 import { TelemetryService } from "@roo-code/telemetry"
 
 import type { ApiHandlerOptions } from "../../shared/api"
-import { calculateApiCostOpenAI } from "../../shared/cost"
 
 import { getModelParams } from "../transform/model-params"
 import {
@@ -23,15 +22,17 @@ import {
 	processAiSdkStreamPart,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyPromptCacheToMessages, mergeProviderOptions } from "../transform/prompt-cache"
 
 import { BaseProvider } from "./base-provider"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
 import { getModelEndpoints } from "./fetchers/modelEndpointCache"
 import { applyRouterToolPreferences } from "./utils/router-tool-preferences"
 import { generateImageWithProvider, ImageGenerationResult } from "./utils/image-generation"
+import { normalizeProviderUsage } from "./utils/normalize-provider-usage"
 
 import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from "../index"
-import type { ApiStreamChunk, ApiStreamUsageChunk } from "../transform/stream"
+import type { ApiStreamChunk } from "../transform/stream"
 import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 export class OpenRouterHandler extends BaseProvider implements SingleCompletionHandler {
@@ -86,48 +87,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		})
 	}
 
-	private normalizeUsage(
-		usage: { inputTokens: number; outputTokens: number },
-		providerMetadata: Record<string, any> | undefined,
-		modelInfo: ModelInfo,
-	): ApiStreamUsageChunk {
-		const inputTokens = usage.inputTokens ?? 0
-		const outputTokens = usage.outputTokens ?? 0
-		const openrouterMeta = providerMetadata?.openrouter ?? {}
-		const cacheReadTokens =
-			openrouterMeta.cachedInputTokens ??
-			openrouterMeta.cache_read_input_tokens ??
-			openrouterMeta.cacheReadTokens ??
-			openrouterMeta.cached_tokens ??
-			0
-		const cacheWriteTokens =
-			openrouterMeta.cacheCreationInputTokens ??
-			openrouterMeta.cache_creation_input_tokens ??
-			openrouterMeta.cacheWriteTokens ??
-			0
-		const reasoningTokens =
-			openrouterMeta.reasoningOutputTokens ??
-			openrouterMeta.reasoning_tokens ??
-			openrouterMeta.output_tokens_details?.reasoning_tokens ??
-			undefined
-		const { totalCost } = calculateApiCostOpenAI(
-			modelInfo,
-			inputTokens,
-			outputTokens,
-			cacheWriteTokens,
-			cacheReadTokens,
-		)
-		return {
-			type: "usage",
-			inputTokens,
-			outputTokens,
-			...(cacheWriteTokens > 0 ? { cacheWriteTokens } : {}),
-			...(cacheReadTokens > 0 ? { cacheReadTokens } : {}),
-			...(typeof reasoningTokens === "number" && reasoningTokens > 0 ? { reasoningTokens } : {}),
-			totalCost,
-		}
-	}
-
 	override async *createMessage(
 		systemPrompt: string,
 		messages: RooMessage[],
@@ -150,11 +109,24 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 		const aiSdkMessages = messages as ModelMessage[]
 
+		const promptCache = applyPromptCacheToMessages({
+			adapter: "ai-sdk",
+			overrideKey: "openrouter",
+			messages: aiSdkMessages,
+			modelInfo: {
+				supportsPromptCache: model.info.supportsPromptCache,
+				promptCacheRetention: model.info.promptCacheRetention,
+			},
+			settings: this.options,
+		})
+
 		const openrouter = this.createOpenRouterProvider({ reasoning, headers })
 
-		const tools = convertToolsForAiSdk(metadata?.tools)
+		const tools = convertToolsForAiSdk(metadata?.tools, {
+			functionToolProviderOptions: promptCache.toolProviderOptions,
+		})
 
-		const providerOptions:
+		const openRouterProviderOptions:
 			| {
 					openrouter?: {
 						provider?: { order: string[]; only: string[]; allow_fallbacks: boolean }
@@ -174,17 +146,28 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 					}
 				: undefined
 
+		const providerOptions = mergeProviderOptions(
+			openRouterProviderOptions as Record<string, unknown> | undefined,
+			promptCache.providerOptionsPatch,
+		)
+
 		try {
 			const result = streamText({
 				model: openrouter.chat(modelId),
-				system: systemPrompt,
+				system: promptCache.systemProviderOptions
+					? ({
+							role: "system",
+							content: systemPrompt,
+							providerOptions: promptCache.systemProviderOptions,
+						} as any)
+					: systemPrompt,
 				messages: aiSdkMessages,
 				maxOutputTokens: maxTokens && maxTokens > 0 ? maxTokens : undefined,
 				temperature,
 				topP,
 				tools,
 				toolChoice: metadata?.tool_choice as any,
-				providerOptions,
+				...(providerOptions ? ({ providerOptions } as Record<string, unknown>) : {}),
 			})
 
 			for await (const part of result.fullStream) {
@@ -196,15 +179,19 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 			const usage = await result.usage
 			const totalUsage = await result.totalUsage
-			const usageChunk = this.normalizeUsage(
-				{
-					inputTokens: totalUsage.inputTokens ?? usage.inputTokens ?? 0,
-					outputTokens: totalUsage.outputTokens ?? usage.outputTokens ?? 0,
-				},
-				providerMetadata,
-				model.info,
-			)
-			yield usageChunk
+			const usageRecord = {
+				...(usage as any),
+				inputTokens: totalUsage.inputTokens ?? usage.inputTokens ?? 0,
+				outputTokens: totalUsage.outputTokens ?? usage.outputTokens ?? 0,
+			}
+			const { chunk } = normalizeProviderUsage({
+				provider: "openrouter",
+				apiProtocol: "openai",
+				usage: usageRecord as any,
+				providerMetadata: providerMetadata as Record<string, unknown> | undefined,
+				modelInfo: model.info,
+			})
+			yield chunk
 
 			yield* yieldResponseMessage(result)
 		} catch (error: any) {

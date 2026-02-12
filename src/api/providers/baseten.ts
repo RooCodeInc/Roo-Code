@@ -13,8 +13,10 @@ import {
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
+import { applyPromptCacheToMessages, mergeProviderOptions } from "../transform/prompt-cache"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { normalizeProviderUsage } from "./utils/normalize-provider-usage"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
@@ -66,20 +68,26 @@ export class BasetenHandler extends BaseProvider implements SingleCompletionHand
 	/**
 	 * Process usage metrics from the AI SDK response.
 	 */
-	protected processUsageMetrics(usage: {
-		inputTokens?: number
-		outputTokens?: number
-		details?: {
-			cachedInputTokens?: number
-			reasoningTokens?: number
-		}
-	}): ApiStreamUsageChunk {
-		return {
-			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
-			reasoningTokens: usage.details?.reasoningTokens,
-		}
+	protected processUsageMetrics(
+		usage: {
+			inputTokens?: number
+			outputTokens?: number
+			details?: {
+				cachedInputTokens?: number
+				reasoningTokens?: number
+			}
+			raw?: Record<string, unknown>
+		},
+		providerMetadata?: Record<string, unknown>,
+	): ApiStreamUsageChunk {
+		const { chunk } = normalizeProviderUsage({
+			provider: "baseten",
+			apiProtocol: "openai",
+			usage: usage as any,
+			providerMetadata,
+			modelInfo: this.getModel().info,
+		})
+		return chunk
 	}
 
 	/**
@@ -98,22 +106,40 @@ export class BasetenHandler extends BaseProvider implements SingleCompletionHand
 		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const { temperature } = this.getModel()
+		const { temperature, info } = this.getModel()
 		const languageModel = this.getLanguageModel()
 
 		const aiSdkMessages = messages as ModelMessage[]
 
+		const promptCache = applyPromptCacheToMessages({
+			adapter: "ai-sdk",
+			overrideKey: "baseten",
+			messages: aiSdkMessages,
+			modelInfo: {
+				supportsPromptCache: info.supportsPromptCache,
+				promptCacheRetention: info.promptCacheRetention,
+			},
+			settings: this.options,
+		})
+
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		const aiSdkTools = convertToolsForAiSdk(openAiTools, {
+			functionToolProviderOptions: promptCache.toolProviderOptions,
+		}) as ToolSet | undefined
+
+		const providerOptions = mergeProviderOptions(undefined, promptCache.providerOptionsPatch)
 
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: promptCache.systemProviderOptions
+				? ({ role: "system", content: systemPrompt, providerOptions: promptCache.systemProviderOptions } as any)
+				: systemPrompt,
 			messages: aiSdkMessages,
 			temperature: this.options.modelTemperature ?? temperature ?? BASETEN_DEFAULT_TEMPERATURE,
 			maxOutputTokens: this.getMaxOutputTokens(),
 			tools: aiSdkTools,
 			toolChoice: mapToolChoice(metadata?.tool_choice),
+			...(providerOptions ? ({ providerOptions } as Record<string, unknown>) : {}),
 		}
 
 		const result = streamText(requestOptions)
@@ -121,8 +147,8 @@ export class BasetenHandler extends BaseProvider implements SingleCompletionHand
 		try {
 			const processUsage = this.processUsageMetrics.bind(this)
 			yield* consumeAiSdkStream(result, async function* () {
-				const usage = await result.usage
-				yield processUsage(usage)
+				const [usage, providerMetadata] = await Promise.all([result.usage, result.providerMetadata])
+				yield processUsage(usage as any, providerMetadata as Record<string, unknown> | undefined)
 			})
 		} catch (error) {
 			throw handleAiSdkError(error, "Baseten")

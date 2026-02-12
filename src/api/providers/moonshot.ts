@@ -2,7 +2,6 @@ import { moonshotModels, moonshotDefaultModelId, type ModelInfo } from "@roo-cod
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import type { ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
 import { OpenAICompatibleHandler, OpenAICompatibleConfig } from "./openai-compatible"
@@ -21,6 +20,7 @@ export class MoonshotHandler extends OpenAICompatibleHandler {
 			modelInfo,
 			modelMaxTokens: options.modelMaxTokens ?? undefined,
 			temperature: options.modelTemperature ?? undefined,
+			cacheOverrideKey: "moonshot",
 		}
 
 		super(options, config)
@@ -37,31 +37,6 @@ export class MoonshotHandler extends OpenAICompatibleHandler {
 			defaultTemperature: 0,
 		})
 		return { id, info, ...params }
-	}
-
-	/**
-	 * Override to handle Moonshot's usage metrics, including caching.
-	 * Moonshot returns cached_tokens in a different location than standard OpenAI.
-	 */
-	protected override processUsageMetrics(usage: {
-		inputTokens?: number
-		outputTokens?: number
-		details?: {
-			cachedInputTokens?: number
-			reasoningTokens?: number
-		}
-		raw?: Record<string, unknown>
-	}): ApiStreamUsageChunk {
-		// Moonshot uses cached_tokens at the top level of raw usage data
-		const rawUsage = usage.raw as { cached_tokens?: number } | undefined
-
-		return {
-			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
-			cacheWriteTokens: 0,
-			cacheReadTokens: rawUsage?.cached_tokens ?? usage.details?.cachedInputTokens,
-		}
 	}
 
 	/**

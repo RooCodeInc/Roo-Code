@@ -135,7 +135,16 @@ describe("VercelAiGatewayHandler", () => {
 
 	describe("createMessage", () => {
 		function createMockStreamResult(options?: {
-			usage?: { inputTokens: number; outputTokens: number; details?: Record<string, unknown> }
+			usage?: {
+				inputTokens: number
+				outputTokens: number
+				inputTokenDetails?: {
+					noCacheTokens?: number
+					cacheReadTokens?: number
+					cacheWriteTokens?: number
+				}
+				details?: Record<string, unknown>
+			}
 			providerMetadata?: Record<string, Record<string, unknown>>
 			fullStream?: AsyncGenerator<any>
 		}) {
@@ -187,10 +196,12 @@ describe("VercelAiGatewayHandler", () => {
 			expect(chunks[1]).toEqual({
 				type: "usage",
 				inputTokens: 10,
+				nonCachedInputTokens: 5,
 				outputTokens: 5,
 				cacheWriteTokens: 2,
 				cacheReadTokens: 3,
 				totalCost: 0.005,
+				reasoningTokens: undefined,
 			})
 		})
 
@@ -277,10 +288,55 @@ describe("VercelAiGatewayHandler", () => {
 			expect(usageChunk).toEqual({
 				type: "usage",
 				inputTokens: 10,
+				nonCachedInputTokens: 5,
 				outputTokens: 5,
 				cacheWriteTokens: 2,
 				cacheReadTokens: 3,
 				totalCost: 0.005,
+				reasoningTokens: undefined,
+			})
+		})
+
+		it("uses non-cached input tokens for anthropic protocol models", async () => {
+			mockStreamText.mockReturnValue(
+				createMockStreamResult({
+					usage: {
+						inputTokens: 13_071,
+						outputTokens: 93,
+						inputTokenDetails: {
+							noCacheTokens: 10,
+							cacheWriteTokens: 489,
+							cacheReadTokens: 12_572,
+						},
+					},
+					providerMetadata: {
+						gateway: {
+							cost: 0.005,
+						},
+					},
+				}),
+			)
+
+			const handler = new VercelAiGatewayHandler(mockOptions)
+			const systemPrompt = "You are a helpful assistant."
+			const messages: RooMessage[] = [{ role: "user", content: "Hello" }]
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((chunk) => chunk.type === "usage")
+			expect(usageChunk).toEqual({
+				type: "usage",
+				inputTokens: 13_071,
+				nonCachedInputTokens: 10,
+				outputTokens: 93,
+				cacheWriteTokens: 489,
+				cacheReadTokens: 12_572,
+				totalCost: 0.005,
+				reasoningTokens: undefined,
 			})
 		})
 
@@ -424,7 +480,10 @@ describe("VercelAiGatewayHandler", () => {
 
 				expect(mockStreamText).toHaveBeenCalledWith(
 					expect.objectContaining({
-						system: "test prompt",
+						system: expect.objectContaining({
+							role: "system",
+							content: "test prompt",
+						}),
 					}),
 				)
 			})

@@ -14,7 +14,9 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyPromptCacheToMessages, mergeProviderOptions } from "../transform/prompt-cache"
 import { ApiStream } from "../transform/stream"
+import { normalizeProviderUsage } from "./utils/normalize-provider-usage"
 
 import { BaseProvider } from "./base-provider"
 import { getOllamaModels } from "./fetchers/ollama"
@@ -89,7 +91,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		await this.fetchModel()
-		const { id: modelId } = this.getModel()
+		const { id: modelId, info } = this.getModel()
 		const useR1Format = modelId.toLowerCase().includes("deepseek-r1")
 		const temperature = this.options.modelTemperature ?? (useR1Format ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0)
 
@@ -97,19 +99,37 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 		const aiSdkMessages = messages as ModelMessage[]
 
-		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		const promptCache = applyPromptCacheToMessages({
+			adapter: "ai-sdk",
+			overrideKey: "ollama",
+			messages: aiSdkMessages,
+			modelInfo: {
+				supportsPromptCache: info.supportsPromptCache,
+				promptCacheRetention: info.promptCacheRetention,
+			},
+			settings: this.options,
+		})
 
-		const providerOptions = this.buildProviderOptions(useR1Format)
+		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
+		const aiSdkTools = convertToolsForAiSdk(openAiTools, {
+			functionToolProviderOptions: promptCache.toolProviderOptions,
+		}) as ToolSet | undefined
+
+		const providerOptions = mergeProviderOptions(
+			this.buildProviderOptions(useR1Format),
+			promptCache.providerOptionsPatch,
+		)
 
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: promptCache.systemProviderOptions
+				? ({ role: "system", content: systemPrompt, providerOptions: promptCache.systemProviderOptions } as any)
+				: systemPrompt,
 			messages: aiSdkMessages,
 			temperature,
 			tools: aiSdkTools,
 			toolChoice: mapToolChoice(metadata?.tool_choice),
-			...(providerOptions && { providerOptions }),
+			...(providerOptions ? ({ providerOptions } as Record<string, unknown>) : {}),
 		}
 
 		const result = streamText(requestOptions)
@@ -123,11 +143,13 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 			const usage = await result.usage
 			if (usage) {
-				yield {
-					type: "usage",
-					inputTokens: usage.inputTokens || 0,
-					outputTokens: usage.outputTokens || 0,
-				}
+				const { chunk } = normalizeProviderUsage({
+					provider: "native-ollama",
+					apiProtocol: "openai",
+					usage: usage as any,
+					modelInfo: info,
+				})
+				yield chunk
 			}
 
 			yield* yieldResponseMessage(result)

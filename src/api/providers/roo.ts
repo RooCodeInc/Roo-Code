@@ -1,13 +1,12 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
-import { streamText, generateText, type ModelMessage } from "ai"
+import { createGateway, streamText, generateText, type ModelMessage } from "ai"
 
 import { rooDefaultModelId, getApiProtocol, type ImageGenerationApiMethod } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 
 import { Package } from "../../shared/package"
 import type { ApiHandlerOptions } from "../../shared/api"
-import { calculateApiCostOpenAI } from "../../shared/cost"
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 import {
@@ -17,6 +16,7 @@ import {
 	mapToolChoice,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyPromptCacheToMessages, mergeProviderOptions } from "../transform/prompt-cache"
 import type { RooReasoningParams } from "../transform/reasoning"
 import { getRooReasoning } from "../transform/reasoning"
 
@@ -24,6 +24,7 @@ import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from ".
 import { BaseProvider } from "./base-provider"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
 import { generateImageWithProvider, generateImageWithImagesApi, ImageGenerationResult } from "./utils/image-generation"
+import { normalizeProviderUsage } from "./utils/normalize-provider-usage"
 import { t } from "../../i18n"
 import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
@@ -57,6 +58,15 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 		})
 	}
 
+	private shouldUseGatewaySdk(): boolean {
+		const envValue = process.env.ROO_CODE_ROUTER_USE_GATEWAY_SDK
+		if (!envValue) {
+			return false
+		}
+
+		return ["1", "true", "yes", "on"].includes(envValue.toLowerCase())
+	}
+
 	/**
 	 * Per-request provider factory. Creates a fresh provider instance
 	 * to ensure the latest session token is used for each request.
@@ -81,6 +91,22 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 					reasoning,
 				}),
 			}),
+		})
+	}
+
+	private createRooGatewayProvider(options?: { taskId?: string }) {
+		const token = this.options.rooApiKey ?? getSessionToken()
+		const headers: Record<string, string> = {
+			"X-Roo-App-Version": Package.version,
+		}
+		if (options?.taskId) {
+			headers["X-Roo-Task-ID"] = options.taskId
+		}
+
+		return createGateway({
+			apiKey: token || "not-provided",
+			baseURL: `${this.fetcherBaseURL}/v3/ai`,
+			headers,
 		})
 	}
 
@@ -116,24 +142,47 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 		const maxTokens = params.maxTokens ?? undefined
 		const temperature = params.temperature ?? 0
 
-		// Create per-request provider with fresh session token
-		const provider = this.createRooProvider({ reasoning, taskId: metadata?.taskId })
+		// Create per-request provider with fresh session token.
+		// Optional gateway mode can be enabled via ROO_CODE_ROUTER_USE_GATEWAY_SDK.
+		const provider = this.shouldUseGatewaySdk()
+			? this.createRooGatewayProvider({ taskId: metadata?.taskId })
+			: this.createRooProvider({ reasoning, taskId: metadata?.taskId })
 
 		// RooMessage[] is already AI SDK-compatible, cast directly
 		const aiSdkMessages = messages as ModelMessage[]
-		const tools = convertToolsForAiSdk(this.convertToolsForOpenAI(metadata?.tools))
+		const promptCache = applyPromptCacheToMessages({
+			adapter: "ai-sdk",
+			overrideKey: "roo",
+			messages: aiSdkMessages,
+			modelInfo: {
+				supportsPromptCache: info.supportsPromptCache,
+				promptCacheRetention: "promptCacheRetention" in info ? info.promptCacheRetention : undefined,
+			},
+			settings: this.options,
+		})
+		const tools = convertToolsForAiSdk(this.convertToolsForOpenAI(metadata?.tools), {
+			functionToolProviderOptions: promptCache.toolProviderOptions,
+		})
+		const providerOptions = mergeProviderOptions(undefined, promptCache.providerOptionsPatch)
 
 		let lastStreamError: string | undefined
 
 		try {
 			const result = streamText({
 				model: provider(modelId),
-				system: systemPrompt,
+				system: promptCache.systemProviderOptions
+					? ({
+							role: "system",
+							content: systemPrompt,
+							providerOptions: promptCache.systemProviderOptions,
+						} as any)
+					: systemPrompt,
 				messages: aiSdkMessages,
 				maxOutputTokens: maxTokens && maxTokens > 0 ? maxTokens : undefined,
 				temperature,
 				tools,
 				toolChoice: mapToolChoice(metadata?.tool_choice),
+				...(providerOptions ? ({ providerOptions } as Record<string, unknown>) : {}),
 			})
 
 			for await (const part of result.fullStream) {
@@ -148,42 +197,38 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 			// Check provider metadata for usage details
 			const providerMetadata =
 				(await result.providerMetadata) ?? (await (result as any).experimental_providerMetadata)
-			const rooMeta = providerMetadata?.roo as Record<string, any> | undefined
-
-			// Process usage with protocol-aware normalization
+			// Process usage with shared protocol-aware normalization
 			const usage = await result.usage
-			const promptTokens = usage.inputTokens ?? 0
-			const completionTokens = usage.outputTokens ?? 0
-
-			// Extract cache tokens from provider metadata
-			const cacheCreation = (rooMeta?.cache_creation_input_tokens as number) ?? 0
-			const cacheRead = (rooMeta?.cache_read_input_tokens as number) ?? (rooMeta?.cached_tokens as number) ?? 0
-
-			// Protocol-aware token normalization:
-			// - OpenAI protocol expects TOTAL input tokens (cached + non-cached)
-			// - Anthropic protocol expects NON-CACHED input tokens (caches passed separately)
+			type UsageLike = typeof usage & {
+				details?: { cachedInputTokens?: number }
+				cacheCreationInputTokens?: number
+				cache_creation_input_tokens?: number
+				cachedInputTokens?: number
+				cached_tokens?: number
+				raw?: Record<string, unknown>
+			}
+			const usageLike = usage as UsageLike
 			const apiProtocol = getApiProtocol("roo", modelId)
-			const nonCached = Math.max(0, promptTokens - cacheCreation - cacheRead)
-			const inputTokens = apiProtocol === "anthropic" ? nonCached : promptTokens
+			const normalizedUsage = normalizeProviderUsage({
+				provider: "roo",
+				usage: usageLike,
+				apiProtocol,
+				providerMetadata: providerMetadata as Record<string, unknown> | undefined,
+				modelInfo: info,
+				emitZeroCacheTokens: true,
+			})
 
-			// Cost: prefer server-side cost, fall back to client-side calculation
 			const isFreeModel = info.isFree === true
-			const serverCost = rooMeta?.cost as number | undefined
-			const { totalCost: calculatedCost } = calculateApiCostOpenAI(
-				info,
-				promptTokens,
-				completionTokens,
-				cacheCreation,
-				cacheRead,
-			)
-			const totalCost = isFreeModel ? 0 : (serverCost ?? calculatedCost)
+			const totalCost = isFreeModel ? 0 : normalizedUsage.chunk.totalCost
 
 			yield {
 				type: "usage" as const,
-				inputTokens,
-				outputTokens: completionTokens,
-				cacheWriteTokens: cacheCreation,
-				cacheReadTokens: cacheRead,
+				inputTokens: normalizedUsage.chunk.inputTokens,
+				nonCachedInputTokens: normalizedUsage.chunk.nonCachedInputTokens,
+				outputTokens: normalizedUsage.chunk.outputTokens,
+				cacheWriteTokens: normalizedUsage.chunk.cacheWriteTokens,
+				cacheReadTokens: normalizedUsage.chunk.cacheReadTokens,
+				reasoningTokens: normalizedUsage.chunk.reasoningTokens,
 				totalCost,
 			}
 
@@ -208,7 +253,7 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 
 	async completePrompt(prompt: string): Promise<string> {
 		const { id: modelId } = this.getModel()
-		const provider = this.createRooProvider()
+		const provider = this.shouldUseGatewaySdk() ? this.createRooGatewayProvider() : this.createRooProvider()
 
 		try {
 			const result = await generateText({

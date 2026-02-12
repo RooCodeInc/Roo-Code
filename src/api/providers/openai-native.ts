@@ -17,12 +17,12 @@ import {
 } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
-import { calculateApiCostOpenAI } from "../../shared/cost"
 
 import { convertToolsForAiSdk, consumeAiSdkStream, mapToolChoice, handleAiSdkError } from "../transform/ai-sdk"
 import { applyPromptCacheToMessages } from "../transform/prompt-cache"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { normalizeProviderUsage } from "./utils/normalize-provider-usage"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -339,44 +339,41 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			inputTokenDetails?: {
+				cacheReadTokens?: number
+				cacheWriteTokens?: number
+			}
+			outputTokenDetails?: {
+				reasoningTokens?: number
+			}
+			cachedInputTokens?: number
+			reasoningTokens?: number
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
+			}
+			raw?: {
+				input_tokens_details?: {
+					cached_tokens?: number | null
+				}
 			}
 		},
 		model: OpenAiNativeModel,
 		providerMetadata?: Record<string, any>,
 	): ApiStreamUsageChunk {
-		const inputTokens = usage.inputTokens || 0
-		const outputTokens = usage.outputTokens || 0
-
-		const cacheReadTokens = usage.details?.cachedInputTokens ?? 0
-		// The OpenAI Responses API does not report cache write tokens separately;
-		// only cached (read) tokens are available via usage.details.cachedInputTokens.
-		const cacheWriteTokens = 0
-		const reasoningTokens = usage.details?.reasoningTokens
-
 		const effectiveTier =
 			this.lastServiceTier || (this.options.openAiNativeServiceTier as ServiceTier | undefined) || undefined
 		const effectiveInfo = this.applyServiceTierPricing(model.info, effectiveTier)
 
-		const { totalCost } = calculateApiCostOpenAI(
-			effectiveInfo,
-			inputTokens,
-			outputTokens,
-			cacheWriteTokens,
-			cacheReadTokens,
-		)
+		const { chunk } = normalizeProviderUsage({
+			provider: "openai-native",
+			apiProtocol: "openai",
+			usage: usage as any,
+			providerMetadata,
+			modelInfo: effectiveInfo,
+		})
 
-		return {
-			type: "usage",
-			inputTokens,
-			outputTokens,
-			cacheWriteTokens: cacheWriteTokens || undefined,
-			cacheReadTokens: cacheReadTokens || undefined,
-			...(typeof reasoningTokens === "number" ? { reasoningTokens } : {}),
-			totalCost,
-		}
+		return chunk
 	}
 
 	/**

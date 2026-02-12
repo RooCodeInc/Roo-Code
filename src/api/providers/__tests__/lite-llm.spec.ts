@@ -267,7 +267,12 @@ describe("LiteLLMHandler", () => {
 
 			expect(mockStreamText).toHaveBeenCalledTimes(1)
 			const callArgs = mockStreamText.mock.calls[0][0]
-			expect(callArgs.system).toBe(systemPrompt)
+			expect(callArgs.system).toEqual(
+				expect.objectContaining({
+					role: "system",
+					content: systemPrompt,
+				}),
+			)
 			expect(callArgs.model).toBeDefined()
 		})
 

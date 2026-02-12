@@ -1,5 +1,6 @@
 import { useCallback, useState, useEffect, useRef } from "react"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { Checkbox } from "vscrui"
 
 import {
 	type ProviderSettings,
@@ -95,6 +96,37 @@ export const LiteLLM = ({
 		vscode.postMessage({ type: "requestRouterModels", values: { litellmApiKey: key, litellmBaseUrl: url } })
 	}, [apiConfiguration, setRefreshStatus, setRefreshError, t])
 
+	const handlePromptCacheOverrideChange = useCallback(
+		(enabled: boolean) => {
+			const globalEnabled = apiConfiguration.promptCachingEnabled ?? true
+			const nextOverrides = { ...(apiConfiguration.promptCachingProviderOverrides ?? {}) }
+
+			if (enabled === globalEnabled) {
+				delete nextOverrides.litellm
+			} else {
+				nextOverrides.litellm = enabled
+			}
+
+			setApiConfigurationField(
+				"promptCachingProviderOverrides",
+				(Object.keys(nextOverrides).length > 0
+					? nextOverrides
+					: undefined) as ProviderSettings["promptCachingProviderOverrides"],
+			)
+		},
+		[
+			apiConfiguration.promptCachingEnabled,
+			apiConfiguration.promptCachingProviderOverrides,
+			setApiConfigurationField,
+		],
+	)
+
+	const selectedModelId = apiConfiguration.litellmModelId || litellmDefaultModelId
+	const selectedModel = routerModels?.litellm?.[selectedModelId]
+	const globalPromptCachingEnabled = apiConfiguration.promptCachingEnabled ?? true
+	const litellmPromptCachingEnabled =
+		apiConfiguration.promptCachingProviderOverrides?.litellm ?? globalPromptCachingEnabled
+
 	return (
 		<>
 			<VSCodeTextField
@@ -159,6 +191,18 @@ export const LiteLLM = ({
 				errorMessage={modelValidationError}
 				simplifySettings={simplifySettings}
 			/>
+			{selectedModel?.supportsPromptCache && (
+				<div className="mt-4">
+					<Checkbox checked={litellmPromptCachingEnabled} onChange={handlePromptCacheOverrideChange}>
+						<div className="flex items-center gap-1">
+							<span className="font-medium">{t("settings:providers.enablePromptCaching")}</span>
+						</div>
+					</Checkbox>
+					<div className="text-sm text-vscode-descriptionForeground ml-6 mt-1">
+						{t("settings:providers.enablePromptCachingTitle")}
+					</div>
+				</div>
+			)}
 		</>
 	)
 }

@@ -5,6 +5,7 @@ import {
 	vercelAiGatewayDefaultModelId,
 	vercelAiGatewayDefaultModelInfo,
 	VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE,
+	getApiProtocol,
 	type ModelInfo,
 	type ModelRecord,
 } from "@roo-code/types"
@@ -19,11 +20,13 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyPromptCacheToMessages, mergeProviderOptions } from "../transform/prompt-cache"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
+import { normalizeProviderUsage } from "./utils/normalize-provider-usage"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
@@ -85,27 +88,32 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			inputTokenDetails?: {
+				noCacheTokens?: number
+				cacheReadTokens?: number
+				cacheWriteTokens?: number
+			}
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
 			}
+			cacheCreationInputTokens?: number
+			cache_creation_input_tokens?: number
+			cachedInputTokens?: number
+			cached_tokens?: number
+			raw?: Record<string, unknown>
 		},
 		providerMetadata?: Record<string, Record<string, unknown>>,
+		apiProtocol?: "anthropic" | "openai",
 	): ApiStreamUsageChunk {
-		const gatewayMeta = providerMetadata?.gateway as Record<string, unknown> | undefined
+		const { chunk } = normalizeProviderUsage({
+			provider: "vercel-ai-gateway",
+			apiProtocol,
+			usage: usage as any,
+			providerMetadata,
+		})
 
-		const cacheWriteTokens = (gatewayMeta?.cache_creation_input_tokens as number) ?? undefined
-		const cacheReadTokens = usage.details?.cachedInputTokens ?? (gatewayMeta?.cached_tokens as number) ?? undefined
-		const totalCost = (gatewayMeta?.cost as number) ?? 0
-
-		return {
-			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
-			cacheWriteTokens,
-			cacheReadTokens,
-			totalCost,
-		}
+		return chunk
 	}
 
 	override async *createMessage(
@@ -118,21 +126,39 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 
 		const aiSdkMessages = messages as ModelMessage[]
 
+		const promptCache = applyPromptCacheToMessages({
+			adapter: "ai-sdk",
+			overrideKey: "vercel-ai-gateway",
+			messages: aiSdkMessages,
+			modelInfo: {
+				supportsPromptCache: info.supportsPromptCache,
+				promptCacheRetention: info.promptCacheRetention,
+			},
+			settings: this.options,
+		})
+
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		const aiSdkTools = convertToolsForAiSdk(openAiTools, {
+			functionToolProviderOptions: promptCache.toolProviderOptions,
+		}) as ToolSet | undefined
 
 		const temperature = this.supportsTemperature(modelId)
 			? (this.options.modelTemperature ?? VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE)
 			: undefined
 
+		const providerOptions = mergeProviderOptions(undefined, promptCache.providerOptionsPatch)
+
 		const result = streamText({
 			model: languageModel,
-			system: systemPrompt,
+			system: promptCache.systemProviderOptions
+				? ({ role: "system", content: systemPrompt, providerOptions: promptCache.systemProviderOptions } as any)
+				: systemPrompt,
 			messages: aiSdkMessages,
 			temperature,
 			maxOutputTokens: info.maxTokens ?? undefined,
 			tools: aiSdkTools,
 			toolChoice: mapToolChoice(metadata?.tool_choice),
+			...(providerOptions ? ({ providerOptions } as Record<string, unknown>) : {}),
 		})
 
 		try {
@@ -151,7 +177,8 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 				const usage = await result.usage
 				const providerMetadata = await result.providerMetadata
 				if (usage) {
-					yield this.processUsageMetrics(usage, providerMetadata as any)
+					const apiProtocol = getApiProtocol("vercel-ai-gateway", modelId)
+					yield this.processUsageMetrics(usage, providerMetadata as any, apiProtocol)
 				}
 			} catch (usageError) {
 				if (lastStreamError) {

@@ -20,6 +20,7 @@ import {
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
+import { applyPromptCacheToMessages, mergeProviderOptions } from "../transform/prompt-cache"
 import { ApiStream } from "../transform/stream"
 
 import { OpenAICompatibleHandler, OpenAICompatibleConfig } from "./openai-compatible"
@@ -43,6 +44,7 @@ export class LmStudioHandler extends OpenAICompatibleHandler implements SingleCo
 			modelInfo,
 			temperature: options.modelTemperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
 			modelMaxTokens: options.modelMaxTokens ?? undefined,
+			cacheOverrideKey: "lmstudio",
 		}
 
 		super(options, config)
@@ -66,12 +68,27 @@ export class LmStudioHandler extends OpenAICompatibleHandler implements SingleCo
 
 		const aiSdkMessages = messages as ModelMessage[]
 
+		const promptCache = applyPromptCacheToMessages({
+			adapter: "ai-sdk",
+			overrideKey: "lmstudio",
+			messages: aiSdkMessages,
+			modelInfo: {
+				supportsPromptCache: model.info.supportsPromptCache,
+				promptCacheRetention: model.info.promptCacheRetention,
+			},
+			settings: this.options,
+		})
+
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		const aiSdkTools = convertToolsForAiSdk(openAiTools, {
+			functionToolProviderOptions: promptCache.toolProviderOptions,
+		}) as ToolSet | undefined
 
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: promptCache.systemProviderOptions
+				? ({ role: "system", content: systemPrompt, providerOptions: promptCache.systemProviderOptions } as any)
+				: systemPrompt,
 			messages: aiSdkMessages,
 			temperature: model.temperature ?? this.config.temperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
 			maxOutputTokens: this.getMaxOutputTokens(),
@@ -79,10 +96,15 @@ export class LmStudioHandler extends OpenAICompatibleHandler implements SingleCo
 			toolChoice: mapToolChoice(metadata?.tool_choice),
 		}
 
+		let providerOptions: Record<string, unknown> | undefined
 		if (this.options.lmStudioSpeculativeDecodingEnabled && this.options.lmStudioDraftModelId) {
-			requestOptions.providerOptions = {
+			providerOptions = {
 				lmstudio: { draft_model: this.options.lmStudioDraftModelId },
 			}
+		}
+		providerOptions = mergeProviderOptions(providerOptions, promptCache.providerOptionsPatch)
+		if (providerOptions) {
+			requestOptions.providerOptions = providerOptions as any
 		}
 
 		const result = streamText(requestOptions)

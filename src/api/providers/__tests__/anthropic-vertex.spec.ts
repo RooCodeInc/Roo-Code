@@ -71,7 +71,15 @@ function createMockProviderFn() {
 // Helper: create a mock streamText result
 function createMockStreamResult(
 	parts: any[],
-	usage?: { inputTokens: number; outputTokens: number },
+	usage?: {
+		inputTokens: number
+		outputTokens: number
+		inputTokenDetails?: {
+			noCacheTokens?: number
+			cacheReadTokens?: number
+			cacheWriteTokens?: number
+		}
+	},
 	providerMetadata?: Record<string, any>,
 ) {
 	return {
@@ -241,7 +249,10 @@ describe("AnthropicVertexHandler", () => {
 			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.objectContaining({
 					model: "mock-model",
-					system: systemPrompt,
+					system: expect.objectContaining({
+						role: "system",
+						content: systemPrompt,
+					}),
 				}),
 			)
 		})
@@ -289,7 +300,11 @@ describe("AnthropicVertexHandler", () => {
 				// consume
 			}
 
-			expect(convertToolsForAiSdk).toHaveBeenCalled()
+			expect(convertToolsForAiSdk).toHaveBeenCalledWith(expect.any(Array), {
+				functionToolProviderOptions: {
+					anthropic: { cacheControl: { type: "ephemeral" } },
+				},
+			})
 		})
 
 		it("should handle API errors for Claude", async () => {
@@ -341,6 +356,46 @@ describe("AnthropicVertexHandler", () => {
 				outputTokens: 5,
 				cacheWriteTokens: 3,
 				cacheReadTokens: 2,
+			})
+		})
+
+		it("uses non-cached input tokens from AI SDK v6 usage details", async () => {
+			mockStreamText.mockReturnValue(
+				createMockStreamResult(
+					[{ type: "text-delta", text: "Hello" }],
+					{
+						inputTokens: 13_071,
+						outputTokens: 93,
+						inputTokenDetails: {
+							noCacheTokens: 10,
+							cacheWriteTokens: 489,
+							cacheReadTokens: 12_572,
+						},
+					},
+					{
+						anthropic: {
+							cacheCreationInputTokens: 489,
+							cacheReadInputTokens: 12_572,
+						},
+					},
+				),
+			)
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks: ApiStreamChunk[] = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toMatchObject({
+				type: "usage",
+				inputTokens: 13_071,
+				nonCachedInputTokens: 10,
+				outputTokens: 93,
+				cacheWriteTokens: 489,
+				cacheReadTokens: 12_572,
 			})
 		})
 

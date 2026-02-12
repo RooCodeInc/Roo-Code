@@ -574,6 +574,7 @@ const ApiOptions = ({
 						<Bedrock
 							apiConfiguration={apiConfiguration}
 							setApiConfigurationField={setApiConfigurationField}
+							selectedModelInfo={selectedModelInfo}
 							simplifySettings={fromWelcomeView}
 						/>
 					)}
@@ -806,28 +807,6 @@ const ApiOptions = ({
 								<div className="text-sm text-vscode-descriptionForeground ml-6 -mt-2">
 									{t("settings:providers.enablePromptCachingTitle")}
 								</div>
-								{(apiConfiguration.promptCachingEnabled ?? true) && (
-									<div>
-										<label className="block font-medium mb-1">Prompt caching strategy</label>
-										<Select
-											value={apiConfiguration.promptCachingStrategy || "aggressive"}
-											onValueChange={(value) =>
-												setApiConfigurationField(
-													"promptCachingStrategy",
-													value as ProviderSettings["promptCachingStrategy"],
-												)
-											}>
-											<SelectTrigger className="w-full">
-												<SelectValue placeholder={t("settings:common.select")} />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="conservative">Conservative</SelectItem>
-												<SelectItem value="balanced">Balanced</SelectItem>
-												<SelectItem value="aggressive">Aggressive</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-								)}
 								{selectedProvider === "openrouter" &&
 									openRouterModelProviders &&
 									Object.keys(openRouterModelProviders).length > 0 && (
