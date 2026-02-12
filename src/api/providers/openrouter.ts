@@ -30,7 +30,6 @@ import { getModelEndpoints } from "./fetchers/modelEndpointCache"
 import { applyRouterToolPreferences } from "./utils/router-tool-preferences"
 import { generateImageWithProvider, ImageGenerationResult } from "./utils/image-generation"
 import { normalizeProviderUsage } from "./utils/normalize-provider-usage"
-import { toFiniteNumber, firstNumber } from "./utils/usage-metrics"
 
 import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from "../index"
 import type { ApiStreamChunk } from "../transform/stream"
@@ -180,26 +179,14 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 			const usage = await result.usage
 			const totalUsage = await result.totalUsage
-			const rawUsage = (usage as any)?.raw as Record<string, unknown> | undefined
 
+			// Prefer totalUsage (multi-step accumulation) over per-step usage;
+			// all further fallback extraction is handled by the openrouter profile
+			// in usage-profiles.ts via normalizeProviderUsage.
 			const usageRecord = {
 				...(usage as any),
-				inputTokens: firstNumber([
-					totalUsage.inputTokens,
-					(usage as any).inputTokens,
-					(usage as any).promptTokens,
-					(usage as any).prompt_tokens,
-					rawUsage?.prompt_tokens as number | undefined,
-					rawUsage?.input_tokens as number | undefined,
-				]),
-				outputTokens: firstNumber([
-					totalUsage.outputTokens,
-					(usage as any).outputTokens,
-					(usage as any).completionTokens,
-					(usage as any).completion_tokens,
-					rawUsage?.completion_tokens as number | undefined,
-					rawUsage?.output_tokens as number | undefined,
-				]),
+				inputTokens: totalUsage.inputTokens ?? (usage as any).inputTokens,
+				outputTokens: totalUsage.outputTokens ?? (usage as any).outputTokens,
 			}
 			const { chunk } = normalizeProviderUsage({
 				provider: "openrouter",

@@ -252,6 +252,15 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 		}
 
+		// Bedrock caching was historically opt-in (awsUsePromptCache).
+		// Preserve that default: when no explicit global or provider-level
+		// setting exists, default to disabled so existing users are not
+		// silently enrolled.
+		const bedrockCacheSettings = {
+			...this.options,
+			promptCachingEnabled: this.options.promptCachingEnabled ?? false,
+		}
+
 		const promptCache = applyPromptCacheToMessages({
 			adapter: "bedrock",
 			overrideKey: "bedrock",
@@ -260,7 +269,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				supportsPromptCache: modelConfig.info.supportsPromptCache,
 				promptCacheRetention: modelConfig.info.promptCacheRetention,
 			},
-			settings: this.options,
+			settings: bedrockCacheSettings,
 		})
 
 		// Build streamText request
