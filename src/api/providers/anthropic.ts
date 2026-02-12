@@ -182,7 +182,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			| undefined
 		const cacheWriteTokens = anthropicMeta?.cacheCreationInputTokens ?? 0
 		const cacheReadTokens =
-			(anthropicMeta?.cacheReadInputTokens || anthropicMeta?.usage?.cache_read_input_tokens) ?? 0
+			anthropicMeta?.cacheReadInputTokens ?? anthropicMeta?.usage?.cache_read_input_tokens ?? 0
 
 		const { totalCost } = calculateApiCostAnthropic(
 			info,

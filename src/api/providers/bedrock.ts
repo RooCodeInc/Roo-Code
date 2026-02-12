@@ -264,6 +264,16 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 					msg.providerOptions = Object.keys(rest).length > 0 ? rest : undefined
 				}
 			}
+			// Also strip cache annotations from tool definitions
+			if (aiSdkTools) {
+				for (const key of Object.keys(aiSdkTools)) {
+					const tool = aiSdkTools[key] as { providerOptions?: Record<string, Record<string, unknown>> }
+					if (tool.providerOptions?.bedrock) {
+						const { bedrock: _, ...rest } = tool.providerOptions
+						tool.providerOptions = Object.keys(rest).length > 0 ? rest : undefined
+					}
+				}
+			}
 		}
 
 		// Build streamText request

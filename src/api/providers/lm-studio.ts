@@ -20,6 +20,7 @@ import {
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream } from "../transform/stream"
 
 import { OpenAICompatibleHandler, OpenAICompatibleConfig } from "./openai-compatible"
@@ -68,6 +69,7 @@ export class LmStudioHandler extends OpenAICompatibleHandler implements SingleCo
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
