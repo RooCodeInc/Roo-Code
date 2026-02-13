@@ -1083,7 +1083,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// with providerOptions (signatures, redactedData, etc.) in the correct format.
 				this.apiConversationHistory.push({
 					...message,
-					...(responseId ? { id: responseId } : {}),
 					ts: message.ts ?? Date.now(),
 				})
 				await this.saveApiConversationHistory()
@@ -1097,7 +1096,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			const messageWithTs: RooAssistantMessage & { content: any } = {
 				...message,
-				...(responseId ? { id: responseId } : {}),
 				ts: Date.now(),
 			}
 

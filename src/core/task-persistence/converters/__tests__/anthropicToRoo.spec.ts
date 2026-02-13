@@ -668,7 +668,6 @@ describe("standalone reasoning messages", () => {
 		const msg = result[0] as RooReasoningMessage
 		expect(msg.type).toBe("reasoning")
 		expect(msg.encrypted_content).toBe("encrypted_data_blob")
-		expect(msg.id).toBe("resp_001")
 		expect(msg.summary).toEqual([{ type: "summary_text", text: "I thought about X" }])
 		expect(msg).not.toHaveProperty("role")
 	})
@@ -1069,7 +1068,6 @@ describe("full conversation round-trip", () => {
 		const m7 = result[7] as RooReasoningMessage
 		expect(m7.type).toBe("reasoning")
 		expect(m7.encrypted_content).toBe("enc_reasoning_blob")
-		expect(m7.id).toBe("resp_reason")
 		expect(m7.ts).toBe(6500)
 	})
 })

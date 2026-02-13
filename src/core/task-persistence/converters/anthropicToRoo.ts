@@ -122,7 +122,6 @@ export function convertAnthropicToRooMessages(messages: LegacyApiMessage[]): Roo
 				encrypted_content: message.encrypted_content,
 				...metadata,
 			}
-			if (message.id) reasoningMsg.id = message.id
 			if (message.summary) reasoningMsg.summary = message.summary
 			result.push(reasoningMsg)
 			continue
