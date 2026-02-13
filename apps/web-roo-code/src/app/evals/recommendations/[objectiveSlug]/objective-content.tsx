@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
-import { ArrowRight, BarChart3, Copy, ExternalLink, SlidersHorizontal, Sparkles, Workflow } from "lucide-react"
+import { ArrowRight, BarChart3, Check, Copy, ExternalLink, SlidersHorizontal, Sparkles, Workflow } from "lucide-react"
 import { Cell, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from "recharts"
 
 import type { RoleRecommendation, ModelCandidate } from "@/lib/mock-recommendations"
@@ -183,9 +183,12 @@ export function ObjectiveContent({ objective, initialMode, recs }: Props) {
 	}, [primaryCandidate])
 
 	const examplePrompt = objective.builderProfile?.examplePrompt?.trim() ?? ""
+	const [promptCopied, setPromptCopied] = useState(false)
 	const copyPrompt = useCallback(async () => {
 		if (!examplePrompt) return
 		await navigator.clipboard.writeText(examplePrompt)
+		setPromptCopied(true)
+		setTimeout(() => setPromptCopied(false), 2000)
 	}, [examplePrompt])
 
 	const onSelectModel = useCallback((roleId: string, modelId: string) => {
@@ -394,8 +397,17 @@ export function ObjectiveContent({ objective, initialMode, recs }: Props) {
 												onClick={copyPrompt}
 												disabled={!examplePrompt}
 												className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border/60 bg-background/10 px-4 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:border-border hover:bg-background/15 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60">
-												Copy example prompt
-												<Copy className="size-4" />
+												{promptCopied ? (
+													<>
+														Copied!
+														<Check className="size-4 text-green-400" />
+													</>
+												) : (
+													<>
+														Copy example prompt
+														<Copy className="size-4" />
+													</>
+												)}
 											</button>
 										</div>
 
