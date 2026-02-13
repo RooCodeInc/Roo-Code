@@ -96,6 +96,7 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 		CodeIndexManager.disposeAll()
 
 		const workspaceStateStore: Record<string, any> = {}
+		const globalStateStore: Record<string, any> = {}
 		mockContext = {
 			subscriptions: [],
 			workspaceState: {
@@ -104,7 +105,12 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 					workspaceStateStore[key] = value
 				}),
 			} as any,
-			globalState: {} as any,
+			globalState: {
+				get: vi.fn((key: string, defaultValue?: any) => globalStateStore[key] ?? defaultValue),
+				update: vi.fn(async (key: string, value: any) => {
+					globalStateStore[key] = value
+				}),
+			} as any,
 			extensionUri: {} as any,
 			extensionPath: testExtensionPath,
 			asAbsolutePath: vi.fn(),
@@ -228,7 +234,7 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 			;(manager as any)._cacheManager = mockCacheManager
 
 			// Simulate an initialized manager by setting the required properties
-			;(manager as any)._orchestrator = { stopWatcher: vi.fn() }
+			;(manager as any)._orchestrator = { stopWatcher: vi.fn(), stopIndexing: vi.fn() }
 			;(manager as any)._searchService = {}
 
 			// Verify manager is considered initialized
@@ -462,7 +468,7 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 			})
 
 			// Mock orchestrator and search service to simulate initialized state
-			;(manager as any)._orchestrator = { stopWatcher: vi.fn(), state: "Error" }
+			;(manager as any)._orchestrator = { stopWatcher: vi.fn(), stopIndexing: vi.fn(), state: "Error" }
 			;(manager as any)._searchService = {}
 			;(manager as any)._serviceFactory = {}
 		})
@@ -592,7 +598,7 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 			// Setup manager with service instances
 			;(manager as any)._configManager = mockConfigManager
 			;(manager as any)._serviceFactory = {}
-			;(manager as any)._orchestrator = { stopWatcher: vi.fn() }
+			;(manager as any)._orchestrator = { stopWatcher: vi.fn(), stopIndexing: vi.fn() }
 			;(manager as any)._searchService = {}
 
 			// Spy on console.error
@@ -620,6 +626,8 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 
 	describe("workspace-enabled gating", () => {
 		it("should not start indexing when workspace is not enabled", async () => {
+			await manager.setAutoEnableDefault(false)
+
 			const mockStateManager = (manager as any)._stateManager
 			mockStateManager.setSystemState = vi.fn()
 			mockStateManager.getCurrentStatus = vi.fn().mockReturnValue({
@@ -637,7 +645,9 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 			expect(mockStateManager.setSystemState).not.toHaveBeenCalledWith("Indexing", expect.any(String))
 		})
 
-		it("should include workspaceEnabled in getCurrentStatus", () => {
+		it("should include workspaceEnabled in getCurrentStatus", async () => {
+			await manager.setAutoEnableDefault(false)
+
 			const mockStateManager = (manager as any)._stateManager
 			mockStateManager.getCurrentStatus = vi.fn().mockReturnValue({
 				systemStatus: "Standby",
@@ -652,6 +662,7 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 		})
 
 		it("should persist workspace enabled state", async () => {
+			await manager.setAutoEnableDefault(false)
 			expect(manager.isWorkspaceEnabled).toBe(false)
 
 			await manager.setWorkspaceEnabled(true)
@@ -662,6 +673,8 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 		})
 
 		it("should store enablement per folder, not per window", async () => {
+			await manager.setAutoEnableDefault(false)
+
 			// Enable indexing for the current manager's folder
 			await manager.setWorkspaceEnabled(true)
 			expect(manager.isWorkspaceEnabled).toBe(true)

@@ -215,7 +215,8 @@
 		"stopIndexingButton": "Dừng lập chỉ mục",
 		"stoppingButton": "Đang dừng...",
 		"workspaceToggleLabel": "Bật lập chỉ mục cho không gian làm việc này",
-		"workspaceDisabledMessage": "Lập chỉ mục đã được cấu hình nhưng chưa được bật cho không gian làm việc này."
+		"workspaceDisabledMessage": "Lập chỉ mục đã được cấu hình nhưng chưa được bật cho không gian làm việc này.",
+		"autoEnableDefaultLabel": "Tự động bật lập chỉ mục cho không gian làm việc mới"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Bạn có thể định cấu hình một phím tắt chung cho cài đặt này <SettingsLink>trong tùy chọn IDE của bạn</SettingsLink>.",

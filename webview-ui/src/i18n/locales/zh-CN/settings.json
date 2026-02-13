@@ -215,7 +215,8 @@
 		"stopIndexingButton": "停止索引",
 		"stoppingButton": "正在停止...",
 		"workspaceToggleLabel": "为此工作区启用索引",
-		"workspaceDisabledMessage": "索引已配置，但尚未为此工作区启用。"
+		"workspaceDisabledMessage": "索引已配置，但尚未为此工作区启用。",
+		"autoEnableDefaultLabel": "自动为新工作区启用索引"
 	},
 	"autoApprove": {
 		"toggleShortcut": "您可以<SettingsLink>在 IDE 首选项中</SettingsLink>为此设置配置全局快捷方式。",

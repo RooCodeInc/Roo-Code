@@ -1590,9 +1590,32 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 							)}
 						</div>
 
+						{/* Auto-enable default */}
+						{currentSettings.codebaseIndexEnabled && (
+							<div className="flex items-center gap-2 pt-4 pb-1">
+								<input
+									type="checkbox"
+									id="auto-enable-default-toggle"
+									checked={indexingStatus.autoEnableDefault ?? true}
+									onChange={(e) =>
+										vscode.postMessage({
+											type: "setAutoEnableDefault",
+											bool: e.target.checked,
+										})
+									}
+									className="accent-vscode-focusBorder"
+								/>
+								<label
+									htmlFor="auto-enable-default-toggle"
+									className="text-xs text-vscode-foreground cursor-pointer">
+									{t("settings:codeIndex.autoEnableDefaultLabel")}
+								</label>
+							</div>
+						)}
+
 						{/* Workspace Toggle */}
 						{currentSettings.codebaseIndexEnabled && (
-							<div className="flex items-center gap-2 pt-4 pb-2">
+							<div className="flex items-center gap-2 pt-1 pb-2">
 								<input
 									type="checkbox"
 									id="workspace-indexing-toggle"

@@ -215,7 +215,8 @@
 		"stopIndexingButton": "Остановить индексацию",
 		"stoppingButton": "Остановка...",
 		"workspaceToggleLabel": "Включить индексацию для этого рабочего пространства",
-		"workspaceDisabledMessage": "Индексация настроена, но не включена для этого рабочего пространства."
+		"workspaceDisabledMessage": "Индексация настроена, но не включена для этого рабочего пространства.",
+		"autoEnableDefaultLabel": "Автоматически включать индексацию для новых рабочих пространств"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Вы можете настроить глобальное сочетание клавиш для этого параметра <SettingsLink>в настройках вашей IDE</SettingsLink>.",

@@ -215,7 +215,8 @@
 		"stopIndexingButton": "インデックス作成を停止",
 		"stoppingButton": "停止中...",
 		"workspaceToggleLabel": "このワークスペースのインデックス作成を有効にする",
-		"workspaceDisabledMessage": "インデックス作成は設定済みですが、このワークスペースでは有効になっていません。"
+		"workspaceDisabledMessage": "インデックス作成は設定済みですが、このワークスペースでは有効になっていません。",
+		"autoEnableDefaultLabel": "新しいワークスペースのインデックス作成を自動的に有効にする"
 	},
 	"autoApprove": {
 		"toggleShortcut": "<SettingsLink>IDEの環境設定</SettingsLink>で、この設定のグローバルショートカットを設定できます。",

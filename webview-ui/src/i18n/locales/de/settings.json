@@ -215,7 +215,8 @@
 		"stopIndexingButton": "Indexierung stoppen",
 		"stoppingButton": "Wird gestoppt...",
 		"workspaceToggleLabel": "Indexierung für diesen Arbeitsbereich aktivieren",
-		"workspaceDisabledMessage": "Indexierung ist konfiguriert, aber nicht für diesen Arbeitsbereich aktiviert."
+		"workspaceDisabledMessage": "Indexierung ist konfiguriert, aber nicht für diesen Arbeitsbereich aktiviert.",
+		"autoEnableDefaultLabel": "Indexierung für neue Arbeitsbereiche automatisch aktivieren"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Du kannst <SettingsLink>in deinen IDE-Einstellungen</SettingsLink> einen globalen Shortcut für diese Einstellung konfigurieren.",

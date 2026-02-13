@@ -76,11 +76,24 @@ export class CodeIndexManager {
 	// --- Public API ---
 
 	public get isWorkspaceEnabled(): boolean {
-		return this.context.workspaceState.get(`codeIndexWorkspaceEnabled:${this.workspacePath}`, false)
+		const explicit = this.context.workspaceState.get<boolean | undefined>(
+			`codeIndexWorkspaceEnabled:${this.workspacePath}`,
+			undefined,
+		)
+		if (explicit !== undefined) return explicit
+		return this.autoEnableDefault
 	}
 
 	public async setWorkspaceEnabled(enabled: boolean): Promise<void> {
 		await this.context.workspaceState.update(`codeIndexWorkspaceEnabled:${this.workspacePath}`, enabled)
+	}
+
+	public get autoEnableDefault(): boolean {
+		return this.context.globalState.get("codeIndexAutoEnableDefault", true)
+	}
+
+	public async setAutoEnableDefault(enabled: boolean): Promise<void> {
+		await this.context.globalState.update("codeIndexAutoEnableDefault", enabled)
 	}
 
 	public get onProgressUpdate() {
@@ -293,6 +306,7 @@ export class CodeIndexManager {
 			...status,
 			workspacePath: this.workspacePath,
 			workspaceEnabled: this.isWorkspaceEnabled,
+			autoEnableDefault: this.autoEnableDefault,
 		}
 	}
 

@@ -215,7 +215,8 @@
 		"stopIndexingButton": "Detener indexación",
 		"stoppingButton": "Deteniendo...",
 		"workspaceToggleLabel": "Activar indexación para este espacio de trabajo",
-		"workspaceDisabledMessage": "La indexación está configurada pero no habilitada para este espacio de trabajo."
+		"workspaceDisabledMessage": "La indexación está configurada pero no habilitada para este espacio de trabajo.",
+		"autoEnableDefaultLabel": "Habilitar automáticamente la indexación para nuevos espacios de trabajo"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Puedes configurar un atajo global para esta configuración <SettingsLink>en las preferencias de tu IDE</SettingsLink>.",

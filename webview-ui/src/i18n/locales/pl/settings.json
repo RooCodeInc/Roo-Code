@@ -215,7 +215,8 @@
 		"stopIndexingButton": "Zatrzymaj indeksowanie",
 		"stoppingButton": "Zatrzymywanie...",
 		"workspaceToggleLabel": "Włącz indeksowanie dla tego workspace'a",
-		"workspaceDisabledMessage": "Indeksowanie jest skonfigurowane, ale nie włączone dla tego workspace'a."
+		"workspaceDisabledMessage": "Indeksowanie jest skonfigurowane, ale nie włączone dla tego workspace'a.",
+		"autoEnableDefaultLabel": "Automatycznie włączaj indeksowanie dla nowych workspace'ów"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Możesz skonfigurować globalny skrót dla tego ustawienia <SettingsLink>w preferencjach swojego IDE</SettingsLink>.",

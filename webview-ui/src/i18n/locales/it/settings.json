@@ -215,7 +215,8 @@
 		"stopIndexingButton": "Interrompi indicizzazione",
 		"stoppingButton": "Interruzione...",
 		"workspaceToggleLabel": "Abilita l'indicizzazione per questo workspace",
-		"workspaceDisabledMessage": "L'indicizzazione è configurata ma non abilitata per questo workspace."
+		"workspaceDisabledMessage": "L'indicizzazione è configurata ma non abilitata per questo workspace.",
+		"autoEnableDefaultLabel": "Abilita automaticamente l'indicizzazione per i nuovi workspace"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Puoi configurare una scorciatoia globale per questa impostazione <SettingsLink>nelle preferenze del tuo IDE</SettingsLink>.",

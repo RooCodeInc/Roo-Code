@@ -2691,6 +2691,25 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
+		case "setAutoEnableDefault": {
+			try {
+				const manager = provider.getCurrentWorkspaceCodeIndexManager()
+				if (!manager) {
+					provider.log("Cannot set auto-enable default: No workspace folder open")
+					return
+				}
+				await manager.setAutoEnableDefault(message.bool ?? true)
+				provider.postMessageToWebview({
+					type: "indexingStatusUpdate",
+					values: manager.getCurrentStatus(),
+				})
+			} catch (error) {
+				provider.log(
+					`Error setting auto-enable default: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+			break
+		}
 		case "clearIndexData": {
 			try {
 				const manager = provider.getCurrentWorkspaceCodeIndexManager()

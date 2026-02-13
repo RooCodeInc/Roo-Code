@@ -215,7 +215,8 @@
 		"stopIndexingButton": "Indexering stoppen",
 		"stoppingButton": "Stoppen...",
 		"workspaceToggleLabel": "Indexering inschakelen voor deze werkruimte",
-		"workspaceDisabledMessage": "Indexering is geconfigureerd maar niet ingeschakeld voor deze werkruimte."
+		"workspaceDisabledMessage": "Indexering is geconfigureerd maar niet ingeschakeld voor deze werkruimte.",
+		"autoEnableDefaultLabel": "Indexering automatisch inschakelen voor nieuwe werkruimtes"
 	},
 	"autoApprove": {
 		"toggleShortcut": "U kunt een globale sneltoets voor deze instelling configureren <SettingsLink>in de voorkeuren van uw IDE</SettingsLink>.",

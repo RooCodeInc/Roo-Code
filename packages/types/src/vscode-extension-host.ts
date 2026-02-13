@@ -512,6 +512,7 @@ export interface WebviewMessage {
 		| "indexingStatusUpdate"
 		| "indexCleared"
 		| "toggleWorkspaceIndexing"
+		| "setAutoEnableDefault"
 		| "focusPanelRequest"
 		| "openExternal"
 		| "filterMarketplaceItems"
@@ -741,6 +742,7 @@ export interface IndexingStatus {
 	currentItemUnit?: string
 	workspacePath?: string
 	workspaceEnabled?: boolean
+	autoEnableDefault?: boolean
 }
 
 export interface IndexingStatusUpdateMessage {

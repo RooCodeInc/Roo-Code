@@ -215,7 +215,8 @@
 		"stopIndexingButton": "인덱싱 중지",
 		"stoppingButton": "중지 중...",
 		"workspaceToggleLabel": "이 워크스페이스에 대한 인덱싱 활성화",
-		"workspaceDisabledMessage": "인덱싱이 구성되었지만 이 워크스페이스에서는 활성화되지 않았습니다."
+		"workspaceDisabledMessage": "인덱싱이 구성되었지만 이 워크스페이스에서는 활성화되지 않았습니다.",
+		"autoEnableDefaultLabel": "새 워크스페이스에 대한 인덱싱 자동 활성화"
 	},
 	"autoApprove": {
 		"toggleShortcut": "<SettingsLink>IDE 환경 설정</SettingsLink>에서 이 설정에 대한 전역 바로 가기를 구성할 수 있습니다.",
