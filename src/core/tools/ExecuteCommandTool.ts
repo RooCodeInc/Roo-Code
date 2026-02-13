@@ -75,7 +75,14 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 			if (sandboxEnabled) {
 				try {
 					const { DockerSandbox } = await import("../../services/sandbox/DockerSandbox")
-					const sandbox = new DockerSandbox(task.cwd)
+					const sandbox = new DockerSandbox(task.cwd, {
+						enabled: true,
+						image: (providerState?.sandboxImage as string) ?? "node:20-slim",
+						networkAccess:
+							(providerState?.sandboxNetworkAccess as "full" | "restricted" | "none") ?? "restricted",
+						memoryLimit: (providerState?.sandboxMemoryLimit as string) ?? "512m",
+						maxExecutionTime: ((providerState?.sandboxMaxExecutionTime as number) ?? 120) * 1000,
+					})
 					if (await sandbox.isAvailable()) {
 						// Convert absolute customCwd to relative for Docker workspace mount
 						let sandboxCwd = customCwd

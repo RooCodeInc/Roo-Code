@@ -31,6 +31,8 @@ const MAX_RISKS = 4
 const DEFAULT_COUNCIL_TIMEOUT_MS = 90_000
 
 export class RpiCouncilEngine {
+	constructor(private readonly timeoutMs: number = DEFAULT_COUNCIL_TIMEOUT_MS) {}
+
 	async analyzeContext(apiConfiguration: ProviderSettings, input: RpiCouncilInput): Promise<RpiCouncilResult> {
 		return this.runAction(apiConfiguration, input, "analyze_context")
 	}
@@ -70,10 +72,10 @@ export class RpiCouncilEngine {
 			throw new Error("Active provider does not support single-prompt completions for RPI council engine.")
 		}
 
-		const timeoutSeconds = Math.max(1, Math.round(DEFAULT_COUNCIL_TIMEOUT_MS / 1000))
+		const timeoutSeconds = Math.max(1, Math.round(this.timeoutMs / 1000))
 		return this.withTimeout(
 			(handler as SingleCompletionHandler).completePrompt(prompt),
-			DEFAULT_COUNCIL_TIMEOUT_MS,
+			this.timeoutMs,
 			`RPI council request timed out after ${timeoutSeconds}s.`,
 		)
 	}

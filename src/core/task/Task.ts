@@ -135,6 +135,7 @@ import { validateAndFixToolResultIds } from "./validateToolResultIds"
 import { mergeConsecutiveApiMessages } from "./mergeConsecutiveApiMessages"
 import { appendEnvironmentDetails, removeEnvironmentDetailsBlocks } from "./appendEnvironmentDetails"
 import { RpiAutopilot, type RpiToolObservation } from "../rpi/RpiAutopilot"
+import { RpiCouncilEngine } from "../rpi/engine/RpiCouncilEngine"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -4775,26 +4776,33 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	private async getRpiAutopilot(): Promise<RpiAutopilot> {
 		if (!this.rpiAutopilot) {
-			this.rpiAutopilot = new RpiAutopilot({
-				taskId: this.taskId,
-				cwd: this.cwd,
-				getMode: async () => this.getTaskMode(),
-				getTaskText: () => this.metadata.task,
-				getApiConfiguration: () => this.getRpiCouncilApiConfiguration(),
-				isCouncilEngineEnabled: () => this.isRpiCouncilEngineEnabled(),
-				getCompletedChildTaskId: () => this.completedByChildId,
-				getVerificationStrictness: () => {
-					const provider = this.providerRef.deref()
-					const value = provider?.contextProxy.getValue("rpiVerificationStrictness")
-					return value === "strict" || value === "standard" || value === "lenient" ? value : "lenient"
+			const provider = this.providerRef.deref()
+			const councilTimeoutSeconds = provider?.contextProxy.getValue("rpiCouncilTimeoutSeconds")
+			const councilTimeoutMs =
+				typeof councilTimeoutSeconds === "number" ? councilTimeoutSeconds * 1000 : undefined
+			this.rpiAutopilot = new RpiAutopilot(
+				{
+					taskId: this.taskId,
+					cwd: this.cwd,
+					getMode: async () => this.getTaskMode(),
+					getTaskText: () => this.metadata.task,
+					getApiConfiguration: () => this.getRpiCouncilApiConfiguration(),
+					isCouncilEngineEnabled: () => this.isRpiCouncilEngineEnabled(),
+					getCompletedChildTaskId: () => this.completedByChildId,
+					getVerificationStrictness: () => {
+						const provider = this.providerRef.deref()
+						const value = provider?.contextProxy.getValue("rpiVerificationStrictness")
+						return value === "strict" || value === "standard" || value === "lenient" ? value : "lenient"
+					},
+					onCouncilEvent: (event) => {
+						void this.handleRpiCouncilEvent(event)
+					},
+					onAutopilotEvent: (event) => {
+						void this.handleRpiAutopilotEvent(event)
+					},
 				},
-				onCouncilEvent: (event) => {
-					void this.handleRpiCouncilEvent(event)
-				},
-				onAutopilotEvent: (event) => {
-					void this.handleRpiAutopilotEvent(event)
-				},
-			})
+				councilTimeoutMs ? new RpiCouncilEngine(councilTimeoutMs) : undefined,
+			)
 		}
 		return this.rpiAutopilot
 	}

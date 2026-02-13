@@ -656,6 +656,20 @@ export const webviewMessageHandler = async (
 						newValue = value ?? true
 					} else if (key === "rpiCouncilEngineEnabled") {
 						newValue = value ?? true
+					} else if (key === "rpiVerificationStrictness") {
+						newValue = value ?? "lenient"
+					} else if (key === "sandboxImage") {
+						newValue = value ?? "node:20-slim"
+					} else if (key === "sandboxNetworkAccess") {
+						newValue = value ?? "restricted"
+					} else if (key === "sandboxMemoryLimit") {
+						newValue = value ?? "512m"
+					} else if (key === "sandboxMaxExecutionTime") {
+						newValue = value ?? 120
+					} else if (key === "rpiContextDistillationBudget") {
+						newValue = value ?? 8000
+					} else if (key === "rpiCouncilTimeoutSeconds") {
+						newValue = value ?? 90
 					} else if (key === "experiments") {
 						if (!value) {
 							continue

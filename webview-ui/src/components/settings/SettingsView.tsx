@@ -14,6 +14,7 @@ import {
 	SquareMousePointer,
 	GitBranch,
 	Bell,
+	Brain,
 	Database,
 	SquareTerminal,
 	FlaskConical,
@@ -73,6 +74,7 @@ import { NotificationSettings } from "./NotificationSettings"
 import { ContextManagementSettings } from "./ContextManagementSettings"
 import { TerminalSettings } from "./TerminalSettings"
 import { ExperimentalSettings } from "./ExperimentalSettings"
+import { RpiSettings } from "./RpiSettings"
 import { LanguageSettings } from "./LanguageSettings"
 import { About } from "./About"
 import { Section } from "./Section"
@@ -106,6 +108,7 @@ export const sectionNames = [
 	"checkpoints",
 	"notifications",
 	"contextManagement",
+	"rpiConfig",
 	"terminal",
 	"modes",
 	"mcp",
@@ -179,6 +182,13 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		rpiAutopilotEnabled,
 		rpiCouncilEngineEnabled,
 		rpiCouncilApiConfigId,
+		rpiVerificationStrictness,
+		sandboxImage,
+		sandboxNetworkAccess,
+		sandboxMemoryLimit,
+		sandboxMaxExecutionTime,
+		rpiContextDistillationBudget,
+		rpiCouncilTimeoutSeconds,
 		condensingApiConfigId,
 		remoteBrowserHost,
 		screenshotQuality,
@@ -450,6 +460,13 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					rpiAutopilotEnabled: rpiAutopilotEnabled ?? true,
 					rpiCouncilEngineEnabled: rpiCouncilEngineEnabled ?? true,
 					rpiCouncilApiConfigId: rpiCouncilApiConfigId ?? "",
+					rpiVerificationStrictness: rpiVerificationStrictness ?? "lenient",
+					sandboxImage: sandboxImage ?? "node:20-slim",
+					sandboxNetworkAccess: sandboxNetworkAccess ?? "restricted",
+					sandboxMemoryLimit: sandboxMemoryLimit ?? "512m",
+					sandboxMaxExecutionTime: sandboxMaxExecutionTime ?? 120,
+					rpiContextDistillationBudget: rpiContextDistillationBudget ?? 8000,
+					rpiCouncilTimeoutSeconds: rpiCouncilTimeoutSeconds ?? 90,
 					condensingApiConfigId: condensingApiConfigId ?? "",
 					maxOpenTabsContext: Math.min(Math.max(0, maxOpenTabsContext ?? 20), 500),
 					maxWorkspaceFiles: Math.min(Math.max(0, maxWorkspaceFiles ?? 200), 500),
@@ -575,6 +592,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "checkpoints", icon: GitCommitVertical },
 			{ id: "notifications", icon: Bell },
 			{ id: "contextManagement", icon: Database },
+			{ id: "rpiConfig", icon: Brain },
 			{ id: "terminal", icon: SquareTerminal },
 			{ id: "prompts", icon: MessageSquare },
 			{ id: "worktrees", icon: GitBranch },
@@ -915,14 +933,31 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								includeCurrentTime={includeCurrentTime}
 								includeCurrentCost={includeCurrentCost}
 								maxGitStatusFiles={maxGitStatusFiles}
-								rpiAutopilotEnabled={rpiAutopilotEnabled}
-								rpiCouncilEngineEnabled={rpiCouncilEngineEnabled}
-								rpiCouncilApiConfigId={rpiCouncilApiConfigId}
 								condensingApiConfigId={condensingApiConfigId}
 								preventCompletionWithEslintProblems={preventCompletionWithEslintProblems}
 								customSupportPrompts={customSupportPrompts || {}}
 								setCustomSupportPrompts={setCustomSupportPromptsField}
 								setCachedStateField={setCachedStateField}
+							/>
+						)}
+
+						{/* RPI Configuration Section */}
+						{renderTab === "rpiConfig" && (
+							<RpiSettings
+								rpiAutopilotEnabled={rpiAutopilotEnabled}
+								rpiCouncilEngineEnabled={rpiCouncilEngineEnabled}
+								rpiCouncilApiConfigId={rpiCouncilApiConfigId}
+								rpiVerificationStrictness={rpiVerificationStrictness}
+								experiments={experiments}
+								listApiConfigMeta={listApiConfigMeta ?? []}
+								setCachedStateField={setCachedStateField}
+								setExperimentEnabled={setExperimentEnabled}
+								sandboxImage={sandboxImage}
+								sandboxNetworkAccess={sandboxNetworkAccess}
+								sandboxMemoryLimit={sandboxMemoryLimit}
+								sandboxMaxExecutionTime={sandboxMaxExecutionTime}
+								rpiContextDistillationBudget={rpiContextDistillationBudget}
+								rpiCouncilTimeoutSeconds={rpiCouncilTimeoutSeconds}
 							/>
 						)}
 

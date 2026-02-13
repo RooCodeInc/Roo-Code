@@ -209,6 +209,12 @@ export const globalSettingsSchema = z.object({
 	rpiCouncilEngineEnabled: z.boolean().optional(),
 	rpiCouncilApiConfigId: z.string().optional(),
 	rpiVerificationStrictness: z.enum(["lenient", "standard", "strict"]).optional(),
+	sandboxImage: z.string().optional(),
+	sandboxNetworkAccess: z.enum(["full", "restricted", "none"]).optional(),
+	sandboxMemoryLimit: z.string().optional(),
+	sandboxMaxExecutionTime: z.number().optional(),
+	rpiContextDistillationBudget: z.number().optional(),
+	rpiCouncilTimeoutSeconds: z.number().optional(),
 
 	mode: z.string().optional(),
 	modeApiConfigs: z.record(z.string(), z.string()).optional(),

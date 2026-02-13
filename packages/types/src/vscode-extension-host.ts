@@ -341,6 +341,13 @@ export type ExtensionState = Pick<
 	| "rpiAutopilotEnabled"
 	| "rpiCouncilEngineEnabled"
 	| "rpiCouncilApiConfigId"
+	| "rpiVerificationStrictness"
+	| "sandboxImage"
+	| "sandboxNetworkAccess"
+	| "sandboxMemoryLimit"
+	| "sandboxMaxExecutionTime"
+	| "rpiContextDistillationBudget"
+	| "rpiCouncilTimeoutSeconds"
 	| "condensingApiConfigId"
 > & {
 	version: string

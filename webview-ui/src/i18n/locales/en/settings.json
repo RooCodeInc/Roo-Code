@@ -28,6 +28,7 @@
 	"sections": {
 		"providers": "Providers",
 		"modes": "Modes",
+		"rpiConfig": "RPI Autopilot",
 		"mcp": "MCP Servers",
 		"worktrees": "Worktrees",
 		"skills": "Skills",
@@ -911,6 +912,62 @@
 		"todoList": {
 			"label": "Enable todo list tool",
 			"description": "When enabled, Roo can create and manage todo lists to track task progress. This helps organize complex tasks into manageable steps."
+		}
+	},
+	"rpiConfig": {
+		"sectionCore": "Core",
+		"autopilot": {
+			"label": "Enable RPI autopilot",
+			"description": "When enabled, Roo automatically keeps the RPI planning files and completion checks in sync during the task. Disable to run without RPI automation."
+		},
+		"councilEngine": {
+			"label": "Enable RPI council engine",
+			"description": "When enabled, Roo runs internal council analysis automatically during discovery, planning, and verification."
+		},
+		"councilApiConfig": {
+			"label": "Council API configuration",
+			"description": "Choose which provider profile the RPI council engine uses. Default uses the currently selected API configuration.",
+			"useCurrentConfig": "Use currently selected API configuration"
+		},
+		"verificationStrictness": {
+			"label": "Verification strictness",
+			"description": "Controls how strict the completion verification is. Lenient only checks for implementation evidence. Standard adds command success checks. Strict adds keyword matching.",
+			"lenient": "Lenient",
+			"standard": "Standard",
+			"strict": "Strict"
+		},
+		"sectionSandbox": "Sandbox Execution",
+		"sandboxEnabled": {
+			"label": "Enable sandbox execution",
+			"description": "When enabled, commands run inside a Docker container for isolation. Requires Docker installed and running. Falls back to terminal if unavailable."
+		},
+		"sandboxImage": {
+			"label": "Docker image",
+			"description": "The Docker image used for sandbox execution."
+		},
+		"sandboxNetworkAccess": {
+			"label": "Network access",
+			"description": "Controls sandbox network capabilities. 'Restricted' blocks outbound connections. 'None' disables networking entirely.",
+			"full": "Full",
+			"restricted": "Restricted",
+			"none": "None"
+		},
+		"sandboxMemoryLimit": {
+			"label": "Memory limit",
+			"description": "Maximum memory for the sandbox container (e.g., 512m, 1g)."
+		},
+		"sandboxMaxExecutionTime": {
+			"label": "Max execution time (seconds)",
+			"description": "Maximum time a sandbox command can run before being killed."
+		},
+		"sectionAdvanced": "Advanced",
+		"contextDistillationBudget": {
+			"label": "Context distillation budget (chars)",
+			"description": "Maximum characters of parent context passed to delegated child tasks."
+		},
+		"councilTimeout": {
+			"label": "Council timeout (seconds)",
+			"description": "Maximum time to wait for council engine API responses."
 		}
 	},
 	"experimental": {

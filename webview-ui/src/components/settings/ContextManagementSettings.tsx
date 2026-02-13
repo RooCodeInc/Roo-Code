@@ -42,9 +42,6 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	includeCurrentTime?: boolean
 	includeCurrentCost?: boolean
 	maxGitStatusFiles?: number
-	rpiAutopilotEnabled?: boolean
-	rpiCouncilEngineEnabled?: boolean
-	rpiCouncilApiConfigId?: string
 	condensingApiConfigId?: string
 	preventCompletionWithEslintProblems?: boolean
 	customSupportPrompts: Record<string, string | undefined>
@@ -65,9 +62,6 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "includeCurrentTime"
 		| "includeCurrentCost"
 		| "maxGitStatusFiles"
-		| "rpiAutopilotEnabled"
-		| "rpiCouncilEngineEnabled"
-		| "rpiCouncilApiConfigId"
 		| "condensingApiConfigId"
 		| "preventCompletionWithEslintProblems"
 	>
@@ -91,9 +85,6 @@ export const ContextManagementSettings = ({
 	includeCurrentTime,
 	includeCurrentCost,
 	maxGitStatusFiles,
-	rpiAutopilotEnabled,
-	rpiCouncilEngineEnabled,
-	rpiCouncilApiConfigId,
 	condensingApiConfigId,
 	preventCompletionWithEslintProblems,
 	customSupportPrompts,
@@ -437,73 +428,6 @@ export const ContextManagementSettings = ({
 					</VSCodeCheckbox>
 					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
 						{t("settings:contextManagement.eslintCompletion.description")}
-					</div>
-				</SearchableSetting>
-
-				<SearchableSetting
-					settingId="context-rpi-autopilot"
-					section="contextManagement"
-					label={t("settings:contextManagement.rpiAutopilot.label")}>
-					<VSCodeCheckbox
-						checked={rpiAutopilotEnabled ?? true}
-						onChange={(e: any) => setCachedStateField("rpiAutopilotEnabled", e.target.checked)}
-						data-testid="rpi-autopilot-enabled-checkbox">
-						<label className="block font-medium mb-1">
-							{t("settings:contextManagement.rpiAutopilot.label")}
-						</label>
-					</VSCodeCheckbox>
-					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
-						{t("settings:contextManagement.rpiAutopilot.description")}
-					</div>
-				</SearchableSetting>
-
-				<SearchableSetting
-					settingId="context-rpi-council-engine"
-					section="contextManagement"
-					label={t("settings:contextManagement.rpiCouncilEngine.label")}>
-					<VSCodeCheckbox
-						checked={rpiCouncilEngineEnabled ?? true}
-						onChange={(e: any) => setCachedStateField("rpiCouncilEngineEnabled", e.target.checked)}
-						data-testid="rpi-council-engine-enabled-checkbox">
-						<label className="block font-medium mb-1">
-							{t("settings:contextManagement.rpiCouncilEngine.label")}
-						</label>
-					</VSCodeCheckbox>
-					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
-						{t("settings:contextManagement.rpiCouncilEngine.description")}
-					</div>
-				</SearchableSetting>
-
-				<SearchableSetting
-					settingId="context-rpi-council-api-config"
-					section="contextManagement"
-					label={t("settings:contextManagement.rpiCouncilApiConfig.label")}>
-					<label className="block font-medium mb-1">
-						{t("settings:contextManagement.rpiCouncilApiConfig.label")}
-					</label>
-					<Select
-						value={rpiCouncilApiConfigId || "-"}
-						onValueChange={(value) => {
-							const newConfigId = value === "-" ? "" : value
-							setCachedStateField("rpiCouncilApiConfigId", newConfigId)
-						}}
-						disabled={!rpiCouncilEngineEnabled}>
-						<SelectTrigger className="w-full">
-							<SelectValue placeholder={t("settings:common.select")} />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="-">
-								{t("settings:contextManagement.rpiCouncilApiConfig.useCurrentConfig")}
-							</SelectItem>
-							{(listApiConfigMeta || []).map((config) => (
-								<SelectItem key={config.id} value={config.id}>
-									{config.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
-						{t("settings:contextManagement.rpiCouncilApiConfig.description")}
 					</div>
 				</SearchableSetting>
 

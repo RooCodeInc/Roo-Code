@@ -112,7 +112,7 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 						parentObservations: rpiAutopilot.currentObservations ?? [],
 						parentPlan: rpiAutopilot.currentPlan,
 						targetMode: mode,
-						maxContextChars: MAX_DISTILLED_CONTEXT_CHARS,
+						maxContextChars: (state?.rpiContextDistillationBudget as number) ?? MAX_DISTILLED_CONTEXT_CHARS,
 					})
 
 					// Wrap with envelope for structured context
