@@ -425,7 +425,8 @@
 		"indexing": "Индексация {{percentage}}%",
 		"indexed": "Проиндексировано",
 		"error": "Ошибка индекса",
-		"status": "Статус индекса"
+		"status": "Статус индекса",
+		"stopping": "Stopping indexing..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Версия {{version}} - Нажмите, чтобы просмотреть примечания к выпуску"

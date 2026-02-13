@@ -37,6 +37,7 @@ export interface IDirectoryScanner {
 		onError?: (error: Error) => void,
 		onBlocksIndexed?: (indexedCount: number) => void,
 		onFileParsed?: (fileBlockCount: number) => void,
+		signal?: AbortSignal,
 	): Promise<{
 		stats: {
 			processed: number

@@ -424,7 +424,8 @@
 		"indexing": "इंडेक्सिंग {{percentage}}%",
 		"indexed": "इंडेक्स किया गया",
 		"error": "इंडेक्स त्रुटि",
-		"status": "इंडेक्स स्थिति"
+		"status": "इंडेक्स स्थिति",
+		"stopping": "Stopping indexing..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "संस्करण {{version}} - रिलीज़ नोट्स देखने के लिए क्लिक करें"

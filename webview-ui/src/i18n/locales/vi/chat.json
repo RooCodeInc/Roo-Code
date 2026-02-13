@@ -425,7 +425,8 @@
 		"indexing": "Đang lập chỉ mục {{percentage}}%",
 		"indexed": "Đã lập chỉ mục",
 		"error": "Lỗi chỉ mục",
-		"status": "Trạng thái chỉ mục"
+		"status": "Trạng thái chỉ mục",
+		"stopping": "Stopping indexing..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Phiên bản {{version}} - Nhấp để xem ghi chú phát hành"

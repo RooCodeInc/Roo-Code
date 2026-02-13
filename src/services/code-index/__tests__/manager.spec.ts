@@ -95,9 +95,15 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 		// Clear all instances before each test
 		CodeIndexManager.disposeAll()
 
+		const workspaceStateStore: Record<string, any> = {}
 		mockContext = {
 			subscriptions: [],
-			workspaceState: {} as any,
+			workspaceState: {
+				get: vi.fn((key: string, defaultValue?: any) => workspaceStateStore[key] ?? defaultValue),
+				update: vi.fn(async (key: string, value: any) => {
+					workspaceStateStore[key] = value
+				}),
+			} as any,
 			globalState: {} as any,
 			extensionUri: {} as any,
 			extensionPath: testExtensionPath,
@@ -606,6 +612,97 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 
 			// Cleanup
 			consoleErrorSpy.mockRestore()
+		})
+	})
+
+	describe("workspace-enabled gating", () => {
+		it("should not start indexing when workspace is not enabled", async () => {
+			const mockStateManager = (manager as any)._stateManager
+			mockStateManager.setSystemState = vi.fn()
+			mockStateManager.getCurrentStatus = vi.fn().mockReturnValue({
+				systemStatus: "Standby",
+				message: "",
+				processedItems: 0,
+				totalItems: 0,
+				currentItemUnit: "items",
+			})
+
+			expect(manager.isWorkspaceEnabled).toBe(false)
+
+			await manager.startIndexing()
+
+			expect(mockStateManager.setSystemState).not.toHaveBeenCalledWith("Indexing", expect.any(String))
+		})
+
+		it("should include workspaceEnabled in getCurrentStatus", () => {
+			const mockStateManager = (manager as any)._stateManager
+			mockStateManager.getCurrentStatus = vi.fn().mockReturnValue({
+				systemStatus: "Standby",
+				message: "",
+				processedItems: 0,
+				totalItems: 0,
+				currentItemUnit: "items",
+			})
+
+			const status = manager.getCurrentStatus()
+			expect(status.workspaceEnabled).toBe(false)
+		})
+
+		it("should persist workspace enabled state", async () => {
+			expect(manager.isWorkspaceEnabled).toBe(false)
+
+			await manager.setWorkspaceEnabled(true)
+			expect(manager.isWorkspaceEnabled).toBe(true)
+
+			await manager.setWorkspaceEnabled(false)
+			expect(manager.isWorkspaceEnabled).toBe(false)
+		})
+	})
+
+	describe("stopIndexing", () => {
+		it("should delegate to orchestrator.stopIndexing()", () => {
+			const mockOrchestrator = {
+				stopIndexing: vi.fn(),
+				stopWatcher: vi.fn(),
+				state: "Indexing",
+			}
+			;(manager as any)._orchestrator = mockOrchestrator
+
+			manager.stopIndexing()
+
+			expect(mockOrchestrator.stopIndexing).toHaveBeenCalled()
+		})
+
+		it("should be safe to call when orchestrator is not set", () => {
+			;(manager as any)._orchestrator = undefined
+
+			expect(() => manager.stopIndexing()).not.toThrow()
+		})
+	})
+
+	describe("handleSettingsChange - disable toggle bug fix", () => {
+		it("should abort active indexing when feature is disabled", async () => {
+			const mockOrchestrator = {
+				stopIndexing: vi.fn(),
+				stopWatcher: vi.fn(),
+				state: "Indexing",
+			}
+			;(manager as any)._orchestrator = mockOrchestrator
+
+			const mockConfigManager = {
+				loadConfiguration: vi.fn().mockResolvedValue({ requiresRestart: false }),
+				isFeatureConfigured: true,
+				isFeatureEnabled: false,
+			}
+			;(manager as any)._configManager = mockConfigManager
+
+			const mockStateManager = (manager as any)._stateManager
+			mockStateManager.setSystemState = vi.fn()
+
+			await manager.handleSettingsChange()
+
+			expect(mockOrchestrator.stopIndexing).toHaveBeenCalled()
+			expect(mockStateManager.setSystemState).toHaveBeenCalledWith("Standby", "Code indexing is disabled")
 		})
 	})
 })

@@ -75,6 +75,14 @@ export class CodeIndexManager {
 
 	// --- Public API ---
 
+	public get isWorkspaceEnabled(): boolean {
+		return this.context.workspaceState.get("codeIndexWorkspaceEnabled", false)
+	}
+
+	public async setWorkspaceEnabled(enabled: boolean): Promise<void> {
+		await this.context.workspaceState.update("codeIndexWorkspaceEnabled", enabled)
+	}
+
 	public get onProgressUpdate() {
 		return this._stateManager.onProgressUpdate
 	}
@@ -151,15 +159,19 @@ export class CodeIndexManager {
 			await this._recreateServices()
 		}
 
-		// 5. Handle Indexing Start/Restart
-		// The enhanced vectorStore.initialize() in startIndexing() now handles dimension changes automatically
-		// by detecting incompatible collections and recreating them, so we rely on that for dimension changes
+		// 5. Check workspace-level enablement
+		if (!this.isWorkspaceEnabled) {
+			this._stateManager.setSystemState("Standby", "Indexing not enabled for this workspace")
+			return { requiresRestart }
+		}
+
+		// 6. Handle Indexing Start/Restart
 		const shouldStartOrRestartIndexing =
 			requiresRestart ||
 			(needsServiceRecreation && (!this._orchestrator || this._orchestrator.state !== "Indexing"))
 
 		if (shouldStartOrRestartIndexing) {
-			this._orchestrator?.startIndexing() // This method is async, but we don't await it here
+			this._orchestrator?.startIndexing()
 		}
 
 		return { requiresRestart }
@@ -173,7 +185,7 @@ export class CodeIndexManager {
 	 * The indexing will continue asynchronously and progress will be reported through events.
 	 */
 	public async startIndexing(): Promise<void> {
-		if (!this.isFeatureEnabled) {
+		if (!this.isFeatureEnabled || !this.isWorkspaceEnabled) {
 			return
 		}
 
@@ -189,6 +201,15 @@ export class CodeIndexManager {
 
 		this.assertInitialized()
 		await this._orchestrator!.startIndexing()
+	}
+
+	/**
+	 * Stops any in-progress indexing operation and the file watcher.
+	 */
+	public stopIndexing(): void {
+		if (this._orchestrator) {
+			this._orchestrator.stopIndexing()
+		}
 	}
 
 	/**
@@ -273,6 +294,7 @@ export class CodeIndexManager {
 		return {
 			...status,
 			workspacePath: this.workspacePath,
+			workspaceEnabled: this.isWorkspaceEnabled,
 		}
 	}
 
@@ -384,13 +406,9 @@ export class CodeIndexManager {
 			const isFeatureEnabled = this.isFeatureEnabled
 			const isFeatureConfigured = this.isFeatureConfigured
 
-			// If feature is disabled, stop the service
+			// If feature is disabled, stop the service (including any active scan)
 			if (!isFeatureEnabled) {
-				// Stop the orchestrator if it exists
-				if (this._orchestrator) {
-					this._orchestrator.stopWatcher()
-				}
-				// Set state to indicate service is disabled
+				this.stopIndexing()
 				this._stateManager.setSystemState("Standby", "Code indexing is disabled")
 				return
 			}

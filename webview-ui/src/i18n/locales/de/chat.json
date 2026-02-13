@@ -424,7 +424,8 @@
 		"indexing": "Indizierung {{percentage}}%",
 		"indexed": "Indiziert",
 		"error": "Index-Fehler",
-		"status": "Index-Status"
+		"status": "Index-Status",
+		"stopping": "Stopping indexing..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Version {{version}} - Klicken Sie, um die Versionshinweise anzuzeigen"
