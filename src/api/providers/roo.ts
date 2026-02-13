@@ -13,11 +13,10 @@ import { getModelParams } from "../transform/model-params"
 import {
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
-	handleAiSdkError,
 	mapToolChoice,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
-import { applyToolCacheOptions } from "../transform/cache-breakpoints"
+import { applyCacheBreakpoints, applyToolCacheOptions } from "../transform/cache-breakpoints"
 import type { RooReasoningParams } from "../transform/reasoning"
 import { getRooReasoning } from "../transform/reasoning"
 
@@ -161,6 +160,8 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 		const tools = convertToolsForAiSdk(this.convertToolsForOpenAI(metadata?.tools))
 		applyToolCacheOptions(tools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
+		applyCacheBreakpoints(aiSdkMessages)
+
 		let lastStreamError: string | undefined
 
 		try {
@@ -265,7 +266,7 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 
 			console.error(`[RooHandler] Error during message streaming: ${JSON.stringify(errorContext)}`)
 
-			throw handleAiSdkError(error, "Roo Code Cloud")
+			throw error
 		}
 	}
 
@@ -281,7 +282,7 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 			})
 			return result.text
 		} catch (error) {
-			throw handleAiSdkError(error, "Roo Code Cloud")
+			throw error
 		}
 	}
 

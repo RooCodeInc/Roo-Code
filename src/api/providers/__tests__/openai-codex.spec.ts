@@ -109,7 +109,7 @@ describe("OpenAiCodexHandler.completePrompt", () => {
 
 		mockGenerateText.mockRejectedValue(new Error("API Error"))
 
-		await expect(handler.completePrompt("Say hello")).rejects.toThrow("OpenAI Codex")
+		await expect(handler.completePrompt("Say hello")).rejects.toThrow("API Error")
 	})
 
 	it("should throw when not authenticated", async () => {

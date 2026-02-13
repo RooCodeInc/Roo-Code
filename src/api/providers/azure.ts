@@ -6,13 +6,7 @@ import { azureModels, azureDefaultModelInfo, type ModelInfo } from "@roo-code/ty
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import {
-	convertToAiSdkMessages,
-	convertToolsForAiSdk,
-	consumeAiSdkStream,
-	mapToolChoice,
-	handleAiSdkError,
-} from "../transform/ai-sdk"
+import { convertToolsForAiSdk, consumeAiSdkStream, mapToolChoice } from "../transform/ai-sdk"
 import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -183,8 +177,7 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 				yield processUsage(usage, providerMetadata as Parameters<typeof processUsage>[1])
 			})
 		} catch (error) {
-			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
-			throw handleAiSdkError(error, "Azure AI Foundry")
+			throw error
 		}
 	}
 

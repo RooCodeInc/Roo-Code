@@ -414,7 +414,7 @@ describe("BasetenHandler", () => {
 				for await (const _ of stream) {
 					// consume stream
 				}
-			}).rejects.toThrow("Baseten: API Error")
+			}).rejects.toThrow("API Error")
 		})
 
 		it("should preserve status codes in error handling", async () => {
@@ -439,7 +439,7 @@ describe("BasetenHandler", () => {
 				}
 				expect.fail("Should have thrown an error")
 			} catch (error: any) {
-				expect(error.message).toContain("Baseten")
+				expect(error.message).toContain("Rate limit exceeded")
 				expect(error.status).toBe(429)
 			}
 		})

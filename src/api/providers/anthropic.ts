@@ -1,5 +1,5 @@
 import { createAnthropic } from "@ai-sdk/anthropic"
-import { streamText, generateText, ToolSet, ModelMessage } from "ai"
+import { streamText, generateText, ToolSet } from "ai"
 
 import {
 	type ModelInfo,
@@ -17,14 +17,13 @@ import { shouldUseReasoningBudget } from "../../shared/api"
 import type { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 import {
-	convertToAiSdkMessages,
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
-	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
-import { applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
+import { applyCacheBreakpoints, applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
+import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 import { calculateApiCostAnthropic } from "../../shared/cost"
 
 import { DEFAULT_HEADERS } from "./constants"
@@ -77,8 +76,8 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 	): ApiStream {
 		const modelConfig = this.getModel()
 
-		// Convert messages to AI SDK format
-		const aiSdkMessages = messages as ModelMessage[]
+		// Sanitize messages for the provider API (allowlist: role, content, providerOptions).
+		const aiSdkMessages = sanitizeMessagesForProvider(messages)
 
 		// Convert tools to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
@@ -115,6 +114,8 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			aiSdkMessages,
 			metadata?.systemProviderOptions,
 		)
+
+		applyCacheBreakpoints(aiSdkMessages)
 
 		// Build streamText request
 		// Cast providerOptions to any to bypass strict JSONObject typing — the AI SDK accepts the correct runtime values
@@ -164,7 +165,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			TelemetryService.instance.captureException(
 				new ApiProviderError(errorMessage, this.providerName, modelConfig.id, "createMessage"),
 			)
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 
@@ -277,7 +278,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 					"completePrompt",
 				),
 			)
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 

@@ -237,11 +237,11 @@ describe("AwsBedrockHandler Error Handling", () => {
 	})
 
 	// -----------------------------------------------------------------------
-	// Non-throttling errors (createMessage) are wrapped by handleAiSdkError
+	// Non-throttling errors (createMessage) propagate unchanged
 	// -----------------------------------------------------------------------
 
 	describe("Non-throttling errors (createMessage)", () => {
-		it("should wrap non-throttling errors with provider name via handleAiSdkError", async () => {
+		it("should propagate non-throttling errors unchanged", async () => {
 			const genericError = createMockError({
 				message: "Something completely unexpected happened",
 			})
@@ -256,7 +256,7 @@ describe("AwsBedrockHandler Error Handling", () => {
 				for await (const _chunk of generator) {
 					// should throw
 				}
-			}).rejects.toThrow("Bedrock: Something completely unexpected happened")
+			}).rejects.toThrow("Something completely unexpected happened")
 		})
 
 		it("should preserve status code from non-throttling API errors", async () => {
@@ -277,8 +277,7 @@ describe("AwsBedrockHandler Error Handling", () => {
 				}
 				throw new Error("Expected error to be thrown")
 			} catch (error: any) {
-				expect(error.message).toContain("Bedrock:")
-				expect(error.message).toContain("Internal server error occurred")
+				expect(error.message).toBe("Internal server error occurred")
 			}
 		})
 
@@ -298,7 +297,7 @@ describe("AwsBedrockHandler Error Handling", () => {
 				for await (const _chunk of generator) {
 					// should throw
 				}
-			}).rejects.toThrow("Bedrock: Too many tokens in request")
+			}).rejects.toThrow("Too many tokens in request")
 		})
 	})
 
@@ -334,7 +333,7 @@ describe("AwsBedrockHandler Error Handling", () => {
 			}).rejects.toThrow("Bedrock is unable to process your request")
 		})
 
-		it("should wrap non-throttling errors that occur mid-stream via handleAiSdkError", async () => {
+		it("should propagate non-throttling errors that occur mid-stream unchanged", async () => {
 			const genericError = createMockError({
 				message: "Some other error",
 				status: 500,
@@ -357,22 +356,22 @@ describe("AwsBedrockHandler Error Handling", () => {
 				for await (const _chunk of generator) {
 					// should throw
 				}
-			}).rejects.toThrow("Bedrock: Some other error")
+			}).rejects.toThrow("Some other error")
 		})
 	})
 
 	// -----------------------------------------------------------------------
-	// completePrompt errors — all go through handleAiSdkError (no throttle check)
+	// completePrompt errors — propagate unchanged (no throttle check)
 	// -----------------------------------------------------------------------
 
 	describe("completePrompt error handling", () => {
-		it("should wrap errors with provider name for completePrompt", async () => {
+		it("should propagate errors unchanged for completePrompt", async () => {
 			mockGenerateText.mockRejectedValueOnce(new Error("Bedrock API failure"))
 
-			await expect(handler.completePrompt("test")).rejects.toThrow("Bedrock: Bedrock API failure")
+			await expect(handler.completePrompt("test")).rejects.toThrow("Bedrock API failure")
 		})
 
-		it("should wrap throttling-pattern errors with provider name for completePrompt", async () => {
+		it("should propagate throttling-pattern errors unchanged for completePrompt", async () => {
 			const throttleError = createMockError({
 				message: "Bedrock is unable to process your request",
 				status: 429,
@@ -380,9 +379,9 @@ describe("AwsBedrockHandler Error Handling", () => {
 
 			mockGenerateText.mockRejectedValueOnce(throttleError)
 
-			// completePrompt does NOT have the throttle-rethrow path; it always uses handleAiSdkError
+			// completePrompt does NOT have the throttle-rethrow path; errors propagate unchanged
 			await expect(handler.completePrompt("test")).rejects.toThrow(
-				"Bedrock: Bedrock is unable to process your request",
+				"Bedrock is unable to process your request",
 			)
 		})
 
@@ -396,7 +395,7 @@ describe("AwsBedrockHandler Error Handling", () => {
 			results.forEach((result) => {
 				expect(result.status).toBe("rejected")
 				if (result.status === "rejected") {
-					expect(result.reason.message).toContain("Bedrock:")
+					expect(result.reason.message).toBe("API failure")
 				}
 			})
 		})
@@ -413,8 +412,7 @@ describe("AwsBedrockHandler Error Handling", () => {
 				await handler.completePrompt("test")
 				throw new Error("Expected error to be thrown")
 			} catch (error: any) {
-				expect(error.message).toContain("Bedrock:")
-				expect(error.message).toContain("Service unavailable")
+				expect(error.message).toBe("Service unavailable")
 			}
 		})
 	})
@@ -479,7 +477,8 @@ describe("AwsBedrockHandler Error Handling", () => {
 		it("should handle non-Error objects thrown by generateText", async () => {
 			mockGenerateText.mockRejectedValueOnce("string error")
 
-			await expect(handler.completePrompt("test")).rejects.toThrow("Bedrock: string error")
+			// Non-Error values propagate as-is
+			await expect(handler.completePrompt("test")).rejects.toBe("string error")
 		})
 
 		it("should handle non-Error objects thrown by streamText", async () => {
@@ -489,12 +488,12 @@ describe("AwsBedrockHandler Error Handling", () => {
 
 			const generator = handler.createMessage("system", [{ role: "user", content: "test" }])
 
-			// Non-Error values are not detected as throttling → handleAiSdkError path
+			// Non-Error values are not detected as throttling → propagate as-is
 			await expect(async () => {
 				for await (const _chunk of generator) {
 					// should throw
 				}
-			}).rejects.toThrow("Bedrock: string error")
+			}).rejects.toBe("string error")
 		})
 
 		it("should handle errors with unusual structure gracefully", async () => {
@@ -505,9 +504,8 @@ describe("AwsBedrockHandler Error Handling", () => {
 				await handler.completePrompt("test")
 				throw new Error("Expected error to be thrown")
 			} catch (error: any) {
-				// handleAiSdkError wraps with "Bedrock: ..."
-				expect(error.message).toContain("Bedrock:")
-				expect(error.message).not.toContain("undefined")
+				// Errors propagate unchanged — the object's message property is preserved
+				expect(error.message).toBe("Error with unusual structure")
 			}
 		})
 

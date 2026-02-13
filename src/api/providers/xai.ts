@@ -6,16 +6,11 @@ import { type XAIModelId, xaiDefaultModelId, xaiModels, type ModelInfo } from "@
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import {
-	convertToAiSdkMessages,
-	convertToolsForAiSdk,
-	consumeAiSdkStream,
-	mapToolChoice,
-	handleAiSdkError,
-} from "../transform/ai-sdk"
+import { convertToolsForAiSdk, consumeAiSdkStream, mapToolChoice } from "../transform/ai-sdk"
 import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
@@ -140,8 +135,8 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 		const { temperature, reasoning } = this.getModel()
 		const languageModel = this.getLanguageModel()
 
-		// Convert messages to AI SDK format
-		const aiSdkMessages = messages
+		// Sanitize messages for the provider API (allowlist: role, content, providerOptions).
+		const aiSdkMessages = sanitizeMessagesForProvider(messages)
 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
@@ -170,7 +165,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 				yield processUsage(usage, providerMetadata as Parameters<typeof processUsage>[1])
 			})
 		} catch (error) {
-			throw handleAiSdkError(error, "xAI")
+			throw error
 		}
 	}
 
@@ -192,7 +187,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 
 			return text
 		} catch (error) {
-			throw handleAiSdkError(error, "xAI")
+			throw error
 		}
 	}
 

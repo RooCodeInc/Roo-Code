@@ -42,7 +42,6 @@ const userMessageParts: RooUserMessage = {
 const assistantMessageString: RooAssistantMessage = {
 	role: "assistant",
 	content: "Sure, I can help with that.",
-	id: "resp_123",
 }
 
 const assistantMessageParts: RooAssistantMessage = {

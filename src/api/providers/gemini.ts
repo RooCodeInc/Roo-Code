@@ -1,6 +1,6 @@
 import type { Anthropic } from "@anthropic-ai/sdk"
 import { createGoogleGenerativeAI, type GoogleGenerativeAIProvider } from "@ai-sdk/google"
-import { streamText, generateText, NoOutputGeneratedError, ToolSet, ModelMessage } from "ai"
+import { streamText, generateText, NoOutputGeneratedError, ToolSet } from "ai"
 
 import {
 	type ModelInfo,
@@ -14,17 +14,16 @@ import { TelemetryService } from "@roo-code/telemetry"
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import {
-	convertToAiSdkMessages,
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
-	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { t } from "i18next"
 import type { ApiStream, ApiStreamUsageChunk, GroundingSource } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseProvider } from "./base-provider"
@@ -77,22 +76,8 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			? (this.options.modelTemperature ?? info.defaultTemperature ?? 1)
 			: info.defaultTemperature
 
-		// The message list can include provider-specific meta entries such as
-		// `{ type: "reasoning", ... }` that are intended only for providers like
-		// openai-native. Gemini should never see those; they are not valid
-		// Anthropic.MessageParam values and will cause failures.
-		type ReasoningMetaLike = { type?: string }
-
-		const filteredMessages = messages.filter((message) => {
-			const meta = message as ReasoningMetaLike
-			if (meta.type === "reasoning") {
-				return false
-			}
-			return true
-		})
-
-		// Convert messages to AI SDK format
-		const aiSdkMessages = filteredMessages as ModelMessage[]
+		// Sanitize messages for the provider API (allowlist: role, content, providerOptions).
+		const aiSdkMessages = sanitizeMessagesForProvider(messages)
 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		let openAiTools = this.convertToolsForOpenAI(metadata?.tools)
@@ -210,14 +195,11 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 			yield* yieldResponseMessage(result)
 		} catch (error) {
-			throw handleAiSdkError(error, this.providerName, {
-				onError: (msg) => {
-					TelemetryService.instance.captureException(
-						new ApiProviderError(msg, this.providerName, modelId, "createMessage"),
-					)
-				},
-				formatMessage: (msg) => t("common:errors.gemini.generate_stream", { error: msg }),
-			})
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			TelemetryService.instance.captureException(
+				new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage"),
+			)
+			throw error
 		}
 	}
 
@@ -368,14 +350,11 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 			return text
 		} catch (error) {
-			throw handleAiSdkError(error, this.providerName, {
-				onError: (msg) => {
-					TelemetryService.instance.captureException(
-						new ApiProviderError(msg, this.providerName, modelId, "completePrompt"),
-					)
-				},
-				formatMessage: (msg) => t("common:errors.gemini.generate_complete_prompt", { error: msg }),
-			})
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			TelemetryService.instance.captureException(
+				new ApiProviderError(errorMessage, this.providerName, modelId, "completePrompt"),
+			)
+			throw error
 		}
 	}
 

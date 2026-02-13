@@ -15,7 +15,6 @@ const {
 	mockCreateAnthropic,
 	mockModel,
 	mockMergeEnvironmentDetailsForMiniMax,
-	mockHandleAiSdkError,
 } = vi.hoisted(() => {
 	const mockModel = vi.fn().mockReturnValue("mock-model-instance")
 	return {
@@ -24,10 +23,6 @@ const {
 		mockCreateAnthropic: vi.fn().mockReturnValue(mockModel),
 		mockModel,
 		mockMergeEnvironmentDetailsForMiniMax: vi.fn((messages: RooMessage[]) => messages),
-		mockHandleAiSdkError: vi.fn((error: unknown, providerName: string) => {
-			const message = error instanceof Error ? error.message : String(error)
-			return new Error(`${providerName}: ${message}`)
-		}),
 	}
 })
 
@@ -44,13 +39,6 @@ vi.mock("../../transform/minimax-format", () => ({
 	mergeEnvironmentDetailsForMiniMax: mockMergeEnvironmentDetailsForMiniMax,
 }))
 
-vi.mock("../../transform/ai-sdk", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("../../transform/ai-sdk")>()
-	return {
-		...actual,
-		handleAiSdkError: mockHandleAiSdkError,
-	}
-})
 
 type HandlerOptions = Omit<Partial<ApiHandlerOptions>, "minimaxBaseUrl"> & {
 	minimaxBaseUrl?: string
@@ -108,10 +96,6 @@ describe("MiniMaxHandler", () => {
 		vi.clearAllMocks()
 		mockCreateAnthropic.mockReturnValue(mockModel)
 		mockMergeEnvironmentDetailsForMiniMax.mockImplementation((inputMessages: RooMessage[]) => inputMessages)
-		mockHandleAiSdkError.mockImplementation((error: unknown, providerName: string) => {
-			const message = error instanceof Error ? error.message : String(error)
-			return new Error(`${providerName}: ${message}`)
-		})
 	})
 
 	describe("constructor", () => {
@@ -359,8 +343,7 @@ describe("MiniMaxHandler", () => {
 
 			await expect(async () => {
 				await collectChunks(stream)
-			}).rejects.toThrow("MiniMax: API Error")
-			expect(mockHandleAiSdkError).toHaveBeenCalledWith(expect.any(Error), "MiniMax")
+			}).rejects.toThrow("API Error")
 		})
 	})
 

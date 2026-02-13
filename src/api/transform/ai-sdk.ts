@@ -3,298 +3,10 @@
  * These utilities are designed to be reused across different AI SDK providers.
  */
 
-import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 import { tool as createTool, jsonSchema, type ModelMessage, type TextStreamPart } from "ai"
 import type { AssistantModelMessage } from "ai"
 import type { ApiStreamChunk, ApiStream } from "./stream"
-
-/**
- * Options for converting Anthropic messages to AI SDK format.
- */
-export interface ConvertToAiSdkMessagesOptions {
-	/**
-	 * Optional function to transform the converted messages.
-	 * Useful for transformations like flattening message content for models that require string content.
-	 */
-	transform?: (messages: ModelMessage[]) => ModelMessage[]
-}
-
-/**
- * Convert Anthropic messages to AI SDK ModelMessage format.
- * Handles text, images, tool uses, and tool results.
- *
- * @param messages - Array of Anthropic message parameters
- * @param options - Optional conversion options including post-processing function
- * @returns Array of AI SDK ModelMessage objects
- */
-export function convertToAiSdkMessages(
-	messages: Anthropic.Messages.MessageParam[],
-	options?: ConvertToAiSdkMessagesOptions,
-): ModelMessage[] {
-	const modelMessages: ModelMessage[] = []
-
-	// First pass: build a map of tool call IDs to tool names from assistant messages
-	const toolCallIdToName = new Map<string, string>()
-	for (const message of messages) {
-		if (message.role === "assistant" && typeof message.content !== "string") {
-			for (const part of message.content) {
-				if (part.type === "tool_use") {
-					toolCallIdToName.set(part.id, part.name)
-				}
-			}
-		}
-	}
-
-	for (const message of messages) {
-		if (typeof message.content === "string") {
-			modelMessages.push({
-				role: message.role,
-				content: message.content,
-			})
-		} else {
-			if (message.role === "user") {
-				const parts: Array<
-					{ type: "text"; text: string } | { type: "image"; image: string; mimeType?: string }
-				> = []
-				const toolResults: Array<{
-					type: "tool-result"
-					toolCallId: string
-					toolName: string
-					output: { type: "text"; value: string }
-				}> = []
-
-				for (const part of message.content) {
-					if (part.type === "text") {
-						parts.push({ type: "text", text: part.text })
-					} else if (part.type === "image") {
-						// Handle both base64 and URL source types
-						const source = part.source as { type: string; media_type?: string; data?: string; url?: string }
-						if (source.type === "base64" && source.media_type && source.data) {
-							parts.push({
-								type: "image",
-								image: `data:${source.media_type};base64,${source.data}`,
-								mimeType: source.media_type,
-							})
-						} else if (source.type === "url" && source.url) {
-							parts.push({
-								type: "image",
-								image: source.url,
-							})
-						}
-					} else if (part.type === "tool_result") {
-						// Convert tool results to string content
-						let content: string
-						if (typeof part.content === "string") {
-							content = part.content
-						} else {
-							content =
-								part.content
-									?.map((c) => {
-										if (c.type === "text") return c.text
-										if (c.type === "image") return "(image)"
-										return ""
-									})
-									.join("\n") ?? ""
-						}
-						// Look up the tool name from the tool call ID
-						const toolName = toolCallIdToName.get(part.tool_use_id) ?? "unknown_tool"
-						toolResults.push({
-							type: "tool-result",
-							toolCallId: part.tool_use_id,
-							toolName,
-							output: { type: "text", value: content || "(empty)" },
-						})
-					}
-				}
-
-				// AI SDK requires tool results in separate "tool" role messages
-				// UserContent only supports: string | Array<TextPart | ImagePart | FilePart>
-				// ToolContent (for role: "tool") supports: Array<ToolResultPart | ToolApprovalResponse>
-				if (toolResults.length > 0) {
-					modelMessages.push({
-						role: "tool",
-						content: toolResults,
-					} as ModelMessage)
-				}
-
-				// Add user message with only text/image content (no tool results)
-				if (parts.length > 0) {
-					modelMessages.push({
-						role: "user",
-						content: parts,
-					} as ModelMessage)
-				}
-			} else if (message.role === "assistant") {
-				const textParts: string[] = []
-				const reasoningParts: string[] = []
-				const reasoningContent = (() => {
-					const maybe = (message as unknown as { reasoning_content?: unknown }).reasoning_content
-					return typeof maybe === "string" && maybe.length > 0 ? maybe : undefined
-				})()
-				const toolCalls: Array<{
-					type: "tool-call"
-					toolCallId: string
-					toolName: string
-					input: unknown
-					providerOptions?: Record<string, Record<string, unknown>>
-				}> = []
-
-				// Capture thinking signature for Anthropic-protocol providers (Bedrock, Anthropic).
-				// Task.ts stores thinking blocks as { type: "thinking", thinking: "...", signature: "..." }.
-				// The signature must be passed back via providerOptions on reasoning parts.
-				let thinkingSignature: string | undefined
-
-				// Extract thoughtSignature from content blocks (Gemini 3 thought signature round-tripping).
-				// Task.ts stores these as { type: "thoughtSignature", thoughtSignature: "..." } blocks.
-				let thoughtSignature: string | undefined
-				for (const part of message.content) {
-					const partAny = part as unknown as { type?: string; thoughtSignature?: string }
-					if (partAny.type === "thoughtSignature" && partAny.thoughtSignature) {
-						thoughtSignature = partAny.thoughtSignature
-					}
-				}
-
-				for (const part of message.content) {
-					if (part.type === "text") {
-						textParts.push(part.text)
-						continue
-					}
-
-					if (part.type === "tool_use") {
-						const toolCall: (typeof toolCalls)[number] = {
-							type: "tool-call",
-							toolCallId: part.id,
-							toolName: part.name,
-							input: part.input,
-						}
-
-						// Attach thoughtSignature as providerOptions on tool-call parts.
-						// The AI SDK's @ai-sdk/google provider reads providerOptions.google.thoughtSignature
-						// and attaches it to the Gemini functionCall part.
-						// Per Gemini 3 rules: only the FIRST functionCall in a parallel batch gets the signature.
-						if (thoughtSignature && toolCalls.length === 0) {
-							toolCall.providerOptions = {
-								google: { thoughtSignature },
-								vertex: { thoughtSignature },
-							}
-						}
-
-						toolCalls.push(toolCall)
-						continue
-					}
-
-					// Some providers (DeepSeek, Gemini, etc.) require reasoning to be round-tripped.
-					// Task stores reasoning as a content block (type: "reasoning") and Anthropic extended
-					// thinking as (type: "thinking"). Convert both to AI SDK's reasoning part.
-					if ((part as unknown as { type?: string }).type === "reasoning") {
-						// If message-level reasoning_content is present, treat it as canonical and
-						// avoid mixing it with content-block reasoning (which can cause duplication).
-						if (reasoningContent) continue
-
-						const text = (part as unknown as { text?: string }).text
-						if (typeof text === "string" && text.length > 0) {
-							reasoningParts.push(text)
-						}
-						continue
-					}
-
-					if ((part as unknown as { type?: string }).type === "thinking") {
-						if (reasoningContent) continue
-
-						const thinkingPart = part as unknown as { thinking?: string; signature?: string }
-						if (typeof thinkingPart.thinking === "string" && thinkingPart.thinking.length > 0) {
-							reasoningParts.push(thinkingPart.thinking)
-						}
-						// Capture the signature for round-tripping (Anthropic/Bedrock thinking).
-						if (thinkingPart.signature) {
-							thinkingSignature = thinkingPart.signature
-						}
-						continue
-					}
-				}
-
-				const content: Array<
-					| { type: "reasoning"; text: string; providerOptions?: Record<string, Record<string, unknown>> }
-					| { type: "text"; text: string }
-					| {
-							type: "tool-call"
-							toolCallId: string
-							toolName: string
-							input: unknown
-							providerOptions?: Record<string, Record<string, unknown>>
-					  }
-				> = []
-
-				if (reasoningContent) {
-					content.push({ type: "reasoning", text: reasoningContent })
-				} else if (reasoningParts.length > 0) {
-					const reasoningPart: (typeof content)[number] = {
-						type: "reasoning",
-						text: reasoningParts.join(""),
-					}
-					// Attach thinking signature for Anthropic/Bedrock round-tripping.
-					// The AI SDK's @ai-sdk/amazon-bedrock reads providerOptions.bedrock.signature
-					// and attaches it to reasoningContent.reasoningText.signature in the Bedrock request.
-					if (thinkingSignature) {
-						reasoningPart.providerOptions = {
-							bedrock: { signature: thinkingSignature },
-							anthropic: { signature: thinkingSignature },
-						}
-					}
-					content.push(reasoningPart)
-				}
-
-				if (textParts.length > 0) {
-					content.push({ type: "text", text: textParts.join("\n") })
-				}
-				content.push(...toolCalls)
-
-				// Carry reasoning_details through to providerOptions for OpenRouter round-tripping
-				// (used by Gemini 3, xAI, etc. for encrypted reasoning chain continuity).
-				// The @openrouter/ai-sdk-provider reads message-level providerOptions.openrouter.reasoning_details
-				// and validates them against ReasoningDetailUnionSchema (a strict Zod union).
-				// Invalid entries (e.g. type "reasoning.encrypted" without a `data` field) must be
-				// filtered out here, otherwise the entire safeParse fails and NO reasoning_details
-				// are included in the outgoing request.
-				const rawReasoningDetails = (message as unknown as { reasoning_details?: Record<string, unknown>[] })
-					.reasoning_details
-				const validReasoningDetails = rawReasoningDetails?.filter((detail) => {
-					switch (detail.type) {
-						case "reasoning.encrypted":
-							return typeof detail.data === "string" && detail.data.length > 0
-						case "reasoning.text":
-							return typeof detail.text === "string"
-						case "reasoning.summary":
-							return typeof detail.summary === "string"
-						default:
-							return false
-					}
-				})
-
-				const assistantMessage: Record<string, unknown> = {
-					role: "assistant",
-					content: content.length > 0 ? content : [{ type: "text", text: "" }],
-				}
-
-				if (validReasoningDetails && validReasoningDetails.length > 0) {
-					assistantMessage.providerOptions = {
-						openrouter: { reasoning_details: validReasoningDetails },
-					}
-				}
-
-				modelMessages.push(assistantMessage as ModelMessage)
-			}
-		}
-	}
-
-	// Apply transform if provided
-	if (options?.transform) {
-		return options.transform(modelMessages)
-	}
-
-	return modelMessages
-}
 
 /**
  * Options for flattening AI SDK messages.
@@ -469,7 +181,7 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 			yield {
 				type: "error",
 				error: "StreamError",
-				message: part.error instanceof Error ? part.error.message : String(part.error),
+				message: extractAiSdkErrorMessage(part.error),
 			}
 			break
 
@@ -639,12 +351,55 @@ export function extractMessageFromResponseBody(responseBody: string): string | u
 		// Format: {"error": {"message": "...", "code": "..."}} or {"error": {"message": "..."}}
 		if (typeof obj.error === "object" && obj.error !== null) {
 			const errorObj = obj.error as Record<string, unknown>
+
+			// OpenRouter wraps the real provider error in error.metadata.raw (a JSON string).
+			// Check this BEFORE error.message because error.message is often just
+			// "Provider returned error" which is not useful.
+			if (typeof errorObj.metadata === "object" && errorObj.metadata !== null) {
+				const metadata = errorObj.metadata as Record<string, unknown>
+				if (typeof metadata.raw === "string" && metadata.raw) {
+					try {
+						const rawParsed: unknown = JSON.parse(metadata.raw)
+						if (typeof rawParsed === "object" && rawParsed !== null) {
+							const rawObj = rawParsed as Record<string, unknown>
+							if (typeof rawObj.message === "string" && rawObj.message) {
+									const providerName =
+										typeof metadata.provider_name === "string" ? metadata.provider_name : undefined
+									const prefix = providerName ? `[${providerName}] ` : ""
+									return `${prefix}${rawObj.message}`
+								}
+								// Anthropic format: {"type":"error","error":{"type":"invalid_request_error","message":"..."}}
+								if (typeof rawObj.error === "object" && rawObj.error !== null) {
+									const innerError = rawObj.error as Record<string, unknown>
+									if (typeof innerError.message === "string" && innerError.message) {
+										const providerName =
+											typeof metadata.provider_name === "string"
+												? metadata.provider_name
+												: undefined
+										const prefix = providerName ? `[${providerName}] ` : ""
+										const typePrefix =
+											typeof innerError.type === "string" ? `[${innerError.type}] ` : ""
+										return `${prefix}${typePrefix}${innerError.message}`
+									}
+								}
+						}
+					} catch {
+						// raw is not valid JSON — fall through to other patterns
+					}
+				}
+			}
+
 			if (typeof errorObj.message === "string" && errorObj.message) {
 				if (typeof errorObj.code === "string" && errorObj.code) {
 					return `[${errorObj.code}] ${errorObj.message}`
 				}
 				if (typeof errorObj.code === "number") {
 					return `[${errorObj.code}] ${errorObj.message}`
+				}
+				// Anthropic format: error.type instead of error.code
+				// e.g. {"type":"error","error":{"type":"overloaded_error","message":"Overloaded"}}
+				if (typeof errorObj.type === "string" && errorObj.type) {
+					return `[${errorObj.type}] ${errorObj.message}`
 				}
 				return errorObj.message
 			}
@@ -668,6 +423,48 @@ export function extractMessageFromResponseBody(responseBody: string): string | u
 }
 
 /**
+ * Recursively traverses an error chain to find the deepest APICallError
+ * with a non-empty responseBody. Checks .cause, .lastError, and .errors[].
+ */
+function findDeepestApiCallError(error: unknown, maxDepth = 10): Record<string, unknown> | undefined {
+	if (maxDepth <= 0 || typeof error !== "object" || error === null) {
+		return undefined
+	}
+
+	const obj = error as Record<string, unknown>
+
+	// Recurse children FIRST so we find the DEEPEST match
+	// Check .cause
+	const fromCause = findDeepestApiCallError(obj.cause, maxDepth - 1)
+	if (fromCause) {
+		return fromCause
+	}
+
+	// Check .lastError
+	const fromLastError = findDeepestApiCallError(obj.lastError, maxDepth - 1)
+	if (fromLastError) {
+		return fromLastError
+	}
+
+	// Check .errors[] array
+	if (Array.isArray(obj.errors)) {
+		for (const element of obj.errors) {
+			const fromElement = findDeepestApiCallError(element, maxDepth - 1)
+			if (fromElement) {
+				return fromElement
+			}
+		}
+	}
+
+	// Then check self
+	if (obj.name === "AI_APICallError" && typeof obj.responseBody === "string" && obj.responseBody.length > 0) {
+		return obj
+	}
+
+	return undefined
+}
+
+/**
  * Extract a user-friendly error message from AI SDK errors.
  * The AI SDK wraps errors in types like AI_RetryError and AI_APICallError
  * which need to be unwrapped to get the actual error message.
@@ -685,6 +482,22 @@ export function extractAiSdkErrorMessage(error: unknown): string {
 	}
 
 	const errorObj = error as Record<string, unknown>
+
+	// First, try to find the deepest APICallError with a responseBody in the error chain.
+	// This handles arbitrarily nested chains like NoOutput → Retry → APICallError.
+	const deepestApiError = findDeepestApiCallError(error)
+	if (deepestApiError) {
+		const responseBody = deepestApiError.responseBody as string
+		const extracted = extractMessageFromResponseBody(responseBody)
+		const statusCode = getStatusCode(deepestApiError)
+		if (extracted) {
+			return statusCode ? `API Error (${statusCode}): ${extracted}` : `API Error: ${extracted}`
+		}
+		// Fall back to raw responseBody
+		return statusCode
+			? `API Error (${statusCode}): ${responseBody}`
+			: `API Error: ${responseBody}`
+	}
 
 	// AI_RetryError has a lastError property with the actual error
 	if (errorObj.name === "AI_RetryError") {
@@ -725,21 +538,31 @@ export function extractAiSdkErrorMessage(error: unknown): string {
 	// AI_APICallError has message, optional status, and responseBody
 	if (errorObj.name === "AI_APICallError") {
 		const statusCode = getStatusCode(error)
+		const hasResponseBody = "responseBody" in errorObj && typeof errorObj.responseBody === "string"
 
 		// Try to extract a richer message from responseBody
 		let message: string | undefined
-		if ("responseBody" in errorObj && typeof errorObj.responseBody === "string") {
-			message = extractMessageFromResponseBody(errorObj.responseBody)
+		if (hasResponseBody) {
+			message = extractMessageFromResponseBody(errorObj.responseBody as string)
 		}
 
 		if (!message) {
-			message = typeof errorObj.message === "string" ? errorObj.message : "API call failed"
+			// Do NOT fall back to error.message — it's often just HTTP status text
+			// like "Bad Request" which swallows the actual error information.
+			if (hasResponseBody && (errorObj.responseBody as string).length > 0) {
+				// Include the raw response body so nothing is silently lost
+				message = errorObj.responseBody as string
+			} else if (hasResponseBody) {
+				message = "Empty response body"
+			} else {
+				message = "No response body available"
+			}
 		}
 
 		if (statusCode) {
 			return `API Error (${statusCode}): ${message}`
 		}
-		return message
+		return `API Error: ${message}`
 	}
 
 	// AI_NoOutputGeneratedError wraps a cause that may be an APICallError

@@ -40,7 +40,7 @@ vi.mock("../checkpointRestoreHandler", () => ({
 import { webviewMessageHandler } from "../webviewMessageHandler"
 import type { ClineProvider } from "../ClineProvider"
 import type { ClineMessage } from "@roo-code/types"
-import type { ApiMessage } from "../../task-persistence/apiMessages"
+import type { LegacyApiMessage } from "../../task-persistence/apiMessages"
 import { MessageManager } from "../../message-manager"
 
 describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
@@ -54,7 +54,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 		mockCurrentTask = {
 			taskId: "test-task-id",
 			clineMessages: [] as ClineMessage[],
-			apiConversationHistory: [] as ApiMessage[],
+			apiConversationHistory: [] as LegacyApiMessage[],
 			overwriteClineMessages: vi.fn(),
 			overwriteApiConversationHistory: vi.fn(),
 			handleWebviewAskResponse: vi.fn(),
@@ -126,7 +126,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 					},
 				],
 			},
-		] as ApiMessage[]
+		] as LegacyApiMessage[]
 
 		// Trigger edit confirmation
 		await webviewMessageHandler(mockClineProvider, {
@@ -184,7 +184,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 				role: "assistant",
 				content: [{ type: "text", text: "Response" }],
 			},
-		] as ApiMessage[]
+		] as LegacyApiMessage[]
 
 		await webviewMessageHandler(mockClineProvider, {
 			type: "editMessageConfirm",
@@ -244,7 +244,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 				role: "assistant",
 				content: [{ type: "text", text: "Response" }],
 			},
-		] as ApiMessage[]
+		] as LegacyApiMessage[]
 
 		await webviewMessageHandler(mockClineProvider, {
 			type: "editMessageConfirm",
@@ -282,7 +282,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 				role: "assistant",
 				content: [{ type: "text", text: "Old message 2" }],
 			},
-		] as ApiMessage[]
+		] as LegacyApiMessage[]
 
 		await webviewMessageHandler(mockClineProvider, {
 			type: "editMessageConfirm",
@@ -378,7 +378,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 					},
 				],
 			},
-		] as ApiMessage[]
+		] as LegacyApiMessage[]
 
 		// Edit the first user message
 		await webviewMessageHandler(mockClineProvider, {

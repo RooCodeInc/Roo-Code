@@ -168,7 +168,7 @@ describe("LmStudioHandler", () => {
 
 		it("should handle API errors with handleAiSdkError", async () => {
 			mockGenerateText.mockRejectedValueOnce(new Error("Connection refused"))
-			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("LM Studio")
+			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("Connection refused")
 		})
 	})
 

@@ -482,7 +482,7 @@ describe("VercelAiGatewayHandler", () => {
 
 			mockGenerateText.mockRejectedValue(new Error(errorMessage))
 
-			await expect(handler.completePrompt("Test")).rejects.toThrow("Vercel AI Gateway")
+			await expect(handler.completePrompt("Test")).rejects.toThrow("API error")
 		})
 
 		it("returns empty string when generateText returns empty text", async () => {

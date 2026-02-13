@@ -1,11 +1,48 @@
+import { APICallError, RetryError } from "ai"
 import { APIError } from "openai"
 
 export function checkContextWindowExceededError(error: unknown): boolean {
 	return (
+		checkIsAiSdkContextWindowError(error) ||
 		checkIsOpenAIContextWindowError(error) ||
 		checkIsOpenRouterContextWindowError(error) ||
 		checkIsAnthropicContextWindowError(error)
 	)
+}
+
+function checkIsAiSdkContextWindowError(error: unknown): boolean {
+	try {
+		// Unwrap RetryError to get the underlying APICallError
+		let apiError: unknown = error
+		if (RetryError.isInstance(error)) {
+			apiError = error.lastError
+		}
+
+		if (!APICallError.isInstance(apiError)) {
+			return false
+		}
+
+		if (apiError.statusCode !== 400) {
+			return false
+		}
+
+		// Check message and responseBody for context window indicators
+		const textsToCheck = [apiError.message, apiError.responseBody].filter((t): t is string => typeof t === "string")
+		const contextWindowPatterns = [
+			/\bcontext\s*(?:length|window)\b/i,
+			/\btoken\s*limit\b/i,
+			/maximum\s*(?:context\s*)?(?:length|tokens)/i,
+			/prompt\s*is\s*too\s*long/i,
+			/input\s*is\s*too\s*long/i,
+			/too\s*many\s*tokens/i,
+			/content\s*size\s*exceeds/i,
+			/request\s*too\s*large/i,
+		]
+
+		return textsToCheck.some((text) => contextWindowPatterns.some((pattern) => pattern.test(text)))
+	} catch {
+		return false
+	}
 }
 
 function checkIsOpenRouterContextWindowError(error: unknown): boolean {

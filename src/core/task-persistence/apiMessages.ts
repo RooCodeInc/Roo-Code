@@ -12,7 +12,10 @@ import type { RooMessage, RooMessageHistory } from "./rooMessage"
 import { ROO_MESSAGE_VERSION } from "./rooMessage"
 import { convertAnthropicToRooMessages } from "./converters/anthropicToRoo"
 
-export type ApiMessage = Anthropic.MessageParam & {
+/**
+ * @deprecated This is the legacy Anthropic message format. Use {@link RooMessage} for the current format.
+ */
+export type LegacyApiMessage = Anthropic.MessageParam & {
 	ts?: number
 	isSummary?: boolean
 	id?: string
@@ -40,13 +43,16 @@ export type ApiMessage = Anthropic.MessageParam & {
 	isTruncationMarker?: boolean
 }
 
+/** @deprecated Use {@link LegacyApiMessage} directly. This alias exists for backward compatibility only. */
+export type ApiMessage = LegacyApiMessage
+
 export async function readApiMessages({
 	taskId,
 	globalStoragePath,
 }: {
 	taskId: string
 	globalStoragePath: string
-}): Promise<ApiMessage[]> {
+}): Promise<LegacyApiMessage[]> {
 	const taskDir = await getTaskDirectoryPath(globalStoragePath, taskId)
 	const filePath = path.join(taskDir, GlobalFileNames.apiConversationHistory)
 
@@ -114,7 +120,7 @@ export async function saveApiMessages({
 	taskId,
 	globalStoragePath,
 }: {
-	messages: ApiMessage[]
+	messages: LegacyApiMessage[]
 	taskId: string
 	globalStoragePath: string
 }) {
@@ -194,7 +200,7 @@ export async function readRooMessages({
 			return []
 		}
 
-		return convertAnthropicToRooMessages(parsedData as ApiMessage[])
+		return convertAnthropicToRooMessages(parsedData as LegacyApiMessage[])
 	}
 
 	const primaryResult = await tryParseFile(filePath)
@@ -212,6 +218,48 @@ export async function readRooMessages({
 		`[Roo-Debug] readRooMessages: API conversation history file not found for taskId: ${taskId}. Expected at: ${filePath}`,
 	)
 	return []
+}
+
+/**
+ * Strip transient cache-control provider options that are applied at request
+ * time by applyCacheBreakpoints() and should not be persisted.
+ *
+ * Removes:
+ * - anthropic.cacheControl
+ * - bedrock.cachePoint
+ *
+ * Preserves all other providerOptions (e.g. anthropic.signature, openrouter.reasoning_details).
+ */
+export function stripCacheProviderOptions(messages: RooMessage[]): RooMessage[] {
+	const cloned = structuredClone(messages)
+
+	for (const msg of cloned) {
+		if (!("providerOptions" in msg) || (msg as { providerOptions?: unknown }).providerOptions == null) {
+			continue
+		}
+
+		const providerOptions = (msg as { providerOptions: Record<string, Record<string, unknown>> }).providerOptions
+
+		if (providerOptions["anthropic"] != null) {
+			delete providerOptions["anthropic"]["cacheControl"]
+			if (Object.keys(providerOptions["anthropic"]).length === 0) {
+				delete providerOptions["anthropic"]
+			}
+		}
+
+		if (providerOptions["bedrock"] != null) {
+			delete providerOptions["bedrock"]["cachePoint"]
+			if (Object.keys(providerOptions["bedrock"]).length === 0) {
+				delete providerOptions["bedrock"]
+			}
+		}
+
+		if (Object.keys(providerOptions).length === 0) {
+			delete (msg as { providerOptions?: unknown }).providerOptions
+		}
+	}
+
+	return cloned
 }
 
 /**

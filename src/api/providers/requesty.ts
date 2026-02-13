@@ -7,14 +7,8 @@ import { type ModelInfo, type ModelRecord, requestyDefaultModelId, requestyDefau
 import type { ApiHandlerOptions } from "../../shared/api"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 
-import {
-	convertToAiSdkMessages,
-	convertToolsForAiSdk,
-	consumeAiSdkStream,
-	mapToolChoice,
-	handleAiSdkError,
-} from "../transform/ai-sdk"
-import { applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
+import { convertToolsForAiSdk, consumeAiSdkStream, mapToolChoice } from "../transform/ai-sdk"
+import { applyCacheBreakpoints, applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -211,6 +205,8 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			metadata?.systemProviderOptions,
 		)
 
+		applyCacheBreakpoints(aiSdkMessages)
+
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
 			system: effectiveSystemPrompt,
@@ -231,7 +227,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 				yield processUsage(usage, info, providerMetadata as RequestyProviderMetadata)
 			})
 		} catch (error) {
-			throw handleAiSdkError(error, "Requesty")
+			throw error
 		}
 	}
 
@@ -252,7 +248,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 
 			return text
 		} catch (error) {
-			throw handleAiSdkError(error, "Requesty")
+			throw error
 		}
 	}
 

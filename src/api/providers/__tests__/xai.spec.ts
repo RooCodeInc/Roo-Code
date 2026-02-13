@@ -399,9 +399,8 @@ describe("XAIHandler", () => {
 			;(mockError as any).name = "AI_APICallError"
 			;(mockError as any).status = 500
 
-			async function* mockFullStream(): AsyncGenerator<never> {
-				// This yield is unreachable but needed to satisfy the require-yield lint rule
-				yield undefined as never
+			async function* mockFullStream(): AsyncGenerator<any> {
+				yield { type: "text-delta", text: "" }
 				throw mockError
 			}
 
@@ -417,7 +416,7 @@ describe("XAIHandler", () => {
 				for await (const _ of stream) {
 					// consume stream
 				}
-			}).rejects.toThrow("xAI")
+			}).rejects.toThrow("API error")
 		})
 	})
 
@@ -456,7 +455,7 @@ describe("XAIHandler", () => {
 			;(mockError as any).name = "AI_APICallError"
 			mockGenerateText.mockRejectedValue(mockError)
 
-			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("xAI")
+			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("API error")
 		})
 	})
 

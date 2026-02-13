@@ -44,21 +44,28 @@ describe("applyCacheBreakpoints", () => {
 		expect(messages[0].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 	})
 
-	it("places 2 breakpoints on 2 user messages", () => {
+	it("places 1 breakpoint on the last of 2 user messages (default maxBreakpoints=1)", () => {
 		const messages: TestMessage[] = [{ role: "user" }, { role: "user" }]
 		applyCacheBreakpoints(messages)
+		expect(messages[0].providerOptions).toBeUndefined()
+		expect(messages[1].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+	})
+
+	it("places 2 breakpoints on 2 user messages when maxBreakpoints=2", () => {
+		const messages: TestMessage[] = [{ role: "user" }, { role: "user" }]
+		applyCacheBreakpoints(messages, { maxBreakpoints: 2 })
 		expect(messages[0].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 		expect(messages[1].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 	})
 
-	it("places 2 breakpoints on 2 tool messages", () => {
+	it("places 1 breakpoint on the last of 2 tool messages (default maxBreakpoints=1)", () => {
 		const messages: TestMessage[] = [{ role: "tool" }, { role: "tool" }]
 		applyCacheBreakpoints(messages)
-		expect(messages[0].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		expect(messages[0].providerOptions).toBeUndefined()
 		expect(messages[1].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 	})
 
-	it("targets last 2 non-assistant messages in a mixed conversation", () => {
+	it("targets last non-assistant message in a mixed conversation", () => {
 		const messages: TestMessage[] = [
 			{ role: "user" },
 			{ role: "assistant" },
@@ -67,15 +74,15 @@ describe("applyCacheBreakpoints", () => {
 			{ role: "tool" },
 		]
 		applyCacheBreakpoints(messages)
-		// Last 2 non-assistant: index 2 (user) and index 4 (tool)
+		// Last 1 non-assistant: index 4 (tool)
 		expect(messages[0].providerOptions).toBeUndefined()
 		expect(messages[1].providerOptions).toBeUndefined()
-		expect(messages[2].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		expect(messages[2].providerOptions).toBeUndefined()
 		expect(messages[3].providerOptions).toBeUndefined()
 		expect(messages[4].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 	})
 
-	it("targets indices 3 and 5 in [user, assistant, tool, user, assistant, tool]", () => {
+	it("targets only index 5 in [user, assistant, tool, user, assistant, tool]", () => {
 		const messages: TestMessage[] = [
 			{ role: "user" },
 			{ role: "assistant" },
@@ -88,7 +95,7 @@ describe("applyCacheBreakpoints", () => {
 		expect(messages[0].providerOptions).toBeUndefined()
 		expect(messages[1].providerOptions).toBeUndefined()
 		expect(messages[2].providerOptions).toBeUndefined()
-		expect(messages[3].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		expect(messages[3].providerOptions).toBeUndefined()
 		expect(messages[4].providerOptions).toBeUndefined()
 		expect(messages[5].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 	})
@@ -97,7 +104,7 @@ describe("applyCacheBreakpoints", () => {
 		const messages: TestMessage[] = [{ role: "system" }, { role: "user" }, { role: "assistant" }, { role: "user" }]
 		applyCacheBreakpoints(messages)
 		expect(messages[0].providerOptions).toBeUndefined()
-		expect(messages[1].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		expect(messages[1].providerOptions).toBeUndefined()
 		expect(messages[3].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 	})
 
@@ -132,7 +139,7 @@ describe("applyCacheBreakpoints", () => {
 	it("adds anchor breakpoint at ~1/3 with useAnchor and enough messages", () => {
 		// 6 non-assistant messages (indices 0-5 in nonAssistantIndices)
 		// Anchor at floor(6/3) = index 2 in nonAssistantIndices -> messages index 4
-		// Last 2: indices 10 and 8
+		// Last 1: index 10
 		const messages: TestMessage[] = [
 			{ role: "user" }, // 0 - nonAssistant[0]
 			{ role: "assistant" }, // 1
@@ -142,21 +149,21 @@ describe("applyCacheBreakpoints", () => {
 			{ role: "assistant" }, // 5
 			{ role: "user" }, // 6 - nonAssistant[3]
 			{ role: "assistant" }, // 7
-			{ role: "user" }, // 8 - nonAssistant[4] <- last 2
+			{ role: "user" }, // 8 - nonAssistant[4]
 			{ role: "assistant" }, // 9
-			{ role: "user" }, // 10 - nonAssistant[5] <- last 2
+			{ role: "user" }, // 10 - nonAssistant[5] <- last 1
 		]
 		applyCacheBreakpoints(messages, { useAnchor: true })
 
-		// Should have 3 breakpoints: indices 4, 8, 10
+		// Should have 2 breakpoints: indices 4 (anchor) and 10 (last 1)
 		expect(messages[4].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
-		expect(messages[8].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 		expect(messages[10].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 
 		// Others should NOT have breakpoints
 		expect(messages[0].providerOptions).toBeUndefined()
 		expect(messages[2].providerOptions).toBeUndefined()
 		expect(messages[6].providerOptions).toBeUndefined()
+		expect(messages[8].providerOptions).toBeUndefined()
 	})
 
 	it("does not add anchor when below anchorThreshold", () => {
@@ -170,9 +177,9 @@ describe("applyCacheBreakpoints", () => {
 		// 3 non-assistant messages, below default threshold of 5
 		applyCacheBreakpoints(messages, { useAnchor: true })
 
-		// Last 2 only: indices 2 and 4
+		// Last 1 only: index 4
 		expect(messages[0].providerOptions).toBeUndefined()
-		expect(messages[2].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
+		expect(messages[2].providerOptions).toBeUndefined()
 		expect(messages[4].providerOptions).toEqual(UNIVERSAL_CACHE_OPTIONS)
 	})
 

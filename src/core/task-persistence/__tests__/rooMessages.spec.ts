@@ -4,8 +4,8 @@ import * as os from "os"
 import * as path from "path"
 import * as fs from "fs/promises"
 
-import { detectFormat, readRooMessages, saveRooMessages } from "../apiMessages"
-import type { ApiMessage } from "../apiMessages"
+import { detectFormat, readRooMessages, saveRooMessages, stripCacheProviderOptions } from "../apiMessages"
+import type { LegacyApiMessage } from "../apiMessages"
 import type { RooMessage, RooMessageHistory } from "../rooMessage"
 import { ROO_MESSAGE_VERSION } from "../rooMessage"
 import * as safeWriteJsonModule from "../../../utils/safeWriteJson"
@@ -46,7 +46,7 @@ const sampleV2Envelope: RooMessageHistory = {
 	messages: sampleRooMessages,
 }
 
-const sampleLegacyMessages: ApiMessage[] = [
+const sampleLegacyMessages: LegacyApiMessage[] = [
 	{ role: "user", content: "Hello from legacy", ts: 1000 },
 	{ role: "assistant", content: "Legacy response", ts: 2000 },
 ]
@@ -273,5 +273,200 @@ describe("round-trip", () => {
 		const raw = await fs.readFile(path.join(taskDir, "api_conversation_history.json"), "utf8")
 		const parsed = JSON.parse(raw)
 		expect(detectFormat(parsed)).toBe("v2")
+	})
+})
+
+// ────────────────────────────────────────────────────────────────────────────
+// stripCacheProviderOptions
+// ────────────────────────────────────────────────────────────────────────────
+
+describe("stripCacheProviderOptions", () => {
+	it("returns messages unchanged when they have no providerOptions", () => {
+		const messages: RooMessage[] = [
+			{ role: "user" as const, content: [{ type: "text" as const, text: "hi" }] },
+			{ role: "assistant" as const, content: [{ type: "text" as const, text: "hello" }] },
+		]
+
+		const result = stripCacheProviderOptions(messages)
+
+		expect(result).toEqual(messages)
+	})
+
+	it("strips anthropic.cacheControl and removes empty providerOptions", () => {
+		const messages: RooMessage[] = [
+			{
+				role: "assistant" as const,
+				content: [{ type: "text" as const, text: "hello" }],
+				providerOptions: {
+					anthropic: { cacheControl: { type: "ephemeral" } },
+				},
+			},
+		]
+
+		const result = stripCacheProviderOptions(messages)
+
+		expect(result).toEqual([
+			{
+				role: "assistant" as const,
+				content: [{ type: "text" as const, text: "hello" }],
+			},
+		])
+		expect(result[0]).not.toHaveProperty("providerOptions")
+	})
+
+	it("strips bedrock.cachePoint and removes empty providerOptions", () => {
+		const messages: RooMessage[] = [
+			{
+				role: "assistant" as const,
+				content: [{ type: "text" as const, text: "hello" }],
+				providerOptions: {
+					bedrock: { cachePoint: { type: "default" } },
+				},
+			},
+		]
+
+		const result = stripCacheProviderOptions(messages)
+
+		expect(result).toEqual([
+			{
+				role: "assistant" as const,
+				content: [{ type: "text" as const, text: "hello" }],
+			},
+		])
+		expect(result[0]).not.toHaveProperty("providerOptions")
+	})
+
+	it("strips both anthropic.cacheControl and bedrock.cachePoint simultaneously", () => {
+		const messages: RooMessage[] = [
+			{
+				role: "assistant" as const,
+				content: [{ type: "text" as const, text: "hello" }],
+				providerOptions: {
+					anthropic: { cacheControl: { type: "ephemeral" } },
+					bedrock: { cachePoint: { type: "default" } },
+				},
+			},
+		]
+
+		const result = stripCacheProviderOptions(messages)
+
+		expect(result).toEqual([
+			{
+				role: "assistant" as const,
+				content: [{ type: "text" as const, text: "hello" }],
+			},
+		])
+		expect(result[0]).not.toHaveProperty("providerOptions")
+	})
+
+	it("preserves anthropic.signature while stripping anthropic.cacheControl", () => {
+		const messages: RooMessage[] = [
+			{
+				role: "assistant" as const,
+				content: [{ type: "text" as const, text: "hello" }],
+				providerOptions: {
+					anthropic: { cacheControl: { type: "ephemeral" }, signature: "abc123" },
+				},
+			},
+		]
+
+		const result = stripCacheProviderOptions(messages)
+
+		expect(result).toEqual([
+			{
+				role: "assistant" as const,
+				content: [{ type: "text" as const, text: "hello" }],
+				providerOptions: {
+					anthropic: { signature: "abc123" },
+				},
+			},
+		])
+	})
+
+	it("preserves openrouter.reasoning_details unchanged", () => {
+		const reasoningDetails = [{ type: "thinking", thinking: "hmm" }]
+		const messages: RooMessage[] = [
+			{
+				role: "assistant" as const,
+				content: [{ type: "text" as const, text: "hello" }],
+				providerOptions: {
+					openrouter: { reasoning_details: reasoningDetails },
+				},
+			},
+		]
+
+		const result = stripCacheProviderOptions(messages)
+
+		expect(result).toEqual([
+			{
+				role: "assistant" as const,
+				content: [{ type: "text" as const, text: "hello" }],
+				providerOptions: {
+					openrouter: { reasoning_details: reasoningDetails },
+				},
+			},
+		])
+	})
+
+	it("strips cache keys while preserving non-cache keys across namespaces", () => {
+		const reasoningDetails = [{ type: "thinking", thinking: "hmm" }]
+		const messages: RooMessage[] = [
+			{
+				role: "assistant" as const,
+				content: [{ type: "text" as const, text: "hello" }],
+				providerOptions: {
+					anthropic: { cacheControl: { type: "ephemeral" }, signature: "abc123" },
+					bedrock: { cachePoint: { type: "default" } },
+					openrouter: { reasoning_details: reasoningDetails },
+				},
+			},
+		]
+
+		const result = stripCacheProviderOptions(messages)
+
+		expect(result).toEqual([
+			{
+				role: "assistant" as const,
+				content: [{ type: "text" as const, text: "hello" }],
+				providerOptions: {
+					anthropic: { signature: "abc123" },
+					openrouter: { reasoning_details: reasoningDetails },
+				},
+			},
+		])
+		// bedrock namespace should be fully removed
+		const resultOptions = (result[0] as unknown as Record<string, unknown>).providerOptions as Record<string, unknown>
+		expect(resultOptions).not.toHaveProperty("bedrock")
+	})
+
+	it("does not mutate the original array", () => {
+		const original: RooMessage[] = [
+			{
+				role: "assistant" as const,
+				content: [{ type: "text" as const, text: "hello" }],
+				providerOptions: {
+					anthropic: { cacheControl: { type: "ephemeral" }, signature: "abc123" },
+				},
+			},
+		]
+
+		// Snapshot original state before calling
+		const originalSnapshot = JSON.parse(JSON.stringify(original))
+
+		stripCacheProviderOptions(original)
+
+		expect(original).toEqual(originalSnapshot)
+		// Verify the providerOptions still has cacheControl on the original
+		const originalOptions = (original[0] as unknown as Record<string, unknown>).providerOptions as Record<
+			string,
+			Record<string, unknown>
+		>
+		expect(originalOptions["anthropic"]["cacheControl"]).toEqual({ type: "ephemeral" })
+	})
+
+	it("returns empty array for empty input", () => {
+		const result = stripCacheProviderOptions([])
+
+		expect(result).toEqual([])
 	})
 })

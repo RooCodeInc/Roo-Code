@@ -9,11 +9,9 @@ import type { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 import { mergeEnvironmentDetailsForMiniMax } from "../transform/minimax-format"
 import {
-	convertToAiSdkMessages,
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
-	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { applyToolCacheOptions } from "../transform/cache-breakpoints"
@@ -133,7 +131,7 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 
 			yield* yieldResponseMessage(result)
 		} catch (error) {
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 
@@ -206,7 +204,7 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 
 			return text
 		} catch (error) {
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 

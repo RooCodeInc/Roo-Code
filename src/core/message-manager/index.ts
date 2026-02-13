@@ -1,7 +1,7 @@
 import * as path from "path"
 import { Task } from "../task/Task"
 import { ClineMessage } from "@roo-code/types"
-import { ApiMessage } from "../task-persistence/apiMessages"
+import { LegacyApiMessage } from "../task-persistence/apiMessages"
 import { cleanupAfterTruncation } from "../condense"
 import { OutputInterceptor } from "../../integrations/terminal/OutputInterceptor"
 import { getTaskDirectoryPath } from "../../utils/storage"

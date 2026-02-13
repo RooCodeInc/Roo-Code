@@ -32,8 +32,11 @@ vitest.mock("@ai-sdk/anthropic", () => ({
 }))
 
 // Mock ai-sdk transform utilities
+vitest.mock("../../transform/sanitize-messages", () => ({
+	sanitizeMessagesForProvider: vitest.fn().mockImplementation((msgs: any[]) => msgs),
+}))
+
 vitest.mock("../../transform/ai-sdk", () => ({
-	convertToAiSdkMessages: vitest.fn().mockReturnValue([{ role: "user", content: [{ type: "text", text: "Hello" }] }]),
 	convertToolsForAiSdk: vitest.fn().mockReturnValue(undefined),
 	processAiSdkStreamPart: vitest.fn().mockImplementation(function* (part: any) {
 		if (part.type === "text-delta") {
@@ -54,7 +57,8 @@ vitest.mock("../../transform/ai-sdk", () => ({
 }))
 
 // Import mocked modules
-import { convertToAiSdkMessages, convertToolsForAiSdk, mapToolChoice } from "../../transform/ai-sdk"
+import { convertToolsForAiSdk, mapToolChoice } from "../../transform/ai-sdk"
+import { sanitizeMessagesForProvider } from "../../transform/sanitize-messages"
 import { Anthropic } from "@anthropic-ai/sdk"
 
 // Helper: create a mock provider function
@@ -82,9 +86,6 @@ describe("AnthropicHandler", () => {
 
 		// Re-set mock defaults after clearAllMocks
 		mockCreateAnthropic.mockReturnValue(mockProviderFn)
-		vitest
-			.mocked(convertToAiSdkMessages)
-			.mockReturnValue([{ role: "user", content: [{ type: "text", text: "Hello" }] }])
 		vitest.mocked(convertToolsForAiSdk).mockReturnValue(undefined)
 		vitest.mocked(mapToolChoice).mockReturnValue(undefined)
 	})
@@ -397,6 +398,51 @@ describe("AnthropicHandler", () => {
 
 			const endChunk = chunks.find((c) => c.type === "tool_call_end")
 			expect(endChunk).toBeDefined()
+		})
+
+		it("should strip reasoning_details and reasoning_content from messages before sending to API", async () => {
+			// Override the identity mock with the real implementation for this test
+			const { sanitizeMessagesForProvider: realSanitize } = await vi.importActual<
+				typeof import("../../transform/sanitize-messages")
+			>("../../transform/sanitize-messages")
+			vi.mocked(sanitizeMessagesForProvider).mockImplementation(realSanitize)
+
+			setupStreamTextMock([{ type: "text-delta", text: "test" }])
+
+			// Simulate messages with extra legacy fields that survive JSON deserialization
+			const messagesWithExtraFields = [
+				{
+					role: "user",
+					content: [{ type: "text" as const, text: "Hello" }],
+				},
+				{
+					role: "assistant",
+					content: [{ type: "text" as const, text: "Hi" }],
+					reasoning_details: [{ type: "thinking", thinking: "some reasoning" }],
+					reasoning_content: "some reasoning content",
+				},
+				{
+					role: "user",
+					content: [{ type: "text" as const, text: "Follow up" }],
+				},
+			] as any
+
+			const stream = handler.createMessage(systemPrompt, messagesWithExtraFields)
+
+			for await (const _chunk of stream) {
+				// Consume stream
+			}
+
+			// Verify streamText was called exactly once
+			expect(mockStreamText).toHaveBeenCalledTimes(1)
+			const callArgs = mockStreamText.mock.calls[0]![0]
+			for (const msg of callArgs.messages) {
+				expect(msg).not.toHaveProperty("reasoning_details")
+				expect(msg).not.toHaveProperty("reasoning_content")
+			}
+			// Verify the rest of the message is preserved
+			expect(callArgs.messages[1].role).toBe("assistant")
+			expect(callArgs.messages[1].content).toEqual([{ type: "text", text: "Hi" }])
 		})
 
 		it("should pass system prompt via system param when no systemProviderOptions", async () => {

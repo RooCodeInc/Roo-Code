@@ -19,14 +19,12 @@ import { shouldUseReasoningBudget } from "../../shared/api"
 import type { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 import {
-	convertToAiSdkMessages,
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
-	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
-import { applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
+import { applyCacheBreakpoints, applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
 import { calculateApiCostAnthropic } from "../../shared/cost"
 
 import { DEFAULT_HEADERS } from "./constants"
@@ -128,6 +126,8 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			metadata?.systemProviderOptions,
 		)
 
+		applyCacheBreakpoints(aiSdkMessages)
+
 		// Build streamText request
 		// Cast providerOptions to any to bypass strict JSONObject typing — the AI SDK accepts the correct runtime values
 		const requestOptions: Parameters<typeof streamText>[0] = {
@@ -176,7 +176,7 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			TelemetryService.instance.captureException(
 				new ApiProviderError(errorMessage, this.providerName, modelConfig.id, "createMessage"),
 			)
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 
@@ -300,7 +300,7 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 					"completePrompt",
 				),
 			)
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 

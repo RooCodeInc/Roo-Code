@@ -87,13 +87,9 @@ export type RooUserMessage = Omit<UserModelMessage, "content"> &
 /**
  * An assistant-authored message. Content may be a plain string or an array of
  * text, tool-call, and reasoning parts. Extends AI SDK `AssistantModelMessage`
- * with metadata and a provider response ID.
+ * with metadata.
  */
-export type RooAssistantMessage = AssistantModelMessage &
-	RooMessageMetadata & {
-		/** Provider response ID (e.g. OpenAI `response.id`). */
-		id?: string
-	}
+export type RooAssistantMessage = AssistantModelMessage & RooMessageMetadata
 
 /**
  * A tool result message containing one or more tool outputs.

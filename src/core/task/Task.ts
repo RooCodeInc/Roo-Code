@@ -61,9 +61,11 @@ import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
 // api
 import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "../../api"
 import type { AssistantModelMessage } from "ai"
+import { APICallError, RetryError } from "ai"
 import { ApiStream, GroundingSource } from "../../api/transform/stream"
+import { extractAiSdkErrorMessage } from "../../api/transform/ai-sdk"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
-import { applyCacheBreakpoints, UNIVERSAL_CACHE_OPTIONS } from "../../api/transform/cache-breakpoints"
+import { UNIVERSAL_CACHE_OPTIONS } from "../../api/transform/cache-breakpoints"
 
 // shared
 import { findLastIndex } from "../../shared/array"
@@ -110,7 +112,7 @@ import { manageContext, willManageContext } from "../context-management"
 import { ClineProvider } from "../webview/ClineProvider"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
 import {
-	type ApiMessage,
+	type LegacyApiMessage,
 	readApiMessages,
 	saveApiMessages,
 	readTaskMessages,
@@ -1064,13 +1066,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		const handler = this.api as ApiHandler & {
-			getResponseId?: () => string | undefined
 			getEncryptedContent?: () => { encrypted_content: string; id?: string } | undefined
 		}
 
 		if (message.role === "assistant") {
-			const responseId = handler.getResponseId?.()
-
 			// Check if the message is already in native AI SDK format (from result.response.messages).
 			// These messages have providerOptions on content parts (reasoning signatures, etc.)
 			// and don't need manual block injection.
@@ -1083,21 +1082,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// with providerOptions (signatures, redactedData, etc.) in the correct format.
 				this.apiConversationHistory.push({
 					...message,
-					...(responseId ? { id: responseId } : {}),
 					ts: message.ts ?? Date.now(),
 				})
 				await this.saveApiConversationHistory()
 				return
 			}
 
-			// Fallback path: store the manually-constructed message with responseId and timestamp.
+			// Fallback path: store the manually-constructed message with timestamp.
 			// This handles non-AI-SDK providers and AI SDK responses without reasoning
 			// (text-only or text + tool calls where no content parts carry providerOptions).
 			const reasoningData = handler.getEncryptedContent?.()
 
 			const messageWithTs: RooAssistantMessage & { content: any } = {
 				...message,
-				...(responseId ? { id: responseId } : {}),
 				ts: Date.now(),
 			}
 
@@ -3084,7 +3081,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							case "tool_call": {
 								// Legacy: Handle complete tool calls (for backward compatibility)
 								// Convert native tool call to ToolUse format
-								const toolUse = NativeToolCallParser.parseToolCall({
+								let toolUse = NativeToolCallParser.parseToolCall({
 									id: chunk.id,
 									name: chunk.name as ToolName,
 									arguments: chunk.arguments,
@@ -3092,7 +3089,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 								if (!toolUse) {
 									console.error(`Failed to parse tool call for task ${this.taskId}:`, chunk)
-									break
+									// Still push a tool_use block so the didToolUse check passes
+									// and presentAssistantMessage's unknown-tool handler can report the error
+									toolUse = {
+										type: "tool_use" as const,
+										name: (chunk.name ?? "unknown_tool") as ToolName,
+										params: {},
+										partial: false,
+									}
 								}
 
 								// Store the tool call ID on the ToolUse object for later reference
@@ -3352,7 +3356,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// Determine cancellation reason
 						const cancelReason: ClineApiReqCancelReason = this.abort ? "user_cancelled" : "streaming_failed"
 
-						const rawErrorMessage = error.message ?? JSON.stringify(serializeError(error), null, 2)
+						const rawErrorMessage = extractAiSdkErrorMessage(error)
 
 						// Check auto-retry state BEFORE abortStream so we can suppress the error
 						// message on the api_req_started row when backoffAndAnnounce will display it instead.
@@ -4384,10 +4388,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// mergeConsecutiveApiMessages implementation) without mutating stored history.
 		const mergedForApi = mergeConsecutiveApiMessages(messagesSinceLastSummary, { roles: ["user"] })
 		const messagesWithoutImages = maybeRemoveImageBlocks(mergedForApi, this.api)
-		const cleanConversationHistory = this.buildCleanConversationHistory(messagesWithoutImages)
-
-		// Breakpoints 3-4: Apply cache breakpoints to the last 2 non-assistant messages
-		applyCacheBreakpoints(cleanConversationHistory.filter(isRooRoleMessage))
 
 		// Check auto-approval limits
 		const approvalResult = await this.autoApprovalHandler.checkAutoApprovalLimits(
@@ -4470,7 +4470,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Reset the flag after using it
 		this.skipPrevResponseIdOnce = false
 
-		const stream = this.api.createMessage(systemPrompt, cleanConversationHistory, metadata)
+		const stream = this.api.createMessage(systemPrompt, messagesWithoutImages, metadata)
 		const iterator = stream[Symbol.asyncIterator]()
 
 		// Set up abort handling - when the signal is aborted, clean up the controller reference
@@ -4538,7 +4538,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			} else {
 				const { response } = await this.ask(
 					"api_req_failed",
-					error.message ?? JSON.stringify(serializeError(error), null, 2),
+					extractAiSdkErrorMessage(error),
 				)
 
 				if (response !== "yesButtonClicked") {
@@ -4585,35 +4585,66 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				rateLimitDelay = Math.ceil(Math.min(rateLimit, Math.max(0, rateLimit * 1000 - elapsed) / 1000))
 			}
 
-			// Prefer RetryInfo on 429 if present
-			if (error?.status === 429) {
-				const retryInfo = error?.errorDetails?.find(
-					(d: any) => d["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
-				)
-				const match = retryInfo?.retryDelay?.match?.(/^(\d+)s$/)
-				if (match) {
-					exponentialDelay = Number(match[1]) + 1
+			// Extract status code from AI SDK errors or legacy error shapes
+				const statusCode = APICallError.isInstance(error)
+					? error.statusCode
+					: RetryError.isInstance(error) && APICallError.isInstance(error.lastError)
+						? error.lastError.statusCode
+						: (error as any)?.status
+	
+				// Prefer RetryInfo on 429 if present
+				if (statusCode === 429) {
+					// Try direct errorDetails (legacy Vertex), then try parsing from responseBody
+					let retryDelaySec: number | undefined
+					const errorDetails = (error as any)?.errorDetails
+					if (errorDetails) {
+						const retryInfo = errorDetails.find(
+							(d: any) => d["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
+						)
+						const match = retryInfo?.retryDelay?.match?.(/^(\d+)s$/)
+						if (match) {
+							retryDelaySec = Number(match[1]) + 1
+						}
+					}
+					// Also try extracting from APICallError responseBody for Vertex errors
+					if (!retryDelaySec) {
+						const responseBody = APICallError.isInstance(error)
+							? error.responseBody
+							: RetryError.isInstance(error) && APICallError.isInstance(error.lastError)
+								? error.lastError.responseBody
+								: undefined
+						if (responseBody) {
+							try {
+								const parsed = JSON.parse(responseBody)
+								const retryInfo = parsed?.error?.details?.find(
+									(d: any) => d["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
+								)
+								const match = retryInfo?.retryDelay?.match?.(/^(\d+)s$/)
+								if (match) {
+									retryDelaySec = Number(match[1]) + 1
+								}
+							} catch {
+								// responseBody not parseable, skip
+							}
+						}
+					}
+					if (retryDelaySec) {
+						exponentialDelay = retryDelaySec
+					}
 				}
-			}
-
-			const finalDelay = Math.max(exponentialDelay, rateLimitDelay)
-			if (finalDelay <= 0) {
-				return
-			}
-
-			// Build header text; fall back to error message if none provided
-			let headerText
-			if (error.status) {
-				// Include both status code (for ChatRow parsing) and detailed message (for error details)
-				// Format: "<status>\n<message>" allows ChatRow to extract status via parseInt(text.substring(0,3))
-				// while preserving the full error message in errorDetails for debugging
-				const errorMessage = error?.message || "Unknown error"
-				headerText = `${error.status}\n${errorMessage}`
-			} else if (error?.message) {
-				headerText = error.message
-			} else {
-				headerText = "Unknown error"
-			}
+	
+				const finalDelay = Math.max(exponentialDelay, rateLimitDelay)
+				if (finalDelay <= 0) {
+					return
+				}
+	
+				// Build header text; fall back to error message if none provided
+				let headerText: string
+				if (statusCode) {
+					headerText = `${statusCode}\n${extractAiSdkErrorMessage(error)}`
+				} else {
+					headerText = extractAiSdkErrorMessage(error)
+				}
 
 			headerText = headerText ? `${headerText}\n` : ""
 
@@ -4640,166 +4671,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		return checkpointSave(this, force, suppressMessage)
 	}
 
-	/**
-	 * Prepares conversation history for the API request by sanitizing stored
-	 * RooMessage items into valid AI SDK ModelMessage format.
-	 *
-	 * Condense/truncation filtering is handled upstream by getEffectiveApiHistory.
-	 * This method:
-	 *
-	 * - Removes RooReasoningMessage items (standalone encrypted reasoning with no `role`)
-	 * - Converts custom content blocks in assistant messages to valid AI SDK parts:
-	 *   - `thinking` (Anthropic) → `reasoning` part with signature in providerOptions
-	 *   - `redacted_thinking` (Anthropic) → stripped (no AI SDK equivalent)
-	 *   - `thoughtSignature` (Gemini) → extracted and attached to first tool-call providerOptions
-	 *   - `reasoning` with `encrypted_content` but no `text` → stripped (invalid reasoning part)
-	 * - Carries `reasoning_details` (OpenRouter) through to providerOptions
-	 * - Strips all reasoning when the provider does not support it
-	 */
-	private buildCleanConversationHistory(messages: RooMessage[]): RooMessage[] {
-		const preserveReasoning = this.api.getModel().info.preserveReasoning === true || this.api.isAiSdkProvider()
-
-		return messages
-			.filter((msg) => {
-				// Always remove standalone RooReasoningMessage items (no `role` field → invalid ModelMessage)
-				if (isRooReasoningMessage(msg)) {
-					return false
-				}
-				return true
-			})
-			.map((msg) => {
-				if (!isRooAssistantMessage(msg) || !Array.isArray(msg.content)) {
-					return msg
-				}
-
-				// Detect native AI SDK format: content parts already have providerOptions
-				// (stored directly from result.response.messages). These don't need legacy sanitization.
-				const isNativeFormat = (msg.content as Array<{ providerOptions?: unknown }>).some(
-					(p) => p.providerOptions,
-				)
-
-				if (isNativeFormat) {
-					// Native format: only strip reasoning if the provider doesn't support it
-					if (!preserveReasoning) {
-						const filtered = (msg.content as Array<{ type: string }>).filter((p) => p.type !== "reasoning")
-						return {
-							...msg,
-							content: filtered.length > 0 ? filtered : [{ type: "text" as const, text: "" }],
-						} as unknown as RooMessage
-					}
-					// Pass through unchanged — already in valid AI SDK format
-					return msg
-				}
-
-				// Legacy path: sanitize old-format messages with custom block types
-				// (thinking, redacted_thinking, thoughtSignature)
-
-				// Extract thoughtSignature block (Gemini 3) before filtering
-				let thoughtSignature: string | undefined
-				for (const part of msg.content) {
-					const partAny = part as unknown as { type?: string; thoughtSignature?: string }
-					if (partAny.type === "thoughtSignature" && partAny.thoughtSignature) {
-						thoughtSignature = partAny.thoughtSignature
-					}
-				}
-
-				const sanitized: Array<{ type: string; [key: string]: unknown }> = []
-				let appliedThoughtSignature = false
-
-				for (const part of msg.content) {
-					const partType = (part as { type: string }).type
-
-					if (partType === "thinking") {
-						// Anthropic extended thinking → AI SDK reasoning part
-						if (!preserveReasoning) continue
-						const thinkingPart = part as unknown as { thinking?: string; signature?: string }
-						if (typeof thinkingPart.thinking === "string" && thinkingPart.thinking.length > 0) {
-							const reasoningPart: Record<string, unknown> = {
-								type: "reasoning",
-								text: thinkingPart.thinking,
-							}
-							if (thinkingPart.signature) {
-								reasoningPart.providerOptions = {
-									anthropic: { signature: thinkingPart.signature },
-									bedrock: { signature: thinkingPart.signature },
-								}
-							}
-							sanitized.push(reasoningPart as (typeof sanitized)[number])
-						}
-						continue
-					}
-
-					if (partType === "redacted_thinking") {
-						// No AI SDK equivalent — strip
-						continue
-					}
-
-					if (partType === "thoughtSignature") {
-						// Extracted above, will be attached to first tool-call — strip block
-						continue
-					}
-
-					if (partType === "reasoning") {
-						if (!preserveReasoning) continue
-						const reasoningPart = part as unknown as { text?: string; encrypted_content?: string }
-						// Only valid if it has a `text` field (AI SDK schema requires it)
-						if (typeof reasoningPart.text === "string" && reasoningPart.text.length > 0) {
-							sanitized.push(part as (typeof sanitized)[number])
-						}
-						// Blocks with encrypted_content but no text are invalid → skip
-						continue
-					}
-
-					if (partType === "tool-call" && thoughtSignature && !appliedThoughtSignature) {
-						// Attach Gemini thoughtSignature to the first tool-call
-						const toolCall = { ...(part as object) } as Record<string, unknown>
-						toolCall.providerOptions = {
-							...((toolCall.providerOptions as Record<string, unknown>) ?? {}),
-							google: { thoughtSignature },
-							vertex: { thoughtSignature },
-						}
-						sanitized.push(toolCall as (typeof sanitized)[number])
-						appliedThoughtSignature = true
-						continue
-					}
-
-					// text, tool-call, tool-result, file — pass through
-					sanitized.push(part as (typeof sanitized)[number])
-				}
-
-				const content = sanitized.length > 0 ? sanitized : [{ type: "text" as const, text: "" }]
-
-				// Carry reasoning_details through to providerOptions for OpenRouter round-tripping
-				const rawReasoningDetails = (msg as unknown as { reasoning_details?: Record<string, unknown>[] })
-					.reasoning_details
-				const validReasoningDetails = rawReasoningDetails?.filter((detail) => {
-					switch (detail.type) {
-						case "reasoning.encrypted":
-							return typeof detail.data === "string" && detail.data.length > 0
-						case "reasoning.text":
-							return typeof detail.text === "string"
-						case "reasoning.summary":
-							return typeof detail.summary === "string"
-						default:
-							return false
-					}
-				})
-
-				const result: Record<string, unknown> = {
-					...msg,
-					content,
-				}
-
-				if (validReasoningDetails && validReasoningDetails.length > 0) {
-					result.providerOptions = {
-						...((msg as unknown as { providerOptions?: Record<string, unknown> }).providerOptions ?? {}),
-						openrouter: { reasoning_details: validReasoningDetails },
-					}
-				}
-
-				return result as unknown as RooMessage
-			})
-	}
 	public async checkpointRestore(options: CheckpointRestoreOptions) {
 		return checkpointRestore(this, options)
 	}

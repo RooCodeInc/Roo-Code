@@ -16,15 +16,14 @@ import {
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import {
-	convertToAiSdkMessages,
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
-	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -165,23 +164,17 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 				const provider = await this.createProvider(accessToken, metadata?.taskId)
 				const languageModel = this.getLanguageModel(provider)
 
-				// Step 1: Collect encrypted reasoning items and their positions before filtering.
+				// Step 1: Collect encrypted reasoning items before sanitization strips them.
 				const encryptedReasoningItems = collectEncryptedReasoningItems(messages)
 
-				// Step 2: Filter out standalone encrypted reasoning items (they lack role).
-				const standardMessages = messages.filter(
-					(msg) =>
-						(msg as unknown as Record<string, unknown>).type !== "reasoning" ||
-						!(msg as unknown as Record<string, unknown>).encrypted_content,
-				)
+				// Step 2: Sanitize messages for the provider API (allowlist: role, content, providerOptions).
+				// This also filters out standalone RooReasoningMessage items (no role field).
+				const sanitizedMessages = sanitizeMessagesForProvider(messages)
 
 				// Step 3: Strip plain-text reasoning blocks from assistant content arrays.
-				const cleanedMessages = stripPlainTextReasoningBlocks(standardMessages)
+				const aiSdkMessages = stripPlainTextReasoningBlocks(sanitizedMessages as RooMessage[]) as ModelMessage[]
 
-				// Step 4: Convert to AI SDK messages.
-				const aiSdkMessages = cleanedMessages as ModelMessage[]
-
-				// Step 5: Re-inject encrypted reasoning as properly-formed AI SDK reasoning parts.
+				// Step 4: Re-inject encrypted reasoning as properly-formed AI SDK reasoning parts.
 				if (encryptedReasoningItems.length > 0) {
 					injectEncryptedReasoning(aiSdkMessages, encryptedReasoningItems, messages as RooMessage[])
 				}
@@ -308,7 +301,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 					accessToken = refreshed
 					continue
 				}
-				throw handleAiSdkError(error, this.providerName)
+				throw error
 			}
 		}
 	}
@@ -352,7 +345,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 
 			return text
 		} catch (error) {
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 

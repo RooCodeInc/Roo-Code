@@ -14,11 +14,9 @@ import { TelemetryService } from "@roo-code/telemetry"
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import {
-	convertToAiSdkMessages,
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
-	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { applyToolCacheOptions } from "../transform/cache-breakpoints"
@@ -191,14 +189,11 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 
 			yield* yieldResponseMessage(result)
 		} catch (error) {
-			throw handleAiSdkError(error, this.providerName, {
-				onError: (msg) => {
-					TelemetryService.instance.captureException(
-						new ApiProviderError(msg, this.providerName, modelId, "createMessage"),
-					)
-				},
-				formatMessage: (msg) => t("common:errors.gemini.generate_stream", { error: msg }),
-			})
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			TelemetryService.instance.captureException(
+				new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage"),
+			)
+			throw error
 		}
 	}
 
@@ -349,14 +344,11 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 
 			return text
 		} catch (error) {
-			throw handleAiSdkError(error, this.providerName, {
-				onError: (msg) => {
-					TelemetryService.instance.captureException(
-						new ApiProviderError(msg, this.providerName, modelId, "completePrompt"),
-					)
-				},
-				formatMessage: (msg) => t("common:errors.gemini.generate_complete_prompt", { error: msg }),
-			})
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			TelemetryService.instance.captureException(
+				new ApiProviderError(errorMessage, this.providerName, modelId, "completePrompt"),
+			)
+			throw error
 		}
 	}
 

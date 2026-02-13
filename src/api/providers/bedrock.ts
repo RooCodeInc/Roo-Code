@@ -1,6 +1,6 @@
 import type { Anthropic } from "@anthropic-ai/sdk"
 import { createAmazonBedrock, type AmazonBedrockProvider } from "@ai-sdk/amazon-bedrock"
-import { streamText, generateText, ToolSet, ModelMessage } from "ai"
+import { streamText, generateText, ToolSet } from "ai"
 import { fromIni } from "@aws-sdk/credential-providers"
 import OpenAI from "openai"
 
@@ -25,15 +25,14 @@ import { TelemetryService } from "@roo-code/telemetry"
 
 import type { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import {
-	convertToAiSdkMessages,
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
-	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
-import { applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
+import { applyCacheBreakpoints, applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
 import { getModelParams } from "../transform/model-params"
+import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 import { shouldUseReasoningBudget } from "../../shared/api"
 import { BaseProvider } from "./base-provider"
 import { DEFAULT_HEADERS } from "./constants"
@@ -194,19 +193,8 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	): ApiStream {
 		const modelConfig = this.getModel()
 
-		// Filter out provider-specific meta entries (e.g., { type: "reasoning" })
-		// that are not valid Anthropic MessageParam values
-		type ReasoningMetaLike = { type?: string }
-		const filteredMessages = messages.filter((message) => {
-			const meta = message as ReasoningMetaLike
-			if (meta.type === "reasoning") {
-				return false
-			}
-			return true
-		})
-
-		// Convert messages to AI SDK format
-		const aiSdkMessages = filteredMessages as ModelMessage[]
+		// Sanitize messages for the provider API (allowlist: role, content, providerOptions).
+		const aiSdkMessages = sanitizeMessagesForProvider(messages)
 
 		// Convert tools to AI SDK format
 		let openAiTools = this.convertToolsForOpenAI(metadata?.tools)
@@ -262,6 +250,8 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		const effectiveSystemPrompt = usePromptCache
 			? applySystemPromptCaching(systemPrompt, aiSdkMessages, metadata?.systemProviderOptions)
 			: systemPrompt || undefined
+
+		applyCacheBreakpoints(aiSdkMessages)
 
 		// Strip non-Bedrock cache annotations from messages when caching is disabled,
 		// and strip Bedrock-specific annotations when caching is disabled.
@@ -342,8 +332,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				throw new Error("Throttling error occurred")
 			}
 
-			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 
@@ -467,8 +456,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			const apiError = new ApiProviderError(errorMessage, this.providerName, modelConfig.id, "completePrompt")
 			TelemetryService.instance.captureException(apiError)
 
-			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 

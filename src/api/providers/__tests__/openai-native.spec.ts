@@ -307,7 +307,7 @@ describe("OpenAiNativeHandler", () => {
 				for await (const _chunk of stream) {
 					// drain
 				}
-			}).rejects.toThrow("OpenAI Native")
+			}).rejects.toThrow("API Error")
 		})
 
 		it("should pass system prompt to streamText", async () => {
@@ -905,7 +905,7 @@ describe("OpenAiNativeHandler", () => {
 		it("should handle errors in completePrompt", async () => {
 			mockGenerateText.mockRejectedValue(new Error("API Error"))
 
-			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("OpenAI Native")
+			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("API Error")
 		})
 
 		it("should return empty string when no text in response", async () => {
