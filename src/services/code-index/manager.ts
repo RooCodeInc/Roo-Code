@@ -76,11 +76,11 @@ export class CodeIndexManager {
 	// --- Public API ---
 
 	public get isWorkspaceEnabled(): boolean {
-		return this.context.workspaceState.get("codeIndexWorkspaceEnabled", false)
+		return this.context.workspaceState.get(`codeIndexWorkspaceEnabled:${this.workspacePath}`, false)
 	}
 
 	public async setWorkspaceEnabled(enabled: boolean): Promise<void> {
-		await this.context.workspaceState.update("codeIndexWorkspaceEnabled", enabled)
+		await this.context.workspaceState.update(`codeIndexWorkspaceEnabled:${this.workspacePath}`, enabled)
 	}
 
 	public get onProgressUpdate() {
@@ -268,9 +268,7 @@ export class CodeIndexManager {
 	 * Cleans up the manager instance.
 	 */
 	public dispose(): void {
-		if (this._orchestrator) {
-			this.stopWatcher()
-		}
+		this.stopIndexing()
 		this._stateManager.dispose()
 	}
 

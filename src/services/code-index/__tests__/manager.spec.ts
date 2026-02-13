@@ -660,6 +660,18 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 			await manager.setWorkspaceEnabled(false)
 			expect(manager.isWorkspaceEnabled).toBe(false)
 		})
+
+		it("should store enablement per folder, not per window", async () => {
+			// Enable indexing for the current manager's folder
+			await manager.setWorkspaceEnabled(true)
+			expect(manager.isWorkspaceEnabled).toBe(true)
+
+			// Create a second manager for a different folder path
+			const otherManager = CodeIndexManager.getInstance(mockContext as any, "/other/workspace")!
+
+			// The other folder should NOT be enabled — keys are per-folder
+			expect(otherManager.isWorkspaceEnabled).toBe(false)
+		})
 	})
 
 	describe("stopIndexing", () => {

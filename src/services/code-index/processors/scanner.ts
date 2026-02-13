@@ -185,7 +185,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 									if (currentBatchBlocks.length >= this.batchSegmentThreshold) {
 										// Wait if we've reached the maximum pending batches
 										while (pendingBatchCount >= MAX_PENDING_BATCHES) {
-											// Wait for at least one batch to complete
+											if (signal?.aborted) break
 											await Promise.race(activeBatchPromises)
 										}
 
