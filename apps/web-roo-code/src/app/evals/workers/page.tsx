@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Fraunces, IBM_Plex_Sans } from "next/font/google"
 
 import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
@@ -10,9 +11,12 @@ import { WorkersContent } from "./workers-content"
 
 const TITLE = "Build with Roo Code Cloud | Roo Code Evals"
 const DESCRIPTION =
-	"Eval-backed model recommendations for shipping production code. Pick a setup based on the work you're doing: single-file fixes, multi-file changes, review, and autonomous runs."
-const OG_DESCRIPTION = "Eval-backed model recommendations for shipping production code"
+	"Outcome-first, eval-backed recommendations for shipping production code. Start from your objective and pick a tradeoff."
+const OG_DESCRIPTION = "Outcome-first recommendations for shipping production code"
 const PATH = "/evals/workers"
+
+const display = Fraunces({ subsets: ["latin"], variable: "--font-display" })
+const body = IBM_Plex_Sans({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-body" })
 
 export const metadata: Metadata = {
 	title: TITLE,
@@ -62,11 +66,11 @@ export default function WorkersPage() {
 	const recommendations = getAllRecommendations()
 
 	// Aggregate totals
-	const totalEvalRuns = recommendations.reduce((sum, r) => sum + r.totalEvalRuns, 0)
-	const totalExercises = recommendations.reduce((sum, r) => sum + r.totalExercises, 0)
-
-	// Unique model count across all roles
-	const uniqueModels = new Set(recommendations.flatMap((r) => r.allCandidates.map((c) => c.modelId)))
+	const totalEvalRuns = recommendations.reduce((sum, recommendation) => sum + recommendation.totalEvalRuns, 0)
+	const totalExercises = recommendations.reduce((sum, recommendation) => sum + recommendation.totalExercises, 0)
+	const uniqueModels = new Set(
+		recommendations.flatMap((recommendation) => recommendation.allCandidates.map((candidate) => candidate.modelId)),
+	)
 	const totalModels = uniqueModels.size
 
 	const lastUpdated = recommendations
@@ -75,17 +79,16 @@ export default function WorkersPage() {
 		.pop()
 
 	return (
-		<WorkersContent
-			roles={roles}
-			recommendations={recommendations}
-			totalEvalRuns={totalEvalRuns}
-			totalExercises={totalExercises}
-			totalModels={totalModels}
-			lastUpdated={lastUpdated}
-			workersRootPath="/evals/workers"
-			enableOutcomeLayer={false}
-			alternateVersionHref="/evals/workers-v2"
-			alternateVersionLabel="View V2 preview"
-		/>
+		<div className={`${body.variable} ${display.variable} [font-family:var(--font-body)]`}>
+			<WorkersContent
+				roles={roles}
+				recommendations={recommendations}
+				totalEvalRuns={totalEvalRuns}
+				totalExercises={totalExercises}
+				totalModels={totalModels}
+				lastUpdated={lastUpdated}
+				workersRootPath="/evals/workers"
+			/>
+		</div>
 	)
 }

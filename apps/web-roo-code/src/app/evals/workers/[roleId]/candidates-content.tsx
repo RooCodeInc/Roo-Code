@@ -665,8 +665,6 @@ export function CandidatesContent({
 	const searchParams = useSearchParams()
 	const theme = ROLE_THEMES[roleId] ?? DEFAULT_THEME
 	const IconComponent = ICON_MAP[role.icon] ?? Code
-	const alternateWorkersRootPath = workersRootPath === "/evals/workers-v2" ? "/evals/workers" : "/evals/workers-v2"
-	const alternateVersionLabel = workersRootPath === "/evals/workers-v2" ? "View baseline" : "View V2 preview"
 	const setupQuery = (() => {
 		const outcome = searchParams.get("outcome")
 		if (!outcome) return ""
@@ -772,12 +770,6 @@ export function CandidatesContent({
 								<Beaker className="size-3.5" />
 								Methodology
 								<ArrowRight className="size-3 transition-transform duration-200 group-hover:translate-x-0.5" />
-							</Link>
-							<div className="hidden h-4 w-px bg-border sm:block" />
-							<Link
-								href={`${alternateWorkersRootPath}/${roleId}${setupQuery}`}
-								className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-								{alternateVersionLabel}
 							</Link>
 						</motion.div>
 

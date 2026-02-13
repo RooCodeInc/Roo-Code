@@ -34,7 +34,7 @@ export function CopySettingsButton({ settings }: CopySettingsButtonProps) {
 			) : (
 				<>
 					<Copy className="size-4 text-muted-foreground" />
-					🔧 Configure Extension
+					Copy Roo Code Cloud Config
 				</>
 			)}
 		</button>

@@ -302,7 +302,7 @@ const seniorCandidates: ModelCandidate[] = [
 	{
 		provider: "moonshot",
 		modelId: "kimi-k2-0905",
-		displayName: "Kimi K2 0905",
+		displayName: "Kimi K2",
 		compositeScore: 95,
 		tier: "best",
 		tags: ["budget-hire", "best-value"],
@@ -439,7 +439,7 @@ const staffCandidates: ModelCandidate[] = [
 	{
 		provider: "anthropic",
 		modelId: "claude-opus-4-6",
-		displayName: "Claude Opus 4.6",
+		displayName: "Opus 4.6",
 		compositeScore: 98,
 		tier: "best",
 		tags: ["speed-hire", "top-performer"],
@@ -467,7 +467,7 @@ const staffCandidates: ModelCandidate[] = [
 	{
 		provider: "anthropic",
 		modelId: "claude-opus-4-5",
-		displayName: "Claude Opus 4.5",
+		displayName: "Opus 4.5",
 		compositeScore: 96,
 		tier: "recommended",
 		tags: [],
@@ -495,7 +495,7 @@ const staffCandidates: ModelCandidate[] = [
 	{
 		provider: "anthropic",
 		modelId: "claude-opus-4-1",
-		displayName: "Claude Opus 4.1",
+		displayName: "Opus 4.1",
 		compositeScore: 73,
 		tier: "situational",
 		tags: [],
@@ -525,7 +525,7 @@ const staffCandidates: ModelCandidate[] = [
 	{
 		provider: "anthropic",
 		modelId: "claude-opus-4",
-		displayName: "Claude Opus 4",
+		displayName: "Opus 4",
 		compositeScore: 57,
 		tier: "not-recommended",
 		tags: [],
@@ -565,7 +565,7 @@ const reviewerCandidates: ModelCandidate[] = [
 	{
 		provider: "anthropic",
 		modelId: "claude-opus-4-6",
-		displayName: "Claude Opus 4.6",
+		displayName: "Opus 4.6",
 		compositeScore: 95,
 		tier: "best",
 		tags: ["speed-hire", "top-performer"],
@@ -731,7 +731,7 @@ const autonomousCandidates: ModelCandidate[] = [
 	{
 		provider: "moonshot",
 		modelId: "kimi-k2-0905",
-		displayName: "Kimi K2 0905",
+		displayName: "Kimi K2",
 		compositeScore: 86,
 		tier: "recommended",
 		tags: [],
@@ -885,6 +885,6 @@ export const MODEL_TIMELINE: ModelTimelineEntry[] = [
 	{ modelName: "GPT-5 Mini", provider: "openai", releaseDate: "2025-12-01", score: 99, costPerRun: 3.34 },
 	{ modelName: "Claude Sonnet 4.5", provider: "anthropic", releaseDate: "2026-01-15", score: 100, costPerRun: 38.43 },
 	{ modelName: "GPT 5.2 (Med)", provider: "openai", releaseDate: "2026-01-20", score: 100, costPerRun: 12.5 },
-	{ modelName: "Claude Opus 4.6", provider: "anthropic", releaseDate: "2026-02-01", score: 100, costPerRun: 49.48 },
+	{ modelName: "Opus 4.6", provider: "anthropic", releaseDate: "2026-02-01", score: 100, costPerRun: 49.48 },
 	{ modelName: "Gemini 3 Pro", provider: "google", releaseDate: "2026-02-05", score: 100, costPerRun: 33.06 },
 ]

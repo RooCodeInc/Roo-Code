@@ -2,23 +2,7 @@
 
 import { useCallback, useMemo } from "react"
 import { motion } from "framer-motion"
-import {
-	Code,
-	GitBranch,
-	Building2,
-	Search,
-	Bot,
-	ArrowRight,
-	ChevronDown,
-	CheckCircle2,
-	AlertTriangle,
-	Users,
-	FlaskConical,
-	Beaker,
-	Globe,
-	TrendingUp,
-} from "lucide-react"
-import type { LucideIcon } from "lucide-react"
+import { ArrowRight, FlaskConical, Beaker } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts"
@@ -26,120 +10,7 @@ import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, Tooltip, ResponsiveContaine
 import type { EngineerRole, RoleRecommendation } from "@/lib/mock-recommendations"
 import { TASKS_PER_DAY, MODEL_TIMELINE } from "@/lib/mock-recommendations"
 import { EVAL_OUTCOMES, isEvalOutcomeId, type EvalOutcomeId } from "@/lib/eval-outcomes"
-
-// ── Icon Mapping ────────────────────────────────────────────────────────────
-
-const ICON_MAP: Record<string, LucideIcon> = {
-	Code,
-	GitBranch,
-	Building2,
-	Search,
-	Bot,
-}
-
-// ── Color Themes per Role ───────────────────────────────────────────────────
-
-type RoleTheme = {
-	accent: string
-	accentLight: string
-	accentDark: string
-	iconBg: string
-	iconText: string
-	badgeBg: string
-	badgeText: string
-	borderHover: string
-	shadowHover: string
-	buttonBg: string
-	buttonHover: string
-	glowColor: string
-	dotColor: string
-	strengthColor: string
-}
-
-const ROLE_THEMES: Record<string, RoleTheme> = {
-	junior: {
-		accent: "emerald",
-		accentLight: "text-emerald-600",
-		accentDark: "dark:text-emerald-400",
-		iconBg: "bg-emerald-100 dark:bg-emerald-900/30",
-		iconText: "text-emerald-700 dark:text-emerald-300",
-		badgeBg: "bg-emerald-100 dark:bg-emerald-900/30",
-		badgeText: "text-emerald-700 dark:text-emerald-300",
-		borderHover: "hover:border-emerald-500/40 dark:hover:border-emerald-400/30",
-		shadowHover: "hover:shadow-emerald-500/10 dark:hover:shadow-emerald-400/10",
-		buttonBg: "bg-emerald-600 dark:bg-emerald-600",
-		buttonHover: "hover:bg-emerald-700 dark:hover:bg-emerald-500",
-		glowColor: "bg-emerald-500/8 dark:bg-emerald-600/15",
-		dotColor: "bg-emerald-500",
-		strengthColor: "text-emerald-600 dark:text-emerald-400",
-	},
-	senior: {
-		accent: "blue",
-		accentLight: "text-blue-600",
-		accentDark: "dark:text-blue-400",
-		iconBg: "bg-blue-100 dark:bg-blue-900/30",
-		iconText: "text-blue-700 dark:text-blue-300",
-		badgeBg: "bg-blue-100 dark:bg-blue-900/30",
-		badgeText: "text-blue-700 dark:text-blue-300",
-		borderHover: "hover:border-blue-500/40 dark:hover:border-blue-400/30",
-		shadowHover: "hover:shadow-blue-500/10 dark:hover:shadow-blue-400/10",
-		buttonBg: "bg-blue-600 dark:bg-blue-600",
-		buttonHover: "hover:bg-blue-700 dark:hover:bg-blue-500",
-		glowColor: "bg-blue-500/8 dark:bg-blue-600/15",
-		dotColor: "bg-blue-500",
-		strengthColor: "text-blue-600 dark:text-blue-400",
-	},
-	staff: {
-		accent: "amber",
-		accentLight: "text-amber-600",
-		accentDark: "dark:text-amber-400",
-		iconBg: "bg-amber-100 dark:bg-amber-900/30",
-		iconText: "text-amber-700 dark:text-amber-300",
-		badgeBg: "bg-amber-100 dark:bg-amber-900/30",
-		badgeText: "text-amber-700 dark:text-amber-300",
-		borderHover: "hover:border-amber-500/40 dark:hover:border-amber-400/30",
-		shadowHover: "hover:shadow-amber-500/10 dark:hover:shadow-amber-400/10",
-		buttonBg: "bg-amber-600 dark:bg-amber-600",
-		buttonHover: "hover:bg-amber-700 dark:hover:bg-amber-500",
-		glowColor: "bg-amber-500/8 dark:bg-amber-600/15",
-		dotColor: "bg-amber-500",
-		strengthColor: "text-amber-600 dark:text-amber-400",
-	},
-	reviewer: {
-		accent: "violet",
-		accentLight: "text-violet-600",
-		accentDark: "dark:text-violet-400",
-		iconBg: "bg-violet-100 dark:bg-violet-900/30",
-		iconText: "text-violet-700 dark:text-violet-300",
-		badgeBg: "bg-violet-100 dark:bg-violet-900/30",
-		badgeText: "text-violet-700 dark:text-violet-300",
-		borderHover: "hover:border-violet-500/40 dark:hover:border-violet-400/30",
-		shadowHover: "hover:shadow-violet-500/10 dark:hover:shadow-violet-400/10",
-		buttonBg: "bg-violet-600 dark:bg-violet-600",
-		buttonHover: "hover:bg-violet-700 dark:hover:bg-violet-500",
-		glowColor: "bg-violet-500/8 dark:bg-violet-600/15",
-		dotColor: "bg-violet-500",
-		strengthColor: "text-violet-600 dark:text-violet-400",
-	},
-	autonomous: {
-		accent: "cyan",
-		accentLight: "text-cyan-600",
-		accentDark: "dark:text-cyan-400",
-		iconBg: "bg-cyan-100 dark:bg-cyan-900/30",
-		iconText: "text-cyan-700 dark:text-cyan-300",
-		badgeBg: "bg-cyan-100 dark:bg-cyan-900/30",
-		badgeText: "text-cyan-700 dark:text-cyan-300",
-		borderHover: "hover:border-cyan-500/40 dark:hover:border-cyan-400/30",
-		shadowHover: "hover:shadow-cyan-500/10 dark:hover:shadow-cyan-400/10",
-		buttonBg: "bg-cyan-600 dark:bg-cyan-600",
-		buttonHover: "hover:bg-cyan-700 dark:hover:bg-cyan-500",
-		glowColor: "bg-cyan-500/8 dark:bg-cyan-600/15",
-		dotColor: "bg-cyan-500",
-		strengthColor: "text-cyan-600 dark:text-cyan-400",
-	},
-}
-
-const DEFAULT_THEME = ROLE_THEMES.senior!
+import { pickObjectiveDefaultModelV1 } from "@/lib/objective-default-models-v1"
 
 // ── Outcome Layer: Optimization Modes ──────────────────────────────────────
 
@@ -150,9 +21,9 @@ const OPTIMIZATION_MODES: Array<{
 	label: string
 	description: string
 }> = [
-	{ id: "best", label: "Best", description: "Best overall quality across our eval suite." },
-	{ id: "fastest", label: "Fastest", description: "Lower latency per task when speed matters." },
-	{ id: "cost", label: "Most cost-effective", description: "Lower cost per task for high-volume work." },
+	{ id: "best", label: "Quality", description: "Maximize pass rate and overall quality across our eval suite." },
+	{ id: "fastest", label: "Speed", description: "Lower latency per task when speed matters." },
+	{ id: "cost", label: "Cost", description: "Lower cost per task for high-volume work." },
 ]
 
 function isEvalOptimizationMode(value: string): value is EvalOptimizationMode {
@@ -167,9 +38,20 @@ function getModeCandidate(rec: RoleRecommendation | undefined, mode: EvalOptimiz
 }
 
 function getModeLabel(mode: EvalOptimizationMode) {
-	if (mode === "fastest") return "Fastest"
-	if (mode === "cost") return "Most cost-effective"
-	return "Best"
+	if (mode === "fastest") return "Speed"
+	if (mode === "cost") return "Cost"
+	return "Quality"
+}
+
+function formatModelIdForUi(modelId: string) {
+	if (modelId.startsWith("claude-opus-")) {
+		const rest = modelId.replace(/^claude-opus-/, "")
+		const parts = rest.split("-").filter(Boolean)
+		if (parts.length >= 2) return `Opus ${parts[0]}.${parts[1]}`
+		if (parts.length === 1) return `Opus ${parts[0]}`
+	}
+	if (modelId === "kimi-k2-0905") return "Kimi K2"
+	return modelId
 }
 
 // ── Framer Motion Variants ──────────────────────────────────────────────────
@@ -298,16 +180,6 @@ function TimelineTooltip({
 
 // ── Sub-Components ──────────────────────────────────────────────────────────
 
-function StatPill({ icon: Icon, value, label }: { icon: LucideIcon; value: string; label: string }) {
-	return (
-		<div className="flex items-center gap-2 text-sm text-muted-foreground">
-			<Icon className="size-4 text-foreground/60" />
-			<span className="font-mono font-semibold text-foreground">{value}</span>
-			<span>{label}</span>
-		</div>
-	)
-}
-
 // ── Main Content Component ──────────────────────────────────────────────────
 
 type WorkersContentProps = {
@@ -318,23 +190,21 @@ type WorkersContentProps = {
 	totalModels: number
 	lastUpdated: string | undefined
 	workersRootPath?: string
-	enableOutcomeLayer?: boolean
-	alternateVersionHref?: string
-	alternateVersionLabel?: string
 }
+
+// Outcomes-first is canonical. Baseline/V1 is removed from the UI.
+const ENABLE_OUTCOME_LAYER = true
 
 export function WorkersContent({
 	roles,
 	recommendations,
 	totalEvalRuns,
-	totalExercises,
-	totalModels,
+	totalExercises: _totalExercises,
+	totalModels: _totalModels,
 	lastUpdated,
 	workersRootPath = "/evals/workers",
-	enableOutcomeLayer = false,
-	alternateVersionHref,
-	alternateVersionLabel,
 }: WorkersContentProps) {
+	const enableOutcomeLayer = ENABLE_OUTCOME_LAYER
 	const router = useRouter()
 	const pathname = usePathname()
 	const searchParams = useSearchParams()
@@ -374,6 +244,13 @@ export function WorkersContent({
 		[pathname, router, searchParams],
 	)
 
+	const scrollToOutcomes = useCallback(() => {
+		if (typeof document === "undefined") return
+		const el = document.getElementById("outcomes")
+		if (!el) return
+		el.scrollIntoView({ behavior: "smooth", block: "start" })
+	}, [])
+
 	const recByRole = new Map(recommendations.map((r) => [r.roleId, r]))
 	const roleById = useMemo(() => new Map(roles.map((r) => [r.id, r])), [roles])
 
@@ -383,19 +260,39 @@ export function WorkersContent({
 	}, [selectedOutcomeId])
 
 	const setupQuery = useMemo(() => {
-		if (!enableOutcomeLayer || !selectedOutcomeId) return ""
+		if (!selectedOutcomeId) return ""
 		const params = new URLSearchParams()
 		params.set("outcome", selectedOutcomeId)
 		params.set("mode", selectedMode)
 		const query = params.toString()
 		return query ? `?${query}` : ""
-	}, [enableOutcomeLayer, selectedOutcomeId, selectedMode])
+	}, [selectedOutcomeId, selectedMode])
 
-	const profileTitle = selectedOutcome?.builderProfile?.title ?? "Your Builder Profile"
+	const isProfileView = useMemo(() => {
+		return searchParams.get("view") === "profile"
+	}, [searchParams])
+
 	const profileDescription =
 		selectedOutcome?.builderProfile?.description ??
 		"A default setup built from our eval signals. It’s a baseline, not a guarantee."
 	const profileHowItWorks = selectedOutcome?.builderProfile?.howItWorks ?? selectedOutcome?.whyItWorks ?? []
+	const objectiveDefaultModel = useMemo(() => {
+		if (!selectedOutcomeId) return null
+		return pickObjectiveDefaultModelV1(selectedOutcomeId, selectedMode)
+	}, [selectedOutcomeId, selectedMode])
+	const objectiveDefaultModelLabel = useMemo(() => {
+		if (!objectiveDefaultModel?.modelId) return "—"
+		return formatModelIdForUi(objectiveDefaultModel.modelId)
+	}, [objectiveDefaultModel])
+	const examplePrompt = selectedOutcome?.builderProfile?.examplePrompt ?? ""
+	const cloudSetupHref = useMemo(() => {
+		if (!selectedOutcomeId) return "/cloud-agents/setup"
+		const params = new URLSearchParams()
+		params.set("outcome", selectedOutcomeId)
+		params.set("mode", selectedMode)
+		if (examplePrompt) params.set("prompt", examplePrompt)
+		return `/cloud-agents/setup?${params.toString()}`
+	}, [examplePrompt, selectedMode, selectedOutcomeId])
 
 	const profileCapabilities = useMemo(() => {
 		if (!selectedOutcome) return []
@@ -414,7 +311,7 @@ export function WorkersContent({
 
 	const agentCapabilities = useMemo(() => profileCapabilities.filter((c) => Boolean(c.roleId)), [profileCapabilities])
 
-	const builtInCapabilities = useMemo(() => profileCapabilities.filter((c) => !c.roleId), [profileCapabilities])
+	const skillCapabilities = useMemo(() => profileCapabilities.filter((c) => !c.roleId), [profileCapabilities])
 
 	// ── Timeline scatter data ──────────────────────────────────────────────
 	const timelineData = useMemo(() => {
@@ -460,255 +357,189 @@ export function WorkersContent({
 					</div>
 				</motion.div>
 
-				{/* Blueprint grid overlay (V2) */}
-				{enableOutcomeLayer ? (
-					<div
-						aria-hidden
-						className="pointer-events-none absolute inset-0 opacity-[0.14] mix-blend-multiply dark:opacity-[0.10] dark:mix-blend-screen"
-						style={{
-							backgroundImage:
-								"linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)",
-							backgroundSize: "72px 72px",
-							maskImage: "radial-gradient(circle at 50% 35%, black 10%, transparent 65%)",
-							WebkitMaskImage: "radial-gradient(circle at 50% 35%, black 10%, transparent 65%)",
-						}}
-					/>
-				) : null}
+				{/* Blueprint grid overlay */}
+				<div
+					aria-hidden
+					className="pointer-events-none absolute inset-0 opacity-[0.14] mix-blend-multiply dark:opacity-[0.10] dark:mix-blend-screen"
+					style={{
+						backgroundImage:
+							"linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)",
+						backgroundSize: "72px 72px",
+						maskImage: "radial-gradient(circle at 50% 35%, black 10%, transparent 65%)",
+						WebkitMaskImage: "radial-gradient(circle at 50% 35%, black 10%, transparent 65%)",
+					}}
+				/>
 
 				{/* Gradient fade from hero atmosphere to cards */}
 				<div className="absolute inset-x-0 bottom-0 z-[1] h-48 bg-gradient-to-b from-transparent via-background/60 to-background" />
 
 				<div className="container relative z-10 mx-auto max-w-screen-lg px-4 sm:px-6 lg:px-8">
 					<motion.div
-						className="mx-auto max-w-3xl text-center"
+						className="mx-auto max-w-6xl"
 						initial="hidden"
 						animate="visible"
 						variants={containerVariants}>
-						{/* Badge */}
-						<motion.div variants={fadeUpVariants}>
-							<div className="mb-6 flex flex-wrap items-center justify-center gap-3">
-								<Link
-									href="/evals/methodology"
-									className="group inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/50 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-300 hover:border-border hover:text-foreground">
-									<Beaker className="size-4" />
-									How we run evals
-									<ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
-								</Link>
-								{alternateVersionHref && alternateVersionLabel ? (
-									<Link
-										href={alternateVersionHref}
-										className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/70 px-4 py-2 text-sm font-medium text-foreground/80 backdrop-blur-sm transition-colors hover:border-border hover:text-foreground">
-										{alternateVersionLabel}
-									</Link>
-								) : null}
+						{enableOutcomeLayer ? (
+							<div className="grid grid-cols-1 gap-14 lg:grid-cols-12 lg:items-end">
+								<div className="lg:col-span-12">
+									<div className="text-center lg:text-left">
+										{/* Badge */}
+										<motion.div variants={fadeUpVariants}>
+											<div className="mb-6 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+												<Link
+													href="/evals/methodology"
+													className="group inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/50 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-300 hover:border-border hover:text-foreground">
+													<Beaker className="size-4" />
+													How we run evals
+													<ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+												</Link>
+											</div>
+										</motion.div>
+
+										<motion.p
+											className="mt-2 text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground/70"
+											variants={fadeUpVariants}>
+											Outcomes over artifacts
+										</motion.p>
+
+										{/* Heading */}
+										<motion.h1
+											className="mt-6 font-semibold leading-[0.95] tracking-tight [font-family:var(--font-display)] text-[clamp(2.35rem,7.6vw,4.6rem)] md:text-6xl lg:text-7xl"
+											variants={fadeUpVariants}>
+											<span className="block whitespace-nowrap">You&rsquo;re the Builder</span>
+											<span className="block whitespace-nowrap">
+												Ship{" "}
+												<span className="bg-gradient-to-r from-emerald-500 via-blue-500 to-amber-500 bg-clip-text text-transparent">
+													Real Code
+												</span>
+											</span>
+										</motion.h1>
+
+										{/* Subheading */}
+										<motion.p
+											className="mt-6 text-lg leading-relaxed text-muted-foreground md:text-xl lg:max-w-[58ch]"
+											variants={fadeUpVariants}>
+											Pick an objective. We&rsquo;ll suggest an agent lineup and default model
+											based on eval results. Treat it as a baseline for your repo.
+										</motion.p>
+
+										<motion.div
+											className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center lg:justify-start"
+											variants={fadeUpVariants}>
+											<button
+												type="button"
+												onClick={scrollToOutcomes}
+												className="inline-flex items-center justify-center gap-2 rounded-full border border-foreground/20 bg-foreground/5 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-foreground/10">
+												Get started with your objective
+											</button>
+										</motion.div>
+									</div>
+								</div>
 							</div>
-						</motion.div>
-
-						{enableOutcomeLayer ? (
-							<motion.p
-								className="mt-2 text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground/70"
-								variants={fadeUpVariants}>
-								Outcomes over artifacts
-							</motion.p>
 						) : null}
-
-						{/* Heading */}
-						<motion.h1
-							className="mt-6 text-5xl font-semibold tracking-tight md:text-6xl lg:text-7xl [font-family:var(--font-display)]"
-							variants={fadeUpVariants}>
-							{enableOutcomeLayer ? (
-								<>
-									Build from outcomes.
-									<br className="hidden sm:block" /> Ship{" "}
-									<span className="bg-gradient-to-r from-emerald-500 via-blue-500 to-amber-500 bg-clip-text text-transparent">
-										real code
-									</span>
-									.
-								</>
-							) : (
-								<>
-									Build with{" "}
-									<span className="bg-gradient-to-r from-emerald-500 via-blue-500 to-amber-500 bg-clip-text text-transparent">
-										Roo Code Cloud
-									</span>
-								</>
-							)}
-						</motion.h1>
-
-						{/* Subheading */}
-						<motion.p
-							className="mt-6 text-lg leading-relaxed text-muted-foreground md:text-xl"
-							variants={fadeUpVariants}>
-							{enableOutcomeLayer ? (
-								<>
-									Pick what you&apos;re trying to ship. We assemble a Builder Profile: the
-									capabilities you need, plus a default model recommendation backed by eval data.
-								</>
-							) : (
-								<>
-									Outcomes over artifacts: start from the production codebase and ship as a reviewable
-									PR. Every model runs the same tasks, same tools, and the same time limit. Your repo
-									will differ—treat this as a baseline.
-								</>
-							)}
-						</motion.p>
-
-						{enableOutcomeLayer ? (
-							<motion.div
-								className="mt-8 flex flex-wrap items-center justify-center gap-3"
-								variants={fadeUpVariants}>
-								<Link
-									href={`${workersRootPath}?outcome=prototype_to_pr&mode=${selectedMode}`}
-									className="inline-flex items-center gap-2 rounded-full border border-foreground/20 bg-foreground/5 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-foreground/10">
-									Start with Prototype → PR
-									<ArrowRight className="size-4" />
-								</Link>
-								<a
-									href="#outcomes"
-									className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/40 px-5 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:border-border hover:text-foreground">
-									Browse outcomes
-								</a>
-							</motion.div>
-						) : null}
-
-						{/* Stats bar */}
-						<motion.div
-							className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 rounded-2xl border border-border/50 bg-card/30 px-6 py-4 backdrop-blur-sm"
-							variants={fadeUpVariants}>
-							<StatPill icon={Users} value={totalModels.toString()} label="models tested" />
-							<div className="hidden h-4 w-px bg-border sm:block" />
-							<StatPill icon={FlaskConical} value={totalExercises.toLocaleString()} label="exercises" />
-							<div className="hidden h-4 w-px bg-border sm:block" />
-							<StatPill icon={Globe} value="5" label="languages" />
-							<div className="hidden h-4 w-px bg-border sm:block" />
-							<StatPill icon={TrendingUp} value={totalEvalRuns.toLocaleString()} label="eval runs" />
-						</motion.div>
 					</motion.div>
 				</div>
 			</section>
 
 			{/* ── Outcomes Overlay ───────────────────────────────────────── */}
 			{enableOutcomeLayer ? (
-				<section id="outcomes" className="relative -mt-24 overflow-hidden pb-14 scroll-mt-24">
-					<div className="container relative z-10 mx-auto max-w-screen-lg px-4 sm:px-6 lg:px-8">
+				<section
+					id="outcomes"
+					className="relative overflow-hidden border-t border-border/40 pb-28 pt-20 scroll-mt-24">
+					<div className="container relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
 						<motion.div
-							className="mx-auto max-w-4xl"
+							className="mx-auto max-w-6xl"
 							initial="hidden"
 							whileInView="visible"
 							viewport={{ once: true }}
 							variants={containerVariants}>
-							<motion.div className="text-center" variants={fadeUpVariants}>
-								<h2 className="text-2xl font-semibold tracking-tight md:text-3xl [font-family:var(--font-display)]">
-									Start with an outcome
-								</h2>
-								<p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-base">
-									Pick what you&apos;re trying to ship. We assemble a Builder Profile: capabilities
-									plus a default model recommendation. It&apos;s a baseline, not a guarantee.
-								</p>
-							</motion.div>
-
-							<motion.div
-								className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-								variants={containerVariants}>
-								{EVAL_OUTCOMES.map((outcome) => {
-									const Icon = outcome.icon
-									const isSelected = outcome.id === selectedOutcomeId
-									const isFeatured = outcome.id === "prototype_to_pr"
-
-									return (
-										<motion.button
-											key={outcome.id}
-											type="button"
-											variants={cardVariants}
-											aria-pressed={isSelected}
-											onClick={() => setOutcome(isSelected ? null : outcome.id)}
-											className={[
-												"group rounded-2xl border bg-card/40 p-5 text-left backdrop-blur-sm transition-all duration-200 hover:bg-card/60",
-												isSelected
-													? "border-foreground/20 ring-1 ring-foreground/15"
-													: "border-border/50 hover:border-border",
-												isFeatured ? "lg:col-span-2" : "",
-											].join(" ")}>
-											<div className="flex items-start gap-3">
-												<div className="flex size-10 items-center justify-center rounded-xl border border-border/50 bg-background/30">
-													<Icon className="size-5 text-foreground/70" />
+							{isProfileView ? (
+								<motion.div
+									className="mx-auto max-w-4xl rounded-2xl border border-border/50 bg-background/10 p-6 backdrop-blur-sm"
+									variants={fadeUpVariants}>
+									{selectedOutcome ? (
+										<>
+											<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+												<div className="min-w-0">
+													<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground/70">
+														Profile
+													</p>
+													<p className="mt-3 text-3xl font-semibold tracking-tight text-foreground [font-family:var(--font-display)]">
+														{selectedOutcome.name}
+													</p>
+													<p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+														{profileDescription}
+													</p>
 												</div>
-												<div className="min-w-0 flex-1">
-													{isFeatured ? (
-														<span className="mb-1 inline-flex items-center rounded-full border border-foreground/15 bg-foreground/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-foreground/70">
-															Recommended starting point
-														</span>
+
+												<div className="flex flex-col gap-3 sm:min-w-[320px]">
+													{examplePrompt ? (
+														<div className="rounded-2xl border border-border/50 bg-background/10 p-4">
+															<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+																Example prompt
+															</p>
+															<pre className="mt-3 whitespace-pre-wrap rounded-xl border border-border/50 bg-background/10 p-3 text-xs leading-relaxed text-foreground/85">
+																{examplePrompt}
+															</pre>
+														</div>
 													) : null}
-													<p className="text-sm font-semibold text-foreground">
-														{outcome.name}
-													</p>
-													<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-														{outcome.description}
-													</p>
+													<Link
+														href={cloudSetupHref}
+														className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-foreground/20 bg-foreground/10 px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-foreground/15">
+														Start in Roo Code Cloud
+														<ArrowRight className="size-4" />
+													</Link>
+													<Link
+														href={`${workersRootPath}${setupQuery}#outcomes`}
+														className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-border/60 bg-background/10 px-4 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:border-border hover:bg-background/15 hover:text-foreground">
+														Back to objectives
+														<ArrowRight className="size-4" />
+													</Link>
 												</div>
 											</div>
-										</motion.button>
-									)
-								})}
-							</motion.div>
 
-							{selectedOutcome ? (
-								<motion.div
-									className="mt-6 rounded-2xl border border-border/50 bg-card/30 p-5 backdrop-blur-sm"
-									variants={fadeUpVariants}>
-									<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-										<div className="min-w-0 md:max-w-[44%]">
-											<p className="text-xs font-medium uppercase tracking-widest text-muted-foreground/70">
-												{profileTitle}
-											</p>
-											<p className="mt-2 text-sm font-semibold text-foreground">
-												{selectedOutcome.name}
-											</p>
-											<p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-												{profileDescription}
-											</p>
-
-											{profileHowItWorks.length > 0 ? (
-												<div className="mt-4">
-													<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-														{selectedOutcome.builderProfile
-															? "How it works"
-															: "Why it works"}
-													</p>
-													<ul className="mt-2 space-y-1 text-xs text-muted-foreground">
-														{profileHowItWorks.map((line) => (
-															<li key={line} className="flex items-start gap-2">
-																<span className="mt-1 size-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
-																<span className="min-w-0">{line}</span>
-															</li>
-														))}
-													</ul>
+											<div className="mt-6 overflow-hidden rounded-2xl border border-border/50 bg-background/10">
+												<div className="grid grid-cols-2 divide-x divide-border/40 sm:grid-cols-4">
+													<div className="p-3">
+														<p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+															Optimized for
+														</p>
+														<p className="mt-1 text-sm font-semibold text-foreground">
+															{getModeLabel(selectedMode)}
+														</p>
+													</div>
+													<div className="p-3">
+														<p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+															Default model
+														</p>
+														<p className="mt-1 truncate font-mono text-sm font-semibold text-foreground">
+															{objectiveDefaultModelLabel}
+														</p>
+													</div>
+													<div className="p-3">
+														<p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+															Agents
+														</p>
+														<p className="mt-1 text-sm font-semibold text-foreground tabular-nums">
+															{agentCapabilities.length}
+														</p>
+													</div>
+													<div className="p-3">
+														<p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+															Skills
+														</p>
+														<p className="mt-1 text-sm font-semibold text-foreground tabular-nums">
+															{skillCapabilities.length}
+														</p>
+													</div>
 												</div>
-											) : null}
+											</div>
 
-											{selectedOutcome.builderProfile?.howItWorks ? (
-												<div className="mt-4">
-													<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-														Why it works
-													</p>
-													<ul className="mt-2 space-y-1 text-xs text-muted-foreground">
-														{selectedOutcome.whyItWorks.map((line) => (
-															<li key={line} className="flex items-start gap-2">
-																<span className="mt-1 size-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
-																<span className="min-w-0">{line}</span>
-															</li>
-														))}
-													</ul>
-												</div>
-											) : null}
-										</div>
-
-										<div className="flex flex-1 flex-col gap-4">
-											<div className="flex flex-wrap items-center justify-between gap-3">
-												<div className="flex flex-wrap items-center gap-2">
-													<span className="text-xs font-medium text-muted-foreground">
-														Optimize for
-													</span>
+											<div className="mt-6">
+												<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+													Optimize for
+												</p>
+												<div className="mt-2 inline-flex rounded-full border border-border/50 bg-card/30 p-1 backdrop-blur-sm">
 													{OPTIMIZATION_MODES.map((mode) => {
 														const isSelected = mode.id === selectedMode
 														return (
@@ -719,59 +550,53 @@ export function WorkersContent({
 																title={mode.description}
 																onClick={() => setMode(mode.id)}
 																className={[
-																	"inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
+																	"rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
 																	isSelected
-																		? "border-foreground/20 bg-foreground/5 text-foreground"
-																		: "border-border/50 bg-background/20 text-foreground/75 hover:border-border hover:text-foreground",
+																		? "bg-foreground/10 text-foreground"
+																		: "text-muted-foreground hover:text-foreground",
 																].join(" ")}>
 																{mode.label}
 															</button>
 														)
 													})}
 												</div>
-												<span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-													Capability set
-												</span>
 											</div>
 
-											<div>
-												<div className="flex items-end justify-between gap-3">
+											<div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
+												<div className="rounded-2xl border border-border/50 bg-background/10 p-5">
 													<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-														Agents
+														Agent lineup
 													</p>
-													<p className="text-xs text-muted-foreground">
-														Click for candidates &amp; settings
-													</p>
-												</div>
-												<div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-													{agentCapabilities.map((capability) => {
-														const roleId = capability.roleId!
-														const rec = recByRole.get(roleId)
-														const candidate = getModeCandidate(rec, selectedMode)
+													<div className="mt-3 space-y-2">
+														{agentCapabilities.map((capability) => {
+															const roleId = capability.roleId!
+															const rec = recByRole.get(roleId)
+															const candidate = getModeCandidate(rec, selectedMode)
 
-														return (
-															<Link
-																key={capability.id}
-																href={`${workersRootPath}/${roleId}${setupQuery}`}
-																className="group rounded-xl border border-border/50 bg-background/20 p-3 text-left transition-colors hover:border-border hover:bg-background/30">
-																<div className="flex items-start justify-between gap-3">
+															const providerColor = candidate
+																? (PROVIDER_COLORS[candidate.provider] ?? "#94a3b8")
+																: "#94a3b8"
+
+															return (
+																<Link
+																	key={capability.id}
+																	href={`${workersRootPath}/${roleId}${setupQuery}`}
+																	className="group flex items-start justify-between gap-3 rounded-xl border border-border/50 bg-background/10 px-4 py-3 transition-colors hover:bg-background/20">
 																	<div className="min-w-0">
-																		<p className="text-xs font-semibold text-foreground">
+																		<p className="text-sm font-semibold text-foreground">
 																			{capability.name}
 																		</p>
-																		{capability.description ? (
-																			<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-																				{capability.description}
-																			</p>
-																		) : null}
-																		<p className="mt-1 text-xs text-muted-foreground">
+																		<p className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+																			<span
+																				className="size-2 rounded-full ring-1 ring-white/10"
+																				style={{
+																					backgroundColor: providerColor,
+																				}}
+																			/>
 																			{candidate ? (
-																				<>
-																					<span className="font-medium text-foreground/80">
-																						{getModeLabel(selectedMode)}:
-																					</span>{" "}
+																				<span className="min-w-0 truncate">
 																					{candidate.displayName}
-																				</>
+																				</span>
 																			) : (
 																				<span className="font-medium text-foreground/80">
 																					View models
@@ -779,228 +604,368 @@ export function WorkersContent({
 																			)}
 																		</p>
 																	</div>
-																	<ArrowRight className="mt-0.5 size-3.5 shrink-0 text-muted-foreground/70 transition-transform group-hover:translate-x-0.5" />
+																	<ArrowRight className="mt-0.5 size-4 shrink-0 text-muted-foreground/70 transition-transform group-hover:translate-x-0.5" />
+																</Link>
+															)
+														})}
+													</div>
+												</div>
+
+												<div className="rounded-2xl border border-border/50 bg-background/10 p-5">
+													<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+														Skills included
+													</p>
+													<div className="mt-3 space-y-2">
+														{skillCapabilities.length > 0 ? (
+															skillCapabilities.map((capability) => (
+																<div
+																	key={capability.id}
+																	className="rounded-xl border border-border/50 bg-background/10 px-4 py-3">
+																	<p className="text-sm font-semibold text-foreground">
+																		{capability.name}
+																	</p>
+																	<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+																		{capability.description}
+																	</p>
 																</div>
-															</Link>
-														)
-													})}
+															))
+														) : (
+															<p className="text-sm text-muted-foreground">
+																No skills listed for this profile yet.
+															</p>
+														)}
+													</div>
 												</div>
 											</div>
 
-											{builtInCapabilities.length > 0 ? (
-												<div>
+											{profileHowItWorks.length > 0 || selectedOutcome.whyItWorks.length > 0 ? (
+												<div className="mt-8 rounded-2xl border border-border/50 bg-background/10 p-5">
 													<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-														Built-ins
+														Rationale
 													</p>
-													<div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-														{builtInCapabilities.map((capability) => (
-															<div
-																key={capability.id}
-																className="rounded-xl border border-border/50 bg-background/20 p-3">
-																<div className="flex items-start gap-2">
-																	<CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-foreground/60" />
-																	<div className="min-w-0">
-																		<div className="flex flex-wrap items-center gap-2">
-																			<p className="text-xs font-semibold text-foreground">
-																				{capability.name}
-																			</p>
-																			<span className="rounded-full border border-border/50 bg-background/30 px-2 py-0.5 text-[10px] font-semibold text-foreground/70">
-																				Built-in
-																			</span>
-																		</div>
-																		<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-																			{capability.description}
-																		</p>
-																	</div>
-																</div>
-															</div>
-														))}
+													<div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+														<div>
+															<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+																{selectedOutcome.builderProfile
+																	? "How it works"
+																	: "Why it works"}
+															</p>
+															<ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+																{profileHowItWorks.map((line) => (
+																	<li key={line} className="flex items-start gap-2">
+																		<span className="mt-2 size-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
+																		<span className="min-w-0">{line}</span>
+																	</li>
+																))}
+															</ul>
+														</div>
+														<div>
+															<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+																Why it works
+															</p>
+															<ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+																{selectedOutcome.whyItWorks.map((line) => (
+																	<li key={line} className="flex items-start gap-2">
+																		<span className="mt-2 size-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
+																		<span className="min-w-0">{line}</span>
+																	</li>
+																))}
+															</ul>
+														</div>
 													</div>
 												</div>
 											) : null}
+										</>
+									) : (
+										<div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+											<div>
+												<p className="text-sm font-semibold text-foreground">
+													No objective selected
+												</p>
+												<p className="mt-1 text-sm text-muted-foreground">
+													Pick an objective first, then open the profile view.
+												</p>
+											</div>
+											<Link
+												href={`${workersRootPath}#outcomes`}
+												className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border/60 bg-background/10 px-4 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:border-border hover:bg-background/15 hover:text-foreground">
+												Back to objectives
+												<ArrowRight className="size-4" />
+											</Link>
 										</div>
-									</div>
+									)}
 								</motion.div>
 							) : null}
-						</motion.div>
-					</div>
-				</section>
-			) : null}
 
-			{/* ── Role Cards Grid (baseline only) ────────────────────────── */}
-			{!enableOutcomeLayer ? (
-				<section className="relative -mt-12 overflow-hidden pb-24">
-					{/* Subtle section background */}
-					<motion.div
-						className="absolute inset-0"
-						initial="hidden"
-						whileInView="visible"
-						viewport={{ once: true }}
-						variants={backgroundVariants}>
-						<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1200px] -translate-x-1/2">
-							<div className="absolute left-1/2 top-1/2 h-[800px] w-full -translate-x-1/2 -translate-y-1/2 rounded-[100%] bg-foreground/[0.02] dark:bg-foreground/[0.03] blur-[100px]" />
-						</div>
-					</motion.div>
+							<div
+								className={
+									isProfileView ? "hidden" : "grid grid-cols-1 gap-14 lg:grid-cols-12 lg:items-start"
+								}>
+								{/* Left rail: objective + mode */}
+								<div className="lg:col-span-5">
+									<motion.div className="text-center lg:text-left" variants={fadeUpVariants}>
+										<h2 className="text-2xl font-semibold tracking-tight md:text-3xl [font-family:var(--font-display)]">
+											Select your objective
+										</h2>
+									</motion.div>
 
-					<div className="container relative z-10 mx-auto max-w-screen-lg px-4 sm:px-6 lg:px-8">
-						{/* Section connector */}
-						<motion.div
-							className="mb-10 flex flex-col items-center gap-2"
-							initial="hidden"
-							whileInView="visible"
-							viewport={{ once: true }}
-							variants={fadeUpVariants}>
-							<p className="text-sm font-medium uppercase tracking-widest text-muted-foreground/70">
-								Choose a setup for the work
-							</p>
-							<ChevronDown className="size-4 text-muted-foreground/40" />
-						</motion.div>
-
-						<motion.div
-							className="grid grid-cols-1 gap-6 md:grid-cols-3 md:grid-rows-[repeat(7,auto)] md:gap-x-6 md:gap-y-10 lg:gap-x-8"
-							variants={containerVariants}
-							initial="hidden"
-							whileInView="visible"
-							viewport={{ once: true }}>
-							{roles.map((role) => {
-								const rec = recByRole.get(role.id)
-								const IconComponent = ICON_MAP[role.icon] ?? Code
-								const candidateCount = rec?.allCandidates.length ?? 0
-								const exerciseCount = rec?.totalExercises ?? 0
-								const theme = ROLE_THEMES[role.id] ?? DEFAULT_THEME
-								const topModel = rec?.best[0] ?? null
-
-								return (
 									<motion.div
-										key={role.id}
-										variants={cardVariants}
-										className="md:row-span-7 md:grid md:grid-rows-subgrid">
-										<div
-											className={[
-												"group relative flex h-full flex-col rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 md:row-span-7 md:grid md:grid-rows-subgrid hover:shadow-xl",
-												theme.borderHover,
-												theme.shadowHover,
-											].join(" ")}>
-											{/* Subtle glow on hover */}
-											<div
-												className={`absolute inset-0 rounded-2xl ${theme.glowColor} opacity-0 transition-opacity duration-300 group-hover:opacity-100`}
-											/>
+										className="mt-6 flex flex-wrap items-center justify-center gap-2 lg:justify-start"
+										variants={fadeUpVariants}>
+										<span className="mr-1 text-xs font-medium text-muted-foreground">
+											Optimize for
+										</span>
+										<div className="inline-flex rounded-full border border-border/50 bg-card/30 p-1 backdrop-blur-sm">
+											{OPTIMIZATION_MODES.map((mode) => {
+												const isSelected = mode.id === selectedMode
+												return (
+													<button
+														key={mode.id}
+														type="button"
+														aria-pressed={isSelected}
+														title={mode.description}
+														onClick={() => setMode(mode.id)}
+														className={[
+															"rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
+															isSelected
+																? "bg-foreground/10 text-foreground"
+																: "text-muted-foreground hover:text-foreground",
+														].join(" ")}>
+														{mode.label}
+													</button>
+												)
+											})}
+										</div>
+									</motion.div>
 
-											<div className="relative z-10 flex h-full flex-col p-6 lg:p-7 md:row-span-7 md:grid md:grid-rows-subgrid">
-												{/* Header: Icon + role badge */}
-												<div className="flex items-start justify-between">
-													<div
-														className={`flex size-12 items-center justify-center rounded-xl ${theme.iconBg} ${theme.iconText}`}>
-														<IconComponent className="size-6" />
+									<motion.div className="mt-8 space-y-2" variants={containerVariants}>
+										{EVAL_OUTCOMES.map((outcome) => {
+											const Icon = outcome.icon
+											const isSelected = outcome.id === selectedOutcomeId
+
+											return (
+												<motion.button
+													key={outcome.id}
+													type="button"
+													variants={cardVariants}
+													aria-pressed={isSelected}
+													onClick={() => setOutcome(isSelected ? null : outcome.id)}
+													className={[
+														"group w-full rounded-2xl border bg-card/35 p-4 text-left backdrop-blur-sm transition-all duration-200 hover:bg-card/55",
+														isSelected
+															? "border-foreground/20 ring-1 ring-foreground/15"
+															: "border-border/50 hover:border-border",
+													].join(" ")}>
+													<div className="flex items-start gap-3">
+														<div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-border/50 bg-background/30">
+															<Icon className="size-5 text-foreground/70" />
+														</div>
+														<div className="min-w-0 flex-1">
+															<div className="flex flex-wrap items-center gap-2">
+																<p className="text-sm font-semibold text-foreground">
+																	{outcome.name}
+																</p>
+															</div>
+															<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+																{outcome.description}
+															</p>
+														</div>
 													</div>
-													{topModel && (
-														<span
-															className={`rounded-full ${theme.badgeBg} ${theme.badgeText} px-3 py-1 text-xs font-medium`}>
-															Top: {topModel.displayName}
+												</motion.button>
+											)
+										})}
+									</motion.div>
+								</div>
+
+								{/* Right rail: profile snapshot */}
+								<div className="lg:col-span-7">
+									<motion.div
+										className="relative overflow-hidden rounded-2xl border border-border/50 bg-background/[0.08] backdrop-blur-xl shadow-[0_24px_110px_-75px_rgba(0,0,0,0.85)] lg:sticky lg:top-24"
+										variants={fadeUpVariants}>
+										<div
+											aria-hidden
+											className="pointer-events-none absolute inset-0 opacity-[0.7]"
+											style={{
+												backgroundImage:
+													"linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px), radial-gradient(circle at 18% 12%, rgba(59,130,246,0.16), transparent 55%), radial-gradient(circle at 82% 32%, rgba(16,185,129,0.14), transparent 55%), radial-gradient(circle at 55% 95%, rgba(245,158,11,0.10), transparent 60%)",
+												backgroundSize: "96px 96px, 96px 96px, auto, auto, auto",
+											}}
+										/>
+										<div
+											aria-hidden
+											className="pointer-events-none absolute -right-44 -top-44 size-[520px] rounded-full bg-foreground/[0.035] blur-3xl"
+										/>
+
+										<div className="relative">
+											<div className="border-b border-border/40 px-6 pb-5 pt-6">
+												<div className="flex flex-wrap items-start justify-between gap-4">
+													<div className="min-w-0">
+														<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground/70">
+															Profile snapshot
+														</p>
+														<p className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
+															{selectedOutcome
+																? selectedOutcome.name
+																: "Pick an objective"}
+														</p>
+														<p className="mt-1.5 max-w-[62ch] text-sm leading-relaxed text-muted-foreground">
+															{selectedOutcome
+																? profileDescription
+																: "Select an objective to see the suggested lineup and default model."}
+														</p>
+													</div>
+
+													<div className="shrink-0">
+														<span className="inline-flex items-center rounded-full border border-border/50 bg-background/20 px-3 py-1 text-xs font-semibold text-foreground/80">
+															Optimized for: {getModeLabel(selectedMode)}
 														</span>
+													</div>
+												</div>
+
+												<div className="mt-5 overflow-hidden rounded-2xl border border-border/50 bg-background/10">
+													<div className="grid grid-cols-2 divide-x divide-border/40 sm:grid-cols-3">
+														<div className="p-3">
+															<p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+																Signal
+															</p>
+															<p className="mt-1 text-sm font-semibold text-foreground tabular-nums">
+																{totalEvalRuns.toLocaleString()} runs
+															</p>
+														</div>
+														<div className="p-3">
+															<p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+																Agents
+															</p>
+															<p className="mt-1 text-sm font-semibold text-foreground tabular-nums">
+																{agentCapabilities.length}
+															</p>
+														</div>
+														<div className="p-3">
+															<p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+																Default model
+															</p>
+															<p className="mt-1 truncate font-mono text-sm font-semibold text-foreground">
+																{objectiveDefaultModelLabel}
+															</p>
+														</div>
+													</div>
+												</div>
+											</div>
+
+											<div className="px-6 py-6">
+												<div className="flex flex-wrap items-end justify-between gap-4">
+													<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+														Agent lineup
+													</p>
+													<p className="text-xs text-muted-foreground">
+														Open candidates &amp; settings
+													</p>
+												</div>
+
+												<div className="mt-3 overflow-hidden rounded-2xl border border-border/50 bg-background/10">
+													{selectedOutcome ? (
+														<div className="grid grid-cols-1 divide-y divide-border/40 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+															{agentCapabilities.map((capability) => {
+																const roleId = capability.roleId!
+																const rec = recByRole.get(roleId)
+																const candidate = getModeCandidate(rec, selectedMode)
+
+																const providerColor = candidate
+																	? (PROVIDER_COLORS[candidate.provider] ?? "#94a3b8")
+																	: "#94a3b8"
+
+																return (
+																	<Link
+																		key={capability.id}
+																		href={`${workersRootPath}/${roleId}${setupQuery}`}
+																		className="group relative px-4 py-3 pl-5 transition-colors hover:bg-background/25">
+																		<span
+																			aria-hidden
+																			className="absolute left-0 top-0 h-full w-0.5"
+																			style={{ backgroundColor: providerColor }}
+																		/>
+																		<div className="flex items-start justify-between gap-3">
+																			<div className="min-w-0">
+																				<p className="text-sm font-semibold text-foreground">
+																					{capability.name}
+																				</p>
+																				<p className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+																					<span
+																						className="size-2 rounded-full ring-1 ring-white/10"
+																						style={{
+																							backgroundColor:
+																								providerColor,
+																						}}
+																					/>
+																					{candidate ? (
+																						<span className="min-w-0 truncate">
+																							{candidate.displayName}
+																						</span>
+																					) : (
+																						<span className="font-medium text-foreground/80">
+																							View models
+																						</span>
+																					)}
+																				</p>
+																			</div>
+																			<ArrowRight className="mt-0.5 size-4 shrink-0 text-muted-foreground/70 transition-transform group-hover:translate-x-0.5" />
+																		</div>
+																	</Link>
+																)
+															})}
+														</div>
+													) : (
+														<div className="p-4">
+															<p className="text-sm font-semibold text-foreground">
+																No objective selected
+															</p>
+															<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+																Pick an objective to see the recommended agent lineup.
+															</p>
+														</div>
 													)}
 												</div>
 
-												{/* Profile name + descriptor */}
-												<h2 className="mt-5 text-2xl font-bold tracking-tight">{role.name}</h2>
-												<p
-													className={`mt-1 font-mono text-lg font-semibold ${theme.accentLight} ${theme.accentDark}`}>
-													{role.salaryRange}
-												</p>
-
-												{/* Description */}
-												<p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-													{role.description}
-												</p>
-
-												{/* Best for */}
-												<div className="mt-5">
-													<h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-														Best for
-													</h3>
-													<div className="mt-2 flex flex-wrap gap-1.5">
-														{role.bestFor.map((item) => (
-															<span
-																key={item}
-																className="rounded-md border border-border/50 bg-muted/50 px-2 py-0.5 text-xs text-foreground/70">
-																{item}
-															</span>
-														))}
-													</div>
-												</div>
-
-												{/* Strengths & Weaknesses side by side */}
-												<div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
-													{/* Strengths */}
-													<div>
-														<h3
-															className={`text-xs font-semibold uppercase tracking-wider ${theme.strengthColor}`}>
-															Strengths
-														</h3>
-														<ul className="mt-2 space-y-1.5">
-															{role.strengths.map((item) => (
-																<li
-																	key={item}
-																	className="flex items-start gap-1.5 text-xs text-foreground/75">
-																	<CheckCircle2
-																		className={`mt-0.5 size-3 shrink-0 ${theme.strengthColor}`}
-																	/>
-																	{item}
-																</li>
-															))}
-														</ul>
-													</div>
-
-													{/* Weaknesses */}
-													<div>
-														<h3 className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-															Trade-offs
-														</h3>
-														<ul className="mt-2 space-y-1.5">
-															{role.weaknesses.map((item) => (
-																<li
-																	key={item}
-																	className="flex items-start gap-1.5 text-xs text-foreground/60">
-																	<AlertTriangle className="mt-0.5 size-3 shrink-0 text-amber-600/70 dark:text-amber-400/70" />
-																	{item}
-																</li>
-															))}
-														</ul>
-													</div>
-												</div>
-
-												{/* Bottom stats + CTA */}
-												<div className="mt-auto pt-6">
-													<div className="mb-4 flex items-center gap-4 border-t border-border/30 pt-4 text-xs text-muted-foreground">
-														<span className="inline-flex items-center gap-1.5">
-															<Users className="size-3.5" />
-															{candidateCount} models
-														</span>
-														<span className="inline-flex items-center gap-1.5">
-															<FlaskConical className="size-3.5" />
-															{exerciseCount.toLocaleString()} exercises
-														</span>
-													</div>
-
-													<Link
-														href={`${workersRootPath}/${role.id}${setupQuery}`}
-														className={`inline-flex w-full items-center justify-center gap-2 rounded-xl ${theme.buttonBg} ${theme.buttonHover} px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]`}>
-														View models
-														<ArrowRight className="size-4" />
-													</Link>
-												</div>
+												{selectedOutcome ? (
+													<>
+														{examplePrompt ? (
+															<div className="mt-6 rounded-2xl border border-border/50 bg-background/10 p-4">
+																<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+																	Example prompt
+																</p>
+																<pre className="mt-3 whitespace-pre-wrap rounded-xl border border-border/50 bg-background/10 p-3 text-xs leading-relaxed text-foreground/85">
+																	{examplePrompt}
+																</pre>
+															</div>
+														) : null}
+														<div className="mt-6 flex flex-col gap-2 sm:flex-row">
+															<Link
+																href={cloudSetupHref}
+																className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-foreground/20 bg-foreground/10 px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-foreground/15">
+																Start in Roo Code Cloud
+																<ArrowRight className="size-4" />
+															</Link>
+															<Link
+																href={`${workersRootPath}${setupQuery}&view=profile#outcomes`}
+																className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-border/60 bg-background/10 px-4 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:border-border hover:bg-background/15 hover:text-foreground">
+																Learn more / customize
+																<ArrowRight className="size-4" />
+															</Link>
+														</div>
+													</>
+												) : null}
 											</div>
 										</div>
 									</motion.div>
-								)
-							})}
+								</div>
+							</div>
 						</motion.div>
 					</div>
 				</section>
 			) : null}
 
 			{/* ── AI Coding Capability Over Time ─────────────────────────── */}
-			<section className="relative overflow-hidden pb-24 pt-8">
+			<section className="relative overflow-hidden border-t border-border/40 pb-28 pt-24">
 				{/* Subtle atmospheric background */}
 				<motion.div
 					className="absolute inset-0"
@@ -1028,7 +993,8 @@ export function WorkersContent({
 								</span>
 							</h2>
 							<p className="mt-3 text-base leading-relaxed text-muted-foreground md:text-lg">
-								Pass rates on our eval suite, by model release date. The best ones now score 100%.
+								Pass rates on our eval suite by model release date. Several current models hit 100% on
+								this suite.
 							</p>
 						</motion.div>
 

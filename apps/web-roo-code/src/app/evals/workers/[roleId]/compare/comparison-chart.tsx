@@ -446,8 +446,6 @@ export function ComparisonChart({
 	const searchParams = useSearchParams()
 	const { allCandidates } = recommendation
 	const theme = ROLE_THEMES[roleId] ?? DEFAULT_THEME
-	const alternateWorkersRootPath = workersRootPath === "/evals/workers-v2" ? "/evals/workers" : "/evals/workers-v2"
-	const alternateVersionLabel = workersRootPath === "/evals/workers-v2" ? "View baseline" : "View V2 preview"
 	const setupQuery = (() => {
 		const outcome = searchParams.get("outcome")
 		if (!outcome) return ""
@@ -593,12 +591,6 @@ export function ComparisonChart({
 							</Link>
 							<span className="text-border">/</span>
 							<span className="font-medium text-foreground">Compare Models</span>
-							<span className="text-border">/</span>
-							<Link
-								href={`${alternateWorkersRootPath}/${roleId}/compare${setupQuery}`}
-								className="font-medium text-muted-foreground transition-colors hover:text-foreground">
-								{alternateVersionLabel}
-							</Link>
 						</motion.nav>
 
 						{/* Title row */}
