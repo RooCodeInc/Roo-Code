@@ -69,7 +69,7 @@ vi.mock("axios", () => ({
 	},
 }))
 
-import { OpenAiHandler, getOpenAiModels } from "../openai"
+import { OpenAiHandler, getOpenAiModels, createThinkingAwareFetch } from "../openai"
 import { ApiHandlerOptions } from "../../../shared/api"
 import { Anthropic } from "@anthropic-ai/sdk"
 import { openAiModelInfoSaneDefaults } from "@roo-code/types"
@@ -144,6 +144,7 @@ describe("OpenAiHandler", () => {
 				expect.objectContaining({
 					baseURL: "https://api.openai.com/v1",
 					apiKey: "test-api-key",
+					fetch: expect.any(Function),
 				}),
 			)
 		})
@@ -977,5 +978,92 @@ describe("getOpenAiModels", () => {
 		const result = await getOpenAiModels("https://api.example.com/v1", "test-key")
 
 		expect(result).toEqual(["gpt-4", "gpt-3.5-turbo"])
+	})
+})
+
+describe("createThinkingAwareFetch", () => {
+	const originalFetch = globalThis.fetch
+
+	afterEach(() => {
+		globalThis.fetch = originalFetch
+	})
+
+	it("should inject thinking: { type: 'enabled' } when reasoning_effort is present", async () => {
+		let capturedBody: string | undefined
+
+		globalThis.fetch = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+			capturedBody = init?.body as string
+			return new Response(JSON.stringify({}), { status: 200 })
+		}) as any
+
+		const wrappedFetch = createThinkingAwareFetch()
+		const body = JSON.stringify({ model: "some-model", reasoning_effort: "high" })
+		await wrappedFetch("https://example.com/v1/chat/completions", { method: "POST", body })
+
+		const parsed = JSON.parse(capturedBody!)
+		expect(parsed.thinking).toEqual({ type: "enabled" })
+		expect(parsed.reasoning_effort).toBe("high")
+	})
+
+	it("should not inject thinking when reasoning_effort is absent", async () => {
+		let capturedBody: string | undefined
+
+		globalThis.fetch = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+			capturedBody = init?.body as string
+			return new Response(JSON.stringify({}), { status: 200 })
+		}) as any
+
+		const wrappedFetch = createThinkingAwareFetch()
+		const body = JSON.stringify({ model: "some-model", messages: [] })
+		await wrappedFetch("https://example.com/v1/chat/completions", { method: "POST", body })
+
+		const parsed = JSON.parse(capturedBody!)
+		expect(parsed.thinking).toBeUndefined()
+	})
+
+	it("should not overwrite existing thinking parameter", async () => {
+		let capturedBody: string | undefined
+
+		globalThis.fetch = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+			capturedBody = init?.body as string
+			return new Response(JSON.stringify({}), { status: 200 })
+		}) as any
+
+		const wrappedFetch = createThinkingAwareFetch()
+		const body = JSON.stringify({
+			model: "some-model",
+			reasoning_effort: "high",
+			thinking: { type: "disabled", budget_tokens: 0 },
+		})
+		await wrappedFetch("https://example.com/v1/chat/completions", { method: "POST", body })
+
+		const parsed = JSON.parse(capturedBody!)
+		expect(parsed.thinking).toEqual({ type: "disabled", budget_tokens: 0 })
+	})
+
+	it("should pass through non-JSON bodies unchanged", async () => {
+		let capturedBody: string | undefined
+
+		globalThis.fetch = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+			capturedBody = init?.body as string
+			return new Response("ok", { status: 200 })
+		}) as any
+
+		const wrappedFetch = createThinkingAwareFetch()
+		const body = "not-json-body"
+		await wrappedFetch("https://example.com/v1/chat/completions", { method: "POST", body })
+
+		expect(capturedBody).toBe("not-json-body")
+	})
+
+	it("should pass through requests with no body", async () => {
+		globalThis.fetch = vi.fn(async () => {
+			return new Response("ok", { status: 200 })
+		}) as any
+
+		const wrappedFetch = createThinkingAwareFetch()
+		await wrappedFetch("https://example.com/v1/models")
+
+		expect(globalThis.fetch).toHaveBeenCalledWith("https://example.com/v1/models", undefined)
 	})
 })
