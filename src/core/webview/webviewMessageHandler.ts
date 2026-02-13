@@ -2698,7 +2698,15 @@ export const webviewMessageHandler = async (
 					provider.log("Cannot set auto-enable default: No workspace folder open")
 					return
 				}
+				const wasEnabled = manager.isWorkspaceEnabled
 				await manager.setAutoEnableDefault(message.bool ?? true)
+				const isNowEnabled = manager.isWorkspaceEnabled
+				if (wasEnabled && !isNowEnabled) {
+					manager.stopIndexing()
+				} else if (!wasEnabled && isNowEnabled && manager.isFeatureEnabled && manager.isFeatureConfigured) {
+					await manager.initialize(provider.contextProxy)
+					manager.startIndexing()
+				}
 				provider.postMessageToWebview({
 					type: "indexingStatusUpdate",
 					values: manager.getCurrentStatus(),
