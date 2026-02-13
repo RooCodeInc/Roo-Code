@@ -12,7 +12,7 @@ export const UNIVERSAL_CACHE_OPTIONS: Record<string, Record<string, unknown>> = 
  * Optional targeting configuration for cache breakpoint placement.
  */
 export interface CacheBreakpointTargeting {
-	/** Maximum number of message breakpoints to place. Default: 2 */
+	/** Maximum number of message breakpoints to place. Default: 1 */
 	maxBreakpoints?: number
 	/** Whether to add an anchor breakpoint at ~1/3 through the conversation. Default: false */
 	useAnchor?: boolean
@@ -23,19 +23,19 @@ export interface CacheBreakpointTargeting {
 /**
  * Apply cache breakpoints to AI SDK messages with ALL provider namespaces.
  *
- * 4-breakpoint strategy:
+ * 3-breakpoint strategy:
  *   1. System prompt — passed as first message in messages[] with providerOptions
  *   2. Tool definitions — handled externally via `toolProviderOptions` in `streamText()`
- *   3-4. Last 2 non-assistant messages — this function handles these
+ *   3. Last non-assistant message — this function handles this
  *
  * @param messages - The AI SDK message array (mutated in place)
- * @param targeting - Optional targeting options (defaults: 2 breakpoints, no anchor)
+ * @param targeting - Optional targeting options (defaults: 1 breakpoint, no anchor)
  */
 export function applyCacheBreakpoints(
 	messages: { role: string; providerOptions?: Record<string, Record<string, unknown>> }[],
 	targeting: CacheBreakpointTargeting = {},
 ): void {
-	const { maxBreakpoints = 2, useAnchor = false, anchorThreshold = 5 } = targeting
+	const { maxBreakpoints = 1, useAnchor = false, anchorThreshold = 5 } = targeting
 
 	// 1. Collect non-assistant message indices (user | tool roles)
 	const nonAssistantIndices: number[] = []

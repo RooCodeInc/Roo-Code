@@ -31,7 +31,7 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
-import { applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
+import { applyCacheBreakpoints, applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
 import { getModelParams } from "../transform/model-params"
 import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 import { shouldUseReasoningBudget } from "../../shared/api"
@@ -251,6 +251,8 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		const effectiveSystemPrompt = usePromptCache
 			? applySystemPromptCaching(systemPrompt, aiSdkMessages, metadata?.systemProviderOptions)
 			: systemPrompt || undefined
+
+		applyCacheBreakpoints(aiSdkMessages)
 
 		// Strip non-Bedrock cache annotations from messages when caching is disabled,
 		// and strip Bedrock-specific annotations when caching is disabled.

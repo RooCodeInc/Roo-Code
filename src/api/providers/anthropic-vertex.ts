@@ -25,7 +25,7 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
-import { applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
+import { applyCacheBreakpoints, applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
 import { calculateApiCostAnthropic } from "../../shared/cost"
 
 import { DEFAULT_HEADERS } from "./constants"
@@ -126,6 +126,8 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			aiSdkMessages,
 			metadata?.systemProviderOptions,
 		)
+
+		applyCacheBreakpoints(aiSdkMessages)
 
 		// Build streamText request
 		// Cast providerOptions to any to bypass strict JSONObject typing — the AI SDK accepts the correct runtime values

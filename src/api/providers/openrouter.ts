@@ -18,7 +18,7 @@ import { calculateApiCostOpenAI } from "../../shared/cost"
 
 import { getModelParams } from "../transform/model-params"
 import { convertToolsForAiSdk, processAiSdkStreamPart, yieldResponseMessage } from "../transform/ai-sdk"
-import { applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
+import { applyCacheBreakpoints, applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
 
 import { BaseProvider } from "./base-provider"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
@@ -181,6 +181,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			aiSdkMessages,
 			metadata?.systemProviderOptions,
 		)
+
+		applyCacheBreakpoints(aiSdkMessages)
 
 		try {
 			const result = streamText({

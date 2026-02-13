@@ -63,7 +63,7 @@ import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "..
 import type { AssistantModelMessage } from "ai"
 import { ApiStream, GroundingSource } from "../../api/transform/stream"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
-import { applyCacheBreakpoints, UNIVERSAL_CACHE_OPTIONS } from "../../api/transform/cache-breakpoints"
+import { UNIVERSAL_CACHE_OPTIONS } from "../../api/transform/cache-breakpoints"
 
 // shared
 import { findLastIndex } from "../../shared/array"
@@ -4386,9 +4386,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// mergeConsecutiveApiMessages implementation) without mutating stored history.
 		const mergedForApi = mergeConsecutiveApiMessages(messagesSinceLastSummary, { roles: ["user"] })
 		const messagesWithoutImages = maybeRemoveImageBlocks(mergedForApi, this.api)
-
-		// Breakpoints 3-4: Apply cache breakpoints to the last 2 non-assistant messages
-		applyCacheBreakpoints(messagesWithoutImages.filter(isRooRoleMessage))
 
 		// Check auto-approval limits
 		const approvalResult = await this.autoApprovalHandler.checkAutoApprovalLimits(

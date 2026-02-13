@@ -17,7 +17,7 @@ import {
 	mapToolChoice,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
-import { applyToolCacheOptions } from "../transform/cache-breakpoints"
+import { applyCacheBreakpoints, applyToolCacheOptions } from "../transform/cache-breakpoints"
 import type { RooReasoningParams } from "../transform/reasoning"
 import { getRooReasoning } from "../transform/reasoning"
 
@@ -160,6 +160,8 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 		const aiSdkMessages = messages as ModelMessage[]
 		const tools = convertToolsForAiSdk(this.convertToolsForOpenAI(metadata?.tools))
 		applyToolCacheOptions(tools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
+
+		applyCacheBreakpoints(aiSdkMessages)
 
 		let lastStreamError: string | undefined
 

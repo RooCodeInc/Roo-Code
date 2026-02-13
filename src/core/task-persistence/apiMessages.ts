@@ -282,10 +282,9 @@ export async function saveRooMessages({
 	try {
 		const taskDir = await getTaskDirectoryPath(globalStoragePath, taskId)
 		const filePath = path.join(taskDir, GlobalFileNames.apiConversationHistory)
-		const strippedMessages = stripCacheProviderOptions(messages)
 		const envelope: RooMessageHistory = {
 			version: ROO_MESSAGE_VERSION,
-			messages: strippedMessages,
+			messages,
 		}
 		await safeWriteJson(filePath, envelope)
 		return true
