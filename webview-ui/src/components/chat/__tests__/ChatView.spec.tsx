@@ -1208,3 +1208,173 @@ describe("ChatView - Context Condensing Indicator Tests", () => {
 		)
 	})
 })
+
+describe("ChatView - Button Click Handler Tests", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		vi.mocked(vscode.postMessage).mockClear()
+	})
+
+	it("calls startNewTask (clearTask) when secondary button clicked with api_req_failed and stale isStreaming true", async () => {
+		const { getByText } = renderChatView()
+
+		const baseTsA = Date.now()
+
+		// Step 1: Post messages with api_req_failed as the last message.
+		// useDeepCompareEffect fires and sets clineAsk = "api_req_failed",
+		// enableButtons = true, primaryButtonText = "chat:retry.title",
+		// secondaryButtonText = "chat:startNewTask.title".
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: baseTsA - 4000,
+					text: "Initial task",
+				},
+				{
+					type: "say",
+					say: "api_req_started",
+					ts: baseTsA - 3000,
+					text: JSON.stringify({ apiProtocol: "anthropic" }), // No cost
+				},
+				{
+					type: "ask",
+					ask: "api_req_failed",
+					ts: baseTsA - 2000,
+					text: "API request failed",
+				},
+			],
+		})
+
+		// Wait for the secondary button to appear with "Start New Task" text
+		await waitFor(() => {
+			expect(getByText("chat:startNewTask.title")).toBeInTheDocument()
+		})
+
+		// Step 2: Append api_req_retry_delayed as the last message.
+		// This makes isLastAsk = false so isToolCurrentlyAsking = false.
+		// Since the last api_req_started has no cost, isStreaming becomes true.
+		// clineAsk remains "api_req_failed" because api_req_retry_delayed only
+		// sets setSendingDisabled(true) without clearing button state.
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: baseTsA - 4000,
+					text: "Initial task",
+				},
+				{
+					type: "say",
+					say: "api_req_started",
+					ts: baseTsA - 3000,
+					text: JSON.stringify({ apiProtocol: "anthropic" }), // No cost → isStreaming = true
+				},
+				{
+					type: "ask",
+					ask: "api_req_failed",
+					ts: baseTsA - 2000,
+					text: "API request failed",
+				},
+				{
+					type: "say",
+					say: "api_req_retry_delayed",
+					ts: baseTsA - 1000,
+					text: "Retrying in 5s",
+				},
+			],
+		})
+
+		// Allow React effects to fully propagate
+		await act(async () => {
+			await new Promise((resolve) => setTimeout(resolve, 50))
+		})
+
+		// The secondary button should still be visible with "Start New Task"
+		await waitFor(() => {
+			expect(getByText("chat:startNewTask.title")).toBeInTheDocument()
+		})
+
+		// Clear previous postMessage calls
+		vi.mocked(vscode.postMessage).mockClear()
+
+		// Click the secondary button (shows "chat:startNewTask.title").
+		// The early-return path in handleSecondaryButtonClick for api_req_failed
+		// should call startNewTask() before the isStreaming guard, preventing
+		// cancelTask from being called.
+		await act(async () => {
+			fireEvent.click(getByText("chat:startNewTask.title"))
+		})
+
+		// Verify startNewTask was called (posts clearTask), not cancelTask
+		await waitFor(() => {
+			expect(vscode.postMessage).toHaveBeenCalledWith({ type: "clearTask" })
+		})
+		expect(vscode.postMessage).not.toHaveBeenCalledWith({ type: "cancelTask" })
+	})
+
+	it("calls startNewTask (clearTask) when primary button clicked with Start New Task text on completion_result", async () => {
+		const { getByText } = renderChatView()
+
+		// Set up completion_result ask (non-partial) which sets:
+		// - clineAsk = "completion_result"
+		// - primaryButtonText = t("chat:startNewTask.title") → "chat:startNewTask.title"
+		// - enableButtons = true
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 2000,
+					text: "Initial task",
+				},
+				{
+					type: "say",
+					say: "api_req_started",
+					ts: Date.now() - 1500,
+					text: JSON.stringify({
+						apiProtocol: "anthropic",
+						cost: 0.05,
+						tokensIn: 100,
+						tokensOut: 50,
+					}),
+				},
+				{
+					type: "ask",
+					ask: "completion_result",
+					ts: Date.now(),
+					text: "Task completed successfully",
+					partial: false,
+				},
+			],
+		})
+
+		// Wait for the primary button with "Start New Task" text to appear
+		await waitFor(() => {
+			expect(getByText("chat:startNewTask.title")).toBeInTheDocument()
+		})
+
+		// Allow React effects to fully propagate
+		await act(async () => {
+			await new Promise((resolve) => setTimeout(resolve, 50))
+		})
+
+		// Clear previous postMessage calls
+		vi.mocked(vscode.postMessage).mockClear()
+
+		// Click the primary button. With clineAsk = "completion_result", the
+		// handler's case "completion_result" calls startNewTask(). The default
+		// case fallback also checks primaryButtonText against
+		// t("chat:startNewTask.title") for safety when clineAsk becomes undefined
+		// due to race conditions.
+		await act(async () => {
+			fireEvent.click(getByText("chat:startNewTask.title"))
+		})
+
+		// Verify startNewTask was called (posts clearTask)
+		await waitFor(() => {
+			expect(vscode.postMessage).toHaveBeenCalledWith({ type: "clearTask" })
+		})
+	})
+})
