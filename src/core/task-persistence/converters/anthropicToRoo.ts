@@ -4,8 +4,8 @@
  * This is the critical backward-compatibility piece that allows old conversation
  * histories stored in Anthropic format to be read and converted to the new format.
  *
- * The conversion logic mirrors {@link ../../api/transform/ai-sdk.ts | convertToAiSdkMessages}
- * but targets `RooMessage` types instead of AI SDK `ModelMessage`.
+ * Converts Anthropic content blocks (tool_use, tool_result, thinking, reasoning,
+ * thoughtSignature, etc.) into their AI SDK RooMessage equivalents.
  */
 
 import type { TextPart, ImagePart, ToolCallPart, ToolResultPart, ReasoningPart } from "../rooMessage"
