@@ -57,6 +57,11 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 			const didApprove = await askApproval("command", unescapedCommand)
 
 			if (!didApprove) {
+				this._rpiObservationExtras = {
+					success: false,
+					error: "Rejected by user",
+					summary: `Command rejected by user: ${unescapedCommand.slice(0, 80)}`,
+				}
 				return
 			}
 

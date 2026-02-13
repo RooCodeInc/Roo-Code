@@ -24,6 +24,63 @@ export interface RpiVerificationResult {
 }
 
 export class RpiVerificationEngine {
+	private static normalizePath(p: string): string {
+		return p.replace(/\\/g, "/").toLowerCase()
+	}
+
+	private static isRpiStateMutation(paths?: string[]): boolean {
+		if (!paths || paths.length === 0) return false
+		return paths.some((p) => {
+			const n = this.normalizePath(p)
+			return (n.includes("/.roo/rpi/") || n.startsWith(".roo/rpi/")) && n.endsWith("/state.json")
+		})
+	}
+
+	private static isMcpWriteToolName(name: string | undefined): boolean {
+		if (!name) return false
+		return (
+			name === "edit_file" ||
+			name === "write_file" ||
+			name === "write_to_file" ||
+			name === "apply_diff" ||
+			name === "apply_patch" ||
+			name === "search_and_replace" ||
+			name === "search_replace" ||
+			name === "delete_file" ||
+			name === "move_file" ||
+			name === "rename_file" ||
+			name === "create_file"
+		)
+	}
+
+	private static isMcpCommandToolName(name: string | undefined): boolean {
+		if (!name) return false
+		return name === "execute_command" || name === "read_command_output" || name === "run_command"
+	}
+
+	private static isSuccessfulWriteObservation(o: RpiToolObservation): boolean {
+		const successfulWriteTools = new Set(["write_to_file", "apply_diff", "search_and_replace", "edit_file"])
+
+		if (o.toolName === "use_mcp_tool") {
+			// Count MCP tools as write evidence only when they map to known write-like tools
+			// AND they are not mutating RPI internal state artifacts.
+			if (!this.isMcpWriteToolName(o.mcpToolName)) return false
+			if (this.isRpiStateMutation(o.filesAffected)) return false
+			return o.success
+		}
+
+		if (!o.success) return false
+		if (!successfulWriteTools.has(o.toolName)) return false
+		if (this.isRpiStateMutation(o.filesAffected)) return false
+		return true
+	}
+
+	private static isSuccessfulCommandObservation(o: RpiToolObservation): boolean {
+		if (o.toolName === "execute_command") return o.success
+		if (o.toolName === "use_mcp_tool") return o.success && this.isMcpCommandToolName(o.mcpToolName)
+		return false
+	}
+
 	evaluate(input: RpiVerificationInput): RpiVerificationResult {
 		const checks: RpiVerificationCheck[] = []
 		const suggestions: string[] = []
@@ -61,10 +118,9 @@ export class RpiVerificationEngine {
 	}
 
 	private checkImplementationEvidence(input: RpiVerificationInput): RpiVerificationCheck {
-		const successfulWriteTools = new Set(["write_to_file", "apply_diff", "search_and_replace", "edit_file"])
 		const hasEvidence =
-			input.observations.some((o) => o.success && successfulWriteTools.has(o.toolName)) ||
-			input.observations.some((o) => o.success && o.toolName === "execute_command")
+			input.observations.some((o) => RpiVerificationEngine.isSuccessfulWriteObservation(o)) ||
+			input.observations.some((o) => RpiVerificationEngine.isSuccessfulCommandObservation(o))
 		return {
 			name: "Implementation evidence",
 			status: hasEvidence ? "passed" : "failed",
@@ -75,8 +131,13 @@ export class RpiVerificationEngine {
 	}
 
 	private checkLastCommandSuccess(input: RpiVerificationInput): RpiVerificationCheck {
-		const commandObs = input.observations.filter((o) => o.toolName === "execute_command")
-		if (commandObs.length === 0) {
+		const commandLikeObs = input.observations.filter((o) => {
+			if (o.toolName === "execute_command") return true
+			if (o.toolName === "use_mcp_tool") return RpiVerificationEngine.isMcpCommandToolName(o.mcpToolName)
+			return false
+		})
+
+		if (commandLikeObs.length === 0) {
 			return {
 				name: "Last command success",
 				status: "skipped",
@@ -84,7 +145,7 @@ export class RpiVerificationEngine {
 			}
 		}
 
-		const lastCommand = commandObs[commandObs.length - 1]
+		const lastCommand = commandLikeObs[commandLikeObs.length - 1]
 		if (lastCommand.success) {
 			return {
 				name: "Last command success",
@@ -101,13 +162,21 @@ export class RpiVerificationEngine {
 	}
 
 	private checkNoUnresolvedWriteErrors(input: RpiVerificationInput): RpiVerificationCheck {
-		const writeObs = input.observations.filter(
-			(o) =>
-				o.toolName === "write_to_file" ||
-				o.toolName === "apply_diff" ||
-				o.toolName === "search_and_replace" ||
-				o.toolName === "edit_file",
-		)
+		const writeObs = input.observations.filter((o) => {
+			if (o.toolName === "use_mcp_tool") {
+				return (
+					RpiVerificationEngine.isMcpWriteToolName(o.mcpToolName) &&
+					!RpiVerificationEngine.isRpiStateMutation(o.filesAffected)
+				)
+			}
+			return (
+				(o.toolName === "write_to_file" ||
+					o.toolName === "apply_diff" ||
+					o.toolName === "search_and_replace" ||
+					o.toolName === "edit_file") &&
+				!RpiVerificationEngine.isRpiStateMutation(o.filesAffected)
+			)
+		})
 
 		if (writeObs.length === 0) {
 			return {
@@ -136,9 +205,13 @@ export class RpiVerificationEngine {
 	private checkTaskKeywordMatching(input: RpiVerificationInput): RpiVerificationCheck {
 		const taskLower = input.taskText.toLowerCase()
 		const toolNames = new Set(input.observations.map((o) => o.toolName))
+		const hasAnyCommand = input.observations.some((o) => RpiVerificationEngine.isSuccessfulCommandObservation(o))
 
 		// If task mentions "test", verify a test command was executed
-		if ((taskLower.includes("test") || taskLower.includes("spec")) && !toolNames.has("execute_command")) {
+		if (
+			(taskLower.includes("test") || taskLower.includes("spec")) &&
+			!(toolNames.has("execute_command") || hasAnyCommand)
+		) {
 			return {
 				name: "Task keyword matching",
 				status: "failed",

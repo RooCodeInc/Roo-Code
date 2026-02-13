@@ -78,6 +78,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 			getCurrentTask: vi.fn(() => ({ taskId: "child-1" })),
 			removeClineFromStack,
 			createTaskWithHistoryItem,
+			postStateToWebview: vi.fn().mockResolvedValue(undefined),
 			updateTaskHistory,
 		} as unknown as ClineProvider
 
@@ -144,6 +145,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
 				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			}),
+			postStateToWebview: vi.fn().mockResolvedValue(undefined),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
 		} as unknown as ClineProvider
 
@@ -227,6 +229,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
 				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			}),
+			postStateToWebview: vi.fn().mockResolvedValue(undefined),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
 		} as unknown as ClineProvider
 
@@ -313,6 +316,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
 				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			}),
+			postStateToWebview: vi.fn().mockResolvedValue(undefined),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
 		} as unknown as ClineProvider
 
@@ -368,6 +372,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 			getCurrentTask: vi.fn(() => ({ taskId: "child-2" })),
 			removeClineFromStack: vi.fn().mockResolvedValue(undefined),
 			createTaskWithHistoryItem: vi.fn().mockResolvedValue(parentInstance),
+			postStateToWebview: vi.fn().mockResolvedValue(undefined),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
 		} as unknown as ClineProvider
 
@@ -411,6 +416,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
 				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			}),
+			postStateToWebview: vi.fn().mockResolvedValue(undefined),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
 		} as unknown as ClineProvider
 
@@ -461,6 +467,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
 				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			}),
+			postStateToWebview: vi.fn().mockResolvedValue(undefined),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
 		} as unknown as ClineProvider
 
@@ -504,6 +511,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
 				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			}),
+			postStateToWebview: vi.fn().mockResolvedValue(undefined),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
 		} as unknown as ClineProvider
 

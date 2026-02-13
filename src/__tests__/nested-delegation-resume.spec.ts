@@ -149,12 +149,17 @@ describe("Nested delegation resume (A → B → C)", () => {
 		})
 
 		const provider = {
-			contextProxy: { globalStorageUri: { fsPath: "/tmp" } },
+			contextProxy: {
+				globalStorageUri: { fsPath: "/tmp" },
+				// Disable ESLint completion guard for this integration-style delegation test
+				getValue: vi.fn(() => false),
+			},
 			getTaskWithId,
 			emit: emitSpy,
 			getCurrentTask: vi.fn(() => (currentActiveId ? ({ taskId: currentActiveId } as any) : undefined)),
 			removeClineFromStack,
 			createTaskWithHistoryItem,
+			postStateToWebview: vi.fn().mockResolvedValue(undefined),
 			updateTaskHistory,
 			// Wire through provider method so attemptCompletionTool can call it
 			reopenParentFromDelegation: vi.fn(async (params: any) => {

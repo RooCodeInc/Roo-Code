@@ -30,6 +30,7 @@ describe("RpiAutopilot council engine integration", () => {
 		mode?: string
 		taskText?: string
 		councilEnabled?: boolean
+		completedChildTaskId?: string
 		engineOverrides?: Partial<
 			Record<"analyzeContext" | "decomposeTask" | "buildDecision" | "runVerificationReview", any>
 		>
@@ -59,12 +60,13 @@ describe("RpiAutopilot council engine integration", () => {
 				getTaskText: () => taskText,
 				getApiConfiguration: async () => apiConfiguration,
 				isCouncilEngineEnabled: () => councilEnabled,
+				getCompletedChildTaskId: () => options?.completedChildTaskId,
 			},
 			mockEngine as any,
 		)
 
 		await autopilot.ensureInitialized()
-		return { autopilot, mockEngine }
+		return { autopilot, mockEngine, cwd }
 	}
 
 	it("runs discovery and planning council actions once with phase/complexity triggers", async () => {
@@ -123,5 +125,65 @@ describe("RpiAutopilot council engine integration", () => {
 		expect(mockEngine.decomposeTask).not.toHaveBeenCalled()
 		expect(mockEngine.buildDecision).not.toHaveBeenCalled()
 		expect(mockEngine.runVerificationReview).not.toHaveBeenCalled()
+	})
+
+	it("accepts completion when implementation evidence exists only in a completed child task", async () => {
+		const completedChildTaskId = "child-1"
+		const { autopilot, cwd } = await createAutopilot({
+			mode: "code",
+			taskText: "Implement bug fix with focused changes.",
+			councilEnabled: false,
+			completedChildTaskId,
+		})
+
+		const childDir = path.join(cwd, ".roo", "rpi", completedChildTaskId)
+		await fs.mkdir(childDir, { recursive: true })
+		await fs.writeFile(
+			path.join(childDir, "state.json"),
+			JSON.stringify(
+				{
+					version: 1,
+					taskId: completedChildTaskId,
+					taskSummary: "child task summary",
+					modeAtStart: "code",
+					strategy: "quick",
+					phase: "done",
+					requiredPhases: ["implementation", "verification"],
+					completedPhases: ["implementation", "verification", "done"],
+					toolRuns: 1,
+					writeOps: 1,
+					commandOps: 0,
+					notesCount: 0,
+					councilTotalRuns: 0,
+					councilRunsByPhase: {},
+					lastUpdatedAt: new Date().toISOString(),
+					createdAt: new Date().toISOString(),
+					observations: [
+						{
+							toolName: "write_to_file",
+							timestamp: new Date().toISOString(),
+							success: true,
+							summary: "Wrote src/file.ts",
+							filesAffected: ["src/file.ts"],
+						},
+					],
+					lastObservation: {
+						toolName: "write_to_file",
+						timestamp: new Date().toISOString(),
+						success: true,
+						summary: "Wrote src/file.ts",
+						filesAffected: ["src/file.ts"],
+					},
+					observationCount: 1,
+					stepAttempts: {},
+				},
+				null,
+				2,
+			),
+			"utf-8",
+		)
+
+		const blocker = await autopilot.getCompletionBlocker()
+		expect(blocker).toBeUndefined()
 	})
 })

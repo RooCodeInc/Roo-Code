@@ -508,6 +508,8 @@ describe("attemptCompletionTool", () => {
 
 				mockGetDiagnostics.mockReturnValue(diagnostics)
 				vi.mocked(diagnosticsToProblemsString).mockResolvedValue("PROBLEMS")
+				// AttemptCompletionTool resolves cwd from `task.cwd` (mockTask is a plain object)
+				;(mockTask as any).cwd = cwd
 				;(mockTask as any).workspacePath = cwd
 				mockTask.fileContextTracker = {
 					getTaskMetadata: vi.fn().mockResolvedValue({
@@ -569,6 +571,7 @@ describe("attemptCompletionTool", () => {
 				]
 
 				mockGetDiagnostics.mockReturnValue(diagnostics)
+				;(mockTask as any).cwd = cwd
 				;(mockTask as any).workspacePath = cwd
 				mockTask.fileContextTracker = {
 					getTaskMetadata: vi.fn().mockResolvedValue({
@@ -626,6 +629,7 @@ describe("attemptCompletionTool", () => {
 				]
 
 				mockGetDiagnostics.mockReturnValue(diagnostics)
+				;(mockTask as any).cwd = cwd
 				;(mockTask as any).workspacePath = cwd
 				mockTask.fileContextTracker = {
 					getTaskMetadata: vi.fn().mockResolvedValue({

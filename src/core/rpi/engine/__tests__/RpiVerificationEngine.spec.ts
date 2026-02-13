@@ -58,6 +58,73 @@ describe("RpiVerificationEngine", () => {
 		expect(result.passed).toBe(true)
 	})
 
+	it("treats MCP write tools as implementation evidence (standard)", () => {
+		const result = engine.evaluate({
+			observations: [
+				makeObservation({
+					toolName: "use_mcp_tool",
+					success: true,
+					summary: "MCP filesystem.edit_file",
+					mcpServerName: "filesystem",
+					mcpToolName: "edit_file",
+					filesAffected: ["src/index.ts"],
+				}),
+			],
+			taskText: "fix the bug",
+			mode: "code",
+			strictness: "standard",
+			writeOps: 0,
+			commandOps: 0,
+		})
+
+		expect(result.passed).toBe(true)
+	})
+
+	it("does not treat MCP reads as implementation evidence (lenient)", () => {
+		const result = engine.evaluate({
+			observations: [
+				makeObservation({
+					toolName: "use_mcp_tool",
+					success: true,
+					summary: "MCP filesystem.read_file",
+					mcpServerName: "filesystem",
+					mcpToolName: "read_file",
+				}),
+			],
+			taskText: "fix the bug",
+			mode: "code",
+			strictness: "lenient",
+			writeOps: 0,
+			commandOps: 0,
+		})
+
+		expect(result.passed).toBe(false)
+		expect(result.checks.find((c) => c.name === "Implementation evidence")?.status).toBe("failed")
+	})
+
+	it("ignores writes to RPI state.json as implementation evidence", () => {
+		const result = engine.evaluate({
+			observations: [
+				makeObservation({
+					toolName: "use_mcp_tool",
+					success: true,
+					summary: "MCP filesystem.edit_file",
+					mcpServerName: "filesystem",
+					mcpToolName: "edit_file",
+					filesAffected: ["c:/repo/.roo/rpi/child/state.json"],
+				}),
+			],
+			taskText: "fix the bug",
+			mode: "code",
+			strictness: "standard",
+			writeOps: 1,
+			commandOps: 0,
+		})
+
+		expect(result.passed).toBe(false)
+		expect(result.checks.find((c) => c.name === "Implementation evidence")?.status).toBe("failed")
+	})
+
 	it("fails standard strictness when last command failed", () => {
 		const result = engine.evaluate({
 			observations: [

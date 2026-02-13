@@ -24,6 +24,9 @@ export interface RpiToolObservation {
 	exitCode?: number
 	diffSummary?: string
 	matchCount?: number
+	/** MCP metadata when toolName is `use_mcp_tool` */
+	mcpServerName?: string
+	mcpToolName?: string
 }
 
 interface RpiTaskStep {
@@ -83,6 +86,11 @@ interface RpiAutopilotContext {
 	getApiConfiguration: () => Promise<ProviderSettings | undefined>
 	isCouncilEngineEnabled: () => boolean
 	getVerificationStrictness?: () => "lenient" | "standard" | "strict"
+	/**
+	 * When a parent task is resumed after a delegated child completes, the parent history
+	 * includes the child's taskId. Expose it so RPI can consider the child's tool evidence.
+	 */
+	getCompletedChildTaskId?: () => string | undefined
 	onCouncilEvent?: (event: {
 		phase: RpiCouncilPhase
 		trigger: "phase_change" | "completion_attempt" | "complexity_threshold"
@@ -112,6 +120,29 @@ const WRITE_TOOLS = new Set<string>([
 const COMMAND_TOOLS = new Set<string>(["execute_command", "read_command_output"])
 
 const IMPLEMENTATION_TOOLS = new Set<string>([...WRITE_TOOLS, ...COMMAND_TOOLS, "use_mcp_tool"])
+
+const MCP_WRITE_TOOL_NAMES = new Set<string>([
+	"edit_file",
+	"write_file",
+	"write_to_file",
+	"apply_diff",
+	"search_and_replace",
+	"search_replace",
+	"apply_patch",
+	"delete_file",
+	"move_file",
+	"rename_file",
+	"create_file",
+])
+
+const MCP_COMMAND_TOOL_NAMES = new Set<string>(["execute_command", "read_command_output", "run_command"])
+
+const isRpiStateMutationPath = (filePath: string): boolean => {
+	const normalized = filePath.replace(/\\/g, "/").toLowerCase()
+	return (
+		(normalized.includes("/.roo/rpi/") || normalized.startsWith(".roo/rpi/")) && normalized.endsWith("/state.json")
+	)
+}
 
 const PLANNING_TOOLS = new Set<string>(["update_todo_list", "ask_followup_question", "switch_mode", "new_task"])
 
@@ -276,11 +307,22 @@ export class RpiAutopilot {
 			this.state.lastToolAt = new Date().toISOString()
 			this.state.lastUpdatedAt = new Date().toISOString()
 
-			if (WRITE_TOOLS.has(toolName)) {
+			const mcpToolName =
+				toolName === "use_mcp_tool" && typeof params?.tool_name === "string" ? params.tool_name : undefined
+			const mcpArgs =
+				toolName === "use_mcp_tool" && params && typeof (params as any).arguments === "object"
+					? ((params as any).arguments as Record<string, unknown> | undefined)
+					: undefined
+			const mcpPath = typeof mcpArgs?.path === "string" ? (mcpArgs.path as string) : undefined
+
+			const shouldCountMcpWrite =
+				!!mcpToolName && MCP_WRITE_TOOL_NAMES.has(mcpToolName) && (!mcpPath || !isRpiStateMutationPath(mcpPath))
+
+			if (WRITE_TOOLS.has(toolName) || shouldCountMcpWrite) {
 				this.state.writeOps += 1
 			}
 
-			if (COMMAND_TOOLS.has(toolName)) {
+			if (COMMAND_TOOLS.has(toolName) || (!!mcpToolName && MCP_COMMAND_TOOL_NAMES.has(mcpToolName))) {
 				this.state.commandOps += 1
 			}
 
@@ -296,8 +338,15 @@ export class RpiAutopilot {
 				await this.appendFinding("info", `Planning activity via \`${toolName}\`.`)
 			}
 
-			if (params?.path && typeof params.path === "string" && WRITE_TOOLS.has(toolName)) {
-				this.appendProgress(`Tool \`${toolName}\` started on \`${params.path}\`.`)
+			const effectivePath =
+				typeof params?.path === "string"
+					? params.path
+					: toolName === "use_mcp_tool" && typeof mcpPath === "string"
+						? mcpPath
+						: undefined
+
+			if (effectivePath && (WRITE_TOOLS.has(toolName) || shouldCountMcpWrite)) {
+				this.appendProgress(`Tool \`${toolName}\` started on \`${effectivePath}\`.`)
 			} else if (IMPLEMENTATION_TOOLS.has(toolName)) {
 				this.appendProgress(`Tool \`${toolName}\` started.`)
 			}
@@ -433,15 +482,26 @@ export class RpiAutopilot {
 				await this.maybeRunCouncilForPhase("verification", "completion_attempt")
 			}
 
+			const completedChildTaskId = this.context.getCompletedChildTaskId?.()
+			const childEvidence = completedChildTaskId
+				? await this.tryLoadExternalEvidence(completedChildTaskId)
+				: undefined
+
+			const effectiveObservations = childEvidence
+				? [...this.state.observations, ...childEvidence.observations]
+				: this.state.observations
+			const effectiveWriteOps = this.state.writeOps + (childEvidence?.writeOps ?? 0)
+			const effectiveCommandOps = this.state.commandOps + (childEvidence?.commandOps ?? 0)
+
 			// Run verification engine with quality gates
 			const strictness = this.context.getVerificationStrictness?.() ?? "lenient"
 			const verification = this.verificationEngine.evaluate({
-				observations: this.state.observations,
+				observations: effectiveObservations,
 				taskText: this.context.getTaskText() ?? "",
 				mode: currentMode,
 				strictness,
-				writeOps: this.state.writeOps,
-				commandOps: this.state.commandOps,
+				writeOps: effectiveWriteOps,
+				commandOps: effectiveCommandOps,
 			})
 
 			if (!verification.passed) {
@@ -1203,6 +1263,40 @@ export class RpiAutopilot {
 				return undefined
 			}
 			return parsed as RpiState
+		} catch {
+			return undefined
+		}
+	}
+
+	private getExternalStatePath(taskId: string): string {
+		const taskDirName = taskId.replace(/[^a-zA-Z0-9._-]/g, "_")
+		return path.join(this.context.cwd, ".roo", "rpi", taskDirName, "state.json")
+	}
+
+	private async tryLoadExternalEvidence(taskId: string): Promise<
+		| {
+				observations: RpiToolObservation[]
+				writeOps: number
+				commandOps: number
+		  }
+		| undefined
+	> {
+		try {
+			const statePath = this.getExternalStatePath(taskId)
+			const content = await fs.readFile(statePath, "utf-8")
+			const parsed = JSON.parse(content) as Partial<RpiState>
+			if (!parsed || typeof parsed !== "object") {
+				return undefined
+			}
+			if (parsed.version !== 1) {
+				return undefined
+			}
+
+			return {
+				observations: Array.isArray(parsed.observations) ? (parsed.observations as RpiToolObservation[]) : [],
+				writeOps: typeof parsed.writeOps === "number" ? parsed.writeOps : 0,
+				commandOps: typeof parsed.commandOps === "number" ? parsed.commandOps : 0,
+			}
 		} catch {
 			return undefined
 		}

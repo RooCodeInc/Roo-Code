@@ -167,6 +167,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	readonly taskId: string
 	readonly rootTaskId?: string
 	readonly parentTaskId?: string
+	readonly completedByChildId?: string
+	readonly completionResultSummary?: string
 	childTaskId?: string
 	pendingNewTaskToolCallId?: string
 
@@ -593,6 +595,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.taskId = historyItem ? historyItem.id : uuidv7()
 		this.rootTaskId = historyItem ? historyItem.rootTaskId : rootTask?.taskId
 		this.parentTaskId = historyItem ? historyItem.parentTaskId : parentTask?.taskId
+		this.completedByChildId = historyItem?.completedByChildId
+		this.completionResultSummary = historyItem?.completionResultSummary
 		this.childTaskId = undefined
 
 		this.metadata = {
@@ -4778,6 +4782,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				getTaskText: () => this.metadata.task,
 				getApiConfiguration: () => this.getRpiCouncilApiConfiguration(),
 				isCouncilEngineEnabled: () => this.isRpiCouncilEngineEnabled(),
+				getCompletedChildTaskId: () => this.completedByChildId,
 				getVerificationStrictness: () => {
 					const provider = this.providerRef.deref()
 					const value = provider?.contextProxy.getValue("rpiVerificationStrictness")

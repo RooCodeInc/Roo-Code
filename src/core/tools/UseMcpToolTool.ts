@@ -33,6 +33,11 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			// Validate parameters
 			const validation = await this.validateParams(task, params, pushToolResult)
 			if (!validation.isValid) {
+				this._rpiObservationExtras = {
+					success: false,
+					error: "Invalid MCP tool parameters",
+					summary: "MCP tool invocation failed: invalid parameters",
+				}
 				return
 			}
 
@@ -41,12 +46,27 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			// Validate that the tool exists on the server
 			const toolValidation = await this.validateToolExists(task, serverName, toolName, pushToolResult)
 			if (!toolValidation.isValid) {
+				this._rpiObservationExtras = {
+					success: false,
+					error: "Unknown or disabled MCP tool",
+					summary: `MCP tool invocation failed: ${serverName}.${toolName}`,
+					mcpServerName: serverName,
+					mcpToolName: toolName,
+				}
 				return
 			}
 
 			// Use the resolved tool name (original name from the server) for MCP calls
 			// This handles cases where models mangle hyphens to underscores
 			const resolvedToolName = toolValidation.resolvedToolName ?? toolName
+
+			const argPath = typeof parsedArguments?.path === "string" ? parsedArguments.path : undefined
+			this._rpiObservationExtras = {
+				mcpServerName: serverName,
+				mcpToolName: resolvedToolName,
+				summary: `MCP ${serverName}.${resolvedToolName}`,
+				filesAffected: argPath ? [argPath] : undefined,
+			}
 
 			// Reset mistake count on successful validation
 			task.consecutiveMistakeCount = 0
@@ -63,11 +83,17 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			const didApprove = await askApproval("use_mcp_server", completeMessage)
 
 			if (!didApprove) {
+				this._rpiObservationExtras = {
+					...this._rpiObservationExtras,
+					success: false,
+					error: "Rejected by user",
+					summary: `MCP tool rejected by user: ${serverName}.${resolvedToolName}`,
+				}
 				return
 			}
 
 			// Execute the tool and process results
-			await this.executeToolAndProcessResult(
+			const { isError } = await this.executeToolAndProcessResult(
 				task,
 				serverName,
 				resolvedToolName,
@@ -75,6 +101,16 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 				executionId,
 				pushToolResult,
 			)
+
+			if (isError) {
+				task.didToolFailInCurrentTurn = true
+				this._rpiObservationExtras = {
+					...this._rpiObservationExtras,
+					success: false,
+					error: "MCP tool returned error",
+					summary: `MCP tool failed: ${serverName}.${resolvedToolName}`,
+				}
+			}
 		} catch (error) {
 			await handleError("executing MCP tool", error as Error)
 		}
@@ -297,7 +333,7 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 		parsedArguments: Record<string, unknown> | undefined,
 		executionId: string,
 		pushToolResult: (content: string | Array<any>) => void,
-	): Promise<void> {
+	): Promise<{ isError: boolean }> {
 		await task.say("mcp_server_request_started")
 
 		// Send started status
@@ -312,6 +348,7 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 
 		let toolResultPretty = "(No response)"
 		let images: string[] = []
+		const isError = !toolResult || toolResult.isError === true
 
 		if (toolResult) {
 			const { text: outputText, images: extractedImages } = this.processToolContent(toolResult)
@@ -347,6 +384,7 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 
 		await task.say("mcp_server_response", toolResultPretty, images)
 		pushToolResult(formatResponse.toolResult(toolResultPretty, images))
+		return { isError }
 	}
 }
 
