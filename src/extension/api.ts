@@ -151,6 +151,10 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 						}
 
 						break
+					case TaskCommandName.DeleteQueuedMessage:
+						this.log(`[API] DeleteQueuedMessage -> ${data}`)
+						this.deleteQueuedMessage(data)
+						break
 				}
 			})
 		}
@@ -264,6 +268,10 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 		}
 
 		await this.sidebarProvider.postMessageToWebview({ type: "invoke", invoke: "sendMessage", text, images })
+	}
+
+	public deleteQueuedMessage(messageId: string) {
+		this.sidebarProvider.getCurrentTask()?.messageQueueService.removeMessage(messageId)
 	}
 
 	public async pressPrimaryButton() {

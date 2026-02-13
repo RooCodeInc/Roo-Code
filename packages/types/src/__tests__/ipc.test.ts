@@ -6,8 +6,19 @@ describe("IPC Types", () => {
 			expect(TaskCommandName.ResumeTask).toBe("ResumeTask")
 		})
 
+		it("should include DeleteQueuedMessage command", () => {
+			expect(TaskCommandName.DeleteQueuedMessage).toBe("DeleteQueuedMessage")
+		})
+
 		it("should have all expected task commands", () => {
-			const expectedCommands = ["StartNewTask", "CancelTask", "CloseTask", "ResumeTask"]
+			const expectedCommands = [
+				"StartNewTask",
+				"CancelTask",
+				"CloseTask",
+				"ResumeTask",
+				"SendMessage",
+				"DeleteQueuedMessage",
+			]
 			const actualCommands = Object.values(TaskCommandName)
 
 			expectedCommands.forEach((command) => {
@@ -64,6 +75,41 @@ describe("IPC Types", () => {
 		it("should reject ResumeTask command without data", () => {
 			const invalidCommand = {
 				commandName: TaskCommandName.ResumeTask,
+				// Missing data field
+			}
+
+			const result = taskCommandSchema.safeParse(invalidCommand)
+			expect(result.success).toBe(false)
+		})
+
+		it("should validate DeleteQueuedMessage command with messageId", () => {
+			const command = {
+				commandName: TaskCommandName.DeleteQueuedMessage,
+				data: "msg-abc-123",
+			}
+
+			const result = taskCommandSchema.safeParse(command)
+			expect(result.success).toBe(true)
+
+			if (result.success && result.data.commandName === TaskCommandName.DeleteQueuedMessage) {
+				expect(result.data.commandName).toBe("DeleteQueuedMessage")
+				expect(result.data.data).toBe("msg-abc-123")
+			}
+		})
+
+		it("should reject DeleteQueuedMessage command with invalid data", () => {
+			const invalidCommand = {
+				commandName: TaskCommandName.DeleteQueuedMessage,
+				data: 123, // Should be string
+			}
+
+			const result = taskCommandSchema.safeParse(invalidCommand)
+			expect(result.success).toBe(false)
+		})
+
+		it("should reject DeleteQueuedMessage command without data", () => {
+			const invalidCommand = {
+				commandName: TaskCommandName.DeleteQueuedMessage,
 				// Missing data field
 			}
 
