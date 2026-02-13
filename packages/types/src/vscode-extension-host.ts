@@ -403,6 +403,7 @@ export type ExtensionState = Pick<
 	taskSyncEnabled: boolean
 	featureRoomoteControlEnabled: boolean
 	openAiCodexIsAuthenticated?: boolean
+	openAiCodexEmail?: string
 	debug?: boolean
 }
 
