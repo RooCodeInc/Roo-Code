@@ -1,5 +1,5 @@
 /**
- * Converter from Anthropic-format `ApiMessage` to the new `RooMessage` format.
+ * Converter from Anthropic-format `LegacyApiMessage` to the new `RooMessage` format.
  *
  * This is the critical backward-compatibility piece that allows old conversation
  * histories stored in Anthropic format to be read and converted to the new format.
@@ -9,7 +9,7 @@
  */
 
 import type { TextPart, ImagePart, ToolCallPart, ToolResultPart, ReasoningPart } from "../rooMessage"
-import type { ApiMessage } from "../apiMessages"
+import type { LegacyApiMessage } from "../apiMessages"
 import type {
 	RooMessage,
 	RooUserMessage,
@@ -28,10 +28,10 @@ import type {
 type LooseProviderOptions = Record<string, Record<string, unknown>>
 
 /**
- * Extract Roo-specific metadata fields from an ApiMessage.
+ * Extract Roo-specific metadata fields from a LegacyApiMessage.
  * Only includes fields that are actually defined (avoids `undefined` keys).
  */
-function extractMetadata(message: ApiMessage): RooMessageMetadata {
+function extractMetadata(message: LegacyApiMessage): RooMessageMetadata {
 	const metadata: RooMessageMetadata = {}
 	if (message.ts !== undefined) metadata.ts = message.ts
 	if (message.condenseId !== undefined) metadata.condenseId = message.condenseId
@@ -82,7 +82,7 @@ function attachReasoningDetails(
 }
 
 /**
- * Convert an array of Anthropic-format `ApiMessage` objects to `RooMessage` format.
+ * Convert an array of Anthropic-format `LegacyApiMessage` objects to `RooMessage` format.
  *
  * Conversion rules:
  * - User string content → `RooUserMessage` with `content: string`
@@ -93,10 +93,10 @@ function attachReasoningDetails(
  * - Standalone reasoning messages → `RooReasoningMessage`
  * - Metadata fields (ts, condenseId, etc.) are preserved on all output messages
  *
- * @param messages - Array of ApiMessage (Anthropic format with metadata)
+ * @param messages - Array of LegacyApiMessage (Anthropic format with metadata)
  * @returns Array of RooMessage objects
  */
-export function convertAnthropicToRooMessages(messages: ApiMessage[]): RooMessage[] {
+export function convertAnthropicToRooMessages(messages: LegacyApiMessage[]): RooMessage[] {
 	const result: RooMessage[] = []
 
 	// First pass: build a map of tool call IDs to tool names from assistant messages.

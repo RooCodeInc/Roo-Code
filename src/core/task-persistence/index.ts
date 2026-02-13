@@ -1,5 +1,5 @@
-export { type ApiMessage, readApiMessages, saveApiMessages } from "./apiMessages"
-export { detectFormat, readRooMessages, saveRooMessages } from "./apiMessages"
+export { type LegacyApiMessage, type ApiMessage, readApiMessages, saveApiMessages } from "./apiMessages"
+export { detectFormat, readRooMessages, saveRooMessages, stripCacheProviderOptions } from "./apiMessages"
 export { readTaskMessages, saveTaskMessages } from "./taskMessages"
 export { taskMetadata } from "./taskMetadata"
 export type { RooMessage, RooMessageHistory, RooMessageMetadata } from "./rooMessage"

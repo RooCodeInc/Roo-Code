@@ -1,4 +1,4 @@
-import type { ApiMessage } from "../../apiMessages"
+import type { LegacyApiMessage } from "../../apiMessages"
 import type {
 	RooUserMessage,
 	RooAssistantMessage,
@@ -16,9 +16,9 @@ import { convertAnthropicToRooMessages } from "../anthropicToRoo"
 // Helpers
 // ────────────────────────────────────────────────────────────────────────────
 
-/** Shorthand to create an ApiMessage with required fields. */
-function apiMsg(overrides: Partial<ApiMessage> & Pick<ApiMessage, "role" | "content">): ApiMessage {
-	return overrides as ApiMessage
+/** Shorthand to create a LegacyApiMessage with required fields. */
+function apiMsg(overrides: Partial<LegacyApiMessage> & Pick<LegacyApiMessage, "role" | "content">): LegacyApiMessage {
+	return overrides as LegacyApiMessage
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -139,7 +139,7 @@ describe("user messages with URL image content", () => {
 
 describe("user messages with tool_result blocks", () => {
 	test("splits tool_result into RooToolMessage before RooUserMessage", () => {
-		const messages: ApiMessage[] = [
+		const messages: LegacyApiMessage[] = [
 			apiMsg({
 				role: "assistant",
 				content: [{ type: "tool_use", id: "call_1", name: "read_file", input: { path: "foo.ts" } }],
@@ -179,7 +179,7 @@ describe("user messages with tool_result blocks", () => {
 	})
 
 	test("handles tool_result with array content (joins text with newlines)", () => {
-		const messages: ApiMessage[] = [
+		const messages: LegacyApiMessage[] = [
 			apiMsg({
 				role: "assistant",
 				content: [{ type: "tool_use", id: "call_2", name: "list_files", input: {} }],
@@ -204,7 +204,7 @@ describe("user messages with tool_result blocks", () => {
 	})
 
 	test("handles tool_result with undefined content → (empty)", () => {
-		const messages: ApiMessage[] = [
+		const messages: LegacyApiMessage[] = [
 			apiMsg({
 				role: "assistant",
 				content: [{ type: "tool_use", id: "call_3", name: "run_command", input: {} }],
@@ -220,7 +220,7 @@ describe("user messages with tool_result blocks", () => {
 	})
 
 	test("handles tool_result with empty string content → (empty)", () => {
-		const messages: ApiMessage[] = [
+		const messages: LegacyApiMessage[] = [
 			apiMsg({
 				role: "assistant",
 				content: [{ type: "tool_use", id: "call_4", name: "run_command", input: {} }],
@@ -242,7 +242,7 @@ describe("user messages with tool_result blocks", () => {
 
 describe("user messages with mixed tool_result and text", () => {
 	test("separates tool results from text/image parts correctly", () => {
-		const messages: ApiMessage[] = [
+		const messages: LegacyApiMessage[] = [
 			apiMsg({
 				role: "assistant",
 				content: [
@@ -287,7 +287,7 @@ describe("user messages with mixed tool_result and text", () => {
 	})
 
 	test("only emits tool message when no text/image parts exist", () => {
-		const messages: ApiMessage[] = [
+		const messages: LegacyApiMessage[] = [
 			apiMsg({
 				role: "assistant",
 				content: [{ type: "tool_use", id: "tc_only", name: "some_tool", input: {} }],
@@ -733,7 +733,7 @@ describe("metadata preservation", () => {
 	})
 
 	test("carries over metadata on tool messages (split from user)", () => {
-		const messages: ApiMessage[] = [
+		const messages: LegacyApiMessage[] = [
 			apiMsg({
 				role: "assistant",
 				content: [{ type: "tool_use", id: "tc_meta", name: "my_tool", input: {} }],
@@ -787,7 +787,7 @@ describe("metadata preservation", () => {
 
 describe("tool name resolution", () => {
 	test("resolves tool names from preceding assistant messages", () => {
-		const messages: ApiMessage[] = [
+		const messages: LegacyApiMessage[] = [
 			apiMsg({
 				role: "assistant",
 				content: [{ type: "tool_use", id: "tc_x", name: "execute_command", input: { command: "ls" } }],
@@ -803,7 +803,7 @@ describe("tool name resolution", () => {
 	})
 
 	test("falls back to unknown_tool when tool call ID is not found", () => {
-		const messages: ApiMessage[] = [
+		const messages: LegacyApiMessage[] = [
 			apiMsg({
 				role: "user",
 				content: [{ type: "tool_result", tool_use_id: "nonexistent_id", content: "result" }],
@@ -815,7 +815,7 @@ describe("tool name resolution", () => {
 	})
 
 	test("resolves tool names across multiple assistant messages", () => {
-		const messages: ApiMessage[] = [
+		const messages: LegacyApiMessage[] = [
 			apiMsg({
 				role: "assistant",
 				content: [{ type: "tool_use", id: "tc_first", name: "tool_alpha", input: {} }],
@@ -878,7 +878,7 @@ describe("empty/undefined content edge cases", () => {
 	})
 
 	test("handles tool_result with image content blocks", () => {
-		const messages: ApiMessage[] = [
+		const messages: LegacyApiMessage[] = [
 			apiMsg({
 				role: "assistant",
 				content: [{ type: "tool_use", id: "tc_img", name: "screenshot", input: {} }],
@@ -914,7 +914,7 @@ describe("empty/undefined content edge cases", () => {
 
 describe("full conversation round-trip", () => {
 	test("converts a realistic multi-turn conversation", () => {
-		const messages: ApiMessage[] = [
+		const messages: LegacyApiMessage[] = [
 			// Turn 1: user asks a question
 			apiMsg({ role: "user", content: "Can you read my config file?", ts: 1000 }),
 			// Turn 2: assistant uses a tool

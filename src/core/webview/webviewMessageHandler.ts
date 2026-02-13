@@ -25,7 +25,7 @@ import { customToolRegistry } from "@roo-code/core"
 import { CloudService } from "@roo-code/cloud"
 import { TelemetryService } from "@roo-code/telemetry"
 
-import { type ApiMessage } from "../task-persistence/apiMessages"
+import { type LegacyApiMessage } from "../task-persistence/apiMessages"
 import { saveTaskMessages } from "../task-persistence"
 
 import { ClineProvider } from "./ClineProvider"
@@ -131,11 +131,11 @@ export const webviewMessageHandler = async (
 
 		// Find all matching API messages by timestamp
 		const allApiMatches = currentCline.apiConversationHistory
-			.map((msg: ApiMessage, idx: number) => ({ msg, idx }))
-			.filter(({ msg }: { msg: ApiMessage }) => msg.ts === messageTs)
+			.map((msg: LegacyApiMessage, idx: number) => ({ msg, idx }))
+			.filter(({ msg }: { msg: LegacyApiMessage }) => msg.ts === messageTs)
 
 		// Prefer non-summary message if multiple matches exist (handles timestamp collision after condense)
-		const preferred = allApiMatches.find(({ msg }: { msg: ApiMessage }) => !msg.isSummary) || allApiMatches[0]
+		const preferred = allApiMatches.find(({ msg }: { msg: LegacyApiMessage }) => !msg.isSummary) || allApiMatches[0]
 		const apiConversationHistoryIndex = preferred?.idx ?? -1
 
 		return { messageIndex, apiConversationHistoryIndex }
@@ -148,7 +148,7 @@ export const webviewMessageHandler = async (
 	const findFirstApiIndexAtOrAfter = (ts: number, currentCline: any) => {
 		if (typeof ts !== "number") return -1
 		return currentCline.apiConversationHistory.findIndex(
-			(msg: ApiMessage) => typeof msg?.ts === "number" && (msg.ts as number) >= ts,
+			(msg: LegacyApiMessage) => typeof msg?.ts === "number" && (msg.ts as number) >= ts,
 		)
 	}
 

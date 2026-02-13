@@ -110,7 +110,7 @@ import { manageContext, willManageContext } from "../context-management"
 import { ClineProvider } from "../webview/ClineProvider"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
 import {
-	type ApiMessage,
+	type LegacyApiMessage,
 	readApiMessages,
 	saveApiMessages,
 	readTaskMessages,
