@@ -32,26 +32,39 @@ export class CodeIndexManager {
 	private _isRecoveringFromError = false
 
 	public static getInstance(context: vscode.ExtensionContext, workspacePath?: string): CodeIndexManager | undefined {
-		// If workspacePath is not provided, try to get it from the active editor or first workspace folder
-		if (!workspacePath) {
+		// Resolve the workspace folder to get both fsPath and the real URI
+		let folder: vscode.WorkspaceFolder | undefined
+
+		if (workspacePath) {
+			folder = vscode.workspace.workspaceFolders?.find((f) => f.uri.fsPath === workspacePath)
+		} else {
 			const activeEditor = vscode.window.activeTextEditor
 			if (activeEditor) {
-				const workspaceFolder = vscode.workspace.getWorkspaceFolder(activeEditor.document.uri)
-				workspacePath = workspaceFolder?.uri.fsPath
+				folder = vscode.workspace.getWorkspaceFolder(activeEditor.document.uri)
 			}
-
-			if (!workspacePath) {
+			if (!folder) {
 				const workspaceFolders = vscode.workspace.workspaceFolders
 				if (!workspaceFolders || workspaceFolders.length === 0) {
 					return undefined
 				}
-				// Use the first workspace folder as fallback
-				workspacePath = workspaceFolders[0].uri.fsPath
+				folder = workspaceFolders[0]
 			}
+			workspacePath = folder.uri.fsPath
 		}
 
 		if (!CodeIndexManager.instances.has(workspacePath)) {
-			CodeIndexManager.instances.set(workspacePath, new CodeIndexManager(workspacePath, context))
+			// folder may be undefined when workspacePath was provided but doesn't match
+			// any workspace folder (e.g. cwd passed from a tool). Fall back to file:// URI.
+			const folderUri =
+				folder?.uri ??
+				({
+					fsPath: workspacePath,
+					scheme: "file",
+					authority: "",
+					path: workspacePath,
+					toString: () => `file://${workspacePath}`,
+				} as unknown as vscode.Uri)
+			CodeIndexManager.instances.set(workspacePath, new CodeIndexManager(workspacePath, folderUri, context))
 		}
 		return CodeIndexManager.instances.get(workspacePath)!
 	}
@@ -64,28 +77,35 @@ export class CodeIndexManager {
 	}
 
 	private readonly workspacePath: string
+	private readonly _folderUri: vscode.Uri
 	private readonly context: vscode.ExtensionContext
 
 	// Private constructor for singleton pattern
-	private constructor(workspacePath: string, context: vscode.ExtensionContext) {
+	private constructor(workspacePath: string, folderUri: vscode.Uri, context: vscode.ExtensionContext) {
 		this.workspacePath = workspacePath
+		this._folderUri = folderUri
 		this.context = context
 		this._stateManager = new CodeIndexStateManager()
 	}
 
 	// --- Public API ---
 
+	/**
+	 * Returns the workspaceState key for per-folder indexing enablement,
+	 * keyed by the real workspace folder URI so local/remote schemes cannot collide.
+	 */
+	private _workspaceEnabledKey(): string {
+		return "codeIndexWorkspaceEnabled:" + this._folderUri.toString(true)
+	}
+
 	public get isWorkspaceEnabled(): boolean {
-		const explicit = this.context.workspaceState.get<boolean | undefined>(
-			`codeIndexWorkspaceEnabled:${this.workspacePath}`,
-			undefined,
-		)
+		const explicit = this.context.workspaceState.get<boolean | undefined>(this._workspaceEnabledKey(), undefined)
 		if (explicit !== undefined) return explicit
 		return this.autoEnableDefault
 	}
 
 	public async setWorkspaceEnabled(enabled: boolean): Promise<void> {
-		await this.context.workspaceState.update(`codeIndexWorkspaceEnabled:${this.workspacePath}`, enabled)
+		await this.context.workspaceState.update(this._workspaceEnabledKey(), enabled)
 	}
 
 	public get autoEnableDefault(): boolean {

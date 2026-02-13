@@ -185,7 +185,9 @@ export class DirectoryScanner implements IDirectoryScanner {
 									if (currentBatchBlocks.length >= this.batchSegmentThreshold) {
 										// Wait if we've reached the maximum pending batches
 										while (pendingBatchCount >= MAX_PENDING_BATCHES) {
-											if (signal?.aborted) break
+											if (signal?.aborted) {
+												throw new DOMException("Indexing aborted", "AbortError")
+											}
 											await Promise.race(activeBatchPromises)
 										}
 

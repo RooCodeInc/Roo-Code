@@ -3,18 +3,45 @@ import { CodeIndexServiceFactory } from "../service-factory"
 import type { MockedClass } from "vitest"
 import * as path from "path"
 
+// Helper: create a mock vscode.Uri from an fsPath
+function mockUri(fsPath: string, scheme = "file") {
+	return {
+		fsPath,
+		scheme,
+		authority: "",
+		path: fsPath,
+		toString: (skipEncoding?: boolean) => `${scheme}://${fsPath}`,
+	}
+}
+
 // Mock vscode module
 vi.mock("vscode", () => {
 	const testPath = require("path")
 	const testWorkspacePath = testPath.join(testPath.sep, "test", "workspace")
 	return {
+		Uri: {
+			file: (p: string) => ({
+				fsPath: p,
+				scheme: "file",
+				authority: "",
+				path: p,
+				toString: (_skipEncoding?: boolean) => `file://${p}`,
+			}),
+			joinPath: vi.fn((...args: any[]) => ({ fsPath: args.join("/") })),
+		},
 		window: {
 			activeTextEditor: null,
 		},
 		workspace: {
 			workspaceFolders: [
 				{
-					uri: { fsPath: testWorkspacePath },
+					uri: {
+						fsPath: testWorkspacePath,
+						scheme: "file",
+						authority: "",
+						path: testWorkspacePath,
+						toString: (_skipEncoding?: boolean) => `file://${testWorkspacePath}`,
+					},
 					name: "test",
 					index: 0,
 				},
@@ -25,8 +52,9 @@ vi.mock("vscode", () => {
 				onDidDelete: vi.fn().mockReturnValue({ dispose: vi.fn() }),
 				dispose: vi.fn(),
 			}),
+			getWorkspaceFolder: vi.fn(),
 		},
-		RelativePattern: vi.fn().mockImplementation((base, pattern) => ({ base, pattern })),
+		RelativePattern: vi.fn().mockImplementation((base: any, pattern: any) => ({ base, pattern })),
 	}
 })
 
@@ -672,18 +700,59 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 			expect(manager.isWorkspaceEnabled).toBe(false)
 		})
 
-		it("should store enablement per folder, not per window", async () => {
-			await manager.setAutoEnableDefault(false)
+		it("should store enablement per folder URI, not per window", async () => {
+			CodeIndexManager.disposeAll()
 
-			// Enable indexing for the current manager's folder
-			await manager.setWorkspaceEnabled(true)
-			expect(manager.isWorkspaceEnabled).toBe(true)
+			const vscode = await import("vscode")
 
-			// Create a second manager for a different folder path
-			const otherManager = CodeIndexManager.getInstance(mockContext as any, "/other/workspace")!
+			const folderAPath = path.join(path.sep, "test", "folderA")
+			const folderBPath = path.join(path.sep, "test", "folderB")
+			const folderAUri = mockUri(folderAPath)
+			const folderBUri = mockUri(folderBPath)
 
-			// The other folder should NOT be enabled — keys are per-folder
-			expect(otherManager.isWorkspaceEnabled).toBe(false)
+			// Both folders share the same workspaceState (same window)
+			const sharedStore: Record<string, any> = {}
+			const sharedContext = {
+				...mockContext,
+				workspaceState: {
+					get: vi.fn((key: string, defaultValue?: any) => sharedStore[key] ?? defaultValue),
+					update: vi.fn(async (key: string, value: any) => {
+						sharedStore[key] = value
+					}),
+				} as any,
+				globalState: {
+					get: vi.fn((_key: string, _defaultValue?: any) => false),
+					update: vi.fn(),
+				} as any,
+			}
+
+			// Patch workspaceFolders to include both folders
+			;(vscode.workspace as any).workspaceFolders = [
+				{ uri: folderAUri, name: "folderA", index: 0 },
+				{ uri: folderBUri, name: "folderB", index: 1 },
+			]
+
+			const managerA = CodeIndexManager.getInstance(sharedContext as any, folderAPath)!
+			const managerB = CodeIndexManager.getInstance(sharedContext as any, folderBPath)!
+
+			// Both start disabled (autoEnableDefault is false via globalState mock)
+			expect(managerA.isWorkspaceEnabled).toBe(false)
+			expect(managerB.isWorkspaceEnabled).toBe(false)
+
+			// Enable A only
+			await managerA.setWorkspaceEnabled(true)
+
+			expect(managerA.isWorkspaceEnabled).toBe(true)
+			expect(managerB.isWorkspaceEnabled).toBe(false)
+
+			// Enable B, disable A
+			await managerB.setWorkspaceEnabled(true)
+			await managerA.setWorkspaceEnabled(false)
+
+			expect(managerA.isWorkspaceEnabled).toBe(false)
+			expect(managerB.isWorkspaceEnabled).toBe(true)
+
+			CodeIndexManager.disposeAll()
 		})
 	})
 

@@ -186,6 +186,7 @@ export class CodeIndexOrchestrator {
 
 				if (signal.aborted) {
 					await this.cacheManager.flush()
+					this.stopWatcher()
 					this.stateManager.setSystemState("Standby", t("embeddings:orchestrator.indexingStopped"))
 					return
 				}
@@ -246,6 +247,7 @@ export class CodeIndexOrchestrator {
 
 				if (signal.aborted) {
 					await this.cacheManager.flush()
+					this.stopWatcher()
 					this.stateManager.setSystemState("Standby", t("embeddings:orchestrator.indexingStopped"))
 					return
 				}
