@@ -1,11 +1,11 @@
 import PQueue from "p-queue"
 
-import { findRun, finishRun, getTasks } from "../db/index"
-import { EVALS_REPO_PATH } from "../exercises/index"
+import { findRun, finishRun, getTasks } from "../db/index.js"
+import { EVALS_REPO_PATH } from "../exercises/index.js"
 
-import { Logger, getTag, isDockerContainer, resetEvalsRepo, commitEvalsRepoChanges } from "./utils"
-import { startHeartbeat, stopHeartbeat } from "./redis"
-import { processTask, processTaskInContainer } from "./processTask"
+import { Logger, getTag, isDockerContainer, resetEvalsRepo, commitEvalsRepoChanges } from "./utils.js"
+import { startHeartbeat, stopHeartbeat } from "./redis.js"
+import { processTask, processTaskInContainer } from "./processTask.js"
 
 export const runEvals = async (runId: number) => {
 	const run = await findRun(runId)

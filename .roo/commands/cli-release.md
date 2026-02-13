@@ -1,5 +1,5 @@
 ---
-description: "Prepare a new release of the Roo Code CLI"
+description: "Create a new release of the Roo Code CLI"
 argument-hint: "[version-description]"
 mode: code
 ---
@@ -84,3 +84,41 @@ mode: code
     - [ ] All CI checks pass" \
         --base main
     ```
+
+7. Wait for PR approval and merge:
+
+    - Request review if required by your workflow
+    - Ensure CI checks pass
+    - Merge the PR using: `gh pr merge --squash --delete-branch`
+    - Or merge via the GitHub UI
+
+8. Run the release script from the monorepo root:
+
+    ```bash
+    # Ensure you're on the updated main branch after the PR merge
+    git checkout main
+    git pull origin main
+
+    # Run the release script
+    ./apps/cli/scripts/release.sh
+    ```
+
+    The release script will automatically:
+
+    - Build the extension and CLI
+    - Create a platform-specific tarball
+    - Verify the installation works correctly (runs --help, --version, and e2e test)
+    - Extract changelog content and include it in the GitHub release notes
+    - Create the GitHub release with the tarball attached
+
+9. After a successful release, verify:
+    - Check the release page: https://github.com/RooCodeInc/Roo-Code/releases
+    - Verify the "What's New" section contains the changelog content
+    - Test installation: `curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/install.sh | sh`
+
+**Notes:**
+
+- The release script requires GitHub CLI (`gh`) to be installed and authenticated
+- If a release already exists for the tag, the script will prompt to delete and recreate it
+- The script creates a tarball for the current platform only (darwin-arm64, darwin-x64, linux-arm64, or linux-x64)
+- Multi-platform releases require running the script on each platform and manually uploading additional tarballs

@@ -1,16 +1,14 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { isRetiredProvider, type ProviderSettings, type ModelInfo } from "@roo-code/types"
-
-import type { RooMessage } from "../core/task-persistence/rooMessage"
+import type { ProviderSettings, ModelInfo } from "@roo-code/types"
 
 import { ApiStream } from "./transform/stream"
 
 import {
 	AnthropicHandler,
 	AwsBedrockHandler,
-	AzureHandler,
+	CerebrasHandler,
 	OpenRouterHandler,
 	VertexHandler,
 	AnthropicVertexHandler,
@@ -23,16 +21,24 @@ import {
 	MoonshotHandler,
 	MistralHandler,
 	VsCodeLmHandler,
+	UnboundHandler,
 	RequestyHandler,
 	FakeAIHandler,
 	XAIHandler,
+	GroqHandler,
+	HuggingFaceHandler,
+	ChutesHandler,
 	LiteLLMHandler,
 	QwenCodeHandler,
 	SambaNovaHandler,
+	IOIntelligenceHandler,
+	DoubaoHandler,
 	ZAiHandler,
 	FireworksHandler,
 	RooHandler,
+	FeatherlessHandler,
 	VercelAiGatewayHandler,
+	DeepInfraHandler,
 	MiniMaxHandler,
 	BasetenHandler,
 } from "./providers"
@@ -45,13 +51,16 @@ export interface SingleCompletionHandler {
 export interface ApiHandlerCreateMessageMetadata {
 	/**
 	 * Task ID used for tracking and provider-specific features:
+	 * - DeepInfra: Used as prompt_cache_key for caching
 	 * - Roo: Sent as X-Roo-Task-ID header
 	 * - Requesty: Sent as trace_id
+	 * - Unbound: Sent in unbound_metadata
 	 */
 	taskId: string
 	/**
 	 * Current mode slug for provider-specific tracking:
 	 * - Requesty: Sent in extra metadata
+	 * - Unbound: Sent in unbound_metadata
 	 */
 	mode?: string
 	suppressPreviousResponseId?: boolean
@@ -88,17 +97,14 @@ export interface ApiHandlerCreateMessageMetadata {
 	 * Only applies to providers that support function calling restrictions (e.g., Gemini).
 	 */
 	allowedFunctionNames?: string[]
-	/** Provider-specific options for tool definitions (e.g. cache control). */
-	toolProviderOptions?: Record<string, Record<string, unknown>>
-	/** Provider-specific options for the system prompt (e.g. cache control).
-	 * Cache-aware providers use this to inject the system prompt as a cached
-	 * system message, since AI SDK v6 does not support providerOptions on the
-	 * `system` string parameter. */
-	systemProviderOptions?: Record<string, Record<string, unknown>>
 }
 
 export interface ApiHandler {
-	createMessage(systemPrompt: string, messages: RooMessage[], metadata?: ApiHandlerCreateMessageMetadata): ApiStream
+	createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream
 
 	getModel(): { id: string; info: ModelInfo }
 
@@ -111,31 +117,14 @@ export interface ApiHandler {
 	 * @returns A promise resolving to the token count
 	 */
 	countTokens(content: Array<Anthropic.Messages.ContentBlockParam>): Promise<number>
-
-	/**
-	 * Indicates whether this provider uses the Vercel AI SDK for streaming.
-	 * AI SDK providers handle reasoning blocks differently and need to preserve
-	 * them in conversation history for proper round-tripping.
-	 *
-	 * @returns true if the provider uses AI SDK, false otherwise
-	 */
-	isAiSdkProvider(): boolean
 }
 
 export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 	const { apiProvider, ...options } = configuration
 
-	if (apiProvider && isRetiredProvider(apiProvider)) {
-		throw new Error(
-			`Sorry, this provider is no longer supported. We saw very few Roo users actually using it and we need to reduce the surface area of our codebase so we can keep shipping fast and serving our community well in this space. It was a really hard decision but it lets us focus on what matters most to you. It sucks, we know.\n\nPlease select a different provider in your API profile settings.`,
-		)
-	}
-
 	switch (apiProvider) {
 		case "anthropic":
 			return new AnthropicHandler(options)
-		case "azure":
-			return new AzureHandler(options)
 		case "openrouter":
 			return new OpenRouterHandler(options)
 		case "bedrock":
@@ -158,6 +147,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new OpenAiNativeHandler(options)
 		case "deepseek":
 			return new DeepSeekHandler(options)
+		case "doubao":
+			return new DoubaoHandler(options)
 		case "qwen-code":
 			return new QwenCodeHandler(options)
 		case "moonshot":
@@ -166,24 +157,40 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new VsCodeLmHandler(options)
 		case "mistral":
 			return new MistralHandler(options)
+		case "unbound":
+			return new UnboundHandler(options)
 		case "requesty":
 			return new RequestyHandler(options)
 		case "fake-ai":
 			return new FakeAIHandler(options)
 		case "xai":
 			return new XAIHandler(options)
+		case "groq":
+			return new GroqHandler(options)
+		case "deepinfra":
+			return new DeepInfraHandler(options)
+		case "huggingface":
+			return new HuggingFaceHandler(options)
+		case "chutes":
+			return new ChutesHandler(options)
 		case "litellm":
 			return new LiteLLMHandler(options)
+		case "cerebras":
+			return new CerebrasHandler(options)
 		case "sambanova":
 			return new SambaNovaHandler(options)
 		case "zai":
 			return new ZAiHandler(options)
 		case "fireworks":
 			return new FireworksHandler(options)
+		case "io-intelligence":
+			return new IOIntelligenceHandler(options)
 		case "roo":
 			// Never throw exceptions from provider constructors
 			// The provider-proxy server will handle authentication and return appropriate error codes
 			return new RooHandler(options)
+		case "featherless":
+			return new FeatherlessHandler(options)
 		case "vercel-ai-gateway":
 			return new VercelAiGatewayHandler(options)
 		case "minimax":

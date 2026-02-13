@@ -7,12 +7,7 @@ import { ToolUse } from "../../../shared/tools"
 // Mock dependencies
 vi.mock("../../prompts/responses", () => ({
 	formatResponse: {
-		toolResult: vi.fn((result: string, images?: string[]) => {
-			if (images && images.length > 0) {
-				return `Tool result: ${result} [with ${images.length} image(s)]`
-			}
-			return `Tool result: ${result}`
-		}),
+		toolResult: vi.fn((result: string) => `Tool result: ${result}`),
 		toolError: vi.fn((error: string) => `Tool error: ${error}`),
 		invalidMcpToolArgumentError: vi.fn((server: string, tool: string) => `Invalid args for ${server}:${tool}`),
 		unknownMcpToolError: vi.fn((server: string, tool: string, availableTools: string[]) => {
@@ -250,7 +245,7 @@ describe("useMcpToolTool", () => {
 			expect(mockTask.consecutiveMistakeCount).toBe(0)
 			expect(mockAskApproval).toHaveBeenCalled()
 			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_request_started")
-			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "Tool executed successfully", [])
+			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "Tool executed successfully")
 			expect(mockPushToolResult).toHaveBeenCalledWith("Tool result: Tool executed successfully")
 		})
 
@@ -488,7 +483,7 @@ describe("useMcpToolTool", () => {
 			expect(mockTask.consecutiveMistakeCount).toBe(0)
 			expect(mockTask.recordToolError).not.toHaveBeenCalled()
 			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_request_started")
-			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "Tool executed successfully", [])
+			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "Tool executed successfully")
 		})
 
 		it("should reject unknown server names with available servers listed", async () => {
@@ -639,236 +634,6 @@ describe("useMcpToolTool", () => {
 
 			// The original tool name (with hyphens) should be passed to callTool
 			expect(callToolMock).toHaveBeenCalledWith("test-server", "get-user-profile", {})
-		})
-	})
-
-	describe("image handling", () => {
-		it("should handle tool response with image content", async () => {
-			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
-					server_name: "figma-server",
-					tool_name: "get_screenshot",
-					arguments: '{"nodeId": "123"}',
-				},
-				nativeArgs: {
-					server_name: "figma-server",
-					tool_name: "get_screenshot",
-					arguments: { nodeId: "123" },
-				},
-				partial: false,
-			}
-
-			mockAskApproval.mockResolvedValue(true)
-
-			const mockToolResult = {
-				content: [
-					{
-						type: "image",
-						mimeType: "image/png",
-						data: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ",
-					},
-				],
-				isError: false,
-			}
-
-			mockProviderRef.deref.mockReturnValue({
-				getMcpHub: () => ({
-					callTool: vi.fn().mockResolvedValue(mockToolResult),
-					getAllServers: vi.fn().mockReturnValue([
-						{
-							name: "figma-server",
-							tools: [{ name: "get_screenshot", description: "Get screenshot" }],
-						},
-					]),
-				}),
-				postMessageToWebview: vi.fn(),
-			})
-
-			await useMcpToolTool.handle(mockTask as Task, block as any, {
-				askApproval: mockAskApproval,
-				handleError: mockHandleError,
-				pushToolResult: mockPushToolResult,
-			})
-
-			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_request_started")
-			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "[1 image(s) received]", [
-				"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ",
-			])
-			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("with 1 image(s)"))
-		})
-
-		it("should handle tool response with both text and image content", async () => {
-			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
-					server_name: "figma-server",
-					tool_name: "get_node_info",
-					arguments: '{"nodeId": "123"}',
-				},
-				nativeArgs: {
-					server_name: "figma-server",
-					tool_name: "get_node_info",
-					arguments: { nodeId: "123" },
-				},
-				partial: false,
-			}
-
-			mockAskApproval.mockResolvedValue(true)
-
-			const mockToolResult = {
-				content: [
-					{ type: "text", text: "Node name: Button" },
-					{
-						type: "image",
-						mimeType: "image/png",
-						data: "base64imagedata",
-					},
-				],
-				isError: false,
-			}
-
-			mockProviderRef.deref.mockReturnValue({
-				getMcpHub: () => ({
-					callTool: vi.fn().mockResolvedValue(mockToolResult),
-					getAllServers: vi
-						.fn()
-						.mockReturnValue([
-							{ name: "figma-server", tools: [{ name: "get_node_info", description: "Get node info" }] },
-						]),
-				}),
-				postMessageToWebview: vi.fn(),
-			})
-
-			await useMcpToolTool.handle(mockTask as Task, block as any, {
-				askApproval: mockAskApproval,
-				handleError: mockHandleError,
-				pushToolResult: mockPushToolResult,
-			})
-
-			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_request_started")
-			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "Node name: Button", [
-				"data:image/png;base64,base64imagedata",
-			])
-			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("with 1 image(s)"))
-		})
-
-		it("should handle image with data URL already formatted", async () => {
-			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
-					server_name: "figma-server",
-					tool_name: "get_screenshot",
-					arguments: '{"nodeId": "123"}',
-				},
-				nativeArgs: {
-					server_name: "figma-server",
-					tool_name: "get_screenshot",
-					arguments: { nodeId: "123" },
-				},
-				partial: false,
-			}
-
-			mockAskApproval.mockResolvedValue(true)
-
-			const mockToolResult = {
-				content: [
-					{
-						type: "image",
-						mimeType: "image/jpeg",
-						data: "data:image/jpeg;base64,/9j/4AAQSkZJRg==",
-					},
-				],
-				isError: false,
-			}
-
-			mockProviderRef.deref.mockReturnValue({
-				getMcpHub: () => ({
-					callTool: vi.fn().mockResolvedValue(mockToolResult),
-					getAllServers: vi.fn().mockReturnValue([
-						{
-							name: "figma-server",
-							tools: [{ name: "get_screenshot", description: "Get screenshot" }],
-						},
-					]),
-				}),
-				postMessageToWebview: vi.fn(),
-			})
-
-			await useMcpToolTool.handle(mockTask as Task, block as any, {
-				askApproval: mockAskApproval,
-				handleError: mockHandleError,
-				pushToolResult: mockPushToolResult,
-			})
-
-			// Should not double-prefix the data URL
-			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "[1 image(s) received]", [
-				"data:image/jpeg;base64,/9j/4AAQSkZJRg==",
-			])
-		})
-
-		it("should handle multiple images in response", async () => {
-			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
-					server_name: "figma-server",
-					tool_name: "get_screenshots",
-					arguments: '{"nodeIds": ["1", "2"]}',
-				},
-				nativeArgs: {
-					server_name: "figma-server",
-					tool_name: "get_screenshots",
-					arguments: { nodeIds: ["1", "2"] },
-				},
-				partial: false,
-			}
-
-			mockAskApproval.mockResolvedValue(true)
-
-			const mockToolResult = {
-				content: [
-					{
-						type: "image",
-						mimeType: "image/png",
-						data: "image1data",
-					},
-					{
-						type: "image",
-						mimeType: "image/png",
-						data: "image2data",
-					},
-				],
-				isError: false,
-			}
-
-			mockProviderRef.deref.mockReturnValue({
-				getMcpHub: () => ({
-					callTool: vi.fn().mockResolvedValue(mockToolResult),
-					getAllServers: vi.fn().mockReturnValue([
-						{
-							name: "figma-server",
-							tools: [{ name: "get_screenshots", description: "Get screenshots" }],
-						},
-					]),
-				}),
-				postMessageToWebview: vi.fn(),
-			})
-
-			await useMcpToolTool.handle(mockTask as Task, block as any, {
-				askApproval: mockAskApproval,
-				handleError: mockHandleError,
-				pushToolResult: mockPushToolResult,
-			})
-
-			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "[2 image(s) received]", [
-				"data:image/png;base64,image1data",
-				"data:image/png;base64,image2data",
-			])
-			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("with 2 image(s)"))
 		})
 	})
 })

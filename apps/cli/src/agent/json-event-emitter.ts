@@ -258,6 +258,15 @@ export class JsonEventEmitter {
 				break
 			}
 
+			case "browser_action":
+			case "browser_action_result":
+				this.emitEvent({
+					type: "tool_result",
+					subtype: "browser",
+					tool_result: { name: "browser_action", output: msg.text },
+				})
+				break
+
 			case "mcp_server_response":
 				this.emitEvent({
 					type: "tool_result",
@@ -324,6 +333,15 @@ export class JsonEventEmitter {
 					id: msg.ts,
 					subtype: "command",
 					tool_use: { name: "execute_command", input: { command: msg.text } },
+				})
+				break
+
+			case "browser_action_launch":
+				this.emitEvent({
+					type: "tool_use",
+					id: msg.ts,
+					subtype: "browser",
+					tool_use: { name: "browser_action", input: { raw: msg.text } },
 				})
 				break
 

@@ -57,6 +57,17 @@ export function extractToolData(toolInfo: Record<string, unknown>): ToolData {
 		toolData.output = toolInfo.output as string
 	}
 
+	// Extract browser-related fields
+	if (toolInfo.action !== undefined) {
+		toolData.action = toolInfo.action as string
+	}
+	if (toolInfo.url !== undefined) {
+		toolData.url = toolInfo.url as string
+	}
+	if (toolInfo.coordinate !== undefined) {
+		toolData.coordinate = toolInfo.coordinate as string
+	}
+
 	// Extract batch file operations
 	if (Array.isArray(toolInfo.files)) {
 		toolData.batchFiles = (toolInfo.files as Array<Record<string, unknown>>).map((f) => ({
@@ -154,6 +165,12 @@ export function formatToolOutput(toolInfo: Record<string, unknown>): string {
 			return `📁 ${listPath || "."}${recursive ? " (recursive)" : ""}`
 		}
 
+		case "browser_action": {
+			const action = toolInfo.action as string
+			const url = toolInfo.url as string
+			return `🌐 ${action || "action"}${url ? `: ${url}` : ""}`
+		}
+
 		case "attempt_completion": {
 			const result = toolInfo.result as string
 			if (result) {
@@ -229,6 +246,12 @@ export function formatToolAskMessage(toolInfo: Record<string, unknown>): string 
 		case "apply_diff": {
 			const diffPath = toolInfo.path as string
 			return `Apply changes to: ${diffPath || "(no path)"}`
+		}
+
+		case "browser_action": {
+			const action = toolInfo.action as string
+			const url = toolInfo.url as string
+			return `Browser: ${action || "action"}${url ? ` - ${url}` : ""}`
 		}
 
 		default: {

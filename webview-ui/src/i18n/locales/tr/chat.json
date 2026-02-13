@@ -111,8 +111,6 @@
 	},
 	"selectMode": "Etkileşim modunu seçin",
 	"selectApiConfig": "API yapılandırmasını seçin",
-	"lockApiConfigAcrossModes": "Bu çalışma alanındaki tüm modlarda API yapılandırmasını kilitle",
-	"unlockApiConfigAcrossModes": "Bu çalışma alanındaki tüm modlarda API yapılandırması kilitli (kilidi açmak için tıkla)",
 	"enhancePrompt": "Ek bağlamla istemi geliştir",
 	"addImages": "Mesaja resim ekle",
 	"sendMessage": "Mesaj gönder",
@@ -220,8 +218,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) üst düzey dosyaları görüntülemek istiyor",
 		"didViewTopLevelOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) üst düzey dosyaları görüntüledi",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) tüm dosyaları özyinelemeli olarak görüntülemek istiyor",
-		"didViewRecursiveOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) tüm dosyaları özyinelemeli olarak görüntüledi",
-		"wantsToViewMultipleDirectories": "Roo birden fazla dizini görüntülemek istiyor"
+		"didViewRecursiveOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) tüm dosyaları özyinelemeli olarak görüntüledi"
 	},
 	"commandOutput": "Komut Çıktısı",
 	"commandExecution": {
@@ -348,8 +345,7 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"claudeOpus": "Claude Opus 4.6: Artık tüm sağlayıcılarda—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex ve OpenRouter—mevcut olup Anthropic'in en yetkin modelini tercih ettiğin platforma getiriyor.",
-			"gptCodex": "GPT-5.3-Codex: OpenAI'nin en son kodlama modeli artık OpenAI - ChatGPT sağlayıcısında desteklenmiş olup, ileri seviye kod oluşturma ve anlama sunuyor."
+			"smartCodeFolding": "Smart Code Folding: Bağlam yoğunlaştırması şimdi dosyalarınızın hafif bir haritasını korur—fonksiyon imzaları, sınıf bildirimleri ve tür tanımları. Bu, yoğunlaştırmadan sonra daha iyi devamlılık ve önceki çalışmaya atıfta bulunurken daha akıllı düzenlemeler sağlar."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",
@@ -364,6 +360,44 @@
 		"total": "Toplam Maliyet: ${{cost}}",
 		"includesSubtasks": "Alt görev maliyetlerini içerir"
 	},
+	"browser": {
+		"session": "Tarayıcı Oturumu",
+		"active": "Aktif",
+		"rooWantsToUse": "Roo tarayıcıyı kullanmak istiyor",
+		"consoleLogs": "Konsol Kayıtları",
+		"noNewLogs": "(Yeni kayıt yok)",
+		"screenshot": "Tarayıcı ekran görüntüsü",
+		"cursor": "imleç",
+		"navigation": {
+			"step": "Adım {{current}} / {{total}}",
+			"previous": "Önceki",
+			"next": "Sonraki"
+		},
+		"sessionStarted": "Tarayıcı Oturumu Başlatıldı",
+		"actions": {
+			"title": "Tarayıcı Eylemi: ",
+			"launched": "Tarayıcı başlatıldı",
+			"launch": "{{url}} adresinde tarayıcı başlat",
+			"clicked": "Tıklandı ({{coordinate}})",
+			"click": "Tıkla ({{coordinate}})",
+			"typed": "Yazıldı: {{text}}",
+			"type": "Yaz \"{{text}}\"",
+			"pressed": "Basıldı: {{key}}",
+			"press": "{{key}} tuşuna bas",
+			"scrolledDown": "Aşağı kaydırıldı",
+			"scrollDown": "Aşağı kaydır",
+			"scrolledUp": "Yukarı kaydırıldı",
+			"scrollUp": "Yukarı kaydır",
+			"hovered": "Üzerine gelinildi ({{coordinate}})",
+			"hover": "Üzerine gel ({{coordinate}})",
+			"resized": "Boyut değiştirildi: {{size}}",
+			"resize": "Boyutu değiştir {{size}}",
+			"screenshotSaved": "Ekran görüntüsü kaydedildi",
+			"screenshot": "Ekran görüntüsünü {{path}} yoluna kaydet",
+			"closed": "Tarayıcı kapatıldı",
+			"close": "Tarayıcıyı kapat"
+		}
+	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Kod bloğunu genişlet",
@@ -371,6 +405,7 @@
 			"copy_code": "Kodu kopyala"
 		}
 	},
+	"systemPromptWarning": "UYARI: Özel sistem komut geçersiz kılma aktif. Bu işlevselliği ciddi şekilde bozabilir ve öngörülemeyen davranışlara neden olabilir.",
 	"profileViolationWarning": "Geçerli profil kuruluşunuzun ayarlarıyla uyumlu değil",
 	"shellIntegration": {
 		"title": "Komut Çalıştırma Uyarısı",
@@ -399,22 +434,6 @@
 	"read-batch": {
 		"approve": {
 			"title": "Tümünü Onayla"
-		},
-		"deny": {
-			"title": "Tümünü Reddet"
-		}
-	},
-	"list-batch": {
-		"approve": {
-			"title": "Tümünü Onayla"
-		},
-		"deny": {
-			"title": "Tümünü Reddet"
-		}
-	},
-	"edit-batch": {
-		"approve": {
-			"title": "Tümünü Kaydet"
 		},
 		"deny": {
 			"title": "Tümünü Reddet"
@@ -493,10 +512,5 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
-	},
-	"retiredProvider": {
-		"title": "Sağlayıcı artık desteklenmiyor",
-		"message": "Üzgünüz, bu sağlayıcı artık desteklenmiyor. Çok az Roo kullanıcısının bunu gerçekten kullandığını gördük ve hızlı gelişmeye devam edip topluluğumuza iyi hizmet verebilmek için kod tabanımızın kapsamını daraltmamız gerekiyor. Gerçekten zor bir karardı ama senin için en önemli olana odaklanmamızı sağlıyor. Bunun can sıkıcı olduğunu biliyoruz.",
-		"openSettings": "Ayarları aç"
 	}
 }

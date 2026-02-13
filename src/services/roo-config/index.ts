@@ -29,50 +29,6 @@ export function getGlobalRooDirectory(): string {
 }
 
 /**
- * Gets the global .agents directory path based on the current platform.
- * This is a shared directory for agent skills across different AI coding tools.
- *
- * @returns The absolute path to the global .agents directory
- *
- * @example Platform-specific paths:
- * ```
- * // macOS/Linux: ~/.agents/
- * // Example: /Users/john/.agents
- *
- * // Windows: %USERPROFILE%\.agents\
- * // Example: C:\Users\john\.agents
- * ```
- *
- * @example Usage:
- * ```typescript
- * const globalAgentsDir = getGlobalAgentsDirectory()
- * // Returns: "/Users/john/.agents" (on macOS/Linux)
- * // Returns: "C:\\Users\\john\\.agents" (on Windows)
- * ```
- */
-export function getGlobalAgentsDirectory(): string {
-	const homeDir = os.homedir()
-	return path.join(homeDir, ".agents")
-}
-
-/**
- * Gets the project-local .agents directory path for a given cwd.
- * This is a shared directory for agent skills across different AI coding tools.
- *
- * @param cwd - Current working directory (project path)
- * @returns The absolute path to the project-local .agents directory
- *
- * @example
- * ```typescript
- * const projectAgentsDir = getProjectAgentsDirectoryForCwd('/Users/john/my-project')
- * // Returns: "/Users/john/my-project/.agents"
- * ```
- */
-export function getProjectAgentsDirectoryForCwd(cwd: string): string {
-	return path.join(cwd, ".agents")
-}
-
-/**
  * Gets the project-local .roo directory path for a given cwd
  *
  * @param cwd - Current working directory (project path)

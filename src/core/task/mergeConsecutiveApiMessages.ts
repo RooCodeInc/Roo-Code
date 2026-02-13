@@ -1,15 +1,12 @@
-import type { RooMessage } from "../task-persistence/rooMessage"
-import { isRooReasoningMessage } from "../task-persistence/rooMessage"
+import { Anthropic } from "@anthropic-ai/sdk"
 
-type Role = "user" | "assistant" | "tool"
+import type { ApiMessage } from "../task-persistence"
 
-/**
- * Normalizes message content to an array of content parts.
- * Handles both string and array content formats.
- */
-function normalizeContentToArray(content: unknown): unknown[] {
+type Role = ApiMessage["role"]
+
+function normalizeContentToBlocks(content: ApiMessage["content"]): Anthropic.Messages.ContentBlockParam[] {
 	if (Array.isArray(content)) {
-		return content
+		return content as Anthropic.Messages.ContentBlockParam[]
 	}
 	if (content === undefined || content === null) {
 		return []
@@ -22,28 +19,19 @@ function normalizeContentToArray(content: unknown): unknown[] {
  *
  * Used for *API request shaping only* (do not use for storage), so rewind/edit operations
  * can still reference the original individual messages.
- *
- * `RooReasoningMessage` items (which have no role) are always passed through unmerged.
  */
-export function mergeConsecutiveApiMessages(messages: RooMessage[], options?: { roles?: Role[] }): RooMessage[] {
+export function mergeConsecutiveApiMessages(messages: ApiMessage[], options?: { roles?: Role[] }): ApiMessage[] {
 	if (messages.length <= 1) {
 		return messages
 	}
 
 	const mergeRoles = new Set<Role>(options?.roles ?? ["user"]) // default: user only
-	const out: RooMessage[] = []
+	const out: ApiMessage[] = []
 
 	for (const msg of messages) {
-		// RooReasoningMessage has no role — always pass through unmerged
-		if (isRooReasoningMessage(msg)) {
-			out.push(msg)
-			continue
-		}
-
 		const prev = out[out.length - 1]
-		const prevHasRole = prev && !isRooReasoningMessage(prev)
 		const canMerge =
-			prevHasRole &&
+			prev &&
 			prev.role === msg.role &&
 			mergeRoles.has(msg.role) &&
 			// Allow merging regular messages into a summary (API-only shaping),
@@ -57,17 +45,14 @@ export function mergeConsecutiveApiMessages(messages: RooMessage[], options?: { 
 			continue
 		}
 
-		const mergedContent = [
-			...normalizeContentToArray((prev as any).content),
-			...normalizeContentToArray((msg as any).content),
-		]
+		const mergedContent = [...normalizeContentToBlocks(prev.content), ...normalizeContentToBlocks(msg.content)]
 
 		// Preserve the newest ts to keep chronological ordering for downstream logic.
 		out[out.length - 1] = {
 			...prev,
 			content: mergedContent,
 			ts: Math.max(prev.ts ?? 0, msg.ts ?? 0) || prev.ts || msg.ts,
-		} as RooMessage
+		}
 	}
 
 	return out

@@ -403,6 +403,166 @@ describe("ToolRepetitionDetector", () => {
 		})
 	})
 
+	// ===== Browser Scroll Action Exclusion tests =====
+	describe("browser scroll action exclusion", () => {
+		it("should not count browser scroll_down actions as repetitions", () => {
+			const detector = new ToolRepetitionDetector(2)
+
+			// Create browser_action tool use with scroll_down
+			const scrollDownTool: ToolUse = {
+				type: "tool_use",
+				name: "browser_action" as ToolName,
+				params: { action: "scroll_down" },
+				partial: false,
+			}
+
+			// Should allow unlimited scroll_down actions
+			for (let i = 0; i < 10; i++) {
+				const result = detector.check(scrollDownTool)
+				expect(result.allowExecution).toBe(true)
+				expect(result.askUser).toBeUndefined()
+			}
+		})
+
+		it("should not count browser scroll_up actions as repetitions", () => {
+			const detector = new ToolRepetitionDetector(2)
+
+			// Create browser_action tool use with scroll_up
+			const scrollUpTool: ToolUse = {
+				type: "tool_use",
+				name: "browser_action" as ToolName,
+				params: { action: "scroll_up" },
+				partial: false,
+			}
+
+			// Should allow unlimited scroll_up actions
+			for (let i = 0; i < 10; i++) {
+				const result = detector.check(scrollUpTool)
+				expect(result.allowExecution).toBe(true)
+				expect(result.askUser).toBeUndefined()
+			}
+		})
+
+		it("should not count alternating scroll_down and scroll_up as repetitions", () => {
+			const detector = new ToolRepetitionDetector(2)
+
+			const scrollDownTool: ToolUse = {
+				type: "tool_use",
+				name: "browser_action" as ToolName,
+				params: { action: "scroll_down" },
+				partial: false,
+			}
+
+			const scrollUpTool: ToolUse = {
+				type: "tool_use",
+				name: "browser_action" as ToolName,
+				params: { action: "scroll_up" },
+				partial: false,
+			}
+
+			// Alternate between scroll_down and scroll_up
+			for (let i = 0; i < 5; i++) {
+				let result = detector.check(scrollDownTool)
+				expect(result.allowExecution).toBe(true)
+				expect(result.askUser).toBeUndefined()
+
+				result = detector.check(scrollUpTool)
+				expect(result.allowExecution).toBe(true)
+				expect(result.askUser).toBeUndefined()
+			}
+		})
+
+		it("should still apply repetition detection to other browser_action types", () => {
+			const detector = new ToolRepetitionDetector(2)
+
+			// Create browser_action tool use with click action
+			const clickTool: ToolUse = {
+				type: "tool_use",
+				name: "browser_action" as ToolName,
+				params: { action: "click", coordinate: "[100, 200]" },
+				partial: false,
+			}
+
+			// First call allowed
+			expect(detector.check(clickTool).allowExecution).toBe(true)
+
+			// Second call allowed
+			expect(detector.check(clickTool).allowExecution).toBe(true)
+
+			// Third identical call should be blocked (limit is 2)
+			const result = detector.check(clickTool)
+			expect(result.allowExecution).toBe(false)
+			expect(result.askUser).toBeDefined()
+		})
+
+		it("should still apply repetition detection to non-browser tools", () => {
+			const detector = new ToolRepetitionDetector(2)
+
+			const readFileTool = createToolUse("read_file", "read_file", { path: "test.txt" })
+
+			// First call allowed
+			expect(detector.check(readFileTool).allowExecution).toBe(true)
+
+			// Second call allowed
+			expect(detector.check(readFileTool).allowExecution).toBe(true)
+
+			// Third identical call should be blocked (limit is 2)
+			const result = detector.check(readFileTool)
+			expect(result.allowExecution).toBe(false)
+			expect(result.askUser).toBeDefined()
+		})
+
+		it("should not interfere with repetition detection of other tools when scroll actions are interspersed", () => {
+			const detector = new ToolRepetitionDetector(2)
+
+			const scrollTool: ToolUse = {
+				type: "tool_use",
+				name: "browser_action" as ToolName,
+				params: { action: "scroll_down" },
+				partial: false,
+			}
+
+			const otherTool = createToolUse("execute_command", "execute_command", { command: "ls" })
+
+			// First execute_command
+			expect(detector.check(otherTool).allowExecution).toBe(true)
+
+			// Scroll actions in between (should not affect counter)
+			expect(detector.check(scrollTool).allowExecution).toBe(true)
+			expect(detector.check(scrollTool).allowExecution).toBe(true)
+
+			// Second execute_command
+			expect(detector.check(otherTool).allowExecution).toBe(true)
+
+			// More scroll actions
+			expect(detector.check(scrollTool).allowExecution).toBe(true)
+
+			// Third execute_command should be blocked
+			const result = detector.check(otherTool)
+			expect(result.allowExecution).toBe(false)
+			expect(result.askUser).toBeDefined()
+		})
+
+		it("should handle browser_action with missing or invalid action parameter gracefully", () => {
+			const detector = new ToolRepetitionDetector(2)
+
+			// Browser action without action parameter
+			const noActionTool: ToolUse = {
+				type: "tool_use",
+				name: "browser_action" as ToolName,
+				params: {},
+				partial: false,
+			}
+
+			// Should apply normal repetition detection
+			expect(detector.check(noActionTool).allowExecution).toBe(true)
+			expect(detector.check(noActionTool).allowExecution).toBe(true)
+			const result = detector.check(noActionTool)
+			expect(result.allowExecution).toBe(false)
+			expect(result.askUser).toBeDefined()
+		})
+	})
+
 	// ===== Native Protocol (nativeArgs) tests =====
 	describe("native protocol with nativeArgs", () => {
 		it("should differentiate read_file calls with different files in nativeArgs", () => {
@@ -415,7 +575,7 @@ describe("ToolRepetitionDetector", () => {
 				params: {}, // Empty for native protocol
 				partial: false,
 				nativeArgs: {
-					path: "file1.ts",
+					files: [{ path: "file1.ts" }],
 				},
 			}
 
@@ -425,7 +585,7 @@ describe("ToolRepetitionDetector", () => {
 				params: {}, // Empty for native protocol
 				partial: false,
 				nativeArgs: {
-					path: "file2.ts",
+					files: [{ path: "file2.ts" }],
 				},
 			}
 
@@ -449,7 +609,7 @@ describe("ToolRepetitionDetector", () => {
 				params: {}, // Empty for native protocol
 				partial: false,
 				nativeArgs: {
-					path: "same-file.ts",
+					files: [{ path: "same-file.ts" }],
 				},
 			}
 
@@ -465,7 +625,7 @@ describe("ToolRepetitionDetector", () => {
 			expect(result.askUser).toBeDefined()
 		})
 
-		it("should treat different slice offsets as distinct read_file calls", () => {
+		it("should differentiate read_file calls with multiple files in different orders", () => {
 			const detector = new ToolRepetitionDetector(2)
 
 			const readFile1: ToolUse = {
@@ -474,9 +634,7 @@ describe("ToolRepetitionDetector", () => {
 				params: {},
 				partial: false,
 				nativeArgs: {
-					path: "a.ts",
-					offset: 1,
-					limit: 2000,
+					files: [{ path: "a.ts" }, { path: "b.ts" }],
 				},
 			}
 
@@ -486,13 +644,11 @@ describe("ToolRepetitionDetector", () => {
 				params: {},
 				partial: false,
 				nativeArgs: {
-					path: "a.ts",
-					offset: 2001,
-					limit: 2000,
+					files: [{ path: "b.ts" }, { path: "a.ts" }],
 				},
 			}
 
-			// Different offsets should be treated as different calls
+			// Different order should be treated as different calls
 			expect(detector.check(readFile1).allowExecution).toBe(true)
 			expect(detector.check(readFile2).allowExecution).toBe(true)
 		})

@@ -116,6 +116,15 @@
 			"thinking_complete_safety": "（思考完成，但由于安全设置输出被阻止。）",
 			"thinking_complete_recitation": "（思考完成，但由于引用检查输出被阻止。）"
 		},
+		"cerebras": {
+			"authenticationFailed": "Cerebras API 身份验证失败。请检查你的 API 密钥是否有效且未过期。",
+			"accessForbidden": "Cerebras API 访问被禁止。你的 API 密钥可能无法访问请求的模型或功能。",
+			"rateLimitExceeded": "Cerebras API 速率限制已超出。请稍等后再发起另一个请求。",
+			"serverError": "Cerebras API 服务器错误 ({{status}})。请稍后重试。",
+			"genericError": "Cerebras API 错误 ({{status}})：{{message}}",
+			"noResponseBody": "Cerebras API 错误：无响应主体",
+			"completionError": "Cerebras 完成错误：{{error}}"
+		},
 		"roo": {
 			"authenticationRequired": "Roo 提供商需要云认证。请登录 Roo Code Cloud。"
 		},
@@ -201,7 +210,10 @@
 		"task_placeholder": "在这里输入任务"
 	},
 	"settings": {
-		"providers": {}
+		"providers": {
+			"groqApiKey": "Groq API 密钥",
+			"getGroqApiKey": "获取 Groq API 密钥"
+		}
 	},
 	"customModes": {
 		"errors": {

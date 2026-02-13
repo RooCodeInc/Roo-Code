@@ -323,7 +323,7 @@ describe("foldedFileContext", () => {
 			expect(summaryMessage).toBeDefined()
 
 			// Each file should have its own content block
-			const contentArray = (summaryMessage as any).content as any[]
+			const contentArray = summaryMessage!.content as any[]
 
 			// Find the content blocks containing file contexts
 			const userFileBlock = contentArray.find(
@@ -381,7 +381,7 @@ describe("foldedFileContext", () => {
 			expect(summaryMessage).toBeDefined()
 
 			// The summary content should NOT contain any file context blocks
-			const contentArray = (summaryMessage as any).content as any[]
+			const contentArray = summaryMessage!.content as any[]
 			const fileContextBlock = contentArray.find(
 				(block: any) => block.type === "text" && block.text?.includes("## File Context"),
 			)

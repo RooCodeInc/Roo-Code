@@ -41,7 +41,6 @@ interface PositionedUseCase extends UseCase {
 	scale: number
 	zIndex: number
 	avatar: string
-	width: number
 }
 
 const SOURCES = {
@@ -244,7 +243,7 @@ const LAYER_SCALES = {
 }
 
 function distributeItems(items: UseCase[]): PositionedUseCase[] {
-	const rng = seededRandom(42)
+	const rng = seededRandom(Math.random() * 12345)
 	const zones = { rows: 7, cols: 4 }
 	const zoneWidth = 100 / zones.cols
 	const zoneHeight = 100 / zones.rows
@@ -285,7 +284,6 @@ function distributeItems(items: UseCase[]): PositionedUseCase[] {
 			},
 			scale: LAYER_SCALES[layer],
 			zIndex: layer,
-			width: Math.round(300 + rng() * 100),
 		}
 	})
 }
@@ -347,7 +345,7 @@ function DesktopUseCaseCard({ item }: { item: PositionedUseCase }) {
 				left: `${item.position.x}%`,
 				top: `${item.position.y}%`,
 				zIndex: item.zIndex,
-				width: item.width,
+				width: Math.round(300 + Math.random() * 100),
 			}}
 			initial={{ opacity: 0, scale: 0 }}
 			whileInView={{

@@ -1,14 +1,28 @@
 import { parseMentions } from "../core/mentions"
+import { UrlContentFetcher } from "../services/browser/UrlContentFetcher"
 import { getCommand } from "../services/command/commands"
 
 // Mock the dependencies
 vi.mock("../services/command/commands")
+vi.mock("../services/browser/UrlContentFetcher")
 
+const MockedUrlContentFetcher = vi.mocked(UrlContentFetcher)
 const mockGetCommand = vi.mocked(getCommand)
 
 describe("Command Mentions", () => {
+	let mockUrlContentFetcher: any
+
 	beforeEach(() => {
 		vi.clearAllMocks()
+
+		// Create a mock UrlContentFetcher instance
+		mockUrlContentFetcher = {
+			launchBrowser: vi.fn(),
+			urlToMarkdown: vi.fn(),
+			closeBrowser: vi.fn(),
+		}
+
+		MockedUrlContentFetcher.mockImplementation(() => mockUrlContentFetcher)
 	})
 
 	// Helper function to call parseMentions with required parameters
@@ -16,11 +30,13 @@ describe("Command Mentions", () => {
 		return parseMentions(
 			text,
 			"/test/cwd", // cwd
+			mockUrlContentFetcher, // urlContentFetcher
 			undefined, // fileContextTracker
 			undefined, // rooIgnoreController
 			false, // showRooIgnoredFiles
 			true, // includeDiagnosticMessages
 			50, // maxDiagnosticMessages
+			undefined, // maxReadFileLine
 		)
 	}
 

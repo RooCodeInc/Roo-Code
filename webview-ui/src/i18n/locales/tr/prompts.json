@@ -25,6 +25,7 @@
 		"toolNames": {
 			"read": "Dosyaları Oku",
 			"edit": "Dosyaları Düzenle",
+			"browser": "Tarayıcı Kullan",
 			"command": "Komutları Çalıştır",
 			"mcp": "MCP Kullan"
 		},
@@ -142,6 +143,10 @@
 			}
 		}
 	},
+	"advancedSystemPrompt": {
+		"title": "Gelişmiş: Sistem Promptunu Geçersiz Kıl",
+		"description": "<2>⚠️ Uyarı:</2> Bu gelişmiş özellik güvenlik önlemlerini atlar. <1>KULLANMADAN ÖNCE BUNU OKUYUN!</1>Çalışma alanınızda <span>.roo/system-prompt-{{slug}}</span> adresinde bir dosya oluşturarak varsayılan sistem istemini geçersiz kılın."
+	},
 	"createModeDialog": {
 		"title": "Yeni Mod Oluştur",
 		"close": "Kapat",
@@ -192,6 +197,9 @@
 		"deleteMode": "Modu sil"
 	},
 	"allFiles": "tüm dosyalar",
+	"advanced": {
+		"title": "Gelişmiş"
+	},
 	"deleteMode": {
 		"title": "Modu Sil",
 		"message": "\"{{modeName}}\" modunu silmek istediğinizden emin misiniz?",

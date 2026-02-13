@@ -15,7 +15,7 @@ export class MoonshotHandler extends OpenAICompatibleHandler {
 
 		const config: OpenAICompatibleConfig = {
 			providerName: "moonshot",
-			baseURL: options.moonshotBaseUrl || "https://api.moonshot.ai/v1",
+			baseURL: options.moonshotBaseUrl ?? "https://api.moonshot.ai/v1",
 			apiKey: options.moonshotApiKey ?? "not-provided",
 			modelId,
 			modelInfo,
@@ -29,13 +29,7 @@ export class MoonshotHandler extends OpenAICompatibleHandler {
 	override getModel() {
 		const id = this.options.apiModelId ?? moonshotDefaultModelId
 		const info = moonshotModels[id as keyof typeof moonshotModels] || moonshotModels[moonshotDefaultModelId]
-		const params = getModelParams({
-			format: "openai",
-			modelId: id,
-			model: info,
-			settings: this.options,
-			defaultTemperature: 0,
-		})
+		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
 		return { id, info, ...params }
 	}
 
@@ -46,12 +40,6 @@ export class MoonshotHandler extends OpenAICompatibleHandler {
 	protected override processUsageMetrics(usage: {
 		inputTokens?: number
 		outputTokens?: number
-		totalInputTokens?: number
-		totalOutputTokens?: number
-		cachedInputTokens?: number
-		reasoningTokens?: number
-		inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
-		outputTokenDetails?: { reasoningTokens?: number }
 		details?: {
 			cachedInputTokens?: number
 			reasoningTokens?: number
@@ -61,20 +49,12 @@ export class MoonshotHandler extends OpenAICompatibleHandler {
 		// Moonshot uses cached_tokens at the top level of raw usage data
 		const rawUsage = usage.raw as { cached_tokens?: number } | undefined
 
-		const inputTokens = usage.inputTokens || 0
-		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens,
-			outputTokens,
-			cacheWriteTokens: usage.inputTokenDetails?.cacheWriteTokens ?? 0,
-			cacheReadTokens:
-				rawUsage?.cached_tokens ??
-				usage.cachedInputTokens ??
-				usage.inputTokenDetails?.cacheReadTokens ??
-				usage.details?.cachedInputTokens,
-			totalInputTokens: inputTokens,
-			totalOutputTokens: outputTokens,
+			inputTokens: usage.inputTokens || 0,
+			outputTokens: usage.outputTokens || 0,
+			cacheWriteTokens: 0,
+			cacheReadTokens: rawUsage?.cached_tokens ?? usage.details?.cachedInputTokens,
 		}
 	}
 

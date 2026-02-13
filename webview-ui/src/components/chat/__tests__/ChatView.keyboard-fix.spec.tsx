@@ -24,6 +24,10 @@ vi.mock("use-sound", () => ({
 }))
 
 // Mock components
+vi.mock("../BrowserSessionRow", () => ({
+	default: () => null,
+}))
+
 vi.mock("../ChatRow", () => ({
 	default: () => null,
 }))

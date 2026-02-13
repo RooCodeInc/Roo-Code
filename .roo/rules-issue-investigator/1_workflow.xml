@@ -70,7 +70,7 @@
         </step>
         <step>
             <title>Draft Comment</title>
-            <description>Draft a comment for the GitHub issue that explains your findings and suggested solution in a conversational, human-like tone. Start the comment with "Hey @roomote-agent,".</description>
+            <description>Draft a comment for the GitHub issue that explains your findings and suggested solution in a conversational, human-like tone.</description>
         </step>
       </steps>
     </phase>

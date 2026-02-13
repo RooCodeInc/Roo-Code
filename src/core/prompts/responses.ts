@@ -1,6 +1,6 @@
+import { Anthropic } from "@anthropic-ai/sdk"
 import * as path from "path"
 import * as diff from "diff"
-import type { TextPart, ImagePart } from "../task-persistence/rooMessage"
 import { RooIgnoreController, LOCK_TEXT_SYMBOL } from "../ignore/RooIgnoreController"
 import { RooProtectedController } from "../protect/RooProtectedController"
 
@@ -96,10 +96,13 @@ Otherwise, if you have not completed the task and do not need additional informa
 			available_servers: availableServers.length > 0 ? availableServers : [],
 		}),
 
-	toolResult: (text: string, images?: string[]): string | Array<TextPart | ImagePart> => {
+	toolResult: (
+		text: string,
+		images?: string[],
+	): string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam> => {
 		if (images && images.length > 0) {
-			const textBlock: TextPart = { type: "text", text }
-			const imageBlocks: ImagePart[] = formatImagesIntoBlocks(images)
+			const textBlock: Anthropic.TextBlockParam = { type: "text", text }
+			const imageBlocks: Anthropic.ImageBlockParam[] = formatImagesIntoBlocks(images)
 			// Placing images after text leads to better results
 			return [textBlock, ...imageBlocks]
 		} else {
@@ -107,7 +110,7 @@ Otherwise, if you have not completed the task and do not need additional informa
 		}
 	},
 
-	imageBlocks: (images?: string[]): ImagePart[] => {
+	imageBlocks: (images?: string[]): Anthropic.ImageBlockParam[] => {
 		return formatImagesIntoBlocks(images)
 	},
 
@@ -199,17 +202,16 @@ Otherwise, if you have not completed the task and do not need additional informa
 }
 
 // to avoid circular dependency
-const formatImagesIntoBlocks = (images?: string[]): ImagePart[] => {
+const formatImagesIntoBlocks = (images?: string[]): Anthropic.ImageBlockParam[] => {
 	return images
 		? images.map((dataUrl) => {
 				// data:image/png;base64,base64string
 				const [rest, base64] = dataUrl.split(",")
 				const mimeType = rest.split(":")[1].split(";")[0]
 				return {
-					type: "image" as const,
-					image: base64,
-					mediaType: mimeType,
-				}
+					type: "image",
+					source: { type: "base64", media_type: mimeType, data: base64 },
+				} as Anthropic.ImageBlockParam
 			})
 		: []
 }

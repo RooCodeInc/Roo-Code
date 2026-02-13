@@ -111,7 +111,7 @@ vi.mock("vscode", () => {
 
 vi.mock("../../mentions", () => ({
 	parseMentions: vi.fn().mockImplementation((text) => {
-		return Promise.resolve({ text: `processed: ${text}`, mode: undefined, contentBlocks: [] })
+		return Promise.resolve(`processed: ${text}`)
 	}),
 	openMention: vi.fn(),
 	getLatestTerminalOutput: vi.fn(),

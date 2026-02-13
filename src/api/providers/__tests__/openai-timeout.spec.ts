@@ -3,34 +3,51 @@
 import { OpenAiHandler } from "../openai"
 import { ApiHandlerOptions } from "../../../shared/api"
 
-const mockCreateOpenAI = vi.hoisted(() => vi.fn())
-const mockCreateOpenAICompatible = vi.hoisted(() => vi.fn())
-const mockCreateAzure = vi.hoisted(() => vi.fn())
-
-vi.mock("@ai-sdk/openai", () => ({
-	createOpenAI: mockCreateOpenAI.mockImplementation(() => ({
-		chat: vi.fn(() => ({ modelId: "test", provider: "openai.chat" })),
-	})),
+// Mock the timeout config utility
+vitest.mock("../utils/timeout-config", () => ({
+	getApiRequestTimeout: vitest.fn(),
 }))
 
-vi.mock("@ai-sdk/openai-compatible", () => ({
-	createOpenAICompatible: mockCreateOpenAICompatible.mockImplementation(() =>
-		vi.fn((modelId: string) => ({ modelId, provider: "openai-compatible" })),
-	),
-}))
+import { getApiRequestTimeout } from "../utils/timeout-config"
 
-vi.mock("@ai-sdk/azure", () => ({
-	createAzure: mockCreateAzure.mockImplementation(() => ({
-		chat: vi.fn((modelId: string) => ({ modelId, provider: "azure.chat" })),
-	})),
-}))
+// Mock OpenAI and AzureOpenAI
+const mockOpenAIConstructor = vitest.fn()
+const mockAzureOpenAIConstructor = vitest.fn()
 
-describe("OpenAiHandler provider configuration", () => {
+vitest.mock("openai", () => {
+	return {
+		__esModule: true,
+		default: vitest.fn().mockImplementation((config) => {
+			mockOpenAIConstructor(config)
+			return {
+				chat: {
+					completions: {
+						create: vitest.fn(),
+					},
+				},
+			}
+		}),
+		AzureOpenAI: vitest.fn().mockImplementation((config) => {
+			mockAzureOpenAIConstructor(config)
+			return {
+				chat: {
+					completions: {
+						create: vitest.fn(),
+					},
+				},
+			}
+		}),
+	}
+})
+
+describe("OpenAiHandler timeout configuration", () => {
 	beforeEach(() => {
-		vi.clearAllMocks()
+		vitest.clearAllMocks()
 	})
 
-	it("should use createOpenAI for standard OpenAI endpoints", () => {
+	it("should use default timeout for standard OpenAI", () => {
+		;(getApiRequestTimeout as any).mockReturnValue(600000)
+
 		const options: ApiHandlerOptions = {
 			apiModelId: "gpt-4",
 			openAiModelId: "gpt-4",
@@ -39,15 +56,19 @@ describe("OpenAiHandler provider configuration", () => {
 
 		new OpenAiHandler(options)
 
-		expect(mockCreateOpenAI).toHaveBeenCalledWith(
+		expect(getApiRequestTimeout).toHaveBeenCalled()
+		expect(mockOpenAIConstructor).toHaveBeenCalledWith(
 			expect.objectContaining({
 				baseURL: "https://api.openai.com/v1",
 				apiKey: "test-key",
+				timeout: 600000, // 600 seconds in milliseconds
 			}),
 		)
 	})
 
-	it("should use createOpenAI for custom OpenAI-compatible providers", () => {
+	it("should use custom timeout for OpenAI-compatible providers", () => {
+		;(getApiRequestTimeout as any).mockReturnValue(1800000) // 30 minutes
+
 		const options: ApiHandlerOptions = {
 			apiModelId: "custom-model",
 			openAiModelId: "custom-model",
@@ -57,14 +78,17 @@ describe("OpenAiHandler provider configuration", () => {
 
 		new OpenAiHandler(options)
 
-		expect(mockCreateOpenAI).toHaveBeenCalledWith(
+		expect(mockOpenAIConstructor).toHaveBeenCalledWith(
 			expect.objectContaining({
 				baseURL: "http://localhost:8080/v1",
+				timeout: 1800000, // 1800 seconds in milliseconds
 			}),
 		)
 	})
 
-	it("should use createAzure for Azure OpenAI", () => {
+	it("should use timeout for Azure OpenAI", () => {
+		;(getApiRequestTimeout as any).mockReturnValue(900000) // 15 minutes
+
 		const options: ApiHandlerOptions = {
 			apiModelId: "gpt-4",
 			openAiModelId: "gpt-4",
@@ -75,16 +99,16 @@ describe("OpenAiHandler provider configuration", () => {
 
 		new OpenAiHandler(options)
 
-		expect(mockCreateAzure).toHaveBeenCalledWith(
+		expect(mockAzureOpenAIConstructor).toHaveBeenCalledWith(
 			expect.objectContaining({
-				baseURL: "https://myinstance.openai.azure.com/openai",
-				apiKey: "test-key",
-				useDeploymentBasedUrls: true,
+				timeout: 900000, // 900 seconds in milliseconds
 			}),
 		)
 	})
 
-	it("should use createOpenAICompatible for Azure AI Inference", () => {
+	it("should use timeout for Azure AI Inference", () => {
+		;(getApiRequestTimeout as any).mockReturnValue(1200000) // 20 minutes
+
 		const options: ApiHandlerOptions = {
 			apiModelId: "deepseek",
 			openAiModelId: "deepseek",
@@ -94,32 +118,26 @@ describe("OpenAiHandler provider configuration", () => {
 
 		new OpenAiHandler(options)
 
-		expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
+		expect(mockOpenAIConstructor).toHaveBeenCalledWith(
 			expect.objectContaining({
-				baseURL: "https://myinstance.services.ai.azure.com/models",
-				apiKey: "test-key",
-				queryParams: expect.objectContaining({
-					"api-version": expect.any(String),
-				}),
+				timeout: 1200000, // 1200 seconds in milliseconds
 			}),
 		)
 	})
 
-	it("should include custom headers in provider configuration", () => {
+	it("should handle zero timeout (no timeout)", () => {
+		;(getApiRequestTimeout as any).mockReturnValue(0)
+
 		const options: ApiHandlerOptions = {
 			apiModelId: "gpt-4",
 			openAiModelId: "gpt-4",
-			openAiApiKey: "test-key",
-			openAiHeaders: { "X-Custom": "value" },
 		}
 
 		new OpenAiHandler(options)
 
-		expect(mockCreateOpenAI).toHaveBeenCalledWith(
+		expect(mockOpenAIConstructor).toHaveBeenCalledWith(
 			expect.objectContaining({
-				headers: expect.objectContaining({
-					"X-Custom": "value",
-				}),
+				timeout: 0, // No timeout
 			}),
 		)
 	})

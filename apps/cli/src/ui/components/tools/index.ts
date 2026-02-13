@@ -15,6 +15,7 @@ import { FileReadTool } from "./FileReadTool.js"
 import { FileWriteTool } from "./FileWriteTool.js"
 import { SearchTool } from "./SearchTool.js"
 import { CommandTool } from "./CommandTool.js"
+import { BrowserTool } from "./BrowserTool.js"
 import { ModeTool } from "./ModeTool.js"
 import { CompletionTool } from "./CompletionTool.js"
 import { GenericTool } from "./GenericTool.js"
@@ -31,6 +32,7 @@ export { FileReadTool } from "./FileReadTool.js"
 export { FileWriteTool } from "./FileWriteTool.js"
 export { SearchTool } from "./SearchTool.js"
 export { CommandTool } from "./CommandTool.js"
+export { BrowserTool } from "./BrowserTool.js"
 export { ModeTool } from "./ModeTool.js"
 export { CompletionTool } from "./CompletionTool.js"
 export { GenericTool } from "./GenericTool.js"
@@ -43,6 +45,7 @@ const CATEGORY_RENDERERS: Record<string, React.FC<ToolRendererProps>> = {
 	"file-write": FileWriteTool,
 	search: SearchTool,
 	command: CommandTool,
+	browser: BrowserTool,
 	mode: ModeTool,
 	completion: CompletionTool,
 	other: GenericTool,

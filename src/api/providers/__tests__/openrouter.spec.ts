@@ -1,34 +1,15 @@
-import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // pnpm --filter roo-cline test api/providers/__tests__/openrouter.spec.ts
 
 vitest.mock("vscode", () => ({}))
 
 import { Anthropic } from "@anthropic-ai/sdk"
+import OpenAI from "openai"
 
 import { OpenRouterHandler } from "../openrouter"
 import { ApiHandlerOptions } from "../../../shared/api"
+import { Package } from "../../../shared/package"
 
-// Mock the AI SDK
-const mockStreamText = vitest.fn()
-const mockGenerateText = vitest.fn()
-const mockCreateOpenRouter = vitest.fn()
-
-vitest.mock("ai", () => ({
-	streamText: (...args: unknown[]) => mockStreamText(...args),
-	generateText: (...args: unknown[]) => mockGenerateText(...args),
-	tool: vitest.fn((t) => t),
-	jsonSchema: vitest.fn((s) => s),
-}))
-
-vitest.mock("@openrouter/ai-sdk-provider", () => ({
-	createOpenRouter: (...args: unknown[]) => {
-		mockCreateOpenRouter(...args)
-		return {
-			chat: vitest.fn((modelId: string) => ({ modelId })),
-		}
-	},
-}))
-
+vitest.mock("openai")
 vitest.mock("delay", () => ({ default: vitest.fn(() => Promise.resolve()) }))
 
 const mockCaptureException = vitest.fn()
@@ -79,16 +60,6 @@ vitest.mock("../fetchers/modelCache", () => ({
 				cacheReadsPrice: 0.3,
 				description: "Claude 3.7 Sonnet with thinking",
 			},
-			"deepseek/deepseek-r1": {
-				maxTokens: 8192,
-				contextWindow: 64000,
-				supportsImages: false,
-				supportsPromptCache: false,
-				inputPrice: 0.55,
-				outputPrice: 2.19,
-				description: "DeepSeek R1",
-				supportsReasoningEffort: true,
-			},
 			"openai/gpt-4o": {
 				maxTokens: 16384,
 				contextWindow: 128000,
@@ -109,32 +80,8 @@ vitest.mock("../fetchers/modelCache", () => ({
 				excludedTools: ["existing_excluded"],
 				includedTools: ["existing_included"],
 			},
-			"google/gemini-2.5-pro": {
-				maxTokens: 65536,
-				contextWindow: 1048576,
-				supportsImages: true,
-				supportsPromptCache: true,
-				inputPrice: 1.25,
-				outputPrice: 10,
-				description: "Gemini 2.5 Pro",
-				thinking: true,
-			},
-			"google/gemini-2.5-flash": {
-				maxTokens: 65536,
-				contextWindow: 1048576,
-				supportsImages: true,
-				supportsPromptCache: true,
-				inputPrice: 0.15,
-				outputPrice: 0.6,
-				description: "Gemini 2.5 Flash",
-			},
 		})
 	}),
-	getModelsFromCache: vitest.fn().mockReturnValue(null),
-}))
-
-vitest.mock("../fetchers/modelEndpointCache", () => ({
-	getModelEndpoints: vitest.fn().mockResolvedValue({}),
 }))
 
 describe("OpenRouterHandler", () => {
@@ -143,13 +90,21 @@ describe("OpenRouterHandler", () => {
 		openRouterModelId: "anthropic/claude-sonnet-4",
 	}
 
-	beforeEach(() => {
-		vitest.clearAllMocks()
-	})
+	beforeEach(() => vitest.clearAllMocks())
 
 	it("initializes with correct options", () => {
 		const handler = new OpenRouterHandler(mockOptions)
 		expect(handler).toBeInstanceOf(OpenRouterHandler)
+
+		expect(OpenAI).toHaveBeenCalledWith({
+			baseURL: "https://openrouter.ai/api/v1",
+			apiKey: mockOptions.openRouterApiKey,
+			defaultHeaders: {
+				"HTTP-Referer": "https://github.com/RooVetGit/Roo-Cline",
+				"X-Title": "Roo Code",
+				"User-Agent": `RooCode/${Package.version}`,
+			},
+		})
 	})
 
 	describe("fetchModel", () => {
@@ -249,27 +204,32 @@ describe("OpenRouterHandler", () => {
 	})
 
 	describe("createMessage", () => {
-		it("generates correct stream chunks with basic usage and totalCost", async () => {
+		it("generates correct stream chunks", async () => {
 			const handler = new OpenRouterHandler(mockOptions)
 
-			// Create mock async iterator for fullStream
-			const mockFullStream = (async function* () {
-				yield { type: "text-delta", text: "test response", id: "1" }
-			})()
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: mockOptions.openRouterModelId,
+						choices: [{ delta: { content: "test response" } }],
+					}
+					yield {
+						id: "test-id",
+						choices: [{ delta: {} }],
+						usage: { prompt_tokens: 10, completion_tokens: 20, cost: 0.001 },
+					}
+				},
+			}
 
-			// Mock usage promises
-			const mockUsage = Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 })
-			const mockTotalUsage = Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 })
+			// Mock OpenAI chat.completions.create
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
 
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: mockUsage,
-				totalUsage: mockTotalUsage,
-				providerMetadata: Promise.resolve(undefined),
-			})
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
 
 			const systemPrompt = "test system prompt"
-			const messages: RooMessage[] = [{ role: "user" as const, content: "test message" }]
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user" as const, content: "test message" }]
 
 			const generator = handler.createMessage(systemPrompt, messages)
 			const chunks = []
@@ -278,780 +238,462 @@ describe("OpenRouterHandler", () => {
 				chunks.push(chunk)
 			}
 
-			// Verify stream chunks - should have text and usage chunks
-			expect(chunks).toHaveLength(2)
+			// Verify stream chunks
+			expect(chunks).toHaveLength(2) // One text chunk and one usage chunk
 			expect(chunks[0]).toEqual({ type: "text", text: "test response" })
-			// Usage chunk should include totalCost calculated from model pricing
-			// Model: anthropic/claude-sonnet-4 with inputPrice: 3, outputPrice: 15 (per million)
-			// Cost = (10 * 3 / 1_000_000) + (20 * 15 / 1_000_000) = 0.00003 + 0.0003 = 0.00033
-			expect(chunks[1]).toMatchObject({
-				type: "usage",
-				inputTokens: 10,
-				outputTokens: 20,
-				totalCost: expect.any(Number),
-			})
-			expect((chunks[1] as any).totalCost).toBeCloseTo(0.00033, 6)
+			expect(chunks[1]).toEqual({ type: "usage", inputTokens: 10, outputTokens: 20, totalCost: 0.001 })
 
-			// Verify streamText was called with correct parameters
-			expect(mockStreamText).toHaveBeenCalledWith(
+			// Verify OpenAI client was called with correct parameters.
+			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
-					messages: expect.any(Array),
-					maxOutputTokens: 8192,
+					max_tokens: 8192,
+					messages: [
+						{
+							content: [
+								{ cache_control: { type: "ephemeral" }, text: "test system prompt", type: "text" },
+							],
+							role: "system",
+						},
+						{
+							content: [{ cache_control: { type: "ephemeral" }, text: "test message", type: "text" }],
+							role: "user",
+						},
+					],
+					model: "anthropic/claude-sonnet-4",
+					stream: true,
+					stream_options: { include_usage: true },
 					temperature: 0,
+					top_p: undefined,
 				}),
+				{ headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" } },
 			)
 		})
 
-		it("includes cache read tokens in usage when provider metadata contains them", async () => {
-			const handler = new OpenRouterHandler(mockOptions)
+		it("adds cache control for supported models", async () => {
+			const handler = new OpenRouterHandler({
+				...mockOptions,
+				openRouterModelId: "anthropic/claude-3.5-sonnet",
+			})
 
-			const mockFullStream = (async function* () {
-				yield { type: "text-delta", text: "test", id: "1" }
-			})()
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "test response" } }],
+					}
+				},
+			}
 
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 100, outputTokens: 50, totalTokens: 150 }),
-				totalUsage: Promise.resolve({ inputTokens: 100, outputTokens: 50, totalTokens: 150 }),
-				providerMetadata: Promise.resolve({
-					openrouter: {
-						cachedInputTokens: 30,
-					},
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "message 1" },
+				{ role: "assistant", content: "response 1" },
+				{ role: "user", content: "message 2" },
+			]
+
+			await handler.createMessage("test system", messages).next()
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					messages: expect.arrayContaining([
+						expect.objectContaining({
+							role: "system",
+							content: expect.arrayContaining([
+								expect.objectContaining({ cache_control: { type: "ephemeral" } }),
+							]),
+						}),
+					]),
 				}),
-			})
-
-			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
-			const chunks = []
-
-			for await (const chunk of generator) {
-				chunks.push(chunk)
-			}
-
-			const usageChunk = chunks.find((c) => c.type === "usage")
-			expect(usageChunk).toBeDefined()
-			expect(usageChunk).toMatchObject({
-				type: "usage",
-				inputTokens: 100,
-				outputTokens: 50,
-				cacheReadTokens: 30,
-				totalCost: expect.any(Number),
-			})
+				{ headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" } },
+			)
 		})
 
-		it("includes reasoning tokens in usage when provider metadata contains them", async () => {
+		it("handles API errors and captures telemetry", async () => {
 			const handler = new OpenRouterHandler(mockOptions)
-
-			const mockFullStream = (async function* () {
-				yield { type: "text-delta", text: "test", id: "1" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 100, outputTokens: 150, totalTokens: 250 }),
-				totalUsage: Promise.resolve({ inputTokens: 100, outputTokens: 150, totalTokens: 250 }),
-				providerMetadata: Promise.resolve({
-					openrouter: {
-						reasoningOutputTokens: 50,
-					},
-				}),
-			})
-
-			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
-			const chunks = []
-
-			for await (const chunk of generator) {
-				chunks.push(chunk)
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield { error: { message: "API Error", code: 500 } }
+				},
 			}
 
-			const usageChunk = chunks.find((c) => c.type === "usage")
-			expect(usageChunk).toBeDefined()
-			expect(usageChunk).toMatchObject({
-				type: "usage",
-				inputTokens: 100,
-				outputTokens: 150,
-				reasoningTokens: 50,
-				totalCost: expect.any(Number),
-			})
-		})
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
 
-		it("includes all detailed usage metrics when provider metadata contains them", async () => {
-			const handler = new OpenRouterHandler(mockOptions)
+			const generator = handler.createMessage("test", [])
+			await expect(generator.next()).rejects.toThrow("OpenRouter API Error 500: API Error")
 
-			const mockFullStream = (async function* () {
-				yield { type: "text-delta", text: "test", id: "1" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 200, outputTokens: 100, totalTokens: 300 }),
-				totalUsage: Promise.resolve({ inputTokens: 200, outputTokens: 100, totalTokens: 300 }),
-				providerMetadata: Promise.resolve({
-					openrouter: {
-						cachedInputTokens: 50,
-						cacheCreationInputTokens: 20,
-						reasoningOutputTokens: 30,
-					},
-				}),
-			})
-
-			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
-			const chunks = []
-
-			for await (const chunk of generator) {
-				chunks.push(chunk)
-			}
-
-			const usageChunk = chunks.find((c) => c.type === "usage")
-			expect(usageChunk).toBeDefined()
-			expect(usageChunk).toMatchObject({
-				type: "usage",
-				inputTokens: 200,
-				outputTokens: 100,
-				cacheReadTokens: 50,
-				cacheWriteTokens: 20,
-				reasoningTokens: 30,
-				totalCost: expect.any(Number),
-			})
-		})
-
-		it("handles experimental_providerMetadata fallback", async () => {
-			const handler = new OpenRouterHandler(mockOptions)
-
-			const mockFullStream = (async function* () {
-				yield { type: "text-delta", text: "test", id: "1" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 100, outputTokens: 50, totalTokens: 150 }),
-				totalUsage: Promise.resolve({ inputTokens: 100, outputTokens: 50, totalTokens: 150 }),
-				providerMetadata: Promise.resolve(undefined),
-				experimental_providerMetadata: Promise.resolve({
-					openrouter: {
-						cachedInputTokens: 25,
-					},
-				}),
-			})
-
-			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
-			const chunks = []
-
-			for await (const chunk of generator) {
-				chunks.push(chunk)
-			}
-
-			const usageChunk = chunks.find((c) => c.type === "usage")
-			expect(usageChunk).toBeDefined()
-			expect(usageChunk).toMatchObject({
-				type: "usage",
-				inputTokens: 100,
-				outputTokens: 50,
-				cacheReadTokens: 25,
-				totalCost: expect.any(Number),
-			})
-		})
-
-		it("handles reasoning delta chunks", async () => {
-			const handler = new OpenRouterHandler(mockOptions)
-
-			const mockFullStream = (async function* () {
-				yield { type: "reasoning-delta", text: "thinking...", id: "1" }
-				yield { type: "text-delta", text: "result", id: "2" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-			})
-
-			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
-			const chunks = []
-
-			for await (const chunk of generator) {
-				chunks.push(chunk)
-			}
-
-			expect(chunks[0]).toEqual({ type: "reasoning", text: "thinking..." })
-			expect(chunks[1]).toEqual({ type: "text", text: "result" })
-		})
-
-		it("handles tool call streaming", async () => {
-			const handler = new OpenRouterHandler(mockOptions)
-
-			const mockFullStream = (async function* () {
-				yield { type: "tool-input-start", id: "call_1", toolName: "read_file" }
-				yield { type: "tool-input-delta", id: "call_1", delta: '{"path":' }
-				yield { type: "tool-input-delta", id: "call_1", delta: '"test.ts"}' }
-				yield { type: "tool-input-end", id: "call_1" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-			})
-
-			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
-			const chunks = []
-
-			for await (const chunk of generator) {
-				chunks.push(chunk)
-			}
-
-			expect(chunks[0]).toEqual({ type: "tool_call_start", id: "call_1", name: "read_file" })
-			expect(chunks[1]).toEqual({ type: "tool_call_delta", id: "call_1", delta: '{"path":' })
-			expect(chunks[2]).toEqual({ type: "tool_call_delta", id: "call_1", delta: '"test.ts"}' })
-			expect(chunks[3]).toEqual({ type: "tool_call_end", id: "call_1" })
-		})
-
-		it("ignores tool-call events (handled by tool-input-start/delta/end)", async () => {
-			const handler = new OpenRouterHandler(mockOptions)
-
-			const mockFullStream = (async function* () {
-				yield {
-					type: "tool-call",
-					toolCallId: "call_1",
-					toolName: "read_file",
-					input: { path: "test.ts" },
-				}
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-			})
-
-			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
-			const chunks = []
-
-			for await (const chunk of generator) {
-				chunks.push(chunk)
-			}
-
-			// tool-call is intentionally ignored by processAiSdkStreamPart,
-			// only usage chunk should be present
-			expect(chunks).toHaveLength(1)
-			expect(chunks[0]).toMatchObject({ type: "usage" })
-		})
-
-		it("handles API errors gracefully", async () => {
-			const handler = new OpenRouterHandler(mockOptions)
-
-			mockStreamText.mockImplementation(() => {
-				throw new Error("API Error")
-			})
-
-			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
-			const chunks = []
-
-			for await (const chunk of generator) {
-				chunks.push(chunk)
-			}
-
-			expect(chunks[0]).toEqual({
-				type: "error",
-				error: "OpenRouterError",
-				message: "OpenRouter API Error: API Error",
-			})
-
-			// Verify telemetry was called
-			expect(mockCaptureException).toHaveBeenCalledTimes(1)
 			expect(mockCaptureException).toHaveBeenCalledWith(
 				expect.objectContaining({
 					message: "API Error",
 					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "createMessage",
+					errorCode: 500,
+					status: 500,
+				}),
+			)
+		})
+
+		it("captures telemetry when createMessage throws an exception", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const mockCreate = vitest.fn().mockRejectedValue(new Error("Connection failed"))
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const generator = handler.createMessage("test", [])
+			await expect(generator.next()).rejects.toThrow()
+
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Connection failed",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
 					operation: "createMessage",
 				}),
 			)
 		})
 
-		it("handles stream errors", async () => {
+		it("passes SDK exceptions with status 429 to telemetry (filtering happens in PostHogTelemetryClient)", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const error = new Error("Rate limit exceeded: free-models-per-day") as any
+			error.status = 429
+
+			const mockCreate = vitest.fn().mockRejectedValue(error)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const generator = handler.createMessage("test", [])
+			await expect(generator.next()).rejects.toThrow("Rate limit exceeded")
+
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Rate limit exceeded: free-models-per-day",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "createMessage",
+				}),
+			)
+		})
+
+		it("passes SDK exceptions with 429 in message to telemetry (filtering happens in PostHogTelemetryClient)", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const error = new Error("429 Rate limit exceeded: free-models-per-day")
+			const mockCreate = vitest.fn().mockRejectedValue(error)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const generator = handler.createMessage("test", [])
+			await expect(generator.next()).rejects.toThrow("429 Rate limit exceeded")
+
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "429 Rate limit exceeded: free-models-per-day",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "createMessage",
+				}),
+			)
+		})
+
+		it("passes SDK exceptions containing 'rate limit' to telemetry (filtering happens in PostHogTelemetryClient)", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const error = new Error("Request failed due to rate limit")
+			const mockCreate = vitest.fn().mockRejectedValue(error)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const generator = handler.createMessage("test", [])
+			await expect(generator.next()).rejects.toThrow("rate limit")
+
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Request failed due to rate limit",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "createMessage",
+				}),
+			)
+		})
+
+		it("passes 429 rate limit errors from stream to telemetry (filtering happens in PostHogTelemetryClient)", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield { error: { message: "Rate limit exceeded", code: 429 } }
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const generator = handler.createMessage("test", [])
+			await expect(generator.next()).rejects.toThrow("OpenRouter API Error 429: Rate limit exceeded")
+
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Rate limit exceeded",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "createMessage",
+					errorCode: 429,
+					status: 429,
+				}),
+			)
+		})
+
+		it("yields tool_call_end events when finish_reason is tool_calls", async () => {
+			// Import NativeToolCallParser to set up state
+			const { NativeToolCallParser } = await import("../../../core/assistant-message/NativeToolCallParser")
+
+			// Clear any previous state
+			NativeToolCallParser.clearRawChunkState()
+
 			const handler = new OpenRouterHandler(mockOptions)
 
-			const mockFullStream = (async function* () {
-				yield { type: "error", error: new Error("Stream error") }
-			})()
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											id: "call_openrouter_test",
+											function: { name: "read_file", arguments: '{"path":"test.ts"}' },
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						id: "test-id",
+						choices: [
+							{
+								delta: {},
+								finish_reason: "tool_calls",
+								index: 0,
+							},
+						],
+						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+					}
+				},
+			}
 
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0, totalTokens: 0 }),
-				totalUsage: Promise.resolve({ inputTokens: 0, outputTokens: 0, totalTokens: 0 }),
-			})
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
 
-			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
+			const generator = handler.createMessage("test", [])
 			const chunks = []
 
 			for await (const chunk of generator) {
+				// Simulate what Task.ts does: when we receive tool_call_partial,
+				// process it through NativeToolCallParser to populate rawChunkTracker
+				if (chunk.type === "tool_call_partial") {
+					NativeToolCallParser.processRawChunk({
+						index: chunk.index,
+						id: chunk.id,
+						name: chunk.name,
+						arguments: chunk.arguments,
+					})
+				}
 				chunks.push(chunk)
 			}
 
-			expect(chunks[0]).toEqual({
-				type: "error",
-				error: "StreamError",
-				message: "Stream error",
-			})
-		})
+			// Should have tool_call_partial and tool_call_end
+			const partialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+			const endChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
 
-		it("passes tools to streamText when provided", async () => {
-			const handler = new OpenRouterHandler(mockOptions)
-
-			const mockFullStream = (async function* () {
-				yield { type: "text-delta", text: "test", id: "1" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-			})
-
-			const tools = [
-				{
-					type: "function" as const,
-					function: {
-						name: "read_file",
-						description: "Read a file",
-						parameters: { type: "object", properties: { path: { type: "string" } } },
-					},
-				},
-			]
-
-			const generator = handler.createMessage("test", [{ role: "user", content: "test" }], {
-				taskId: "test",
-				tools,
-			})
-
-			for await (const _ of generator) {
-				// consume
-			}
-
-			expect(mockStreamText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tools: expect.objectContaining({
-						read_file: expect.any(Object),
-					}),
-				}),
-			)
-		})
-
-		it("passes reasoning parameters via extraBody when reasoning effort is enabled", async () => {
-			const handler = new OpenRouterHandler({
-				openRouterApiKey: "test-key",
-				openRouterModelId: "deepseek/deepseek-r1",
-				reasoningEffort: "high",
-				enableReasoningEffort: true,
-			})
-
-			const mockFullStream = (async function* () {
-				yield { type: "reasoning-delta", text: "thinking...", id: "1" }
-				yield { type: "text-delta", text: "result", id: "2" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-			})
-
-			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
-
-			for await (const _ of generator) {
-				// consume
-			}
-
-			// Verify that reasoning was passed via extraBody when creating the provider
-			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
-				expect.objectContaining({
-					extraBody: expect.objectContaining({
-						reasoning: expect.objectContaining({
-							effort: "high",
-						}),
-					}),
-				}),
-			)
-
-			// Verify that providerOptions does NOT contain extended_thinking
-			expect(mockStreamText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					providerOptions: undefined,
-				}),
-			)
-		})
-
-		it("does not pass reasoning via extraBody when reasoning is disabled", async () => {
-			const handler = new OpenRouterHandler({
-				openRouterApiKey: "test-key",
-				openRouterModelId: "anthropic/claude-sonnet-4",
-			})
-
-			const mockFullStream = (async function* () {
-				yield { type: "text-delta", text: "test", id: "1" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-			})
-
-			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
-
-			for await (const _ of generator) {
-				// consume
-			}
-
-			// Verify that createOpenRouter was called with correct base config
-			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
-				expect.objectContaining({
-					apiKey: "test-key",
-					baseURL: "https://openrouter.ai/api/v1",
-				}),
-			)
-
-			// Verify that providerOptions is undefined when no provider routing
-			expect(mockStreamText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					providerOptions: undefined,
-				}),
-			)
+			expect(partialChunks).toHaveLength(1)
+			expect(endChunks).toHaveLength(1)
+			expect(endChunks[0].id).toBe("call_openrouter_test")
 		})
 	})
 
 	describe("completePrompt", () => {
 		it("returns correct response", async () => {
 			const handler = new OpenRouterHandler(mockOptions)
+			const mockResponse = { choices: [{ message: { content: "test completion" } }] }
 
-			mockGenerateText.mockResolvedValue({
-				text: "test completion",
-			})
+			const mockCreate = vitest.fn().mockResolvedValue(mockResponse)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
 
 			const result = await handler.completePrompt("test prompt")
 
 			expect(result).toBe("test completion")
-			expect(mockGenerateText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					prompt: "test prompt",
-					maxOutputTokens: 8192,
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				{
+					model: mockOptions.openRouterModelId,
+					max_tokens: 8192,
 					temperature: 0,
-				}),
+					messages: [{ role: "user", content: "test prompt" }],
+					stream: false,
+				},
+				{ headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" } },
 			)
 		})
 
-		it("passes reasoning parameters via extraBody when reasoning effort is enabled", async () => {
-			const handler = new OpenRouterHandler({
-				openRouterApiKey: "test-key",
-				openRouterModelId: "deepseek/deepseek-r1",
-				reasoningEffort: "medium",
-				enableReasoningEffort: true,
-			})
-
-			mockGenerateText.mockResolvedValue({
-				text: "test completion with reasoning",
-			})
-
-			const result = await handler.completePrompt("test prompt")
-
-			expect(result).toBe("test completion with reasoning")
-
-			// Verify that reasoning was passed via extraBody when creating the provider
-			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
-				expect.objectContaining({
-					extraBody: expect.objectContaining({
-						reasoning: expect.objectContaining({
-							effort: "medium",
-						}),
-					}),
-				}),
-			)
-
-			// Verify that providerOptions does NOT contain extended_thinking
-			expect(mockGenerateText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					providerOptions: undefined,
-				}),
-			)
-		})
-
-		it("handles API errors", async () => {
+		it("handles API errors and captures telemetry", async () => {
 			const handler = new OpenRouterHandler(mockOptions)
+			const mockError = {
+				error: {
+					message: "API Error",
+					code: 500,
+				},
+			}
 
-			mockGenerateText.mockRejectedValue(new Error("API Error"))
+			const mockCreate = vitest.fn().mockResolvedValue(mockError)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
 
-			await expect(handler.completePrompt("test prompt")).rejects.toThrow(
-				"OpenRouter completion error: API Error",
-			)
+			await expect(handler.completePrompt("test prompt")).rejects.toThrow("OpenRouter API Error 500: API Error")
 
-			// Verify telemetry was called
-			expect(mockCaptureException).toHaveBeenCalledTimes(1)
+			// Verify telemetry was captured
 			expect(mockCaptureException).toHaveBeenCalledWith(
 				expect.objectContaining({
 					message: "API Error",
 					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "completePrompt",
+					errorCode: 500,
+					status: 500,
+				}),
+			)
+		})
+
+		it("handles unexpected errors and captures telemetry", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const error = new Error("Unexpected error")
+			const mockCreate = vitest.fn().mockRejectedValue(error)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			await expect(handler.completePrompt("test prompt")).rejects.toThrow("Unexpected error")
+
+			// Verify telemetry was captured (filtering now happens inside PostHogTelemetryClient)
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Unexpected error",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
 					operation: "completePrompt",
 				}),
 			)
 		})
 
-		it("handles rate limit errors", async () => {
+		it("passes SDK exceptions with status 429 to telemetry (filtering happens in PostHogTelemetryClient)", async () => {
 			const handler = new OpenRouterHandler(mockOptions)
+			const error = new Error("Rate limit exceeded: free-models-per-day") as any
+			error.status = 429
+			const mockCreate = vitest.fn().mockRejectedValue(error)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
 
-			mockGenerateText.mockRejectedValue(new Error("Rate limit exceeded"))
+			await expect(handler.completePrompt("test prompt")).rejects.toThrow("Rate limit exceeded")
+
+			// captureException is called, but PostHogTelemetryClient filters out 429 errors internally
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Rate limit exceeded: free-models-per-day",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "completePrompt",
+				}),
+			)
+		})
+
+		it("passes SDK exceptions with 429 in message to telemetry (filtering happens in PostHogTelemetryClient)", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const error = new Error("429 Rate limit exceeded: free-models-per-day")
+			const mockCreate = vitest.fn().mockRejectedValue(error)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			await expect(handler.completePrompt("test prompt")).rejects.toThrow("429 Rate limit exceeded")
+
+			// captureException is called, but PostHogTelemetryClient filters out 429 errors internally
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "429 Rate limit exceeded: free-models-per-day",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "completePrompt",
+				}),
+			)
+		})
+
+		it("passes SDK exceptions containing 'rate limit' to telemetry (filtering happens in PostHogTelemetryClient)", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const error = new Error("Request failed due to rate limit")
+			const mockCreate = vitest.fn().mockRejectedValue(error)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			await expect(handler.completePrompt("test prompt")).rejects.toThrow("rate limit")
+
+			// captureException is called, but PostHogTelemetryClient filters out rate limit errors internally
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Request failed due to rate limit",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "completePrompt",
+				}),
+			)
+		})
+
+		it("passes 429 rate limit errors from response to telemetry (filtering happens in PostHogTelemetryClient)", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const mockError = {
+				error: {
+					message: "Rate limit exceeded",
+					code: 429,
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockError)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
 
 			await expect(handler.completePrompt("test prompt")).rejects.toThrow(
-				"OpenRouter completion error: Rate limit exceeded",
+				"OpenRouter API Error 429: Rate limit exceeded",
 			)
 
-			// Verify telemetry was called
-			expect(mockCaptureException).toHaveBeenCalledTimes(1)
+			// captureException is called, but PostHogTelemetryClient filters out 429 errors internally
 			expect(mockCaptureException).toHaveBeenCalledWith(
 				expect.objectContaining({
 					message: "Rate limit exceeded",
 					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
 					operation: "completePrompt",
-				}),
-			)
-		})
-	})
-
-	describe("provider configuration", () => {
-		it("creates OpenRouter provider with correct API key and base URL", async () => {
-			const customOptions: ApiHandlerOptions = {
-				openRouterApiKey: "custom-key",
-				openRouterBaseUrl: "https://custom.openrouter.ai/api/v1",
-				openRouterModelId: "anthropic/claude-sonnet-4",
-			}
-
-			const handler = new OpenRouterHandler(customOptions)
-
-			const mockFullStream = (async function* () {
-				yield { type: "text-delta", text: "test", id: "1" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-			})
-
-			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
-
-			for await (const _ of generator) {
-				// consume
-			}
-
-			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
-				expect.objectContaining({
-					apiKey: "custom-key",
-					baseURL: "https://custom.openrouter.ai/api/v1",
-				}),
-			)
-		})
-
-		it("uses default base URL when not specified", async () => {
-			const handler = new OpenRouterHandler(mockOptions)
-
-			const mockFullStream = (async function* () {
-				yield { type: "text-delta", text: "test", id: "1" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-			})
-
-			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
-
-			for await (const _ of generator) {
-				// consume
-			}
-
-			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
-				expect.objectContaining({
-					apiKey: "test-key",
-					baseURL: "https://openrouter.ai/api/v1",
-				}),
-			)
-		})
-	})
-
-	describe("model-specific handling", () => {
-		const mockStreamResult = () => {
-			const mockFullStream = (async function* () {
-				yield { type: "text-delta", text: "response", id: "1" }
-			})()
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
-			})
-		}
-
-		const consumeGenerator = async (
-			handler: any,
-			system = "test",
-			msgs: any[] = [{ role: "user", content: "test" }],
-		) => {
-			const generator = handler.createMessage(system, msgs)
-			for await (const _ of generator) {
-				// consume
-			}
-		}
-
-		it("passes topP for DeepSeek R1 models", async () => {
-			const handler = new OpenRouterHandler({
-				openRouterApiKey: "test-key",
-				openRouterModelId: "deepseek/deepseek-r1",
-			})
-			mockStreamResult()
-			await consumeGenerator(handler)
-
-			expect(mockStreamText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					topP: 0.95,
-				}),
-			)
-		})
-
-		it("does not pass topP for non-R1 models", async () => {
-			const handler = new OpenRouterHandler({
-				openRouterApiKey: "test-key",
-				openRouterModelId: "openai/gpt-4o",
-			})
-			mockStreamResult()
-			await consumeGenerator(handler)
-
-			expect(mockStreamText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					topP: undefined,
-				}),
-			)
-		})
-
-		it("does not use R1 format for DeepSeek R1 models (uses standard AI SDK path)", async () => {
-			const handler = new OpenRouterHandler({
-				openRouterApiKey: "test-key",
-				openRouterModelId: "deepseek/deepseek-r1",
-			})
-			mockStreamResult()
-			await consumeGenerator(handler, "system prompt")
-
-			// R1 models should NOT pass extraBody.messages (R1 format conversion removed)
-			const providerCall = mockCreateOpenRouter.mock.calls[0][0]
-			expect(providerCall?.extraBody?.messages).toBeUndefined()
-
-			// System prompt should be passed normally via streamText
-			const streamTextCall = mockStreamText.mock.calls[0][0]
-			expect(streamTextCall.system).toBe("system prompt")
-		})
-
-		it("applies Anthropic beta headers for Anthropic models", async () => {
-			const handler = new OpenRouterHandler({
-				openRouterApiKey: "test-key",
-				openRouterModelId: "anthropic/claude-sonnet-4",
-			})
-			mockStreamResult()
-			await consumeGenerator(handler)
-
-			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
-				expect.objectContaining({
-					headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" },
-				}),
-			)
-		})
-
-		it("does not apply Anthropic beta headers for non-Anthropic models", async () => {
-			const handler = new OpenRouterHandler({
-				openRouterApiKey: "test-key",
-				openRouterModelId: "openai/gpt-4o",
-			})
-			mockStreamResult()
-			await consumeGenerator(handler)
-
-			const call = mockCreateOpenRouter.mock.calls[0][0]
-			expect(call.headers).toBeUndefined()
-		})
-
-		it("passes system prompt directly for Anthropic models (no caching transform)", async () => {
-			const handler = new OpenRouterHandler({
-				openRouterApiKey: "test-key",
-				openRouterModelId: "anthropic/claude-sonnet-4",
-			})
-			mockStreamResult()
-			await consumeGenerator(handler)
-
-			// System prompt should be passed directly via streamText
-			const streamTextCall = mockStreamText.mock.calls[0][0]
-			expect(streamTextCall.system).toBe("test")
-
-			// Messages should be the converted AI SDK messages (no system-role message injected)
-			const systemMsgs = streamTextCall.messages.filter((m: any) => m.role === "system")
-			expect(systemMsgs).toHaveLength(0)
-		})
-
-		it("disables reasoning for Gemini 2.5 Pro when not explicitly configured", async () => {
-			const handler = new OpenRouterHandler({
-				openRouterApiKey: "test-key",
-				openRouterModelId: "google/gemini-2.5-pro",
-			})
-			mockStreamResult()
-			await consumeGenerator(handler)
-
-			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
-				expect.objectContaining({
-					extraBody: expect.objectContaining({
-						reasoning: { exclude: true },
-					}),
-				}),
-			)
-		})
-
-		it("passes system prompt directly for Gemini models (no caching transform)", async () => {
-			const handler = new OpenRouterHandler({
-				openRouterApiKey: "test-key",
-				openRouterModelId: "google/gemini-2.5-flash",
-			})
-			mockStreamResult()
-			await consumeGenerator(handler)
-
-			// System prompt should be passed directly via streamText
-			const streamTextCall = mockStreamText.mock.calls[0][0]
-			expect(streamTextCall.system).toBe("test")
-
-			// No system-role message should be injected
-			const systemMsgs = streamTextCall.messages.filter((m: any) => m.role === "system")
-			expect(systemMsgs).toHaveLength(0)
-		})
-
-		it("does not use extraBody.messages for Gemini models outside caching set", async () => {
-			const handler = new OpenRouterHandler({
-				openRouterApiKey: "test-key",
-				openRouterModelId: "google/gemini-3-pro-preview",
-			})
-			mockStreamResult()
-			await consumeGenerator(handler)
-
-			// Non-caching Gemini models should go through the AI SDK natively
-			// (no extraBody.messages — reasoning_details are wired via providerOptions)
-			const callArgs = mockCreateOpenRouter.mock.calls[0]?.[0] ?? {}
-			const extraBody = callArgs.extraBody ?? {}
-			expect(extraBody.messages).toBeUndefined()
-		})
-
-		it("passes topP to completePrompt for R1 models", async () => {
-			const handler = new OpenRouterHandler({
-				openRouterApiKey: "test-key",
-				openRouterModelId: "deepseek/deepseek-r1",
-			})
-			mockGenerateText.mockResolvedValue({ text: "completion" })
-
-			await handler.completePrompt("test prompt")
-
-			expect(mockGenerateText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					topP: 0.95,
+					errorCode: 429,
+					status: 429,
 				}),
 			)
 		})

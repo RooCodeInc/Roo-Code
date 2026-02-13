@@ -2,7 +2,6 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { presentAssistantMessage } from "../presentAssistantMessage"
-import { validateToolUse } from "../../tools/validateToolUse"
 
 // Mock dependencies
 vi.mock("../../task/Task")
@@ -59,6 +58,9 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 			clineMessages: [],
 			api: {
 				getModel: () => ({ id: "test-model", info: {} }),
+			},
+			browserSession: {
+				closeBrowser: vi.fn().mockResolvedValue(undefined),
 			},
 			recordToolUsage: vi.fn(),
 			recordToolError: vi.fn(),
@@ -296,44 +298,6 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 			// When experiment is off, shouldn't even check the registry
 			// (Code checks stateExperiments?.customTools before calling has())
 			expect(customToolRegistry.has).not.toHaveBeenCalled()
-		})
-	})
-
-	describe("Validation requirements", () => {
-		it("normalizes disabledTools aliases before validateToolUse", async () => {
-			const toolCallId = "tool_call_validation_alias_123"
-			mockTask.assistantMessageContent = [
-				{
-					type: "tool_use",
-					id: toolCallId,
-					name: "some_unknown_tool",
-					params: {},
-					partial: false,
-				},
-			]
-
-			mockTask.providerRef = {
-				deref: () => ({
-					getState: vi.fn().mockResolvedValue({
-						mode: "code",
-						customModes: [],
-						experiments: {
-							customTools: false,
-						},
-						disabledTools: ["search_and_replace"],
-					}),
-				}),
-			}
-
-			await presentAssistantMessage(mockTask)
-
-			const validateToolUseMock = vi.mocked(validateToolUse)
-			expect(validateToolUseMock).toHaveBeenCalled()
-			const toolRequirements = validateToolUseMock.mock.calls[0][3]
-			expect(toolRequirements).toMatchObject({
-				search_and_replace: false,
-				edit: false,
-			})
 		})
 	})
 

@@ -25,6 +25,7 @@
 		"toolNames": {
 			"read": "Read Files",
 			"edit": "Edit Files",
+			"browser": "Use Browser",
 			"command": "Run Commands",
 			"mcp": "Use MCP"
 		},
@@ -68,6 +69,9 @@
 			"label": "Project Level",
 			"description": "Only available in this workspace. If the exported mode contained rules files, they will be recreated in .roo/rules-{slug}/ folder."
 		}
+	},
+	"advanced": {
+		"title": "Advanced: Override System Prompt"
 	},
 	"globalCustomInstructions": {
 		"title": "Custom Instructions for All Modes",
@@ -140,6 +144,10 @@
 				"description": "Start a new task with user input. Available in the Command Palette."
 			}
 		}
+	},
+	"advancedSystemPrompt": {
+		"title": "Advanced: Override System Prompt",
+		"description": "<2>⚠️ Warning:</2> This advanced feature bypasses safeguards. <1>READ THIS BEFORE USING!</1>Override the default system prompt by creating a file at <span>.roo/system-prompt-{{slug}}</span>."
 	},
 	"createModeDialog": {
 		"title": "Create New Mode",

@@ -117,6 +117,10 @@ describe("getEnvironmentDetails", () => {
 				deref: vi.fn().mockReturnValue(mockProvider),
 				[Symbol.toStringTag]: "WeakRef",
 			} as unknown as WeakRef<ClineProvider>,
+			browserSession: {
+				isSessionActive: vi.fn().mockReturnValue(false),
+				getViewportSize: vi.fn().mockReturnValue({ width: 900, height: 600 }),
+			} as any,
 		}
 
 		// Mock other dependencies.
@@ -443,5 +447,19 @@ describe("getEnvironmentDetails", () => {
 		await getEnvironmentDetails(mockCline as Task)
 
 		expect(getGitStatus).toHaveBeenCalledWith(mockCwd, 5)
+	})
+
+	it("should NOT include Browser Session Status when inactive", async () => {
+		const result = await getEnvironmentDetails(mockCline as Task)
+		expect(result).not.toContain("# Browser Session Status")
+	})
+
+	it("should include Browser Session Status with current viewport when active", async () => {
+		;(mockCline.browserSession as any).isSessionActive = vi.fn().mockReturnValue(true)
+		;(mockCline.browserSession as any).getViewportSize = vi.fn().mockReturnValue({ width: 1280, height: 720 })
+
+		const result = await getEnvironmentDetails(mockCline as Task)
+		expect(result).toContain("Active - A browser session is currently open and ready for browser_action commands")
+		expect(result).toContain("Current viewport size: 1280x720 pixels.")
 	})
 })

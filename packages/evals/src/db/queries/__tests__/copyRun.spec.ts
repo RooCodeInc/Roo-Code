@@ -2,14 +2,14 @@
 
 import { eq } from "drizzle-orm"
 
-import { copyRun } from "../copyRun"
-import { createRun } from "../runs"
-import { createTask } from "../tasks"
-import { createTaskMetrics } from "../taskMetrics"
-import { createToolError } from "../toolErrors"
-import { RecordNotFoundError } from "../errors"
-import { schema } from "../../schema"
-import { client as db } from "../../db"
+import { copyRun } from "../copyRun.js"
+import { createRun } from "../runs.js"
+import { createTask } from "../tasks.js"
+import { createTaskMetrics } from "../taskMetrics.js"
+import { createToolError } from "../toolErrors.js"
+import { RecordNotFoundError } from "../errors.js"
+import { schema } from "../../schema.js"
+import { client as db } from "../../db.js"
 
 describe("copyRun", () => {
 	let sourceRunId: number
@@ -138,8 +138,8 @@ describe("copyRun", () => {
 		const toolError3 = await createToolError({
 			runId: sourceRunId,
 			taskId: null,
-			toolName: "write_to_file",
-			error: "Write timeout",
+			toolName: "browser_action",
+			error: "Browser connection timeout",
 		})
 
 		sourceToolErrorIds.push(toolError3.id)
@@ -234,8 +234,8 @@ describe("copyRun", () => {
 		expect(taskToolErrors).toHaveLength(2)
 		expect(runToolErrors).toHaveLength(1)
 
-		const writeError = runToolErrors.find((te) => te.toolName === "write_to_file")!
-		expect(writeError.error).toBe("Write timeout")
+		const browserError = runToolErrors.find((te) => te.toolName === "browser_action")!
+		expect(browserError.error).toBe("Browser connection timeout")
 
 		await db.delete(schema.toolErrors).where(eq(schema.toolErrors.runId, newRunId))
 		await db.delete(schema.tasks).where(eq(schema.tasks.runId, newRunId))

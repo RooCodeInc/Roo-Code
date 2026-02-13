@@ -92,7 +92,7 @@ export function Features() {
 			opacity: 1,
 			transition: {
 				duration: 1.2,
-				ease: "easeOut" as const,
+				ease: "easeOut",
 			},
 		},
 	}

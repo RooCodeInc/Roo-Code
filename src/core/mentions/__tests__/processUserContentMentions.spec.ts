@@ -2,6 +2,7 @@
 
 import { processUserContentMentions } from "../processUserContentMentions"
 import { parseMentions } from "../index"
+import { UrlContentFetcher } from "../../../services/browser/UrlContentFetcher"
 import { FileContextTracker } from "../../context-tracking/FileContextTracker"
 
 // Mock the parseMentions function
@@ -10,12 +11,14 @@ vi.mock("../index", () => ({
 }))
 
 describe("processUserContentMentions", () => {
+	let mockUrlContentFetcher: UrlContentFetcher
 	let mockFileContextTracker: FileContextTracker
 	let mockRooIgnoreController: any
 
 	beforeEach(() => {
 		vi.clearAllMocks()
 
+		mockUrlContentFetcher = {} as UrlContentFetcher
 		mockFileContextTracker = {} as FileContextTracker
 		mockRooIgnoreController = {}
 
@@ -23,8 +26,98 @@ describe("processUserContentMentions", () => {
 		vi.mocked(parseMentions).mockImplementation(async (text) => ({
 			text: `parsed: ${text}`,
 			mode: undefined,
-			contentBlocks: [],
 		}))
+	})
+
+	describe("maxReadFileLine parameter", () => {
+		it("should pass maxReadFileLine to parseMentions when provided", async () => {
+			const userContent = [
+				{
+					type: "text" as const,
+					text: "<user_message>Read file with limit</user_message>",
+				},
+			]
+
+			await processUserContentMentions({
+				userContent,
+				cwd: "/test",
+				urlContentFetcher: mockUrlContentFetcher,
+				fileContextTracker: mockFileContextTracker,
+				rooIgnoreController: mockRooIgnoreController,
+				maxReadFileLine: 100,
+			})
+
+			expect(parseMentions).toHaveBeenCalledWith(
+				"<user_message>Read file with limit</user_message>",
+				"/test",
+				mockUrlContentFetcher,
+				mockFileContextTracker,
+				mockRooIgnoreController,
+				false,
+				true, // includeDiagnosticMessages
+				50, // maxDiagnosticMessages
+				100,
+			)
+		})
+
+		it("should pass undefined maxReadFileLine when not provided", async () => {
+			const userContent = [
+				{
+					type: "text" as const,
+					text: "<user_message>Read file without limit</user_message>",
+				},
+			]
+
+			await processUserContentMentions({
+				userContent,
+				cwd: "/test",
+				urlContentFetcher: mockUrlContentFetcher,
+				fileContextTracker: mockFileContextTracker,
+				rooIgnoreController: mockRooIgnoreController,
+			})
+
+			expect(parseMentions).toHaveBeenCalledWith(
+				"<user_message>Read file without limit</user_message>",
+				"/test",
+				mockUrlContentFetcher,
+				mockFileContextTracker,
+				mockRooIgnoreController,
+				false,
+				true, // includeDiagnosticMessages
+				50, // maxDiagnosticMessages
+				undefined,
+			)
+		})
+
+		it("should handle UNLIMITED_LINES constant correctly", async () => {
+			const userContent = [
+				{
+					type: "text" as const,
+					text: "<user_message>Read unlimited lines</user_message>",
+				},
+			]
+
+			await processUserContentMentions({
+				userContent,
+				cwd: "/test",
+				urlContentFetcher: mockUrlContentFetcher,
+				fileContextTracker: mockFileContextTracker,
+				rooIgnoreController: mockRooIgnoreController,
+				maxReadFileLine: -1,
+			})
+
+			expect(parseMentions).toHaveBeenCalledWith(
+				"<user_message>Read unlimited lines</user_message>",
+				"/test",
+				mockUrlContentFetcher,
+				mockFileContextTracker,
+				mockRooIgnoreController,
+				false,
+				true, // includeDiagnosticMessages
+				50, // maxDiagnosticMessages
+				-1,
+			)
+		})
 	})
 
 	describe("content processing", () => {
@@ -39,6 +132,7 @@ describe("processUserContentMentions", () => {
 			const result = await processUserContentMentions({
 				userContent,
 				cwd: "/test",
+				urlContentFetcher: mockUrlContentFetcher,
 				fileContextTracker: mockFileContextTracker,
 			})
 
@@ -61,6 +155,7 @@ describe("processUserContentMentions", () => {
 			const result = await processUserContentMentions({
 				userContent,
 				cwd: "/test",
+				urlContentFetcher: mockUrlContentFetcher,
 				fileContextTracker: mockFileContextTracker,
 			})
 
@@ -81,20 +176,15 @@ describe("processUserContentMentions", () => {
 			const result = await processUserContentMentions({
 				userContent,
 				cwd: "/test",
+				urlContentFetcher: mockUrlContentFetcher,
 				fileContextTracker: mockFileContextTracker,
 			})
 
 			expect(parseMentions).toHaveBeenCalled()
-			// String content is now converted to array format to support content blocks
 			expect(result.content[0]).toEqual({
 				type: "tool_result",
 				tool_use_id: "123",
-				content: [
-					{
-						type: "text",
-						text: "parsed: <user_message>Tool feedback</user_message>",
-					},
-				],
+				content: "parsed: <user_message>Tool feedback</user_message>",
 			})
 			expect(result.mode).toBeUndefined()
 		})
@@ -120,6 +210,7 @@ describe("processUserContentMentions", () => {
 			const result = await processUserContentMentions({
 				userContent,
 				cwd: "/test",
+				urlContentFetcher: mockUrlContentFetcher,
 				fileContextTracker: mockFileContextTracker,
 			})
 
@@ -141,7 +232,7 @@ describe("processUserContentMentions", () => {
 			expect(result.mode).toBeUndefined()
 		})
 
-		it("should handle mixed content types (text + image)", async () => {
+		it("should handle mixed content types", async () => {
 			const userContent = [
 				{
 					type: "text" as const,
@@ -149,24 +240,39 @@ describe("processUserContentMentions", () => {
 				},
 				{
 					type: "image" as const,
-					image: "base64data",
-					mediaType: "image/png",
+					source: {
+						type: "base64" as const,
+						media_type: "image/png" as const,
+						data: "base64data",
+					},
+				},
+				{
+					type: "tool_result" as const,
+					tool_use_id: "456",
+					content: "<user_message>Feedback</user_message>",
 				},
 			]
 
 			const result = await processUserContentMentions({
-				userContent: userContent as any,
+				userContent,
 				cwd: "/test",
+				urlContentFetcher: mockUrlContentFetcher,
 				fileContextTracker: mockFileContextTracker,
+				maxReadFileLine: 50,
 			})
 
-			expect(parseMentions).toHaveBeenCalledTimes(1)
-			expect(result.content).toHaveLength(2)
+			expect(parseMentions).toHaveBeenCalledTimes(2)
+			expect(result.content).toHaveLength(3)
 			expect(result.content[0]).toEqual({
 				type: "text",
 				text: "parsed: <user_message>First task</user_message>",
 			})
 			expect(result.content[1]).toEqual(userContent[1]) // Image block unchanged
+			expect(result.content[2]).toEqual({
+				type: "tool_result",
+				tool_use_id: "456",
+				content: "parsed: <user_message>Feedback</user_message>",
+			})
 			expect(result.mode).toBeUndefined()
 		})
 	})
@@ -183,17 +289,20 @@ describe("processUserContentMentions", () => {
 			await processUserContentMentions({
 				userContent,
 				cwd: "/test",
+				urlContentFetcher: mockUrlContentFetcher,
 				fileContextTracker: mockFileContextTracker,
 			})
 
 			expect(parseMentions).toHaveBeenCalledWith(
 				"<user_message>Test default</user_message>",
 				"/test",
+				mockUrlContentFetcher,
 				mockFileContextTracker,
 				undefined,
 				false, // showRooIgnoredFiles should default to false
 				true, // includeDiagnosticMessages
 				50, // maxDiagnosticMessages
+				undefined,
 			)
 		})
 
@@ -208,6 +317,7 @@ describe("processUserContentMentions", () => {
 			await processUserContentMentions({
 				userContent,
 				cwd: "/test",
+				urlContentFetcher: mockUrlContentFetcher,
 				fileContextTracker: mockFileContextTracker,
 				showRooIgnoredFiles: false,
 			})
@@ -215,11 +325,13 @@ describe("processUserContentMentions", () => {
 			expect(parseMentions).toHaveBeenCalledWith(
 				"<user_message>Test explicit false</user_message>",
 				"/test",
+				mockUrlContentFetcher,
 				mockFileContextTracker,
 				undefined,
 				false,
 				true, // includeDiagnosticMessages
 				50, // maxDiagnosticMessages
+				undefined,
 			)
 		})
 	})
@@ -230,7 +342,6 @@ describe("processUserContentMentions", () => {
 				text: "parsed text",
 				slashCommandHelp: "command help",
 				mode: undefined,
-				contentBlocks: [],
 			})
 
 			const userContent = [
@@ -243,6 +354,7 @@ describe("processUserContentMentions", () => {
 			const result = await processUserContentMentions({
 				userContent,
 				cwd: "/test",
+				urlContentFetcher: mockUrlContentFetcher,
 				fileContextTracker: mockFileContextTracker,
 			})
 
@@ -262,7 +374,6 @@ describe("processUserContentMentions", () => {
 				text: "parsed tool output",
 				slashCommandHelp: "command help",
 				mode: undefined,
-				contentBlocks: [],
 			})
 
 			const userContent = [
@@ -276,6 +387,7 @@ describe("processUserContentMentions", () => {
 			const result = await processUserContentMentions({
 				userContent,
 				cwd: "/test",
+				urlContentFetcher: mockUrlContentFetcher,
 				fileContextTracker: mockFileContextTracker,
 			})
 
@@ -301,7 +413,6 @@ describe("processUserContentMentions", () => {
 				text: "parsed array item",
 				slashCommandHelp: "command help",
 				mode: undefined,
-				contentBlocks: [],
 			})
 
 			const userContent = [
@@ -320,6 +431,7 @@ describe("processUserContentMentions", () => {
 			const result = await processUserContentMentions({
 				userContent,
 				cwd: "/test",
+				urlContentFetcher: mockUrlContentFetcher,
 				fileContextTracker: mockFileContextTracker,
 			})
 

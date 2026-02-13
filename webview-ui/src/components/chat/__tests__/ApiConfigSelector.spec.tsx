@@ -72,8 +72,6 @@ describe("ApiConfigSelector", () => {
 		],
 		pinnedApiConfigs: { config1: true },
 		togglePinnedApiConfig: mockTogglePinnedApiConfig,
-		lockApiConfigAcrossModes: false,
-		onToggleLockApiConfig: vi.fn(),
 	}
 
 	beforeEach(() => {

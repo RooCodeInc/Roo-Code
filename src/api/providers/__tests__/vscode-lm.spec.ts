@@ -1,4 +1,3 @@
-import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 import type { Mock } from "vitest"
 
 // Mocks must come first, before imports
@@ -144,7 +143,7 @@ describe("VsCodeLmHandler", () => {
 
 		it("should stream text responses", async () => {
 			const systemPrompt = "You are a helpful assistant"
-			const messages: RooMessage[] = [
+			const messages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user" as const,
 					content: "Hello",
@@ -183,7 +182,7 @@ describe("VsCodeLmHandler", () => {
 
 		it("should emit tool_call chunks when tools are provided", async () => {
 			const systemPrompt = "You are a helpful assistant"
-			const messages: RooMessage[] = [
+			const messages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user" as const,
 					content: "Calculate 2+2",
@@ -248,7 +247,7 @@ describe("VsCodeLmHandler", () => {
 
 		it("should handle native tool calls when tools are provided", async () => {
 			const systemPrompt = "You are a helpful assistant"
-			const messages: RooMessage[] = [
+			const messages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user" as const,
 					content: "Calculate 2+2",
@@ -313,7 +312,7 @@ describe("VsCodeLmHandler", () => {
 
 		it("should pass tools to request options when tools are provided", async () => {
 			const systemPrompt = "You are a helpful assistant"
-			const messages: RooMessage[] = [
+			const messages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user" as const,
 					content: "Calculate 2+2",
@@ -381,7 +380,7 @@ describe("VsCodeLmHandler", () => {
 
 		it("should handle errors", async () => {
 			const systemPrompt = "You are a helpful assistant"
-			const messages: RooMessage[] = [
+			const messages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user" as const,
 					content: "Hello",

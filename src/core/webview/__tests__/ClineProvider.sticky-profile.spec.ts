@@ -126,7 +126,7 @@ vi.mock("../../../shared/modes", () => ({
 			slug: "code",
 			name: "Code Mode",
 			roleDefinition: "You are a code assistant",
-			groups: ["read", "edit"],
+			groups: ["read", "edit", "browser"],
 		},
 		{
 			slug: "architect",
@@ -139,7 +139,7 @@ vi.mock("../../../shared/modes", () => ({
 		slug: "code",
 		name: "Code Mode",
 		roleDefinition: "You are a code assistant",
-		groups: ["read", "edit"],
+		groups: ["read", "edit", "browser"],
 	}),
 	defaultModeSlug: "code",
 }))
@@ -228,11 +228,6 @@ describe("ClineProvider - Sticky Provider Profile", () => {
 					delete secrets[key]
 					return Promise.resolve()
 				}),
-			},
-			workspaceState: {
-				get: vi.fn().mockReturnValue(undefined),
-				update: vi.fn().mockResolvedValue(undefined),
-				keys: vi.fn().mockReturnValue([]),
 			},
 			subscriptions: [],
 			extension: {

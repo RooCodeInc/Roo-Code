@@ -55,6 +55,7 @@ describe("checkExistKey", () => {
 			mistralApiKey: undefined,
 			vsCodeLmModelSelector: undefined,
 			requestyApiKey: undefined,
+			unboundApiKey: undefined,
 		}
 		expect(checkExistKey(config)).toBe(false)
 	})

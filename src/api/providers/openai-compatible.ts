@@ -6,26 +6,18 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
-import { streamText, generateText, LanguageModel, ToolSet, ModelMessage } from "ai"
+import { streamText, generateText, LanguageModel, ToolSet } from "ai"
 
 import type { ModelInfo } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import {
-	convertToAiSdkMessages,
-	convertToolsForAiSdk,
-	consumeAiSdkStream,
-	mapToolChoice,
-	handleAiSdkError,
-} from "../transform/ai-sdk"
+import { convertToAiSdkMessages, convertToolsForAiSdk, processAiSdkStreamPart } from "../transform/ai-sdk"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
-import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 /**
  * Configuration options for creating an OpenAI-compatible provider.
@@ -96,41 +88,53 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 	protected processUsageMetrics(usage: {
 		inputTokens?: number
 		outputTokens?: number
-		totalInputTokens?: number
-		totalOutputTokens?: number
-		cachedInputTokens?: number
-		reasoningTokens?: number
-		inputTokenDetails?: {
-			cacheReadTokens?: number
-			cacheWriteTokens?: number
-			noCacheTokens?: number
-		}
-		outputTokenDetails?: {
-			reasoningTokens?: number
-		}
 		details?: {
 			cachedInputTokens?: number
 			reasoningTokens?: number
 		}
 		raw?: Record<string, unknown>
 	}): ApiStreamUsageChunk {
-		const inputTokens = usage.inputTokens || 0
-		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens,
-			outputTokens,
-			// P1: AI SDK v6 top-level
-			// P2: AI SDK v6 structured (LanguageModelInputTokenDetails)
-			// P3: Legacy AI SDK standard (usage.details)
-			cacheReadTokens:
-				usage.cachedInputTokens ?? usage.inputTokenDetails?.cacheReadTokens ?? usage.details?.cachedInputTokens,
-			cacheWriteTokens: usage.inputTokenDetails?.cacheWriteTokens,
-			reasoningTokens:
-				usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
-			totalInputTokens: inputTokens,
-			totalOutputTokens: outputTokens,
+			inputTokens: usage.inputTokens || 0,
+			outputTokens: usage.outputTokens || 0,
+			cacheReadTokens: usage.details?.cachedInputTokens,
+			reasoningTokens: usage.details?.reasoningTokens,
 		}
+	}
+
+	/**
+	 * Map OpenAI tool_choice to AI SDK toolChoice format.
+	 */
+	protected mapToolChoice(
+		toolChoice: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"],
+	): "auto" | "none" | "required" | { type: "tool"; toolName: string } | undefined {
+		if (!toolChoice) {
+			return undefined
+		}
+
+		// Handle string values
+		if (typeof toolChoice === "string") {
+			switch (toolChoice) {
+				case "auto":
+					return "auto"
+				case "none":
+					return "none"
+				case "required":
+					return "required"
+				default:
+					return "auto"
+			}
+		}
+
+		// Handle object values (OpenAI ChatCompletionNamedToolChoice format)
+		if (typeof toolChoice === "object" && "type" in toolChoice) {
+			if (toolChoice.type === "function" && "function" in toolChoice && toolChoice.function?.name) {
+				return { type: "tool", toolName: toolChoice.function.name }
+			}
+		}
+
+		return undefined
 	}
 
 	/**
@@ -148,43 +152,45 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: RooMessage[],
+		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const model = this.getModel()
 		const languageModel = this.getLanguageModel()
 
 		// Convert messages to AI SDK format
-		const aiSdkMessages = messages as ModelMessage[]
+		const aiSdkMessages = convertToAiSdkMessages(messages)
 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
-		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		// Build the request options
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt || undefined,
+			system: systemPrompt,
 			messages: aiSdkMessages,
 			temperature: model.temperature ?? this.config.temperature ?? 0,
 			maxOutputTokens: this.getMaxOutputTokens(),
 			tools: aiSdkTools,
-			toolChoice: mapToolChoice(metadata?.tool_choice),
+			toolChoice: this.mapToolChoice(metadata?.tool_choice),
 		}
 
 		// Use streamText for streaming responses
 		const result = streamText(requestOptions)
 
-		try {
-			const processUsage = this.processUsageMetrics.bind(this)
-			yield* consumeAiSdkStream(result, async function* () {
-				const usage = await result.usage
-				yield processUsage(usage)
-			})
-		} catch (error) {
-			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
-			throw handleAiSdkError(error, this.config.providerName)
+		// Process the full stream to get all events
+		for await (const part of result.fullStream) {
+			// Use the processAiSdkStreamPart utility to convert stream parts
+			for (const chunk of processAiSdkStreamPart(part)) {
+				yield chunk
+			}
+		}
+
+		// Yield usage metrics at the end
+		const usage = await result.usage
+		if (usage) {
+			yield this.processUsageMetrics(usage)
 		}
 	}
 
@@ -202,9 +208,5 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 		})
 
 		return text
-	}
-
-	override isAiSdkProvider(): boolean {
-		return true
 	}
 }

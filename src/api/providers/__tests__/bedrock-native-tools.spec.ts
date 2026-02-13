@@ -1,12 +1,3 @@
-// Mock TelemetryService before other imports
-vi.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		instance: {
-			captureException: vi.fn(),
-		},
-	},
-}))
-
 // Mock AWS SDK credential providers
 vi.mock("@aws-sdk/credential-providers", () => {
 	const mockFromIni = vi.fn().mockReturnValue({
@@ -16,27 +7,28 @@ vi.mock("@aws-sdk/credential-providers", () => {
 	return { fromIni: mockFromIni }
 })
 
-// Use vi.hoisted to define mock functions for AI SDK
-const { mockStreamText, mockGenerateText } = vi.hoisted(() => ({
-	mockStreamText: vi.fn(),
-	mockGenerateText: vi.fn(),
-}))
+// Mock BedrockRuntimeClient and ConverseStreamCommand
+const mockSend = vi.fn()
 
-vi.mock("ai", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("ai")>()
+vi.mock("@aws-sdk/client-bedrock-runtime", () => {
 	return {
-		...actual,
-		streamText: mockStreamText,
-		generateText: mockGenerateText,
+		BedrockRuntimeClient: vi.fn().mockImplementation(() => ({
+			send: mockSend,
+			config: { region: "us-east-1" },
+		})),
+		ConverseStreamCommand: vi.fn((params) => ({
+			...params,
+			input: params,
+		})),
+		ConverseCommand: vi.fn(),
 	}
 })
 
-vi.mock("@ai-sdk/amazon-bedrock", () => ({
-	createAmazonBedrock: vi.fn(() => vi.fn(() => ({ modelId: "test", provider: "bedrock" }))),
-}))
-
 import { AwsBedrockHandler } from "../bedrock"
+import { ConverseStreamCommand } from "@aws-sdk/client-bedrock-runtime"
 import type { ApiHandlerCreateMessageMetadata } from "../../index"
+
+const mockConverseStreamCommand = vi.mocked(ConverseStreamCommand)
 
 // Test tool definitions in OpenAI format
 const testTools = [
@@ -71,365 +63,531 @@ const testTools = [
 	},
 ]
 
-/**
- * Helper: set up mockStreamText to return a simple text-delta stream.
- */
-function setupMockStreamText() {
-	async function* mockFullStream() {
-		yield { type: "text-delta", text: "Response text" }
-	}
-	mockStreamText.mockReturnValue({
-		fullStream: mockFullStream(),
-		usage: Promise.resolve({ inputTokens: 100, outputTokens: 50 }),
-		providerMetadata: Promise.resolve({}),
-	})
-}
-
-/**
- * Helper: set up mockStreamText to return a stream with tool-call events.
- */
-function setupMockStreamTextWithToolCall() {
-	async function* mockFullStream() {
-		yield {
-			type: "tool-input-start",
-			id: "tool-123",
-			toolName: "read_file",
-		}
-		yield {
-			type: "tool-input-delta",
-			id: "tool-123",
-			delta: '{"path": "/test.txt"}',
-		}
-		yield {
-			type: "tool-input-end",
-			id: "tool-123",
-		}
-	}
-	mockStreamText.mockReturnValue({
-		fullStream: mockFullStream(),
-		usage: Promise.resolve({ inputTokens: 100, outputTokens: 50 }),
-		providerMetadata: Promise.resolve({}),
-	})
-}
-
-describe("AwsBedrockHandler Native Tool Calling (AI SDK)", () => {
+describe("AwsBedrockHandler Native Tool Calling", () => {
 	let handler: AwsBedrockHandler
 
 	beforeEach(() => {
 		vi.clearAllMocks()
 
+		// Create handler with a model that supports native tools
 		handler = new AwsBedrockHandler({
 			apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
 			awsAccessKey: "test-access-key",
 			awsSecretKey: "test-secret-key",
 			awsRegion: "us-east-1",
 		})
+
+		// Mock the stream response
+		mockSend.mockResolvedValue({
+			stream: [],
+		})
 	})
 
-	describe("tools passed to streamText", () => {
-		it("should pass converted tools to streamText when tools are provided", async () => {
-			setupMockStreamText()
+	describe("convertToolsForBedrock", () => {
+		it("should convert OpenAI tools to Bedrock format", () => {
+			// Access private method
+			const convertToolsForBedrock = (handler as any).convertToolsForBedrock.bind(handler)
+
+			const bedrockTools = convertToolsForBedrock(testTools)
+
+			expect(bedrockTools).toHaveLength(2)
+
+			// Check structure and key properties (normalizeToolSchema adds additionalProperties: false)
+			const tool = bedrockTools[0]
+			expect(tool.toolSpec.name).toBe("read_file")
+			expect(tool.toolSpec.description).toBe("Read a file from the filesystem")
+			expect(tool.toolSpec.inputSchema.json.type).toBe("object")
+			expect(tool.toolSpec.inputSchema.json.properties.path.type).toBe("string")
+			expect(tool.toolSpec.inputSchema.json.properties.path.description).toBe("The path to the file")
+			expect(tool.toolSpec.inputSchema.json.required).toEqual(["path"])
+			// normalizeToolSchema adds additionalProperties: false by default
+			expect(tool.toolSpec.inputSchema.json.additionalProperties).toBe(false)
+		})
+
+		it("should transform type arrays to anyOf for JSON Schema 2020-12 compliance", () => {
+			const convertToolsForBedrock = (handler as any).convertToolsForBedrock.bind(handler)
+
+			// Tools with type: ["string", "null"] syntax (valid in draft-07 but not 2020-12)
+			const toolsWithNullableTypes = [
+				{
+					type: "function" as const,
+					function: {
+						name: "execute_command",
+						description: "Execute a command",
+						parameters: {
+							type: "object",
+							properties: {
+								command: { type: "string", description: "The command to execute" },
+								cwd: {
+									type: ["string", "null"],
+									description: "Working directory (optional)",
+								},
+							},
+							required: ["command", "cwd"],
+						},
+					},
+				},
+				{
+					type: "function" as const,
+					function: {
+						name: "read_file",
+						description: "Read files",
+						parameters: {
+							type: "object",
+							properties: {
+								files: {
+									type: "array",
+									items: {
+										type: "object",
+										properties: {
+											path: { type: "string" },
+											line_ranges: {
+												type: ["array", "null"],
+												items: { type: "integer" },
+												description: "Optional line ranges",
+											},
+										},
+										required: ["path", "line_ranges"],
+									},
+								},
+							},
+							required: ["files"],
+						},
+					},
+				},
+			]
+
+			const bedrockTools = convertToolsForBedrock(toolsWithNullableTypes)
+
+			expect(bedrockTools).toHaveLength(2)
+
+			// First tool: cwd should be transformed from type: ["string", "null"] to anyOf
+			const executeCommandSchema = bedrockTools[0].toolSpec.inputSchema.json as any
+			expect(executeCommandSchema.properties.cwd.anyOf).toEqual([{ type: "string" }, { type: "null" }])
+			expect(executeCommandSchema.properties.cwd.type).toBeUndefined()
+			expect(executeCommandSchema.properties.cwd.description).toBe("Working directory (optional)")
+
+			// Second tool: line_ranges should be transformed from type: ["array", "null"] to anyOf
+			// with items moved inside the array variant (required by GPT-5-mini strict schema validation)
+			const readFileSchema = bedrockTools[1].toolSpec.inputSchema.json as any
+			const lineRanges = readFileSchema.properties.files.items.properties.line_ranges
+			expect(lineRanges.anyOf).toEqual([{ type: "array", items: { type: "integer" } }, { type: "null" }])
+			expect(lineRanges.type).toBeUndefined()
+			// items should now be inside the array variant, not at root
+			expect(lineRanges.items).toBeUndefined()
+			expect(lineRanges.description).toBe("Optional line ranges")
+		})
+
+		it("should filter non-function tools", () => {
+			const convertToolsForBedrock = (handler as any).convertToolsForBedrock.bind(handler)
+
+			const mixedTools = [
+				...testTools,
+				{ type: "other" as any, something: {} }, // Should be filtered out
+			]
+
+			const bedrockTools = convertToolsForBedrock(mixedTools)
+
+			expect(bedrockTools).toHaveLength(2)
+		})
+	})
+
+	describe("convertToolChoiceForBedrock", () => {
+		it("should convert 'auto' to Bedrock auto format", () => {
+			const convertToolChoiceForBedrock = (handler as any).convertToolChoiceForBedrock.bind(handler)
+
+			const result = convertToolChoiceForBedrock("auto")
+
+			expect(result).toEqual({ auto: {} })
+		})
+
+		it("should convert 'required' to Bedrock any format", () => {
+			const convertToolChoiceForBedrock = (handler as any).convertToolChoiceForBedrock.bind(handler)
+
+			const result = convertToolChoiceForBedrock("required")
+
+			expect(result).toEqual({ any: {} })
+		})
+
+		it("should return undefined for 'none'", () => {
+			const convertToolChoiceForBedrock = (handler as any).convertToolChoiceForBedrock.bind(handler)
+
+			const result = convertToolChoiceForBedrock("none")
+
+			expect(result).toBeUndefined()
+		})
+
+		it("should convert specific tool choice to Bedrock tool format", () => {
+			const convertToolChoiceForBedrock = (handler as any).convertToolChoiceForBedrock.bind(handler)
+
+			const result = convertToolChoiceForBedrock({
+				type: "function",
+				function: { name: "read_file" },
+			})
+
+			expect(result).toEqual({
+				tool: {
+					name: "read_file",
+				},
+			})
+		})
+
+		it("should default to auto for undefined toolChoice", () => {
+			const convertToolChoiceForBedrock = (handler as any).convertToolChoiceForBedrock.bind(handler)
+
+			const result = convertToolChoiceForBedrock(undefined)
+
+			expect(result).toEqual({ auto: {} })
+		})
+	})
+
+	describe("createMessage with native tools", () => {
+		it("should include toolConfig when tools are provided", async () => {
+			const handlerWithNativeTools = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test-access-key",
+				awsSecretKey: "test-secret-key",
+				awsRegion: "us-east-1",
+			})
 
 			const metadata: ApiHandlerCreateMessageMetadata = {
 				taskId: "test-task",
 				tools: testTools,
 			}
 
-			const generator = handler.createMessage(
+			const generator = handlerWithNativeTools.createMessage(
 				"You are a helpful assistant.",
 				[{ role: "user", content: "Read the file at /test.txt" }],
 				metadata,
 			)
 
-			// Drain the generator
-			for await (const _chunk of generator) {
-				/* consume */
-			}
+			await generator.next()
 
-			expect(mockStreamText).toHaveBeenCalledTimes(1)
-			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(mockConverseStreamCommand).toHaveBeenCalled()
+			const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
 
-			// tools should be defined and contain AI SDK tool objects keyed by name
-			expect(callArgs.tools).toBeDefined()
-			expect(callArgs.tools.read_file).toBeDefined()
-			expect(callArgs.tools.write_file).toBeDefined()
+			expect(commandArg.toolConfig).toBeDefined()
+			expect(commandArg.toolConfig.tools).toHaveLength(2)
+			expect(commandArg.toolConfig.tools[0].toolSpec.name).toBe("read_file")
+			expect(commandArg.toolConfig.toolChoice).toEqual({ auto: {} })
 		})
 
-		it("should pass undefined tools when no tools are provided in metadata", async () => {
-			setupMockStreamText()
+		it("should always include toolConfig (tools are always present after PR #10841)", async () => {
+			const handlerWithNativeTools = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test-access-key",
+				awsSecretKey: "test-secret-key",
+				awsRegion: "us-east-1",
+			})
 
 			const metadata: ApiHandlerCreateMessageMetadata = {
 				taskId: "test-task",
-				// No tools
+				// Even without explicit tools, tools are always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
 			}
 
-			const generator = handler.createMessage(
+			const generator = handlerWithNativeTools.createMessage(
+				"You are a helpful assistant.",
+				[{ role: "user", content: "Read the file at /test.txt" }],
+				metadata,
+			)
+
+			await generator.next()
+
+			expect(mockConverseStreamCommand).toHaveBeenCalled()
+			const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
+
+			// Tools are now always present
+			expect(commandArg.toolConfig).toBeDefined()
+			expect(commandArg.toolConfig.tools).toBeDefined()
+			expect(commandArg.toolConfig.toolChoice).toEqual({ auto: {} })
+		})
+
+		it("should include toolConfig with undefined toolChoice when tool_choice is none", async () => {
+			const handlerWithNativeTools = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test-access-key",
+				awsSecretKey: "test-secret-key",
+				awsRegion: "us-east-1",
+			})
+
+			const metadata: ApiHandlerCreateMessageMetadata = {
+				taskId: "test-task",
+				tools: testTools,
+				tool_choice: "none", // Explicitly disable tool use
+			}
+
+			const generator = handlerWithNativeTools.createMessage(
+				"You are a helpful assistant.",
+				[{ role: "user", content: "Read the file at /test.txt" }],
+				metadata,
+			)
+
+			await generator.next()
+
+			expect(mockConverseStreamCommand).toHaveBeenCalled()
+			const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
+
+			// toolConfig is still provided but toolChoice is undefined for "none"
+			expect(commandArg.toolConfig).toBeDefined()
+			expect(commandArg.toolConfig.toolChoice).toBeUndefined()
+		})
+
+		it("should include fine-grained tool streaming beta for Claude models with native tools", async () => {
+			const handlerWithNativeTools = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test-access-key",
+				awsSecretKey: "test-secret-key",
+				awsRegion: "us-east-1",
+			})
+
+			const metadata: ApiHandlerCreateMessageMetadata = {
+				taskId: "test-task",
+				tools: testTools,
+			}
+
+			const generator = handlerWithNativeTools.createMessage(
+				"You are a helpful assistant.",
+				[{ role: "user", content: "Read the file at /test.txt" }],
+				metadata,
+			)
+
+			await generator.next()
+
+			expect(mockConverseStreamCommand).toHaveBeenCalled()
+			const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
+
+			// Should include the fine-grained tool streaming beta
+			expect(commandArg.additionalModelRequestFields).toBeDefined()
+			expect(commandArg.additionalModelRequestFields.anthropic_beta).toContain(
+				"fine-grained-tool-streaming-2025-05-14",
+			)
+		})
+
+		it("should always include fine-grained tool streaming beta for Claude models", async () => {
+			const handlerWithNativeTools = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test-access-key",
+				awsSecretKey: "test-secret-key",
+				awsRegion: "us-east-1",
+			})
+
+			const metadata: ApiHandlerCreateMessageMetadata = {
+				taskId: "test-task",
+				// No tools provided
+			}
+
+			const generator = handlerWithNativeTools.createMessage(
 				"You are a helpful assistant.",
 				[{ role: "user", content: "Hello" }],
 				metadata,
 			)
 
-			for await (const _chunk of generator) {
-				/* consume */
-			}
+			await generator.next()
 
-			expect(mockStreamText).toHaveBeenCalledTimes(1)
-			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(mockConverseStreamCommand).toHaveBeenCalled()
+			const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
 
-			// When no tools are provided, tools should be undefined
-			expect(callArgs.tools).toBeUndefined()
-		})
-
-		it("should filter non-function tools before passing to streamText", async () => {
-			setupMockStreamText()
-
-			const mixedTools: any[] = [
-				...testTools,
-				{ type: "other", something: {} }, // Should be filtered out
-			]
-
-			const metadata: ApiHandlerCreateMessageMetadata = {
-				taskId: "test-task",
-				tools: mixedTools as any,
-			}
-
-			const generator = handler.createMessage(
-				"You are a helpful assistant.",
-				[{ role: "user", content: "Read a file" }],
-				metadata,
+			// Should always include anthropic_beta with fine-grained-tool-streaming for Claude models
+			expect(commandArg.additionalModelRequestFields).toBeDefined()
+			expect(commandArg.additionalModelRequestFields.anthropic_beta).toContain(
+				"fine-grained-tool-streaming-2025-05-14",
 			)
-
-			for await (const _chunk of generator) {
-				/* consume */
-			}
-
-			expect(mockStreamText).toHaveBeenCalledTimes(1)
-			const callArgs = mockStreamText.mock.calls[0][0]
-
-			// Only function tools should be present (keyed by name)
-			expect(callArgs.tools).toBeDefined()
-			expect(Object.keys(callArgs.tools)).toHaveLength(2)
-			expect(callArgs.tools.read_file).toBeDefined()
-			expect(callArgs.tools.write_file).toBeDefined()
-		})
-	})
-
-	describe("toolChoice passed to streamText", () => {
-		it("should default toolChoice to undefined when tool_choice is not specified", async () => {
-			setupMockStreamText()
-
-			const metadata: ApiHandlerCreateMessageMetadata = {
-				taskId: "test-task",
-				tools: testTools,
-				// No tool_choice
-			}
-
-			const generator = handler.createMessage(
-				"You are a helpful assistant.",
-				[{ role: "user", content: "Read the file" }],
-				metadata,
-			)
-
-			for await (const _chunk of generator) {
-				/* consume */
-			}
-
-			expect(mockStreamText).toHaveBeenCalledTimes(1)
-			const callArgs = mockStreamText.mock.calls[0][0]
-
-			// mapToolChoice(undefined) returns undefined
-			expect(callArgs.toolChoice).toBeUndefined()
-		})
-
-		it("should pass 'auto' toolChoice when tool_choice is 'auto'", async () => {
-			setupMockStreamText()
-
-			const metadata: ApiHandlerCreateMessageMetadata = {
-				taskId: "test-task",
-				tools: testTools,
-				tool_choice: "auto",
-			}
-
-			const generator = handler.createMessage(
-				"You are a helpful assistant.",
-				[{ role: "user", content: "Read the file" }],
-				metadata,
-			)
-
-			for await (const _chunk of generator) {
-				/* consume */
-			}
-
-			expect(mockStreamText).toHaveBeenCalledTimes(1)
-			const callArgs = mockStreamText.mock.calls[0][0]
-
-			expect(callArgs.toolChoice).toBe("auto")
-		})
-
-		it("should pass 'none' toolChoice when tool_choice is 'none'", async () => {
-			setupMockStreamText()
-
-			const metadata: ApiHandlerCreateMessageMetadata = {
-				taskId: "test-task",
-				tools: testTools,
-				tool_choice: "none",
-			}
-
-			const generator = handler.createMessage(
-				"You are a helpful assistant.",
-				[{ role: "user", content: "Read the file" }],
-				metadata,
-			)
-
-			for await (const _chunk of generator) {
-				/* consume */
-			}
-
-			expect(mockStreamText).toHaveBeenCalledTimes(1)
-			const callArgs = mockStreamText.mock.calls[0][0]
-
-			expect(callArgs.toolChoice).toBe("none")
-		})
-
-		it("should pass 'required' toolChoice when tool_choice is 'required'", async () => {
-			setupMockStreamText()
-
-			const metadata: ApiHandlerCreateMessageMetadata = {
-				taskId: "test-task",
-				tools: testTools,
-				tool_choice: "required",
-			}
-
-			const generator = handler.createMessage(
-				"You are a helpful assistant.",
-				[{ role: "user", content: "Read the file" }],
-				metadata,
-			)
-
-			for await (const _chunk of generator) {
-				/* consume */
-			}
-
-			expect(mockStreamText).toHaveBeenCalledTimes(1)
-			const callArgs = mockStreamText.mock.calls[0][0]
-
-			expect(callArgs.toolChoice).toBe("required")
-		})
-
-		it("should pass specific tool choice when tool_choice names a function", async () => {
-			setupMockStreamText()
-
-			const metadata: ApiHandlerCreateMessageMetadata = {
-				taskId: "test-task",
-				tools: testTools,
-				tool_choice: {
-					type: "function",
-					function: { name: "read_file" },
-				},
-			}
-
-			const generator = handler.createMessage(
-				"You are a helpful assistant.",
-				[{ role: "user", content: "Read the file" }],
-				metadata,
-			)
-
-			for await (const _chunk of generator) {
-				/* consume */
-			}
-
-			expect(mockStreamText).toHaveBeenCalledTimes(1)
-			const callArgs = mockStreamText.mock.calls[0][0]
-
-			expect(callArgs.toolChoice).toEqual({
-				type: "tool",
-				toolName: "read_file",
-			})
 		})
 	})
 
 	describe("tool call streaming events", () => {
-		it("should yield tool_call_start, tool_call_delta, and tool_call_end for tool input stream", async () => {
-			setupMockStreamTextWithToolCall()
+		it("should yield tool_call_partial for toolUse block start", async () => {
+			const handlerWithNativeTools = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test-access-key",
+				awsSecretKey: "test-secret-key",
+				awsRegion: "us-east-1",
+			})
 
-			const metadata: ApiHandlerCreateMessageMetadata = {
-				taskId: "test-task",
-				tools: testTools,
-			}
+			// Mock stream with tool use events
+			mockSend.mockResolvedValue({
+				stream: (async function* () {
+					yield {
+						contentBlockStart: {
+							contentBlockIndex: 0,
+							start: {
+								toolUse: {
+									toolUseId: "tool-123",
+									name: "read_file",
+								},
+							},
+						},
+					}
+					yield {
+						contentBlockDelta: {
+							contentBlockIndex: 0,
+							delta: {
+								toolUse: {
+									input: '{"path": "/test.txt"}',
+								},
+							},
+						},
+					}
+					yield {
+						metadata: {
+							usage: {
+								inputTokens: 100,
+								outputTokens: 50,
+							},
+						},
+					}
+				})(),
+			})
 
-			const generator = handler.createMessage(
-				"You are a helpful assistant.",
-				[{ role: "user", content: "Read the file" }],
-				metadata,
-			)
+			const generator = handlerWithNativeTools.createMessage("You are a helpful assistant.", [
+				{ role: "user", content: "Read the file" },
+			])
 
 			const results: any[] = []
 			for await (const chunk of generator) {
 				results.push(chunk)
 			}
 
-			// Should have tool_call_start chunk
-			const startChunks = results.filter((r) => r.type === "tool_call_start")
-			expect(startChunks).toHaveLength(1)
-			expect(startChunks[0]).toEqual({
-				type: "tool_call_start",
+			// Should have tool_call_partial chunks
+			const toolCallChunks = results.filter((r) => r.type === "tool_call_partial")
+			expect(toolCallChunks).toHaveLength(2)
+
+			// First chunk should have id and name
+			expect(toolCallChunks[0]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
 				id: "tool-123",
 				name: "read_file",
+				arguments: undefined,
 			})
 
-			// Should have tool_call_delta chunk
-			const deltaChunks = results.filter((r) => r.type === "tool_call_delta")
-			expect(deltaChunks).toHaveLength(1)
-			expect(deltaChunks[0]).toEqual({
-				type: "tool_call_delta",
-				id: "tool-123",
-				delta: '{"path": "/test.txt"}',
-			})
-
-			// Should have tool_call_end chunk
-			const endChunks = results.filter((r) => r.type === "tool_call_end")
-			expect(endChunks).toHaveLength(1)
-			expect(endChunks[0]).toEqual({
-				type: "tool_call_end",
-				id: "tool-123",
+			// Second chunk should have arguments
+			expect(toolCallChunks[1]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: undefined,
+				name: undefined,
+				arguments: '{"path": "/test.txt"}',
 			})
 		})
 
-		it("should handle mixed text and tool use content in stream", async () => {
-			async function* mockFullStream() {
-				yield { type: "text-delta", text: "Let me read that file for you." }
-				yield { type: "text-delta", text: " Here's what I found:" }
-				yield {
-					type: "tool-input-start",
-					id: "tool-789",
-					toolName: "read_file",
-				}
-				yield {
-					type: "tool-input-delta",
-					id: "tool-789",
-					delta: '{"path": "/example.txt"}',
-				}
-				yield {
-					type: "tool-input-end",
-					id: "tool-789",
-				}
-			}
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream(),
-				usage: Promise.resolve({ inputTokens: 150, outputTokens: 75 }),
-				providerMetadata: Promise.resolve({}),
+		it("should yield tool_call_partial for contentBlock toolUse structure", async () => {
+			const handlerWithNativeTools = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test-access-key",
+				awsSecretKey: "test-secret-key",
+				awsRegion: "us-east-1",
 			})
 
-			const metadata: ApiHandlerCreateMessageMetadata = {
-				taskId: "test-task",
-				tools: testTools,
+			// Mock stream with alternative tool use structure
+			mockSend.mockResolvedValue({
+				stream: (async function* () {
+					yield {
+						contentBlockStart: {
+							contentBlockIndex: 0,
+							contentBlock: {
+								toolUse: {
+									toolUseId: "tool-456",
+									name: "write_file",
+								},
+							},
+						},
+					}
+					yield {
+						metadata: {
+							usage: {
+								inputTokens: 100,
+								outputTokens: 50,
+							},
+						},
+					}
+				})(),
+			})
+
+			const generator = handlerWithNativeTools.createMessage("You are a helpful assistant.", [
+				{ role: "user", content: "Write a file" },
+			])
+
+			const results: any[] = []
+			for await (const chunk of generator) {
+				results.push(chunk)
 			}
 
-			const generator = handler.createMessage(
-				"You are a helpful assistant.",
-				[{ role: "user", content: "Read the example file" }],
-				metadata,
-			)
+			// Should have tool_call_partial chunk
+			const toolCallChunks = results.filter((r) => r.type === "tool_call_partial")
+			expect(toolCallChunks).toHaveLength(1)
+
+			expect(toolCallChunks[0]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: "tool-456",
+				name: "write_file",
+				arguments: undefined,
+			})
+		})
+
+		it("should handle mixed text and tool use content", async () => {
+			const handlerWithNativeTools = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test-access-key",
+				awsSecretKey: "test-secret-key",
+				awsRegion: "us-east-1",
+			})
+
+			// Mock stream with mixed content
+			mockSend.mockResolvedValue({
+				stream: (async function* () {
+					yield {
+						contentBlockStart: {
+							contentBlockIndex: 0,
+							start: {
+								text: "Let me read that file for you.",
+							},
+						},
+					}
+					yield {
+						contentBlockDelta: {
+							contentBlockIndex: 0,
+							delta: {
+								text: " Here's what I found:",
+							},
+						},
+					}
+					yield {
+						contentBlockStart: {
+							contentBlockIndex: 1,
+							start: {
+								toolUse: {
+									toolUseId: "tool-789",
+									name: "read_file",
+								},
+							},
+						},
+					}
+					yield {
+						contentBlockDelta: {
+							contentBlockIndex: 1,
+							delta: {
+								toolUse: {
+									input: '{"path": "/example.txt"}',
+								},
+							},
+						},
+					}
+					yield {
+						metadata: {
+							usage: {
+								inputTokens: 150,
+								outputTokens: 75,
+							},
+						},
+					}
+				})(),
+			})
+
+			const generator = handlerWithNativeTools.createMessage("You are a helpful assistant.", [
+				{ role: "user", content: "Read the example file" },
+			])
 
 			const results: any[] = []
 			for await (const chunk of generator) {
@@ -442,158 +600,11 @@ describe("AwsBedrockHandler Native Tool Calling (AI SDK)", () => {
 			expect(textChunks[0].text).toBe("Let me read that file for you.")
 			expect(textChunks[1].text).toBe(" Here's what I found:")
 
-			// Should have tool call start
-			const startChunks = results.filter((r) => r.type === "tool_call_start")
-			expect(startChunks).toHaveLength(1)
-			expect(startChunks[0].name).toBe("read_file")
-
-			// Should have tool call delta
-			const deltaChunks = results.filter((r) => r.type === "tool_call_delta")
-			expect(deltaChunks).toHaveLength(1)
-			expect(deltaChunks[0].delta).toBe('{"path": "/example.txt"}')
-
-			// Should have tool call end
-			const endChunks = results.filter((r) => r.type === "tool_call_end")
-			expect(endChunks).toHaveLength(1)
-		})
-
-		it("should handle multiple tool calls in a single stream", async () => {
-			async function* mockFullStream() {
-				yield {
-					type: "tool-input-start",
-					id: "tool-1",
-					toolName: "read_file",
-				}
-				yield {
-					type: "tool-input-delta",
-					id: "tool-1",
-					delta: '{"path": "/file1.txt"}',
-				}
-				yield {
-					type: "tool-input-end",
-					id: "tool-1",
-				}
-				yield {
-					type: "tool-input-start",
-					id: "tool-2",
-					toolName: "write_file",
-				}
-				yield {
-					type: "tool-input-delta",
-					id: "tool-2",
-					delta: '{"path": "/file2.txt", "content": "hello"}',
-				}
-				yield {
-					type: "tool-input-end",
-					id: "tool-2",
-				}
-			}
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream(),
-				usage: Promise.resolve({ inputTokens: 200, outputTokens: 100 }),
-				providerMetadata: Promise.resolve({}),
-			})
-
-			const metadata: ApiHandlerCreateMessageMetadata = {
-				taskId: "test-task",
-				tools: testTools,
-			}
-
-			const generator = handler.createMessage(
-				"You are a helpful assistant.",
-				[{ role: "user", content: "Read and write files" }],
-				metadata,
-			)
-
-			const results: any[] = []
-			for await (const chunk of generator) {
-				results.push(chunk)
-			}
-
-			// Should have two tool_call_start chunks
-			const startChunks = results.filter((r) => r.type === "tool_call_start")
-			expect(startChunks).toHaveLength(2)
-			expect(startChunks[0].name).toBe("read_file")
-			expect(startChunks[1].name).toBe("write_file")
-
-			// Should have two tool_call_delta chunks
-			const deltaChunks = results.filter((r) => r.type === "tool_call_delta")
-			expect(deltaChunks).toHaveLength(2)
-
-			// Should have two tool_call_end chunks
-			const endChunks = results.filter((r) => r.type === "tool_call_end")
-			expect(endChunks).toHaveLength(2)
-		})
-	})
-
-	describe("tools schema normalization", () => {
-		it("should apply schema normalization (additionalProperties: false, strict: true) via convertToolsForOpenAI", async () => {
-			setupMockStreamText()
-
-			const metadata: ApiHandlerCreateMessageMetadata = {
-				taskId: "test-task",
-				tools: [
-					{
-						type: "function" as const,
-						function: {
-							name: "test_tool",
-							description: "A test tool",
-							parameters: {
-								type: "object",
-								properties: {
-									arg1: { type: "string" },
-								},
-								// Note: no "required" field and no "additionalProperties"
-							},
-						},
-					},
-				],
-			}
-
-			const generator = handler.createMessage(
-				"You are a helpful assistant.",
-				[{ role: "user", content: "test" }],
-				metadata,
-			)
-
-			for await (const _chunk of generator) {
-				/* consume */
-			}
-
-			expect(mockStreamText).toHaveBeenCalledTimes(1)
-			const callArgs = mockStreamText.mock.calls[0][0]
-
-			// The AI SDK tools should be keyed by tool name
-			expect(callArgs.tools).toBeDefined()
-			expect(callArgs.tools.test_tool).toBeDefined()
-		})
-	})
-
-	describe("usage metrics with tools", () => {
-		it("should yield usage chunk after tool call stream completes", async () => {
-			setupMockStreamTextWithToolCall()
-
-			const metadata: ApiHandlerCreateMessageMetadata = {
-				taskId: "test-task",
-				tools: testTools,
-			}
-
-			const generator = handler.createMessage(
-				"You are a helpful assistant.",
-				[{ role: "user", content: "Read a file" }],
-				metadata,
-			)
-
-			const results: any[] = []
-			for await (const chunk of generator) {
-				results.push(chunk)
-			}
-
-			// Should have a usage chunk at the end
-			const usageChunks = results.filter((r) => r.type === "usage")
-			expect(usageChunks).toHaveLength(1)
-			expect(usageChunks[0].inputTokens).toBe(100)
-			expect(usageChunks[0].outputTokens).toBe(50)
+			// Should have tool call chunks
+			const toolCallChunks = results.filter((r) => r.type === "tool_call_partial")
+			expect(toolCallChunks).toHaveLength(2)
+			expect(toolCallChunks[0].name).toBe("read_file")
+			expect(toolCallChunks[1].arguments).toBe('{"path": "/example.txt"}')
 		})
 	})
 })

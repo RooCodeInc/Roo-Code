@@ -25,6 +25,7 @@
 		"toolNames": {
 			"read": "Czytaj pliki",
 			"edit": "Edytuj pliki",
+			"browser": "Używaj przeglądarki",
 			"command": "Uruchamiaj polecenia",
 			"mcp": "Używaj MCP"
 		},
@@ -69,6 +70,9 @@
 			"label": "Poziom projektu",
 			"description": "Dostępne tylko w tym obszarze roboczym. Jeśli wyeksportowany tryb zawierał pliki reguł, zostaną one odtworzone w folderze .roo/rules-{slug}/."
 		}
+	},
+	"advanced": {
+		"title": "Zaawansowane"
 	},
 	"globalCustomInstructions": {
 		"title": "Niestandardowe instrukcje dla wszystkich trybów",
@@ -141,6 +145,10 @@
 				"description": "Rozpocznij nowe zadanie z wprowadzonymi danymi. Dostępne w palecie poleceń."
 			}
 		}
+	},
+	"advancedSystemPrompt": {
+		"title": "Zaawansowane: Zastąp podpowiedź systemową",
+		"description": "<2>⚠️ Ostrzeżenie:</2> Ta zaawansowana funkcja omija zabezpieczenia. <1>PRZECZYTAJ TO PRZED UŻYCIEM!</1>Zastąp domyślną podpowiedź systemową, tworząc plik w <span>.roo/system-prompt-{{slug}}</span>."
 	},
 	"createModeDialog": {
 		"title": "Utwórz nowy tryb",

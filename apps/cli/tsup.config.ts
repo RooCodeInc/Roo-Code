@@ -16,6 +16,7 @@ export default defineConfig({
 	external: [
 		// Keep native modules external
 		"@anthropic-ai/sdk",
+		"@anthropic-ai/bedrock-sdk",
 		"@anthropic-ai/vertex-sdk",
 		// Keep @vscode/ripgrep external - we bundle the binary separately
 		"@vscode/ripgrep",

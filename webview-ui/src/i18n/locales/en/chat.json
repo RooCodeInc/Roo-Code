@@ -74,22 +74,6 @@
 			"title": "Deny All"
 		}
 	},
-	"list-batch": {
-		"approve": {
-			"title": "Approve All"
-		},
-		"deny": {
-			"title": "Deny All"
-		}
-	},
-	"edit-batch": {
-		"approve": {
-			"title": "Save All"
-		},
-		"deny": {
-			"title": "Deny All"
-		}
-	},
 	"runCommand": {
 		"title": "Run",
 		"tooltip": "Execute this command"
@@ -138,8 +122,6 @@
 	},
 	"selectMode": "Select mode for interaction",
 	"selectApiConfig": "Select API configuration",
-	"lockApiConfigAcrossModes": "Lock API configuration across all modes in this workspace",
-	"unlockApiConfigAcrossModes": "API configuration is locked across all modes in this workspace (click to unlock)",
 	"enhancePrompt": "Enhance prompt with additional context",
 	"modeSelector": {
 		"title": "Modes",
@@ -174,14 +156,14 @@
 		"rateLimitWait": "Rate limiting",
 		"errorTitle": "Provider Error {{code}}",
 		"errorMessage": {
+			"docs": "Docs",
+			"goToSettings": "Settings",
 			"400": "The provider couldn't process the request as made. Stop the task and try a different approach.",
 			"401": "Couldn't authenticate with provider. Please check your API key configuration.",
 			"402": "You seem to have run out of funds/credits in your account. Go to your provider and add more to continue.",
 			"403": "Unauthorized. Your API key is valid, but the provider refused to complete this request.",
 			"429": "Too many requests. You're being rate-limited by the provider. Please wait a bit before your next API call.",
 			"500": "Provider server error. Something is wrong on the provider side, there's nothing wrong with your request.",
-			"docs": "Docs",
-			"goToSettings": "Settings",
 			"connection": "Connection error. Make sure you have a working internet connection.",
 			"unknown": "Unknown API error. Please contact Roo Code support.",
 			"claudeCodeNotAuthenticated": "You need to sign in to use Claude Code. Go to Settings and click \"Sign in to Claude Code\" to authenticate."
@@ -253,7 +235,6 @@
 		"didViewRecursive": "Roo recursively viewed all files in this directory",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo wants to recursively view all files in this directory (outside workspace)",
 		"didViewRecursiveOutsideWorkspace": "Roo recursively viewed all files in this directory (outside workspace)",
-		"wantsToViewMultipleDirectories": "Roo wants to view multiple directories",
 		"wantsToSearch": "Roo wants to search this directory for <code>{{regex}}</code>",
 		"didSearch": "Roo searched this directory for <code>{{regex}}</code>",
 		"wantsToSearchOutsideWorkspace": "Roo wants to search this directory (outside workspace) for <code>{{regex}}</code>",
@@ -366,8 +347,7 @@
 		},
 		"release": {
 			"heading": "What's New:",
-			"claudeOpus": "Claude Opus 4.6: Now available across all providers—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex, and OpenRouter—bringing Anthropic's most capable model to your preferred platform.",
-			"gptCodex": "GPT-5.3-Codex: OpenAI's latest coding model is now supported in the OpenAI - ChatGPT provider, delivering cutting-edge code generation and understanding."
+			"smartCodeFolding": "Smart Code Folding: Context condensation now preserves a lightweight map of your files: function signatures, class declarations, and type definitions. This provides better continuity after condensing and smarter edits when referencing previous work."
 		},
 		"cloudAgents": {
 			"heading": "New in the Cloud:",
@@ -390,6 +370,44 @@
 		"total": "Total Cost: ${{cost}}",
 		"includesSubtasks": "Includes subtask costs"
 	},
+	"browser": {
+		"session": "Browser Session",
+		"active": "Active",
+		"rooWantsToUse": "Roo wants to use the browser",
+		"consoleLogs": "Console Logs",
+		"noNewLogs": "(No new logs)",
+		"screenshot": "Browser screenshot",
+		"cursor": "cursor",
+		"navigation": {
+			"step": "Step {{current}} of {{total}}",
+			"previous": "Previous",
+			"next": "Next"
+		},
+		"sessionStarted": "Browser Session Started",
+		"actions": {
+			"title": "Browser Action: ",
+			"launched": "Launched browser",
+			"launch": "Launch browser at {{url}}",
+			"clicked": "Clicked at: {{coordinate}}",
+			"click": "Click ({{coordinate}})",
+			"typed": "Typed: {{text}}",
+			"type": "Type \"{{text}}\"",
+			"pressed": "Pressed key: {{key}}",
+			"press": "Press {{key}}",
+			"scrolledDown": "Scrolled down",
+			"scrollDown": "Scroll down",
+			"scrolledUp": "Scrolled up",
+			"scrollUp": "Scroll up",
+			"hovered": "Hovered at: {{coordinate}}",
+			"hover": "Hover ({{coordinate}})",
+			"resized": "Resized to: {{size}}",
+			"resize": "Resize to {{size}}",
+			"screenshotSaved": "Screenshot saved",
+			"screenshot": "Save screenshot to {{path}}",
+			"closed": "Closed browser",
+			"close": "Close browser"
+		}
+	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Expand code block",
@@ -397,6 +415,7 @@
 			"copy_code": "Copy code"
 		}
 	},
+	"systemPromptWarning": "WARNING: Custom system prompt override active. This can severely break functionality and cause unpredictable behavior.",
 	"profileViolationWarning": "The current profile isn't compatible with your organization's settings",
 	"shellIntegration": {
 		"title": "Command Execution Warning",
@@ -480,10 +499,5 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
-	},
-	"retiredProvider": {
-		"title": "Provider no longer supported",
-		"message": "Sorry, this provider is no longer supported. We saw very few Roo users actually using it and we need to reduce the surface area of our codebase so we can keep shipping fast and serving our community well in this space. It was a really hard decision but it lets us focus on what matters most to you. It sucks, we know.",
-		"openSettings": "Open Settings"
 	}
 }

@@ -74,22 +74,6 @@
 			"title": "全部拒絕"
 		}
 	},
-	"list-batch": {
-		"approve": {
-			"title": "全部核准"
-		},
-		"deny": {
-			"title": "全部拒絕"
-		}
-	},
-	"edit-batch": {
-		"approve": {
-			"title": "全部儲存"
-		},
-		"deny": {
-			"title": "全部拒絕"
-		}
-	},
 	"runCommand": {
 		"title": "執行",
 		"tooltip": "執行此命令"
@@ -138,8 +122,6 @@
 	},
 	"selectMode": "選擇互動模式",
 	"selectApiConfig": "選取 API 設定",
-	"lockApiConfigAcrossModes": "鎖定此工作區所有模式的 API 設定",
-	"unlockApiConfigAcrossModes": "此工作區所有模式的 API 設定已鎖定（點擊解鎖）",
 	"enhancePrompt": "使用額外內容強化提示詞",
 	"modeSelector": {
 		"title": "模式",
@@ -174,14 +156,14 @@
 		"rateLimitWait": "速率限制",
 		"errorTitle": "供應商錯誤 {{code}}",
 		"errorMessage": {
+			"docs": "說明文件",
+			"goToSettings": "設定",
 			"400": "供應商無法按照此方式處理請求。請停止工作並嘗試其他方法。",
 			"401": "無法向供應商進行身份驗證。請檢查您的 API 金鑰設定。",
 			"402": "您的帳戶資金／額度似乎已用盡。請前往供應商增加額度以繼續。",
 			"403": "無權存取。您的 API 金鑰有效，但供應商拒絕完成此請求。",
 			"429": "請求次數過多。供應商已對您的請求進行速率限制。請在下一次 API 呼叫前稍候。",
 			"500": "供應商伺服器錯誤。伺服器端發生問題，您的請求沒有問題。",
-			"docs": "說明文件",
-			"goToSettings": "設定",
 			"connection": "連線錯誤。請確保您有可用的網際網路連線。",
 			"unknown": "未知 API 錯誤。請聯絡 Roo Code 技術支援。",
 			"claudeCodeNotAuthenticated": "您需要登入才能使用 Claude Code。前往設定並點選「登入 Claude Code」以進行驗證。"
@@ -259,8 +241,7 @@
 		"wantsToSearch": "Roo 想要在此目錄中搜尋 <code>{{regex}}</code>",
 		"didSearch": "Roo 已在此目錄中搜尋 <code>{{regex}}</code>",
 		"wantsToSearchOutsideWorkspace": "Roo 想要在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "Roo 已在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
-		"wantsToViewMultipleDirectories": "Roo 想要查看多個目錄"
+		"didSearchOutsideWorkspace": "Roo 已在此目錄（工作區外）中搜尋 <code>{{regex}}</code>"
 	},
 	"codebaseSearch": {
 		"wantsToSearch": "Roo 想要在程式碼庫中搜尋 <code>{{query}}</code>",
@@ -369,8 +350,7 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"claudeOpus": "Claude Opus 4.6: 現已可在所有供應商——Roo Code Router、Anthropic、AWS Bedrock、Google Vertex 和 OpenRouter——上取得，將 Anthropic 最強大的模型帶到您偏好的平台。",
-			"gptCodex": "GPT-5.3-Codex: OpenAI 最新的編碼模型現已在 OpenAI - ChatGPT 供應商中受支援，提供尖端的程式碼生成和理解。"
+			"smartCodeFolding": "智慧代碼摺疊：上下文壓縮現保留檔案的輕量級對應圖——函數簽章、類別宣告和型別定義。 這提供壓縮後更佳的連續性，以及引用之前工作時更聰慧的編輯。"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",
@@ -393,6 +373,44 @@
 		"total": "總成本：${{cost}}",
 		"includesSubtasks": "包含子任務成本"
 	},
+	"browser": {
+		"session": "瀏覽器工作階段",
+		"active": "使用中",
+		"rooWantsToUse": "Roo 想要使用瀏覽器",
+		"consoleLogs": "主控台記錄",
+		"noNewLogs": "（沒有新記錄）",
+		"screenshot": "瀏覽器螢幕擷圖",
+		"cursor": "游標",
+		"navigation": {
+			"step": "步驟 {{current}}／{{total}}",
+			"previous": "上一步",
+			"next": "下一步"
+		},
+		"sessionStarted": "瀏覽器工作階段已啟動",
+		"actions": {
+			"title": "瀏覽器動作：",
+			"launched": "瀏覽器已啟動",
+			"launch": "在 {{url}} 啟動瀏覽器",
+			"clicked": "點選位置：{{coordinate}}",
+			"click": "點選 ({{coordinate}})",
+			"typed": "輸入：{{text}}",
+			"type": "輸入「{{text}}」",
+			"pressed": "已按下 {{key}}",
+			"press": "按下 {{key}}",
+			"scrolledDown": "已向下捲動",
+			"scrollDown": "向下捲動",
+			"scrolledUp": "已向上捲動",
+			"scrollUp": "向上捲動",
+			"hovered": "滑鼠停留位置：{{coordinate}}",
+			"hover": "滑鼠停留 ({{coordinate}})",
+			"resized": "大小已變更：{{size}}",
+			"resize": "調整大小為 {{size}}",
+			"screenshotSaved": "螢幕擷圖已儲存",
+			"screenshot": "將螢幕擷圖儲存至 {{path}}",
+			"closed": "瀏覽器已關閉",
+			"close": "關閉瀏覽器"
+		}
+	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "展開程式碼區塊",
@@ -400,6 +418,7 @@
 			"copy_code": "複製程式碼"
 		}
 	},
+	"systemPromptWarning": "警告：自訂系統提示詞覆寫已啟用。這可能嚴重破壞功能並導致不可預測的行為。",
 	"profileViolationWarning": "目前設定檔與您的組織設定不相容",
 	"shellIntegration": {
 		"title": "命令執行警告",
@@ -483,10 +502,5 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
-	},
-	"retiredProvider": {
-		"title": "供應商不再受支援",
-		"message": "抱歉，此供應商已不再受支援。我們發現實際使用它的 Roo 使用者非常少，我們需要縮減程式碼庫的範圍，以便繼續快速交付並更好地服務社群。這是一個非常艱難的決定，但它能讓我們專注於對你最重要的事情。我們知道這很遺憾。",
-		"openSettings": "開啟設定"
 	}
 }

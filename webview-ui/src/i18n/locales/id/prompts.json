@@ -25,6 +25,7 @@
 		"toolNames": {
 			"read": "Baca File",
 			"edit": "Edit File",
+			"browser": "Gunakan Browser",
 			"command": "Jalankan Perintah",
 			"mcp": "Gunakan MCP"
 		},
@@ -69,6 +70,9 @@
 			"label": "Tingkat Proyek",
 			"description": "Hanya tersedia di ruang kerja ini. Jika mode yang diekspor berisi file aturan, file tersebut akan dibuat ulang di folder .roo/rules-{slug}/."
 		}
+	},
+	"advanced": {
+		"title": "Lanjutan"
 	},
 	"globalCustomInstructions": {
 		"title": "Instruksi Kustom untuk Semua Mode",
@@ -141,6 +145,10 @@
 				"description": "Mulai tugas baru dengan input pengguna. Tersedia di Command Palette."
 			}
 		}
+	},
+	"advancedSystemPrompt": {
+		"title": "Lanjutan: Override System Prompt",
+		"description": "<2>⚠️ Peringatan:</2> Fitur lanjutan ini melewati pengamanan. <1>BACA INI SEBELUM MENGGUNAKAN!</1>Override system prompt default dengan membuat file di <span>.roo/system-prompt-{{slug}}</span>."
 	},
 	"createModeDialog": {
 		"title": "Buat Mode Baru",

@@ -18,7 +18,6 @@ import type { CloudUserInfo, CloudOrganizationMembership, OrganizationAllowList,
 import type { SerializedCustomToolDefinition } from "./custom-tool.js"
 import type { GitCommit } from "./git.js"
 import type { McpServer } from "./mcp.js"
-import type { SkillMetadata } from "./skills.js"
 import type { ModelRecord, RouterModels } from "./model.js"
 import type { OpenAiCodexRateLimitInfo } from "./providers/openai-codex-rate-limits.js"
 import type { WorktreeIncludeStatus } from "./worktree.js"
@@ -47,6 +46,7 @@ export interface ExtensionMessage {
 		| "ollamaModels"
 		| "lmStudioModels"
 		| "vsCodeLmModels"
+		| "huggingFaceModels"
 		| "vsCodeLmApiAvailable"
 		| "updatePrompt"
 		| "systemPrompt"
@@ -59,8 +59,12 @@ export interface ExtensionMessage {
 		| "deleteCustomModeCheck"
 		| "currentCheckpointUpdated"
 		| "checkpointInitWarning"
+		| "browserToolEnabled"
+		| "browserConnectionResult"
+		| "remoteBrowserEnabled"
 		| "ttsStart"
 		| "ttsStop"
+		| "maxReadFileLine"
 		| "fileSearchResults"
 		| "toggleApiConfigPin"
 		| "acceptInput"
@@ -89,6 +93,8 @@ export interface ExtensionMessage {
 		| "dismissedUpsells"
 		| "organizationSwitchResult"
 		| "interactionRequired"
+		| "browserSessionUpdate"
+		| "browserSessionNavigate"
 		| "customToolsResult"
 		| "modes"
 		| "taskWithAggregatedCosts"
@@ -102,7 +108,6 @@ export interface ExtensionMessage {
 		| "worktreeIncludeStatus"
 		| "branchWorktreeIncludeResult"
 		| "folderSelected"
-		| "skills"
 	text?: string
 	payload?: any // eslint-disable-line @typescript-eslint/no-explicit-any
 	checkpointWarning?: {
@@ -138,6 +143,23 @@ export interface ExtensionMessage {
 	ollamaModels?: ModelRecord
 	lmStudioModels?: ModelRecord
 	vsCodeLmModels?: { vendor?: string; family?: string; version?: string; id?: string }[]
+	huggingFaceModels?: Array<{
+		id: string
+		object: string
+		created: number
+		owned_by: string
+		providers: Array<{
+			provider: string
+			status: "live" | "staging" | "error"
+			supports_tools?: boolean
+			supports_structured_output?: boolean
+			context_length?: number
+			pricing?: {
+				input: number
+				output: number
+			}
+		}>
+	}>
 	mcpServers?: McpServer[]
 	commits?: GitCommit[]
 	listApiConfig?: ProviderSettingsEntry[]
@@ -175,9 +197,11 @@ export interface ExtensionMessage {
 	queuedMessages?: QueuedMessage[]
 	list?: string[] // For dismissedUpsells
 	organizationId?: string | null // For organizationSwitchResult
+	browserSessionMessages?: ClineMessage[] // For browser session panel updates
+	isBrowserSessionActive?: boolean // For browser session panel updates
+	stepIndex?: number // For browserSessionNavigate: the target step index to display
 	tools?: SerializedCustomToolDefinition[] // For customToolsResult
 	modes?: { slug: string; name: string }[] // For modes response
-	skills?: SkillMetadata[] // For skills response
 	aggregatedCosts?: {
 		// For taskWithAggregatedCosts response
 		totalCost: number
@@ -256,6 +280,7 @@ export type ExtensionState = Pick<
 	| "alwaysAllowWrite"
 	| "alwaysAllowWriteOutsideWorkspace"
 	| "alwaysAllowWriteProtected"
+	| "alwaysAllowBrowser"
 	| "alwaysAllowMcp"
 	| "alwaysAllowModeSwitch"
 	| "alwaysAllowSubtasks"
@@ -266,10 +291,17 @@ export type ExtensionState = Pick<
 	| "deniedCommands"
 	| "allowedMaxRequests"
 	| "allowedMaxCost"
+	| "browserToolEnabled"
+	| "browserViewportSize"
+	| "screenshotQuality"
+	| "remoteBrowserEnabled"
+	| "cachedChromeHostUrl"
+	| "remoteBrowserHost"
 	| "ttsEnabled"
 	| "ttsSpeed"
 	| "soundEnabled"
 	| "soundVolume"
+	| "maxConcurrentFileReads"
 	| "terminalOutputPreviewSize"
 	| "terminalShellIntegrationTimeout"
 	| "terminalShellIntegrationDisabled"
@@ -301,9 +333,7 @@ export type ExtensionState = Pick<
 	| "maxGitStatusFiles"
 	| "requestDelaySeconds"
 	| "showWorktreesInHomeScreen"
-	| "disabledTools"
 > & {
-	lockApiConfigAcrossModes?: boolean
 	version: string
 	clineMessages: ClineMessage[]
 	currentTaskItem?: HistoryItem
@@ -322,6 +352,7 @@ export type ExtensionState = Pick<
 	maxWorkspaceFiles: number // Maximum number of files to include in current working directory details (0-500)
 	showRooIgnoredFiles: boolean // Whether to show .rooignore'd files in listings
 	enableSubfolderRules: boolean // Whether to load rules from subdirectories
+	maxReadFileLine: number // Maximum number of lines to read from a file before truncating
 	maxImageFileSize: number // Maximum size of image files to process in MB
 	maxTotalImageSize: number // Maximum total size for all images in a single read operation in MB
 
@@ -352,6 +383,8 @@ export type ExtensionState = Pick<
 	organizationAllowList: OrganizationAllowList
 	organizationSettingsVersion?: number
 
+	isBrowserSessionActive: boolean // Actual browser session state
+
 	autoCondenseContext: boolean
 	autoCondenseContextPercent: number
 	marketplaceItems?: MarketplaceItem[]
@@ -364,20 +397,13 @@ export type ExtensionState = Pick<
 	lastShownAnnouncementId?: string
 	apiModelId?: string
 	mcpServers?: McpServer[]
+	hasSystemPromptOverride?: boolean
 	mdmCompliant?: boolean
 	remoteControlEnabled: boolean
 	taskSyncEnabled: boolean
 	featureRoomoteControlEnabled: boolean
 	openAiCodexIsAuthenticated?: boolean
 	debug?: boolean
-
-	/**
-	 * Monotonically increasing sequence number for clineMessages state pushes.
-	 * When present, the frontend should only apply clineMessages from a state push
-	 * if its seq is greater than the last applied seq. This prevents stale state
-	 * (captured during async getStateToPostToWebview) from overwriting newer messages.
-	 */
-	clineMessagesSeq?: number
 }
 
 export interface Command {
@@ -440,6 +466,7 @@ export interface WebviewMessage {
 		| "requestRooModels"
 		| "requestRooCreditBalance"
 		| "requestVsCodeLmModels"
+		| "requestHuggingFaceModels"
 		| "openImage"
 		| "saveImage"
 		| "openFile"
@@ -491,10 +518,11 @@ export interface WebviewMessage {
 		| "deleteMcpServer"
 		| "codebaseIndexEnabled"
 		| "telemetrySetting"
+		| "testBrowserConnection"
+		| "browserConnectionResult"
 		| "searchFiles"
 		| "toggleApiConfigPin"
 		| "hasOpenedModeSelector"
-		| "lockApiConfigAcrossModes"
 		| "clearCloudAuthSkipModel"
 		| "cloudButtonClicked"
 		| "rooCloudSignIn"
@@ -547,6 +575,11 @@ export interface WebviewMessage {
 		| "allowedCommands"
 		| "getTaskWithAggregatedCosts"
 		| "deniedCommands"
+		| "killBrowserSession"
+		| "openBrowserSessionPanel"
+		| "showBrowserSessionPanelAtStep"
+		| "refreshBrowserSessionPanel"
+		| "browserPanelDidLaunch"
 		| "openDebugApiHistory"
 		| "openDebugUiHistory"
 		| "downloadErrorDiagnostics"
@@ -567,13 +600,6 @@ export interface WebviewMessage {
 		| "createWorktreeInclude"
 		| "checkoutBranch"
 		| "browseForWorktreePath"
-		// Skills messages
-		| "requestSkills"
-		| "createSkill"
-		| "deleteSkill"
-		| "moveSkill"
-		| "updateSkillModes"
-		| "openSkillFile"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -608,18 +634,9 @@ export interface WebviewMessage {
 	timeout?: number
 	payload?: WebViewMessagePayload
 	source?: "global" | "project"
-	skillName?: string // For skill operations (createSkill, deleteSkill, moveSkill, openSkillFile)
-	/** @deprecated Use skillModeSlugs instead */
-	skillMode?: string // For skill operations (current mode restriction)
-	/** @deprecated Use newSkillModeSlugs instead */
-	newSkillMode?: string // For moveSkill (target mode)
-	skillDescription?: string // For createSkill (skill description)
-	/** Mode slugs for skill operations. undefined/empty = any mode */
-	skillModeSlugs?: string[] // For skill operations (mode restrictions)
-	/** Target mode slugs for updateSkillModes */
-	newSkillModeSlugs?: string[] // For updateSkillModes (new mode restrictions)
 	requestId?: string
 	ids?: string[]
+	hasSystemPromptOverride?: boolean
 	terminalOperation?: "continue" | "abort"
 	messageTs?: number
 	restoreCheckpoint?: boolean
@@ -790,7 +807,6 @@ export interface ClineSayTool {
 	isProtected?: boolean
 	additionalFileCount?: number // Number of additional files in the same read_file request
 	lineNumber?: number
-	startLine?: number // Starting line for read_file operations (for navigation on click)
 	query?: string
 	batchFiles?: Array<{
 		path: string
@@ -811,12 +827,6 @@ export interface ClineSayTool {
 			startLine?: number
 		}>
 	}>
-	batchDirs?: Array<{
-		path: string
-		recursive: boolean
-		isOutsideWorkspace?: boolean
-		key: string
-	}>
 	question?: string
 	imageData?: string // Base64 encoded image data for generated images
 	// Properties for runSlashCommand tool
@@ -826,6 +836,39 @@ export interface ClineSayTool {
 	description?: string
 	// Properties for skill tool
 	skill?: string
+}
+
+// Must keep in sync with system prompt.
+export const browserActions = [
+	"launch",
+	"click",
+	"hover",
+	"type",
+	"press",
+	"scroll_down",
+	"scroll_up",
+	"resize",
+	"close",
+	"screenshot",
+] as const
+
+export type BrowserAction = (typeof browserActions)[number]
+
+export interface ClineSayBrowserAction {
+	action: BrowserAction
+	coordinate?: string
+	size?: string
+	text?: string
+	executedCoordinate?: string
+}
+
+export type BrowserActionResult = {
+	screenshot?: string
+	logs?: string
+	currentUrl?: string
+	currentMousePosition?: string
+	viewportWidth?: number
+	viewportHeight?: number
 }
 
 export interface ClineAskUseMcpServer {

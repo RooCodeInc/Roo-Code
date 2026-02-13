@@ -111,8 +111,6 @@
 	},
 	"selectMode": "상호작용 모드 선택",
 	"selectApiConfig": "API 구성 선택",
-	"lockApiConfigAcrossModes": "이 워크스페이스의 모든 모드에서 API 구성 잠금",
-	"unlockApiConfigAcrossModes": "이 워크스페이스의 모든 모드에서 API 구성이 잠겨 있습니다 (클릭하여 해제)",
 	"enhancePrompt": "추가 컨텍스트로 프롬프트 향상",
 	"addImages": "메시지에 이미지 추가",
 	"sendMessage": "메시지 보내기",
@@ -220,8 +218,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)의 최상위 파일을 보고 싶어합니다",
 		"didViewTopLevelOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)의 최상위 파일을 보았습니다",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)의 모든 파일을 재귀적으로 보고 싶어합니다",
-		"didViewRecursiveOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)의 모든 파일을 재귀적으로 보았습니다",
-		"wantsToViewMultipleDirectories": "Roo가 여러 디렉토리를 보려고 합니다"
+		"didViewRecursiveOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)의 모든 파일을 재귀적으로 보았습니다"
 	},
 	"commandOutput": "명령 출력",
 	"commandExecution": {
@@ -347,8 +344,7 @@
 		},
 		"release": {
 			"heading": "새로운 기능:",
-			"claudeOpus": "Claude Opus 4.6: 이제 모든 제공업체—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex, OpenRouter—에서 이용 가능하며 Anthropic의 가장 강력한 모델을 선호하는 플랫폼으로 가져옵니다.",
-			"gptCodex": "GPT-5.3-Codex: OpenAI의 최신 코딩 모델이 이제 OpenAI - ChatGPT 제공업체에서 지원되어 최첨단 코드 생성 및 이해를 제공합니다."
+			"smartCodeFolding": "스마트 코드 폴딩: 컨텍스트 응축이 이제 파일의 경량 맵을 보존합니다—함수 시그니처, 클래스 선언 및 타입 정의를 포함합니다. 이는 응축 후 더 나은 연속성과 이전 작업을 참조할 때 더 스마트한 편집을 제공합니다."
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",
@@ -363,6 +359,44 @@
 		"total": "총 비용: ${{cost}}",
 		"includesSubtasks": "하위 작업 비용 포함"
 	},
+	"browser": {
+		"session": "브라우저 세션",
+		"active": "활성",
+		"rooWantsToUse": "Roo가 브라우저를 사용하고 싶어합니다",
+		"consoleLogs": "콘솔 로그",
+		"noNewLogs": "(새 로그 없음)",
+		"screenshot": "브라우저 스크린샷",
+		"cursor": "커서",
+		"navigation": {
+			"step": "단계 {{current}} / {{total}}",
+			"previous": "이전",
+			"next": "다음"
+		},
+		"sessionStarted": "브라우저 세션 시작됨",
+		"actions": {
+			"title": "브라우저 작업: ",
+			"launched": "브라우저 실행됨",
+			"launch": "{{url}}에서 브라우저 실행",
+			"clicked": "클릭함: {{coordinate}}",
+			"click": "클릭 ({{coordinate}})",
+			"typed": "입력함: {{text}}",
+			"type": "입력 \"{{text}}\"",
+			"pressed": "{{key}} 누름",
+			"press": "{{key}} 누르기",
+			"scrolledDown": "아래로 스크롤됨",
+			"scrollDown": "아래로 스크롤",
+			"scrolledUp": "위로 스크롤됨",
+			"scrollUp": "위로 스크롤",
+			"hovered": "가리킴: {{coordinate}}",
+			"hover": "가리키기 ({{coordinate}})",
+			"resized": "크기 조정됨: {{size}}",
+			"resize": "크기를 {{size}}로 조정",
+			"screenshotSaved": "스크린샷 저장됨",
+			"screenshot": "스크린샷을 {{path}}에 저장",
+			"closed": "브라우저 닫음",
+			"close": "브라우저 닫기"
+		}
+	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "코드 블록 확장",
@@ -370,6 +404,7 @@
 			"copy_code": "코드 복사"
 		}
 	},
+	"systemPromptWarning": "경고: 사용자 정의 시스템 프롬프트 재정의가 활성화되었습니다. 이로 인해 기능이 심각하게 손상되고 예측할 수 없는 동작이 발생할 수 있습니다.",
 	"profileViolationWarning": "현재 프로필이 조직 설정과 호환되지 않습니다",
 	"shellIntegration": {
 		"title": "명령 실행 경고",
@@ -398,22 +433,6 @@
 	"read-batch": {
 		"approve": {
 			"title": "모두 승인"
-		},
-		"deny": {
-			"title": "모두 거부"
-		}
-	},
-	"list-batch": {
-		"approve": {
-			"title": "모두 승인"
-		},
-		"deny": {
-			"title": "모두 거부"
-		}
-	},
-	"edit-batch": {
-		"approve": {
-			"title": "모두 저장"
 		},
 		"deny": {
 			"title": "모두 거부"
@@ -492,10 +511,5 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
-	},
-	"retiredProvider": {
-		"title": "공급자 지원 종료",
-		"message": "죄송합니다. 이 공급자는 더 이상 지원되지 않습니다. 실제로 사용하는 Roo 사용자가 매우 적었고, 빠르게 개발하고 커뮤니티에 잘 봉사하기 위해 코드베이스의 범위를 줄여야 했습니다. 정말 어려운 결정이었지만, 당신에게 가장 중요한 것에 집중할 수 있게 해줍니다. 불편을 드려 죄송합니다.",
-		"openSettings": "설정 열기"
 	}
 }

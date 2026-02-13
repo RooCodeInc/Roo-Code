@@ -13,7 +13,6 @@ import { convertToVsCodeLmMessages, extractTextCountFromMessage } from "../trans
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 /**
  * Converts OpenAI-format tools to VSCode Language Model tools.
@@ -365,7 +364,7 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: RooMessage[],
+		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		// Ensure clean state before starting a new request
@@ -375,13 +374,13 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 		// Process messages
 		const cleanedMessages = messages.map((msg) => ({
 			...msg,
-			...("content" in msg ? { content: this.cleanMessageContent((msg as any).content) } : {}),
+			content: this.cleanMessageContent(msg.content),
 		}))
 
-		// Convert messages to VS Code LM messages
+		// Convert Anthropic messages to VS Code LM messages
 		const vsCodeLmMessages: vscode.LanguageModelChatMessage[] = [
 			vscode.LanguageModelChatMessage.Assistant(systemPrompt),
-			...convertToVsCodeLmMessages(cleanedMessages as any),
+			...convertToVsCodeLmMessages(cleanedMessages),
 		]
 
 		// Initialize cancellation token for the request
@@ -475,8 +474,6 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 				type: "usage",
 				inputTokens: totalInputTokens,
 				outputTokens: totalOutputTokens,
-				totalInputTokens,
-				totalOutputTokens,
 			}
 		} catch (error: unknown) {
 			this.ensureCleanState()

@@ -1,4 +1,3 @@
-import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // Use vi.hoisted to define mock functions that can be referenced in hoisted vi.mock() calls
 const { mockStreamText, mockGenerateText } = vi.hoisted(() => ({
 	mockStreamText: vi.fn(),
@@ -122,7 +121,7 @@ describe("MoonshotHandler", () => {
 
 	describe("createMessage", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: RooMessage[] = [
+		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: [
@@ -345,7 +344,7 @@ describe("MoonshotHandler", () => {
 
 	describe("tool handling", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: RooMessage[] = [
+		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: [{ type: "text" as const, text: "Hello!" }],
@@ -420,10 +419,7 @@ describe("MoonshotHandler", () => {
 			expect(toolCallEndChunks[0].id).toBe("tool-call-1")
 		})
 
-		it("should ignore tool-call events to prevent duplicate tools in UI", async () => {
-			// tool-call events are intentionally ignored because tool-input-start/delta/end
-			// already provide complete tool call information. Emitting tool-call would cause
-			// duplicate tools in the UI for AI SDK providers (e.g., DeepSeek, Moonshot).
+		it("should handle complete tool calls", async () => {
 			async function* mockFullStream() {
 				yield {
 					type: "tool-call",
@@ -468,9 +464,11 @@ describe("MoonshotHandler", () => {
 				chunks.push(chunk)
 			}
 
-			// tool-call events are ignored, so no tool_call chunks should be emitted
 			const toolCallChunks = chunks.filter((c) => c.type === "tool_call")
-			expect(toolCallChunks.length).toBe(0)
+			expect(toolCallChunks.length).toBe(1)
+			expect(toolCallChunks[0].id).toBe("tool-call-1")
+			expect(toolCallChunks[0].name).toBe("read_file")
+			expect(toolCallChunks[0].arguments).toBe('{"path":"test.ts"}')
 		})
 	})
 })

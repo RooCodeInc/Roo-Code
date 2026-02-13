@@ -67,6 +67,18 @@ vi.mock("@modelcontextprotocol/sdk/types.js", () => ({
 	},
 }))
 
+vi.mock("../../../services/browser/BrowserSession", () => ({
+	BrowserSession: vi.fn().mockImplementation(() => ({
+		testConnection: vi.fn().mockResolvedValue({ success: false }),
+	})),
+}))
+
+vi.mock("../../../services/browser/browserDiscovery", () => ({
+	discoverChromeHostUrl: vi.fn().mockResolvedValue("http://localhost:9222"),
+	tryChromeHostUrl: vi.fn().mockResolvedValue(false),
+	testBrowserConnection: vi.fn(),
+}))
+
 vi.mock("@modelcontextprotocol/sdk/client/index.js", () => ({
 	Client: vi.fn().mockImplementation(() => ({
 		connect: vi.fn().mockResolvedValue(undefined),
@@ -275,11 +287,6 @@ describe("ClineProvider Task History Synchronization", () => {
 				store: vi.fn().mockImplementation((key: string, value: string | undefined) => (secrets[key] = value)),
 				delete: vi.fn().mockImplementation((key: string) => delete secrets[key]),
 			},
-			workspaceState: {
-				get: vi.fn().mockReturnValue(undefined),
-				update: vi.fn().mockResolvedValue(undefined),
-				keys: vi.fn().mockReturnValue([]),
-			},
 			subscriptions: [],
 			extension: {
 				packageJSON: { version: "1.0.0" },
@@ -406,74 +413,6 @@ describe("ClineProvider Task History Synchronization", () => {
 			const taskHistoryItemUpdatedCalls = findCallsByType(mockPostMessage.mock.calls, "taskHistoryItemUpdated")
 
 			expect(taskHistoryItemUpdatedCalls.length).toBe(0)
-		})
-
-		it("preserves delegated metadata on partial update unless explicitly overwritten (UTH-02)", async () => {
-			await provider.resolveWebviewView(mockWebviewView)
-			provider.isViewLaunched = true
-
-			const initial = createHistoryItem({
-				id: "task-delegated-metadata",
-				task: "Delegated task",
-				status: "delegated",
-				delegatedToId: "child-1",
-				awaitingChildId: "child-1",
-				childIds: ["child-1"],
-			})
-
-			await provider.updateTaskHistory(initial, { broadcast: false })
-
-			// Partial update intentionally omits delegated metadata fields.
-			const partialUpdate: HistoryItem = {
-				...createHistoryItem({ id: "task-delegated-metadata", task: "Delegated task (updated)" }),
-				status: "active",
-			}
-
-			const updatedHistory = await provider.updateTaskHistory(partialUpdate, { broadcast: false })
-			const updatedItem = updatedHistory.find((item) => item.id === "task-delegated-metadata")
-
-			expect(updatedItem).toBeDefined()
-			expect(updatedItem?.status).toBe("active")
-			expect(updatedItem?.delegatedToId).toBe("child-1")
-			expect(updatedItem?.awaitingChildId).toBe("child-1")
-			expect(updatedItem?.childIds).toEqual(["child-1"])
-		})
-
-		it("invalidates recentTasksCache on updateTaskHistory (UTH-04)", async () => {
-			const workspace = provider.cwd
-			const tsBase = Date.now()
-
-			await provider.updateTaskHistory(
-				createHistoryItem({
-					id: "cache-seed",
-					task: "Cache seed",
-					workspace,
-					ts: tsBase,
-				}),
-				{ broadcast: false },
-			)
-
-			const initialRecent = provider.getRecentTasks()
-			expect(initialRecent).toContain("cache-seed")
-
-			// Prime cache and verify internal cache is set.
-			expect((provider as unknown as { recentTasksCache?: string[] }).recentTasksCache).toEqual(initialRecent)
-
-			await provider.updateTaskHistory(
-				createHistoryItem({
-					id: "cache-new",
-					task: "Cache new",
-					workspace,
-					ts: tsBase + 1,
-				}),
-				{ broadcast: false },
-			)
-
-			// Direct assertion for invalidation side-effect.
-			expect((provider as unknown as { recentTasksCache?: string[] }).recentTasksCache).toBeUndefined()
-
-			const recomputedRecent = provider.getRecentTasks()
-			expect(recomputedRecent).toContain("cache-new")
 		})
 
 		it("updates existing task in history", async () => {
@@ -651,99 +590,6 @@ describe("ClineProvider Task History Synchronization", () => {
 			expect(state.taskHistory.some((item: HistoryItem) => item.workspace === "/path/to/workspace1")).toBe(true)
 			expect(state.taskHistory.some((item: HistoryItem) => item.workspace === "/path/to/workspace2")).toBe(true)
 			expect(state.taskHistory.some((item: HistoryItem) => item.workspace === "/different/workspace")).toBe(true)
-		})
-	})
-
-	describe("taskHistory write lock (mutex)", () => {
-		it("serializes concurrent updateTaskHistory calls so no entries are lost", async () => {
-			await provider.resolveWebviewView(mockWebviewView)
-
-			// Fire 5 concurrent updateTaskHistory calls
-			const items = Array.from({ length: 5 }, (_, i) =>
-				createHistoryItem({ id: `concurrent-${i}`, task: `Task ${i}` }),
-			)
-
-			await Promise.all(items.map((item) => provider.updateTaskHistory(item, { broadcast: false })))
-
-			// All 5 entries must survive
-			const history = (provider as any).contextProxy.getGlobalState("taskHistory") as HistoryItem[]
-			const ids = history.map((h: HistoryItem) => h.id)
-			for (const item of items) {
-				expect(ids).toContain(item.id)
-			}
-			expect(history.length).toBe(5)
-		})
-
-		it("serializes concurrent update and deleteTaskFromState so they don't corrupt each other", async () => {
-			await provider.resolveWebviewView(mockWebviewView)
-
-			// Seed with two items
-			const keep = createHistoryItem({ id: "keep-me", task: "Keep" })
-			const remove = createHistoryItem({ id: "remove-me", task: "Remove" })
-			await provider.updateTaskHistory(keep, { broadcast: false })
-			await provider.updateTaskHistory(remove, { broadcast: false })
-
-			// Concurrently: add a new item AND delete "remove-me"
-			const newItem = createHistoryItem({ id: "new-item", task: "New" })
-			await Promise.all([
-				provider.updateTaskHistory(newItem, { broadcast: false }),
-				provider.deleteTaskFromState("remove-me"),
-			])
-
-			const history = (provider as any).contextProxy.getGlobalState("taskHistory") as HistoryItem[]
-			const ids = history.map((h: HistoryItem) => h.id)
-			expect(ids).toContain("keep-me")
-			expect(ids).toContain("new-item")
-			expect(ids).not.toContain("remove-me")
-		})
-
-		it("does not block subsequent writes when a previous write errors", async () => {
-			await provider.resolveWebviewView(mockWebviewView)
-
-			// Temporarily make updateGlobalState throw
-			const origUpdateGlobalState = (provider as any).updateGlobalState.bind(provider)
-			let callCount = 0
-			;(provider as any).updateGlobalState = vi.fn().mockImplementation((...args: unknown[]) => {
-				callCount++
-				if (callCount === 1) {
-					return Promise.reject(new Error("simulated write failure"))
-				}
-				return origUpdateGlobalState(...args)
-			})
-
-			// First call should fail
-			const item1 = createHistoryItem({ id: "fail-item", task: "Fail" })
-			await expect(provider.updateTaskHistory(item1, { broadcast: false })).rejects.toThrow(
-				"simulated write failure",
-			)
-
-			// Second call should still succeed (lock not stuck)
-			const item2 = createHistoryItem({ id: "ok-item", task: "OK" })
-			const result = await provider.updateTaskHistory(item2, { broadcast: false })
-			expect(result.some((h) => h.id === "ok-item")).toBe(true)
-		})
-
-		it("serializes concurrent updates to the same item preserving the last write", async () => {
-			await provider.resolveWebviewView(mockWebviewView)
-
-			const base = createHistoryItem({ id: "race-item", task: "Original" })
-			await provider.updateTaskHistory(base, { broadcast: false })
-
-			// Fire two concurrent updates to the same item
-			await Promise.all([
-				provider.updateTaskHistory(createHistoryItem({ id: "race-item", task: "Original", tokensIn: 111 }), {
-					broadcast: false,
-				}),
-				provider.updateTaskHistory(createHistoryItem({ id: "race-item", task: "Original", tokensIn: 222 }), {
-					broadcast: false,
-				}),
-			])
-
-			const history = (provider as any).contextProxy.getGlobalState("taskHistory") as HistoryItem[]
-			const item = history.find((h: HistoryItem) => h.id === "race-item")
-			expect(item).toBeDefined()
-			// The second write (tokensIn: 222) should be the last one since writes are serialized
-			expect(item!.tokensIn).toBe(222)
 		})
 	})
 })

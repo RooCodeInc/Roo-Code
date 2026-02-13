@@ -111,6 +111,15 @@
 			"thinking_complete_safety": "(Düşünme tamamlandı, ancak çıktı güvenlik ayarları nedeniyle engellendi.)",
 			"thinking_complete_recitation": "(Düşünme tamamlandı, ancak çıktı okuma kontrolü nedeniyle engellendi.)"
 		},
+		"cerebras": {
+			"authenticationFailed": "Cerebras API kimlik doğrulama başarısız oldu. API anahtarınızın geçerli olduğunu ve süresi dolmadığını kontrol edin.",
+			"accessForbidden": "Cerebras API erişimi yasak. API anahtarınız istenen modele veya özelliğe erişimi olmayabilir.",
+			"rateLimitExceeded": "Cerebras API hız sınırı aşıldı. Başka bir istek yapmadan önce bekleyin.",
+			"serverError": "Cerebras API sunucu hatası ({{status}}). Lütfen daha sonra tekrar deneyin.",
+			"genericError": "Cerebras API Hatası ({{status}}): {{message}}",
+			"noResponseBody": "Cerebras API Hatası: Yanıt gövdesi yok",
+			"completionError": "Cerebras tamamlama hatası: {{error}}"
+		},
 		"roo": {
 			"authenticationRequired": "Roo sağlayıcısı bulut kimlik doğrulaması gerektirir. Lütfen Roo Code Cloud'a giriş yapın."
 		},
@@ -196,7 +205,10 @@
 		"task_placeholder": "Görevini buraya yaz"
 	},
 	"settings": {
-		"providers": {}
+		"providers": {
+			"groqApiKey": "Groq API Anahtarı",
+			"getGroqApiKey": "Groq API Anahtarı Al"
+		}
 	},
 	"customModes": {
 		"errors": {

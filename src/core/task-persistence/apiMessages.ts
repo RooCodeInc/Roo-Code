@@ -8,9 +8,6 @@ import { fileExistsAtPath } from "../../utils/fs"
 
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import { getTaskDirectoryPath } from "../../utils/storage"
-import type { RooMessage, RooMessageHistory } from "./rooMessage"
-import { ROO_MESSAGE_VERSION } from "./rooMessage"
-import { convertAnthropicToRooMessages } from "./converters/anthropicToRoo"
 
 export type ApiMessage = Anthropic.MessageParam & {
 	ts?: number
@@ -54,23 +51,17 @@ export async function readApiMessages({
 		const fileContent = await fs.readFile(filePath, "utf8")
 		try {
 			const parsedData = JSON.parse(fileContent)
-			if (!Array.isArray(parsedData)) {
-				console.warn(
-					`[readApiMessages] Parsed data is not an array (got ${typeof parsedData}), returning empty. TaskId: ${taskId}, Path: ${filePath}`,
-				)
-				return []
-			}
-			if (parsedData.length === 0) {
+			if (Array.isArray(parsedData) && parsedData.length === 0) {
 				console.error(
 					`[Roo-Debug] readApiMessages: Found API conversation history file, but it's empty (parsed as []). TaskId: ${taskId}, Path: ${filePath}`,
 				)
 			}
 			return parsedData
 		} catch (error) {
-			console.warn(
-				`[readApiMessages] Error parsing API conversation history file, returning empty. TaskId: ${taskId}, Path: ${filePath}, Error: ${error}`,
+			console.error(
+				`[Roo-Debug] readApiMessages: Error parsing API conversation history file. TaskId: ${taskId}, Path: ${filePath}, Error: ${error}`,
 			)
-			return []
+			throw error
 		}
 	} else {
 		const oldPath = path.join(taskDir, "claude_messages.json")
@@ -79,13 +70,7 @@ export async function readApiMessages({
 			const fileContent = await fs.readFile(oldPath, "utf8")
 			try {
 				const parsedData = JSON.parse(fileContent)
-				if (!Array.isArray(parsedData)) {
-					console.warn(
-						`[readApiMessages] Parsed OLD data is not an array (got ${typeof parsedData}), returning empty. TaskId: ${taskId}, Path: ${oldPath}`,
-					)
-					return []
-				}
-				if (parsedData.length === 0) {
+				if (Array.isArray(parsedData) && parsedData.length === 0) {
 					console.error(
 						`[Roo-Debug] readApiMessages: Found OLD API conversation history file (claude_messages.json), but it's empty (parsed as []). TaskId: ${taskId}, Path: ${oldPath}`,
 					)
@@ -93,11 +78,11 @@ export async function readApiMessages({
 				await fs.unlink(oldPath)
 				return parsedData
 			} catch (error) {
-				console.warn(
-					`[readApiMessages] Error parsing OLD API conversation history file (claude_messages.json), returning empty. TaskId: ${taskId}, Path: ${oldPath}, Error: ${error}`,
+				console.error(
+					`[Roo-Debug] readApiMessages: Error parsing OLD API conversation history file (claude_messages.json). TaskId: ${taskId}, Path: ${oldPath}, Error: ${error}`,
 				)
-				// DO NOT unlink oldPath if parsing failed.
-				return []
+				// DO NOT unlink oldPath if parsing failed, throw error instead.
+				throw error
 			}
 		}
 	}
@@ -121,127 +106,4 @@ export async function saveApiMessages({
 	const taskDir = await getTaskDirectoryPath(globalStoragePath, taskId)
 	const filePath = path.join(taskDir, GlobalFileNames.apiConversationHistory)
 	await safeWriteJson(filePath, messages)
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-// RooMessage versioned storage
-// ────────────────────────────────────────────────────────────────────────────
-
-/**
- * Detect whether parsed JSON data is the new versioned RooMessage format
- * or the legacy Anthropic array format.
- */
-export function detectFormat(data: unknown): "v2" | "legacy" {
-	if (
-		data &&
-		typeof data === "object" &&
-		!Array.isArray(data) &&
-		"version" in data &&
-		(data as Record<string, unknown>).version === ROO_MESSAGE_VERSION &&
-		Array.isArray((data as Record<string, unknown>).messages)
-	) {
-		return "v2"
-	}
-	return "legacy"
-}
-
-/**
- * Read a conversation history file and return `RooMessage[]`.
- *
- * - If the file is in v2 format (`{ version: 2, messages: [...] }`), the
- *   messages are returned directly.
- * - If the file is a plain array (legacy Anthropic format), the messages
- *   are auto-converted via {@link convertAnthropicToRooMessages}.
- * - Falls back to `claude_messages.json` when the primary file is missing.
- */
-export async function readRooMessages({
-	taskId,
-	globalStoragePath,
-}: {
-	taskId: string
-	globalStoragePath: string
-}): Promise<RooMessage[]> {
-	const taskDir = await getTaskDirectoryPath(globalStoragePath, taskId)
-	const filePath = path.join(taskDir, GlobalFileNames.apiConversationHistory)
-
-	const tryParseFile = async (targetPath: string): Promise<RooMessage[] | null> => {
-		if (!(await fileExistsAtPath(targetPath))) {
-			return null
-		}
-
-		const fileContent = await fs.readFile(targetPath, "utf8")
-		let parsedData: unknown
-
-		try {
-			parsedData = JSON.parse(fileContent)
-		} catch (error) {
-			console.warn(
-				`[readRooMessages] Error parsing file, returning empty. TaskId: ${taskId}, Path: ${targetPath}, Error: ${error}`,
-			)
-			return []
-		}
-
-		const format = detectFormat(parsedData)
-
-		if (format === "v2") {
-			return (parsedData as RooMessageHistory).messages
-		}
-
-		if (!Array.isArray(parsedData)) {
-			console.warn(
-				`[readRooMessages] Parsed data is not an array (got ${typeof parsedData}), returning empty. TaskId: ${taskId}, Path: ${targetPath}`,
-			)
-			return []
-		}
-
-		return convertAnthropicToRooMessages(parsedData as ApiMessage[])
-	}
-
-	const primaryResult = await tryParseFile(filePath)
-	if (primaryResult !== null) {
-		return primaryResult
-	}
-
-	const oldPath = path.join(taskDir, "claude_messages.json")
-	const fallbackResult = await tryParseFile(oldPath)
-	if (fallbackResult !== null) {
-		return fallbackResult
-	}
-
-	console.error(
-		`[Roo-Debug] readRooMessages: API conversation history file not found for taskId: ${taskId}. Expected at: ${filePath}`,
-	)
-	return []
-}
-
-/**
- * Save `RooMessage[]` wrapped in the versioned `RooMessageHistory` envelope.
- *
- * Always writes to `api_conversation_history.json` using {@link safeWriteJson}
- * for atomic, corruption-resistant persistence.
- *
- * @returns `true` on success, `false` on failure.
- */
-export async function saveRooMessages({
-	messages,
-	taskId,
-	globalStoragePath,
-}: {
-	messages: RooMessage[]
-	taskId: string
-	globalStoragePath: string
-}): Promise<boolean> {
-	try {
-		const taskDir = await getTaskDirectoryPath(globalStoragePath, taskId)
-		const filePath = path.join(taskDir, GlobalFileNames.apiConversationHistory)
-		const envelope: RooMessageHistory = {
-			version: ROO_MESSAGE_VERSION,
-			messages,
-		}
-		await safeWriteJson(filePath, envelope)
-		return true
-	} catch (error) {
-		console.error(`[saveRooMessages] Failed to save messages for taskId: ${taskId}. Error: ${error}`)
-		return false
-	}
 }

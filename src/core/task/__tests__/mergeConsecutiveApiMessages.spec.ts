@@ -11,12 +11,12 @@ describe("mergeConsecutiveApiMessages", () => {
 		])
 
 		expect(merged).toHaveLength(2)
-		expect((merged[0] as any).role).toBe("user")
-		expect((merged[0] as any).content).toEqual([
+		expect(merged[0].role).toBe("user")
+		expect(merged[0].content).toEqual([
 			{ type: "text", text: "A" },
 			{ type: "text", text: "B" },
 		])
-		expect((merged[1] as any).role).toBe("assistant")
+		expect(merged[1].role).toBe("assistant")
 	})
 
 	it("merges regular user message into a summary (API shaping only)", () => {
@@ -27,7 +27,7 @@ describe("mergeConsecutiveApiMessages", () => {
 
 		expect(merged).toHaveLength(1)
 		expect(merged[0].isSummary).toBe(true)
-		expect((merged[0] as any).content).toEqual([
+		expect(merged[0].content).toEqual([
 			{ type: "text", text: "Summary" },
 			{ type: "text", text: "After" },
 		])

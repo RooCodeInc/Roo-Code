@@ -9,14 +9,44 @@ import { mentionRegexGlobal, commandRegexGlobal, unescapeSpaces } from "../../sh
 import { getCommitInfo, getWorkingState } from "../../utils/git"
 
 import { openFile } from "../../integrations/misc/open-file"
-import { extractTextFromFileWithMetadata, type ExtractTextResult } from "../../integrations/misc/extract-text"
+import { extractTextFromFile } from "../../integrations/misc/extract-text"
 import { diagnosticsToProblemsString } from "../../integrations/diagnostics"
-import { DEFAULT_LINE_LIMIT } from "../prompts/tools/native-tools/read_file"
+
+import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher"
 
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
 
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { getCommand, type Command } from "../../services/command/commands"
+
+import { t } from "../../i18n"
+
+function getUrlErrorMessage(error: unknown): string {
+	const errorMessage = error instanceof Error ? error.message : String(error)
+
+	// Check for common error patterns and return appropriate message
+	if (errorMessage.includes("timeout")) {
+		return t("common:errors.url_timeout")
+	}
+	if (errorMessage.includes("net::ERR_NAME_NOT_RESOLVED")) {
+		return t("common:errors.url_not_found")
+	}
+	if (errorMessage.includes("net::ERR_INTERNET_DISCONNECTED")) {
+		return t("common:errors.no_internet")
+	}
+	if (errorMessage.includes("net::ERR_ABORTED")) {
+		return t("common:errors.url_request_aborted")
+	}
+	if (errorMessage.includes("403") || errorMessage.includes("Forbidden")) {
+		return t("common:errors.url_forbidden")
+	}
+	if (errorMessage.includes("404") || errorMessage.includes("Not Found")) {
+		return t("common:errors.url_page_not_found")
+	}
+
+	// Default error message
+	return t("common:errors.url_fetch_failed", { error: errorMessage })
+}
 
 export async function openMention(cwd: string, mention?: string): Promise<void> {
 	if (!mention) {
@@ -41,71 +71,25 @@ export async function openMention(cwd: string, mention?: string): Promise<void> 
 	}
 }
 
-/**
- * Represents a content block generated from an @ mention.
- * These are returned separately from the user's text to enable
- * proper formatting as distinct message blocks.
- */
-export interface MentionContentBlock {
-	type: "file" | "folder" | "url" | "diagnostics" | "git_changes" | "git_commit" | "terminal" | "command"
-	/** Path for file/folder mentions */
-	path?: string
-	/** The content to display */
-	content: string
-	/** Metadata about truncation (for files) */
-	metadata?: {
-		totalLines: number
-		returnedLines: number
-		wasTruncated: boolean
-		linesShown?: [number, number]
-	}
-}
-
 export interface ParseMentionsResult {
-	/** User's text with @ mentions replaced by clean path references */
 	text: string
-	/** Separate content blocks for each mention (file content, URLs, etc.) */
-	contentBlocks: MentionContentBlock[]
 	slashCommandHelp?: string
 	mode?: string // Mode from the first slash command that has one
-}
-
-/**
- * Formats file content to look like a read_file tool result.
- * Includes Gemini-style truncation warning when content is truncated.
- */
-function formatFileReadResult(filePath: string, result: ExtractTextResult): string {
-	const header = `[read_file for '${filePath}']`
-
-	if (result.wasTruncated && result.linesShown) {
-		const [start, end] = result.linesShown
-		const nextOffset = end + 1
-		return `${header}
-IMPORTANT: File content truncated.
-Status: Showing lines ${start}-${end} of ${result.totalLines} total lines.
-To read more: Use the read_file tool with offset=${nextOffset} and limit=${DEFAULT_LINE_LIMIT}.
-
-File: ${filePath}
-${result.content}`
-	}
-
-	return `${header}
-File: ${filePath}
-${result.content}`
 }
 
 export async function parseMentions(
 	text: string,
 	cwd: string,
+	urlContentFetcher: UrlContentFetcher,
 	fileContextTracker?: FileContextTracker,
 	rooIgnoreController?: RooIgnoreController,
 	showRooIgnoredFiles: boolean = false,
 	includeDiagnosticMessages: boolean = true,
 	maxDiagnosticMessages: number = 50,
+	maxReadFileLine?: number,
 ): Promise<ParseMentionsResult> {
 	const mentions: Set<string> = new Set()
 	const validCommands: Map<string, Command> = new Map()
-	const contentBlocks: MentionContentBlock[] = []
 	let commandMode: string | undefined // Track mode from the first slash command that has one
 
 	// First pass: check which command mentions exist and cache the results
@@ -135,7 +119,7 @@ export async function parseMentions(
 		}
 	}
 
-	// Only replace text for commands that actually exist (keep "see below" for commands)
+	// Only replace text for commands that actually exist
 	let parsedText = text
 	for (const [match, commandName] of commandMatches) {
 		if (validCommands.has(commandName)) {
@@ -143,16 +127,16 @@ export async function parseMentions(
 		}
 	}
 
-	// Second pass: handle regular mentions - replace with clean references
-	// Content will be provided as separate blocks that look like read_file results
+	// Second pass: handle regular mentions
 	parsedText = parsedText.replace(mentionRegexGlobal, (match, mention) => {
 		mentions.add(mention)
 		if (mention.startsWith("http")) {
-			return `'${mention}'`
+			return `'${mention}' (see below for site content)`
 		} else if (mention.startsWith("/")) {
-			// Clean path reference - no "see below" since we format like tool results
 			const mentionPath = mention.slice(1)
-			return mentionPath.endsWith("/") ? `'${mentionPath}'` : `'${mentionPath}'`
+			return mentionPath.endsWith("/")
+				? `'${mentionPath}' (see below for folder content)`
+				: `'${mentionPath}' (see below for file content)`
 		} else if (mention === "problems") {
 			return `Workspace Problems (see below for diagnostics)`
 		} else if (mention === "git-changes") {
@@ -165,25 +149,71 @@ export async function parseMentions(
 		return match
 	})
 
+	const urlMention = Array.from(mentions).find((mention) => mention.startsWith("http"))
+	let launchBrowserError: Error | undefined
+	if (urlMention) {
+		try {
+			await urlContentFetcher.launchBrowser()
+		} catch (error) {
+			launchBrowserError = error
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			vscode.window.showErrorMessage(`Error fetching content for ${urlMention}: ${errorMessage}`)
+		}
+	}
+
 	for (const mention of mentions) {
-		if (mention.startsWith("/")) {
+		if (mention.startsWith("http")) {
+			let result: string
+			if (launchBrowserError) {
+				const errorMessage =
+					launchBrowserError instanceof Error ? launchBrowserError.message : String(launchBrowserError)
+				result = `Error fetching content: ${errorMessage}`
+			} else {
+				try {
+					const markdown = await urlContentFetcher.urlToMarkdown(mention)
+					result = markdown
+				} catch (error) {
+					console.error(`Error fetching URL ${mention}:`, error)
+
+					// Get raw error message for AI
+					const rawErrorMessage = error instanceof Error ? error.message : String(error)
+
+					// Get localized error message for UI notification
+					const localizedErrorMessage = getUrlErrorMessage(error)
+
+					vscode.window.showErrorMessage(
+						t("common:errors.url_fetch_error_with_url", { url: mention, error: localizedErrorMessage }),
+					)
+
+					// Send raw error message to AI model
+					result = `Error fetching content: ${rawErrorMessage}`
+				}
+			}
+			parsedText += `\n\n<url_content url="${mention}">\n${result}\n</url_content>`
+		} else if (mention.startsWith("/")) {
 			const mentionPath = mention.slice(1)
 			try {
-				const fileResult = await getFileOrFolderContentWithMetadata(
+				const content = await getFileOrFolderContent(
 					mentionPath,
 					cwd,
 					rooIgnoreController,
 					showRooIgnoredFiles,
-					fileContextTracker,
+					maxReadFileLine,
 				)
-				contentBlocks.push(fileResult)
+				if (mention.endsWith("/")) {
+					parsedText += `\n\n<folder_content path="${mentionPath}">\n${content}\n</folder_content>`
+				} else {
+					parsedText += `\n\n<file_content path="${mentionPath}">\n${content}\n</file_content>`
+					if (fileContextTracker) {
+						await fileContextTracker.trackFileContext(mentionPath, "file_mentioned")
+					}
+				}
 			} catch (error) {
-				const errorMsg = error instanceof Error ? error.message : String(error)
-				contentBlocks.push({
-					type: mention.endsWith("/") ? "folder" : "file",
-					path: mentionPath,
-					content: `[read_file for '${mentionPath}']\nError: ${errorMsg}`,
-				})
+				if (mention.endsWith("/")) {
+					parsedText += `\n\n<folder_content path="${mentionPath}">\nError fetching content: ${error.message}\n</folder_content>`
+				} else {
+					parsedText += `\n\n<file_content path="${mentionPath}">\nError fetching content: ${error.message}\n</file_content>`
+				}
 			}
 		} else if (mention === "problems") {
 			try {
@@ -231,28 +261,26 @@ export async function parseMentions(
 		}
 	}
 
-	return {
-		text: parsedText,
-		contentBlocks,
-		mode: commandMode,
-		slashCommandHelp: slashCommandHelp.trim() || undefined,
+	if (urlMention) {
+		try {
+			await urlContentFetcher.closeBrowser()
+		} catch (error) {
+			console.error(`Error closing browser: ${error.message}`)
+		}
 	}
+
+	return { text: parsedText, mode: commandMode, slashCommandHelp: slashCommandHelp.trim() || undefined }
 }
 
-/**
- * Gets file or folder content and returns it as a MentionContentBlock
- * formatted to look like a read_file tool result.
- */
-async function getFileOrFolderContentWithMetadata(
+async function getFileOrFolderContent(
 	mentionPath: string,
 	cwd: string,
 	rooIgnoreController?: any,
 	showRooIgnoredFiles: boolean = false,
-	fileContextTracker?: FileContextTracker,
-): Promise<MentionContentBlock> {
+	maxReadFileLine?: number,
+): Promise<string> {
 	const unescapedPath = unescapeSpaces(mentionPath)
 	const absPath = path.resolve(cwd, unescapedPath)
-	const isFolder = mentionPath.endsWith("/")
 
 	try {
 		const stats = await fs.stat(absPath)
@@ -262,50 +290,21 @@ async function getFileOrFolderContentWithMetadata(
 			// Image mentions are handled separately via image attachment flow.
 			const isBinary = await isBinaryFile(absPath).catch(() => false)
 			if (isBinary) {
-				return {
-					type: "file",
-					path: mentionPath,
-					content: `[read_file for '${mentionPath}']\nNote: Binary file omitted from context.`,
-				}
+				return `(Binary file ${mentionPath} omitted)`
 			}
 			if (rooIgnoreController && !rooIgnoreController.validateAccess(unescapedPath)) {
-				return {
-					type: "file",
-					path: mentionPath,
-					content: `[read_file for '${mentionPath}']\nNote: File is ignored by .rooignore.`,
-				}
+				return `(File ${mentionPath} is ignored by .rooignore)`
 			}
 			try {
-				const result = await extractTextFromFileWithMetadata(absPath)
-
-				// Track file context
-				if (fileContextTracker) {
-					await fileContextTracker.trackFileContext(mentionPath, "file_mentioned")
-				}
-
-				return {
-					type: "file",
-					path: mentionPath,
-					content: formatFileReadResult(mentionPath, result),
-					metadata: {
-						totalLines: result.totalLines,
-						returnedLines: result.returnedLines,
-						wasTruncated: result.wasTruncated,
-						linesShown: result.linesShown,
-					},
-				}
+				const content = await extractTextFromFile(absPath, maxReadFileLine)
+				return content
 			} catch (error) {
-				const errorMsg = error instanceof Error ? error.message : String(error)
-				return {
-					type: "file",
-					path: mentionPath,
-					content: `[read_file for '${mentionPath}']\nError: ${errorMsg}`,
-				}
+				return `(Failed to read contents of ${mentionPath}): ${error.message}`
 			}
 		} else if (stats.isDirectory()) {
 			const entries = await fs.readdir(absPath, { withFileTypes: true })
-			let folderListing = ""
-			const fileReadResults: string[] = []
+			let folderContent = ""
+			const fileContentPromises: Promise<string | undefined>[] = []
 			const LOCK_SYMBOL = "🔒"
 
 			for (let index = 0; index < entries.length; index++) {
@@ -326,48 +325,38 @@ async function getFileOrFolderContentWithMetadata(
 				const displayName = isIgnored ? `${LOCK_SYMBOL} ${entry.name}` : entry.name
 
 				if (entry.isFile()) {
-					folderListing += `${linePrefix}${displayName}\n`
+					folderContent += `${linePrefix}${displayName}\n`
 					if (!isIgnored) {
 						const filePath = path.join(mentionPath, entry.name)
 						const absoluteFilePath = path.resolve(absPath, entry.name)
-						try {
-							const isBinary = await isBinaryFile(absoluteFilePath).catch(() => false)
-							if (!isBinary) {
-								const result = await extractTextFromFileWithMetadata(absoluteFilePath)
-								fileReadResults.push(formatFileReadResult(filePath.toPosix(), result))
-							}
-						} catch (error) {
-							// Skip files that can't be read
-						}
+						fileContentPromises.push(
+							(async () => {
+								try {
+									const isBinary = await isBinaryFile(absoluteFilePath).catch(() => false)
+									if (isBinary) {
+										return undefined
+									}
+									const content = await extractTextFromFile(absoluteFilePath, maxReadFileLine)
+									return `<file_content path="${filePath.toPosix()}">\n${content}\n</file_content>`
+								} catch (error) {
+									return undefined
+								}
+							})(),
+						)
 					}
 				} else if (entry.isDirectory()) {
-					folderListing += `${linePrefix}${displayName}/\n`
+					folderContent += `${linePrefix}${displayName}/\n`
 				} else {
-					folderListing += `${linePrefix}${displayName}\n`
+					folderContent += `${linePrefix}${displayName}\n`
 				}
 			}
-
-			// Format folder content similar to read_file output
-			let content = `[read_file for folder '${mentionPath}']\nFolder listing:\n${folderListing}`
-			if (fileReadResults.length > 0) {
-				content += `\n\n--- File Contents ---\n\n${fileReadResults.join("\n\n")}`
-			}
-
-			return {
-				type: "folder",
-				path: mentionPath,
-				content,
-			}
+			const fileContents = (await Promise.all(fileContentPromises)).filter((content) => content)
+			return `${folderContent}\n${fileContents.join("\n\n")}`.trim()
 		} else {
-			return {
-				type: isFolder ? "folder" : "file",
-				path: mentionPath,
-				content: `[read_file for '${mentionPath}']\nError: Unable to read (not a file or directory)`,
-			}
+			return `(Failed to read contents of ${mentionPath})`
 		}
 	} catch (error) {
-		const errorMsg = error instanceof Error ? error.message : String(error)
-		throw new Error(`Failed to access path "${mentionPath}": ${errorMsg}`)
+		throw new Error(`Failed to access path "${mentionPath}": ${error.message}`)
 	}
 }
 

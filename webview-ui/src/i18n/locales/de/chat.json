@@ -111,8 +111,6 @@
 	},
 	"selectMode": "Interaktionsmodus auswählen",
 	"selectApiConfig": "API-Konfiguration auswählen",
-	"lockApiConfigAcrossModes": "API-Konfiguration für alle Modi in diesem Arbeitsbereich sperren",
-	"unlockApiConfigAcrossModes": "API-Konfiguration ist für alle Modi in diesem Arbeitsbereich gesperrt (klicke zum Entsperren)",
 	"enhancePrompt": "Prompt mit zusätzlichem Kontext verbessern",
 	"addImages": "Bilder zur Nachricht hinzufügen",
 	"sendMessage": "Nachricht senden",
@@ -220,8 +218,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo möchte die Dateien auf oberster Ebene in diesem Verzeichnis (außerhalb des Arbeitsbereichs) anzeigen",
 		"didViewTopLevelOutsideWorkspace": "Roo hat die Dateien auf oberster Ebene in diesem Verzeichnis (außerhalb des Arbeitsbereichs) angezeigt",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo möchte rekursiv alle Dateien in diesem Verzeichnis (außerhalb des Arbeitsbereichs) anzeigen",
-		"didViewRecursiveOutsideWorkspace": "Roo hat rekursiv alle Dateien in diesem Verzeichnis (außerhalb des Arbeitsbereichs) angezeigt",
-		"wantsToViewMultipleDirectories": "Roo möchte mehrere Verzeichnisse anzeigen"
+		"didViewRecursiveOutsideWorkspace": "Roo hat rekursiv alle Dateien in diesem Verzeichnis (außerhalb des Arbeitsbereichs) angezeigt"
 	},
 	"commandOutput": "Befehlsausgabe",
 	"commandExecution": {
@@ -347,8 +344,7 @@
 		},
 		"release": {
 			"heading": "Was ist neu:",
-			"claudeOpus": "Claude Opus 4.6: Jetzt über alle Provider verfügbar—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex und OpenRouter—mit Anthropics fähigstem Modell auf deiner bevorzugten Plattform.",
-			"gptCodex": "GPT-5.3-Codex: OpenAIs neuestes Coding-Modell wird nun im OpenAI - ChatGPT Provider unterstützt und liefert hochmoderne Code-Generierung und Verständnis."
+			"smartCodeFolding": "Intelligentes Code-Folding: Kontextkomprimierung bewahrt jetzt eine leichte Karte deiner Dateien—Funktionssignaturen, Klassendeklarationen und Typdefinitionen. Dies ermöglicht bessere Kontinuität nach der Komprimierung und intelligentere Bearbeitungen beim Verweisen auf vorherige Arbeiten."
 		},
 		"cloudAgents": {
 			"heading": "Neu in der Cloud:",
@@ -363,6 +359,44 @@
 		"total": "Gesamtkosten: ${{cost}}",
 		"includesSubtasks": "Enthält Kosten für Unteraufgaben"
 	},
+	"browser": {
+		"session": "Browser-Sitzung",
+		"active": "Aktiv",
+		"rooWantsToUse": "Roo möchte den Browser verwenden",
+		"consoleLogs": "Konsolenprotokolle",
+		"noNewLogs": "(Keine neuen Protokolle)",
+		"screenshot": "Browser-Screenshot",
+		"cursor": "Cursor",
+		"navigation": {
+			"step": "Schritt {{current}} von {{total}}",
+			"previous": "Zurück",
+			"next": "Weiter"
+		},
+		"sessionStarted": "Browser-Sitzung gestartet",
+		"actions": {
+			"title": "Browser-Aktion: ",
+			"launched": "Browser gestartet",
+			"launch": "Browser starten auf {{url}}",
+			"clicked": "Geklickt auf: {{coordinate}}",
+			"click": "Klicken ({{coordinate}})",
+			"typed": "Eingegeben: {{text}}",
+			"type": "Eingeben \"{{text}}\"",
+			"pressed": "{{key}} gedrückt",
+			"press": "{{key}} drücken",
+			"scrolledDown": "Nach unten gescrollt",
+			"scrollDown": "Nach unten scrollen",
+			"scrolledUp": "Nach oben gescrollt",
+			"scrollUp": "Nach oben scrollen",
+			"hovered": "Gehovered auf: {{coordinate}}",
+			"hover": "Hover ({{coordinate}})",
+			"resized": "Größe geändert auf: {{size}}",
+			"resize": "Größe ändern auf {{size}}",
+			"screenshotSaved": "Screenshot gespeichert",
+			"screenshot": "Screenshot speichern unter {{path}}",
+			"closed": "Browser geschlossen",
+			"close": "Browser schließen"
+		}
+	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Code-Block erweitern",
@@ -370,6 +404,7 @@
 			"copy_code": "Code kopieren"
 		}
 	},
+	"systemPromptWarning": "WARNUNG: Benutzerdefinierte Systemaufforderung aktiv. Dies kann die Funktionalität erheblich beeinträchtigen und zu unvorhersehbarem Verhalten führen.",
 	"profileViolationWarning": "Das aktuelle Profil ist nicht kompatibel mit den Einstellungen deiner Organisation",
 	"shellIntegration": {
 		"title": "Befehlsausführungswarnung",
@@ -398,22 +433,6 @@
 	"read-batch": {
 		"approve": {
 			"title": "Alle genehmigen"
-		},
-		"deny": {
-			"title": "Alle ablehnen"
-		}
-	},
-	"list-batch": {
-		"approve": {
-			"title": "Alle genehmigen"
-		},
-		"deny": {
-			"title": "Alle ablehnen"
-		}
-	},
-	"edit-batch": {
-		"approve": {
-			"title": "Alle speichern"
 		},
 		"deny": {
 			"title": "Alle ablehnen"
@@ -492,10 +511,5 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo las Befehlsausgabe"
-	},
-	"retiredProvider": {
-		"title": "Anbieter wird nicht mehr unterstützt",
-		"message": "Leider wird dieser Anbieter nicht mehr unterstützt. Wir haben festgestellt, dass nur sehr wenige Roo-Nutzer ihn tatsächlich verwendet haben, und wir müssen den Umfang unserer Codebasis reduzieren, damit wir weiterhin schnell liefern und unserer Community in diesem Bereich gut dienen können. Es war eine wirklich schwere Entscheidung, aber sie ermöglicht uns, uns auf das zu konzentrieren, was dir am wichtigsten ist. Es ist ärgerlich, das wissen wir.",
-		"openSettings": "Einstellungen öffnen"
 	}
 }

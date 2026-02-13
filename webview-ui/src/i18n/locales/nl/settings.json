@@ -31,6 +31,7 @@
 		"mcp": "MCP-servers",
 		"worktrees": "Worktrees",
 		"autoApprove": "Auto-goedkeuren",
+		"browser": "Browser",
 		"checkpoints": "Checkpoints",
 		"notifications": "Meldingen",
 		"contextManagement": "Context",
@@ -40,8 +41,7 @@
 		"ui": "UI",
 		"experimental": "Experimenteel",
 		"language": "Taal",
-		"about": "Over Roo Code",
-		"skills": "Skills"
+		"about": "Over Roo Code"
 	},
 	"about": {
 		"bugReport": {
@@ -68,39 +68,7 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Beheer je slash-commando's om snel aangepaste workflows en acties uit te voeren. <DocsLink>Meer informatie</DocsLink>",
-		"workspaceCommands": "Werkruimteopdrachten",
-		"globalCommands": "Globale opdrachten",
-		"noWorkspaceCommands": "Nog geen opdrachten in dit project.",
-		"noGlobalCommands": "Nog geen globale opdrachten.",
-		"addCommand": "Slash-opdracht toevoegen",
-		"editCommand": "Opdracht bewerken",
-		"deleteCommand": "Opdracht verwijderen",
-		"deleteDialog": {
-			"title": "Opdracht verwijderen",
-			"description": "Weet je zeker dat je de opdracht \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
-			"confirm": "Verwijderen",
-			"cancel": "Annuleren"
-		},
-		"createDialog": {
-			"title": "Nieuw slash-commando maken",
-			"nameLabel": "Naam",
-			"namePlaceholder": "my-command-name",
-			"nameHint": "Alleen kleine letters, cijfers, streepjes en onderstrepen",
-			"sourceLabel": "Locatie",
-			"create": "Maken",
-			"cancel": "Annuleren"
-		},
-		"source": {
-			"global": "Globaal (beschikbaar in alle werkruimten)",
-			"project": "Werkruimte"
-		},
-		"validation": {
-			"nameRequired": "Naam is vereist",
-			"nameTooLong": "Naam mag max. 64 tekens zijn",
-			"nameInvalid": "Naam mag alleen letters, cijfers, streepjes en onderstrepen bevatten"
-		},
-		"footer": "Gebruik slash-commando's voor snelle toegang tot veelgebruikte prompts en workflows."
+		"description": "Beheer je slash-commando's om snel aangepaste workflows en acties uit te voeren. <DocsLink>Meer informatie</DocsLink>"
 	},
 	"prompts": {
 		"description": "Configureer ondersteuningsprompts die worden gebruikt voor snelle acties zoals het verbeteren van prompts, het uitleggen van code en het oplossen van problemen. Deze prompts helpen Roo om betere ondersteuning te bieden voor veelvoorkomende ontwikkelingstaken."
@@ -240,6 +208,10 @@
 				"description": "Sta Roo toe om beschermde bestanden (zoals .rooignore en .roo/ configuratiebestanden) aan te maken en te bewerken zonder goedkeuring."
 			}
 		},
+		"browser": {
+			"label": "Browser",
+			"description": "Automatisch browseracties uitvoeren zonder goedkeuring. Let op: geldt alleen als het model computergebruik ondersteunt."
+		},
 		"mcp": {
 			"label": "MCP",
 			"description": "Automatische goedkeuring van individuele MCP-tools in het MCP-serversoverzicht inschakelen (vereist zowel deze instelling als het selectievakje 'Altijd toestaan' bij de tool)"
@@ -271,6 +243,7 @@
 		},
 		"apiRequestLimit": {
 			"title": "Maximale verzoeken",
+			"description": "Voer automatisch dit aantal API-verzoeken uit voordat om goedkeuring wordt gevraagd om door te gaan met de taak.",
 			"unlimited": "Onbeperkt"
 		},
 		"selectOptionsFirst": "Selecteer ten minste één optie hieronder om automatische goedkeuring in te schakelen",
@@ -304,7 +277,6 @@
 		"searchProviderPlaceholder": "Zoek providers",
 		"noProviderMatchFound": "Geen providers gevonden",
 		"noMatchFound": "Geen overeenkomende profielen gevonden",
-		"retiredProviderMessage": "Sorry, deze provider wordt niet meer ondersteund. We zagen dat heel weinig Roo-gebruikers deze daadwerkelijk gebruikten en we moeten de omvang van onze codebase verkleinen zodat we snel kunnen blijven leveren en onze community goed kunnen bedienen. Het was een heel moeilijke beslissing, maar het laat ons focussen op wat het belangrijkst voor je is. Het is vervelend, dat weten we.",
 		"vscodeLmDescription": "De VS Code Language Model API stelt je in staat modellen te draaien die door andere VS Code-extensies worden geleverd (waaronder GitHub Copilot). De eenvoudigste manier om te beginnen is door de Copilot- en Copilot Chat-extensies te installeren vanuit de VS Code Marketplace.",
 		"awsCustomArnUse": "Voer een geldige Amazon Bedrock ARN in voor het model dat je wilt gebruiken. Voorbeeldformaten:",
 		"awsCustomArnDesc": "Zorg ervoor dat de regio in de ARN overeenkomt met je geselecteerde AWS-regio hierboven.",
@@ -366,23 +338,15 @@
 		"getAnthropicApiKey": "Anthropic API-sleutel ophalen",
 		"anthropicUseAuthToken": "Anthropic API-sleutel als Authorization-header doorgeven in plaats van X-Api-Key",
 		"anthropic1MContextBetaLabel": "1M contextvenster inschakelen (bèta)",
-		"anthropic1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"anthropic1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "1M contextvenster inschakelen (bèta)",
-		"awsBedrock1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"awsBedrock1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4",
 		"vertex1MContextBetaLabel": "1M contextvenster inschakelen (bèta)",
-		"vertex1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"vertex1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4",
 		"basetenApiKey": "Baseten API-sleutel",
 		"getBasetenApiKey": "Baseten API-sleutel verkrijgen",
 		"cerebrasApiKey": "Cerebras API-sleutel",
 		"getCerebrasApiKey": "Cerebras API-sleutel verkrijgen",
-		"azureResourceName": "Azure Resource-naam",
-		"azureResourceNameDescription": "De naam van je Azure AI Foundry resource (bijv. 'mijn-openai-resource').",
-		"azureDeploymentName": "Azure Deployment-naam",
-		"azureDeploymentNameDescription": "De naam van je model deployment binnen de resource.",
-		"azureApiKey": "Azure API-sleutel",
-		"getAzureApiKey": "Azure AI Foundry-toegang verkrijgen",
-		"azureApiVersion": "Azure API-versie",
-		"azureApiVersionDescription": "De API-versie om te gebruiken (bijv. '2024-10-21'). Laat leeg voor standaardwaarde.",
 		"chutesApiKey": "Chutes API-sleutel",
 		"getChutesApiKey": "Chutes API-sleutel ophalen",
 		"fireworksApiKey": "Fireworks API-sleutel",
@@ -465,6 +429,16 @@
 		"cacheUsageNote": "Let op: als je geen cachegebruik ziet, probeer dan een ander model te selecteren en vervolgens weer je gewenste model.",
 		"vscodeLmModel": "Taalmodel",
 		"vscodeLmWarning": "Let op: Modellen die via de VS Code Language Model API worden benaderd kunnen door de provider worden verpakt of fijn‑afgesteld, waardoor het gedrag kan afwijken van het rechtstreeks gebruiken van hetzelfde model bij een typische provider of router. Om een model uit de keuzelijst ‘Language Model’ te gebruiken, schakel eerst naar dat model en klik vervolgens op ‘Accepteren’ in de Copilot Chat‑prompt; anders kun je een fout zien zoals 400 ‘The requested model is not supported’.",
+		"geminiParameters": {
+			"urlContext": {
+				"title": "URL-context inschakelen",
+				"description": "Staat Gemini toe om URL's te openen en te verwerken voor extra context bij het genereren van antwoorden. Handig voor taken die webinhoudsanalyse vereisen."
+			},
+			"groundingSearch": {
+				"title": "Grounding met Google-zoekopdracht inschakelen",
+				"description": "Staat Gemini toe om Google te doorzoeken voor actuele informatie en antwoorden op realtime gegevens te baseren. Handig voor vragen die actuele informatie vereisen."
+			}
+		},
 		"googleCloudSetup": {
 			"title": "Om Google Cloud Vertex AI te gebruiken, moet je:",
 			"step1": "1. Maak een Google Cloud-account aan, schakel de Vertex AI API in en activeer de gewenste Claude-modellen.",
@@ -587,6 +561,34 @@
 			"maxTokensDescription": "Maximaal aantal output-tokens voor Claude Code-reacties. Standaard is 8000."
 		}
 	},
+	"browser": {
+		"enable": {
+			"label": "Browserhulpmiddel inschakelen",
+			"description": "Indien ingeschakeld, kan Roo een browser gebruiken om te interageren met websites wanneer modellen computergebruik ondersteunen. <0>Meer informatie</0>"
+		},
+		"viewport": {
+			"label": "Viewport-grootte",
+			"description": "Selecteer de viewport-grootte voor browserinteracties. Dit beïnvloedt hoe websites worden weergegeven en gebruikt.",
+			"options": {
+				"largeDesktop": "Groot bureaublad (1280x800)",
+				"smallDesktop": "Klein bureaublad (900x600)",
+				"tablet": "Tablet (768x1024)",
+				"mobile": "Mobiel (360x640)"
+			}
+		},
+		"screenshotQuality": {
+			"label": "Screenshotkwaliteit",
+			"description": "Pas de WebP-kwaliteit van browserscreenshots aan. Hogere waarden geven duidelijkere screenshots maar verhogen het tokengebruik."
+		},
+		"remote": {
+			"label": "Gebruik externe browserverbinding",
+			"description": "Verbind met een Chrome-browser die draait met remote debugging ingeschakeld (--remote-debugging-port=9222).",
+			"urlPlaceholder": "Aangepaste URL (bijv. http://localhost:9222)",
+			"testButton": "Verbinding testen",
+			"testingButton": "Bezig met testen...",
+			"instructions": "Voer het DevTools Protocol hostadres in of laat leeg om lokale Chrome-instanties automatisch te detecteren. De knop Verbinding testen probeert de aangepaste URL als opgegeven, of detecteert automatisch als het veld leeg is."
+		}
+	},
 	"checkpoints": {
 		"timeout": {
 			"label": "Timeout voor checkpoint-initialisatie (seconden)",
@@ -672,6 +674,7 @@
 				"label": "Maximale diagnostische berichten",
 				"description": "Maximaal aantal diagnostische berichten dat per bestand moet worden opgenomen. Deze limiet geldt voor zowel automatische opname (wanneer checkbox is ingeschakeld) als handmatige @problems vermeldingen. Hogere waarden bieden meer context maar verhogen het tokengebruik.",
 				"resetTooltip": "Reset naar standaardwaarde (50)",
+				"unlimited": "Onbeperkte diagnostische berichten",
 				"unlimitedLabel": "Onbeperkt"
 			},
 			"delayAfterWrite": {
@@ -896,6 +899,7 @@
 		"simplifiedExplanation": "Je kunt later gedetailleerde modelinstellingen aanpassen."
 	},
 	"footer": {
+		"feedback": "Heb je vragen of feedback? Open gerust een issue op <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> of sluit je aan bij <redditLink>reddit.com/r/RooCode</redditLink> of <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Anonieme fout- en gebruiksrapportage toestaan",
 			"description": "Help Roo Code te verbeteren door anonieme gebruiksgegevens en foutmeldingen te versturen. Deze telemetrie verzamelt geen code, prompts of persoonlijke informatie. Zie ons <privacyLink>privacybeleid</privacyLink> voor meer details."
@@ -926,9 +930,7 @@
 		"providerNotAllowed": "Provider '{{provider}}' is niet toegestaan door je organisatie",
 		"modelNotAllowed": "Model '{{model}}' is niet toegestaan voor provider '{{provider}}' door je organisatie",
 		"profileInvalid": "Dit profiel bevat een provider of model dat niet is toegestaan door je organisatie",
-		"qwenCodeOauthPath": "Je moet een geldig OAuth-referentiepad opgeven",
-		"azureResourceName": "Je moet een Azure-resourcenaam opgeven.",
-		"azureDeploymentName": "Je moet een Azure-implementatienaam opgeven."
+		"qwenCodeOauthPath": "Je moet een geldig OAuth-referentiepad opgeven"
 	},
 	"placeholders": {
 		"apiKey": "Voer API-sleutel in...",
@@ -941,8 +943,6 @@
 		"projectId": "Voer project-ID in...",
 		"customArn": "Voer ARN in (bijv. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Voer basis-URL in...",
-		"azureResourceName": "e.g. my-openai-resource",
-		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "bijv. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "bijv. lmstudio-community/llama-3.2-1b-instruct",
@@ -993,58 +993,5 @@
 			"label": "Vereist {{primaryMod}}+Enter om berichten te versturen",
 			"description": "Wanneer ingeschakeld, moet je {{primaryMod}}+Enter indrukken om berichten te versturen in plaats van alleen Enter"
 		}
-	},
-	"skills": {
-		"description": "Beheer skills die contextuele instructies aan de agent verstrekken. Skills worden automatisch toegepast wanneer ze relevant zijn voor uw taken. <DocsLink>Meer informatie</DocsLink>",
-		"workspaceSkills": "Werkruimteskills",
-		"globalSkills": "Globale skills",
-		"noWorkspaceSkills": "Nog geen skills in dit project.",
-		"noGlobalSkills": "Nog geen globale skills.",
-		"addSkill": "Skill toevoegen",
-		"editSkill": "Skill bewerken",
-		"deleteSkill": "Skill verwijderen",
-		"configureModes": "Modebeschikbaarheid",
-		"modeAny": "Elke modus",
-		"modeCount": "{{count}} modus",
-		"deleteDialog": {
-			"title": "Skill verwijderen",
-			"description": "Weet u zeker dat u de skill \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
-			"confirm": "Verwijderen",
-			"cancel": "Annuleren"
-		},
-		"modeDialog": {
-			"title": "Skillmodi configureren",
-			"description": "Kies welke modi deze skill kunnen gebruiken",
-			"intro": "Om je context licht te houden, raden we aan skills alleen beschikbaar te maken voor de modi die ze nodig hebben.",
-			"anyMode": "Elke modus (overal beschikbaar)",
-			"save": "Opslaan",
-			"cancel": "Annuleren"
-		},
-		"createDialog": {
-			"title": "Nieuwe Skill maken",
-			"nameLabel": "Naam",
-			"namePlaceholder": "mijn-skill-naam",
-			"descriptionLabel": "Beschrijving",
-			"descriptionPlaceholder": "Beschrijf wanneer deze skill moet worden gebruikt...",
-			"sourceLabel": "Locatie",
-			"modeLabel": "Modus (optioneel)",
-			"modePlaceholder": "Elke modus",
-			"modeHint": "Beperk deze skill tot een specifieke modus",
-			"modeAny": "Elke modus",
-			"create": "Maken",
-			"cancel": "Annuleren"
-		},
-		"source": {
-			"global": "Globaal (beschikbaar in alle projecten)",
-			"project": "Project (alleen deze workspace)"
-		},
-		"validation": {
-			"nameRequired": "Naam is verplicht",
-			"nameTooLong": "Naam moet maximaal 64 tekens zijn",
-			"nameInvalid": "Naam moet 1-64 kleine letters, cijfers of streepjes zijn",
-			"descriptionRequired": "Beschrijving is verplicht",
-			"descriptionTooLong": "Beschrijving moet maximaal 1024 tekens zijn"
-		},
-		"footer": "Maak je eigen skills met de Skill Writer modus, beschikbaar in de <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	}
 }

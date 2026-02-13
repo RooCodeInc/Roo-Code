@@ -38,13 +38,15 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calling", () =
 			currentStreamingContentIndex: 0,
 			assistantMessageContent: [],
 			userMessageContent: [],
-			pendingToolResults: [],
 			didCompleteReadingStream: false,
 			didRejectTool: false,
 			didAlreadyUseTool: false,
 			consecutiveMistakeCount: 0,
 			api: {
 				getModel: () => ({ id: "test-model", info: {} }),
+			},
+			browserSession: {
+				closeBrowser: vi.fn().mockResolvedValue(undefined),
 			},
 			recordToolUsage: vi.fn(),
 			toolRepetitionDetector: {
@@ -64,13 +66,13 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calling", () =
 
 		// Add pushToolResultToUserContent method after mockTask is created so it can reference mockTask
 		mockTask.pushToolResultToUserContent = vi.fn().mockImplementation((toolResult: any) => {
-			const existingResult = mockTask.pendingToolResults.find(
-				(block: any) => block.type === "tool-result" && block.toolCallId === toolResult.toolCallId,
+			const existingResult = mockTask.userMessageContent.find(
+				(block: any) => block.type === "tool_result" && block.tool_use_id === toolResult.tool_use_id,
 			)
 			if (existingResult) {
 				return false
 			}
-			mockTask.pendingToolResults.push(toolResult)
+			mockTask.userMessageContent.push(toolResult)
 			return true
 		})
 	})
@@ -107,25 +109,25 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calling", () =
 		// Execute presentAssistantMessage
 		await presentAssistantMessage(mockTask)
 
-		// Verify that pendingToolResults was populated
-		expect(mockTask.pendingToolResults.length).toBeGreaterThan(0)
+		// Verify that userMessageContent was populated
+		expect(mockTask.userMessageContent.length).toBeGreaterThan(0)
 
-		// Find the tool-result block in pendingToolResults
-		const toolResult = mockTask.pendingToolResults.find(
-			(item: any) => item.type === "tool-result" && item.toolCallId === toolCallId,
+		// Find the tool_result block
+		const toolResult = mockTask.userMessageContent.find(
+			(item: any) => item.type === "tool_result" && item.tool_use_id === toolCallId,
 		)
 
 		expect(toolResult).toBeDefined()
-		expect(toolResult.toolCallId).toBe(toolCallId)
+		expect(toolResult.tool_use_id).toBe(toolCallId)
 
-		// For native tool calling, output should be a text value
-		expect(toolResult.output).toBeDefined()
-		expect(toolResult.output.value).toContain("I see a cat")
+		// For native tool calling, tool_result content should be a string (text only)
+		expect(typeof toolResult.content).toBe("string")
+		expect(toolResult.content).toContain("I see a cat")
 
-		// Images should be added as separate ImagePart blocks in userMessageContent
+		// Images should be added as separate blocks AFTER the tool_result
 		const imageBlocks = mockTask.userMessageContent.filter((item: any) => item.type === "image")
 		expect(imageBlocks.length).toBeGreaterThan(0)
-		expect(imageBlocks[0].image).toBe("base64ImageData")
+		expect(imageBlocks[0].source.data).toBe("base64ImageData")
 	})
 
 	it("should convert to string when no images are present (native tool calling)", async () => {
@@ -150,15 +152,14 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calling", () =
 
 		await presentAssistantMessage(mockTask)
 
-		const toolResult = mockTask.pendingToolResults.find(
-			(item: any) => item.type === "tool-result" && item.toolCallId === toolCallId,
+		const toolResult = mockTask.userMessageContent.find(
+			(item: any) => item.type === "tool_result" && item.tool_use_id === toolCallId,
 		)
 
 		expect(toolResult).toBeDefined()
 
-		// When no images, output should be a text value
-		expect(toolResult.output.type).toBe("text")
-		expect(typeof toolResult.output.value).toBe("string")
+		// When no images, content should be a string
+		expect(typeof toolResult.content).toBe("string")
 	})
 
 	it("should fail fast when tool_use is missing id (legacy/XML-style tool call)", async () => {
@@ -208,13 +209,13 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calling", () =
 
 		await presentAssistantMessage(mockTask)
 
-		const toolResult = mockTask.pendingToolResults.find(
-			(item: any) => item.type === "tool-result" && item.toolCallId === toolCallId,
+		const toolResult = mockTask.userMessageContent.find(
+			(item: any) => item.type === "tool_result" && item.tool_use_id === toolCallId,
 		)
 
 		expect(toolResult).toBeDefined()
 		// Should have fallback text
-		expect(toolResult.output).toBeTruthy()
+		expect(toolResult.content).toBeTruthy()
 	})
 
 	describe("Multiple tool calls handling", () => {
@@ -245,20 +246,20 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calling", () =
 			mockTask.currentStreamingContentIndex = 1
 			await presentAssistantMessage(mockTask)
 
-			// Find the tool-result for the second tool in pendingToolResults
-			const toolResult = mockTask.pendingToolResults.find(
-				(item: any) => item.type === "tool-result" && item.toolCallId === toolCallId2,
+			// Find the tool_result for the second tool
+			const toolResult = mockTask.userMessageContent.find(
+				(item: any) => item.type === "tool_result" && item.tool_use_id === toolCallId2,
 			)
 
-			// Verify that a tool-result block was created (not a text block)
+			// Verify that a tool_result block was created (not a text block)
 			expect(toolResult).toBeDefined()
-			expect(toolResult.toolCallId).toBe(toolCallId2)
-			expect(toolResult.output.value).toContain("[ERROR]")
-			expect(toolResult.output.value).toContain("due to user rejecting a previous tool")
+			expect(toolResult.tool_use_id).toBe(toolCallId2)
+			expect(toolResult.is_error).toBe(true)
+			expect(toolResult.content).toContain("due to user rejecting a previous tool")
 
 			// Ensure no text blocks were added for this rejection
 			const textBlocks = mockTask.userMessageContent.filter(
-				(item: any) => item.type === "text" && item.text?.includes("due to user rejecting"),
+				(item: any) => item.type === "text" && item.text.includes("due to user rejecting"),
 			)
 			expect(textBlocks.length).toBe(0)
 		})
@@ -309,15 +310,15 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calling", () =
 
 			await presentAssistantMessage(mockTask)
 
-			// Find the tool-result in pendingToolResults
-			const toolResult = mockTask.pendingToolResults.find(
-				(item: any) => item.type === "tool-result" && item.toolCallId === toolCallId,
+			// Find the tool_result
+			const toolResult = mockTask.userMessageContent.find(
+				(item: any) => item.type === "tool_result" && item.tool_use_id === toolCallId,
 			)
 
-			// Verify tool-result was created for partial block
+			// Verify tool_result was created for partial block
 			expect(toolResult).toBeDefined()
-			expect(toolResult.output.value).toContain("[ERROR]")
-			expect(toolResult.output.value).toContain("was interrupted and not executed")
+			expect(toolResult.is_error).toBe(true)
+			expect(toolResult.content).toContain("was interrupted and not executed")
 		})
 	})
 })

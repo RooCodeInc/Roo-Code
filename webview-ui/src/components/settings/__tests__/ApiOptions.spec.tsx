@@ -662,31 +662,4 @@ describe("ApiOptions", () => {
 			useExtensionStateMock.mockRestore()
 		})
 	})
-
-	it("renders retired provider message and hides provider-specific forms", () => {
-		renderApiOptions({
-			apiConfiguration: {
-				apiProvider: "groq",
-			},
-		})
-
-		expect(screen.getByTestId("retired-provider-message")).toHaveTextContent(
-			"settings:providers.retiredProviderMessage",
-		)
-		expect(screen.queryByTestId("litellm-provider")).not.toBeInTheDocument()
-	})
-
-	it("does not reintroduce retired providers into active provider options", () => {
-		renderApiOptions({
-			apiConfiguration: {
-				apiProvider: "groq",
-			},
-		})
-
-		const providerSelectContainer = screen.getByTestId("provider-select")
-		const providerSelect = providerSelectContainer.querySelector("select") as HTMLSelectElement
-		const providerOptions = Array.from(providerSelect.querySelectorAll("option")).map((option) => option.value)
-
-		expect(providerOptions).not.toContain("groq")
-	})
 })

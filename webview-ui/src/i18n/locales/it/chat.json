@@ -111,8 +111,6 @@
 	},
 	"selectMode": "Seleziona modalità di interazione",
 	"selectApiConfig": "Seleziona la configurazione API",
-	"lockApiConfigAcrossModes": "Blocca la configurazione API per tutte le modalità in questo workspace",
-	"unlockApiConfigAcrossModes": "La configurazione API è bloccata per tutte le modalità in questo workspace (clicca per sbloccare)",
 	"enhancePrompt": "Migliora prompt con contesto aggiuntivo",
 	"addImages": "Aggiungi immagini al messaggio",
 	"sendMessage": "Invia messaggio",
@@ -220,8 +218,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo vuole visualizzare i file di primo livello in questa directory (fuori dall'area di lavoro)",
 		"didViewTopLevelOutsideWorkspace": "Roo ha visualizzato i file di primo livello in questa directory (fuori dall'area di lavoro)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo vuole visualizzare ricorsivamente tutti i file in questa directory (fuori dall'area di lavoro)",
-		"didViewRecursiveOutsideWorkspace": "Roo ha visualizzato ricorsivamente tutti i file in questa directory (fuori dall'area di lavoro)",
-		"wantsToViewMultipleDirectories": "Roo vuole visualizzare più directory"
+		"didViewRecursiveOutsideWorkspace": "Roo ha visualizzato ricorsivamente tutti i file in questa directory (fuori dall'area di lavoro)"
 	},
 	"commandOutput": "Output del Comando",
 	"commandExecution": {
@@ -347,8 +344,7 @@
 		},
 		"release": {
 			"heading": "Novità:",
-			"claudeOpus": "Claude Opus 4.6: Ora disponibile su tutti i provider—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex e OpenRouter—portando il modello più capace di Anthropic alla tua piattaforma preferita.",
-			"gptCodex": "GPT-5.3-Codex: Il modello di codifica più recente di OpenAI è ora supportato nel provider OpenAI - ChatGPT, offrendo generazione e comprensione del codice all'avanguardia."
+			"smartCodeFolding": "Smart Code Folding: La condensazione del contesto mantiene ora una mappa leggera dei tuoi file—firme di funzione, dichiarazioni di classe e definizioni di tipo. Questo fornisce una migliore continuità dopo la condensazione e modifiche più intelligenti quando si fa riferimento al lavoro precedente."
 		},
 		"cloudAgents": {
 			"heading": "Novità nel Cloud:",
@@ -363,6 +359,44 @@
 		"total": "Costo totale: ${{cost}}",
 		"includesSubtasks": "Include i costi delle sottoattività"
 	},
+	"browser": {
+		"session": "Sessione del browser",
+		"active": "Attivo",
+		"rooWantsToUse": "Roo vuole utilizzare il browser",
+		"consoleLogs": "Log della console",
+		"noNewLogs": "(Nessun nuovo log)",
+		"screenshot": "Screenshot del browser",
+		"cursor": "cursore",
+		"navigation": {
+			"step": "Passo {{current}} di {{total}}",
+			"previous": "Precedente",
+			"next": "Successivo"
+		},
+		"sessionStarted": "Sessione browser avviata",
+		"actions": {
+			"title": "Azione browser: ",
+			"launched": "Browser avviato",
+			"launch": "Avvia browser su {{url}}",
+			"clicked": "Cliccato su: {{coordinate}}",
+			"click": "Clic ({{coordinate}})",
+			"typed": "Digitato: {{text}}",
+			"type": "Digita \"{{text}}\"",
+			"pressed": "Premuto: {{key}}",
+			"press": "Premi {{key}}",
+			"scrolledDown": "Scorso verso il basso",
+			"scrollDown": "Scorri verso il basso",
+			"scrolledUp": "Scorso verso l'alto",
+			"scrollUp": "Scorri verso l'alto",
+			"hovered": "Passato il mouse su: {{coordinate}}",
+			"hover": "Passa il mouse ({{coordinate}})",
+			"resized": "Ridimensionato a: {{size}}",
+			"resize": "Ridimensiona a {{size}}",
+			"screenshotSaved": "Screenshot salvato",
+			"screenshot": "Salva screenshot in {{path}}",
+			"closed": "Browser chiuso",
+			"close": "Chiudi browser"
+		}
+	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Espandi blocco di codice",
@@ -370,6 +404,7 @@
 			"copy_code": "Copia codice"
 		}
 	},
+	"systemPromptWarning": "ATTENZIONE: Sovrascrittura personalizzata delle istruzioni di sistema attiva. Questo può compromettere gravemente le funzionalità e causare comportamenti imprevedibili.",
 	"profileViolationWarning": "Il profilo corrente non è compatibile con le impostazioni della tua organizzazione",
 	"shellIntegration": {
 		"title": "Avviso di esecuzione comando",
@@ -398,22 +433,6 @@
 	"read-batch": {
 		"approve": {
 			"title": "Approva tutto"
-		},
-		"deny": {
-			"title": "Nega tutto"
-		}
-	},
-	"list-batch": {
-		"approve": {
-			"title": "Approva tutto"
-		},
-		"deny": {
-			"title": "Nega tutto"
-		}
-	},
-	"edit-batch": {
-		"approve": {
-			"title": "Salva tutto"
 		},
 		"deny": {
 			"title": "Nega tutto"
@@ -492,10 +511,5 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
-	},
-	"retiredProvider": {
-		"title": "Provider non più supportato",
-		"message": "Ci dispiace, questo provider non è più supportato. Abbiamo visto che pochissimi utenti di Roo lo utilizzavano effettivamente e dobbiamo ridurre la portata del nostro codice per continuare a procedere velocemente e servire bene la nostra community. È stata una decisione davvero difficile, ma ci permette di concentrarci su ciò che conta di più per te. Lo sappiamo, è una seccatura.",
-		"openSettings": "Apri impostazioni"
 	}
 }

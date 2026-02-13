@@ -46,11 +46,6 @@ vi.mock("@dotenvx/dotenvx", () => ({
 	config: vi.fn(),
 }))
 
-// Mock fs so the extension module can safely check for optional .env.
-vi.mock("fs", () => ({
-	existsSync: vi.fn().mockReturnValue(false),
-}))
-
 const mockBridgeOrchestratorDisconnect = vi.fn().mockResolvedValue(undefined)
 
 const mockCloudServiceInstance = {
@@ -188,7 +183,6 @@ vi.mock("../core/webview/ClineProvider", async () => {
 		resolveWebviewView: vi.fn(),
 		postMessageToWebview: vi.fn(),
 		postStateToWebview: vi.fn(),
-		postStateToWebviewWithoutClineMessages: vi.fn(),
 		getState: vi.fn().mockResolvedValue({}),
 		remoteControlEnabled: vi.fn().mockImplementation(async (enabled: boolean) => {
 			if (!enabled) {
@@ -242,36 +236,6 @@ describe("extension.ts", () => {
 		} as unknown as vscode.ExtensionContext
 
 		authStateChangedHandler = undefined
-	})
-
-	test("does not call dotenvx.config when optional .env does not exist", async () => {
-		vi.resetModules()
-		vi.clearAllMocks()
-
-		const fs = await import("fs")
-		vi.mocked(fs.existsSync).mockReturnValue(false)
-
-		const dotenvx = await import("@dotenvx/dotenvx")
-
-		const { activate } = await import("../extension")
-		await activate(mockContext)
-
-		expect(dotenvx.config).not.toHaveBeenCalled()
-	})
-
-	test("calls dotenvx.config when optional .env exists", async () => {
-		vi.resetModules()
-		vi.clearAllMocks()
-
-		const fs = await import("fs")
-		vi.mocked(fs.existsSync).mockReturnValue(true)
-
-		const dotenvx = await import("@dotenvx/dotenvx")
-
-		const { activate } = await import("../extension")
-		await activate(mockContext)
-
-		expect(dotenvx.config).toHaveBeenCalledTimes(1)
 	})
 
 	test("authStateChangedHandler calls BridgeOrchestrator.disconnect when logged-out event fires", async () => {

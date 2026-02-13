@@ -10,13 +10,14 @@ import { getToolRenderer } from "./tools/index.js"
 /**
  * Tool categories for styling
  */
-type ToolCategory = "file" | "directory" | "search" | "command" | "mode" | "completion" | "other"
+type ToolCategory = "file" | "directory" | "search" | "command" | "browser" | "mode" | "completion" | "other"
 
 function getToolCategory(toolName: string): ToolCategory {
 	const fileTools = ["readFile", "read_file", "writeToFile", "write_to_file", "applyDiff", "apply_diff"]
 	const dirTools = ["listFiles", "list_files", "listFilesRecursive", "listFilesTopLevel"]
 	const searchTools = ["searchFiles", "search_files"]
 	const commandTools = ["executeCommand", "execute_command"]
+	const browserTools = ["browserAction", "browser_action"]
 	const modeTools = ["switchMode", "switch_mode", "newTask", "new_task"]
 	const completionTools = ["attemptCompletion", "attempt_completion", "askFollowupQuestion", "ask_followup_question"]
 
@@ -24,6 +25,7 @@ function getToolCategory(toolName: string): ToolCategory {
 	if (dirTools.includes(toolName)) return "directory"
 	if (searchTools.includes(toolName)) return "search"
 	if (commandTools.includes(toolName)) return "command"
+	if (browserTools.includes(toolName)) return "browser"
 	if (modeTools.includes(toolName)) return "mode"
 	if (completionTools.includes(toolName)) return "completion"
 	return "other"
@@ -37,6 +39,7 @@ const CATEGORY_COLORS: Record<ToolCategory, string> = {
 	directory: theme.toolHeader,
 	search: theme.warningColor,
 	command: theme.successColor,
+	browser: theme.focusColor,
 	mode: theme.userHeader,
 	completion: theme.successColor,
 	other: theme.toolHeader,

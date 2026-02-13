@@ -31,6 +31,7 @@
 		"mcp": "Servidors MCP",
 		"worktrees": "Worktrees",
 		"autoApprove": "Auto-aprovació",
+		"browser": "Accés a l'ordinador",
 		"checkpoints": "Punts de control",
 		"notifications": "Notificacions",
 		"contextManagement": "Context",
@@ -40,8 +41,7 @@
 		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Idioma",
-		"about": "Sobre Roo Code",
-		"skills": "Skills"
+		"about": "Sobre Roo Code"
 	},
 	"about": {
 		"bugReport": {
@@ -68,39 +68,7 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Gestiona les teves comandes de barra per executar ràpidament fluxos de treball i accions personalitzades. <DocsLink>Aprèn-ne més</DocsLink>",
-		"workspaceCommands": "Comandes de l'espai de treball",
-		"globalCommands": "Comandes globals",
-		"noWorkspaceCommands": "Sense comandes en aquest projecte encara.",
-		"noGlobalCommands": "Sense comandes globals encara.",
-		"addCommand": "Afegir comanda de barra",
-		"editCommand": "Editar comanda",
-		"deleteCommand": "Suprimir comanda",
-		"deleteDialog": {
-			"title": "Suprimir comanda",
-			"description": "Estàs segur que vols suprimir la comanda \"{{name}}\"? Aquesta acció no es pot desfer.",
-			"confirm": "Suprimir",
-			"cancel": "Cancel·lar"
-		},
-		"createDialog": {
-			"title": "Crear una nova comanda de barra",
-			"nameLabel": "Nom",
-			"namePlaceholder": "my-command-name",
-			"nameHint": "Només lletres minúscules, números, guions i subratllats",
-			"sourceLabel": "Ubicació",
-			"create": "Crear",
-			"cancel": "Cancel·lar"
-		},
-		"source": {
-			"global": "Global (disponible en tots els espais de treball)",
-			"project": "Espai de treball"
-		},
-		"validation": {
-			"nameRequired": "El nom és obligatori",
-			"nameTooLong": "El nom ha de tenir 64 caràcters o menys",
-			"nameInvalid": "El nom ha de contenir només lletres, números, guions i subratllats"
-		},
-		"footer": "Utilitza comandes de barra per accedir ràpidament a indicacions i fluxos de treball utilitzats freqüentment."
+		"description": "Gestiona les teves comandes de barra per executar ràpidament fluxos de treball i accions personalitzades. <DocsLink>Aprèn-ne més</DocsLink>"
 	},
 	"prompts": {
 		"description": "Configura les indicacions de suport utilitzades per a accions ràpides com millorar indicacions, explicar codi i solucionar problemes. Aquestes indicacions ajuden Roo a proporcionar millor assistència per a tasques comunes de desenvolupament."
@@ -240,6 +208,10 @@
 				"description": "Permetre a Roo crear i editar fitxers protegits (com .rooignore i fitxers de configuració .roo/) sense requerir aprovació."
 			}
 		},
+		"browser": {
+			"label": "Navegador",
+			"description": "Realitzar accions del navegador automàticament sense requerir aprovació. Nota: Només s'aplica quan el model admet l'ús de l'ordinador"
+		},
 		"mcp": {
 			"label": "MCP",
 			"description": "Habilitar l'aprovació automàtica d'eines MCP individuals a la vista de Servidors MCP (requereix tant aquesta configuració com la casella \"Permetre sempre\" de l'eina)"
@@ -271,6 +243,7 @@
 		},
 		"apiRequestLimit": {
 			"title": "Màximes Sol·licituds",
+			"description": "Fes aquesta quantitat de sol·licituds API automàticament abans de demanar aprovació per continuar amb la tasca.",
 			"unlimited": "Il·limitat"
 		},
 		"selectOptionsFirst": "Seleccioneu almenys una opció a continuació per activar l'aprovació automàtica",
@@ -304,7 +277,6 @@
 		"searchProviderPlaceholder": "Cerca proveïdors",
 		"noProviderMatchFound": "No s'han trobat proveïdors",
 		"noMatchFound": "No s'han trobat perfils coincidents",
-		"retiredProviderMessage": "Ho sentim, aquest proveïdor ja no és compatible. Hem vist que molt pocs usuaris de Roo l'utilitzaven realment i necessitem reduir la superfície del nostre codi perquè puguem seguir avançant ràpidament i servir bé a la nostra comunitat. Ha estat una decisió molt difícil, però ens permet centrar-nos en el que més t'importa. Ho sabem, és una llàstima.",
 		"vscodeLmDescription": "L'API del model de llenguatge de VS Code us permet executar models proporcionats per altres extensions de VS Code (incloent-hi, però no limitat a, GitHub Copilot). La manera més senzilla de començar és instal·lar les extensions Copilot i Copilot Chat des del VS Code Marketplace.",
 		"awsCustomArnUse": "Introduïu un ARN vàlid d'Amazon Bedrock per al model que voleu utilitzar. Exemples de format:",
 		"awsCustomArnDesc": "Assegureu-vos que la regió a l'ARN coincideix amb la regió d'AWS seleccionada anteriorment.",
@@ -366,23 +338,15 @@
 		"getAnthropicApiKey": "Obtenir clau API d'Anthropic",
 		"anthropicUseAuthToken": "Passar la clau API d'Anthropic com a capçalera d'autorització en lloc de X-Api-Key",
 		"anthropic1MContextBetaLabel": "Activa la finestra de context d'1M (Beta)",
-		"anthropic1MContextBetaDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"anthropic1MContextBetaDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Activa la finestra de context d'1M (Beta)",
-		"awsBedrock1MContextBetaDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"awsBedrock1MContextBetaDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4",
 		"vertex1MContextBetaLabel": "Activa la finestra de context d'1M (Beta)",
-		"vertex1MContextBetaDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"vertex1MContextBetaDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4",
 		"basetenApiKey": "Clau API de Baseten",
 		"getBasetenApiKey": "Obtenir clau API de Baseten",
 		"cerebrasApiKey": "Clau API de Cerebras",
 		"getCerebrasApiKey": "Obtenir clau API de Cerebras",
-		"azureResourceName": "Nom del recurs d'Azure",
-		"azureResourceNameDescription": "El nom del teu recurs Azure AI Foundry (p. ex. 'el-meu-recurs-openai').",
-		"azureDeploymentName": "Nom del desplegament d'Azure",
-		"azureDeploymentNameDescription": "El nom del desplegament del model dins del recurs.",
-		"azureApiKey": "Clau API d'Azure",
-		"getAzureApiKey": "Obtenir accés a Azure AI Foundry",
-		"azureApiVersion": "Versió de l'API d'Azure",
-		"azureApiVersionDescription": "La versió de l'API a utilitzar (p. ex. '2024-10-21'). Deixa buit per al valor per defecte.",
 		"chutesApiKey": "Clau API de Chutes",
 		"getChutesApiKey": "Obtenir clau API de Chutes",
 		"fireworksApiKey": "Clau API de Fireworks",
@@ -465,6 +429,16 @@
 		"cacheUsageNote": "Nota: Si no veieu l'ús de la caché, proveu de seleccionar un model diferent i després tornar a seleccionar el model desitjat.",
 		"vscodeLmModel": "Model de llenguatge",
 		"vscodeLmWarning": "Nota: Els models accessibles a través de l’API VS Code Language Model poden estar encapsulats o ajustats pel proveïdor; per tant, el comportament pot diferir de l’ús directe del mateix model des d’un proveïdor o enrutador típic. Per utilitzar un model del desplegable «Language Model», primer canvia a aquest model i després fes clic a «Acceptar» a l’avís de Copilot Chat; en cas contrari pots veure un error com 400 «The requested model is not supported».",
+		"geminiParameters": {
+			"urlContext": {
+				"title": "Activa el context d'URL",
+				"description": "Permet a Gemini llegir pàgines enllaçades per extreure, comparar i sintetitzar el seu contingut en respostes informades."
+			},
+			"groundingSearch": {
+				"title": "Activa la Fonamentació amb la Cerca de Google",
+				"description": "Connecta Gemini a dades web en temps real per a respostes precises i actualitzades amb citacions verificables."
+			}
+		},
 		"googleCloudSetup": {
 			"title": "Per utilitzar Google Cloud Vertex AI, necessiteu:",
 			"step1": "1. Crear un compte de Google Cloud, habilitar l'API de Vertex AI i habilitar els models Claude necessaris.",
@@ -585,6 +559,34 @@
 			"placeholder": "Per defecte: claude",
 			"maxTokensLabel": "Tokens màxims de sortida",
 			"maxTokensDescription": "Nombre màxim de tokens de sortida per a les respostes de Claude Code. El valor per defecte és 8000."
+		}
+	},
+	"browser": {
+		"enable": {
+			"label": "Habilitar eina de navegador",
+			"description": "Quan està habilitat, Roo pot utilitzar un navegador per interactuar amb llocs web quan s'utilitzen models que admeten l'ús de l'ordinador. <0>Més informació</0>"
+		},
+		"viewport": {
+			"label": "Mida del viewport",
+			"description": "Seleccioneu la mida del viewport per a interaccions del navegador. Això afecta com es mostren i interactuen els llocs web.",
+			"options": {
+				"largeDesktop": "Escriptori gran (1280x800)",
+				"smallDesktop": "Escriptori petit (900x600)",
+				"tablet": "Tauleta (768x1024)",
+				"mobile": "Mòbil (360x640)"
+			}
+		},
+		"screenshotQuality": {
+			"label": "Qualitat de captures de pantalla",
+			"description": "Ajusteu la qualitat WebP de les captures de pantalla del navegador. Valors més alts proporcionen captures més clares però augmenten l'ús de token."
+		},
+		"remote": {
+			"label": "Utilitzar connexió remota del navegador",
+			"description": "Connectar a un navegador Chrome que s'executa amb depuració remota habilitada (--remote-debugging-port=9222).",
+			"urlPlaceholder": "URL personalitzada (ex. http://localhost:9222)",
+			"testButton": "Provar connexió",
+			"testingButton": "Provant...",
+			"instructions": "Introduïu l'adreça d'amfitrió del protocol DevTools o deixeu-la buida per descobrir automàticament instàncies locals de Chrome. El botó Provar Connexió provarà la URL personalitzada si es proporciona, o descobrirà automàticament si el camp està buit."
 		}
 	},
 	"checkpoints": {
@@ -896,6 +898,7 @@
 		"simplifiedExplanation": "Pots ajustar la configuració detallada del model més tard."
 	},
 	"footer": {
+		"feedback": "Si teniu qualsevol pregunta o comentari, no dubteu a obrir un issue a <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unir-vos a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Permetre informes anònims d'errors i ús",
 			"description": "Ajuda a millorar Roo Code enviant dades d'ús anònimes i informes d'error. Aquesta telemetria no recull codi, prompts o informació personal. Consulta la nostra <privacyLink>política de privacitat</privacyLink> per a més detalls. Pots desactivar-ho en qualsevol moment."
@@ -926,9 +929,7 @@
 		"providerNotAllowed": "El proveïdor '{{provider}}' no està permès per la vostra organització",
 		"modelNotAllowed": "El model '{{model}}' no està permès per al proveïdor '{{provider}}' per la vostra organització",
 		"profileInvalid": "Aquest perfil conté un proveïdor o model que no està permès per la vostra organització",
-		"qwenCodeOauthPath": "Has de proporcionar una ruta vàlida de credencials OAuth",
-		"azureResourceName": "Has de proporcionar un nom de recurs d'Azure.",
-		"azureDeploymentName": "Has de proporcionar un nom de desplegament d'Azure."
+		"qwenCodeOauthPath": "Has de proporcionar una ruta vàlida de credencials OAuth"
 	},
 	"placeholders": {
 		"apiKey": "Introduïu la clau API...",
@@ -941,8 +942,6 @@
 		"projectId": "Introduïu l'ID del projecte...",
 		"customArn": "Introduïu l'ARN (p. ex. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Introduïu l'URL base...",
-		"azureResourceName": "e.g. my-openai-resource",
-		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "p. ex. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "p. ex. lmstudio-community/llama-3.2-1b-instruct",
@@ -993,58 +992,5 @@
 			"label": "Requereix {{primaryMod}}+Intro per enviar missatges",
 			"description": "Quan estigui activat, has de prémer {{primaryMod}}+Intro per enviar missatges en lloc de només Intro"
 		}
-	},
-	"skills": {
-		"description": "Gestiona les skills que proporcionen instruccions contextuals a l'agent. Les skills s'apliquen automàticament quan són rellevants per a les teves tasques. <DocsLink>Més informació</DocsLink>",
-		"workspaceSkills": "Skills de l'espai de treball",
-		"globalSkills": "Skills globals",
-		"noWorkspaceSkills": "Sense skills en aquest projecte encara.",
-		"noGlobalSkills": "Sense skills globals encara.",
-		"addSkill": "Afegir Skill",
-		"editSkill": "Editar skill",
-		"deleteSkill": "Eliminar skill",
-		"configureModes": "Disponibilitat del mode",
-		"modeAny": "Qualsevol mode",
-		"modeCount": "{{count}} modes",
-		"deleteDialog": {
-			"title": "Eliminar Skill",
-			"description": "Estàs segur que vols eliminar la skill \"{{name}}\"? Aquesta acció no es pot desfer.",
-			"confirm": "Eliminar",
-			"cancel": "Cancel·lar"
-		},
-		"modeDialog": {
-			"title": "Configurar els modes de Skill",
-			"description": "Tria quins modes poden usar aquesta skill",
-			"intro": "Per mantenir el teu context lleuger, et recomanem que només facis disponibles skills per als modes que les necessiten.",
-			"anyMode": "Qualsevol mode (disponible a tot arreu)",
-			"save": "Desar",
-			"cancel": "Cancel·lar"
-		},
-		"createDialog": {
-			"title": "Crear Nova Skill",
-			"nameLabel": "Nom",
-			"namePlaceholder": "el-meu-nom-de-skill",
-			"descriptionLabel": "Descripció",
-			"descriptionPlaceholder": "Descriu quan s'hauria d'utilitzar aquesta skill...",
-			"sourceLabel": "Ubicació",
-			"modeLabel": "Mode (opcional)",
-			"modePlaceholder": "Qualsevol mode",
-			"modeHint": "Restringeix aquesta skill a un mode específic",
-			"modeAny": "Qualsevol mode",
-			"create": "Crear",
-			"cancel": "Cancel·lar"
-		},
-		"source": {
-			"global": "Global (disponible en tots els projectes)",
-			"project": "Projecte (només aquest espai de treball)"
-		},
-		"validation": {
-			"nameRequired": "El nom és obligatori",
-			"nameTooLong": "El nom ha de tenir com a màxim 64 caràcters",
-			"nameInvalid": "El nom ha de tenir entre 1 i 64 caràcters, només lletres minúscules, números o guions",
-			"descriptionRequired": "La descripció és obligatòria",
-			"descriptionTooLong": "La descripció ha de tenir com a màxim 1024 caràcters"
-		},
-		"footer": "Crea les teves pròpies skills amb el mode Skill Writer, disponible al <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	}
 }

@@ -61,11 +61,16 @@ export class ProfileValidator {
 			case "mistral":
 			case "deepseek":
 			case "xai":
+			case "groq":
 			case "sambanova":
+			case "chutes":
 			case "fireworks":
+			case "featherless":
 				return profile.apiModelId
 			case "litellm":
 				return profile.litellmModelId
+			case "unbound":
+				return profile.unboundModelId
 			case "lmstudio":
 				return profile.lmStudioModelId
 			case "vscode-lm":
@@ -77,6 +82,10 @@ export class ProfileValidator {
 				return profile.ollamaModelId
 			case "requesty":
 				return profile.requestyModelId
+			case "io-intelligence":
+				return profile.ioIntelligenceModelId
+			case "deepinfra":
+				return profile.deepInfraModelId
 			case "fake-ai":
 			default:
 				return undefined

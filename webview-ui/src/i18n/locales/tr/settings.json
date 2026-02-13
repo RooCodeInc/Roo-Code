@@ -31,6 +31,7 @@
 		"mcp": "MCP Sunucuları",
 		"worktrees": "Worktrees",
 		"autoApprove": "Oto-Onay",
+		"browser": "Bilgisayar Erişimi",
 		"checkpoints": "Kontrol Noktaları",
 		"notifications": "Bildirimler",
 		"contextManagement": "Bağlam",
@@ -40,8 +41,7 @@
 		"ui": "UI",
 		"experimental": "Deneysel",
 		"language": "Dil",
-		"about": "Roo Code Hakkında",
-		"skills": "Skills"
+		"about": "Roo Code Hakkında"
 	},
 	"about": {
 		"bugReport": {
@@ -68,39 +68,7 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Özel iş akışlarını ve eylemleri hızlı bir şekilde yürütmek için eğik çizgi komutlarınızı yönetin. <DocsLink>Daha fazla bilgi edinin</DocsLink>",
-		"workspaceCommands": "Çalışma Alanı Komutları",
-		"globalCommands": "Genel Komutlar",
-		"noWorkspaceCommands": "Bu projede henüz komut yok.",
-		"noGlobalCommands": "Henüz genel komut yok.",
-		"addCommand": "Eğik Çizgi Komutu Ekle",
-		"editCommand": "Komutu düzenle",
-		"deleteCommand": "Komutu sil",
-		"deleteDialog": {
-			"title": "Komutu sil",
-			"description": "\"{{name}}\" komutunu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
-			"confirm": "Sil",
-			"cancel": "İptal"
-		},
-		"createDialog": {
-			"title": "Yeni Eğik Çizgi Komutu Oluştur",
-			"nameLabel": "Ad",
-			"namePlaceholder": "my-command-name",
-			"nameHint": "Yalnızca küçük harfler, sayılar, tireleme ve alt çizgi",
-			"sourceLabel": "Konum",
-			"create": "Oluştur",
-			"cancel": "İptal"
-		},
-		"source": {
-			"global": "Genel (tüm çalışma alanlarında mevcut)",
-			"project": "Çalışma Alanı"
-		},
-		"validation": {
-			"nameRequired": "Ad gereklidir",
-			"nameTooLong": "Ad en fazla 64 karakter olmalıdır",
-			"nameInvalid": "Ad yalnızca harfleri, sayıları, tirelemeyi ve alt çizgiyi içerebilir"
-		},
-		"footer": "Sık kullanılan komutlara ve iş akışlarına hızlı erişim için eğik çizgi komutlarını kullanın."
+		"description": "Özel iş akışlarını ve eylemleri hızlı bir şekilde yürütmek için eğik çizgi komutlarınızı yönetin. <DocsLink>Daha fazla bilgi edinin</DocsLink>"
 	},
 	"prompts": {
 		"description": "Prompt geliştirme, kod açıklama ve sorun çözme gibi hızlı eylemler için kullanılan destek promptlarını yapılandırın. Bu promptlar, Roo'nun yaygın geliştirme görevleri için daha iyi destek sağlamasına yardımcı olur."
@@ -240,6 +208,10 @@
 				"description": "Roo'nun korumalı dosyaları (.rooignore ve .roo/ yapılandırma dosyaları gibi) onay gerektirmeden oluşturmasına ve düzenlemesine izin ver."
 			}
 		},
+		"browser": {
+			"label": "Tarayıcı",
+			"description": "Onay gerektirmeden otomatik olarak tarayıcı eylemleri gerçekleştir. Not: Yalnızca model bilgisayar kullanımını desteklediğinde geçerlidir"
+		},
 		"mcp": {
 			"label": "MCP",
 			"description": "MCP Sunucuları görünümünde bireysel MCP araçlarının otomatik onayını etkinleştir (hem bu ayar hem de aracın \"Her zaman izin ver\" onay kutusu gerekir)"
@@ -271,6 +243,7 @@
 		},
 		"apiRequestLimit": {
 			"title": "Maksimum İstek",
+			"description": "Göreve devam etmek için onay istemeden önce bu sayıda API isteği otomatik olarak yap.",
 			"unlimited": "Sınırsız"
 		},
 		"selectOptionsFirst": "Otomatik onayı etkinleştirmek için aşağıdan en az bir seçenek seçin",
@@ -304,7 +277,6 @@
 		"searchProviderPlaceholder": "Sağlayıcıları ara",
 		"noProviderMatchFound": "Eşleşen sağlayıcı bulunamadı",
 		"noMatchFound": "Eşleşen profil bulunamadı",
-		"retiredProviderMessage": "Üzgünüz, bu sağlayıcı artık desteklenmiyor. Çok az Roo kullanıcısının bunu gerçekten kullandığını gördük ve kod tabanımızın kapsamını azaltmamız gerekiyor, böylece hızlı gelişmeye devam edebilir ve topluluğumuza iyi hizmet verebiliriz. Gerçekten zor bir karardı ama sana en önemli olan şeylere odaklanmamızı sağlıyor. Biliyoruz, bu sinir bozucu.",
 		"vscodeLmDescription": "VS Code Dil Modeli API'si, diğer VS Code uzantıları tarafından sağlanan modelleri çalıştırmanıza olanak tanır (GitHub Copilot dahil ancak bunlarla sınırlı değildir). Başlamanın en kolay yolu, VS Code Marketplace'ten Copilot ve Copilot Chat uzantılarını yüklemektir.",
 		"awsCustomArnUse": "Kullanmak istediğiniz model için geçerli bir Amazon Bedrock ARN'si girin. Format örnekleri:",
 		"awsCustomArnDesc": "ARN içindeki bölgenin yukarıda seçilen AWS Bölgesiyle eşleştiğinden emin olun.",
@@ -366,23 +338,15 @@
 		"getAnthropicApiKey": "Anthropic API Anahtarı Al",
 		"anthropicUseAuthToken": "Anthropic API Anahtarını X-Api-Key yerine Authorization başlığı olarak geçir",
 		"anthropic1MContextBetaLabel": "1M bağlam penceresini etkinleştir (Beta)",
-		"anthropic1MContextBetaDescription": "Claude Sonnet 4 / 4.5 / Claude Opus 4.6 için bağlam penceresini 1 milyon token'a genişletir",
+		"anthropic1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
 		"awsBedrock1MContextBetaLabel": "1M bağlam penceresini etkinleştir (Beta)",
-		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4 / 4.5 / Claude Opus 4.6 için bağlam penceresini 1 milyon token'a genişletir",
+		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
 		"vertex1MContextBetaLabel": "1M bağlam penceresini etkinleştir (Beta)",
-		"vertex1MContextBetaDescription": "Claude Sonnet 4 / 4.5 / Claude Opus 4.6 için bağlam penceresini 1 milyon token'a genişletir",
+		"vertex1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
 		"basetenApiKey": "Baseten API Anahtarı",
 		"getBasetenApiKey": "Baseten API Anahtarı Al",
 		"cerebrasApiKey": "Cerebras API Anahtarı",
 		"getCerebrasApiKey": "Cerebras API Anahtarını Al",
-		"azureResourceName": "Azure Kaynak Adı",
-		"azureResourceNameDescription": "Azure AI Foundry kaynak adınız (örn. 'benim-openai-kaynagim').",
-		"azureDeploymentName": "Azure Dağıtım Adı",
-		"azureDeploymentNameDescription": "Kaynak içindeki model dağıtım adınız.",
-		"azureApiKey": "Azure API Anahtarı",
-		"getAzureApiKey": "Azure AI Foundry Erişimi Al",
-		"azureApiVersion": "Azure API Sürümü",
-		"azureApiVersionDescription": "Kullanılacak API sürümü (örn. '2024-10-21'). Varsayılan için boş bırakın.",
 		"chutesApiKey": "Chutes API Anahtarı",
 		"getChutesApiKey": "Chutes API Anahtarı Al",
 		"fireworksApiKey": "Fireworks API Anahtarı",
@@ -465,6 +429,16 @@
 		"cacheUsageNote": "Not: Önbellek kullanımını görmüyorsanız, farklı bir model seçip ardından istediğiniz modeli tekrar seçmeyi deneyin.",
 		"vscodeLmModel": "Dil Modeli",
 		"vscodeLmWarning": "Not: VS Code Language Model API üzerinden erişilen modeller sağlayıcı tarafından sarılmış veya ince ayarlanmış olabilir; bu nedenle davranış, aynı modelin tipik bir sağlayıcı ya da yönlendirici üzerinden doğrudan kullanılmasından farklı olabilir. «Language Model» açılır menüsünden bir model kullanmak için önce o modele geçin ve ardından Copilot Chat isteminde «Kabul Et»e tıklayın; aksi takdirde 400 «The requested model is not supported» gibi bir hata görebilirsiniz.",
+		"geminiParameters": {
+			"urlContext": {
+				"title": "URL bağlamını etkinleştir",
+				"description": "Yanıtlar oluşturulurken ek bağlam için Gemini'nin URL'lere erişmesine ve işlemesine izin verir. Web içeriği analizi gerektiren görevler için faydalıdır."
+			},
+			"groundingSearch": {
+				"title": "Google Aramasıyla Grounding Etkinleştir",
+				"description": "Gemini'nin güncel bilgileri almak için Google'da arama yapmasına ve yanıtları gerçek zamanlı verilere dayandırmasına izin verir. Güncel bilgi gerektiren sorgular için kullanışlıdır."
+			}
+		},
 		"googleCloudSetup": {
 			"title": "Google Cloud Vertex AI'yi kullanmak için şunları yapmanız gerekir:",
 			"step1": "1. Google Cloud hesabı oluşturun, Vertex AI API'sini etkinleştirin ve istediğiniz Claude modellerini etkinleştirin.",
@@ -587,6 +561,34 @@
 			"maxTokensDescription": "Claude Code yanıtları için maksimum çıktı token sayısı. Varsayılan 8000'dir."
 		}
 	},
+	"browser": {
+		"enable": {
+			"label": "Tarayıcı aracını etkinleştir",
+			"description": "Etkinleştirildiğinde, Roo bilgisayar kullanımını destekleyen modeller kullanırken web siteleriyle etkileşim kurmak için bir tarayıcı kullanabilir. <0>Daha fazla bilgi</0>"
+		},
+		"viewport": {
+			"label": "Görünüm alanı boyutu",
+			"description": "Tarayıcı etkileşimleri için görünüm alanı boyutunu seçin. Bu, web sitelerinin nasıl görüntülendiğini ve etkileşime girdiğini etkiler.",
+			"options": {
+				"largeDesktop": "Büyük Masaüstü (1280x800)",
+				"smallDesktop": "Küçük Masaüstü (900x600)",
+				"tablet": "Tablet (768x1024)",
+				"mobile": "Mobil (360x640)"
+			}
+		},
+		"screenshotQuality": {
+			"label": "Ekran görüntüsü kalitesi",
+			"description": "Tarayıcı ekran görüntülerinin WebP kalitesini ayarlayın. Daha yüksek değerler daha net ekran görüntüleri sağlar ancak token kullanımını artırır."
+		},
+		"remote": {
+			"label": "Uzak tarayıcı bağlantısı kullan",
+			"description": "Uzaktan hata ayıklama etkinleştirilmiş olarak çalışan bir Chrome tarayıcısına bağlanın (--remote-debugging-port=9222).",
+			"urlPlaceholder": "Özel URL (örn. http://localhost:9222)",
+			"testButton": "Bağlantıyı Test Et",
+			"testingButton": "Test Ediliyor...",
+			"instructions": "DevTools protokolü ana bilgisayar adresini girin veya yerel Chrome örneklerini otomatik olarak keşfetmek için boş bırakın. Bağlantıyı Test Et düğmesi, sağlanmışsa özel URL'yi deneyecek veya alan boşsa otomatik olarak keşfedecektir."
+		}
+	},
 	"checkpoints": {
 		"timeout": {
 			"label": "Kontrol noktası başlatma zaman aşımı (saniye)",
@@ -662,6 +664,7 @@
 				"label": "Maksimum tanı mesajı",
 				"description": "Dosya başına dahil edilecek maksimum tanı mesajı sayısı. Bu sınır hem otomatik dahil etme (onay kutusu etkinleştirildiğinde) hem de manuel @problems bahisleri için geçerlidir. Daha yüksek değerler daha fazla bağlam sağlar ancak jeton kullanımını artırır.",
 				"resetTooltip": "Varsayılan değere sıfırla (50)",
+				"unlimited": "Sınırsız tanı mesajları",
 				"unlimitedLabel": "Sınırsız"
 			},
 			"delayAfterWrite": {
@@ -896,6 +899,7 @@
 		"simplifiedExplanation": "Ayrıntılı model ayarlarını daha sonra ayarlayabilirsiniz."
 	},
 	"footer": {
+		"feedback": "Herhangi bir sorunuz veya geri bildiriminiz varsa, <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> adresinde bir konu açmaktan veya <redditLink>reddit.com/r/RooCode</redditLink> ya da <discordLink>discord.gg/roocode</discordLink>'a katılmaktan çekinmeyin",
 		"telemetry": {
 			"label": "Anonim hata ve kullanım raporlamaya izin ver",
 			"description": "Anonim kullanım verileri ve hata raporları göndererek Roo Code'u geliştirmeye yardım edin. Bu telemetri kod, prompt veya kişisel bilgi toplamaz. Daha fazla ayrıntı için <privacyLink>gizlilik politikamıza</privacyLink> bakın. Bunu istediğiniz zaman kapatabilirsiniz."
@@ -926,9 +930,7 @@
 		"providerNotAllowed": "Sağlayıcı '{{provider}}' kuruluşunuz tarafından izin verilmiyor",
 		"modelNotAllowed": "Model '{{model}}' sağlayıcı '{{provider}}' için kuruluşunuz tarafından izin verilmiyor",
 		"profileInvalid": "Bu profil, kuruluşunuz tarafından izin verilmeyen bir sağlayıcı veya model içeriyor",
-		"qwenCodeOauthPath": "Geçerli bir OAuth kimlik bilgileri yolu sağlamalısın",
-		"azureResourceName": "Bir Azure kaynak adı sağlamalısın.",
-		"azureDeploymentName": "Bir Azure dağıtım adı sağlamalısın."
+		"qwenCodeOauthPath": "Geçerli bir OAuth kimlik bilgileri yolu sağlamalısın"
 	},
 	"placeholders": {
 		"apiKey": "API anahtarını girin...",
@@ -941,8 +943,6 @@
 		"projectId": "Proje ID'sini girin...",
 		"customArn": "ARN girin (örn. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Temel URL'yi girin...",
-		"azureResourceName": "e.g. my-openai-resource",
-		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "örn. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "örn. lmstudio-community/llama-3.2-1b-instruct",
@@ -993,58 +993,5 @@
 			"label": "Mesaj göndermek için {{primaryMod}}+Enter gerekli",
 			"description": "Etkinleştirildiğinde, sadece Enter yerine mesaj göndermek için {{primaryMod}}+Enter'a basmalısınız"
 		}
-	},
-	"skills": {
-		"description": "Ajana bağlamsal talimatlar sağlayan becerileri yönetin. Beceriler, görevlerinizle ilgili olduklarında otomatik olarak uygulanır. <DocsLink>Daha fazla bilgi</DocsLink>",
-		"workspaceSkills": "Çalışma Alanı Becerileri",
-		"globalSkills": "Genel Beceriler",
-		"noWorkspaceSkills": "Bu projede henüz beceri yok.",
-		"noGlobalSkills": "Yapılandırılmış genel beceri yok. Tüm projelerde kullanılabilir ajan yetenekleri eklemek için bir tane oluşturun.",
-		"addSkill": "Beceri Ekle",
-		"editSkill": "Beceriyi düzenle",
-		"deleteSkill": "Beceriyi sil",
-		"configureModes": "Mod Kullanılabilirliği",
-		"modeAny": "Herhangi bir mod",
-		"modeCount": "{{count}} mod",
-		"deleteDialog": {
-			"title": "Beceriyi Sil",
-			"description": "\"{{name}}\" becerisini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
-			"confirm": "Sil",
-			"cancel": "İptal"
-		},
-		"modeDialog": {
-			"title": "Beceri Modlarını Yapılandır",
-			"description": "Bu beceriyi kullanabilecek modları seçin",
-			"intro": "Bağlamınızı hafif tutmak için, becerileri yalnızca onlara ihtiyaç duyan modlar için kullanılabilir hale getirilmesini öneririz.",
-			"anyMode": "Herhangi bir mod (her yerde mevcut)",
-			"save": "Kaydet",
-			"cancel": "İptal"
-		},
-		"createDialog": {
-			"title": "Yeni Beceri Oluştur",
-			"nameLabel": "Ad",
-			"namePlaceholder": "benim-beceri-adim",
-			"descriptionLabel": "Açıklama",
-			"descriptionPlaceholder": "Bu becerinin ne zaman kullanılması gerektiğini açıklayın...",
-			"sourceLabel": "Konum",
-			"modeLabel": "Mod (isteğe bağlı)",
-			"modePlaceholder": "Herhangi bir mod",
-			"modeHint": "Bu beceriyi belirli bir modla sınırlayın",
-			"modeAny": "Herhangi bir mod",
-			"create": "Oluştur",
-			"cancel": "İptal"
-		},
-		"source": {
-			"global": "Genel (tüm projelerde kullanılabilir)",
-			"project": "Proje (yalnızca bu çalışma alanı)"
-		},
-		"validation": {
-			"nameRequired": "Ad gereklidir",
-			"nameTooLong": "Ad en fazla 64 karakter olmalıdır",
-			"nameInvalid": "Ad 1-64 küçük harf, rakam veya kısa çizgi olmalıdır",
-			"descriptionRequired": "Açıklama gereklidir",
-			"descriptionTooLong": "Açıklama en fazla 1024 karakter olmalıdır"
-		},
-		"footer": "Skill Writer modu ile kendi becerilerinizi oluşturun. <MarketplaceLink>Modes Marketplace</MarketplaceLink>'de mevcut."
 	}
 }

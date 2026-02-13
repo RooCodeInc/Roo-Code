@@ -99,7 +99,7 @@ describe("skillTool", () => {
 		)
 	})
 
-	it("should successfully load a global skill", async () => {
+	it("should successfully load built-in skill", async () => {
 		const block: ToolUse<"skill"> = {
 			type: "tool_use" as const,
 			name: "skill" as const,
@@ -113,7 +113,7 @@ describe("skillTool", () => {
 		const mockSkillContent = {
 			name: "create-mcp-server",
 			description: "Instructions for creating MCP servers",
-			source: "global",
+			source: "built-in",
 			instructions: "Step 1: Create the server...",
 		}
 
@@ -127,7 +127,7 @@ describe("skillTool", () => {
 				tool: "skill",
 				skill: "create-mcp-server",
 				args: undefined,
-				source: "global",
+				source: "built-in",
 				description: "Instructions for creating MCP servers",
 			}),
 		)
@@ -135,7 +135,7 @@ describe("skillTool", () => {
 		expect(mockCallbacks.pushToolResult).toHaveBeenCalledWith(
 			`Skill: create-mcp-server
 Description: Instructions for creating MCP servers
-Source: global
+Source: built-in
 
 --- Skill Instructions ---
 
@@ -158,7 +158,7 @@ Step 1: Create the server...`,
 		const mockSkillContent = {
 			name: "create-mcp-server",
 			description: "Instructions for creating MCP servers",
-			source: "global",
+			source: "built-in",
 			instructions: "Step 1: Create the server...",
 		}
 
@@ -170,7 +170,7 @@ Step 1: Create the server...`,
 			`Skill: create-mcp-server
 Description: Instructions for creating MCP servers
 Provided arguments: weather API server
-Source: global
+Source: built-in
 
 --- Skill Instructions ---
 
@@ -192,7 +192,7 @@ Step 1: Create the server...`,
 		mockSkillsManager.getSkillContent.mockResolvedValue({
 			name: "create-mcp-server",
 			description: "Test",
-			source: "global",
+			source: "built-in",
 			instructions: "Test instructions",
 		})
 
@@ -264,7 +264,7 @@ Step 1: Create the server...`,
 		const mockSkillContent = {
 			name: "create-mcp-server",
 			description: "Test",
-			source: "global",
+			source: "built-in",
 			instructions: "Test instructions",
 		}
 

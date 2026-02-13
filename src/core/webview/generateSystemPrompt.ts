@@ -1,6 +1,6 @@
 import * as vscode from "vscode"
 import { WebviewMessage } from "../../shared/WebviewMessage"
-import { defaultModeSlug } from "../../shared/modes"
+import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes"
 import { buildApiHandler } from "../../api"
 
 import { SYSTEM_PROMPT } from "../prompts/system"
@@ -14,9 +14,13 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		apiConfiguration,
 		customModePrompts,
 		customInstructions,
+		browserViewportSize,
 		mcpEnabled,
 		experiments,
+		browserToolEnabled,
 		language,
+		maxReadFileLine,
+		maxConcurrentFileReads,
 		enableSubfolderRules,
 	} = await provider.getState()
 
@@ -29,22 +33,36 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 
 	const rooIgnoreInstructions = provider.getCurrentTask()?.rooIgnoreController?.getInstructions()
 
-	// Create a temporary API handler to check model info for stealth mode.
-	// This avoids relying on an active Cline instance which might not exist during preview.
-	let modelInfo: { isStealthModel?: boolean } | undefined
+	// Determine if browser tools can be used based on model support, mode, and user settings
+	let modelInfo: any = undefined
+
+	// Create a temporary API handler to check if the model supports browser capability
+	// This avoids relying on an active Cline instance which might not exist during preview
 	try {
 		const tempApiHandler = buildApiHandler(apiConfiguration)
 		modelInfo = tempApiHandler.getModel().info
 	} catch (error) {
-		console.error("Error fetching model info for system prompt preview:", error)
+		console.error("Error checking if model supports browser capability:", error)
 	}
+
+	// Check if the current mode includes the browser tool group
+	const modeConfig = getModeBySlug(mode, customModes)
+	const modeSupportsBrowser = modeConfig?.groups.some((group) => getGroupName(group) === "browser") ?? false
+
+	// Check if model supports browser capability (images)
+	const modelSupportsBrowser = modelInfo && (modelInfo as any)?.supportsImages === true
+
+	// Only enable browser tools if the model supports it, the mode includes browser tools,
+	// and browser tools are enabled in settings
+	const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
 
 	const systemPrompt = await SYSTEM_PROMPT(
 		provider.context,
 		cwd,
-		false, // supportsComputerUse — browser removed
+		canUseBrowserTool,
 		mcpEnabled ? provider.getMcpHub() : undefined,
 		diffStrategy,
+		browserViewportSize ?? "900x600",
 		mode,
 		customModePrompts,
 		customModes,
@@ -52,7 +70,9 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		experiments,
 		language,
 		rooIgnoreInstructions,
+		maxReadFileLine !== -1,
 		{
+			maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
 			todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
 			useAgentRules: vscode.workspace.getConfiguration(Package.name).get<boolean>("useAgentRules") ?? true,
 			enableSubfolderRules: enableSubfolderRules ?? false,

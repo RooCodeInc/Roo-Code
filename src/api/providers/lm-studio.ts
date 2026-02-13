@@ -1,140 +1,230 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import {
-	streamText,
-	generateText,
-	ToolSet,
-	wrapLanguageModel,
-	extractReasoningMiddleware,
-	LanguageModel,
-	ModelMessage,
-} from "ai"
+import OpenAI from "openai"
+import axios from "axios"
 
 import { type ModelInfo, openAiModelInfoSaneDefaults, LMSTUDIO_DEFAULT_TEMPERATURE } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import {
-	convertToAiSdkMessages,
-	convertToolsForAiSdk,
-	consumeAiSdkStream,
-	mapToolChoice,
-	handleAiSdkError,
-} from "../transform/ai-sdk"
-import { applyToolCacheOptions } from "../transform/cache-breakpoints"
+import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
+import { TagMatcher } from "../../utils/tag-matcher"
+
+import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStream } from "../transform/stream"
 
-import { OpenAICompatibleHandler, OpenAICompatibleConfig } from "./openai-compatible"
+import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { getModelsFromCache } from "./fetchers/modelCache"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
+import { getApiRequestTimeout } from "./utils/timeout-config"
+import { handleOpenAIError } from "./utils/openai-error-handler"
 
-export class LmStudioHandler extends OpenAICompatibleHandler implements SingleCompletionHandler {
+export class LmStudioHandler extends BaseProvider implements SingleCompletionHandler {
+	protected options: ApiHandlerOptions
+	private client: OpenAI
+	private readonly providerName = "LM Studio"
+
 	constructor(options: ApiHandlerOptions) {
-		const modelId = options.lmStudioModelId || ""
-		const baseURL = (options.lmStudioBaseUrl || "http://localhost:1234") + "/v1"
+		super()
+		this.options = options
 
-		const models = getModelsFromCache("lmstudio")
-		const modelInfo = (models && modelId && models[modelId]) || openAiModelInfoSaneDefaults
+		// LM Studio uses "noop" as a placeholder API key
+		const apiKey = "noop"
 
-		const config: OpenAICompatibleConfig = {
-			providerName: "lmstudio",
-			baseURL,
-			apiKey: "noop",
-			modelId,
-			modelInfo,
-			temperature: options.modelTemperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
-			modelMaxTokens: options.modelMaxTokens ?? undefined,
-		}
-
-		super(options, config)
-	}
-
-	protected override getLanguageModel(): LanguageModel {
-		const baseModel = this.provider(this.config.modelId)
-		return wrapLanguageModel({
-			model: baseModel,
-			middleware: extractReasoningMiddleware({ tagName: "think" }),
+		this.client = new OpenAI({
+			baseURL: (this.options.lmStudioBaseUrl || "http://localhost:1234") + "/v1",
+			apiKey: apiKey,
+			timeout: getApiRequestTimeout(),
 		})
 	}
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: RooMessage[],
+		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const model = this.getModel()
-		const languageModel = this.getLanguageModel()
+		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+			{ role: "system", content: systemPrompt },
+			...convertToOpenAiMessages(messages),
+		]
 
-		const aiSdkMessages = messages as ModelMessage[]
-
-		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
-		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
-
-		const requestOptions: Parameters<typeof streamText>[0] = {
-			model: languageModel,
-			system: systemPrompt || undefined,
-			messages: aiSdkMessages,
-			temperature: model.temperature ?? this.config.temperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
-			maxOutputTokens: this.getMaxOutputTokens(),
-			tools: aiSdkTools,
-			toolChoice: mapToolChoice(metadata?.tool_choice),
-		}
-
-		if (this.options.lmStudioSpeculativeDecodingEnabled && this.options.lmStudioDraftModelId) {
-			requestOptions.providerOptions = {
-				lmstudio: { draft_model: this.options.lmStudioDraftModelId },
+		// -------------------------
+		// Track token usage
+		// -------------------------
+		const toContentBlocks = (
+			blocks: Anthropic.Messages.MessageParam[] | string,
+		): Anthropic.Messages.ContentBlockParam[] => {
+			if (typeof blocks === "string") {
+				return [{ type: "text", text: blocks }]
 			}
+
+			const result: Anthropic.Messages.ContentBlockParam[] = []
+			for (const msg of blocks) {
+				if (typeof msg.content === "string") {
+					result.push({ type: "text", text: msg.content })
+				} else if (Array.isArray(msg.content)) {
+					for (const part of msg.content) {
+						if (part.type === "text") {
+							result.push({ type: "text", text: part.text })
+						}
+					}
+				}
+			}
+			return result
 		}
 
-		const result = streamText(requestOptions)
+		let inputTokens = 0
+		try {
+			inputTokens = await this.countTokens([{ type: "text", text: systemPrompt }, ...toContentBlocks(messages)])
+		} catch (err) {
+			console.error("[LmStudio] Failed to count input tokens:", err)
+			inputTokens = 0
+		}
+
+		let assistantText = ""
 
 		try {
-			const processUsage = this.processUsageMetrics.bind(this)
-			yield* consumeAiSdkStream(result, async function* () {
-				const usage = await result.usage
-				yield processUsage(usage)
-			})
+			const params: OpenAI.Chat.ChatCompletionCreateParamsStreaming & { draft_model?: string } = {
+				model: this.getModel().id,
+				messages: openAiMessages,
+				temperature: this.options.modelTemperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
+				stream: true,
+				tools: this.convertToolsForOpenAI(metadata?.tools),
+				tool_choice: metadata?.tool_choice,
+				parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+			}
+
+			if (this.options.lmStudioSpeculativeDecodingEnabled && this.options.lmStudioDraftModelId) {
+				params.draft_model = this.options.lmStudioDraftModelId
+			}
+
+			let results
+			try {
+				results = await this.client.chat.completions.create(params)
+			} catch (error) {
+				throw handleOpenAIError(error, this.providerName)
+			}
+
+			const matcher = new TagMatcher(
+				"think",
+				(chunk) =>
+					({
+						type: chunk.matched ? "reasoning" : "text",
+						text: chunk.data,
+					}) as const,
+			)
+
+			for await (const chunk of results) {
+				const delta = chunk.choices[0]?.delta
+				const finishReason = chunk.choices[0]?.finish_reason
+
+				if (delta?.content) {
+					assistantText += delta.content
+					for (const processedChunk of matcher.update(delta.content)) {
+						yield processedChunk
+					}
+				}
+
+				// Handle tool calls in stream - emit partial chunks for NativeToolCallParser
+				if (delta?.tool_calls) {
+					for (const toolCall of delta.tool_calls) {
+						yield {
+							type: "tool_call_partial",
+							index: toolCall.index,
+							id: toolCall.id,
+							name: toolCall.function?.name,
+							arguments: toolCall.function?.arguments,
+						}
+					}
+				}
+
+				// Process finish_reason to emit tool_call_end events
+				if (finishReason) {
+					const endEvents = NativeToolCallParser.processFinishReason(finishReason)
+					for (const event of endEvents) {
+						yield event
+					}
+				}
+			}
+
+			for (const processedChunk of matcher.final()) {
+				yield processedChunk
+			}
+
+			let outputTokens = 0
+			try {
+				outputTokens = await this.countTokens([{ type: "text", text: assistantText }])
+			} catch (err) {
+				console.error("[LmStudio] Failed to count output tokens:", err)
+				outputTokens = 0
+			}
+
+			yield {
+				type: "usage",
+				inputTokens,
+				outputTokens,
+			} as const
 		} catch (error) {
-			throw handleAiSdkError(error, "LM Studio")
+			throw new Error(
+				"Please check the LM Studio developer logs to debug what went wrong. You may need to load the model with a larger context length to work with Roo Code's prompts.",
+			)
 		}
 	}
 
-	override getModel(): { id: string; info: ModelInfo; maxTokens?: number; temperature?: number } {
+	override getModel(): { id: string; info: ModelInfo } {
 		const models = getModelsFromCache("lmstudio")
-		const modelId = this.options.lmStudioModelId || ""
-
-		const info = (models && modelId && models[modelId]) || openAiModelInfoSaneDefaults
-
-		return {
-			id: modelId,
-			info,
-			temperature: this.options.modelTemperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
-			maxTokens: this.options.modelMaxTokens ?? undefined,
+		if (models && this.options.lmStudioModelId && models[this.options.lmStudioModelId]) {
+			return {
+				id: this.options.lmStudioModelId,
+				info: models[this.options.lmStudioModelId],
+			}
+		} else {
+			return {
+				id: this.options.lmStudioModelId || "",
+				info: openAiModelInfoSaneDefaults,
+			}
 		}
 	}
 
-	override async completePrompt(prompt: string): Promise<string> {
-		const languageModel = this.getLanguageModel()
-
-		const options: Parameters<typeof generateText>[0] = {
-			model: languageModel,
-			prompt,
-			maxOutputTokens: this.getMaxOutputTokens(),
-			temperature: this.options.modelTemperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
-		}
-
-		if (this.options.lmStudioSpeculativeDecodingEnabled && this.options.lmStudioDraftModelId) {
-			options.providerOptions = {
-				lmstudio: { draft_model: this.options.lmStudioDraftModelId },
-			}
-		}
-
+	async completePrompt(prompt: string): Promise<string> {
 		try {
-			const { text } = await generateText(options)
-			return text
+			// Create params object with optional draft model
+			const params: any = {
+				model: this.getModel().id,
+				messages: [{ role: "user", content: prompt }],
+				temperature: this.options.modelTemperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
+				stream: false,
+			}
+
+			// Add draft model if speculative decoding is enabled and a draft model is specified
+			if (this.options.lmStudioSpeculativeDecodingEnabled && this.options.lmStudioDraftModelId) {
+				params.draft_model = this.options.lmStudioDraftModelId
+			}
+
+			let response
+			try {
+				response = await this.client.chat.completions.create(params)
+			} catch (error) {
+				throw handleOpenAIError(error, this.providerName)
+			}
+			return response.choices[0]?.message.content || ""
 		} catch (error) {
-			throw handleAiSdkError(error, "LM Studio")
+			throw new Error(
+				"Please check the LM Studio developer logs to debug what went wrong. You may need to load the model with a larger context length to work with Roo Code's prompts.",
+			)
 		}
+	}
+}
+
+export async function getLmStudioModels(baseUrl = "http://localhost:1234") {
+	try {
+		if (!URL.canParse(baseUrl)) {
+			return []
+		}
+
+		const response = await axios.get(`${baseUrl}/v1/models`)
+		const modelsArray = response.data?.data?.map((model: any) => model.id) || []
+		return [...new Set<string>(modelsArray)]
+	} catch (error) {
+		return []
 	}
 }

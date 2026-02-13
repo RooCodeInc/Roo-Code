@@ -22,6 +22,38 @@ vitest.mock("../../../utils/logging", () => ({
 	},
 }))
 
+// Mock AWS SDK
+vitest.mock("@aws-sdk/client-bedrock-runtime", () => {
+	const mockModule = {
+		lastCommandInput: null as Record<string, any> | null,
+		mockSend: vitest.fn().mockImplementation(async function () {
+			return {
+				output: new TextEncoder().encode(JSON.stringify({ content: "Test response" })),
+			}
+		}),
+		mockConverseCommand: vitest.fn(function (input) {
+			mockModule.lastCommandInput = input
+			return { input }
+		}),
+		MockBedrockRuntimeClient: class {
+			public config: any
+			public send: any
+
+			constructor(config: { region?: string }) {
+				this.config = config
+				this.send = mockModule.mockSend
+			}
+		},
+	}
+
+	return {
+		BedrockRuntimeClient: mockModule.MockBedrockRuntimeClient,
+		ConverseCommand: mockModule.mockConverseCommand,
+		ConverseStreamCommand: vitest.fn(),
+		__mock: mockModule, // Expose mock internals for testing
+	}
+})
+
 describe("Bedrock ARN Handling", () => {
 	// Helper function to create a handler with specific options
 	const createHandler = (options: Partial<ApiHandlerOptions> = {}) => {
@@ -192,8 +224,8 @@ describe("Bedrock ARN Handling", () => {
 					"arn:aws:bedrock:eu-west-1:123456789012:inference-profile/anthropic.claude-3-sonnet-20240229-v1:0",
 			})
 
-			// Verify the handler's options were updated with the ARN region
-			expect((handler as any).options.awsRegion).toBe("eu-west-1")
+			// Verify the client was created with the ARN region, not the provided region
+			expect((handler as any).client.config.region).toBe("eu-west-1")
 		})
 
 		it("should log region mismatch warning when ARN region differs from provided region", () => {

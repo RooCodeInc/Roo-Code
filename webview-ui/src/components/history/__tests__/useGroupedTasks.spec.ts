@@ -2,8 +2,7 @@ import { renderHook, act } from "@/utils/test-utils"
 
 import type { HistoryItem } from "@roo-code/types"
 
-import { useGroupedTasks, buildSubtree } from "../useGroupedTasks"
-import { countAllSubtasks } from "../types"
+import { useGroupedTasks } from "../useGroupedTasks"
 
 const createMockTask = (overrides: Partial<HistoryItem> = {}): HistoryItem => ({
 	id: "task-1",
@@ -43,8 +42,8 @@ describe("useGroupedTasks", () => {
 			expect(result.current.groups).toHaveLength(1)
 			expect(result.current.groups[0].parent.id).toBe("parent-1")
 			expect(result.current.groups[0].subtasks).toHaveLength(2)
-			expect(result.current.groups[0].subtasks[0].item.id).toBe("child-2") // Newest first
-			expect(result.current.groups[0].subtasks[1].item.id).toBe("child-1")
+			expect(result.current.groups[0].subtasks[0].id).toBe("child-2") // Newest first
+			expect(result.current.groups[0].subtasks[1].id).toBe("child-1")
 		})
 
 		it("handles tasks with no children", () => {
@@ -122,7 +121,7 @@ describe("useGroupedTasks", () => {
 			expect(result.current.isSearchMode).toBe(false)
 		})
 
-		it("handles deeply nested tasks with recursive tree structure", () => {
+		it("handles deeply nested tasks (grandchildren treated as children of their direct parent)", () => {
 			const rootTask = createMockTask({
 				id: "root-1",
 				task: "Root task",
@@ -147,12 +146,10 @@ describe("useGroupedTasks", () => {
 			expect(result.current.groups).toHaveLength(1)
 			expect(result.current.groups[0].parent.id).toBe("root-1")
 			expect(result.current.groups[0].subtasks).toHaveLength(1)
-			expect(result.current.groups[0].subtasks[0].item.id).toBe("child-1")
+			expect(result.current.groups[0].subtasks[0].id).toBe("child-1")
 
-			// Grandchild is nested inside child's children
-			expect(result.current.groups[0].subtasks[0].children).toHaveLength(1)
-			expect(result.current.groups[0].subtasks[0].children[0].item.id).toBe("grandchild-1")
-			expect(result.current.groups[0].subtasks[0].children[0].children).toHaveLength(0)
+			// Note: grandchild is a child of child-1, not root-1
+			// The current implementation only shows direct children in subtasks
 		})
 	})
 
@@ -396,201 +393,5 @@ describe("useGroupedTasks", () => {
 			// Expand state should be preserved
 			expect(result.current.groups[0].isExpanded).toBe(true)
 		})
-	})
-})
-
-describe("buildSubtree", () => {
-	it("builds a leaf node with no children", () => {
-		const task = createMockTask({ id: "task-1", task: "Leaf task" })
-		const childrenMap = new Map<string, HistoryItem[]>()
-
-		const node = buildSubtree(task, childrenMap, new Set<string>())
-
-		expect(node.item.id).toBe("task-1")
-		expect(node.children).toHaveLength(0)
-		expect(node.isExpanded).toBe(false)
-	})
-
-	it("builds a node with direct children sorted newest first", () => {
-		const parent = createMockTask({ id: "parent-1", task: "Parent" })
-		const child1 = createMockTask({
-			id: "child-1",
-			task: "Child 1",
-			parentTaskId: "parent-1",
-			ts: new Date("2024-01-15T12:00:00").getTime(),
-		})
-		const child2 = createMockTask({
-			id: "child-2",
-			task: "Child 2",
-			parentTaskId: "parent-1",
-			ts: new Date("2024-01-15T14:00:00").getTime(),
-		})
-
-		const childrenMap = new Map<string, HistoryItem[]>()
-		childrenMap.set("parent-1", [child1, child2])
-
-		const node = buildSubtree(parent, childrenMap, new Set<string>())
-
-		expect(node.item.id).toBe("parent-1")
-		expect(node.children).toHaveLength(2)
-		expect(node.children[0].item.id).toBe("child-2") // Newest first
-		expect(node.children[1].item.id).toBe("child-1")
-		expect(node.isExpanded).toBe(false)
-		expect(node.children[0].isExpanded).toBe(false)
-		expect(node.children[1].isExpanded).toBe(false)
-	})
-
-	it("builds a deeply nested tree recursively", () => {
-		const root = createMockTask({ id: "root", task: "Root" })
-		const child = createMockTask({
-			id: "child",
-			task: "Child",
-			parentTaskId: "root",
-			ts: new Date("2024-01-15T13:00:00").getTime(),
-		})
-		const grandchild = createMockTask({
-			id: "grandchild",
-			task: "Grandchild",
-			parentTaskId: "child",
-			ts: new Date("2024-01-15T14:00:00").getTime(),
-		})
-		const greatGrandchild = createMockTask({
-			id: "great-grandchild",
-			task: "Great Grandchild",
-			parentTaskId: "grandchild",
-			ts: new Date("2024-01-15T15:00:00").getTime(),
-		})
-
-		const childrenMap = new Map<string, HistoryItem[]>()
-		childrenMap.set("root", [child])
-		childrenMap.set("child", [grandchild])
-		childrenMap.set("grandchild", [greatGrandchild])
-
-		const node = buildSubtree(root, childrenMap, new Set<string>())
-
-		expect(node.item.id).toBe("root")
-		expect(node.children).toHaveLength(1)
-		expect(node.children[0].item.id).toBe("child")
-		expect(node.children[0].children).toHaveLength(1)
-		expect(node.children[0].children[0].item.id).toBe("grandchild")
-		expect(node.children[0].children[0].children).toHaveLength(1)
-		expect(node.children[0].children[0].children[0].item.id).toBe("great-grandchild")
-		expect(node.children[0].children[0].children[0].children).toHaveLength(0)
-	})
-
-	it("does not mutate the original childrenMap arrays", () => {
-		const parent = createMockTask({ id: "parent-1", task: "Parent" })
-		const child1 = createMockTask({
-			id: "child-1",
-			task: "Child 1",
-			parentTaskId: "parent-1",
-			ts: new Date("2024-01-15T12:00:00").getTime(),
-		})
-		const child2 = createMockTask({
-			id: "child-2",
-			task: "Child 2",
-			parentTaskId: "parent-1",
-			ts: new Date("2024-01-15T14:00:00").getTime(),
-		})
-
-		const originalChildren = [child1, child2]
-		const childrenMap = new Map<string, HistoryItem[]>()
-		childrenMap.set("parent-1", originalChildren)
-
-		buildSubtree(parent, childrenMap, new Set<string>())
-
-		// Original array should not be mutated (sort is on a slice)
-		expect(originalChildren[0].id).toBe("child-1")
-		expect(originalChildren[1].id).toBe("child-2")
-	})
-
-	it("sets isExpanded: true when task ID is in expandedIds", () => {
-		const parent = createMockTask({ id: "parent-1", task: "Parent" })
-		const child = createMockTask({
-			id: "child-1",
-			task: "Child",
-			parentTaskId: "parent-1",
-			ts: new Date("2024-01-15T13:00:00").getTime(),
-		})
-
-		const childrenMap = new Map<string, HistoryItem[]>()
-		childrenMap.set("parent-1", [child])
-
-		const expandedIds = new Set<string>(["parent-1"])
-		const node = buildSubtree(parent, childrenMap, expandedIds)
-
-		expect(node.isExpanded).toBe(true)
-		expect(node.children[0].isExpanded).toBe(false)
-	})
-
-	it("propagates isExpanded correctly through deeply nested tree", () => {
-		const root = createMockTask({ id: "root", task: "Root" })
-		const child = createMockTask({
-			id: "child",
-			task: "Child",
-			parentTaskId: "root",
-			ts: new Date("2024-01-15T13:00:00").getTime(),
-		})
-		const grandchild = createMockTask({
-			id: "grandchild",
-			task: "Grandchild",
-			parentTaskId: "child",
-			ts: new Date("2024-01-15T14:00:00").getTime(),
-		})
-		const greatGrandchild = createMockTask({
-			id: "great-grandchild",
-			task: "Great Grandchild",
-			parentTaskId: "grandchild",
-			ts: new Date("2024-01-15T15:00:00").getTime(),
-		})
-
-		const childrenMap = new Map<string, HistoryItem[]>()
-		childrenMap.set("root", [child])
-		childrenMap.set("child", [grandchild])
-		childrenMap.set("grandchild", [greatGrandchild])
-
-		// Expand root and grandchild, but NOT child
-		const expandedIds = new Set<string>(["root", "grandchild"])
-		const node = buildSubtree(root, childrenMap, expandedIds)
-
-		expect(node.isExpanded).toBe(true)
-		expect(node.children[0].isExpanded).toBe(false) // child not expanded
-		expect(node.children[0].children[0].isExpanded).toBe(true) // grandchild expanded
-		expect(node.children[0].children[0].children[0].isExpanded).toBe(false) // great-grandchild not expanded
-	})
-})
-
-describe("countAllSubtasks", () => {
-	it("returns 0 for empty array", () => {
-		expect(countAllSubtasks([])).toBe(0)
-	})
-
-	it("returns count of items in flat list (no grandchildren)", () => {
-		const nodes = [
-			{ item: createMockTask({ id: "a" }), children: [], isExpanded: false },
-			{ item: createMockTask({ id: "b" }), children: [], isExpanded: false },
-			{ item: createMockTask({ id: "c" }), children: [], isExpanded: false },
-		]
-		expect(countAllSubtasks(nodes)).toBe(3)
-	})
-
-	it("returns total count at all nesting levels", () => {
-		const nodes = [
-			{
-				item: createMockTask({ id: "a" }),
-				children: [
-					{
-						item: createMockTask({ id: "a1" }),
-						children: [{ item: createMockTask({ id: "a1i" }), children: [], isExpanded: false }],
-						isExpanded: false,
-					},
-					{ item: createMockTask({ id: "a2" }), children: [], isExpanded: false },
-				],
-				isExpanded: false,
-			},
-			{ item: createMockTask({ id: "b" }), children: [], isExpanded: false },
-		]
-		// a (1) + a1 (1) + a1i (1) + a2 (1) + b (1) = 5
-		expect(countAllSubtasks(nodes)).toBe(5)
 	})
 })

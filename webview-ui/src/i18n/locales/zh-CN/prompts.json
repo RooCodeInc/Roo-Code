@@ -25,6 +25,7 @@
 		"toolNames": {
 			"read": "读取文件",
 			"edit": "编辑文件",
+			"browser": "浏览器",
 			"command": "运行命令",
 			"mcp": "MCP服务"
 		},
@@ -142,6 +143,10 @@
 			}
 		}
 	},
+	"advancedSystemPrompt": {
+		"title": "高级：覆盖系统提示词",
+		"description": "<2>⚠️ 警告：</2> 此高级功能会绕过安全措施。<1>使用前请阅读！</1>通过在您的工作区中创建文件 <span>.roo/system-prompt-{{slug}}</span> 来覆盖默认系统提示。"
+	},
 	"createModeDialog": {
 		"title": "创建新模式",
 		"close": "关闭",
@@ -192,6 +197,9 @@
 		"deleteMode": "删除模式"
 	},
 	"allFiles": "所有文件",
+	"advanced": {
+		"title": "高级"
+	},
 	"deleteMode": {
 		"title": "删除模式",
 		"message": "您确定要删除\"{{modeName}}\"模式吗？",
