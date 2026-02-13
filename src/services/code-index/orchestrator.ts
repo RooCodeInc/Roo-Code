@@ -185,6 +185,7 @@ export class CodeIndexOrchestrator {
 				)
 
 				if (signal.aborted) {
+					await this.cacheManager.flush()
 					this.stateManager.setSystemState("Standby", t("embeddings:orchestrator.indexingStopped"))
 					return
 				}
@@ -244,6 +245,7 @@ export class CodeIndexOrchestrator {
 				)
 
 				if (signal.aborted) {
+					await this.cacheManager.flush()
 					this.stateManager.setSystemState("Standby", t("embeddings:orchestrator.indexingStopped"))
 					return
 				}
@@ -300,6 +302,7 @@ export class CodeIndexOrchestrator {
 			// Handle abort gracefully — not an error, just a user-initiated stop
 			if (error?.name === "AbortError" || signal.aborted) {
 				console.log("[CodeIndexOrchestrator] Indexing aborted by user.")
+				await this.cacheManager.flush()
 				this.stopWatcher()
 				this.stateManager.setSystemState("Standby", t("embeddings:orchestrator.indexingStopped"))
 				return

@@ -79,6 +79,7 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 
 		cacheManager = {
 			clearCacheFile: vi.fn().mockResolvedValue(undefined),
+			flush: vi.fn().mockResolvedValue(undefined),
 		}
 
 		vectorStore = {
@@ -190,6 +191,7 @@ describe("CodeIndexOrchestrator - stopIndexing", () => {
 
 		cacheManager = {
 			clearCacheFile: vi.fn().mockResolvedValue(undefined),
+			flush: vi.fn().mockResolvedValue(undefined),
 		}
 
 		vectorStore = {

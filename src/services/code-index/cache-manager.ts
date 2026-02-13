@@ -111,6 +111,13 @@ export class CacheManager implements ICacheManager {
 	}
 
 	/**
+	 * Flushes any pending debounced cache writes to disk immediately.
+	 */
+	async flush(): Promise<void> {
+		await this._performSave()
+	}
+
+	/**
 	 * Gets a copy of all file hashes
 	 * @returns A copy of the file hashes record
 	 */
