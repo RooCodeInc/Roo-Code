@@ -5,7 +5,7 @@
  * in the built-in/ directory. To modify built-in skills, edit the corresponding
  * SKILL.md file and run: pnpm generate:skills
  *
- * Generated at: 2026-01-28T23:09:14.137Z
+ * Generated at: 2026-02-13T16:07:37.922Z
  */
 
 import { SkillMetadata, SkillContent } from "../../shared/skills"
@@ -32,6 +32,7 @@ Unless the user specifies otherwise, new local MCP servers should be created in 
 MCP servers can be configured in two ways in the MCP settings file:
 
 1. Local (Stdio) Server Configuration:
+
 \`\`\`json
 {
 	"mcpServers": {
@@ -47,6 +48,7 @@ MCP servers can be configured in two ways in the MCP settings file:
 \`\`\`
 
 2. Remote (SSE) Server Configuration:
+
 \`\`\`json
 {
 	"mcpServers": {
@@ -61,6 +63,7 @@ MCP servers can be configured in two ways in the MCP settings file:
 \`\`\`
 
 Common configuration options for both types:
+
 - \`disabled\`: (optional) Set to true to temporarily disable the server
 - \`timeout\`: (optional) Maximum time in seconds to wait for server responses (default: 60)
 - \`alwaysAllow\`: (optional) Array of tool names that don't require user confirmation
@@ -105,178 +108,170 @@ weather-server/
 
 \`\`\`typescript
 #!/usr/bin/env node
-import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
-import axios from 'axios';
+import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js"
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
+import { z } from "zod"
+import axios from "axios"
 
-const API_KEY = process.env.OPENWEATHER_API_KEY; // provided by MCP config
+const API_KEY = process.env.OPENWEATHER_API_KEY // provided by MCP config
 if (!API_KEY) {
-  throw new Error('OPENWEATHER_API_KEY environment variable is required');
+	throw new Error("OPENWEATHER_API_KEY environment variable is required")
 }
 
 // Define types for OpenWeather API responses
 interface WeatherData {
-  main: {
-    temp: number;
-    humidity: number;
-  };
-  weather: Array<{
-    description: string;
-  }>;
-  wind: {
-    speed: number;
-  };
+	main: {
+		temp: number
+		humidity: number
+	}
+	weather: Array<{
+		description: string
+	}>
+	wind: {
+		speed: number
+	}
 }
 
 interface ForecastData {
-  list: Array<WeatherData & {
-    dt_txt: string;
-  }>;
+	list: Array<
+		WeatherData & {
+			dt_txt: string
+		}
+	>
 }
 
 // Create an MCP server
 const server = new McpServer({
-  name: "weather-server",
-  version: "0.1.0"
-});
+	name: "weather-server",
+	version: "0.1.0",
+})
 
 // Create axios instance for OpenWeather API
 const weatherApi = axios.create({
-  baseURL: 'http://api.openweathermap.org/data/2.5',
-  params: {
-    appid: API_KEY,
-    units: 'metric',
-  },
-});
+	baseURL: "http://api.openweathermap.org/data/2.5",
+	params: {
+		appid: API_KEY,
+		units: "metric",
+	},
+})
 
 // Add a tool for getting weather forecasts
 server.tool(
-  "get_forecast",
-  {
-    city: z.string().describe("City name"),
-    days: z.number().min(1).max(5).optional().describe("Number of days (1-5)"),
-  },
-  async ({ city, days = 3 }) => {
-    try {
-      const response = await weatherApi.get<ForecastData>('forecast', {
-        params: {
-          q: city,
-          cnt: Math.min(days, 5) * 8,
-        },
-      });
+	"get_forecast",
+	{
+		city: z.string().describe("City name"),
+		days: z.number().min(1).max(5).optional().describe("Number of days (1-5)"),
+	},
+	async ({ city, days = 3 }) => {
+		try {
+			const response = await weatherApi.get<ForecastData>("forecast", {
+				params: {
+					q: city,
+					cnt: Math.min(days, 5) * 8,
+				},
+			})
 
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(response.data.list, null, 2),
-          },
-        ],
-      };
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: \`Weather API error: \${
-                error.response?.data.message ?? error.message
-              }\`,
-            },
-          ],
-          isError: true,
-        };
-      }
-      throw error;
-    }
-  }
-);
+			return {
+				content: [
+					{
+						type: "text",
+						text: JSON.stringify(response.data.list, null, 2),
+					},
+				],
+			}
+		} catch (error) {
+			if (axios.isAxiosError(error)) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: \`Weather API error: \${error.response?.data.message ?? error.message}\`,
+						},
+					],
+					isError: true,
+				}
+			}
+			throw error
+		}
+	},
+)
 
 // Add a resource for current weather in San Francisco
-server.resource(
-  "sf_weather",
-  { uri: "weather://San Francisco/current", list: true },
-  async (uri) => {
-    try {
-      const response = weatherApi.get<WeatherData>('weather', {
-        params: { q: "San Francisco" },
-      });
+server.resource("sf_weather", { uri: "weather://San Francisco/current", list: true }, async (uri) => {
+	try {
+		const response = weatherApi.get<WeatherData>("weather", {
+			params: { q: "San Francisco" },
+		})
 
-      return {
-        contents: [
-          {
-            uri: uri.href,
-            mimeType: "application/json",
-            text: JSON.stringify(
-              {
-                temperature: response.data.main.temp,
-                conditions: response.data.weather[0].description,
-                humidity: response.data.main.humidity,
-                wind_speed: response.data.wind.speed,
-                timestamp: new Date().toISOString(),
-              },
-              null,
-              2
-            ),
-          },
-        ],
-      };
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(\`Weather API error: \${
-          error.response?.data.message ?? error.message
-        }\`);
-      }
-      throw error;
-    }
-  }
-);
+		return {
+			contents: [
+				{
+					uri: uri.href,
+					mimeType: "application/json",
+					text: JSON.stringify(
+						{
+							temperature: response.data.main.temp,
+							conditions: response.data.weather[0].description,
+							humidity: response.data.main.humidity,
+							wind_speed: response.data.wind.speed,
+							timestamp: new Date().toISOString(),
+						},
+						null,
+						2,
+					),
+				},
+			],
+		}
+	} catch (error) {
+		if (axios.isAxiosError(error)) {
+			throw new Error(\`Weather API error: \${error.response?.data.message ?? error.message}\`)
+		}
+		throw error
+	}
+})
 
 // Add a dynamic resource template for current weather by city
 server.resource(
-  "current_weather",
-  new ResourceTemplate("weather://{city}/current", { list: true }),
-  async (uri, { city }) => {
-    try {
-      const response = await weatherApi.get('weather', {
-        params: { q: city },
-      });
+	"current_weather",
+	new ResourceTemplate("weather://{city}/current", { list: true }),
+	async (uri, { city }) => {
+		try {
+			const response = await weatherApi.get("weather", {
+				params: { q: city },
+			})
 
-      return {
-        contents: [
-          {
-            uri: uri.href,
-            mimeType: "application/json",
-            text: JSON.stringify(
-              {
-                temperature: response.data.main.temp,
-                conditions: response.data.weather[0].description,
-                humidity: response.data.main.humidity,
-                wind_speed: response.data.wind.speed,
-                timestamp: new Date().toISOString(),
-              },
-              null,
-              2
-            ),
-          },
-        ],
-      };
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(\`Weather API error: \${
-          error.response?.data.message ?? error.message
-        }\`);
-      }
-      throw error;
-    }
-  }
-);
+			return {
+				contents: [
+					{
+						uri: uri.href,
+						mimeType: "application/json",
+						text: JSON.stringify(
+							{
+								temperature: response.data.main.temp,
+								conditions: response.data.weather[0].description,
+								humidity: response.data.main.humidity,
+								wind_speed: response.data.wind.speed,
+								timestamp: new Date().toISOString(),
+							},
+							null,
+							2,
+						),
+					},
+				],
+			}
+		} catch (error) {
+			if (axios.isAxiosError(error)) {
+				throw new Error(\`Weather API error: \${error.response?.data.message ?? error.message}\`)
+			}
+			throw error
+		}
+	},
+)
 
 // Start receiving messages on stdin and sending messages on stdout
-const transport = new StdioServerTransport();
-await server.connect(transport);
-console.error('Weather MCP server running on stdio');
+const transport = new StdioServerTransport()
+await server.connect(transport)
+console.error("Weather MCP server running on stdio")
 \`\`\`
 
 (Remember: This is just an example–you may use different dependencies, break the implementation up into multiple files, etc.)
