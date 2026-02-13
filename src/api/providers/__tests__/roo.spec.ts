@@ -4,30 +4,62 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { rooDefaultModelId } from "@roo-code/types"
 
 import { ApiHandlerOptions } from "../../../shared/api"
-import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 
-// Mock the AI SDK
-const mockStreamText = vitest.fn()
-const mockGenerateText = vitest.fn()
-const mockCreateOpenAICompatible = vitest.fn()
+// Mock OpenAI client
+const mockCreate = vitest.fn()
 
-vitest.mock("ai", () => ({
-	streamText: (...args: unknown[]) => mockStreamText(...args),
-	generateText: (...args: unknown[]) => mockGenerateText(...args),
-	tool: vitest.fn((t) => t),
-	jsonSchema: vitest.fn((s) => s),
-}))
+vitest.mock("openai", () => {
+	return {
+		__esModule: true,
+		default: vitest.fn().mockImplementation(() => ({
+			chat: {
+				completions: {
+					create: mockCreate.mockImplementation(async (options) => {
+						if (!options.stream) {
+							return {
+								id: "test-completion",
+								choices: [
+									{
+										message: { role: "assistant", content: "Test response" },
+										finish_reason: "stop",
+										index: 0,
+									},
+								],
+								usage: {
+									prompt_tokens: 10,
+									completion_tokens: 5,
+									total_tokens: 15,
+								},
+							}
+						}
 
-vitest.mock("@ai-sdk/openai-compatible", () => ({
-	createOpenAICompatible: (...args: unknown[]) => {
-		mockCreateOpenAICompatible(...args)
-		return vitest.fn((modelId: string) => ({ modelId, provider: "roo" }))
-	},
-}))
+						return {
+							[Symbol.asyncIterator]: async function* () {
+								yield {
+									choices: [{ delta: { content: "Test response" }, index: 0 }],
+									usage: null,
+								}
+								yield {
+									choices: [{ delta: {}, index: 0 }],
+									usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+								}
+							},
+						}
+					}),
+				},
+			},
+		})),
+	}
+})
 
 // Mock CloudService - Define functions outside to avoid initialization issues
+const mockGetSessionToken = vitest.fn()
+const mockHasInstance = vitest.fn()
+
+// Create mock functions that we can control
 const mockGetSessionTokenFn = vitest.fn()
 const mockHasInstanceFn = vitest.fn()
+const mockOnFn = vitest.fn()
 
 vitest.mock("@roo-code/cloud", () => ({
 	CloudService: {
@@ -96,56 +128,11 @@ vitest.mock("../../providers/fetchers/modelCache", () => ({
 import { RooHandler } from "../roo"
 import { CloudService } from "@roo-code/cloud"
 
-/**
- * Helper to create a mock stream result for streamText.
- */
-function createMockStreamResult(options?: {
-	textChunks?: string[]
-	reasoningChunks?: string[]
-	toolCallParts?: Array<{ type: string; id?: string; toolName?: string; delta?: string }>
-	inputTokens?: number
-	outputTokens?: number
-	providerMetadata?: Record<string, unknown>
-	usage?: {
-		cachedInputTokens?: number
-		inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
-		details?: { cachedInputTokens?: number }
-	}
-}) {
-	const {
-		textChunks = ["Test response"],
-		reasoningChunks = [],
-		toolCallParts = [],
-		inputTokens = 10,
-		outputTokens = 5,
-		providerMetadata = undefined,
-		usage = undefined,
-	} = options ?? {}
-
-	const fullStream = (async function* () {
-		for (const text of reasoningChunks) {
-			yield { type: "reasoning-delta", text }
-		}
-		for (const text of textChunks) {
-			yield { type: "text-delta", text, id: "1" }
-		}
-		for (const part of toolCallParts) {
-			yield part
-		}
-	})()
-
-	return {
-		fullStream,
-		usage: Promise.resolve({ inputTokens, outputTokens, ...usage }),
-		providerMetadata: Promise.resolve(providerMetadata),
-	}
-}
-
 describe("RooHandler", () => {
 	let handler: RooHandler
 	let mockOptions: ApiHandlerOptions
 	const systemPrompt = "You are a helpful assistant."
-	const messages: RooMessage[] = [
+	const messages: Anthropic.Messages.MessageParam[] = [
 		{
 			role: "user",
 			content: "Hello!",
@@ -159,9 +146,7 @@ describe("RooHandler", () => {
 		// Set up CloudService mocks for successful authentication
 		mockHasInstanceFn.mockReturnValue(true)
 		mockGetSessionTokenFn.mockReturnValue("test-session-token")
-		mockStreamText.mockClear()
-		mockGenerateText.mockClear()
-		mockCreateOpenAICompatible.mockClear()
+		mockCreate.mockClear()
 		vitest.clearAllMocks()
 	})
 
@@ -202,6 +187,8 @@ describe("RooHandler", () => {
 		it("should pass correct configuration to base class", () => {
 			handler = new RooHandler(mockOptions)
 			expect(handler).toBeInstanceOf(RooHandler)
+			// The handler should be initialized with correct base URL and API key
+			// We can't directly test the parent class constructor, but we can verify the handler works
 			expect(handler).toBeDefined()
 		})
 	})
@@ -212,26 +199,21 @@ describe("RooHandler", () => {
 		})
 
 		it("should update API key before making request", async () => {
+			// Set up a fresh token that will be returned when createMessage is called
 			const freshToken = "fresh-session-token"
 			mockGetSessionTokenFn.mockReturnValue(freshToken)
-			mockStreamText.mockReturnValue(createMockStreamResult())
 
 			const stream = handler.createMessage(systemPrompt, messages)
+			// Consume the stream to trigger the API call
 			for await (const _chunk of stream) {
 				// Just consume
 			}
 
-			// Verify createOpenAICompatible was called (per-request provider creates fresh one)
-			expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
-				expect.objectContaining({
-					apiKey: freshToken,
-				}),
-			)
+			// Verify getSessionToken was called to get the fresh token
+			expect(mockGetSessionTokenFn).toHaveBeenCalled()
 		})
 
 		it("should handle streaming responses", async () => {
-			mockStreamText.mockReturnValue(createMockStreamResult())
-
 			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks: any[] = []
 			for await (const chunk of stream) {
@@ -245,8 +227,6 @@ describe("RooHandler", () => {
 		})
 
 		it("should include usage information", async () => {
-			mockStreamText.mockReturnValue(createMockStreamResult())
-
 			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks: any[] = []
 			for await (const chunk of stream) {
@@ -260,34 +240,33 @@ describe("RooHandler", () => {
 		})
 
 		it("should handle API errors", async () => {
-			mockStreamText.mockReturnValue({
-				fullStream: {
-					[Symbol.asyncIterator]() {
-						return {
-							next: () => Promise.reject(new Error("API Error")),
-						}
-					},
-				},
-				usage: new Promise(() => {}), // never resolves; stream throws before usage is awaited
-				providerMetadata: Promise.resolve(undefined),
-			})
-
+			mockCreate.mockRejectedValueOnce(new Error("API Error"))
 			const stream = handler.createMessage(systemPrompt, messages)
 			await expect(async () => {
 				for await (const _chunk of stream) {
 					// Should not reach here
 				}
-			}).rejects.toThrow()
+			}).rejects.toThrow("API Error")
 		})
 
 		it("should handle empty response content", async () => {
-			mockStreamText.mockReturnValue(
-				createMockStreamResult({
-					textChunks: [],
-					inputTokens: 10,
-					outputTokens: 0,
-				}),
-			)
+			mockCreate.mockResolvedValueOnce({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: { content: null },
+								index: 0,
+							},
+						],
+						usage: {
+							prompt_tokens: 10,
+							completion_tokens: 0,
+							total_tokens: 10,
+						},
+					}
+				},
+			})
 
 			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks: any[] = []
@@ -302,9 +281,7 @@ describe("RooHandler", () => {
 		})
 
 		it("should handle multiple messages in conversation", async () => {
-			mockStreamText.mockReturnValue(createMockStreamResult())
-
-			const multipleMessages: RooMessage[] = [
+			const multipleMessages: Anthropic.Messages.MessageParam[] = [
 				{ role: "user", content: "First message" },
 				{ role: "assistant", content: "First response" },
 				{ role: "user", content: "Second message" },
@@ -316,45 +293,18 @@ describe("RooHandler", () => {
 				chunks.push(chunk)
 			}
 
-			// Verify streamText was called with system prompt and converted messages
-			expect(mockStreamText).toHaveBeenCalledWith(
+			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
-					system: systemPrompt,
-					messages: expect.any(Array),
+					messages: expect.arrayContaining([
+						expect.objectContaining({ role: "system", content: systemPrompt }),
+						expect.objectContaining({ role: "user", content: "First message" }),
+						expect.objectContaining({ role: "assistant", content: "First response" }),
+						expect.objectContaining({ role: "user", content: "Second message" }),
+					]),
 				}),
-			)
-		})
-
-		it("should pass X-Roo-App-Version header via createOpenAICompatible", async () => {
-			mockStreamText.mockReturnValue(createMockStreamResult())
-
-			const stream = handler.createMessage(systemPrompt, messages)
-			for await (const _chunk of stream) {
-				// consume
-			}
-
-			expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
 				expect.objectContaining({
 					headers: expect.objectContaining({
 						"X-Roo-App-Version": expect.any(String),
-					}),
-				}),
-			)
-		})
-
-		it("should pass X-Roo-Task-ID header when taskId is provided", async () => {
-			mockStreamText.mockReturnValue(createMockStreamResult())
-
-			const stream = handler.createMessage(systemPrompt, messages, { taskId: "test-task-123" })
-			for await (const _chunk of stream) {
-				// consume
-			}
-
-			expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
-				expect.objectContaining({
-					headers: expect.objectContaining({
-						"X-Roo-App-Version": expect.any(String),
-						"X-Roo-Task-ID": "test-task-123",
 					}),
 				}),
 			)
@@ -367,39 +317,52 @@ describe("RooHandler", () => {
 		})
 
 		it("should complete prompt successfully", async () => {
-			mockGenerateText.mockResolvedValue({ text: "Test response" })
-
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("Test response")
-			expect(mockGenerateText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					prompt: "Test prompt",
-				}),
-			)
+			expect(mockCreate).toHaveBeenCalledWith({
+				model: mockOptions.apiModelId,
+				messages: [{ role: "user", content: "Test prompt" }],
+			})
 		})
 
 		it("should update API key before making request", async () => {
+			// Set up a fresh token that will be returned when completePrompt is called
 			const freshToken = "fresh-session-token"
 			mockGetSessionTokenFn.mockReturnValue(freshToken)
-			mockGenerateText.mockResolvedValue({ text: "Test response" })
+
+			// Access the client's apiKey property to verify it gets updated
+			const clientApiKeyGetter = vitest.fn()
+			Object.defineProperty(handler["client"], "apiKey", {
+				get: clientApiKeyGetter,
+				set: vitest.fn(),
+				configurable: true,
+			})
 
 			await handler.completePrompt("Test prompt")
 
-			// Verify createOpenAICompatible was called with fresh token
-			expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
-				expect.objectContaining({
-					apiKey: freshToken,
-				}),
-			)
+			// Verify getSessionToken was called to get the fresh token
+			expect(mockGetSessionTokenFn).toHaveBeenCalled()
 		})
 
 		it("should handle API errors", async () => {
-			mockGenerateText.mockRejectedValue(new Error("API Error"))
-			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("Roo Code Cloud")
+			mockCreate.mockRejectedValueOnce(new Error("API Error"))
+			await expect(handler.completePrompt("Test prompt")).rejects.toThrow(
+				"Roo Code Cloud completion error: API Error",
+			)
 		})
 
 		it("should handle empty response", async () => {
-			mockGenerateText.mockResolvedValue({ text: "" })
+			mockCreate.mockResolvedValueOnce({
+				choices: [{ message: { content: "" } }],
+			})
+			const result = await handler.completePrompt("Test prompt")
+			expect(result).toBe("")
+		})
+
+		it("should handle missing response content", async () => {
+			mockCreate.mockResolvedValueOnce({
+				choices: [{ message: {} }],
+			})
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("")
 		})
@@ -414,6 +377,7 @@ describe("RooHandler", () => {
 			const modelInfo = handler.getModel()
 			expect(modelInfo.id).toBe(mockOptions.apiModelId)
 			expect(modelInfo.info).toBeDefined()
+			// Models are loaded dynamically, so we just verify the structure
 			expect(modelInfo.info.maxTokens).toBeDefined()
 			expect(modelInfo.info.contextWindow).toBeDefined()
 		})
@@ -423,6 +387,7 @@ describe("RooHandler", () => {
 			const modelInfo = handlerWithoutModel.getModel()
 			expect(modelInfo.id).toBe(rooDefaultModelId)
 			expect(modelInfo.info).toBeDefined()
+			// Models are loaded dynamically
 			expect(modelInfo.info.maxTokens).toBeDefined()
 			expect(modelInfo.info.contextWindow).toBeDefined()
 		})
@@ -434,6 +399,7 @@ describe("RooHandler", () => {
 			const modelInfo = handlerWithUnknownModel.getModel()
 			expect(modelInfo.id).toBe("unknown-model-id")
 			expect(modelInfo.info).toBeDefined()
+			// Should return fallback info for unknown models (dynamic models will be merged in real usage)
 			expect(modelInfo.info.maxTokens).toBeDefined()
 			expect(modelInfo.info.contextWindow).toBeDefined()
 			expect(modelInfo.info.supportsImages).toBeDefined()
@@ -443,6 +409,7 @@ describe("RooHandler", () => {
 		})
 
 		it("should handle any model ID since models are loaded dynamically", () => {
+			// Test with various model IDs - they should all work since models are loaded dynamically
 			const testModelIds = ["xai/grok-code-fast-1", "roo/sonic", "deepseek/deepseek-chat-v3.1"]
 
 			for (const modelId of testModelIds) {
@@ -450,6 +417,7 @@ describe("RooHandler", () => {
 				const modelInfo = handlerWithModel.getModel()
 				expect(modelInfo.id).toBe(modelId)
 				expect(modelInfo.info).toBeDefined()
+				// Verify the structure has required fields
 				expect(modelInfo.info.maxTokens).toBeDefined()
 				expect(modelInfo.info.contextWindow).toBeDefined()
 			}
@@ -460,6 +428,7 @@ describe("RooHandler", () => {
 				apiModelId: "minimax/minimax-m2:free",
 			})
 			const modelInfo = handlerWithMinimax.getModel()
+			// The settings from API should already be applied in the cached model info
 			expect(modelInfo.info.inputPrice).toBe(0.15)
 			expect(modelInfo.info.outputPrice).toBe(0.6)
 		})
@@ -468,16 +437,19 @@ describe("RooHandler", () => {
 	describe("temperature and model configuration", () => {
 		it("should use default temperature of 0", async () => {
 			handler = new RooHandler(mockOptions)
-			mockStreamText.mockReturnValue(createMockStreamResult())
-
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
-			expect(mockStreamText).toHaveBeenCalledWith(
+			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
 					temperature: 0,
+				}),
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
 				}),
 			)
 		})
@@ -487,23 +459,29 @@ describe("RooHandler", () => {
 				...mockOptions,
 				modelTemperature: 0.9,
 			})
-			mockStreamText.mockReturnValue(createMockStreamResult())
-
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
-			expect(mockStreamText).toHaveBeenCalledWith(
+			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
 					temperature: 0.9,
+				}),
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
 				}),
 			)
 		})
 
 		it("should use correct API endpoint", () => {
+			// The base URL should be set to Roo's API endpoint
+			// We can't directly test the OpenAI client configuration, but we can verify the handler initializes
 			handler = new RooHandler(mockOptions)
 			expect(handler).toBeInstanceOf(RooHandler)
+			// The handler should work with the Roo API endpoint
 		})
 	})
 
@@ -519,8 +497,10 @@ describe("RooHandler", () => {
 
 		it("should handle undefined auth service gracefully", () => {
 			mockHasInstanceFn.mockReturnValue(true)
+			// Mock CloudService with undefined authService
 			const originalGetSessionToken = mockGetSessionTokenFn.getMockImplementation()
 
+			// Temporarily make authService return undefined
 			mockGetSessionTokenFn.mockImplementation(() => undefined)
 
 			try {
@@ -536,9 +516,11 @@ describe("RooHandler", () => {
 				expect(() => {
 					new RooHandler(mockOptions)
 				}).not.toThrow()
+				// Constructor should succeed even with undefined auth service
 				const handler = new RooHandler(mockOptions)
 				expect(handler).toBeInstanceOf(RooHandler)
 			} finally {
+				// Restore original mock implementation
 				if (originalGetSessionToken) {
 					mockGetSessionTokenFn.mockImplementation(originalGetSessionToken)
 				} else {
@@ -553,126 +535,137 @@ describe("RooHandler", () => {
 			expect(() => {
 				new RooHandler(mockOptions)
 			}).not.toThrow()
+			// Constructor should succeed even with empty session token
 			const handler = new RooHandler(mockOptions)
 			expect(handler).toBeInstanceOf(RooHandler)
 		})
 	})
 
 	describe("reasoning effort support", () => {
-		/**
-		 * Helper: extracts the `transformRequestBody` function from the most recent
-		 * `createOpenAICompatible` call and invokes it with a sample body to return
-		 * the transformed result. Returns `undefined` when no transform was provided.
-		 */
-		function getTransformedBody(): Record<string, unknown> | undefined {
-			const callArgs = mockCreateOpenAICompatible.mock.calls[0]?.[0]
-			if (!callArgs?.transformRequestBody) {
-				return undefined
-			}
-			const sampleBody = { model: "test-model", messages: [] }
-			return callArgs.transformRequestBody(sampleBody)
-		}
-
-		it("should inject reasoning { enabled: false } via transformRequestBody when not enabled", async () => {
+		it("should include reasoning with enabled: false when not enabled", async () => {
 			handler = new RooHandler(mockOptions)
-			mockStreamText.mockReturnValue(createMockStreamResult())
-
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
-			// Reasoning is injected via transformRequestBody when creating the provider
-			const transformed = getTransformedBody()
-			expect(transformed).toBeDefined()
-			expect(transformed!.reasoning).toEqual({ enabled: false })
-			// Original body fields are preserved
-			expect(transformed!.model).toBe("test-model")
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: mockOptions.apiModelId,
+					messages: expect.any(Array),
+					stream: true,
+					stream_options: { include_usage: true },
+					reasoning: { enabled: false },
+				}),
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
+				}),
+			)
 		})
 
-		it("should inject reasoning { enabled: false } via transformRequestBody when explicitly disabled", async () => {
+		it("should include reasoning with enabled: false when explicitly disabled", async () => {
 			handler = new RooHandler({
 				...mockOptions,
 				enableReasoningEffort: false,
 			})
-			mockStreamText.mockReturnValue(createMockStreamResult())
-
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
-			const transformed = getTransformedBody()
-			expect(transformed).toBeDefined()
-			expect(transformed!.reasoning).toEqual({ enabled: false })
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					reasoning: { enabled: false },
+				}),
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
+				}),
+			)
 		})
 
-		it("should inject reasoning { enabled: true, effort: 'low' } via transformRequestBody", async () => {
+		it("should include reasoning with enabled: true and effort: low", async () => {
 			handler = new RooHandler({
 				...mockOptions,
 				reasoningEffort: "low",
 			})
-			mockStreamText.mockReturnValue(createMockStreamResult())
-
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
-			const transformed = getTransformedBody()
-			expect(transformed).toBeDefined()
-			expect(transformed!.reasoning).toEqual({ enabled: true, effort: "low" })
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					reasoning: { enabled: true, effort: "low" },
+				}),
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
+				}),
+			)
 		})
 
-		it("should inject reasoning { enabled: true, effort: 'medium' } via transformRequestBody", async () => {
+		it("should include reasoning with enabled: true and effort: medium", async () => {
 			handler = new RooHandler({
 				...mockOptions,
 				reasoningEffort: "medium",
 			})
-			mockStreamText.mockReturnValue(createMockStreamResult())
-
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
-			const transformed = getTransformedBody()
-			expect(transformed).toBeDefined()
-			expect(transformed!.reasoning).toEqual({ enabled: true, effort: "medium" })
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					reasoning: { enabled: true, effort: "medium" },
+				}),
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
+				}),
+			)
 		})
 
-		it("should inject reasoning { enabled: true, effort: 'high' } via transformRequestBody", async () => {
+		it("should include reasoning with enabled: true and effort: high", async () => {
 			handler = new RooHandler({
 				...mockOptions,
 				reasoningEffort: "high",
 			})
-			mockStreamText.mockReturnValue(createMockStreamResult())
-
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
-			const transformed = getTransformedBody()
-			expect(transformed).toBeDefined()
-			expect(transformed!.reasoning).toEqual({ enabled: true, effort: "high" })
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					reasoning: { enabled: true, effort: "high" },
+				}),
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
+				}),
+			)
 		})
 
-		it("should not provide transformRequestBody for minimal (treated as none)", async () => {
+		it("should not include reasoning for minimal (treated as none)", async () => {
 			handler = new RooHandler({
 				...mockOptions,
 				reasoningEffort: "minimal",
 			})
-			mockStreamText.mockReturnValue(createMockStreamResult())
-
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
-			// minimal should result in no reasoning parameter, thus no transformRequestBody
-			const callArgs = mockCreateOpenAICompatible.mock.calls[0][0]
-			expect(callArgs.transformRequestBody).toBeUndefined()
+			// minimal should result in no reasoning parameter
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.reasoning).toBeUndefined()
 		})
 
 		it("should handle enableReasoningEffort: false overriding reasoningEffort setting", async () => {
@@ -681,164 +674,22 @@ describe("RooHandler", () => {
 				enableReasoningEffort: false,
 				reasoningEffort: "high",
 			})
-			mockStreamText.mockReturnValue(createMockStreamResult())
-
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
 			// When explicitly disabled, should send enabled: false regardless of effort setting
-			const transformed = getTransformedBody()
-			expect(transformed).toBeDefined()
-			expect(transformed!.reasoning).toEqual({ enabled: false })
-		})
-	})
-
-	describe("usage and cost processing", () => {
-		beforeEach(() => {
-			handler = new RooHandler(mockOptions)
-		})
-
-		it("should use server-side cost from providerMetadata when available", async () => {
-			mockStreamText.mockReturnValue(
-				createMockStreamResult({
-					inputTokens: 100,
-					outputTokens: 50,
-					providerMetadata: {
-						roo: { cost: 0.005 },
-					},
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					reasoning: { enabled: false },
+				}),
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
 				}),
 			)
-
-			const stream = handler.createMessage(systemPrompt, messages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			const usageChunk = chunks.find((c) => c.type === "usage")
-			expect(usageChunk).toBeDefined()
-			expect(usageChunk.totalCost).toBe(0.005)
-		})
-
-		it("should report 0 cost for free models", async () => {
-			const freeHandler = new RooHandler({
-				apiModelId: "xai/grok-code-fast-1", // has isFree: false but inputPrice/outputPrice = 0
-			})
-
-			mockStreamText.mockReturnValue(
-				createMockStreamResult({
-					inputTokens: 100,
-					outputTokens: 50,
-					providerMetadata: {
-						roo: { cost: 0.005 },
-					},
-				}),
-			)
-
-			const stream = freeHandler.createMessage(systemPrompt, messages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			const usageChunk = chunks.find((c) => c.type === "usage")
-			expect(usageChunk).toBeDefined()
-			// Model is not marked as isFree, so cost should be from server
-			expect(usageChunk.totalCost).toBe(0.005)
-		})
-
-		it("should include cache tokens from providerMetadata", async () => {
-			mockStreamText.mockReturnValue(
-				createMockStreamResult({
-					inputTokens: 100,
-					outputTokens: 50,
-					providerMetadata: {
-						roo: {
-							cache_creation_input_tokens: 20,
-							cache_read_input_tokens: 30,
-						},
-					},
-				}),
-			)
-
-			const stream = handler.createMessage(systemPrompt, messages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			const usageChunk = chunks.find((c) => c.type === "usage")
-			expect(usageChunk).toBeDefined()
-			expect(usageChunk.cacheWriteTokens).toBe(20)
-			expect(usageChunk.cacheReadTokens).toBe(30)
-			expect(usageChunk.totalInputTokens).toBe(100)
-		})
-
-		it("should fall back to anthropic metadata when roo metadata is missing", async () => {
-			mockStreamText.mockReturnValue(
-				createMockStreamResult({
-					inputTokens: 120,
-					outputTokens: 40,
-					providerMetadata: {
-						anthropic: {
-							cacheCreationInputTokens: 25,
-							usage: {
-								cache_read_input_tokens: 35,
-							},
-						},
-					},
-				}),
-			)
-
-			const stream = handler.createMessage(systemPrompt, messages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			const usageChunk = chunks.find((c) => c.type === "usage")
-			expect(usageChunk).toBeDefined()
-			expect(usageChunk.inputTokens).toBe(120)
-			expect(usageChunk.cacheWriteTokens).toBe(25)
-			expect(usageChunk.cacheReadTokens).toBe(35)
-			expect(usageChunk.totalInputTokens).toBe(120)
-		})
-
-		it("should fall back to AI SDK usage cache fields when provider metadata is missing", async () => {
-			mockStreamText.mockReturnValue(
-				createMockStreamResult({
-					inputTokens: 140,
-					outputTokens: 30,
-					usage: {
-						cachedInputTokens: 22,
-						inputTokenDetails: {
-							cacheWriteTokens: 11,
-						},
-					},
-				}),
-			)
-
-			const stream = handler.createMessage(systemPrompt, messages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			const usageChunk = chunks.find((c) => c.type === "usage")
-			expect(usageChunk).toBeDefined()
-			expect(usageChunk.inputTokens).toBe(140)
-			expect(usageChunk.cacheWriteTokens).toBe(11)
-			expect(usageChunk.cacheReadTokens).toBe(22)
-			expect(usageChunk.totalInputTokens).toBe(140)
-		})
-	})
-
-	describe("isAiSdkProvider", () => {
-		it("should return true", () => {
-			handler = new RooHandler(mockOptions)
-			expect(handler.isAiSdkProvider()).toBe(true)
 		})
 	})
 
@@ -847,17 +698,52 @@ describe("RooHandler", () => {
 			handler = new RooHandler(mockOptions)
 		})
 
-		it("should yield tool call events from AI SDK stream", async () => {
-			mockStreamText.mockReturnValue(
-				createMockStreamResult({
-					textChunks: [],
-					toolCallParts: [
-						{ type: "tool-input-start", id: "call_123", toolName: "read_file" },
-						{ type: "tool-input-delta", id: "call_123", delta: '{"path":"test.ts"}' },
-						{ type: "tool-input-end", id: "call_123" },
-					],
-				}),
-			)
+		it("should yield raw tool call chunks when tool_calls present", async () => {
+			mockCreate.mockResolvedValueOnce({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											id: "call_123",
+											function: { name: "read_file", arguments: '{"path":"' },
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											function: { arguments: 'test.ts"}' },
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {},
+								finish_reason: "tool_calls",
+								index: 0,
+							},
+						],
+						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+					}
+				},
+			})
 
 			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks: any[] = []
@@ -865,36 +751,60 @@ describe("RooHandler", () => {
 				chunks.push(chunk)
 			}
 
-			const startChunks = chunks.filter((c) => c.type === "tool_call_start")
-			const deltaChunks = chunks.filter((c) => c.type === "tool_call_delta")
-			const endChunks = chunks.filter((c) => c.type === "tool_call_end")
+			// Verify we get raw tool call chunks
+			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
 
-			expect(startChunks).toHaveLength(1)
-			expect(startChunks[0].id).toBe("call_123")
-			expect(startChunks[0].name).toBe("read_file")
-
-			expect(deltaChunks).toHaveLength(1)
-			expect(deltaChunks[0].id).toBe("call_123")
-			expect(deltaChunks[0].delta).toBe('{"path":"test.ts"}')
-
-			expect(endChunks).toHaveLength(1)
-			expect(endChunks[0].id).toBe("call_123")
+			expect(rawChunks).toHaveLength(2)
+			expect(rawChunks[0]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: "call_123",
+				name: "read_file",
+				arguments: '{"path":"',
+			})
+			expect(rawChunks[1]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: undefined,
+				name: undefined,
+				arguments: 'test.ts"}',
+			})
 		})
 
-		it("should handle multiple tool calls", async () => {
-			mockStreamText.mockReturnValue(
-				createMockStreamResult({
-					textChunks: [],
-					toolCallParts: [
-						{ type: "tool-input-start", id: "call_1", toolName: "read_file" },
-						{ type: "tool-input-delta", id: "call_1", delta: '{"path":"file1.ts"}' },
-						{ type: "tool-input-end", id: "call_1" },
-						{ type: "tool-input-start", id: "call_2", toolName: "read_file" },
-						{ type: "tool-input-delta", id: "call_2", delta: '{"path":"file2.ts"}' },
-						{ type: "tool-input-end", id: "call_2" },
-					],
-				}),
-			)
+		it("should yield raw tool call chunks even when finish_reason is not tool_calls", async () => {
+			mockCreate.mockResolvedValueOnce({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											id: "call_456",
+											function: {
+												name: "write_to_file",
+												arguments: '{"path":"test.ts","content":"hello"}',
+											},
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {},
+								finish_reason: "stop",
+								index: 0,
+							},
+						],
+						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+					}
+				},
+			})
 
 			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks: any[] = []
@@ -902,24 +812,169 @@ describe("RooHandler", () => {
 				chunks.push(chunk)
 			}
 
-			const startChunks = chunks.filter((c) => c.type === "tool_call_start")
-			const endChunks = chunks.filter((c) => c.type === "tool_call_end")
+			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
 
-			expect(startChunks).toHaveLength(2)
-			expect(startChunks[0].id).toBe("call_1")
-			expect(startChunks[1].id).toBe("call_2")
+			expect(rawChunks).toHaveLength(1)
+			expect(rawChunks[0]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: "call_456",
+				name: "write_to_file",
+				arguments: '{"path":"test.ts","content":"hello"}',
+			})
+		})
 
-			expect(endChunks).toHaveLength(2)
-			expect(endChunks[0].id).toBe("call_1")
-			expect(endChunks[1].id).toBe("call_2")
+		it("should handle multiple tool calls with different indices", async () => {
+			mockCreate.mockResolvedValueOnce({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											id: "call_1",
+											function: { name: "read_file", arguments: '{"path":"file1.ts"}' },
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 1,
+											id: "call_2",
+											function: { name: "read_file", arguments: '{"path":"file2.ts"}' },
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {},
+								finish_reason: "tool_calls",
+								index: 0,
+							},
+						],
+						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+					}
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+
+			expect(rawChunks).toHaveLength(2)
+			expect(rawChunks[0].index).toBe(0)
+			expect(rawChunks[0].id).toBe("call_1")
+			expect(rawChunks[1].index).toBe(1)
+			expect(rawChunks[1].id).toBe("call_2")
+		})
+
+		it("should emit raw chunks for streaming arguments", async () => {
+			mockCreate.mockResolvedValueOnce({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											id: "call_789",
+											function: { name: "execute_command", arguments: '{"command":"' },
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											function: { arguments: "npm install" },
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											function: { arguments: '"}' },
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {},
+								finish_reason: "tool_calls",
+								index: 0,
+							},
+						],
+						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+					}
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+
+			expect(rawChunks).toHaveLength(3)
+			expect(rawChunks[0].arguments).toBe('{"command":"')
+			expect(rawChunks[1].arguments).toBe("npm install")
+			expect(rawChunks[2].arguments).toBe('"}')
 		})
 
 		it("should not yield tool call chunks when no tool calls present", async () => {
-			mockStreamText.mockReturnValue(
-				createMockStreamResult({
-					textChunks: ["Regular text response"],
-				}),
-			)
+			mockCreate.mockResolvedValueOnce({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [{ delta: { content: "Regular text response" }, index: 0 }],
+					}
+					yield {
+						choices: [{ delta: {}, finish_reason: "stop", index: 0 }],
+						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+					}
+				},
+			})
 
 			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks: any[] = []
@@ -927,10 +982,71 @@ describe("RooHandler", () => {
 				chunks.push(chunk)
 			}
 
-			const toolChunks = chunks.filter(
-				(c) => c.type === "tool_call_start" || c.type === "tool_call_delta" || c.type === "tool_call_end",
-			)
-			expect(toolChunks).toHaveLength(0)
+			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+			expect(rawChunks).toHaveLength(0)
+		})
+
+		it("should yield tool_call_end events when finish_reason is tool_calls", async () => {
+			// Import NativeToolCallParser to set up state
+			const { NativeToolCallParser } = await import("../../../core/assistant-message/NativeToolCallParser")
+
+			// Clear any previous state
+			NativeToolCallParser.clearRawChunkState()
+
+			mockCreate.mockResolvedValueOnce({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											id: "call_finish_test",
+											function: { name: "read_file", arguments: '{"path":"test.ts"}' },
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {},
+								finish_reason: "tool_calls",
+								index: 0,
+							},
+						],
+						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+					}
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				// Simulate what Task.ts does: when we receive tool_call_partial,
+				// process it through NativeToolCallParser to populate rawChunkTracker
+				if (chunk.type === "tool_call_partial") {
+					NativeToolCallParser.processRawChunk({
+						index: chunk.index,
+						id: chunk.id,
+						name: chunk.name,
+						arguments: chunk.arguments,
+					})
+				}
+				chunks.push(chunk)
+			}
+
+			// Should have tool_call_partial and tool_call_end
+			const partialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+			const endChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
+
+			expect(partialChunks).toHaveLength(1)
+			expect(endChunks).toHaveLength(1)
+			expect(endChunks[0].id).toBe("call_finish_test")
 		})
 	})
 })

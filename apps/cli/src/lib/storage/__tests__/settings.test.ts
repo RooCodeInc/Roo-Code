@@ -103,7 +103,7 @@ describe("Settings Storage", () => {
 			await saveSettings({
 				mode: "architect",
 				provider: "anthropic" as const,
-				model: "claude-opus-4.6",
+				model: "claude-opus-4.5",
 				reasoningEffort: "medium" as const,
 			})
 
@@ -112,7 +112,7 @@ describe("Settings Storage", () => {
 
 			expect(settings.mode).toBe("architect")
 			expect(settings.provider).toBe("anthropic")
-			expect(settings.model).toBe("claude-opus-4.6")
+			expect(settings.model).toBe("claude-opus-4.5")
 			expect(settings.reasoningEffort).toBe("medium")
 		})
 
@@ -179,20 +179,20 @@ describe("Settings Storage", () => {
 			expect(loaded.reasoningEffort).toBe("low")
 		})
 
-		it("should support requireApproval setting", async () => {
-			await saveSettings({ requireApproval: true })
+		it("should support dangerouslySkipPermissions setting", async () => {
+			await saveSettings({ dangerouslySkipPermissions: true })
 			const loaded = await loadSettings()
 
-			expect(loaded.requireApproval).toBe(true)
+			expect(loaded.dangerouslySkipPermissions).toBe(true)
 		})
 
-		it("should support all settings together including requireApproval", async () => {
+		it("should support all settings together including dangerouslySkipPermissions", async () => {
 			const allSettings = {
 				mode: "architect",
 				provider: "anthropic" as const,
 				model: "claude-sonnet-4-20250514",
 				reasoningEffort: "high" as const,
-				requireApproval: true,
+				dangerouslySkipPermissions: true,
 			}
 
 			await saveSettings(allSettings)
@@ -202,7 +202,7 @@ describe("Settings Storage", () => {
 			expect(loaded.provider).toBe("anthropic")
 			expect(loaded.model).toBe("claude-sonnet-4-20250514")
 			expect(loaded.reasoningEffort).toBe("high")
-			expect(loaded.requireApproval).toBe(true)
+			expect(loaded.dangerouslySkipPermissions).toBe(true)
 		})
 
 		it("should support oneshot setting", async () => {
@@ -218,7 +218,7 @@ describe("Settings Storage", () => {
 				provider: "anthropic" as const,
 				model: "claude-sonnet-4-20250514",
 				reasoningEffort: "high" as const,
-				requireApproval: true,
+				dangerouslySkipPermissions: true,
 				oneshot: true,
 			}
 
@@ -229,15 +229,8 @@ describe("Settings Storage", () => {
 			expect(loaded.provider).toBe("anthropic")
 			expect(loaded.model).toBe("claude-sonnet-4-20250514")
 			expect(loaded.reasoningEffort).toBe("high")
-			expect(loaded.requireApproval).toBe(true)
-			expect(loaded.oneshot).toBe(true)
-		})
-
-		it("should still load legacy dangerouslySkipPermissions setting", async () => {
-			await saveSettings({ dangerouslySkipPermissions: true })
-			const loaded = await loadSettings()
-
 			expect(loaded.dangerouslySkipPermissions).toBe(true)
+			expect(loaded.oneshot).toBe(true)
 		})
 	})
 })

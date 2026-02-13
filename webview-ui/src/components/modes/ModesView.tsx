@@ -92,6 +92,7 @@ const ModesView = () => {
 	const [isToolsEditMode, setIsToolsEditMode] = useState(false)
 	const [showConfigMenu, setShowConfigMenu] = useState(false)
 	const [isCreateModeDialogOpen, setIsCreateModeDialogOpen] = useState(false)
+	const [isSystemPromptDisclosureOpen, setIsSystemPromptDisclosureOpen] = useState(false)
 	const [isExporting, setIsExporting] = useState(false)
 	const [isImporting, setIsImporting] = useState(false)
 	const [showImportDialog, setShowImportDialog] = useState(false)
@@ -1326,6 +1327,67 @@ const ModesView = () => {
 								<span className="codicon codicon-copy"></span>
 							</Button>
 						</StandardTooltip>
+					</div>
+
+					{/* Advanced Features Disclosure */}
+					<div className="mt-4">
+						<button
+							onClick={() => setIsSystemPromptDisclosureOpen(!isSystemPromptDisclosureOpen)}
+							className="flex items-center text-xs text-vscode-foreground hover:text-vscode-textLink-foreground focus:outline-none"
+							aria-expanded={isSystemPromptDisclosureOpen}>
+							<span
+								className={`codicon codicon-${isSystemPromptDisclosureOpen ? "chevron-down" : "chevron-right"} mr-1`}></span>
+							<span>{t("prompts:advanced.title")}</span>
+						</button>
+
+						{isSystemPromptDisclosureOpen && (
+							<div className="mt-2 ml-5 space-y-4">
+								{/* Override System Prompt Section */}
+								<div>
+									<h4 className="text-xs font-semibold text-vscode-foreground mb-2">
+										Override System Prompt
+									</h4>
+									<div className="text-xs text-vscode-descriptionForeground">
+										<Trans
+											i18nKey="prompts:advancedSystemPrompt.description"
+											values={{
+												slug: getCurrentMode()?.slug || "code",
+											}}
+											components={{
+												span: (
+													<span
+														className="text-vscode-textLink-foreground cursor-pointer underline"
+														onClick={() => {
+															const currentMode = getCurrentMode()
+															if (!currentMode) return
+
+															vscode.postMessage({
+																type: "openFile",
+																text: `./.roo/system-prompt-${currentMode.slug}`,
+																values: {
+																	create: true,
+																	content: "",
+																},
+															})
+														}}
+													/>
+												),
+												"1": (
+													<VSCodeLink
+														href={buildDocLink(
+															"features/footgun-prompting",
+															"prompts_advanced_system_prompt",
+														)}
+														style={{ display: "inline" }}
+														aria-label="Read important information about overriding system prompts"></VSCodeLink>
+												),
+												"2": <strong />,
+											}}
+										/>
+									</div>
+								</div>
+							</div>
+						)}
 					</div>
 				</div>
 

@@ -19,19 +19,19 @@ describe("isToolAllowedForMode", () => {
 			slug: "markdown-editor",
 			name: "Markdown Editor",
 			roleDefinition: "You are a markdown editor",
-			groups: ["read", ["edit", { fileRegex: "\\.md$" }]],
+			groups: ["read", ["edit", { fileRegex: "\\.md$" }], "browser"],
 		},
 		{
 			slug: "css-editor",
 			name: "CSS Editor",
 			roleDefinition: "You are a CSS editor",
-			groups: ["read", ["edit", { fileRegex: "\\.css$" }]],
+			groups: ["read", ["edit", { fileRegex: "\\.css$" }], "browser"],
 		},
 		{
 			slug: "test-exp-mode",
 			name: "Test Exp Mode",
 			roleDefinition: "You are an experimental tester",
-			groups: ["read", "edit"],
+			groups: ["read", "edit", "browser"],
 		},
 	]
 
@@ -42,6 +42,7 @@ describe("isToolAllowedForMode", () => {
 
 	it("allows unrestricted tools", () => {
 		expect(isToolAllowedForMode("read_file", "markdown-editor", customModes)).toBe(true)
+		expect(isToolAllowedForMode("browser_action", "markdown-editor", customModes)).toBe(true)
 	})
 
 	describe("file restrictions", () => {
@@ -150,7 +151,11 @@ describe("isToolAllowedForMode", () => {
 					slug: "docs-editor",
 					name: "Documentation Editor",
 					roleDefinition: "You are a documentation editor",
-					groups: ["read", ["edit", { fileRegex: "\\.(md|txt)$", description: "Documentation files only" }]],
+					groups: [
+						"read",
+						["edit", { fileRegex: "\\.(md|txt)$", description: "Documentation files only" }],
+						"browser",
+					],
 				},
 			]
 
@@ -238,6 +243,7 @@ describe("isToolAllowedForMode", () => {
 
 			// Should maintain read capabilities
 			expect(isToolAllowedForMode("read_file", "architect", [])).toBe(true)
+			expect(isToolAllowedForMode("browser_action", "architect", [])).toBe(true)
 			expect(isToolAllowedForMode("use_mcp_tool", "architect", [])).toBe(true)
 		})
 
@@ -529,7 +535,7 @@ describe("isToolAllowedForMode", () => {
 				slug: "test-custom-tools",
 				name: "Test Custom Tools Mode",
 				roleDefinition: "You are a test mode",
-				groups: ["read", "edit"],
+				groups: ["read", "edit", "browser"],
 			},
 		]
 
@@ -561,7 +567,7 @@ describe("isToolAllowedForMode", () => {
 					slug: "no-edit-mode",
 					name: "No Edit Mode",
 					roleDefinition: "You have no edit powers",
-					groups: ["read"], // No edit group
+					groups: ["read", "browser"], // No edit group
 				},
 			]
 
@@ -613,7 +619,7 @@ describe("FileRestrictionError", () => {
 				name: "🪲 Debug",
 				roleDefinition:
 					"You are Roo, an expert software debugger specializing in systematic problem diagnosis and resolution.",
-				groups: ["read", "edit", "command", "mcp"],
+				groups: ["read", "edit", "browser", "command", "mcp"],
 			})
 			expect(debugMode?.customInstructions).toContain(
 				"Reflect on 5-7 different possible sources of the problem, distill those down to 1-2 most likely sources, and then add logs to validate your assumptions. Explicitly ask the user to confirm the diagnosis before fixing the problem.",

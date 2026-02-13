@@ -25,6 +25,7 @@
 		"toolNames": {
 			"read": "Dateien lesen",
 			"edit": "Dateien bearbeiten",
+			"browser": "Browser verwenden",
 			"command": "Befehle ausführen",
 			"mcp": "MCP verwenden"
 		},
@@ -69,6 +70,9 @@
 			"label": "Projektebene",
 			"description": "Nur in diesem Arbeitsbereich verfügbar. Wenn der exportierte Modus Regeldateien enthielt, werden diese im Ordner .roo/rules-{slug}/ neu erstellt."
 		}
+	},
+	"advanced": {
+		"title": "Erweitert"
 	},
 	"globalCustomInstructions": {
 		"title": "Benutzerdefinierte Anweisungen für alle Modi",
@@ -141,6 +145,10 @@
 				"description": "Starte eine neue Aufgabe mit deiner Eingabe. Verfügbar in der Befehlspalette."
 			}
 		}
+	},
+	"advancedSystemPrompt": {
+		"title": "Erweitert: System-Prompt überschreiben",
+		"description": "<2>⚠️ Warnung:</2> Diese erweiterte Funktion umgeht Sicherheitsvorkehrungen. <1>LESEN SIE DIES VOR DER VERWENDUNG!</1>Überschreiben Sie den Standard-System-Prompt, indem Sie eine Datei unter <span>.roo/system-prompt-{{slug}}</span> erstellen."
 	},
 	"createModeDialog": {
 		"title": "Neuen Modus erstellen",

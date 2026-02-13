@@ -25,6 +25,7 @@
 		"toolNames": {
 			"read": "파일 읽기",
 			"edit": "파일 편집",
+			"browser": "브라우저 사용",
 			"command": "명령 실행",
 			"mcp": "MCP 사용"
 		},
@@ -69,6 +70,9 @@
 			"label": "프로젝트 수준",
 			"description": "이 작업 공간에서만 사용할 수 있습니다. 내보낸 모드에 규칙 파일이 포함된 경우 .roo/rules-{slug}/ 폴더에 다시 생성됩니다."
 		}
+	},
+	"advanced": {
+		"title": "고급"
 	},
 	"globalCustomInstructions": {
 		"title": "모든 모드에 대한 사용자 지정 지침",
@@ -141,6 +145,10 @@
 				"description": "입력한 내용으로 새 작업을 시작할 수 있습니다. 명령 팔레트에서 이용 가능합니다."
 			}
 		}
+	},
+	"advancedSystemPrompt": {
+		"title": "고급: 시스템 프롬프트 재정의",
+		"description": "<2>⚠️ 경고:</2> 이 고급 기능은 안전 장치를 우회합니다. <1>사용하기 전에 이것을 읽으십시오!</1>작업 공간의 <span>.roo/system-prompt-{{slug}}</span>에 파일을 생성하여 기본 시스템 프롬프트를 재정의합니다."
 	},
 	"createModeDialog": {
 		"title": "새 모드 만들기",

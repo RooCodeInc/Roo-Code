@@ -25,6 +25,7 @@
 		"toolNames": {
 			"read": "Đọc tệp",
 			"edit": "Chỉnh sửa tệp",
+			"browser": "Sử dụng trình duyệt",
 			"command": "Chạy lệnh",
 			"mcp": "Sử dụng MCP"
 		},
@@ -142,6 +143,10 @@
 			}
 		}
 	},
+	"advancedSystemPrompt": {
+		"title": "Nâng cao: Ghi đè lời nhắc hệ thống",
+		"description": "<2>⚠️ Cảnh báo:</2> Tính năng nâng cao này bỏ qua các biện pháp bảo vệ. <1>ĐỌC KỸ TRƯỚC KHI SỬ DỤNG!</1>Ghi đè lời nhắc hệ thống mặc định bằng cách tạo một tệp tại <span>.roo/system-prompt-{{slug}}</span>."
+	},
 	"createModeDialog": {
 		"title": "Tạo chế độ mới",
 		"close": "Đóng",
@@ -192,6 +197,9 @@
 		"deleteMode": "Xóa chế độ"
 	},
 	"allFiles": "tất cả các tệp",
+	"advanced": {
+		"title": "Nâng cao"
+	},
 	"deleteMode": {
 		"title": "Xóa chế độ",
 		"message": "Bạn có chắc chắn muốn xóa chế độ \"{{modeName}}\" không?",

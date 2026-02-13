@@ -5,7 +5,15 @@ export interface ToolRendererProps {
 	rawContent?: string
 }
 
-export type ToolCategory = "file-read" | "file-write" | "search" | "command" | "mode" | "completion" | "other"
+export type ToolCategory =
+	| "file-read"
+	| "file-write"
+	| "search"
+	| "command"
+	| "browser"
+	| "mode"
+	| "completion"
+	| "other"
 
 export function getToolCategory(toolName: string): ToolCategory {
 	const fileReadTools = ["readFile", "read_file", "skill", "listFilesTopLevel", "listFilesRecursive", "list_files"]
@@ -21,6 +29,7 @@ export function getToolCategory(toolName: string): ToolCategory {
 
 	const searchTools = ["searchFiles", "search_files", "codebaseSearch", "codebase_search"]
 	const commandTools = ["execute_command", "executeCommand"]
+	const browserTools = ["browser_action", "browserAction"]
 	const modeTools = ["switchMode", "switch_mode", "newTask", "new_task", "finishTask"]
 	const completionTools = ["attempt_completion", "attemptCompletion", "ask_followup_question", "askFollowupQuestion"]
 
@@ -28,6 +37,7 @@ export function getToolCategory(toolName: string): ToolCategory {
 	if (fileWriteTools.includes(toolName)) return "file-write"
 	if (searchTools.includes(toolName)) return "search"
 	if (commandTools.includes(toolName)) return "command"
+	if (browserTools.includes(toolName)) return "browser"
 	if (modeTools.includes(toolName)) return "mode"
 	if (completionTools.includes(toolName)) return "completion"
 	return "other"

@@ -31,6 +31,7 @@
 		"mcp": "MCPサーバー",
 		"worktrees": "Worktrees",
 		"autoApprove": "自動承認",
+		"browser": "コンピューターアクセス",
 		"checkpoints": "チェックポイント",
 		"notifications": "通知",
 		"contextManagement": "コンテキスト",
@@ -40,8 +41,7 @@
 		"ui": "UI",
 		"experimental": "実験的",
 		"language": "言語",
-		"about": "Roo Codeについて",
-		"skills": "Skills"
+		"about": "Roo Codeについて"
 	},
 	"about": {
 		"bugReport": {
@@ -68,39 +68,7 @@
 		}
 	},
 	"slashCommands": {
-		"description": "スラッシュコマンドを管理して、カスタムワークフローやアクションを素早く実行します。<DocsLink>詳細はこちら</DocsLink>",
-		"workspaceCommands": "ワークスペースコマンド",
-		"globalCommands": "グローバルコマンド",
-		"noWorkspaceCommands": "このプロジェクトにはまだコマンドがありません。",
-		"noGlobalCommands": "グローバルコマンドはまだありません。",
-		"addCommand": "スラッシュコマンドを追加",
-		"editCommand": "コマンドを編集",
-		"deleteCommand": "コマンドを削除",
-		"deleteDialog": {
-			"title": "コマンドを削除",
-			"description": "コマンド \"{{name}}\" を削除してもよろしいですか？このアクションは取り消せません。",
-			"confirm": "削除",
-			"cancel": "キャンセル"
-		},
-		"createDialog": {
-			"title": "新しいスラッシュコマンドを作成",
-			"nameLabel": "名前",
-			"namePlaceholder": "my-command-name",
-			"nameHint": "小文字、数字、ハイフン、アンダースコアのみ",
-			"sourceLabel": "場所",
-			"create": "作成",
-			"cancel": "キャンセル"
-		},
-		"source": {
-			"global": "グローバル（すべてのワークスペースで利用可能）",
-			"project": "ワークスペース"
-		},
-		"validation": {
-			"nameRequired": "名前は必須です",
-			"nameTooLong": "名前は64文字以下である必要があります",
-			"nameInvalid": "名前は文字、数字、ハイフン、アンダースコアのみを含める必要があります"
-		},
-		"footer": "スラッシュコマンドを使用して、頻繁に使用するプロンプトとワークフローにすばやくアクセスします。"
+		"description": "スラッシュコマンドを管理して、カスタムワークフローやアクションを素早く実行します。<DocsLink>詳細はこちら</DocsLink>"
 	},
 	"prompts": {
 		"description": "プロンプトの強化、コードの説明、問題の修正などの迅速なアクションに使用されるサポートプロンプトを設定します。これらのプロンプトは、Rooが一般的な開発タスクでより良いサポートを提供するのに役立ちます。"
@@ -240,6 +208,10 @@
 				"description": "Rooが保護されたファイル（.rooignoreや.roo/設定ファイルなど）を承認なしで作成・編集することを許可します。"
 			}
 		},
+		"browser": {
+			"label": "ブラウザ",
+			"description": "承認なしで自動的にブラウザアクションを実行 — 注意：コンピューター使用をサポートするモデルを使用している場合のみ適用されます"
+		},
 		"mcp": {
 			"label": "MCP",
 			"description": "MCPサーバービューで個々のMCPツールの自動承認を有効にします（この設定とツールの「常に許可」チェックボックスの両方が必要）"
@@ -271,6 +243,7 @@
 		},
 		"apiRequestLimit": {
 			"title": "最大リクエスト数",
+			"description": "タスクを続行するための承認を求める前に、自動的にこの数のAPIリクエストを行います。",
 			"unlimited": "無制限"
 		},
 		"selectOptionsFirst": "自動承認を有効にするには、以下のオプションを少なくとも1つ選択してください",
@@ -304,7 +277,6 @@
 		"searchProviderPlaceholder": "プロバイダーを検索",
 		"noProviderMatchFound": "プロバイダーが見つかりません",
 		"noMatchFound": "一致するプロファイルが見つかりません",
-		"retiredProviderMessage": "申し訳ありませんが、このプロバイダーはサポートされなくなりました。実際に使用しているRooユーザーが非常に少ないことがわかり、コードベースの範囲を縮小して、迅速な開発を続け、コミュニティにより良いサービスを提供する必要がありました。本当に難しい決断でしたが、あなたにとって最も重要なことに集中することができます。残念なことだと分かっています。",
 		"vscodeLmDescription": "VS Code言語モデルAPIを使用すると、他のVS Code拡張機能（GitHub Copilotなど）が提供するモデルを実行できます。最も簡単な方法は、VS Code MarketplaceからCopilotおよびCopilot Chat拡張機能をインストールすることです。",
 		"awsCustomArnUse": "使用したいモデルの有効なAmazon Bedrock ARNを入力してください。形式の例:",
 		"awsCustomArnDesc": "ARN内のリージョンが上で選択したAWSリージョンと一致していることを確認してください。",
@@ -366,23 +338,15 @@
 		"getAnthropicApiKey": "Anthropic APIキーを取得",
 		"anthropicUseAuthToken": "Anthropic APIキーをX-Api-Keyの代わりにAuthorizationヘッダーとして渡す",
 		"anthropic1MContextBetaLabel": "1Mコンテキストウィンドウを有効にする（ベータ版）",
-		"anthropic1MContextBetaDescription": "Claude Sonnet 4 / 4.5 / Claude Opus 4.6のコンテキストウィンドウを100万トークンに拡張します",
+		"anthropic1MContextBetaDescription": "Claude Sonnet 4のコンテキストウィンドウを100万トークンに拡張します",
 		"awsBedrock1MContextBetaLabel": "1Mコンテキストウィンドウを有効にする（ベータ版）",
-		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4 / 4.5 / Claude Opus 4.6のコンテキストウィンドウを100万トークンに拡張します",
+		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4のコンテキストウィンドウを100万トークンに拡張します",
 		"vertex1MContextBetaLabel": "1Mコンテキストウィンドウを有効にする（ベータ版）",
-		"vertex1MContextBetaDescription": "Claude Sonnet 4 / 4.5 / Claude Opus 4.6のコンテキストウィンドウを100万トークンに拡張します",
+		"vertex1MContextBetaDescription": "Claude Sonnet 4のコンテキストウィンドウを100万トークンに拡張します",
 		"basetenApiKey": "Baseten APIキー",
 		"getBasetenApiKey": "Baseten APIキーを取得",
 		"cerebrasApiKey": "Cerebras APIキー",
 		"getCerebrasApiKey": "Cerebras APIキーを取得",
-		"azureResourceName": "Azureリソース名",
-		"azureResourceNameDescription": "Azure AI Foundryリソースの名前（例：'my-openai-resource'）。",
-		"azureDeploymentName": "Azureデプロイメント名",
-		"azureDeploymentNameDescription": "リソース内のモデルデプロイメントの名前。",
-		"azureApiKey": "Azure APIキー",
-		"getAzureApiKey": "Azure AI Foundryアクセスを取得",
-		"azureApiVersion": "Azure APIバージョン",
-		"azureApiVersionDescription": "使用するAPIバージョン（例：'2024-10-21'）。デフォルトを使用する場合は空にしてください。",
 		"chutesApiKey": "Chutes APIキー",
 		"getChutesApiKey": "Chutes APIキーを取得",
 		"fireworksApiKey": "Fireworks APIキー",
@@ -465,6 +429,16 @@
 		"cacheUsageNote": "注意：キャッシュの使用が表示されない場合は、別のモデルを選択してから希望のモデルを再度選択してみてください。",
 		"vscodeLmModel": "言語モデル",
 		"vscodeLmWarning": "注意: VS Code Language Model API を通じて利用されるモデルは、プロバイダーによってラップまたは微調整されている場合があります。したがって、一般的なプロバイダーやルーターから同じモデルを直接使用する場合と挙動が異なることがあります。『Language Model』ドロップダウンのモデルを使用するには、まずそのモデルに切り替え、Copilot Chat のプロンプトで『承認』をクリックしてください。そうしないと、400『The requested model is not supported』などのエラーが表示されることがあります。",
+		"geminiParameters": {
+			"urlContext": {
+				"title": "URLコンテキストを有効にする",
+				"description": "応答を生成する際に、追加のコンテキストとしてGeminiがURLにアクセスして処理できるようにします。Webコンテンツの分析を必要とするタスクに役立ちます。"
+			},
+			"groundingSearch": {
+				"title": "Google検索でのグラウンディングを有効にする",
+				"description": "GeminiがGoogleを検索して最新情報を取得し、リアルタイムデータに基づいて応答をグラウンディングできるようにします。最新情報が必要なクエリに便利です。"
+			}
+		},
 		"googleCloudSetup": {
 			"title": "Google Cloud Vertex AIを使用するには：",
 			"step1": "1. Google Cloudアカウントを作成し、Vertex AI APIを有効にして、希望するClaudeモデルを有効にします。",
@@ -587,6 +561,34 @@
 			"maxTokensDescription": "Claude Codeレスポンスの最大出力トークン数。デフォルトは8000です。"
 		}
 	},
+	"browser": {
+		"enable": {
+			"label": "ブラウザツールを有効化",
+			"description": "有効にすると、コンピューター使用をサポートするモデルを使用する際に、Rooはウェブサイトとのやり取りにブラウザを使用できます。 <0>詳細情報</0>"
+		},
+		"viewport": {
+			"label": "ビューポートサイズ",
+			"description": "ブラウザインタラクションのビューポートサイズを選択します。これはウェブサイトの表示方法とインタラクション方法に影響します。",
+			"options": {
+				"largeDesktop": "大型デスクトップ (1280x800)",
+				"smallDesktop": "小型デスクトップ (900x600)",
+				"tablet": "タブレット (768x1024)",
+				"mobile": "モバイル (360x640)"
+			}
+		},
+		"screenshotQuality": {
+			"label": "スクリーンショット品質",
+			"description": "ブラウザスクリーンショットのWebP品質を調整します。高い値はより鮮明なスクリーンショットを提供しますが、token使用量が増加します。"
+		},
+		"remote": {
+			"label": "リモートブラウザ接続を使用",
+			"description": "リモートデバッグを有効にして実行しているChromeブラウザに接続します（--remote-debugging-port=9222）。",
+			"urlPlaceholder": "カスタムURL（例：http://localhost:9222）",
+			"testButton": "接続テスト",
+			"testingButton": "テスト中...",
+			"instructions": "DevToolsプロトコルホストアドレスを入力するか、Chromeのローカルインスタンスを自動検出するために空のままにします。接続テストボタンは、提供されている場合はカスタムURLを試み、フィールドが空の場合は自動検出します。"
+		}
+	},
 	"checkpoints": {
 		"timeout": {
 			"label": "チェックポイント初期化タイムアウト（秒）",
@@ -662,6 +664,7 @@
 				"label": "最大診断メッセージ数",
 				"description": "ファイルごとに含める診断メッセージの最大数。この制限は、自動インクルード（チェックボックスが有効な場合）と手動の@problemsメンションの両方に適用されます。値を高くするとより多くのコンテキストが提供されますが、トークンの使用量が増加します。",
 				"resetTooltip": "デフォルト値（50）にリセット",
+				"unlimited": "無制限の診断メッセージ",
 				"unlimitedLabel": "無制限"
 			},
 			"delayAfterWrite": {
@@ -896,6 +899,7 @@
 		"simplifiedExplanation": "詳細なモデル設定は後で調整できます。"
 	},
 	"footer": {
+		"feedback": "質問やフィードバックがある場合は、<githubLink>github.com/RooCodeInc/Roo-Code</githubLink>で問題を開くか、<redditLink>reddit.com/r/RooCode</redditLink>や<discordLink>discord.gg/roocode</discordLink>に参加してください",
 		"telemetry": {
 			"label": "匿名のエラーと使用状況レポートを許可",
 			"description": "匿名の使用データとエラーレポートを送信してRoo Codeの改善にご協力ください。このテレメトリはコード、プロンプト、個人情報を収集しません。詳細については<privacyLink>プライバシーポリシー</privacyLink>をご覧ください。"
@@ -926,9 +930,7 @@
 		"providerNotAllowed": "プロバイダー「{{provider}}」は組織によって許可されていません",
 		"modelNotAllowed": "モデル「{{model}}」はプロバイダー「{{provider}}」に対して組織によって許可されていません",
 		"profileInvalid": "このプロファイルには、組織によって許可されていないプロバイダーまたはモデルが含まれています",
-		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります",
-		"azureResourceName": "Azureリソース名を入力してください。",
-		"azureDeploymentName": "Azureデプロイメント名を入力してください。"
+		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります"
 	},
 	"placeholders": {
 		"apiKey": "API キーを入力...",
@@ -941,8 +943,6 @@
 		"projectId": "プロジェクト ID を入力...",
 		"customArn": "ARN を入力（例：arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model）",
 		"baseUrl": "ベース URL を入力...",
-		"azureResourceName": "e.g. my-openai-resource",
-		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "例：meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "例：lmstudio-community/llama-3.2-1b-instruct",
@@ -993,58 +993,5 @@
 			"label": "メッセージを送信するには{{primaryMod}}+Enterが必要",
 			"description": "有効にすると、Enterだけでなく{{primaryMod}}+Enterを押してメッセージを送信する必要があります"
 		}
-	},
-	"skills": {
-		"description": "エージェントにコンテキスト指示を提供するスキルを管理します。スキルはタスクに関連する場合に自動的に適用されます。<DocsLink>詳細を見る</DocsLink>",
-		"workspaceSkills": "ワークスペーススキル",
-		"globalSkills": "グローバルスキル",
-		"noWorkspaceSkills": "このプロジェクトにはまだスキルがありません。",
-		"noGlobalSkills": "グローバルスキルが設定されていません。すべてのプロジェクトで利用可能なエージェント機能を追加するには、作成してください。",
-		"addSkill": "スキルを追加",
-		"editSkill": "スキルを編集",
-		"deleteSkill": "スキルを削除",
-		"configureModes": "モード可用性",
-		"modeAny": "任意のモード",
-		"modeCount": "{{count}} モード",
-		"deleteDialog": {
-			"title": "スキルを削除",
-			"description": "スキル「{{name}}」を削除してもよろしいですか？この操作は元に戻せません。",
-			"confirm": "削除",
-			"cancel": "キャンセル"
-		},
-		"modeDialog": {
-			"title": "スキルモードを設定",
-			"description": "このスキルを使用できるモードを選択します",
-			"intro": "コンテキストを軽く保つために、必要なモードのみでスキルを利用可能にすることをお勧めします。",
-			"anyMode": "任意のモード（どこでも利用可能）",
-			"save": "保存",
-			"cancel": "キャンセル"
-		},
-		"createDialog": {
-			"title": "新しいスキルを作成",
-			"nameLabel": "名前",
-			"namePlaceholder": "my-skill-name",
-			"descriptionLabel": "説明",
-			"descriptionPlaceholder": "このスキルをいつ使用するか説明してください...",
-			"sourceLabel": "場所",
-			"modeLabel": "モード（オプション）",
-			"modePlaceholder": "全てのモード",
-			"modeHint": "このスキルを特定のモードに制限する",
-			"modeAny": "全てのモード",
-			"create": "作成",
-			"cancel": "キャンセル"
-		},
-		"source": {
-			"global": "グローバル（すべてのプロジェクトで利用可能）",
-			"project": "プロジェクト（このワークスペースのみ）"
-		},
-		"validation": {
-			"nameRequired": "名前は必須です",
-			"nameTooLong": "名前は64文字以内である必要があります",
-			"nameInvalid": "名前は1〜64文字の小文字、数字、またはハイフンである必要があります",
-			"descriptionRequired": "説明は必須です",
-			"descriptionTooLong": "説明は1024文字以内である必要があります"
-		},
-		"footer": "スキルライターモードで独自のスキルを作成します。<MarketplaceLink>モードマーケットプレイス</MarketplaceLink>で入手可能です。"
 	}
 }

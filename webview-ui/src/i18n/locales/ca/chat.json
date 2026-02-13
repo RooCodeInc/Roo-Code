@@ -111,8 +111,6 @@
 	},
 	"selectMode": "Selecciona el mode d'interacció",
 	"selectApiConfig": "Seleccioneu la configuració de l'API",
-	"lockApiConfigAcrossModes": "Bloqueja la configuració de l'API a tots els modes en aquest espai de treball",
-	"unlockApiConfigAcrossModes": "La configuració de l'API està bloquejada a tots els modes en aquest espai de treball (fes clic per desbloquejar)",
 	"enhancePrompt": "Millora la sol·licitud amb context addicional",
 	"addImages": "Afegeix imatges al missatge",
 	"sendMessage": "Envia el missatge",
@@ -220,8 +218,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo vol veure els fitxers de nivell superior en aquest directori (fora de l'espai de treball)",
 		"didViewTopLevelOutsideWorkspace": "Roo ha vist els fitxers de nivell superior en aquest directori (fora de l'espai de treball)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo vol veure recursivament tots els fitxers en aquest directori (fora de l'espai de treball)",
-		"didViewRecursiveOutsideWorkspace": "Roo ha vist recursivament tots els fitxers en aquest directori (fora de l'espai de treball)",
-		"wantsToViewMultipleDirectories": "Roo vol veure diversos directoris"
+		"didViewRecursiveOutsideWorkspace": "Roo ha vist recursivament tots els fitxers en aquest directori (fora de l'espai de treball)"
 	},
 	"commandOutput": "Sortida de la comanda",
 	"commandExecution": {
@@ -347,8 +344,7 @@
 		},
 		"release": {
 			"heading": "Què hi ha de nou:",
-			"claudeOpus": "Claude Opus 4.6: Ara disponible en tots els proveïdors—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex i OpenRouter—portant el model més capaç d'Anthropic a la teva plataforma preferida.",
-			"gptCodex": "GPT-5.3-Codex: El model de codificació més recent d'OpenAI ara és compatible amb el proveïdor OpenAI - ChatGPT, oferint generació de codi de última generació i comprensió."
+			"smartCodeFolding": "Plegament intel·ligent de codi: La condensació de context ara preserva un mapa lleuger dels teus fitxers—signatures de funcions, declaracions de classe i definicions de tipus. Això proporciona millor continuïtat després de condensar i edicions més intel·ligents quan es fa referència a feina anterior."
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",
@@ -363,6 +359,44 @@
 		"total": "Cost total: ${{cost}}",
 		"includesSubtasks": "Inclou els costos de les subtasques"
 	},
+	"browser": {
+		"session": "Sessió del navegador",
+		"active": "Actiu",
+		"rooWantsToUse": "Roo vol utilitzar el navegador",
+		"consoleLogs": "Registres de consola",
+		"noNewLogs": "(Cap registre nou)",
+		"screenshot": "Captura de pantalla del navegador",
+		"cursor": "cursor",
+		"navigation": {
+			"step": "Pas {{current}} de {{total}}",
+			"previous": "Anterior",
+			"next": "Següent"
+		},
+		"sessionStarted": "Sessió de navegador iniciada",
+		"actions": {
+			"title": "Acció del navegador: ",
+			"launched": "Navegador iniciat",
+			"launch": "Iniciar navegador a {{url}}",
+			"clicked": "Fet clic ({{coordinate}})",
+			"click": "Clic ({{coordinate}})",
+			"typed": "Escrit: {{text}}",
+			"type": "Escriure \"{{text}}\"",
+			"pressed": "Premut: {{key}}",
+			"press": "Prem {{key}}",
+			"scrolledDown": "Desplaçat avall",
+			"scrollDown": "Desplaçar avall",
+			"scrolledUp": "Desplaçat amunt",
+			"scrollUp": "Desplaçar amunt",
+			"hovered": "Planat sobre ({{coordinate}})",
+			"hover": "Plana sobre ({{coordinate}})",
+			"resized": "Mida canviada a: {{size}}",
+			"resize": "Canvia la mida a {{size}}",
+			"screenshotSaved": "Captura de pantalla guardada",
+			"screenshot": "Guarda la captura de pantalla a {{path}}",
+			"closed": "Navegador tancat",
+			"close": "Tancar navegador"
+		}
+	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Expandir bloc de codi",
@@ -370,6 +404,7 @@
 			"copy_code": "Copiar codi"
 		}
 	},
+	"systemPromptWarning": "ADVERTÈNCIA: S'ha activat una substitució personalitzada d'instruccions del sistema. Això pot trencar greument la funcionalitat i causar un comportament impredictible.",
 	"profileViolationWarning": "El perfil actual no és compatible amb la configuració de la teva organització",
 	"shellIntegration": {
 		"title": "Advertència d'execució d'ordres",
@@ -398,22 +433,6 @@
 	"read-batch": {
 		"approve": {
 			"title": "Aprovar tot"
-		},
-		"deny": {
-			"title": "Denegar tot"
-		}
-	},
-	"list-batch": {
-		"approve": {
-			"title": "Aprovar tot"
-		},
-		"deny": {
-			"title": "Denegar tot"
-		}
-	},
-	"edit-batch": {
-		"approve": {
-			"title": "Desar tot"
 		},
 		"deny": {
 			"title": "Denegar tot"
@@ -492,10 +511,5 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
-	},
-	"retiredProvider": {
-		"title": "Proveïdor ja no compatible",
-		"message": "Ho sentim, aquest proveïdor ja no és compatible. Hem vist molt pocs usuaris de Roo que realment l'utilitzaven i necessitem reduir l'abast del nostre codi per poder seguir avançant ràpidament i servir bé la nostra comunitat en aquest espai. Va ser una decisió molt difícil, però ens permet centrar-nos en el que més t'importa. Ho sabem, és una llàstima.",
-		"openSettings": "Obrir configuració"
 	}
 }

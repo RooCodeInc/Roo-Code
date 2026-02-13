@@ -33,7 +33,10 @@ export async function getSkillsSection(
 		.map((skill) => {
 			const name = escapeXml(skill.name)
 			const description = escapeXml(skill.description)
-			const locationLine = `\n    <location>${escapeXml(skill.path)}</location>`
+			// Only include location for file-based skills (not built-in)
+			// Built-in skills are loaded via the skill tool by name, not by path
+			const isFileBasedSkill = skill.source !== "built-in" && skill.path !== "built-in"
+			const locationLine = isFileBasedSkill ? `\n    <location>${escapeXml(skill.path)}</location>` : ""
 			return `  <skill>\n    <name>${name}</name>\n    <description>${description}</description>${locationLine}\n  </skill>`
 		})
 		.join("\n")

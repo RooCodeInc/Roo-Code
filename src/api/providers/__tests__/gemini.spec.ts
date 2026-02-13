@@ -1,7 +1,4 @@
-import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // npx vitest run src/api/providers/__tests__/gemini.spec.ts
-
-import { NoOutputGeneratedError } from "ai"
 
 const mockCaptureException = vitest.fn()
 
@@ -12,30 +9,6 @@ vitest.mock("@roo-code/telemetry", () => ({
 		},
 	},
 }))
-
-// Mock the AI SDK functions
-const mockStreamText = vitest.fn()
-const mockGenerateText = vitest.fn()
-
-vitest.mock("ai", async (importOriginal) => {
-	const original = await importOriginal<typeof import("ai")>()
-	return {
-		...original,
-		streamText: (...args: unknown[]) => mockStreamText(...args),
-		generateText: (...args: unknown[]) => mockGenerateText(...args),
-	}
-})
-
-// Mock createGoogleGenerativeAI to capture constructor options
-const mockCreateGoogleGenerativeAI = vitest.fn().mockReturnValue(() => ({}))
-
-vitest.mock("@ai-sdk/google", async (importOriginal) => {
-	const original = await importOriginal<typeof import("@ai-sdk/google")>()
-	return {
-		...original,
-		createGoogleGenerativeAI: (...args: unknown[]) => mockCreateGoogleGenerativeAI(...args),
-	}
-})
 
 import { Anthropic } from "@anthropic-ai/sdk"
 
@@ -52,16 +25,26 @@ describe("GeminiHandler", () => {
 	beforeEach(() => {
 		// Reset mocks
 		mockCaptureException.mockClear()
-		mockStreamText.mockClear()
-		mockGenerateText.mockClear()
-		mockCreateGoogleGenerativeAI.mockClear()
-		mockCreateGoogleGenerativeAI.mockReturnValue(() => ({}))
+
+		// Create mock functions
+		const mockGenerateContentStream = vitest.fn()
+		const mockGenerateContent = vitest.fn()
+		const mockGetGenerativeModel = vitest.fn()
 
 		handler = new GeminiHandler({
 			apiKey: "test-key",
 			apiModelId: GEMINI_MODEL_NAME,
 			geminiApiKey: "test-key",
 		})
+
+		// Replace the client with our mock
+		handler["client"] = {
+			models: {
+				generateContentStream: mockGenerateContentStream,
+				generateContent: mockGenerateContent,
+				getGenerativeModel: mockGetGenerativeModel,
+			},
+		} as any
 	})
 
 	describe("constructor", () => {
@@ -69,41 +52,10 @@ describe("GeminiHandler", () => {
 			expect(handler["options"].geminiApiKey).toBe("test-key")
 			expect(handler["options"].apiModelId).toBe(GEMINI_MODEL_NAME)
 		})
-
-		it("should pass undefined baseURL when googleGeminiBaseUrl is empty string", () => {
-			mockCreateGoogleGenerativeAI.mockClear()
-			new GeminiHandler({
-				apiModelId: GEMINI_MODEL_NAME,
-				geminiApiKey: "test-key",
-				googleGeminiBaseUrl: "",
-			})
-			expect(mockCreateGoogleGenerativeAI).toHaveBeenCalledWith(expect.objectContaining({ baseURL: undefined }))
-		})
-
-		it("should pass undefined baseURL when googleGeminiBaseUrl is not provided", () => {
-			mockCreateGoogleGenerativeAI.mockClear()
-			new GeminiHandler({
-				apiModelId: GEMINI_MODEL_NAME,
-				geminiApiKey: "test-key",
-			})
-			expect(mockCreateGoogleGenerativeAI).toHaveBeenCalledWith(expect.objectContaining({ baseURL: undefined }))
-		})
-
-		it("should pass custom baseURL when googleGeminiBaseUrl is a valid URL", () => {
-			mockCreateGoogleGenerativeAI.mockClear()
-			new GeminiHandler({
-				apiModelId: GEMINI_MODEL_NAME,
-				geminiApiKey: "test-key",
-				googleGeminiBaseUrl: "https://custom-gemini.example.com/v1beta",
-			})
-			expect(mockCreateGoogleGenerativeAI).toHaveBeenCalledWith(
-				expect.objectContaining({ baseURL: "https://custom-gemini.example.com/v1beta" }),
-			)
-		})
 	})
 
 	describe("createMessage", () => {
-		const mockMessages: RooMessage[] = [
+		const mockMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: "Hello",
@@ -117,17 +69,13 @@ describe("GeminiHandler", () => {
 		const systemPrompt = "You are a helpful assistant"
 
 		it("should handle text messages correctly", async () => {
-			// Setup the mock implementation to return an async generator for fullStream
-			// AI SDK text-delta events have a 'text' property (processAiSdkStreamPart casts to this)
-			const mockFullStream = (async function* () {
-				yield { type: "text-delta", text: "Hello" }
-				yield { type: "text-delta", text: " world!" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
-				providerMetadata: Promise.resolve({}),
+			// Setup the mock implementation to return an async generator
+			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield { text: "Hello" }
+					yield { text: " world!" }
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
 			})
 
 			const stream = handler.createMessage(systemPrompt, mockMessages)
@@ -143,105 +91,21 @@ describe("GeminiHandler", () => {
 			expect(chunks[1]).toEqual({ type: "text", text: " world!" })
 			expect(chunks[2]).toMatchObject({ type: "usage", inputTokens: 10, outputTokens: 5 })
 
-			// Verify the call to streamText
-			expect(mockStreamText).toHaveBeenCalledWith(
+			// Verify the call to generateContentStream
+			expect(handler["client"].models.generateContentStream).toHaveBeenCalledWith(
 				expect.objectContaining({
-					system: systemPrompt,
-					temperature: 1,
+					model: GEMINI_MODEL_NAME,
+					config: expect.objectContaining({
+						temperature: 1,
+						systemInstruction: systemPrompt,
+					}),
 				}),
 			)
 		})
 
-		it("should yield informative message when stream produces no text content", async () => {
-			// Stream with only reasoning (no text-delta) simulates thinking-only response
-			const mockFullStream = (async function* () {
-				yield { type: "reasoning-delta", id: "1", text: "thinking..." }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 0 }),
-				providerMetadata: Promise.resolve({}),
-			})
-
-			const stream = handler.createMessage(systemPrompt, mockMessages)
-			const chunks = []
-
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			// Should have: reasoning chunk, empty-stream informative message, usage
-			const textChunks = chunks.filter((c) => c.type === "text")
-			expect(textChunks).toHaveLength(1)
-			expect(textChunks[0]).toEqual({
-				type: "text",
-				text: "Model returned an empty response. This may be caused by an unsupported thinking configuration or content filtering.",
-			})
-		})
-
-		it("should suppress NoOutputGeneratedError when no text content was yielded", async () => {
-			// Empty stream - nothing yielded at all
-			const mockFullStream = (async function* () {
-				// empty stream
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.reject(new NoOutputGeneratedError({ message: "No output generated." })),
-				providerMetadata: Promise.resolve({}),
-			})
-
-			const stream = handler.createMessage(systemPrompt, mockMessages)
-			const chunks = []
-
-			// Should NOT throw - the error is suppressed
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			// Should have the informative empty-stream message only (no usage since it errored)
-			const textChunks = chunks.filter((c) => c.type === "text")
-			expect(textChunks).toHaveLength(1)
-			expect(textChunks[0]).toMatchObject({
-				type: "text",
-				text: expect.stringContaining("empty response"),
-			})
-		})
-
-		it("should re-throw NoOutputGeneratedError when text content was yielded", async () => {
-			// Stream yields text content but usage still throws NoOutputGeneratedError (unexpected)
-			const mockFullStream = (async function* () {
-				yield { type: "text-delta", text: "Hello" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.reject(new NoOutputGeneratedError({ message: "No output generated." })),
-				providerMetadata: Promise.resolve({}),
-			})
-
-			const stream = handler.createMessage(systemPrompt, mockMessages)
-
-			await expect(async () => {
-				for await (const _chunk of stream) {
-					// consume stream
-				}
-			}).rejects.toThrow()
-		})
-
 		it("should handle API errors", async () => {
 			const mockError = new Error("Gemini API error")
-			// eslint-disable-next-line require-yield
-			const mockFullStream = (async function* () {
-				throw mockError
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({}),
-				providerMetadata: Promise.resolve({}),
-			})
+			;(handler["client"].models.generateContentStream as any).mockRejectedValue(mockError)
 
 			const stream = handler.createMessage(systemPrompt, mockMessages)
 
@@ -255,26 +119,28 @@ describe("GeminiHandler", () => {
 
 	describe("completePrompt", () => {
 		it("should complete prompt successfully", async () => {
-			mockGenerateText.mockResolvedValue({
+			// Mock the response with text property
+			;(handler["client"].models.generateContent as any).mockResolvedValue({
 				text: "Test response",
-				providerMetadata: {},
 			})
 
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("Test response")
 
-			// Verify the call to generateText
-			expect(mockGenerateText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					prompt: "Test prompt",
+			// Verify the call to generateContent
+			expect(handler["client"].models.generateContent).toHaveBeenCalledWith({
+				model: GEMINI_MODEL_NAME,
+				contents: [{ role: "user", parts: [{ text: "Test prompt" }] }],
+				config: {
+					httpOptions: undefined,
 					temperature: 1,
-				}),
-			)
+				},
+			})
 		})
 
 		it("should handle API errors", async () => {
 			const mockError = new Error("Gemini API error")
-			mockGenerateText.mockRejectedValue(mockError)
+			;(handler["client"].models.generateContent as any).mockRejectedValue(mockError)
 
 			await expect(handler.completePrompt("Test prompt")).rejects.toThrow(
 				t("common:errors.gemini.generate_complete_prompt", { error: "Gemini API error" }),
@@ -282,9 +148,9 @@ describe("GeminiHandler", () => {
 		})
 
 		it("should handle empty response", async () => {
-			mockGenerateText.mockResolvedValue({
+			// Mock the response with empty text
+			;(handler["client"].models.generateContent as any).mockResolvedValue({
 				text: "",
-				providerMetadata: {},
 			})
 
 			const result = await handler.completePrompt("Test prompt")
@@ -378,7 +244,7 @@ describe("GeminiHandler", () => {
 	})
 
 	describe("error telemetry", () => {
-		const mockMessages: RooMessage[] = [
+		const mockMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
 				content: "Hello",
@@ -389,16 +255,7 @@ describe("GeminiHandler", () => {
 
 		it("should capture telemetry on createMessage error", async () => {
 			const mockError = new Error("Gemini API error")
-			// eslint-disable-next-line require-yield
-			const mockFullStream = (async function* () {
-				throw mockError
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({}),
-				providerMetadata: Promise.resolve({}),
-			})
+			;(handler["client"].models.generateContentStream as any).mockRejectedValue(mockError)
 
 			const stream = handler.createMessage(systemPrompt, mockMessages)
 
@@ -426,7 +283,7 @@ describe("GeminiHandler", () => {
 
 		it("should capture telemetry on completePrompt error", async () => {
 			const mockError = new Error("Gemini completion error")
-			mockGenerateText.mockRejectedValue(mockError)
+			;(handler["client"].models.generateContent as any).mockRejectedValue(mockError)
 
 			await expect(handler.completePrompt("Test prompt")).rejects.toThrow()
 
@@ -448,16 +305,7 @@ describe("GeminiHandler", () => {
 
 		it("should still throw the error after capturing telemetry", async () => {
 			const mockError = new Error("Gemini API error")
-			// eslint-disable-next-line require-yield
-			const mockFullStream = (async function* () {
-				throw mockError
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve({}),
-				providerMetadata: Promise.resolve({}),
-			})
+			;(handler["client"].models.generateContentStream as any).mockRejectedValue(mockError)
 
 			const stream = handler.createMessage(systemPrompt, mockMessages)
 
@@ -470,170 +318,6 @@ describe("GeminiHandler", () => {
 
 			// Telemetry should have been captured before the error was thrown
 			expect(mockCaptureException).toHaveBeenCalled()
-		})
-	})
-
-	describe("AI SDK v6 usage field paths", () => {
-		const mockMessages: RooMessage[] = [
-			{
-				role: "user",
-				content: "Hello",
-			},
-		]
-		const systemPrompt = "You are a helpful assistant"
-
-		function setupStream(usage: Record<string, unknown>) {
-			const mockFullStream = (async function* () {
-				yield { type: "text-delta", text: "reply" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream,
-				usage: Promise.resolve(usage),
-				providerMetadata: Promise.resolve({}),
-			})
-		}
-
-		describe("cache tokens", () => {
-			it("should read cache tokens from v6 top-level cachedInputTokens", async () => {
-				setupStream({ inputTokens: 100, outputTokens: 50, cachedInputTokens: 30 })
-
-				const stream = handler.createMessage(systemPrompt, mockMessages)
-				const chunks = []
-				for await (const chunk of stream) {
-					chunks.push(chunk)
-				}
-
-				const usageChunk = chunks.find((c) => c.type === "usage")
-				expect(usageChunk).toBeDefined()
-				expect(usageChunk!.cacheReadTokens).toBe(30)
-			})
-
-			it("should read cache tokens from v6 inputTokenDetails.cacheReadTokens", async () => {
-				setupStream({
-					inputTokens: 100,
-					outputTokens: 50,
-					inputTokenDetails: { cacheReadTokens: 25 },
-				})
-
-				const stream = handler.createMessage(systemPrompt, mockMessages)
-				const chunks = []
-				for await (const chunk of stream) {
-					chunks.push(chunk)
-				}
-
-				const usageChunk = chunks.find((c) => c.type === "usage")
-				expect(usageChunk).toBeDefined()
-				expect(usageChunk!.cacheReadTokens).toBe(25)
-			})
-
-			it("should prefer v6 top-level cachedInputTokens over legacy details", async () => {
-				setupStream({
-					inputTokens: 100,
-					outputTokens: 50,
-					cachedInputTokens: 30,
-					details: { cachedInputTokens: 20 },
-				})
-
-				const stream = handler.createMessage(systemPrompt, mockMessages)
-				const chunks = []
-				for await (const chunk of stream) {
-					chunks.push(chunk)
-				}
-
-				const usageChunk = chunks.find((c) => c.type === "usage")
-				expect(usageChunk).toBeDefined()
-				expect(usageChunk!.cacheReadTokens).toBe(30)
-			})
-
-			it("should fall back to legacy details.cachedInputTokens", async () => {
-				setupStream({
-					inputTokens: 100,
-					outputTokens: 50,
-					details: { cachedInputTokens: 20 },
-				})
-
-				const stream = handler.createMessage(systemPrompt, mockMessages)
-				const chunks = []
-				for await (const chunk of stream) {
-					chunks.push(chunk)
-				}
-
-				const usageChunk = chunks.find((c) => c.type === "usage")
-				expect(usageChunk).toBeDefined()
-				expect(usageChunk!.cacheReadTokens).toBe(20)
-			})
-		})
-
-		describe("reasoning tokens", () => {
-			it("should read reasoning tokens from v6 top-level reasoningTokens", async () => {
-				setupStream({ inputTokens: 100, outputTokens: 50, reasoningTokens: 40 })
-
-				const stream = handler.createMessage(systemPrompt, mockMessages)
-				const chunks = []
-				for await (const chunk of stream) {
-					chunks.push(chunk)
-				}
-
-				const usageChunk = chunks.find((c) => c.type === "usage")
-				expect(usageChunk).toBeDefined()
-				expect(usageChunk!.reasoningTokens).toBe(40)
-			})
-
-			it("should read reasoning tokens from v6 outputTokenDetails.reasoningTokens", async () => {
-				setupStream({
-					inputTokens: 100,
-					outputTokens: 50,
-					outputTokenDetails: { reasoningTokens: 35 },
-				})
-
-				const stream = handler.createMessage(systemPrompt, mockMessages)
-				const chunks = []
-				for await (const chunk of stream) {
-					chunks.push(chunk)
-				}
-
-				const usageChunk = chunks.find((c) => c.type === "usage")
-				expect(usageChunk).toBeDefined()
-				expect(usageChunk!.reasoningTokens).toBe(35)
-			})
-
-			it("should prefer v6 top-level reasoningTokens over legacy details", async () => {
-				setupStream({
-					inputTokens: 100,
-					outputTokens: 50,
-					reasoningTokens: 40,
-					details: { reasoningTokens: 15 },
-				})
-
-				const stream = handler.createMessage(systemPrompt, mockMessages)
-				const chunks = []
-				for await (const chunk of stream) {
-					chunks.push(chunk)
-				}
-
-				const usageChunk = chunks.find((c) => c.type === "usage")
-				expect(usageChunk).toBeDefined()
-				expect(usageChunk!.reasoningTokens).toBe(40)
-			})
-
-			it("should fall back to legacy details.reasoningTokens", async () => {
-				setupStream({
-					inputTokens: 100,
-					outputTokens: 50,
-					details: { reasoningTokens: 15 },
-				})
-
-				const stream = handler.createMessage(systemPrompt, mockMessages)
-				const chunks = []
-				for await (const chunk of stream) {
-					chunks.push(chunk)
-				}
-
-				const usageChunk = chunks.find((c) => c.type === "usage")
-				expect(usageChunk).toBeDefined()
-				expect(usageChunk!.reasoningTokens).toBe(15)
-			})
 		})
 	})
 })

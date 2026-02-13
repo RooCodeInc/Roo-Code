@@ -31,6 +31,7 @@
 		"mcp": "Máy chủ MCP",
 		"worktrees": "Worktrees",
 		"autoApprove": "Phê duyệt",
+		"browser": "Trình duyệt",
 		"checkpoints": "Điểm kiểm tra",
 		"notifications": "Thông báo",
 		"contextManagement": "Ngữ cảnh",
@@ -40,8 +41,7 @@
 		"ui": "UI",
 		"experimental": "Thử nghiệm",
 		"language": "Ngôn ngữ",
-		"about": "Giới thiệu",
-		"skills": "Skills"
+		"about": "Giới thiệu"
 	},
 	"about": {
 		"bugReport": {
@@ -68,39 +68,7 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Quản lý các lệnh slash của bạn để thực thi nhanh các quy trình công việc và hành động tùy chỉnh. <DocsLink>Tìm hiểu thêm</DocsLink>",
-		"workspaceCommands": "Lệnh không gian làm việc",
-		"globalCommands": "Lệnh toàn cầu",
-		"noWorkspaceCommands": "Chưa có lệnh trong dự án này.",
-		"noGlobalCommands": "Chưa có lệnh toàn cầu.",
-		"addCommand": "Thêm lệnh Slash",
-		"editCommand": "Chỉnh sửa lệnh",
-		"deleteCommand": "Xóa lệnh",
-		"deleteDialog": {
-			"title": "Xóa lệnh",
-			"description": "Bạn có chắc chắn muốn xóa lệnh \"{{name}}\" không? Không thể hoàn tác hành động này.",
-			"confirm": "Xóa",
-			"cancel": "Hủy"
-		},
-		"createDialog": {
-			"title": "Tạo lệnh Slash mới",
-			"nameLabel": "Tên",
-			"namePlaceholder": "my-command-name",
-			"nameHint": "Chỉ chữ cái thường, số, dấu gạch ngang và dấu gạch dưới",
-			"sourceLabel": "Vị trí",
-			"create": "Tạo",
-			"cancel": "Hủy"
-		},
-		"source": {
-			"global": "Toàn cầu (có sẵn ở tất cả các không gian làm việc)",
-			"project": "Không gian làm việc"
-		},
-		"validation": {
-			"nameRequired": "Tên là bắt buộc",
-			"nameTooLong": "Tên phải có 64 ký tự hoặc ít hơn",
-			"nameInvalid": "Tên chỉ có thể chứa chữ cái, số, dấu gạch ngang và dấu gạch dưới"
-		},
-		"footer": "Sử dụng lệnh slash để truy cập nhanh các prompt và quy trình công việc được sử dụng thường xuyên."
+		"description": "Quản lý các lệnh slash của bạn để thực thi nhanh các quy trình công việc và hành động tùy chỉnh. <DocsLink>Tìm hiểu thêm</DocsLink>"
 	},
 	"prompts": {
 		"description": "Cấu hình các lời nhắc hỗ trợ được sử dụng cho các hành động nhanh như cải thiện lời nhắc, giải thích mã và khắc phục sự cố. Những lời nhắc này giúp Roo cung cấp hỗ trợ tốt hơn cho các tác vụ phát triển phổ biến."
@@ -240,6 +208,10 @@
 				"description": "Cho phép Roo tạo và chỉnh sửa các tệp được bảo vệ (như .rooignore và các tệp cấu hình .roo/) mà không yêu cầu phê duyệt."
 			}
 		},
+		"browser": {
+			"label": "Trình duyệt",
+			"description": "Tự động thực hiện các hành động trình duyệt mà không cần phê duyệt. Lưu ý: Chỉ áp dụng khi mô hình hỗ trợ sử dụng máy tính"
+		},
 		"mcp": {
 			"label": "MCP",
 			"description": "Bật tự động phê duyệt các công cụ MCP riêng lẻ trong chế độ xem Máy chủ MCP (yêu cầu cả cài đặt này và hộp kiểm \"Luôn cho phép\" của công cụ)"
@@ -271,6 +243,7 @@
 		},
 		"apiRequestLimit": {
 			"title": "Số lượng yêu cầu tối đa",
+			"description": "Tự động thực hiện số lượng API request này trước khi yêu cầu phê duyệt để tiếp tục với nhiệm vụ.",
 			"unlimited": "Không giới hạn"
 		},
 		"selectOptionsFirst": "Chọn ít nhất một tùy chọn bên dưới để bật tự động phê duyệt",
@@ -304,7 +277,6 @@
 		"searchProviderPlaceholder": "Tìm kiếm nhà cung cấp",
 		"noProviderMatchFound": "Không tìm thấy nhà cung cấp",
 		"noMatchFound": "Không tìm thấy hồ sơ phù hợp",
-		"retiredProviderMessage": "Xin lỗi, nhà cung cấp này không còn được hỗ trợ nữa. Chúng tôi thấy rất ít người dùng Roo thực sự sử dụng nó và chúng tôi cần giảm phạm vi mã nguồn để có thể tiếp tục phát triển nhanh và phục vụ cộng đồng tốt hơn. Đây là một quyết định rất khó khăn nhưng nó cho phép chúng tôi tập trung vào những gì quan trọng nhất với bạn. Chúng tôi biết điều này thật phiền.",
 		"vscodeLmDescription": "API Mô hình Ngôn ngữ VS Code cho phép bạn chạy các mô hình được cung cấp bởi các tiện ích mở rộng khác của VS Code (bao gồm nhưng không giới hạn ở GitHub Copilot). Cách dễ nhất để bắt đầu là cài đặt các tiện ích mở rộng Copilot và Copilot Chat từ VS Code Marketplace.",
 		"awsCustomArnUse": "Nhập một ARN Amazon Bedrock hợp lệ cho mô hình bạn muốn sử dụng. Ví dụ về định dạng:",
 		"awsCustomArnDesc": "Đảm bảo rằng vùng trong ARN khớp với vùng AWS đã chọn ở trên.",
@@ -366,23 +338,15 @@
 		"getAnthropicApiKey": "Lấy khóa API Anthropic",
 		"anthropicUseAuthToken": "Truyền khóa API Anthropic dưới dạng tiêu đề Authorization thay vì X-Api-Key",
 		"anthropic1MContextBetaLabel": "Bật cửa sổ ngữ cảnh 1M (Beta)",
-		"anthropic1MContextBetaDescription": "Mở rộng cửa sổ ngữ cảnh lên 1 triệu token cho Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"anthropic1MContextBetaDescription": "Mở rộng cửa sổ ngữ cảnh lên 1 triệu token cho Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Bật cửa sổ ngữ cảnh 1M (Beta)",
-		"awsBedrock1MContextBetaDescription": "Mở rộng cửa sổ ngữ cảnh lên 1 triệu token cho Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"awsBedrock1MContextBetaDescription": "Mở rộng cửa sổ ngữ cảnh lên 1 triệu token cho Claude Sonnet 4",
 		"vertex1MContextBetaLabel": "Bật cửa sổ ngữ cảnh 1M (Beta)",
-		"vertex1MContextBetaDescription": "Mở rộng cửa sổ ngữ cảnh lên 1 triệu token cho Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"vertex1MContextBetaDescription": "Mở rộng cửa sổ ngữ cảnh lên 1 triệu token cho Claude Sonnet 4",
 		"basetenApiKey": "Khóa API Baseten",
 		"getBasetenApiKey": "Lấy khóa API Baseten",
 		"cerebrasApiKey": "Khóa API Cerebras",
 		"getCerebrasApiKey": "Lấy khóa API Cerebras",
-		"azureResourceName": "Tên tài nguyên Azure",
-		"azureResourceNameDescription": "Tên tài nguyên Azure AI Foundry của bạn (ví dụ: 'my-openai-resource').",
-		"azureDeploymentName": "Tên triển khai Azure",
-		"azureDeploymentNameDescription": "Tên triển khai mô hình trong tài nguyên.",
-		"azureApiKey": "Khóa API Azure",
-		"getAzureApiKey": "Lấy quyền truy cập Azure AI Foundry",
-		"azureApiVersion": "Phiên bản API Azure",
-		"azureApiVersionDescription": "Phiên bản API để sử dụng (ví dụ: '2024-10-21'). Để trống để dùng giá trị mặc định.",
 		"chutesApiKey": "Khóa API Chutes",
 		"getChutesApiKey": "Lấy khóa API Chutes",
 		"fireworksApiKey": "Khóa API Fireworks",
@@ -465,6 +429,16 @@
 		"cacheUsageNote": "Lưu ý: Nếu bạn không thấy việc sử dụng bộ nhớ đệm, hãy thử chọn một mô hình khác và sau đó chọn lại mô hình mong muốn của bạn.",
 		"vscodeLmModel": "Mô hình ngôn ngữ",
 		"vscodeLmWarning": "Lưu ý: Các mô hình truy cập qua VS Code Language Model API có thể được nhà cung cấp bao bọc hoặc tinh chỉnh, vì vậy hành vi có thể khác so với khi dùng trực tiếp cùng mô hình từ nhà cung cấp hoặc router thông thường. Để dùng một mô hình trong menu «Language Model», trước tiên hãy chuyển sang mô hình đó rồi nhấp «Chấp nhận» trong lời nhắc Copilot Chat; nếu không bạn có thể gặp lỗi như 400 «The requested model is not supported».",
+		"geminiParameters": {
+			"urlContext": {
+				"title": "Bật ngữ cảnh URL",
+				"description": "Cho phép Gemini truy cập và xử lý URL để có thêm ngữ cảnh khi tạo phản hồi. Hữu ích cho các tác vụ yêu cầu phân tích nội dung web."
+			},
+			"groundingSearch": {
+				"title": "Bật grounding với tìm kiếm Google",
+				"description": "Cho phép Gemini tìm kiếm trên Google để lấy thông tin mới nhất và căn cứ phản hồi dựa trên dữ liệu thời gian thực. Hữu ích cho các truy vấn yêu cầu thông tin cập nhật."
+			}
+		},
 		"googleCloudSetup": {
 			"title": "Để sử dụng Google Cloud Vertex AI, bạn cần:",
 			"step1": "1. Tạo tài khoản Google Cloud, kích hoạt Vertex AI API và kích hoạt các mô hình Claude mong muốn.",
@@ -587,6 +561,34 @@
 			"maxTokensDescription": "Số lượng token đầu ra tối đa cho các phản hồi của Claude Code. Mặc định là 8000."
 		}
 	},
+	"browser": {
+		"enable": {
+			"label": "Bật công cụ trình duyệt",
+			"description": "Khi được bật, Roo có thể sử dụng trình duyệt để tương tác với các trang web khi sử dụng các mô hình hỗ trợ sử dụng máy tính. <0>Tìm hiểu thêm</0>"
+		},
+		"viewport": {
+			"label": "Kích thước khung nhìn",
+			"description": "Chọn kích thước khung nhìn cho tương tác trình duyệt. Điều này ảnh hưởng đến cách trang web được hiển thị và tương tác.",
+			"options": {
+				"largeDesktop": "Máy tính để bàn lớn (1280x800)",
+				"smallDesktop": "Máy tính để bàn nhỏ (900x600)",
+				"tablet": "Máy tính bảng (768x1024)",
+				"mobile": "Di động (360x640)"
+			}
+		},
+		"screenshotQuality": {
+			"label": "Chất lượng ảnh chụp màn hình",
+			"description": "Điều chỉnh chất lượng WebP của ảnh chụp màn hình trình duyệt. Giá trị cao hơn cung cấp ảnh chụp màn hình rõ ràng hơn nhưng tăng sử dụng token."
+		},
+		"remote": {
+			"label": "Sử dụng kết nối trình duyệt từ xa",
+			"description": "Kết nối với trình duyệt Chrome đang chạy với tính năng gỡ lỗi từ xa được bật (--remote-debugging-port=9222).",
+			"urlPlaceholder": "URL tùy chỉnh (ví dụ: http://localhost:9222)",
+			"testButton": "Kiểm tra kết nối",
+			"testingButton": "Đang kiểm tra...",
+			"instructions": "Nhập địa chỉ DevTools Protocol hoặc để trống để tự động phát hiện các instance Chrome cục bộ. Nút Kiểm tra kết nối sẽ thử URL tùy chỉnh nếu được cung cấp, hoặc tự động phát hiện nếu trường này trống."
+		}
+	},
 	"checkpoints": {
 		"timeout": {
 			"label": "Thời gian chờ khởi tạo điểm kiểm tra (giây)",
@@ -662,6 +664,7 @@
 				"label": "Thông báo chẩn đoán tối đa",
 				"description": "Số lượng thông báo chẩn đoán tối đa được bao gồm cho mỗi tệp. Giới hạn này áp dụng cho cả việc bao gồm tự động (khi hộp kiểm được bật) và đề cập thủ công @problems. Giá trị cao hơn cung cấp nhiều ngữ cảnh hơn nhưng tăng mức sử dụng token.",
 				"resetTooltip": "Đặt lại về giá trị mặc định (50)",
+				"unlimited": "Thông báo chẩn đoán không giới hạn",
 				"unlimitedLabel": "Không giới hạn"
 			},
 			"delayAfterWrite": {
@@ -896,6 +899,7 @@
 		"simplifiedExplanation": "Bạn có thể điều chỉnh cài đặt mô hình chi tiết sau."
 	},
 	"footer": {
+		"feedback": "Nếu bạn có bất kỳ câu hỏi hoặc phản hồi nào, vui lòng mở một vấn đề tại <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> hoặc tham gia <redditLink>reddit.com/r/RooCode</redditLink> hoặc <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Cho phép báo cáo lỗi và sử dụng ẩn danh",
 			"description": "Giúp cải thiện Roo Code bằng cách gửi dữ liệu sử dụng ẩn danh và báo cáo lỗi. Telemetry này không thu thập mã, prompt hoặc thông tin cá nhân. Xem <privacyLink>chính sách bảo mật</privacyLink> của chúng tôi để biết thêm chi tiết. Bạn có thể tắt tính năng này bất cứ lúc nào."
@@ -926,9 +930,7 @@
 		"providerNotAllowed": "Nhà cung cấp '{{provider}}' không được phép bởi tổ chức của bạn",
 		"modelNotAllowed": "Mô hình '{{model}}' không được phép cho nhà cung cấp '{{provider}}' bởi tổ chức của bạn",
 		"profileInvalid": "Hồ sơ này chứa một nhà cung cấp hoặc mô hình không được phép bởi tổ chức của bạn",
-		"qwenCodeOauthPath": "Bạn phải cung cấp đường dẫn thông tin xác thực OAuth hợp lệ",
-		"azureResourceName": "Bạn phải cung cấp tên tài nguyên Azure.",
-		"azureDeploymentName": "Bạn phải cung cấp tên triển khai Azure."
+		"qwenCodeOauthPath": "Bạn phải cung cấp đường dẫn thông tin xác thực OAuth hợp lệ"
 	},
 	"placeholders": {
 		"apiKey": "Nhập khóa API...",
@@ -941,8 +943,6 @@
 		"projectId": "Nhập ID dự án...",
 		"customArn": "Nhập ARN (vd: arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Nhập URL cơ sở...",
-		"azureResourceName": "e.g. my-openai-resource",
-		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "vd: meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "vd: lmstudio-community/llama-3.2-1b-instruct",
@@ -993,58 +993,5 @@
 			"label": "Yêu cầu {{primaryMod}}+Enter để gửi tin nhắn",
 			"description": "Khi được bật, bạn phải nhấn {{primaryMod}}+Enter để gửi tin nhắn thay vì chỉ nhấn Enter"
 		}
-	},
-	"skills": {
-		"description": "Quản lý các skill cung cấp hướng dẫn theo ngữ cảnh cho agent. Các skill được áp dụng tự động khi chúng liên quan đến nhiệm vụ của bạn. <DocsLink>Tìm hiểu thêm</DocsLink>",
-		"workspaceSkills": "Kỹ năng không gian làm việc",
-		"globalSkills": "Skills Toàn Cục",
-		"noWorkspaceSkills": "Chưa có kỹ năng trong dự án này.",
-		"noGlobalSkills": "Không có skill toàn cục nào được cấu hình. Tạo một skill để thêm khả năng agent có sẵn trong tất cả các dự án.",
-		"addSkill": "Thêm Skill",
-		"editSkill": "Chỉnh sửa skill",
-		"deleteSkill": "Xóa skill",
-		"configureModes": "Tính khả dụng của chế độ",
-		"modeAny": "Bất kỳ chế độ nào",
-		"modeCount": "{{count}} chế độ",
-		"deleteDialog": {
-			"title": "Xóa Skill",
-			"description": "Bạn có chắc chắn muốn xóa skill \"{{name}}\" không? Hành động này không thể hoàn tác.",
-			"confirm": "Xóa",
-			"cancel": "Hủy"
-		},
-		"modeDialog": {
-			"title": "Cấu hình chế độ Skill",
-			"description": "Chọn chế độ nào có thể sử dụng skill này",
-			"intro": "Để giữ bối cảnh của bạn nhẹ, chúng tôi khuyên bạn nên chỉ cung cấp các kỹ năng cho các chế độ cần chúng.",
-			"anyMode": "Bất kỳ chế độ nào (có sẵn ở mọi nơi)",
-			"save": "Lưu",
-			"cancel": "Hủy"
-		},
-		"createDialog": {
-			"title": "Tạo Skill Mới",
-			"nameLabel": "Tên",
-			"namePlaceholder": "ten-skill-cua-toi",
-			"descriptionLabel": "Mô tả",
-			"descriptionPlaceholder": "Mô tả khi nào nên sử dụng skill này...",
-			"sourceLabel": "Vị trí",
-			"modeLabel": "Chế độ (tùy chọn)",
-			"modePlaceholder": "Bất kỳ chế độ nào",
-			"modeHint": "Hạn chế skill này cho một chế độ cụ thể",
-			"modeAny": "Bất kỳ chế độ nào",
-			"create": "Tạo",
-			"cancel": "Hủy"
-		},
-		"source": {
-			"global": "Toàn cục (có sẵn trong tất cả các dự án)",
-			"project": "Dự án (chỉ workspace này)"
-		},
-		"validation": {
-			"nameRequired": "Tên là bắt buộc",
-			"nameTooLong": "Tên phải có tối đa 64 ký tự",
-			"nameInvalid": "Tên phải là 1-64 chữ thường, số hoặc dấu gạch ngang",
-			"descriptionRequired": "Mô tả là bắt buộc",
-			"descriptionTooLong": "Mô tả phải có tối đa 1024 ký tự"
-		},
-		"footer": "Tạo các skill của riêng bạn với chế độ Skill Writer, có sẵn tại <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	}
 }

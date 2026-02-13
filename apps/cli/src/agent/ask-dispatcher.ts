@@ -60,11 +60,6 @@ export interface AskDispatcherOptions {
 	nonInteractive?: boolean
 
 	/**
-	 * Whether to exit on API request errors instead of retrying.
-	 */
-	exitOnError?: boolean
-
-	/**
 	 * Whether to disable ask handling (for TUI mode).
 	 * In TUI mode, the TUI handles asks directly.
 	 */
@@ -92,7 +87,6 @@ export class AskDispatcher {
 	private promptManager: PromptManager
 	private sendMessage: (message: WebviewMessage) => void
 	private nonInteractive: boolean
-	private exitOnError: boolean
 	private disabled: boolean
 
 	/**
@@ -106,7 +100,6 @@ export class AskDispatcher {
 		this.promptManager = options.promptManager
 		this.sendMessage = options.sendMessage
 		this.nonInteractive = options.nonInteractive ?? false
-		this.exitOnError = options.exitOnError ?? false
 		this.disabled = options.disabled ?? false
 	}
 
@@ -244,7 +237,7 @@ export class AskDispatcher {
 	}
 
 	/**
-	 * Handle interactive asks (followup, command, tool, use_mcp_server).
+	 * Handle interactive asks (followup, command, tool, browser_action_launch, use_mcp_server).
 	 * These require user approval or input.
 	 */
 	private async handleInteractiveAsk(ts: number, ask: ClineAsk, text: string): Promise<AskHandleResult> {
@@ -257,6 +250,9 @@ export class AskDispatcher {
 
 			case "tool":
 				return await this.handleToolApproval(ts, text)
+
+			case "browser_action_launch":
+				return await this.handleBrowserApproval(ts, text)
 
 			case "use_mcp_server":
 				return await this.handleMcpApproval(ts, text)
@@ -442,6 +438,32 @@ export class AskDispatcher {
 	}
 
 	/**
+	 * Handle browser action approval.
+	 */
+	private async handleBrowserApproval(ts: number, text: string): Promise<AskHandleResult> {
+		this.outputManager.output("\n[browser action request]")
+		if (text) {
+			this.outputManager.output(`  Action: ${text}`)
+		}
+		this.outputManager.markDisplayed(ts, text || "", false)
+
+		if (this.nonInteractive) {
+			// Auto-approved by extension settings
+			return { handled: true }
+		}
+
+		try {
+			const approved = await this.promptManager.promptForYesNo("Allow browser action? (y/n): ")
+			this.sendApprovalResponse(approved)
+			return { handled: true, response: approved ? "yesButtonClicked" : "noButtonClicked" }
+		} catch {
+			this.outputManager.output("[Defaulting to: no]")
+			this.sendApprovalResponse(false)
+			return { handled: true, response: "noButtonClicked" }
+		}
+	}
+
+	/**
 	 * Handle MCP server access approval.
 	 */
 	private async handleMcpApproval(ts: number, text: string): Promise<AskHandleResult> {
@@ -495,11 +517,6 @@ export class AskDispatcher {
 		this.outputManager.output("\n[api request failed]")
 		this.outputManager.output(`  Error: ${text || "Unknown error"}`)
 		this.outputManager.markDisplayed(ts, text || "", false)
-
-		if (this.exitOnError) {
-			console.error(`[CLI] API request failed: ${text || "Unknown error"}`)
-			process.exit(1)
-		}
 
 		if (this.nonInteractive) {
 			this.outputManager.output("\n[retrying api request]")

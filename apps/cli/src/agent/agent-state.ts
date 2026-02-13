@@ -116,7 +116,7 @@ export enum AgentLoopState {
  */
 export type RequiredAction =
 	| "none" // No action needed (running/streaming)
-	| "approve" // Can approve/reject (tool, command, mcp)
+	| "approve" // Can approve/reject (tool, command, browser, mcp)
 	| "answer" // Need to answer a question (followup)
 	| "retry_or_new_task" // Can retry or start new task (api_req_failed)
 	| "proceed_or_new_task" // Can proceed or start new task (mistake_limit)
@@ -221,6 +221,7 @@ function getRequiredAction(ask: ClineAsk): RequiredAction {
 			return "answer"
 		case "command":
 		case "tool":
+		case "browser_action_launch":
 		case "use_mcp_server":
 			return "approve"
 		case "command_output":
@@ -263,6 +264,8 @@ function getStateDescription(state: AgentLoopState, ask?: ClineAsk): string {
 					return "Agent wants to execute a command. Approve or reject."
 				case "tool":
 					return "Agent wants to perform a file operation. Approve or reject."
+				case "browser_action_launch":
+					return "Agent wants to use the browser. Approve or reject."
 				case "use_mcp_server":
 					return "Agent wants to use an MCP server. Approve or reject."
 				default:

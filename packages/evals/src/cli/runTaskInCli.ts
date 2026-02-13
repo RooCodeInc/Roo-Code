@@ -7,11 +7,11 @@ import { execa } from "execa"
 import { type ToolUsage, TaskCommandName, RooCodeEventName, IpcMessageType } from "@roo-code/types"
 import { IpcClient } from "@roo-code/ipc"
 
-import { updateTask, createTaskMetrics, updateTaskMetrics, createToolError } from "../db/index"
-import { EVALS_REPO_PATH } from "../exercises/index"
+import { updateTask, createTaskMetrics, updateTaskMetrics, createToolError } from "../db/index.js"
+import { EVALS_REPO_PATH } from "../exercises/index.js"
 
-import { type RunTaskOptions } from "./types"
-import { mergeToolUsage, waitForSubprocessWithTimeout } from "./utils"
+import { type RunTaskOptions } from "./types.js"
+import { mergeToolUsage, waitForSubprocessWithTimeout } from "./utils.js"
 
 /**
  * Run a task using the Roo Code CLI (headless mode).
@@ -43,6 +43,7 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 		promptSourcePath,
 		"--workspace",
 		workspacePath,
+		"--yes",
 		"--reasoning-effort",
 		"disabled",
 		"--oneshot",
@@ -263,7 +264,7 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 
 		if (rooTaskId && !isClientDisconnected) {
 			logger.info("cancelling task")
-			client.sendCommand({ commandName: TaskCommandName.CancelTask })
+			client.sendCommand({ commandName: TaskCommandName.CancelTask, data: rooTaskId })
 			await new Promise((resolve) => setTimeout(resolve, 5_000))
 		}
 
@@ -288,7 +289,7 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 
 	if (rooTaskId && !isClientDisconnected) {
 		logger.info("closing task")
-		client.sendCommand({ commandName: TaskCommandName.CloseTask })
+		client.sendCommand({ commandName: TaskCommandName.CloseTask, data: rooTaskId })
 		await new Promise((resolve) => setTimeout(resolve, 2_000))
 	}
 

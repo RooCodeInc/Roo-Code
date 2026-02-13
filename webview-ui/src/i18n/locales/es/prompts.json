@@ -25,6 +25,7 @@
 		"toolNames": {
 			"read": "Leer archivos",
 			"edit": "Editar archivos",
+			"browser": "Usar navegador",
 			"command": "Ejecutar comandos",
 			"mcp": "Usar MCP"
 		},
@@ -69,6 +70,9 @@
 			"label": "Nivel de proyecto",
 			"description": "Solo disponible en este espacio de trabajo. Si el modo exportado contenía archivos de reglas, se volverán a crear en la carpeta .roo/rules-{slug}/."
 		}
+	},
+	"advanced": {
+		"title": "Avanzado"
 	},
 	"globalCustomInstructions": {
 		"title": "Instrucciones personalizadas para todos los modos",
@@ -141,6 +145,10 @@
 				"description": "Inicia una nueva tarea con entrada del usuario. Disponible en la Paleta de comandos."
 			}
 		}
+	},
+	"advancedSystemPrompt": {
+		"title": "Avanzado: Anular solicitud del sistema",
+		"description": "<2>⚠️ Advertencia:</2> Esta función avanzada omite las medidas de seguridad. <1>¡LEE ESTO ANTES DE USAR!</1>Anula la solicitud del sistema predeterminada creando un archivo en <span>.roo/system-prompt-{{slug}}</span>."
 	},
 	"createModeDialog": {
 		"title": "Crear nuevo modo",

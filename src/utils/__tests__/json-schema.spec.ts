@@ -86,9 +86,9 @@ describe("normalizeToolSchema", () => {
 				type: "object",
 				properties: {
 					path: { type: "string" },
-					tags: {
+					line_ranges: {
 						type: ["array", "null"],
-						items: { type: "string" },
+						items: { type: "integer" },
 					},
 				},
 			},
@@ -104,8 +104,8 @@ describe("normalizeToolSchema", () => {
 				type: "object",
 				properties: {
 					path: { type: "string" },
-					tags: {
-						anyOf: [{ type: "array", items: { type: "string" } }, { type: "null" }],
+					line_ranges: {
+						anyOf: [{ type: "array", items: { type: "integer" } }, { type: "null" }],
 					},
 				},
 				additionalProperties: false,
@@ -123,7 +123,7 @@ describe("normalizeToolSchema", () => {
 						type: "object",
 						properties: {
 							path: { type: "string" },
-							ranges: {
+							line_ranges: {
 								type: ["array", "null"],
 								items: {
 									type: "array",
@@ -131,7 +131,7 @@ describe("normalizeToolSchema", () => {
 								},
 							},
 						},
-						required: ["path", "ranges"],
+						required: ["path", "line_ranges"],
 					},
 				},
 			},
@@ -144,7 +144,7 @@ describe("normalizeToolSchema", () => {
 		const filesItems = properties.files.items as Record<string, unknown>
 		const filesItemsProps = filesItems.properties as Record<string, Record<string, unknown>>
 		// Array-specific properties (items) should be moved inside the array variant
-		expect(filesItemsProps.ranges.anyOf).toEqual([
+		expect(filesItemsProps.line_ranges.anyOf).toEqual([
 			{ type: "array", items: { type: "array", items: { type: "integer" } } },
 			{ type: "null" },
 		])
@@ -224,32 +224,60 @@ describe("normalizeToolSchema", () => {
 		const input = {
 			type: "object",
 			properties: {
-				path: {
-					type: "string",
-					description: "Path to the file",
-				},
-				indentation: {
-					type: ["object", "null"],
-					properties: {
-						anchor_line: {
-							type: ["integer", "null"],
+				files: {
+					type: "array",
+					description: "List of files to read",
+					items: {
+						type: "object",
+						properties: {
+							path: {
+								type: "string",
+								description: "Path to the file",
+							},
+							line_ranges: {
+								type: ["array", "null"],
+								description: "Optional line ranges",
+								items: {
+									type: "array",
+									items: { type: "integer" },
+									minItems: 2,
+									maxItems: 2,
+								},
+							},
 						},
+						required: ["path", "line_ranges"],
+						additionalProperties: false,
 					},
+					minItems: 1,
 				},
 			},
-			required: ["path"],
+			required: ["files"],
 			additionalProperties: false,
 		}
 
 		const result = normalizeToolSchema(input)
 
-		// Verify nested nullable objects are transformed correctly
-		const props = result.properties as Record<string, Record<string, unknown>>
-		expect(props.indentation.anyOf).toEqual([{ type: "object" }, { type: "null" }])
-		expect(props.indentation.additionalProperties).toBe(false)
-		expect((props.indentation.properties as Record<string, unknown>).anchor_line).toEqual({
-			anyOf: [{ type: "integer" }, { type: "null" }],
-		})
+		// Verify the line_ranges was transformed with items inside the array variant
+		const files = (result.properties as Record<string, unknown>).files as Record<string, unknown>
+		const items = files.items as Record<string, unknown>
+		const props = items.properties as Record<string, Record<string, unknown>>
+		// Array-specific properties (items, minItems, maxItems) should be moved inside the array variant
+		expect(props.line_ranges.anyOf).toEqual([
+			{
+				type: "array",
+				items: {
+					type: "array",
+					items: { type: "integer" },
+					minItems: 2,
+					maxItems: 2,
+				},
+			},
+			{ type: "null" },
+		])
+		// items should NOT be at root level anymore
+		expect(props.line_ranges.items).toBeUndefined()
+		// Other properties are preserved at root level
+		expect(props.line_ranges.description).toBe("Optional line ranges")
 	})
 
 	describe("format field handling", () => {

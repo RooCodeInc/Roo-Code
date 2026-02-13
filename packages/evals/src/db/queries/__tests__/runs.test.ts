@@ -1,6 +1,6 @@
-import { createRun, finishRun } from "../runs"
-import { createTask } from "../tasks"
-import { createTaskMetrics } from "../taskMetrics"
+import { createRun, finishRun } from "../runs.js"
+import { createTask } from "../tasks.js"
+import { createTaskMetrics } from "../taskMetrics.js"
 
 describe("finishRun", () => {
 	it("aggregates task metrics, including tool usage", async () => {

@@ -1,0 +1,357 @@
+<documentation_patterns>
+  <overview>
+    Standard templates for structuring extracted documentation.
+  </overview>
+
+  <output_structure>
+    <user_focused_template>
+# [Feature Name]
+
+[Description of what the feature does and why a user should care.]
+
+### Key Features
+- [Benefit-oriented feature 1]
+- [Benefit-oriented feature 2]
+- [Benefit-oriented feature 3]
+
+---
+
+## Use Case
+
+**Before**: [Description of the old way]
+- [Pain point 1]
+- [Pain point 2]
+
+**With this feature**: [Description of the new experience.]
+
+## How it Works
+
+[Simple explanation of the feature's operation.]
+
+[Suggest visual representations where helpful.]
+
+---
+
+## Configuration
+
+[Explanation of relevant settings.]
+
+1. **[Setting Name]**:
+   - **Setting**: `[technical_name]`
+   - **Description**: [What this does.]
+   - **Default**: [Default value and its meaning.]
+
+2. **[Setting Name]**:
+   - **Setting**: `[technical_name]`
+   - **Description**: [What this does.]
+   - **Default**: [Default value and its meaning.]
+
+---
+
+## FAQ
+
+**"[User question]"**
+- [Answer.]
+- [Optional tip.]
+
+**"[User question]"**
+- [Answer.]
+- [Optional tip.]
+
+    </user_focused_template>
+
+    <comprehensive_template>
+# [Feature Name] Technical Documentation
+
+## Table of Contents
+1. Overview
+2. Quick Start
+3. Architecture
+4. API Reference
+5. Configuration
+6. User Guide
+7. Developer Guide
+8. Security
+9. Performance
+10. Troubleshooting
+11. FAQ
+12. Changelog
+13. References
+
+[Use this as an internal source-material outline for technical sections; not for final docs.]
+    </comprehensive_template>
+  </output_structure>
+
+  <documentation_patterns>
+    <before_after>
+      <template>
+**Before**: Multiple, sequential file read requests:
+- "Read `src/app.js`?" → Approve
+- "Read `src/utils.js`?" → Approve
+- "Read `src/config.json`?" → Approve
+
+**Now**: One request to read all related files.
+      </template>
+    </before_after>
+
+    <visual_separator>
+      <format>---</format>
+      <purpose>Separate sections.</purpose>
+    </visual_separator>
+
+    <faq>
+      <template>
+## FAQ
+
+**"Why disable this?"**
+- Your AI model handles single files better.
+- You need more control over file access.
+- You are working with very large files.
+
+**"What if some files are blocked?"**
+- Roo reads approved files and works with what it has.
+- `.rooignore` files are excluded automatically.
+- Individual files can still be denied in the batch dialog.
+      </template>
+    </faq>
+
+    <examples>
+      <guideline>Show tool output or UI elements.</guideline>
+      <guideline>Use actual file paths and setting names.</guideline>
+      <guideline>Include common errors and solutions.</guideline>
+    </examples>
+
+    <troubleshooting>
+      <template>
+## Troubleshooting
+
+**"Too many files requested"**
+- Lower the concurrent file limit in settings.
+- Deny individual files in the batch dialog.
+
+**"Feature isn't working"**
+- Ensure "Enable concurrent file reads" is on in settings.
+- Verify the file limit is set correctly (default: 100).
+- Some AI models may not support this feature.
+      </template>
+    </troubleshooting>
+
+    <help>
+      <template>
+## Help
+
+- See the [FAQ](#faq) for common issues.
+- Report problems on [GitHub Issues](https://github.com/RooCodeInc/Roo-Code/issues).
+- Include reproduction steps and error messages.
+      </template>
+    </help>
+  </documentation_patterns>
+
+  <audience_sections>
+    <audience type="user">
+      <focus>
+        <area>Tutorials</area>
+        <area>Use cases</area>
+        <area>Troubleshooting</area>
+        <area>Benefits</area>
+      </focus>
+      <style>
+        <guideline>Simple language</guideline>
+        <guideline>Visual aids</guideline>
+        <guideline>Focus on outcomes</guideline>
+        <guideline>Clear action steps</guideline>
+      </style>
+    </audience>
+
+    <audience type="developer">
+      <focus>
+        <area>Code examples</area>
+        <area>API specs</area>
+        <area>Integration patterns</area>
+        <area>Performance</area>
+      </focus>
+      <style>
+        <guideline>Precise terminology</guideline>
+        <guideline>Code samples</guideline>
+        <guideline>Document edge cases</guideline>
+        <guideline>Debugging guidance</guideline>
+      </style>
+    </audience>
+
+  </audience_sections>
+
+  <metadata_patterns>
+    <version_info>
+      <template>
+### Version Compatibility
+| Component | Min | Recommended | Max | Notes |
+|-----------|-----|-------------|-----|-------|
+| [Component] | [version] | [version] | [version] | [notes] |
+      </template>
+    </version_info>
+
+    <deprecation_notice>
+      <template>
+> ⚠️ **Deprecated**
+>
+> Deprecated since: [vX.Y.Z] on [date]
+> Removal target: [vA.B.C]
+> Migration: See [migration guide](#migration).
+> Replacement: [new feature/method].
+      </template>
+    </deprecation_notice>
+
+    <security_warning>
+      <template>
+> 🔒 **Security Warning**
+>
+> [Description of concern]
+> - **Risk**: [High/Medium/Low]
+> - **Affected**: [versions]
+> - **Mitigation**: [steps]
+> - **References**: [links]
+      </template>
+    </security_warning>
+
+    <performance_note>
+      <template>
+> ⚡ **Performance Note**
+>
+> [Description of performance consideration]
+> - **Impact**: [metrics]
+> - **Optimization**: [approach]
+> - **Trade-offs**: [considerations]
+      </template>
+    </performance_note>
+  </metadata_patterns>
+
+  <code_documentation_patterns>
+    <api_endpoint>
+      <template>
+### `[METHOD] /api/[path]`
+
+**Description**: [What this endpoint does]
+
+**Authentication**: [Required/Optional] - [Type]
+
+**Parameters**:
+| Name | Type | Required | Description | Example |
+|------|------|----------|-------------|---------|
+| [param] | [type] | [Yes/No] | [description] | [example] |
+
+**Request Body**:
+```json
+{
+  "field": "value"
+}
+```
+
+**Response**:
+- **Success (200)**:
+  ```json
+  {
+    "status": "success",
+    "data": {}
+  }
+  ```
+- **Error (4xx/5xx)**:
+  ```json
+  {
+    "error": "error_code",
+    "message": "Human readable message"
+  }
+  ```
+
+**Example**:
+```bash
+curl -X [METHOD] https://api.example.com/[path] \
+  -H "Authorization: Bearer [token]" \
+  -H "Content-Type: application/json" \
+  -d '{"field": "value"}'
+```
+      </template>
+    </api_endpoint>
+
+    <function_documentation>
+      <template>
+### `functionName(parameters)`
+
+**Purpose**: [What this function does]
+
+**Parameters**:
+- `param1` (Type): [Description]
+- `param2` (Type, optional): [Description] - Default: [value]
+
+**Returns**: `Type` - [Description of return value]
+
+**Throws**:
+- `ErrorType`: [When this error occurs]
+
+**Example**:
+```typescript
+const result = functionName(value1, value2);
+// Expected output: [description]
+```
+
+**Notes**:
+- [Important consideration 1]
+- [Important consideration 2]
+      </template>
+    </function_documentation>
+
+    <configuration_option>
+      <template>
+### `CONFIG_NAME`
+
+**Type**: `string | number | boolean`
+
+**Default**: `default_value`
+
+**Environment Variable**: `APP_CONFIG_NAME`
+
+**Description**: [What this configuration controls]
+
+**Valid Values**:
+- `value1`: [Description]
+- `value2`: [Description]
+
+**Example**:
+```yaml
+config:
+  name: value
+```
+
+**Impact**: [What changes when this is modified]
+      </template>
+    </configuration_option>
+  </code_documentation_patterns>
+
+  <cross_reference_patterns>
+    <internal_link>
+      <format>[Link Text](#section-anchor)</format>
+      <example>[See Configuration Guide](#configuration)</example>
+    </internal_link>
+
+    <external_link>
+      <format>[Link Text](https://external.url)</format>
+      <example>[Official Documentation](https://docs.example.com)</example>
+    </external_link>
+
+    <related_feature>
+      <template>
+> 📌 **Related Features**
+> - [Feature A](../feature-a/README.md): [How it relates]
+> - [Feature B](../feature-b/README.md): [How it relates]
+      </template>
+    </related_feature>
+
+    <see_also>
+      <template>
+> 👉 **See Also**
+> - [Related Topic 1](#anchor1)
+> - [Related Topic 2](#anchor2)
+> - [External Resource](https://example.com)
+      </template>
+    </see_also>
+  </cross_reference_patterns>
+</documentation_patterns>

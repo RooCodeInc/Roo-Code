@@ -28,7 +28,6 @@ describe("API - SendMessage Command", () => {
 			postMessageToWebview: mockPostMessageToWebview,
 			on: vi.fn(),
 			getCurrentTaskStack: vi.fn().mockReturnValue([]),
-			getCurrentTask: vi.fn().mockReturnValue(undefined),
 			viewLaunched: true,
 		} as unknown as ClineProvider
 

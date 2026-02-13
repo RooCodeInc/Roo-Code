@@ -1,32 +1,32 @@
-import { type RooMessage } from "../../core/task-persistence/rooMessage"
+import { ApiMessage } from "../../core/task-persistence/apiMessages"
 
 import { ApiHandler } from "../index"
 
 /* Removes image blocks from messages if they are not supported by the Api Handler */
-export function maybeRemoveImageBlocks(messages: RooMessage[], apiHandler: ApiHandler): RooMessage[] {
+export function maybeRemoveImageBlocks(messages: ApiMessage[], apiHandler: ApiHandler): ApiMessage[] {
 	// Check model capability ONCE instead of for every message
 	const supportsImages = apiHandler.getModel().info.supportsImages
 
-	if (supportsImages) {
-		return messages
-	}
-
 	return messages.map((message) => {
-		// Only process messages with a role and array content
-		if (!("role" in message) || !Array.isArray(message.content)) {
-			return message
-		}
-
-		const content = message.content.map((block: any) => {
-			if (block.type === "image") {
-				return {
-					type: "text" as const,
-					text: "[Referenced image in conversation]",
-				}
+		// Handle array content (could contain image blocks).
+		let { content } = message
+		if (Array.isArray(content)) {
+			if (!supportsImages) {
+				// Convert image blocks to text descriptions.
+				content = content.map((block) => {
+					if (block.type === "image") {
+						// Convert image blocks to text descriptions.
+						// Note: We can't access the actual image content/url due to API limitations,
+						// but we can indicate that an image was present in the conversation.
+						return {
+							type: "text",
+							text: "[Referenced image in conversation]",
+						}
+					}
+					return block
+				})
 			}
-			return block
-		})
-
-		return { ...message, content } as typeof message
+		}
+		return { ...message, content }
 	})
 }

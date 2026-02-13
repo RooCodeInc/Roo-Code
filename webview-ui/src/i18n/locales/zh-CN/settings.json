@@ -31,6 +31,7 @@
 		"mcp": "MCP 服务",
 		"worktrees": "Worktrees",
 		"autoApprove": "自动批准",
+		"browser": "计算机交互",
 		"checkpoints": "存档点",
 		"notifications": "通知",
 		"contextManagement": "上下文",
@@ -40,8 +41,7 @@
 		"ui": "UI",
 		"experimental": "实验性",
 		"language": "语言",
-		"about": "关于 Roo Code",
-		"skills": "Skills"
+		"about": "关于 Roo Code"
 	},
 	"about": {
 		"bugReport": {
@@ -68,39 +68,7 @@
 		}
 	},
 	"slashCommands": {
-		"description": "管理您的斜杠命令，以快速执行自定义工作流和操作。 <DocsLink>了解更多</DocsLink>",
-		"workspaceCommands": "工作区命令",
-		"globalCommands": "全局命令",
-		"noWorkspaceCommands": "此项目中还没有命令。",
-		"noGlobalCommands": "还没有全局命令。",
-		"addCommand": "添加斜杠命令",
-		"editCommand": "编辑命令",
-		"deleteCommand": "删除命令",
-		"deleteDialog": {
-			"title": "删除命令",
-			"description": "确定要删除命令 \"{{name}}\" 吗？此操作无法撤销。",
-			"confirm": "删除",
-			"cancel": "取消"
-		},
-		"createDialog": {
-			"title": "创建新斜杠命令",
-			"nameLabel": "名称",
-			"namePlaceholder": "my-command-name",
-			"nameHint": "仅限小写字母、数字、连字符和下划线",
-			"sourceLabel": "位置",
-			"create": "创建",
-			"cancel": "取消"
-		},
-		"source": {
-			"global": "全局（在所有工作区中可用）",
-			"project": "工作区"
-		},
-		"validation": {
-			"nameRequired": "名称为必填项",
-			"nameTooLong": "名称必须为 64 个字符或更少",
-			"nameInvalid": "名称只能包含字母、数字、连字符和下划线"
-		},
-		"footer": "使用斜杠命令快速访问经常使用的提示词和工作流。"
+		"description": "管理您的斜杠命令，以快速执行自定义工作流和操作。 <DocsLink>了解更多</DocsLink>"
 	},
 	"prompts": {
 		"description": "配置用于快速操作的支持提示词，如增强提示词、解释代码和修复问题。这些提示词帮助 Roo 为常见开发任务提供更好的支持。"
@@ -240,6 +208,10 @@
 				"description": "允许 Roo 创建和编辑受保护的文件（如 .rooignore 和 .roo/ 配置文件），无需批准。"
 			}
 		},
+		"browser": {
+			"label": "浏览器",
+			"description": "自动执行浏览器操作而无需批准 — 注意：仅当模型支持计算机功能调用时适用"
+		},
 		"mcp": {
 			"label": "MCP",
 			"description": "允许自动调用MCP服务而无需批准"
@@ -271,6 +243,7 @@
 		},
 		"apiRequestLimit": {
 			"title": "最大请求数",
+			"description": "在请求批准以继续执行任务之前，自动发出此数量的 API 请求。",
 			"unlimited": "无限制"
 		},
 		"selectOptionsFirst": "请至少选择以下一个选项以启用自动批准",
@@ -304,7 +277,6 @@
 		"searchProviderPlaceholder": "搜索提供商",
 		"noProviderMatchFound": "未找到提供商",
 		"noMatchFound": "未找到匹配的配置文件",
-		"retiredProviderMessage": "抱歉，该提供商已不再受支持。我们发现实际使用该提供商的 Roo 用户非常少，我们需要缩减代码库的覆盖范围，以便继续快速开发并更好地服务社区。这是一个非常艰难的决定，但它让我们能专注于对你最重要的事情。我们知道这很遗憾。",
 		"vscodeLmDescription": "VS Code 语言模型 API 允许您运行由其他 VS Code 扩展（包括但不限于 GitHub Copilot）提供的模型。最简单的方法是从 VS Code 市场安装 Copilot 和 Copilot Chat 扩展。",
 		"awsCustomArnUse": "请输入有效的 Amazon Bedrock ARN（Amazon资源名称），格式示例：",
 		"awsCustomArnDesc": "请确保ARN中的区域与上方选择的AWS区域一致。",
@@ -366,23 +338,15 @@
 		"getAnthropicApiKey": "获取 Anthropic API 密钥",
 		"anthropicUseAuthToken": "将 Anthropic API 密钥作为 Authorization 标头传递，而不是 X-Api-Key",
 		"anthropic1MContextBetaLabel": "启用 1M 上下文窗口 (Beta)",
-		"anthropic1MContextBetaDescription": "为 Claude Sonnet 4 / 4.5 / Claude Opus 4.6 将上下文窗口扩展至 100 万个 token",
+		"anthropic1MContextBetaDescription": "为 Claude Sonnet 4 将上下文窗口扩展至 100 万个 token",
 		"awsBedrock1MContextBetaLabel": "启用 1M 上下文窗口 (Beta)",
-		"awsBedrock1MContextBetaDescription": "为 Claude Sonnet 4 / 4.5 / Claude Opus 4.6 将上下文窗口扩展至 100 万个 token",
+		"awsBedrock1MContextBetaDescription": "为 Claude Sonnet 4 将上下文窗口扩展至 100 万个 token",
 		"vertex1MContextBetaLabel": "启用 1M 上下文窗口 (Beta)",
-		"vertex1MContextBetaDescription": "为 Claude Sonnet 4 / 4.5 / Claude Opus 4.6 将上下文窗口扩展至 100 万个 token",
+		"vertex1MContextBetaDescription": "为 Claude Sonnet 4 将上下文窗口扩展至 100 万个 token",
 		"basetenApiKey": "Baseten API 密钥",
 		"getBasetenApiKey": "获取 Baseten API 密钥",
 		"cerebrasApiKey": "Cerebras API 密钥",
 		"getCerebrasApiKey": "获取 Cerebras API 密钥",
-		"azureResourceName": "Azure 资源名称",
-		"azureResourceNameDescription": "您的 Azure AI Foundry 资源名称（例如：'my-openai-resource'）。",
-		"azureDeploymentName": "Azure 部署名称",
-		"azureDeploymentNameDescription": "资源中的模型部署名称。",
-		"azureApiKey": "Azure API 密钥",
-		"getAzureApiKey": "获取 Azure AI Foundry 访问权限",
-		"azureApiVersion": "Azure API 版本",
-		"azureApiVersionDescription": "要使用的 API 版本（例如：'2024-10-21'）。留空使用默认值。",
 		"chutesApiKey": "Chutes API 密钥",
 		"getChutesApiKey": "获取 Chutes API 密钥",
 		"fireworksApiKey": "Fireworks API 密钥",
@@ -465,6 +429,16 @@
 		"cacheUsageNote": "提示：若未显示缓存使用情况，请切换模型后重新选择",
 		"vscodeLmModel": "VSCode LM 模型",
 		"vscodeLmWarning": "注意：通过 VS Code Language Model API 访问的模型可能由提供商进行封装或微调，因此其行为可能与直接从常见提供商或路由器使用同一模型时不同。要使用「Language Model」下拉列表中的模型，请先切换到该模型，然后在 Copilot Chat 提示中点击「接受」；否则可能会出现 400「The requested model is not supported」等错误。",
+		"geminiParameters": {
+			"urlContext": {
+				"title": "启用 URL 上下文",
+				"description": "让 Gemini 读取链接的页面以提取、比较和综合其内容，从而提供明智的答复。"
+			},
+			"groundingSearch": {
+				"title": "启用 Google 搜索基础",
+				"description": "将 Gemini 连接到实时网络数据，以获得包含可验证引用的准确、最新的答案。"
+			}
+		},
 		"googleCloudSetup": {
 			"title": "要使用 Google Cloud Vertex AI，您需要：",
 			"step1": "1. 注册Google Cloud账号并启用Vertex AI API",
@@ -587,6 +561,34 @@
 			"maxTokensDescription": "Claude Code 响应的最大输出 Token 数量。默认为 8000。"
 		}
 	},
+	"browser": {
+		"enable": {
+			"label": "启用浏览器工具",
+			"description": "启用后，若模型支持计算机功能调用，Roo 可以使用浏览器与网站交互。 <0>了解更多</0>"
+		},
+		"viewport": {
+			"label": "视口大小",
+			"description": "选择浏览器交互的视口大小。这会影响网站的显示方式和交互方式。",
+			"options": {
+				"largeDesktop": "大桌面 (1280x800)",
+				"smallDesktop": "小桌面 (900x600)",
+				"tablet": "平板 (768x1024)",
+				"mobile": "移动设备 (360x640)"
+			}
+		},
+		"screenshotQuality": {
+			"label": "截图质量",
+			"description": "调整浏览器的截图质量。更高的值提供更清晰的截图，但会增加 token 消耗。"
+		},
+		"remote": {
+			"label": "使用远程浏览器连接",
+			"description": "连接到启用远程调试的 Chrome 浏览器 (--remote-debugging-port=9222)。",
+			"urlPlaceholder": "自定义 URL（例如 http://localhost:9222）",
+			"testButton": "测试连接",
+			"testingButton": "测试中...",
+			"instructions": "输入 DevTools 协议主机地址或留空以自动发现本地 Chrome 实例。测试连接按钮将尝试使用自定义 URL（如果提供），或者如果字段为空则自动发现。"
+		}
+	},
 	"checkpoints": {
 		"timeout": {
 			"label": "存档点初始化超时时间（秒）",
@@ -662,6 +664,7 @@
 				"label": "最大诊断消息数",
 				"description": "每个文件包含的最大诊断消息数。此限制适用于自动包含（启用复选框时）和手动 @problems 提及。较高的值提供更多上下文，但会增加令牌使用量。",
 				"resetTooltip": "重置为默认值 (50)",
+				"unlimited": "无限制诊断消息",
 				"unlimitedLabel": "无限制"
 			},
 			"delayAfterWrite": {
@@ -896,6 +899,7 @@
 		"simplifiedExplanation": "你可以稍后调整详细的模型设置。"
 	},
 	"footer": {
+		"feedback": "如果您有任何问题或反馈，请随时在 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> 上提出问题或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "允许匿名数据收集",
 			"description": "通过发送匿名使用数据和错误报告来帮助改进 Roo Code。此遥测不会收集代码、提示 或个人信息。详细信息请参阅我们的<privacyLink>隐私政策</privacyLink>。您可以随时关闭此功能。"
@@ -926,9 +930,7 @@
 		"providerNotAllowed": "提供商 '{{provider}}' 不允许用于您的组织",
 		"modelNotAllowed": "模型 '{{model}}' 不允许用于提供商 '{{provider}}'，您的组织不允许",
 		"profileInvalid": "此配置文件包含您的组织不允许的提供商或模型",
-		"qwenCodeOauthPath": "您必须提供有效的 OAuth 凭证路径",
-		"azureResourceName": "您必须提供 Azure 资源名称。",
-		"azureDeploymentName": "您必须提供 Azure 部署名称。"
+		"qwenCodeOauthPath": "您必须提供有效的 OAuth 凭证路径"
 	},
 	"placeholders": {
 		"apiKey": "请输入 API 密钥...",
@@ -941,8 +943,6 @@
 		"projectId": "请输入项目 ID...",
 		"customArn": "请输入 ARN（例：arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model）",
 		"baseUrl": "请输入基础 URL...",
-		"azureResourceName": "e.g. my-openai-resource",
-		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "例：meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "例：lmstudio-community/llama-3.2-1b-instruct",
@@ -993,58 +993,5 @@
 			"label": "需要 {{primaryMod}}+Enter 发送消息",
 			"description": "启用后，必须按 {{primaryMod}}+Enter 发送消息，而不仅仅是 Enter"
 		}
-	},
-	"skills": {
-		"description": "管理为代理提供上下文指令的技能。技能会在与您的任务相关时自动应用。<DocsLink>了解更多</DocsLink>",
-		"workspaceSkills": "工作区技能",
-		"globalSkills": "全局技能",
-		"noWorkspaceSkills": "此项目中还没有技能。",
-		"noGlobalSkills": "未配置全局技能。创建一个以添加在所有项目中可用的代理功能。",
-		"addSkill": "添加技能",
-		"editSkill": "编辑技能",
-		"deleteSkill": "删除技能",
-		"configureModes": "模式可用性",
-		"modeAny": "任意模式",
-		"modeCount": "{{count}} 种模式",
-		"deleteDialog": {
-			"title": "删除技能",
-			"description": "您确定要删除技能\"{{name}}\"吗？此操作无法撤销。",
-			"confirm": "删除",
-			"cancel": "取消"
-		},
-		"modeDialog": {
-			"title": "配置技能模式",
-			"description": "选择哪些模式可以使用此技能",
-			"intro": "为了保持上下文简洁，我们建议只在需要的模式中提供技能。",
-			"anyMode": "任何模式（随处可用）",
-			"save": "保存",
-			"cancel": "取消"
-		},
-		"createDialog": {
-			"title": "创建新技能",
-			"nameLabel": "名称",
-			"namePlaceholder": "my-skill-name",
-			"descriptionLabel": "描述",
-			"descriptionPlaceholder": "描述何时应使用此技能...",
-			"sourceLabel": "位置",
-			"modeLabel": "模式（可选）",
-			"modePlaceholder": "任何模式",
-			"modeHint": "将此技能限制为特定模式",
-			"modeAny": "任何模式",
-			"create": "创建",
-			"cancel": "取消"
-		},
-		"source": {
-			"global": "全局（在所有项目中可用）",
-			"project": "项目（仅此工作区）"
-		},
-		"validation": {
-			"nameRequired": "名称为必填项",
-			"nameTooLong": "名称不得超过64个字符",
-			"nameInvalid": "名称必须为1-64个小写字母、数字或连字符",
-			"descriptionRequired": "描述为必填项",
-			"descriptionTooLong": "描述不得超过1024个字符"
-		},
-		"footer": "使用技能编写器模式创建您自己的技能，可在 <MarketplaceLink>模式市集</MarketplaceLink> 中获得。"
 	}
 }

@@ -1,359 +1,967 @@
 import * as os from "os"
 import { v7 as uuidv7 } from "uuid"
 import { Anthropic } from "@anthropic-ai/sdk"
-import { createOpenAI } from "@ai-sdk/openai"
-import { streamText, generateText, ToolSet, ModelMessage } from "ai"
+import OpenAI from "openai"
 
-import { Package } from "../../shared/package"
 import {
 	type ModelInfo,
 	openAiCodexDefaultModelId,
 	OpenAiCodexModelId,
 	openAiCodexModels,
+	type ReasoningEffort,
 	type ReasoningEffortExtended,
+	ApiProviderError,
 } from "@roo-code/types"
+import { TelemetryService } from "@roo-code/telemetry"
 
+import { Package } from "../../shared/package"
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import {
-	convertToAiSdkMessages,
-	convertToolsForAiSdk,
-	processAiSdkStreamPart,
-	mapToolChoice,
-	handleAiSdkError,
-	yieldResponseMessage,
-} from "../transform/ai-sdk"
-import { ApiStream } from "../transform/stream"
+import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import { isMcpTool } from "../../utils/mcp-name"
+import { sanitizeOpenAiCallId } from "../../utils/tool-id"
 import { openAiCodexOAuthManager } from "../../integrations/openai-codex/oauth"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
-import {
-	stripPlainTextReasoningBlocks,
-	collectEncryptedReasoningItems,
-	injectEncryptedReasoning,
-} from "./openai-native"
+import { t } from "../../i18n"
 
 export type OpenAiCodexModel = ReturnType<OpenAiCodexHandler["getModel"]>
 
 /**
- * OpenAI Codex base URL for API requests.
+ * OpenAI Codex base URL for API requests
  * Per the implementation guide: requests are routed to chatgpt.com/backend-api/codex
  */
 const CODEX_API_BASE_URL = "https://chatgpt.com/backend-api/codex"
 
 /**
- * Check whether an error looks like an authentication / authorization failure
- * so the caller can attempt a token refresh and retry.
- */
-function isAuthFailure(error: unknown): boolean {
-	if (error && typeof error === "object") {
-		const status = (error as any).status ?? (error as any).statusCode
-		if (status === 401 || status === 403) return true
-		const msg = (error as any).message ?? ""
-		if (/unauthorized|invalid.*token|expired.*token|auth/i.test(msg)) return true
-	}
-	return false
-}
-
-/**
- * OpenAiCodexHandler – Uses the AI SDK with the OpenAI Responses API and OAuth authentication.
+ * OpenAiCodexHandler - Uses OpenAI Responses API with OAuth authentication
  *
  * Key differences from OpenAiNativeHandler:
  * - Uses OAuth Bearer tokens instead of API keys
  * - Routes requests to Codex backend (chatgpt.com/backend-api/codex)
- * - Subscription-based pricing (no per-token costs → totalCost: 0)
+ * - Subscription-based pricing (no per-token costs)
  * - Limited model subset
  * - Custom headers for Codex backend
- * - Provider is created fresh per-request (OAuth tokens expire)
  */
 export class OpenAiCodexHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private readonly providerName = "OpenAI Codex"
-	private readonly sessionId: string
-
+	private client?: OpenAI
+	// Complete response output array
+	private lastResponseOutput: any[] | undefined
+	// Last top-level response id
 	private lastResponseId: string | undefined
-	private lastEncryptedContent: { encrypted_content: string; id?: string } | undefined
+	// Abort controller for cancelling ongoing requests
+	private abortController?: AbortController
+	// Session ID for the Codex API (persists for the lifetime of the handler)
+	private readonly sessionId: string
+	/**
+	 * Some Codex/Responses streams emit tool-call argument deltas without stable call id/name.
+	 * Track the last observed tool identity from output_item events so we can still
+	 * emit `tool_call_partial` chunks (tool-call-only streams).
+	 */
+	private pendingToolCallId: string | undefined
+	private pendingToolCallName: string | undefined
+
+	// Event types handled by the shared event processor
+	private readonly coreHandledEventTypes = new Set<string>([
+		"response.text.delta",
+		"response.output_text.delta",
+		"response.reasoning.delta",
+		"response.reasoning_text.delta",
+		"response.reasoning_summary.delta",
+		"response.reasoning_summary_text.delta",
+		"response.refusal.delta",
+		"response.output_item.added",
+		"response.output_item.done",
+		"response.done",
+		"response.completed",
+		"response.tool_call_arguments.delta",
+		"response.function_call_arguments.delta",
+		"response.tool_call_arguments.done",
+		"response.function_call_arguments.done",
+	])
 
 	constructor(options: ApiHandlerOptions) {
 		super()
 		this.options = options
+		// Generate a new session ID for standalone handler usage (fallback)
 		this.sessionId = uuidv7()
 	}
 
-	/**
-	 * Create a fresh AI SDK OpenAI provider for a single request.
-	 * OAuth tokens can expire, so we never cache the provider instance.
-	 */
-	private async createProvider(accessToken: string, taskId?: string) {
-		const accountId = await openAiCodexOAuthManager.getAccountId()
-		return createOpenAI({
-			apiKey: accessToken,
-			baseURL: CODEX_API_BASE_URL,
-			headers: {
-				originator: "roo-code",
-				session_id: taskId || this.sessionId,
-				"User-Agent": `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
-				...(accountId ? { "ChatGPT-Account-Id": accountId } : {}),
-			},
-		})
-	}
+	private normalizeUsage(usage: any, model: OpenAiCodexModel): ApiStreamUsageChunk | undefined {
+		if (!usage) return undefined
 
-	/**
-	 * Get the language model for the configured model ID.
-	 * Uses the Responses API (default for @ai-sdk/openai since AI SDK 5).
-	 */
-	private getLanguageModel(provider: ReturnType<typeof createOpenAI>) {
-		const { id } = this.getModel()
-		return provider.responses(id)
-	}
+		const inputDetails = usage.input_tokens_details ?? usage.prompt_tokens_details
 
-	private getReasoningEffort(model: OpenAiCodexModel): ReasoningEffortExtended | undefined {
-		const selected = (this.options.reasoningEffort as any) ?? (model.info.reasoningEffort as any)
-		return selected && selected !== "disable" && selected !== "none" ? (selected as any) : undefined
-	}
+		const hasCachedTokens = typeof inputDetails?.cached_tokens === "number"
+		const hasCacheMissTokens = typeof inputDetails?.cache_miss_tokens === "number"
+		const cachedFromDetails = hasCachedTokens ? inputDetails.cached_tokens : 0
+		const missFromDetails = hasCacheMissTokens ? inputDetails.cache_miss_tokens : 0
 
-	/**
-	 * Build OpenAI-specific provider options for the Responses API.
-	 */
-	private buildProviderOptions(
-		model: OpenAiCodexModel,
-		metadata?: ApiHandlerCreateMessageMetadata,
-		systemPrompt?: string,
-	): Record<string, any> {
-		const reasoningEffort = this.getReasoningEffort(model)
-
-		const openaiOptions: Record<string, any> = {
-			store: false,
-			parallelToolCalls: metadata?.parallelToolCalls ?? true,
-			...(systemPrompt !== undefined && { instructions: systemPrompt }),
+		let totalInputTokens = usage.input_tokens ?? usage.prompt_tokens ?? 0
+		if (totalInputTokens === 0 && inputDetails && (cachedFromDetails > 0 || missFromDetails > 0)) {
+			totalInputTokens = cachedFromDetails + missFromDetails
 		}
 
-		if (reasoningEffort) {
-			openaiOptions.reasoningEffort = reasoningEffort
-			openaiOptions.include = ["reasoning.encrypted_content"]
-			openaiOptions.reasoningSummary = "auto"
-		}
+		const totalOutputTokens = usage.output_tokens ?? usage.completion_tokens ?? 0
+		const cacheWriteTokens = usage.cache_creation_input_tokens ?? usage.cache_write_tokens ?? 0
+		const cacheReadTokens =
+			usage.cache_read_input_tokens ?? usage.cache_read_tokens ?? usage.cached_tokens ?? cachedFromDetails ?? 0
 
-		return { openai: openaiOptions }
+		const reasoningTokens =
+			typeof usage.output_tokens_details?.reasoning_tokens === "number"
+				? usage.output_tokens_details.reasoning_tokens
+				: undefined
+
+		// Subscription-based: no per-token costs
+		const out: ApiStreamUsageChunk = {
+			type: "usage",
+			inputTokens: totalInputTokens,
+			outputTokens: totalOutputTokens,
+			cacheWriteTokens,
+			cacheReadTokens,
+			...(typeof reasoningTokens === "number" ? { reasoningTokens } : {}),
+			totalCost: 0, // Subscription-based pricing
+		}
+		return out
 	}
 
-	/**
-	 * Create a message stream using the AI SDK with auth-retry support.
-	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: RooMessage[],
+		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const model = this.getModel()
+		yield* this.handleResponsesApiMessage(model, systemPrompt, messages, metadata)
+	}
 
+	private async *handleResponsesApiMessage(
+		model: OpenAiCodexModel,
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		// Reset state for this request
+		this.lastResponseOutput = undefined
 		this.lastResponseId = undefined
-		this.lastEncryptedContent = undefined
+		this.pendingToolCallId = undefined
+		this.pendingToolCallName = undefined
 
-		// Get initial access token
+		// Get access token from OAuth manager
 		let accessToken = await openAiCodexOAuthManager.getAccessToken()
 		if (!accessToken) {
-			throw new Error("Not authenticated with OpenAI Codex. Please sign in using the OpenAI Codex OAuth flow.")
+			throw new Error(
+				t("common:errors.openAiCodex.notAuthenticated", {
+					defaultValue:
+						"Not authenticated with OpenAI Codex. Please sign in using the OpenAI Codex OAuth flow.",
+				}),
+			)
 		}
 
-		// Auth retry loop: 2 attempts max
+		// Resolve reasoning effort
+		const reasoningEffort = this.getReasoningEffort(model)
+
+		// Format conversation
+		const formattedInput = this.formatFullConversation(systemPrompt, messages)
+
+		// Build request body
+		// Per the implementation guide: Codex backend may reject some parameters
+		// Notably: max_output_tokens and prompt_cache_retention may be rejected
+		const requestBody = this.buildRequestBody(model, formattedInput, systemPrompt, reasoningEffort, metadata)
+
+		// Make the request with retry on auth failure
 		for (let attempt = 0; attempt < 2; attempt++) {
 			try {
-				const provider = await this.createProvider(accessToken, metadata?.taskId)
-				const languageModel = this.getLanguageModel(provider)
-
-				// Step 1: Collect encrypted reasoning items and their positions before filtering.
-				const encryptedReasoningItems = collectEncryptedReasoningItems(messages)
-
-				// Step 2: Filter out standalone encrypted reasoning items (they lack role).
-				const standardMessages = messages.filter(
-					(msg) =>
-						(msg as unknown as Record<string, unknown>).type !== "reasoning" ||
-						!(msg as unknown as Record<string, unknown>).encrypted_content,
-				)
-
-				// Step 3: Strip plain-text reasoning blocks from assistant content arrays.
-				const cleanedMessages = stripPlainTextReasoningBlocks(standardMessages)
-
-				// Step 4: Convert to AI SDK messages.
-				const aiSdkMessages = cleanedMessages as ModelMessage[]
-
-				// Step 5: Re-inject encrypted reasoning as properly-formed AI SDK reasoning parts.
-				if (encryptedReasoningItems.length > 0) {
-					injectEncryptedReasoning(aiSdkMessages, encryptedReasoningItems, messages as RooMessage[])
-				}
-
-				// Convert tools to OpenAI format first, then to AI SDK format
-				const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-				const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
-
-				const providerOptions = this.buildProviderOptions(model, metadata, systemPrompt)
-
-				// Note: maxOutputTokens is intentionally omitted — Codex backend rejects it.
-				const result = streamText({
-					model: languageModel,
-					messages: aiSdkMessages,
-					tools: aiSdkTools,
-					toolChoice: mapToolChoice(metadata?.tool_choice),
-					providerOptions,
-					...(model.info.supportsTemperature !== false && {
-						temperature: this.options.modelTemperature ?? 0,
-					}),
-				})
-
-				// Stream parts
-				let lastStreamError: string | undefined
-
-				for await (const part of result.fullStream) {
-					for (const chunk of processAiSdkStreamPart(part)) {
-						if (chunk.type === "error") {
-							lastStreamError = chunk.message
-						}
-						yield chunk
-					}
-				}
-
-				// Extract metadata and usage — wrap in try/catch for stream error fallback
-				try {
-					// Extract metadata from completed response
-					const providerMeta = await result.providerMetadata
-					const openaiMeta = (providerMeta as any)?.openai
-
-					if (openaiMeta?.responseId) {
-						this.lastResponseId = openaiMeta.responseId
-					}
-
-					// Capture encrypted content from reasoning parts in the response
-					try {
-						const content = await (result as any).content
-						if (Array.isArray(content)) {
-							for (const part of content) {
-								if (part.type === "reasoning" && part.providerMetadata) {
-									const partMeta = (part.providerMetadata as any)?.openai
-									if (partMeta?.reasoningEncryptedContent) {
-										this.lastEncryptedContent = {
-											encrypted_content: partMeta.reasoningEncryptedContent,
-											...(partMeta.itemId ? { id: partMeta.itemId } : {}),
-										}
-										break
-									}
-								}
-							}
-						}
-					} catch {
-						// Content parts with encrypted reasoning may not always be available
-					}
-
-					// Yield usage — subscription pricing means totalCost is always 0
-					const usage = await result.usage
-					if (usage) {
-						const inputTokens = usage.inputTokens || 0
-						const outputTokens = usage.outputTokens || 0
-						const typedUsage = usage as {
-							inputTokens?: number
-							outputTokens?: number
-							cachedInputTokens?: number
-							reasoningTokens?: number
-							inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
-							outputTokenDetails?: { reasoningTokens?: number }
-							details?: { cachedInputTokens?: number; reasoningTokens?: number }
-						}
-						const cacheReadTokens =
-							typedUsage.cachedInputTokens ??
-							typedUsage.inputTokenDetails?.cacheReadTokens ??
-							typedUsage.details?.cachedInputTokens ??
-							0
-						// The OpenAI Responses API does not report cache write tokens separately;
-						// only cached (read) tokens are available via usage.details.cachedInputTokens.
-						const cacheWriteTokens = typedUsage.inputTokenDetails?.cacheWriteTokens ?? 0
-						const reasoningTokens =
-							typedUsage.reasoningTokens ??
-							typedUsage.outputTokenDetails?.reasoningTokens ??
-							typedUsage.details?.reasoningTokens
-
-						yield {
-							type: "usage",
-							inputTokens,
-							outputTokens,
-							cacheWriteTokens: cacheWriteTokens || undefined,
-							cacheReadTokens: cacheReadTokens || undefined,
-							...(typeof reasoningTokens === "number" ? { reasoningTokens } : {}),
-							totalCost: 0, // Subscription-based pricing
-							totalInputTokens: inputTokens,
-							totalOutputTokens: outputTokens,
-						}
-					}
-				} catch (usageError) {
-					if (lastStreamError) {
-						throw new Error(lastStreamError)
-					}
-					throw usageError
-				}
-
-				yield* yieldResponseMessage(result)
-
-				// Success — exit the retry loop
+				yield* this.executeRequest(requestBody, model, accessToken, metadata?.taskId)
 				return
 			} catch (error) {
-				if (attempt === 0 && isAuthFailure(error)) {
+				const message = error instanceof Error ? error.message : String(error)
+				const isAuthFailure = /unauthorized|invalid token|not authenticated|authentication|401/i.test(message)
+
+				if (attempt === 0 && isAuthFailure) {
+					// Force refresh the token for retry
 					const refreshed = await openAiCodexOAuthManager.forceRefreshAccessToken()
 					if (!refreshed) {
 						throw new Error(
-							"Not authenticated with OpenAI Codex. Please sign in using the OpenAI Codex OAuth flow.",
+							t("common:errors.openAiCodex.notAuthenticated", {
+								defaultValue:
+									"Not authenticated with OpenAI Codex. Please sign in using the OpenAI Codex OAuth flow.",
+							}),
 						)
 					}
 					accessToken = refreshed
 					continue
 				}
-				throw handleAiSdkError(error, this.providerName)
+				throw error
 			}
 		}
 	}
 
-	/**
-	 * Extracts encrypted_content and id from the last response's reasoning output.
-	 */
-	getEncryptedContent(): { encrypted_content: string; id?: string } | undefined {
-		return this.lastEncryptedContent
+	private buildRequestBody(
+		model: OpenAiCodexModel,
+		formattedInput: any,
+		systemPrompt: string,
+		reasoningEffort: ReasoningEffortExtended | undefined,
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): any {
+		const ensureAllRequired = (schema: any): any => {
+			if (!schema || typeof schema !== "object" || schema.type !== "object") {
+				return schema
+			}
+
+			const result = { ...schema }
+			if (result.additionalProperties !== false) {
+				result.additionalProperties = false
+			}
+
+			if (result.properties) {
+				const allKeys = Object.keys(result.properties)
+				result.required = allKeys
+
+				const newProps = { ...result.properties }
+				for (const key of allKeys) {
+					const prop = newProps[key]
+					if (prop.type === "object") {
+						newProps[key] = ensureAllRequired(prop)
+					} else if (prop.type === "array" && prop.items?.type === "object") {
+						newProps[key] = {
+							...prop,
+							items: ensureAllRequired(prop.items),
+						}
+					}
+				}
+				result.properties = newProps
+			}
+
+			return result
+		}
+
+		const ensureAdditionalPropertiesFalse = (schema: any): any => {
+			if (!schema || typeof schema !== "object" || schema.type !== "object") {
+				return schema
+			}
+
+			const result = { ...schema }
+			if (result.additionalProperties !== false) {
+				result.additionalProperties = false
+			}
+
+			if (result.properties) {
+				const newProps = { ...result.properties }
+				for (const key of Object.keys(result.properties)) {
+					const prop = newProps[key]
+					if (prop && prop.type === "object") {
+						newProps[key] = ensureAdditionalPropertiesFalse(prop)
+					} else if (prop && prop.type === "array" && prop.items?.type === "object") {
+						newProps[key] = {
+							...prop,
+							items: ensureAdditionalPropertiesFalse(prop.items),
+						}
+					}
+				}
+				result.properties = newProps
+			}
+
+			return result
+		}
+
+		interface ResponsesRequestBody {
+			model: string
+			input: Array<{ role: "user" | "assistant"; content: any[] } | { type: string; content: string }>
+			stream: boolean
+			reasoning?: { effort?: ReasoningEffortExtended; summary?: "auto" }
+			temperature?: number
+			store?: boolean
+			instructions?: string
+			include?: string[]
+			tools?: Array<{
+				type: "function"
+				name: string
+				description?: string
+				parameters?: any
+				strict?: boolean
+			}>
+			tool_choice?: any
+			parallel_tool_calls?: boolean
+		}
+
+		// Per the implementation guide: Codex backend may reject max_output_tokens
+		// and prompt_cache_retention, so we omit them
+		const body: ResponsesRequestBody = {
+			model: model.id,
+			input: formattedInput,
+			stream: true,
+			store: false,
+			instructions: systemPrompt,
+			// Only include encrypted reasoning content when reasoning effort is set
+			...(reasoningEffort ? { include: ["reasoning.encrypted_content"] } : {}),
+			...(reasoningEffort
+				? {
+						reasoning: {
+							...(reasoningEffort ? { effort: reasoningEffort } : {}),
+							summary: "auto" as const,
+						},
+					}
+				: {}),
+			tools: (metadata?.tools ?? [])
+				.filter((tool) => tool.type === "function")
+				.map((tool) => {
+					const isMcp = isMcpTool(tool.function.name)
+					return {
+						type: "function",
+						name: tool.function.name,
+						description: tool.function.description,
+						parameters: isMcp
+							? ensureAdditionalPropertiesFalse(tool.function.parameters)
+							: ensureAllRequired(tool.function.parameters),
+						strict: !isMcp,
+					}
+				}),
+			tool_choice: metadata?.tool_choice,
+			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+		}
+
+		return body
 	}
 
-	getResponseId(): string | undefined {
-		return this.lastResponseId
+	private async *executeRequest(
+		requestBody: any,
+		model: OpenAiCodexModel,
+		accessToken: string,
+		taskId?: string,
+	): ApiStream {
+		// Create AbortController for cancellation
+		this.abortController = new AbortController()
+
+		try {
+			// Prefer OpenAI SDK streaming (same approach as openai-native) so event handling
+			// is consistent across providers.
+			try {
+				// Get ChatGPT account ID for organization subscriptions
+				const accountId = await openAiCodexOAuthManager.getAccountId()
+
+				// Build Codex-specific headers. Authorization is provided by the SDK apiKey.
+				const codexHeaders: Record<string, string> = {
+					originator: "roo-code",
+					session_id: taskId || this.sessionId,
+					"User-Agent": `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
+					...(accountId ? { "ChatGPT-Account-Id": accountId } : {}),
+				}
+
+				// Allow tests to inject a client. If none is injected, create one for this request.
+				const client =
+					this.client ??
+					new OpenAI({
+						apiKey: accessToken,
+						baseURL: CODEX_API_BASE_URL,
+						defaultHeaders: codexHeaders,
+					})
+
+				const stream = (await (client as any).responses.create(requestBody, {
+					signal: this.abortController.signal,
+					// If the SDK supports per-request overrides, ensure headers are present.
+					headers: codexHeaders,
+				})) as AsyncIterable<any>
+
+				if (typeof (stream as any)?.[Symbol.asyncIterator] !== "function") {
+					throw new Error(
+						"OpenAI SDK did not return an AsyncIterable for Responses API streaming. Falling back to SSE.",
+					)
+				}
+
+				for await (const event of stream) {
+					if (this.abortController.signal.aborted) {
+						break
+					}
+
+					for await (const outChunk of this.processEvent(event, model)) {
+						yield outChunk
+					}
+				}
+			} catch (_sdkErr) {
+				// Fallback to manual SSE via fetch (Codex backend).
+				yield* this.makeCodexRequest(requestBody, model, accessToken, taskId)
+			}
+		} finally {
+			this.abortController = undefined
+		}
 	}
 
-	/**
-	 * Complete a prompt using the AI SDK generateText.
-	 */
-	async completePrompt(prompt: string): Promise<string> {
-		const model = this.getModel()
+	private formatFullConversation(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): any {
+		const formattedInput: any[] = []
 
-		const accessToken = await openAiCodexOAuthManager.getAccessToken()
-		if (!accessToken) {
-			throw new Error("Not authenticated with OpenAI Codex. Please sign in using the OpenAI Codex OAuth flow.")
+		for (const message of messages) {
+			// Check if this is a reasoning item
+			if ((message as any).type === "reasoning") {
+				formattedInput.push(message)
+				continue
+			}
+
+			if (message.role === "user") {
+				const content: any[] = []
+				const toolResults: any[] = []
+
+				if (typeof message.content === "string") {
+					content.push({ type: "input_text", text: message.content })
+				} else if (Array.isArray(message.content)) {
+					for (const block of message.content) {
+						if (block.type === "text") {
+							content.push({ type: "input_text", text: block.text })
+						} else if (block.type === "image") {
+							const image = block as Anthropic.Messages.ImageBlockParam
+							const imageUrl = `data:${image.source.media_type};base64,${image.source.data}`
+							content.push({ type: "input_image", image_url: imageUrl })
+						} else if (block.type === "tool_result") {
+							const result =
+								typeof block.content === "string"
+									? block.content
+									: block.content?.map((c) => (c.type === "text" ? c.text : "")).join("") || ""
+							toolResults.push({
+								type: "function_call_output",
+								// Sanitize and truncate call_id to fit OpenAI's 64-char limit
+								call_id: sanitizeOpenAiCallId(block.tool_use_id),
+								output: result,
+							})
+						}
+					}
+				}
+
+				if (content.length > 0) {
+					formattedInput.push({ role: "user", content })
+				}
+
+				if (toolResults.length > 0) {
+					formattedInput.push(...toolResults)
+				}
+			} else if (message.role === "assistant") {
+				const content: any[] = []
+				const toolCalls: any[] = []
+
+				if (typeof message.content === "string") {
+					content.push({ type: "output_text", text: message.content })
+				} else if (Array.isArray(message.content)) {
+					for (const block of message.content) {
+						if (block.type === "text") {
+							content.push({ type: "output_text", text: block.text })
+						} else if (block.type === "tool_use") {
+							toolCalls.push({
+								type: "function_call",
+								// Sanitize and truncate call_id to fit OpenAI's 64-char limit
+								call_id: sanitizeOpenAiCallId(block.id),
+								name: block.name,
+								arguments: JSON.stringify(block.input),
+							})
+						}
+					}
+				}
+
+				if (content.length > 0) {
+					formattedInput.push({ role: "assistant", content })
+				}
+
+				if (toolCalls.length > 0) {
+					formattedInput.push(...toolCalls)
+				}
+			}
+		}
+
+		return formattedInput
+	}
+
+	private async *makeCodexRequest(
+		requestBody: any,
+		model: OpenAiCodexModel,
+		accessToken: string,
+		taskId?: string,
+	): ApiStream {
+		// Per the implementation guide: route to Codex backend with Bearer token
+		const url = `${CODEX_API_BASE_URL}/responses`
+
+		// Get ChatGPT account ID for organization subscriptions
+		const accountId = await openAiCodexOAuthManager.getAccountId()
+
+		// Build headers with required Codex-specific fields
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${accessToken}`,
+			originator: "roo-code",
+			session_id: taskId || this.sessionId,
+			"User-Agent": `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
+		}
+
+		// Add ChatGPT-Account-Id if available (required for organization subscriptions)
+		if (accountId) {
+			headers["ChatGPT-Account-Id"] = accountId
 		}
 
 		try {
-			const provider = await this.createProvider(accessToken)
-			const languageModel = this.getLanguageModel(provider)
-			const providerOptions = this.buildProviderOptions(model)
-
-			// Note: maxOutputTokens is intentionally omitted — Codex backend rejects it.
-			const { text } = await generateText({
-				model: languageModel,
-				prompt,
-				providerOptions,
-				...(model.info.supportsTemperature !== false && {
-					temperature: this.options.modelTemperature ?? 0,
-				}),
+			const response = await fetch(url, {
+				method: "POST",
+				headers,
+				body: JSON.stringify(requestBody),
+				signal: this.abortController?.signal,
 			})
 
-			return text
+			if (!response.ok) {
+				const errorText = await response.text()
+
+				let errorMessage = t("common:errors.api.apiRequestFailed", { status: response.status })
+				let errorDetails = ""
+
+				try {
+					const errorJson = JSON.parse(errorText)
+					if (errorJson.error?.message) {
+						errorDetails = errorJson.error.message
+					} else if (errorJson.message) {
+						errorDetails = errorJson.message
+					} else if (errorJson.detail) {
+						errorDetails = errorJson.detail
+					} else {
+						errorDetails = errorText
+					}
+				} catch {
+					errorDetails = errorText
+				}
+
+				switch (response.status) {
+					case 400:
+						errorMessage = t("common:errors.openAiCodex.invalidRequest")
+						break
+					case 401:
+						errorMessage = t("common:errors.openAiCodex.authenticationFailed")
+						break
+					case 403:
+						errorMessage = t("common:errors.openAiCodex.accessDenied")
+						break
+					case 404:
+						errorMessage = t("common:errors.openAiCodex.endpointNotFound")
+						break
+					case 429:
+						errorMessage = t("common:errors.openAiCodex.rateLimitExceeded")
+						break
+					case 500:
+					case 502:
+					case 503:
+						errorMessage = t("common:errors.openAiCodex.serviceError")
+						break
+					default:
+						errorMessage = t("common:errors.openAiCodex.genericError", { status: response.status })
+				}
+
+				if (errorDetails) {
+					errorMessage += ` - ${errorDetails}`
+				}
+
+				throw new Error(errorMessage)
+			}
+
+			if (!response.body) {
+				throw new Error(t("common:errors.openAiCodex.noResponseBody"))
+			}
+
+			yield* this.handleStreamResponse(response.body, model)
 		} catch (error) {
-			throw handleAiSdkError(error, this.providerName)
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, model.id, "createMessage")
+			TelemetryService.instance.captureException(apiError)
+
+			if (error instanceof Error) {
+				if (error.message.includes("Codex API")) {
+					throw error
+				}
+				throw new Error(t("common:errors.openAiCodex.connectionFailed", { message: error.message }))
+			}
+			throw new Error(t("common:errors.openAiCodex.unexpectedConnectionError"))
 		}
+	}
+
+	private async *handleStreamResponse(body: ReadableStream<Uint8Array>, model: OpenAiCodexModel): ApiStream {
+		const reader = body.getReader()
+		const decoder = new TextDecoder()
+		let buffer = ""
+		let hasContent = false
+
+		try {
+			while (true) {
+				if (this.abortController?.signal.aborted) {
+					break
+				}
+
+				const { done, value } = await reader.read()
+				if (done) break
+
+				buffer += decoder.decode(value, { stream: true })
+				const lines = buffer.split("\n")
+				buffer = lines.pop() || ""
+
+				for (const line of lines) {
+					if (line.startsWith("data: ")) {
+						const data = line.slice(6).trim()
+						if (data === "[DONE]") {
+							continue
+						}
+
+						try {
+							const parsed = JSON.parse(data)
+
+							// Capture response metadata
+							if (parsed.response?.output && Array.isArray(parsed.response.output)) {
+								this.lastResponseOutput = parsed.response.output
+							}
+							if (parsed.response?.id) {
+								this.lastResponseId = parsed.response.id as string
+							}
+
+							// Delegate standard event types
+							if (parsed?.type && this.coreHandledEventTypes.has(parsed.type)) {
+								// Capture tool call identity from output_item events so we can
+								// emit tool_call_partial for subsequent function_call_arguments.delta events
+								if (
+									parsed.type === "response.output_item.added" ||
+									parsed.type === "response.output_item.done"
+								) {
+									const item = parsed.item
+									if (item && (item.type === "function_call" || item.type === "tool_call")) {
+										const callId = item.call_id || item.tool_call_id || item.id
+										const name = item.name || item.function?.name || item.function_name
+										if (typeof callId === "string" && callId.length > 0) {
+											this.pendingToolCallId = callId
+											this.pendingToolCallName = typeof name === "string" ? name : undefined
+										}
+									}
+								}
+
+								// Some Codex streams only return tool calls (no text). Treat tool output as content.
+								if (
+									parsed.type === "response.function_call_arguments.delta" ||
+									parsed.type === "response.tool_call_arguments.delta" ||
+									parsed.type === "response.output_item.added" ||
+									parsed.type === "response.output_item.done"
+								) {
+									hasContent = true
+								}
+
+								for await (const outChunk of this.processEvent(parsed, model)) {
+									if (outChunk.type === "text" || outChunk.type === "reasoning") {
+										hasContent = true
+									}
+									yield outChunk
+								}
+								continue
+							}
+
+							// Handle complete response
+							if (parsed.response && parsed.response.output && Array.isArray(parsed.response.output)) {
+								for (const outputItem of parsed.response.output) {
+									if (outputItem.type === "text" && outputItem.content) {
+										for (const content of outputItem.content) {
+											if (content.type === "text" && content.text) {
+												hasContent = true
+												yield { type: "text", text: content.text }
+											}
+										}
+									}
+									if (outputItem.type === "reasoning" && Array.isArray(outputItem.summary)) {
+										for (const summary of outputItem.summary) {
+											if (summary?.type === "summary_text" && typeof summary.text === "string") {
+												hasContent = true
+												yield { type: "reasoning", text: summary.text }
+											}
+										}
+									}
+								}
+								if (parsed.response.usage) {
+									const usageData = this.normalizeUsage(parsed.response.usage, model)
+									if (usageData) {
+										yield usageData
+									}
+								}
+							} else if (
+								parsed.type === "response.text.delta" ||
+								parsed.type === "response.output_text.delta"
+							) {
+								if (parsed.delta) {
+									hasContent = true
+									yield { type: "text", text: parsed.delta }
+								}
+							} else if (
+								parsed.type === "response.reasoning.delta" ||
+								parsed.type === "response.reasoning_text.delta"
+							) {
+								if (parsed.delta) {
+									hasContent = true
+									yield { type: "reasoning", text: parsed.delta }
+								}
+							} else if (
+								parsed.type === "response.reasoning_summary.delta" ||
+								parsed.type === "response.reasoning_summary_text.delta"
+							) {
+								if (parsed.delta) {
+									hasContent = true
+									yield { type: "reasoning", text: parsed.delta }
+								}
+							} else if (parsed.type === "response.refusal.delta") {
+								if (parsed.delta) {
+									hasContent = true
+									yield { type: "text", text: `[Refusal] ${parsed.delta}` }
+								}
+							} else if (parsed.type === "response.output_item.added") {
+								if (parsed.item) {
+									if (parsed.item.type === "text" && parsed.item.text) {
+										hasContent = true
+										yield { type: "text", text: parsed.item.text }
+									} else if (parsed.item.type === "reasoning" && parsed.item.text) {
+										hasContent = true
+										yield { type: "reasoning", text: parsed.item.text }
+									} else if (parsed.item.type === "message" && parsed.item.content) {
+										for (const content of parsed.item.content) {
+											if (content.type === "text" && content.text) {
+												hasContent = true
+												yield { type: "text", text: content.text }
+											}
+										}
+									}
+								}
+							} else if (parsed.type === "response.error" || parsed.type === "error") {
+								if (parsed.error || parsed.message) {
+									throw new Error(
+										t("common:errors.openAiCodex.apiError", {
+											message: parsed.error?.message || parsed.message || "Unknown error",
+										}),
+									)
+								}
+							} else if (parsed.type === "response.failed") {
+								if (parsed.error || parsed.message) {
+									throw new Error(
+										t("common:errors.openAiCodex.responseFailed", {
+											message: parsed.error?.message || parsed.message || "Unknown failure",
+										}),
+									)
+								}
+							} else if (parsed.type === "response.completed" || parsed.type === "response.done") {
+								if (parsed.response?.output && Array.isArray(parsed.response.output)) {
+									this.lastResponseOutput = parsed.response.output
+								}
+								if (parsed.response?.id) {
+									this.lastResponseId = parsed.response.id as string
+								}
+
+								if (
+									!hasContent &&
+									parsed.response &&
+									parsed.response.output &&
+									Array.isArray(parsed.response.output)
+								) {
+									for (const outputItem of parsed.response.output) {
+										if (outputItem.type === "message" && outputItem.content) {
+											for (const content of outputItem.content) {
+												if (content.type === "output_text" && content.text) {
+													hasContent = true
+													yield { type: "text", text: content.text }
+												}
+											}
+										}
+										if (outputItem.type === "reasoning" && Array.isArray(outputItem.summary)) {
+											for (const summary of outputItem.summary) {
+												if (
+													summary?.type === "summary_text" &&
+													typeof summary.text === "string"
+												) {
+													hasContent = true
+													yield { type: "reasoning", text: summary.text }
+												}
+											}
+										}
+									}
+								}
+							} else if (parsed.choices?.[0]?.delta?.content) {
+								hasContent = true
+								yield { type: "text", text: parsed.choices[0].delta.content }
+							} else if (
+								parsed.item &&
+								typeof parsed.item.text === "string" &&
+								parsed.item.text.length > 0
+							) {
+								hasContent = true
+								yield { type: "text", text: parsed.item.text }
+							} else if (parsed.usage) {
+								const usageData = this.normalizeUsage(parsed.usage, model)
+								if (usageData) {
+									yield usageData
+								}
+							}
+						} catch (e) {
+							if (!(e instanceof SyntaxError)) {
+								throw e
+							}
+						}
+					} else if (line.trim() && !line.startsWith(":")) {
+						try {
+							const parsed = JSON.parse(line)
+							if (parsed.content || parsed.text || parsed.message) {
+								hasContent = true
+								yield { type: "text", text: parsed.content || parsed.text || parsed.message }
+							}
+						} catch {
+							// Not JSON, ignore
+						}
+					}
+				}
+			}
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, model.id, "createMessage")
+			TelemetryService.instance.captureException(apiError)
+
+			if (error instanceof Error) {
+				throw new Error(t("common:errors.openAiCodex.streamProcessingError", { message: error.message }))
+			}
+			throw new Error(t("common:errors.openAiCodex.unexpectedStreamError"))
+		} finally {
+			reader.releaseLock()
+		}
+	}
+
+	private async *processEvent(event: any, model: OpenAiCodexModel): ApiStream {
+		if (event?.response?.output && Array.isArray(event.response.output)) {
+			this.lastResponseOutput = event.response.output
+		}
+		if (event?.response?.id) {
+			this.lastResponseId = event.response.id as string
+		}
+
+		// Handle text deltas
+		if (event?.type === "response.text.delta" || event?.type === "response.output_text.delta") {
+			if (event?.delta) {
+				yield { type: "text", text: event.delta }
+			}
+			return
+		}
+
+		// Handle reasoning deltas
+		if (
+			event?.type === "response.reasoning.delta" ||
+			event?.type === "response.reasoning_text.delta" ||
+			event?.type === "response.reasoning_summary.delta" ||
+			event?.type === "response.reasoning_summary_text.delta"
+		) {
+			if (event?.delta) {
+				yield { type: "reasoning", text: event.delta }
+			}
+			return
+		}
+
+		// Handle refusal deltas
+		if (event?.type === "response.refusal.delta") {
+			if (event?.delta) {
+				yield { type: "text", text: `[Refusal] ${event.delta}` }
+			}
+			return
+		}
+
+		// Handle tool/function call deltas
+		if (
+			event?.type === "response.tool_call_arguments.delta" ||
+			event?.type === "response.function_call_arguments.delta"
+		) {
+			const callId = event.call_id || event.tool_call_id || event.id || this.pendingToolCallId
+			const name = event.name || event.function_name || this.pendingToolCallName
+			const args = event.delta || event.arguments
+
+			// Codex/Responses may stream tool-call arguments, but these delta events are not guaranteed
+			// to include a stable id/name. Avoid emitting incomplete tool_call_partial chunks because
+			// NativeToolCallParser requires a name to start a call.
+			if (typeof callId === "string" && callId.length > 0 && typeof name === "string" && name.length > 0) {
+				yield {
+					type: "tool_call_partial",
+					index: event.index ?? 0,
+					id: callId,
+					name,
+					arguments: typeof args === "string" ? args : "",
+				}
+			}
+			return
+		}
+
+		// Handle tool/function call completion
+		if (
+			event?.type === "response.tool_call_arguments.done" ||
+			event?.type === "response.function_call_arguments.done"
+		) {
+			return
+		}
+
+		// Handle output item events
+		if (event?.type === "response.output_item.added" || event?.type === "response.output_item.done") {
+			const item = event?.item
+			if (item) {
+				// Capture tool identity so subsequent argument deltas can be attributed.
+				if (item.type === "function_call" || item.type === "tool_call") {
+					const callId = item.call_id || item.tool_call_id || item.id
+					const name = item.name || item.function?.name || item.function_name
+					if (typeof callId === "string" && callId.length > 0) {
+						this.pendingToolCallId = callId
+						this.pendingToolCallName = typeof name === "string" ? name : undefined
+					}
+				}
+
+				// For "added" events, yield text/reasoning content (streaming path)
+				// For "done" events, do NOT yield text/reasoning - it's already been streamed via deltas
+				// and would cause double-emission (A, B, C, ABC).
+				if (event.type === "response.output_item.added") {
+					if (item.type === "text" && item.text) {
+						yield { type: "text", text: item.text }
+					} else if (item.type === "reasoning" && item.text) {
+						yield { type: "reasoning", text: item.text }
+					} else if (item.type === "message" && Array.isArray(item.content)) {
+						for (const content of item.content) {
+							if ((content?.type === "text" || content?.type === "output_text") && content?.text) {
+								yield { type: "text", text: content.text }
+							}
+						}
+					}
+				}
+
+				// Note: We intentionally do NOT emit tool_call from response.output_item.done
+				// for function_call/tool_call items. The streaming path handles tool calls via:
+				// 1. tool_call_partial events during argument deltas
+				// 2. NativeToolCallParser.finalizeRawChunks() at stream end emitting tool_call_end
+				// 3. NativeToolCallParser.finalizeStreamingToolCall() creating the final ToolUse
+				// Emitting tool_call here would cause duplicate tool rendering.
+			}
+			return
+		}
+
+		// Handle completion events
+		if (event?.type === "response.done" || event?.type === "response.completed") {
+			const usage = event?.response?.usage || event?.usage || undefined
+			const usageData = this.normalizeUsage(usage, model)
+			if (usageData) {
+				yield usageData
+			}
+			return
+		}
+
+		// Fallbacks
+		if (event?.choices?.[0]?.delta?.content) {
+			yield { type: "text", text: event.choices[0].delta.content }
+			return
+		}
+
+		if (event?.usage) {
+			const usageData = this.normalizeUsage(event.usage, model)
+			if (usageData) {
+				yield usageData
+			}
+		}
+	}
+
+	private getReasoningEffort(model: OpenAiCodexModel): ReasoningEffortExtended | undefined {
+		const selected = (this.options.reasoningEffort as any) ?? (model.info.reasoningEffort as any)
+		return selected && selected !== "disable" && selected !== "none" ? (selected as any) : undefined
 	}
 
 	override getModel() {
@@ -374,7 +982,129 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 		return { id, info, ...params }
 	}
 
-	override isAiSdkProvider(): boolean {
-		return true
+	getEncryptedContent(): { encrypted_content: string; id?: string } | undefined {
+		if (!this.lastResponseOutput) return undefined
+
+		const reasoningItem = this.lastResponseOutput.find(
+			(item) => item.type === "reasoning" && item.encrypted_content,
+		)
+
+		if (!reasoningItem?.encrypted_content) return undefined
+
+		return {
+			encrypted_content: reasoningItem.encrypted_content,
+			...(reasoningItem.id ? { id: reasoningItem.id } : {}),
+		}
+	}
+
+	getResponseId(): string | undefined {
+		return this.lastResponseId
+	}
+
+	async completePrompt(prompt: string): Promise<string> {
+		this.abortController = new AbortController()
+
+		try {
+			const model = this.getModel()
+
+			// Get access token
+			const accessToken = await openAiCodexOAuthManager.getAccessToken()
+			if (!accessToken) {
+				throw new Error(
+					t("common:errors.openAiCodex.notAuthenticated", {
+						defaultValue:
+							"Not authenticated with OpenAI Codex. Please sign in using the OpenAI Codex OAuth flow.",
+					}),
+				)
+			}
+
+			const reasoningEffort = this.getReasoningEffort(model)
+
+			const requestBody: any = {
+				model: model.id,
+				input: [
+					{
+						role: "user",
+						content: [{ type: "input_text", text: prompt }],
+					},
+				],
+				stream: false,
+				store: false,
+				...(reasoningEffort ? { include: ["reasoning.encrypted_content"] } : {}),
+			}
+
+			if (reasoningEffort) {
+				requestBody.reasoning = {
+					effort: reasoningEffort,
+					summary: "auto" as const,
+				}
+			}
+
+			const url = `${CODEX_API_BASE_URL}/responses`
+
+			// Get ChatGPT account ID for organization subscriptions
+			const accountId = await openAiCodexOAuthManager.getAccountId()
+
+			// Build headers with required Codex-specific fields
+			const headers: Record<string, string> = {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${accessToken}`,
+				originator: "roo-code",
+				session_id: this.sessionId,
+				"User-Agent": `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
+			}
+
+			// Add ChatGPT-Account-Id if available
+			if (accountId) {
+				headers["ChatGPT-Account-Id"] = accountId
+			}
+
+			const response = await fetch(url, {
+				method: "POST",
+				headers,
+				body: JSON.stringify(requestBody),
+				signal: this.abortController.signal,
+			})
+
+			if (!response.ok) {
+				const errorText = await response.text()
+				throw new Error(
+					t("common:errors.openAiCodex.genericError", { status: response.status }) +
+						(errorText ? `: ${errorText}` : ""),
+				)
+			}
+
+			const responseData = await response.json()
+
+			if (responseData?.output && Array.isArray(responseData.output)) {
+				for (const outputItem of responseData.output) {
+					if (outputItem.type === "message" && outputItem.content) {
+						for (const content of outputItem.content) {
+							if (content.type === "output_text" && content.text) {
+								return content.text
+							}
+						}
+					}
+				}
+			}
+
+			if (responseData?.text) {
+				return responseData.text
+			}
+
+			return ""
+		} catch (error) {
+			const errorModel = this.getModel()
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, errorModel.id, "completePrompt")
+			TelemetryService.instance.captureException(apiError)
+
+			if (error instanceof Error) {
+				throw new Error(t("common:errors.openAiCodex.completionError", { message: error.message }))
+			}
+			throw error
+		} finally {
+			this.abortController = undefined
+		}
 	}
 }

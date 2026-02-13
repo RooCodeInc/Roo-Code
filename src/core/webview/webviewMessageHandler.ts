@@ -29,16 +29,9 @@ import { type ApiMessage } from "../task-persistence/apiMessages"
 import { saveTaskMessages } from "../task-persistence"
 
 import { ClineProvider } from "./ClineProvider"
+import { BrowserSessionPanelManager } from "./BrowserSessionPanelManager"
 import { handleCheckpointRestoreOperation } from "./checkpointRestoreHandler"
 import { generateErrorDiagnostics } from "./diagnosticsHandler"
-import {
-	handleRequestSkills,
-	handleCreateSkill,
-	handleDeleteSkill,
-	handleMoveSkill,
-	handleUpdateSkillModes,
-	handleOpenSkillFile,
-} from "./skillsMessageHandler"
 import { changeLanguage, t } from "../../i18n"
 import { Package } from "../../shared/package"
 import { type RouterName, toRouterName } from "../../shared/api"
@@ -51,6 +44,7 @@ import { openFile } from "../../integrations/misc/open-file"
 import { openImage, saveImage } from "../../integrations/misc/image-handler"
 import { selectImages } from "../../integrations/misc/process-images"
 import { getTheme } from "../../integrations/theme/getTheme"
+import { discoverChromeHostUrl, tryChromeHostUrl } from "../../services/browser/browserDiscovery"
 import { searchWorkspaceFiles } from "../../services/search/file-search"
 import { fileExistsAtPath } from "../../utils/fs"
 import { playTts, setTtsEnabled, setTtsSpeed, stopTts } from "../../utils/tts"
@@ -382,7 +376,9 @@ export const webviewMessageHandler = async (
 					// Align API history truncation to the same user message timestamp if present
 					const userTs = m.ts
 					if (typeof userTs === "number") {
-						const apiIdx = currentCline.apiConversationHistory.findIndex((am) => (am as any).ts === userTs)
+						const apiIdx = currentCline.apiConversationHistory.findIndex(
+							(am: ApiMessage) => am.ts === userTs,
+						)
 						if (apiIdx !== -1) {
 							deleteFromApiIndex = apiIdx
 						}
@@ -494,18 +490,12 @@ export const webviewMessageHandler = async (
 						if (!checkExistKey(listApiConfig[0])) {
 							const { apiConfiguration } = await provider.getState()
 
-							// Only save if the current configuration has meaningful settings
-							// (e.g., API keys). This prevents saving a default "anthropic"
-							// fallback when no real config exists, which can happen during
-							// CLI initialization before provider settings are applied.
-							if (checkExistKey(apiConfiguration)) {
-								await provider.providerSettingsManager.saveConfig(
-									listApiConfig[0].name ?? "default",
-									apiConfiguration,
-								)
+							await provider.providerSettingsManager.saveConfig(
+								listApiConfig[0].name ?? "default",
+								apiConfiguration,
+							)
 
-								listApiConfig[0].apiProvider = apiConfiguration.apiProvider
-							}
+							listApiConfig[0].apiProvider = apiConfiguration.apiProvider
 						}
 					}
 
@@ -545,14 +535,10 @@ export const webviewMessageHandler = async (
 			provider.isViewLaunched = true
 			break
 		case "newTask":
-			if (provider.isTaskCreationInProgress) {
-				break
-			}
-			provider.isTaskCreationInProgress = true
+			// Initializing new instance of Cline will make sure that any
+			// agentically running promises in old instance don't affect our new
+			// task. This essentially creates a fresh slate for the new task.
 			try {
-				// Initializing new instance of Cline will make sure that any
-				// agentically running promises in old instance don't affect our new
-				// task. This essentially creates a fresh slate for the new task.
 				const resolved = await resolveIncomingImages({ text: message.text, images: message.images })
 				await provider.createTask(resolved.text, resolved.images)
 				// Task created successfully - notify the UI to reset
@@ -564,8 +550,6 @@ export const webviewMessageHandler = async (
 				vscode.window.showErrorMessage(
 					`Failed to create task: ${error instanceof Error ? error.message : String(error)}`,
 				)
-			} finally {
-				provider.isTaskCreationInProgress = false
 			}
 			break
 		case "customInstructions":
@@ -876,11 +860,16 @@ export const webviewMessageHandler = async (
 				: {
 						openrouter: {},
 						"vercel-ai-gateway": {},
+						huggingface: {},
 						litellm: {},
+						deepinfra: {},
+						"io-intelligence": {},
 						requesty: {},
+						unbound: {},
 						ollama: {},
 						lmstudio: {},
 						roo: {},
+						chutes: {},
 					}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
@@ -898,7 +887,7 @@ export const webviewMessageHandler = async (
 
 			// Base candidates (only those handled by this aggregate fetcher)
 			const candidates: { key: RouterName; options: GetModelsOptions }[] = [
-				{ key: "openrouter", options: { provider: "openrouter", baseUrl: apiConfiguration.openRouterBaseUrl } },
+				{ key: "openrouter", options: { provider: "openrouter" } },
 				{
 					key: "requesty",
 					options: {
@@ -907,7 +896,16 @@ export const webviewMessageHandler = async (
 						baseUrl: apiConfiguration.requestyBaseUrl,
 					},
 				},
+				{ key: "unbound", options: { provider: "unbound", apiKey: apiConfiguration.unboundApiKey } },
 				{ key: "vercel-ai-gateway", options: { provider: "vercel-ai-gateway" } },
+				{
+					key: "deepinfra",
+					options: {
+						provider: "deepinfra",
+						apiKey: apiConfiguration.deepInfraApiKey,
+						baseUrl: apiConfiguration.deepInfraBaseUrl,
+					},
+				},
 				{
 					key: "roo",
 					options: {
@@ -918,7 +916,19 @@ export const webviewMessageHandler = async (
 							: undefined,
 					},
 				},
+				{
+					key: "chutes",
+					options: { provider: "chutes", apiKey: apiConfiguration.chutesApiKey },
+				},
 			]
+
+			// IO Intelligence is conditional on api key
+			if (apiConfiguration.ioIntelligenceApiKey) {
+				candidates.push({
+					key: "io-intelligence",
+					options: { provider: "io-intelligence", apiKey: apiConfiguration.ioIntelligenceApiKey },
+				})
+			}
 
 			// LiteLLM is conditional on baseUrl+apiKey
 			const litellmApiKey = apiConfiguration.litellmApiKey || message?.values?.litellmApiKey
@@ -1107,6 +1117,21 @@ export const webviewMessageHandler = async (
 			// TODO: Cache like we do for OpenRouter, etc?
 			provider.postMessageToWebview({ type: "vsCodeLmModels", vsCodeLmModels })
 			break
+		case "requestHuggingFaceModels":
+			// TODO: Why isn't this handled by `requestRouterModels` above?
+			try {
+				const { getHuggingFaceModelsWithMetadata } = await import("../../api/providers/fetchers/huggingface")
+				const huggingFaceModelsResponse = await getHuggingFaceModelsWithMetadata()
+
+				provider.postMessageToWebview({
+					type: "huggingFaceModels",
+					huggingFaceModels: huggingFaceModelsResponse.models,
+				})
+			} catch (error) {
+				console.error("Failed to fetch Hugging Face models:", error)
+				provider.postMessageToWebview({ type: "huggingFaceModels", huggingFaceModels: [] })
+			}
+			break
 		case "openImage":
 			openImage(message.text!, { values: message.values })
 			break
@@ -1188,6 +1213,69 @@ export const webviewMessageHandler = async (
 		case "cancelAutoApproval":
 			// Cancel any pending auto-approval timeout for the current task
 			provider.getCurrentTask()?.cancelAutoApprovalTimeout()
+			break
+		case "killBrowserSession":
+			{
+				const task = provider.getCurrentTask()
+				if (task?.browserSession) {
+					await task.browserSession.closeBrowser()
+					await provider.postStateToWebview()
+				}
+			}
+			break
+		case "openBrowserSessionPanel":
+			{
+				// Toggle the Browser Session panel (open if closed, close if open)
+				const panelManager = BrowserSessionPanelManager.getInstance(provider)
+				await panelManager.toggle()
+			}
+			break
+		case "showBrowserSessionPanelAtStep":
+			{
+				const panelManager = BrowserSessionPanelManager.getInstance(provider)
+
+				// If this is a launch action, reset the manual close flag
+				if (message.isLaunchAction) {
+					panelManager.resetManualCloseFlag()
+				}
+
+				// Show panel if:
+				// 1. Manual click (forceShow) - always show
+				// 2. Launch action - always show and reset flag
+				// 3. Auto-open for non-launch action - only if user hasn't manually closed
+				if (message.forceShow || message.isLaunchAction || panelManager.shouldAllowAutoOpen()) {
+					// Ensure panel is shown and populated
+					await panelManager.show()
+
+					// Navigate to a specific step if provided
+					// For launch actions: navigate to step 0
+					// For manual clicks: navigate to the clicked step
+					// For auto-opens of regular actions: don't navigate, let BrowserSessionRow's
+					// internal auto-advance logic handle it (only advances if user is on most recent step)
+					if (typeof message.stepIndex === "number" && message.stepIndex >= 0) {
+						await panelManager.navigateToStep(message.stepIndex)
+					}
+				}
+			}
+			break
+		case "refreshBrowserSessionPanel":
+			{
+				// Re-send the latest browser session snapshot to the panel
+				const panelManager = BrowserSessionPanelManager.getInstance(provider)
+				const task = provider.getCurrentTask()
+				if (task) {
+					const messages = task.clineMessages || []
+					const browserSessionStartIndex = messages.findIndex(
+						(m) =>
+							m.ask === "browser_action_launch" ||
+							(m.say === "browser_session_status" && m.text?.includes("opened")),
+					)
+					const browserSessionMessages =
+						browserSessionStartIndex !== -1 ? messages.slice(browserSessionStartIndex) : []
+					const isBrowserSessionActive = task.browserSession?.isSessionActive() ?? false
+					await panelManager.updateBrowserSession(browserSessionMessages, isBrowserSessionActive)
+				}
+			}
 			break
 		case "allowedCommands": {
 			// Validate and sanitize the commands array
@@ -1417,6 +1505,43 @@ export const webviewMessageHandler = async (
 			stopTts()
 			break
 
+		case "testBrowserConnection":
+			// If no text is provided, try auto-discovery
+			if (!message.text) {
+				// Use testBrowserConnection for auto-discovery
+				const chromeHostUrl = await discoverChromeHostUrl()
+
+				if (chromeHostUrl) {
+					// Send the result back to the webview
+					await provider.postMessageToWebview({
+						type: "browserConnectionResult",
+						success: !!chromeHostUrl,
+						text: `Auto-discovered and tested connection to Chrome: ${chromeHostUrl}`,
+						values: { endpoint: chromeHostUrl },
+					})
+				} else {
+					await provider.postMessageToWebview({
+						type: "browserConnectionResult",
+						success: false,
+						text: "No Chrome instances found on the network. Make sure Chrome is running with remote debugging enabled (--remote-debugging-port=9222).",
+					})
+				}
+			} else {
+				// Test the provided URL
+				const customHostUrl = message.text
+				const hostIsValid = await tryChromeHostUrl(message.text)
+
+				// Send the result back to the webview
+				await provider.postMessageToWebview({
+					type: "browserConnectionResult",
+					success: hostIsValid,
+					text: hostIsValid
+						? `Successfully connected to Chrome: ${customHostUrl}`
+						: "Failed to connect to Chrome",
+				})
+			}
+			break
+
 		case "updateVSCodeSetting": {
 			const { setting, value } = message
 
@@ -1521,14 +1646,6 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("hasOpenedModeSelector", message.bool ?? true)
 			await provider.postStateToWebview()
 			break
-
-		case "lockApiConfigAcrossModes": {
-			const enabled = message.bool ?? false
-			await provider.context.workspaceState.update("lockApiConfigAcrossModes", enabled)
-
-			await provider.postStateToWebview()
-			break
-		}
 
 		case "toggleApiConfigPin":
 			if (message.text) {
@@ -2127,9 +2244,10 @@ export const webviewMessageHandler = async (
 					const yamlContent = await fs.readFile(fileUri[0].fsPath, "utf-8")
 
 					// Import the mode with the specified source level
-					// Note: "built-in" is not a valid source for importing modes
-					const importSource = message.source === "global" ? "global" : "project"
-					const result = await provider.customModesManager.importModeWithRules(yamlContent, importSource)
+					const result = await provider.customModesManager.importModeWithRules(
+						yamlContent,
+						message.source || "project", // Default to project if not specified
+					)
 
 					if (result.success) {
 						// Update state after importing
@@ -2850,30 +2968,6 @@ export const webviewMessageHandler = async (
 				provider.log(`Error fetching modes: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
 				await provider.postMessageToWebview({ type: "modes", modes: [] })
 			}
-			break
-		}
-		case "requestSkills": {
-			await handleRequestSkills(provider)
-			break
-		}
-		case "createSkill": {
-			await handleCreateSkill(provider, message)
-			break
-		}
-		case "deleteSkill": {
-			await handleDeleteSkill(provider, message)
-			break
-		}
-		case "moveSkill": {
-			await handleMoveSkill(provider, message)
-			break
-		}
-		case "updateSkillModes": {
-			await handleUpdateSkillModes(provider, message)
-			break
-		}
-		case "openSkillFile": {
-			await handleOpenSkillFile(provider, message)
 			break
 		}
 		case "openCommandFile": {

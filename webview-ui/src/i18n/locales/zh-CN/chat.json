@@ -111,8 +111,6 @@
 	},
 	"selectMode": "选择交互模式",
 	"selectApiConfig": "选择 API 配置",
-	"lockApiConfigAcrossModes": "锁定此工作区所有模式的 API 配置",
-	"unlockApiConfigAcrossModes": "此工作区所有模式的 API 配置已锁定（点击解锁）",
 	"enhancePrompt": "增强提示词",
 	"addImages": "添加图片到消息",
 	"sendMessage": "发送消息",
@@ -220,8 +218,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "需要查看目录文件列表（工作区外）",
 		"didViewTopLevelOutsideWorkspace": "已查看目录文件列表（工作区外）",
 		"wantsToViewRecursiveOutsideWorkspace": "需要查看目录所有文件（工作区外）",
-		"didViewRecursiveOutsideWorkspace": "已查看目录所有文件（工作区外）",
-		"wantsToViewMultipleDirectories": "Roo 想要查看多个目录"
+		"didViewRecursiveOutsideWorkspace": "已查看目录所有文件（工作区外）"
 	},
 	"commandOutput": "命令输出",
 	"commandExecution": {
@@ -348,8 +345,7 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"claudeOpus": "Claude Opus 4.6: 现已在所有供应商——Roo Code Router、Anthropic、AWS Bedrock、Google Vertex 和 OpenRouter——提供，将 Anthropic 最强大的模型带到您的首选平台。",
-			"gptCodex": "GPT-5.3-Codex: OpenAI 最新的编码模型现已在 OpenAI - ChatGPT 供应商中支持，提供尖端的代码生成和理解。"
+			"smartCodeFolding": "智能代码折叠：上下文压缩现在保留文件的轻量级映射——函数签名、类声明和类型定义。 这在压缩后提供更好的连续性，引用之前工作时编辑更聪明。"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",
@@ -364,6 +360,44 @@
 		"total": "总成本: ${{cost}}",
 		"includesSubtasks": "包括子任务成本"
 	},
+	"browser": {
+		"session": "浏览器会话",
+		"active": "活动中",
+		"rooWantsToUse": "Roo想使用浏览器",
+		"consoleLogs": "控制台日志",
+		"noNewLogs": "(没有新日志)",
+		"screenshot": "浏览器截图",
+		"cursor": "光标",
+		"navigation": {
+			"step": "步骤 {{current}} / {{total}}",
+			"previous": "上一步",
+			"next": "下一步"
+		},
+		"sessionStarted": "浏览器会话已启动",
+		"actions": {
+			"title": "浏览器操作: ",
+			"launched": "浏览器已启动",
+			"launch": "访问 {{url}}",
+			"clicked": "点击位置: {{coordinate}}",
+			"click": "点击 ({{coordinate}})",
+			"typed": "输入: {{text}}",
+			"type": "输入 \"{{text}}\"",
+			"pressed": "已按 {{key}}",
+			"press": "按 {{key}}",
+			"scrolledDown": "已向下滚动",
+			"scrollDown": "向下滚动",
+			"scrolledUp": "已向上滚动",
+			"scrollUp": "向上滚动",
+			"hovered": "悬停位置: {{coordinate}}",
+			"hover": "悬停 ({{coordinate}})",
+			"resized": "大小已更改: {{size}}",
+			"resize": "调整大小为 {{size}}",
+			"screenshotSaved": "截图已保存",
+			"screenshot": "将截图保存到 {{path}}",
+			"closed": "浏览器已关闭",
+			"close": "关闭浏览器"
+		}
+	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "展开代码块",
@@ -371,6 +405,7 @@
 			"copy_code": "复制代码"
 		}
 	},
+	"systemPromptWarning": "警告：自定义系统提示词覆盖已激活。这可能严重破坏功能并导致不可预测的行为。",
 	"profileViolationWarning": "当前配置文件与您的组织设置不兼容",
 	"shellIntegration": {
 		"title": "命令执行警告",
@@ -399,22 +434,6 @@
 	"read-batch": {
 		"approve": {
 			"title": "全部批准"
-		},
-		"deny": {
-			"title": "全部拒绝"
-		}
-	},
-	"list-batch": {
-		"approve": {
-			"title": "全部批准"
-		},
-		"deny": {
-			"title": "全部拒绝"
-		}
-	},
-	"edit-batch": {
-		"approve": {
-			"title": "全部保存"
 		},
 		"deny": {
 			"title": "全部拒绝"
@@ -493,10 +512,5 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
-	},
-	"retiredProvider": {
-		"title": "供应商不再受支持",
-		"message": "抱歉，此供应商已不再受支持。我们发现实际使用它的 Roo 用户非常少，我们需要缩减代码库的范围，以便继续快速交付并更好地服务社区。这是一个非常艰难的决定，但它能让我们专注于对你最重要的事情。我们知道这很遗憾。",
-		"openSettings": "打开设置"
 	}
 }

@@ -1,198 +1,350 @@
 // npx vitest run src/api/providers/__tests__/bedrock-invokedModelId.spec.ts
 
-// Mock TelemetryService before other imports
-vi.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		instance: {
-			captureException: vi.fn(),
-		},
-	},
-}))
+import { ApiHandlerOptions } from "../../../shared/api"
 
-// Mock AWS SDK credential providers
-vi.mock("@aws-sdk/credential-providers", () => ({
-	fromIni: vi.fn().mockReturnValue({
+import { AwsBedrockHandler, StreamEvent } from "../bedrock"
+
+// Mock AWS SDK credential providers and Bedrock client
+vitest.mock("@aws-sdk/credential-providers", () => ({
+	fromIni: vitest.fn().mockReturnValue({
 		accessKeyId: "profile-access-key",
 		secretAccessKey: "profile-secret-key",
 	}),
 }))
 
-// Use vi.hoisted to define mock functions for AI SDK
-const { mockStreamText, mockGenerateText } = vi.hoisted(() => ({
-	mockStreamText: vi.fn(),
-	mockGenerateText: vi.fn(),
+// Mock Smithy client
+vitest.mock("@smithy/smithy-client", () => ({
+	throwDefaultError: vitest.fn(),
 }))
 
-vi.mock("ai", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("ai")>()
+// Create a mock send function that we can reference
+const mockSend = vitest.fn().mockImplementation(async () => {
 	return {
-		...actual,
-		streamText: mockStreamText,
-		generateText: mockGenerateText,
-	}
-})
-
-vi.mock("@ai-sdk/amazon-bedrock", () => ({
-	createAmazonBedrock: vi.fn(() => vi.fn(() => ({ modelId: "test", provider: "bedrock" }))),
-}))
-
-import { AwsBedrockHandler } from "../bedrock"
-import { bedrockModels } from "@roo-code/types"
-
-describe("AwsBedrockHandler with invokedModelId", () => {
-	beforeEach(() => {
-		vi.clearAllMocks()
-	})
-
-	/**
-	 * Helper: set up mockStreamText to return a stream whose resolved
-	 * `providerMetadata` contains the given `invokedModelId` in the
-	 * `bedrock.trace.promptRouter` path.
-	 */
-	function setupMockStreamWithInvokedModelId(invokedModelId?: string) {
-		async function* mockFullStream() {
-			yield { type: "text-delta", text: "Hello" }
-			yield { type: "text-delta", text: ", world!" }
-		}
-
-		const providerMetadata = invokedModelId
-			? {
-					bedrock: {
-						trace: {
-							promptRouter: {
-								invokedModelId,
-							},
+		$metadata: {
+			httpStatusCode: 200,
+			requestId: "mock-request-id",
+		},
+		stream: {
+			[Symbol.asyncIterator]: async function* () {
+				yield {
+					metadata: {
+						usage: {
+							inputTokens: 100,
+							outputTokens: 200,
 						},
 					},
 				}
-			: {}
+			},
+		},
+	}
+})
 
-		mockStreamText.mockReturnValue({
-			fullStream: mockFullStream(),
-			usage: Promise.resolve({ inputTokens: 100, outputTokens: 200 }),
-			providerMetadata: Promise.resolve(providerMetadata),
-		})
+// Mock AWS SDK modules
+vitest.mock("@aws-sdk/client-bedrock-runtime", () => {
+	return {
+		BedrockRuntimeClient: vitest.fn().mockImplementation(() => ({
+			send: mockSend,
+			config: { region: "us-east-1" },
+			middlewareStack: {
+				clone: () => ({ resolve: () => {} }),
+				use: () => {},
+			},
+		})),
+		ConverseStreamCommand: vitest.fn((params) => ({
+			...params,
+			input: params,
+			middlewareStack: {
+				clone: () => ({ resolve: () => {} }),
+				use: () => {},
+			},
+		})),
+		ConverseCommand: vitest.fn((params) => ({
+			...params,
+			input: params,
+			middlewareStack: {
+				clone: () => ({ resolve: () => {} }),
+				use: () => {},
+			},
+		})),
+	}
+})
+
+describe("AwsBedrockHandler with invokedModelId", () => {
+	beforeEach(() => {
+		vitest.clearAllMocks()
+	})
+
+	// Helper function to create a mock async iterable stream
+	function createMockStream(events: StreamEvent[]) {
+		return {
+			[Symbol.asyncIterator]: async function* () {
+				for (const event of events) {
+					yield event
+				}
+				// Always yield a metadata event at the end
+				yield {
+					metadata: {
+						usage: {
+							inputTokens: 100,
+							outputTokens: 200,
+						},
+					},
+				}
+			},
+		}
 	}
 
-	it("should update costModelConfig when invokedModelId is present in providerMetadata", async () => {
-		// Create a handler with a custom ARN (prompt router)
-		const handler = new AwsBedrockHandler({
+	it("should update costModelConfig when invokedModelId is present in the stream", async () => {
+		// Create a handler with a custom ARN
+		const mockOptions: ApiHandlerOptions = {
 			awsAccessKey: "test-access-key",
 			awsSecretKey: "test-secret-key",
 			awsRegion: "us-east-1",
 			awsCustomArn: "arn:aws:bedrock:us-west-2:123456789:default-prompt-router/anthropic.claude:1",
-		})
+		}
 
-		// The default prompt router model should use sonnet pricing (inputPrice: 3)
+		const handler = new AwsBedrockHandler(mockOptions)
+
+		// Verify that getModel returns the updated model info
 		const initialModel = handler.getModel()
+		//the default prompt router model has an input price of 3. After the stream is handled it should be updated to 8
 		expect(initialModel.info.inputPrice).toBe(3)
 
-		// Spy on getModelById to verify the invoked model is looked up
-		const getModelByIdSpy = vi.spyOn(handler, "getModelById")
+		// Create a spy on the getModel
+		const getModelByIdSpy = vitest.spyOn(handler, "getModelById")
 
-		// Set up stream to include an invokedModelId pointing to Claude 3 Opus
-		setupMockStreamWithInvokedModelId(
-			"arn:aws:bedrock:us-west-2:699475926481:inference-profile/us.anthropic.claude-3-opus-20240229-v1:0",
-		)
+		// Mock the stream to include an event with invokedModelId and usage metadata
+		mockSend.mockImplementationOnce(async () => {
+			return {
+				stream: createMockStream([
+					// First event with invokedModelId and usage metadata
+					{
+						trace: {
+							promptRouter: {
+								invokedModelId:
+									"arn:aws:bedrock:us-west-2:699475926481:inference-profile/us.anthropic.claude-3-opus-20240229-v1:0",
+								usage: {
+									inputTokens: 150,
+									outputTokens: 250,
+									cacheReadTokens: 0,
+									cacheWriteTokens: 0,
+								},
+							},
+						},
+					},
+					{
+						contentBlockStart: {
+							start: {
+								text: "Hello",
+							},
+							contentBlockIndex: 0,
+						},
+					},
+					{
+						contentBlockDelta: {
+							delta: {
+								text: ", world!",
+							},
+							contentBlockIndex: 0,
+						},
+					},
+				]),
+			}
+		})
 
-		// Consume the generator
+		// Create a message generator
+		const messageGenerator = handler.createMessage("system prompt", [{ role: "user", content: "user message" }])
+
+		// Collect all yielded events to verify usage events
 		const events = []
-		for await (const event of handler.createMessage("system prompt", [{ role: "user", content: "user message" }])) {
+		for await (const event of messageGenerator) {
 			events.push(event)
 		}
 
-		// Verify that getModelById was called with the parsed model id and type
+		// Verify that getModelById was called with the id, not the full arn
 		expect(getModelByIdSpy).toHaveBeenCalledWith("anthropic.claude-3-opus-20240229-v1:0", "inference-profile")
 
-		// After processing, getModel should return the invoked model's pricing (Opus: inputPrice 15)
+		// Verify that getModel returns the updated model info
 		const costModel = handler.getModel()
+		//expect(costModel.id).toBe("anthropic.claude-3-5-sonnet-20240620-v1:0")
 		expect(costModel.info.inputPrice).toBe(15)
 
-		// Verify that a usage event was emitted
-		const usageEvents = events.filter((e: any) => e.type === "usage")
+		// Verify that a usage event was emitted after updating the costModelConfig
+		const usageEvents = events.filter((event) => event.type === "usage")
 		expect(usageEvents.length).toBeGreaterThanOrEqual(1)
 
-		// The usage event should contain the token counts
-		const lastUsageEvent = usageEvents[usageEvents.length - 1] as any
+		// The last usage event should have the token counts from the metadata
+		const lastUsageEvent = usageEvents[usageEvents.length - 1]
+		// Expect the usage event to include all token information
 		expect(lastUsageEvent).toMatchObject({
 			type: "usage",
 			inputTokens: 100,
 			outputTokens: 200,
+			// Cache tokens may be present with default values
+			cacheReadTokens: expect.any(Number),
+			cacheWriteTokens: expect.any(Number),
 		})
 	})
 
 	it("should not update costModelConfig when invokedModelId is not present", async () => {
-		const handler = new AwsBedrockHandler({
+		// Create a handler with default settings
+		const mockOptions: ApiHandlerOptions = {
 			apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
 			awsAccessKey: "test-access-key",
 			awsSecretKey: "test-secret-key",
 			awsRegion: "us-east-1",
-		})
+		}
 
+		const handler = new AwsBedrockHandler(mockOptions)
+
+		// Store the initial model configuration
 		const initialModelConfig = handler.getModel()
 		expect(initialModelConfig.id).toBe("anthropic.claude-3-5-sonnet-20241022-v2:0")
 
-		// Set up stream WITHOUT an invokedModelId
-		setupMockStreamWithInvokedModelId(undefined)
+		// Mock the stream without an invokedModelId event
+		mockSend.mockImplementationOnce(async () => {
+			return {
+				stream: createMockStream([
+					// Some content events but no invokedModelId
+					{
+						contentBlockStart: {
+							start: {
+								text: "Hello",
+							},
+							contentBlockIndex: 0,
+						},
+					},
+					{
+						contentBlockDelta: {
+							delta: {
+								text: ", world!",
+							},
+							contentBlockIndex: 0,
+						},
+					},
+				]),
+			}
+		})
+
+		// Create a message generator
+		const messageGenerator = handler.createMessage("system prompt", [{ role: "user", content: "user message" }])
 
 		// Consume the generator
-		for await (const _ of handler.createMessage("system prompt", [{ role: "user", content: "user message" }])) {
-			// Just consume
+		for await (const _ of messageGenerator) {
+			// Just consume the messages
 		}
 
-		// Model should remain unchanged
+		// Verify that getModel returns the original model info (unchanged)
 		const costModel = handler.getModel()
 		expect(costModel.id).toBe("anthropic.claude-3-5-sonnet-20241022-v2:0")
-		expect(costModel.info.inputPrice).toBe(initialModelConfig.info.inputPrice)
+		expect(costModel).toEqual(initialModelConfig)
 	})
 
 	it("should handle invalid invokedModelId format gracefully", async () => {
-		const handler = new AwsBedrockHandler({
+		// Create a handler with default settings
+		const mockOptions: ApiHandlerOptions = {
 			apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
 			awsAccessKey: "test-access-key",
 			awsSecretKey: "test-secret-key",
 			awsRegion: "us-east-1",
-		})
-
-		// Set up stream with an invalid (non-ARN) invokedModelId
-		setupMockStreamWithInvokedModelId("invalid-format-not-an-arn")
-
-		// Consume the generator — should not throw
-		for await (const _ of handler.createMessage("system prompt", [{ role: "user", content: "user message" }])) {
-			// Just consume
 		}
 
-		// Model should remain unchanged (the parseArn call should fail gracefully)
+		const handler = new AwsBedrockHandler(mockOptions)
+
+		// Mock the stream with an invalid invokedModelId
+		mockSend.mockImplementationOnce(async () => {
+			return {
+				stream: createMockStream([
+					// Event with invalid invokedModelId format
+					{
+						trace: {
+							promptRouter: {
+								invokedModelId: "invalid-format-not-an-arn",
+							},
+						},
+					},
+					// Some content events
+					{
+						contentBlockStart: {
+							start: {
+								text: "Hello",
+							},
+							contentBlockIndex: 0,
+						},
+					},
+				]),
+			}
+		})
+
+		// Create a message generator
+		const messageGenerator = handler.createMessage("system prompt", [{ role: "user", content: "user message" }])
+
+		// Consume the generator
+		for await (const _ of messageGenerator) {
+			// Just consume the messages
+		}
+
+		// Verify that getModel returns the original model info
 		const costModel = handler.getModel()
 		expect(costModel.id).toBe("anthropic.claude-3-5-sonnet-20241022-v2:0")
 	})
 
-	it("should use the invoked model's pricing for totalCost calculation", async () => {
-		const handler = new AwsBedrockHandler({
+	it("should handle errors during invokedModelId processing", async () => {
+		// Create a handler with default settings
+		const mockOptions: ApiHandlerOptions = {
+			apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
 			awsAccessKey: "test-access-key",
 			awsSecretKey: "test-secret-key",
 			awsRegion: "us-east-1",
-			awsCustomArn: "arn:aws:bedrock:us-west-2:123456789:default-prompt-router/anthropic.claude:1",
-		})
-
-		// Set up stream to include Opus as the invoked model
-		setupMockStreamWithInvokedModelId(
-			"arn:aws:bedrock:us-west-2:699475926481:foundation-model/anthropic.claude-3-opus-20240229-v1:0",
-		)
-
-		const events = []
-		for await (const event of handler.createMessage("system prompt", [{ role: "user", content: "user message" }])) {
-			events.push(event)
 		}
 
-		const usageEvent = events.find((e: any) => e.type === "usage") as any
-		expect(usageEvent).toBeDefined()
+		const handler = new AwsBedrockHandler(mockOptions)
 
-		// Calculate expected cost based on Opus pricing ($15 / 1M input, $75 / 1M output)
-		const opusInfo = bedrockModels["anthropic.claude-3-opus-20240229-v1:0"]
-		const expectedCost =
-			(100 * (opusInfo.inputPrice ?? 0)) / 1_000_000 + (200 * (opusInfo.outputPrice ?? 0)) / 1_000_000
+		// Mock the stream with a valid invokedModelId
+		mockSend.mockImplementationOnce(async () => {
+			return {
+				stream: createMockStream([
+					// Event with valid invokedModelId
+					{
+						trace: {
+							promptRouter: {
+								invokedModelId:
+									"arn:aws:bedrock:us-east-1:123456789:foundation-model/anthropic.claude-3-sonnet-20240229-v1:0",
+							},
+						},
+					},
+				]),
+			}
+		})
 
-		expect(usageEvent.totalCost).toBeCloseTo(expectedCost, 10)
+		// Mock getModel to throw an error when called with the model name
+		vitest.spyOn(handler, "getModel").mockImplementation((modelName?: string) => {
+			if (modelName === "anthropic.claude-3-sonnet-20240229-v1:0") {
+				throw new Error("Test error during model lookup")
+			}
+
+			// Default return value for initial call
+			return {
+				id: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				info: {
+					maxTokens: 4096,
+					contextWindow: 128_000,
+					supportsPromptCache: false,
+					supportsImages: true,
+				},
+			}
+		})
+
+		// Create a message generator
+		const messageGenerator = handler.createMessage("system prompt", [{ role: "user", content: "user message" }])
+
+		// Consume the generator
+		for await (const _ of messageGenerator) {
+			// Just consume the messages
+		}
+
+		// Verify that getModel returns the original model info
+		const costModel = handler.getModel()
+		expect(costModel.id).toBe("anthropic.claude-3-5-sonnet-20241022-v2:0")
 	})
 })

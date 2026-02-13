@@ -1,7 +1,7 @@
 import { type TaskEvent } from "@roo-code/types"
 
-import type { Run, Task } from "../db/index"
-import { Logger } from "./utils"
+import type { Run, Task } from "../db/index.js"
+import { Logger } from "./utils.js"
 
 export class SubprocessTimeoutError extends Error {
 	constructor(timeout: number) {

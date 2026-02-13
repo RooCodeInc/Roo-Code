@@ -24,8 +24,8 @@ export type FlagOptions = {
 	print: boolean
 	extension?: string
 	debug: boolean
-	requireApproval: boolean
-	exitOnError: boolean
+	yes: boolean
+	dangerouslySkipPermissions: boolean
 	apiKey?: string
 	provider?: SupportedProvider
 	model?: string
@@ -57,9 +57,7 @@ export interface CliSettings {
 	model?: string
 	/** Default reasoning effort level */
 	reasoningEffort?: ReasoningEffortFlagOptions
-	/** Require manual approval for tools/commands/browser/MCP actions */
-	requireApproval?: boolean
-	/** @deprecated Legacy inverse setting kept for backward compatibility */
+	/** Auto-approve all prompts (use with caution) */
 	dangerouslySkipPermissions?: boolean
 	/** Exit upon task completion */
 	oneshot?: boolean

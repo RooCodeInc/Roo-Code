@@ -1,189 +1,150 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import { createDeepSeek } from "@ai-sdk/deepseek"
-import { streamText, generateText, ToolSet, ModelMessage } from "ai"
+import OpenAI from "openai"
 
-import { deepSeekModels, deepSeekDefaultModelId, DEEP_SEEK_DEFAULT_TEMPERATURE, type ModelInfo } from "@roo-code/types"
+import {
+	deepSeekModels,
+	deepSeekDefaultModelId,
+	DEEP_SEEK_DEFAULT_TEMPERATURE,
+	OPENAI_AZURE_AI_INFERENCE_PATH,
+} from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import {
-	convertToAiSdkMessages,
-	convertToolsForAiSdk,
-	consumeAiSdkStream,
-	mapToolChoice,
-	handleAiSdkError,
-} from "../transform/ai-sdk"
-import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { convertToR1Format } from "../transform/r1-format"
 
-import { DEFAULT_HEADERS } from "./constants"
-import { BaseProvider } from "./base-provider"
-import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
+import { OpenAiHandler } from "./openai"
+import type { ApiHandlerCreateMessageMetadata } from "../index"
 
-/**
- * DeepSeek provider using the dedicated @ai-sdk/deepseek package.
- * Provides native support for reasoning (deepseek-reasoner) and prompt caching.
- */
-export class DeepSeekHandler extends BaseProvider implements SingleCompletionHandler {
-	protected options: ApiHandlerOptions
-	protected provider: ReturnType<typeof createDeepSeek>
+// Custom interface for DeepSeek params to support thinking mode
+type DeepSeekChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParamsStreaming & {
+	thinking?: { type: "enabled" | "disabled" }
+}
 
+export class DeepSeekHandler extends OpenAiHandler {
 	constructor(options: ApiHandlerOptions) {
-		super()
-		this.options = options
-
-		// Create the DeepSeek provider using AI SDK
-		this.provider = createDeepSeek({
-			baseURL: options.deepSeekBaseUrl || "https://api.deepseek.com/v1",
-			apiKey: options.deepSeekApiKey ?? "not-provided",
-			headers: DEFAULT_HEADERS,
+		super({
+			...options,
+			openAiApiKey: options.deepSeekApiKey ?? "not-provided",
+			openAiModelId: options.apiModelId ?? deepSeekDefaultModelId,
+			openAiBaseUrl: options.deepSeekBaseUrl ?? "https://api.deepseek.com",
+			openAiStreamingEnabled: true,
+			includeMaxTokens: true,
 		})
 	}
 
-	override getModel(): { id: string; info: ModelInfo; maxTokens?: number; temperature?: number } {
+	override getModel() {
 		const id = this.options.apiModelId ?? deepSeekDefaultModelId
 		const info = deepSeekModels[id as keyof typeof deepSeekModels] || deepSeekModels[deepSeekDefaultModelId]
-		const params = getModelParams({
-			format: "openai",
-			modelId: id,
-			model: info,
-			settings: this.options,
-			defaultTemperature: DEEP_SEEK_DEFAULT_TEMPERATURE,
-		})
+		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
 		return { id, info, ...params }
 	}
 
-	/**
-	 * Get the language model for the configured model ID.
-	 */
-	protected getLanguageModel() {
-		const { id } = this.getModel()
-		return this.provider(id)
-	}
-
-	/**
-	 * Process usage metrics from the AI SDK response, including DeepSeek's cache metrics.
-	 * DeepSeek provides cache hit/miss info via providerMetadata.
-	 */
-	protected processUsageMetrics(
-		usage: {
-			inputTokens?: number
-			outputTokens?: number
-			totalInputTokens?: number
-			totalOutputTokens?: number
-			cachedInputTokens?: number
-			reasoningTokens?: number
-			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
-			outputTokenDetails?: { reasoningTokens?: number }
-			details?: {
-				cachedInputTokens?: number
-				reasoningTokens?: number
-			}
-		},
-		providerMetadata?: {
-			deepseek?: {
-				promptCacheHitTokens?: number
-				promptCacheMissTokens?: number
-			}
-		},
-	): ApiStreamUsageChunk {
-		// Extract cache metrics from DeepSeek's providerMetadata, then v6 fields, then legacy
-		const cacheReadTokens =
-			providerMetadata?.deepseek?.promptCacheHitTokens ??
-			usage.cachedInputTokens ??
-			usage.inputTokenDetails?.cacheReadTokens ??
-			usage.details?.cachedInputTokens
-		const cacheWriteTokens =
-			providerMetadata?.deepseek?.promptCacheMissTokens ?? usage.inputTokenDetails?.cacheWriteTokens
-
-		const inputTokens = usage.inputTokens || 0
-		const outputTokens = usage.outputTokens || 0
-		return {
-			type: "usage",
-			inputTokens,
-			outputTokens,
-			cacheReadTokens,
-			cacheWriteTokens,
-			reasoningTokens:
-				usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
-			totalInputTokens: inputTokens,
-			totalOutputTokens: outputTokens,
-		}
-	}
-
-	/**
-	 * Get the max tokens parameter to include in the request.
-	 */
-	protected getMaxOutputTokens(): number | undefined {
-		const { info } = this.getModel()
-		return this.options.modelMaxTokens || info.maxTokens || undefined
-	}
-
-	/**
-	 * Create a message stream using the AI SDK.
-	 * The AI SDK automatically handles reasoning for deepseek-reasoner model.
-	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: RooMessage[],
+		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const { temperature } = this.getModel()
-		const languageModel = this.getLanguageModel()
+		const modelId = this.options.apiModelId ?? deepSeekDefaultModelId
+		const { info: modelInfo } = this.getModel()
 
-		// Convert messages to AI SDK format
-		const aiSdkMessages = messages as ModelMessage[]
+		// Check if this is a thinking-enabled model (deepseek-reasoner)
+		const isThinkingModel = modelId.includes("deepseek-reasoner")
 
-		// Convert tools to OpenAI format first, then to AI SDK format
-		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
-		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
-
-		// Build the request options
-		const requestOptions: Parameters<typeof streamText>[0] = {
-			model: languageModel,
-			system: systemPrompt || undefined,
-			messages: aiSdkMessages,
-			temperature: this.options.modelTemperature ?? temperature ?? DEEP_SEEK_DEFAULT_TEMPERATURE,
-			maxOutputTokens: this.getMaxOutputTokens(),
-			tools: aiSdkTools,
-			toolChoice: mapToolChoice(metadata?.tool_choice),
-		}
-
-		// Use streamText for streaming responses
-		const result = streamText(requestOptions)
-
-		try {
-			const processUsage = this.processUsageMetrics.bind(this)
-			yield* consumeAiSdkStream(result, async function* () {
-				const [usage, providerMetadata] = await Promise.all([result.usage, result.providerMetadata])
-				yield processUsage(usage, providerMetadata as Parameters<typeof processUsage>[1])
-			})
-		} catch (error) {
-			throw handleAiSdkError(error, "DeepSeek")
-		}
-	}
-
-	/**
-	 * Complete a prompt using the AI SDK generateText.
-	 */
-	async completePrompt(prompt: string): Promise<string> {
-		const { temperature } = this.getModel()
-		const languageModel = this.getLanguageModel()
-
-		const { text } = await generateText({
-			model: languageModel,
-			prompt,
-			maxOutputTokens: this.getMaxOutputTokens(),
-			temperature: this.options.modelTemperature ?? temperature ?? DEEP_SEEK_DEFAULT_TEMPERATURE,
+		// Convert messages to R1 format (merges consecutive same-role messages)
+		// This is required for DeepSeek which does not support successive messages with the same role
+		// For thinking models (deepseek-reasoner), enable mergeToolResultText to preserve reasoning_content
+		// during tool call sequences. Without this, environment_details text after tool_results would
+		// create user messages that cause DeepSeek to drop all previous reasoning_content.
+		// See: https://api-docs.deepseek.com/guides/thinking_mode
+		const convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages], {
+			mergeToolResultText: isThinkingModel,
 		})
 
-		return text
+		const requestOptions: DeepSeekChatCompletionParams = {
+			model: modelId,
+			temperature: this.options.modelTemperature ?? DEEP_SEEK_DEFAULT_TEMPERATURE,
+			messages: convertedMessages,
+			stream: true as const,
+			stream_options: { include_usage: true },
+			// Enable thinking mode for deepseek-reasoner or when tools are used with thinking model
+			...(isThinkingModel && { thinking: { type: "enabled" } }),
+			tools: this.convertToolsForOpenAI(metadata?.tools),
+			tool_choice: metadata?.tool_choice,
+			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+		}
+
+		// Add max_tokens if needed
+		this.addMaxTokensIfNeeded(requestOptions, modelInfo)
+
+		// Check if base URL is Azure AI Inference (for DeepSeek via Azure)
+		const isAzureAiInference = this._isAzureAiInference(this.options.deepSeekBaseUrl)
+
+		let stream
+		try {
+			stream = await this.client.chat.completions.create(
+				requestOptions,
+				isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
+			)
+		} catch (error) {
+			const { handleOpenAIError } = await import("./utils/openai-error-handler")
+			throw handleOpenAIError(error, "DeepSeek")
+		}
+
+		let lastUsage
+
+		for await (const chunk of stream) {
+			const delta = chunk.choices?.[0]?.delta ?? {}
+
+			// Handle regular text content
+			if (delta.content) {
+				yield {
+					type: "text",
+					text: delta.content,
+				}
+			}
+
+			// Handle reasoning_content from DeepSeek's interleaved thinking
+			// This is the proper way DeepSeek sends thinking content in streaming
+			if ("reasoning_content" in delta && delta.reasoning_content) {
+				yield {
+					type: "reasoning",
+					text: (delta.reasoning_content as string) || "",
+				}
+			}
+
+			// Handle tool calls
+			if (delta.tool_calls) {
+				for (const toolCall of delta.tool_calls) {
+					yield {
+						type: "tool_call_partial",
+						index: toolCall.index,
+						id: toolCall.id,
+						name: toolCall.function?.name,
+						arguments: toolCall.function?.arguments,
+					}
+				}
+			}
+
+			if (chunk.usage) {
+				lastUsage = chunk.usage
+			}
+		}
+
+		if (lastUsage) {
+			yield this.processUsageMetrics(lastUsage, modelInfo)
+		}
 	}
 
-	override isAiSdkProvider(): boolean {
-		return true
+	// Override to handle DeepSeek's usage metrics, including caching.
+	protected override processUsageMetrics(usage: any, _modelInfo?: any): ApiStreamUsageChunk {
+		return {
+			type: "usage",
+			inputTokens: usage?.prompt_tokens || 0,
+			outputTokens: usage?.completion_tokens || 0,
+			cacheWriteTokens: usage?.prompt_tokens_details?.cache_miss_tokens,
+			cacheReadTokens: usage?.prompt_tokens_details?.cached_tokens,
+		}
 	}
 }

@@ -1,8 +1,16 @@
-import type { TextPart, ImagePart } from "../core/task-persistence/rooMessage"
+import { Anthropic } from "@anthropic-ai/sdk"
 
-import type { ClineAsk, ToolProgressStatus, ToolGroup, ToolName, GenerateImageParams } from "@roo-code/types"
+import type {
+	ClineAsk,
+	ToolProgressStatus,
+	ToolGroup,
+	ToolName,
+	FileEntry,
+	BrowserActionParams,
+	GenerateImageParams,
+} from "@roo-code/types"
 
-export type ToolResponse = string | Array<TextPart | ImagePart>
+export type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
 
 export type AskApproval = (
 	type: ClineAsk,
@@ -58,28 +66,17 @@ export const toolParamNames = [
 	"todos",
 	"prompt",
 	"image",
-	// read_file parameters (native protocol)
+	"files", // Native protocol parameter for read_file
 	"operations", // search_and_replace parameter for multiple operations
 	"patch", // apply_patch parameter
 	"file_path", // search_replace and edit_file parameter
 	"old_string", // search_replace and edit_file parameter
 	"new_string", // search_replace and edit_file parameter
-	"replace_all", // edit tool parameter for replacing all occurrences
 	"expected_replacements", // edit_file parameter for multiple occurrences
 	"artifact_id", // read_command_output parameter
 	"search", // read_command_output parameter for grep-like search
-	"offset", // read_command_output and read_file parameter
-	"limit", // read_command_output and read_file parameter
-	// read_file indentation mode parameters
-	"indentation",
-	"anchor_line",
-	"max_levels",
-	"include_siblings",
-	"include_header",
-	"max_lines",
-	// read_file legacy format parameter (backward compatibility)
-	"files",
-	"line_ranges",
+	"offset", // read_command_output parameter for pagination
+	"limit", // read_command_output parameter for max bytes to return
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -90,13 +87,12 @@ export type ToolParamName = (typeof toolParamNames)[number]
  */
 export type NativeToolArgs = {
 	access_mcp_resource: { server_name: string; uri: string }
-	read_file: import("@roo-code/types").ReadFileToolParams
+	read_file: { files: FileEntry[] }
 	read_command_output: { artifact_id: string; search?: string; offset?: number; limit?: number }
 	attempt_completion: { result: string }
 	execute_command: { command: string; cwd?: string }
 	apply_diff: { path: string; diff: string }
-	edit: { file_path: string; old_string: string; new_string: string; replace_all?: boolean }
-	search_and_replace: { file_path: string; old_string: string; new_string: string; replace_all?: boolean }
+	search_and_replace: { path: string; operations: Array<{ search: string; replace: string }> }
 	search_replace: { file_path: string; old_string: string; new_string: string }
 	edit_file: { file_path: string; old_string: string; new_string: string; expected_replacements?: number }
 	apply_patch: { patch: string }
@@ -106,10 +102,11 @@ export type NativeToolArgs = {
 		question: string
 		follow_up: Array<{ text: string; mode?: string }>
 	}
+	browser_action: BrowserActionParams
 	codebase_search: { query: string; path?: string }
 	generate_image: GenerateImageParams
 	run_slash_command: { command: string; args?: string }
-	skill: { skill: string; args?: string | null }
+	skill: { skill: string; args?: string }
 	search_files: { path: string; regex: string; file_pattern?: string | null }
 	switch_mode: { mode_slug: string; reason: string }
 	update_todo_list: { todos: string }
@@ -138,11 +135,6 @@ export interface ToolUse<TName extends ToolName = ToolName> {
 	partial: boolean
 	// nativeArgs is properly typed based on TName if it's in NativeToolArgs, otherwise never
 	nativeArgs?: TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
-	/**
-	 * Flag indicating whether the tool call used a legacy/deprecated format.
-	 * Used for telemetry tracking to monitor migration from old formats.
-	 */
-	usedLegacyFormat?: boolean
 }
 
 /**
@@ -173,23 +165,7 @@ export interface ExecuteCommandToolUse extends ToolUse<"execute_command"> {
 
 export interface ReadFileToolUse extends ToolUse<"read_file"> {
 	name: "read_file"
-	params: Partial<
-		Pick<
-			Record<ToolParamName, string>,
-			| "args"
-			| "path"
-			| "start_line"
-			| "end_line"
-			| "mode"
-			| "offset"
-			| "limit"
-			| "indentation"
-			| "anchor_line"
-			| "max_levels"
-			| "include_siblings"
-			| "include_header"
-		>
-	>
+	params: Partial<Pick<Record<ToolParamName, string>, "args" | "path" | "start_line" | "end_line" | "files">>
 }
 
 export interface WriteToFileToolUse extends ToolUse<"write_to_file"> {
@@ -210,6 +186,11 @@ export interface SearchFilesToolUse extends ToolUse<"search_files"> {
 export interface ListFilesToolUse extends ToolUse<"list_files"> {
 	name: "list_files"
 	params: Partial<Pick<Record<ToolParamName, string>, "path" | "recursive">>
+}
+
+export interface BrowserActionToolUse extends ToolUse<"browser_action"> {
+	name: "browser_action"
+	params: Partial<Pick<Record<ToolParamName, string>, "action" | "url" | "coordinate" | "text" | "size" | "path">>
 }
 
 export interface UseMcpToolToolUse extends ToolUse<"use_mcp_tool"> {
@@ -270,13 +251,13 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	read_command_output: "read command output",
 	write_to_file: "write files",
 	apply_diff: "apply changes",
-	edit: "edit files",
 	search_and_replace: "apply changes using search and replace",
 	search_replace: "apply single search and replace",
 	edit_file: "edit files using search and replace",
 	apply_patch: "apply patches using codex format",
 	search_files: "search files",
 	list_files: "list files",
+	browser_action: "use a browser",
 	use_mcp_tool: "use mcp tools",
 	access_mcp_resource: "access mcp resources",
 	ask_followup_question: "ask questions",
@@ -298,7 +279,10 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 	},
 	edit: {
 		tools: ["apply_diff", "write_to_file", "generate_image"],
-		customTools: ["edit", "search_replace", "edit_file", "apply_patch"],
+		customTools: ["search_and_replace", "search_replace", "edit_file", "apply_patch"],
+	},
+	browser: {
+		tools: ["browser_action"],
 	},
 	command: {
 		tools: ["execute_command", "read_command_output"],
@@ -335,7 +319,6 @@ export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
  */
 export const TOOL_ALIASES: Record<string, ToolName> = {
 	write_file: "write_to_file",
-	search_and_replace: "edit",
 } as const
 
 export type DiffResult =

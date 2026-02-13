@@ -12,9 +12,10 @@ import { inputEventTransform } from "../transforms"
 type GeminiProps = {
 	apiConfiguration: ProviderSettings
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
+	simplifySettings?: boolean
 }
 
-export const Gemini = ({ apiConfiguration, setApiConfigurationField }: GeminiProps) => {
+export const Gemini = ({ apiConfiguration, setApiConfigurationField, simplifySettings }: GeminiProps) => {
 	const { t } = useAppTranslation()
 
 	const [googleGeminiBaseUrlSelected, setGoogleGeminiBaseUrlSelected] = useState(
@@ -71,6 +72,31 @@ export const Gemini = ({ apiConfiguration, setApiConfigurationField }: GeminiPro
 						placeholder={t("settings:defaults.geminiUrl")}
 						className="w-full mt-1"
 					/>
+				)}
+
+				{!simplifySettings && (
+					<>
+						<Checkbox
+							className="mt-6"
+							data-testid="checkbox-url-context"
+							checked={!!apiConfiguration.enableUrlContext}
+							onChange={(checked: boolean) => setApiConfigurationField("enableUrlContext", checked)}>
+							{t("settings:providers.geminiParameters.urlContext.title")}
+						</Checkbox>
+						<div className="text-sm text-vscode-descriptionForeground mb-3 mt-1.5">
+							{t("settings:providers.geminiParameters.urlContext.description")}
+						</div>
+
+						<Checkbox
+							data-testid="checkbox-grounding-search"
+							checked={!!apiConfiguration.enableGrounding}
+							onChange={(checked: boolean) => setApiConfigurationField("enableGrounding", checked)}>
+							{t("settings:providers.geminiParameters.groundingSearch.title")}
+						</Checkbox>
+						<div className="text-sm text-vscode-descriptionForeground mb-3 mt-1.5">
+							{t("settings:providers.geminiParameters.groundingSearch.description")}
+						</div>
+					</>
 				)}
 			</div>
 		</>

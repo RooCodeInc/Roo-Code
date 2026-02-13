@@ -150,20 +150,10 @@ export const getGeminiReasoning = ({
 		return undefined
 	}
 
-	// Validate that the selected effort is supported by this specific model.
-	// e.g. gemini-3-pro-preview only supports ["low", "high"] — sending
-	// "medium" (carried over from a different model's settings) causes errors.
-	const effortToUse =
-		Array.isArray(model.supportsReasoningEffort) &&
-		isGeminiThinkingLevel(selectedEffort) &&
-		!model.supportsReasoningEffort.includes(selectedEffort)
-			? model.reasoningEffort
-			: selectedEffort
-
 	// Effort-based models on Google GenAI support minimal/low/medium/high levels.
-	if (!effortToUse || !isGeminiThinkingLevel(effortToUse)) {
+	if (!isGeminiThinkingLevel(selectedEffort)) {
 		return undefined
 	}
 
-	return { thinkingLevel: effortToUse, includeThoughts: true }
+	return { thinkingLevel: selectedEffort, includeThoughts: true }
 }

@@ -31,6 +31,7 @@
 		"mcp": "MCP 伺服器",
 		"worktrees": "Worktree",
 		"autoApprove": "自動核准",
+		"browser": "瀏覽器",
 		"checkpoints": "檢查點",
 		"notifications": "通知",
 		"contextManagement": "上下文",
@@ -40,8 +41,7 @@
 		"ui": "UI",
 		"experimental": "實驗性",
 		"language": "語言",
-		"about": "關於 Roo Code",
-		"skills": "Skills"
+		"about": "關於 Roo Code"
 	},
 	"about": {
 		"bugReport": {
@@ -68,39 +68,7 @@
 		}
 	},
 	"slashCommands": {
-		"description": "管理您的斜線命令，以便快速執行自訂工作流程和動作。 <DocsLink>了解更多</DocsLink>",
-		"workspaceCommands": "工作區命令",
-		"globalCommands": "全域命令",
-		"noWorkspaceCommands": "此專案中還沒有命令。",
-		"noGlobalCommands": "還沒有全域命令。",
-		"addCommand": "新增斜線命令",
-		"editCommand": "編輯命令",
-		"deleteCommand": "刪除命令",
-		"deleteDialog": {
-			"title": "刪除命令",
-			"description": "您確定要刪除命令 \"{{name}}\" 嗎？此動作無法復原。",
-			"confirm": "刪除",
-			"cancel": "取消"
-		},
-		"createDialog": {
-			"title": "建立新斜線命令",
-			"nameLabel": "名稱",
-			"namePlaceholder": "my-command-name",
-			"nameHint": "僅限小寫字母、數字、連字號和底線",
-			"sourceLabel": "位置",
-			"create": "建立",
-			"cancel": "取消"
-		},
-		"source": {
-			"global": "全域（可在所有工作區中使用）",
-			"project": "工作區"
-		},
-		"validation": {
-			"nameRequired": "名稱為必填項",
-			"nameTooLong": "名稱必須為 64 個字元或更少",
-			"nameInvalid": "名稱只能包含字母、數字、連字號和底線"
-		},
-		"footer": "使用斜線命令快速存取經常使用的提示詞和工作流程。"
+		"description": "管理您的斜線命令，以便快速執行自訂工作流程和動作。 <DocsLink>了解更多</DocsLink>"
 	},
 	"ui": {
 		"collapseThinking": {
@@ -248,6 +216,10 @@
 				"description": "允許 Roo 建立與編輯受保護的檔案（如 .rooignore 和 .roo/ 設定檔）且無需核准。"
 			}
 		},
+		"browser": {
+			"label": "瀏覽器",
+			"description": "無需核准即可自動執行瀏覽器動作。注意：僅適用於支援電腦操作的模型。"
+		},
 		"mcp": {
 			"label": "MCP",
 			"description": "啟用 MCP 伺服器檢視中個別 MCP 工具的自動核准（需同時啟用此設定與該工具的「始終允許」核取方塊）"
@@ -314,7 +286,6 @@
 		"searchProviderPlaceholder": "搜尋供應商",
 		"noProviderMatchFound": "找不到供應商",
 		"noMatchFound": "找不到符合的設定檔",
-		"retiredProviderMessage": "抱歉，此供應商已不再受支援。我們發現實際使用此供應商的 Roo 使用者非常少，我們需要縮減程式碼庫的範圍，以便持續快速開發並更好地服務社群。這是一個非常艱難的決定，但它讓我們能專注於對你最重要的事情。我們知道這很遺憾。",
 		"vscodeLmDescription": "VS Code 語言模型 API 可以讓您使用其他擴充功能（如 GitHub Copilot）提供的模型。最簡單的方式是從 VS Code Marketplace 安裝 Copilot 和 Copilot Chat 擴充套件。",
 		"awsCustomArnUse": "輸入您要使用的模型的有效 Amazon Bedrock ARN。格式範例：",
 		"awsCustomArnDesc": "確保 ARN 中的區域與您上面選擇的 AWS 區域相符。",
@@ -376,23 +347,15 @@
 		"getAnthropicApiKey": "取得 Anthropic API 金鑰",
 		"anthropicUseAuthToken": "將 Anthropic API 金鑰作為 Authorization 標頭傳遞，而非使用 X-Api-Key",
 		"anthropic1MContextBetaLabel": "啟用 1M 上下文視窗 (Beta)",
-		"anthropic1MContextBetaDescription": "為 Claude Sonnet 4 / 4.5 / Claude Opus 4.6 將上下文視窗擴展至 100 萬個 token",
+		"anthropic1MContextBetaDescription": "為 Claude Sonnet 4 將上下文視窗擴展至 100 萬個 token",
 		"awsBedrock1MContextBetaLabel": "啟用 1M 上下文視窗 (Beta)",
-		"awsBedrock1MContextBetaDescription": "為 Claude Sonnet 4 / 4.5 / Claude Opus 4.6 將上下文視窗擴展至 100 萬個 token",
+		"awsBedrock1MContextBetaDescription": "為 Claude Sonnet 4 將上下文視窗擴展至 100 萬個 token",
 		"vertex1MContextBetaLabel": "啟用 1M 上下文視窗 (Beta)",
-		"vertex1MContextBetaDescription": "為 Claude Sonnet 4 / 4.5 / Claude Opus 4.6 將上下文視窗擴展至 100 萬個 token",
+		"vertex1MContextBetaDescription": "為 Claude Sonnet 4 將上下文視窗擴展至 100 萬個 token",
 		"basetenApiKey": "Baseten API 金鑰",
 		"getBasetenApiKey": "取得 Baseten API 金鑰",
 		"cerebrasApiKey": "Cerebras API 金鑰",
 		"getCerebrasApiKey": "取得 Cerebras API 金鑰",
-		"azureResourceName": "Azure 資源名稱",
-		"azureResourceNameDescription": "您的 Azure AI Foundry 資源名稱（例如：'my-openai-resource'）。",
-		"azureDeploymentName": "Azure 部署名稱",
-		"azureDeploymentNameDescription": "資源中的模型部署名稱。",
-		"azureApiKey": "Azure API 金鑰",
-		"getAzureApiKey": "取得 Azure AI Foundry 存取權限",
-		"azureApiVersion": "Azure API 版本",
-		"azureApiVersionDescription": "要使用的 API 版本（例如：'2024-10-21'）。留空使用預設值。",
 		"chutesApiKey": "Chutes API 金鑰",
 		"getChutesApiKey": "取得 Chutes API 金鑰",
 		"fireworksApiKey": "Fireworks API 金鑰",
@@ -475,6 +438,16 @@
 		"cacheUsageNote": "注意：如果您沒有看到快取使用情況，請嘗試選擇其他模型，然後重新選擇您想要的模型。",
 		"vscodeLmModel": "語言模型",
 		"vscodeLmWarning": "注意：透過 VS Code Language Model API 存取的模型可能由供應商封裝或微調，因此其行為可能與直接從一般供應商或路由器使用相同模型時不同。要使用「Language Model」下拉式選單中的模型，請先切換到該模型，然後在 Copilot Chat 提示中點選「接受」；否則可能會出現 400「The requested model is not supported」等錯誤。",
+		"geminiParameters": {
+			"urlContext": {
+				"title": "啟用 URL 上下文",
+				"description": "讓 Gemini 讀取連結的頁面，以擷取、比較並統整其內容，提供更有根據的回覆。"
+			},
+			"groundingSearch": {
+				"title": "啟用 Google 搜尋 Grounding",
+				"description": "將 Gemini 連線到即時網路資料，以取得準確、最新且附可驗證引用的答案。"
+			}
+		},
 		"googleCloudSetup": {
 			"title": "要使用 Google Cloud Vertex AI，您需要：",
 			"step1": "1. 建立 Google Cloud 帳戶，啟用 Vertex AI API 並啟用所需的 Claude 模型。",
@@ -595,6 +568,34 @@
 			"placeholder": "預設：claude",
 			"maxTokensLabel": "最大輸出 Token",
 			"maxTokensDescription": "Claude Code 回應的最大輸出 Token 數量。預設為 8000。"
+		}
+	},
+	"browser": {
+		"enable": {
+			"label": "啟用瀏覽器工具",
+			"description": "啟用後，Roo 可在使用支援電腦使用的模型時使用瀏覽器與網站互動。 <0>了解更多</0>"
+		},
+		"viewport": {
+			"label": "視窗大小",
+			"description": "選擇瀏覽器互動的視窗大小。這會影響網站的顯示方式和互動方式。",
+			"options": {
+				"largeDesktop": "大型桌面 (1280x800)",
+				"smallDesktop": "小型桌面 (900x600)",
+				"tablet": "平板 (768x1024)",
+				"mobile": "行動裝置 (360x640)"
+			}
+		},
+		"screenshotQuality": {
+			"label": "截圖品質",
+			"description": "調整瀏覽器截圖的 WebP 品質。數值越高截圖越清晰，但會增加 Token 用量。"
+		},
+		"remote": {
+			"label": "使用遠端瀏覽器連線",
+			"description": "連線到啟用遠端除錯的 Chrome 瀏覽器（--remote-debugging-port=9222）。",
+			"urlPlaceholder": "自訂 URL（例如 http://localhost:9222）",
+			"testButton": "測試連線",
+			"testingButton": "測試中...",
+			"instructions": "請輸入 DevTools Protocol 主機位址，或留空以自動偵測本機 Chrome 執行個體。「測試連線」按鈕將嘗試連線至您提供的自訂 URL，若未提供則會自動偵測。"
 		}
 	},
 	"checkpoints": {
@@ -936,9 +937,7 @@
 		"providerNotAllowed": "供應商 '{{provider}}' 不允許用於您的組織。",
 		"modelNotAllowed": "模型 '{{model}}' 不允許用於供應商 '{{provider}}'，此設定已被組織禁止",
 		"profileInvalid": "此設定檔包含您的組織不允許的供應商或模型",
-		"qwenCodeOauthPath": "您必須提供有效的 OAuth 憑證路徑",
-		"azureResourceName": "您必須提供 Azure 資源名稱。",
-		"azureDeploymentName": "您必須提供 Azure 部署名稱。"
+		"qwenCodeOauthPath": "您必須提供有效的 OAuth 憑證路徑"
 	},
 	"placeholders": {
 		"apiKey": "請輸入 API 金鑰...",
@@ -951,8 +950,6 @@
 		"projectId": "請輸入專案 ID...",
 		"customArn": "請輸入 ARN（例：arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model）",
 		"baseUrl": "請輸入基礎 URL...",
-		"azureResourceName": "e.g. my-openai-resource",
-		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "例：meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "例：lmstudio-community/llama-3.2-1b-instruct",
@@ -993,58 +990,5 @@
 			"output": "輸出",
 			"cacheReads": "快取讀取"
 		}
-	},
-	"skills": {
-		"description": "管理為代理提供上下文指令的技能。技能會在與您的任務相關時自動套用。<DocsLink>深入了解</DocsLink>",
-		"workspaceSkills": "工作區技能",
-		"globalSkills": "全域技能",
-		"noWorkspaceSkills": "此專案中還沒有技能。",
-		"noGlobalSkills": "未設定全域技能。建立一個以新增在所有專案中可用的代理功能。",
-		"addSkill": "新增技能",
-		"editSkill": "編輯技能",
-		"deleteSkill": "刪除技能",
-		"configureModes": "模式可用性",
-		"modeAny": "任意模式",
-		"modeCount": "{{count}} 種模式",
-		"deleteDialog": {
-			"title": "刪除技能",
-			"description": "您確定要刪除技能「{{name}}」嗎？此動作無法復原。",
-			"confirm": "刪除",
-			"cancel": "取消"
-		},
-		"modeDialog": {
-			"title": "設定技能模式",
-			"description": "選擇哪些模式可以使用此技能",
-			"intro": "為了保持您的上下文簡潔，我們建議只在需要的模式中提供技能。",
-			"anyMode": "任何模式（隨處可用）",
-			"save": "儲存",
-			"cancel": "取消"
-		},
-		"createDialog": {
-			"title": "建立新技能",
-			"nameLabel": "名稱",
-			"namePlaceholder": "my-skill-name",
-			"descriptionLabel": "說明",
-			"descriptionPlaceholder": "描述何時應使用此技能...",
-			"sourceLabel": "位置",
-			"modeLabel": "模式（選填）",
-			"modePlaceholder": "任何模式",
-			"modeHint": "將此技能限制為特定模式",
-			"modeAny": "任何模式",
-			"create": "建立",
-			"cancel": "取消"
-		},
-		"source": {
-			"global": "全域（在所有專案中可用）",
-			"project": "專案（僅此工作區）"
-		},
-		"validation": {
-			"nameRequired": "名稱為必填",
-			"nameTooLong": "名稱不得超過64個字元",
-			"nameInvalid": "名稱必須為1-64個小寫字母、數字或連字號",
-			"descriptionRequired": "說明為必填",
-			"descriptionTooLong": "說明不得超過1024個字元"
-		},
-		"footer": "使用技能編寫器模式建立您自己的技能，可在 <MarketplaceLink>模式市集</MarketplaceLink> 中取得。"
 	}
 }

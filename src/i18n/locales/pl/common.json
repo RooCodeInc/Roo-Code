@@ -111,6 +111,15 @@
 			"thinking_complete_safety": "(Myślenie zakończone, ale dane wyjściowe zostały zablokowane przez ustawienia bezpieczeństwa.)",
 			"thinking_complete_recitation": "(Myślenie zakończone, ale dane wyjściowe zostały zablokowane przez kontrolę recytacji.)"
 		},
+		"cerebras": {
+			"authenticationFailed": "Uwierzytelnianie API Cerebras nie powiodło się. Sprawdź, czy twój klucz API jest ważny i nie wygasł.",
+			"accessForbidden": "Dostęp do API Cerebras zabroniony. Twój klucz API może nie mieć dostępu do żądanego modelu lub funkcji.",
+			"rateLimitExceeded": "Przekroczono limit szybkości API Cerebras. Poczekaj przed wykonaniem kolejnego żądania.",
+			"serverError": "Błąd serwera API Cerebras ({{status}}). Spróbuj ponownie później.",
+			"genericError": "Błąd API Cerebras ({{status}}): {{message}}",
+			"noResponseBody": "Błąd API Cerebras: Brak treści odpowiedzi",
+			"completionError": "Błąd uzupełniania Cerebras: {{error}}"
+		},
 		"roo": {
 			"authenticationRequired": "Dostawca Roo wymaga uwierzytelnienia w chmurze. Zaloguj się do Roo Code Cloud."
 		},
@@ -196,7 +205,10 @@
 		"task_placeholder": "Wpisz swoje zadanie tutaj"
 	},
 	"settings": {
-		"providers": {}
+		"providers": {
+			"groqApiKey": "Klucz API Groq",
+			"getGroqApiKey": "Uzyskaj klucz API Groq"
+		}
 	},
 	"customModes": {
 		"errors": {

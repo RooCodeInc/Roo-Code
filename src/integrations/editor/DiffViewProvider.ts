@@ -98,11 +98,7 @@ export class DiffViewProvider {
 
 		for (const tab of tabs) {
 			if (!tab.isDirty) {
-				try {
-					await vscode.window.tabGroups.close(tab)
-				} catch (err) {
-					console.error(`Failed to close tab ${tab.label}`, err)
-				}
+				await vscode.window.tabGroups.close(tab)
 			}
 			this.documentWasOpen = true
 		}

@@ -31,6 +31,7 @@
 		"mcp": "MCP 서버",
 		"worktrees": "Worktrees",
 		"autoApprove": "자동 승인",
+		"browser": "컴퓨터 접근",
 		"checkpoints": "체크포인트",
 		"notifications": "알림",
 		"contextManagement": "컨텍스트",
@@ -40,8 +41,7 @@
 		"ui": "UI",
 		"experimental": "실험적",
 		"language": "언어",
-		"about": "Roo Code 정보",
-		"skills": "Skills"
+		"about": "Roo Code 정보"
 	},
 	"about": {
 		"bugReport": {
@@ -68,39 +68,7 @@
 		}
 	},
 	"slashCommands": {
-		"description": "사용자 지정 워크플로와 작업을 신속하게 실행하기 위해 슬래시 명령을 관리합니다. <DocsLink>더 알아보기</DocsLink>",
-		"workspaceCommands": "워크스페이스 명령",
-		"globalCommands": "글로벌 명령",
-		"noWorkspaceCommands": "이 프로젝트에 명령이 아직 없습니다.",
-		"noGlobalCommands": "글로벌 명령이 아직 없습니다.",
-		"addCommand": "슬래시 명령 추가",
-		"editCommand": "명령 편집",
-		"deleteCommand": "명령 삭제",
-		"deleteDialog": {
-			"title": "명령 삭제",
-			"description": "명령 \"{{name}}\"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
-			"confirm": "삭제",
-			"cancel": "취소"
-		},
-		"createDialog": {
-			"title": "새 슬래시 명령 만들기",
-			"nameLabel": "이름",
-			"namePlaceholder": "my-command-name",
-			"nameHint": "소문자, 숫자, 하이픈 및 밑줄만",
-			"sourceLabel": "위치",
-			"create": "만들기",
-			"cancel": "취소"
-		},
-		"source": {
-			"global": "글로벌 (모든 워크스페이스에서 사용 가능)",
-			"project": "워크스페이스"
-		},
-		"validation": {
-			"nameRequired": "이름은 필수입니다",
-			"nameTooLong": "이름은 64자 이하여야 합니다",
-			"nameInvalid": "이름은 문자, 숫자, 하이픈 및 밑줄만 포함할 수 있습니다"
-		},
-		"footer": "슬래시 명령을 사용하여 자주 사용하는 프롬프트 및 워크플로에 빠르게 액세스합니다."
+		"description": "사용자 지정 워크플로와 작업을 신속하게 실행하기 위해 슬래시 명령을 관리합니다. <DocsLink>더 알아보기</DocsLink>"
 	},
 	"prompts": {
 		"description": "프롬프트 향상, 코드 설명, 문제 해결과 같은 빠른 작업에 사용되는 지원 프롬프트를 구성합니다. 이러한 프롬프트는 Roo가 일반적인 개발 작업에 대해 더 나은 지원을 제공하는 데 도움이 됩니다."
@@ -240,6 +208,10 @@
 				"description": "Roo가 보호된 파일(.rooignore 및 .roo/ 구성 파일 등)을 승인 없이 생성하고 편집할 수 있도록 허용합니다."
 			}
 		},
+		"browser": {
+			"label": "브라우저",
+			"description": "승인 없이 자동으로 브라우저 작업 수행 — 참고: 모델이 컴퓨터 사용을 지원할 때만 적용됩니다"
+		},
 		"mcp": {
 			"label": "MCP",
 			"description": "MCP 서버 보기에서 개별 MCP 도구의 자동 승인 활성화(이 설정과 도구의 \"항상 허용\" 체크박스 모두 필요)"
@@ -271,6 +243,7 @@
 		},
 		"apiRequestLimit": {
 			"title": "최대 요청 수",
+			"description": "작업을 계속하기 위한 승인을 요청하기 전에 자동으로 이 수의 API 요청을 수행합니다.",
 			"unlimited": "무제한"
 		},
 		"selectOptionsFirst": "자동 승인을 활성화하려면 아래에서 하나 이상의 옵션을 선택하세요",
@@ -304,7 +277,6 @@
 		"searchProviderPlaceholder": "공급자 검색",
 		"noProviderMatchFound": "공급자를 찾을 수 없습니다",
 		"noMatchFound": "일치하는 프로필이 없습니다",
-		"retiredProviderMessage": "죄송합니다. 이 공급자는 더 이상 지원되지 않습니다. 실제로 이를 사용하는 Roo 사용자가 매우 적었고, 빠르게 개발하고 커뮤니티에 더 나은 서비스를 제공하기 위해 코드베이스의 범위를 줄여야 했습니다. 정말 어려운 결정이었지만, 여러분에게 가장 중요한 것에 집중할 수 있게 해줍니다. 아쉽다는 거, 저희도 알아요.",
 		"vscodeLmDescription": "VS Code 언어 모델 API를 사용하면 GitHub Copilot을 포함한 기타 VS Code 확장 프로그램이 제공하는 모델을 실행할 수 있습니다. 시작하려면 VS Code 마켓플레이스에서 Copilot 및 Copilot Chat 확장 프로그램을 설치하는 것이 가장 쉽습니다.",
 		"awsCustomArnUse": "사용하려는 모델의 유효한 Amazon Bedrock ARN을 입력하세요. 형식 예시:",
 		"awsCustomArnDesc": "ARN의 리전이 위에서 선택한 AWS 리전과 일치하는지 확인하세요.",
@@ -366,23 +338,15 @@
 		"getAnthropicApiKey": "Anthropic API 키 받기",
 		"anthropicUseAuthToken": "X-Api-Key 대신 Authorization 헤더로 Anthropic API 키 전달",
 		"anthropic1MContextBetaLabel": "1M 컨텍스트 창 활성화 (베타)",
-		"anthropic1MContextBetaDescription": "Claude Sonnet 4 / 4.5 / Claude Opus 4.6의 컨텍스트 창을 100만 토큰으로 확장",
+		"anthropic1MContextBetaDescription": "Claude Sonnet 4의 컨텍스트 창을 100만 토큰으로 확장",
 		"awsBedrock1MContextBetaLabel": "1M 컨텍스트 창 활성화 (베타)",
-		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4 / 4.5 / Claude Opus 4.6의 컨텍스트 창을 100만 토큰으로 확장",
+		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4의 컨텍스트 창을 100만 토큰으로 확장",
 		"vertex1MContextBetaLabel": "1M 컨텍스트 창 활성화 (베타)",
-		"vertex1MContextBetaDescription": "Claude Sonnet 4 / 4.5 / Claude Opus 4.6의 컨텍스트 창을 100만 토큰으로 확장",
+		"vertex1MContextBetaDescription": "Claude Sonnet 4의 컨텍스트 창을 100만 토큰으로 확장",
 		"basetenApiKey": "Baseten API 키",
 		"getBasetenApiKey": "Baseten API 키 가져오기",
 		"cerebrasApiKey": "Cerebras API 키",
 		"getCerebrasApiKey": "Cerebras API 키 가져오기",
-		"azureResourceName": "Azure 리소스 이름",
-		"azureResourceNameDescription": "Azure AI Foundry 리소스 이름 (예: 'my-openai-resource').",
-		"azureDeploymentName": "Azure 배포 이름",
-		"azureDeploymentNameDescription": "리소스 내 모델 배포 이름.",
-		"azureApiKey": "Azure API 키",
-		"getAzureApiKey": "Azure AI Foundry 액세스 받기",
-		"azureApiVersion": "Azure API 버전",
-		"azureApiVersionDescription": "사용할 API 버전 (예: '2024-10-21'). 기본값을 사용하려면 비워두세요.",
 		"chutesApiKey": "Chutes API 키",
 		"getChutesApiKey": "Chutes API 키 받기",
 		"fireworksApiKey": "Fireworks API 키",
@@ -465,6 +429,16 @@
 		"cacheUsageNote": "참고: 캐시 사용이 표시되지 않는 경우, 다른 모델을 선택한 다음 원하는 모델을 다시 선택해 보세요.",
 		"vscodeLmModel": "언어 모델",
 		"vscodeLmWarning": "참고: VS Code Language Model API를 통해 액세스되는 모델은 공급자가 래핑하거나 미세 조정했을 수 있어, 일반적인 공급자나 라우터에서 동일한 모델을 직접 사용할 때와 동작이 다를 수 있습니다. ‘Language Model’ 드롭다운의 모델을 사용하려면 먼저 해당 모델로 전환한 다음 Copilot Chat 프롬프트에서 ‘허용(수락)’을 클릭하세요. 그렇지 않으면 400 ‘The requested model is not supported’와 같은 오류가 발생할 수 있습니다.",
+		"geminiParameters": {
+			"urlContext": {
+				"title": "URL 컨텍스트 활성화",
+				"description": "응답을 생성할 때 추가 컨텍스트를 위해 Gemini가 URL에 액세스하고 처리할 수 있도록 합니다. 웹 콘텐츠 분석이 필요한 작업에 유용합니다."
+			},
+			"groundingSearch": {
+				"title": "Google 검색과 함께 근거 지정 활성화",
+				"description": "Gemini가 최신 정보를 얻기 위해 Google을 검색하고 응답을 실시간 데이터에 근거하도록 합니다. 최신 정보가 필요한 쿼리에 유용합니다."
+			}
+		},
 		"googleCloudSetup": {
 			"title": "Google Cloud Vertex AI를 사용하려면:",
 			"step1": "1. Google Cloud 계정을 만들고, Vertex AI API를 활성화하고, 원하는 Claude 모델을 활성화하세요.",
@@ -587,6 +561,34 @@
 			"maxTokensDescription": "Claude Code 응답의 최대 출력 토큰 수. 기본값은 8000입니다."
 		}
 	},
+	"browser": {
+		"enable": {
+			"label": "브라우저 도구 활성화",
+			"description": "활성화되면 Roo는 컴퓨터 사용을 지원하는 모델을 사용할 때 웹사이트와 상호 작용하기 위해 브라우저를 사용할 수 있습니다. <0>더 알아보기</0>"
+		},
+		"viewport": {
+			"label": "뷰포트 크기",
+			"description": "브라우저 상호 작용을 위한 뷰포트 크기를 선택하세요. 이는 웹사이트가 표시되고 상호 작용하는 방식에 영향을 미칩니다.",
+			"options": {
+				"largeDesktop": "대형 데스크톱 (1280x800)",
+				"smallDesktop": "소형 데스크톱 (900x600)",
+				"tablet": "태블릿 (768x1024)",
+				"mobile": "모바일 (360x640)"
+			}
+		},
+		"screenshotQuality": {
+			"label": "스크린샷 품질",
+			"description": "브라우저 스크린샷의 WebP 품질을 조정합니다. 높은 값은 더 선명한 스크린샷을 제공하지만 token 사용량이 증가합니다."
+		},
+		"remote": {
+			"label": "원격 브라우저 연결 사용",
+			"description": "원격 디버깅이 활성화된 Chrome 브라우저에 연결합니다(--remote-debugging-port=9222).",
+			"urlPlaceholder": "사용자 정의 URL(예: http://localhost:9222)",
+			"testButton": "연결 테스트",
+			"testingButton": "테스트 중...",
+			"instructions": "DevTools 프로토콜 호스트 주소를 입력하거나 Chrome 로컬 인스턴스를 자동으로 발견하기 위해 비워두세요. 연결 테스트 버튼은 제공된 경우 사용자 정의 URL을 시도하거나, 필드가 비어 있으면 자동으로 발견합니다."
+		}
+	},
 	"checkpoints": {
 		"timeout": {
 			"label": "체크포인트 초기화 타임아웃(초)",
@@ -662,6 +664,7 @@
 				"label": "최대 진단 메시지",
 				"description": "파일당 포함할 최대 진단 메시지 수입니다. 이 제한은 자동 포함(체크박스가 활성화된 경우)과 수동 @problems 언급 모두에 적용됩니다. 값이 높을수록 더 많은 컨텍스트를 제공하지만 토큰 사용량이 증가합니다.",
 				"resetTooltip": "기본값(50)으로 재설정",
+				"unlimited": "무제한 진단 메시지",
 				"unlimitedLabel": "무제한"
 			},
 			"delayAfterWrite": {
@@ -896,6 +899,7 @@
 		"simplifiedExplanation": "나중에 자세한 모델 설정을 조정할 수 있습니다."
 	},
 	"footer": {
+		"feedback": "질문이나 피드백이 있으시면 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink>에서 이슈를 열거나 <redditLink>reddit.com/r/RooCode</redditLink> 또는 <discordLink>discord.gg/roocode</discordLink>에 가입하세요",
 		"telemetry": {
 			"label": "익명 오류 및 사용 보고 허용",
 			"description": "익명 사용 데이터 및 오류 보고서를 전송하여 Roo Code 개선에 도움을 주세요. 이 텔레메트리는 코드, 프롬프트 또는 개인 정보를 수집하지 않습니다. 자세한 내용은 <privacyLink>개인정보 보호정책</privacyLink>을 참조하세요."
@@ -926,9 +930,7 @@
 		"providerNotAllowed": "제공자 '{{provider}}'는 조직에서 허용되지 않습니다",
 		"modelNotAllowed": "모델 '{{model}}'은 제공자 '{{provider}}'에 대해 조직에서 허용되지 않습니다",
 		"profileInvalid": "이 프로필에는 조직에서 허용되지 않는 제공자 또는 모델이 포함되어 있습니다",
-		"qwenCodeOauthPath": "유효한 OAuth 자격 증명 경로를 제공해야 합니다",
-		"azureResourceName": "Azure 리소스 이름을 입력해야 합니다.",
-		"azureDeploymentName": "Azure 배포 이름을 입력해야 합니다."
+		"qwenCodeOauthPath": "유효한 OAuth 자격 증명 경로를 제공해야 합니다"
 	},
 	"placeholders": {
 		"apiKey": "API 키 입력...",
@@ -941,8 +943,6 @@
 		"projectId": "프로젝트 ID 입력...",
 		"customArn": "ARN 입력 (예: arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "기본 URL 입력...",
-		"azureResourceName": "e.g. my-openai-resource",
-		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "예: meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "예: lmstudio-community/llama-3.2-1b-instruct",
@@ -993,58 +993,5 @@
 			"label": "메시지를 보내려면 {{primaryMod}}+Enter가 필요",
 			"description": "활성화하면 Enter만으로는 안 되고 {{primaryMod}}+Enter를 눌러야 메시지를 보낼 수 있습니다"
 		}
-	},
-	"skills": {
-		"description": "에이전트에 컨텍스트 지침을 제공하는 스킬을 관리합니다. 스킬은 작업과 관련이 있을 때 자동으로 적용됩니다. <DocsLink>자세히 알아보기</DocsLink>",
-		"workspaceSkills": "워크스페이스 스킬",
-		"globalSkills": "전역 스킬",
-		"noWorkspaceSkills": "이 프로젝트에 스킬이 아직 없습니다.",
-		"noGlobalSkills": "구성된 전역 스킬이 없습니다. 모든 프로젝트에서 사용할 수 있는 에이전트 기능을 추가하려면 하나를 만드세요.",
-		"addSkill": "스킬 추가",
-		"editSkill": "스킬 편집",
-		"deleteSkill": "스킬 삭제",
-		"configureModes": "모드 가용성",
-		"modeAny": "모든 모드",
-		"modeCount": "{{count}} 모드",
-		"deleteDialog": {
-			"title": "스킬 삭제",
-			"description": "스킬 \"{{name}}\"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
-			"confirm": "삭제",
-			"cancel": "취소"
-		},
-		"modeDialog": {
-			"title": "스킬 모드 구성",
-			"description": "이 스킬을 사용할 수 있는 모드를 선택합니다",
-			"intro": "컨텍스트를 가볍게 유지하기 위해 필요한 모드에서만 스킬을 사용 가능하게 하는 것을 권장합니다.",
-			"anyMode": "모든 모드 (모든 곳에서 사용 가능)",
-			"save": "저장",
-			"cancel": "취소"
-		},
-		"createDialog": {
-			"title": "새 스킬 만들기",
-			"nameLabel": "이름",
-			"namePlaceholder": "my-skill-name",
-			"descriptionLabel": "설명",
-			"descriptionPlaceholder": "이 스킬을 언제 사용해야 하는지 설명하세요...",
-			"sourceLabel": "위치",
-			"modeLabel": "모드 (선택사항)",
-			"modePlaceholder": "모든 모드",
-			"modeHint": "이 스킬을 특정 모드로 제한",
-			"modeAny": "모든 모드",
-			"create": "만들기",
-			"cancel": "취소"
-		},
-		"source": {
-			"global": "전역 (모든 프로젝트에서 사용 가능)",
-			"project": "프로젝트 (이 작업공간만)"
-		},
-		"validation": {
-			"nameRequired": "이름은 필수입니다",
-			"nameTooLong": "이름은 64자 이하여야 합니다",
-			"nameInvalid": "이름은 1-64자의 소문자, 숫자 또는 하이픈이어야 합니다",
-			"descriptionRequired": "설명은 필수입니다",
-			"descriptionTooLong": "설명은 1024자 이하여야 합니다"
-		},
-		"footer": "스킬 작성자 모드로 자신만의 스킬을 만들 수 있습니다. <MarketplaceLink>모드 마켓플레이스</MarketplaceLink>에서 사용 가능합니다."
 	}
 }

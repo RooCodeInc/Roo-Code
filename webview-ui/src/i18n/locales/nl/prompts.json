@@ -25,6 +25,7 @@
 		"toolNames": {
 			"read": "Bestanden lezen",
 			"edit": "Bestanden bewerken",
+			"browser": "Browser gebruiken",
 			"command": "Commando's uitvoeren",
 			"mcp": "MCP gebruiken"
 		},
@@ -69,6 +70,9 @@
 			"label": "Projectniveau",
 			"description": "Alleen beschikbaar in deze werkruimte. Als de geëxporteerde modus regelbestanden bevatte, worden deze opnieuw gemaakt in de map .roo/rules-{slug}/."
 		}
+	},
+	"advanced": {
+		"title": "Geavanceerd"
 	},
 	"globalCustomInstructions": {
 		"title": "Aangepaste instructies voor alle modi",
@@ -141,6 +145,10 @@
 				"description": "Start een nieuwe taak met gebruikersinvoer. Beschikbaar via de Command Palette."
 			}
 		}
+	},
+	"advancedSystemPrompt": {
+		"title": "Geavanceerd: Systeemprompt overschrijven",
+		"description": "<2>⚠️ Waarschuwing:</2> Deze geavanceerde functie omzeilt beveiligingen. <1>LEES DIT VOOR GEBRUIK!</1>Overschrijf de standaard systeemprompt door een bestand aan te maken op <span>.roo/system-prompt-{{slug}}</span>."
 	},
 	"createModeDialog": {
 		"title": "Nieuwe modus aanmaken",

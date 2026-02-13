@@ -25,6 +25,7 @@
 		"toolNames": {
 			"read": "ファイルを読み込む",
 			"edit": "ファイルを編集",
+			"browser": "ブラウザを使用",
 			"command": "コマンドを実行",
 			"mcp": "MCP を使用"
 		},
@@ -69,6 +70,9 @@
 			"label": "プロジェクトレベル",
 			"description": "このワークスペースでのみ利用可能です。エクスポートされたモードにルールファイルが含まれていた場合、それらは.roo/rules-{slug}/フォルダに再作成されます。"
 		}
+	},
+	"advanced": {
+		"title": "詳細設定"
 	},
 	"globalCustomInstructions": {
 		"title": "すべてのモードのカスタム指示",
@@ -141,6 +145,10 @@
 				"description": "入力内容で新しいタスクを開始できます。コマンドパレットから利用できます。"
 			}
 		}
+	},
+	"advancedSystemPrompt": {
+		"title": "詳細設定：システムプロンプトの上書き",
+		"description": "<2>⚠️ 警告：</2> この高度な機能は安全対策をバイパスします。<1>使用前にこれを読んでください！</1>ワークスペースの<span>.roo/system-prompt-{{slug}}</span>にファイルを作成することで、デフォルトのシステムプロンプトを上書きします。"
 	},
 	"createModeDialog": {
 		"title": "新しいモードを作成",

@@ -6,9 +6,9 @@ import { execa, type ResultPromise } from "execa"
 
 import type { ToolUsage } from "@roo-code/types"
 
-import type { Run, Task } from "../db/index"
+import type { Run, Task } from "../db/index.js"
 
-import { SubprocessTimeoutError } from "./types"
+import { SubprocessTimeoutError } from "./types.js"
 
 export const getTag = (caller: string, { run, task }: { run: Run; task?: Task }) =>
 	task

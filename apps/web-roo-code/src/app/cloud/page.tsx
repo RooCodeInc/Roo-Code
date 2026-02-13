@@ -5,9 +5,9 @@ import {
 	ChartLine,
 	Github,
 	History,
-	ListChecks,
 	LucideIcon,
 	Pencil,
+	Router,
 	Share2,
 	Slack,
 	Users,
@@ -22,7 +22,7 @@ import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
 import { EXTERNAL_LINKS } from "@/lib/constants"
 // Workaround for next/image choking on these for some reason
-import screenshotDark from "../../../public/heroes/cloud-screen.png"
+import screenshotDark from "/public/heroes/cloud-screen.png"
 
 const TITLE = "Roo Code Cloud"
 const DESCRIPTION =
@@ -112,9 +112,9 @@ const features: Feature[] = [
 		description: "Start tasks, get updates, and collaborate with agents directly from your team's Slack channels.",
 	},
 	{
-		icon: ListChecks,
-		title: "Linear Integration",
-		description: "Assign issues to Roo Code directly from Linear. Get PRs back without switching tools.",
+		icon: Router,
+		title: "Roomote Control",
+		description: "Connect to your local VS Code instance and control the extension remotely from the browser.",
 	},
 	{
 		icon: Users,

@@ -111,8 +111,6 @@
 	},
 	"selectMode": "Wybierz tryb interakcji",
 	"selectApiConfig": "Wybierz konfigurację API",
-	"lockApiConfigAcrossModes": "Zablokuj konfigurację API dla wszystkich trybów w tym obszarze roboczym",
-	"unlockApiConfigAcrossModes": "Konfiguracja API jest zablokowana dla wszystkich trybów w tym obszarze roboczym (kliknij, aby odblokować)",
 	"enhancePrompt": "Ulepsz podpowiedź dodatkowym kontekstem",
 	"addImages": "Dodaj obrazy do wiadomości",
 	"sendMessage": "Wyślij wiadomość",
@@ -152,14 +150,14 @@
 		"rateLimitWait": "Ograniczenie szybkości",
 		"errorTitle": "Błąd dostawcy {{code}}",
 		"errorMessage": {
+			"docs": "Dokumentacja",
+			"goToSettings": "Ustawienia",
 			"400": "Dostawca nie mógł przetworzyć żądania. Zatrzymaj zadanie i spróbuj innego podejścia.",
 			"401": "Nie można uwierzytelnić u dostawcy. Sprawdź konfigurację klucza API.",
 			"402": "Wygląda na to, że wyczerpałeś środki/kredyty na swoim koncie. Przejdź do dostawcy i dodaj więcej, aby kontynuować.",
 			"403": "Brak autoryzacji. Twój klucz API jest ważny, ale dostawca odmówił ukończenia tego żądania.",
 			"429": "Zbyt wiele żądań. Dostawca ogranicza Ci szybkość żądań. Poczekaj chwilę przed następnym wywołaniem API.",
 			"500": "Błąd serwera dostawcy. Po stronie dostawcy coś się nie powiodło, w Twoim żądaniu nie ma nic złego.",
-			"docs": "Dokumentacja",
-			"goToSettings": "Ustawienia",
 			"unknown": "Nieznany błąd API. Skontaktuj się z pomocą techniczną Roo Code.",
 			"connection": "Błąd połączenia. Upewnij się, że masz działające połączenie internetowe.",
 			"claudeCodeNotAuthenticated": "Musisz się zalogować, aby korzystać z Claude Code. Przejdź do Ustawień i kliknij \"Zaloguj się do Claude Code\", aby się uwierzytelnić."
@@ -220,8 +218,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo chce zobaczyć pliki najwyższego poziomu w tym katalogu (poza obszarem roboczym)",
 		"didViewTopLevelOutsideWorkspace": "Roo zobaczył pliki najwyższego poziomu w tym katalogu (poza obszarem roboczym)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo chce rekurencyjnie zobaczyć wszystkie pliki w tym katalogu (poza obszarem roboczym)",
-		"didViewRecursiveOutsideWorkspace": "Roo rekurencyjnie zobaczył wszystkie pliki w tym katalogu (poza obszarem roboczym)",
-		"wantsToViewMultipleDirectories": "Roo chce wyświetlić wiele katalogów"
+		"didViewRecursiveOutsideWorkspace": "Roo rekurencyjnie zobaczył wszystkie pliki w tym katalogu (poza obszarem roboczym)"
 	},
 	"commandOutput": "Wyjście polecenia",
 	"commandExecution": {
@@ -347,8 +344,7 @@
 		},
 		"release": {
 			"heading": "Co nowego:",
-			"claudeOpus": "Claude Opus 4.6: Teraz dostępny u wszystkich dostawców—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex i OpenRouter—przynoszący najbardziej zaawansowany model Anthropic na twoją preferowaną platformę.",
-			"gptCodex": "GPT-5.3-Codex: Najnowszy model kodowania OpenAI jest teraz obsługiwany u dostawcy OpenAI - ChatGPT, zapewniający zaawansowaną generację kodu i zrozumienie."
+			"smartCodeFolding": "Smart Code Folding: Kondensacja kontekstu teraz zachowuje lekką mapę twoich plików—sygnatury funkcji, deklaracje klas i definicje typów. Zapewnia to lepszą ciągłość po kondensacji i mądrzejsze edycje przy odwoływaniu się do poprzedniej pracy."
 		},
 		"cloudAgents": {
 			"heading": "Nowości w chmurze:",
@@ -363,6 +359,44 @@
 		"total": "Całkowity koszt: ${{cost}}",
 		"includesSubtasks": "Zawiera koszty podzadań"
 	},
+	"browser": {
+		"session": "Sesja przeglądarki",
+		"active": "Aktywna",
+		"rooWantsToUse": "Roo chce użyć przeglądarki",
+		"consoleLogs": "Logi konsoli",
+		"noNewLogs": "(Brak nowych logów)",
+		"screenshot": "Zrzut ekranu przeglądarki",
+		"cursor": "kursor",
+		"navigation": {
+			"step": "Krok {{current}} z {{total}}",
+			"previous": "Poprzedni",
+			"next": "Następny"
+		},
+		"sessionStarted": "Sesja przeglądarki rozpoczęta",
+		"actions": {
+			"title": "Akcja przeglądarki: ",
+			"launched": "Przeglądarka uruchomiona",
+			"launch": "Uruchom przeglądarkę na {{url}}",
+			"clicked": "Kliknięto ({{coordinate}})",
+			"click": "Kliknij ({{coordinate}})",
+			"typed": "Wpisano: {{text}}",
+			"type": "Wpisz \"{{text}}\"",
+			"pressed": "Naciśnięto: {{key}}",
+			"press": "Naciśnij {{key}}",
+			"scrolledDown": "Przewinięto w dół",
+			"scrollDown": "Przewiń w dół",
+			"scrolledUp": "Przewinięto w górę",
+			"scrollUp": "Przewiń w górę",
+			"hovered": "Najechano ({{coordinate}})",
+			"hover": "Najedź ({{coordinate}})",
+			"resized": "Zmieniono rozmiar na: {{size}}",
+			"resize": "Zmień rozmiar na {{size}}",
+			"screenshotSaved": "Zrzut ekranu zapisany",
+			"screenshot": "Zapisz zrzut ekranu do {{path}}",
+			"closed": "Przeglądarka zamknięta",
+			"close": "Zamknij przeglądarkę"
+		}
+	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Rozwiń blok kodu",
@@ -370,6 +404,7 @@
 			"copy_code": "Kopiuj kod"
 		}
 	},
+	"systemPromptWarning": "OSTRZEŻENIE: Aktywne niestandardowe zastąpienie instrukcji systemowych. Może to poważnie zakłócić funkcjonalność i powodować nieprzewidywalne zachowanie.",
 	"profileViolationWarning": "Bieżący profil nie jest kompatybilny z ustawieniami Twojej organizacji",
 	"shellIntegration": {
 		"title": "Ostrzeżenie wykonania polecenia",
@@ -398,22 +433,6 @@
 	"read-batch": {
 		"approve": {
 			"title": "Zatwierdź wszystko"
-		},
-		"deny": {
-			"title": "Odrzuć wszystko"
-		}
-	},
-	"list-batch": {
-		"approve": {
-			"title": "Zatwierdź wszystko"
-		},
-		"deny": {
-			"title": "Odrzuć wszystko"
-		}
-	},
-	"edit-batch": {
-		"approve": {
-			"title": "Zapisz wszystko"
 		},
 		"deny": {
 			"title": "Odrzuć wszystko"
@@ -492,10 +511,5 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
-	},
-	"retiredProvider": {
-		"title": "Dostawca nie jest już obsługiwany",
-		"message": "Przepraszamy, ten dostawca nie jest już obsługiwany. Zauważyliśmy, że bardzo niewielu użytkowników Roo faktycznie z niego korzystało, a my musimy zmniejszyć zakres naszego kodu, aby móc dalej szybko dostarczać i dobrze służyć naszej społeczności. To była naprawdę trudna decyzja, ale pozwala nam skupić się na tym, co jest dla ciebie najważniejsze. Wiemy, że to frustrujące.",
-		"openSettings": "Otwórz ustawienia"
 	}
 }

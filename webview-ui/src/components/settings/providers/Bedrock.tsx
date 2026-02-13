@@ -28,7 +28,7 @@ export const Bedrock = ({ apiConfiguration, setApiConfigurationField, selectedMo
 	const { t } = useAppTranslation()
 	const [awsEndpointSelected, setAwsEndpointSelected] = useState(!!apiConfiguration?.awsBedrockEndpointEnabled)
 
-	// Check if the selected model supports 1M context (supported Claude 4 models)
+	// Check if the selected model supports 1M context (Claude Sonnet 4 / 4.5)
 	const supports1MContextBeta =
 		!!apiConfiguration?.apiModelId && BEDROCK_1M_CONTEXT_MODEL_IDS.includes(apiConfiguration.apiModelId as any)
 

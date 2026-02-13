@@ -1,109 +1,126 @@
 <common_mistakes_to_avoid>
   <mode_initialization_mistakes>
-    - Asking "What would you like to do?" at start instead of treating the first message as the issue description
-    - Delaying the workflow with unnecessary questions before discovery
-    - Not immediately beginning codebase-aware discovery (semantic search → regex refine → read key files)
-    - Skipping repository detection (git + origin) before discovery or submission
-    - Not validating repository context before gh commands
+    - CRITICAL: Asking "What would you like to do?" when mode starts
+    - Waiting for user to say "create an issue" or "make me an issue"
+    - Not treating the first user message as the issue description
+    - Delaying the workflow start with unnecessary questions
+    - Asking if they want to create an issue when they've already chosen this mode
+    - Not immediately beginning repository detection and codebase discovery
   </mode_initialization_mistakes>
-
-  <scope_mistakes>
-    - Submitting without explicit user confirmation ("Submit now")
-    - Targeting the wrong repository by relying on current directory defaults; always pass --repo OWNER/REPO detected in Step 2
-    - Performing PR prep, complexity estimates, or technical scoping
-  </scope_mistakes>
-
-  <submission_mistakes>
-    <mistake_block>
-      <mistake>Splitting final review and submission into multiple steps</mistake>
-      <impact>Creates redundant prompts and inconsistent state; leads to janky UX</impact>
-      <correct_approach>Use a single merged "Review and Submit" step offering only: Submit now, Submit now and assign to me; treat any other response as a change request</correct_approach>
-    </mistake_block>
-    <mistake_block>
-      <mistake>Not offering "Submit now and assign to me"</mistake>
-      <impact>Forces manual assignment later; reduces efficiency</impact>
-      <correct_approach>Provide the assignment option and use gh issue create --assignee "@me"; if that fails, immediately run gh issue edit <issue-url-or-number> --add-assignee "@me"</correct_approach>
-    </mistake_block>
-    <mistake_block>
-      <mistake>Using temporary files or --body-file for issue body submission</mistake>
-      <impact>Introduces filesystem dependencies and leaks paths; contradicts single-command policy</impact>
-      <correct_approach>Use inline --body with robust quoting, e.g., --body "$(printf '%s\n' "[ISSUE_BODY]")"; do not reference any file paths</correct_approach>
-    </mistake_block>
-    <mistake_block>
-      <mistake>Omitting --repo or relying on current directory defaults</mistake>
-      <impact>May submit to the wrong repository in multi-repo or worktree contexts</impact>
-      <correct_approach>Always pass --repo [OWNER_REPO] detected in Step 2</correct_approach>
-    </mistake_block>
-    <mistake_block>
-      <mistake>Attempting submission without prior repository detection</mistake>
-      <impact>Commands may target the wrong repo or fail</impact>
-      <correct_approach>Detect git repo and ensure origin is configured before any gh commands</correct_approach>
-    </mistake_block>
-  </submission_mistakes>
-
-  <sourcing_mistakes>
-    <mistake_block>
-      <mistake>Inventing or inferring “Variations tried” when the user didn’t provide any</mistake>
-      <impact>Misleads triage and wastes time reproducing non-existent attempts</impact>
-      <correct_approach>Omit the “Variations tried” line entirely unless explicitly provided; if needed, ask a targeted question first</correct_approach>
-    </mistake_block>
-    <mistake_block>
-      <mistake>Framing only the problem without the value/impact</mistake>
-      <impact>Makes prioritization harder; obscures who benefits and why it matters</impact>
-      <correct_approach>Pair the problem with a plain-language value statement (who, when, why it matters)</correct_approach>
-    </mistake_block>
-    <mistake_block>
-      <mistake>Overstating impact without user signal</mistake>
-      <impact>Damages credibility and misguides prioritization</impact>
-      <correct_approach>Use conservative, plain language; if unsure, omit severity/reach or ask a single targeted question</correct_approach>
-    </mistake_block>
-  </sourcing_mistakes>
-
+  
   <problem_reporting_mistakes>
-    - Vague descriptions like "doesn't work" without who/when impact
-    - Missing minimal reproduction for bugs (environment, steps, expected, actual, variations)
-    - Enhancement requests that skip the user goal or desired behavior in plain language
-    - Titles/summaries that don't quickly communicate the issue
+    - Vague descriptions like "doesn't work" or "broken"
+    - Missing reproduction steps for bugs
+    - Feature requests without clear problem statements
+    - Not explaining the impact on users
+    - Forgetting to specify when/how the problem occurs
+    - Using wrong labels or no labels
+    - Titles that don't summarize the issue
+    - Not checking for duplicates
   </problem_reporting_mistakes>
-
-  <output_mistakes>
-    - Including code paths, line numbers, stack traces, or diffs in the final issue body
-    - Adding labels, metadata, or repository details to the body
-    - Leaving empty section placeholders instead of omitting the section
-    - Using technical jargon instead of plain, user-centric language
-  </output_mistakes>
-
-  <code_exploration_mistakes>
-    <mistake>Skipping semantic search and jumping straight to assumptions</mistake>
-    <impact>Leads to misclassification and inaccurate context</impact>
+  
+  <workflow_mistakes>
+    - Asking for technical details from non-contributing users
+    - Performing issue scoping before confirming user wants to contribute
+    - Requiring acceptance criteria from problem reporters
+    - Making the process too complex for simple problem reports
+    - Not clearly indicating the "submit now" option
+    - Overwhelming users with contributor requirements upfront
+    - Using hardcoded templates instead of repository templates
+    - Not checking for issue templates before creating content
+    - Ignoring template metadata like labels and assignees
+  </workflow_mistakes>
+  
+  <contributor_mistakes>
+    - Starting implementation before approval
+    - Not providing detailed issue scoping when contributing
+    - Missing acceptance criteria for contributed features
+    - Forgetting to include technical context from code exploration
+    - Not considering trade-offs and alternatives
+    - Proposing solutions without understanding current architecture
+  </contributor_mistakes>
+  
+  <technical_analysis_mistakes>
+    <mistake>Not tracing data flow completely through the system</mistake>
+    <impact>Missing that data already exists leads to proposing unnecessary new code</impact>
     <correct_approach>
-      - Start with codebase_search on extracted keywords
-      - Refine with search_files for exact strings (errors, component names, flags)
-      - read_file only as needed to verify behavior; keep evidence internal
-      - Early-stop when hits converge or you can name the exact feature/component
-      - Escalate-once if signals conflict (one refined pass), then proceed
+      - Use codebase_search extensively to find ALL related code
+      - Trace variables from creation to consumption
+      - Check if needed data is already calculated but not used
+      - Look for similar working features as patterns
     </correct_approach>
-  </code_exploration_mistakes>
-
-  <discrepancy_handling_mistakes>
-    <mistake>Accepting user claims that contradict the codebase without verification</mistake>
-    <impact>Produces misleading or incorrect issue framing</impact>
+    <example>
+      Bad: "Add mode tracking to import function"
+      Good: "The export already includes mode info at line 234, just use it in import at line 567"
+    </example>
+  </technical_analysis_mistakes>
+  
+  <solution_design_mistakes>
+    <mistake>Proposing complex new systems when simple fixes exist</mistake>
+    <impact>Creates unnecessary complexity, maintenance burden, and potential bugs</impact>
     <correct_approach>
-      - Verify claims against the implementation; trace data from creation → usage
-      - Compare with similar working features to ground expectations
-      - If discrepancies arise, present concrete, plain-language examples (no code) and confirm
+      - ALWAYS check if functionality already exists first
+      - Look for minimal changes that solve the problem
+      - Prefer using existing variables/functions differently
+      - Aim for the smallest possible diff
     </correct_approach>
-  </discrepancy_handling_mistakes>
-
-  <questioning_mistakes>
-    - Asking broad, unfocused questions instead of targeted ones based on findings
-    - Demanding technical details from non-technical users
-    - Failing to provide easy, suggested answer formats (repro scaffold, goal statement)
-  </questioning_mistakes>
-
-  <consistency_mistakes>
-    - Mixing internal technical evidence into the final body
-    - Ignoring the issue format or adding extra sections
-    - Using inconsistent tone or switching between technical and non-technical language
-  </consistency_mistakes>
+    <example>
+      Bad: "Create new state management system for mode tracking"
+      Good: "Pass existing modeInfo variable from line 45 to the function at line 78"
+    </example>
+  </solution_design_mistakes>
+  
+  <code_verification_mistakes>
+    <mistake>Not reading actual code before proposing solutions</mistake>
+    <impact>Solutions don't match the actual codebase structure</impact>
+    <correct_approach>
+      - Always read the relevant files first
+      - Verify exact line numbers and content
+      - Check imports/exports to understand data availability
+      - Look at similar features that work correctly
+    </correct_approach>
+  </code_verification_mistakes>
+  
+  <pattern_recognition_mistakes>
+    <mistake>Creating new patterns instead of following existing ones</mistake>
+    <impact>Inconsistent codebase, harder to maintain</impact>
+    <correct_approach>
+      - Find similar features that work correctly
+      - Follow the same patterns and structures
+      - Reuse existing utilities and helpers
+      - Maintain consistency with the codebase style
+    </correct_approach>
+  </pattern_recognition_mistakes>
+  
+  <template_usage_mistakes>
+    <mistake>Using hardcoded templates when repository templates exist</mistake>
+    <impact>Issues don't follow repository conventions, may be rejected or need reformatting</impact>
+    <correct_approach>
+      - Always check .github/ISSUE_TEMPLATE/ directory first
+      - Parse and use repository templates when available
+      - Only create generic templates when none exist
+    </correct_approach>
+  </template_usage_mistakes>
+  
+  <template_parsing_mistakes>
+    <mistake>Not properly parsing YAML template structure</mistake>
+    <impact>Missing required fields, incorrect formatting, lost metadata</impact>
+    <correct_approach>
+      - Parse YAML templates to extract all form elements
+      - Convert form elements to appropriate markdown sections
+      - Preserve field requirements and descriptions
+      - Maintain dropdown options and checkbox lists
+    </correct_approach>
+  </template_parsing_mistakes>
+  
+  <template_filling_mistakes>
+    <mistake>Leaving placeholder text in final issue</mistake>
+    <impact>Unprofessional appearance, confusion about what information is needed</impact>
+    <correct_approach>
+      - Replace all placeholders with actual information
+      - Remove instruction text meant for template users
+      - Fill every section with relevant content
+      - Add "N/A" for truly inapplicable sections
+    </correct_approach>
+  </template_filling_mistakes>
 </common_mistakes_to_avoid>

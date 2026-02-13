@@ -58,16 +58,6 @@ describe("export-markdown", () => {
 			expect(formatContentBlockToMarkdown(block)).toBe("[Tool]\nLine 1\nLine 2")
 		})
 
-		it("should format AI SDK tool-result blocks with [ERROR] output as errors", () => {
-			const block = {
-				type: "tool-result",
-				toolCallId: "123",
-				toolName: "read_file",
-				output: { type: "text", value: "[ERROR] Permission denied" },
-			} as unknown as ExtendedContentBlock
-			expect(formatContentBlockToMarkdown(block)).toBe("[Tool (Error)]\n[ERROR] Permission denied")
-		})
-
 		it("should format reasoning blocks", () => {
 			const block = { type: "reasoning", text: "Let me think about this..." } as ExtendedContentBlock
 			expect(formatContentBlockToMarkdown(block)).toBe("[Reasoning]\nLet me think about this...")

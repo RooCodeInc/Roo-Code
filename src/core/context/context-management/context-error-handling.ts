@@ -4,7 +4,8 @@ export function checkContextWindowExceededError(error: unknown): boolean {
 	return (
 		checkIsOpenAIContextWindowError(error) ||
 		checkIsOpenRouterContextWindowError(error) ||
-		checkIsAnthropicContextWindowError(error)
+		checkIsAnthropicContextWindowError(error) ||
+		checkIsCerebrasContextWindowError(error)
 	)
 }
 
@@ -89,6 +90,24 @@ function checkIsAnthropicContextWindowError(response: unknown): boolean {
 		}
 
 		return false
+	} catch {
+		return false
+	}
+}
+
+function checkIsCerebrasContextWindowError(response: unknown): boolean {
+	try {
+		// Type guard to safely access properties
+		if (!response || typeof response !== "object") {
+			return false
+		}
+
+		// Use type assertions with proper checks
+		const res = response as Record<string, any>
+		const status = res.status ?? res.code ?? res.error?.status ?? res.response?.status
+		const message: string = String(res.message || res.error?.message || "")
+
+		return String(status) === "400" && message.includes("Please reduce the length of the messages or completion")
 	} catch {
 		return false
 	}

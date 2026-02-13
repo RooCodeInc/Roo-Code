@@ -25,6 +25,7 @@
 		"toolNames": {
 			"read": "Leggi file",
 			"edit": "Modifica file",
+			"browser": "Usa browser",
 			"command": "Esegui comandi",
 			"mcp": "Usa MCP"
 		},
@@ -69,6 +70,9 @@
 			"label": "Livello di progetto",
 			"description": "Disponibile solo in questo spazio di lavoro. Se la modalità esportata conteneva file di regole, verranno ricreati nella cartella .roo/rules-{slug}/."
 		}
+	},
+	"advanced": {
+		"title": "Avanzato"
 	},
 	"globalCustomInstructions": {
 		"title": "Istruzioni personalizzate per tutte le modalità",
@@ -141,6 +145,10 @@
 				"description": "Avvia una nuova attività con il tuo input. Disponibile nella palette dei comandi."
 			}
 		}
+	},
+	"advancedSystemPrompt": {
+		"title": "Avanzato: Sovrascrivi prompt di sistema",
+		"description": "<2>⚠️ Attenzione:</2> Questa funzionalità avanzata bypassa le misure di sicurezza. <1>LEGGI QUESTO PRIMA DI USARE!</1>Sovrascrivi il prompt di sistema predefinito creando un file in <span>.roo/system-prompt-{{slug}}</span>."
 	},
 	"createModeDialog": {
 		"title": "Crea nuova modalità",

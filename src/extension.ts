@@ -1,20 +1,15 @@
 import * as vscode from "vscode"
 import * as dotenvx from "@dotenvx/dotenvx"
-import * as fs from "fs"
 import * as path from "path"
 
 // Load environment variables from .env file
-// The extension-level .env is optional (not shipped in production builds).
-// Avoid calling dotenvx when the file doesn't exist, otherwise dotenvx emits
-// a noisy [MISSING_ENV_FILE] error to the extension host console.
-const envPath = path.join(__dirname, "..", ".env")
-if (fs.existsSync(envPath)) {
-	try {
-		dotenvx.config({ path: envPath })
-	} catch (e) {
-		// Best-effort only: never fail extension activation due to optional env loading.
-		console.warn("Failed to load environment variables:", e)
-	}
+try {
+	// Specify path to .env file in the project root directory
+	const envPath = path.join(__dirname, "..", ".env")
+	dotenvx.config({ path: envPath })
+} catch (e) {
+	// Silently handle environment loading errors
+	console.warn("Failed to load environment variables:", e)
 }
 
 import type { CloudUserInfo, AuthState } from "@roo-code/types"
@@ -195,7 +190,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, mdmService)
 
 	// Initialize Roo Code Cloud service.
-	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebviewWithoutClineMessages()
+	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebview()
 
 	authStateChangedHandler = async (data: { state: AuthState; previousState: AuthState }) => {
 		postStateListener()

@@ -3,7 +3,7 @@ import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { Trans } from "react-i18next"
 import { ChevronsUpDown, Check, X, Info } from "lucide-react"
 
-import { type ProviderSettings, type ModelInfo, type OrganizationAllowList, isRetiredProvider } from "@roo-code/types"
+import type { ProviderSettings, ModelInfo, OrganizationAllowList } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useSelectedModel } from "@/components/ui/hooks/useSelectedModel"
@@ -29,9 +29,12 @@ import { ApiErrorMessage } from "./ApiErrorMessage"
 type ModelIdKey = keyof Pick<
 	ProviderSettings,
 	| "openRouterModelId"
+	| "unboundModelId"
 	| "requestyModelId"
 	| "openAiModelId"
 	| "litellmModelId"
+	| "deepInfraModelId"
+	| "ioIntelligenceModelId"
 	| "vercelAiGatewayModelId"
 	| "apiModelId"
 	| "ollamaModelId"
@@ -104,13 +107,8 @@ export const ModelPicker = ({
 		return selectedModelId
 	}, [displayTransform, apiConfiguration, modelIdKey, selectedModelId])
 
-	const activeProvider =
-		apiConfiguration.apiProvider && isRetiredProvider(apiConfiguration.apiProvider)
-			? undefined
-			: apiConfiguration.apiProvider
-
 	const modelIds = useMemo(() => {
-		const filteredModels = filterModels(models, activeProvider, organizationAllowList)
+		const filteredModels = filterModels(models, apiConfiguration.apiProvider, organizationAllowList)
 
 		// Include the currently selected model even if deprecated (so users can see what they have selected)
 		// But filter out other deprecated models from being newly selectable
@@ -130,7 +128,7 @@ export const ModelPicker = ({
 			)
 
 		return Object.keys(availableModels).sort((a, b) => a.localeCompare(b))
-	}, [models, activeProvider, organizationAllowList, selectedModelId])
+	}, [models, apiConfiguration.apiProvider, organizationAllowList, selectedModelId])
 
 	const [searchValue, setSearchValue] = useState("")
 

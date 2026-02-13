@@ -31,6 +31,7 @@
 		"mcp": "Servidores MCP",
 		"worktrees": "Worktrees",
 		"autoApprove": "Auto-aprobación",
+		"browser": "Acceso al ordenador",
 		"checkpoints": "Puntos de control",
 		"notifications": "Notificaciones",
 		"contextManagement": "Contexto",
@@ -40,8 +41,7 @@
 		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Idioma",
-		"about": "Acerca de Roo Code",
-		"skills": "Skills"
+		"about": "Acerca de Roo Code"
 	},
 	"about": {
 		"bugReport": {
@@ -68,39 +68,7 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Gestiona tus comandos de barra para ejecutar rápidamente flujos de trabajo y acciones personalizadas. <DocsLink>Saber más</DocsLink>",
-		"workspaceCommands": "Comandos del espacio de trabajo",
-		"globalCommands": "Comandos globales",
-		"noWorkspaceCommands": "Sin comandos en este proyecto aún.",
-		"noGlobalCommands": "Sin comandos globales aún.",
-		"addCommand": "Agregar comando de barra",
-		"editCommand": "Editar comando",
-		"deleteCommand": "Eliminar comando",
-		"deleteDialog": {
-			"title": "Eliminar comando",
-			"description": "¿Estás seguro de que quieres eliminar el comando \"{{name}}\"? Esta acción no se puede deshacer.",
-			"confirm": "Eliminar",
-			"cancel": "Cancelar"
-		},
-		"createDialog": {
-			"title": "Crear nuevo comando de barra",
-			"nameLabel": "Nombre",
-			"namePlaceholder": "my-command-name",
-			"nameHint": "Solo letras minúsculas, números, guiones y guiones bajos",
-			"sourceLabel": "Ubicación",
-			"create": "Crear",
-			"cancel": "Cancelar"
-		},
-		"source": {
-			"global": "Global (disponible en todos los espacios de trabajo)",
-			"project": "Espacio de trabajo"
-		},
-		"validation": {
-			"nameRequired": "El nombre es obligatorio",
-			"nameTooLong": "El nombre debe tener 64 caracteres o menos",
-			"nameInvalid": "El nombre solo puede contener letras, números, guiones y guiones bajos"
-		},
-		"footer": "Usa comandos de barra para acceder rápidamente a indicaciones y flujos de trabajo frecuentemente utilizados."
+		"description": "Gestiona tus comandos de barra para ejecutar rápidamente flujos de trabajo y acciones personalizadas. <DocsLink>Saber más</DocsLink>"
 	},
 	"prompts": {
 		"description": "Configura indicaciones de soporte que se utilizan para acciones rápidas como mejorar indicaciones, explicar código y solucionar problemas. Estas indicaciones ayudan a Roo a brindar mejor asistencia para tareas comunes de desarrollo."
@@ -240,6 +208,10 @@
 				"description": "Permitir a Roo crear y editar archivos protegidos (como .rooignore y archivos de configuración .roo/) sin requerir aprobación."
 			}
 		},
+		"browser": {
+			"label": "Navegador",
+			"description": "Realizar acciones del navegador automáticamente sin requerir aprobación. Nota: Solo se aplica cuando el modelo admite el uso del ordenador"
+		},
 		"mcp": {
 			"label": "MCP",
 			"description": "Habilitar la aprobación automática de herramientas MCP individuales en la vista de Servidores MCP (requiere tanto esta configuración como la casilla \"Permitir siempre\" de la herramienta)"
@@ -271,6 +243,7 @@
 		},
 		"apiRequestLimit": {
 			"title": "Solicitudes máximas",
+			"description": "Realizar automáticamente esta cantidad de solicitudes a la API antes de pedir aprobación para continuar con la tarea.",
 			"unlimited": "Ilimitado"
 		},
 		"selectOptionsFirst": "Selecciona al menos una opción a continuación para habilitar la aprobación automática",
@@ -304,7 +277,6 @@
 		"searchProviderPlaceholder": "Buscar proveedores",
 		"noProviderMatchFound": "No se encontraron proveedores",
 		"noMatchFound": "No se encontraron perfiles coincidentes",
-		"retiredProviderMessage": "Lo sentimos, este proveedor ya no es compatible. Vimos que muy pocos usuarios de Roo lo usaban realmente y necesitamos reducir el alcance de nuestro código para poder seguir avanzando rápido y servir bien a nuestra comunidad. Fue una decisión muy difícil, pero nos permite centrarnos en lo que más te importa. Lo sabemos, es una lástima.",
 		"vscodeLmDescription": "La API del Modelo de Lenguaje de VS Code le permite ejecutar modelos proporcionados por otras extensiones de VS Code (incluido, entre otros, GitHub Copilot). La forma más sencilla de empezar es instalar las extensiones Copilot y Copilot Chat desde el VS Code Marketplace.",
 		"awsCustomArnUse": "Ingrese un ARN de Amazon Bedrock válido para el modelo que desea utilizar. Ejemplos de formato:",
 		"awsCustomArnDesc": "Asegúrese de que la región en el ARN coincida con la región de AWS seleccionada anteriormente.",
@@ -366,23 +338,15 @@
 		"getAnthropicApiKey": "Obtener clave API de Anthropic",
 		"anthropicUseAuthToken": "Pasar la clave API de Anthropic como encabezado de autorización en lugar de X-Api-Key",
 		"anthropic1MContextBetaLabel": "Habilitar ventana de contexto de 1M (Beta)",
-		"anthropic1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"anthropic1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Habilitar ventana de contexto de 1M (Beta)",
-		"awsBedrock1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"awsBedrock1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4",
 		"vertex1MContextBetaLabel": "Habilitar ventana de contexto de 1M (Beta)",
-		"vertex1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"vertex1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4",
 		"basetenApiKey": "Clave API de Baseten",
 		"getBasetenApiKey": "Obtener clave API de Baseten",
 		"cerebrasApiKey": "Clave API de Cerebras",
 		"getCerebrasApiKey": "Obtener clave API de Cerebras",
-		"azureResourceName": "Nombre del recurso Azure",
-		"azureResourceNameDescription": "El nombre de tu recurso Azure AI Foundry (ej. 'mi-recurso-openai').",
-		"azureDeploymentName": "Nombre del despliegue Azure",
-		"azureDeploymentNameDescription": "El nombre del despliegue de tu modelo dentro del recurso.",
-		"azureApiKey": "Clave API de Azure",
-		"getAzureApiKey": "Obtener acceso a Azure AI Foundry",
-		"azureApiVersion": "Versión de API de Azure",
-		"azureApiVersionDescription": "La versión de la API a usar (ej. '2024-10-21'). Dejar vacío para usar el valor predeterminado.",
 		"chutesApiKey": "Clave API de Chutes",
 		"getChutesApiKey": "Obtener clave API de Chutes",
 		"fireworksApiKey": "Clave API de Fireworks",
@@ -465,6 +429,16 @@
 		"cacheUsageNote": "Nota: Si no ve el uso del caché, intente seleccionar un modelo diferente y luego seleccionar nuevamente su modelo deseado.",
 		"vscodeLmModel": "Modelo de lenguaje",
 		"vscodeLmWarning": "Nota: Los modelos a los que se accede a través de la API de modelos de lenguaje de VS Code pueden estar envueltos o ajustados por el proveedor, por lo que su comportamiento puede diferir del uso directo del mismo modelo desde un proveedor o enrutador típico. Para usar un modelo del menú desplegable «Language Model», primero cambia a ese modelo y luego haz clic en «Aceptar» en el aviso de Copilot Chat; de lo contrario, puedes ver un error como 400 «The requested model is not supported».",
+		"geminiParameters": {
+			"urlContext": {
+				"title": "Habilitar contexto de URL",
+				"description": "Permite que Gemini acceda y procese URLs para contexto adicional al generar respuestas. Útil para tareas que requieren análisis de contenido web."
+			},
+			"groundingSearch": {
+				"title": "Habilitar grounding con búsqueda en Google",
+				"description": "Permite que Gemini busque en Google información actual y fundamente las respuestas en datos en tiempo real. Útil para consultas que requieren información actualizada."
+			}
+		},
 		"googleCloudSetup": {
 			"title": "Para usar Google Cloud Vertex AI, necesita:",
 			"step1": "1. Crear una cuenta de Google Cloud, habilitar la API de Vertex AI y habilitar los modelos Claude deseados.",
@@ -585,6 +559,34 @@
 			"placeholder": "Por defecto: claude",
 			"maxTokensLabel": "Tokens máximos de salida",
 			"maxTokensDescription": "Número máximo de tokens de salida para las respuestas de Claude Code. El valor predeterminado es 8000."
+		}
+	},
+	"browser": {
+		"enable": {
+			"label": "Habilitar herramienta de navegador",
+			"description": "Cuando está habilitado, Roo puede usar un navegador para interactuar con sitios web cuando se utilizan modelos que admiten el uso del ordenador. <0>Más información</0>"
+		},
+		"viewport": {
+			"label": "Tamaño del viewport",
+			"description": "Seleccione el tamaño del viewport para interacciones del navegador. Esto afecta cómo se muestran e interactúan los sitios web.",
+			"options": {
+				"largeDesktop": "Escritorio grande (1280x800)",
+				"smallDesktop": "Escritorio pequeño (900x600)",
+				"tablet": "Tablet (768x1024)",
+				"mobile": "Móvil (360x640)"
+			}
+		},
+		"screenshotQuality": {
+			"label": "Calidad de capturas de pantalla",
+			"description": "Ajuste la calidad WebP de las capturas de pantalla del navegador. Valores más altos proporcionan capturas más claras pero aumentan el uso de token."
+		},
+		"remote": {
+			"label": "Usar conexión remota del navegador",
+			"description": "Conectarse a un navegador Chrome que se ejecuta con depuración remota habilitada (--remote-debugging-port=9222).",
+			"urlPlaceholder": "URL personalizada (ej. http://localhost:9222)",
+			"testButton": "Probar conexión",
+			"testingButton": "Probando...",
+			"instructions": "Ingrese la dirección del host del protocolo DevTools o déjelo vacío para descubrir automáticamente instancias locales de Chrome. El botón Probar Conexión intentará usar la URL personalizada si se proporciona, o descubrirá automáticamente si el campo está vacío."
 		}
 	},
 	"checkpoints": {
@@ -896,6 +898,7 @@
 		"simplifiedExplanation": "Puedes ajustar la configuración detallada del modelo más tarde."
 	},
 	"footer": {
+		"feedback": "Si tiene alguna pregunta o comentario, no dude en abrir un issue en <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unirse a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Permitir informes anónimos de errores y uso",
 			"description": "Ayuda a mejorar Roo Code enviando datos de uso anónimos e informes de errores. Esta telemetría no recopila código, prompts o información personal. Consulta nuestra <privacyLink>política de privacidad</privacyLink> para más detalles."
@@ -926,9 +929,7 @@
 		"providerNotAllowed": "El proveedor '{{provider}}' no está permitido por su organización",
 		"modelNotAllowed": "El modelo '{{model}}' no está permitido para el proveedor '{{provider}}' por su organización",
 		"profileInvalid": "Este perfil contiene un proveedor o modelo que no está permitido por su organización",
-		"qwenCodeOauthPath": "Debes proporcionar una ruta válida de credenciales OAuth",
-		"azureResourceName": "Debes proporcionar un nombre de recurso de Azure.",
-		"azureDeploymentName": "Debes proporcionar un nombre de despliegue de Azure."
+		"qwenCodeOauthPath": "Debes proporcionar una ruta válida de credenciales OAuth"
 	},
 	"placeholders": {
 		"apiKey": "Ingrese clave API...",
@@ -941,8 +942,6 @@
 		"projectId": "Ingrese ID del proyecto...",
 		"customArn": "Ingrese ARN (ej. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Ingrese URL base...",
-		"azureResourceName": "e.g. my-openai-resource",
-		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "ej. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "ej. lmstudio-community/llama-3.2-1b-instruct",
@@ -993,58 +992,5 @@
 			"label": "Requerir {{primaryMod}}+Enter para enviar mensajes",
 			"description": "Cuando está activado, debes presionar {{primaryMod}}+Enter para enviar mensajes en lugar de solo Enter"
 		}
-	},
-	"skills": {
-		"description": "Gestiona skills que proporcionan instrucciones contextuales al agente. Las skills se aplican automáticamente cuando son relevantes para tus tareas. <DocsLink>Más información</DocsLink>",
-		"workspaceSkills": "Skills del espacio de trabajo",
-		"globalSkills": "Skills globales",
-		"noWorkspaceSkills": "Sin skills en este proyecto aún.",
-		"noGlobalSkills": "Sin skills globales aún.",
-		"addSkill": "Agregar Skill",
-		"editSkill": "Editar skill",
-		"deleteSkill": "Eliminar skill",
-		"configureModes": "Disponibilidad de modo",
-		"modeAny": "Cualquier modo",
-		"modeCount": "{{count}} modos",
-		"deleteDialog": {
-			"title": "Eliminar Skill",
-			"description": "¿Estás seguro de que quieres eliminar la skill \"{{name}}\"? Esta acción no se puede deshacer.",
-			"confirm": "Eliminar",
-			"cancel": "Cancelar"
-		},
-		"modeDialog": {
-			"title": "Configurar modos de Skill",
-			"description": "Elige qué modos pueden usar esta skill",
-			"intro": "Para mantener tu contexto ligero, recomendamos que solo hagas disponibles las skills para los modos que las necesitan.",
-			"anyMode": "Cualquier modo (disponible en todas partes)",
-			"save": "Guardar",
-			"cancel": "Cancelar"
-		},
-		"createDialog": {
-			"title": "Crear Nueva Skill",
-			"nameLabel": "Nombre",
-			"namePlaceholder": "mi-nombre-de-skill",
-			"descriptionLabel": "Descripción",
-			"descriptionPlaceholder": "Describe cuándo debería usarse esta skill...",
-			"sourceLabel": "Ubicación",
-			"modeLabel": "Modo (opcional)",
-			"modePlaceholder": "Cualquier modo",
-			"modeHint": "Restringe esta skill a un modo específico",
-			"modeAny": "Cualquier modo",
-			"create": "Crear",
-			"cancel": "Cancelar"
-		},
-		"source": {
-			"global": "Global (disponible en todos los proyectos)",
-			"project": "Proyecto (solo este espacio de trabajo)"
-		},
-		"validation": {
-			"nameRequired": "El nombre es obligatorio",
-			"nameTooLong": "El nombre debe tener como máximo 64 caracteres",
-			"nameInvalid": "El nombre debe tener entre 1 y 64 caracteres, solo letras minúsculas, números o guiones",
-			"descriptionRequired": "La descripción es obligatoria",
-			"descriptionTooLong": "La descripción debe tener como máximo 1024 caracteres"
-		},
-		"footer": "Crea tus propias skills con el modo Skill Writer, disponible en el <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	}
 }

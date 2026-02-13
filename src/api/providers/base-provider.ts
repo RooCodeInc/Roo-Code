@@ -1,5 +1,4 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 import type { ModelInfo } from "@roo-code/types"
 
@@ -14,7 +13,7 @@ import { isMcpTool } from "../../utils/mcp-name"
 export abstract class BaseProvider implements ApiHandler {
 	abstract createMessage(
 		systemPrompt: string,
-		messages: RooMessage[],
+		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream
 
@@ -119,13 +118,5 @@ export abstract class BaseProvider implements ApiHandler {
 		}
 
 		return countTokens(content, { useWorker: true })
-	}
-
-	/**
-	 * Default implementation returns false.
-	 * AI SDK providers should override this to return true.
-	 */
-	isAiSdkProvider(): boolean {
-		return false
 	}
 }

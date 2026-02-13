@@ -1,0 +1,349 @@
+<analysis_techniques>
+  <overview>
+    Heuristics for analyzing a codebase to extract reliable, user-facing documentation.
+    This file contains technique checklists only—no tool instructions or invocations.
+  </overview>
+
+  <ui_ux_analysis_techniques>
+    <technique name="component_discovery">
+      <description>Find and analyze UI components and their interactions</description>
+      <heuristics>
+        <rule>Start from feature or route directories and enumerate components related to the requested topic.</rule>
+        <rule>Differentiate container vs presentational components; note composition patterns.</rule>
+        <rule>Trace inputs/outputs: props, state, context, events, and side effects.</rule>
+        <rule>Record conditional rendering that affects user-visible states.</rule>
+      </heuristics>
+      <evidence_to_collect>
+        <item>Primary components and responsibilities.</item>
+        <item>Props/state/context that change behavior.</item>
+        <item>High-level dependency/composition map.</item>
+      </evidence_to_collect>
+    </technique>
+
+    <technique name="style_analysis">
+      <description>Analyze styling and visual elements</description>
+      <heuristics>
+        <rule>Identify design tokens and utility classes used to drive layout and state.</rule>
+        <rule>Capture responsive behavior and breakpoint rules that materially change UX.</rule>
+        <rule>Document visual affordances tied to state (loading, error, disabled).</rule>
+      </heuristics>
+      <evidence_to_collect>
+        <item>Key classes/selectors influencing layout/state.</item>
+        <item>Responsive behavior summary and breakpoints.</item>
+      </evidence_to_collect>
+    </technique>
+
+    <technique name="user_flow_mapping">
+      <description>Map user interactions and navigation flows</description>
+      <analysis_areas>
+        <area>Route definitions and navigation</area>
+        <area>Form submissions and validations</area>
+        <area>Button clicks and event handlers</area>
+        <area>State changes and UI updates</area>
+        <area>Loading and error states</area>
+      </analysis_areas>
+      <heuristics>
+        <rule>Outline entry points and expected outcomes for each primary flow.</rule>
+        <rule>Summarize validation rules and failure states the user can encounter.</rule>
+        <rule>Record redirects and deep-link behavior relevant to the feature.</rule>
+      </heuristics>
+      <evidence_to_collect>
+        <item>Flow diagrams or bullet sequences for main tasks.</item>
+        <item>Validation conditions and error messages.</item>
+        <item>Navigation transitions and guards.</item>
+      </evidence_to_collect>
+    </technique>
+
+    <technique name="user_feedback_analysis">
+      <description>Analyze how the system communicates with users</description>
+      <elements_to_find>
+        <element>Error messages and alerts</element>
+        <element>Success notifications</element>
+        <element>Loading indicators</element>
+        <element>Tooltips and help text</element>
+        <element>Confirmation dialogs</element>
+        <element>Progress indicators</element>
+      </elements_to_find>
+      <heuristics>
+        <rule>Map message triggers to the user actions that cause them.</rule>
+        <rule>Capture severity, persistence, and dismissal behavior.</rule>
+        <rule>Note localization or accessibility considerations in messages.</rule>
+      </heuristics>
+      <evidence_to_collect>
+        <item>Catalog of messages with purpose and conditions.</item>
+        <item>Loading/progress patterns and timeouts.</item>
+      </evidence_to_collect>
+    </technique>
+
+    <technique name="accessibility_analysis">
+      <description>Check for accessibility features and compliance</description>
+      <accessibility_checks>
+        <check>ARIA labels and roles</check>
+        <check>Keyboard navigation support</check>
+        <check>Screen reader compatibility</check>
+        <check>Focus management</check>
+        <check>Color contrast considerations</check>
+      </accessibility_checks>
+      <heuristics>
+        <rule>Confirm interactive elements have clear focus and labels.</rule>
+        <rule>Describe keyboard-only navigation paths for core flows.</rule>
+      </heuristics>
+      <evidence_to_collect>
+        <item>Accessibility gaps affecting task completion.</item>
+      </evidence_to_collect>
+    </technique>
+
+    <technique name="responsive_design_analysis">
+      <description>Analyze responsive design and mobile experience</description>
+      <analysis_points>
+        <point>Breakpoint definitions</point>
+        <point>Mobile-specific components</point>
+        <point>Touch event handlers</point>
+        <point>Viewport configurations</point>
+        <point>Media queries</point>
+      </analysis_points>
+      <heuristics>
+        <rule>Summarize layout changes across breakpoints that alter workflow.</rule>
+        <rule>Note touch targets and gestures required on mobile.</rule>
+      </heuristics>
+      <evidence_to_collect>
+        <item>Table of key differences per breakpoint.</item>
+      </evidence_to_collect>
+    </technique>
+  </ui_ux_analysis_techniques>
+
+  <code_analysis_techniques>
+    <technique name="entry_point_analysis">
+      <description>Understand feature entry points and control flow</description>
+      <steps>
+        <step>Identify main functions, controllers, or route handlers.</step>
+        <step>Trace execution and decision branches.</step>
+        <step>Document input validation and preconditions.</step>
+      </steps>
+      <evidence_to_collect>
+        <item>Entry points list and short purpose statements.</item>
+        <item>Decision matrix or flow sketch.</item>
+      </evidence_to_collect>
+    </technique>
+
+    <technique name="api_extraction">
+      <description>Extract API specifications from code</description>
+      <patterns>
+        <pattern type="rest">
+          <extraction>
+            <item>HTTP method and route path</item>
+            <item>Path/query parameters</item>
+            <item>Request/response schemas</item>
+            <item>Status codes and error bodies</item>
+          </extraction>
+        </pattern>
+        <pattern type="graphql">
+          <extraction>
+            <item>Schema and input types</item>
+            <item>Resolvers and return types</item>
+            <item>Field arguments and constraints</item>
+          </extraction>
+        </pattern>
+      </patterns>
+    </technique>
+
+    <technique name="dependency_mapping">
+      <description>Map dependencies and integration points</description>
+      <analysis_points>
+        <point>Imports and module boundaries</point>
+        <point>Package and runtime dependencies</point>
+        <point>External API/SDK usage</point>
+        <point>DB connections and migrations</point>
+        <point>Messaging/queue/event streams</point>
+        <point>Filesystem or network side effects</point>
+      </analysis_points>
+      <evidence_to_collect>
+        <item>Dependency graph summary and hot spots.</item>
+        <item>List of external integrations and auth methods.</item>
+      </evidence_to_collect>
+    </technique>
+
+    <technique name="data_model_extraction">
+      <description>Extract data models, schemas, and type definitions</description>
+      <sources>
+        <source type="typescript">
+          <patterns>- interfaces, types, classes, enums</patterns>
+        </source>
+        <source type="database">
+          <patterns>- Schema definitions, migration files, ORM models</patterns>
+        </source>
+        <source type="validation">
+          <patterns>- JSON Schema, Joi/Yup/Zod schemas, validation decorators</patterns>
+        </source>
+      </sources>
+      <evidence_to_collect>
+        <item>Canonical definitions and field constraints.</item>
+        <item>Entity relationships and ownership.</item>
+      </evidence_to_collect>
+    </technique>
+
+    <technique name="business_logic_extraction">
+      <description>Identify and document business rules</description>
+      <indicators>
+        <indicator>Complex conditionals</indicator>
+        <indicator>Calculation functions</indicator>
+        <indicator>Validation rules</indicator>
+        <indicator>State machines</indicator>
+        <indicator>Domain-specific constants and algorithms</indicator>
+      </indicators>
+      <documentation_focus>
+        <focus>Why the logic exists (business need)</focus>
+        <focus>When the logic applies (conditions)</focus>
+        <focus>What the logic does (transformation)</focus>
+        <focus>Edge cases and invariants</focus>
+        <focus>Impact of changes</focus>
+      </documentation_focus>
+    </technique>
+
+    <technique name="error_handling_analysis">
+      <description>Document error handling and recovery</description>
+      <analysis_areas>
+        <area>try/catch blocks and error boundaries</area>
+        <area>Custom error classes and codes</area>
+        <area>Logging, fallbacks, retries, circuit breakers</area>
+      </analysis_areas>
+      <evidence_to_collect>
+        <item>Error taxonomy and user-facing messages.</item>
+        <item>Recovery/rollback strategies and timeouts.</item>
+      </evidence_to_collect>
+    </technique>
+
+    <technique name="security_analysis">
+      <description>Identify security measures and vulnerabilities</description>
+      <security_checks>
+        <check category="authentication">JWT, sessions, OAuth, API keys</check>
+        <check category="authorization">RBAC, permission checks, ownership validation</check>
+        <check category="data_protection">Encryption, hashing, sensitive data handling</check>
+        <check category="input_validation">Sanitization and injection prevention</check>
+      </security_checks>
+      <evidence_to_collect>
+        <item>Threat surfaces and mitigations relevant to the feature.</item>
+      </evidence_to_collect>
+    </technique>
+
+    <technique name="performance_analysis">
+      <description>Identify performance factors and optimization opportunities</description>
+      <analysis_points>
+        <point>Expensive loops/algorithms</point>
+        <point>DB query patterns (e.g., N+1)</point>
+        <point>Caching strategies</point>
+        <point>Concurrency and async usage</point>
+        <point>Batching and resource pooling</point>
+        <point>Memory management and object lifetimes</point>
+      </analysis_points>
+      <metrics_to_document>
+        <metric>Time/space complexity</metric>
+        <metric>DB query counts</metric>
+        <metric>API response times</metric>
+        <metric>Memory usage</metric>
+        <metric>Concurrency handling</metric>
+      </metrics_to_document>
+    </technique>
+
+    <technique name="test_coverage_analysis">
+      <description>Assess test coverage at a useful granularity</description>
+      <test_types>
+        <type name="unit">
+          <analysis>Function-level coverage and edge cases</analysis>
+        </type>
+        <type name="integration">
+          <analysis>Workflow coverage and contract boundaries</analysis>
+        </type>
+        <type name="api">
+          <analysis>Endpoint success/failure paths and schemas</analysis>
+        </type>
+      </test_types>
+      <evidence_to_collect>
+        <item>List of critical behaviors missing tests.</item>
+      </evidence_to_collect>
+    </technique>
+
+    <technique name="configuration_extraction">
+      <description>Extract configuration options and their impacts</description>
+      <configuration_sources>
+        <source>.env files, config files, CLI args, feature flags</source>
+      </configuration_sources>
+      <documentation_requirements>
+        <requirement>Default values and valid ranges</requirement>
+        <requirement>Behavioral impact of each option</requirement>
+        <requirement>Dependencies between options</requirement>
+        <requirement>Security implications</requirement>
+      </documentation_requirements>
+    </technique>
+  </code_analysis_techniques>
+
+  <workflow_analysis>
+    <technique name="user_journey_mapping">
+      <description>Map user workflows through the feature</description>
+      <steps>
+        <step>Identify entry points (UI, API, CLI)</step>
+        <step>Trace user actions and decision points</step>
+        <step>Map data transformations</step>
+        <step>Identify outcomes and completion criteria</step>
+      </steps>
+      <deliverables>
+        <deliverable>Flow diagrams, procedures, decision trees, state diagrams</deliverable>
+      </deliverables>
+    </technique>
+
+    <technique name="integration_flow_analysis">
+      <description>Document integration with other systems</description>
+      <integration_types>
+        <type>Sync API calls, async messaging, events, batch processing, streaming</type>
+      </integration_types>
+      <documentation_focus>
+        <focus>Protocols, auth, error handling, data transforms, SLAs</focus>
+      </documentation_focus>
+    </technique>
+  </workflow_analysis>
+
+  <metadata_extraction>
+    <technique name="version_compatibility">
+      <description>Summarize version constraints and compatibility</description>
+      <sources>
+        <source>package manifests, READMEs, migration guides, breaking changes docs</source>
+      </sources>
+      <evidence_to_collect>
+        <item>Minimum/recommended versions and notable constraints.</item>
+      </evidence_to_collect>
+    </technique>
+
+    <technique name="deprecation_tracking">
+      <description>Track deprecations and migrations</description>
+      <indicators>
+        <indicator>Explicit deprecation notices and TODO markers</indicator>
+        <indicator>Legacy code paths and adapters</indicator>
+      </indicators>
+      <documentation_requirements>
+        <requirement>Deprecation date and removal timeline</requirement>
+        <requirement>Migration path and alternatives</requirement>
+      </documentation_requirements>
+    </technique>
+  </metadata_extraction>
+
+  <quality_indicators>
+    <indicator name="documentation_completeness">
+      <checks>
+        <check>Public APIs documented with inputs/outputs and errors</check>
+        <check>Examples for complex features</check>
+        <check>Error scenarios covered with recovery guidance</check>
+        <check>Config options explained with defaults and impacts</check>
+        <check>Security considerations addressed</check>
+      </checks>
+    </indicator>
+    <indicator name="code_quality_metrics">
+      <metrics>
+        <metric>Cyclomatic complexity</metric>
+        <metric>Code duplication</metric>
+        <metric>Test coverage and gaps</metric>
+        <metric>Documentation coverage for user-visible behaviors</metric>
+        <metric>Known technical debt affecting UX</metric>
+      </metrics>
+    </indicator>
+  </quality_indicators>
+</analysis_techniques>

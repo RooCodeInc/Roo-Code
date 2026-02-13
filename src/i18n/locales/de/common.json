@@ -111,6 +111,15 @@
 			"thinking_complete_safety": "(Denken abgeschlossen, aber die Ausgabe wurde aufgrund von Sicherheitseinstellungen blockiert.)",
 			"thinking_complete_recitation": "(Denken abgeschlossen, aber die Ausgabe wurde aufgrund der Rezitationsprüfung blockiert.)"
 		},
+		"cerebras": {
+			"authenticationFailed": "Cerebras API-Authentifizierung fehlgeschlagen. Bitte überprüfe, ob dein API-Schlüssel gültig und nicht abgelaufen ist.",
+			"accessForbidden": "Cerebras API-Zugriff verweigert. Dein API-Schlüssel hat möglicherweise keinen Zugriff auf das angeforderte Modell oder die Funktion.",
+			"rateLimitExceeded": "Cerebras API-Ratenlimit überschritten. Bitte warte, bevor du eine weitere Anfrage stellst.",
+			"serverError": "Cerebras API-Serverfehler ({{status}}). Bitte versuche es später erneut.",
+			"genericError": "Cerebras API-Fehler ({{status}}): {{message}}",
+			"noResponseBody": "Cerebras API-Fehler: Kein Antworttext vorhanden",
+			"completionError": "Cerebras-Vervollständigungsfehler: {{error}}"
+		},
 		"roo": {
 			"authenticationRequired": "Roo-Anbieter erfordert Cloud-Authentifizierung. Bitte melde dich bei Roo Code Cloud an."
 		},
@@ -196,7 +205,10 @@
 		"task_placeholder": "Gib deine Aufgabe hier ein"
 	},
 	"settings": {
-		"providers": {}
+		"providers": {
+			"groqApiKey": "Groq API-Schlüssel",
+			"getGroqApiKey": "Groq API-Schlüssel erhalten"
+		}
 	},
 	"customModes": {
 		"errors": {

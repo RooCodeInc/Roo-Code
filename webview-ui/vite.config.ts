@@ -110,7 +110,7 @@ export default defineConfig(({ mode }) => {
 			sourcemap: true,
 			// Ensure source maps are properly included in the build
 			minify: mode === "production" ? "esbuild" : false,
-			// Use a single combined CSS bundle so all webviews share styles
+			// Use a single combined CSS bundle so both webviews share styles
 			cssCodeSplit: false,
 			rollupOptions: {
 				// Externalize vscode module - it's imported by file-search.ts which is
@@ -119,6 +119,7 @@ export default defineConfig(({ mode }) => {
 				external: ["vscode"],
 				input: {
 					index: resolve(__dirname, "index.html"),
+					"browser-panel": resolve(__dirname, "browser-panel.html"),
 				},
 				output: {
 					entryFileNames: `assets/[name].js`,

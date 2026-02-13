@@ -44,7 +44,7 @@ describe("GeminiEmbedder", () => {
 		it("should create an instance with specified model", () => {
 			// Arrange
 			const apiKey = "test-gemini-api-key"
-			const modelId = "gemini-embedding-001"
+			const modelId = "text-embedding-004"
 
 			// Act
 			embedder = new GeminiEmbedder(apiKey, modelId)
@@ -53,24 +53,7 @@ describe("GeminiEmbedder", () => {
 			expect(MockedOpenAICompatibleEmbedder).toHaveBeenCalledWith(
 				"https://generativelanguage.googleapis.com/v1beta/openai/",
 				apiKey,
-				"gemini-embedding-001",
-				2048,
-			)
-		})
-
-		it("should migrate deprecated text-embedding-004 to gemini-embedding-001", () => {
-			// Arrange
-			const apiKey = "test-gemini-api-key"
-			const deprecatedModelId = "text-embedding-004"
-
-			// Act
-			embedder = new GeminiEmbedder(apiKey, deprecatedModelId)
-
-			// Assert - should be migrated to gemini-embedding-001
-			expect(MockedOpenAICompatibleEmbedder).toHaveBeenCalledWith(
-				"https://generativelanguage.googleapis.com/v1beta/openai/",
-				apiKey,
-				"gemini-embedding-001",
+				"text-embedding-004",
 				2048,
 			)
 		})
@@ -126,8 +109,8 @@ describe("GeminiEmbedder", () => {
 			})
 
 			it("should use provided model parameter when specified", async () => {
-				// Arrange - even with deprecated model in constructor, the runtime parameter takes precedence
-				embedder = new GeminiEmbedder("test-api-key", "gemini-embedding-001")
+				// Arrange
+				embedder = new GeminiEmbedder("test-api-key", "text-embedding-004")
 				const texts = ["test text 1", "test text 2"]
 				const mockResponse = {
 					embeddings: [
@@ -137,7 +120,7 @@ describe("GeminiEmbedder", () => {
 				}
 				mockCreateEmbeddings.mockResolvedValue(mockResponse)
 
-				// Act - specify a different model at runtime
+				// Act
 				const result = await embedder.createEmbeddings(texts, "gemini-embedding-001")
 
 				// Assert

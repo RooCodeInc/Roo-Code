@@ -4,5 +4,4 @@ export const GlobalFileNames = {
 	mcpSettings: "mcp_settings.json",
 	customModes: "custom_modes.yaml",
 	taskMetadata: "task_metadata.json",
-	delegationMetadata: "delegation_metadata.json",
 }

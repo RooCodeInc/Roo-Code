@@ -70,7 +70,7 @@
       <step number="6">
           <description>Formulate a solution and draft a comment.</description>
           <draft>
-"Hey @roomote-agent, I took a look at this issue and it seems like the problem is in the `handleLogin` function in `src/auth/login.ts`. There's an empty `try...catch` block that is likely catching the login error and preventing any message from being shown to the user.
+"Hey, I took a look at this issue and it seems like the problem is in the `handleLogin` function in `src/auth/login.ts`. There's an empty `try...catch` block that is likely catching the login error and preventing any message from being shown to the user.
 
 A good first step to fixing this would be to add some logging to the `catch` block to see what error is actually happening. Then, we should probably implement proper error feedback to the user on the login page. This should solve the issue of the silent failure."
           </draft>

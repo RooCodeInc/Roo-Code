@@ -111,6 +111,15 @@
 			"thinking_complete_safety": "(सोचना पूरा हुआ, लेकिन सुरक्षा सेटिंग्स के कारण आउटपुट अवरुद्ध कर दिया गया।)",
 			"thinking_complete_recitation": "(सोचना पूरा हुआ, लेकिन पाठ जाँच के कारण आउटपुट अवरुद्ध कर दिया गया।)"
 		},
+		"cerebras": {
+			"authenticationFailed": "Cerebras API प्रमाणीकरण विफल हुआ। कृपया जांचें कि आपकी API कुंजी वैध है और समाप्त नहीं हुई है।",
+			"accessForbidden": "Cerebras API पहुंच निषेध। आपकी API कुंजी का अनुरोधित मॉडल या सुविधा तक पहुंच नहीं हो सकती है।",
+			"rateLimitExceeded": "Cerebras API दर सीमा पार हो गई। कृपया दूसरा अनुरोध करने से पहले प्रतीक्षा करें।",
+			"serverError": "Cerebras API सर्वर त्रुटि ({{status}})। कृपया बाद में पुनः प्रयास करें।",
+			"genericError": "Cerebras API त्रुटि ({{status}}): {{message}}",
+			"noResponseBody": "Cerebras API त्रुटि: कोई प्रतिक्रिया मुख्य भाग नहीं",
+			"completionError": "Cerebras पूर्णता त्रुटि: {{error}}"
+		},
 		"roo": {
 			"authenticationRequired": "Roo प्रदाता को क्लाउड प्रमाणीकरण की आवश्यकता है। कृपया Roo Code Cloud में साइन इन करें।"
 		},
@@ -196,7 +205,10 @@
 		"task_placeholder": "अपना कार्य यहाँ लिखें"
 	},
 	"settings": {
-		"providers": {}
+		"providers": {
+			"groqApiKey": "ग्रोक एपीआई कुंजी",
+			"getGroqApiKey": "ग्रोक एपीआई कुंजी प्राप्त करें"
+		}
 	},
 	"customModes": {
 		"errors": {

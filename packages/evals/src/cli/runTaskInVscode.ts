@@ -15,12 +15,12 @@ import {
 } from "@roo-code/types"
 import { IpcClient } from "@roo-code/ipc"
 
-import { updateTask, createTaskMetrics, updateTaskMetrics, createToolError } from "../db/index"
-import { EVALS_REPO_PATH } from "../exercises/index"
+import { updateTask, createTaskMetrics, updateTaskMetrics, createToolError } from "../db/index.js"
+import { EVALS_REPO_PATH } from "../exercises/index.js"
 
-import { type RunTaskOptions } from "./types"
-import { isDockerContainer, copyConversationHistory, mergeToolUsage, waitForSubprocessWithTimeout } from "./utils"
-import { MessageLogDeduper } from "./messageLogDeduper"
+import { type RunTaskOptions } from "./types.js"
+import { isDockerContainer, copyConversationHistory, mergeToolUsage, waitForSubprocessWithTimeout } from "./utils.js"
+import { MessageLogDeduper } from "./messageLogDeduper.js"
 
 export const runTaskInVscode = async ({ run, task, publish, logger, jobToken }: RunTaskOptions) => {
 	const { language, exercise } = task
@@ -270,7 +270,7 @@ export const runTaskInVscode = async ({ run, task, publish, logger, jobToken }: 
 
 		if (rooTaskId && !isClientDisconnected) {
 			logger.info("cancelling task")
-			client.sendCommand({ commandName: TaskCommandName.CancelTask })
+			client.sendCommand({ commandName: TaskCommandName.CancelTask, data: rooTaskId })
 			await new Promise((resolve) => setTimeout(resolve, 5_000)) // Allow some time for the task to cancel.
 		}
 
@@ -289,7 +289,7 @@ export const runTaskInVscode = async ({ run, task, publish, logger, jobToken }: 
 
 	if (rooTaskId && !isClientDisconnected) {
 		logger.info("closing task")
-		client.sendCommand({ commandName: TaskCommandName.CloseTask })
+		client.sendCommand({ commandName: TaskCommandName.CloseTask, data: rooTaskId })
 		await new Promise((resolve) => setTimeout(resolve, 2_000)) // Allow some time for the window to close.
 	}
 
