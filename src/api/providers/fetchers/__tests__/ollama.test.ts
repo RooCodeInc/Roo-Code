@@ -167,10 +167,14 @@ describe("Ollama Fetcher", () => {
 			const result = await getOllamaModels(baseUrl)
 
 			expect(mockedAxios.get).toHaveBeenCalledTimes(1)
-			expect(mockedAxios.get).toHaveBeenCalledWith(`${baseUrl}/api/tags`, { headers: {} })
+			expect(mockedAxios.get).toHaveBeenCalledWith(`${baseUrl}/api/tags`, { headers: {}, timeout: 10_000 })
 
 			expect(mockedAxios.post).toHaveBeenCalledTimes(1)
-			expect(mockedAxios.post).toHaveBeenCalledWith(`${baseUrl}/api/show`, { model: modelName }, { headers: {} })
+			expect(mockedAxios.post).toHaveBeenCalledWith(
+				`${baseUrl}/api/show`,
+				{ model: modelName },
+				{ headers: {}, timeout: 10_000 },
+			)
 
 			expect(typeof result).toBe("object")
 			expect(result).not.toBeInstanceOf(Array)
@@ -235,36 +239,58 @@ describe("Ollama Fetcher", () => {
 			expect(result[modelName]).toBeUndefined()
 		})
 
-		it("should return an empty list if the initial /api/tags call fails", async () => {
+		it("should throw an error with descriptive message if the initial /api/tags call fails", async () => {
 			const baseUrl = "http://localhost:11434"
 			mockedAxios.get.mockRejectedValueOnce(new Error("Network error"))
-			const consoleInfoSpy = vi.spyOn(console, "error").mockImplementation(() => {}) // Spy and suppress output
 
-			const result = await getOllamaModels(baseUrl)
+			await expect(getOllamaModels(baseUrl)).rejects.toThrow(
+				`Failed to connect to Ollama at ${baseUrl}: Network error`,
+			)
 
 			expect(mockedAxios.get).toHaveBeenCalledTimes(1)
-			expect(mockedAxios.get).toHaveBeenCalledWith(`${baseUrl}/api/tags`, { headers: {} })
+			expect(mockedAxios.get).toHaveBeenCalledWith(`${baseUrl}/api/tags`, { headers: {}, timeout: 10_000 })
 			expect(mockedAxios.post).not.toHaveBeenCalled()
-			expect(result).toEqual({})
 		})
 
-		it("should log an info message and return an empty object on ECONNREFUSED", async () => {
+		it("should throw a user-friendly error on ECONNREFUSED", async () => {
 			const baseUrl = "http://localhost:11434"
-			const consoleInfoSpy = vi.spyOn(console, "warn").mockImplementation(() => {}) // Spy and suppress output
 
 			const econnrefusedError = new Error("Connection refused") as any
 			econnrefusedError.code = "ECONNREFUSED"
 			mockedAxios.get.mockRejectedValueOnce(econnrefusedError)
 
-			const result = await getOllamaModels(baseUrl)
+			await expect(getOllamaModels(baseUrl)).rejects.toThrow(
+				`Connection refused by Ollama at ${baseUrl}. Is the server running and accessible?`,
+			)
 
 			expect(mockedAxios.get).toHaveBeenCalledTimes(1)
-			expect(mockedAxios.get).toHaveBeenCalledWith(`${baseUrl}/api/tags`, { headers: {} })
 			expect(mockedAxios.post).not.toHaveBeenCalled()
-			expect(consoleInfoSpy).toHaveBeenCalledWith(`Failed connecting to Ollama at ${baseUrl}`)
-			expect(result).toEqual({})
+		})
 
-			consoleInfoSpy.mockRestore() // Restore original console.info
+		it("should throw a user-friendly error on timeout", async () => {
+			const baseUrl = "http://10.3.4.5:11434"
+
+			const timeoutError = new Error("timeout of 10000ms exceeded") as any
+			timeoutError.code = "ECONNABORTED"
+			mockedAxios.get.mockRejectedValueOnce(timeoutError)
+
+			await expect(getOllamaModels(baseUrl)).rejects.toThrow(/timed out after 10s.*firewall/)
+		})
+
+		it("should throw an error for invalid URL", async () => {
+			await expect(getOllamaModels("not-a-valid-url")).rejects.toThrow(/Invalid Ollama URL/)
+		})
+
+		it("should throw a user-friendly error on ENOTFOUND", async () => {
+			const baseUrl = "http://nonexistent-host:11434"
+
+			const enotfoundError = new Error("getaddrinfo ENOTFOUND nonexistent-host") as any
+			enotfoundError.code = "ENOTFOUND"
+			mockedAxios.get.mockRejectedValueOnce(enotfoundError)
+
+			await expect(getOllamaModels(baseUrl)).rejects.toThrow(
+				`Could not resolve hostname for Ollama at ${baseUrl}. Check the URL.`,
+			)
 		})
 
 		it("should handle models with null families field in API response", async () => {
@@ -317,10 +343,14 @@ describe("Ollama Fetcher", () => {
 			const result = await getOllamaModels(baseUrl)
 
 			expect(mockedAxios.get).toHaveBeenCalledTimes(1)
-			expect(mockedAxios.get).toHaveBeenCalledWith(`${baseUrl}/api/tags`, { headers: {} })
+			expect(mockedAxios.get).toHaveBeenCalledWith(`${baseUrl}/api/tags`, { headers: {}, timeout: 10_000 })
 
 			expect(mockedAxios.post).toHaveBeenCalledTimes(1)
-			expect(mockedAxios.post).toHaveBeenCalledWith(`${baseUrl}/api/show`, { model: modelName }, { headers: {} })
+			expect(mockedAxios.post).toHaveBeenCalledWith(
+				`${baseUrl}/api/show`,
+				{ model: modelName },
+				{ headers: {}, timeout: 10_000 },
+			)
 
 			expect(typeof result).toBe("object")
 			expect(result).not.toBeInstanceOf(Array)
@@ -384,13 +414,16 @@ describe("Ollama Fetcher", () => {
 			const expectedHeaders = { Authorization: `Bearer ${apiKey}` }
 
 			expect(mockedAxios.get).toHaveBeenCalledTimes(1)
-			expect(mockedAxios.get).toHaveBeenCalledWith(`${baseUrl}/api/tags`, { headers: expectedHeaders })
+			expect(mockedAxios.get).toHaveBeenCalledWith(`${baseUrl}/api/tags`, {
+				headers: expectedHeaders,
+				timeout: 10_000,
+			})
 
 			expect(mockedAxios.post).toHaveBeenCalledTimes(1)
 			expect(mockedAxios.post).toHaveBeenCalledWith(
 				`${baseUrl}/api/show`,
 				{ model: modelName },
-				{ headers: expectedHeaders },
+				{ headers: expectedHeaders, timeout: 10_000 },
 			)
 
 			expect(typeof result).toBe("object")

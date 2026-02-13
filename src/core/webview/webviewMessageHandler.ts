@@ -1008,12 +1008,17 @@ export const webviewMessageHandler = async (
 
 				const ollamaModels = await getModels(ollamaOptions)
 
-				if (Object.keys(ollamaModels).length > 0) {
-					provider.postMessageToWebview({ type: "ollamaModels", ollamaModels: ollamaModels })
-				}
+				// Always send a response so the webview doesn't just timeout silently
+				provider.postMessageToWebview({ type: "ollamaModels", ollamaModels })
 			} catch (error) {
-				// Silently fail - user hasn't configured Ollama yet
-				console.debug("Ollama models fetch failed:", error)
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				console.debug("Ollama models fetch failed:", errorMessage)
+				// Send empty models with error so the UI can display the connection failure
+				provider.postMessageToWebview({
+					type: "ollamaModels",
+					ollamaModels: {},
+					error: errorMessage,
+				})
 			}
 			break
 		}
