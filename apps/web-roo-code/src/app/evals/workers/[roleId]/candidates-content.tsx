@@ -645,6 +645,11 @@ export type CandidatesContentProps = {
 	lastUpdated: string
 	cloudUrls: Record<string, string>
 	workersRootPath?: string
+	/**
+	 * Base path for role detail routes, without the role id.
+	 * Examples: `/evals/workers`, `/evals/recommendations/roles`.
+	 */
+	roleBasePath?: string
 }
 
 // ── Main Content Component ──────────────────────────────────────────────────
@@ -661,19 +666,27 @@ export function CandidatesContent({
 	lastUpdated,
 	cloudUrls,
 	workersRootPath = "/evals/recommendations",
+	roleBasePath = workersRootPath,
 }: CandidatesContentProps) {
 	const searchParams = useSearchParams()
 	const theme = ROLE_THEMES[roleId] ?? DEFAULT_THEME
 	const IconComponent = ICON_MAP[role.icon] ?? Code
+	const outcome = searchParams.get("outcome")
+	const objectiveSlug = searchParams.get("objective")
+	const mode = searchParams.get("mode")
 	const setupQuery = (() => {
-		const outcome = searchParams.get("outcome")
-		if (!outcome) return ""
+		if (!outcome && !objectiveSlug) return ""
 		const params = new URLSearchParams()
-		params.set("outcome", outcome)
-		const mode = searchParams.get("mode")
+		if (outcome) params.set("outcome", outcome)
+		if (objectiveSlug) params.set("objective", objectiveSlug)
 		if (mode) params.set("mode", mode)
 		return `?${params.toString()}`
 	})()
+	let homeHref = `${workersRootPath}${setupQuery}`
+	if (objectiveSlug && workersRootPath === "/evals/recommendations") {
+		homeHref = `${workersRootPath}/${objectiveSlug}`
+		if (mode) homeHref += `?mode=${encodeURIComponent(mode)}`
+	}
 
 	return (
 		<>
@@ -706,9 +719,7 @@ export function CandidatesContent({
 								Evals
 							</Link>
 							<span className="text-border">/</span>
-							<Link
-								href={`${workersRootPath}${setupQuery}`}
-								className="transition-colors hover:text-foreground">
+							<Link href={homeHref} className="transition-colors hover:text-foreground">
 								Build with Roo Code Cloud
 							</Link>
 							<span className="text-border">/</span>
@@ -977,7 +988,7 @@ export function CandidatesContent({
 						{/* Compare link */}
 						<motion.div className="mt-6 text-center" variants={fadeUpVariants}>
 							<Link
-								href={`${workersRootPath}/${roleId}/compare${setupQuery}`}
+								href={`${roleBasePath}/${roleId}/compare${setupQuery}`}
 								className={`group inline-flex items-center gap-2 rounded-full border ${theme.methodologyBorder} bg-card/50 px-5 py-2.5 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-300 hover:text-foreground`}>
 								📊 Compare all candidates
 								<ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -998,7 +1009,7 @@ export function CandidatesContent({
 						variants={containerVariants}>
 						<motion.div variants={fadeUpVariants}>
 							<Link
-								href={`${workersRootPath}${setupQuery}`}
+								href={homeHref}
 								className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/50 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-200 hover:border-border hover:text-foreground">
 								<ArrowLeft className="size-4" />
 								Back to all roles
@@ -1006,7 +1017,7 @@ export function CandidatesContent({
 						</motion.div>
 						<motion.div className="flex flex-wrap gap-3" variants={fadeUpVariants}>
 							<Link
-								href={`${workersRootPath}/${roleId}/compare${setupQuery}`}
+								href={`${roleBasePath}/${roleId}/compare${setupQuery}`}
 								className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/50 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-200 hover:border-border hover:text-foreground">
 								📊 Compare candidates
 							</Link>

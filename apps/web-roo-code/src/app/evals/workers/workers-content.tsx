@@ -190,6 +190,11 @@ type WorkersContentProps = {
 	totalModels: number
 	lastUpdated: string | undefined
 	workersRootPath?: string
+	/**
+	 * Base path for role detail routes, without the role id.
+	 * Examples: `/evals/workers`, `/evals/recommendations/roles`.
+	 */
+	roleBasePath?: string
 }
 
 // Outcomes-first is canonical. Baseline/V1 is removed from the UI.
@@ -203,6 +208,7 @@ export function WorkersContent({
 	totalModels: _totalModels,
 	lastUpdated,
 	workersRootPath = "/evals/recommendations",
+	roleBasePath = workersRootPath,
 }: WorkersContentProps) {
 	const enableOutcomeLayer = ENABLE_OUTCOME_LAYER
 	const router = useRouter()
@@ -270,15 +276,6 @@ export function WorkersContent({
 		params.set("mode", selectedMode)
 		const query = params.toString()
 		return query ? `?${query}` : ""
-	}, [effectiveOutcomeId, selectedMode])
-
-	const profileViewQuery = useMemo(() => {
-		if (!effectiveOutcomeId) return ""
-		const params = new URLSearchParams()
-		params.set("outcome", effectiveOutcomeId)
-		params.set("mode", selectedMode)
-		params.set("view", "profile")
-		return `?${params.toString()}`
 	}, [effectiveOutcomeId, selectedMode])
 
 	const isProfileView = useMemo(() => {
@@ -593,7 +590,7 @@ export function WorkersContent({
 															return (
 																<Link
 																	key={capability.id}
-																	href={`${workersRootPath}/${roleId}${setupQuery}`}
+																	href={`${roleBasePath}/${roleId}${setupQuery}`}
 																	className="group flex items-start justify-between gap-3 rounded-xl border border-border/50 bg-background/10 px-4 py-3 transition-colors hover:bg-background/20">
 																	<div className="min-w-0">
 																		<p className="text-sm font-semibold text-foreground">
@@ -890,7 +887,7 @@ export function WorkersContent({
 																return (
 																	<Link
 																		key={capability.id}
-																		href={`${workersRootPath}/${roleId}${setupQuery}`}
+																		href={`${roleBasePath}/${roleId}${setupQuery}`}
 																		className="group relative px-4 py-3 pl-5 transition-colors hover:bg-background/25">
 																		<span
 																			aria-hidden
@@ -959,7 +956,7 @@ export function WorkersContent({
 																<ArrowRight className="size-4" />
 															</Link>
 															<Link
-																href={`${workersRootPath}${profileViewQuery}#outcomes`}
+																href={`/evals/recommendations/${selectedOutcome.slug}?mode=${selectedMode}`}
 																className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-border/60 bg-background/10 px-4 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:border-border hover:bg-background/15 hover:text-foreground">
 																Learn more / customize
 																<ArrowRight className="size-4" />

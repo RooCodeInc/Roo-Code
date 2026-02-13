@@ -5,9 +5,7 @@ import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
 import { getEngineerRole, getRoleRecommendation } from "@/lib/mock-recommendations"
 
-import { ComparisonChart } from "./comparison-chart"
-
-// ── SEO Metadata ────────────────────────────────────────────────────────────
+import { ComparisonChart } from "../../../../workers/[roleId]/compare/comparison-chart"
 
 type PageProps = { params: Promise<{ roleId: string }> }
 
@@ -25,7 +23,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 	const title = `Compare Models — ${role.name} | Roo Code Evals`
 	const description = `Interactive comparison of AI models for the ${role.name} setup. Compare composite score, success rate, cost efficiency, and speed.`
 	const ogDescription = `Compare Models — ${role.name}`
-	const path = `/evals/workers/${roleId}/compare`
+	const path = `/evals/recommendations/roles/${roleId}/compare`
 
 	return {
 		title,
@@ -67,9 +65,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 	}
 }
 
-// ── Page Component ──────────────────────────────────────────────────────────
-
-export default async function CompareModelsPage({ params }: PageProps) {
+export default async function RecommendationComparePage({ params }: PageProps) {
 	const { roleId } = await params
 	const recommendation = getRoleRecommendation(roleId)
 
@@ -82,7 +78,8 @@ export default async function CompareModelsPage({ params }: PageProps) {
 			recommendation={recommendation}
 			role={recommendation.role}
 			roleId={roleId}
-			workersRootPath="/evals/workers"
+			workersRootPath="/evals/recommendations"
+			roleBasePath="/evals/recommendations/roles"
 		/>
 	)
 }

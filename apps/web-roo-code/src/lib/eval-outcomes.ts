@@ -34,6 +34,8 @@ export type EvalOutcomeProfile = {
 
 export type EvalOutcome = {
 	id: EvalOutcomeId
+	/** URL slug used for objective deep dives: /evals/recommendations/<slug> */
+	slug: string
 	name: string
 	description: string
 	icon: LucideIcon
@@ -53,6 +55,7 @@ export type EvalOutcome = {
 export const EVAL_OUTCOMES: EvalOutcome[] = [
 	{
 		id: "review_guardrails",
+		slug: "idea-prototype",
 		name: "Idea → Prototype",
 		description: "Turn a vague idea into a working demo in your real codebase.",
 		icon: Sparkles,
@@ -116,6 +119,7 @@ Deliver:
 	},
 	{
 		id: "prototype_to_pr",
+		slug: "prototype-pr",
 		name: "Prototype → PR",
 		description: "Build a working prototype on the production codebase, then turn it into a reviewable diff.",
 		icon: Sparkles,
@@ -188,6 +192,7 @@ Deliver:
 	},
 	{
 		id: "issue_to_pr",
+		slug: "issue-pr",
 		name: "Issue → PR",
 		description: "Run end-to-end work in the background and come back to a reviewable result.",
 		icon: GitPullRequest,
@@ -249,6 +254,7 @@ Deliver:
 	},
 	{
 		id: "sentry_triage",
+		slug: "customer-escalation-resolved",
 		name: "Customer Escalation → Resolved",
 		description: "Triage a customer-blocking issue and ship the smallest safe fix.",
 		icon: Bug,
@@ -318,6 +324,7 @@ Deliver:
 	},
 	{
 		id: "repro_to_fix",
+		slug: "bug-report-fix",
 		name: "Bug Report → Fix",
 		description: "Reproduce, isolate, patch, and validate in one loop.",
 		icon: Workflow,
@@ -381,6 +388,7 @@ Deliver:
 	},
 	{
 		id: "paper_cuts",
+		slug: "paper-cuts-shipped",
 		name: "Paper Cuts → Shipped",
 		description: "Fix the small stuff without dragging engineers off big projects.",
 		icon: CheckCircle2,
@@ -446,4 +454,8 @@ Deliver:
 
 export function isEvalOutcomeId(value: string): value is EvalOutcomeId {
 	return EVAL_OUTCOMES.some((o) => o.id === value)
+}
+
+export function getEvalOutcomeBySlug(slug: string): EvalOutcome | undefined {
+	return EVAL_OUTCOMES.find((o) => o.slug === slug)
 }

@@ -435,6 +435,11 @@ interface ComparisonChartProps {
 	role: EngineerRole
 	roleId: string
 	workersRootPath?: string
+	/**
+	 * Base path for role detail routes, without the role id.
+	 * Examples: `/evals/workers`, `/evals/recommendations/roles`.
+	 */
+	roleBasePath?: string
 }
 
 export function ComparisonChart({
@@ -442,19 +447,27 @@ export function ComparisonChart({
 	role,
 	roleId,
 	workersRootPath = "/evals/recommendations",
+	roleBasePath = workersRootPath,
 }: ComparisonChartProps) {
 	const searchParams = useSearchParams()
 	const { allCandidates } = recommendation
 	const theme = ROLE_THEMES[roleId] ?? DEFAULT_THEME
+	const outcome = searchParams.get("outcome")
+	const objectiveSlug = searchParams.get("objective")
+	const mode = searchParams.get("mode")
 	const setupQuery = (() => {
-		const outcome = searchParams.get("outcome")
-		if (!outcome) return ""
+		if (!outcome && !objectiveSlug) return ""
 		const params = new URLSearchParams()
-		params.set("outcome", outcome)
-		const mode = searchParams.get("mode")
+		if (outcome) params.set("outcome", outcome)
+		if (objectiveSlug) params.set("objective", objectiveSlug)
 		if (mode) params.set("mode", mode)
 		return `?${params.toString()}`
 	})()
+	let homeHref = `${workersRootPath}${setupQuery}`
+	if (objectiveSlug && workersRootPath === "/evals/recommendations") {
+		homeHref = `${workersRootPath}/${objectiveSlug}`
+		if (mode) homeHref += `?mode=${encodeURIComponent(mode)}`
+	}
 
 	// ── State ───────────────────────────────────────────────────────────────
 	const [selectedLanguage, setSelectedLanguage] = useState<keyof LanguageScores | "all">("all")
@@ -578,14 +591,12 @@ export function ComparisonChart({
 								Evals
 							</Link>
 							<span className="text-border">/</span>
-							<Link
-								href={`${workersRootPath}${setupQuery}`}
-								className="transition-colors hover:text-foreground">
+							<Link href={homeHref} className="transition-colors hover:text-foreground">
 								Build with Roo Code Cloud
 							</Link>
 							<span className="text-border">/</span>
 							<Link
-								href={`${workersRootPath}/${roleId}${setupQuery}`}
+								href={`${roleBasePath}/${roleId}${setupQuery}`}
 								className="transition-colors hover:text-foreground">
 								{role.name}
 							</Link>
@@ -1014,7 +1025,7 @@ export function ComparisonChart({
 						<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 							<div>
 								<Link
-									href={`${workersRootPath}/${roleId}${setupQuery}`}
+									href={`${roleBasePath}/${roleId}${setupQuery}`}
 									className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/50 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-200 hover:border-border hover:text-foreground">
 									<ArrowLeft className="size-4" />
 									Back to {role.name} models
@@ -1022,7 +1033,7 @@ export function ComparisonChart({
 							</div>
 							<div className="flex flex-wrap gap-3">
 								<Link
-									href={`${workersRootPath}${setupQuery}`}
+									href={homeHref}
 									className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/50 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all duration-200 hover:border-border hover:text-foreground">
 									<ArrowLeft className="size-3.5" />
 									All roles

@@ -1,9 +1,10 @@
 import type { Metadata } from "next"
-import { Fraunces, IBM_Plex_Sans } from "next/font/google"
+import { redirect } from "next/navigation"
 
 import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
 import { getEngineerRoles, getAllRecommendations } from "@/lib/mock-recommendations"
+import { EVAL_OUTCOMES, isEvalOutcomeId } from "@/lib/eval-outcomes"
 
 import { WorkersContent } from "../workers/workers-content"
 
@@ -14,9 +15,6 @@ const DESCRIPTION =
 	"Outcome-first, eval-backed recommendations for shipping production code. Start from your objective and pick a tradeoff."
 const OG_DESCRIPTION = "Outcome-first recommendations for shipping production code"
 const PATH = "/evals/recommendations"
-
-const display = Fraunces({ subsets: ["latin"], variable: "--font-display" })
-const body = IBM_Plex_Sans({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-body" })
 
 export const metadata: Metadata = {
 	title: TITLE,
@@ -61,7 +59,25 @@ export const metadata: Metadata = {
 
 // ── Page Component ──────────────────────────────────────────────────────────
 
-export default function RecommendationsPage() {
+type PageProps = {
+	searchParams?: Promise<Record<string, string | string[] | undefined>>
+}
+
+export default async function RecommendationsPage({ searchParams }: PageProps) {
+	const sp = (await searchParams) ?? {}
+	const view = typeof sp.view === "string" ? sp.view : undefined
+	const outcome = typeof sp.outcome === "string" ? sp.outcome : undefined
+	const mode = typeof sp.mode === "string" ? sp.mode : undefined
+
+	// Legacy deep link: move profile investigations into the dedicated objective pages.
+	if (view === "profile" && outcome && isEvalOutcomeId(outcome)) {
+		const objective = EVAL_OUTCOMES.find((o) => o.id === outcome)
+		if (objective) {
+			const qs = mode ? `?mode=${encodeURIComponent(mode)}` : ""
+			redirect(`/evals/recommendations/${objective.slug}${qs}`)
+		}
+	}
+
 	const roles = getEngineerRoles()
 	const recommendations = getAllRecommendations()
 
@@ -79,16 +95,15 @@ export default function RecommendationsPage() {
 		.pop()
 
 	return (
-		<div className={`${body.variable} ${display.variable} [font-family:var(--font-body)]`}>
-			<WorkersContent
-				roles={roles}
-				recommendations={recommendations}
-				totalEvalRuns={totalEvalRuns}
-				totalExercises={totalExercises}
-				totalModels={totalModels}
-				lastUpdated={lastUpdated}
-				workersRootPath="/evals/recommendations"
-			/>
-		</div>
+		<WorkersContent
+			roles={roles}
+			recommendations={recommendations}
+			totalEvalRuns={totalEvalRuns}
+			totalExercises={totalExercises}
+			totalModels={totalModels}
+			lastUpdated={lastUpdated}
+			workersRootPath="/evals/recommendations"
+			roleBasePath="/evals/recommendations/roles"
+		/>
 	)
 }

@@ -5,9 +5,7 @@ import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
 import { getRoleRecommendation, getCloudSetupUrl } from "@/lib/mock-recommendations"
 
-import { CandidatesContent } from "./candidates-content"
-
-// ── SEO Metadata ────────────────────────────────────────────────────────────
+import { CandidatesContent } from "../../../workers/[roleId]/candidates-content"
 
 type PageProps = { params: Promise<{ roleId: string }> }
 
@@ -26,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 	const title = `${role.name} — Recommended Models | Roo Code Evals`
 	const description = `Eval-backed recommendations for ${role.name}. Compare models by success rate, cost, and speed across 5 languages.`
 	const ogDescription = `${role.name} — Recommended Models`
-	const path = `/evals/workers/${roleId}`
+	const path = `/evals/recommendations/roles/${roleId}`
 
 	return {
 		title,
@@ -68,9 +66,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 	}
 }
 
-// ── Page Component ──────────────────────────────────────────────────────────
-
-export default async function RoleCandidatesPage({ params }: PageProps) {
+export default async function RecommendationRolePage({ params }: PageProps) {
 	const { roleId } = await params
 	const recommendation = getRoleRecommendation(roleId)
 
@@ -81,8 +77,6 @@ export default async function RoleCandidatesPage({ params }: PageProps) {
 	const { role, best, budgetHire, speedHire, allCandidates, totalEvalRuns, totalExercises, lastUpdated } =
 		recommendation
 
-	// Pre-compute cloud URLs on the server so the client component receives
-	// only serializable data (no functions).
 	const cloudUrls: Record<string, string> = {}
 	for (const candidate of allCandidates) {
 		cloudUrls[candidate.modelId] = getCloudSetupUrl(candidate)
@@ -100,7 +94,8 @@ export default async function RoleCandidatesPage({ params }: PageProps) {
 			totalExercises={totalExercises}
 			lastUpdated={lastUpdated}
 			cloudUrls={cloudUrls}
-			workersRootPath="/evals/workers"
+			workersRootPath="/evals/recommendations"
+			roleBasePath="/evals/recommendations/roles"
 		/>
 	)
 }
