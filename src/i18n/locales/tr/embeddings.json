@@ -70,7 +70,7 @@
 		"failedDuringInitialScan": "İlk tarama sırasında başarısız: {{errorMessage}}",
 		"unknownError": "Bilinmeyen hata",
 		"indexingRequiresWorkspace": "İndeksleme açık bir workspace klasörü gerektirir",
-		"indexingStopped": "Indexing stopped by user.",
-		"indexingStoppedPartial": "Indexing stopped. Partial index data preserved."
+		"indexingStopped": "İndeksleme kullanıcı tarafından durduruldu.",
+		"indexingStoppedPartial": "İndeksleme durduruldu. Kısmi indeks verileri korundu."
 	}
 }

@@ -70,7 +70,7 @@
 		"failedDuringInitialScan": "Mislukt tijdens initiële scan: {{errorMessage}}",
 		"unknownError": "Onbekende fout",
 		"indexingRequiresWorkspace": "Indexering vereist een geopende workspace map",
-		"indexingStopped": "Indexing stopped by user.",
-		"indexingStoppedPartial": "Indexing stopped. Partial index data preserved."
+		"indexingStopped": "Indexering gestopt door gebruiker.",
+		"indexingStoppedPartial": "Indexering gestopt. Gedeeltelijke indexgegevens bewaard."
 	}
 }

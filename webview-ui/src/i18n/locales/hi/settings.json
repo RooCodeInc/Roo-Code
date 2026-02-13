@@ -212,10 +212,10 @@
 		"searchMaxResultsLabel": "अधिकतम खोज परिणाम",
 		"searchMaxResultsDescription": "कोडबेस इंडेक्स को क्वेरी करते समय वापस करने के लिए खोज परिणामों की अधिकतम संख्या। उच्च मान अधिक संदर्भ प्रदान करते हैं लेकिन कम प्रासंगिक परिणाम शामिल कर सकते हैं।",
 		"resetToDefault": "डिफ़ॉल्ट पर रीसेट करें",
-		"stopIndexingButton": "Stop Indexing",
-		"stoppingButton": "Stopping...",
-		"workspaceToggleLabel": "Enable indexing for this workspace",
-		"workspaceDisabledMessage": "Indexing is configured but not enabled for this workspace."
+		"stopIndexingButton": "इंडेक्सिंग रोकें",
+		"stoppingButton": "रोक रहा है...",
+		"workspaceToggleLabel": "इस वर्कस्पेस के लिए इंडेक्सिंग सक्षम करें",
+		"workspaceDisabledMessage": "इंडेक्सिंग कॉन्फ़िगर की गई है लेकिन इस वर्कस्पेस के लिए सक्षम नहीं है।"
 	},
 	"autoApprove": {
 		"toggleShortcut": "आप <SettingsLink>अपनी आईडीई वरीयताओं में</SettingsLink> इस सेटिंग के लिए एक वैश्विक शॉर्टकट कॉन्फ़िगर कर सकते हैं।",

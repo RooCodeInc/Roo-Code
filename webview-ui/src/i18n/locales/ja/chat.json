@@ -425,7 +425,7 @@
 		"indexed": "インデックス作成済み",
 		"error": "インデックスエラー",
 		"status": "インデックス状態",
-		"stopping": "Stopping indexing..."
+		"stopping": "インデックス作成を停止中..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "バージョン {{version}} - クリックしてリリースノートを表示"

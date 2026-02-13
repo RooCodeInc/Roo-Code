@@ -426,7 +426,7 @@
 		"indexed": "Проиндексировано",
 		"error": "Ошибка индекса",
 		"status": "Статус индекса",
-		"stopping": "Stopping indexing..."
+		"stopping": "Остановка индексации..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Версия {{version}} - Нажмите, чтобы просмотреть примечания к выпуску"

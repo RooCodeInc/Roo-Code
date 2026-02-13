@@ -426,7 +426,7 @@
 		"indexed": "İndekslendi",
 		"error": "İndeks hatası",
 		"status": "İndeks durumu",
-		"stopping": "Stopping indexing..."
+		"stopping": "İndeksleme durduruluyor..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Sürüm {{version}} - Sürüm notlarını görüntülemek için tıklayın"

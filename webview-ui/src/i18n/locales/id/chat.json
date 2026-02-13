@@ -431,7 +431,7 @@
 		"indexed": "Terindeks",
 		"error": "Error indeks",
 		"status": "Status indeks",
-		"stopping": "Stopping indexing..."
+		"stopping": "Menghentikan pengindeksan..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versi {{version}} - Klik untuk melihat catatan rilis"

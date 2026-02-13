@@ -426,7 +426,7 @@
 		"indexed": "已索引",
 		"error": "索引错误",
 		"status": "索引状态",
-		"stopping": "Stopping indexing..."
+		"stopping": "正在停止索引..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "版本 {{version}} - 点击查看发布说明"

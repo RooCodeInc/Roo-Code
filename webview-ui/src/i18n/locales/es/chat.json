@@ -425,7 +425,7 @@
 		"indexed": "Indexado",
 		"error": "Error de índice",
 		"status": "Estado del índice",
-		"stopping": "Stopping indexing..."
+		"stopping": "Deteniendo la indexación..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versión {{version}} - Haz clic para ver las notas de la versión"

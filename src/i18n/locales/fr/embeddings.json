@@ -70,7 +70,7 @@
 		"failedDuringInitialScan": "Échec lors du scan initial : {{errorMessage}}",
 		"unknownError": "Erreur inconnue",
 		"indexingRequiresWorkspace": "L'indexation nécessite l'ouverture d'un dossier workspace",
-		"indexingStopped": "Indexing stopped by user.",
-		"indexingStoppedPartial": "Indexing stopped. Partial index data preserved."
+		"indexingStopped": "Indexation arrêtée par l'utilisateur.",
+		"indexingStoppedPartial": "Indexation arrêtée. Données d'index partielles conservées."
 	}
 }

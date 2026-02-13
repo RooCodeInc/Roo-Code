@@ -146,26 +146,26 @@ export class CodeIndexManager {
 			return { requiresRestart }
 		}
 
-		// 4. CacheManager Initialization
+		// 4. Check workspace-level enablement (before creating expensive services)
+		if (!this.isWorkspaceEnabled) {
+			this._stateManager.setSystemState("Standby", "Indexing not enabled for this workspace")
+			return { requiresRestart }
+		}
+
+		// 5. CacheManager Initialization
 		if (!this._cacheManager) {
 			this._cacheManager = new CacheManager(this.context, this.workspacePath)
 			await this._cacheManager.initialize()
 		}
 
-		// 4. Determine if Core Services Need Recreation
+		// 6. Determine if Core Services Need Recreation
 		const needsServiceRecreation = !this._serviceFactory || requiresRestart
 
 		if (needsServiceRecreation) {
 			await this._recreateServices()
 		}
 
-		// 5. Check workspace-level enablement
-		if (!this.isWorkspaceEnabled) {
-			this._stateManager.setSystemState("Standby", "Indexing not enabled for this workspace")
-			return { requiresRestart }
-		}
-
-		// 6. Handle Indexing Start/Restart
+		// 7. Handle Indexing Start/Restart
 		const shouldStartOrRestartIndexing =
 			requiresRestart ||
 			(needsServiceRecreation && (!this._orchestrator || this._orchestrator.state !== "Indexing"))

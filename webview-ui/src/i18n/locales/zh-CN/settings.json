@@ -212,10 +212,10 @@
 		"searchMaxResultsLabel": "最大搜索结果数",
 		"searchMaxResultsDescription": "查询代码库索引时返回的最大搜索结果数。较高的值提供更多上下文，但可能包含相关性较低的结果。",
 		"resetToDefault": "恢复默认值",
-		"stopIndexingButton": "Stop Indexing",
-		"stoppingButton": "Stopping...",
-		"workspaceToggleLabel": "Enable indexing for this workspace",
-		"workspaceDisabledMessage": "Indexing is configured but not enabled for this workspace."
+		"stopIndexingButton": "停止索引",
+		"stoppingButton": "正在停止...",
+		"workspaceToggleLabel": "为此工作区启用索引",
+		"workspaceDisabledMessage": "索引已配置，但尚未为此工作区启用。"
 	},
 	"autoApprove": {
 		"toggleShortcut": "您可以<SettingsLink>在 IDE 首选项中</SettingsLink>为此设置配置全局快捷方式。",

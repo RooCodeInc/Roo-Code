@@ -425,7 +425,7 @@
 		"indexed": "Geïndexeerd",
 		"error": "Index fout",
 		"status": "Index status",
-		"stopping": "Stopping indexing..."
+		"stopping": "Indexering wordt gestopt..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versie {{version}} - Klik om release notes te bekijken"

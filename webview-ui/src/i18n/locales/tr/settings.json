@@ -212,10 +212,10 @@
 		"searchMaxResultsLabel": "Maksimum Arama Sonuçları",
 		"searchMaxResultsDescription": "Kod tabanı dizinini sorgularken döndürülecek maksimum arama sonucu sayısı. Daha yüksek değerler daha fazla bağlam sağlar ancak daha az alakalı sonuçlar içerebilir.",
 		"resetToDefault": "Varsayılana sıfırla",
-		"stopIndexingButton": "Stop Indexing",
-		"stoppingButton": "Stopping...",
-		"workspaceToggleLabel": "Enable indexing for this workspace",
-		"workspaceDisabledMessage": "Indexing is configured but not enabled for this workspace."
+		"stopIndexingButton": "İndekslemeyi durdur",
+		"stoppingButton": "Durduruluyor...",
+		"workspaceToggleLabel": "Bu çalışma alanı için indekslemeyi etkinleştir",
+		"workspaceDisabledMessage": "İndeksleme yapılandırıldı ancak bu çalışma alanı için etkinleştirilmedi."
 	},
 	"autoApprove": {
 		"toggleShortcut": "<SettingsLink>IDE tercihlerinizde</SettingsLink> bu ayar için genel bir kısayol yapılandırabilirsiniz.",

@@ -70,7 +70,7 @@
 		"failedDuringInitialScan": "Ha fallat durant l'escaneig inicial: {{errorMessage}}",
 		"unknownError": "Error desconegut",
 		"indexingRequiresWorkspace": "Indexació requereix una carpeta de workspace oberta",
-		"indexingStopped": "Indexing stopped by user.",
-		"indexingStoppedPartial": "Indexing stopped. Partial index data preserved."
+		"indexingStopped": "Indexació aturada per l'usuari.",
+		"indexingStoppedPartial": "Indexació aturada. Dades d'índex parcials conservades."
 	}
 }

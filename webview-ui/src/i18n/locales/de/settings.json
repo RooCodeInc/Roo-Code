@@ -212,10 +212,10 @@
 		"searchMaxResultsLabel": "Maximale Suchergebnisse",
 		"searchMaxResultsDescription": "Maximale Anzahl von Suchergebnissen, die bei der Abfrage des Codebase-Index zurückgegeben werden. Höhere Werte bieten mehr Kontext, können aber weniger relevante Ergebnisse enthalten.",
 		"resetToDefault": "Auf Standard zurücksetzen",
-		"stopIndexingButton": "Stop Indexing",
-		"stoppingButton": "Stopping...",
-		"workspaceToggleLabel": "Enable indexing for this workspace",
-		"workspaceDisabledMessage": "Indexing is configured but not enabled for this workspace."
+		"stopIndexingButton": "Indexierung stoppen",
+		"stoppingButton": "Wird gestoppt...",
+		"workspaceToggleLabel": "Indexierung für diesen Arbeitsbereich aktivieren",
+		"workspaceDisabledMessage": "Indexierung ist konfiguriert, aber nicht für diesen Arbeitsbereich aktiviert."
 	},
 	"autoApprove": {
 		"toggleShortcut": "Du kannst <SettingsLink>in deinen IDE-Einstellungen</SettingsLink> einen globalen Shortcut für diese Einstellung konfigurieren.",

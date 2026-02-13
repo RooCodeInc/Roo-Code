@@ -212,10 +212,10 @@
 		"searchMaxResultsLabel": "最大検索結果数",
 		"searchMaxResultsDescription": "コードベースインデックスをクエリする際に返される検索結果の最大数。値を高くするとより多くのコンテキストが提供されますが、関連性の低い結果が含まれる可能性があります。",
 		"resetToDefault": "デフォルトにリセット",
-		"stopIndexingButton": "Stop Indexing",
-		"stoppingButton": "Stopping...",
-		"workspaceToggleLabel": "Enable indexing for this workspace",
-		"workspaceDisabledMessage": "Indexing is configured but not enabled for this workspace."
+		"stopIndexingButton": "インデックス作成を停止",
+		"stoppingButton": "停止中...",
+		"workspaceToggleLabel": "このワークスペースのインデックス作成を有効にする",
+		"workspaceDisabledMessage": "インデックス作成は設定済みですが、このワークスペースでは有効になっていません。"
 	},
 	"autoApprove": {
 		"toggleShortcut": "<SettingsLink>IDEの環境設定</SettingsLink>で、この設定のグローバルショートカットを設定できます。",

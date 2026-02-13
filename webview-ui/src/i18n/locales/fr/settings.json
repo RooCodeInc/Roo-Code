@@ -212,10 +212,10 @@
 		"searchMaxResultsLabel": "Résultats de recherche maximum",
 		"searchMaxResultsDescription": "Nombre maximum de résultats de recherche à retourner lors de l'interrogation de l'index de code. Des valeurs plus élevées fournissent plus de contexte mais peuvent inclure des résultats moins pertinents.",
 		"resetToDefault": "Réinitialiser par défaut",
-		"stopIndexingButton": "Stop Indexing",
-		"stoppingButton": "Stopping...",
-		"workspaceToggleLabel": "Enable indexing for this workspace",
-		"workspaceDisabledMessage": "Indexing is configured but not enabled for this workspace."
+		"stopIndexingButton": "Arrêter l'indexation",
+		"stoppingButton": "Arrêt en cours...",
+		"workspaceToggleLabel": "Activer l'indexation pour cet espace de travail",
+		"workspaceDisabledMessage": "L'indexation est configurée mais non activée pour cet espace de travail."
 	},
 	"autoApprove": {
 		"toggleShortcut": "Vous pouvez configurer un raccourci global pour ce paramètre <SettingsLink>dans les préférences de votre IDE</SettingsLink>.",

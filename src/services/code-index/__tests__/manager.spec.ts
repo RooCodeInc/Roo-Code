@@ -546,6 +546,9 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 				}),
 			}
 
+			// Enable workspace indexing before re-initialization
+			await manager.setWorkspaceEnabled(true)
+
 			// Re-initialize
 			await manager.initialize(mockContextProxy as any)
 

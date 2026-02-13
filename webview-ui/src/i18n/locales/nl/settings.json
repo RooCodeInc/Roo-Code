@@ -212,10 +212,10 @@
 		"searchMaxResultsLabel": "Maximum Zoekresultaten",
 		"searchMaxResultsDescription": "Maximum aantal zoekresultaten dat wordt geretourneerd bij het doorzoeken van de codebase-index. Hogere waarden bieden meer context maar kunnen minder relevante resultaten bevatten.",
 		"resetToDefault": "Reset naar standaard",
-		"stopIndexingButton": "Stop Indexing",
-		"stoppingButton": "Stopping...",
-		"workspaceToggleLabel": "Enable indexing for this workspace",
-		"workspaceDisabledMessage": "Indexing is configured but not enabled for this workspace."
+		"stopIndexingButton": "Indexering stoppen",
+		"stoppingButton": "Stoppen...",
+		"workspaceToggleLabel": "Indexering inschakelen voor deze werkruimte",
+		"workspaceDisabledMessage": "Indexering is geconfigureerd maar niet ingeschakeld voor deze werkruimte."
 	},
 	"autoApprove": {
 		"toggleShortcut": "U kunt een globale sneltoets voor deze instelling configureren <SettingsLink>in de voorkeuren van uw IDE</SettingsLink>.",
