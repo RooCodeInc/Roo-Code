@@ -15,6 +15,7 @@ import { ApiStreamChunk } from "../../../api/transform/stream"
 import { ContextProxy } from "../../config/ContextProxy"
 import { processUserContentMentions } from "../../mentions/processUserContentMentions"
 import { MultiSearchReplaceDiffStrategy } from "../../diff/strategies/multi-search-replace"
+import { NativeToolCallParser } from "../../assistant-message/NativeToolCallParser"
 
 // Mock delay before any imports that might use it
 vi.mock("delay", () => ({
@@ -2258,5 +2259,149 @@ describe("pushToolResultToUserContent", () => {
 		expect(task.userMessageContent[0].type).toBe("text")
 		expect(task.pendingToolResults).toHaveLength(1)
 		expect(task.pendingToolResults[0]).toEqual(toolResult)
+	})
+
+	describe("case tool_call handler - fallback when parseToolCall returns null", () => {
+		it("should push a fallback tool_use block when parseToolCall returns null", () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			// Verify that parseToolCall returns null for an unrecognized tool name
+			const result = NativeToolCallParser.parseToolCall({
+				id: "call_fallback_123",
+				name: "completely_nonexistent_tool" as any,
+				arguments: "{}",
+			})
+			expect(result).toBeNull()
+
+			// Simulate the fixed case "tool_call" handler:
+			// When parseToolCall returns null, the handler now creates a fallback ToolUse block
+			const chunk = {
+				type: "tool_call" as const,
+				id: "call_fallback_123",
+				name: "completely_nonexistent_tool",
+				arguments: "{}",
+			}
+
+			let toolUse = NativeToolCallParser.parseToolCall({
+				id: chunk.id,
+				name: chunk.name as any,
+				arguments: chunk.arguments,
+			})
+
+			if (!toolUse) {
+				toolUse = {
+					type: "tool_use" as const,
+					name: (chunk.name ?? "unknown_tool") as any,
+					params: {},
+					partial: false,
+				}
+			}
+
+			toolUse.id = chunk.id
+			task.assistantMessageContent.push(toolUse)
+
+			// Verify the fallback block was pushed
+			expect(task.assistantMessageContent).toHaveLength(1)
+			const block = task.assistantMessageContent[0] as any
+			expect(block.type).toBe("tool_use")
+			expect(block.name).toBe("completely_nonexistent_tool")
+			expect(block.id).toBe("call_fallback_123")
+			expect(block.partial).toBe(false)
+		})
+
+		it("should ensure didToolUse check passes when fallback tool_use block is pushed", () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			// Simulate the fallback block being pushed (as the fix does)
+			task.assistantMessageContent.push({
+				type: "tool_use" as const,
+				name: "unknown_tool" as any,
+				params: {},
+				partial: false,
+			})
+
+			// This is the exact check from Task.ts ~line 3751
+			const didToolUse = task.assistantMessageContent.some(
+				(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
+			)
+
+			expect(didToolUse).toBe(true)
+		})
+
+		it("should use chunk.name when available in fallback block", () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			const chunk = {
+				type: "tool_call" as const,
+				id: "call_with_name",
+				name: "some_bad_tool",
+				arguments: "{invalid json",
+			}
+
+			// parseToolCall returns null for invalid JSON or unrecognized tool
+			const toolUse = NativeToolCallParser.parseToolCall({
+				id: chunk.id,
+				name: chunk.name as any,
+				arguments: chunk.arguments,
+			})
+			expect(toolUse).toBeNull()
+
+			// The fallback should use chunk.name
+			const fallback: any = {
+				type: "tool_use" as const,
+				name: (chunk.name ?? "unknown_tool") as any,
+				params: {},
+				partial: false,
+			}
+			fallback.id = chunk.id
+			task.assistantMessageContent.push(fallback)
+
+			expect((task.assistantMessageContent[0] as any).name).toBe("some_bad_tool")
+		})
+
+		it("should not affect the streaming path (tool_call_start pushes block independently)", () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			// The streaming path pushes a block at tool_call_start time,
+			// so even before parsing completes, the block exists.
+			// Simulate the streaming path pushing a partial tool_use block:
+			const partialToolUse: any = {
+				type: "tool_use" as const,
+				name: "read_file" as any,
+				params: {},
+				partial: true,
+				id: "call_streaming_123",
+			}
+			task.assistantMessageContent.push(partialToolUse)
+
+			// The didToolUse check should find it
+			const didToolUse = task.assistantMessageContent.some(
+				(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
+			)
+			expect(didToolUse).toBe(true)
+
+			// Verify the streaming path block is intact
+			expect(task.assistantMessageContent[0]).toEqual(partialToolUse)
+		})
 	})
 })

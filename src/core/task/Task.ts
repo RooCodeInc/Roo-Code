@@ -3082,7 +3082,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							case "tool_call": {
 								// Legacy: Handle complete tool calls (for backward compatibility)
 								// Convert native tool call to ToolUse format
-								const toolUse = NativeToolCallParser.parseToolCall({
+								let toolUse = NativeToolCallParser.parseToolCall({
 									id: chunk.id,
 									name: chunk.name as ToolName,
 									arguments: chunk.arguments,
@@ -3090,7 +3090,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 								if (!toolUse) {
 									console.error(`Failed to parse tool call for task ${this.taskId}:`, chunk)
-									break
+									// Still push a tool_use block so the didToolUse check passes
+									// and presentAssistantMessage's unknown-tool handler can report the error
+									toolUse = {
+										type: "tool_use" as const,
+										name: (chunk.name ?? "unknown_tool") as ToolName,
+										params: {},
+										partial: false,
+									}
 								}
 
 								// Store the tool call ID on the ToolUse object for later reference
