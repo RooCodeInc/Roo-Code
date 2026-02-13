@@ -1064,13 +1064,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		const handler = this.api as ApiHandler & {
-			getResponseId?: () => string | undefined
 			getEncryptedContent?: () => { encrypted_content: string; id?: string } | undefined
 		}
 
 		if (message.role === "assistant") {
-			const responseId = handler.getResponseId?.()
-
 			// Check if the message is already in native AI SDK format (from result.response.messages).
 			// These messages have providerOptions on content parts (reasoning signatures, etc.)
 			// and don't need manual block injection.
@@ -1089,7 +1086,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				return
 			}
 
-			// Fallback path: store the manually-constructed message with responseId and timestamp.
+			// Fallback path: store the manually-constructed message with timestamp.
 			// This handles non-AI-SDK providers and AI SDK responses without reasoning
 			// (text-only or text + tool calls where no content parts carry providerOptions).
 			const reasoningData = handler.getEncryptedContent?.()
