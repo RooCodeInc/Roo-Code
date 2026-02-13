@@ -1,6 +1,6 @@
 import { permanentRedirect } from "next/navigation"
 
-import { buildQueryString, type RedirectSearchParams } from "../../../_redirect-utils"
+import { buildQueryString, type RedirectSearchParams } from "../../_redirect-utils"
 
 type PageProps = {
 	params: Promise<{ roleId: string }>
