@@ -244,6 +244,10 @@ export class DirectoryScanner implements IDirectoryScanner {
 						await this.cacheManager.updateHash(filePath, currentFileHash)
 					}
 				} catch (error) {
+					// Re-throw AbortError — it's not a file processing error, just a user-initiated stop
+					if (error instanceof DOMException && error.name === "AbortError") {
+						throw error
+					}
 					console.error(`Error processing file ${filePath} in workspace ${scanWorkspace}:`, error)
 					TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
 						error: sanitizeErrorMessage(error instanceof Error ? error.message : String(error)),

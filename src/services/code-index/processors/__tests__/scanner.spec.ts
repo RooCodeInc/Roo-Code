@@ -435,11 +435,10 @@ describe("DirectoryScanner", () => {
 				return mockBlocks
 			})
 
-			const result = await scanner.scanDirectory("/test", undefined, undefined, undefined, controller.signal)
-
-			// The scan should have returned partial results without error
-			expect(result).toBeDefined()
-			expect(result.stats).toBeDefined()
+			// AbortError should propagate up (the orchestrator handles it in its catch block)
+			await expect(
+				scanner.scanDirectory("/test", undefined, undefined, undefined, controller.signal),
+			).rejects.toThrow("Indexing aborted")
 		})
 
 		it("should not process deleted files when signal is aborted", async () => {
