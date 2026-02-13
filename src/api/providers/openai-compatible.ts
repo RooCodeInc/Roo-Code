@@ -6,7 +6,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
-import { streamText, generateText, LanguageModel, ToolSet } from "ai"
+import { streamText, generateText, LanguageModel, ToolSet, ModelMessage } from "ai"
 
 import type { ModelInfo } from "@roo-code/types"
 
@@ -26,7 +26,6 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import type { RooMessage } from "../../core/task-persistence/rooMessage"
-import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 
 /**
  * Configuration options for creating an OpenAI-compatible provider.
@@ -155,8 +154,8 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 		const model = this.getModel()
 		const languageModel = this.getLanguageModel()
 
-		// Sanitize messages for the provider API (allowlist: role, content, providerOptions).
-		const aiSdkMessages = sanitizeMessagesForProvider(messages)
+		// Convert messages to AI SDK format
+		const aiSdkMessages = messages as ModelMessage[]
 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)

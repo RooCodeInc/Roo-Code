@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createSambaNova } from "sambanova-ai-provider"
-import { streamText, generateText, ToolSet } from "ai"
+import { streamText, generateText, ToolSet, ModelMessage } from "ai"
 
 import { sambaNovaModels, sambaNovaDefaultModelId, type ModelInfo } from "@roo-code/types"
 
@@ -22,7 +22,6 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import type { RooMessage } from "../../core/task-persistence/rooMessage"
-import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 
 const SAMBANOVA_DEFAULT_TEMPERATURE = 0.7
 
@@ -135,12 +134,10 @@ export class SambaNovaHandler extends BaseProvider implements SingleCompletionHa
 		const { temperature, info } = this.getModel()
 		const languageModel = this.getLanguageModel()
 
-		// Sanitize messages for the provider API (allowlist: role, content, providerOptions).
-		// For models that don't support multi-part content (like DeepSeek), flatten to string content.
-		const sanitizedMessages = sanitizeMessagesForProvider(messages)
-		const aiSdkMessages = info.supportsImages
-			? sanitizedMessages
-			: flattenAiSdkMessagesToStringContent(sanitizedMessages)
+		// For models that don't support multi-part content (like DeepSeek), flatten messages to string content
+		// SambaNova's DeepSeek models expect string content, not array content
+		const castMessages = messages as ModelMessage[]
+		const aiSdkMessages = info.supportsImages ? castMessages : flattenAiSdkMessagesToStringContent(castMessages)
 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)

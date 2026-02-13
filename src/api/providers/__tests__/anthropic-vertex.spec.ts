@@ -246,7 +246,7 @@ describe("AnthropicVertexHandler", () => {
 			)
 		})
 
-		it("should sanitize and pass messages to streamText as ModelMessage[]", async () => {
+		it("should pass messages directly to streamText as ModelMessage[]", async () => {
 			mockStreamText.mockReturnValue(createMockStreamResult([]))
 
 			const stream = handler.createMessage(systemPrompt, mockMessages)
@@ -254,13 +254,12 @@ describe("AnthropicVertexHandler", () => {
 				// consume
 			}
 
-			// Messages are sanitized (allowlist: role, content, providerOptions) before passing to streamText
-			const callArgs = mockStreamText.mock.calls[0]![0]
-			expect(callArgs.messages).toHaveLength(2)
-			expect(callArgs.messages[0].role).toBe("user")
-			expect(callArgs.messages[0].content).toBe("Hello")
-			expect(callArgs.messages[1].role).toBe("assistant")
-			expect(callArgs.messages[1].content).toBe("Hi there!")
+			// Messages are now already in ModelMessage format, passed directly to streamText
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					messages: mockMessages,
+				}),
+			)
 		})
 
 		it("should pass tools through AI SDK conversion pipeline", async () => {

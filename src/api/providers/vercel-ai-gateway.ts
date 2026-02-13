@@ -1,5 +1,5 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import { createGateway, streamText, generateText, ToolSet } from "ai"
+import { createGateway, streamText, generateText, ToolSet, ModelMessage } from "ai"
 
 import {
 	vercelAiGatewayDefaultModelId,
@@ -27,7 +27,6 @@ import { BaseProvider } from "./base-provider"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import type { RooMessage } from "../../core/task-persistence/rooMessage"
-import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 
 /**
  * Vercel AI Gateway provider using the built-in AI SDK gateway support.
@@ -136,7 +135,7 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 		const { id: modelId, info } = await this.fetchModel()
 		const languageModel = this.getLanguageModel(modelId)
 
-		const aiSdkMessages = sanitizeMessagesForProvider(messages)
+		const aiSdkMessages = messages as ModelMessage[]
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined

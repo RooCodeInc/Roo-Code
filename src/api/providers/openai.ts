@@ -32,7 +32,6 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import type { RooMessage } from "../../core/task-persistence/rooMessage"
-import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 
 // TODO: Rename this to OpenAICompatibleHandler. Also, I think the
 // `OpenAINativeHandler` can subclass from this, since it's obviously
@@ -108,7 +107,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 		const languageModel = this.getLanguageModel()
 
-		const aiSdkMessages = sanitizeMessagesForProvider(messages)
+		const aiSdkMessages = messages as ModelMessage[]
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined

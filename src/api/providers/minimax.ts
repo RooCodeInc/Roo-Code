@@ -1,6 +1,6 @@
 import type { Anthropic } from "@anthropic-ai/sdk"
 import { createAnthropic } from "@ai-sdk/anthropic"
-import { streamText, generateText, ToolSet } from "ai"
+import { streamText, generateText, ToolSet, ModelMessage } from "ai"
 
 import { type ModelInfo, minimaxDefaultModelId, minimaxModels } from "@roo-code/types"
 
@@ -23,7 +23,6 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import type { RooMessage } from "../../core/task-persistence/rooMessage"
-import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 
 export class MiniMaxHandler extends BaseProvider implements SingleCompletionHandler {
 	private client: ReturnType<typeof createAnthropic>
@@ -74,7 +73,7 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 		})
 
 		const mergedMessages = mergeEnvironmentDetailsForMiniMax(messages as any)
-		const aiSdkMessages = sanitizeMessagesForProvider(mergedMessages as RooMessage[])
+		const aiSdkMessages = mergedMessages as ModelMessage[]
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
 		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)

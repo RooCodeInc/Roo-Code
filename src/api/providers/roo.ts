@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
-import { streamText, generateText } from "ai"
+import { streamText, generateText, type ModelMessage } from "ai"
 
 import { rooDefaultModelId, getApiProtocol, type ImageGenerationApiMethod } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
@@ -27,7 +27,6 @@ import { getModels, getModelsFromCache } from "./fetchers/modelCache"
 import { generateImageWithProvider, generateImageWithImagesApi, ImageGenerationResult } from "./utils/image-generation"
 import { t } from "../../i18n"
 import type { RooMessage } from "../../core/task-persistence/rooMessage"
-import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 
 type RooProviderMetadata = {
 	cost?: number
@@ -157,8 +156,8 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 		// Create per-request provider with fresh session token
 		const provider = this.createRooProvider({ reasoning, taskId: metadata?.taskId })
 
-		// Sanitize messages for the provider API (allowlist: role, content, providerOptions).
-		const aiSdkMessages = sanitizeMessagesForProvider(messages)
+		// RooMessage[] is already AI SDK-compatible, cast directly
+		const aiSdkMessages = messages as ModelMessage[]
 		const tools = convertToolsForAiSdk(this.convertToolsForOpenAI(metadata?.tools))
 		applyToolCacheOptions(tools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
