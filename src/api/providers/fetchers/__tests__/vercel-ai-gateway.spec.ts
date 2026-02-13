@@ -237,6 +237,21 @@ describe("Vercel AI Gateway Fetchers", () => {
 			)
 		})
 
+		it("sets supportsReasoningEffort when model tags include reasoning", () => {
+			const reasoningModel = {
+				...baseModel,
+				id: "anthropic/claude-opus-4.6",
+				tags: ["tool-use", "reasoning", "vision"],
+			}
+
+			const result = parseVercelAiGatewayModel({
+				id: reasoningModel.id,
+				model: reasoningModel,
+			})
+
+			expect(result.supportsReasoningEffort).toBe(true)
+		})
+
 		it("handles missing cache pricing", () => {
 			const modelNoCachePricing = {
 				...baseModel,

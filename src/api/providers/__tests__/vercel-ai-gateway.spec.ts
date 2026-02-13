@@ -58,6 +58,18 @@ vi.mock("../fetchers/modelCache", () => ({
 				cacheReadsPrice: 0.25,
 				description: "GPT-4o",
 			},
+			"anthropic/claude-opus-4.6": {
+				maxTokens: 128000,
+				contextWindow: 1000000,
+				supportsImages: true,
+				supportsPromptCache: true,
+				supportsReasoningEffort: true,
+				inputPrice: 5,
+				outputPrice: 25,
+				cacheWritesPrice: 6.25,
+				cacheReadsPrice: 0.5,
+				description: "Claude Opus 4.6",
+			},
 		})
 	}),
 	getModelsFromCache: vi.fn().mockReturnValue(undefined),
@@ -228,6 +240,36 @@ describe("VercelAiGatewayHandler", () => {
 			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.objectContaining({
 					temperature: VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE,
+				}),
+			)
+		})
+
+		it("passes gateway reasoning effort when enabled", async () => {
+			mockStreamText.mockReturnValue(createMockStreamResult())
+
+			const handler = new VercelAiGatewayHandler({
+				...mockOptions,
+				vercelAiGatewayModelId: "anthropic/claude-opus-4.6",
+				enableReasoningEffort: true,
+				reasoningEffort: "high",
+			})
+
+			await handler.createMessage("test", []).next()
+
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					reasoning: {
+						enabled: true,
+						effort: "high",
+					},
+					providerOptions: {
+						anthropic: {
+							thinking: {
+								type: "enabled",
+								budgetTokens: 102400,
+							},
+						},
+					},
 				}),
 			)
 		})

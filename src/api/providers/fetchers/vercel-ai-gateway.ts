@@ -33,6 +33,7 @@ const vercelAiGatewayModelSchema = z.object({
 	context_window: z.number(),
 	max_tokens: z.number(),
 	type: z.string(),
+	tags: z.array(z.string()).optional(),
 	pricing: vercelAiGatewayPricingSchema,
 })
 
@@ -91,6 +92,14 @@ export async function getVercelAiGatewayModels(options?: ApiHandlerOptions): Pro
  */
 
 export const parseVercelAiGatewayModel = ({ id, model }: { id: string; model: VercelAiGatewayModel }): ModelInfo => {
+	const tags = model.tags ?? []
+	const supportsReasoningEffort =
+		tags.includes("reasoning") ||
+		id.startsWith("openai/o") ||
+		id.startsWith("openai/gpt-5") ||
+		id.startsWith("openai/gpt-oss") ||
+		id.startsWith("xai/grok-3-mini")
+
 	const cacheWritesPrice = model.pricing?.input_cache_write
 		? parseApiPrice(model.pricing?.input_cache_write)
 		: undefined
@@ -105,6 +114,7 @@ export const parseVercelAiGatewayModel = ({ id, model }: { id: string; model: Ve
 		maxTokens: model.max_tokens,
 		contextWindow: model.context_window,
 		supportsImages,
+		...(supportsReasoningEffort ? { supportsReasoningEffort: true } : {}),
 		supportsPromptCache,
 		inputPrice: parseApiPrice(model.pricing?.input),
 		outputPrice: parseApiPrice(model.pricing?.output),

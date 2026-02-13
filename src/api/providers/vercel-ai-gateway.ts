@@ -21,6 +21,8 @@ import {
 } from "../transform/ai-sdk"
 import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
+import { getModelParams } from "../transform/model-params"
+import type { OpenAiReasoningParams } from "../transform/reasoning"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
@@ -28,6 +30,15 @@ import { getModels, getModelsFromCache } from "./fetchers/modelCache"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import type { RooMessage } from "../../core/task-persistence/rooMessage"
 import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
+
+type ModelSelection = {
+	id: string
+	info: ModelInfo
+	maxTokens?: number
+	temperature?: number
+	reasoning?: OpenAiReasoningParams
+	reasoningBudget?: number
+}
 
 /**
  * Vercel AI Gateway provider using the built-in AI SDK gateway support.
@@ -50,20 +61,41 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 		})
 	}
 
-	override getModel(): { id: string; info: ModelInfo } {
+	override getModel(): ModelSelection {
 		const id = this.options.vercelAiGatewayModelId ?? vercelAiGatewayDefaultModelId
+		const resolveModel = (modelInfo: ModelInfo) => ({
+			id,
+			info: modelInfo,
+			...getModelParams({
+				format: "openai",
+				modelId: id,
+				model: modelInfo,
+				settings: this.options,
+				defaultTemperature: VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE,
+			}),
+		})
 
 		if (this.models[id]) {
-			return { id, info: this.models[id] }
+			return resolveModel(this.models[id])
 		}
 
 		const cachedModels = getModelsFromCache(this.name)
 		if (cachedModels?.[id]) {
 			this.models = cachedModels
-			return { id, info: cachedModels[id] }
+			return resolveModel(cachedModels[id])
 		}
 
-		return { id: vercelAiGatewayDefaultModelId, info: vercelAiGatewayDefaultModelInfo }
+		return {
+			id: vercelAiGatewayDefaultModelId,
+			info: vercelAiGatewayDefaultModelInfo,
+			...getModelParams({
+				format: "openai",
+				modelId: vercelAiGatewayDefaultModelId,
+				model: vercelAiGatewayDefaultModelInfo,
+				settings: this.options,
+				defaultTemperature: VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE,
+			}),
+		}
 	}
 
 	public async fetchModel() {
@@ -115,7 +147,7 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const { id: modelId, info } = await this.fetchModel()
+		const { id: modelId, info, temperature, reasoning, reasoningBudget } = await this.fetchModel()
 		const languageModel = this.getLanguageModel(modelId)
 
 		const aiSdkMessages = sanitizeMessagesForProvider(messages)
@@ -124,18 +156,33 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
 		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
-		const temperature = this.supportsTemperature(modelId)
-			? (this.options.modelTemperature ?? VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE)
+		const resolvedTemperature = this.supportsTemperature(modelId)
+			? (this.options.modelTemperature ?? temperature ?? VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE)
 			: undefined
+
+		const reasoningConfig = reasoning ? { enabled: true, effort: reasoning.reasoning_effort } : undefined
+		const anthropicProviderOptions =
+			modelId.startsWith("anthropic/") && reasoningConfig
+				? {
+						anthropic: {
+							thinking: {
+								type: "enabled" as const,
+								budgetTokens: reasoningBudget ?? Math.floor((info.maxTokens ?? 0) * 0.8),
+							},
+						},
+					}
+				: undefined
 
 		const result = streamText({
 			model: languageModel,
 			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
-			temperature,
+			temperature: resolvedTemperature,
 			maxOutputTokens: info.maxTokens ?? undefined,
 			tools: aiSdkTools,
 			toolChoice: mapToolChoice(metadata?.tool_choice),
+			...(reasoningConfig ? { reasoning: reasoningConfig } : {}),
+			...(anthropicProviderOptions ? { providerOptions: anthropicProviderOptions } : {}),
 		})
 
 		try {
@@ -170,19 +217,34 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
-		const { id: modelId, info } = await this.fetchModel()
+		const { id: modelId, info, temperature, reasoning, reasoningBudget } = await this.fetchModel()
 		const languageModel = this.getLanguageModel(modelId)
 
-		const temperature = this.supportsTemperature(modelId)
-			? (this.options.modelTemperature ?? VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE)
+		const resolvedTemperature = this.supportsTemperature(modelId)
+			? (this.options.modelTemperature ?? temperature ?? VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE)
 			: undefined
+
+		const reasoningConfig = reasoning ? { enabled: true, effort: reasoning.reasoning_effort } : undefined
+		const anthropicProviderOptions =
+			modelId.startsWith("anthropic/") && reasoningConfig
+				? {
+						anthropic: {
+							thinking: {
+								type: "enabled" as const,
+								budgetTokens: reasoningBudget ?? Math.floor((info.maxTokens ?? 0) * 0.8),
+							},
+						},
+					}
+				: undefined
 
 		try {
 			const { text } = await generateText({
 				model: languageModel,
 				prompt,
 				maxOutputTokens: info.maxTokens ?? undefined,
-				temperature,
+				temperature: resolvedTemperature,
+				...(reasoningConfig ? { reasoning: reasoningConfig } : {}),
+				...(anthropicProviderOptions ? { providerOptions: anthropicProviderOptions } : {}),
 			})
 
 			return text
