@@ -595,7 +595,7 @@ describe("SambaNovaHandler", () => {
 				for await (const _ of stream) {
 					// consume stream
 				}
-			}).rejects.toThrow("SambaNova: API Error")
+			}).rejects.toThrow("API Error")
 		})
 
 		it("should preserve status codes in error handling", async () => {
@@ -621,7 +621,7 @@ describe("SambaNovaHandler", () => {
 				}
 				expect.fail("Should have thrown an error")
 			} catch (error: any) {
-				expect(error.message).toContain("SambaNova")
+				expect(error.message).toContain("Rate limit exceeded")
 				expect(error.status).toBe(429)
 			}
 		})

@@ -105,10 +105,3 @@ export function handleProviderError(
 	return wrapped
 }
 
-/**
- * Specialized handler for OpenAI-compatible providers
- * Re-exports with OpenAI-specific defaults for backward compatibility
- */
-export function handleOpenAIError(error: unknown, providerName: string): Error {
-	return handleProviderError(error, providerName, { messagePrefix: "completion" })
-}

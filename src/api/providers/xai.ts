@@ -6,7 +6,7 @@ import { type XAIModelId, xaiDefaultModelId, xaiModels, type ModelInfo } from "@
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import { convertToolsForAiSdk, consumeAiSdkStream, mapToolChoice, handleAiSdkError } from "../transform/ai-sdk"
+import { convertToolsForAiSdk, consumeAiSdkStream, mapToolChoice } from "../transform/ai-sdk"
 import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -165,7 +165,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 				yield processUsage(usage, providerMetadata as Parameters<typeof processUsage>[1])
 			})
 		} catch (error) {
-			throw handleAiSdkError(error, "xAI")
+			throw error
 		}
 	}
 
@@ -187,7 +187,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 
 			return text
 		} catch (error) {
-			throw handleAiSdkError(error, "xAI")
+			throw error
 		}
 	}
 

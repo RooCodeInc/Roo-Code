@@ -197,35 +197,44 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				providerOptions,
 			})
 
+			let lastStreamError: string | undefined
 			for await (const part of result.fullStream) {
-				yield* processAiSdkStreamPart(part)
+				for (const chunk of processAiSdkStreamPart(part)) {
+					if (chunk.type === "error") {
+						lastStreamError = chunk.message
+					}
+					yield chunk
+				}
 			}
 
-			const providerMetadata =
-				(await result.providerMetadata) ?? (await (result as any).experimental_providerMetadata)
+			try {
+				const providerMetadata =
+					(await result.providerMetadata) ?? (await (result as any).experimental_providerMetadata)
 
-			const usage = await result.usage
-			const totalUsage = await result.totalUsage
-			const usageChunk = this.normalizeUsage(
-				{
-					inputTokens: totalUsage.inputTokens ?? usage.inputTokens ?? 0,
-					outputTokens: totalUsage.outputTokens ?? usage.outputTokens ?? 0,
-				},
-				providerMetadata,
-				model.info,
-			)
-			yield usageChunk
+				const usage = await result.usage
+				const totalUsage = await result.totalUsage
+				const usageChunk = this.normalizeUsage(
+					{
+						inputTokens: totalUsage.inputTokens ?? usage.inputTokens ?? 0,
+						outputTokens: totalUsage.outputTokens ?? usage.outputTokens ?? 0,
+					},
+					providerMetadata,
+					model.info,
+				)
+				yield usageChunk
+			} catch (usageError) {
+				if (lastStreamError) {
+					throw new Error(lastStreamError)
+				}
+				throw usageError
+			}
 
 			yield* yieldResponseMessage(result)
 		} catch (error: any) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
 			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage")
 			TelemetryService.instance.captureException(apiError)
-			yield {
-				type: "error",
-				error: "OpenRouterError",
-				message: `${this.providerName} API Error: ${errorMessage}`,
-			}
+			throw error
 		}
 	}
 
@@ -322,7 +331,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			const errorMessage = error instanceof Error ? error.message : String(error)
 			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "completePrompt")
 			TelemetryService.instance.captureException(apiError)
-			throw new Error(`${this.providerName} completion error: ${errorMessage}`)
+			throw error
 		}
 	}
 

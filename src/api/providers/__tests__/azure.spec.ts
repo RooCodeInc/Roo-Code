@@ -335,7 +335,7 @@ describe("AzureHandler", () => {
 				for await (const chunk of stream) {
 					chunks.push(chunk)
 				}
-			}).rejects.toThrow("Azure AI Foundry")
+			}).rejects.toThrow("API Error")
 		})
 	})
 

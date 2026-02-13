@@ -61,7 +61,9 @@ import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
 // api
 import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "../../api"
 import type { AssistantModelMessage } from "ai"
+import { APICallError, RetryError } from "ai"
 import { ApiStream, GroundingSource } from "../../api/transform/stream"
+import { extractAiSdkErrorMessage } from "../../api/transform/ai-sdk"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { UNIVERSAL_CACHE_OPTIONS } from "../../api/transform/cache-breakpoints"
 
@@ -3354,7 +3356,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// Determine cancellation reason
 						const cancelReason: ClineApiReqCancelReason = this.abort ? "user_cancelled" : "streaming_failed"
 
-						const rawErrorMessage = error.message ?? JSON.stringify(serializeError(error), null, 2)
+						const rawErrorMessage = extractAiSdkErrorMessage(error)
 
 						// Check auto-retry state BEFORE abortStream so we can suppress the error
 						// message on the api_req_started row when backoffAndAnnounce will display it instead.
@@ -4536,7 +4538,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			} else {
 				const { response } = await this.ask(
 					"api_req_failed",
-					error.message ?? JSON.stringify(serializeError(error), null, 2),
+					extractAiSdkErrorMessage(error),
 				)
 
 				if (response !== "yesButtonClicked") {
@@ -4583,35 +4585,66 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				rateLimitDelay = Math.ceil(Math.min(rateLimit, Math.max(0, rateLimit * 1000 - elapsed) / 1000))
 			}
 
-			// Prefer RetryInfo on 429 if present
-			if (error?.status === 429) {
-				const retryInfo = error?.errorDetails?.find(
-					(d: any) => d["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
-				)
-				const match = retryInfo?.retryDelay?.match?.(/^(\d+)s$/)
-				if (match) {
-					exponentialDelay = Number(match[1]) + 1
+			// Extract status code from AI SDK errors or legacy error shapes
+				const statusCode = APICallError.isInstance(error)
+					? error.statusCode
+					: RetryError.isInstance(error) && APICallError.isInstance(error.lastError)
+						? error.lastError.statusCode
+						: (error as any)?.status
+	
+				// Prefer RetryInfo on 429 if present
+				if (statusCode === 429) {
+					// Try direct errorDetails (legacy Vertex), then try parsing from responseBody
+					let retryDelaySec: number | undefined
+					const errorDetails = (error as any)?.errorDetails
+					if (errorDetails) {
+						const retryInfo = errorDetails.find(
+							(d: any) => d["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
+						)
+						const match = retryInfo?.retryDelay?.match?.(/^(\d+)s$/)
+						if (match) {
+							retryDelaySec = Number(match[1]) + 1
+						}
+					}
+					// Also try extracting from APICallError responseBody for Vertex errors
+					if (!retryDelaySec) {
+						const responseBody = APICallError.isInstance(error)
+							? error.responseBody
+							: RetryError.isInstance(error) && APICallError.isInstance(error.lastError)
+								? error.lastError.responseBody
+								: undefined
+						if (responseBody) {
+							try {
+								const parsed = JSON.parse(responseBody)
+								const retryInfo = parsed?.error?.details?.find(
+									(d: any) => d["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
+								)
+								const match = retryInfo?.retryDelay?.match?.(/^(\d+)s$/)
+								if (match) {
+									retryDelaySec = Number(match[1]) + 1
+								}
+							} catch {
+								// responseBody not parseable, skip
+							}
+						}
+					}
+					if (retryDelaySec) {
+						exponentialDelay = retryDelaySec
+					}
 				}
-			}
-
-			const finalDelay = Math.max(exponentialDelay, rateLimitDelay)
-			if (finalDelay <= 0) {
-				return
-			}
-
-			// Build header text; fall back to error message if none provided
-			let headerText
-			if (error.status) {
-				// Include both status code (for ChatRow parsing) and detailed message (for error details)
-				// Format: "<status>\n<message>" allows ChatRow to extract status via parseInt(text.substring(0,3))
-				// while preserving the full error message in errorDetails for debugging
-				const errorMessage = error?.message || "Unknown error"
-				headerText = `${error.status}\n${errorMessage}`
-			} else if (error?.message) {
-				headerText = error.message
-			} else {
-				headerText = "Unknown error"
-			}
+	
+				const finalDelay = Math.max(exponentialDelay, rateLimitDelay)
+				if (finalDelay <= 0) {
+					return
+				}
+	
+				// Build header text; fall back to error message if none provided
+				let headerText: string
+				if (statusCode) {
+					headerText = `${statusCode}\n${extractAiSdkErrorMessage(error)}`
+				} else {
+					headerText = extractAiSdkErrorMessage(error)
+				}
 
 			headerText = headerText ? `${headerText}\n` : ""
 

@@ -19,7 +19,6 @@ import {
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
-	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { ApiStream } from "../transform/stream"
@@ -302,7 +301,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 					accessToken = refreshed
 					continue
 				}
-				throw handleAiSdkError(error, this.providerName)
+				throw error
 			}
 		}
 	}
@@ -346,7 +345,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 
 			return text
 		} catch (error) {
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 

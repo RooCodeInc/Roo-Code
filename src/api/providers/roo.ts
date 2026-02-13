@@ -13,7 +13,6 @@ import { getModelParams } from "../transform/model-params"
 import {
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
-	handleAiSdkError,
 	mapToolChoice,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
@@ -267,7 +266,7 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 
 			console.error(`[RooHandler] Error during message streaming: ${JSON.stringify(errorContext)}`)
 
-			throw handleAiSdkError(error, "Roo Code Cloud")
+			throw error
 		}
 	}
 
@@ -283,7 +282,7 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 			})
 			return result.text
 		} catch (error) {
-			throw handleAiSdkError(error, "Roo Code Cloud")
+			throw error
 		}
 	}
 

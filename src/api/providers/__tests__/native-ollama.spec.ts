@@ -265,6 +265,33 @@ describe("NativeOllamaHandler", () => {
 			}).rejects.toThrow("Ollama service is not running")
 		})
 
+		it("propagates stream error when usage resolution fails after stream error", async () => {
+			async function* mockFullStream() {
+				yield { type: "error", error: new Error("upstream provider returned 500") }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.reject(new Error("No output generated")),
+			})
+
+			const stream = handler.createMessage("System", [{ role: "user" as const, content: "Test" }])
+			const results: any[] = []
+
+			await expect(async () => {
+				for await (const chunk of stream) {
+					results.push(chunk)
+				}
+			}).rejects.toThrow("upstream provider returned 500")
+
+			// The stream error should have been yielded before the throw
+			expect(results).toContainEqual({
+				type: "error",
+				error: "StreamError",
+				message: "upstream provider returned 500",
+			})
+		})
+
 		it("should handle model not found errors", async () => {
 			const error = new Error("Not found") as any
 			error.status = 404

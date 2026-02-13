@@ -12,7 +12,7 @@ import type { ModelInfo } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import { convertToolsForAiSdk, consumeAiSdkStream, mapToolChoice, handleAiSdkError } from "../transform/ai-sdk"
+import { convertToolsForAiSdk, consumeAiSdkStream, mapToolChoice } from "../transform/ai-sdk"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 
@@ -177,8 +177,7 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 				yield processUsage(usage)
 			})
 		} catch (error) {
-			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
-			throw handleAiSdkError(error, this.config.providerName)
+			throw error
 		}
 	}
 

@@ -28,7 +28,6 @@ import {
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
-	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { applyCacheBreakpoints, applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
@@ -333,8 +332,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				throw new Error("Throttling error occurred")
 			}
 
-			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 
@@ -458,8 +456,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			const apiError = new ApiProviderError(errorMessage, this.providerName, modelConfig.id, "completePrompt")
 			TelemetryService.instance.captureException(apiError)
 
-			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 

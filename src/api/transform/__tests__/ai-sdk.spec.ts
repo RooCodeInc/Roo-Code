@@ -1047,6 +1047,65 @@ describe("Error extraction utilities", () => {
 			const result = extractMessageFromResponseBody(body)
 			expect(result).toBe("top level error")
 		})
+
+		it("extracts message from Anthropic-style error with error.type", () => {
+			const body = JSON.stringify({
+				type: "error",
+				error: {
+					type: "overloaded_error",
+					message: "Overloaded",
+				},
+			})
+			const result = extractMessageFromResponseBody(body)
+			expect(result).toBeDefined()
+			expect(result).toContain("Overloaded")
+		})
+
+		it("extracts message from OpenRouter + Anthropic nested error format in metadata.raw", () => {
+			const body = JSON.stringify({
+				error: {
+					message: "Provider returned error",
+					code: 400,
+					metadata: {
+						raw: JSON.stringify({
+							type: "error",
+							error: {
+								type: "invalid_request_error",
+								message:
+									"A maximum of 4 blocks with cache_control may be provided. Found 5.",
+							},
+						}),
+						provider_name: "Anthropic",
+					},
+				},
+			})
+
+			const result = extractMessageFromResponseBody(body)
+			expect(result).toBe(
+				"[Anthropic] [invalid_request_error] A maximum of 4 blocks with cache_control may be provided. Found 5.",
+			)
+		})
+
+		it("extracts message from OpenRouter + Anthropic nested error format without provider_name", () => {
+			const body = JSON.stringify({
+				error: {
+					message: "Provider returned error",
+					code: 400,
+					metadata: {
+						raw: JSON.stringify({
+							type: "error",
+							error: {
+								type: "overloaded_error",
+								message: "Overloaded",
+							},
+						}),
+					},
+				},
+			})
+
+			const result = extractMessageFromResponseBody(body)
+			expect(result).toBe("[overloaded_error] Overloaded")
+		})
 	})
 
 	describe("extractAiSdkErrorMessage", () => {
@@ -1140,6 +1199,95 @@ describe("Error extraction utilities", () => {
 
 			const result = extractAiSdkErrorMessage(error)
 			expect(result).toContain("some error")
+		})
+
+		it("should extract message from deeply nested NoOutputGeneratedError → RetryError → APICallError chain", () => {
+			const error = {
+				name: "AI_NoOutputGeneratedError",
+				message: "No output generated. Check the stream for errors.",
+				cause: {
+					name: "AI_RetryError",
+					message: "Failed after 3 attempts.",
+					lastError: {
+						name: "AI_APICallError",
+						message: "Bad Request",
+						statusCode: 400,
+						responseBody: JSON.stringify({
+							error: {
+								message: "Your credit balance is too low.",
+								type: "insufficient_quota",
+								code: "quota_exceeded",
+							},
+						}),
+					},
+					errors: [],
+				},
+			}
+			const result = extractAiSdkErrorMessage(error)
+			expect(result).toContain("quota_exceeded")
+			expect(result).toContain("Your credit balance is too low.")
+			expect(result).toContain("400")
+			expect(result).not.toContain("No output generated")
+			expect(result).not.toContain("Bad Request")
+		})
+
+		it("should extract message from RetryError with nested cause chain", () => {
+			const error = {
+				name: "AI_RetryError",
+				message: "Failed after 2 attempts.",
+				lastError: {
+					name: "AI_APICallError",
+					message: "Bad Request",
+					statusCode: 400,
+					responseBody: JSON.stringify({
+						type: "error",
+						error: {
+							type: "overloaded_error",
+							message: "Overloaded",
+						},
+					}),
+				},
+				errors: [],
+			}
+			const result = extractAiSdkErrorMessage(error)
+			expect(result).toContain("Overloaded")
+			expect(result).toContain("400")
+		})
+
+		it("should handle triple-nested error chain via .errors[] array", () => {
+			const error = {
+				name: "AI_NoOutputGeneratedError",
+				message: "No output generated.",
+				cause: {
+					name: "AI_RetryError",
+					message: "Failed after 3 attempts.",
+					lastError: {
+						name: "AI_APICallError",
+						message: "Server Error",
+						statusCode: 500,
+						responseBody: "", // empty — not useful
+					},
+					errors: [
+						{
+							name: "AI_APICallError",
+							message: "Bad Request",
+							statusCode: 400,
+							responseBody: JSON.stringify({
+								error: { message: "Invalid model ID", code: "invalid_model" },
+							}),
+						},
+						{
+							name: "AI_APICallError",
+							message: "Server Error",
+							statusCode: 500,
+							responseBody: "",
+						},
+					],
+				},
+			}
+			const result = extractAiSdkErrorMessage(error)
+			expect(result).toContain("Invalid model ID")
+			expect(result).toContain("400")
 		})
 	})
 })

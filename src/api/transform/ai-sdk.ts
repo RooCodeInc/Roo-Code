@@ -181,7 +181,7 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 			yield {
 				type: "error",
 				error: "StreamError",
-				message: part.error instanceof Error ? part.error.message : String(part.error),
+				message: extractAiSdkErrorMessage(part.error),
 			}
 			break
 
@@ -363,11 +363,25 @@ export function extractMessageFromResponseBody(responseBody: string): string | u
 						if (typeof rawParsed === "object" && rawParsed !== null) {
 							const rawObj = rawParsed as Record<string, unknown>
 							if (typeof rawObj.message === "string" && rawObj.message) {
-								const providerName =
-									typeof metadata.provider_name === "string" ? metadata.provider_name : undefined
-								const prefix = providerName ? `[${providerName}] ` : ""
-								return `${prefix}${rawObj.message}`
-							}
+									const providerName =
+										typeof metadata.provider_name === "string" ? metadata.provider_name : undefined
+									const prefix = providerName ? `[${providerName}] ` : ""
+									return `${prefix}${rawObj.message}`
+								}
+								// Anthropic format: {"type":"error","error":{"type":"invalid_request_error","message":"..."}}
+								if (typeof rawObj.error === "object" && rawObj.error !== null) {
+									const innerError = rawObj.error as Record<string, unknown>
+									if (typeof innerError.message === "string" && innerError.message) {
+										const providerName =
+											typeof metadata.provider_name === "string"
+												? metadata.provider_name
+												: undefined
+										const prefix = providerName ? `[${providerName}] ` : ""
+										const typePrefix =
+											typeof innerError.type === "string" ? `[${innerError.type}] ` : ""
+										return `${prefix}${typePrefix}${innerError.message}`
+									}
+								}
 						}
 					} catch {
 						// raw is not valid JSON — fall through to other patterns
@@ -381,6 +395,11 @@ export function extractMessageFromResponseBody(responseBody: string): string | u
 				}
 				if (typeof errorObj.code === "number") {
 					return `[${errorObj.code}] ${errorObj.message}`
+				}
+				// Anthropic format: error.type instead of error.code
+				// e.g. {"type":"error","error":{"type":"overloaded_error","message":"Overloaded"}}
+				if (typeof errorObj.type === "string" && errorObj.type) {
+					return `[${errorObj.type}] ${errorObj.message}`
 				}
 				return errorObj.message
 			}
@@ -404,6 +423,48 @@ export function extractMessageFromResponseBody(responseBody: string): string | u
 }
 
 /**
+ * Recursively traverses an error chain to find the deepest APICallError
+ * with a non-empty responseBody. Checks .cause, .lastError, and .errors[].
+ */
+function findDeepestApiCallError(error: unknown, maxDepth = 10): Record<string, unknown> | undefined {
+	if (maxDepth <= 0 || typeof error !== "object" || error === null) {
+		return undefined
+	}
+
+	const obj = error as Record<string, unknown>
+
+	// Recurse children FIRST so we find the DEEPEST match
+	// Check .cause
+	const fromCause = findDeepestApiCallError(obj.cause, maxDepth - 1)
+	if (fromCause) {
+		return fromCause
+	}
+
+	// Check .lastError
+	const fromLastError = findDeepestApiCallError(obj.lastError, maxDepth - 1)
+	if (fromLastError) {
+		return fromLastError
+	}
+
+	// Check .errors[] array
+	if (Array.isArray(obj.errors)) {
+		for (const element of obj.errors) {
+			const fromElement = findDeepestApiCallError(element, maxDepth - 1)
+			if (fromElement) {
+				return fromElement
+			}
+		}
+	}
+
+	// Then check self
+	if (obj.name === "AI_APICallError" && typeof obj.responseBody === "string" && obj.responseBody.length > 0) {
+		return obj
+	}
+
+	return undefined
+}
+
+/**
  * Extract a user-friendly error message from AI SDK errors.
  * The AI SDK wraps errors in types like AI_RetryError and AI_APICallError
  * which need to be unwrapped to get the actual error message.
@@ -421,6 +482,22 @@ export function extractAiSdkErrorMessage(error: unknown): string {
 	}
 
 	const errorObj = error as Record<string, unknown>
+
+	// First, try to find the deepest APICallError with a responseBody in the error chain.
+	// This handles arbitrarily nested chains like NoOutput → Retry → APICallError.
+	const deepestApiError = findDeepestApiCallError(error)
+	if (deepestApiError) {
+		const responseBody = deepestApiError.responseBody as string
+		const extracted = extractMessageFromResponseBody(responseBody)
+		const statusCode = getStatusCode(deepestApiError)
+		if (extracted) {
+			return statusCode ? `API Error (${statusCode}): ${extracted}` : `API Error: ${extracted}`
+		}
+		// Fall back to raw responseBody
+		return statusCode
+			? `API Error (${statusCode}): ${responseBody}`
+			: `API Error: ${responseBody}`
+	}
 
 	// AI_RetryError has a lastError property with the actual error
 	if (errorObj.name === "AI_RetryError") {

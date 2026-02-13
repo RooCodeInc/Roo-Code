@@ -15,7 +15,6 @@ import {
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
-	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { applyToolCacheOptions } from "../transform/cache-breakpoints"
@@ -181,7 +180,7 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 
 			yield* yieldResponseMessage(result)
 		} catch (error) {
-			throw handleAiSdkError(error, "Vercel AI Gateway")
+			throw error
 		}
 	}
 
@@ -203,7 +202,7 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 
 			return text
 		} catch (error) {
-			throw handleAiSdkError(error, "Vercel AI Gateway")
+			throw error
 		}
 	}
 

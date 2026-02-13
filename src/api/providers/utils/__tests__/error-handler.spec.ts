@@ -1,4 +1,4 @@
-import { handleProviderError, handleOpenAIError } from "../error-handler"
+import { handleProviderError } from "../error-handler"
 
 describe("handleProviderError", () => {
 	const providerName = "TestProvider"
@@ -259,25 +259,3 @@ describe("handleProviderError", () => {
 	})
 })
 
-describe("handleOpenAIError (backward compatibility)", () => {
-	it("should be an alias for handleProviderError with completion prefix", () => {
-		const error = new Error("API failed") as any
-		error.status = 500
-
-		const result = handleOpenAIError(error, "OpenAI")
-
-		expect(result).toBeInstanceOf(Error)
-		expect(result.message).toContain("OpenAI completion error")
-		expect((result as any).status).toBe(500)
-	})
-
-	it("should preserve backward compatibility for existing callers", () => {
-		const error = new Error("Authentication failed") as any
-		error.status = 401
-
-		const result = handleOpenAIError(error, "Roo Code Cloud")
-
-		expect(result.message).toBe("Roo Code Cloud completion error: Authentication failed")
-		expect((result as any).status).toBe(401)
-	})
-})

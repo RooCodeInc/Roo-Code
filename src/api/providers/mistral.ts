@@ -12,7 +12,7 @@ import {
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import { convertToolsForAiSdk, consumeAiSdkStream, handleAiSdkError } from "../transform/ai-sdk"
+import { convertToolsForAiSdk, consumeAiSdkStream } from "../transform/ai-sdk"
 import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -186,7 +186,7 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 				yield processUsage(usage)
 			})
 		} catch (error) {
-			throw handleAiSdkError(error, "Mistral")
+			throw error
 		}
 	}
 

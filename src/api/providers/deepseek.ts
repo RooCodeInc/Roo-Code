@@ -6,7 +6,7 @@ import { deepSeekModels, deepSeekDefaultModelId, DEEP_SEEK_DEFAULT_TEMPERATURE, 
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import { convertToolsForAiSdk, consumeAiSdkStream, mapToolChoice, handleAiSdkError } from "../transform/ai-sdk"
+import { convertToolsForAiSdk, consumeAiSdkStream, mapToolChoice } from "../transform/ai-sdk"
 import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -156,7 +156,7 @@ export class DeepSeekHandler extends BaseProvider implements SingleCompletionHan
 				yield processUsage(usage, providerMetadata as Parameters<typeof processUsage>[1])
 			})
 		} catch (error) {
-			throw handleAiSdkError(error, "DeepSeek")
+			throw error
 		}
 	}
 

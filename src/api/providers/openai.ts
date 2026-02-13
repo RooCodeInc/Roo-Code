@@ -20,7 +20,6 @@ import {
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
-	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { applyToolCacheOptions } from "../transform/cache-breakpoints"
@@ -239,7 +238,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			yield* yieldResponseMessage(result)
 		} catch (error) {
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 
@@ -285,7 +284,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				yield this.processUsageMetrics(usage, modelInfo, providerMetadata as any)
 			}
 		} catch (error) {
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 

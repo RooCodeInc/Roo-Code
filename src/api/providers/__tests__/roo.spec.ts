@@ -395,7 +395,7 @@ describe("RooHandler", () => {
 
 		it("should handle API errors", async () => {
 			mockGenerateText.mockRejectedValue(new Error("API Error"))
-			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("Roo Code Cloud")
+			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("API Error")
 		})
 
 		it("should handle empty response", async () => {

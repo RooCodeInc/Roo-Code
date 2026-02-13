@@ -10,7 +10,6 @@ import {
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
-	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { applyToolCacheOptions } from "../transform/cache-breakpoints"
@@ -116,23 +115,34 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 		const result = streamText(requestOptions)
 
 		try {
+			let lastStreamError: string | undefined
 			for await (const part of result.fullStream) {
 				for (const chunk of processAiSdkStreamPart(part)) {
+					if (chunk.type === "error") {
+						lastStreamError = chunk.message
+					}
 					yield chunk
 				}
 			}
 
-			const usage = await result.usage
-			if (usage) {
-				const inputTokens = usage.inputTokens || 0
-				const outputTokens = usage.outputTokens || 0
-				yield {
-					type: "usage",
-					inputTokens,
-					outputTokens,
-					totalInputTokens: inputTokens,
-					totalOutputTokens: outputTokens,
+			try {
+				const usage = await result.usage
+				if (usage) {
+					const inputTokens = usage.inputTokens || 0
+					const outputTokens = usage.outputTokens || 0
+					yield {
+						type: "usage",
+						inputTokens,
+						outputTokens,
+						totalInputTokens: inputTokens,
+						totalOutputTokens: outputTokens,
+					}
 				}
+			} catch (usageError) {
+				if (lastStreamError) {
+					throw new Error(lastStreamError)
+				}
+				throw usageError
 			}
 
 			yield* yieldResponseMessage(result)
@@ -187,7 +197,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 			)
 		}
 
-		throw handleAiSdkError(error, "Ollama")
+		throw error
 	}
 
 	override isAiSdkProvider(): boolean {

@@ -19,7 +19,7 @@ import {
 import type { ApiHandlerOptions } from "../../shared/api"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 
-import { convertToolsForAiSdk, consumeAiSdkStream, mapToolChoice, handleAiSdkError } from "../transform/ai-sdk"
+import { convertToolsForAiSdk, consumeAiSdkStream, mapToolChoice } from "../transform/ai-sdk"
 import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -511,7 +511,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				}
 			})
 		} catch (error) {
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 
@@ -547,7 +547,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 			return text
 		} catch (error) {
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 

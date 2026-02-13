@@ -544,17 +544,12 @@ describe("OpenRouterHandler", () => {
 			})
 
 			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
-			const chunks = []
 
-			for await (const chunk of generator) {
-				chunks.push(chunk)
-			}
-
-			expect(chunks[0]).toEqual({
-				type: "error",
-				error: "OpenRouterError",
-				message: "OpenRouter API Error: API Error",
-			})
+			await expect(async () => {
+				for await (const _chunk of generator) {
+					// consume
+				}
+			}).rejects.toThrow("API Error")
 
 			// Verify telemetry was called
 			expect(mockCaptureException).toHaveBeenCalledTimes(1)
@@ -591,6 +586,42 @@ describe("OpenRouterHandler", () => {
 				type: "error",
 				error: "StreamError",
 				message: "Stream error",
+			})
+		})
+
+		it("propagates stream error when usage resolution fails after stream error", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+
+			const mockFullStream = (async function* () {
+				yield { type: "error", error: new Error("upstream provider returned 500") }
+			})()
+
+			// Share one rejection so we don't create an unhandled-rejection for totalUsage
+			const usageRejection = Promise.reject(new Error("No output generated"))
+			// Prevent Node unhandled-rejection for the shared promise
+			usageRejection.catch(() => {})
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: usageRejection,
+				totalUsage: usageRejection,
+				providerMetadata: Promise.resolve(undefined),
+			})
+
+			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
+			const chunks: any[] = []
+
+			await expect(async () => {
+				for await (const chunk of generator) {
+					chunks.push(chunk)
+				}
+			}).rejects.toThrow("upstream provider returned 500")
+
+			// The stream error should have been yielded before the throw
+			expect(chunks).toContainEqual({
+				type: "error",
+				error: "StreamError",
+				message: "upstream provider returned 500",
 			})
 		})
 
@@ -779,9 +810,7 @@ describe("OpenRouterHandler", () => {
 
 			mockGenerateText.mockRejectedValue(new Error("API Error"))
 
-			await expect(handler.completePrompt("test prompt")).rejects.toThrow(
-				"OpenRouter completion error: API Error",
-			)
+			await expect(handler.completePrompt("test prompt")).rejects.toThrow("API Error")
 
 			// Verify telemetry was called
 			expect(mockCaptureException).toHaveBeenCalledTimes(1)
@@ -799,9 +828,7 @@ describe("OpenRouterHandler", () => {
 
 			mockGenerateText.mockRejectedValue(new Error("Rate limit exceeded"))
 
-			await expect(handler.completePrompt("test prompt")).rejects.toThrow(
-				"OpenRouter completion error: Rate limit exceeded",
-			)
+			await expect(handler.completePrompt("test prompt")).rejects.toThrow("Rate limit exceeded")
 
 			// Verify telemetry was called
 			expect(mockCaptureException).toHaveBeenCalledTimes(1)

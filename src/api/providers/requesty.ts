@@ -7,7 +7,7 @@ import { type ModelInfo, type ModelRecord, requestyDefaultModelId, requestyDefau
 import type { ApiHandlerOptions } from "../../shared/api"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 
-import { convertToolsForAiSdk, consumeAiSdkStream, mapToolChoice, handleAiSdkError } from "../transform/ai-sdk"
+import { convertToolsForAiSdk, consumeAiSdkStream, mapToolChoice } from "../transform/ai-sdk"
 import { applyCacheBreakpoints, applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -227,7 +227,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 				yield processUsage(usage, info, providerMetadata as RequestyProviderMetadata)
 			})
 		} catch (error) {
-			throw handleAiSdkError(error, "Requesty")
+			throw error
 		}
 	}
 
@@ -248,7 +248,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 
 			return text
 		} catch (error) {
-			throw handleAiSdkError(error, "Requesty")
+			throw error
 		}
 	}
 

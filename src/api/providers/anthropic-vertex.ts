@@ -22,7 +22,6 @@ import {
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
-	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { applyCacheBreakpoints, applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
@@ -177,7 +176,7 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			TelemetryService.instance.captureException(
 				new ApiProviderError(errorMessage, this.providerName, modelConfig.id, "createMessage"),
 			)
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 
@@ -301,7 +300,7 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 					"completePrompt",
 				),
 			)
-			throw handleAiSdkError(error, this.providerName)
+			throw error
 		}
 	}
 

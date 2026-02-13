@@ -10,7 +10,6 @@ import {
 	convertToolsForAiSdk,
 	consumeAiSdkStream,
 	mapToolChoice,
-	handleAiSdkError,
 	flattenAiSdkMessagesToStringContent,
 } from "../transform/ai-sdk"
 import { applyToolCacheOptions } from "../transform/cache-breakpoints"
@@ -164,7 +163,7 @@ export class SambaNovaHandler extends BaseProvider implements SingleCompletionHa
 				yield processUsage(usage, providerMetadata as Parameters<typeof processUsage>[1])
 			})
 		} catch (error) {
-			throw handleAiSdkError(error, "SambaNova")
+			throw error
 		}
 	}
 
