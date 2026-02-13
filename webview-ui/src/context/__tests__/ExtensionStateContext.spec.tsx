@@ -291,6 +291,7 @@ describe("mergeExtensionState", () => {
 			featureRoomoteControlEnabled: false,
 			isBrowserSessionActive: false,
 			checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
+			maxReadFileLine: -1,
 		}
 
 		const makeMessage = (ts: number, text: string): ClineMessage =>
