@@ -12,6 +12,9 @@ import { t } from "../../i18n"
 import { diagnosticsToProblemsString } from "../../integrations/diagnostics"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
+import { ContextDistiller } from "../rpi/ContextDistiller"
+
+const MAX_DISTILLED_RESULT_CHARS = 4000
 
 interface AttemptCompletionParams {
 	result: string
@@ -206,10 +209,26 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 		pushToolResult("")
 		await (task as any).markRpiCompletionAccepted?.()
 
+		// Apply completion result distillation
+		let distilledResult = result
+		try {
+			const rpiAutopilot = (task as any).rpiAutopilot
+			if (rpiAutopilot) {
+				const distiller = new ContextDistiller()
+				distilledResult = distiller.distillCompletionResult({
+					childResult: result,
+					childObservations: rpiAutopilot.currentObservations ?? [],
+					maxResultChars: MAX_DISTILLED_RESULT_CHARS,
+				})
+			}
+		} catch {
+			// Distillation is best-effort
+		}
+
 		await provider.reopenParentFromDelegation({
 			parentTaskId: task.parentTaskId!,
 			childTaskId: task.taskId,
-			completionResultSummary: result,
+			completionResultSummary: distilledResult,
 		})
 
 		return true

@@ -10,6 +10,8 @@ const MESSAGE_PARAMETER_DESCRIPTION = `Initial user instructions or context for 
 
 const TODOS_PARAMETER_DESCRIPTION = `Optional initial todo list written as a markdown checklist; required when the workspace mandates todos`
 
+const PARALLEL_GROUP_DESCRIPTION = `Optional parallel execution group name. Tasks in the same parallel_group can run concurrently. Use this when delegating multiple independent subtasks that don't depend on each other.`
+
 export default {
 	type: "function",
 	function: {
@@ -30,6 +32,10 @@ export default {
 				todos: {
 					type: ["string", "null"],
 					description: TODOS_PARAMETER_DESCRIPTION,
+				},
+				parallel_group: {
+					type: ["string", "null"],
+					description: PARALLEL_GROUP_DESCRIPTION,
 				},
 			},
 			required: ["mode", "message", "todos"],

@@ -10,18 +10,23 @@ import { parseMarkdownChecklist } from "./UpdateTodoListTool"
 import { Package } from "../../shared/package"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
+import { ContextDistiller } from "../rpi/ContextDistiller"
+import { buildEnvelope, serializeEnvelope } from "../rpi/TaskContextEnvelope"
 
 interface NewTaskParams {
 	mode: string
 	message: string
 	todos?: string
+	parallel_group?: string
 }
+
+const MAX_DISTILLED_CONTEXT_CHARS = 8000
 
 export class NewTaskTool extends BaseTool<"new_task"> {
 	readonly name = "new_task" as const
 
 	async execute(params: NewTaskParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { mode, message, todos } = params
+		const { mode, message, todos, parallel_group } = params
 		const { askApproval, handleError, pushToolResult } = callbacks
 
 		try {
@@ -96,11 +101,35 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				return
 			}
 
+			// Apply context distillation if RPI autopilot has observations
+			let finalMessage = unescapedMessage
+			try {
+				const rpiAutopilot = (task as any).rpiAutopilot
+				if (rpiAutopilot) {
+					const distiller = new ContextDistiller()
+					const distilled = distiller.distill({
+						parentMessage: unescapedMessage,
+						parentObservations: rpiAutopilot.currentObservations ?? [],
+						parentPlan: rpiAutopilot.currentPlan,
+						targetMode: mode,
+						maxContextChars: MAX_DISTILLED_CONTEXT_CHARS,
+					})
+
+					// Wrap with envelope for structured context
+					const envelope = buildEnvelope(distilled)
+					const envelopeStr = serializeEnvelope(envelope)
+					finalMessage = `${envelopeStr}\n\n${distilled.formattedMessage}`
+				}
+			} catch {
+				// Context distillation is best-effort, use original message on failure
+			}
+
 			const toolMessage = JSON.stringify({
 				tool: "newTask",
 				mode: targetMode.name,
 				content: message,
 				todos: todoItems,
+				parallel_group: parallel_group ?? undefined,
 			})
 
 			const didApprove = await askApproval("tool", toolMessage)
@@ -112,9 +141,10 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 			// Delegate parent and open child as sole active task
 			const child = await (provider as any).delegateParentAndOpenChild({
 				parentTaskId: task.taskId,
-				message: unescapedMessage,
+				message: finalMessage,
 				initialTodos: todoItems,
 				mode,
+				parallelGroup: parallel_group,
 			})
 
 			// Reflect delegation in tool result (no pause/unpause, no wait)
@@ -130,12 +160,14 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 		const mode: string | undefined = block.params.mode
 		const message: string | undefined = block.params.message
 		const todos: string | undefined = block.params.todos
+		const parallel_group: string | undefined = block.params.parallel_group
 
 		const partialMessage = JSON.stringify({
 			tool: "newTask",
 			mode: mode ?? "",
 			content: message ?? "",
 			todos: todos,
+			parallel_group: parallel_group ?? undefined,
 		})
 
 		await task.ask("tool", partialMessage, block.partial).catch(() => {})

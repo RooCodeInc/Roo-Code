@@ -61,6 +61,15 @@ const groupEntryArraySchema = z.array(groupEntrySchema).refine(
 	{ message: "Duplicate groups are not allowed" },
 )
 
+export const modelOverrideSchema = z
+	.object({
+		apiProvider: z.string().optional(),
+		apiModelId: z.string().optional(),
+	})
+	.optional()
+
+export type ModelOverride = z.infer<typeof modelOverrideSchema>
+
 export const modeConfigSchema = z.object({
 	slug: z.string().regex(/^[a-zA-Z0-9-]+$/, "Slug must contain only letters numbers and dashes"),
 	name: z.string().min(1, "Name is required"),
@@ -70,6 +79,7 @@ export const modeConfigSchema = z.object({
 	customInstructions: z.string().optional(),
 	groups: groupEntryArraySchema,
 	source: z.enum(["global", "project"]).optional(),
+	modelOverride: modelOverrideSchema,
 })
 
 export type ModeConfig = z.infer<typeof modeConfigSchema>
@@ -179,6 +189,18 @@ export const DEFAULT_MODES: readonly ModeConfig[] = [
 		groups: ["read", "edit", "browser", "command", "mcp"],
 		customInstructions:
 			"Reflect on 5-7 different possible sources of the problem, distill those down to 1-2 most likely sources, and then add logs to validate your assumptions. Explicitly ask the user to confirm the diagnosis before fixing the problem.",
+	},
+	{
+		slug: "research",
+		name: "🔍 Research",
+		roleDefinition:
+			"You are Roo, a systematic research agent who gathers, validates, and synthesizes information from multiple sources. You excel at finding accurate, up-to-date information through web searches, documentation lookup, codebase analysis, and cross-referencing sources.",
+		whenToUse:
+			"For fact-checking, documentation lookup, technology evaluation, dependency analysis, security vulnerability research, and any task requiring systematic information gathering and synthesis.",
+		description: "Research and gather information systematically",
+		groups: ["read", "browser", "mcp", "research"],
+		customInstructions:
+			"Follow a systematic research workflow:\n1. **Define**: Clearly state the research questions to answer\n2. **Search**: Use web_search and fetch_url to gather information from multiple sources\n3. **Read**: Use read_file and codebase_search to find relevant local context\n4. **Cross-reference**: Validate findings across multiple sources\n5. **Synthesize**: Combine findings into a clear, structured summary\n6. **Cite**: Always note the sources of your findings\n\nPrioritize accuracy over speed. When findings conflict, note the discrepancy and provide both perspectives. Always distinguish between confirmed facts and educated guesses.",
 	},
 	{
 		slug: "orchestrator",

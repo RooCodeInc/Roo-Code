@@ -178,6 +178,15 @@ export class RpiAutopilot {
 	private taskPlan?: RpiTaskPlan
 	private pendingCorrectionHint?: RpiCorrectionSuggestion
 
+	/** Expose observations and plan for ContextDistiller integration */
+	get currentObservations(): RpiToolObservation[] {
+		return this.state?.observations ?? []
+	}
+
+	get currentPlan(): RpiTaskPlan | undefined {
+		return this.taskPlan
+	}
+
 	constructor(
 		private readonly context: RpiAutopilotContext,
 		councilEngine?: RpiCouncilEngine,
@@ -216,8 +225,18 @@ export class RpiAutopilot {
 			}
 
 			// Initialize dynamic task plan if not yet created
+			// Prefer AI-driven decomposition when council engine is enabled
 			if (!this.taskPlan && this.state) {
-				this.taskPlan = this.heuristicDecompose(taskText, mode)
+				if (this.context.isCouncilEngineEnabled() && taskText.length > 50) {
+					try {
+						this.taskPlan = await this.aiDecompose(taskText, mode)
+					} catch {
+						// Fallback to heuristic if AI decomposition fails
+						this.taskPlan = this.heuristicDecompose(taskText, mode)
+					}
+				} else {
+					this.taskPlan = this.heuristicDecompose(taskText, mode)
+				}
 			}
 
 			// Recall relevant memories from cross-task memory
@@ -439,6 +458,9 @@ export class RpiAutopilot {
 
 			// Auto-advance dynamic plan steps based on observation
 			this.autoAdvanceStep(observation)
+
+			// Phase 5.1: Adaptive re-planning - check if plan needs revision
+			await this.maybeRevisePlan()
 
 			await this.syncArtifacts()
 		})
@@ -814,6 +836,174 @@ export class RpiAutopilot {
 			currentStepIndex: 0,
 			lastUpdatedAt: new Date().toISOString(),
 		}
+	}
+
+	/**
+	 * AI-driven task decomposition using the council engine's structured_decompose action.
+	 * Falls back to heuristic decomposition if AI fails.
+	 */
+	private async aiDecompose(taskText: string, mode: string): Promise<RpiTaskPlan> {
+		const apiConfiguration = await this.context.getApiConfiguration()
+		if (!apiConfiguration?.apiProvider) {
+			return this.heuristicDecompose(taskText, mode)
+		}
+
+		const input = this.buildCouncilInput(mode)
+		const result = await this.councilEngine.structuredDecompose(apiConfiguration, input)
+
+		// Parse structured steps from the council result
+		const rawResponse = result.rawResponse
+		const parsed = this.tryParseJsonFromResponse(rawResponse)
+
+		if (parsed?.steps && Array.isArray(parsed.steps) && parsed.steps.length > 0) {
+			let stepId = 0
+			const nextId = () => `s${++stepId}`
+
+			const steps: RpiTaskStep[] = parsed.steps.slice(0, 15).map((s: any) => ({
+				id: nextId(),
+				description: typeof s.description === "string" ? s.description.slice(0, 200) : "Step",
+				status: "pending" as const,
+				phase: this.normalizePhase(s.phase),
+				toolsExpected: Array.isArray(s.toolsExpected)
+					? s.toolsExpected.filter((t: unknown) => typeof t === "string").slice(0, 5)
+					: undefined,
+				toolsUsed: [],
+				observationIds: [],
+			}))
+
+			// Mark first step as in_progress
+			if (steps.length > 0) {
+				steps[0].status = "in_progress"
+			}
+
+			this.appendProgress("Task plan generated via AI decomposition.")
+
+			return {
+				version: 2,
+				taskSummary: this.state?.taskSummary ?? this.summarizeTask(taskText),
+				decompositionSource: "council",
+				steps,
+				currentStepIndex: 0,
+				lastUpdatedAt: new Date().toISOString(),
+			}
+		}
+
+		// Fallback if parsing failed
+		return this.heuristicDecompose(taskText, mode)
+	}
+
+	private normalizePhase(phase: unknown): RpiPhase {
+		if (typeof phase !== "string") return "implementation"
+		const normalized = phase.toLowerCase()
+		if (normalized === "discovery") return "discovery"
+		if (normalized === "planning") return "planning"
+		if (normalized === "implementation") return "implementation"
+		if (normalized === "verification") return "verification"
+		return "implementation"
+	}
+
+	/**
+	 * Phase 5.1: Adaptive re-planning.
+	 * Every N tool executions, evaluate whether the current plan is still relevant.
+	 * If observations deviate significantly from the plan, trigger a re-plan.
+	 */
+	private readonly REPLAN_INTERVAL = 5
+	private lastReplanAt = 0
+
+	private async maybeRevisePlan(): Promise<void> {
+		if (!this.state || !this.taskPlan || !this.context.isCouncilEngineEnabled()) {
+			return
+		}
+
+		// Only check every N tool runs
+		if (this.state.toolRuns - this.lastReplanAt < this.REPLAN_INTERVAL) {
+			return
+		}
+
+		// Don't replan if already in verification or done
+		if (this.state.phase === "verification" || this.state.phase === "done") {
+			return
+		}
+
+		// Check if recent observations indicate plan deviation
+		const recentObs = this.state.observations.slice(-this.REPLAN_INTERVAL)
+		const failureRate = recentObs.filter((o) => !o.success).length / recentObs.length
+
+		// If failure rate is high or we have blocked steps, consider replanning
+		const hasBlockedSteps = this.taskPlan.steps.some((s) => s.status === "blocked")
+
+		if (failureRate < 0.4 && !hasBlockedSteps) {
+			return
+		}
+
+		this.lastReplanAt = this.state.toolRuns
+
+		try {
+			const apiConfiguration = await this.context.getApiConfiguration()
+			if (!apiConfiguration?.apiProvider) {
+				return
+			}
+
+			const mode = (await this.context.getMode()) || this.state.modeAtStart
+			const input = this.buildCouncilInput(mode)
+			const result = await this.councilEngine.structuredDecompose(apiConfiguration, input)
+			const parsed = this.tryParseJsonFromResponse(result.rawResponse)
+
+			if (parsed?.steps && Array.isArray(parsed.steps) && parsed.steps.length > 0) {
+				// Preserve completed steps, replace only pending/in_progress ones
+				const completedSteps = this.taskPlan.steps.filter((s) => s.status === "completed")
+				let stepId = completedSteps.length
+
+				const newPendingSteps: RpiTaskStep[] = parsed.steps.slice(0, 10).map((s: any) => ({
+					id: `s${++stepId}`,
+					description: typeof s.description === "string" ? s.description.slice(0, 200) : "Step",
+					status: "pending" as const,
+					phase: this.normalizePhase(s.phase),
+					toolsExpected: Array.isArray(s.toolsExpected)
+						? s.toolsExpected.filter((t: unknown) => typeof t === "string").slice(0, 5)
+						: undefined,
+					toolsUsed: [],
+					observationIds: [],
+				}))
+
+				// Mark first new step as in_progress
+				if (newPendingSteps.length > 0) {
+					newPendingSteps[0].status = "in_progress"
+				}
+
+				this.taskPlan.steps = [...completedSteps, ...newPendingSteps]
+				this.taskPlan.currentStepIndex = completedSteps.length
+				this.taskPlan.lastUpdatedAt = new Date().toISOString()
+				this.appendProgress("Plan revised via adaptive re-planning.")
+				await this.appendFinding("info", "Plan revised due to execution deviation.")
+			}
+		} catch {
+			// Re-planning is best-effort
+		}
+	}
+
+	private tryParseJsonFromResponse(rawResponse: string): Record<string, unknown> | undefined {
+		// Try direct parse
+		try {
+			const parsed = JSON.parse(rawResponse.trim())
+			if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+				return parsed as Record<string, unknown>
+			}
+		} catch {
+			// Try extracting from code fences
+		}
+		const fencedMatch = rawResponse.match(/```(?:json)?\s*([\s\S]*?)```/i)
+		if (fencedMatch?.[1]) {
+			try {
+				const parsed = JSON.parse(fencedMatch[1].trim())
+				if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+					return parsed as Record<string, unknown>
+				}
+			} catch {
+				// ignore
+			}
+		}
+		return undefined
 	}
 
 	private extractKeywordsForMemory(text: string): string[] {

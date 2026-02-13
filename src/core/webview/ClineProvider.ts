@@ -75,6 +75,7 @@ import { CodeIndexManager } from "../../services/code-index/manager"
 import type { IndexProgressUpdate } from "../../services/code-index/interfaces/manager"
 import { MdmService } from "../../services/mdm/MdmService"
 import { SkillsManager } from "../../services/skills/SkillsManager"
+import { TaskQueueManager } from "../../services/task-queue/TaskQueueManager"
 
 import { fileExistsAtPath } from "../../utils/fs"
 import { setTtsEnabled, setTtsSpeed } from "../../utils/tts"
@@ -137,6 +138,7 @@ export class ClineProvider
 	private webviewDisposables: vscode.Disposable[] = []
 	private view?: vscode.WebviewView | vscode.WebviewPanel
 	private clineStack: Task[] = []
+	private taskQueueManager = new TaskQueueManager(1)
 	private codeIndexStatusSubscription?: vscode.Disposable
 	private codeIndexManager?: CodeIndexManager
 	private _workspaceTracker?: WorkspaceTracker // workSpaceTracker read-only for access outside this class
@@ -1346,14 +1348,38 @@ export class ClineProvider
 				// The task will continue with the current/default configuration.
 			}
 		} else {
-			// If no saved config for this mode, save current config as default.
-			const currentApiConfigNameAfter = this.getGlobalState("currentApiConfigName")
+			// No saved API config for this mode — check for modelOverride from mode definition.
+			// modelOverride is a fallback that applies only when the user has NOT saved an explicit config.
+			const state = await this.getState()
+			const modeConfig = getModeBySlug(newMode, state?.customModes)
 
-			if (currentApiConfigNameAfter) {
-				const config = listApiConfig.find((c) => c.name === currentApiConfigNameAfter)
+			if (modeConfig?.modelOverride?.apiProvider || modeConfig?.modelOverride?.apiModelId) {
+				const override = modeConfig.modelOverride
+				const currentSettings = this.contextProxy.getProviderSettings()
+				const merged = { ...currentSettings }
 
-				if (config?.id) {
-					await this.providerSettingsManager.setModeConfig(newMode, config.id)
+				if (override.apiProvider) {
+					merged.apiProvider = override.apiProvider as any
+				}
+				if (override.apiModelId) {
+					merged.apiModelId = override.apiModelId
+				}
+
+				// Apply temporarily to the current task (don't save as user config)
+				const currentTask = this.getCurrentTask()
+				if (currentTask) {
+					currentTask.updateApiConfiguration(merged)
+				}
+			} else {
+				// No modelOverride — save current config as default for this mode.
+				const currentApiConfigNameAfter = this.getGlobalState("currentApiConfigName")
+
+				if (currentApiConfigNameAfter) {
+					const config = listApiConfig.find((c) => c.name === currentApiConfigNameAfter)
+
+					if (config?.id) {
+						await this.providerSettingsManager.setModeConfig(newMode, config.id)
+					}
 				}
 			}
 		}
@@ -3198,8 +3224,9 @@ export class ClineProvider
 		message: string
 		initialTodos: TodoItem[]
 		mode: string
+		parallelGroup?: string
 	}): Promise<Task> {
-		const { parentTaskId, message, initialTodos, mode } = params
+		const { parentTaskId, message, initialTodos, mode, parallelGroup } = params
 
 		// Metadata-driven delegation is always enabled
 
@@ -3269,6 +3296,33 @@ export class ClineProvider
 			)
 		}
 
+		// 4.1) Apply modelOverride for the child's target mode if no user-saved config exists.
+		//      This ensures delegated children use the mode's preferred model as fallback.
+		try {
+			const savedChildConfigId = await this.providerSettingsManager.getModeConfigId(mode as any)
+			if (!savedChildConfigId) {
+				const delegationState = await this.getState()
+				const targetModeConfig = getModeBySlug(mode, delegationState?.customModes)
+				if (targetModeConfig?.modelOverride) {
+					const override = targetModeConfig.modelOverride
+					const current = this.contextProxy.getProviderSettings()
+					if (override.apiProvider) {
+						current.apiProvider = override.apiProvider as any
+					}
+					if (override.apiModelId) {
+						current.apiModelId = override.apiModelId
+					}
+					await this.contextProxy.setProviderSettings(current)
+				}
+			}
+		} catch (e) {
+			this.log(
+				`[delegateParentAndOpenChild] modelOverride application failed (non-fatal): ${
+					(e as Error)?.message ?? String(e)
+				}`,
+			)
+		}
+
 		// 5) Create child as sole active (parent reference preserved for lineage)
 		// Pass initialStatus: "active" to ensure the child task's historyItem is created
 		// with status from the start, avoiding race conditions where the task might
@@ -3310,6 +3364,28 @@ export class ClineProvider
 			)
 		}
 
+		// 6.1) Persist parallelGroup on child's history and register with task queue
+		if (parallelGroup) {
+			try {
+				const { historyItem: childHistory } = await this.getTaskWithId(child.taskId)
+				await this.updateTaskHistory({ ...childHistory, parallelGroup })
+
+				// Register in task queue for group tracking
+				this.taskQueueManager.addTask({
+					id: child.taskId,
+					message,
+					mode,
+					parallelGroup,
+				})
+			} catch (err) {
+				this.log(
+					`[delegateParentAndOpenChild] Failed to persist parallelGroup for child ${child.taskId}: ${
+						(err as Error)?.message ?? String(err)
+					}`,
+				)
+			}
+		}
+
 		// 7) Emit TaskDelegated (provider-level)
 		try {
 			this.emit(RooCodeEventName.TaskDelegated, parentTaskId, child.taskId)
@@ -3328,8 +3404,28 @@ export class ClineProvider
 		childTaskId: string
 		completionResultSummary: string
 	}): Promise<void> {
-		const { parentTaskId, childTaskId, completionResultSummary } = params
+		const { parentTaskId, childTaskId } = params
+		let { completionResultSummary } = params
 		const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
+
+		// 0) Enrich completion result with parallel group context if applicable
+		try {
+			const { historyItem: childHistory } = await this.getTaskWithId(childTaskId)
+			if (childHistory.parallelGroup) {
+				// Mark task completed in queue
+				this.taskQueueManager.completeTask(childTaskId, completionResultSummary)
+
+				// Get group stats for context enrichment
+				const allTasks = this.taskQueueManager.getAllTasks()
+				const groupTasks = allTasks.filter((t) => t.parallelGroup === childHistory.parallelGroup)
+				const completedInGroup = groupTasks.filter((t) => t.status === "completed").length
+				const totalInGroup = groupTasks.length
+
+				completionResultSummary = `[Group '${childHistory.parallelGroup}': task ${completedInGroup}/${totalInGroup} completed]\n${completionResultSummary}`
+			}
+		} catch {
+			// Group enrichment is best-effort
+		}
 
 		// 1) Load parent from history and current persisted messages
 		const { historyItem } = await this.getTaskWithId(parentTaskId)

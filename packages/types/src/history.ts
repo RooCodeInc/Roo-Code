@@ -26,6 +26,7 @@ export const historyItemSchema = z.object({
 	awaitingChildId: z.string().optional(), // Child currently awaited (set when delegated)
 	completedByChildId: z.string().optional(), // Child that completed and resumed this parent
 	completionResultSummary: z.string().optional(), // Summary from completed child
+	parallelGroup: z.string().optional(), // Parallel execution group name for batch delegation
 })
 
 export type HistoryItem = z.infer<typeof historyItemSchema>

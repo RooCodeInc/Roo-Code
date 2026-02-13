@@ -86,6 +86,17 @@ export const toolParamNames = [
 	// read_file legacy format parameter (backward compatibility)
 	"files",
 	"line_ranges",
+	// web_search parameters
+	"max_results",
+	"search_type",
+	// notify_user parameters
+	"level",
+	// fetch_url parameters (uses existing "url")
+	"max_length",
+	// shell_write_to_process parameters
+	"input",
+	// new_task parallel group
+	"parallel_group",
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -106,7 +117,7 @@ export type NativeToolArgs = {
 	edit_file: { file_path: string; old_string: string; new_string: string; expected_replacements?: number }
 	apply_patch: { patch: string }
 	list_files: { path: string; recursive?: boolean }
-	new_task: { mode: string; message: string; todos?: string }
+	new_task: { mode: string; message: string; todos?: string; parallel_group?: string }
 	ask_followup_question: {
 		question: string
 		follow_up: Array<{ text: string; mode?: string }>
@@ -121,6 +132,11 @@ export type NativeToolArgs = {
 	update_todo_list: { todos: string }
 	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
 	write_to_file: { path: string; content: string }
+	web_search: { query: string; max_results?: number; search_type?: "general" | "code" | "docs" }
+	notify_user: { message: string; level?: "info" | "warning" | "error" }
+	fetch_url: { url: string; max_length?: number }
+	shell_write_to_process: { artifact_id: string; input: string }
+	shell_view_output: { artifact_id: string; offset?: number; limit?: number }
 	// Add more tools as they are migrated to native protocol
 }
 
@@ -300,6 +316,11 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	skill: "load skill",
 	generate_image: "generate images",
 	custom_tool: "use custom tools",
+	web_search: "search the web",
+	notify_user: "notify user",
+	fetch_url: "fetch URL content",
+	shell_write_to_process: "write to process",
+	shell_view_output: "view process output",
 } as const
 
 // Define available tool groups.
@@ -315,7 +336,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 		tools: ["browser_action"],
 	},
 	command: {
-		tools: ["execute_command", "read_command_output"],
+		tools: ["execute_command", "read_command_output", "shell_write_to_process", "shell_view_output"],
 	},
 	mcp: {
 		tools: ["use_mcp_tool", "access_mcp_resource"],
@@ -323,6 +344,9 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 	modes: {
 		tools: ["switch_mode", "new_task"],
 		alwaysAvailable: true,
+	},
+	research: {
+		tools: ["web_search", "fetch_url"],
 	},
 }
 
@@ -335,6 +359,7 @@ export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
 	"update_todo_list",
 	"run_slash_command",
 	"skill",
+	"notify_user",
 ] as const
 
 /**

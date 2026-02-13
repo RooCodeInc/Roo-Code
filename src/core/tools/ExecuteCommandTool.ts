@@ -69,6 +69,50 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 			const provider = await task.providerRef.deref()
 			const providerState = await provider?.getState()
 
+			// Check if sandbox execution is enabled via experiment flag
+			const sandboxEnabled = providerState?.experiments?.sandboxExecution ?? false
+
+			if (sandboxEnabled) {
+				try {
+					const { DockerSandbox } = await import("../../services/sandbox/DockerSandbox")
+					const sandbox = new DockerSandbox(task.cwd)
+					if (await sandbox.isAvailable()) {
+						// Convert absolute customCwd to relative for Docker workspace mount
+						let sandboxCwd = customCwd
+						if (customCwd && path.isAbsolute(customCwd)) {
+							sandboxCwd = path.relative(task.cwd, customCwd)
+						}
+
+						const sandboxResult = await sandbox.exec(unescapedCommand, sandboxCwd)
+
+						let output = sandboxResult.stdout || ""
+						if (sandboxResult.stderr) {
+							output += (output ? "\n" : "") + `STDERR:\n${sandboxResult.stderr}`
+						}
+						if (sandboxResult.timedOut) {
+							output += "\n[Command timed out]"
+						}
+
+						const status =
+							sandboxResult.exitCode !== 0
+								? `Command failed (exit ${sandboxResult.exitCode})`
+								: `Exit code: 0`
+
+						this._rpiObservationExtras = {
+							success: sandboxResult.exitCode === 0,
+							summary: `[Sandbox] ${unescapedCommand.slice(0, 80)} → exit ${sandboxResult.exitCode}`,
+							outputSnippet: output.slice(-500),
+						}
+
+						pushToolResult(`[Docker Sandbox] ${status}\nOutput:\n${output}`)
+						return
+					}
+					// Docker not available — fall through to normal terminal execution
+				} catch {
+					// Sandbox error — fall through to normal terminal execution
+				}
+			}
+
 			const { terminalShellIntegrationDisabled = true } = providerState ?? {}
 
 			// Get command execution timeout from VSCode configuration (in seconds)

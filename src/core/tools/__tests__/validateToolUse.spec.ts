@@ -15,11 +15,15 @@ describe("mode-validator", () => {
 	describe("isToolAllowedForMode", () => {
 		describe("code mode", () => {
 			it("allows all code mode tools", () => {
-				// Code mode has all groups
-				Object.entries(TOOL_GROUPS).forEach(([_, config]) => {
-					config.tools.forEach((tool: string) => {
-						expect(isToolAllowedForMode(tool, codeMode, [])).toBe(true)
-					})
+				// Code mode has specific groups: read, edit, browser, command, mcp
+				const codeModeGroups = ["read", "edit", "browser", "command", "mcp"] as const
+				codeModeGroups.forEach((group) => {
+					const config = TOOL_GROUPS[group]
+					if (config) {
+						config.tools.forEach((tool: string) => {
+							expect(isToolAllowedForMode(tool, codeMode, [])).toBe(true)
+						})
+					}
 				})
 			})
 

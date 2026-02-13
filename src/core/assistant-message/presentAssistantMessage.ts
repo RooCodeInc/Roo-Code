@@ -38,6 +38,11 @@ import { generateImageTool } from "../tools/GenerateImageTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
+import { webSearchTool } from "../tools/WebSearchTool"
+import { notifyUserTool } from "../tools/NotifyUserTool"
+import { fetchUrlTool } from "../tools/FetchUrlTool"
+import { shellWriteToProcessTool } from "../tools/ShellWriteToProcessTool"
+import { shellViewOutputTool } from "../tools/ShellViewOutputTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
@@ -397,6 +402,16 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.skill}'${block.params.args ? ` with args: ${block.params.args}` : ""}]`
 					case "generate_image":
 						return `[${block.name} for '${block.params.path}']`
+					case "web_search":
+						return `[${block.name} for '${block.params.query}']`
+					case "notify_user":
+						return `[${block.name}: '${block.params.message}']`
+					case "fetch_url":
+						return `[${block.name} for '${block.params.url}']`
+					case "shell_write_to_process":
+						return `[${block.name} to '${block.params.artifact_id}']`
+					case "shell_view_output":
+						return `[${block.name} for '${block.params.artifact_id}']`
 					default:
 						return `[${block.name}]`
 				}
@@ -883,6 +898,41 @@ export async function presentAssistantMessage(cline: Task) {
 				case "generate_image":
 					await checkpointSaveAndMark(cline)
 					await generateImageTool.handle(cline, block as ToolUse<"generate_image">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "web_search":
+					await webSearchTool.handle(cline, block as ToolUse<"web_search">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "notify_user":
+					await notifyUserTool.handle(cline, block as ToolUse<"notify_user">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "fetch_url":
+					await fetchUrlTool.handle(cline, block as ToolUse<"fetch_url">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "shell_write_to_process":
+					await shellWriteToProcessTool.handle(cline, block as ToolUse<"shell_write_to_process">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "shell_view_output":
+					await shellViewOutputTool.handle(cline, block as ToolUse<"shell_view_output">, {
 						askApproval,
 						handleError,
 						pushToolResult,
