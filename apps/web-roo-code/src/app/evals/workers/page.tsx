@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import type { Metadata } from "next"
 
 import { SEO } from "@/lib/seo"
@@ -75,14 +76,16 @@ export default function WorkersPage() {
 		.pop()
 
 	return (
-		<WorkersContent
-			roles={roles}
-			recommendations={recommendations}
-			totalEvalRuns={totalEvalRuns}
-			totalExercises={totalExercises}
-			totalModels={totalModels}
-			lastUpdated={lastUpdated}
-			workersRootPath="/evals/workers"
-		/>
+		<Suspense>
+			<WorkersContent
+				roles={roles}
+				recommendations={recommendations}
+				totalEvalRuns={totalEvalRuns}
+				totalExercises={totalExercises}
+				totalModels={totalModels}
+				lastUpdated={lastUpdated}
+				workersRootPath="/evals/workers"
+			/>
+		</Suspense>
 	)
 }

@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 
@@ -82,8 +83,8 @@ export default async function RecommendationsPage({ searchParams }: PageProps) {
 	const recommendations = getAllRecommendations()
 
 	// Aggregate totals
-	const totalEvalRuns = recommendations.reduce((sum, recommendation) => sum + recommendation.totalEvalRuns, 0)
-	const totalExercises = recommendations.reduce((sum, recommendation) => sum + recommendation.totalExercises, 0)
+	const totalEvalRuns = recommendations[0]?.totalEvalRuns ?? 0
+	const totalExercises = recommendations[0]?.totalExercises ?? 0
 	const uniqueModels = new Set(
 		recommendations.flatMap((recommendation) => recommendation.allCandidates.map((candidate) => candidate.modelId)),
 	)
@@ -95,15 +96,17 @@ export default async function RecommendationsPage({ searchParams }: PageProps) {
 		.pop()
 
 	return (
-		<WorkersContent
-			roles={roles}
-			recommendations={recommendations}
-			totalEvalRuns={totalEvalRuns}
-			totalExercises={totalExercises}
-			totalModels={totalModels}
-			lastUpdated={lastUpdated}
-			workersRootPath="/evals/recommendations"
-			roleBasePath="/evals/recommendations/roles"
-		/>
+		<Suspense>
+			<WorkersContent
+				roles={roles}
+				recommendations={recommendations}
+				totalEvalRuns={totalEvalRuns}
+				totalExercises={totalExercises}
+				totalModels={totalModels}
+				lastUpdated={lastUpdated}
+				workersRootPath="/evals/recommendations"
+				roleBasePath="/evals/recommendations/roles"
+			/>
+		</Suspense>
 	)
 }
