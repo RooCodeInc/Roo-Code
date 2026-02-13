@@ -44,6 +44,7 @@ import { Package } from "../../shared/package"
 import { type RouterName, toRouterName } from "../../shared/api"
 import { MessageEnhancer } from "./messageEnhancer"
 
+import { CodeIndexManager } from "../../services/code-index/manager"
 import { checkExistKey } from "../../shared/checkExistApiConfig"
 import { experimentDefault } from "../../shared/experiments"
 import { Terminal } from "../../integrations/terminal/Terminal"
@@ -2698,14 +2699,20 @@ export const webviewMessageHandler = async (
 					provider.log("Cannot set auto-enable default: No workspace folder open")
 					return
 				}
-				const wasEnabled = manager.isWorkspaceEnabled
+				// Capture prior state for every manager before persisting the global change
+				const allManagers = CodeIndexManager.getAllInstances()
+				const priorStates = new Map(allManagers.map((m) => [m, m.isWorkspaceEnabled]))
 				await manager.setAutoEnableDefault(message.bool ?? true)
-				const isNowEnabled = manager.isWorkspaceEnabled
-				if (wasEnabled && !isNowEnabled) {
-					manager.stopIndexing()
-				} else if (!wasEnabled && isNowEnabled && manager.isFeatureEnabled && manager.isFeatureConfigured) {
-					await manager.initialize(provider.contextProxy)
-					manager.startIndexing()
+				// Apply stop/start to every affected manager
+				for (const m of allManagers) {
+					const wasEnabled = priorStates.get(m)!
+					const isNowEnabled = m.isWorkspaceEnabled
+					if (wasEnabled && !isNowEnabled) {
+						m.stopIndexing()
+					} else if (!wasEnabled && isNowEnabled && m.isFeatureEnabled && m.isFeatureConfigured) {
+						await m.initialize(provider.contextProxy)
+						m.startIndexing()
+					}
 				}
 				provider.postMessageToWebview({
 					type: "indexingStatusUpdate",

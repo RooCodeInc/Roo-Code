@@ -69,6 +69,10 @@ export class CodeIndexManager {
 		return CodeIndexManager.instances.get(workspacePath)!
 	}
 
+	public static getAllInstances(): CodeIndexManager[] {
+		return Array.from(CodeIndexManager.instances.values())
+	}
+
 	public static disposeAll(): void {
 		for (const instance of CodeIndexManager.instances.values()) {
 			instance.dispose()
