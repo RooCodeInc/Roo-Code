@@ -8,5 +8,5 @@ type PageProps = {
 
 export default async function WorkersV2Page({ searchParams }: PageProps) {
 	const sp = (await searchParams) ?? {}
-	permanentRedirect(`/evals/workers${buildQueryString(sp)}`)
+	permanentRedirect(`/evals/recommendations${buildQueryString(sp)}`)
 }

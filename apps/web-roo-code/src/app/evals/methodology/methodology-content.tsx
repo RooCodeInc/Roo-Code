@@ -147,7 +147,9 @@ export function MethodologyContent() {
 										Evals
 									</Link>
 									<span className="text-border">/</span>
-									<Link href="/evals/workers" className="transition-colors hover:text-foreground">
+									<Link
+										href="/evals/recommendations"
+										className="transition-colors hover:text-foreground">
 										Recommendations
 									</Link>
 									<span className="text-border">/</span>
@@ -183,7 +185,7 @@ export function MethodologyContent() {
 									variants={fadeUpVariants}
 									className="mt-10 flex flex-wrap items-center gap-5">
 									<Link
-										href="/evals/workers"
+										href="/evals/recommendations"
 										className="inline-flex items-center justify-center gap-2 rounded-full border border-foreground/20 bg-foreground/5 px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-foreground/10">
 										View recommendations <InlineArrow />
 									</Link>
@@ -500,7 +502,7 @@ export function MethodologyContent() {
 									Links
 								</p>
 								<div className="mt-4 flex flex-col gap-3">
-									<SmallLink href="/evals/workers" label="Recommendations" />
+									<SmallLink href="/evals/recommendations" label="Recommendations" />
 									<SmallLink href="/evals" label="Raw eval data" />
 								</div>
 								<div className="mt-5 border-t border-border/40 pt-5">

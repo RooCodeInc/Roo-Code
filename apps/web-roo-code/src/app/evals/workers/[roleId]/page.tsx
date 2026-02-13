@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 	const title = `${role.name} — Recommended Models | Roo Code Evals`
 	const description = `Eval-backed recommendations for ${role.name}. Compare models by success rate, cost, and speed across 5 languages.`
 	const ogDescription = `${role.name} — Recommended Models`
-	const path = `/evals/workers/${roleId}`
+	const path = `/evals/recommendations/${roleId}`
 
 	return {
 		title,
@@ -100,7 +100,7 @@ export default async function RoleCandidatesPage({ params }: PageProps) {
 			totalExercises={totalExercises}
 			lastUpdated={lastUpdated}
 			cloudUrls={cloudUrls}
-			workersRootPath="/evals/workers"
+			workersRootPath="/evals/recommendations"
 		/>
 	)
 }

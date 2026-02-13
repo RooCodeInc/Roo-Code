@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 	const title = `Compare Models — ${role.name} | Roo Code Evals`
 	const description = `Interactive comparison of AI models for the ${role.name} setup. Compare composite score, success rate, cost efficiency, and speed.`
 	const ogDescription = `Compare Models — ${role.name}`
-	const path = `/evals/workers/${roleId}/compare`
+	const path = `/evals/recommendations/${roleId}/compare`
 
 	return {
 		title,
@@ -82,7 +82,7 @@ export default async function CompareModelsPage({ params }: PageProps) {
 			recommendation={recommendation}
 			role={recommendation.role}
 			roleId={roleId}
-			workersRootPath="/evals/workers"
+			workersRootPath="/evals/recommendations"
 		/>
 	)
 }

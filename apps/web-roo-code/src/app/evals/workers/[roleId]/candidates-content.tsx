@@ -660,7 +660,7 @@ export function CandidatesContent({
 	totalExercises,
 	lastUpdated,
 	cloudUrls,
-	workersRootPath = "/evals/workers",
+	workersRootPath = "/evals/recommendations",
 }: CandidatesContentProps) {
 	const searchParams = useSearchParams()
 	const theme = ROLE_THEMES[roleId] ?? DEFAULT_THEME

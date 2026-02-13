@@ -441,7 +441,7 @@ export function ComparisonChart({
 	recommendation,
 	role,
 	roleId,
-	workersRootPath = "/evals/workers",
+	workersRootPath = "/evals/recommendations",
 }: ComparisonChartProps) {
 	const searchParams = useSearchParams()
 	const { allCandidates } = recommendation

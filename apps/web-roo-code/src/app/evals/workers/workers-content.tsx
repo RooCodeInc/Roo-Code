@@ -202,7 +202,7 @@ export function WorkersContent({
 	totalExercises: _totalExercises,
 	totalModels: _totalModels,
 	lastUpdated,
-	workersRootPath = "/evals/workers",
+	workersRootPath = "/evals/recommendations",
 }: WorkersContentProps) {
 	const enableOutcomeLayer = ENABLE_OUTCOME_LAYER
 	const router = useRouter()
@@ -214,6 +214,10 @@ export function WorkersContent({
 		if (!outcome) return null
 		return isEvalOutcomeId(outcome) ? outcome : null
 	}, [searchParams])
+	const effectiveOutcomeId = useMemo(() => {
+		if (selectedOutcomeId) return selectedOutcomeId
+		return EVAL_OUTCOMES[0]?.id ?? null
+	}, [selectedOutcomeId])
 
 	const selectedMode = useMemo((): EvalOptimizationMode => {
 		const mode = searchParams.get("mode")
@@ -255,18 +259,27 @@ export function WorkersContent({
 	const roleById = useMemo(() => new Map(roles.map((r) => [r.id, r])), [roles])
 
 	const selectedOutcome = useMemo(() => {
-		if (!selectedOutcomeId) return null
-		return EVAL_OUTCOMES.find((o) => o.id === selectedOutcomeId) ?? null
-	}, [selectedOutcomeId])
+		if (!effectiveOutcomeId) return null
+		return EVAL_OUTCOMES.find((o) => o.id === effectiveOutcomeId) ?? null
+	}, [effectiveOutcomeId])
 
 	const setupQuery = useMemo(() => {
-		if (!selectedOutcomeId) return ""
+		if (!effectiveOutcomeId) return ""
 		const params = new URLSearchParams()
-		params.set("outcome", selectedOutcomeId)
+		params.set("outcome", effectiveOutcomeId)
 		params.set("mode", selectedMode)
 		const query = params.toString()
 		return query ? `?${query}` : ""
-	}, [selectedOutcomeId, selectedMode])
+	}, [effectiveOutcomeId, selectedMode])
+
+	const profileViewQuery = useMemo(() => {
+		if (!effectiveOutcomeId) return ""
+		const params = new URLSearchParams()
+		params.set("outcome", effectiveOutcomeId)
+		params.set("mode", selectedMode)
+		params.set("view", "profile")
+		return `?${params.toString()}`
+	}, [effectiveOutcomeId, selectedMode])
 
 	const isProfileView = useMemo(() => {
 		return searchParams.get("view") === "profile"
@@ -277,22 +290,22 @@ export function WorkersContent({
 		"A default setup built from our eval signals. It’s a baseline, not a guarantee."
 	const profileHowItWorks = selectedOutcome?.builderProfile?.howItWorks ?? selectedOutcome?.whyItWorks ?? []
 	const objectiveDefaultModel = useMemo(() => {
-		if (!selectedOutcomeId) return null
-		return pickObjectiveDefaultModelV1(selectedOutcomeId, selectedMode)
-	}, [selectedOutcomeId, selectedMode])
+		if (!effectiveOutcomeId) return null
+		return pickObjectiveDefaultModelV1(effectiveOutcomeId, selectedMode)
+	}, [effectiveOutcomeId, selectedMode])
 	const objectiveDefaultModelLabel = useMemo(() => {
 		if (!objectiveDefaultModel?.modelId) return "—"
 		return formatModelIdForUi(objectiveDefaultModel.modelId)
 	}, [objectiveDefaultModel])
 	const examplePrompt = selectedOutcome?.builderProfile?.examplePrompt ?? ""
 	const cloudSetupHref = useMemo(() => {
-		if (!selectedOutcomeId) return "/cloud-agents/setup"
+		if (!effectiveOutcomeId) return "/cloud-agents/setup"
 		const params = new URLSearchParams()
-		params.set("outcome", selectedOutcomeId)
+		params.set("outcome", effectiveOutcomeId)
 		params.set("mode", selectedMode)
 		if (examplePrompt) params.set("prompt", examplePrompt)
 		return `/cloud-agents/setup?${params.toString()}`
-	}, [examplePrompt, selectedMode, selectedOutcomeId])
+	}, [examplePrompt, selectedMode, effectiveOutcomeId])
 
 	const profileCapabilities = useMemo(() => {
 		if (!selectedOutcome) return []
@@ -741,7 +754,7 @@ export function WorkersContent({
 									<motion.div className="mt-8 space-y-2" variants={containerVariants}>
 										{EVAL_OUTCOMES.map((outcome) => {
 											const Icon = outcome.icon
-											const isSelected = outcome.id === selectedOutcomeId
+											const isSelected = outcome.id === effectiveOutcomeId
 
 											return (
 												<motion.button
@@ -946,7 +959,7 @@ export function WorkersContent({
 																<ArrowRight className="size-4" />
 															</Link>
 															<Link
-																href={`${workersRootPath}${setupQuery}&view=profile#outcomes`}
+																href={`${workersRootPath}${profileViewQuery}#outcomes`}
 																className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-border/60 bg-background/10 px-4 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:border-border hover:bg-background/15 hover:text-foreground">
 																Learn more / customize
 																<ArrowRight className="size-4" />
