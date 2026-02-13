@@ -62,8 +62,8 @@ export default function WorkersPage() {
 	const recommendations = getAllRecommendations()
 
 	// Aggregate totals
-	const totalEvalRuns = recommendations.reduce((sum, recommendation) => sum + recommendation.totalEvalRuns, 0)
-	const totalExercises = recommendations.reduce((sum, recommendation) => sum + recommendation.totalExercises, 0)
+	const totalEvalRuns = recommendations[0]?.totalEvalRuns ?? 0
+	const totalExercises = recommendations[0]?.totalExercises ?? 0
 	const uniqueModels = new Set(
 		recommendations.flatMap((recommendation) => recommendation.allCandidates.map((candidate) => candidate.modelId)),
 	)
