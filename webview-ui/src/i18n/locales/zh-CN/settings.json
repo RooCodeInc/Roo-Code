@@ -508,6 +508,10 @@
 				"title": "OpenRouter 提供商路由",
 				"description": "OpenRouter 将请求路由到适合您模型的最佳可用提供商。默认情况下，请求会在顶级提供商之间进行负载均衡以最大化正常运行时间。但是，您可以为此模型选择特定的提供商。",
 				"learnMore": "了解更多"
+			},
+			"excludeLowQuantization": {
+				"label": "Exclude low-bit quantization (FP4/FP6/Int4)",
+				"description": "Only allow higher precision providers (FP8/FP16/BF16/Int8). Helps prevent broken CJK (Korean/Chinese/Japanese) encoding from aggressively quantized models."
 			}
 		},
 		"customModel": {

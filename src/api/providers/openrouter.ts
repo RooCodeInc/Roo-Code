@@ -159,25 +159,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		const tools = convertToolsForAiSdk(metadata?.tools)
 		applyToolCacheOptions(tools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
-		const providerOptions:
-			| {
-					openrouter?: {
-						provider?: { order: string[]; only: string[]; allow_fallbacks: boolean }
-					}
-			  }
-			| undefined =
-			this.options.openRouterSpecificProvider &&
-			this.options.openRouterSpecificProvider !== OPENROUTER_DEFAULT_PROVIDER_NAME
-				? {
-						openrouter: {
-							provider: {
-								order: [this.options.openRouterSpecificProvider],
-								only: [this.options.openRouterSpecificProvider],
-								allow_fallbacks: false,
-							},
-						},
-					}
-				: undefined
+		const providerOptions = this.buildProviderOptions()
 
 		// Breakpoint 1: System prompt caching — inject as cached system message
 		// OpenRouter routes to Anthropic models that benefit from cache annotations
@@ -274,6 +256,47 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		return { id, info, topP: isDeepSeekR1 ? 0.95 : undefined, ...params }
 	}
 
+	private buildProviderOptions():
+		| {
+				openrouter?: {
+					provider?: {
+						order?: string[]
+						only?: string[]
+						allow_fallbacks?: boolean
+						quantizations?: string[]
+					}
+				}
+		  }
+		| undefined {
+		const hasSpecificProvider =
+			this.options.openRouterSpecificProvider &&
+			this.options.openRouterSpecificProvider !== OPENROUTER_DEFAULT_PROVIDER_NAME
+		const excludeLowQuantization = this.options.openRouterExcludeLowQuantization
+
+		if (!hasSpecificProvider && !excludeLowQuantization) {
+			return undefined
+		}
+
+		const provider: {
+			order?: string[]
+			only?: string[]
+			allow_fallbacks?: boolean
+			quantizations?: string[]
+		} = {}
+
+		if (hasSpecificProvider) {
+			provider.order = [this.options.openRouterSpecificProvider!]
+			provider.only = [this.options.openRouterSpecificProvider!]
+			provider.allow_fallbacks = false
+		}
+
+		if (excludeLowQuantization) {
+			provider.quantizations = ["fp16", "bf16", "fp8", "int8"]
+		}
+
+		return { openrouter: { provider } }
+	}
+
 	async completePrompt(prompt: string): Promise<string> {
 		let { id: modelId, maxTokens, temperature, topP, reasoning } = await this.fetchModel()
 
@@ -291,25 +314,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 		const openrouter = this.createOpenRouterProvider({ reasoning, headers })
 
-		const providerOptions:
-			| {
-					openrouter?: {
-						provider?: { order: string[]; only: string[]; allow_fallbacks: boolean }
-					}
-			  }
-			| undefined =
-			this.options.openRouterSpecificProvider &&
-			this.options.openRouterSpecificProvider !== OPENROUTER_DEFAULT_PROVIDER_NAME
-				? {
-						openrouter: {
-							provider: {
-								order: [this.options.openRouterSpecificProvider],
-								only: [this.options.openRouterSpecificProvider],
-								allow_fallbacks: false,
-							},
-						},
-					}
-				: undefined
+		const providerOptions = this.buildProviderOptions()
 
 		try {
 			const result = await generateText({

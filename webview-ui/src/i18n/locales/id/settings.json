@@ -508,6 +508,10 @@
 				"title": "OpenRouter Provider Routing",
 				"description": "OpenRouter mengarahkan permintaan ke provider terbaik yang tersedia untuk model kamu. Secara default, permintaan diseimbangkan beban di seluruh provider teratas untuk memaksimalkan uptime. Namun, kamu dapat memilih provider spesifik untuk digunakan untuk model ini.",
 				"learnMore": "Pelajari lebih lanjut tentang provider routing"
+			},
+			"excludeLowQuantization": {
+				"label": "Exclude low-bit quantization (FP4/FP6/Int4)",
+				"description": "Only allow higher precision providers (FP8/FP16/BF16/Int8). Helps prevent broken CJK (Korean/Chinese/Japanese) encoding from aggressively quantized models."
 			}
 		},
 		"customModel": {

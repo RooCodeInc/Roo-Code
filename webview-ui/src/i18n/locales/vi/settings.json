@@ -508,6 +508,10 @@
 				"title": "Định tuyến nhà cung cấp OpenRouter",
 				"description": "OpenRouter chuyển hướng yêu cầu đến các nhà cung cấp tốt nhất hiện có cho mô hình của bạn. Theo mặc định, các yêu cầu được cân bằng giữa các nhà cung cấp hàng đầu để tối đa hóa thời gian hoạt động. Tuy nhiên, bạn có thể chọn một nhà cung cấp cụ thể để sử dụng cho mô hình này.",
 				"learnMore": "Tìm hiểu thêm về định tuyến nhà cung cấp"
+			},
+			"excludeLowQuantization": {
+				"label": "Exclude low-bit quantization (FP4/FP6/Int4)",
+				"description": "Only allow higher precision providers (FP8/FP16/BF16/Int8). Helps prevent broken CJK (Korean/Chinese/Japanese) encoding from aggressively quantized models."
 			}
 		},
 		"customModel": {

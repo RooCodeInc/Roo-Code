@@ -1056,4 +1056,136 @@ describe("OpenRouterHandler", () => {
 			)
 		})
 	})
+
+	describe("quantization filter", () => {
+		it("includes quantizations in providerOptions when openRouterExcludeLowQuantization is enabled", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "openai/gpt-4o",
+				openRouterExcludeLowQuantization: true,
+			})
+
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "test", id: "1" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+			})
+
+			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
+
+			for await (const _ of generator) {
+				// consume
+			}
+
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					providerOptions: {
+						openrouter: {
+							provider: {
+								quantizations: ["fp16", "bf16", "fp8", "int8"],
+							},
+						},
+					},
+				}),
+			)
+		})
+
+		it("does not include quantizations in providerOptions when openRouterExcludeLowQuantization is disabled", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "openai/gpt-4o",
+				openRouterExcludeLowQuantization: false,
+			})
+
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "test", id: "1" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+			})
+
+			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
+
+			for await (const _ of generator) {
+				// consume
+			}
+
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					providerOptions: undefined,
+				}),
+			)
+		})
+
+		it("combines quantizations with specific provider routing", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "openai/gpt-4o",
+				openRouterExcludeLowQuantization: true,
+				openRouterSpecificProvider: "DeepInfra",
+			})
+
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "test", id: "1" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+			})
+
+			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
+
+			for await (const _ of generator) {
+				// consume
+			}
+
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					providerOptions: {
+						openrouter: {
+							provider: {
+								order: ["DeepInfra"],
+								only: ["DeepInfra"],
+								allow_fallbacks: false,
+								quantizations: ["fp16", "bf16", "fp8", "int8"],
+							},
+						},
+					},
+				}),
+			)
+		})
+
+		it("includes quantizations in completePrompt when openRouterExcludeLowQuantization is enabled", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "openai/gpt-4o",
+				openRouterExcludeLowQuantization: true,
+			})
+
+			mockGenerateText.mockResolvedValue({ text: "test" })
+
+			await handler.completePrompt("test prompt")
+
+			expect(mockGenerateText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					providerOptions: {
+						openrouter: {
+							provider: {
+								quantizations: ["fp16", "bf16", "fp8", "int8"],
+							},
+						},
+					},
+				}),
+			)
+		})
+	})
 })

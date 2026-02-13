@@ -508,6 +508,10 @@
 				"title": "Encaminament de Proveïdors d'OpenRouter",
 				"description": "OpenRouter dirigeix les sol·licituds als millors proveïdors disponibles per al vostre model. Per defecte, les sol·licituds s'equilibren entre els principals proveïdors per maximitzar el temps de funcionament. No obstant això, podeu triar un proveïdor específic per utilitzar amb aquest model.",
 				"learnMore": "Més informació sobre l'encaminament de proveïdors"
+			},
+			"excludeLowQuantization": {
+				"label": "Exclude low-bit quantization (FP4/FP6/Int4)",
+				"description": "Only allow higher precision providers (FP8/FP16/BF16/Int8). Helps prevent broken CJK (Korean/Chinese/Japanese) encoding from aggressively quantized models."
 			}
 		},
 		"customModel": {

@@ -508,6 +508,10 @@
 				"title": "Roteamento de Provedores OpenRouter",
 				"description": "OpenRouter direciona solicitações para os melhores provedores disponíveis para seu modelo. Por padrão, as solicitações são balanceadas entre os principais provedores para maximizar o tempo de atividade. No entanto, você pode escolher um provedor específico para usar com este modelo.",
 				"learnMore": "Saiba mais sobre roteamento de provedores"
+			},
+			"excludeLowQuantization": {
+				"label": "Exclude low-bit quantization (FP4/FP6/Int4)",
+				"description": "Only allow higher precision providers (FP8/FP16/BF16/Int8). Helps prevent broken CJK (Korean/Chinese/Japanese) encoding from aggressively quantized models."
 			}
 		},
 		"customModel": {
