@@ -400,44 +400,6 @@
 		"total": "Total Biaya: ${{cost}}",
 		"includesSubtasks": "Termasuk biaya subtugas"
 	},
-	"browser": {
-		"session": "Sesi Browser",
-		"active": "Aktif",
-		"rooWantsToUse": "Roo ingin menggunakan browser",
-		"consoleLogs": "Log Konsol",
-		"noNewLogs": "(Tidak ada log baru)",
-		"screenshot": "Screenshot browser",
-		"cursor": "kursor",
-		"navigation": {
-			"step": "Langkah {{current}} dari {{total}}",
-			"previous": "Sebelumnya",
-			"next": "Selanjutnya"
-		},
-		"sessionStarted": "Sesi Browser Dimulai",
-		"actions": {
-			"title": "Aksi Browser: ",
-			"launched": "Browser diluncurkan",
-			"launch": "Luncurkan browser di {{url}}",
-			"clicked": "Diklik ({{coordinate}})",
-			"click": "Klik ({{coordinate}})",
-			"typed": "Diketik: {{text}}",
-			"type": "Ketik \"{{text}}\"",
-			"pressed": "Ditekan: {{key}}",
-			"press": "Tekan {{key}}",
-			"scrolledDown": "Digulir ke bawah",
-			"scrollDown": "Gulir ke bawah",
-			"scrolledUp": "Digulir ke atas",
-			"scrollUp": "Gulir ke atas",
-			"hovered": "Diarahkan ({{coordinate}})",
-			"hover": "Arahkan ({{coordinate}})",
-			"resized": "Ukuran diubah ke: {{size}}",
-			"resize": "Ubah ukuran ke {{size}}",
-			"screenshotSaved": "Screenshot disimpan",
-			"screenshot": "Simpan screenshot ke {{path}}",
-			"closed": "Browser ditutup",
-			"close": "Tutup browser"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Perluas blok kode",

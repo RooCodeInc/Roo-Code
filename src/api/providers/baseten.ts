@@ -13,6 +13,7 @@ import {
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -69,16 +70,29 @@ export class BasetenHandler extends BaseProvider implements SingleCompletionHand
 	protected processUsageMetrics(usage: {
 		inputTokens?: number
 		outputTokens?: number
+		totalInputTokens?: number
+		totalOutputTokens?: number
+		cachedInputTokens?: number
+		reasoningTokens?: number
+		inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+		outputTokenDetails?: { reasoningTokens?: number }
 		details?: {
 			cachedInputTokens?: number
 			reasoningTokens?: number
 		}
 	}): ApiStreamUsageChunk {
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
-			reasoningTokens: usage.details?.reasoningTokens,
+			inputTokens,
+			outputTokens,
+			cacheReadTokens:
+				usage.cachedInputTokens ?? usage.inputTokenDetails?.cacheReadTokens ?? usage.details?.cachedInputTokens,
+			reasoningTokens:
+				usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 
@@ -105,10 +119,11 @@ export class BasetenHandler extends BaseProvider implements SingleCompletionHand
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
 			temperature: this.options.modelTemperature ?? temperature ?? BASETEN_DEFAULT_TEMPERATURE,
 			maxOutputTokens: this.getMaxOutputTokens(),

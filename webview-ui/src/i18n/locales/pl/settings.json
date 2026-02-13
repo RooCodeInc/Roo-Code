@@ -31,7 +31,6 @@
 		"mcp": "Serwery MCP",
 		"worktrees": "Worktrees",
 		"autoApprove": "Auto-zatwierdzanie",
-		"browser": "Dostęp komputera",
 		"checkpoints": "Punkty kontrolne",
 		"notifications": "Powiadomienia",
 		"contextManagement": "Kontekst",
@@ -240,10 +239,6 @@
 				"label": "Uwzględnij pliki chronione",
 				"description": "Pozwól Roo na tworzenie i edycję plików chronionych (takich jak .rooignore i pliki konfiguracyjne .roo/) bez konieczności zatwierdzania."
 			}
-		},
-		"browser": {
-			"label": "Przeglądarka",
-			"description": "Automatycznie wykonuj akcje przeglądarki bez konieczności zatwierdzania. Uwaga: Dotyczy tylko gdy model obsługuje używanie komputera"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -590,34 +585,6 @@
 			"placeholder": "Domyślnie: claude",
 			"maxTokensLabel": "Maksymalna liczba tokenów wyjściowych",
 			"maxTokensDescription": "Maksymalna liczba tokenów wyjściowych dla odpowiedzi Claude Code. Domyślnie 8000."
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "Włącz narzędzie przeglądarki",
-			"description": "Gdy włączone, Roo może używać przeglądarki do interakcji ze stronami internetowymi podczas korzystania z modeli obsługujących używanie komputera. <0>Dowiedz się więcej</0>"
-		},
-		"viewport": {
-			"label": "Rozmiar viewportu",
-			"description": "Wybierz rozmiar viewportu dla interakcji przeglądarki. Wpływa to na sposób wyświetlania stron internetowych i interakcji z nimi.",
-			"options": {
-				"largeDesktop": "Duży pulpit (1280x800)",
-				"smallDesktop": "Mały pulpit (900x600)",
-				"tablet": "Tablet (768x1024)",
-				"mobile": "Telefon (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "Jakość zrzutów ekranu",
-			"description": "Dostosuj jakość WebP zrzutów ekranu przeglądarki. Wyższe wartości zapewniają wyraźniejsze zrzuty ekranu, ale zwiększają zużycie token."
-		},
-		"remote": {
-			"label": "Użyj zdalnego połączenia przeglądarki",
-			"description": "Połącz się z przeglądarką Chrome uruchomioną z włączonym zdalnym debugowaniem (--remote-debugging-port=9222).",
-			"urlPlaceholder": "Niestandardowy URL (np. http://localhost:9222)",
-			"testButton": "Testuj połączenie",
-			"testingButton": "Testowanie...",
-			"instructions": "Wprowadź adres hosta protokołu DevTools lub pozostaw puste, aby automatycznie wykryć lokalne instancje Chrome. Przycisk Test Połączenia spróbuje użyć niestandardowego URL, jeśli podany, lub automatycznie wykryje, jeśli pole jest puste."
 		}
 	},
 	"checkpoints": {

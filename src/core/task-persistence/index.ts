@@ -36,3 +36,4 @@ export {
 } from "./rooMessage"
 export { convertAnthropicToRooMessages } from "./converters/anthropicToRoo"
 export { flattenModelMessagesToStringContent } from "./messageUtils"
+export { type DelegationMeta, readDelegationMeta, saveDelegationMeta } from "./delegationMeta"

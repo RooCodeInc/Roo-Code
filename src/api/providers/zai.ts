@@ -21,6 +21,7 @@ import {
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -102,10 +103,11 @@ export class ZAiHandler extends BaseProvider implements SingleCompletionHandler 
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
 			temperature: this.options.modelTemperature ?? temperature ?? ZAI_DEFAULT_TEMPERATURE,
 			maxOutputTokens: this.getMaxOutputTokens(),
@@ -113,8 +115,8 @@ export class ZAiHandler extends BaseProvider implements SingleCompletionHandler 
 			toolChoice: mapToolChoice(metadata?.tool_choice),
 		}
 
-		// GLM-4.7 thinking mode: pass thinking parameter via providerOptions
-		const isThinkingModel = modelId === "glm-4.7" && Array.isArray(info.supportsReasoningEffort)
+		// Thinking mode: pass thinking parameter via providerOptions for models that support it (e.g. GLM-4.7, GLM-5)
+		const isThinkingModel = Array.isArray(info.supportsReasoningEffort)
 
 		if (isThinkingModel) {
 			const useReasoning = shouldUseReasoningEffort({ model: info, settings: this.options })

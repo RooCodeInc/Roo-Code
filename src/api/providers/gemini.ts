@@ -21,6 +21,7 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { t } from "i18next"
 import type { ApiStream, ApiStreamUsageChunk, GroundingSource } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -103,6 +104,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		// Build tool choice - use 'required' when allowedFunctionNames restricts available tools
 		const toolChoice =
@@ -113,7 +115,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		// Build the request options
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: this.provider(modelId),
-			system: systemInstruction,
+			system: systemInstruction || undefined,
 			messages: aiSdkMessages,
 			temperature: temperatureConfig,
 			maxOutputTokens,
@@ -246,6 +248,12 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -256,8 +264,10 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 	): ApiStreamUsageChunk {
 		const inputTokens = usage.inputTokens || 0
 		const outputTokens = usage.outputTokens || 0
-		const cacheReadTokens = usage.details?.cachedInputTokens
-		const reasoningTokens = usage.details?.reasoningTokens
+		const cacheReadTokens =
+			usage.cachedInputTokens ?? usage.inputTokenDetails?.cacheReadTokens ?? usage.details?.cachedInputTokens
+		const reasoningTokens =
+			usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens
 
 		return {
 			type: "usage",
@@ -272,6 +282,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				cacheReadTokens,
 				reasoningTokens,
 			}),
+			// Gemini: inputTokens is already total
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 

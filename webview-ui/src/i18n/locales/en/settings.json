@@ -32,7 +32,6 @@
 		"worktrees": "Worktrees",
 		"skills": "Skills",
 		"autoApprove": "Auto-Approve",
-		"browser": "Browser",
 		"checkpoints": "Checkpoints",
 		"notifications": "Notifications",
 		"contextManagement": "Context",
@@ -301,10 +300,6 @@
 				"label": "Include protected files",
 				"description": "Allow Roo to create and edit protected files (like .rooignore and .roo/ configuration files) without requiring approval."
 			}
-		},
-		"browser": {
-			"label": "Browser",
-			"description": "Automatically perform browser actions without requiring approval. Note: Only applies when the model supports computer use"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -627,34 +622,6 @@
 			"placeholder": "Default: claude",
 			"maxTokensLabel": "Max Output Tokens",
 			"maxTokensDescription": "Maximum number of output tokens for Claude Code responses. Default is 8000."
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "Enable browser tool",
-			"description": "When enabled, Roo can use a browser to interact with websites when using models that support computer use. <0>Learn more</0>"
-		},
-		"viewport": {
-			"label": "Viewport size",
-			"description": "Select the viewport size for browser interactions. This affects how websites are displayed and interacted with.",
-			"options": {
-				"largeDesktop": "Large Desktop (1280x800)",
-				"smallDesktop": "Small Desktop (900x600)",
-				"tablet": "Tablet (768x1024)",
-				"mobile": "Mobile (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "Screenshot quality",
-			"description": "Adjust the WebP quality of browser screenshots. Higher values provide clearer screenshots but increase token usage."
-		},
-		"remote": {
-			"label": "Use remote browser connection",
-			"description": "Connect to a Chrome browser running with remote debugging enabled (--remote-debugging-port=9222).",
-			"urlPlaceholder": "Custom URL (e.g., http://localhost:9222)",
-			"testButton": "Test Connection",
-			"testingButton": "Testing...",
-			"instructions": "Enter the DevTools Protocol host address or leave empty to auto-discover Chrome local instances. The Test Connection button will try the custom URL if provided, or auto-discover if the field is empty."
 		}
 	},
 	"checkpoints": {

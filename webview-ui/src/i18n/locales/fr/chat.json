@@ -363,44 +363,6 @@
 		"total": "Coût total : ${{cost}}",
 		"includesSubtasks": "Inclut les coûts des sous-tâches"
 	},
-	"browser": {
-		"session": "Session du navigateur",
-		"active": "Actif",
-		"rooWantsToUse": "Roo veut utiliser le navigateur",
-		"consoleLogs": "Journaux de console",
-		"noNewLogs": "(Pas de nouveaux journaux)",
-		"screenshot": "Capture d'écran du navigateur",
-		"cursor": "curseur",
-		"navigation": {
-			"step": "Étape {{current}} sur {{total}}",
-			"previous": "Précédent",
-			"next": "Suivant"
-		},
-		"sessionStarted": "Session de navigateur démarrée",
-		"actions": {
-			"title": "Action du navigateur : ",
-			"launched": "Navigateur lancé",
-			"launch": "Lancer le navigateur sur {{url}}",
-			"clicked": "Cliqué sur : {{coordinate}}",
-			"click": "Cliquer ({{coordinate}})",
-			"typed": "Saisi : {{text}}",
-			"type": "Saisir \"{{text}}\"",
-			"pressed": "Appuyé sur : {{key}}",
-			"press": "Appuyer sur {{key}}",
-			"scrolledDown": "Défilé vers le bas",
-			"scrollDown": "Défiler vers le bas",
-			"scrolledUp": "Défilé vers le haut",
-			"scrollUp": "Défiler vers le haut",
-			"hovered": "Survolé : {{coordinate}}",
-			"hover": "Survoler ({{coordinate}})",
-			"resized": "Redimensionné à : {{size}}",
-			"resize": "Redimensionner à {{size}}",
-			"screenshotSaved": "Capture d'écran enregistrée",
-			"screenshot": "Enregistrer une capture d'écran dans {{path}}",
-			"closed": "Navigateur fermé",
-			"close": "Fermer le navigateur"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Développer le bloc de code",

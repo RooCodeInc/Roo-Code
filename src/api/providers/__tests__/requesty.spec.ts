@@ -178,6 +178,8 @@ describe("RequestyHandler", () => {
 				cacheReadTokens: 2,
 				reasoningTokens: undefined,
 				totalCost: expect.any(Number),
+				totalInputTokens: 10,
+				totalOutputTokens: 20,
 			})
 		})
 

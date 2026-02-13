@@ -14,6 +14,7 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream } from "../transform/stream"
 
 import { BaseProvider } from "./base-provider"
@@ -99,12 +100,13 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		const providerOptions = this.buildProviderOptions(useR1Format)
 
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
 			temperature,
 			tools: aiSdkTools,
@@ -123,10 +125,14 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 			const usage = await result.usage
 			if (usage) {
+				const inputTokens = usage.inputTokens || 0
+				const outputTokens = usage.outputTokens || 0
 				yield {
 					type: "usage",
-					inputTokens: usage.inputTokens || 0,
-					outputTokens: usage.outputTokens || 0,
+					inputTokens,
+					outputTokens,
+					totalInputTokens: inputTokens,
+					totalOutputTokens: outputTokens,
 				}
 			}
 

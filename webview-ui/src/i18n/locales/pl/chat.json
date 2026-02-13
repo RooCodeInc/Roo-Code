@@ -363,44 +363,6 @@
 		"total": "Całkowity koszt: ${{cost}}",
 		"includesSubtasks": "Zawiera koszty podzadań"
 	},
-	"browser": {
-		"session": "Sesja przeglądarki",
-		"active": "Aktywna",
-		"rooWantsToUse": "Roo chce użyć przeglądarki",
-		"consoleLogs": "Logi konsoli",
-		"noNewLogs": "(Brak nowych logów)",
-		"screenshot": "Zrzut ekranu przeglądarki",
-		"cursor": "kursor",
-		"navigation": {
-			"step": "Krok {{current}} z {{total}}",
-			"previous": "Poprzedni",
-			"next": "Następny"
-		},
-		"sessionStarted": "Sesja przeglądarki rozpoczęta",
-		"actions": {
-			"title": "Akcja przeglądarki: ",
-			"launched": "Przeglądarka uruchomiona",
-			"launch": "Uruchom przeglądarkę na {{url}}",
-			"clicked": "Kliknięto ({{coordinate}})",
-			"click": "Kliknij ({{coordinate}})",
-			"typed": "Wpisano: {{text}}",
-			"type": "Wpisz \"{{text}}\"",
-			"pressed": "Naciśnięto: {{key}}",
-			"press": "Naciśnij {{key}}",
-			"scrolledDown": "Przewinięto w dół",
-			"scrollDown": "Przewiń w dół",
-			"scrolledUp": "Przewinięto w górę",
-			"scrollUp": "Przewiń w górę",
-			"hovered": "Najechano ({{coordinate}})",
-			"hover": "Najedź ({{coordinate}})",
-			"resized": "Zmieniono rozmiar na: {{size}}",
-			"resize": "Zmień rozmiar na {{size}}",
-			"screenshotSaved": "Zrzut ekranu zapisany",
-			"screenshot": "Zapisz zrzut ekranu do {{path}}",
-			"closed": "Przeglądarka zamknięta",
-			"close": "Zamknij przeglądarkę"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Rozwiń blok kodu",

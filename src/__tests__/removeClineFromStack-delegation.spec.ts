@@ -1,6 +1,12 @@
 // npx vitest run __tests__/removeClineFromStack-delegation.spec.ts
 
 import { describe, it, expect, vi } from "vitest"
+
+vi.mock("../core/task-persistence/delegationMeta", () => ({
+	readDelegationMeta: vi.fn().mockResolvedValue(null),
+	saveDelegationMeta: vi.fn().mockResolvedValue(undefined),
+}))
+
 import { ClineProvider } from "../core/webview/ClineProvider"
 
 describe("ClineProvider.removeClineFromStack() delegation awareness", () => {
@@ -38,6 +44,7 @@ describe("ClineProvider.removeClineFromStack() delegation awareness", () => {
 			log: vi.fn(),
 			getTaskWithId,
 			updateTaskHistory,
+			contextProxy: { globalStorageUri: { fsPath: "/tmp" } },
 		}
 
 		return { provider, childTask, updateTaskHistory, getTaskWithId }
@@ -183,6 +190,7 @@ describe("ClineProvider.removeClineFromStack() delegation awareness", () => {
 			log: vi.fn(),
 			getTaskWithId: vi.fn(),
 			updateTaskHistory: vi.fn(),
+			contextProxy: { globalStorageUri: { fsPath: "/tmp" } },
 		}
 
 		// Should not throw
@@ -263,6 +271,7 @@ describe("ClineProvider.removeClineFromStack() delegation awareness", () => {
 			log: vi.fn(),
 			getTaskWithId,
 			updateTaskHistory,
+			contextProxy: { globalStorageUri: { fsPath: "/tmp" } },
 		}
 
 		// Simulate what delegateParentAndOpenChild does: pop B with skipDelegationRepair

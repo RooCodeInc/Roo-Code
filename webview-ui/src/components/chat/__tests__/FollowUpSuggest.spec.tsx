@@ -592,4 +592,102 @@ describe("FollowUpSuggest", () => {
 			expect(screen.getByText(/3s/)).toBeInTheDocument()
 		})
 	})
+
+	describe("auto-approve toggle off mid-countdown", () => {
+		it("should call onCancelAutoApproval when autoApprovalEnabled changes to false during countdown", async () => {
+			const { rerender } = renderWithTestProviders(
+				<FollowUpSuggest
+					suggestions={mockSuggestions}
+					onSuggestionClick={mockOnSuggestionClick}
+					ts={123}
+					onCancelAutoApproval={mockOnCancelAutoApproval}
+					isAnswered={false}
+				/>,
+				defaultTestState,
+			)
+
+			// Should show countdown initially
+			expect(screen.getByText(/3s/)).toBeInTheDocument()
+
+			// Advance timer partially
+			await act(async () => {
+				vi.advanceTimersByTime(1000)
+			})
+
+			// Countdown should be at 2s
+			expect(screen.getByText(/2s/)).toBeInTheDocument()
+
+			// Clear mock to track calls from the toggle-off
+			mockOnCancelAutoApproval.mockClear()
+
+			// User toggles auto-approve off
+			rerender(
+				<TestExtensionStateProvider value={{ ...defaultTestState, autoApprovalEnabled: false }}>
+					<TooltipProvider>
+						<FollowUpSuggest
+							suggestions={mockSuggestions}
+							onSuggestionClick={mockOnSuggestionClick}
+							ts={123}
+							onCancelAutoApproval={mockOnCancelAutoApproval}
+							isAnswered={false}
+						/>
+					</TooltipProvider>
+				</TestExtensionStateProvider>,
+			)
+
+			// Countdown should disappear
+			expect(screen.queryByText(/\d+s/)).not.toBeInTheDocument()
+
+			// onCancelAutoApproval should have been called to cancel the backend timeout
+			expect(mockOnCancelAutoApproval).toHaveBeenCalled()
+
+			// Advance timer past original timeout - nothing should happen
+			await act(async () => {
+				vi.advanceTimersByTime(5000)
+			})
+
+			// onSuggestionClick should NOT have been called
+			expect(mockOnSuggestionClick).not.toHaveBeenCalled()
+		})
+
+		it("should call onCancelAutoApproval when alwaysAllowFollowupQuestions changes to false during countdown", async () => {
+			const { rerender } = renderWithTestProviders(
+				<FollowUpSuggest
+					suggestions={mockSuggestions}
+					onSuggestionClick={mockOnSuggestionClick}
+					ts={123}
+					onCancelAutoApproval={mockOnCancelAutoApproval}
+					isAnswered={false}
+				/>,
+				defaultTestState,
+			)
+
+			// Should show countdown initially
+			expect(screen.getByText(/3s/)).toBeInTheDocument()
+
+			// Clear mock to track calls from the toggle-off
+			mockOnCancelAutoApproval.mockClear()
+
+			// User disables follow-up question auto-approval
+			rerender(
+				<TestExtensionStateProvider value={{ ...defaultTestState, alwaysAllowFollowupQuestions: false }}>
+					<TooltipProvider>
+						<FollowUpSuggest
+							suggestions={mockSuggestions}
+							onSuggestionClick={mockOnSuggestionClick}
+							ts={123}
+							onCancelAutoApproval={mockOnCancelAutoApproval}
+							isAnswered={false}
+						/>
+					</TooltipProvider>
+				</TestExtensionStateProvider>,
+			)
+
+			// Countdown should disappear
+			expect(screen.queryByText(/\d+s/)).not.toBeInTheDocument()
+
+			// onCancelAutoApproval should have been called to cancel the backend timeout
+			expect(mockOnCancelAutoApproval).toHaveBeenCalled()
+		})
+	})
 })

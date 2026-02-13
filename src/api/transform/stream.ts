@@ -66,6 +66,10 @@ export interface ApiStreamUsageChunk {
 	cacheReadTokens?: number
 	reasoningTokens?: number
 	totalCost?: number
+	/** Total input tokens including cache read/write tokens. Each provider computes this directly. */
+	totalInputTokens?: number
+	/** Total output tokens. Each provider computes this directly. */
+	totalOutputTokens?: number
 }
 
 export interface ApiStreamGroundingChunk {

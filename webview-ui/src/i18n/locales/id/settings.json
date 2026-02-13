@@ -31,7 +31,6 @@
 		"mcp": "Server MCP",
 		"worktrees": "Worktrees",
 		"autoApprove": "Auto-Approve",
-		"browser": "Browser",
 		"checkpoints": "Checkpoint",
 		"notifications": "Notifikasi",
 		"contextManagement": "Konteks",
@@ -240,10 +239,6 @@
 				"label": "Sertakan file yang dilindungi",
 				"description": "Izinkan Roo membuat dan mengedit file yang dilindungi (seperti .rooignore dan file konfigurasi .roo/) tanpa memerlukan persetujuan."
 			}
-		},
-		"browser": {
-			"label": "Browser",
-			"description": "Secara otomatis melakukan aksi browser tanpa memerlukan persetujuan. Catatan: Hanya berlaku ketika model mendukung computer use"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -590,34 +585,6 @@
 			"placeholder": "Default: claude",
 			"maxTokensLabel": "Token Output Maks",
 			"maxTokensDescription": "Jumlah maksimum token output untuk respons Claude Code. Default adalah 8000."
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "Aktifkan tool browser",
-			"description": "Ketika diaktifkan, Roo dapat menggunakan browser untuk berinteraksi dengan website ketika menggunakan model yang mendukung computer use. <0>Pelajari lebih lanjut</0>"
-		},
-		"viewport": {
-			"label": "Ukuran viewport",
-			"description": "Pilih ukuran viewport untuk interaksi browser. Ini mempengaruhi bagaimana website ditampilkan dan berinteraksi.",
-			"options": {
-				"largeDesktop": "Desktop Besar (1280x800)",
-				"smallDesktop": "Desktop Kecil (900x600)",
-				"tablet": "Tablet (768x1024)",
-				"mobile": "Mobile (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "Kualitas screenshot",
-			"description": "Sesuaikan kualitas WebP screenshot browser. Nilai yang lebih tinggi memberikan screenshot yang lebih jelas tetapi meningkatkan penggunaan token."
-		},
-		"remote": {
-			"label": "Gunakan koneksi browser remote",
-			"description": "Hubungkan ke browser Chrome yang berjalan dengan remote debugging diaktifkan (--remote-debugging-port=9222).",
-			"urlPlaceholder": "URL Kustom (misalnya, http://localhost:9222)",
-			"testButton": "Test Koneksi",
-			"testingButton": "Testing...",
-			"instructions": "Masukkan alamat host DevTools Protocol atau biarkan kosong untuk auto-discover instance Chrome lokal. Tombol Test Koneksi akan mencoba URL kustom jika disediakan, atau auto-discover jika field kosong."
 		}
 	},
 	"checkpoints": {

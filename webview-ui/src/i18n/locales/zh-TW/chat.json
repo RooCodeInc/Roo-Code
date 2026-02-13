@@ -393,44 +393,6 @@
 		"total": "總成本：${{cost}}",
 		"includesSubtasks": "包含子任務成本"
 	},
-	"browser": {
-		"session": "瀏覽器工作階段",
-		"active": "使用中",
-		"rooWantsToUse": "Roo 想要使用瀏覽器",
-		"consoleLogs": "主控台記錄",
-		"noNewLogs": "（沒有新記錄）",
-		"screenshot": "瀏覽器螢幕擷圖",
-		"cursor": "游標",
-		"navigation": {
-			"step": "步驟 {{current}}／{{total}}",
-			"previous": "上一步",
-			"next": "下一步"
-		},
-		"sessionStarted": "瀏覽器工作階段已啟動",
-		"actions": {
-			"title": "瀏覽器動作：",
-			"launched": "瀏覽器已啟動",
-			"launch": "在 {{url}} 啟動瀏覽器",
-			"clicked": "點選位置：{{coordinate}}",
-			"click": "點選 ({{coordinate}})",
-			"typed": "輸入：{{text}}",
-			"type": "輸入「{{text}}」",
-			"pressed": "已按下 {{key}}",
-			"press": "按下 {{key}}",
-			"scrolledDown": "已向下捲動",
-			"scrollDown": "向下捲動",
-			"scrolledUp": "已向上捲動",
-			"scrollUp": "向上捲動",
-			"hovered": "滑鼠停留位置：{{coordinate}}",
-			"hover": "滑鼠停留 ({{coordinate}})",
-			"resized": "大小已變更：{{size}}",
-			"resize": "調整大小為 {{size}}",
-			"screenshotSaved": "螢幕擷圖已儲存",
-			"screenshot": "將螢幕擷圖儲存至 {{path}}",
-			"closed": "瀏覽器已關閉",
-			"close": "關閉瀏覽器"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "展開程式碼區塊",

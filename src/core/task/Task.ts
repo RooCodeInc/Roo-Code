@@ -63,6 +63,7 @@ import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "..
 import type { AssistantModelMessage } from "ai"
 import { ApiStream, GroundingSource } from "../../api/transform/stream"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
+import { applyCacheBreakpoints, UNIVERSAL_CACHE_OPTIONS } from "../../api/transform/cache-breakpoints"
 
 // shared
 import { findLastIndex } from "../../shared/array"
@@ -71,13 +72,11 @@ import { combineCommandSequences } from "../../shared/combineCommandSequences"
 import { t } from "../../i18n"
 import { getApiMetrics, hasTokenUsageChanged, hasToolUsageChanged } from "../../shared/getApiMetrics"
 import { ClineAskResponse } from "../../shared/WebviewMessage"
-import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes"
+import { defaultModeSlug, getModeBySlug } from "../../shared/modes"
 import { DiffStrategy, type ToolUse, type ToolParamName, toolParamNames } from "../../shared/tools"
 import { getModelMaxOutputTokens } from "../../shared/api"
 
 // services
-import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher"
-import { BrowserSession } from "../../services/browser/BrowserSession"
 import { McpHub } from "../../services/mcp/McpHub"
 import { McpServerManager } from "../../services/mcp/McpServerManager"
 import { RepoPerTaskCheckpointService } from "../../services/checkpoints"
@@ -90,7 +89,6 @@ import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { OutputInterceptor } from "../../integrations/terminal/OutputInterceptor"
 
 // utils
-import { calculateApiCostAnthropic, calculateApiCostOpenAI } from "../../shared/cost"
 import { getWorkspacePath } from "../../utils/path"
 import { sanitizeToolUseId } from "../../utils/tool-id"
 import { getTaskDirectoryPath } from "../../utils/storage"
@@ -183,8 +181,6 @@ export interface TaskOptions extends CreateTaskOptions {
 	onCreated?: (task: Task) => void
 	initialTodos?: TodoItem[]
 	workspacePath?: string
-	/** Initial status for the task's history item (e.g., "active" for child tasks) */
-	initialStatus?: "active" | "delegated" | "completed"
 }
 
 export class Task extends EventEmitter<TaskEvents> implements TaskLike {
@@ -326,11 +322,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	rooIgnoreController?: RooIgnoreController
 	rooProtectedController?: RooProtectedController
 	fileContextTracker: FileContextTracker
-	urlContentFetcher: UrlContentFetcher
 	terminalProcess?: RooTerminalProcess
-
-	// Computer User
-	browserSession: BrowserSession
 
 	// Editing
 	diffViewProvider: DiffViewProvider
@@ -472,7 +464,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Add to content and present
 			this.assistantMessageContent.push(partialToolUse)
 			this.userMessageContentReady = false
-			presentAssistantMessage(this)
+			presentAssistantMessage(this).catch((err) => {
+				if (!this.abort) {
+					console.error("[presentAssistantMessage] Unhandled error:", err)
+				}
+			})
 		} else if (event.type === "tool_call_delta") {
 			// Process chunk using streaming JSON parser
 			const partialToolUse = NativeToolCallParser.processStreamingChunk(event.id, event.delta)
@@ -488,7 +484,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					this.assistantMessageContent[toolUseIndex] = partialToolUse
 
 					// Present updated tool use
-					presentAssistantMessage(this)
+					presentAssistantMessage(this).catch((err) => {
+						if (!this.abort) {
+							console.error("[presentAssistantMessage] Unhandled error:", err)
+						}
+					})
 				}
 			}
 		} else if (event.type === "tool_call_end") {
@@ -514,7 +514,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.userMessageContentReady = false
 
 				// Present the finalized tool call
-				presentAssistantMessage(this)
+				presentAssistantMessage(this).catch((err) => {
+					if (!this.abort) {
+						console.error("[presentAssistantMessage] Unhandled error:", err)
+					}
+				})
 			} else if (toolUseIndex !== undefined) {
 				// finalizeStreamingToolCall returned null (malformed JSON or missing args)
 				// Mark the tool as non-partial so it's presented as complete, but execution
@@ -533,7 +537,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.userMessageContentReady = false
 
 				// Present the tool call - validation will handle missing params
-				presentAssistantMessage(this)
+				presentAssistantMessage(this).catch((err) => {
+					if (!this.abort) {
+						console.error("[presentAssistantMessage] Unhandled error:", err)
+					}
+				})
 			}
 		}
 	}
@@ -568,9 +576,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// Cloud Sync Tracking
 	private cloudSyncedMessageTimestamps: Set<number> = new Set()
 
-	// Initial status for the task's history item (set at creation time to avoid race conditions)
-	private readonly initialStatus?: "active" | "delegated" | "completed"
-
 	// MessageManager for high-level message operations (lazy initialized)
 	private _messageManager?: MessageManager
 
@@ -592,7 +597,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		onCreated,
 		initialTodos,
 		workspacePath,
-		initialStatus,
 	}: TaskOptions) {
 		super()
 
@@ -644,29 +648,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.api = buildApiHandler(this.apiConfiguration)
 		this.autoApprovalHandler = new AutoApprovalHandler()
 
-		this.urlContentFetcher = new UrlContentFetcher(provider.context)
-		this.browserSession = new BrowserSession(provider.context, (isActive: boolean) => {
-			// Add a message to indicate browser session status change
-			this.say("browser_session_status", isActive ? "Browser session opened" : "Browser session closed")
-			// Broadcast to browser panel
-			this.broadcastBrowserSessionUpdate()
-
-			// When a browser session becomes active, automatically open/reveal the Browser Session tab
-			if (isActive) {
-				try {
-					// Lazy-load to avoid circular imports at module load time
-					const { BrowserSessionPanelManager } = require("../webview/BrowserSessionPanelManager")
-					const providerRef = this.providerRef.deref()
-					if (providerRef) {
-						BrowserSessionPanelManager.getInstance(providerRef)
-							.show()
-							.catch(() => {})
-					}
-				} catch (err) {
-					console.error("[Task] Failed to auto-open Browser Session panel:", err)
-				}
-			}
-		})
 		this.consecutiveMistakeLimit = consecutiveMistakeLimit ?? DEFAULT_CONSECUTIVE_MISTAKE_LIMIT
 		this.providerRef = new WeakRef(provider)
 		this.globalStoragePath = provider.context.globalStorageUri.fsPath
@@ -677,7 +658,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.parentTask = parentTask
 		this.taskNumber = taskNumber
-		this.initialStatus = initialStatus
 
 		// Store the task's mode and API config name when it's created.
 		// For history items, use the stored values; for new tasks, we'll set them
@@ -749,13 +729,47 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		if (startTask) {
 			this._started = true
 			if (task || images) {
-				this.startTask(task, images)
+				this.runLifecycleTaskInBackground(this.startTask(task, images), "startTask")
 			} else if (historyItem) {
-				this.resumeTaskFromHistory()
+				this.runLifecycleTaskInBackground(this.resumeTaskFromHistory(), "resumeTaskFromHistory")
 			} else {
 				throw new Error("Either historyItem or task/images must be provided")
 			}
 		}
+	}
+
+	private runLifecycleTaskInBackground(taskPromise: Promise<void>, operation: "startTask" | "resumeTaskFromHistory") {
+		void taskPromise.catch((error) => {
+			if (this.shouldIgnoreBackgroundLifecycleError(error)) {
+				return
+			}
+
+			console.error(
+				`[Task#${operation}] task ${this.taskId}.${this.instanceId} failed: ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+			)
+		})
+	}
+
+	private shouldIgnoreBackgroundLifecycleError(error: unknown): boolean {
+		if (error instanceof AskIgnoredError) {
+			return true
+		}
+
+		if (this.abandoned === true || this.abort === true || this.abortReason === "user_cancelled") {
+			return true
+		}
+
+		if (!(error instanceof Error)) {
+			return false
+		}
+
+		const abortedByCurrentTask =
+			error.message.includes(`[RooCode#ask] task ${this.taskId}.${this.instanceId} aborted`) ||
+			error.message.includes(`[RooCode#say] task ${this.taskId}.${this.instanceId} aborted`)
+
+		return abortedByCurrentTask
 	}
 
 	/**
@@ -1369,7 +1383,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				workspace: this.cwd,
 				mode: this._taskMode || defaultModeSlug, // Use the task's own mode, not the current provider mode.
 				apiConfigName: this._taskApiConfigName, // Use the task's own provider profile, not the current provider profile.
-				initialStatus: this.initialStatus,
 			})
 
 			// Emit token/tool usage updates using debounced function
@@ -1382,7 +1395,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			await this.providerRef.deref()?.updateTaskHistory(historyItem)
 			return true
 		} catch (error) {
-			console.error("Failed to save Roo messages:", error)
+			console.error(
+				`[Task#saveClineMessages] Failed to save Roo messages for task ${this.taskId}: ${error instanceof Error ? error.message : String(error)}`,
+				error,
+			)
 			return false
 		}
 	}
@@ -1567,12 +1583,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			if (message) {
 				// Check if this is a tool approval ask that needs to be handled.
-				if (
-					type === "tool" ||
-					type === "command" ||
-					type === "browser_action_launch" ||
-					type === "use_mcp_server"
-				) {
+				if (type === "tool" || type === "command" || type === "use_mcp_server") {
 					// For tool approvals, we need to approve first, then send
 					// the message if there's text/images.
 					this.handleWebviewAskResponse("yesButtonClicked", message.text, message.images)
@@ -1599,12 +1610,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					if (message) {
 						// If this is a tool approval ask, we need to approve first (yesButtonClicked)
 						// and include any queued text/images.
-						if (
-							type === "tool" ||
-							type === "command" ||
-							type === "browser_action_launch" ||
-							type === "use_mcp_server"
-						) {
+						if (type === "tool" || type === "command" || type === "use_mcp_server") {
 							this.handleWebviewAskResponse("yesButtonClicked", message.text, message.images)
 						} else {
 							this.handleWebviewAskResponse("messageResponse", message.text, message.images)
@@ -1802,7 +1808,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				customModes: state?.customModes,
 				experiments: state?.experiments,
 				apiConfiguration,
-				browserToolEnabled: state?.browserToolEnabled ?? true,
 				disabledTools: state?.disabledTools,
 				modelInfo,
 				includeAllToolsWithRestrictions: false,
@@ -1996,11 +2001,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				contextTruncation,
 			})
 		}
-
-		// Broadcast browser session updates to panel when browser-related messages are added
-		if (type === "browser_action" || type === "browser_action_result" || type === "browser_session_status") {
-			this.broadcastBrowserSessionUpdate()
-		}
 	}
 
 	async sayAndCreateMissingParamError(toolName: ToolName, paramName: string, relPath?: string) {
@@ -2058,7 +2058,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 * child task begins writing its own history (avoiding a read-modify-write
 	 * race on globalState).
 	 */
-	public start(): void {
+	public start(): Promise<void> | void {
 		if (this._started) {
 			return
 		}
@@ -2067,7 +2067,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const { task, images } = this.metadata
 
 		if (task || images) {
-			this.startTask(task ?? undefined, images ?? undefined)
+			return this.startTask(task ?? undefined, images ?? undefined)
 		}
 	}
 
@@ -2098,6 +2098,27 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			await this.providerRef.deref()?.postStateToWebviewWithoutTaskHistory()
 
 			await this.say("text", task, images)
+
+			// Verify initial persistence succeeded — if saveClineMessages failed silently,
+			// this task will be invisible to globalState and delegation will break.
+			try {
+				const provider = this.providerRef.deref()
+				if (provider) {
+					const history =
+						((provider as any).getGlobalState("taskHistory") as Array<{ id: string }> | undefined) ?? []
+					if (!history.find((h) => h.id === this.taskId)) {
+						console.error(
+							`[Task#startTask] CRITICAL: Task ${this.taskId} not found in globalState after initial say(). ` +
+								`saveClineMessages may have failed silently. Retrying persistence...`,
+						)
+						await this.saveClineMessages()
+					}
+				}
+			} catch (verifyErr) {
+				console.error(
+					`[Task#startTask] Failed to verify initial persistence: ${verifyErr instanceof Error ? verifyErr.message : String(verifyErr)}`,
+				)
+			}
 
 			// Check for too many MCP tools and warn the user
 			const { enabledToolCount, enabledServerCount } = await this.getEnabledMcpToolsCount()
@@ -2478,6 +2499,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			console.error("Error cancelling current request:", error)
 		}
 
+		// Cancel debounced token usage emitter to prevent zombie callbacks
+		try {
+			this.debouncedEmitTokenUsage.cancel()
+		} catch (error) {
+			console.error("Error cancelling debounced token usage emitter:", error)
+		}
+
 		// Remove provider profile change listener
 		try {
 			if (this.providerProfileChangeListener) {
@@ -2537,28 +2565,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			.catch((error) => {
 				console.error("Error cleaning up command output artifacts:", error)
 			})
-
-		try {
-			this.urlContentFetcher.closeBrowser()
-		} catch (error) {
-			console.error("Error closing URL content fetcher browser:", error)
-		}
-
-		try {
-			this.browserSession.closeBrowser()
-		} catch (error) {
-			console.error("Error closing browser session:", error)
-		}
-		// Also close the Browser Session panel when the task is disposed
-		try {
-			const provider = this.providerRef.deref()
-			if (provider) {
-				const { BrowserSessionPanelManager } = require("../webview/BrowserSessionPanelManager")
-				BrowserSessionPanelManager.getInstance(provider).dispose()
-			}
-		} catch (error) {
-			console.error("Error closing browser session panel:", error)
-		}
 
 		try {
 			if (this.rooIgnoreController) {
@@ -2812,7 +2818,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const { content: parsedUserContent, mode: slashCommandMode } = await processUserContentMentions({
 				userContent: currentUserContent as Array<TextPart | ImagePart>,
 				cwd: this.cwd,
-				urlContentFetcher: this.urlContentFetcher,
 				fileContextTracker: this.fileContextTracker,
 				rooIgnoreController: this.rooIgnoreController,
 				showRooIgnoredFiles,
@@ -2888,6 +2893,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				let inputTokens = 0
 				let outputTokens = 0
 				let totalCost: number | undefined
+				let totalInputTokensAccum = 0
+				let totalOutputTokensAccum = 0
 
 				// We can't use `api_req_finished` anymore since it's a unique case
 				// where it could come after a streaming message (i.e. in the middle
@@ -2903,38 +2910,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					const existingData = JSON.parse(this.clineMessages[lastApiReqIndex].text || "{}")
 
-					// Calculate total tokens and cost using provider-aware function
-					const modelId = getModelId(this.apiConfiguration)
-					const apiProvider = this.apiConfiguration.apiProvider
-					const apiProtocol = getApiProtocol(
-						apiProvider && !isRetiredProvider(apiProvider) ? apiProvider : undefined,
-						modelId,
-					)
-
-					const costResult =
-						apiProtocol === "anthropic"
-							? calculateApiCostAnthropic(
-									streamModelInfo,
-									inputTokens,
-									outputTokens,
-									cacheWriteTokens,
-									cacheReadTokens,
-								)
-							: calculateApiCostOpenAI(
-									streamModelInfo,
-									inputTokens,
-									outputTokens,
-									cacheWriteTokens,
-									cacheReadTokens,
-								)
-
+					// Use provider-computed totals when available, falling back to raw token counts
 					this.clineMessages[lastApiReqIndex].text = JSON.stringify({
 						...existingData,
-						tokensIn: costResult.totalInputTokens,
-						tokensOut: costResult.totalOutputTokens,
+						tokensIn: totalInputTokensAccum || inputTokens,
+						tokensOut: totalOutputTokensAccum || outputTokens,
 						cacheWrites: cacheWriteTokens,
 						cacheReads: cacheReadTokens,
-						cost: totalCost ?? costResult.totalCost,
+						cost: totalCost ?? existingData.cost,
 						cancelReason,
 						streamingFailedMessage,
 					} satisfies ClineApiReqInfo)
@@ -3063,7 +3046,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								outputTokens += chunk.outputTokens
 								cacheWriteTokens += chunk.cacheWriteTokens ?? 0
 								cacheReadTokens += chunk.cacheReadTokens ?? 0
-								totalCost = chunk.totalCost
+								totalCost = chunk.totalCost ?? totalCost
+								totalInputTokensAccum += chunk.totalInputTokens ?? 0
+								totalOutputTokensAccum += chunk.totalOutputTokens ?? 0
 								break
 							case "grounding":
 								// Handle grounding sources separately from regular content
@@ -3122,7 +3107,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 								// Present the tool call to user - presentAssistantMessage will execute
 								// tools sequentially and accumulate all results in userMessageContent
-								presentAssistantMessage(this)
+								presentAssistantMessage(this).catch((err) => {
+									if (!this.abort) {
+										console.error("[presentAssistantMessage] Unhandled error:", err)
+									}
+								})
 								break
 							}
 							case "text": {
@@ -3141,7 +3130,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									})
 									this.userMessageContentReady = false
 								}
-								presentAssistantMessage(this)
+								presentAssistantMessage(this).catch((err) => {
+									if (!this.abort) {
+										console.error("[presentAssistantMessage] Unhandled error:", err)
+									}
+								})
 								break
 							}
 							case "response_message":
@@ -3188,6 +3181,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						cacheWrite: cacheWriteTokens,
 						cacheRead: cacheReadTokens,
 						total: totalCost,
+						totalIn: totalInputTokensAccum,
+						totalOut: totalOutputTokensAccum,
 					}
 
 					const drainStreamInBackgroundToFindAllUsage = async (apiReqIndex: number) => {
@@ -3201,6 +3196,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						let bgCacheWriteTokens = currentTokens.cacheWrite
 						let bgCacheReadTokens = currentTokens.cacheRead
 						let bgTotalCost = currentTokens.total
+						let bgTotalInputTokens = currentTokens.totalIn
+						let bgTotalOutputTokens = currentTokens.totalOut
 
 						// Helper function to capture telemetry and update messages
 						const captureUsageData = async (
@@ -3210,6 +3207,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								cacheWrite: number
 								cacheRead: number
 								total?: number
+								totalIn: number
+								totalOut: number
 							},
 							messageIndex: number = apiReqIndex,
 						) => {
@@ -3224,7 +3223,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								outputTokens = tokens.output
 								cacheWriteTokens = tokens.cacheWrite
 								cacheReadTokens = tokens.cacheRead
-								totalCost = tokens.total
+								totalCost = tokens.total ?? totalCost
+								totalInputTokensAccum = tokens.totalIn
+								totalOutputTokensAccum = tokens.totalOut
 
 								// Update the API request message with the latest usage data
 								updateApiReqMsg()
@@ -3236,38 +3237,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									await this.updateClineMessage(apiReqMessage)
 								}
 
-								// Capture telemetry with provider-aware cost calculation
-								const modelId = getModelId(this.apiConfiguration)
-								const apiProvider = this.apiConfiguration.apiProvider
-								const apiProtocol = getApiProtocol(
-									apiProvider && !isRetiredProvider(apiProvider) ? apiProvider : undefined,
-									modelId,
-								)
+								const messageData = JSON.parse(
+									this.clineMessages[messageIndex]?.text || "{}",
+								) as ClineApiReqInfo
+								const telemetryCost =
+									tokens.total ??
+									(typeof messageData.cost === "number" ? messageData.cost : undefined)
 
-								// Use the appropriate cost function based on the API protocol
-								const costResult =
-									apiProtocol === "anthropic"
-										? calculateApiCostAnthropic(
-												streamModelInfo,
-												tokens.input,
-												tokens.output,
-												tokens.cacheWrite,
-												tokens.cacheRead,
-											)
-										: calculateApiCostOpenAI(
-												streamModelInfo,
-												tokens.input,
-												tokens.output,
-												tokens.cacheWrite,
-												tokens.cacheRead,
-											)
-
+								// Use provider-computed totals for telemetry, falling back to raw counts
 								TelemetryService.instance.captureLlmCompletion(this.taskId, {
-									inputTokens: costResult.totalInputTokens,
-									outputTokens: costResult.totalOutputTokens,
+									inputTokens: tokens.totalIn || tokens.input,
+									outputTokens: tokens.totalOut || tokens.output,
 									cacheWriteTokens: tokens.cacheWrite,
 									cacheReadTokens: tokens.cacheRead,
-									cost: tokens.total ?? costResult.totalCost,
+									cost: telemetryCost,
 								})
 							}
 						}
@@ -3301,7 +3284,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									bgOutputTokens += chunk.outputTokens
 									bgCacheWriteTokens += chunk.cacheWriteTokens ?? 0
 									bgCacheReadTokens += chunk.cacheReadTokens ?? 0
-									bgTotalCost = chunk.totalCost
+									bgTotalCost = chunk.totalCost ?? bgTotalCost
+									bgTotalInputTokens += chunk.totalInputTokens ?? 0
+									bgTotalOutputTokens += chunk.totalOutputTokens ?? 0
 								}
 							}
 
@@ -3320,6 +3305,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 										cacheWrite: bgCacheWriteTokens,
 										cacheRead: bgCacheReadTokens,
 										total: bgTotalCost,
+										totalIn: bgTotalInputTokens,
+										totalOut: bgTotalOutputTokens,
 									},
 									lastApiReqIndex,
 								)
@@ -3344,6 +3331,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 										cacheWrite: bgCacheWriteTokens,
 										cacheRead: bgCacheReadTokens,
 										total: bgTotalCost,
+										totalIn: bgTotalInputTokens,
+										totalOut: bgTotalOutputTokens,
 									},
 									lastApiReqIndex,
 								)
@@ -3468,7 +3457,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							this.userMessageContentReady = false
 
 							// Present the finalized tool call
-							presentAssistantMessage(this)
+							presentAssistantMessage(this).catch((err) => {
+								if (!this.abort) {
+									console.error("[presentAssistantMessage] Unhandled error:", err)
+								}
+							})
 						} else if (toolUseIndex !== undefined) {
 							// finalizeStreamingToolCall returned null (malformed JSON or missing args)
 							// We still need to mark the tool as non-partial so it gets executed
@@ -3487,7 +3480,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							this.userMessageContentReady = false
 
 							// Present the tool call - validation will handle missing params
-							presentAssistantMessage(this)
+							presentAssistantMessage(this).catch((err) => {
+								if (!this.abort) {
+									console.error("[presentAssistantMessage] Unhandled error:", err)
+								}
+							})
 						}
 					}
 				}
@@ -3721,7 +3718,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// If there is content to update then it will complete and
 					// update `this.userMessageContentReady` to true, which we
 					// `pWaitFor` before making the next request.
-					presentAssistantMessage(this)
+					presentAssistantMessage(this).catch((err) => {
+						if (!this.abort) {
+							console.error("[presentAssistantMessage] Unhandled error:", err)
+						}
+					})
 				}
 
 				if (hasTextContent || hasToolUses) {
@@ -3741,7 +3742,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// 	this.userMessageContentReady = true
 					// }
 
-					await pWaitFor(() => this.userMessageContentReady)
+					await pWaitFor(() => this.userMessageContentReady || this.abort)
+
+					if (this.abort) {
+						return false
+					}
 
 					// If the model did not tool use, then we need to tell it to
 					// either use a tool or attempt_completion.
@@ -3951,13 +3956,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const state = await this.providerRef.deref()?.getState()
 
 		const {
-			browserViewportSize,
 			mode,
 			customModes,
 			customModePrompts,
 			customInstructions,
 			experiments,
-			browserToolEnabled,
 			language,
 			apiConfiguration,
 			enableSubfolderRules,
@@ -3970,24 +3973,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				throw new Error("Provider not available")
 			}
 
-			// Align browser tool enablement with generateSystemPrompt: require model image support,
-			// mode to include the browser group, and the user setting to be enabled.
-			const modeConfig = getModeBySlug(mode ?? defaultModeSlug, customModes)
-			const modeSupportsBrowser = modeConfig?.groups.some((group) => getGroupName(group) === "browser") ?? false
-
-			// Check if model supports browser capability (images)
 			const modelInfo = this.api.getModel().info
-			const modelSupportsBrowser = (modelInfo as any)?.supportsImages === true
-
-			const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
 
 			return SYSTEM_PROMPT(
 				provider.context,
 				this.cwd,
-				canUseBrowserTool,
+				false,
 				mcpHub,
 				this.diffStrategy,
-				browserViewportSize ?? "900x600",
 				mode ?? defaultModeSlug,
 				customModePrompts,
 				customModes,
@@ -3997,7 +3990,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				rooIgnoreInstructions,
 				{
 					todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
-					browserToolEnabled: browserToolEnabled ?? true,
 					useAgentRules:
 						vscode.workspace.getConfiguration(Package.name).get<boolean>("useAgentRules") ?? true,
 					enableSubfolderRules: enableSubfolderRules ?? false,
@@ -4058,7 +4050,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				customModes: state?.customModes,
 				experiments: state?.experiments,
 				apiConfiguration,
-				browserToolEnabled: state?.browserToolEnabled ?? true,
 				disabledTools: state?.disabledTools,
 				modelInfo,
 				includeAllToolsWithRestrictions: false,
@@ -4273,7 +4264,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						customModes: state?.customModes,
 						experiments: state?.experiments,
 						apiConfiguration,
-						browserToolEnabled: state?.browserToolEnabled ?? true,
 						disabledTools: state?.disabledTools,
 						modelInfo,
 						includeAllToolsWithRestrictions: false,
@@ -4396,6 +4386,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const messagesWithoutImages = maybeRemoveImageBlocks(mergedForApi, this.api)
 		const cleanConversationHistory = this.buildCleanConversationHistory(messagesWithoutImages)
 
+		// Breakpoints 3-4: Apply cache breakpoints to the last 2 non-assistant messages
+		applyCacheBreakpoints(cleanConversationHistory.filter(isRooRoleMessage))
+
 		// Check auto-approval limits
 		const approvalResult = await this.autoApprovalHandler.checkAutoApprovalLimits(
 			state,
@@ -4438,7 +4431,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				customModes: state?.customModes,
 				experiments: state?.experiments,
 				apiConfiguration,
-				browserToolEnabled: state?.browserToolEnabled ?? true,
 				disabledTools: state?.disabledTools,
 				modelInfo,
 				includeAllToolsWithRestrictions: supportsAllowedFunctionNames,
@@ -4453,6 +4445,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			mode: mode,
 			taskId: this.taskId,
 			suppressPreviousResponseId: this.skipPrevResponseIdOnce,
+			toolProviderOptions: UNIVERSAL_CACHE_OPTIONS,
+			// Breakpoint 1: System prompt caching — cache-aware providers use this
+			// to inject the system prompt as a cached system message via
+			// applySystemPromptCaching(), since AI SDK v6 does not support
+			// providerOptions on the `system` string parameter.
+			systemProviderOptions: UNIVERSAL_CACHE_OPTIONS,
 			// Include tools whenever they are present.
 			...(shouldIncludeTools
 				? {
@@ -4908,41 +4906,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this._messageManager = new MessageManager(this)
 		}
 		return this._messageManager
-	}
-
-	/**
-	 * Broadcast browser session updates to the browser panel (if open)
-	 */
-	private broadcastBrowserSessionUpdate(): void {
-		const provider = this.providerRef.deref()
-		if (!provider) {
-			return
-		}
-
-		try {
-			const { BrowserSessionPanelManager } = require("../webview/BrowserSessionPanelManager")
-			const panelManager = BrowserSessionPanelManager.getInstance(provider)
-
-			// Get browser session messages
-			const browserSessionStartIndex = this.clineMessages.findIndex(
-				(m) =>
-					m.ask === "browser_action_launch" ||
-					(m.say === "browser_session_status" && m.text?.includes("opened")),
-			)
-
-			const browserSessionMessages =
-				browserSessionStartIndex !== -1 ? this.clineMessages.slice(browserSessionStartIndex) : []
-
-			const isBrowserSessionActive = this.browserSession?.isSessionActive() ?? false
-
-			// Update the panel asynchronously
-			panelManager.updateBrowserSession(browserSessionMessages, isBrowserSessionActive).catch((error: Error) => {
-				console.error("Failed to broadcast browser session update:", error)
-			})
-		} catch (error) {
-			// Silently fail if panel manager is not available
-			console.debug("Browser panel not available for update:", error)
-		}
 	}
 
 	/**

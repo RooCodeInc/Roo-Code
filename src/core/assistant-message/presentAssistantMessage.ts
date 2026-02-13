@@ -24,7 +24,6 @@ import { searchReplaceTool } from "../tools/SearchReplaceTool"
 import { editFileTool } from "../tools/EditFileTool"
 import { applyPatchTool } from "../tools/ApplyPatchTool"
 import { searchFilesTool } from "../tools/SearchFilesTool"
-import { browserActionTool } from "../tools/BrowserActionTool"
 import { executeCommandTool } from "../tools/ExecuteCommandTool"
 import { useMcpToolTool } from "../tools/UseMcpToolTool"
 import { accessMcpResourceTool } from "../tools/accessMcpResourceTool"
@@ -61,7 +60,7 @@ import { sanitizeToolUseId } from "../../utils/tool-id"
  */
 
 export async function presentAssistantMessage(cline: Task) {
-	if (cline.abort) {
+	if (cline.abort || cline.abandoned) {
 		throw new Error(`[Task#presentAssistantMessage] task ${cline.taskId}.${cline.instanceId} aborted`)
 	}
 
@@ -358,8 +357,6 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name}]`
 					case "list_files":
 						return `[${block.name} for '${block.params.path}']`
-					case "browser_action":
-						return `[${block.name} for '${block.params.action}']`
 					case "use_mcp_tool":
 						return `[${block.name} for '${block.params.server_name}']`
 					case "access_mcp_resource":
@@ -557,34 +554,6 @@ export async function presentAssistantMessage(cline: Task) {
 				)
 
 				pushToolResult(formatResponse.toolError(errorString))
-			}
-
-			// Keep browser open during an active session so other tools can run.
-			// Session is active if we've seen any browser_action_result and the last browser_action is not "close".
-			try {
-				const messages = cline.clineMessages || []
-				const hasStarted = messages.some((m: any) => m.say === "browser_action_result")
-				let isClosed = false
-				for (let i = messages.length - 1; i >= 0; i--) {
-					const m = messages[i]
-					if (m.say === "browser_action") {
-						try {
-							const act = JSON.parse(m.text || "{}")
-							isClosed = act.action === "close"
-						} catch {}
-						break
-					}
-				}
-				const sessionActive = hasStarted && !isClosed
-				// Only auto-close when no active browser session is present, and this isn't a browser_action
-				if (!sessionActive && block.name !== "browser_action") {
-					await cline.browserSession.closeBrowser()
-				}
-			} catch {
-				// On any unexpected error, fall back to conservative behavior
-				if (block.name !== "browser_action") {
-					await cline.browserSession.closeBrowser()
-				}
 			}
 
 			if (!block.partial) {
@@ -798,15 +767,6 @@ export async function presentAssistantMessage(cline: Task) {
 						pushToolResult,
 					})
 					break
-				case "browser_action":
-					await browserActionTool(
-						cline,
-						block as ToolUse<"browser_action">,
-						askApproval,
-						handleError,
-						pushToolResult,
-					)
-					break
 				case "execute_command":
 					await executeCommandTool.handle(cline, block as ToolUse<"execute_command">, {
 						askApproval,
@@ -978,6 +938,15 @@ export async function presentAssistantMessage(cline: Task) {
 	// locked.
 	cline.presentAssistantMessageLocked = false
 
+	// Early exit if task was aborted/abandoned during tool execution (e.g., new_task delegation).
+	// Prevents unhandled promise rejections from recursive calls hitting the abort check.
+	if (cline.abort || cline.abandoned) {
+		if (cline.didCompleteReadingStream) {
+			cline.userMessageContentReady = true
+		}
+		return
+	}
+
 	// NOTE: When tool is rejected, iterator stream is interrupted and it waits
 	// for `userMessageContentReady` to be true. Future calls to present will
 	// skip execution since `didRejectTool` and iterate until `contentIndex` is
@@ -1005,7 +974,11 @@ export async function presentAssistantMessage(cline: Task) {
 		if (cline.currentStreamingContentIndex < cline.assistantMessageContent.length) {
 			// There are already more content blocks to stream, so we'll call
 			// this function ourselves.
-			presentAssistantMessage(cline)
+			presentAssistantMessage(cline).catch((err) => {
+				if (!cline.abort) {
+					console.error("[presentAssistantMessage] Unhandled error:", err)
+				}
+			})
 			return
 		} else {
 			// CRITICAL FIX: If we're out of bounds and the stream is complete, set userMessageContentReady
@@ -1018,7 +991,11 @@ export async function presentAssistantMessage(cline: Task) {
 
 	// Block is partial, but the read stream may have finished.
 	if (cline.presentAssistantMessageHasPendingUpdates) {
-		presentAssistantMessage(cline)
+		presentAssistantMessage(cline).catch((err) => {
+			if (!cline.abort) {
+				console.error("[presentAssistantMessage] Unhandled error:", err)
+			}
+		})
 	}
 }
 

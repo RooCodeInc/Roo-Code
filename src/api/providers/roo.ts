@@ -17,6 +17,7 @@ import {
 	mapToolChoice,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import type { RooReasoningParams } from "../transform/reasoning"
 import { getRooReasoning } from "../transform/reasoning"
 
@@ -26,6 +27,40 @@ import { getModels, getModelsFromCache } from "./fetchers/modelCache"
 import { generateImageWithProvider, generateImageWithImagesApi, ImageGenerationResult } from "./utils/image-generation"
 import { t } from "../../i18n"
 import type { RooMessage } from "../../core/task-persistence/rooMessage"
+
+type RooProviderMetadata = {
+	cost?: number
+	cache_creation_input_tokens?: number
+	cache_read_input_tokens?: number
+	cached_tokens?: number
+}
+
+type AnthropicProviderMetadata = {
+	cacheCreationInputTokens?: number
+	cacheReadInputTokens?: number
+	usage?: {
+		cache_read_input_tokens?: number
+	}
+}
+
+type GatewayProviderMetadata = {
+	cost?: number
+	cache_creation_input_tokens?: number
+	cached_tokens?: number
+}
+
+type UsageWithCache = {
+	inputTokens?: number
+	outputTokens?: number
+	cachedInputTokens?: number
+	inputTokenDetails?: {
+		cacheReadTokens?: number
+		cacheWriteTokens?: number
+	}
+	details?: {
+		cachedInputTokens?: number
+	}
+}
 
 function getSessionToken(): string {
 	const token = CloudService.hasInstance() ? CloudService.instance.authService?.getSessionToken() : undefined
@@ -93,6 +128,8 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		const firstNumber = (...values: Array<number | undefined>) => values.find((value) => typeof value === "number")
+
 		const model = this.getModel()
 		const { id: modelId, info } = model
 
@@ -122,13 +159,14 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 		// RooMessage[] is already AI SDK-compatible, cast directly
 		const aiSdkMessages = messages as ModelMessage[]
 		const tools = convertToolsForAiSdk(this.convertToolsForOpenAI(metadata?.tools))
+		applyToolCacheOptions(tools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		let lastStreamError: string | undefined
 
 		try {
 			const result = streamText({
 				model: provider(modelId),
-				system: systemPrompt,
+				system: systemPrompt || undefined,
 				messages: aiSdkMessages,
 				maxOutputTokens: maxTokens && maxTokens > 0 ? maxTokens : undefined,
 				temperature,
@@ -146,18 +184,40 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 			}
 
 			// Check provider metadata for usage details
-			const providerMetadata =
-				(await result.providerMetadata) ?? (await (result as any).experimental_providerMetadata)
-			const rooMeta = providerMetadata?.roo as Record<string, any> | undefined
+			const providerMetadata = (await result.providerMetadata) ?? undefined
+			const experimentalProviderMetadata = await (
+				result as { experimental_providerMetadata?: Promise<Record<string, unknown> | undefined> }
+			).experimental_providerMetadata
+			const metadataWithFallback = providerMetadata ?? experimentalProviderMetadata
+			const rooMeta = metadataWithFallback?.roo as RooProviderMetadata | undefined
+			const anthropicMeta = metadataWithFallback?.anthropic as AnthropicProviderMetadata | undefined
+			const gatewayMeta = metadataWithFallback?.gateway as GatewayProviderMetadata | undefined
 
 			// Process usage with protocol-aware normalization
-			const usage = await result.usage
+			const usage = (await result.usage) as UsageWithCache
 			const promptTokens = usage.inputTokens ?? 0
 			const completionTokens = usage.outputTokens ?? 0
 
-			// Extract cache tokens from provider metadata
-			const cacheCreation = (rooMeta?.cache_creation_input_tokens as number) ?? 0
-			const cacheRead = (rooMeta?.cache_read_input_tokens as number) ?? (rooMeta?.cached_tokens as number) ?? 0
+			// Extract cache tokens with priority chain (no double counting):
+			// Roo metadata -> Anthropic metadata -> Gateway metadata -> AI SDK usage -> legacy usage.details -> 0
+			const cacheCreation =
+				firstNumber(
+					rooMeta?.cache_creation_input_tokens,
+					anthropicMeta?.cacheCreationInputTokens,
+					gatewayMeta?.cache_creation_input_tokens,
+					usage.inputTokenDetails?.cacheWriteTokens,
+				) ?? 0
+			const cacheRead =
+				firstNumber(
+					rooMeta?.cache_read_input_tokens,
+					rooMeta?.cached_tokens,
+					anthropicMeta?.cacheReadInputTokens,
+					anthropicMeta?.usage?.cache_read_input_tokens,
+					gatewayMeta?.cached_tokens,
+					usage.cachedInputTokens,
+					usage.inputTokenDetails?.cacheReadTokens,
+					usage.details?.cachedInputTokens,
+				) ?? 0
 
 			// Protocol-aware token normalization:
 			// - OpenAI protocol expects TOTAL input tokens (cached + non-cached)
@@ -168,7 +228,7 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 
 			// Cost: prefer server-side cost, fall back to client-side calculation
 			const isFreeModel = info.isFree === true
-			const serverCost = rooMeta?.cost as number | undefined
+			const serverCost = firstNumber(rooMeta?.cost, gatewayMeta?.cost)
 			const { totalCost: calculatedCost } = calculateApiCostOpenAI(
 				info,
 				promptTokens,
@@ -185,6 +245,9 @@ export class RooHandler extends BaseProvider implements SingleCompletionHandler 
 				cacheWriteTokens: cacheCreation,
 				cacheReadTokens: cacheRead,
 				totalCost,
+				// Roo: promptTokens is always the server-reported total regardless of protocol normalization
+				totalInputTokens: promptTokens,
+				totalOutputTokens: completionTokens,
 			}
 
 			yield* yieldResponseMessage(result)

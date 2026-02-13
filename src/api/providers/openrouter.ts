@@ -23,6 +23,7 @@ import {
 	processAiSdkStreamPart,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
 
 import { BaseProvider } from "./base-provider"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
@@ -125,6 +126,9 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			...(cacheReadTokens > 0 ? { cacheReadTokens } : {}),
 			...(typeof reasoningTokens === "number" && reasoningTokens > 0 ? { reasoningTokens } : {}),
 			totalCost,
+			// OpenRouter uses OpenAI convention: inputTokens is already total
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 
@@ -153,6 +157,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		const openrouter = this.createOpenRouterProvider({ reasoning, headers })
 
 		const tools = convertToolsForAiSdk(metadata?.tools)
+		applyToolCacheOptions(tools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		const providerOptions:
 			| {
@@ -174,10 +179,18 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 					}
 				: undefined
 
+		// Breakpoint 1: System prompt caching — inject as cached system message
+		// OpenRouter routes to Anthropic models that benefit from cache annotations
+		const effectiveSystemPrompt = applySystemPromptCaching(
+			systemPrompt,
+			aiSdkMessages,
+			metadata?.systemProviderOptions,
+		)
+
 		try {
 			const result = streamText({
 				model: openrouter.chat(modelId),
-				system: systemPrompt,
+				system: effectiveSystemPrompt,
 				messages: aiSdkMessages,
 				maxOutputTokens: maxTokens && maxTokens > 0 ? maxTokens : undefined,
 				temperature,

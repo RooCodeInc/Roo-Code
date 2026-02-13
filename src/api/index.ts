@@ -88,6 +88,13 @@ export interface ApiHandlerCreateMessageMetadata {
 	 * Only applies to providers that support function calling restrictions (e.g., Gemini).
 	 */
 	allowedFunctionNames?: string[]
+	/** Provider-specific options for tool definitions (e.g. cache control). */
+	toolProviderOptions?: Record<string, Record<string, unknown>>
+	/** Provider-specific options for the system prompt (e.g. cache control).
+	 * Cache-aware providers use this to inject the system prompt as a cached
+	 * system message, since AI SDK v6 does not support providerOptions on the
+	 * `system` string parameter. */
+	systemProviderOptions?: Record<string, Record<string, unknown>>
 }
 
 export interface ApiHandler {

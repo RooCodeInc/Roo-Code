@@ -13,6 +13,7 @@ import {
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -88,6 +89,12 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -100,19 +107,28 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 			}
 		},
 	): ApiStreamUsageChunk {
-		// Extract cache metrics from Azure's providerMetadata if available
-		const cacheReadTokens = providerMetadata?.azure?.promptCacheHitTokens ?? usage.details?.cachedInputTokens
+		// Extract cache metrics from Azure's providerMetadata, then v6 fields, then legacy
+		const cacheReadTokens =
+			providerMetadata?.azure?.promptCacheHitTokens ??
+			usage.cachedInputTokens ??
+			usage.inputTokenDetails?.cacheReadTokens ??
+			usage.details?.cachedInputTokens
 		// Azure uses OpenAI-compatible caching which does not report cache write tokens separately;
 		// promptCacheMissTokens represents tokens NOT found in cache (processed from scratch), not tokens written to cache.
-		const cacheWriteTokens = undefined
+		const cacheWriteTokens = usage.inputTokenDetails?.cacheWriteTokens
 
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
+			inputTokens,
+			outputTokens,
 			cacheReadTokens,
 			cacheWriteTokens,
-			reasoningTokens: usage.details?.reasoningTokens,
+			reasoningTokens:
+				usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 
@@ -144,11 +160,12 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		// Build the request options
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
 			temperature: this.options.modelTemperature ?? temperature ?? AZURE_DEFAULT_TEMPERATURE,
 			maxOutputTokens: this.getMaxOutputTokens(),

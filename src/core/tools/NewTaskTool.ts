@@ -110,15 +110,15 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 			}
 
 			// Delegate parent and open child as sole active task
-			const child = await (provider as any).delegateParentAndOpenChild({
+			await (provider as any).delegateParentAndOpenChild({
 				parentTaskId: task.taskId,
 				message: unescapedMessage,
 				initialTodos: todoItems,
 				mode,
 			})
-
-			// Reflect delegation in tool result (no pause/unpause, no wait)
-			pushToolResult(`Delegated to child task ${child.taskId}`)
+			// No pushToolResult needed — reopenParentFromDelegation injects the tool_result
+			// when the child completes. Any result pushed here would be orphaned because
+			// flushPendingToolResultsToHistory() already persisted userMessageContent.
 			return
 		} catch (error) {
 			await handleError("creating new task", error)

@@ -31,7 +31,6 @@
 		"mcp": "Máy chủ MCP",
 		"worktrees": "Worktrees",
 		"autoApprove": "Phê duyệt",
-		"browser": "Trình duyệt",
 		"checkpoints": "Điểm kiểm tra",
 		"notifications": "Thông báo",
 		"contextManagement": "Ngữ cảnh",
@@ -240,10 +239,6 @@
 				"label": "Bao gồm các tệp được bảo vệ",
 				"description": "Cho phép Roo tạo và chỉnh sửa các tệp được bảo vệ (như .rooignore và các tệp cấu hình .roo/) mà không yêu cầu phê duyệt."
 			}
-		},
-		"browser": {
-			"label": "Trình duyệt",
-			"description": "Tự động thực hiện các hành động trình duyệt mà không cần phê duyệt. Lưu ý: Chỉ áp dụng khi mô hình hỗ trợ sử dụng máy tính"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -590,34 +585,6 @@
 			"placeholder": "Mặc định: claude",
 			"maxTokensLabel": "Số token đầu ra tối đa",
 			"maxTokensDescription": "Số lượng token đầu ra tối đa cho các phản hồi của Claude Code. Mặc định là 8000."
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "Bật công cụ trình duyệt",
-			"description": "Khi được bật, Roo có thể sử dụng trình duyệt để tương tác với các trang web khi sử dụng các mô hình hỗ trợ sử dụng máy tính. <0>Tìm hiểu thêm</0>"
-		},
-		"viewport": {
-			"label": "Kích thước khung nhìn",
-			"description": "Chọn kích thước khung nhìn cho tương tác trình duyệt. Điều này ảnh hưởng đến cách trang web được hiển thị và tương tác.",
-			"options": {
-				"largeDesktop": "Máy tính để bàn lớn (1280x800)",
-				"smallDesktop": "Máy tính để bàn nhỏ (900x600)",
-				"tablet": "Máy tính bảng (768x1024)",
-				"mobile": "Di động (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "Chất lượng ảnh chụp màn hình",
-			"description": "Điều chỉnh chất lượng WebP của ảnh chụp màn hình trình duyệt. Giá trị cao hơn cung cấp ảnh chụp màn hình rõ ràng hơn nhưng tăng sử dụng token."
-		},
-		"remote": {
-			"label": "Sử dụng kết nối trình duyệt từ xa",
-			"description": "Kết nối với trình duyệt Chrome đang chạy với tính năng gỡ lỗi từ xa được bật (--remote-debugging-port=9222).",
-			"urlPlaceholder": "URL tùy chỉnh (ví dụ: http://localhost:9222)",
-			"testButton": "Kiểm tra kết nối",
-			"testingButton": "Đang kiểm tra...",
-			"instructions": "Nhập địa chỉ DevTools Protocol hoặc để trống để tự động phát hiện các instance Chrome cục bộ. Nút Kiểm tra kết nối sẽ thử URL tùy chỉnh nếu được cung cấp, hoặc tự động phát hiện nếu trường này trống."
 		}
 	},
 	"checkpoints": {

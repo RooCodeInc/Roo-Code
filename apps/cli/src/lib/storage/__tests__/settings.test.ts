@@ -179,20 +179,20 @@ describe("Settings Storage", () => {
 			expect(loaded.reasoningEffort).toBe("low")
 		})
 
-		it("should support dangerouslySkipPermissions setting", async () => {
-			await saveSettings({ dangerouslySkipPermissions: true })
+		it("should support requireApproval setting", async () => {
+			await saveSettings({ requireApproval: true })
 			const loaded = await loadSettings()
 
-			expect(loaded.dangerouslySkipPermissions).toBe(true)
+			expect(loaded.requireApproval).toBe(true)
 		})
 
-		it("should support all settings together including dangerouslySkipPermissions", async () => {
+		it("should support all settings together including requireApproval", async () => {
 			const allSettings = {
 				mode: "architect",
 				provider: "anthropic" as const,
 				model: "claude-sonnet-4-20250514",
 				reasoningEffort: "high" as const,
-				dangerouslySkipPermissions: true,
+				requireApproval: true,
 			}
 
 			await saveSettings(allSettings)
@@ -202,7 +202,7 @@ describe("Settings Storage", () => {
 			expect(loaded.provider).toBe("anthropic")
 			expect(loaded.model).toBe("claude-sonnet-4-20250514")
 			expect(loaded.reasoningEffort).toBe("high")
-			expect(loaded.dangerouslySkipPermissions).toBe(true)
+			expect(loaded.requireApproval).toBe(true)
 		})
 
 		it("should support oneshot setting", async () => {
@@ -218,7 +218,7 @@ describe("Settings Storage", () => {
 				provider: "anthropic" as const,
 				model: "claude-sonnet-4-20250514",
 				reasoningEffort: "high" as const,
-				dangerouslySkipPermissions: true,
+				requireApproval: true,
 				oneshot: true,
 			}
 
@@ -229,8 +229,15 @@ describe("Settings Storage", () => {
 			expect(loaded.provider).toBe("anthropic")
 			expect(loaded.model).toBe("claude-sonnet-4-20250514")
 			expect(loaded.reasoningEffort).toBe("high")
-			expect(loaded.dangerouslySkipPermissions).toBe(true)
+			expect(loaded.requireApproval).toBe(true)
 			expect(loaded.oneshot).toBe(true)
+		})
+
+		it("should still load legacy dangerouslySkipPermissions setting", async () => {
+			await saveSettings({ dangerouslySkipPermissions: true })
+			const loaded = await loadSettings()
+
+			expect(loaded.dangerouslySkipPermissions).toBe(true)
 		})
 	})
 })

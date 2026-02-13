@@ -120,6 +120,21 @@ export const internationalZAiModels = {
 		description:
 			"GLM-4.7 is Zhipu's latest model with built-in thinking capabilities enabled by default. It provides enhanced reasoning for complex tasks while maintaining fast response times.",
 	},
+	"glm-5": {
+		maxTokens: 16_384,
+		contextWindow: 202_752,
+		supportsImages: false,
+		supportsPromptCache: true,
+		supportsReasoningEffort: ["disable", "medium"],
+		reasoningEffort: "medium",
+		preserveReasoning: true,
+		inputPrice: 0.6,
+		outputPrice: 2.2,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.11,
+		description:
+			"GLM-5 is Zhipu's next-generation model with a 202k context window and built-in thinking capabilities. It delivers state-of-the-art reasoning, coding, and agentic performance.",
+	},
 	"glm-4.7-flash": {
 		maxTokens: 16_384,
 		contextWindow: 200_000,
@@ -280,6 +295,21 @@ export const mainlandZAiModels = {
 		cacheReadsPrice: 0.057,
 		description:
 			"GLM-4.7 is Zhipu's latest model with built-in thinking capabilities enabled by default. It provides enhanced reasoning for complex tasks while maintaining fast response times.",
+	},
+	"glm-5": {
+		maxTokens: 16_384,
+		contextWindow: 202_752,
+		supportsImages: false,
+		supportsPromptCache: true,
+		supportsReasoningEffort: ["disable", "medium"],
+		reasoningEffort: "medium",
+		preserveReasoning: true,
+		inputPrice: 0.29,
+		outputPrice: 1.14,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.057,
+		description:
+			"GLM-5 is Zhipu's next-generation model with a 202k context window and built-in thinking capabilities. It delivers state-of-the-art reasoning, coding, and agentic performance.",
 	},
 	"glm-4.7-flash": {
 		maxTokens: 16_384,

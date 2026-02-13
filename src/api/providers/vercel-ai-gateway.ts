@@ -19,6 +19,7 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 
 import { DEFAULT_HEADERS } from "./constants"
@@ -85,6 +86,12 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -94,17 +101,29 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 	): ApiStreamUsageChunk {
 		const gatewayMeta = providerMetadata?.gateway as Record<string, unknown> | undefined
 
-		const cacheWriteTokens = (gatewayMeta?.cache_creation_input_tokens as number) ?? undefined
-		const cacheReadTokens = usage.details?.cachedInputTokens ?? (gatewayMeta?.cached_tokens as number) ?? undefined
+		const cacheWriteTokens =
+			(gatewayMeta?.cache_creation_input_tokens as number) ??
+			usage.inputTokenDetails?.cacheWriteTokens ??
+			undefined
+		const cacheReadTokens =
+			usage.cachedInputTokens ??
+			usage.inputTokenDetails?.cacheReadTokens ??
+			usage.details?.cachedInputTokens ??
+			(gatewayMeta?.cached_tokens as number) ??
+			undefined
 		const totalCost = (gatewayMeta?.cost as number) ?? 0
 
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
+			inputTokens,
+			outputTokens,
 			cacheWriteTokens,
 			cacheReadTokens,
 			totalCost,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 
@@ -120,6 +139,7 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		const temperature = this.supportsTemperature(modelId)
 			? (this.options.modelTemperature ?? VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE)
@@ -127,7 +147,7 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 
 		const result = streamText({
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
 			temperature,
 			maxOutputTokens: info.maxTokens ?? undefined,

@@ -84,7 +84,13 @@ describe("NativeOllamaHandler", () => {
 			expect(results).toHaveLength(3)
 			expect(results[0]).toEqual({ type: "text", text: "Hello" })
 			expect(results[1]).toEqual({ type: "text", text: " world" })
-			expect(results[2]).toEqual({ type: "usage", inputTokens: 10, outputTokens: 2 })
+			expect(results[2]).toEqual({
+				type: "usage",
+				inputTokens: 10,
+				outputTokens: 2,
+				totalInputTokens: 10,
+				totalOutputTokens: 2,
+			})
 		})
 
 		it("should not include providerOptions by default (no num_ctx)", async () => {

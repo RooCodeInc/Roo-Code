@@ -24,6 +24,7 @@ import {
 	handleAiSdkError,
 	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -110,6 +111,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		let effectiveSystemPrompt: string | undefined = systemPrompt
 		let effectiveTemperature: number | undefined =
@@ -141,7 +143,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 		if (deepseekReasoner) {
 			effectiveSystemPrompt = undefined
-			aiSdkMessages.unshift({ role: "user", content: systemPrompt })
+			if (systemPrompt) {
+				aiSdkMessages.unshift({ role: "user", content: systemPrompt })
+			}
 		}
 
 		if (this.options.openAiStreamingEnabled ?? true) {
@@ -181,7 +185,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	): ApiStream {
 		const result = streamText({
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages,
 			temperature,
 			maxOutputTokens: this.getMaxOutputTokens(),
@@ -253,7 +257,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		try {
 			const { text, toolCalls, usage, providerMetadata } = await generateText({
 				model: languageModel,
-				system: systemPrompt,
+				system: systemPrompt || undefined,
 				messages,
 				temperature,
 				maxOutputTokens: this.getMaxOutputTokens(),
@@ -290,6 +294,12 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -304,16 +314,28 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		},
 	): ApiStreamUsageChunk {
 		// Extract cache and reasoning metrics from OpenAI's providerMetadata when available,
-		// falling back to usage.details for standard AI SDK fields.
-		const cacheReadTokens = providerMetadata?.openai?.cachedPromptTokens ?? usage.details?.cachedInputTokens
-		const reasoningTokens = providerMetadata?.openai?.reasoningTokens ?? usage.details?.reasoningTokens
+		// then v6 fields, then legacy usage.details.
+		const cacheReadTokens =
+			providerMetadata?.openai?.cachedPromptTokens ??
+			usage.cachedInputTokens ??
+			usage.inputTokenDetails?.cacheReadTokens ??
+			usage.details?.cachedInputTokens
+		const reasoningTokens =
+			providerMetadata?.openai?.reasoningTokens ??
+			usage.reasoningTokens ??
+			usage.outputTokenDetails?.reasoningTokens ??
+			usage.details?.reasoningTokens
 
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
+			inputTokens,
+			outputTokens,
 			cacheReadTokens,
 			reasoningTokens,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 

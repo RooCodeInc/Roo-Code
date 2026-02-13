@@ -25,7 +25,6 @@
 		"toolNames": {
 			"read": "Czytaj pliki",
 			"edit": "Edytuj pliki",
-			"browser": "Używaj przeglądarki",
 			"command": "Uruchamiaj polecenia",
 			"mcp": "Używaj MCP"
 		},

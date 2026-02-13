@@ -363,44 +363,6 @@
 		"total": "Totale kosten: ${{cost}}",
 		"includesSubtasks": "Inclusief kosten van subtaken"
 	},
-	"browser": {
-		"session": "Browsersessie",
-		"active": "Actief",
-		"rooWantsToUse": "Roo wil de browser gebruiken",
-		"consoleLogs": "Console-logboeken",
-		"noNewLogs": "(Geen nieuwe logboeken)",
-		"screenshot": "Browserschermopname",
-		"cursor": "cursor",
-		"navigation": {
-			"step": "Stap {{current}} van {{total}}",
-			"previous": "Vorige",
-			"next": "Volgende"
-		},
-		"sessionStarted": "Browsersessie gestart",
-		"actions": {
-			"title": "Browseractie: ",
-			"launched": "Browser gestart",
-			"launch": "Browser starten op {{url}}",
-			"clicked": "Geklikt ({{coordinate}})",
-			"click": "Klik ({{coordinate}})",
-			"typed": "Getypt: {{text}}",
-			"type": "Typ \"{{text}}\"",
-			"pressed": "Ingedrukt: {{key}}",
-			"press": "Druk op {{key}}",
-			"scrolledDown": "Naar beneden gescrolld",
-			"scrollDown": "Scroll naar beneden",
-			"scrolledUp": "Naar boven gescrolld",
-			"scrollUp": "Scroll naar boven",
-			"hovered": "Zweefde ({{coordinate}})",
-			"hover": "Zweven ({{coordinate}})",
-			"resized": "Grootte gewijzigd naar: {{size}}",
-			"resize": "Grootte wijzigen naar {{size}}",
-			"screenshotSaved": "Schermopname opgeslagen",
-			"screenshot": "Schermopname opslaan naar {{path}}",
-			"closed": "Browser gesloten",
-			"close": "Browser sluiten"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Codeblok uitvouwen",

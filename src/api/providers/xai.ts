@@ -13,6 +13,7 @@ import {
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -81,6 +82,12 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -92,17 +99,25 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 			}
 		},
 	): ApiStreamUsageChunk {
-		// Extract cache metrics from xAI's providerMetadata if available
-		// xAI supports prompt caching through prompt_tokens_details.cached_tokens
-		const cacheReadTokens = providerMetadata?.xai?.cachedPromptTokens ?? usage.details?.cachedInputTokens
+		// Extract cache metrics from xAI's providerMetadata, then v6 fields, then legacy
+		const cacheReadTokens =
+			providerMetadata?.xai?.cachedPromptTokens ??
+			usage.cachedInputTokens ??
+			usage.inputTokenDetails?.cacheReadTokens ??
+			usage.details?.cachedInputTokens
 
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
+			inputTokens,
+			outputTokens,
 			cacheReadTokens,
-			cacheWriteTokens: undefined, // xAI doesn't report cache write tokens separately
-			reasoningTokens: usage.details?.reasoningTokens,
+			cacheWriteTokens: usage.inputTokenDetails?.cacheWriteTokens, // xAI doesn't typically report cache write tokens
+			reasoningTokens:
+				usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 
@@ -131,11 +146,12 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		// Build the request options
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
 			temperature: this.options.modelTemperature ?? temperature ?? XAI_DEFAULT_TEMPERATURE,
 			maxOutputTokens: this.getMaxOutputTokens(),

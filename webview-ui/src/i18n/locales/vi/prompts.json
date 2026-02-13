@@ -25,7 +25,6 @@
 		"toolNames": {
 			"read": "Đọc tệp",
 			"edit": "Chỉnh sửa tệp",
-			"browser": "Sử dụng trình duyệt",
 			"command": "Chạy lệnh",
 			"mcp": "Sử dụng MCP"
 		},

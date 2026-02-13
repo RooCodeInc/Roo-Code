@@ -252,14 +252,27 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 					if (usage) {
 						const inputTokens = usage.inputTokens || 0
 						const outputTokens = usage.outputTokens || 0
-						const details = (usage as any).details as
-							| { cachedInputTokens?: number; reasoningTokens?: number }
-							| undefined
-						const cacheReadTokens = details?.cachedInputTokens ?? 0
+						const typedUsage = usage as {
+							inputTokens?: number
+							outputTokens?: number
+							cachedInputTokens?: number
+							reasoningTokens?: number
+							inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+							outputTokenDetails?: { reasoningTokens?: number }
+							details?: { cachedInputTokens?: number; reasoningTokens?: number }
+						}
+						const cacheReadTokens =
+							typedUsage.cachedInputTokens ??
+							typedUsage.inputTokenDetails?.cacheReadTokens ??
+							typedUsage.details?.cachedInputTokens ??
+							0
 						// The OpenAI Responses API does not report cache write tokens separately;
 						// only cached (read) tokens are available via usage.details.cachedInputTokens.
-						const cacheWriteTokens = 0
-						const reasoningTokens = details?.reasoningTokens
+						const cacheWriteTokens = typedUsage.inputTokenDetails?.cacheWriteTokens ?? 0
+						const reasoningTokens =
+							typedUsage.reasoningTokens ??
+							typedUsage.outputTokenDetails?.reasoningTokens ??
+							typedUsage.details?.reasoningTokens
 
 						yield {
 							type: "usage",
@@ -269,6 +282,8 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 							cacheReadTokens: cacheReadTokens || undefined,
 							...(typeof reasoningTokens === "number" ? { reasoningTokens } : {}),
 							totalCost: 0, // Subscription-based pricing
+							totalInputTokens: inputTokens,
+							totalOutputTokens: outputTokens,
 						}
 					}
 				} catch (usageError) {

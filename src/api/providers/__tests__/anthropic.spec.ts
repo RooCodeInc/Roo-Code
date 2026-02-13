@@ -399,7 +399,7 @@ describe("AnthropicHandler", () => {
 			expect(endChunk).toBeDefined()
 		})
 
-		it("should pass system prompt via system param with systemProviderOptions for cache control", async () => {
+		it("should pass system prompt via system param when no systemProviderOptions", async () => {
 			setupStreamTextMock([{ type: "text-delta", text: "test" }])
 
 			const stream = handler.createMessage(systemPrompt, [
@@ -410,15 +410,36 @@ describe("AnthropicHandler", () => {
 				// Consume
 			}
 
-			// Verify streamText was called with system + systemProviderOptions (not as a message)
+			// Without systemProviderOptions, system prompt is passed via the system parameter
 			const callArgs = mockStreamText.mock.calls[0]![0]
 			expect(callArgs.system).toBe(systemPrompt)
-			expect(callArgs.systemProviderOptions).toEqual({
-				anthropic: { cacheControl: { type: "ephemeral" } },
-			})
 			// System prompt should NOT be in the messages array
 			const systemMessages = callArgs.messages.filter((m: any) => m.role === "system")
 			expect(systemMessages).toHaveLength(0)
+		})
+
+		it("should inject system prompt as cached system message when systemProviderOptions provided", async () => {
+			setupStreamTextMock([{ type: "text-delta", text: "test" }])
+
+			const cacheOpts = { anthropic: { cacheControl: { type: "ephemeral" } } }
+			const stream = handler.createMessage(
+				systemPrompt,
+				[{ role: "user", content: [{ type: "text" as const, text: "test" }] }],
+				{ taskId: "test-task", systemProviderOptions: cacheOpts },
+			)
+
+			for await (const _chunk of stream) {
+				// Consume
+			}
+
+			// With systemProviderOptions, system prompt is injected as messages[0]
+			const callArgs = mockStreamText.mock.calls[0]![0]
+			expect(callArgs.system).toBeUndefined()
+			// System prompt should be the first message with providerOptions
+			const systemMessages = callArgs.messages.filter((m: any) => m.role === "system")
+			expect(systemMessages).toHaveLength(1)
+			expect(systemMessages[0].content).toBe(systemPrompt)
+			expect(systemMessages[0].providerOptions).toEqual(cacheOpts)
 		})
 	})
 

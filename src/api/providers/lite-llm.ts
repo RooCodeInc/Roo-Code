@@ -96,18 +96,30 @@ export class LiteLLMHandler extends OpenAICompatibleHandler implements SingleCom
 	protected override processUsageMetrics(usage: {
 		inputTokens?: number
 		outputTokens?: number
+		totalInputTokens?: number
+		totalOutputTokens?: number
+		cachedInputTokens?: number
+		reasoningTokens?: number
+		inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+		outputTokenDetails?: { reasoningTokens?: number }
 		details?: {
 			cachedInputTokens?: number
 			reasoningTokens?: number
 		}
 		raw?: Record<string, unknown>
 	}): ApiStreamUsageChunk {
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
-			cacheReadTokens: usage.details?.cachedInputTokens,
-			reasoningTokens: usage.details?.reasoningTokens,
+			inputTokens,
+			outputTokens,
+			cacheReadTokens:
+				usage.cachedInputTokens ?? usage.inputTokenDetails?.cacheReadTokens ?? usage.details?.cachedInputTokens,
+			reasoningTokens:
+				usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 }

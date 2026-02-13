@@ -191,6 +191,8 @@ describe("VercelAiGatewayHandler", () => {
 				cacheWriteTokens: 2,
 				cacheReadTokens: 3,
 				totalCost: 0.005,
+				totalInputTokens: 10,
+				totalOutputTokens: 5,
 			})
 		})
 
@@ -281,6 +283,8 @@ describe("VercelAiGatewayHandler", () => {
 				cacheWriteTokens: 2,
 				cacheReadTokens: 3,
 				totalCost: 0.005,
+				totalInputTokens: 10,
+				totalOutputTokens: 5,
 			})
 		})
 
