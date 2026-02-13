@@ -2,7 +2,7 @@ import * as os from "os"
 import { v7 as uuidv7 } from "uuid"
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createOpenAI } from "@ai-sdk/openai"
-import { streamText, generateText, ToolSet } from "ai"
+import { streamText, generateText, ToolSet, ModelMessage } from "ai"
 
 import { Package } from "../../shared/package"
 import {
@@ -21,6 +21,7 @@ import {
 	processAiSdkStreamPart,
 	mapToolChoice,
 	handleAiSdkError,
+	yieldResponseMessage,
 } from "../transform/ai-sdk"
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -28,6 +29,7 @@ import { getModelParams } from "../transform/model-params"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { openAiCodexOAuthManager } from "../../integrations/openai-codex/oauth"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 import {
 	stripPlainTextReasoningBlocks,
 	collectEncryptedReasoningItems,
@@ -143,7 +145,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const model = this.getModel()
@@ -177,11 +179,11 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 				const cleanedMessages = stripPlainTextReasoningBlocks(standardMessages)
 
 				// Step 4: Convert to AI SDK messages.
-				const aiSdkMessages = convertToAiSdkMessages(cleanedMessages)
+				const aiSdkMessages = cleanedMessages as ModelMessage[]
 
 				// Step 5: Re-inject encrypted reasoning as properly-formed AI SDK reasoning parts.
 				if (encryptedReasoningItems.length > 0) {
-					injectEncryptedReasoning(aiSdkMessages, encryptedReasoningItems, messages)
+					injectEncryptedReasoning(aiSdkMessages, encryptedReasoningItems, messages as RooMessage[])
 				}
 
 				// Convert tools to OpenAI format first, then to AI SDK format
@@ -203,65 +205,95 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 				})
 
 				// Stream parts
+				let lastStreamError: string | undefined
+
 				for await (const part of result.fullStream) {
 					for (const chunk of processAiSdkStreamPart(part)) {
+						if (chunk.type === "error") {
+							lastStreamError = chunk.message
+						}
 						yield chunk
 					}
 				}
 
-				// Extract metadata from completed response
-				const providerMeta = await result.providerMetadata
-				const openaiMeta = (providerMeta as any)?.openai
-
-				if (openaiMeta?.responseId) {
-					this.lastResponseId = openaiMeta.responseId
-				}
-
-				// Capture encrypted content from reasoning parts in the response
+				// Extract metadata and usage — wrap in try/catch for stream error fallback
 				try {
-					const content = await (result as any).content
-					if (Array.isArray(content)) {
-						for (const part of content) {
-							if (part.type === "reasoning" && part.providerMetadata) {
-								const partMeta = (part.providerMetadata as any)?.openai
-								if (partMeta?.reasoningEncryptedContent) {
-									this.lastEncryptedContent = {
-										encrypted_content: partMeta.reasoningEncryptedContent,
-										...(partMeta.itemId ? { id: partMeta.itemId } : {}),
+					// Extract metadata from completed response
+					const providerMeta = await result.providerMetadata
+					const openaiMeta = (providerMeta as any)?.openai
+
+					if (openaiMeta?.responseId) {
+						this.lastResponseId = openaiMeta.responseId
+					}
+
+					// Capture encrypted content from reasoning parts in the response
+					try {
+						const content = await (result as any).content
+						if (Array.isArray(content)) {
+							for (const part of content) {
+								if (part.type === "reasoning" && part.providerMetadata) {
+									const partMeta = (part.providerMetadata as any)?.openai
+									if (partMeta?.reasoningEncryptedContent) {
+										this.lastEncryptedContent = {
+											encrypted_content: partMeta.reasoningEncryptedContent,
+											...(partMeta.itemId ? { id: partMeta.itemId } : {}),
+										}
+										break
 									}
-									break
 								}
 							}
 						}
+					} catch {
+						// Content parts with encrypted reasoning may not always be available
 					}
-				} catch {
-					// Content parts with encrypted reasoning may not always be available
+
+					// Yield usage — subscription pricing means totalCost is always 0
+					const usage = await result.usage
+					if (usage) {
+						const inputTokens = usage.inputTokens || 0
+						const outputTokens = usage.outputTokens || 0
+						const typedUsage = usage as {
+							inputTokens?: number
+							outputTokens?: number
+							cachedInputTokens?: number
+							reasoningTokens?: number
+							inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+							outputTokenDetails?: { reasoningTokens?: number }
+							details?: { cachedInputTokens?: number; reasoningTokens?: number }
+						}
+						const cacheReadTokens =
+							typedUsage.cachedInputTokens ??
+							typedUsage.inputTokenDetails?.cacheReadTokens ??
+							typedUsage.details?.cachedInputTokens ??
+							0
+						// The OpenAI Responses API does not report cache write tokens separately;
+						// only cached (read) tokens are available via usage.details.cachedInputTokens.
+						const cacheWriteTokens = typedUsage.inputTokenDetails?.cacheWriteTokens ?? 0
+						const reasoningTokens =
+							typedUsage.reasoningTokens ??
+							typedUsage.outputTokenDetails?.reasoningTokens ??
+							typedUsage.details?.reasoningTokens
+
+						yield {
+							type: "usage",
+							inputTokens,
+							outputTokens,
+							cacheWriteTokens: cacheWriteTokens || undefined,
+							cacheReadTokens: cacheReadTokens || undefined,
+							...(typeof reasoningTokens === "number" ? { reasoningTokens } : {}),
+							totalCost: 0, // Subscription-based pricing
+							totalInputTokens: inputTokens,
+							totalOutputTokens: outputTokens,
+						}
+					}
+				} catch (usageError) {
+					if (lastStreamError) {
+						throw new Error(lastStreamError)
+					}
+					throw usageError
 				}
 
-				// Yield usage — subscription pricing means totalCost is always 0
-				const usage = await result.usage
-				if (usage) {
-					const inputTokens = usage.inputTokens || 0
-					const outputTokens = usage.outputTokens || 0
-					const details = (usage as any).details as
-						| { cachedInputTokens?: number; reasoningTokens?: number }
-						| undefined
-					const cacheReadTokens = details?.cachedInputTokens ?? 0
-					// The OpenAI Responses API does not report cache write tokens separately;
-					// only cached (read) tokens are available via usage.details.cachedInputTokens.
-					const cacheWriteTokens = 0
-					const reasoningTokens = details?.reasoningTokens
-
-					yield {
-						type: "usage",
-						inputTokens,
-						outputTokens,
-						cacheWriteTokens: cacheWriteTokens || undefined,
-						cacheReadTokens: cacheReadTokens || undefined,
-						...(typeof reasoningTokens === "number" ? { reasoningTokens } : {}),
-						totalCost: 0, // Subscription-based pricing
-					}
-				}
+				yield* yieldResponseMessage(result)
 
 				// Success — exit the retry loop
 				return

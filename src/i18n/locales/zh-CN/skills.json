@@ -11,8 +11,6 @@
 		"missing_update_modes_fields": "缺少必填字段：skillName 或 source",
 		"manager_unavailable": "技能管理器不可用",
 		"missing_delete_fields": "缺少必填字段：skillName 或 source",
-		"skill_not_found": "未找到技能 \"{{name}}\"",
-		"cannot_modify_builtin": "内置技能无法创建或删除",
-		"cannot_open_builtin": "内置技能无法作为文件打开"
+		"skill_not_found": "未找到技能 \"{{name}}\""
 	}
 }

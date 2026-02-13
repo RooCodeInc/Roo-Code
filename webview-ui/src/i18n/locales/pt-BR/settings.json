@@ -31,7 +31,6 @@
 		"mcp": "Servidores MCP",
 		"worktrees": "Worktrees",
 		"autoApprove": "Aprovação",
-		"browser": "Navegador",
 		"checkpoints": "Checkpoints",
 		"notifications": "Notificações",
 		"contextManagement": "Contexto",
@@ -240,10 +239,6 @@
 				"label": "Incluir arquivos protegidos",
 				"description": "Permitir que o Roo crie e edite arquivos protegidos (como .rooignore e arquivos de configuração .roo/) sem exigir aprovação."
 			}
-		},
-		"browser": {
-			"label": "Navegador",
-			"description": "Realizar ações do navegador automaticamente sem exigir aprovação. Nota: Aplica-se apenas quando o modelo suporta uso do computador"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -590,34 +585,6 @@
 			"placeholder": "Padrão: claude",
 			"maxTokensLabel": "Tokens de saída máximos",
 			"maxTokensDescription": "Número máximo de tokens de saída para respostas do Claude Code. O padrão é 8000."
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "Ativar ferramenta de navegador",
-			"description": "Quando ativado, o Roo pode usar um navegador para interagir com sites ao usar modelos que suportam o uso do computador. <0>Saiba mais</0>"
-		},
-		"viewport": {
-			"label": "Tamanho da viewport",
-			"description": "Selecione o tamanho da viewport para interações do navegador. Isso afeta como os sites são exibidos e como se interage com eles.",
-			"options": {
-				"largeDesktop": "Desktop grande (1280x800)",
-				"smallDesktop": "Desktop pequeno (900x600)",
-				"tablet": "Tablet (768x1024)",
-				"mobile": "Móvel (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "Qualidade das capturas de tela",
-			"description": "Ajuste a qualidade WebP das capturas de tela do navegador. Valores mais altos fornecem capturas mais nítidas, mas aumentam o uso de token."
-		},
-		"remote": {
-			"label": "Usar conexão remota de navegador",
-			"description": "Conectar a um navegador Chrome executando com depuração remota ativada (--remote-debugging-port=9222).",
-			"urlPlaceholder": "URL personalizado (ex. http://localhost:9222)",
-			"testButton": "Testar conexão",
-			"testingButton": "Testando...",
-			"instructions": "Digite o endereço do host do protocolo DevTools ou deixe em branco para descobrir automaticamente instâncias locais do Chrome. O botão Testar Conexão tentará usar o URL personalizado, se fornecido, ou descobrirá automaticamente se o campo estiver vazio."
 		}
 	},
 	"checkpoints": {

@@ -4,8 +4,8 @@ import { apply_diff } from "./apply_diff"
 import applyPatch from "./apply_patch"
 import askFollowupQuestion from "./ask_followup_question"
 import attemptCompletion from "./attempt_completion"
-import browserAction from "./browser_action"
 import codebaseSearch from "./codebase_search"
+import editTool from "./edit"
 import executeCommand from "./execute_command"
 import generateImage from "./generate_image"
 import listFiles from "./list_files"
@@ -14,7 +14,6 @@ import readCommandOutput from "./read_command_output"
 import { createReadFileTool, type ReadFileToolOptions } from "./read_file"
 import runSlashCommand from "./run_slash_command"
 import skill from "./skill"
-import searchAndReplace from "./search_and_replace"
 import searchReplace from "./search_replace"
 import edit_file from "./edit_file"
 import searchFiles from "./search_files"
@@ -53,7 +52,6 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 		applyPatch,
 		askFollowupQuestion,
 		attemptCompletion,
-		browserAction,
 		codebaseSearch,
 		executeCommand,
 		generateImage,
@@ -63,9 +61,9 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 		createReadFileTool(readFileOptions),
 		runSlashCommand,
 		skill,
-		searchAndReplace,
 		searchReplace,
 		edit_file,
+		editTool,
 		searchFiles,
 		switchMode,
 		updateTodoList,

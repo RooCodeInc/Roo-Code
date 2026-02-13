@@ -1,3 +1,4 @@
+import type { RooMessage } from "../../task-persistence/rooMessage"
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { Anthropic } from "@anthropic-ai/sdk"
 
@@ -67,7 +68,7 @@ describe("Task Tool History Handling", () => {
 
 	describe("convertToOpenAiMessages format", () => {
 		it("should properly convert tool_use to tool_calls format", () => {
-			const anthropicMessage: Anthropic.Messages.MessageParam = {
+			const anthropicMessage: any = {
 				role: "assistant",
 				content: [
 					{
@@ -84,7 +85,9 @@ describe("Task Tool History Handling", () => {
 			}
 
 			// Simulate what convertToOpenAiMessages does
-			const toolUseBlocks = (anthropicMessage.content as any[]).filter((block) => block.type === "tool_use")
+			const toolUseBlocks = ((anthropicMessage as any).content as any[]).filter(
+				(block) => block.type === "tool_use",
+			)
 
 			const tool_calls = toolUseBlocks.map((toolMessage) => ({
 				id: toolMessage.id,
@@ -107,7 +110,7 @@ describe("Task Tool History Handling", () => {
 		})
 
 		it("should properly convert tool_result to tool role messages", () => {
-			const anthropicMessage: Anthropic.Messages.MessageParam = {
+			const anthropicMessage: any = {
 				role: "user",
 				content: [
 					{
@@ -119,7 +122,9 @@ describe("Task Tool History Handling", () => {
 			}
 
 			// Simulate what convertToOpenAiMessages does
-			const toolMessages = (anthropicMessage.content as any[]).filter((block) => block.type === "tool_result")
+			const toolMessages = ((anthropicMessage as any).content as any[]).filter(
+				(block) => block.type === "tool_result",
+			)
 
 			const openAiToolMessages = toolMessages.map((toolMessage) => ({
 				role: "tool" as const,

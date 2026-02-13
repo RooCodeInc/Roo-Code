@@ -1,3 +1,4 @@
+import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // Mock TelemetryService before other imports
 const mockCaptureException = vi.fn()
 
@@ -490,17 +491,14 @@ describe("AwsBedrockHandler", () => {
 		it("should properly pass image content through to streamText via AI SDK messages", async () => {
 			setupMockStreamText()
 
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: any[] = [
 				{
 					role: "user",
 					content: [
 						{
 							type: "image",
-							source: {
-								type: "base64",
-								data: mockImageData,
-								media_type: "image/jpeg",
-							},
+							image: `data:image/jpeg;base64,${mockImageData}`,
+							mimeType: "image/jpeg",
 						},
 						{
 							type: "text",
@@ -530,7 +528,7 @@ describe("AwsBedrockHandler", () => {
 			expect(userMsg).toBeDefined()
 			expect(Array.isArray(userMsg.content)).toBe(true)
 
-			// The AI SDK convertToAiSdkMessages converts images to { type: "image", image: "data:...", mimeType: "..." }
+			// Messages are already in AI SDK ImagePart format
 			const imagePart = userMsg.content.find((p: { type: string }) => p.type === "image")
 			expect(imagePart).toBeDefined()
 			expect(imagePart.image).toContain("data:image/jpeg;base64,")
@@ -544,17 +542,14 @@ describe("AwsBedrockHandler", () => {
 		it("should handle multiple images in a single message", async () => {
 			setupMockStreamText()
 
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: any[] = [
 				{
 					role: "user",
 					content: [
 						{
 							type: "image",
-							source: {
-								type: "base64",
-								data: mockImageData,
-								media_type: "image/jpeg",
-							},
+							image: `data:image/jpeg;base64,${mockImageData}`,
+							mimeType: "image/jpeg",
 						},
 						{
 							type: "text",
@@ -562,11 +557,8 @@ describe("AwsBedrockHandler", () => {
 						},
 						{
 							type: "image",
-							source: {
-								type: "base64",
-								data: mockImageData,
-								media_type: "image/png",
-							},
+							image: `data:image/png;base64,${mockImageData}`,
+							mimeType: "image/png",
 						},
 						{
 							type: "text",
@@ -761,7 +753,7 @@ describe("AwsBedrockHandler", () => {
 				awsBedrock1MContext: true,
 			})
 
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessage[] = [
 				{
 					role: "user",
 					content: "Test message",
@@ -794,7 +786,7 @@ describe("AwsBedrockHandler", () => {
 				awsBedrock1MContext: false,
 			})
 
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessage[] = [
 				{
 					role: "user",
 					content: "Test message",
@@ -828,7 +820,7 @@ describe("AwsBedrockHandler", () => {
 				awsBedrock1MContext: true,
 			})
 
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessage[] = [
 				{
 					role: "user",
 					content: "Test message",
@@ -881,7 +873,7 @@ describe("AwsBedrockHandler", () => {
 				awsBedrock1MContext: true,
 			})
 
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessage[] = [
 				{
 					role: "user",
 					content: "Test message",
@@ -1013,7 +1005,7 @@ describe("AwsBedrockHandler", () => {
 					awsBedrockServiceTier: "PRIORITY",
 				})
 
-				const messages: Anthropic.Messages.MessageParam[] = [
+				const messages: RooMessage[] = [
 					{
 						role: "user",
 						content: "Test message",
@@ -1050,7 +1042,7 @@ describe("AwsBedrockHandler", () => {
 					awsBedrockServiceTier: "FLEX",
 				})
 
-				const messages: Anthropic.Messages.MessageParam[] = [
+				const messages: RooMessage[] = [
 					{
 						role: "user",
 						content: "Test message",
@@ -1087,7 +1079,7 @@ describe("AwsBedrockHandler", () => {
 					awsBedrockServiceTier: "PRIORITY", // Try to apply PRIORITY tier
 				})
 
-				const messages: Anthropic.Messages.MessageParam[] = [
+				const messages: RooMessage[] = [
 					{
 						role: "user",
 						content: "Test message",
@@ -1122,7 +1114,7 @@ describe("AwsBedrockHandler", () => {
 					// No awsBedrockServiceTier specified
 				})
 
-				const messages: Anthropic.Messages.MessageParam[] = [
+				const messages: RooMessage[] = [
 					{
 						role: "user",
 						content: "Test message",
@@ -1192,7 +1184,7 @@ describe("AwsBedrockHandler", () => {
 				awsRegion: "us-east-1",
 			})
 
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessage[] = [
 				{
 					role: "user",
 					content: "Hello",
@@ -1267,7 +1259,7 @@ describe("AwsBedrockHandler", () => {
 				awsRegion: "us-east-1",
 			})
 
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessage[] = [
 				{
 					role: "user",
 					content: "Hello",
@@ -1285,6 +1277,167 @@ describe("AwsBedrockHandler", () => {
 
 			// Telemetry should have been captured before the error was thrown
 			expect(mockCaptureException).toHaveBeenCalled()
+		})
+	})
+
+	describe("AI SDK v6 usage field paths", () => {
+		const systemPrompt = "You are a helpful assistant"
+		const messages: RooMessage[] = [
+			{
+				role: "user",
+				content: "Hello",
+			},
+		]
+
+		function setupStream(usage: Record<string, unknown>, providerMetadata: Record<string, unknown> = {}) {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "reply" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve(usage),
+				providerMetadata: Promise.resolve(providerMetadata),
+			})
+		}
+
+		describe("cache tokens", () => {
+			it("should read cache tokens from v6 top-level cachedInputTokens", async () => {
+				setupStream({ inputTokens: 100, outputTokens: 50, cachedInputTokens: 30 })
+
+				const generator = handler.createMessage(systemPrompt, messages)
+				const chunks: unknown[] = []
+				for await (const chunk of generator) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c: any) => c.type === "usage") as any
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk.cacheReadTokens).toBe(30)
+			})
+
+			it("should read cache tokens from v6 inputTokenDetails.cacheReadTokens", async () => {
+				setupStream({
+					inputTokens: 100,
+					outputTokens: 50,
+					inputTokenDetails: { cacheReadTokens: 25 },
+				})
+
+				const generator = handler.createMessage(systemPrompt, messages)
+				const chunks: unknown[] = []
+				for await (const chunk of generator) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c: any) => c.type === "usage") as any
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk.cacheReadTokens).toBe(25)
+			})
+
+			it("should prefer v6 top-level cachedInputTokens over providerMetadata.bedrock", async () => {
+				setupStream(
+					{ inputTokens: 100, outputTokens: 50, cachedInputTokens: 30 },
+					{ bedrock: { usage: { cacheReadInputTokens: 20 } } },
+				)
+
+				const generator = handler.createMessage(systemPrompt, messages)
+				const chunks: unknown[] = []
+				for await (const chunk of generator) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c: any) => c.type === "usage") as any
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk.cacheReadTokens).toBe(30)
+			})
+
+			it("should fall back to providerMetadata.bedrock.usage.cacheReadInputTokens", async () => {
+				setupStream(
+					{ inputTokens: 100, outputTokens: 50 },
+					{ bedrock: { usage: { cacheReadInputTokens: 20 } } },
+				)
+
+				const generator = handler.createMessage(systemPrompt, messages)
+				const chunks: unknown[] = []
+				for await (const chunk of generator) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c: any) => c.type === "usage") as any
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk.cacheReadTokens).toBe(20)
+			})
+
+			it("should read cacheWriteTokens from v6 inputTokenDetails.cacheWriteTokens", async () => {
+				setupStream({
+					inputTokens: 100,
+					outputTokens: 50,
+					inputTokenDetails: { cacheWriteTokens: 15 },
+				})
+
+				const generator = handler.createMessage(systemPrompt, messages)
+				const chunks: unknown[] = []
+				for await (const chunk of generator) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c: any) => c.type === "usage") as any
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk.cacheWriteTokens).toBe(15)
+			})
+		})
+
+		describe("reasoning tokens", () => {
+			it("should read reasoning tokens from v6 top-level reasoningTokens", async () => {
+				setupStream({ inputTokens: 100, outputTokens: 50, reasoningTokens: 40 })
+
+				const generator = handler.createMessage(systemPrompt, messages)
+				const chunks: unknown[] = []
+				for await (const chunk of generator) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c: any) => c.type === "usage") as any
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk.reasoningTokens).toBe(40)
+			})
+
+			it("should read reasoning tokens from v6 outputTokenDetails.reasoningTokens", async () => {
+				setupStream({
+					inputTokens: 100,
+					outputTokens: 50,
+					outputTokenDetails: { reasoningTokens: 35 },
+				})
+
+				const generator = handler.createMessage(systemPrompt, messages)
+				const chunks: unknown[] = []
+				for await (const chunk of generator) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c: any) => c.type === "usage") as any
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk.reasoningTokens).toBe(35)
+			})
+
+			it("should prefer v6 top-level reasoningTokens over outputTokenDetails", async () => {
+				setupStream({
+					inputTokens: 100,
+					outputTokens: 50,
+					reasoningTokens: 40,
+					outputTokenDetails: { reasoningTokens: 15 },
+				})
+
+				const generator = handler.createMessage(systemPrompt, messages)
+				const chunks: unknown[] = []
+				for await (const chunk of generator) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c: any) => c.type === "usage") as any
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk.reasoningTokens).toBe(40)
+			})
 		})
 	})
 })

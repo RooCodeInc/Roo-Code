@@ -28,7 +28,6 @@ vi.mock("../../../i18n", () => ({
 			"skills:errors.missing_delete_fields": "Missing required fields: skillName or source",
 			"skills:errors.missing_move_fields": "Missing required fields: skillName or source",
 			"skills:errors.skill_not_found": `Skill "${params?.name}" not found`,
-			"skills:errors.cannot_modify_builtin": "Built-in skills cannot be created, deleted, or moved",
 		}
 		return translations[key] || key
 	},
@@ -331,25 +330,6 @@ describe("skillsMessageHandler", () => {
 			expect(mockLog).toHaveBeenCalledWith("Error moving skill: Skills manager not available")
 			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
 				"Failed to move skill: Skills manager not available",
-			)
-		})
-
-		it("returns undefined when trying to move a built-in skill", async () => {
-			const provider = createMockProvider(true)
-
-			const result = await handleMoveSkill(provider, {
-				type: "moveSkill",
-				skillName: "test-skill",
-				source: "built-in",
-				newSkillMode: "code",
-			} as WebviewMessage)
-
-			expect(result).toBeUndefined()
-			expect(mockLog).toHaveBeenCalledWith(
-				"Error moving skill: Built-in skills cannot be created, deleted, or moved",
-			)
-			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
-				"Failed to move skill: Built-in skills cannot be created, deleted, or moved",
 			)
 		})
 	})

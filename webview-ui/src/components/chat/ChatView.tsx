@@ -38,13 +38,10 @@ import TelemetryBanner from "../common/TelemetryBanner"
 import VersionIndicator from "../common/VersionIndicator"
 import HistoryPreview from "../history/HistoryPreview"
 import Announcement from "./Announcement"
-import BrowserActionRow from "./BrowserActionRow"
-import BrowserSessionStatusRow from "./BrowserSessionStatusRow"
 import ChatRow from "./ChatRow"
 import WarningRow from "./WarningRow"
 import { ChatTextArea } from "./ChatTextArea"
 import TaskHeader from "./TaskHeader"
-import SystemPromptWarning from "./SystemPromptWarning"
 import ProfileViolationWarning from "./ProfileViolationWarning"
 import { CheckpointWarning } from "./CheckpointWarning"
 import { QueuedMessages } from "./QueuedMessages"
@@ -92,12 +89,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		alwaysAllowModeSwitch,
 		customModes,
 		telemetrySetting,
-		hasSystemPromptOverride,
 		soundEnabled,
 		soundVolume,
 		cloudIsAuthenticated,
 		messageQueue = [],
-		isBrowserSessionActive,
 		showWorktreesInHomeScreen,
 	} = useExtensionState()
 
@@ -163,7 +158,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
 	const stickyFollowRef = useRef<boolean>(false)
 	const [showScrollToBottom, setShowScrollToBottom] = useState(false)
-	const [isAtBottom, setIsAtBottom] = useState(false)
+	const isAtBottomRef = useRef(false)
 	const lastTtsRef = useRef<string>("")
 	const [wasStreaming, setWasStreaming] = useState<boolean>(false)
 	const [checkpointWarning, setCheckpointWarning] = useState<
@@ -372,13 +367,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 									break
 							}
 							break
-						case "browser_action_launch":
-							setSendingDisabled(isPartial)
-							setClineAsk("browser_action_launch")
-							setEnableButtons(!isPartial)
-							setPrimaryButtonText(t("chat:approve.title"))
-							setSecondaryButtonText(t("chat:reject.title"))
-							break
 						case "command":
 							setSendingDisabled(isPartial)
 							setClineAsk("command")
@@ -456,7 +444,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							// Clear button state when a new API request starts
 							// This fixes buttons persisting when the task continues
 							setSendingDisabled(true)
-							setSelectedImages([])
+							// Note: Do NOT clear selectedImages here. This handler fires
+							// every time the backend starts an API call, which would wipe
+							// images the user has pasted while the chat is in progress.
+							// Images are already cleared in the appropriate user-action
+							// handlers (handleSendMessage, handlePrimaryButtonClick, etc.).
 							setClineAsk(undefined)
 							setEnableButtons(false)
 							setPrimaryButtonText(undefined)
@@ -465,8 +457,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						case "api_req_finished":
 						case "error":
 						case "text":
-						case "browser_action":
-						case "browser_action_result":
 						case "command_output":
 						case "mcp_server_request_started":
 						case "mcp_server_response":
@@ -516,6 +506,23 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 		// Reset user response flag for new task
 		userRespondedRef.current = false
+
+		// Ensure new task starts anchored to the bottom. Virtuoso's
+		// initialTopMostItemIndex fires at mount but the message data may
+		// arrive asynchronously, so we also engage sticky follow and
+		// explicitly scroll after a frame to handle the race.
+		let rafId: number | undefined
+		if (task?.ts) {
+			stickyFollowRef.current = true
+			rafId = requestAnimationFrame(() => {
+				virtuosoRef.current?.scrollTo({ top: Number.MAX_SAFE_INTEGER, behavior: "auto" })
+			})
+		}
+		return () => {
+			if (rafId !== undefined) {
+				cancelAnimationFrame(rafId)
+			}
+		}
 	}, [task?.ts])
 
 	const taskTs = task?.ts
@@ -694,7 +701,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					) {
 						case "followup":
 						case "tool":
-						case "browser_action_launch":
 						case "command": // User can provide feedback to a tool or command use.
 						case "use_mcp_server":
 						case "completion_result": // If this happens then the user has feedback for the completion result.
@@ -782,7 +788,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				case "api_req_failed":
 				case "command":
 				case "tool":
-				case "browser_action_launch":
 				case "use_mcp_server":
 				case "mistake_limit_reached":
 					// Only send text/images if they exist
@@ -867,7 +872,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					break
 				case "command":
 				case "tool":
-				case "browser_action_launch":
 				case "use_mcp_server":
 					// Only send text/images if they exist
 					if (trimmedInput || (images && images.length > 0)) {
@@ -1160,43 +1164,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		setWasStreaming(isStreaming)
 	}, [isStreaming, lastMessage, wasStreaming, messages.length])
 
-	// Compute current browser session messages for the top banner (not grouped into chat stream)
-	// Find the FIRST browser session from the beginning to show ALL sessions
-	const browserSessionStartIndex = useMemo(() => {
-		for (let i = 0; i < messages.length; i++) {
-			if (messages[i].ask === "browser_action_launch") {
-				return i
-			}
-		}
-		return -1
-	}, [messages])
-
-	const _browserSessionMessages = useMemo<ClineMessage[]>(() => {
-		if (browserSessionStartIndex === -1) return []
-		return messages.slice(browserSessionStartIndex)
-	}, [browserSessionStartIndex, messages])
-
-	// Show globe toggle only when in a task that has a browser session (active or inactive)
-	const showBrowserDockToggle = useMemo(
-		() => Boolean(task && (browserSessionStartIndex !== -1 || isBrowserSessionActive)),
-		[task, browserSessionStartIndex, isBrowserSessionActive],
-	)
-
-	const isBrowserSessionMessage = useCallback((message: ClineMessage): boolean => {
-		// Only the launch ask should be hidden from chat (it's shown in the drawer header)
-		if (message.type === "ask" && message.ask === "browser_action_launch") {
-			return true
-		}
-		// browser_action_result messages are paired with browser_action and should not appear independently
-		if (message.type === "say" && message.say === "browser_action_result") {
-			return true
-		}
-		return false
-	}, [])
-
 	const groupedMessages = useMemo(() => {
-		// Only filter out the launch ask and result messages - browser actions appear in chat
-		const filtered: ClineMessage[] = visibleMessages.filter((msg) => !isBrowserSessionMessage(msg))
+		const filtered: ClineMessage[] = visibleMessages
 
 		// Helper to check if a message is a read_file ask that should be batched
 		const isReadFileAsk = (msg: ClineMessage): boolean => {
@@ -1342,7 +1311,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			} as ClineMessage)
 		}
 		return result
-	}, [isCondensing, visibleMessages, isBrowserSessionMessage])
+	}, [isCondensing, visibleMessages])
 
 	// scrolling
 
@@ -1389,7 +1358,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	const handleRowHeightChange = useCallback(
 		(isTaller: boolean) => {
-			if (isAtBottom) {
+			if (isAtBottomRef.current) {
 				if (isTaller) {
 					scrollToBottomSmooth()
 				} else {
@@ -1397,7 +1366,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				}
 			}
 		},
-		[scrollToBottomSmooth, scrollToBottomAuto, isAtBottom],
+		[scrollToBottomSmooth, scrollToBottomAuto],
 	)
 
 	// Disable sticky follow when user scrolls up inside the chat container
@@ -1408,23 +1377,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 	}, [])
 	useEvent("wheel", handleWheel, window, { passive: true })
-
-	// Also disable sticky follow when the chat container is scrolled away from bottom
-	useEffect(() => {
-		const el = scrollContainerRef.current
-		if (!el) return
-		const onScroll = () => {
-			// Consider near-bottom within a small threshold consistent with Virtuoso settings
-			const nearBottom = Math.abs(el.scrollHeight - el.scrollTop - el.clientHeight) < 10
-			if (!nearBottom) {
-				stickyFollowRef.current = false
-			}
-			// Keep UI button state in sync with scroll position
-			setShowScrollToBottom(!nearBottom)
-		}
-		el.addEventListener("scroll", onScroll, { passive: true })
-		return () => el.removeEventListener("scroll", onScroll)
-	}, [])
 
 	// Effect to clear checkpoint warning when messages appear or task changes
 	useEffect(() => {
@@ -1490,37 +1442,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		vscode.postMessage({ type: "askResponse", askResponse: "objectResponse", text: JSON.stringify(response) })
 	}, [])
 
+	// Cancel backend auto-approval timeout when FollowUpSuggest's countdown effect cleans up.
+	// This is called when auto-approve is toggled off, a suggestion is clicked, or the component unmounts.
+	const handleFollowUpUnmount = useCallback(() => {
+		vscode.postMessage({ type: "cancelAutoApproval" })
+	}, [])
+
 	const itemContent = useCallback(
 		(index: number, messageOrGroup: ClineMessage) => {
 			const hasCheckpoint = modifiedMessages.some((message) => message.say === "checkpoint_saved")
-
-			// Check if this is a browser action message
-			if (messageOrGroup.type === "say" && messageOrGroup.say === "browser_action") {
-				// Find the corresponding result message by looking for the next browser_action_result after this action's timestamp
-				const nextMessage = modifiedMessages.find(
-					(m) => m.ts > messageOrGroup.ts && m.say === "browser_action_result",
-				)
-
-				// Calculate action index and total count
-				const browserActions = modifiedMessages.filter((m) => m.say === "browser_action")
-				const actionIndex = browserActions.findIndex((m) => m.ts === messageOrGroup.ts) + 1
-				const totalActions = browserActions.length
-
-				return (
-					<BrowserActionRow
-						key={messageOrGroup.ts}
-						message={messageOrGroup}
-						nextMessage={nextMessage}
-						actionIndex={actionIndex}
-						totalActions={totalActions}
-					/>
-				)
-			}
-
-			// Check if this is a browser session status message
-			if (messageOrGroup.type === "say" && messageOrGroup.say === "browser_session_status") {
-				return <BrowserSessionStatusRow key={messageOrGroup.ts} message={messageOrGroup} />
-			}
 
 			// regular message
 			return (
@@ -1535,6 +1465,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					isStreaming={isStreaming}
 					onSuggestionClick={handleSuggestionClickInRow} // This was already stabilized
 					onBatchFileResponse={handleBatchFileResponse}
+					onFollowUpUnmount={handleFollowUpUnmount}
 					isFollowUpAnswered={messageOrGroup.isAnswered === true || messageOrGroup.ts === currentFollowUpTs}
 					isFollowUpAutoApprovalPaused={isFollowUpAutoApprovalPaused}
 					editable={
@@ -1565,6 +1496,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			isStreaming,
 			handleSuggestionClickInRow,
 			handleBatchFileResponse,
+			handleFollowUpUnmount,
 			currentFollowUpTs,
 			isFollowUpAutoApprovalPaused,
 			enableButtons,
@@ -1703,12 +1635,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						todos={latestTodos}
 					/>
 
-					{hasSystemPromptOverride && (
-						<div className="px-3">
-							<SystemPromptWarning />
-						</div>
-					)}
-
 					{checkpointWarning && (
 						<div className="px-3">
 							<CheckpointWarning warning={checkpointWarning} />
@@ -1763,9 +1689,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							itemContent={itemContent}
 							followOutput={(isAtBottom: boolean) => isAtBottom || stickyFollowRef.current}
 							atBottomStateChange={(isAtBottom: boolean) => {
-								setIsAtBottom(isAtBottom)
-								// Only show the scroll-to-bottom button if not at bottom
+								isAtBottomRef.current = isAtBottom
 								setShowScrollToBottom(!isAtBottom)
+								// Clear sticky follow when user scrolls away from bottom
+								if (!isAtBottom) {
+									stickyFollowRef.current = false
+								}
 							}}
 							atBottomThreshold={10}
 							initialTopMostItemIndex={groupedMessages.length - 1}
@@ -1894,15 +1823,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				onSelectImages={selectImages}
 				shouldDisableImages={shouldDisableImages}
 				onHeightChange={() => {
-					if (isAtBottom) {
+					if (isAtBottomRef.current) {
 						scrollToBottomAuto()
 					}
 				}}
 				mode={mode}
 				setMode={setMode}
 				modeShortcutText={modeShortcutText}
-				isBrowserSessionActive={!!isBrowserSessionActive}
-				showBrowserDockToggle={showBrowserDockToggle}
 				isStreaming={isStreaming}
 				onStop={handleStopTask}
 				onEnqueueMessage={handleEnqueueCurrentMessage}

@@ -915,3 +915,81 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 		})
 	},
 )
+
+describe("worktree path comparison", () => {
+	it("accepts core.worktree with trailing newline from git output", async () => {
+		const shadowDir = path.join(tmpDir, `worktree-trim-${Date.now()}`)
+		const workspaceDir = path.join(tmpDir, `workspace-trim-${Date.now()}`)
+
+		try {
+			await fs.mkdir(workspaceDir, { recursive: true })
+			const mainGit = simpleGit(workspaceDir)
+			await mainGit.init()
+			await mainGit.addConfig("user.name", "Roo Code")
+			await mainGit.addConfig("user.email", "support@roocode.com")
+
+			await fs.writeFile(path.join(workspaceDir, "main.txt"), "main content")
+			await mainGit.add("main.txt")
+			await mainGit.commit("Initial commit")
+
+			vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(() => {
+				return Promise.resolve([])
+			})
+
+			// First init to create the shadow repo
+			const service1 = new RepoPerTaskCheckpointService("trim-test", shadowDir, workspaceDir, () => {})
+			await service1.initShadowGit()
+
+			// Second init with stubbed worktree returning a trailing newline
+			const service2 = new RepoPerTaskCheckpointService("trim-test-2", shadowDir, workspaceDir, () => {})
+			vitest
+				.spyOn(service2 as any, "getShadowGitConfigWorktree")
+				.mockResolvedValue(workspaceDir + "\n")
+
+			await service2.initShadowGit()
+		} finally {
+			vitest.restoreAllMocks()
+			await fs.rm(shadowDir, { recursive: true, force: true })
+			await fs.rm(workspaceDir, { recursive: true, force: true })
+		}
+	})
+
+	it("throws when core.worktree is missing", async () => {
+		const shadowDir = path.join(tmpDir, `worktree-missing-${Date.now()}`)
+		const workspaceDir = path.join(tmpDir, `workspace-missing-${Date.now()}`)
+
+		try {
+			await fs.mkdir(workspaceDir, { recursive: true })
+			const mainGit = simpleGit(workspaceDir)
+			await mainGit.init()
+			await mainGit.addConfig("user.name", "Roo Code")
+			await mainGit.addConfig("user.email", "support@roocode.com")
+
+			await fs.writeFile(path.join(workspaceDir, "main.txt"), "main content")
+			await mainGit.add("main.txt")
+			await mainGit.commit("Initial commit")
+
+			vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(() => {
+				return Promise.resolve([])
+			})
+
+			// First init to create the shadow repo
+			const service1 = new RepoPerTaskCheckpointService("missing-test", shadowDir, workspaceDir, () => {})
+			await service1.initShadowGit()
+
+			// Remove core.worktree from the shadow git config
+			const shadowGit = simpleGit(shadowDir)
+			await shadowGit.raw(["config", "--unset", "core.worktree"])
+
+			// Second init should throw because core.worktree is missing
+			const service2 = new RepoPerTaskCheckpointService("missing-test-2", shadowDir, workspaceDir, () => {})
+			await expect(service2.initShadowGit()).rejects.toThrowError(
+				/core\.worktree to be set/,
+			)
+		} finally {
+			vitest.restoreAllMocks()
+			await fs.rm(shadowDir, { recursive: true, force: true })
+			await fs.rm(workspaceDir, { recursive: true, force: true })
+		}
+	})
+})

@@ -93,13 +93,6 @@ describe("detectAgentState", () => {
 			expect(state.requiredAction).toBe("answer")
 		})
 
-		it("should detect waiting for browser_action_launch approval", () => {
-			const messages = [createMessage({ type: "ask", ask: "browser_action_launch", partial: false })]
-			const state = detectAgentState(messages)
-			expect(state.state).toBe(AgentLoopState.WAITING_FOR_INPUT)
-			expect(state.requiredAction).toBe("approve")
-		})
-
 		it("should detect waiting for use_mcp_server approval", () => {
 			const messages = [createMessage({ type: "ask", ask: "use_mcp_server", partial: false })]
 			const state = detectAgentState(messages)
@@ -202,7 +195,6 @@ describe("Type Guards", () => {
 			expect(isInteractiveAsk("tool")).toBe(true)
 			expect(isInteractiveAsk("command")).toBe(true)
 			expect(isInteractiveAsk("followup")).toBe(true)
-			expect(isInteractiveAsk("browser_action_launch")).toBe(true)
 			expect(isInteractiveAsk("use_mcp_server")).toBe(true)
 		})
 

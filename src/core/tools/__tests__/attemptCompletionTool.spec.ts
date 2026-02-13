@@ -25,6 +25,15 @@ vi.mock("../../../shared/package", () => ({
 	},
 }))
 
+// Mock TelemetryService
+vi.mock("@roo-code/telemetry", () => ({
+	TelemetryService: {
+		instance: {
+			captureTaskCompleted: vi.fn(),
+		},
+	},
+}))
+
 import { attemptCompletionTool, AttemptCompletionCallbacks } from "../AttemptCompletionTool"
 import { Task } from "../../task/Task"
 import * as vscode from "vscode"
@@ -467,6 +476,122 @@ describe("attemptCompletionTool", () => {
 				expect(mockTask.consecutiveMistakeCount).toBe(0)
 				expect(mockTask.recordToolError).not.toHaveBeenCalled()
 			})
+		})
+	})
+
+	describe("delegation flow", () => {
+		let mockProvider: {
+			getTaskWithId: ReturnType<typeof vi.fn>
+			reopenParentFromDelegation: ReturnType<typeof vi.fn>
+			updateTaskHistory: ReturnType<typeof vi.fn>
+			persistDelegationMeta: ReturnType<typeof vi.fn>
+			readDelegationMeta: ReturnType<typeof vi.fn>
+		}
+
+		let block: AttemptCompletionToolUse
+		let callbacks: AttemptCompletionCallbacks
+
+		beforeEach(() => {
+			mockProvider = {
+				getTaskWithId: vi.fn(),
+				reopenParentFromDelegation: vi.fn(),
+				updateTaskHistory: vi.fn(),
+				persistDelegationMeta: vi.fn(),
+				readDelegationMeta: vi.fn().mockResolvedValue(null),
+			}
+
+			Object.defineProperty(mockTask, "parentTaskId", { value: "parent-123", writable: true, configurable: true })
+			Object.defineProperty(mockTask, "providerRef", {
+				value: new WeakRef(mockProvider),
+				writable: true,
+				configurable: true,
+			})
+
+			// Default: child task is active (triggers delegation path)
+			mockProvider.getTaskWithId.mockResolvedValue({
+				historyItem: { status: "active", childIds: [] },
+			})
+
+			mockAskFinishSubTaskApproval.mockResolvedValue(true)
+
+			block = {
+				type: "tool_use",
+				name: "attempt_completion",
+				params: { result: "Task completed successfully" },
+				nativeArgs: { result: "Task completed successfully" },
+				partial: false,
+			}
+
+			callbacks = {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+				toolDescription: mockToolDescription,
+			}
+		})
+
+		it("repairs parent to active when both delegation attempts fail", async () => {
+			mockProvider.reopenParentFromDelegation.mockRejectedValue(new Error("persistent error"))
+
+			// First call: child task check in execute(); second call: parent repair in delegateToParent()
+			mockProvider.getTaskWithId
+				.mockResolvedValueOnce({ historyItem: { status: "active", childIds: [] } })
+				.mockResolvedValueOnce({
+					historyItem: { status: "delegated", childIds: [], delegatedToId: "child-task" },
+				})
+
+			mockProvider.updateTaskHistory.mockResolvedValue([])
+			mockProvider.persistDelegationMeta.mockResolvedValue(undefined)
+
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+			expect(mockProvider.updateTaskHistory).toHaveBeenCalledWith(
+				expect.objectContaining({ status: "active", awaitingChildId: undefined }),
+			)
+			expect(mockProvider.persistDelegationMeta).toHaveBeenCalledWith(
+				"parent-123",
+				expect.objectContaining({ status: "active", awaitingChildId: null }),
+			)
+			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegation to parent task failed"))
+		})
+
+		it("handles repair failure gracefully when both delegation and repair fail", async () => {
+			mockProvider.reopenParentFromDelegation.mockRejectedValue(new Error("persistent error"))
+
+			// First call: child task check; second call: parent repair (will succeed but updateTaskHistory throws)
+			mockProvider.getTaskWithId
+				.mockResolvedValueOnce({ historyItem: { status: "active", childIds: [] } })
+				.mockResolvedValueOnce({ historyItem: { status: "delegated", childIds: [] } })
+
+			mockProvider.updateTaskHistory.mockRejectedValue(new Error("repair failed"))
+
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks) // should NOT throw — repair error is caught internally
+
+			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegation to parent task failed"))
+		})
+
+		it("repairs parent via disk fallback when getTaskWithId throws Task not found", async () => {
+			mockProvider.reopenParentFromDelegation.mockRejectedValue(new Error("persistent error"))
+
+			// First call: child task check in execute(); second call: parent repair throws "Task not found"
+			mockProvider.getTaskWithId
+				.mockResolvedValueOnce({ historyItem: { status: "active", childIds: [] } })
+				.mockRejectedValueOnce(new Error("Task not found"))
+
+			mockProvider.persistDelegationMeta.mockResolvedValue(undefined)
+
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+			expect(mockProvider.persistDelegationMeta).toHaveBeenCalledWith("parent-123", {
+				status: "active",
+				awaitingChildId: null,
+				delegatedToId: null,
+				childIds: ["task_1"],
+				completedByChildId: null,
+				completionResultSummary: null,
+			})
+			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegation to parent task failed"))
 		})
 	})
 })

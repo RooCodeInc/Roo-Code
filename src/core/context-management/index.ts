@@ -1,11 +1,11 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import crypto from "crypto"
 
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { ApiHandler, ApiHandlerCreateMessageMetadata } from "../../api"
 import { MAX_CONDENSE_THRESHOLD, MIN_CONDENSE_THRESHOLD, summarizeConversation, SummarizeResponse } from "../condense"
-import { ApiMessage } from "../task-persistence/apiMessages"
+import type { RooMessage, ContentBlockParam } from "../task-persistence/rooMessage"
+import { isRooRoleMessage } from "../task-persistence/rooMessage"
 import { ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
 
@@ -28,23 +28,22 @@ export const TOKEN_BUFFER_PERCENTAGE = 0.1
 /**
  * Counts tokens for user content using the provider's token counting implementation.
  *
- * @param {Array<Anthropic.Messages.ContentBlockParam>} content - The content to count tokens for
- * @param {ApiHandler} apiHandler - The API handler to use for token counting
- * @returns {Promise<number>} A promise resolving to the token count
+ * @param content - The content to count tokens for
+ * @param apiHandler - The API handler to use for token counting
+ * @returns A promise resolving to the token count
  */
-export async function estimateTokenCount(
-	content: Array<Anthropic.Messages.ContentBlockParam>,
-	apiHandler: ApiHandler,
-): Promise<number> {
+export async function estimateTokenCount(content: ContentBlockParam[], apiHandler: ApiHandler): Promise<number> {
 	if (!content || content.length === 0) return 0
-	return apiHandler.countTokens(content)
+	// countTokens accepts Anthropic.Messages.ContentBlockParam[] — our { type, text? }
+	// blocks are structurally compatible with TextBlockParam.
+	return apiHandler.countTokens(content as Parameters<typeof apiHandler.countTokens>[0])
 }
 
 /**
  * Result of truncation operation, includes the truncation ID for UI events.
  */
 export type TruncationResult = {
-	messages: ApiMessage[]
+	messages: RooMessage[]
 	truncationId: string
 	messagesRemoved: number
 }
@@ -59,12 +58,12 @@ export type TruncationResult = {
  * This implements non-destructive sliding window truncation, allowing messages to be
  * restored if the user rewinds past the truncation point.
  *
- * @param {ApiMessage[]} messages - The conversation messages.
+ * @param {RooMessage[]} messages - The conversation messages.
  * @param {number} fracToRemove - The fraction (between 0 and 1) of messages (excluding the first) to hide.
  * @param {string} taskId - The task ID for the conversation, used for telemetry
  * @returns {TruncationResult} Object containing the tagged messages, truncation ID, and count of messages removed.
  */
-export function truncateConversation(messages: ApiMessage[], fracToRemove: number, taskId: string): TruncationResult {
+export function truncateConversation(messages: RooMessage[], fracToRemove: number, taskId: string): TruncationResult {
 	TelemetryService.instance.captureSlidingWindowTruncation(taskId)
 
 	const truncationId = crypto.randomUUID()
@@ -110,7 +109,7 @@ export function truncateConversation(messages: ApiMessage[], fracToRemove: numbe
 
 	// Insert truncation marker at the actual boundary (between last truncated and first kept)
 	const firstKeptTs = messages[firstKeptVisibleIndex]?.ts ?? Date.now()
-	const truncationMarker: ApiMessage = {
+	const truncationMarker: RooMessage = {
 		role: "user",
 		content: `[Sliding window truncation: ${messagesToRemove} messages hidden to reduce context]`,
 		ts: firstKeptTs - 1,
@@ -203,11 +202,11 @@ export function willManageContext({
  * Falls back to sliding window truncation if condensation is unavailable or fails.
  *
  * @param {ContextManagementOptions} options - The options for truncation/condensation
- * @returns {Promise<ApiMessage[]>} The original, condensed, or truncated conversation messages.
+ * @returns {Promise<RooMessage[]>} The original, condensed, or truncated conversation messages.
  */
 
 export type ContextManagementOptions = {
-	messages: ApiMessage[]
+	messages: RooMessage[]
 	totalTokens: number
 	contextWindow: number
 	maxTokens?: number | null
@@ -242,7 +241,7 @@ export type ContextManagementResult = SummarizeResponse & {
  * Conditionally manages conversation context (condense and fallback truncation).
  *
  * @param {ContextManagementOptions} options - The options for truncation/condensation
- * @returns {Promise<ApiMessage[]>} The original, condensed, or truncated conversation messages.
+ * @returns {Promise<RooMessage[]>} The original, condensed, or truncated conversation messages.
  */
 export async function manageContext({
 	messages,
@@ -271,9 +270,9 @@ export async function manageContext({
 
 	// Estimate tokens for the last message (which is always a user message)
 	const lastMessage = messages[messages.length - 1]
-	const lastMessageContent = lastMessage.content
+	const lastMessageContent = isRooRoleMessage(lastMessage) ? lastMessage.content : ""
 	const lastMessageTokens = Array.isArray(lastMessageContent)
-		? await estimateTokenCount(lastMessageContent, apiHandler)
+		? await estimateTokenCount(lastMessageContent as ContentBlockParam[], apiHandler)
 		: await estimateTokenCount([{ type: "text", text: lastMessageContent as string }], apiHandler)
 
 	// Calculate total effective tokens (totalTokens never includes the last message)
@@ -348,9 +347,9 @@ export async function manageContext({
 		)
 
 		for (const msg of effectiveMessages) {
-			const content = msg.content
+			const content = isRooRoleMessage(msg) ? msg.content : undefined
 			if (Array.isArray(content)) {
-				newContextTokensAfterTruncation += await estimateTokenCount(content, apiHandler)
+				newContextTokensAfterTruncation += await estimateTokenCount(content as ContentBlockParam[], apiHandler)
 			} else if (typeof content === "string") {
 				newContextTokensAfterTruncation += await estimateTokenCount(
 					[{ type: "text", text: content }],

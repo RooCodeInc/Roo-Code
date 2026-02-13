@@ -23,8 +23,6 @@ export type TaskMetadataOptions = {
 	mode?: string
 	/** Provider profile name for the task (sticky profile feature) */
 	apiConfigName?: string
-	/** Initial status for the task (e.g., "active" for child tasks) */
-	initialStatus?: "active" | "delegated" | "completed"
 }
 
 export async function taskMetadata({
@@ -37,7 +35,6 @@ export async function taskMetadata({
 	workspace,
 	mode,
 	apiConfigName,
-	initialStatus,
 }: TaskMetadataOptions) {
 	const taskDir = await getTaskDirectoryPath(globalStoragePath, id)
 
@@ -90,9 +87,6 @@ export async function taskMetadata({
 	}
 
 	// Create historyItem once with pre-calculated values.
-	// initialStatus is included when provided (e.g., "active" for child tasks)
-	// to ensure the status is set from the very first save, avoiding race conditions
-	// where attempt_completion might run before a separate status update.
 	const historyItem: HistoryItem = {
 		id,
 		rootTaskId,
@@ -111,7 +105,6 @@ export async function taskMetadata({
 		workspace,
 		mode,
 		...(typeof apiConfigName === "string" && apiConfigName.length > 0 ? { apiConfigName } : {}),
-		...(initialStatus && { status: initialStatus }),
 	}
 
 	return { historyItem, tokenUsage }

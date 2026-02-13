@@ -43,17 +43,21 @@ vi.mock("vscode", () => {
 vi.mock("../core/task-persistence/taskMessages", () => ({
 	readTaskMessages: vi.fn().mockResolvedValue([]),
 }))
-vi.mock("../core/task-persistence", () => ({
-	readApiMessages: vi.fn().mockResolvedValue([]),
-	saveApiMessages: vi.fn().mockResolvedValue(undefined),
-	saveTaskMessages: vi.fn().mockResolvedValue(undefined),
-}))
+vi.mock("../core/task-persistence", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("../core/task-persistence")>()
+	return {
+		...actual,
+		readRooMessages: vi.fn().mockResolvedValue([]),
+		saveRooMessages: vi.fn().mockResolvedValue(undefined),
+		saveTaskMessages: vi.fn().mockResolvedValue(undefined),
+	}
+})
 
 import { attemptCompletionTool } from "../core/tools/AttemptCompletionTool"
 import { ClineProvider } from "../core/webview/ClineProvider"
 import type { Task } from "../core/task/Task"
 import { readTaskMessages } from "../core/task-persistence/taskMessages"
-import { readApiMessages, saveApiMessages, saveTaskMessages } from "../core/task-persistence"
+import { readRooMessages, saveRooMessages, saveTaskMessages } from "../core/task-persistence"
 
 describe("Nested delegation resume (A → B → C)", () => {
 	beforeEach(() => {
@@ -164,7 +168,7 @@ describe("Nested delegation resume (A → B → C)", () => {
 
 		// Empty histories for simplicity
 		vi.mocked(readTaskMessages).mockResolvedValue([])
-		vi.mocked(readApiMessages).mockResolvedValue([])
+		vi.mocked(readRooMessages).mockResolvedValue([])
 
 		// Step 1: C completes -> should reopen B automatically
 		const clineC = {
@@ -174,6 +178,7 @@ describe("Nested delegation resume (A → B → C)", () => {
 			historyItem: { parentTaskId: "B" },
 			providerRef: { deref: () => provider },
 			say: vi.fn().mockResolvedValue(undefined),
+			ask: vi.fn().mockResolvedValue({ response: "yesButtonClicked", text: undefined, images: undefined }),
 			emit: vi.fn(),
 			getTokenUsage: vi.fn(() => ({})),
 			toolUsage: {},
@@ -221,6 +226,7 @@ describe("Nested delegation resume (A → B → C)", () => {
 			historyItem: { parentTaskId: "A" },
 			providerRef: { deref: () => provider },
 			say: vi.fn().mockResolvedValue(undefined),
+			ask: vi.fn().mockResolvedValue({ response: "yesButtonClicked", text: undefined, images: undefined }),
 			emit: vi.fn(),
 			getTokenUsage: vi.fn(() => ({})),
 			toolUsage: {},

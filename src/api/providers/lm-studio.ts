@@ -1,5 +1,13 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import { streamText, generateText, ToolSet, wrapLanguageModel, extractReasoningMiddleware, LanguageModel } from "ai"
+import {
+	streamText,
+	generateText,
+	ToolSet,
+	wrapLanguageModel,
+	extractReasoningMiddleware,
+	LanguageModel,
+	ModelMessage,
+} from "ai"
 
 import { type ModelInfo, openAiModelInfoSaneDefaults, LMSTUDIO_DEFAULT_TEMPERATURE } from "@roo-code/types"
 
@@ -8,15 +16,17 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import {
 	convertToAiSdkMessages,
 	convertToolsForAiSdk,
-	processAiSdkStreamPart,
+	consumeAiSdkStream,
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream } from "../transform/stream"
 
 import { OpenAICompatibleHandler, OpenAICompatibleConfig } from "./openai-compatible"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { getModelsFromCache } from "./fetchers/modelCache"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 export class LmStudioHandler extends OpenAICompatibleHandler implements SingleCompletionHandler {
 	constructor(options: ApiHandlerOptions) {
@@ -49,20 +59,21 @@ export class LmStudioHandler extends OpenAICompatibleHandler implements SingleCo
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const model = this.getModel()
 		const languageModel = this.getLanguageModel()
 
-		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const aiSdkMessages = messages as ModelMessage[]
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
 			temperature: model.temperature ?? this.config.temperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
 			maxOutputTokens: this.getMaxOutputTokens(),
@@ -79,16 +90,11 @@ export class LmStudioHandler extends OpenAICompatibleHandler implements SingleCo
 		const result = streamText(requestOptions)
 
 		try {
-			for await (const part of result.fullStream) {
-				for (const chunk of processAiSdkStreamPart(part)) {
-					yield chunk
-				}
-			}
-
-			const usage = await result.usage
-			if (usage) {
-				yield this.processUsageMetrics(usage)
-			}
+			const processUsage = this.processUsageMetrics.bind(this)
+			yield* consumeAiSdkStream(result, async function* () {
+				const usage = await result.usage
+				yield processUsage(usage)
+			})
 		} catch (error) {
 			throw handleAiSdkError(error, "LM Studio")
 		}

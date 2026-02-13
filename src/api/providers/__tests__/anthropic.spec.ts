@@ -50,6 +50,7 @@ vitest.mock("../../transform/ai-sdk", () => ({
 	}),
 	mapToolChoice: vitest.fn().mockReturnValue(undefined),
 	handleAiSdkError: vitest.fn().mockImplementation((error: any) => error),
+	yieldResponseMessage: vitest.fn().mockImplementation(function* () {}),
 }))
 
 // Import mocked modules
@@ -398,86 +399,7 @@ describe("AnthropicHandler", () => {
 			expect(endChunk).toBeDefined()
 		})
 
-		it("should capture thinking signature from stream events", async () => {
-			const testSignature = "test-thinking-signature"
-			setupStreamTextMock([
-				{
-					type: "reasoning-delta",
-					text: "thinking...",
-					providerMetadata: { anthropic: { signature: testSignature } },
-				},
-				{ type: "text-delta", text: "Answer" },
-			])
-
-			const stream = handler.createMessage(systemPrompt, [
-				{ role: "user", content: [{ type: "text" as const, text: "test" }] },
-			])
-
-			for await (const _chunk of stream) {
-				// Consume stream
-			}
-
-			expect(handler.getThoughtSignature()).toBe(testSignature)
-		})
-
-		it("should capture redacted thinking blocks from stream events", async () => {
-			setupStreamTextMock([
-				{
-					type: "reasoning-delta",
-					text: "",
-					providerMetadata: { anthropic: { redactedData: "redacted-data-base64" } },
-				},
-				{ type: "text-delta", text: "Answer" },
-			])
-
-			const stream = handler.createMessage(systemPrompt, [
-				{ role: "user", content: [{ type: "text" as const, text: "test" }] },
-			])
-
-			for await (const _chunk of stream) {
-				// Consume stream
-			}
-
-			const redactedBlocks = handler.getRedactedThinkingBlocks()
-			expect(redactedBlocks).toBeDefined()
-			expect(redactedBlocks).toHaveLength(1)
-			expect(redactedBlocks![0]).toEqual({
-				type: "redacted_thinking",
-				data: "redacted-data-base64",
-			})
-		})
-
-		it("should reset thinking state between requests", async () => {
-			// First request with signature
-			setupStreamTextMock([
-				{
-					type: "reasoning-delta",
-					text: "thinking...",
-					providerMetadata: { anthropic: { signature: "sig-1" } },
-				},
-			])
-
-			const stream1 = handler.createMessage(systemPrompt, [
-				{ role: "user", content: [{ type: "text" as const, text: "test 1" }] },
-			])
-			for await (const _chunk of stream1) {
-				// Consume
-			}
-			expect(handler.getThoughtSignature()).toBe("sig-1")
-
-			// Second request without signature
-			setupStreamTextMock([{ type: "text-delta", text: "plain answer" }])
-
-			const stream2 = handler.createMessage(systemPrompt, [
-				{ role: "user", content: [{ type: "text" as const, text: "test 2" }] },
-			])
-			for await (const _chunk of stream2) {
-				// Consume
-			}
-			expect(handler.getThoughtSignature()).toBeUndefined()
-		})
-
-		it("should pass system prompt via system param with systemProviderOptions for cache control", async () => {
+		it("should pass system prompt via system param when no systemProviderOptions", async () => {
 			setupStreamTextMock([{ type: "text-delta", text: "test" }])
 
 			const stream = handler.createMessage(systemPrompt, [
@@ -488,15 +410,36 @@ describe("AnthropicHandler", () => {
 				// Consume
 			}
 
-			// Verify streamText was called with system + systemProviderOptions (not as a message)
+			// Without systemProviderOptions, system prompt is passed via the system parameter
 			const callArgs = mockStreamText.mock.calls[0]![0]
 			expect(callArgs.system).toBe(systemPrompt)
-			expect(callArgs.systemProviderOptions).toEqual({
-				anthropic: { cacheControl: { type: "ephemeral" } },
-			})
 			// System prompt should NOT be in the messages array
 			const systemMessages = callArgs.messages.filter((m: any) => m.role === "system")
 			expect(systemMessages).toHaveLength(0)
+		})
+
+		it("should inject system prompt as cached system message when systemProviderOptions provided", async () => {
+			setupStreamTextMock([{ type: "text-delta", text: "test" }])
+
+			const cacheOpts = { anthropic: { cacheControl: { type: "ephemeral" } } }
+			const stream = handler.createMessage(
+				systemPrompt,
+				[{ role: "user", content: [{ type: "text" as const, text: "test" }] }],
+				{ taskId: "test-task", systemProviderOptions: cacheOpts },
+			)
+
+			for await (const _chunk of stream) {
+				// Consume
+			}
+
+			// With systemProviderOptions, system prompt is injected as messages[0]
+			const callArgs = mockStreamText.mock.calls[0]![0]
+			expect(callArgs.system).toBeUndefined()
+			// System prompt should be the first message with providerOptions
+			const systemMessages = callArgs.messages.filter((m: any) => m.role === "system")
+			expect(systemMessages).toHaveLength(1)
+			expect(systemMessages[0].content).toBe(systemPrompt)
+			expect(systemMessages[0].providerOptions).toEqual(cacheOpts)
 		})
 	})
 
@@ -608,16 +551,6 @@ describe("AnthropicHandler", () => {
 	describe("isAiSdkProvider", () => {
 		it("should return true", () => {
 			expect(handler.isAiSdkProvider()).toBe(true)
-		})
-	})
-
-	describe("thinking signature", () => {
-		it("should return undefined when no signature captured", () => {
-			expect(handler.getThoughtSignature()).toBeUndefined()
-		})
-
-		it("should return undefined for redacted blocks when none captured", () => {
-			expect(handler.getRedactedThinkingBlocks()).toBeUndefined()
 		})
 	})
 })

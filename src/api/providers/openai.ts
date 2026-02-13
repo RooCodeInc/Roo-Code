@@ -2,7 +2,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { createOpenAI } from "@ai-sdk/openai"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
 import { createAzure } from "@ai-sdk/azure"
-import { streamText, generateText, ToolSet, LanguageModel } from "ai"
+import { streamText, generateText, ToolSet, LanguageModel, ModelMessage } from "ai"
 import axios from "axios"
 
 import {
@@ -22,13 +22,16 @@ import {
 	processAiSdkStreamPart,
 	mapToolChoice,
 	handleAiSdkError,
+	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 // TODO: Rename this to OpenAICompatibleHandler. Also, I think the
 // `OpenAINativeHandler` can subclass from this, since it's obviously
@@ -93,7 +96,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { info: modelInfo, temperature, reasoning } = this.getModel()
@@ -104,10 +107,11 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 		const languageModel = this.getLanguageModel()
 
-		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const aiSdkMessages = messages as ModelMessage[]
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		let effectiveSystemPrompt: string | undefined = systemPrompt
 		let effectiveTemperature: number | undefined =
@@ -139,7 +143,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 		if (deepseekReasoner) {
 			effectiveSystemPrompt = undefined
-			aiSdkMessages.unshift({ role: "user", content: systemPrompt })
+			if (systemPrompt) {
+				aiSdkMessages.unshift({ role: "user", content: systemPrompt })
+			}
 		}
 
 		if (this.options.openAiStreamingEnabled ?? true) {
@@ -170,7 +176,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	private async *handleStreaming(
 		languageModel: LanguageModel,
 		systemPrompt: string | undefined,
-		messages: ReturnType<typeof convertToAiSdkMessages>,
+		messages: ModelMessage[],
 		temperature: number | undefined,
 		tools: ToolSet | undefined,
 		metadata: ApiHandlerCreateMessageMetadata | undefined,
@@ -179,7 +185,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	): ApiStream {
 		const result = streamText({
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages,
 			temperature,
 			maxOutputTokens: this.getMaxOutputTokens(),
@@ -198,8 +204,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		)
 
 		try {
+			let lastStreamError: string | undefined
+
 			for await (const part of result.fullStream) {
 				for (const chunk of processAiSdkStreamPart(part)) {
+					if (chunk.type === "error") {
+						lastStreamError = chunk.message
+					}
 					if (chunk.type === "text") {
 						for (const matchedChunk of matcher.update(chunk.text)) {
 							yield matchedChunk
@@ -214,11 +225,20 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				yield chunk
 			}
 
-			const usage = await result.usage
-			const providerMetadata = await result.providerMetadata
-			if (usage) {
-				yield this.processUsageMetrics(usage, modelInfo, providerMetadata as any)
+			try {
+				const usage = await result.usage
+				const providerMetadata = await result.providerMetadata
+				if (usage) {
+					yield this.processUsageMetrics(usage, modelInfo, providerMetadata as any)
+				}
+			} catch (usageError) {
+				if (lastStreamError) {
+					throw new Error(lastStreamError)
+				}
+				throw usageError
 			}
+
+			yield* yieldResponseMessage(result)
 		} catch (error) {
 			throw handleAiSdkError(error, this.providerName)
 		}
@@ -227,7 +247,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	private async *handleNonStreaming(
 		languageModel: LanguageModel,
 		systemPrompt: string | undefined,
-		messages: ReturnType<typeof convertToAiSdkMessages>,
+		messages: ModelMessage[],
 		temperature: number | undefined,
 		tools: ToolSet | undefined,
 		metadata: ApiHandlerCreateMessageMetadata | undefined,
@@ -237,7 +257,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		try {
 			const { text, toolCalls, usage, providerMetadata } = await generateText({
 				model: languageModel,
-				system: systemPrompt,
+				system: systemPrompt || undefined,
 				messages,
 				temperature,
 				maxOutputTokens: this.getMaxOutputTokens(),
@@ -274,6 +294,12 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -288,16 +314,28 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		},
 	): ApiStreamUsageChunk {
 		// Extract cache and reasoning metrics from OpenAI's providerMetadata when available,
-		// falling back to usage.details for standard AI SDK fields.
-		const cacheReadTokens = providerMetadata?.openai?.cachedPromptTokens ?? usage.details?.cachedInputTokens
-		const reasoningTokens = providerMetadata?.openai?.reasoningTokens ?? usage.details?.reasoningTokens
+		// then v6 fields, then legacy usage.details.
+		const cacheReadTokens =
+			providerMetadata?.openai?.cachedPromptTokens ??
+			usage.cachedInputTokens ??
+			usage.inputTokenDetails?.cacheReadTokens ??
+			usage.details?.cachedInputTokens
+		const reasoningTokens =
+			providerMetadata?.openai?.reasoningTokens ??
+			usage.reasoningTokens ??
+			usage.outputTokenDetails?.reasoningTokens ??
+			usage.details?.reasoningTokens
 
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
+			inputTokens,
+			outputTokens,
 			cacheReadTokens,
 			reasoningTokens,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 

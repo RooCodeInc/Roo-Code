@@ -487,11 +487,11 @@ describe("userSettingsConfigSchema with llmEnhancedFeaturesEnabled", () => {
 describe("organizationDefaultSettingsSchema with disabledTools", () => {
 	it("should accept disabledTools as an array of valid tool names", () => {
 		const input: OrganizationDefaultSettings = {
-			disabledTools: ["execute_command", "browser_action"],
+			disabledTools: ["execute_command", "write_to_file"],
 		}
 		const result = organizationDefaultSettingsSchema.safeParse(input)
 		expect(result.success).toBe(true)
-		expect(result.data?.disabledTools).toEqual(["execute_command", "browser_action"])
+		expect(result.data?.disabledTools).toEqual(["execute_command", "write_to_file"])
 	})
 
 	it("should accept empty disabledTools array", () => {

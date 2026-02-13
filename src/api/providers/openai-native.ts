@@ -22,15 +22,17 @@ import { calculateApiCostOpenAI } from "../../shared/cost"
 import {
 	convertToAiSdkMessages,
 	convertToolsForAiSdk,
-	processAiSdkStreamPart,
+	consumeAiSdkStream,
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
 
@@ -57,16 +59,14 @@ export interface EncryptedReasoningItem {
  * This function removes them BEFORE conversion. If an assistant message's
  * content becomes empty after filtering, the message is removed entirely.
  */
-export function stripPlainTextReasoningBlocks(
-	messages: Anthropic.Messages.MessageParam[],
-): Anthropic.Messages.MessageParam[] {
-	return messages.reduce<Anthropic.Messages.MessageParam[]>((acc, msg) => {
-		if (msg.role !== "assistant" || typeof msg.content === "string") {
+export function stripPlainTextReasoningBlocks(messages: RooMessage[]): RooMessage[] {
+	return messages.reduce<RooMessage[]>((acc, msg) => {
+		if (!("role" in msg) || msg.role !== "assistant" || typeof msg.content === "string") {
 			acc.push(msg)
 			return acc
 		}
 
-		const filteredContent = msg.content.filter((block) => {
+		const filteredContent = (msg.content as any[]).filter((block: any) => {
 			const b = block as unknown as Record<string, unknown>
 			// Remove blocks that are plain-text reasoning:
 			// type === "reasoning" AND has "text" AND does NOT have "encrypted_content"
@@ -78,7 +78,7 @@ export function stripPlainTextReasoningBlocks(
 
 		// Only include the message if it still has content
 		if (filteredContent.length > 0) {
-			acc.push({ ...msg, content: filteredContent })
+			acc.push({ ...msg, content: filteredContent } as RooMessage)
 		}
 
 		return acc
@@ -92,10 +92,10 @@ export function stripPlainTextReasoningBlocks(
  * injected by `buildCleanConversationHistory` for OpenAI Responses API
  * reasoning continuity.
  */
-export function collectEncryptedReasoningItems(messages: Anthropic.Messages.MessageParam[]): EncryptedReasoningItem[] {
+export function collectEncryptedReasoningItems(messages: RooMessage[]): EncryptedReasoningItem[] {
 	const items: EncryptedReasoningItem[] = []
 	messages.forEach((msg, index) => {
-		const m = msg as unknown as Record<string, unknown>
+		const m = msg as any
 		if (m.type === "reasoning" && m.encrypted_content) {
 			items.push({
 				id: m.id as string,
@@ -124,7 +124,7 @@ export function collectEncryptedReasoningItems(messages: Anthropic.Messages.Mess
 export function injectEncryptedReasoning(
 	aiSdkMessages: ModelMessage[],
 	encryptedItems: EncryptedReasoningItem[],
-	originalMessages: Anthropic.Messages.MessageParam[],
+	originalMessages: RooMessage[],
 ): void {
 	if (encryptedItems.length === 0) return
 
@@ -135,7 +135,7 @@ export function injectEncryptedReasoning(
 		// Walk forward from the encrypted item to find its corresponding assistant message,
 		// skipping over any other encrypted reasoning items.
 		for (let i = item.originalIndex + 1; i < originalMessages.length; i++) {
-			const msg = originalMessages[i] as unknown as Record<string, unknown>
+			const msg = originalMessages[i] as any
 			if (msg.type === "reasoning" && msg.encrypted_content) continue
 			if ((msg as { role?: string }).role === "assistant") {
 				const existing = itemsByAssistantOrigIdx.get(i) || []
@@ -153,7 +153,7 @@ export function injectEncryptedReasoning(
 	// encrypted reasoning items have been filtered out (order preserved).
 	const standardAssistantOriginalIndices: number[] = []
 	for (let i = 0; i < originalMessages.length; i++) {
-		const msg = originalMessages[i] as unknown as Record<string, unknown>
+		const msg = originalMessages[i] as any
 		if (msg.type === "reasoning" && msg.encrypted_content) continue
 		if ((msg as { role?: string }).role === "assistant") {
 			standardAssistantOriginalIndices.push(i)
@@ -345,6 +345,12 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -356,11 +362,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		const inputTokens = usage.inputTokens || 0
 		const outputTokens = usage.outputTokens || 0
 
-		const cacheReadTokens = usage.details?.cachedInputTokens ?? 0
+		const cacheReadTokens =
+			usage.cachedInputTokens ?? usage.inputTokenDetails?.cacheReadTokens ?? usage.details?.cachedInputTokens ?? 0
 		// The OpenAI Responses API does not report cache write tokens separately;
 		// only cached (read) tokens are available via usage.details.cachedInputTokens.
-		const cacheWriteTokens = 0
-		const reasoningTokens = usage.details?.reasoningTokens
+		const cacheWriteTokens = usage.inputTokenDetails?.cacheWriteTokens ?? 0
+		const reasoningTokens =
+			usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens
 
 		const effectiveTier =
 			this.lastServiceTier || (this.options.openAiNativeServiceTier as ServiceTier | undefined) || undefined
@@ -382,6 +390,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			cacheReadTokens: cacheReadTokens || undefined,
 			...(typeof reasoningTokens === "number" ? { reasoningTokens } : {}),
 			totalCost,
+			// OpenAI: inputTokens is already total
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 
@@ -398,7 +409,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const model = this.getModel()
@@ -416,9 +427,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Step 2: Filter out standalone encrypted reasoning items (they lack role
 		// and would break convertToAiSdkMessages which expects user/assistant/tool).
 		const standardMessages = messages.filter(
-			(msg) =>
-				(msg as unknown as Record<string, unknown>).type !== "reasoning" ||
-				!(msg as unknown as Record<string, unknown>).encrypted_content,
+			(msg) => (msg as any).type !== "reasoning" || !(msg as any).encrypted_content,
 		)
 
 		// Step 3: Strip plain-text reasoning blocks from assistant content arrays.
@@ -427,16 +436,17 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		const cleanedMessages = stripPlainTextReasoningBlocks(standardMessages)
 
 		// Step 4: Convert to AI SDK messages.
-		const aiSdkMessages = convertToAiSdkMessages(cleanedMessages)
+		const aiSdkMessages = cleanedMessages as ModelMessage[]
 
 		// Step 5: Re-inject encrypted reasoning as properly-formed AI SDK reasoning
 		// parts with providerOptions.openai.itemId and reasoningEncryptedContent.
 		if (encryptedReasoningItems.length > 0) {
-			injectEncryptedReasoning(aiSdkMessages, encryptedReasoningItems, messages)
+			injectEncryptedReasoning(aiSdkMessages, encryptedReasoningItems, messages as RooMessage[])
 		}
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		const taskId = metadata?.taskId
 		const userAgent = `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`
@@ -463,48 +473,55 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		const result = streamText(requestOptions)
 
+		const processUsage = this.processUsageMetrics.bind(this)
+		const setResponseId = (id: string) => {
+			this.lastResponseId = id
+		}
+		const setServiceTier = (tier: ServiceTier) => {
+			this.lastServiceTier = tier
+		}
+		const setEncryptedContent = (content: { encrypted_content: string; id?: string }) => {
+			this.lastEncryptedContent = content
+		}
 		try {
-			for await (const part of result.fullStream) {
-				for (const chunk of processAiSdkStreamPart(part)) {
-					yield chunk
+			yield* consumeAiSdkStream(result, async function* () {
+				const providerMeta = await result.providerMetadata
+				const openaiMeta = providerMeta?.openai as Record<string, unknown> | undefined
+
+				if (typeof openaiMeta?.responseId === "string") {
+					setResponseId(openaiMeta.responseId)
 				}
-			}
+				if (typeof openaiMeta?.serviceTier === "string") {
+					setServiceTier(openaiMeta.serviceTier as ServiceTier)
+				}
 
-			const providerMeta = await result.providerMetadata
-			const openaiMeta = (providerMeta as any)?.openai
-
-			if (openaiMeta?.responseId) {
-				this.lastResponseId = openaiMeta.responseId
-			}
-			if (openaiMeta?.serviceTier) {
-				this.lastServiceTier = openaiMeta.serviceTier as ServiceTier
-			}
-
-			// Capture encrypted content from reasoning parts in the response
-			try {
-				const content = await (result as any).content
-				if (Array.isArray(content)) {
-					for (const part of content) {
-						if (part.type === "reasoning" && part.providerMetadata) {
-							const partMeta = (part.providerMetadata as any)?.openai
-							if (partMeta?.reasoningEncryptedContent) {
-								this.lastEncryptedContent = {
-									encrypted_content: partMeta.reasoningEncryptedContent,
-									...(partMeta.itemId ? { id: partMeta.itemId } : {}),
+				// Capture encrypted content from reasoning parts in the response
+				try {
+					const content = await (result as unknown as { content?: Promise<unknown[]> }).content
+					if (Array.isArray(content)) {
+						for (const part of content) {
+							const p = part as Record<string, unknown>
+							if (p.type === "reasoning" && p.providerMetadata) {
+								const partMeta = (p.providerMetadata as Record<string, Record<string, unknown>>)?.openai
+								if (typeof partMeta?.reasoningEncryptedContent === "string") {
+									setEncryptedContent({
+										encrypted_content: partMeta.reasoningEncryptedContent,
+										...(typeof partMeta.itemId === "string" ? { id: partMeta.itemId } : {}),
+									})
+									break
 								}
-								break
 							}
 						}
 					}
+				} catch {
+					// Content parts with encrypted reasoning may not always be available
 				}
-			} catch {
-				// Content parts with encrypted reasoning may not always be available
-			}
 
-			const usage = await result.usage
-			if (usage) {
-				yield this.processUsageMetrics(usage, model, providerMeta as any)
-			}
+				const usage = await result.usage
+				if (usage) {
+					yield processUsage(usage, model, providerMeta as Parameters<typeof processUsage>[2])
+				}
+			})
 		} catch (error) {
 			throw handleAiSdkError(error, this.providerName)
 		}

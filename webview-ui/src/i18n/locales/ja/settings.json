@@ -31,7 +31,6 @@
 		"mcp": "MCPサーバー",
 		"worktrees": "Worktrees",
 		"autoApprove": "自動承認",
-		"browser": "コンピューターアクセス",
 		"checkpoints": "チェックポイント",
 		"notifications": "通知",
 		"contextManagement": "コンテキスト",
@@ -240,10 +239,6 @@
 				"label": "保護されたファイルを含める",
 				"description": "Rooが保護されたファイル（.rooignoreや.roo/設定ファイルなど）を承認なしで作成・編集することを許可します。"
 			}
-		},
-		"browser": {
-			"label": "ブラウザ",
-			"description": "承認なしで自動的にブラウザアクションを実行 — 注意：コンピューター使用をサポートするモデルを使用している場合のみ適用されます"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -590,34 +585,6 @@
 			"placeholder": "デフォルト：claude",
 			"maxTokensLabel": "最大出力トークン",
 			"maxTokensDescription": "Claude Codeレスポンスの最大出力トークン数。デフォルトは8000です。"
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "ブラウザツールを有効化",
-			"description": "有効にすると、コンピューター使用をサポートするモデルを使用する際に、Rooはウェブサイトとのやり取りにブラウザを使用できます。 <0>詳細情報</0>"
-		},
-		"viewport": {
-			"label": "ビューポートサイズ",
-			"description": "ブラウザインタラクションのビューポートサイズを選択します。これはウェブサイトの表示方法とインタラクション方法に影響します。",
-			"options": {
-				"largeDesktop": "大型デスクトップ (1280x800)",
-				"smallDesktop": "小型デスクトップ (900x600)",
-				"tablet": "タブレット (768x1024)",
-				"mobile": "モバイル (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "スクリーンショット品質",
-			"description": "ブラウザスクリーンショットのWebP品質を調整します。高い値はより鮮明なスクリーンショットを提供しますが、token使用量が増加します。"
-		},
-		"remote": {
-			"label": "リモートブラウザ接続を使用",
-			"description": "リモートデバッグを有効にして実行しているChromeブラウザに接続します（--remote-debugging-port=9222）。",
-			"urlPlaceholder": "カスタムURL（例：http://localhost:9222）",
-			"testButton": "接続テスト",
-			"testingButton": "テスト中...",
-			"instructions": "DevToolsプロトコルホストアドレスを入力するか、Chromeのローカルインスタンスを自動検出するために空のままにします。接続テストボタンは、提供されている場合はカスタムURLを試み、フィールドが空の場合は自動検出します。"
 		}
 	},
 	"checkpoints": {

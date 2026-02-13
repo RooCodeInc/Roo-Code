@@ -1,11 +1,32 @@
-import Anthropic from "@anthropic-ai/sdk"
 import crypto from "crypto"
 
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { t } from "../../i18n"
 import { ApiHandler, ApiHandlerCreateMessageMetadata } from "../../api"
-import { ApiMessage } from "../task-persistence/apiMessages"
+import {
+	type RooMessage,
+	type RooUserMessage,
+	type RooToolMessage,
+	type RooRoleMessage,
+	isRooAssistantMessage,
+	isRooToolMessage,
+	isRooUserMessage,
+	isRooRoleMessage,
+	type ToolCallPart,
+	type ToolResultPart,
+	type TextPart,
+	type AnyToolCallBlock,
+	type AnyToolResultBlock,
+	isAnyToolCallBlock,
+	isAnyToolResultBlock,
+	getToolCallId,
+	getToolCallName,
+	getToolCallInput,
+	getToolResultCallId,
+	getToolResultContent,
+	getToolResultIsError,
+} from "../task-persistence/rooMessage"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
@@ -15,13 +36,15 @@ import { generateFoldedFileContext } from "./foldedFileContext"
 export type { FoldedFileContextResult, FoldedFileContextOptions } from "./foldedFileContext"
 
 /**
- * Converts a tool_use block to a text representation.
- * This allows the conversation to be summarized without requiring the tools parameter.
+ * Converts a tool-call / tool_use block to a text representation.
+ * Accepts both AI SDK ToolCallPart (toolName, input) and legacy Anthropic format (name, input).
  */
-export function toolUseToText(block: Anthropic.Messages.ToolUseBlockParam): string {
+export function toolUseToText(block: AnyToolCallBlock): string {
+	const name = getToolCallName(block)
+	const rawInput = getToolCallInput(block)
 	let input: string
-	if (typeof block.input === "object" && block.input !== null) {
-		input = Object.entries(block.input)
+	if (typeof rawInput === "object" && rawInput !== null) {
+		input = Object.entries(rawInput)
 			.map(([key, value]) => {
 				const formattedValue =
 					typeof value === "object" && value !== null ? JSON.stringify(value, null, 2) : String(value)
@@ -29,33 +52,38 @@ export function toolUseToText(block: Anthropic.Messages.ToolUseBlockParam): stri
 			})
 			.join("\n")
 	} else {
-		input = String(block.input)
+		input = String(rawInput)
 	}
-	return `[Tool Use: ${block.name}]\n${input}`
+	return `[Tool Use: ${name}]\n${input}`
 }
 
 /**
- * Converts a tool_result block to a text representation.
- * This allows the conversation to be summarized without requiring the tools parameter.
+ * Converts a tool-result / tool_result block to a text representation.
+ * Accepts both AI SDK ToolResultPart and legacy Anthropic format.
  */
-export function toolResultToText(block: Anthropic.Messages.ToolResultBlockParam): string {
-	const errorSuffix = block.is_error ? " (Error)" : ""
-	if (typeof block.content === "string") {
-		return `[Tool Result${errorSuffix}]\n${block.content}`
-	} else if (Array.isArray(block.content)) {
-		const contentText = block.content
-			.map((contentBlock) => {
+export function toolResultToText(block: AnyToolResultBlock): string {
+	const isError = getToolResultIsError(block)
+	const errorSuffix = isError ? " (Error)" : ""
+	// AI SDK uses `output`, legacy uses `content`
+	const rawContent = getToolResultContent(block)
+	if (typeof rawContent === "string") {
+		return `[Tool Result${errorSuffix}]\n${rawContent}`
+	} else if (Array.isArray(rawContent)) {
+		const contentText = rawContent
+			.map((contentBlock: { type: string; text?: string }) => {
 				if (contentBlock.type === "text") {
 					return contentBlock.text
 				}
 				if (contentBlock.type === "image") {
 					return "[Image]"
 				}
-				// Handle any other content block types
-				return `[${(contentBlock as { type: string }).type}]`
+				return `[${contentBlock.type}]`
 			})
 			.join("\n")
 		return `[Tool Result${errorSuffix}]\n${contentText}`
+	} else if (rawContent && typeof rawContent === "object" && "value" in rawContent) {
+		// AI SDK ToolResultPart.output has shape { type: "text", value: string }
+		return `[Tool Result${errorSuffix}]\n${String((rawContent as { value: unknown }).value)}`
 	}
 	return `[Tool Result${errorSuffix}]`
 }
@@ -68,21 +96,21 @@ export function toolResultToText(block: Anthropic.Messages.ToolResultBlockParam)
  * @param content - The message content (string or array of content blocks)
  * @returns The transformed content with tool blocks converted to text blocks
  */
-export function convertToolBlocksToText(
-	content: string | Anthropic.Messages.ContentBlockParam[],
-): string | Anthropic.Messages.ContentBlockParam[] {
+export function convertToolBlocksToText(content: string | Array<{ type: string }>): string | Array<{ type: string }> {
 	if (typeof content === "string") {
 		return content
 	}
 
 	return content.map((block) => {
-		if (block.type === "tool_use") {
+		// Check both AI SDK (`tool-call`) and legacy (`tool_use`) discriminators
+		if (isAnyToolCallBlock(block)) {
 			return {
 				type: "text" as const,
 				text: toolUseToText(block),
 			}
 		}
-		if (block.type === "tool_result") {
+		// Check both AI SDK (`tool-result`) and legacy (`tool_result`) discriminators
+		if (isAnyToolResultBlock(block)) {
 			return {
 				type: "text" as const,
 				text: toolResultToText(block),
@@ -99,9 +127,9 @@ export function convertToolBlocksToText(
  * @param messages - The messages to transform
  * @returns The transformed messages with tool blocks converted to text
  */
-export function transformMessagesForCondensing<
-	T extends { role: string; content: string | Anthropic.Messages.ContentBlockParam[] },
->(messages: T[]): T[] {
+export function transformMessagesForCondensing<T extends { role: string; content: string | Array<{ type: string }> }>(
+	messages: T[],
+): T[] {
 	return messages.map((msg) => ({
 		...msg,
 		content: convertToolBlocksToText(msg.content),
@@ -131,24 +159,33 @@ The goal is for work to continue seamlessly after condensation - as if it never 
  * @param messages - The conversation messages to process
  * @returns The messages with synthetic tool_results appended if needed
  */
-export function injectSyntheticToolResults(messages: ApiMessage[]): ApiMessage[] {
-	// Find all tool_call IDs in assistant messages
+export function injectSyntheticToolResults(messages: RooMessage[]): RooMessage[] {
+	// Find all tool-call IDs in assistant messages
 	const toolCallIds = new Set<string>()
-	// Find all tool_result IDs in user messages
+	// Find all tool-result IDs in user/tool messages
 	const toolResultIds = new Set<string>()
 
 	for (const msg of messages) {
-		if (msg.role === "assistant" && Array.isArray(msg.content)) {
+		if (isRooAssistantMessage(msg) && Array.isArray(msg.content)) {
 			for (const block of msg.content) {
-				if (block.type === "tool_use") {
-					toolCallIds.add(block.id)
+				if (isAnyToolCallBlock(block as { type: string })) {
+					toolCallIds.add(getToolCallId(block as AnyToolCallBlock))
 				}
 			}
 		}
-		if (msg.role === "user" && Array.isArray(msg.content)) {
+		if (isRooToolMessage(msg) && Array.isArray(msg.content)) {
 			for (const block of msg.content) {
-				if (block.type === "tool_result") {
-					toolResultIds.add(block.tool_use_id)
+				if (isAnyToolResultBlock(block as { type: string })) {
+					toolResultIds.add(getToolResultCallId(block as AnyToolResultBlock))
+				}
+			}
+		}
+		// Also check legacy user messages with tool_result blocks
+		if (isRooUserMessage(msg) && Array.isArray(msg.content)) {
+			for (const block of msg.content) {
+				const typedBlock = block as unknown as { type: string }
+				if (isAnyToolResultBlock(typedBlock)) {
+					toolResultIds.add(getToolResultCallId(typedBlock))
 				}
 			}
 		}
@@ -161,15 +198,16 @@ export function injectSyntheticToolResults(messages: ApiMessage[]): ApiMessage[]
 		return messages
 	}
 
-	// Inject synthetic tool_results as a new user message
-	const syntheticResults: Anthropic.Messages.ToolResultBlockParam[] = orphanIds.map((id) => ({
-		type: "tool_result" as const,
-		tool_use_id: id,
-		content: "Context condensation triggered. Tool execution deferred.",
+	// Inject synthetic tool_results as a new RooToolMessage
+	const syntheticResults: ToolResultPart[] = orphanIds.map((id) => ({
+		type: "tool-result" as const,
+		toolCallId: id,
+		toolName: "unknown",
+		output: { type: "text" as const, value: "Context condensation triggered. Tool execution deferred." },
 	}))
 
-	const syntheticMessage: ApiMessage = {
-		role: "user",
+	const syntheticMessage: RooToolMessage = {
+		role: "tool",
 		content: syntheticResults,
 		ts: Date.now(),
 	}
@@ -184,7 +222,10 @@ export function injectSyntheticToolResults(messages: ApiMessage[]): ApiMessage[]
  * @param message - The message to extract command blocks from
  * @returns A string containing all command blocks found, or empty string if none
  */
-export function extractCommandBlocks(message: ApiMessage): string {
+export function extractCommandBlocks(message: RooMessage): string {
+	if (!isRooRoleMessage(message)) {
+		return ""
+	}
 	const content = message.content
 	let text: string
 
@@ -193,7 +234,7 @@ export function extractCommandBlocks(message: ApiMessage): string {
 	} else if (Array.isArray(content)) {
 		// Concatenate all text blocks
 		text = content
-			.filter((block): block is Anthropic.Messages.TextBlockParam => block.type === "text")
+			.filter((block): block is TextPart => (block as { type: string }).type === "text")
 			.map((block) => block.text)
 			.join("\n")
 	} else {
@@ -212,7 +253,7 @@ export function extractCommandBlocks(message: ApiMessage): string {
 }
 
 export type SummarizeResponse = {
-	messages: ApiMessage[] // The messages after summarization
+	messages: RooMessage[] // The messages after summarization
 	summary: string // The summary text; empty string for no summary
 	cost: number // The cost of the summarization operation
 	newContextTokens?: number // The number of tokens in the context for the next API request
@@ -222,7 +263,7 @@ export type SummarizeResponse = {
 }
 
 export type SummarizeConversationOptions = {
-	messages: ApiMessage[]
+	messages: RooMessage[]
 	apiHandler: ApiHandler
 	systemPrompt: string
 	taskId: string
@@ -287,7 +328,7 @@ export async function summarizeConversation(options: SummarizeConversationOption
 	}
 
 	// Check if there's a recent summary in the messages (edge case)
-	const recentSummaryExists = messagesToSummarize.some((message: ApiMessage) => message.isSummary)
+	const recentSummaryExists = messagesToSummarize.some((message) => message.isSummary)
 
 	if (recentSummaryExists && messagesToSummarize.length <= 2) {
 		const error = t("common:errors.condensed_recently")
@@ -298,7 +339,7 @@ export async function summarizeConversation(options: SummarizeConversationOption
 	// This respects user's custom condensing prompt setting
 	const condenseInstructions = customCondensingPrompt?.trim() || supportPrompt.default.CONDENSE
 
-	const finalRequestMessage: Anthropic.MessageParam = {
+	const finalRequestMessage: RooUserMessage = {
 		role: "user",
 		content: condenseInstructions,
 	}
@@ -311,8 +352,15 @@ export async function summarizeConversation(options: SummarizeConversationOption
 	// This is necessary because some providers (like Bedrock via LiteLLM) require the `tools` parameter
 	// when tool blocks are present. By converting them to text, we can send the conversation for
 	// summarization without needing to pass the tools parameter.
+	// Filter out reasoning messages (no role/content) before transforming for the API
+	const messagesForApi = [...messagesWithToolResults, finalRequestMessage].filter(
+		(msg): msg is Exclude<RooMessage, { type: "reasoning" }> => "role" in msg,
+	)
 	const messagesWithTextToolBlocks = transformMessagesForCondensing(
-		maybeRemoveImageBlocks([...messagesWithToolResults, finalRequestMessage], apiHandler),
+		maybeRemoveImageBlocks(messagesForApi, apiHandler) as Array<{
+			role: string
+			content: string | Array<{ type: string }>
+		}>,
 	)
 
 	const requestMessages = messagesWithTextToolBlocks.map(({ role, content }) => ({ role, content }))
@@ -332,7 +380,7 @@ export async function summarizeConversation(options: SummarizeConversationOption
 	let outputTokens = 0
 
 	try {
-		const stream = apiHandler.createMessage(promptToUse, requestMessages, metadata)
+		const stream = apiHandler.createMessage(promptToUse, requestMessages as RooMessage[], metadata)
 
 		for await (const chunk of stream) {
 			if (chunk.type === "text") {
@@ -398,9 +446,7 @@ export async function summarizeConversation(options: SummarizeConversationOption
 	const commandBlocks = firstMessage ? extractCommandBlocks(firstMessage) : ""
 
 	// Build the summary content as separate text blocks
-	const summaryContent: Anthropic.Messages.ContentBlockParam[] = [
-		{ type: "text", text: `## Conversation Summary\n${summary}` },
-	]
+	const summaryContent: TextPart[] = [{ type: "text", text: `## Conversation Summary\n${summary}` }]
 
 	// Add command blocks (active workflows) in their own system-reminder block if present
 	if (commandBlocks) {
@@ -455,7 +501,7 @@ ${commandBlocks}
 	// The summary goes at the end of all messages.
 	const lastMsgTs = messages[messages.length - 1]?.ts ?? Date.now()
 
-	const summaryMessage: ApiMessage = {
+	const summaryMessage: RooUserMessage = {
 		role: "user", // Fresh start model: summary is a user message
 		content: summaryContent,
 		ts: lastMsgTs + 1, // Unique timestamp after last message
@@ -488,7 +534,7 @@ ${commandBlocks}
 
 	// Count the tokens in the context for the next API request
 	// After condense, the context will contain: system prompt + summary + tool definitions
-	const systemPromptMessage: ApiMessage = { role: "user", content: systemPrompt }
+	const systemPromptMessage: RooUserMessage = { role: "user", content: systemPrompt }
 
 	// Count actual summaryMessage content directly instead of using outputTokens as a proxy
 	// This ensures we account for wrapper text (## Conversation Summary, <system-reminder>, <environment_details>)
@@ -496,7 +542,7 @@ ${commandBlocks}
 		typeof message.content === "string" ? [{ text: message.content, type: "text" as const }] : message.content,
 	)
 
-	const messageTokens = await apiHandler.countTokens(contextBlocks)
+	const messageTokens = await apiHandler.countTokens(contextBlocks as Parameters<typeof apiHandler.countTokens>[0])
 
 	// Count tool definition tokens if tools are provided
 	let toolTokens = 0
@@ -516,7 +562,7 @@ ${commandBlocks}
  * Note: Summary messages are always created with role: "user" (fresh-start model),
  * so the first message since the last summary is guaranteed to be a user message.
  */
-export function getMessagesSinceLastSummary(messages: ApiMessage[]): ApiMessage[] {
+export function getMessagesSinceLastSummary(messages: RooMessage[]): RooMessage[] {
 	const lastSummaryIndexReverse = [...messages].reverse().findIndex((message) => message.isSummary)
 
 	if (lastSummaryIndexReverse === -1) {
@@ -543,7 +589,7 @@ export function getMessagesSinceLastSummary(messages: ApiMessage[]): ApiMessage[
  * @param messages - The full API conversation history including tagged messages
  * @returns The filtered history that should be sent to the API
  */
-export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
+export function getEffectiveApiHistory(messages: RooMessage[]): RooMessage[] {
 	// Find the most recent summary message
 	const lastSummary = findLast(messages, (msg) => msg.isSummary === true)
 
@@ -552,42 +598,56 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 		const summaryIndex = messages.indexOf(lastSummary)
 		let messagesFromSummary = messages.slice(summaryIndex)
 
-		// Collect all tool_use IDs from assistant messages in the result
-		// This is needed to filter out orphan tool_result blocks that reference
-		// tool_use IDs from messages that were condensed away
-		const toolUseIds = new Set<string>()
+		// Collect all tool call IDs from assistant messages in the result.
+		// This is needed to filter out orphan tool results that reference
+		// tool call IDs from messages that were condensed away.
+		const toolCallIds = new Set<string>()
 		for (const msg of messagesFromSummary) {
-			if (msg.role === "assistant" && Array.isArray(msg.content)) {
-				for (const block of msg.content) {
-					if (block.type === "tool_use" && (block as Anthropic.Messages.ToolUseBlockParam).id) {
-						toolUseIds.add((block as Anthropic.Messages.ToolUseBlockParam).id)
+			if (isRooAssistantMessage(msg) && Array.isArray(msg.content)) {
+				for (const part of msg.content) {
+					if (isAnyToolCallBlock(part as { type: string })) {
+						toolCallIds.add(getToolCallId(part as AnyToolCallBlock))
 					}
 				}
 			}
 		}
 
-		// Filter out orphan tool_result blocks from user messages
+		// Filter out orphan tool results from tool messages
 		messagesFromSummary = messagesFromSummary
 			.map((msg) => {
-				if (msg.role === "user" && Array.isArray(msg.content)) {
-					const filteredContent = msg.content.filter((block) => {
-						if (block.type === "tool_result") {
-							return toolUseIds.has((block as Anthropic.Messages.ToolResultBlockParam).tool_use_id)
+				if (isRooToolMessage(msg) && Array.isArray(msg.content)) {
+					const filteredContent = msg.content.filter((part) => {
+						if (part.type === "tool-result") {
+							return toolCallIds.has((part as ToolResultPart).toolCallId)
 						}
 						return true
 					})
-					// If all content was filtered out, mark for removal
 					if (filteredContent.length === 0) {
 						return null
 					}
-					// If some content was filtered, return updated message
 					if (filteredContent.length !== msg.content.length) {
 						return { ...msg, content: filteredContent }
 					}
 				}
+				// Also handle legacy user messages that may contain tool_result blocks
+				if (isRooUserMessage(msg) && Array.isArray(msg.content)) {
+					const filteredContent = msg.content.filter((block) => {
+						const typedBlock = block as unknown as { type: string }
+						if (isAnyToolResultBlock(typedBlock)) {
+							return toolCallIds.has(getToolResultCallId(typedBlock))
+						}
+						return true
+					})
+					if (filteredContent.length === 0) {
+						return null
+					}
+					if (filteredContent.length !== msg.content.length) {
+						return { ...msg, content: filteredContent as typeof msg.content }
+					}
+				}
 				return msg
 			})
-			.filter((msg): msg is ApiMessage => msg !== null)
+			.filter((msg): msg is RooMessage => msg !== null)
 
 		// Still need to filter out any truncated messages within this range
 		const existingTruncationIds = new Set<string>()
@@ -598,7 +658,6 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 		}
 
 		return messagesFromSummary.filter((msg) => {
-			// Filter out truncated messages if their truncation marker exists
 			if (msg.truncationParent && existingTruncationIds.has(msg.truncationParent)) {
 				return false
 			}
@@ -609,9 +668,7 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 	// No summary - filter based on condenseParent and truncationParent as before
 	// This handles the case of orphaned condenseParent tags (summary was deleted via rewind)
 
-	// Collect all condenseIds of summaries that exist in the current history
 	const existingSummaryIds = new Set<string>()
-	// Collect all truncationIds of truncation markers that exist in the current history
 	const existingTruncationIds = new Set<string>()
 
 	for (const msg of messages) {
@@ -623,15 +680,10 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 		}
 	}
 
-	// Filter out messages whose condenseParent points to an existing summary
-	// or whose truncationParent points to an existing truncation marker.
-	// Messages with orphaned parents (summary/marker was deleted) are included.
 	return messages.filter((msg) => {
-		// Filter out condensed messages if their summary exists
 		if (msg.condenseParent && existingSummaryIds.has(msg.condenseParent)) {
 			return false
 		}
-		// Filter out truncated messages if their truncation marker exists
 		if (msg.truncationParent && existingTruncationIds.has(msg.truncationParent)) {
 			return false
 		}
@@ -650,7 +702,7 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
  * @param messages - The API conversation history after truncation
  * @returns The cleaned history with orphaned condenseParent and truncationParent fields cleared
  */
-export function cleanupAfterTruncation(messages: ApiMessage[]): ApiMessage[] {
+export function cleanupAfterTruncation(messages: RooMessage[]): RooMessage[] {
 	// Collect all condenseIds of summaries that still exist
 	const existingSummaryIds = new Set<string>()
 	// Collect all truncationIds of truncation markers that still exist
@@ -682,7 +734,7 @@ export function cleanupAfterTruncation(messages: ApiMessage[]): ApiMessage[] {
 		if (needsUpdate) {
 			// Create a new object without orphaned parent references
 			const { condenseParent, truncationParent, ...rest } = msg
-			const result: ApiMessage = rest as ApiMessage
+			const result = rest as RooMessage
 
 			// Keep condenseParent if its summary still exists
 			if (condenseParent && existingSummaryIds.has(condenseParent)) {

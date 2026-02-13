@@ -1,5 +1,5 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import { TelemetryService } from "@roo-code/telemetry"
+import type { RooMessage } from "../../task-persistence/rooMessage"
 import {
 	validateAndFixToolResultIds,
 	ToolResultIdMismatchError,
@@ -23,18 +23,18 @@ describe("validateAndFixToolResultIds", () => {
 
 	describe("when there is no previous assistant message", () => {
 		it("should return the user message unchanged", () => {
-			const userMessage: Anthropic.MessageParam = {
-				role: "user",
+			const userMessage = {
+				role: "user" as const,
 				content: [
 					{
-						type: "tool_result",
+						type: "tool_result" as const,
 						tool_use_id: "tool-123",
 						content: "Result",
 					},
 				],
-			}
+			} as unknown as RooMessage
 
-			const result = validateAndFixToolResultIds(userMessage, [])
+			const result = validateAndFixToolResultIds(userMessage as any, [])
 
 			expect(result).toEqual(userMessage)
 		})
@@ -42,7 +42,7 @@ describe("validateAndFixToolResultIds", () => {
 
 	describe("when tool_result IDs match tool_use IDs", () => {
 		it("should return the user message unchanged for single tool", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -54,7 +54,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -65,13 +65,13 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
 			expect(result).toEqual(userMessage)
 		})
 
 		it("should return the user message unchanged for multiple tools", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -89,7 +89,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -105,7 +105,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
 			expect(result).toEqual(userMessage)
 		})
@@ -113,7 +113,7 @@ describe("validateAndFixToolResultIds", () => {
 
 	describe("when tool_result IDs do not match tool_use IDs", () => {
 		it("should fix single mismatched tool_use_id by position", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -125,7 +125,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -136,16 +136,16 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
-			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			expect(Array.isArray((result as any).content)).toBe(true)
+			const resultContent = (result as any).content as any[]
 			expect(resultContent[0].tool_use_id).toBe("correct-id-123")
 			expect(resultContent[0].content).toBe("File content")
 		})
 
 		it("should fix multiple mismatched tool_use_ids by position", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -163,7 +163,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -179,16 +179,16 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
-			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			expect(Array.isArray((result as any).content)).toBe(true)
+			const resultContent = (result as any).content as any[]
 			expect(resultContent[0].tool_use_id).toBe("correct-1")
 			expect(resultContent[1].tool_use_id).toBe("correct-2")
 		})
 
 		it("should partially fix when some IDs match and some don't", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -206,7 +206,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -222,10 +222,10 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
-			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			expect(Array.isArray((result as any).content)).toBe(true)
+			const resultContent = (result as any).content as any[]
 			expect(resultContent[0].tool_use_id).toBe("id-1")
 			expect(resultContent[1].tool_use_id).toBe("id-2")
 		})
@@ -233,7 +233,7 @@ describe("validateAndFixToolResultIds", () => {
 
 	describe("when user message has non-tool_result content", () => {
 		it("should preserve text blocks alongside tool_result blocks", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -245,7 +245,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -260,20 +260,20 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
-			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Array<Anthropic.ToolResultBlockParam | Anthropic.TextBlockParam>
+			expect(Array.isArray((result as any).content)).toBe(true)
+			const resultContent = (result as any).content as any[]
 			expect(resultContent[0].type).toBe("tool_result")
-			expect((resultContent[0] as Anthropic.ToolResultBlockParam).tool_use_id).toBe("tool-123")
+			expect(resultContent[0].tool_use_id ?? resultContent[0].toolCallId).toBe("tool-123")
 			expect(resultContent[1].type).toBe("text")
-			expect((resultContent[1] as Anthropic.TextBlockParam).text).toBe("Additional context")
+			expect(resultContent[1].text).toBe("Additional context")
 		})
 	})
 
 	describe("when assistant message has non-tool_use content", () => {
 		it("should only consider tool_use blocks for matching", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -289,7 +289,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -300,17 +300,17 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
-			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			expect(Array.isArray((result as any).content)).toBe(true)
+			const resultContent = (result as any).content as any[]
 			expect(resultContent[0].tool_use_id).toBe("tool-123")
 		})
 	})
 
 	describe("when user message content is a string", () => {
 		it("should return the message unchanged", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -322,12 +322,12 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: "Just a plain text message",
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
 			expect(result).toEqual(userMessage)
 		})
@@ -335,12 +335,12 @@ describe("validateAndFixToolResultIds", () => {
 
 	describe("when assistant message content is a string", () => {
 		it("should return the user message unchanged", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: "Just some text, no tool use",
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -351,7 +351,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
 			expect(result).toEqual(userMessage)
 		})
@@ -359,7 +359,7 @@ describe("validateAndFixToolResultIds", () => {
 
 	describe("when there are more tool_results than tool_uses", () => {
 		it("should filter out orphaned tool_results with invalid IDs", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -371,7 +371,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -387,10 +387,10 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
-			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			expect(Array.isArray((result as any).content)).toBe(true)
+			const resultContent = (result as any).content as any[]
 			// Only one tool_result should remain - the first one gets fixed to tool-1
 			expect(resultContent.length).toBe(1)
 			expect(resultContent[0].tool_use_id).toBe("tool-1")
@@ -399,7 +399,7 @@ describe("validateAndFixToolResultIds", () => {
 		it("should filter out duplicate tool_results when one already has a valid ID", () => {
 			// This is the exact scenario from the PostHog error:
 			// 2 tool_results (call_08230257, call_55577629), 1 tool_use (call_55577629)
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -411,7 +411,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -427,10 +427,10 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
-			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			expect(Array.isArray((result as any).content)).toBe(true)
+			const resultContent = (result as any).content as any[]
 			// Should only keep one tool_result since there's only one tool_use
 			// The first invalid one gets fixed to the valid ID, then the second one
 			// (which already has that ID) becomes a duplicate and is filtered out
@@ -439,7 +439,7 @@ describe("validateAndFixToolResultIds", () => {
 		})
 
 		it("should preserve text blocks while filtering orphaned tool_results", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -451,7 +451,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -471,22 +471,22 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
-			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Array<Anthropic.ToolResultBlockParam | Anthropic.TextBlockParam>
+			expect(Array.isArray((result as any).content)).toBe(true)
+			const resultContent = (result as any).content as any[]
 			// Should have tool_result + text block, orphaned tool_result filtered out
 			expect(resultContent.length).toBe(2)
 			expect(resultContent[0].type).toBe("tool_result")
-			expect((resultContent[0] as Anthropic.ToolResultBlockParam).tool_use_id).toBe("tool-1")
+			expect(resultContent[0].tool_use_id ?? resultContent[0].toolCallId).toBe("tool-1")
 			expect(resultContent[1].type).toBe("text")
-			expect((resultContent[1] as Anthropic.TextBlockParam).text).toBe("Some additional context")
+			expect(resultContent[1].text).toBe("Some additional context")
 		})
 
 		// Verifies fix for GitHub #10465: Terminal fallback race condition can generate
 		// duplicate tool_results with the same valid tool_use_id, causing API protocol violations.
 		it("should filter out duplicate tool_results with identical valid tool_use_ids (terminal fallback scenario)", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -499,7 +499,7 @@ describe("validateAndFixToolResultIds", () => {
 			}
 
 			// Two tool_results with the SAME valid tool_use_id from terminal fallback race condition
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -515,10 +515,10 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
-			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			expect(Array.isArray((result as any).content)).toBe(true)
+			const resultContent = (result as any).content as any[]
 
 			// Only ONE tool_result should remain to prevent API protocol violation
 			expect(resultContent.length).toBe(1)
@@ -527,7 +527,7 @@ describe("validateAndFixToolResultIds", () => {
 		})
 
 		it("should preserve text blocks while deduplicating tool_results with same valid ID", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -539,7 +539,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -559,24 +559,24 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
-			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Array<Anthropic.ToolResultBlockParam | Anthropic.TextBlockParam>
+			expect(Array.isArray((result as any).content)).toBe(true)
+			const resultContent = (result as any).content as any[]
 
 			// Should have: 1 tool_result + 1 text block (duplicate filtered out)
 			expect(resultContent.length).toBe(2)
 			expect(resultContent[0].type).toBe("tool_result")
-			expect((resultContent[0] as Anthropic.ToolResultBlockParam).tool_use_id).toBe("tool-123")
-			expect((resultContent[0] as Anthropic.ToolResultBlockParam).content).toBe("First result")
+			expect(resultContent[0].tool_use_id ?? resultContent[0].toolCallId).toBe("tool-123")
+			expect(resultContent[0].content ?? resultContent[0].output.value).toBe("First result")
 			expect(resultContent[1].type).toBe("text")
-			expect((resultContent[1] as Anthropic.TextBlockParam).text).toBe("Environment details here")
+			expect(resultContent[1].text).toBe("Environment details here")
 		})
 	})
 
 	describe("when there are more tool_uses than tool_results", () => {
 		it("should fix the available tool_results and add missing ones", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -594,7 +594,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -605,23 +605,23 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
-			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			expect(Array.isArray((result as any).content)).toBe(true)
+			const resultContent = (result as any).content as any[]
 			// Should now have 2 tool_results: one fixed and one added for the missing tool_use
 			expect(resultContent.length).toBe(2)
-			// The missing tool_result is prepended
-			expect(resultContent[0].tool_use_id).toBe("tool-2")
-			expect(resultContent[0].content).toBe("Tool execution was interrupted before completion.")
-			// The original is fixed
+			// The missing tool_result is prepended (AI SDK format)
+			expect(resultContent[0].toolCallId).toBe("tool-2")
+			expect(resultContent[0].output.value).toBe("Tool execution was interrupted before completion.")
+			// The original is fixed (legacy format, tool_use_id updated)
 			expect(resultContent[1].tool_use_id).toBe("tool-1")
 		})
 	})
 
 	describe("when tool_results are completely missing", () => {
 		it("should add missing tool_result for single tool_use", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -633,7 +633,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -643,23 +643,21 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
-			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Array<Anthropic.ToolResultBlockParam | Anthropic.TextBlockParam>
+			expect(Array.isArray((result as any).content)).toBe(true)
+			const resultContent = (result as any).content as any[]
 			expect(resultContent.length).toBe(2)
-			// Missing tool_result should be prepended
-			expect(resultContent[0].type).toBe("tool_result")
-			expect((resultContent[0] as Anthropic.ToolResultBlockParam).tool_use_id).toBe("tool-123")
-			expect((resultContent[0] as Anthropic.ToolResultBlockParam).content).toBe(
-				"Tool execution was interrupted before completion.",
-			)
+			// Missing tool_result should be prepended (AI SDK format)
+			expect(resultContent[0].type).toBe("tool-result")
+			expect(resultContent[0].toolCallId).toBe("tool-123")
+			expect(resultContent[0].output.value).toBe("Tool execution was interrupted before completion.")
 			// Original text block should be preserved
 			expect(resultContent[1].type).toBe("text")
 		})
 
 		it("should add missing tool_results for multiple tool_uses", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -677,7 +675,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -687,22 +685,22 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
-			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Array<Anthropic.ToolResultBlockParam | Anthropic.TextBlockParam>
+			expect(Array.isArray((result as any).content)).toBe(true)
+			const resultContent = (result as any).content as any[]
 			expect(resultContent.length).toBe(3)
-			// Both missing tool_results should be prepended
-			expect(resultContent[0].type).toBe("tool_result")
-			expect((resultContent[0] as Anthropic.ToolResultBlockParam).tool_use_id).toBe("tool-1")
-			expect(resultContent[1].type).toBe("tool_result")
-			expect((resultContent[1] as Anthropic.ToolResultBlockParam).tool_use_id).toBe("tool-2")
+			// Both missing tool_results should be prepended (AI SDK format)
+			expect(resultContent[0].type).toBe("tool-result")
+			expect(resultContent[0].toolCallId).toBe("tool-1")
+			expect(resultContent[1].type).toBe("tool-result")
+			expect(resultContent[1].toolCallId).toBe("tool-2")
 			// Original text should be preserved
 			expect(resultContent[2].type).toBe("text")
 		})
 
 		it("should add only the missing tool_results when some exist", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -720,7 +718,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -731,21 +729,21 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
-			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			expect(Array.isArray((result as any).content)).toBe(true)
+			const resultContent = (result as any).content as any[]
 			expect(resultContent.length).toBe(2)
-			// Missing tool_result for tool-2 should be prepended
-			expect(resultContent[0].tool_use_id).toBe("tool-2")
-			expect(resultContent[0].content).toBe("Tool execution was interrupted before completion.")
+			// Missing tool_result for tool-2 should be prepended (AI SDK format)
+			expect(resultContent[0].toolCallId).toBe("tool-2")
+			expect(resultContent[0].output.value).toBe("Tool execution was interrupted before completion.")
 			// Existing tool_result should be preserved
 			expect(resultContent[1].tool_use_id).toBe("tool-1")
 			expect(resultContent[1].content).toBe("Content for tool 1")
 		})
 
 		it("should handle empty user content array by adding all missing tool_results", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -757,25 +755,25 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const result = validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
-			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			expect(Array.isArray((result as any).content)).toBe(true)
+			const resultContent = (result as any).content as any[]
 			expect(resultContent.length).toBe(1)
-			expect(resultContent[0].type).toBe("tool_result")
-			expect(resultContent[0].tool_use_id).toBe("tool-1")
-			expect(resultContent[0].content).toBe("Tool execution was interrupted before completion.")
+			expect(resultContent[0].type).toBe("tool-result")
+			expect(resultContent[0].toolCallId).toBe("tool-1")
+			expect(resultContent[0].output.value).toBe("Tool execution was interrupted before completion.")
 		})
 	})
 
 	describe("telemetry", () => {
 		it("should call captureException for both missing and mismatch when there is a mismatch", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -787,7 +785,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -798,7 +796,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			validateAndFixToolResultIds(userMessage, [assistantMessage])
+			validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
 			// A mismatch also triggers missing detection since the wrong-id doesn't match any tool_use
 			expect(TelemetryService.instance.captureException).toHaveBeenCalledTimes(2)
@@ -823,7 +821,7 @@ describe("validateAndFixToolResultIds", () => {
 		})
 
 		it("should not call captureException when IDs match", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -835,7 +833,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -846,7 +844,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			validateAndFixToolResultIds(userMessage, [assistantMessage])
+			validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
 			expect(TelemetryService.instance.captureException).not.toHaveBeenCalled()
 		})
@@ -884,7 +882,7 @@ describe("validateAndFixToolResultIds", () => {
 
 	describe("telemetry for missing tool_results", () => {
 		it("should call captureException when tool_results are missing", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -896,7 +894,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -906,7 +904,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			validateAndFixToolResultIds(userMessage, [assistantMessage])
+			validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
 			expect(TelemetryService.instance.captureException).toHaveBeenCalledTimes(1)
 			expect(TelemetryService.instance.captureException).toHaveBeenCalledWith(
@@ -921,7 +919,7 @@ describe("validateAndFixToolResultIds", () => {
 		})
 
 		it("should call captureException twice when both mismatch and missing occur", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -939,7 +937,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -951,7 +949,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			validateAndFixToolResultIds(userMessage, [assistantMessage])
+			validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
 			// Should be called twice: once for missing, once for mismatch
 			expect(TelemetryService.instance.captureException).toHaveBeenCalledTimes(2)
@@ -966,7 +964,7 @@ describe("validateAndFixToolResultIds", () => {
 		})
 
 		it("should not call captureException for missing when all tool_results exist", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage = {
 				role: "assistant",
 				content: [
 					{
@@ -978,7 +976,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage = {
 				role: "user",
 				content: [
 					{
@@ -989,7 +987,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			validateAndFixToolResultIds(userMessage, [assistantMessage])
+			validateAndFixToolResultIds(userMessage as any, [assistantMessage] as any)
 
 			expect(TelemetryService.instance.captureException).not.toHaveBeenCalled()
 		})

@@ -6,7 +6,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
-import { streamText, generateText, LanguageModel, ToolSet } from "ai"
+import { streamText, generateText, LanguageModel, ToolSet, ModelMessage } from "ai"
 
 import type { ModelInfo } from "@roo-code/types"
 
@@ -15,15 +15,17 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import {
 	convertToAiSdkMessages,
 	convertToolsForAiSdk,
-	processAiSdkStreamPart,
+	consumeAiSdkStream,
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 /**
  * Configuration options for creating an OpenAI-compatible provider.
@@ -94,18 +96,40 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 	protected processUsageMetrics(usage: {
 		inputTokens?: number
 		outputTokens?: number
+		totalInputTokens?: number
+		totalOutputTokens?: number
+		cachedInputTokens?: number
+		reasoningTokens?: number
+		inputTokenDetails?: {
+			cacheReadTokens?: number
+			cacheWriteTokens?: number
+			noCacheTokens?: number
+		}
+		outputTokenDetails?: {
+			reasoningTokens?: number
+		}
 		details?: {
 			cachedInputTokens?: number
 			reasoningTokens?: number
 		}
 		raw?: Record<string, unknown>
 	}): ApiStreamUsageChunk {
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
-			cacheReadTokens: usage.details?.cachedInputTokens,
-			reasoningTokens: usage.details?.reasoningTokens,
+			inputTokens,
+			outputTokens,
+			// P1: AI SDK v6 top-level
+			// P2: AI SDK v6 structured (LanguageModelInputTokenDetails)
+			// P3: Legacy AI SDK standard (usage.details)
+			cacheReadTokens:
+				usage.cachedInputTokens ?? usage.inputTokenDetails?.cacheReadTokens ?? usage.details?.cachedInputTokens,
+			cacheWriteTokens: usage.inputTokenDetails?.cacheWriteTokens,
+			reasoningTokens:
+				usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 
@@ -124,23 +148,24 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const model = this.getModel()
 		const languageModel = this.getLanguageModel()
 
 		// Convert messages to AI SDK format
-		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const aiSdkMessages = messages as ModelMessage[]
 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		// Build the request options
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
 			temperature: model.temperature ?? this.config.temperature ?? 0,
 			maxOutputTokens: this.getMaxOutputTokens(),
@@ -152,19 +177,11 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 		const result = streamText(requestOptions)
 
 		try {
-			// Process the full stream to get all events
-			for await (const part of result.fullStream) {
-				// Use the processAiSdkStreamPart utility to convert stream parts
-				for (const chunk of processAiSdkStreamPart(part)) {
-					yield chunk
-				}
-			}
-
-			// Yield usage metrics at the end
-			const usage = await result.usage
-			if (usage) {
-				yield this.processUsageMetrics(usage)
-			}
+			const processUsage = this.processUsageMetrics.bind(this)
+			yield* consumeAiSdkStream(result, async function* () {
+				const usage = await result.usage
+				yield processUsage(usage)
+			})
 		} catch (error) {
 			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
 			throw handleAiSdkError(error, this.config.providerName)

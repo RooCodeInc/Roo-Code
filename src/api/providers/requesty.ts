@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createRequesty, type RequestyProviderMetadata } from "@requesty/ai-sdk"
-import { streamText, generateText, ToolSet } from "ai"
+import { streamText, generateText, ToolSet, ModelMessage } from "ai"
 
 import { type ModelInfo, type ModelRecord, requestyDefaultModelId, requestyDefaultModelInfo } from "@roo-code/types"
 
@@ -10,10 +10,11 @@ import { calculateApiCostOpenAI } from "../../shared/cost"
 import {
 	convertToAiSdkMessages,
 	convertToolsForAiSdk,
-	processAiSdkStreamPart,
+	consumeAiSdkStream,
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -23,6 +24,7 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { toRequestyServiceUrl } from "../../shared/utils/requesty"
 import { applyRouterToolPreferences } from "./utils/router-tool-preferences"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 /**
  * Requesty provider using the dedicated @requesty/ai-sdk package.
@@ -139,6 +141,12 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -149,8 +157,14 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 	): ApiStreamUsageChunk {
 		const inputTokens = usage.inputTokens || 0
 		const outputTokens = usage.outputTokens || 0
-		const cacheWriteTokens = providerMetadata?.requesty?.usage?.cachingTokens ?? 0
-		const cacheReadTokens = providerMetadata?.requesty?.usage?.cachedTokens ?? usage.details?.cachedInputTokens ?? 0
+		const cacheWriteTokens =
+			providerMetadata?.requesty?.usage?.cachingTokens ?? usage.inputTokenDetails?.cacheWriteTokens ?? 0
+		const cacheReadTokens =
+			providerMetadata?.requesty?.usage?.cachedTokens ??
+			usage.cachedInputTokens ??
+			usage.inputTokenDetails?.cacheReadTokens ??
+			usage.details?.cachedInputTokens ??
+			0
 
 		const { totalCost } = modelInfo
 			? calculateApiCostOpenAI(modelInfo, inputTokens, outputTokens, cacheWriteTokens, cacheReadTokens)
@@ -162,8 +176,11 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			outputTokens,
 			cacheWriteTokens,
 			cacheReadTokens,
-			reasoningTokens: usage.details?.reasoningTokens,
+			reasoningTokens:
+				usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
 			totalCost,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 
@@ -172,22 +189,31 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { info, temperature } = await this.fetchModel()
 		const languageModel = this.getLanguageModel()
 
-		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const aiSdkMessages = messages as ModelMessage[]
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		const requestyOptions = this.getRequestyProviderOptions(metadata)
 
+		// Breakpoint 1: System prompt caching — inject as cached system message
+		// Requesty routes to Anthropic models that benefit from cache annotations
+		const effectiveSystemPrompt = applySystemPromptCaching(
+			systemPrompt,
+			aiSdkMessages,
+			metadata?.systemProviderOptions,
+		)
+
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: effectiveSystemPrompt,
 			messages: aiSdkMessages,
 			temperature: this.options.modelTemperature ?? temperature ?? 0,
 			maxOutputTokens: this.getMaxOutputTokens(),
@@ -199,17 +225,11 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 		const result = streamText(requestOptions)
 
 		try {
-			for await (const part of result.fullStream) {
-				for (const chunk of processAiSdkStreamPart(part)) {
-					yield chunk
-				}
-			}
-
-			const usage = await result.usage
-			const providerMetadata = await result.providerMetadata
-			if (usage) {
-				yield this.processUsageMetrics(usage, info, providerMetadata as RequestyProviderMetadata)
-			}
+			const processUsage = this.processUsageMetrics.bind(this)
+			yield* consumeAiSdkStream(result, async function* () {
+				const [usage, providerMetadata] = await Promise.all([result.usage, result.providerMetadata])
+				yield processUsage(usage, info, providerMetadata as RequestyProviderMetadata)
+			})
 		} catch (error) {
 			throw handleAiSdkError(error, "Requesty")
 		}

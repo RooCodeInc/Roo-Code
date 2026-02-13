@@ -23,10 +23,16 @@
         <practice>Use `gh issue view [URL] --json title,body,labels,comments` to fetch initial details.</practice>
         <practice>Use `gh issue comment [URL] --body "..."` to add comments, but only after explicit user approval.</practice>
         <practice>Always wrap the comment body in quotes to handle special characters.</practice>
+        <practice>When posting a comment, the body must start with "Hey @roomote-agent," exactly.</practice>
       </best_practices>
       <example><![CDATA[
 <execute_command>
 <command>gh issue view https://github.com/RooCodeInc/Roo-Code/issues/123 --json title,body</command>
+</execute_command>
+      ]]></example>
+      <example><![CDATA[
+<execute_command>
+<command>gh issue comment https://github.com/RooCodeInc/Roo-Code/issues/123 --body "Hey @roomote-agent, I've investigated and proposed a theoretical fix above."</command>
 </execute_command>
       ]]></example>
     </tool>

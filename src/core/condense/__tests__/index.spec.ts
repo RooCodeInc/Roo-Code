@@ -2,11 +2,10 @@
 
 import type { Mock } from "vitest"
 
-import { Anthropic } from "@anthropic-ai/sdk"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { ApiHandler } from "../../../api"
-import { ApiMessage } from "../../task-persistence/apiMessages"
+import { RooMessage } from "../../task-persistence/rooMessage"
 import { maybeRemoveImageBlocks } from "../../../api/transform/image-cleaning"
 import {
 	summarizeConversation,
@@ -22,7 +21,7 @@ import {
 } from "../index"
 
 vi.mock("../../../api/transform/image-cleaning", () => ({
-	maybeRemoveImageBlocks: vi.fn((messages: ApiMessage[], _apiHandler: ApiHandler) => [...messages]),
+	maybeRemoveImageBlocks: vi.fn((messages: RooMessage[], _apiHandler: ApiHandler) => [...messages]),
 }))
 
 vi.mock("@roo-code/telemetry", () => ({
@@ -37,7 +36,7 @@ const taskId = "test-task-id"
 
 describe("extractCommandBlocks", () => {
 	it("should extract command blocks from string content", () => {
-		const message: ApiMessage = {
+		const message: any = {
 			role: "user",
 			content: 'Some text <command name="prr">/prr #123</command> more text',
 		}
@@ -47,7 +46,7 @@ describe("extractCommandBlocks", () => {
 	})
 
 	it("should extract multiple command blocks", () => {
-		const message: ApiMessage = {
+		const message: any = {
 			role: "user",
 			content: '<command name="prr">/prr #123</command> text <command name="mode">/mode code</command>',
 		}
@@ -57,7 +56,7 @@ describe("extractCommandBlocks", () => {
 	})
 
 	it("should extract command blocks from array content", () => {
-		const message: ApiMessage = {
+		const message: any = {
 			role: "user",
 			content: [
 				{ type: "text", text: "Some user text" },
@@ -70,7 +69,7 @@ describe("extractCommandBlocks", () => {
 	})
 
 	it("should return empty string when no command blocks found", () => {
-		const message: ApiMessage = {
+		const message: any = {
 			role: "user",
 			content: "Just regular text without commands",
 		}
@@ -80,7 +79,7 @@ describe("extractCommandBlocks", () => {
 	})
 
 	it("should handle multiline command blocks", () => {
-		const message: ApiMessage = {
+		const message: any = {
 			role: "user",
 			content: `<command name="prr">
 Line 1
@@ -94,7 +93,7 @@ Line 2
 	})
 
 	it("should handle command blocks with attributes", () => {
-		const message: ApiMessage = {
+		const message: any = {
 			role: "user",
 			content: '<command name="test" attr1="value1" attr2="value2">content</command>',
 		}
@@ -107,7 +106,7 @@ Line 2
 
 describe("injectSyntheticToolResults", () => {
 	it("should return messages unchanged when no orphan tool_calls exist", () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{
 				role: "assistant",
@@ -126,7 +125,7 @@ describe("injectSyntheticToolResults", () => {
 	})
 
 	it("should inject synthetic tool_result for orphan tool_call", () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{
 				role: "assistant",
@@ -141,17 +140,17 @@ describe("injectSyntheticToolResults", () => {
 		const result = injectSyntheticToolResults(messages)
 
 		expect(result.length).toBe(3)
-		expect(result[2].role).toBe("user")
+		expect((result[2] as any).role).toBe("tool")
 
-		const content = result[2].content as any[]
+		const content = (result[2] as any).content as any[]
 		expect(content.length).toBe(1)
-		expect(content[0].type).toBe("tool_result")
-		expect(content[0].tool_use_id).toBe("tool-orphan")
-		expect(content[0].content).toBe("Context condensation triggered. Tool execution deferred.")
+		expect(content[0].type).toBe("tool-result")
+		expect(content[0].toolCallId).toBe("tool-orphan")
+		expect(content[0].output.value).toBe("Context condensation triggered. Tool execution deferred.")
 	})
 
 	it("should inject synthetic tool_results for multiple orphan tool_calls", () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{
 				role: "assistant",
@@ -167,14 +166,14 @@ describe("injectSyntheticToolResults", () => {
 		const result = injectSyntheticToolResults(messages)
 
 		expect(result.length).toBe(3)
-		const content = result[2].content as any[]
+		const content = (result[2] as any).content as any[]
 		expect(content.length).toBe(2)
-		expect(content[0].tool_use_id).toBe("tool-1")
-		expect(content[1].tool_use_id).toBe("tool-2")
+		expect(content[0].toolCallId).toBe("tool-1")
+		expect(content[1].toolCallId).toBe("tool-2")
 	})
 
 	it("should only inject for orphan tool_calls, not matched ones", () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{
 				role: "assistant",
@@ -195,13 +194,13 @@ describe("injectSyntheticToolResults", () => {
 		const result = injectSyntheticToolResults(messages)
 
 		expect(result.length).toBe(4)
-		const syntheticContent = result[3].content as any[]
+		const syntheticContent = (result[3] as any).content as any[]
 		expect(syntheticContent.length).toBe(1)
-		expect(syntheticContent[0].tool_use_id).toBe("orphan-tool")
+		expect(syntheticContent[0].toolCallId).toBe("orphan-tool")
 	})
 
 	it("should handle messages with string content (no tool_use/tool_result)", () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there!", ts: 2 },
 		]
@@ -216,7 +215,7 @@ describe("injectSyntheticToolResults", () => {
 	})
 
 	it("should handle tool_results spread across multiple user messages", () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{
 				role: "assistant",
@@ -246,7 +245,7 @@ describe("injectSyntheticToolResults", () => {
 
 describe("getMessagesSinceLastSummary", () => {
 	it("should return all messages when there is no summary", () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there", ts: 2 },
 			{ role: "user", content: "How are you?", ts: 3 },
@@ -257,7 +256,7 @@ describe("getMessagesSinceLastSummary", () => {
 	})
 
 	it("should return messages since the last summary", () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there", ts: 2 },
 			{ role: "user", content: "Summary of conversation", ts: 3, isSummary: true },
@@ -274,7 +273,7 @@ describe("getMessagesSinceLastSummary", () => {
 	})
 
 	it("should handle multiple summary messages and return since the last one", () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "user", content: "First summary", ts: 2, isSummary: true },
 			{ role: "assistant", content: "How are you?", ts: 3 },
@@ -295,7 +294,7 @@ describe("getMessagesSinceLastSummary", () => {
 	})
 
 	it("should return messages from user summary (fresh start model)", () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1, condenseParent: "cond-1" },
 			{ role: "assistant", content: "Hi there", ts: 2, condenseParent: "cond-1" },
 			{ role: "user", content: "Summary content", ts: 3, isSummary: true, condenseId: "cond-1" },
@@ -304,14 +303,14 @@ describe("getMessagesSinceLastSummary", () => {
 
 		const result = getMessagesSinceLastSummary(messages)
 		expect(result[0].isSummary).toBe(true)
-		expect(result[0].role).toBe("user")
+		expect((result[0] as any).role).toBe("user")
 	})
 })
 
 describe("getEffectiveApiHistory", () => {
 	it("should return only summary when summary exists (fresh start model)", () => {
 		const condenseId = "test-condense-id"
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "First", condenseParent: condenseId },
 			{ role: "assistant", content: "Second", condenseParent: condenseId },
 			{ role: "user", content: "Third", condenseParent: condenseId },
@@ -331,7 +330,7 @@ describe("getEffectiveApiHistory", () => {
 
 	it("should include messages after summary in fresh start model", () => {
 		const condenseId = "test-condense-id"
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "First", condenseParent: condenseId },
 			{ role: "assistant", content: "Second", condenseParent: condenseId },
 			{
@@ -348,12 +347,12 @@ describe("getEffectiveApiHistory", () => {
 
 		expect(result).toHaveLength(3)
 		expect(result[0].isSummary).toBe(true)
-		expect(result[1].content).toBe("New response after summary")
-		expect(result[2].content).toBe("New user message")
+		expect((result[1] as any).content).toBe("New response after summary")
+		expect((result[2] as any).content).toBe("New user message")
 	})
 
 	it("should return all messages when no summary exists", () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "First" },
 			{ role: "assistant", content: "Second" },
 			{ role: "user", content: "Third" },
@@ -366,7 +365,7 @@ describe("getEffectiveApiHistory", () => {
 
 	it("should restore messages when summary is deleted (rewind - orphaned condenseParent)", () => {
 		const orphanedCondenseId = "deleted-summary-id"
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "First", condenseParent: orphanedCondenseId },
 			{ role: "assistant", content: "Second", condenseParent: orphanedCondenseId },
 			{ role: "user", content: "Third", condenseParent: orphanedCondenseId },
@@ -382,7 +381,7 @@ describe("getEffectiveApiHistory", () => {
 	it("should filter out truncated messages within summary range", () => {
 		const condenseId = "cond-1"
 		const truncationId = "trunc-1"
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "First", condenseParent: condenseId },
 			{
 				role: "user",
@@ -406,12 +405,12 @@ describe("getEffectiveApiHistory", () => {
 		expect(result).toHaveLength(3)
 		expect(result[0].isSummary).toBe(true)
 		expect(result[1].isTruncationMarker).toBe(true)
-		expect(result[2].content).toBe("After truncation")
+		expect((result[2] as any).content).toBe("After truncation")
 	})
 
 	it("should filter out orphan tool_result blocks after fresh start condensation", () => {
 		const condenseId = "cond-1"
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", condenseParent: condenseId },
 			{
 				role: "assistant",
@@ -443,7 +442,7 @@ describe("getEffectiveApiHistory", () => {
 
 	it("should keep tool_result blocks that have matching tool_use in fresh start", () => {
 		const condenseId = "cond-1"
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", condenseParent: condenseId },
 			{
 				role: "user",
@@ -451,12 +450,14 @@ describe("getEffectiveApiHistory", () => {
 				isSummary: true,
 				condenseId,
 			},
-			// This tool_use is AFTER the summary, so it's not condensed away
+			// This tool-call is AFTER the summary, so it's not condensed away
 			{
 				role: "assistant",
-				content: [{ type: "tool_use", id: "tool-valid", name: "read_file", input: { path: "test.ts" } }],
+				content: [
+					{ type: "tool-call", toolCallId: "tool-valid", toolName: "read_file", input: { path: "test.ts" } },
+				],
 			},
-			// This tool_result has a matching tool_use, so it should be kept
+			// This tool_result has a matching tool-call, so it should be kept (legacy user message format)
 			{
 				role: "user",
 				content: [{ type: "tool_result", tool_use_id: "tool-valid", content: "file contents" }],
@@ -468,18 +469,23 @@ describe("getEffectiveApiHistory", () => {
 		// All messages after summary should be included
 		expect(result).toHaveLength(3)
 		expect(result[0].isSummary).toBe(true)
-		expect((result[1].content as any[])[0].id).toBe("tool-valid")
-		expect((result[2].content as any[])[0].tool_use_id).toBe("tool-valid")
+		expect(((result[1] as any).content as any[])[0].toolCallId).toBe("tool-valid")
+		expect(((result[2] as any).content as any[])[0].tool_use_id).toBe("tool-valid")
 	})
 
 	it("should filter orphan tool_results but keep other content in mixed user message", () => {
 		const condenseId = "cond-1"
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", condenseParent: condenseId },
 			{
 				role: "assistant",
 				content: [
-					{ type: "tool_use", id: "tool-orphan", name: "attempt_completion", input: { result: "Done" } },
+					{
+						type: "tool-call",
+						toolCallId: "tool-orphan",
+						toolName: "attempt_completion",
+						input: { result: "Done" },
+					},
 				],
 				condenseParent: condenseId,
 			},
@@ -489,12 +495,14 @@ describe("getEffectiveApiHistory", () => {
 				isSummary: true,
 				condenseId,
 			},
-			// This tool_use is AFTER the summary
+			// This tool-call is AFTER the summary
 			{
 				role: "assistant",
-				content: [{ type: "tool_use", id: "tool-valid", name: "read_file", input: { path: "test.ts" } }],
+				content: [
+					{ type: "tool-call", toolCallId: "tool-valid", toolName: "read_file", input: { path: "test.ts" } },
+				],
 			},
-			// Mixed content: one orphan tool_result and one valid tool_result
+			// Mixed content: one orphan tool_result and one valid tool_result (legacy user message format)
 			{
 				role: "user",
 				content: [
@@ -506,18 +514,18 @@ describe("getEffectiveApiHistory", () => {
 
 		const result = getEffectiveApiHistory(messages)
 
-		// Summary + assistant with tool_use + filtered user message
+		// Summary + assistant with tool-call + filtered user message
 		expect(result).toHaveLength(3)
 		expect(result[0].isSummary).toBe(true)
 		// The user message should only contain the valid tool_result
-		const userContent = result[2].content as any[]
+		const userContent = (result[2] as any).content as any[]
 		expect(userContent).toHaveLength(1)
 		expect(userContent[0].tool_use_id).toBe("tool-valid")
 	})
 
 	it("should handle multiple orphan tool_results in a single message", () => {
 		const condenseId = "cond-1"
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{
 				role: "assistant",
 				content: [
@@ -551,7 +559,7 @@ describe("getEffectiveApiHistory", () => {
 
 	it("should preserve non-tool_result content in user messages", () => {
 		const condenseId = "cond-1"
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{
 				role: "assistant",
 				content: [
@@ -580,7 +588,7 @@ describe("getEffectiveApiHistory", () => {
 		// Summary + user message with only text (orphan tool_result filtered)
 		expect(result).toHaveLength(2)
 		expect(result[0].isSummary).toBe(true)
-		const userContent = result[1].content as any[]
+		const userContent = (result[1] as any).content as any[]
 		expect(userContent).toHaveLength(1)
 		expect(userContent[0].type).toBe("text")
 		expect(userContent[0].text).toBe("User added some text")
@@ -590,7 +598,7 @@ describe("getEffectiveApiHistory", () => {
 describe("cleanupAfterTruncation", () => {
 	it("should clear orphaned condenseParent references", () => {
 		const orphanedCondenseId = "deleted-summary"
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "First", condenseParent: orphanedCondenseId },
 			{ role: "assistant", content: "Second", condenseParent: orphanedCondenseId },
 			{ role: "user", content: "Third" },
@@ -605,7 +613,7 @@ describe("cleanupAfterTruncation", () => {
 
 	it("should keep condenseParent when summary still exists", () => {
 		const condenseId = "existing-summary"
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "First", condenseParent: condenseId },
 			{ role: "assistant", content: "Second", condenseParent: condenseId },
 			{
@@ -624,7 +632,7 @@ describe("cleanupAfterTruncation", () => {
 
 	it("should clear orphaned truncationParent references", () => {
 		const orphanedTruncationId = "deleted-truncation"
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "First", truncationParent: orphanedTruncationId },
 			{ role: "assistant", content: "Second" },
 		]
@@ -636,7 +644,7 @@ describe("cleanupAfterTruncation", () => {
 
 	it("should keep truncationParent when marker still exists", () => {
 		const truncationId = "existing-truncation"
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "First", truncationParent: truncationId },
 			{
 				role: "assistant",
@@ -654,7 +662,7 @@ describe("cleanupAfterTruncation", () => {
 	it("should handle mixed orphaned and valid references", () => {
 		const validCondenseId = "valid-cond"
 		const orphanedCondenseId = "orphaned-cond"
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "First", condenseParent: orphanedCondenseId },
 			{ role: "assistant", content: "Second", condenseParent: validCondenseId },
 			{
@@ -712,7 +720,7 @@ describe("summarizeConversation", () => {
 	const defaultSystemPrompt = "You are a helpful assistant."
 
 	it("should not summarize when there are not enough messages", async () => {
-		const messages: ApiMessage[] = [{ role: "user", content: "Hello", ts: 1 }]
+		const messages: any[] = [{ role: "user", content: "Hello", ts: 1 }]
 
 		const result = await summarizeConversation({
 			messages,
@@ -729,7 +737,7 @@ describe("summarizeConversation", () => {
 	})
 
 	it("should create summary with user role (fresh start model)", async () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there", ts: 2 },
 			{ role: "user", content: "How are you?", ts: 3 },
@@ -763,19 +771,19 @@ describe("summarizeConversation", () => {
 		}
 
 		// Summary message is a user message with just text (fresh start model)
-		expect(summaryMessage!.role).toBe("user")
-		expect(Array.isArray(summaryMessage!.content)).toBe(true)
-		const content = summaryMessage!.content as any[]
+		expect((summaryMessage! as any).role).toBe("user")
+		expect(Array.isArray((summaryMessage as any).content)).toBe(true)
+		const content = (summaryMessage as any).content as any[]
 		expect(content).toHaveLength(1)
 		expect(content[0].type).toBe("text")
 		expect(content[0].text).toContain("## Conversation Summary")
 		expect(content[0].text).toContain("This is a summary")
 
 		// Fresh start: effective API history should contain only the summary
-		const effectiveHistory = getEffectiveApiHistory(result.messages)
+		const effectiveHistory = getEffectiveApiHistory(result.messages as any)
 		expect(effectiveHistory).toHaveLength(1)
 		expect(effectiveHistory[0].isSummary).toBe(true)
-		expect(effectiveHistory[0].role).toBe("user")
+		expect((effectiveHistory[0] as any).role).toBe("user")
 
 		// Check the cost and token counts
 		expect(result.cost).toBe(0.05)
@@ -786,7 +794,7 @@ describe("summarizeConversation", () => {
 	})
 
 	it("should preserve command blocks from first message in summary", async () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{
 				role: "user",
 				content: 'Hello <command name="prr">/prr #123</command>',
@@ -808,7 +816,7 @@ describe("summarizeConversation", () => {
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
 
-		const content = summaryMessage!.content as any[]
+		const content = (summaryMessage as any).content as any[]
 		// Summary content is now split into separate text blocks
 		expect(content).toHaveLength(2)
 		expect(content[0].text).toContain("## Conversation Summary")
@@ -818,7 +826,7 @@ describe("summarizeConversation", () => {
 	})
 
 	it("should not include command blocks wrapper when no commands in first message", async () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there", ts: 2 },
 			{ role: "user", content: "How are you?", ts: 3 },
@@ -836,14 +844,14 @@ describe("summarizeConversation", () => {
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
 
-		const content = summaryMessage!.content as any[]
+		const content = (summaryMessage as any).content as any[]
 		expect(content[0].text).not.toContain("<system-reminder>")
 		expect(content[0].text).not.toContain("Active Workflows")
 	})
 
 	it("should handle empty summary response and return error", async () => {
 		// We need enough messages to trigger summarization
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there", ts: 2 },
 			{ role: "user", content: "How are you?", ts: 3 },
@@ -884,7 +892,7 @@ describe("summarizeConversation", () => {
 	})
 
 	it("should correctly format the request to the API", async () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there", ts: 2 },
 			{ role: "user", content: "How are you?", ts: 3 },
@@ -921,7 +929,7 @@ describe("summarizeConversation", () => {
 	})
 
 	it("should include the original first user message in summarization input", async () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Initial ask", ts: 1 },
 			{ role: "assistant", content: "Ack", ts: 2 },
 			{ role: "user", content: "Follow-up", ts: 3 },
@@ -953,7 +961,7 @@ describe("summarizeConversation", () => {
 	})
 
 	it("should calculate newContextTokens correctly with systemPrompt", async () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there", ts: 2 },
 			{ role: "user", content: "How are you?", ts: 3 },
@@ -992,7 +1000,7 @@ describe("summarizeConversation", () => {
 	})
 
 	it("should successfully summarize conversation", async () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there", ts: 2 },
 			{ role: "user", content: "How are you?", ts: 3 },
@@ -1025,7 +1033,7 @@ describe("summarizeConversation", () => {
 		expect(result.messages.length).toBe(messages.length + 1)
 
 		// Fresh start: effective history should contain only the summary
-		const effectiveHistory = getEffectiveApiHistory(result.messages)
+		const effectiveHistory = getEffectiveApiHistory(result.messages as any)
 		expect(effectiveHistory.length).toBe(1)
 		expect(effectiveHistory[0].isSummary).toBe(true)
 
@@ -1037,7 +1045,7 @@ describe("summarizeConversation", () => {
 	})
 
 	it("should return error when API handler is invalid", async () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there", ts: 2 },
 			{ role: "user", content: "How are you?", ts: 3 },
@@ -1081,7 +1089,7 @@ describe("summarizeConversation", () => {
 	})
 
 	it("should tag all messages with condenseParent (fresh start model)", async () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there", ts: 2 },
 			{ role: "user", content: "How are you?", ts: 3 },
@@ -1107,7 +1115,7 @@ describe("summarizeConversation", () => {
 	})
 
 	it("should place summary message at end of messages array", async () => {
-		const messages: ApiMessage[] = [
+		const messages: any[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there", ts: 2 },
 			{ role: "user", content: "How are you?", ts: 3 },
@@ -1125,7 +1133,7 @@ describe("summarizeConversation", () => {
 		// Summary should be the last message
 		const lastMessage = result.messages[result.messages.length - 1]
 		expect(lastMessage.isSummary).toBe(true)
-		expect(lastMessage.role).toBe("user")
+		expect((lastMessage as any).role).toBe("user")
 	})
 })
 
@@ -1136,7 +1144,7 @@ describe("summarizeConversation with custom settings", () => {
 	const localTaskId = "test-task"
 
 	// Sample messages for testing
-	const sampleMessages: ApiMessage[] = [
+	const sampleMessages: any[] = [
 		{ role: "user", content: "Hello", ts: 1 },
 		{ role: "assistant", content: "Hi there", ts: 2 },
 		{ role: "user", content: "How are you?", ts: 3 },
@@ -1289,7 +1297,7 @@ describe("summarizeConversation with custom settings", () => {
 
 describe("toolUseToText", () => {
 	it("should convert tool_use block with object input to text", () => {
-		const block: Anthropic.Messages.ToolUseBlockParam = {
+		const block: any = {
 			type: "tool_use",
 			id: "tool-123",
 			name: "read_file",
@@ -1302,7 +1310,7 @@ describe("toolUseToText", () => {
 	})
 
 	it("should convert tool_use block with nested object input to text", () => {
-		const block: Anthropic.Messages.ToolUseBlockParam = {
+		const block: any = {
 			type: "tool_use",
 			id: "tool-456",
 			name: "write_file",
@@ -1322,7 +1330,7 @@ describe("toolUseToText", () => {
 	})
 
 	it("should convert tool_use block with string input to text", () => {
-		const block: Anthropic.Messages.ToolUseBlockParam = {
+		const block: any = {
 			type: "tool_use",
 			id: "tool-789",
 			name: "execute_command",
@@ -1335,7 +1343,7 @@ describe("toolUseToText", () => {
 	})
 
 	it("should handle empty object input", () => {
-		const block: Anthropic.Messages.ToolUseBlockParam = {
+		const block: any = {
 			type: "tool_use",
 			id: "tool-empty",
 			name: "some_tool",
@@ -1350,7 +1358,7 @@ describe("toolUseToText", () => {
 
 describe("toolResultToText", () => {
 	it("should convert tool_result with string content to text", () => {
-		const block: Anthropic.Messages.ToolResultBlockParam = {
+		const block: any = {
 			type: "tool_result",
 			tool_use_id: "tool-123",
 			content: "File contents here",
@@ -1362,7 +1370,7 @@ describe("toolResultToText", () => {
 	})
 
 	it("should convert tool_result with error flag to text", () => {
-		const block: Anthropic.Messages.ToolResultBlockParam = {
+		const block: any = {
 			type: "tool_result",
 			tool_use_id: "tool-456",
 			content: "File not found",
@@ -1375,7 +1383,7 @@ describe("toolResultToText", () => {
 	})
 
 	it("should convert tool_result with array content to text", () => {
-		const block: Anthropic.Messages.ToolResultBlockParam = {
+		const block: any = {
 			type: "tool_result",
 			tool_use_id: "tool-789",
 			content: [
@@ -1390,7 +1398,7 @@ describe("toolResultToText", () => {
 	})
 
 	it("should handle tool_result with image in array content", () => {
-		const block: Anthropic.Messages.ToolResultBlockParam = {
+		const block: any = {
 			type: "tool_result",
 			tool_use_id: "tool-img",
 			content: [
@@ -1405,7 +1413,7 @@ describe("toolResultToText", () => {
 	})
 
 	it("should handle tool_result with no content", () => {
-		const block: Anthropic.Messages.ToolResultBlockParam = {
+		const block: any = {
 			type: "tool_result",
 			tool_use_id: "tool-empty",
 		}
@@ -1426,7 +1434,7 @@ describe("convertToolBlocksToText", () => {
 	})
 
 	it("should convert tool_use blocks to text blocks", () => {
-		const content: Anthropic.Messages.ContentBlockParam[] = [
+		const content: any[] = [
 			{
 				type: "tool_use",
 				id: "tool-123",
@@ -1438,12 +1446,12 @@ describe("convertToolBlocksToText", () => {
 		const result = convertToolBlocksToText(content)
 
 		expect(Array.isArray(result)).toBe(true)
-		expect((result as Anthropic.Messages.ContentBlockParam[])[0].type).toBe("text")
-		expect((result as Anthropic.Messages.TextBlockParam[])[0].text).toContain("[Tool Use: read_file]")
+		expect((result as any[])[0].type).toBe("text")
+		expect((result as any[])[0].text).toContain("[Tool Use: read_file]")
 	})
 
 	it("should convert tool_result blocks to text blocks", () => {
-		const content: Anthropic.Messages.ContentBlockParam[] = [
+		const content: any[] = [
 			{
 				type: "tool_result",
 				tool_use_id: "tool-123",
@@ -1454,12 +1462,12 @@ describe("convertToolBlocksToText", () => {
 		const result = convertToolBlocksToText(content)
 
 		expect(Array.isArray(result)).toBe(true)
-		expect((result as Anthropic.Messages.ContentBlockParam[])[0].type).toBe("text")
-		expect((result as Anthropic.Messages.TextBlockParam[])[0].text).toContain("[Tool Result]")
+		expect((result as any[])[0].type).toBe("text")
+		expect((result as any[])[0].text).toContain("[Tool Result]")
 	})
 
 	it("should preserve non-tool blocks unchanged", () => {
-		const content: Anthropic.Messages.ContentBlockParam[] = [
+		const content: any[] = [
 			{ type: "text", text: "Hello" },
 			{
 				type: "tool_use",
@@ -1473,16 +1481,16 @@ describe("convertToolBlocksToText", () => {
 		const result = convertToolBlocksToText(content)
 
 		expect(Array.isArray(result)).toBe(true)
-		const resultArray = result as Anthropic.Messages.ContentBlockParam[]
+		const resultArray = result as any[]
 		expect(resultArray).toHaveLength(3)
 		expect(resultArray[0]).toEqual({ type: "text", text: "Hello" })
 		expect(resultArray[1].type).toBe("text")
-		expect((resultArray[1] as Anthropic.Messages.TextBlockParam).text).toContain("[Tool Use: read_file]")
+		expect((resultArray[1] as any).text).toContain("[Tool Use: read_file]")
 		expect(resultArray[2]).toEqual({ type: "text", text: "World" })
 	})
 
 	it("should handle mixed content with multiple tool blocks", () => {
-		const content: Anthropic.Messages.ContentBlockParam[] = [
+		const content: any[] = [
 			{
 				type: "tool_use",
 				id: "tool-1",
@@ -1499,11 +1507,11 @@ describe("convertToolBlocksToText", () => {
 		const result = convertToolBlocksToText(content)
 
 		expect(Array.isArray(result)).toBe(true)
-		const resultArray = result as Anthropic.Messages.ContentBlockParam[]
+		const resultArray = result as any[]
 		expect(resultArray).toHaveLength(2)
-		expect((resultArray[0] as Anthropic.Messages.TextBlockParam).text).toContain("[Tool Use: read_file]")
-		expect((resultArray[1] as Anthropic.Messages.TextBlockParam).text).toContain("[Tool Result]")
-		expect((resultArray[1] as Anthropic.Messages.TextBlockParam).text).toContain("contents of a.ts")
+		expect((resultArray[0] as any).text).toContain("[Tool Use: read_file]")
+		expect((resultArray[1] as any).text).toContain("[Tool Result]")
+		expect((resultArray[1] as any).text).toContain("contents of a.ts")
 	})
 })
 

@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createZhipu } from "zhipu-ai-provider"
-import { streamText, generateText, ToolSet } from "ai"
+import { streamText, generateText, ToolSet, ModelMessage } from "ai"
 
 import {
 	internationalZAiModels,
@@ -17,16 +17,18 @@ import { type ApiHandlerOptions, shouldUseReasoningEffort } from "../../shared/a
 import {
 	convertToAiSdkMessages,
 	convertToolsForAiSdk,
-	processAiSdkStreamPart,
+	consumeAiSdkStream,
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 /**
  * Z.ai provider using the dedicated zhipu-ai-provider package.
@@ -91,20 +93,21 @@ export class ZAiHandler extends BaseProvider implements SingleCompletionHandler 
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { id: modelId, info, temperature } = this.getModel()
 		const languageModel = this.getLanguageModel()
 
-		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const aiSdkMessages = messages as ModelMessage[]
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
 			temperature: this.options.modelTemperature ?? temperature ?? ZAI_DEFAULT_TEMPERATURE,
 			maxOutputTokens: this.getMaxOutputTokens(),
@@ -112,8 +115,8 @@ export class ZAiHandler extends BaseProvider implements SingleCompletionHandler 
 			toolChoice: mapToolChoice(metadata?.tool_choice),
 		}
 
-		// GLM-4.7 thinking mode: pass thinking parameter via providerOptions
-		const isThinkingModel = modelId === "glm-4.7" && Array.isArray(info.supportsReasoningEffort)
+		// Thinking mode: pass thinking parameter via providerOptions for models that support it (e.g. GLM-4.7, GLM-5)
+		const isThinkingModel = Array.isArray(info.supportsReasoningEffort)
 
 		if (isThinkingModel) {
 			const useReasoning = shouldUseReasoningEffort({ model: info, settings: this.options })
@@ -127,20 +130,7 @@ export class ZAiHandler extends BaseProvider implements SingleCompletionHandler 
 		const result = streamText(requestOptions)
 
 		try {
-			for await (const part of result.fullStream) {
-				for (const chunk of processAiSdkStreamPart(part)) {
-					yield chunk
-				}
-			}
-
-			const usage = await result.usage
-			if (usage) {
-				yield {
-					type: "usage" as const,
-					inputTokens: usage.inputTokens || 0,
-					outputTokens: usage.outputTokens || 0,
-				}
-			}
+			yield* consumeAiSdkStream(result)
 		} catch (error) {
 			throw handleAiSdkError(error, "Z.ai")
 		}

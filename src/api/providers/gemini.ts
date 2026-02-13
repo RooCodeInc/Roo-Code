@@ -1,6 +1,6 @@
 import type { Anthropic } from "@anthropic-ai/sdk"
 import { createGoogleGenerativeAI, type GoogleGenerativeAIProvider } from "@ai-sdk/google"
-import { streamText, generateText, NoOutputGeneratedError, ToolSet } from "ai"
+import { streamText, generateText, NoOutputGeneratedError, ToolSet, ModelMessage } from "ai"
 
 import {
 	type ModelInfo,
@@ -18,7 +18,10 @@ import {
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
+	handleAiSdkError,
+	yieldResponseMessage,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { t } from "i18next"
 import type { ApiStream, ApiStreamUsageChunk, GroundingSource } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -26,12 +29,12 @@ import { getModelParams } from "../transform/model-params"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseProvider } from "./base-provider"
 import { DEFAULT_HEADERS } from "./constants"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 export class GeminiHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	protected provider: GoogleGenerativeAIProvider
 	private readonly providerName = "Gemini"
-	private lastThoughtSignature: string | undefined
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -50,7 +53,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 	async *createMessage(
 		systemInstruction: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { id: modelId, info, reasoning: thinkingConfig, maxTokens } = this.getModel()
@@ -80,7 +83,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		// Anthropic.MessageParam values and will cause failures.
 		type ReasoningMetaLike = { type?: string }
 
-		const filteredMessages = messages.filter((message): message is Anthropic.Messages.MessageParam => {
+		const filteredMessages = messages.filter((message) => {
 			const meta = message as ReasoningMetaLike
 			if (meta.type === "reasoning") {
 				return false
@@ -89,7 +92,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		})
 
 		// Convert messages to AI SDK format
-		const aiSdkMessages = convertToAiSdkMessages(filteredMessages)
+		const aiSdkMessages = filteredMessages as ModelMessage[]
 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		let openAiTools = this.convertToolsForOpenAI(metadata?.tools)
@@ -101,6 +104,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		// Build tool choice - use 'required' when allowedFunctionNames restricts available tools
 		const toolChoice =
@@ -111,7 +115,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		// Build the request options
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: this.provider(modelId),
-			system: systemInstruction,
+			system: systemInstruction || undefined,
 			messages: aiSdkMessages,
 			temperature: temperatureConfig,
 			maxOutputTokens,
@@ -125,27 +129,19 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 
 		try {
-			// Reset thought signature for this request
-			this.lastThoughtSignature = undefined
-
 			// Use streamText for streaming responses
 			const result = streamText(requestOptions)
 
 			// Track whether any text content was yielded (not just reasoning/thinking)
 			let hasContent = false
+			let lastStreamError: string | undefined
 
 			// Process the full stream to get all events including reasoning
 			for await (const part of result.fullStream) {
-				// Capture thoughtSignature from tool-call events (Gemini 3 thought signatures)
-				// The AI SDK's tool-call event includes providerMetadata with the signature
-				if (part.type === "tool-call") {
-					const googleMeta = (part as any).providerMetadata?.google
-					if (googleMeta?.thoughtSignature) {
-						this.lastThoughtSignature = googleMeta.thoughtSignature
-					}
-				}
-
 				for (const chunk of processAiSdkStreamPart(part)) {
+					if (chunk.type === "error") {
+						lastStreamError = chunk.message
+					}
 					if (chunk.type === "text" || chunk.type === "tool_call_start") {
 						hasContent = true
 					}
@@ -163,7 +159,15 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 
 			// Extract grounding sources from providerMetadata if available
-			const providerMetadata = await result.providerMetadata
+			let providerMetadata: Awaited<typeof result.providerMetadata>
+			try {
+				providerMetadata = await result.providerMetadata
+			} catch (metaError) {
+				if (lastStreamError) {
+					throw new Error(lastStreamError)
+				}
+				throw metaError
+			}
 			const groundingMetadata = providerMetadata?.google as
 				| {
 						groundingMetadata?: {
@@ -190,6 +194,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 					yield this.processUsageMetrics(usage, info, providerMetadata)
 				}
 			} catch (usageError) {
+				if (lastStreamError) {
+					throw new Error(lastStreamError)
+				}
 				if (usageError instanceof NoOutputGeneratedError) {
 					// If we already yielded the empty-stream message, suppress this error
 					if (hasContent) {
@@ -200,16 +207,17 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 					throw usageError
 				}
 			}
+
+			yield* yieldResponseMessage(result)
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error)
-			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage")
-			TelemetryService.instance.captureException(apiError)
-
-			if (error instanceof Error) {
-				throw new Error(t("common:errors.gemini.generate_stream", { error: error.message }))
-			}
-
-			throw error
+			throw handleAiSdkError(error, this.providerName, {
+				onError: (msg) => {
+					TelemetryService.instance.captureException(
+						new ApiProviderError(msg, this.providerName, modelId, "createMessage"),
+					)
+				},
+				formatMessage: (msg) => t("common:errors.gemini.generate_stream", { error: msg }),
+			})
 		}
 	}
 
@@ -240,6 +248,12 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -250,8 +264,10 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 	): ApiStreamUsageChunk {
 		const inputTokens = usage.inputTokens || 0
 		const outputTokens = usage.outputTokens || 0
-		const cacheReadTokens = usage.details?.cachedInputTokens
-		const reasoningTokens = usage.details?.reasoningTokens
+		const cacheReadTokens =
+			usage.cachedInputTokens ?? usage.inputTokenDetails?.cacheReadTokens ?? usage.details?.cachedInputTokens
+		const reasoningTokens =
+			usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens
 
 		return {
 			type: "usage",
@@ -266,6 +282,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				cacheReadTokens,
 				reasoningTokens,
 			}),
+			// Gemini: inputTokens is already total
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 
@@ -349,15 +368,14 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 			return text
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error)
-			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "completePrompt")
-			TelemetryService.instance.captureException(apiError)
-
-			if (error instanceof Error) {
-				throw new Error(t("common:errors.gemini.generate_complete_prompt", { error: error.message }))
-			}
-
-			throw error
+			throw handleAiSdkError(error, this.providerName, {
+				onError: (msg) => {
+					TelemetryService.instance.captureException(
+						new ApiProviderError(msg, this.providerName, modelId, "completePrompt"),
+					)
+				},
+				formatMessage: (msg) => t("common:errors.gemini.generate_complete_prompt", { error: msg }),
+			})
 		}
 	}
 
@@ -427,14 +445,5 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 	override isAiSdkProvider(): boolean {
 		return true
-	}
-
-	/**
-	 * Returns the thought signature captured from the last Gemini response.
-	 * Gemini 3 models return thoughtSignature on function call parts,
-	 * which must be round-tripped back for tool use continuations.
-	 */
-	getThoughtSignature(): string | undefined {
-		return this.lastThoughtSignature
 	}
 }

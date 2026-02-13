@@ -29,15 +29,23 @@ vi.mock("vscode", () => {
 vi.mock("../core/task-persistence/taskMessages", () => ({
 	readTaskMessages: vi.fn().mockResolvedValue([]),
 }))
-vi.mock("../core/task-persistence", () => ({
-	readApiMessages: vi.fn().mockResolvedValue([]),
-	saveApiMessages: vi.fn().mockResolvedValue(undefined),
-	saveTaskMessages: vi.fn().mockResolvedValue(undefined),
+vi.mock("../core/task-persistence", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("../core/task-persistence")>()
+	return {
+		...actual,
+		readRooMessages: vi.fn().mockResolvedValue([]),
+		saveRooMessages: vi.fn().mockResolvedValue(undefined),
+		saveTaskMessages: vi.fn().mockResolvedValue(undefined),
+	}
+})
+vi.mock("../core/task-persistence/delegationMeta", () => ({
+	readDelegationMeta: vi.fn().mockResolvedValue(null),
+	saveDelegationMeta: vi.fn().mockResolvedValue(undefined),
 }))
 
 import { ClineProvider } from "../core/webview/ClineProvider"
 import { readTaskMessages } from "../core/task-persistence/taskMessages"
-import { readApiMessages, saveApiMessages, saveTaskMessages } from "../core/task-persistence"
+import { readRooMessages, saveRooMessages, saveTaskMessages } from "../core/task-persistence"
 
 describe("History resume delegation - parent metadata transitions", () => {
 	beforeEach(() => {
@@ -83,7 +91,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 
 		// Mock persistence reads to return empty arrays
 		vi.mocked(readTaskMessages).mockResolvedValue([])
-		vi.mocked(readApiMessages).mockResolvedValue([])
+		vi.mocked(readRooMessages).mockResolvedValue([])
 
 		await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
 			parentTaskId: "parent-1",
@@ -145,6 +153,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			}),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
+			log: vi.fn(),
 		} as unknown as ClineProvider
 
 		// Start with existing messages in history
@@ -152,7 +161,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 		const existingApiMessages = [{ role: "user", content: [{ type: "text", text: "Old request" }], ts: 50 }]
 
 		vi.mocked(readTaskMessages).mockResolvedValue(existingUiMessages as any)
-		vi.mocked(readApiMessages).mockResolvedValue(existingApiMessages as any)
+		vi.mocked(readRooMessages).mockResolvedValue(existingApiMessages as any)
 
 		await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
 			parentTaskId: "p1",
@@ -176,7 +185,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 		)
 
 		// Verify API history injection (user role message)
-		expect(saveApiMessages).toHaveBeenCalledWith(
+		expect(saveRooMessages).toHaveBeenCalledWith(
 			expect.objectContaining({
 				messages: expect.arrayContaining([
 					expect.objectContaining({
@@ -198,11 +207,11 @@ describe("History resume delegation - parent metadata transitions", () => {
 		const uiCall = vi.mocked(saveTaskMessages).mock.calls[0][0]
 		expect(uiCall.messages).toHaveLength(2) // 1 original + 1 injected
 
-		const apiCall = vi.mocked(saveApiMessages).mock.calls[0][0]
+		const apiCall = vi.mocked(saveRooMessages).mock.calls[0][0]
 		expect(apiCall.messages).toHaveLength(2) // 1 original + 1 injected
 	})
 
-	it("reopenParentFromDelegation injects tool_result when new_task tool_use exists in API history", async () => {
+	it("reopenParentFromDelegation injects tool-result message when new_task tool_use exists in API history", async () => {
 		const provider = {
 			contextProxy: { globalStorageUri: { fsPath: "/storage" } },
 			getTaskWithId: vi.fn().mockResolvedValue({
@@ -228,6 +237,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			}),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
+			log: vi.fn(),
 		} as unknown as ClineProvider
 
 		// Include an assistant message with new_task tool_use to exercise the tool_result path
@@ -249,7 +259,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 		]
 
 		vi.mocked(readTaskMessages).mockResolvedValue(existingUiMessages as any)
-		vi.mocked(readApiMessages).mockResolvedValue(existingApiMessages as any)
+		vi.mocked(readRooMessages).mockResolvedValue(existingApiMessages as any)
 
 		await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
 			parentTaskId: "p-tool",
@@ -257,17 +267,19 @@ describe("History resume delegation - parent metadata transitions", () => {
 			completionResultSummary: "Subtask completed via tool_result",
 		})
 
-		// Verify API history injection uses tool_result (not text fallback)
-		expect(saveApiMessages).toHaveBeenCalledWith(
+		// Verify API history injection uses tool-result (not text fallback)
+		expect(saveRooMessages).toHaveBeenCalledWith(
 			expect.objectContaining({
 				messages: expect.arrayContaining([
 					expect.objectContaining({
-						role: "user",
+						role: "tool",
 						content: expect.arrayContaining([
 							expect.objectContaining({
-								type: "tool_result",
-								tool_use_id: "toolu_abc123",
-								content: expect.stringContaining("Subtask c-tool completed"),
+								type: "tool-result",
+								toolCallId: "toolu_abc123",
+								output: expect.objectContaining({
+									value: expect.stringContaining("Subtask c-tool completed"),
+								}),
 							}),
 						]),
 					}),
@@ -277,15 +289,15 @@ describe("History resume delegation - parent metadata transitions", () => {
 			}),
 		)
 
-		// Verify total message count: 2 original + 1 injected user message with tool_result
-		const apiCall = vi.mocked(saveApiMessages).mock.calls[0][0]
+		// Verify total message count: 2 original + 1 injected tool message with tool-result
+		const apiCall = vi.mocked(saveRooMessages).mock.calls[0][0]
 		expect(apiCall.messages).toHaveLength(3)
 
-		// Verify the injected message is a user message with tool_result type
-		const injectedMsg = apiCall.messages[2]
-		expect(injectedMsg.role).toBe("user")
-		expect((injectedMsg.content[0] as any).type).toBe("tool_result")
-		expect((injectedMsg.content[0] as any).tool_use_id).toBe("toolu_abc123")
+		// Verify the injected message is a tool message with tool-result type
+		const injectedMsg = apiCall.messages[2] as any
+		expect(injectedMsg.role).toBe("tool")
+		expect((injectedMsg.content[0] as any).type).toBe("tool-result")
+		expect((injectedMsg.content[0] as any).toolCallId).toBe("toolu_abc123")
 	})
 
 	it("reopenParentFromDelegation injects plain text when no new_task tool_use exists in API history", async () => {
@@ -314,6 +326,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			}),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
+			log: vi.fn(),
 		} as unknown as ClineProvider
 
 		// No assistant tool_use in history
@@ -321,7 +334,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 		const existingApiMessages = [{ role: "user", content: [{ type: "text", text: "Create a subtask" }], ts: 40 }]
 
 		vi.mocked(readTaskMessages).mockResolvedValue(existingUiMessages as any)
-		vi.mocked(readApiMessages).mockResolvedValue(existingApiMessages as any)
+		vi.mocked(readRooMessages).mockResolvedValue(existingApiMessages as any)
 
 		await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
 			parentTaskId: "p-no-tool",
@@ -329,10 +342,10 @@ describe("History resume delegation - parent metadata transitions", () => {
 			completionResultSummary: "Subtask completed without tool_use",
 		})
 
-		const apiCall = vi.mocked(saveApiMessages).mock.calls[0][0]
+		const apiCall = vi.mocked(saveRooMessages).mock.calls[0][0]
 		// Should append a user text note
 		expect(apiCall.messages).toHaveLength(2)
-		const injected = apiCall.messages[1]
+		const injected = apiCall.messages[1] as any
 		expect(injected.role).toBe("user")
 		expect((injected.content[0] as any).type).toBe("text")
 		expect((injected.content[0] as any).text).toContain("Subtask c-no-tool completed")
@@ -372,7 +385,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 		} as unknown as ClineProvider
 
 		vi.mocked(readTaskMessages).mockResolvedValue([])
-		vi.mocked(readApiMessages).mockResolvedValue([])
+		vi.mocked(readRooMessages).mockResolvedValue([])
 
 		await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
 			parentTaskId: "parent-2",
@@ -416,7 +429,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 		} as unknown as ClineProvider
 
 		vi.mocked(readTaskMessages).mockResolvedValue([])
-		vi.mocked(readApiMessages).mockResolvedValue([])
+		vi.mocked(readRooMessages).mockResolvedValue([])
 
 		await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
 			parentTaskId: "p3",
@@ -494,7 +507,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 		} as unknown as ClineProvider
 
 		vi.mocked(readTaskMessages).mockResolvedValue([])
-		vi.mocked(readApiMessages).mockResolvedValue([])
+		vi.mocked(readRooMessages).mockResolvedValue([])
 
 		await expect(
 			(ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
@@ -549,10 +562,11 @@ describe("History resume delegation - parent metadata transitions", () => {
 				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			}),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
+			log: vi.fn(),
 		} as unknown as ClineProvider
 
 		vi.mocked(readTaskMessages).mockResolvedValue([])
-		vi.mocked(readApiMessages).mockResolvedValue([])
+		vi.mocked(readRooMessages).mockResolvedValue([])
 
 		await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
 			parentTaskId: "p4",
@@ -616,7 +630,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 		} as unknown as ClineProvider
 
 		vi.mocked(readTaskMessages).mockResolvedValue([])
-		vi.mocked(readApiMessages).mockResolvedValue([])
+		vi.mocked(readRooMessages).mockResolvedValue([])
 
 		await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
 			parentTaskId: "parent-rpd02",
@@ -697,7 +711,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 		} as unknown as ClineProvider
 
 		vi.mocked(readTaskMessages).mockResolvedValue([])
-		vi.mocked(readApiMessages).mockResolvedValue([])
+		vi.mocked(readRooMessages).mockResolvedValue([])
 
 		await expect(
 			(ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
@@ -748,11 +762,12 @@ describe("History resume delegation - parent metadata transitions", () => {
 				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			}),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
+			log: vi.fn(),
 		} as unknown as ClineProvider
 
 		// Mock read failures or empty returns
 		vi.mocked(readTaskMessages).mockResolvedValue([])
-		vi.mocked(readApiMessages).mockResolvedValue([])
+		vi.mocked(readRooMessages).mockResolvedValue([])
 
 		await expect(
 			(ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
@@ -774,7 +789,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 			}),
 		)
 
-		expect(saveApiMessages).toHaveBeenCalledWith(
+		expect(saveRooMessages).toHaveBeenCalledWith(
 			expect.objectContaining({
 				messages: [
 					expect.objectContaining({

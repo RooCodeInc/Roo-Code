@@ -1,3 +1,4 @@
+import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // npx vitest run src/api/providers/__tests__/vercel-ai-gateway.spec.ts
 
 // Use vi.hoisted to define mock functions that can be referenced in hoisted vi.mock() calls
@@ -170,7 +171,7 @@ describe("VercelAiGatewayHandler", () => {
 
 			const handler = new VercelAiGatewayHandler(mockOptions)
 			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+			const messages: RooMessage[] = [{ role: "user", content: "Hello" }]
 
 			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks = []
@@ -190,6 +191,8 @@ describe("VercelAiGatewayHandler", () => {
 				cacheWriteTokens: 2,
 				cacheReadTokens: 3,
 				totalCost: 0.005,
+				totalInputTokens: 10,
+				totalOutputTokens: 5,
 			})
 		})
 
@@ -203,7 +206,7 @@ describe("VercelAiGatewayHandler", () => {
 			})
 
 			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+			const messages: RooMessage[] = [{ role: "user", content: "Hello" }]
 
 			await handler.createMessage(systemPrompt, messages).next()
 
@@ -220,7 +223,7 @@ describe("VercelAiGatewayHandler", () => {
 			const handler = new VercelAiGatewayHandler(mockOptions)
 
 			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+			const messages: RooMessage[] = [{ role: "user", content: "Hello" }]
 
 			await handler.createMessage(systemPrompt, messages).next()
 
@@ -237,7 +240,7 @@ describe("VercelAiGatewayHandler", () => {
 			const handler = new VercelAiGatewayHandler(mockOptions)
 
 			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+			const messages: RooMessage[] = [{ role: "user", content: "Hello" }]
 
 			await handler.createMessage(systemPrompt, messages).next()
 
@@ -264,7 +267,7 @@ describe("VercelAiGatewayHandler", () => {
 
 			const handler = new VercelAiGatewayHandler(mockOptions)
 			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+			const messages: RooMessage[] = [{ role: "user", content: "Hello" }]
 
 			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks = []
@@ -280,6 +283,8 @@ describe("VercelAiGatewayHandler", () => {
 				cacheWriteTokens: 2,
 				cacheReadTokens: 3,
 				totalCost: 0.005,
+				totalInputTokens: 10,
+				totalOutputTokens: 5,
 			})
 		})
 

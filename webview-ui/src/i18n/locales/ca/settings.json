@@ -31,7 +31,6 @@
 		"mcp": "Servidors MCP",
 		"worktrees": "Worktrees",
 		"autoApprove": "Auto-aprovació",
-		"browser": "Accés a l'ordinador",
 		"checkpoints": "Punts de control",
 		"notifications": "Notificacions",
 		"contextManagement": "Context",
@@ -240,10 +239,6 @@
 				"label": "Incloure fitxers protegits",
 				"description": "Permetre a Roo crear i editar fitxers protegits (com .rooignore i fitxers de configuració .roo/) sense requerir aprovació."
 			}
-		},
-		"browser": {
-			"label": "Navegador",
-			"description": "Realitzar accions del navegador automàticament sense requerir aprovació. Nota: Només s'aplica quan el model admet l'ús de l'ordinador"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -590,34 +585,6 @@
 			"placeholder": "Per defecte: claude",
 			"maxTokensLabel": "Tokens màxims de sortida",
 			"maxTokensDescription": "Nombre màxim de tokens de sortida per a les respostes de Claude Code. El valor per defecte és 8000."
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "Habilitar eina de navegador",
-			"description": "Quan està habilitat, Roo pot utilitzar un navegador per interactuar amb llocs web quan s'utilitzen models que admeten l'ús de l'ordinador. <0>Més informació</0>"
-		},
-		"viewport": {
-			"label": "Mida del viewport",
-			"description": "Seleccioneu la mida del viewport per a interaccions del navegador. Això afecta com es mostren i interactuen els llocs web.",
-			"options": {
-				"largeDesktop": "Escriptori gran (1280x800)",
-				"smallDesktop": "Escriptori petit (900x600)",
-				"tablet": "Tauleta (768x1024)",
-				"mobile": "Mòbil (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "Qualitat de captures de pantalla",
-			"description": "Ajusteu la qualitat WebP de les captures de pantalla del navegador. Valors més alts proporcionen captures més clares però augmenten l'ús de token."
-		},
-		"remote": {
-			"label": "Utilitzar connexió remota del navegador",
-			"description": "Connectar a un navegador Chrome que s'executa amb depuració remota habilitada (--remote-debugging-port=9222).",
-			"urlPlaceholder": "URL personalitzada (ex. http://localhost:9222)",
-			"testButton": "Provar connexió",
-			"testingButton": "Provant...",
-			"instructions": "Introduïu l'adreça d'amfitrió del protocol DevTools o deixeu-la buida per descobrir automàticament instàncies locals de Chrome. El botó Provar Connexió provarà la URL personalitzada si es proporciona, o descobrirà automàticament si el camp està buit."
 		}
 	},
 	"checkpoints": {

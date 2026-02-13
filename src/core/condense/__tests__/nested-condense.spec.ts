@@ -9,7 +9,7 @@ describe("nested condensing scenarios", () => {
 			const condenseId2 = "condense-2"
 
 			// Simulate history after two nested condenses with user-role summaries
-			const history: ApiMessage[] = [
+			const history: any[] = [
 				// Original task - condensed in first condense
 				{ role: "user", content: "Build an app", ts: 100, condenseParent: condenseId1 },
 				// Messages from first condense
@@ -47,8 +47,8 @@ describe("nested condensing scenarios", () => {
 			expect(effectiveHistory.length).toBe(3)
 			expect(effectiveHistory[0].isSummary).toBe(true)
 			expect(effectiveHistory[0].condenseId).toBe(condenseId2) // Latest summary
-			expect(effectiveHistory[1].content).toBe("Database added")
-			expect(effectiveHistory[2].content).toBe("Now test it")
+			expect((effectiveHistory[1] as any).content).toBe("Database added")
+			expect((effectiveHistory[2] as any).content).toBe("Now test it")
 
 			// Verify NO condensed messages are included
 			const hasCondensedMessages = effectiveHistory.some(
@@ -68,7 +68,7 @@ describe("nested condensing scenarios", () => {
 			const hasSummary1 = messagesSinceLastSummary.some((m) => m.condenseId === condenseId1)
 			expect(hasSummary1).toBe(false)
 
-			const hasOriginalTask = messagesSinceLastSummary.some((m) => m.content === "Build an app")
+			const hasOriginalTask = messagesSinceLastSummary.some((m) => (m as any).content === "Build an app")
 			expect(hasOriginalTask).toBe(false)
 		})
 
@@ -77,7 +77,7 @@ describe("nested condensing scenarios", () => {
 			const condenseId2 = "condense-2"
 			const condenseId3 = "condense-3"
 
-			const history: ApiMessage[] = [
+			const history: any[] = [
 				// First condense content
 				{ role: "user", content: "Task", ts: 100, condenseParent: condenseId1 },
 				{
@@ -116,7 +116,7 @@ describe("nested condensing scenarios", () => {
 			// Should only contain Summary3 and current work
 			expect(effectiveHistory.length).toBe(2)
 			expect(effectiveHistory[0].condenseId).toBe(condenseId3)
-			expect(effectiveHistory[1].content).toBe("Current work")
+			expect((effectiveHistory[1] as any).content).toBe("Current work")
 
 			const messagesSinceLastSummary = getMessagesSinceLastSummary(effectiveHistory)
 			expect(messagesSinceLastSummary.length).toBe(2)
@@ -133,7 +133,7 @@ describe("nested condensing scenarios", () => {
 		it("should return consistent results when called with full history vs effective history", () => {
 			const condenseId = "condense-1"
 
-			const fullHistory: ApiMessage[] = [
+			const fullHistory: any[] = [
 				{ role: "user", content: "Original task", ts: 100, condenseParent: condenseId },
 				{ role: "assistant", content: "Response", ts: 200, condenseParent: condenseId },
 				{
@@ -166,7 +166,7 @@ describe("nested condensing scenarios", () => {
 			const condenseId2 = "condense-2"
 
 			// Scenario: Two nested condenses with user-role summaries
-			const fullHistory: ApiMessage[] = [
+			const fullHistory: any[] = [
 				{ role: "user", content: "Original task - should NOT appear", ts: 100, condenseParent: condenseId1 },
 				{ role: "assistant", content: "Old response", ts: 200, condenseParent: condenseId1 },
 				// First summary (user role, fresh-start model), then condensed again
@@ -197,9 +197,9 @@ describe("nested condensing scenarios", () => {
 
 			// The original task should NOT be included
 			const hasOriginalTask = messagesSinceLastSummary.some((m) =>
-				typeof m.content === "string"
-					? m.content.includes("Original task")
-					: JSON.stringify(m.content).includes("Original task"),
+				typeof (m as any).content === "string"
+					? (m as any).content.includes("Original task")
+					: JSON.stringify((m as any).content).includes("Original task"),
 			)
 			expect(hasOriginalTask).toBe(false)
 

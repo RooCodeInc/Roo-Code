@@ -4,8 +4,10 @@ import {
 	convertToAiSdkMessages,
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
+	consumeAiSdkStream,
 	mapToolChoice,
 	extractAiSdkErrorMessage,
+	extractMessageFromResponseBody,
 	handleAiSdkError,
 	flattenAiSdkMessagesToStringContent,
 } from "../ai-sdk"
@@ -501,6 +503,132 @@ describe("AI SDK conversion utilities", () => {
 			expect(toolCallPart).toBeDefined()
 			expect(toolCallPart.providerOptions).toBeUndefined()
 		})
+
+		it("attaches valid reasoning_details as providerOptions.openrouter, filtering invalid entries", () => {
+			const validEncrypted = {
+				type: "reasoning.encrypted",
+				data: "encrypted_blob_data",
+				id: "tool_call_123",
+				format: "google-gemini-v1",
+				index: 0,
+			}
+			const invalidEncrypted = {
+				// type is "reasoning.encrypted" but has text instead of data —
+				// this is a plaintext summary mislabeled as encrypted by Gemini/OpenRouter.
+				// The provider's ReasoningDetailEncryptedSchema requires `data: string`,
+				// so including this causes the entire Zod safeParse to fail.
+				type: "reasoning.encrypted",
+				text: "Plaintext reasoning summary",
+				id: "tool_call_123",
+				format: "google-gemini-v1",
+				index: 0,
+			}
+			const textWithSignature = {
+				type: "reasoning.text",
+				text: "Some reasoning content",
+				signature: "stale-signature-from-previous-model",
+			}
+
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "text", text: "Using a tool" },
+						{
+							type: "tool_use",
+							id: "tool_call_123",
+							name: "attempt_completion",
+							input: { result: "done" },
+						},
+					],
+					reasoning_details: [validEncrypted, invalidEncrypted, textWithSignature],
+				} as any,
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			const assistantMsg = result[0] as any
+			expect(assistantMsg.role).toBe("assistant")
+			expect(assistantMsg.providerOptions).toBeDefined()
+			expect(assistantMsg.providerOptions.openrouter).toBeDefined()
+			const details = assistantMsg.providerOptions.openrouter.reasoning_details
+			// Only the valid entries should survive filtering (invalidEncrypted dropped)
+			expect(details).toHaveLength(2)
+			expect(details[0]).toEqual(validEncrypted)
+			// Signatures should be preserved as-is for same-model Anthropic conversations via OpenRouter
+			expect(details[1]).toEqual(textWithSignature)
+		})
+
+		it("does not attach providerOptions when no reasoning_details are present", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [{ type: "text", text: "Just text" }],
+				},
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			const assistantMsg = result[0] as any
+			expect(assistantMsg.providerOptions).toBeUndefined()
+		})
+
+		it("does not attach providerOptions when reasoning_details is an empty array", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [{ type: "text", text: "Just text" }],
+					reasoning_details: [],
+				} as any,
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			const assistantMsg = result[0] as any
+			expect(assistantMsg.providerOptions).toBeUndefined()
+		})
+
+		it("preserves both reasoning_details and thoughtSignature providerOptions", () => {
+			const reasoningDetails = [
+				{
+					type: "reasoning.encrypted",
+					data: "encrypted_data",
+					id: "tool_call_abc",
+					format: "google-gemini-v1",
+					index: 0,
+				},
+			]
+
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "thoughtSignature", thoughtSignature: "sig-xyz" } as any,
+						{ type: "text", text: "Using tool" },
+						{
+							type: "tool_use",
+							id: "tool_call_abc",
+							name: "read_file",
+							input: { path: "test.ts" },
+						},
+					],
+					reasoning_details: reasoningDetails,
+				} as any,
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			const assistantMsg = result[0] as any
+			// Message-level providerOptions carries reasoning_details
+			expect(assistantMsg.providerOptions.openrouter.reasoning_details).toEqual(reasoningDetails)
+			// Part-level providerOptions carries thoughtSignature on the first tool-call
+			const toolCallPart = assistantMsg.content.find((p: any) => p.type === "tool-call")
+			expect(toolCallPart.providerOptions.google.thoughtSignature).toBe("sig-xyz")
+		})
 	})
 
 	describe("convertToolsForAiSdk", () => {
@@ -686,6 +814,27 @@ describe("AI SDK conversion utilities", () => {
 				expect(chunks).toHaveLength(0)
 			}
 		})
+		it("should filter [REDACTED] from reasoning-delta parts", () => {
+			const redactedPart = { type: "reasoning-delta" as const, text: "[REDACTED]" }
+			const normalPart = { type: "reasoning-delta" as const, text: "actual reasoning" }
+
+			const redactedResult = [...processAiSdkStreamPart(redactedPart as any)]
+			const normalResult = [...processAiSdkStreamPart(normalPart as any)]
+
+			expect(redactedResult).toEqual([])
+			expect(normalResult).toEqual([{ type: "reasoning", text: "actual reasoning" }])
+		})
+
+		it("should filter [REDACTED] from reasoning (fullStream format) parts", () => {
+			const redactedPart = { type: "reasoning" as const, text: "[REDACTED]" }
+			const normalPart = { type: "reasoning" as const, text: "actual reasoning" }
+
+			const redactedResult = [...processAiSdkStreamPart(redactedPart as any)]
+			const normalResult = [...processAiSdkStreamPart(normalPart as any)]
+
+			expect(redactedResult).toEqual([])
+			expect(normalResult).toEqual([{ type: "reasoning", text: "actual reasoning" }])
+		})
 	})
 
 	describe("mapToolChoice", () => {
@@ -793,6 +942,75 @@ describe("AI SDK conversion utilities", () => {
 			expect(extractAiSdkErrorMessage("string error")).toBe("string error")
 			expect(extractAiSdkErrorMessage({ custom: "object" })).toBe("[object Object]")
 		})
+
+		it("should extract message from AI_APICallError responseBody with JSON error", () => {
+			const apiError = {
+				name: "AI_APICallError",
+				message: "API call failed",
+				responseBody: '{"error":{"message":"Insufficient balance or no resource package.","code":"1113"}}',
+				statusCode: 402,
+			}
+
+			const result = extractAiSdkErrorMessage(apiError)
+			expect(result).toContain("Insufficient balance")
+			expect(result).not.toBe("API call failed")
+		})
+
+		it("should fall back to message when AI_APICallError responseBody is non-JSON", () => {
+			const apiError = {
+				name: "AI_APICallError",
+				message: "Server error",
+				responseBody: "Internal Server Error",
+				statusCode: 500,
+			}
+
+			const result = extractAiSdkErrorMessage(apiError)
+			expect(result).toContain("Server error")
+		})
+
+		it("should extract message from AI_RetryError lastError responseBody", () => {
+			const retryError = {
+				name: "AI_RetryError",
+				message: "Failed after retries",
+				lastError: {
+					name: "AI_APICallError",
+					message: "API call failed",
+					responseBody: '{"error":{"message":"Rate limit exceeded"}}',
+					statusCode: 429,
+				},
+				errors: [{}],
+			}
+
+			const result = extractAiSdkErrorMessage(retryError)
+			expect(result).toContain("Rate limit exceeded")
+		})
+
+		it("should extract message from NoOutputGeneratedError with APICallError cause", () => {
+			const error = {
+				name: "AI_NoOutputGeneratedError",
+				message: "No output generated",
+				cause: {
+					name: "AI_APICallError",
+					message: "Forbidden",
+					responseBody: '{"error":{"message":"Insufficient balance"}}',
+					statusCode: 403,
+				},
+			}
+
+			const result = extractAiSdkErrorMessage(error)
+			expect(result).toContain("Insufficient balance")
+			expect(result).not.toBe("No output generated")
+		})
+
+		it("should return own message from NoOutputGeneratedError without useful cause", () => {
+			const error = {
+				name: "AI_NoOutputGeneratedError",
+				message: "No output generated",
+			}
+
+			const result = extractAiSdkErrorMessage(error)
+			expect(result).toBe("No output generated")
+		})
 	})
 
 	describe("handleAiSdkError", () => {
@@ -836,6 +1054,90 @@ describe("AI SDK conversion utilities", () => {
 			const result = handleAiSdkError(originalError, "Mistral")
 
 			expect((result as any).cause).toBe(originalError)
+		})
+
+		it("should call onError with extracted message and original error", () => {
+			const originalError = new Error("Quota exceeded")
+			const onError = vi.fn()
+
+			handleAiSdkError(originalError, "Gemini", { onError })
+
+			expect(onError).toHaveBeenCalledOnce()
+			expect(onError).toHaveBeenCalledWith("Quota exceeded", originalError)
+		})
+
+		it("should use formatMessage to override default message format", () => {
+			const error = new Error("Rate limit hit")
+			const formatMessage = (msg: string) => `Custom: ${msg}`
+
+			const result = handleAiSdkError(error, "Vertex", { formatMessage })
+
+			expect(result.message).toBe("Custom: Rate limit hit")
+		})
+
+		it("should call onError and use formatMessage together", () => {
+			const originalError = {
+				name: "AI_APICallError",
+				message: "Forbidden",
+				status: 403,
+			}
+			const onError = vi.fn()
+			const formatMessage = (msg: string) => `Translated: ${msg}`
+
+			const result = handleAiSdkError(originalError, "Gemini", { onError, formatMessage })
+
+			// onError receives the extracted message
+			expect(onError).toHaveBeenCalledOnce()
+			expect(onError.mock.calls[0][0]).toContain("403")
+			expect(onError.mock.calls[0][1]).toBe(originalError)
+
+			// formatMessage overrides the thrown message
+			expect(result.message).toMatch(/^Translated:/)
+
+			// Status code is still preserved
+			expect((result as any).status).toBe(403)
+		})
+
+		it("should use default format when no options are provided", () => {
+			const error = new Error("Something broke")
+			const result = handleAiSdkError(error, "TestProvider")
+
+			expect(result.message).toBe("TestProvider: Something broke")
+		})
+	})
+
+	describe("extractMessageFromResponseBody", () => {
+		it("should extract message with code from error object", () => {
+			const body = '{"error": {"message": "Insufficient balance", "code": "1113"}}'
+			expect(extractMessageFromResponseBody(body)).toBe("[1113] Insufficient balance")
+		})
+
+		it("should extract message from error object without code", () => {
+			const body = '{"error": {"message": "Rate limit exceeded"}}'
+			expect(extractMessageFromResponseBody(body)).toBe("Rate limit exceeded")
+		})
+
+		it("should extract message from error string field", () => {
+			const body = '{"error": "Something went wrong"}'
+			expect(extractMessageFromResponseBody(body)).toBe("Something went wrong")
+		})
+
+		it("should extract message from top-level message field", () => {
+			const body = '{"message": "Bad request"}'
+			expect(extractMessageFromResponseBody(body)).toBe("Bad request")
+		})
+
+		it("should return undefined for non-JSON string", () => {
+			expect(extractMessageFromResponseBody("Not Found")).toBeUndefined()
+		})
+
+		it("should return undefined for empty string", () => {
+			expect(extractMessageFromResponseBody("")).toBeUndefined()
+		})
+
+		it("should return undefined for JSON without error fields", () => {
+			const body = '{"status": "ok"}'
+			expect(extractMessageFromResponseBody(body)).toBeUndefined()
 		})
 	})
 
@@ -1059,5 +1361,187 @@ describe("AI SDK conversion utilities", () => {
 			// Should not flatten because there's a tool call
 			expect(result[0]).toEqual(messages[0])
 		})
+	})
+})
+
+describe("consumeAiSdkStream", () => {
+	/**
+	 * Helper to create an AsyncIterable from an array of stream parts.
+	 */
+	async function* createAsyncIterable<T>(items: T[]): AsyncGenerator<T> {
+		for (const item of items) {
+			yield item
+		}
+	}
+
+	/**
+	 * Helper to collect all chunks from an async generator.
+	 * Returns { chunks, error } to support both success and error paths.
+	 */
+	async function collectStream(stream: AsyncGenerator<unknown>): Promise<{ chunks: unknown[]; error: Error | null }> {
+		const chunks: unknown[] = []
+		let error: Error | null = null
+		try {
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+		} catch (e) {
+			error = e instanceof Error ? e : new Error(String(e))
+		}
+		return { chunks, error }
+	}
+
+	it("yields stream chunks from fullStream", async () => {
+		const result = {
+			fullStream: createAsyncIterable([
+				{ type: "text-delta" as const, id: "1", text: "hello" },
+				{ type: "text" as const, text: " world" },
+			]),
+			usage: Promise.resolve({ inputTokens: 5, outputTokens: 10 }),
+		}
+
+		const { chunks, error } = await collectStream(consumeAiSdkStream(result as any))
+
+		expect(error).toBeNull()
+		// Two text chunks + one usage chunk
+		expect(chunks).toHaveLength(3)
+		expect(chunks[0]).toEqual({ type: "text", text: "hello" })
+		expect(chunks[1]).toEqual({ type: "text", text: " world" })
+	})
+
+	it("yields default usage chunk when no usageHandler provided", async () => {
+		const result = {
+			fullStream: createAsyncIterable([{ type: "text-delta" as const, id: "1", text: "hi" }]),
+			usage: Promise.resolve({ inputTokens: 10, outputTokens: 20 }),
+		}
+
+		const { chunks, error } = await collectStream(consumeAiSdkStream(result as any))
+
+		expect(error).toBeNull()
+		const usageChunk = chunks.find((c: any) => c.type === "usage")
+		expect(usageChunk).toEqual({
+			type: "usage",
+			inputTokens: 10,
+			outputTokens: 20,
+		})
+	})
+
+	it("uses usageHandler when provided", async () => {
+		const result = {
+			fullStream: createAsyncIterable([{ type: "text-delta" as const, id: "1", text: "hi" }]),
+			usage: Promise.resolve({ inputTokens: 10, outputTokens: 20 }),
+		}
+
+		async function* customUsageHandler() {
+			yield {
+				type: "usage" as const,
+				inputTokens: 42,
+				outputTokens: 84,
+				cacheWriteTokens: 5,
+				cacheReadTokens: 3,
+			}
+		}
+
+		const { chunks, error } = await collectStream(consumeAiSdkStream(result as any, customUsageHandler))
+
+		expect(error).toBeNull()
+		const usageChunk = chunks.find((c: any) => c.type === "usage")
+		expect(usageChunk).toEqual({
+			type: "usage",
+			inputTokens: 42,
+			outputTokens: 84,
+			cacheWriteTokens: 5,
+			cacheReadTokens: 3,
+		})
+	})
+
+	/**
+	 * THE KEY TEST: Verifies that when the stream contains an error chunk (e.g. "Insufficient balance")
+	 * and result.usage rejects with a generic error (AI SDK's NoOutputGeneratedError), the thrown
+	 * error preserves the specific stream error message rather than the generic one.
+	 */
+	it("captures stream error and throws it when usage fails", async () => {
+		const usageRejection = Promise.reject(new Error("No output generated. Check the stream for errors."))
+		// Prevent unhandled rejection warning — the rejection is intentionally caught inside consumeAiSdkStream
+		usageRejection.catch(() => {})
+
+		const result = {
+			fullStream: createAsyncIterable([
+				{ type: "text-delta" as const, id: "1", text: "partial" },
+				{
+					type: "error" as const,
+					error: new Error("Insufficient balance to complete this request"),
+				},
+			]),
+			usage: usageRejection,
+		}
+
+		const { chunks, error } = await collectStream(consumeAiSdkStream(result as any))
+
+		// The error chunk IS still yielded during stream iteration
+		const errorChunk = chunks.find((c: any) => c.type === "error")
+		expect(errorChunk).toEqual({
+			type: "error",
+			error: "StreamError",
+			message: "Insufficient balance to complete this request",
+		})
+
+		// The thrown error uses the captured stream error, NOT the generic usage error
+		expect(error).not.toBeNull()
+		expect(error!.message).toBe("Insufficient balance to complete this request")
+		expect(error!.message).not.toContain("No output generated")
+	})
+
+	it("re-throws usage error when no stream error captured", async () => {
+		const usageRejection = Promise.reject(new Error("Rate limit exceeded"))
+		usageRejection.catch(() => {})
+
+		const result = {
+			fullStream: createAsyncIterable([{ type: "text-delta" as const, id: "1", text: "hello" }]),
+			usage: usageRejection,
+		}
+
+		const { chunks, error } = await collectStream(consumeAiSdkStream(result as any))
+
+		// Text chunk should still be yielded
+		expect(chunks).toHaveLength(1)
+		expect(chunks[0]).toEqual({ type: "text", text: "hello" })
+
+		// The original usage error is re-thrown since no stream error was captured
+		expect(error).not.toBeNull()
+		expect(error!.message).toBe("Rate limit exceeded")
+	})
+
+	it("captures stream error and throws it when usageHandler fails", async () => {
+		const result = {
+			fullStream: createAsyncIterable([
+				{ type: "text-delta" as const, id: "1", text: "partial" },
+				{
+					type: "error" as const,
+					error: new Error("Insufficient balance to complete this request"),
+				},
+			]),
+			usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
+		}
+
+		// eslint-disable-next-line require-yield
+		async function* failingUsageHandler(): AsyncGenerator<never> {
+			throw new Error("No output generated. Check the stream for errors.")
+		}
+
+		const { chunks, error } = await collectStream(consumeAiSdkStream(result as any, failingUsageHandler))
+
+		// Error chunk was yielded during streaming
+		const errorChunk = chunks.find((c: any) => c.type === "error")
+		expect(errorChunk).toEqual({
+			type: "error",
+			error: "StreamError",
+			message: "Insufficient balance to complete this request",
+		})
+
+		// The thrown error uses the captured stream error, not the usageHandler error
+		expect(error).not.toBeNull()
+		expect(error!.message).toBe("Insufficient balance to complete this request")
+		expect(error!.message).not.toContain("No output generated")
 	})
 })

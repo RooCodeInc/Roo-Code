@@ -94,11 +94,23 @@ import { ContextProxy } from "../config/ContextProxy"
 import { ProviderSettingsManager } from "../config/ProviderSettingsManager"
 import { CustomModesManager } from "../config/CustomModesManager"
 import { Task } from "../task/Task"
-import { getSystemPromptFilePath } from "../prompts/sections/custom-system-prompt"
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import type { ClineMessage, TodoItem } from "@roo-code/types"
-import { readApiMessages, saveApiMessages, saveTaskMessages } from "../task-persistence"
+import {
+	readRooMessages,
+	saveRooMessages,
+	saveTaskMessages,
+	type RooMessage,
+	isRooAssistantMessage,
+	isRooToolMessage,
+	isAnyToolCallBlock,
+	isAnyToolResultBlock,
+	getToolCallId,
+	getToolCallName,
+	getToolResultCallId,
+} from "../task-persistence"
+import { type DelegationMeta, readDelegationMeta, saveDelegationMeta } from "../task-persistence/delegationMeta"
 import { readTaskMessages } from "../task-persistence/taskMessages"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
@@ -149,6 +161,7 @@ export class ClineProvider
 	private taskEventListeners: WeakMap<Task, Array<() => void>> = new WeakMap()
 	private currentWorkspacePath: string | undefined
 	private _disposed = false
+	private delegationInProgress = false
 
 	private recentTasksCache?: string[]
 	private taskHistoryWriteLock: Promise<void> = Promise.resolve()
@@ -159,7 +172,14 @@ export class ClineProvider
 	private cloudOrganizationsCacheTimestamp: number | null = null
 	private static readonly CLOUD_ORGANIZATIONS_CACHE_DURATION_MS = 5 * 1000 // 5 seconds
 
+	/**
+	 * Monotonically increasing sequence number for clineMessages state pushes.
+	 * Used by the frontend to reject stale state that arrives out-of-order.
+	 */
+	private clineMessagesSeq = 0
+
 	public isViewLaunched = false
+	public isTaskCreationInProgress = false
 	public settingsImportedAt?: number
 	public readonly latestAnnouncementId = "feb-2026-v3.47.0-opus-4.6-gpt-5.3-codex" // v3.47.0 Claude Opus 4.6 & GPT-5.3-Codex
 	public readonly providerSettingsManager: ProviderSettingsManager
@@ -192,7 +212,7 @@ export class ClineProvider
 		this.providerSettingsManager = new ProviderSettingsManager(this.context)
 
 		this.customModesManager = new CustomModesManager(this.context, async () => {
-			await this.postStateToWebview()
+			await this.postStateToWebviewWithoutClineMessages()
 		})
 
 		// Initialize MCP Hub through the singleton manager
@@ -389,7 +409,7 @@ export class ClineProvider
 					await this.activateProviderProfile({ name: profile.name })
 				}
 
-				await this.postStateToWebview()
+				await this.postStateToWebviewWithoutClineMessages()
 			}
 		} catch (error) {
 			this.log(`Error syncing cloud profiles: ${error}`)
@@ -511,17 +531,63 @@ export class ClineProvider
 							status: "active",
 							awaitingChildId: undefined,
 						})
+						const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
+						await saveDelegationMeta({
+							taskId: parentTaskId,
+							globalStoragePath,
+							meta: {
+								status: "active",
+								awaitingChildId: null,
+								delegatedToId: parentHistory.delegatedToId,
+								childIds: parentHistory.childIds,
+								completedByChildId: parentHistory.completedByChildId,
+								completionResultSummary: parentHistory.completionResultSummary,
+							},
+						})
 						this.log(
 							`[ClineProvider#removeClineFromStack] Repaired parent ${parentTaskId} metadata: delegated → active (child ${childTaskId} removed)`,
 						)
 					}
 				} catch (err) {
-					// Non-fatal: log but do not block the pop operation.
-					this.log(
-						`[ClineProvider#removeClineFromStack] Failed to repair parent metadata for ${parentTaskId} (non-fatal): ${
-							err instanceof Error ? err.message : String(err)
-						}`,
-					)
+					// Disk-only fallback when parent is missing from globalState
+					if (err instanceof Error && err.message === "Task not found") {
+						try {
+							const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
+							const delegationMeta = await readDelegationMeta({ taskId: parentTaskId, globalStoragePath })
+							if (
+								delegationMeta?.status === "delegated" &&
+								delegationMeta?.awaitingChildId === childTaskId
+							) {
+								await saveDelegationMeta({
+									taskId: parentTaskId,
+									globalStoragePath,
+									meta: {
+										status: "active",
+										awaitingChildId: null,
+										delegatedToId: delegationMeta.delegatedToId,
+										childIds: delegationMeta.childIds,
+										completedByChildId: delegationMeta.completedByChildId,
+										completionResultSummary: delegationMeta.completionResultSummary,
+									},
+								})
+								this.log(
+									`[ClineProvider#removeClineFromStack] Repaired parent ${parentTaskId} via disk fallback (not in globalState)`,
+								)
+							}
+						} catch (diskErr) {
+							this.log(
+								`[ClineProvider#removeClineFromStack] Disk fallback repair also failed for ${parentTaskId}: ${
+									diskErr instanceof Error ? diskErr.message : String(diskErr)
+								}`,
+							)
+						}
+					} else {
+						this.log(
+							`[ClineProvider#removeClineFromStack] Failed to repair parent metadata for ${parentTaskId} (non-fatal): ${
+								err instanceof Error ? err.message : String(err)
+							}`,
+						)
+					}
 				}
 			}
 		}
@@ -1028,8 +1094,6 @@ export class ClineProvider
 			onCreated: this.taskCreationCallback,
 			startTask: options?.startTask ?? true,
 			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, taskSyncEnabled),
-			// Preserve the status from the history item to avoid overwriting it when the task saves messages
-			initialStatus: historyItem.status,
 		})
 
 		if (isRehydratingCurrentTask) {
@@ -1716,7 +1780,7 @@ export class ClineProvider
 		taskDirPath: string
 		apiConversationHistoryFilePath: string
 		uiMessagesFilePath: string
-		apiConversationHistory: Anthropic.MessageParam[]
+		apiConversationHistory: RooMessage[]
 	}> {
 		const history = this.getGlobalState("taskHistory") ?? []
 		const historyItem = history.find((item) => item.id === id)
@@ -1725,28 +1789,41 @@ export class ClineProvider
 			throw new Error("Task not found")
 		}
 
-		const { getTaskDirectoryPath } = await import("../../utils/storage")
+		// Hoist globalStoragePath so the delegation-meta merge and the file-path
+		// resolution below share one computation.
 		const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
+
+		// Merge per-task delegation metadata (source of truth for delegation fields).
+		// Old tasks without a file are unchanged (null → no merge).
+		try {
+			const delegationMeta = await readDelegationMeta({ taskId: id, globalStoragePath })
+
+			if (delegationMeta) {
+				for (const [key, value] of Object.entries(delegationMeta)) {
+					;(historyItem as Record<string, unknown>)[key] = value === null ? undefined : value
+				}
+			}
+		} catch (err) {
+			// Non-fatal: fall back to globalState values
+			console.warn(
+				`[getTaskWithId] Failed to read delegation metadata for task ${id} (non-fatal): ${err instanceof Error ? err.message : String(err)}`,
+			)
+		}
+
+		const { getTaskDirectoryPath } = await import("../../utils/storage")
 		const taskDirPath = await getTaskDirectoryPath(globalStoragePath, id)
 		const apiConversationHistoryFilePath = path.join(taskDirPath, GlobalFileNames.apiConversationHistory)
 		const uiMessagesFilePath = path.join(taskDirPath, GlobalFileNames.uiMessages)
 		const fileExists = await fileExistsAtPath(apiConversationHistoryFilePath)
-
-		let apiConversationHistory: Anthropic.MessageParam[] = []
-
-		if (fileExists) {
-			try {
-				apiConversationHistory = JSON.parse(await fs.readFile(apiConversationHistoryFilePath, "utf8"))
-			} catch (error) {
-				console.warn(
-					`[getTaskWithId] api_conversation_history.json corrupted for task ${id}, returning empty history: ${error instanceof Error ? error.message : String(error)}`,
-				)
-			}
-		} else {
+		if (!fileExists) {
 			console.warn(
 				`[getTaskWithId] api_conversation_history.json missing for task ${id}, returning empty history`,
 			)
 		}
+		const apiConversationHistory = await readRooMessages({
+			taskId: id,
+			globalStoragePath,
+		})
 
 		return {
 			historyItem,
@@ -1772,6 +1849,11 @@ export class ClineProvider
 	}
 
 	async showTaskWithId(id: string) {
+		if (this.delegationInProgress) {
+			this.log("[showTaskWithId] Skipped: delegation in progress")
+			vscode.window.showInformationMessage("Task delegation in progress, please wait...")
+			return
+		}
 		if (id !== this.getCurrentTask()?.taskId) {
 			// Non-current task.
 			const { historyItem } = await this.getTaskWithId(id)
@@ -1815,6 +1897,11 @@ export class ClineProvider
 	// If the task has subtasks (childIds), they will also be deleted recursively
 	async deleteTaskWithId(id: string, cascadeSubtasks: boolean = true) {
 		try {
+			if (this.delegationInProgress) {
+				this.log("[deleteTaskWithId] Skipped: delegation in progress")
+				vscode.window.showInformationMessage("Task delegation in progress, please wait...")
+				return
+			}
 			// get the task directory full path and history item
 			const { taskDirPath, historyItem } = await this.getTaskWithId(id)
 
@@ -1913,6 +2000,8 @@ export class ClineProvider
 
 	async postStateToWebview() {
 		const state = await this.getStateToPostToWebview()
+		this.clineMessagesSeq++
+		state.clineMessagesSeq = this.clineMessagesSeq
 		this.postMessageToWebview({ type: "state", state })
 
 		// Check MDM compliance and send user to account tab if not compliant
@@ -1932,7 +2021,31 @@ export class ClineProvider
 	 */
 	async postStateToWebviewWithoutTaskHistory(): Promise<void> {
 		const state = await this.getStateToPostToWebview()
+		this.clineMessagesSeq++
+		state.clineMessagesSeq = this.clineMessagesSeq
 		const { taskHistory: _omit, ...rest } = state
+		this.postMessageToWebview({ type: "state", state: rest })
+
+		// Preserve existing MDM redirect behavior
+		if (this.mdmService?.requiresCloudAuth() && !this.checkMdmCompliance()) {
+			await this.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
+		}
+	}
+
+	/**
+	 * Like postStateToWebview but intentionally omits both clineMessages and taskHistory.
+	 *
+	 * Rationale:
+	 * - Cloud event handlers (auth, settings, user-info) and mode changes trigger state pushes
+	 *   that have nothing to do with chat messages. Including clineMessages in these pushes
+	 *   creates race conditions where a stale snapshot of clineMessages (captured during async
+	 *   getStateToPostToWebview) overwrites newer messages the task has streamed in the meantime.
+	 * - This method ensures cloud/mode events only push the state fields they actually affect
+	 *   (cloud auth, org settings, profiles, etc.) without interfering with task message streaming.
+	 */
+	async postStateToWebviewWithoutClineMessages(): Promise<void> {
+		const state = await this.getStateToPostToWebview()
+		const { clineMessages: _omitMessages, taskHistory: _omitHistory, ...rest } = state
 		this.postMessageToWebview({ type: "state", state: rest })
 
 		// Preserve existing MDM redirect behavior
@@ -1984,14 +2097,6 @@ export class ClineProvider
 				)
 			}
 		}
-	}
-
-	/**
-	 * Checks if there is a file-based system prompt override for the given mode
-	 */
-	async hasFileBasedSystemPromptOverride(mode: Mode): Promise<boolean> {
-		const promptFilePath = getSystemPromptFilePath(this.cwd, mode)
-		return await fileExistsAtPath(promptFilePath)
 	}
 
 	/**
@@ -2063,7 +2168,6 @@ export class ClineProvider
 			alwaysAllowExecute,
 			allowedCommands,
 			deniedCommands,
-			alwaysAllowBrowser,
 			alwaysAllowMcp,
 			alwaysAllowModeSwitch,
 			alwaysAllowSubtasks,
@@ -2078,11 +2182,6 @@ export class ClineProvider
 			checkpointTimeout,
 			taskHistory,
 			soundVolume,
-			browserViewportSize,
-			screenshotQuality,
-			remoteBrowserHost,
-			remoteBrowserEnabled,
-			cachedChromeHostUrl,
 			writeDelayMs,
 			terminalShellIntegrationTimeout,
 			terminalShellIntegrationDisabled,
@@ -2105,7 +2204,6 @@ export class ClineProvider
 			experiments,
 			maxOpenTabsContext,
 			maxWorkspaceFiles,
-			browserToolEnabled,
 			disabledTools,
 			telemetrySetting,
 			showRooIgnoredFiles,
@@ -2140,7 +2238,6 @@ export class ClineProvider
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
 			featureRoomoteControlEnabled,
-			isBrowserSessionActive,
 			lockApiConfigAcrossModes,
 		} = await this.getState()
 
@@ -2172,10 +2269,6 @@ export class ClineProvider
 		const mergedDeniedCommands = this.mergeDeniedCommands(deniedCommands)
 		const cwd = this.cwd
 
-		// Check if there's a system prompt override for the current mode
-		const currentMode = mode ?? defaultModeSlug
-		const hasSystemPromptOverride = await this.hasFileBasedSystemPromptOverride(currentMode)
-
 		return {
 			version: this.context.extension?.packageJSON?.version ?? "",
 			apiConfiguration,
@@ -2186,11 +2279,9 @@ export class ClineProvider
 			alwaysAllowWriteOutsideWorkspace: alwaysAllowWriteOutsideWorkspace ?? false,
 			alwaysAllowWriteProtected: alwaysAllowWriteProtected ?? false,
 			alwaysAllowExecute: alwaysAllowExecute ?? false,
-			alwaysAllowBrowser: alwaysAllowBrowser ?? false,
 			alwaysAllowMcp: alwaysAllowMcp ?? false,
 			alwaysAllowModeSwitch: alwaysAllowModeSwitch ?? false,
 			alwaysAllowSubtasks: alwaysAllowSubtasks ?? false,
-			isBrowserSessionActive,
 			allowedMaxRequests,
 			allowedMaxCost,
 			autoCondenseContext: autoCondenseContext ?? true,
@@ -2215,11 +2306,6 @@ export class ClineProvider
 			allowedCommands: mergedAllowedCommands,
 			deniedCommands: mergedDeniedCommands,
 			soundVolume: soundVolume ?? 0.5,
-			browserViewportSize: browserViewportSize ?? "900x600",
-			screenshotQuality: screenshotQuality ?? 75,
-			remoteBrowserHost,
-			remoteBrowserEnabled: remoteBrowserEnabled ?? false,
-			cachedChromeHostUrl: cachedChromeHostUrl,
 			writeDelayMs: writeDelayMs ?? DEFAULT_WRITE_DELAY_MS,
 			terminalShellIntegrationTimeout: terminalShellIntegrationTimeout ?? Terminal.defaultShellIntegrationTimeout,
 			terminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,
@@ -2244,7 +2330,6 @@ export class ClineProvider
 			maxOpenTabsContext: maxOpenTabsContext ?? 20,
 			maxWorkspaceFiles: maxWorkspaceFiles ?? 200,
 			cwd,
-			browserToolEnabled: browserToolEnabled ?? true,
 			disabledTools,
 			telemetrySetting,
 			telemetryKey,
@@ -2256,7 +2341,6 @@ export class ClineProvider
 			maxImageFileSize: maxImageFileSize ?? 5,
 			maxTotalImageSize: maxTotalImageSize ?? 20,
 			settingsImportedAt: this.settingsImportedAt,
-			hasSystemPromptOverride,
 			historyPreviewCollapsed: historyPreviewCollapsed ?? false,
 			reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
 			enterBehavior: enterBehavior ?? "send",
@@ -2326,12 +2410,7 @@ export class ClineProvider
 	async getState(): Promise<
 		Omit<
 			ExtensionState,
-			| "clineMessages"
-			| "renderContext"
-			| "hasOpenedModeSelector"
-			| "version"
-			| "shouldShowAnnouncement"
-			| "hasSystemPromptOverride"
+			"clineMessages" | "renderContext" | "hasOpenedModeSelector" | "version" | "shouldShowAnnouncement"
 		>
 	> {
 		const stateValues = this.contextProxy.getValues()
@@ -2424,9 +2503,6 @@ export class ClineProvider
 			)
 		}
 
-		// Get actual browser session state
-		const isBrowserSessionActive = this.getCurrentTask()?.browserSession?.isSessionActive() ?? false
-
 		// Return the same structure as before.
 		return {
 			apiConfiguration: providerSettings,
@@ -2439,12 +2515,10 @@ export class ClineProvider
 			alwaysAllowWriteOutsideWorkspace: stateValues.alwaysAllowWriteOutsideWorkspace ?? false,
 			alwaysAllowWriteProtected: stateValues.alwaysAllowWriteProtected ?? false,
 			alwaysAllowExecute: stateValues.alwaysAllowExecute ?? false,
-			alwaysAllowBrowser: stateValues.alwaysAllowBrowser ?? false,
 			alwaysAllowMcp: stateValues.alwaysAllowMcp ?? false,
 			alwaysAllowModeSwitch: stateValues.alwaysAllowModeSwitch ?? false,
 			alwaysAllowSubtasks: stateValues.alwaysAllowSubtasks ?? false,
 			alwaysAllowFollowupQuestions: stateValues.alwaysAllowFollowupQuestions ?? false,
-			isBrowserSessionActive,
 			followupAutoApproveTimeoutMs: stateValues.followupAutoApproveTimeoutMs ?? 60000,
 			diagnosticsEnabled: stateValues.diagnosticsEnabled ?? true,
 			allowedMaxRequests: stateValues.allowedMaxRequests,
@@ -2460,11 +2534,6 @@ export class ClineProvider
 			enableCheckpoints: stateValues.enableCheckpoints ?? true,
 			checkpointTimeout: stateValues.checkpointTimeout ?? DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 			soundVolume: stateValues.soundVolume,
-			browserViewportSize: stateValues.browserViewportSize ?? "900x600",
-			screenshotQuality: stateValues.screenshotQuality ?? 75,
-			remoteBrowserHost: stateValues.remoteBrowserHost,
-			remoteBrowserEnabled: stateValues.remoteBrowserEnabled ?? false,
-			cachedChromeHostUrl: stateValues.cachedChromeHostUrl as string | undefined,
 			writeDelayMs: stateValues.writeDelayMs ?? DEFAULT_WRITE_DELAY_MS,
 			terminalShellIntegrationTimeout:
 				stateValues.terminalShellIntegrationTimeout ?? Terminal.defaultShellIntegrationTimeout,
@@ -2491,7 +2560,6 @@ export class ClineProvider
 			customModes,
 			maxOpenTabsContext: stateValues.maxOpenTabsContext ?? 20,
 			maxWorkspaceFiles: stateValues.maxWorkspaceFiles ?? 200,
-			browserToolEnabled: stateValues.browserToolEnabled ?? true,
 			disabledTools: stateValues.disabledTools,
 			telemetrySetting: stateValues.telemetrySetting || "unset",
 			showRooIgnoredFiles: stateValues.showRooIgnoredFiles ?? false,
@@ -2616,6 +2684,28 @@ export class ClineProvider
 
 			return history
 		})
+	}
+
+	/**
+	 * Convenience wrapper around the standalone saveDelegationMeta function,
+	 * injecting globalStoragePath from this provider's context.
+	 * Exposed so tools (e.g. AttemptCompletionTool) can persist delegation
+	 * metadata through the DelegationProvider interface.
+	 */
+	async persistDelegationMeta(taskId: string, meta: DelegationMeta): Promise<void> {
+		const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
+		await saveDelegationMeta({ taskId, globalStoragePath, meta })
+	}
+
+	/**
+	 * Convenience wrapper around the standalone readDelegationMeta function,
+	 * injecting globalStoragePath from this provider's context.
+	 * Exposed so tools (e.g. AttemptCompletionTool) can read existing delegation
+	 * metadata for read-merge-write patterns through the DelegationProvider interface.
+	 */
+	async readDelegationMeta(taskId: string): Promise<DelegationMeta | null> {
+		const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
+		return readDelegationMeta({ taskId, globalStoragePath })
 	}
 
 	/**
@@ -2932,6 +3022,12 @@ export class ClineProvider
 		options: CreateTaskOptions = {},
 		configuration: RooCodeSettings = {},
 	): Promise<Task> {
+		if (this.delegationInProgress && !parentTask) {
+			this.log("[createTask] Blocked: delegation in progress")
+			vscode.window.showInformationMessage("Task delegation in progress, please wait...")
+			throw new Error("Cannot create task while delegation is in progress")
+		}
+
 		if (configuration) {
 			await this.setValues(configuration)
 
@@ -3013,6 +3109,11 @@ export class ClineProvider
 	}
 
 	public async cancelTask(): Promise<void> {
+		if (this.delegationInProgress) {
+			this.log("[cancelTask] Skipped: delegation in progress")
+			vscode.window.showInformationMessage("Task delegation in progress, please wait...")
+			return
+		}
 		const task = this.getCurrentTask()
 
 		if (!task) {
@@ -3251,128 +3352,231 @@ export class ClineProvider
 	}): Promise<Task> {
 		const { parentTaskId, message, initialTodos, mode } = params
 
-		// Metadata-driven delegation is always enabled
+		if (this.delegationInProgress) {
+			throw new Error("[delegateParentAndOpenChild] Delegation already in progress")
+		}
+		this.delegationInProgress = true
 
-		// 1) Get parent (must be current task)
-		const parent = this.getCurrentTask()
-		if (!parent) {
-			throw new Error("[delegateParentAndOpenChild] No current task")
-		}
-		if (parent.taskId !== parentTaskId) {
-			throw new Error(
-				`[delegateParentAndOpenChild] Parent mismatch: expected ${parentTaskId}, current ${parent.taskId}`,
-			)
-		}
-		// 2) Flush pending tool results to API history BEFORE disposing the parent.
-		//    This is critical: when tools are called before new_task,
-		//    their tool_result blocks are in userMessageContent but not yet saved to API history.
-		//    If we don't flush them, the parent's API conversation will be incomplete and
-		//    cause 400 errors when resumed (missing tool_result for tool_use blocks).
-		//
-		//    NOTE: We do NOT pass the assistant message here because the assistant message
-		//    is already added to apiConversationHistory by the normal flow in
-		//    recursivelyMakeClineRequests BEFORE tools start executing. We only need to
-		//    flush the pending user message with tool_results.
+		const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
+
 		try {
-			const flushSuccess = await parent.flushPendingToolResultsToHistory()
+			// Metadata-driven delegation is always enabled
 
-			if (!flushSuccess) {
-				console.warn(`[delegateParentAndOpenChild] Flush failed for parent ${parentTaskId}, retrying...`)
-				const retrySuccess = await parent.retrySaveApiConversationHistory()
-
-				if (!retrySuccess) {
-					console.error(
-						`[delegateParentAndOpenChild] CRITICAL: Parent ${parentTaskId} API history not persisted to disk. Child return may produce stale state.`,
-					)
-					vscode.window.showWarningMessage(
-						"Warning: Parent task state could not be saved. The parent task may lose recent context when resumed.",
-					)
-				}
+			// 1) Get parent (must be current task)
+			const parent = this.getCurrentTask()
+			if (!parent) {
+				throw new Error("[delegateParentAndOpenChild] No current task")
 			}
-		} catch (error) {
-			this.log(
-				`[delegateParentAndOpenChild] Error flushing pending tool results (non-fatal): ${
-					error instanceof Error ? error.message : String(error)
-				}`,
+			if (parent.taskId !== parentTaskId) {
+				throw new Error(
+					`[delegateParentAndOpenChild] Parent mismatch: expected ${parentTaskId}, current ${parent.taskId}`,
+				)
+			}
+			// Capture parent metadata before the parent is removed from the stack (Change A)
+			const parentMetadata = { task: parent?.metadata?.task, taskNumber: parent?.taskNumber }
+
+			// 2) Flush pending tool results to API history BEFORE disposing the parent.
+			//    This is critical: when tools are called before new_task,
+			//    their tool_result blocks are in userMessageContent but not yet saved to API history.
+			//    If we don't flush them, the parent's API conversation will be incomplete and
+			//    cause 400 errors when resumed (missing tool_result for tool_use blocks).
+			//
+			//    NOTE: We do NOT pass the assistant message here because the assistant message
+			//    is already added to apiConversationHistory by the normal flow in
+			//    recursivelyMakeClineRequests BEFORE tools start executing. We only need to
+			//    flush the pending user message with tool_results.
+			try {
+				const flushSuccess = await parent.flushPendingToolResultsToHistory()
+
+				if (!flushSuccess) {
+					console.warn(`[delegateParentAndOpenChild] Flush failed for parent ${parentTaskId}, retrying...`)
+					const retrySuccess = await parent.retrySaveApiConversationHistory()
+
+					if (!retrySuccess) {
+						console.error(
+							`[delegateParentAndOpenChild] CRITICAL: Parent ${parentTaskId} API history not persisted to disk. Child return may produce stale state.`,
+						)
+						vscode.window.showWarningMessage(
+							"Warning: Parent task state could not be saved. The parent task may lose recent context when resumed.",
+						)
+					}
+				}
+			} catch (error) {
+				this.log(
+					`[delegateParentAndOpenChild] Error flushing pending tool results (non-fatal): ${
+						error instanceof Error ? error.message : String(error)
+					}`,
+				)
+			}
+
+			// 3) Enforce single-open invariant by closing/disposing the parent first
+			//    This ensures we never have >1 tasks open at any time during delegation.
+			//    Await abort completion to ensure clean disposal and prevent unhandled rejections.
+			try {
+				await this.removeClineFromStack({ skipDelegationRepair: true })
+			} catch (error) {
+				this.log(
+					`[delegateParentAndOpenChild] Error during parent disposal (non-fatal): ${
+						error instanceof Error ? error.message : String(error)
+					}`,
+				)
+				// Non-fatal: proceed with child creation even if parent cleanup had issues
+			}
+
+			// 3) Switch provider mode to child's requested mode BEFORE creating the child task
+			//    This ensures the child's system prompt and configuration are based on the correct mode.
+			//    The mode switch must happen before createTask() because the Task constructor
+			//    initializes its mode from provider.getState() during initializeTaskMode().
+			try {
+				await this.handleModeSwitch(mode as any)
+			} catch (e) {
+				this.log(
+					`[delegateParentAndOpenChild] handleModeSwitch failed for mode '${mode}': ${
+						(e as Error)?.message ?? String(e)
+					}`,
+				)
+			}
+
+			// 4) Create child as sole active (parent reference preserved for lineage)
+			//
+			// Pass startTask: false to prevent the child from beginning its task loop
+			// (and writing to globalState via saveClineMessages → updateTaskHistory)
+			// before we persist the parent's delegation metadata in step 5.
+			// Without this, the child's fire-and-forget startTask() races with step 5,
+			// and the last writer to globalState overwrites the other's changes—
+			// causing the parent's delegation fields to be lost.
+			const child = await this.createTask(message, undefined, parent as any, {
+				initialTodos,
+				startTask: false,
+			})
+
+			// 4b) Persist child's initial status in globalState (saveClineMessages no longer writes status)
+			// Build the history item directly from the child Task object instead of getTaskWithId,
+			// because the child isn't in globalState yet at this point.
+			await this.updateTaskHistory(
+				{
+					id: child.taskId,
+					ts: Date.now(),
+					task: message,
+					number: child.taskNumber,
+					tokensIn: 0,
+					tokensOut: 0,
+					totalCost: 0,
+					status: "active",
+					parentTaskId: parentTaskId,
+					rootTaskId: child.rootTaskId,
+					workspace: this.cwd,
+				} as HistoryItem,
+				{ broadcast: false },
 			)
-		}
 
-		// 3) Enforce single-open invariant by closing/disposing the parent first
-		//    This ensures we never have >1 tasks open at any time during delegation.
-		//    Await abort completion to ensure clean disposal and prevent unhandled rejections.
-		try {
-			await this.removeClineFromStack({ skipDelegationRepair: true })
-		} catch (error) {
-			this.log(
-				`[delegateParentAndOpenChild] Error during parent disposal (non-fatal): ${
-					error instanceof Error ? error.message : String(error)
-				}`,
-			)
-			// Non-fatal: proceed with child creation even if parent cleanup had issues
-		}
-
-		// 3) Switch provider mode to child's requested mode BEFORE creating the child task
-		//    This ensures the child's system prompt and configuration are based on the correct mode.
-		//    The mode switch must happen before createTask() because the Task constructor
-		//    initializes its mode from provider.getState() during initializeTaskMode().
-		try {
-			await this.handleModeSwitch(mode as any)
-		} catch (e) {
-			this.log(
-				`[delegateParentAndOpenChild] handleModeSwitch failed for mode '${mode}': ${
-					(e as Error)?.message ?? String(e)
-				}`,
-			)
-		}
-
-		// 4) Create child as sole active (parent reference preserved for lineage)
-		// Pass initialStatus: "active" to ensure the child task's historyItem is created
-		// with status from the start, avoiding race conditions where the task might
-		// call attempt_completion before status is persisted separately.
-		//
-		// Pass startTask: false to prevent the child from beginning its task loop
-		// (and writing to globalState via saveClineMessages → updateTaskHistory)
-		// before we persist the parent's delegation metadata in step 5.
-		// Without this, the child's fire-and-forget startTask() races with step 5,
-		// and the last writer to globalState overwrites the other's changes—
-		// causing the parent's delegation fields to be lost.
-		const child = await this.createTask(message, undefined, parent as any, {
-			initialTodos,
-			initialStatus: "active",
-			startTask: false,
-		})
-
-		// 5) Persist parent delegation metadata BEFORE the child starts writing.
-		try {
-			const { historyItem } = await this.getTaskWithId(parentTaskId)
-			const childIds = Array.from(new Set([...(historyItem.childIds ?? []), child.taskId]))
-			const updatedHistory: typeof historyItem = {
-				...historyItem,
-				status: "delegated",
+			// 5) Persist parent delegation metadata BEFORE the child starts writing.
+			// updateTaskHistory (globalState) is critical — without it, parent won't show as delegated
+			let parentHistory: HistoryItem
+			try {
+				const result = await this.getTaskWithId(parentTaskId)
+				parentHistory = result.historyItem
+			} catch (err) {
+				console.error(
+					`[delegateParentAndOpenChild] Parent ${parentTaskId} not in globalState, using in-memory fallback: ${
+						err instanceof Error ? err.message : String(err)
+					}`,
+				)
+				parentHistory = {
+					id: parentTaskId,
+					ts: Date.now(),
+					task: parentMetadata.task ?? "",
+					number: parentMetadata.taskNumber ?? 0,
+					tokensIn: 0,
+					tokensOut: 0,
+					totalCost: 0,
+					workspace: this.cwd,
+				} as HistoryItem
+			}
+			const childIds = Array.from(new Set([...(parentHistory.childIds ?? []), child.taskId]))
+			const updatedHistory = {
+				...parentHistory,
+				status: "delegated" as const,
 				delegatedToId: child.taskId,
 				awaitingChildId: child.taskId,
 				childIds,
 			}
 			await this.updateTaskHistory(updatedHistory)
-		} catch (err) {
-			this.log(
-				`[delegateParentAndOpenChild] Failed to persist parent metadata for ${parentTaskId} -> ${child.taskId}: ${
-					(err as Error)?.message ?? String(err)
-				}`,
-			)
+
+			// Per-task file backup is non-critical — globalState is the primary source
+			try {
+				await saveDelegationMeta({
+					taskId: parentTaskId,
+					globalStoragePath,
+					meta: {
+						status: "delegated",
+						delegatedToId: child.taskId,
+						awaitingChildId: child.taskId,
+						childIds,
+						completedByChildId: parentHistory.completedByChildId ?? null,
+						completionResultSummary: parentHistory.completionResultSummary ?? null,
+					},
+				})
+				await saveDelegationMeta({
+					taskId: child.taskId,
+					globalStoragePath,
+					meta: { status: "active" },
+				})
+			} catch (err) {
+				this.log(
+					`[delegateParentAndOpenChild] Non-critical: Failed to write delegation metadata files for ${parentTaskId} -> ${child.taskId}: ${(err as Error)?.message ?? String(err)}`,
+				)
+				vscode.window.showWarningMessage(
+					"Delegation metadata could not be saved. Task delegation may be in a degraded state.",
+				)
+			}
+
+			// 6) Start the child task now that parent metadata is safely persisted.
+			const startPromise = child.start()
+			if (startPromise) {
+				startPromise.catch(async (err) => {
+					this.log(
+						`[delegateParentAndOpenChild] child.start() failed for ${child.taskId}: ${
+							(err as Error)?.message ?? String(err)
+						}`,
+					)
+					// Repair parent status back to active
+					try {
+						const { historyItem: parentHistory } = await this.getTaskWithId(parentTaskId)
+						await this.updateTaskHistory({ ...parentHistory, status: "active", awaitingChildId: undefined })
+						await saveDelegationMeta({
+							taskId: parentTaskId,
+							globalStoragePath,
+							meta: {
+								status: "active",
+								awaitingChildId: null,
+								delegatedToId: parentHistory.delegatedToId,
+								childIds: parentHistory.childIds,
+								completedByChildId: parentHistory.completedByChildId ?? null,
+								completionResultSummary: parentHistory.completionResultSummary ?? null,
+							},
+						})
+					} catch (repairErr) {
+						this.log(
+							`[delegateParentAndOpenChild] Failed to repair parent after child.start() failure: ${
+								(repairErr as Error)?.message ?? String(repairErr)
+							}`,
+						)
+					}
+				})
+			}
+
+			// 7) Emit TaskDelegated (provider-level)
+			try {
+				this.emit(RooCodeEventName.TaskDelegated, parentTaskId, child.taskId)
+			} catch {
+				// non-fatal
+			}
+
+			return child
+		} finally {
+			this.delegationInProgress = false
 		}
-
-		// 6) Start the child task now that parent metadata is safely persisted.
-		child.start()
-
-		// 7) Emit TaskDelegated (provider-level)
-		try {
-			this.emit(RooCodeEventName.TaskDelegated, parentTaskId, child.taskId)
-		} catch {
-			// non-fatal
-		}
-
-		return child
 	}
 
 	/**
@@ -3386,191 +3590,254 @@ export class ClineProvider
 		const { parentTaskId, childTaskId, completionResultSummary } = params
 		const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
 
-		// 1) Load parent from history and current persisted messages
-		const { historyItem } = await this.getTaskWithId(parentTaskId)
+		if (this.delegationInProgress) {
+			throw new Error("[reopenParentFromDelegation] Delegation already in progress")
+		}
+		this.delegationInProgress = true
 
-		let parentClineMessages: ClineMessage[] = []
 		try {
-			parentClineMessages = await readTaskMessages({
-				taskId: parentTaskId,
-				globalStoragePath,
-			})
-		} catch {
-			parentClineMessages = []
-		}
+			// 1) Load parent from history and current persisted messages
+			const { historyItem } = await this.getTaskWithId(parentTaskId)
 
-		let parentApiMessages: any[] = []
-		try {
-			parentApiMessages = (await readApiMessages({
-				taskId: parentTaskId,
-				globalStoragePath,
-			})) as any[]
-		} catch {
-			parentApiMessages = []
-		}
-
-		// 2) Inject synthetic records: UI subtask_result and update API tool_result
-		const ts = Date.now()
-
-		// Defensive: ensure arrays
-		if (!Array.isArray(parentClineMessages)) parentClineMessages = []
-		if (!Array.isArray(parentApiMessages)) parentApiMessages = []
-
-		const subtaskUiMessage: ClineMessage = {
-			type: "say",
-			say: "subtask_result",
-			text: completionResultSummary,
-			ts,
-		}
-		parentClineMessages.push(subtaskUiMessage)
-		await saveTaskMessages({ messages: parentClineMessages, taskId: parentTaskId, globalStoragePath })
-
-		// Find the tool_use_id from the last assistant message's new_task tool_use
-		let toolUseId: string | undefined
-		for (let i = parentApiMessages.length - 1; i >= 0; i--) {
-			const msg = parentApiMessages[i]
-			if (msg.role === "assistant" && Array.isArray(msg.content)) {
-				for (const block of msg.content) {
-					if (block.type === "tool_use" && block.name === "new_task") {
-						toolUseId = block.id
-						break
-					}
-				}
-				if (toolUseId) break
+			let parentClineMessages: ClineMessage[] = []
+			try {
+				parentClineMessages = await readTaskMessages({
+					taskId: parentTaskId,
+					globalStoragePath,
+				})
+			} catch {
+				parentClineMessages = []
 			}
-		}
 
-		// Preferred: if the parent history contains the native tool_use for new_task,
-		// inject a matching tool_result for the Anthropic message contract:
-		// user → assistant (tool_use) → user (tool_result)
-		if (toolUseId) {
-			// Check if the last message is already a user message with a tool_result for this tool_use_id
-			// (in case this is a retry or the history was already updated)
-			const lastMsg = parentApiMessages[parentApiMessages.length - 1]
-			let alreadyHasToolResult = false
-			if (lastMsg?.role === "user" && Array.isArray(lastMsg.content)) {
-				for (const block of lastMsg.content) {
-					if (block.type === "tool_result" && block.tool_use_id === toolUseId) {
-						// Update the existing tool_result content
-						block.content = `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`
-						alreadyHasToolResult = true
-						break
+			let parentApiMessages: RooMessage[] = []
+			try {
+				parentApiMessages = await readRooMessages({
+					taskId: parentTaskId,
+					globalStoragePath,
+				})
+			} catch {
+				parentApiMessages = []
+			}
+
+			// 2) Inject synthetic records: UI subtask_result and update API tool_result
+			const ts = Date.now()
+
+			// Defensive: ensure arrays
+			if (!Array.isArray(parentClineMessages)) parentClineMessages = []
+			if (!Array.isArray(parentApiMessages)) parentApiMessages = []
+
+			const subtaskUiMessage: ClineMessage = {
+				type: "say",
+				say: "subtask_result",
+				text: completionResultSummary,
+				ts,
+			}
+			parentClineMessages.push(subtaskUiMessage)
+			await saveTaskMessages({ messages: parentClineMessages, taskId: parentTaskId, globalStoragePath })
+
+			// Find the tool call ID from the last assistant message's new_task tool call
+			let toolUseId: string | undefined
+			for (let i = parentApiMessages.length - 1; i >= 0; i--) {
+				const msg = parentApiMessages[i]
+				if (isRooAssistantMessage(msg) && Array.isArray(msg.content)) {
+					for (const block of msg.content) {
+						const typedBlock = block as unknown as { type: string }
+						if (isAnyToolCallBlock(typedBlock) && getToolCallName(typedBlock) === "new_task") {
+							toolUseId = getToolCallId(typedBlock)
+							break
+						}
 					}
+					if (toolUseId) break
 				}
 			}
 
-			// If no existing tool_result found, create a NEW user message with the tool_result
-			if (!alreadyHasToolResult) {
+			// Preferred: if the parent history contains a new_task tool call,
+			// inject a matching tool result for the model message contract.
+			if (toolUseId) {
+				// Check if the last message already contains a tool result for this tool call ID
+				// (in case this is a retry or the history was already updated)
+				const lastMsg = parentApiMessages[parentApiMessages.length - 1]
+				let alreadyHasToolResult = false
+				if (lastMsg && "role" in lastMsg && Array.isArray(lastMsg.content)) {
+					for (const block of lastMsg.content) {
+						const typedBlock = block as unknown as { type: string }
+						if (isAnyToolResultBlock(typedBlock) && getToolResultCallId(typedBlock) === toolUseId) {
+							const updatedText = `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`
+							if (typedBlock.type === "tool-result") {
+								;(typedBlock as { output: { type: "text"; value: string } }).output = {
+									type: "text",
+									value: updatedText,
+								}
+							} else {
+								;(typedBlock as { content: string }).content = updatedText
+							}
+							alreadyHasToolResult = true
+							break
+						}
+					}
+				}
+
+				// If no existing tool result found, create a NEW tool message with the tool result
+				if (!alreadyHasToolResult) {
+					parentApiMessages.push({
+						role: "tool",
+						content: [
+							{
+								type: "tool-result" as const,
+								toolCallId: toolUseId,
+								toolName: "new_task",
+								output: {
+									type: "text" as const,
+									value: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
+								},
+							},
+						],
+						ts,
+					})
+				}
+
+				// Validate the newly injected/updated tool result against the preceding assistant message.
+				const lastMessage = parentApiMessages[parentApiMessages.length - 1]
+				if (
+					lastMessage &&
+					(isRooToolMessage(lastMessage) || ("role" in lastMessage && lastMessage.role === "user"))
+				) {
+					const validatedMessage = validateAndFixToolResultIds(lastMessage, parentApiMessages.slice(0, -1))
+					parentApiMessages[parentApiMessages.length - 1] = validatedMessage as RooMessage
+				}
+			} else {
+				// If there is no corresponding tool call in the parent API history, we cannot emit a
+				// tool result. Fall back to a plain user text note so the parent can still resume.
 				parentApiMessages.push({
 					role: "user",
 					content: [
 						{
-							type: "tool_result" as const,
-							tool_use_id: toolUseId,
-							content: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
+							type: "text" as const,
+							text: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
 						},
 					],
 					ts,
 				})
 			}
 
-			// Validate the newly injected tool_result against the preceding assistant message.
-			// This ensures the tool_result's tool_use_id matches a tool_use in the immediately
-			// preceding assistant message (Anthropic API requirement).
-			const lastMessage = parentApiMessages[parentApiMessages.length - 1]
-			if (lastMessage?.role === "user") {
-				const validatedMessage = validateAndFixToolResultIds(lastMessage, parentApiMessages.slice(0, -1))
-				parentApiMessages[parentApiMessages.length - 1] = validatedMessage
-			}
-		} else {
-			// If there is no corresponding tool_use in the parent API history, we cannot emit a
-			// tool_result. Fall back to a plain user text note so the parent can still resume.
-			parentApiMessages.push({
-				role: "user",
-				content: [
-					{
-						type: "text" as const,
-						text: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
-					},
-				],
-				ts,
+			const savedApiMessages = await saveRooMessages({
+				messages: parentApiMessages,
+				taskId: parentTaskId,
+				globalStoragePath,
 			})
-		}
-
-		await saveApiMessages({ messages: parentApiMessages as any, taskId: parentTaskId, globalStoragePath })
-
-		// 3) Close child instance if still open (single-open-task invariant).
-		//    This MUST happen BEFORE updating the child's status to "completed" because
-		//    removeClineFromStack() → abortTask(true) → saveClineMessages() writes
-		//    the historyItem with initialStatus (typically "active"), which would
-		//    overwrite a "completed" status set earlier.
-		const current = this.getCurrentTask()
-		if (current?.taskId === childTaskId) {
-			await this.removeClineFromStack()
-		}
-
-		// 4) Update child metadata to "completed" status.
-		//    This runs after the abort so it overwrites the stale "active" status
-		//    that saveClineMessages() may have written during step 3.
-		try {
-			const { historyItem: childHistory } = await this.getTaskWithId(childTaskId)
-			await this.updateTaskHistory({
-				...childHistory,
-				status: "completed",
-			})
-		} catch (err) {
-			this.log(
-				`[reopenParentFromDelegation] Failed to persist child completed status for ${childTaskId}: ${
-					(err as Error)?.message ?? String(err)
-				}`,
-			)
-		}
-
-		// 5) Update parent metadata and persist BEFORE emitting completion event
-		const childIds = Array.from(new Set([...(historyItem.childIds ?? []), childTaskId]))
-		const updatedHistory: typeof historyItem = {
-			...historyItem,
-			status: "active",
-			completedByChildId: childTaskId,
-			completionResultSummary,
-			awaitingChildId: undefined,
-			childIds,
-		}
-		await this.updateTaskHistory(updatedHistory)
-
-		// 6) Emit TaskDelegationCompleted (provider-level)
-		try {
-			this.emit(RooCodeEventName.TaskDelegationCompleted, parentTaskId, childTaskId, completionResultSummary)
-		} catch {
-			// non-fatal
-		}
-
-		// 7) Reopen the parent from history as the sole active task (restores saved mode)
-		//    IMPORTANT: startTask=false to suppress resume-from-history ask scheduling
-		const parentInstance = await this.createTaskWithHistoryItem(updatedHistory, { startTask: false })
-
-		// 8) Inject restored histories into the in-memory instance before resuming
-		if (parentInstance) {
-			try {
-				await parentInstance.overwriteClineMessages(parentClineMessages)
-			} catch {
-				// non-fatal
+			if (savedApiMessages === false) {
+				this.log(`[reopenParentFromDelegation] Failed to save API messages for parent ${parentTaskId}`)
 			}
+
+			// 3) Close child instance if still open (single-open-task invariant).
+			//    This MUST happen BEFORE updating the child's status to "completed" because
+			//    removeClineFromStack() → abortTask(true) → saveClineMessages() calls
+			//    updateTaskHistory which would overwrite a "completed" status set earlier
+			//    (updateTaskHistory spreads incoming fields over existing ones).
+			const current = this.getCurrentTask()
+			if (current?.taskId === childTaskId) {
+				await this.removeClineFromStack({ skipDelegationRepair: true })
+			}
+
+			// 4) Update child metadata to "completed" status.
+			//    This runs after the abort so it overwrites the stale "active" status
+			//    that saveClineMessages() may have written during step 3.
+
 			try {
-				await parentInstance.overwriteApiConversationHistory(parentApiMessages as any)
+				const { historyItem: childHistory } = await this.getTaskWithId(childTaskId)
+				await this.updateTaskHistory({
+					...childHistory,
+					status: "completed",
+				})
+				await saveDelegationMeta({
+					taskId: childTaskId,
+					globalStoragePath,
+					meta: { status: "completed" },
+				})
+			} catch (err) {
+				this.log(
+					`[reopenParentFromDelegation] Failed to persist child completed status for ${childTaskId}: ${
+						(err as Error)?.message ?? String(err)
+					}`,
+				)
+			}
+
+			// 5) Update parent metadata and persist BEFORE emitting completion event
+			//    Re-read parent to avoid stale-read TOCTOU: historyItem was loaded at step 1
+			//    but many async operations (message injection, child abort) have elapsed since.
+			const { historyItem: freshParent } = await this.getTaskWithId(parentTaskId)
+			const childIds = Array.from(new Set([...(freshParent.childIds ?? []), childTaskId]))
+			const updatedHistory: typeof freshParent = {
+				...freshParent,
+				status: "active",
+				completedByChildId: childTaskId,
+				completionResultSummary,
+				awaitingChildId: undefined,
+				childIds,
+			}
+			await this.updateTaskHistory(updatedHistory)
+			await saveDelegationMeta({
+				taskId: parentTaskId,
+				globalStoragePath,
+				meta: {
+					status: "active",
+					completedByChildId: childTaskId,
+					completionResultSummary,
+					awaitingChildId: null,
+					childIds,
+					delegatedToId: freshParent.delegatedToId ?? null,
+				},
+			})
+
+			// 6) Emit TaskDelegationCompleted (provider-level)
+			try {
+				this.emit(RooCodeEventName.TaskDelegationCompleted, parentTaskId, childTaskId, completionResultSummary)
 			} catch {
 				// non-fatal
 			}
 
-			// Auto-resume parent without ask("resume_task")
-			await parentInstance.resumeAfterDelegation()
-		}
+			// 7) Reopen the parent from history as the sole active task (restores saved mode)
+			//    IMPORTANT: startTask=false to suppress resume-from-history ask scheduling
+			const parentInstance = await this.createTaskWithHistoryItem(updatedHistory, { startTask: false })
 
-		// 9) Emit TaskDelegationResumed (provider-level)
-		try {
-			this.emit(RooCodeEventName.TaskDelegationResumed, parentTaskId, childTaskId)
-		} catch {
-			// non-fatal
+			// 8) Inject restored histories into the in-memory instance before resuming
+			if (parentInstance) {
+				try {
+					await parentInstance.overwriteClineMessages(parentClineMessages)
+				} catch {
+					// non-fatal
+				}
+				try {
+					await parentInstance.overwriteApiConversationHistory(parentApiMessages as any)
+				} catch {
+					// non-fatal
+				}
+
+				// Clear delegation guard BEFORE resuming parent so the parent's
+				// task loop can itself initiate a new delegation (new_task) without
+				// hitting the "delegation already in progress" guard. This early
+				// reset is safe because all metadata is persisted and the parent
+				// instance is fully reconstructed at this point.
+				//
+				// The `finally` block at the bottom of this method also sets
+				// `delegationInProgress = false` as a safety net for error paths —
+				// if an exception is thrown before reaching this line, the finally
+				// block ensures the guard is always released. On the happy path
+				// the finally reset is a harmless no-op.
+				this.delegationInProgress = false
+
+				// Auto-resume parent without ask("resume_task")
+				await parentInstance.resumeAfterDelegation()
+			}
+
+			// 9) Emit TaskDelegationResumed (provider-level)
+			try {
+				this.emit(RooCodeEventName.TaskDelegationResumed, parentTaskId, childTaskId)
+			} catch {
+				// non-fatal
+			}
+		} finally {
+			this.delegationInProgress = false
 		}
 	}
 

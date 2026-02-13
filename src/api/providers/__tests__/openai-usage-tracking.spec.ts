@@ -1,3 +1,4 @@
+import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // npx vitest run api/providers/__tests__/openai-usage-tracking.spec.ts
 
 import { Anthropic } from "@anthropic-ai/sdk"
@@ -53,7 +54,7 @@ describe("OpenAiHandler with usage tracking fix", () => {
 
 	describe("usage metrics with streaming", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: RooMessage[] = [
 			{
 				role: "user",
 				content: [
@@ -97,6 +98,8 @@ describe("OpenAiHandler with usage tracking fix", () => {
 				type: "usage",
 				inputTokens: 10,
 				outputTokens: 5,
+				totalInputTokens: 10,
+				totalOutputTokens: 5,
 			})
 
 			const lastChunk = chunks[chunks.length - 1]
@@ -132,6 +135,8 @@ describe("OpenAiHandler with usage tracking fix", () => {
 				type: "usage",
 				inputTokens: 10,
 				outputTokens: 5,
+				totalInputTokens: 10,
+				totalOutputTokens: 5,
 			})
 		})
 
@@ -227,6 +232,203 @@ describe("OpenAiHandler with usage tracking fix", () => {
 					reasoningTokens: 20,
 				}),
 			)
+		})
+
+		describe("AI SDK v6 usage field paths", () => {
+			describe("cache tokens", () => {
+				it("should read cache tokens from v6 top-level cachedInputTokens when providerMetadata is empty", async () => {
+					async function* mockFullStream() {
+						yield { type: "text-delta", text: "Test response" }
+					}
+
+					mockStreamText.mockReturnValueOnce({
+						fullStream: mockFullStream(),
+						usage: Promise.resolve({
+							inputTokens: 100,
+							outputTokens: 50,
+							cachedInputTokens: 30,
+						}),
+						providerMetadata: Promise.resolve(undefined),
+					})
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					const chunks: any[] = []
+					for await (const chunk of stream) {
+						chunks.push(chunk)
+					}
+
+					const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
+					expect(usageChunks).toHaveLength(1)
+					expect(usageChunks[0].cacheReadTokens).toBe(30)
+				})
+
+				it("should read cache tokens from v6 inputTokenDetails.cacheReadTokens when providerMetadata is empty", async () => {
+					async function* mockFullStream() {
+						yield { type: "text-delta", text: "Test response" }
+					}
+
+					mockStreamText.mockReturnValueOnce({
+						fullStream: mockFullStream(),
+						usage: Promise.resolve({
+							inputTokens: 100,
+							outputTokens: 50,
+							inputTokenDetails: { cacheReadTokens: 25 },
+						}),
+						providerMetadata: Promise.resolve(undefined),
+					})
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					const chunks: any[] = []
+					for await (const chunk of stream) {
+						chunks.push(chunk)
+					}
+
+					const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
+					expect(usageChunks).toHaveLength(1)
+					expect(usageChunks[0].cacheReadTokens).toBe(25)
+				})
+
+				it("should prefer providerMetadata.openai.cachedPromptTokens over v6 top-level", async () => {
+					async function* mockFullStream() {
+						yield { type: "text-delta", text: "Test response" }
+					}
+
+					mockStreamText.mockReturnValueOnce({
+						fullStream: mockFullStream(),
+						usage: Promise.resolve({
+							inputTokens: 100,
+							outputTokens: 50,
+							cachedInputTokens: 30,
+						}),
+						providerMetadata: Promise.resolve({
+							openai: {
+								cachedPromptTokens: 80,
+							},
+						}),
+					})
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					const chunks: any[] = []
+					for await (const chunk of stream) {
+						chunks.push(chunk)
+					}
+
+					const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
+					expect(usageChunks).toHaveLength(1)
+					expect(usageChunks[0].cacheReadTokens).toBe(80)
+				})
+
+				it("should prefer v6 top-level cachedInputTokens over legacy details when providerMetadata is empty", async () => {
+					async function* mockFullStream() {
+						yield { type: "text-delta", text: "Test response" }
+					}
+
+					mockStreamText.mockReturnValueOnce({
+						fullStream: mockFullStream(),
+						usage: Promise.resolve({
+							inputTokens: 100,
+							outputTokens: 50,
+							cachedInputTokens: 30,
+							details: { cachedInputTokens: 20 },
+						}),
+						providerMetadata: Promise.resolve(undefined),
+					})
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					const chunks: any[] = []
+					for await (const chunk of stream) {
+						chunks.push(chunk)
+					}
+
+					const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
+					expect(usageChunks).toHaveLength(1)
+					expect(usageChunks[0].cacheReadTokens).toBe(30)
+				})
+			})
+
+			describe("reasoning tokens", () => {
+				it("should read reasoning tokens from v6 top-level reasoningTokens when providerMetadata is empty", async () => {
+					async function* mockFullStream() {
+						yield { type: "text-delta", text: "Test response" }
+					}
+
+					mockStreamText.mockReturnValueOnce({
+						fullStream: mockFullStream(),
+						usage: Promise.resolve({
+							inputTokens: 100,
+							outputTokens: 50,
+							reasoningTokens: 40,
+						}),
+						providerMetadata: Promise.resolve(undefined),
+					})
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					const chunks: any[] = []
+					for await (const chunk of stream) {
+						chunks.push(chunk)
+					}
+
+					const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
+					expect(usageChunks).toHaveLength(1)
+					expect(usageChunks[0].reasoningTokens).toBe(40)
+				})
+
+				it("should read reasoning tokens from v6 outputTokenDetails.reasoningTokens when providerMetadata is empty", async () => {
+					async function* mockFullStream() {
+						yield { type: "text-delta", text: "Test response" }
+					}
+
+					mockStreamText.mockReturnValueOnce({
+						fullStream: mockFullStream(),
+						usage: Promise.resolve({
+							inputTokens: 100,
+							outputTokens: 50,
+							outputTokenDetails: { reasoningTokens: 35 },
+						}),
+						providerMetadata: Promise.resolve(undefined),
+					})
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					const chunks: any[] = []
+					for await (const chunk of stream) {
+						chunks.push(chunk)
+					}
+
+					const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
+					expect(usageChunks).toHaveLength(1)
+					expect(usageChunks[0].reasoningTokens).toBe(35)
+				})
+
+				it("should prefer providerMetadata.openai.reasoningTokens over v6 top-level", async () => {
+					async function* mockFullStream() {
+						yield { type: "text-delta", text: "Test response" }
+					}
+
+					mockStreamText.mockReturnValueOnce({
+						fullStream: mockFullStream(),
+						usage: Promise.resolve({
+							inputTokens: 100,
+							outputTokens: 50,
+							reasoningTokens: 40,
+						}),
+						providerMetadata: Promise.resolve({
+							openai: {
+								reasoningTokens: 20,
+							},
+						}),
+					})
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					const chunks: any[] = []
+					for await (const chunk of stream) {
+						chunks.push(chunk)
+					}
+
+					const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
+					expect(usageChunks).toHaveLength(1)
+					expect(usageChunks[0].reasoningTokens).toBe(20)
+				})
+			})
 		})
 	})
 })

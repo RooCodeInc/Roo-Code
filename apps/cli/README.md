@@ -66,7 +66,7 @@ pnpm --filter @roo-code/cli build
 
 ### Interactive Mode (Default)
 
-By default, the CLI prompts for approval before executing actions:
+By default, the CLI auto-approves actions and runs in interactive TUI mode:
 
 ```bash
 export OPENROUTER_API_KEY=sk-or-v1-...
@@ -82,24 +82,23 @@ roo -w ~/Documents/my-project
 
 In interactive mode:
 
-- Tool executions prompt for yes/no approval
-- Commands prompt for yes/no approval
-- Followup questions show suggestions and wait for user input
-- Browser and MCP actions prompt for approval
+- Tool executions are auto-approved
+- Commands are auto-approved
+- Followup questions show suggestions with a 60-second timeout, then auto-select the first suggestion
+- Browser and MCP actions are auto-approved
 
-### Non-Interactive Mode (`-y`)
+### Approval-Required Mode (`--require-approval`)
 
-For automation and scripts, use `-y` to auto-approve all actions:
+If you want manual approval prompts, enable approval-required mode:
 
 ```bash
-roo "Refactor the utils.ts file" -y -w ~/Documents/my-project
+roo "Refactor the utils.ts file" --require-approval -w ~/Documents/my-project
 ```
 
-In non-interactive mode:
+In approval-required mode:
 
-- Tool, command, browser, and MCP actions are auto-approved
-- Followup questions show a 60-second timeout, then auto-select the first suggestion
-- Typing any key cancels the timeout and allows manual input
+- Tool, command, browser, and MCP actions prompt for yes/no approval
+- Followup questions wait for manual input (no auto-timeout)
 
 ### Roo Code Cloud Authentication
 
@@ -147,23 +146,23 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 
 ## Options
 
-| Option                                      | Description                                                                             | Default                                  |
-| ------------------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------- |
-| `[prompt]`                                  | Your prompt (positional argument, optional)                                             | None                                     |
-| `--prompt-file <path>`                      | Read prompt from a file instead of command line argument                                | None                                     |
-| `-w, --workspace <path>`                    | Workspace path to operate in                                                            | Current directory                        |
-| `-p, --print`                               | Print response and exit (non-interactive mode)                                          | `false`                                  |
-| `-e, --extension <path>`                    | Path to the extension bundle directory                                                  | Auto-detected                            |
-| `-d, --debug`                               | Enable debug output (includes detailed debug information, prompts, paths, etc)          | `false`                                  |
-| `-y, --yes, --dangerously-skip-permissions` | Auto-approve all actions (use with caution)                                             | `false`                                  |
-| `-k, --api-key <key>`                       | API key for the LLM provider                                                            | From env var                             |
-| `--provider <provider>`                     | API provider (roo, anthropic, openai, openrouter, etc.)                                 | `openrouter` (or `roo` if authenticated) |
-| `-m, --model <model>`                       | Model to use                                                                            | `anthropic/claude-opus-4.6`              |
-| `--mode <mode>`                             | Mode to start in (code, architect, ask, debug, etc.)                                    | `code`                                   |
-| `-r, --reasoning-effort <effort>`           | Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh) | `medium`                                 |
-| `--ephemeral`                               | Run without persisting state (uses temporary storage)                                   | `false`                                  |
-| `--oneshot`                                 | Exit upon task completion                                                               | `false`                                  |
-| `--output-format <format>`                  | Output format with `--print`: `text`, `json`, or `stream-json`                          | `text`                                   |
+| Option                            | Description                                                                             | Default                                  |
+| --------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `[prompt]`                        | Your prompt (positional argument, optional)                                             | None                                     |
+| `--prompt-file <path>`            | Read prompt from a file instead of command line argument                                | None                                     |
+| `-w, --workspace <path>`          | Workspace path to operate in                                                            | Current directory                        |
+| `-p, --print`                     | Print response and exit (non-interactive mode)                                          | `false`                                  |
+| `-e, --extension <path>`          | Path to the extension bundle directory                                                  | Auto-detected                            |
+| `-d, --debug`                     | Enable debug output (includes detailed debug information, prompts, paths, etc)          | `false`                                  |
+| `-a, --require-approval`          | Require manual approval before actions execute                                          | `false`                                  |
+| `-k, --api-key <key>`             | API key for the LLM provider                                                            | From env var                             |
+| `--provider <provider>`           | API provider (roo, anthropic, openai, openrouter, etc.)                                 | `openrouter` (or `roo` if authenticated) |
+| `-m, --model <model>`             | Model to use                                                                            | `anthropic/claude-opus-4.6`              |
+| `--mode <mode>`                   | Mode to start in (code, architect, ask, debug, etc.)                                    | `code`                                   |
+| `-r, --reasoning-effort <effort>` | Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh) | `medium`                                 |
+| `--ephemeral`                     | Run without persisting state (uses temporary storage)                                   | `false`                                  |
+| `--oneshot`                       | Exit upon task completion                                                               | `false`                                  |
+| `--output-format <format>`        | Output format with `--print`: `text`, `json`, or `stream-json`                          | `text`                                   |
 
 ## Auth Commands
 

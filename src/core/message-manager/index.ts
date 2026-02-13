@@ -168,7 +168,7 @@ export class MessageManager {
 			// at or after the cutoff to use as the actual boundary.
 			// This ensures assistant messages that preceded the user's response are preserved.
 			const firstUserMsgIndexToRemove = apiHistory.findIndex(
-				(m) => m.ts !== undefined && m.ts >= cutoffTs && m.role === "user",
+				(m) => m.ts !== undefined && m.ts >= cutoffTs && "role" in m && m.role === "user",
 			)
 
 			if (firstUserMsgIndexToRemove !== -1) {

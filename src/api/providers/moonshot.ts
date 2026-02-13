@@ -46,6 +46,12 @@ export class MoonshotHandler extends OpenAICompatibleHandler {
 	protected override processUsageMetrics(usage: {
 		inputTokens?: number
 		outputTokens?: number
+		totalInputTokens?: number
+		totalOutputTokens?: number
+		cachedInputTokens?: number
+		reasoningTokens?: number
+		inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+		outputTokenDetails?: { reasoningTokens?: number }
 		details?: {
 			cachedInputTokens?: number
 			reasoningTokens?: number
@@ -55,12 +61,20 @@ export class MoonshotHandler extends OpenAICompatibleHandler {
 		// Moonshot uses cached_tokens at the top level of raw usage data
 		const rawUsage = usage.raw as { cached_tokens?: number } | undefined
 
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
-			cacheWriteTokens: 0,
-			cacheReadTokens: rawUsage?.cached_tokens ?? usage.details?.cachedInputTokens,
+			inputTokens,
+			outputTokens,
+			cacheWriteTokens: usage.inputTokenDetails?.cacheWriteTokens ?? 0,
+			cacheReadTokens:
+				rawUsage?.cached_tokens ??
+				usage.cachedInputTokens ??
+				usage.inputTokenDetails?.cacheReadTokens ??
+				usage.details?.cachedInputTokens,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 

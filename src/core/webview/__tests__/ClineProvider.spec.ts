@@ -78,34 +78,6 @@ vi.mock("@modelcontextprotocol/sdk/types.js", () => ({
 	},
 }))
 
-vi.mock("../../../services/browser/BrowserSession", () => ({
-	BrowserSession: vi.fn().mockImplementation(() => ({
-		testConnection: vi.fn().mockImplementation(async (url) => {
-			if (url === "http://localhost:9222") {
-				return {
-					success: true,
-					message: "Successfully connected to Chrome",
-					endpoint: "ws://localhost:9222/devtools/browser/123",
-				}
-			} else {
-				return {
-					success: false,
-					message: "Failed to connect to Chrome",
-					endpoint: undefined,
-				}
-			}
-		}),
-	})),
-}))
-
-vi.mock("../../../services/browser/browserDiscovery", () => ({
-	discoverChromeHostUrl: vi.fn().mockResolvedValue("http://localhost:9222"),
-	tryChromeHostUrl: vi.fn().mockImplementation(async (url) => {
-		return url === "http://localhost:9222"
-	}),
-	testBrowserConnection: vi.fn(),
-}))
-
 // Remove duplicate mock - it's already defined below.
 
 const mockAddCustomInstructions = vi.fn().mockResolvedValue("Combined instructions")
@@ -213,6 +185,7 @@ vi.mock("../../task/Task", () => ({
 	Task: vi.fn().mockImplementation((options: any) => ({
 		api: undefined,
 		abortTask: vi.fn(),
+		resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
 		handleWebviewAskResponse: vi.fn(),
 		clineMessages: [],
 		apiConversationHistory: [],
@@ -247,7 +220,7 @@ vi.mock("../../../shared/modes", () => ({
 			slug: "code",
 			name: "Code Mode",
 			roleDefinition: "You are a code assistant",
-			groups: ["read", "edit", "browser"],
+			groups: ["read", "edit"],
 		},
 		{
 			slug: "architect",
@@ -266,7 +239,7 @@ vi.mock("../../../shared/modes", () => ({
 		slug: "code",
 		name: "Code Mode",
 		roleDefinition: "You are a code assistant",
-		groups: ["read", "edit", "browser"],
+		groups: ["read", "edit"],
 	}),
 	getGroupName: vi.fn().mockImplementation((group: string) => {
 		// Return appropriate group names for different tool groups
@@ -275,8 +248,6 @@ vi.mock("../../../shared/modes", () => ({
 				return "Read Tools"
 			case "edit":
 				return "Edit Tools"
-			case "browser":
-				return "Browser Tools"
 			case "mcp":
 				return "MCP Tools"
 			default:
@@ -347,6 +318,7 @@ describe("ClineProvider", () => {
 			const task: any = {
 				api: undefined,
 				abortTask: vi.fn(),
+				resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
 				handleWebviewAskResponse: vi.fn(),
 				clineMessages: [],
 				apiConversationHistory: [],
@@ -535,7 +507,6 @@ describe("ClineProvider", () => {
 
 		const mockState: ExtensionState = {
 			version: "1.0.0",
-			isBrowserSessionActive: false,
 			clineMessages: [],
 			taskHistory: [],
 			shouldShowAnnouncement: false,
@@ -555,21 +526,18 @@ describe("ClineProvider", () => {
 			},
 			alwaysAllowWriteOutsideWorkspace: false,
 			alwaysAllowExecute: false,
-			alwaysAllowBrowser: false,
 			alwaysAllowMcp: false,
 			uriScheme: "vscode",
 			soundEnabled: false,
 			ttsEnabled: false,
 			enableCheckpoints: false,
 			writeDelayMs: 1000,
-			browserViewportSize: "900x600",
 			mcpEnabled: true,
 			mode: defaultModeSlug,
 			customModes: [],
 			experiments: experimentDefault,
 			maxOpenTabsContext: 20,
 			maxWorkspaceFiles: 200,
-			browserToolEnabled: true,
 			telemetrySetting: "unset",
 			showRooIgnoredFiles: false,
 			enableSubfolderRules: false,
@@ -802,7 +770,6 @@ describe("ClineProvider", () => {
 		expect(state).toHaveProperty("alwaysAllowReadOnly")
 		expect(state).toHaveProperty("alwaysAllowWrite")
 		expect(state).toHaveProperty("alwaysAllowExecute")
-		expect(state).toHaveProperty("alwaysAllowBrowser")
 		expect(state).toHaveProperty("taskHistory")
 		expect(state).toHaveProperty("soundEnabled")
 		expect(state).toHaveProperty("ttsEnabled")
@@ -1004,21 +971,6 @@ describe("ClineProvider", () => {
 		expect(provider.providerSettingsManager.activateProfile).toHaveBeenCalledWith({ id: "config-id-123" })
 	})
 
-	test("handles browserToolEnabled setting", async () => {
-		await provider.resolveWebviewView(mockWebviewView)
-		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
-
-		// Test browserToolEnabled
-		await messageHandler({ type: "updateSettings", updatedSettings: { browserToolEnabled: true } })
-		expect(mockContext.globalState.update).toHaveBeenCalledWith("browserToolEnabled", true)
-		expect(mockPostMessage).toHaveBeenCalled()
-
-		// Verify state includes browserToolEnabled
-		const state = await provider.getState()
-		expect(state).toHaveProperty("browserToolEnabled")
-		expect(state.browserToolEnabled).toBe(true) // Default value should be true
-	})
-
 	test("handles showRooIgnoredFiles setting", async () => {
 		await provider.resolveWebviewView(mockWebviewView)
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
@@ -1203,7 +1155,7 @@ describe("ClineProvider", () => {
 				{ ts: 1000, type: "say", say: "user_feedback" }, // User message 1
 				{ ts: 2000, type: "say", say: "tool" }, // Tool message
 				{ ts: 3000, type: "say", say: "text" }, // Message before delete
-				{ ts: 4000, type: "say", say: "browser_action" }, // Message to delete
+				{ ts: 4000, type: "say", say: "tool" }, // Message to delete
 				{ ts: 5000, type: "say", say: "user_feedback" }, // Next user message
 				{ ts: 6000, type: "say", say: "user_feedback" }, // Final message
 			] as ClineMessage[]
@@ -1220,7 +1172,7 @@ describe("ClineProvider", () => {
 			// Setup Task instance with auto-mock from the top of the file
 			const mockCline = new Task(defaultTaskOptions) // Create a new mocked instance
 			mockCline.clineMessages = mockMessages // Set test-specific messages
-			mockCline.apiConversationHistory = mockApiHistory // Set API history
+			mockCline.apiConversationHistory = mockApiHistory as any // Set API history
 			await provider.addClineToStack(mockCline) // Add the mocked instance to the stack
 
 			// Mock getTaskWithId
@@ -1291,7 +1243,7 @@ describe("ClineProvider", () => {
 				{ ts: 1000, type: "say", say: "user_feedback" }, // User message 1
 				{ ts: 2000, type: "say", say: "tool" }, // Tool message
 				{ ts: 3000, type: "say", say: "text" }, // Message before edit
-				{ ts: 4000, type: "say", say: "browser_action" }, // Message to edit
+				{ ts: 4000, type: "say", say: "tool" }, // Message to edit
 				{ ts: 5000, type: "say", say: "user_feedback" }, // Next user message
 				{ ts: 6000, type: "say", say: "user_feedback" }, // Final message
 			] as ClineMessage[]
@@ -1308,7 +1260,7 @@ describe("ClineProvider", () => {
 			// Setup Task instance with auto-mock from the top of the file
 			const mockCline = new Task(defaultTaskOptions) // Create a new mocked instance
 			mockCline.clineMessages = mockMessages // Set test-specific messages
-			mockCline.apiConversationHistory = mockApiHistory // Set API history
+			mockCline.apiConversationHistory = mockApiHistory as any // Set API history
 
 			// Explicitly mock the overwrite methods since they're not being called in the tests
 			mockCline.overwriteClineMessages = vi.fn()
@@ -1484,7 +1436,6 @@ describe("ClineProvider", () => {
 				},
 				mode: "architect",
 				mcpEnabled: false,
-				browserViewportSize: "900x600",
 				experiments: experimentDefault,
 			} as any)
 
@@ -1498,54 +1449,6 @@ describe("ClineProvider", () => {
 					type: "systemPrompt",
 					text: expect.any(String),
 					mode: "architect",
-				}),
-			)
-		})
-
-		// Tests for browser tool support - simplified to focus on behavior
-		test("generates system prompt with different browser tool configurations", async () => {
-			await provider.resolveWebviewView(mockWebviewView)
-			const handler = getMessageHandler()
-
-			// Test 1: Browser tools enabled with compatible model and mode
-			vi.spyOn(provider, "getState").mockResolvedValueOnce({
-				apiConfiguration: {
-					apiProvider: "openrouter",
-				},
-				browserToolEnabled: true,
-				mode: "code", // code mode includes browser tool group
-				experiments: experimentDefault,
-			} as any)
-
-			await handler({ type: "getSystemPrompt", mode: "code" })
-
-			expect(mockPostMessage).toHaveBeenCalledWith(
-				expect.objectContaining({
-					type: "systemPrompt",
-					text: expect.any(String),
-					mode: "code",
-				}),
-			)
-
-			mockPostMessage.mockClear()
-
-			// Test 2: Browser tools disabled
-			vi.spyOn(provider, "getState").mockResolvedValueOnce({
-				apiConfiguration: {
-					apiProvider: "openrouter",
-				},
-				browserToolEnabled: false,
-				mode: "code",
-				experiments: experimentDefault,
-			} as any)
-
-			await handler({ type: "getSystemPrompt", mode: "code" })
-
-			expect(mockPostMessage).toHaveBeenCalledWith(
-				expect.objectContaining({
-					type: "systemPrompt",
-					text: expect.any(String),
-					mode: "code",
 				}),
 			)
 		})
@@ -1644,7 +1547,7 @@ describe("ClineProvider", () => {
 					slug: "code",
 					name: "Code Mode",
 					roleDefinition: "You are a code assistant",
-					groups: ["read", "edit", "browser"],
+					groups: ["read", "edit"],
 				}) // Subsequent calls return default mode
 
 			// Mock provider settings manager
@@ -1843,7 +1746,7 @@ describe("ClineProvider", () => {
 				slug: "code",
 				name: "Code Mode",
 				roleDefinition: "You are a code assistant",
-				groups: ["read", "edit", "browser"],
+				groups: ["read", "edit"],
 			})
 
 			// Mock provider settings manager to throw error
@@ -2092,77 +1995,6 @@ describe("ClineProvider", () => {
 			expect(updateGlobalStateSpy).toHaveBeenCalledWith("listApiConfigMeta", [
 				{ name: "test-config", id: "test-id", apiProvider: "anthropic" },
 			])
-		})
-	})
-
-	describe("browser connection features", () => {
-		beforeEach(async () => {
-			// Reset mocks
-			vi.clearAllMocks()
-			await provider.resolveWebviewView(mockWebviewView)
-		})
-
-		// These mocks are already defined at the top of the file
-
-		test("handles testBrowserConnection with provided URL", async () => {
-			// Get the message handler
-			const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
-
-			// Test with valid URL
-			await messageHandler({
-				type: "testBrowserConnection",
-				text: "http://localhost:9222",
-			})
-
-			// Verify postMessage was called with success result
-			expect(mockPostMessage).toHaveBeenCalledWith(
-				expect.objectContaining({
-					type: "browserConnectionResult",
-					success: true,
-					text: expect.stringContaining("Successfully connected to Chrome"),
-				}),
-			)
-
-			// Reset mock
-			mockPostMessage.mockClear()
-
-			// Test with invalid URL
-			await messageHandler({
-				type: "testBrowserConnection",
-				text: "http://inlocalhost:9222",
-			})
-
-			// Verify postMessage was called with failure result
-			expect(mockPostMessage).toHaveBeenCalledWith(
-				expect.objectContaining({
-					type: "browserConnectionResult",
-					success: false,
-					text: expect.stringContaining("Failed to connect to Chrome"),
-				}),
-			)
-		})
-
-		test("handles testBrowserConnection with auto-discovery", async () => {
-			// Get the message handler
-			const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
-
-			// Test auto-discovery (no URL provided)
-			await messageHandler({
-				type: "testBrowserConnection",
-			})
-
-			// Verify discoverChromeHostUrl was called
-			const { discoverChromeHostUrl } = await import("../../../services/browser/browserDiscovery")
-			expect(discoverChromeHostUrl).toHaveBeenCalled()
-
-			// Verify postMessage was called with success result
-			expect(mockPostMessage).toHaveBeenCalledWith(
-				expect.objectContaining({
-					type: "browserConnectionResult",
-					success: true,
-					text: expect.stringContaining("Auto-discovered and tested connection to Chrome"),
-				}),
-			)
 		})
 	})
 })
@@ -3839,6 +3671,150 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 
 			// Restore the spy
 			vi.mocked(fsUtils.fileExistsAtPath).mockRestore()
+		})
+
+		it("reads v2 envelope format via readRooMessages", async () => {
+			const historyItem = { id: "v2-envelope-task", task: "test task", ts: Date.now() }
+			vi.mocked(mockContext.globalState.get).mockImplementation((key: string) => {
+				if (key === "taskHistory") {
+					return [historyItem]
+				}
+				return undefined
+			})
+
+			const fsUtils = await import("../../../utils/fs")
+			vi.spyOn(fsUtils, "fileExistsAtPath").mockResolvedValue(true)
+
+			const fsp = await import("fs/promises")
+			// First readFile call is consumed by readDelegationMeta (delegation_metadata.json)
+			vi.mocked(fsp.readFile).mockResolvedValueOnce("null" as never)
+			// Second readFile call is consumed by readRooMessages (api_conversation_history.json)
+			vi.mocked(fsp.readFile).mockResolvedValueOnce(
+				JSON.stringify({
+					version: 2,
+					messages: [{ role: "user", content: "hello from v2" }],
+				}) as never,
+			)
+
+			const result = await (provider as any).getTaskWithId("v2-envelope-task")
+
+			expect(result.historyItem).toEqual(historyItem)
+			expect(result.apiConversationHistory).toEqual([{ role: "user", content: "hello from v2" }])
+
+			vi.mocked(fsUtils.fileExistsAtPath).mockRestore()
+		})
+	})
+
+	describe("reopenParentFromDelegation", () => {
+		it("reads/writes Roo messages and appends a tool result for new_task tool-call", async () => {
+			const parentTaskId = "parent-task"
+			const childTaskId = "child-task"
+			const completionResultSummary = "child completed work"
+
+			vi.spyOn(provider, "getTaskWithId").mockImplementation(async (taskId: string) => {
+				if (taskId === parentTaskId) {
+					return {
+						historyItem: { id: parentTaskId, childIds: [] },
+					} as any
+				}
+				return {
+					historyItem: { id: childTaskId, status: "active" },
+				} as any
+			})
+
+			vi.spyOn(provider, "getCurrentTask").mockReturnValue(undefined as any)
+			vi.spyOn(provider, "updateTaskHistory").mockResolvedValue(undefined as any)
+
+			const taskMessages = await import("../../task-persistence/taskMessages")
+			vi.spyOn(taskMessages, "readTaskMessages").mockResolvedValue([])
+			vi.spyOn(taskMessages, "saveTaskMessages").mockResolvedValue(undefined)
+
+			const persistence = await import("../../task-persistence")
+			vi.spyOn(persistence, "readRooMessages").mockResolvedValue([
+				{
+					role: "assistant",
+					content: [{ type: "tool-call", toolCallId: "call_new_task_1", toolName: "new_task", input: {} }],
+					ts: 1,
+				},
+				{ role: "user", content: [{ type: "text", text: "continuation" }], ts: 2 },
+			] as any)
+			const saveRooMessagesSpy = vi.spyOn(persistence, "saveRooMessages").mockResolvedValue(true)
+
+			await provider.reopenParentFromDelegation({ parentTaskId, childTaskId, completionResultSummary })
+
+			expect(persistence.readRooMessages).toHaveBeenCalledWith({
+				taskId: parentTaskId,
+				globalStoragePath: "/test/storage/path",
+			})
+			expect(saveRooMessagesSpy).toHaveBeenCalledTimes(1)
+
+			const savedPayload = saveRooMessagesSpy.mock.calls[0][0]
+			expect(savedPayload.taskId).toBe(parentTaskId)
+			expect(savedPayload.globalStoragePath).toBe("/test/storage/path")
+			expect(savedPayload.messages).toHaveLength(3)
+			const last = savedPayload.messages[2] as any
+			expect(last.role).toBe("tool")
+			expect(last.content[0]).toMatchObject({
+				type: "tool-result",
+				toolCallId: "call_new_task_1",
+				toolName: "new_task",
+			})
+			expect(last.content[0].output.value).toContain(completionResultSummary)
+		})
+
+		it("updates existing trailing tool result instead of appending a duplicate", async () => {
+			const parentTaskId = "parent-task"
+			const childTaskId = "child-task"
+			const completionResultSummary = "updated child summary"
+
+			vi.spyOn(provider, "getTaskWithId").mockImplementation(async (taskId: string) => {
+				if (taskId === parentTaskId) {
+					return {
+						historyItem: { id: parentTaskId, childIds: [] },
+					} as any
+				}
+				return {
+					historyItem: { id: childTaskId, status: "active" },
+				} as any
+			})
+
+			vi.spyOn(provider, "getCurrentTask").mockReturnValue(undefined as any)
+			vi.spyOn(provider, "updateTaskHistory").mockResolvedValue(undefined as any)
+
+			const taskMessages = await import("../../task-persistence/taskMessages")
+			vi.spyOn(taskMessages, "readTaskMessages").mockResolvedValue([])
+			vi.spyOn(taskMessages, "saveTaskMessages").mockResolvedValue(undefined)
+
+			const persistence = await import("../../task-persistence")
+			vi.spyOn(persistence, "readRooMessages").mockResolvedValue([
+				{
+					role: "assistant",
+					content: [{ type: "tool-call", toolCallId: "call_new_task_2", toolName: "new_task", input: {} }],
+					ts: 1,
+				},
+				{
+					role: "tool",
+					content: [
+						{
+							type: "tool-result",
+							toolCallId: "call_new_task_2",
+							toolName: "new_task",
+							output: { type: "text", value: "old summary" },
+						},
+					],
+					ts: 2,
+				},
+			] as any)
+			const saveRooMessagesSpy = vi.spyOn(persistence, "saveRooMessages").mockResolvedValue(true)
+
+			await provider.reopenParentFromDelegation({ parentTaskId, childTaskId, completionResultSummary })
+
+			const savedPayload = saveRooMessagesSpy.mock.calls[0][0]
+			expect(savedPayload.messages).toHaveLength(2)
+			const last = savedPayload.messages[1] as any
+			expect(last.role).toBe("tool")
+			expect(last.content[0].toolCallId).toBe("call_new_task_2")
+			expect(last.content[0].output.value).toContain(completionResultSummary)
 		})
 	})
 })

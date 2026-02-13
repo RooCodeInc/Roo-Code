@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createSambaNova } from "sambanova-ai-provider"
-import { streamText, generateText, ToolSet } from "ai"
+import { streamText, generateText, ToolSet, ModelMessage } from "ai"
 
 import { sambaNovaModels, sambaNovaDefaultModelId, type ModelInfo } from "@roo-code/types"
 
@@ -9,17 +9,19 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import {
 	convertToAiSdkMessages,
 	convertToolsForAiSdk,
-	processAiSdkStreamPart,
+	consumeAiSdkStream,
 	mapToolChoice,
 	handleAiSdkError,
 	flattenAiSdkMessagesToStringContent,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 const SAMBANOVA_DEFAULT_TEMPERATURE = 0.7
 
@@ -71,6 +73,12 @@ export class SambaNovaHandler extends BaseProvider implements SingleCompletionHa
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -83,17 +91,27 @@ export class SambaNovaHandler extends BaseProvider implements SingleCompletionHa
 			}
 		},
 	): ApiStreamUsageChunk {
-		// Extract cache metrics from SambaNova's providerMetadata if available
-		const cacheReadTokens = providerMetadata?.sambanova?.promptCacheHitTokens ?? usage.details?.cachedInputTokens
-		const cacheWriteTokens = providerMetadata?.sambanova?.promptCacheMissTokens
+		// Extract cache metrics from SambaNova's providerMetadata, then v6 fields, then legacy
+		const cacheReadTokens =
+			providerMetadata?.sambanova?.promptCacheHitTokens ??
+			usage.cachedInputTokens ??
+			usage.inputTokenDetails?.cacheReadTokens ??
+			usage.details?.cachedInputTokens
+		const cacheWriteTokens =
+			providerMetadata?.sambanova?.promptCacheMissTokens ?? usage.inputTokenDetails?.cacheWriteTokens
 
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
+			inputTokens,
+			outputTokens,
 			cacheReadTokens,
 			cacheWriteTokens,
-			reasoningTokens: usage.details?.reasoningTokens,
+			reasoningTokens:
+				usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 
@@ -110,27 +128,26 @@ export class SambaNovaHandler extends BaseProvider implements SingleCompletionHa
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { temperature, info } = this.getModel()
 		const languageModel = this.getLanguageModel()
 
-		// Convert messages to AI SDK format
 		// For models that don't support multi-part content (like DeepSeek), flatten messages to string content
 		// SambaNova's DeepSeek models expect string content, not array content
-		const aiSdkMessages = convertToAiSdkMessages(messages, {
-			transform: info.supportsImages ? undefined : flattenAiSdkMessagesToStringContent,
-		})
+		const castMessages = messages as ModelMessage[]
+		const aiSdkMessages = info.supportsImages ? castMessages : flattenAiSdkMessagesToStringContent(castMessages)
 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		// Build the request options
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
 			temperature: this.options.modelTemperature ?? temperature ?? SAMBANOVA_DEFAULT_TEMPERATURE,
 			maxOutputTokens: this.getMaxOutputTokens(),
@@ -142,21 +159,12 @@ export class SambaNovaHandler extends BaseProvider implements SingleCompletionHa
 		const result = streamText(requestOptions)
 
 		try {
-			// Process the full stream to get all events including reasoning
-			for await (const part of result.fullStream) {
-				for (const chunk of processAiSdkStreamPart(part)) {
-					yield chunk
-				}
-			}
-
-			// Yield usage metrics at the end, including cache metrics from providerMetadata
-			const usage = await result.usage
-			const providerMetadata = await result.providerMetadata
-			if (usage) {
-				yield this.processUsageMetrics(usage, providerMetadata as any)
-			}
+			const processUsage = this.processUsageMetrics.bind(this)
+			yield* consumeAiSdkStream(result, async function* () {
+				const [usage, providerMetadata] = await Promise.all([result.usage, result.providerMetadata])
+				yield processUsage(usage, providerMetadata as Parameters<typeof processUsage>[1])
+			})
 		} catch (error) {
-			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
 			throw handleAiSdkError(error, "SambaNova")
 		}
 	}

@@ -9,16 +9,18 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import {
 	convertToAiSdkMessages,
 	convertToolsForAiSdk,
-	processAiSdkStreamPart,
+	consumeAiSdkStream,
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
+import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 const XAI_DEFAULT_TEMPERATURE = 0
 
@@ -80,6 +82,12 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
+			totalInputTokens?: number
+			totalOutputTokens?: number
+			cachedInputTokens?: number
+			reasoningTokens?: number
+			inputTokenDetails?: { cacheReadTokens?: number; cacheWriteTokens?: number }
+			outputTokenDetails?: { reasoningTokens?: number }
 			details?: {
 				cachedInputTokens?: number
 				reasoningTokens?: number
@@ -91,17 +99,25 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 			}
 		},
 	): ApiStreamUsageChunk {
-		// Extract cache metrics from xAI's providerMetadata if available
-		// xAI supports prompt caching through prompt_tokens_details.cached_tokens
-		const cacheReadTokens = providerMetadata?.xai?.cachedPromptTokens ?? usage.details?.cachedInputTokens
+		// Extract cache metrics from xAI's providerMetadata, then v6 fields, then legacy
+		const cacheReadTokens =
+			providerMetadata?.xai?.cachedPromptTokens ??
+			usage.cachedInputTokens ??
+			usage.inputTokenDetails?.cacheReadTokens ??
+			usage.details?.cachedInputTokens
 
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 		return {
 			type: "usage",
-			inputTokens: usage.inputTokens || 0,
-			outputTokens: usage.outputTokens || 0,
+			inputTokens,
+			outputTokens,
 			cacheReadTokens,
-			cacheWriteTokens: undefined, // xAI doesn't report cache write tokens separately
-			reasoningTokens: usage.details?.reasoningTokens,
+			cacheWriteTokens: usage.inputTokenDetails?.cacheWriteTokens, // xAI doesn't typically report cache write tokens
+			reasoningTokens:
+				usage.reasoningTokens ?? usage.outputTokenDetails?.reasoningTokens ?? usage.details?.reasoningTokens,
+			totalInputTokens: inputTokens,
+			totalOutputTokens: outputTokens,
 		}
 	}
 
@@ -118,23 +134,24 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { temperature, reasoning } = this.getModel()
 		const languageModel = this.getLanguageModel()
 
 		// Convert messages to AI SDK format
-		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const aiSdkMessages = messages
 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+		applyToolCacheOptions(aiSdkTools as Parameters<typeof applyToolCacheOptions>[0], metadata?.toolProviderOptions)
 
 		// Build the request options
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
+			system: systemPrompt || undefined,
 			messages: aiSdkMessages,
 			temperature: this.options.modelTemperature ?? temperature ?? XAI_DEFAULT_TEMPERATURE,
 			maxOutputTokens: this.getMaxOutputTokens(),
@@ -147,21 +164,12 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 		const result = streamText(requestOptions)
 
 		try {
-			// Process the full stream to get all events including reasoning
-			for await (const part of result.fullStream) {
-				for (const chunk of processAiSdkStreamPart(part)) {
-					yield chunk
-				}
-			}
-
-			// Yield usage metrics at the end, including cache metrics from providerMetadata
-			const usage = await result.usage
-			const providerMetadata = await result.providerMetadata
-			if (usage) {
-				yield this.processUsageMetrics(usage, providerMetadata as any)
-			}
+			const processUsage = this.processUsageMetrics.bind(this)
+			yield* consumeAiSdkStream(result, async function* () {
+				const [usage, providerMetadata] = await Promise.all([result.usage, result.providerMetadata])
+				yield processUsage(usage, providerMetadata as Parameters<typeof processUsage>[1])
+			})
 		} catch (error) {
-			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
 			throw handleAiSdkError(error, "xAI")
 		}
 	}

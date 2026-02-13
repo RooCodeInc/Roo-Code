@@ -1,3 +1,4 @@
+import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // npx vitest run src/api/providers/__tests__/gemini.spec.ts
 
 import { NoOutputGeneratedError } from "ai"
@@ -102,7 +103,7 @@ describe("GeminiHandler", () => {
 	})
 
 	describe("createMessage", () => {
-		const mockMessages: Anthropic.Messages.MessageParam[] = [
+		const mockMessages: RooMessage[] = [
 			{
 				role: "user",
 				content: "Hello",
@@ -377,7 +378,7 @@ describe("GeminiHandler", () => {
 	})
 
 	describe("error telemetry", () => {
-		const mockMessages: Anthropic.Messages.MessageParam[] = [
+		const mockMessages: RooMessage[] = [
 			{
 				role: "user",
 				content: "Hello",
@@ -469,6 +470,170 @@ describe("GeminiHandler", () => {
 
 			// Telemetry should have been captured before the error was thrown
 			expect(mockCaptureException).toHaveBeenCalled()
+		})
+	})
+
+	describe("AI SDK v6 usage field paths", () => {
+		const mockMessages: RooMessage[] = [
+			{
+				role: "user",
+				content: "Hello",
+			},
+		]
+		const systemPrompt = "You are a helpful assistant"
+
+		function setupStream(usage: Record<string, unknown>) {
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "reply" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve(usage),
+				providerMetadata: Promise.resolve({}),
+			})
+		}
+
+		describe("cache tokens", () => {
+			it("should read cache tokens from v6 top-level cachedInputTokens", async () => {
+				setupStream({ inputTokens: 100, outputTokens: 50, cachedInputTokens: 30 })
+
+				const stream = handler.createMessage(systemPrompt, mockMessages)
+				const chunks = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c) => c.type === "usage")
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk!.cacheReadTokens).toBe(30)
+			})
+
+			it("should read cache tokens from v6 inputTokenDetails.cacheReadTokens", async () => {
+				setupStream({
+					inputTokens: 100,
+					outputTokens: 50,
+					inputTokenDetails: { cacheReadTokens: 25 },
+				})
+
+				const stream = handler.createMessage(systemPrompt, mockMessages)
+				const chunks = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c) => c.type === "usage")
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk!.cacheReadTokens).toBe(25)
+			})
+
+			it("should prefer v6 top-level cachedInputTokens over legacy details", async () => {
+				setupStream({
+					inputTokens: 100,
+					outputTokens: 50,
+					cachedInputTokens: 30,
+					details: { cachedInputTokens: 20 },
+				})
+
+				const stream = handler.createMessage(systemPrompt, mockMessages)
+				const chunks = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c) => c.type === "usage")
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk!.cacheReadTokens).toBe(30)
+			})
+
+			it("should fall back to legacy details.cachedInputTokens", async () => {
+				setupStream({
+					inputTokens: 100,
+					outputTokens: 50,
+					details: { cachedInputTokens: 20 },
+				})
+
+				const stream = handler.createMessage(systemPrompt, mockMessages)
+				const chunks = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c) => c.type === "usage")
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk!.cacheReadTokens).toBe(20)
+			})
+		})
+
+		describe("reasoning tokens", () => {
+			it("should read reasoning tokens from v6 top-level reasoningTokens", async () => {
+				setupStream({ inputTokens: 100, outputTokens: 50, reasoningTokens: 40 })
+
+				const stream = handler.createMessage(systemPrompt, mockMessages)
+				const chunks = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c) => c.type === "usage")
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk!.reasoningTokens).toBe(40)
+			})
+
+			it("should read reasoning tokens from v6 outputTokenDetails.reasoningTokens", async () => {
+				setupStream({
+					inputTokens: 100,
+					outputTokens: 50,
+					outputTokenDetails: { reasoningTokens: 35 },
+				})
+
+				const stream = handler.createMessage(systemPrompt, mockMessages)
+				const chunks = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c) => c.type === "usage")
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk!.reasoningTokens).toBe(35)
+			})
+
+			it("should prefer v6 top-level reasoningTokens over legacy details", async () => {
+				setupStream({
+					inputTokens: 100,
+					outputTokens: 50,
+					reasoningTokens: 40,
+					details: { reasoningTokens: 15 },
+				})
+
+				const stream = handler.createMessage(systemPrompt, mockMessages)
+				const chunks = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c) => c.type === "usage")
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk!.reasoningTokens).toBe(40)
+			})
+
+			it("should fall back to legacy details.reasoningTokens", async () => {
+				setupStream({
+					inputTokens: 100,
+					outputTokens: 50,
+					details: { reasoningTokens: 15 },
+				})
+
+				const stream = handler.createMessage(systemPrompt, mockMessages)
+				const chunks = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				const usageChunk = chunks.find((c) => c.type === "usage")
+				expect(usageChunk).toBeDefined()
+				expect(usageChunk!.reasoningTokens).toBe(15)
+			})
 		})
 	})
 })

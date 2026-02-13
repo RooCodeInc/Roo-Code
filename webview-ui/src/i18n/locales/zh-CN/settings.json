@@ -31,7 +31,6 @@
 		"mcp": "MCP 服务",
 		"worktrees": "Worktrees",
 		"autoApprove": "自动批准",
-		"browser": "计算机交互",
 		"checkpoints": "存档点",
 		"notifications": "通知",
 		"contextManagement": "上下文",
@@ -240,10 +239,6 @@
 				"label": "包含受保护的文件",
 				"description": "允许 Roo 创建和编辑受保护的文件（如 .rooignore 和 .roo/ 配置文件），无需批准。"
 			}
-		},
-		"browser": {
-			"label": "浏览器",
-			"description": "自动执行浏览器操作而无需批准 — 注意：仅当模型支持计算机功能调用时适用"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -590,34 +585,6 @@
 			"placeholder": "默认：claude",
 			"maxTokensLabel": "最大输出 Token",
 			"maxTokensDescription": "Claude Code 响应的最大输出 Token 数量。默认为 8000。"
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "启用浏览器工具",
-			"description": "启用后，若模型支持计算机功能调用，Roo 可以使用浏览器与网站交互。 <0>了解更多</0>"
-		},
-		"viewport": {
-			"label": "视口大小",
-			"description": "选择浏览器交互的视口大小。这会影响网站的显示方式和交互方式。",
-			"options": {
-				"largeDesktop": "大桌面 (1280x800)",
-				"smallDesktop": "小桌面 (900x600)",
-				"tablet": "平板 (768x1024)",
-				"mobile": "移动设备 (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "截图质量",
-			"description": "调整浏览器的截图质量。更高的值提供更清晰的截图，但会增加 token 消耗。"
-		},
-		"remote": {
-			"label": "使用远程浏览器连接",
-			"description": "连接到启用远程调试的 Chrome 浏览器 (--remote-debugging-port=9222)。",
-			"urlPlaceholder": "自定义 URL（例如 http://localhost:9222）",
-			"testButton": "测试连接",
-			"testingButton": "测试中...",
-			"instructions": "输入 DevTools 协议主机地址或留空以自动发现本地 Chrome 实例。测试连接按钮将尝试使用自定义 URL（如果提供），或者如果字段为空则自动发现。"
 		}
 	},
 	"checkpoints": {

@@ -1,3 +1,4 @@
+import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 import { Anthropic } from "@anthropic-ai/sdk"
 
 import type { ModelInfo } from "@roo-code/types"
@@ -7,7 +8,7 @@ import type { ApiStream } from "../../transform/stream"
 
 // Create a concrete implementation for testing
 class TestProvider extends BaseProvider {
-	createMessage(_systemPrompt: string, _messages: Anthropic.Messages.MessageParam[]): ApiStream {
+	createMessage(_systemPrompt: string, _messages: RooMessage[]): ApiStream {
 		throw new Error("Not implemented")
 	}
 
