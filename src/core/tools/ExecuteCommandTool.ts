@@ -99,6 +99,15 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 					task.didRejectTool = true
 				}
 
+				this._rpiObservationExtras = {
+					success: !rejected,
+					error: rejected ? "Rejected by user" : undefined,
+					summary: rejected
+						? `Command rejected by user: ${unescapedCommand.slice(0, 80)}`
+						: `Executed: ${unescapedCommand.slice(0, 80)}`,
+					outputSnippet: typeof result === "string" ? result.slice(-500) : undefined,
+				}
+
 				pushToolResult(result)
 			} catch (error: unknown) {
 				const status: CommandExecutionStatus = { executionId, status: "fallback" }

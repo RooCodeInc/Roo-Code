@@ -21,7 +21,7 @@ export type ClaudeCodeAcpModelId = keyof typeof claudeCodeAcpModels
 export const claudeCodeAcpModels: Record<string, ModelInfo> = {
 	"claude-opus-4-6": {
 		maxTokens: 128_000,
-		contextWindow: 500_000,
+		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,
 		inputPrice: 5.0,

@@ -208,6 +208,7 @@ export const globalSettingsSchema = z.object({
 	rpiAutopilotEnabled: z.boolean().optional(),
 	rpiCouncilEngineEnabled: z.boolean().optional(),
 	rpiCouncilApiConfigId: z.string().optional(),
+	rpiVerificationStrictness: z.enum(["lenient", "standard", "strict"]).optional(),
 
 	mode: z.string().optional(),
 	modeApiConfigs: z.record(z.string(), z.string()).optional(),

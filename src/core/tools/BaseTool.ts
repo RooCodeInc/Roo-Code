@@ -2,6 +2,7 @@ import type { ToolName } from "@roo-code/types"
 
 import { Task } from "../task/Task"
 import type { ToolUse, HandleError, PushToolResult, AskApproval, NativeToolArgs } from "../../shared/tools"
+import type { RpiToolObservation } from "../rpi/RpiAutopilot"
 
 /**
  * Callbacks passed to tool execution
@@ -37,6 +38,12 @@ export abstract class BaseTool<TName extends ToolName> {
 	 * Used by hasPathStabilized() to prevent displaying truncated paths from partial-json parsing.
 	 */
 	protected lastSeenPartialPath: string | undefined = undefined
+
+	/**
+	 * Extra observation data set by tool subclasses during execute().
+	 * Merged into the observation built by buildObservation() after execution.
+	 */
+	protected _rpiObservationExtras: Partial<RpiToolObservation> = {}
 
 	/**
 	 * Execute the tool with typed parameters.
@@ -96,6 +103,29 @@ export abstract class BaseTool<TName extends ToolName> {
 	 */
 	resetPartialState(): void {
 		this.lastSeenPartialPath = undefined
+	}
+
+	/**
+	 * Build an RPI observation from execution results.
+	 *
+	 * Subclasses can set `this._rpiObservationExtras` during execute() to enrich
+	 * the observation with tool-specific data (exitCode, diffSummary, matchCount, etc.).
+	 *
+	 * @param params - The tool parameters used during execution
+	 * @param error - The execution error, if any
+	 * @returns An RpiToolObservation describing the execution outcome
+	 */
+	protected buildObservation(params: Record<string, unknown> | undefined, error?: Error): RpiToolObservation {
+		const pathValue = params?.path
+		return {
+			toolName: this.name,
+			timestamp: new Date().toISOString(),
+			success: !error,
+			error: error ? error.message.slice(0, 200) : undefined,
+			summary: error ? `Failed: ${error.message.slice(0, 150)}` : `${this.name} completed`,
+			filesAffected: typeof pathValue === "string" ? [pathValue] : undefined,
+			...this._rpiObservationExtras,
+		}
 	}
 
 	/**
@@ -169,7 +199,12 @@ export abstract class BaseTool<TName extends ToolName> {
 			executionError = error instanceof Error ? error : new Error(String(error))
 			throw error
 		} finally {
-			await (task as any).onRpiToolFinish?.(this.name, executionError)
+			const observation = this.buildObservation(
+				typeof params === "object" && params !== null ? (params as Record<string, unknown>) : undefined,
+				executionError,
+			)
+			await (task as any).onRpiToolFinish?.(this.name, observation)
+			this._rpiObservationExtras = {}
 		}
 	}
 }

@@ -134,7 +134,7 @@ import { MessageManager } from "../message-manager"
 import { validateAndFixToolResultIds } from "./validateToolResultIds"
 import { mergeConsecutiveApiMessages } from "./mergeConsecutiveApiMessages"
 import { appendEnvironmentDetails, removeEnvironmentDetailsBlocks } from "./appendEnvironmentDetails"
-import { RpiAutopilot } from "../rpi/RpiAutopilot"
+import { RpiAutopilot, type RpiToolObservation } from "../rpi/RpiAutopilot"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -4778,6 +4778,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				getTaskText: () => this.metadata.task,
 				getApiConfiguration: () => this.getRpiCouncilApiConfiguration(),
 				isCouncilEngineEnabled: () => this.isRpiCouncilEngineEnabled(),
+				getVerificationStrictness: () => {
+					const provider = this.providerRef.deref()
+					const value = provider?.contextProxy.getValue("rpiVerificationStrictness")
+					return value === "strict" || value === "standard" || value === "lenient" ? value : "lenient"
+				},
 				onCouncilEvent: (event) => {
 					void this.handleRpiCouncilEvent(event)
 				},
@@ -4895,13 +4900,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
-	public async onRpiToolFinish(toolName: string, error?: Error): Promise<void> {
+	public async onRpiToolFinish(toolName: string, observation: RpiToolObservation): Promise<void> {
 		try {
 			if (!this.isRpiAutopilotEnabled()) {
 				return
 			}
 			const autopilot = await this.getRpiAutopilot()
-			await autopilot.onToolFinish(toolName, error)
+			await autopilot.onToolFinish(toolName, observation)
 		} catch (finishError) {
 			console.error(
 				`[Task#onRpiToolFinish] Failed: ${finishError instanceof Error ? finishError.message : String(finishError)}`,

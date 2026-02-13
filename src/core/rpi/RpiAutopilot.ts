@@ -3,12 +3,52 @@ import * as path from "path"
 import type { ProviderSettings } from "@roo-code/types"
 
 import { type RpiCouncilResult, RpiCouncilEngine, type RpiCouncilInput } from "./engine/RpiCouncilEngine"
+import { RpiCorrectionEngine, type RpiCorrectionSuggestion } from "./engine/RpiCorrectionEngine"
+import { RpiVerificationEngine } from "./engine/RpiVerificationEngine"
+import { RpiMemory } from "./RpiMemory"
 
 type RpiStrategy = "quick" | "standard" | "full"
 type RpiPhase = "discovery" | "planning" | "implementation" | "verification" | "done"
 type RpiCouncilPhase = Exclude<RpiPhase, "implementation" | "done">
 
 type RpiEventLevel = "info" | "warn" | "error"
+
+export interface RpiToolObservation {
+	toolName: string
+	timestamp: string
+	success: boolean
+	error?: string
+	summary: string
+	outputSnippet?: string
+	filesAffected?: string[]
+	exitCode?: number
+	diffSummary?: string
+	matchCount?: number
+}
+
+interface RpiTaskStep {
+	id: string
+	description: string
+	status: "pending" | "in_progress" | "completed" | "blocked" | "skipped"
+	phase: RpiPhase
+	toolsExpected?: string[]
+	toolsUsed: string[]
+	observationIds: number[]
+	outcome?: string
+	blockedReason?: string
+}
+
+interface RpiTaskPlan {
+	version: 2
+	taskSummary: string
+	decompositionSource: "council" | "heuristic"
+	steps: RpiTaskStep[]
+	currentStepIndex: number
+	lastUpdatedAt: string
+}
+
+const MAX_OBSERVATIONS = 20
+const MAX_PROGRESS_EVENTS = 30
 
 interface RpiState {
 	version: 1
@@ -29,6 +69,10 @@ interface RpiState {
 	lastToolAt?: string
 	lastUpdatedAt: string
 	createdAt: string
+	observations: RpiToolObservation[]
+	lastObservation?: RpiToolObservation
+	observationCount: number
+	stepAttempts: Record<string, number>
 }
 
 interface RpiAutopilotContext {
@@ -38,6 +82,7 @@ interface RpiAutopilotContext {
 	getTaskText: () => string | undefined
 	getApiConfiguration: () => Promise<ProviderSettings | undefined>
 	isCouncilEngineEnabled: () => boolean
+	getVerificationStrictness?: () => "lenient" | "standard" | "strict"
 	onCouncilEvent?: (event: {
 		phase: RpiCouncilPhase
 		trigger: "phase_change" | "completion_attempt" | "complexity_threshold"
@@ -95,12 +140,21 @@ export class RpiAutopilot {
 	private initialized = false
 	private ioQueue: Promise<void> = Promise.resolve()
 	private readonly councilEngine: RpiCouncilEngine
+	private readonly correctionEngine: RpiCorrectionEngine
+	private readonly verificationEngine: RpiVerificationEngine
+	private readonly memory: RpiMemory
+	private progressEvents: string[] = []
+	private taskPlan?: RpiTaskPlan
+	private pendingCorrectionHint?: RpiCorrectionSuggestion
 
 	constructor(
 		private readonly context: RpiAutopilotContext,
 		councilEngine?: RpiCouncilEngine,
 	) {
 		this.councilEngine = councilEngine ?? new RpiCouncilEngine()
+		this.correctionEngine = new RpiCorrectionEngine()
+		this.verificationEngine = new RpiVerificationEngine()
+		this.memory = new RpiMemory(context.cwd)
 	}
 
 	async ensureInitialized(): Promise<void> {
@@ -130,6 +184,25 @@ export class RpiAutopilot {
 				}
 			}
 
+			// Initialize dynamic task plan if not yet created
+			if (!this.taskPlan && this.state) {
+				this.taskPlan = this.heuristicDecompose(taskText, mode)
+			}
+
+			// Recall relevant memories from cross-task memory
+			if (taskText) {
+				try {
+					const memories = await this.memory.recall(taskText)
+					if (memories.length > 0) {
+						for (const mem of memories) {
+							this.appendProgress(`Memory recalled [${mem.type}]: ${mem.content}`)
+						}
+					}
+				} catch {
+					// Memory recall is best-effort, don't block initialization
+				}
+			}
+
 			await this.syncArtifacts()
 			this.initialized = true
 			if (this.state) {
@@ -147,16 +220,43 @@ export class RpiAutopilot {
 			return undefined
 		}
 
-		const completed = this.state.completedPhases.join(", ") || "none"
-		return [
-			"RPI autopilot is active and auto-managed.",
-			`Current strategy: ${this.state.strategy}.`,
-			`Current phase: ${this.state.phase}.`,
-			`Completed phases: ${completed}.`,
+		const plan = this.taskPlan
+		const currentStep = plan?.steps[plan.currentStepIndex]
+		const pendingSteps = plan?.steps.filter((s) => s.status === "pending" || s.status === "in_progress")
+		const completedCount = plan?.steps.filter((s) => s.status === "completed").length ?? 0
+		const totalSteps = plan?.steps.length ?? 0
+
+		const lines: string[] = [
+			`RPI autopilot active. Strategy: ${this.state.strategy}. Phase: ${this.state.phase}.`,
 			`Council engine: ${this.context.isCouncilEngineEnabled() ? "enabled" : "disabled"}.`,
-			`Before major decisions, align with ${this.relativeTaskPlanPath}.`,
-			`Keep durable notes in ${this.relativeFindingsPath} and ${this.relativeProgressPath}.`,
-		].join(" ")
+		]
+
+		// Attention mechanism: current step and next steps
+		if (currentStep) {
+			lines.push(`CURRENT STEP [${completedCount + 1}/${totalSteps}]: ${currentStep.description}`)
+		}
+		if (pendingSteps && pendingSteps.length > 1) {
+			const next = pendingSteps
+				.slice(1, 3)
+				.map((s) => s.description)
+				.join("; ")
+			lines.push(`NEXT: ${next}`)
+		}
+
+		// Last observation for continuity
+		if (this.state.lastObservation) {
+			lines.push(`Last result: ${this.state.lastObservation.summary}`)
+		}
+
+		// Correction hint if pending
+		if (this.pendingCorrectionHint) {
+			lines.push(`CORRECTION: ${this.pendingCorrectionHint.reasoning}`)
+		}
+
+		// References to artifacts
+		lines.push(`Plan: ${this.relativeTaskPlanPath}. Notes: ${this.relativeFindingsPath}.`)
+
+		return lines.join(" ")
 	}
 
 	async onToolStart(toolName: string, params?: Record<string, unknown>): Promise<void> {
@@ -197,9 +297,9 @@ export class RpiAutopilot {
 			}
 
 			if (params?.path && typeof params.path === "string" && WRITE_TOOLS.has(toolName)) {
-				await this.appendProgress(`Tool \`${toolName}\` started on \`${params.path}\`.`)
+				this.appendProgress(`Tool \`${toolName}\` started on \`${params.path}\`.`)
 			} else if (IMPLEMENTATION_TOOLS.has(toolName)) {
-				await this.appendProgress(`Tool \`${toolName}\` started.`)
+				this.appendProgress(`Tool \`${toolName}\` started.`)
 			}
 
 			if (currentPhase !== previousPhase) {
@@ -220,7 +320,7 @@ export class RpiAutopilot {
 		})
 	}
 
-	async onToolFinish(toolName: string, error?: Error): Promise<void> {
+	async onToolFinish(toolName: string, observation: RpiToolObservation): Promise<void> {
 		await this.ensureInitialized()
 		if (!this.state) {
 			return
@@ -233,12 +333,63 @@ export class RpiAutopilot {
 
 			this.state.lastUpdatedAt = new Date().toISOString()
 
-			if (error) {
-				await this.appendProgress(`Tool \`${toolName}\` failed: ${error.message}`)
-				await this.appendFinding("error", `Tool \`${toolName}\` failed: ${error.message}`)
-			} else if (IMPLEMENTATION_TOOLS.has(toolName) || PLANNING_TOOLS.has(toolName)) {
-				await this.appendProgress(`Tool \`${toolName}\` completed successfully.`)
+			// Store observation in rolling window
+			this.state.observations.push(observation)
+			if (this.state.observations.length > MAX_OBSERVATIONS) {
+				this.state.observations.shift()
 			}
+			this.state.lastObservation = observation
+			this.state.observationCount += 1
+
+			// Rich progress logging based on observation
+			if (!observation.success) {
+				this.appendProgress(`Tool \`${toolName}\` FAILED → ${observation.summary}`)
+				await this.appendFinding(
+					"error",
+					`Tool \`${toolName}\` failed: ${observation.error ?? observation.summary}`,
+				)
+			} else if (IMPLEMENTATION_TOOLS.has(toolName) || PLANNING_TOOLS.has(toolName)) {
+				this.appendProgress(`Tool \`${toolName}\` → ${observation.summary}`)
+			}
+
+			// Correction engine: analyze failures and suggest next action
+			if (!observation.success) {
+				const stepKey = this.taskPlan?.steps[this.taskPlan.currentStepIndex]?.id ?? toolName
+				this.state.stepAttempts[stepKey] = (this.state.stepAttempts[stepKey] ?? 0) + 1
+
+				const correction = this.correctionEngine.analyze({
+					failedToolName: toolName,
+					errorMessage: observation.error ?? "Unknown error",
+					observation,
+					recentObservations: this.state.observations.slice(-5),
+					attemptCount: this.state.stepAttempts[stepKey],
+				})
+
+				this.pendingCorrectionHint = correction
+				await this.appendFinding("warn", `Correction (L${correction.escalationLevel}): ${correction.reasoning}`)
+
+				// Phase regression if suggested
+				if (correction.action === "phase_regression" && this.state.phase === "implementation") {
+					const previousPhase = this.state.phase
+					this.state.phase = "discovery"
+					this.notifyAutopilotEvent({
+						status: "phase_changed",
+						phase: "discovery",
+						previousPhase,
+						trigger: "correction_regression",
+					})
+				}
+			} else {
+				this.pendingCorrectionHint = undefined
+				// Reset attempt count on success
+				const stepKey = this.taskPlan?.steps[this.taskPlan.currentStepIndex]?.id
+				if (stepKey) {
+					this.state.stepAttempts[stepKey] = 0
+				}
+			}
+
+			// Auto-advance dynamic plan steps based on observation
+			this.autoAdvanceStep(observation)
 
 			await this.syncArtifacts()
 		})
@@ -276,17 +427,31 @@ export class RpiAutopilot {
 			}
 
 			const currentMode = (await this.context.getMode()) || this.state.modeAtStart
-			const requiresImplementationEvidence = MODES_REQUIRING_IMPLEMENTATION_EVIDENCE.has(currentMode)
 			const hasImplementationEvidence = this.state.writeOps > 0 || this.state.commandOps > 0
 
 			if (this.shouldRunVerificationCouncil(currentMode, hasImplementationEvidence)) {
 				await this.maybeRunCouncilForPhase("verification", "completion_attempt")
 			}
 
-			if (requiresImplementationEvidence && !hasImplementationEvidence) {
+			// Run verification engine with quality gates
+			const strictness = this.context.getVerificationStrictness?.() ?? "lenient"
+			const verification = this.verificationEngine.evaluate({
+				observations: this.state.observations,
+				taskText: this.context.getTaskText() ?? "",
+				mode: currentMode,
+				strictness,
+				writeOps: this.state.writeOps,
+				commandOps: this.state.commandOps,
+			})
+
+			if (!verification.passed) {
+				const failed = verification.checks
+					.filter((c) => c.status === "failed")
+					.map((c) => `- ${c.name}: ${c.detail}`)
+					.join("\n")
 				this.state.lastUpdatedAt = new Date().toISOString()
 				await this.syncArtifacts()
-				return `RPI autopilot blocked completion: no implementation evidence yet. Continue with code or command execution before finishing.`
+				return `RPI verification failed:\n${failed}\n\nSuggestions:\n${verification.suggestions.join("\n")}`
 			}
 
 			this.completePhase("implementation")
@@ -312,8 +477,40 @@ export class RpiAutopilot {
 			this.state.phase = "done"
 			this.completePhase("done")
 			this.state.lastUpdatedAt = new Date().toISOString()
-			await this.appendProgress("Task completion accepted by user.")
+			this.appendProgress("Task completion accepted by user.")
 			await this.syncArtifacts()
+
+			// Save key findings to cross-task memory
+			try {
+				const taskSummary = this.state.taskSummary
+				const tags = this.extractKeywordsForMemory(taskSummary)
+
+				if (this.state.observationCount > 0) {
+					await this.memory.remember({
+						taskId: this.context.taskId,
+						type: "pattern",
+						content: `Completed: ${taskSummary} (${this.state.writeOps} writes, ${this.state.commandOps} cmds, strategy: ${this.state.strategy})`,
+						tags,
+						source: "completion",
+					})
+				}
+
+				// Remember any correction patterns as pitfalls
+				if (this.pendingCorrectionHint) {
+					await this.memory.remember({
+						taskId: this.context.taskId,
+						type: "pitfall",
+						content: this.pendingCorrectionHint.reasoning,
+						tags,
+						source: "correction",
+					})
+				}
+
+				await this.memory.prune()
+			} catch {
+				// Memory is best-effort
+			}
+
 			this.notifyAutopilotEvent({
 				status: "phase_changed",
 				phase: "done",
@@ -377,10 +574,6 @@ export class RpiAutopilot {
 
 	private get relativeFindingsPath(): string {
 		return path.posix.join(this.relativeBaseDir, "findings.md")
-	}
-
-	private get relativeProgressPath(): string {
-		return path.posix.join(this.relativeBaseDir, "progress.md")
 	}
 
 	private queueWrite(operation: () => Promise<void>): Promise<void> {
@@ -449,6 +642,196 @@ export class RpiAutopilot {
 		return ["discovery", "planning", "implementation", "verification"]
 	}
 
+	private heuristicDecompose(taskText: string, _mode: string): RpiTaskPlan {
+		const steps: RpiTaskStep[] = []
+		const normalized = taskText.toLowerCase()
+		let stepId = 0
+		const nextId = () => `s${++stepId}`
+
+		const strategy = this.state?.strategy ?? "standard"
+
+		// 1. Always: Understand context (unless quick)
+		if (strategy !== "quick") {
+			steps.push({
+				id: nextId(),
+				description: "Understand the relevant codebase context",
+				status: "pending",
+				phase: "discovery",
+				toolsExpected: ["read_file", "search_files", "list_files"],
+				toolsUsed: [],
+				observationIds: [],
+			})
+
+			// If task mentions specific files, add a read step
+			const fileRefs = this.extractFileReferences(taskText)
+			if (fileRefs.length > 0) {
+				steps.push({
+					id: nextId(),
+					description: `Read key files: ${fileRefs.slice(0, 5).join(", ")}`,
+					status: "pending",
+					phase: "discovery",
+					toolsExpected: ["read_file"],
+					toolsUsed: [],
+					observationIds: [],
+				})
+			}
+
+			// 2. Planning step for non-quick strategies
+			steps.push({
+				id: nextId(),
+				description: "Plan the implementation approach",
+				status: "pending",
+				phase: "planning",
+				toolsExpected: ["update_todo_list"],
+				toolsUsed: [],
+				observationIds: [],
+			})
+		}
+
+		// 3. Implementation (based on keywords)
+		if (
+			normalized.includes("refactor") ||
+			normalized.includes("fix") ||
+			normalized.includes("implement") ||
+			normalized.includes("add") ||
+			normalized.includes("create") ||
+			normalized.includes("update")
+		) {
+			steps.push({
+				id: nextId(),
+				description: "Implement the requested changes",
+				status: strategy === "quick" ? "pending" : "pending",
+				phase: "implementation",
+				toolsExpected: ["write_to_file", "apply_diff", "execute_command"],
+				toolsUsed: [],
+				observationIds: [],
+			})
+		} else {
+			// Generic implementation step
+			steps.push({
+				id: nextId(),
+				description: "Execute the task",
+				status: "pending",
+				phase: "implementation",
+				toolsUsed: [],
+				observationIds: [],
+			})
+		}
+
+		if (normalized.includes("test")) {
+			steps.push({
+				id: nextId(),
+				description: "Write or update tests",
+				status: "pending",
+				phase: "implementation",
+				toolsExpected: ["write_to_file", "execute_command"],
+				toolsUsed: [],
+				observationIds: [],
+			})
+		}
+
+		// 4. Always: Verify
+		steps.push({
+			id: nextId(),
+			description: "Verify changes work correctly",
+			status: "pending",
+			phase: "verification",
+			toolsExpected: ["execute_command"],
+			toolsUsed: [],
+			observationIds: [],
+		})
+
+		// Mark first step as in_progress
+		if (steps.length > 0) {
+			steps[0].status = "in_progress"
+		}
+
+		return {
+			version: 2,
+			taskSummary: this.state?.taskSummary ?? this.summarizeTask(taskText),
+			decompositionSource: "heuristic",
+			steps,
+			currentStepIndex: 0,
+			lastUpdatedAt: new Date().toISOString(),
+		}
+	}
+
+	private extractKeywordsForMemory(text: string): string[] {
+		return text
+			.toLowerCase()
+			.replace(/[^a-z0-9\s_-]/g, " ")
+			.split(/\s+/)
+			.filter((w) => w.length > 2)
+			.slice(0, 10)
+	}
+
+	private extractFileReferences(text: string): string[] {
+		const filePattern =
+			/(?:^|\s|[`"'(])([a-zA-Z0-9_\-./\\]+\.(?:ts|tsx|js|jsx|py|rs|go|java|css|html|json|md|yaml|yml|toml))\b/g
+		const matches: string[] = []
+		let match: RegExpExecArray | null
+		while ((match = filePattern.exec(text)) !== null) {
+			if (match[1] && !matches.includes(match[1])) {
+				matches.push(match[1])
+			}
+		}
+		return matches
+	}
+
+	private autoAdvanceStep(observation: RpiToolObservation): void {
+		if (!this.taskPlan) {
+			return
+		}
+		const current = this.taskPlan.steps[this.taskPlan.currentStepIndex]
+		if (!current || current.status !== "in_progress") {
+			return
+		}
+
+		// Record tool used and observation
+		if (!current.toolsUsed.includes(observation.toolName)) {
+			current.toolsUsed.push(observation.toolName)
+		}
+		current.observationIds.push(this.state?.observationCount ?? 0)
+
+		// Heuristic step completion based on phase + tool combination
+		if (observation.success && this.isStepLikelyComplete(current, observation)) {
+			current.status = "completed"
+			current.outcome = observation.summary
+			this.taskPlan.currentStepIndex++
+			this.taskPlan.lastUpdatedAt = new Date().toISOString()
+			if (this.taskPlan.currentStepIndex < this.taskPlan.steps.length) {
+				this.taskPlan.steps[this.taskPlan.currentStepIndex].status = "in_progress"
+			}
+		}
+	}
+
+	private isStepLikelyComplete(step: RpiTaskStep, observation: RpiToolObservation): boolean {
+		const tool = observation.toolName
+
+		switch (step.phase) {
+			case "discovery":
+				// Discovery steps complete after read/search/list tools
+				return [
+					"read_file",
+					"search_files",
+					"list_files",
+					"codebase_search",
+					"list_code_definition_names",
+				].includes(tool)
+			case "planning":
+				// Planning completes after todo update or after any planning tool
+				return ["update_todo_list", "ask_followup_question", "switch_mode"].includes(tool)
+			case "implementation":
+				// Implementation completes after a successful write
+				return WRITE_TOOLS.has(tool) || tool === "execute_command"
+			case "verification":
+				// Verification completes after a successful command execution
+				return tool === "execute_command"
+			default:
+				return false
+		}
+	}
+
 	private createInitialState(mode: string, taskText: string): RpiState {
 		const strategy = this.classifyStrategy(taskText, mode)
 		const now = new Date().toISOString()
@@ -469,6 +852,9 @@ export class RpiAutopilot {
 			councilRunsByPhase: {},
 			lastUpdatedAt: now,
 			createdAt: now,
+			observations: [],
+			observationCount: 0,
+			stepAttempts: {},
 		}
 	}
 
@@ -477,6 +863,9 @@ export class RpiAutopilot {
 			...state,
 			councilTotalRuns: state.councilTotalRuns ?? 0,
 			councilRunsByPhase: state.councilRunsByPhase ?? {},
+			observations: state.observations ?? [],
+			observationCount: state.observationCount ?? 0,
+			stepAttempts: state.stepAttempts ?? {},
 		}
 	}
 
@@ -594,7 +983,7 @@ export class RpiAutopilot {
 			for (const risk of result.risks.slice(0, MAX_COUNCIL_RISKS)) {
 				await this.appendFinding("warn", `Council ${councilPhase} risk: ${risk}`)
 			}
-			await this.appendProgress(`Council ${councilPhase} run completed (${trigger}).`)
+			this.appendProgress(`Council ${councilPhase} run completed (${trigger}).`)
 			this.notifyCouncilEvent({
 				phase: councilPhase,
 				trigger,
@@ -605,7 +994,7 @@ export class RpiAutopilot {
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error)
 			await this.appendFinding("warn", `Council ${councilPhase} skipped: ${message}`)
-			await this.appendProgress(`Council ${councilPhase} run skipped (${trigger}).`)
+			this.appendProgress(`Council ${councilPhase} run skipped (${trigger}).`)
 			this.notifyCouncilEvent({
 				phase: councilPhase,
 				trigger,
@@ -848,10 +1237,67 @@ export class RpiAutopilot {
 		await fs.appendFile(this.findingsPath, line, "utf-8")
 	}
 
-	private async appendProgress(message: string): Promise<void> {
-		const timestamp = new Date().toISOString()
-		const line = `- [${timestamp}] ${message}\n`
-		await fs.appendFile(this.progressPath, line, "utf-8")
+	private appendProgress(message: string): void {
+		const timestamp = new Date().toISOString().slice(11, 19) // HH:MM:SS
+		this.progressEvents.push(`[${timestamp}] ${message}`)
+		if (this.progressEvents.length > MAX_PROGRESS_EVENTS) {
+			this.progressEvents.shift()
+		}
+	}
+
+	getProgressSummary(): string {
+		if (!this.state) {
+			return ""
+		}
+		const { phase, strategy, toolRuns, writeOps, commandOps, observationCount } = this.state
+		const lastObs = this.state.lastObservation
+		const parts = [
+			`Phase: ${phase}`,
+			`Strategy: ${strategy}`,
+			`Tools: ${toolRuns} runs`,
+			`Writes: ${writeOps}`,
+			`Commands: ${commandOps}`,
+			`Observations: ${observationCount}`,
+		]
+		if (lastObs) {
+			parts.push(`Last: ${lastObs.summary}`)
+		}
+		return parts.join(" | ")
+	}
+
+	private async writeProgressFile(): Promise<void> {
+		if (!this.state) {
+			return
+		}
+
+		const { phase, strategy, toolRuns, writeOps, commandOps, observationCount, councilTotalRuns } = this.state
+
+		const lines: string[] = [
+			"# RPI Progress",
+			"",
+			"## Summary",
+			`- Task: ${this.state.taskSummary}`,
+			`- Strategy: ${strategy} | Phase: ${phase}`,
+			`- Tools: ${toolRuns} runs | Writes: ${writeOps} | Commands: ${commandOps} | Observations: ${observationCount}`,
+			`- Council runs: ${councilTotalRuns}`,
+		]
+
+		if (this.state.lastObservation) {
+			lines.push(`- Last result: ${this.state.lastObservation.summary}`)
+		}
+
+		lines.push("", "## Event Log")
+
+		if (this.progressEvents.length === 0) {
+			lines.push("- (no events yet)")
+		} else {
+			for (const event of this.progressEvents) {
+				lines.push(`- ${event}`)
+			}
+		}
+
+		lines.push("")
+		await fs.writeFile(this.progressPath, lines.join("\n"), "utf-8")
 	}
 
 	private async syncArtifacts(): Promise<void> {
@@ -861,16 +1307,13 @@ export class RpiAutopilot {
 		await this.ensureArtifactHeaders()
 		await this.writeStateFile()
 		await this.writeTaskPlanFile()
+		await this.writeProgressFile()
 	}
 
 	private async ensureArtifactHeaders(): Promise<void> {
 		await this.ensureFileWithHeader(
 			this.findingsPath,
 			"# RPI Findings\n\nAuto-managed durable findings log.\n\n## Entries\n",
-		)
-		await this.ensureFileWithHeader(
-			this.progressPath,
-			"# RPI Progress\n\nAuto-managed execution journal.\n\n## Timeline\n",
 		)
 	}
 
@@ -894,42 +1337,45 @@ export class RpiAutopilot {
 			return
 		}
 
-		const allPhases: RpiPhase[] = ["discovery", "planning", "implementation", "verification"]
-		const completed = new Set(this.state.completedPhases)
-		const required = new Set(this.state.requiredPhases)
+		const plan = this.taskPlan
+		const completedSteps = plan?.steps.filter((s) => s.status === "completed").length ?? 0
+		const totalSteps = plan?.steps.length ?? 0
 
-		const phaseLines = allPhases
-			.filter((phase) => required.has(phase))
-			.map((phase) => {
-				const mark = completed.has(phase) ? "x" : " "
-				const label = phase.charAt(0).toUpperCase() + phase.slice(1)
-				return `- [${mark}] ${label}`
-			})
-			.join("\n")
-
-		const content = [
+		const lines: string[] = [
 			"# RPI Task Plan",
 			"",
-			"Auto-managed by Roo RPI autopilot.",
-			"",
 			`- Task: ${this.state.taskSummary}`,
-			`- Mode at start: ${this.state.modeAtStart}`,
-			`- Strategy: ${this.state.strategy}`,
-			`- Current phase: ${this.state.phase}`,
+			`- Strategy: ${this.state.strategy} | Phase: ${this.state.phase} | Steps: ${completedSteps}/${totalSteps}`,
 			`- Council runs: ${this.state.councilTotalRuns}`,
-			`- Last tool: ${this.state.lastTool ?? "none"}`,
 			`- Last update: ${this.state.lastUpdatedAt}`,
-			"",
-			"## Required Phases",
-			phaseLines || "- [ ] Implementation",
+		]
+
+		if (plan && plan.steps.length > 0) {
+			lines.push("", "## Steps")
+			for (let i = 0; i < plan.steps.length; i++) {
+				const step = plan.steps[i]
+				const mark = step.status === "completed" ? "x" : step.status === "in_progress" ? "-" : " "
+				const phaseTag = `(${step.phase})`
+				let line = `- [${mark}] ${i + 1}. ${step.description} ${phaseTag}`
+				if (step.outcome) {
+					line += `\n       Outcome: ${step.outcome}`
+				}
+				if (step.toolsUsed.length > 0) {
+					line += `\n       Tools: ${step.toolsUsed.join(", ")}`
+				}
+				lines.push(line)
+			}
+		}
+
+		lines.push(
 			"",
 			"## Flow Rules",
 			"- Keep implementation and decisions synchronized with the current phase.",
 			"- Persist durable knowledge in findings and progress files.",
 			"- Completion is allowed only after verification gate succeeds.",
 			"",
-		].join("\n")
+		)
 
-		await fs.writeFile(this.taskPlanPath, content, "utf-8")
+		await fs.writeFile(this.taskPlanPath, lines.join("\n"), "utf-8")
 	}
 }

@@ -240,6 +240,13 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				task.didToolFailInCurrentTurn = true
 			}
 
+			this._rpiObservationExtras = {
+				summary: `Read ${filePath}`,
+				filesAffected: fileResults
+					.filter((r) => r.status !== "error" && r.status !== "blocked")
+					.map((r) => r.path),
+			}
+
 			this.buildAndPushResult(task, fileResults, pushToolResult)
 		} catch (error) {
 			const relPath = filePath || "unknown"

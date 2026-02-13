@@ -175,6 +175,11 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 			task.didEditFile = true
 
+			this._rpiObservationExtras = {
+				summary: `Wrote ${relPath} (${fileExists ? "modified" : "created"})`,
+				filesAffected: [relPath],
+			}
+
 			const message = await task.diffViewProvider.pushToolWriteResult(task, task.cwd, !fileExists)
 
 			pushToolResult(message)

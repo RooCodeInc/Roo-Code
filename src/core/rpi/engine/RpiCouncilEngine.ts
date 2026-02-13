@@ -19,7 +19,12 @@ export interface RpiCouncilResult {
 	rawResponse: string
 }
 
-type CouncilAction = "analyze_context" | "decompose_task" | "build_decision" | "verification_review"
+type CouncilAction =
+	| "analyze_context"
+	| "decompose_task"
+	| "build_decision"
+	| "verification_review"
+	| "structured_decompose"
 
 const MAX_FINDINGS = 6
 const MAX_RISKS = 4
@@ -40,6 +45,10 @@ export class RpiCouncilEngine {
 
 	async runVerificationReview(apiConfiguration: ProviderSettings, input: RpiCouncilInput): Promise<RpiCouncilResult> {
 		return this.runAction(apiConfiguration, input, "verification_review")
+	}
+
+	async structuredDecompose(apiConfiguration: ProviderSettings, input: RpiCouncilInput): Promise<RpiCouncilResult> {
+		return this.runAction(apiConfiguration, input, "structured_decompose")
 	}
 
 	private async runAction(
@@ -107,6 +116,8 @@ export class RpiCouncilEngine {
 				return "Propose the next technical decision with rationale and tradeoffs."
 			case "verification_review":
 				return "Review implementation readiness and highlight residual risks before completion."
+			case "structured_decompose":
+				return 'Break the task into 3-10 ordered execution steps. For each step provide: description (what to do), phase (discovery|planning|implementation|verification), and toolsExpected (which Roo Code tools will likely be needed). Return JSON: {"summary":"...", "steps":[{"description":"...", "phase":"...", "toolsExpected":["..."]}], "findings":[...], "risks":[...]}'
 		}
 	}
 

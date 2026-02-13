@@ -65,6 +65,12 @@ export class SearchFilesTool extends BaseTool<"search_files"> {
 				return
 			}
 
+			const matchLines = results ? results.split("\n").filter((l) => l.trim().length > 0).length : 0
+			this._rpiObservationExtras = {
+				summary: `Search /${regex}/ in ${relDirPath}: ${matchLines} result line(s)`,
+				matchCount: matchLines,
+			}
+
 			pushToolResult(results)
 		} catch (error) {
 			await handleError("searching files", error as Error)

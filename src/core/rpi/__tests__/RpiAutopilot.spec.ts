@@ -87,6 +87,13 @@ describe("RpiAutopilot council engine integration", () => {
 		})
 
 		await autopilot.onToolStart("write_to_file", { path: "src/file.ts" })
+		await autopilot.onToolFinish("write_to_file", {
+			toolName: "write_to_file",
+			timestamp: new Date().toISOString(),
+			success: true,
+			summary: "Wrote src/file.ts",
+			filesAffected: ["src/file.ts"],
+		})
 		const blocker = await autopilot.getCompletionBlocker()
 
 		expect(blocker).toBeUndefined()
@@ -101,7 +108,7 @@ describe("RpiAutopilot council engine integration", () => {
 
 		const blocker = await autopilot.getCompletionBlocker()
 
-		expect(blocker).toContain("no implementation evidence")
+		expect(blocker).toContain("Implementation evidence")
 		expect(mockEngine.runVerificationReview).not.toHaveBeenCalled()
 	})
 

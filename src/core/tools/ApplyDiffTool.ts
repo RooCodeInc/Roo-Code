@@ -213,6 +213,12 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 				const didApprove = await askApproval("tool", completeMessage, toolProgressStatus, isWriteProtected)
 
 				if (!didApprove) {
+					this._rpiObservationExtras = {
+						success: false,
+						error: "Rejected by user",
+						summary: `Diff rejected by user for ${relPath}`,
+						filesAffected: [relPath],
+					}
 					await task.diffViewProvider.revertChanges()
 					task.processQueuedMessages()
 					return
@@ -229,6 +235,18 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 
 			// Used to determine if we should wait for busy terminal to update before sending api request
 			task.didEditFile = true
+
+			const hasPartialFailures = diffResult.failParts && diffResult.failParts.length > 0
+			this._rpiObservationExtras = {
+				success: !hasPartialFailures,
+				error: hasPartialFailures
+					? `Partial apply: ${diffResult.failParts!.length} diff part(s) failed`
+					: undefined,
+				summary: hasPartialFailures ? `Partially applied diff to ${relPath}` : `Applied diff to ${relPath}`,
+				filesAffected: [relPath],
+				diffSummary: diffStats ? `+${diffStats.added ?? 0} -${diffStats.removed ?? 0} lines` : undefined,
+			}
+
 			let partFailHint = ""
 
 			if (diffResult.failParts && diffResult.failParts.length > 0) {
