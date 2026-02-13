@@ -99,22 +99,48 @@ export type McpResourceResponse = {
 	}>
 }
 
+/**
+ * Annotations that can be attached to content items in MCP tool call responses.
+ * Used to indicate audience targeting, priority, and modification timestamps.
+ */
+export type McpContentAnnotations = {
+	audience?: Array<"user" | "assistant">
+	priority?: number
+	lastModified?: string
+}
+
 export type McpToolCallResponse = {
 	_meta?: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 	content: Array<
 		| {
 				type: "text"
 				text: string
+				annotations?: McpContentAnnotations
+				_meta?: Record<string, unknown>
 		  }
 		| {
 				type: "image"
 				data: string
 				mimeType: string
+				annotations?: McpContentAnnotations
+				_meta?: Record<string, unknown>
 		  }
 		| {
 				type: "audio"
 				data: string
 				mimeType: string
+				annotations?: McpContentAnnotations
+				_meta?: Record<string, unknown>
+		  }
+		| {
+				type: "resource_link"
+				uri: string
+				name: string
+				description?: string
+				mimeType?: string
+				title?: string
+				annotations?: McpContentAnnotations
+				_meta?: Record<string, unknown>
 		  }
 		| {
 				type: "resource"
@@ -123,9 +149,13 @@ export type McpToolCallResponse = {
 					mimeType?: string
 					text?: string
 					blob?: string
+					_meta?: Record<string, unknown>
 				}
+				annotations?: McpContentAnnotations
+				_meta?: Record<string, unknown>
 		  }
 	>
+	structuredContent?: Record<string, unknown>
 	isError?: boolean
 }
 
