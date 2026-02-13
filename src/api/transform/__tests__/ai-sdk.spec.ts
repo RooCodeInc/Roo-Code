@@ -305,7 +305,8 @@ describe("AI SDK conversion utilities", () => {
 			}
 
 			const result = extractAiSdkErrorMessage(apiError)
-			expect(result).toBe("API Error (429): Rate limit exceeded")
+			// No responseBody present — new behavior reports that instead of using error.message
+			expect(result).toBe("API Error (429): No response body available")
 		})
 
 		it("should handle AI_APICallError without status", () => {
@@ -315,7 +316,8 @@ describe("AI SDK conversion utilities", () => {
 			}
 
 			const result = extractAiSdkErrorMessage(apiError)
-			expect(result).toBe("Connection timeout")
+			// No responseBody, no status — new behavior reports missing body
+			expect(result).toBe("API Error: No response body available")
 		})
 
 		it("should extract message from standard Error", () => {
@@ -341,7 +343,7 @@ describe("AI SDK conversion utilities", () => {
 			expect(result).not.toBe("API call failed")
 		})
 
-		it("should fall back to message when AI_APICallError responseBody is non-JSON", () => {
+		it("should include raw responseBody when AI_APICallError responseBody is non-JSON", () => {
 			const apiError = {
 				name: "AI_APICallError",
 				message: "Server error",
@@ -350,7 +352,8 @@ describe("AI SDK conversion utilities", () => {
 			}
 
 			const result = extractAiSdkErrorMessage(apiError)
-			expect(result).toContain("Server error")
+			// New behavior: raw responseBody is included instead of falling back to error.message
+			expect(result).toBe("API Error (500): Internal Server Error")
 		})
 
 		it("should extract message from AI_RetryError lastError responseBody", () => {
@@ -928,5 +931,215 @@ describe("consumeAiSdkStream", () => {
 		expect(error).not.toBeNull()
 		expect(error!.message).toBe("Insufficient balance to complete this request")
 		expect(error!.message).not.toContain("No output generated")
+	})
+})
+
+describe("Error extraction utilities", () => {
+	describe("extractMessageFromResponseBody", () => {
+		it("extracts message from OpenRouter-style error with error.metadata.raw", () => {
+			const body = JSON.stringify({
+				error: {
+					message: "Provider returned error",
+					code: 400,
+					metadata: {
+						raw: JSON.stringify({
+							message: "A maximum of 4 blocks with cache_control may be provided. Found 5.",
+						}),
+						provider_name: "Amazon Bedrock",
+					},
+				},
+			})
+
+			const result = extractMessageFromResponseBody(body)
+			expect(result).toBe("[Amazon Bedrock] A maximum of 4 blocks with cache_control may be provided. Found 5.")
+		})
+
+		it("extracts message from OpenRouter-style error without provider_name", () => {
+			const body = JSON.stringify({
+				error: {
+					message: "Provider returned error",
+					code: 400,
+					metadata: {
+						raw: JSON.stringify({ message: "Token limit exceeded" }),
+					},
+				},
+			})
+
+			const result = extractMessageFromResponseBody(body)
+			expect(result).toBe("Token limit exceeded")
+		})
+
+		it("falls through when error.metadata.raw is invalid JSON", () => {
+			const body = JSON.stringify({
+				error: {
+					message: "Provider returned error",
+					code: 400,
+					metadata: {
+						raw: "not valid json {{{",
+					},
+				},
+			})
+
+			const result = extractMessageFromResponseBody(body)
+			// Should fall through to the error.message path
+			expect(result).toBe("[400] Provider returned error")
+		})
+
+		it("falls through when error.metadata.raw has no message field", () => {
+			const body = JSON.stringify({
+				error: {
+					message: "Provider returned error",
+					code: 400,
+					metadata: {
+						raw: JSON.stringify({ status: "failed", detail: "something" }),
+					},
+				},
+			})
+
+			const result = extractMessageFromResponseBody(body)
+			// Should fall through to the error.message path
+			expect(result).toBe("[400] Provider returned error")
+		})
+
+		it("extracts direct error.message format", () => {
+			const body = JSON.stringify({
+				error: {
+					message: "actual error from provider",
+				},
+			})
+
+			const result = extractMessageFromResponseBody(body)
+			expect(result).toBe("actual error from provider")
+		})
+
+		it("extracts error.message with string code", () => {
+			const body = JSON.stringify({
+				error: {
+					message: "rate limit exceeded",
+					code: "rate_limit",
+				},
+			})
+
+			const result = extractMessageFromResponseBody(body)
+			expect(result).toBe("[rate_limit] rate limit exceeded")
+		})
+
+		it("returns undefined for non-JSON input", () => {
+			const result = extractMessageFromResponseBody("this is not json at all")
+			expect(result).toBeUndefined()
+		})
+
+		it("returns undefined for empty string", () => {
+			const result = extractMessageFromResponseBody("")
+			expect(result).toBeUndefined()
+		})
+
+		it("extracts string error format", () => {
+			const body = JSON.stringify({ error: "something went wrong" })
+
+			const result = extractMessageFromResponseBody(body)
+			expect(result).toBe("something went wrong")
+		})
+
+		it("extracts top-level message format", () => {
+			const body = JSON.stringify({ message: "top level error" })
+
+			const result = extractMessageFromResponseBody(body)
+			expect(result).toBe("top level error")
+		})
+	})
+
+	describe("extractAiSdkErrorMessage", () => {
+		it("returns raw responseBody when structured parsing yields nothing for AI_APICallError", () => {
+			const error = {
+				name: "AI_APICallError",
+				message: "Bad Request",
+				statusCode: 400,
+				responseBody: "Some unstructured error text from provider",
+			}
+
+			const result = extractAiSdkErrorMessage(error)
+			expect(result).toBe("API Error (400): Some unstructured error text from provider")
+			expect(result).not.toContain("Bad Request")
+		})
+
+		it("returns 'No response body available' when responseBody is absent", () => {
+			const error = {
+				name: "AI_APICallError",
+				message: "Bad Request",
+				statusCode: 400,
+			}
+
+			const result = extractAiSdkErrorMessage(error)
+			expect(result).toBe("API Error (400): No response body available")
+			expect(result).not.toContain("Bad Request")
+		})
+
+		it("extracts structured message from responseBody for AI_APICallError", () => {
+			const error = {
+				name: "AI_APICallError",
+				message: "Bad Request",
+				statusCode: 400,
+				responseBody: JSON.stringify({
+					error: {
+						message: "Context length exceeded",
+						code: "context_length_exceeded",
+					},
+				}),
+			}
+
+			const result = extractAiSdkErrorMessage(error)
+			expect(result).toBe("API Error (400): [context_length_exceeded] Context length exceeded")
+			expect(result).not.toContain("Bad Request")
+		})
+
+		it("never returns generic 'Bad Request' when responseBody has useful info", () => {
+			const error = {
+				name: "AI_APICallError",
+				message: "Bad Request",
+				statusCode: 400,
+				responseBody: JSON.stringify({
+					error: {
+						message: "Provider returned error",
+						code: 400,
+						metadata: {
+							raw: JSON.stringify({
+								message: "A maximum of 4 blocks with cache_control may be provided. Found 5.",
+							}),
+							provider_name: "Amazon Bedrock",
+						},
+					},
+				}),
+			}
+
+			const result = extractAiSdkErrorMessage(error)
+			expect(result).not.toBe("Bad Request")
+			expect(result).not.toBe("API Error (400): Bad Request")
+			expect(result).toContain("A maximum of 4 blocks with cache_control may be provided")
+		})
+
+		it("includes raw malformed responseBody instead of swallowing it", () => {
+			const error = {
+				name: "AI_APICallError",
+				message: "Bad Request",
+				statusCode: 400,
+				responseBody: "<html>500 Internal Server Error</html>",
+			}
+
+			const result = extractAiSdkErrorMessage(error)
+			expect(result).toBe("API Error (400): <html>500 Internal Server Error</html>")
+			expect(result).not.toContain("Bad Request")
+		})
+
+		it("handles AI_APICallError without statusCode", () => {
+			const error = {
+				name: "AI_APICallError",
+				message: "Bad Request",
+				responseBody: JSON.stringify({ error: { message: "some error" } }),
+			}
+
+			const result = extractAiSdkErrorMessage(error)
+			expect(result).toContain("some error")
+		})
 	})
 })

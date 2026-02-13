@@ -351,6 +351,30 @@ export function extractMessageFromResponseBody(responseBody: string): string | u
 		// Format: {"error": {"message": "...", "code": "..."}} or {"error": {"message": "..."}}
 		if (typeof obj.error === "object" && obj.error !== null) {
 			const errorObj = obj.error as Record<string, unknown>
+
+			// OpenRouter wraps the real provider error in error.metadata.raw (a JSON string).
+			// Check this BEFORE error.message because error.message is often just
+			// "Provider returned error" which is not useful.
+			if (typeof errorObj.metadata === "object" && errorObj.metadata !== null) {
+				const metadata = errorObj.metadata as Record<string, unknown>
+				if (typeof metadata.raw === "string" && metadata.raw) {
+					try {
+						const rawParsed: unknown = JSON.parse(metadata.raw)
+						if (typeof rawParsed === "object" && rawParsed !== null) {
+							const rawObj = rawParsed as Record<string, unknown>
+							if (typeof rawObj.message === "string" && rawObj.message) {
+								const providerName =
+									typeof metadata.provider_name === "string" ? metadata.provider_name : undefined
+								const prefix = providerName ? `[${providerName}] ` : ""
+								return `${prefix}${rawObj.message}`
+							}
+						}
+					} catch {
+						// raw is not valid JSON — fall through to other patterns
+					}
+				}
+			}
+
 			if (typeof errorObj.message === "string" && errorObj.message) {
 				if (typeof errorObj.code === "string" && errorObj.code) {
 					return `[${errorObj.code}] ${errorObj.message}`
@@ -437,21 +461,31 @@ export function extractAiSdkErrorMessage(error: unknown): string {
 	// AI_APICallError has message, optional status, and responseBody
 	if (errorObj.name === "AI_APICallError") {
 		const statusCode = getStatusCode(error)
+		const hasResponseBody = "responseBody" in errorObj && typeof errorObj.responseBody === "string"
 
 		// Try to extract a richer message from responseBody
 		let message: string | undefined
-		if ("responseBody" in errorObj && typeof errorObj.responseBody === "string") {
-			message = extractMessageFromResponseBody(errorObj.responseBody)
+		if (hasResponseBody) {
+			message = extractMessageFromResponseBody(errorObj.responseBody as string)
 		}
 
 		if (!message) {
-			message = typeof errorObj.message === "string" ? errorObj.message : "API call failed"
+			// Do NOT fall back to error.message — it's often just HTTP status text
+			// like "Bad Request" which swallows the actual error information.
+			if (hasResponseBody && (errorObj.responseBody as string).length > 0) {
+				// Include the raw response body so nothing is silently lost
+				message = errorObj.responseBody as string
+			} else if (hasResponseBody) {
+				message = "Empty response body"
+			} else {
+				message = "No response body available"
+			}
 		}
 
 		if (statusCode) {
 			return `API Error (${statusCode}): ${message}`
 		}
-		return message
+		return `API Error: ${message}`
 	}
 
 	// AI_NoOutputGeneratedError wraps a cause that may be an APICallError
