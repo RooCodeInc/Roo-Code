@@ -264,6 +264,98 @@ export class RpiAutopilot {
 		})
 	}
 
+	/**
+	 * Fast initialization path: only performs disk I/O and heuristic decomposition.
+	 * Skips AI decomposition and memory recall to avoid blocking the task loop.
+	 * Use `deferAiEnhancement()` afterwards for AI-driven plan improvement.
+	 */
+	async ensureInitializedFast(): Promise<void> {
+		if (this.initialized) {
+			return
+		}
+
+		await this.queueWrite(async () => {
+			if (this.initialized) {
+				return
+			}
+
+			await fs.mkdir(this.baseDir, { recursive: true })
+			const mode = await this.context.getMode()
+			const taskText = this.context.getTaskText() ?? ""
+			const fromDisk = await this.readStateFile()
+
+			if (fromDisk && fromDisk.taskId === this.context.taskId) {
+				this.state = this.normalizeState(fromDisk)
+			} else {
+				const legacyState = await this.readLegacyStateFile()
+				if (legacyState && legacyState.taskId === this.context.taskId) {
+					this.state = this.normalizeState(legacyState)
+					await this.maybeMigrateLegacyArtifacts()
+				} else {
+					this.state = this.createInitialState(mode, taskText)
+				}
+			}
+
+			// Always use heuristic decomposition for fast init (instant)
+			if (!this.taskPlan && this.state) {
+				this.taskPlan = this.heuristicDecompose(taskText, mode)
+			}
+
+			await this.syncArtifacts()
+			this.initialized = true
+			if (this.state) {
+				this.notifyAutopilotEvent({
+					status: "initialized",
+					phase: this.state.phase,
+				})
+			}
+		})
+	}
+
+	/**
+	 * Deferred AI enhancement: runs AI decomposition and memory recall in background.
+	 * Should be called fire-and-forget after `ensureInitializedFast()`.
+	 * Updates the task plan in-place if AI decomposition succeeds.
+	 */
+	async deferAiEnhancement(): Promise<void> {
+		if (!this.initialized || !this.state) {
+			return
+		}
+
+		const taskText = this.context.getTaskText() ?? ""
+		const mode = await this.context.getMode()
+
+		// AI-driven decomposition (only if council engine enabled + task text substantial)
+		if (this.context.isCouncilEngineEnabled() && taskText.length > 50) {
+			try {
+				const aiPlan = await this.aiDecompose(taskText, mode)
+				this.taskPlan = aiPlan
+				await this.queueWrite(async () => {
+					await this.writeTaskPlanFile()
+				})
+			} catch {
+				// Keep heuristic plan — AI enhancement is best-effort
+			}
+		}
+
+		// Memory recall (best-effort)
+		if (taskText) {
+			try {
+				const memories = await this.memory.recall(taskText)
+				if (memories.length > 0) {
+					for (const mem of memories) {
+						this.appendProgress(`Memory recalled [${mem.type}]: ${mem.content}`)
+					}
+					await this.queueWrite(async () => {
+						await this.writeProgressFile()
+					})
+				}
+			} catch {
+				// Memory recall is best-effort
+			}
+		}
+	}
+
 	async getPromptGuidance(): Promise<string | undefined> {
 		await this.ensureInitialized()
 		if (!this.state) {
@@ -1588,10 +1680,10 @@ export class RpiAutopilot {
 		if (!this.state) {
 			return
 		}
+		// ensureArtifactHeaders must run first (creates files if missing)
 		await this.ensureArtifactHeaders()
-		await this.writeStateFile()
-		await this.writeTaskPlanFile()
-		await this.writeProgressFile()
+		// Write state, plan, and progress in parallel (independent files)
+		await Promise.all([this.writeStateFile(), this.writeTaskPlanFile(), this.writeProgressFile()])
 	}
 
 	private async ensureArtifactHeaders(): Promise<void> {

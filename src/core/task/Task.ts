@@ -2067,7 +2067,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			await this.providerRef.deref()?.postStateToWebviewWithoutTaskHistory()
 
 			await this.say("text", task, images)
-			await this.initializeRpiAutopilot()
+			await this.initializeRpiAutopilotFast()
 
 			// Check for too many MCP tools and warn the user
 			const { enabledToolCount, enabledServerCount } = await this.getEnabledMcpToolsCount()
@@ -2197,7 +2197,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		this.isInitialized = true
-		await this.initializeRpiAutopilot()
+		await this.initializeRpiAutopilotFast()
 
 		const { response, text, images } = await this.ask(askType) // Calls `postStateToWebview`.
 
@@ -4874,6 +4874,31 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} catch (error) {
 			console.error(
 				`[Task#initializeRpiAutopilot] Failed: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+	}
+
+	/**
+	 * Fast RPI autopilot initialization: only disk I/O + heuristic decomposition.
+	 * AI decomposition and memory recall run in background (fire-and-forget).
+	 */
+	public async initializeRpiAutopilotFast(): Promise<void> {
+		try {
+			if (!this.isRpiAutopilotEnabled()) {
+				return
+			}
+			const autopilot = await this.getRpiAutopilot()
+			await autopilot.ensureInitializedFast()
+			await this.maybeAnnounceRpiAutopilot()
+			// Fire-and-forget: AI enhancement runs in background
+			autopilot.deferAiEnhancement().catch((error) => {
+				console.error(
+					`[Task#initializeRpiAutopilotFast] AI enhancement failed: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			})
+		} catch (error) {
+			console.error(
+				`[Task#initializeRpiAutopilotFast] Failed: ${error instanceof Error ? error.message : String(error)}`,
 			)
 		}
 	}
