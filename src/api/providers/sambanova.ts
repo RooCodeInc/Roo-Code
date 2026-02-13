@@ -7,7 +7,6 @@ import { sambaNovaModels, sambaNovaDefaultModelId, type ModelInfo } from "@roo-c
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import {
-	convertToAiSdkMessages,
 	convertToolsForAiSdk,
 	consumeAiSdkStream,
 	mapToolChoice,

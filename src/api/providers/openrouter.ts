@@ -17,12 +17,7 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 
 import { getModelParams } from "../transform/model-params"
-import {
-	convertToAiSdkMessages,
-	convertToolsForAiSdk,
-	processAiSdkStreamPart,
-	yieldResponseMessage,
-} from "../transform/ai-sdk"
+import { convertToolsForAiSdk, processAiSdkStreamPart, yieldResponseMessage } from "../transform/ai-sdk"
 import { applyToolCacheOptions, applySystemPromptCaching } from "../transform/cache-breakpoints"
 
 import { BaseProvider } from "./base-provider"

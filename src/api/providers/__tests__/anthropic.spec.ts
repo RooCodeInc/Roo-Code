@@ -32,8 +32,11 @@ vitest.mock("@ai-sdk/anthropic", () => ({
 }))
 
 // Mock ai-sdk transform utilities
+vitest.mock("../../transform/sanitize-messages", () => ({
+	sanitizeMessagesForProvider: vitest.fn().mockImplementation((msgs: any[]) => msgs),
+}))
+
 vitest.mock("../../transform/ai-sdk", () => ({
-	convertToAiSdkMessages: vitest.fn().mockReturnValue([{ role: "user", content: [{ type: "text", text: "Hello" }] }]),
 	convertToolsForAiSdk: vitest.fn().mockReturnValue(undefined),
 	processAiSdkStreamPart: vitest.fn().mockImplementation(function* (part: any) {
 		if (part.type === "text-delta") {
@@ -54,7 +57,7 @@ vitest.mock("../../transform/ai-sdk", () => ({
 }))
 
 // Import mocked modules
-import { convertToAiSdkMessages, convertToolsForAiSdk, mapToolChoice } from "../../transform/ai-sdk"
+import { convertToolsForAiSdk, mapToolChoice } from "../../transform/ai-sdk"
 import { Anthropic } from "@anthropic-ai/sdk"
 
 // Helper: create a mock provider function
@@ -82,9 +85,6 @@ describe("AnthropicHandler", () => {
 
 		// Re-set mock defaults after clearAllMocks
 		mockCreateAnthropic.mockReturnValue(mockProviderFn)
-		vitest
-			.mocked(convertToAiSdkMessages)
-			.mockReturnValue([{ role: "user", content: [{ type: "text", text: "Hello" }] }])
 		vitest.mocked(convertToolsForAiSdk).mockReturnValue(undefined)
 		vitest.mocked(mapToolChoice).mockReturnValue(undefined)
 	})

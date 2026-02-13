@@ -14,7 +14,6 @@ import { TelemetryService } from "@roo-code/telemetry"
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import {
-	convertToAiSdkMessages,
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,

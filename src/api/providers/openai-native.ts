@@ -19,16 +19,11 @@ import {
 import type { ApiHandlerOptions } from "../../shared/api"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 
-import {
-	convertToAiSdkMessages,
-	convertToolsForAiSdk,
-	consumeAiSdkStream,
-	mapToolChoice,
-	handleAiSdkError,
-} from "../transform/ai-sdk"
+import { convertToolsForAiSdk, consumeAiSdkStream, mapToolChoice, handleAiSdkError } from "../transform/ai-sdk"
 import { applyToolCacheOptions } from "../transform/cache-breakpoints"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { sanitizeMessagesForProvider } from "../transform/sanitize-messages"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -38,7 +33,7 @@ export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
 
 /**
  * An encrypted reasoning item extracted from the conversation history.
- * These are standalone items injected by `buildCleanConversationHistory` with
+ * These are standalone RooReasoningMessage items with
  * `{ type: "reasoning", encrypted_content: "...", id: "...", summary: [...] }`.
  */
 export interface EncryptedReasoningItem {
@@ -52,12 +47,13 @@ export interface EncryptedReasoningItem {
  * Strip plain-text reasoning blocks from assistant message content arrays.
  *
  * Plain-text reasoning blocks (`{ type: "reasoning", text: "..." }`) inside
- * assistant content arrays would be converted by `convertToAiSdkMessages`
- * into AI SDK reasoning parts WITHOUT `providerOptions.openai.itemId`.
- * The `@ai-sdk/openai` Responses provider rejects those with console warnings.
+ * assistant content arrays would become AI SDK reasoning parts WITHOUT
+ * `providerOptions.openai.itemId`. The `@ai-sdk/openai` Responses provider
+ * rejects those with console warnings.
  *
- * This function removes them BEFORE conversion. If an assistant message's
- * content becomes empty after filtering, the message is removed entirely.
+ * This function removes them before sending to the API. If an assistant
+ * message's content becomes empty after filtering, the message is removed
+ * entirely.
  */
 export function stripPlainTextReasoningBlocks(messages: RooMessage[]): RooMessage[] {
 	return messages.reduce<RooMessage[]>((acc, msg) => {
@@ -88,9 +84,8 @@ export function stripPlainTextReasoningBlocks(messages: RooMessage[]): RooMessag
 /**
  * Collect encrypted reasoning items from the messages array.
  *
- * These are standalone items with `type: "reasoning"` and `encrypted_content`,
- * injected by `buildCleanConversationHistory` for OpenAI Responses API
- * reasoning continuity.
+ * These are standalone RooReasoningMessage items with `type: "reasoning"`
+ * and `encrypted_content`, used for OpenAI Responses API reasoning continuity.
  */
 export function collectEncryptedReasoningItems(messages: RooMessage[]): EncryptedReasoningItem[] {
 	const items: EncryptedReasoningItem[] = []
@@ -419,26 +414,19 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		this.lastEncryptedContent = undefined
 		this.lastServiceTier = undefined
 
-		// Step 1: Collect encrypted reasoning items and their positions before filtering.
-		// These are standalone items injected by buildCleanConversationHistory:
-		// { type: "reasoning", encrypted_content: "...", id: "...", summary: [...] }
+		// Step 1: Collect encrypted reasoning items before sanitization strips them.
 		const encryptedReasoningItems = collectEncryptedReasoningItems(messages)
 
-		// Step 2: Filter out standalone encrypted reasoning items (they lack role
-		// and would break convertToAiSdkMessages which expects user/assistant/tool).
-		const standardMessages = messages.filter(
-			(msg) => (msg as any).type !== "reasoning" || !(msg as any).encrypted_content,
-		)
+		// Step 2: Sanitize messages for the provider API (allowlist: role, content, providerOptions).
+		// This also filters out standalone RooReasoningMessage items (no role field).
+		const sanitizedMessages = sanitizeMessagesForProvider(messages)
 
 		// Step 3: Strip plain-text reasoning blocks from assistant content arrays.
 		// These would be converted to AI SDK reasoning parts WITHOUT
 		// providerOptions.openai.itemId, which the Responses provider rejects.
-		const cleanedMessages = stripPlainTextReasoningBlocks(standardMessages)
+		const aiSdkMessages = stripPlainTextReasoningBlocks(sanitizedMessages as RooMessage[]) as ModelMessage[]
 
-		// Step 4: Convert to AI SDK messages.
-		const aiSdkMessages = cleanedMessages as ModelMessage[]
-
-		// Step 5: Re-inject encrypted reasoning as properly-formed AI SDK reasoning
+		// Step 4: Re-inject encrypted reasoning as properly-formed AI SDK reasoning
 		// parts with providerOptions.openai.itemId and reasoningEncryptedContent.
 		if (encryptedReasoningItems.length > 0) {
 			injectEncryptedReasoning(aiSdkMessages, encryptedReasoningItems, messages as RooMessage[])
