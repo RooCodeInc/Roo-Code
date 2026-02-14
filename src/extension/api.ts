@@ -152,8 +152,8 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 
 						break
 					case TaskCommandName.DeleteQueuedMessage:
-						this.log(`[API] DeleteQueuedMessage -> ${data}`)
-						this.deleteQueuedMessage(data)
+						this.log(`[API] DeleteQueuedMessage -> ${command.data}`)
+						this.deleteQueuedMessage(command.data)
 						break
 				}
 			})
