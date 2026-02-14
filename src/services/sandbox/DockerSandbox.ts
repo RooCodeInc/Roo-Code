@@ -1,9 +1,9 @@
-import { exec } from "child_process"
+import { execFile } from "child_process"
 import { promisify } from "util"
 
 import { type SandboxConfig, resolveSandboxConfig } from "./SandboxConfig"
 
-const execAsync = promisify(exec)
+const execFileAsync = promisify(execFile)
 
 interface SandboxExecResult {
 	stdout: string
@@ -38,7 +38,7 @@ export class DockerSandbox {
 		}
 
 		try {
-			await execAsync("docker info", { timeout: 5000 })
+			await execFileAsync("docker", ["info"], { timeout: 5000 })
 			this.dockerAvailable = true
 		} catch {
 			this.dockerAvailable = false
@@ -58,10 +58,9 @@ export class DockerSandbox {
 		}
 
 		const args = this.buildDockerArgs(command, cwd)
-		const fullCommand = `docker ${args.join(" ")}`
 
 		try {
-			const { stdout, stderr } = await execAsync(fullCommand, {
+			const { stdout, stderr } = await execFileAsync("docker", args, {
 				timeout: this.config.maxExecutionTime,
 				maxBuffer: 10 * 1024 * 1024, // 10MB
 			})
