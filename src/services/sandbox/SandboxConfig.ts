@@ -10,11 +10,11 @@ export interface SandboxConfig {
 
 export const DEFAULT_SANDBOX_CONFIG: SandboxConfig = {
 	enabled: false,
-	image: "node:20-slim",
+	image: "node:20",
 	mountWorkspace: true,
 	networkAccess: "restricted",
 	maxExecutionTime: 120_000,
-	memoryLimit: "512m",
+	memoryLimit: "4g",
 	allowedMounts: [],
 }
 

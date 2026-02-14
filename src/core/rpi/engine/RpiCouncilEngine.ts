@@ -19,12 +19,27 @@ export interface RpiCouncilResult {
 	rawResponse: string
 }
 
+export interface RpiCodeReviewIssue {
+	severity: "critical" | "major" | "minor"
+	category: string
+	description: string
+	file?: string
+	suggestion?: string
+}
+
+export interface RpiCodeReviewResult extends RpiCouncilResult {
+	score: number
+	issues: RpiCodeReviewIssue[]
+	reviewMarkdown: string
+}
+
 type CouncilAction =
 	| "analyze_context"
 	| "decompose_task"
 	| "build_decision"
 	| "verification_review"
 	| "structured_decompose"
+	| "code_review"
 
 const MAX_FINDINGS = 6
 const MAX_RISKS = 4
@@ -51,6 +66,27 @@ export class RpiCouncilEngine {
 
 	async structuredDecompose(apiConfiguration: ProviderSettings, input: RpiCouncilInput): Promise<RpiCouncilResult> {
 		return this.runAction(apiConfiguration, input, "structured_decompose")
+	}
+
+	async runCodeReview(
+		apiConfiguration: ProviderSettings,
+		input: RpiCouncilInput,
+		fileContents: { path: string; content: string }[],
+		timeoutMs?: number,
+	): Promise<RpiCodeReviewResult> {
+		const prompt = this.buildCodeReviewPrompt(input, fileContents)
+		const handler = buildApiHandler(apiConfiguration)
+		if (!("completePrompt" in handler)) {
+			throw new Error("Active provider does not support single-prompt completions for RPI code review.")
+		}
+		const effectiveTimeout = timeoutMs ?? this.timeoutMs
+		const timeoutSeconds = Math.max(1, Math.round(effectiveTimeout / 1000))
+		const rawResponse = await this.withTimeout(
+			(handler as SingleCompletionHandler).completePrompt(prompt),
+			effectiveTimeout,
+			`RPI code review timed out after ${timeoutSeconds}s.`,
+		)
+		return this.parseCodeReviewResult(rawResponse)
 	}
 
 	private async runAction(
@@ -120,6 +156,8 @@ export class RpiCouncilEngine {
 				return "Review implementation readiness and highlight residual risks before completion."
 			case "structured_decompose":
 				return 'Break the task into 3-10 ordered execution steps. For each step provide: description (what to do), phase (discovery|planning|implementation|verification), and toolsExpected (which Roo Code tools will likely be needed). Return JSON: {"summary":"...", "steps":[{"description":"...", "phase":"...", "toolsExpected":["..."]}], "findings":[...], "risks":[...]}'
+			case "code_review":
+				return "Perform a senior-level code review focusing on Security, Performance, Code Quality, Error Handling, and Testing."
 		}
 	}
 
@@ -193,6 +231,165 @@ export class RpiCouncilEngine {
 			return text
 		}
 		return `${text.slice(0, Math.max(0, maxChars - 3))}...`
+	}
+
+	private buildCodeReviewPrompt(input: RpiCouncilInput, fileContents: { path: string; content: string }[]): string {
+		const taskSummary = this.clampText(input.taskSummary, 480)
+		const filesSection = fileContents.map((f) => `### ${f.path}\n\`\`\`\n${f.content}\n\`\`\``).join("\n\n")
+
+		return [
+			"You are a Senior Code Reviewer with a skeptical, security-first mindset.",
+			"ALL code below is assumed to be written by a junior developer.",
+			"",
+			"Return valid JSON only with this exact shape:",
+			'{"summary":"string","score":number,"criticalIssues":[{"category":"string","description":"string","file":"string","suggestion":"string"}],"majorIssues":[...],"minorIssues":[...],"findings":["string"],"risks":["string"]}',
+			"",
+			"Rules:",
+			"- score is 1-10 (1=reject, 10=production-ready)",
+			"- criticalIssues: Security vulnerabilities, data loss, broken core functionality",
+			"- majorIssues: Performance, missing error handling, poor patterns",
+			"- minorIssues: Style, naming, minor improvements",
+			"- Each issue must have: category, description, file, suggestion",
+			"- findings must be specific and execution-oriented",
+			"- risks must only include real blockers or residual risks",
+			"- Do not add markdown, explanations, or extra keys",
+			"",
+			"Review categories: Security, Performance, Code Quality, Error Handling, Testing",
+			"Common junior mistakes to watch for:",
+			"- Trusting user input without validation",
+			"- Hardcoded secrets or credentials",
+			"- Missing error handling (happy-path-only code)",
+			"- No input sanitization, SQL injection, XSS vectors",
+			"- Race conditions, memory leaks",
+			"- Missing null/undefined checks",
+			"",
+			`Task context: ${taskSummary}`,
+			`Mode: ${input.mode}`,
+			"",
+			"Files to review:",
+			filesSection,
+		].join("\n")
+	}
+
+	private parseCodeReviewResult(rawResponse: string): RpiCodeReviewResult {
+		const parsed = this.tryParseJson(rawResponse)
+
+		if (!parsed) {
+			return {
+				summary: "Code review completed (could not parse structured response).",
+				score: 5,
+				issues: [],
+				findings: [],
+				risks: [],
+				reviewMarkdown: this.formatReviewMarkdown(
+					5,
+					[],
+					"Code review completed but response was not valid JSON.",
+				),
+				rawResponse,
+			}
+		}
+
+		const summary = this.ensureString(parsed.summary)
+		const findings = this.ensureStringArray(parsed.findings, MAX_FINDINGS)
+		const risks = this.ensureStringArray(parsed.risks, MAX_RISKS)
+
+		const rawScore = typeof parsed.score === "number" ? parsed.score : 5
+		const score = Math.max(1, Math.min(10, Math.round(rawScore)))
+
+		const issues: RpiCodeReviewIssue[] = []
+		const severityMap: [string, RpiCodeReviewIssue["severity"]][] = [
+			["criticalIssues", "critical"],
+			["majorIssues", "major"],
+			["minorIssues", "minor"],
+		]
+
+		for (const [key, severity] of severityMap) {
+			const arr = parsed[key]
+			if (!Array.isArray(arr)) {
+				continue
+			}
+			for (const item of arr) {
+				if (!item || typeof item !== "object") {
+					continue
+				}
+				const issue = item as Record<string, unknown>
+				issues.push({
+					severity,
+					category: typeof issue.category === "string" ? issue.category : "General",
+					description:
+						typeof issue.description === "string" ? issue.description : String(issue.description ?? ""),
+					file: typeof issue.file === "string" ? issue.file : undefined,
+					suggestion: typeof issue.suggestion === "string" ? issue.suggestion : undefined,
+				})
+			}
+		}
+
+		const reviewMarkdown = this.formatReviewMarkdown(score, issues, summary || "Code review completed.")
+
+		return {
+			summary: summary || "Code review completed.",
+			score,
+			issues,
+			findings,
+			risks,
+			reviewMarkdown,
+			rawResponse,
+		}
+	}
+
+	private formatReviewMarkdown(score: number, issues: RpiCodeReviewIssue[], summary: string): string {
+		const statusLabel = score >= 7 ? "OK" : score >= 4 ? "WARN" : "FAIL"
+		const lines: string[] = [`## Code Review — Score: ${score}/10 [${statusLabel}]`, "", summary]
+
+		const critical = issues.filter((i) => i.severity === "critical")
+		const major = issues.filter((i) => i.severity === "major")
+		const minor = issues.filter((i) => i.severity === "minor")
+
+		if (critical.length > 0) {
+			lines.push("", "### Critical Issues")
+			for (const issue of critical) {
+				lines.push(`- **[${issue.category}]** ${issue.description}`)
+				if (issue.file) {
+					lines.push(`  File: \`${issue.file}\``)
+				}
+				if (issue.suggestion) {
+					lines.push(`  Fix: ${issue.suggestion}`)
+				}
+			}
+		}
+
+		if (major.length > 0) {
+			lines.push("", "### Major Issues")
+			for (const issue of major) {
+				lines.push(`- **[${issue.category}]** ${issue.description}`)
+				if (issue.file) {
+					lines.push(`  File: \`${issue.file}\``)
+				}
+				if (issue.suggestion) {
+					lines.push(`  Fix: ${issue.suggestion}`)
+				}
+			}
+		}
+
+		if (minor.length > 0) {
+			lines.push("", "### Minor Issues")
+			for (const issue of minor) {
+				lines.push(`- [${issue.category}] ${issue.description}`)
+				if (issue.file) {
+					lines.push(`  File: \`${issue.file}\``)
+				}
+				if (issue.suggestion) {
+					lines.push(`  Fix: ${issue.suggestion}`)
+				}
+			}
+		}
+
+		if (issues.length === 0) {
+			lines.push("", "No issues found.")
+		}
+
+		return lines.join("\n")
 	}
 
 	private async withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {

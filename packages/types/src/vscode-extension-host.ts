@@ -346,6 +346,8 @@ export type ExtensionState = Pick<
 	| "sandboxNetworkAccess"
 	| "sandboxMemoryLimit"
 	| "sandboxMaxExecutionTime"
+	| "rpiCodeReviewEnabled"
+	| "rpiCodeReviewScoreThreshold"
 	| "rpiContextDistillationBudget"
 	| "rpiCouncilTimeoutSeconds"
 	| "condensingApiConfigId"

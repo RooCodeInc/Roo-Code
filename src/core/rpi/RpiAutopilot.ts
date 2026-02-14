@@ -2,7 +2,12 @@ import fs from "fs/promises"
 import * as path from "path"
 import type { ProviderSettings } from "@roo-code/types"
 
-import { type RpiCouncilResult, RpiCouncilEngine, type RpiCouncilInput } from "./engine/RpiCouncilEngine"
+import {
+	type RpiCouncilResult,
+	type RpiCodeReviewResult,
+	RpiCouncilEngine,
+	type RpiCouncilInput,
+} from "./engine/RpiCouncilEngine"
 import { RpiCorrectionEngine, type RpiCorrectionSuggestion } from "./engine/RpiCorrectionEngine"
 import { RpiVerificationEngine } from "./engine/RpiVerificationEngine"
 import { RpiMemory } from "./RpiMemory"
@@ -76,6 +81,8 @@ interface RpiState {
 	lastObservation?: RpiToolObservation
 	observationCount: number
 	stepAttempts: Record<string, number>
+	codeReviewRuns: number
+	codeReviewScore?: number
 }
 
 interface RpiAutopilotContext {
@@ -104,6 +111,17 @@ interface RpiAutopilotContext {
 		phase: RpiPhase
 		previousPhase?: RpiPhase
 		trigger?: string
+	}) => void
+	getCodeReviewScoreThreshold?: () => number
+	isCodeReviewEnabled?: () => boolean
+	onCodeReviewEvent?: (event: {
+		status: "started" | "completed" | "skipped"
+		filesCount?: number
+		score?: number
+		issuesCount?: number
+		reviewMarkdown?: string
+		error?: string
+		elapsedSeconds?: number
 	}) => void
 }
 
@@ -165,6 +183,33 @@ const MAX_COUNCIL_RUNS_PER_TASK = 3
 const DEFAULT_COUNCIL_PROMPT_MAX_CHARS = 5000
 const MAX_COUNCIL_FINDINGS = 6
 const MAX_COUNCIL_RISKS = 4
+const MAX_CODE_REVIEW_RUNS_PER_TASK = 1
+const DEFAULT_CODE_REVIEW_TIMEOUT_MS = 120_000
+const DEFAULT_CODE_REVIEW_MAX_FILE_CHARS = 15_000
+const CODE_REVIEW_BINARY_EXTENSIONS = new Set([
+	".png",
+	".jpg",
+	".jpeg",
+	".gif",
+	".ico",
+	".svg",
+	".woff",
+	".woff2",
+	".ttf",
+	".eot",
+	".mp3",
+	".mp4",
+	".zip",
+	".tar",
+	".gz",
+	".pdf",
+	".exe",
+	".dll",
+	".so",
+	".dylib",
+	".bin",
+	".dat",
+])
 
 export class RpiAutopilot {
 	private state?: RpiState
@@ -626,6 +671,14 @@ export class RpiAutopilot {
 				this.state.lastUpdatedAt = new Date().toISOString()
 				await this.syncArtifacts()
 				return `RPI verification failed:\n${failed}\n\nSuggestions:\n${verification.suggestions.join("\n")}`
+			}
+
+			// Senior code review gate
+			const codeReviewBlocker = await this.maybeRunCodeReview()
+			if (codeReviewBlocker) {
+				this.state.lastUpdatedAt = new Date().toISOString()
+				await this.syncArtifacts()
+				return codeReviewBlocker
 			}
 
 			this.completePhase("implementation")
@@ -1197,6 +1250,7 @@ export class RpiAutopilot {
 			observations: [],
 			observationCount: 0,
 			stepAttempts: {},
+			codeReviewRuns: 0,
 		}
 	}
 
@@ -1208,6 +1262,7 @@ export class RpiAutopilot {
 			observations: state.observations ?? [],
 			observationCount: state.observationCount ?? 0,
 			stepAttempts: state.stepAttempts ?? {},
+			codeReviewRuns: state.codeReviewRuns ?? 0,
 		}
 	}
 
@@ -1217,6 +1272,167 @@ export class RpiAutopilot {
 			return "Task started without explicit text."
 		}
 		return trimmed.length > 180 ? `${trimmed.slice(0, 177)}...` : trimmed
+	}
+
+	private collectModifiedFiles(): string[] {
+		if (!this.state) {
+			return []
+		}
+		const seen = new Set<string>()
+		for (const obs of this.state.observations) {
+			if (!obs.filesAffected) {
+				continue
+			}
+			for (const filePath of obs.filesAffected) {
+				if (!filePath) {
+					continue
+				}
+				const ext = path.extname(filePath).toLowerCase()
+				if (CODE_REVIEW_BINARY_EXTENSIONS.has(ext)) {
+					continue
+				}
+				if (isRpiStateMutationPath(filePath)) {
+					continue
+				}
+				seen.add(filePath)
+			}
+		}
+		return Array.from(seen)
+	}
+
+	private async readFilesForReview(
+		filePaths: string[],
+		maxTotalChars: number = DEFAULT_CODE_REVIEW_MAX_FILE_CHARS,
+	): Promise<{ path: string; content: string }[]> {
+		if (filePaths.length === 0) {
+			return []
+		}
+		const perFileLimit = Math.max(2000, Math.floor(maxTotalChars / filePaths.length))
+		const results: { path: string; content: string }[] = []
+		let totalChars = 0
+
+		for (const filePath of filePaths) {
+			if (totalChars >= maxTotalChars) {
+				break
+			}
+			try {
+				const absolutePath = path.isAbsolute(filePath) ? filePath : path.resolve(this.context.cwd, filePath)
+				let content = await fs.readFile(absolutePath, "utf-8")
+				if (content.length > perFileLimit) {
+					content = content.slice(0, perFileLimit) + "\n// ... truncated"
+				}
+				if (totalChars + content.length > maxTotalChars) {
+					content = content.slice(0, maxTotalChars - totalChars) + "\n// ... truncated"
+				}
+				results.push({ path: filePath, content })
+				totalChars += content.length
+			} catch {
+				// File deleted or inaccessible — skip silently
+			}
+		}
+		return results
+	}
+
+	private async maybeRunCodeReview(): Promise<string | undefined> {
+		if (!this.state) {
+			return undefined
+		}
+
+		// Guard: council must be enabled and code review must be enabled
+		if (!this.context.isCouncilEngineEnabled()) {
+			return undefined
+		}
+		if (this.context.isCodeReviewEnabled && !this.context.isCodeReviewEnabled()) {
+			return undefined
+		}
+
+		// Guard: only run once per task
+		if (this.state.codeReviewRuns >= MAX_CODE_REVIEW_RUNS_PER_TASK) {
+			return undefined
+		}
+
+		// Collect modified files
+		const modifiedFiles = this.collectModifiedFiles()
+		if (modifiedFiles.length === 0) {
+			this.context.onCodeReviewEvent?.({ status: "skipped", error: "No modified files to review." })
+			return undefined
+		}
+
+		// Read file contents
+		const fileContents = await this.readFilesForReview(modifiedFiles)
+		if (fileContents.length === 0) {
+			this.context.onCodeReviewEvent?.({ status: "skipped", error: "Could not read any modified files." })
+			return undefined
+		}
+
+		// Emit started event
+		this.context.onCodeReviewEvent?.({ status: "started", filesCount: fileContents.length })
+
+		const startTime = Date.now()
+		try {
+			const apiConfig = await this.context.getApiConfiguration()
+			if (!apiConfig) {
+				this.context.onCodeReviewEvent?.({ status: "skipped", error: "No API configuration available." })
+				return undefined
+			}
+
+			const mode = (await this.context.getMode()) || this.state.modeAtStart
+			const input: RpiCouncilInput = {
+				taskSummary: this.state.taskSummary,
+				taskText: this.context.getTaskText() ?? this.state.taskSummary,
+				mode,
+				strategy: this.state.strategy,
+				maxPromptChars: DEFAULT_CODE_REVIEW_MAX_FILE_CHARS,
+			}
+
+			const result: RpiCodeReviewResult = await this.councilEngine.runCodeReview(
+				apiConfig,
+				input,
+				fileContents,
+				DEFAULT_CODE_REVIEW_TIMEOUT_MS,
+			)
+
+			this.state.codeReviewRuns++
+			this.state.codeReviewScore = result.score
+
+			const elapsedSeconds = Math.round((Date.now() - startTime) / 1000)
+
+			// Store findings as progress
+			if (result.findings.length > 0) {
+				this.appendProgress(`Code review findings: ${result.findings.join("; ")}`)
+			}
+
+			this.context.onCodeReviewEvent?.({
+				status: "completed",
+				filesCount: fileContents.length,
+				score: result.score,
+				issuesCount: result.issues.length,
+				reviewMarkdown: result.reviewMarkdown,
+				elapsedSeconds,
+			})
+
+			// Check threshold
+			const threshold = this.context.getCodeReviewScoreThreshold?.() ?? 4
+			if (result.score < threshold) {
+				return (
+					`RPI Senior Code Review: Score ${result.score}/10 (threshold: ${threshold}/10) — BLOCKED.\n\n` +
+					`${result.reviewMarkdown}\n\n` +
+					`Fix the issues above and try again.`
+				)
+			}
+
+			return undefined
+		} catch (error) {
+			const elapsedSeconds = Math.round((Date.now() - startTime) / 1000)
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			this.context.onCodeReviewEvent?.({
+				status: "skipped",
+				error: errorMessage,
+				elapsedSeconds,
+			})
+			// LLM error does not block completion
+			return undefined
+		}
 	}
 
 	private completePhase(phase: RpiPhase): void {

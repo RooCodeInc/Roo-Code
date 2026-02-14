@@ -4800,6 +4800,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					onAutopilotEvent: (event) => {
 						void this.handleRpiAutopilotEvent(event)
 					},
+					isCodeReviewEnabled: () => {
+						const provider = this.providerRef.deref()
+						return provider?.contextProxy.getValue("rpiCodeReviewEnabled") ?? true
+					},
+					getCodeReviewScoreThreshold: () => {
+						const provider = this.providerRef.deref()
+						return provider?.contextProxy.getValue("rpiCodeReviewScoreThreshold") ?? 4
+					},
+					onCodeReviewEvent: (event) => {
+						void this.handleRpiCodeReviewEvent(event)
+					},
 				},
 				councilTimeoutMs ? new RpiCouncilEngine(councilTimeoutMs) : undefined,
 			)
@@ -5014,6 +5025,45 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			})
 		} catch (error) {
 			console.error(`[Task#handleRpiAutopilotEvent] Failed: ${(error as Error)?.message ?? String(error)}`)
+		}
+	}
+
+	private async handleRpiCodeReviewEvent(event: {
+		status: "started" | "completed" | "skipped"
+		filesCount?: number
+		score?: number
+		issuesCount?: number
+		reviewMarkdown?: string
+		error?: string
+		elapsedSeconds?: number
+	}): Promise<void> {
+		try {
+			if (event.status === "started") {
+				await this.say(
+					"rpi_council",
+					`Senior Code Review running... (${event.filesCount ?? 0} files)`,
+					undefined,
+					true,
+					undefined,
+					undefined,
+					{ isNonInteractive: true },
+				)
+			} else if (event.status === "completed") {
+				const text = event.reviewMarkdown ?? `Senior Code Review completed. Score: ${event.score ?? "?"}/10`
+				await this.say("rpi_council", text, undefined, false, undefined, undefined, { isNonInteractive: true })
+			} else if (event.status === "skipped") {
+				await this.say(
+					"rpi_council",
+					`Senior Code Review skipped.${event.error ? ` ${event.error}` : ""}`,
+					undefined,
+					false,
+					undefined,
+					undefined,
+					{ isNonInteractive: true },
+				)
+			}
+		} catch (error) {
+			console.error(`[Task#handleRpiCodeReviewEvent] Failed: ${(error as Error)?.message ?? String(error)}`)
 		}
 	}
 

@@ -30,11 +30,15 @@ type RpiSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	rpiVerificationStrictness?: string
 	experiments: Experiments
 	listApiConfigMeta: { id: string; name: string }[]
+	rpiCodeReviewEnabled?: boolean
+	rpiCodeReviewScoreThreshold?: number
 	setCachedStateField: SetCachedStateField<
 		| "rpiAutopilotEnabled"
 		| "rpiCouncilEngineEnabled"
 		| "rpiCouncilApiConfigId"
 		| "rpiVerificationStrictness"
+		| "rpiCodeReviewEnabled"
+		| "rpiCodeReviewScoreThreshold"
 		| "sandboxImage"
 		| "sandboxNetworkAccess"
 		| "sandboxMemoryLimit"
@@ -64,6 +68,8 @@ export const RpiSettings = ({
 	sandboxNetworkAccess,
 	sandboxMemoryLimit,
 	sandboxMaxExecutionTime,
+	rpiCodeReviewEnabled,
+	rpiCodeReviewScoreThreshold,
 	rpiContextDistillationBudget,
 	rpiCouncilTimeoutSeconds,
 	className,
@@ -169,6 +175,46 @@ export const RpiSettings = ({
 						{t("settings:rpiConfig.verificationStrictness.description")}
 					</div>
 				</SearchableSetting>
+
+				<SearchableSetting
+					settingId="rpi-code-review"
+					section="rpiConfig"
+					label={t("settings:rpiConfig.codeReview.label")}>
+					<VSCodeCheckbox
+						checked={rpiCodeReviewEnabled ?? true}
+						onChange={(e: any) => setCachedStateField("rpiCodeReviewEnabled", e.target.checked)}
+						data-testid="rpi-code-review-enabled-checkbox">
+						<label className="block font-medium mb-1">{t("settings:rpiConfig.codeReview.label")}</label>
+					</VSCodeCheckbox>
+					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+						{t("settings:rpiConfig.codeReview.description")}
+					</div>
+				</SearchableSetting>
+
+				<SearchableSetting
+					settingId="rpi-code-review-threshold"
+					section="rpiConfig"
+					label={t("settings:rpiConfig.codeReviewThreshold.label")}>
+					<label className="block font-medium mb-1">
+						{t("settings:rpiConfig.codeReviewThreshold.label")}
+					</label>
+					<Input
+						type="number"
+						value={rpiCodeReviewScoreThreshold ?? 4}
+						onChange={(e) =>
+							setCachedStateField(
+								"rpiCodeReviewScoreThreshold",
+								Math.max(1, Math.min(10, parseInt(e.target.value) || 4)),
+							)
+						}
+						disabled={!(rpiCodeReviewEnabled ?? true)}
+						min={1}
+						max={10}
+					/>
+					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+						{t("settings:rpiConfig.codeReviewThreshold.description")}
+					</div>
+				</SearchableSetting>
 			</Section>
 
 			{/* Sandbox Section */}
@@ -197,10 +243,10 @@ export const RpiSettings = ({
 					label={t("settings:rpiConfig.sandboxImage.label")}>
 					<label className="block font-medium mb-1">{t("settings:rpiConfig.sandboxImage.label")}</label>
 					<Input
-						value={sandboxImage ?? "node:20-slim"}
+						value={sandboxImage ?? "node:20"}
 						onChange={(e) => setCachedStateField("sandboxImage", e.target.value)}
 						disabled={!sandboxEnabled}
-						placeholder="node:20-slim"
+						placeholder="node:20"
 					/>
 					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
 						{t("settings:rpiConfig.sandboxImage.description")}
@@ -240,7 +286,7 @@ export const RpiSettings = ({
 					label={t("settings:rpiConfig.sandboxMemoryLimit.label")}>
 					<label className="block font-medium mb-1">{t("settings:rpiConfig.sandboxMemoryLimit.label")}</label>
 					<Select
-						value={sandboxMemoryLimit ?? "512m"}
+						value={sandboxMemoryLimit ?? "4g"}
 						onValueChange={(value) => setCachedStateField("sandboxMemoryLimit", value)}
 						disabled={!sandboxEnabled}>
 						<SelectTrigger className="w-full">

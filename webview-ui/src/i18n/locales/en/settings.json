@@ -936,6 +936,14 @@
 			"standard": "Standard",
 			"strict": "Strict"
 		},
+		"codeReview": {
+			"label": "Enable senior code review",
+			"description": "When enabled, a senior-level code review runs during verification. If the quality score is below the threshold, task completion is blocked until issues are fixed."
+		},
+		"codeReviewThreshold": {
+			"label": "Code review score threshold (1-10)",
+			"description": "Minimum score required to pass the code review. Tasks scoring below this are blocked. Default: 4."
+		},
 		"sectionSandbox": "Sandbox Execution",
 		"sandboxEnabled": {
 			"label": "Enable sandbox execution",

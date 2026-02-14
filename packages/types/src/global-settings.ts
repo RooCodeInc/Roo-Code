@@ -213,6 +213,8 @@ export const globalSettingsSchema = z.object({
 	sandboxNetworkAccess: z.enum(["full", "restricted", "none"]).optional(),
 	sandboxMemoryLimit: z.enum(["256m", "512m", "1g", "2g", "4g", "8g", "16g"]).optional(),
 	sandboxMaxExecutionTime: z.number().optional(),
+	rpiCodeReviewEnabled: z.boolean().optional(),
+	rpiCodeReviewScoreThreshold: z.number().min(1).max(10).optional(),
 	rpiContextDistillationBudget: z.number().optional(),
 	rpiCouncilTimeoutSeconds: z.number().optional(),
 

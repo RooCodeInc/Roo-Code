@@ -77,10 +77,10 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 					const { DockerSandbox } = await import("../../services/sandbox/DockerSandbox")
 					const sandbox = new DockerSandbox(task.cwd, {
 						enabled: true,
-						image: (providerState?.sandboxImage as string) ?? "node:20-slim",
+						image: (providerState?.sandboxImage as string) ?? "node:20",
 						networkAccess:
 							(providerState?.sandboxNetworkAccess as "full" | "restricted" | "none") ?? "restricted",
-						memoryLimit: (providerState?.sandboxMemoryLimit as string) ?? "512m",
+						memoryLimit: (providerState?.sandboxMemoryLimit as string) ?? "4g",
 						maxExecutionTime: ((providerState?.sandboxMaxExecutionTime as number) ?? 120) * 1000,
 					})
 					if (await sandbox.isAvailable()) {

@@ -187,6 +187,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		sandboxNetworkAccess,
 		sandboxMemoryLimit,
 		sandboxMaxExecutionTime,
+		rpiCodeReviewEnabled,
+		rpiCodeReviewScoreThreshold,
 		rpiContextDistillationBudget,
 		rpiCouncilTimeoutSeconds,
 		condensingApiConfigId,
@@ -461,10 +463,12 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					rpiCouncilEngineEnabled: rpiCouncilEngineEnabled ?? true,
 					rpiCouncilApiConfigId: rpiCouncilApiConfigId ?? "",
 					rpiVerificationStrictness: rpiVerificationStrictness ?? "lenient",
-					sandboxImage: sandboxImage ?? "node:20-slim",
+					sandboxImage: sandboxImage ?? "node:20",
 					sandboxNetworkAccess: sandboxNetworkAccess ?? "restricted",
-					sandboxMemoryLimit: sandboxMemoryLimit ?? "512m",
+					sandboxMemoryLimit: sandboxMemoryLimit ?? "4g",
 					sandboxMaxExecutionTime: sandboxMaxExecutionTime ?? 120,
+					rpiCodeReviewEnabled: rpiCodeReviewEnabled ?? true,
+					rpiCodeReviewScoreThreshold: rpiCodeReviewScoreThreshold ?? 4,
 					rpiContextDistillationBudget: rpiContextDistillationBudget ?? 8000,
 					rpiCouncilTimeoutSeconds: rpiCouncilTimeoutSeconds ?? 90,
 					condensingApiConfigId: condensingApiConfigId ?? "",
@@ -956,6 +960,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								sandboxNetworkAccess={sandboxNetworkAccess}
 								sandboxMemoryLimit={sandboxMemoryLimit}
 								sandboxMaxExecutionTime={sandboxMaxExecutionTime}
+								rpiCodeReviewEnabled={rpiCodeReviewEnabled}
+								rpiCodeReviewScoreThreshold={rpiCodeReviewScoreThreshold}
 								rpiContextDistillationBudget={rpiContextDistillationBudget}
 								rpiCouncilTimeoutSeconds={rpiCouncilTimeoutSeconds}
 							/>
