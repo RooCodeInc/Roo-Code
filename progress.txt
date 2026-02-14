@@ -1,0 +1,35 @@
+# Reapply Progress — Batch 2 (reapply/batch-2-minor-conflicts)
+
+## Status: ✅ READY FOR FORCE PUSH
+
+## Summary
+Batch 2 branch has been rebuilt from scratch on top of origin/main.
+
+## Changes from Previous Attempt
+- **3 delegation PRs removed**: #11379, #11418, #11422 (contained AI SDK contamination)
+- Branch rebuilt with clean cherry-picks only
+
+## Cherry-Picked PRs (9 total)
+1. fix: correct Bedrock model ID for Claude Opus 4.6 (#11232)
+2. fix: guard against empty-string baseURL (#11233)
+3. fix: make defaultTemperature required (#11218)
+4. feat: batch consecutive tool calls (#11245)
+5. feat: add IPC query handlers (#11279)
+6. feat: add lock toggle to pin API config (#11295)
+7. fix: validate Gemini thinkingLevel (#11303)
+8. chore(cli): prepare release v0.0.53 (#11425)
+9. feat: add GLM-5 model support to Z.ai provider (#11440)
+
+## Post-Cherry-Pick Fixes
+- **AI SDK contamination cleaned**: Removed 3 AI SDK tests + import from gemini.spec.ts
+- **Type errors fixed**: Added missing `defaultTemperature` to vertex.ts and xai.ts
+- **pnpm-lock.yaml regenerated**: Clean lockfile matching current dependencies
+
+## Verification Results (2026-02-14)
+- **Backend tests**: 375 files passed, 5372 tests (4 files skipped, 48 tests skipped)
+- **Webview-ui tests**: 120 files passed, 1250 tests (8 tests skipped)
+- **TypeScript check**: 14/14 packages clean (all cached)
+- **AI SDK contamination check**: CLEAN — no traces of `from "ai"`, `rooMessage`, `@ai-sdk`
+- **rooMessage.ts file check**: CLEAN — no such file exists
+
+## Branch ready for force push to origin/reapply/batch-2-minor-conflicts
