@@ -239,12 +239,23 @@ export const RpiSettings = ({
 					section="rpiConfig"
 					label={t("settings:rpiConfig.sandboxMemoryLimit.label")}>
 					<label className="block font-medium mb-1">{t("settings:rpiConfig.sandboxMemoryLimit.label")}</label>
-					<Input
+					<Select
 						value={sandboxMemoryLimit ?? "512m"}
-						onChange={(e) => setCachedStateField("sandboxMemoryLimit", e.target.value)}
-						disabled={!sandboxEnabled}
-						placeholder="512m"
-					/>
+						onValueChange={(value) => setCachedStateField("sandboxMemoryLimit", value)}
+						disabled={!sandboxEnabled}>
+						<SelectTrigger className="w-full">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="256m">256 MB</SelectItem>
+							<SelectItem value="512m">512 MB</SelectItem>
+							<SelectItem value="1g">1 GB</SelectItem>
+							<SelectItem value="2g">2 GB</SelectItem>
+							<SelectItem value="4g">4 GB</SelectItem>
+							<SelectItem value="8g">8 GB</SelectItem>
+							<SelectItem value="16g">16 GB</SelectItem>
+						</SelectContent>
+					</Select>
 					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
 						{t("settings:rpiConfig.sandboxMemoryLimit.description")}
 					</div>

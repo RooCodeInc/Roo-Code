@@ -45,6 +45,7 @@ import { ProgressIndicator } from "./ProgressIndicator"
 import { Markdown } from "./Markdown"
 import { CommandExecution } from "./CommandExecution"
 import { CommandExecutionError } from "./CommandExecutionError"
+import { SandboxFallbackWarning } from "./SandboxFallbackWarning"
 import { AutoApprovedRequestLimitWarning } from "./AutoApprovedRequestLimitWarning"
 import { InProgressRow, CondensationResultRow, CondensationErrorRow, TruncationResultRow } from "./context-management"
 import CodebaseSearchResultsDisplay from "./CodebaseSearchResultsDisplay"
@@ -1448,6 +1449,8 @@ export const ChatRowContent = ({
 					)
 				case "shell_integration_warning":
 					return <CommandExecutionError />
+				case "sandbox_fallback":
+					return <SandboxFallbackWarning message={message.text} />
 				case "checkpoint_saved":
 					return (
 						<CheckpointSaved

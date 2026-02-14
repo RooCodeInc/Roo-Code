@@ -427,6 +427,11 @@
 		"description": "Your command is being executed without VSCode terminal shell integration. To suppress this warning you can disable shell integration in the <strong>Terminal</strong> section of the <settingsLink>Roo Code settings</settingsLink> or troubleshoot VSCode terminal integration using the link below.",
 		"troubleshooting": "Click here for shell integration documentation."
 	},
+	"sandbox": {
+		"fallbackTitle": "Docker Sandbox Unavailable",
+		"fallbackDescription": "Sandbox execution is enabled but Docker is not available. Commands are running directly on the host system. Install Docker or disable sandbox in RPI Autopilot settings.",
+		"openSettings": "Open RPI Autopilot Settings"
+	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "Auto-Approved Request Limit Reached",

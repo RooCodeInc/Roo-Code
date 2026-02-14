@@ -211,7 +211,7 @@ export const globalSettingsSchema = z.object({
 	rpiVerificationStrictness: z.enum(["lenient", "standard", "strict"]).optional(),
 	sandboxImage: z.string().optional(),
 	sandboxNetworkAccess: z.enum(["full", "restricted", "none"]).optional(),
-	sandboxMemoryLimit: z.string().optional(),
+	sandboxMemoryLimit: z.enum(["256m", "512m", "1g", "2g", "4g", "8g", "16g"]).optional(),
 	sandboxMaxExecutionTime: z.number().optional(),
 	rpiContextDistillationBudget: z.number().optional(),
 	rpiCouncilTimeoutSeconds: z.number().optional(),

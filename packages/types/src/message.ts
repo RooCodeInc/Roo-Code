@@ -186,6 +186,7 @@ export const clineSays = [
 	"too_many_tools_warning",
 	"rpi_autopilot",
 	"rpi_council",
+	"sandbox_fallback",
 	"tool",
 ] as const
 

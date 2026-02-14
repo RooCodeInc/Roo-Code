@@ -114,9 +114,14 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 						pushToolResult(`[Docker Sandbox] ${status}\nOutput:\n${output}`)
 						return
 					}
-					// Docker not available — fall through to normal terminal execution
-				} catch {
-					// Sandbox error — fall through to normal terminal execution
+					// Docker not available — notify user and fall through to normal terminal execution
+					await task.say("sandbox_fallback")
+				} catch (sandboxError) {
+					// Sandbox error — notify user and fall through to normal terminal execution
+					await task.say(
+						"sandbox_fallback",
+						sandboxError instanceof Error ? sandboxError.message : "Unknown sandbox error",
+					)
 				}
 			}
 
