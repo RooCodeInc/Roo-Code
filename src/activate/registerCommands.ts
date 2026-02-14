@@ -203,7 +203,7 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 		}
 
 		const currentMultiplier = visibleProvider.contextProxy.getValue("chatFontSizeMultiplier") ?? 1
-		const newMultiplier = Math.min(2, currentMultiplier + 0.1)
+		const newMultiplier = Math.min(2, Math.round((currentMultiplier + 0.1) * 10) / 10)
 		await visibleProvider.contextProxy.setValue("chatFontSizeMultiplier", newMultiplier)
 		await visibleProvider.postStateToWebview()
 	},
@@ -215,7 +215,7 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 		}
 
 		const currentMultiplier = visibleProvider.contextProxy.getValue("chatFontSizeMultiplier") ?? 1
-		const newMultiplier = Math.max(0.5, currentMultiplier - 0.1)
+		const newMultiplier = Math.max(0.5, Math.round((currentMultiplier - 0.1) * 10) / 10)
 		await visibleProvider.contextProxy.setValue("chatFontSizeMultiplier", newMultiplier)
 		await visibleProvider.postStateToWebview()
 	},
