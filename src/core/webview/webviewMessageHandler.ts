@@ -689,7 +689,26 @@ export const webviewMessageHandler = async (
 						}
 					}
 
+					// Diagnostic: log RPI/sandbox settings during save
+					if (key.startsWith("rpi") || key.startsWith("sandbox")) {
+						console.log(
+							`[updateSettings] SAVE key="${key}" value=${JSON.stringify(value)} newValue=${JSON.stringify(newValue)}`,
+						)
+					}
+
 					await provider.contextProxy.setValue(key as keyof RooCodeSettings, newValue)
+				}
+
+				// Diagnostic: verify RPI settings were stored
+				const rpiDiag = [
+					"rpiCodeReviewScoreThreshold",
+					"rpiCodeReviewEnabled",
+					"rpiCouncilEngineEnabled",
+					"sandboxImage",
+				] as const
+				for (const rk of rpiDiag) {
+					const stored = provider.contextProxy.getValue(rk)
+					console.log(`[updateSettings] VERIFY key="${rk}" storedValue=${JSON.stringify(stored)}`)
 				}
 
 				await provider.postStateToWebview()

@@ -158,6 +158,12 @@ export class ClineProvider
 	private cloudOrganizationsCacheTimestamp: number | null = null
 	private static readonly CLOUD_ORGANIZATIONS_CACHE_DURATION_MS = 5 * 1000 // 5 seconds
 
+	// Debounce mechanism for postStateToWebview to prevent race conditions
+	// when multiple concurrent message handlers call it with stale intermediate state.
+	private _postStateVersion = 0
+	private _postStateResolvers: Array<() => void> = []
+	private _postStateTimer: ReturnType<typeof setTimeout> | undefined
+
 	public isViewLaunched = false
 	public settingsImportedAt?: number
 	public readonly latestAnnouncementId = "feb-2026-v3.47.0-opus-4.6-gpt-5.3-codex" // v3.47.0 Claude Opus 4.6 & GPT-5.3-Codex
@@ -1880,15 +1886,65 @@ export class ClineProvider
 		await this.postStateToWebview()
 	}
 
-	async postStateToWebview() {
-		const state = await this.getStateToPostToWebview()
-		this.postMessageToWebview({ type: "state", state })
+	/**
+	 * Sends the full extension state to the webview.
+	 *
+	 * Uses a short debounce (80ms) to batch rapid concurrent calls that
+	 * occur when handleSubmit sends multiple messages (updateSettings,
+	 * upsertApiConfiguration, telemetrySetting, debugSetting) — each
+	 * handler calls postStateToWebview() independently. Without debounce,
+	 * fast handlers (debugSetting) send stale state before slow handlers
+	 * (updateSettings) finish writing all keys to stateCache.
+	 */
+	async postStateToWebview(): Promise<void> {
+		const version = ++this._postStateVersion
 
-		// Check MDM compliance and send user to account tab if not compliant
-		// Only redirect if there's an actual MDM policy requiring authentication
-		if (this.mdmService?.requiresCloudAuth() && !this.checkMdmCompliance()) {
-			await this.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
+		if (this._postStateTimer) {
+			clearTimeout(this._postStateTimer)
 		}
+
+		return new Promise<void>((resolve) => {
+			this._postStateResolvers.push(resolve)
+
+			this._postStateTimer = setTimeout(async () => {
+				this._postStateTimer = undefined
+
+				// If a newer call arrived after us, skip — it will handle the send
+				if (version !== this._postStateVersion) {
+					console.log(
+						`[postStateToWebview] SKIP version=${version} (superseded by ${this._postStateVersion})`,
+					)
+					return
+				}
+
+				const resolvers = this._postStateResolvers
+				this._postStateResolvers = []
+
+				try {
+					const state = await this.getStateToPostToWebview()
+
+					// Diagnostic: log RPI values being sent to webview
+					console.log(
+						`[postStateToWebview] SEND version=${version} resolvers=${resolvers.length}` +
+							` rpiCodeReviewScoreThreshold=${state.rpiCodeReviewScoreThreshold}` +
+							` sandboxMemoryLimit=${state.sandboxMemoryLimit}` +
+							` sandboxMaxExecutionTime=${state.sandboxMaxExecutionTime}` +
+							` rpiCouncilTimeoutSeconds=${state.rpiCouncilTimeoutSeconds}`,
+					)
+
+					this.postMessageToWebview({ type: "state", state })
+
+					// Check MDM compliance and send user to account tab if not compliant
+					if (this.mdmService?.requiresCloudAuth() && !this.checkMdmCompliance()) {
+						await this.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
+					}
+				} finally {
+					for (const r of resolvers) {
+						r()
+					}
+				}
+			}, 80)
+		})
 	}
 
 	/**

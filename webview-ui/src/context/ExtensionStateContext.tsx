@@ -328,6 +328,14 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 			switch (message.type) {
 				case "state": {
 					const newState = message.state ?? {}
+					// Diagnostic: log RPI values received from extension host
+					console.log(
+						`[ExtensionState] RECV state:` +
+							` rpiCodeReviewScoreThreshold=${(newState as any).rpiCodeReviewScoreThreshold}` +
+							` sandboxMemoryLimit=${(newState as any).sandboxMemoryLimit}` +
+							` sandboxMaxExecutionTime=${(newState as any).sandboxMaxExecutionTime}` +
+							` rpiCouncilTimeoutSeconds=${(newState as any).rpiCouncilTimeoutSeconds}`,
+					)
 					setState((prevState) => mergeExtensionState(prevState, newState))
 					setShowWelcome(!checkExistKey(newState.apiConfiguration))
 					setDidHydrateState(true)

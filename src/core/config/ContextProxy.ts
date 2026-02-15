@@ -64,6 +64,23 @@ export class ContextProxy {
 			}
 		}
 
+		// Diagnostic: log RPI/sandbox settings loaded from storage
+		const rpiDiag = [
+			"rpiCodeReviewScoreThreshold",
+			"rpiCodeReviewEnabled",
+			"rpiCouncilEngineEnabled",
+			"sandboxImage",
+			"rpiVerificationStrictness",
+			"sandboxMemoryLimit",
+		] as const
+		for (const rk of rpiDiag) {
+			const raw = this.originalContext.globalState.get(rk)
+			const cached = this.stateCache[rk as keyof typeof this.stateCache]
+			console.log(
+				`[ContextProxy.initialize] LOAD key="${rk}" raw=${JSON.stringify(raw)} cached=${JSON.stringify(cached)} inKeys=${GLOBAL_STATE_KEYS.includes(rk as any)}`,
+			)
+		}
+
 		const promises = [
 			...SECRET_STATE_KEYS.map(async (key) => {
 				try {

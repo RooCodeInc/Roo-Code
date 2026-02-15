@@ -150,7 +150,17 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const prevApiConfigName = useRef(currentApiConfigName)
 	const confirmDialogHandler = useRef<() => void>()
 
-	const [cachedState, setCachedState] = useState(() => extensionState)
+	const [cachedState, setCachedState] = useState(() => {
+		// Diagnostic: log RPI values from extensionState on SettingsView mount
+		console.log(
+			`[SettingsView] MOUNT extensionState:` +
+				` rpiCodeReviewScoreThreshold=${extensionState.rpiCodeReviewScoreThreshold}` +
+				` sandboxMemoryLimit=${extensionState.sandboxMemoryLimit}` +
+				` sandboxMaxExecutionTime=${extensionState.sandboxMaxExecutionTime}` +
+				` rpiCouncilTimeoutSeconds=${extensionState.rpiCouncilTimeoutSeconds}`,
+		)
+		return extensionState
+	})
 
 	const {
 		alwaysAllowReadOnly,
