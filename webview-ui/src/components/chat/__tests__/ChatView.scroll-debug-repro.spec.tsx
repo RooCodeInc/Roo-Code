@@ -1,5 +1,5 @@
 import React, { useEffect, useImperativeHandle, useRef } from "react"
-import { act, render, waitFor } from "@/utils/test-utils"
+import { act, fireEvent, render, waitFor } from "@/utils/test-utils"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 import { ExtensionStateContextProvider } from "@src/context/ExtensionStateContext"
@@ -215,11 +215,12 @@ interface MockVirtuosoProps {
 	data: ClineMessage[]
 	itemContent: (index: number, item: ClineMessage) => React.ReactNode
 	atBottomStateChange?: (isAtBottom: boolean) => void
+	className?: string
 }
 
 vi.mock("react-virtuoso", () => {
 	const MockVirtuoso = React.forwardRef<MockVirtuosoHandle, MockVirtuosoProps>(function MockVirtuoso(
-		{ data, itemContent, atBottomStateChange },
+		{ data, itemContent, atBottomStateChange, className },
 		ref,
 	) {
 		const atBottomCallbackRef = useRef(atBottomStateChange)
@@ -257,7 +258,7 @@ vi.mock("react-virtuoso", () => {
 		}))
 
 		return (
-			<div data-testid="virtuoso-item-list" data-count={data.length}>
+			<div data-testid="virtuoso-item-list" className={className} data-count={data.length}>
 				{data.map((item, index) => (
 					<div key={item.ts} data-testid={`virtuoso-item-${index}`}>
 						{itemContent(index, item)}
@@ -799,6 +800,117 @@ describe("ChatView scroll debug repro harness", () => {
 			expect(successfulLateRearms.length).toBeGreaterThan(0)
 			expect(showScrollToBottomSuppressedWhileSettling.length).toBeGreaterThan(0)
 			expect(stableSettleAfterLateWave).toBeTruthy()
+		} finally {
+			capture.stop()
+		}
+	})
+
+	it("stops forcing bottom when user interrupts settle via keyboard navigation", async () => {
+		virtuosoHarness.scrollCalls = 0
+		virtuosoHarness.atBottomAfterCalls = Number.POSITIVE_INFINITY
+		virtuosoHarness.atBottomSignalDelayMs = 16
+
+		const capture = createDebugCapture()
+
+		try {
+			renderChatView()
+
+			const baseTs = Date.now() - 25_000
+			const initialMessages = buildLongHeterogeneousHistory(baseTs, false)
+
+			await act(async () => {
+				mockPostMessage({ debug: true, clineMessages: initialMessages })
+			})
+
+			await waitFor(
+				() => {
+					expect(capture.events.some((event) => event.event === "settle-attempt")).toBe(true)
+				},
+				{ timeout: 1200 },
+			)
+
+			await act(async () => {
+				fireEvent.keyDown(window, { key: "PageUp" })
+			})
+
+			await waitFor(
+				() => {
+					expect(
+						capture.events.some(
+							(event) => event.event === "sticky-follow-cleared" && event.source === "keyboard-nav-up",
+						),
+					).toBe(true)
+				},
+				{ timeout: 1000 },
+			)
+
+			await waitFor(
+				() => {
+					expect(capture.events.some((event) => event.event === "settle-abort-sticky-disabled")).toBe(true)
+				},
+				{ timeout: 1200 },
+			)
+
+			const scrollCallsAtAbort = virtuosoHarness.scrollCalls
+			const settleAttemptsAtAbort = capture.events.filter((event) => event.event === "settle-attempt").length
+
+			await sleep(140)
+
+			const settleAttemptsAfterWait = capture.events.filter((event) => event.event === "settle-attempt").length
+			expect(virtuosoHarness.scrollCalls).toBe(scrollCallsAtAbort)
+			expect(settleAttemptsAfterWait).toBe(settleAttemptsAtAbort)
+		} finally {
+			capture.stop()
+		}
+	})
+
+	it("disengages sticky follow on pointer drag/manual upward scroll intent", async () => {
+		virtuosoHarness.scrollCalls = 0
+		virtuosoHarness.atBottomAfterCalls = Number.POSITIVE_INFINITY
+		virtuosoHarness.atBottomSignalDelayMs = 20
+
+		const capture = createDebugCapture()
+
+		try {
+			renderChatView()
+
+			const baseTs = Date.now() - 5_000
+			const initialMessages = buildLongHeterogeneousHistory(baseTs, false)
+
+			await act(async () => {
+				mockPostMessage({ debug: true, clineMessages: initialMessages })
+			})
+
+			await waitFor(
+				() => {
+					expect(capture.events.some((event) => event.event === "settle-attempt")).toBe(true)
+				},
+				{ timeout: 1200 },
+			)
+
+			const scrollable = document.querySelector(".scrollable")
+			expect(scrollable).toBeInstanceOf(HTMLElement)
+
+			const scrollableElement = scrollable as HTMLElement
+			scrollableElement.scrollTop = 220
+
+			await act(async () => {
+				fireEvent.pointerDown(scrollableElement)
+				scrollableElement.scrollTop = 120
+				fireEvent.scroll(scrollableElement)
+				fireEvent.pointerUp(window)
+			})
+
+			await waitFor(
+				() => {
+					expect(
+						capture.events.some(
+							(event) => event.event === "sticky-follow-cleared" && event.source === "pointer-scroll-up",
+						),
+					).toBe(true)
+				},
+				{ timeout: 1200 },
+			)
 		} finally {
 			capture.stop()
 		}

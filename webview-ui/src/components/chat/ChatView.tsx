@@ -67,7 +67,22 @@ const INITIAL_LOAD_SETTLE_TIMEOUT_MS = 2500
 const INITIAL_LOAD_SETTLE_HARD_CAP_MS = 10000
 const INITIAL_LOAD_SETTLE_STABLE_FRAME_TARGET = 3
 
+type StickyFollowClearSource = "wheel-up" | "row-expansion" | "keyboard-nav-up" | "pointer-scroll-up"
+
 const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
+
+const isEditableKeyboardTarget = (target: EventTarget | null): boolean => {
+	if (!(target instanceof HTMLElement)) {
+		return false
+	}
+
+	if (target.isContentEditable) {
+		return true
+	}
+
+	const tagName = target.tagName
+	return tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT"
+}
 
 const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewProps> = (
 	{ isHidden, showAnnouncement, hideAnnouncement },
@@ -179,6 +194,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const settleAttemptRef = useRef(0)
 	const groupedMessagesLengthRef = useRef(0)
 	const rawMessagesLengthRef = useRef(0)
+	const pointerScrollActiveRef = useRef(false)
+	const pointerScrollLastTopRef = useRef<number | null>(null)
 	const lastTtsRef = useRef<string>("")
 	const [wasStreaming, setWasStreaming] = useState<boolean>(false)
 	const [checkpointWarning, setCheckpointWarning] = useState<
@@ -335,6 +352,22 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				return
 			}
 
+			if (!stickyFollowRef.current) {
+				const windowState = getInitialSettleWindowState(taskTs)
+				emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
+					event: "settle-abort-sticky-disabled",
+					taskTs,
+					attempt: settleAttemptRef.current,
+					isAtBottom: isAtBottomRef.current,
+					windowOpen: windowState.windowOpen,
+					deadlineMs: windowState.deadlineMs,
+					hardCapDeadlineMs: windowState.hardCapDeadlineMs,
+					hardCapReached: windowState.hardCapReached,
+				})
+				completeInitialSettle(taskTs, "timeout")
+				return
+			}
+
 			settleAttemptRef.current += 1
 			const nowMs = Date.now()
 			const settleStartMs = settleStartMsRef.current ?? nowMs
@@ -378,6 +411,21 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		},
 		[completeInitialSettle, getInitialSettleWindowState],
 	)
+
+	const clearStickyFollow = useCallback((source: StickyFollowClearSource) => {
+		if (!stickyFollowRef.current) {
+			return
+		}
+
+		stickyFollowRef.current = false
+		emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
+			event: "sticky-follow-cleared",
+			source,
+			isAtBottom: isAtBottomRef.current,
+			isSettling: isSettlingRef.current,
+			taskTs: settlingTaskTsRef.current,
+		})
+	}, [])
 
 	const startInitialSettle = useCallback(
 		(taskTs: number, source: string) => {
@@ -866,11 +914,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 		// Expanding a row indicates the user is browsing; disable sticky follow
 		if (wasAnyRowExpandedByUser) {
-			stickyFollowRef.current = false
+			clearStickyFollow("row-expansion")
 		}
 
 		prevExpandedRowsRef.current = expandedRows // Store current state for next comparison
-	}, [expandedRows])
+	}, [clearStickyFollow, expandedRows])
 
 	const isStreaming = useMemo(() => {
 		// Checking clineAsk isn't enough since messages effect may be called
@@ -1749,13 +1797,75 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	)
 
 	// Disable sticky follow when user scrolls up inside the chat container
-	const handleWheel = useCallback((event: Event) => {
-		const wheelEvent = event as WheelEvent
-		if (wheelEvent.deltaY < 0 && scrollContainerRef.current?.contains(wheelEvent.target as Node)) {
-			stickyFollowRef.current = false
-		}
-	}, [])
+	const handleWheel = useCallback(
+		(event: Event) => {
+			const wheelEvent = event as WheelEvent
+			if (wheelEvent.deltaY < 0 && scrollContainerRef.current?.contains(wheelEvent.target as Node)) {
+				clearStickyFollow("wheel-up")
+			}
+		},
+		[clearStickyFollow],
+	)
 	useEvent("wheel", handleWheel, window, { passive: true })
+
+	const handlePointerDown = useCallback((event: Event) => {
+		const pointerEvent = event as PointerEvent
+		const pointerTarget = pointerEvent.target
+		if (!(pointerTarget instanceof HTMLElement)) {
+			pointerScrollActiveRef.current = false
+			pointerScrollLastTopRef.current = null
+			return
+		}
+
+		if (!scrollContainerRef.current?.contains(pointerTarget)) {
+			pointerScrollActiveRef.current = false
+			pointerScrollLastTopRef.current = null
+			return
+		}
+
+		const scroller =
+			(pointerTarget.closest(".scrollable") as HTMLElement | null) ??
+			(pointerTarget.scrollHeight > pointerTarget.clientHeight ? pointerTarget : null)
+
+		pointerScrollActiveRef.current = true
+		pointerScrollLastTopRef.current = scroller?.scrollTop ?? 0
+	}, [])
+
+	const handlePointerEnd = useCallback(() => {
+		pointerScrollActiveRef.current = false
+		pointerScrollLastTopRef.current = null
+	}, [])
+
+	const handlePointerActiveScroll = useCallback(
+		(event: Event) => {
+			if (!pointerScrollActiveRef.current) {
+				return
+			}
+
+			const scrollTarget = event.target
+			if (!(scrollTarget instanceof HTMLElement)) {
+				return
+			}
+
+			if (!scrollContainerRef.current?.contains(scrollTarget)) {
+				return
+			}
+
+			const previousTop = pointerScrollLastTopRef.current
+			const currentTop = scrollTarget.scrollTop
+			pointerScrollLastTopRef.current = currentTop
+
+			if (previousTop !== null && currentTop < previousTop) {
+				clearStickyFollow("pointer-scroll-up")
+			}
+		},
+		[clearStickyFollow],
+	)
+
+	useEvent("pointerdown", handlePointerDown, window, { passive: true })
+	useEvent("pointerup", handlePointerEnd, window, { passive: true })
+	useEvent("pointercancel", handlePointerEnd, window, { passive: true })
+	useEvent("scroll", handlePointerActiveScroll, window, { passive: true, capture: true })
 
 	// Effect to clear checkpoint warning when messages appear or task changes
 	useEffect(() => {
@@ -1916,9 +2026,36 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					// Just Period = Next mode
 					switchToNextMode()
 				}
+				return
+			}
+
+			if (!task || isHidden) {
+				return
+			}
+
+			if (event.metaKey || event.ctrlKey || event.altKey) {
+				return
+			}
+
+			if (event.key !== "PageUp" && event.key !== "Home" && event.key !== "ArrowUp") {
+				return
+			}
+
+			if (isEditableKeyboardTarget(event.target)) {
+				return
+			}
+
+			const activeElement = document.activeElement
+			const focusInsideChat =
+				activeElement instanceof HTMLElement && !!scrollContainerRef.current?.contains(activeElement)
+			const eventTargetInsideChat =
+				event.target instanceof Node && !!scrollContainerRef.current?.contains(event.target)
+
+			if (focusInsideChat || eventTargetInsideChat || activeElement === document.body) {
+				clearStickyFollow("keyboard-nav-up")
 			}
 		},
-		[switchToNextMode, switchToPreviousMode],
+		[clearStickyFollow, isHidden, switchToNextMode, switchToPreviousMode, task],
 	)
 
 	useEffect(() => {
@@ -2107,7 +2244,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 								})
 								setShowScrollToBottom(nextShowScrollToBottom)
 								// stickyFollowRef is only cleared by explicit user actions
-								// (wheel-up, row expansion), not by transient bottom-detection
+								// (wheel-up, keyboard navigation up, pointer drag up, row expansion),
+								// not by transient bottom-detection
 								// state changes which can flicker during layout reflows.
 							}}
 							atBottomThreshold={10}
