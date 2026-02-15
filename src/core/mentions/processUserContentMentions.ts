@@ -1,19 +1,15 @@
+import Anthropic from "@anthropic-ai/sdk"
+
 import { parseMentions, ParseMentionsResult, MentionContentBlock } from "./index"
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
 
-// These types were originally in rooMessage.ts which no longer exists.
-// Defined locally as simple structural types matching the Anthropic message shapes.
-type TextPart = { type: "text"; text: string }
-type ImagePart = { type: "image"; source: { type: string; media_type: string; data: string } }
-type LegacyToolResultBlock = {
-	type: "tool_result"
-	tool_use_id: string
-	content?: string | Array<{ type: "text"; text: string } | { type: "image"; source: { type: string; media_type: string; data: string } }>
-	is_error?: boolean
-}
+// Internal aliases for the Anthropic content block subtypes used during processing.
+type TextPart = Anthropic.Messages.TextBlockParam
+type ImagePart = Anthropic.Messages.ImageBlockParam
+type ToolResultPart = Anthropic.Messages.ToolResultBlockParam
 
 export interface ProcessUserContentMentionsResult {
-	content: Array<TextPart | ImagePart | LegacyToolResultBlock>
+	content: Anthropic.Messages.ContentBlockParam[]
 	mode?: string // Mode from the first slash command that has one
 }
 
@@ -45,7 +41,7 @@ export async function processUserContentMentions({
 	includeDiagnosticMessages = true,
 	maxDiagnosticMessages = 50,
 }: {
-	userContent: Array<TextPart | ImagePart | LegacyToolResultBlock>
+	userContent: Anthropic.Messages.ContentBlockParam[]
 	cwd: string
 	fileContextTracker: FileContextTracker
 	rooIgnoreController?: any
@@ -214,5 +210,5 @@ export async function processUserContentMentions({
 		)
 	).flat()
 
-	return { content: content as Array<TextPart | ImagePart | LegacyToolResultBlock>, mode: commandMode }
+	return { content: content as Anthropic.Messages.ContentBlockParam[], mode: commandMode }
 }

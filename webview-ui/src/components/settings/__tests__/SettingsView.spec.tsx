@@ -232,6 +232,36 @@ vi.mock("@/components/ui", () => ({
 	CollapsibleContent: ({ children, className }: any) => (
 		<div className={`collapsible-content-mock ${className || ""}`}>{children}</div>
 	),
+	Dialog: ({ children, ...props }: any) => (
+		<div data-testid="dialog" {...props}>
+			{children}
+		</div>
+	),
+	DialogContent: ({ children, ...props }: any) => (
+		<div data-testid="dialog-content" {...props}>
+			{children}
+		</div>
+	),
+	DialogHeader: ({ children, ...props }: any) => (
+		<div data-testid="dialog-header" {...props}>
+			{children}
+		</div>
+	),
+	DialogTitle: ({ children, ...props }: any) => (
+		<div data-testid="dialog-title" {...props}>
+			{children}
+		</div>
+	),
+	DialogDescription: ({ children, ...props }: any) => (
+		<div data-testid="dialog-description" {...props}>
+			{children}
+		</div>
+	),
+	DialogFooter: ({ children, ...props }: any) => (
+		<div data-testid="dialog-footer" {...props}>
+			{children}
+		</div>
+	),
 }))
 
 // Mock window.postMessage to trigger state hydration

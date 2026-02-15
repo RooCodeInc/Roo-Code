@@ -13,6 +13,7 @@ import {
 	type ExtensionMessage,
 	type ExtensionState,
 	type MarketplaceInstalledMetadata,
+	type SkillMetadata,
 	type Command,
 	type McpServer,
 	RouterModels,
@@ -146,6 +147,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setIncludeCurrentCost: (value: boolean) => void
 	showWorktreesInHomeScreen: boolean
 	setShowWorktreesInHomeScreen: (value: boolean) => void
+	skills?: SkillMetadata[]
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
@@ -285,6 +287,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		project: {},
 		global: {},
 	})
+	const [skills, setSkills] = useState<SkillMetadata[]>([])
 	const [includeTaskHistoryInEnhance, setIncludeTaskHistoryInEnhance] = useState(true)
 	const [prevCloudIsAuthenticated, setPrevCloudIsAuthenticated] = useState(false)
 	const [includeCurrentTime, setIncludeCurrentTime] = useState(true)
@@ -393,6 +396,12 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 						)
 						return prevState
 					})
+					break
+				}
+				case "skills": {
+					if (message.skills) {
+						setSkills(message.skills)
+					}
 					break
 				}
 				case "mcpServers": {
@@ -607,6 +616,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setIncludeCurrentTime,
 		includeCurrentCost,
 		setIncludeCurrentCost,
+		skills,
 		showWorktreesInHomeScreen: state.showWorktreesInHomeScreen ?? true,
 		setShowWorktreesInHomeScreen: (value) =>
 			setState((prevState) => ({ ...prevState, showWorktreesInHomeScreen: value })),
