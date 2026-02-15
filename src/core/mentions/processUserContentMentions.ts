@@ -1,6 +1,16 @@
-import type { TextPart, ImagePart, LegacyToolResultBlock } from "../task-persistence/rooMessage"
 import { parseMentions, ParseMentionsResult, MentionContentBlock } from "./index"
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
+
+// These types were originally in rooMessage.ts which no longer exists.
+// Defined locally as simple structural types matching the Anthropic message shapes.
+type TextPart = { type: "text"; text: string }
+type ImagePart = { type: "image"; source: { type: string; media_type: string; data: string } }
+type LegacyToolResultBlock = {
+	type: "tool_result"
+	tool_use_id: string
+	content?: string | Array<{ type: "text"; text: string } | { type: "image"; source: { type: string; media_type: string; data: string } }>
+	is_error?: boolean
+}
 
 export interface ProcessUserContentMentionsResult {
 	content: Array<TextPart | ImagePart | LegacyToolResultBlock>
