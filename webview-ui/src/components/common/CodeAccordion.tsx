@@ -9,7 +9,7 @@ import CodeBlock from "./CodeBlock"
 import { PathTooltip } from "../ui/PathTooltip"
 import DiffView from "./DiffView"
 
-interface CodeAccordianProps {
+interface CodeAccordionProps {
 	path?: string
 	code?: string
 	language: string
@@ -24,7 +24,7 @@ interface CodeAccordianProps {
 	diffStats?: { added: number; removed: number }
 }
 
-const CodeAccordian = ({
+const CodeAccordion = ({
 	path,
 	code = "",
 	language,
@@ -36,7 +36,7 @@ const CodeAccordian = ({
 	header,
 	onJumpToFile,
 	diffStats,
-}: CodeAccordianProps) => {
+}: CodeAccordionProps) => {
 	const inferredLanguage = useMemo(() => language ?? (path ? getLanguageFromPath(path) : "txt"), [path, language])
 	const source = useMemo(() => code.trim(), [code])
 	const hasHeader = Boolean(path || isFeedback || header)
@@ -128,4 +128,4 @@ const CodeAccordian = ({
 	)
 }
 
-export default memo(CodeAccordian)
+export default memo(CodeAccordion)
