@@ -54,6 +54,24 @@ Otherwise, if you have not completed the task and do not need additional informa
 (This is an automated message, so do not respond to it conversationally.)`
 	},
 
+	xmlToolCallError: () => {
+		const instructions = getToolInstructionsReminder()
+
+		return `[ERROR] XML tool calls are no longer supported. The model produced XML-style tool markup (e.g. <tool_name>...</tool_name>) instead of using the API's native tool calling mechanism.
+
+Do NOT embed tool invocations as XML tags in your text response. Instead, use the platform's built-in function/tool calling feature to invoke tools.
+
+${instructions}
+
+# Next Steps
+
+Please retry your previous action using proper native tool calls.
+If you have completed the user's task, use the attempt_completion tool.
+If you require additional information from the user, use the ask_followup_question tool.
+Otherwise, proceed with the next step of the task using native tool calls.
+(This is an automated message, so do not respond to it conversationally.)`
+	},
+
 	tooManyMistakes: (feedback?: string) =>
 		JSON.stringify({
 			status: "guidance",
