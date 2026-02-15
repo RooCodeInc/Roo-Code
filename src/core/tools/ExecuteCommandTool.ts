@@ -71,6 +71,9 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 
 			// Check if sandbox execution is enabled via experiment flag
 			const sandboxEnabled = providerState?.experiments?.sandboxExecution ?? false
+			console.log(
+				`[ExecuteCommandTool] Sandbox check: enabled=${sandboxEnabled}, experiments=${JSON.stringify(providerState?.experiments ?? {})}`,
+			)
 
 			if (sandboxEnabled) {
 				try {

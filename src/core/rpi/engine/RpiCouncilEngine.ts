@@ -186,17 +186,32 @@ export class RpiCouncilEngine {
 	}
 
 	private tryParseJson(rawResponse: string): Record<string, unknown> | undefined {
+		// 1. Try direct parse of full response
 		const direct = this.parseCandidate(rawResponse)
 		if (direct) {
 			return direct
 		}
 
+		// 2. Try fenced code block
 		const fencedMatch = rawResponse.match(/```(?:json)?\s*([\s\S]*?)```/i)
-		if (!fencedMatch?.[1]) {
-			return undefined
+		if (fencedMatch?.[1]) {
+			const fenced = this.parseCandidate(fencedMatch[1])
+			if (fenced) {
+				return fenced
+			}
 		}
 
-		return this.parseCandidate(fencedMatch[1])
+		// 3. Try to extract JSON object from within text (handles LLM preamble/postamble)
+		const firstBrace = rawResponse.indexOf("{")
+		const lastBrace = rawResponse.lastIndexOf("}")
+		if (firstBrace !== -1 && lastBrace > firstBrace) {
+			const extracted = this.parseCandidate(rawResponse.slice(firstBrace, lastBrace + 1))
+			if (extracted) {
+				return extracted
+			}
+		}
+
+		return undefined
 	}
 
 	private parseCandidate(candidate: string): Record<string, unknown> | undefined {
@@ -241,7 +256,10 @@ export class RpiCouncilEngine {
 			"You are a Senior Code Reviewer with a skeptical, security-first mindset.",
 			"ALL code below is assumed to be written by a junior developer.",
 			"",
-			"Return valid JSON only with this exact shape:",
+			"CRITICAL: Your response MUST be a single valid JSON object. No text before or after the JSON.",
+			"Do NOT wrap in markdown code fences. Do NOT add explanations. Output ONLY the JSON object.",
+			"",
+			"JSON shape:",
 			'{"summary":"string","score":number,"criticalIssues":[{"category":"string","description":"string","file":"string","suggestion":"string"}],"majorIssues":[...],"minorIssues":[...],"findings":["string"],"risks":["string"]}',
 			"",
 			"Rules:",
@@ -252,7 +270,6 @@ export class RpiCouncilEngine {
 			"- Each issue must have: category, description, file, suggestion",
 			"- findings must be specific and execution-oriented",
 			"- risks must only include real blockers or residual risks",
-			"- Do not add markdown, explanations, or extra keys",
 			"",
 			"Review categories: Security, Performance, Code Quality, Error Handling, Testing",
 			"Common junior mistakes to watch for:",
@@ -275,16 +292,20 @@ export class RpiCouncilEngine {
 		const parsed = this.tryParseJson(rawResponse)
 
 		if (!parsed) {
+			const snippet = rawResponse.slice(0, 500).replace(/\s+/g, " ")
+			console.error(
+				`[RpiCouncilEngine] Code review JSON parse failed. Response preview (${rawResponse.length} chars): ${snippet}`,
+			)
 			return {
-				summary: "Code review completed (could not parse structured response).",
-				score: 5,
+				summary: "Code review FAILED — LLM did not return valid JSON. Review will be retried on next attempt.",
+				score: 1,
 				issues: [],
-				findings: [],
-				risks: [],
+				findings: ["LLM response was not valid JSON — code review could not be performed."],
+				risks: ["Code quality is unknown — review must pass before completion."],
 				reviewMarkdown: this.formatReviewMarkdown(
-					5,
+					1,
 					[],
-					"Code review completed but response was not valid JSON.",
+					"Code review FAILED — the LLM response was not valid JSON. The task will be blocked until a valid review passes.",
 				),
 				rawResponse,
 			}

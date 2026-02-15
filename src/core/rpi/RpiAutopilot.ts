@@ -1392,10 +1392,15 @@ export class RpiAutopilot {
 				DEFAULT_CODE_REVIEW_TIMEOUT_MS,
 			)
 
-			this.state.codeReviewRuns++
-			this.state.codeReviewScore = result.score
-
 			const elapsedSeconds = Math.round((Date.now() - startTime) / 1000)
+
+			// Only count as a used review run if the LLM returned parseable JSON.
+			// A JSON parse failure (score=1, issues=[]) should allow retry.
+			const jsonParseFailed = result.issues.length === 0 && result.score === 1
+			if (!jsonParseFailed) {
+				this.state.codeReviewRuns++
+			}
+			this.state.codeReviewScore = result.score
 
 			// Store findings as progress
 			if (result.findings.length > 0) {
