@@ -5,6 +5,17 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.54] - 2026-02-15
+
+### Added
+
+- **Stdin Stream Mode**: New `stdin-prompt-stream` mode that reads prompts from stdin, allowing batch processing and piping multiple tasks. Each line of stdin is processed as a separate prompt with streaming JSON output. See [`stdin-prompt-stream.ts`](src/ui/stdin-prompt-stream.ts) for implementation.
+
+### Fixed
+
+- Fixed JSON emitter state not being cleared between tasks in stdin-prompt-stream mode
+- Fixed inconsistent user role for prompt echo partials in stream-json mode
+
 ## [0.0.53] - 2026-02-12
 
 ### Changed
