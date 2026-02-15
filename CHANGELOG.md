@@ -2572,7 +2572,7 @@
 - Custom ARNs in Amazon Bedrock (thanks @Smartsheet-JB-Brown!)
 - Update MCP servers directory path for platform compatibility (thanks @hannesrudolph!)
 - Fix browser system prompt inclusion rules (thanks @cannuri!)
-- Publish git tags to github from CI (thanks @pdecat!)
+- Publish git tags to GitHub from CI (thanks @pdecat!)
 - Fixes to OpenAI-style cost calculations (thanks @dtrugman!)
 - Fix to allow using an excluded directory as your working directory (thanks @Szpadel!)
 - Kotlin language support in list_code_definition_names tool (thanks @kohii!)

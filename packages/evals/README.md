@@ -72,7 +72,7 @@ To stop an evals run early you can simply stop the "controller" container using 
 
 The evals system runs VS Code headlessly in Docker containers for consistent, reproducible environments. While this design ensures reliability, it can make debugging more challenging. For debugging purposes, you can run the system locally on macOS, though this approach is less reliable due to hardware and environment variability.
 
-To configure your MacOS system to run evals locally, execute the setup script:
+To configure your macOS system to run evals locally, execute the setup script:
 
 ```sh
 cd packages/evals && ./scripts/setup.sh
