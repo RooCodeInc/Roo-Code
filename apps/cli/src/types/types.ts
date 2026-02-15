@@ -22,6 +22,7 @@ export type FlagOptions = {
 	promptFile?: string
 	workspace?: string
 	print: boolean
+	stdinPromptStream: boolean
 	extension?: string
 	debug: boolean
 	requireApproval: boolean

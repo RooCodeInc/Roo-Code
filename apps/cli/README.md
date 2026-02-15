@@ -100,6 +100,24 @@ In approval-required mode:
 - Tool, command, browser, and MCP actions prompt for yes/no approval
 - Followup questions wait for manual input (no auto-timeout)
 
+### Print Mode (`--print`)
+
+Use `--print` for non-interactive execution and machine-readable output:
+
+```bash
+# Prompt is required
+roo --print "Summarize this repository"
+```
+
+### Stdin Stream Mode (`--stdin-prompt-stream`)
+
+For programmatic control (one process, multiple prompts), use `--stdin-prompt-stream` with `--print`.
+Send one prompt per line via stdin:
+
+```bash
+printf '1+1=?\n10!=?\n' | roo --print --stdin-prompt-stream --output-format stream-json
+```
+
 ### Roo Code Cloud Authentication
 
 To use Roo Code Cloud features (like the provider proxy), you need to authenticate:
@@ -152,6 +170,7 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 | `--prompt-file <path>`            | Read prompt from a file instead of command line argument                                | None                                     |
 | `-w, --workspace <path>`          | Workspace path to operate in                                                            | Current directory                        |
 | `-p, --print`                     | Print response and exit (non-interactive mode)                                          | `false`                                  |
+| `--stdin-prompt-stream`           | Read prompts from stdin (one prompt per line, requires `--print`)                       | `false`                                  |
 | `-e, --extension <path>`          | Path to the extension bundle directory                                                  | Auto-detected                            |
 | `-d, --debug`                     | Enable debug output (includes detailed debug information, prompts, paths, etc)          | `false`                                  |
 | `-a, --require-approval`          | Require manual approval before actions execute                                          | `false`                                  |

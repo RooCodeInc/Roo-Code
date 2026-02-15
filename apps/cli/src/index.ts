@@ -16,6 +16,7 @@ program
 	.option("--prompt-file <path>", "Read prompt from a file instead of command line argument")
 	.option("-w, --workspace <path>", "Workspace directory path (defaults to current working directory)")
 	.option("-p, --print", "Print response and exit (non-interactive mode)", false)
+	.option("--stdin-prompt-stream", "Read prompts from stdin (one prompt per line, requires --print)", false)
 	.option("-e, --extension <path>", "Path to the extension bundle directory")
 	.option("-d, --debug", "Enable debug output (includes detailed debug information)", false)
 	.option("-a, --require-approval", "Require manual approval for actions", false)
