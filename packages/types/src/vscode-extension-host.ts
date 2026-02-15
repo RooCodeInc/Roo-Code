@@ -20,6 +20,7 @@ import type { GitCommit } from "./git.js"
 import type { McpServer } from "./mcp.js"
 import type { ModelRecord, RouterModels } from "./model.js"
 import type { OpenAiCodexRateLimitInfo } from "./providers/openai-codex-rate-limits.js"
+import type { SkillMetadata } from "./skills.js"
 import type { WorktreeIncludeStatus } from "./worktree.js"
 
 /**
@@ -101,6 +102,7 @@ export interface ExtensionMessage {
 		| "worktreeIncludeStatus"
 		| "branchWorktreeIncludeResult"
 		| "folderSelected"
+		| "skills"
 	text?: string
 	payload?: any // eslint-disable-line @typescript-eslint/no-explicit-any
 	checkpointWarning?: {
@@ -174,6 +176,7 @@ export interface ExtensionMessage {
 	list?: string[] // For dismissedUpsells
 	organizationId?: string | null // For organizationSwitchResult
 	tools?: SerializedCustomToolDefinition[] // For customToolsResult
+	skills?: SkillMetadata[] // For skills response
 	modes?: { slug: string; name: string }[] // For modes response
 	aggregatedCosts?: {
 		// For taskWithAggregatedCosts response
