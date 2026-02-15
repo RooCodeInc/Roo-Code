@@ -310,6 +310,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 				for await (const stdinPrompt of readPromptsFromStdinLines()) {
 					hasReceivedStdinPrompt = true
 					await host.runTask(stdinPrompt)
+					jsonEmitter?.clear()
 				}
 
 				if (!hasReceivedStdinPrompt) {
