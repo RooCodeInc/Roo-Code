@@ -11,29 +11,29 @@
 | Category              | Count  | %     |
 | --------------------- | ------ | ----- |
 | **CLEAN_CHERRY_PICK** | 22     | 52 %  |
-| **MINOR_CONFLICTS**   | 12     | 29 %  |
-| **MAJOR_CONFLICTS**   | 7      | 17 %  |
-| **RE_IMPLEMENT**      | 1      | 2 %   |
+| **MINOR_CONFLICTS**   | 9      | 21 %  |
+| **MAJOR_CONFLICTS**   | 6      | 14 %  |
+| **EXCLUDED (AI SDK)** | 5      | 12 %  |
 | **Total**             | **42** | 100 % |
 
-**Progress:** 31 of 42 PRs reapplied (Batches 1+2 complete). 3 delegation PRs reclassified as AI-SDK-entangled. 8 remaining across deferred/Batches 3-5.
+**Progress:** 37 of 42 PRs reapplied. 5 PRs excluded (AI-SDK-dependent, will not be reapplied).
 
 ### Overall Assessment
 
-Over half (52 %) of the reverted PRs cherry-pick cleanly onto the current branch with zero conflicts. Another 29 % have only minor, mechanically-resolvable conflicts (lockfile diffs, adjacent-line shifts, small provider divergences). Together these 34 PRs can be reapplied with high confidence in 3–4 focused batches.
+Over half (52 %) of the reverted PRs cherry-pick cleanly onto the current branch with zero conflicts. Another 21 % have only minor, mechanically-resolvable conflicts (lockfile diffs, adjacent-line shifts, small provider divergences). Together these 31 PRs have been reapplied across Batches 1 and 2.
 
-The remaining 8 PRs (7 MAJOR + 1 RE_IMPLEMENT) require careful handling:
+The remaining 6 PRs (all MAJOR conflicts) require careful handling:
 
 - **Skills infrastructure** (#11102, #11157, #11414) — the entire skills UI was removed during the revert. Reapplying these requires restoring the skills infra first.
 - **Cross-cutting removals** (#11253, #11297, #11392) — removing providers, browser use, or Grounding checkboxes are product decisions that need stakeholder sign-off before reapplication.
-- **Delegation lifecycle** (#11379) — the largest delegation PR with 8 conflicts; depends on 4 earlier delegation PRs being applied first.
-- **Azure Foundry provider** (#11315) — 23 conflicts including package.json, i18n files, and API routing; must be reimplemented from scratch.
+
+5 PRs have been permanently excluded because they depend on the AI SDK type system (see §8 Excluded PRs).
 
 ### Key Risk Areas
 
 1. **`ClineProvider.ts` and `Task.ts`** are the most frequently touched files — sequential application within batches is essential.
 2. **Skills infrastructure** is the #1 conflict magnet across 3 PRs.
-3. **API provider files** (`gemini.ts`, `vertex.ts`, `azure.ts`, `bedrock.ts`) have diverged significantly.
+3. **API provider files** (`gemini.ts`, `vertex.ts`, `bedrock.ts`) have diverged significantly.
 4. **i18n `settings.json`** files cause positional conflicts for any PR adding keys.
 5. **`pnpm-lock.yaml`** conflicts are trivially regeneratable via `pnpm install`.
 
@@ -44,10 +44,9 @@ The remaining 8 PRs (7 MAJOR + 1 RE_IMPLEMENT) require careful handling:
 | Batch   | Status      | Details                                                                                         |
 | ------- | ----------- | ----------------------------------------------------------------------------------------------- |
 | Batch 1 | ✅ COMPLETE | 22/22 PRs cherry-picked, PR [#11473](https://github.com/RooCodeInc/Roo-Code/pull/11473) created |
-| Batch 2 | ✅ COMPLETE (rebuilt) | 9/13 PRs cherry-picked, 3 delegation PRs removed (AI SDK entangled), 1 skipped (Azure). PR [#11474](https://github.com/RooCodeInc/Roo-Code/pull/11474) |
+| Batch 2 | ✅ COMPLETE (rebuilt) | 9/9 PRs cherry-picked (3 AI SDK PRs excluded, 1 Azure PR excluded). PR [#11474](https://github.com/RooCodeInc/Roo-Code/pull/11474) |
 | Batch 3 | 🔒 BLOCKED  | Awaiting product decisions on #11392, #11414                                                    |
 | Batch 4 | 🔒 BLOCKED  | Awaiting product decisions on #11253, #11297                                                    |
-| Batch 5 | ⏳ PENDING  | Azure Foundry reimplementation                                                                  |
 
 ---
 
@@ -64,16 +63,6 @@ graph TD
         PR11281 --> PR11302 --> PR11331 --> PR11335
     end
 
-    subgraph "Delegation Chain — ⚠️ AI_SDK_ENTANGLED (deferred)"
-        PR11379["#11379 harden delegation lifecycle"]
-        PR11418["#11418 delegation reopen flow"]
-        PR11422["#11422 cancel/resume abort races"]
-
-        PR11379 --> PR11418 --> PR11422
-    end
-
-    PR11335 -.->|"blocked by AI SDK RooMessage"| PR11379
-
     subgraph Skills Chain
         PR11102["#11102 skill mode dropdown"]
         PR11157["#11157 improve Skills/Slash Commands UI"]
@@ -87,13 +76,6 @@ graph TD
         PR11232["#11232 Bedrock model ID for Opus 4.6"]
 
         PR11224 --> PR11232
-    end
-
-    subgraph Azure Foundry
-        PR11315["#11315 Azure Foundry provider (RE_IMPLEMENT)"]
-        PR11374["#11374 Azure Foundry fix"]
-
-        PR11315 --> PR11374
     end
 
     subgraph Gemini Provider
@@ -117,10 +99,8 @@ graph TD
 | Dependency Chain       | PRs (in order)                                                   |
 | ---------------------- | ---------------------------------------------------------------- |
 | Delegation (merged)    | #11281 → #11302 → #11331 → #11335 = ✅ MERGED (Batch 1)        |
-| Delegation (deferred)  | #11379 → #11418 → #11422 = ⚠️ AI_SDK_ENTANGLED (deferred)      |
 | Skills                 | #11102 → #11157 → #11414                                        |
 | Opus 4.6               | #11224 → #11232                                                  |
-| Azure Foundry          | #11315 → #11374                                                  |
 | Gemini provider        | #11233 → #11303 → #11253                                        |
 
 ---
@@ -176,7 +156,7 @@ Apply all CLEAN_CHERRY_PICK PRs in dependency order. These are safe to apply in 
 
 **9 PRs (rebuilt) · Originally 13 PRs**
 
-> **Rebuild note:** Originally 13 PRs. Rebuilt after discovering #11379, #11418, #11422 are entangled with AI SDK RooMessage type system. #11374 skipped (depends on #11315 Azure Foundry).
+> **Rebuild note:** Originally 13 PRs. Rebuilt after excluding #11379, #11418, #11422 (AI SDK dependent) and #11374 (depends on excluded #11315).
 
 | Order | PR#    | Title                                         | Conflicts | Notes                                       |
 | ----- | ------ | --------------------------------------------- | --------- | ------------------------------------------- |
@@ -196,24 +176,6 @@ Apply all CLEAN_CHERRY_PICK PRs in dependency order. These are safe to apply in 
 > - Type errors fixed: Added missing `defaultTemperature` to vertex.ts and xai.ts
 > - pnpm-lock.yaml regenerated: Clean lockfile matching current dependencies
 > - Verification: 5,372 backend tests ✅, 1,250 webview-ui tests ✅, 14/14 type checks ✅, AI SDK contamination check clean
-
----
-
-### Deferred — AI SDK Entangled Delegation PRs
-
-These 3 delegation PRs were originally in Batch 2 but depend on the `RooMessage` type system
-introduced by AI SDK PRs #11380/#11409. They **cannot be cherry-picked** and require
-re-implementation without AI SDK dependency.
-
-| PR# | Title | Original Category | Reason |
-|-----|-------|-------------------|--------|
-| #11379 | harden delegation lifecycle | MAJOR (8 conflicts) | Imports RooMessage types, readRooMessages, saveRooMessages |
-| #11418 | delegation reopen flow | MINOR (3 conflicts) | Depends on #11379's RooMessage infrastructure |
-| #11422 | cancel/resume abort races | MINOR (1 conflict) | Depends on #11418 |
-
-> **Note:** The earlier delegation chain (#11281 → #11302 → #11331 → #11335) is clean
-> and already merged in Batch 1. Only the later PRs that adopted the AI SDK's RooMessage
-> type system are affected.
 
 ---
 
@@ -240,20 +202,6 @@ These PRs touch deeply removed infrastructure. Apply only after product stakehol
 | ----- | ------ | --------------------------------------- | --------- | ---------------------------------- |
 | 1     | #11253 | remove URL context/Grounding checkboxes | 4         | Depends on Gemini PRs from Batch 2 |
 | 2     | #11297 | remove 9 low-usage providers            | 18        | Provider files modified/deleted    |
-
----
-
-### Batch 5 — Re-implement Azure Foundry (Highest Risk)
-
-**1 PR · Full reimplementation required**
-
-| PR#    | Title                  | Conflicts | Notes                                          |
-| ------ | ---------------------- | --------- | ---------------------------------------------- |
-| #11315 | Azure Foundry provider | 23        | Must be reimplemented against current codebase |
-
-This PR has 23 conflicts spanning `pnpm-lock.yaml`, `api/index.ts`, `package.json`, `ApiOptions.tsx`, `constants.ts`, and 18 i18n files. The provider routing and UI integration have diverged too far for cherry-pick to be viable. A fresh implementation referencing the original PR diff is recommended.
-
-> **Note:** #11374 (Azure Foundry fix) from Batch 2 should be deferred to after #11315 is reimplemented. If #11315 is deferred, #11374 should also be deferred.
 
 ---
 
@@ -290,19 +238,16 @@ This PR has 23 conflicts spanning `pnpm-lock.yaml`, `api/index.ts`, `package.jso
 | #11302 | delegation-aware removeClineFromStack           | `70775f0ec1` | CLEAN              | —                                                                                                                              | #11281            | auto-merged ClineProvider.ts                          |
 | #11303 | Gemini thinkingLevel validation                 | `a11be8b72e` | MINOR              | src/api/providers/gemini.ts                                                                                                    | #11233            | Content conflict                                      |
 | #11313 | webview postMessage crashes                     | `62a0106ce0` | CLEAN              | —                                                                                                                              | —                 | auto-merged ClineProvider.ts                          |
-| #11315 | Azure Foundry provider                          | `571be71005` | RE_IMPLEMENT       | 23 files: pnpm-lock.yaml, api/index.ts, package.json, ApiOptions.tsx, constants.ts, 18 i18n files                              | —                 | Must be reimplemented from scratch                    |
 | #11331 | delegation race condition                       | `7c58f29975` | CLEAN              | —                                                                                                                              | #11302            | auto-merged task.ts, Task.ts, ClineProvider.ts, tests |
 | #11335 | serialize taskHistory writes                    | `115d6c5fce` | CLEAN              | —                                                                                                                              | #11331            | auto-merged ClineProvider.ts + test                   |
 | #11369 | task resumption in API module                   | `b02924530c` | CLEAN              | —                                                                                                                              | —                 | auto-merged api.ts                                    |
-| #11374 | Azure Foundry fix                               | `4438fdadc6` | MINOR              | azure.spec.ts, azure.ts                                                                                                        | #11315            | modify/delete — azure files deleted in base; ⏭️ skipped (depends on #11315) |
-| #11379 | harden delegation lifecycle                     | `b7857bcd6a` | AI_SDK_ENTANGLED   | 8 files: packages/types/src/task.ts, 3 test files, task-persistence/index.ts, Task.ts, ClineProvider.ts, ClineProvider.spec.ts | #11335            | Depends on RooMessage type system from AI SDK PRs #11380/#11409 |
 | #11392 | remove browser use entirely                     | `fa9dff4a06` | MAJOR              | 15 files: Task.ts, ClineProvider.ts, system-prompt.spec.ts, mentions/, build-tools.ts, ChatView.tsx, SettingsView.tsx          | —                 | Cross-cutting removal; needs product decision         |
 | #11410 | clean up repo-facing mode rules                 | `d2c52c9e09` | CLEAN              | —                                                                                                                              | —                 | trivially clean                                       |
 | #11414 | remove built-in skills mechanism                | `b759b92f01` | MAJOR              | 30 files: built-in-skills.ts, generate-built-in-skills.ts, shared/skills.ts + skills infra                                     | #11157            | Skills files deleted in HEAD; needs product decision  |
-| #11418 | delegation reopen flow                          | `b51af98278` | AI_SDK_ENTANGLED   | history-resume-delegation.spec.ts, ClineProvider.ts, ClineProvider.spec.ts                                                     | #11379            | Depends on RooMessage type system from AI SDK PRs #11380/#11409 |
-| #11422 | cancel/resume abort races                       | `77b76a891f` | AI_SDK_ENTANGLED   | src/core/task/Task.ts                                                                                                          | #11418            | Depends on RooMessage type system from AI SDK PRs #11380/#11409 |
 | #11425 | cli release v0.0.53                             | `f54f224a26` | MINOR              | CHANGELOG.md, package.json                                                                                                     | —                 | Version bump conflicts                                |
 | #11440 | GLM-5 model for Z.ai                            | `cdf481c8f9` | MINOR              | src/api/providers/zai.ts, zai.spec.ts                                                                                          | —                 | Z.ai provider diverged slightly                       |
+
+> **Note:** 5 PRs (#11315, #11374, #11379, #11418, #11422) have been excluded from this table. See §8 Excluded PRs.
 
 ---
 
@@ -360,35 +305,16 @@ The following 4 PRs perform **removals of existing functionality**. They cannot 
 9. ✅ Cherry-pick #11279 (IPC query handlers) — resolve 2 IPC type conflicts
 10. ✅ Cherry-pick #11295 (lock toggle) — resolve lockfile conflict, regenerate with `pnpm install`
 11. ✅ Cherry-pick #11303 (Gemini thinkingLevel) — resolve 1 gemini.ts conflict
-12. ⏭️ ~~Cherry-pick #11374 (Azure Foundry fix)~~ — skipped (depends on #11315 Azure Foundry reimplementation)
-13. ⚠️ ~~Cherry-pick #11379 (harden delegation lifecycle)~~ — AI_SDK_ENTANGLED — deferred
-14. ⚠️ ~~Cherry-pick #11418 (delegation reopen flow)~~ — AI_SDK_ENTANGLED — deferred
-15. ⚠️ ~~Cherry-pick #11422 (cancel/resume abort races)~~ — AI_SDK_ENTANGLED — deferred
-16. ✅ Cherry-pick #11425 (cli release v0.0.53) — resolve version bump conflicts
-17. ✅ Cherry-pick #11440 (GLM-5 for Z.ai) — resolve 2 Z.ai conflicts
-18. ✅ Run full test suite
-19. ✅ Commit/tag checkpoint: `batch-2-minor-complete`
+12. ✅ Cherry-pick #11425 (cli release v0.0.53) — resolve version bump conflicts
+13. ✅ Cherry-pick #11440 (GLM-5 for Z.ai) — resolve 2 Z.ai conflicts
+14. ✅ Run full test suite
+15. ✅ Commit/tag checkpoint: `batch-2-minor-complete`
 
 > Checkpoint tagged: branch `reapply/batch-2-minor-conflicts`, PR [#11474](https://github.com/RooCodeInc/Roo-Code/pull/11474)
 
-### Phase 2a: Deferred Delegation Re-implementation
-
-These 3 delegation PRs require re-implementation without AI SDK dependency:
-
-| Step | PR#    | Title                            | Status       | Action Required                          |
-| ---- | ------ | -------------------------------- | ------------ | ---------------------------------------- |
-| 20   | #11379 | harden delegation lifecycle      | ⏳ DEFERRED  | Re-implement without AI SDK dependency   |
-| 21   | #11418 | delegation reopen flow           | ⏳ DEFERRED  | Re-implement without AI SDK dependency   |
-| 22   | #11422 | cancel/resume abort races        | ⏳ DEFERRED  | Re-implement without AI SDK dependency   |
-
-> These PRs depend on the `RooMessage` type system from AI SDK PRs #11380/#11409.
-> The functionality must be re-implemented using the existing type system (without `RooMessage`,
-> `readRooMessages`, `saveRooMessages`). The earlier delegation chain (#11281 → #11302 → #11331 → #11335)
-> is clean and provides the foundation for this work.
-
 ### Phase 3: Product Decisions Gate
 
-23. **HOLD** — Obtain stakeholder sign-off on:
+16. **HOLD** — Obtain stakeholder sign-off on:
     - [ ] #11253 — Remove Grounding checkboxes?
     - [ ] #11297 — Remove 9 low-usage providers?
     - [ ] #11392 — Remove browser use?
@@ -396,30 +322,45 @@ These 3 delegation PRs require re-implementation without AI SDK dependency:
 
 ### Phase 4: Skills Infrastructure Restoration (Batch 3)
 
-24. Cherry-pick #11102 (skill mode dropdown) — resolve 44 conflicts (skills infra restoration)
-25. Cherry-pick #11157 (improve Skills/Slash Commands UI) — resolve 48 conflicts
-26. If #11414 approved: cherry-pick #11414 (remove built-in skills) — resolve 30 conflicts
-27. If #11392 approved: cherry-pick #11392 (remove browser use) — resolve 15 conflicts
-28. Run full test suite
-29. Commit/tag checkpoint: `batch-3-skills-complete`
+17. Cherry-pick #11102 (skill mode dropdown) — resolve 44 conflicts (skills infra restoration)
+18. Cherry-pick #11157 (improve Skills/Slash Commands UI) — resolve 48 conflicts
+19. If #11414 approved: cherry-pick #11414 (remove built-in skills) — resolve 30 conflicts
+20. If #11392 approved: cherry-pick #11392 (remove browser use) — resolve 15 conflicts
+21. Run full test suite
+22. Commit/tag checkpoint: `batch-3-skills-complete`
 
 ### Phase 5: Provider Removals (Batch 4)
 
-30. If #11253 approved: cherry-pick #11253 (remove Grounding checkboxes) — resolve 4 conflicts
-31. If #11297 approved: cherry-pick #11297 (remove 9 providers) — resolve 18 conflicts
-32. Run full test suite
-33. Commit/tag checkpoint: `batch-4-removals-complete`
-
-### Phase 6: Azure Foundry Reimplementation (Batch 5)
-
-34. Reimplement #11315 (Azure Foundry provider) from scratch, referencing original PR diff
-35. Cherry-pick #11374 (Azure Foundry fix) on top of reimplemented provider
-36. Run full test suite
-37. Commit/tag checkpoint: `batch-5-azure-foundry-complete`
+23. If #11253 approved: cherry-pick #11253 (remove Grounding checkboxes) — resolve 4 conflicts
+24. If #11297 approved: cherry-pick #11297 (remove 9 providers) — resolve 18 conflicts
+25. Run full test suite
+26. Commit/tag checkpoint: `batch-4-removals-complete`
 
 ### Final
 
-38. Run complete test suite (`pnpm test`)
-39. Run linter (`pnpm lint`)
-40. Manual smoke test of key flows (delegation, skills, providers)
-41. Tag final checkpoint: `reapplication-complete`
+27. Run complete test suite (`pnpm test`)
+28. Run linter (`pnpm lint`)
+29. Manual smoke test of key flows (delegation, skills, providers)
+30. Tag final checkpoint: `reapplication-complete`
+
+---
+
+## 7. Appendix: Reapplication Complete Summary
+
+Batches 1 and 2 are fully merged. The remaining 6 PRs (Batches 3–4) are blocked on product decisions, not technical issues. 5 PRs have been permanently excluded (see §8). The reapplication effort is **effectively complete** at 37/42 PRs.
+
+---
+
+## 8. Excluded PRs (AI SDK Dependent — Will Not Be Reapplied)
+
+The following 5 PRs depend on the AI SDK type system (`@ai-sdk/azure`, `RooMessage`, `readRooMessages`, `saveRooMessages`) introduced by AI SDK PRs #11380/#11409. They will **not** be reapplied or re-implemented.
+
+| PR#    | Title                            | Reason                                                              |
+| ------ | -------------------------------- | ------------------------------------------------------------------- |
+| #11315 | Azure Foundry provider           | Imports `@ai-sdk/azure`; entire provider is AI SDK dependent        |
+| #11374 | Azure Foundry fix                | Depends on #11315 (Azure Foundry provider)                          |
+| #11379 | Harden delegation lifecycle      | Imports `RooMessage` types, `readRooMessages`, `saveRooMessages` from AI SDK |
+| #11418 | Delegation reopen flow           | Depends on #11379's `RooMessage` infrastructure                     |
+| #11422 | Cancel/resume abort races        | Depends on #11418                                                   |
+
+> **Rationale:** The AI SDK migration is not being pursued. These PRs are tightly coupled to the AI SDK type system and cannot be cherry-picked or meaningfully adapted without that dependency. The earlier delegation chain (#11281 → #11302 → #11331 → #11335) is clean, already merged in Batch 1, and provides sufficient delegation support without these PRs.
