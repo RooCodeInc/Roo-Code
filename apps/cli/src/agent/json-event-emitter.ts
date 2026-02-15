@@ -229,9 +229,11 @@ export class JsonEventEmitter {
 	private handleSayMessage(msg: ClineMessage, contentToSend: string | null, isDone: boolean): void {
 		switch (msg.say) {
 			case "text":
-				if (this.expectPromptEchoAsUser && isDone) {
+				if (this.expectPromptEchoAsUser) {
 					this.emitEvent(this.buildTextEvent("user", msg.ts, contentToSend, isDone))
-					this.expectPromptEchoAsUser = false
+					if (isDone) {
+						this.expectPromptEchoAsUser = false
+					}
 				} else {
 					this.emitEvent(this.buildTextEvent("assistant", msg.ts, contentToSend, isDone))
 				}
