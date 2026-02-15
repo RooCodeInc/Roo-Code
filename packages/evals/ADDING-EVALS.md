@@ -268,7 +268,7 @@ export const exerciseLanguages = [
 Create `prompts/{language}.md` in the evals repository:
 
 ```markdown
-Your job is to complete a coding exercise described the markdown files inside the `docs` directory.
+Your job is to complete a coding exercise described in the markdown files inside the `docs` directory.
 
 A file with the implementation stubbed out has been created for you, along with a test file (the tests should be failing initially).
 
