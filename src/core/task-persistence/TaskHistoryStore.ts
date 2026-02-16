@@ -29,8 +29,21 @@ interface HistoryIndex {
  * on per-task file writes. Within a single extension host process,
  * an in-process write lock serializes mutations.
  */
+/**
+ * Options for TaskHistoryStore constructor.
+ */
+export interface TaskHistoryStoreOptions {
+	/**
+	 * Optional callback invoked inside the write lock after each mutation
+	 * (upsert, delete, deleteMany). Used for serialized write-through to
+	 * globalState during the transition period.
+	 */
+	onWrite?: (items: HistoryItem[]) => Promise<void>
+}
+
 export class TaskHistoryStore {
 	private readonly globalStoragePath: string
+	private readonly onWrite?: (items: HistoryItem[]) => Promise<void>
 	private cache: Map<string, HistoryItem> = new Map()
 	private writeLock: Promise<void> = Promise.resolve()
 	private indexWriteTimer: ReturnType<typeof setTimeout> | null = null
@@ -38,14 +51,25 @@ export class TaskHistoryStore {
 	private reconcileTimer: ReturnType<typeof setTimeout> | null = null
 	private disposed = false
 
+	/**
+	 * Promise that resolves when initialization is complete.
+	 * Callers can await this to ensure the store is ready before reading.
+	 */
+	public readonly initialized: Promise<void>
+	private resolveInitialized!: () => void
+
 	/** Debounce window for index writes in milliseconds. */
 	private static readonly INDEX_WRITE_DEBOUNCE_MS = 2000
 
 	/** Periodic reconciliation interval in milliseconds. */
 	private static readonly RECONCILE_INTERVAL_MS = 5 * 60 * 1000
 
-	constructor(globalStoragePath: string) {
+	constructor(globalStoragePath: string, options?: TaskHistoryStoreOptions) {
 		this.globalStoragePath = globalStoragePath
+		this.onWrite = options?.onWrite
+		this.initialized = new Promise<void>((resolve) => {
+			this.resolveInitialized = resolve
+		})
 	}
 
 	// ────────────────────────────── Lifecycle ──────────────────────────────
@@ -54,20 +78,25 @@ export class TaskHistoryStore {
 	 * Load index, reconcile if needed, start watchers.
 	 */
 	async initialize(): Promise<void> {
-		const tasksDir = await this.getTasksDir()
-		await fs.mkdir(tasksDir, { recursive: true })
+		try {
+			const tasksDir = await this.getTasksDir()
+			await fs.mkdir(tasksDir, { recursive: true })
 
-		// 1. Load existing index into the cache
-		await this.loadIndex()
+			// 1. Load existing index into the cache
+			await this.loadIndex()
 
-		// 2. Reconcile cache against actual task directories on disk
-		await this.reconcile()
+			// 2. Reconcile cache against actual task directories on disk
+			await this.reconcile()
 
-		// 3. Start fs.watch for cross-instance reactivity
-		this.startWatcher()
+			// 3. Start fs.watch for cross-instance reactivity
+			this.startWatcher()
 
-		// 4. Start periodic reconciliation as a defensive fallback
-		this.startPeriodicReconciliation()
+			// 4. Start periodic reconciliation as a defensive fallback
+			this.startPeriodicReconciliation()
+		} finally {
+			// Mark initialization as complete so callers awaiting `initialized` can proceed
+			this.resolveInitialized()
+		}
 	}
 
 	/**
@@ -144,7 +173,14 @@ export class TaskHistoryStore {
 			// Schedule debounced index write
 			this.scheduleIndexWrite()
 
-			return this.getAll()
+			const all = this.getAll()
+
+			// Call onWrite callback inside the lock for serialized write-through
+			if (this.onWrite) {
+				await this.onWrite(all)
+			}
+
+			return all
 		})
 	}
 
@@ -164,6 +200,11 @@ export class TaskHistoryStore {
 			}
 
 			this.scheduleIndexWrite()
+
+			// Call onWrite callback inside the lock for serialized write-through
+			if (this.onWrite) {
+				await this.onWrite(this.getAll())
+			}
 		})
 	}
 
@@ -184,6 +225,11 @@ export class TaskHistoryStore {
 			}
 
 			this.scheduleIndexWrite()
+
+			// Call onWrite callback inside the lock for serialized write-through
+			if (this.onWrite) {
+				await this.onWrite(this.getAll())
+			}
 		})
 	}
 
@@ -196,48 +242,51 @@ export class TaskHistoryStore {
 	 * - Tasks in cache but missing from disk: remove
 	 */
 	async reconcile(): Promise<void> {
-		const tasksDir = await this.getTasksDir()
+		// Run through the write lock to prevent interleaving with upsert/delete
+		return this.withLock(async () => {
+			const tasksDir = await this.getTasksDir()
 
-		let dirEntries: string[]
-		try {
-			dirEntries = await fs.readdir(tasksDir)
-		} catch {
-			return // tasks dir doesn't exist yet
-		}
+			let dirEntries: string[]
+			try {
+				dirEntries = await fs.readdir(tasksDir)
+			} catch {
+				return // tasks dir doesn't exist yet
+			}
 
-		// Filter out the index file and hidden files
-		const taskDirNames = dirEntries.filter((name) => !name.startsWith("_") && !name.startsWith("."))
+			// Filter out the index file and hidden files
+			const taskDirNames = dirEntries.filter((name) => !name.startsWith("_") && !name.startsWith("."))
 
-		const onDiskIds = new Set(taskDirNames)
-		const cacheIds = new Set(this.cache.keys())
-		let changed = false
+			const onDiskIds = new Set(taskDirNames)
+			const cacheIds = new Set(this.cache.keys())
+			let changed = false
 
-		// Tasks on disk but not in cache: read their history_item.json
-		for (const taskId of onDiskIds) {
-			if (!cacheIds.has(taskId)) {
-				try {
-					const item = await this.readTaskFile(taskId)
-					if (item) {
-						this.cache.set(taskId, item)
-						changed = true
+			// Tasks on disk but not in cache: read their history_item.json
+			for (const taskId of onDiskIds) {
+				if (!cacheIds.has(taskId)) {
+					try {
+						const item = await this.readTaskFile(taskId)
+						if (item) {
+							this.cache.set(taskId, item)
+							changed = true
+						}
+					} catch {
+						// Corrupted or missing file, skip
 					}
-				} catch {
-					// Corrupted or missing file, skip
 				}
 			}
-		}
 
-		// Tasks in cache but not on disk: remove from cache
-		for (const taskId of cacheIds) {
-			if (!onDiskIds.has(taskId)) {
-				this.cache.delete(taskId)
-				changed = true
+			// Tasks in cache but not on disk: remove from cache
+			for (const taskId of cacheIds) {
+				if (!onDiskIds.has(taskId)) {
+					this.cache.delete(taskId)
+					changed = true
+				}
 			}
-		}
 
-		if (changed) {
-			this.scheduleIndexWrite()
-		}
+			if (changed) {
+				this.scheduleIndexWrite()
+			}
+		})
 	}
 
 	// ────────────────────────────── Cache invalidation ──────────────────────────────

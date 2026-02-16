@@ -186,8 +186,13 @@ export class ClineProvider
 		this.mdmService = mdmService
 		this.updateGlobalState("codebaseIndexModels", EMBEDDING_MODEL_PROFILES)
 
-		// Initialize the per-task file-based history store.
-		this.taskHistoryStore = new TaskHistoryStore(this.contextProxy.globalStorageUri.fsPath)
+		// Initialize the per-task file-based history store with write-through callback.
+		this.taskHistoryStore = new TaskHistoryStore(this.contextProxy.globalStorageUri.fsPath, {
+			onWrite: async (items) => {
+				// Write-through to globalState inside the store's lock for transition period
+				await this.updateGlobalState("taskHistory", items)
+			},
+		})
 		this.initializeTaskHistoryStore().catch((error) => {
 			this.log(`Failed to initialize TaskHistoryStore: ${error}`)
 		})
@@ -1897,10 +1902,6 @@ export class ClineProvider
 			await this.taskHistoryStore.deleteMany(allIdsToDelete)
 			this.recentTasksCache = undefined
 
-			// Write-through to globalState during transition period
-			const remainingHistory = this.taskHistoryStore.getAll()
-			await this.updateGlobalState("taskHistory", remainingHistory)
-
 			// Delete associated shadow repositories or branches and task directories
 			const globalStorageDir = this.contextProxy.globalStorageUri.fsPath
 			const workspaceDir = this.cwd
@@ -1942,10 +1943,6 @@ export class ClineProvider
 	async deleteTaskFromState(id: string) {
 		await this.taskHistoryStore.delete(id)
 		this.recentTasksCache = undefined
-
-		// Write-through to globalState during transition period
-		const remainingHistory = this.taskHistoryStore.getAll()
-		await this.updateGlobalState("taskHistory", remainingHistory)
 
 		await this.postStateToWebview()
 	}
@@ -2113,6 +2110,9 @@ export class ClineProvider
 	}
 
 	async getStateToPostToWebview(): Promise<ExtensionState> {
+		// Ensure the store is initialized before reading task history
+		await this.taskHistoryStore.initialized
+
 		const {
 			apiConfiguration,
 			lastShownAnnouncementId,
@@ -2602,9 +2602,6 @@ export class ClineProvider
 
 		const history = await this.taskHistoryStore.upsert(item)
 		this.recentTasksCache = undefined
-
-		// Write-through to globalState during transition period for backward compatibility
-		await this.updateGlobalState("taskHistory", history)
 
 		// Broadcast the updated history to the webview if requested.
 		// Prefer per-item updates to avoid repeatedly cloning/sending the full history.
