@@ -76,6 +76,7 @@ export function getToolDisplayName(toolName: string): string {
 		// Mode operations
 		switchMode: "Switch Mode",
 		switch_mode: "Switch Mode",
+		select_active_intent: "Select Intent",
 		newTask: "New Task",
 		new_task: "New Task",
 		finishTask: "Finish Task",
@@ -128,6 +129,7 @@ export function getToolIconName(toolName: string): IconName {
 		// Mode operations
 		switchMode: "switch",
 		switch_mode: "switch",
+		select_active_intent: "switch",
 		newTask: "switch",
 		new_task: "switch",
 		finishTask: "check",

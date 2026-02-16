@@ -17,7 +17,7 @@ function getToolCategory(toolName: string): ToolCategory {
 	const dirTools = ["listFiles", "list_files", "listFilesRecursive", "listFilesTopLevel"]
 	const searchTools = ["searchFiles", "search_files"]
 	const commandTools = ["executeCommand", "execute_command"]
-	const modeTools = ["switchMode", "switch_mode", "newTask", "new_task"]
+	const modeTools = ["switchMode", "switch_mode", "select_active_intent", "newTask", "new_task"]
 	const completionTools = ["attemptCompletion", "attempt_completion", "askFollowupQuestion", "ask_followup_question"]
 
 	if (fileTools.includes(toolName)) return "file"

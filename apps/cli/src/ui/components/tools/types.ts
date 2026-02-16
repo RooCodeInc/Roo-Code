@@ -21,7 +21,7 @@ export function getToolCategory(toolName: string): ToolCategory {
 
 	const searchTools = ["searchFiles", "search_files", "codebaseSearch", "codebase_search"]
 	const commandTools = ["execute_command", "executeCommand"]
-	const modeTools = ["switchMode", "switch_mode", "newTask", "new_task", "finishTask"]
+	const modeTools = ["switchMode", "switch_mode", "select_active_intent", "newTask", "new_task", "finishTask"]
 	const completionTools = ["attempt_completion", "attemptCompletion", "ask_followup_question", "askFollowupQuestion"]
 
 	if (fileReadTools.includes(toolName)) return "file-read"

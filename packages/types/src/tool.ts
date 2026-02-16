@@ -25,6 +25,7 @@ export const toolNames = [
 	"execute_command",
 	"read_file",
 	"read_command_output",
+	"select_active_intent",
 	"write_to_file",
 	"apply_diff",
 	"edit",

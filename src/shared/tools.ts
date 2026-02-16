@@ -47,6 +47,7 @@ export const toolParamNames = [
 	"mode",
 	"message",
 	"cwd",
+	"intent_id",
 	"follow_up",
 	"task",
 	"size",
@@ -94,6 +95,7 @@ export type NativeToolArgs = {
 	read_command_output: { artifact_id: string; search?: string; offset?: number; limit?: number }
 	attempt_completion: { result: string }
 	execute_command: { command: string; cwd?: string }
+	select_active_intent: { intent_id: string }
 	apply_diff: { path: string; diff: string }
 	edit: { file_path: string; old_string: string; new_string: string; replace_all?: boolean }
 	search_and_replace: { file_path: string; old_string: string; new_string: string; replace_all?: boolean }
@@ -169,6 +171,11 @@ export interface ExecuteCommandToolUse extends ToolUse<"execute_command"> {
 	name: "execute_command"
 	// Pick<Record<ToolParamName, string>, "command"> makes "command" required, but Partial<> makes it optional
 	params: Partial<Pick<Record<ToolParamName, string>, "command" | "cwd">>
+}
+
+export interface SelectActiveIntentToolUse extends ToolUse<"select_active_intent"> {
+	name: "select_active_intent"
+	params: Partial<Pick<Record<ToolParamName, string>, "intent_id">>
 }
 
 export interface ReadFileToolUse extends ToolUse<"read_file"> {
@@ -266,6 +273,7 @@ export type ToolGroupConfig = {
 
 export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	execute_command: "run commands",
+	select_active_intent: "select active intent",
 	read_file: "read files",
 	read_command_output: "read command output",
 	write_to_file: "write files",
@@ -307,7 +315,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 		tools: ["use_mcp_tool", "access_mcp_resource"],
 	},
 	modes: {
-		tools: ["switch_mode", "new_task"],
+		tools: ["switch_mode", "new_task", "select_active_intent"],
 		alwaysAvailable: true,
 	},
 }
@@ -316,6 +324,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
 	"ask_followup_question",
 	"attempt_completion",
+	"select_active_intent",
 	"switch_mode",
 	"new_task",
 	"update_todo_list",

@@ -34,9 +34,11 @@ import { updateTodoListTool } from "../tools/UpdateTodoListTool"
 import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
 import { skillTool } from "../tools/SkillTool"
 import { generateImageTool } from "../tools/GenerateImageTool"
+import { selectActiveIntentTool } from "../tools/SelectActiveIntentTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
+import { runOrchestrationPostToolHook, runOrchestrationPreToolHook } from "../orchestration/ToolHookEngine"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
@@ -189,6 +191,11 @@ export async function presentAssistantMessage(cline: Task) {
 				progressStatus?: ToolProgressStatus,
 				isProtected?: boolean,
 			) => {
+				if (consumePreHookApproval) {
+					consumePreHookApproval = false
+					return true
+				}
+
 				const { response, text, images } = await cline.ask(
 					type,
 					partialMessage,
@@ -363,6 +370,8 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.question}']`
 					case "attempt_completion":
 						return `[${block.name}]`
+					case "select_active_intent":
+						return `[${block.name} '${block.params.intent_id}']`
 					case "switch_mode":
 						return `[${block.name} to '${block.params.mode_slug}'${block.params.reason ? ` because: ${block.params.reason}` : ""}]`
 					case "codebase_search":
@@ -445,6 +454,8 @@ export async function presentAssistantMessage(cline: Task) {
 
 			// Store approval feedback to merge into tool result (GitHub #10465)
 			let approvalFeedback: { text: string; images?: string[] } | undefined
+			let lastToolResult: ToolResponse | undefined
+			let consumePreHookApproval = false
 
 			const pushToolResult = (content: ToolResponse) => {
 				// Native tool calling: only allow ONE tool_result per tool call
@@ -454,6 +465,8 @@ export async function presentAssistantMessage(cline: Task) {
 					)
 					return
 				}
+
+				lastToolResult = content
 
 				let resultContent: string
 				let imageBlocks: Anthropic.ImageBlockParam[] = []
@@ -497,6 +510,11 @@ export async function presentAssistantMessage(cline: Task) {
 				progressStatus?: ToolProgressStatus,
 				isProtected?: boolean,
 			) => {
+				if (consumePreHookApproval) {
+					consumePreHookApproval = false
+					return true
+				}
+
 				const { response, text, images } = await cline.ask(
 					type,
 					partialMessage,
@@ -675,6 +693,29 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			let orchestrationPreHookContext:
+				| import("../orchestration/ToolHookEngine").OrchestrationPreHookContext
+				| undefined
+
+			if (!block.partial) {
+				const preHookResult = await runOrchestrationPreToolHook({
+					task: cline,
+					toolName: block.name,
+					toolArgs: (block.nativeArgs ?? block.params) as Record<string, unknown> | undefined,
+					askApproval,
+				})
+
+				if (preHookResult.blocked) {
+					if (!preHookResult.alreadyHandled && preHookResult.errorResult) {
+						pushToolResult(preHookResult.errorResult)
+					}
+					break
+				}
+
+				orchestrationPreHookContext = preHookResult.context
+				consumePreHookApproval = preHookResult.preApproved === true
+			}
+
 			switch (block.name) {
 				case "write_to_file":
 					await checkpointSaveAndMark(cline)
@@ -791,6 +832,13 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "ask_followup_question":
 					await askFollowupQuestionTool.handle(cline, block as ToolUse<"ask_followup_question">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "select_active_intent":
+					await selectActiveIntentTool.handle(cline, block as ToolUse<"select_active_intent">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -915,6 +963,14 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				}
+			}
+
+			if (!block.partial && orchestrationPreHookContext) {
+				await runOrchestrationPostToolHook({
+					task: cline,
+					context: orchestrationPreHookContext,
+					toolResult: lastToolResult,
+				})
 			}
 
 			break

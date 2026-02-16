@@ -118,6 +118,11 @@ export function formatToolOutput(toolInfo: Record<string, unknown>): string {
 			return `→ ${mode} mode${reason ? `\n  ${reason}` : ""}`
 		}
 
+		case "select_active_intent": {
+			const intentId = (toolInfo.intent_id as string) || "unknown"
+			return "Intent: " + intentId
+		}
+
 		case "execute_command": {
 			const command = toolInfo.command as string
 			return `$ ${command || "(no command)"}`
@@ -205,6 +210,11 @@ export function formatToolAskMessage(toolInfo: Record<string, unknown>): string 
 			const mode = (toolInfo.mode as string) || (toolInfo.mode_slug as string) || "unknown"
 			const reason = toolInfo.reason as string
 			return `Switch to ${mode} mode?${reason ? `\nReason: ${reason}` : ""}`
+		}
+
+		case "select_active_intent": {
+			const intentId = (toolInfo.intent_id as string) || "unknown"
+			return "Select active intent: " + intentId
 		}
 
 		case "execute_command": {
@@ -321,3 +331,4 @@ export function parseMarkdownChecklist(markdown: string): TodoItem[] {
 
 	return todos
 }
+
