@@ -154,6 +154,7 @@ export function useScrollLifecycle({
 
 	// --- Pointer scroll tracking ---
 	const pointerScrollActiveRef = useRef(false)
+	const pointerScrollElementRef = useRef<HTMLElement | null>(null)
 	const pointerScrollLastTopRef = useRef<number | null>(null)
 
 	// --- Re-anchor frame ---
@@ -256,16 +257,28 @@ export function useScrollLifecycle({
 	// Settle completion
 	// -----------------------------------------------------------------------
 
-	const completeInitialSettle = useCallback(() => {
-		cancelInitialSettleFrame()
-		isSettlingRef.current = false
-		if (isAtBottomRef.current && settleBottomConfirmedRef.current) {
-			enterAnchoredFollowing()
-			return
-		}
-		transitionScrollPhase("USER_BROWSING_HISTORY")
-		setShowScrollToBottom(true)
-	}, [cancelInitialSettleFrame, enterAnchoredFollowing, transitionScrollPhase])
+	const completeInitialSettle = useCallback(
+		(ts: number) => {
+			if (settleTaskTsRef.current !== ts) {
+				return
+			}
+
+			cancelInitialSettleFrame()
+			isSettlingRef.current = false
+
+			if (scrollPhaseRef.current !== "HYDRATING_PINNED_TO_BOTTOM") {
+				return
+			}
+
+			if (isAtBottomRef.current && settleBottomConfirmedRef.current) {
+				enterAnchoredFollowing()
+				return
+			}
+			transitionScrollPhase("USER_BROWSING_HISTORY")
+			setShowScrollToBottom(true)
+		},
+		[cancelInitialSettleFrame, enterAnchoredFollowing, transitionScrollPhase],
+	)
 
 	// -----------------------------------------------------------------------
 	// Settle frame loop
@@ -282,12 +295,12 @@ export function useScrollLifecycle({
 
 			settleFrameCountRef.current += 1
 			if (settleFrameCountRef.current > INITIAL_LOAD_SETTLE_MAX_FRAMES) {
-				completeInitialSettle()
+				completeInitialSettle(ts)
 				return
 			}
 
 			if (!isSettleWindowOpen(ts)) {
-				completeInitialSettle()
+				completeInitialSettle(ts)
 				return
 			}
 
@@ -304,7 +317,7 @@ export function useScrollLifecycle({
 			virtuosoRef.current?.scrollToIndex({ index: "LAST", align: "end", behavior: "auto" })
 
 			if (settleStableFramesRef.current >= INITIAL_LOAD_SETTLE_STABLE_FRAME_TARGET) {
-				completeInitialSettle()
+				completeInitialSettle(ts)
 				return
 			}
 
@@ -559,12 +572,14 @@ export function useScrollLifecycle({
 			const pointerTarget = pointerEvent.target
 			if (!(pointerTarget instanceof HTMLElement)) {
 				pointerScrollActiveRef.current = false
+				pointerScrollElementRef.current = null
 				pointerScrollLastTopRef.current = null
 				return
 			}
 
 			if (!scrollContainerRef.current?.contains(pointerTarget)) {
 				pointerScrollActiveRef.current = false
+				pointerScrollElementRef.current = null
 				pointerScrollLastTopRef.current = null
 				return
 			}
@@ -573,14 +588,16 @@ export function useScrollLifecycle({
 				(pointerTarget.closest(".scrollable") as HTMLElement | null) ??
 				(pointerTarget.scrollHeight > pointerTarget.clientHeight ? pointerTarget : null)
 
-			pointerScrollActiveRef.current = true
-			pointerScrollLastTopRef.current = scroller?.scrollTop ?? 0
+			pointerScrollActiveRef.current = scroller !== null
+			pointerScrollElementRef.current = scroller
+			pointerScrollLastTopRef.current = scroller?.scrollTop ?? null
 		},
 		[scrollContainerRef],
 	)
 
 	const handlePointerEnd = useCallback(() => {
 		pointerScrollActiveRef.current = false
+		pointerScrollElementRef.current = null
 		pointerScrollLastTopRef.current = null
 	}, [])
 
@@ -596,6 +613,10 @@ export function useScrollLifecycle({
 			}
 
 			if (!scrollContainerRef.current?.contains(scrollTarget)) {
+				return
+			}
+
+			if (pointerScrollElementRef.current !== scrollTarget) {
 				return
 			}
 

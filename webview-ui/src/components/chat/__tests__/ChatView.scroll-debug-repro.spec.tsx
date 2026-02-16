@@ -46,6 +46,7 @@ interface VirtuosoHarnessState {
 	signalDelayMs: number
 	emitFalseOnDataChange: boolean
 	followOutput: FollowOutput | undefined
+	emitAtBottom: (isAtBottom: boolean) => void
 }
 
 const harness = vi.hoisted<VirtuosoHarnessState>(() => ({
@@ -54,6 +55,7 @@ const harness = vi.hoisted<VirtuosoHarnessState>(() => ({
 	signalDelayMs: 20,
 	emitFalseOnDataChange: true,
 	followOutput: undefined,
+	emitAtBottom: () => {},
 }))
 
 function nullDefaultModule() {
@@ -139,6 +141,9 @@ vi.mock("react-virtuoso", () => {
 		const timeoutIdsRef = useRef<number[]>([])
 
 		harness.followOutput = followOutput
+		harness.emitAtBottom = (isAtBottom: boolean) => {
+			atBottomRef.current?.(isAtBottom)
+		}
 
 		useImperativeHandle(ref, () => ({
 			scrollToIndex: () => {
@@ -280,6 +285,7 @@ describe("ChatView scroll behavior regression coverage", () => {
 		harness.signalDelayMs = 20
 		harness.emitFalseOnDataChange = true
 		harness.followOutput = undefined
+		harness.emitAtBottom = () => {}
 	})
 
 	it("rehydration converges to bottom", async () => {
@@ -337,6 +343,31 @@ describe("ChatView scroll behavior regression coverage", () => {
 		expect(resolveFollowOutput(false)).toBe(false)
 	})
 
+	it("nested scroller scroll events do not falsely disengage sticky follow", async () => {
+		await hydrate(4)
+		await waitForCalls(4)
+		await expectCallsStable()
+		expect(resolveFollowOutput(false)).toBe("auto")
+
+		const scrollable = getScrollable()
+		const nestedScrollable = document.createElement("div")
+		nestedScrollable.style.overflowY = "auto"
+		nestedScrollable.scrollTop = 0
+		scrollable.appendChild(nestedScrollable)
+
+		scrollable.scrollTop = 240
+
+		await act(async () => {
+			fireEvent.pointerDown(nestedScrollable)
+			nestedScrollable.scrollTop = 120
+			fireEvent.scroll(nestedScrollable)
+			fireEvent.pointerUp(window)
+		})
+
+		expect(resolveFollowOutput(false)).toBe("auto")
+		expect(document.querySelector(".codicon-chevron-down")).toBeNull()
+	})
+
 	it("wheel-up intent disengages sticky follow", async () => {
 		await hydrate(4)
 		await waitForCalls(4)
@@ -348,6 +379,30 @@ describe("ChatView scroll behavior regression coverage", () => {
 		await act(async () => {
 			fireEvent.wheel(scrollable, { deltaY: -120 })
 		})
+
+		expect(resolveFollowOutput(false)).toBe(false)
+		await waitFor(() => expect(document.querySelector(".codicon-chevron-down")).toBeTruthy(), {
+			timeout: 1_200,
+		})
+	})
+
+	it("late settle completion cannot override user escape hatch", async () => {
+		await hydrate(Number.POSITIVE_INFINITY)
+		await waitForCalls(2, 1_200)
+
+		await act(async () => {
+			harness.emitAtBottom(true)
+		})
+
+		expect(resolveFollowOutput(false)).toBe("auto")
+
+		await act(async () => {
+			fireEvent.keyDown(window, { key: "PageUp" })
+		})
+
+		expect(resolveFollowOutput(false)).toBe(false)
+
+		await sleep(120)
 
 		expect(resolveFollowOutput(false)).toBe(false)
 		await waitFor(() => expect(document.querySelector(".codicon-chevron-down")).toBeTruthy(), {
