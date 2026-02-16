@@ -201,6 +201,11 @@ export const globalSettingsSchema = z.object({
 	historyPreviewCollapsed: z.boolean().optional(),
 	reasoningBlockCollapsed: z.boolean().optional(),
 	/**
+	 * Whether to auto-expand diffs in "Roo wants to edit this file" chat messages.
+	 * @default false
+	 */
+	autoExpandDiffs: z.boolean().optional(),
+	/**
 	 * Controls the keyboard behavior for sending messages in the chat input.
 	 * - "send": Enter sends message, Shift+Enter creates newline (default)
 	 * - "newline": Enter creates newline, Shift+Enter/Ctrl+Enter sends message

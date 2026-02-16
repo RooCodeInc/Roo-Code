@@ -94,6 +94,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		cloudIsAuthenticated,
 		messageQueue = [],
 		showWorktreesInHomeScreen,
+		autoExpandDiffs,
 	} = useExtensionState()
 
 	// Show a WarningRow when the user sends a message with a retired provider.
@@ -571,6 +572,43 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 		prevExpandedRowsRef.current = expandedRows // Store current state for next comparison
 	}, [expandedRows])
+
+	// Auto-expand diff rows when autoExpandDiffs setting is enabled
+	const DIFF_TOOL_TYPES = useMemo(
+		() => new Set(["editedExistingFile", "appliedDiff", "insertContent", "searchAndReplace", "newFileCreated"]),
+		[],
+	)
+
+	useEffect(() => {
+		if (!autoExpandDiffs) {
+			return
+		}
+
+		const newExpansions: Record<number, boolean> = {}
+
+		for (const msg of modifiedMessages) {
+			// Skip messages already tracked in expandedRows
+			if (expandedRows[msg.ts] !== undefined) {
+				continue
+			}
+
+			// Check if this message contains a diff tool
+			if (msg.text) {
+				try {
+					const tool = JSON.parse(msg.text)
+					if (tool.tool && DIFF_TOOL_TYPES.has(tool.tool)) {
+						newExpansions[msg.ts] = true
+					}
+				} catch {
+					// Not valid JSON, skip
+				}
+			}
+		}
+
+		if (Object.keys(newExpansions).length > 0) {
+			setExpandedRows((prev) => ({ ...prev, ...newExpansions }))
+		}
+	}, [modifiedMessages, autoExpandDiffs, expandedRows, DIFF_TOOL_TYPES])
 
 	const isStreaming = useMemo(() => {
 		// Checking clineAsk isn't enough since messages effect may be called
