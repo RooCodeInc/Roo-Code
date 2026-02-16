@@ -3401,14 +3401,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// the assistant message is already in history. Otherwise, tool_result blocks would appear
 				// BEFORE their corresponding tool_use blocks, causing API errors.
 
-				// Check if we have any content to process (text or tool uses)
+				// Check if we have any content to process (text, reasoning, or tool uses)
+				// Thinking models (e.g., Kimi K2, DeepSeek-R1, QwQ) may produce only
+				// reasoning_content with no regular text content. This should not be
+				// treated as an empty/failed response — the model did respond, just
+				// entirely in reasoning tokens.
 				const hasTextContent = assistantMessage.length > 0
+				const hasReasoningContent = reasoningMessage.length > 0
 
 				const hasToolUses = this.assistantMessageContent.some(
 					(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
 				)
 
-				if (hasTextContent || hasToolUses) {
+				if (hasTextContent || hasToolUses || hasReasoningContent) {
 					// Reset counter when we get a successful response with content
 					this.consecutiveNoAssistantMessagesCount = 0
 					// Display grounding sources to the user if they exist
