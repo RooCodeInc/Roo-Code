@@ -1,0 +1,34 @@
+project:
+  orchestration_dir: ".orchestration"
+
+protocol:
+  require_intent_before_write: true
+  intent_context_format: "xml"
+  intent_context_tag: "intent_context"
+
+tools:
+  select_active_intent:
+    required: true
+  write_tools:
+    require_intent_id: true
+    require_mutation_class: true
+
+mutation_class:
+  allowed:
+    - AST_REFACTOR
+    - INTENT_EVOLUTION
+
+security:
+  hitl_required_for:
+    - execute_command
+    - write_file
+    - delete_file
+
+traceability:
+  ledger_file: ".orchestration/agent_trace.jsonl"
+  require_content_hash: true
+  hash_algorithm: "sha256"
+
+concurrency:
+  optimistic_locking: true
+  stale_write_block: true
