@@ -1,6 +1,5 @@
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react"
 import { useDeepCompareEffect, useEvent } from "react-use"
-import debounce from "debounce"
 import { Virtuoso, type VirtuosoHandle } from "react-virtuoso"
 import removeMd from "remove-markdown"
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
@@ -48,6 +47,7 @@ import { QueuedMessages } from "./QueuedMessages"
 import { WorktreeSelector } from "./WorktreeSelector"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
+import { useScrollLifecycle } from "@src/hooks/useScrollLifecycle"
 import { Cloud } from "lucide-react"
 
 export interface ChatViewProps {
@@ -62,36 +62,12 @@ export interface ChatViewRef {
 
 export const MAX_IMAGES_PER_MESSAGE = 20 // This is the Anthropic limit.
 
-const INITIAL_LOAD_SETTLE_TIMEOUT_MS = 2500
-const INITIAL_LOAD_SETTLE_HARD_CAP_MS = 10000
-const INITIAL_LOAD_SETTLE_STABLE_FRAME_TARGET = 3
-const INITIAL_LOAD_SETTLE_MAX_FRAMES = Math.ceil(INITIAL_LOAD_SETTLE_HARD_CAP_MS / (1000 / 60))
-
-type ScrollPhase = "HYDRATING_PINNED_TO_BOTTOM" | "ANCHORED_FOLLOWING" | "USER_BROWSING_HISTORY"
-
-type ScrollFollowDisengageSource = "wheel-up" | "row-expansion" | "keyboard-nav-up" | "pointer-scroll-up"
-
 const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
-
-const isEditableKeyboardTarget = (target: EventTarget | null): boolean => {
-	if (!(target instanceof HTMLElement)) {
-		return false
-	}
-
-	if (target.isContentEditable) {
-		return true
-	}
-
-	const tagName = target.tagName
-	return tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT"
-}
 
 const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewProps> = (
 	{ isHidden, showAnnouncement, hideAnnouncement },
 	ref,
 ) => {
-	const isMountedRef = useRef(true)
-
 	const [audioBaseUri] = useState(() => {
 		return (window as unknown as { AUDIO_BASE_URI?: string }).AUDIO_BASE_URI || ""
 	})
@@ -178,24 +154,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({})
 	const prevExpandedRowsRef = useRef<Record<number, boolean>>()
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
-	const [scrollPhase, setScrollPhase] = useState<ScrollPhase>("USER_BROWSING_HISTORY")
-	const scrollPhaseRef = useRef<ScrollPhase>("USER_BROWSING_HISTORY")
-	const [showScrollToBottom, setShowScrollToBottom] = useState(false)
-	const isAtBottomRef = useRef(false)
-	const isSettlingRef = useRef(false)
-	const settleTaskTsRef = useRef<number | null>(null)
-	const settleDeadlineMsRef = useRef<number | null>(null)
-	const settleHardDeadlineMsRef = useRef<number | null>(null)
-	const settleAnimationFrameRef = useRef<number | null>(null)
-	const settleStableFramesRef = useRef(0)
-	const settleFrameCountRef = useRef(0)
-	const settleBottomConfirmedRef = useRef(false)
-	const settleMutationVersionRef = useRef(0)
-	const settleObservedMutationVersionRef = useRef(0)
-	const groupedMessagesLengthRef = useRef(0)
-	const pointerScrollActiveRef = useRef(false)
-	const pointerScrollLastTopRef = useRef<number | null>(null)
-	const reanchorAnimationFrameRef = useRef<number | null>(null)
 	const lastTtsRef = useRef<string>("")
 	const [wasStreaming, setWasStreaming] = useState<boolean>(false)
 	const [checkpointWarning, setCheckpointWarning] = useState<
@@ -228,174 +186,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		clineAskRef.current = clineAsk
 	}, [clineAsk])
 
-	useEffect(() => {
-		scrollPhaseRef.current = scrollPhase
-	}, [scrollPhase])
-
-	const transitionScrollPhase = useCallback((nextPhase: ScrollPhase) => {
-		if (scrollPhaseRef.current === nextPhase) {
-			return
-		}
-
-		scrollPhaseRef.current = nextPhase
-		setScrollPhase(nextPhase)
-	}, [])
-
-	const beginHydrationPinnedToBottom = useCallback(() => {
-		isAtBottomRef.current = false
-		settleBottomConfirmedRef.current = false
-		settleFrameCountRef.current = 0
-		transitionScrollPhase("HYDRATING_PINNED_TO_BOTTOM")
-		setShowScrollToBottom(false)
-	}, [transitionScrollPhase])
-
-	const enterAnchoredFollowing = useCallback(() => {
-		transitionScrollPhase("ANCHORED_FOLLOWING")
-		setShowScrollToBottom(false)
-	}, [transitionScrollPhase])
-
-	const enterUserBrowsingHistory = useCallback(
-		(_source: ScrollFollowDisengageSource) => {
-			transitionScrollPhase("USER_BROWSING_HISTORY")
-			setShowScrollToBottom(!isAtBottomRef.current)
-		},
-		[transitionScrollPhase],
-	)
-
-	const isSettleWindowOpen = useCallback((taskTs: number): boolean => {
-		if (scrollPhaseRef.current !== "HYDRATING_PINNED_TO_BOTTOM") {
-			return false
-		}
-
-		if (settleTaskTsRef.current !== taskTs) {
-			return false
-		}
-
-		const nowMs = Date.now()
-		const deadlineMs = settleDeadlineMsRef.current
-		if (deadlineMs === null || nowMs > deadlineMs) {
-			return false
-		}
-
-		const hardDeadlineMs = settleHardDeadlineMsRef.current
-		return hardDeadlineMs === null || nowMs <= hardDeadlineMs
-	}, [])
-
-	const extendInitialSettleWindow = useCallback((taskTs: number): boolean => {
-		if (scrollPhaseRef.current !== "HYDRATING_PINNED_TO_BOTTOM") {
-			return false
-		}
-
-		if (settleTaskTsRef.current !== taskTs) {
-			return false
-		}
-
-		const nowMs = Date.now()
-		const hardDeadlineMs = settleHardDeadlineMsRef.current
-		if (hardDeadlineMs !== null && nowMs > hardDeadlineMs) {
-			return false
-		}
-
-		settleDeadlineMsRef.current = nowMs + INITIAL_LOAD_SETTLE_TIMEOUT_MS
-		if (hardDeadlineMs === null) {
-			settleHardDeadlineMsRef.current = nowMs + INITIAL_LOAD_SETTLE_HARD_CAP_MS
-		}
-
-		return true
-	}, [])
-
-	const cancelInitialSettleFrame = useCallback(() => {
-		if (settleAnimationFrameRef.current !== null) {
-			cancelAnimationFrame(settleAnimationFrameRef.current)
-			settleAnimationFrameRef.current = null
-		}
-	}, [])
-
-	const cancelReanchorFrame = useCallback(() => {
-		if (reanchorAnimationFrameRef.current !== null) {
-			cancelAnimationFrame(reanchorAnimationFrameRef.current)
-			reanchorAnimationFrameRef.current = null
-		}
-	}, [])
-
-	const completeInitialSettle = useCallback(() => {
-		cancelInitialSettleFrame()
-		isSettlingRef.current = false
-		if (isAtBottomRef.current && settleBottomConfirmedRef.current) {
-			enterAnchoredFollowing()
-			return
-		}
-
-		transitionScrollPhase("USER_BROWSING_HISTORY")
-		setShowScrollToBottom(true)
-	}, [cancelInitialSettleFrame, enterAnchoredFollowing, transitionScrollPhase])
-
-	const runInitialSettleFrame = useCallback(
-		(taskTs: number) => {
-			if (!isMountedRef.current) {
-				return
-			}
-			if (!isSettlingRef.current || settleTaskTsRef.current !== taskTs) {
-				return
-			}
-
-			settleFrameCountRef.current += 1
-			if (settleFrameCountRef.current > INITIAL_LOAD_SETTLE_MAX_FRAMES) {
-				completeInitialSettle()
-				return
-			}
-
-			if (!isSettleWindowOpen(taskTs)) {
-				completeInitialSettle()
-				return
-			}
-
-			const mutationVersion = settleMutationVersionRef.current
-			const isTailStable = mutationVersion === settleObservedMutationVersionRef.current
-			settleObservedMutationVersionRef.current = mutationVersion
-
-			if (isAtBottomRef.current && settleBottomConfirmedRef.current && isTailStable) {
-				settleStableFramesRef.current += 1
-			} else {
-				settleStableFramesRef.current = 0
-			}
-
-			virtuosoRef.current?.scrollToIndex({ index: "LAST", align: "end", behavior: "auto" })
-
-			if (settleStableFramesRef.current >= INITIAL_LOAD_SETTLE_STABLE_FRAME_TARGET) {
-				completeInitialSettle()
-				return
-			}
-
-			settleAnimationFrameRef.current = requestAnimationFrame(() => runInitialSettleFrame(taskTs))
-		},
-		[completeInitialSettle, isSettleWindowOpen],
-	)
-
-	const startInitialSettle = useCallback(
-		(taskTs: number) => {
-			if (scrollPhaseRef.current !== "HYDRATING_PINNED_TO_BOTTOM") {
-				return
-			}
-
-			if (!isSettleWindowOpen(taskTs)) {
-				return
-			}
-			if (isSettlingRef.current && settleTaskTsRef.current === taskTs) {
-				return
-			}
-
-			cancelInitialSettleFrame()
-			settleTaskTsRef.current = taskTs
-			isSettlingRef.current = true
-			settleStableFramesRef.current = 0
-			settleFrameCountRef.current = 0
-			settleObservedMutationVersionRef.current = settleMutationVersionRef.current
-			settleAnimationFrameRef.current = requestAnimationFrame(() => runInitialSettleFrame(taskTs))
-		},
-		[cancelInitialSettleFrame, isSettleWindowOpen, runInitialSettleFrame],
-	)
-
 	const {
 		isOpen: isUpsellOpen,
 		openUpsell,
@@ -423,14 +213,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			vscode.postMessage({ type: "cancelAutoApproval" })
 		}
 	}, [isFollowUpAutoApprovalPaused])
-
-	useEffect(() => {
-		isMountedRef.current = true
-		return () => {
-			isMountedRef.current = false
-			cancelReanchorFrame()
-		}
-	}, [cancelReanchorFrame])
 
 	const isProfileDisabled = useMemo(
 		() => !!apiConfiguration && !ProfileValidator.isProfileAllowed(apiConfiguration, organizationAllowList),
@@ -697,64 +479,20 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 	}, [messages.length])
 
+	// Reset UI states when task changes. Scroll lifecycle is handled by
+	// useScrollLifecycle which has its own effect keyed on taskTs.
 	useEffect(() => {
-		const taskSwitchMs = Date.now()
-		settleStableFramesRef.current = 0
-		settleFrameCountRef.current = 0
-		settleBottomConfirmedRef.current = false
-		settleMutationVersionRef.current = 0
-		settleObservedMutationVersionRef.current = 0
-		isAtBottomRef.current = false
-		cancelInitialSettleFrame()
-		cancelReanchorFrame()
-		settleTaskTsRef.current = task?.ts ?? null
-		settleDeadlineMsRef.current = null
-		settleHardDeadlineMsRef.current = null
-
-		// Reset UI states only when task changes
 		setExpandedRows({})
-		everVisibleMessagesTsRef.current.clear() // Clear for new task
-		setCurrentFollowUpTs(null) // Clear follow-up answered state for new task
-		setIsCondensing(false) // Reset condensing state when switching tasks
-		// Note: sendingDisabled is not reset here as it's managed by message effects
+		everVisibleMessagesTsRef.current.clear()
+		setCurrentFollowUpTs(null)
+		setIsCondensing(false)
 
-		// Clear any pending auto-approval timeout from previous task
 		if (autoApproveTimeoutRef.current) {
 			clearTimeout(autoApproveTimeoutRef.current)
 			autoApproveTimeoutRef.current = null
 		}
-		// Reset user response flag for new task
 		userRespondedRef.current = false
-
-		// Ensure new task starts in deterministic hydration mode, pinned to
-		// the bottom until the message tail has settled.
-		if (task?.ts) {
-			beginHydrationPinnedToBottom()
-			isSettlingRef.current = false
-			settleDeadlineMsRef.current = taskSwitchMs + INITIAL_LOAD_SETTLE_TIMEOUT_MS
-			settleHardDeadlineMsRef.current = taskSwitchMs + INITIAL_LOAD_SETTLE_HARD_CAP_MS
-			startInitialSettle(task.ts)
-		} else {
-			transitionScrollPhase("USER_BROWSING_HISTORY")
-			setShowScrollToBottom(false)
-		}
-		return () => {
-			cancelInitialSettleFrame()
-			cancelReanchorFrame()
-			settleTaskTsRef.current = null
-			settleDeadlineMsRef.current = null
-			settleHardDeadlineMsRef.current = null
-			isSettlingRef.current = false
-			settleBottomConfirmedRef.current = false
-		}
-	}, [
-		beginHydrationPinnedToBottom,
-		cancelInitialSettleFrame,
-		cancelReanchorFrame,
-		startInitialSettle,
-		task?.ts,
-		transitionScrollPhase,
-	])
+	}, [task?.ts])
 
 	const taskTs = task?.ts
 
@@ -780,28 +518,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			cache.clear()
 		}
 	}, [])
-
-	useEffect(() => {
-		const prev = prevExpandedRowsRef.current
-		let wasAnyRowExpandedByUser = false
-		if (prev) {
-			// Check if any row transitioned from false/undefined to true
-			for (const [tsKey, isExpanded] of Object.entries(expandedRows)) {
-				const ts = Number(tsKey)
-				if (isExpanded && !(prev[ts] ?? false)) {
-					wasAnyRowExpandedByUser = true
-					break
-				}
-			}
-		}
-
-		// Expanding a row indicates the user is browsing; disable sticky follow
-		if (wasAnyRowExpandedByUser) {
-			enterUserBrowsingHistory("row-expansion")
-		}
-
-		prevExpandedRowsRef.current = expandedRows // Store current state for next comparison
-	}, [enterUserBrowsingHistory, expandedRows])
 
 	const isStreaming = useMemo(() => {
 		// Checking clineAsk isn't enough since messages effect may be called
@@ -1544,49 +1260,49 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		return result
 	}, [isCondensing, visibleMessages])
 
+	// Scroll lifecycle is managed by a dedicated hook to keep ChatView focused
+	// on message handling and UI orchestration.
+	const {
+		showScrollToBottom,
+		handleRowHeightChange,
+		handleScrollToBottomClick,
+		enterUserBrowsingHistory,
+		followOutputCallback,
+		atBottomStateChangeCallback,
+		scrollToBottomAuto,
+		isAtBottomRef,
+		scrollPhaseRef,
+	} = useScrollLifecycle({
+		virtuosoRef,
+		scrollContainerRef,
+		taskTs: task?.ts,
+		isStreaming,
+		isHidden,
+		hasTask: !!task,
+		groupedMessagesLength: groupedMessages.length,
+	})
+
+	// Expanding a row indicates the user is browsing; disable sticky follow.
+	// Placed after the hook call so enterUserBrowsingHistory is defined.
 	useEffect(() => {
-		const previousLength = groupedMessagesLengthRef.current
-		groupedMessagesLengthRef.current = groupedMessages.length
-
-		if (previousLength === groupedMessages.length) {
-			return
+		const prev = prevExpandedRowsRef.current
+		let wasAnyRowExpandedByUser = false
+		if (prev) {
+			for (const [tsKey, isExpanded] of Object.entries(expandedRows)) {
+				const ts = Number(tsKey)
+				if (isExpanded && !(prev[ts] ?? false)) {
+					wasAnyRowExpandedByUser = true
+					break
+				}
+			}
 		}
 
-		settleMutationVersionRef.current += 1
-
-		const settleTaskTs = settleTaskTsRef.current
-		if (settleTaskTs !== null && extendInitialSettleWindow(settleTaskTs)) {
-			startInitialSettle(settleTaskTs)
+		if (wasAnyRowExpandedByUser) {
+			enterUserBrowsingHistory("row-expansion")
 		}
-	}, [groupedMessages.length, extendInitialSettleWindow, startInitialSettle])
 
-	// scrolling
-
-	const scrollToBottomSmooth = useMemo(
-		() =>
-			debounce(
-				() => virtuosoRef.current?.scrollToIndex({ index: "LAST", align: "end", behavior: "smooth" }),
-				10,
-				{
-					immediate: true,
-				},
-			),
-		[],
-	)
-
-	useEffect(() => {
-		return () => {
-			scrollToBottomSmooth.clear()
-		}
-	}, [scrollToBottomSmooth])
-
-	const scrollToBottomAuto = useCallback(() => {
-		virtuosoRef.current?.scrollToIndex({
-			index: "LAST",
-			align: "end",
-			behavior: "auto", // Instant causes crash.
-		})
-	}, [])
+		prevExpandedRowsRef.current = expandedRows
+	}, [enterUserBrowsingHistory, expandedRows])
 
 	const handleSetExpandedRow = useCallback(
 		(ts: number, expand?: boolean) => {
@@ -1607,111 +1323,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		},
 		[handleSetExpandedRow],
 	)
-
-	const handleRowHeightChange = useCallback(
-		(isTaller: boolean) => {
-			settleMutationVersionRef.current += 1
-
-			const settleTaskTs = settleTaskTsRef.current
-			if (isTaller && settleTaskTs !== null && extendInitialSettleWindow(settleTaskTs)) {
-				startInitialSettle(settleTaskTs)
-			}
-
-			const shouldAutoFollowBottom = scrollPhaseRef.current !== "USER_BROWSING_HISTORY"
-			const shouldForcePinForAnchoredStreaming = scrollPhaseRef.current === "ANCHORED_FOLLOWING" && isStreaming
-			if ((isAtBottomRef.current || shouldForcePinForAnchoredStreaming) && shouldAutoFollowBottom) {
-				if (isTaller) {
-					scrollToBottomSmooth()
-				} else {
-					scrollToBottomAuto()
-				}
-			}
-		},
-		[extendInitialSettleWindow, isStreaming, scrollToBottomSmooth, scrollToBottomAuto, startInitialSettle],
-	)
-
-	// Disable sticky follow when user scrolls up inside the chat container
-	const handleWheel = useCallback(
-		(event: Event) => {
-			const wheelEvent = event as WheelEvent
-			if (wheelEvent.deltaY < 0 && scrollContainerRef.current?.contains(wheelEvent.target as Node)) {
-				enterUserBrowsingHistory("wheel-up")
-			}
-		},
-		[enterUserBrowsingHistory],
-	)
-	useEvent("wheel", handleWheel, window, { passive: true })
-
-	const handlePointerDown = useCallback((event: Event) => {
-		const pointerEvent = event as PointerEvent
-		const pointerTarget = pointerEvent.target
-		if (!(pointerTarget instanceof HTMLElement)) {
-			pointerScrollActiveRef.current = false
-			pointerScrollLastTopRef.current = null
-			return
-		}
-
-		if (!scrollContainerRef.current?.contains(pointerTarget)) {
-			pointerScrollActiveRef.current = false
-			pointerScrollLastTopRef.current = null
-			return
-		}
-
-		const scroller =
-			(pointerTarget.closest(".scrollable") as HTMLElement | null) ??
-			(pointerTarget.scrollHeight > pointerTarget.clientHeight ? pointerTarget : null)
-
-		pointerScrollActiveRef.current = true
-		pointerScrollLastTopRef.current = scroller?.scrollTop ?? 0
-	}, [])
-
-	const handlePointerEnd = useCallback(() => {
-		pointerScrollActiveRef.current = false
-		pointerScrollLastTopRef.current = null
-	}, [])
-
-	const handlePointerActiveScroll = useCallback(
-		(event: Event) => {
-			if (!pointerScrollActiveRef.current) {
-				return
-			}
-
-			const scrollTarget = event.target
-			if (!(scrollTarget instanceof HTMLElement)) {
-				return
-			}
-
-			if (!scrollContainerRef.current?.contains(scrollTarget)) {
-				return
-			}
-
-			const previousTop = pointerScrollLastTopRef.current
-			const currentTop = scrollTarget.scrollTop
-			pointerScrollLastTopRef.current = currentTop
-
-			if (previousTop !== null && currentTop < previousTop) {
-				enterUserBrowsingHistory("pointer-scroll-up")
-			}
-		},
-		[enterUserBrowsingHistory],
-	)
-
-	useEvent("pointerdown", handlePointerDown, window, { passive: true })
-	useEvent("pointerup", handlePointerEnd, window, { passive: true })
-	useEvent("pointercancel", handlePointerEnd, window, { passive: true })
-	useEvent("scroll", handlePointerActiveScroll, window, { passive: true, capture: true })
-
-	const handleScrollToBottomClick = useCallback(() => {
-		enterAnchoredFollowing()
-		scrollToBottomAuto()
-		cancelReanchorFrame()
-		reanchorAnimationFrameRef.current = requestAnimationFrame(() => {
-			reanchorAnimationFrameRef.current = null
-			if (scrollPhaseRef.current === "ANCHORED_FOLLOWING") {
-				scrollToBottomAuto()
-			}
-		})
-	}, [cancelReanchorFrame, enterAnchoredFollowing, scrollToBottomAuto])
 
 	// Effect to clear checkpoint warning when messages appear or task changes
 	useEffect(() => {
@@ -1857,51 +1468,20 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		switchToMode(allModes[previousModeIndex].slug)
 	}, [mode, customModes, switchToMode])
 
-	// Add keyboard event handler
+	// Mode switching keyboard handler. Scroll-intent keyboard detection
+	// (PageUp, Home, ArrowUp) is handled by useScrollLifecycle.
 	const handleKeyDown = useCallback(
 		(event: KeyboardEvent) => {
-			// Check for Command/Ctrl + Period (with or without Shift)
-			// Using event.key to respect keyboard layouts (e.g., Dvorak)
 			if ((event.metaKey || event.ctrlKey) && event.key === ".") {
-				event.preventDefault() // Prevent default browser behavior
-
+				event.preventDefault()
 				if (event.shiftKey) {
-					// Shift + Period = Previous mode
 					switchToPreviousMode()
 				} else {
-					// Just Period = Next mode
 					switchToNextMode()
 				}
-				return
-			}
-
-			if (!task || isHidden) {
-				return
-			}
-
-			if (event.metaKey || event.ctrlKey || event.altKey) {
-				return
-			}
-
-			if (event.key !== "PageUp" && event.key !== "Home" && event.key !== "ArrowUp") {
-				return
-			}
-
-			if (isEditableKeyboardTarget(event.target)) {
-				return
-			}
-
-			const activeElement = document.activeElement
-			const focusInsideChat =
-				activeElement instanceof HTMLElement && !!scrollContainerRef.current?.contains(activeElement)
-			const eventTargetInsideChat =
-				event.target instanceof Node && !!scrollContainerRef.current?.contains(event.target)
-
-			if (focusInsideChat || eventTargetInsideChat || activeElement === document.body) {
-				enterUserBrowsingHistory("keyboard-nav-up")
 			}
 		},
-		[enterUserBrowsingHistory, isHidden, switchToNextMode, switchToPreviousMode, task],
+		[switchToNextMode, switchToPreviousMode],
 	)
 
 	useEffect(() => {
@@ -2049,44 +1629,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							increaseViewportBy={{ top: 3_000, bottom: 1000 }}
 							data={groupedMessages}
 							itemContent={itemContent}
-							followOutput={() => (scrollPhase === "USER_BROWSING_HISTORY" ? false : "auto")}
-							atBottomStateChange={(isAtBottom: boolean) => {
-								isAtBottomRef.current = isAtBottom
-
-								const currentPhase = scrollPhaseRef.current
-								if (currentPhase === "HYDRATING_PINNED_TO_BOTTOM" && isAtBottom) {
-									settleBottomConfirmedRef.current = true
-								}
-
-								if (currentPhase === "HYDRATING_PINNED_TO_BOTTOM" && !isAtBottom) {
-									return
-								}
-
-								if (
-									currentPhase === "ANCHORED_FOLLOWING" &&
-									!isAtBottom &&
-									pointerScrollActiveRef.current
-								) {
-									enterUserBrowsingHistory("pointer-scroll-up")
-									return
-								}
-
-								if (isAtBottom) {
-									setShowScrollToBottom(false)
-									if (currentPhase === "USER_BROWSING_HISTORY") {
-										enterAnchoredFollowing()
-									}
-									return
-								}
-
-								if (currentPhase === "ANCHORED_FOLLOWING" && isStreaming) {
-									scrollToBottomAuto()
-									setShowScrollToBottom(false)
-									return
-								}
-
-								setShowScrollToBottom(currentPhase === "USER_BROWSING_HISTORY")
-							}}
+							followOutput={followOutputCallback}
+							atBottomStateChange={atBottomStateChangeCallback}
 							atBottomThreshold={10}
 							initialTopMostItemIndex={groupedMessages.length - 1}
 						/>
