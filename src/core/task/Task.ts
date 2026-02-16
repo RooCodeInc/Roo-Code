@@ -2099,7 +2099,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		if (existingApiConversationHistory.length > 0) {
 			const lastMessage = existingApiConversationHistory[existingApiConversationHistory.length - 1]
 
-			if (lastMessage.role === "assistant") {
+			if (lastMessage.isSummary) {
+				// IMPORTANT: If the last message is a condensation summary, we must preserve it
+				// intact. The summary message carries critical metadata (isSummary, condenseId)
+				// that getEffectiveApiHistory() uses to filter out condensed messages.
+				// Removing or merging it would destroy this metadata, causing all condensed
+				// messages to become "orphaned" and restored to active status — effectively
+				// undoing the condensation and sending the full history to the API.
+				// See: https://github.com/RooCodeInc/Roo-Code/issues/11487
+				modifiedApiConversationHistory = [...existingApiConversationHistory]
+				modifiedOldUserContent = []
+			} else if (lastMessage.role === "assistant") {
 				const content = Array.isArray(lastMessage.content)
 					? lastMessage.content
 					: [{ type: "text", text: lastMessage.content }]
