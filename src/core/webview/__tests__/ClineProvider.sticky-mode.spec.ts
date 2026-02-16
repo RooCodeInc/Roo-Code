@@ -165,9 +165,22 @@ vi.mock("fs/promises", () => ({
 	mkdir: vi.fn().mockResolvedValue(undefined),
 	writeFile: vi.fn().mockResolvedValue(undefined),
 	readFile: vi.fn().mockResolvedValue(""),
+	readdir: vi.fn().mockResolvedValue([]),
 	unlink: vi.fn().mockResolvedValue(undefined),
 	rmdir: vi.fn().mockResolvedValue(undefined),
+	access: vi.fn().mockResolvedValue(undefined),
+	rm: vi.fn().mockResolvedValue(undefined),
 }))
+
+vi.mock("../../../utils/storage", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("../../../utils/storage")>()
+	return {
+		...actual,
+		getStorageBasePath: vi.fn().mockImplementation((defaultPath: string) => defaultPath),
+		getSettingsDirectoryPath: vi.fn().mockResolvedValue("/test/settings/path"),
+		getTaskDirectoryPath: vi.fn().mockResolvedValue("/test/task/path"),
+	}
+})
 
 vi.mock("@roo-code/telemetry", () => ({
 	TelemetryService: {
@@ -191,7 +204,7 @@ describe("ClineProvider - Sticky Mode", () => {
 	let mockWebviewView: vscode.WebviewView
 	let mockPostMessage: any
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		vi.clearAllMocks()
 
 		if (!TelemetryService.hasInstance()) {
@@ -267,6 +280,9 @@ describe("ClineProvider - Sticky Mode", () => {
 		} as unknown as vscode.WebviewView
 
 		provider = new ClineProvider(mockContext, mockOutputChannel, "sidebar", new ContextProxy(mockContext))
+
+		// Wait for the async TaskHistoryStore initialization to complete
+		await new Promise((resolve) => setTimeout(resolve, 10))
 
 		// Mock getMcpHub method
 		provider.getMcpHub = vi.fn().mockReturnValue({
