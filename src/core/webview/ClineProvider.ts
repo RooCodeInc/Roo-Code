@@ -93,6 +93,26 @@ import { forceFullModelDetailsLoad, hasLoadedFullDetails } from "../../api/provi
 import { ContextProxy } from "../config/ContextProxy"
 import { ProviderSettingsManager } from "../config/ProviderSettingsManager"
 import { CustomModesManager } from "../config/CustomModesManager"
+import {
+	DEFAULT_RPI_AUTOPILOT_ENABLED,
+	DEFAULT_RPI_CODE_REVIEW_ENABLED,
+	DEFAULT_RPI_CODE_REVIEW_SCORE_THRESHOLD,
+	DEFAULT_RPI_CONTEXT_DISTILLATION_BUDGET,
+	DEFAULT_RPI_COUNCIL_ENGINE_ENABLED,
+	DEFAULT_RPI_COUNCIL_TIMEOUT_SECONDS,
+	DEFAULT_RPI_VERIFICATION_STRICTNESS,
+	DEFAULT_SANDBOX_IMAGE,
+	DEFAULT_SANDBOX_MAX_EXECUTION_TIME,
+	DEFAULT_SANDBOX_MEMORY_LIMIT,
+	DEFAULT_SANDBOX_NETWORK_ACCESS,
+	normalizeBooleanSetting,
+	normalizeNumberSetting,
+	normalizeRpiCouncilApiConfigId,
+	normalizeSandboxImage,
+	normalizeSandboxMemoryLimit,
+	normalizeSandboxNetworkAccess,
+	normalizeVerificationStrictness,
+} from "../config/rpiSettingsNormalization"
 import { Task } from "../task/Task"
 import { getSystemPromptFilePath } from "../prompts/sections/custom-system-prompt"
 
@@ -2391,6 +2411,20 @@ export class ClineProvider
 	> {
 		const stateValues = this.contextProxy.getValues()
 		const customModes = await this.customModesManager.getCustomModes()
+		// Read RPI/sandbox settings directly from ContextProxy key access.
+		// This avoids dependence on getValues() aggregation when key lists drift at runtime.
+		const directRpiAutopilotEnabled = this.contextProxy.getValue("rpiAutopilotEnabled")
+		const directRpiCouncilEngineEnabled = this.contextProxy.getValue("rpiCouncilEngineEnabled")
+		const directRpiCouncilApiConfigId = this.contextProxy.getValue("rpiCouncilApiConfigId")
+		const directRpiVerificationStrictness = this.contextProxy.getValue("rpiVerificationStrictness")
+		const directSandboxImage = this.contextProxy.getValue("sandboxImage")
+		const directSandboxNetworkAccess = this.contextProxy.getValue("sandboxNetworkAccess")
+		const directSandboxMemoryLimit = this.contextProxy.getValue("sandboxMemoryLimit")
+		const directSandboxMaxExecutionTime = this.contextProxy.getValue("sandboxMaxExecutionTime")
+		const directRpiCodeReviewEnabled = this.contextProxy.getValue("rpiCodeReviewEnabled")
+		const directRpiCodeReviewScoreThreshold = this.contextProxy.getValue("rpiCodeReviewScoreThreshold")
+		const directRpiContextDistillationBudget = this.contextProxy.getValue("rpiContextDistillationBudget")
+		const directRpiCouncilTimeoutSeconds = this.contextProxy.getValue("rpiCouncilTimeoutSeconds")
 
 		// Determine apiProvider with the same logic as before.
 		const apiProvider: ProviderName = stateValues.apiProvider ? stateValues.apiProvider : "anthropic"
@@ -2478,6 +2512,57 @@ export class ClineProvider
 
 		// Get actual browser session state
 		const isBrowserSessionActive = this.getCurrentTask()?.browserSession?.isSessionActive() ?? false
+		const normalizedRpiAutopilotEnabled = normalizeBooleanSetting(
+			directRpiAutopilotEnabled ?? stateValues.rpiAutopilotEnabled,
+			DEFAULT_RPI_AUTOPILOT_ENABLED,
+		)
+		const normalizedRpiCouncilEngineEnabled = normalizeBooleanSetting(
+			directRpiCouncilEngineEnabled ?? stateValues.rpiCouncilEngineEnabled,
+			DEFAULT_RPI_COUNCIL_ENGINE_ENABLED,
+		)
+		const normalizedRpiCouncilApiConfigId = normalizeRpiCouncilApiConfigId(
+			directRpiCouncilApiConfigId ?? stateValues.rpiCouncilApiConfigId,
+		)
+		const normalizedRpiVerificationStrictness = normalizeVerificationStrictness(
+			directRpiVerificationStrictness ?? stateValues.rpiVerificationStrictness,
+			DEFAULT_RPI_VERIFICATION_STRICTNESS,
+		)
+		const normalizedSandboxImage = normalizeSandboxImage(
+			directSandboxImage ?? stateValues.sandboxImage,
+			DEFAULT_SANDBOX_IMAGE,
+		)
+		const normalizedSandboxNetworkAccess = normalizeSandboxNetworkAccess(
+			directSandboxNetworkAccess ?? stateValues.sandboxNetworkAccess,
+			DEFAULT_SANDBOX_NETWORK_ACCESS,
+		)
+		const normalizedSandboxMemoryLimit = normalizeSandboxMemoryLimit(
+			directSandboxMemoryLimit ?? stateValues.sandboxMemoryLimit,
+			DEFAULT_SANDBOX_MEMORY_LIMIT,
+		)
+		const normalizedSandboxMaxExecutionTime = normalizeNumberSetting(
+			directSandboxMaxExecutionTime ?? stateValues.sandboxMaxExecutionTime,
+			DEFAULT_SANDBOX_MAX_EXECUTION_TIME,
+			{ min: 10, max: 600, integer: true },
+		)
+		const normalizedRpiCodeReviewEnabled = normalizeBooleanSetting(
+			directRpiCodeReviewEnabled ?? stateValues.rpiCodeReviewEnabled,
+			DEFAULT_RPI_CODE_REVIEW_ENABLED,
+		)
+		const normalizedRpiCodeReviewScoreThreshold = normalizeNumberSetting(
+			directRpiCodeReviewScoreThreshold ?? stateValues.rpiCodeReviewScoreThreshold,
+			DEFAULT_RPI_CODE_REVIEW_SCORE_THRESHOLD,
+			{ min: 1, max: 10, integer: true },
+		)
+		const normalizedRpiContextDistillationBudget = normalizeNumberSetting(
+			directRpiContextDistillationBudget ?? stateValues.rpiContextDistillationBudget,
+			DEFAULT_RPI_CONTEXT_DISTILLATION_BUDGET,
+			{ min: 1000, max: 32000, integer: true },
+		)
+		const normalizedRpiCouncilTimeoutSeconds = normalizeNumberSetting(
+			directRpiCouncilTimeoutSeconds ?? stateValues.rpiCouncilTimeoutSeconds,
+			DEFAULT_RPI_COUNCIL_TIMEOUT_SECONDS,
+			{ min: 15, max: 300, integer: true },
+		)
 
 		// Return the same structure as before.
 		return {
@@ -2531,18 +2616,18 @@ export class ClineProvider
 			mode: stateValues.mode ?? defaultModeSlug,
 			language: stateValues.language ?? formatLanguage(vscode.env.language),
 			mcpEnabled: stateValues.mcpEnabled ?? true,
-			rpiAutopilotEnabled: stateValues.rpiAutopilotEnabled ?? true,
-			rpiCouncilEngineEnabled: stateValues.rpiCouncilEngineEnabled ?? true,
-			rpiCouncilApiConfigId: stateValues.rpiCouncilApiConfigId ?? "",
-			rpiVerificationStrictness: stateValues.rpiVerificationStrictness ?? "lenient",
-			sandboxImage: stateValues.sandboxImage ?? "node:20",
-			sandboxNetworkAccess: stateValues.sandboxNetworkAccess ?? "restricted",
-			sandboxMemoryLimit: stateValues.sandboxMemoryLimit ?? "4g",
-			sandboxMaxExecutionTime: stateValues.sandboxMaxExecutionTime ?? 120,
-			rpiCodeReviewEnabled: stateValues.rpiCodeReviewEnabled ?? true,
-			rpiCodeReviewScoreThreshold: stateValues.rpiCodeReviewScoreThreshold ?? 4,
-			rpiContextDistillationBudget: stateValues.rpiContextDistillationBudget ?? 8000,
-			rpiCouncilTimeoutSeconds: stateValues.rpiCouncilTimeoutSeconds ?? 90,
+			rpiAutopilotEnabled: normalizedRpiAutopilotEnabled,
+			rpiCouncilEngineEnabled: normalizedRpiCouncilEngineEnabled,
+			rpiCouncilApiConfigId: normalizedRpiCouncilApiConfigId,
+			rpiVerificationStrictness: normalizedRpiVerificationStrictness,
+			sandboxImage: normalizedSandboxImage,
+			sandboxNetworkAccess: normalizedSandboxNetworkAccess,
+			sandboxMemoryLimit: normalizedSandboxMemoryLimit,
+			sandboxMaxExecutionTime: normalizedSandboxMaxExecutionTime,
+			rpiCodeReviewEnabled: normalizedRpiCodeReviewEnabled,
+			rpiCodeReviewScoreThreshold: normalizedRpiCodeReviewScoreThreshold,
+			rpiContextDistillationBudget: normalizedRpiContextDistillationBudget,
+			rpiCouncilTimeoutSeconds: normalizedRpiCouncilTimeoutSeconds,
 			condensingApiConfigId: stateValues.condensingApiConfigId ?? "",
 			mcpServers: this.mcpHub?.getAllServers() ?? [],
 			currentApiConfigName: stateValues.currentApiConfigName ?? "default",

@@ -74,7 +74,8 @@ describe("ContextProxy", () => {
 			// 1. openRouterImageGenerationSettings
 			// 2. customCondensingPrompt
 			// 3. customSupportPrompts (for migrateOldDefaultCondensingPrompt)
-			expect(mockGlobalState.get).toHaveBeenCalledTimes(GLOBAL_STATE_KEYS.length + 3)
+			// +6 for RPI/sandbox diagnostics in initialize()
+			expect(mockGlobalState.get).toHaveBeenCalledTimes(GLOBAL_STATE_KEYS.length + 3 + 6)
 			for (const key of GLOBAL_STATE_KEYS) {
 				expect(mockGlobalState.get).toHaveBeenCalledWith(key)
 			}
@@ -82,6 +83,13 @@ describe("ContextProxy", () => {
 			expect(mockGlobalState.get).toHaveBeenCalledWith("openRouterImageGenerationSettings")
 			expect(mockGlobalState.get).toHaveBeenCalledWith("customCondensingPrompt")
 			expect(mockGlobalState.get).toHaveBeenCalledWith("customSupportPrompts")
+			// Diagnostic calls
+			expect(mockGlobalState.get).toHaveBeenCalledWith("rpiCodeReviewScoreThreshold")
+			expect(mockGlobalState.get).toHaveBeenCalledWith("rpiCodeReviewEnabled")
+			expect(mockGlobalState.get).toHaveBeenCalledWith("rpiCouncilEngineEnabled")
+			expect(mockGlobalState.get).toHaveBeenCalledWith("sandboxImage")
+			expect(mockGlobalState.get).toHaveBeenCalledWith("rpiVerificationStrictness")
+			expect(mockGlobalState.get).toHaveBeenCalledWith("sandboxMemoryLimit")
 		})
 
 		it("should initialize secret cache with all secret keys", () => {
@@ -104,8 +112,8 @@ describe("ContextProxy", () => {
 			const result = proxy.getGlobalState("apiProvider")
 			expect(result).toBe("deepseek")
 
-			// Original context should be called once during updateGlobalState (+3 for migration checks)
-			expect(mockGlobalState.get).toHaveBeenCalledTimes(GLOBAL_STATE_KEYS.length + 3) // From initialization + migration checks
+			// Original context should be called once during updateGlobalState (+3 migration checks +6 diagnostics).
+			expect(mockGlobalState.get).toHaveBeenCalledTimes(GLOBAL_STATE_KEYS.length + 3 + 6)
 		})
 
 		it("should handle default values correctly", async () => {
@@ -147,6 +155,17 @@ describe("ContextProxy", () => {
 
 			// Should return default value when original context returns undefined
 			expect(result).toBe(historyItems)
+		})
+
+		it("should read through to storage when key is missing from cache map", async () => {
+			// Simulate runtime key-list drift by removing an existing key from cache tracking.
+			delete (proxy as any).stateCache["sandboxMemoryLimit"]
+			mockGlobalState.get.mockImplementation((key: string) => (key === "sandboxMemoryLimit" ? "8g" : undefined))
+
+			const result = proxy.getGlobalState("sandboxMemoryLimit" as any)
+
+			expect(result).toBe("8g")
+			expect(mockGlobalState.get).toHaveBeenCalledWith("sandboxMemoryLimit")
 		})
 	})
 

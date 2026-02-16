@@ -70,6 +70,26 @@ import { GetModelsOptions } from "../../shared/api"
 import { generateSystemPrompt } from "./generateSystemPrompt"
 import { resolveDefaultSaveUri, saveLastExportPath } from "../../utils/export"
 import { getCommand } from "../../utils/commands"
+import {
+	DEFAULT_RPI_AUTOPILOT_ENABLED,
+	DEFAULT_RPI_CODE_REVIEW_ENABLED,
+	DEFAULT_RPI_CODE_REVIEW_SCORE_THRESHOLD,
+	DEFAULT_RPI_CONTEXT_DISTILLATION_BUDGET,
+	DEFAULT_RPI_COUNCIL_ENGINE_ENABLED,
+	DEFAULT_RPI_COUNCIL_TIMEOUT_SECONDS,
+	DEFAULT_RPI_VERIFICATION_STRICTNESS,
+	DEFAULT_SANDBOX_IMAGE,
+	DEFAULT_SANDBOX_MAX_EXECUTION_TIME,
+	DEFAULT_SANDBOX_MEMORY_LIMIT,
+	DEFAULT_SANDBOX_NETWORK_ACCESS,
+	normalizeBooleanSetting,
+	normalizeNumberSetting,
+	normalizeRpiCouncilApiConfigId,
+	normalizeSandboxImage,
+	normalizeSandboxMemoryLimit,
+	normalizeSandboxNetworkAccess,
+	normalizeVerificationStrictness,
+} from "../config/rpiSettingsNormalization"
 
 const ALLOWED_VSCODE_SETTINGS = new Set(["terminal.integrated.inheritEnv"])
 
@@ -580,140 +600,174 @@ export const webviewMessageHandler = async (
 			break
 
 		case "updateSettings":
-			if (message.updatedSettings) {
-				for (const [key, value] of Object.entries(message.updatedSettings)) {
-					let newValue = value
+			try {
+				if (message.updatedSettings) {
+					for (const [key, value] of Object.entries(message.updatedSettings)) {
+						let newValue = value
 
-					if (key === "language") {
-						newValue = value ?? "en"
-						changeLanguage(newValue as Language)
-					} else if (key === "allowedCommands") {
-						const commands = value ?? []
+						if (key === "language") {
+							newValue = value ?? "en"
+							changeLanguage(newValue as Language)
+						} else if (key === "allowedCommands") {
+							const commands = value ?? []
 
-						newValue = Array.isArray(commands)
-							? commands.filter((cmd) => typeof cmd === "string" && cmd.trim().length > 0)
-							: []
+							newValue = Array.isArray(commands)
+								? commands.filter((cmd) => typeof cmd === "string" && cmd.trim().length > 0)
+								: []
 
-						await vscode.workspace
-							.getConfiguration(Package.name)
-							.update("allowedCommands", newValue, vscode.ConfigurationTarget.Global)
-					} else if (key === "deniedCommands") {
-						const commands = value ?? []
+							await vscode.workspace
+								.getConfiguration(Package.name)
+								.update("allowedCommands", newValue, vscode.ConfigurationTarget.Global)
+						} else if (key === "deniedCommands") {
+							const commands = value ?? []
 
-						newValue = Array.isArray(commands)
-							? commands.filter((cmd) => typeof cmd === "string" && cmd.trim().length > 0)
-							: []
+							newValue = Array.isArray(commands)
+								? commands.filter((cmd) => typeof cmd === "string" && cmd.trim().length > 0)
+								: []
 
-						await vscode.workspace
-							.getConfiguration(Package.name)
-							.update("deniedCommands", newValue, vscode.ConfigurationTarget.Global)
-					} else if (key === "ttsEnabled") {
-						newValue = value ?? true
-						setTtsEnabled(newValue as boolean)
-					} else if (key === "ttsSpeed") {
-						newValue = value ?? 1.0
-						setTtsSpeed(newValue as number)
-					} else if (key === "terminalShellIntegrationTimeout") {
-						if (value !== undefined) {
-							Terminal.setShellIntegrationTimeout(value as number)
-						}
-					} else if (key === "terminalShellIntegrationDisabled") {
-						if (value !== undefined) {
-							Terminal.setShellIntegrationDisabled(value as boolean)
-						}
-					} else if (key === "terminalCommandDelay") {
-						if (value !== undefined) {
-							Terminal.setCommandDelay(value as number)
-						}
-					} else if (key === "terminalPowershellCounter") {
-						if (value !== undefined) {
-							Terminal.setPowershellCounter(value as boolean)
-						}
-					} else if (key === "terminalZshClearEolMark") {
-						if (value !== undefined) {
-							Terminal.setTerminalZshClearEolMark(value as boolean)
-						}
-					} else if (key === "terminalZshOhMy") {
-						if (value !== undefined) {
-							Terminal.setTerminalZshOhMy(value as boolean)
-						}
-					} else if (key === "terminalZshP10k") {
-						if (value !== undefined) {
-							Terminal.setTerminalZshP10k(value as boolean)
-						}
-					} else if (key === "terminalZdotdir") {
-						if (value !== undefined) {
-							Terminal.setTerminalZdotdir(value as boolean)
-						}
-					} else if (key === "mcpEnabled") {
-						newValue = value ?? true
-						const mcpHub = provider.getMcpHub()
+							await vscode.workspace
+								.getConfiguration(Package.name)
+								.update("deniedCommands", newValue, vscode.ConfigurationTarget.Global)
+						} else if (key === "ttsEnabled") {
+							newValue = value ?? true
+							setTtsEnabled(newValue as boolean)
+						} else if (key === "ttsSpeed") {
+							newValue = value ?? 1.0
+							setTtsSpeed(newValue as number)
+						} else if (key === "terminalShellIntegrationTimeout") {
+							if (value !== undefined) {
+								Terminal.setShellIntegrationTimeout(value as number)
+							}
+						} else if (key === "terminalShellIntegrationDisabled") {
+							if (value !== undefined) {
+								Terminal.setShellIntegrationDisabled(value as boolean)
+							}
+						} else if (key === "terminalCommandDelay") {
+							if (value !== undefined) {
+								Terminal.setCommandDelay(value as number)
+							}
+						} else if (key === "terminalPowershellCounter") {
+							if (value !== undefined) {
+								Terminal.setPowershellCounter(value as boolean)
+							}
+						} else if (key === "terminalZshClearEolMark") {
+							if (value !== undefined) {
+								Terminal.setTerminalZshClearEolMark(value as boolean)
+							}
+						} else if (key === "terminalZshOhMy") {
+							if (value !== undefined) {
+								Terminal.setTerminalZshOhMy(value as boolean)
+							}
+						} else if (key === "terminalZshP10k") {
+							if (value !== undefined) {
+								Terminal.setTerminalZshP10k(value as boolean)
+							}
+						} else if (key === "terminalZdotdir") {
+							if (value !== undefined) {
+								Terminal.setTerminalZdotdir(value as boolean)
+							}
+						} else if (key === "mcpEnabled") {
+							newValue = value ?? true
+							const mcpHub = provider.getMcpHub()
 
-						if (mcpHub) {
-							await mcpHub.handleMcpEnabledChange(newValue as boolean)
-						}
-					} else if (key === "rpiAutopilotEnabled") {
-						newValue = value ?? true
-					} else if (key === "rpiCouncilEngineEnabled") {
-						newValue = value ?? true
-					} else if (key === "rpiVerificationStrictness") {
-						newValue = value ?? "lenient"
-					} else if (key === "sandboxImage") {
-						newValue = value ?? "node:20"
-					} else if (key === "sandboxNetworkAccess") {
-						newValue = value ?? "restricted"
-					} else if (key === "sandboxMemoryLimit") {
-						newValue = value ?? "4g"
-					} else if (key === "sandboxMaxExecutionTime") {
-						newValue = value ?? 120
-					} else if (key === "rpiContextDistillationBudget") {
-						newValue = value ?? 8000
-					} else if (key === "rpiCouncilTimeoutSeconds") {
-						newValue = value ?? 90
-					} else if (key === "rpiCodeReviewEnabled") {
-						newValue = value ?? true
-					} else if (key === "rpiCodeReviewScoreThreshold") {
-						newValue = value ?? 4
-					} else if (key === "experiments") {
-						if (!value) {
-							continue
+							if (mcpHub) {
+								await mcpHub.handleMcpEnabledChange(newValue as boolean)
+							}
+						} else if (key === "rpiAutopilotEnabled") {
+							newValue = normalizeBooleanSetting(value, DEFAULT_RPI_AUTOPILOT_ENABLED)
+						} else if (key === "rpiCouncilEngineEnabled") {
+							newValue = normalizeBooleanSetting(value, DEFAULT_RPI_COUNCIL_ENGINE_ENABLED)
+						} else if (key === "rpiCouncilApiConfigId") {
+							newValue = normalizeRpiCouncilApiConfigId(value)
+						} else if (key === "rpiVerificationStrictness") {
+							newValue = normalizeVerificationStrictness(value, DEFAULT_RPI_VERIFICATION_STRICTNESS)
+						} else if (key === "sandboxImage") {
+							newValue = normalizeSandboxImage(value, DEFAULT_SANDBOX_IMAGE)
+						} else if (key === "sandboxNetworkAccess") {
+							newValue = normalizeSandboxNetworkAccess(value, DEFAULT_SANDBOX_NETWORK_ACCESS)
+						} else if (key === "sandboxMemoryLimit") {
+							newValue = normalizeSandboxMemoryLimit(value, DEFAULT_SANDBOX_MEMORY_LIMIT)
+						} else if (key === "sandboxMaxExecutionTime") {
+							newValue = normalizeNumberSetting(value, DEFAULT_SANDBOX_MAX_EXECUTION_TIME, {
+								min: 10,
+								max: 600,
+								integer: true,
+							})
+						} else if (key === "rpiContextDistillationBudget") {
+							newValue = normalizeNumberSetting(value, DEFAULT_RPI_CONTEXT_DISTILLATION_BUDGET, {
+								min: 1000,
+								max: 32000,
+								integer: true,
+							})
+						} else if (key === "rpiCouncilTimeoutSeconds") {
+							newValue = normalizeNumberSetting(value, DEFAULT_RPI_COUNCIL_TIMEOUT_SECONDS, {
+								min: 15,
+								max: 300,
+								integer: true,
+							})
+						} else if (key === "rpiCodeReviewEnabled") {
+							newValue = normalizeBooleanSetting(value, DEFAULT_RPI_CODE_REVIEW_ENABLED)
+						} else if (key === "rpiCodeReviewScoreThreshold") {
+							newValue = normalizeNumberSetting(value, DEFAULT_RPI_CODE_REVIEW_SCORE_THRESHOLD, {
+								min: 1,
+								max: 10,
+								integer: true,
+							})
+						} else if (key === "experiments") {
+							if (!value) {
+								continue
+							}
+
+							newValue = {
+								...(getGlobalState("experiments") ?? experimentDefault),
+								...(value as Record<ExperimentId, boolean>),
+							}
+						} else if (key === "customSupportPrompts") {
+							if (!value) {
+								continue
+							}
 						}
 
-						newValue = {
-							...(getGlobalState("experiments") ?? experimentDefault),
-							...(value as Record<ExperimentId, boolean>),
+						// Diagnostic: log RPI/sandbox settings during save
+						if (key.startsWith("rpi") || key.startsWith("sandbox")) {
+							console.log(
+								`[updateSettings] SAVE key="${key}" value=${JSON.stringify(value)} newValue=${JSON.stringify(newValue)}`,
+							)
 						}
-					} else if (key === "customSupportPrompts") {
-						if (!value) {
-							continue
-						}
+
+						await provider.contextProxy.setValue(key as keyof RooCodeSettings, newValue)
 					}
 
-					// Diagnostic: log RPI/sandbox settings during save
-					if (key.startsWith("rpi") || key.startsWith("sandbox")) {
-						console.log(
-							`[updateSettings] SAVE key="${key}" value=${JSON.stringify(value)} newValue=${JSON.stringify(newValue)}`,
-						)
+					// Diagnostic: verify RPI settings were stored
+					const rpiDiag = [
+						"rpiCodeReviewScoreThreshold",
+						"rpiCodeReviewEnabled",
+						"rpiCouncilEngineEnabled",
+						"sandboxImage",
+					] as const
+					for (const rk of rpiDiag) {
+						const stored = provider.contextProxy.getValue(rk)
+						console.log(`[updateSettings] VERIFY key="${rk}" storedValue=${JSON.stringify(stored)}`)
 					}
 
-					await provider.contextProxy.setValue(key as keyof RooCodeSettings, newValue)
+					await provider.postStateToWebview()
 				}
 
-				// Diagnostic: verify RPI settings were stored
-				const rpiDiag = [
-					"rpiCodeReviewScoreThreshold",
-					"rpiCodeReviewEnabled",
-					"rpiCouncilEngineEnabled",
-					"sandboxImage",
-				] as const
-				for (const rk of rpiDiag) {
-					const stored = provider.contextProxy.getValue(rk)
-					console.log(`[updateSettings] VERIFY key="${rk}" storedValue=${JSON.stringify(stored)}`)
-				}
-
-				await provider.postStateToWebview()
+				await provider.postMessageToWebview({
+					type: "settingsSaved",
+					requestId: message.requestId,
+					success: true,
+				})
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error update settings: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+				await provider.postMessageToWebview({
+					type: "settingsSaved",
+					requestId: message.requestId,
+					success: false,
+					error: errorMessage,
+				})
 			}
-
 			break
 
 		case "terminalOperation":

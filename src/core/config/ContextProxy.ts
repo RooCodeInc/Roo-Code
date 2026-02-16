@@ -339,8 +339,30 @@ export class ContextProxy {
 			return value === undefined || value === null ? defaultValue : value
 		}
 
+		const hasCachedKey = Object.prototype.hasOwnProperty.call(this.stateCache, key)
 		const value = this.stateCache[key]
-		return value !== undefined ? value : defaultValue
+		if (hasCachedKey) {
+			// Key tracked in cache (initialized path). Respect explicit undefined and use provided default.
+			if (value !== undefined) {
+				return value
+			}
+			return defaultValue
+		}
+
+		// Key missing from cache map: attempt read-through from storage.
+		if (value !== undefined) {
+			return value
+		}
+
+		// Fallback read-through for keys missing from initialization lists at runtime.
+		// This keeps persisted values accessible even if key registries drift between builds.
+		const storedValue = this.originalContext.globalState.get<GlobalState[K]>(key)
+		if (storedValue !== undefined) {
+			this.stateCache[key] = storedValue
+			return storedValue
+		}
+
+		return defaultValue
 	}
 
 	updateGlobalState<K extends GlobalStateKey>(key: K, value: GlobalState[K]) {

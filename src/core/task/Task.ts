@@ -136,6 +136,17 @@ import { mergeConsecutiveApiMessages } from "./mergeConsecutiveApiMessages"
 import { appendEnvironmentDetails, removeEnvironmentDetailsBlocks } from "./appendEnvironmentDetails"
 import { RpiAutopilot, type RpiToolObservation } from "../rpi/RpiAutopilot"
 import { RpiCouncilEngine } from "../rpi/engine/RpiCouncilEngine"
+import {
+	DEFAULT_RPI_AUTOPILOT_ENABLED,
+	DEFAULT_RPI_CODE_REVIEW_ENABLED,
+	DEFAULT_RPI_CODE_REVIEW_SCORE_THRESHOLD,
+	DEFAULT_RPI_COUNCIL_ENGINE_ENABLED,
+	DEFAULT_RPI_COUNCIL_TIMEOUT_SECONDS,
+	DEFAULT_RPI_VERIFICATION_STRICTNESS,
+	normalizeBooleanSetting,
+	normalizeNumberSetting,
+	normalizeVerificationStrictness,
+} from "../config/rpiSettingsNormalization"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -4765,21 +4776,24 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private isRpiAutopilotEnabled(): boolean {
 		const provider = this.providerRef.deref()
 		const setting = provider?.contextProxy.getValue("rpiAutopilotEnabled")
-		return setting ?? true
+		return normalizeBooleanSetting(setting, DEFAULT_RPI_AUTOPILOT_ENABLED)
 	}
 
 	private isRpiCouncilEngineEnabled(): boolean {
 		const provider = this.providerRef.deref()
 		const setting = provider?.contextProxy.getValue("rpiCouncilEngineEnabled")
-		return setting ?? true
+		return normalizeBooleanSetting(setting, DEFAULT_RPI_COUNCIL_ENGINE_ENABLED)
 	}
 
 	private async getRpiAutopilot(): Promise<RpiAutopilot> {
 		if (!this.rpiAutopilot) {
 			const provider = this.providerRef.deref()
-			const councilTimeoutSeconds = provider?.contextProxy.getValue("rpiCouncilTimeoutSeconds")
-			const councilTimeoutMs =
-				typeof councilTimeoutSeconds === "number" ? councilTimeoutSeconds * 1000 : undefined
+			const councilTimeoutSeconds = normalizeNumberSetting(
+				provider?.contextProxy.getValue("rpiCouncilTimeoutSeconds"),
+				DEFAULT_RPI_COUNCIL_TIMEOUT_SECONDS,
+				{ min: 15, max: 300, integer: true },
+			)
+			const councilTimeoutMs = councilTimeoutSeconds * 1000
 			this.rpiAutopilot = new RpiAutopilot(
 				{
 					taskId: this.taskId,
@@ -4792,7 +4806,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					getVerificationStrictness: () => {
 						const provider = this.providerRef.deref()
 						const value = provider?.contextProxy.getValue("rpiVerificationStrictness")
-						return value === "strict" || value === "standard" || value === "lenient" ? value : "lenient"
+						return normalizeVerificationStrictness(value, DEFAULT_RPI_VERIFICATION_STRICTNESS)
 					},
 					onCouncilEvent: (event) => {
 						void this.handleRpiCouncilEvent(event)
@@ -4802,17 +4816,24 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					},
 					isCodeReviewEnabled: () => {
 						const provider = this.providerRef.deref()
-						return provider?.contextProxy.getValue("rpiCodeReviewEnabled") ?? true
+						return normalizeBooleanSetting(
+							provider?.contextProxy.getValue("rpiCodeReviewEnabled"),
+							DEFAULT_RPI_CODE_REVIEW_ENABLED,
+						)
 					},
 					getCodeReviewScoreThreshold: () => {
 						const provider = this.providerRef.deref()
-						return provider?.contextProxy.getValue("rpiCodeReviewScoreThreshold") ?? 4
+						return normalizeNumberSetting(
+							provider?.contextProxy.getValue("rpiCodeReviewScoreThreshold"),
+							DEFAULT_RPI_CODE_REVIEW_SCORE_THRESHOLD,
+							{ min: 1, max: 10, integer: true },
+						)
 					},
 					onCodeReviewEvent: (event) => {
 						void this.handleRpiCodeReviewEvent(event)
 					},
 				},
-				councilTimeoutMs ? new RpiCouncilEngine(councilTimeoutMs) : undefined,
+				new RpiCouncilEngine(councilTimeoutMs),
 			)
 		}
 		return this.rpiAutopilot

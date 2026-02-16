@@ -99,6 +99,7 @@ export interface ExtensionMessage {
 		| "modes"
 		| "taskWithAggregatedCosts"
 		| "openAiCodexRateLimits"
+		| "settingsSaved"
 		// Worktree response types
 		| "worktreeList"
 		| "worktreeResult"

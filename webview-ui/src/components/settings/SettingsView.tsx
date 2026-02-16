@@ -31,12 +31,14 @@ import {
 	ArrowLeft,
 	GitCommitVertical,
 	GraduationCap,
+	Loader2,
 } from "lucide-react"
 
 import {
 	type ProviderSettings,
 	type ExperimentId,
 	type TelemetrySetting,
+	type ExtensionMessage,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 	ImageGenerationProvider,
 } from "@roo-code/types"
@@ -127,6 +129,8 @@ type SettingsViewProps = {
 	targetSection?: string
 }
 
+const SAVE_ACK_TIMEOUT_MS = 15000
+
 const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, targetSection }, ref) => {
 	const { t } = useAppTranslation()
 
@@ -136,6 +140,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const [isDiscardDialogShow, setDiscardDialogShow] = useState(false)
 	const [isChangeDetected, setChangeDetected] = useState(false)
 	const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined)
+	const [isSaving, setIsSaving] = useState(false)
 	const [activeTab, setActiveTab] = useState<SectionName>(
 		targetSection && sectionNames.includes(targetSection as SectionName)
 			? (targetSection as SectionName)
@@ -149,6 +154,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	const prevApiConfigName = useRef(currentApiConfigName)
 	const confirmDialogHandler = useRef<() => void>()
+	const pendingSaveRequestIdRef = useRef<string | null>(null)
+	const saveTimeoutRef = useRef<number | null>(null)
 
 	const [cachedState, setCachedState] = useState(() => {
 		// Diagnostic: log RPI values from extensionState on SettingsView mount
@@ -277,6 +284,45 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			return { ...prevState, [field]: value }
 		})
 	}, [])
+
+	const clearSaveTimeout = useCallback(() => {
+		if (saveTimeoutRef.current !== null) {
+			window.clearTimeout(saveTimeoutRef.current)
+			saveTimeoutRef.current = null
+		}
+	}, [])
+
+	useEffect(() => {
+		return () => {
+			clearSaveTimeout()
+		}
+	}, [clearSaveTimeout])
+
+	useEffect(() => {
+		const handleMessage = (event: MessageEvent) => {
+			const message = event.data as ExtensionMessage
+			if (message.type !== "settingsSaved") {
+				return
+			}
+
+			if (!pendingSaveRequestIdRef.current || message.requestId !== pendingSaveRequestIdRef.current) {
+				return
+			}
+
+			pendingSaveRequestIdRef.current = null
+			clearSaveTimeout()
+			setIsSaving(false)
+
+			if (message.success !== false) {
+				setChangeDetected(false)
+			}
+		}
+
+		window.addEventListener("message", handleMessage)
+		return () => {
+			window.removeEventListener("message", handleMessage)
+		}
+	}, [clearSaveTimeout])
 
 	const setApiConfigurationField = useCallback(
 		<K extends keyof ProviderSettings>(field: K, value: ProviderSettings[K], isUserAction: boolean = true) => {
@@ -422,109 +468,126 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const isSettingValid = !errorMessage
 
 	const handleSubmit = () => {
-		if (isSettingValid) {
-			vscode.postMessage({
-				type: "updateSettings",
-				updatedSettings: {
-					language,
-					alwaysAllowReadOnly: alwaysAllowReadOnly ?? undefined,
-					alwaysAllowReadOnlyOutsideWorkspace: alwaysAllowReadOnlyOutsideWorkspace ?? undefined,
-					alwaysAllowWrite: alwaysAllowWrite ?? undefined,
-					alwaysAllowWriteOutsideWorkspace: alwaysAllowWriteOutsideWorkspace ?? undefined,
-					alwaysAllowWriteProtected: alwaysAllowWriteProtected ?? undefined,
-					alwaysAllowExecute: alwaysAllowExecute ?? undefined,
-					alwaysAllowBrowser: alwaysAllowBrowser ?? undefined,
-					alwaysAllowMcp,
-					alwaysAllowModeSwitch,
-					allowedCommands: allowedCommands ?? [],
-					deniedCommands: deniedCommands ?? [],
-					preventCompletionWithEslintProblems:
-						preventCompletionWithEslintProblems !== undefined ? preventCompletionWithEslintProblems : true,
-					// Note that we use `null` instead of `undefined` since `JSON.stringify`
-					// will omit `undefined` when serializing the object and passing it to the
-					// extension host. We may need to do the same for other nullable fields.
-					allowedMaxRequests: allowedMaxRequests ?? null,
-					allowedMaxCost: allowedMaxCost ?? null,
-					autoCondenseContext,
-					autoCondenseContextPercent,
-					browserToolEnabled: browserToolEnabled ?? true,
-					soundEnabled: soundEnabled ?? true,
-					soundVolume: soundVolume ?? 0.5,
-					ttsEnabled,
-					ttsSpeed,
-					enableCheckpoints: enableCheckpoints ?? false,
-					checkpointTimeout: checkpointTimeout ?? DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
-					browserViewportSize: browserViewportSize ?? "900x600",
-					remoteBrowserHost: remoteBrowserEnabled ? remoteBrowserHost : undefined,
-					remoteBrowserEnabled: remoteBrowserEnabled ?? false,
-					writeDelayMs,
-					screenshotQuality: screenshotQuality ?? 75,
-					terminalShellIntegrationTimeout: terminalShellIntegrationTimeout ?? 30_000,
-					terminalShellIntegrationDisabled,
-					terminalCommandDelay,
-					terminalPowershellCounter,
-					terminalZshClearEolMark,
-					terminalZshOhMy,
-					terminalZshP10k,
-					terminalZdotdir,
-					terminalOutputPreviewSize: terminalOutputPreviewSize ?? "medium",
-					mcpEnabled,
-					rpiAutopilotEnabled: rpiAutopilotEnabled ?? true,
-					rpiCouncilEngineEnabled: rpiCouncilEngineEnabled ?? true,
-					rpiCouncilApiConfigId: rpiCouncilApiConfigId ?? "",
-					rpiVerificationStrictness: rpiVerificationStrictness ?? "lenient",
-					sandboxImage: sandboxImage ?? "node:20",
-					sandboxNetworkAccess: sandboxNetworkAccess ?? "restricted",
-					sandboxMemoryLimit: sandboxMemoryLimit ?? "4g",
-					sandboxMaxExecutionTime: sandboxMaxExecutionTime ?? 120,
-					rpiCodeReviewEnabled: rpiCodeReviewEnabled ?? true,
-					rpiCodeReviewScoreThreshold: rpiCodeReviewScoreThreshold ?? 4,
-					rpiContextDistillationBudget: rpiContextDistillationBudget ?? 8000,
-					rpiCouncilTimeoutSeconds: rpiCouncilTimeoutSeconds ?? 90,
-					condensingApiConfigId: condensingApiConfigId ?? "",
-					maxOpenTabsContext: Math.min(Math.max(0, maxOpenTabsContext ?? 20), 500),
-					maxWorkspaceFiles: Math.min(Math.max(0, maxWorkspaceFiles ?? 200), 500),
-					showRooIgnoredFiles: showRooIgnoredFiles ?? true,
-					enableSubfolderRules: enableSubfolderRules ?? false,
-					maxImageFileSize: maxImageFileSize ?? 5,
-					maxTotalImageSize: maxTotalImageSize ?? 20,
-					includeDiagnosticMessages:
-						includeDiagnosticMessages !== undefined ? includeDiagnosticMessages : true,
-					maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
-					alwaysAllowSubtasks,
-					alwaysAllowFollowupQuestions: alwaysAllowFollowupQuestions ?? false,
-					followupAutoApproveTimeoutMs,
-					includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
-					reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
-					enterBehavior: enterBehavior ?? "send",
-					includeCurrentTime: includeCurrentTime ?? true,
-					includeCurrentCost: includeCurrentCost ?? true,
-					maxGitStatusFiles: maxGitStatusFiles ?? 0,
-					profileThresholds,
-					imageGenerationProvider,
-					openRouterImageApiKey,
-					openRouterImageGenerationSelectedModel,
-					customImageGenBaseUrl,
-					customImageGenApiKey,
-					customImageGenModel,
-					customImageGenApiMethod,
-					experiments,
-					customSupportPrompts,
-				},
-			})
-
-			// These have more complex logic so they aren't (yet) handled
-			// by the `updateSettings` message.
-			vscode.postMessage({ type: "upsertApiConfiguration", text: currentApiConfigName, apiConfiguration })
-			vscode.postMessage({ type: "telemetrySetting", text: telemetrySetting })
-			vscode.postMessage({ type: "debugSetting", bool: cachedState.debug })
-
-			setChangeDetected(false)
+		if (!isSettingValid || !isChangeDetected || isSaving) {
+			return
 		}
+
+		const requestId = `settings-save-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+		pendingSaveRequestIdRef.current = requestId
+		clearSaveTimeout()
+		setIsSaving(true)
+		saveTimeoutRef.current = window.setTimeout(() => {
+			if (!pendingSaveRequestIdRef.current) {
+				return
+			}
+
+			pendingSaveRequestIdRef.current = null
+			setIsSaving(false)
+		}, SAVE_ACK_TIMEOUT_MS)
+
+		vscode.postMessage({
+			type: "updateSettings",
+			requestId,
+			updatedSettings: {
+				language,
+				alwaysAllowReadOnly: alwaysAllowReadOnly ?? undefined,
+				alwaysAllowReadOnlyOutsideWorkspace: alwaysAllowReadOnlyOutsideWorkspace ?? undefined,
+				alwaysAllowWrite: alwaysAllowWrite ?? undefined,
+				alwaysAllowWriteOutsideWorkspace: alwaysAllowWriteOutsideWorkspace ?? undefined,
+				alwaysAllowWriteProtected: alwaysAllowWriteProtected ?? undefined,
+				alwaysAllowExecute: alwaysAllowExecute ?? undefined,
+				alwaysAllowBrowser: alwaysAllowBrowser ?? undefined,
+				alwaysAllowMcp,
+				alwaysAllowModeSwitch,
+				allowedCommands: allowedCommands ?? [],
+				deniedCommands: deniedCommands ?? [],
+				preventCompletionWithEslintProblems:
+					preventCompletionWithEslintProblems !== undefined ? preventCompletionWithEslintProblems : true,
+				// Note that we use `null` instead of `undefined` since `JSON.stringify`
+				// will omit `undefined` when serializing the object and passing it to the
+				// extension host. We may need to do the same for other nullable fields.
+				allowedMaxRequests: allowedMaxRequests ?? null,
+				allowedMaxCost: allowedMaxCost ?? null,
+				autoCondenseContext,
+				autoCondenseContextPercent,
+				browserToolEnabled: browserToolEnabled ?? true,
+				soundEnabled: soundEnabled ?? true,
+				soundVolume: soundVolume ?? 0.5,
+				ttsEnabled,
+				ttsSpeed,
+				enableCheckpoints: enableCheckpoints ?? false,
+				checkpointTimeout: checkpointTimeout ?? DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
+				browserViewportSize: browserViewportSize ?? "900x600",
+				remoteBrowserHost: remoteBrowserEnabled ? remoteBrowserHost : undefined,
+				remoteBrowserEnabled: remoteBrowserEnabled ?? false,
+				writeDelayMs,
+				screenshotQuality: screenshotQuality ?? 75,
+				terminalShellIntegrationTimeout: terminalShellIntegrationTimeout ?? 30_000,
+				terminalShellIntegrationDisabled,
+				terminalCommandDelay,
+				terminalPowershellCounter,
+				terminalZshClearEolMark,
+				terminalZshOhMy,
+				terminalZshP10k,
+				terminalZdotdir,
+				terminalOutputPreviewSize: terminalOutputPreviewSize ?? "medium",
+				mcpEnabled,
+				rpiAutopilotEnabled: rpiAutopilotEnabled ?? true,
+				rpiCouncilEngineEnabled: rpiCouncilEngineEnabled ?? true,
+				rpiCouncilApiConfigId: rpiCouncilApiConfigId ?? "",
+				rpiVerificationStrictness: rpiVerificationStrictness ?? "lenient",
+				sandboxImage: sandboxImage ?? "node:20",
+				sandboxNetworkAccess: sandboxNetworkAccess ?? "restricted",
+				sandboxMemoryLimit: sandboxMemoryLimit ?? "4g",
+				sandboxMaxExecutionTime: sandboxMaxExecutionTime ?? 120,
+				rpiCodeReviewEnabled: rpiCodeReviewEnabled ?? true,
+				rpiCodeReviewScoreThreshold: rpiCodeReviewScoreThreshold ?? 4,
+				rpiContextDistillationBudget: rpiContextDistillationBudget ?? 8000,
+				rpiCouncilTimeoutSeconds: rpiCouncilTimeoutSeconds ?? 90,
+				condensingApiConfigId: condensingApiConfigId ?? "",
+				maxOpenTabsContext: Math.min(Math.max(0, maxOpenTabsContext ?? 20), 500),
+				maxWorkspaceFiles: Math.min(Math.max(0, maxWorkspaceFiles ?? 200), 500),
+				showRooIgnoredFiles: showRooIgnoredFiles ?? true,
+				enableSubfolderRules: enableSubfolderRules ?? false,
+				maxImageFileSize: maxImageFileSize ?? 5,
+				maxTotalImageSize: maxTotalImageSize ?? 20,
+				includeDiagnosticMessages: includeDiagnosticMessages !== undefined ? includeDiagnosticMessages : true,
+				maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
+				alwaysAllowSubtasks,
+				alwaysAllowFollowupQuestions: alwaysAllowFollowupQuestions ?? false,
+				followupAutoApproveTimeoutMs,
+				includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
+				reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
+				enterBehavior: enterBehavior ?? "send",
+				includeCurrentTime: includeCurrentTime ?? true,
+				includeCurrentCost: includeCurrentCost ?? true,
+				maxGitStatusFiles: maxGitStatusFiles ?? 0,
+				profileThresholds,
+				imageGenerationProvider,
+				openRouterImageApiKey,
+				openRouterImageGenerationSelectedModel,
+				customImageGenBaseUrl,
+				customImageGenApiKey,
+				customImageGenModel,
+				customImageGenApiMethod,
+				experiments,
+				customSupportPrompts,
+			},
+		})
+
+		// These have more complex logic so they aren't (yet) handled
+		// by the `updateSettings` message.
+		vscode.postMessage({ type: "upsertApiConfiguration", text: currentApiConfigName, apiConfiguration })
+		vscode.postMessage({ type: "telemetrySetting", text: telemetrySetting })
+		vscode.postMessage({ type: "debugSetting", bool: cachedState.debug })
 	}
 
 	const checkUnsaveChanges = useCallback(
 		(then: () => void) => {
+			if (isSaving) {
+				return
+			}
+
 			if (isChangeDetected) {
 				confirmDialogHandler.current = then
 				setDiscardDialogShow(true)
@@ -532,7 +595,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 				then()
 			}
 		},
-		[isChangeDetected],
+		[isChangeDetected, isSaving],
 	)
 
 	useImperativeHandle(ref, () => ({ checkUnsaveChanges }), [checkUnsaveChanges])
@@ -553,12 +616,16 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	// Handle tab changes with unsaved changes check
 	const handleTabChange = useCallback(
 		(newTab: SectionName) => {
+			if (isSaving) {
+				return
+			}
+
 			if (contentRef.current) {
 				scrollPositions.current[activeTab] = contentRef.current.scrollTop
 			}
 			setActiveTab(newTab)
 		},
-		[activeTab],
+		[activeTab, isSaving],
 	)
 
 	useLayoutEffect(() => {
@@ -620,10 +687,14 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	// Update target section logic to set active tab
 	useEffect(() => {
+		if (isSaving) {
+			return
+		}
+
 		if (targetSection && sectionNames.includes(targetSection as SectionName)) {
 			setActiveTab(targetSection as SectionName)
 		}
-	}, [targetSection])
+	}, [targetSection, isSaving])
 
 	// Function to scroll the active tab into view for vertical layout
 	const scrollToActiveTab = useCallback(() => {
@@ -701,6 +772,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	// Handle search navigation - switch to the correct tab and scroll to the element
 	const handleSearchNavigate = useCallback(
 		(section: SectionName, settingId: string) => {
+			if (isSaving) {
+				return
+			}
+
 			// Switch to the correct tab
 			handleTabChange(section)
 
@@ -720,7 +795,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 				}, 100) // Small delay to ensure tab content is rendered
 			})
 		},
-		[handleTabChange],
+		[handleTabChange, isSaving],
 	)
 
 	return (
@@ -728,7 +803,11 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			<TabHeader className="flex justify-between items-center gap-2">
 				<div className="flex items-center gap-2 grow">
 					<StandardTooltip content={t("settings:header.doneButtonTooltip")}>
-						<Button variant="ghost" className="px-1.5 -ml-2" onClick={() => checkUnsaveChanges(onDone)}>
+						<Button
+							variant="ghost"
+							className="px-1.5 -ml-2"
+							onClick={() => checkUnsaveChanges(onDone)}
+							disabled={isSaving}>
 							<ArrowLeft />
 							<span className="sr-only">{t("settings:common.done")}</span>
 						</Button>
@@ -741,19 +820,28 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					)}
 					<StandardTooltip
 						content={
-							!isSettingValid
-								? errorMessage
-								: isChangeDetected
-									? t("settings:header.saveButtonTooltip")
-									: t("settings:header.nothingChangedTooltip")
+							isSaving
+								? t("settings:codeIndex.saving")
+								: !isSettingValid
+									? errorMessage
+									: isChangeDetected
+										? t("settings:header.saveButtonTooltip")
+										: t("settings:header.nothingChangedTooltip")
 						}>
 						<Button
 							variant={isSettingValid ? "primary" : "secondary"}
 							className={!isSettingValid ? "!border-vscode-errorForeground" : ""}
 							onClick={handleSubmit}
-							disabled={!isChangeDetected || !isSettingValid}
+							disabled={isSaving || !isChangeDetected || !isSettingValid}
 							data-testid="save-button">
-							{t("settings:common.save")}
+							{isSaving ? (
+								<span className="inline-flex items-center gap-1.5">
+									<Loader2 className="w-4 h-4 animate-spin" />
+									{t("settings:codeIndex.saving")}
+								</span>
+							) : (
+								t("settings:common.save")
+							)}
 						</Button>
 					</StandardTooltip>
 				</div>
@@ -766,6 +854,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					value={activeTab}
 					onValueChange={(value) => handleTabChange(value as SectionName)}
 					className={cn(settingsTabList)}
+					aria-disabled={isSaving}
 					data-compact={isCompactMode}
 					data-testid="settings-tab-list">
 					{sections.map(({ id, icon: Icon }) => {
@@ -783,8 +872,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 									isSelected // Use manual isSelected for styling
 										? `${settingsTabTrigger} ${settingsTabTriggerActive}`
 										: settingsTabTrigger,
+									isSaving && "opacity-60 cursor-not-allowed",
 									"cursor-pointer focus:ring-0", // Remove the focus ring styling
 								)}
+								disabled={isSaving}
 								data-testid={`tab-${id}`}
 								data-compact={isCompactMode}>
 								<div className={cn("flex items-center gap-2", isCompactMode && "justify-center")}>
@@ -799,7 +890,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							return (
 								<TooltipProvider key={id} delayDuration={300}>
 									<Tooltip>
-										<TooltipTrigger asChild onClick={onSelect}>
+										<TooltipTrigger asChild onClick={isSaving ? undefined : onSelect}>
 											{/* Clone to avoid ref issues if triggerComponent itself had a key */}
 											{React.cloneElement(triggerComponent)}
 										</TooltipTrigger>
@@ -820,7 +911,11 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 				{/* Content area - renders only the active tab (or indexing tab during initial indexing) */}
 				<TabContent
 					ref={contentRef}
-					className={cn("p-0 flex-1 overflow-auto", isIndexing && "opacity-0")}
+					className={cn(
+						"p-0 flex-1 overflow-auto",
+						isIndexing && "opacity-0",
+						isSaving && "pointer-events-none opacity-80",
+					)}
 					data-testid="settings-content">
 					<SearchIndexProvider value={searchContextValue}>
 						{/* Providers Section */}
