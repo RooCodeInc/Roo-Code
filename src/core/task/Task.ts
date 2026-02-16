@@ -3565,21 +3565,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 
 				if (hasTextContent || hasToolUses || hasReasoningContent) {
-					// NOTE: This comment is here for future reference - this was a
-					// workaround for `userMessageContent` not getting set to true.
-					// It was due to it not recursively calling for partial blocks
-					// when `didRejectTool`, so it would get stuck waiting for a
-					// partial block to complete before it could continue.
-					// In case the content blocks finished it may be the api stream
-					// finished after the last parsed content block was executed, so
-					// we are able to detect out of bounds and set
-					// `userMessageContentReady` to true (note you should not call
-					// `presentAssistantMessage` since if the last block i
-					//  completed it will be presented again).
-					// const completeBlocks = this.assistantMessageContent.filter((block) => !block.partial) // If there are any partial blocks after the stream ended we can consider them invalid.
-					// if (this.currentStreamingContentIndex >= completeBlocks.length) {
-					// 	this.userMessageContentReady = true
-					// }
+					// When the model produces only reasoning content (no text blocks,
+					// no tool uses), assistantMessageContent is empty. In that case,
+					// presentAssistantMessage is never called, so userMessageContentReady
+					// would never be set to true. We must set it directly to avoid
+					// blocking forever on the pWaitFor below.
+					if (this.assistantMessageContent.length === 0) {
+						this.userMessageContentReady = true
+					}
 
 					await pWaitFor(() => this.userMessageContentReady)
 
