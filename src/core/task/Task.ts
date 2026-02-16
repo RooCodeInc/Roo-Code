@@ -3564,7 +3564,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					presentAssistantMessage(this)
 				}
 
-				if (hasTextContent || hasToolUses) {
+				if (hasTextContent || hasToolUses || hasReasoningContent) {
 					// NOTE: This comment is here for future reference - this was a
 					// workaround for `userMessageContent` not getting set to true.
 					// It was due to it not recursively calling for partial blocks
