@@ -65,8 +65,11 @@ export const MAX_IMAGES_PER_MESSAGE = 20 // This is the Anthropic limit.
 const INITIAL_LOAD_SETTLE_TIMEOUT_MS = 2500
 const INITIAL_LOAD_SETTLE_HARD_CAP_MS = 10000
 const INITIAL_LOAD_SETTLE_STABLE_FRAME_TARGET = 3
+const INITIAL_LOAD_SETTLE_MAX_FRAMES = Math.ceil(INITIAL_LOAD_SETTLE_HARD_CAP_MS / (1000 / 60))
 
-type StickyFollowClearSource = "wheel-up" | "row-expansion" | "keyboard-nav-up" | "pointer-scroll-up"
+type ScrollPhase = "HYDRATING_PINNED_TO_BOTTOM" | "ANCHORED_FOLLOWING" | "USER_BROWSING_HISTORY"
+
+type ScrollFollowDisengageSource = "wheel-up" | "row-expansion" | "keyboard-nav-up" | "pointer-scroll-up"
 
 const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
 
@@ -175,7 +178,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({})
 	const prevExpandedRowsRef = useRef<Record<number, boolean>>()
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
-	const stickyFollowRef = useRef<boolean>(false)
+	const [scrollPhase, setScrollPhase] = useState<ScrollPhase>("USER_BROWSING_HISTORY")
+	const scrollPhaseRef = useRef<ScrollPhase>("USER_BROWSING_HISTORY")
 	const [showScrollToBottom, setShowScrollToBottom] = useState(false)
 	const isAtBottomRef = useRef(false)
 	const isSettlingRef = useRef(false)
@@ -184,11 +188,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const settleHardDeadlineMsRef = useRef<number | null>(null)
 	const settleAnimationFrameRef = useRef<number | null>(null)
 	const settleStableFramesRef = useRef(0)
+	const settleFrameCountRef = useRef(0)
+	const settleBottomConfirmedRef = useRef(false)
 	const settleMutationVersionRef = useRef(0)
 	const settleObservedMutationVersionRef = useRef(0)
 	const groupedMessagesLengthRef = useRef(0)
 	const pointerScrollActiveRef = useRef(false)
 	const pointerScrollLastTopRef = useRef<number | null>(null)
+	const reanchorAnimationFrameRef = useRef<number | null>(null)
 	const lastTtsRef = useRef<string>("")
 	const [wasStreaming, setWasStreaming] = useState<boolean>(false)
 	const [checkpointWarning, setCheckpointWarning] = useState<
@@ -221,7 +228,45 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		clineAskRef.current = clineAsk
 	}, [clineAsk])
 
+	useEffect(() => {
+		scrollPhaseRef.current = scrollPhase
+	}, [scrollPhase])
+
+	const transitionScrollPhase = useCallback((nextPhase: ScrollPhase) => {
+		if (scrollPhaseRef.current === nextPhase) {
+			return
+		}
+
+		scrollPhaseRef.current = nextPhase
+		setScrollPhase(nextPhase)
+	}, [])
+
+	const beginHydrationPinnedToBottom = useCallback(() => {
+		isAtBottomRef.current = false
+		settleBottomConfirmedRef.current = false
+		settleFrameCountRef.current = 0
+		transitionScrollPhase("HYDRATING_PINNED_TO_BOTTOM")
+		setShowScrollToBottom(false)
+	}, [transitionScrollPhase])
+
+	const enterAnchoredFollowing = useCallback(() => {
+		transitionScrollPhase("ANCHORED_FOLLOWING")
+		setShowScrollToBottom(false)
+	}, [transitionScrollPhase])
+
+	const enterUserBrowsingHistory = useCallback(
+		(_source: ScrollFollowDisengageSource) => {
+			transitionScrollPhase("USER_BROWSING_HISTORY")
+			setShowScrollToBottom(!isAtBottomRef.current)
+		},
+		[transitionScrollPhase],
+	)
+
 	const isSettleWindowOpen = useCallback((taskTs: number): boolean => {
+		if (scrollPhaseRef.current !== "HYDRATING_PINNED_TO_BOTTOM") {
+			return false
+		}
+
 		if (settleTaskTsRef.current !== taskTs) {
 			return false
 		}
@@ -237,6 +282,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	}, [])
 
 	const extendInitialSettleWindow = useCallback((taskTs: number): boolean => {
+		if (scrollPhaseRef.current !== "HYDRATING_PINNED_TO_BOTTOM") {
+			return false
+		}
+
 		if (settleTaskTsRef.current !== taskTs) {
 			return false
 		}
@@ -262,13 +311,24 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 	}, [])
 
+	const cancelReanchorFrame = useCallback(() => {
+		if (reanchorAnimationFrameRef.current !== null) {
+			cancelAnimationFrame(reanchorAnimationFrameRef.current)
+			reanchorAnimationFrameRef.current = null
+		}
+	}, [])
+
 	const completeInitialSettle = useCallback(() => {
 		cancelInitialSettleFrame()
 		isSettlingRef.current = false
-		if (!isAtBottomRef.current) {
-			setShowScrollToBottom(true)
+		if (isAtBottomRef.current && settleBottomConfirmedRef.current) {
+			enterAnchoredFollowing()
+			return
 		}
-	}, [cancelInitialSettleFrame])
+
+		transitionScrollPhase("USER_BROWSING_HISTORY")
+		setShowScrollToBottom(true)
+	}, [cancelInitialSettleFrame, enterAnchoredFollowing, transitionScrollPhase])
 
 	const runInitialSettleFrame = useCallback(
 		(taskTs: number) => {
@@ -279,7 +339,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				return
 			}
 
-			if (!stickyFollowRef.current || !isSettleWindowOpen(taskTs)) {
+			settleFrameCountRef.current += 1
+			if (settleFrameCountRef.current > INITIAL_LOAD_SETTLE_MAX_FRAMES) {
+				completeInitialSettle()
+				return
+			}
+
+			if (!isSettleWindowOpen(taskTs)) {
 				completeInitialSettle()
 				return
 			}
@@ -288,7 +354,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			const isTailStable = mutationVersion === settleObservedMutationVersionRef.current
 			settleObservedMutationVersionRef.current = mutationVersion
 
-			if (isAtBottomRef.current && isTailStable) {
+			if (isAtBottomRef.current && settleBottomConfirmedRef.current && isTailStable) {
 				settleStableFramesRef.current += 1
 			} else {
 				settleStableFramesRef.current = 0
@@ -306,16 +372,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		[completeInitialSettle, isSettleWindowOpen],
 	)
 
-	const clearStickyFollow = useCallback((_source: StickyFollowClearSource) => {
-		if (!stickyFollowRef.current) {
-			return
-		}
-
-		stickyFollowRef.current = false
-	}, [])
-
 	const startInitialSettle = useCallback(
 		(taskTs: number) => {
+			if (scrollPhaseRef.current !== "HYDRATING_PINNED_TO_BOTTOM") {
+				return
+			}
+
 			if (!isSettleWindowOpen(taskTs)) {
 				return
 			}
@@ -327,6 +389,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			settleTaskTsRef.current = taskTs
 			isSettlingRef.current = true
 			settleStableFramesRef.current = 0
+			settleFrameCountRef.current = 0
 			settleObservedMutationVersionRef.current = settleMutationVersionRef.current
 			settleAnimationFrameRef.current = requestAnimationFrame(() => runInitialSettleFrame(taskTs))
 		},
@@ -365,8 +428,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		isMountedRef.current = true
 		return () => {
 			isMountedRef.current = false
+			cancelReanchorFrame()
 		}
-	}, [])
+	}, [cancelReanchorFrame])
 
 	const isProfileDisabled = useMemo(
 		() => !!apiConfiguration && !ProfileValidator.isProfileAllowed(apiConfiguration, organizationAllowList),
@@ -636,9 +700,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	useEffect(() => {
 		const taskSwitchMs = Date.now()
 		settleStableFramesRef.current = 0
+		settleFrameCountRef.current = 0
+		settleBottomConfirmedRef.current = false
 		settleMutationVersionRef.current = 0
 		settleObservedMutationVersionRef.current = 0
+		isAtBottomRef.current = false
 		cancelInitialSettleFrame()
+		cancelReanchorFrame()
 		settleTaskTsRef.current = task?.ts ?? null
 		settleDeadlineMsRef.current = null
 		settleHardDeadlineMsRef.current = null
@@ -658,26 +726,35 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		// Reset user response flag for new task
 		userRespondedRef.current = false
 
-		// Ensure new task starts anchored to the bottom. Virtuoso's
-		// initialTopMostItemIndex fires at mount but the message data may
-		// arrive asynchronously, so we also engage sticky follow and
-		// explicitly scroll after a frame to handle the race.
+		// Ensure new task starts in deterministic hydration mode, pinned to
+		// the bottom until the message tail has settled.
 		if (task?.ts) {
-			stickyFollowRef.current = true
+			beginHydrationPinnedToBottom()
 			isSettlingRef.current = false
-			setShowScrollToBottom(false)
 			settleDeadlineMsRef.current = taskSwitchMs + INITIAL_LOAD_SETTLE_TIMEOUT_MS
 			settleHardDeadlineMsRef.current = taskSwitchMs + INITIAL_LOAD_SETTLE_HARD_CAP_MS
 			startInitialSettle(task.ts)
+		} else {
+			transitionScrollPhase("USER_BROWSING_HISTORY")
+			setShowScrollToBottom(false)
 		}
 		return () => {
 			cancelInitialSettleFrame()
+			cancelReanchorFrame()
 			settleTaskTsRef.current = null
 			settleDeadlineMsRef.current = null
 			settleHardDeadlineMsRef.current = null
 			isSettlingRef.current = false
+			settleBottomConfirmedRef.current = false
 		}
-	}, [cancelInitialSettleFrame, startInitialSettle, task?.ts])
+	}, [
+		beginHydrationPinnedToBottom,
+		cancelInitialSettleFrame,
+		cancelReanchorFrame,
+		startInitialSettle,
+		task?.ts,
+		transitionScrollPhase,
+	])
 
 	const taskTs = task?.ts
 
@@ -720,11 +797,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 		// Expanding a row indicates the user is browsing; disable sticky follow
 		if (wasAnyRowExpandedByUser) {
-			clearStickyFollow("row-expansion")
+			enterUserBrowsingHistory("row-expansion")
 		}
 
 		prevExpandedRowsRef.current = expandedRows // Store current state for next comparison
-	}, [clearStickyFollow, expandedRows])
+	}, [enterUserBrowsingHistory, expandedRows])
 
 	const isStreaming = useMemo(() => {
 		// Checking clineAsk isn't enough since messages effect may be called
@@ -1478,7 +1555,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		settleMutationVersionRef.current += 1
 
 		const settleTaskTs = settleTaskTsRef.current
-		if (settleTaskTs !== null && !isSettlingRef.current && extendInitialSettleWindow(settleTaskTs)) {
+		if (settleTaskTs !== null && extendInitialSettleWindow(settleTaskTs)) {
 			startInitialSettle(settleTaskTs)
 		}
 	}, [groupedMessages.length, extendInitialSettleWindow, startInitialSettle])
@@ -1536,24 +1613,21 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			settleMutationVersionRef.current += 1
 
 			const settleTaskTs = settleTaskTsRef.current
-			if (
-				isTaller &&
-				settleTaskTs !== null &&
-				!isSettlingRef.current &&
-				extendInitialSettleWindow(settleTaskTs)
-			) {
+			if (isTaller && settleTaskTs !== null && extendInitialSettleWindow(settleTaskTs)) {
 				startInitialSettle(settleTaskTs)
 			}
 
-			if (isAtBottomRef.current) {
+			const shouldAutoFollowBottom = scrollPhaseRef.current !== "USER_BROWSING_HISTORY"
+			const shouldForcePinForAnchoredStreaming = scrollPhaseRef.current === "ANCHORED_FOLLOWING" && isStreaming
+			if ((isAtBottomRef.current || shouldForcePinForAnchoredStreaming) && shouldAutoFollowBottom) {
 				if (isTaller) {
 					scrollToBottomSmooth()
 				} else {
-					setTimeout(() => scrollToBottomAuto(), 0)
+					scrollToBottomAuto()
 				}
 			}
 		},
-		[extendInitialSettleWindow, scrollToBottomSmooth, scrollToBottomAuto, startInitialSettle],
+		[extendInitialSettleWindow, isStreaming, scrollToBottomSmooth, scrollToBottomAuto, startInitialSettle],
 	)
 
 	// Disable sticky follow when user scrolls up inside the chat container
@@ -1561,10 +1635,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		(event: Event) => {
 			const wheelEvent = event as WheelEvent
 			if (wheelEvent.deltaY < 0 && scrollContainerRef.current?.contains(wheelEvent.target as Node)) {
-				clearStickyFollow("wheel-up")
+				enterUserBrowsingHistory("wheel-up")
 			}
 		},
-		[clearStickyFollow],
+		[enterUserBrowsingHistory],
 	)
 	useEvent("wheel", handleWheel, window, { passive: true })
 
@@ -1616,16 +1690,28 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			pointerScrollLastTopRef.current = currentTop
 
 			if (previousTop !== null && currentTop < previousTop) {
-				clearStickyFollow("pointer-scroll-up")
+				enterUserBrowsingHistory("pointer-scroll-up")
 			}
 		},
-		[clearStickyFollow],
+		[enterUserBrowsingHistory],
 	)
 
 	useEvent("pointerdown", handlePointerDown, window, { passive: true })
 	useEvent("pointerup", handlePointerEnd, window, { passive: true })
 	useEvent("pointercancel", handlePointerEnd, window, { passive: true })
 	useEvent("scroll", handlePointerActiveScroll, window, { passive: true, capture: true })
+
+	const handleScrollToBottomClick = useCallback(() => {
+		enterAnchoredFollowing()
+		scrollToBottomAuto()
+		cancelReanchorFrame()
+		reanchorAnimationFrameRef.current = requestAnimationFrame(() => {
+			reanchorAnimationFrameRef.current = null
+			if (scrollPhaseRef.current === "ANCHORED_FOLLOWING") {
+				scrollToBottomAuto()
+			}
+		})
+	}, [cancelReanchorFrame, enterAnchoredFollowing, scrollToBottomAuto])
 
 	// Effect to clear checkpoint warning when messages appear or task changes
 	useEffect(() => {
@@ -1812,10 +1898,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				event.target instanceof Node && !!scrollContainerRef.current?.contains(event.target)
 
 			if (focusInsideChat || eventTargetInsideChat || activeElement === document.body) {
-				clearStickyFollow("keyboard-nav-up")
+				enterUserBrowsingHistory("keyboard-nav-up")
 			}
 		},
-		[clearStickyFollow, isHidden, switchToNextMode, switchToPreviousMode, task],
+		[enterUserBrowsingHistory, isHidden, switchToNextMode, switchToPreviousMode, task],
 	)
 
 	useEffect(() => {
@@ -1963,19 +2049,43 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							increaseViewportBy={{ top: 3_000, bottom: 1000 }}
 							data={groupedMessages}
 							itemContent={itemContent}
-							followOutput={(isAtBottom: boolean) =>
-								isAtBottom || stickyFollowRef.current ? "auto" : false
-							}
+							followOutput={() => (scrollPhase === "USER_BROWSING_HISTORY" ? false : "auto")}
 							atBottomStateChange={(isAtBottom: boolean) => {
 								isAtBottomRef.current = isAtBottom
-								if (isSettlingRef.current && !isAtBottom) {
+
+								const currentPhase = scrollPhaseRef.current
+								if (currentPhase === "HYDRATING_PINNED_TO_BOTTOM" && isAtBottom) {
+									settleBottomConfirmedRef.current = true
+								}
+
+								if (currentPhase === "HYDRATING_PINNED_TO_BOTTOM" && !isAtBottom) {
 									return
 								}
-								setShowScrollToBottom(!isAtBottom)
-								// stickyFollowRef is only cleared by explicit user actions
-								// (wheel-up, keyboard navigation up, pointer drag up, row expansion),
-								// not by transient bottom-detection
-								// state changes which can flicker during layout reflows.
+
+								if (
+									currentPhase === "ANCHORED_FOLLOWING" &&
+									!isAtBottom &&
+									pointerScrollActiveRef.current
+								) {
+									enterUserBrowsingHistory("pointer-scroll-up")
+									return
+								}
+
+								if (isAtBottom) {
+									setShowScrollToBottom(false)
+									if (currentPhase === "USER_BROWSING_HISTORY") {
+										enterAnchoredFollowing()
+									}
+									return
+								}
+
+								if (currentPhase === "ANCHORED_FOLLOWING" && isStreaming) {
+									scrollToBottomAuto()
+									setShowScrollToBottom(false)
+									return
+								}
+
+								setShowScrollToBottom(currentPhase === "USER_BROWSING_HISTORY")
 							}}
 							atBottomThreshold={10}
 							initialTopMostItemIndex={groupedMessages.length - 1}
@@ -1991,14 +2101,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 									<Button
 										variant="secondary"
 										className="flex-[2]"
-										onClick={() => {
-											// Engage sticky follow until user scrolls up
-											stickyFollowRef.current = true
-											// Pin immediately to avoid lag during fast streaming
-											scrollToBottomAuto()
-											// Hide button immediately to prevent flash
-											setShowScrollToBottom(false)
-										}}>
+										onClick={handleScrollToBottomClick}>
 										<span className="codicon codicon-chevron-down"></span>
 									</Button>
 								</StandardTooltip>
@@ -2104,7 +2207,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				onSelectImages={selectImages}
 				shouldDisableImages={shouldDisableImages}
 				onHeightChange={() => {
-					if (isAtBottomRef.current) {
+					if (isAtBottomRef.current && scrollPhaseRef.current !== "USER_BROWSING_HISTORY") {
 						scrollToBottomAuto()
 					}
 				}}

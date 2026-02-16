@@ -259,6 +259,20 @@ const getScrollable = (): HTMLElement => {
 	return scrollable
 }
 
+const getScrollToBottomButton = (): HTMLButtonElement => {
+	const icon = document.querySelector(".codicon-chevron-down")
+	if (!(icon instanceof HTMLElement)) {
+		throw new Error("Expected scroll-to-bottom icon")
+	}
+
+	const button = icon.closest("button")
+	if (!(button instanceof HTMLButtonElement)) {
+		throw new Error("Expected scroll-to-bottom button")
+	}
+
+	return button
+}
+
 describe("ChatView scroll behavior regression coverage", () => {
 	beforeEach(() => {
 		harness.scrollCalls = 0
@@ -321,5 +335,52 @@ describe("ChatView scroll behavior regression coverage", () => {
 		})
 
 		expect(resolveFollowOutput(false)).toBe(false)
+	})
+
+	it("wheel-up intent disengages sticky follow", async () => {
+		await hydrate(4)
+		await waitForCalls(4)
+		await expectCallsStable()
+		expect(resolveFollowOutput(false)).toBe("auto")
+
+		const scrollable = getScrollable()
+
+		await act(async () => {
+			fireEvent.wheel(scrollable, { deltaY: -120 })
+		})
+
+		expect(resolveFollowOutput(false)).toBe(false)
+		await waitFor(() => expect(document.querySelector(".codicon-chevron-down")).toBeTruthy(), {
+			timeout: 1_200,
+		})
+	})
+
+	it("scroll-to-bottom CTA re-anchors with one interaction", async () => {
+		await hydrate(4)
+		await waitForCalls(4)
+		await expectCallsStable()
+		expect(resolveFollowOutput(false)).toBe("auto")
+
+		await act(async () => {
+			fireEvent.keyDown(window, { key: "PageUp" })
+		})
+
+		expect(resolveFollowOutput(false)).toBe(false)
+		await waitFor(() => expect(document.querySelector(".codicon-chevron-down")).toBeTruthy(), {
+			timeout: 1_200,
+		})
+
+		const callsBeforeClick = harness.scrollCalls
+		harness.atBottomAfterCalls = callsBeforeClick + 2
+
+		await act(async () => {
+			getScrollToBottomButton().click()
+		})
+
+		expect(resolveFollowOutput(false)).toBe("auto")
+		await waitFor(() => expect(harness.scrollCalls).toBeGreaterThanOrEqual(callsBeforeClick + 2), {
+			timeout: 1_200,
+		})
+		await waitFor(() => expect(document.querySelector(".codicon-chevron-down")).toBeNull(), { timeout: 1_200 })
 	})
 })
