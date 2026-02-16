@@ -64,6 +64,7 @@ import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 
 // shared
 import { findLastIndex } from "../../shared/array"
+import { normalizeContentBlocks } from "../../shared/messages"
 import { combineApiRequests } from "../../shared/combineApiRequests"
 import { combineCommandSequences } from "../../shared/combineCommandSequences"
 import { t } from "../../i18n"
@@ -1995,6 +1996,39 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
+	/**
+	 * Find the tool_use ID for a pending `attempt_completion` call in the
+	 * API conversation history. Returns undefined if not found.
+	 *
+	 * This detects the case where the user accepted completion and the
+	 * process restarted before the follow-up could be resolved — the
+	 * history ends with an assistant message containing an
+	 * `attempt_completion` tool_use without a matching tool_result.
+	 */
+	private getPendingAttemptCompletionToolUseId(): string | undefined {
+		const history = this.apiConversationHistory
+		if (history.length === 0) return undefined
+
+		const lastMsg = history[history.length - 1]
+		if (lastMsg.role !== "assistant") return undefined
+
+		const content = normalizeContentBlocks(lastMsg.content)
+
+		const toolUse = content.find(
+			(block): block is Anthropic.Messages.ToolUseBlockParam =>
+				block.type === "tool_use" && block.name === "attempt_completion",
+		)
+
+		// Only treat as pending completion if there are no other unanswered
+		// tool_use blocks — otherwise the rewind path is more appropriate.
+		if (toolUse) {
+			const hasOtherToolUse = content.some((block) => block.type === "tool_use" && block !== toolUse)
+			if (hasOtherToolUse) return undefined
+		}
+
+		return toolUse?.id
+	}
+
 	private async resumeTaskFromHistory() {
 		if (this.enableBridge) {
 			try {
@@ -2057,15 +2091,32 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// the task first.
 		this.apiConversationHistory = await this.getSavedApiConversationHistory()
 
+		// No explicit overwriteApiConversationHistory() call here — the history
+		// was just loaded from disk by getSavedApiConversationHistory(), so
+		// re-persisting it would be a no-op. overwriteApiConversationHistory()
+		// has no validation side-effects; validateAndFixToolResultIds only runs
+		// inside addToApiConversationHistory(). For the interrupted path,
+		// rewindToLastAskPoint() will persist any truncation it performs.
+
 		const lastClineMessage = this.clineMessages
 			.slice()
 			.reverse()
 			.find((m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task")) // Could be multiple resume tasks.
 
+		// Check if this is a completed task that has a pending attempt_completion
+		// tool_use without a tool_result. This happens when the user accepted
+		// completion (yesButtonClicked) and the process restarted before the
+		// follow-up ask could be resolved.
+		const pendingAttemptCompletionToolUseId = this.getPendingAttemptCompletionToolUseId()
+
 		let askType: ClineAsk
-		if (lastClineMessage?.ask === "completion_result") {
+		if (lastClineMessage?.ask === "completion_result" || pendingAttemptCompletionToolUseId) {
 			askType = "resume_completed_task"
 		} else {
+			// Rewind conversation state to the last valid ask point.
+			// Only rewind for non-completed tasks — completed tasks may have
+			// a pending attempt_completion tool_use that we need to preserve.
+			await this.rewindToLastAskPoint()
 			askType = "resume_task"
 		}
 
@@ -2082,135 +2133,55 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			responseImages = images
 		}
 
-		// Make sure that the api conversation history can be resumed by the API,
-		// even if it goes out of sync with cline messages.
-		let existingApiConversationHistory: ApiMessage[] = await this.getSavedApiConversationHistory()
+		// Build the new user content for the next API call.
+		let newUserContent: Anthropic.Messages.ContentBlockParam[] = []
 
-		// Tool blocks are always preserved; native tool calling only.
+		// If this is a completed task with a pending attempt_completion tool_use,
+		// route the user's message as a tool_result instead of a bare text block.
+		// This ensures the API contract is maintained after a process restart.
+		if (pendingAttemptCompletionToolUseId && responseText) {
+			const feedbackText = `<user_message>\n${responseText}\n</user_message>`
+			newUserContent.push({
+				type: "tool_result",
+				tool_use_id: pendingAttemptCompletionToolUseId,
+				content: feedbackText,
+			} satisfies Anthropic.ToolResultBlockParam)
 
-		// if the last message is an assistant message, we need to check if there's tool use since every tool use has to have a tool response
-		// if there's no tool use and only a text block, then we can just add a user message
-		// (note this isn't relevant anymore since we use custom tool prompts instead of tool use blocks, but this is here for legacy purposes in case users resume old tasks)
-
-		// if the last message is a user message, we can need to get the assistant message before it to see if it made tool calls, and if so, fill in the remaining tool responses with 'interrupted'
-
-		let modifiedOldUserContent: Anthropic.Messages.ContentBlockParam[] // either the last message if its user message, or the user message before the last (assistant) message
-		let modifiedApiConversationHistory: ApiMessage[] // need to remove the last user message to replace with new modified user message
-		if (existingApiConversationHistory.length > 0) {
-			const lastMessage = existingApiConversationHistory[existingApiConversationHistory.length - 1]
-
-			if (lastMessage.role === "assistant") {
-				const content = Array.isArray(lastMessage.content)
-					? lastMessage.content
-					: [{ type: "text", text: lastMessage.content }]
-				const hasToolUse = content.some((block) => block.type === "tool_use")
-
-				if (hasToolUse) {
-					const toolUseBlocks = content.filter(
-						(block) => block.type === "tool_use",
-					) as Anthropic.Messages.ToolUseBlock[]
-					const toolResponses: Anthropic.ToolResultBlockParam[] = toolUseBlocks.map((block) => ({
-						type: "tool_result",
-						tool_use_id: block.id,
-						content: "Task was interrupted before this tool call could be completed.",
-					}))
-					modifiedApiConversationHistory = [...existingApiConversationHistory] // no changes
-					modifiedOldUserContent = [...toolResponses]
-				} else {
-					modifiedApiConversationHistory = [...existingApiConversationHistory]
-					modifiedOldUserContent = []
-				}
-			} else if (lastMessage.role === "user") {
-				const previousAssistantMessage: ApiMessage | undefined =
-					existingApiConversationHistory[existingApiConversationHistory.length - 2]
-
-				const existingUserContent: Anthropic.Messages.ContentBlockParam[] = Array.isArray(lastMessage.content)
-					? lastMessage.content
-					: [{ type: "text", text: lastMessage.content }]
-				if (previousAssistantMessage && previousAssistantMessage.role === "assistant") {
-					const assistantContent = Array.isArray(previousAssistantMessage.content)
-						? previousAssistantMessage.content
-						: [{ type: "text", text: previousAssistantMessage.content }]
-
-					const toolUseBlocks = assistantContent.filter(
-						(block) => block.type === "tool_use",
-					) as Anthropic.Messages.ToolUseBlock[]
-
-					if (toolUseBlocks.length > 0) {
-						const existingToolResults = existingUserContent.filter(
-							(block) => block.type === "tool_result",
-						) as Anthropic.ToolResultBlockParam[]
-
-						const missingToolResponses: Anthropic.ToolResultBlockParam[] = toolUseBlocks
-							.filter(
-								(toolUse) => !existingToolResults.some((result) => result.tool_use_id === toolUse.id),
-							)
-							.map((toolUse) => ({
-								type: "tool_result",
-								tool_use_id: toolUse.id,
-								content: "Task was interrupted before this tool call could be completed.",
-							}))
-
-						modifiedApiConversationHistory = existingApiConversationHistory.slice(0, -1) // removes the last user message
-						modifiedOldUserContent = [...existingUserContent, ...missingToolResponses]
-					} else {
-						modifiedApiConversationHistory = existingApiConversationHistory.slice(0, -1)
-						modifiedOldUserContent = [...existingUserContent]
-					}
-				} else {
-					modifiedApiConversationHistory = existingApiConversationHistory.slice(0, -1)
-					modifiedOldUserContent = [...existingUserContent]
-				}
-			} else {
-				throw new Error("Unexpected: Last message is not a user or assistant message")
+			if (responseImages && responseImages.length > 0) {
+				newUserContent.push(...formatResponse.imageBlocks(responseImages))
 			}
 		} else {
-			throw new Error("Unexpected: No existing API conversation history")
-		}
-
-		let newUserContent: Anthropic.Messages.ContentBlockParam[] = [...modifiedOldUserContent]
-
-		const agoText = ((): string => {
-			const timestamp = lastClineMessage?.ts ?? Date.now()
-			const now = Date.now()
-			const diff = now - timestamp
-			const minutes = Math.floor(diff / 60000)
-			const hours = Math.floor(minutes / 60)
-			const days = Math.floor(hours / 24)
-
-			if (days > 0) {
-				return `${days} day${days > 1 ? "s" : ""} ago`
+			if (responseText) {
+				newUserContent.push({
+					type: "text",
+					text: `<user_message>\n${responseText}\n</user_message>`,
+				})
 			}
-			if (hours > 0) {
-				return `${hours} hour${hours > 1 ? "s" : ""} ago`
-			}
-			if (minutes > 0) {
-				return `${minutes} minute${minutes > 1 ? "s" : ""} ago`
-			}
-			return "just now"
-		})()
 
-		if (responseText) {
-			newUserContent.push({
-				type: "text",
-				text: `<user_message>\n${responseText}\n</user_message>`,
-			})
-		}
-
-		if (responseImages && responseImages.length > 0) {
-			newUserContent.push(...formatResponse.imageBlocks(responseImages))
+			if (responseImages && responseImages.length > 0) {
+				newUserContent.push(...formatResponse.imageBlocks(responseImages))
+			}
 		}
 
 		// Ensure we have at least some content to send to the API.
 		// If newUserContent is empty, add a minimal resumption message.
 		if (newUserContent.length === 0) {
-			newUserContent.push({
-				type: "text",
-				text: "[TASK RESUMPTION] Resuming task...",
-			})
+			if (pendingAttemptCompletionToolUseId) {
+				newUserContent.push({
+					type: "tool_result",
+					tool_use_id: pendingAttemptCompletionToolUseId,
+					content: JSON.stringify({
+						status: "completed",
+						message: "The user is satisfied with the result.",
+					}),
+				} satisfies Anthropic.ToolResultBlockParam)
+			} else {
+				newUserContent.push({
+					type: "text",
+					text: "The user has resumed this task.",
+				})
+			}
 		}
-
-		await this.overwriteApiConversationHistory(modifiedApiConversationHistory)
 
 		// Task resuming from history item.
 		await this.initiateTaskLoop(newUserContent)
@@ -2239,6 +2210,140 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.debouncedEmitTokenUsage.flush()
 	}
 
+	/**
+	 * Rewind the conversation state to the last completed ask point.
+	 *
+	 * This implements the "Rewind on Interrupt" model: instead of injecting
+	 * synthetic "interrupted" messages into the conversation, we truncate both
+	 * `clineMessages` and `apiConversationHistory` back to the last valid
+	 * checkpoint where the system was waiting for user input.
+	 *
+	 * The method:
+	 * 1. Finds the last non-partial ask message in clineMessages (the rewind target)
+	 * 2. Truncates clineMessages to include up to and including that ask
+	 * 3. Removes any trailing incomplete assistant message from apiConversationHistory
+	 * 4. Removes orphaned user messages that don't have matching tool_results
+	 * 5. Persists both histories to disk
+	 *
+	 * This ensures the conversation can be cleanly resumed without the model
+	 * seeing fabricated "interrupted" context.
+	 */
+	private async rewindToLastAskPoint(): Promise<boolean> {
+		try {
+			// Find the last completed (non-partial) ask message that represents
+			// a real checkpoint where the system was waiting for user input.
+			// Skip non-blocking asks (command_output) and resume asks since
+			// they aren't real interaction points.
+			const lastAskIndex = findLastIndex(
+				this.clineMessages,
+				(m) =>
+					m.type === "ask" &&
+					!m.partial &&
+					m.ask !== "command_output" &&
+					m.ask !== "resume_task" &&
+					m.ask !== "resume_completed_task",
+			)
+
+			if (lastAskIndex === -1) {
+				console.log(`[Task#${this.taskId}] rewindToLastAskPoint: no ask point found, nothing to rewind`)
+				return false
+			}
+
+			const lastAsk = this.clineMessages[lastAskIndex]
+			console.log(
+				`[Task#${this.taskId}] rewindToLastAskPoint: rewinding to ask "${lastAsk.ask}" at index ${lastAskIndex} (ts=${lastAsk.ts})`,
+			)
+
+			// Truncate clineMessages to include up to and including the ask point.
+			// Also keep any non-interactive messages (like api_req_started cost info)
+			// that are siblings of this ask in the same turn.
+			this.clineMessages = this.clineMessages.slice(0, lastAskIndex + 1)
+
+			// Now fix up the API conversation history.
+			// The goal is to ensure the history ends with either:
+			// (a) a complete user→assistant→user exchange (all tool_uses have tool_results), or
+			// (b) a user message (waiting for assistant response)
+			//
+			// We need to remove any trailing assistant message that has tool_use
+			// blocks without corresponding tool_results (the interrupted response).
+			const history = this.apiConversationHistory
+			if (history.length > 0) {
+				const lastMsg = history[history.length - 1]
+
+				if (lastMsg.role === "assistant") {
+					// Check if this assistant message has tool_use blocks
+					const content = normalizeContentBlocks(lastMsg.content)
+
+					const hasToolUse = content.some(
+						(block: Anthropic.Messages.ContentBlockParam) => block.type === "tool_use",
+					)
+
+					if (hasToolUse) {
+						// This assistant message has tool calls that were never answered.
+						// Remove it entirely - the model will regenerate on resume.
+						history.pop()
+						console.log(
+							`[Task#${this.taskId}] rewindToLastAskPoint: removed trailing assistant message with unanswered tool_use`,
+						)
+					}
+					// If assistant message is text-only, it's fine to keep
+				} else if (lastMsg.role === "user") {
+					// Check if previous assistant message has tool_use blocks
+					// that this user message should have tool_results for
+					if (history.length >= 2) {
+						const prevAssistant = history[history.length - 2]
+						if (prevAssistant.role === "assistant") {
+							const assistantContent = normalizeContentBlocks(prevAssistant.content)
+
+							const toolUseBlocks = assistantContent.filter(
+								(block): block is Anthropic.Messages.ToolUseBlockParam => block.type === "tool_use",
+							)
+
+							if (toolUseBlocks.length > 0) {
+								const userContent = normalizeContentBlocks(lastMsg.content)
+
+								const toolResultIds = new Set(
+									userContent
+										.filter(
+											(block): block is Anthropic.Messages.ToolResultBlockParam =>
+												block.type === "tool_result",
+										)
+										.map((block) => block.tool_use_id),
+								)
+
+								const allToolUsesAnswered = toolUseBlocks.every((tu) => toolResultIds.has(tu.id))
+
+								if (!allToolUsesAnswered) {
+									// User message has incomplete tool_results.
+									// Remove both the user message and the assistant message.
+									history.pop() // remove incomplete user message
+									history.pop() // remove assistant message with unanswered tools
+									console.log(
+										`[Task#${this.taskId}] rewindToLastAskPoint: removed incomplete user+assistant messages`,
+									)
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// Persist both histories
+			await this.overwriteClineMessages(this.clineMessages)
+			await this.overwriteApiConversationHistory(history)
+
+			console.log(
+				`[Task#${this.taskId}] rewindToLastAskPoint: rewind complete. ` +
+					`clineMessages: ${this.clineMessages.length}, apiHistory: ${history.length}`,
+			)
+
+			return true
+		} catch (error) {
+			console.error(`[Task#${this.taskId}] rewindToLastAskPoint failed:`, error)
+			return false
+		}
+	}
+
 	public async abortTask(isAbandoned = false) {
 		// Aborting task
 
@@ -2264,12 +2369,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			console.error(`Error during task ${this.taskId}.${this.instanceId} disposal:`, error)
 			// Don't rethrow - we want abort to always succeed
 		}
-		// Save the countdown message in the automatic retry or other content.
-		try {
-			// Save the countdown message in the automatic retry or other content.
-			await this.saveClineMessages()
-		} catch (error) {
-			console.error(`Error saving messages during abort for task ${this.taskId}.${this.instanceId}:`, error)
+		// Rewind conversation state to the last valid ask point.
+		// This ensures that on resume, the model doesn't see synthetic
+		// "interrupted" messages — instead it sees a clean conversation
+		// ending at the last checkpoint where user input was expected.
+		if (!isAbandoned) {
+			try {
+				await this.rewindToLastAskPoint()
+			} catch (error) {
+				console.error(`[Task#${this.taskId}.${this.instanceId}] Error during rewind on abort:`, error)
+			}
 		}
 	}
 
