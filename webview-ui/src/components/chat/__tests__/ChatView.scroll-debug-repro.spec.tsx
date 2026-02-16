@@ -2,19 +2,13 @@ import React, { useEffect, useImperativeHandle, useRef } from "react"
 import { act, fireEvent, render, waitFor } from "@/utils/test-utils"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
+import type { ClineMessage } from "@roo-code/types"
+
 import { ExtensionStateContextProvider } from "@src/context/ExtensionStateContext"
-import { CHAT_SCROLL_DEBUG_EVENT_NAME } from "@src/utils/chatScrollDebug"
 
 import ChatView, { type ChatViewProps } from "../ChatView"
 
-interface ClineMessage {
-	type: "say" | "ask"
-	say?: string
-	ask?: string
-	ts: number
-	text?: string
-	partial?: boolean
-}
+type FollowOutput = ((isAtBottom: boolean) => "auto" | false) | "auto" | false
 
 interface ExtensionStateMessage {
 	type: "state"
@@ -27,38 +21,73 @@ interface ExtensionStateMessage {
 		alwaysAllowExecute: boolean
 		cloudIsAuthenticated: boolean
 		telemetrySetting: "enabled" | "disabled" | "unset"
-		debug?: boolean
 	}
 }
 
-interface ChatScrollDebugEventDetail {
-	ts: number
-	event: string
-	[key: string]: unknown
+interface MockVirtuosoHandle {
+	scrollToIndex: (options: {
+		index: number | "LAST"
+		align?: "end" | "start" | "center"
+		behavior?: "auto" | "smooth"
+	}) => void
+}
+
+interface MockVirtuosoProps {
+	data: ClineMessage[]
+	itemContent: (index: number, item: ClineMessage) => React.ReactNode
+	atBottomStateChange?: (isAtBottom: boolean) => void
+	followOutput?: FollowOutput
+	className?: string
 }
 
 interface VirtuosoHarnessState {
 	scrollCalls: number
 	atBottomAfterCalls: number
-	atBottomSignalDelayMs: number
+	signalDelayMs: number
 	emitFalseOnDataChange: boolean
+	followOutput: FollowOutput | undefined
 }
 
-const virtuosoHarness = vi.hoisted<VirtuosoHarnessState>(() => ({
+const harness = vi.hoisted<VirtuosoHarnessState>(() => ({
 	scrollCalls: 0,
 	atBottomAfterCalls: Number.POSITIVE_INFINITY,
-	atBottomSignalDelayMs: 20,
+	signalDelayMs: 20,
 	emitFalseOnDataChange: true,
+	followOutput: undefined,
 }))
 
-vi.mock("@src/utils/vscode", () => ({
-	vscode: {
-		postMessage: vi.fn(),
-	},
+function nullDefaultModule() {
+	return { default: () => null }
+}
+
+vi.mock("@src/utils/vscode", () => ({ vscode: { postMessage: vi.fn() } }))
+vi.mock("use-sound", () => ({ default: vi.fn().mockImplementation(() => [vi.fn()]) }))
+vi.mock("@src/components/cloud/CloudUpsellDialog", () => ({ CloudUpsellDialog: () => null }))
+vi.mock("@src/hooks/useCloudUpsell", () => ({
+	useCloudUpsell: () => ({
+		isOpen: false,
+		openUpsell: vi.fn(),
+		closeUpsell: vi.fn(),
+		handleConnect: vi.fn(),
+	}),
 }))
 
-vi.mock("use-sound", () => ({
-	default: vi.fn().mockImplementation(() => [vi.fn()]),
+vi.mock("../common/TelemetryBanner", nullDefaultModule)
+vi.mock("../common/VersionIndicator", nullDefaultModule)
+vi.mock("../history/HistoryPreview", nullDefaultModule)
+vi.mock("@src/components/welcome/RooHero", nullDefaultModule)
+vi.mock("@src/components/welcome/RooTips", nullDefaultModule)
+vi.mock("../Announcement", nullDefaultModule)
+vi.mock("./TaskHeader", () => ({ default: () => <div data-testid="task-header" /> }))
+vi.mock("./ProfileViolationWarning", nullDefaultModule)
+vi.mock("../common/DismissibleUpsell", nullDefaultModule)
+
+vi.mock("./CheckpointWarning", () => ({ CheckpointWarning: () => null }))
+vi.mock("./QueuedMessages", () => ({ QueuedMessages: () => null }))
+vi.mock("./WorktreeSelector", () => ({ WorktreeSelector: () => null }))
+
+vi.mock("@vscode/webview-ui-toolkit/react", () => ({
+	VSCodeLink: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }))
 
 vi.mock("@/components/ui", async (importOriginal) => {
@@ -69,193 +98,76 @@ vi.mock("@/components/ui", async (importOriginal) => {
 	}
 })
 
-vi.mock("@vscode/webview-ui-toolkit/react", () => ({
-	VSCodeLink: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}))
-
-vi.mock("@src/hooks/useCloudUpsell", () => ({
-	useCloudUpsell: () => ({
-		isOpen: false,
-		openUpsell: vi.fn(),
-		closeUpsell: vi.fn(),
-		handleConnect: vi.fn(),
-	}),
-}))
-
-vi.mock("@src/components/cloud/CloudUpsellDialog", () => ({
-	CloudUpsellDialog: () => null,
-}))
-
-vi.mock("../common/TelemetryBanner", () => ({
-	default: () => null,
-}))
-
-vi.mock("../common/VersionIndicator", () => ({
-	default: () => null,
-}))
-
-vi.mock("../history/HistoryPreview", () => ({
-	default: () => null,
-}))
-
-vi.mock("@src/components/welcome/RooHero", () => ({
-	default: () => null,
-}))
-
-vi.mock("@src/components/welcome/RooTips", () => ({
-	default: () => null,
-}))
-
-vi.mock("../Announcement", () => ({
-	default: () => null,
-}))
-
-vi.mock("./TaskHeader", () => ({
-	default: () => <div data-testid="task-header" />,
-}))
-
-vi.mock("./ProfileViolationWarning", () => ({
-	default: () => null,
-}))
-
-vi.mock("./CheckpointWarning", () => ({
-	CheckpointWarning: () => null,
-}))
-
-vi.mock("./QueuedMessages", () => ({
-	QueuedMessages: () => null,
-}))
-
-vi.mock("./WorktreeSelector", () => ({
-	WorktreeSelector: () => null,
-}))
-
-vi.mock("../common/DismissibleUpsell", () => ({
-	default: () => null,
-}))
-
-interface MockChatTextAreaProps {
-	inputValue?: string
-	setInputValue?: (value: string) => void
-	onSend: () => void
-	sendingDisabled?: boolean
-}
-
 vi.mock("../ChatTextArea", () => {
-	const ChatTextAreaComponent = React.forwardRef(function MockChatTextArea(
-		props: MockChatTextAreaProps,
+	const MockTextArea = React.forwardRef(function MockTextArea(
+		props: {
+			inputValue?: string
+			setInputValue?: (value: string) => void
+			onSend: () => void
+			sendingDisabled?: boolean
+		},
 		ref: React.ForwardedRef<{ focus: () => void }>,
 	) {
-		React.useImperativeHandle(ref, () => ({
-			focus: () => {},
-		}))
+		useImperativeHandle(ref, () => ({ focus: () => {} }))
 
 		return (
-			<div data-testid="chat-textarea">
-				<input
-					value={props.inputValue ?? ""}
-					onChange={(event) => props.setInputValue?.(event.target.value)}
-					onKeyDown={(event) => {
-						if (event.key === "Enter" && !props.sendingDisabled) {
-							props.onSend()
-						}
-					}}
-				/>
-			</div>
+			<input
+				value={props.inputValue ?? ""}
+				onChange={(event) => props.setInputValue?.(event.target.value)}
+				onKeyDown={(event) => {
+					if (event.key === "Enter" && !props.sendingDisabled) {
+						props.onSend()
+					}
+				}}
+			/>
 		)
 	})
 
-	return {
-		default: ChatTextAreaComponent,
-		ChatTextArea: ChatTextAreaComponent,
-	}
+	return { default: MockTextArea, ChatTextArea: MockTextArea }
 })
 
-interface MockChatRowProps {
-	message: ClineMessage
-	isLast: boolean
-	onHeightChange: (isTaller: boolean) => void
-}
-
 vi.mock("../ChatRow", () => ({
-	default: function MockChatRow({ message, isLast, onHeightChange }: MockChatRowProps) {
-		useEffect(() => {
-			if (!isLast || message.type !== "say" || message.say !== "text") {
-				return
-			}
-
-			if (!message.text?.includes("__LATE_GROW__")) {
-				return
-			}
-
-			const timeoutA = window.setTimeout(() => onHeightChange(true), 1050)
-			const timeoutB = window.setTimeout(() => onHeightChange(true), 1250)
-
-			return () => {
-				window.clearTimeout(timeoutA)
-				window.clearTimeout(timeoutB)
-			}
-		}, [isLast, message, onHeightChange])
-
-		return <div data-testid="chat-row">{message.ts}</div>
-	},
+	default: ({ message }: { message: ClineMessage }) => <div data-testid="chat-row">{message.ts}</div>,
 }))
-
-interface VirtuosoScrollOptions {
-	index: number | "LAST"
-	align?: "end" | "start" | "center"
-	behavior?: "auto" | "smooth"
-}
-
-interface MockVirtuosoHandle {
-	scrollToIndex: (options: VirtuosoScrollOptions) => void
-}
-
-interface MockVirtuosoProps {
-	data: ClineMessage[]
-	itemContent: (index: number, item: ClineMessage) => React.ReactNode
-	atBottomStateChange?: (isAtBottom: boolean) => void
-	className?: string
-}
 
 vi.mock("react-virtuoso", () => {
 	const MockVirtuoso = React.forwardRef<MockVirtuosoHandle, MockVirtuosoProps>(function MockVirtuoso(
-		{ data, itemContent, atBottomStateChange, className },
+		{ data, itemContent, atBottomStateChange, followOutput, className },
 		ref,
 	) {
-		const atBottomCallbackRef = useRef(atBottomStateChange)
-		const pendingAtBottomTimeoutsRef = useRef<number[]>([])
+		const atBottomRef = useRef(atBottomStateChange)
+		const timeoutIdsRef = useRef<number[]>([])
+
+		harness.followOutput = followOutput
+
+		useImperativeHandle(ref, () => ({
+			scrollToIndex: () => {
+				harness.scrollCalls += 1
+				const reachedBottom = harness.scrollCalls >= harness.atBottomAfterCalls
+				const timeoutId = window.setTimeout(() => {
+					atBottomRef.current?.(reachedBottom)
+				}, harness.signalDelayMs)
+				timeoutIdsRef.current.push(timeoutId)
+			},
+		}))
 
 		useEffect(() => {
-			atBottomCallbackRef.current = atBottomStateChange
+			atBottomRef.current = atBottomStateChange
 		}, [atBottomStateChange])
 
 		useEffect(() => {
-			return () => {
-				for (const timeoutId of pendingAtBottomTimeoutsRef.current) {
-					window.clearTimeout(timeoutId)
-				}
-				pendingAtBottomTimeoutsRef.current = []
-			}
-		}, [])
-
-		useEffect(() => {
-			if (virtuosoHarness.emitFalseOnDataChange) {
+			if (harness.emitFalseOnDataChange) {
 				atBottomStateChange?.(false)
 			}
 		}, [data.length, atBottomStateChange])
 
-		useImperativeHandle(ref, () => ({
-			scrollToIndex: () => {
-				virtuosoHarness.scrollCalls += 1
-				const shouldReportAtBottom = virtuosoHarness.scrollCalls >= virtuosoHarness.atBottomAfterCalls
-
-				const timeoutId = window.setTimeout(() => {
-					atBottomCallbackRef.current?.(shouldReportAtBottom)
-				}, virtuosoHarness.atBottomSignalDelayMs)
-				pendingAtBottomTimeoutsRef.current.push(timeoutId)
+		useEffect(
+			() => () => {
+				timeoutIdsRef.current.forEach((id) => window.clearTimeout(id))
+				timeoutIdsRef.current = []
 			},
-		}))
+			[],
+		)
 
 		return (
 			<div data-testid="virtuoso-item-list" className={className} data-count={data.length}>
@@ -271,648 +183,143 @@ vi.mock("react-virtuoso", () => {
 	return { Virtuoso: MockVirtuoso }
 })
 
-function mockPostMessage(state: Partial<ExtensionStateMessage["state"]>) {
+const props: ChatViewProps = {
+	isHidden: false,
+	showAnnouncement: false,
+	hideAnnouncement: () => {},
+}
+
+const sleep = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms))
+
+const buildMessages = (baseTs: number): ClineMessage[] => [
+	{ type: "say", say: "text", ts: baseTs, text: "task" },
+	{ type: "say", say: "text", ts: baseTs + 1, text: "row-1" },
+	{ type: "say", say: "text", ts: baseTs + 2, text: "row-2" },
+]
+
+const resolveFollowOutput = (isAtBottom: boolean): "auto" | false => {
+	const followOutput = harness.followOutput
+	if (typeof followOutput === "function") {
+		return followOutput(isAtBottom)
+	}
+	return followOutput === "auto" ? "auto" : false
+}
+
+const postState = (clineMessages: ClineMessage[]) => {
 	const message: ExtensionStateMessage = {
 		type: "state",
 		state: {
 			version: "1.0.0",
-			clineMessages: [],
+			clineMessages,
 			taskHistory: [],
 			shouldShowAnnouncement: false,
 			allowedCommands: [],
 			alwaysAllowExecute: false,
 			cloudIsAuthenticated: false,
 			telemetrySetting: "enabled",
-			...state,
 		},
 	}
 
 	window.postMessage(message, "*")
 }
 
-function mockMessageUpdated(clineMessage: ClineMessage) {
-	window.postMessage(
-		{
-			type: "messageUpdated",
-			clineMessage,
-		},
-		"*",
-	)
-}
-
-function getEventNumber(detail: ChatScrollDebugEventDetail, key: string): number | undefined {
-	const value = detail[key]
-	return typeof value === "number" ? value : undefined
-}
-
-function getEventBoolean(detail: ChatScrollDebugEventDetail, key: string): boolean | undefined {
-	const value = detail[key]
-	return typeof value === "boolean" ? value : undefined
-}
-
-function buildLongHeterogeneousHistory(baseTs: number, includeLateTailGrowth: boolean): ClineMessage[] {
-	const messages: ClineMessage[] = [
-		{
-			type: "say",
-			say: "task",
-			ts: baseTs,
-			text: "Investigate existing conversation",
-		},
-	]
-
-	for (let i = 0; i < 12; i += 1) {
-		messages.push({
-			type: "say",
-			say: i % 2 === 0 ? "text" : "user_feedback",
-			ts: baseTs + 10 + i,
-			text: `history-text-${i}`,
-		})
-	}
-
-	for (let i = 0; i < 8; i += 1) {
-		messages.push({
-			type: "ask",
-			ask: "tool",
-			ts: baseTs + 100 + i,
-			text: JSON.stringify({ tool: "readFile", path: `src/file-${i}.ts`, reason: `line-${i}` }),
-		})
-	}
-
-	for (let i = 0; i < 8; i += 1) {
-		messages.push({
-			type: "ask",
-			ask: "tool",
-			ts: baseTs + 200 + i,
-			text: JSON.stringify({ tool: "listFilesRecursive", path: `src/dir-${i}` }),
-		})
-	}
-
-	for (let i = 0; i < 5; i += 1) {
-		messages.push({
-			type: "ask",
-			ask: "tool",
-			ts: baseTs + 300 + i,
-			text: JSON.stringify({ tool: "editedExistingFile", path: `src/edit-${i}.ts`, diff: `@@ change ${i}` }),
-		})
-	}
-
-	messages.push({
-		type: "say",
-		say: "text",
-		ts: baseTs + 500,
-		text: includeLateTailGrowth ? "tail message __LATE_GROW__" : "tail message stable",
-	})
-
-	return messages
-}
-
-function createDebugCapture() {
-	const events: ChatScrollDebugEventDetail[] = []
-
-	const handler = (event: Event) => {
-		const customEvent = event as CustomEvent<ChatScrollDebugEventDetail>
-		events.push(customEvent.detail)
-	}
-
-	window.addEventListener(CHAT_SCROLL_DEBUG_EVENT_NAME, handler)
-
-	return {
-		events,
-		stop: () => window.removeEventListener(CHAT_SCROLL_DEBUG_EVENT_NAME, handler),
-	}
-}
-
-async function sleep(ms: number) {
-	await new Promise((resolve) => window.setTimeout(resolve, ms))
-}
-
-const defaultProps: ChatViewProps = {
-	isHidden: false,
-	showAnnouncement: false,
-	hideAnnouncement: () => {},
-}
-
-function renderChatView() {
-	return render(
+const renderView = () =>
+	render(
 		<ExtensionStateContextProvider>
 			<QueryClientProvider client={new QueryClient()}>
-				<ChatView {...defaultProps} />
+				<ChatView {...props} />
 			</QueryClientProvider>
 		</ExtensionStateContextProvider>,
 	)
+
+const hydrate = async (atBottomAfterCalls: number) => {
+	harness.atBottomAfterCalls = atBottomAfterCalls
+	renderView()
+	await act(async () => {
+		postState(buildMessages(Date.now() - 3_000))
+	})
 }
 
-describe("ChatView scroll debug repro harness", () => {
+const waitForCalls = async (min: number, timeout = 1_500) => {
+	await waitFor(() => expect(harness.scrollCalls).toBeGreaterThanOrEqual(min), { timeout })
+}
+
+const expectCallsStable = async (ms = 120) => {
+	await sleep(ms)
+	const snapshot = harness.scrollCalls
+	await sleep(ms)
+	expect(harness.scrollCalls).toBe(snapshot)
+}
+
+const getScrollable = (): HTMLElement => {
+	const scrollable = document.querySelector(".scrollable")
+	if (!(scrollable instanceof HTMLElement)) {
+		throw new Error("Expected ChatView scrollable container")
+	}
+	return scrollable
+}
+
+describe("ChatView scroll behavior regression coverage", () => {
 	beforeEach(() => {
-		virtuosoHarness.scrollCalls = 0
-		virtuosoHarness.atBottomAfterCalls = Number.POSITIVE_INFINITY
-		virtuosoHarness.atBottomSignalDelayMs = 20
-		virtuosoHarness.emitFalseOnDataChange = true
-		;(window as Window & { __ROO_CHAT_SCROLL_DEBUG__?: boolean }).__ROO_CHAT_SCROLL_DEBUG__ = true
-		window.localStorage.setItem("roo.chatScrollDebug", "1")
+		harness.scrollCalls = 0
+		harness.atBottomAfterCalls = Number.POSITIVE_INFINITY
+		harness.signalDelayMs = 20
+		harness.emitFalseOnDataChange = true
+		harness.followOutput = undefined
 	})
 
-	afterEach(() => {
-		window.localStorage.removeItem("roo.chatScrollDebug")
-		;(window as Window & { __ROO_CHAT_SCROLL_DEBUG__?: boolean }).__ROO_CHAT_SCROLL_DEBUG__ = false
+	it("rehydration converges to bottom", async () => {
+		await hydrate(6)
+		await waitForCalls(6, 2_000)
+		await expectCallsStable()
+		expect(document.querySelector(".codicon-chevron-down")).toBeNull()
 	})
 
-	it("converges to bottom after delayed at-bottom measurement cycles", async () => {
-		virtuosoHarness.scrollCalls = 0
-		virtuosoHarness.atBottomAfterCalls = 7
-		virtuosoHarness.atBottomSignalDelayMs = 18
+	it("transient settle-time not-at-bottom signals do not disable sticky follow", async () => {
+		await hydrate(8)
+		await waitForCalls(2, 1_200)
+		expect(resolveFollowOutput(false)).toBe("auto")
+		expect(document.querySelector(".codicon-chevron-down")).toBeNull()
 
-		const capture = createDebugCapture()
-
-		try {
-			renderChatView()
-
-			const baseTs = Date.now() - 20_000
-			const initialMessages = buildLongHeterogeneousHistory(baseTs, false)
-
-			await act(async () => {
-				mockPostMessage({ debug: true, clineMessages: initialMessages })
-			})
-
-			await waitFor(
-				() => {
-					expect(capture.events.some((event) => event.event === "settle-complete")).toBe(true)
-				},
-				{ timeout: 2500 },
-			)
-
-			const firstAtBottomTrue = capture.events.find(
-				(event) => event.event === "at-bottom-state-change" && event.isAtBottom === true,
-			)
-			const firstTrueTs =
-				typeof firstAtBottomTrue?.ts === "number" ? firstAtBottomTrue.ts : Number.MAX_SAFE_INTEGER
-			const settleAttemptsBeforeFirstTrue = capture.events.filter(
-				(event) => event.event === "settle-attempt" && event.ts <= firstTrueTs,
-			)
-			const stableSettleComplete = capture.events.find(
-				(event) => event.event === "settle-complete" && event.reason === "stable" && event.isAtBottom === true,
-			)
-
-			console.info(
-				"[chat-scroll-repro][scenario=delayed-measurement-convergence]",
-				JSON.stringify({
-					scrollCalls: virtuosoHarness.scrollCalls,
-					firstAtBottomTrue,
-					settleAttemptsBeforeFirstTrue: settleAttemptsBeforeFirstTrue.length,
-					stableSettleComplete,
-				}),
-			)
-
-			expect(firstAtBottomTrue).toBeTruthy()
-			expect(settleAttemptsBeforeFirstTrue.length).toBeGreaterThanOrEqual(5)
-			expect(stableSettleComplete).toBeTruthy()
-		} finally {
-			capture.stop()
-		}
+		await waitForCalls(8, 2_000)
+		await expectCallsStable()
+		expect(resolveFollowOutput(false)).toBe("auto")
 	})
 
-	it("re-arms on late tail growth during initial settle window and still converges", async () => {
-		virtuosoHarness.scrollCalls = 0
-		virtuosoHarness.atBottomAfterCalls = 6
-		virtuosoHarness.atBottomSignalDelayMs = 20
+	it("user escape hatch during settle stops forced follow", async () => {
+		await hydrate(Number.POSITIVE_INFINITY)
+		await waitForCalls(3, 1_200)
 
-		const capture = createDebugCapture()
+		await act(async () => {
+			fireEvent.keyDown(window, { key: "PageUp" })
+		})
 
-		try {
-			renderChatView()
+		expect(resolveFollowOutput(false)).toBe(false)
+		const callsAfterEscape = harness.scrollCalls
+		await sleep(260)
+		expect(harness.scrollCalls).toBe(callsAfterEscape)
 
-			const baseTs = Date.now() - 10_000
-			const initialMessages = buildLongHeterogeneousHistory(baseTs, true)
-
-			await act(async () => {
-				mockPostMessage({ debug: true, clineMessages: initialMessages })
-			})
-
-			await waitFor(
-				() => {
-					expect(
-						capture.events.some(
-							(event) => event.event === "row-height-change-callback" && event.shouldRearmSettle === true,
-						),
-					).toBe(true)
-				},
-				{ timeout: 2200 },
-			)
-
-			const rowGrowthRearmEvent = capture.events.find(
-				(event) => event.event === "row-height-change-callback" && event.shouldRearmSettle === true,
-			)
-			const rowGrowthRearmTs = typeof rowGrowthRearmEvent?.ts === "number" ? rowGrowthRearmEvent.ts : 0
-
-			await waitFor(
-				() => {
-					expect(
-						capture.events.some(
-							(event) =>
-								event.event === "settle-start" &&
-								event.source === "row-height-growth" &&
-								event.ts >= rowGrowthRearmTs,
-						),
-					).toBe(true)
-				},
-				{ timeout: 2500 },
-			)
-
-			const rearmSettleStart = capture.events.find(
-				(event) =>
-					event.event === "settle-start" &&
-					event.source === "row-height-growth" &&
-					event.ts >= rowGrowthRearmTs,
-			)
-			const rearmSettleStartTs = typeof rearmSettleStart?.ts === "number" ? rearmSettleStart.ts : 0
-			await waitFor(
-				() => {
-					expect(
-						capture.events.some(
-							(event) =>
-								event.event === "settle-complete" &&
-								event.reason === "stable" &&
-								event.isAtBottom === true &&
-								event.ts >= rearmSettleStartTs,
-						),
-					).toBe(true)
-				},
-				{ timeout: 1200 },
-			)
-
-			const stableCompleteAfterRearm = capture.events.find(
-				(event) =>
-					event.event === "settle-complete" &&
-					event.reason === "stable" &&
-					event.isAtBottom === true &&
-					event.ts >= rearmSettleStartTs,
-			)
-
-			console.info(
-				"[chat-scroll-repro][scenario=late-tail-growth-rearm-convergence]",
-				JSON.stringify({
-					rowGrowthRearmEvent,
-					rearmSettleStart,
-					stableCompleteAfterRearm,
-				}),
-			)
-
-			expect(rowGrowthRearmEvent).toBeTruthy()
-			expect(rearmSettleStart).toBeTruthy()
-			expect(stableCompleteAfterRearm).toBeTruthy()
-		} finally {
-			capture.stop()
-		}
+		await waitFor(() => expect(document.querySelector(".codicon-chevron-down")).toBeTruthy(), {
+			timeout: 1_200,
+		})
 	})
 
-	it("uses the safety cap deterministically when bottom is never reached", async () => {
-		virtuosoHarness.scrollCalls = 0
-		virtuosoHarness.atBottomAfterCalls = Number.POSITIVE_INFINITY
-		virtuosoHarness.atBottomSignalDelayMs = 20
+	it("non-wheel upward intent disengages sticky follow", async () => {
+		await hydrate(4)
+		await waitForCalls(4)
+		await expectCallsStable()
+		expect(resolveFollowOutput(false)).toBe("auto")
 
-		const capture = createDebugCapture()
+		const scrollable = getScrollable()
+		scrollable.scrollTop = 240
 
-		try {
-			renderChatView()
+		await act(async () => {
+			fireEvent.pointerDown(scrollable)
+			scrollable.scrollTop = 120
+			fireEvent.scroll(scrollable)
+			fireEvent.pointerUp(window)
+		})
 
-			const baseTs = Date.now() - 30_000
-			const initialMessages = buildLongHeterogeneousHistory(baseTs, false)
-
-			await act(async () => {
-				mockPostMessage({ debug: true, clineMessages: initialMessages })
-			})
-
-			await waitFor(
-				() => {
-					expect(capture.events.some((event) => event.event === "settle-complete")).toBe(true)
-				},
-				{ timeout: 3400 },
-			)
-
-			const timeoutSettleComplete = capture.events.find(
-				(event) => event.event === "settle-complete" && event.reason === "timeout",
-			)
-			const elapsedMs =
-				timeoutSettleComplete && typeof timeoutSettleComplete.elapsedMs === "number"
-					? timeoutSettleComplete.elapsedMs
-					: -1
-
-			console.info(
-				"[chat-scroll-repro][scenario=safety-cap-timeout]",
-				JSON.stringify({
-					timeoutSettleComplete,
-					elapsedMs,
-					scrollCalls: virtuosoHarness.scrollCalls,
-				}),
-			)
-
-			expect(timeoutSettleComplete).toBeTruthy()
-			expect(timeoutSettleComplete?.isAtBottom).toBe(false)
-			expect(elapsedMs).toBeGreaterThanOrEqual(2400)
-			expect(elapsedMs).toBeLessThanOrEqual(3300)
-			expect(virtuosoHarness.scrollCalls).toBeGreaterThan(10)
-		} finally {
-			capture.stop()
-		}
-	})
-
-	it("keeps settle lifecycle eligible across late rehydration waves and converges after re-arm", async () => {
-		virtuosoHarness.scrollCalls = 0
-		virtuosoHarness.atBottomAfterCalls = 5
-		virtuosoHarness.atBottomSignalDelayMs = 18
-
-		const capture = createDebugCapture()
-
-		try {
-			renderChatView()
-
-			const baseTs = Date.now() - 45_000
-			const initialMessages = buildLongHeterogeneousHistory(baseTs, false)
-
-			await act(async () => {
-				mockPostMessage({ debug: true, clineMessages: initialMessages })
-			})
-
-			await waitFor(
-				() => {
-					expect(capture.events.some((event) => event.event === "settle-window-opened")).toBe(true)
-				},
-				{ timeout: 1200 },
-			)
-
-			const windowOpened = capture.events.find((event) => event.event === "settle-window-opened")
-			const deadlineMs = windowOpened ? getEventNumber(windowOpened, "deadlineMs") : undefined
-
-			await waitFor(
-				() => {
-					expect(capture.events.some((event) => event.event === "settle-complete")).toBe(true)
-				},
-				{ timeout: 2500 },
-			)
-
-			const initialSettleComplete = capture.events.find((event) => event.event === "settle-complete")
-			const initialSettleCompleteTs = typeof initialSettleComplete?.ts === "number" ? initialSettleComplete.ts : 0
-
-			const waitMs = Math.max(0, (deadlineMs ?? Date.now()) - Date.now() + 220)
-			await sleep(waitMs)
-
-			const lateMessage: ClineMessage = {
-				type: "say",
-				say: "text",
-				ts: baseTs + 700,
-				text: "late hydration wave __LATE_GROW__",
-			}
-			const lateWaveMessages = [...initialMessages, lateMessage]
-
-			await act(async () => {
-				mockPostMessage({ debug: true, clineMessages: lateWaveMessages })
-			})
-
-			await act(async () => {
-				mockMessageUpdated({ ...lateMessage, text: "late hydration wave __LATE_GROW__ updated" })
-			})
-
-			const lateMutationStartTs = Date.now()
-
-			await waitFor(
-				() => {
-					expect(
-						capture.events.some(
-							(event) =>
-								event.event === "grouped-messages-length-change" &&
-								getEventBoolean(event, "budgetExtended") === true &&
-								getEventBoolean(event, "windowOpen") === true,
-						),
-					).toBe(true)
-				},
-				{ timeout: 1700 },
-			)
-
-			await waitFor(
-				() => {
-					expect(
-						capture.events.some(
-							(event) =>
-								event.event === "row-height-change-callback" &&
-								getEventBoolean(event, "budgetExtended") === true &&
-								getEventBoolean(event, "windowOpen") === true,
-						),
-					).toBe(true)
-				},
-				{ timeout: 3200 },
-			)
-
-			await waitFor(
-				() => {
-					expect(
-						capture.events.some(
-							(event) =>
-								event.event === "settle-start" &&
-								(event.source === "grouped-messages-length-change" ||
-									event.source === "row-height-growth") &&
-								event.ts >= lateMutationStartTs,
-						),
-					).toBe(true)
-				},
-				{ timeout: 2200 },
-			)
-
-			await waitFor(
-				() => {
-					expect(
-						capture.events.some(
-							(event) =>
-								event.event === "settle-complete" &&
-								event.reason === "stable" &&
-								event.isAtBottom === true &&
-								event.ts > initialSettleCompleteTs,
-						),
-					).toBe(true)
-				},
-				{ timeout: 2200 },
-			)
-
-			const firstAtBottomTrue = capture.events.find(
-				(event) => event.event === "at-bottom-state-change" && event.isAtBottom === true,
-			)
-
-			const groupedLengthMutations = capture.events.filter(
-				(event) => event.event === "grouped-messages-length-change",
-			)
-			const firstGroupedLengthMutation = groupedLengthMutations.at(0)
-			const lastGroupedLengthMutation = groupedLengthMutations.at(-1)
-
-			const lateRawLengthMutations = capture.events.filter((event) => {
-				if (event.event !== "raw-messages-length-change") {
-					return false
-				}
-				const eventTs = getEventNumber(event, "ts")
-				return eventTs !== undefined && deadlineMs !== undefined && eventTs > deadlineMs
-			})
-
-			const successfulLateRearms = capture.events.filter((event) => {
-				if (event.event !== "grouped-messages-length-change" && event.event !== "row-height-change-callback") {
-					return false
-				}
-				const eventTs = getEventNumber(event, "ts")
-				if (eventTs === undefined || eventTs <= (deadlineMs ?? 0)) {
-					return false
-				}
-				return (
-					getEventBoolean(event, "windowOpen") === true &&
-					getEventBoolean(event, "shouldRearmSettle") === true
-				)
-			})
-
-			const showScrollToBottomSuppressedWhileSettling = capture.events.filter(
-				(event) =>
-					event.event === "show-scroll-to-bottom-suppressed" && getEventBoolean(event, "windowOpen") === true,
-			)
-
-			const stableSettleAfterLateWave = capture.events.find(
-				(event) =>
-					event.event === "settle-complete" &&
-					event.reason === "stable" &&
-					event.isAtBottom === true &&
-					event.ts > initialSettleCompleteTs,
-			)
-
-			console.info(
-				"[chat-scroll-repro][scenario=hydration-aware-rearm-after-late-wave]",
-				JSON.stringify({
-					windowOpened,
-					initialSettleComplete,
-					firstAtBottomTrue,
-					firstGroupedLengthMutation,
-					lastGroupedLengthMutation,
-					lateRawLengthMutations,
-					successfulLateRearms,
-					showScrollToBottomSuppressedWhileSettling,
-					stableSettleAfterLateWave,
-				}),
-			)
-
-			expect(deadlineMs).toBeTruthy()
-			expect(firstAtBottomTrue).toBeTruthy()
-			expect(firstGroupedLengthMutation).toBeTruthy()
-			expect(lastGroupedLengthMutation).toBeTruthy()
-			expect(lateRawLengthMutations.length).toBeGreaterThan(0)
-			expect(successfulLateRearms.length).toBeGreaterThan(0)
-			expect(showScrollToBottomSuppressedWhileSettling.length).toBeGreaterThan(0)
-			expect(stableSettleAfterLateWave).toBeTruthy()
-		} finally {
-			capture.stop()
-		}
-	})
-
-	it("stops forcing bottom when user interrupts settle via keyboard navigation", async () => {
-		virtuosoHarness.scrollCalls = 0
-		virtuosoHarness.atBottomAfterCalls = Number.POSITIVE_INFINITY
-		virtuosoHarness.atBottomSignalDelayMs = 16
-
-		const capture = createDebugCapture()
-
-		try {
-			renderChatView()
-
-			const baseTs = Date.now() - 25_000
-			const initialMessages = buildLongHeterogeneousHistory(baseTs, false)
-
-			await act(async () => {
-				mockPostMessage({ debug: true, clineMessages: initialMessages })
-			})
-
-			await waitFor(
-				() => {
-					expect(capture.events.some((event) => event.event === "settle-attempt")).toBe(true)
-				},
-				{ timeout: 1200 },
-			)
-
-			await act(async () => {
-				fireEvent.keyDown(window, { key: "PageUp" })
-			})
-
-			await waitFor(
-				() => {
-					expect(
-						capture.events.some(
-							(event) => event.event === "sticky-follow-cleared" && event.source === "keyboard-nav-up",
-						),
-					).toBe(true)
-				},
-				{ timeout: 1000 },
-			)
-
-			await waitFor(
-				() => {
-					expect(capture.events.some((event) => event.event === "settle-abort-sticky-disabled")).toBe(true)
-				},
-				{ timeout: 1200 },
-			)
-
-			const scrollCallsAtAbort = virtuosoHarness.scrollCalls
-			const settleAttemptsAtAbort = capture.events.filter((event) => event.event === "settle-attempt").length
-
-			await sleep(140)
-
-			const settleAttemptsAfterWait = capture.events.filter((event) => event.event === "settle-attempt").length
-			expect(virtuosoHarness.scrollCalls).toBe(scrollCallsAtAbort)
-			expect(settleAttemptsAfterWait).toBe(settleAttemptsAtAbort)
-		} finally {
-			capture.stop()
-		}
-	})
-
-	it("disengages sticky follow on pointer drag/manual upward scroll intent", async () => {
-		virtuosoHarness.scrollCalls = 0
-		virtuosoHarness.atBottomAfterCalls = Number.POSITIVE_INFINITY
-		virtuosoHarness.atBottomSignalDelayMs = 20
-
-		const capture = createDebugCapture()
-
-		try {
-			renderChatView()
-
-			const baseTs = Date.now() - 5_000
-			const initialMessages = buildLongHeterogeneousHistory(baseTs, false)
-
-			await act(async () => {
-				mockPostMessage({ debug: true, clineMessages: initialMessages })
-			})
-
-			await waitFor(
-				() => {
-					expect(capture.events.some((event) => event.event === "settle-attempt")).toBe(true)
-				},
-				{ timeout: 1200 },
-			)
-
-			const scrollable = document.querySelector(".scrollable")
-			expect(scrollable).toBeInstanceOf(HTMLElement)
-
-			const scrollableElement = scrollable as HTMLElement
-			scrollableElement.scrollTop = 220
-
-			await act(async () => {
-				fireEvent.pointerDown(scrollableElement)
-				scrollableElement.scrollTop = 120
-				fireEvent.scroll(scrollableElement)
-				fireEvent.pointerUp(window)
-			})
-
-			await waitFor(
-				() => {
-					expect(
-						capture.events.some(
-							(event) => event.event === "sticky-follow-cleared" && event.source === "pointer-scroll-up",
-						),
-					).toBe(true)
-				},
-				{ timeout: 1200 },
-			)
-		} finally {
-			capture.stop()
-		}
+		expect(resolveFollowOutput(false)).toBe(false)
 	})
 })

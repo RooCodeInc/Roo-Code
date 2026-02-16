@@ -49,7 +49,6 @@ import { WorktreeSelector } from "./WorktreeSelector"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
-import { emitChatScrollDebug, isChatScrollDebugEnabled } from "@src/utils/chatScrollDebug"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -114,7 +113,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		cloudIsAuthenticated,
 		messageQueue = [],
 		showWorktreesInHomeScreen,
-		debug,
 	} = useExtensionState()
 
 	// Show a WarningRow when the user sends a message with a retired provider.
@@ -181,19 +179,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const [showScrollToBottom, setShowScrollToBottom] = useState(false)
 	const isAtBottomRef = useRef(false)
 	const isSettlingRef = useRef(false)
-	const settleBudgetAnchorMsRef = useRef<number | null>(null)
-	const settleHardCapDeadlineMsRef = useRef<number | null>(null)
-	const settleLifecycleTaskTsRef = useRef<number | null>(null)
+	const settleTaskTsRef = useRef<number | null>(null)
+	const settleDeadlineMsRef = useRef<number | null>(null)
+	const settleHardDeadlineMsRef = useRef<number | null>(null)
 	const settleAnimationFrameRef = useRef<number | null>(null)
 	const settleStableFramesRef = useRef(0)
 	const settleMutationVersionRef = useRef(0)
 	const settleObservedMutationVersionRef = useRef(0)
-	const settlingTaskTsRef = useRef<number | null>(null)
-	const chatScrollDebugEnabledRef = useRef(false)
-	const settleStartMsRef = useRef<number | null>(null)
-	const settleAttemptRef = useRef(0)
 	const groupedMessagesLengthRef = useRef(0)
-	const rawMessagesLengthRef = useRef(0)
 	const pointerScrollActiveRef = useRef(false)
 	const pointerScrollLastTopRef = useRef<number | null>(null)
 	const lastTtsRef = useRef<string>("")
@@ -228,70 +221,39 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		clineAskRef.current = clineAsk
 	}, [clineAsk])
 
-	useEffect(() => {
-		chatScrollDebugEnabledRef.current = isChatScrollDebugEnabled(debug)
-	}, [debug])
-
-	type InitialSettleWindowState = {
-		nowMs: number
-		taskEligible: boolean
-		windowOpen: boolean
-		deadlineMs: number | null
-		hardCapDeadlineMs: number | null
-		hardCapReached: boolean
-	}
-
-	const getInitialSettleWindowState = useCallback((taskTs: number | null): InitialSettleWindowState => {
-		const nowMs = Date.now()
-		const taskEligible = taskTs !== null && settleLifecycleTaskTsRef.current === taskTs
-		const deadlineMs =
-			settleBudgetAnchorMsRef.current === null
-				? null
-				: settleBudgetAnchorMsRef.current + INITIAL_LOAD_SETTLE_TIMEOUT_MS
-		const hardCapDeadlineMs = settleHardCapDeadlineMsRef.current
-		const hardCapReached = hardCapDeadlineMs !== null && nowMs > hardCapDeadlineMs
-		const windowOpen = taskEligible && deadlineMs !== null && nowMs <= deadlineMs && !hardCapReached
-
-		return {
-			nowMs,
-			taskEligible,
-			windowOpen,
-			deadlineMs,
-			hardCapDeadlineMs,
-			hardCapReached,
+	const isSettleWindowOpen = useCallback((taskTs: number): boolean => {
+		if (settleTaskTsRef.current !== taskTs) {
+			return false
 		}
+
+		const nowMs = Date.now()
+		const deadlineMs = settleDeadlineMsRef.current
+		if (deadlineMs === null || nowMs > deadlineMs) {
+			return false
+		}
+
+		const hardDeadlineMs = settleHardDeadlineMsRef.current
+		return hardDeadlineMs === null || nowMs <= hardDeadlineMs
 	}, [])
 
-	const extendInitialSettleBudgetForMutation = useCallback(
-		(taskTs: number): { budgetExtended: boolean; windowState: InitialSettleWindowState } => {
-			if (settleLifecycleTaskTsRef.current !== taskTs) {
-				return {
-					budgetExtended: false,
-					windowState: getInitialSettleWindowState(taskTs),
-				}
-			}
+	const extendInitialSettleWindow = useCallback((taskTs: number): boolean => {
+		if (settleTaskTsRef.current !== taskTs) {
+			return false
+		}
 
-			const nowMs = Date.now()
-			const hardCapDeadlineMs = settleHardCapDeadlineMsRef.current
-			if (hardCapDeadlineMs !== null && nowMs > hardCapDeadlineMs) {
-				return {
-					budgetExtended: false,
-					windowState: getInitialSettleWindowState(taskTs),
-				}
-			}
+		const nowMs = Date.now()
+		const hardDeadlineMs = settleHardDeadlineMsRef.current
+		if (hardDeadlineMs !== null && nowMs > hardDeadlineMs) {
+			return false
+		}
 
-			settleBudgetAnchorMsRef.current = nowMs
-			if (settleHardCapDeadlineMsRef.current === null) {
-				settleHardCapDeadlineMsRef.current = nowMs + INITIAL_LOAD_SETTLE_HARD_CAP_MS
-			}
+		settleDeadlineMsRef.current = nowMs + INITIAL_LOAD_SETTLE_TIMEOUT_MS
+		if (hardDeadlineMs === null) {
+			settleHardDeadlineMsRef.current = nowMs + INITIAL_LOAD_SETTLE_HARD_CAP_MS
+		}
 
-			return {
-				budgetExtended: true,
-				windowState: getInitialSettleWindowState(taskTs),
-			}
-		},
-		[getInitialSettleWindowState],
-	)
+		return true
+	}, [])
 
 	const cancelInitialSettleFrame = useCallback(() => {
 		if (settleAnimationFrameRef.current !== null) {
@@ -300,78 +262,27 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 	}, [])
 
-	const completeInitialSettle = useCallback(
-		(taskTs: number, reason: "stable" | "timeout") => {
-			cancelInitialSettleFrame()
-			isSettlingRef.current = false
-
-			const windowState = getInitialSettleWindowState(taskTs)
-
-			const nowMs = Date.now()
-			const settleStartMs = settleStartMsRef.current ?? nowMs
-			const elapsedMs = nowMs - settleStartMs
-
-			emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
-				event: "settle-complete",
-				taskTs,
-				reason,
-				attempts: settleAttemptRef.current,
-				elapsedMs,
-				isAtBottom: isAtBottomRef.current,
-				stableFrames: settleStableFramesRef.current,
-				windowOpen: windowState.windowOpen,
-				deadlineMs: windowState.deadlineMs,
-				hardCapDeadlineMs: windowState.hardCapDeadlineMs,
-				hardCapReached: windowState.hardCapReached,
-			})
-
-			if (!isAtBottomRef.current) {
-				emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
-					event: "show-scroll-to-bottom-set",
-					value: true,
-					source: "settle-complete",
-					reason,
-					taskTs,
-					windowOpen: windowState.windowOpen,
-					deadlineMs: windowState.deadlineMs,
-					hardCapDeadlineMs: windowState.hardCapDeadlineMs,
-					hardCapReached: windowState.hardCapReached,
-				})
-				setShowScrollToBottom(true)
-			}
-		},
-		[cancelInitialSettleFrame, getInitialSettleWindowState],
-	)
+	const completeInitialSettle = useCallback(() => {
+		cancelInitialSettleFrame()
+		isSettlingRef.current = false
+		if (!isAtBottomRef.current) {
+			setShowScrollToBottom(true)
+		}
+	}, [cancelInitialSettleFrame])
 
 	const runInitialSettleFrame = useCallback(
 		(taskTs: number) => {
 			if (!isMountedRef.current) {
 				return
 			}
-			if (!isSettlingRef.current || settlingTaskTsRef.current !== taskTs) {
+			if (!isSettlingRef.current || settleTaskTsRef.current !== taskTs) {
 				return
 			}
 
-			if (!stickyFollowRef.current) {
-				const windowState = getInitialSettleWindowState(taskTs)
-				emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
-					event: "settle-abort-sticky-disabled",
-					taskTs,
-					attempt: settleAttemptRef.current,
-					isAtBottom: isAtBottomRef.current,
-					windowOpen: windowState.windowOpen,
-					deadlineMs: windowState.deadlineMs,
-					hardCapDeadlineMs: windowState.hardCapDeadlineMs,
-					hardCapReached: windowState.hardCapReached,
-				})
-				completeInitialSettle(taskTs, "timeout")
+			if (!stickyFollowRef.current || !isSettleWindowOpen(taskTs)) {
+				completeInitialSettle()
 				return
 			}
-
-			settleAttemptRef.current += 1
-			const nowMs = Date.now()
-			const settleStartMs = settleStartMsRef.current ?? nowMs
-			const elapsedMs = nowMs - settleStartMs
 
 			const mutationVersion = settleMutationVersionRef.current
 			const isTailStable = mutationVersion === settleObservedMutationVersionRef.current
@@ -383,118 +294,43 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				settleStableFramesRef.current = 0
 			}
 
-			emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
-				event: "settle-attempt",
-				taskTs,
-				attempt: settleAttemptRef.current,
-				elapsedMs,
-				isAtBottom: isAtBottomRef.current,
-				isTailStable,
-				stableFrames: settleStableFramesRef.current,
-				stableFrameTarget: INITIAL_LOAD_SETTLE_STABLE_FRAME_TARGET,
-			})
-
 			virtuosoRef.current?.scrollToIndex({ index: "LAST", align: "end", behavior: "auto" })
 
 			if (settleStableFramesRef.current >= INITIAL_LOAD_SETTLE_STABLE_FRAME_TARGET) {
-				completeInitialSettle(taskTs, "stable")
-				return
-			}
-
-			const windowState = getInitialSettleWindowState(taskTs)
-			if (!windowState.windowOpen) {
-				completeInitialSettle(taskTs, "timeout")
+				completeInitialSettle()
 				return
 			}
 
 			settleAnimationFrameRef.current = requestAnimationFrame(() => runInitialSettleFrame(taskTs))
 		},
-		[completeInitialSettle, getInitialSettleWindowState],
+		[completeInitialSettle, isSettleWindowOpen],
 	)
 
-	const clearStickyFollow = useCallback((source: StickyFollowClearSource) => {
+	const clearStickyFollow = useCallback((_source: StickyFollowClearSource) => {
 		if (!stickyFollowRef.current) {
 			return
 		}
 
 		stickyFollowRef.current = false
-		emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
-			event: "sticky-follow-cleared",
-			source,
-			isAtBottom: isAtBottomRef.current,
-			isSettling: isSettlingRef.current,
-			taskTs: settlingTaskTsRef.current,
-		})
 	}, [])
 
 	const startInitialSettle = useCallback(
-		(taskTs: number, source: string) => {
-			const windowState = getInitialSettleWindowState(taskTs)
-
-			if (!windowState.taskEligible) {
-				emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
-					event: "settle-start-rejected",
-					taskTs,
-					source,
-					reason: "task-ineligible",
-					nowMs: windowState.nowMs,
-					deadlineMs: windowState.deadlineMs,
-					hardCapDeadlineMs: windowState.hardCapDeadlineMs,
-					hardCapReached: windowState.hardCapReached,
-					lifecycleTaskTs: settleLifecycleTaskTsRef.current,
-				})
+		(taskTs: number) => {
+			if (!isSettleWindowOpen(taskTs)) {
 				return
 			}
-
-			if (!windowState.windowOpen) {
-				emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
-					event: "settle-start-rejected",
-					taskTs,
-					source,
-					reason: "window-closed",
-					nowMs: windowState.nowMs,
-					deadlineMs: windowState.deadlineMs,
-					hardCapDeadlineMs: windowState.hardCapDeadlineMs,
-					hardCapReached: windowState.hardCapReached,
-				})
-				return
-			}
-
-			if (isSettlingRef.current && settlingTaskTsRef.current === taskTs) {
-				emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
-					event: "settle-start-rejected",
-					taskTs,
-					source,
-					reason: "already-settling",
-					nowMs: windowState.nowMs,
-					deadlineMs: windowState.deadlineMs,
-					hardCapDeadlineMs: windowState.hardCapDeadlineMs,
-					hardCapReached: windowState.hardCapReached,
-				})
+			if (isSettlingRef.current && settleTaskTsRef.current === taskTs) {
 				return
 			}
 
 			cancelInitialSettleFrame()
-			settlingTaskTsRef.current = taskTs
+			settleTaskTsRef.current = taskTs
 			isSettlingRef.current = true
-			if (settleStartMsRef.current === null) {
-				settleStartMsRef.current = windowState.nowMs
-			}
 			settleStableFramesRef.current = 0
 			settleObservedMutationVersionRef.current = settleMutationVersionRef.current
-
-			emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
-				event: "settle-start",
-				taskTs,
-				source,
-				isAtBottom: isAtBottomRef.current,
-				deadlineMs: windowState.deadlineMs,
-				hardCapDeadlineMs: windowState.hardCapDeadlineMs,
-			})
-
 			settleAnimationFrameRef.current = requestAnimationFrame(() => runInitialSettleFrame(taskTs))
 		},
-		[cancelInitialSettleFrame, getInitialSettleWindowState, runInitialSettleFrame],
+		[cancelInitialSettleFrame, isSettleWindowOpen, runInitialSettleFrame],
 	)
 
 	const {
@@ -799,16 +635,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	useEffect(() => {
 		const taskSwitchMs = Date.now()
-		settleAttemptRef.current = 0
-		settleStartMsRef.current = null
 		settleStableFramesRef.current = 0
 		settleMutationVersionRef.current = 0
 		settleObservedMutationVersionRef.current = 0
 		cancelInitialSettleFrame()
-		settleBudgetAnchorMsRef.current = null
-		settleHardCapDeadlineMsRef.current = null
-		settleLifecycleTaskTsRef.current = task?.ts ?? null
-		settlingTaskTsRef.current = task?.ts ?? null
+		settleTaskTsRef.current = task?.ts ?? null
+		settleDeadlineMsRef.current = null
+		settleHardDeadlineMsRef.current = null
 
 		// Reset UI states only when task changes
 		setExpandedRows({})
@@ -833,47 +666,20 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			stickyFollowRef.current = true
 			isSettlingRef.current = false
 			setShowScrollToBottom(false)
-			settleBudgetAnchorMsRef.current = taskSwitchMs
-			settleStartMsRef.current = taskSwitchMs
-			const deadlineMs = taskSwitchMs + INITIAL_LOAD_SETTLE_TIMEOUT_MS
-			emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
-				event: "settle-window-opened",
-				taskTs: task.ts,
-				taskSwitchMs,
-				deadlineMs,
-				hardCapDeadlineMs: null,
-				timeoutMs: INITIAL_LOAD_SETTLE_TIMEOUT_MS,
-				hardCapTimeoutMs: INITIAL_LOAD_SETTLE_HARD_CAP_MS,
-			})
-			startInitialSettle(task.ts, "task-switch")
+			settleDeadlineMsRef.current = taskSwitchMs + INITIAL_LOAD_SETTLE_TIMEOUT_MS
+			settleHardDeadlineMsRef.current = taskSwitchMs + INITIAL_LOAD_SETTLE_HARD_CAP_MS
+			startInitialSettle(task.ts)
 		}
 		return () => {
 			cancelInitialSettleFrame()
-			settleBudgetAnchorMsRef.current = null
-			settleHardCapDeadlineMsRef.current = null
-			settleLifecycleTaskTsRef.current = null
-			settlingTaskTsRef.current = null
+			settleTaskTsRef.current = null
+			settleDeadlineMsRef.current = null
+			settleHardDeadlineMsRef.current = null
 			isSettlingRef.current = false
 		}
 	}, [cancelInitialSettleFrame, startInitialSettle, task?.ts])
 
 	const taskTs = task?.ts
-
-	useEffect(() => {
-		const previousLength = rawMessagesLengthRef.current
-		rawMessagesLengthRef.current = messages.length
-
-		if (previousLength === messages.length) {
-			return
-		}
-
-		emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
-			event: "raw-messages-length-change",
-			previousLength,
-			nextLength: messages.length,
-			taskTs,
-		})
-	}, [messages.length, taskTs])
 
 	// Request aggregated costs when task changes and has childIds
 	useEffect(() => {
@@ -1670,34 +1476,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 
 		settleMutationVersionRef.current += 1
-		const mutationVersion = settleMutationVersionRef.current
 
-		const taskTs = settleLifecycleTaskTsRef.current
-		const budgetExtension =
-			taskTs !== null
-				? extendInitialSettleBudgetForMutation(taskTs)
-				: { budgetExtended: false, windowState: getInitialSettleWindowState(taskTs) }
-		const shouldRearmSettle = taskTs !== null && !isSettlingRef.current && budgetExtension.windowState.windowOpen
-
-		emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
-			event: "grouped-messages-length-change",
-			previousLength,
-			nextLength: groupedMessages.length,
-			mutationVersion,
-			taskTs,
-			windowOpen: budgetExtension.windowState.windowOpen,
-			deadlineMs: budgetExtension.windowState.deadlineMs,
-			hardCapDeadlineMs: budgetExtension.windowState.hardCapDeadlineMs,
-			hardCapReached: budgetExtension.windowState.hardCapReached,
-			budgetExtended: budgetExtension.budgetExtended,
-			isSettling: isSettlingRef.current,
-			shouldRearmSettle,
-		})
-
-		if (shouldRearmSettle) {
-			startInitialSettle(taskTs, "grouped-messages-length-change")
+		const settleTaskTs = settleTaskTsRef.current
+		if (settleTaskTs !== null && !isSettlingRef.current && extendInitialSettleWindow(settleTaskTs)) {
+			startInitialSettle(settleTaskTs)
 		}
-	}, [groupedMessages.length, extendInitialSettleBudgetForMutation, getInitialSettleWindowState, startInitialSettle])
+	}, [groupedMessages.length, extendInitialSettleWindow, startInitialSettle])
 
 	// scrolling
 
@@ -1751,32 +1535,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		(isTaller: boolean) => {
 			settleMutationVersionRef.current += 1
 
-			const taskTs = settleLifecycleTaskTsRef.current
-			const budgetExtension =
-				isTaller && taskTs !== null
-					? extendInitialSettleBudgetForMutation(taskTs)
-					: { budgetExtended: false, windowState: getInitialSettleWindowState(taskTs) }
-			const shouldRearmSettle =
-				isTaller && taskTs !== null && !isSettlingRef.current && budgetExtension.windowState.windowOpen
-			const mutationVersion = settleMutationVersionRef.current
-
-			emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
-				event: "row-height-change-callback",
-				isTaller,
-				isAtBottom: isAtBottomRef.current,
-				taskTs,
-				windowOpen: budgetExtension.windowState.windowOpen,
-				deadlineMs: budgetExtension.windowState.deadlineMs,
-				hardCapDeadlineMs: budgetExtension.windowState.hardCapDeadlineMs,
-				hardCapReached: budgetExtension.windowState.hardCapReached,
-				budgetExtended: budgetExtension.budgetExtended,
-				isSettling: isSettlingRef.current,
-				mutationVersion,
-				shouldRearmSettle,
-			})
-
-			if (shouldRearmSettle) {
-				startInitialSettle(taskTs, "row-height-growth")
+			const settleTaskTs = settleTaskTsRef.current
+			if (
+				isTaller &&
+				settleTaskTs !== null &&
+				!isSettlingRef.current &&
+				extendInitialSettleWindow(settleTaskTs)
+			) {
+				startInitialSettle(settleTaskTs)
 			}
 
 			if (isAtBottomRef.current) {
@@ -1787,13 +1553,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				}
 			}
 		},
-		[
-			extendInitialSettleBudgetForMutation,
-			getInitialSettleWindowState,
-			scrollToBottomSmooth,
-			scrollToBottomAuto,
-			startInitialSettle,
-		],
+		[extendInitialSettleWindow, scrollToBottomSmooth, scrollToBottomAuto, startInitialSettle],
 	)
 
 	// Disable sticky follow when user scrolls up inside the chat container
@@ -2208,41 +1968,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							}
 							atBottomStateChange={(isAtBottom: boolean) => {
 								isAtBottomRef.current = isAtBottom
-								emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
-									event: "at-bottom-state-change",
-									isAtBottom,
-									isSettling: isSettlingRef.current,
-								})
 								if (isSettlingRef.current && !isAtBottom) {
-									const windowState = getInitialSettleWindowState(settlingTaskTsRef.current)
-									emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
-										event: "show-scroll-to-bottom-suppressed",
-										source: "at-bottom-state-change-suppressed",
-										isAtBottom,
-										isSettling: true,
-										windowOpen: windowState.windowOpen,
-										deadlineMs: windowState.deadlineMs,
-										hardCapDeadlineMs: windowState.hardCapDeadlineMs,
-										hardCapReached: windowState.hardCapReached,
-										taskTs: settlingTaskTsRef.current,
-									})
 									return
 								}
-								const windowState = getInitialSettleWindowState(settlingTaskTsRef.current)
-								const nextShowScrollToBottom = !isAtBottom
-								emitChatScrollDebug(chatScrollDebugEnabledRef.current, {
-									event: "show-scroll-to-bottom-set",
-									value: nextShowScrollToBottom,
-									source: "at-bottom-state-change",
-									isAtBottom,
-									isSettling: isSettlingRef.current,
-									windowOpen: windowState.windowOpen,
-									deadlineMs: windowState.deadlineMs,
-									hardCapDeadlineMs: windowState.hardCapDeadlineMs,
-									hardCapReached: windowState.hardCapReached,
-									taskTs: settlingTaskTsRef.current,
-								})
-								setShowScrollToBottom(nextShowScrollToBottom)
+								setShowScrollToBottom(!isAtBottom)
 								// stickyFollowRef is only cleared by explicit user actions
 								// (wheel-up, keyboard navigation up, pointer drag up, row expansion),
 								// not by transient bottom-detection
