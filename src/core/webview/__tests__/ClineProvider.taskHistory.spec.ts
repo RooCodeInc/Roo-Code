@@ -508,18 +508,15 @@ describe("ClineProvider Task History Synchronization", () => {
 
 			await provider.updateTaskHistory(updatedItem)
 
-			// Verify the update was persisted
-			expect(mockContext.globalState.update).toHaveBeenCalledWith(
-				"taskHistory",
+			// Verify the update was persisted in the store
+			const storeHistory = provider.taskHistoryStore.getAll()
+			expect(storeHistory).toEqual(
 				expect.arrayContaining([expect.objectContaining({ id: "task-update", task: "Updated task" })]),
 			)
 
 			// Should not have duplicates
-			const allCalls = (mockContext.globalState.update as ReturnType<typeof vi.fn>).mock.calls
-			const lastUpdateCall = allCalls.find((call: any[]) => call[0] === "taskHistory")
-			const historyArray = lastUpdateCall?.[1] as HistoryItem[]
-			const matchingItems = historyArray?.filter((item: HistoryItem) => item.id === "task-update")
-			expect(matchingItems?.length).toBe(1)
+			const matchingItems = storeHistory.filter((item: HistoryItem) => item.id === "task-update")
+			expect(matchingItems.length).toBe(1)
 		})
 
 		it("returns the updated task history array", async () => {
@@ -676,8 +673,8 @@ describe("ClineProvider Task History Synchronization", () => {
 
 			await Promise.all(items.map((item) => provider.updateTaskHistory(item, { broadcast: false })))
 
-			// All 5 entries must survive
-			const history = (provider as any).contextProxy.getGlobalState("taskHistory") as HistoryItem[]
+			// All 5 entries must survive (read from store, not debounced globalState)
+			const history = provider.taskHistoryStore.getAll()
 			const ids = history.map((h: HistoryItem) => h.id)
 			for (const item of items) {
 				expect(ids).toContain(item.id)
@@ -701,32 +698,35 @@ describe("ClineProvider Task History Synchronization", () => {
 				provider.deleteTaskFromState("remove-me"),
 			])
 
-			const history = (provider as any).contextProxy.getGlobalState("taskHistory") as HistoryItem[]
+			const history = provider.taskHistoryStore.getAll()
 			const ids = history.map((h: HistoryItem) => h.id)
 			expect(ids).toContain("keep-me")
 			expect(ids).toContain("new-item")
 			expect(ids).not.toContain("remove-me")
 		})
 
-		it("does not block subsequent writes when a previous write errors", async () => {
+		it("does not block subsequent writes when a previous store write errors", async () => {
 			await provider.resolveWebviewView(mockWebviewView)
 
-			// Temporarily make the globalState write-through throw
-			const origUpdateGlobalState = (provider as any).updateGlobalState.bind(provider)
+			// Temporarily make the store's safeWriteJson throw
+			const { safeWriteJson } = await import("../../../utils/safeWriteJson")
+			const mockSafeWriteJson = vi.mocked(safeWriteJson)
 			let callCount = 0
-			;(provider as any).updateGlobalState = vi.fn().mockImplementation((...args: unknown[]) => {
+			mockSafeWriteJson.mockImplementation(async () => {
 				callCount++
 				if (callCount === 1) {
-					return Promise.reject(new Error("simulated write failure"))
+					throw new Error("simulated write failure")
 				}
-				return origUpdateGlobalState(...args)
 			})
 
-			// First call should fail (due to write-through to globalState)
+			// First call should fail (store write failure)
 			const item1 = createHistoryItem({ id: "fail-item", task: "Fail" })
 			await expect(provider.updateTaskHistory(item1, { broadcast: false })).rejects.toThrow(
 				"simulated write failure",
 			)
+
+			// Restore mock
+			mockSafeWriteJson.mockResolvedValue(undefined)
 
 			// Second call should still succeed (store lock not stuck)
 			const item2 = createHistoryItem({ id: "ok-item", task: "OK" })
@@ -750,7 +750,7 @@ describe("ClineProvider Task History Synchronization", () => {
 				}),
 			])
 
-			const history = (provider as any).contextProxy.getGlobalState("taskHistory") as HistoryItem[]
+			const history = provider.taskHistoryStore.getAll()
 			const item = history.find((h: HistoryItem) => h.id === "race-item")
 			expect(item).toBeDefined()
 			// The second write (tokensIn: 222) should be the last one since writes are serialized

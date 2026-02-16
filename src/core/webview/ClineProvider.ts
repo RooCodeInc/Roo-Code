@@ -152,6 +152,8 @@ export class ClineProvider
 	private recentTasksCache?: string[]
 	public readonly taskHistoryStore: TaskHistoryStore
 	private taskHistoryStoreInitialized = false
+	private globalStateWriteThroughTimer: ReturnType<typeof setTimeout> | null = null
+	private static readonly GLOBAL_STATE_WRITE_THROUGH_DEBOUNCE_MS = 5000 // 5 seconds
 	private pendingOperations: Map<string, PendingEditOperation> = new Map()
 	private static readonly PENDING_OPERATION_TIMEOUT_MS = 30000 // 30 seconds
 
@@ -186,11 +188,12 @@ export class ClineProvider
 		this.mdmService = mdmService
 		this.updateGlobalState("codebaseIndexModels", EMBEDDING_MODEL_PROFILES)
 
-		// Initialize the per-task file-based history store with write-through callback.
+		// Initialize the per-task file-based history store.
+		// The globalState write-through is debounced separately (not on every mutation)
+		// since per-task files are authoritative and globalState is only for downgrade compat.
 		this.taskHistoryStore = new TaskHistoryStore(this.contextProxy.globalStorageUri.fsPath, {
-			onWrite: async (items) => {
-				// Write-through to globalState inside the store's lock for transition period
-				await this.updateGlobalState("taskHistory", items)
+			onWrite: async () => {
+				this.scheduleGlobalStateWriteThrough()
 			},
 		})
 		this.initializeTaskHistoryStore().catch((error) => {
@@ -709,6 +712,7 @@ export class ClineProvider
 		this.marketplaceManager?.cleanup()
 		this.customModesManager?.dispose()
 		this.taskHistoryStore.dispose()
+		this.flushGlobalStateWriteThrough()
 		this.log("Disposed all disposables")
 		ClineProvider.activeInstances.delete(this)
 
@@ -2611,6 +2615,44 @@ export class ClineProvider
 		}
 
 		return history
+	}
+
+	/**
+	 * Schedule a debounced write-through of task history to globalState.
+	 * Only used for backward compatibility during the transition period.
+	 * Per-task files are authoritative; globalState is the downgrade fallback.
+	 */
+	private scheduleGlobalStateWriteThrough(): void {
+		if (this.globalStateWriteThroughTimer) {
+			clearTimeout(this.globalStateWriteThroughTimer)
+		}
+
+		this.globalStateWriteThroughTimer = setTimeout(async () => {
+			this.globalStateWriteThroughTimer = null
+			try {
+				const items = this.taskHistoryStore.getAll()
+				await this.updateGlobalState("taskHistory", items)
+			} catch (err) {
+				this.log(
+					`[scheduleGlobalStateWriteThrough] Failed: ${err instanceof Error ? err.message : String(err)}`,
+				)
+			}
+		}, ClineProvider.GLOBAL_STATE_WRITE_THROUGH_DEBOUNCE_MS)
+	}
+
+	/**
+	 * Flush any pending debounced globalState write-through immediately.
+	 */
+	private flushGlobalStateWriteThrough(): void {
+		if (this.globalStateWriteThroughTimer) {
+			clearTimeout(this.globalStateWriteThroughTimer)
+			this.globalStateWriteThroughTimer = null
+		}
+
+		const items = this.taskHistoryStore.getAll()
+		this.updateGlobalState("taskHistory", items).catch((err) => {
+			this.log(`[flushGlobalStateWriteThrough] Failed: ${err instanceof Error ? err.message : String(err)}`)
+		})
 	}
 
 	/**
