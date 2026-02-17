@@ -1,68 +1,10 @@
-# Apex Reference Guide
-
-## Comprehensive Reference for AI Systems with Programming & Salesforce Knowledge
-
----
-
-## ⚠️ CRITICAL: MANDATORY FIRST STEP - Retrieve Apex Classes
-
-**BEFORE DOING ANYTHING ELSE, YOU MUST RETRIEVE EXISTING APEX CLASSES FROM THE ORG**
-
-This is **NOT OPTIONAL**. Every time you start an Apex-related task, you MUST:
-
-### Step 1: Retrieve All Apex Classes (MANDATORY)
-
-**USE THIS COMMAND FIRST:**
-
-```
-<retrieve_sf_metadata>
-<metadata_type>ApexClass</metadata_type>
-</retrieve_sf_metadata>
-```
-
-This retrieves all existing Apex classes from the org to `force-app/main/default/classes/`
-
-### Why This Is Critical:
-
-✅ **ALWAYS retrieve at the start** of any Apex-related task to understand existing code
-✅ **ALWAYS retrieve before creating** a new class to check if a similar class already exists
-✅ **ALWAYS retrieve before modifying** a class to get the latest version
-✅ Prevents duplicate class creation
-✅ Prevents conflicts with existing code
-✅ Ensures you work with the latest version from the org
-
-### ❌ NEVER DO THIS:
-
-❌ **NEVER create an Apex class file directly without first using the retrieve tool**
-❌ **NEVER assume a class doesn't exist** - always retrieve and check first
-❌ **NEVER modify a class without retrieving** the latest version first
-❌ **NEVER skip this step** - it is MANDATORY for every Apex task
-
-### Directory Location:
-
-**Apex classes are stored in:** `force-app/main/default/classes/`
-
-- Each Apex class has two files:
-    - `ClassName.cls` (the Apex class file)
-    - `ClassName.cls-meta.xml` (the metadata XML file)
-
----
+## Comprehensive Apex Reference for AI Systems with Programming & Salesforce Knowledge
 
 ## ⚠️ MANDATORY WORKFLOW FOR ALL APEX TASKS
 
-**After retrieving Apex classes, you MUST follow this workflow for EVERY Apex-related task:**
+**When a prompt is given, you MUST follow this workflow for EVERY Apex-related task:**
 
-### Step 1: ✅ Retrieve All Apex Classes (Already Done Above)
-
-### Step 2: 🔍 Check for Existing Patterns
-
-After retrieving, check if the following classes already exist:
-
-- **Selector Classes**: Look for `*Selector.cls` files (e.g., `AccountSelector`, `OpportunitySelector`)
-- **Service Classes**: Look for `*Service.cls` files (e.g., `AccountService`, `OpportunityService`)
-- **Related Classes**: Look for any existing class that handles similar functionality
-
-### Step 3: 📋 Plan Your Implementation Using Required Patterns
+### Step 1: 📋 Plan Your Implementation Using Required Patterns
 
 **YOU MUST USE THESE PATTERNS - THIS IS NOT OPTIONAL:**
 
@@ -146,7 +88,7 @@ public with sharing class OpportunityListController {
 }
 ```
 
-### Step 4: 🔤 Follow Naming Conventions (MANDATORY)
+### Step 2: 🔤 Follow Naming Conventions (MANDATORY)
 
 **YOU MUST USE THESE NAMING CONVENTIONS:**
 
@@ -164,18 +106,15 @@ public with sharing class OpportunityListController {
 - **Selectors**: `OpportunitySelector`, `AccountSelector`
 - **Services**: `OpportunityService`, `AccountService`
 - **Controllers**: `OpportunityListController`, `AccountCardController`
-- **Test Classes**: `OpportunityService_Test`, `AccountSelector_Test`
 
 #### Methods:
 
 - **camelCase with verb**: `getProspectingOpportunities()`, `validateAccount()`, `createOrder()`
 
-### Step 5: 📝 Implementation Checklist
+### Step 3: 📝 Implementation Checklist
 
 Before writing ANY code, verify:
 
-- [ ] ✅ Retrieved all Apex classes
-- [ ] 🔍 Checked for existing Selector/Service classes
 - [ ] 📋 Planned to use Selector pattern for SOQL
 - [ ] 📋 Planned to use Service pattern for business logic
 - [ ] 🔤 Will follow naming conventions (list/set/map/str/int prefixes)
@@ -183,7 +122,7 @@ Before writing ANY code, verify:
 - [ ] 📦 Will use `with sharing` on classes
 - [ ] 📄 Will create XML metadata files for each class
 
-### Step 6: ⚡ Create Classes in This Order
+### Step 4: ⚡ Create Classes in This Order
 
 1. **First**: Create Selector class(es) with SOQL queries
 2. **Second**: Create Service class(es) that call Selector(s)
@@ -241,14 +180,13 @@ Selector (SOQL queries)
 8. [DML Operations](#dml-operations)
 9. [Governor Limits & Bulkification](#governor-limits--bulkification)
 10. [Asynchronous Apex](#asynchronous-apex)
-11. [Testing Framework](#testing-framework)
-12. [Security & Sharing](#security--sharing)
-13. [Triggers](#triggers)
-14. [Key Namespaces](#key-namespaces)
-15. [Exception Handling](#exception-handling)
-16. [Integration Standards](#integration-standards)
-17. [Best Practices](#best-practices)
-18. [Governance & Developer Checklist](#governance--developer-checklist)
+11. [Security & Sharing](#security--sharing)
+12. [Triggers](#triggers)
+13. [Key Namespaces](#key-namespaces)
+14. [Exception Handling](#exception-handling)
+15. [Integration Standards](#integration-standards)
+16. [Best Practices](#best-practices)
+17. [Governance & Developer Checklist](#governance--developer-checklist)
 
 ---
 
@@ -278,15 +216,14 @@ Consistent naming is critical for maintainability and code readability. Use the 
 
 ### General Apex Naming
 
-| Component        | Format                 | Pattern / Example                                          |
-| ---------------- | ---------------------- | ---------------------------------------------------------- |
-| **Classes**      | PascalCase             | `OrderService`, `AccountTriggerHandler`, `AccountSelector` |
-| **Interfaces**   | PascalCase + Suffix    | `IntegrationStrategyInterface`                             |
-| **Methods**      | camelCase (Verb-based) | `createOrder()`, `validateInput()`, `syncToSAP()`          |
-| **Variables**    | camelCase              | `accountList`, `hasErrors`, `retryCount`                   |
-| **Constants**    | ALL_CAPS (Underscore)  | `MAX_RETRY_COUNT`, `SAP_ENDPOINT_NAME`                     |
-| **Triggers**     | PascalCase             | `<ObjectName>Trigger` (e.g., `AccountTrigger`)             |
-| **Test Classes** | PascalCase + Suffix    | `<ClassName>_Test` (e.g., `OrderService_Test`)             |
+| Component      | Format                 | Pattern / Example                                          |
+| -------------- | ---------------------- | ---------------------------------------------------------- |
+| **Classes**    | PascalCase             | `OrderService`, `AccountTriggerHandler`, `AccountSelector` |
+| **Interfaces** | PascalCase + Suffix    | `IntegrationStrategyInterface`                             |
+| **Methods**    | camelCase (Verb-based) | `createOrder()`, `validateInput()`, `syncToSAP()`          |
+| **Variables**  | camelCase              | `accountList`, `hasErrors`, `retryCount`                   |
+| **Constants**  | ALL_CAPS (Underscore)  | `MAX_RETRY_COUNT`, `SAP_ENDPOINT_NAME`                     |
+| **Triggers**   | PascalCase             | `<ObjectName>Trigger` (e.g., `AccountTrigger`)             |
 
 ### Primitive Variable Prefixes (Optional but Recommended)
 
@@ -1445,465 +1382,6 @@ This includes Future Methods, Queueable Apex, Batch Apex, Scheduled Apex, error 
 
 ---
 
-## Testing Framework
-
-### Test Class Basics
-
-```apex
-@isTest
-public class MyTest {
-
-    @isTest
-    static void testMethod1() {
-        // Test code
-    }
-
-    // Alternative annotation
-    @isTest(SeeAllData=false)  // Isolates test data (default since v24)
-    static void testMethod2() {
-        // Test code
-    }
-}
-
-// Class-level annotation
-@isTest(SeeAllData=false)
-private class MyTest {
-    // All methods have access to test data only
-}
-```
-
-### Test Data Creation
-
-```apex
-@isTest
-private class AccountTest {
-
-    @isTest
-    static void testAccountCreation() {
-        // Create test data
-        Account acc = new Account(
-            Name = 'Test Account',
-            Industry = 'Technology'
-        );
-        insert acc;
-
-        // Query and verify
-        Account result = [SELECT Id, Name, Industry FROM Account WHERE Id = :acc.Id];
-        System.assertEquals('Test Account', result.Name);
-        System.assertEquals('Technology', result.Industry);
-    }
-}
-```
-
-### Test.startTest() and Test.stopTest()
-
-**Critical**: Resets governor limits for the code under test.
-
-```apex
-@isTest
-static void testBulkOperation() {
-    // Setup data (uses test limits)
-    List<Account> accounts = new List<Account>();
-    for(Integer i = 0; i < 200; i++) {
-        accounts.add(new Account(Name = 'Account ' + i));
-    }
-    insert accounts;
-
-    // Start test context (resets limits)
-    Test.startTest();
-
-    // Code under test (has fresh limits)
-    MyClass.processAccounts(accounts);
-
-    // Stop test (synchronous execution completes)
-    Test.stopTest();
-
-    // Verify results
-    List<Account> results = [SELECT Id, Industry FROM Account];
-    System.assertEquals(200, results.size());
-}
-```
-
-**Important behaviors**:
-
-- Resets governor limits between setup and actual test
-- Forces asynchronous code to execute synchronously
-- Max 1 pair per test method
-- Async methods complete before Test.stopTest() returns
-
-### Assertions
-
-```apex
-// Equality
-System.assertEquals(expected, actual);
-System.assertEquals(expected, actual, 'Custom message');
-
-// Inequality
-System.assertNotEquals(expected, actual);
-
-// Boolean conditions
-System.assert(condition);
-System.assert(condition, 'Custom message');
-```
-
-### Testing Exceptions
-
-```apex
-@isTest
-static void testException() {
-    try {
-        Test.startTest();
-        MyClass.methodThatThrows();
-        Test.stopTest();
-
-        // Fail if no exception thrown
-        System.assert(false, 'Expected exception was not thrown');
-    } catch(MyCustomException e) {
-        // Expected exception
-        System.assert(true);
-    }
-}
-```
-
-### Mock Callouts
-
-```apex
-// Mock class
-@isTest
-global class MockHttpResponse implements HttpCalloutMock {
-    global HTTPResponse respond(HTTPRequest req) {
-        HttpResponse res = new HttpResponse();
-        res.setHeader('Content-Type', 'application/json');
-        res.setBody('{"status":"success"}');
-        res.setStatusCode(200);
-        return res;
-    }
-}
-
-// Test method
-@isTest
-static void testCallout() {
-    // Set mock
-    Test.setMock(HttpCalloutMock.class, new MockHttpResponse());
-
-    Test.startTest();
-    // Call method that makes callout
-    MyClass.makeCallout();
-    Test.stopTest();
-
-    // Verify results
-}
-```
-
-### Testing Batch Apex
-
-```apex
-@isTest
-static void testBatch() {
-    // Setup data
-    List<Account> accounts = new List<Account>();
-    for(Integer i = 0; i < 200; i++) {
-        accounts.add(new Account(Name = 'Test ' + i));
-    }
-    insert accounts;
-
-    Test.startTest();
-    // Execute batch (runs synchronously in test)
-    BatchExample batch = new BatchExample();
-    Id batchId = Database.executeBatch(batch);
-    Test.stopTest();
-
-    // Verify results
-    List<Account> results = [SELECT Id, Industry FROM Account];
-    System.assertEquals(200, results.size());
-    for(Account acc : results) {
-        System.assertEquals('Technology', acc.Industry);
-    }
-}
-```
-
-### Test Data Factory
-
-```apex
-@isTest
-public class TestDataFactory {
-
-    public static Account createAccount(String name) {
-        return new Account(
-            Name = name,
-            Industry = 'Technology'
-        );
-    }
-
-    public static List<Account> createAccounts(Integer count) {
-        List<Account> accounts = new List<Account>();
-        for(Integer i = 0; i < count; i++) {
-            accounts.add(createAccount('Test Account ' + i));
-        }
-        return accounts;
-    }
-}
-
-// Usage in tests
-@isTest
-static void testSomething() {
-    List<Account> accounts = TestDataFactory.createAccounts(10);
-    insert accounts;
-    // Test code
-}
-```
-
-### Code Coverage Requirements
-
-- **75% overall coverage** required for production deployment
-- **Target 90%+ per class** for best practices
-- **1% per-class minimum** enforced by Salesforce
-- Every trigger must have some coverage
-- Test methods themselves don't count toward coverage
-- @isTest methods and classes don't count toward coverage
-
-```apex
-// Check coverage
-ApexCodeCoverage[] coverage = [
-    SELECT ApexClassOrTrigger.Name, NumLinesCovered, NumLinesUncovered
-    FROM ApexCodeCoverage
-    WHERE ApexClassOrTrigger.Name = 'MyClass'
-];
-```
-
-### Test Data Setup Standards
-
-Isolate test data to ensure tests are independent and robust.
-
-**Key Principles:**
-
-- **✅ Isolation**: All test methods must create their own test data or use a shared Test Data Factory
-- **✅ Independence**: Never rely on existing org data (profiles, accounts, opportunities) in tests
-- **✅ Structure**: Use clear Given–When–Then comment structure to delimit setup, execution, and verification
-- **✅ Efficiency**: Avoid creating unnecessary data—only create what the specific scenario needs
-- **✅ Reusability**: Use Test Data Factory classes for common data setup
-
-**Example: Test Data Setup with Given-When-Then**
-
-```apex
-@isTest
-private class OrderService_Test {
-    @isTest
-    static void testCreateOrdersForAccounts_Positive() {
-        // GIVEN – Test data setup
-        Account acc = new Account(Name = 'Test Account', Industry = 'Technology');
-        insert acc;
-        List<Id> listAccountIds = new List<Id>{ acc.Id };
-
-        // WHEN – Call method under test
-        Test.startTest();
-        List<Order__c> listOrders = OrderService.createOrdersForAccounts(listAccountIds);
-        Test.stopTest();
-
-        // THEN – Verify results
-        System.assertEquals(1, listOrders.size(), 'One order should be created.');
-        System.assertEquals(acc.Id, listOrders[0].Account__c, 'Order linked to correct Account.');
-    }
-}
-```
-
-### Test Data Factory Pattern
-
-Use a dedicated class to centralize test data creation. This reduces code duplication and simplifies maintenance when required fields change.
-
-**Structure:**
-
-- Create a separate class annotated with `@isTest`
-- Provide small, focused factory methods per object
-- No asserts in factory methods—they strictly create and return data
-- Use naming conventions with prefixes (optional): `listAccounts`, `intCount`
-
-**Example: Test Data Factory Class**
-
-```apex
-@isTest
-public class TestDataFactory {
-
-    /**
-     * Create a single Account with given name
-     */
-    public static Account createAccount(String name) {
-        Account acc = new Account(
-            Name = name,
-            Industry = 'Technology',
-            Type = 'Customer'
-        );
-        insert acc;
-        return acc;
-    }
-
-    /**
-     * Create multiple Accounts in bulk
-     */
-    public static List<Account> createAccounts(Integer intCount) {
-        List<Account> listAcc = new List<Account>();
-        for (Integer intIndex = 0; intIndex < intCount; intIndex++) {
-            listAcc.add(new Account(
-                Name = 'Test Acc ' + intIndex,
-                Industry = 'Technology'
-            ));
-        }
-        insert listAcc;
-        return listAcc;
-    }
-
-    /**
-     * Create an Opportunity linked to an Account
-     */
-    public static Opportunity createOpportunity(Account acc, Decimal decAmount) {
-        Opportunity opp = new Opportunity(
-            Name = 'Test Opp',
-            StageName = 'Prospecting',
-            CloseDate = System.today().addDays(30),
-            AccountId = acc.Id,
-            Amount = decAmount
-        );
-        insert opp;
-        return opp;
-    }
-
-    /**
-     * Create multiple Opportunities for an Account
-     */
-    public static List<Opportunity> createOpportunities(Account acc, Integer intCount, Decimal decAmount) {
-        List<Opportunity> listOpp = new List<Opportunity>();
-        for (Integer intIndex = 0; intIndex < intCount; intIndex++) {
-            listOpp.add(new Opportunity(
-                Name = 'Test Opp ' + intIndex,
-                StageName = 'Prospecting',
-                CloseDate = System.today().addDays(30),
-                AccountId = acc.Id,
-                Amount = decAmount
-            ));
-        }
-        insert listOpp;
-        return listOpp;
-    }
-}
-```
-
-**Example: Using the Factory in a Test**
-
-```apex
-@isTest
-private class OpportunityService_Test {
-    @isTest
-    static void testCalculateCommission_Positive() {
-        // GIVEN
-        Account acc = TestDataFactory.createAccount('Commission Acc');
-        Opportunity opp = TestDataFactory.createOpportunity(acc, 10000);
-
-        // WHEN
-        Test.startTest();
-        Decimal decCommission = OpportunityService.calculateCommission(opp.Id);
-        Test.stopTest();
-
-        // THEN
-        System.assertEquals(1000, decCommission, '10% commission expected.');
-    }
-}
-```
-
-### Per-Method Test Strategy (Positive & Negative)
-
-Every public method in a Service or Handler class requires comprehensive testing coverage, not just "Happy Path" testing.
-
-- **Positive Test:** Verifies that the method works correctly with valid data.
-- **Negative Test:** Verifies that the method handles invalid data, null inputs, or boundary limits gracefully (including Exception handling).
-- **Naming:** Name methods clearly reflect the scenario (e.g., `testMethodName_Positive`, `testMethodName_Negative_NullInput`).
-- **Bulk Testing:** Ensure logic holds up to 200 records.
-
-**Example: Service Class Logic**
-
-```apex
-public with sharing class PaymentService {
-    public static Decimal calculateTax(Decimal decAmount) {
-        if (decAmount == null || decAmount < 0) {
-            throw new PaymentException('Amount must be positive.');
-        }
-        return decAmount * 0.18;
-    }
-
-    public static Boolean validatePaymentLimit(Decimal decAmount, Decimal decLimit) {
-        return decAmount <= decLimit;
-    }
-
-    public class PaymentException extends Exception {}
-}
-```
-
-**Example: Positive & Negative Tests**
-
-```apex
-@isTest
-private class PaymentService_Test {
-
-    // Positive test case
-    @isTest
-    static void testCalculateTax_Positive() {
-        // GIVEN
-        Decimal decAmount = 100;
-
-        // WHEN
-        Decimal decTax = PaymentService.calculateTax(decAmount);
-
-        // THEN
-        System.assertEquals(18, decTax, '18% tax expected.');
-    }
-
-    @isTest
-    static void testCalculateTax_Negative_AmountNullOrNegative() {
-        // GIVEN
-        Decimal decAmount = -10;
-
-        // WHEN
-        try {
-            Decimal decTax = PaymentService.calculateTax(decAmount);
-            System.assert(false, 'Exception should have been thrown.');
-        } catch (PaymentService.PaymentException ex) {
-            // THEN
-            System.assert(ex.getMessage().contains('Amount must be positive.'),
-                'Expected positive amount error.');
-        }
-    }
-
-    // Positive test case
-    @isTest
-    static void testValidatePaymentLimit_Positive() {
-        // GIVEN
-        Decimal decAmount = 90;
-        Decimal decLimit = 100;
-
-        // WHEN
-        Boolean isAllowed = PaymentService.validatePaymentLimit(decAmount, decLimit);
-
-        // THEN
-        System.assertEquals(true, isAllowed, 'Payment should be within limit.');
-    }
-
-    // Negative test case - exceeds limit
-    @isTest
-    static void testValidatePaymentLimit_Negative_ExceedsLimit() {
-        // GIVEN
-        Decimal decAmount = 150;
-        Decimal decLimit = 100;
-
-        // WHEN
-        Boolean isAllowed = PaymentService.validatePaymentLimit(decAmount, decLimit);
-
-        // THEN
-        System.assertEquals(false, isAllowed, 'Payment should exceed limit and be rejected.');
-    }
-}
-```
-
----
-
 ## Security & Sharing
 
 ### Sharing Modes
@@ -2317,10 +1795,7 @@ HttpResponse res = http.send(req);
 Limits.getQueries();
 Limits.getDmlStatements();
 
-// Test methods
-Test.startTest();
-Test.stopTest();
-Test.setMock(HttpCalloutMock.class, mockInstance);
+
 
 // JSON handling
 String jsonString = JSON.serialize(obj);
@@ -2735,45 +2210,7 @@ if(!isValid) {
 }
 ```
 
-### 6. Testing Best Practices
-
-```apex
-// ✅ Test bulk operations
-@isTest
-static void testBulk() {
-    List<Account> accounts = new List<Account>();
-    for(Integer i = 0; i < 200; i++) {
-        accounts.add(new Account(Name = 'Test ' + i));
-    }
-
-    Test.startTest();
-    insert accounts;
-    Test.stopTest();
-
-    System.assertEquals(200, [SELECT COUNT() FROM Account]);
-}
-
-// ✅ Test both positive and negative scenarios
-@isTest
-static void testPositive() {
-    // Valid data
-}
-
-@isTest
-static void testNegative() {
-    try {
-        // Invalid data
-        System.assert(false, 'Should have thrown exception');
-    } catch(Exception e) {
-        System.assert(true);
-    }
-}
-
-// ✅ Use test data factory
-List<Account> accounts = TestDataFactory.createAccounts(200);
-```
-
-### 7. Code Organization
+### 6. Code Organization
 
 ```apex
 // ✅ Use helper classes for shared logic
@@ -2797,7 +2234,7 @@ public class Constants {
 }
 ```
 
-### 8. Performance Optimization
+### 7. Performance Optimization
 
 ```apex
 // ✅ Use Maps for lookups
