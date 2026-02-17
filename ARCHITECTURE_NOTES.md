@@ -470,10 +470,6 @@ Task.attemptApiRequest()                    ← Task.ts:3988
 
 ## 7. Identified Interception Points (Mapping Only)
 
-> [!NOTE]
-> This section identifies potential middleware boundaries discovered during Phase 0 system mapping.
-> No implementation decisions are made here. Detailed hook design and enforcement logic will be addressed in **Phase 1**.
-
 During system mapping, the following interception points were identified:
 
 - **`BaseTool.handle()`** — single funnel for all native tool executions (`BaseTool.ts`, lines 101–161). Fires after the LLM has chosen a tool and parameters, but before any side effects occur.
