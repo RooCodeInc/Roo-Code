@@ -10,6 +10,210 @@ This document maps the extension "nervous system" for:
 - where `execute_command` and `write_to_file` are handled,
 - where the system prompt is built.
 
+## 0. Single-Page Agent Architecture (Phase 0)
+
+```mermaid
+flowchart LR
+    U["User"] --> WV["Webview UI"]
+    WV --> WMH["webviewMessageHandler"]
+    WMH --> CP["ClineProvider.createTask(...)"]
+    CP --> TK["Task Runtime"]
+    TK --> SP["Task.getSystemPrompt() / SYSTEM_PROMPT(...)"]
+    TK --> TB["buildNativeToolsArrayWithRestrictions(...)"]
+    TK --> API["api.createMessage(...)"]
+    API --> NTP["NativeToolCallParser"]
+    NTP --> PAM["presentAssistantMessage(...)"]
+    PAM --> HE["HookEngine preToolUse / postToolUse"]
+    HE --> TOOLS["Tool Classes (write/exec/read/etc.)"]
+    TOOLS --> EXT["Workspace FS / Terminal / MCP"]
+    HE --> ORCH[".orchestration sidecar files"]
+```
+
+Runtime planes:
+
+- UI plane: Webview rendering and event emission only.
+- Logic plane: Extension Host orchestration, tool policy, API/MCP wiring.
+- Execution plane: `Task` loop, stream parsing, centralized tool dispatch.
+- Persistence plane: task history + sidecar orchestration files.
+
+Key control points:
+
+1. Activation and provider bootstrap:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/extension.ts:120`
+    - `/Users/gersumasfaw/Roo-Code-10x/src/extension.ts:195`
+2. Webview message boundary:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/webview/webviewMessageHandler.ts:570`
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/webview/ClineProvider.ts:2914`
+3. Task loop and API call:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/task/Task.ts:2531`
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/task/Task.ts:4008`
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/task/Task.ts:4299`
+4. Tool dispatch boundary:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/assistant-message/presentAssistantMessage.ts:63`
+5. Hook middleware boundary:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/hooks/HookEngine.ts:73`
+6. Prompt builder:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/task/Task.ts:3765`
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/prompts/system.ts:112`
+
+### Hook Lifecycle (Focused)
+
+```mermaid
+sequenceDiagram
+    participant Model
+    participant Parser as NativeToolCallParser
+    participant Dispatch as presentAssistantMessage
+    participant Hook as HookEngine
+    participant Tool as ToolClass
+    participant Sidecar as .orchestration/*
+
+    Model->>Parser: stream tool call
+    Parser->>Dispatch: ToolUse block
+    Dispatch->>Hook: preToolUse(task, block)
+    Hook-->>Dispatch: allow/deny + context
+
+    alt denied
+        Dispatch-->>Model: tool_result error
+    else allowed
+        Dispatch->>Tool: handle(...)
+        Tool-->>Dispatch: result / failure
+        Dispatch->>Hook: postToolUse(task, block, context, executionSucceeded)
+        Hook->>Sidecar: update active_intents, trace, intent_map, AGENT
+    end
+```
+
+### Hook System Diagrams And Schemas
+
+#### A. Middleware Boundary Diagram
+
+```mermaid
+flowchart TB
+    UI["Webview UI (Restricted)"] -->|postMessage| HOST["Extension Host (Logic)"]
+    HOST --> DISPATCH["Tool Dispatch: presentAssistantMessage(...)"]
+    DISPATCH --> PRE["HookEngine.preToolUse(...)"]
+    PRE -->|allow| TOOL["Tool Implementation"]
+    PRE -->|deny| ERR["tool_result error"]
+    TOOL --> POST["HookEngine.postToolUse(...)"]
+    POST --> SIDECAR[".orchestration sidecar"]
+```
+
+#### B. Pre-Hook Decision Flow
+
+```mermaid
+flowchart TD
+    S["Incoming ToolUse"] --> A{"Tool is mutating?"}
+    A -->|No| OK["Allow execution"]
+    A -->|Yes| B{"activeIntentId set?"}
+    B -->|No| DENY1["Deny: must call select_active_intent first"]
+    B -->|Yes| C{"Intent exists in active_intents.yaml?"}
+    C -->|No| DENY2["Deny: active intent missing"]
+    C -->|Yes| D{"Touched paths inside owned_scope?"}
+    D -->|No| DENY3["Deny + shared brain scope violation entry"]
+    D -->|Yes| OK
+```
+
+#### C. Two-Stage Turn State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Request
+    Request --> Handshake: "Model calls select_active_intent(intent_id)"
+    Handshake --> Action: "Pre-hook injects/validates intent context"
+    Action --> [*]: "Post-hook logs traces and evolution"
+    Action --> Handshake: "If intent changes, re-checkout"
+```
+
+#### D. Canonical `active_intents.yaml` Schema
+
+```yaml
+active_intents:
+    - id: "INT-001"
+      name: "JWT Authentication Migration"
+      status: "IN_PROGRESS"
+      owned_scope:
+          - "src/auth/**"
+          - "src/middleware/jwt.ts"
+      constraints:
+          - "Must not use external auth providers"
+          - "Must maintain backward compatibility with Basic Auth"
+      acceptance_criteria:
+          - "Unit tests in tests/auth/ pass"
+      related_files:
+          - "src/auth/middleware.ts"
+      recent_history:
+          - "PRE_HOOK write_to_file"
+```
+
+Compatibility note:
+
+- Loader currently accepts both `active_intents` and legacy `intents`.
+- Legacy fields (`intent_id`, `title`) are normalized to (`id`, `name`) internally.
+
+#### E. `agent_trace.jsonl` Record Schema (per line)
+
+```json
+{
+	"id": "uuid-v4",
+	"timestamp": "2026-02-16T12:00:00Z",
+	"vcs": { "revision_id": "git_sha_hash" },
+	"files": [
+		{
+			"relative_path": "src/auth/middleware.ts",
+			"conversations": [
+				{
+					"url": "task_or_session_id",
+					"contributor": {
+						"entity_type": "AI",
+						"model_identifier": "model-id"
+					},
+					"ranges": [
+						{
+							"start_line": 1,
+							"end_line": 45,
+							"content_hash": "sha256:..."
+						}
+					],
+					"related": [
+						{
+							"type": "specification",
+							"value": "INT-001"
+						}
+					]
+				}
+			]
+		}
+	]
+}
+```
+
+Implementation note:
+
+- Current implementation computes `content_hash` from entire touched file content (SHA-256) and records a single range per file.
+
+#### F. Hook Contract Schemas
+
+Pre-hook result (runtime contract):
+
+```json
+{
+	"allowExecution": true,
+	"errorMessage": "optional string",
+	"context": {
+		"toolName": "write_to_file",
+		"isMutatingTool": true,
+		"intentId": "INT-001",
+		"touchedPaths": ["src/auth/middleware.ts"],
+		"hadToolFailureBefore": false
+	}
+}
+```
+
+Post-hook side effects:
+
+1. Append recent history entry to selected intent.
+2. For mutating success: append `agent_trace.jsonl` and `intent_map.md`.
+3. For failures/scope issues/completion evolution: append `AGENT.md`.
+
 ## 1. Fork & Run Status
 
 This workspace already contains the Roo Code source and is buildable.
@@ -221,18 +425,17 @@ Hook Engine (middleware boundary for all tools):
 
 ### 8.2 `.orchestration/` Sidecar Contract (Required)
 
-Add a machine-managed directory under `task.cwd`:
+Implemented machine-managed sidecar files under `task.cwd` (plus shared brain at workspace root):
 
 - `.orchestration/active_intents.yaml`
 - `.orchestration/agent_trace.jsonl`
 - `.orchestration/intent_map.md`
-- `CLAUDE.md` or `AGENT.md` (shared brain)
+- `AGENT.md`
 
-Recommended implementation location:
+Implementation location:
 
-- new host-side service module, for example:
-    - `src/core/orchestration/OrchestrationStore.ts`
-    - `src/core/orchestration/IntentTraceService.ts`
+- `/Users/gersumasfaw/Roo-Code-10x/src/hooks/OrchestrationStore.ts`
+- `/Users/gersumasfaw/Roo-Code-10x/src/hooks/IntentContextService.ts`
 
 Reason:
 
@@ -250,7 +453,12 @@ State 1: Request
 State 2: Reasoning Intercept (Handshake)
 
 - Agent must call mandatory tool: `select_active_intent(intent_id)`.
-- Pre-hook intercepts this tool call, loads intent constraints/scope/history from `.orchestration`, and returns structured context (for example `<intent_context>...</intent_context>`).
+- Tool and parser are implemented and wired:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/tools/SelectActiveIntentTool.ts:12`
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/assistant-message/NativeToolCallParser.ts:457`
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/assistant-message/presentAssistantMessage.ts:802`
+- Pre-hook runs before all tools and updates intent lifecycle for checkout:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/hooks/HookEngine.ts:71`
 - Execution remains paused naturally because tool execution is awaited in dispatch path.
 
 State 3: Contextualized Action
@@ -258,33 +466,33 @@ State 3: Contextualized Action
 - Agent continues with mutating tools (`write_to_file`, alias `write_file`).
 - Alias evidence:
     - `/Users/gersumasfaw/Roo-Code-10x/src/shared/tools.ts:337`
-- Post-hook computes `content_hash` and appends trace record linked to selected `intent_id`.
+- Post-hook computes SHA-256 `content_hash`, appends trace JSONL, updates intent map/shared brain:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/hooks/HookEngine.ts:153`
+    - `/Users/gersumasfaw/Roo-Code-10x/src/hooks/OrchestrationStore.ts:226`
 
-## 9. Required Gaps to Implement (from your spec)
+## 9. Phase 1 Status (Current)
 
-These items are not present yet and must be added:
+Implemented:
 
-1. New mandatory tool: `select_active_intent(intent_id: string)`.
+1. `select_active_intent(intent_id)` tool end-to-end.
+2. Hook middleware boundary (`PreToolUse`/`PostToolUse`) around central tool dispatch.
+3. Intent-aware pre-write enforcement:
+    - blocks mutating tools when no active intent is selected,
+    - blocks writes outside workspace boundary,
+    - enforces `owned_scope` patterns.
+4. Sidecar model support and lifecycle updates:
+    - active intents,
+    - append-only trace ledger,
+    - intent map updates,
+    - shared brain append.
+5. Prompt-level instruction for two-stage handshake:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/prompts/system.ts:27`
 
-- Add tool schema in native tools.
-- Add typed args in `NativeToolArgs`.
-- Add tool executor class.
-- Add dispatch case in `presentAssistantMessage`.
+Remaining hardening work:
 
-2. Hook middleware abstraction.
-
-- Create explicit pre/post hook pipeline around tool execution (not scattered inside each tool class).
-- Keep all HITL/scope policy at middleware layer.
-
-3. Intent-aware pre-write enforcement.
-
-- Block mutating tools unless active intent is set and valid.
-- Enforce `owned_scope` for target file writes.
-
-4. Trace ledger on post-write.
-
-- Compute hash and append to `.orchestration/agent_trace.jsonl`.
-- Include `intent_id` mapping in trace `related`.
+1. Improve range-level hashing accuracy (currently whole-file hash range per touched path).
+2. Add tests for hook policies and trace output.
+3. Optional storage backend upgrade (SQLite/Zvec) if scale/perf requires it.
 
 ## 10. Concrete Injection Points for This Repo
 
@@ -308,8 +516,8 @@ These items are not present yet and must be added:
 
 ## 11. Updated Phase-0 Outcome
 
-Phase 0 now includes:
+Phase 0 mapping remains valid, and Phase 1 foundation is now implemented:
 
 - exact current architecture mapping,
-- exact tool and prompt construction points,
-- exact plan to implement your required hook engine, `.orchestration` storage, and two-stage intent handshake in Phase 1.
+- tool and prompt construction points,
+- active hook middleware, sidecar models, and intent handshake enforcement in the extension host.

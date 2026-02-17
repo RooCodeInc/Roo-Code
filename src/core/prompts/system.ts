@@ -25,6 +25,13 @@ import {
 	getSkillsSection,
 } from "./sections"
 
+function getIntentHandshakeSection(): string {
+	return `<intent_handshake>
+Before using any mutating tool (write_to_file, apply_diff, edit, search_and_replace, search_replace, edit_file, apply_patch, generate_image), you must call select_active_intent with an intent id.
+Do not call mutating tools until select_active_intent has succeeded for the current turn.
+</intent_handshake>`
+}
+
 // Helper function to get prompt component, filtering out empty objects
 export function getPromptComponent(
 	customModePrompts: CustomModePrompts | undefined,
@@ -87,6 +94,8 @@ async function generatePrompt(
 ${markdownFormattingSection()}
 
 ${getSharedToolUseSection()}${toolsCatalog}
+
+${getIntentHandshakeSection()}
 
 	${getToolUseGuidelinesSection()}
 

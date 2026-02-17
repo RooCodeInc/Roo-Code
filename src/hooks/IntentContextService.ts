@@ -1,11 +1,14 @@
-import { type IntentRecord, OrchestrationStore } from "./OrchestrationStore"
+import { type ActiveIntentRecord, OrchestrationStore } from "./OrchestrationStore"
 
 export interface SelectedIntentContext {
-	intent_id: string
-	title?: string
+	id: string
+	name?: string
+	status?: string
+	owned_scope: string[]
 	constraints: string[]
-	related_files: string[]
+	acceptance_criteria: string[]
 	recent_history: string[]
+	related_files: string[]
 }
 
 export interface SelectIntentResult {
@@ -30,10 +33,10 @@ export class IntentContextService {
 	constructor(private readonly store: OrchestrationStore) {}
 
 	async selectIntent(intentId: string): Promise<SelectIntentResult> {
-		const intents = await this.store.loadIntents()
 		const normalizedIntentId = intentId.trim()
-		const selected = intents.find((intent) => intent.intent_id === normalizedIntentId)
-		const availableIntentIds = intents.map((intent) => intent.intent_id)
+		const intents = await this.store.loadIntents()
+		const selected = intents.find((intent) => intent.id === normalizedIntentId)
+		const availableIntentIds = intents.map((intent) => intent.id)
 
 		if (!selected) {
 			const available = availableIntentIds.length > 0 ? availableIntentIds.join(", ") : "(none)"
@@ -53,21 +56,35 @@ export class IntentContextService {
 		}
 	}
 
-	private toContext(intent: IntentRecord): SelectedIntentContext {
+	async markIntentInProgress(intentId: string): Promise<void> {
+		await this.store.setIntentStatus(intentId, "IN_PROGRESS")
+	}
+
+	async markIntentCompleted(intentId: string): Promise<void> {
+		await this.store.setIntentStatus(intentId, "COMPLETED")
+	}
+
+	private toContext(intent: ActiveIntentRecord): SelectedIntentContext {
 		return {
-			intent_id: intent.intent_id,
-			title: typeof intent.title === "string" && intent.title.trim().length > 0 ? intent.title : undefined,
+			id: intent.id,
+			name: typeof intent.name === "string" && intent.name.trim().length > 0 ? intent.name : undefined,
+			status: typeof intent.status === "string" ? intent.status : undefined,
+			owned_scope: normalizeStringArray(intent.owned_scope),
 			constraints: normalizeStringArray(intent.constraints),
-			related_files: normalizeStringArray(intent.related_files),
+			acceptance_criteria: normalizeStringArray(intent.acceptance_criteria),
 			recent_history: normalizeStringArray(intent.recent_history),
+			related_files: normalizeStringArray(intent.related_files),
 		}
 	}
 
 	private formatContextMessage(context: SelectedIntentContext): string {
 		const payload = {
-			intent_id: context.intent_id,
-			title: context.title ?? null,
+			id: context.id,
+			name: context.name ?? null,
+			status: context.status ?? null,
+			owned_scope: context.owned_scope,
 			constraints: context.constraints,
+			acceptance_criteria: context.acceptance_criteria,
 			related_files: context.related_files,
 			recent_history: context.recent_history,
 		}

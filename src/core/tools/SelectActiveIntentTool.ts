@@ -2,8 +2,8 @@ import { Task } from "../task/Task"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
-import { OrchestrationStore } from "../orchestration/OrchestrationStore"
-import { IntentContextService } from "../orchestration/IntentContextService"
+import { OrchestrationStore } from "../../hooks/OrchestrationStore"
+import { IntentContextService } from "../../hooks/IntentContextService"
 
 interface SelectActiveIntentParams {
 	intent_id: string
@@ -37,7 +37,8 @@ export class SelectActiveIntentTool extends BaseTool<"select_active_intent"> {
 				return
 			}
 
-			task.setActiveIntentId(result.context.intent_id)
+			task.setActiveIntentId(result.context.id)
+			await intentContextService.markIntentInProgress(result.context.id)
 			task.consecutiveMistakeCount = 0
 			pushToolResult(result.message)
 		} catch (error) {
