@@ -3633,8 +3633,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// or tool_use content blocks from API which we should assume is
 					// an error.
 
-					// Increment consecutive no-assistant-messages counter
-					this.consecutiveNoAssistantMessagesCount++
+					// When the model returned reasoning/thinking content but no
+					// actionable text or tool calls (common with gemini-3-pro-preview),
+					// treat this as a transient issue and don't count it against the
+					// consecutive failure threshold. The model clearly attempted to
+					// respond but failed to produce actionable output, so we give it
+					// a free retry without triggering the error UI.
+					const hasReasoningOnly = reasoningMessage.length > 0
+
+					// Only increment the failure counter for truly empty responses
+					// (no reasoning either). Reasoning-only responses get a free retry.
+					if (!hasReasoningOnly) {
+						this.consecutiveNoAssistantMessagesCount++
+					}
 
 					// Only show error and count toward mistake limit after 2 consecutive failures
 					// This provides a "grace retry" - first failure retries silently
@@ -3657,12 +3668,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					// Check if we should auto-retry or prompt the user
 					// Reuse the state variable from above
-					if (state?.autoApprovalEnabled) {
+					// For reasoning-only responses, always auto-retry silently since the
+					// model clearly attempted to respond (produced thinking content) but
+					// just didn't generate actionable output. This avoids bothering the
+					// user with retry prompts for transient Gemini 3 Pro behavior.
+					if (state?.autoApprovalEnabled || hasReasoningOnly) {
 						// Auto-retry with backoff - don't persist failure message when retrying
 						await this.backoffAndAnnounce(
 							currentItem.retryAttempt ?? 0,
 							new Error(
-								"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
+								hasReasoningOnly
+									? "The model produced reasoning/thinking content but no actionable output. Retrying automatically."
+									: "Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
 							),
 						)
 

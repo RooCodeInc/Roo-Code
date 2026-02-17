@@ -305,6 +305,16 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				this.lastResponseId = finalResponse.responseId
 			}
 
+			// Surface non-STOP finish reasons when the model produced no actionable content.
+			// This covers cases like SAFETY, RECITATION, MAX_TOKENS where the API
+			// silently returns nothing. Throwing here gives Task.ts retry logic a
+			// meaningful error message instead of the generic "no assistant messages".
+			if (!hasContent && finishReason && finishReason !== "STOP") {
+				throw new Error(
+					`Gemini response blocked or incomplete (finishReason: ${finishReason}). No content was returned.`,
+				)
+			}
+
 			if (pendingGroundingMetadata) {
 				const sources = this.extractGroundingSources(pendingGroundingMetadata)
 				if (sources.length > 0) {
