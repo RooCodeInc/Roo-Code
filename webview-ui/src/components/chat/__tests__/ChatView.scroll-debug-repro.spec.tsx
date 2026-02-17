@@ -314,36 +314,49 @@ describe("ChatView scroll behavior regression coverage", () => {
 		harness.emitAtBottom = () => {}
 	})
 
-	it("rehydration converges to bottom", async () => {
-		await hydrate(6)
-		await waitForCalls(6, 2_000)
-		await waitForCallsSettled()
-		expect(document.querySelector(".codicon-chevron-down")).toBeNull()
-	})
-
-	it("transient settle-time not-at-bottom signals do not disable sticky follow", async () => {
-		await hydrate(8)
+	it("rehydration uses bounded bottom pinning", async () => {
+		await hydrate(2)
 		await waitForCalls(2, 1_200)
+		await waitForCallsSettled()
+		expect(harness.scrollCalls).toBe(2)
+		expect(resolveFollowOutput(false)).toBe("auto")
+		expect(document.querySelector(".codicon-chevron-down")).toBeNull()
+	})
+
+	it("transient hydration-time not-at-bottom signals do not disable sticky follow", async () => {
+		await hydrate(2)
+		await waitForCalls(1, 1_200)
 		expect(resolveFollowOutput(false)).toBe("auto")
 		expect(document.querySelector(".codicon-chevron-down")).toBeNull()
 
-		await waitForCalls(8, 2_000)
+		await act(async () => {
+			harness.emitAtBottom(false)
+		})
+
+		expect(resolveFollowOutput(false)).toBe("auto")
+		expect(document.querySelector(".codicon-chevron-down")).toBeNull()
+
+		await waitForCalls(2, 1_200)
 		await waitForCallsSettled()
+		expect(harness.scrollCalls).toBe(2)
 		expect(resolveFollowOutput(false)).toBe("auto")
 	})
 
-	it("user escape hatch during settle stops forced follow", async () => {
+	it("user escape hatch during hydration prevents repinning", async () => {
 		await hydrate(Number.POSITIVE_INFINITY)
-		await waitForCalls(3, 1_200)
+		await waitForCalls(1, 1_200)
 
 		await act(async () => {
 			fireEvent.keyDown(window, { key: "PageUp" })
 		})
 
 		expect(resolveFollowOutput(false)).toBe(false)
-		const callsAfterEscape = harness.scrollCalls
-		await sleep(260)
-		expect(harness.scrollCalls).toBe(callsAfterEscape)
+
+		await act(async () => {
+			harness.emitAtBottom(true)
+		})
+
+		expect(resolveFollowOutput(false)).toBe(false)
 
 		await waitFor(() => expect(document.querySelector(".codicon-chevron-down")).toBeTruthy(), {
 			timeout: 1_200,
@@ -351,8 +364,8 @@ describe("ChatView scroll behavior regression coverage", () => {
 	})
 
 	it("non-wheel upward intent disengages sticky follow", async () => {
-		await hydrate(4)
-		await waitForCalls(4)
+		await hydrate(2)
+		await waitForCalls(2)
 		await waitForCallsSettled()
 		expect(resolveFollowOutput(false)).toBe("auto")
 
@@ -370,8 +383,8 @@ describe("ChatView scroll behavior regression coverage", () => {
 	})
 
 	it("nested scroller scroll events do not falsely disengage sticky follow", async () => {
-		await hydrate(4)
-		await waitForCalls(4)
+		await hydrate(2)
+		await waitForCalls(2)
 		await waitForCallsSettled()
 		expect(resolveFollowOutput(false)).toBe("auto")
 
@@ -395,8 +408,8 @@ describe("ChatView scroll behavior regression coverage", () => {
 	})
 
 	it("wheel-up intent disengages sticky follow", async () => {
-		await hydrate(4)
-		await waitForCalls(4)
+		await hydrate(2)
+		await waitForCalls(2)
 		await waitForCallsSettled()
 		expect(resolveFollowOutput(false)).toBe("auto")
 
@@ -412,15 +425,9 @@ describe("ChatView scroll behavior regression coverage", () => {
 		})
 	})
 
-	it("late settle completion cannot override user escape hatch", async () => {
+	it("hydration completion cannot override user escape hatch", async () => {
 		await hydrate(Number.POSITIVE_INFINITY)
-		await waitForCalls(2, 1_200)
-
-		await act(async () => {
-			harness.emitAtBottom(true)
-		})
-
-		expect(resolveFollowOutput(false)).toBe("auto")
+		await waitForCalls(1, 1_200)
 
 		await act(async () => {
 			fireEvent.keyDown(window, { key: "PageUp" })
@@ -428,7 +435,7 @@ describe("ChatView scroll behavior regression coverage", () => {
 
 		expect(resolveFollowOutput(false)).toBe(false)
 
-		await sleep(120)
+		await sleep(700)
 
 		expect(resolveFollowOutput(false)).toBe(false)
 		await waitFor(() => expect(document.querySelector(".codicon-chevron-down")).toBeTruthy(), {
@@ -437,8 +444,8 @@ describe("ChatView scroll behavior regression coverage", () => {
 	})
 
 	it("scroll-to-bottom CTA re-anchors with one interaction", async () => {
-		await hydrate(4)
-		await waitForCalls(4)
+		await hydrate(2)
+		await waitForCalls(2)
 		await waitForCallsSettled()
 		expect(resolveFollowOutput(false)).toBe("auto")
 
@@ -459,7 +466,7 @@ describe("ChatView scroll behavior regression coverage", () => {
 		})
 
 		expect(resolveFollowOutput(false)).toBe("auto")
-		await waitFor(() => expect(harness.scrollCalls).toBeGreaterThanOrEqual(callsBeforeClick + 2), {
+		await waitFor(() => expect(harness.scrollCalls).toBe(callsBeforeClick + 2), {
 			timeout: 1_200,
 		})
 		await waitFor(() => expect(document.querySelector(".codicon-chevron-down")).toBeNull(), { timeout: 1_200 })

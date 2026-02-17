@@ -1,37 +1,14 @@
 /**
  * useScrollLifecycle
  *
- * Encapsulates the chat scroll lifecycle extracted from ChatView, making the
- * scroll logic testable in isolation and preventing it from growing the
- * component further.
+ * Simplified chat scroll lifecycle with a short, time-boxed hydration window.
  *
- * ## Scroll Phase Model
- *
- * 1. **HYDRATING_PINNED_TO_BOTTOM** – Active during task switch / rehydration.
- *    A settle loop repeatedly calls `scrollToIndex` until Virtuoso confirms
- *    the viewport is at the bottom for a stable run of consecutive frames.
- *    Transient `atBottomStateChange(false)` signals from Virtuoso layout
- *    reflows are suppressed during this phase.
- *
- * 2. **ANCHORED_FOLLOWING** – The user is at the bottom and new content should
- *    be followed automatically. `followOutput` returns `"auto"`.
- *
- * 3. **USER_BROWSING_HISTORY** – The user scrolled away from the bottom (via
- *    wheel, keyboard, pointer drag, or row expansion). `followOutput` returns
- *    `false` and the scroll-to-bottom CTA appears.
- *
- * ## Note on scrollToIndex vs scrollTo
- *
- * This implementation uses `scrollToIndex({ index: "LAST", align: "end" })`
- * rather than `scrollTo({ top: Number.MAX_SAFE_INTEGER })`.
- *
- * PR #6780 removed `scrollToIndex` because it caused scroll jitter. However,
- * that issue was triggered by passing a *numeric* index that could become
- * stale mid-render. The `"LAST"` constant is a Virtuoso built-in that
- * resolves to the current last item at call time, avoiding the stale-index
- * problem. Using `"LAST"` with `align: "end"` provides deterministic
- * bottom-anchoring without the `MAX_SAFE_INTEGER` overshooting that
- * `scrollTo` relied on.
+ * - Task switch enters `HYDRATING_PINNED_TO_BOTTOM`
+ * - We issue one immediate `scrollToIndex("LAST")` and one post-render retry
+ * - During hydration, transient Virtuoso `atBottomStateChange(false)` signals
+ *   are ignored so follow mode does not flicker off
+ * - User escape intent (wheel / keyboard / pointer-upward drag / row expansion)
+ *   moves to `USER_BROWSING_HISTORY` and prevents forced re-pinning
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -39,27 +16,7 @@ import { useEvent } from "react-use"
 import debounce from "debounce"
 import type { VirtuosoHandle } from "react-virtuoso"
 
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-/** Soft deadline: resets on every new mutation observed during settle. */
-const INITIAL_LOAD_SETTLE_TIMEOUT_MS = 2500
-
-/**
- * Hard deadline: absolute upper bound for the settle window.
- *
- * Reduced from the original 10 s to 5 s. If rehydration takes longer than
- * this, there is likely a rendering performance issue worth investigating
- * separately rather than accommodating with a longer timeout.
- */
-const INITIAL_LOAD_SETTLE_HARD_CAP_MS = 5000
-
-/** Number of consecutive "at-bottom + stable tail" frames before we accept convergence. */
-const INITIAL_LOAD_SETTLE_STABLE_FRAME_TARGET = 3
-
-/** Frame-count safety valve derived from the hard cap at ~60 fps. */
-const INITIAL_LOAD_SETTLE_MAX_FRAMES = Math.ceil(INITIAL_LOAD_SETTLE_HARD_CAP_MS / (1000 / 60))
+const HYDRATION_WINDOW_MS = 600
 
 // ---------------------------------------------------------------------------
 // Types
@@ -95,7 +52,6 @@ export interface UseScrollLifecycleOptions {
 	isStreaming: boolean
 	isHidden: boolean
 	hasTask: boolean
-	groupedMessagesLength: number
 }
 
 export interface UseScrollLifecycleReturn {
@@ -122,7 +78,6 @@ export function useScrollLifecycle({
 	isStreaming,
 	isHidden,
 	hasTask,
-	groupedMessagesLength,
 }: UseScrollLifecycleOptions): UseScrollLifecycleReturn {
 	// --- Mounted guard ---
 	const isMountedRef = useRef(true)
@@ -137,20 +92,10 @@ export function useScrollLifecycle({
 	// --- Bottom detection ---
 	const isAtBottomRef = useRef(false)
 
-	// --- Settle lifecycle refs ---
-	const isSettlingRef = useRef(false)
-	const settleTaskTsRef = useRef<number | null>(null)
-	const settleDeadlineMsRef = useRef<number | null>(null)
-	const settleHardDeadlineMsRef = useRef<number | null>(null)
-	const settleAnimationFrameRef = useRef<number | null>(null)
-	const settleStableFramesRef = useRef(0)
-	const settleFrameCountRef = useRef(0)
-	const settleBottomConfirmedRef = useRef(false)
-	const settleMutationVersionRef = useRef(0)
-	const settleObservedMutationVersionRef = useRef(0)
-
-	// --- Mutation tracking ---
-	const groupedMessagesLengthRef = useRef(0)
+	// --- Hydration window ---
+	const isHydratingRef = useRef(false)
+	const hydrationTimeoutRef = useRef<number | null>(null)
+	const hydrationRetryAnimationFrameRef = useRef<number | null>(null)
 
 	// --- Pointer scroll tracking ---
 	const pointerScrollActiveRef = useRef(false)
@@ -172,14 +117,6 @@ export function useScrollLifecycle({
 		setScrollPhase(nextPhase)
 	}, [])
 
-	const beginHydrationPinnedToBottom = useCallback(() => {
-		isAtBottomRef.current = false
-		settleBottomConfirmedRef.current = false
-		settleFrameCountRef.current = 0
-		transitionScrollPhase("HYDRATING_PINNED_TO_BOTTOM")
-		setShowScrollToBottom(false)
-	}, [transitionScrollPhase])
-
 	const enterAnchoredFollowing = useCallback(() => {
 		transitionScrollPhase("ANCHORED_FOLLOWING")
 		setShowScrollToBottom(false)
@@ -187,6 +124,10 @@ export function useScrollLifecycle({
 
 	const enterUserBrowsingHistory = useCallback(
 		(_source: ScrollFollowDisengageSource) => {
+			if (hydrationRetryAnimationFrameRef.current !== null) {
+				cancelAnimationFrame(hydrationRetryAnimationFrameRef.current)
+				hydrationRetryAnimationFrameRef.current = null
+			}
 			transitionScrollPhase("USER_BROWSING_HISTORY")
 			// Always show the scroll-to-bottom CTA when the user explicitly
 			// disengages. If they happen to still be at the physical bottom,
@@ -196,162 +137,12 @@ export function useScrollLifecycle({
 		[transitionScrollPhase],
 	)
 
-	// -----------------------------------------------------------------------
-	// Settle window management
-	// -----------------------------------------------------------------------
-
-	const isSettleWindowOpen = useCallback((ts: number): boolean => {
-		if (scrollPhaseRef.current !== "HYDRATING_PINNED_TO_BOTTOM") {
-			return false
-		}
-		if (settleTaskTsRef.current !== ts) {
-			return false
-		}
-		const nowMs = Date.now()
-		const deadlineMs = settleDeadlineMsRef.current
-		if (deadlineMs === null || nowMs > deadlineMs) {
-			return false
-		}
-		const hardDeadlineMs = settleHardDeadlineMsRef.current
-		return hardDeadlineMs === null || nowMs <= hardDeadlineMs
-	}, [])
-
-	const extendInitialSettleWindow = useCallback((ts: number): boolean => {
-		if (scrollPhaseRef.current !== "HYDRATING_PINNED_TO_BOTTOM") {
-			return false
-		}
-		if (settleTaskTsRef.current !== ts) {
-			return false
-		}
-		const nowMs = Date.now()
-		const hardDeadlineMs = settleHardDeadlineMsRef.current
-		if (hardDeadlineMs !== null && nowMs > hardDeadlineMs) {
-			return false
-		}
-		settleDeadlineMsRef.current = nowMs + INITIAL_LOAD_SETTLE_TIMEOUT_MS
-		if (hardDeadlineMs === null) {
-			settleHardDeadlineMsRef.current = nowMs + INITIAL_LOAD_SETTLE_HARD_CAP_MS
-		}
-		return true
-	}, [])
-
-	// -----------------------------------------------------------------------
-	// Animation frame management
-	// -----------------------------------------------------------------------
-
-	const cancelInitialSettleFrame = useCallback(() => {
-		if (settleAnimationFrameRef.current !== null) {
-			cancelAnimationFrame(settleAnimationFrameRef.current)
-			settleAnimationFrameRef.current = null
-		}
-	}, [])
-
 	const cancelReanchorFrame = useCallback(() => {
 		if (reanchorAnimationFrameRef.current !== null) {
 			cancelAnimationFrame(reanchorAnimationFrameRef.current)
 			reanchorAnimationFrameRef.current = null
 		}
 	}, [])
-
-	// -----------------------------------------------------------------------
-	// Settle completion
-	// -----------------------------------------------------------------------
-
-	const completeInitialSettle = useCallback(
-		(ts: number) => {
-			if (settleTaskTsRef.current !== ts) {
-				return
-			}
-
-			cancelInitialSettleFrame()
-			isSettlingRef.current = false
-
-			if (scrollPhaseRef.current !== "HYDRATING_PINNED_TO_BOTTOM") {
-				return
-			}
-
-			if (isAtBottomRef.current && settleBottomConfirmedRef.current) {
-				enterAnchoredFollowing()
-				return
-			}
-			transitionScrollPhase("USER_BROWSING_HISTORY")
-			setShowScrollToBottom(true)
-		},
-		[cancelInitialSettleFrame, enterAnchoredFollowing, transitionScrollPhase],
-	)
-
-	// -----------------------------------------------------------------------
-	// Settle frame loop
-	// -----------------------------------------------------------------------
-
-	const runInitialSettleFrame = useCallback(
-		(ts: number) => {
-			if (!isMountedRef.current) {
-				return
-			}
-			if (!isSettlingRef.current || settleTaskTsRef.current !== ts) {
-				return
-			}
-
-			settleFrameCountRef.current += 1
-			if (settleFrameCountRef.current > INITIAL_LOAD_SETTLE_MAX_FRAMES) {
-				completeInitialSettle(ts)
-				return
-			}
-
-			if (!isSettleWindowOpen(ts)) {
-				completeInitialSettle(ts)
-				return
-			}
-
-			const mutationVersion = settleMutationVersionRef.current
-			const isTailStable = mutationVersion === settleObservedMutationVersionRef.current
-			settleObservedMutationVersionRef.current = mutationVersion
-
-			if (isAtBottomRef.current && settleBottomConfirmedRef.current && isTailStable) {
-				settleStableFramesRef.current += 1
-			} else {
-				settleStableFramesRef.current = 0
-			}
-
-			virtuosoRef.current?.scrollToIndex({ index: "LAST", align: "end", behavior: "auto" })
-
-			if (settleStableFramesRef.current >= INITIAL_LOAD_SETTLE_STABLE_FRAME_TARGET) {
-				completeInitialSettle(ts)
-				return
-			}
-
-			settleAnimationFrameRef.current = requestAnimationFrame(() => runInitialSettleFrame(ts))
-		},
-		[completeInitialSettle, isSettleWindowOpen, virtuosoRef],
-	)
-
-	// -----------------------------------------------------------------------
-	// Start settle
-	// -----------------------------------------------------------------------
-
-	const startInitialSettle = useCallback(
-		(ts: number) => {
-			if (scrollPhaseRef.current !== "HYDRATING_PINNED_TO_BOTTOM") {
-				return
-			}
-			if (!isSettleWindowOpen(ts)) {
-				return
-			}
-			if (isSettlingRef.current && settleTaskTsRef.current === ts) {
-				return
-			}
-
-			cancelInitialSettleFrame()
-			settleTaskTsRef.current = ts
-			isSettlingRef.current = true
-			settleStableFramesRef.current = 0
-			settleFrameCountRef.current = 0
-			settleObservedMutationVersionRef.current = settleMutationVersionRef.current
-			settleAnimationFrameRef.current = requestAnimationFrame(() => runInitialSettleFrame(ts))
-		},
-		[cancelInitialSettleFrame, isSettleWindowOpen, runInitialSettleFrame],
-	)
 
 	// -----------------------------------------------------------------------
 	// Scroll commands
@@ -375,6 +166,66 @@ export function useScrollLifecycle({
 		})
 	}, [virtuosoRef])
 
+	const clearHydrationRetry = useCallback(() => {
+		if (hydrationRetryAnimationFrameRef.current !== null) {
+			cancelAnimationFrame(hydrationRetryAnimationFrameRef.current)
+			hydrationRetryAnimationFrameRef.current = null
+		}
+	}, [])
+
+	const clearHydrationWindow = useCallback(() => {
+		isHydratingRef.current = false
+		if (hydrationTimeoutRef.current !== null) {
+			window.clearTimeout(hydrationTimeoutRef.current)
+			hydrationTimeoutRef.current = null
+		}
+		clearHydrationRetry()
+	}, [clearHydrationRetry])
+
+	const finishHydrationWindow = useCallback(() => {
+		if (!isMountedRef.current || !isHydratingRef.current) {
+			return
+		}
+
+		if (scrollPhaseRef.current === "HYDRATING_PINNED_TO_BOTTOM") {
+			if (isAtBottomRef.current) {
+				enterAnchoredFollowing()
+			} else {
+				transitionScrollPhase("USER_BROWSING_HISTORY")
+				setShowScrollToBottom(true)
+			}
+		}
+
+		clearHydrationWindow()
+	}, [clearHydrationWindow, enterAnchoredFollowing, transitionScrollPhase])
+
+	const scheduleHydrationRetry = useCallback(() => {
+		clearHydrationRetry()
+		hydrationRetryAnimationFrameRef.current = requestAnimationFrame(() => {
+			hydrationRetryAnimationFrameRef.current = null
+			if (!isMountedRef.current || !isHydratingRef.current) {
+				return
+			}
+			if (scrollPhaseRef.current === "USER_BROWSING_HISTORY") {
+				return
+			}
+			scrollToBottomAuto()
+		})
+	}, [clearHydrationRetry, scrollToBottomAuto])
+
+	const startHydrationWindow = useCallback(() => {
+		isHydratingRef.current = true
+		if (hydrationTimeoutRef.current !== null) {
+			window.clearTimeout(hydrationTimeoutRef.current)
+		}
+		hydrationTimeoutRef.current = window.setTimeout(() => {
+			finishHydrationWindow()
+		}, HYDRATION_WINDOW_MS)
+
+		scrollToBottomAuto()
+		scheduleHydrationRetry()
+	}, [finishHydrationWindow, scheduleHydrationRetry, scrollToBottomAuto])
+
 	// -----------------------------------------------------------------------
 	// Lifecycle effects
 	// -----------------------------------------------------------------------
@@ -384,76 +235,37 @@ export function useScrollLifecycle({
 		isMountedRef.current = true
 		return () => {
 			isMountedRef.current = false
+			clearHydrationWindow()
 			cancelReanchorFrame()
 			scrollToBottomSmooth.clear()
 		}
-	}, [cancelReanchorFrame, scrollToBottomSmooth])
+	}, [cancelReanchorFrame, clearHydrationWindow, scrollToBottomSmooth])
 
 	// Keep phase ref in sync with state
 	useEffect(() => {
 		scrollPhaseRef.current = scrollPhase
 	}, [scrollPhase])
 
-	// Task switch: reset settle state and begin hydration
+	// Task switch: reset and begin a short hydration window
 	useEffect(() => {
-		const taskSwitchMs = Date.now()
-		settleStableFramesRef.current = 0
-		settleFrameCountRef.current = 0
-		settleBottomConfirmedRef.current = false
-		settleMutationVersionRef.current = 0
-		settleObservedMutationVersionRef.current = 0
 		isAtBottomRef.current = false
-		cancelInitialSettleFrame()
+		clearHydrationWindow()
 		cancelReanchorFrame()
-		settleTaskTsRef.current = taskTs ?? null
-		settleDeadlineMsRef.current = null
-		settleHardDeadlineMsRef.current = null
 
 		if (taskTs) {
-			beginHydrationPinnedToBottom()
-			isSettlingRef.current = false
-			settleDeadlineMsRef.current = taskSwitchMs + INITIAL_LOAD_SETTLE_TIMEOUT_MS
-			settleHardDeadlineMsRef.current = taskSwitchMs + INITIAL_LOAD_SETTLE_HARD_CAP_MS
-			startInitialSettle(taskTs)
+			transitionScrollPhase("HYDRATING_PINNED_TO_BOTTOM")
+			setShowScrollToBottom(false)
+			startHydrationWindow()
 		} else {
 			transitionScrollPhase("USER_BROWSING_HISTORY")
 			setShowScrollToBottom(false)
 		}
 
 		return () => {
-			cancelInitialSettleFrame()
+			clearHydrationWindow()
 			cancelReanchorFrame()
-			settleTaskTsRef.current = null
-			settleDeadlineMsRef.current = null
-			settleHardDeadlineMsRef.current = null
-			isSettlingRef.current = false
-			settleBottomConfirmedRef.current = false
 		}
-	}, [
-		beginHydrationPinnedToBottom,
-		cancelInitialSettleFrame,
-		cancelReanchorFrame,
-		startInitialSettle,
-		taskTs,
-		transitionScrollPhase,
-	])
-
-	// Grouped messages mutation tracking
-	useEffect(() => {
-		const previousLength = groupedMessagesLengthRef.current
-		groupedMessagesLengthRef.current = groupedMessagesLength
-
-		if (previousLength === groupedMessagesLength) {
-			return
-		}
-
-		settleMutationVersionRef.current += 1
-
-		const settleTaskTs = settleTaskTsRef.current
-		if (settleTaskTs !== null && extendInitialSettleWindow(settleTaskTs)) {
-			startInitialSettle(settleTaskTs)
-		}
-	}, [groupedMessagesLength, extendInitialSettleWindow, startInitialSettle])
+	}, [cancelReanchorFrame, clearHydrationWindow, startHydrationWindow, taskTs, transitionScrollPhase])
 
 	// -----------------------------------------------------------------------
 	// Row height change handler
@@ -461,16 +273,15 @@ export function useScrollLifecycle({
 
 	const handleRowHeightChange = useCallback(
 		(isTaller: boolean) => {
-			settleMutationVersionRef.current += 1
-
-			const settleTaskTs = settleTaskTsRef.current
-			if (isTaller && settleTaskTs !== null && extendInitialSettleWindow(settleTaskTs)) {
-				startInitialSettle(settleTaskTs)
+			if (
+				scrollPhaseRef.current === "USER_BROWSING_HISTORY" ||
+				scrollPhaseRef.current === "HYDRATING_PINNED_TO_BOTTOM"
+			) {
+				return
 			}
 
-			const shouldAutoFollowBottom = scrollPhaseRef.current !== "USER_BROWSING_HISTORY"
 			const shouldForcePinForAnchoredStreaming = scrollPhaseRef.current === "ANCHORED_FOLLOWING" && isStreaming
-			if ((isAtBottomRef.current || shouldForcePinForAnchoredStreaming) && shouldAutoFollowBottom) {
+			if (isAtBottomRef.current || shouldForcePinForAnchoredStreaming) {
 				if (isTaller) {
 					scrollToBottomSmooth()
 				} else {
@@ -478,7 +289,7 @@ export function useScrollLifecycle({
 				}
 			}
 		},
-		[extendInitialSettleWindow, isStreaming, scrollToBottomSmooth, scrollToBottomAuto, startInitialSettle],
+		[isStreaming, scrollToBottomSmooth, scrollToBottomAuto],
 	)
 
 	// -----------------------------------------------------------------------
@@ -515,24 +326,23 @@ export function useScrollLifecycle({
 
 			const currentPhase = scrollPhaseRef.current
 
-			if (currentPhase === "HYDRATING_PINNED_TO_BOTTOM" && isAtBottom) {
-				settleBottomConfirmedRef.current = true
+			if (!isAtBottom && isHydratingRef.current && currentPhase !== "USER_BROWSING_HISTORY") {
+				setShowScrollToBottom(false)
+				return
 			}
 
-			if (currentPhase === "HYDRATING_PINNED_TO_BOTTOM" && !isAtBottom) {
+			if (isAtBottom) {
+				if (currentPhase === "USER_BROWSING_HISTORY" && isHydratingRef.current) {
+					setShowScrollToBottom(true)
+					return
+				}
+
+				enterAnchoredFollowing()
 				return
 			}
 
 			if (currentPhase === "ANCHORED_FOLLOWING" && !isAtBottom && pointerScrollActiveRef.current) {
 				enterUserBrowsingHistory("pointer-scroll-up")
-				return
-			}
-
-			if (isAtBottom) {
-				setShowScrollToBottom(false)
-				if (currentPhase === "USER_BROWSING_HISTORY") {
-					enterAnchoredFollowing()
-				}
 				return
 			}
 

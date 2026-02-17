@@ -1279,7 +1279,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		isStreaming,
 		isHidden,
 		hasTask: !!task,
-		groupedMessagesLength: groupedMessages.length,
 	})
 
 	// Expanding a row indicates the user is browsing; disable sticky follow.
