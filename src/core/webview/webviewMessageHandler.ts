@@ -62,6 +62,7 @@ import { openMention } from "../mentions"
 import { resolveImageMentions } from "../mentions/resolveImageMentions"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { getWorkspacePath } from "../../utils/path"
+import { appendChatTrace, compact as compactTrace } from "../../utils/chatTrace"
 import { Mode, defaultModeSlug } from "../../shared/modes"
 import { getModels, flushModels } from "../../api/providers/fetchers/modelCache"
 import { GetModelsOptions } from "../../shared/api"
@@ -98,6 +99,26 @@ export const webviewMessageHandler = async (
 
 	const getCurrentCwd = () => {
 		return provider.getCurrentTask()?.cwd || provider.cwd
+	}
+
+	// Trace incoming webview messages (compact summary saved to workspace logs/chat-trace.log)
+	try {
+		const cwd = getCurrentCwd() || provider.cwd || process.cwd()
+		let payloadSummary = ""
+		try {
+			if ((message as any).text) payloadSummary = compactTrace((message as any).text)
+			else if ((message as any).askResponse) payloadSummary = String((message as any).askResponse)
+			else payloadSummary = compactTrace(JSON.stringify(message))
+		} catch (e) {
+			payloadSummary = ""
+		}
+
+		void appendChatTrace(
+			cwd,
+			`incoming:webview type=${message.type}${payloadSummary ? ` payload=\"${payloadSummary}\"` : ""}`,
+		)
+	} catch (err) {
+		// swallow
 	}
 
 	/**

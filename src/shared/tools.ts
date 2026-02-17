@@ -40,6 +40,7 @@ export const toolParamNames = [
 	"uri",
 	"question",
 	"result",
+	"intent_id",
 	"diff",
 	"mode_slug",
 	"reason",
@@ -93,6 +94,7 @@ export type NativeToolArgs = {
 	read_file: import("@roo-code/types").ReadFileToolParams
 	read_command_output: { artifact_id: string; search?: string; offset?: number; limit?: number }
 	attempt_completion: { result: string }
+	select_active_intent: { intent_id: string }
 	execute_command: { command: string; cwd?: string }
 	apply_diff: { path: string; diff: string }
 	edit: { file_path: string; old_string: string; new_string: string; replace_all?: boolean }
@@ -232,6 +234,11 @@ export interface AttemptCompletionToolUse extends ToolUse<"attempt_completion"> 
 	params: Partial<Pick<Record<ToolParamName, string>, "result">>
 }
 
+export interface SelectActiveIntentToolUse extends ToolUse<"select_active_intent"> {
+	name: "select_active_intent"
+	params: Partial<Pick<Record<ToolParamName, string>, "intent_id">>
+}
+
 export interface SwitchModeToolUse extends ToolUse<"switch_mode"> {
 	name: "switch_mode"
 	params: Partial<Pick<Record<ToolParamName, string>, "mode_slug" | "reason">>
@@ -281,6 +288,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	access_mcp_resource: "access mcp resources",
 	ask_followup_question: "ask questions",
 	attempt_completion: "complete tasks",
+	select_active_intent: "select active intent",
 	switch_mode: "switch modes",
 	new_task: "create new task",
 	codebase_search: "codebase search",
@@ -316,6 +324,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
 	"ask_followup_question",
 	"attempt_completion",
+	"select_active_intent",
 	"switch_mode",
 	"new_task",
 	"update_todo_list",

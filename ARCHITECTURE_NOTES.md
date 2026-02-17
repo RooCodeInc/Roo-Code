@@ -183,3 +183,133 @@ These are the safest insertion points for deterministic hook middleware:
 - [x] Exact `write_to_file` handler path identified.
 - [x] Exact system prompt builder path identified.
 - [x] `ARCHITECTURE_NOTES.md` delivered.
+
+## 8. Architecture Specification Alignment Update
+
+This section aligns the codebase to your required architecture:
+
+- strict privilege separation,
+- hook middleware boundary,
+- mandatory intent handshake before writes,
+- `.orchestration/` sidecar state.
+
+### 8.1 Privilege Separation (Mapped to Current Code)
+
+Webview (UI, restricted presentation layer):
+
+- Receives state/events via webview messaging:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/webview/ClineProvider.ts:1127`
+- User actions are handled as typed messages:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/webview/webviewMessageHandler.ts:468`
+
+Extension Host (logic, API + MCP + execution):
+
+- Provider/task orchestration is in extension host:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/extension.ts:120`
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/task/Task.ts:2511`
+- LLM call path:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/task/Task.ts:3988`
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/task/Task.ts:4279`
+- MCP initialization/management:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/services/mcp/McpServerManager.ts:20`
+
+Hook Engine (middleware boundary for all tools):
+
+- Central interception location is `presentAssistantMessage(...)` before dispatch:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/assistant-message/presentAssistantMessage.ts:678`
+- This is the correct place to inject `PreToolUse` and `PostToolUse`.
+
+### 8.2 `.orchestration/` Sidecar Contract (Required)
+
+Add a machine-managed directory under `task.cwd`:
+
+- `.orchestration/active_intents.yaml`
+- `.orchestration/agent_trace.jsonl`
+- `.orchestration/intent_map.md`
+- `CLAUDE.md` or `AGENT.md` (shared brain)
+
+Recommended implementation location:
+
+- new host-side service module, for example:
+    - `src/core/orchestration/OrchestrationStore.ts`
+    - `src/core/orchestration/IntentTraceService.ts`
+
+Reason:
+
+- keep file IO and schema logic out of tool classes and out of Webview code.
+
+### 8.3 Two-Stage State Machine Per Turn (Required)
+
+State 1: Request
+
+- User sends prompt from webview (`newTask`/`askResponse`) into task loop.
+- Entry points:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/webview/webviewMessageHandler.ts:549`
+    - `/Users/gersumasfaw/Roo-Code-10x/src/core/task/Task.ts:2477`
+
+State 2: Reasoning Intercept (Handshake)
+
+- Agent must call mandatory tool: `select_active_intent(intent_id)`.
+- Pre-hook intercepts this tool call, loads intent constraints/scope/history from `.orchestration`, and returns structured context (for example `<intent_context>...</intent_context>`).
+- Execution remains paused naturally because tool execution is awaited in dispatch path.
+
+State 3: Contextualized Action
+
+- Agent continues with mutating tools (`write_to_file`, alias `write_file`).
+- Alias evidence:
+    - `/Users/gersumasfaw/Roo-Code-10x/src/shared/tools.ts:337`
+- Post-hook computes `content_hash` and appends trace record linked to selected `intent_id`.
+
+## 9. Required Gaps to Implement (from your spec)
+
+These items are not present yet and must be added:
+
+1. New mandatory tool: `select_active_intent(intent_id: string)`.
+
+- Add tool schema in native tools.
+- Add typed args in `NativeToolArgs`.
+- Add tool executor class.
+- Add dispatch case in `presentAssistantMessage`.
+
+2. Hook middleware abstraction.
+
+- Create explicit pre/post hook pipeline around tool execution (not scattered inside each tool class).
+- Keep all HITL/scope policy at middleware layer.
+
+3. Intent-aware pre-write enforcement.
+
+- Block mutating tools unless active intent is set and valid.
+- Enforce `owned_scope` for target file writes.
+
+4. Trace ledger on post-write.
+
+- Compute hash and append to `.orchestration/agent_trace.jsonl`.
+- Include `intent_id` mapping in trace `related`.
+
+## 10. Concrete Injection Points for This Repo
+
+1. Tool definitions:
+
+- `/Users/gersumasfaw/Roo-Code-10x/src/core/prompts/tools/native-tools/index.ts:42`
+- `/Users/gersumasfaw/Roo-Code-10x/src/shared/tools.ts:91`
+
+2. Dispatch boundary (best hook point):
+
+- `/Users/gersumasfaw/Roo-Code-10x/src/core/assistant-message/presentAssistantMessage.ts:678`
+
+3. Prompt protocol enforcement (reasoning loop instruction):
+
+- `/Users/gersumasfaw/Roo-Code-10x/src/core/prompts/system.ts:85`
+- `/Users/gersumasfaw/Roo-Code-10x/src/core/task/Task.ts:3745`
+
+4. API call where system prompt is consumed:
+
+- `/Users/gersumasfaw/Roo-Code-10x/src/core/task/Task.ts:4279`
+
+## 11. Updated Phase-0 Outcome
+
+Phase 0 now includes:
+
+- exact current architecture mapping,
+- exact tool and prompt construction points,
+- exact plan to implement your required hook engine, `.orchestration` storage, and two-stage intent handshake in Phase 1.

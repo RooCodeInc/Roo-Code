@@ -1,0 +1,9 @@
+intents:
+  - intent_id: auth-refactor
+    title: Refactor auth middleware
+    constraints:
+      - Keep public API unchanged
+    related_files:
+      - src/middleware/auth.ts
+    recent_history:
+      - Investigated token parsing bugs
