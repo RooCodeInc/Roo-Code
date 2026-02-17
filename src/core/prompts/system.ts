@@ -37,7 +37,7 @@ export function getPromptComponent(
 	}
 	return component
 }
-
+//TODO: Prompt Builder
 async function generatePrompt(
 	context: vscode.ExtensionContext,
 	cwd: string,

@@ -22,7 +22,7 @@ interface WriteToFileParams {
 	path: string
 	content: string
 }
-
+//TODO: Modify the WriteToFileTool
 export class WriteToFileTool extends BaseTool<"write_to_file"> {
 	readonly name = "write_to_file" as const
 

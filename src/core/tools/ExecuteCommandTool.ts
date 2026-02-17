@@ -27,7 +27,7 @@ interface ExecuteCommandParams {
 	command: string
 	cwd?: string
 }
-
+//TODO: Modify ExecuteCommand
 export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 	readonly name = "execute_command" as const
 
