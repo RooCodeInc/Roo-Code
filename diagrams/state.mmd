@@ -1,0 +1,14 @@
+%% Mermaid State Diagram: Two-Stage Deterministic Workflow
+stateDiagram-v2
+  [*] --> Request
+  Request: User Prompt
+  Request --> IntentSelection: select_active_intent(intent_id)
+  IntentSelection --> Handshake: PreHook.validate(intent_id)
+  Handshake: Intent Validation + Context Injection
+  Handshake --> ContextualizedAction: SYSTEM_PROMPT += <intent_context>
+  ContextualizedAction: LLM Execution + Tooling
+  ContextualizedAction --> PostHook: Append to agent_trace.jsonl
+  PostHook --> [*]
+
+  Request --> [*]: abort
+  Handshake --> Request: invalid intent / scope violation

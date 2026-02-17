@@ -1,6 +1,7 @@
-import * as fs from "fs/promises"
-import * as path from "path"
-import { randomUUID, createHash } from "crypto"
+/// <reference types="node" />
+import * as fs from "node:fs/promises"
+import * as path from "node:path"
+import { randomUUID, createHash } from "node:crypto"
 
 import type { MutationClass, AgentTraceEntry } from "../models/AgentTrace"
 
@@ -18,7 +19,7 @@ export class PostHook {
 
     await fs.mkdir(orchestrationDir, { recursive: true })
 
-    const contentHash = createHash("sha256").update(args.content, "utf8").digest("hex")
+    const contentHash = computeContentHash(args.content)
     const now = new Date().toISOString()
 
     const entry: AgentTraceEntry = {
@@ -30,6 +31,7 @@ export class PostHook {
           conversations: [
             {
               contributor: { entity_type: "AI", model_identifier: args.contributorModel },
+              classification: mapClassification(args.mutationClass),
               ranges: [
                 {
                   start_line: 0,
@@ -46,5 +48,21 @@ export class PostHook {
 
     const line = JSON.stringify(entry)
     await fs.appendFile(ledgerPath, line + "\n", "utf-8")
+  }
+}
+
+function computeContentHash(code: string): string {
+  const normalized = code.trim().replace(/\s+/g, " ")
+  return createHash("sha256").update(normalized, "utf8").digest("hex")
+}
+
+function mapClassification(mutationClass: MutationClass): "REFACTOR" | "FEATURE" | "BUGFIX" | undefined {
+  switch (mutationClass) {
+    case "AST_REFACTOR":
+      return "REFACTOR"
+    case "INTENT_EVOLUTION":
+      return "FEATURE"
+    default:
+      return undefined
   }
 }
