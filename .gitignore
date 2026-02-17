@@ -6,6 +6,7 @@ node_modules
 package-lock.json
 coverage/
 mock/
+resources/
 
 .DS_Store
 
