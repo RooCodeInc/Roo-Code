@@ -5,6 +5,7 @@ import { defaultModeSlug } from "@roo/modes"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { vscode } from "@src/utils/vscode"
 import * as pathMentions from "@src/utils/path-mentions"
+import { useSelectedModel } from "@/components/ui/hooks/useSelectedModel"
 
 import ChatTextArea from "../ChatTextArea"
 
@@ -33,6 +34,15 @@ const mockConvertToMentionPath = pathMentions.convertToMentionPath as ReturnType
 
 // Mock ExtensionStateContext
 vi.mock("@src/context/ExtensionStateContext")
+
+vi.mock("@/components/ui/hooks/useSelectedModel", () => ({
+	useSelectedModel: vi.fn(() => ({
+		id: "mock-model",
+		info: { contextWindow: 4096 },
+		isLoading: false,
+		isError: false,
+	})),
+}))
 
 // Custom query function to get the enhance prompt button
 const getEnhancePromptButton = () => {
@@ -73,6 +83,12 @@ describe("ChatTextArea", () => {
 			},
 			taskHistory: [],
 			cwd: "/test/workspace",
+		})
+		;(useSelectedModel as ReturnType<typeof vi.fn>).mockReturnValue({
+			id: "mock-model",
+			info: { contextWindow: 4096 },
+			isLoading: false,
+			isError: false,
 		})
 	})
 
@@ -180,6 +196,84 @@ describe("ChatTextArea", () => {
 
 			// Verify the enhance button appears after apiConfiguration changes
 			expect(getEnhancePromptButton()).toBeInTheDocument()
+		})
+	})
+
+	describe("auto-condense context", () => {
+		it("should call onCondenseContext when tokens exceed window", () => {
+			const onCondenseContext = vi.fn()
+
+			render(
+				<ChatTextArea
+					{...defaultProps}
+					contextTokens={200}
+					contextWindow={100}
+					onCondenseContext={onCondenseContext}
+					isCondensing={false}
+				/>,
+			)
+
+			expect(onCondenseContext).toHaveBeenCalledTimes(1)
+		})
+
+		it("should not call onCondenseContext when tokens fit in window", () => {
+			const onCondenseContext = vi.fn()
+
+			render(
+				<ChatTextArea
+					{...defaultProps}
+					contextTokens={100}
+					contextWindow={100}
+					onCondenseContext={onCondenseContext}
+					isCondensing={false}
+				/>,
+			)
+
+			expect(onCondenseContext).not.toHaveBeenCalled()
+		})
+
+		it("should not call onCondenseContext while condensing", () => {
+			const onCondenseContext = vi.fn()
+
+			render(
+				<ChatTextArea
+					{...defaultProps}
+					contextTokens={200}
+					contextWindow={100}
+					onCondenseContext={onCondenseContext}
+					isCondensing={true}
+				/>,
+			)
+
+			expect(onCondenseContext).not.toHaveBeenCalled()
+		})
+
+		it("should call onCondenseContext after model switch to smaller window", () => {
+			const onCondenseContext = vi.fn()
+
+			const { rerender } = render(
+				<ChatTextArea
+					{...defaultProps}
+					contextTokens={200}
+					contextWindow={400}
+					onCondenseContext={onCondenseContext}
+					isCondensing={false}
+				/>,
+			)
+
+			expect(onCondenseContext).not.toHaveBeenCalled()
+
+			rerender(
+				<ChatTextArea
+					{...defaultProps}
+					contextTokens={200}
+					contextWindow={150}
+					onCondenseContext={onCondenseContext}
+					isCondensing={false}
+				/>,
+			)
+
+			expect(onCondenseContext).toHaveBeenCalledTimes(1)
 		})
 	})
 
