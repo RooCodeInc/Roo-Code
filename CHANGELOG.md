@@ -1,5 +1,11 @@
 # Roo Code Changelog
 
+## 3.48.0
+
+### Minor Changes
+
+-   - Add Anthropic Claude Sonnet 4.6 support across all providers — Anthropic, Bedrock, Vertex, OpenRouter, and Vercel AI Gateway (PR #11509 by @PeterDaveHello)
+
 ## [3.45.0] - 2026-01-27
 
 ![3.45.0 Release - Smart Code Folding](/releases/3.45.0-release.png)
