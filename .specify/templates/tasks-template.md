@@ -67,6 +67,9 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T007 Create base models/entities that all stories depend on
 - [ ] T008 Configure error handling and logging infrastructure
 - [ ] T009 Setup environment configuration management
+- [ ] T010 Define or update `.orchestration/active_intents.yaml` for this feature
+- [ ] T011 Add/verify pre-hook and post-hook enforcement touchpoints for changed tools
+- [ ] T012 Define traceability validation tasks for `.orchestration/agent_trace.jsonl`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -244,6 +247,8 @@ With multiple developers:
 - [P] tasks = different files, no dependencies
 - [Story] label maps task to specific user story for traceability
 - Each user story should be independently completable and testable
+- Include at least one task that validates intent scope coverage for changed files
+- Include at least one task that validates trace ledger output for mutation paths
 - Verify tests fail before implementing
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently

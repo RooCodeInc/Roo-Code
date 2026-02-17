@@ -80,8 +80,8 @@ function Test-FeatureBranch {
     }
     
     if ($Branch -notmatch '^[0-9]{3}-') {
-        Write-Output "ERROR: Not on a feature branch. Current branch: $Branch"
-        Write-Output "Feature branches should be named like: 001-feature-name"
+        Write-Host "ERROR: Not on a feature branch. Current branch: $Branch"
+        Write-Host "Feature branches should be named like: 001-feature-name"
         return $false
     }
     return $true
@@ -134,4 +134,3 @@ function Test-DirHasFiles {
         return $false
     }
 }
-

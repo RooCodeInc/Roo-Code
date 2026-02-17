@@ -3,10 +3,8 @@ import { useEvent } from "react-use"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 import { type ExtensionMessage, TelemetryEventName } from "@roo-code/types"
-
 import TranslationProvider from "./i18n/TranslationContext"
 import { MarketplaceViewStateManager } from "./components/marketplace/MarketplaceViewStateManager"
-
 import { vscode } from "./utils/vscode"
 import { telemetryClient } from "./utils/TelemetryClient"
 import { initializeSourceMaps, exposeSourceMapsForDebugging } from "./utils/sourceMapInitializer"
@@ -79,7 +77,6 @@ const App = () => {
 		messageTs: 0,
 		hasCheckpoint: false,
 	})
-
 	const [editMessageDialogState, setEditMessageDialogState] = useState<EditMessageDialogState>({
 		isOpen: false,
 		messageTs: 0,

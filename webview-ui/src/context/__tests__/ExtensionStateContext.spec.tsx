@@ -47,7 +47,30 @@ const ApiConfigTestComponent = () => {
 	)
 }
 
+const HydrationStateTestComponent = () => {
+	const { didHydrateState } = useExtensionState()
+	return <div data-testid="did-hydrate-state">{JSON.stringify(didHydrateState)}</div>
+}
+
 describe("ExtensionStateContext", () => {
+	it("hydrates in browser mode when VS Code API is unavailable", async () => {
+		const originalAcquireVsCodeApi = (globalThis as any).acquireVsCodeApi
+		try {
+			;(globalThis as any).acquireVsCodeApi = undefined
+
+			render(
+				<ExtensionStateContextProvider>
+					<HydrationStateTestComponent />
+				</ExtensionStateContextProvider>,
+			)
+
+			await screen.findByTestId("did-hydrate-state")
+			expect(JSON.parse(screen.getByTestId("did-hydrate-state").textContent!)).toBe(true)
+		} finally {
+			;(globalThis as any).acquireVsCodeApi = originalAcquireVsCodeApi
+		}
+	})
+
 	it("initializes with empty allowedCommands array", () => {
 		render(
 			<ExtensionStateContextProvider>

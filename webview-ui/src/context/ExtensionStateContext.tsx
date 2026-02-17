@@ -477,6 +477,15 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	}, [handleMessage])
 
 	useEffect(() => {
+		// In browser dev mode, no extension host sends the initial "state" message.
+		// Mark hydrated so the UI renders with defaults/local persisted state.
+		if (typeof acquireVsCodeApi !== "function") {
+			setDidHydrateState(true)
+			setShowWelcome(!checkExistKey(state.apiConfiguration))
+		}
+	}, [state.apiConfiguration])
+
+	useEffect(() => {
 		vscode.postMessage({ type: "webviewDidLaunch" })
 	}, [])
 

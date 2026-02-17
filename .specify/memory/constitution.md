@@ -1,73 +1,95 @@
-# [PROJECT_NAME] Constitution
+<!--
+Sync Impact Report
+- Version change: N/A -> 1.0.0
+- Modified principles:
+  - N/A -> I. Intent-First Mutation Control
+  - N/A -> II. Deterministic Hook Enforcement
+  - N/A -> III. Cryptographic Traceability and Append-Only Ledger
+  - N/A -> IV. Scope Ownership and Parallel Safety
+  - N/A -> V. Living Documentation as a Side Effect
+- Added sections:
+  - Architecture Boundaries
+  - Delivery Workflow and Quality Gates
+- Removed sections:
+  - Template placeholder sections and tokens
+- Templates requiring updates:
+  - .specify/templates/plan-template.md (updated)
+  - .specify/templates/spec-template.md (updated)
+  - .specify/templates/tasks-template.md (updated)
+- Follow-up TODOs:
+  - None
+-->
 
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Gonche Roo Code Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
+### I. Intent-First Mutation Control
 
-<!-- Example: I. Library-First -->
+Every mutation-capable task MUST select an active intent before any file write or
+destructive command. The active intent MUST exist in
+`.orchestration/active_intents.yaml` and provide owned scope, constraints, and
+acceptance criteria. Mutations without intent selection are invalid by design.
 
-[PRINCIPLE_1_DESCRIPTION]
+### II. Deterministic Hook Enforcement
 
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+Pre-execution and post-execution hooks MUST run for tool calls and MUST enforce:
+intent selection, scope ownership, context injection, and Human-in-the-Loop
+authorization for destructive operations. If an invariant fails, execution MUST be
+blocked with a structured error.
 
-### [PRINCIPLE_2_NAME]
+### III. Cryptographic Traceability and Append-Only Ledger
 
-<!-- Example: II. CLI Interface -->
+All successful writes MUST produce SHA-256 content hashes and mutation metadata in
+`.orchestration/agent_trace.jsonl`. The ledger is append-only and MUST preserve
+linkage from `intent_id` to file-level change ranges and revision identity.
 
-[PRINCIPLE_2_DESCRIPTION]
+### IV. Scope Ownership and Parallel Safety
 
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Write access MUST be validated against `owned_scope` patterns for the active
+intent. Parallel and stale-write safety MUST be enforced using file hash checks and
+turn-based freshness checks before mutation. Stale writes MUST be blocked.
 
-### [PRINCIPLE_3_NAME]
+### V. Living Documentation as a Side Effect
 
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
+Intent evolution (new-file or scope-expanding changes) MUST update
+`.orchestration/intent_map.md`. Verification failures and cross-turn lessons MUST be
+captured in `AGENT.md` or `CLAUDE.md` to prevent repeated failure loops.
 
-[PRINCIPLE_3_DESCRIPTION]
+## Architecture Boundaries
 
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+The system MUST maintain strict separation between:
 
-### [PRINCIPLE_4_NAME]
+- Webview/UI presentation concerns.
+- Extension host logic, model/tool orchestration, and secrets.
+- Hook middleware enforcement for all tool execution boundaries.
 
-<!-- Example: IV. Integration Testing -->
+No UI layer code may bypass hook enforcement or mutate orchestration state directly.
 
-[PRINCIPLE_4_DESCRIPTION]
+## Delivery Workflow and Quality Gates
 
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+Feature delivery MUST follow Spec-Driven Development:
 
-### [PRINCIPLE_5_NAME]
-
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-
-[PRINCIPLE_5_DESCRIPTION]
-
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
-
-## [SECTION_2_NAME]
-
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
-
-[SECTION_2_CONTENT]
-
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
-
-## [SECTION_3_NAME]
-
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+1. Define or update specs before implementation.
+2. Map each implementation task to an explicit intent with declared scope.
+3. Run constitution checks during planning and again before merge.
+4. Require traceability evidence (intent, hash, ledger record) for write paths.
+5. Reject changes that weaken hook enforcement, scope checks, or ledger integrity
+   without an approved constitutional amendment.
 
 ## Governance
 
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+This constitution is the highest-priority engineering policy for this repository.
 
-[GOVERNANCE_RULES]
+- Amendments require:
+    - A documented rationale.
+    - Explicit impact assessment on hooks, traceability, and scope safety.
+    - Version bump using semantic versioning:
+        - MAJOR: backward-incompatible governance changes.
+        - MINOR: new principles or materially expanded mandates.
+        - PATCH: clarifications without changing obligations.
+- Every plan and PR review MUST include a constitution compliance check.
+- Runtime guidance lives in `AGENTS.md`, and shared cross-task learning lives in
+  `AGENT.md` (or `CLAUDE.md` if used by the active agent stack).
 
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
-
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-02-17

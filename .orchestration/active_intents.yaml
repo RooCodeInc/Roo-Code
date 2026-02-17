@@ -1,0 +1,65 @@
+active_intents:
+  - id: INT-001
+    name: Core Orchestration and Hook Enforcement
+    status: active
+    owned_scope:
+      - src/core/orchestration/**
+      - src/core/tools/**
+      - src/core/assistant-message/**
+      - src/core/task/**
+      - src/shared/**
+    constraints:
+      - Mutations MUST preserve deterministic pre/post hook behavior.
+      - Mutations MUST keep intent-required checks and scope-validation checks.
+      - Mutations MUST preserve trace ledger compatibility.
+    acceptance_criteria:
+      - Pre-hook blocks write/destructive mutation without active intent.
+      - Post-hook writes append-only trace entries with hashes.
+      - Scope violation and stale-file checks remain active.
+
+  - id: INT-002
+    name: Webview and User Interaction Flow
+    status: active
+    owned_scope:
+      - webview-ui/**
+    constraints:
+      - SettingsView input controls MUST bind to cachedState, not live extension state.
+      - UI changes MUST not bypass extension-host governance boundaries.
+    acceptance_criteria:
+      - Webview behavior remains deterministic under concurrent state updates.
+      - Settings edits remain buffered until explicit save.
+
+  - id: INT-003
+    name: Spec and Governance Documentation
+    status: active
+    owned_scope:
+      - specs/**
+      - .specify/**
+      - .orchestration/**
+      - README.md
+      - AGENTS.md
+      - AGENT.md
+    constraints:
+      - Governance docs MUST remain aligned with the active constitution.
+      - Spec IDs 000-008 remain the canonical SDD baseline.
+    acceptance_criteria:
+      - Constitution contains concrete, testable principles.
+      - SDD specs are present and internally consistent.
+
+  - id: INT-004
+    name: Monorepo Package and Build Maintenance
+    status: active
+    owned_scope:
+      - apps/**
+      - packages/**
+      - scripts/**
+      - package.json
+      - pnpm-lock.yaml
+      - turbo.json
+      - tsconfig*.json
+    constraints:
+      - Tooling changes MUST preserve build and lint pipeline operability.
+      - Dependency changes MUST remain traceable in commit history.
+    acceptance_criteria:
+      - Lint/build commands remain executable after changes.
+      - Package-level behavior remains backward compatible unless explicitly documented.

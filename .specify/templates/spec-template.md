@@ -95,6 +95,13 @@ _Example of marking unclear requirements:_
 - **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
 - **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
 
+### Intent and Scope Mapping _(mandatory for mutation workflows)_
+
+- **INT-Map-001**: Identify target `intent_id`(s) from `.orchestration/active_intents.yaml`.
+- **INT-Map-002**: Enumerate owned scope paths expected to change.
+- **INT-Map-003**: Define how post-write trace records will be validated.
+- **INT-Map-004**: Define stale-write or parallel-session conflict expectations.
+
 ### Key Entities _(include if feature involves data)_
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]

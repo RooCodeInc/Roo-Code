@@ -31,7 +31,11 @@
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-[Gates determined based on constitution file]
+- [ ] Active intent mapping is defined for each planned mutation scope.
+- [ ] Pre-hook and post-hook enforcement impact is analyzed for changed tool paths.
+- [ ] Traceability plan includes `intent_id`, hash capture, and ledger append behavior.
+- [ ] Parallel safety and stale-write handling are preserved or explicitly upgraded.
+- [ ] Destructive command flows retain Human-in-the-Loop authorization.
 
 ## Project Structure
 
