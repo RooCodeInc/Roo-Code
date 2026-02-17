@@ -118,6 +118,13 @@ export const modelInfoSchema = z.object({
 	// Cannot force-add tools from groups the mode doesn't allow
 	includedTools: z.array(z.string()).optional(),
 	/**
+	 * Whether the model supports programmatic tool calling.
+	 * When true, the model can generate Python code that calls tool functions,
+	 * enabling multiple tool calls within a single code execution in a sandbox.
+	 * Currently supported by Anthropic Claude models.
+	 */
+	supportsProgrammaticToolCalling: z.boolean().optional(),
+	/**
 	 * Service tiers with pricing information.
 	 * Each tier can have a name (for OpenAI service tiers) and pricing overrides.
 	 * The top-level input/output/cache* fields represent the default/standard tier.

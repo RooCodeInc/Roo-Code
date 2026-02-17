@@ -17,6 +17,7 @@ export const anthropicModels = {
 		cacheWritesPrice: 3.75, // $3.75 per million tokens
 		cacheReadsPrice: 0.3, // $0.30 per million tokens
 		supportsReasoningBudget: true,
+		supportsProgrammaticToolCalling: true,
 		// Tiered pricing for extended context (requires beta flag 'context-1m-2025-08-07')
 		tiers: [
 			{
@@ -38,6 +39,7 @@ export const anthropicModels = {
 		cacheWritesPrice: 3.75, // $3.75 per million tokens
 		cacheReadsPrice: 0.3, // $0.30 per million tokens
 		supportsReasoningBudget: true,
+		supportsProgrammaticToolCalling: true,
 		// Tiered pricing for extended context (requires beta flag 'context-1m-2025-08-07')
 		tiers: [
 			{
@@ -59,6 +61,7 @@ export const anthropicModels = {
 		cacheWritesPrice: 6.25, // $6.25 per million tokens
 		cacheReadsPrice: 0.5, // $0.50 per million tokens
 		supportsReasoningBudget: true,
+		supportsProgrammaticToolCalling: true,
 		// Tiered pricing for extended context (requires beta flag)
 		tiers: [
 			{
@@ -80,6 +83,7 @@ export const anthropicModels = {
 		cacheWritesPrice: 6.25, // $6.25 per million tokens
 		cacheReadsPrice: 0.5, // $0.50 per million tokens
 		supportsReasoningBudget: true,
+		supportsProgrammaticToolCalling: true,
 	},
 	"claude-opus-4-1-20250805": {
 		maxTokens: 32_000, // Overridden to 8k if `enableReasoningEffort` is false.
@@ -91,6 +95,7 @@ export const anthropicModels = {
 		cacheWritesPrice: 18.75, // $18.75 per million tokens
 		cacheReadsPrice: 1.5, // $1.50 per million tokens
 		supportsReasoningBudget: true,
+		supportsProgrammaticToolCalling: true,
 	},
 	"claude-opus-4-20250514": {
 		maxTokens: 32_000, // Overridden to 8k if `enableReasoningEffort` is false.
@@ -102,6 +107,7 @@ export const anthropicModels = {
 		cacheWritesPrice: 18.75, // $18.75 per million tokens
 		cacheReadsPrice: 1.5, // $1.50 per million tokens
 		supportsReasoningBudget: true,
+		supportsProgrammaticToolCalling: true,
 	},
 	"claude-3-7-sonnet-20250219:thinking": {
 		maxTokens: 128_000, // Unlocked by passing `beta` flag to the model. Otherwise, it's 64k.

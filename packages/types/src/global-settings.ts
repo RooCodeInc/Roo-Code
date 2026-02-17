@@ -231,6 +231,15 @@ export const globalSettingsSchema = z.object({
 	 * Tools in this list will be excluded from prompt generation and rejected at execution time.
 	 */
 	disabledTools: z.array(toolNamesSchema).optional(),
+
+	/**
+	 * Whether to enable programmatic tool calling.
+	 * When enabled, supported models can generate Python code that calls multiple tools
+	 * within a single sandboxed code execution, reducing round-trips to the model.
+	 * Tools still require individual approval before execution.
+	 * @default false
+	 */
+	enableProgrammaticToolCalling: z.boolean().optional(),
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>
