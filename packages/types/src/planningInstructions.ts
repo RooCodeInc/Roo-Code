@@ -51,11 +51,22 @@ export const PLANNING_INSTRUCTIONS = `
 - **Deliverables:** [What will be created]
 - **Dependencies:** [What must be done first]
 - **Estimated complexity:** [Simple | Medium | Complex]
+- **Files Changed:**
+  - \`[exact-file-path]\` — [created | modified | deleted]
 
 **Phase 2/N: [Description] ([mode-name])**
 - **Deliverables:** [What will be created]
 - **Dependencies:** [What must be done first]
 - **Estimated complexity:** [Simple | Medium | Complex]
+- **Files Changed:**
+  - \`[exact-file-path]\` — [created | modified | deleted]
+
+**Phase N/N: Deploy**
+- **Deliverables:** Deploy ONLY the specific changed files listed above to the target environment
+- **Dependencies:** All previous phases completed and validated
+- **Estimated complexity:** [Simple | Medium | Complex]
+- **Files to Deploy:** (collected from all phases above)
+  - \`[exact-file-path]\`
 
 ---
 
@@ -64,19 +75,38 @@ export const PLANNING_INSTRUCTIONS = `
 **Phase 1: [Status]**
 - Started: [timestamp]
 - Completed: [timestamp]
-- Files Created: [list]
+- Files Modified:
+  - \`[file-path]\` — [created | modified | deleted]
+  - \`[file-path]\` — [created | modified | deleted]
 - Notes: [any issues or important details]
 
 **Phase 2: [Status]**
 - Started: [timestamp]
 - Completed: [timestamp]
-- Files Created: [list]
+- Files Modified:
+  - \`[file-path]\` — [created | modified | deleted]
+  - \`[file-path]\` — [created | modified | deleted]
 - Notes: [any issues or important details]
+
+**Deploy Phase: [Status]**
+- Started: [timestamp]
+- Completed: [timestamp]
+- Environment: [target environment]
+- **IMPORTANT: Deploy ONLY the specific files changed — NEVER deploy entire folders (e.g., default/, classes/, lwc/, triggers/). Use the exact file paths collected from previous phases.**
+- Files & Deployment Status:
+  - \`[exact-file-path]\` — [local | dry-run | deploying | deployed | failed]
+  - \`[exact-file-path]\` — [local | dry-run | deploying | deployed | failed]
+- Notes: [deployment details, any issues]
 
 ---
 
 ## Final Summary
-[Summary of all work completed, files created, and any remaining tasks]
+[Summary of all work completed and any remaining tasks]
+
+### Modified Files & Deployment Status
+| File | Status | Deployment |
+|------|--------|------------|
+| \`[file-path]\` | created/modified/deleted | local/dry-run/deploying/deployed/failed |
 \`\`\`
 
 **Update Protocol:**
@@ -101,4 +131,9 @@ export const PLANNING_WORKFLOW_STEPS = `
    - ONE task in_progress at a time
 
 3. **Execute & Validate** each phase before proceeding
+
+4. **Deploy** only the specific changed files to the target environment as the final phase
+   - NEVER deploy entire folders (e.g., \`default/\`, \`classes/\`, \`lwc/\`, \`triggers/\`)
+   - Collect exact file paths from each phase's "Files Changed" list
+   - Deploy only those individual files
 `

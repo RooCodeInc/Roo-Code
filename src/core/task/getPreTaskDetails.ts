@@ -5,6 +5,7 @@ import { TaskTypeMapping } from "../../shared/globalFileNames"
 import { PLANNING_WORKFLOW_STEPS, PLANNING_INSTRUCTIONS } from "@siid-code/types"
 import { experiments } from "../../shared/experiments"
 import type { Experiments } from "@siid-code/types"
+import { FileChangesService } from "../../services/file-changes"
 
 export interface PreTaskOptions {
 	globalStorageUri: vscode.Uri | undefined
@@ -12,6 +13,7 @@ export interface PreTaskOptions {
 	hasTodoList?: boolean
 	cwd?: string
 	experiments?: Experiments
+	taskId?: string
 }
 
 /**
@@ -19,7 +21,7 @@ export interface PreTaskOptions {
  * Content is dynamic based on current task state.
  */
 export async function getPreTaskDetails(globalStorageUri: vscode.Uri | undefined, options?: Partial<PreTaskOptions>) {
-	const { taskGuidesFetched = false, hasTodoList = false, cwd, experiments: exps } = options || {}
+	const { taskGuidesFetched = false, hasTodoList = false, cwd, experiments: exps, taskId } = options || {}
 
 	let preTask = "<pre-task>\n\n"
 
@@ -34,6 +36,26 @@ export async function getPreTaskDetails(globalStorageUri: vscode.Uri | undefined
 		// Dynamic todo list reminder
 		if (hasTodoList) {
 			preTask += `**Todo List:** A todo list exists. UPDATE it as you progress - don't recreate.\n\n`
+		}
+
+		// Include modified files list so AI knows what has changed and deploys only those files
+		if (taskId) {
+			try {
+				const service = FileChangesService.getInstance()
+				const fileChanges = await service.getTaskFileChanges(taskId)
+				if (fileChanges.length > 0) {
+					preTask += `### Modified Files in This Task\n`
+					preTask += `**IMPORTANT:** Keep track of these files. During deployment, deploy ONLY these specific files — NEVER deploy entire folders (e.g., \`default/\`, \`classes/\`, \`lwc/\`, \`triggers/\`).\n\n`
+					preTask += `| File | Status | Deployment |\n`
+					preTask += `|------|--------|------------|\n`
+					for (const fc of fileChanges) {
+						preTask += `| \`${fc.filePath}\` | ${fc.status} | ${fc.deploymentStatus} |\n`
+					}
+					preTask += `\n`
+				}
+			} catch {
+				// Ignore errors — file changes service may not be initialized
+			}
 		}
 
 		preTask += `---\n\n`

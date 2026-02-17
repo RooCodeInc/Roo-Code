@@ -2207,7 +2207,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				if (typeof payload.text === "string") {
 					// allow multi-dot filenames like Foo.cls-meta.xml, require path separator
 					const regex =
-						/(?:Create|Created|Edit|Edited|Modify|Modified):?\s*((?:[\w-]+[/\\])+[\w-]+(?:\.[A-Za-z0-9_./+-]+)+)/gi
+						/(?:Create|Created|Edit|Edited|Modify|Modified):?\s*((?:[\w-]+[/\\])+[\w-]+(?:\.[A-Za-z0-9_./-]+)+)/gi
 					let m: RegExpExecArray | null
 					const found: string[] = []
 					while ((m = regex.exec(payload.text)) !== null) {
@@ -2249,7 +2249,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			// Generic fallback: if payload.text contains human readable markers, extract all matches
 			if (typeof payload.text === "string") {
 				const regexAll =
-					/(?:Create|Created|Edit|Edited|Modify|Modified):?\s*((?:[\w-]+[/\\])+[\w-]+(?:\.[A-Za-z0-9_./+-]+)+)/gi
+					/(?:Create|Created|Edit|Edited|Modify|Modified):?\s*((?:[\w-]+[/\\])+[\w-]+(?:\.[A-Za-z0-9_./-]+)+)/gi
 				let mm: RegExpExecArray | null
 				const discovered: string[] = []
 				while ((mm = regexAll.exec(payload.text)) !== null) {
@@ -2263,7 +2263,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				const bodyText = typeof document !== "undefined" ? document.body.innerText || "" : ""
 				if (bodyText && bodyText.length > 0) {
 					const domRegex =
-						/(?:Create|Created|Edit|Edited|Modify|Modified):?\s*((?:[\w-]+[/\\])+[\w-]+(?:\.[A-Za-z0-9_./+-]+)+)/gi
+						/(?:Create|Created|Edit|Edited|Modify|Modified):?\s*((?:[\w-]+[/\\])+[\w-]+(?:\.[A-Za-z0-9_./-]+)+)/gi
 					let d: RegExpExecArray | null
 					const domFound: string[] = []
 					while ((d = domRegex.exec(bodyText)) !== null) {
@@ -2504,14 +2504,27 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				}}
 			/>
 			{fileChanges.length > 0 && (
-				<FileChanges
-					files={fileChanges}
-					variant="list"
-					defaultCollapsed={fileListCollapsed}
-					onViewDiff={openVsCodeDiff}
-					className="px-3.5 mb-2"
-					taskId={task?.ts ? String(task.ts) : undefined}
-				/>
+				<>
+					{/* List variant - collapsible summary */}
+					<FileChanges
+						files={fileChanges}
+						variant="list"
+						defaultCollapsed={fileListCollapsed}
+						onViewDiff={openVsCodeDiff}
+						className="px-3.5 mb-2"
+						taskId={task?.ts ? String(task.ts) : undefined}
+					/>
+					{/* Detail variant - expanded view with stats (shown when more than 3 files) */}
+					{fileChanges.length > 3 && (
+						<FileChanges
+							files={fileChanges}
+							variant="detail"
+							onViewDiff={openVsCodeDiff}
+							className="px-3.5 mb-3"
+							taskId={task?.ts ? String(task.ts) : undefined}
+						/>
+					)}
+				</>
 			)}
 			<ChatTextArea
 				ref={textAreaRef}

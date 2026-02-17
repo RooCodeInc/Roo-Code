@@ -171,7 +171,10 @@ export const FileChangeItem: React.FC<FileChangeItemProps> = ({
 		}
 	}
 
-	const hasStats = showStats && (file.additions !== undefined || file.deletions !== undefined)
+	const hasStats =
+		showStats &&
+		((file.additions !== undefined && file.additions !== 0) ||
+			(file.deletions !== undefined && file.deletions !== 0))
 
 	const deploymentConfig = showDeploymentStatus ? getDeploymentStatusConfig(file.deploymentStatus) : null
 
@@ -184,28 +187,32 @@ export const FileChangeItem: React.FC<FileChangeItemProps> = ({
 				{file.path}
 			</button>
 
-			{/* Show additions/deletions - always show both when stats are available */}
+			{/* Show additions/deletions only when non-zero values are provided */}
 			{hasStats && (
 				<div className="flex items-center gap-1">
-					<span
-						style={{
-							fontSize: "11px",
-							color: "var(--vscode-charts-green)",
-							fontFamily: "monospace",
-							fontWeight: "bold",
-						}}>
-						+{file.additions ?? 0}
-					</span>
+					{file.additions !== undefined && file.additions !== 0 && (
+						<span
+							style={{
+								fontSize: "11px",
+								color: "var(--vscode-charts-green)",
+								fontFamily: "monospace",
+								fontWeight: "bold",
+							}}>
+							+{file.additions}
+						</span>
+					)}
 
-					<span
-						style={{
-							fontSize: "11px",
-							color: "var(--vscode-errorForeground)",
-							fontFamily: "monospace",
-							fontWeight: "bold",
-						}}>
-						-{file.deletions ?? 0}
-					</span>
+					{file.deletions !== undefined && file.deletions !== 0 && (
+						<span
+							style={{
+								fontSize: "11px",
+								color: "var(--vscode-errorForeground)",
+								fontFamily: "monospace",
+								fontWeight: "bold",
+							}}>
+							-{file.deletions}
+						</span>
+					)}
 				</div>
 			)}
 

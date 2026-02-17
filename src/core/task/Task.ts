@@ -1713,6 +1713,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			hasTodoList,
 			cwd: this.cwd,
 			experiments: state?.experiments,
+			taskId: this.taskId,
 		})
 
 		// Add pre-task details FIRST for higher priority, then parsed content, then environment details
