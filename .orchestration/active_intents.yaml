@@ -1,0 +1,8 @@
+- id: INTENT-001
+  title: System Initialization & Hook Mapping
+  status: in-progress
+  description: Implementing a Two-Stage State Machine for intent-code traceability within the Roo Code core.
+  metadata:
+      target_files:
+          - ClineProvider.ts
+          - WriteToFileTool.ts
