@@ -3,6 +3,7 @@ import * as path from "path"
 
 interface RpiMemoryEntry {
 	id: string
+	schemaVersion: 1
 	taskId: string
 	parentTaskId?: string
 	timestamp: string
@@ -22,6 +23,23 @@ interface RpiMemoryEntry {
 
 const MAX_ENTRIES = 500
 const MAX_CONTENT_LENGTH = 600
+const MEMORY_SCHEMA_VERSION = 1
+const ENTRY_TYPES = new Set<RpiMemoryEntry["type"]>([
+	"pattern",
+	"pitfall",
+	"dependency",
+	"convention",
+	"decision",
+	"lesson_learned",
+	"architecture_context",
+	"known_issue",
+])
+const ENTRY_SOURCES = new Set<RpiMemoryEntry["source"]>(["council", "correction", "completion", "manual"])
+
+interface RpiRecallOptions {
+	freshnessTtlHours?: number
+	maxStaleResults?: number
+}
 
 /**
  * Simple TF-IDF implementation for semantic memory recall.
@@ -166,12 +184,13 @@ export class RpiMemory {
 		this.indexPath = path.join(this.memoryDir, "index.json")
 	}
 
-	async remember(entry: Omit<RpiMemoryEntry, "id" | "timestamp">): Promise<void> {
+	async remember(entry: Omit<RpiMemoryEntry, "id" | "timestamp" | "schemaVersion">): Promise<void> {
 		await fs.mkdir(this.memoryDir, { recursive: true })
 		const entries = await this.loadEntries()
 
 		const newEntry: RpiMemoryEntry = {
 			...entry,
+			schemaVersion: MEMORY_SCHEMA_VERSION,
 			id: this.generateId(),
 			timestamp: new Date().toISOString(),
 			content: entry.content.slice(0, MAX_CONTENT_LENGTH),
@@ -183,10 +202,30 @@ export class RpiMemory {
 		await this.saveEntries(entries)
 	}
 
-	async recall(taskText: string, limit = 5): Promise<RpiMemoryEntry[]> {
+	async recall(taskText: string, limit = 5, options?: RpiRecallOptions): Promise<RpiMemoryEntry[]> {
 		const entries = await this.loadEntries()
 		if (entries.length === 0) {
 			return []
+		}
+
+		const freshnessTtlHours = options?.freshnessTtlHours
+		const maxStaleResults = Math.max(0, options?.maxStaleResults ?? 0)
+
+		if (typeof freshnessTtlHours === "number" && freshnessTtlHours > 0) {
+			const freshEntries = entries.filter((entry) => this.isFresh(entry, freshnessTtlHours))
+			const staleEntries = entries.filter((entry) => !this.isFresh(entry, freshnessTtlHours))
+			const freshResults = this.recallFromEntries(taskText, freshEntries, limit)
+			if (freshResults.length >= limit || staleEntries.length === 0 || maxStaleResults === 0) {
+				return freshResults.slice(0, limit)
+			}
+
+			const staleBudget = Math.min(maxStaleResults, limit - freshResults.length)
+			if (staleBudget <= 0) {
+				return freshResults.slice(0, limit)
+			}
+
+			const staleResults = this.recallFromEntries(taskText, staleEntries, staleBudget)
+			return [...freshResults, ...staleResults].slice(0, limit)
 		}
 
 		// Build TF-IDF index if needed
@@ -225,6 +264,20 @@ export class RpiMemory {
 			.map((s) => s.entry)
 	}
 
+	async getFreshnessStats(freshnessTtlHours: number): Promise<{ total: number; fresh: number; stale: number }> {
+		const entries = await this.loadEntries()
+		if (entries.length === 0) {
+			return { total: 0, fresh: 0, stale: 0 }
+		}
+
+		const fresh = entries.filter((entry) => this.isFresh(entry, freshnessTtlHours)).length
+		return {
+			total: entries.length,
+			fresh,
+			stale: entries.length - fresh,
+		}
+	}
+
 	async inheritFromParent(parentTaskId: string): Promise<RpiMemoryEntry[]> {
 		const entries = await this.loadEntries()
 		return entries.filter((e) => e.taskId === parentTaskId)
@@ -253,6 +306,43 @@ export class RpiMemory {
 		this.indexBuilt = true
 	}
 
+	private recallFromEntries(taskText: string, entries: RpiMemoryEntry[], limit: number): RpiMemoryEntry[] {
+		if (entries.length === 0 || limit <= 0) {
+			return []
+		}
+
+		const localIndex = new TfIdfIndex()
+		for (const entry of entries) {
+			const text = [...entry.tags, entry.content, entry.type].join(" ")
+			localIndex.addDocument(entry.id, text)
+		}
+
+		const tfidfResults = localIndex.query(taskText)
+		if (tfidfResults.length > 0) {
+			const entryMap = new Map(entries.map((e) => [e.id, e]))
+			return tfidfResults
+				.filter((r) => r.score > 0.05)
+				.slice(0, limit)
+				.map((r) => entryMap.get(r.id))
+				.filter((entry): entry is RpiMemoryEntry => Boolean(entry))
+		}
+
+		const keywords = this.extractKeywords(taskText)
+		if (keywords.length === 0) {
+			return []
+		}
+
+		return entries
+			.map((entry) => ({
+				entry,
+				score: entry.tags.filter((tag) => keywords.includes(tag.toLowerCase())).length,
+			}))
+			.filter((item) => item.score > 0)
+			.sort((a, b) => b.score - a.score)
+			.slice(0, limit)
+			.map((item) => item.entry)
+	}
+
 	private async loadEntries(): Promise<RpiMemoryEntry[]> {
 		if (this.cachedEntries) {
 			return this.cachedEntries
@@ -261,7 +351,7 @@ export class RpiMemory {
 			const content = await fs.readFile(this.indexPath, "utf-8")
 			const parsed = JSON.parse(content)
 			if (Array.isArray(parsed)) {
-				this.cachedEntries = parsed as RpiMemoryEntry[]
+				this.cachedEntries = this.normalizeEntries(parsed)
 				return this.cachedEntries
 			}
 			return []
@@ -270,10 +360,61 @@ export class RpiMemory {
 		}
 	}
 
+	private normalizeEntries(rawEntries: unknown[]): RpiMemoryEntry[] {
+		const normalized: RpiMemoryEntry[] = []
+		for (const raw of rawEntries) {
+			if (!raw || typeof raw !== "object") {
+				continue
+			}
+
+			const entry = raw as Partial<RpiMemoryEntry>
+			if (
+				typeof entry.taskId !== "string" ||
+				typeof entry.type !== "string" ||
+				typeof entry.content !== "string" ||
+				!Array.isArray(entry.tags) ||
+				typeof entry.source !== "string"
+			) {
+				continue
+			}
+			if (!ENTRY_TYPES.has(entry.type as RpiMemoryEntry["type"])) {
+				continue
+			}
+			if (!ENTRY_SOURCES.has(entry.source as RpiMemoryEntry["source"])) {
+				continue
+			}
+
+			normalized.push({
+				id: typeof entry.id === "string" ? entry.id : this.generateId(),
+				schemaVersion: MEMORY_SCHEMA_VERSION,
+				taskId: entry.taskId,
+				parentTaskId: typeof entry.parentTaskId === "string" ? entry.parentTaskId : undefined,
+				timestamp: typeof entry.timestamp === "string" ? entry.timestamp : new Date().toISOString(),
+				type: entry.type as RpiMemoryEntry["type"],
+				content: entry.content.slice(0, MAX_CONTENT_LENGTH),
+				tags: entry.tags.filter((tag): tag is string => typeof tag === "string"),
+				source: entry.source as RpiMemoryEntry["source"],
+			})
+		}
+		return normalized
+	}
+
 	private async saveEntries(entries: RpiMemoryEntry[]): Promise<void> {
 		// Prune before saving if over limit
 		const toSave = entries.length > MAX_ENTRIES ? entries.slice(-MAX_ENTRIES) : entries
 		await fs.writeFile(this.indexPath, JSON.stringify(toSave, null, "\t"), "utf-8")
+	}
+
+	private isFresh(entry: RpiMemoryEntry, freshnessTtlHours: number): boolean {
+		if (freshnessTtlHours <= 0) {
+			return true
+		}
+		const timestamp = Date.parse(entry.timestamp)
+		if (!Number.isFinite(timestamp)) {
+			return false
+		}
+		const ttlMs = freshnessTtlHours * 60 * 60 * 1000
+		return Date.now() - timestamp <= ttlMs
 	}
 
 	private extractKeywords(text: string): string[] {

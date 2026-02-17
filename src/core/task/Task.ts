@@ -337,6 +337,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private askResponseImages?: string[]
 	public lastMessageTs?: number
 	private autoApprovalTimeoutRef?: NodeJS.Timeout
+	private rpiCompletionBlocker?: string
+	private rpiCompletionBlockerRepeatCount = 0
 
 	// Tool Use
 	consecutiveMistakeCount: number = 0
@@ -1506,7 +1508,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Automatically approve if the ask according to the user's settings.
 		const provider = this.providerRef.deref()
 		const state = provider ? await provider.getState() : undefined
-		const approval = await checkAutoApproval({ state, ask: type, text, isProtected })
+		const approval = await checkAutoApproval({
+			state,
+			ask: type,
+			text,
+			isProtected,
+			cwd: this.cwd,
+			followupAutoResponseText: type === "followup" ? this.getRpiFollowupAutoResponseOverride() : undefined,
+		})
 
 		if (approval.decision === "approve") {
 			this.approveAsk()
@@ -4801,6 +4810,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					getMode: async () => this.getTaskMode(),
 					getTaskText: () => this.metadata.task,
 					getApiConfiguration: () => this.getRpiCouncilApiConfiguration(),
+					getTokenUsage: () => {
+						const usage = this.tokenUsage
+						if (!usage) {
+							return undefined
+						}
+						return {
+							totalCost: usage.totalCost,
+							totalTokensIn: usage.totalTokensIn,
+							totalTokensOut: usage.totalTokensOut,
+						}
+					},
 					isCouncilEngineEnabled: () => this.isRpiCouncilEngineEnabled(),
 					getCompletedChildTaskId: () => this.completedByChildId,
 					getVerificationStrictness: () => {
@@ -5006,11 +5026,47 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 			const autopilot = await this.getRpiAutopilot()
 			await autopilot.markCompletionAccepted()
+			this.clearRpiCompletionBlocker()
 		} catch (error) {
 			console.error(
 				`[Task#markRpiCompletionAccepted] Failed: ${error instanceof Error ? error.message : String(error)}`,
 			)
 		}
+	}
+
+	public registerRpiCompletionBlocker(blocker: string): number {
+		const normalized = blocker.trim()
+		if (!normalized) {
+			return 0
+		}
+
+		if (this.rpiCompletionBlocker === normalized) {
+			this.rpiCompletionBlockerRepeatCount += 1
+		} else {
+			this.rpiCompletionBlocker = normalized
+			this.rpiCompletionBlockerRepeatCount = 1
+		}
+
+		return this.rpiCompletionBlockerRepeatCount
+	}
+
+	public clearRpiCompletionBlocker(): void {
+		this.rpiCompletionBlocker = undefined
+		this.rpiCompletionBlockerRepeatCount = 0
+	}
+
+	private getRpiFollowupAutoResponseOverride(): string | undefined {
+		if (!this.rpiCompletionBlocker) {
+			return undefined
+		}
+
+		// Preserve auto-approval flow while preventing repeated blocker loops.
+		// After repeated identical completion blockers, force a terminal response.
+		if (this.rpiCompletionBlockerRepeatCount >= 2) {
+			return "Terminate now with no additional assistant output."
+		}
+
+		return undefined
 	}
 
 	private async maybeAnnounceRpiAutopilot(): Promise<void> {

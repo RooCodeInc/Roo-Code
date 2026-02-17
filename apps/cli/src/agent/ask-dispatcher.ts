@@ -368,8 +368,10 @@ export class AskDispatcher {
 		this.outputManager.markDisplayed(ts, text || "", false)
 
 		if (this.nonInteractive) {
-			// Auto-approved by extension settings
-			return { handled: true }
+			// In non-interactive mode we must still send a response to avoid hangs
+			// when policy requires explicit approval prompts.
+			this.sendApprovalResponse(true)
+			return { handled: true, response: "yesButtonClicked" }
 		}
 
 		try {
@@ -429,8 +431,10 @@ export class AskDispatcher {
 		this.outputManager.markDisplayed(ts, text || "", false)
 
 		if (this.nonInteractive) {
-			// Auto-approved by extension settings (unless protected)
-			return { handled: true }
+			// In non-interactive mode we must still send a response to avoid hangs
+			// when policy requires explicit approval prompts.
+			this.sendApprovalResponse(true)
+			return { handled: true, response: "yesButtonClicked" }
 		}
 
 		try {
@@ -455,8 +459,10 @@ export class AskDispatcher {
 		this.outputManager.markDisplayed(ts, text || "", false)
 
 		if (this.nonInteractive) {
-			// Auto-approved by extension settings
-			return { handled: true }
+			// In non-interactive mode we must still send a response to avoid hangs
+			// when policy requires explicit approval prompts.
+			this.sendApprovalResponse(true)
+			return { handled: true, response: "yesButtonClicked" }
 		}
 
 		try {
@@ -502,8 +508,10 @@ export class AskDispatcher {
 		this.outputManager.markDisplayed(ts, text || "", false)
 
 		if (this.nonInteractive) {
-			// Auto-approved by extension settings
-			return { handled: true }
+			// In non-interactive mode we must still send a response to avoid hangs
+			// when policy requires explicit approval prompts.
+			this.sendApprovalResponse(true)
+			return { handled: true, response: "yesButtonClicked" }
 		}
 
 		try {

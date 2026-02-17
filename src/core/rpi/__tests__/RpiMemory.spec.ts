@@ -134,4 +134,73 @@ describe("RpiMemory", () => {
 		const results = await memory.recall("auth pattern implementation", 3)
 		expect(results.length).toBe(3)
 	})
+
+	it("enforces freshness TTL and allows limited stale fallback", async () => {
+		const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "rpi-memory-freshness-"))
+		createdDirs.push(tmpDir)
+		const memory = new RpiMemory(tmpDir)
+
+		await memory.remember({
+			taskId: "task-fresh",
+			type: "pattern",
+			content: "Fresh auth strategy",
+			tags: ["fresh", "auth"],
+			source: "completion",
+		})
+
+		const indexPath = path.join(tmpDir, ".roo", "rpi", "memory", "index.json")
+		const parsed = JSON.parse(await fs.readFile(indexPath, "utf-8")) as any[]
+		parsed.push({
+			id: "legacy-stale",
+			taskId: "task-stale",
+			timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+			type: "pattern",
+			content: "Stale cache pattern",
+			tags: ["stale", "cache"],
+			source: "manual",
+		})
+		await fs.writeFile(indexPath, JSON.stringify(parsed, null, 2), "utf-8")
+
+		const reloadedMemory = new RpiMemory(tmpDir)
+		const strictFresh = await reloadedMemory.recall("stale cache", 5, { freshnessTtlHours: 24, maxStaleResults: 0 })
+		expect(strictFresh.length).toBe(0)
+
+		const withStaleFallback = await reloadedMemory.recall("stale cache", 5, {
+			freshnessTtlHours: 24,
+			maxStaleResults: 1,
+		})
+		expect(withStaleFallback.length).toBe(1)
+		expect(withStaleFallback[0].content).toContain("Stale")
+	})
+
+	it("normalizes legacy entries without schemaVersion", async () => {
+		const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "rpi-memory-legacy-"))
+		createdDirs.push(tmpDir)
+		const memory = new RpiMemory(tmpDir)
+		const memoryDir = path.join(tmpDir, ".roo", "rpi", "memory")
+		await fs.mkdir(memoryDir, { recursive: true })
+		await fs.writeFile(
+			path.join(memoryDir, "index.json"),
+			JSON.stringify(
+				[
+					{
+						id: "legacy-1",
+						taskId: "task-legacy",
+						timestamp: new Date().toISOString(),
+						type: "pattern",
+						content: "Legacy entry should still work",
+						tags: ["legacy"],
+						source: "manual",
+					},
+				],
+				null,
+				2,
+			),
+			"utf-8",
+		)
+
+		const results = await memory.recall("legacy")
+		expect(results.length).toBe(1)
+		expect(results[0].content).toContain("Legacy")
+	})
 })

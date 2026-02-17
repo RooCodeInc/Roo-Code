@@ -192,6 +192,7 @@ export abstract class BaseTool<TName extends ToolName> {
 			typeof params === "object" && params !== null ? (params as Record<string, unknown>) : undefined,
 		)
 
+		const startedAt = Date.now()
 		let executionError: Error | undefined
 		try {
 			await this.execute(params, task, callbacks)
@@ -203,6 +204,7 @@ export abstract class BaseTool<TName extends ToolName> {
 				typeof params === "object" && params !== null ? (params as Record<string, unknown>) : undefined,
 				executionError,
 			)
+			observation.durationMs = Math.max(0, Date.now() - startedAt)
 			await (task as any).onRpiToolFinish?.(this.name, observation)
 			this._rpiObservationExtras = {}
 		}

@@ -92,6 +92,64 @@ describe("attemptCompletionTool", () => {
 		}
 	})
 
+	it("records repeated RPI completion blockers with stronger guidance", async () => {
+		const block: AttemptCompletionToolUse = {
+			type: "tool_use",
+			name: "attempt_completion",
+			params: { result: "Task completed successfully" },
+			nativeArgs: { result: "Task completed successfully" },
+			partial: false,
+		}
+
+		;(mockTask as any).getRpiCompletionBlocker = vi
+			.fn()
+			.mockResolvedValue("RPI canary gate is blocked for fingerprint provider::model.")
+		;(mockTask as any).registerRpiCompletionBlocker = vi.fn().mockReturnValue(3)
+		;(mockTask as any).clearRpiCompletionBlocker = vi.fn()
+
+		const callbacks: AttemptCompletionCallbacks = {
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+			askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+			toolDescription: mockToolDescription,
+		}
+
+		await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+		expect(mockTask.consecutiveMistakeCount).toBe(1)
+		expect(mockTask.recordToolError).toHaveBeenCalledWith("attempt_completion")
+		expect(mockPushToolResult).toHaveBeenCalledWith(
+			expect.stringContaining("Completion remains blocked (3 consecutive attempts)"),
+		)
+		expect((mockTask as any).clearRpiCompletionBlocker).not.toHaveBeenCalled()
+	})
+
+	it("clears cached RPI blocker state when completion blocker no longer exists", async () => {
+		const block: AttemptCompletionToolUse = {
+			type: "tool_use",
+			name: "attempt_completion",
+			params: { result: "Task completed successfully" },
+			nativeArgs: { result: "Task completed successfully" },
+			partial: false,
+		}
+
+		;(mockTask as any).getRpiCompletionBlocker = vi.fn().mockResolvedValue(undefined)
+		;(mockTask as any).clearRpiCompletionBlocker = vi.fn()
+
+		const callbacks: AttemptCompletionCallbacks = {
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+			askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+			toolDescription: mockToolDescription,
+		}
+
+		await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+		expect((mockTask as any).clearRpiCompletionBlocker).toHaveBeenCalledTimes(1)
+	})
+
 	describe("todo list validation", () => {
 		it("should allow completion when there is no todo list", async () => {
 			const block: AttemptCompletionToolUse = {

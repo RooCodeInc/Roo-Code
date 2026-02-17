@@ -31,6 +31,8 @@ describe("RpiAutopilot council engine integration", () => {
 		taskText?: string
 		councilEnabled?: boolean
 		completedChildTaskId?: string
+		tokenUsage?: { totalCost?: number; totalTokensIn?: number; totalTokensOut?: number }
+		qualityGatesYaml?: string
 		engineOverrides?: Partial<
 			Record<"analyzeContext" | "decomposeTask" | "buildDecision" | "runVerificationReview", any>
 		>
@@ -43,6 +45,11 @@ describe("RpiAutopilot council engine integration", () => {
 			options?.taskText ??
 			"Build architecture migration workflow with integration and security requirements across multiple modules."
 		const councilEnabled = options?.councilEnabled ?? true
+		if (options?.qualityGatesYaml) {
+			const policyDir = path.join(cwd, "policy")
+			await fs.mkdir(policyDir, { recursive: true })
+			await fs.writeFile(path.join(policyDir, "quality-gates.yaml"), options.qualityGatesYaml, "utf-8")
+		}
 
 		const mockEngine = {
 			analyzeContext: vi.fn().mockResolvedValue(createCouncilResult("discovery summary")),
@@ -59,6 +66,7 @@ describe("RpiAutopilot council engine integration", () => {
 				getMode: async () => mode,
 				getTaskText: () => taskText,
 				getApiConfiguration: async () => apiConfiguration,
+				getTokenUsage: () => options?.tokenUsage,
 				isCouncilEngineEnabled: () => councilEnabled,
 				getCompletedChildTaskId: () => options?.completedChildTaskId,
 			},
@@ -103,7 +111,7 @@ describe("RpiAutopilot council engine integration", () => {
 	})
 
 	it("does not run verification council when blocked due to missing implementation evidence", async () => {
-		const { autopilot, mockEngine } = await createAutopilot({
+		const { autopilot, mockEngine, cwd } = await createAutopilot({
 			mode: "code",
 			taskText: "Simple clarification task.",
 		})
@@ -112,6 +120,10 @@ describe("RpiAutopilot council engine integration", () => {
 
 		expect(blocker).toContain("Implementation evidence")
 		expect(mockEngine.runVerificationReview).not.toHaveBeenCalled()
+
+		const replayPath = path.join(cwd, ".roo", "rpi", "task-123", "replay_record.json")
+		const replayContent = await fs.readFile(replayPath, "utf-8")
+		expect(JSON.parse(replayContent).reason).toBe("verification_failed")
 	})
 
 	it("skips all council execution when feature is disabled", async () => {
@@ -185,5 +197,91 @@ describe("RpiAutopilot council engine integration", () => {
 
 		const blocker = await autopilot.getCompletionBlocker()
 		expect(blocker).toBeUndefined()
+	})
+
+	it("blocks completion when cost guardrail fallback threshold is exceeded", async () => {
+		const { autopilot, cwd } = await createAutopilot({
+			mode: "code",
+			taskText: "Implement fix quickly.",
+			councilEnabled: false,
+			tokenUsage: { totalCost: 10 },
+		})
+
+		const blocker = await autopilot.getCompletionBlocker()
+		expect(blocker).toContain("cost guardrail blocked completion")
+
+		const replayPath = path.join(cwd, ".roo", "rpi", "task-123", "replay_record.json")
+		const replayContent = await fs.readFile(replayPath, "utf-8")
+		expect(JSON.parse(replayContent).reason).toBe("cost_guardrail_blocked")
+	})
+
+	it("blocks completion on canary failure when runtime failure rate exceeds policy", async () => {
+		const { autopilot, cwd } = await createAutopilot({
+			mode: "code",
+			taskText: "Implement fix and validate.",
+			councilEnabled: false,
+			qualityGatesYaml: [
+				"verification:",
+				"  requireImplementationEvidence: true",
+				"  enforceLastCommandSuccessOn: [standard, strict]",
+				"  enforceNoUnresolvedWriteErrorsOn: [standard, strict]",
+				"  enforceTaskKeywordMatchingOn: [strict]",
+				"  commandKeywords: [test, spec]",
+				"finalization:",
+				"  requiredPreCompletionArtifacts: [state.json, task_plan.md, findings.md, progress.md, execution_trace.jsonl]",
+				"  requiredPostCompletionArtifacts: [final_summary.md]",
+				"replay:",
+				"  includeRecentObservations: 10",
+				"  includeRecentTraceEvents: 25",
+				"performance:",
+				"  adaptiveConcurrency:",
+				"    enabled: true",
+				"    evaluationWindow: 8",
+				"    failureRateThreshold: 0.3",
+				"    p95LatencyMsThreshold: 15000",
+				"    fallbackFailureRateThreshold: 0.6",
+				"    fallbackP95LatencyMsThreshold: 30000",
+				"  costGuardrails:",
+				"    enabled: false",
+				"    maxTaskCostUsd: 100",
+				"    warnAtRatio: 0.8",
+				"    throttleAtRatio: 1.0",
+				"    fallbackAtRatio: 1.2",
+				"rollout:",
+				"  canary:",
+				"    enabled: true",
+				"    sampleSize: 1",
+				"    maxFailureRate: 0.1",
+				"    maxP95LatencyMs: 30000",
+				"    minCodeReviewScore: 1",
+				"memory:",
+				"  freshnessTtlHours: 336",
+				"  maxStaleResults: 1",
+			].join("\n"),
+		})
+
+		await autopilot.onToolStart("write_to_file", { path: "src/file.ts" })
+		await autopilot.onToolFinish("write_to_file", {
+			toolName: "write_to_file",
+			timestamp: new Date().toISOString(),
+			success: true,
+			summary: "Wrote src/file.ts",
+			filesAffected: ["src/file.ts"],
+		})
+		await autopilot.onToolStart("execute_command", { command: "pnpm test" })
+		await autopilot.onToolFinish("execute_command", {
+			toolName: "execute_command",
+			timestamp: new Date().toISOString(),
+			success: false,
+			summary: "Tests failed",
+			error: "non-zero exit",
+		})
+
+		const blocker = await autopilot.getCompletionBlocker()
+		expect(blocker).toContain("Canary failed: failure rate")
+
+		const replayPath = path.join(cwd, ".roo", "rpi", "task-123", "replay_record.json")
+		const replayContent = await fs.readFile(replayPath, "utf-8")
+		expect(JSON.parse(replayContent).reason).toBe("canary_gate_failed")
 	})
 })

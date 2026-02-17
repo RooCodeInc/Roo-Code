@@ -199,4 +199,21 @@ describe("RpiVerificationEngine", () => {
 		const cmdCheck = result.checks.find((c) => c.name === "Last command success")
 		expect(cmdCheck?.status).toBe("skipped")
 	})
+
+	it("supports policy override to disable implementation evidence requirement", () => {
+		const result = engine.evaluate({
+			observations: [],
+			taskText: "document architecture notes",
+			mode: "architect",
+			strictness: "lenient",
+			writeOps: 0,
+			commandOps: 0,
+			policy: {
+				requireImplementationEvidence: false,
+			},
+		})
+
+		expect(result.passed).toBe(true)
+		expect(result.checks.find((c) => c.name === "Implementation evidence")?.status).toBe("skipped")
+	})
 })

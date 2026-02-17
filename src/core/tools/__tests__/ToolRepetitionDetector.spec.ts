@@ -142,7 +142,7 @@ describe("ToolRepetitionDetector", () => {
 
 			expect(result.allowExecution).toBe(false)
 			expect(result.askUser).toBeDefined()
-			expect(result.askUser?.messageKey).toBe("mistake_limit_reached")
+			expect(result.askUser?.messageKey).toBe("tool_repetition_limit_reached")
 			expect(result.askUser?.messageDetail).toContain("repeat-tool")
 		})
 
@@ -370,7 +370,7 @@ describe("ToolRepetitionDetector", () => {
 			const result6 = detector5.check(tool)
 			expect(result6.allowExecution).toBe(false)
 			expect(result6.askUser).toBeDefined()
-			expect(result6.askUser?.messageKey).toBe("mistake_limit_reached")
+			expect(result6.askUser?.messageKey).toBe("tool_repetition_limit_reached")
 		})
 
 		it("should reset counter after blocking and allow new attempts", () => {

@@ -75,11 +75,17 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 
 		const rpiCompletionBlocker = await (task as any).getRpiCompletionBlocker?.()
 		if (rpiCompletionBlocker) {
+			const repeatCount = (task as any).registerRpiCompletionBlocker?.(rpiCompletionBlocker) ?? 1
+			const blockerMessage =
+				repeatCount > 1
+					? `${rpiCompletionBlocker}\n\nCompletion remains blocked (${repeatCount} consecutive attempts). Stop retrying attempt_completion until this blocker is resolved. Ask the user to update provider/model or rollout policy before retrying completion.`
+					: `${rpiCompletionBlocker}\n\nDo not retry attempt_completion until this blocker is resolved. Ask the user to update provider/model or rollout policy before retrying completion.`
 			task.consecutiveMistakeCount++
 			task.recordToolError("attempt_completion")
-			pushToolResult(formatResponse.toolError(rpiCompletionBlocker))
+			pushToolResult(formatResponse.toolError(blockerMessage))
 			return
 		}
+		;(task as any).clearRpiCompletionBlocker?.()
 
 		try {
 			const eslintBlocker = await this.getEslintCompletionBlocker(task)

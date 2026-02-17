@@ -2,6 +2,14 @@ import type { RpiToolObservation } from "../RpiAutopilot"
 
 type VerificationStrictness = "lenient" | "standard" | "strict"
 
+export interface RpiVerificationPolicy {
+	requireImplementationEvidence: boolean
+	enforceLastCommandSuccessOn: VerificationStrictness[]
+	enforceNoUnresolvedWriteErrorsOn: VerificationStrictness[]
+	enforceTaskKeywordMatchingOn: VerificationStrictness[]
+	commandKeywords: string[]
+}
+
 interface RpiVerificationInput {
 	observations: RpiToolObservation[]
 	taskText: string
@@ -9,6 +17,7 @@ interface RpiVerificationInput {
 	strictness: VerificationStrictness
 	writeOps: number
 	commandOps: number
+	policy?: Partial<RpiVerificationPolicy>
 }
 
 interface RpiVerificationCheck {
@@ -21,6 +30,14 @@ export interface RpiVerificationResult {
 	passed: boolean
 	checks: RpiVerificationCheck[]
 	suggestions: string[]
+}
+
+const DEFAULT_VERIFICATION_POLICY: RpiVerificationPolicy = {
+	requireImplementationEvidence: true,
+	enforceLastCommandSuccessOn: ["standard", "strict"],
+	enforceNoUnresolvedWriteErrorsOn: ["standard", "strict"],
+	enforceTaskKeywordMatchingOn: ["strict"],
+	commandKeywords: ["test", "spec"],
 }
 
 export class RpiVerificationEngine {
@@ -84,29 +101,38 @@ export class RpiVerificationEngine {
 	evaluate(input: RpiVerificationInput): RpiVerificationResult {
 		const checks: RpiVerificationCheck[] = []
 		const suggestions: string[] = []
+		const policy = this.resolvePolicy(input.policy)
 
-		// Gate 1: Implementation evidence (lenient+)
-		checks.push(this.checkImplementationEvidence(input))
+		// Gate 1: Implementation evidence
+		if (policy.requireImplementationEvidence) {
+			checks.push(this.checkImplementationEvidence(input))
+		} else {
+			checks.push({
+				name: "Implementation evidence",
+				status: "skipped",
+				detail: "Disabled by policy.",
+			})
+		}
 
-		// Gate 2: Last command success (standard+)
-		if (input.strictness !== "lenient") {
+		// Gate 2: Last command success
+		if (policy.enforceLastCommandSuccessOn.includes(input.strictness)) {
 			checks.push(this.checkLastCommandSuccess(input))
 		}
 
-		// Gate 3: No unresolved write errors (standard+)
-		if (input.strictness !== "lenient") {
+		// Gate 3: No unresolved write errors
+		if (policy.enforceNoUnresolvedWriteErrorsOn.includes(input.strictness)) {
 			checks.push(this.checkNoUnresolvedWriteErrors(input))
 		}
 
-		// Gate 4: Task keyword matching (strict only)
-		if (input.strictness === "strict") {
-			checks.push(this.checkTaskKeywordMatching(input))
+		// Gate 4: Task keyword matching
+		if (policy.enforceTaskKeywordMatchingOn.includes(input.strictness)) {
+			checks.push(this.checkTaskKeywordMatching(input, policy.commandKeywords))
 		}
 
 		const failed = checks.filter((c) => c.status === "failed")
 		if (failed.length > 0) {
 			for (const check of failed) {
-				suggestions.push(`Fix: ${check.name} — ${check.detail}`)
+				suggestions.push(`Fix: ${check.name} - ${check.detail}`)
 			}
 		}
 
@@ -114,6 +140,23 @@ export class RpiVerificationEngine {
 			passed: failed.length === 0,
 			checks,
 			suggestions,
+		}
+	}
+
+	private resolvePolicy(input?: Partial<RpiVerificationPolicy>): RpiVerificationPolicy {
+		return {
+			requireImplementationEvidence:
+				input?.requireImplementationEvidence ?? DEFAULT_VERIFICATION_POLICY.requireImplementationEvidence,
+			enforceLastCommandSuccessOn:
+				input?.enforceLastCommandSuccessOn ?? DEFAULT_VERIFICATION_POLICY.enforceLastCommandSuccessOn,
+			enforceNoUnresolvedWriteErrorsOn:
+				input?.enforceNoUnresolvedWriteErrorsOn ?? DEFAULT_VERIFICATION_POLICY.enforceNoUnresolvedWriteErrorsOn,
+			enforceTaskKeywordMatchingOn:
+				input?.enforceTaskKeywordMatchingOn ?? DEFAULT_VERIFICATION_POLICY.enforceTaskKeywordMatchingOn,
+			commandKeywords:
+				input?.commandKeywords && input.commandKeywords.length > 0
+					? input.commandKeywords
+					: DEFAULT_VERIFICATION_POLICY.commandKeywords,
 		}
 	}
 
@@ -202,20 +245,17 @@ export class RpiVerificationEngine {
 		}
 	}
 
-	private checkTaskKeywordMatching(input: RpiVerificationInput): RpiVerificationCheck {
+	private checkTaskKeywordMatching(input: RpiVerificationInput, commandKeywords: string[]): RpiVerificationCheck {
 		const taskLower = input.taskText.toLowerCase()
 		const toolNames = new Set(input.observations.map((o) => o.toolName))
 		const hasAnyCommand = input.observations.some((o) => RpiVerificationEngine.isSuccessfulCommandObservation(o))
+		const requiresCommandEvidence = commandKeywords.some((keyword) => taskLower.includes(keyword.toLowerCase()))
 
-		// If task mentions "test", verify a test command was executed
-		if (
-			(taskLower.includes("test") || taskLower.includes("spec")) &&
-			!(toolNames.has("execute_command") || hasAnyCommand)
-		) {
+		if (requiresCommandEvidence && !(toolNames.has("execute_command") || hasAnyCommand)) {
 			return {
 				name: "Task keyword matching",
 				status: "failed",
-				detail: "Task mentions tests but no command was executed. Run the tests before completing.",
+				detail: "Task mentions command-sensitive keywords but no command was executed.",
 			}
 		}
 

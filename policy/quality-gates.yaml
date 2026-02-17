@@ -1,0 +1,54 @@
+verification:
+  requireImplementationEvidence: true
+  enforceLastCommandSuccessOn:
+    - standard
+    - strict
+  enforceNoUnresolvedWriteErrorsOn:
+    - standard
+    - strict
+  enforceTaskKeywordMatchingOn:
+    - strict
+  commandKeywords:
+    - test
+    - spec
+
+finalization:
+  requiredPreCompletionArtifacts:
+    - state.json
+    - task_plan.md
+    - findings.md
+    - progress.md
+    - execution_trace.jsonl
+  requiredPostCompletionArtifacts:
+    - final_summary.md
+
+replay:
+  includeRecentObservations: 10
+  includeRecentTraceEvents: 25
+
+performance:
+  adaptiveConcurrency:
+    enabled: true
+    evaluationWindow: 8
+    failureRateThreshold: 0.35
+    p95LatencyMsThreshold: 15000
+    fallbackFailureRateThreshold: 0.6
+    fallbackP95LatencyMsThreshold: 30000
+  costGuardrails:
+    enabled: true
+    maxTaskCostUsd: 3
+    warnAtRatio: 0.8
+    throttleAtRatio: 1.0
+    fallbackAtRatio: 1.2
+
+rollout:
+  canary:
+    enabled: true
+    sampleSize: 3
+    maxFailureRate: 0.34
+    maxP95LatencyMs: 25000
+    minCodeReviewScore: 4
+
+memory:
+  freshnessTtlHours: 336
+  maxStaleResults: 1

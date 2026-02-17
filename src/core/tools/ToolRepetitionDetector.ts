@@ -64,7 +64,9 @@ export class ToolRepetitionDetector {
 			return {
 				allowExecution: false,
 				askUser: {
-					messageKey: "mistake_limit_reached",
+					// Tool repetition is a loop guard, not a "mistake limit reached" condition.
+					// Using a dedicated key prevents blocking UX paths that assume user intervention.
+					messageKey: "tool_repetition_limit_reached",
 					messageDetail: t("tools:toolRepetitionLimitReached", { toolName: currentToolCallBlock.name }),
 				},
 			}

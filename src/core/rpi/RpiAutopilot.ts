@@ -1,6 +1,6 @@
 import fs from "fs/promises"
 import * as path from "path"
-import type { ProviderSettings } from "@roo-code/types"
+import { getModelId, type ProviderSettings } from "@roo-code/types"
 
 import {
 	type RpiCouncilResult,
@@ -11,10 +11,12 @@ import {
 import { RpiCorrectionEngine, type RpiCorrectionSuggestion } from "./engine/RpiCorrectionEngine"
 import { RpiVerificationEngine } from "./engine/RpiVerificationEngine"
 import { RpiMemory } from "./RpiMemory"
+import { classifyRpiToolRisk, loadRpiPolicyBundle, type RpiPolicyBundle, type RpiRiskClass } from "./RpiPolicy"
 
 type RpiStrategy = "quick" | "standard" | "full"
 type RpiPhase = "discovery" | "planning" | "implementation" | "verification" | "done"
 type RpiCouncilPhase = Exclude<RpiPhase, "implementation" | "done">
+type RpiThrottleMode = "normal" | "throttled" | "fallback"
 
 type RpiEventLevel = "info" | "warn" | "error"
 
@@ -29,6 +31,7 @@ export interface RpiToolObservation {
 	exitCode?: number
 	diffSummary?: string
 	matchCount?: number
+	durationMs?: number
 	/** MCP metadata when toolName is `use_mcp_tool` */
 	mcpServerName?: string
 	mcpToolName?: string
@@ -53,6 +56,35 @@ interface RpiTaskPlan {
 	steps: RpiTaskStep[]
 	currentStepIndex: number
 	lastUpdatedAt: string
+}
+
+interface RpiTraceEvent {
+	type:
+		| "policy_loaded"
+		| "tool_start"
+		| "tool_finish"
+		| "verification_failed"
+		| "code_review_blocked"
+		| "evidence_gate_failed"
+		| "adaptive_throttle_changed"
+		| "cost_guardrail_warned"
+		| "cost_guardrail_blocked"
+		| "canary_state_changed"
+		| "canary_gate_failed"
+		| "completion_accepted"
+	taskId: string
+	timestamp: string
+	phase: RpiPhase
+	detail?: string
+	toolName?: string
+	mcpToolName?: string
+	success?: boolean
+	riskClass?: RpiRiskClass
+	throttleMode?: RpiThrottleMode
+	costUsd?: number
+	costRatio?: number
+	fingerprint?: string
+	canaryStatus?: "active" | "stable" | "blocked"
 }
 
 const MAX_OBSERVATIONS = 20
@@ -83,6 +115,24 @@ interface RpiState {
 	stepAttempts: Record<string, number>
 	codeReviewRuns: number
 	codeReviewScore?: number
+	throttleMode: RpiThrottleMode
+	lastRuntimeSnapshot?: {
+		failureRate: number
+		p95LatencyMs: number
+		recentCount: number
+		costUsd?: number
+		costRatio?: number
+	}
+}
+
+interface RpiCanaryState {
+	version: 1
+	fingerprint: string
+	status: "active" | "stable" | "blocked"
+	sampleSize: number
+	samples: number
+	failedSamples: number
+	lastUpdatedAt: string
 }
 
 interface RpiAutopilotContext {
@@ -91,6 +141,7 @@ interface RpiAutopilotContext {
 	getMode: () => Promise<string>
 	getTaskText: () => string | undefined
 	getApiConfiguration: () => Promise<ProviderSettings | undefined>
+	getTokenUsage?: () => { totalCost?: number; totalTokensIn?: number; totalTokensOut?: number } | undefined
 	isCouncilEngineEnabled: () => boolean
 	getVerificationStrictness?: () => "lenient" | "standard" | "strict"
 	/**
@@ -186,6 +237,8 @@ const MAX_COUNCIL_RISKS = 4
 const MAX_CODE_REVIEW_RUNS_PER_TASK = 1
 const DEFAULT_CODE_REVIEW_TIMEOUT_MS = 120_000
 const DEFAULT_CODE_REVIEW_MAX_FILE_CHARS = 15_000
+const DEFAULT_ADAPTIVE_WINDOW = 8
+const DEFAULT_REPLAN_INTERVAL = 5
 const CODE_REVIEW_BINARY_EXTENSIONS = new Set([
 	".png",
 	".jpg",
@@ -219,9 +272,13 @@ export class RpiAutopilot {
 	private readonly correctionEngine: RpiCorrectionEngine
 	private readonly verificationEngine: RpiVerificationEngine
 	private readonly memory: RpiMemory
+	private policyBundle?: RpiPolicyBundle
 	private progressEvents: string[] = []
 	private taskPlan?: RpiTaskPlan
 	private pendingCorrectionHint?: RpiCorrectionSuggestion
+	private readonly toolStartAt = new Map<string, number>()
+	private canaryState?: RpiCanaryState
+	private canaryOutcomeRecorded = false
 
 	/** Expose observations and plan for ContextDistiller integration */
 	get currentObservations(): RpiToolObservation[] {
@@ -253,6 +310,7 @@ export class RpiAutopilot {
 			}
 
 			await fs.mkdir(this.baseDir, { recursive: true })
+			await this.loadPolicyBundle()
 			const mode = await this.context.getMode()
 			const taskText = this.context.getTaskText() ?? ""
 			const fromDisk = await this.readStateFile()
@@ -268,6 +326,8 @@ export class RpiAutopilot {
 					this.state = this.createInitialState(mode, taskText)
 				}
 			}
+			await this.loadCanaryState()
+			await this.enforceCanaryFingerprint()
 
 			// Initialize dynamic task plan if not yet created
 			// Prefer AI-driven decomposition when council engine is enabled
@@ -287,10 +347,22 @@ export class RpiAutopilot {
 			// Recall relevant memories from cross-task memory
 			if (taskText) {
 				try {
-					const memories = await this.memory.recall(taskText)
+					const freshnessPolicy = this.policyBundle?.qualityGates.memory
+					const memories = await this.memory.recall(taskText, 5, {
+						freshnessTtlHours: freshnessPolicy?.freshnessTtlHours,
+						maxStaleResults: freshnessPolicy?.maxStaleResults,
+					})
 					if (memories.length > 0) {
 						for (const mem of memories) {
 							this.appendProgress(`Memory recalled [${mem.type}]: ${mem.content}`)
+						}
+					}
+					if (freshnessPolicy) {
+						const freshnessStats = await this.memory.getFreshnessStats(freshnessPolicy.freshnessTtlHours)
+						if (freshnessStats.stale > 0) {
+							this.appendProgress(
+								`Memory freshness: ${freshnessStats.fresh}/${freshnessStats.total} fresh entries (${freshnessStats.stale} stale).`,
+							)
 						}
 					}
 				} catch {
@@ -325,6 +397,7 @@ export class RpiAutopilot {
 			}
 
 			await fs.mkdir(this.baseDir, { recursive: true })
+			await this.loadPolicyBundle()
 			const mode = await this.context.getMode()
 			const taskText = this.context.getTaskText() ?? ""
 			const fromDisk = await this.readStateFile()
@@ -340,6 +413,8 @@ export class RpiAutopilot {
 					this.state = this.createInitialState(mode, taskText)
 				}
 			}
+			await this.loadCanaryState()
+			await this.enforceCanaryFingerprint()
 
 			// Always use heuristic decomposition for fast init (instant)
 			if (!this.taskPlan && this.state) {
@@ -355,6 +430,30 @@ export class RpiAutopilot {
 				})
 			}
 		})
+	}
+
+	private async loadPolicyBundle(): Promise<void> {
+		if (this.policyBundle) {
+			return
+		}
+
+		try {
+			this.policyBundle = await loadRpiPolicyBundle(this.context.cwd)
+			for (const warning of this.policyBundle.loadWarnings) {
+				this.appendProgress(`Policy warning: ${warning}`)
+			}
+			await this.appendExecutionTrace({
+				type: "policy_loaded",
+				taskId: this.context.taskId,
+				timestamp: new Date().toISOString(),
+				phase: this.state?.phase ?? "discovery",
+				detail: `risk=${this.policyBundle.metadata.riskMatrixPath}, quality=${this.policyBundle.metadata.qualityGatesPath}`,
+			})
+		} catch (error) {
+			this.appendProgress(
+				`Policy load failed, defaults active: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
 	}
 
 	/**
@@ -386,7 +485,11 @@ export class RpiAutopilot {
 		// Memory recall (best-effort)
 		if (taskText) {
 			try {
-				const memories = await this.memory.recall(taskText)
+				const freshnessPolicy = this.policyBundle?.qualityGates.memory
+				const memories = await this.memory.recall(taskText, 5, {
+					freshnessTtlHours: freshnessPolicy?.freshnessTtlHours,
+					maxStaleResults: freshnessPolicy?.maxStaleResults,
+				})
 				if (memories.length > 0) {
 					for (const mem of memories) {
 						this.appendProgress(`Memory recalled [${mem.type}]: ${mem.content}`)
@@ -417,6 +520,14 @@ export class RpiAutopilot {
 			`RPI autopilot active. Strategy: ${this.state.strategy}. Phase: ${this.state.phase}.`,
 			`Council engine: ${this.context.isCouncilEngineEnabled() ? "enabled" : "disabled"}.`,
 		]
+		if (this.state.throttleMode !== "normal") {
+			lines.push(`Runtime mode: ${this.state.throttleMode}.`)
+		}
+		if (this.canaryState) {
+			lines.push(
+				`Canary status: ${this.canaryState.status} (${this.canaryState.samples}/${this.canaryState.sampleSize}).`,
+			)
+		}
 
 		// Attention mechanism: current step and next steps
 		if (currentStep) {
@@ -441,7 +552,9 @@ export class RpiAutopilot {
 		}
 
 		// References to artifacts
-		lines.push(`Plan: ${this.relativeTaskPlanPath}. Notes: ${this.relativeFindingsPath}.`)
+		lines.push(
+			`Plan: ${this.relativeTaskPlanPath}. Notes: ${this.relativeFindingsPath}. Trace: .roo/rpi/${this.taskDirName}/execution_trace.jsonl.`,
+		)
 
 		return lines.join(" ")
 	}
@@ -459,12 +572,14 @@ export class RpiAutopilot {
 
 			const previousPhase = this.state.phase
 			this.state.toolRuns += 1
+			this.toolStartAt.set(toolName, Date.now())
 			this.state.lastTool = toolName
 			this.state.lastToolAt = new Date().toISOString()
 			this.state.lastUpdatedAt = new Date().toISOString()
 
 			const mcpToolName =
 				toolName === "use_mcp_tool" && typeof params?.tool_name === "string" ? params.tool_name : undefined
+			const riskClass = this.classifyToolRisk(toolName, mcpToolName)
 			const mcpArgs =
 				toolName === "use_mcp_tool" && params && typeof (params as any).arguments === "object"
 					? ((params as any).arguments as Record<string, unknown> | undefined)
@@ -507,6 +622,16 @@ export class RpiAutopilot {
 				this.appendProgress(`Tool \`${toolName}\` started.`)
 			}
 
+			await this.appendExecutionTrace({
+				type: "tool_start",
+				taskId: this.context.taskId,
+				timestamp: new Date().toISOString(),
+				phase: this.state.phase,
+				toolName,
+				mcpToolName,
+				riskClass,
+			})
+
 			if (currentPhase !== previousPhase) {
 				this.notifyAutopilotEvent({
 					status: "phase_changed",
@@ -537,35 +662,63 @@ export class RpiAutopilot {
 			}
 
 			this.state.lastUpdatedAt = new Date().toISOString()
+			const startedAt = this.toolStartAt.get(toolName)
+			this.toolStartAt.delete(toolName)
+			const normalizedObservation: RpiToolObservation =
+				observation.durationMs === undefined && startedAt
+					? {
+							...observation,
+							durationMs: Math.max(0, Date.now() - startedAt),
+						}
+					: observation
 
 			// Store observation in rolling window
-			this.state.observations.push(observation)
+			this.state.observations.push(normalizedObservation)
 			if (this.state.observations.length > MAX_OBSERVATIONS) {
 				this.state.observations.shift()
 			}
-			this.state.lastObservation = observation
+			this.state.lastObservation = normalizedObservation
 			this.state.observationCount += 1
 
 			// Rich progress logging based on observation
-			if (!observation.success) {
-				this.appendProgress(`Tool \`${toolName}\` FAILED → ${observation.summary}`)
+			if (!normalizedObservation.success) {
+				this.appendProgress(`Tool \`${toolName}\` FAILED -> ${normalizedObservation.summary}`)
 				await this.appendFinding(
 					"error",
-					`Tool \`${toolName}\` failed: ${observation.error ?? observation.summary}`,
+					`Tool \`${toolName}\` failed: ${normalizedObservation.error ?? normalizedObservation.summary}`,
 				)
 			} else if (IMPLEMENTATION_TOOLS.has(toolName) || PLANNING_TOOLS.has(toolName)) {
-				this.appendProgress(`Tool \`${toolName}\` → ${observation.summary}`)
+				this.appendProgress(`Tool \`${toolName}\` -> ${normalizedObservation.summary}`)
+			}
+
+			const riskClass = this.classifyToolRisk(toolName, normalizedObservation.mcpToolName)
+			await this.appendExecutionTrace({
+				type: "tool_finish",
+				taskId: this.context.taskId,
+				timestamp: new Date().toISOString(),
+				phase: this.state.phase,
+				toolName,
+				mcpToolName: normalizedObservation.mcpToolName,
+				riskClass,
+				success: normalizedObservation.success,
+				detail: normalizedObservation.error ?? normalizedObservation.summary,
+			})
+			if (normalizedObservation.success && (riskClass === "R2" || riskClass === "R3")) {
+				await this.appendFinding(
+					riskClass === "R3" ? "warn" : "info",
+					`Risk-class ${riskClass} tool completed: \`${toolName}\`${normalizedObservation.mcpToolName ? ` (${normalizedObservation.mcpToolName})` : ""}.`,
+				)
 			}
 
 			// Correction engine: analyze failures and suggest next action
-			if (!observation.success) {
+			if (!normalizedObservation.success) {
 				const stepKey = this.taskPlan?.steps[this.taskPlan.currentStepIndex]?.id ?? toolName
 				this.state.stepAttempts[stepKey] = (this.state.stepAttempts[stepKey] ?? 0) + 1
 
 				const correction = this.correctionEngine.analyze({
 					failedToolName: toolName,
-					errorMessage: observation.error ?? "Unknown error",
-					observation,
+					errorMessage: normalizedObservation.error ?? "Unknown error",
+					observation: normalizedObservation,
 					recentObservations: this.state.observations.slice(-5),
 					attemptCount: this.state.stepAttempts[stepKey],
 				})
@@ -594,9 +747,10 @@ export class RpiAutopilot {
 			}
 
 			// Auto-advance dynamic plan steps based on observation
-			this.autoAdvanceStep(observation)
+			this.autoAdvanceStep(normalizedObservation)
 
 			// Phase 5.1: Adaptive re-planning - check if plan needs revision
+			await this.evaluateAdaptiveRuntimeControls()
 			await this.maybeRevisePlan()
 
 			await this.syncArtifacts()
@@ -651,9 +805,55 @@ export class RpiAutopilot {
 				: this.state.observations
 			const effectiveWriteOps = this.state.writeOps + (childEvidence?.writeOps ?? 0)
 			const effectiveCommandOps = this.state.commandOps + (childEvidence?.commandOps ?? 0)
+			await this.evaluateAdaptiveRuntimeControls()
+
+			const costGuardrailBlocker = this.getCostGuardrailCompletionBlocker()
+			if (costGuardrailBlocker) {
+				await this.appendExecutionTrace({
+					type: "cost_guardrail_blocked",
+					taskId: this.context.taskId,
+					timestamp: new Date().toISOString(),
+					phase: this.state.phase,
+					detail: costGuardrailBlocker,
+					costUsd: this.state.lastRuntimeSnapshot?.costUsd,
+					costRatio: this.state.lastRuntimeSnapshot?.costRatio,
+					throttleMode: this.state.throttleMode,
+				})
+				await this.writeReplayRecord("cost_guardrail_blocked", {
+					blocker: costGuardrailBlocker,
+					runtimeSnapshot: this.state.lastRuntimeSnapshot,
+					effectiveWriteOps,
+					effectiveCommandOps,
+				})
+				this.state.lastUpdatedAt = new Date().toISOString()
+				await this.syncArtifacts()
+				return costGuardrailBlocker
+			}
+
+			if (this.canaryState?.status === "blocked") {
+				const blocker = `RPI canary gate is blocked for fingerprint ${this.canaryState.fingerprint}. Adjust rollout policy or switch provider/model before completing.`
+				await this.appendExecutionTrace({
+					type: "canary_gate_failed",
+					taskId: this.context.taskId,
+					timestamp: new Date().toISOString(),
+					phase: this.state.phase,
+					detail: blocker,
+					fingerprint: this.canaryState.fingerprint,
+					canaryStatus: this.canaryState.status,
+				})
+				await this.writeReplayRecord("canary_gate_failed", {
+					blocker,
+					canaryState: this.canaryState,
+				})
+				await this.recordCanaryOutcome(false)
+				this.state.lastUpdatedAt = new Date().toISOString()
+				await this.syncArtifacts()
+				return blocker
+			}
 
 			// Run verification engine with quality gates
 			const strictness = this.context.getVerificationStrictness?.() ?? "lenient"
+			const verificationPolicy = this.policyBundle?.qualityGates.verification
 			const verification = this.verificationEngine.evaluate({
 				observations: effectiveObservations,
 				taskText: this.context.getTaskText() ?? "",
@@ -661,6 +861,7 @@ export class RpiAutopilot {
 				strictness,
 				writeOps: effectiveWriteOps,
 				commandOps: effectiveCommandOps,
+				policy: verificationPolicy,
 			})
 
 			if (!verification.passed) {
@@ -668,6 +869,20 @@ export class RpiAutopilot {
 					.filter((c) => c.status === "failed")
 					.map((c) => `- ${c.name}: ${c.detail}`)
 					.join("\n")
+				await this.appendExecutionTrace({
+					type: "verification_failed",
+					taskId: this.context.taskId,
+					timestamp: new Date().toISOString(),
+					phase: this.state.phase,
+					detail: failed,
+				})
+				await this.writeReplayRecord("verification_failed", {
+					strictness,
+					failedChecks: verification.checks.filter((c) => c.status === "failed"),
+					suggestions: verification.suggestions,
+					effectiveWriteOps,
+					effectiveCommandOps,
+				})
 				this.state.lastUpdatedAt = new Date().toISOString()
 				await this.syncArtifacts()
 				return `RPI verification failed:\n${failed}\n\nSuggestions:\n${verification.suggestions.join("\n")}`
@@ -676,9 +891,67 @@ export class RpiAutopilot {
 			// Senior code review gate
 			const codeReviewBlocker = await this.maybeRunCodeReview()
 			if (codeReviewBlocker) {
+				await this.appendExecutionTrace({
+					type: "code_review_blocked",
+					taskId: this.context.taskId,
+					timestamp: new Date().toISOString(),
+					phase: this.state.phase,
+					detail: codeReviewBlocker,
+				})
+				await this.writeReplayRecord("code_review_blocked", {
+					blocker: codeReviewBlocker,
+					effectiveWriteOps,
+					effectiveCommandOps,
+				})
+				this.appendProgress("Completion blocked by senior code review gate.")
 				this.state.lastUpdatedAt = new Date().toISOString()
 				await this.syncArtifacts()
 				return codeReviewBlocker
+			}
+
+			const canaryCompletionBlocker = this.getCanaryCompletionBlocker()
+			if (canaryCompletionBlocker) {
+				await this.appendExecutionTrace({
+					type: "canary_gate_failed",
+					taskId: this.context.taskId,
+					timestamp: new Date().toISOString(),
+					phase: this.state.phase,
+					detail: canaryCompletionBlocker,
+					fingerprint: this.canaryState?.fingerprint,
+					canaryStatus: this.canaryState?.status ?? "active",
+				})
+				await this.writeReplayRecord("canary_gate_failed", {
+					blocker: canaryCompletionBlocker,
+					canaryState: this.canaryState,
+					runtimeSnapshot: this.state.lastRuntimeSnapshot,
+					codeReviewScore: this.state.codeReviewScore,
+				})
+				await this.recordCanaryOutcome(false)
+				this.state.lastUpdatedAt = new Date().toISOString()
+				await this.syncArtifacts()
+				return canaryCompletionBlocker
+			}
+
+			const missingPreCompletionArtifacts = await this.getMissingRequiredArtifacts(
+				this.policyBundle?.qualityGates.finalization.requiredPreCompletionArtifacts ?? [],
+			)
+			if (missingPreCompletionArtifacts.length > 0) {
+				const detail = `Missing artifacts: ${missingPreCompletionArtifacts.join(", ")}`
+				await this.appendExecutionTrace({
+					type: "evidence_gate_failed",
+					taskId: this.context.taskId,
+					timestamp: new Date().toISOString(),
+					phase: this.state.phase,
+					detail,
+				})
+				await this.writeReplayRecord("evidence_gate_failed", {
+					missingPreCompletionArtifacts,
+					effectiveWriteOps,
+					effectiveCommandOps,
+				})
+				this.state.lastUpdatedAt = new Date().toISOString()
+				await this.syncArtifacts()
+				return `RPI evidence gate failed: ${detail}.`
 			}
 
 			this.completePhase("implementation")
@@ -705,7 +978,24 @@ export class RpiAutopilot {
 			this.completePhase("done")
 			this.state.lastUpdatedAt = new Date().toISOString()
 			this.appendProgress("Task completion accepted by user.")
+			await this.appendExecutionTrace({
+				type: "completion_accepted",
+				taskId: this.context.taskId,
+				timestamp: new Date().toISOString(),
+				phase: "done",
+			})
+			await this.writeFinalSummaryFile()
 			await this.syncArtifacts()
+			const missingPostCompletionArtifacts = await this.getMissingRequiredArtifacts(
+				this.policyBundle?.qualityGates.finalization.requiredPostCompletionArtifacts ?? [],
+			)
+			if (missingPostCompletionArtifacts.length > 0) {
+				await this.appendFinding(
+					"warn",
+					`Post-completion artifacts missing: ${missingPostCompletionArtifacts.join(", ")}.`,
+				)
+			}
+			await this.recordCanaryOutcome(true)
 
 			// Save key findings to cross-task memory
 			try {
@@ -730,6 +1020,15 @@ export class RpiAutopilot {
 						content: this.pendingCorrectionHint.reasoning,
 						tags,
 						source: "correction",
+					})
+				}
+				if (this.state.throttleMode !== "normal") {
+					await this.memory.remember({
+						taskId: this.context.taskId,
+						type: "decision",
+						content: `Runtime fallback used: ${this.state.throttleMode}. Snapshot=${JSON.stringify(this.state.lastRuntimeSnapshot ?? {})}`,
+						tags,
+						source: "completion",
 					})
 				}
 
@@ -757,6 +1056,14 @@ export class RpiAutopilot {
 
 	private get legacyBaseDir(): string {
 		return path.join(this.context.cwd, ".roo", "rpi")
+	}
+
+	private get controlDir(): string {
+		return path.join(this.context.cwd, ".roo", "rpi", "_control")
+	}
+
+	private get canaryStatePath(): string {
+		return path.join(this.controlDir, "canary_state.json")
 	}
 
 	private get statePath(): string {
@@ -789,6 +1096,18 @@ export class RpiAutopilot {
 
 	private get legacyProgressPath(): string {
 		return path.join(this.legacyBaseDir, "progress.md")
+	}
+
+	private get executionTracePath(): string {
+		return path.join(this.baseDir, "execution_trace.jsonl")
+	}
+
+	private get replayRecordPath(): string {
+		return path.join(this.baseDir, "replay_record.json")
+	}
+
+	private get finalSummaryPath(): string {
+		return path.join(this.baseDir, "final_summary.md")
 	}
 
 	private get relativeBaseDir(): string {
@@ -1052,7 +1371,6 @@ export class RpiAutopilot {
 	 * Every N tool executions, evaluate whether the current plan is still relevant.
 	 * If observations deviate significantly from the plan, trigger a re-plan.
 	 */
-	private readonly REPLAN_INTERVAL = 5
 	private lastReplanAt = 0
 
 	private async maybeRevisePlan(): Promise<void> {
@@ -1060,8 +1378,17 @@ export class RpiAutopilot {
 			return
 		}
 
+		const adaptivePolicy = this.policyBundle?.qualityGates.performance.adaptiveConcurrency
+		const adaptiveWindow = adaptivePolicy?.evaluationWindow ?? DEFAULT_ADAPTIVE_WINDOW
+		const replanInterval =
+			this.state.throttleMode === "fallback"
+				? adaptiveWindow * 2
+				: this.state.throttleMode === "throttled"
+					? adaptiveWindow + 2
+					: DEFAULT_REPLAN_INTERVAL
+
 		// Only check every N tool runs
-		if (this.state.toolRuns - this.lastReplanAt < this.REPLAN_INTERVAL) {
+		if (this.state.toolRuns - this.lastReplanAt < replanInterval) {
 			return
 		}
 
@@ -1071,13 +1398,17 @@ export class RpiAutopilot {
 		}
 
 		// Check if recent observations indicate plan deviation
-		const recentObs = this.state.observations.slice(-this.REPLAN_INTERVAL)
+		const recentObs = this.state.observations.slice(-replanInterval)
+		if (recentObs.length === 0) {
+			return
+		}
 		const failureRate = recentObs.filter((o) => !o.success).length / recentObs.length
 
 		// If failure rate is high or we have blocked steps, consider replanning
 		const hasBlockedSteps = this.taskPlan.steps.some((s) => s.status === "blocked")
 
-		if (failureRate < 0.4 && !hasBlockedSteps) {
+		const minFailureRateForReplan = adaptivePolicy?.failureRateThreshold ?? 0.4
+		if (failureRate < minFailureRateForReplan && !hasBlockedSteps) {
 			return
 		}
 
@@ -1124,6 +1455,294 @@ export class RpiAutopilot {
 			}
 		} catch {
 			// Re-planning is best-effort
+		}
+	}
+
+	private isCanaryEnabled(): boolean {
+		return this.policyBundle?.qualityGates.rollout.canary.enabled ?? false
+	}
+
+	private async loadCanaryState(): Promise<void> {
+		if (!this.isCanaryEnabled()) {
+			this.canaryState = undefined
+			return
+		}
+
+		await fs.mkdir(this.controlDir, { recursive: true })
+		try {
+			const content = await fs.readFile(this.canaryStatePath, "utf-8")
+			const parsed = JSON.parse(content) as Partial<RpiCanaryState>
+			if (
+				parsed &&
+				parsed.version === 1 &&
+				typeof parsed.fingerprint === "string" &&
+				(parsed.status === "active" || parsed.status === "stable" || parsed.status === "blocked")
+			) {
+				this.canaryState = {
+					version: 1,
+					fingerprint: parsed.fingerprint,
+					status: parsed.status,
+					sampleSize: Math.max(1, parsed.sampleSize ?? 1),
+					samples: Math.max(0, parsed.samples ?? 0),
+					failedSamples: Math.max(0, parsed.failedSamples ?? 0),
+					lastUpdatedAt:
+						typeof parsed.lastUpdatedAt === "string" ? parsed.lastUpdatedAt : new Date().toISOString(),
+				}
+			}
+		} catch {
+			// Missing or malformed canary state is treated as first-run.
+		}
+	}
+
+	private async enforceCanaryFingerprint(): Promise<void> {
+		if (!this.isCanaryEnabled()) {
+			return
+		}
+		const canaryPolicy = this.policyBundle?.qualityGates.rollout.canary
+		if (!canaryPolicy) {
+			return
+		}
+
+		const fingerprint = await this.buildRolloutFingerprint()
+		const needsReset =
+			!this.canaryState ||
+			this.canaryState.fingerprint !== fingerprint ||
+			this.canaryState.sampleSize !== canaryPolicy.sampleSize
+
+		if (!needsReset) {
+			return
+		}
+
+		this.canaryState = {
+			version: 1,
+			fingerprint,
+			status: "active",
+			sampleSize: canaryPolicy.sampleSize,
+			samples: 0,
+			failedSamples: 0,
+			lastUpdatedAt: new Date().toISOString(),
+		}
+		await this.saveCanaryState()
+		await this.appendExecutionTrace({
+			type: "canary_state_changed",
+			taskId: this.context.taskId,
+			timestamp: new Date().toISOString(),
+			phase: this.state?.phase ?? "discovery",
+			fingerprint,
+			canaryStatus: "active",
+			detail: "Canary fingerprint initialized.",
+		})
+	}
+
+	private async buildRolloutFingerprint(): Promise<string> {
+		const apiConfig = await this.context.getApiConfiguration()
+		const provider = apiConfig?.apiProvider ?? "unknown-provider"
+		const modelId = apiConfig ? (getModelId(apiConfig) ?? "unknown-model") : "unknown-model"
+		return `${provider}::${modelId}`
+	}
+
+	private async saveCanaryState(): Promise<void> {
+		if (!this.canaryState) {
+			return
+		}
+		await fs.mkdir(this.controlDir, { recursive: true })
+		await fs.writeFile(this.canaryStatePath, `${JSON.stringify(this.canaryState, null, "\t")}\n`, "utf-8")
+	}
+
+	private async recordCanaryOutcome(passed: boolean): Promise<void> {
+		if (!this.isCanaryEnabled() || !this.canaryState) {
+			return
+		}
+		if (passed && this.canaryOutcomeRecorded) {
+			return
+		}
+
+		if (passed) {
+			this.canaryOutcomeRecorded = true
+		}
+		const canaryPolicy = this.policyBundle?.qualityGates.rollout.canary
+		if (!canaryPolicy) {
+			return
+		}
+
+		this.canaryState.samples += 1
+		if (!passed) {
+			this.canaryState.failedSamples += 1
+		}
+		const failureRate = this.canaryState.samples > 0 ? this.canaryState.failedSamples / this.canaryState.samples : 0
+		if (this.canaryState.samples >= this.canaryState.sampleSize) {
+			this.canaryState.status = failureRate > canaryPolicy.maxFailureRate ? "blocked" : "stable"
+		} else {
+			this.canaryState.status = "active"
+		}
+		this.canaryState.lastUpdatedAt = new Date().toISOString()
+		await this.saveCanaryState()
+		await this.appendExecutionTrace({
+			type: "canary_state_changed",
+			taskId: this.context.taskId,
+			timestamp: new Date().toISOString(),
+			phase: this.state?.phase ?? "verification",
+			fingerprint: this.canaryState.fingerprint,
+			canaryStatus: this.canaryState.status,
+			detail: `samples=${this.canaryState.samples}, failed=${this.canaryState.failedSamples}`,
+		})
+	}
+
+	private getCanaryCompletionBlocker(): string | undefined {
+		const canaryPolicy = this.policyBundle?.qualityGates.rollout.canary
+		if (!canaryPolicy?.enabled || !this.state || !this.canaryState) {
+			return undefined
+		}
+		if (this.canaryState.status === "stable") {
+			return undefined
+		}
+
+		const snapshot = this.state.lastRuntimeSnapshot
+		const failureRate = snapshot?.failureRate ?? 0
+		const p95LatencyMs = snapshot?.p95LatencyMs ?? 0
+		if (failureRate > canaryPolicy.maxFailureRate) {
+			return `Canary failed: failure rate ${(failureRate * 100).toFixed(1)}% exceeds limit ${(canaryPolicy.maxFailureRate * 100).toFixed(1)}%.`
+		}
+		if (p95LatencyMs > canaryPolicy.maxP95LatencyMs) {
+			return `Canary failed: p95 latency ${Math.round(p95LatencyMs)}ms exceeds limit ${canaryPolicy.maxP95LatencyMs}ms.`
+		}
+		const score = this.state.codeReviewScore
+		if (typeof score === "number" && score < canaryPolicy.minCodeReviewScore) {
+			return `Canary failed: code review score ${score}/10 is below minimum ${canaryPolicy.minCodeReviewScore}/10.`
+		}
+		return undefined
+	}
+
+	private getCostGuardrailCompletionBlocker(): string | undefined {
+		const guardrails = this.policyBundle?.qualityGates.performance.costGuardrails
+		if (!guardrails?.enabled) {
+			return undefined
+		}
+		const liveCost = this.context.getTokenUsage?.()?.totalCost
+		if (
+			typeof liveCost === "number" &&
+			(!this.state?.lastRuntimeSnapshot || this.state.lastRuntimeSnapshot.costUsd !== liveCost)
+		) {
+			const ratio = guardrails.maxTaskCostUsd > 0 ? liveCost / guardrails.maxTaskCostUsd : undefined
+			if (this.state) {
+				this.state.lastRuntimeSnapshot = {
+					failureRate: this.state.lastRuntimeSnapshot?.failureRate ?? 0,
+					p95LatencyMs: this.state.lastRuntimeSnapshot?.p95LatencyMs ?? 0,
+					recentCount: this.state.lastRuntimeSnapshot?.recentCount ?? 0,
+					costUsd: liveCost,
+					costRatio: ratio,
+				}
+			}
+		}
+		const ratio = this.state?.lastRuntimeSnapshot?.costRatio
+		const cost = this.state?.lastRuntimeSnapshot?.costUsd
+		if (typeof ratio !== "number" || typeof cost !== "number") {
+			return undefined
+		}
+		if (ratio >= guardrails.fallbackAtRatio) {
+			return `RPI cost guardrail blocked completion: cost $${cost.toFixed(2)} is ${(ratio * 100).toFixed(0)}% of cap $${guardrails.maxTaskCostUsd.toFixed(2)}.`
+		}
+		return undefined
+	}
+
+	private getPercentile(values: number[], percentile: number): number {
+		if (values.length === 0) {
+			return 0
+		}
+		const sorted = [...values].sort((a, b) => a - b)
+		const index = Math.min(sorted.length - 1, Math.max(0, Math.ceil((percentile / 100) * sorted.length) - 1))
+		return sorted[index]
+	}
+
+	private async evaluateAdaptiveRuntimeControls(): Promise<void> {
+		if (!this.state) {
+			return
+		}
+
+		const adaptivePolicy = this.policyBundle?.qualityGates.performance.adaptiveConcurrency
+		const costPolicy = this.policyBundle?.qualityGates.performance.costGuardrails
+		const evaluationWindow = adaptivePolicy?.evaluationWindow ?? DEFAULT_ADAPTIVE_WINDOW
+		const recent = this.state.observations.slice(-evaluationWindow)
+		if (recent.length === 0) {
+			return
+		}
+
+		const failureRate = recent.filter((observation) => !observation.success).length / recent.length
+		const latencySamples = recent
+			.map((observation) => observation.durationMs)
+			.filter((value): value is number => typeof value === "number" && value >= 0)
+		const p95LatencyMs = latencySamples.length > 0 ? this.getPercentile(latencySamples, 95) : 0
+
+		const totalCost = this.context.getTokenUsage?.()?.totalCost
+		const costRatio =
+			typeof totalCost === "number" && (costPolicy?.maxTaskCostUsd ?? 0) > 0
+				? totalCost / (costPolicy?.maxTaskCostUsd ?? 1)
+				: undefined
+
+		const previousSnapshot = this.state.lastRuntimeSnapshot
+		this.state.lastRuntimeSnapshot = {
+			failureRate,
+			p95LatencyMs,
+			recentCount: recent.length,
+			costUsd: typeof totalCost === "number" ? totalCost : undefined,
+			costRatio,
+		}
+
+		let nextThrottleMode: RpiThrottleMode = "normal"
+		if (adaptivePolicy?.enabled !== false) {
+			if (
+				failureRate >= (adaptivePolicy?.fallbackFailureRateThreshold ?? 0.6) ||
+				p95LatencyMs >= (adaptivePolicy?.fallbackP95LatencyMsThreshold ?? 30_000)
+			) {
+				nextThrottleMode = "fallback"
+			} else if (
+				failureRate >= (adaptivePolicy?.failureRateThreshold ?? 0.35) ||
+				p95LatencyMs >= (adaptivePolicy?.p95LatencyMsThreshold ?? 15_000)
+			) {
+				nextThrottleMode = "throttled"
+			}
+		}
+
+		if (costPolicy?.enabled && typeof costRatio === "number") {
+			if (costRatio >= costPolicy.fallbackAtRatio) {
+				nextThrottleMode = "fallback"
+			} else if (costRatio >= costPolicy.throttleAtRatio && nextThrottleMode === "normal") {
+				nextThrottleMode = "throttled"
+			}
+
+			const previousRatio = previousSnapshot?.costRatio
+			if (
+				costRatio >= costPolicy.warnAtRatio &&
+				(previousRatio === undefined || previousRatio < costPolicy.warnAtRatio)
+			) {
+				await this.appendExecutionTrace({
+					type: "cost_guardrail_warned",
+					taskId: this.context.taskId,
+					timestamp: new Date().toISOString(),
+					phase: this.state.phase,
+					costUsd: totalCost,
+					costRatio,
+					throttleMode: nextThrottleMode,
+					detail: `Cost ratio ${(costRatio * 100).toFixed(0)}% reached warning threshold.`,
+				})
+			}
+		}
+
+		if (this.state.throttleMode !== nextThrottleMode) {
+			this.state.throttleMode = nextThrottleMode
+			await this.appendExecutionTrace({
+				type: "adaptive_throttle_changed",
+				taskId: this.context.taskId,
+				timestamp: new Date().toISOString(),
+				phase: this.state.phase,
+				throttleMode: nextThrottleMode,
+				costUsd: typeof totalCost === "number" ? totalCost : undefined,
+				costRatio,
+				detail: `failureRate=${(failureRate * 100).toFixed(1)}%, p95=${Math.round(p95LatencyMs)}ms`,
+			})
+			this.appendProgress(
+				`Adaptive runtime mode changed to ${nextThrottleMode} (failure ${(failureRate * 100).toFixed(1)}%, p95 ${Math.round(p95LatencyMs)}ms).`,
+			)
 		}
 	}
 
@@ -1251,6 +1870,7 @@ export class RpiAutopilot {
 			observationCount: 0,
 			stepAttempts: {},
 			codeReviewRuns: 0,
+			throttleMode: "normal",
 		}
 	}
 
@@ -1263,6 +1883,8 @@ export class RpiAutopilot {
 			observationCount: state.observationCount ?? 0,
 			stepAttempts: state.stepAttempts ?? {},
 			codeReviewRuns: state.codeReviewRuns ?? 0,
+			throttleMode: state.throttleMode ?? "normal",
+			lastRuntimeSnapshot: state.lastRuntimeSnapshot,
 		}
 	}
 
@@ -1335,6 +1957,9 @@ export class RpiAutopilot {
 
 	private async maybeRunCodeReview(): Promise<string | undefined> {
 		if (!this.state) {
+			return undefined
+		}
+		if (this.state.throttleMode === "fallback" && !this.isCanaryEnabled()) {
 			return undefined
 		}
 
@@ -1499,6 +2124,12 @@ export class RpiAutopilot {
 		}
 
 		const councilPhase = phase as RpiCouncilPhase
+		if (this.state.throttleMode === "fallback" && councilPhase !== "verification") {
+			return
+		}
+		if (this.state.throttleMode === "throttled" && trigger === "complexity_threshold") {
+			return
+		}
 		if (this.state.councilTotalRuns >= MAX_COUNCIL_RUNS_PER_TASK) {
 			return
 		}
@@ -1828,6 +2459,142 @@ export class RpiAutopilot {
 		])
 	}
 
+	private classifyToolRisk(toolName: string, mcpToolName?: string): RpiRiskClass {
+		if (!this.policyBundle) {
+			return "R1"
+		}
+		return classifyRpiToolRisk(this.policyBundle.riskMatrix, { toolName, mcpToolName })
+	}
+
+	private async appendExecutionTrace(event: RpiTraceEvent): Promise<void> {
+		await fs.appendFile(this.executionTracePath, `${JSON.stringify(event)}\n`, "utf-8")
+	}
+
+	private async readRecentTraceEvents(limit: number): Promise<RpiTraceEvent[]> {
+		try {
+			const content = await fs.readFile(this.executionTracePath, "utf-8")
+			const lines = content
+				.split("\n")
+				.map((line) => line.trim())
+				.filter((line) => line.length > 0)
+			const selected = lines.slice(-Math.max(1, limit))
+			const parsed: RpiTraceEvent[] = []
+			for (const line of selected) {
+				try {
+					parsed.push(JSON.parse(line) as RpiTraceEvent)
+				} catch {
+					// Ignore malformed trace line
+				}
+			}
+			return parsed
+		} catch {
+			return []
+		}
+	}
+
+	private async writeReplayRecord(
+		reason:
+			| "verification_failed"
+			| "code_review_blocked"
+			| "evidence_gate_failed"
+			| "cost_guardrail_blocked"
+			| "canary_gate_failed",
+		payload: Record<string, unknown>,
+	): Promise<void> {
+		if (!this.state) {
+			return
+		}
+
+		const includeRecentObservations = this.policyBundle?.qualityGates.replay.includeRecentObservations ?? 10
+		const includeRecentTraceEvents = this.policyBundle?.qualityGates.replay.includeRecentTraceEvents ?? 25
+		const replayRecord = {
+			version: 1,
+			reason,
+			taskId: this.context.taskId,
+			phase: this.state.phase,
+			timestamp: new Date().toISOString(),
+			state: {
+				strategy: this.state.strategy,
+				toolRuns: this.state.toolRuns,
+				writeOps: this.state.writeOps,
+				commandOps: this.state.commandOps,
+				observationCount: this.state.observationCount,
+				lastUpdatedAt: this.state.lastUpdatedAt,
+				throttleMode: this.state.throttleMode,
+				lastRuntimeSnapshot: this.state.lastRuntimeSnapshot,
+			},
+			taskText: this.context.getTaskText() ?? "",
+			canaryState: this.canaryState,
+			recentObservations: this.state.observations.slice(-Math.max(1, includeRecentObservations)),
+			recentTraceEvents: await this.readRecentTraceEvents(includeRecentTraceEvents),
+			payload,
+		}
+
+		await fs.writeFile(this.replayRecordPath, `${JSON.stringify(replayRecord, null, "\t")}\n`, "utf-8")
+	}
+
+	private async writeFinalSummaryFile(): Promise<void> {
+		if (!this.state) {
+			return
+		}
+
+		const lines = [
+			"# RPI Final Summary",
+			"",
+			`- Task: ${this.state.taskSummary}`,
+			`- Task ID: ${this.context.taskId}`,
+			`- Strategy: ${this.state.strategy}`,
+			`- Final phase: ${this.state.phase}`,
+			`- Runtime mode: ${this.state.throttleMode}`,
+			`- Tool runs: ${this.state.toolRuns}`,
+			`- Writes: ${this.state.writeOps}`,
+			`- Commands: ${this.state.commandOps}`,
+			`- Observations: ${this.state.observationCount}`,
+			`- Last updated: ${this.state.lastUpdatedAt}`,
+			`- Total cost (USD): ${
+				typeof this.state.lastRuntimeSnapshot?.costUsd === "number"
+					? this.state.lastRuntimeSnapshot.costUsd.toFixed(4)
+					: "n/a"
+			}`,
+			`- Canary: ${
+				this.canaryState
+					? `${this.canaryState.status} (${this.canaryState.samples}/${this.canaryState.sampleSize})`
+					: "disabled"
+			}`,
+			"",
+			"## Evidence",
+			"- state.json",
+			"- task_plan.md",
+			"- findings.md",
+			"- progress.md",
+			"- execution_trace.jsonl",
+			"",
+			"## Postmortem",
+			`- Failure rate (recent): ${((this.state.lastRuntimeSnapshot?.failureRate ?? 0) * 100).toFixed(1)}%`,
+			`- P95 latency (recent): ${Math.round(this.state.lastRuntimeSnapshot?.p95LatencyMs ?? 0)}ms`,
+			"",
+		]
+
+		await fs.writeFile(this.finalSummaryPath, lines.join("\n"), "utf-8")
+	}
+
+	private async getMissingRequiredArtifacts(requiredArtifacts: string[]): Promise<string[]> {
+		if (requiredArtifacts.length === 0) {
+			return []
+		}
+
+		const missing: string[] = []
+		for (const artifact of requiredArtifacts) {
+			const resolvedPath = path.isAbsolute(artifact) ? artifact : path.join(this.baseDir, artifact)
+			try {
+				await fs.access(resolvedPath)
+			} catch {
+				missing.push(artifact)
+			}
+		}
+		return missing
+	}
+
 	private async appendFinding(level: RpiEventLevel, message: string): Promise<void> {
 		const timestamp = new Date().toISOString()
 		const line = `- [${timestamp}] [${level.toUpperCase()}] ${message}\n`
@@ -1912,6 +2679,7 @@ export class RpiAutopilot {
 			this.findingsPath,
 			"# RPI Findings\n\nAuto-managed durable findings log.\n\n## Entries\n",
 		)
+		await this.ensureFileWithHeader(this.executionTracePath, "")
 	}
 
 	private async ensureFileWithHeader(filePath: string, header: string): Promise<void> {
@@ -1969,6 +2737,7 @@ export class RpiAutopilot {
 			"## Flow Rules",
 			"- Keep implementation and decisions synchronized with the current phase.",
 			"- Persist durable knowledge in findings and progress files.",
+			"- Keep execution_trace.jsonl updated for replay and auditability.",
 			"- Completion is allowed only after verification gate succeeds.",
 			"",
 		)

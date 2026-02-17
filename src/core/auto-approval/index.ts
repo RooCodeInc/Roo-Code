@@ -12,6 +12,7 @@ import { ClineAskResponse } from "../../shared/WebviewMessage"
 import { isWriteToolAction, isReadOnlyToolAction } from "./tools"
 import { isMcpToolAlwaysAllowed } from "./mcp"
 import { getCommandDecision } from "./commands"
+import { classifyRpiToolRisk, loadRpiPolicyBundle, type RpiPolicyBundle, type RpiRiskClass } from "../rpi/RpiPolicy"
 
 // We have 10 different actions that can be auto-approved.
 export type AutoApprovalState =
@@ -50,14 +51,25 @@ export async function checkAutoApproval({
 	ask,
 	text,
 	isProtected,
+	cwd,
+	followupAutoResponseText,
 }: {
 	state?: Pick<ExtensionState, AutoApprovalState | AutoApprovalStateOptions>
 	ask: ClineAsk
 	text?: string
 	isProtected?: boolean
+	cwd?: string
+	followupAutoResponseText?: string
 }): Promise<CheckAutoApprovalResult> {
 	if (isNonBlockingAsk(ask)) {
 		return { decision: "approve" }
+	}
+
+	const policyApprovalMode = await getPolicyApprovalMode({ ask, text, isProtected, cwd })
+	// "manual" is a hard-stop: never auto-approve.
+	// "manual-first" is a soft gate: allow auto-approve rules (allowlists/toggles) to proceed.
+	if (policyApprovalMode === "manual") {
+		return { decision: "ask" }
 	}
 
 	if (!state || !state.autoApprovalEnabled) {
@@ -66,23 +78,33 @@ export async function checkAutoApproval({
 
 	if (ask === "followup") {
 		if (state.alwaysAllowFollowupQuestions === true) {
+			const configuredOverride = followupAutoResponseText?.trim()
+			const timeoutMs =
+				typeof state.followupAutoApproveTimeoutMs === "number" && state.followupAutoApproveTimeoutMs > 0
+					? state.followupAutoApproveTimeoutMs
+					: undefined
+
 			try {
 				const suggestion = (JSON.parse(text || "{}") as FollowUpData).suggest?.[0]
+				const selectedResponse = configuredOverride || suggestion?.answer
 
-				if (
-					suggestion &&
-					typeof state.followupAutoApproveTimeoutMs === "number" &&
-					state.followupAutoApproveTimeoutMs > 0
-				) {
+				if (selectedResponse && timeoutMs) {
 					return {
 						decision: "timeout",
-						timeout: state.followupAutoApproveTimeoutMs,
-						fn: () => ({ askResponse: "messageResponse", text: suggestion.answer }),
+						timeout: timeoutMs,
+						fn: () => ({ askResponse: "messageResponse", text: selectedResponse }),
 					}
 				} else {
 					return { decision: "ask" }
 				}
 			} catch (error) {
+				if (configuredOverride && timeoutMs) {
+					return {
+						decision: "timeout",
+						timeout: timeoutMs,
+						fn: () => ({ askResponse: "messageResponse", text: configuredOverride }),
+					}
+				}
 				return { decision: "ask" }
 			}
 		} else {
@@ -188,3 +210,111 @@ export async function checkAutoApproval({
 }
 
 export { AutoApprovalHandler } from "./AutoApprovalHandler"
+
+const uiToolToCanonicalRiskMap: Partial<Record<ClineSayTool["tool"], string>> = {
+	editedExistingFile: "write_to_file",
+	appliedDiff: "apply_diff",
+	newFileCreated: "write_to_file",
+	codebaseSearch: "codebase_search",
+	readFile: "read_file",
+	readCommandOutput: "read_command_output",
+	listFilesTopLevel: "list_files",
+	listFilesRecursive: "list_files",
+	searchFiles: "search_files",
+	switchMode: "switch_mode",
+	newTask: "new_task",
+	finishTask: "finish_task",
+	generateImage: "generate_image",
+	imageGenerated: "generate_image",
+	runSlashCommand: "run_slash_command",
+	updateTodoList: "update_todo_list",
+	skill: "skill",
+}
+
+const policyCache = new Map<string, Promise<RpiPolicyBundle | undefined>>()
+
+async function getPolicyBundle(cwd?: string): Promise<RpiPolicyBundle | undefined> {
+	if (!cwd) {
+		return undefined
+	}
+
+	const key = cwd
+	if (!policyCache.has(key)) {
+		policyCache.set(
+			key,
+			loadRpiPolicyBundle(cwd).catch(() => {
+				return undefined
+			}),
+		)
+	}
+	return policyCache.get(key)!
+}
+
+async function getPolicyApprovalMode({
+	ask,
+	text,
+	isProtected,
+	cwd,
+}: {
+	ask: ClineAsk
+	text?: string
+	isProtected?: boolean
+	cwd?: string
+}): Promise<string | undefined> {
+	const bundle = await getPolicyBundle(cwd)
+	if (!bundle) {
+		return undefined
+	}
+
+	const classify = (toolName: string, mcpToolName?: string): RpiRiskClass => {
+		const risk = classifyRpiToolRisk(bundle.riskMatrix, { toolName, mcpToolName })
+		if (isProtected && risk !== "R3") {
+			return "R3"
+		}
+		return risk
+	}
+
+	let risk: RpiRiskClass | undefined
+
+	if (ask === "command") {
+		risk = classify("execute_command")
+	} else if (ask === "browser_action_launch") {
+		risk = classify("browser_action")
+	} else if (ask === "use_mcp_server") {
+		try {
+			const mcpServerUse = JSON.parse(text || "{}") as McpServerUse
+			if (mcpServerUse.type === "use_mcp_tool") {
+				const rawToolName =
+					(mcpServerUse as McpServerUse & { tool_name?: string }).toolName ||
+					(mcpServerUse as any).tool_name ||
+					""
+				const mcpToolName = rawToolName.toLowerCase()
+				risk = classify("use_mcp_tool", mcpToolName)
+			} else if (mcpServerUse.type === "access_mcp_resource") {
+				risk = classify("access_mcp_resource")
+			}
+		} catch {
+			// Leave risk undefined and skip policy override.
+		}
+	} else if (ask === "tool") {
+		try {
+			const tool = JSON.parse(text || "{}") as ClineSayTool
+			const canonical = uiToolToCanonicalRiskMap[tool.tool]
+			if (canonical) {
+				risk = classify(canonical)
+			} else if (isWriteToolAction(tool)) {
+				risk = classify("write_to_file")
+			} else if (isReadOnlyToolAction(tool)) {
+				risk = classify("read_file")
+			}
+		} catch {
+			// Leave risk undefined and skip policy override.
+		}
+	}
+
+	if (!risk) {
+		return undefined
+	}
+
+	return bundle.riskMatrix.riskClasses[risk]?.approval
+}

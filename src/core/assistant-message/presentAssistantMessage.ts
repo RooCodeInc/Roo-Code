@@ -675,27 +675,11 @@ export async function presentAssistantMessage(cline: Task) {
 				// block directly.
 				const repetitionCheck = cline.toolRepetitionDetector.check(block)
 
-				// If execution is not allowed, notify user and break.
+				// If execution is not allowed, do not block on an interactive ask.
+				// This is a model loop-guard; blocking here creates UX loops (especially with auto-approve enabled).
 				if (!repetitionCheck.allowExecution && repetitionCheck.askUser) {
-					// Handle repetition similar to mistake_limit_reached pattern.
-					const { response, text, images } = await cline.ask(
-						repetitionCheck.askUser.messageKey as ClineAsk,
-						repetitionCheck.askUser.messageDetail.replace("{toolName}", block.name),
-					)
-
-					if (response === "messageResponse") {
-						// Add user feedback to userContent.
-						cline.userMessageContent.push(
-							{
-								type: "text" as const,
-								text: `Tool repetition limit reached. User feedback: ${text}`,
-							},
-							...formatResponse.imageBlocks(images),
-						)
-
-						// Add user feedback to chat.
-						await cline.say("user_feedback", text, images)
-					}
+					const detail = repetitionCheck.askUser.messageDetail.replace("{toolName}", block.name)
+					await cline.say("error", detail)
 
 					// Track tool repetition in telemetry via PostHog exception tracking and event.
 					TelemetryService.instance.captureConsecutiveMistakeError(cline.taskId)
@@ -711,10 +695,10 @@ export async function presentAssistantMessage(cline: Task) {
 						),
 					)
 
-					// Return tool result message about the repetition
+					// Return tool_result message about the repetition so the model can self-correct.
 					pushToolResult(
 						formatResponse.toolError(
-							`Tool call repetition limit reached for ${block.name}. Please try a different approach.`,
+							`Tool repetition detected for ${block.name}. Do not call ${block.name} again; choose a different tool/approach and continue.`,
 						),
 					)
 					break

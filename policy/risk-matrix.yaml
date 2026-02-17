@@ -1,0 +1,56 @@
+riskClasses:
+  R0:
+    approval: auto
+    sandbox: read-only
+    network: restricted
+    notes: Low-risk read-only operations.
+  R1:
+    approval: auto
+    sandbox: workspace-write
+    network: restricted
+    notes: Local code edits in workspace scope.
+  R2:
+    approval: manual-first
+    sandbox: workspace-write
+    network: restricted
+    notes: Commands or tool actions that can affect runtime/build state.
+  R3:
+    approval: manual
+    sandbox: restricted-isolated
+    network: none
+    notes: Sensitive actions requiring strict oversight.
+
+toolRisk:
+  default: R1
+  byTool:
+    read_file: R0
+    list_files: R0
+    search_files: R0
+    codebase_search: R0
+    access_mcp_resource: R0
+    write_to_file: R1
+    apply_diff: R1
+    search_and_replace: R1
+    edit_file: R1
+    execute_command: R2
+    read_command_output: R2
+    use_mcp_tool: R2
+    browser_action: R3
+
+  byMcpTool:
+    read_file: R0
+    list_files: R0
+    search_files: R0
+    codebase_search: R0
+    edit_file: R1
+    write_file: R1
+    write_to_file: R1
+    apply_diff: R1
+    apply_patch: R1
+    search_and_replace: R1
+    execute_command: R2
+    run_command: R2
+    delete_file: R3
+    move_file: R3
+    rename_file: R3
+

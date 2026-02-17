@@ -111,6 +111,10 @@ vi.mock("@src/components/ui", () => ({
 	),
 	SelectTrigger: ({ children }: any) => <div data-testid="select-trigger">{children}</div>,
 	SelectValue: ({ placeholder }: any) => <div data-testid="select-value">{placeholder}</div>,
+	// Collapsible primitives (used by RpiSettings)
+	Collapsible: ({ children }: any) => <div data-testid="collapsible">{children}</div>,
+	CollapsibleTrigger: ({ children }: any) => <div data-testid="collapsible-trigger">{children}</div>,
+	CollapsibleContent: ({ children }: any) => <div data-testid="collapsible-content">{children}</div>,
 }))
 
 // Mock ModesView and McpView since they're rendered during indexing

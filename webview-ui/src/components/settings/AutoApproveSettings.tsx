@@ -84,6 +84,13 @@ export const AutoApproveSettings = ({
 
 	const { effectiveAutoApprovalEnabled } = useAutoApprovalState(toggles, autoApprovalEnabled)
 
+	// Auto-approve toggles are operational (they affect runtime approval prompts).
+	// Apply them immediately to avoid confusing "I enabled it but it still asks" states.
+	const setAndApplyCachedStateField = <K extends Parameters<typeof setCachedStateField>[0]>(key: K, value: any) => {
+		setCachedStateField(key, value)
+		vscode.postMessage({ type: "updateSettings", updatedSettings: { [key]: value } })
+	}
+
 	const handleAddCommand = () => {
 		const currentCommands = allowedCommands ?? []
 
@@ -161,14 +168,14 @@ export const AutoApproveSettings = ({
 						alwaysAllowSubtasks={alwaysAllowSubtasks}
 						alwaysAllowExecute={alwaysAllowExecute}
 						alwaysAllowFollowupQuestions={alwaysAllowFollowupQuestions}
-						onToggle={(key, value) => setCachedStateField(key, value)}
+						onToggle={(key, value) => setAndApplyCachedStateField(key, value)}
 					/>
 
 					<MaxLimitInputs
 						allowedMaxRequests={allowedMaxRequests}
 						allowedMaxCost={allowedMaxCost}
-						onMaxRequestsChange={(value) => setCachedStateField("allowedMaxRequests", value)}
-						onMaxCostChange={(value) => setCachedStateField("allowedMaxCost", value)}
+						onMaxRequestsChange={(value) => setAndApplyCachedStateField("allowedMaxRequests", value)}
+						onMaxCostChange={(value) => setAndApplyCachedStateField("allowedMaxCost", value)}
 					/>
 				</div>
 
@@ -187,7 +194,7 @@ export const AutoApproveSettings = ({
 							<VSCodeCheckbox
 								checked={alwaysAllowReadOnlyOutsideWorkspace}
 								onChange={(e: any) =>
-									setCachedStateField("alwaysAllowReadOnlyOutsideWorkspace", e.target.checked)
+									setAndApplyCachedStateField("alwaysAllowReadOnlyOutsideWorkspace", e.target.checked)
 								}
 								data-testid="always-allow-readonly-outside-workspace-checkbox">
 								<span className="font-medium">
@@ -214,7 +221,7 @@ export const AutoApproveSettings = ({
 							<VSCodeCheckbox
 								checked={alwaysAllowWriteOutsideWorkspace}
 								onChange={(e: any) =>
-									setCachedStateField("alwaysAllowWriteOutsideWorkspace", e.target.checked)
+									setAndApplyCachedStateField("alwaysAllowWriteOutsideWorkspace", e.target.checked)
 								}
 								data-testid="always-allow-write-outside-workspace-checkbox">
 								<span className="font-medium">
@@ -232,7 +239,7 @@ export const AutoApproveSettings = ({
 							<VSCodeCheckbox
 								checked={alwaysAllowWriteProtected}
 								onChange={(e: any) =>
-									setCachedStateField("alwaysAllowWriteProtected", e.target.checked)
+									setAndApplyCachedStateField("alwaysAllowWriteProtected", e.target.checked)
 								}
 								data-testid="always-allow-write-protected-checkbox">
 								<span className="font-medium">{t("settings:autoApprove.write.protected.label")}</span>
@@ -261,7 +268,7 @@ export const AutoApproveSettings = ({
 									step={1000}
 									value={[followupAutoApproveTimeoutMs]}
 									onValueChange={([value]) =>
-										setCachedStateField("followupAutoApproveTimeoutMs", value)
+										setAndApplyCachedStateField("followupAutoApproveTimeoutMs", value)
 									}
 									data-testid="followup-timeout-slider"
 								/>
