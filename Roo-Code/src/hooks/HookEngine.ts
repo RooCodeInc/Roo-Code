@@ -32,7 +32,7 @@ export interface HookResult {
 }
 
 // ============================================================
-// HookEngine
+// HookEngine - The Middleware Boundary for Intent-Driven Tool Execution
 // ============================================================
 
 /**
