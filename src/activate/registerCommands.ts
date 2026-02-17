@@ -31,6 +31,19 @@ export function getVisibleProviderOrLog(outputChannel: vscode.OutputChannel): Cl
 let sidebarPanel: vscode.WebviewView | undefined = undefined
 let tabPanel: vscode.WebviewPanel | undefined = undefined
 
+// Callback invoked when a tab provider is created via openClineInNewTab.
+// This allows the API to register event listeners on dynamically created tab providers.
+let onTabProviderCreatedCallback: ((provider: ClineProvider) => void) | undefined
+
+/**
+ * Register a callback that will be invoked whenever a new tab provider is
+ * created via `openClineInNewTab`. Used by the API to forward events from
+ * tab providers to the `RooCodeAPI` EventEmitter.
+ */
+export function setOnTabProviderCreated(callback: (provider: ClineProvider) => void): void {
+	onTabProviderCreatedCallback = callback
+}
+
 /**
  * Get the currently active panel
  * @returns WebviewPanel或WebviewView
@@ -269,6 +282,9 @@ export const openClineInNewTab = async ({ context, outputChannel }: Omit<Registe
 	// Lock the editor group so clicking on files doesn't open them over the panel.
 	await delay(100)
 	await vscode.commands.executeCommand("workbench.action.lockEditorGroup")
+
+	// Notify the API (if registered) so it can forward events from this tab provider.
+	onTabProviderCreatedCallback?.(tabProvider)
 
 	return tabProvider
 }
