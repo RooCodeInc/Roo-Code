@@ -204,7 +204,6 @@ describe("mergeExtensionState", () => {
 			maxReadFileLine: 500,
 			cloudUserInfo: null,
 			organizationAllowList: { allowAll: true, providers: {} },
-			autoCondenseContext: true,
 			autoCondenseContextPercent: 100,
 			cloudIsAuthenticated: false,
 			firebaseIsAuthenticated: false,

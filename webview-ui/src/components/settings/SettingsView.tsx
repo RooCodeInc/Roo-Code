@@ -136,7 +136,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		alwaysAllowWriteOutsideWorkspace,
 		alwaysAllowWriteProtected,
 		alwaysApproveResubmit,
-		autoCondenseContext,
 		autoCondenseContextPercent,
 		browserToolEnabled,
 		browserViewportSize,
@@ -298,7 +297,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			vscode.postMessage({ type: "deniedCommands", commands: deniedCommands ?? [] })
 			vscode.postMessage({ type: "allowedMaxRequests", value: allowedMaxRequests ?? undefined })
 			vscode.postMessage({ type: "allowedMaxCost", value: allowedMaxCost ?? undefined })
-			vscode.postMessage({ type: "autoCondenseContext", bool: autoCondenseContext })
 			vscode.postMessage({ type: "autoCondenseContextPercent", value: autoCondenseContextPercent })
 			vscode.postMessage({ type: "browserToolEnabled", bool: browserToolEnabled })
 			vscode.postMessage({ type: "notificationsEnabled", bool: notificationsEnabled })
@@ -686,7 +684,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					{activeTab === "contextManagement" && (
 						<ContextManagementSettings
 							developerMode={(cachedState as any).developerMode ?? false}
-							autoCondenseContext={autoCondenseContext}
 							autoCondenseContextPercent={autoCondenseContextPercent}
 							listApiConfigMeta={listApiConfigMeta ?? []}
 							maxOpenTabsContext={maxOpenTabsContext}

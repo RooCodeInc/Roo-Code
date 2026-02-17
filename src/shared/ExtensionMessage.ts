@@ -354,7 +354,6 @@ export type ExtensionState = Pick<
 	organizationAllowList: OrganizationAllowList
 	organizationSettingsVersion?: number
 
-	autoCondenseContext: boolean
 	autoCondenseContextPercent: number
 	marketplaceItems?: MarketplaceItem[]
 	marketplaceInstalledMetadata?: { project: Record<string, any>; global: Record<string, any> }
