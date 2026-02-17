@@ -14,6 +14,7 @@ import { CodeIndexManager } from "../services/code-index/manager"
 import { importSettingsWithFeedback } from "../core/config/importExport"
 import { MdmService } from "../services/mdm/MdmService"
 import { t } from "../i18n"
+import { clearActiveIntent, promptAndSetActiveIntent, showActiveIntent } from "../core/governance/intentStore"
 
 /**
  * Helper to get the visible ClineProvider instance or log if not found.
@@ -62,12 +63,49 @@ export type RegisterCommandOptions = {
 }
 
 export const registerCommands = (options: RegisterCommandOptions) => {
-	const { context } = options
+	const { context, outputChannel } = options
 
 	for (const [id, callback] of Object.entries(getCommandsMap(options))) {
 		const command = getCommand(id as CommandId)
 		context.subscriptions.push(vscode.commands.registerCommand(command, callback))
 	}
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand("roo.setActiveIntent", async () => {
+			try {
+				const intent = await promptAndSetActiveIntent()
+				if (intent) {
+					vscode.window.showInformationMessage(`Active intent set: ${intent.id}`)
+				}
+			} catch (error) {
+				outputChannel.appendLine(`Error setting active intent: ${error}`)
+				vscode.window.showErrorMessage(`Failed to set active intent: ${error}`)
+			}
+		}),
+	)
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand("roo.clearActiveIntent", async () => {
+			try {
+				await clearActiveIntent()
+				vscode.window.showInformationMessage("Active intent cleared.")
+			} catch (error) {
+				outputChannel.appendLine(`Error clearing active intent: ${error}`)
+				vscode.window.showErrorMessage(`Failed to clear active intent: ${error}`)
+			}
+		}),
+	)
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand("roo.showActiveIntent", async () => {
+			try {
+				await showActiveIntent()
+			} catch (error) {
+				outputChannel.appendLine(`Error showing active intent: ${error}`)
+				vscode.window.showErrorMessage(`Failed to show active intent: ${error}`)
+			}
+		}),
+	)
 }
 
 const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOptions): Record<CommandId, any> => ({

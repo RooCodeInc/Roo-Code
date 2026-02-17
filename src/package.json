@@ -169,6 +169,21 @@
 				"command": "roo-cline.toggleAutoApprove",
 				"title": "%command.toggleAutoApprove.title%",
 				"category": "%configuration.title%"
+			},
+			{
+				"command": "roo.setActiveIntent",
+				"title": "Set Active Intent",
+				"category": "Roo Code"
+			},
+			{
+				"command": "roo.clearActiveIntent",
+				"title": "Clear Active Intent",
+				"category": "Roo Code"
+			},
+			{
+				"command": "roo.showActiveIntent",
+				"title": "Show Active Intent",
+				"category": "Roo Code"
 			}
 		],
 		"menus": {
