@@ -1,10 +1,13 @@
 name: Siid-Code Auto-Version & Release
 
 on:
+  push:
+    branches: 
+      - main
   pull_request:
     branches:
       - main
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
       version_bump:
@@ -24,10 +27,10 @@ on:
         default: false
 
 jobs:
-  # Job 1: PR Quality Checks (runs on pull requests, not on closed/merged)
+  # Job 1: PR Quality Checks (runs on pull requests)
   pr-checks:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    if: github.event_name == 'pull_request'
     
     steps:
       - name: Checkout repository
@@ -133,10 +136,10 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "✨ **This PR is ready for review and merge!**" >> $GITHUB_STEP_SUMMARY
 
-  # Job 2: Auto-Version and Release (runs when PR is merged into main)
+  # Job 2: Auto-Version and Release (runs on push to main)
   auto-version-and-release:
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
       - name: Checkout repository
