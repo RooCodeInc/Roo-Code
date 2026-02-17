@@ -15,7 +15,7 @@ const PATH_PARAMETER_DESCRIPTION = `The path of the file to write to (relative t
 
 const CONTENT_PARAMETER_DESCRIPTION = `The content to write to the file. ALWAYS provide the COMPLETE intended content of the file, without any truncation or omissions. You MUST include ALL parts of the file, even if they haven't been modified. Do NOT include line numbers in the content.`
 const INTENT_ID_PARAMETER_DESCRIPTION = `The active intent identifier selected through select_active_intent(intent_id).`
-const MUTATION_CLASS_PARAMETER_DESCRIPTION = `Mutation classification for this write. Must be one of: create, modify, replace, delete.`
+const MUTATION_CLASS_PARAMETER_DESCRIPTION = `Mutation classification for this write. Must be one of: create, modify, replace, delete, AST_REFACTOR, INTENT_EVOLUTION.`
 const RELATED_PARAMETER_DESCRIPTION = `Optional related trace identifiers. The runtime will inject intent_id when missing.`
 const READ_HASH_PARAMETER_DESCRIPTION = `Optional read-time SHA-256 hash for optimistic locking.`
 
@@ -42,7 +42,7 @@ export default {
 				},
 				mutation_class: {
 					type: "string",
-					enum: ["create", "modify", "replace", "delete"],
+					enum: ["create", "modify", "replace", "delete", "AST_REFACTOR", "INTENT_EVOLUTION"],
 					description: MUTATION_CLASS_PARAMETER_DESCRIPTION,
 				},
 				related: {
