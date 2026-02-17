@@ -1,0 +1,5 @@
+# SpecKit - Exclude sensitive agent data
+.claude/state/
+.claude/credentials/
+.claude/*.json
+*.log
