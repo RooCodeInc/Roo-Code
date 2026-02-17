@@ -103,6 +103,7 @@ import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
 import { REQUESTY_BASE_URL } from "../../shared/utils/requesty"
 import { validateAndFixToolResultIds } from "../task/validateToolResultIds"
+import { getGovernanceStatusSnapshot } from "../../hooks/governanceStatus"
 
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -2186,6 +2187,7 @@ export class ClineProvider
 		const mergedAllowedCommands = this.mergeAllowedCommands(allowedCommands)
 		const mergedDeniedCommands = this.mergeDeniedCommands(deniedCommands)
 		const cwd = this.cwd
+		const governanceStatus = await getGovernanceStatusSnapshot(cwd)
 
 		return {
 			version: this.context.extension?.packageJSON?.version ?? "",
@@ -2316,6 +2318,7 @@ export class ClineProvider
 				}
 			})(),
 			debug: vscode.workspace.getConfiguration(Package.name).get<boolean>("debug", false),
+			governanceStatus,
 		}
 	}
 

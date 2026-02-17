@@ -243,6 +243,15 @@ export interface OpenAiCodexRateLimitsMessage {
 	error?: string
 }
 
+export interface GovernanceStatus {
+	activeIntentId?: string
+	activeIntentTitle?: string
+	activeIntentStatus?: "PLANNED" | "IN_PROGRESS" | "COMPLETED"
+	lastTraceAt?: string
+	lastTraceStatus?: "success" | "failure" | "blocked"
+	lastToolName?: string
+}
+
 export type ExtensionState = Pick<
 	GlobalSettings,
 	| "currentApiConfigName"
@@ -371,6 +380,7 @@ export type ExtensionState = Pick<
 	featureRoomoteControlEnabled: boolean
 	openAiCodexIsAuthenticated?: boolean
 	debug?: boolean
+	governanceStatus?: GovernanceStatus
 
 	/**
 	 * Monotonically increasing sequence number for clineMessages state pushes.
@@ -545,6 +555,7 @@ export interface WebviewMessage {
 		| "getDismissedUpsells"
 		| "openMarkdownPreview"
 		| "updateSettings"
+		| "requestGovernanceStatus"
 		| "allowedCommands"
 		| "getTaskWithAggregatedCosts"
 		| "deniedCommands"

@@ -546,6 +546,9 @@ export const webviewMessageHandler = async (
 
 			provider.isViewLaunched = true
 			break
+		case "requestGovernanceStatus":
+			await provider.postStateToWebviewWithoutTaskHistory()
+			break
 		case "newTask":
 			// Initializing new instance of Cline will make sure that any
 			// agentically running promises in old instance don't affect our new
