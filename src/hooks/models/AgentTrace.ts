@@ -18,6 +18,10 @@ export type AgentTraceEntry = {
         entity_type?: "AI" | "Human"
         model_identifier?: string
       }
+      // Optional classification aligned to evaluation rubric
+      classification?: "REFACTOR" | "FEATURE" | "BUGFIX"
+      // Optional AST node type for correlation (e.g., FunctionDeclaration)
+      ast_node_type?: string
       ranges: AgentTraceRange[]
       related?: Array<{ type: string; value: string }>
     }>

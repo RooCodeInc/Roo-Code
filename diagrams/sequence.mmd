@@ -1,0 +1,20 @@
+%% Mermaid Sequence Diagram: Tool execution flow with hooks
+sequenceDiagram
+  participant User
+  participant Assistant
+  participant PreHook
+  participant Handshake
+  participant Tools
+  participant FS
+  participant PostHook
+  participant Ledger
+
+  User->>Assistant: Request ("Refactor auth middleware")
+  Assistant->>PreHook: validate(activeIntentId)
+  PreHook-->>Handshake: IntentContext (owned_scope, acceptance_criteria)
+  Handshake-->>Assistant: SYSTEM_PROMPT += <intent_context>
+  Assistant->>Tools: write_to_file(path, content)
+  Tools->>FS: saveChanges()
+  FS-->>PostHook: FileWrittenEvent(path, content)
+  PostHook->>Ledger: Append(agent_trace.jsonl, {intent_id, content_hash, classification})
+  Ledger-->>Assistant: Trace ID

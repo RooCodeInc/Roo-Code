@@ -1,0 +1,50 @@
+%% Mermaid Class Diagram: HookEngine and dependencies
+classDiagram
+  class HookEngine {
+    +executeWithHooks(fn, intentId, meta) Promise
+  }
+  class PreHook {
+    +validate(activeIntentId) Intent
+  }
+  class PostHook {
+    +log({filePath, content, intentId, mutationClass, contributorModel}) void
+  }
+  class IntentManager {
+    +checkout(intentId, intent) Intent
+    +get(intentId) Intent | undefined
+    +clear(intentId) void
+  }
+  class AgentTraceEntry {
+    +id: string
+    +timestamp: string
+    +files: File[]
+  }
+  class File {
+    +relative_path: string
+    +conversations: Conversation[]
+  }
+  class Conversation {
+    +contributor: Contributor
+    +classification: REFACTOR|FEATURE|BUGFIX
+    +ast_node_type: string
+    +ranges: Range[]
+    +related: Related[]
+  }
+  class Range {
+    +start_line: number
+    +end_line: number
+    +content_hash: sha256:hex
+  }
+  class Contributor {
+    +entity_type: AI|Human
+    +model_identifier: string
+  }
+  class Related {
+    +type: string
+    +value: string
+  }
+
+  HookEngine --> PreHook : before
+  HookEngine --> PostHook : after
+  PreHook --> IntentManager : stores checked out intent
+  PostHook --> AgentTraceEntry : writes entries
