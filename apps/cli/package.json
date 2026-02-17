@@ -17,6 +17,7 @@
 		"build:extension": "pnpm --filter roo-cline bundle",
 		"dev": "ROO_AUTH_BASE_URL=https://app.roocode.com ROO_SDK_BASE_URL=https://cloud-api.roocode.com ROO_CODE_PROVIDER_URL=https://api.roocode.com/proxy tsx src/index.ts",
 		"dev:local": "ROO_AUTH_BASE_URL=http://localhost:3000 ROO_SDK_BASE_URL=http://localhost:3001 ROO_CODE_PROVIDER_URL=http://localhost:8080/proxy tsx src/index.ts",
+		"dev:test-stdin": "tsx scripts/test-stdin-stream.ts",
 		"clean": "rimraf dist .turbo"
 	},
 	"dependencies": {
