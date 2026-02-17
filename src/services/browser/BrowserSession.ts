@@ -33,10 +33,19 @@ export class BrowserSession {
 	// Track last known viewport to surface in environment details
 	private lastViewportWidth?: number
 	private lastViewportHeight?: number
+	private remoteBrowserOverride?: string
 
 	constructor(context: vscode.ExtensionContext, onStateChange?: (isActive: boolean) => void) {
 		this.context = context
 		this.onStateChange = onStateChange
+	}
+
+	/**
+	 * Override the remote browser host URL for this session without persisting to global state.
+	 * When set, `launchBrowser()` will prefer connecting to the remote browser.
+	 */
+	public overrideRemoteBrowserHost(hostUrl?: string): void {
+		this.remoteBrowserOverride = hostUrl
 	}
 
 	private async ensureChromiumExists(): Promise<PCRStats> {
@@ -114,7 +123,8 @@ export class BrowserSession {
 	 * Returns true if connection was successful, false otherwise
 	 */
 	private async connectToRemoteBrowser(): Promise<boolean> {
-		let remoteBrowserHost = this.context.globalState.get("remoteBrowserHost") as string | undefined
+		let remoteBrowserHost =
+			this.remoteBrowserOverride ?? (this.context.globalState.get("remoteBrowserHost") as string | undefined)
 		let reconnectionAttempted = false
 
 		// Try to connect with cached endpoint first if it exists and is recent (less than 1 hour old)
@@ -175,7 +185,9 @@ export class BrowserSession {
 		console.log("launch browser called")
 
 		// Check if remote browser connection is enabled
-		const remoteBrowserEnabled = this.context.globalState.get("remoteBrowserEnabled") as boolean | undefined
+		const remoteBrowserEnabled =
+			!!this.remoteBrowserOverride ||
+			(this.context.globalState.get("remoteBrowserEnabled") as boolean | undefined)
 
 		if (!remoteBrowserEnabled) {
 			console.log("Launching local browser")

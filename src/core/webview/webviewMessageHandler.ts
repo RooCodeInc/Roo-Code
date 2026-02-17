@@ -1,10 +1,12 @@
 import { safeWriteJson } from "../../utils/safeWriteJson"
+import { execFile } from "child_process"
 import * as path from "path"
 import * as os from "os"
 import * as fs from "fs/promises"
 import { getRooDirectoriesForCwd } from "../../services/roo-config/index.js"
 import pWaitFor from "p-wait-for"
 import * as vscode from "vscode"
+import { promisify } from "util"
 
 import {
 	type Language,
@@ -79,15 +81,21 @@ import {
 	DEFAULT_RPI_COUNCIL_TIMEOUT_SECONDS,
 	DEFAULT_RPI_VERIFICATION_STRICTNESS,
 	DEFAULT_SANDBOX_IMAGE,
+	DEFAULT_SANDBOX_DOCKER_BROWSER_ENABLED,
+	DEFAULT_SANDBOX_DOCKER_BROWSER_IMAGE,
 	DEFAULT_SANDBOX_MAX_EXECUTION_TIME,
 	DEFAULT_SANDBOX_MEMORY_LIMIT,
 	DEFAULT_SANDBOX_NETWORK_ACCESS,
+	DEFAULT_SANDBOX_SESSION_PORTS,
 	normalizeBooleanSetting,
 	normalizeNumberSetting,
 	normalizeRpiCouncilApiConfigId,
+	normalizeSandboxDockerBrowserEnabled,
+	normalizeSandboxDockerBrowserImage,
 	normalizeSandboxImage,
 	normalizeSandboxMemoryLimit,
 	normalizeSandboxNetworkAccess,
+	normalizeSandboxSessionPorts,
 	normalizeVerificationStrictness,
 } from "../config/rpiSettingsNormalization"
 
@@ -107,6 +115,8 @@ import {
 	handleCreateWorktreeInclude,
 	handleCheckoutBranch,
 } from "./worktree"
+
+const execFileAsync = promisify(execFile)
 
 export const webviewMessageHandler = async (
 	provider: ClineProvider,
@@ -693,6 +703,15 @@ export const webviewMessageHandler = async (
 								max: 600,
 								integer: true,
 							})
+						} else if (key === "sandboxSessionPorts") {
+							newValue = normalizeSandboxSessionPorts(value, DEFAULT_SANDBOX_SESSION_PORTS)
+						} else if (key === "sandboxDockerBrowserEnabled") {
+							newValue = normalizeSandboxDockerBrowserEnabled(
+								value,
+								DEFAULT_SANDBOX_DOCKER_BROWSER_ENABLED,
+							)
+						} else if (key === "sandboxDockerBrowserImage") {
+							newValue = normalizeSandboxDockerBrowserImage(value, DEFAULT_SANDBOX_DOCKER_BROWSER_IMAGE)
 						} else if (key === "rpiContextDistillationBudget") {
 							newValue = normalizeNumberSetting(value, DEFAULT_RPI_CONTEXT_DISTILLATION_BUDGET, {
 								min: 1000,
@@ -775,6 +794,51 @@ export const webviewMessageHandler = async (
 				provider.getCurrentTask()?.handleTerminalOperation(message.terminalOperation)
 			}
 			break
+		case "sandboxSessionOperation": {
+			if (message.sandboxSessionOperation !== "stop" || !message.containerName) {
+				break
+			}
+
+			const executionId = message.executionId
+			const containerName = message.containerName.trim()
+			if (!containerName.startsWith("roo-sbx-sess-")) {
+				vscode.window.showErrorMessage("Refusing to stop non-sandbox Docker container.")
+				break
+			}
+			try {
+				await execFileAsync("docker", ["rm", "-f", containerName], { timeout: 30_000 })
+				vscode.window.showInformationMessage(`Stopped Docker sandbox session: ${containerName}`)
+
+				if (executionId) {
+					await provider.postMessageToWebview({
+						type: "commandExecutionStatus",
+						text: JSON.stringify({
+							executionId,
+							status: "sandbox_session_stopped",
+							containerName,
+							success: true,
+						}),
+					})
+				}
+			} catch (error) {
+				const msg = error instanceof Error ? error.message : String(error)
+				vscode.window.showErrorMessage(`Failed to stop Docker sandbox session: ${msg}`)
+
+				if (executionId) {
+					await provider.postMessageToWebview({
+						type: "commandExecutionStatus",
+						text: JSON.stringify({
+							executionId,
+							status: "sandbox_session_stopped",
+							containerName,
+							success: false,
+							error: msg,
+						}),
+					})
+				}
+			}
+			break
+		}
 		case "clearTask":
 			// Clear task resets the current session. Delegation flows are
 			// handled via metadata; parent resumption occurs through

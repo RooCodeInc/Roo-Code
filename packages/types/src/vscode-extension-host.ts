@@ -347,6 +347,9 @@ export type ExtensionState = Pick<
 	| "sandboxNetworkAccess"
 	| "sandboxMemoryLimit"
 	| "sandboxMaxExecutionTime"
+	| "sandboxSessionPorts"
+	| "sandboxDockerBrowserEnabled"
+	| "sandboxDockerBrowserImage"
 	| "rpiCodeReviewEnabled"
 	| "rpiCodeReviewScoreThreshold"
 	| "rpiContextDistillationBudget"
@@ -466,6 +469,7 @@ export interface WebviewMessage {
 		| "newTask"
 		| "askResponse"
 		| "terminalOperation"
+		| "sandboxSessionOperation"
 		| "clearTask"
 		| "didShowAnnouncement"
 		| "selectImages"
@@ -674,6 +678,9 @@ export interface WebviewMessage {
 	ids?: string[]
 	hasSystemPromptOverride?: boolean
 	terminalOperation?: "continue" | "abort"
+	sandboxSessionOperation?: "stop"
+	executionId?: string
+	containerName?: string
 	messageTs?: number
 	restoreCheckpoint?: boolean
 	historyPreviewCollapsed?: boolean

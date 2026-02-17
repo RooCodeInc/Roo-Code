@@ -250,6 +250,7 @@
 	"commandOutput": "Command Output",
 	"commandExecution": {
 		"abort": "Abort",
+		"stopSession": "Stop Docker session",
 		"running": "Running",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "Exited with status {{exitCode}}",

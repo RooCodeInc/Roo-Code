@@ -968,6 +968,18 @@
 			"label": "Max execution time (seconds)",
 			"description": "Maximum time a sandbox command can run before being killed."
 		},
+		"sandboxSessionPorts": {
+			"label": "Session ports (dev servers)",
+			"description": "Ports to publish when starting long-running sandbox sessions (e.g. pnpm dev). Comma-separated list."
+		},
+		"sandboxDockerBrowserEnabled": {
+			"label": "Use Docker browser for browser tool",
+			"description": "When enabled and sandbox execution is on, Roo prefers a headless Chrome running in Docker for browser actions (keeps host clean)."
+		},
+		"sandboxDockerBrowserImage": {
+			"label": "Docker browser image",
+			"description": "Docker image used for the headless browser (must include Chrome/Chromium)."
+		},
 		"sectionAdvanced": "Advanced",
 		"contextDistillationBudget": {
 			"label": "Context distillation budget (chars)",

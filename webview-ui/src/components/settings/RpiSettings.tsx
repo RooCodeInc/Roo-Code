@@ -43,6 +43,9 @@ type RpiSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "sandboxNetworkAccess"
 		| "sandboxMemoryLimit"
 		| "sandboxMaxExecutionTime"
+		| "sandboxSessionPorts"
+		| "sandboxDockerBrowserEnabled"
+		| "sandboxDockerBrowserImage"
 		| "rpiContextDistillationBudget"
 		| "rpiCouncilTimeoutSeconds"
 	>
@@ -51,6 +54,9 @@ type RpiSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	sandboxNetworkAccess?: string
 	sandboxMemoryLimit?: string
 	sandboxMaxExecutionTime?: number
+	sandboxSessionPorts?: string
+	sandboxDockerBrowserEnabled?: boolean
+	sandboxDockerBrowserImage?: string
 	rpiContextDistillationBudget?: number
 	rpiCouncilTimeoutSeconds?: number
 }
@@ -68,6 +74,9 @@ export const RpiSettings = ({
 	sandboxNetworkAccess,
 	sandboxMemoryLimit,
 	sandboxMaxExecutionTime,
+	sandboxSessionPorts,
+	sandboxDockerBrowserEnabled,
+	sandboxDockerBrowserImage,
 	rpiCodeReviewEnabled,
 	rpiCodeReviewScoreThreshold,
 	rpiContextDistillationBudget,
@@ -326,6 +335,59 @@ export const RpiSettings = ({
 					/>
 					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
 						{t("settings:rpiConfig.sandboxMaxExecutionTime.description")}
+					</div>
+				</SearchableSetting>
+
+				<SearchableSetting
+					settingId="rpi-sandbox-session-ports"
+					section="rpiConfig"
+					label={t("settings:rpiConfig.sandboxSessionPorts.label")}>
+					<label className="block font-medium mb-1">
+						{t("settings:rpiConfig.sandboxSessionPorts.label")}
+					</label>
+					<Input
+						value={sandboxSessionPorts ?? "3000,5173,4173,8000,8080,6006"}
+						onChange={(e) => setCachedStateField("sandboxSessionPorts", e.target.value)}
+						disabled={!sandboxEnabled}
+						placeholder="3000,5173,4173,8000,8080,6006"
+					/>
+					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+						{t("settings:rpiConfig.sandboxSessionPorts.description")}
+					</div>
+				</SearchableSetting>
+
+				<SearchableSetting
+					settingId="rpi-sandbox-docker-browser-enabled"
+					section="rpiConfig"
+					label={t("settings:rpiConfig.sandboxDockerBrowserEnabled.label")}>
+					<VSCodeCheckbox
+						checked={sandboxDockerBrowserEnabled ?? true}
+						onChange={(e: any) => setCachedStateField("sandboxDockerBrowserEnabled", e.target.checked)}
+						disabled={!sandboxEnabled}>
+						<label className="block font-medium mb-1">
+							{t("settings:rpiConfig.sandboxDockerBrowserEnabled.label")}
+						</label>
+					</VSCodeCheckbox>
+					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+						{t("settings:rpiConfig.sandboxDockerBrowserEnabled.description")}
+					</div>
+				</SearchableSetting>
+
+				<SearchableSetting
+					settingId="rpi-sandbox-docker-browser-image"
+					section="rpiConfig"
+					label={t("settings:rpiConfig.sandboxDockerBrowserImage.label")}>
+					<label className="block font-medium mb-1">
+						{t("settings:rpiConfig.sandboxDockerBrowserImage.label")}
+					</label>
+					<Input
+						value={sandboxDockerBrowserImage ?? "ghcr.io/puppeteer/puppeteer:latest"}
+						onChange={(e) => setCachedStateField("sandboxDockerBrowserImage", e.target.value)}
+						disabled={!sandboxEnabled || !(sandboxDockerBrowserEnabled ?? true)}
+						placeholder="ghcr.io/puppeteer/puppeteer:latest"
+					/>
+					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+						{t("settings:rpiConfig.sandboxDockerBrowserImage.description")}
 					</div>
 				</SearchableSetting>
 			</Section>

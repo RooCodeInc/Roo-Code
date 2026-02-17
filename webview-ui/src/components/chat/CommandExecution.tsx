@@ -47,6 +47,7 @@ export const CommandExecution = ({ executionId, text, icon, title }: CommandExec
 	const [isExpanded, setIsExpanded] = useState(terminalShellIntegrationDisabled)
 	const [streamingOutput, setStreamingOutput] = useState("")
 	const [status, setStatus] = useState<CommandExecutionStatus | null>(null)
+	const [sandboxSession, setSandboxSession] = useState<{ containerName: string } | null>(null)
 
 	// The command's output can either come from the text associated with the
 	// task message (this is the case for completed commands) or from the
@@ -126,6 +127,14 @@ export const CommandExecution = ({ executionId, text, icon, title }: CommandExec
 						case "started":
 							setStatus(data)
 							break
+						case "sandbox_session_started":
+							setStatus(data)
+							setSandboxSession({ containerName: data.containerName })
+							break
+						case "sandbox_session_stopped":
+							setStatus(data)
+							setSandboxSession(null)
+							break
 						case "output":
 							setStreamingOutput(data.output)
 							break
@@ -177,6 +186,25 @@ export const CommandExecution = ({ executionId, text, icon, title }: CommandExec
 											vscode.postMessage({
 												type: "terminalOperation",
 												terminalOperation: "abort",
+											})
+										}>
+										<OctagonX className="size-4" />
+									</Button>
+								</StandardTooltip>
+							</div>
+						)}
+						{status?.status === "sandbox_session_started" && sandboxSession?.containerName && (
+							<div className="flex flex-row items-center gap-2 font-mono text-xs">
+								<StandardTooltip content={t("chat:commandExecution.stopSession")}>
+									<Button
+										variant="ghost"
+										size="icon"
+										onClick={() =>
+											vscode.postMessage({
+												type: "sandboxSessionOperation",
+												sandboxSessionOperation: "stop",
+												executionId,
+												containerName: sandboxSession.containerName,
 											})
 										}>
 										<OctagonX className="size-4" />

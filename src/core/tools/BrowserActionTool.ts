@@ -91,6 +91,32 @@ export async function browserActionTool(
 				// The only scenario we have to avoid is sending messages WHILE a partial message exists at the end of the messages array.
 				// For example the api_req_finished message would interfere with the partial message, so we needed to remove that.
 
+				// If sandbox execution is enabled, prefer a headless Docker browser (keeps host clean).
+				try {
+					const provider = await cline.providerRef.deref()
+					const providerState = await provider?.getState()
+					const sandboxEnabled = providerState?.experiments?.sandboxExecution ?? false
+
+					const remoteBrowserEnabled = provider?.context?.globalState.get("remoteBrowserEnabled") as
+						| boolean
+						| undefined
+
+					const dockerBrowserEnabled = (providerState as any)?.sandboxDockerBrowserEnabled ?? true
+					const dockerBrowserImage = (providerState as any)?.sandboxDockerBrowserImage as string | undefined
+
+					if (sandboxEnabled && dockerBrowserEnabled && !remoteBrowserEnabled) {
+						const { DockerBrowser } = await import("../../services/browser/DockerBrowser")
+						const dockerBrowser = await DockerBrowser.ensureRunning(cline.cwd, {
+							image: dockerBrowserImage,
+							networkAccess:
+								(providerState?.sandboxNetworkAccess as "full" | "restricted" | "none") ?? "restricted",
+						})
+						cline.browserSession.overrideRemoteBrowserHost(dockerBrowser.browserUrl)
+					}
+				} catch {
+					// Best-effort; fall back to normal browser behavior.
+				}
+
 				// Launch browser first (this triggers "Browser session opened" status message)
 				await cline.browserSession.launchBrowser()
 

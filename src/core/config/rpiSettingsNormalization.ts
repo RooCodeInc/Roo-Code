@@ -14,6 +14,9 @@ export const DEFAULT_SANDBOX_IMAGE = "node:20"
 export const DEFAULT_SANDBOX_NETWORK_ACCESS: SandboxNetworkAccess = "restricted"
 export const DEFAULT_SANDBOX_MEMORY_LIMIT: SandboxMemoryLimit = "4g"
 export const DEFAULT_SANDBOX_MAX_EXECUTION_TIME = 120
+export const DEFAULT_SANDBOX_SESSION_PORTS = "3000,5173,4173,8000,8080,6006"
+export const DEFAULT_SANDBOX_DOCKER_BROWSER_ENABLED = true
+export const DEFAULT_SANDBOX_DOCKER_BROWSER_IMAGE = "ghcr.io/puppeteer/puppeteer:latest"
 
 const STRICTNESS_VALUES = new Set<RpiVerificationStrictness>(["lenient", "standard", "strict"])
 const SANDBOX_NETWORK_VALUES = new Set<SandboxNetworkAccess>(["full", "restricted", "none"])
@@ -118,6 +121,62 @@ export const normalizeSandboxMemoryLimit = (
 	}
 	const normalized = value.trim().toLowerCase() as SandboxMemoryLimit
 	return SANDBOX_MEMORY_VALUES.has(normalized) ? normalized : fallback
+}
+
+export const normalizeSandboxSessionPorts = (
+	value: unknown,
+	fallback: string = DEFAULT_SANDBOX_SESSION_PORTS,
+): string => {
+	if (typeof value !== "string") {
+		return fallback
+	}
+
+	const raw = value.trim()
+	if (!raw) {
+		return fallback
+	}
+
+	const parts = raw
+		.split(/[,\s]+/g)
+		.map((p) => p.trim())
+		.filter(Boolean)
+	const ports: number[] = []
+	const seen = new Set<number>()
+	for (const part of parts) {
+		const num = Number(part)
+		if (!Number.isInteger(num) || num <= 0 || num > 65535) {
+			continue
+		}
+		if (seen.has(num)) {
+			continue
+		}
+		seen.add(num)
+		ports.push(num)
+	}
+
+	if (ports.length === 0) {
+		return fallback
+	}
+
+	return ports.join(",")
+}
+
+export const normalizeSandboxDockerBrowserEnabled = (
+	value: unknown,
+	fallback: boolean = DEFAULT_SANDBOX_DOCKER_BROWSER_ENABLED,
+): boolean => {
+	return normalizeBooleanSetting(value, fallback)
+}
+
+export const normalizeSandboxDockerBrowserImage = (
+	value: unknown,
+	fallback: string = DEFAULT_SANDBOX_DOCKER_BROWSER_IMAGE,
+): string => {
+	if (typeof value !== "string") {
+		return fallback
+	}
+	const normalized = value.trim()
+	return normalized.length > 0 ? normalized : fallback
 }
 
 export const normalizeRpiCouncilApiConfigId = (value: unknown): string => {

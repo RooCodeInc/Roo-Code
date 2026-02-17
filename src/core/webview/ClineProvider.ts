@@ -102,15 +102,21 @@ import {
 	DEFAULT_RPI_COUNCIL_TIMEOUT_SECONDS,
 	DEFAULT_RPI_VERIFICATION_STRICTNESS,
 	DEFAULT_SANDBOX_IMAGE,
+	DEFAULT_SANDBOX_DOCKER_BROWSER_ENABLED,
+	DEFAULT_SANDBOX_DOCKER_BROWSER_IMAGE,
 	DEFAULT_SANDBOX_MAX_EXECUTION_TIME,
 	DEFAULT_SANDBOX_MEMORY_LIMIT,
 	DEFAULT_SANDBOX_NETWORK_ACCESS,
+	DEFAULT_SANDBOX_SESSION_PORTS,
 	normalizeBooleanSetting,
 	normalizeNumberSetting,
 	normalizeRpiCouncilApiConfigId,
+	normalizeSandboxDockerBrowserEnabled,
+	normalizeSandboxDockerBrowserImage,
 	normalizeSandboxImage,
 	normalizeSandboxMemoryLimit,
 	normalizeSandboxNetworkAccess,
+	normalizeSandboxSessionPorts,
 	normalizeVerificationStrictness,
 } from "../config/rpiSettingsNormalization"
 import { Task } from "../task/Task"
@@ -2227,6 +2233,9 @@ export class ClineProvider
 			sandboxNetworkAccess,
 			sandboxMemoryLimit,
 			sandboxMaxExecutionTime,
+			sandboxSessionPorts,
+			sandboxDockerBrowserEnabled,
+			sandboxDockerBrowserImage,
 			rpiCodeReviewEnabled,
 			rpiCodeReviewScoreThreshold,
 			rpiContextDistillationBudget,
@@ -2379,6 +2388,9 @@ export class ClineProvider
 			sandboxNetworkAccess: sandboxNetworkAccess ?? "restricted",
 			sandboxMemoryLimit: sandboxMemoryLimit ?? "4g",
 			sandboxMaxExecutionTime: sandboxMaxExecutionTime ?? 120,
+			sandboxSessionPorts: sandboxSessionPorts ?? DEFAULT_SANDBOX_SESSION_PORTS,
+			sandboxDockerBrowserEnabled: sandboxDockerBrowserEnabled ?? DEFAULT_SANDBOX_DOCKER_BROWSER_ENABLED,
+			sandboxDockerBrowserImage: sandboxDockerBrowserImage ?? DEFAULT_SANDBOX_DOCKER_BROWSER_IMAGE,
 			rpiCodeReviewEnabled: rpiCodeReviewEnabled ?? true,
 			rpiCodeReviewScoreThreshold: rpiCodeReviewScoreThreshold ?? 4,
 			rpiContextDistillationBudget: rpiContextDistillationBudget ?? 8000,
@@ -2502,6 +2514,9 @@ export class ClineProvider
 		const directSandboxNetworkAccess = this.contextProxy.getValue("sandboxNetworkAccess")
 		const directSandboxMemoryLimit = this.contextProxy.getValue("sandboxMemoryLimit")
 		const directSandboxMaxExecutionTime = this.contextProxy.getValue("sandboxMaxExecutionTime")
+		const directSandboxSessionPorts = this.contextProxy.getValue("sandboxSessionPorts")
+		const directSandboxDockerBrowserEnabled = this.contextProxy.getValue("sandboxDockerBrowserEnabled")
+		const directSandboxDockerBrowserImage = this.contextProxy.getValue("sandboxDockerBrowserImage")
 		const directRpiCodeReviewEnabled = this.contextProxy.getValue("rpiCodeReviewEnabled")
 		const directRpiCodeReviewScoreThreshold = this.contextProxy.getValue("rpiCodeReviewScoreThreshold")
 		const directRpiContextDistillationBudget = this.contextProxy.getValue("rpiContextDistillationBudget")
@@ -2625,6 +2640,18 @@ export class ClineProvider
 			DEFAULT_SANDBOX_MAX_EXECUTION_TIME,
 			{ min: 10, max: 600, integer: true },
 		)
+		const normalizedSandboxSessionPorts = normalizeSandboxSessionPorts(
+			directSandboxSessionPorts ?? stateValues.sandboxSessionPorts,
+			DEFAULT_SANDBOX_SESSION_PORTS,
+		)
+		const normalizedSandboxDockerBrowserEnabled = normalizeSandboxDockerBrowserEnabled(
+			directSandboxDockerBrowserEnabled ?? stateValues.sandboxDockerBrowserEnabled,
+			DEFAULT_SANDBOX_DOCKER_BROWSER_ENABLED,
+		)
+		const normalizedSandboxDockerBrowserImage = normalizeSandboxDockerBrowserImage(
+			directSandboxDockerBrowserImage ?? stateValues.sandboxDockerBrowserImage,
+			DEFAULT_SANDBOX_DOCKER_BROWSER_IMAGE,
+		)
 		const normalizedRpiCodeReviewEnabled = normalizeBooleanSetting(
 			directRpiCodeReviewEnabled ?? stateValues.rpiCodeReviewEnabled,
 			DEFAULT_RPI_CODE_REVIEW_ENABLED,
@@ -2705,6 +2732,9 @@ export class ClineProvider
 			sandboxNetworkAccess: normalizedSandboxNetworkAccess,
 			sandboxMemoryLimit: normalizedSandboxMemoryLimit,
 			sandboxMaxExecutionTime: normalizedSandboxMaxExecutionTime,
+			sandboxSessionPorts: normalizedSandboxSessionPorts,
+			sandboxDockerBrowserEnabled: normalizedSandboxDockerBrowserEnabled,
+			sandboxDockerBrowserImage: normalizedSandboxDockerBrowserImage,
 			rpiCodeReviewEnabled: normalizedRpiCodeReviewEnabled,
 			rpiCodeReviewScoreThreshold: normalizedRpiCodeReviewScoreThreshold,
 			rpiContextDistillationBudget: normalizedRpiContextDistillationBudget,

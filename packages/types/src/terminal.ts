@@ -13,6 +13,14 @@ export const commandExecutionStatusSchema = z.discriminatedUnion("status", [
 	}),
 	z.object({
 		executionId: z.string(),
+		status: z.literal("sandbox_session_started"),
+		command: z.string(),
+		containerName: z.string(),
+		// Maps container port -> list of host mappings (e.g. ["0.0.0.0:49153"])
+		publishedPorts: z.record(z.string(), z.array(z.string())).optional(),
+	}),
+	z.object({
+		executionId: z.string(),
 		status: z.literal("output"),
 		output: z.string(),
 	}),
@@ -20,6 +28,13 @@ export const commandExecutionStatusSchema = z.discriminatedUnion("status", [
 		executionId: z.string(),
 		status: z.literal("exited"),
 		exitCode: z.number().optional(),
+	}),
+	z.object({
+		executionId: z.string(),
+		status: z.literal("sandbox_session_stopped"),
+		containerName: z.string(),
+		success: z.boolean(),
+		error: z.string().optional(),
 	}),
 	z.object({
 		executionId: z.string(),

@@ -224,6 +224,7 @@
 	"commandExecution": {
 		"running": "Executando",
 		"abort": "Interromper",
+		"stopSession": "Parar sessão Docker",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "Saiu com o status {{exitCode}}",
 		"manageCommands": "Comandos aprovados automaticamente",

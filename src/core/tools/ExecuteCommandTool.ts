@@ -31,6 +31,69 @@ interface ExecuteCommandParams {
 export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 	readonly name = "execute_command" as const
 
+	private isLikelyLongRunning(command: string): boolean {
+		const trimmed = command.trim()
+		if (!trimmed) return false
+
+		// Common dev server/watch commands (prefer session container + port publishing)
+		const patterns: RegExp[] = [
+			/\b(pnpm|npm|yarn)\s+(run\s+)?(dev|start|serve|preview|watch)\b/i,
+			/\b(vite|next|nuxt|astro)\s+dev\b/i,
+			/\b(storybook)\s+(dev|start)\b/i,
+			/\b(docker\s+compose|docker-compose)\s+up\b/i,
+		]
+
+		return patterns.some((p) => p.test(trimmed))
+	}
+
+	private formatPublishedPorts(publishedPorts: Record<number, string[]>): string {
+		const lines: string[] = []
+		for (const [containerPortRaw, mappings] of Object.entries(publishedPorts)) {
+			const containerPort = Number(containerPortRaw)
+			if (!mappings?.length) continue
+			for (const mapping of mappings) {
+				// mapping looks like: 0.0.0.0:49153 or [::]:49153
+				const hostPort = mapping.split(":").pop()
+				if (hostPort) {
+					lines.push(`- ${containerPort} → http://127.0.0.1:${hostPort}`)
+				}
+			}
+		}
+		return lines.length ? lines.join("\n") : ""
+	}
+
+	private parseSessionPorts(value: unknown): number[] | undefined {
+		if (typeof value !== "string") {
+			return undefined
+		}
+
+		const trimmed = value.trim()
+		if (!trimmed) {
+			return undefined
+		}
+
+		const parts = trimmed
+			.split(/[,\s]+/g)
+			.map((p) => p.trim())
+			.filter(Boolean)
+
+		const ports: number[] = []
+		const seen = new Set<number>()
+		for (const part of parts) {
+			const num = Number(part)
+			if (!Number.isInteger(num) || num <= 0 || num > 65535) {
+				continue
+			}
+			if (seen.has(num)) {
+				continue
+			}
+			seen.add(num)
+			ports.push(num)
+		}
+
+		return ports.length ? ports : undefined
+	}
+
 	async execute(params: ExecuteCommandParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { command, cwd: customCwd } = params
 		const { handleError, pushToolResult, askApproval } = callbacks
@@ -81,6 +144,7 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 					const sandbox = new DockerSandbox(task.cwd, {
 						enabled: true,
 						image: (providerState?.sandboxImage as string) ?? "node:20",
+						workspaceMountMode: "rw",
 						networkAccess:
 							(providerState?.sandboxNetworkAccess as "full" | "restricted" | "none") ?? "restricted",
 						memoryLimit: (providerState?.sandboxMemoryLimit as string) ?? "4g",
@@ -88,9 +152,46 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 					})
 					if (await sandbox.isAvailable()) {
 						// Convert absolute customCwd to relative for Docker workspace mount
+						// Convert absolute customCwd to relative for Docker workspace mount
 						let sandboxCwd = customCwd
 						if (customCwd && path.isAbsolute(customCwd)) {
 							sandboxCwd = path.relative(task.cwd, customCwd)
+						}
+
+						if (this.isLikelyLongRunning(unescapedCommand)) {
+							const sessionPorts = this.parseSessionPorts((providerState as any)?.sandboxSessionPorts)
+							const session = await sandbox.startSession(unescapedCommand, {
+								cwd: sandboxCwd,
+								ports: sessionPorts,
+							})
+							const portsText = this.formatPublishedPorts(session.publishedPorts)
+
+							provider?.postMessageToWebview({
+								type: "commandExecutionStatus",
+								text: JSON.stringify({
+									executionId,
+									status: "sandbox_session_started",
+									command: unescapedCommand,
+									containerName: session.containerName,
+									publishedPorts: session.publishedPorts,
+								}),
+							})
+
+							this._rpiObservationExtras = {
+								success: true,
+								summary: `[Sandbox Session] ${unescapedCommand.slice(0, 80)} → ${session.containerName}`,
+								outputSnippet: (session.initialLogs || portsText).slice(-500),
+							}
+
+							const outputParts = [
+								`[Docker Sandbox Session] Started: ${session.containerName}`,
+								portsText ? `Published ports:\n${portsText}` : "",
+								session.initialLogs ? `Logs (tail):\n${session.initialLogs}` : "",
+								`Stop: docker rm -f ${session.containerName}`,
+							].filter(Boolean)
+
+							pushToolResult(outputParts.join("\n\n"))
+							return
 						}
 
 						const sandboxResult = await sandbox.exec(unescapedCommand, sandboxCwd)

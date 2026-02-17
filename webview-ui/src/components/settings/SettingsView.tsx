@@ -204,6 +204,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		sandboxNetworkAccess,
 		sandboxMemoryLimit,
 		sandboxMaxExecutionTime,
+		sandboxSessionPorts,
+		sandboxDockerBrowserEnabled,
+		sandboxDockerBrowserImage,
 		rpiCodeReviewEnabled,
 		rpiCodeReviewScoreThreshold,
 		rpiContextDistillationBudget,
@@ -540,6 +543,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 				sandboxNetworkAccess: sandboxNetworkAccess ?? "restricted",
 				sandboxMemoryLimit: sandboxMemoryLimit ?? "4g",
 				sandboxMaxExecutionTime: sandboxMaxExecutionTime ?? 120,
+				sandboxSessionPorts: sandboxSessionPorts ?? "3000,5173,4173,8000,8080,6006",
+				sandboxDockerBrowserEnabled: sandboxDockerBrowserEnabled ?? true,
+				sandboxDockerBrowserImage: sandboxDockerBrowserImage ?? "ghcr.io/puppeteer/puppeteer:latest",
 				rpiCodeReviewEnabled: rpiCodeReviewEnabled ?? true,
 				rpiCodeReviewScoreThreshold: rpiCodeReviewScoreThreshold ?? 4,
 				rpiContextDistillationBudget: rpiContextDistillationBudget ?? 8000,
@@ -1065,6 +1071,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								sandboxNetworkAccess={sandboxNetworkAccess}
 								sandboxMemoryLimit={sandboxMemoryLimit}
 								sandboxMaxExecutionTime={sandboxMaxExecutionTime}
+								sandboxSessionPorts={sandboxSessionPorts}
+								sandboxDockerBrowserEnabled={sandboxDockerBrowserEnabled}
+								sandboxDockerBrowserImage={sandboxDockerBrowserImage}
 								rpiCodeReviewEnabled={rpiCodeReviewEnabled}
 								rpiCodeReviewScoreThreshold={rpiCodeReviewScoreThreshold}
 								rpiContextDistillationBudget={rpiContextDistillationBudget}
