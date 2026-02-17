@@ -527,6 +527,28 @@ export async function presentAssistantMessage(cline: Task) {
 					approvalFeedback = { text, images }
 				}
 
+				// === PreToolUse Hook (fires after user approves to avoid wasting API calls on rejected tools) ===
+				try {
+					const hooksManager = cline.providerRef.deref()?.getHooksManager()
+					if (hooksManager?.hasHooksForEvent("PreToolUse")) {
+						const matchingHooks = hooksManager.getMatchingHooks("PreToolUse", block.name)
+						if (matchingHooks.length > 0) {
+							const hookContext: HookContext = {
+								event: "PreToolUse",
+								toolName: block.name,
+								toolInput: block.nativeArgs || block.params,
+							}
+							const hookResults = await executeHooks(matchingHooks, hookContext, cline.apiConfiguration)
+							const hookOutput = formatHookResults(hookResults)
+							if (hookOutput) {
+								await cline.say("hook_output", `PreToolUse hook for ${block.name}:\n${hookOutput}`)
+							}
+						}
+					}
+				} catch (hookError) {
+					console.warn(`[presentAssistantMessage] PreToolUse hook error:`, hookError)
+				}
+
 				return true
 			}
 
@@ -674,30 +696,6 @@ export async function presentAssistantMessage(cline: Task) {
 						),
 					)
 					break
-				}
-			}
-
-			// === PreToolUse Hook ===
-			if (!block.partial) {
-				try {
-					const hooksManager = cline.providerRef.deref()?.getHooksManager()
-					if (hooksManager?.hasHooksForEvent("PreToolUse")) {
-						const matchingHooks = hooksManager.getMatchingHooks("PreToolUse", block.name)
-						if (matchingHooks.length > 0) {
-							const hookContext: HookContext = {
-								event: "PreToolUse",
-								toolName: block.name,
-								toolInput: block.nativeArgs || block.params,
-							}
-							const hookResults = await executeHooks(matchingHooks, hookContext, cline.apiConfiguration)
-							const hookOutput = formatHookResults(hookResults)
-							if (hookOutput) {
-								await cline.say("hook_output", `PreToolUse hook for ${block.name}:\n${hookOutput}`)
-							}
-						}
-					}
-				} catch (hookError) {
-					console.warn(`[presentAssistantMessage] PreToolUse hook error:`, hookError)
 				}
 			}
 
@@ -963,11 +961,10 @@ export async function presentAssistantMessage(cline: Task) {
 									: Array.isArray(lastResult?.content)
 										? lastResult.content
 												.filter(
-													(b): b is import("@anthropic-ai/sdk").Anthropic.TextBlockParam =>
-														b.type === "text",
+													(b): b is Anthropic.TextBlockParam => b.type === "text",
 												)
 												.map((b) => b.text)
-												.join("\n")
+												.join("\n") || ""
 										: ""
 							const hookContext: HookContext = {
 								event: "PostToolUse",
