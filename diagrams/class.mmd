@@ -1,18 +1,18 @@
 %% Mermaid Class Diagram: HookEngine and dependencies
 classDiagram
   class HookEngine {
-    +executeWithHooks(fn: Function, intentId: string, meta: any): Promise
+    +executeWithHooks(fn, intentId, meta) Promise
   }
   class PreHook {
-    +validate(activeIntentId: string): Intent
+    +validate(activeIntentId) Intent
   }
   class PostHook {
-    +log(filePath: string, content: string, intentId: string, mutationClass: string, contributorModel: string): void
+    +log({filePath, content, intentId, mutationClass, contributorModel}) void
   }
   class IntentManager {
-    +checkout(intentId: string, intent: Intent): Intent
-    +get(intentId: string): Intent
-    +clear(intentId: string): void
+    +checkout(intentId, intent) Intent
+    +get(intentId) Intent | undefined
+    +clear(intentId) void
   }
   class AgentTraceEntry {
     +id: string
@@ -25,7 +25,7 @@ classDiagram
   }
   class Conversation {
     +contributor: Contributor
-    +classification: string
+    +classification: REFACTOR|FEATURE|BUGFIX
     +ast_node_type: string
     +ranges: Range[]
     +related: Related[]
@@ -33,10 +33,10 @@ classDiagram
   class Range {
     +start_line: number
     +end_line: number
-    +content_hash: string
+    +content_hash: sha256:hex
   }
   class Contributor {
-    +entity_type: string
+    +entity_type: AI|Human
     +model_identifier: string
   }
   class Related {
