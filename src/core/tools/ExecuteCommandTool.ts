@@ -20,6 +20,10 @@ import { Package } from "../../shared/package"
 import { t } from "../../i18n"
 import { getTaskDirectoryPath } from "../../utils/storage"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
+// Hooks integration
+import { PreHook } from "../../hooks/engines/PreHook"
+import { PostHook } from "../../hooks/engines/PostHook"
+import type { MutationClass } from "../../hooks/models/AgentTrace"
 
 class ShellIntegrationError extends Error {}
 
@@ -34,6 +38,16 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 	async execute(params: ExecuteCommandParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { command, cwd: customCwd } = params
 		const { handleError, pushToolResult, askApproval } = callbacks
+
+		// Governance: validate active intent before any command execution
+		let intentIdForTrace: string | undefined
+		try {
+			const intent = await PreHook.validate(task.providerRef.deref() ? (await task.providerRef.deref()!.getState())?.activeIntentId ?? "INT-001")
+			intentIdForTrace = intent.id
+		} catch (e) {
+			pushToolResult((e as Error).message)
+			return
+		}
 
 		try {
 			if (!command) {
@@ -101,6 +115,18 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 				}
 
 				pushToolResult(result)
+
+				// PostHook trace logging for command execution (log under synthetic path)
+				if (intentIdForTrace) {
+					const mutationClass: MutationClass = "AST_REFACTOR"
+					await PostHook.log({
+						filePath: "__terminal__/execute_command",
+						content: canonicalCommand,
+						intentId: intentIdForTrace,
+						mutationClass,
+						contributorModel: task.api.getModel().id,
+					})
+				}
 			} catch (error: unknown) {
 				const status: CommandExecutionStatus = { executionId, status: "fallback" }
 				provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
@@ -120,6 +146,18 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 					}
 
 					pushToolResult(result)
+
+					// PostHook trace logging for fallback execution
+					if (intentIdForTrace) {
+						const mutationClass: MutationClass = "AST_REFACTOR"
+						await PostHook.log({
+							filePath: "__terminal__/execute_command",
+							content: canonicalCommand,
+							intentId: intentIdForTrace,
+							mutationClass,
+							contributorModel: task.api.getModel().id,
+						})
+					}
 				} else {
 					pushToolResult(`Command failed to execute in terminal due to a shell integration error.`)
 				}

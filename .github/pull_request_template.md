@@ -1,3 +1,31 @@
+## Summary
+
+Describe the change succinctly: what, why, and the governance impact.
+
+## Architecture & Governance
+
+- Intent checkout enforced (PreHook)
+- Trace ledger appended with content-hash (PostHook)
+- Privilege separation respected (Webview ↔ Extension Host ↔ Hook Engine)
+
+## Implementation Details
+
+- Entry points (tools) wrapped via IoC adapter
+- Prompt interception point identified; context dynamically injected
+- No tight coupling; hooks are isolated and composable
+
+## Tests & Verification
+
+- Unit/e2e around Point-of-No-Return intercepts
+- Scope enforcement validations
+- Ledger append assertions
+
+## Checklist
+
+- [ ] Intent selected and validated
+- [ ] Scope enforced for all writes
+- [ ] Ledger includes `intent_id` and `content_hash`
+- [ ] Docs updated (`ARCHITECTURE_NOTES.md`)
 <!--
 Thank you for contributing to Roo Code!
 
