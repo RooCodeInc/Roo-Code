@@ -957,7 +957,18 @@ export async function presentAssistantMessage(cline: Task) {
 										b.type === "tool_result",
 								)
 								.pop()
-							const resultText = typeof lastResult?.content === "string" ? lastResult.content : ""
+							const resultText =
+								typeof lastResult?.content === "string"
+									? lastResult.content
+									: Array.isArray(lastResult?.content)
+										? lastResult.content
+												.filter(
+													(b): b is import("@anthropic-ai/sdk").Anthropic.TextBlockParam =>
+														b.type === "text",
+												)
+												.map((b) => b.text)
+												.join("\n")
+										: ""
 							const hookContext: HookContext = {
 								event: "PostToolUse",
 								toolName: block.name,
