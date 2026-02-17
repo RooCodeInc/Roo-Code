@@ -225,7 +225,11 @@ const postState = (clineMessages: ClineMessage[]) => {
 		},
 	}
 
-	window.postMessage(message, "*")
+	window.dispatchEvent(
+		new MessageEvent("message", {
+			data: message,
+		}),
+	)
 }
 
 const renderView = () =>
@@ -241,7 +245,15 @@ const hydrate = async (atBottomAfterCalls: number) => {
 	harness.atBottomAfterCalls = atBottomAfterCalls
 	renderView()
 	await act(async () => {
+		await Promise.resolve()
+	})
+	await act(async () => {
 		postState(buildMessages(Date.now() - 3_000))
+	})
+	await waitFor(() => {
+		const list = document.querySelector("[data-testid='virtuoso-item-list']")
+		expect(list).toBeTruthy()
+		expect(list?.getAttribute("data-count")).toBe("2")
 	})
 }
 
@@ -249,11 +261,25 @@ const waitForCalls = async (min: number, timeout = 1_500) => {
 	await waitFor(() => expect(harness.scrollCalls).toBeGreaterThanOrEqual(min), { timeout })
 }
 
-const expectCallsStable = async (ms = 120) => {
-	await sleep(ms)
-	const snapshot = harness.scrollCalls
-	await sleep(ms)
-	expect(harness.scrollCalls).toBe(snapshot)
+const waitForCallsSettled = async (idleMs = 80, timeoutMs = 2_000) => {
+	const deadline = Date.now() + timeoutMs
+	let lastSeen = harness.scrollCalls
+
+	while (Date.now() < deadline) {
+		await sleep(idleMs)
+		const current = harness.scrollCalls
+
+		if (current === lastSeen) {
+			await sleep(idleMs)
+			if (harness.scrollCalls === current) {
+				return
+			}
+		}
+
+		lastSeen = current
+	}
+
+	throw new Error(`Expected scroll calls to settle within ${timeoutMs}ms, last count: ${harness.scrollCalls}`)
 }
 
 const getScrollable = (): HTMLElement => {
@@ -291,7 +317,7 @@ describe("ChatView scroll behavior regression coverage", () => {
 	it("rehydration converges to bottom", async () => {
 		await hydrate(6)
 		await waitForCalls(6, 2_000)
-		await expectCallsStable()
+		await waitForCallsSettled()
 		expect(document.querySelector(".codicon-chevron-down")).toBeNull()
 	})
 
@@ -302,7 +328,7 @@ describe("ChatView scroll behavior regression coverage", () => {
 		expect(document.querySelector(".codicon-chevron-down")).toBeNull()
 
 		await waitForCalls(8, 2_000)
-		await expectCallsStable()
+		await waitForCallsSettled()
 		expect(resolveFollowOutput(false)).toBe("auto")
 	})
 
@@ -327,7 +353,7 @@ describe("ChatView scroll behavior regression coverage", () => {
 	it("non-wheel upward intent disengages sticky follow", async () => {
 		await hydrate(4)
 		await waitForCalls(4)
-		await expectCallsStable()
+		await waitForCallsSettled()
 		expect(resolveFollowOutput(false)).toBe("auto")
 
 		const scrollable = getScrollable()
@@ -346,7 +372,7 @@ describe("ChatView scroll behavior regression coverage", () => {
 	it("nested scroller scroll events do not falsely disengage sticky follow", async () => {
 		await hydrate(4)
 		await waitForCalls(4)
-		await expectCallsStable()
+		await waitForCallsSettled()
 		expect(resolveFollowOutput(false)).toBe("auto")
 
 		const scrollable = getScrollable()
@@ -371,7 +397,7 @@ describe("ChatView scroll behavior regression coverage", () => {
 	it("wheel-up intent disengages sticky follow", async () => {
 		await hydrate(4)
 		await waitForCalls(4)
-		await expectCallsStable()
+		await waitForCallsSettled()
 		expect(resolveFollowOutput(false)).toBe("auto")
 
 		const scrollable = getScrollable()
@@ -413,7 +439,7 @@ describe("ChatView scroll behavior regression coverage", () => {
 	it("scroll-to-bottom CTA re-anchors with one interaction", async () => {
 		await hydrate(4)
 		await waitForCalls(4)
-		await expectCallsStable()
+		await waitForCallsSettled()
 		expect(resolveFollowOutput(false)).toBe("auto")
 
 		await act(async () => {
