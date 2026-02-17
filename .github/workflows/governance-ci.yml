@@ -1,0 +1,31 @@
+name: Governance CI
+
+on:
+    workflow_dispatch:
+    push:
+        branches:
+            - "**"
+    pull_request:
+        types: [opened, reopened, synchronize, ready_for_review]
+
+jobs:
+    governance-checks:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js and pnpm
+              uses: ./.github/actions/setup-node-pnpm
+
+            - name: Verify orchestration sidecar files exist
+              run: |
+                  test -f .orchestration/active_intents.yaml
+                  test -f .orchestration/intent_map.md
+                  test -f .orchestration/CLAUDE.md
+
+            - name: Lint extension package
+              run: pnpm --filter roo-cline lint
+
+            - name: Typecheck extension package
+              run: pnpm --filter roo-cline check-types
