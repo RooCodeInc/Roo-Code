@@ -3789,7 +3789,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			const modelInfo = this.api.getModel().info
 
-			return SYSTEM_PROMPT(
+			const basePrompt = await SYSTEM_PROMPT(
 				provider.context,
 				this.cwd,
 				false,
@@ -3815,7 +3815,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				undefined, // todoList
 				this.api.getModel().id,
 				provider.getSkillsManager(),
-			)
+						)
+						// Inject Reasoning Intercept context for runtime task execution
+						const providerState = await provider.getState()
+						const activeIntentId = providerState?.activeIntentId ?? "INT-001"
+						const intent = await (await import("../../hooks/engines/PreHook")).PreHook.validate(activeIntentId)
+						const { buildIntentContextBlock, buildIntentHandshakeInstruction } = await import(
+							"../../hooks/utilities/intentContext"
+						)
+						const intentBlock = buildIntentContextBlock(intent)
+						const handshake = buildIntentHandshakeInstruction()
+						return `${handshake}\n\n${intentBlock}\n\n${basePrompt}`
 		})()
 	}
 
