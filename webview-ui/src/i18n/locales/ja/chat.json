@@ -33,6 +33,9 @@
 	},
 	"unpin": "ピン留めを解除",
 	"pin": "ピン留め",
+	"fileChangesInConversation": {
+		"header": "この会話で {{count}} 個のファイルが変更されました"
+	},
 	"tokenProgress": {
 		"availableSpace": "利用可能な空き容量: {{amount}} トークン",
 		"tokensUsed": "使用トークン: {{used}} / {{total}}",

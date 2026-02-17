@@ -33,6 +33,9 @@
 	},
 	"unpin": "Bỏ ghim khỏi đầu",
 	"pin": "Ghim lên đầu",
+	"fileChangesInConversation": {
+		"header": "{{count}} tệp đã thay đổi trong cuộc hội thoại này"
+	},
 	"tokenProgress": {
 		"availableSpace": "Không gian khả dụng: {{amount}} tokens",
 		"tokensUsed": "Tokens đã sử dụng: {{used}} trong {{total}}",

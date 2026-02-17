@@ -33,6 +33,9 @@
 	},
 	"unpin": "Lösen von oben",
 	"pin": "Anheften",
+	"fileChangesInConversation": {
+		"header": "{{count}} Datei(en) in dieser Unterhaltung geändert"
+	},
 	"tokenProgress": {
 		"availableSpace": "Verfügbarer Speicher: {{amount}} Tokens",
 		"tokensUsed": "Verwendete Tokens: {{used}} von {{total}}",

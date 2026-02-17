@@ -33,6 +33,9 @@
 	},
 	"unpin": "Sabitlemeyi iptal et",
 	"pin": "Sabitle",
+	"fileChangesInConversation": {
+		"header": "Bu sohbette {{count}} dosya değiştirildi"
+	},
 	"tokenProgress": {
 		"availableSpace": "Kullanılabilir alan: {{amount}} token",
 		"tokensUsed": "Kullanılan tokenlar: {{used}} / {{total}}",

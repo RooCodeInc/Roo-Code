@@ -33,6 +33,9 @@
 	},
 	"unpin": "Rilascia",
 	"pin": "Fissa",
+	"fileChangesInConversation": {
+		"header": "{{count}} file modificati in questa conversazione"
+	},
 	"tokenProgress": {
 		"availableSpace": "Spazio disponibile: {{amount}} tokens",
 		"tokensUsed": "Tokens utilizzati: {{used}} di {{total}}",

@@ -33,6 +33,9 @@
 	},
 	"unpin": "Unpin",
 	"pin": "Pin",
+	"fileChangesInConversation": {
+		"header": "{{count}} file(s) changed in this conversation"
+	},
 	"retry": {
 		"title": "Retry",
 		"tooltip": "Try the operation again"

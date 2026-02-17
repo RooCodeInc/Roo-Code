@@ -50,6 +50,7 @@ function createFileEditMessage(path: string, diff: string): ClineMessage {
 		ask: "tool",
 		ts: Date.now(),
 		partial: false,
+		isAnswered: true,
 		text: JSON.stringify({
 			tool: "appliedDiff",
 			path,
@@ -96,6 +97,24 @@ describe("FileChangesPanel", () => {
 				ts: Date.now(),
 				partial: false,
 				text: JSON.stringify({ tool: "read_file", path: "x.ts" }),
+			},
+		]
+		const { container } = renderPanel(messages)
+		expect(container.firstChild).toBeNull()
+	})
+
+	it("renders nothing when file-edit ask tool is not approved (isAnswered false or missing)", () => {
+		const messages: ClineMessage[] = [
+			{
+				type: "ask",
+				ask: "tool",
+				ts: Date.now(),
+				partial: false,
+				text: JSON.stringify({
+					tool: "appliedDiff",
+					path: "src/foo.ts",
+					diff: "+line",
+				}),
 			},
 		]
 		const { container } = renderPanel(messages)

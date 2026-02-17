@@ -33,6 +33,9 @@
 	},
 	"unpin": "Losmaken",
 	"pin": "Vastmaken",
+	"fileChangesInConversation": {
+		"header": "{{count}} bestand(en) gewijzigd in dit gesprek"
+	},
 	"retry": {
 		"title": "Opnieuw proberen",
 		"tooltip": "Probeer de bewerking opnieuw"

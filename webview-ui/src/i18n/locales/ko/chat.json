@@ -33,6 +33,9 @@
 	},
 	"unpin": "고정 해제하기",
 	"pin": "고정하기",
+	"fileChangesInConversation": {
+		"header": "이 대화에서 {{count}}개 파일이 변경됨"
+	},
 	"tokenProgress": {
 		"availableSpace": "사용 가능한 공간: {{amount}} 토큰",
 		"tokensUsed": "사용된 토큰: {{used}} / {{total}}",

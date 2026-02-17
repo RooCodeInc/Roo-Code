@@ -1532,6 +1532,21 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				})
 			}
 		}
+
+		// Mark the last tool-approval ask as answered when user approves (or auto-approval)
+		if (askResponse === "yesButtonClicked") {
+			const lastToolAskIndex = findLastIndex(
+				this.clineMessages,
+				(msg) => msg.type === "ask" && msg.ask === "tool" && !msg.isAnswered,
+			)
+			if (lastToolAskIndex !== -1) {
+				this.clineMessages[lastToolAskIndex].isAnswered = true
+				void this.updateClineMessage(this.clineMessages[lastToolAskIndex])
+				this.saveClineMessages().catch((error) => {
+					console.error("Failed to save answered tool-ask state:", error)
+				})
+			}
+		}
 	}
 
 	/**

@@ -1,4 +1,4 @@
-import { memo, useMemo, useState, useCallback } from "react"
+import { memo, useEffect, useMemo, useState, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { ChevronDown, ChevronRight, FileDiff } from "lucide-react"
 
@@ -20,6 +20,11 @@ const FileChangesPanel = memo(({ clineMessages, className }: FileChangesPanelPro
 	const { t } = useTranslation()
 	const [panelExpanded, setPanelExpanded] = useState(false)
 	const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set())
+
+	// Reset expanded file rows when switching to a different task (clineMessages identity change)
+	useEffect(() => {
+		setExpandedPaths(new Set())
+	}, [clineMessages])
 
 	const fileChanges = useMemo(() => fileChangesFromMessages(clineMessages), [clineMessages])
 

@@ -1,18 +1,8 @@
 import type { ClineMessage, ClineSayTool } from "@roo-code/types"
 import { safeJsonParse } from "@roo/core"
 
-const FILE_EDIT_TOOLS = new Set([
-	"editedExistingFile",
-	"appliedDiff",
-	"newFileCreated",
-	"searchAndReplace",
-	"search_and_replace",
-	"search_replace",
-	"edit",
-	"edit_file",
-	"apply_patch",
-	"apply_diff",
-])
+/** File-edit tool names from ClineSayTool["tool"] (packages/types). */
+const FILE_EDIT_TOOLS = new Set<string>(["editedExistingFile", "appliedDiff", "newFileCreated"])
 
 export interface FileChangeEntry {
 	path: string
@@ -36,6 +26,8 @@ export function fileChangesFromMessages(messages: ClineMessage[] | undefined): F
 		const isSayTool = msg.type === "say" && msg.say === "tool"
 		const isAskTool = msg.type === "ask" && msg.ask === "tool"
 		if ((!isSayTool && !isAskTool) || !msg.text || msg.partial) continue
+		// Only include ask "tool" file edits that the user (or auto-approval) has approved
+		if (isAskTool && !msg.isAnswered) continue
 
 		const tool = safeJsonParse<ClineSayTool>(msg.text)
 		if (!tool || !FILE_EDIT_TOOLS.has(tool.tool as string)) continue

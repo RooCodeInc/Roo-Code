@@ -55,11 +55,42 @@ describe("fileChangesFromMessages", () => {
 		expect(fileChangesFromMessages(messages)).toEqual([])
 	})
 
+	it("excludes ask tool file-edit when isAnswered is false or undefined", () => {
+		const payload = JSON.stringify({
+			tool: "appliedDiff",
+			path: "src/foo.ts",
+			diff: "+line",
+		})
+		expect(fileChangesFromMessages([msg({ type: "ask", ask: "tool", text: payload, isAnswered: false })])).toEqual(
+			[],
+		)
+		expect(fileChangesFromMessages([msg({ type: "ask", ask: "tool", text: payload })])).toEqual([])
+	})
+
+	it("includes ask tool file-edit when isAnswered is true", () => {
+		const messages: ClineMessage[] = [
+			msg({
+				type: "ask",
+				ask: "tool",
+				isAnswered: true,
+				text: JSON.stringify({
+					tool: "appliedDiff",
+					path: "src/foo.ts",
+					diff: "+line",
+				}),
+			}),
+		]
+		const result = fileChangesFromMessages(messages)
+		expect(result).toHaveLength(1)
+		expect(result[0].path).toBe("src/foo.ts")
+	})
+
 	it("extracts single-file edit from ask tool message", () => {
 		const messages: ClineMessage[] = [
 			msg({
 				type: "ask",
 				ask: "tool",
+				isAnswered: true,
 				text: JSON.stringify({
 					tool: "appliedDiff",
 					path: "src/foo.ts",
@@ -100,6 +131,7 @@ describe("fileChangesFromMessages", () => {
 			msg({
 				type: "ask",
 				ask: "tool",
+				isAnswered: true,
 				text: JSON.stringify({
 					tool: "newFileCreated",
 					path: "new.ts",
@@ -145,6 +177,7 @@ describe("fileChangesFromMessages", () => {
 			msg({
 				type: "ask",
 				ask: "tool",
+				isAnswered: true,
 				text: JSON.stringify({
 					tool: "appliedDiff",
 					batchDiffs: [
@@ -167,6 +200,7 @@ describe("fileChangesFromMessages", () => {
 			msg({
 				type: "ask",
 				ask: "tool",
+				isAnswered: true,
 				text: JSON.stringify({
 					tool: "appliedDiff",
 					batchDiffs: [
@@ -183,13 +217,14 @@ describe("fileChangesFromMessages", () => {
 		expect(result[0].diffStats).toEqual({ added: 2, removed: 1 })
 	})
 
-	it("recognizes searchAndReplace and other file-edit tool names", () => {
-		const tools = ["searchAndReplace", "search_replace", "edit", "apply_patch"]
+	it("recognizes all ClineSayTool file-edit tool names (editedExistingFile, appliedDiff, newFileCreated)", () => {
+		const tools = ["editedExistingFile", "appliedDiff", "newFileCreated"]
 		for (const tool of tools) {
 			const messages: ClineMessage[] = [
 				msg({
 					type: "ask",
 					ask: "tool",
+					isAnswered: true,
 					text: JSON.stringify({
 						tool,
 						path: "f.ts",
@@ -208,6 +243,7 @@ describe("fileChangesFromMessages", () => {
 			msg({
 				type: "ask",
 				ask: "tool",
+				isAnswered: true,
 				text: JSON.stringify({
 					tool: "appliedDiff",
 					path: "first.ts",
@@ -217,6 +253,7 @@ describe("fileChangesFromMessages", () => {
 			msg({
 				type: "ask",
 				ask: "tool",
+				isAnswered: true,
 				text: JSON.stringify({
 					tool: "editedExistingFile",
 					path: "second.ts",

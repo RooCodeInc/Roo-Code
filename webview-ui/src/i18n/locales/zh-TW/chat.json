@@ -33,6 +33,9 @@
 	},
 	"unpin": "取消釘選",
 	"pin": "釘選",
+	"fileChangesInConversation": {
+		"header": "此對話中已變更 {{count}} 個檔案"
+	},
 	"retry": {
 		"title": "重試",
 		"tooltip": "再次嘗試操作"

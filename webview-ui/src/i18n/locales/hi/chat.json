@@ -33,6 +33,9 @@
 	},
 	"unpin": "पिन करें",
 	"pin": "अवपिन करें",
+	"fileChangesInConversation": {
+		"header": "इस वार्तालाप में {{count}} फ़ाइल(ें) बदली गईं"
+	},
 	"tokenProgress": {
 		"availableSpace": "उपलब्ध स्थान: {{amount}} tokens",
 		"tokensUsed": "प्रयुक्त tokens: {{used}} / {{total}}",
