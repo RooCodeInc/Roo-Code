@@ -1,0 +1,36 @@
+intents:
+  - id: INT-001
+    title: Hook Engine Core
+    description: Implement deterministic pre/post tool middleware across the extension host.
+    scope:
+      - src/hooks/**
+      - src/core/assistant-message/**
+      - src/core/prompts/sections/rules.ts
+    acceptanceCriteria:
+      - All tool calls pass through preToolUse and postToolUse.
+      - Structured JSON hook errors are emitted for blocked actions.
+      - Sidecar traces are append-only and deterministic.
+  - id: INT-002
+    title: Intent Handshake and Governance
+    description: Enforce two-stage intent handshake and write gating.
+    scope:
+      - src/core/prompts/tools/native-tools/**
+      - src/core/tools/WriteToFileTool.ts
+      - src/shared/tools.ts
+      - packages/types/src/tool.ts
+    acceptanceCriteria:
+      - select_active_intent is available as a native tool.
+      - write_to_file requires intent_id and mutation_class.
+      - Writes fail when intent handshake is missing.
+  - id: INT-003
+    title: Concurrency and Security Hardening
+    description: Add optimistic locking, scope checks, path sanitization, and circuit breaker protections.
+    scope:
+      - src/hooks/concurrencyGuard.ts
+      - src/hooks/scopeValidator.ts
+      - src/hooks/securityClassifier.ts
+      - src/hooks/traceLogger.ts
+    acceptanceCriteria:
+      - Stale writes are rejected via hash mismatch.
+      - Directory traversal and unsafe command inputs are blocked.
+      - Circuit breaker triggers after repeated failures.

@@ -40,7 +40,8 @@ import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
-import { preToolUse, postToolUse } from "../governance/hooks"
+import { preToolUse, type PreToolResult } from "../../hooks/preToolUse"
+import { postToolUse } from "../../hooks/postToolUse"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -270,28 +271,41 @@ export async function presentAssistantMessage(cline: Task) {
 				},
 			}
 
-			const governanceArgs = {
+			let governanceArgs: Record<string, any> = {
 				server_name: resolvedServerName,
 				tool_name: mcpBlock.toolName,
 				arguments: mcpBlock.arguments,
 			}
-			const governancePre = !mcpBlock.partial
+			const governancePre: PreToolResult = !mcpBlock.partial
 				? await preToolUse({
+						taskId: cline.taskId,
 						cwd: cline.cwd,
 						toolName: mcpBlock.name,
 						args: governanceArgs,
 					})
 				: {
-						allowed: true,
+						ok: true,
 						intentId: null,
 						approved: null,
 						decisionReason: "Partial MCP tool block.",
+						securityClass: "SAFE",
 						startedAt: Date.now(),
+						normalizedArgs: governanceArgs,
 					}
+			governanceArgs = governancePre.normalizedArgs
 
-			if (!mcpBlock.partial && !governancePre.allowed) {
-				pushToolResult(formatResponse.toolError(governancePre.decisionReason))
+			if (!mcpBlock.partial && !governancePre.ok) {
+				pushToolResult(
+					formatResponse.toolError(
+						JSON.stringify(
+							governancePre.errorPayload ?? {
+								error: { code: "HOOK_BLOCKED", message: governancePre.decisionReason },
+							},
+						),
+					),
+				)
 				await postToolUse({
+					taskId: cline.taskId,
 					cwd: cline.cwd,
 					toolName: mcpBlock.name,
 					args: governanceArgs,
@@ -317,6 +331,7 @@ export async function presentAssistantMessage(cline: Task) {
 			} finally {
 				if (!mcpBlock.partial) {
 					await postToolUse({
+						taskId: cline.taskId,
 						cwd: cline.cwd,
 						toolName: mcpBlock.name,
 						args: governanceArgs,
@@ -417,6 +432,8 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name}]`
 					case "switch_mode":
 						return `[${block.name} to '${block.params.mode_slug}'${block.params.reason ? ` because: ${block.params.reason}` : ""}]`
+					case "select_active_intent":
+						return `[${block.name} '${block.params.intent_id}']`
 					case "codebase_search":
 						return `[${block.name} for '${block.params.query}']`
 					case "read_command_output":
@@ -629,23 +646,36 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
-			const governanceArgs = (block.nativeArgs || block.params || {}) as Record<string, any>
-			const governancePre = !block.partial
+			let governanceArgs = (block.nativeArgs || block.params || {}) as Record<string, any>
+			const governancePre: PreToolResult = !block.partial
 				? await preToolUse({
+						taskId: cline.taskId,
 						cwd: cline.cwd,
 						toolName: block.name,
 						args: governanceArgs,
 					})
 				: {
-						allowed: true,
+						ok: true,
 						intentId: null,
 						approved: null,
 						decisionReason: "Partial tool block.",
+						securityClass: "SAFE",
 						startedAt: Date.now(),
+						normalizedArgs: governanceArgs,
 					}
-			if (!block.partial && !governancePre.allowed) {
-				pushToolResult(formatResponse.toolError(governancePre.decisionReason))
+			governanceArgs = governancePre.normalizedArgs
+			if (!block.partial && !governancePre.ok) {
+				pushToolResult(
+					formatResponse.toolError(
+						JSON.stringify(
+							governancePre.errorPayload ?? {
+								error: { code: "HOOK_BLOCKED", message: governancePre.decisionReason },
+							},
+						),
+					),
+				)
 				await postToolUse({
+					taskId: cline.taskId,
 					cwd: cline.cwd,
 					toolName: block.name,
 					args: governanceArgs,
@@ -705,6 +735,7 @@ export async function presentAssistantMessage(cline: Task) {
 						is_error: true,
 					})
 					await postToolUse({
+						taskId: cline.taskId,
 						cwd: cline.cwd,
 						toolName: block.name,
 						args: governanceArgs,
@@ -766,6 +797,7 @@ export async function presentAssistantMessage(cline: Task) {
 						),
 					)
 					await postToolUse({
+						taskId: cline.taskId,
 						cwd: cline.cwd,
 						toolName: block.name,
 						args: governanceArgs,
@@ -908,6 +940,14 @@ export async function presentAssistantMessage(cline: Task) {
 							pushToolResult,
 						})
 						break
+					case "select_active_intent":
+						pushToolResult(
+							JSON.stringify({
+								selected_intent_id: governancePre.intentId,
+								message: "Active intent selected for current task.",
+							}),
+						)
+						break
 					case "new_task":
 						await checkpointSaveAndMark(cline)
 						await newTaskTool.handle(cline, block as ToolUse<"new_task">, {
@@ -955,69 +995,73 @@ export async function presentAssistantMessage(cline: Task) {
 						})
 						break
 					default: {
-					// Handle unknown/invalid tool names OR custom tools
-					// This is critical for native tool calling where every tool_use MUST have a tool_result
+						// Handle unknown/invalid tool names OR custom tools
+						// This is critical for native tool calling where every tool_use MUST have a tool_result
 
-					// CRITICAL: Don't process partial blocks for unknown tools - just let them stream in.
-					// If we try to show errors for partial blocks, we'd show the error on every streaming chunk,
-					// creating a loop that appears to freeze the extension. Only handle complete blocks.
-					if (block.partial) {
-						break
-					}
-
-					const customTool = stateExperiments?.customTools ? customToolRegistry.get(block.name) : undefined
-
-					if (customTool) {
-						try {
-							let customToolArgs
-
-							if (customTool.parameters) {
-								try {
-									customToolArgs = customTool.parameters.parse(block.nativeArgs || block.params || {})
-								} catch (parseParamsError) {
-									const message = `Custom tool "${block.name}" argument validation failed: ${parseParamsError.message}`
-									console.error(message)
-									cline.consecutiveMistakeCount++
-									await cline.say("error", message)
-									pushToolResult(formatResponse.toolError(message))
-									break
-								}
-							}
-
-							const result = await customTool.execute(customToolArgs, {
-								mode: mode ?? defaultModeSlug,
-								task: cline,
-							})
-
-							console.log(
-								`${customTool.name}.execute(): ${JSON.stringify(customToolArgs)} -> ${JSON.stringify(result)}`,
-							)
-
-							pushToolResult(result)
-							cline.consecutiveMistakeCount = 0
-						} catch (executionError: any) {
-							cline.consecutiveMistakeCount++
-							// Record custom tool error with static name
-							cline.recordToolError("custom_tool", executionError.message)
-							await handleError(`executing custom tool "${block.name}"`, executionError)
+						// CRITICAL: Don't process partial blocks for unknown tools - just let them stream in.
+						// If we try to show errors for partial blocks, we'd show the error on every streaming chunk,
+						// creating a loop that appears to freeze the extension. Only handle complete blocks.
+						if (block.partial) {
+							break
 						}
 
-						break
-					}
+						const customTool = stateExperiments?.customTools
+							? customToolRegistry.get(block.name)
+							: undefined
 
-					// Not a custom tool - handle as unknown tool error
-					const errorMessage = `Unknown tool "${block.name}". This tool does not exist. Please use one of the available tools.`
-					cline.consecutiveMistakeCount++
-					cline.recordToolError(block.name as ToolName, errorMessage)
-					await cline.say("error", t("tools:unknownToolError", { toolName: block.name }))
-					// Push tool_result directly WITHOUT setting didAlreadyUseTool
-					// This prevents the stream from being interrupted with "Response interrupted by tool use result"
-					cline.pushToolResultToUserContent({
-						type: "tool_result",
-						tool_use_id: sanitizeToolUseId(toolCallId),
-						content: formatResponse.toolError(errorMessage),
-						is_error: true,
-					})
+						if (customTool) {
+							try {
+								let customToolArgs
+
+								if (customTool.parameters) {
+									try {
+										customToolArgs = customTool.parameters.parse(
+											block.nativeArgs || block.params || {},
+										)
+									} catch (parseParamsError) {
+										const message = `Custom tool "${block.name}" argument validation failed: ${parseParamsError.message}`
+										console.error(message)
+										cline.consecutiveMistakeCount++
+										await cline.say("error", message)
+										pushToolResult(formatResponse.toolError(message))
+										break
+									}
+								}
+
+								const result = await customTool.execute(customToolArgs, {
+									mode: mode ?? defaultModeSlug,
+									task: cline,
+								})
+
+								console.log(
+									`${customTool.name}.execute(): ${JSON.stringify(customToolArgs)} -> ${JSON.stringify(result)}`,
+								)
+
+								pushToolResult(result)
+								cline.consecutiveMistakeCount = 0
+							} catch (executionError: any) {
+								cline.consecutiveMistakeCount++
+								// Record custom tool error with static name
+								cline.recordToolError("custom_tool", executionError.message)
+								await handleError(`executing custom tool "${block.name}"`, executionError)
+							}
+
+							break
+						}
+
+						// Not a custom tool - handle as unknown tool error
+						const errorMessage = `Unknown tool "${block.name}". This tool does not exist. Please use one of the available tools.`
+						cline.consecutiveMistakeCount++
+						cline.recordToolError(block.name as ToolName, errorMessage)
+						await cline.say("error", t("tools:unknownToolError", { toolName: block.name }))
+						// Push tool_result directly WITHOUT setting didAlreadyUseTool
+						// This prevents the stream from being interrupted with "Response interrupted by tool use result"
+						cline.pushToolResultToUserContent({
+							type: "tool_result",
+							tool_use_id: sanitizeToolUseId(toolCallId),
+							content: formatResponse.toolError(errorMessage),
+							is_error: true,
+						})
 						break
 					}
 				}
@@ -1028,6 +1072,7 @@ export async function presentAssistantMessage(cline: Task) {
 			} finally {
 				if (!block.partial) {
 					await postToolUse({
+						taskId: cline.taskId,
 						cwd: cline.cwd,
 						toolName: block.name,
 						args: governanceArgs,

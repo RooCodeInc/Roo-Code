@@ -14,7 +14,13 @@ import { CodeIndexManager } from "../services/code-index/manager"
 import { importSettingsWithFeedback } from "../core/config/importExport"
 import { MdmService } from "../services/mdm/MdmService"
 import { t } from "../i18n"
-import { clearActiveIntent, promptAndSetActiveIntent, showActiveIntent } from "../core/governance/intentStore"
+import {
+	commandClearSelectedIntent,
+	commandGetSelectedIntent,
+	commandSelectActiveIntent,
+	ensureIntentCatalogFile,
+} from "../hooks/intentLoader"
+import { getWorkspacePath } from "../utils/path"
 
 /**
  * Helper to get the visible ClineProvider instance or log if not found.
@@ -73,7 +79,17 @@ export const registerCommands = (options: RegisterCommandOptions) => {
 	context.subscriptions.push(
 		vscode.commands.registerCommand("roo.setActiveIntent", async () => {
 			try {
-				const intent = await promptAndSetActiveIntent()
+				const cwd = getWorkspacePath()
+				await ensureIntentCatalogFile(cwd)
+				const intentId = await vscode.window.showInputBox({
+					title: "Set Active Intent",
+					prompt: "Intent ID from .orchestration/active_intents.yaml",
+					ignoreFocusOut: true,
+				})
+				if (!intentId) {
+					return
+				}
+				const intent = await commandSelectActiveIntent(cwd, intentId.trim())
 				if (intent) {
 					vscode.window.showInformationMessage(`Active intent set: ${intent.id}`)
 				}
@@ -87,7 +103,7 @@ export const registerCommands = (options: RegisterCommandOptions) => {
 	context.subscriptions.push(
 		vscode.commands.registerCommand("roo.clearActiveIntent", async () => {
 			try {
-				await clearActiveIntent()
+				commandClearSelectedIntent()
 				vscode.window.showInformationMessage("Active intent cleared.")
 			} catch (error) {
 				outputChannel.appendLine(`Error clearing active intent: ${error}`)
@@ -99,7 +115,15 @@ export const registerCommands = (options: RegisterCommandOptions) => {
 	context.subscriptions.push(
 		vscode.commands.registerCommand("roo.showActiveIntent", async () => {
 			try {
-				await showActiveIntent()
+				const cwd = getWorkspacePath()
+				const intent = await commandGetSelectedIntent(cwd)
+				if (!intent) {
+					vscode.window.showInformationMessage("No active intent is currently selected.")
+				} else {
+					vscode.window.showInformationMessage(
+						`Active Intent: ${intent.id} | ${intent.title} | Scope: ${intent.scope.join(", ")}`,
+					)
+				}
 			} catch (error) {
 				outputChannel.appendLine(`Error showing active intent: ${error}`)
 				vscode.window.showErrorMessage(`Failed to show active intent: ${error}`)
