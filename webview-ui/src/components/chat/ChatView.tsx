@@ -1631,7 +1631,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							followOutput={followOutputCallback}
 							atBottomStateChange={atBottomStateChangeCallback}
 							atBottomThreshold={10}
-							initialTopMostItemIndex={groupedMessages.length - 1}
 						/>
 					</div>
 					{areButtonsVisible && (

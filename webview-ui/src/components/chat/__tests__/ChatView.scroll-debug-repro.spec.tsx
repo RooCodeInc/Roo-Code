@@ -38,6 +38,7 @@ interface MockVirtuosoProps {
 	atBottomStateChange?: (isAtBottom: boolean) => void
 	followOutput?: FollowOutput
 	className?: string
+	initialTopMostItemIndex?: number
 }
 
 interface VirtuosoHarnessState {
@@ -45,6 +46,8 @@ interface VirtuosoHarnessState {
 	atBottomAfterCalls: number
 	signalDelayMs: number
 	emitFalseOnDataChange: boolean
+	delayedGrowthMs: number | null
+	initialTopMostItemIndex: number | undefined
 	followOutput: FollowOutput | undefined
 	emitAtBottom: (isAtBottom: boolean) => void
 }
@@ -54,6 +57,8 @@ const harness = vi.hoisted<VirtuosoHarnessState>(() => ({
 	atBottomAfterCalls: Number.POSITIVE_INFINITY,
 	signalDelayMs: 20,
 	emitFalseOnDataChange: true,
+	delayedGrowthMs: null,
+	initialTopMostItemIndex: undefined,
 	followOutput: undefined,
 	emitAtBottom: () => {},
 }))
@@ -134,13 +139,14 @@ vi.mock("../ChatRow", () => ({
 
 vi.mock("react-virtuoso", () => {
 	const MockVirtuoso = React.forwardRef<MockVirtuosoHandle, MockVirtuosoProps>(function MockVirtuoso(
-		{ data, itemContent, atBottomStateChange, followOutput, className },
+		{ data, itemContent, atBottomStateChange, followOutput, className, initialTopMostItemIndex },
 		ref,
 	) {
 		const atBottomRef = useRef(atBottomStateChange)
 		const timeoutIdsRef = useRef<number[]>([])
 
 		harness.followOutput = followOutput
+		harness.initialTopMostItemIndex = initialTopMostItemIndex
 		harness.emitAtBottom = (isAtBottom: boolean) => {
 			atBottomRef.current?.(isAtBottom)
 		}
@@ -163,6 +169,13 @@ vi.mock("react-virtuoso", () => {
 		useEffect(() => {
 			if (harness.emitFalseOnDataChange) {
 				atBottomStateChange?.(false)
+			}
+
+			if (harness.delayedGrowthMs !== null) {
+				const timeoutId = window.setTimeout(() => {
+					atBottomRef.current?.(false)
+				}, harness.delayedGrowthMs)
+				timeoutIdsRef.current.push(timeoutId)
 			}
 		}, [data.length, atBottomStateChange])
 
@@ -310,8 +323,15 @@ describe("ChatView scroll behavior regression coverage", () => {
 		harness.atBottomAfterCalls = Number.POSITIVE_INFINITY
 		harness.signalDelayMs = 20
 		harness.emitFalseOnDataChange = true
+		harness.delayedGrowthMs = null
+		harness.initialTopMostItemIndex = undefined
 		harness.followOutput = undefined
 		harness.emitAtBottom = () => {}
+	})
+
+	it("existing-task entry does not set a top-most initial anchor", async () => {
+		await hydrate(2)
+		expect(harness.initialTopMostItemIndex).toBeUndefined()
 	})
 
 	it("rehydration uses bounded bottom pinning", async () => {
@@ -340,6 +360,18 @@ describe("ChatView scroll behavior regression coverage", () => {
 		await waitForCallsSettled()
 		expect(harness.scrollCalls).toBe(2)
 		expect(resolveFollowOutput(false)).toBe("auto")
+	})
+
+	it("delayed last-row growth during hydration keeps anchored follow with one bounded repin", async () => {
+		harness.delayedGrowthMs = 320
+		await hydrate(3)
+		await waitForCalls(1, 1_200)
+
+		await sleep(950)
+
+		expect(harness.scrollCalls).toBe(2)
+		expect(resolveFollowOutput(false)).toBe("auto")
+		expect(document.querySelector(".codicon-chevron-down")).toBeNull()
 	})
 
 	it("user escape hatch during hydration prevents repinning", async () => {
