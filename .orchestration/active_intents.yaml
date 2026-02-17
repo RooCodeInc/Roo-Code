@@ -1,0 +1,7 @@
+# List of currently active intents per agent session
+# Format: agentId: intentId
+
+agents:
+  planner-agent: INT-001
+  backend-agent: INT-002
+  frontend-agent: INT-003
