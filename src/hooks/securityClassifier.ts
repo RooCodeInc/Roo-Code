@@ -46,6 +46,9 @@ export function assertCommandSafe(command: string): void {
 	if (command.includes("\0") || command.includes("\n") || command.includes("\r")) {
 		throw new Error("Command contains unsafe control characters.")
 	}
+	if (/[`]/.test(command) || /\$\(/.test(command)) {
+		throw new Error("Command contains unsafe shell substitution syntax.")
+	}
 }
 
 export function escapeShellArg(value: string): string {

@@ -1,6 +1,6 @@
 import * as vscode from "vscode"
 
-import { captureReadSnapshot, validateWriteFreshness } from "./concurrencyGuard"
+import { captureReadSnapshot, readFileContentSafe, validateWriteFreshness } from "./concurrencyGuard"
 import { canProceed, classifyTool, getFailureCount, assertCommandSafe, type SecurityClass } from "./securityClassifier"
 import {
 	getSelectedIntent,
@@ -10,18 +10,8 @@ import {
 	type IntentLoadError,
 } from "./intentLoader"
 import { sanitizeAndNormalizePath, validatePathAgainstScope } from "./scopeValidator"
-
-const writeLikeTools = new Set([
-	"write_to_file",
-	"apply_diff",
-	"edit",
-	"search_and_replace",
-	"search_replace",
-	"edit_file",
-	"apply_patch",
-	"generate_image",
-	"execute_command",
-])
+import { inferSemanticMutationClass, isMutationClassCompatible, type SemanticMutationClass } from "./mutationClassifier"
+import { preCompact } from "./preCompact"
 
 const fileReadTools = new Set(["read_file"])
 const fileWriteTools = new Set([
@@ -40,6 +30,7 @@ interface HookErrorPayload {
 		details?: Record<string, unknown>
 	}
 }
+const sessionApprovalByTask = new Set<string>()
 
 export interface PreToolContext {
 	taskId: string
@@ -59,6 +50,7 @@ export interface PreToolResult {
 	normalizedArgs: Record<string, any>
 	errorPayload?: HookErrorPayload
 	readHash?: string | null
+	semanticMutationClass?: SemanticMutationClass
 }
 
 function hookError(code: string, message: string, details?: Record<string, unknown>): HookErrorPayload {
@@ -69,22 +61,33 @@ function getPathArg(args: Record<string, any>): string | undefined {
 	return args.path ?? args.file_path
 }
 
-async function askDestructiveApproval(toolName: string): Promise<boolean> {
-	const approve = "Approve"
+async function askSensitiveApproval(taskId: string, toolName: string): Promise<{ approved: boolean; always: boolean }> {
+	if (sessionApprovalByTask.has(taskId)) {
+		return { approved: true, always: true }
+	}
+	const approveOnce = "Approve once"
+	const approveAlways = "Approve always (session)"
 	const deny = "Deny"
 	const result = await vscode.window.showWarningMessage(
-		`Destructive tool call detected: ${toolName}. Do you want to continue?`,
+		`Sensitive tool call detected: ${toolName}. Do you want to continue?`,
 		{ modal: true },
-		approve,
+		approveOnce,
+		approveAlways,
 		deny,
 	)
-	return result === approve
+	if (result === approveAlways) {
+		sessionApprovalByTask.add(taskId)
+		return { approved: true, always: true }
+	}
+	return { approved: result === approveOnce, always: false }
 }
 
 export async function preToolUse(context: PreToolContext): Promise<PreToolResult> {
 	const startedAt = Date.now()
 	const normalizedArgs = { ...(context.args ?? {}) }
 	const securityClass = classifyTool(context.toolName, normalizedArgs)
+
+	await preCompact(context.taskId, context.cwd).catch(() => undefined)
 
 	if (!canProceed(context.taskId)) {
 		return {
@@ -159,7 +162,7 @@ export async function preToolUse(context: PreToolContext): Promise<PreToolResult
 	}
 
 	const selectedIntent = await getSelectedIntent(context.taskId, context.cwd)
-	if (writeLikeTools.has(context.toolName) && !selectedIntent) {
+	if (!selectedIntent) {
 		return {
 			ok: false,
 			intentId: null,
@@ -170,24 +173,24 @@ export async function preToolUse(context: PreToolContext): Promise<PreToolResult
 			normalizedArgs,
 			errorPayload: hookError(
 				"HANDSHAKE_REQUIRED",
-				"Write and state-changing tools require an active intent selection.",
+				"All tools except select_active_intent require an active intent selection.",
 			),
 		}
 	}
 
-	if (securityClass === "DESTRUCTIVE") {
-		const approved = await askDestructiveApproval(context.toolName)
-		if (!approved) {
+	if (securityClass === "DESTRUCTIVE" || securityClass === "WRITE") {
+		const approval = await askSensitiveApproval(context.taskId, context.toolName)
+		if (!approval.approved) {
 			return {
 				ok: false,
 				intentId: selectedIntent?.id ?? null,
 				intent: selectedIntent ?? undefined,
 				approved: false,
-				decisionReason: "Destructive tool denied by human approval.",
+				decisionReason: "Sensitive tool denied by human approval.",
 				securityClass,
 				startedAt,
 				normalizedArgs,
-				errorPayload: hookError("HITL_DENIED", "Destructive tool denied."),
+				errorPayload: hookError("HITL_DENIED", "Sensitive tool denied."),
 			}
 		}
 	}
@@ -224,6 +227,9 @@ export async function preToolUse(context: PreToolContext): Promise<PreToolResult
 				readHash = await captureReadSnapshot(context.taskId, normalizedPath.absolutePath)
 			}
 			if (fileWriteTools.has(context.toolName)) {
+				const oldContent = await readFileContentSafe(normalizedPath.absolutePath)
+				normalizedArgs.__old_content = oldContent
+				normalizedArgs.__file_existed = oldContent !== null
 				const freshness = await validateWriteFreshness(
 					context.taskId,
 					normalizedPath.absolutePath,
@@ -242,13 +248,18 @@ export async function preToolUse(context: PreToolContext): Promise<PreToolResult
 						errorPayload: hookError("STALE_WRITE", "Optimistic lock failed due to hash mismatch.", {
 							expected_hash: freshness.expectedHash,
 							actual_hash: freshness.actualHash,
+							collision_event: true,
 						}),
 					}
 				}
 
 				if (context.toolName === "write_to_file") {
 					const mutationClass = String(normalizedArgs.mutation_class ?? "")
-					if (!["create", "modify", "replace", "delete"].includes(mutationClass)) {
+					if (
+						!["create", "modify", "replace", "delete", "AST_REFACTOR", "INTENT_EVOLUTION"].includes(
+							mutationClass,
+						)
+					) {
 						return {
 							ok: false,
 							intentId: selectedIntent?.id ?? null,
@@ -260,7 +271,7 @@ export async function preToolUse(context: PreToolContext): Promise<PreToolResult
 							normalizedArgs,
 							errorPayload: hookError(
 								"MALFORMED_WRITE_REQUEST",
-								"write_to_file requires mutation_class in [create, modify, replace, delete].",
+								"write_to_file requires mutation_class in [create, modify, replace, delete, AST_REFACTOR, INTENT_EVOLUTION].",
 							),
 						}
 					}
@@ -278,6 +289,31 @@ export async function preToolUse(context: PreToolContext): Promise<PreToolResult
 							errorPayload: hookError(
 								"INTENT_MISMATCH",
 								"write_to_file intent_id must match selected active intent.",
+							),
+						}
+					}
+					const newContent = String(normalizedArgs.content ?? "")
+					const inferredClass = inferSemanticMutationClass({
+						filePath: normalizedPath.relativePath,
+						oldContent: oldContent,
+						newContent,
+					})
+					normalizedArgs.__semantic_mutation_class = inferredClass
+					if (!isMutationClassCompatible(mutationClass, inferredClass)) {
+						return {
+							ok: false,
+							intentId: selectedIntent?.id ?? null,
+							intent: selectedIntent ?? undefined,
+							approved: null,
+							decisionReason: `Mutation class mismatch. provided='${mutationClass}', inferred='${inferredClass}'.`,
+							securityClass,
+							startedAt,
+							normalizedArgs,
+							semanticMutationClass: inferredClass,
+							errorPayload: hookError(
+								"MUTATION_CLASS_MISMATCH",
+								"Provided mutation_class does not match semantic classification.",
+								{ provided: mutationClass, inferred: inferredClass },
 							),
 						}
 					}
@@ -305,11 +341,12 @@ export async function preToolUse(context: PreToolContext): Promise<PreToolResult
 		ok: true,
 		intentId: selectedIntent?.id ?? null,
 		intent: selectedIntent ?? undefined,
-		approved: securityClass === "DESTRUCTIVE" ? true : null,
+		approved: securityClass === "DESTRUCTIVE" || securityClass === "WRITE" ? true : null,
 		decisionReason: "Allowed by preToolUse.",
 		securityClass,
 		startedAt,
 		normalizedArgs,
 		readHash,
+		semanticMutationClass: normalizedArgs.__semantic_mutation_class as SemanticMutationClass | undefined,
 	}
 }
