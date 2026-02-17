@@ -23,6 +23,7 @@ import { z } from "zod"
  * - `mistake_limit_reached`: Too many errors encountered, needs user guidance on how to proceed
  * - `use_mcp_server`: Permission to use Model Context Protocol (MCP) server functionality
  * - `auto_approval_max_req_reached`: Auto-approval limit has been reached, manual approval required
+ * - `hook`: Approval to execute a prompt-based hook at an agent lifecycle event
  */
 export const clineAsks = [
 	"followup",
@@ -36,6 +37,7 @@ export const clineAsks = [
 	"mistake_limit_reached",
 	"use_mcp_server",
 	"auto_approval_max_req_reached",
+	"hook",
 ] as const
 
 export const clineAskSchema = z.enum(clineAsks)
@@ -53,6 +55,7 @@ export const idleAsks = [
 	"resume_completed_task",
 	"mistake_limit_reached",
 	"auto_approval_max_req_reached",
+	"hook",
 ] as const satisfies readonly ClineAsk[]
 
 export type IdleAsk = (typeof idleAsks)[number]

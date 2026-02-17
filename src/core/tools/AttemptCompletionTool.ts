@@ -85,14 +85,18 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 				const hooksManager = task.providerRef.deref()?.getHooksManager()
 				if (hooksManager?.hasHooksForEvent("Stop")) {
 					const stopHooks = hooksManager.getHooksForEvent("Stop")
-					const hookContext: HookContext = {
-						event: "Stop",
-						completionResult: result,
-					}
-					const hookResults = await executeHooks(stopHooks, hookContext, task.apiConfiguration)
-					const hookOutput = formatHookResults(hookResults)
-					if (hookOutput) {
-						await task.say("hook_output", `Stop hook:\n${hookOutput}`)
+					const hookDescription = `Stop hook (${stopHooks.length} hook(s) will run)`
+					const { response } = await task.ask("hook", JSON.stringify({ hookEvent: "Stop", hookDescription }))
+					if (response === "yesButtonClicked") {
+						const hookContext: HookContext = {
+							event: "Stop",
+							completionResult: result,
+						}
+						const hookResults = await executeHooks(stopHooks, hookContext, task.apiConfiguration)
+						const hookOutput = formatHookResults(hookResults)
+						if (hookOutput) {
+							await task.say("hook_output", `Stop hook:\n${hookOutput}`)
+						}
 					}
 				}
 			} catch (hookError) {
