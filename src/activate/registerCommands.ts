@@ -103,7 +103,8 @@ export const registerCommands = (options: RegisterCommandOptions) => {
 	context.subscriptions.push(
 		vscode.commands.registerCommand("roo.clearActiveIntent", async () => {
 			try {
-				commandClearSelectedIntent()
+				const cwd = getWorkspacePath()
+				await commandClearSelectedIntent(cwd)
 				vscode.window.showInformationMessage("Active intent cleared.")
 			} catch (error) {
 				outputChannel.appendLine(`Error clearing active intent: ${error}`)
