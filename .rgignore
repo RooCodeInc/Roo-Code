@@ -1,0 +1,7 @@
+.vscode/
+.roo/
+
+releases/
+
+.git/
+.github/
