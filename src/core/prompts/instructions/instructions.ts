@@ -2,6 +2,7 @@ import { createMCPServerInstructions } from "./create-mcp-server"
 import { createModeInstructions } from "./create-mode"
 import { createLWCInstructions } from "./create-lwc"
 import { createApexInstructions } from "./create-apex"
+import { createAsyncApexInstructions } from "./create-async-apex"
 import { createVisualForceInstructions } from "./create-visual-force"
 import { createAuraComponentsInstructions } from "./create-aura-components"
 import {
@@ -47,6 +48,9 @@ export async function fetchInstructions(text: string, detail: InstructionsDetail
 		}
 		case "create_apex": {
 			return await createApexInstructions(detail.context, detail.section)
+		}
+		case "create_async_apex": {
+			return await createAsyncApexInstructions(detail.context, detail.section)
 		}
 		case "create_visual_force": {
 			console.log("[INSTRUCTIONS] Matched task: create_visual_force")

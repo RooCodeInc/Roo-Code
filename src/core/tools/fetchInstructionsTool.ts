@@ -14,6 +14,7 @@ function getTaskDisplayName(task: string): string {
 		create_mode: "Custom Mode Instructions",
 		create_lwc: "Lightning Web Component Instructions",
 		create_apex: "Apex Class Instructions",
+		create_async_apex: "Asynchronous Apex Instructions",
 		// Salesforce Agent Instructions
 		agentforce_agent_create: "Agentforce Agent Creation Workflow",
 		agentforce_agent_analyse: "Agentforce Agent Analysis & Enhancement Workflow",

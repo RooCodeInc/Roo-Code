@@ -73,7 +73,7 @@ export async function getPreTaskDetails(globalStorageUri: vscode.Uri | undefined
 			preTask += `---\n\n`
 		}
 		// If planning workflow is disabled, don't include planning instructions at all
-		preTask += `- **code:** Apex, LWC, triggers, test classes, development\n\n`
+		preTask += `- **code:** Apex, async Apex, LWC, triggers, test classes, development\n\n`
 
 		preTask += `---\n\n`
 

@@ -604,9 +604,33 @@ Before deploying:
 
 ---
 
+## Asynchronous Operations
+
+If your Agentforce action needs to perform long-running operations (like processing large datasets, making multiple API calls, or bulk updates), consider using asynchronous Apex patterns instead of synchronous invocable methods.
+
+**📖 For detailed information**: See [asynchronous-apex-guide.md](./asynchronous-apex-guide.md) for:
+
+- When to use Future Methods vs Queueable Apex
+- Batch processing patterns
+- Job monitoring and error handling
+- Invoking async operations from synchronous code
+
+**Common pattern**: Invocable method enqueues an async job
+
+```apex
+@InvocableMethod(label='Process Large Dataset')
+public static List<ProcessResponse> processLargeDataset(List<ProcessRequest> requests) {
+    System.enqueueJob(new LargeDatasetProcessor(requests[0].recordIds));
+    return new List<ProcessResponse>{ new ProcessResponse(true, 'Processing started') };
+}
+```
+
+---
+
 ## Resources
 
 - [Invocable Methods Documentation](https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_classes_annotation_InvocableMethod.htm)
+- [Asynchronous Apex Guide](./asynchronous-apex-guide.md)
 - [Agentforce Guide](https://developer.salesforce.com/docs/einstein/agentforce)
 - [SOQL Reference](https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/)
 - [Apex Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/)
