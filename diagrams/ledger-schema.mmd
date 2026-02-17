@@ -3,7 +3,7 @@ classDiagram
   class AgentTraceEntry {
     +id: string
     +timestamp: string
-    +vcs: {revision_id?: string}
+    +vcs: VCS
     +files: File[]
   }
   class File {
@@ -13,7 +13,7 @@ classDiagram
   class Conversation {
     +url?: string
     +contributor?: Contributor
-    +classification?: REFACTOR|FEATURE|BUGFIX
+    +classification?: string
     +ast_node_type?: string
     +ranges: Range[]
     +related?: Related[]
@@ -21,15 +21,18 @@ classDiagram
   class Range {
     +start_line: number
     +end_line: number
-    +content_hash: sha256:hex
+    +content_hash: string
   }
   class Contributor {
-    +entity_type: AI|Human
+    +entity_type: string
     +model_identifier: string
   }
   class Related {
     +type: string
     +value: string
+  }
+  class VCS {
+    +revision_id?: string
   }
 
   AgentTraceEntry --> File
@@ -37,3 +40,4 @@ classDiagram
   Conversation --> Range
   Conversation --> Contributor
   Conversation --> Related
+  AgentTraceEntry --> VCS
