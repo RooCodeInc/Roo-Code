@@ -76,6 +76,7 @@ import { CodeIndexManager } from "../../services/code-index/manager"
 import type { IndexProgressUpdate } from "../../services/code-index/interfaces/manager"
 import { MdmService } from "../../services/mdm/MdmService"
 import { SkillsManager } from "../../services/skills/SkillsManager"
+import { HooksManager } from "../../services/hooks/HooksManager"
 
 import { fileExistsAtPath } from "../../utils/fs"
 import { setTtsEnabled, setTtsSpeed } from "../../utils/tts"
@@ -142,6 +143,7 @@ export class ClineProvider
 	private _workspaceTracker?: WorkspaceTracker // workSpaceTracker read-only for access outside this class
 	protected mcpHub?: McpHub // Change from private to protected
 	protected skillsManager?: SkillsManager
+	protected hooksManager?: HooksManager
 	private marketplaceManager: MarketplaceManager
 	private mdmService?: MdmService
 	private taskCreationCallback: (task: Task) => void
@@ -214,6 +216,12 @@ export class ClineProvider
 		this.skillsManager = new SkillsManager(this)
 		this.skillsManager.initialize().catch((error) => {
 			this.log(`Failed to initialize Skills Manager: ${error}`)
+		})
+
+		// Initialize Hooks Manager for prompt-based hooks
+		this.hooksManager = new HooksManager(this.cwd)
+		this.hooksManager.initialize().catch((error) => {
+			this.log(`Failed to initialize Hooks Manager: ${error}`)
 		})
 
 		this.marketplaceManager = new MarketplaceManager(this.context, this.customModesManager)
@@ -664,6 +672,7 @@ export class ClineProvider
 		await this.mcpHub?.unregisterClient()
 		this.mcpHub = undefined
 		await this.skillsManager?.dispose()
+		this.hooksManager?.dispose()
 		this.skillsManager = undefined
 		this.marketplaceManager?.cleanup()
 		this.customModesManager?.dispose()
@@ -2715,6 +2724,10 @@ export class ClineProvider
 
 	public getSkillsManager(): SkillsManager | undefined {
 		return this.skillsManager
+	}
+
+	public getHooksManager(): HooksManager | undefined {
+		return this.hooksManager
 	}
 
 	/**

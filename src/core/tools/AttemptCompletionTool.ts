@@ -10,6 +10,8 @@ import type { ToolUse } from "../../shared/tools"
 import { t } from "../../i18n"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
+import { executeHooks, formatHookResults } from "../../services/hooks/HookExecutor"
+import type { HookContext } from "../../shared/hooks"
 
 interface AttemptCompletionParams {
 	result: string
@@ -77,6 +79,25 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			}
 
 			task.consecutiveMistakeCount = 0
+
+			// === Stop Hook ===
+			try {
+				const hooksManager = task.providerRef.deref()?.getHooksManager()
+				if (hooksManager?.hasHooksForEvent("Stop")) {
+					const stopHooks = hooksManager.getHooksForEvent("Stop")
+					const hookContext: HookContext = {
+						event: "Stop",
+						completionResult: result,
+					}
+					const hookResults = await executeHooks(stopHooks, hookContext, task.apiConfiguration)
+					const hookOutput = formatHookResults(hookResults)
+					if (hookOutput) {
+						await task.say("hook_output", `Stop hook:\n${hookOutput}`)
+					}
+				}
+			} catch (hookError) {
+				console.warn(`[AttemptCompletionTool] Stop hook error:`, hookError)
+			}
 
 			await task.say("completion_result", result, undefined, false)
 

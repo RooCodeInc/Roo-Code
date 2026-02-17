@@ -1,4 +1,6 @@
 import { serializeError } from "serialize-error"
+import { executeHooks, formatHookResults } from "../../services/hooks/HookExecutor"
+import type { HookContext } from "../../shared/hooks"
 import { Anthropic } from "@anthropic-ai/sdk"
 
 import type { ToolName, ClineAsk, ToolProgressStatus } from "@roo-code/types"
@@ -675,6 +677,30 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			// === PreToolUse Hook ===
+			if (!block.partial) {
+				try {
+					const hooksManager = cline.providerRef.deref()?.getHooksManager()
+					if (hooksManager?.hasHooksForEvent("PreToolUse")) {
+						const matchingHooks = hooksManager.getMatchingHooks("PreToolUse", block.name)
+						if (matchingHooks.length > 0) {
+							const hookContext: HookContext = {
+								event: "PreToolUse",
+								toolName: block.name,
+								toolInput: block.nativeArgs || block.params,
+							}
+							const hookResults = await executeHooks(matchingHooks, hookContext, cline.apiConfiguration)
+							const hookOutput = formatHookResults(hookResults)
+							if (hookOutput) {
+								await cline.say("hook_output", `PreToolUse hook for ${block.name}:\n${hookOutput}`)
+							}
+						}
+					}
+				} catch (hookError) {
+					console.warn(`[presentAssistantMessage] PreToolUse hook error:`, hookError)
+				}
+			}
+
 			switch (block.name) {
 				case "write_to_file":
 					await checkpointSaveAndMark(cline)
@@ -914,6 +940,38 @@ export async function presentAssistantMessage(cline: Task) {
 						is_error: true,
 					})
 					break
+				}
+			}
+
+			// === PostToolUse Hook ===
+			if (!block.partial) {
+				try {
+					const hooksManager = cline.providerRef.deref()?.getHooksManager()
+					if (hooksManager?.hasHooksForEvent("PostToolUse")) {
+						const matchingHooks = hooksManager.getMatchingHooks("PostToolUse", block.name)
+						if (matchingHooks.length > 0) {
+							// Get the last tool result text for context
+							const lastResult = cline.userMessageContent
+								.filter(
+									(b): b is import("@anthropic-ai/sdk").Anthropic.ToolResultBlockParam =>
+										b.type === "tool_result",
+								)
+								.pop()
+							const resultText = typeof lastResult?.content === "string" ? lastResult.content : ""
+							const hookContext: HookContext = {
+								event: "PostToolUse",
+								toolName: block.name,
+								toolResult: resultText.slice(0, 2000),
+							}
+							const hookResults = await executeHooks(matchingHooks, hookContext, cline.apiConfiguration)
+							const hookOutput = formatHookResults(hookResults)
+							if (hookOutput) {
+								await cline.say("hook_output", `PostToolUse hook for ${block.name}:\n${hookOutput}`)
+							}
+						}
+					}
+				} catch (hookError) {
+					console.warn(`[presentAssistantMessage] PostToolUse hook error:`, hookError)
 				}
 			}
 
