@@ -7,6 +7,7 @@ import { customToolRegistry, formatNative } from "@roo-code/core"
 
 import type { ClineProvider } from "../webview/ClineProvider"
 import { getRooDirectoriesForCwd } from "../../services/roo-config/index.js"
+import { selectActiveIntentToolDefinition } from "../../hooks/SelectActiveIntentTool"
 
 import { getNativeTools, getMcpServerTools } from "../prompts/tools/native-tools"
 import {
@@ -142,8 +143,7 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 	}
 
 	// Combine filtered tools (for backward compatibility and for allowedFunctionNames)
-	const filteredTools = [...filteredNativeTools, ...filteredMcpTools, ...nativeCustomTools]
-
+  const filteredTools = [...filteredNativeTools, ...filteredMcpTools, ...nativeCustomTools, selectActiveIntentToolDefinition]
 	// If includeAllToolsWithRestrictions is true, return ALL tools but provide
 	// allowed names based on mode filtering
 	if (includeAllToolsWithRestrictions) {
