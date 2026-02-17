@@ -1861,12 +1861,40 @@ export class ClineProvider
 			const { getTaskDirectoryPath } = await import("../../utils/storage")
 			const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
 
+			const sanitizeRpiDirName = (taskId: string) => taskId.replace(/[^a-zA-Z0-9._-]/g, "_")
+			const normalizeWorkspaceKey = (workspacePath: string) => {
+				try {
+					const resolved = path.resolve(workspacePath)
+					return process.platform === "win32" ? resolved.toLowerCase() : resolved
+				} catch {
+					return workspacePath
+				}
+			}
+
+			const impactedWorkspaces = new Map<string, string>()
+
 			for (const taskId of allIdsToDelete) {
+				const historyItem = taskMap.get(taskId)
+				const taskWorkspacePath = historyItem?.workspace?.trim() || this.cwd
+				const workspaceKey = normalizeWorkspaceKey(taskWorkspacePath)
+				impactedWorkspaces.set(workspaceKey, taskWorkspacePath)
+
 				try {
 					await ShadowCheckpointService.deleteTask({ taskId, globalStorageDir, workspaceDir })
 				} catch (error) {
 					console.error(
 						`[deleteTaskWithId${taskId}] failed to delete associated shadow repository or branch: ${error instanceof Error ? error.message : String(error)}`,
+					)
+				}
+
+				// Delete the RPI data directory for the task (workspace-local: .roo/rpi/<taskId>)
+				try {
+					const rpiTaskDir = path.join(taskWorkspacePath, ".roo", "rpi", sanitizeRpiDirName(taskId))
+					await fs.rm(rpiTaskDir, { recursive: true, force: true })
+					console.log(`[deleteTaskWithId${taskId}] removed RPI directory`)
+				} catch (error) {
+					console.error(
+						`[deleteTaskWithId${taskId}] failed to remove RPI directory: ${error instanceof Error ? error.message : String(error)}`,
 					)
 				}
 
@@ -1878,6 +1906,27 @@ export class ClineProvider
 				} catch (error) {
 					console.error(
 						`[deleteTaskWithId${taskId}] failed to remove task directory: ${error instanceof Error ? error.message : String(error)}`,
+					)
+				}
+			}
+
+			// If a workspace no longer has any tasks in history, remove the workspace-local RPI root too.
+			const remainingWorkspaceKeys = new Set(
+				updatedTaskHistory.map((task) => normalizeWorkspaceKey(task.workspace?.trim() || this.cwd)),
+			)
+
+			for (const [workspaceKey, workspacePath] of impactedWorkspaces.entries()) {
+				if (remainingWorkspaceKeys.has(workspaceKey)) {
+					continue
+				}
+
+				try {
+					const rpiRootDir = path.join(workspacePath, ".roo", "rpi")
+					await fs.rm(rpiRootDir, { recursive: true, force: true })
+					console.log(`[deleteTaskWithId] removed workspace RPI root: ${rpiRootDir}`)
+				} catch (error) {
+					console.error(
+						`[deleteTaskWithId] failed to remove workspace RPI root: ${error instanceof Error ? error.message : String(error)}`,
 					)
 				}
 			}
@@ -1895,9 +1944,41 @@ export class ClineProvider
 
 	async deleteTaskFromState(id: string) {
 		const taskHistory = this.getGlobalState("taskHistory") ?? []
+		const deletedItem = taskHistory.find((task) => task.id === id)
 		const updatedTaskHistory = taskHistory.filter((task) => task.id !== id)
 		await this.updateGlobalState("taskHistory", updatedTaskHistory)
 		this.recentTasksCache = undefined
+
+		// Best-effort cleanup of workspace-local RPI data for the removed task.
+		try {
+			const taskWorkspacePath = deletedItem?.workspace?.trim() || this.cwd
+			const sanitizeRpiDirName = (taskId: string) => taskId.replace(/[^a-zA-Z0-9._-]/g, "_")
+			const rpiTaskDir = path.join(taskWorkspacePath, ".roo", "rpi", sanitizeRpiDirName(id))
+			await fs.rm(rpiTaskDir, { recursive: true, force: true })
+
+			// If this was the last task for the workspace, remove the workspace RPI root too.
+			const normalizeWorkspaceKey = (workspacePath: string) => {
+				try {
+					const resolved = path.resolve(workspacePath)
+					return process.platform === "win32" ? resolved.toLowerCase() : resolved
+				} catch {
+					return workspacePath
+				}
+			}
+
+			const workspaceKey = normalizeWorkspaceKey(taskWorkspacePath)
+			const remainingWorkspaceKeys = new Set(
+				updatedTaskHistory.map((task) => normalizeWorkspaceKey(task.workspace?.trim() || this.cwd)),
+			)
+
+			if (!remainingWorkspaceKeys.has(workspaceKey)) {
+				const rpiRootDir = path.join(taskWorkspacePath, ".roo", "rpi")
+				await fs.rm(rpiRootDir, { recursive: true, force: true })
+			}
+		} catch {
+			// Cleanup is best-effort
+		}
+
 		await this.postStateToWebview()
 	}
 

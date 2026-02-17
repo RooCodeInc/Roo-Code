@@ -14,7 +14,7 @@
 	"copyPrompt": "Copiar prompt",
 	"exportTask": "Exportar tarefa",
 	"deleteTask": "Excluir tarefa",
-	"deleteTaskMessage": "Tem certeza que deseja excluir esta tarefa? Esta ação não pode ser desfeita.",
+	"deleteTaskMessage": "Tem certeza que deseja excluir esta tarefa? Esta ação não pode ser desfeita. Os dados de RPI dessa tarefa também serão removidos.",
 	"cancel": "Cancelar",
 	"delete": "Excluir",
 	"exitSelection": "Sair da seleção",
@@ -26,7 +26,7 @@
 	"deleteSelected": "Excluir selecionados",
 	"deleteTasks": "Excluir tarefas",
 	"confirmDeleteTasks": "Tem certeza que deseja excluir {{count}} tarefas?",
-	"deleteTasksWarning": "As tarefas excluídas não podem ser recuperadas. Por favor, certifique-se de que deseja prosseguir.",
+	"deleteTasksWarning": "As tarefas excluídas não podem ser recuperadas. Os dados de RPI das tarefas excluídas também serão removidos. Se todas as tarefas de um espaço de trabalho forem excluídas, a pasta .roo/rpi também será removida.",
 	"deleteItems": "Excluir {{count}} itens",
 	"workspace": {
 		"prefix": "Espaço de trabalho:",
@@ -45,7 +45,7 @@
 	"subtasks_one": "{{count}} subtarefa",
 	"subtasks_other": "{{count}} subtarefas",
 	"subtaskTag": "Subtarefa",
-	"deleteWithSubtasks": "Isso também excluirá {{count}} subtarefa(s). Tem certeza?",
+	"deleteWithSubtasks": "Isso também excluirá {{count}} subtarefa(s). Tem certeza? Os dados de RPI dessas tarefas também serão removidos.",
 	"expandSubtasks": "Expandir subtarefas",
 	"collapseSubtasks": "Recolher subtarefas"
 }
