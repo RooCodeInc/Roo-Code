@@ -695,6 +695,10 @@
 		"MULTIPLE_TOOL_CALLS": {
 			"name": "Enable multiple tool calls per message",
 			"description": "When enabled, Pro can use multiple tools in a single message for independent actions, reducing back-and-forth and completing tasks faster. When disabled, Pro uses one tool at a time per message."
+		},
+		"PLANNING_WORKFLOW": {
+			"name": "Create Planning File",
+			"description": "When enabled, SIID will generate a planning file for complex development tasks. This helps organize multi-step workflows and track progress."
 		}
 	},
 	"promptCaching": {

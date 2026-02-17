@@ -46,6 +46,7 @@ import { Mode, defaultModeSlug, getModeBySlug } from "../../shared/modes"
 import { getDefaultModelForMode, getModelsForMode } from "../../shared/mode-models"
 import { experimentDefault } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
+import { analyzeTaskComplexity } from "../task/analyzeTaskComplexity"
 import { WebviewMessage } from "../../shared/WebviewMessage"
 import { EMBEDDING_MODEL_PROFILES } from "../../shared/embeddingModels"
 import { ProfileValidator } from "../../shared/ProfileValidator"
@@ -652,12 +653,33 @@ export class ClineProvider
 			diffEnabled: enableDiff,
 			enableCheckpoints,
 			fuzzyMatchThreshold,
-			experiments,
+			experiments: baseExperiments,
 		} = await this.getState()
 
 		if (!ProfileValidator.isProfileAllowed(apiConfiguration, organizationAllowList)) {
 			throw new OrganizationAllowListViolationError(t("common:errors.violated_organization_allowlist"))
 		}
+
+		// Analyze task complexity and auto-enable/disable planning workflow
+		// unless experiments are explicitly provided in options (user override)
+		let experiments = baseExperiments
+		let complexity = { isComplex: false, score: 0, factors: [] as string[] }
+
+		if (!options.experiments) {
+			complexity = analyzeTaskComplexity(text)
+			experiments = {
+				...baseExperiments,
+				planningWorkflow: complexity.isComplex,
+			}
+			// Update global state with the new experiments value so toggle reflects in UI
+			await this.updateGlobalState("experiments", experiments)
+		} else {
+			// Use provided experiments, but don't override if planningWorkflow is not explicitly set
+			experiments = { ...baseExperiments, ...options.experiments }
+		}
+
+		// Extract experiments from options to prevent it from being spread again
+		const { experiments: optionsExperiments, ...restOptions } = options
 
 		const task = new Task({
 			provider: this,
@@ -673,8 +695,10 @@ export class ClineProvider
 			parentTask,
 			taskNumber: this.clineStack.length + 1,
 			onCreated: (instance) => this.emit(RooCodeEventName.TaskCreated, instance),
-			...options,
+			...restOptions,
 		})
+
+		await this.addClineToStack(task)
 
 		// Listen for task completion to update webview state
 		task.on(RooCodeEventName.TaskCompleted, async () => {
@@ -689,7 +713,33 @@ export class ClineProvider
 			await this.postStateToWebview()
 		})
 
-		await this.addClineToStack(task)
+		// Add complexity analysis message - show in chat after initial task message
+		if (!options.experiments && complexity.score > 0) {
+			const complexityText = complexity.isComplex
+				? `**Creating planning file for better task organization and tracking.**`
+				: `**No plan file required.**`
+
+			// Send message after a small delay to ensure the task's initial say() message is in place
+			setTimeout(() => {
+				const complexityMessage: any = {
+					ts: Date.now(),
+					type: "say",
+					say: "text",
+					text: complexityText,
+				}
+
+				// Add to the task's messages so it appears in the chat history
+				task.clineMessages.push(complexityMessage)
+
+				// Notify webview to update
+				this.postStateToWebview().catch((err: any) => {
+					console.error("Failed to update webview with complexity message:", err)
+				})
+			}, 150)
+		}
+
+		// Update webview with new experiments state
+		await this.postStateToWebview()
 
 		this.log(
 			`[subtasks] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
