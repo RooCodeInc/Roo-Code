@@ -222,20 +222,19 @@ export async function getData(
  * @param outputChannel Optional output channel for logging
  * @returns Admin API key or null if not found
  */
-export async function getAdminApiKey(outputChannel?: vscode.OutputChannel): Promise<string | null> {
+export async function getAdminApiKey(outputChannel?: vscode.OutputChannel): Promise<any | null> {
 	const log = outputChannel ? createOutputChannelLogger(outputChannel) : () => {}
 
 	try {
-		log("Getting admin API key")
 		const api = await getFirebaseAPI(outputChannel)
 		if (!api) {
 			log("Firebase API not available for getting admin API key")
 			return null
 		}
 
-		const key = await api.getAdminApiKey()
-		log(key ? `Admin API key retrieved Key: ${key}` : "No admin API key found")
-		return key || null
+		const adminConfig = await api.getAdminApiKey()
+
+		return adminConfig || null
 	} catch (error) {
 		log("Error getting admin API key:", error)
 		return null
