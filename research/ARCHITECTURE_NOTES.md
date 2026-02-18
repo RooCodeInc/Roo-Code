@@ -2680,3 +2680,158 @@ This architecture provides a comprehensive framework for intent-driven AI-assist
 - `.orchestration/`: Workspace directory for persistence
 
 This architecture transforms AI agents from autonomous code generators into contextualized, traceable, and governable development partners.
+
+---
+
+## 11. Token Budget Strategy & Truncation Policy
+
+The Context Injector must gracefully handle cases where the injected intent context plus the system prompt exceeds the model's token budget. The strategy prioritizes critical information and makes pruning observable to both the agent and the user.
+
+- Priority order (highest first): `constraints` → `owned_scope` → `acceptance_criteria` → `highlights` (prior traces)
+- Truncation rules: prune entire sections (not mid-item) to preserve parseability of the `<intent_context>` block
+- Observable notifications: emit a `context_pruned` message to the agent and a UI toast to inform users about reduced context
+- Retry guidance: advise the agent to request narrower scope or staged injection when pruned
+
+Reference payloads:
+
+```json
+{
+	"type": "context_pruned",
+	"intent_id": "INT-001",
+	"pruned_sections": ["acceptance_criteria", "highlights"],
+	"remaining_sections": ["constraints", "owned_scope"],
+	"token_budget": {
+		"limit": 200000,
+		"used": 198500,
+		"estimated_next_turn": 1800
+	},
+	"hints": ["Consider narrowing owned_scope patterns", "Consider deferring acceptance criteria until tests phase"]
+}
+```
+
+Pseudocode strategy:
+
+```typescript
+function buildIntentContextWithBudget(spec: IntentSpec, maxTokens: number): string {
+	const sections = [
+		{ name: "constraints", builder: buildConstraints },
+		{ name: "owned_scope", builder: buildScope },
+		{ name: "acceptance_criteria", builder: buildAcceptance },
+		{ name: "highlights", builder: buildHighlights },
+	]
+
+	let xml = openTag("intent_context") + baseHeader(spec)
+	const pruned: string[] = []
+
+	for (const section of sections) {
+		const chunk = section.builder(spec)
+		if (estimateTokens(xml + chunk) <= maxTokens) {
+			xml += chunk
+		} else {
+			pruned.push(section.name)
+		}
+	}
+
+	xml += closeTag("intent_context")
+	notifyPruned(spec.id, pruned, remainingFrom(sections, pruned))
+	return xml
+}
+```
+
+---
+
+## 12. Approval UX Contract (Minimum Viable Dialog)
+
+The approval dialog is a decision surface, not a policy engine. It must present enough information for a fast, informed user choice and return structured feedback for recovery.
+
+- Required fields shown: `intent_id`, `intent_name`, `action`, `target_paths/commands`, `risk_hints`, `context_block_preview`
+- Actions: `Approve` / `Reject` (reject requires a reason)
+- Rejection reasons (standardized): `scope_adjustment`, `missing_tests`, `security_concern`, `other`
+- Returned payload maps to `ToolError` with `type = "user_rejection"` and includes `user_feedback` and `correction_hints`
+
+Approval request payload:
+
+```json
+{
+	"type": "approval:request",
+	"payload": {
+		"approval_id": "apr-uuid-001",
+		"intent": { "id": "INT-001", "name": "JWT Authentication" },
+		"action": { "tool": "write_file", "targets": ["src/auth/jwt.ts"] },
+		"risk_hints": ["Destructive operation", "Security-sensitive area"],
+		"context_block_preview": "<intent_context>..."
+	}
+}
+```
+
+Approval response payload:
+
+```json
+{
+	"type": "approval:respond",
+	"payload": {
+		"approval_id": "apr-uuid-001",
+		"decision": "rejected",
+		"reason": "missing_tests",
+		"user_feedback": "Add unit tests first"
+	}
+}
+```
+
+---
+
+## 13. MCP vs Native Tool Parity Guarantees
+
+All tool execution paths (native and MCP) must converge on the same interception and logging pipeline to guarantee consistent enforcement and traceability.
+
+- Convergence point: `src/core/assistant-message/presentAssistantMessage.ts` at `case "tool_use"` before dispatch
+- Pre/Post hooks apply identically to MCP tools via MCP dispatch wrappers
+- Invariants enforced for both:
+    - `tool_use` → `tool_result` pairing with matching `tool_use_id`
+    - `nativeArgs` validation and tool name validation
+    - Approval gating for destructive operations
+    - Trace ledger append with intent linkage after completion
+
+Pseudo-integration (conceptual):
+
+```typescript
+switch (block.type) {
+	case "tool_use": {
+		const pre = await hookEngine.preToolUse(block.name, block.nativeArgs)
+		if (!pre.allowed) return pushToolError(pre.rejectionReason)
+
+		const result = block.isMcp
+			? await mcpHub.execute(block.name, pre.modifiedParams || block.nativeArgs)
+			: await nativeTools.execute(block.name, pre.modifiedParams || block.nativeArgs)
+
+		await hookEngine.postToolUse(block.name, pre.modifiedParams || block.nativeArgs, result)
+		return pushToolResult(result)
+	}
+}
+```
+
+---
+
+## 14. Testing Plan (Determinism & Guardrails)
+
+Tests ensure the hook system is deterministic, enforceable, and robust under streaming and concurrency.
+
+- Deterministic pre-hook decisions: same inputs → same allow/deny and context injection
+- Streaming handling: partial blocks do not trigger execution; sequential processing enforced by locks
+- Scope enforcement: path normalization (POSIX/Windows), symlink resolution, glob match edge cases
+- Intent validation: malformed YAML fails closed; inactive/aborted intents blocked
+- Approval flow: rejection returns standardized `ToolError`; recovery hints present
+- Trace ledger: append-only integrity; rebuild spatial map from ledger entries; content hash stability under refactors
+- Token budget: `context_pruned` emitted when truncation occurs; agent receives retry guidance
+- MCP parity: MCP and native tool calls traverse identical hook paths and produce identical invariants
+- Concurrency: optimistic lock acquisition/revalidation; conflict detection on hash mismatch; supervisor arbitration recorded in `CLAUDE.md`
+
+Example test cases (high level):
+
+- `PreHookIntentMissingBlocksWrite`: `write_file` with no intent → deny with `intent_not_selected`
+- `ScopeViolationBlocksWrite`: path outside `owned_scope` → deny with `scope_violation`
+- `ApprovalRejectedReturnsToolError`: user rejects destructive op → `user_rejection` with feedback
+- `TokenBudgetPrunesAcceptanceCriteria`: large spec triggers pruning → `context_pruned` emitted
+- `LedgerAppendAndMapUpdate`: write_file success → ledger line appended, spatial map updated
+- `StreamingPartialBlockIgnored`: `block.partial === true` → no tool execution
+- `McpToolParity`: MCP `write_file` behaves identically to native `write_file`
