@@ -348,7 +348,9 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"smartCodeFolding": "智能代码折叠：上下文压缩现在保留文件的轻量级映射——函数签名、类声明和类型定义。 这在压缩后提供更好的连续性，引用之前工作时编辑更聪明。"
+			"sonnet46": "Claude Sonnet 4.6：全面支持 Anthropic 最新的 Claude Sonnet 4.6 模型，覆盖所有提供商 — Anthropic、Bedrock、Vertex、OpenRouter 和 Vercel AI Gateway。",
+			"stabilityFixes": "稳定性改进：强化委派生命周期以防止竞态条件，修复导航和任务恢复时的聊天历史保留问题，并解决滚动锚定问题以获得更流畅的体验。",
+			"lockedApiConfig": "锁定 API 配置：新的锁定开关让你可以在工作区的所有模式中固定 API 配置，这样切换模式不再重置你的提供商设置。"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",

@@ -108,6 +108,13 @@ export class IpcClient extends EventEmitter<IpcClientEvents> {
 		})
 	}
 
+	public deleteQueuedMessage(messageId: string) {
+		this.sendCommand({
+			commandName: TaskCommandName.DeleteQueuedMessage,
+			data: messageId,
+		})
+	}
+
 	public sendMessage(message: IpcMessage) {
 		ipc.of[this._id]?.emit("message", message)
 	}
