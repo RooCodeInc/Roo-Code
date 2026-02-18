@@ -1,0 +1,15 @@
+active_intents:
+    - id: "INT-001"
+      name: "Governance Layer Implementation"
+      status: "IN_PROGRESS"
+      owned_scope:
+          - "src/core/prompts/**"
+          - "src/core/assistant-message/**"
+          - ".orchestration/**"
+      constraints:
+          - "Must not break existing tool functionality"
+          - "Must use strict TypeScript typing"
+          - "Must log all hook activities to console"
+      acceptance_criteria:
+          - "System prompt includes intent declaration rules"
+          - "Pre-hook blocks unauthorized file writes"
