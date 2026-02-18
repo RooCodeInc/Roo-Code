@@ -41,6 +41,7 @@ Defines cryptographically verifiable, spatially independent entries for every mu
                 },
                 "classification": {"type": "string", "enum": ["REFACTOR", "FEATURE", "BUGFIX"]},
                 "ast_node_type": {"type": "string"},
+                "intent_id": {"type": "string"},
                 "ranges": {
                   "type": "array",
                   "items": {

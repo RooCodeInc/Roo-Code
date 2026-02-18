@@ -1,14 +1,12 @@
-%% Mermaid State Diagram: Two-Stage Deterministic Workflow
+%% Mermaid State Diagram: Deterministic Workflow (IDLE → CHECKOUT → EXECUTION → AUDIT)
 stateDiagram-v2
-  [*] --> Request
-  Request: User Prompt
-  Request --> IntentSelection: select_active_intent(intent_id)
-  IntentSelection --> Handshake: PreHook.validate(intent_id)
-  Handshake: Intent Validation + Context Injection
-  Handshake --> ContextualizedAction: SYSTEM_PROMPT += <intent_context>
-  ContextualizedAction: LLM Execution + Tooling
-  ContextualizedAction --> PostHook: Append to agent_trace.jsonl
-  PostHook --> [*]
+  [*] --> IDLE
+  IDLE: Waiting for User Prompt
+  IDLE --> INTENT_CHECKOUT: select_active_intent(intent_id)
+  INTENT_CHECKOUT --> EXECUTION: PreHook.validate(intent_id) and SYSTEM_PROMPT += <intent_context>
+  EXECUTION: LLM Reasoning + Tooling
+  EXECUTION --> AUDIT: PostHook.append(agent_trace.jsonl)
+  AUDIT --> [*]
 
-  Request --> [*]: abort
-  Handshake --> Request: invalid intent / scope violation
+  IDLE --> [*]: abort
+  INTENT_CHECKOUT --> IDLE: invalid intent / scope violation

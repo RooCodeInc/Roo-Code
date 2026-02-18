@@ -4,6 +4,7 @@ sequenceDiagram
   participant Assistant
   participant PreHook
   participant Handshake
+  participant LLM
   participant Tools
   participant FS
   participant PostHook
@@ -13,6 +14,8 @@ sequenceDiagram
   Assistant->>PreHook: validate(activeIntentId)
   PreHook-->>Handshake: IntentContext (owned_scope, acceptance_criteria)
   Handshake-->>Assistant: SYSTEM_PROMPT += <intent_context>
+  Assistant->>LLM: generate(plan, tool calls)
+  LLM-->>Assistant: tool invocations
   Assistant->>Tools: write_to_file(path, content)
   Tools->>FS: saveChanges()
   FS-->>PostHook: FileWrittenEvent(path, content)
