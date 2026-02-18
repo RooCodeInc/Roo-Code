@@ -5,12 +5,13 @@
 		"outDir": "dist",
 		"jsx": "react-jsx",
 		"jsxImportSource": "react",
-		"ignoreDeprecations": "6.0",
+		// previously: "ignoreDeprecations": "6.0",
+		"ignoreDeprecations": "6.0", // ← use a string value as required by TS
+		//     (e.g., "5.0" or "6.0")
 		"paths": {
-			// "@/*": ["src/*"]
 			"*": ["./*"]
 		}
-		// Ensure 'baseUrl' is not set here; if present in '@roo-code/config-typescript/base.json', remove or migrate it there.
+		// …other options…
 	},
 	"include": ["src", "*.config.ts"],
 	"exclude": ["node_modules"]
