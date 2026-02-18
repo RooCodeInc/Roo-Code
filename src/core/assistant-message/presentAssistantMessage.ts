@@ -28,6 +28,7 @@ import { useMcpToolTool } from "../tools/UseMcpToolTool"
 import { accessMcpResourceTool } from "../tools/accessMcpResourceTool"
 import { askFollowupQuestionTool } from "../tools/AskFollowupQuestionTool"
 import { switchModeTool } from "../tools/SwitchModeTool"
+import { SelectActiveIntentTool } from "../tools/SelectActiveIntentTool"
 import { attemptCompletionTool, AttemptCompletionCallbacks } from "../tools/AttemptCompletionTool"
 import { newTaskTool } from "../tools/NewTaskTool"
 import { updateTodoListTool } from "../tools/UpdateTodoListTool"
@@ -40,6 +41,8 @@ import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+
+const selectActiveIntentTool = new SelectActiveIntentTool()
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -365,6 +368,8 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name}]`
 					case "switch_mode":
 						return `[${block.name} to '${block.params.mode_slug}'${block.params.reason ? ` because: ${block.params.reason}` : ""}]`
+					case "select_active_intent":
+						return `[${block.name} for '${block.params.intent_id}']`
 					case "codebase_search":
 						return `[${block.name} for '${block.params.query}']`
 					case "read_command_output":
@@ -803,6 +808,16 @@ export async function presentAssistantMessage(cline: Task) {
 						pushToolResult,
 					})
 					break
+				case "select_active_intent": {
+					try {
+						const intentId = block.nativeArgs?.intent_id ?? block.params.intent_id ?? ""
+						const result = await selectActiveIntentTool.handle({ intent_id: intentId }, cline.cwd)
+						pushToolResult(result)
+					} catch (error) {
+						await handleError("loading active intent context", error as Error)
+					}
+					break
+				}
 				case "new_task":
 					await checkpointSaveAndMark(cline)
 					await newTaskTool.handle(cline, block as ToolUse<"new_task">, {

@@ -47,6 +47,17 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			return
 		}
 
+		const hasSelectedActiveIntent = (task.toolUsage.select_active_intent?.attempts ?? 0) > 0
+		if (!hasSelectedActiveIntent) {
+			const governanceError = "GOVERNANCE ERROR: You must cite a valid active Intent ID before modifying files."
+			task.consecutiveMistakeCount++
+			task.recordToolError("write_to_file", governanceError)
+			task.didToolFailInCurrentTurn = true
+			pushToolResult(formatResponse.toolError(governanceError))
+			await task.diffViewProvider.reset()
+			return
+		}
+
 		const accessAllowed = task.rooIgnoreController?.validateAccess(relPath)
 
 		if (!accessAllowed) {
