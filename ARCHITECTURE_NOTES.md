@@ -76,6 +76,7 @@ sequenceDiagram
 
 ### B. Intent Context Schema
 
+```xml
 <intent_context>
 <intent_id>INT-001</intent_id>
 <status>IN PROGRESS</status>
@@ -86,3 +87,4 @@ sequenceDiagram
 <constraints> - Must not use external auth providers - Maintain backward compatibility
 </constraints>
 </intent_context>
+```
