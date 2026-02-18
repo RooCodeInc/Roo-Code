@@ -3,10 +3,10 @@ import * as path from "path"
 import { execa, parseCommandString } from "execa"
 import psTree from "ps-tree"
 
-import type { Task } from "../db/index.js"
-import { type ExerciseLanguage, EVALS_REPO_PATH } from "../exercises/index.js"
+import type { Task } from "../db/index"
+import { type ExerciseLanguage, EVALS_REPO_PATH } from "../exercises/index"
 
-import { Logger } from "./utils.js"
+import { Logger } from "./utils"
 
 const UNIT_TEST_TIMEOUT = 2 * 60 * 1_000
 

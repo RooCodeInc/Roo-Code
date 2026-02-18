@@ -19,7 +19,8 @@ import type { ClineMessage } from "@roo-code/types"
 import type { JsonEvent, JsonEventCost, JsonFinalOutput } from "@/types/json-events.js"
 
 import type { ExtensionClient } from "./extension-client.js"
-import type { TaskCompletedEvent } from "./events.js"
+import type { AgentStateChangeEvent, TaskCompletedEvent } from "./events.js"
+import { AgentLoopState } from "./agent-state.js"
 
 /**
  * Options for JsonEventEmitter.
@@ -93,6 +94,8 @@ export class JsonEventEmitter {
 	private previousContent = new Map<number, string>()
 	// Track the completion result content
 	private completionResultContent: string | undefined
+	// The first non-partial "say:text" per task is the echoed user prompt.
+	private expectPromptEchoAsUser = true
 
 	constructor(options: JsonEventEmitterOptions) {
 		this.mode = options.mode
@@ -106,10 +109,11 @@ export class JsonEventEmitter {
 		// Subscribe to message events
 		const unsubMessage = client.on("message", (msg) => this.handleMessage(msg, false))
 		const unsubMessageUpdated = client.on("messageUpdated", (msg) => this.handleMessage(msg, true))
+		const unsubStateChange = client.on("stateChange", (event) => this.handleStateChange(event))
 		const unsubTaskCompleted = client.on("taskCompleted", (event) => this.handleTaskCompleted(event))
 		const unsubError = client.on("error", (error) => this.handleError(error))
 
-		this.unsubscribers.push(unsubMessage, unsubMessageUpdated, unsubTaskCompleted, unsubError)
+		this.unsubscribers.push(unsubMessage, unsubMessageUpdated, unsubStateChange, unsubTaskCompleted, unsubError)
 
 		// Emit init event
 		this.emitEvent({
@@ -117,6 +121,16 @@ export class JsonEventEmitter {
 			subtype: "init",
 			content: "Task started",
 		})
+	}
+
+	private handleStateChange(event: AgentStateChangeEvent): void {
+		// Only treat the next say:text as a prompt echo when a new task starts.
+		if (
+			event.previousState.state === AgentLoopState.NO_TASK &&
+			event.currentState.state !== AgentLoopState.NO_TASK
+		) {
+			this.expectPromptEchoAsUser = true
+		}
 	}
 
 	/**
@@ -227,7 +241,14 @@ export class JsonEventEmitter {
 	private handleSayMessage(msg: ClineMessage, contentToSend: string | null, isDone: boolean): void {
 		switch (msg.say) {
 			case "text":
-				this.emitEvent(this.buildTextEvent("assistant", msg.ts, contentToSend, isDone))
+				if (this.expectPromptEchoAsUser) {
+					this.emitEvent(this.buildTextEvent("user", msg.ts, contentToSend, isDone))
+					if (isDone) {
+						this.expectPromptEchoAsUser = false
+					}
+				} else {
+					this.emitEvent(this.buildTextEvent("assistant", msg.ts, contentToSend, isDone))
+				}
 				break
 
 			case "reasoning":
@@ -248,6 +269,9 @@ export class JsonEventEmitter {
 			case "user_feedback":
 			case "user_feedback_diff":
 				this.emitEvent(this.buildTextEvent("user", msg.ts, contentToSend, isDone))
+				if (isDone) {
+					this.expectPromptEchoAsUser = false
+				}
 				break
 
 			case "api_req_started": {
@@ -257,15 +281,6 @@ export class JsonEventEmitter {
 				}
 				break
 			}
-
-			case "browser_action":
-			case "browser_action_result":
-				this.emitEvent({
-					type: "tool_result",
-					subtype: "browser",
-					tool_result: { name: "browser_action", output: msg.text },
-				})
-				break
 
 			case "mcp_server_response":
 				this.emitEvent({
@@ -333,15 +348,6 @@ export class JsonEventEmitter {
 					id: msg.ts,
 					subtype: "command",
 					tool_use: { name: "execute_command", input: { command: msg.text } },
-				})
-				break
-
-			case "browser_action_launch":
-				this.emitEvent({
-					type: "tool_use",
-					id: msg.ts,
-					subtype: "browser",
-					tool_use: { name: "browser_action", input: { raw: msg.text } },
 				})
 				break
 
@@ -460,5 +466,6 @@ export class JsonEventEmitter {
 		this.seenMessageIds.clear()
 		this.previousContent.clear()
 		this.completionResultContent = undefined
+		this.expectPromptEchoAsUser = true
 	}
 }

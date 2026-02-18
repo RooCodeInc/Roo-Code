@@ -45,9 +45,6 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calling", () =
 			api: {
 				getModel: () => ({ id: "test-model", info: {} }),
 			},
-			browserSession: {
-				closeBrowser: vi.fn().mockResolvedValue(undefined),
-			},
 			recordToolUsage: vi.fn(),
 			toolRepetitionDetector: {
 				check: vi.fn().mockReturnValue({ allowExecution: true }),

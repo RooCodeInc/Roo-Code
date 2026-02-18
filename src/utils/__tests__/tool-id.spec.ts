@@ -47,6 +47,14 @@ describe("sanitizeToolUseId", () => {
 		it("should replace multiple invalid characters", () => {
 			expect(sanitizeToolUseId("mcp.server:tool/name")).toBe("mcp_server_tool_name")
 		})
+
+		it("should sanitize Gemini/OpenRouter function call IDs with dots and colons", () => {
+			// This is the exact pattern seen in PostHog errors where tool_result IDs
+			// didn't match tool_use IDs due to missing sanitization
+			expect(sanitizeToolUseId("functions.read_file:0")).toBe("functions_read_file_0")
+			expect(sanitizeToolUseId("functions.write_to_file:1")).toBe("functions_write_to_file_1")
+			expect(sanitizeToolUseId("read_file:0")).toBe("read_file_0")
+		})
 	})
 
 	describe("real-world MCP tool use ID patterns", () => {

@@ -1,6 +1,7 @@
 import { memo } from "react"
 import { cn } from "@/lib/utils"
 import type { TaskGroup } from "./types"
+import { countAllSubtasks } from "./types"
 import TaskItem from "./TaskItem"
 import SubtaskCollapsibleRow from "./SubtaskCollapsibleRow"
 import SubtaskRow from "./SubtaskRow"
@@ -20,15 +21,17 @@ interface TaskGroupItemProps {
 	onToggleSelection?: (taskId: string, isSelected: boolean) => void
 	/** Callback when delete is requested */
 	onDelete?: (taskId: string) => void
-	/** Callback when expand/collapse is toggled */
+	/** Callback when the parent group expand/collapse is toggled */
 	onToggleExpand: () => void
+	/** Callback when a nested subtask node expand/collapse is toggled */
+	onToggleSubtaskExpand: (taskId: string) => void
 	/** Optional className for styling */
 	className?: string
 }
 
 /**
- * Renders a task group consisting of a parent task and its collapsible subtask list.
- * When expanded, shows individual subtask rows.
+ * Renders a task group consisting of a parent task and its collapsible subtask tree.
+ * When expanded, shows recursively nested subtask rows.
  */
 const TaskGroupItem = ({
 	group,
@@ -39,10 +42,12 @@ const TaskGroupItem = ({
 	onToggleSelection,
 	onDelete,
 	onToggleExpand,
+	onToggleSubtaskExpand,
 	className,
 }: TaskGroupItemProps) => {
 	const { parent, subtasks, isExpanded } = group
 	const hasSubtasks = subtasks.length > 0
+	const totalSubtaskCount = hasSubtasks ? countAllSubtasks(subtasks) : 0
 
 	return (
 		<div
@@ -63,21 +68,21 @@ const TaskGroupItem = ({
 				hasSubtasks={hasSubtasks}
 			/>
 
-			{/* Subtask collapsible row */}
+			{/* Subtask collapsible row — shows total recursive count */}
 			{hasSubtasks && (
-				<SubtaskCollapsibleRow count={subtasks.length} isExpanded={isExpanded} onToggle={onToggleExpand} />
+				<SubtaskCollapsibleRow count={totalSubtaskCount} isExpanded={isExpanded} onToggle={onToggleExpand} />
 			)}
 
-			{/* Expanded subtasks */}
+			{/* Expanded subtask tree */}
 			{hasSubtasks && (
 				<div
 					data-testid="subtask-list"
 					className={cn(
 						"overflow-clip transition-all duration-500",
-						isExpanded ? "max-h-100 pb-2" : "max-h-0",
+						isExpanded ? "max-h-[2000px] pb-2" : "max-h-0",
 					)}>
-					{subtasks.map((subtask) => (
-						<SubtaskRow key={subtask.id} item={subtask} />
+					{subtasks.map((node) => (
+						<SubtaskRow key={node.item.id} node={node} depth={1} onToggleExpand={onToggleSubtaskExpand} />
 					))}
 				</div>
 			)}

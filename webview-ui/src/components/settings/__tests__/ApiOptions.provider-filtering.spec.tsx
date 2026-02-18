@@ -167,9 +167,7 @@ describe("ApiOptions Provider Filtering", () => {
 		expect(providerValues).toContain("ollama")
 		expect(providerValues).toContain("lmstudio")
 		expect(providerValues).toContain("litellm")
-		expect(providerValues).toContain("unbound")
 		expect(providerValues).toContain("requesty")
-		expect(providerValues).toContain("io-intelligence")
 	})
 
 	it("should filter static providers based on organization allow list", () => {

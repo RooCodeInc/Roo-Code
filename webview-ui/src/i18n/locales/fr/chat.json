@@ -111,6 +111,8 @@
 	},
 	"selectMode": "Sélectionner le mode d'interaction",
 	"selectApiConfig": "Sélectionner la configuration de l'API",
+	"lockApiConfigAcrossModes": "Verrouiller la configuration API pour tous les modes dans cet espace de travail",
+	"unlockApiConfigAcrossModes": "La configuration API est verrouillée pour tous les modes dans cet espace de travail (cliquer pour déverrouiller)",
 	"enhancePrompt": "Améliorer la requête avec un contexte supplémentaire",
 	"addImages": "Ajouter des images au message",
 	"sendMessage": "Envoyer le message",
@@ -218,7 +220,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo veut voir les fichiers de premier niveau dans ce répertoire (hors espace de travail)",
 		"didViewTopLevelOutsideWorkspace": "Roo a vu les fichiers de premier niveau dans ce répertoire (hors espace de travail)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo veut voir récursivement tous les fichiers dans ce répertoire (hors espace de travail)",
-		"didViewRecursiveOutsideWorkspace": "Roo a vu récursivement tous les fichiers dans ce répertoire (hors espace de travail)"
+		"didViewRecursiveOutsideWorkspace": "Roo a vu récursivement tous les fichiers dans ce répertoire (hors espace de travail)",
+		"wantsToViewMultipleDirectories": "Roo veut voir plusieurs répertoires"
 	},
 	"commandOutput": "Sortie de la Commande",
 	"commandExecution": {
@@ -344,7 +347,9 @@
 		},
 		"release": {
 			"heading": "Quoi de neuf :",
-			"smartCodeFolding": "Pliage de code intelligent : La condensation du contexte préserve maintenant une carte légère de vos fichiers—signatures de fonctions, déclarations de classes et définitions de types. Cela offre une meilleure continuité après la condensation et des éditions plus intelligentes lors du référencement de travail antérieur."
+			"sonnet46": "Claude Sonnet 4.6 : Prise en charge complète du dernier modèle Claude Sonnet 4.6 d'Anthropic sur tous les fournisseurs — Anthropic, Bedrock, Vertex, OpenRouter et Vercel AI Gateway.",
+			"stabilityFixes": "Améliorations de stabilité : Cycle de vie de délégation renforcé contre les conditions de course, correction de la préservation de l'historique de chat lors de la navigation et de la reprise de tâches, et résolution des problèmes d'ancrage du défilement pour une expérience plus fluide.",
+			"lockedApiConfig": "Configuration API verrouillée : Un nouveau bouton de verrouillage te permet de fixer ta configuration API sur tous les modes d'un espace de travail, pour que changer de mode ne réinitialise plus tes paramètres de fournisseur."
 		},
 		"cloudAgents": {
 			"heading": "Nouveautés dans le Cloud :",
@@ -359,44 +364,6 @@
 		"total": "Coût total : ${{cost}}",
 		"includesSubtasks": "Inclut les coûts des sous-tâches"
 	},
-	"browser": {
-		"session": "Session du navigateur",
-		"active": "Actif",
-		"rooWantsToUse": "Roo veut utiliser le navigateur",
-		"consoleLogs": "Journaux de console",
-		"noNewLogs": "(Pas de nouveaux journaux)",
-		"screenshot": "Capture d'écran du navigateur",
-		"cursor": "curseur",
-		"navigation": {
-			"step": "Étape {{current}} sur {{total}}",
-			"previous": "Précédent",
-			"next": "Suivant"
-		},
-		"sessionStarted": "Session de navigateur démarrée",
-		"actions": {
-			"title": "Action du navigateur : ",
-			"launched": "Navigateur lancé",
-			"launch": "Lancer le navigateur sur {{url}}",
-			"clicked": "Cliqué sur : {{coordinate}}",
-			"click": "Cliquer ({{coordinate}})",
-			"typed": "Saisi : {{text}}",
-			"type": "Saisir \"{{text}}\"",
-			"pressed": "Appuyé sur : {{key}}",
-			"press": "Appuyer sur {{key}}",
-			"scrolledDown": "Défilé vers le bas",
-			"scrollDown": "Défiler vers le bas",
-			"scrolledUp": "Défilé vers le haut",
-			"scrollUp": "Défiler vers le haut",
-			"hovered": "Survolé : {{coordinate}}",
-			"hover": "Survoler ({{coordinate}})",
-			"resized": "Redimensionné à : {{size}}",
-			"resize": "Redimensionner à {{size}}",
-			"screenshotSaved": "Capture d'écran enregistrée",
-			"screenshot": "Enregistrer une capture d'écran dans {{path}}",
-			"closed": "Navigateur fermé",
-			"close": "Fermer le navigateur"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Développer le bloc de code",
@@ -404,7 +371,6 @@
 			"copy_code": "Copier le code"
 		}
 	},
-	"systemPromptWarning": "AVERTISSEMENT : Remplacement d'instructions système personnalisées actif. Cela peut gravement perturber la fonctionnalité et provoquer un comportement imprévisible.",
 	"profileViolationWarning": "Le profil actuel n'est pas compatible avec les paramètres de votre organisation",
 	"shellIntegration": {
 		"title": "Avertissement d'exécution de commande",
@@ -433,6 +399,22 @@
 	"read-batch": {
 		"approve": {
 			"title": "Tout approuver"
+		},
+		"deny": {
+			"title": "Tout refuser"
+		}
+	},
+	"list-batch": {
+		"approve": {
+			"title": "Tout approuver"
+		},
+		"deny": {
+			"title": "Tout refuser"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Tout enregistrer"
 		},
 		"deny": {
 			"title": "Tout refuser"
@@ -511,5 +493,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Fournisseur plus pris en charge",
+		"message": "Désolé, ce fournisseur n'est plus pris en charge. Nous avons constaté que très peu d'utilisateurs de Roo l'utilisaient réellement et nous devons réduire la portée de notre code pour continuer à avancer rapidement et bien servir notre communauté. C'était une décision vraiment difficile, mais elle nous permet de nous concentrer sur ce qui compte le plus pour toi. C'est rageant, on le sait.",
+		"openSettings": "Ouvrir les paramètres"
 	}
 }

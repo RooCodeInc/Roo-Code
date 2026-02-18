@@ -28,7 +28,7 @@ export class DeepSeekHandler extends OpenAiHandler {
 			...options,
 			openAiApiKey: options.deepSeekApiKey ?? "not-provided",
 			openAiModelId: options.apiModelId ?? deepSeekDefaultModelId,
-			openAiBaseUrl: options.deepSeekBaseUrl ?? "https://api.deepseek.com",
+			openAiBaseUrl: options.deepSeekBaseUrl || "https://api.deepseek.com",
 			openAiStreamingEnabled: true,
 			includeMaxTokens: true,
 		})
@@ -37,7 +37,13 @@ export class DeepSeekHandler extends OpenAiHandler {
 	override getModel() {
 		const id = this.options.apiModelId ?? deepSeekDefaultModelId
 		const info = deepSeekModels[id as keyof typeof deepSeekModels] || deepSeekModels[deepSeekDefaultModelId]
-		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
+		const params = getModelParams({
+			format: "openai",
+			modelId: id,
+			model: info,
+			settings: this.options,
+			defaultTemperature: DEEP_SEEK_DEFAULT_TEMPERATURE,
+		})
 		return { id, info, ...params }
 	}
 

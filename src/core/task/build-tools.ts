@@ -22,9 +22,7 @@ interface BuildToolsOptions {
 	customModes: ModeConfig[] | undefined
 	experiments: Record<string, boolean> | undefined
 	apiConfiguration: ProviderSettings | undefined
-	maxReadFileLine: number
-	maxConcurrentFileReads: number
-	browserToolEnabled: boolean
+	disabledTools?: string[]
 	modelInfo?: ModelInfo
 	/**
 	 * If true, returns all tools without mode filtering, but also includes
@@ -89,9 +87,7 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 		customModes,
 		experiments,
 		apiConfiguration,
-		maxReadFileLine,
-		maxConcurrentFileReads,
-		browserToolEnabled,
+		disabledTools,
 		modelInfo,
 		includeAllToolsWithRestrictions,
 	} = options
@@ -105,20 +101,15 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 	// Build settings object for tool filtering.
 	const filterSettings = {
 		todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
-		browserToolEnabled: browserToolEnabled ?? true,
+		disabledTools,
 		modelInfo,
 	}
-
-	// Determine if partial reads are enabled based on maxReadFileLine setting.
-	const partialReadsEnabled = maxReadFileLine !== -1
 
 	// Check if the model supports images for read_file tool description.
 	const supportsImages = modelInfo?.supportsImages ?? false
 
 	// Build native tools with dynamic read_file tool based on settings.
 	const nativeTools = getNativeTools({
-		partialReadsEnabled,
-		maxConcurrentFileReads,
 		supportsImages,
 	})
 

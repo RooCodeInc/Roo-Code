@@ -16,9 +16,10 @@ program
 	.option("--prompt-file <path>", "Read prompt from a file instead of command line argument")
 	.option("-w, --workspace <path>", "Workspace directory path (defaults to current working directory)")
 	.option("-p, --print", "Print response and exit (non-interactive mode)", false)
+	.option("--stdin-prompt-stream", "Read prompts from stdin (one prompt per line, requires --print)", false)
 	.option("-e, --extension <path>", "Path to the extension bundle directory")
 	.option("-d, --debug", "Enable debug output (includes detailed debug information)", false)
-	.option("-y, --yes, --dangerously-skip-permissions", "Auto-approve all prompts (use with caution)", false)
+	.option("-a, --require-approval", "Require manual approval for actions", false)
 	.option("-k, --api-key <key>", "API key for the LLM provider")
 	.option("--provider <provider>", "API provider (roo, anthropic, openai, openrouter, etc.)")
 	.option("-m, --model <model>", "Model to use", DEFAULT_FLAGS.model)
@@ -28,6 +29,7 @@ program
 		"Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh)",
 		DEFAULT_FLAGS.reasoningEffort,
 	)
+	.option("--exit-on-error", "Exit on API request errors instead of retrying", false)
 	.option("--ephemeral", "Run without persisting state (uses temporary storage)", false)
 	.option("--oneshot", "Exit upon task completion", false)
 	.option(

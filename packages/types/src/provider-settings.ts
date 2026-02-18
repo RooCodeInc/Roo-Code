@@ -6,14 +6,9 @@ import {
 	anthropicModels,
 	basetenModels,
 	bedrockModels,
-	cerebrasModels,
 	deepSeekModels,
-	doubaoModels,
-	featherlessModels,
 	fireworksModels,
 	geminiModels,
-	groqModels,
-	ioIntelligenceModels,
 	mistralModels,
 	moonshotModels,
 	openAiCodexModels,
@@ -39,18 +34,7 @@ export const DEFAULT_CONSECUTIVE_MISTAKE_LIMIT = 3
  * Dynamic provider requires external API calls in order to get the model list.
  */
 
-export const dynamicProviders = [
-	"openrouter",
-	"vercel-ai-gateway",
-	"huggingface",
-	"litellm",
-	"deepinfra",
-	"io-intelligence",
-	"requesty",
-	"unbound",
-	"roo",
-	"chutes",
-] as const
+export const dynamicProviders = ["openrouter", "vercel-ai-gateway", "litellm", "requesty", "roo"] as const
 
 export type DynamicProvider = (typeof dynamicProviders)[number]
 
@@ -121,14 +105,10 @@ export const providerNames = [
 	"anthropic",
 	"bedrock",
 	"baseten",
-	"cerebras",
-	"doubao",
 	"deepseek",
-	"featherless",
 	"fireworks",
 	"gemini",
 	"gemini-cli",
-	"groq",
 	"mistral",
 	"moonshot",
 	"minimax",
@@ -150,13 +130,40 @@ export const isProviderName = (key: unknown): key is ProviderName =>
 	typeof key === "string" && providerNames.includes(key as ProviderName)
 
 /**
+ * RetiredProviderName
+ */
+
+export const retiredProviderNames = [
+	"cerebras",
+	"chutes",
+	"deepinfra",
+	"doubao",
+	"featherless",
+	"groq",
+	"huggingface",
+	"io-intelligence",
+	"unbound",
+] as const
+
+export const retiredProviderNamesSchema = z.enum(retiredProviderNames)
+
+export type RetiredProviderName = z.infer<typeof retiredProviderNamesSchema>
+
+export const isRetiredProvider = (value: string): value is RetiredProviderName =>
+	retiredProviderNames.includes(value as RetiredProviderName)
+
+export const providerNamesWithRetiredSchema = z.union([providerNamesSchema, retiredProviderNamesSchema])
+
+export type ProviderNameWithRetired = z.infer<typeof providerNamesWithRetiredSchema>
+
+/**
  * ProviderSettingsEntry
  */
 
 export const providerSettingsEntrySchema = z.object({
 	id: z.string(),
 	name: z.string(),
-	apiProvider: providerNamesSchema.optional(),
+	apiProvider: providerNamesWithRetiredSchema.optional(),
 	modelId: z.string().optional(),
 })
 
@@ -227,8 +234,6 @@ const vertexSchema = apiModelIdProviderModelSchema.extend({
 	vertexJsonCredentials: z.string().optional(),
 	vertexProjectId: z.string().optional(),
 	vertexRegion: z.string().optional(),
-	enableUrlContext: z.boolean().optional(),
-	enableGrounding: z.boolean().optional(),
 	vertex1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window.
 })
 
@@ -273,8 +278,6 @@ const lmStudioSchema = baseProviderSettingsSchema.extend({
 const geminiSchema = apiModelIdProviderModelSchema.extend({
 	geminiApiKey: z.string().optional(),
 	googleGeminiBaseUrl: z.string().optional(),
-	enableUrlContext: z.boolean().optional(),
-	enableGrounding: z.boolean().optional(),
 })
 
 const geminiCliSchema = apiModelIdProviderModelSchema.extend({
@@ -304,17 +307,6 @@ const deepSeekSchema = apiModelIdProviderModelSchema.extend({
 	deepSeekApiKey: z.string().optional(),
 })
 
-const deepInfraSchema = apiModelIdProviderModelSchema.extend({
-	deepInfraBaseUrl: z.string().optional(),
-	deepInfraApiKey: z.string().optional(),
-	deepInfraModelId: z.string().optional(),
-})
-
-const doubaoSchema = apiModelIdProviderModelSchema.extend({
-	doubaoBaseUrl: z.string().optional(),
-	doubaoApiKey: z.string().optional(),
-})
-
 const moonshotSchema = apiModelIdProviderModelSchema.extend({
 	moonshotBaseUrl: z
 		.union([z.literal("https://api.moonshot.ai/v1"), z.literal("https://api.moonshot.cn/v1")])
@@ -327,11 +319,6 @@ const minimaxSchema = apiModelIdProviderModelSchema.extend({
 		.union([z.literal("https://api.minimax.io/v1"), z.literal("https://api.minimaxi.com/v1")])
 		.optional(),
 	minimaxApiKey: z.string().optional(),
-})
-
-const unboundSchema = baseProviderSettingsSchema.extend({
-	unboundApiKey: z.string().optional(),
-	unboundModelId: z.string().optional(),
 })
 
 const requestySchema = baseProviderSettingsSchema.extend({
@@ -348,29 +335,11 @@ const xaiSchema = apiModelIdProviderModelSchema.extend({
 	xaiApiKey: z.string().optional(),
 })
 
-const groqSchema = apiModelIdProviderModelSchema.extend({
-	groqApiKey: z.string().optional(),
-})
-
-const huggingFaceSchema = baseProviderSettingsSchema.extend({
-	huggingFaceApiKey: z.string().optional(),
-	huggingFaceModelId: z.string().optional(),
-	huggingFaceInferenceProvider: z.string().optional(),
-})
-
-const chutesSchema = apiModelIdProviderModelSchema.extend({
-	chutesApiKey: z.string().optional(),
-})
-
 const litellmSchema = baseProviderSettingsSchema.extend({
 	litellmBaseUrl: z.string().optional(),
 	litellmApiKey: z.string().optional(),
 	litellmModelId: z.string().optional(),
 	litellmUsePromptCache: z.boolean().optional(),
-})
-
-const cerebrasSchema = apiModelIdProviderModelSchema.extend({
-	cerebrasApiKey: z.string().optional(),
 })
 
 const sambaNovaSchema = apiModelIdProviderModelSchema.extend({
@@ -388,15 +357,6 @@ const zaiSchema = apiModelIdProviderModelSchema.extend({
 
 const fireworksSchema = apiModelIdProviderModelSchema.extend({
 	fireworksApiKey: z.string().optional(),
-})
-
-const featherlessSchema = apiModelIdProviderModelSchema.extend({
-	featherlessApiKey: z.string().optional(),
-})
-
-const ioIntelligenceSchema = apiModelIdProviderModelSchema.extend({
-	ioIntelligenceModelId: z.string().optional(),
-	ioIntelligenceApiKey: z.string().optional(),
 })
 
 const qwenCodeSchema = apiModelIdProviderModelSchema.extend({
@@ -436,25 +396,16 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	openAiNativeSchema.merge(z.object({ apiProvider: z.literal("openai-native") })),
 	mistralSchema.merge(z.object({ apiProvider: z.literal("mistral") })),
 	deepSeekSchema.merge(z.object({ apiProvider: z.literal("deepseek") })),
-	deepInfraSchema.merge(z.object({ apiProvider: z.literal("deepinfra") })),
-	doubaoSchema.merge(z.object({ apiProvider: z.literal("doubao") })),
 	moonshotSchema.merge(z.object({ apiProvider: z.literal("moonshot") })),
 	minimaxSchema.merge(z.object({ apiProvider: z.literal("minimax") })),
-	unboundSchema.merge(z.object({ apiProvider: z.literal("unbound") })),
 	requestySchema.merge(z.object({ apiProvider: z.literal("requesty") })),
 	fakeAiSchema.merge(z.object({ apiProvider: z.literal("fake-ai") })),
 	xaiSchema.merge(z.object({ apiProvider: z.literal("xai") })),
-	groqSchema.merge(z.object({ apiProvider: z.literal("groq") })),
 	basetenSchema.merge(z.object({ apiProvider: z.literal("baseten") })),
-	huggingFaceSchema.merge(z.object({ apiProvider: z.literal("huggingface") })),
-	chutesSchema.merge(z.object({ apiProvider: z.literal("chutes") })),
 	litellmSchema.merge(z.object({ apiProvider: z.literal("litellm") })),
-	cerebrasSchema.merge(z.object({ apiProvider: z.literal("cerebras") })),
 	sambaNovaSchema.merge(z.object({ apiProvider: z.literal("sambanova") })),
 	zaiSchema.merge(z.object({ apiProvider: z.literal("zai") })),
 	fireworksSchema.merge(z.object({ apiProvider: z.literal("fireworks") })),
-	featherlessSchema.merge(z.object({ apiProvider: z.literal("featherless") })),
-	ioIntelligenceSchema.merge(z.object({ apiProvider: z.literal("io-intelligence") })),
 	qwenCodeSchema.merge(z.object({ apiProvider: z.literal("qwen-code") })),
 	rooSchema.merge(z.object({ apiProvider: z.literal("roo") })),
 	vercelAiGatewaySchema.merge(z.object({ apiProvider: z.literal("vercel-ai-gateway") })),
@@ -462,7 +413,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 ])
 
 export const providerSettingsSchema = z.object({
-	apiProvider: providerNamesSchema.optional(),
+	apiProvider: providerNamesWithRetiredSchema.optional(),
 	...anthropicSchema.shape,
 	...openRouterSchema.shape,
 	...bedrockSchema.shape,
@@ -477,25 +428,16 @@ export const providerSettingsSchema = z.object({
 	...openAiNativeSchema.shape,
 	...mistralSchema.shape,
 	...deepSeekSchema.shape,
-	...deepInfraSchema.shape,
-	...doubaoSchema.shape,
 	...moonshotSchema.shape,
 	...minimaxSchema.shape,
-	...unboundSchema.shape,
 	...requestySchema.shape,
 	...fakeAiSchema.shape,
 	...xaiSchema.shape,
-	...groqSchema.shape,
 	...basetenSchema.shape,
-	...huggingFaceSchema.shape,
-	...chutesSchema.shape,
 	...litellmSchema.shape,
-	...cerebrasSchema.shape,
 	...sambaNovaSchema.shape,
 	...zaiSchema.shape,
 	...fireworksSchema.shape,
-	...featherlessSchema.shape,
-	...ioIntelligenceSchema.shape,
 	...qwenCodeSchema.shape,
 	...rooSchema.shape,
 	...vercelAiGatewaySchema.shape,
@@ -525,13 +467,9 @@ export const modelIdKeys = [
 	"ollamaModelId",
 	"lmStudioModelId",
 	"lmStudioDraftModelId",
-	"unboundModelId",
 	"requestyModelId",
 	"litellmModelId",
-	"huggingFaceModelId",
-	"ioIntelligenceModelId",
 	"vercelAiGatewayModelId",
-	"deepInfraModelId",
 ] as const satisfies readonly (keyof ProviderSettings)[]
 
 export type ModelIdKey = (typeof modelIdKeys)[number]
@@ -565,23 +503,14 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	moonshot: "apiModelId",
 	minimax: "apiModelId",
 	deepseek: "apiModelId",
-	deepinfra: "deepInfraModelId",
-	doubao: "apiModelId",
 	"qwen-code": "apiModelId",
-	unbound: "unboundModelId",
 	requesty: "requestyModelId",
 	xai: "apiModelId",
-	groq: "apiModelId",
 	baseten: "apiModelId",
-	chutes: "apiModelId",
 	litellm: "litellmModelId",
-	huggingface: "huggingFaceModelId",
-	cerebras: "apiModelId",
 	sambanova: "apiModelId",
 	zai: "apiModelId",
 	fireworks: "apiModelId",
-	featherless: "apiModelId",
-	"io-intelligence": "ioIntelligenceModelId",
 	roo: "apiModelId",
 	"vercel-ai-gateway": "vercelAiGatewayModelId",
 }
@@ -633,21 +562,10 @@ export const MODELS_BY_PROVIDER: Record<
 		label: "Amazon Bedrock",
 		models: Object.keys(bedrockModels),
 	},
-	cerebras: {
-		id: "cerebras",
-		label: "Cerebras",
-		models: Object.keys(cerebrasModels),
-	},
 	deepseek: {
 		id: "deepseek",
 		label: "DeepSeek",
 		models: Object.keys(deepSeekModels),
-	},
-	doubao: { id: "doubao", label: "Doubao", models: Object.keys(doubaoModels) },
-	featherless: {
-		id: "featherless",
-		label: "Featherless",
-		models: Object.keys(featherlessModels),
 	},
 	fireworks: {
 		id: "fireworks",
@@ -658,12 +576,6 @@ export const MODELS_BY_PROVIDER: Record<
 		id: "gemini",
 		label: "Google Gemini",
 		models: Object.keys(geminiModels),
-	},
-	groq: { id: "groq", label: "Groq", models: Object.keys(groqModels) },
-	"io-intelligence": {
-		id: "io-intelligence",
-		label: "IO Intelligence",
-		models: Object.keys(ioIntelligenceModels),
 	},
 	mistral: {
 		id: "mistral",
@@ -712,14 +624,10 @@ export const MODELS_BY_PROVIDER: Record<
 	baseten: { id: "baseten", label: "Baseten", models: Object.keys(basetenModels) },
 
 	// Dynamic providers; models pulled from remote APIs.
-	huggingface: { id: "huggingface", label: "Hugging Face", models: [] },
 	litellm: { id: "litellm", label: "LiteLLM", models: [] },
 	openrouter: { id: "openrouter", label: "OpenRouter", models: [] },
 	requesty: { id: "requesty", label: "Requesty", models: [] },
-	unbound: { id: "unbound", label: "Unbound", models: [] },
-	deepinfra: { id: "deepinfra", label: "DeepInfra", models: [] },
 	"vercel-ai-gateway": { id: "vercel-ai-gateway", label: "Vercel AI Gateway", models: [] },
-	chutes: { id: "chutes", label: "Chutes AI", models: [] },
 
 	// Local providers; models discovered from localhost endpoints.
 	lmstudio: { id: "lmstudio", label: "LM Studio", models: [] },

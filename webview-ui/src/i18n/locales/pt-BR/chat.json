@@ -111,6 +111,8 @@
 	},
 	"selectMode": "Selecionar modo de interação",
 	"selectApiConfig": "Selecionar configuração da API",
+	"lockApiConfigAcrossModes": "Bloquear configuração da API em todos os modos neste workspace",
+	"unlockApiConfigAcrossModes": "A configuração da API está bloqueada em todos os modos neste workspace (clique para desbloquear)",
 	"enhancePrompt": "Aprimorar prompt com contexto adicional",
 	"addImages": "Adicionar imagens à mensagem",
 	"sendMessage": "Enviar mensagem",
@@ -218,7 +220,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo quer visualizar os arquivos de nível superior neste diretório (fora do espaço de trabalho)",
 		"didViewTopLevelOutsideWorkspace": "Roo visualizou os arquivos de nível superior neste diretório (fora do espaço de trabalho)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo quer visualizar recursivamente todos os arquivos neste diretório (fora do espaço de trabalho)",
-		"didViewRecursiveOutsideWorkspace": "Roo visualizou recursivamente todos os arquivos neste diretório (fora do espaço de trabalho)"
+		"didViewRecursiveOutsideWorkspace": "Roo visualizou recursivamente todos os arquivos neste diretório (fora do espaço de trabalho)",
+		"wantsToViewMultipleDirectories": "Roo quer visualizar vários diretórios"
 	},
 	"commandOutput": "Saída do comando",
 	"commandExecution": {
@@ -344,7 +347,9 @@
 		},
 		"release": {
 			"heading": "Novidades:",
-			"smartCodeFolding": "Smart Code Folding: A condensação de contexto agora preserva um mapa leve de seus arquivos—assinaturas de função, declarações de classe e definições de tipo. Isso oferece melhor continuidade após condensação e edições mais inteligentes ao referenciar trabalho anterior."
+			"sonnet46": "Claude Sonnet 4.6: Suporte completo para o mais recente modelo Claude Sonnet 4.6 da Anthropic em todos os provedores — Anthropic, Bedrock, Vertex, OpenRouter e Vercel AI Gateway.",
+			"stabilityFixes": "Melhorias de estabilidade: Ciclo de vida de delegação reforçado contra condições de corrida, correção da preservação do histórico de chat durante navegação e retomada de tarefas, e resolução de problemas de ancoragem de rolagem para uma experiência mais suave.",
+			"lockedApiConfig": "Configuração de API bloqueada: Um novo botão de bloqueio permite fixar sua configuração de API em todos os modos de um workspace, para que trocar de modo não redefina mais suas configurações de provedor."
 		},
 		"cloudAgents": {
 			"heading": "Novidades na Nuvem:",
@@ -359,44 +364,6 @@
 		"total": "Custo Total: ${{cost}}",
 		"includesSubtasks": "Inclui custos de subtarefas"
 	},
-	"browser": {
-		"session": "Sessão do Navegador",
-		"active": "Ativo",
-		"rooWantsToUse": "Roo quer usar o navegador",
-		"consoleLogs": "Logs do console",
-		"noNewLogs": "(Sem novos logs)",
-		"screenshot": "Captura de tela do navegador",
-		"cursor": "cursor",
-		"navigation": {
-			"step": "Passo {{current}} de {{total}}",
-			"previous": "Anterior",
-			"next": "Próximo"
-		},
-		"sessionStarted": "Sessão do navegador iniciada",
-		"actions": {
-			"title": "Ação do navegador: ",
-			"launched": "Navegador iniciado",
-			"launch": "Iniciar navegador em {{url}}",
-			"clicked": "Clicado em: {{coordinate}}",
-			"click": "Clique ({{coordinate}})",
-			"typed": "Digitado: {{text}}",
-			"type": "Digitar \"{{text}}\"",
-			"pressed": "Pressionado: {{key}}",
-			"press": "Pressione {{key}}",
-			"scrolledDown": "Rolado para baixo",
-			"scrollDown": "Rolar para baixo",
-			"scrolledUp": "Rolado para cima",
-			"scrollUp": "Rolar para cima",
-			"hovered": "Pairado em: {{coordinate}}",
-			"hover": "Pairar ({{coordinate}})",
-			"resized": "Redimensionado para: {{size}}",
-			"resize": "Redimensionar para {{size}}",
-			"screenshotSaved": "Captura de tela salva",
-			"screenshot": "Salvar captura de tela em {{path}}",
-			"closed": "Navegador fechado",
-			"close": "Fechar navegador"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Expandir bloco de código",
@@ -404,7 +371,6 @@
 			"copy_code": "Copiar código"
 		}
 	},
-	"systemPromptWarning": "AVISO: Substituição personalizada de instrução do sistema ativa. Isso pode comprometer gravemente a funcionalidade e causar comportamento imprevisível.",
 	"profileViolationWarning": "O perfil atual não é compatível com as configurações da sua organização",
 	"shellIntegration": {
 		"title": "Aviso de execução de comando",
@@ -433,6 +399,22 @@
 	"read-batch": {
 		"approve": {
 			"title": "Aprovar tudo"
+		},
+		"deny": {
+			"title": "Negar tudo"
+		}
+	},
+	"list-batch": {
+		"approve": {
+			"title": "Aprovar tudo"
+		},
+		"deny": {
+			"title": "Negar tudo"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Salvar tudo"
 		},
 		"deny": {
 			"title": "Negar tudo"
@@ -511,5 +493,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Provedor não é mais suportado",
+		"message": "Desculpe, este provedor não é mais suportado. Percebemos que muito poucos usuários do Roo realmente o utilizavam e precisamos reduzir o escopo do nosso código para continuar entregando rápido e servindo bem nossa comunidade. Foi uma decisão muito difícil, mas nos permite focar no que mais importa para você. Sabemos que é chato.",
+		"openSettings": "Abrir configurações"
 	}
 }

@@ -16,6 +16,7 @@ import {
 	globalSettingsSchema,
 	isSecretStateKey,
 	isProviderName,
+	isRetiredProvider,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
@@ -223,14 +224,16 @@ export class ContextProxy {
 	}
 
 	/**
-	 * Migrates invalid/removed apiProvider values by clearing them from storage.
-	 * This handles cases where a user had a provider selected that was later removed
-	 * from the extension (e.g., "glama").
+	 * Migrates unknown apiProvider values by clearing them from storage.
+	 * Retired providers are preserved so users can keep historical configuration.
 	 */
 	private async migrateInvalidApiProvider() {
 		try {
 			const apiProvider = this.stateCache.apiProvider
-			if (apiProvider !== undefined && !isProviderName(apiProvider)) {
+			const isKnownProvider =
+				typeof apiProvider === "string" && (isProviderName(apiProvider) || isRetiredProvider(apiProvider))
+
+			if (apiProvider !== undefined && !isKnownProvider) {
 				logger.info(`[ContextProxy] Found invalid provider "${apiProvider}" in storage - clearing it`)
 				// Clear the invalid provider from both cache and storage
 				this.stateCache.apiProvider = undefined
@@ -439,8 +442,8 @@ export class ContextProxy {
 	}
 
 	/**
-	 * Sanitizes provider values by resetting invalid/removed apiProvider values.
-	 * This prevents schema validation errors for removed providers.
+	 * Sanitizes provider values by resetting unknown apiProvider values.
+	 * Active and retired providers are preserved.
 	 */
 	private sanitizeProviderValues(values: RooCodeSettings): RooCodeSettings {
 		// Remove legacy Claude Code CLI wrapper keys that may still exist in global state.
@@ -456,7 +459,11 @@ export class ContextProxy {
 			}
 		}
 
-		if (values.apiProvider !== undefined && !isProviderName(values.apiProvider)) {
+		const isKnownProvider =
+			typeof values.apiProvider === "string" &&
+			(isProviderName(values.apiProvider) || isRetiredProvider(values.apiProvider))
+
+		if (values.apiProvider !== undefined && !isKnownProvider) {
 			logger.info(`[ContextProxy] Sanitizing invalid provider "${values.apiProvider}" - resetting to undefined`)
 			// Return a new values object without the invalid apiProvider
 			const { apiProvider, ...restValues } = sanitizedValues
