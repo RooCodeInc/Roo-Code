@@ -56,8 +56,11 @@ Current intent scope: `src/hooks/`, `src/core/assistant-message/`
 
 1. Ask: "Create a file src/other/test.ts with export const test = true"
 2. Check console for: `[PreToolHook] File src/other/test.ts out of scope - blocking`
+3. Check console for: `[PreHook] Tool write_to_file blocked by pre-hook`
+4. Verify file is NOT created
+5. Verify agent receives error message about scope violation
 
-**Expected:** ✅ Hook blocks the write (if blocking is enabled)
+**Expected:** ✅ Hook blocks the write, file is not created, agent receives error feedback
 
 ---
 
@@ -228,8 +231,8 @@ OR (with active intent):
 
 ## Test Results Template
 
-**Date:** ******\_\_\_******
-**Tester:** ******\_\_\_******
+**Date:** **\*\***\_\_\_**\*\***
+**Tester:** **\*\***\_\_\_**\*\***
 
 ### Phase 1.1 Results
 
