@@ -335,7 +335,7 @@ export function WorkersContent({
 				costPerRun: m.costPerRun,
 				// numeric X for scatter: days since epoch
 				dateNum: date.getTime(),
-				dateLabel: date.toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+				dateLabel: date.toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" }),
 				// Dot size: inversely proportional to cost (cheaper = bigger dot)
 				dotSize: Math.round(60 + (1 - m.costPerRun / maxCost) * 340),
 			}
@@ -841,7 +841,9 @@ export function WorkersContent({
 															<p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
 																Signal
 															</p>
-															<p className="mt-1 text-sm font-semibold text-foreground tabular-nums">
+															<p
+																className="mt-1 text-sm font-semibold text-foreground tabular-nums"
+																suppressHydrationWarning>
 																{totalEvalRuns.toLocaleString()} runs
 															</p>
 														</div>
@@ -1047,6 +1049,7 @@ export function WorkersContent({
 												return d.toLocaleDateString("en-US", {
 													month: "short",
 													year: "2-digit",
+													timeZone: "UTC",
 												})
 											}}
 											stroke="hsl(var(--muted-foreground))"
@@ -1149,7 +1152,7 @@ export function WorkersContent({
 						<motion.div
 							className="mb-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground"
 							variants={fadeUpVariants}>
-							<span className="font-mono font-semibold text-foreground">
+							<span className="font-mono font-semibold text-foreground" suppressHydrationWarning>
 								{totalEvalRuns.toLocaleString()}+
 							</span>{" "}
 							eval runs
@@ -1157,12 +1160,13 @@ export function WorkersContent({
 							<span className="font-mono font-semibold text-foreground">5</span> languages
 							<span className="text-border">•</span>
 							Last updated:{" "}
-							<span className="font-medium text-foreground/80">
+							<span className="font-medium text-foreground/80" suppressHydrationWarning>
 								{lastUpdated
 									? new Date(lastUpdated).toLocaleDateString("en-US", {
 											year: "numeric",
 											month: "long",
 											day: "numeric",
+											timeZone: "UTC",
 										})
 									: "N/A"}
 							</span>

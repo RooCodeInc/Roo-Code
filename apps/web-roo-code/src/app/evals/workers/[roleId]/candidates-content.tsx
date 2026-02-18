@@ -750,7 +750,7 @@ export function CandidatesContent({
 							variants={fadeUpVariants}>
 							<span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
 								<FlaskConical className="size-4 text-foreground/60" />
-								<span className="font-mono font-semibold text-foreground">
+								<span className="font-mono font-semibold text-foreground" suppressHydrationWarning>
 									{totalEvalRuns.toLocaleString()}
 								</span>
 								eval runs
@@ -758,7 +758,7 @@ export function CandidatesContent({
 							<div className="hidden h-4 w-px bg-border sm:block" />
 							<span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
 								<BarChart3 className="size-4 text-foreground/60" />
-								<span className="font-mono font-semibold text-foreground">
+								<span className="font-mono font-semibold text-foreground" suppressHydrationWarning>
 									{totalExercises.toLocaleString()}
 								</span>
 								exercises
@@ -766,11 +766,12 @@ export function CandidatesContent({
 							<div className="hidden h-4 w-px bg-border sm:block" />
 							<span className="text-sm text-muted-foreground">
 								Updated{" "}
-								<span className="font-medium text-foreground/80">
+								<span className="font-medium text-foreground/80" suppressHydrationWarning>
 									{new Date(lastUpdated).toLocaleDateString("en-US", {
 										month: "short",
 										day: "numeric",
 										year: "numeric",
+										timeZone: "UTC",
 									})}
 								</span>
 							</span>
