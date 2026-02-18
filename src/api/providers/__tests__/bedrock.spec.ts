@@ -703,7 +703,7 @@ describe("AwsBedrockHandler", () => {
 
 		it("should apply 1M tier pricing when awsBedrock1MContext is true for Claude Sonnet 4.6", () => {
 			const handler = new AwsBedrockHandler({
-				apiModelId: "anthropic.claude-sonnet-4-6-20260114-v1:0",
+				apiModelId: "anthropic.claude-sonnet-4-6",
 				awsAccessKey: "test",
 				awsSecretKey: "test",
 				awsRegion: "us-east-1",
