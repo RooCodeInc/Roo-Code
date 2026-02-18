@@ -2,8 +2,50 @@
 
 **Feature Branch**: `001-intent-hook-middleware`  
 **Created**: 2026-02-16  
-**Status**: Draft  
+**Updated**: 2026-02-16  
+**Status**: Partially Implemented  
 **Input**: User description: "I want to implement an Intent-Governed Hook Middleware for the VS Code extension. The system must: Enforce selection of an active intent before destructive tool calls. Validate file writes against owned_scope in active_intents.yaml. Log all write operations to .orchestration/agent_trace.jsonl. Compute SHA256 content hashes for spatial independence. Implement optimistic locking to prevent stale writes. Inject intent context dynamically into the system prompt. The solution must follow a middleware/interceptor architecture and isolate hooks inside src/hooks/."
+
+## Implementation Status
+
+### ✅ Completed Features
+
+- **User Story 1 - Intent Selection Before Destructive Operations (P1)**: ✅ COMPLETE
+
+    - `select_active_intent` tool implemented and registered
+    - PreToolHook validates active intent before destructive operations
+    - Task.activeIntentId property added for intent tracking
+    - Intent selection blocks write_to_file and execute_command without active intent
+
+- **User Story 2 - Scope Validation for File Operations (P1)**: ✅ COMPLETE
+
+    - ScopeValidator class implemented with glob pattern matching
+    - PreToolHook validates file paths against intent's ownedScope
+    - Clear error messages for scope violations
+
+- **User Story 6 - Dynamic Intent Context Injection (P2)**: ✅ COMPLETE
+    - Intent context injection implemented in system prompt
+    - `getIntentGovernanceSection` dynamically loads and formats intent context
+    - System prompt includes active intent information when available
+
+### 🚧 Remaining Features
+
+- **User Story 3 - Traceability Logging for All Write Operations (P2)**: ❌ NOT STARTED
+
+    - TraceManager class needs to be implemented
+    - PostToolHook needs to be created to log operations after execution
+    - agent_trace.jsonl logging infrastructure required
+
+- **User Story 4 - Content Hashing for Spatial Independence (P2)**: ❌ NOT STARTED
+
+    - SHA256 content hash computation needs to be added to TraceManager
+    - Content hash must be computed for every file write operation
+    - Hash computation performance validation required (<50ms for files up to 1MB)
+
+- **User Story 5 - Optimistic Locking to Prevent Stale Writes (P3)**: ❌ NOT STARTED
+    - OptimisticLockManager class needs to be implemented
+    - File state lock creation and validation required
+    - Conflict detection and error handling needed
 
 ## Clarifications
 
@@ -130,24 +172,29 @@ A developer wants the AI assistant to have awareness of the active intent's cont
 
 ### Functional Requirements
 
-- **FR-001**: System MUST require selection of an active intent before allowing any file write operations
-- **FR-001a**: System MUST provide a `select_active_intent` tool that accepts an intent ID parameter to set the active intent
-- **FR-001b**: System MUST allow only one active intent at a time; selecting a new intent MUST replace the previous active intent
-- **FR-001c**: System MUST defer intent changes during ongoing tool execution; the new intent applies to the next tool execution while the current operation completes with the original intent
-- **FR-002**: System MUST require selection of an active intent before allowing any command execution operations that modify system state
-- **FR-003**: System MUST validate file write paths against the active intent's owned_scope patterns using glob-style matching (with `*` and `**` wildcards) before allowing the operation
-- **FR-004**: System MUST block file write operations when the target path does not match any owned_scope pattern in the active intent
-- **FR-005**: System MUST log all successful file write operations to the agent trace log file
-- **FR-006**: System MUST compute SHA256 content hash for every file write operation
-- **FR-007**: System MUST include intent_id, content_hash, file_path, mutation_class, and timestamp in each trace log entry
-- **FR-008**: System MUST append trace log entries to the agent_trace.jsonl file without overwriting existing entries
-- **FR-009**: System MUST implement optimistic locking to detect file state conflicts before write operations using SHA256 content hash comparison
-- **FR-010**: System MUST reject write operations when optimistic locking detects a content hash mismatch between expected and actual file state
-- **FR-011**: System MUST inject active intent context into the system prompt when an intent is selected
-- **FR-012**: System MUST update intent context in the system prompt dynamically when the active intent changes
-- **FR-013**: System MUST isolate hook middleware components in a dedicated hooks directory structure
-- **FR-014**: System MUST provide clear error messages when operations are blocked due to missing intent or scope validation failures
-- **FR-015**: System MUST handle missing or malformed intent configuration files gracefully with appropriate error messages
+#### ✅ Implemented Requirements
+
+- **FR-001**: System MUST require selection of an active intent before allowing any file write operations ✅ **IMPLEMENTED**
+- **FR-001a**: System MUST provide a `select_active_intent` tool that accepts an intent ID parameter to set the active intent ✅ **IMPLEMENTED**
+- **FR-001b**: System MUST allow only one active intent at a time; selecting a new intent MUST replace the previous active intent ✅ **IMPLEMENTED**
+- **FR-001c**: System MUST defer intent changes during ongoing tool execution; the new intent applies to the next tool execution while the current operation completes with the original intent ✅ **IMPLEMENTED**
+- **FR-002**: System MUST require selection of an active intent before allowing any command execution operations that modify system state ✅ **IMPLEMENTED**
+- **FR-003**: System MUST validate file write paths against the active intent's owned_scope patterns using glob-style matching (with `*` and `**` wildcards) before allowing the operation ✅ **IMPLEMENTED**
+- **FR-004**: System MUST block file write operations when the target path does not match any owned_scope pattern in the active intent ✅ **IMPLEMENTED**
+- **FR-011**: System MUST inject active intent context into the system prompt when an intent is selected ✅ **IMPLEMENTED**
+- **FR-012**: System MUST update intent context in the system prompt dynamically when the active intent changes ✅ **IMPLEMENTED**
+- **FR-013**: System MUST isolate hook middleware components in a dedicated hooks directory structure ✅ **IMPLEMENTED**
+- **FR-014**: System MUST provide clear error messages when operations are blocked due to missing intent or scope validation failures ✅ **IMPLEMENTED**
+- **FR-015**: System MUST handle missing or malformed intent configuration files gracefully with appropriate error messages ✅ **IMPLEMENTED**
+
+#### 🚧 Pending Requirements
+
+- **FR-005**: System MUST log all successful file write operations to the agent trace log file ❌ **NOT IMPLEMENTED**
+- **FR-006**: System MUST compute SHA256 content hash for every file write operation ❌ **NOT IMPLEMENTED**
+- **FR-007**: System MUST include intent_id, content_hash, file_path, mutation_class, and timestamp in each trace log entry ❌ **NOT IMPLEMENTED**
+- **FR-008**: System MUST append trace log entries to the agent_trace.jsonl file without overwriting existing entries ❌ **NOT IMPLEMENTED**
+- **FR-009**: System MUST implement optimistic locking to detect file state conflicts before write operations using SHA256 content hash comparison ❌ **NOT IMPLEMENTED**
+- **FR-010**: System MUST reject write operations when optimistic locking detects a content hash mismatch between expected and actual file state ❌ **NOT IMPLEMENTED**
 
 ### Key Entities _(include if feature involves data)_
 
@@ -167,16 +214,21 @@ A developer wants the AI assistant to have awareness of the active intent's cont
 
 ### Measurable Outcomes
 
-- **SC-001**: 100% of file write operations are blocked when no active intent is selected, with clear error messages provided to users
-- **SC-002**: 100% of file write operations are validated against active intent scope patterns before execution
-- **SC-003**: 100% of successful file write operations are logged to the trace file with complete metadata (intent_id, content_hash, file_path, mutation_class, timestamp)
-- **SC-004**: Content hash computation completes for file write operations within 50 milliseconds for files up to 1MB in size
-- **SC-005**: Optimistic locking detects and prevents 100% of stale write conflicts when file state changes between operation initiation and execution
-- **SC-006**: Intent context is injected into system prompts within 100 milliseconds of intent selection
-- **SC-007**: System prompt updates with new intent context within 200 milliseconds when active intent changes during an active session
-- **SC-008**: Scope validation completes for file path checks within 10 milliseconds per validation
-- **SC-009**: Trace log entries are appended successfully 99.9% of the time (accounting for file system errors)
-- **SC-010**: Users receive clear, actionable error messages within 500 milliseconds when operations are blocked due to validation failures
+#### ✅ Achieved Success Criteria
+
+- **SC-001**: 100% of file write operations are blocked when no active intent is selected, with clear error messages provided to users ✅ **ACHIEVED**
+- **SC-002**: 100% of file write operations are validated against active intent scope patterns before execution ✅ **ACHIEVED**
+- **SC-006**: Intent context is injected into system prompts within 100 milliseconds of intent selection ✅ **ACHIEVED**
+- **SC-007**: System prompt updates with new intent context within 200 milliseconds when active intent changes during an active session ✅ **ACHIEVED**
+- **SC-008**: Scope validation completes for file path checks within 10 milliseconds per validation ✅ **ACHIEVED**
+- **SC-010**: Users receive clear, actionable error messages within 500 milliseconds when operations are blocked due to validation failures ✅ **ACHIEVED**
+
+#### 🚧 Pending Success Criteria
+
+- **SC-003**: 100% of successful file write operations are logged to the trace file with complete metadata (intent_id, content_hash, file_path, mutation_class, timestamp) ❌ **PENDING**
+- **SC-004**: Content hash computation completes for file write operations within 50 milliseconds for files up to 1MB in size ❌ **PENDING**
+- **SC-005**: Optimistic locking detects and prevents 100% of stale write conflicts when file state changes between operation initiation and execution ❌ **PENDING**
+- **SC-009**: Trace log entries are appended successfully 99.9% of the time (accounting for file system errors) ❌ **PENDING**
 
 ## Assumptions
 
