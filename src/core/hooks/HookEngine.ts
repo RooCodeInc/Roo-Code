@@ -1,5 +1,6 @@
 import { Task } from "../task/Task"
-import type { ToolUse, ToolName } from "../../shared/tools"
+import type { ToolUse } from "../../shared/tools"
+import type { ToolName } from "@roo-code/types"
 import { OrchestrationDataModel, type ActiveIntent } from "../orchestration/OrchestrationDataModel"
 import * as vscode from "vscode"
 import * as path from "path"
@@ -111,8 +112,9 @@ export class HookEngine {
 
 			// Load intent details (for authorization prompt + scope checks)
 			if (!activeIntent) {
-				activeIntent = await this.dataModel.getIntent(activeIntentId)
-				if (activeIntent) {
+				const loadedIntent = await this.dataModel.getIntent(activeIntentId)
+				if (loadedIntent) {
+					activeIntent = loadedIntent
 					;(task as any).activeIntent = activeIntent
 				}
 			}

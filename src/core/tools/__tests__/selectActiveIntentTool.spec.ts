@@ -111,22 +111,11 @@ describe("SelectActiveIntentTool - Phase 1 End-to-End Test", () => {
 			)
 
 			// Execute: Call select_active_intent
-			const toolUse: ToolUse<"select_active_intent"> = {
-				type: "tool_use",
-				id: "tool-1",
-				name: "select_active_intent",
-				params: { intent_id: "INT-001" },
-			}
-
-			await selectActiveIntentTool.execute(
-				{ intent_id: "INT-001" },
-				mockTask,
-				{
-					askApproval: vi.fn(),
-					handleError: mockHandleError,
-					pushToolResult: mockPushToolResult,
-				},
-			)
+			await selectActiveIntentTool.execute({ intent_id: "INT-001" }, mockTask, {
+				askApproval: vi.fn(),
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+			})
 
 			// Verify: pushToolResult was called with XML context
 			expect(mockPushToolResult).toHaveBeenCalledTimes(1)
@@ -178,15 +167,11 @@ describe("SelectActiveIntentTool - Phase 1 End-to-End Test", () => {
 			await fs.writeFile(tracePath, "", "utf-8")
 
 			// Execute
-			await selectActiveIntentTool.execute(
-				{ intent_id: "INT-002" },
-				mockTask,
-				{
-					askApproval: vi.fn(),
-					handleError: mockHandleError,
-					pushToolResult: mockPushToolResult,
-				},
-			)
+			await selectActiveIntentTool.execute({ intent_id: "INT-002" }, mockTask, {
+				askApproval: vi.fn(),
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+			})
 
 			// Verify: XML contains "No recent changes" message
 			const contextXml = mockPushToolResult.mock.calls[0][0]
@@ -261,15 +246,11 @@ describe("SelectActiveIntentTool - Phase 1 End-to-End Test", () => {
 			)
 
 			// Execute: Select INT-001
-			await selectActiveIntentTool.execute(
-				{ intent_id: "INT-001" },
-				mockTask,
-				{
-					askApproval: vi.fn(),
-					handleError: mockHandleError,
-					pushToolResult: mockPushToolResult,
-				},
-			)
+			await selectActiveIntentTool.execute({ intent_id: "INT-001" }, mockTask, {
+				askApproval: vi.fn(),
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+			})
 
 			// Verify: Only INT-001 trace entry is included
 			const contextXml = mockPushToolResult.mock.calls[0][0]
@@ -285,15 +266,11 @@ describe("SelectActiveIntentTool - Phase 1 End-to-End Test", () => {
 			await fs.writeFile(intentsPath, intentsYaml, "utf-8")
 
 			// Execute
-			await selectActiveIntentTool.execute(
-				{ intent_id: "INT-999" },
-				mockTask,
-				{
-					askApproval: vi.fn(),
-					handleError: mockHandleError,
-					pushToolResult: mockPushToolResult,
-				},
-			)
+			await selectActiveIntentTool.execute({ intent_id: "INT-999" }, mockTask, {
+				askApproval: vi.fn(),
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+			})
 
 			// Verify: Error was returned
 			expect(mockPushToolResult).toHaveBeenCalled()
@@ -304,15 +281,11 @@ describe("SelectActiveIntentTool - Phase 1 End-to-End Test", () => {
 
 		it("should handle missing intent_id parameter", async () => {
 			// Execute without intent_id
-			await selectActiveIntentTool.execute(
-				{ intent_id: "" },
-				mockTask,
-				{
-					askApproval: vi.fn(),
-					handleError: mockHandleError,
-					pushToolResult: mockPushToolResult,
-				},
-			)
+			await selectActiveIntentTool.execute({ intent_id: "" }, mockTask, {
+				askApproval: vi.fn(),
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+			})
 
 			// Verify: Missing parameter error
 			expect(mockSayAndCreateMissingParamError).toHaveBeenCalledWith("select_active_intent", "intent_id")
@@ -320,4 +293,3 @@ describe("SelectActiveIntentTool - Phase 1 End-to-End Test", () => {
 		})
 	})
 })
-
