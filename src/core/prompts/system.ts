@@ -23,6 +23,7 @@ import {
 	addCustomInstructions,
 	markdownFormattingSection,
 	getSkillsSection,
+	getIntentProtocolSection,
 } from "./sections"
 
 // Helper function to get prompt component, filtering out empty objects
@@ -85,6 +86,8 @@ async function generatePrompt(
 	const basePrompt = `${roleDefinition}
 
 ${markdownFormattingSection()}
+
+${getIntentProtocolSection()}
 
 ${getSharedToolUseSection()}${toolsCatalog}
 
