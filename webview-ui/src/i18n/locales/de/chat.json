@@ -347,7 +347,9 @@
 		},
 		"release": {
 			"heading": "Was ist neu:",
-			"smartCodeFolding": "Intelligentes Code-Folding: Kontextkomprimierung bewahrt jetzt eine leichte Karte deiner Dateien—Funktionssignaturen, Klassendeklarationen und Typdefinitionen. Dies ermöglicht bessere Kontinuität nach der Komprimierung und intelligentere Bearbeitungen beim Verweisen auf vorherige Arbeiten."
+			"sonnet46": "Claude Sonnet 4.6: Volle Unterstützung für Anthropics neuestes Claude Sonnet 4.6 Modell bei allen Anbietern — Anthropic, Bedrock, Vertex, OpenRouter und Vercel AI Gateway.",
+			"stabilityFixes": "Stabilitätsverbesserungen: Delegierungs-Lebenszyklus gegen Race Conditions gehärtet, Erhaltung des Chat-Verlaufs bei Navigation und Aufgabenwiederaufnahme behoben und Scroll-Verankerungsprobleme für ein flüssigeres Erlebnis gelöst.",
+			"lockedApiConfig": "Gesperrte API-Konfiguration: Ein neuer Sperr-Schalter ermöglicht es dir, deine API-Konfiguration über alle Modi in einem Workspace zu fixieren, sodass ein Moduswechsel deine Anbietereinstellungen nicht mehr zurücksetzt."
 		},
 		"cloudAgents": {
 			"heading": "Neu in der Cloud:",

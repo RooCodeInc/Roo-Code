@@ -26,6 +26,7 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 	const supports1MContextBeta =
 		selectedModel?.id === "claude-sonnet-4-20250514" ||
 		selectedModel?.id === "claude-sonnet-4-5" ||
+		selectedModel?.id === "claude-sonnet-4-6" ||
 		selectedModel?.id === "claude-opus-4-6"
 
 	const handleInputChange = useCallback(
