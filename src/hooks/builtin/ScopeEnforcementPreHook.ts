@@ -1,7 +1,7 @@
 import * as fs from "fs"
 import * as path from "path"
 
-import * as yaml from "js-yaml"
+import { parse as parseYaml } from "yaml"
 
 import { HookContext, HookDecision, PreToolHook } from "../types"
 
@@ -60,7 +60,7 @@ export class ScopeEnforcementPreHook implements PreToolHook {
 		let intentsFile: IntentsFile
 		try {
 			const raw = await fs.promises.readFile(intentsPath, "utf-8")
-			intentsFile = yaml.load(raw) as IntentsFile
+			intentsFile = parseYaml(raw) as IntentsFile
 		} catch {
 			// No sidecar file — allow without scope check.
 			return { allow: true }
