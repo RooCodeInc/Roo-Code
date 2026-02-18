@@ -20,7 +20,7 @@ export class PreToolHook {
 				return { blocked: false }
 			}
 
-			const filePath = context.params.path || context.params.file_path
+			const filePath = context.params?.path || context.params?.file_path
 			if (filePath && !intentManager.isFileInScope(filePath, activeIntent)) {
 				console.log(`[PreToolHook] File ${filePath} out of scope - blocking`)
 				return { blocked: true }

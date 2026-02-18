@@ -9,7 +9,7 @@ export class PostToolHook {
 			const workspacePath = context.task.cwd
 			const logger = new TraceLogger(workspacePath)
 
-			const filePath = context.params.path || context.params.file_path
+			const filePath = context.params?.path || context.params?.file_path
 			await logger.log({
 				toolName: context.toolName,
 				filePath,
