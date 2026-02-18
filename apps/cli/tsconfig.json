@@ -10,6 +10,7 @@
 			// "@/*": ["src/*"]
 			"*": ["./*"]
 		}
+		// Ensure 'baseUrl' is not set here; if present in '@roo-code/config-typescript/base.json', remove or migrate it there.
 	},
 	"include": ["src", "*.config.ts"],
 	"exclude": ["node_modules"]
