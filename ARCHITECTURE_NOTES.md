@@ -1,65 +1,63 @@
 # ARCHITECTURE_NOTES.md
-## TRP1 Challenge Week 1
-### Architecting the AI-Native IDE & Intent-Code Traceability
+## TRP1 Challenge – Architecting the AI-Native IDE & Intent-Code Traceability
 
-Author: Addisu Taye 
-Role: Forward Deployed Engineer (FDE)  
+Author: Addisu Taye
 Target Extension: Roo Code (Forked)  
-Submission: Interim (Wednesday 21hr UTC)
+Submission Phase: Interim (Week 1)
 
 ---
 
-# 1. Executive Summary
+# 1. Executive Overview
 
 This document describes the architectural upgrade of Roo Code into a Governed AI-Native IDE.
 
 Traditional Git tracks:
+
 - What changed
 - When it changed
 
 It does NOT track:
+
 - Why it changed (Intent)
-- Whether the change preserves semantics (AST refactor vs feature evolution)
+- Whether the change preserved semantics
+- Which agent performed the mutation
+- Whether architectural constraints were respected
 
-This creates:
-- Cognitive Debt
-- Trust Debt
-- Context Rot
-- Vibe Coding
-
-We introduce:
+This project introduces:
 
 - Deterministic Hook Middleware
-- Intent-Code Traceability
-- AI-Native Git (Semantic Ledger)
-- Context Injection Protocol
-- Parallel Agent Orchestration Support
+- Intent-First Execution Protocol
+- AI-Native Git Semantic Ledger
+- Scope Enforcement
+- Concurrency Control
+- Living Documentation
 
-This transforms the IDE into a Governed Execution Environment.
+The goal is to replace blind trust with deterministic verification.
 
 ---
 
-# 2. Baseline Roo Code Architecture (Phase 0 – Archaeological Dig)
+# 2. Baseline Roo Code Architecture (Archaeological Dig)
 
-## 2.1 Observed Execution Flow
+## Existing Execution Flow
 
+User Prompt
+   ↓
 Webview (UI)
-    ↓ postMessage
+   ↓ postMessage
 Extension Host
-    ↓
+   ↓
 Agent Loop
-    ↓
+   ↓
 Tool Dispatcher (write_file, execute_command, etc.)
-    ↓
+   ↓
 Filesystem / Terminal
 
-### Findings
+### Observations
 
-1. Prompt construction happens in the Extension Host.
-2. Tool execution is centrally dispatched.
-3. No semantic trace exists.
-4. No intent enforcement layer.
-5. No governance middleware boundary.
+- No middleware governance layer
+- No semantic mutation tracking
+- No intent declaration requirement
+- No concurrency safeguards
 
 The system is linear and text-diff driven.
 
@@ -67,118 +65,132 @@ The system is linear and text-diff driven.
 
 # 3. Proposed AI-Native Architecture
 
-We introduce a strict middleware boundary.
+We introduce a strict middleware boundary called the Hook Engine.
 
-Webview (UI - Restricted)
-        ↓
+New Execution Flow:
+
+User Prompt
+   ↓
+Webview (Restricted Presentation Layer)
+   ↓
 Extension Host (Core Logic)
-        ↓
-┌──────────────────────────────┐
-│         HOOK ENGINE          │
-│  Deterministic Middleware    │
-└──────────────────────────────┘
-        ↓
+   ↓
+Hook Engine (Deterministic Middleware)
+   ↓
 Tool Dispatcher
-        ↓
-Filesystem / Git / Terminal
+   ↓
+Filesystem / Git
+   ↓
+.orchestration/ (Governance Artifacts)
 
 The Hook Engine becomes:
 
-- Security Boundary
-- Governance Layer
-- Semantic Trace Controller
+- Intent validator
+- Scope enforcer
+- Context injector
+- Semantic ledger writer
+- Concurrency guard
+
+Governance is enforced at execution time.
 
 ---
 
-# 4. Hook Engine Design
+# 4. Two-Stage Intent Handshake
+
+## Problem
+
+LLMs are synchronous.
+The IDE tool execution loop is asynchronous.
+
+Without control, the agent can write code immediately.
+
+## Solution: Mandatory Intent Checkout
+
+State 1: User Request  
+State 2: Reasoning Intercept  
+State 3: Contextualized Execution  
+
+Protocol:
+
+1. Agent analyzes request.
+2. Agent MUST call:
+
+   select_active_intent(intent_id: string)
+
+3. Pre-Hook validates intent.
+4. Context constraints injected.
+5. Only then may write operations proceed.
+
+If no valid intent_id → Execution blocked.
+
+This prevents context drift and vibe coding.
+
+---
+
+# 5. The Hook Engine Design
 
 Location:
 
 src/hooks/
-    hookEngine.ts
-    preHooks.ts
-    postHooks.ts
-    intentValidator.ts
-    traceSerializer.ts
-    concurrencyGuard.ts
 
-## 4.1 Responsibilities
+Structure:
 
-### Pre-Tool Execution
+- hookEngine.ts
+- preHooks.ts
+- postHooks.ts
+- intentValidator.ts
+- traceSerializer.ts
+- concurrencyGuard.ts
+
+## 5.1 Pre-Tool Responsibilities
 
 - Validate intent_id
 - Enforce owned_scope
-- Inject structured intent context
 - Classify command (Safe / Destructive)
-- Human-in-the-Loop approval
-- Concurrency hash validation
+- Inject structured intent context
+- Verify concurrency hash
 
-### Post-Tool Execution
+## 5.2 Post-Tool Responsibilities
 
 - Compute SHA-256 content hash
-- Classify mutation (AST_REFACTOR / INTENT_EVOLUTION)
-- Append to agent_trace.jsonl
+- Classify mutation
+- Append ledger entry
 - Update intent_map.md
-- Update active_intents.yaml lifecycle state
+- Update active_intents.yaml
 
 Hooks are:
 
-- Isolated
-- Composable
-- Fail-safe
 - Deterministic
+- Isolated
+- Fail-safe
+- Policy-driven
 
-No business logic leaks into the main execution loop.
-
----
-
-# 5. Two-Stage State Machine (Handshake Protocol)
-
-## Problem
-
-LLM is synchronous.
-IDE loop is asynchronous.
-
-Without governance, the agent writes code immediately.
-
-## Solution
-
-Enforced Two-Stage Protocol:
-
-State 1 — User Request  
-State 2 — Reasoning Intercept (Intent Checkout)  
-State 3 — Contextualized Execution  
-
-The agent MUST call:
-
-select_active_intent(intent_id: string)
-
-before any mutating operation.
-
-If not declared → Execution blocked.
-
-This prevents:
-- Context drift
-- Intent ambiguity
-- Unauthorized edits
+No governance logic is embedded in the main execution loop.
 
 ---
 
-# 6. The .orchestration/ Data Model
+# 6. Governance Layer (.orchestration/)
 
-All governance artifacts are stored in:
+All AI-native artifacts are stored in:
 
 .orchestration/
 
-This sidecar model ensures spatial independence from the source code.
+Contains:
+
+- active_intents.yaml
+- agent_trace.jsonl
+- intent_map.md
+- CLAUDE.md
+
+This sidecar model ensures separation from business source code.
 
 ---
 
-## 6.1 active_intents.yaml
+# 7. active_intents.yaml
 
-Tracks business requirements formally.
+Tracks lifecycle of business requirements.
 
-Structure:
+Example structure:
 
 active_intents:
   - id: "INT-001"
@@ -188,121 +200,69 @@ active_intents:
       - "src/auth/**"
       - "src/middleware/jwt.ts"
     constraints:
-      - "Must maintain backward compatibility"
+      - "Maintain backward compatibility"
     acceptance_criteria:
       - "All auth tests pass"
 
-Updated by:
-- Pre-Hook (when selected)
-- Post-Hook (when completed)
+Purpose:
+
+- Formalize intent ownership
+- Define allowed file scope
+- Enable parallel safe execution
 
 ---
 
-## 6.2 agent_trace.jsonl (Semantic Ledger)
+# 8. agent_trace.jsonl (AI-Native Git Ledger)
 
 Append-only JSONL file.
 
-Each entry contains:
+Each mutating action logs:
 
-- uuid
-- timestamp
-- git revision
-- file path
-- content_hash (sha256)
-- mutation_class
-- intent_id reference
+- Unique ID (UUID)
+- Timestamp
+- Git revision
+- File path
+- SHA-256 content hash
+- Mutation class
+- Related intent_id
 
-Example entry:
+Mutation classes:
 
-{
-  "id": "uuid-v4",
-  "timestamp": "2026-02-16T12:00:00Z",
-  "vcs": { "revision_id": "git_sha" },
-  "files": [
-    {
-      "relative_path": "src/auth/middleware.ts",
-      "conversations": [
-        {
-          "contributor": {
-            "entity_type": "AI",
-            "model_identifier": "claude-3-5-sonnet"
-          },
-          "ranges": [
-            {
-              "start_line": 15,
-              "end_line": 45,
-              "content_hash": "sha256:abc123..."
-            }
-          ],
-          "mutation_class": "AST_REFACTOR",
-          "related": [
-            { "type": "specification", "value": "INT-001" }
-          ]
-        }
-      ]
-    }
-  ]
-}
+- AST_REFACTOR (structure preserved)
+- INTENT_EVOLUTION (feature expansion)
 
-This guarantees spatial independence.
+This creates Intent → AST → File traceability.
 
 ---
 
-## 6.3 intent_map.md
+# 9. Content Hashing (Spatial Independence)
 
-Maps:
-
-Intent → Files → AST Regions
-
-Provides managerial observability:
-
-"Where is billing logic implemented?"
-
----
-
-## 6.4 CLAUDE.md (Shared Brain)
-
-Persistent parallel memory.
-
-Contains:
-
-- Architectural decisions
-- Style constraints
-- Lessons learned
-- Verification failures
-
-Enables multi-agent parallel orchestration.
-
----
-
-# 7. Content Hashing (Spatial Independence)
-
-We compute:
+For every write operation:
 
 SHA-256(modified_code_block)
 
 Properties:
 
-- Independent of file position
-- Independent of line movement
+- Independent of line position
+- Independent of file movement
 - Independent of diff noise
-- Mathematically stable identity
+- Cryptographically stable
 
-If code moves → Hash remains valid.
+If code moves, the hash remains valid.
 
-This repays Trust Debt.
+This repays Trust Debt with verification.
 
 ---
 
-# 8. Scope Enforcement Model
+# 10. Scope Enforcement
 
-On write_file:
+Before write_file executes:
 
-1. Extract relative_path
-2. Match against active_intent.owned_scope
-3. If outside scope → Reject
+1. Extract target path.
+2. Compare against active_intent.owned_scope.
+3. If outside scope → Block execution.
 
-Structured error returned:
+Example structured error:
 
 {
   "error": "ScopeViolation",
@@ -312,41 +272,19 @@ Structured error returned:
 
 Prevents:
 
-- Intent drift
-- Cross-feature contamination
-- Accidental feature evolution
+- Cross-intent contamination
+- Architectural drift
+- Unauthorized feature expansion
 
 ---
 
-# 9. Command Classification
+# 11. Concurrency Control (Parallel Agents)
 
-Commands are categorized as:
+Optimistic Locking Model:
 
-Safe:
-- read_file
-- list_files
-- search
-
-Destructive:
-- write_file
-- delete_file
-- execute_command
-
-Destructive operations require:
-
-- Intent validation
-- Scope validation
-- Optional HITL approval
-
----
-
-# 10. Concurrency Control (Parallel Agents)
-
-Optimistic Locking:
-
-1. Agent reads file → compute read_hash
-2. Before write → compute current_hash
-3. If mismatch → Block write
+1. Agent reads file → compute read_hash.
+2. Before write → compute current_hash.
+3. If mismatch → Block write.
 
 Error returned:
 
@@ -357,78 +295,72 @@ Error returned:
 
 Prevents:
 
-- Parallel overwrite
 - Agent-agent collision
-- Human-agent race conditions
+- Human-agent overwrite
+- Lost updates
 
-Enables Master Thinker orchestration.
-
----
-
-# 11. Security Boundary
-
-Strict privilege separation:
-
-Webview:
-- Presentation only
-- No tool execution
-- No secret access
-
-Extension Host:
-- File system access
-- Git access
-- Secret management
-
-Hook Engine:
-- Deterministic policy enforcement
-- No LLM invocation
-- No external calls
-
-This architecture prevents privilege escalation.
+Enables Master Thinker parallel orchestration.
 
 ---
 
-# 12. Architectural Decisions & Rationale
+# 12. Architectural Principles
 
-| Decision | Rationale |
-|----------|------------|
-| Sidecar .orchestration | Spatial independence |
-| JSONL ledger | Append-only auditability |
-| SHA-256 hashing | Mathematical traceability |
-| Intent-first handshake | Eliminate context rot |
-| Scope enforcement | Prevent agent drift |
-| HITL boundary | Reduce trust debt |
-| Optimistic locking | Enable safe parallelism |
-| Middleware isolation | Clean separation of concerns |
+This system enforces:
+
+- Intent-first execution
+- Deterministic middleware boundaries
+- Cryptographic traceability
+- Scope-limited mutation
+- Parallel-safe orchestration
+- Living documentation side effects
+
+Governance is encoded in the execution layer.
+
+Not discipline.
+Architecture.
 
 ---
 
-# 13. Transformation Summary
+# 13. Interim Status
 
-Before:
+Completed:
 
-AI-powered text editor.
+- Architecture mapping
+- Hook Engine design
+- Governance schema design
+- Mutation classification model
+- Concurrency strategy definition
 
-After:
+In Progress:
 
-Governed AI-Native IDE with:
+- Hook integration
+- select_active_intent tool
+- Hash utility implementation
+- Ledger serialization logic
 
-- Intent awareness
-- Semantic tracking
-- Deterministic hooks
-- Cryptographic verification
-- Parallel orchestration support
-- Living documentation
+Remaining:
 
-We replaced:
+- Full middleware wiring
+- HITL integration
+- Parallel orchestration demo
+- Meta-audit video
 
-Blind trust → Verifiable traceability  
-Drift → Deterministic governance  
-Text diffs → Intent-AST correlation  
+---
 
-This architecture repays:
+# 14. Summary
 
-- Cognitive Debt
-- Trust Debt
+This architecture transforms Roo Code from:
 
-And enables Master Thinker workflows.
+AI-powered text editor
+
+into:
+
+Governed AI-Native IDE.
+
+It replaces:
+
+Blind trust → Verifiable trace  
+Text diffs → Intent-linked semantic ledger  
+Vibe coding → Deterministic governance  
+
+This is the foundation for Intent-Driven AI Software Engineering.
