@@ -780,6 +780,9 @@ export function WorkersContent({
 																{outcome.description}
 															</p>
 														</div>
+														<span className="shrink-0 inline-flex items-center rounded-full border border-border/50 bg-background/20 px-2.5 py-1 text-[10px] font-semibold text-foreground/70">
+															Optimized for: {getModeLabel(selectedMode)}
+														</span>
 													</div>
 												</motion.button>
 											)
