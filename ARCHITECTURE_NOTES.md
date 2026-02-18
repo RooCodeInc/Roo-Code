@@ -390,4 +390,69 @@ src/
 
 ---
 
+Complete execution flow diagram
+┌─────────────────────────────────────────────────────────────┐
+│ 1. LLM Response (Streaming) │
+│ Anthropic API → Task.recursivelyMakeClineRequests() │
+└──────────────────────┬──────────────────────────────────────┘
+│
+▼
+┌─────────────────────────────────────────────────────────────┐
+│ 2. Tool Call Parsing │
+│ Task.ts:2989-3016 │
+│ - Receives "tool_call" chunk │
+│ - Parses via NativeToolCallParser │
+│ - Creates ToolUse object │
+│ - Adds to assistantMessageContent[] │
+└──────────────────────┬──────────────────────────────────────┘
+│
+▼
+┌─────────────────────────────────────────────────────────────┐
+│ 3. Message Presentation Router │
+│ presentAssistantMessage.ts:63 │
+│ - Checks lock (prevents concurrent execution) │
+│ - Gets current block from assistantMessageContent │
+│ - Routes by block.type → "tool_use" │
+└──────────────────────┬──────────────────────────────────────┘
+│
+▼
+┌─────────────────────────────────────────────────────────────┐
+│ 4. Tool Routing (SWITCH STATEMENT) │
+│ presentAssistantMessage.ts:691 │
+│ switch (block.name) { │
+│ case "write_to_file": │
+│ case "execute_command": │
+│ ... │
+│ } │
+└──────────────────────┬──────────────────────────────────────┘
+│
+▼
+┌─────────────────────────────────────────────────────────────┐
+│ 5. Tool Execution │
+│ tool.handle(task, block, callbacks) │
+│ BaseTool.ts:113 │
+│ - Parses block.nativeArgs → params │
+│ - Calls tool.execute(params, task, callbacks) │
+└──────────────────────┬──────────────────────────────────────┘
+│
+▼
+┌─────────────────────────────────────────────────────────────┐
+│ 6. Actual Tool Logic │
+│ WriteToFileTool.execute() or ExecuteCommandTool.execute()│
+│ - Validates parameters │
+│ - Checks permissions │
+│ - Asks user approval │
+│ - Performs operation │
+│ - Calls pushToolResult() │
+└──────────────────────┬──────────────────────────────────────┘
+│
+▼
+┌─────────────────────────────────────────────────────────────┐
+│ 7. Result Back to LLM │
+│ pushToolResult() → task.pushToolResultToUserContent() │
+│ - Creates tool_result block │
+│ - Adds to userMessageContent[] │
+│ - LLM receives result in next request │
+└─────────────────────────────────────────────────────────────┘
+
 **End of Architecture Notes**
