@@ -348,7 +348,9 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"smartCodeFolding": "Smart Code Folding: Nén ngữ cảnh giờ đây bảo tồn một bản đồ nhẹ của các tệp của bạn—chữ ký hàm, khai báo lớp và định nghĩa kiểu. Điều này cung cấp tính liên tục tốt hơn sau nén và chỉnh sửa thông minh hơn khi tham chiếu công việc trước đó."
+			"sonnet46": "Claude Sonnet 4.6: Hỗ trợ đầy đủ mô hình Claude Sonnet 4.6 mới nhất của Anthropic trên tất cả nhà cung cấp — Anthropic, Bedrock, Vertex, OpenRouter và Vercel AI Gateway.",
+			"stabilityFixes": "Cải thiện ổn định: Tăng cường vòng đời ủy quyền chống lại điều kiện cạnh tranh, sửa lỗi bảo tồn lịch sử trò chuyện khi điều hướng và tiếp tục tác vụ, đồng thời giải quyết các vấn đề neo cuộn để có trải nghiệm mượt mà hơn.",
+			"lockedApiConfig": "Cấu hình API đã khóa: Nút khóa mới cho phép bạn ghim cấu hình API trên tất cả các chế độ trong workspace, để việc chuyển chế độ không còn đặt lại cài đặt nhà cung cấp nữa."
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",
