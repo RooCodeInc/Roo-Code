@@ -1,5 +1,3 @@
-// packages/core/src/tools/select_active_intent.ts
-
 type Intent = {
 	description: string
 	constraints: string[]
@@ -20,15 +18,20 @@ const intents: Record<string, Intent> = {
 	},
 }
 
+// Utility to escape XML special characters
+function escapeXml(str: string) {
+	return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+}
+
 export function select_active_intent(intent_id: string): string {
 	const intent = intents[intent_id]
 	if (!intent) throw new Error("Invalid intent_id")
 
 	const xmlContext = `<intent_context>
-    <description>${intent.description}</description>
-    <constraints>${intent.constraints.join(", ")}</constraints>
-    <scope>${intent.scope.join(", ")}</scope>
-  </intent_context>`
+  <description>${escapeXml(intent.description)}</description>
+  <constraints>${escapeXml(intent.constraints.join(", "))}</constraints>
+  <scope>${escapeXml(intent.scope.join(", "))}</scope>
+</intent_context>`
 
 	return xmlContext
 }
