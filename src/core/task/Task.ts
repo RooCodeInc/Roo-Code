@@ -389,6 +389,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	didAlreadyUseTool = false
 	didToolFailInCurrentTurn = false
 	didCompleteReadingStream = false
+	/** Set by select_active_intent pre-hook; used by gatekeeper and write_file scope enforcement. */
+	currentIntentId: string | null = null
 	private _started = false
 	// No streaming parser is required.
 	assistantMessageParser?: undefined
@@ -2766,6 +2768,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.didRejectTool = false
 				this.didAlreadyUseTool = false
 				this.assistantMessageSavedToHistory = false
+				// Orchestration: require intent selection again each turn so gatekeeper can block if model skips select_active_intent
+				this.currentIntentId = null
 				// Reset tool failure flag for each new assistant turn - this ensures that tool failures
 				// only prevent attempt_completion within the same assistant message, not across turns
 				// (e.g., if a tool fails, then user sends a message saying "just complete anyway")

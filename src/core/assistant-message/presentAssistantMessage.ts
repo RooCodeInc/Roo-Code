@@ -40,6 +40,9 @@ import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+import { selectActiveIntentPreHook } from "../../hooks/preHooks/selectActiveIntent"
+import { writeFilePreHook } from "../../hooks/preHooks/writeFile"
+import { writeFilePostHook } from "../../hooks/postHooks/writeFile"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -383,6 +386,8 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.skill}'${block.params.args ? ` with args: ${block.params.args}` : ""}]`
 					case "generate_image":
 						return `[${block.name} for '${block.params.path}']`
+					case "select_active_intent":
+						return `[${block.name} for '${(block.nativeArgs ?? block.params)?.intent_id ?? "?"}']`
 					default:
 						return `[${block.name}]`
 				}
@@ -675,15 +680,71 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			// Gatekeeper: require an active intent for all tools except select_active_intent (Phase 1 / orchestration)
+			if (!block.partial && block.name !== "select_active_intent" && !cline.currentIntentId) {
+				const gatekeeperError =
+					"No active intent selected. You must call select_active_intent with a valid intent ID (INT-XXX) before using other tools."
+				pushToolResult(formatResponse.toolError(gatekeeperError))
+				break
+			}
+
 			switch (block.name) {
-				case "write_to_file":
+				case "select_active_intent": {
+					if (block.partial) break
+					const intentId = (block.nativeArgs?.intent_id ?? block.params?.intent_id) as string | undefined
+					if (!intentId) {
+						pushToolResult(
+							formatResponse.toolError("select_active_intent requires intent_id (e.g. INT-001)."),
+						)
+						break
+					}
+					const preHookResult = await selectActiveIntentPreHook(
+						{ intent_id: intentId },
+						{ task: cline, workspaceRoot: cline.cwd },
+					)
+					if (preHookResult.blocked) {
+						pushToolResult(formatResponse.toolError(preHookResult.error ?? "Intent selection blocked."))
+						break
+					}
+					cline.currentIntentId = intentId
+					if (preHookResult.context) {
+						pushToolResult(preHookResult.context)
+					} else {
+						pushToolResult(
+							`Active intent set to ${intentId}. (Context loading will be implemented in Phase 1.)`,
+						)
+					}
+					break
+				}
+				case "write_to_file": {
 					await checkpointSaveAndMark(cline)
+					const writeParams = (block.nativeArgs ?? block.params) as { path?: string; content?: string }
+					const writePreResult = await writeFilePreHook(
+						{ path: writeParams?.path ?? "", content: writeParams?.content ?? "" },
+						{
+							intentId: cline.currentIntentId,
+							workspaceRoot: cline.cwd,
+						},
+					)
+					if (writePreResult.blocked) {
+						pushToolResult(
+							formatResponse.toolError(writePreResult.error ?? "Write blocked by scope or intent check."),
+						)
+						break
+					}
 					await writeToFileTool.handle(cline, block as ToolUse<"write_to_file">, {
 						askApproval,
 						handleError,
 						pushToolResult,
 					})
+					// Post-hook: trace and intent_map (Phase 3); fire-and-forget
+					writeFilePostHook(
+						{ path: writeParams?.path ?? "", content: writeParams?.content ?? "" },
+						{ success: true },
+						{ intentId: cline.currentIntentId, workspaceRoot: cline.cwd },
+					).catch((err) => console.error("[hooks] writeFilePostHook error:", err))
 					break
+				}
 				case "update_todo_list":
 					await updateTodoListTool.handle(cline, block as ToolUse<"update_todo_list">, {
 						askApproval,
