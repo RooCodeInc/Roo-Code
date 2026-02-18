@@ -35,6 +35,91 @@
 - **select_active_intent**: New tool in **SelectActiveIntentTool.ts**. It sets **task.activeIntentId**, reads **.orchestration/active_intents.yaml** via **loadActiveIntents**, and returns an **<intent_context>** XML block (constraints, owned_scope) as the tool result so the model has context for subsequent edits.
 - **.orchestration/**: Machine-managed directory in workspace root: **active_intents.yaml** (TRP1 intent list), **agent_trace.jsonl** (append-only trace with optional TRP1 schema). **intent_map.md** and **AGENT.md/CLAUDE.md** are specified by TRP1 for later phases (spatial map, shared brain).
 
+## Theoretical grounding (Why this architecture exists)
+
+This implementation is intentionally designed to reduce **Cognitive Debt** and **Trust Debt** in AI-assisted engineering, and to prevent **Context Rot**.
+
+- **Cognitive Debt**: When a developer (or reviewer) cannot reconstruct _why_ changes happened, velocity becomes “borrowed time” that must be repaid later via debugging, archeology, and re-learning. The Reasoning Loop forces an explicit _intent checkout_ step (`select_active_intent`) so changes are anchored to a named, reviewable business objective rather than an implicit chat thread.
+- **Trust Debt**: When AI changes exceed our ability to verify them, we accumulate risk. The hook engine creates a deterministic interception point for _every_ mutating action and writes a ledger entry (`agent_trace.jsonl`) linking **intent_id → tool action → content hash** to improve auditability.
+- **Context Rot**: Long-running agent sessions degrade because context becomes stale, overly broad, or contradictory. By loading only the selected intent’s **scope + constraints** into an explicit `<intent_context>` block, we keep the “active context” narrow and relevant for the next mutation.
+
+In short: the hook middleware is not “extra plumbing”; it is the enforcement mechanism that turns AI output from “best effort” into a governed workflow with an inspectable decision trail.
+
+## The “Reasoning Loop” architecture (Phases 1 & 2)
+
+**Goal (Context Paradox)**: the agent must be constrained _before_ it generates code, but those constraints are intent-specific and cannot be known until an intent is selected.
+
+**Solution (Two-stage state machine per turn)**:
+
+- **Stage A — Handshake / Intent checkout**
+    - Model analyzes user request and calls `select_active_intent({ intent_id })`.
+    - Hook + tool handler load `active_intents.yaml` and return `<intent_context>` containing **owned_scope** and **constraints**.
+    - Task state is updated: `task.activeIntentId = intent_id`.
+- **Stage B — Contextualized action**
+    - Model performs mutating tools (`write_to_file`, `apply_patch`, etc.) now operating under injected constraints.
+    - Hook engine appends trace entries linking the mutation to the intent.
+
+This is designed to be extendable in Phase 2 with: **scope enforcement**, **HITL approvals**, and **intent ignore rules**.
+
+## Failure modes & mitigations (beyond “intent missing”)
+
+The hook system must remain safe and predictable under partial failures. Below are key failure modes and the expected behavior.
+
+### Intent + context failure modes
+
+- **Missing `active_intents.yaml`**
+
+    - **Symptom**: `select_active_intent` can’t find constraints/scope.
+    - **Behavior**: Still sets `task.activeIntentId`, returns a message instructing how to add the intent to the file (current behavior).
+    - **Mitigation (planned)**: auto-scaffold a minimal record in `active_intents.yaml` on first selection (merge rather than overwrite).
+
+- **Malformed `active_intents.yaml`**
+
+    - **Symptom**: parser returns `[]`, intent lookup fails silently.
+    - **Behavior**: tool returns “Active intent set… add to file…” (safe fallback) but governance becomes weaker due to missing constraints.
+    - **Mitigation (planned)**: strict YAML parser + explicit tool_result error that asks user/agent to fix the file, plus “safe mode” that blocks destructive tools when intent metadata cannot be loaded.
+
+- **Invalid intent ID (not present in YAML)**
+
+    - **Behavior**: allow selection but return “Add to YAML…” (current).
+    - **Mitigation (planned)**: require the intent ID to exist for destructive tools; otherwise block with “Invalid intent_id”.
+
+- **Context token limits / overlong intent context**
+    - **Symptom**: `<intent_context>` becomes too large (many constraints, large scope, long trace history).
+    - **Mitigation (planned)**:
+        - compact serialization (only constraints + scope, no historical dumps by default)
+        - size budget (e.g., truncate to N chars; include a `context_truncated=true` flag)
+        - progressive disclosure (agent can request more via read tools if needed)
+
+### Tool execution + hook engine failure modes
+
+- **Hook engine throws (pre or post hook crash)**
+
+    - **Risk**: tool execution could proceed without governance if errors are swallowed.
+    - **Mitigation (planned)**: fail-closed policy for destructive tools (if hook fails, block tool and emit structured error).
+
+- **MCP tool calls bypass hook wrapper**
+
+    - **Current**: `mcp_tool_use` path is not wrapped by hooks in the interim.
+    - **Risk**: destructive MCP tools could mutate without intent enforcement.
+    - **Mitigation (planned)**: wrap `useMcpToolTool.handle` in `runWithHooks` and classify MCP tools as safe/destructive based on tool metadata.
+
+- **Trace write failures (`agent_trace.jsonl` append fails)**
+    - **Risk**: governance enforcement works but audit trail is incomplete.
+    - **Mitigation (planned)**: best-effort append with telemetry/logging + “trace degraded mode” flag surfaced to the UI; optionally block destructive tools if trace cannot be written (strict mode).
+
+### Concurrency / consistency failure modes (Phase 4 alignment)
+
+- **Stale file writes in parallel sessions**
+    - **Symptom**: last writer wins, overwriting newer changes.
+    - **Mitigation (planned)**: optimistic locking (compare pre-read hash of file-on-disk vs current before write; block with “Stale File” error).
+
+### Security boundary failure modes
+
+- **Destructive command execution without intent**
+    - **Mitigation**: current `requireActiveIntent` blocks destructive tools when `activeIntentId` is missing.
+    - **Mitigation (planned)**: add HITL approval prompts for high-risk tools and enforce owned_scope checks for file mutations.
+
 ## Visual System Blueprint (Diagrams)
 
 ### High-Level Flow with Data Payloads
