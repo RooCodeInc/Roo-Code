@@ -1,0 +1,25 @@
+intents:
+  - id: "refactor-auth"
+    description: "Refactor authentication module"
+    scope:
+      - "src/auth"
+    constraints:
+      - "Do not change database schema"
+      - "Do not add new dependencies"
+
+  - id: "fix-bug-42"
+    description: "Fix reported bug #42"
+    scope:
+      - "src/utils"
+      - "src/services"
+    constraints:
+      - "Only modify existing functions"
+      - "No new files allowed"
+
+  - id: "add-logging"
+    description: "Add logging to critical operations"
+    scope:
+      - "src"
+    constraints:
+      - "Use existing logger only"
+      - "Do not expose secrets"

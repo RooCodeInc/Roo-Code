@@ -1,10 +1,21 @@
-export async function preToolHook(toolName: string, args: any) {
-  console.log(`[PRE-HOOK] Tool: ${toolName}`)
+let activeIntent: string | null = null
 
-  return {
-    allowed: true,
-    toolName,
-    args,
-    timestamp: new Date().toISOString(),
-  }
+export function setActiveIntent(intentId: string) {
+	activeIntent = intentId
+}
+
+export async function preToolHook(toolName: string, args: any) {
+	if (!activeIntent) {
+		return {
+			allowed: false,
+			reason: "You must cite a valid active Intent ID.",
+		}
+	}
+
+	// Example scope enforcement
+	if (toolName === "deleteFile" && args.path === "/") {
+		return { allowed: false, reason: "Root deletion is unsafe" }
+	}
+
+	return { allowed: true }
 }
