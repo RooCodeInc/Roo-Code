@@ -134,6 +134,7 @@ export async function presentAssistantMessage(cline: Task) {
 
 			// Store approval feedback to merge into tool result (GitHub #10465)
 			let approvalFeedback: { text: string; images?: string[] } | undefined
+			let consumePreHookApproval = false
 
 			const pushToolResult = (content: ToolResponse, feedbackImages?: string[]) => {
 				if (hasToolResult) {

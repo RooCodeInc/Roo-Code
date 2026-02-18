@@ -1,63 +1,90 @@
 # Architecture Notes
 
-## 1) Tool Loop (Host Extension)
+## Phase 0: Core Map
 
-Exact host-extension dispatcher for `execute_command` and `write_to_file`:
-- `presentAssistantMessage(cline: Task)` in `src/core/assistant-message/presentAssistantMessage.ts:61`
-- Dispatch switch for tool execution is in the `tool_use` branch:
-- `write_to_file` dispatch: `src/core/assistant-message/presentAssistantMessage.ts:679`
-- `writeToFileTool.handle(...)`: `src/core/assistant-message/presentAssistantMessage.ts:681`
-- `execute_command` dispatch: `src/core/assistant-message/presentAssistantMessage.ts:764`
-- `executeCommandTool.handle(...)`: `src/core/assistant-message/presentAssistantMessage.ts:765`
+### Tool loop entrypoint (host extension)
 
-Execution path behind that dispatcher:
-- Shared tool entrypoint: `BaseTool.handle(...)` in `src/core/tools/BaseTool.ts:113`
-- BaseTool calls concrete tool execution via `await this.execute(...)` in `src/core/tools/BaseTool.ts:160`
-- Command implementation: `ExecuteCommandTool.execute(...)` in `src/core/tools/ExecuteCommandTool.ts:34`
-- Terminal runner used by command tool: `executeCommandInTerminal(...)` in `src/core/tools/ExecuteCommandTool.ts:149`
-- File-write implementation: `WriteToFileTool.execute(...)` in `src/core/tools/WriteToFileTool.ts:29`
+- Dispatcher: `src/core/assistant-message/presentAssistantMessage.ts`
+- `write_to_file` and other write/destructive tools are routed from this switch.
+- `execute_command` is routed from this same switch.
 
-How tool calls arrive at `presentAssistantMessage(...)`:
-- Stream loop: `Task.attemptApiRequest(...)` in `src/core/task/Task.ts:3978`
-- Streaming tool chunks parsed via `NativeToolCallParser.processRawChunk(...)` in `src/core/task/Task.ts:2858`
-- Parsed `tool_use` blocks are pushed into `assistantMessageContent`, then `presentAssistantMessage(this)` is called (e.g. `src/core/task/Task.ts:2908`, `src/core/task/Task.ts:2927`, `src/core/task/Task.ts:3005`)
+### Concrete tool executors
 
-## 2) System Prompt Builder (LLM Instructions)
+- `src/core/tools/WriteToFileTool.ts`
+- `src/core/tools/ExecuteCommandTool.ts`
+- `src/core/tools/ApplyDiffTool.ts`
+- `src/core/tools/ApplyPatchTool.ts`
+- `src/core/tools/EditFileTool.ts`
+- `src/core/tools/SearchReplaceTool.ts`
 
-Runtime path used for real model calls:
-- `Task.attemptApiRequest(...)` builds prompt with `const systemPrompt = await this.getSystemPrompt()` in `src/core/task/Task.ts:4010`
-- Prompt builder method: `Task.getSystemPrompt()` in `src/core/task/Task.ts:3735`
-- `getSystemPrompt()` calls `SYSTEM_PROMPT(...)` in `src/core/task/Task.ts:3782`
-- `SYSTEM_PROMPT` is defined in `src/core/prompts/system.ts:112`
-- `SYSTEM_PROMPT(...)` delegates to `generatePrompt(...)` in `src/core/prompts/system.ts:140`
-- Prompt string is assembled in `generatePrompt(...)` and `const basePrompt = ...` in `src/core/prompts/system.ts:41` and `src/core/prompts/system.ts:85`
-- Final API handoff uses `this.api.createMessage(systemPrompt, ...)` in `src/core/task/Task.ts:4269`
+### Prompt builder path
 
-Prompt preview path in the UI (not the runtime execution path):
-- Webview message handler: `case "getSystemPrompt"` and `case "copySystemPrompt"` in `src/core/webview/webviewMessageHandler.ts:1595` and `src/core/webview/webviewMessageHandler.ts:1611`
-- Preview generator: `generateSystemPrompt(...)` in `src/core/webview/generateSystemPrompt.ts:12`
-- Preview also calls `SYSTEM_PROMPT(...)` in `src/core/webview/generateSystemPrompt.ts:42`
+- Runtime assembly starts in `Task.getSystemPrompt()` at `src/core/task/Task.ts`.
+- Prompt sections are composed through `src/core/prompts/system.ts`.
+- Intent-first protocol instructions are in:
+    - `src/core/prompts/sections/objective.ts`
+    - `src/core/prompts/sections/rules.ts`
+    - `src/core/prompts/sections/tool-use-guidelines.ts`
 
-## 3) Where to Modify to Enforce a "Reasoning Loop"
+## Phase 1: Handshake
 
-Primary edit point for global LLM behavior:
-- `src/core/prompts/system.ts` controls section composition/order.
+### New intent tool
 
-Most direct instruction-content edit points:
-- `src/core/prompts/sections/objective.ts` (high-level behavior loop/instructions)
-- `src/core/prompts/sections/rules.ts` (strict operational constraints)
-- `src/core/prompts/sections/tool-use-guidelines.ts` (tool sequencing policy)
+- Tool definition: `src/core/prompts/tools/native-tools/select_active_intent.ts`
+- Tool executor: `src/core/tools/SelectActiveIntentTool.ts`
 
-Practical recommendation:
-- Put the core "Reasoning Loop" policy in `objective.ts` (what to do each turn).
-- Put hard constraints/checks in `rules.ts` (must/must-not behavior).
-- Keep `system.ts` unchanged unless you need to change section order or add a new section.
+### Context loader and injection
 
-## 4) Minimal Mental Model
+- Intent load, validation, and context assembly: `selectActiveIntentForTask(...)` in `src/core/orchestration/ToolHookEngine.ts`
+- Reads `.orchestration/active_intents.yaml`
+- Reads recent matching entries from `.orchestration/agent_trace.jsonl`
+- Returns `<intent_context>...</intent_context>` tool result
 
-- API stream emits tool-call chunks.
-- `Task.ts` parses chunks -> appends/upgrades `assistantMessageContent` blocks.
-- `presentAssistantMessage(...)` is the host dispatcher that routes by tool name.
-- Concrete tool classes perform side effects (`execute_command`, `write_to_file`).
-- Next LLM turn receives tool results.
-- System prompt for each turn comes from `Task.getSystemPrompt()` -> `SYSTEM_PROMPT(...)` -> `generatePrompt(...)`.
+### Gatekeeper
+
+- `runOrchestrationPreToolHook(...)` blocks mutation when no valid active intent is selected.
+
+## Phase 2: Hook Middleware & Security Boundary
+
+### Hook wrapper over tool execution
+
+- Pre-hook call occurs before each tool execution in `presentAssistantMessage(...)`.
+- Post-hook call occurs after each non-partial tool execution in `presentAssistantMessage(...)`.
+
+### Command classification and human gate
+
+- SAFE/DESTRUCTIVE classification in `ToolHookEngine.ts`.
+- Destructive actions require approve/reject via `askApproval(...)`.
+- Scope checks enforce `owned_scope` against target paths.
+- `.intentignore` support blocks mutations for ignored intent IDs.
+
+### Autonomous recovery
+
+- Hook returns structured JSON tool errors for blocked/invalid mutation attempts.
+
+## Phase 3: AI-native trace layer
+
+### Write metadata contract
+
+- Write tools require `intent_id` and `mutation_class`.
+- Runtime pre-hook validates:
+    - `intent_id` is present and matches selected active intent
+    - `mutation_class` is present and one of `{AST_REFACTOR, INTENT_EVOLUTION}`
+
+### Trace serialization
+
+- Post-hook computes SHA-256 content hashes for modified segments.
+- Appends JSONL records to `.orchestration/agent_trace.jsonl`.
+- Includes `intent_id`, `related_requirements`, `mutation_class`, `tool_name`, `modified_ranges`.
+- Appends intent evolution entries into `.orchestration/intent_map.md` when class is `INTENT_EVOLUTION`.
+
+## Phase 4: Parallel orchestration
+
+### Optimistic locking
+
+- Pre-write stale checks compare observed hash/mtime against current disk snapshot.
+- Blocks write on divergence with `Stale File` error.
+
+### Verification failure lesson recording
+
+- Failed verification-like commands (`test`, `lint`, `typecheck`, `check-types`, `ci`) append lessons under `## Lessons Learned` in `CLAUDE.md` (fallback `AGENT.md`).

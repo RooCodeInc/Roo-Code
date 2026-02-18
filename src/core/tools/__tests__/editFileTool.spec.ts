@@ -644,6 +644,8 @@ describe("editFileTool", () => {
 					file_path: testFilePath,
 					old_string: testOldString,
 					new_string: testNewString,
+					intent_id: "INT-001",
+					mutation_class: "AST_REFACTOR",
 				},
 				partial: false,
 			}

@@ -22,6 +22,10 @@ const PATH_PARAMETER_DESCRIPTION = `Filesystem path (relative to the workspace) 
 
 const IMAGE_PARAMETER_DESCRIPTION = `Optional path (relative to the workspace) to an existing image to edit; supports PNG, JPG, JPEG, GIF, and WEBP`
 
+const INTENT_ID_PARAMETER_DESCRIPTION = `Identifier of the active intent selected for this mutation (must match the prior select_active_intent call).`
+
+const MUTATION_CLASS_PARAMETER_DESCRIPTION = `Classification of this mutation: AST_REFACTOR for intent-preserving changes, or INTENT_EVOLUTION for intent expansion.`
+
 export default {
 	type: "function",
 	function: {
@@ -43,8 +47,17 @@ export default {
 					type: ["string", "null"],
 					description: IMAGE_PARAMETER_DESCRIPTION,
 				},
+				intent_id: {
+					type: "string",
+					description: INTENT_ID_PARAMETER_DESCRIPTION,
+				},
+				mutation_class: {
+					type: "string",
+					enum: ["AST_REFACTOR", "INTENT_EVOLUTION"],
+					description: MUTATION_CLASS_PARAMETER_DESCRIPTION,
+				},
 			},
-			required: ["prompt", "path", "image"],
+			required: ["prompt", "path", "image", "intent_id", "mutation_class"],
 			additionalProperties: false,
 		},
 	},

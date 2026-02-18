@@ -7,6 +7,7 @@ active_intents:
       - src/core/tools/**
       - src/core/assistant-message/**
       - src/core/task/**
+      - src/core/prompts/**
       - src/shared/**
     constraints:
       - Mutations MUST preserve deterministic pre/post hook behavior.
@@ -39,6 +40,7 @@ active_intents:
       - README.md
       - AGENTS.md
       - AGENT.md
+      - ARCHITECTURE_NOTES.md
     constraints:
       - Governance docs MUST remain aligned with the active constitution.
       - Spec IDs 000-008 remain the canonical SDD baseline.
