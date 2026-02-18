@@ -68,7 +68,7 @@ export const openAiCodexModels = {
 		supportsTemperature: false,
 		description: "GPT-5.3 Codex: OpenAI's flagship coding model via ChatGPT subscription",
 	},
-	"gpt-5.3-codex-spark": {
+	"gpt-5.3-spark-codex": {
 		maxTokens: 128000,
 		contextWindow: 400000,
 		includedTools: ["apply_patch"],
@@ -80,7 +80,7 @@ export const openAiCodexModels = {
 		inputPrice: 0,
 		outputPrice: 0,
 		supportsTemperature: false,
-		description: "GPT-5.3 Codex Spark: Fast, lightweight coding model via ChatGPT subscription",
+		description: "GPT-5.3 Spark Codex: Fast, lightweight coding model via ChatGPT subscription",
 	},
 	"gpt-5.2-codex": {
 		maxTokens: 128000,
