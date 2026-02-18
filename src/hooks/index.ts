@@ -1,2 +1,5 @@
 export { HookEngine } from "./HookEngine"
+export { IntentManager } from "./IntentManager"
+export { TraceLogger } from "./TraceLogger"
+export { ContentHasher } from "./ContentHasher"
 export type { PreHookContext, PreHookResult, PostHookContext } from "./types"
