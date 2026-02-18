@@ -4,6 +4,9 @@ import { IntentManager } from "./IntentManager"
 export class PreToolHook {
 	async execute(context: PreHookContext): Promise<PreHookResult> {
 		try {
+			if (!context.toolName) {
+				return { blocked: false }
+			}
 			console.log(`[PreToolHook] Tool: ${context.toolName}`)
 
 			const writeTools = ["write_to_file", "apply_diff", "edit", "search_and_replace"]

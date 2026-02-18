@@ -4,6 +4,9 @@ import { TraceLogger } from "./TraceLogger"
 export class PostToolHook {
 	async execute(context: PostHookContext): Promise<void> {
 		try {
+			if (!context.toolName) {
+				return
+			}
 			console.log(`[PostToolHook] Tool: ${context.toolName} completed`)
 
 			const workspacePath = context.task.cwd
