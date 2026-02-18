@@ -2,6 +2,8 @@ import type { ToolName } from "@roo-code/types"
 
 import { Task } from "../task/Task"
 import type { ToolUse, HandleError, PushToolResult, AskApproval, NativeToolArgs } from "../../shared/tools"
+import { formatResponse } from "../prompts/responses"
+import { isGovernedWorkspace, loadActiveIntents, findIntentById, type IntentTraceEvent } from "../context/activeIntents"
 
 /**
  * Callbacks passed to tool execution
@@ -18,6 +20,29 @@ export interface ToolCallbacks {
  * If the tool has native args defined in NativeToolArgs, use those; otherwise fall back to any.
  */
 type ToolParams<TName extends ToolName> = TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : any
+
+/**
+ * Tools that are safe (read-only / non-destructive) and bypass intent enforcement.
+ * These tools can be used even without an active intent in governed mode.
+ */
+export const SAFE_TOOLS: ReadonlySet<string> = new Set([
+	// Read-only tools
+	"read_file",
+	"search_files",
+	"list_files",
+	"codebase_search",
+	"read_command_output",
+	// Non-destructive / meta tools
+	"ask_followup_question",
+	"attempt_completion",
+	"switch_mode",
+	"new_task",
+	"update_todo_list",
+	"run_slash_command",
+	"skill",
+	// Intent tool itself
+	"select_active_intent",
+])
 
 /**
  * Abstract base class for all tools.
@@ -104,7 +129,8 @@ export abstract class BaseTool<TName extends ToolName> {
 	 * Handles the complete flow:
 	 * 1. Partial message handling (if partial)
 	 * 2. Parameter parsing (nativeArgs only)
-	 * 3. Core execution (execute)
+	 * 3. Intent Handshake enforcement (governed mode only)
+	 * 4. Core execution (execute)
 	 *
 	 * @param task - Task instance
 	 * @param block - ToolUse block from assistant message
@@ -156,7 +182,95 @@ export abstract class BaseTool<TName extends ToolName> {
 			return
 		}
 
-		// Execute with typed parameters
-		await this.execute(params, task, callbacks)
+		/**
+		 * Intent Handshake Enforcement
+		 *
+		 * When .orchestration/active_intents.yaml exists, the workspace is in "governed mode".
+		 * In governed mode, ALL destructive tools must have a valid, IN_PROGRESS intent selected.
+		 *
+		 * Rules:
+		 * 1. select_active_intent is always allowed (it sets the intent)
+		 * 2. Read-only tools (SAFE_TOOLS) are always allowed
+		 * 3. If no intent is selected → block with error
+		 * 4. If intent exists but is not found in YAML or not IN_PROGRESS → clear it and block
+		 * 5. If no .orchestration/active_intents.yaml exists → skip enforcement (ungoverned mode)
+		 *
+		 * This ensures the LLM cannot make changes without first loading intent context,
+		 * and stale/completed intents are automatically rejected.
+		 */
+		if (!SAFE_TOOLS.has(this.name) && isGovernedWorkspace(task.cwd)) {
+			// Rule 3: No intent selected at all
+			if (!task.activeIntentId) {
+				const errorMsg =
+					"ERROR: No active Intent selected. You must call select_active_intent(intent_id) " +
+					"before using destructive tools. This workspace requires intent governance."
+				task.consecutiveMistakeCount++
+				task.recordToolError(this.name, errorMsg)
+				callbacks.pushToolResult(formatResponse.toolError(errorMsg))
+				return
+			}
+
+			// Rule 4: Validate that the selected intent is still valid and IN_PROGRESS
+			try {
+				const intents = await loadActiveIntents(task.cwd)
+				const intent = findIntentById(intents, task.activeIntentId)
+
+				if (!intent || intent.status !== "IN_PROGRESS") {
+					// Stale or completed intent — clear it and block
+					const reason = !intent
+						? `Intent "${task.activeIntentId}" no longer exists in active_intents.yaml.`
+						: `Intent "${task.activeIntentId}" has status "${intent.status}" (must be IN_PROGRESS).`
+
+					task.activeIntentId = undefined
+					task.activeIntentContext = undefined
+
+					const inProgressIds = intents.filter((i) => i.status === "IN_PROGRESS").map((i) => i.id)
+					const suggestion =
+						inProgressIds.length > 0
+							? ` Available IN_PROGRESS intents: [${inProgressIds.join(", ")}]`
+							: " No IN_PROGRESS intents available."
+
+					const errorMsg =
+						`ERROR: ${reason} Intent cleared.` +
+						` Call select_active_intent(intent_id) with a valid IN_PROGRESS intent.` +
+						suggestion
+					task.consecutiveMistakeCount++
+					task.recordToolError(this.name, errorMsg)
+					callbacks.pushToolResult(formatResponse.toolError(errorMsg))
+					return
+				}
+			} catch (error) {
+				// If we can't read the YAML, log but allow execution to continue
+				// (the file existed at the isGovernedWorkspace check above)
+				console.warn(`[BaseTool] Failed to re-validate intent: ${error}`)
+			}
+		}
+
+		// Execute with typed parameters and record trace events for governed mode
+		let executeError: Error | undefined
+		try {
+			await this.execute(params, task, callbacks)
+		} catch (error) {
+			executeError = error instanceof Error ? error : new Error(String(error))
+			throw executeError
+		} finally {
+			// Reset partial state after execution to avoid leakage between tool runs.
+			this.resetPartialState()
+
+			// Record trace event for non-SAFE tools in governed mode.
+			// SAFE_TOOLS are excluded from trace to keep it focused on destructive actions.
+			if (!SAFE_TOOLS.has(this.name) && task.activeIntentId && isGovernedWorkspace(task.cwd)) {
+				const traceEvent: IntentTraceEvent = {
+					toolName: this.name,
+					summary: executeError
+						? `${this.name} failed: ${executeError.message.slice(0, 80)}`
+						: `${this.name} executed successfully`,
+					outcome: executeError ? "error" : "success",
+					timestamp: new Date().toISOString(),
+					intentId: task.activeIntentId,
+				}
+				task.intentTraceLog.push(traceEvent)
+			}
+		}
 	}
 }

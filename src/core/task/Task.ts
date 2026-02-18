@@ -326,6 +326,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	consecutiveNoAssistantMessagesCount: number = 0
 	toolUsage: ToolUsage = {}
 
+	// Intent Handshake
+	activeIntentId: string | undefined = undefined
+	activeIntentContext: string | undefined = undefined
+	intentTraceLog: import("../context/activeIntents").IntentTraceEvent[] = []
+
 	// Checkpoints
 	enableCheckpoints: boolean
 	checkpointTimeout: number
@@ -3789,7 +3794,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			const modelInfo = this.api.getModel().info
 
-			return SYSTEM_PROMPT(
+			let prompt = await SYSTEM_PROMPT(
 				provider.context,
 				this.cwd,
 				false,
@@ -3816,6 +3821,30 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.api.getModel().id,
 				provider.getSkillsManager(),
 			)
+
+			// Pre-hook context injection:
+			// When an active intent is loaded, rebuild the <intent_context> XML
+			// with the latest trace entries so the LLM receives up-to-date
+			// constraints, scope, and recent tool history on every API call.
+			if (this.activeIntentId && this.activeIntentContext) {
+				// Rebuild with current trace (trace grows between API calls)
+				const { loadActiveIntents, findIntentById, buildIntentContextXml } = await import(
+					"../context/activeIntents"
+				)
+				try {
+					const intents = await loadActiveIntents(this.cwd)
+					const intent = findIntentById(intents, this.activeIntentId)
+					if (intent) {
+						const relevantTrace = this.intentTraceLog.filter((e) => e.intentId === this.activeIntentId)
+						this.activeIntentContext = buildIntentContextXml(intent, relevantTrace)
+					}
+				} catch {
+					// If rebuild fails, use the last stored context
+				}
+				prompt += `\n\n====\n\nACTIVE INTENT CONTEXT\n\nThe following intent is currently active and governs all your actions:\n\n${this.activeIntentContext}`
+			}
+
+			return prompt
 		})()
 	}
 

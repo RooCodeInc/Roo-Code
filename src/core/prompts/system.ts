@@ -23,7 +23,9 @@ import {
 	addCustomInstructions,
 	markdownFormattingSection,
 	getSkillsSection,
+	getIntentProtocolSection,
 } from "./sections"
+import { isGovernedWorkspace } from "../context/activeIntents"
 
 // Helper function to get prompt component, filtering out empty objects
 export function getPromptComponent(
@@ -82,6 +84,9 @@ async function generatePrompt(
 	// Tools catalog is not included in the system prompt.
 	const toolsCatalog = ""
 
+	// Conditionally include Intent Protocol section for governed workspaces
+	const intentSection = isGovernedWorkspace(cwd) ? `\n${getIntentProtocolSection()}` : ""
+
 	const basePrompt = `${roleDefinition}
 
 ${markdownFormattingSection()}
@@ -93,7 +98,7 @@ ${getSharedToolUseSection()}${toolsCatalog}
 ${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined)}
 
 ${modesSection}
-${skillsSection ? `\n${skillsSection}` : ""}
+${skillsSection ? `\n${skillsSection}` : ""}${intentSection}
 ${getRulesSection(cwd, settings)}
 
 ${getSystemInfoSection(cwd)}
