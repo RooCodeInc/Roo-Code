@@ -1,202 +1,178 @@
-# Architecture Notes - Roo Code Extension
+# Architecture Notes: AI-Native IDE Hook System (Phase 0 & Upgrade Plan)
 
-## Overview
+## 1. Host Extension Architectural Analysis (Phase 0)
 
-The Roo Code extension is a VS Code extension that provides AI-powered coding assistance. This document outlines the core architecture, design decisions, and the hook system implementation.
+### 1.1 Trace of Execution: The Nervous System
 
-## Extension Architecture
+We performed a deep structural analysis of the **Roo Code** codebase to identify interception points. The execution flow for a single agent turn is mapped as follows:
 
-### Core Components
+1.  **User Input:** Entered in Webview Sidebar (`webview-ui/`).
+2.  **IPC Transmission:** Message sent via `vscode.postMessage({ type: 'submit', text: ... })` to Extension Host.
+3.  **Webview Provider:** `src/core/webview/ClineProvider.ts` receives the message. This is the **Data Boundary**.
+4.  **Task Manager:** `ClineProvider` instantiates or updates a `Task` instance in `src/core/task/Task.ts`.
+5.  **Prompt Construction:** `Task.ts` assembles the System Prompt (stateless re-assembly on every turn).
+6.  **Tool Execution Loop:** `src/core/assistant-message/presentAssistantMessage.ts` contains a switch statement that calls `tool.handle(task, block, callbacks)` for each tool.
+    - **Injection Point:** The switch statement in `presentAssistantMessage.ts` (lines 700-850) is the **Logical Chokepoint** where the Hook Engine will intercept execution.
 
-1. **Extension Entry Point** (`src/extension.ts`)
+### 1.2 Data Boundaries: Webview vs. Extension Host
 
-    - Handles extension activation and deactivation
-    - Initializes core services and providers
-    - Manages extension lifecycle
+| Layer            | Component                    | Data Format               | Transformation Process                         |
+| :--------------- | :--------------------------- | :------------------------ | :--------------------------------------------- |
+| **UI Layer**     | `ClineProvider.ts`           | JSON (`postMessage`)      | Sanitized input only; No Node.js API access    |
+| **IPC Boundary** | `ipcHandler.ts`              | JSON → Internal Object    | Deserializes JSON payload into `ToolUse` block |
+| **Logic Layer**  | `presentAssistantMessage.ts` | Internal `ToolUse` Object | Full Filesystem Access; Manages Promise Chain  |
 
-2. **ClineProvider** (`src/core/webview/ClineProvider.ts`)
+**Architectural Constraint:** The System Prompt is **stateless**. It must be re-assembled from conversation history on every turn. This necessitates the **PreCompact Hook** to prevent context overflow and ensure deterministic behavior.
 
-    - Manages the webview UI
-    - Handles communication between extension and webview
-    - Coordinates task execution
+### 1.3 Identification of Injection Points
 
-3. **Task System** (`src/core/task/Task.ts`)
+The Hook Engine is inserted at two critical junctures in `src/core/assistant-message/presentAssistantMessage.ts`:
 
-    - Represents individual AI coding tasks
-    - Manages task lifecycle and state
-    - Emits events for task state changes
+1.  **Pre-Execution:** Before `tool.handle()` is called. We wrap the Promise chain to intercept the `ToolUse` block. This allows us to validate intent before any side effects occur.
+2.  **Post-Execution:** After the Promise resolves but before the result is appended to conversation history. This allows us to modify the result (e.g., inject linter errors) before the LLM sees it, enabling autonomous recovery.
 
-4. **Services Layer**
+---
 
-    - **CloudService**: Handles cloud integration and authentication
-    - **McpServerManager**: Manages MCP (Model Context Protocol) servers
-    - **CodeIndexManager**: Manages code indexing for context
-    - **TelemetryService**: Handles telemetry and analytics
+## 2. The 'Reasoning Loop' Architecture (Phases 1 & 2)
 
-5. **Hook System** (`src/hooks/`)
-    - Plugin-like architecture for extending functionality
-    - Lifecycle hooks for extension stages
-    - Event hooks for extension events
+### 2.1 The Two-Stage State Machine (Handshake)
 
-## Hook System Architecture
+To solve the **Context-Injection Paradox**, we implement a mandatory Two-Stage State Machine. The agent cannot transition from **Reasoning** to **Action** without completing the Handshake.
 
-### Design Philosophy
+- **Stage 1: Intent Selection.** Agent must call `select_active_intent(intent_id)`.
+- **Stage 2: Contextualized Action.** Only after receiving `<intent_context>` can the agent call `write_file`.
 
-The hook system provides a clean, extensible way to add functionality without modifying core extension code. It follows the plugin pattern, allowing:
+### 2.2 Trigger Mechanism & Gatekeeper
 
-- **Separation of Concerns**: Core functionality remains separate from extensions
-- **Extensibility**: New features can be added without touching core code
-- **Testability**: Hooks can be tested independently
-- **Maintainability**: Clear contracts and interfaces
+- **Trigger Tool:** `select_active_intent(intent_id: string)`.
+- **Gatekeeper Logic:** Located in `src/hooks/middleware/intent-gatekeeper.ts`.
+    - **Check 1:** Is `intent_id` valid in `active_intents.yaml`?
+    - **Check 2:** Is the intent `LOCKED` by another agent? (Optimistic Locking).
+    - **Check 3:** Does the requested tool action fall within `owned_scope`?
 
-### Architecture Components
+### 2.3 Theoretical Grounding: Repaying Debt
 
-#### HookManager
+| Technical Decision      | Debt Repaid        | Mechanism                                                                          |
+| :---------------------- | :----------------- | :--------------------------------------------------------------------------------- |
+| **Mandatory Handshake** | **Trust Debt**     | Prevents blind code acceptance. Forces explicit intent citation.                   |
+| **Scope Enforcement**   | **Cognitive Debt** | Prevents "Vibe Coding" drift. Ensures agent stays within architectural boundaries. |
+| **PreCompact Hook**     | **Context Rot**    | Summarizes history to prevent token overflow and reasoning degradation.            |
 
-Singleton manager that orchestrates all hook operations:
+### 2.4 Failure Modes & Recovery Flows
 
-- **Registration**: Registers lifecycle and event hooks
-- **Execution**: Executes hooks in priority order
-- **Management**: Tracks and manages hook lifecycle
+- **Locked Intent:** If Agent A selects `INT-001`, Agent B is blocked. **Recovery:** Agent B is prompted to select a different intent or wait (returned as `tool_error`).
+- **Token Limit Exceeded:** If `<intent_context>` exceeds window. **Recovery:** `PreCompact Hook` truncates non-essential constraints, prioritizing `acceptance_criteria`.
+- **Scope Violation:** Agent attempts to write outside `owned_scope`. **Recovery:** Hook blocks write, returns error suggesting `scope_expansion_request` tool.
 
-#### Hook Types
+---
 
-Defines the contract for hooks:
+## 3. Hook System Architecture (Upgraded)
 
-- **Lifecycle Hooks**: Execute at specific extension lifecycle stages
-- **Event Hooks**: Execute in response to extension events
-- **Priority System**: Controls execution order
+### 3.1 Design Philosophy
 
-#### Hook Factory
+The upgraded hook system provides a **Deterministic Lifecycle** boundary for governed agent operations. It follows the **Middleware Interceptor Pattern**, allowing:
 
-Convenience API for creating and registering hooks:
+- **Privilege Separation**: Webview (UI) cannot access filesystem directly.
+- **Deterministic Execution**: Hooks execute regardless of model probabilistic output.
+- **Fail-Safe Operations**: Individual hook failures do not crash the agent loop.
+- **Traceability**: Every action is logged to `.orchestration/agent_trace.jsonl`.
 
-```typescript
-const hook = createHook()
-hook.onLifecycle(HookLifecycleStage.AfterActivate, callback)
-hook.onEvent(HookEventType.TaskCreated, callback)
-```
+### 3.2 Architecture Components
 
-### Hook Lifecycle Stages
+#### HookEngine
 
-1. **BeforeActivate**: Executes before extension activation
+Central middleware boundary that orchestrates all hook operations:
 
-    - Use case: Pre-initialization checks, configuration validation
+- **Registration**: Registers PreToolUse and PostToolUse hooks.
+- **Interception**: Wraps tool execution promises.
+- **Context Management**: Maintains `activeIntentId` across turns.
 
-2. **AfterActivate**: Executes after extension activation
+#### Hook Types (Deterministic Lifecycle)
 
-    - Use case: Post-initialization setup, service registration
+- **PreToolUse**: Executes BEFORE tool execution (Validation, HITL, Scope Check).
+- **PostToolUse**: Executes AFTER tool execution (Trace Logging, Linting, Formatting).
+- **PreCompact**: Executes BEFORE context assembly (Token Management, Summarization).
 
-3. **BeforeDeactivate**: Executes before extension deactivation
+### 3.3 Priority System
 
-    - Use case: Cleanup preparation, state saving
+Hooks execute in priority order to ensure security before logic:
 
-4. **AfterDeactivate**: Executes after extension deactivation
-    - Use case: Final cleanup, resource release
+- **Critical**: Security gates (Intent Gatekeeper, HITL).
+- **High**: Context enrichment (Intent Loading).
+- **Normal**: Traceability (Logging, Hashing).
+- **Low**: Post-processing (Formatting, Telemetry).
 
-### Hook Event Types
-
-- **TaskCreated**: Triggered when a new task is created
-- **TaskStarted**: Triggered when a task starts execution
-- **TaskCompleted**: Triggered when a task completes successfully
-- **TaskAborted**: Triggered when a task is aborted
-- **ProviderInitialized**: Triggered when ClineProvider is initialized
-- **SettingsChanged**: Triggered when extension settings change
-- **WorkspaceOpened**: Triggered when a workspace is opened
-- **WorkspaceClosed**: Triggered when a workspace is closed
-
-### Priority System
-
-Hooks execute in priority order:
-
-- **Critical**: Highest priority, executes first
-- **High**: High priority
-- **Normal**: Default priority
-- **Low**: Lowest priority, executes last
-
-Within the same priority, hooks execute in registration order.
-
-### Error Handling
+### 3.4 Error Handling
 
 The hook system implements robust error handling:
 
-- Individual hook failures don't stop other hooks from executing
-- Errors are logged to the output channel
-- Hook execution continues even if one hook fails
+- Individual hook failures don't stop other hooks from executing.
+- Errors are returned as structured `tool_error` to the LLM for self-correction.
+- Hook execution continues even if one hook fails (Fail-Safe).
 
-## Integration Points
+---
 
-### Extension Activation
+## 4. Integration Points
+
+### 4.1 Extension Activation
 
 The hook system is initialized during extension activation:
 
 ```typescript
-const hookManager = HookManager.getInstance()
-hookManager.initialize({ extensionContext, outputChannel })
-
-await hookManager.executeLifecycleHook(HookLifecycleStage.BeforeActivate)
-// ... extension initialization ...
-await hookManager.executeLifecycleHook(HookLifecycleStage.AfterActivate)
+// In src/extension.ts
+const hookEngine = new HookEngine(context)
+hookEngine.registerPreHook(new IntentGatekeeper())
+hookEngine.registerPostHook(new TraceSerializer())
 ```
 
-### Task Lifecycle
+### 4.2 Task Lifecycle
 
-Hooks are integrated into the task system:
+Hooks are integrated into the task system at the tool execution chokepoint:
 
 ```typescript
-// In Task.ts
-await hookManager.executeEventHook(HookEventType.TaskCreated, { taskId })
-await hookManager.executeEventHook(HookEventType.TaskStarted, { taskId })
+// In src/core/assistant-message/presentAssistantMessage.ts
+const preResult = await hookEngine.interceptPre(toolCall)
+if (preResult.blocked) return this.formatRejection(preResult)
+
+const result = await tool.handle(task, block, callbacks)
+
+await hookEngine.interceptPost(toolCall, result)
 ```
 
-### Extension Deactivation
+### 4.3 Sidecar Storage
 
-Hooks are executed during deactivation:
+Trace data is stored non-destructively in `.orchestration/`:
 
-```typescript
-await hookManager.executeLifecycleHook(HookLifecycleStage.BeforeDeactivate)
-// ... cleanup ...
-await hookManager.executeLifecycleHook(HookLifecycleStage.AfterDeactivate)
-```
+- **active_intents.yaml**: Intent Specifications (SpecKit Foundation).
+- **agent_trace.jsonl**: Immutable Ledger (Agent Trace Spec).
+- **CLAUDE.md**: Shared Brain (Multi-Agent Orchestration).
 
-## Design Patterns
+---
 
-### Singleton Pattern
+## 5. Visual System Blueprint
 
-HookManager uses the singleton pattern to ensure a single instance manages all hooks across the extension.
+### 5.1 Component Separation
 
-### Observer Pattern
+- **Webview**: Restricted UI (No Node.js API).
+- **Extension Host**: Logic Layer (Task.ts, presentAssistantMessage.ts).
+- **Hook Engine**: Middleware Boundary (src/hooks/).
+- **Sidecar Storage**: Data Layer (.orchestration/).
 
-The hook system implements the observer pattern, allowing multiple hooks to observe and react to the same events.
+### 5.2 Data Flow
 
-### Factory Pattern
+1.  User Prompt → Webview → IPC → Extension Host.
+2.  Extension Host → Hook Engine (PreToolUse).
+3.  Hook Engine → Tool Executor (if validated).
+4.  Tool Executor → File System.
+5.  File System → Hook Engine (PostToolUse).
+6.  Hook Engine → Sidecar Storage (Trace Log).
 
-The `createHook()` factory function provides a clean API for hook creation and registration.
+---
 
-## Extension Points
+## 6. Best Practices
 
-The hook system provides extension points for:
-
-1. **Custom Initialization**: Add custom initialization logic
-2. **Event Monitoring**: Monitor and react to extension events
-3. **Task Interception**: Intercept and modify task behavior
-4. **Settings Integration**: React to settings changes
-5. **Workspace Management**: Handle workspace lifecycle events
-
-## Future Enhancements
-
-Potential enhancements to the hook system:
-
-1. **Hook Dependencies**: Allow hooks to depend on other hooks
-2. **Conditional Execution**: Execute hooks based on conditions
-3. **Hook Middleware**: Transform data between hooks
-4. **Hook Testing Utilities**: Utilities for testing hooks
-5. **Hook Documentation Generation**: Auto-generate hook documentation
-
-## Best Practices
-
-1. **Idempotency**: Hooks should be idempotent when possible
-2. **Error Handling**: Hooks should handle errors gracefully
-3. **Performance**: Hooks should be fast and non-blocking
-4. **Naming**: Use descriptive names for hooks
-5. **Documentation**: Document hook behavior and side effects
+1.  **Spatial Independence**: Use content hashes (SHA-256) for trace records, not line numbers.
+2.  **Atomic Writes**: Sidecar files must be written atomically to prevent corruption.
+3.  **Idempotency**: Hooks should be idempotent when possible.
+4.  **Least Privilege**: Tools should operate under the principle of least privilege.
+5.  **Documentation**: Document hook behavior and side effects in CLAUDE.md.
