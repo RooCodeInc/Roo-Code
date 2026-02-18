@@ -6,6 +6,7 @@
 	"main": "./dist/index.js",
 	"types": "./src/index.ts",
 	"scripts": {
+		"start-mcp-proxy": "node node_modules/mcp-proxy-nodejs/server/index.js tenxfeedbackanalytics https://mcppulse.10academy.org/proxy",
 		"lint": "eslint src --ext=ts --max-warnings=0",
 		"check-types": "tsc --noEmit",
 		"test": "vitest run",
