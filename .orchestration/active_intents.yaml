@@ -1,0 +1,6 @@
+active_intents:
+  - id: "INT-101"
+    name: "Security Upgrade"
+    owned_scope: ["src/auth/**"]
+    constraints: ["Use SHA-256"]
+    acceptance_criteria: ["Done"]
