@@ -1,5 +1,7 @@
 import { PreHook } from "./PreHook"
 import { PostHook } from "./PostHook"
+import { IntentLockManager } from "./IntentLockManager"
+import { detectAstNodeType } from "../utilities/astCapture"
 import type { MutationClass } from "../models/AgentTrace"
 
 export type HookMeta = {
@@ -25,20 +27,36 @@ export class HookEngine {
     // Pre: Validate intent (will throw on invalid/missing)
     await PreHook.validate(intentId)
 
-    // Run tool
-    const result = await fn()
-
-    // Post: Append ledger entry when file context is provided
-    if (meta?.filePath && typeof meta.content === "string") {
-      await PostHook.log({
-        filePath: meta.filePath,
-        content: meta.content,
-        intentId,
-        mutationClass: meta.mutationClass ?? ("INTENT_EVOLUTION" as MutationClass),
-        contributorModel: meta.contributorModel,
-        astNodeType: meta.astNodeType,
-      })
+    // Acquire intent lock to avoid parallel collisions
+    const locks = new IntentLockManager()
+    const owner = meta?.contributorModel ?? "HookEngine"
+    const acquired = await locks.acquire(intentId, owner)
+    if (!acquired) {
+      throw new Error(`Intent lock is held for ${intentId}. Try again later.`)
     }
-    return result
+
+    let result: T
+    try {
+      // Run tool
+      result = await fn()
+
+      // Post: Append ledger entry when file context is provided
+      if (meta?.filePath && typeof meta.content === "string") {
+        const astNodeType =
+          meta.astNodeType ?? detectAstNodeType(meta.filePath, meta.content)
+        await PostHook.log({
+          filePath: meta.filePath,
+          content: meta.content,
+          intentId,
+          mutationClass: meta.mutationClass ?? ("INTENT_EVOLUTION" as MutationClass),
+          contributorModel: meta.contributorModel,
+          astNodeType,
+        })
+      }
+      return result
+    } finally {
+      // Always release the lock
+      await locks.release(intentId, owner)
+    }
   }
 }

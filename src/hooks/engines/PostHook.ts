@@ -1,7 +1,7 @@
 /// <reference types="node" />
-import * as fs from "node:fs/promises"
-import * as path from "node:path"
-import { randomUUID, createHash } from "node:crypto"
+import * as fs from "fs/promises"
+import * as path from "path"
+import { randomUUID, createHash } from "crypto"
 
 import type { MutationClass, AgentTraceEntry } from "../models/AgentTrace"
 
