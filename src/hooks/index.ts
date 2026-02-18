@@ -14,6 +14,10 @@ import { contextLoader } from "./preHooks/contextLoader"
 import { intentValidator } from "./preHooks/intentValidator"
 import { traceLogger } from "./postHooks/traceLogger"
 import { docUpdater } from "./postHooks/docUpdater"
+import { selectActiveIntent } from "./tools/selectActiveIntent"
+import { runWithHooks } from "./engine"
 
 export const preHooks = [contextLoader, intentValidator]
 export const postHooks = [traceLogger, docUpdater]
+
+export { selectActiveIntent, runWithHooks }
