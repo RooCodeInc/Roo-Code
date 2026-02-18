@@ -1,0 +1,20 @@
+# .orchestration/active_intents.yaml
+# Sidecar Storage for Intent Specifications
+# This file is machine-managed. Do not edit manually.
+
+version: 1.0
+active_intents:
+  - id: "INT-001"
+    name: "Example: Build Weather API Endpoint"
+    status: "IN_PROGRESS"
+    owned_scope: 
+      - "src/api/weather/**"
+      - "src/models/Weather.ts"
+    constraints:
+      - "Use TypeScript interfaces for all API responses"
+      - "Include rate limiting middleware"
+      - "Must not use external auth providers"
+    acceptance_criteria:
+      - "GET /api/weather/:city returns 200 with valid schema"
+      - "Unit tests in tests/api/weather/ pass"
+    rationale: "Migrate from session-based to stateless auth to scale horizontally."
