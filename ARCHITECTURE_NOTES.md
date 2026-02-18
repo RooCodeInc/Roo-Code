@@ -86,3 +86,7 @@
 ## 7. High-Level Message Diagram
 
 `Webview UI` -> `ClineProvider` -> `webviewMessageHandler` -> `Task.submitUserMessage` -> `API stream` -> `tool_call parsing` -> `Tool class execute` -> `tool_result persisted` -> `webview state update`
+
+## 8. Maintenance Note
+
+This file includes documentation-only updates and does not change runtime behavior.
