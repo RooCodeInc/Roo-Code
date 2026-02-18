@@ -294,6 +294,7 @@ export function WorkersContent({
 		if (!objectiveDefaultModel?.modelId) return "—"
 		return formatModelIdForUi(objectiveDefaultModel.modelId)
 	}, [objectiveDefaultModel])
+	const selectedModeLabel = getModeLabel(selectedMode)
 	const examplePrompt = selectedOutcome?.builderProfile?.examplePrompt ?? ""
 	const cloudSetupHref = useMemo(() => {
 		if (!effectiveOutcomeId) return "/cloud-agents/setup"
@@ -515,7 +516,7 @@ export function WorkersContent({
 															Optimized for
 														</p>
 														<p className="mt-1 text-sm font-semibold text-foreground">
-															{getModeLabel(selectedMode)}
+															{selectedModeLabel}
 														</p>
 													</div>
 													<div className="p-3">
@@ -780,9 +781,6 @@ export function WorkersContent({
 																{outcome.description}
 															</p>
 														</div>
-														<span className="shrink-0 inline-flex items-center rounded-full border border-border/50 bg-background/20 px-2.5 py-1 text-[10px] font-semibold text-foreground/70">
-															Optimized for: {getModeLabel(selectedMode)}
-														</span>
 													</div>
 												</motion.button>
 											)
@@ -811,8 +809,8 @@ export function WorkersContent({
 
 										<div className="relative">
 											<div className="border-b border-border/40 px-6 pb-5 pt-6">
-												<div className="flex flex-wrap items-start justify-between gap-4">
-													<div className="min-w-0">
+												<div className="flex items-start gap-4">
+													<div className="min-w-0 flex-1">
 														<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground/70">
 															Profile snapshot
 														</p>
@@ -830,7 +828,7 @@ export function WorkersContent({
 
 													<div className="shrink-0">
 														<span className="inline-flex items-center rounded-full border border-border/50 bg-background/20 px-3 py-1 text-xs font-semibold text-foreground/80">
-															Optimized for: {getModeLabel(selectedMode)}
+															Optimized for: {selectedModeLabel}
 														</span>
 													</div>
 												</div>
@@ -963,7 +961,7 @@ export function WorkersContent({
 															<Link
 																href={`/evals/recommendations/${selectedOutcome.slug}?mode=${selectedMode}`}
 																className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-border/60 bg-background/10 px-4 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:border-border hover:bg-background/15 hover:text-foreground">
-																Learn more / customize
+																Learn more about this profile
 																<ArrowRight className="size-4" />
 															</Link>
 														</div>

@@ -62,7 +62,7 @@ function pickCandidate(rec: RoleRecommendation | undefined, mode: EvalOptimizati
 	return rec.best[0] ?? null
 }
 
-function shortProvider(provider: string) {
+function shortProvider(provider: string): string {
 	switch (provider) {
 		case "openai":
 			return "OpenAI"
@@ -81,12 +81,12 @@ function shortProvider(provider: string) {
 	}
 }
 
-function formatDollars(value: number) {
+function formatDollars(value: number): string {
 	if (!Number.isFinite(value)) return "—"
 	return `$${Math.round(value)}`
 }
 
-function formatSeconds(value: number) {
+function formatSeconds(value: number): string {
 	if (!Number.isFinite(value)) return "—"
 	return `${value.toFixed(1)}s`
 }
@@ -95,7 +95,7 @@ function buildObjectiveQueryString(
 	searchParams: { get(name: string): string | null },
 	objectiveSlug: string,
 	mode: EvalOptimizationMode,
-) {
+): string {
 	const params = new URLSearchParams()
 	params.set("objective", objectiveSlug)
 	params.set("mode", mode)
@@ -107,9 +107,85 @@ function buildObjectiveQueryString(
 	return `?${params.toString()}`
 }
 
+type PrimaryScatterPoint = {
+	name: string
+	provider: string
+	score: number
+	successRate: number
+	dailyCost: number
+	dotSize: number
+	isSelected: boolean
+}
+
+type ObjectiveDataPreviewProps = {
+	points: PrimaryScatterPoint[]
+	compareHref: string
+}
+
+function ObjectiveDataPreview({ points, compareHref }: ObjectiveDataPreviewProps): JSX.Element {
+	return (
+		<div className="mt-6 rounded-2xl border border-border/50 bg-background/15 p-6 backdrop-blur-sm">
+			<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground/70">Data preview</p>
+			<p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+				Composite score vs estimated daily cost for the primary agent, with dot size mapped to success rate.
+			</p>
+
+			<div className="mt-4 h-[320px] w-full overflow-hidden rounded-2xl border border-border/50 bg-background/10 p-3">
+				<ResponsiveContainer width="100%" height="100%">
+					<ScatterChart margin={{ top: 10, right: 10, bottom: 10, left: 0 }}>
+						<XAxis
+							type="number"
+							dataKey="dailyCost"
+							name="Daily Cost"
+							tick={{ fill: "currentColor", fontSize: 12 }}
+							axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
+							tickLine={{ stroke: "rgba(255,255,255,0.08)" }}
+						/>
+						<YAxis
+							type="number"
+							dataKey="score"
+							name="Score"
+							domain={[40, 100]}
+							tick={{ fill: "currentColor", fontSize: 12 }}
+							axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
+							tickLine={{ stroke: "rgba(255,255,255,0.08)" }}
+						/>
+						<ZAxis type="number" dataKey="dotSize" range={[60, 360]} />
+						<Tooltip content={<ObjectiveTooltip />} />
+						<Scatter data={points} fill="#3b82f6">
+							{points.map((point, i) => {
+								const pointColor = point.isSelected ? "#22c55e" : "#3b82f6"
+								const strokeColor = point.isSelected ? "rgba(34,197,94,0.65)" : "rgba(59,130,246,0.35)"
+								const strokeWidth = point.isSelected ? 2 : 1
+
+								return <Cell key={i} fill={pointColor} stroke={strokeColor} strokeWidth={strokeWidth} />
+							})}
+						</Scatter>
+					</ScatterChart>
+				</ResponsiveContainer>
+			</div>
+
+			<div className="mt-4">
+				<Link
+					href={compareHref}
+					className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/10 px-5 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-background/20 hover:text-foreground">
+					Compare the full set
+					<ArrowRight className="size-4" />
+				</Link>
+			</div>
+		</div>
+	)
+}
+
 type ObjectiveTooltipPayloadEntry = { payload?: unknown }
 
-function ObjectiveTooltip({ active, payload }: { active?: boolean; payload?: ObjectiveTooltipPayloadEntry[] }) {
+function ObjectiveTooltip({
+	active,
+	payload,
+}: {
+	active?: boolean
+	payload?: ObjectiveTooltipPayloadEntry[]
+}): JSX.Element | null {
 	if (!active || !payload?.length) return null
 	const entryPayload = payload[0]?.payload
 	const p = entryPayload as
@@ -204,7 +280,7 @@ export function ObjectiveContent({ objective, initialMode, recs }: Props) {
 		[mode, objective.slug, searchParams],
 	)
 
-	const primaryScatter = useMemo(() => {
+	const primaryScatter = useMemo<PrimaryScatterPoint[]>(() => {
 		if (!primaryRoleId) return []
 		const rec = recByRole.get(primaryRoleId)
 		if (!rec) return []
@@ -218,6 +294,10 @@ export function ObjectiveContent({ objective, initialMode, recs }: Props) {
 			isSelected: primaryCandidate?.modelId === c.modelId,
 		}))
 	}, [primaryCandidate?.modelId, primaryRoleId, recByRole])
+
+	const comparePrimaryHref = primaryRoleId
+		? `/evals/recommendations/roles/${primaryRoleId}/compare${roleQuery}`
+		: "/evals/recommendations"
 
 	return (
 		<div className="relative">
@@ -529,6 +609,8 @@ export function ObjectiveContent({ objective, initialMode, recs }: Props) {
 									)
 								})}
 							</div>
+
+							<ObjectiveDataPreview points={primaryScatter} compareHref={comparePrimaryHref} />
 						</div>
 
 						<div className="lg:col-span-5">
@@ -570,69 +652,6 @@ export function ObjectiveContent({ objective, initialMode, recs }: Props) {
 										</pre>
 									</div>
 								) : null}
-							</div>
-
-							<div className="mt-6 rounded-2xl border border-border/50 bg-background/15 p-6 backdrop-blur-sm">
-								<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground/70">
-									Data preview
-								</p>
-								<p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-									Composite score vs estimated daily cost for the primary agent, with dot size mapped
-									to success rate.
-								</p>
-
-								<div className="mt-4 h-[320px] w-full overflow-hidden rounded-2xl border border-border/50 bg-background/10 p-3">
-									<ResponsiveContainer width="100%" height="100%">
-										<ScatterChart margin={{ top: 10, right: 10, bottom: 10, left: 0 }}>
-											<XAxis
-												type="number"
-												dataKey="dailyCost"
-												name="Daily Cost"
-												tick={{ fill: "currentColor", fontSize: 12 }}
-												axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
-												tickLine={{ stroke: "rgba(255,255,255,0.08)" }}
-											/>
-											<YAxis
-												type="number"
-												dataKey="score"
-												name="Score"
-												domain={[40, 100]}
-												tick={{ fill: "currentColor", fontSize: 12 }}
-												axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
-												tickLine={{ stroke: "rgba(255,255,255,0.08)" }}
-											/>
-											<ZAxis type="number" dataKey="dotSize" range={[60, 360]} />
-											<Tooltip content={<ObjectiveTooltip />} />
-											<Scatter data={primaryScatter} fill="#3b82f6">
-												{primaryScatter.map((d, i) => (
-													<Cell
-														key={i}
-														fill={d.isSelected ? "#22c55e" : "#3b82f6"}
-														stroke={
-															d.isSelected
-																? "rgba(34,197,94,0.65)"
-																: "rgba(59,130,246,0.35)"
-														}
-														strokeWidth={d.isSelected ? 2 : 1}
-													/>
-												))}
-											</Scatter>
-										</ScatterChart>
-									</ResponsiveContainer>
-								</div>
-
-								<div className="mt-4">
-									<Link
-										href={
-											primaryRoleId
-												? `/evals/recommendations/roles/${primaryRoleId}/compare${roleQuery}`
-												: "/evals/recommendations"
-										}
-										className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/10 px-5 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-background/20 hover:text-foreground">
-										Compare the full set
-										<ArrowRight className="size-4" />
-									</Link>
-								</div>
 							</div>
 						</div>
 					</div>
