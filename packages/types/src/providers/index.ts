@@ -23,6 +23,7 @@ export * from "./xai.js"
 export * from "./vercel-ai-gateway.js"
 export * from "./zai.js"
 export * from "./minimax.js"
+export * from "./modelslab.js"
 
 import { anthropicDefaultModelId } from "./anthropic.js"
 import { basetenDefaultModelId } from "./baseten.js"
@@ -45,6 +46,7 @@ import { xaiDefaultModelId } from "./xai.js"
 import { vercelAiGatewayDefaultModelId } from "./vercel-ai-gateway.js"
 import { internationalZAiDefaultModelId, mainlandZAiDefaultModelId } from "./zai.js"
 import { minimaxDefaultModelId } from "./minimax.js"
+import { modelsLabDefaultModelId } from "./modelslab.js"
 
 // Import the ProviderName type from provider-settings to avoid duplication
 import type { ProviderName } from "../provider-settings.js"
@@ -79,7 +81,9 @@ export function getProviderDefaultModelId(
 			return deepSeekDefaultModelId
 		case "moonshot":
 			return moonshotDefaultModelId
-		case "minimax":
+		case "modelslab":
+    return modelsLabDefaultModelId
+  case "minimax":
 			return minimaxDefaultModelId
 		case "zai":
 			return options?.isChina ? mainlandZAiDefaultModelId : internationalZAiDefaultModelId
