@@ -1852,7 +1852,6 @@ export class ClineProvider
 			alwaysAllowUpdateTodoList,
 			allowedMaxRequests,
 			allowedMaxCost,
-			autoCondenseContext,
 			autoCondenseContextPercent,
 			notificationsEnabled,
 			soundEnabled,
@@ -1952,7 +1951,6 @@ export class ClineProvider
 			alwaysAllowUpdateTodoList: alwaysAllowUpdateTodoList ?? false,
 			allowedMaxRequests,
 			allowedMaxCost,
-			autoCondenseContext: autoCondenseContext ?? true,
 			autoCondenseContextPercent: autoCondenseContextPercent ?? 100,
 			uriScheme: vscode.env.uriScheme,
 			currentTaskItem: this.getCurrentCline()?.taskId
@@ -2183,7 +2181,6 @@ export class ClineProvider
 			diagnosticsEnabled: stateValues.diagnosticsEnabled ?? true,
 			allowedMaxRequests: stateValues.allowedMaxRequests,
 			allowedMaxCost: stateValues.allowedMaxCost,
-			autoCondenseContext: stateValues.autoCondenseContext ?? true,
 			autoCondenseContextPercent: stateValues.autoCondenseContextPercent ?? 100,
 			taskHistory: stateValues.taskHistory,
 			allowedCommands: stateValues.allowedCommands,

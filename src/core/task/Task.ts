@@ -30,6 +30,7 @@ import {
 	getModelId,
 	DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
 	isBlockingAsk,
+	ANTHROPIC_DEFAULT_MAX_TOKENS,
 } from "@siid-code/types"
 import { TelemetryService } from "@siid-code/telemetry"
 import { CloudService } from "@roo-code/cloud"
@@ -107,7 +108,7 @@ import {
 } from "../checkpoints"
 import { processUserContentMentions } from "../mentions/processUserContentMentions"
 import { ApiMessage } from "../task-persistence/apiMessages"
-import { summarizeConversation } from "../condense"
+import { summarizeConversation, MIN_CONDENSE_THRESHOLD, MAX_CONDENSE_THRESHOLD } from "../condense"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { restoreTodoListForTask, setTodoListForTask } from "../tools/updateTodoListTool"
 import { AutoApprovalHandler } from "./AutoApprovalHandler"
@@ -832,7 +833,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
-	public async condenseContext(): Promise<void> {
+	public async condenseContext(isAutomaticTrigger = false): Promise<void> {
 		const systemPrompt = await this.getSystemPrompt()
 
 		// Get condensing configuration
@@ -871,7 +872,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			systemPrompt, // Default summarization prompt (fallback)
 			this.taskId,
 			prevContextTokens,
-			false, // manual trigger
+			isAutomaticTrigger,
 			customCondensingPrompt, // User's custom prompt
 			condensingApiHandler, // Specific handler for condensing
 		)
@@ -2277,7 +2278,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			alwaysApproveResubmit,
 			requestDelaySeconds,
 			mode,
-			autoCondenseContext = true,
 			autoCondenseContextPercent = 100,
 			profileThresholds = {},
 		} = state ?? {}
@@ -2345,46 +2345,44 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			const contextWindow = modelInfo.contextWindow
 
-			const currentProfileId =
-				state?.listApiConfigMeta.find((profile) => profile.name === state?.currentApiConfigName)?.id ??
-				"default"
-
 			// Count system prompt tokens and add to contextTokens for accurate threshold checking
 			const systemPromptTokens = await this.api.countTokens([{ type: "text", text: systemPrompt }])
 			const totalTokensWithSystemPrompt = contextTokens + systemPromptTokens
 
-			const truncateResult = await truncateConversationIfNeeded({
-				messages: this.apiConversationHistory,
-				totalTokens: totalTokensWithSystemPrompt,
-				maxTokens,
-				contextWindow,
-				apiHandler: this.api,
-				autoCondenseContext,
-				autoCondenseContextPercent,
-				systemPrompt,
-				taskId: this.taskId,
-				customCondensingPrompt,
-				condensingApiHandler,
-				profileThresholds,
-				currentProfileId,
-			})
-			if (truncateResult.messages !== this.apiConversationHistory) {
-				await this.overwriteApiConversationHistory(truncateResult.messages)
-			}
-			if (truncateResult.error) {
-				await this.say("condense_context_error", truncateResult.error)
-			} else if (truncateResult.summary) {
-				const { summary, cost, prevContextTokens, newContextTokens = 0 } = truncateResult
-				const contextCondense: ContextCondense = { summary, cost, newContextTokens, prevContextTokens }
-				await this.say(
-					"condense_context",
-					undefined /* text */,
-					undefined /* images */,
-					false /* partial */,
-					undefined /* checkpoint */,
-					undefined /* progressStatus */,
-					{ isNonInteractive: true } /* options */,
-					contextCondense,
+			// Check if automatic condensing should trigger based on context threshold
+			const effectiveMaxTokens = maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS
+			const availableTokens = contextWindow - effectiveMaxTokens
+			const contextPercentUsed = (totalTokensWithSystemPrompt / availableTokens) * 100
+
+			// Get profile-specific threshold or fall back to global default
+			const currentProfileId =
+				state?.listApiConfigMeta.find((profile) => profile.name === state?.currentApiConfigName)?.id ??
+				"default"
+			const profileThreshold = profileThresholds[currentProfileId]
+			const threshold =
+				profileThreshold !== undefined && profileThreshold !== -1
+					? profileThreshold
+					: autoCondenseContextPercent
+			const clampedThreshold = Math.max(MIN_CONDENSE_THRESHOLD, Math.min(threshold, MAX_CONDENSE_THRESHOLD))
+
+			console.log(
+				`[Task] Auto-condense check: contextPercentUsed=${contextPercentUsed.toFixed(1)}%, threshold=${clampedThreshold}%`,
+			)
+
+			// If threshold exceeded, trigger automatic condensing
+			if (contextPercentUsed >= clampedThreshold) {
+				console.log(`[Task] Threshold exceeded, triggering automatic condenseContext()`)
+				await this.condenseContext(true) // true = automatic trigger
+
+				// After condensing, recalculate token usage to verify it worked
+				const { contextTokens: newContextTokens } = this.getTokenUsage()
+				const systemPromptTokensAfter = await this.api.countTokens([{ type: "text", text: systemPrompt }])
+				const totalTokensAfterCondense = newContextTokens + systemPromptTokensAfter
+				const contextPercentAfterCondense = (totalTokensAfterCondense / availableTokens) * 100
+
+				console.log(
+					`[Task] After condensing: contextPercentUsed=${contextPercentAfterCondense.toFixed(1)}%, ` +
+						`tokens reduced from ${totalTokensWithSystemPrompt} to ${totalTokensAfterCondense}`,
 				)
 			}
 		}

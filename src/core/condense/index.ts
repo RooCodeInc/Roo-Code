@@ -103,7 +103,6 @@ const TOOLS_TO_TRIM_RESULTS: string[] = [
 // 	"new_task",
 // ]
 
-// TODO: Re-implement full summarization logic later
 export async function summarizeConversation(
 	messages: ApiMessage[],
 	apiHandler: ApiHandler,
@@ -114,48 +113,150 @@ export async function summarizeConversation(
 	customCondensingPrompt?: string,
 	condensingApiHandler?: ApiHandler,
 ): Promise<SummarizeResponse> {
-	console.log(`[summarizeConversation] Trimming tool results in-place. taskId: ${taskId}`)
+	const startTime = Date.now()
+	console.log(
+		`[summarizeConversation] Starting full summarization. taskId: ${taskId}, messageCount: ${messages.length}, isAutomatic: ${isAutomaticTrigger}`,
+	)
 
-	// Replace tool results with status message for specified tools (mutate in-place)
-	// Format: [0] header "[tool_name for '...'] Result:" -> keep
-	//         [1] actual result content -> remove (splice out)
-	//         [2] continuation hint "[Tool executed successfully...]" -> remove (splice out)
-	//         Then insert a single "[Result removed for context reduction]" block after the header
-	for (const msg of messages) {
-		if (msg.role !== "user" || !Array.isArray(msg.content)) {
-			continue
+	try {
+		// Use condensing handler if provided, otherwise use main handler
+		const handler = condensingApiHandler ?? apiHandler
+		const prompt = customCondensingPrompt ?? SUMMARY_PROMPT
+
+		// If we have too few messages, no need to summarize
+		if (messages.length <= N_MESSAGES_TO_KEEP * 2) {
+			console.log(`[summarizeConversation] Too few messages (${messages.length}), skipping summarization`)
+			return { messages, cost: 0, summary: "", newContextTokens: prevContextTokens }
 		}
-		for (let i = 0; i < msg.content.length; i++) {
-			const block = msg.content[i]
-			if (block.type !== "text") {
-				continue
+
+		// Split messages: keep first N and last N, summarize the middle
+		const firstMessages = messages.slice(0, N_MESSAGES_TO_KEEP)
+		const lastMessages = messages.slice(-N_MESSAGES_TO_KEEP)
+		const middleMessages = messages.slice(N_MESSAGES_TO_KEEP, -N_MESSAGES_TO_KEEP)
+
+		console.log(
+			`[summarizeConversation] Message split: first=${firstMessages.length}, middle=${middleMessages.length}, last=${lastMessages.length}`,
+		)
+
+		// Remove images from middle messages to save tokens
+		const cleanedMiddleMessages = maybeRemoveImageBlocks(middleMessages, handler)
+
+		// Make LLM call to summarize the middle section
+		const metadata = { taskId, mode: "summarize" }
+		const stream = handler.createMessage(prompt, cleanedMiddleMessages, metadata)
+
+		// Collect summary text and usage metrics
+		let summaryText = ""
+		let inputTokens = 0
+		let outputTokens = 0
+		let cacheWriteTokens = 0
+		let cacheReadTokens = 0
+		let totalCost: number | undefined
+
+		console.log(`[summarizeConversation] Streaming summary from LLM...`)
+
+		for await (const chunk of stream) {
+			if (!chunk) continue
+
+			switch (chunk.type) {
+				case "text":
+					summaryText += chunk.text
+					break
+				case "usage":
+					inputTokens += chunk.inputTokens
+					outputTokens += chunk.outputTokens
+					cacheWriteTokens += chunk.cacheWriteTokens ?? 0
+					cacheReadTokens += chunk.cacheReadTokens ?? 0
+					totalCost = chunk.totalCost
+					break
 			}
-			// Check if this block is a tool result header like "[tool_name for '...'] Result:"
-			// Some tools have extra text after the path, e.g. "[read_file for 'path'. Extra info here] Result:"
-			const toolMatch = block.text.match(/^\[(\w+)\s+for\s+'[^']*'[^\]]*\]\s*Result:/)
-			if (!toolMatch) {
-				continue
+		}
+
+		console.log(
+			`[summarizeConversation] Summary complete. Length: ${summaryText.length} chars, tokens: in=${inputTokens}, out=${outputTokens}`,
+		)
+
+		// If summary is empty or failed, return original messages
+		if (!summaryText || summaryText.trim().length === 0) {
+			console.log(`[summarizeConversation] Empty summary, returning original messages`)
+			return {
+				messages,
+				cost: 0,
+				summary: "",
+				newContextTokens: prevContextTokens,
+				error: "Summary generation returned empty result",
 			}
-			const toolName = toolMatch[1]
-			if (!TOOLS_TO_TRIM_RESULTS.includes(toolName)) {
-				continue
-			}
-			// Remove the next 2 blocks (result content + continuation hint) and replace with status message
-			const removeCount = Math.min(2, msg.content.length - (i + 1))
-			msg.content.splice(i + 1, removeCount, {
-				type: "text",
-				text: "[Result removed for context reduction]",
-			} as any)
+		}
+
+		// Calculate cost
+		// Import at top of file: import { calculateApiCostAnthropic } from "../../shared/cost"
+		const { calculateApiCostAnthropic } = await import("../../shared/cost")
+		const cost =
+			totalCost ??
+			calculateApiCostAnthropic(
+				handler.getModel().info,
+				inputTokens,
+				outputTokens,
+				cacheWriteTokens,
+				cacheReadTokens,
+			)
+
+		// Create summary message
+		const summaryMessage: ApiMessage = {
+			role: "assistant",
+			content: [
+				{
+					type: "text",
+					text: `[Context Summary]\n\n${summaryText}`,
+				},
+			],
+		}
+
+		// Build condensed conversation: first messages + summary + last messages
+		const condensedMessages: ApiMessage[] = [...firstMessages, summaryMessage, ...lastMessages]
+
+		// Count new token usage
+		const contextBlocks = condensedMessages.flatMap((message) =>
+			typeof message.content === "string" ? [{ text: message.content, type: "text" as const }] : message.content,
+		)
+		const newContextTokens = await handler.countTokens(contextBlocks)
+
+		const duration = Date.now() - startTime
+		const reduction = prevContextTokens - newContextTokens
+		const reductionPercent = ((reduction / prevContextTokens) * 100).toFixed(1)
+
+		console.log(
+			`[summarizeConversation] Success! Duration: ${duration}ms, ` +
+				`prevTokens: ${prevContextTokens}, newTokens: ${newContextTokens}, ` +
+				`reduction: ${reduction} tokens (${reductionPercent}%), cost: $${cost.toFixed(4)}`,
+		)
+
+		// Track telemetry
+		TelemetryService.instance.captureLlmCompletion(taskId, {
+			inputTokens,
+			outputTokens,
+			cacheWriteTokens,
+			cacheReadTokens,
+			cost,
+		})
+
+		return {
+			messages: condensedMessages,
+			summary: summaryText,
+			cost,
+			newContextTokens,
+		}
+	} catch (error) {
+		const duration = Date.now() - startTime
+		console.error(`[summarizeConversation] Error after ${duration}ms:`, error)
+
+		// Return original messages on error, with error message
+		return {
+			messages,
+			cost: 0,
+			summary: "",
+			newContextTokens: prevContextTokens,
+			error: error instanceof Error ? error.message : String(error),
 		}
 	}
-	// Count tokens after trimming to report new context size (exclude system prompt to match prevContextTokens calculation)
-	const contextBlocks = messages.flatMap((message) =>
-		typeof message.content === "string" ? [{ text: message.content, type: "text" as const }] : message.content,
-	)
-	const newContextTokens = await apiHandler.countTokens(contextBlocks)
-	console.log(
-		`[summarizeConversation] prevContextTokens: ${prevContextTokens}, newContextTokens: ${newContextTokens}`,
-	)
-
-	return { messages, cost: 0, summary: "", newContextTokens }
 }
