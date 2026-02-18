@@ -38,6 +38,7 @@ export const toolParamNames = [
 	"tool_name",
 	"arguments",
 	"uri",
+	"intent_id",
 	"question",
 	"result",
 	"diff",
@@ -90,6 +91,7 @@ export type ToolParamName = (typeof toolParamNames)[number]
  */
 export type NativeToolArgs = {
 	access_mcp_resource: { server_name: string; uri: string }
+	select_active_intent: { intent_id: string }
 	read_file: import("@roo-code/types").ReadFileToolParams
 	read_command_output: { artifact_id: string; search?: string; offset?: number; limit?: number }
 	attempt_completion: { result: string }
@@ -279,6 +281,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	list_files: "list files",
 	use_mcp_tool: "use mcp tools",
 	access_mcp_resource: "access mcp resources",
+	select_active_intent: "select active intent",
 	ask_followup_question: "ask questions",
 	attempt_completion: "complete tasks",
 	switch_mode: "switch modes",
@@ -315,6 +318,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 // Tools that are always available to all modes.
 export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
 	"ask_followup_question",
+	"select_active_intent",
 	"attempt_completion",
 	"switch_mode",
 	"new_task",
