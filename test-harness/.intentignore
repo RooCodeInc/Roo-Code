@@ -1,0 +1,4 @@
+# Build output — excluded from intent scope checks
+dist/*
+node_modules/*
+*.log

@@ -1,0 +1,21 @@
+# Phase 1 Test Harness — Intent Governance Configuration
+# This file controls which intents are active and enforceable.
+# Only IN_PROGRESS intents can be selected by the agent.
+
+intents:
+  - id: "refactor-auth"
+    goal: "Refactor authentication module for improved maintainability"
+    status: IN_PROGRESS
+    constraints:
+      - "Do not modify public API"
+      - "Preserve existing function signatures"
+    scope:
+      - "src/auth/*"
+
+  - id: "optimize-billing"
+    goal: "Improve invoice generation performance"
+    status: PAUSED
+    constraints:
+      - "No schema changes"
+    scope:
+      - "src/billing/*"

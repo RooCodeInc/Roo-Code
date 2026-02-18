@@ -4,6 +4,7 @@ import { Task } from "../task/Task"
 import type { ToolUse, HandleError, PushToolResult, AskApproval, NativeToolArgs } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
 import { isGovernedWorkspace, loadActiveIntents, findIntentById, type IntentTraceEvent } from "../context/activeIntents"
+import { hookEngine, buildHookContext } from "../../hooks"
 
 /**
  * Callbacks passed to tool execution
@@ -243,6 +244,20 @@ export abstract class BaseTool<TName extends ToolName> {
 				// If we can't read the YAML, log but allow execution to continue
 				// (the file existed at the isGovernedWorkspace check above)
 				console.warn(`[BaseTool] Failed to re-validate intent: ${error}`)
+			}
+		}
+
+		// ──────────────────────────────────────────────────────────────────────
+		// Phase 2: Hook Engine — UI-Blocking Authorization & Scope Enforcement
+		// Runs AFTER the Phase 1 gatekeeper (intent handshake) and BEFORE
+		// tool execution. Fires only for destructive tools in governed mode.
+		// ──────────────────────────────────────────────────────────────────────
+		if (!SAFE_TOOLS.has(this.name) && isGovernedWorkspace(task.cwd)) {
+			const hookCtx = buildHookContext(this.name, (params ?? {}) as Record<string, unknown>, task)
+			const hookResult = await hookEngine.runPre(hookCtx)
+			if (!hookResult.proceed) {
+				callbacks.pushToolResult(formatResponse.toolError(hookResult.error ?? "Blocked by Hook Engine."))
+				return
 			}
 		}
 
