@@ -1,7 +1,7 @@
 import fs from "fs/promises"
 import path from "path"
 
-import type { GovernanceStatus } from "@roo-code/types"
+import type { GovernanceStatus, GovernanceTraceEntry } from "@roo-code/types"
 
 import { loadIntentCatalog } from "./intentLoader"
 
@@ -83,5 +83,58 @@ export async function getGovernanceStatusSnapshot(cwd: string): Promise<Governan
 		lastTraceAt: lastTrace?.timestamp,
 		lastTraceStatus: lastTrace?.status,
 		lastToolName: lastTrace?.tool_name,
+	}
+}
+
+function parseTraceLine(line: string): GovernanceTraceEntry | null {
+	try {
+		const parsed = JSON.parse(line) as {
+			trace_id?: string
+			timestamp?: string
+			intent_id?: string | null
+			tool_name?: string
+			status?: "success" | "failure" | "blocked"
+			error_message?: string
+			args_summary?: string
+		}
+		if (
+			typeof parsed.trace_id !== "string" ||
+			typeof parsed.timestamp !== "string" ||
+			typeof parsed.tool_name !== "string" ||
+			(parsed.status !== "success" && parsed.status !== "failure" && parsed.status !== "blocked")
+		) {
+			return null
+		}
+		const msg = parsed.error_message ?? ""
+		const argsSummary = parsed.args_summary ?? ""
+		const collisionEvent =
+			msg.toLowerCase().includes("stale write") || argsSummary.toLowerCase().includes("collision_event")
+		return {
+			traceId: parsed.trace_id,
+			timestamp: parsed.timestamp,
+			intentId: parsed.intent_id ?? undefined,
+			toolName: parsed.tool_name,
+			status: parsed.status,
+			errorMessage: parsed.error_message,
+			collisionEvent,
+		}
+	} catch {
+		return null
+	}
+}
+
+export async function getGovernanceTraceEntries(cwd: string, limit = 100): Promise<GovernanceTraceEntry[]> {
+	const traceFile = orchestrationPath(cwd, "agent_trace.jsonl")
+	try {
+		const raw = await fs.readFile(traceFile, "utf-8")
+		const entries = raw
+			.split(/\r?\n/)
+			.map((line) => line.trim())
+			.filter(Boolean)
+			.map((line) => parseTraceLine(line))
+			.filter((item): item is GovernanceTraceEntry => Boolean(item))
+		return entries.slice(-Math.max(1, limit)).reverse()
+	} catch {
+		return []
 	}
 }

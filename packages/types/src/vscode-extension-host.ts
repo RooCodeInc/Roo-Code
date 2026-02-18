@@ -252,6 +252,16 @@ export interface GovernanceStatus {
 	lastToolName?: string
 }
 
+export interface GovernanceTraceEntry {
+	traceId: string
+	timestamp: string
+	intentId?: string
+	toolName: string
+	status: "success" | "failure" | "blocked"
+	errorMessage?: string
+	collisionEvent?: boolean
+}
+
 export type ExtensionState = Pick<
 	GlobalSettings,
 	| "currentApiConfigName"
@@ -381,6 +391,7 @@ export type ExtensionState = Pick<
 	openAiCodexIsAuthenticated?: boolean
 	debug?: boolean
 	governanceStatus?: GovernanceStatus
+	governanceTraceEntries?: GovernanceTraceEntry[]
 
 	/**
 	 * Monotonically increasing sequence number for clineMessages state pushes.

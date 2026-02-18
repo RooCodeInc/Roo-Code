@@ -50,6 +50,7 @@ import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
 import { GovernanceStatusPanel } from "./GovernanceStatusPanel"
+import { GovernanceTraceExplorer } from "./GovernanceTraceExplorer"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -1601,6 +1602,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				/>
 			)}
 			<GovernanceStatusPanel />
+			<GovernanceTraceExplorer />
 			{task ? (
 				<>
 					<TaskHeader
