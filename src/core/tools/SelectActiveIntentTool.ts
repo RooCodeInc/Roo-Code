@@ -98,6 +98,16 @@ export class SelectActiveIntentTool extends BaseTool<"select_active_intent"> {
 </intent_context>`
 
 			task.activeIntentId = intent_id
+
+			// Parse scope into Task state
+			const scopeLines = scope.split("\n")
+			const cleanScope = scopeLines
+				.map((line) => line.trim())
+				.filter((line) => line.length > 0)
+				.map((line) => line.replace(/^-\s*/, "").replace(/['"]/g, "").trim())
+
+			task.activeIntentScope = cleanScope
+
 			pushToolResult(xmlResult)
 		} catch (error) {
 			await handleError("selecting active intent", error as Error)
