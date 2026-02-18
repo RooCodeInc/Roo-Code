@@ -2987,7 +2987,7 @@ export class ClineProvider
 			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, remoteControlEnabled),
 			initialTodos: options.initialTodos,
 			...options,
-			workspacePath: options.workspacePath ?? this.currentWorkspacePath ?? getWorkspacePath(),
+			workspacePath: this.currentWorkspacePath ?? getWorkspacePath(),
 		})
 
 		await this.addClineToStack(task)
