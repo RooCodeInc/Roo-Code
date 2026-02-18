@@ -21,6 +21,7 @@ Strict privilege separation MUST be enforced.
 
 - Intercepts all tool execution requests.
 - Enforces deterministic governance rules.
+- MUST include native tools, dynamic MCP (`mcp_tool_use`), and custom-tool execution paths.
 
 ## Hook Responsibilities
 

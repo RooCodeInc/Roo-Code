@@ -131,6 +131,10 @@ export async function presentAssistantMessage(cline: Task) {
 			// Track if we've already pushed a tool result
 			let hasToolResult = false
 			const toolCallId = mcpBlock.id
+			let lastToolResult: ToolResponse | undefined
+			let orchestrationPreHookContext:
+				| import("../orchestration/ToolHookEngine").OrchestrationPreHookContext
+				| undefined
 
 			// Store approval feedback to merge into tool result (GitHub #10465)
 			let approvalFeedback: { text: string; images?: string[] } | undefined
@@ -143,6 +147,8 @@ export async function presentAssistantMessage(cline: Task) {
 					)
 					return
 				}
+
+				lastToolResult = content
 
 				let resultContent: string
 				let imageBlocks: Anthropic.ImageBlockParam[] = []
@@ -258,6 +264,33 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			if (!mcpBlock.partial) {
+				const preHookResult = await runOrchestrationPreToolHook({
+					task: cline,
+					toolName: "use_mcp_tool",
+					toolCallId,
+					toolOrigin: "mcp_dynamic",
+					mcpServerName: resolvedServerName,
+					mcpToolName: mcpBlock.toolName,
+					toolArgs: {
+						server_name: resolvedServerName,
+						tool_name: mcpBlock.toolName,
+						arguments: mcpBlock.arguments,
+					},
+					askApproval,
+				})
+
+				if (preHookResult.blocked) {
+					if (!preHookResult.alreadyHandled && preHookResult.errorResult) {
+						pushToolResult(preHookResult.errorResult)
+					}
+					break
+				}
+
+				orchestrationPreHookContext = preHookResult.context
+				consumePreHookApproval = preHookResult.preApproved === true
+			}
+
 			// Execute the MCP tool using the same handler as use_mcp_tool
 			// Create a synthetic ToolUse block that the useMcpToolTool can handle
 			const syntheticToolUse: ToolUse<"use_mcp_tool"> = {
@@ -282,6 +315,14 @@ export async function presentAssistantMessage(cline: Task) {
 				handleError,
 				pushToolResult,
 			})
+
+			if (!mcpBlock.partial && orchestrationPreHookContext) {
+				await runOrchestrationPostToolHook({
+					task: cline,
+					context: orchestrationPreHookContext,
+					toolResult: lastToolResult,
+				})
+			}
 			break
 		}
 		case "text": {
@@ -699,9 +740,12 @@ export async function presentAssistantMessage(cline: Task) {
 				| undefined
 
 			if (!block.partial) {
+				const isCustomToolForHook = stateExperiments?.customTools && customToolRegistry.has(block.name)
 				const preHookResult = await runOrchestrationPreToolHook({
 					task: cline,
 					toolName: block.name,
+					toolCallId,
+					toolOrigin: isCustomToolForHook ? "custom" : "native",
 					toolArgs: (block.nativeArgs ?? block.params) as Record<string, unknown> | undefined,
 					askApproval,
 				})

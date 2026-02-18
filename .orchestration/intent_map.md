@@ -34,3 +34,23 @@
 - .orchestration/active_intents.yaml
 - .orchestration/intent_map.md
 - ARCHITECTURE_NOTES.md
+
+## 2026-02-18T00:00:00.000Z - INT-001
+
+- src/core/orchestration/AstAttribution.ts
+- src/core/orchestration/ToolHookEngine.ts
+- src/core/assistant-message/presentAssistantMessage.ts
+- src/core/orchestration/**tests**/AstAttribution.spec.ts
+- src/core/orchestration/**tests**/ToolHookEngine.spec.ts
+- src/core/assistant-message/**tests**/presentAssistantMessage-mcp-orchestration.spec.ts
+
+## 2026-02-18T00:00:00.000Z - INT-003
+
+- .orchestration/hook_policy.yaml
+- specs/002-architecture-overview.md
+- specs/004-data-model-spec.md
+- specs/005-governance-spec.md
+- specs/006-traceability-spec.md
+- specs/008-definition-of-done.md
+- ARCHITECTURE_NOTES.md
+- .orchestration/intent_map.md

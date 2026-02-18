@@ -50,10 +50,13 @@
 
 - Pre-hook call occurs before each tool execution in `presentAssistantMessage(...)`.
 - Post-hook call occurs after each non-partial tool execution in `presentAssistantMessage(...)`.
+- Coverage includes native `tool_use`, dynamic `mcp_tool_use`, and custom tools.
 
 ### Command classification and human gate
 
-- SAFE/DESTRUCTIVE classification in `ToolHookEngine.ts`.
+- Default-destructive classification in `ToolHookEngine.ts`:
+    - `execute_command` is SAFE only when all chained segments match `.orchestration/hook_policy.yaml` read-only allowlist.
+    - Dynamic MCP tools are DESTRUCTIVE by default unless allowlisted in `.orchestration/hook_policy.yaml`.
 - Destructive actions require approve/reject via `askApproval(...)`.
 - Scope checks enforce `owned_scope` against target paths.
 - `.intentignore` support blocks mutations for ignored intent IDs.
@@ -75,8 +78,11 @@
 
 - Post-hook computes SHA-256 content hashes for modified segments.
 - Appends JSONL records to `.orchestration/agent_trace.jsonl`.
-- Includes `intent_id`, `related_requirements`, `mutation_class`, `tool_name`, `modified_ranges`.
-- Appends intent evolution entries into `.orchestration/intent_map.md` when class is `INTENT_EVOLUTION`.
+- Includes `intent_id`, `related_requirements`, `mutation_class`, `tool_name`, `tool_origin`, `agent_action`, `modified_ranges`.
+- Each modified range stores best-effort AST attribution:
+    - `ast_status` in `{ok,fallback}`
+    - `ast_nodes[]` with symbol/type/line/hash when parseable.
+- Appends intent evolution entries into `.orchestration/intent_map.md` with file and symbol surfaces when class is `INTENT_EVOLUTION`.
 
 ## Phase 4: Parallel orchestration
 

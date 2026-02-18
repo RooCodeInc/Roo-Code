@@ -1,0 +1,10 @@
+command:
+  readonly_allowlist:
+    - "^(pwd|ls|dir|get-childitem)(\\s+.*)?$"
+    - "^(cat|type|get-content)(\\s+.*)?$"
+    - "^(echo|printf|write-output)(\\s+.*)?$"
+    - "^(git\\s+(status|diff|log))(\\s+.*)?$"
+    - "^(rg|grep|findstr|select-string)(\\s+.*)?$"
+mcp:
+  default_classification: DESTRUCTIVE
+  readonly_tools: []

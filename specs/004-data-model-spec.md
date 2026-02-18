@@ -47,6 +47,10 @@ Post-hook after successful write operations.
 
 - Compute SHA-256 `content_hash`.
 - Preserve spatial independence of tracked changes.
+- Persist `tool_origin` and canonical `agent_action` per trace entry.
+- Persist per-range AST attribution:
+    - `ast_status` in `{ok,fallback}`
+    - `ast_nodes[]` with symbol/type/line/hash when available.
 
 ## 3. Spatial Intent Map
 
@@ -62,7 +66,27 @@ Map business intents to physical files and structural change surfaces.
 
 On `INTENT_EVOLUTION` mutations.
 
-## 4. Shared Brain
+### Requirements
+
+- When AST attribution exists, append symbol surfaces alongside file mappings.
+
+## 4. Hook Policy Sidecar
+
+### File
+
+`.orchestration/hook_policy.yaml`
+
+### Purpose
+
+Defines deterministic command/MCP mutability policy used by pre-hooks.
+
+### Structure
+
+- `command.readonly_allowlist[]`
+- `mcp.default_classification`
+- `mcp.readonly_tools[]`
+
+## 5. Shared Brain
 
 ### File
 

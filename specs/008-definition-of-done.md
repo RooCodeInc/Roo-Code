@@ -7,5 +7,6 @@ The SDD implementation is complete only when all conditions below are true:
 - Ledger links intent to code mutation records.
 - Scope violations are blocked.
 - Destructive commands require explicit approval.
+- Dynamic MCP tool paths are governed by the same deterministic pre/post hooks.
 - Parallel stale overwrite is prevented.
 - Documentation evolves as a side effect of code execution.

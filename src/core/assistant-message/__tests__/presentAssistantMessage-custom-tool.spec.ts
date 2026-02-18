@@ -6,6 +6,20 @@ import { validateToolUse } from "../../tools/validateToolUse"
 
 // Mock dependencies
 vi.mock("../../task/Task")
+vi.mock("../../orchestration/ToolHookEngine", () => ({
+	runOrchestrationPreToolHook: vi.fn().mockResolvedValue({
+		blocked: false,
+		preApproved: false,
+		context: {
+			toolName: "test_tool",
+			toolOrigin: "native",
+			agentActionName: "test_tool",
+			relatedRequirementIds: [],
+			targets: [],
+		},
+	}),
+	runOrchestrationPostToolHook: vi.fn().mockResolvedValue(undefined),
+}))
 vi.mock("../../tools/validateToolUse", () => ({
 	validateToolUse: vi.fn(),
 	isValidToolName: vi.fn((toolName: string) =>

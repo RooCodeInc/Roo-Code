@@ -6,9 +6,11 @@ import * as yaml from "yaml"
 
 import type { AskApproval, ToolResponse } from "../../shared/tools"
 import type { Task } from "../task/Task"
+import { collectAstAttributionForRange, type AstNodeAttribution } from "./AstAttribution"
 
 type MutationClass = "AST_REFACTOR" | "INTENT_EVOLUTION"
 type CommandClass = "SAFE" | "DESTRUCTIVE"
+type ToolOrigin = "native" | "mcp_dynamic" | "custom"
 
 interface ActiveIntent {
 	id: string
@@ -21,6 +23,22 @@ interface ActiveIntent {
 
 interface ActiveIntentsYaml {
 	active_intents?: ActiveIntent[]
+}
+
+interface HookPolicyYaml {
+	command?: {
+		readonly_allowlist?: string[]
+	}
+	mcp?: {
+		default_classification?: CommandClass
+		readonly_tools?: string[]
+	}
+}
+
+interface LoadedHookPolicy {
+	commandReadonlyAllowlist: RegExp[]
+	mcpDefaultClassification: CommandClass
+	mcpReadonlyTools: Set<string>
 }
 
 interface RuntimeState {
@@ -40,14 +58,30 @@ interface FileSnapshot {
 	beforeContent: string
 }
 
+interface TraceModifiedRange {
+	file: string
+	old_range: { start_line: number; end_line: number }
+	new_range: { start_line: number; end_line: number }
+	content_hash: string
+	before_hash: string | null
+	after_hash: string | null
+	ast_status: "ok" | "fallback"
+	ast_nodes: AstNodeAttribution[]
+}
+
 export interface OrchestrationPreHookContext {
 	toolName: string
+	toolCallId?: string
+	toolOrigin: ToolOrigin
+	agentActionName: string
 	intentId?: string
 	mutationClass?: MutationClass
 	relatedRequirementIds: string[]
 	targets: FileSnapshot[]
 	command?: string
 	commandClass?: CommandClass
+	mcpServerName?: string
+	mcpToolName?: string
 }
 
 export interface OrchestrationPreHookResult {
@@ -61,6 +95,10 @@ export interface OrchestrationPreHookResult {
 interface OrchestrationPreHookInput {
 	task: Task
 	toolName: string
+	toolCallId?: string
+	toolOrigin?: ToolOrigin
+	mcpServerName?: string
+	mcpToolName?: string
 	toolArgs?: Record<string, unknown>
 	askApproval: AskApproval
 }
@@ -78,8 +116,17 @@ const ACTIVE_INTENTS_FILE = "active_intents.yaml"
 const TRACE_LEDGER_FILE = "agent_trace.jsonl"
 const INTENT_MAP_FILE = "intent_map.md"
 const INTENT_IGNORE_FILE = ".intentignore"
+const HOOK_POLICY_FILE = "hook_policy.yaml"
 const DEFAULT_TRACE_REQUIREMENT_IDS = ["REQ-TRACE-001", "REQ-TRACE-002", "REQ-TRACE-003", "REQ-TRACE-004"]
 const ALLOWED_MUTATION_CLASSES = new Set<MutationClass>(["AST_REFACTOR", "INTENT_EVOLUTION"])
+const DEFAULT_MCP_CLASSIFICATION: CommandClass = "DESTRUCTIVE"
+const DEFAULT_COMMAND_READONLY_ALLOWLIST = [
+	"^(pwd|ls|dir|get-childitem)(\\s+.*)?$",
+	"^(cat|type|get-content)(\\s+.*)?$",
+	"^(echo|printf|write-output)(\\s+.*)?$",
+	"^(git\\s+(status|diff|log))(\\s+.*)?$",
+	"^(rg|grep|findstr|select-string)(\\s+.*)?$",
+]
 
 const WRITE_TOOLS = new Set<string>([
 	"write_to_file",
@@ -167,14 +214,23 @@ export async function selectActiveIntentForTask(
 export async function runOrchestrationPreToolHook(
 	input: OrchestrationPreHookInput,
 ): Promise<OrchestrationPreHookResult> {
-	const { task, toolName, toolArgs, askApproval } = input
+	const { task, toolName, toolArgs, askApproval, toolCallId, mcpServerName, mcpToolName } = input
 	const state = getRuntimeState(task)
+	const toolOrigin: ToolOrigin = input.toolOrigin ?? "native"
+	const agentActionName =
+		toolOrigin === "mcp_dynamic" ? `${mcpServerName ?? "unknown"}/${mcpToolName ?? toolName}` : toolName
+	const hookPolicy = await loadHookPolicy(task.cwd)
 
 	const context: OrchestrationPreHookContext = {
 		toolName,
+		toolCallId,
+		toolOrigin,
+		agentActionName,
 		intentId: state.activeIntent?.id,
 		relatedRequirementIds: DEFAULT_TRACE_REQUIREMENT_IDS,
 		targets: [],
+		mcpServerName,
+		mcpToolName,
 	}
 
 	if (toolName === "select_active_intent") {
@@ -182,10 +238,18 @@ export async function runOrchestrationPreToolHook(
 	}
 
 	const commandClass =
-		toolName === "execute_command" ? classifyCommand((toolArgs?.command as string | undefined) ?? "") : "SAFE"
+		toolName === "execute_command"
+			? classifyCommand((toolArgs?.command as string | undefined) ?? "", hookPolicy.commandReadonlyAllowlist)
+			: "SAFE"
+	const mcpToolClass =
+		toolOrigin === "mcp_dynamic"
+			? classifyMcpTool(hookPolicy, mcpServerName ?? "", mcpToolName ?? toolName)
+			: "SAFE"
 	const isCommandMutation = toolName === "execute_command" && commandClass === "DESTRUCTIVE"
 	const isWriteMutation = WRITE_TOOLS.has(toolName)
-	const isMutation = isWriteMutation || isCommandMutation
+	const isMcpMutation = toolOrigin === "mcp_dynamic" && mcpToolClass === "DESTRUCTIVE"
+	const isCustomMutation = toolOrigin === "custom"
+	const isMutation = isWriteMutation || isCommandMutation || isMcpMutation || isCustomMutation
 
 	if (isMutation && (!state.activeIntent || !state.turnIntentSelected)) {
 		return {
@@ -213,6 +277,11 @@ export async function runOrchestrationPreToolHook(
 	if (toolName === "execute_command") {
 		context.command = (toolArgs?.command as string | undefined) ?? ""
 		context.commandClass = commandClass
+	} else if (toolOrigin === "mcp_dynamic") {
+		context.command = `${mcpServerName ?? "unknown"}/${mcpToolName ?? toolName}`
+		context.commandClass = mcpToolClass
+	} else if (toolOrigin === "custom") {
+		context.commandClass = "DESTRUCTIVE"
 	}
 
 	if (!isMutation) {
@@ -295,19 +364,24 @@ export async function runOrchestrationPreToolHook(
 		}
 	}
 
-	const destructive = isWriteMutation || isCommandMutation
+	const destructive = isWriteMutation || isCommandMutation || isMcpMutation || isCustomMutation
 	if (!destructive) {
 		return { blocked: false, preApproved: false, context }
 	}
 
 	const approvalPayload = JSON.stringify({
 		tool: "orchestration_pre_hook",
+		tool_call_id: toolCallId ?? null,
+		tool_origin: toolOrigin,
+		agent_action_name: agentActionName,
 		tool_name: toolName,
 		classification: "DESTRUCTIVE",
 		intent_id: state.activeIntent?.id ?? null,
 		targets: context.targets.map((target) => target.relativePath),
 		command_class: context.commandClass,
 		command: context.command,
+		mcp_server_name: mcpServerName ?? null,
+		mcp_tool_name: mcpToolName ?? null,
 	})
 
 	const didApprove = await askApproval("tool", approvalPayload)
@@ -333,14 +407,7 @@ export async function runOrchestrationPostToolHook(input: OrchestrationPostHookI
 	if (WRITE_TOOLS.has(context.toolName) && context.targets.length > 0 && context.intentId) {
 		await ensureOrchestrationScaffold(task.cwd)
 
-		const modifiedRanges: Array<{
-			file: string
-			old_range: { start_line: number; end_line: number }
-			new_range: { start_line: number; end_line: number }
-			content_hash: string
-			before_hash: string | null
-			after_hash: string | null
-		}> = []
+		const modifiedRanges: TraceModifiedRange[] = []
 
 		for (const target of context.targets) {
 			const afterSnapshot = await readSnapshot(target.absolutePath, target.relativePath)
@@ -353,6 +420,11 @@ export async function runOrchestrationPostToolHook(input: OrchestrationPostHookI
 			}
 
 			const range = computeModifiedRange(target.beforeContent, afterSnapshot.beforeContent)
+			const astAttribution = await collectAstAttributionForRange(
+				target.absolutePath,
+				afterSnapshot.beforeContent,
+				range.newRange,
+			)
 			modifiedRanges.push({
 				file: target.relativePath,
 				old_range: range.oldRange,
@@ -360,6 +432,8 @@ export async function runOrchestrationPostToolHook(input: OrchestrationPostHookI
 				content_hash: range.contentHash,
 				before_hash: target.beforeHash,
 				after_hash: afterSnapshot.beforeHash,
+				ast_status: astAttribution.status,
+				ast_nodes: astAttribution.nodes,
 			})
 		}
 
@@ -372,17 +446,15 @@ export async function runOrchestrationPostToolHook(input: OrchestrationPostHookI
 				related_requirements: context.relatedRequirementIds,
 				mutation_class: context.mutationClass ?? "AST_REFACTOR",
 				tool_name: context.toolName,
+				tool_origin: context.toolOrigin,
+				agent_action: context.agentActionName,
 				modified_ranges: modifiedRanges,
 			}
 
 			await appendJsonLine(path.join(task.cwd, ORCHESTRATION_DIR, TRACE_LEDGER_FILE), traceEntry)
 
 			if (traceEntry.mutation_class === "INTENT_EVOLUTION") {
-				await appendIntentMapUpdate(
-					task.cwd,
-					context.intentId,
-					modifiedRanges.map((entry) => entry.file),
-				)
+				await appendIntentMapUpdate(task.cwd, context.intentId, modifiedRanges)
 			}
 		}
 	}
@@ -411,6 +483,7 @@ async function ensureOrchestrationScaffold(cwd: string): Promise<void> {
 
 	await ensureFile(path.join(orchestrationDir, TRACE_LEDGER_FILE), "")
 	await ensureFile(path.join(orchestrationDir, INTENT_MAP_FILE), "# Intent Map\n\n")
+	await ensureFile(path.join(orchestrationDir, HOOK_POLICY_FILE), defaultHookPolicyYaml())
 }
 
 async function ensureFile(filePath: string, defaultContent: string): Promise<void> {
@@ -663,16 +736,96 @@ function asString(value: unknown): string | undefined {
 	return typeof value === "string" ? value : undefined
 }
 
-function classifyCommand(command: string): CommandClass {
-	const normalized = command.toLowerCase()
-	const destructivePatterns = [
-		/[>|]{1,2}/,
-		/\b(rm|del|remove-item|mv|move-item|cp|copy-item|mkdir|rmdir|touch|chmod|chown)\b/,
-		/\b(git\s+(commit|push|reset|checkout|clean))\b/,
-		/\b(npm|pnpm|yarn)\s+(install|add|remove|uninstall|update|upgrade)\b/,
-		/\bsed\s+-i\b/,
-	]
-	return destructivePatterns.some((pattern) => pattern.test(normalized)) ? "DESTRUCTIVE" : "SAFE"
+function defaultHookPolicyYaml(): string {
+	return `command:
+  readonly_allowlist:
+    - "^(pwd|ls|dir|get-childitem)(\\\\s+.*)?$"
+    - "^(cat|type|get-content)(\\\\s+.*)?$"
+    - "^(echo|printf|write-output)(\\\\s+.*)?$"
+    - "^(git\\\\s+(status|diff|log))(\\\\s+.*)?$"
+    - "^(rg|grep|findstr|select-string)(\\\\s+.*)?$"
+mcp:
+  default_classification: DESTRUCTIVE
+  readonly_tools: []
+`
+}
+
+async function loadHookPolicy(cwd: string): Promise<LoadedHookPolicy> {
+	const defaults: LoadedHookPolicy = {
+		commandReadonlyAllowlist: DEFAULT_COMMAND_READONLY_ALLOWLIST.map((pattern) => new RegExp(pattern, "i")),
+		mcpDefaultClassification: DEFAULT_MCP_CLASSIFICATION,
+		mcpReadonlyTools: new Set<string>(),
+	}
+
+	const policyPath = path.join(cwd, ORCHESTRATION_DIR, HOOK_POLICY_FILE)
+	try {
+		const raw = await fs.readFile(policyPath, "utf-8")
+		const parsed = (yaml.parse(raw) as HookPolicyYaml | null) ?? {}
+		const allowlist = Array.isArray(parsed.command?.readonly_allowlist)
+			? parsed.command?.readonly_allowlist
+			: undefined
+		const readonlyTools = Array.isArray(parsed.mcp?.readonly_tools) ? parsed.mcp?.readonly_tools : undefined
+		const defaultClassification = parsed.mcp?.default_classification
+
+		return {
+			commandReadonlyAllowlist:
+				allowlist && allowlist.length > 0
+					? allowlist
+							.map((pattern) => {
+								try {
+									return new RegExp(pattern, "i")
+								} catch {
+									return undefined
+								}
+							})
+							.filter((value): value is RegExp => !!value)
+					: defaults.commandReadonlyAllowlist,
+			mcpDefaultClassification:
+				defaultClassification === "SAFE" || defaultClassification === "DESTRUCTIVE"
+					? defaultClassification
+					: defaults.mcpDefaultClassification,
+			mcpReadonlyTools: new Set(
+				(readonlyTools ?? [])
+					.map((tool) => normalizeMcpToolKey(tool))
+					.filter((tool): tool is string => tool.length > 0),
+			),
+		}
+	} catch {
+		return defaults
+	}
+}
+
+function splitCommandSegments(command: string): string[] {
+	return command
+		.split(/(?:&&|\|\||;)/)
+		.map((segment) => segment.trim())
+		.filter(Boolean)
+}
+
+function classifyCommand(command: string, readonlyAllowlist: RegExp[]): CommandClass {
+	if (!command.trim()) {
+		return "SAFE"
+	}
+
+	const segments = splitCommandSegments(command)
+	if (segments.length === 0) {
+		return "SAFE"
+	}
+
+	const allReadOnly = segments.every((segment) => readonlyAllowlist.some((pattern) => pattern.test(segment)))
+	return allReadOnly ? "SAFE" : "DESTRUCTIVE"
+}
+
+function normalizeMcpToolKey(value: string): string {
+	return value.trim().toLowerCase().replaceAll("\\", "/")
+}
+
+function classifyMcpTool(policy: LoadedHookPolicy, serverName: string, toolName: string): CommandClass {
+	const key = normalizeMcpToolKey(`${serverName}/${toolName}`)
+	if (policy.mcpReadonlyTools.has(key)) {
+		return "SAFE"
+	}
+	return policy.mcpDefaultClassification
 }
 
 function sha256(content: string): string {
@@ -734,11 +887,37 @@ async function getRevisionId(cwd: string): Promise<string> {
 	}
 }
 
-async function appendIntentMapUpdate(cwd: string, intentId: string, files: string[]): Promise<void> {
+async function appendIntentMapUpdate(
+	cwd: string,
+	intentId: string,
+	modifiedRanges: TraceModifiedRange[],
+): Promise<void> {
 	const filePath = path.join(cwd, ORCHESTRATION_DIR, INTENT_MAP_FILE)
 	const timestamp = new Date().toISOString()
-	const uniqueFiles = [...new Set(files)]
-	const lines = [`## ${timestamp} - ${intentId}`, ...uniqueFiles.map((file) => `- ${file}`), ""]
+	const fileNodes = new Map<string, AstNodeAttribution[]>()
+
+	for (const range of modifiedRanges) {
+		const existing = fileNodes.get(range.file) ?? []
+		if (range.ast_status === "ok" && range.ast_nodes.length > 0) {
+			existing.push(...range.ast_nodes)
+		}
+		fileNodes.set(range.file, existing)
+	}
+
+	const lines = [`## ${timestamp} - ${intentId}`]
+	for (const [file, nodes] of fileNodes.entries()) {
+		lines.push(`- ${file}`)
+		if (nodes.length > 0) {
+			const uniqueNodes = [...new Map(nodes.map((node) => [node.segment_hash, node])).values()]
+			for (const node of uniqueNodes) {
+				const identifier = node.identifier ?? "<anonymous>"
+				lines.push(
+					`  - symbol: ${identifier} [${node.type}] lines ${node.start_line}-${node.end_line} hash ${node.segment_hash}`,
+				)
+			}
+		}
+	}
+	lines.push("")
 	await fs.appendFile(filePath, `${lines.join("\n")}\n`, "utf-8")
 }
 
