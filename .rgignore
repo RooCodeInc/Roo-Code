@@ -5,3 +5,5 @@ releases/
 
 .git/
 .github/
+
+__tests__/
