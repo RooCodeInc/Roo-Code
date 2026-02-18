@@ -18,6 +18,8 @@ export type AgentTraceEntry = {
         entity_type?: "AI" | "Human"
         model_identifier?: string
       }
+      // Explicit intent ID for direct linkage
+      intent_id?: string
       // Optional classification aligned to evaluation rubric
       classification?: "REFACTOR" | "FEATURE" | "BUGFIX"
       // Optional AST node type for correlation (e.g., FunctionDeclaration)

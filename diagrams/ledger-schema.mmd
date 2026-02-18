@@ -3,12 +3,10 @@ classDiagram
   class AgentTraceEntry {
     +id: string
     +timestamp: string
-    +vcs: Vcs
+    +vcs: VCS
     +files: File[]
   }
-  class Vcs {
-    +revision_id: string
-  }
+  
   class File {
     +relative_path: string
     +conversations: Conversation[]
@@ -18,6 +16,7 @@ classDiagram
     +contributor?: Contributor
     +classification?: string
     +ast_node_type?: string
+    +intent_id?: string
     +ranges: Range[]
     +related?: Related[]
   }
@@ -34,10 +33,13 @@ classDiagram
     +type: string
     +value: string
   }
+  class VCS {
+    +revision_id?: string
+  }
 
   AgentTraceEntry --> File
-  AgentTraceEntry --> Vcs
   File --> Conversation
   Conversation --> Range
   Conversation --> Contributor
   Conversation --> Related
+  AgentTraceEntry --> VCS

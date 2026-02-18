@@ -12,6 +12,7 @@ export class PostHook {
     intentId: string
     mutationClass: MutationClass
     contributorModel?: string
+    astNodeType?: string
   }): Promise<void> {
     const cwd = process.cwd()
     const orchestrationDir = path.join(cwd, ".orchestration")
@@ -31,6 +32,8 @@ export class PostHook {
           conversations: [
             {
               contributor: { entity_type: "AI", model_identifier: args.contributorModel },
+              ast_node_type: args.astNodeType,
+              intent_id: args.intentId,
               classification: mapClassification(args.mutationClass),
               ranges: [
                 {
