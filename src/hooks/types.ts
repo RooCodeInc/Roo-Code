@@ -9,14 +9,14 @@ export enum MutationClass {
 
 /**
  * WBSContext formalizes the "What-Boundaries-Success" framework
- * to reduce the LLM's solution space through structured constraints.[1]
+ * to reduce the LLM's solution space through structured constraints.
  */
 export interface WBSContext {
 	id: string // e.g., "INT-001"
-	owned_scope: string // Glob patterns of authorized files
-	what: string // Functional requirements
-	boundaries: string // "Soft constraints" to prevent hallucinations [1]
-	success: string // Measurable criteria for the "Definition of Done"
+	owned_scope: string[] // Glob patterns of authorized files
+	what: string[] // Functional requirements
+	boundaries: string[] // "Soft constraints" to prevent hallucinations
+	success: string[] // Measurable criteria for "Definition of Done"
 }
 
 /**
@@ -24,12 +24,12 @@ export interface WBSContext {
  * a position-independent audit log of AI contributions.
  */
 export interface TraceRecord {
-	version: string // Specification version (e.g., "1.0")
-	id: string // Unique UUID for the trace event
-	timestamp: string // ISO 8601 recorded time
+	version: string
+	id: string
+	timestamp: string
 	vcs?: {
 		type: "git" | "jj" | "hg" | "svn"
-		revision: string // VCS-specific revision hash
+		revision: string
 	}
 	files: Array<{
 		path: string
@@ -41,7 +41,6 @@ export interface TraceRecord {
 			ranges: Array<{
 				start_line: number
 				end_line: number
-				// Content hash H for spatial independence
 				content_hash?: string
 			}>
 		}>
