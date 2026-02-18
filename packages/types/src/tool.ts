@@ -43,6 +43,7 @@ export const toolNames = [
 	"codebase_search",
 	"update_todo_list",
 	"run_slash_command",
+	"select_active_intent",
 	"skill",
 	"generate_image",
 	"custom_tool",

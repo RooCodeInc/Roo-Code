@@ -89,6 +89,7 @@ export type ToolParamName = (typeof toolParamNames)[number]
  * Tools not listed here will fall back to `any` for backward compatibility.
  */
 export type NativeToolArgs = {
+	select_active_intent: { intent_id: string }
 	access_mcp_resource: { server_name: string; uri: string }
 	read_file: import("@roo-code/types").ReadFileToolParams
 	read_command_output: { artifact_id: string; search?: string; offset?: number; limit?: number }
@@ -286,6 +287,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	codebase_search: "codebase search",
 	update_todo_list: "update todo list",
 	run_slash_command: "run slash command",
+	select_active_intent: "select active intent",
 	skill: "load skill",
 	generate_image: "generate images",
 	custom_tool: "use custom tools",
@@ -320,6 +322,7 @@ export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
 	"new_task",
 	"update_todo_list",
 	"run_slash_command",
+	"select_active_intent",
 	"skill",
 ] as const
 

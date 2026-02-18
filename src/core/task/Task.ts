@@ -306,6 +306,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	diffStrategy?: DiffStrategy
 	didEditFile: boolean = false
 
+	/** Active intent ID for TRP1 hook governance; set by select_active_intent tool. */
+	activeIntentId?: string
+
 	// LLM Messages & Chat Messages
 	apiConversationHistory: ApiMessage[] = []
 	clineMessages: ClineMessage[] = []
