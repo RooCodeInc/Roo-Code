@@ -12,6 +12,20 @@ interface SelectActiveIntentParams {
 export class SelectActiveIntentTool extends BaseTool<"select_active_intent"> {
 	readonly name = "select_active_intent" as const
 
+	private resolveWorkspacePath(task: Task): string | undefined {
+		const fromWorkspacePath = (task as Task & { workspacePath?: string }).workspacePath
+		if (typeof fromWorkspacePath === "string" && fromWorkspacePath.trim().length > 0) {
+			return fromWorkspacePath.trim()
+		}
+
+		const cwd = task.cwd
+		if (typeof cwd === "string" && cwd.trim().length > 0) {
+			return cwd.trim()
+		}
+
+		return undefined
+	}
+
 	async execute(params: SelectActiveIntentParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { handleError, pushToolResult } = callbacks
 		const intentId = params.intent_id?.trim()
@@ -25,7 +39,16 @@ export class SelectActiveIntentTool extends BaseTool<"select_active_intent"> {
 				return
 			}
 
-			const store = new OrchestrationStore(task.cwd)
+			const workspacePath = this.resolveWorkspacePath(task)
+			if (!workspacePath) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("select_active_intent")
+				task.didToolFailInCurrentTurn = true
+				pushToolResult(formatResponse.toolError("Cannot resolve workspace path for select_active_intent."))
+				return
+			}
+
+			const store = new OrchestrationStore(workspacePath)
 			const intentContextService = new IntentContextService(store)
 			const result = await intentContextService.selectIntent(intentId)
 

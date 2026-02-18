@@ -3,12 +3,12 @@ active_intents:
     name: "Refactor auth flow"
     status: "IN_PROGRESS"
     owned_scope:
+      - "src/hooks/**"
       - "src/integrations/openai-codex/**"
     constraints:
       - "Keep public API unchanged"
     acceptance_criteria:
       - "No regressions in auth flow"
     related_files:
-      - "src/integrations/openai-codex/oauth.ts"
-    recent_history:
-      - "Investigated token handling"
+      - "src/hooks/HookEngine.ts"
+    recent_history: []

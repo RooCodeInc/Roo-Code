@@ -1,6 +1,5 @@
 import * as path from "path"
 import * as vscode from "vscode"
-import os from "os"
 import crypto from "crypto"
 import { v7 as uuidv7 } from "uuid"
 import EventEmitter from "events"
@@ -474,9 +473,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		// Normal use-case is usually retry similar history task with new workspace.
-		this.workspacePath = parentTask
-			? parentTask.workspacePath
-			: (workspacePath ?? getWorkspacePath(path.join(os.homedir(), "Desktop")))
+		this.workspacePath = parentTask ? parentTask.workspacePath : (workspacePath ?? getWorkspacePath())
 
 		this.instanceId = crypto.randomUUID().slice(0, 8)
 		this.taskNumber = -1

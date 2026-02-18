@@ -72,12 +72,25 @@ function toUnique(values: string[]): string[] {
 
 export class HookEngine {
 	async preToolUse(task: Task, block: ToolUse): Promise<HookPreToolUseResult> {
-		const store = new OrchestrationStore(task.cwd)
-		await store.ensureInitialized()
-
 		const toolName = String(block.name)
 		const isMutatingTool = MUTATING_TOOLS.has(block.name as ToolName)
-		const extractedPaths = this.extractTouchedPaths(task.cwd, block)
+		const workspacePath = this.getWorkspacePath(task)
+		if (!workspacePath) {
+			return {
+				allowExecution: true,
+				context: {
+					toolName,
+					isMutatingTool,
+					touchedPaths: [],
+					hadToolFailureBefore: task.didToolFailInCurrentTurn,
+				},
+			}
+		}
+
+		const store = new OrchestrationStore(workspacePath)
+		await store.ensureInitialized()
+
+		const extractedPaths = this.extractTouchedPaths(workspacePath, block)
 		const context: HookPreToolUseContext = {
 			toolName,
 			isMutatingTool,
@@ -159,7 +172,12 @@ export class HookEngine {
 		context: HookPreToolUseContext,
 		executionSucceeded: boolean,
 	): Promise<void> {
-		const store = new OrchestrationStore(task.cwd)
+		const workspacePath = this.getWorkspacePath(task)
+		if (!workspacePath) {
+			return
+		}
+
+		const store = new OrchestrationStore(workspacePath)
 		await store.ensureInitialized()
 
 		if (context.intentId) {
@@ -194,6 +212,20 @@ export class HookEngine {
 		if (context.intent) {
 			await store.appendIntentMapEntry(context.intent, context.touchedPaths)
 		}
+	}
+
+	private getWorkspacePath(task: Task): string | undefined {
+		const fromWorkspacePath = (task as Task & { workspacePath?: string }).workspacePath
+		if (typeof fromWorkspacePath === "string" && fromWorkspacePath.trim().length > 0) {
+			return fromWorkspacePath.trim()
+		}
+
+		const cwd = task.cwd
+		if (typeof cwd === "string" && cwd.trim().length > 0) {
+			return cwd.trim()
+		}
+
+		return undefined
 	}
 
 	private extractRequestedIntentId(block: ToolUse): string | undefined {
@@ -296,11 +328,12 @@ export class HookEngine {
 		for (const relativePath of toUnique(context.touchedPaths)) {
 			const absolutePath = path.join(task.cwd, relativePath)
 
-			let fileBuffer = Buffer.from("")
+			let fileBuffer: Buffer
 			try {
 				fileBuffer = await fs.readFile(absolutePath)
 			} catch {
 				// Deleted/non-text files still emit a stable empty hash range.
+				fileBuffer = Buffer.alloc(0)
 			}
 
 			const contentHash = `sha256:${crypto.createHash("sha256").update(fileBuffer).digest("hex")}`
@@ -351,3 +384,5 @@ export class HookEngine {
 }
 
 export const hookEngine = new HookEngine()
+
+// hook-smoke
