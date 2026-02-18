@@ -1,0 +1,13 @@
+
+active_intents:
+  - id: "INT-001"
+    name: "JWT Authentication Migration"
+    status: "IN_PROGRESS"
+    owned_scope:
+      - "src/auth/**"
+      - "src/middleware/jwt.ts"
+    constraints:
+      - "Must not use external auth providers"
+      - "Must maintain backward compatibility with Basic Auth"
+    acceptance_criteria:
+      - "Unit tests in tests/auth/ pass"
