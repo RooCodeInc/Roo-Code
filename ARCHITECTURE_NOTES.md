@@ -50,3 +50,39 @@ Traditional AI IDEs suffer from "Context Rot" by dumping entire file trees into 
 **On-Demand Context:** When select_active_intent is called, the system reads the YAML and constructs a targeted <intent_context> XML block.
 
 **Traceability:** This ensures the agent only operates within its "owned_scope" and respects the "acceptance_criteria" defined in the sidecar, maintaining a high signal-to-noise ratio in the context window.
+
+## 5. Diagrams and Schemas (Required for Interim Submission)
+
+### A. The Two-Stage Handshake (Sequence Diagram)
+
+This diagram illustrates how the Hook Engine intercepts the LLM's request to ensure intent-validation before execution.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant LLM as Roo Code Agent
+    participant Hook as Hook Engine (Middleware)
+    participant Sidecar as .orchestration/active_intents.yaml
+
+    User->>LLM: "Refactor Auth Logic"
+    Note over LLM: Agent is blocked from writing code
+    LLM->>Hook: call select_active_intent(INT-001)
+    Hook->>Sidecar: Validate Intent ID & Status
+    Sidecar-->>Hook: Return Scope & Constraints
+    Hook-->>LLM: Inject <intent_context> into prompt
+    Note over LLM: Agent now has authorization
+    LLM->>User: "I have loaded intent INT-001. Proceeding..."
+```
+
+### B. Intent Context Schema
+
+<intent_context>
+<intent_id>INT-001</intent_id>
+<status>IN PROGRESS</status>
+<owned_scope>
+<file>src/auth/\*\*</file>
+<file>src/middleware/jwt.ts</file>
+</owned_scope>
+<constraints> - Must not use external auth providers - Maintain backward compatibility
+</constraints>
+</intent_context>
