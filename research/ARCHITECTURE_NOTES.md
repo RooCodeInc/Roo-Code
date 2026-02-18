@@ -241,6 +241,48 @@ Operational expectations:
 
 ---
 
+## Research-Informed Enhancements
+
+> **Source**: [AI-Native Git: Version Control for Agent Code](https://medium.com/@ThinkingLoop/ai-native-git-version-control-for-agent-code-a98462c154e4) (Thinking Loop, Aug 2025)  
+> **Key Insight**: Agentic systems require a paradigm shift from **static snapshots** to **continuous memory streams**, from **commit hashes** to **semantic intent queries**.
+
+The following ideas extend the base architecture with AI-native capabilities:
+
+### 1. Semantic Query Layer
+
+Enable natural language queries over the trace ledger instead of requiring content hashes or intent IDs. Developers can ask "show me authentication-related changes from last week" or "what was the agent trying to do when it modified the rate limiter?"
+
+### 2. Continuous Memory Stream
+
+Extend traceability beyond discrete tool executions to capture the agent's reasoning process. Record "thinking" tokens, partial code drafts, rejected approaches, and internal checkpoints before the agent finalizes a tool call.
+
+### 3. Generative vs. Operational Classification
+
+Distinguish between:
+
+- **Generative actions**: Reasoning, planning, analysis (no side effects, no approval needed)
+- **Operational actions**: File writes, command execution (requires intent + approval)
+- **Meta actions**: Changes to orchestration state (requires elevated privileges)
+
+### 4. Intent Branching & Evolution
+
+Treat intents as a version-controlled graph supporting forking (try alternative approaches), merging (combine completed intents), and evolution (track how requirements change over time).
+
+### 5. Semantic Recovery Points
+
+## Research (Inspired by git-ai)
+
+Additive ideas from `git-ai-project/git-ai` that map well onto the intent + hook + trace ledger approach.
+
+- Git Notes for provenance: attach intent/trace/attribution metadata to commits via Git Notes (keep main history clean)
+- Line-level authorship log: maintain a machine-readable mapping of file + line ranges -> agent session (tool + model + session ID) to enable an "AI blame" view
+- Checkpoints during work, aggregate on commit: collect small attribution/trace checkpoints as edits happen and materialize a single structured artifact at commit time
+- Keep transcripts out of Git: store only transcript pointers/IDs in notes; keep transcripts local (e.g., SQLite) or in a controlled prompt store (with access control + redaction)
+- Durability across history rewrites: preserve provenance through rebase/squash/merge/cherry-pick by rewriting/translating attribution logs when history changes
+- First-class "why" retrieval: provide a `/ask`-style tool/skill that rehydrates original intent + transcript context for a file/hunk/line range
+- Adoption/quality metrics: track AI/human/mixed contributions plus acceptance/override/durability indicators to guide governance and tooling
+- IDE surfaces: show provenance in-editor (gutter/hover) with links to trace artifacts and transcript summaries
+
 ## 4. Phase-by-Phase Implementation Architecture
 
 The implementation is staged to keep the extension usable while gradually increasing enforcement. Early phases focus on learning the current execution model and adding the minimum viable handshake. Later phases add security hardening and traceability, and only then attempt concurrency (which otherwise multiplies failure modes).
