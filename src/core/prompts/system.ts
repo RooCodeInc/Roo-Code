@@ -81,6 +81,11 @@ async function generatePrompt(
 
 	// Tools catalog is not included in the system prompt.
 	const toolsCatalog = ""
+	const intentTraceabilityInstruction = `## Intent-Code Traceability
+
+- Before using any side-effect tool (for example: write_to_file, apply_diff, edit, search_replace, apply_patch, execute_command, or new_task), first call \`select_active_intent\` with the intent identifier you are currently executing.
+- Treat the selected intent as the active contract for the next tool actions. Keep actions within that intent's declared scope.
+- If no active intent is available, ask a follow-up question instead of running side-effect tools.`
 
 	const basePrompt = `${roleDefinition}
 
@@ -89,6 +94,8 @@ ${markdownFormattingSection()}
 ${getSharedToolUseSection()}${toolsCatalog}
 
 	${getToolUseGuidelinesSection()}
+
+${intentTraceabilityInstruction}
 
 ${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined)}
 

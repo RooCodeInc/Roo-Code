@@ -80,6 +80,7 @@ export const toolParamNames = [
 	// read_file legacy format parameter (backward compatibility)
 	"files",
 	"line_ranges",
+	"intent_id",
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -112,6 +113,7 @@ export type NativeToolArgs = {
 	skill: { skill: string; args?: string }
 	search_files: { path: string; regex: string; file_pattern?: string | null }
 	switch_mode: { mode_slug: string; reason: string }
+	select_active_intent: { intent_id: string }
 	update_todo_list: { todos: string }
 	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
 	write_to_file: { path: string; content: string }
