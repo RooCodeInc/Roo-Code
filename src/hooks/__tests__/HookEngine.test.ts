@@ -65,7 +65,7 @@ describe("HookEngine", () => {
 
 	it("stops at first blocking pre-hook (fail-closed)", async () => {
 		const engine = new HookEngine()
-		const laterHook: PreToolHook = { name: "later", run: vi.fn(() => ({ allow: true })) }
+		const laterHook: PreToolHook = { name: "later", run: vi.fn(() => ({ allow: true as const })) }
 		engine.registerPreHook({
 			name: "blocker",
 			run: () => ({ allow: false, code: "SCOPE_VIOLATION" as const, reason: "scope" }),
