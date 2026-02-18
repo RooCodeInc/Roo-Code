@@ -177,6 +177,96 @@ It also makes approvals more meaningful because the UI can show the _intent_ and
                                       └──────────────────┘
 ```
 
+### 2.3 Data Boundary Mapping: UI (Webview) ↔ Extension Host
+
+The following details the specific data flow between the Webview UI and Extension Host layers:
+
+**Webview → Extension Host (via `postMessage`):**
+
+- Message type: `WebviewMessage` (defined in `src/shared/WebviewMessage.ts`)
+- Handler: `webviewMessageHandler()` in `src/core/webview/webviewMessageHandler.ts`
+- State updates flow through `provider.contextProxy.setValue()` → VS Code global state
+
+**Extension Host → Webview (via `postMessage`):**
+
+- Message type: `ExtensionMessage` (defined in `@roo-code/types`)
+- Handlers in UI: `ExtensionStateContext.tsx` uses `window.addEventListener('message', handler)`
+- State synchronization: Messages dispatched via `provider.postMessageToWebview()`
+
+**Specific Message Flows:**
+
+1. **Tool Approval Request:**
+
+    - Host → UI: `askApproval()` callback triggers UI modal
+    - UI → Host: User response via `ClineAskResponse` type
+    - Data: `{type: 'ask', ask: 'tool', ...}` → `{response: 'yesButtonClicked' | 'noButtonClicked', text?: string}`
+
+2. **State Synchronization:**
+
+    - Host: `ContextProxy` maintains `stateCache` for global state
+    - UI: `ExtensionStateContext` hydrates from `ExtensionMessage` type events
+    - Key files: `src/core/config/ContextProxy.ts` ↔ `webview-ui/src/context/ExtensionStateContext.tsx`
+
+3. **Streaming Content:**
+    - Host → UI: `cline.say()` sends incremental updates
+    - UI: React components re-render via context updates
+    - Format: `{type: 'say', say: 'text' | 'tool', ...}`
+
+### 2.4 Agent Turn Lifecycle Mapping
+
+The following traces a single agent turn from user input through tool execution to response generation:
+
+```
+TURN START
+│
+├─► User Input received via webviewMessageHandler.ts
+│   └─► `provider.contextProxy.getState()` retrieves settings
+│   └─► `task.resumeTask(message.text)` initiates turn
+│
+├─► Task.ts: `initiateTaskLoop()` or `resumeTask()`
+│   └─► Reconstruct API message history from persistence
+│   └─► Load `assistantMessageContent` from previous turn
+│   └─► System prompt regenerated via `generateSystemPrompt()`
+│       └─► `src/core/prompts/system.ts:generatePrompt()` - STATELESS
+│       └─► Prompt includes: role definition, rules, capabilities, custom instructions
+│
+├─► API Request initiated via `startTask()` or `resumeTask()`
+│   └─► `apiHandler.createMessage()` sends conversation to LLM
+│   └─► Streaming response received via `ApiStream`
+│
+├─► Streaming Content Processing
+│   └─► `for await (const chunk of stream)` in Task.ts
+│   └─► Chunks appended to `assistantMessageContent` array
+│   └─► `presentAssistantMessage(this)` called for each chunk
+│       └─► LOCK: `presentAssistantMessageLocked` prevents concurrent execution
+│       └─► Process `block.type`:
+│           ├─ "text": Display to user
+│           ├─ "tool_use": Execute tool (HOOK INJECTION POINT)
+│           └─ "mcp_tool_use": Execute MCP tool
+│
+├─► Tool Execution (if triggered)
+│   └─► Validation: `block.nativeArgs` must exist
+│   └─► Approval: `askApproval()` callback → UI modal
+│   └─► Dispatch: Tool handlers (WriteToFileTool, ExecuteCommandTool, etc.)
+│   └─► Result: `pushToolResult()` → API history
+│
+├─► Turn Completion
+│   └─► `didCompleteReadingStream = true`
+│   └─► `userMessageContentReady = true`
+│   └─► `saveApiMessages()` persists conversation state
+│   └─► `saveTaskMessages()` persists UI-visible messages
+│
+└─► TURN END (Loop repeats with next user input or autonomous continuation)
+```
+
+**Key State Transforms:**
+
+- **Input**: Plain text → API message format (user message)
+- **Prompt**: Stateless assembly each turn (JSON → string with role/constraint injection)
+- **Streaming**: Raw chunks → Structured blocks (`text` | `tool_use` | `tool_result`)
+- **Tool Params**: Raw JSON → Validated `nativeArgs` → Tool-specific parameter objects
+- **Tool Results**: Tool output → `tool_result` block → API message history
+
 ---
 
 ## 3. Architectural Key Components
@@ -232,6 +322,44 @@ PostToolUse is responsible for recording reality. It should capture:
 - and any automation side effects (formatter/linter rewrites).
 
 This ensures the audit log reflects the true final state on disk, even if the agent's narrative is incomplete or incorrect.
+
+#### 3.1.1 Roo Code Host Extension Architectural Constraints
+
+The following constraints are specific to the Roo Code host extension architecture and must be respected when designing the hook system:
+
+**Native Tool Calling Protocol Requirements:**
+
+- Every `tool_use` block MUST have a corresponding `tool_result` block with matching `tool_use_id`
+- Missing or mismatched tool_use/tool_result pairs cause Anthropic API 400 errors
+- Tool IDs must be unique within a conversation turn (sanitized via `sanitizeToolUseId`)
+
+**Stateless System Prompt Assembly:**
+
+- System prompt is reconstructed on every agent turn (no persistent state)
+- Prompt assembly occurs in `src/core/prompts/system.ts:generatePrompt()`
+- Context must be re-injected on each turn via `Task.ts` message queue
+
+**Streaming Content Block Processing:**
+
+- Content blocks arrive incrementally during API streaming
+- `presentAssistantMessage()` uses a locking mechanism (`presentAssistantMessageLocked`) to prevent concurrent execution
+- Blocks are processed sequentially via `currentStreamingContentIndex`
+- Partial blocks (`block.partial === true`) must not trigger tool execution
+
+**Message Ordering Invariants:**
+
+- `tool_use` blocks must appear BEFORE corresponding `tool_result` blocks in API history
+- `didCompleteReadingStream` flag indicates when streaming is complete
+- `userMessageContentReady` signals when to proceed to next request
+
+**Tool Execution Dispatch Flow:**
+
+1. `block.type === "tool_use"` triggers tool dispatch
+2. `block.nativeArgs` validation (must exist for valid tool calls)
+3. Tool name validation via `isValidToolName()`
+4. Approval flow via `askApproval()` callback
+5. Tool execution via specific tool handlers (e.g., `WriteToFileTool`, `ExecuteCommandTool`)
+6. `pushToolResult()` sends result back to API history
 
 ### 3.2 Intent Management System
 
@@ -352,12 +480,67 @@ The main architectural question to answer is: "What is the narrowest place to in
 
 **Integration Points**:
 
-- `src/core/Cline.ts`: Main task execution controller
+- `src/core/task/Task.ts`: Main task execution controller (Cline class replaced with Task)
+- `src/core/assistant-message/presentAssistantMessage.ts`: Tool dispatch and execution orchestration
 - `src/shared/tools.ts`: Tool definition schemas
 - `src/services/mcp/McpHub.ts`: MCP tool execution
 - `webview-ui/src/context/ExtensionStateContext.tsx`: UI state management
 
 **Deliverable**: Complete architecture mapping document
+
+#### Phase 0.1: Precise Injection Chokepoint Identification
+
+**The Narrowest Interception Point:**
+
+The ideal hook injection location is within `src/core/assistant-message/presentAssistantMessage.ts` at the `case "tool_use":` block switch statement (approximately line 298). This is the ONLY point where all tool execution paths converge.
+
+**Exact Injection Location:**
+
+```typescript
+// src/core/assistant-message/presentAssistantMessage.ts ~line 298
+case "tool_use": {
+  // INJECTION POINT 1: Pre-hook validation
+  // - Check if intent is selected
+  // - Validate scope for destructive tools
+  // - Request user approval
+
+  const toolCallId = (block as any).id as string | undefined
+  if (!toolCallId) {
+    // Handle invalid tool call...
+  }
+
+  // ... validation logic ...
+
+  // Tool dispatch happens here via switch on block.name
+  switch (block.name) {
+    case "write_to_file":
+      await writeToFileTool.handle(cline, block, callbacks)
+      break
+    case "execute_command":
+      await executeCommandTool.handle(cline, block, callbacks)
+      break
+    // ... other tools
+  }
+
+  // INJECTION POINT 2: Post-hook processing
+  // - Compute content hashes
+  // - Write trace records
+  // - Update spatial map
+}
+```
+
+**Why This Is The Ideal Chokepoint:**
+
+1. **Single entry**: All tool calls (native and MCP) flow through this switch statement
+2. **After validation**: Tool IDs and `nativeArgs` are validated before this point
+3. **Before execution**: Tool handlers haven't been invoked yet
+4. **After completion**: Results are pushed via `pushToolResult()` callback
+
+**Alternative (Less Desirable) Points:**
+
+- Individual tool handlers (e.g., `WriteToFileTool.execute()`): Too granular, easy to miss edge cases
+- `Task.ts` message loop: Too early, before tool parsing
+- `ClineProvider.ts`: Too far from execution, misses programmatic tool calls
 
 Completion checklist (practical):
 
@@ -451,7 +634,7 @@ class Gatekeeper {
 
 **Integration Points**:
 
-- Hook into `src/core/Cline.ts` tool execution flow
+- Hook into `src/core/assistant-message/presentAssistantMessage.ts` tool execution flow
 - Extend tool definitions in `src/shared/tools.ts`
 - Modify system prompt generation in message manager
 
@@ -547,7 +730,7 @@ interface ToolError {
 
 **Integration Points**:
 
-- Intercept in `src/core/Cline.ts` before tool execution
+- Intercept in `src/core/assistant-message/presentAssistantMessage.ts` before tool execution
 - Extend webview UI for approval dialogs
 - Store authorization state in `ContextProxy`
 
@@ -722,7 +905,7 @@ class SpatialMapBuilder {
 **Integration Points**:
 
 - Extend `write_file` tool schema to include `intent_id` and `mutation_class`
-- Hook into `src/core/Cline.ts` after successful file writes
+- Hook into `src/core/assistant-message/presentAssistantMessage.ts` after successful file writes
 - Store trace ledger in workspace `.orchestration/`
 
 ---
@@ -1282,7 +1465,7 @@ src/
 │   ├── index.ts                    # Add: initialize intent orchestration
 │   └── registerCommands.ts         # Add: intent management commands
 ├── core/
-│   └── Cline.ts                    # Modify: inject hook interception
+│   └── Task.ts                     # Modify: inject hook interception
 ├── shared/
 │   ├── tools.ts                    # Extend: add select_active_intent tool
 │   └── WebviewMessage.ts           # Extend: add intent message types
@@ -1306,7 +1489,7 @@ The integration points here are chosen because they are high-leverage: changing 
 
 **1. Tool Execution Flow**
 
-Location: `src/core/Cline.ts`
+Location: `src/core/assistant-message/presentAssistantMessage.ts`
 
 Current flow:
 
@@ -1886,7 +2069,7 @@ This architecture provides a comprehensive framework for intent-driven AI-assist
 
 - `src/hooks/`: New directory for hook system
 - `src/services/intent/`: Intent management service
-- `src/core/Cline.ts`: Modified for hook interception
+- `src/core/assistant-message/presentAssistantMessage.ts`: Modified for hook interception
 - `src/shared/tools.ts`: Extended tool definitions
 - `webview-ui/src/components/intent/`: UI components for intent management
 - `.orchestration/`: Workspace directory for persistence
