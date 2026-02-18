@@ -1,7 +1,7 @@
 # ARCHITECTURE_NOTES.md – Phase 0: Archaeological Dig Results
 
 **TRP1 Challenge Week 1 – Architecting the AI-Native IDE & Intent-Code Traceability**  
-_Findings from Roo Code (fork: Birkity/roocode-intent-hooks)_  
+_Findings from Roo Code (fork: https://github.com/Birkity/Roo-Code)_  
 _Date: February 18, 2026_
 
 ## Executive Summary – Phase 0 Status
