@@ -4,13 +4,33 @@
 
 This document describes the architecture for an intent-driven orchestration system built as a VS Code extension. The system introduces a **Hook Engine** middleware layer that intercepts all AI agent operations, enforces business intent context, and maintains immutable trace records linking code changes to specific requirements.
 
+The purpose is to make AI-assisted development behave more like a controlled engineering workflow than a free-form code generator. In particular, the architecture assumes that (a) the model is probabilistic and can make unsafe guesses, and (b) developers need to understand and audit why a change happened later. So the system focuses on hard interception points, explicit intent selection, and append-only trace records that can be queried and reviewed.
+
 **Core Innovation**: Instead of direct code generation, the system enforces a **"Reasoning → Intent Selection → Contextualized Action"** workflow. All file modifications are tagged with intent IDs and content hashes, enabling spatial independence during refactoring and complete audit trails.
+
+In practical terms, the agent must "check out" an intent before it can mutate the workspace. The selected intent acts as a short contract that defines:
+
+- what the agent is allowed to touch (owned scope),
+- what it must not violate (constraints), and
+- how to decide the work is complete (acceptance criteria).
+
+The trace layer then links every actual mutation back to that contract so later refactors (which move code around) do not break attribution.
 
 ---
 
 ## 2. High-Level System Architecture
 
+This section explains where the major parts live (topology) and how a single request becomes an approved, scoped tool action (execution flow). The design is intentionally layered so UI concerns, execution concerns, and policy concerns stay separate.
+
 ### 2.1 System Topology
+
+The topology highlights three planes:
+
+- **Workspace plane**: user source code plus a dedicated `.orchestration/` sidecar directory that stores intent specs and traces without polluting the codebase.
+- **Extension-host plane**: the only place with Node/VSC APIs and filesystem/command access; it runs the Hook Engine and tool orchestration.
+- **Webview plane**: presentation only; it sends and receives messages via `postMessage` and cannot directly execute tools.
+
+The key property is that all tool calls that can mutate state flow through the Hook Engine first, so an agent (or UI) cannot bypass scope checks, approval gates, or logging.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -63,6 +83,19 @@ This document describes the architecture for an intent-driven orchestration syst
 
 ### 2.2 Execution Flow Diagram
 
+The flow formalizes a "handshake" step that sits between user intent and destructive execution:
+
+- The model can analyze immediately, but it cannot write code immediately.
+- The model must declare which intent it is serving (via `select_active_intent`).
+- Only after the Hook Engine injects the corresponding constraints/scope does the system allow mutating tools.
+
+This reduces two common failure modes:
+
+1. **Unscoped edits** (agent touches unrelated files because it does not know boundaries).
+2. **Stale context** (agent acts based on earlier conversation instead of current intent constraints).
+
+It also makes approvals more meaningful because the UI can show the _intent_ and the _exact tool action_ together.
+
 ```
 ┌──────────┐     ┌──────────────┐     ┌──────────────────┐     ┌─────────────┐
 │   User   │────▶│   Prompt     │────▶│ Agent Analysis   │────▶│ Intent ID   │
@@ -102,9 +135,13 @@ This document describes the architecture for an intent-driven orchestration syst
 
 ## 3. Architectural Key Components
 
+This section describes the components that turn a conversational agent into a governable system: (1) a hook boundary that can block unsafe operations, (2) an intent model that declares scope/constraints, and (3) trace records that provide durable attribution.
+
 ### 3.1 The Hook Engine
 
 The Hook Engine is the central middleware that intercepts all tool execution requests. It operates in three phases:
+
+Conceptually, the Hook Engine is a deterministic policy gate around non-deterministic model behavior. It should be implemented so the same tool request and intent state produce the same allow/deny decision and the same injected context, making the system predictable and easier to debug.
 
 #### PreToolUse Hook
 
@@ -114,12 +151,24 @@ The Hook Engine is the central middleware that intercepts all tool execution req
 - **Command Classification**: Categorizes as Safe (Read) or Destructive (Write/Delete/Execute)
 - **HITL Gate**: Pauses execution for user approval on destructive operations
 
+PreToolUse should be treated as _fail-closed_ for destructive actions: if intent is missing/invalid, scope does not match, or approval is not granted, the tool does not run. For safe/read tools, PreToolUse can still inject context (or just pass through) depending on how strongly you want to steer model behavior.
+
 #### Context Injector
 
 - Reads `.orchestration/active_intents.yaml`
 - Constructs `<intent_context>` XML block
 - Injects constraints, acceptance criteria, and owned scope into prompt
 - Enforces "analysis before action" via prompt engineering
+
+Context injection should be curated rather than a raw dump of all project state. The ideal injected payload is the smallest set of information that reliably constrains the next step:
+
+- intent id and short name,
+- owned scope patterns,
+- constraints (non-negotiables),
+- acceptance criteria (definition of done),
+- and optionally relevant prior trace highlights for the same intent.
+
+Using a structured block (XML-like) is less about XML and more about creating a stable, parseable boundary in the prompt so both the model and any future tooling can reliably find the injected context.
 
 #### PostToolUse Hook
 
@@ -128,6 +177,15 @@ The Hook Engine is the central middleware that intercepts all tool execution req
 - Appends to `agent_trace.jsonl`
 - Updates `intent_map.md` with spatial mappings
 - Triggers automated formatting/linting
+
+PostToolUse is responsible for recording reality. It should capture:
+
+- what tool actually ran,
+- what files were mutated,
+- before/after content hashes,
+- and any automation side effects (formatter/linter rewrites).
+
+This ensures the audit log reflects the true final state on disk, even if the agent's narrative is incomplete or incorrect.
 
 ### 3.2 Intent Management System
 
@@ -138,6 +196,14 @@ The Intent Management System tracks the lifecycle of business requirements:
 - **Scope Definition**: Glob patterns defining which files the intent owns
 - **Constraint Enforcement**: Non-negotiable rules agents must follow
 
+Intent specs are the policy substrate of the system. A useful way to think about them:
+
+- **owned_scope** is an allowlist ("may write here"); if it is not matched, writes are blocked.
+- **constraints** are invariants ("must be true"); they should be phrased to be verifiable when possible (tests, lint rules, compatibility requirements).
+- **acceptance_criteria** is the completion contract; it can drive automated checks and UI progress reporting.
+
+The status field enables lifecycle governance (e.g., block destructive operations for ABORTED intents; require explicit override approvals for COMPLETED intents).
+
 ### 3.3 Traceability Engine
 
 The Traceability Engine maintains immutable records of all code modifications:
@@ -146,6 +212,13 @@ The Traceability Engine maintains immutable records of all code modifications:
 - **Trace Records**: Append-only JSONL format with full audit trail
 - **Git Integration**: Links traces to VCS revisions
 - **Temporal Tracking**: Timestamps for all modifications
+
+The design centers on **spatial independence**: attribution should survive refactors and file movement.
+
+- Line numbers are helpful for navigation, but not reliable identifiers.
+- Content hashes (and optionally AST-node hashes) become stable anchors for tracking ownership over time.
+
+The ledger being append-only is intentional: it supports forensic integrity and makes it possible to rebuild derived views (like `intent_map.md`) from ground truth.
 
 ### 3.4 Orchestration Directory Structure
 
@@ -158,13 +231,29 @@ The Traceability Engine maintains immutable records of all code modifications:
 └── claude.md               # Shared knowledge across sessions
 ```
 
+Operational expectations:
+
+- `active_intents.yaml` is the source of truth for what work is active and what boundaries apply.
+- `agent_trace.jsonl` is the source of truth for what mutations occurred.
+- `intent_map.md` is a human-friendly index that can be regenerated from trace records.
+- `TODO.md` is short-lived session continuity (useful across reloads).
+- `claude.md` (or `CLAUDE.md` depending on conventions) accumulates lessons/patterns to reduce repeated failures.
+
 ---
 
 ## 4. Phase-by-Phase Implementation Architecture
 
+The implementation is staged to keep the extension usable while gradually increasing enforcement. Early phases focus on learning the current execution model and adding the minimum viable handshake. Later phases add security hardening and traceability, and only then attempt concurrency (which otherwise multiplies failure modes).
+
+This sequencing mirrors the curriculum described in related research notes: first scaffolding and state, then hook middleware, then traceability, then multi-agent orchestration. Each phase should leave the system in a valid state where the next phase can be implemented without rewriting earlier work.
+
 ### Phase 0: System Analysis
 
+Phase 0 is about finding the real control points in the existing extension. In VS Code extensions, "where work happens" is often spread across message handlers, tool dispatchers, and prompt builders; this phase ensures you can intercept the right point once and apply policy consistently.
+
 **Goal**: Map the extension's execution loop and identify integration points.
+
+The main architectural question to answer is: "What is the narrowest place to intercept _all_ tool calls?" If the interception point is incomplete (misses a path), the system can end up with unenforced writes.
 
 **Tasks**:
 
@@ -182,15 +271,27 @@ The Traceability Engine maintains immutable records of all code modifications:
 
 **Deliverable**: Complete architecture mapping document
 
+Completion checklist (practical):
+
+- Confirm where tool schemas are defined and validated.
+- Confirm where the extension decides a tool call is allowed and where it requests approvals.
+- Confirm how the webview receives tool results and how it triggers new actions.
+
 ---
 
 ### Phase 1: Reasoning Loop & Context Injection
 
+Phase 1 introduces the handshake that prevents "immediate code generation" from turning into "immediate mutation". The design goal is to make intent selection explicit, interceptable, and auditable.
+
 **Goal**: Bridge synchronous LLM with asynchronous IDE loop.
+
+This is less about threading and more about modeling: the model runs in turns, while the IDE can require asynchronous approvals and policy checks. Intent selection becomes the explicit synchronization point.
 
 #### Key Components:
 
 **1. Intent Selection Tool**
+
+By defining intent selection as a tool, you ensure the agent cannot "silently" decide intent in natural language. The selection becomes structured data the system can validate (does the intent exist? is it active?) and the UI can display.
 
 ```typescript
 // src/shared/tools.ts - New Tool Definition
@@ -205,6 +306,8 @@ interface SelectActiveIntentTool {
 ```
 
 **2. PreToolUse Hook Implementation**
+
+Even though this section shows a TypeScript interface, the core requirement is behavioral: PreToolUse must be able to (a) deny, (b) request approval, or (c) enrich the next model turn with curated intent context.
 
 ```typescript
 // src/hooks/PreToolUseHook.ts
@@ -224,6 +327,8 @@ interface HookResult {
 ```
 
 **3. System Prompt Modification**
+
+The system prompt change is a cooperative layer: it teaches the model the protocol so it chooses the right first step. Enforcement must still be implemented in hooks, but clear prompting reduces wasted turns.
 Add mandatory preamble to system prompt:
 
 ```
@@ -235,6 +340,8 @@ Add mandatory preamble to system prompt:
 ```
 
 **4. Gatekeeper**
+
+The Gatekeeper is a minimal stateful guard. Keeping it small reduces the chance of duplicating policy logic (which leads to drift). Treat it as an "intent selected?" latch, not as a full authorization engine.
 
 ```typescript
 // src/hooks/Gatekeeper.ts
@@ -264,11 +371,20 @@ class Gatekeeper {
 
 ### Phase 2: Hook Middleware & Security
 
+Phase 2 turns the Hook Engine into a security boundary. The intent protocol is only meaningful if destructive operations are consistently classified, constrained, and optionally approved by a human.
+
 **Goal**: Establish formal boundaries for safe execution.
+
+The boundary is defined in terms of tool effects:
+
+- read/search tools are generally safe,
+- write/delete/execute tools are potentially destructive and must be guarded.
 
 #### Key Components:
 
 **1. Command Classification**
+
+Classification is the first defense layer. It does not need to be perfect; it needs to be conservative. When unsure, classify as destructive and require approval.
 
 ```typescript
 // src/hooks/CommandClassifier.ts
@@ -287,6 +403,8 @@ class CommandClassifier {
 
 **2. Authorization Flow**
 
+Approval should be designed for fast, informed decisions. The user should see intent id/name, the exact operation, and the paths/commands affected.
+
 ```typescript
 // src/hooks/AuthorizationGate.ts
 interface AuthorizationGate {
@@ -302,6 +420,8 @@ interface ApprovalResult {
 ```
 
 **3. Scope Enforcement**
+
+Scope enforcement is an allowlist. A common failure mode is path trickery (relative paths, different separators, symlinks). Normalizing paths before matching is an important implementation detail.
 
 ```typescript
 // src/hooks/ScopeValidator.ts
@@ -320,6 +440,8 @@ class ScopeValidator {
 ```
 
 **4. Recovery Mechanism**
+
+Structured errors are essential for autonomous recovery. They let the model react to a specific violation (missing intent vs out-of-scope vs user rejection) rather than guessing.
 
 ```typescript
 // Standardized error format for agent correction
@@ -345,7 +467,11 @@ interface ToolError {
 
 ### Phase 3: Traceability & Hashing
 
+Phase 3 makes the system auditable. The intent protocol explains what the agent _intended_ to do; traceability records what the system _actually_ did.
+
 **Goal**: Implement semantic tracking with spatial independence.
+
+Spatial independence means a trace remains meaningful even after code is moved. Hashes (file/block/AST) are used as anchors so attribution survives refactors.
 
 #### Key Components:
 
@@ -515,7 +641,11 @@ class SpatialMapBuilder {
 
 ### Phase 4: Parallel Orchestration
 
+Phase 4 introduces multi-agent execution. This is deliberately last because concurrency increases complexity: it creates conflicts, ordering issues, and new recovery paths.
+
 **Goal**: Enable safe concurrent agent execution.
+
+The design assumes that conflicts are inevitable at some scale. The objective is not to prevent every conflict, but to detect them early (locking), minimize their surface area (diffs), and provide a clear resolution workflow (supervisor arbitration + lessons).
 
 #### Key Components:
 
@@ -670,7 +800,17 @@ class SharedKnowledgeManager {
 
 ## 5. Data Models & Schemas
 
+These schemas are the contract between the Hook Engine (enforcement), the `.orchestration/` directory (persistence), and the Webview UI (inspection/approval). They should be treated as versioned public interfaces: validate them with JSON Schema / YAML schema checks and evolve them carefully to avoid breaking existing traces.
+
 ### 5.1 Intent Specification Schema (YAML)
+
+The intent spec is designed to be human-authored and diff-friendly:
+
+- YAML keeps the file readable and easy to edit.
+- `owned_scope` should be considered an allowlist used by scope enforcement.
+- `constraints` and `acceptance_criteria` should be written so they can be verified (tests, commands, or checklists).
+
+If this file becomes a single point of enforcement, schema validation becomes important: malformed YAML should fail closed (block destructive tools) rather than allow a write with missing constraints.
 
 ```yaml
 # .orchestration/active_intents.yaml
@@ -722,6 +862,14 @@ active_intents:
 
 ### 5.2 Agent Trace Record Schema (JSONL)
 
+The trace ledger is an append-only event stream.
+
+- JSONL (one JSON object per line) allows safe appends and streaming reads.
+- Records should be written by the system (PostToolUse), not by the agent, to ensure integrity.
+- Including VCS metadata makes it possible to correlate traces with commits and review states.
+
+When designing queries, treat hashes as identifiers and line ranges as navigation hints.
+
 ```json
 {
 	"id": "550e8400-e29b-41d4-a716-446655440000",
@@ -766,6 +914,13 @@ active_intents:
 
 ### 5.3 Spatial Map Structure (Markdown)
 
+The spatial map is a human navigation layer. It exists to answer questions like:
+
+- "Which intent owns this code block?"
+- "Where in the repo did INT-001 make changes?"
+
+It should be treated as a derived projection that can be regenerated from the immutable JSONL ledger if it drifts.
+
 ```markdown
 # Intent Spatial Map
 
@@ -802,9 +957,24 @@ active_intents:
 
 ## 6. Interface Specifications
 
+The system relies on clear boundaries:
+
+- The **Extension Host** owns execution, policy enforcement, and persistence.
+- The **Webview** owns presentation and user interaction.
+
+Defining explicit interfaces keeps the hook/intent system modular and makes it easier to test pieces independently.
+
 ### 6.1 Extension Host Interface
 
 The Extension Host provides the core API for the hook system:
+
+This interface is effectively the "intent orchestration runtime". It should be the only place that:
+
+- reads/writes `.orchestration/` files,
+- executes mutating tools,
+- and emits approval requests.
+
+Everything else (including the UI) should interact through message passing or these methods, ensuring there is a single, enforceable pathway for mutation.
 
 ```typescript
 // src/extension/IntentOrchestrationAPI.ts
@@ -856,6 +1026,12 @@ export function activateIntentOrchestration(context: vscode.ExtensionContext): I
 ### 6.2 Webview UI Interface
 
 The Webview UI provides visual interfaces for intent management:
+
+The UI is not a security boundary; it is a decision surface.
+
+- It renders current intent state, trace results, and pending approvals.
+- It should not attempt to re-implement validation rules; instead it should display validation outcomes from the host.
+- Because webviews do not have Node access, all privileged operations must round-trip through the extension host.
 
 ```typescript
 // webview-ui/src/types/IntentTypes.ts
@@ -995,7 +1171,22 @@ export const IntentProvider: React.FC<{ children: ReactNode }> = ({
 
 ## 7. Integration with Current Implementation
 
+This section explains how to integrate the intent-driven layer into an existing Roo Code/Cline-style extension with minimal disruption. The general strategy is:
+
+- intercept tool execution in one place,
+- add intent protocol to the system prompt,
+- extend tool schemas to carry intent metadata,
+- and build new services (intent manager, trace ledger) alongside existing ones.
+
+The most important non-functional requirement is "no bypass paths": once hooks exist, every destructive tool must go through them.
+
 ### 7.1 Extension Entry Points
+
+The proposed file layout keeps new functionality clustered. That reduces merge conflicts and makes it easier to review the "new system" as a unit:
+
+- `src/hooks/` for interception logic,
+- `src/services/intent/` for persistence and querying,
+- and small edits in core execution/prompt/message layers to wire everything together.
 
 ```
 src/
@@ -1022,6 +1213,8 @@ src/
 ```
 
 ### 7.2 Key Integration Points
+
+The integration points here are chosen because they are high-leverage: changing them affects all tool calls and all model turns.
 
 **1. Tool Execution Flow**
 
@@ -1237,7 +1430,22 @@ export class OrchestrationMcpServer {
 
 ## 8. Security & Guardrails
 
+Security is a core motivation for the architecture. The system is designed to prevent both:
+
+- accidental damage (well-meaning but wrong actions), and
+- malicious or prompt-injected actions (unsafe commands, scope bypass attempts).
+
+Guardrails are layered so that failure of one layer (e.g., prompt discipline) does not result in unsafe execution.
+
 ### 8.1 Security Architecture
+
+The security layers are ordered intentionally:
+
+- classify first (so later checks know what level of scrutiny to apply),
+- validate intent and scope (so actions are tied to an explicit contract),
+- require HITL approval (so risky actions are reviewed),
+- sanitize inputs (so parameters cannot escape intended boundaries),
+- and use circuit breakers (so repeated failures do not spiral).
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -1270,6 +1478,8 @@ export class OrchestrationMcpServer {
 ```
 
 ### 8.2 Guardrail Specifications
+
+These examples are reference implementations showing the type of enforcement expected. In production, patterns should be expanded and hardened, but the overarching rule remains: when the system cannot confidently prove an action is safe and in-scope, it should block or require explicit approval.
 
 **Command Injection Prevention**:
 
@@ -1331,7 +1541,15 @@ class CircuitBreaker {
 
 ## 9. Diagrams Appendix
 
+These diagrams are not just illustrative; they encode the intended invariants of the system. If implementation details change, the diagrams should be updated so they remain a reliable reference for reviewers and contributors.
+
 ### 9.1 Two-Stage State Machine
+
+How to read this diagram:
+
+- "Reasoning Intercept" is the mandatory handshake state. The system should not allow destructive tool calls in State 1.
+- Context injection happens inside the handshake so the next model turn is constrained.
+- Trace logging happens after execution so it reflects the real disk outcome.
 
 ```
                     ┌─────────────────┐
@@ -1401,6 +1619,12 @@ class CircuitBreaker {
 ```
 
 ### 9.2 Hook Engine Data Flow
+
+How to read this diagram:
+
+- Pre-processing is a pipeline of validators; any failure short-circuits to a structured error.
+- Tool execution runs only when all validators pass.
+- Post-processing persists immutable evidence (hashes + trace record) and updates derived artifacts (maps).
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -1476,6 +1700,12 @@ class CircuitBreaker {
 
 ### 9.3 Multi-Agent Orchestration Topology
 
+How to read this diagram:
+
+- The Supervisor is a coordination plane: it assigns disjoint scopes, monitors progress, and arbitrates conflicts.
+- Workers should still be constrained by the same intent/scope policies (no privileged bypass).
+- Shared resources are designed for concurrent access (append-friendly logs, lock managers, diff-based writes).
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                     SUPERVISOR AGENT                            │
@@ -1537,6 +1767,14 @@ Conflict Resolution:
 ---
 
 ## 10. Summary
+
+This architecture reframes AI assistance as a controlled execution pipeline:
+
+- intent selection is required before mutation,
+- hooks enforce scope, constraints, and approvals at runtime,
+- and trace records provide durable attribution via content hashing.
+
+The result is a system that is safer to operate, easier to review, and robust to refactoring, while still enabling advanced workflows like multi-agent parallelism.
 
 This architecture provides a comprehensive framework for intent-driven AI-assisted development:
 
