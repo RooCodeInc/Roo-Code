@@ -18,6 +18,7 @@ import { listFilesTool } from "../tools/ListFilesTool"
 import { readFileTool } from "../tools/ReadFileTool"
 import { readCommandOutputTool } from "../tools/ReadCommandOutputTool"
 import { writeToFileTool } from "../tools/WriteToFileTool"
+import { runWithHooks } from "../../hooks"
 import { editTool } from "../tools/EditTool"
 import { searchReplaceTool } from "../tools/SearchReplaceTool"
 import { editFileTool } from "../tools/EditFileTool"
@@ -678,11 +679,31 @@ export async function presentAssistantMessage(cline: Task) {
 			switch (block.name) {
 				case "write_to_file":
 					await checkpointSaveAndMark(cline)
-					await writeToFileTool.handle(cline, block as ToolUse<"write_to_file">, {
-						askApproval,
-						handleError,
-						pushToolResult,
-					})
+					await runWithHooks(
+						{ intentId: (block as any).params?.intent_id ?? (block as any).params?.intentId },
+						async (ctx) => {
+							// Execute the original tool handler
+							await writeToFileTool.handle(cline, block as ToolUse<"write_to_file">, {
+								askApproval,
+								handleError,
+								pushToolResult,
+							})
+
+							// Construct a minimal result object for post-hooks (traceLogger expects this shape)
+							return {
+								operation: "write_file",
+								path: (block as any).params?.path,
+								content: (block as any).params?.content,
+								session_id: cline.taskId,
+								model: cline.api?.getModel?.()?.id ?? null,
+								contributor: {
+									entity_type: "AI",
+									model_identifier: cline.api?.getModel?.()?.id ?? "unknown",
+								},
+								mutation_class: (block as any).params?.mutation_class ?? null,
+							}
+						},
+					)
 					break
 				case "update_todo_list":
 					await updateTodoListTool.handle(cline, block as ToolUse<"update_todo_list">, {
