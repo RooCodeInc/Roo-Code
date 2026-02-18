@@ -39,6 +39,14 @@ export const formatResponse = {
 			suggestion: "Try to continue without this file, or ask the user to update the .rooignore file",
 		}),
 
+	intentError: (message: string) =>
+		JSON.stringify({
+			status: "error",
+			type: "intent_violation",
+			message,
+			suggestion: "Ensure you have selected an active intent and are operating within its scope.",
+		}),
+
 	noToolsUsed: () => {
 		const instructions = getToolInstructionsReminder()
 
