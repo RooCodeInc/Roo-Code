@@ -77,7 +77,9 @@ const ORCHESTRATION_DIR = ".orchestration"
 const ACTIVE_INTENTS_FILE = "active_intents.yaml"
 const TRACE_LEDGER_FILE = "agent_trace.jsonl"
 const INTENT_MAP_FILE = "intent_map.md"
+const INTENT_IGNORE_FILE = ".intentignore"
 const DEFAULT_TRACE_REQUIREMENT_IDS = ["REQ-TRACE-001", "REQ-TRACE-002", "REQ-TRACE-003", "REQ-TRACE-004"]
+const ALLOWED_MUTATION_CLASSES = new Set<MutationClass>(["AST_REFACTOR", "INTENT_EVOLUTION"])
 
 const WRITE_TOOLS = new Set<string>([
 	"write_to_file",
@@ -195,6 +197,19 @@ export async function runOrchestrationPreToolHook(
 		}
 	}
 
+	if (isMutation && state.activeIntent?.id) {
+		const ignoredIntents = await loadIgnoredIntents(task.cwd)
+		if (ignoredIntents.has(state.activeIntent.id)) {
+			return {
+				blocked: true,
+				errorResult: createStructuredError(
+					"intent_ignored",
+					`Intent '${state.activeIntent.id}' is excluded by ${INTENT_IGNORE_FILE} and cannot perform mutations. Remove it from ${INTENT_IGNORE_FILE} or select another intent.`,
+				),
+			}
+		}
+	}
+
 	if (toolName === "execute_command") {
 		context.command = (toolArgs?.command as string | undefined) ?? ""
 		context.commandClass = commandClass
@@ -205,6 +220,41 @@ export async function runOrchestrationPreToolHook(
 	}
 
 	if (isWriteMutation) {
+		const declaredIntentId = asString(toolArgs?.intent_id)?.trim()
+		if (!declaredIntentId) {
+			return {
+				blocked: true,
+				errorResult: createStructuredError(
+					"intent_required",
+					`Write tool '${toolName}' requires intent_id in tool arguments.`,
+				),
+			}
+		}
+
+		if (declaredIntentId !== state.activeIntent?.id) {
+			return {
+				blocked: true,
+				errorResult: createStructuredError(
+					"intent_mismatch",
+					`Intent mismatch: active intent is '${state.activeIntent?.id ?? "UNKNOWN"}' but tool declared '${declaredIntentId}'.`,
+				),
+			}
+		}
+
+		const declaredMutationClassValue = asString(toolArgs?.mutation_class)?.trim()
+		if (!declaredMutationClassValue || !ALLOWED_MUTATION_CLASSES.has(declaredMutationClassValue as MutationClass)) {
+			return {
+				blocked: true,
+				errorResult: createStructuredError(
+					"mutation_class_required",
+					`Write tool '${toolName}' requires mutation_class in {AST_REFACTOR, INTENT_EVOLUTION}.`,
+				),
+			}
+		}
+
+		context.intentId = declaredIntentId
+		context.mutationClass = declaredMutationClassValue as MutationClass
+
 		const rawTargets = extractWriteTargets(toolName, toolArgs)
 		if (rawTargets.length === 0) {
 			return {
@@ -243,9 +293,6 @@ export async function runOrchestrationPreToolHook(
 
 			context.targets.push(snapshot)
 		}
-
-		context.mutationClass = context.targets.every((target) => target.existed) ? "AST_REFACTOR" : "INTENT_EVOLUTION"
-		context.intentId = state.activeIntent?.id
 	}
 
 	const destructive = isWriteMutation || isCommandMutation
@@ -331,7 +378,11 @@ export async function runOrchestrationPostToolHook(input: OrchestrationPostHookI
 			await appendJsonLine(path.join(task.cwd, ORCHESTRATION_DIR, TRACE_LEDGER_FILE), traceEntry)
 
 			if (traceEntry.mutation_class === "INTENT_EVOLUTION") {
-				await appendIntentMapUpdate(task.cwd, context.intentId, modifiedRanges.map((entry) => entry.file))
+				await appendIntentMapUpdate(
+					task.cwd,
+					context.intentId,
+					modifiedRanges.map((entry) => entry.file),
+				)
 			}
 		}
 	}
@@ -370,7 +421,9 @@ async function ensureFile(filePath: string, defaultContent: string): Promise<voi
 	}
 }
 
-async function loadActiveIntents(cwd: string): Promise<{ ok: true; intents: ActiveIntent[] } | { ok: false; errorResult: string }> {
+async function loadActiveIntents(
+	cwd: string,
+): Promise<{ ok: true; intents: ActiveIntent[] } | { ok: false; errorResult: string }> {
 	const intentsPath = path.join(cwd, ORCHESTRATION_DIR, ACTIVE_INTENTS_FILE)
 	try {
 		const raw = await fs.readFile(intentsPath, "utf-8")
@@ -414,7 +467,9 @@ async function loadActiveIntents(cwd: string): Promise<{ ok: true; intents: Acti
 
 function buildIntentContext(intent: ActiveIntent, recentTrace: Array<Record<string, unknown>>): string {
 	const ownedScopeXml = intent.owned_scope.map((scope) => `    <path>${escapeXml(scope)}</path>`).join("\n")
-	const constraintsXml = intent.constraints.map((constraint) => `    <rule>${escapeXml(constraint)}</rule>`).join("\n")
+	const constraintsXml = intent.constraints
+		.map((constraint) => `    <rule>${escapeXml(constraint)}</rule>`)
+		.join("\n")
 	const recentTraceXml = recentTrace
 		.map((entry) => {
 			const timestamp = escapeXml(String(entry.timestamp ?? ""))
@@ -444,7 +499,11 @@ ${recentTraceXml || "    <entry />"}
 </intent_context>`
 }
 
-async function loadRecentTraceForIntent(cwd: string, intentId: string, limit: number): Promise<Array<Record<string, unknown>>> {
+async function loadRecentTraceForIntent(
+	cwd: string,
+	intentId: string,
+	limit: number,
+): Promise<Array<Record<string, unknown>>> {
 	const tracePath = path.join(cwd, ORCHESTRATION_DIR, TRACE_LEDGER_FILE)
 	try {
 		const raw = await fs.readFile(tracePath, "utf-8")
@@ -467,6 +526,28 @@ async function loadRecentTraceForIntent(cwd: string, intentId: string, limit: nu
 		return parsed.slice(-limit)
 	} catch {
 		return []
+	}
+}
+
+async function loadIgnoredIntents(cwd: string): Promise<Set<string>> {
+	const intentIgnorePath = path.join(cwd, INTENT_IGNORE_FILE)
+	try {
+		const raw = await fs.readFile(intentIgnorePath, "utf-8")
+		const entries = raw
+			.split(/\r?\n/)
+			.map((line) => line.split("#")[0]?.trim() ?? "")
+			.filter(Boolean)
+			.map((line) => {
+				const [intentId] = line.split(":")
+				return (intentId ?? "").trim()
+			})
+			.filter(Boolean)
+		return new Set(entries)
+	} catch (error: any) {
+		if (error?.code === "ENOENT") {
+			return new Set()
+		}
+		return new Set()
 	}
 }
 
@@ -598,7 +679,10 @@ function sha256(content: string): string {
 	return crypto.createHash("sha256").update(content).digest("hex")
 }
 
-function computeModifiedRange(beforeContent: string, afterContent: string): {
+function computeModifiedRange(
+	beforeContent: string,
+	afterContent: string,
+): {
 	oldRange: { start_line: number; end_line: number }
 	newRange: { start_line: number; end_line: number }
 	contentHash: string
@@ -654,11 +738,7 @@ async function appendIntentMapUpdate(cwd: string, intentId: string, files: strin
 	const filePath = path.join(cwd, ORCHESTRATION_DIR, INTENT_MAP_FILE)
 	const timestamp = new Date().toISOString()
 	const uniqueFiles = [...new Set(files)]
-	const lines = [
-		`## ${timestamp} - ${intentId}`,
-		...uniqueFiles.map((file) => `- ${file}`),
-		"",
-	]
+	const lines = [`## ${timestamp} - ${intentId}`, ...uniqueFiles.map((file) => `- ${file}`), ""]
 	await fs.appendFile(filePath, `${lines.join("\n")}\n`, "utf-8")
 }
 
@@ -686,7 +766,8 @@ async function appendLessonLearned(cwd: string, command: string): Promise<void> 
 	}
 
 	if (!existing.includes(heading)) {
-		const seed = existing.trim().length > 0 ? `${existing.trim()}\n\n${heading}\n${line}\n` : `${heading}\n${line}\n`
+		const seed =
+			existing.trim().length > 0 ? `${existing.trim()}\n\n${heading}\n${line}\n` : `${heading}\n${line}\n`
 		await fs.writeFile(target, seed, "utf-8")
 		return
 	}

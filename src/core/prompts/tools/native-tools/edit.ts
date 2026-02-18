@@ -10,6 +10,10 @@ Usage:
 - The edit will FAIL if \`old_string\` is not unique in the file. Either provide a larger string with more surrounding context to make it unique or use \`replace_all\` to change every instance of \`old_string\`.
 - Use \`replace_all\` for replacing and renaming strings across the file. This parameter is useful if you want to rename a variable for instance.`
 
+const INTENT_ID_PARAMETER_DESCRIPTION = `Identifier of the active intent selected for this mutation (must match the prior select_active_intent call).`
+
+const MUTATION_CLASS_PARAMETER_DESCRIPTION = `Classification of this mutation: AST_REFACTOR for intent-preserving changes, or INTENT_EVOLUTION for intent expansion.`
+
 const edit = {
 	type: "function",
 	function: {
@@ -38,8 +42,17 @@ const edit = {
 						"When true, replaces ALL occurrences of old_string in the file. When false (default), only replaces the first occurrence and errors if multiple matches exist.",
 					default: false,
 				},
+				intent_id: {
+					type: "string",
+					description: INTENT_ID_PARAMETER_DESCRIPTION,
+				},
+				mutation_class: {
+					type: "string",
+					enum: ["AST_REFACTOR", "INTENT_EVOLUTION"],
+					description: MUTATION_CLASS_PARAMETER_DESCRIPTION,
+				},
 			},
-			required: ["file_path", "old_string", "new_string"],
+			required: ["file_path", "old_string", "new_string", "intent_id", "mutation_class"],
 			additionalProperties: false,
 		},
 	},

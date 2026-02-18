@@ -3,6 +3,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import type { ClineAsk, ToolProgressStatus, ToolGroup, ToolName, GenerateImageParams } from "@roo-code/types"
 
 export type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
+export type MutationClassValue = "AST_REFACTOR" | "INTENT_EVOLUTION"
 
 export type AskApproval = (
 	type: ClineAsk,
@@ -48,6 +49,7 @@ export const toolParamNames = [
 	"message",
 	"cwd",
 	"intent_id",
+	"mutation_class",
 	"follow_up",
 	"task",
 	"size",
@@ -96,12 +98,39 @@ export type NativeToolArgs = {
 	attempt_completion: { result: string }
 	execute_command: { command: string; cwd?: string }
 	select_active_intent: { intent_id: string }
-	apply_diff: { path: string; diff: string }
-	edit: { file_path: string; old_string: string; new_string: string; replace_all?: boolean }
-	search_and_replace: { file_path: string; old_string: string; new_string: string; replace_all?: boolean }
-	search_replace: { file_path: string; old_string: string; new_string: string }
-	edit_file: { file_path: string; old_string: string; new_string: string; expected_replacements?: number }
-	apply_patch: { patch: string }
+	apply_diff: { path: string; diff: string; intent_id: string; mutation_class: MutationClassValue }
+	edit: {
+		file_path: string
+		old_string: string
+		new_string: string
+		replace_all?: boolean
+		intent_id: string
+		mutation_class: MutationClassValue
+	}
+	search_and_replace: {
+		file_path: string
+		old_string: string
+		new_string: string
+		replace_all?: boolean
+		intent_id: string
+		mutation_class: MutationClassValue
+	}
+	search_replace: {
+		file_path: string
+		old_string: string
+		new_string: string
+		intent_id: string
+		mutation_class: MutationClassValue
+	}
+	edit_file: {
+		file_path: string
+		old_string: string
+		new_string: string
+		expected_replacements?: number
+		intent_id: string
+		mutation_class: MutationClassValue
+	}
+	apply_patch: { patch: string; intent_id: string; mutation_class: MutationClassValue }
 	list_files: { path: string; recursive?: boolean }
 	new_task: { mode: string; message: string; todos?: string }
 	ask_followup_question: {
@@ -109,14 +138,14 @@ export type NativeToolArgs = {
 		follow_up: Array<{ text: string; mode?: string }>
 	}
 	codebase_search: { query: string; path?: string }
-	generate_image: GenerateImageParams
+	generate_image: GenerateImageParams & { intent_id: string; mutation_class: MutationClassValue }
 	run_slash_command: { command: string; args?: string }
 	skill: { skill: string; args?: string }
 	search_files: { path: string; regex: string; file_pattern?: string | null }
 	switch_mode: { mode_slug: string; reason: string }
 	update_todo_list: { todos: string }
 	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
-	write_to_file: { path: string; content: string }
+	write_to_file: { path: string; content: string; intent_id: string; mutation_class: MutationClassValue }
 	// Add more tools as they are migrated to native protocol
 }
 
@@ -201,7 +230,7 @@ export interface ReadFileToolUse extends ToolUse<"read_file"> {
 
 export interface WriteToFileToolUse extends ToolUse<"write_to_file"> {
 	name: "write_to_file"
-	params: Partial<Pick<Record<ToolParamName, string>, "path" | "content">>
+	params: Partial<Pick<Record<ToolParamName, string>, "path" | "content" | "intent_id" | "mutation_class">>
 }
 
 export interface CodebaseSearchToolUse extends ToolUse<"codebase_search"> {

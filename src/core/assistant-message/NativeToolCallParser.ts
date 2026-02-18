@@ -472,10 +472,17 @@ export class NativeToolCallParser {
 				break
 
 			case "write_to_file":
-				if (partialArgs.path || partialArgs.content) {
+				if (
+					partialArgs.path !== undefined ||
+					partialArgs.content !== undefined ||
+					partialArgs.intent_id !== undefined ||
+					partialArgs.mutation_class !== undefined
+				) {
 					nativeArgs = {
 						path: partialArgs.path,
 						content: partialArgs.content,
+						intent_id: partialArgs.intent_id,
+						mutation_class: partialArgs.mutation_class,
 					}
 				}
 				break
@@ -490,10 +497,17 @@ export class NativeToolCallParser {
 				break
 
 			case "apply_diff":
-				if (partialArgs.path !== undefined || partialArgs.diff !== undefined) {
+				if (
+					partialArgs.path !== undefined ||
+					partialArgs.diff !== undefined ||
+					partialArgs.intent_id !== undefined ||
+					partialArgs.mutation_class !== undefined
+				) {
 					nativeArgs = {
 						path: partialArgs.path,
 						diff: partialArgs.diff,
+						intent_id: partialArgs.intent_id,
+						mutation_class: partialArgs.mutation_class,
 					}
 				}
 				break
@@ -508,11 +522,18 @@ export class NativeToolCallParser {
 				break
 
 			case "generate_image":
-				if (partialArgs.prompt !== undefined || partialArgs.path !== undefined) {
+				if (
+					partialArgs.prompt !== undefined ||
+					partialArgs.path !== undefined ||
+					partialArgs.intent_id !== undefined ||
+					partialArgs.mutation_class !== undefined
+				) {
 					nativeArgs = {
 						prompt: partialArgs.prompt,
 						path: partialArgs.path,
 						image: partialArgs.image,
+						intent_id: partialArgs.intent_id,
+						mutation_class: partialArgs.mutation_class,
 					}
 				}
 				break
@@ -573,9 +594,15 @@ export class NativeToolCallParser {
 				break
 
 			case "apply_patch":
-				if (partialArgs.patch !== undefined) {
+				if (
+					partialArgs.patch !== undefined ||
+					partialArgs.intent_id !== undefined ||
+					partialArgs.mutation_class !== undefined
+				) {
 					nativeArgs = {
 						patch: partialArgs.patch,
+						intent_id: partialArgs.intent_id,
+						mutation_class: partialArgs.mutation_class,
 					}
 				}
 				break
@@ -584,12 +611,16 @@ export class NativeToolCallParser {
 				if (
 					partialArgs.file_path !== undefined ||
 					partialArgs.old_string !== undefined ||
-					partialArgs.new_string !== undefined
+					partialArgs.new_string !== undefined ||
+					partialArgs.intent_id !== undefined ||
+					partialArgs.mutation_class !== undefined
 				) {
 					nativeArgs = {
 						file_path: partialArgs.file_path,
 						old_string: partialArgs.old_string,
 						new_string: partialArgs.new_string,
+						intent_id: partialArgs.intent_id,
+						mutation_class: partialArgs.mutation_class,
 					}
 				}
 				break
@@ -599,13 +630,17 @@ export class NativeToolCallParser {
 				if (
 					partialArgs.file_path !== undefined ||
 					partialArgs.old_string !== undefined ||
-					partialArgs.new_string !== undefined
+					partialArgs.new_string !== undefined ||
+					partialArgs.intent_id !== undefined ||
+					partialArgs.mutation_class !== undefined
 				) {
 					nativeArgs = {
 						file_path: partialArgs.file_path,
 						old_string: partialArgs.old_string,
 						new_string: partialArgs.new_string,
 						replace_all: this.coerceOptionalBoolean(partialArgs.replace_all),
+						intent_id: partialArgs.intent_id,
+						mutation_class: partialArgs.mutation_class,
 					}
 				}
 				break
@@ -614,13 +649,17 @@ export class NativeToolCallParser {
 				if (
 					partialArgs.file_path !== undefined ||
 					partialArgs.old_string !== undefined ||
-					partialArgs.new_string !== undefined
+					partialArgs.new_string !== undefined ||
+					partialArgs.intent_id !== undefined ||
+					partialArgs.mutation_class !== undefined
 				) {
 					nativeArgs = {
 						file_path: partialArgs.file_path,
 						old_string: partialArgs.old_string,
 						new_string: partialArgs.new_string,
 						expected_replacements: partialArgs.expected_replacements,
+						intent_id: partialArgs.intent_id,
+						mutation_class: partialArgs.mutation_class,
 					}
 				}
 				break
@@ -812,6 +851,8 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							path: args.path,
 							diff: args.diff,
+							intent_id: args.intent_id,
+							mutation_class: args.mutation_class,
 						} as NativeArgsFor<TName>
 					}
 					break
@@ -828,6 +869,8 @@ export class NativeToolCallParser {
 							old_string: args.old_string,
 							new_string: args.new_string,
 							replace_all: this.coerceOptionalBoolean(args.replace_all),
+							intent_id: args.intent_id,
+							mutation_class: args.mutation_class,
 						} as NativeArgsFor<TName>
 					}
 					break
@@ -856,6 +899,8 @@ export class NativeToolCallParser {
 							prompt: args.prompt,
 							path: args.path,
 							image: args.image,
+							intent_id: args.intent_id,
+							mutation_class: args.mutation_class,
 						} as NativeArgsFor<TName>
 					}
 					break
@@ -921,6 +966,8 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							path: args.path,
 							content: args.content,
+							intent_id: args.intent_id,
+							mutation_class: args.mutation_class,
 						} as NativeArgsFor<TName>
 					}
 					break
@@ -948,6 +995,8 @@ export class NativeToolCallParser {
 					if (args.patch !== undefined) {
 						nativeArgs = {
 							patch: args.patch,
+							intent_id: args.intent_id,
+							mutation_class: args.mutation_class,
 						} as NativeArgsFor<TName>
 					}
 					break
@@ -962,6 +1011,8 @@ export class NativeToolCallParser {
 							file_path: args.file_path,
 							old_string: args.old_string,
 							new_string: args.new_string,
+							intent_id: args.intent_id,
+							mutation_class: args.mutation_class,
 						} as NativeArgsFor<TName>
 					}
 					break
@@ -977,6 +1028,8 @@ export class NativeToolCallParser {
 							old_string: args.old_string,
 							new_string: args.new_string,
 							expected_replacements: args.expected_replacements,
+							intent_id: args.intent_id,
+							mutation_class: args.mutation_class,
 						} as NativeArgsFor<TName>
 					}
 					break
