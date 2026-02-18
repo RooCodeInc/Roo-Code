@@ -1,9 +1,8 @@
-export interface ToolExecutionContext {
-	toolName: string
-	args: Record<string, any>
-	agentId: string
-	intentId?: string // Populated after select_active_intent
+export interface HookContext {
+	intentId?: string
+	metadata?: Record<string, unknown>
 }
 
-export type PreHook = (ctx: ToolExecutionContext) => Promise<ToolExecutionContext>
-export type PostHook = (ctx: ToolExecutionContext, result: any) => Promise<void>
+export type PreHook = (ctx: HookContext) => Promise<void>
+
+export type PostHook = (ctx: HookContext, result: unknown) => Promise<void>
