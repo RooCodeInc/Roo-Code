@@ -1,5 +1,13 @@
 # Roo Code Changelog
 
+## 3.48.1
+
+### Patch Changes
+
+- Fix: Await MCP server initialization before returning McpHub instance, preventing race conditions (PR #11518 by @daniel-lxs)
+- Fix: Correct Bedrock Claude Sonnet 4.6 model ID (#11509 by @PeterDaveHello, PR #11569 by @PeterDaveHello)
+- Add DeleteQueuedMessage IPC command for managing queued messages (PR #11464 by @roomote)
+
 ## [3.48.0]
 
 - Add Anthropic Claude Sonnet 4.6 support across all providers — Anthropic, Bedrock, Vertex, OpenRouter, and Vercel AI Gateway (PR #11509 by @PeterDaveHello)
