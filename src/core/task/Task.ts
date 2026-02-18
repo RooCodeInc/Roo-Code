@@ -128,6 +128,7 @@ import {
 import { processUserContentMentions } from "../mentions/processUserContentMentions"
 import { getMessagesSinceLastSummary, summarizeConversation, getEffectiveApiHistory } from "../condense"
 import { MessageQueueService } from "../message-queue/MessageQueueService"
+import { HookEngine } from "../../hooks"
 import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
 import { MessageManager } from "../message-manager"
 import { validateAndFixToolResultIds } from "./validateToolResultIds"
@@ -335,6 +336,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// Task Bridge
 	enableBridge: boolean
 
+	/**
+	 * HookEngine — Phase 1 "Handshake" middleware.
+	 * Intercepts every tool call to enforce intent-driven architecture:
+	 * - Gatekeeper: blocks mutating tools unless an intent is active
+	 * - IntentContextLoader: handles select_active_intent to inject context
+	 * @see src/hooks/HookEngine.ts
+	 */
+	hookEngine: HookEngine
+
 	// Message Queue Service
 	public readonly messageQueueService: MessageQueueService
 	private messageQueueStateChangedHandler: (() => void) | undefined
@@ -495,6 +505,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.providerRef = new WeakRef(provider)
 		this.globalStoragePath = provider.context.globalStorageUri.fsPath
 		this.diffViewProvider = new DiffViewProvider(this.cwd, this)
+		this.hookEngine = new HookEngine(this.cwd)
 		this.enableCheckpoints = enableCheckpoints
 		this.checkpointTimeout = checkpointTimeout
 		this.enableBridge = enableBridge

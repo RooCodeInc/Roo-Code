@@ -23,6 +23,7 @@ import {
 	addCustomInstructions,
 	markdownFormattingSection,
 	getSkillsSection,
+	getIntentProtocolSection,
 } from "./sections"
 
 // Helper function to get prompt component, filtering out empty objects
@@ -99,6 +100,8 @@ ${getRulesSection(cwd, settings)}
 ${getSystemInfoSection(cwd)}
 
 ${getObjectiveSection()}
+
+${getIntentProtocolSection()}
 
 ${await addCustomInstructions(baseInstructions, globalCustomInstructions || "", cwd, mode, {
 	language: language ?? formatLanguage(vscode.env.language),

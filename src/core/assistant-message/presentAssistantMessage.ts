@@ -675,6 +675,38 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			// ── HookEngine: Pre-Tool Middleware (Phase 1 Handshake) ──────────
+			// Run all registered pre-hooks before executing the tool.
+			// This enforces the Intent-Driven Architecture:
+			//   1. Gatekeeper: blocks mutating tools unless an intent is active
+			//   2. IntentContextLoader: handles select_active_intent to inject context
+			// If a hook blocks or injects, we push the result and skip the switch.
+			if (!block.partial) {
+				const hookResult = await cline.hookEngine.runPreHooks(
+					block.name,
+					(block.nativeArgs as Record<string, unknown>) ?? block.params ?? {},
+				)
+
+				if (hookResult.action === "block" || hookResult.action === "inject") {
+					// Push the hook's response as the tool_result
+					pushToolResult(
+						hookResult.action === "block"
+							? formatResponse.toolError(hookResult.toolResult)
+							: hookResult.toolResult,
+					)
+
+					if (hookResult.action === "block") {
+						cline.consecutiveMistakeCount++
+					} else {
+						// "inject" = successful select_active_intent
+						cline.consecutiveMistakeCount = 0
+					}
+
+					break
+				}
+			}
+			// ── End HookEngine Pre-Tool Middleware ───────────────────────────
+
 			switch (block.name) {
 				case "write_to_file":
 					await checkpointSaveAndMark(cline)
@@ -848,6 +880,12 @@ export async function presentAssistantMessage(cline: Task) {
 						handleError,
 						pushToolResult,
 					})
+					break
+				case "select_active_intent":
+					// Handled by HookEngine pre-hook (IntentContextLoader).
+					// This case should not be reached because the pre-hook intercepts
+					// and returns the result via "inject" action above.
+					// If we get here, it means the hook allowed it through — no-op.
 					break
 				default: {
 					// Handle unknown/invalid tool names OR custom tools

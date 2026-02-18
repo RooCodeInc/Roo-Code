@@ -1,0 +1,73 @@
+# .orchestration/active_intents.yaml
+# ──────────────────────────────────────────────────────────────────────────
+# Intent Specification File — Machine-Managed
+#
+# This file defines the active business intents for this workspace.
+# The AI agent MUST call select_active_intent(intent_id) to "checkout"
+# an intent before performing any mutating operations.
+#
+# Structure:
+#   - id:                  Unique identifier (e.g., "INT-001")
+#   - name:                Human-readable description
+#   - status:              DRAFT | IN_PROGRESS | COMPLETE | BLOCKED
+#   - owned_scope:         File globs the intent is authorized to modify
+#   - constraints:         Architectural rules the agent must follow
+#   - acceptance_criteria: Definition of Done — conditions for completion
+#
+# Updated via Pre-Hooks (when agent picks a task) and Post-Hooks (on completion).
+# See: TRP1 Challenge Week 1 — The Data Model
+# ──────────────────────────────────────────────────────────────────────────
+
+active_intents:
+  - id: "INT-001"
+    name: "JWT Authentication Migration"
+    status: "IN_PROGRESS"
+    owned_scope:
+      - "src/auth/**"
+      - "src/middleware/jwt.ts"
+      - "tests/auth/**"
+    constraints:
+      - "Must not use external auth providers (e.g., Auth0, Firebase Auth)"
+      - "Must maintain backward compatibility with Basic Auth"
+      - "All tokens must expire within 24 hours"
+      - "Must use RS256 signing algorithm"
+    acceptance_criteria:
+      - "Unit tests in tests/auth/ pass"
+      - "JWT tokens are issued on successful login"
+      - "Token refresh endpoint is functional"
+      - "Basic Auth fallback remains operational"
+
+  - id: "INT-002"
+    name: "Refactor Auth Middleware"
+    status: "IN_PROGRESS"
+    owned_scope:
+      - "src/middleware/**"
+      - "src/auth/**"
+      - "tests/middleware/**"
+    constraints:
+      - "Must follow single-responsibility principle"
+      - "Must not break existing route handlers"
+      - "Must maintain Express.js middleware signature (req, res, next)"
+      - "Error responses must use standardized JSON error format"
+    acceptance_criteria:
+      - "All existing middleware tests pass"
+      - "Middleware is split into auth, rate-limit, and logging modules"
+      - "No circular dependencies between middleware modules"
+
+  - id: "INT-003"
+    name: "Build Weather API Endpoint"
+    status: "DRAFT"
+    owned_scope:
+      - "src/api/weather/**"
+      - "src/services/weather/**"
+      - "tests/api/weather/**"
+    constraints:
+      - "Must use OpenWeatherMap free-tier API"
+      - "Must implement response caching (5-minute TTL)"
+      - "Must return ISO 8601 timestamps"
+      - "Rate limit: 60 requests per minute per client"
+    acceptance_criteria:
+      - "GET /api/weather/:city returns current weather data"
+      - "Response includes temperature, humidity, and description"
+      - "Invalid city returns 404 with descriptive error"
+      - "Cache reduces external API calls by at least 80%"
