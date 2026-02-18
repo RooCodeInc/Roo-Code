@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520">
+  <style>
+    .box { fill:#f7fbff; stroke:#2b7bd6; stroke-width:2px; rx:6; }
+    .text { font-family: Arial, Helvetica, sans-serif; font-size:13px; fill:#111; }
+    .title { font-weight:700; font-size:15px; }
+    .arrow { stroke:#666; stroke-width:2; marker-end: url(#a); }
+  </style>
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666" />
+    </marker>
+  </defs>
+
+  <rect class="box" x="40" y="30" width="220" height="60" />
+  <text class="text title" x="60" y="60">Spec Files (.specify)</text>
+  <text class="text" x="60" y="82">Markdown + YAML front-matter</text>
+
+  <rect class="box" x="320" y="30" width="220" height="60" />
+  <text class="text title" x="340" y="60">IntentLoader</text>
+  <text class="text" x="340" y="82">Parses requirements</text>
+
+  <rect class="box" x="600" y="30" width="220" height="60" />
+  <text class="text title" x="620" y="60">IntentSelector</text>
+  <text class="text" x="620" y="82">Selects active requirement</text>
+
+  <line class="arrow" x1="260" y1="60" x2="320" y2="60" />
+  <line class="arrow" x1="540" y1="60" x2="600" y2="60" />
+
+  <rect class="box" x="320" y="140" width="500" height="90" />
+  <text class="text title" x="340" y="170">ContextInjector</text>
+  <text class="text" x="340" y="192">Builds `AgentContext` including current requirement, history, and snippets</text>
+
+  <line class="arrow" x1="710" y1="90" x2="710" y2="140" />
+  <line class="arrow" x1="420" y1="200" x2="420" y2="260" />
+
+  <rect class="box" x="320" y="270" width="500" height="80" />
+  <text class="text title" x="340" y="300">Agent Execution</text>
+  <text class="text" x="340" y="322">Deterministic prompts · Code changes · Tools</text>
+
+  <text class="text" x="40" y="380">Lifecycle notes: ensure canonical IDs, stable front-matter, and minimal context to avoid prompt drift.</text>
+</svg>

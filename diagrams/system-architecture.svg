@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="700" viewBox="0 0 1400 700">
+  <style>
+    .svc { fill:#f2f9ff; stroke:#1f6fb4; stroke-width:2px; rx:8; }
+    .comp { fill:#fff7f2; stroke:#c45a00; stroke-width:2px; rx:6; }
+    .text { font-family: Arial, Helvetica, sans-serif; font-size:14px; fill:#111; }
+    .title { font-weight:700; font-size:16px; }
+    .arrow { stroke:#666; stroke-width:2; marker-end: url(#m); }
+  </style>
+  <defs>
+    <marker id="m" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666" />
+    </marker>
+  </defs>
+
+  <rect class="svc" x="40" y="30" width="300" height="100" />
+  <text class="text title" x="60" y="70">External</text>
+  <text class="text" x="60" y="92">User/API - CI - VCS</text>
+
+  <rect class="svc" x="380" y="30" width="320" height="100" />
+  <text class="text title" x="400" y="70">Orchestration Layer</text>
+  <text class="text" x="400" y="92">OrchestrationService - AgentCoordinator</text>
+
+  <rect class="comp" x="740" y="20" width="580" height="120" />
+  <text class="text title" x="760" y="50">Agents &amp; Hooks</text>
+  <text class="text" x="760" y="72">Agents (Planner/Worker/Reviewer) - HookEngine</text>
+
+  <line class="arrow" x1="340" y1="80" x2="380" y2="80" />
+  <line class="arrow" x1="700" y1="80" x2="740" y2="80" />
+
+  <rect class="svc" x="40" y="170" width="360" height="120" />
+  <text class="text title" x="60" y="200">Knowledge &amp; Specs</text>
+  <text class="text" x="60" y="222">.specify/ - KnowledgeManager</text>
+
+  <rect class="comp" x="420" y="170" width="420" height="120" />
+  <text class="text title" x="440" y="200">Trace &amp; Storage</text>
+  <text class="text" x="440" y="222">TraceLogger - .orchestration/agent_trace.jsonl</text>
+
+  <rect class="comp" x="860" y="170" width="400" height="120" />
+  <text class="text title" x="880" y="200">Tools &amp; Runners</text>
+  <text class="text" x="880" y="222">Prettier, ESLint, Git, External APIs</text>
+
+  <line class="arrow" x1="200" y1="150" x2="200" y2="120" />
+  <line class="arrow" x1="640" y1="150" x2="640" y2="120" />
+  <line class="arrow" x1="1080" y1="150" x2="1080" y2="120" />
+
+  <text class="text" x="40" y="330">Notes: For distributed mode, replace local append-only JSONL with a trace service or S3-backed append mechanism. Ensure atomic writes and transactional metadata for trace integrity.</text>
+</svg>
