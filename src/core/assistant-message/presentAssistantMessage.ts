@@ -67,6 +67,19 @@ export async function presentAssistantMessage(cline: Task) {
 	cline.presentAssistantMessageLocked = true
 	cline.presentAssistantMessageHasPendingUpdates = false
 
+	// Check if multiple tool calls per message experiment is enabled
+	const multiToolProvider = cline.providerRef.deref()
+	console.log("[Task#presentAssistantMessage] Checking if multiple tool calls per message experiment is enabled")
+	let isMultipleToolCallsEnabled = false
+	if (multiToolProvider) {
+		console.log("[Task#presentAssistantMessage] Provider found, getting state for experiment check")
+		const state = await multiToolProvider.getState()
+		isMultipleToolCallsEnabled = experiments.isEnabled(state.experiments ?? {}, EXPERIMENT_IDS.MULTIPLE_TOOL_CALLS)
+	}
+	console.log(
+		`[Task#presentAssistantMessage] Multiple tool calls per message experiment enabled: ${isMultipleToolCallsEnabled}`,
+	)
+
 	if (cline.currentStreamingContentIndex >= cline.assistantMessageContent.length) {
 		// This may happen if the last content block was completed before
 		// streaming could finish. If streaming is finished, and we're out of
@@ -84,7 +97,7 @@ export async function presentAssistantMessage(cline: Task) {
 
 	switch (block.type) {
 		case "text": {
-			if (cline.didRejectTool || cline.didAlreadyUseTool) {
+			if (cline.didRejectTool || (cline.didAlreadyUseTool && !isMultipleToolCallsEnabled)) {
 				break
 			}
 
@@ -105,9 +118,7 @@ export async function presentAssistantMessage(cline: Task) {
 					// Remove full thinking tags from text and present remaining text
 					const remaining = content.replace(fullTagRegex, "").trim()
 					// Combine multiple thinking blocks into one reasoning message
-					const combined = fullMatches
-						.map((r) => r.replace(/^\n/, "").replace(/\n$/, ""))
-						.join("\n")
+					const combined = fullMatches.map((r) => r.replace(/^\n/, "").replace(/\n$/, "")).join("\n")
 					const combinedTrim = combined.trim()
 					// Present reasoning first, then any remaining text
 					if (combinedTrim.length > 0) {
@@ -162,20 +173,20 @@ export async function presentAssistantMessage(cline: Task) {
 					}
 				}
 
-					// Remove any tool XML tags (e.g. <sf_deploy_metadata />,
-					// <read_file>...</read_file>) from plain text so tool markup
-					// doesn't appear outside thinking/reasoning blocks.
-					if (content && Array.isArray(toolNames)) {
-						for (const t of toolNames) {
-							// Remove full tags with content
-							const fullTagRegex = new RegExp(`<${t}>[\\s\\S]*?<\\/${t}>`, "g")
-							content = content.replace(fullTagRegex, "")
-							// Remove self-closing or stray opening tags
-							const selfClosingRegex = new RegExp(`<${t}[^>]*\\/?>`, "g")
-							content = content.replace(selfClosingRegex, "")
-						}
-						content = content.trim()
+				// Remove any tool XML tags (e.g. <sf_deploy_metadata />,
+				// <read_file>...</read_file>) from plain text so tool markup
+				// doesn't appear outside thinking/reasoning blocks.
+				if (content && Array.isArray(toolNames)) {
+					for (const t of toolNames) {
+						// Remove full tags with content
+						const fullTagRegex = new RegExp(`<${t}>[\\s\\S]*?<\\/${t}>`, "g")
+						content = content.replace(fullTagRegex, "")
+						// Remove self-closing or stray opening tags
+						const selfClosingRegex = new RegExp(`<${t}[^>]*\\/?>`, "g")
+						content = content.replace(selfClosingRegex, "")
 					}
+					content = content.trim()
+				}
 			}
 
 			// If the next block is an `attempt_completion` tool, it will
@@ -280,8 +291,8 @@ export async function presentAssistantMessage(cline: Task) {
 				break
 			}
 
-			if (cline.didAlreadyUseTool) {
-				// Ignore any content after a tool has already been used.
+			if (cline.didAlreadyUseTool && !isMultipleToolCallsEnabled) {
+				// Ignore any content after a tool has already been used (only when multi-tool is disabled).
 				cline.userMessageContent.push({
 					type: "text",
 					text: `Tool [${block.name}] was not executed because a tool has already been used in this message. Only one tool may be used per message. You must assess the first tool's result before proceeding to use the next tool.`,
@@ -299,9 +310,9 @@ export async function presentAssistantMessage(cline: Task) {
 					cline.userMessageContent.push(...content)
 				}
 
-				// Once a tool result has been collected, ignore all other tool
-				// uses since we should only ever present one tool result per
-				// message.
+				// Once a tool result has been collected, mark that a tool has
+				// been used. When multiple tool calls are enabled, this flag
+				// is still set but won't block subsequent tools.
 				cline.didAlreadyUseTool = true
 			}
 
