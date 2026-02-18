@@ -1,27 +1,37 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
+# --------------------------------------------------
+# Dependencies
+# --------------------------------------------------
+node_modules/
+.pnp/
 .pnp.js
 
-# testing
-/coverage
+# pnpm
+pnpm-lock.yaml
 
-# production
-/build
+# --------------------------------------------------
+# Build Outputs
+# --------------------------------------------------
+dist/
+build/
+out/
+.next/
+coverage/
+*.tsbuildinfo
 
-# misc
-.DS_Store
+# Webview / Vite
+webview-ui/dist/
+webview-ui/.vite/
+
+# --------------------------------------------------
+# Environment Files
+# --------------------------------------------------
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-*storybook.log
-
-tsconfig.tsbuildinfo
+# --------------------------------------------------
+# Logs
+# --------------------------------------------------
+npm-debug.log
