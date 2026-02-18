@@ -166,7 +166,7 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "jan-2026-v3.45.0-smart-code-folding" // v3.45.0 Smart Code Folding
+	public readonly latestAnnouncementId = "feb-2026-v3.48.0-sonnet-46-stability-locked-config" // v3.48.0 Sonnet 4.6, Stability, Locked API Config
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 

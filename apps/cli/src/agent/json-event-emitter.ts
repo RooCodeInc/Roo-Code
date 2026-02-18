@@ -19,7 +19,8 @@ import type { ClineMessage } from "@roo-code/types"
 import type { JsonEvent, JsonEventCost, JsonFinalOutput } from "@/types/json-events.js"
 
 import type { ExtensionClient } from "./extension-client.js"
-import type { TaskCompletedEvent } from "./events.js"
+import type { AgentStateChangeEvent, TaskCompletedEvent } from "./events.js"
+import { AgentLoopState } from "./agent-state.js"
 
 /**
  * Options for JsonEventEmitter.
@@ -108,10 +109,11 @@ export class JsonEventEmitter {
 		// Subscribe to message events
 		const unsubMessage = client.on("message", (msg) => this.handleMessage(msg, false))
 		const unsubMessageUpdated = client.on("messageUpdated", (msg) => this.handleMessage(msg, true))
+		const unsubStateChange = client.on("stateChange", (event) => this.handleStateChange(event))
 		const unsubTaskCompleted = client.on("taskCompleted", (event) => this.handleTaskCompleted(event))
 		const unsubError = client.on("error", (error) => this.handleError(error))
 
-		this.unsubscribers.push(unsubMessage, unsubMessageUpdated, unsubTaskCompleted, unsubError)
+		this.unsubscribers.push(unsubMessage, unsubMessageUpdated, unsubStateChange, unsubTaskCompleted, unsubError)
 
 		// Emit init event
 		this.emitEvent({
@@ -119,6 +121,16 @@ export class JsonEventEmitter {
 			subtype: "init",
 			content: "Task started",
 		})
+	}
+
+	private handleStateChange(event: AgentStateChangeEvent): void {
+		// Only treat the next say:text as a prompt echo when a new task starts.
+		if (
+			event.previousState.state === AgentLoopState.NO_TASK &&
+			event.currentState.state !== AgentLoopState.NO_TASK
+		) {
+			this.expectPromptEchoAsUser = true
+		}
 	}
 
 	/**
@@ -257,6 +269,9 @@ export class JsonEventEmitter {
 			case "user_feedback":
 			case "user_feedback_diff":
 				this.emitEvent(this.buildTextEvent("user", msg.ts, contentToSend, isDone))
+				if (isDone) {
+					this.expectPromptEchoAsUser = false
+				}
 				break
 
 			case "api_req_started": {
@@ -387,9 +402,6 @@ export class JsonEventEmitter {
 		if (this.mode === "json") {
 			this.outputFinalResult(event.success, resultContent)
 		}
-
-		// Next task in the same process starts with a new echoed prompt.
-		this.expectPromptEchoAsUser = true
 	}
 
 	/**

@@ -163,6 +163,13 @@ export function Footer() {
 								<h3 className="text-sm font-semibold uppercase leading-6 text-foreground">Resources</h3>
 								<ul className="mt-6 space-y-4">
 									<li>
+										<Link
+											href="/blog"
+											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
+											Blog
+										</Link>
+									</li>
+									<li>
 										<a
 											href={EXTERNAL_LINKS.EVALS}
 											target="_blank"

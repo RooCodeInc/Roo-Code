@@ -347,7 +347,9 @@
 		},
 		"release": {
 			"heading": "새로운 기능:",
-			"smartCodeFolding": "스마트 코드 폴딩: 컨텍스트 응축이 이제 파일의 경량 맵을 보존합니다—함수 시그니처, 클래스 선언 및 타입 정의를 포함합니다. 이는 응축 후 더 나은 연속성과 이전 작업을 참조할 때 더 스마트한 편집을 제공합니다."
+			"sonnet46": "Claude Sonnet 4.6: 모든 제공업체에서 Anthropic의 최신 Claude Sonnet 4.6 모델을 완벽 지원 — Anthropic, Bedrock, Vertex, OpenRouter, Vercel AI Gateway.",
+			"stabilityFixes": "안정성 개선: 레이스 컨디션에 대한 위임 수명주기 강화, 탐색 및 작업 재개 시 채팅 기록 보존 수정, 더 부드러운 경험을 위한 스크롤 앵커링 문제 해결.",
+			"lockedApiConfig": "잠긴 API 설정: 새로운 잠금 토글로 워크스페이스의 모든 모드에서 API 구성을 고정할 수 있어, 모드를 전환해도 제공업체 설정이 더 이상 초기화되지 않습니다."
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",
