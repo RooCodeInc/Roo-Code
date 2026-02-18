@@ -75,7 +75,7 @@ export const openAiCodexModels = {
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
 		supportsPromptCache: true,
-		supportsReasoningEffort: ["low", "medium", "high"],
+		supportsReasoningEffort: ["low", "medium", "high", "xhigh"],
 		reasoningEffort: "medium",
 		inputPrice: 0,
 		outputPrice: 0,
