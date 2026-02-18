@@ -3789,6 +3789,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								userContent: currentUserContent,
 								includeFileDetails: false,
 								retryAttempt: (currentItem.retryAttempt ?? 0) + 1,
+								// We removed the last user message above; ensure it is re-added on retry.
+								userMessageWasRemoved: true,
 							})
 
 							// Continue to retry the request

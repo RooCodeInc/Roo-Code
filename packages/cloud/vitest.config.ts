@@ -1,4 +1,5 @@
 import { defineConfig } from "vitest/config"
+import { fileURLToPath } from "node:url"
 
 export default defineConfig({
 	test: {
@@ -8,7 +9,9 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: {
-			vscode: new URL("./src/__mocks__/vscode.ts", import.meta.url).pathname,
+			// `URL.pathname` is not a valid Windows filesystem path (it starts with `/C:/...`).
+			// Use `fileURLToPath` so Vitest/Vite can resolve the mock consistently across platforms.
+			vscode: fileURLToPath(new URL("./src/__mocks__/vscode.ts", import.meta.url)),
 		},
 	},
 })

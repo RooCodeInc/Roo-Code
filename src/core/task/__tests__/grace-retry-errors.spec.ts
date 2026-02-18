@@ -278,6 +278,53 @@ describe("Grace Retry Error Handling", () => {
 	})
 
 	describe("Grace Retry Pattern", () => {
+		it("re-adds the user message when user retries after empty response (manual approval mode)", async () => {
+			// Manual approval mode: Task will prompt the user on api_req_failed instead of auto-retrying.
+			mockProvider.getState = vi.fn().mockResolvedValue({
+				autoApprovalEnabled: false,
+				apiConfiguration: mockApiConfig,
+			})
+
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			// First empty response triggers api_req_failed prompt; user chooses to retry.
+			vi.spyOn(task, "ask").mockImplementation(async (type: any) => {
+				if (type === "api_req_failed") return { response: "yesButtonClicked" } as any
+				if (type === "completion_result") return { response: "yesButtonClicked" } as any
+				return { response: "noButtonClicked" } as any
+			})
+
+			// First API attempt yields no chunks (empty response). Second attempt yields a tool call.
+			let callCount = 0
+			vi.spyOn(task, "attemptApiRequest").mockImplementation(() => {
+				callCount++
+				if (callCount === 1) {
+					return (async function* () {})() as any
+				}
+
+				return (async function* () {
+					yield {
+						type: "tool_call",
+						id: "call_1",
+						name: "attempt_completion",
+						arguments: JSON.stringify({ result: "ok" }),
+					}
+				})() as any
+			})
+
+			await task.recursivelyMakeClineRequests([{ type: "text", text: "hello" } as any], false)
+
+			// The first attempt adds then removes the user message (because the assistant was empty).
+			// On user-approved retry, the user message must be re-added before the second request.
+			expect(task.apiConversationHistory.length).toBeGreaterThan(0)
+			expect(task.apiConversationHistory[0].role).toBe("user")
+		})
+
 		it("should not show error on first failure (grace retry)", async () => {
 			const task = new Task({
 				provider: mockProvider,
