@@ -55,3 +55,4 @@ qdrant_storage/
 plans/
 
 roo-cli-*.tar.gz*
+.vscode/mcp.json
