@@ -3,7 +3,7 @@
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
   "publisher": "ConscendoTechInc",
-  "version": "2026.0.5",
+  "version": "2026.0.7",
   "icon": "assets/icons/icon.png",
   "galleryBanner": {
     "color": "#617A91",
