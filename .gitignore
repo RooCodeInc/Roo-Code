@@ -55,3 +55,7 @@ qdrant_storage/
 plans/
 
 roo-cli-*.tar.gz*
+
+
+# VS Code MCP analytics file — do not commit
+.vscode/mcp.json
