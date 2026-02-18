@@ -6,6 +6,7 @@ export const GlobalFileNames = {
 	taskMetadata: "task_metadata.json",
 	lwcInstructions: "code/lwc-guide.md",
 	apexInstructions: "code/apex-guide.md",
+	asynchronousApexInstructions: "code/asynchronous-apex-guide.md",
 	// Salesforce Agent Instructions
 	assignmentRulesInstructions: "Salesforce_Agent/assignment-rules.md",
 	customFieldInstructions: "Salesforce_Agent/custom-field.md",
@@ -55,6 +56,11 @@ export const TaskTypeMapping: Record<string, TaskTypeConfig> = {
 	"create-apex": {
 		instructions: ["create_apex"],
 		description: "Create Apex class or trigger",
+		mode: "code",
+	},
+	"create-async-apex": {
+		instructions: ["create_async_apex"],
+		description: "Create asynchronous Apex (Future, Queueable, Batch, Scheduled)",
 		mode: "code",
 	},
 	"create-invocable-apex": {

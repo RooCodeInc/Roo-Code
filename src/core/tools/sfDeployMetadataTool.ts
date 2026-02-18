@@ -6,6 +6,8 @@ import { Task } from "../task/Task"
 import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
 import { ClineSayTool } from "../../shared/ExtensionMessage"
+import { FileChangesService } from "../../services/file-changes"
+import type { DeploymentStatus } from "../../services/file-changes"
 
 /**
  * Metadata type configuration for SF CLI commands
@@ -542,6 +544,46 @@ function formatDeployResult(output: string, metadataType: string, metadataName: 
 	}
 }
 
+/**
+ * Extract deployed component file paths from SF CLI JSON output.
+ * Returns relative file paths (e.g., "force-app/main/default/classes/MyClass.cls").
+ */
+function extractDeployedFilePaths(jsonOutput: any): string[] {
+	const filePaths: string[] = []
+	const deployedSource = jsonOutput?.result?.deployedSource || jsonOutput?.result?.files || []
+
+	for (const comp of deployedSource) {
+		// SF CLI provides filePath or fileName for each deployed component
+		const filePath = comp.filePath || comp.fileName
+		if (filePath) {
+			filePaths.push(filePath)
+		}
+	}
+
+	return filePaths
+}
+
+/**
+ * Update deployment status for files involved in a deploy operation.
+ * Handles both tracked files (in FileChangesDatabase) and untracked files
+ * (ones the AI deployed that weren't modified in this task).
+ */
+async function updateDeploymentStatuses(
+	taskId: string,
+	filePaths: string[],
+	status: DeploymentStatus,
+	error?: string,
+): Promise<void> {
+	try {
+		const service = FileChangesService.getInstance()
+		for (const filePath of filePaths) {
+			await service.updateDeploymentStatus(taskId, filePath, status, error)
+		}
+	} catch (err) {
+		console.error(`[deploySfMetadata] Failed to update deployment statuses: ${err}`)
+	}
+}
+
 export async function deploySfMetadataTool(
 	cline: Task,
 	block: ToolUse,
@@ -683,6 +725,18 @@ export async function deploySfMetadataTool(
 			}
 			console.log(`[deploySfMetadata] ✅ Dry run PASSED - proceeding to actual deployment`)
 
+			// Update deployment status to "dry-run" for validated components
+			try {
+				const dryRunJson = JSON.parse(dryRunOutput)
+				const validatedPaths = extractDeployedFilePaths(dryRunJson)
+				if (validatedPaths.length > 0) {
+					await updateDeploymentStatuses(cline.taskId, validatedPaths, "dry-run")
+					console.log(`[deploySfMetadata] Updated ${validatedPaths.length} files to dry-run status`)
+				}
+			} catch {
+				// Non-critical — continue with deployment even if status update fails
+			}
+
 			// Update UI: Dry run passed
 			await cline.say("text", "✅ Validation passed! Proceeding with actual deployment...")
 		} catch (dryRunError: any) {
@@ -741,6 +795,18 @@ export async function deploySfMetadataTool(
 		console.log(`[deploySfMetadata] ===== PHASE 2: ACTUAL DEPLOYMENT =====`)
 		console.log(`[deploySfMetadata] Executing deployment command...`)
 
+		// Mark all task files as "deploying" before starting
+		try {
+			const service = FileChangesService.getInstance()
+			const taskFiles = await service.getTaskFileChanges(cline.taskId)
+			const dryRunPaths = taskFiles.filter((f) => f.deploymentStatus === "dry-run").map((f) => f.filePath)
+			if (dryRunPaths.length > 0) {
+				await updateDeploymentStatuses(cline.taskId, dryRunPaths, "deploying")
+			}
+		} catch {
+			// Non-critical
+		}
+
 		try {
 			// Execute actual deployment
 			const deployOutput = execSync(deployCommand, {
@@ -756,6 +822,18 @@ export async function deploySfMetadataTool(
 			const formattedResult = formatDeployResult(deployOutput, metadataType, metadataName)
 			console.log(`[deploySfMetadata] ✅ DEPLOYMENT SUCCESSFUL ${formattedResult}`)
 
+			// Update deployment status to "deployed" for successfully deployed components
+			try {
+				const deployJson = JSON.parse(deployOutput)
+				const deployedPaths = extractDeployedFilePaths(deployJson)
+				if (deployedPaths.length > 0) {
+					await updateDeploymentStatuses(cline.taskId, deployedPaths, "deployed")
+					console.log(`[deploySfMetadata] Updated ${deployedPaths.length} files to deployed status`)
+				}
+			} catch {
+				// Non-critical
+			}
+
 			// Update UI: Show deployment results in expandable section
 			const deployResultMessage = JSON.stringify({
 				...sharedMessageProps,
@@ -769,6 +847,25 @@ export async function deploySfMetadataTool(
 
 			pushToolResult(formatResponse.toolResult(formattedResult))
 		} catch (deployError: any) {
+			// Mark deploying files as "failed"
+			try {
+				const service = FileChangesService.getInstance()
+				const taskFiles = await service.getTaskFileChanges(cline.taskId)
+				const deployingPaths = taskFiles
+					.filter((f) => f.deploymentStatus === "deploying")
+					.map((f) => f.filePath)
+				if (deployingPaths.length > 0) {
+					await updateDeploymentStatuses(
+						cline.taskId,
+						deployingPaths,
+						"failed",
+						String(deployError?.message || "Deployment failed"),
+					)
+				}
+			} catch {
+				// Non-critical
+			}
+
 			// Handle deployment execution errors
 			let errorMessage = "Failed to execute SF CLI deployment"
 

@@ -23,7 +23,7 @@ export const experimentConfigsMap: Record<ExperimentKey, ExperimentConfig> = {
 	PREVENT_FOCUS_DISRUPTION: { enabled: false },
 	ASSISTANT_MESSAGE_PARSER: { enabled: false },
 	MULTIPLE_TOOL_CALLS: { enabled: true },
-	PLANNING_WORKFLOW: { enabled: true },
+	PLANNING_WORKFLOW: { enabled: false },
 }
 
 export const experimentDefault = Object.fromEntries(

@@ -45,6 +45,7 @@ export class OpenRouterKeyService {
 	private static readonly API_BASE_URL = "https://openrouter.ai/api/v1"
 	private readonly outputChannel: vscode.OutputChannel
 	private provisioningApiKey: string | undefined
+	private creditLimit: number | undefined = 0
 	private setupInProgress: Promise<string> | null = null
 
 	constructor(outputChannel: vscode.OutputChannel) {
@@ -93,13 +94,14 @@ export class OpenRouterKeyService {
 			this.outputChannelLog("[OpenRouterKeyService] Fetching admin provisioning API key from Firebase...")
 
 			// Use Firebase helper's getAdminApiKey method
-			const key = await getAdminApiKey(this.outputChannel)
+			const adminConfig = await getAdminApiKey(this.outputChannel)
 
-			if (key) {
+			if (adminConfig) {
 				logger.info("[OpenRouterKeyService] Successfully fetched admin provisioning API key")
 				this.outputChannelLog("[OpenRouterKeyService] Successfully fetched admin provisioning API key")
-				this.provisioningApiKey = key
-				return key
+				this.provisioningApiKey = adminConfig.adminApiKey
+				this.creditLimit = adminConfig.creditLimit
+				return this.provisioningApiKey
 			} else {
 				logger.warn("[OpenRouterKeyService] No admin provisioning API key found in Firebase")
 				this.outputChannelLog("[OpenRouterKeyService] No admin provisioning API key found in Firebase")
@@ -132,13 +134,14 @@ export class OpenRouterKeyService {
 			this.outputChannelLog("[OpenRouterKeyService] Fetching default provisioning API key from Firebase...")
 
 			// Use the getAdminApiKey helper which correctly retrieves the adminApiKey field
-			const key = await getAdminApiKey(this.outputChannel)
+			const adminConfig = await getAdminApiKey(this.outputChannel)
 
-			if (key) {
+			if (adminConfig) {
 				logger.info("[OpenRouterKeyService] Successfully fetched default provisioning API key")
 				this.outputChannelLog("[OpenRouterKeyService] Successfully fetched default provisioning API key")
-				this.provisioningApiKey = key
-				return key
+				this.provisioningApiKey = adminConfig.adminApiKey
+				this.creditLimit = adminConfig.creditLimit
+				return this.provisioningApiKey
 			} else {
 				logger.warn("[OpenRouterKeyService] No default provisioning API key found in Firebase")
 				this.outputChannelLog("[OpenRouterKeyService] No default provisioning API key found in Firebase")
@@ -208,7 +211,7 @@ export class OpenRouterKeyService {
 		// Default settings: $0 monthly limit (for free tier)
 		const params: CreateKeyParams = {
 			name: keyName,
-			limit: 0,
+			limit: this.creditLimit,
 			limit_reset: "monthly",
 			include_byok_in_limit: true,
 		}
@@ -348,8 +351,7 @@ export async function getOpenRouterKeyService(outputChannel: vscode.OutputChanne
 	logger.info("[getOpenRouterKeyService] Accessing OpenRouterKeyService instance")
 	if (!keyServiceInstance) {
 		keyServiceInstance = new OpenRouterKeyService(outputChannel)
-		let adminApiKey = await keyServiceInstance.getAdminProvisioningKey()
-		logger.info(`[getOpenRouterKeyService] Admin Provisioning API Key: ${adminApiKey}`)
+		let adminConfig = await keyServiceInstance.getAdminProvisioningKey()
 	}
 	return keyServiceInstance
 }

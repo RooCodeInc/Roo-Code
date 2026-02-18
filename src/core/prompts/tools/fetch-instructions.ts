@@ -12,6 +12,7 @@ export function getFetchInstructionsDescription(enableMcpServerCreation?: boolea
   create_mode
   create_lwc
   create_apex
+  create_async_apex
   create_visual_force
   create_aura_components
   assignment_rules
@@ -30,6 +31,7 @@ export function getFetchInstructionsDescription(enableMcpServerCreation?: boolea
 			: `  create_mode
   create_lwc
   create_apex
+  create_async_apex
   create_visual_force
   create_aura_components
   assignment_rules
@@ -116,6 +118,12 @@ Example: Requesting instructions to create an Apex class
 
 <fetch_instructions>
 <task>create_apex</task>
+</fetch_instructions>
+
+Example: Requesting instructions for Asynchronous Apex (Future, Queueable, Batch, Scheduled)
+
+<fetch_instructions>
+<task>create_async_apex</task>
 </fetch_instructions>
 
 Example: Requesting instructions for Salesforce Custom Object
