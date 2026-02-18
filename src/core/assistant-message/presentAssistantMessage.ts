@@ -41,6 +41,7 @@ import { selectActiveIntentTool } from "../tools/SelectActiveIntentTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+import { validateGovernanceHook } from "../../hooks/governance"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -320,6 +321,21 @@ export async function presentAssistantMessage(cline: Task) {
 				cline.didAlreadyUseTool = true
 				break
 			}
+
+			// ==== CONSOLIDATED GOVERNANCE HOOKS ====
+			if (!block.partial) {
+				const govCheck = validateGovernanceHook(cline, block, toolCallId)
+				if (!govCheck.allowed) {
+					cline.pushToolResultToUserContent({
+						type: "tool_result",
+						tool_use_id: sanitizeToolUseId(toolCallId!),
+						content: formatResponse.toolError(govCheck.error!),
+						is_error: true,
+					})
+					break // KILL EXECUTION FOR ANY VIOLATION
+				}
+			}
+			// =======================================
 
 			// Fetch state early so it's available for toolDescription and validation
 			const state = await cline.providerRef.deref()?.getState()
@@ -675,22 +691,6 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				}
 			}
-
-			// ==== GOVERNANCE GATEKEEPER ====
-			// Phase 1: Block all tools except 'select_active_intent' if no intent is active.
-			if (!block.partial && !cline.activeIntentId && block.name !== "select_active_intent") {
-				const errorMessage =
-					"GOVERNANCE VIOLATION: You must call 'select_active_intent(intent_id)' to declare your intent before executing any other tools."
-
-				cline.pushToolResultToUserContent({
-					type: "tool_result",
-					tool_use_id: sanitizeToolUseId(toolCallId),
-					content: formatResponse.toolError(errorMessage),
-					is_error: true,
-				})
-				break
-			}
-			// ===============================
 
 			switch (block.name) {
 				case "write_to_file":
