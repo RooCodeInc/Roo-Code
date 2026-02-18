@@ -2,8 +2,8 @@ import type * as vscode from "vscode"
 import {
 	type HookCallback,
 	type HookContext,
-	type HookLifecycleStage,
-	type HookEventType,
+	HookLifecycleStage,
+	HookEventType,
 	type HookOptions,
 	type HookRegistration,
 	type HookUnregister,
