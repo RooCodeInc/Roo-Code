@@ -164,5 +164,3 @@ Shared brain for parallel agent sessions.
 4. **New Tool**: `select_active_intent`
     - Forces the reasoning loop
     - Returns intent context to the agent
-
-#'arch notes"
