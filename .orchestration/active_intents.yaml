@@ -1,0 +1,5 @@
+- id: "intent-001"
+  description: "Add hook system to Roo Code"
+  scope:
+    - "src/hooks/"
+    - "src/core/assistant-message/"
