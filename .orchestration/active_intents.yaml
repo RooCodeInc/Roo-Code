@@ -1,0 +1,41 @@
+# Active Intents Specification
+# 
+# This file tracks the lifecycle of business requirements.
+# Not all code changes are equal; this file tracks WHY we are working.
+
+active_intents:
+  - id: "INT-001"
+    name: "Weather API Implementation"
+    status: "PENDING"
+    # Formal Scope Definition (Crucial for Parallelism)
+    owned_scope: 
+      - "src/weather/**"
+      - "src/api/weather.ts"
+    constraints:
+      - "Must use OpenWeatherMap API"
+      - "Must support both current weather and forecast"
+      - "Must include error handling for API failures"
+    # The "Definition of Done"
+    acceptance_criteria:
+      - "Unit tests in tests/weather/ pass"
+      - "API endpoint returns valid JSON"
+      - "Rate limiting implemented"
+    created_at: "2026-02-17T00:00:00Z"
+    updated_at: "2026-02-17T00:00:00Z"
+
+  - id: "INT-002"
+    name: "User Authentication Refactor"
+    status: "PENDING"
+    owned_scope:
+      - "src/auth/**"
+      - "src/middleware/auth.ts"
+    constraints:
+      - "Must maintain backward compatibility with existing API"
+      - "Must support JWT and OAuth2"
+      - "Passwords must be hashed with bcrypt"
+    acceptance_criteria:
+      - "All auth tests pass"
+      - "No breaking changes to existing API contracts"
+      - "Security audit passes"
+    created_at: "2026-02-17T00:00:00Z"
+    updated_at: "2026-02-17T00:00:00Z"
