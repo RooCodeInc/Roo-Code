@@ -82,7 +82,15 @@ async function generatePrompt(
 	// Tools catalog is not included in the system prompt.
 	const toolsCatalog = ""
 
-	const basePrompt = `${roleDefinition}
+	const phase1Instruction = `
+PHASE 1 HANDSHAKE:
+1. You MUST call the tool "select_active_intent" with a valid intent_id before doing anything else.
+2. You CANNOT call write_file or execute_command until an intent is selected.
+3. Every action must reference the selected intent and log to agent_trace.jsonl.
+`
+
+	const basePrompt = `${phase1Instruction}
+${roleDefinition}
 
 ${markdownFormattingSection()}
 
