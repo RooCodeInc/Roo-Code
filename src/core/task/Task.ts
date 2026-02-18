@@ -98,6 +98,7 @@ import { buildNativeToolsArrayWithRestrictions } from "./build-tools"
 
 // core modules
 import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
+import { IntentMetadata } from "../../hooks/types"
 import { restoreTodoListForTask } from "../tools/UpdateTodoListTool"
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
@@ -166,6 +167,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	readonly parentTaskId?: string
 	childTaskId?: string
 	pendingNewTaskToolCallId?: string
+
+	// TRP1 Intent-Driven Features
+	activeIntentId: string | undefined = undefined
+	activeIntentMetadata: IntentMetadata | undefined = undefined
+	baselineFileHashes: Map<string, string> = new Map()
 
 	readonly instanceId: string
 	readonly metadata: TaskMetadata
@@ -3811,6 +3817,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						.getConfiguration(Package.name)
 						.get<boolean>("newTaskRequireTodos", false),
 					isStealthModel: modelInfo?.isStealthModel,
+					activeIntentId: this.activeIntentId,
+					activeIntentMetadata: this.activeIntentMetadata,
 				},
 				undefined, // todoList
 				this.api.getModel().id,
@@ -4697,6 +4705,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this._messageManager = new MessageManager(this)
 		}
 		return this._messageManager
+	}
+
+	// TRP1 Intent Management
+	async setActiveIntent(intentId: string) {
+		const { IntentContextLoader } = await import("../../hooks/IntentContextLoader")
+
+		this.activeIntentId = intentId
+		const loader = new IntentContextLoader(this.workspacePath)
+		this.activeIntentMetadata = await loader.loadIntent(intentId)
+
+		if (this.activeIntentMetadata) {
+			// Trigger a state push to the webview
+			this.providerRef.deref()?.postStateToWebview()
+		}
 	}
 
 	/**

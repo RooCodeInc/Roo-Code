@@ -758,6 +758,9 @@ export const webviewMessageHandler = async (
 		case "deleteTaskWithId":
 			provider.deleteTaskWithId(message.text!)
 			break
+		case "intent_selected":
+			await provider.getCurrentTask()?.setActiveIntent(message.intentId!)
+			break
 		case "deleteMultipleTasksWithIds": {
 			const ids = message.ids
 

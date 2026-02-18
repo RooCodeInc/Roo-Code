@@ -40,6 +40,9 @@ import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+import { HookEngine } from "../../hooks/HookEngine"
+import { HookContext } from "../../hooks/types"
+import { IntentApi } from "../../api/IntentApi"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -324,6 +327,17 @@ export async function presentAssistantMessage(cline: Task) {
 			const state = await cline.providerRef.deref()?.getState()
 			const { mode, customModes, experiments: stateExperiments, disabledTools } = state ?? {}
 
+			// TRP1 Hook Engine Integration - Initialize early for use in pushToolResult
+			const hookEngine = HookEngine.getInstance(cline.cwd)
+			const hookContext: HookContext = {
+				toolName: block.name,
+				toolParams: block.params || {},
+				activeIntentId: cline.activeIntentId,
+				sessionId: cline.taskId,
+				workspaceRoot: cline.cwd,
+				filePath: block.params?.path || block.params?.file_path || block.params?.path_to_file,
+			}
+
 			const toolDescription = (): string => {
 				switch (block.name) {
 					case "execute_command":
@@ -489,6 +503,11 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 
 				hasToolResult = true
+
+				// TRP1 Post-Tool-Use Hook
+				hookEngine.postToolUse(hookContext, resultContent).catch((err) => {
+					console.error("PostToolUse hook failed:", err)
+				})
 			}
 
 			const askApproval = async (
@@ -623,59 +642,36 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
-			// Check for identical consecutive tool calls.
-			if (!block.partial) {
-				// Use the detector to check for repetition, passing the ToolUse
-				// block directly.
-				const repetitionCheck = cline.toolRepetitionDetector.check(block)
+			const hookResult = await hookEngine.preToolUse(hookContext)
+			if (!hookResult.allow) {
+				const errorMessage = hookResult.error || "Action blocked by Hook Engine."
+				await cline.say("error", errorMessage)
+				pushToolResult(formatResponse.toolError(errorMessage))
+				break
+			}
 
-				// If execution is not allowed, notify user and break.
-				if (!repetitionCheck.allowExecution && repetitionCheck.askUser) {
-					// Handle repetition similar to mistake_limit_reached pattern.
-					const { response, text, images } = await cline.ask(
-						repetitionCheck.askUser.messageKey as ClineAsk,
-						repetitionCheck.askUser.messageDetail.replace("{toolName}", block.name),
-					)
-
-					if (response === "messageResponse") {
-						// Add user feedback to userContent.
-						cline.userMessageContent.push(
-							{
-								type: "text" as const,
-								text: `Tool repetition limit reached. User feedback: ${text}`,
-							},
-							...formatResponse.imageBlocks(images),
-						)
-
-						// Add user feedback to chat.
-						await cline.say("user_feedback", text, images)
-					}
-
-					// Track tool repetition in telemetry via PostHog exception tracking and event.
-					TelemetryService.instance.captureConsecutiveMistakeError(cline.taskId)
-					TelemetryService.instance.captureException(
-						new ConsecutiveMistakeError(
-							`Tool repetition limit reached for ${block.name}`,
-							cline.taskId,
-							cline.consecutiveMistakeCount,
-							cline.consecutiveMistakeLimit,
-							"tool_repetition",
-							cline.apiConfiguration.apiProvider,
-							cline.api.getModel().id,
-						),
-					)
-
-					// Return tool result message about the repetition
-					pushToolResult(
-						formatResponse.toolError(
-							`Tool call repetition limit reached for ${block.name}. Please try a different approach.`,
-						),
-					)
-					break
-				}
+			// Inject context if provided (e.g. intent details or shared brain)
+			if (hookResult.injectedContext) {
+				// We can't easily inject into the actual tool result here without modifying the tool handlers,
+				// but we can add it to the user message content for the NEXT turn.
+				// However, the best way for the protocol is to feed it back as the tool result of the selection tool.
 			}
 
 			switch (block.name) {
+				case "select_active_intent": {
+					const intentId = block.params.intent_id || block.params.intentId
+					cline.activeIntentId = intentId
+					// Metadata is already loaded in HookEngine's pre-hook handleSelectActiveIntent
+					// and returned in injectedContext
+					pushToolResult(hookResult.injectedContext || `Successfully selected intent: ${intentId}`)
+					break
+				}
+				case "list_active_intents": {
+					const intentApi = new IntentApi(cline.cwd)
+					const result = await intentApi.listIntents()
+					pushToolResult(result)
+					break
+				}
 				case "write_to_file":
 					await checkpointSaveAndMark(cline)
 					await writeToFileTool.handle(cline, block as ToolUse<"write_to_file">, {

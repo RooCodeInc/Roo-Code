@@ -575,6 +575,7 @@ export interface WebviewMessage {
 		| "moveSkill"
 		| "updateSkillModes"
 		| "openSkillFile"
+		| "intent_selected"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -681,6 +682,7 @@ export interface WebviewMessage {
 	worktreeForce?: boolean
 	worktreeNewWindow?: boolean
 	worktreeIncludeContent?: string
+	intentId?: string
 }
 
 export interface RequestOpenAiCodexRateLimitsMessage {

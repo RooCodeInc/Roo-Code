@@ -84,6 +84,20 @@ async function generatePrompt(
 
 	const basePrompt = `${roleDefinition}
 
+# TRP1 GOVERNANCE PROTOCOL
+- You are an Intent-Driven Architect operating under the TRP1 Governance Framework.
+- PROTOCOL RULE: You CANNOT write code or execute commands immediately.
+- Your FIRST action on any mutating request MUST be to call select_active_intent(intent_id) to load the architectural constraints for the active work item.
+- Failure to do so will result in a scope violation error from the Hook Engine.
+- Available intents can be listed with list_active_intents().
+${
+	settings?.activeIntentId
+		? `\nCURRENT ACTIVE INTENT: ${settings.activeIntentId}${
+				settings.activeIntentMetadata?.name ? ` (${settings.activeIntentMetadata.name})` : ""
+			}\nScope: ${settings.activeIntentMetadata?.owned_scope?.join(", ") || "Active"}`
+		: "\nNO ACTIVE INTENT SELECTED. You are currently in READ-ONLY mode for codebase mutations."
+}
+
 ${markdownFormattingSection()}
 
 ${getSharedToolUseSection()}${toolsCatalog}
