@@ -1366,6 +1366,8 @@ flowchart TD
 
 ## 11. File Structure for Hook System
 
+### Source Code Structure
+
 ```
 src/hooks/
 ├── HookEngine.ts              # Main middleware coordinator
@@ -1374,14 +1376,46 @@ src/hooks/
 ├── IntentManager.ts           # Manages active_intents.yaml
 ├── TraceManager.ts            # Manages agent_trace.jsonl
 ├── IntentMapManager.ts        # Manages intent_map.md
-└── OrchestrationStorage.ts   # File I/O for .orchestration/
+├── OrchestrationStorage.ts    # File I/O for .orchestration/
+├── ScopeValidator.ts          # Validates file paths against scope patterns
+└── OptimisticLockManager.ts   # Handles optimistic locking with content hashes
 
-.orchestration/                # Workspace root directory
-├── active_intents.yaml       # Intent specifications
-├── agent_trace.jsonl         # Append-only action log
-├── intent_map.md             # Spatial map of intents
-└── AGENT.md                  # Shared brain (lessons learned)
+tests/hooks/
+├── HookEngine.test.ts
+├── IntentManager.test.ts
+├── TraceManager.test.ts
+├── ScopeValidator.test.ts
+├── PreToolHook.test.ts
+├── PostToolHook.test.ts
+└── OptimisticLockManager.test.ts
+
+tests/integration/
+├── intent-selection-flow.test.ts
+├── scope-validation-flow.test.ts
+├── trace-logging-flow.test.ts
+├── content-hashing-flow.test.ts
+├── optimistic-locking-flow.test.ts
+└── intent-context-injection.test.ts
 ```
+
+### Workspace Orchestration Directory
+
+```
+.orchestration/                # Workspace root directory (created automatically)
+├── active_intents.yaml        # Intent specifications (YAML format)
+├── agent_trace.jsonl          # Append-only action log (JSONL format)
+├── intent_map.md              # Spatial map of intents (Markdown format)
+└── AGENT.md                   # Shared brain (lessons learned, future enhancement)
+```
+
+**Directory Creation**: The `.orchestration/` directory is created automatically by `OrchestrationStorage` when first accessed. It is located at the workspace root (same level as `.git`, `src/`, etc.).
+
+**File Formats**:
+
+- `active_intents.yaml`: YAML format for human-readable intent definitions
+- `agent_trace.jsonl`: JSONL format (one JSON object per line) for append-only logging
+- `intent_map.md`: Markdown format for human-readable spatial mapping
+- `AGENT.md`: Markdown format for lessons learned (future enhancement)
 
 ---
 

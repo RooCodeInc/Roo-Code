@@ -2,6 +2,8 @@ import type { ToolName } from "@roo-code/types"
 
 import { Task } from "../task/Task"
 import type { ToolUse, HandleError, PushToolResult, AskApproval, NativeToolArgs } from "../../shared/tools"
+import type { HookEngine } from "../../hooks/HookEngine"
+import type { ToolExecutionContext } from "../../hooks/types"
 
 /**
  * Callbacks passed to tool execution
@@ -156,7 +158,69 @@ export abstract class BaseTool<TName extends ToolName> {
 			return
 		}
 
+		// Intent-Governed Hook Middleware: Execute pre-hooks before tool execution
+		const hookEngine = (global as any).__hookEngine as HookEngine | undefined
+		if (hookEngine) {
+			const context: ToolExecutionContext = {
+				toolName: this.name,
+				toolParams: params as Record<string, unknown>,
+				taskId: task.taskId,
+				workspacePath: task.workspacePath,
+				activeIntentId: task.activeIntentId,
+			}
+
+			try {
+				const preResult = await hookEngine.executePreHooks(context)
+				if (!preResult.allowed) {
+					// Pre-hook blocked execution
+					await callbacks.handleError(
+						`pre-hook validation for ${this.name}`,
+						new Error(preResult.error || "Operation blocked by pre-hook"),
+					)
+					return
+				}
+
+				// Update params if hook modified them
+				if (preResult.modifiedParams) {
+					params = { ...params, ...preResult.modifiedParams } as ToolParams<TName>
+				}
+			} catch (hookError) {
+				// Pre-hook errors block execution
+				console.error(`[BaseTool] Pre-hook error:`, hookError)
+				await callbacks.handleError(
+					`pre-hook execution for ${this.name}`,
+					hookError instanceof Error ? hookError : new Error(String(hookError)),
+				)
+				return
+			}
+		}
+
 		// Execute with typed parameters
-		await this.execute(params, task, callbacks)
+		let executionResult: unknown
+		try {
+			await this.execute(params, task, callbacks)
+			executionResult = { success: true }
+		} catch (executeError) {
+			executionResult = { success: false, error: executeError }
+			throw executeError // Re-throw to maintain existing error handling
+		} finally {
+			// Intent-Governed Hook Middleware: Execute post-hooks after tool execution
+			if (hookEngine) {
+				const context: ToolExecutionContext = {
+					toolName: this.name,
+					toolParams: params as Record<string, unknown>,
+					taskId: task.taskId,
+					workspacePath: task.workspacePath,
+					activeIntentId: task.activeIntentId,
+				}
+
+				try {
+					await hookEngine.executePostHooks(context, executionResult)
+				} catch (hookError) {
+					// Post-hook errors are logged but don't block
+					console.error(`[BaseTool] Post-hook error:`, hookError)
+				}
+			}
+		}
 	}
 }

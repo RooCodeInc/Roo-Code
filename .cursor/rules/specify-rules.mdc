@@ -1,0 +1,29 @@
+﻿# TRP1-Challenge-Week-1 Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2026-02-18
+
+## Active Technologies
+
+- TypeScript 5.x (aligned with existing Roo Code codebase) (001-intent-hook-middleware)
+
+## Project Structure
+
+```text
+src/
+tests/
+```
+
+## Commands
+
+npm test; npm run lint
+
+## Code Style
+
+TypeScript 5.x (aligned with existing Roo Code codebase): Follow standard conventions
+
+## Recent Changes
+
+- 001-intent-hook-middleware: Added TypeScript 5.x (aligned with existing Roo Code codebase)
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->

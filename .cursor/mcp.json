@@ -1,0 +1,18 @@
+﻿{
+	"mcpServers": {
+		"tenxfeedbackanalytics": {
+			"name": "tenxanalysismcp",
+			"url": "https://mcppulse.10academy.org/proxy",
+			"headers": {
+				"X-Device": "windows",
+				"X-Coding-Tool": "cursor"
+			}
+		},
+		"github": {
+			"url": "https://api.githubcopilot.com/mcp/",
+			"headers": {
+				"Authorization": "Bearer YOUR_GITHUB_PERSONAL_ACCESS_TOKEN"
+			}
+		}
+	}
+}
