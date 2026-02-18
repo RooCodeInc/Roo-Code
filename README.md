@@ -1,176 +1,86 @@
-<p align="center">
-  <a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"><img src="https://img.shields.io/badge/VS_Code_Marketplace-007ACC?style=flat&logo=visualstudiocode&logoColor=white" alt="VS Code Marketplace"></a>
-  <a href="https://x.com/roocode"><img src="https://img.shields.io/badge/roocode-000000?style=flat&logo=x&logoColor=white" alt="X"></a>
-  <a href="https://youtube.com/@roocodeyt?feature=shared"><img src="https://img.shields.io/badge/YouTube-FF0000?style=flat&logo=youtube&logoColor=white" alt="YouTube"></a>
-  <a href="https://discord.gg/roocode"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Join Discord"></a>
-  <a href="https://www.reddit.com/r/RooCode/"><img src="https://img.shields.io/badge/Join%20r%2FRooCode-FF4500?style=flat&logo=reddit&logoColor=white" alt="Join r/RooCode"></a>
-</p>
-<p align="center">
-  <em>Get help fast → <a href="https://discord.gg/roocode">Join Discord</a> • Prefer async? → <a href="https://www.reddit.com/r/RooCode/">Join r/RooCode</a></em>
-</p>
+# Roo Code: Governed AI-Native IDE (TRP1 Challenge Week 1)
 
-# Roo Code
+[![VS Code Marketplace](https://img.shields.io/badge/VS_Code_Marketplace-007ACC?style=flat&logo=visualstudiocode&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline)
+[![TRP1 Challenge](https://img.shields.io/badge/TRP1-Week_1_Challenge-FFD700?style=flat)](https://github.com/RooCodeInc/Roo-Code)
 
-> Your AI-Powered Dev Team, Right in Your Editor
-
-<details>
-  <summary>🌐 Available languages</summary>
-
-- [English](README.md)
-- [Català](locales/ca/README.md)
-- [Deutsch](locales/de/README.md)
-- [Español](locales/es/README.md)
-- [Français](locales/fr/README.md)
-- [हिंदी](locales/hi/README.md)
-- [Bahasa Indonesia](locales/id/README.md)
-- [Italiano](locales/it/README.md)
-- [日本語](locales/ja/README.md)
-- [한국어](locales/ko/README.md)
-- [Nederlands](locales/nl/README.md)
-- [Polski](locales/pl/README.md)
-- [Português (BR)](locales/pt-BR/README.md)
-- [Русский](locales/ru/README.md)
-- [Türkçe](locales/tr/README.md)
-- [Tiếng Việt](locales/vi/README.md)
-- [简体中文](locales/zh-CN/README.md)
-- [繁體中文](locales/zh-TW/README.md)
-- ...
-      </details>
+This repository is a hardened, governed fork of Roo Code. It has been re-architected to transition software engineering from manual syntax generation to the **orchestration of silicon workers** with strict **Intent-Code Traceability**.
 
 ---
 
-## What Can Roo Code Do For YOU?
+## 🎯 The Business Objective
 
-- Generate Code from natural language descriptions and specs
-- Adapt with Modes: Code, Architect, Ask, Debug, and Custom Modes
-- Refactor & Debug existing code
-- Write & Update documentation
-- Answer Questions about your codebase
-- Automate repetitive tasks
-- Utilize MCP Servers
+In the era of AI-generated code, the primary bottleneck is no longer writing syntax, but **Governance and Context Management**. This project addresses two critical forms of debt:
 
-## Modes
+1.  **Cognitive Debt**: Preventing the loss of knowledge "stickiness" that occurs when humans skim AI output rather than deeply understanding it.
+2.  **Trust Debt**: Bridging the gap between what the system produces and what can be verified through cryptographic and architectural constraints.
 
-Roo Code adapts to how you work:
+## ✨ Governance Features (Master Thinker Implementation)
 
-- Code Mode: everyday coding, edits, and file ops
-- Architect Mode: plan systems, specs, and migrations
-- Ask Mode: fast answers, explanations, and docs
-- Debug Mode: trace issues, add logs, isolate root causes
-- Custom Modes: build specialized modes for your team or workflow
-- Roomote Control: Roomote Control lets you remotely control tasks running in your local VS Code instance.
+### 1. The Handshake (Reasoning Loop)
 
-Learn more: [Using Modes](https://docs.roocode.com/basic-usage/using-modes) • [Custom Modes](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+We have implemented a **Two-Stage State Machine** for every agent turn. The agent is strictly forbidden from writing code immediately; it must first "checkout" an intent.
 
-## Tutorial & Feature Videos
+- **`select_active_intent(intent_id)`**: A mandatory tool that loads business constraints, owned scopes, and architectural requirements from the sidecar database into the agent's immediate context.
 
-<div align="center">
+### 2. The Hook Engine (Deterministic Gatekeeper)
 
-|                                                                                                                                                                           |                                                                                                                                                                            |                                                                                                                                                                         |
-| :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Installing Roo Code</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>Configuring Profiles</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Codebase Indexing</b> |
-|    <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>Custom Modes</b>     |     <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Checkpoints</b>      |    <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>Context Management</b>     |
+All tool executions are intercepted by a **Deterministic Hook System** within the Extension Host:
 
-</div>
-<p align="center">
-<a href="https://docs.roocode.com/tutorial-videos">More quick tutorial and feature videos...</a>
-</p>
+- **Pre-Hook Governance**: Automatically blocks destructive tools (`write_to_file`, `execute_command`, `apply_diff`) if no active Intent ID is declared.
+- **Protocol Enforcement**: Rejects "Vibe Coding" attempts, forcing the agent to adhere to the plan-first strategy modeled after industry leaders like Boris Cherny (Anthropic).
 
-## Resources
+### 3. AI-Native Git (Traceability Ledger)
 
-- **[Documentation](https://docs.roocode.com):** The official guide to installing, configuring, and mastering Roo Code.
-- **[YouTube Channel](https://youtube.com/@roocodeyt?feature=shared):** Watch tutorials and see features in action.
-- **[Discord Server](https://discord.gg/roocode):** Join the community for real-time help and discussion.
-- **[Reddit Community](https://www.reddit.com/r/RooCode):** Share your experiences and see what others are building.
-- **[GitHub Issues](https://github.com/RooCodeInc/Roo-Code/issues):** Report bugs and track development.
-- **[Feature Requests](https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop):** Have an idea? Share it with the developers.
+By enforcing **Intent-Code Traceability**, we replace blind trust with verification:
+
+- **Spatial Independence**: Every file modification is logged with a **SHA-256 Content Hash**. Even if lines move during refactoring, the logic remains traceable.
+- **The Ledger**: An append-only `.orchestration/agent_trace.jsonl` file that links Business Intent -> Code AST -> Agent Action.
 
 ---
 
-## Local Setup & Development
+## 🛠️ Data Model & Sidecar Storage
 
-1. **Clone** the repo:
+The architecture maintains a strictly defined `.orchestration/` directory in the user's workspace to prevent "Context Rot":
 
-```sh
-git clone https://github.com/RooCodeInc/Roo-Code.git
-```
+- **`active_intents.yaml`**: Tracks the lifecycle of business requirements and formalized scope definitions.
+- **`agent_trace.jsonl`**: A machine-readable history of every mutating action, ensuring spatial independence via content hashing.
+- **`intent_map.md`**: Maps high-level business intents to physical files and AST nodes for real-time architectural auditing.
 
-2. **Install dependencies**:
+---
 
-```sh
-pnpm install
-```
+## 🚀 Getting Started
 
-3. **Run the extension**:
+### Installation
 
-There are several ways to run the Roo Code extension:
-
-### Development Mode (F5)
-
-For active development, use VSCode's built-in debugging:
-
-Press `F5` (or go to **Run** → **Start Debugging**) in VSCode. This will open a new VSCode window with the Roo Code extension running.
-
-- Changes to the webview will appear immediately.
-- Changes to the core extension will also hot reload automatically.
-
-### Automated VSIX Installation
-
-To build and install the extension as a VSIX package directly into VSCode:
-
-```sh
-pnpm install:vsix [-y] [--editor=<command>]
-```
-
-This command will:
-
-- Ask which editor command to use (code/cursor/code-insiders) - defaults to 'code'
-- Uninstall any existing version of the extension.
-- Build the latest VSIX package.
-- Install the newly built VSIX.
-- Prompt you to restart VS Code for changes to take effect.
-
-Options:
-
-- `-y`: Skip all confirmation prompts and use defaults
-- `--editor=<command>`: Specify the editor command (e.g., `--editor=cursor` or `--editor=code-insiders`)
-
-### Manual VSIX Installation
-
-If you prefer to install the VSIX package manually:
-
-1.  First, build the VSIX package:
-    ```sh
-    pnpm vsix
+1.  **Clone the Repository**:
+    ```bash
+    git clone https://github.com/ibnu-asma/Roo-Code.git
     ```
-2.  A `.vsix` file will be generated in the `bin/` directory (e.g., `bin/roo-cline-<version>.vsix`).
-3.  Install it manually using the VSCode CLI:
-    ```sh
-    code --install-extension bin/roo-cline-<version>.vsix
+2.  **Install Dependencies**:
+    ```bash
+    pnpm install
     ```
+3.  **Run the Governed IDE**:
+    Press `F5` to open the **VS Code Extension Development Host**.
+
+### Usage Protocol
+
+1.  Create a `.orchestration/active_intents.yaml` file in your test project.
+2.  Define an intent (e.g., `id: "INT-101"`).
+3.  Prompt the agent. Observe the **Gatekeeper** blocking unauthorized writes until the **Handshake** (`select_active_intent`) is performed.
 
 ---
 
-We use [changesets](https://github.com/changesets/changesets) for versioning and publishing. Check our `CHANGELOG.md` for release notes.
+## 🎓 TRP1 Challenge Roadmap
+
+- [x] **Phase 0**: Archaeological Dig (Mapping the Tool Loop & Prompt Builder)
+- [x] **Phase 1**: The Handshake (Reasoning Loop & Context Injection)
+- [x] **Phase 2**: The Hook Middleware (Command Classification & Security Boundary)
+- [x] **Phase 3**: AI-Native Git Layer (SHA-256 Content Hashing & Ledger Serialization)
+- [ ] **Phase 4**: Parallel Orchestration (Optimistic Locking & Lesson Recording)
 
 ---
 
-## Disclaimer
+## 📜 License
 
-**Please note** that Roo Code, Inc does **not** make any representations or warranties regarding any code, models, or other tools provided or made available in connection with Roo Code, any associated third-party tools, or any resulting outputs. You assume **all risks** associated with the use of any such tools or outputs; such tools are provided on an **"AS IS"** and **"AS AVAILABLE"** basis. Such risks may include, without limitation, intellectual property infringement, cyber vulnerabilities or attacks, bias, inaccuracies, errors, defects, viruses, downtime, property loss or damage, and/or personal injury. You are solely responsible for your use of any such tools or outputs (including, without limitation, the legality, appropriateness, and results thereof).
-
----
-
-## Contributing
-
-We love community contributions! Get started by reading our [CONTRIBUTING.md](CONTRIBUTING.md).
-
----
-
-## License
-
-[Apache 2.0 © 2025 Roo Code, Inc.](./LICENSE)
-
----
-
-**Enjoy Roo Code!** Whether you keep it on a short leash or let it roam autonomously, we can’t wait to see what you build. If you have questions or feature ideas, drop by our [Reddit community](https://www.reddit.com/r/RooCode/) or [Discord](https://discord.gg/roocode). Happy coding!
+This project is licensed under the Apache 2.0 License - see the [LICENSE](./LICENSE) file for details.
