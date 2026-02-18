@@ -316,7 +316,7 @@ export class CodeIndexManager {
 		let respectGitIgnore = true
 		try {
 			const codebaseIndexConfig = this._configManager!.getContextProxy()?.getGlobalState("codebaseIndexConfig")
-			respectGitIgnore = codebaseIndexConfig?.respectGitIgnore ?? true
+			respectGitIgnore = codebaseIndexConfig?.codebaseIndexRespectGitIgnore ?? true
 		} catch {
 			// Fall back to default (respect .gitignore) if config proxy is not available
 		}

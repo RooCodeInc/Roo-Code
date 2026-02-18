@@ -270,7 +270,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 			if (maxFiles === 0) {
 				details += "(Workspace files context disabled. Use list_files to explore if needed.)"
 			} else {
-				const respectGitIgnore = state?.codebaseIndexConfig?.respectGitIgnore ?? true
+				const respectGitIgnore = state?.codebaseIndexConfig?.codebaseIndexRespectGitIgnore ?? true
 				const [files, didHitLimit] = await listFiles(cline.cwd, true, maxFiles, respectGitIgnore)
 				const { showRooIgnoredFiles = false } = state ?? {}
 

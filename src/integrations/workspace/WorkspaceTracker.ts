@@ -33,7 +33,7 @@ class WorkspaceTracker {
 		let respectGitIgnore = true
 		try {
 			const state = await this.providerRef.deref()?.getState()
-			respectGitIgnore = state?.codebaseIndexConfig?.respectGitIgnore ?? true
+			respectGitIgnore = state?.codebaseIndexConfig?.codebaseIndexRespectGitIgnore ?? true
 		} catch {
 			// Fall back to default (respect .gitignore) if state is not available
 		}

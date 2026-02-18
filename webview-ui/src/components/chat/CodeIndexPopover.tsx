@@ -81,7 +81,7 @@ interface LocalCodeIndexSettings {
 	codebaseIndexVercelAiGatewayApiKey?: string
 	codebaseIndexOpenRouterApiKey?: string
 	codebaseIndexOpenRouterSpecificProvider?: string
-	respectGitIgnore?: boolean
+	codebaseIndexRespectGitIgnore?: boolean
 }
 
 // Validation schema for codebase index settings
@@ -226,7 +226,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexVercelAiGatewayApiKey: "",
 		codebaseIndexOpenRouterApiKey: "",
 		codebaseIndexOpenRouterSpecificProvider: "",
-		respectGitIgnore: true,
+		codebaseIndexRespectGitIgnore: true,
 	})
 
 	// Initial settings state - stores the settings when popover opens
@@ -267,7 +267,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 				codebaseIndexOpenRouterApiKey: "",
 				codebaseIndexOpenRouterSpecificProvider:
 					codebaseIndexConfig.codebaseIndexOpenRouterSpecificProvider || "",
-				respectGitIgnore: codebaseIndexConfig.respectGitIgnore ?? true,
+				codebaseIndexRespectGitIgnore: codebaseIndexConfig.codebaseIndexRespectGitIgnore ?? true,
 			}
 			setInitialSettings(settings)
 			setCurrentSettings(settings)
@@ -1593,9 +1593,9 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 									<div className="space-y-2">
 										<div className="flex items-center gap-2">
 											<VSCodeCheckbox
-												checked={currentSettings.respectGitIgnore ?? true}
+												checked={currentSettings.codebaseIndexRespectGitIgnore ?? true}
 												onChange={(e: any) =>
-													updateSetting("respectGitIgnore", e.target.checked)
+													updateSetting("codebaseIndexRespectGitIgnore", e.target.checked)
 												}>
 												<span className="font-medium">
 													{t("settings:codeIndex.respectGitIgnoreLabel")}

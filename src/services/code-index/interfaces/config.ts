@@ -45,5 +45,5 @@ export type PreviousConfigSnapshot = {
 	openRouterSpecificProvider?: string
 	qdrantUrl?: string
 	qdrantApiKey?: string
-	respectGitIgnore?: boolean
+	codebaseIndexRespectGitIgnore?: boolean
 }

@@ -51,7 +51,7 @@ export const codebaseIndexConfigSchema = z.object({
 	// OpenRouter specific fields
 	codebaseIndexOpenRouterSpecificProvider: z.string().optional(),
 	// Gitignore behavior
-	respectGitIgnore: z.boolean().optional(),
+	codebaseIndexRespectGitIgnore: z.boolean().optional(),
 })
 
 export type CodebaseIndexConfig = z.infer<typeof codebaseIndexConfigSchema>
