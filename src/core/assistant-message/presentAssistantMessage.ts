@@ -37,9 +37,13 @@ import { generateImageTool } from "../tools/GenerateImageTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
+import { selectActiveIntentTool } from "../tools/SelectActiveIntentTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+
+// Intent-Driven Governance: Hook Engine middleware
+import { hookEngine } from "../../hooks/HookEngine"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -675,7 +679,32 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			// ── Intent-Driven Governance: Pre-Hook ─────────────────────────────────
+			// Runs before every tool. Blocks mutating tools if no intent is declared,
+			// or if the target file is outside the active intent's owned_scope.
+			// select_active_intent itself is exempt from the gate check.
+			if (block.name !== "select_active_intent" && !block.partial) {
+				const preHookResult = await hookEngine.runPreHook(
+					block.name,
+					(block.nativeArgs ?? {}) as Record<string, unknown>,
+					cline.taskId,
+					cline.cwd,
+				)
+				if (preHookResult.blocked) {
+					pushToolResult(formatResponse.toolError(preHookResult.reason ?? "Blocked by governance hook."))
+					break
+				}
+			}
+			// ── End Pre-Hook ────────────────────────────────────────────────────────
+
 			switch (block.name) {
+				case "select_active_intent":
+					await selectActiveIntentTool.handle(cline, block as ToolUse<"select_active_intent">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
 				case "write_to_file":
 					await checkpointSaveAndMark(cline)
 					await writeToFileTool.handle(cline, block as ToolUse<"write_to_file">, {
@@ -683,6 +712,18 @@ export async function presentAssistantMessage(cline: Task) {
 						handleError,
 						pushToolResult,
 					})
+					// ── Post-Hook: Trace Ledger ──────────────────────────────────────────
+					if (!block.partial) {
+						hookEngine
+							.runPostHook(
+								"write_to_file",
+								(block.nativeArgs ?? {}) as Record<string, unknown>,
+								cline.taskId,
+								cline.cwd,
+								cline.api.getModel().id,
+							)
+							.catch((err) => console.error("[PostHook] traceLedger error:", err))
+					}
 					break
 				case "update_todo_list":
 					await updateTodoListTool.handle(cline, block as ToolUse<"update_todo_list">, {

@@ -1,0 +1,53 @@
+# .orchestration/active_intents.yaml
+# The Intent Specification — what work is authorized and why.
+#
+# This file is the source of truth for governance.
+# The Hook Engine reads this file before every mutating tool call.
+# Agents MUST call select_active_intent(intent_id) before writing code.
+#
+# Status values: PENDING | IN_PROGRESS | COMPLETED | CANCELLED
+
+active_intents:
+  - id: "INT-001"
+    name: "Hook Engine Implementation"
+    status: "IN_PROGRESS"
+    # Scope: which files/directories this intent is authorized to modify
+    owned_scope:
+      - "src/hooks/**"
+      - "src/core/tools/SelectActiveIntentTool.ts"
+      - "src/core/assistant-message/presentAssistantMessage.ts"
+    constraints:
+      - "Must not modify existing tool behavior — only intercept before/after"
+      - "Hook failures must never crash the agent — always fail gracefully"
+      - "Trace records must be append-only — never overwrite agent_trace.jsonl"
+    acceptance_criteria:
+      - "Agent is blocked when calling write_to_file without select_active_intent"
+      - "Agent is blocked when writing outside owned_scope"
+      - "agent_trace.jsonl is updated after every file write with correct hash"
+
+  - id: "INT-002"
+    name: "Orchestration Data Model Setup"
+    status: "IN_PROGRESS"
+    owned_scope:
+      - ".orchestration/**"
+      - "ARCHITECTURE_NOTES.md"
+    constraints:
+      - "YAML files must be valid and parseable by the yaml npm package"
+      - "agent_trace.jsonl must remain append-only JSONL format"
+    acceptance_criteria:
+      - "active_intents.yaml exists and is valid YAML"
+      - "intent_map.md maps all active intents to their owned files"
+      - "agent_trace.jsonl contains at least one valid trace record"
+
+  - id: "INT-003"
+    name: "System Prompt Intent Enforcement"
+    status: "PENDING"
+    owned_scope:
+      - "src/core/prompts/**"
+      - "packages/types/src/tool.ts"
+    constraints:
+      - "Must not break existing system prompt structure"
+      - "Intent instructions must be injected as a new section, not replacing existing ones"
+    acceptance_criteria:
+      - "Agent's first action for any code task is always select_active_intent"
+      - "Agent cannot skip the handshake without being blocked"
