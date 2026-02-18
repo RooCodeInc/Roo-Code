@@ -7,6 +7,8 @@ interface TraceEntry {
 	toolName: string
 	filePath?: string
 	contentHash?: string
+	mutationClass?: string
+	intentId?: string
 	result: string
 }
 

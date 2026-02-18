@@ -1,5 +1,8 @@
 import type { PreHookContext, PreHookResult } from "./types"
 import { IntentManager } from "./IntentManager"
+import { ContentHasher } from "./ContentHasher"
+import * as fs from "fs"
+import * as path from "path"
 
 export class PreToolHook {
 	async execute(context: PreHookContext): Promise<PreHookResult> {
@@ -34,6 +37,18 @@ export class PreToolHook {
 			if (filePath && !intentManager.isFileInScope(filePath, activeIntent)) {
 				console.log(`[PreToolHook] File ${filePath} out of scope - blocking`)
 				return { blocked: true }
+			}
+
+			// Calculate content hash of current file for optimistic locking
+			if (filePath) {
+				const fullPath = path.join(context.task.cwd, filePath)
+				if (fs.existsSync(fullPath)) {
+					const currentContent = fs.readFileSync(fullPath, "utf-8")
+					const currentHash = ContentHasher.hash(currentContent)
+					// Store hash in task for PostToolHook to verify
+					;(context.task as any).preWriteHash = currentHash
+					console.log(`[PreToolHook] Pre-write hash: ${currentHash.substring(0, 12)}...`)
+				}
 			}
 
 			return { blocked: false }
