@@ -136,4 +136,5 @@ function verifyPassword(password: string, storedHash: string, storedSalt: string
  */
 
 // Export functions for use in other modules
-export { generateSalt, hashPassword, verifyPassword, HashResult }
+export { generateSalt, hashPassword, verifyPassword }
+export type { HashResult }
