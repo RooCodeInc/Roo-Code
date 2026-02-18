@@ -3731,16 +3731,24 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						await this.say("error", "MODEL_NO_ASSISTANT_MESSAGES")
 					}
 
-					// IMPORTANT: We already added the user message to
-					// apiConversationHistory at line 1876. Since the assistant failed to respond,
-					// we need to remove that message before retrying to avoid having two consecutive
-					// user messages (which would cause tool_result validation errors).
+					// IMPORTANT: We may have added the user message to
+					// apiConversationHistory earlier in this iteration. Since the assistant failed
+					// to respond, we need to remove that message before retrying to avoid having
+					// two consecutive user messages (which would cause tool_result validation errors).
+					//
+					// CRITICAL: Only pop if we actually added a message in this iteration
+					// (shouldAddUserMessage === true). In delegation-resume flows, the user
+					// message with tool_result was already in history and was NOT added by us.
+					// Popping it would destroy the tool_result, corrupting the conversation
+					// history and causing all subsequent API calls to fail.
 					let state = await this.providerRef.deref()?.getState()
-					if (this.apiConversationHistory.length > 0) {
+					let userMessageWasRemovedInThisIteration = false
+					if (shouldAddUserMessage && this.apiConversationHistory.length > 0) {
 						const lastMessage = this.apiConversationHistory[this.apiConversationHistory.length - 1]
 						if (lastMessage.role === "user") {
-							// Remove the last user message that we added earlier
+							// Remove the last user message that we added earlier in this iteration
 							this.apiConversationHistory.pop()
+							userMessageWasRemovedInThisIteration = true
 						}
 					}
 
@@ -3764,12 +3772,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						}
 
 						// Push the same content back onto the stack to retry, incrementing the retry attempt counter
-						// Mark that user message was removed so it gets re-added on retry
+						// Only mark userMessageWasRemoved if we actually removed one in this iteration.
+						// In delegation-resume flows (empty userContent), no message was added or removed,
+						// so we must NOT set this flag — otherwise the retry would add a spurious
+						// user message without the original tool_result content.
 						stack.push({
 							userContent: currentUserContent,
 							includeFileDetails: false,
 							retryAttempt: (currentItem.retryAttempt ?? 0) + 1,
-							userMessageWasRemoved: true,
+							userMessageWasRemoved: userMessageWasRemovedInThisIteration,
 						})
 
 						// Continue to retry the request
@@ -3789,19 +3800,21 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								userContent: currentUserContent,
 								includeFileDetails: false,
 								retryAttempt: (currentItem.retryAttempt ?? 0) + 1,
-								// We removed the last user message above; ensure it is re-added on retry.
-								userMessageWasRemoved: true,
+								// Only re-add if we actually removed a message in this iteration.
+								userMessageWasRemoved: userMessageWasRemovedInThisIteration,
 							})
 
 							// Continue to retry the request
 							continue
 						} else {
 							// User declined to retry
-							// Re-add the user message we removed.
-							await this.addToApiConversationHistory({
-								role: "user",
-								content: currentUserContent,
-							})
+							// Re-add the user message only if we actually removed one.
+							if (userMessageWasRemovedInThisIteration) {
+								await this.addToApiConversationHistory({
+									role: "user",
+									content: currentUserContent,
+								})
+							}
 
 							await this.say(
 								"error",

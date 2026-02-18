@@ -325,6 +325,82 @@ describe("Grace Retry Error Handling", () => {
 			expect(task.apiConversationHistory[0].role).toBe("user")
 		})
 
+		it("does NOT pop the original tool_result message when delegation-resume gets an empty response", async () => {
+			// Delegation-resume passes empty userContent ([]) to recursivelyMakeClineRequests.
+			// The existing user message in history (with tool_result) must NOT be popped
+			// when the API returns an empty response, otherwise the conversation becomes
+			// corrupted (tool_use without tool_result) and ALL subsequent API calls fail.
+			mockProvider.getState = vi.fn().mockResolvedValue({
+				autoApprovalEnabled: true,
+				apiConfiguration: mockApiConfig,
+			})
+
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			// Pre-populate conversation history to simulate delegation state:
+			// assistant called new_task (tool_use) → user replied with tool_result
+			const toolUseId = "toolu_delegation_1"
+			task.apiConversationHistory = [
+				{ role: "user", content: [{ type: "text", text: "initial task" }] },
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "tool_use",
+							id: toolUseId,
+							name: "new_task",
+							input: { mode: "code", message: "do something" },
+						},
+					],
+				},
+				{
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: toolUseId,
+							content: "Subtask completed successfully.",
+						},
+					],
+				},
+			]
+
+			// First API attempt: empty response. Second attempt: success with tool call.
+			let callCount = 0
+			vi.spyOn(task, "attemptApiRequest").mockImplementation(() => {
+				callCount++
+				if (callCount === 1) {
+					return (async function* () {})() as any
+				}
+
+				return (async function* () {
+					yield {
+						type: "tool_call",
+						id: "call_2",
+						name: "attempt_completion",
+						arguments: JSON.stringify({ result: "done" }),
+					}
+				})() as any
+			})
+
+			// Call with empty array — this is how resumeAfterDelegation invokes the loop
+			await task.recursivelyMakeClineRequests([], false)
+
+			// The original tool_result message must still be in history (not popped).
+			const toolResultMsg = task.apiConversationHistory.find(
+				(msg) =>
+					msg.role === "user" &&
+					Array.isArray(msg.content) &&
+					msg.content.some((block: any) => block.type === "tool_result" && block.tool_use_id === toolUseId),
+			)
+			expect(toolResultMsg).toBeDefined()
+		})
+
 		it("should not show error on first failure (grace retry)", async () => {
 			const task = new Task({
 				provider: mockProvider,
