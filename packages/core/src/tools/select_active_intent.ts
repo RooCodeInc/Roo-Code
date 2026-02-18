@@ -1,4 +1,6 @@
-// Define the Intent type including optional trace info
+import { load_intents } from "./load_intents.js"
+
+// Intent type
 export type Intent = {
 	description: string
 	constraints: string[]
@@ -9,40 +11,28 @@ export type Intent = {
 	}
 }
 
-// Hardcoded intents for Phase 1 with trace
-export const intents: Record<string, Intent> = {
-	"REQ-001": {
-		description: "Initialize MCP server",
-		constraints: ["do not write code immediately"],
-		scope: ["packages/core/src/tools/"],
-		trace: {
-			files: ["server.ts"],
-			functions: ["initializeServer"],
-		},
-	},
-	"REQ-002": {
-		description: "Set up AI-Native IDE",
-		constraints: ["analyze user request first"],
-		scope: ["packages/core/src/ide/"],
-		// No trace needed yet for this intent
-	},
-}
-
 // Utility to escape XML special characters
 function escapeXml(str: string) {
 	return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
 }
 
-// Returns intent info as XML (Phase 1 functionality)
+// Returns intent info as XML
 export function select_active_intent(intent_id: string): string {
+	const intents = load_intents()
 	const intent = intents[intent_id]
 	if (!intent) throw new Error("Invalid intent_id")
 
-	const xmlContext = `<intent_context>
+	return `<intent_context>
   <description>${escapeXml(intent.description)}</description>
   <constraints>${escapeXml(intent.constraints.join(", "))}</constraints>
   <scope>${escapeXml(intent.scope.join(", "))}</scope>
 </intent_context>`
+}
 
-	return xmlContext
+// Returns the trace info for a given intent, or undefined if none
+export function get_intent_trace(intent_id: string): Intent["trace"] {
+	const intents = load_intents()
+	const intent = intents[intent_id]
+	if (!intent) throw new Error("Invalid intent_id")
+	return intent.trace
 }

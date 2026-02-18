@@ -1,0 +1,16 @@
+{
+	"REQ-001": {
+		"description": "Initialize MCP server",
+		"constraints": ["do not write code immediately"],
+		"scope": ["packages/core/src/tools/"],
+		"trace": {
+			"files": ["server.ts"],
+			"functions": ["initializeServer"]
+		}
+	},
+	"REQ-002": {
+		"description": "Set up AI-Native IDE",
+		"constraints": ["analyze user request first"],
+		"scope": ["packages/core/src/ide/"]
+	}
+}

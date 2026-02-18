@@ -1,15 +1,14 @@
 import { describe, it, expect } from "vitest"
-import { select_active_intent, get_intent_trace } from "./index.js"
+import { select_active_intent, get_intent_trace } from "./select_active_intent.js"
 
 describe("Intent utilities", () => {
-	it("select_active_intent returns valid XML", () => {
+	it("select_active_intent returns XML for REQ-001", () => {
 		const xml = select_active_intent("REQ-001")
-		expect(xml).toContain("<intent_context>")
-		expect(xml).toContain("</intent_context>")
-		expect(xml).toContain("Initialize MCP server")
+		expect(xml).toContain("<description>Initialize MCP server</description>")
+		expect(xml).toContain("<constraints>do not write code immediately</constraints>")
 	})
 
-	it("get_intent_trace returns correct trace info", () => {
+	it("get_intent_trace returns trace for REQ-001", () => {
 		const trace = get_intent_trace("REQ-001")
 		expect(trace).toEqual({
 			files: ["server.ts"],
@@ -17,8 +16,13 @@ describe("Intent utilities", () => {
 		})
 	})
 
-	it("throws on invalid intent", () => {
-		expect(() => select_active_intent("INVALID")).toThrow()
-		expect(() => get_intent_trace("INVALID")).toThrow()
+	it("get_intent_trace returns undefined for REQ-002", () => {
+		const trace = get_intent_trace("REQ-002")
+		expect(trace).toBe(undefined)
+	})
+
+	it("throws on invalid intent_id", () => {
+		expect(() => select_active_intent("INVALID")).toThrowError("Invalid intent_id")
+		expect(() => get_intent_trace("INVALID")).toThrowError("Invalid intent_id")
 	})
 })
