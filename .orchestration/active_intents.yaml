@@ -1,0 +1,8 @@
+intent_ledger:
+  version: "1.0.0"
+  active_intent_id: "INT-001" # The currently "checked-out" intent
+  status: "locked"           # Prevents multi-tasking hallucinations
+  current_context:
+    task: "Implement Pre-Hook logic"
+    files_in_scope: ["src/core/RooCode.ts"]
+    constraints: ["Do not modify UI components"]
