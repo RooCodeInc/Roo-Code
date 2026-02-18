@@ -1,0 +1,7 @@
+# Agent Trace Ledger (JSONL format - one JSON object per line)
+# Append-only, machine-readable history of every mutating action.
+# Links abstract Intent to concrete Code Hash for spatial independence.
+#
+# Example entry:
+# {"id":"trace-1234567890-abc","timestamp":"2026-02-16T12:00:00Z","vcs":{"revision_id":"abc123def456"},"files":[{"relative_path":"src/auth/middleware.ts","conversations":[{"url":"task-xyz","contributor":{"entity_type":"AI","model_identifier":"claude-3-5-sonnet"},"ranges":[{"start_line":15,"end_line":45,"content_hash":"sha256:a8f5f167f44f4964e6c998dee827110c"}],"related":[{"type":"intent","value":"INT-001"}]}]}]}
+

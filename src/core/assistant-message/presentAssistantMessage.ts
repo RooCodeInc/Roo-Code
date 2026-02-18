@@ -37,9 +37,11 @@ import { generateImageTool } from "../tools/GenerateImageTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
+import { selectActiveIntentTool } from "../tools/SelectActiveIntentTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+import { HookEngine } from "../hooks/HookEngine"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -675,14 +677,44 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			// Initialize hook engine for this task
+			const hookEngine = new HookEngine(cline.cwd)
+			await hookEngine.initialize()
+
+			// Pre-Hook: Intercept tool execution
+			const preHookResult = await hookEngine.preHook(block.name as ToolName, block, cline)
+			if (!preHookResult.shouldProceed) {
+				pushToolResult(formatResponse.toolError(preHookResult.errorMessage || "Tool execution blocked by hook"))
+				break
+			}
+
 			switch (block.name) {
-				case "write_to_file":
-					await checkpointSaveAndMark(cline)
-					await writeToFileTool.handle(cline, block as ToolUse<"write_to_file">, {
+				case "select_active_intent":
+					await selectActiveIntentTool.handle(cline, block as ToolUse<"select_active_intent">, {
 						askApproval,
 						handleError,
 						pushToolResult,
 					})
+					break
+				case "write_to_file":
+					await checkpointSaveAndMark(cline)
+					let writeSuccess = false
+					let writeResult: string | undefined
+					try {
+						await writeToFileTool.handle(cline, block as ToolUse<"write_to_file">, {
+							askApproval,
+							handleError,
+							pushToolResult: (result) => {
+								writeResult = typeof result === "string" ? result : JSON.stringify(result)
+								pushToolResult(result)
+							},
+						})
+						writeSuccess = true
+					} catch (error) {
+						writeSuccess = false
+					}
+					// Post-Hook: Log trace entry
+					await hookEngine.postHook(block.name as ToolName, block, cline, writeSuccess, writeResult)
 					break
 				case "update_todo_list":
 					await updateTodoListTool.handle(cline, block as ToolUse<"update_todo_list">, {
@@ -718,11 +750,23 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "edit_file":
 					await checkpointSaveAndMark(cline)
-					await editFileTool.handle(cline, block as ToolUse<"edit_file">, {
-						askApproval,
-						handleError,
-						pushToolResult,
-					})
+					let editSuccess = false
+					let editResult: string | undefined
+					try {
+						await editFileTool.handle(cline, block as ToolUse<"edit_file">, {
+							askApproval,
+							handleError,
+							pushToolResult: (result) => {
+								editResult = typeof result === "string" ? result : JSON.stringify(result)
+								pushToolResult(result)
+							},
+						})
+						editSuccess = true
+					} catch (error) {
+						editSuccess = false
+					}
+					// Post-Hook: Log trace entry
+					await hookEngine.postHook(block.name as ToolName, block, cline, editSuccess, editResult)
 					break
 				case "apply_patch":
 					await checkpointSaveAndMark(cline)

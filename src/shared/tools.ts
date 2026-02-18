@@ -265,6 +265,7 @@ export type ToolGroupConfig = {
 }
 
 export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
+	select_active_intent: "select active intent",
 	execute_command: "run commands",
 	read_file: "read files",
 	read_command_output: "read command output",
@@ -314,6 +315,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 
 // Tools that are always available to all modes.
 export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
+	"select_active_intent",
 	"ask_followup_question",
 	"attempt_completion",
 	"switch_mode",

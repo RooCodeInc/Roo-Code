@@ -20,6 +20,7 @@ import searchFiles from "./search_files"
 import switchMode from "./switch_mode"
 import updateTodoList from "./update_todo_list"
 import writeToFile from "./write_to_file"
+import selectActiveIntent from "./select_active_intent"
 
 export { getMcpServerTools } from "./mcp_server"
 export { convertOpenAIToolToAnthropic, convertOpenAIToolsToAnthropic } from "./converters"
@@ -47,6 +48,7 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 	}
 
 	return [
+		selectActiveIntent, // Must be first - required before code changes
 		accessMcpResource,
 		apply_diff,
 		applyPatch,
