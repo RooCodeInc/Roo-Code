@@ -1,5 +1,19 @@
 # Architecture Notes
 
+## Required Deliverable
+
+This document is the required Week 1 architecture deliverable for the SDD baseline.
+It provides the implementation map and governance evidence for `specs/000-system-charter.md` through `specs/008-definition-of-done.md`.
+
+### Deliverable Coverage
+
+- Intent-first two-stage flow (`select_active_intent` before mutation): see `Phase 1: Handshake`.
+- Deterministic pre/post hook boundary across native, MCP, and custom tools: see `Phase 2: Hook Middleware & Security Boundary`.
+- Scope gating, destructive-action approval, and policy sidecar enforcement: see `Phase 2: Command classification and human gate`.
+- Traceability contract (`intent_id`, `mutation_class`, hashes, tool origin, agent action, AST attribution): see `Phase 3: AI-native trace layer`.
+- Parallel stale-write prevention and shared-memory governance behavior: see `Phase 4: Parallel orchestration`.
+- Living documentation side effects for governance continuity: see `Phase 4: Verification failure lesson recording`.
+
 ## Phase 0: Core Map
 
 ### Tool loop entrypoint (host extension)
