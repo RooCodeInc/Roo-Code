@@ -166,6 +166,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	readonly parentTaskId?: string
 	childTaskId?: string
 	pendingNewTaskToolCallId?: string
+	activeIntentId?: string
 
 	readonly instanceId: string
 	readonly metadata: TaskMetadata
