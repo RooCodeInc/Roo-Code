@@ -269,6 +269,61 @@ TURN START
 
 ---
 
+### 2.5 Theoretical Foundations
+
+The Reasoning Loop architecture addresses two fundamental challenges in AI-assisted development: **Cognitive Debt** and **Trust Debt**. Understanding these concepts clarifies why the Two-Stage State Machine with its mandatory handshake is essential rather than optional.
+
+#### Cognitive Debt
+
+Cognitive Debt accumulates when developers (human or AI) act without fully understanding the context and constraints of their actions. In traditional AI-assisted development, the agent can immediately execute destructive operations after receiving a user request, leading to:
+
+- **Context Switching Costs**: The agent must simultaneously analyze requirements, understand codebase structure, identify appropriate changes, and execute modifications—all within a single turn. This cognitive overload leads to mistakes, missed constraints, and poorly scoped changes.
+- **Implicit Assumptions**: Without explicit intent contracts, the agent makes implicit assumptions about scope and requirements that may not match reality. These assumptions compound as technical debt when they turn out to be wrong.
+- **Analysis Paralysis vs. Reckless Action**: The agent either over-analyzes without acting or acts prematurely without adequate analysis, both representing failed cognitive resource allocation.
+
+The Two-Stage State Machine directly addresses Cognitive Debt by:
+
+1. **Separating Analysis from Action**: Stage 1 (Reasoning Intercept) is dedicated solely to analysis and intent selection. The agent cannot perform destructive operations during this phase, freeing cognitive resources for understanding.
+
+2. **Explicit Context Contracts**: By requiring `select_active_intent` before any mutations, the system forces the agent to explicitly declare which business requirement it is serving. This externalizes the agent's mental model, making it inspectable and correctable.
+
+3. **Curated Context Injection**: Rather than overwhelming the agent with all project state, the Context Injector provides precisely the constraints, scope, and acceptance criteria relevant to the selected intent. This targeted information delivery reduces cognitive load while improving decision quality.
+
+4. **Bounded Scope**: The `owned_scope` patterns act as cognitive guardrails, limiting the solution space the agent must consider. This bounded rationality prevents the agent from considering irrelevant files or making changes outside its mandate.
+
+#### Trust Debt
+
+Trust Debt emerges when stakeholders (developers, reviewers, auditors) cannot verify or understand why changes were made. In autonomous AI systems, this manifests as:
+
+- **Opacity**: Changes appear without clear connection to requirements, making code review difficult and error-prone.
+- **Unaccountability**: When issues arise, there is no clear record of what the agent intended versus what actually happened.
+- **Fragile Attribution**: Code ownership becomes unclear after refactoring, making it impossible to understand the rationale behind implementation decisions.
+- **Constraint Violations**: Without enforcement mechanisms, agents inadvertently violate project constraints (architectural rules, security requirements, compatibility needs), eroding trust in AI-assisted development.
+
+The architecture repays Trust Debt through several mechanisms:
+
+1. **Immutable Trace Records**: The `agent_trace.jsonl` ledger creates an append-only, tamper-evident record of every modification. Each entry links specific code changes (via content hashes) to the intent that authorized them. This provides forensic-level accountability.
+
+2. **Spatial Independence via Content Hashing**: Traditional line-number-based attribution breaks during refactoring. By hashing content blocks, traces remain valid even when code moves between files, ensuring durable attribution that survives code evolution.
+
+3. **Fail-Closed Gatekeeper**: The Gatekeeper enforces a conservative security posture—if intent is unclear, scope is violated, or constraints are unverified, the operation is blocked. This "better to ask permission than forgiveness" approach prevents unauthorized changes that would erode trust.
+
+4. **Human-in-the-Loop (HITL) Gates**: Destructive operations require explicit human approval. The approval UI displays both the intent context and the exact operation, enabling informed consent. This preserves human agency and builds confidence that the AI operates within boundaries.
+
+5. **Observable State Machines**: The Two-Stage flow is not hidden in implementation details but explicitly modeled and diagrammed. Stakeholders can inspect `active_intents.yaml` to see what work is authorized, query `intent_map.md` to understand code ownership, and review `agent_trace.jsonl` to audit changes.
+
+#### The Handshake as Trust Builder
+
+The mandatory handshake (`select_active_intent` → Context Injection → Validation) is the architectural manifestation of both debt repayment strategies:
+
+- **For Cognitive Debt**: The handshake forces the agent to pause and externalize its intent before acting. This pause prevents "autopilot coding" where the agent operates on pattern matching rather than understanding.
+
+- **For Trust Debt**: The handshake creates an explicit audit point. When a developer sees that `write_file` was called after `select_active_intent` with intent "INT-001", they can verify in `active_intents.yaml` what scope and constraints applied. This traceability transforms AI actions from opaque mutations into accountable, reviewable operations.
+
+The handshake transforms the AI from an autonomous actor that must be trusted implicitly into a contextualized agent that earns trust through transparency, scope limitations, and immutable record-keeping.
+
+---
+
 ## 3. Architectural Key Components
 
 This section describes the components that turn a conversational agent into a governable system: (1) a hook boundary that can block unsafe operations, (2) an intent model that declares scope/constraints, and (3) trace records that provide durable attribution.
