@@ -348,7 +348,9 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"smartCodeFolding": "Smart Code Folding: Bağlam yoğunlaştırması şimdi dosyalarınızın hafif bir haritasını korur—fonksiyon imzaları, sınıf bildirimleri ve tür tanımları. Bu, yoğunlaştırmadan sonra daha iyi devamlılık ve önceki çalışmaya atıfta bulunurken daha akıllı düzenlemeler sağlar."
+			"sonnet46": "Claude Sonnet 4.6: Anthropic'in en yeni Claude Sonnet 4.6 modeli için tüm sağlayıcılarda tam destek — Anthropic, Bedrock, Vertex, OpenRouter ve Vercel AI Gateway.",
+			"stabilityFixes": "Kararlılık İyileştirmeleri: Yarış koşullarına karşı delegasyon yaşam döngüsü güçlendirildi, gezinme ve görev devam ettirme sırasında sohbet geçmişi koruması düzeltildi ve daha akıcı bir deneyim için kaydırma sabitleme sorunları çözüldü.",
+			"lockedApiConfig": "Kilitli API Yapılandırması: Yeni kilit düğmesi, API yapılandırmanı bir çalışma alanındaki tüm modlarda sabitlemenizi sağlar, böylece mod değiştirmek artık sağlayıcı ayarlarını sıfırlamaz."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",
