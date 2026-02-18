@@ -155,6 +155,46 @@ We use [changesets](https://github.com/changesets/changesets) for versioning and
 
 ---
 
+## TRP1 Challenge – Intent-Code Traceability Hook System
+
+This fork implements an AI-Native Intent-Code Traceability layer for the TRP1 Week 1 challenge, adding governance and semantic tracking to Roo Code's AI agent workflow.
+
+### Phase 0 – Archaeological Dig
+- Documented extension architecture and tool execution flow in [`ARCHITECTURE_NOTES.md`](ARCHITECTURE_NOTES.md)
+- Mapped tool routing (`presentAssistantMessage`) and system prompt builder (`SYSTEM_PROMPT`)
+- Identified hook injection points for middleware integration
+
+### Phase 1 – Reasoning Loop & Context Loader ✅
+- **New Native Tool**: `select_active_intent(intent_id)` enforces two-stage state machine (intent selection → contextualized action)
+- **Hook Middleware**: `HookEngine` wraps all destructive tools with pre/post-hooks for governance and traceability
+- **Orchestration Sidecar**: `.orchestration/` directory implements AI-native Git layer:
+  - `active_intents.yaml` – Intent specifications with scope, constraints, acceptance criteria
+  - `agent_trace.jsonl` – Append-only ledger linking Intent → Code Hash
+  - `intent_map.md` – Spatial mapping of intents to files
+  - `AGENT.md` – Shared knowledge base
+- **Context Loader**: `select_active_intent` returns `<intent_context>` XML with intent specs + recent history from trace entries
+
+### Phase 2 – Hook Middleware & Security (Partial)
+- **Command Classification**: Safe (read) vs Destructive (write/execute) tools
+- **UI-Blocking Authorization**: Modal approval required for intent evolution (Human-in-the-Loop)
+- **Scope Enforcement**: File paths validated against intent's `owned_scope` patterns
+- **Post-Hook Trace Logging**: Automatic logging to `agent_trace.jsonl` with content hashing
+
+### Documentation & Testing
+- [`docs/Architecture.md`](docs/Architecture.md) – High-level architecture overview
+- [`ARCHITECTURE_NOTES.md`](ARCHITECTURE_NOTES.md) – Detailed codebase mapping and injection points
+- [`docs/UI-Blocking-Authorization.md`](docs/UI-Blocking-Authorization.md) – HITL governance design
+- [`docs/TESTING-PHASE1.md`](docs/TESTING-PHASE1.md) – Manual testing guide
+- [`docs/PHASE1-TEST-RESULTS.md`](docs/PHASE1-TEST-RESULTS.md) – Test execution results (5/5 passing)
+
+### Key Files
+- `src/core/hooks/HookEngine.ts` – Hook middleware implementation
+- `src/core/orchestration/OrchestrationDataModel.ts` – Data model for `.orchestration/` directory
+- `src/core/tools/SelectActiveIntentTool.ts` – Intent selection tool
+- `src/core/tools/__tests__/selectActiveIntentTool.spec.ts` – Phase 1 test suite
+
+---
+
 ## Disclaimer
 
 **Please note** that Roo Code, Inc does **not** make any representations or warranties regarding any code, models, or other tools provided or made available in connection with Roo Code, any associated third-party tools, or any resulting outputs. You assume **all risks** associated with the use of any such tools or outputs; such tools are provided on an **"AS IS"** and **"AS AVAILABLE"** basis. Such risks may include, without limitation, intellectual property infringement, cyber vulnerabilities or attacks, bias, inaccuracies, errors, defects, viruses, downtime, property loss or damage, and/or personal injury. You are solely responsible for your use of any such tools or outputs (including, without limitation, the legality, appropriateness, and results thereof).
