@@ -1,0 +1,96 @@
+# Active Intents Configuration
+# This file defines the business intents that govern AI agent operations.
+# Each intent specifies what files/areas the agent is authorized to modify.
+
+intents:
+  # Example Intent: Hook System Implementation
+  - id: "INT-001"
+    name: "Implement Intent-Governed Hook Middleware"
+    description: "Develop and test the Intent-Governed Hook Middleware system for TRP1 Challenge Week 1. This includes implementing intent selection, scope validation, and traceability features."
+    status: "IN_PROGRESS"
+    ownedScope:
+      - "src/hooks/**"
+      - "src/core/tools/BaseTool.ts"
+      - "src/core/tools/SelectActiveIntentTool.ts"
+      - "src/core/prompts/tools/native-tools/select_active_intent.ts"
+      - "src/core/assistant-message/presentAssistantMessage.ts"
+      - "src/core/task/Task.ts"
+      - "src/extension.ts"
+      - "tests/hooks/**"
+      - "src/hooks/__tests__/**"
+      - ".orchestration/**"
+      - "specs/001-intent-hook-middleware/**"
+    constraints:
+      - "All file writes must be within the ownedScope patterns"
+      - "Intent must be selected before any destructive operations"
+      - "All changes must be traceable via agent_trace.jsonl"
+    acceptanceCriteria:
+      - "Intent selection blocks destructive operations without active intent"
+      - "Scope validation prevents writes outside ownedScope"
+      - "All write operations are logged to agent_trace.jsonl"
+      - "Content hashes are computed for spatial independence"
+      - "System prompt includes active intent context"
+    metadata:
+      challenge: "TRP1 Week 1"
+      feature: "Intent-Governed Hook Middleware"
+      priority: "P0"
+      createdAt: "2026-01-16"
+      updatedAt: "2026-01-16"
+
+  # Example Intent: Documentation Updates
+  - id: "INT-002"
+    name: "Update Architecture Documentation"
+    description: "Enhance ARCHITECTURE_NOTES.md with detailed diagrams and explanations of the hook system integration points."
+    status: "PENDING"
+    ownedScope:
+      - "ARCHITECTURE_NOTES.md"
+      - "README.md"
+      - "docs/**"
+    constraints:
+      - "Documentation changes only"
+      - "No code modifications"
+    acceptanceCriteria:
+      - "Architecture diagrams are clear and accurate"
+      - "Integration points are well documented"
+      - "Examples are provided for common use cases"
+    metadata:
+      type: "documentation"
+      priority: "P2"
+
+  # Example Intent: Test Coverage
+  - id: "INT-003"
+    name: "Add Integration Tests for Hook System"
+    description: "Create comprehensive integration tests to verify the end-to-end flow of intent selection, scope validation, and trace logging."
+    status: "PENDING"
+    ownedScope:
+      - "tests/integration/**"
+      - "src/hooks/__tests__/**"
+    constraints:
+      - "Test files only"
+      - "Follow TDD principles"
+    acceptanceCriteria:
+      - "Integration tests cover intent selection flow"
+      - "Scope validation blocking is tested"
+      - "Trace logging is verified"
+    metadata:
+      type: "testing"
+      priority: "P1"
+
+  # General Intent: HTML File Creation
+  - id: "INT-004"
+    name: "Create HTML Files"
+    description: "General intent for creating and modifying HTML files in the workspace."
+    status: "IN_PROGRESS"
+    ownedScope:
+      - "**/*.html"
+      - "**/*.htm"
+      - "index.html"
+    constraints:
+      - "HTML files only"
+      - "Must be valid HTML syntax"
+    acceptanceCriteria:
+      - "HTML file is created/modified successfully"
+      - "File is valid HTML"
+    metadata:
+      type: "general"
+      priority: "P2"

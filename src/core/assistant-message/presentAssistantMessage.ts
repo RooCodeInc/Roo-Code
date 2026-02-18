@@ -26,6 +26,7 @@ import { searchFilesTool } from "../tools/SearchFilesTool"
 import { executeCommandTool } from "../tools/ExecuteCommandTool"
 import { useMcpToolTool } from "../tools/UseMcpToolTool"
 import { accessMcpResourceTool } from "../tools/accessMcpResourceTool"
+import { selectActiveIntentTool } from "../tools/SelectActiveIntentTool"
 import { askFollowupQuestionTool } from "../tools/AskFollowupQuestionTool"
 import { switchModeTool } from "../tools/SwitchModeTool"
 import { attemptCompletionTool, AttemptCompletionCallbacks } from "../tools/AttemptCompletionTool"
@@ -40,6 +41,9 @@ import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+import { PreToolHook } from "../../hooks/PreToolHook"
+import { IntentManager } from "../../hooks/IntentManager"
+import { OrchestrationStorage } from "../../hooks/OrchestrationStorage"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -359,6 +363,8 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.server_name}']`
 					case "access_mcp_resource":
 						return `[${block.name} for '${block.params.server_name}']`
+					case "select_active_intent":
+						return `[${block.name} for '${block.params.intent_id}']`
 					case "ask_followup_question":
 						return `[${block.name} for '${block.params.question}']`
 					case "attempt_completion":
@@ -623,6 +629,30 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			// Enforce intent governance for destructive tools.
+			if (!block.partial) {
+				const preToolHook = new PreToolHook(new IntentManager(new OrchestrationStorage()))
+				const preHookResult = await preToolHook.run({
+					toolName: block.name,
+					toolParams: (block.nativeArgs as Record<string, unknown>) ?? {},
+					taskId: cline.taskId,
+					workspacePath: cline.workspacePath,
+				})
+
+				if (!preHookResult.allowed) {
+					cline.consecutiveMistakeCount++
+					const errorMessage = preHookResult.error || `Tool "${block.name}" was blocked by intent governance.`
+					cline.recordToolError(block.name as ToolName, errorMessage)
+					cline.pushToolResultToUserContent({
+						type: "tool_result",
+						tool_use_id: sanitizeToolUseId(toolCallId),
+						content: formatResponse.toolError(errorMessage),
+						is_error: true,
+					})
+					break
+				}
+			}
+
 			// Check for identical consecutive tool calls.
 			if (!block.partial) {
 				// Use the detector to check for repetition, passing the ToolUse
@@ -784,6 +814,13 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "access_mcp_resource":
 					await accessMcpResourceTool.handle(cline, block as ToolUse<"access_mcp_resource">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "select_active_intent":
+					await selectActiveIntentTool.handle(cline, block as ToolUse<"select_active_intent">, {
 						askApproval,
 						handleError,
 						pushToolResult,

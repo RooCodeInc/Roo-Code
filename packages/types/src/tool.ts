@@ -36,6 +36,7 @@ export const toolNames = [
 	"list_files",
 	"use_mcp_tool",
 	"access_mcp_resource",
+	"select_active_intent",
 	"ask_followup_question",
 	"attempt_completion",
 	"switch_mode",
