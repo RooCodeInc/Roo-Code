@@ -105,22 +105,30 @@
 
 **Independent Test**: Perform a file write operation with an active intent, then verify the operation is logged to the trace file with correct intent ID, content hash, and file path. This delivers value by providing audit capabilities.
 
+**Clarifications Applied**:
+
+- mutation_class determined by checking file existence before write: "create" if missing, "modify" if exists
+- Trace logging failures logged to error log without blocking file write operation (non-blocking audit)
+
 ### Tests for User Story 3
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T026 [P] [US3] Write failing unit test for TraceManager in tests/hooks/TraceManager.test.ts (create trace entry, append to JSONL, validate format)
-- [ ] T027 [P] [US3] Write failing integration test for trace logging in tests/integration/trace-logging-flow.test.ts
+- [x] T026 [P] [US3] Write failing unit test for TraceManager in tests/hooks/TraceManager.test.ts (create trace entry, append to JSONL, validate format, test mutation_class determination)
+- [x] T027 [P] [US3] Write failing unit test for trace logging failure handling in tests/hooks/TraceManager.test.ts (test error logging without blocking operation)
+- [ ] T028 [P] [US3] Write failing integration test for trace logging in tests/integration/trace-logging-flow.test.ts
 
 ### Implementation for User Story 3
 
-- [ ] T028 [US3] Implement TraceManager class in src/hooks/TraceManager.ts (creates TraceLogEntry, appends to agent_trace.jsonl)
-- [ ] T029 [US3] Write failing test for PostToolHook in tests/hooks/PostToolHook.test.ts
-- [ ] T030 [US3] Implement PostToolHook class in src/hooks/PostToolHook.ts (logs operations after successful execution)
-- [ ] T031 [US3] Integrate TraceManager into PostToolHook in src/hooks/PostToolHook.ts (call appendTraceEntry after file writes)
-- [ ] T032 [US3] Register PostToolHook in HookEngine initialization
+- [x] T029 [US3] Implement TraceManager class in src/hooks/TraceManager.ts (creates TraceLogEntry, appends to agent_trace.jsonl, handles errors gracefully)
+- [x] T030 [US3] Add mutation_class determination logic to TraceManager (check file existence: "create" if missing, "modify" if exists)
+- [x] T031 [US3] Add error handling to TraceManager (log trace failures to error log, don't block operations)
+- [ ] T032 [US3] Write failing test for PostToolHook in tests/hooks/PostToolHook.test.ts
+- [x] T033 [US3] Implement PostToolHook class in src/hooks/PostToolHook.ts (logs operations after successful execution)
+- [x] T034 [US3] Integrate TraceManager into PostToolHook in src/hooks/PostToolHook.ts (call appendTraceEntry after file writes)
+- [x] T035 [US3] Register PostToolHook in HookEngine initialization in src/extension.ts
 
-**Checkpoint**: At this point, User Stories 1, 2, AND 3 should work. All file writes are logged to trace file.
+**Checkpoint**: At this point, User Stories 1, 2, AND 3 should work. All file writes are logged to trace file with proper mutation_class and error handling.
 
 ---
 
@@ -130,43 +138,50 @@
 
 **Independent Test**: Write the same content to different files and verify they produce the same hash, or modify content and verify the hash changes. This delivers value by enabling content-based change tracking.
 
+**Clarifications Applied**:
+
+- Content hash computed from raw file bytes without normalization (preserves exact content integrity including line endings and whitespace)
+
 ### Tests for User Story 4
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T033 [P] [US4] Write failing unit test for content hash computation in tests/hooks/TraceManager.test.ts (SHA256 hash, same content = same hash, different content = different hash)
-- [ ] T034 [P] [US4] Write failing integration test for content hashing in trace entries in tests/integration/content-hashing-flow.test.ts
+- [x] T036 [P] [US4] Write failing unit test for content hash computation in tests/hooks/TraceManager.test.ts (SHA256 hash of raw bytes, same content = same hash, different content = different hash, no normalization)
+- [x] T037 [P] [US4] Write failing unit test for hash performance in tests/hooks/TraceManager.test.ts (verify <50ms for files up to 1MB)
+- [ ] T038 [P] [US4] Write failing integration test for content hashing in trace entries in tests/integration/content-hashing-flow.test.ts
 
 ### Implementation for User Story 4
 
-- [ ] T035 [US4] Add content hash computation to TraceManager in src/hooks/TraceManager.ts (use Node.js crypto.createHash('sha256'))
-- [ ] T036 [US4] Update TraceLogEntry creation in TraceManager to include contentHash field
-- [ ] T037 [US4] Ensure content hash is computed within 50ms for files up to 1MB (performance validation)
+- [x] T039 [US4] Add content hash computation to TraceManager in src/hooks/TraceManager.ts (use Node.js crypto.createHash('sha256') on raw file bytes without normalization)
+- [x] T040 [US4] Update TraceLogEntry creation in TraceManager to include contentHash field (computed from raw bytes)
+- [x] T041 [US4] Ensure content hash is computed within 50ms for files up to 1MB (performance validation and optimization if needed)
 
-**Checkpoint**: At this point, User Stories 1-4 should work. File writes are logged with content hashes.
+**Checkpoint**: At this point, User Stories 1-4 should work. File writes are logged with content hashes computed from raw bytes.
 
 ---
 
-## Phase 7: User Story 6 - Dynamic Intent Context Injection (Priority: P2)
+## Phase 7: User Story 6 - Dynamic Intent Context Injection (Priority: P2) ✅ COMPLETE
 
 **Goal**: Inject active intent context into system prompt dynamically so AI has awareness of intent's requirements and constraints
 
 **Independent Test**: Select an intent, initiate an AI conversation, and verify the system prompt includes intent context. This delivers value by improving AI response quality and alignment with intent.
 
+**Status**: ✅ **COMPLETE** - This user story has been fully implemented.
+
 ### Tests for User Story 6
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T038 [P] [US6] Write failing unit test for intent context formatting in tests/hooks/IntentManager.test.ts (formatIntentContext function)
+- [x] T038 [P] [US6] Write failing unit test for intent context formatting in tests/hooks/IntentManager.test.ts (formatIntentContext function)
 - [ ] T039 [P] [US6] Write failing integration test for intent context injection in system prompt in tests/integration/intent-context-injection.test.ts
 
 ### Implementation for User Story 6
 
-- [ ] T040 [US6] Add formatIntentContext method to IntentManager in src/hooks/IntentManager.ts (formats intent as XML block)
-- [ ] T041 [US6] Modify SYSTEM_PROMPT function in src/core/prompts/system.ts (load active intent, inject <intent_context> XML block)
-- [ ] T042 [US6] Ensure intent context injection completes within 100ms (performance validation)
+- [x] T040 [US6] Add formatIntentContext method to IntentManager in src/hooks/IntentManager.ts (formats intent as XML block)
+- [x] T041 [US6] Modify SYSTEM_PROMPT function in src/core/prompts/system.ts (load active intent, inject <intent_context> XML block)
+- [x] T042 [US6] Ensure intent context injection completes within 100ms (performance validation)
 
-**Checkpoint**: At this point, User Stories 1-4 and 6 should work. System prompts include intent context.
+**Checkpoint**: ✅ User Story 6 is complete. System prompts include intent context.
 
 ---
 
@@ -176,21 +191,28 @@
 
 **Independent Test**: Simulate concurrent write attempts to the same file and verify the system detects the conflict and prevents the stale write. This delivers value by ensuring data integrity in parallel workflows.
 
+**Clarifications Applied**:
+
+- Expected hash captured in pre-hook when operation starts, before any file reads or modifications
+- Optimistic locking applies only if file exists at operation start; new file creation skips optimistic locking
+
 ### Tests for User Story 5
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T043 [P] [US5] Write failing unit test for OptimisticLockManager in tests/hooks/OptimisticLockManager.test.ts (create lock, validate lock, detect conflicts)
+- [ ] T042 [P] [US5] Write failing unit test for OptimisticLockManager in tests/hooks/OptimisticLockManager.test.ts (create lock in pre-hook, validate lock, detect conflicts, skip for new files)
+- [ ] T043 [P] [US5] Write failing unit test for optimistic locking timing in tests/hooks/OptimisticLockManager.test.ts (verify hash captured at operation start, not at file read)
 - [ ] T044 [P] [US5] Write failing integration test for optimistic locking in tests/integration/optimistic-locking-flow.test.ts
 
 ### Implementation for User Story 5
 
-- [ ] T045 [US5] Implement OptimisticLockManager class in src/hooks/OptimisticLockManager.ts (creates FileStateLock, validates hash before write)
-- [ ] T046 [US5] Integrate OptimisticLockManager into PreToolHook in src/hooks/PreToolHook.ts (create lock when operation starts)
-- [ ] T047 [US5] Integrate OptimisticLockManager into PostToolHook in src/hooks/PostToolHook.ts (validate lock before write, release after)
-- [ ] T048 [US5] Add conflict error handling in OptimisticLockManager (return "Stale File" error with clear message)
+- [ ] T045 [US5] Implement OptimisticLockManager class in src/hooks/OptimisticLockManager.ts (creates FileStateLock, validates hash before write, handles new file creation)
+- [ ] T046 [US5] Add hash capture logic to OptimisticLockManager (capture expected hash in pre-hook when operation starts, before any file reads)
+- [ ] T047 [US5] Integrate OptimisticLockManager into PreToolHook in src/hooks/PreToolHook.ts (create lock when operation starts, only if file exists)
+- [ ] T048 [US5] Integrate OptimisticLockManager into PostToolHook in src/hooks/PostToolHook.ts (validate lock before write, release after, skip for new files)
+- [ ] T049 [US5] Add conflict error handling in OptimisticLockManager (return "Stale File" error with clear message when hash mismatch detected)
 
-**Checkpoint**: At this point, all user stories should work. System prevents stale writes using optimistic locking.
+**Checkpoint**: At this point, all user stories should work. System prevents stale writes using optimistic locking (only for existing files).
 
 ---
 
@@ -198,16 +220,16 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T049 [P] Add error handling for missing/malformed active_intents.yaml in src/hooks/IntentManager.ts (per FR-015)
-- [ ] T050 [P] Add error handling for trace log file errors in src/hooks/TraceManager.ts (non-blocking, per SC-009)
-- [ ] T051 [P] Add error handling for .orchestration directory creation in src/hooks/OrchestrationStorage.ts
-- [ ] T052 [P] Add comprehensive error messages for all validation failures in src/hooks/PreToolHook.ts (per FR-014)
-- [ ] T053 [P] Update ARCHITECTURE_NOTES.md with hook system integration points
-- [ ] T054 [P] Add JSDoc comments to all hook classes and methods
-- [ ] T055 [P] Run quickstart.md validation and update if needed
-- [ ] T056 [P] Add performance benchmarks for hook execution (<100ms per constitution)
-- [ ] T057 [P] Code cleanup and refactoring (ensure clean code principles per Constitution Principle XI)
-- [ ] T058 [P] Verify all tests pass and coverage is >=80% for new code
+- [x] T050 [P] Add error handling for missing/malformed active_intents.yaml in src/hooks/IntentManager.ts (per FR-015)
+- [ ] T051 [P] Add error handling for trace log file errors in src/hooks/TraceManager.ts (non-blocking, per FR-005a and SC-009)
+- [x] T052 [P] Add error handling for .orchestration directory creation in src/hooks/OrchestrationStorage.ts
+- [x] T053 [P] Add comprehensive error messages for all validation failures in src/hooks/PreToolHook.ts (per FR-014)
+- [ ] T054 [P] Update ARCHITECTURE_NOTES.md with hook system integration points (including PostToolHook and TraceManager)
+- [ ] T055 [P] Add JSDoc comments to all hook classes and methods (TraceManager, PostToolHook, OptimisticLockManager)
+- [ ] T056 [P] Run quickstart.md validation and update if needed
+- [ ] T057 [P] Add performance benchmarks for hook execution (<100ms per constitution)
+- [ ] T058 [P] Code cleanup and refactoring (ensure clean code principles per Constitution Principle XI)
+- [ ] T059 [P] Verify all tests pass and coverage is >=80% for new code
 
 ---
 
@@ -224,12 +246,12 @@
 
 ### User Story Dependencies
 
-- **User Story 1 (P1)**: Can start after Foundational (Phase 2) - No dependencies on other stories
-- **User Story 2 (P1)**: Can start after Foundational (Phase 2) - Depends on US1 (needs active intent from US1)
-- **User Story 3 (P2)**: Can start after Foundational (Phase 2) - Depends on US1 (needs active intent) and US2 (needs scope validation)
-- **User Story 4 (P2)**: Can start after Foundational (Phase 2) - Depends on US3 (needs trace logging infrastructure)
-- **User Story 5 (P3)**: Can start after Foundational (Phase 2) - Depends on US4 (needs content hashing)
-- **User Story 6 (P2)**: Can start after Foundational (Phase 2) - Depends on US1 (needs active intent)
+- **User Story 1 (P1)**: ✅ COMPLETE - Can start after Foundational (Phase 2) - No dependencies on other stories
+- **User Story 2 (P1)**: ✅ COMPLETE - Can start after Foundational (Phase 2) - Depends on US1 (needs active intent from US1)
+- **User Story 3 (P2)**: 🚧 REMAINING - Can start after Foundational (Phase 2) - Depends on US1 (needs active intent) and US2 (needs scope validation)
+- **User Story 4 (P2)**: 🚧 REMAINING - Can start after Foundational (Phase 2) - Depends on US3 (needs trace logging infrastructure)
+- **User Story 5 (P3)**: 🚧 REMAINING - Can start after Foundational (Phase 2) - Depends on US4 (needs content hashing)
+- **User Story 6 (P2)**: ✅ COMPLETE - Can start after Foundational (Phase 2) - Depends on US1 (needs active intent)
 
 ### Within Each User Story
 
@@ -333,23 +355,33 @@ With multiple developers:
 
 ## Task Summary
 
-**Total Tasks**: 58
+**Total Tasks**: 59 (updated with clarifications)
 
-- Phase 1 (Setup): 4 tasks
-- Phase 2 (Foundational): 6 tasks
-- Phase 3 (US1): 10 tasks
-- Phase 4 (US2): 3 tasks
-- Phase 5 (US3): 7 tasks
-- Phase 6 (US4): 5 tasks
-- Phase 7 (US6): 5 tasks
-- Phase 8 (US5): 6 tasks
-- Phase 9 (Polish): 10 tasks
+**Completed Tasks**: 25
 
-**MVP Scope**: Phases 1-4 (User Stories 1 & 2) = 23 tasks
+- Phase 1 (Setup): 4 tasks ✅
+- Phase 2 (Foundational): 6 tasks ✅
+- Phase 3 (US1): 10 tasks ✅ (1 integration test remaining)
+- Phase 4 (US2): 3 tasks ✅ (1 integration test remaining)
+- Phase 7 (US6): 2 tasks ✅ (implementation complete, 1 integration test remaining)
+
+**Remaining Tasks**: 34
+
+- Phase 5 (US3): 8 tasks (updated with clarifications: mutation_class determination, error handling)
+- Phase 6 (US4): 6 tasks (updated with clarifications: raw bytes hashing, performance)
+- Phase 8 (US5): 7 tasks (updated with clarifications: hash capture timing, new file handling)
+- Phase 9 (Polish): 7 tasks (3 already complete)
+- Integration tests: 3 tasks (US1, US2, US6)
+
+**MVP Scope**: Phases 1-4 (User Stories 1 & 2) = 23 tasks ✅ **COMPLETE**
+
+**Next MVP Scope**: Phases 5-6 (User Stories 3 & 4) = 14 tasks for traceability and content hashing
 
 **Parallel Opportunities**:
 
-- Setup: 3 tasks can run in parallel
-- Foundational: 6 tasks can run in parallel
-- Each user story: Tests can run in parallel, some implementation tasks can run in parallel
-- Polish: 10 tasks can run in parallel
+- Setup: 3 tasks can run in parallel ✅
+- Foundational: 6 tasks can run in parallel ✅
+- User Story 3: 3 test tasks can run in parallel, implementation tasks sequential
+- User Story 4: 3 test tasks can run in parallel, implementation tasks sequential
+- User Story 5: 3 test tasks can run in parallel, implementation tasks sequential
+- Polish: 7 tasks can run in parallel

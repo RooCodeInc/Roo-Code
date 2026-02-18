@@ -43,6 +43,8 @@ import { OrchestrationStorage } from "./hooks/OrchestrationStorage"
 import { IntentManager } from "./hooks/IntentManager"
 import { HookEngine } from "./hooks/HookEngine"
 import { PreToolHook } from "./hooks/PreToolHook"
+import { TraceManager } from "./hooks/TraceManager"
+import { PostToolHook } from "./hooks/PostToolHook"
 import { initializeSelectActiveIntentTool } from "./core/tools/SelectActiveIntentTool"
 import { initializeGetActiveIntentTool } from "./core/tools/GetActiveIntentTool"
 
@@ -200,9 +202,12 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Initialize Intent-Governed Hook Middleware
 	const orchestrationStorage = new OrchestrationStorage()
 	const intentManager = new IntentManager(orchestrationStorage)
+	const traceManager = new TraceManager(orchestrationStorage)
 	const hookEngine = new HookEngine()
 	const preToolHook = new PreToolHook(intentManager)
+	const postToolHook = new PostToolHook(traceManager, intentManager)
 	hookEngine.registerPreHook((context) => preToolHook.run(context))
+	hookEngine.registerPostHook((context, result) => postToolHook.run(context, result))
 
 	// Initialize SelectActiveIntentTool and GetActiveIntentTool with IntentManager
 	initializeSelectActiveIntentTool(intentManager)

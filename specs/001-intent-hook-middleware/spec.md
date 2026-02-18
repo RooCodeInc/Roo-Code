@@ -56,6 +56,11 @@
 - Q: Which state indicator should be used for optimistic locking to detect file conflicts? → A: Content hash (SHA256) - Compare SHA256 hash of file content before and after operation
 - Q: What should happen if a user selects a new intent while a tool execution is in progress? → A: Defer to next operation - Intent change is queued and applies to the next tool execution; current operation completes with original intent
 - Q: What pattern matching rules should be used for scope validation? → A: Glob patterns - Use glob-style matching with `*` (single segment) and `**` (recursive) wildcards
+- Q: How should the system determine mutation_class (create vs modify) for trace log entries? → A: Check file existence before write - System checks if file exists before write operation; classifies as "create" if file is missing, "modify" if file exists
+- Q: Should content be normalized before computing SHA256 hash? → A: Hash raw bytes as-is - Content hash computed from raw file bytes without normalization (preserves exact content integrity)
+- Q: When should the expected hash be captured for optimistic locking? → A: Capture when operation starts - Expected hash captured in pre-hook when operation starts, before any file reads or modifications
+- Q: How should the system handle trace logging failures? → A: Log to error log, don't block - Trace logging failures are logged to error log but do not block the file write operation (non-blocking audit)
+- Q: How should optimistic locking work for new file creation? → A: Apply only if file exists - Optimistic locking applies only if file exists at operation start; new file creation skips optimistic locking since there's no previous state to compare
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -101,9 +106,10 @@ A developer or project manager wants to maintain a complete audit trail of all f
 
 **Acceptance Scenarios**:
 
-1. **Given** a file write operation completes successfully, **When** the system logs the operation, **Then** the trace entry includes intent_id, content_hash (SHA256), file_path, mutation_class, and timestamp
+1. **Given** a file write operation completes successfully, **When** the system logs the operation, **Then** the trace entry includes intent_id, content_hash (SHA256), file_path, mutation_class (determined by checking file existence: "create" if missing, "modify" if exists), and timestamp
 2. **Given** multiple file write operations occur, **When** each operation completes, **Then** each operation is appended to the trace log in chronological order
 3. **Given** a file write operation fails validation, **When** the system handles the failure, **Then** the failure is optionally logged with reason for audit purposes
+4. **Given** a file write operation succeeds but trace logging fails, **When** the system handles the trace failure, **Then** the failure is logged to error log and the file write operation is allowed to proceed (non-blocking audit)
 
 ---
 
@@ -117,7 +123,7 @@ A developer working in a distributed or parallel development environment wants c
 
 **Acceptance Scenarios**:
 
-1. **Given** a file write operation with content "function hello() {}", **When** the system computes the content hash, **Then** the hash is a SHA256 digest of the content bytes
+1. **Given** a file write operation with content "function hello() {}", **When** the system computes the content hash, **Then** the hash is a SHA256 digest of the raw content bytes (without normalization)
 2. **Given** the same content is written to two different file paths, **When** the system computes hashes, **Then** both operations produce identical hash values
 3. **Given** file content is modified, **When** the system computes the new hash, **Then** the new hash differs from the previous hash
 
@@ -133,9 +139,10 @@ A developer working in a parallel development scenario wants protection against 
 
 **Acceptance Scenarios**:
 
-1. **Given** a file write operation is initiated, **When** the system checks the file's current state, **Then** it computes the SHA256 hash of the current file content and compares it with the expected hash, proceeding only if they match
-2. **Given** a file was modified by another process since the operation started, **When** the system detects the state mismatch, **Then** it rejects the write operation and reports a conflict
-3. **Given** a conflict is detected, **When** the system handles the conflict, **Then** it provides clear information about what changed and allows the developer to resolve the conflict
+1. **Given** a file write operation is initiated for an existing file, **When** the system captures the expected hash in pre-hook (before any file reads), **Then** it later compares the actual file content hash with the expected hash before write, proceeding only if they match
+2. **Given** a file write operation is initiated for a new file (file doesn't exist), **When** the system checks for optimistic locking, **Then** it skips optimistic locking since there's no previous state to compare
+3. **Given** an existing file was modified by another process since the operation started, **When** the system detects the state mismatch, **Then** it rejects the write operation and reports a conflict
+4. **Given** a conflict is detected, **When** the system handles the conflict, **Then** it provides clear information about what changed and allows the developer to resolve the conflict
 
 ---
 
@@ -165,7 +172,7 @@ A developer wants the AI assistant to have awareness of the active intent's cont
 - How does the system handle hash computation for very large files?
 - What happens when optimistic locking detects a conflict but the file is being read by another process?
 - How does the system handle intent context injection when the intent file is modified during an active session?
-- What happens when the trace log file becomes corrupted or inaccessible?
+- What happens when the trace log file becomes corrupted or inaccessible? (Answer: Trace logging failure is logged to error log, but file write operation proceeds without blocking)
 - How does the system handle scope validation for symbolic links or special file paths?
 
 ## Requirements _(mandatory)_
@@ -190,10 +197,15 @@ A developer wants the AI assistant to have awareness of the active intent's cont
 #### 🚧 Pending Requirements
 
 - **FR-005**: System MUST log all successful file write operations to the agent trace log file ❌ **NOT IMPLEMENTED**
+- **FR-005a**: System MUST handle trace logging failures gracefully by logging errors to error log without blocking the file write operation ❌ **NOT IMPLEMENTED**
 - **FR-006**: System MUST compute SHA256 content hash for every file write operation ❌ **NOT IMPLEMENTED**
+- **FR-006a**: System MUST compute content hash from raw file bytes without normalization (preserves exact content integrity) ❌ **NOT IMPLEMENTED**
 - **FR-007**: System MUST include intent_id, content_hash, file_path, mutation_class, and timestamp in each trace log entry ❌ **NOT IMPLEMENTED**
+- **FR-007a**: System MUST determine mutation_class by checking file existence before write: "create" if file is missing, "modify" if file exists ❌ **NOT IMPLEMENTED**
 - **FR-008**: System MUST append trace log entries to the agent_trace.jsonl file without overwriting existing entries ❌ **NOT IMPLEMENTED**
 - **FR-009**: System MUST implement optimistic locking to detect file state conflicts before write operations using SHA256 content hash comparison ❌ **NOT IMPLEMENTED**
+- **FR-009a**: System MUST capture expected hash in pre-hook when operation starts, before any file reads or modifications ❌ **NOT IMPLEMENTED**
+- **FR-009b**: System MUST apply optimistic locking only if file exists at operation start; new file creation skips optimistic locking ❌ **NOT IMPLEMENTED**
 - **FR-010**: System MUST reject write operations when optimistic locking detects a content hash mismatch between expected and actual file state ❌ **NOT IMPLEMENTED**
 
 ### Key Entities _(include if feature involves data)_
@@ -202,11 +214,11 @@ A developer wants the AI assistant to have awareness of the active intent's cont
 
 - **Intent Scope Pattern**: Defines file path patterns using glob-style matching (e.g., "src/components/**") that determine which files are within an intent's authorized boundaries. Supports `*` for single-segment wildcards and `**` for recursive directory matching. Used to validate file write operations.
 
-- **Trace Log Entry**: A record of a file write operation containing intent_id, content_hash (SHA256), file_path, mutation_class (create/modify), line_ranges, and timestamp. Appended to agent_trace.jsonl for audit trail.
+- **Trace Log Entry**: A record of a file write operation containing intent_id, content_hash (SHA256), file_path, mutation_class (create/modify), line_ranges, and timestamp. Appended to agent_trace.jsonl for audit trail. The mutation_class is determined by checking file existence before write: "create" if file is missing, "modify" if file exists.
 
-- **Content Hash**: A SHA256 digest of file content bytes, enabling spatial independence by tracking changes by content rather than location. Used for detecting identical content across different paths.
+- **Content Hash**: A SHA256 digest of raw file content bytes (computed without normalization), enabling spatial independence by tracking changes by content rather than location. Used for detecting identical content across different paths. Preserves exact content integrity including line endings and whitespace differences.
 
-- **File State Lock**: A mechanism for optimistic locking that tracks expected file state using SHA256 content hash and compares it with actual file content hash before write operations to detect conflicts.
+- **File State Lock**: A mechanism for optimistic locking that tracks expected file state using SHA256 content hash (captured in pre-hook when operation starts, before any file reads) and compares it with actual file content hash before write operations to detect conflicts. Applies only to existing files; new file creation skips optimistic locking.
 
 - **Intent Context**: Dynamic information injected into system prompts, including intent description, scope boundaries, constraints, and related requirements. Enables AI to make decisions aligned with the active intent.
 
