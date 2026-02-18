@@ -18,6 +18,52 @@ The trace layer then links every actual mutation back to that contract so later 
 
 ---
 
+## Folder structure
+
+Phase 1 (Reasoning Loop & Context Injection) is implemented as a primary feature under `src/hook/`, with one public entrypoint and internal submodules for intent validation, scope enforcement, approval gating, context injection, and trace recording.
+
+```text
+src/
+  hook/
+    intent-orchestration/
+      README.md
+      index.ts
+      HookEngine.ts
+      types/
+        HookResult.ts
+        IntentTypes.ts
+        ToolAction.ts
+        TraceTypes.ts
+      errors/
+        ApprovalRejectedError.ts
+        IntentNotSelectedError.ts
+        ScopeViolationError.ts
+        ValidationError.ts
+      pre-tool-use/
+        PreToolUseHook.ts
+        CommandClassifier.ts
+        ScopeEnforcer.ts
+        IntentValidator.ts
+        ApprovalGate.ts
+        ContextInjector.ts
+      post-tool-use/
+        PostToolUseHook.ts
+        ContentHasher.ts
+        TraceLedgerWriter.ts
+        SpatialMapUpdater.ts
+      intent-store/
+        IntentStore.ts
+        OrchestrationPaths.ts
+        ActiveIntentsSchema.ts
+      trace-store/
+        TraceLedger.ts
+        SpatialMap.ts
+      utils/
+        normalizePath.ts
+        globMatch.ts
+        redact.ts
+```
+
 ## 2. High-Level System Architecture
 
 This section explains where the major parts live (topology) and how a single request becomes an approved, scoped tool action (execution flow). The design is intentionally layered so UI concerns, execution concerns, and policy concerns stay separate.
