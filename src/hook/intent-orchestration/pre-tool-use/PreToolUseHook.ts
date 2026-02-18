@@ -3,9 +3,8 @@
  * Handles intent validation, scope enforcement, and context injection
  */
 
-import type { PreHook, HookEngine } from "../HookEngine"
+import type { PreHook } from "../HookEngine"
 import type { HookContext, PreHookResult } from "../types/HookResult"
-import type { ToolAction } from "../types/ToolAction"
 import type { IntentDefinition } from "../types/IntentTypes"
 import { IntentStore } from "../intent-store/IntentStore"
 import { ValidationError } from "../errors/ValidationError"
@@ -98,7 +97,7 @@ export class PreToolUseHook implements PreHook {
 	 * Check if tool is a mutation tool (modifies files)
 	 */
 	private isMutationTool(toolName: string): boolean {
-		const mutationTools = ["write_file", "edit_file", "apply_diff"]
+		const mutationTools = ["write_to_file", "edit_file", "apply_diff", "edit", "search_replace", "apply_patch"]
 		return mutationTools.includes(toolName)
 	}
 

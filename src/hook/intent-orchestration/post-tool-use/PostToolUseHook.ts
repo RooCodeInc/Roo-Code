@@ -75,7 +75,16 @@ export class PostToolUseHook implements PostHook {
 	 * Check if tool is a file operation
 	 */
 	private isFileOperation(toolName: string): boolean {
-		const fileTools = ["read_file", "write_file", "edit_file", "apply_diff", "search_files"]
+		const fileTools = [
+			"read_file",
+			"write_to_file",
+			"edit_file",
+			"edit",
+			"search_replace",
+			"apply_patch",
+			"apply_diff",
+			"search_files",
+		]
 		return fileTools.includes(toolName)
 	}
 
@@ -113,9 +122,12 @@ export class PostToolUseHook implements PostHook {
 			case "read_file":
 			case "search_files":
 				return "read"
-			case "write_file":
+			case "write_to_file":
 				return "write"
 			case "edit_file":
+			case "edit":
+			case "search_replace":
+			case "apply_patch":
 			case "apply_diff":
 				return "modify"
 			default:

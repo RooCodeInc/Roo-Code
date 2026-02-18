@@ -4,8 +4,8 @@
  */
 
 import type { ToolAction, ToolInterceptor } from "./types/ToolAction"
-import type { HookContext, HookResult, PreHookResult, PostHookResult } from "./types/HookResult"
-import { ValidationError } from "./errors/ValidationError"
+import type { HookContext, PreHookResult, PostHookResult } from "./types/HookResult"
+import { IntentStore } from "./intent-store/IntentStore"
 
 export interface PreHook {
 	name: string
@@ -22,6 +22,11 @@ export class HookEngine {
 	private postHooks: Map<string, PostHook> = new Map()
 	private interceptors: Map<string, ToolInterceptor> = new Map()
 	private activeIntentId: string | null = null
+	private intentStore: IntentStore
+
+	constructor(workspaceRoot: string = process.cwd()) {
+		this.intentStore = new IntentStore(workspaceRoot)
+	}
 
 	/**
 	 * Register a pre-tool-use hook
@@ -58,6 +63,10 @@ export class HookEngine {
 		return this.activeIntentId
 	}
 
+	getIntentStore(): IntentStore {
+		return this.intentStore
+	}
+
 	/**
 	 * Execute pre-tool-use hooks and interceptors
 	 * This is the main entry point for tool interception
@@ -80,12 +89,24 @@ export class HookEngine {
 					error: "intent_id is required for select_active_intent",
 				}
 			}
-			// Set active intent and inject context
+			// Load spec, select, set active intent and inject context.
+			try {
+				await this.intentStore.load()
+				this.intentStore.selectIntent(intentId)
+			} catch (error) {
+				return {
+					action: "block",
+					shouldProceed: false,
+					error: error instanceof Error ? error.message : String(error),
+				}
+			}
+
 			this.setActiveIntent(intentId)
+			this.intentStore.markContextInjected()
 			return {
 				action: "inject",
 				shouldProceed: true,
-				contextToInject: this.buildIntentContextBlock(intentId),
+				contextToInject: this.intentStore.buildContextBlock(intentId),
 			}
 		}
 
@@ -146,21 +167,18 @@ export class HookEngine {
 	}
 
 	/**
-	 * Build the intent context XML block for injection
-	 */
-	private buildIntentContextBlock(intentId: string): string {
-		// This will be implemented to read from IntentStore
-		return `<intent_context>
-  <intent_id>${intentId}</intent_id>
-  <status>active</status>
-</intent_context>`
-	}
-
-	/**
 	 * Determine if a tool requires an active intent
 	 */
 	private requiresIntent(toolName: string): boolean {
-		const toolsRequiringIntent = ["write_file", "edit_file", "apply_diff", "execute_command"]
+		const toolsRequiringIntent = [
+			"write_to_file",
+			"edit",
+			"search_replace",
+			"edit_file",
+			"apply_diff",
+			"apply_patch",
+			"execute_command",
+		]
 		return toolsRequiringIntent.includes(toolName)
 	}
 }

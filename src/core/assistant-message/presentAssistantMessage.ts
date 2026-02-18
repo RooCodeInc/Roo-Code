@@ -37,7 +37,8 @@ import { generateImageTool } from "../tools/GenerateImageTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
-
+import { selectActiveIntentTool } from "../tools/SelectActiveIntentTool"
+import { HookEngine, PreToolUseHook } from "../../hook/intent-orchestration"
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
 
@@ -59,6 +60,38 @@ import { sanitizeToolUseId } from "../../utils/tool-id"
  */
 
 export async function presentAssistantMessage(cline: Task) {
+	// Intent orchestration hook engine (workspace-scoped)
+	// Default singleton is kept for backward compatibility; prefer per-workspace instance.
+	;(cline as any).hookEngine = (cline as any).hookEngine ?? new HookEngine(cline.cwd)
+	const hookEngine: HookEngine = (cline as any).hookEngine
+
+	// Ensure the baseline PreToolUseHook is registered.
+	// This enforces: intent required for mutation/system tools, scope checks, and first-mutation context injection.
+	;(cline as any)._intentHooksRegistered = (cline as any)._intentHooksRegistered ?? false
+	if (!(cline as any)._intentHooksRegistered) {
+		try {
+			const intentStore = hookEngine.getIntentStore()
+			await intentStore.load()
+			hookEngine.registerPreHook(
+				new PreToolUseHook({
+					intentStore,
+					requireIntentForTools: [
+						"write_to_file",
+						"edit",
+						"search_replace",
+						"edit_file",
+						"apply_diff",
+						"apply_patch",
+						"execute_command",
+					],
+				}),
+			)
+		} catch {
+			// Best effort: if orchestration config isn't present, runtime enforcement is limited.
+		}
+		;(cline as any)._intentHooksRegistered = true
+	}
+
 	if (cline.abort) {
 		throw new Error(`[Task#presentAssistantMessage] task ${cline.taskId}.${cline.instanceId} aborted`)
 	}
@@ -491,6 +524,22 @@ export async function presentAssistantMessage(cline: Task) {
 				hasToolResult = true
 			}
 
+			const pushBlockedByIntentResult = (message: string) => {
+				cline.consecutiveMistakeCount++
+				try {
+					cline.recordToolError(block.name as ToolName, message)
+				} catch {
+					// Best-effort only
+				}
+				cline.pushToolResultToUserContent({
+					type: "tool_result",
+					tool_use_id: sanitizeToolUseId(toolCallId),
+					content: formatResponse.intentError(message),
+					is_error: true,
+				})
+				hasToolResult = true
+			}
+
 			const askApproval = async (
 				type: ClineAsk,
 				partialMessage?: string,
@@ -623,6 +672,32 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			// Intent orchestration: pre-hook enforcement for complete blocks only.
+			if (!block.partial) {
+				try {
+					const startTs = Date.now()
+					const pre = await hookEngine.executePreHooks({
+						name: (block.name === "search_and_replace" ? "edit" : block.name) as any,
+						args: (block.nativeArgs ?? {}) as any,
+						timestamp: new Date().toISOString(),
+					})
+
+					if (!pre.shouldProceed) {
+						pushBlockedByIntentResult(pre.error || "Tool blocked by intent orchestration")
+						break
+					}
+
+					if (pre.action === "inject" && pre.contextToInject) {
+						cline.userMessageContent.push({ type: "text", text: pre.contextToInject })
+					}
+
+					;(cline as any)._intentHookStartTs = startTs
+				} catch (error) {
+					pushBlockedByIntentResult(error instanceof Error ? error.message : String(error))
+					break
+				}
+			}
+
 			// Check for identical consecutive tool calls.
 			if (!block.partial) {
 				// Use the detector to check for repetition, passing the ToolUse
@@ -676,6 +751,16 @@ export async function presentAssistantMessage(cline: Task) {
 			}
 
 			switch (block.name) {
+				case "select_active_intent":
+					await selectActiveIntentTool.handle(cline, block as ToolUse<"select_active_intent">, {
+						askApproval: async () => true,
+						handleError,
+						pushToolResult,
+					})
+					if (!(cline as any)._intentHookStartTs) {
+						;(cline as any)._intentHookStartTs = Date.now()
+					}
+					break
 				case "write_to_file":
 					await checkpointSaveAndMark(cline)
 					await writeToFileTool.handle(cline, block as ToolUse<"write_to_file">, {
@@ -914,6 +999,30 @@ export async function presentAssistantMessage(cline: Task) {
 						is_error: true,
 					})
 					break
+				}
+			}
+
+			// Intent orchestration: post-hook execution for complete blocks.
+			if (!block.partial && (cline as any)._intentHookStartTs) {
+				try {
+					const durationMs = Date.now() - Number((cline as any)._intentHookStartTs)
+					const post = await hookEngine.executePostHooks(
+						{
+							name: (block.name === "search_and_replace" ? "edit" : block.name) as any,
+							args: (block.nativeArgs ?? {}) as any,
+							timestamp: new Date().toISOString(),
+						},
+						{},
+					)
+
+					if (post.trace_entry) {
+						post.trace_entry.duration_ms = durationMs
+						// TODO: Persist trace entry via TraceLedgerWriter once wired in.
+					}
+				} catch {
+					// Best-effort only
+				} finally {
+					;(cline as any)._intentHookStartTs = undefined
 				}
 			}
 

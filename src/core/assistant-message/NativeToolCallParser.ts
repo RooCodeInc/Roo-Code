@@ -395,6 +395,12 @@ export class NativeToolCallParser {
 		let usedLegacyFormat = false
 
 		switch (name) {
+			case "select_active_intent":
+				if (partialArgs.intent_id !== undefined) {
+					nativeArgs = { intent_id: partialArgs.intent_id }
+				}
+				break
+
 			case "read_file":
 				// Check for legacy format first: { files: [...] }
 				// Handle both array and stringified array (some models double-stringify)
@@ -725,6 +731,14 @@ export class NativeToolCallParser {
 			let usedLegacyFormat = false
 
 			switch (resolvedName) {
+				case "select_active_intent":
+					if (args.intent_id !== undefined) {
+						nativeArgs = {
+							intent_id: args.intent_id,
+						} as NativeArgsFor<TName>
+					}
+					break
+
 				case "read_file":
 					// Check for legacy format first: { files: [...] }
 					// Handle both array and stringified array (some models double-stringify)
