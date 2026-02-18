@@ -24,6 +24,7 @@ export interface TextContent {
 }
 
 export const toolParamNames = [
+	"intent_id",
 	"command",
 	"path",
 	"content",
@@ -89,6 +90,7 @@ export type ToolParamName = (typeof toolParamNames)[number]
  * Tools not listed here will fall back to `any` for backward compatibility.
  */
 export type NativeToolArgs = {
+	select_active_intent: { intent_id: string }
 	access_mcp_resource: { server_name: string; uri: string }
 	read_file: import("@roo-code/types").ReadFileToolParams
 	read_command_output: { artifact_id: string; search?: string; offset?: number; limit?: number }
@@ -265,6 +267,7 @@ export type ToolGroupConfig = {
 }
 
 export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
+	select_active_intent: "select intent",
 	execute_command: "run commands",
 	read_file: "read files",
 	read_command_output: "read command output",
@@ -314,6 +317,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 
 // Tools that are always available to all modes.
 export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
+	"select_active_intent",
 	"ask_followup_question",
 	"attempt_completion",
 	"switch_mode",

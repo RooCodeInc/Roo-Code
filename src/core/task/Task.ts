@@ -163,6 +163,7 @@ export interface TaskOptions extends CreateTaskOptions {
 export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	readonly taskId: string
 	readonly rootTaskId?: string
+	public activeIntentId?: string
 	readonly parentTaskId?: string
 	childTaskId?: string
 	pendingNewTaskToolCallId?: string

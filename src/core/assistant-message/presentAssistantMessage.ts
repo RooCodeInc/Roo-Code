@@ -7,13 +7,14 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { customToolRegistry } from "@roo-code/core"
 
 import { t } from "../../i18n"
+import { AgentTrace } from "../tracing/AgentTrace"
 
 import { defaultModeSlug, getModeBySlug } from "../../shared/modes"
 import type { ToolParamName, ToolResponse, ToolUse, McpToolUse } from "../../shared/tools"
 
 import { AskIgnoredError } from "../task/AskIgnoredError"
 import { Task } from "../task/Task"
-
+import { SelectActiveIntentTool } from "../tools/SelectActiveIntentTool"
 import { listFilesTool } from "../tools/ListFilesTool"
 import { readFileTool } from "../tools/ReadFileTool"
 import { readCommandOutputTool } from "../tools/ReadCommandOutputTool"
@@ -328,6 +329,9 @@ export async function presentAssistantMessage(cline: Task) {
 				switch (block.name) {
 					case "execute_command":
 						return `[${block.name} for '${block.params.command}']`
+
+					case "select_active_intent":
+						return `[${block.name} for '${block.params.intent_id}']`
 					case "read_file":
 						// Prefer native typed args when available; fall back to legacy params
 						// Check if nativeArgs exists (native protocol)
@@ -419,27 +423,32 @@ export async function presentAssistantMessage(cline: Task) {
 				const customTool = stateExperiments?.customTools ? customToolRegistry.get(block.name) : undefined
 				const isKnownTool = isValidToolName(String(block.name), stateExperiments)
 				if (isKnownTool && !block.nativeArgs && !customTool) {
-					const errorMessage =
-						`Invalid tool call for '${block.name}': missing nativeArgs. ` +
-						`This usually means the model streamed invalid or incomplete arguments and the call could not be finalized.`
+					// Exception: allow select_active_intent to proceed to its handler even if nativeArgs is missing
+					if (block.name === "select_active_intent") {
+						// Do not break; let it proceed to SelectActiveIntentTool.handle
+					} else {
+						const errorMessage =
+							`Invalid tool call for '${block.name}': missing nativeArgs. ` +
+							`This usually means the model streamed invalid or incomplete arguments and the call could not be finalized.`
 
-					cline.consecutiveMistakeCount++
-					try {
-						cline.recordToolError(block.name as ToolName, errorMessage)
-					} catch {
-						// Best-effort only
+						cline.consecutiveMistakeCount++
+						try {
+							cline.recordToolError(block.name as ToolName, errorMessage)
+						} catch {
+							// Best-effort only
+						}
+
+						// Push tool_result directly without setting didAlreadyUseTool so streaming can
+						// continue gracefully.
+						cline.pushToolResultToUserContent({
+							type: "tool_result",
+							tool_use_id: sanitizeToolUseId(toolCallId),
+							content: formatResponse.toolError(errorMessage),
+							is_error: true,
+						})
+
+						break
 					}
-
-					// Push tool_result directly without setting didAlreadyUseTool so streaming can
-					// continue gracefully.
-					cline.pushToolResultToUserContent({
-						type: "tool_result",
-						tool_use_id: sanitizeToolUseId(toolCallId),
-						content: formatResponse.toolError(errorMessage),
-						is_error: true,
-					})
-
-					break
 				}
 			}
 
@@ -675,7 +684,40 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			// --- SMART GATEKEEPER ---
+			const destructiveTools = ["write_to_file", "execute_command", "apply_diff", "edit_file", "search_replace"]
+
+			// ONLY block if the tool is destructive AND it's NOT the intent-selection tool itself
+			if (
+				block.type === "tool_use" &&
+				destructiveTools.includes(block.name) &&
+				block.name !== "select_active_intent" && // IMPORTANT: Allow the AI to call the handshake!
+				!cline.activeIntentId
+			) {
+				const violationMessage =
+					"PROTOCOL VIOLATION: Action blocked. You must call 'select_active_intent' first."
+
+				cline.pushToolResultToUserContent({
+					type: "tool_result",
+					tool_use_id: sanitizeToolUseId(toolCallId),
+					content: violationMessage,
+					is_error: true,
+				})
+
+				await cline.say("error", "Gatekeeper Blocked: No Active Intent ID")
+				cline.presentAssistantMessageLocked = false
+				return
+			}
+			// --- END OF GATEKEEPER ---
+
 			switch (block.name) {
+				case "select_active_intent":
+					await SelectActiveIntentTool.handle(cline, block as ToolUse<"select_active_intent">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
 				case "write_to_file":
 					await checkpointSaveAndMark(cline)
 					await writeToFileTool.handle(cline, block as ToolUse<"write_to_file">, {
@@ -683,6 +725,19 @@ export async function presentAssistantMessage(cline: Task) {
 						handleError,
 						pushToolResult,
 					})
+					// --- START OF POST-HOOK (PHASE 3) ---
+					if (cline.activeIntentId) {
+						const filePath = (block.params as any).path
+						const content = (block.params as any).content
+						const modelId = cline.api.getModel().id
+
+						// Record the trace
+						await AgentTrace.logChange(cline.cwd, cline.activeIntentId, filePath, content, modelId)
+
+						// Optional: Show a small info message in the UI
+						await cline.say("text", `✅ Audit Trace recorded for intent: ${cline.activeIntentId}`)
+					}
+					// --- END OF POST-HOOK ---
 					break
 				case "update_todo_list":
 					await updateTodoListTool.handle(cline, block as ToolUse<"update_todo_list">, {
