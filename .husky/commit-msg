@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Enforce Conventional Commits via commitlint
+npx --no-install commitlint --edit "$1" || {
+  echo "\nCommit message must follow Conventional Commits (e.g., feat(hooks): ...).";
+  exit 1;
+}

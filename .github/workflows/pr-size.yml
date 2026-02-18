@@ -1,0 +1,48 @@
+name: PR Size Labeler
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  size:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute diff size
+        id: diff
+        run: |
+          echo "files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | wc -l | tr -d ' ')" >> $GITHUB_OUTPUT
+          echo "lines=$(git diff --numstat origin/${{ github.base_ref }}...HEAD | awk '{added+=$1;deleted+=$2} END {print added+deleted}')" >> $GITHUB_OUTPUT
+
+      - name: Ensure size labels exist
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = [
+              { name: 'size/XS', color: 'ededed' },
+              { name: 'size/S', color: 'c2e0c6' },
+              { name: 'size/M', color: 'fbca04' },
+              { name: 'size/L', color: 'b60205' },
+              { name: 'size/XL', color: 'd93f0b' }
+            ];
+            for (const l of labels) {
+              try {
+                await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, name: l.name });
+              } catch (e) {
+                await github.rest.issues.createLabel({ owner: context.repo.owner, repo: context.repo.repo, name: l.name, color: l.color });
+              }
+            }
+
+      - name: Apply size label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const files = parseInt('${{ steps.diff.outputs.files }}', 10);
+            const lines = parseInt('${{ steps.diff.outputs.lines }}', 10);
+            let label = 'size/XS';
+            if (lines > 50) label = 'size/S';
+            if (lines > 200) label = 'size/M';
+            if (lines > 500) label = 'size/L';
+            if (lines > 1000) label = 'size/XL';
+            await github.rest.issues.addLabels({ owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, labels: [label] });
