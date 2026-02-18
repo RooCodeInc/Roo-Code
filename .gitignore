@@ -7,6 +7,7 @@ package-lock.json
 coverage/
 mock/
 resources/
+note/
 
 .DS_Store
 
