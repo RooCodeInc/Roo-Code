@@ -54,4 +54,7 @@ qdrant_storage/
 # Architect plans
 plans/
 
+# Challenge task (local only, do not commit)
+task/
+
 roo-cli-*.tar.gz*
