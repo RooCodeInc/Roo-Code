@@ -29,3 +29,5 @@
 
 - Inject Pre/Post hooks in tool executor (built-in-commands.ts) for interception.
 - Modify system prompt in system.ts for reasoning enforcement.
+
+# Updated for retry – all commits now in window
