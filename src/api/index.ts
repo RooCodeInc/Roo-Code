@@ -161,6 +161,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new SambaNovaHandler(options)
 		case "zai":
 			return new ZAiHandler(options)
+		case "modelslab":
+			return new ModelsLabHandler(options)
 		case "fireworks":
 			return new FireworksHandler(options)
 		case "roo":
