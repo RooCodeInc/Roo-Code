@@ -13,6 +13,7 @@ import type { ToolParamName, ToolResponse, ToolUse, McpToolUse } from "../../sha
 
 import { AskIgnoredError } from "../task/AskIgnoredError"
 import { Task } from "../task/Task"
+import { HookEngine } from "../../hooks"
 
 import { listFilesTool } from "../tools/ListFilesTool"
 import { readFileTool } from "../tools/ReadFileTool"
@@ -675,6 +676,17 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			// Execute pre-hook
+			const preHookResult = await HookEngine.getInstance().executePreHook({
+				toolName: block.name,
+				params: block.params,
+				task: cline,
+			})
+
+			if (preHookResult.blocked) {
+				console.log(`[PreHook] Tool ${block.name} blocked by pre-hook`)
+			}
+
 			switch (block.name) {
 				case "write_to_file":
 					await checkpointSaveAndMark(cline)
@@ -920,6 +932,14 @@ export async function presentAssistantMessage(cline: Task) {
 			break
 		}
 	}
+
+	// Execute post-hook
+	await HookEngine.getInstance().executePostHook({
+		toolName: block.name,
+		params: block.params,
+		task: cline,
+		result: "success",
+	})
 
 	// Seeing out of bounds is fine, it means that the next too call is being
 	// built up and ready to add to assistantMessageContent to present.
