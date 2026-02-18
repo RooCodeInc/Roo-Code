@@ -46,3 +46,38 @@ export interface HookRegistration {
 	callback: HookCallback
 	options: HookOptions
 }
+
+export interface ToolCall {
+	name: string
+	parameters: Record<string, unknown>
+	context?: unknown
+}
+
+export interface HookResult {
+	blocked: boolean
+	reason?: string
+	enrichedContext?: unknown
+	recoveryHint?: string
+}
+
+export interface IHook {
+	name: string
+	execute(toolCall: ToolCall, context?: ToolHookContext, result?: unknown): Promise<HookResult>
+}
+
+export interface ToolHookContext {
+	activeIntentId?: string
+	sessionId: string
+	workspacePath: string
+	modelName: string
+	agentRole: "Architect" | "Builder" | "Tester"
+}
+
+export interface IntentSpec {
+	id: string
+	name: string
+	status: "IN_PROGRESS" | "COMPLETED" | "BLOCKED"
+	owned_scope: string[]
+	constraints: string[]
+	acceptance_criteria: string[]
+}
