@@ -6,12 +6,18 @@ import { type Mode, FileRestrictionError, getModeBySlug, getGroupName } from "..
 import { EXPERIMENT_IDS } from "../../shared/experiments"
 import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS, TOOL_ALIASES } from "../../shared/tools"
 
+const INTENT_CONTROL_TOOL = "select_active_intent"
+
 /**
  * Checks if a tool name is a valid, known tool.
  * Note: This does NOT check if the tool is allowed for a specific mode,
  * only that the tool actually exists.
  */
 export function isValidToolName(toolName: string, experiments?: Record<string, boolean>): toolName is ToolName {
+	if (toolName === INTENT_CONTROL_TOOL) {
+		return true
+	}
+
 	// Check if it's a valid static tool
 	if ((validToolNames as readonly string[]).includes(toolName)) {
 		return true
@@ -126,6 +132,10 @@ export function isToolAllowedForMode(
 	experiments?: Record<string, boolean>,
 	includedTools?: string[], // Opt-in tools explicitly included (e.g., from modelInfo)
 ): boolean {
+	if (tool === INTENT_CONTROL_TOOL) {
+		return true
+	}
+
 	// Resolve alias to canonical name (e.g., "search_and_replace" → "edit")
 	const resolvedTool = TOOL_ALIASES[tool] ?? tool
 	const resolvedIncludedTools = includedTools?.map((t) => TOOL_ALIASES[t] ?? t)

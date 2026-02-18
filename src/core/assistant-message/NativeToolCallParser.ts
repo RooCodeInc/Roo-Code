@@ -18,6 +18,8 @@ import type {
 } from "../../api/transform/stream"
 import { MCP_TOOL_PREFIX, MCP_TOOL_SEPARATOR, parseMcpToolName, normalizeMcpToolName } from "../../utils/mcp-name"
 
+const RUNTIME_NATIVE_ONLY_TOOLS = new Set<string>(["select_active_intent"])
+
 /**
  * Helper type to extract properly typed native arguments for a given tool.
  * Returns the type from NativeToolArgs if the tool is defined there, otherwise never.
@@ -689,7 +691,11 @@ export class NativeToolCallParser {
 		const resolvedName = resolveToolAlias(toolCall.name as string) as TName
 
 		// Validate tool name (after alias resolution).
-		if (!toolNames.includes(resolvedName as ToolName) && !customToolRegistry.has(resolvedName)) {
+		if (
+			!toolNames.includes(resolvedName as ToolName) &&
+			!customToolRegistry.has(resolvedName) &&
+			!RUNTIME_NATIVE_ONLY_TOOLS.has(resolvedName)
+		) {
 			console.error(`Invalid tool name: ${toolCall.name} (resolved: ${resolvedName})`)
 			console.error(`Valid tool names:`, toolNames)
 			return null
@@ -723,6 +729,12 @@ export class NativeToolCallParser {
 
 			// Track if legacy format was used (for telemetry)
 			let usedLegacyFormat = false
+
+			if (String(resolvedName) === "select_active_intent" && args.intent_id !== undefined) {
+				nativeArgs = {
+					intent_id: args.intent_id,
+				} as unknown as NativeArgsFor<TName>
+			}
 
 			switch (resolvedName) {
 				case "read_file":
@@ -994,7 +1006,7 @@ export class NativeToolCallParser {
 
 			// Native-only: core tools must always have typed nativeArgs.
 			// If we couldn't construct it, the model produced an invalid tool call payload.
-			if (!nativeArgs && !customToolRegistry.has(resolvedName)) {
+			if (!nativeArgs && !customToolRegistry.has(resolvedName) && !RUNTIME_NATIVE_ONLY_TOOLS.has(resolvedName)) {
 				throw new Error(
 					`[NativeToolCallParser] Invalid arguments for tool '${resolvedName}'. ` +
 						`Native tool calls require a valid JSON payload matching the tool schema. ` +
