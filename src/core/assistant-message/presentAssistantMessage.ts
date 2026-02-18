@@ -685,6 +685,12 @@ export async function presentAssistantMessage(cline: Task) {
 
 			if (preHookResult.blocked) {
 				console.log(`[PreHook] Tool ${block.name} blocked by pre-hook`)
+				pushToolResult(
+					formatResponse.toolError(
+						`Tool ${block.name} blocked: File is outside the active intent scope. Please modify files within the allowed scope.`,
+					),
+				)
+				break
 			}
 
 			switch (block.name) {
