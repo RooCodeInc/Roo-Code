@@ -3,7 +3,7 @@ classDiagram
   class AgentTraceEntry {
     +id: string
     +timestamp: string
-    +vcs: VCS
+    +git_revision?: GitRevision
     +files: File[]
   }
   
@@ -33,8 +33,10 @@ classDiagram
     +type: string
     +value: string
   }
-  class VCS {
-    +revision_id?: string
+  class GitRevision {
+    +commit?: string
+    +branch?: string
+    +status?: string
   }
 
   AgentTraceEntry --> File
@@ -42,4 +44,4 @@ classDiagram
   Conversation --> Range
   Conversation --> Contributor
   Conversation --> Related
-  AgentTraceEntry --> VCS
+  AgentTraceEntry --> GitRevision

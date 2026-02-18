@@ -1,23 +1,26 @@
-%% Mermaid Sequence Diagram: Tool execution flow with hooks
+%% Mermaid Sequence Diagram: Deterministic execution with governance hooks
 sequenceDiagram
-  participant User
-  participant Assistant
-  participant PreHook
-  participant Handshake
-  participant LLM
-  participant Tools
-  participant FS
-  participant PostHook
-  participant Ledger
+  participant U as User
+  participant W as Webview (React)
+  participant E as Extension Host
+  participant H as HookEngine (PreHook/PostHook)
+  participant T as Tool (Execute/Write)
+  participant L as Ledger (agent_trace.jsonl)
 
-  User->>Assistant: Request ("Refactor auth middleware")
-  Assistant->>PreHook: validate(activeIntentId)
-  PreHook-->>Handshake: IntentContext (owned_scope, acceptance_criteria)
-  Handshake-->>Assistant: SYSTEM_PROMPT += <intent_context>
-  Assistant->>LLM: generate(plan, tool calls)
-  LLM-->>Assistant: tool invocations
-  Assistant->>Tools: write_to_file(path, content)
-  Tools->>FS: saveChanges()
-  FS-->>PostHook: FileWrittenEvent(path, content)
-  PostHook->>Ledger: Append(agent_trace.jsonl, {intent_id, content_hash, classification})
-  Ledger-->>Assistant: Trace ID
+  U->>W: Types request (goal/intent)
+  W->>E: postMessage({ type: "ask", payload })
+  E->>H: executeWithHooks(payload)
+
+  H->>H: PreHook: validate intent_id & scope
+
+  alt Intent missing or invalid
+    H-->>E: Block execution (error)
+    E-->>W: Notify (select/confirm intent)
+  else Intent valid
+    H->>T: Execute Tool (deterministic PONR)
+    T-->>H: Result (outputs, affected files)
+    H->>H: PostHook: compute SHA-256 content_hash
+    H->>L: Append trace entry (intent_id, content_hash, git_revision)
+    H-->>E: Success (trace id)
+    E-->>W: Update UI (status, artifacts)
+  end

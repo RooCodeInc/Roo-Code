@@ -10,6 +10,11 @@ export type AgentTraceEntry = {
   id: string
   timestamp: string
   vcs?: { revision_id?: string }
+  git_revision?: {
+    commit?: string
+    branch?: string
+    status?: "clean" | "dirty" | "unknown"
+  }
   files: Array<{
     relative_path: string
     conversations: Array<{

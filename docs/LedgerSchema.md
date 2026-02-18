@@ -13,9 +13,13 @@ Defines cryptographically verifiable, spatially independent entries for every mu
   "properties": {
     "id": {"type": "string"},
     "timestamp": {"type": "string", "format": "date-time"},
-    "vcs": {
+    "git_revision": {
       "type": "object",
-      "properties": {"revision_id": {"type": "string"}},
+      "properties": {
+        "commit": {"type": "string"},
+        "branch": {"type": "string"},
+        "status": {"type": "string", "enum": ["clean", "dirty", "unknown"]}
+      },
       "additionalProperties": false
     },
     "files": {
@@ -87,6 +91,7 @@ Defines cryptographically verifiable, spatially independent entries for every mu
 {
   "id": "b4d3e9c2-4f1a-4d3f-9f8a-9c6e8c7f2a1b",
   "timestamp": "2026-02-17T12:34:56.789Z",
+  "git_revision": {"commit": "63f1127e...", "branch": "main", "status": "clean"},
   "files": [
     {
       "relative_path": "src/utils/math.ts",
