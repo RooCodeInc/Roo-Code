@@ -14,6 +14,13 @@ export class PreToolHook {
 				return { blocked: false }
 			}
 
+			// Gatekeeper: Check if intent was selected
+			const selectedIntentId = (context.task as any).selectedIntentId
+			if (!selectedIntentId) {
+				console.log("[PreToolHook] No intent selected - blocking write operation")
+				return { blocked: true }
+			}
+
 			const workspacePath = context.task.cwd
 			const intentManager = new IntentManager(workspacePath)
 			const activeIntent = await intentManager.getActiveIntent()

@@ -18,11 +18,17 @@ export class IntentManager {
 
 	async loadIntents(): Promise<Intent[]> {
 		try {
+			console.log(`[IntentManager] Loading intents from: ${this.intentFilePath}`)
 			const content = await fs.readFile(this.intentFilePath, "utf-8")
+			console.log(`[IntentManager] File content: ${content}`)
 			const parsed = yaml.parse(content)
+			console.log(`[IntentManager] Parsed YAML:`, parsed)
+			console.log(`[IntentManager] Is array?`, Array.isArray(parsed))
 			this.cachedIntents = Array.isArray(parsed) ? parsed : []
+			console.log(`[IntentManager] Cached intents:`, this.cachedIntents)
 			return this.cachedIntents
 		} catch (error) {
+			console.log(`[IntentManager] Error loading intents:`, error)
 			this.cachedIntents = []
 			return []
 		}

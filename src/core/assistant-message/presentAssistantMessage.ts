@@ -32,6 +32,7 @@ import { switchModeTool } from "../tools/SwitchModeTool"
 import { attemptCompletionTool, AttemptCompletionCallbacks } from "../tools/AttemptCompletionTool"
 import { newTaskTool } from "../tools/NewTaskTool"
 import { updateTodoListTool } from "../tools/UpdateTodoListTool"
+import { selectActiveIntentTool } from "../tools/SelectActiveIntentTool"
 import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
 import { skillTool } from "../tools/SkillTool"
 import { generateImageTool } from "../tools/GenerateImageTool"
@@ -685,11 +686,11 @@ export async function presentAssistantMessage(cline: Task) {
 
 			if (preHookResult.blocked) {
 				console.log(`[PreHook] Tool ${block.name} blocked by pre-hook`)
-				pushToolResult(
-					formatResponse.toolError(
-						`Tool ${block.name} blocked: File is outside the active intent scope. Please modify files within the allowed scope.`,
-					),
-				)
+				const selectedIntentId = (cline as any).selectedIntentId
+				const errorMsg = !selectedIntentId
+					? `You must call select_active_intent first before performing write operations. Please select an intent from active_intents.yaml.`
+					: `Tool ${block.name} blocked: File is outside the active intent scope. Please modify files within the allowed scope.`
+				pushToolResult(formatResponse.toolError(errorMsg))
 				break
 			}
 
@@ -707,6 +708,12 @@ export async function presentAssistantMessage(cline: Task) {
 						askApproval,
 						handleError,
 						pushToolResult,
+					})
+					break
+				case "select_active_intent":
+					await selectActiveIntentTool.handle(cline, (block as any).params, {
+						pushToolResult,
+						handleError,
 					})
 					break
 				case "apply_diff":
