@@ -1,0 +1,1 @@
+{"id":"sample-uuid-1","timestamp":"2026-02-18T12:00:00Z","vcs":{"revision_id":"git-sha-sample"},"files":[{"relative_path":"src/logger/index.ts","conversations":[{"contributor":{"entity_type":"AI","model_identifier":"sample-model"},"ranges":[{"start_line":1,"end_line":40,"content_hash":"sha256:deadbeef..."}],"related":[{"type":"specification","value":"INT-001"}]}]}]}

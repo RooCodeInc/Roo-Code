@@ -47,6 +47,7 @@ import {
 	registerTerminalActions,
 	CodeActionProvider,
 } from "./activate"
+import { registerHooks } from "./hooks"
 import { initializeI18n } from "./i18n"
 import { flushModels, initializeModelCacheRefresh, refreshModels } from "./api/providers/fetchers/modelCache"
 
@@ -193,6 +194,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Initialize the provider *before* the Roo Code Cloud service.
 	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, mdmService)
+
+	// Register hook implementations (pre/post tool hooks)
+	try {
+		registerHooks()
+	} catch (error) {
+		outputChannel.appendLine(`Failed to register hooks: ${error instanceof Error ? error.message : String(error)}`)
+	}
 
 	// Initialize Roo Code Cloud service.
 	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebviewWithoutClineMessages()

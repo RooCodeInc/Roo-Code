@@ -1,0 +1,20 @@
+active_intents:
+  - id: "INT-001"
+    name: "Sample: Replace logging library"
+    status: "IN_PROGRESS"
+    owned_scope:
+      - "src/logger/**"
+    constraints:
+      - "Must keep public API stable"
+    acceptance_criteria:
+      - "Unit tests under tests/logger/ pass"
+
+  - id: "INT-002"
+    name: "Sample: Refactor auth middleware"
+    status: "OPEN"
+    owned_scope:
+      - "src/auth/**"
+    constraints:
+      - "Maintain backward compatibility"
+    acceptance_criteria:
+      - "All auth tests pass"
