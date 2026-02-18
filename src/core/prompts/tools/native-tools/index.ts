@@ -1,4 +1,5 @@
 import type OpenAI from "openai"
+import { select_active_intent } from "./select_active_intent"
 import accessMcpResource from "./access_mcp_resource"
 import { apply_diff } from "./apply_diff"
 import applyPatch from "./apply_patch"
@@ -47,6 +48,7 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 	}
 
 	return [
+		select_active_intent,
 		accessMcpResource,
 		apply_diff,
 		applyPatch,
