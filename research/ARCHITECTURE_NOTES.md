@@ -1869,159 +1869,359 @@ class CircuitBreaker {
 
 These diagrams are not just illustrative; they encode the intended invariants of the system. If implementation details change, the diagrams should be updated so they remain a reliable reference for reviewers and contributors.
 
-### 9.1 Two-Stage State Machine
+### 9.1 Two-Stage State Machine (Enhanced with Data Payloads)
 
 How to read this diagram:
 
 - "Reasoning Intercept" is the mandatory handshake state. The system should not allow destructive tool calls in State 1.
 - Context injection happens inside the handshake so the next model turn is constrained.
 - Trace logging happens after execution so it reflects the real disk outcome.
+- **Data payloads show exact information transferred at each transition.**
 
 ```
-                    ┌─────────────────┐
-                    │     START       │
-                    └────────┬────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      STATE 1: REQUEST                        │
-│                                                              │
-│  Trigger: User inputs prompt                                 │
-│  Action: Display in chat                                     │
-│                                                              │
-└──────────────────────────┬──────────────────────────────────┘
+                         ┌─────────────────┐
+                         │     START       │
+                         └────────┬────────┘
+                                  │
+                                  │ UserPrompt
+                                  │ { "message": "Add JWT auth" }
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           STATE 1: REQUEST                                   │
+│                                                                              │
+│  Trigger: User inputs prompt                                                 │
+│  Action: Display in chat                                                     │
+│  Data: { "type": "user_request", "content": "Add JWT auth", "timestamp": "" } │
+│                                                                              │
+└──────────────────────────┬──────────────────────────────────────────────────┘
+                           │
+                           │ AgentAnalysisResult
+                           │ { "can_proceed": false,
+                           │   "reason": "requires_intent_selection",
+                           │   "suggested_intents": ["INT-001", "INT-002"] }
+                           ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      STATE 2: REASONING INTERCEPT                            │
+│                           (The Handshake)                                    │
+│                                                                              │
+│  ┌─────────────────┐     ┌──────────────────┐     ┌─────────────┐          │
+│  │                 │     │                  │     │             │          │
+│  │  Agent Analysis │────▶│select_active_    │────▶│ Pre-Hook    │          │
+│  │  (Cannot write  │     │intent()          │     │ Intercept   │          │
+│  │   code yet)     │     │                  │     │             │          │
+│  └─────────────────┘     └──────────────────┘     └──────┬──────┘          │
+│                                                          │                   │
+│                              IntentSelection             │                   │
+                              Payload:                    │                   │
+│  ┌───────────────────────────────────────────────────────┘                   │
+│  │ { "intent_id": "INT-001",                                                   │
+│  │   "reasoning": "Adding JWT authentication",                               │
+│  │   "expected_mutations": ["src/auth/jwt.ts"] }                             │
+│  │                                                                           │
+│  ▼                                                                           │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │                         VALIDATION GATE                               │   │
+│  │                                                                       │   │
+│  │  ┌─────────────────────────────────────────────────────────────────┐  │   │
+│  │  │  CHECK 1: Intent Exists?                                       │  │   │
+│  │  │  Query: active_intents.yaml for INT-001                        │  │   │
+│  │  │  Result: ✓ FOUND                                               │  │   │
+│  │  │                                                                 │  │   │
+│  │  │  CHECK 2: Intent Active?                                       │  │   │
+│  │  │  Status: "IN_PROGRESS" ✓                                        │  │   │
+│  │  │                                                                 │  │   │
+│  │  │  CHECK 3: Scope Match? (for writes)                            │  │   │
+│  │  │  Target: "src/auth/jwt.ts"                                     │  │   │
+│  │  │  Allowed: ["src/auth/**", "tests/auth/**"]                     │  │   │
+│  │  │  Result: ✓ MATCHED "src/auth/**"                               │  │   │
+│  │  └─────────────────────────────────────────────────────────────────┘  │   │
+│  │                                                                       │   │
+│  │  IF ALL CHECKS PASS:                                                  │   │
+│  │     ┌─────────────────────────────────────────────────────────────┐   │   │
+│  │     │  Context Query                                              │   │   │
+│  │     │  Read: .orchestration/active_intents.yaml                   │   │   │
+│  │     │                                                             │   │   │
+│  │     │  IntentRecord: {                                            │   │   │
+│  │     │    "id": "INT-001",                                         │   │   │
+│  │     │    "name": "JWT Authentication Migration",                  │   │   │
+│  │     │    "status": "IN_PROGRESS",                                 │   │   │
+│  │     │    "owned_scope": ["src/auth/**", "tests/auth/**"],         │   │   │
+│  │     │    "constraints": [                                         │   │   │
+│  │     │      "Must not use external auth providers",                │   │   │
+│  │     │      "Must maintain backward compatibility"                 │   │   │
+│  │     │    ],                                                       │   │   │
+│  │     │    "acceptance_criteria": [                                 │   │   │
+│  │     │      "Unit tests pass",                                     │   │   │
+│  │     │      "Integration tests pass",                              │   │   │
+│  │     │      "Documentation updated"                                │   │   │
+│  │     │    ]                                                        │   │   │
+│  │     │  }                                                          │   │   │
+│  │     └────────────────────────┬────────────────────────────────────┘   │   │
+│  │                              │                                         │   │
+│  │                              │ IntentContext                           │   │
+│  │                              ▼                                         │   │
+│  │     ┌─────────────────────────────────────────────────────────────┐   │   │
+│  │     │  Context Injection                                          │   │   │
+│  │     │                                                             │   │   │
+│  │     │  Injected XML Block:                                        │   │   │
+│  │     │  ─────────────────────────────────────────────────────────  │   │   │
+│  │     │  <intent_context>                                           │   │   │
+│  │     │    <id>INT-001</id>                                         │   │   │
+│  │     │    <name>JWT Authentication Migration</name>                │   │   │
+│  │     │    <status>IN_PROGRESS</status>                             │   │   │
+│  │     │    <scope>                                                  │   │   │
+│  │     │      <allowed>src/auth/**</allowed>                         │   │   │
+│  │     │      <allowed>tests/auth/**</allowed>                       │   │   │
+│  │     │    </scope>                                                  │   │   │
+│  │     │    <constraints>                                            │   │   │
+│  │     │      <item>Must not use external auth providers</item>      │   │   │
+│  │     │      <item>Must maintain backward compatibility</item>      │   │   │
+│  │     │    </constraints>                                            │   │   │
+│  │     │    <acceptance_criteria>                                    │   │   │
+│  │     │      <item>Unit tests pass</item>                           │   │   │
+│  │     │      <item>Integration tests pass</item>                    │   │   │
+│  │     │      <item>Documentation updated</item>                     │   │   │
+│  │     │    </acceptance_criteria>                                    │   │   │
+│  │     │  </intent_context>                                           │   │   │
+│  │     │  ─────────────────────────────────────────────────────────  │   │   │
+│  │     │                                                             │   │   │
+│  │     │  This XML block is prepended to the next LLM prompt         │   │   │
+│  │     └────────────────────────┬────────────────────────────────────┘   │   │
+│  │                              │                                         │   │
+│  └──────────────────────────────┼─────────────────────────────────────────┘   │
+│                                 │                                              │
+│                                 │ ContextualizedPrompt                         │
+│                                 │ { "prompt": "<intent_context>...</intent_    │
+│                                 │              context>\n\nNow generate...",   │
+│                                 │   "intent_id": "INT-001",                    │
+│                                 │   "tools_allowed": ["write_file", ...] }     │
+│                                 ▼                                              │
+└──────────────────────────┬──────────────────────────────────────────────────┘
                            │
                            ▼
-┌─────────────────────────────────────────────────────────────┐
-│                 STATE 2: REASONING INTERCEPT                  │
-│                    (The Handshake)                           │
-│                                                              │
-│  ┌─────────────────┐  ┌──────────────────┐  ┌─────────────┐ │
-│  │  Agent Analysis │──│select_active_    │──│ Pre-Hook    │ │
-│  │  (Cannot write  │  │intent()          │  │ Intercept   │ │
-│  │   code yet)     │  │                  │  │             │ │
-│  └─────────────────┘  └──────────────────┘  └──────┬──────┘ │
-│                                                    │         │
-│                           ┌────────────────────────┘         │
-│                           ▼                                  │
-│                    ┌──────────────────┐                      │
-│                    │ Context Query    │                      │
-│                    │ Read active_     │                      │
-│                    │ intents.yaml     │                      │
-│                    └────────┬─────────┘                      │
-│                             │                                │
-│                             ▼                                │
-│                    ┌──────────────────┐                      │
-│                    │ Context Injection│                      │
-│                    │ Inject XML block │                      │
-│                    │ into prompt      │                      │
-│                    └──────────────────┘                      │
-└──────────────────────────┬──────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      STATE 3: CONTEXTUALIZED ACTION                          │
+│                                                                              │
+│  ┌─────────────────┐     ┌──────────────────┐     ┌─────────────┐          │
+│  │                 │     │                  │     │             │          │
+│  │  LLM Generates  │────▶│  Tool Execution  │────▶│ Post-Hook   │          │
+│  │  Code with      │     │  (write_file,    │     │ Processing  │          │
+│  │  Context        │     │   etc.)          │     │             │          │
+│  └─────────────────┘     └──────────────────┘     └──────┬──────┘          │
+│                                                          │                   │
+│                              ToolUseRequest              │                   │
+│                              { "tool": "write_file",      │                   │
+│                              ┌───────────────────────────┘                   │
+│                              │
+│                              │ ToolResult
+│                              │ { "success": true,
+│                              │   "path": "src/auth/jwt.ts",
+│                              │   "bytes_written": 2048,
+│                              │   "content_hash": "sha256:a8f5f1..." }
+│                              ▼
+│  ┌──────────────────────────────────────────────────────────────────────┐
+│  │                         Trace Logging                                 │
+│  │                                                                       │
+│  │  Trace Record: {                                                      │
+│  │    "id": "550e8400-e29b-41d4-a716-446655440000",                      │
+│  │    "timestamp": "2026-02-18T14:30:00Z",                               │
+│  │    "intent_id": "INT-001",                                            │
+│  │    "tool": "write_file",                                              │
+│  │    "target": "src/auth/jwt.ts",                                       │
+│  │    "content_hash": "sha256:a8f5f167f44f4964e6c998dee827110c",        │
+│  │    "session_id": "sess-uuid-001"                                      │
+│  │  }                                                                    │
+│  │                                                                       │
+│  │  Action: Append to .orchestration/agent_trace.jsonl                   │
+│  │                                                                       │
+│  │  BEFORE: [file content hash: abc123...]                               │
+│  │  AFTER:  [file content hash: a8f5f1...]                               │
+│  │                                                                       │
+│  └──────────────────────────────────────────────────────────────────────┘
+│
+└──────────────────────────┬──────────────────────────────────────────────────┘
                            │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   STATE 3: CONTEXTUALIZED ACTION             │
-│                                                              │
-│  ┌─────────────────┐  ┌──────────────────┐  ┌─────────────┐ │
-│  │  LLM Generates  │──│  Tool Execution  │──│ Post-Hook   │ │
-│  │  Code with      │  │  (write_file,    │  │ Processing  │ │
-│  │  Context        │  │   etc.)          │  │             │ │
-│  └─────────────────┘  └──────────────────┘  └──────┬──────┘ │
-│                                                    │         │
-│                           ┌────────────────────────┘         │
-│                           ▼                                  │
-│                    ┌──────────────────┐                      │
-│                    │ Trace Logging    │                      │
-│                    │ Write to         │                      │
-│                    │ agent_trace.jsonl│                      │
-│                    └──────────────────┘                      │
-│                                                              │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
+                           │ ExecutionComplete
+                           │ { "status": "success",
+                           │   "intent_id": "INT-001",
+                           │   "trace_id": "550e8400-...",
+                           │   "next_action": "continue" }
                            ▼
                     ┌─────────────────┐
                     │      END        │
                     └─────────────────┘
 ```
 
-### 9.2 Hook Engine Data Flow
+### 9.2 Hook Engine Data Flow (Enhanced with Data Payloads)
 
 How to read this diagram:
 
 - Pre-processing is a pipeline of validators; any failure short-circuits to a structured error.
 - Tool execution runs only when all validators pass.
 - Post-processing persists immutable evidence (hashes + trace record) and updates derived artifacts (maps).
+- **Data payloads are shown on connection arrows showing exact data transferred between components.**
 
 ```
-┌────────────────────────────────────────────────────────────────┐
-│                         HOOK ENGINE                             │
-│                                                                 │
-│  Input: Tool Request (toolName, params, conversationContext)   │
-│                                                                 │
-└──────────────────────────────┬──────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────┐
+│                           HOOK ENGINE                                       │
+│                                                                             │
+│  Input: Tool Request                                                         │
+│  {                                                                           │
+│    "tool_name": "write_file",                                                │
+│    "params": {                                                               │
+│      "path": "src/auth/jwt.ts",                                              │
+│      "content": "export function...",                                        │
+│      "intent_id": "INT-001"                                                  │
+│    },                                                                        │
+│    "conversation_context": {                                                 │
+│      "session_id": "sess-uuid",                                              │
+│      "message_index": 42                                                     │
+│    }                                                                         │
+│  }                                                                           │
+└──────────────────────────────┬─────────────────────────────────────────────┘
+                               │
+                               │ Payload: ToolRequest
+                               ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│                        PRE-PROCESSING PIPELINE                              │
+│                                                                             │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐                  │
+│  │ Command      │    │ Intent       │    │ Scope        │                  │
+│  │ Classifier   │───▶│ Validator    │───▶│ Validator    │                  │
+│  │              │    │              │    │              │                  │
+│  │ Safe?        │    │ Active?      │    │ In Scope?    │                  │
+│  │ Destructive? │    │ Valid ID?    │    │ Authorized?  │                  │
+│  └──────────────┘    └──────────────┘    └──────────────┘                  │
+│       │ │ │              │ │ │              │ │ │                          │
+│       │ │ │              │ │ │              │ │ │                          │
+│       │ │ │              │ │ │              │ │ │ ValidationResult:        │
+│       │ │ │              │ │ │              │ │ │ {                        │
+│       │ │ │              │ │ │              │ │ │   "valid": true/false,   │
+│       │ │ │              │ │ │              │ │ │   "intent_id": "INT-001",│
+│       │ │ │              │ │ │              │ │ │   "scope_matched":       │
+│       │ │ │              │ │ │              │ │ │     "src/auth/**",       │
+│       │ │ │              │ │ │              │ │ │   "errors": [...]        │
+│       │ │ │              │ │ │              │ │ │ }                        │
+│       │ │ │              │ │ │              │ │ │                          │
+│       │ │ └──────────────┼─┼─┴──────────────┼─┼─┘                          │
+│       │ │                │ │                │ │                            │
+│       │ │                │ │                │ │                            │
+│       │ └────────────────┼─┴────────────────┼─┘                            │
+│       │                  │                  │                              │
+│       │                  ▼                  │                              │
+│       │     ┌────────────────────────┐      │                              │
+│       │     │   All Checks Passed?   │      │                              │
+│       │     └───────────┬────────────┘      │                              │
+│       │                 │                   │                              │
+│       │    ┌────────────┴────────────┐      │                              │
+│       │    │                         │      │                              │
+│       │    ▼                         ▼      │                              │
+│       │ ┌────────────────┐  ┌─────────────────┐                           │
+│       │ │   YES ✓        │  │   NO ✗          │                           │
+│       │ │                │  │                 │                           │
+│       │ │ Context Inject │  │ Return Error    │                           │
+│       │ │ Load intent    │  │ ToolError with  │                           │
+│       │ │ Build XML block│  │ correction hints│                           │
+│       │ └───────┬────────┘  └─────────────────┘                           │
+│       │       │                                                         │
+│       │       │ IntentContext + ModifiedParams                           │
+│       │       │ {                                                         │
+│       │       │   "intent_context": "<intent_context>\n                   │
+│       │       │     <id>INT-001</id>\n                                   │
+│       │       │     <name>JWT Auth Migration</name>\n                    │
+│       │       │     <scope>src/auth/**</scope>\n                         │
+│       │       │     <constraints>\n                                      │
+│       │       │       - Must not use external providers\n                │
+│       │       │     </constraints>\n                                     │
+│       │       │   </intent_context>",                                    │
+│       │       │   "modified_params": {                                   │
+│       │       │     "path": "src/auth/jwt.ts",                           │
+│       │       │     "content": "...",                                    │
+│       │       │     "intent_id": "INT-001"                               │
+│       │       │   }                                                      │
+│       │       │ }                                                        │
+│       │       │                                                          │
+└───────┼───────┼──────────────────────────────────────────────────────────┘
+        │       │
+        │       │ ToolExecutionRequest
+        │       │ {
+        │       │   "tool": "write_file",
+        │       │   "params": { ... },
+        │       │   "injected_context": "<intent_context>...",
+        │       │   "approval_status": "approved"
+        │       │ }
+        │       ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│                         TOOL EXECUTION                                      │
+│                                                                             │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │  write_file tool executes with:                                       │  │
+  │  • Original params + intent context injection                          │  │
+│  • File written: src/auth/jwt.ts                                       │  │
+│  │  • Content hash computed: sha256:a8f5...                               │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                              │                                              │
+│                              │ ToolResult                                    │
+│                              │ {                                             │
+│                              │   "success": true,                            │
+│                              │   "path": "src/auth/jwt.ts",                  │
+│                              │   "bytes_written": 2048,                      │
+│                              │   "after_content": "export function..."       │
+│                              │ }                                             │
+│                              ▼                                              │
+└──────────────────────────────┬─────────────────────────────────────────────┘
                                │
                                ▼
-┌────────────────────────────────────────────────────────────────┐
-│                      PRE-PROCESSING PIPELINE                    │
-│                                                                 │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │ Command      │──│ Intent       │──│ Scope        │          │
-│  │ Classifier   │  │ Validator    │  │ Validator    │          │
-│  │              │  │              │  │              │          │
-│  │ Safe?        │  │ Active?      │  │ In Scope?    │          │
-│  │ Destructive? │  │ Valid ID?    │  │ Authorized?  │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
-│         │                 │                 │                   │
-│         └─────────────────┼─────────────────┘                   │
-│                           ▼                                     │
-│              ┌────────────────────────┐                         │
-│              │   All Checks Passed?   │                         │
-│              └───────────┬────────────┘                         │
-│                          │                                      │
-│           ┌──────────────┴──────────────┐                      │
-│           │                             │                      │
-│           ▼                             ▼                      │
-│  ┌─────────────────┐           ┌─────────────────┐            │
-│  │   YES           │           │   NO            │            │
-│  │                 │           │                 │            │
-│  │ Context Inject  │           │ Return Error    │            │
-│  │ Load intent     │           │ ToolError with  │            │
-│  │ Build XML block │           │ correction hints│            │
-│  └────────┬────────┘           └─────────────────┘            │
-│           │                                                     │
-└───────────┼─────────────────────────────────────────────────────┘
-            │
-            ▼
-┌────────────────────────────────────────────────────────────────┐
-│                      TOOL EXECUTION                             │
-│                                                                 │
-│  Execute tool with modified params and injected context        │
-│                                                                 │
-└──────────────────────────────┬──────────────────────────────────┘
-                               │
-                               ▼
-┌────────────────────────────────────────────────────────────────┐
-│                      POST-PROCESSING PIPELINE                   │
-│                                                                 │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │ Hash         │──│ Trace        │──│ Map          │          │
-│  │ Computer     │  │ Builder      │  │ Updater      │          │
-│  │              │  │              │  │              │          │
-│  │ SHA-256 of   │  │ Build JSONL  │  │ Update       │          │
-│  │ content      │  │ record       │  │ intent_map   │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
-│         │                 │                 │                   │
-│         └─────────────────┼─────────────────┘                   │
-│                           ▼                                     │
-│              ┌────────────────────────┐                         │
-│              │   Persistence Layer    │                         │
-│              │                        │                         │
-│              │ • agent_trace.jsonl    │                         │
-│              │ • intent_map.md        │                         │
-│              │ • active_intents.yaml  │                         │
-│              └────────────────────────┘                         │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────┐
+│                       POST-PROCESSING PIPELINE                              │
+│                                                                             │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐                  │
+│  │ Hash         │───▶│ Trace        │───▶│ Map          │                  │
+│  │ Computer     │    │ Builder      │    │ Updater      │                  │
+│  │              │    │              │    │              │                  │
+│  │ SHA-256 of   │    │ Build JSONL  │    │ Update       │                  │
+│  │ content      │    │ record       │    │ intent_map   │                  │
+│  └──────────────┘    └──────────────┘    └──────────────┘                  │
+│       │ │ │              │ │ │              │ │ │                          │
+│       │ │ │              │ │ │              │ │ │                          │
+│       │ │ │ ContentHash  │ │ │ TraceRecord  │ │ │ SpatialMapEntry          │
+│       │ │ │ {            │ │ │ {            │ │ │ {                        │
+│       │ │ │   "algorithm"│ │ │   "id":      │ │ │   "intent_id":           │
+│       │ │ │     "sha256" │ │ │     "uuid",  │ │ │     "INT-001",           │
+│       │ │ │   "hash":    │ │ │   "timestamp"│ │ │   "file": {              │
+│       │ │ │     "a8f5..",│ │ │     "ISO8601"│ │ │     "path":              │
+│       │ │ │   "preview": │ │ │   "intent_id"│ │ │     "src/auth/jwt.ts",   │
+│       │ │ │     "exp..." │ │ │     "INT-001"│ │ │     "blocks": [{         │
+│       │ │ │ }            │ │ │   "files": [{│ │ │       "hash": "a8f5...", │
+│       │ │ │              │ │ │     "path":  │ │ │       "lines": "1-45",   │
+│       │ │ │              │ │ │     "op":    │ │ │       "trace_id":        │
+│       │ │ │              │ │ │     "modify" │ │ │         "uuid"           │
+│       │ │ │              │ │ │   }]         │ │ │     }]                   │
+│       │ │ │              │ │ │ }            │ │ │   }                      │
+│       │ │ │              │ │ │              │ │ │ }                        │
+│       │ │ │              │ │ │              │ │ │                          │
+│       │ └────────────────┼─┼─┴──────────────┼─┼─┘                          │
+│       │                  │ │                │ │                            │
+│       └──────────────────┼─┴────────────────┼─┘                            │
+│                          │                  │                              │
+│                          ▼                  │                              │
+│           ┌────────────────────────┐        │                              │
+│           │   Persistence Layer    │        │                              │
+│           │                        │        │                              │
+│           │ • agent_trace.jsonl    │◀───────┘                              │
+│           │   Append:              │                                         │
+│           │   {"id":"uuid",...}    │                                         │
+│           │                        │                                         │
+│           │ • intent_map.md        │                                         │
+│           │   Update:              │                                         │
+│           │   ## INT-001           │                                         │
+│           │   - Lines 1-45         │                                         │
+│           │                        │                                         │
+│           │ • active_intents.yaml  │                                         │
+│           │   (reference only)     │                                         │
+│           └────────────────────────┘                                         │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 9.3 Multi-Agent Orchestration Topology
@@ -2088,6 +2288,356 @@ Conflict Resolution:
 │  4. Supervisor reassigns or merges work                       │
 │  5. Lesson recorded in CLAUDE.md                              │
 └──────────────────────────────────────────────────────────────┘
+```
+
+### 9.4 Scope Violation Rejection Flow
+
+How to read this diagram:
+
+- This diagram shows the exact rejection path when an agent attempts to write outside its allowed scope
+- Data payloads are shown in detail with exact field names and formats
+- The error includes correction hints so the agent can recover
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         SCOPE VIOLATION SCENARIO                            │
+│                      (Alternative Path - Rejection)                         │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  AGENT                                        HOOK ENGINE                   │
+│    │                                              │                         │
+│    │  1. Attempt write to out-of-scope file      │                         │
+│    │──────────────────────────────────────────────>│                         │
+│    │     Payload: {                               │                         │
+│    │       "tool": "write_file",                  │                         │
+│    │       "params": {                            │                         │
+│    │         "path": "src/api/routes.ts",         │                         │
+│    │         "content": "...",                    │                         │
+│    │         "intent_id": "INT-001"               │                         │
+│    │       }                                      │                         │
+│    │     }                                        │                         │
+│    │                                              │                         │
+│    │                                              ▼                         │
+│    │                                   ┌──────────────────────┐            │
+│    │                                   │  PreToolUse Hook     │            │
+│    │                                   │  • Intent Validation │            │
+│    │                                   │  • Scope Check       │            │
+│    │                                   └──────────┬───────────┘            │
+│    │                                              │                         │
+│    │                                              ▼                         │
+│    │                                   ┌──────────────────────┐            │
+│    │                                   │ ScopeValidator       │            │
+│    │                                   │ Compare:             │            │
+│    │                                   │ • target: src/api/   │            │
+│    │                                   │   routes.ts          │            │
+│    │                                   │ • allowed: [         │            │
+│    │                                   │     "src/auth/**",   │            │
+│    │                                   │     "tests/auth/**"  │            │
+│    │                                   │   ]                  │            │
+│    │                                   │ Result: NO MATCH     │            │
+│    │                                   └──────────┬───────────┘            │
+│    │                                              │                         │
+│    │  2. Return ScopeViolationError               │                         │
+│    │<──────────────────────────────────────────────│                         │
+│    │     Payload: {                               │                         │
+│    │       "error": true,                         │                         │
+│    │       "type": "scope_violation",             │                         │
+│    │       "message": "File src/api/routes.ts     │                         │
+│    │                outside intent scope",        │                         │
+│    │       "context": {                           │                         │
+│    │         "intent_id": "INT-001",              │                         │
+│    │         "attempted_action": "write_file",    │                         │
+│    │         "target_file": "src/api/routes.ts",  │                         │
+│    │         "allowed_scope": [                   │                         │
+│    │           "src/auth/**",                     │                         │
+│    │           "tests/auth/**"                    │                         │
+│    │         ],                                   │                         │
+│    │         "correction_hints": [                │                         │
+│    │           "Create new intent INT-003 for     │                         │
+│    │            src/api scope",                   │                         │
+│    │           "Modify existing intent to         │                         │
+│    │            include src/api/**"               │                         │
+│    │         ],                                   │                         │
+│    │         "available_intents": [               │                         │
+│    │           { "id": "INT-001",                 │                         │
+│    │             "scope": "src/auth/**" },        │                         │
+│    │           { "id": "INT-002",                 │                         │
+│    │             "scope": "src/rate-limiter/**" } │                         │
+│    │         ]                                    │                         │
+│    │       }                                      │                         │
+│    │     }                                        │                         │
+│    │                                              │                         │
+│    │  3. Display error to user                    │                         │
+│    │<──────────────────────────────────────────────│                         │
+│    │     UI shows:                                │                         │
+│    │     ┌────────────────────────────────────┐   │                         │
+│    │     │ ⚠️ Scope Violation Detected        │   │                         │
+│    │     │                                    │   │                         │
+│    │     │ Intent: INT-001 (JWT Auth)         │   │                         │
+│    │     │ Attempted: Write to src/api/       │   │                         │
+│    │     │            routes.ts               │   │                         │
+│    │     │                                    │   │                         │
+│    │     │ Allowed scopes:                    │   │                         │
+│    │     │ • src/auth/**                      │   │                         │
+│    │     │ • tests/auth/**                    │   │                         │
+│    │     │                                    │   │                         │
+│    │     │ [Create Intent] [Modify Scope]     │   │                         │
+│    │     └────────────────────────────────────┘   │                         │
+│    │                                              │                         │
+└────┴──────────────────────────────────────────────┴─────────────────────────┘
+```
+
+### 9.5 Validation Error Handling Flow
+
+How to read this diagram:
+
+- Shows the complete validation pipeline failure scenarios
+- Each validator can reject with structured error data
+- Demonstrates how validation errors propagate back to the agent
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       VALIDATION ERROR SCENARIOS                            │
+│                    (Alternative Paths - Multiple Failures)                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │                    VALIDATION PIPELINE                                 │  │
+│  │                                                                        │  │
+│  │   Input: Tool Request                                                  │  │
+│  │   {                                                                    │  │
+│  │     "tool": "write_file",                                              │  │
+│  │     "intent_id": "INT-999",  ← INVALID ID                              │  │
+│  │     "path": "/etc/passwd"   ← DANGEROUS PATH                           │  │
+│  │   }                                                                    │  │
+│  │        │                                                               │  │
+│  │        ▼                                                               │  │
+│  │   ┌─────────────────┐                                                  │  │
+│  │   │ Layer 1:        │  PASS                                            │  │
+│  │   │ Command         │──┐ Destructive tool detected                     │  │
+│  │   │ Classifier      │  │ Proceed to validation                         │  │
+│  │   └─────────────────┘  │                                               │  │
+│  │        │               │                                               │  │
+│  │        ▼               │                                               │  │
+│  │   ┌─────────────────┐  │                                               │  │
+│  │   │ Layer 2:        │  │                                               │  │
+│  │   │ Intent          │  │  FAIL: Intent not found                       │  │
+│  │   │ Validator       │──┼──┐                                            │  │
+│  │   │                 │  │  │                                            │  │
+│  │   │ Query:          │  │  │                                            │  │
+│  │   │ active_intents  │  │  │  Error Payload:                            │  │
+│  │   │ for INT-999     │  │  │  {                                         │  │
+│  │   │ Result: null    │  │  │    "error": true,                          │  │
+│  │   └─────────────────┘  │  │    "type": "intent_not_found",              │  │
+│  │        │               │  │    "message": "Intent INT-999 does not      │  │
+│  │        │               │  │              exist or is not active",       │  │
+│  │        │               │  │    "context": {                            │  │
+│  │        │               │  │      "requested_intent": "INT-999",        │  │
+│  │        │               │  │      "available_intents": ["INT-001",       │  │
+│  │        │               │  │                             "INT-002"],    │  │
+│  │        │               │  │      "correction": "Call select_active_     │  │
+│  │        │               │  │                intent() with valid ID"      │  │
+│  │        │               │  │    }                                       │  │
+│  │        │               │  │  }                                         │  │
+│  │        │               │  │                                            │  │
+│  │        ▼               │  │                                            │  │
+│  │   ┌─────────────────┐  │  │                                            │  │
+│  │   │ Layer 3:        │  │  │ (Skipped due to prior failure)             │  │
+│  │   │ Scope           │  │  │                                            │  │
+│  │   │ Validator       │  │  │                                            │  │
+│  │   └─────────────────┘  │  │                                            │  │
+│  │        │               │  │                                            │  │
+│  │        ▼               │  │                                            │  │
+│  │   ┌─────────────────┐  │  │                                            │  │
+│  │   │ Layer 4:        │  │  │ (Skipped due to prior failure)             │  │
+│  │   │ Input           │  │  │                                            │  │
+│  │   │ Sanitizer       │  │  │                                            │  │
+│  │   │                 │  │  │ If reached, would detect:                  │  │
+│  │   │ Pattern match:  │  │  │ • /etc/passwd is system file              │  │
+│  │   │ /etc/passwd →   │  │  │ • Block write to system directories       │  │
+│  │   │ SECURITY ERROR  │  │  │                                            │  │
+│  │   │ Payload: {      │  │  │ Error Payload:                             │  │
+│  │   │   "type":       │  │  │ {                                          │  │
+│  │   │   "security_    │  │  │   "error": true,                           │  │
+│  │   │   violation",   │  │  │   "type": "security_violation",            │  │
+│  │   │   "threat":     │  │  │   "severity": "critical",                  │  │
+│  │   │   "system_file │  │  │   "message": "Write to system file         │  │
+│  │   │   _access"      │  │  │                /etc/passwd blocked",       │  │
+│  │   │ }               │  │  │   "context": {                             │  │
+│  │   └─────────────────┘  │  │     "violation_type": "system_file",       │  │
+│  │        │               │  │     "blocked_path": "/etc/passwd"          │  │
+│  │        │               │  │   }                                        │  │
+│  │        │               │  │ }                                          │  │
+│  │        │               │  │                                            │  │
+│  │        └───────────────┴──┴──────────┬───────────────────────────────────┘  │
+│  │                                      │                                      │
+│  │                                      ▼                                      │
+│  │                        ┌──────────────────────┐                             │
+│  │                        │  Error Aggregator    │                             │
+│  │                        │  • Collect all errors│                             │
+│  │                        │  • Prioritize by     │                             │
+│  │                        │    severity          │                             │
+│  │                        │  • Format response   │                             │
+│  │                        └──────────┬───────────┘                             │
+│  │                                   │                                         │
+│  │                                   ▼                                         │
+│  │                        ┌──────────────────────┐                             │
+│  │                        │  Return to Agent     │                             │
+│  │                        │  with corrections    │                             │
+│  │                        └──────────────────────┘                             │
+│  │                                                                             │
+│  └─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 9.6 Approval Rejection Scenario (HITL Flow)
+
+How to read this diagram:
+
+- Shows the complete Human-in-the-Loop approval flow including rejection
+- Details the approval dialog UI payload structure
+- Shows the recovery path after user rejection
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    APPROVAL REJECTION SCENARIO                              │
+│                  (Alternative Path - User Rejection)                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  STEP 1: Pre-Validation Passes                                              │
+│  ════════════════════════════                                               │
+│                                                                             │
+│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐         │
+│  │ Command         │───▶│ Intent          │───▶│ Scope           │         │
+│  │ Classifier      │ ✓  │ Validator       │ ✓  │ Validator       │ ✓        │
+│  │ Destructive?    │    │ Active? Yes     │    │ In Scope? Yes   │         │
+│  └─────────────────┘    └─────────────────┘    └─────────────────┘         │
+│                                                                             │
+│  STEP 2: Approval Request with Detailed Payload                             │
+│  ══════════════════════════════════════════════                             │
+│                                                                             │
+│  Hook Engine ───────▶ Extension Host ───────▶ Webview UI                    │
+│       │                    │                     │                          │
+│       │  Payload:          │  Payload:          │                          │
+│       │  {                 │  {                 │  Display:                │
+│       │    "approval_id":  │    "type":         │                          │
+│       │    "apr-uuid-001", │    "approval:      │  ┌────────────────────┐  │
+│       │    "intent_id":    │      request",     │  │ 🔒 Approval Required│  │
+│       │    "INT-001",      │    "payload": {    │  │                     │  │
+│       │    "intent_name":  │      "dialog_type":│  │ Intent: INT-001     │  │
+│       │    "JWT Auth",     │      "destructive",│  │ JWT Authentication  │  │
+│       │    "tool":          │      "details": {  │  │                     │  │
+│       │    "write_file",   │        "action":   │  │ Action: Write File  │  │
+│       │    "target":        │        "Write to   │  │ Target:             │  │
+│       │    "src/auth/jwt.ts│        src/auth/   │  │   src/auth/jwt.ts   │  │
+│       │    "constraints": [│        jwt.ts",    │  │                     │  │
+│       │      "Must not use │        "size":      │  │ Constraints:        │  │
+│       │       external     │        "4.2 KB",   │  │ • Must not use ext  │  │
+│       │       auth prov"   │        "intent": { │  │   auth providers    │  │
+│       │    ],              │          "id":      │  │ • Must maintain     │  │
+│       │    "context_block":│          "INT-001",│  │   backward compat   │  │
+│       │    "<intent_       │          "name":    │  │                     │  │
+│       │     context>...    │          "JWT Auth"│  │ [✓ Approve] [✗ Reject]│
+│       │     </intent_      │        }           │  │                     │  │
+│       │     context>"      │      }             │  └────────────────────┘  │
+│       │  }                 │    }               │                          │
+│       │                    │  }                 │                          │
+│       │                    │                    │                          │
+│  STEP 3: User Rejects                                                       │
+│  ═══════════════════                                                        │
+│                                                                             │
+│  User clicks [✗ Reject]                                                     │
+│       │                                                                     │
+│       ▼                                                                     │
+│  ┌─────────────────────────────────────────┐                                │
+│  │ Rejection Dialog                        │                                │
+│  │                                         │                                │
+│  │ Please provide reason for rejection:    │                                │
+│  │                                         │                                │
+│  │ [ ] Scope needs adjustment              │                                │
+│  │ [ ] Missing test coverage in plan       │                                │
+│  │ [ ] Security concern                    │                                │
+│  │ [ ] Other: _______________              │                                │
+│  │                                         │                                │
+│  │ [Submit Rejection]                      │                                │
+│  └─────────────────────────────────────────┘                                │
+│       │                                                                     │
+│       ▼                                                                     │
+│  Payload: {                                                                 │
+│    "approval_id": "apr-uuid-001",                                           │
+│    "decision": "rejected",                                                  │
+│    "rejection_reason": "missing_tests",                                     │
+│    "user_feedback": "Please add unit tests before modifying auth code",     │
+│    "timestamp": "2026-02-18T14:30:00Z",                                     │
+│    "user_id": "developer-001"                                               │
+│  }                                                                          │
+│                                                                             │
+│  STEP 4: Return Rejection to Agent                                          │
+│  ═════════════════════════════════                                          │
+│                                                                             │
+│  Webview UI ───────▶ Extension Host ───────▶ Hook Engine ───────▶ Agent     │
+│       │                    │                    │                    │      │
+│       │                    │                    │  Error Payload:    │      │
+│       │                    │                    │  {                 │      │
+│       │                    │                    │    "error": true,  │      │
+│       │                    │                    │    "type": "user_  │      │
+│       │                    │                    │            rejection",     │
+│       │                    │                    │    "message": "User      │
+│       │                    │                    │      rejected operation:  │
+│       │                    │                    │      Missing test         │
+│       │                    │                    │      coverage",           │
+│       │                    │                    │    "context": {    │      │
+│       │                    │                    │      "intent_id":  │      │
+│       │                    │                    │        "INT-001",  │      │
+│       │                    │                    │      "action":     │      │
+│       │                    │                    │        "write_file",      │
+│       │                    │                    │      "user_feedback":     │
+│       │                    │                    │        "Please add unit   │
+│       │                    │                    │          tests before     │
+│       │                    │                    │          modifying auth   │
+       │                    │                    │          code",           │
+│       │                    │                    │      "correction_hints":  │
+│       │                    │                    │        ["Add unit tests    │
+│       │                    │                    │           to tests/auth/", │
+│       │                    │                    │         "Update intent    │
+│       │                    │                    │           acceptance_     │
+│       │                    │                    │           criteria"],     │
+│       │                    │                    │      "retry_allowed":     │
+│       │                    │                    │        true,              │
+│       │                    │                    │      "requires_new_       │
+│       │                    │                    │        approval": true    │
+│       │                    │                    │    }                 │      │
+│       │                    │                    │  }                   │      │
+│       │                    │                    │                    │      │
+│  STEP 5: Recovery Path                                                      │
+│  ════════════════════                                                       │
+│                                                                             │
+│  Agent receives rejection and can:                                          │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ Recovery Options:                                                    │   │
+│  │                                                                      │   │
+│  │ 1. UPDATE INTENT                                                     │   │
+│  │    Call: update_intent(INT-001, {                                    │   │
+│  │      acceptance_criteria: [                                          │   │
+│  │        "Add unit tests in tests/auth/jwt.test.ts",                   │   │
+│  │        "Ensure 100% branch coverage",                                │   │
+│  │        "Existing: Unit tests pass"                                   │   │
+│  │      ]                                                               │   │
+│  │    })                                                                │   │
+│  │                                                                      │   │
+│  │ 2. ADD TESTS FIRST                                                   │   │
+│  │    • Create tests/auth/jwt.test.ts                                   │   │
+│  │    • Run tests to verify they fail (TDD)                             │   │
+│  │    • Then retry the write_file operation                             │   │
+│  │                                                                      │   │
+│  │ 3. REQUEST NEW APPROVAL                                              │   │
+│  │    • Present updated plan to user                                    │   │
+│  │    • Include test strategy                                           │   │
+│  │    • User can approve modified approach                              │   │
+│  │                                                                      │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
