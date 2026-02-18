@@ -4,9 +4,9 @@ import * as fs from "fs/promises"
 import * as path from "path"
 import * as os from "os"
 
-import { selectActiveIntentTool } from "../SelectActiveIntentTool"
+import { selectActiveIntentTool } from "../../../hooks/SelectActiveIntentTool"
 import type { ToolUse } from "../../../shared/tools"
-import type { AgentTraceEntry } from "../../orchestration/OrchestrationDataModel"
+import type { AgentTraceEntry } from "../../../hooks/OrchestrationDataModel"
 
 describe("SelectActiveIntentTool - Phase 1 End-to-End Test", () => {
 	let testWorkspaceDir: string

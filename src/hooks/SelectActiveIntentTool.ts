@@ -1,8 +1,8 @@
-import { Task } from "../task/Task"
-import { formatResponse } from "../prompts/responses"
-import { BaseTool, ToolCallbacks } from "./BaseTool"
-import type { ToolUse } from "../../shared/tools"
-import { OrchestrationDataModel } from "../orchestration/OrchestrationDataModel"
+import { Task } from "../core/task/Task"
+import { formatResponse } from "../core/prompts/responses"
+import { BaseTool, ToolCallbacks } from "../core/tools/BaseTool"
+import type { ToolUse } from "../shared/tools"
+import { OrchestrationDataModel } from "./OrchestrationDataModel"
 
 interface SelectActiveIntentParams {
 	intent_id: string
@@ -126,3 +126,4 @@ ${recentHistorySection}
 }
 
 export const selectActiveIntentTool = new SelectActiveIntentTool()
+

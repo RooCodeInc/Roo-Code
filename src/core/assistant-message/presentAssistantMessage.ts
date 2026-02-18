@@ -37,11 +37,10 @@ import { generateImageTool } from "../tools/GenerateImageTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
-import { selectActiveIntentTool } from "../tools/SelectActiveIntentTool"
-
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
-import { HookEngine } from "../hooks/HookEngine"
+import { HookEngine } from "../../hooks/HookEngine"
+import { selectActiveIntentTool } from "../../hooks/SelectActiveIntentTool"
 
 /**
  * Processes and presents assistant message content to the user interface.

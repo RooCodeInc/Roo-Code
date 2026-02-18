@@ -1,7 +1,7 @@
-import { Task } from "../task/Task"
-import type { ToolUse } from "../../shared/tools"
+import { Task } from "../core/task/Task"
+import type { ToolUse } from "../shared/tools"
 import type { ToolName } from "@roo-code/types"
-import { OrchestrationDataModel, type ActiveIntent } from "../orchestration/OrchestrationDataModel"
+import { OrchestrationDataModel, type ActiveIntent } from "./OrchestrationDataModel"
 import * as vscode from "vscode"
 import * as path from "path"
 import * as fs from "fs/promises"
@@ -339,3 +339,4 @@ export class HookEngine {
 		}
 	}
 }
+
