@@ -1,0 +1,12 @@
+active_intents:
+  - id: "INT-001"
+    name: "Example Interim Intent"
+    status: "IN_PROGRESS"
+    owned_scope:
+      - "src/example/**"
+    constraints:
+      - "No external libraries"
+      - "Do not modify unrelated files"
+    acceptance_criteria:
+      - "Code compiles"
+      - "Basic test passes"
