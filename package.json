@@ -56,7 +56,17 @@
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
-			"@vscode/ripgrep"
+			"@vscode/ripgrep",
+			"@tailwindcss/oxide",
+			"@vscode/vsce-sign",
+			"better-sqlite3",
+			"core-js",
+			"esbuild",
+			"keytar",
+			"protobufjs",
+			"puppeteer-core",
+			"puppeteer-chromium-resolver",
+			"sharp"
 		],
 		"overrides": {
 			"tar-fs": ">=3.1.1",
