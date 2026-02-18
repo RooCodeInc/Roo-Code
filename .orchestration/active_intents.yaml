@@ -1,0 +1,70 @@
+active_intents:
+  - id: "INT-001"
+    name: "Hook Engine Middleware Integration"
+    status: "IN_PROGRESS"
+    description: >
+      Instrument the Roo Code extension with a deterministic Hook Engine that
+      intercepts every tool execution at the pre-hook and post-hook boundaries
+      inside presentAssistantMessage.ts.
+    owned_scope:
+      - "src/hooks/**"
+      - "src/core/assistant-message/presentAssistantMessage.ts"
+      - "src/core/prompts/system.ts"
+      - "src/core/prompts/tools/native-tools/**"
+    constraints:
+      - "Hooks must not throw uncaught exceptions into the main task loop"
+      - "Pre-hooks must fail-closed: any policy violation blocks the tool call"
+      - "Post-hooks must fail-safe: telemetry errors must not crash the agent"
+      - "All mutating tools require a valid active intent_id before execution"
+    acceptance_criteria:
+      - "HookEngine.runPreHooks() is called before tool dispatch in presentAssistantMessage.ts"
+      - "HookEngine.runPostHooks() is called after tool execution in presentAssistantMessage.ts"
+      - "RequireIntentPreHook blocks write_to_file and execute_command without intent_id"
+      - "TraceMutationPostHook appends a record to .orchestration/agent_trace.jsonl"
+    agent: "Builder"
+    started_at: "2026-02-18T00:00:00Z"
+
+  - id: "INT-002"
+    name: "select_active_intent Tool Implementation"
+    status: "IN_PROGRESS"
+    description: >
+      Define and register a new native tool select_active_intent(intent_id) that
+      reads the active_intents.yaml sidecar, validates the requested intent ID,
+      and returns an XML <intent_context> block to the agent with the constraints,
+      owned_scope, and acceptance criteria for that intent.
+    owned_scope:
+      - "src/core/prompts/tools/native-tools/**"
+      - "src/core/assistant-message/presentAssistantMessage.ts"
+      - ".orchestration/active_intents.yaml"
+    constraints:
+      - "Must return a structured <intent_context> XML block as tool result"
+      - "Must validate that intent_id exists in active_intents.yaml"
+      - "Must be registered in the native tools array before hook wiring"
+    acceptance_criteria:
+      - "select_active_intent appears in getNativeTools() output"
+      - "Tool result contains intent constraints and owned_scope"
+      - "Invalid intent_id returns a structured error"
+    agent: "Builder"
+    started_at: "2026-02-18T00:00:00Z"
+
+  - id: "INT-003"
+    name: "AI-Native Git Trace Ledger"
+    status: "PLANNED"
+    description: >
+      Implement the append-only agent_trace.jsonl ledger. Every write_to_file
+      post-hook call must compute SHA-256 content hashes of modified ranges and
+      append a fully structured trace record linking to the active intent.
+    owned_scope:
+      - "src/hooks/builtin/TraceMutationPostHook.ts"
+      - ".orchestration/agent_trace.jsonl"
+    constraints:
+      - "Records must be append-only — never overwrite existing entries"
+      - "content_hash must use SHA-256 of the exact file content string"
+      - "mutation_class must be AST_REFACTOR or INTENT_EVOLUTION"
+      - "vcs.revision_id must reflect the current git HEAD SHA"
+    acceptance_criteria:
+      - "Each write_to_file creates a new JSONL record"
+      - "Record contains intent_id, content_hash, file path, and line ranges"
+      - "agent_trace.jsonl is valid JSONL (one JSON object per line)"
+    agent: "Builder"
+    started_at: null
