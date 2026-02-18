@@ -1,0 +1,43 @@
+active_intents:
+    - id: "INT-001"
+      name: "Code Indexing: Workspace Symbol Index"
+      status: "IN_PROGRESS"
+      owned_scope:
+          - "src/services/code-index/**"
+          - "src/services/code-index/manager.ts"
+          - "src/services/code-index/cache-manager.ts"
+      constraints:
+          - "Do not upload workspace files to external services"
+          - "Respect .gitignore and workspace exclusion settings"
+      acceptance_criteria:
+          - "Symbol search returns results for common workspace symbols"
+          - "Unit tests in tests/code-index/ pass"
+      created_at: "2026-02-18T00:00:00Z"
+      owner: "team:search"
+
+    - id: "INT-002"
+      name: "JWT Authentication Migration"
+      status: "IN_PROGRESS"
+      owned_scope:
+          - "src/auth/**"
+          - "src/middleware/jwt.ts"
+      constraints:
+          - "Must not use external auth providers"
+          - "Must maintain backward compatibility with Basic Auth"
+      acceptance_criteria:
+          - "Unit tests in tests/auth/ pass"
+      created_at: "2026-02-16T12:00:00Z"
+      owner: "team:security"
+
+    - id: "INT-003"
+      name: "Refactor: Billing Domain Boundaries"
+      status: "PROPOSED"
+      owned_scope:
+          - "src/billing/**"
+      constraints:
+          - "Do not change public REST API signatures"
+          - "All changes must include migration notes"
+      acceptance_criteria:
+          - "Integration tests for billing pass"
+      created_at: "2026-02-18T06:30:00Z"
+      owner: "team:platform"
