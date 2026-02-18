@@ -538,7 +538,8 @@
 		"workerpool": "^9.2.0",
 		"yaml": "^2.8.0",
 		"zhipu-ai-provider": "^0.2.2",
-		"zod": "3.25.76"
+		"zod": "3.25.76",
+		"minimatch": "^10.0.0"
 	},
 	"devDependencies": {
 		"@ai-sdk/openai-compatible": "^2.0.28",

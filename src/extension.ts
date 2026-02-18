@@ -39,6 +39,12 @@ import { MdmService } from "./services/mdm/MdmService"
 import { migrateSettings } from "./utils/migrateSettings"
 import { autoImportSettings } from "./utils/autoImportSettings"
 import { API } from "./extension/api"
+import { OrchestrationStorage } from "./hooks/OrchestrationStorage"
+import { IntentManager } from "./hooks/IntentManager"
+import { HookEngine } from "./hooks/HookEngine"
+import { PreToolHook } from "./hooks/PreToolHook"
+import { initializeSelectActiveIntentTool } from "./core/tools/SelectActiveIntentTool"
+import { initializeGetActiveIntentTool } from "./core/tools/GetActiveIntentTool"
 
 import {
 	handleUri,
@@ -190,6 +196,22 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 		}
 	}
+
+	// Initialize Intent-Governed Hook Middleware
+	const orchestrationStorage = new OrchestrationStorage()
+	const intentManager = new IntentManager(orchestrationStorage)
+	const hookEngine = new HookEngine()
+	const preToolHook = new PreToolHook(intentManager)
+	hookEngine.registerPreHook((context) => preToolHook.run(context))
+
+	// Initialize SelectActiveIntentTool and GetActiveIntentTool with IntentManager
+	initializeSelectActiveIntentTool(intentManager)
+	initializeGetActiveIntentTool(intentManager)
+
+	// Store hook engine globally for tool execution interception
+	// TODO: Integrate hookEngine into BaseTool.handle() or presentAssistantMessage
+	;(global as any).__hookEngine = hookEngine
+	;(global as any).__intentManager = intentManager
 
 	// Initialize the provider *before* the Roo Code Cloud service.
 	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, mdmService)

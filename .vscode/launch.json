@@ -10,7 +10,13 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
-			"args": ["--extensionDevelopmentPath=${workspaceFolder}/src"],
+			"args": [
+				"--extensionDevelopmentPath=${workspaceFolder}/src"
+				// To open a specific workspace folder, uncomment and set the path:
+				// , "${workspaceFolder}"  // Opens current workspace
+				// , "D:/Personal/TRP1 Intensive Training/TRP1-Challenge-Week-1"  // Opens specific folder
+				// , "D:/path/to/SimbaPharma"  // Opens SimbaPharma workspace
+			],
 			"sourceMaps": true,
 			"outFiles": ["${workspaceFolder}/src/dist/**/*.js"],
 			"preLaunchTask": "${defaultBuildTask}",

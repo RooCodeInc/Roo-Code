@@ -195,6 +195,50 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 			action: "toggleAutoApprove",
 		})
 	},
+	showActiveIntent: async () => {
+		const visibleProvider = getVisibleProviderOrLog(outputChannel)
+		if (!visibleProvider) {
+			return
+		}
+
+		const currentTask = visibleProvider.getCurrentTask()
+		if (!currentTask) {
+			vscode.window.showInformationMessage("No active task found.")
+			return
+		}
+
+		// Get IntentManager from global
+		const intentManager = (global as any).__intentManager as
+			| import("../hooks/IntentManager").IntentManager
+			| undefined
+		if (!intentManager) {
+			vscode.window.showErrorMessage("Intent Manager not initialized.")
+			return
+		}
+
+		try {
+			const activeIntent = await intentManager.getActiveIntent(currentTask.taskId)
+			if (activeIntent) {
+				const message =
+					`Active Intent: ${activeIntent.id} - ${activeIntent.name}\n\n` +
+					`Description: ${activeIntent.description}\n\n` +
+					`Status: ${activeIntent.status}\n\n` +
+					`Scope: ${activeIntent.ownedScope.join(", ")}\n\n` +
+					`Constraints: ${activeIntent.constraints.length > 0 ? activeIntent.constraints.join(", ") : "None"}`
+
+				vscode.window.showInformationMessage(message, { modal: true })
+			} else {
+				vscode.window.showWarningMessage(
+					`No active intent selected for task: ${currentTask.taskId}\n\n` +
+						`Use the select_active_intent tool to select an intent before performing destructive operations.`,
+				)
+			}
+		} catch (error) {
+			vscode.window.showErrorMessage(
+				`Failed to get active intent: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+	},
 })
 
 export const openClineInNewTab = async ({ context, outputChannel }: Omit<RegisterCommandOptions, "provider">) => {

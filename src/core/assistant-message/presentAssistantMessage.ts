@@ -32,6 +32,8 @@ import { attemptCompletionTool, AttemptCompletionCallbacks } from "../tools/Atte
 import { newTaskTool } from "../tools/NewTaskTool"
 import { updateTodoListTool } from "../tools/UpdateTodoListTool"
 import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
+import { selectActiveIntentTool } from "../tools/SelectActiveIntentTool"
+import { getActiveIntentTool } from "../tools/GetActiveIntentTool"
 import { skillTool } from "../tools/SkillTool"
 import { generateImageTool } from "../tools/GenerateImageTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
@@ -798,6 +800,20 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "switch_mode":
 					await switchModeTool.handle(cline, block as ToolUse<"switch_mode">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "select_active_intent":
+					await selectActiveIntentTool.handle(cline, block as ToolUse<"select_active_intent">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "get_active_intent":
+					await getActiveIntentTool.handle(cline, block as ToolUse<"get_active_intent">, {
 						askApproval,
 						handleError,
 						pushToolResult,

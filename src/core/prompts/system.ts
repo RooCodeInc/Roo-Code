@@ -23,6 +23,7 @@ import {
 	addCustomInstructions,
 	markdownFormattingSection,
 	getSkillsSection,
+	getIntentGovernanceSection,
 } from "./sections"
 
 // Helper function to get prompt component, filtering out empty objects
@@ -74,9 +75,10 @@ async function generatePrompt(
 	// Tool calling is native-only.
 	const effectiveProtocol = "native"
 
-	const [modesSection, skillsSection] = await Promise.all([
+	const [modesSection, skillsSection, intentGovernanceSection] = await Promise.all([
 		getModesSection(context),
 		getSkillsSection(skillsManager, mode as string),
+		getIntentGovernanceSection(cwd),
 	])
 
 	// Tools catalog is not included in the system prompt.
@@ -94,6 +96,7 @@ ${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined)}
 
 ${modesSection}
 ${skillsSection ? `\n${skillsSection}` : ""}
+${intentGovernanceSection}
 ${getRulesSection(cwd, settings)}
 
 ${getSystemInfoSection(cwd)}
