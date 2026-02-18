@@ -1,0 +1,10 @@
+active_intents:
+  - id: "INT-001"
+    name: "Build Weather API"
+    status: "IN_PROGRESS"
+    owned_scope:
+      - "src/weather/**"
+    constraints:
+      - "Use only internal API, no external services"
+    acceptance_criteria:
+      - "Unit tests in tests/weather/ pass"
