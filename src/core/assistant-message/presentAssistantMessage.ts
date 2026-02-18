@@ -37,6 +37,7 @@ import { generateImageTool } from "../tools/GenerateImageTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
+import { selectActiveIntentTool } from "../tools/SelectActiveIntentTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
@@ -675,6 +676,22 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			// ==== GOVERNANCE GATEKEEPER ====
+			// Phase 1: Block all tools except 'select_active_intent' if no intent is active.
+			if (!block.partial && !cline.activeIntentId && block.name !== "select_active_intent") {
+				const errorMessage =
+					"GOVERNANCE VIOLATION: You must call 'select_active_intent(intent_id)' to declare your intent before executing any other tools."
+
+				cline.pushToolResultToUserContent({
+					type: "tool_result",
+					tool_use_id: sanitizeToolUseId(toolCallId),
+					content: formatResponse.toolError(errorMessage),
+					is_error: true,
+				})
+				break
+			}
+			// ===============================
+
 			switch (block.name) {
 				case "write_to_file":
 					await checkpointSaveAndMark(cline)
@@ -791,6 +808,13 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "ask_followup_question":
 					await askFollowupQuestionTool.handle(cline, block as ToolUse<"ask_followup_question">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "select_active_intent":
+					await selectActiveIntentTool.handle(cline, block as ToolUse<"select_active_intent">, {
 						askApproval,
 						handleError,
 						pushToolResult,
