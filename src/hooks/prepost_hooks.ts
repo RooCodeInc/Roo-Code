@@ -4,42 +4,6 @@ import * as crypto from "crypto"
 import * as fs from "fs"
 import * as path from "path"
 
-// Exported hooks (to be wired into the extension host)
-export async function preHook_SelectActiveIntent(intentId: string, workspaceRoot: string) {
-	const intent = loadActiveIntent(intentId, workspaceRoot)
-	if (!intent) throw new Error("You must cite a valid active Intent ID.")
-	// Return a simple intent_context block
-	return `<intent_context>\nname: ${intent.name}\nconstraints: ${JSON.stringify(intent.constraints || [])}\n</intent_context>`
-}
-
-export async function postHook_WriteFile(relativePath: string, newContent: string, workspaceRoot: string, meta: any) {
-	const contentHash = computeSha256(newContent)
-	const trace = {
-		id: meta?.id || "generated-uuid",
-		timestamp: new Date().toISOString(),
-		vcs: { revision_id: meta?.vcs || null },
-		files: [
-			{
-				relative_path: relativePath,
-				conversations: [
-					{
-						contributor: meta?.contributor || { entity_type: "AI", model_identifier: "example-model" },
-						ranges: [
-							{
-								start_line: meta?.start_line || 1,
-								end_line: meta?.end_line || 1,
-								content_hash: `sha256:${contentHash}`,
-							},
-						],
-						related: meta?.related || [],
-					},
-				],
-			},
-		],
-	}
-	appendAgentTrace(workspaceRoot, trace)
-	return trace
-}
 // Prefer a proper YAML parser if available.
 let yamlParse: (input: string) => any
 try {
