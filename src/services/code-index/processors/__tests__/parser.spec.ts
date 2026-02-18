@@ -65,6 +65,28 @@ describe("CodeParser", () => {
 		vi.mocked(readFile).mockResolvedValue("// default test content")
 	})
 
+	it("should delete tree-sitter parse trees to avoid retaining WASM memory", async () => {
+		const deleteSpy = vi.fn()
+		mockLanguageParser.js.parser.parse = vi.fn((content: string) => ({
+			rootNode: {
+				text: content,
+				startPosition: { row: 0 },
+				endPosition: { row: content.split("\n").length - 1 },
+				children: [],
+				type: "program",
+			},
+			delete: deleteSpy,
+		}))
+		mockLanguageParser.js.query.captures.mockReturnValue([])
+
+		await parser.parseFile("test.js", {
+			content:
+				"/* This is a long test content string that exceeds 100 characters to trigger parsing. It spans enough content for fallback chunking. */",
+		})
+
+		expect(deleteSpy).toHaveBeenCalledTimes(1)
+	})
+
 	describe("parseFile", () => {
 		it("should return empty array for unsupported extensions", async () => {
 			const result = await parser.parseFile("test.unsupported")
