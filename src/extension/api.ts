@@ -153,7 +153,12 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 						break
 					case TaskCommandName.DeleteQueuedMessage:
 						this.log(`[API] DeleteQueuedMessage -> ${command.data}`)
-						this.deleteQueuedMessage(command.data)
+						try {
+							this.deleteQueuedMessage(command.data)
+						} catch (error) {
+							const errorMessage = error instanceof Error ? error.message : String(error)
+							this.log(`[API] DeleteQueuedMessage failed for messageId ${command.data}: ${errorMessage}`)
+						}
 						break
 				}
 			})
@@ -271,7 +276,14 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 	}
 
 	public deleteQueuedMessage(messageId: string) {
-		this.sidebarProvider.getCurrentTask()?.messageQueueService.removeMessage(messageId)
+		const currentTask = this.sidebarProvider.getCurrentTask()
+
+		if (!currentTask) {
+			this.log(`[API#deleteQueuedMessage] no current task; ignoring delete for messageId ${messageId}`)
+			return
+		}
+
+		currentTask.messageQueueService.removeMessage(messageId)
 	}
 
 	public async pressPrimaryButton() {

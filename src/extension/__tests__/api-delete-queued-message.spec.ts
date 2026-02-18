@@ -49,11 +49,15 @@ describe("API - DeleteQueuedMessage Command", () => {
 		expect(mockRemoveMessage).toHaveBeenCalledTimes(1)
 	})
 
-	it("should handle missing current task gracefully", () => {
+	it("should handle missing current task gracefully and log a message", () => {
 		;(mockProvider.getCurrentTask as ReturnType<typeof vi.fn>).mockReturnValue(undefined)
 
 		// Should not throw
 		expect(() => api.deleteQueuedMessage("msg-abc-123")).not.toThrow()
+		expect(mockLog).toHaveBeenCalledWith(
+			"[API#deleteQueuedMessage] no current task; ignoring delete for messageId msg-abc-123",
+		)
+		expect(mockRemoveMessage).not.toHaveBeenCalled()
 	})
 
 	it("should handle non-existent message id gracefully", () => {
