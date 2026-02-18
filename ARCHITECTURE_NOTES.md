@@ -1,10 +1,9 @@
----
-
-```markdown
 # ARCHITECTURE_NOTES.md
+
 ## TRP1 Week 1 – Interim Submission
 
 ### 1. Purpose
+
 This document outlines the architecture and hook system implemented for the interim submission of the TRP1 Week 1 challenge: **AI-Native IDE & Intent-Code Traceability**.
 The goal of this submission is to demonstrate the initial hook middleware structure, context injection, and intent validation mechanisms.
 
