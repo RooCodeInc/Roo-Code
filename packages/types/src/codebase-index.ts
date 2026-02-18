@@ -12,6 +12,11 @@ export const CODEBASE_INDEX_DEFAULTS = {
 	MAX_SEARCH_SCORE: 1,
 	DEFAULT_SEARCH_MIN_SCORE: 0.4,
 	SEARCH_SCORE_STEP: 0.05,
+	// Auto-start and concurrency control settings
+	DEFAULT_AUTO_START: true,
+	DEFAULT_MAX_CONCURRENT: 1,
+	MIN_MAX_CONCURRENT: 1,
+	MAX_MAX_CONCURRENT: 10,
 } as const
 
 /**
@@ -41,6 +46,13 @@ export const codebaseIndexConfigSchema = z.object({
 		.number()
 		.min(CODEBASE_INDEX_DEFAULTS.MIN_SEARCH_RESULTS)
 		.max(CODEBASE_INDEX_DEFAULTS.MAX_SEARCH_RESULTS)
+		.optional(),
+	// Auto-start and concurrency control settings
+	codebaseIndexAutoStart: z.boolean().optional(),
+	codebaseIndexMaxConcurrent: z
+		.number()
+		.min(CODEBASE_INDEX_DEFAULTS.MIN_MAX_CONCURRENT)
+		.max(CODEBASE_INDEX_DEFAULTS.MAX_MAX_CONCURRENT)
 		.optional(),
 	// OpenAI Compatible specific fields
 	codebaseIndexOpenAiCompatibleBaseUrl: z.string().optional(),
