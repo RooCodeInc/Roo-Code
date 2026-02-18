@@ -1,3 +1,5 @@
+#mcp_server
+.vscode/mcp.json
 .pnpm-store
 dist
 out
@@ -55,3 +57,4 @@ qdrant_storage/
 plans/
 
 roo-cli-*.tar.gz*
+.vscode/mcp.json

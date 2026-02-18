@@ -1,8 +1,17 @@
+// ...existing code...
 {
-	"extends": "@roo-code/config-typescript/base.json",
 	"compilerOptions": {
-		"types": ["node"]
+		"target": "ES2020",
+		"module": "commonjs",
+		"rootDir": "src",
+		"outDir": "dist",
+		"strict": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true
 	},
-	"exclude": ["node_modules"],
-	"include": ["scripts/*.ts"]
+	"include": ["src/**/*.ts", "scripts/*.ts"],
+	"exclude": ["node_modules", "dist"]
 }
+
+// ...existing code...
