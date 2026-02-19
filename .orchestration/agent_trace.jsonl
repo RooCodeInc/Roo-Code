@@ -1,0 +1,1 @@
+{"id": "init-uuid", "timestamp": "2026-02-16T12:00:00Z", "intent_id": "INT-001", "vcs": { "revision_id": "initial" }, "files": [{"relative_path": "src/hooks/Gatekeeper.ts", "conversations": [{"url": "init_session", "contributor": {"entity_type": "AI", "model_identifier": "claude-3-5-sonnet"}, "ranges": [{"start_line": 1, "end_line": 1, "content_hash": "sha256:0000000"}]}]}]}
