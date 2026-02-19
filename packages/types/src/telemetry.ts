@@ -1,7 +1,7 @@
 import { z } from "zod"
 
-import { providerNames } from "./provider-settings.js"
-import { clineMessageSchema } from "./message.js"
+import { providerNames } from "./provider-settings"
+import { clineMessageSchema } from "./message"
 
 /**
  * TelemetrySetting

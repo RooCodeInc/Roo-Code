@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { DynamicProvider, LocalProvider } from "./provider-settings.js"
+import { DynamicProvider, LocalProvider } from "./provider-settings"
 
 /**
  * ReasoningEffort

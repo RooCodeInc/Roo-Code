@@ -1,6 +1,6 @@
 import type { ZodType, z } from "zod/v4"
 
-import { TaskLike } from "./task.js"
+import { TaskLike } from "./task"
 
 // Re-export from Zod for convenience.
 

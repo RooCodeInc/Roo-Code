@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import type { Keys, Equals, AssertEqual } from "./type-fu.js"
+import type { Keys, Equals, AssertEqual } from "./type-fu"
 
 /**
  * ExperimentId

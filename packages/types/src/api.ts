@@ -1,10 +1,10 @@
 import type { EventEmitter } from "events"
 import type { Socket } from "net"
 
-import type { RooCodeEvents } from "./events.js"
-import type { RooCodeSettings } from "./global-settings.js"
-import type { ProviderSettingsEntry, ProviderSettings } from "./provider-settings.js"
-import type { IpcMessage, IpcServerEvents } from "./ipc.js"
+import type { RooCodeEvents } from "./events"
+import type { RooCodeSettings } from "./global-settings"
+import type { ProviderSettingsEntry, ProviderSettings } from "./provider-settings"
+import type { IpcMessage, IpcServerEvents } from "./ipc"
 
 export type RooCodeAPIEvents = RooCodeEvents
 

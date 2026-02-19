@@ -2,13 +2,13 @@ import EventEmitter from "events"
 
 import { z } from "zod"
 
-import { RooCodeEventName } from "./events.js"
-import { TaskStatus, taskMetadataSchema } from "./task.js"
-import { globalSettingsSchema } from "./global-settings.js"
-import { providerSettingsWithIdSchema } from "./provider-settings.js"
-import { mcpMarketplaceItemSchema } from "./marketplace.js"
-import { clineMessageSchema, queuedMessageSchema, tokenUsageSchema } from "./message.js"
-import { staticAppPropertiesSchema, gitPropertiesSchema } from "./telemetry.js"
+import { RooCodeEventName } from "./events"
+import { TaskStatus, taskMetadataSchema } from "./task"
+import { globalSettingsSchema } from "./global-settings"
+import { providerSettingsWithIdSchema } from "./provider-settings"
+import { mcpMarketplaceItemSchema } from "./marketplace"
+import { clineMessageSchema, queuedMessageSchema, tokenUsageSchema } from "./message"
+import { staticAppPropertiesSchema, gitPropertiesSchema } from "./telemetry"
 
 /**
  * JWTPayload

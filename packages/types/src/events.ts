@@ -1,8 +1,8 @@
 import { z } from "zod"
 
-import { clineMessageSchema, queuedMessageSchema, tokenUsageSchema } from "./message.js"
-import { modelInfoSchema } from "./model.js"
-import { toolNamesSchema, toolUsageSchema } from "./tool.js"
+import { clineMessageSchema, queuedMessageSchema, tokenUsageSchema } from "./message"
+import { modelInfoSchema } from "./model"
+import { toolNamesSchema, toolUsageSchema } from "./tool"
 
 /**
  * RooCodeEventName

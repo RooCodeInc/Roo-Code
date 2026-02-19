@@ -2,7 +2,9 @@
 	"extends": "@roo-code/config-typescript/base.json",
 	"compilerOptions": {
 		"types": ["vitest/globals"],
-		"outDir": "dist"
+		"outDir": "dist",
+		"moduleResolution": "node",
+		"module": "ESNext"
 	},
 	"include": ["src", "scripts", "*.config.ts"],
 	"exclude": ["node_modules"]

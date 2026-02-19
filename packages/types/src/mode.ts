@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { deprecatedToolGroups, toolGroupsSchema } from "./tool.js"
+import { deprecatedToolGroups, toolGroupsSchema } from "./tool"
 
 /**
  * GroupOptions

@@ -1,7 +1,7 @@
 import { z } from "zod"
 
-import { modelInfoSchema, reasoningEffortSettingSchema, verbosityLevelsSchema, serviceTierSchema } from "./model.js"
-import { codebaseIndexProviderSchema } from "./codebase-index.js"
+import { modelInfoSchema, reasoningEffortSettingSchema, verbosityLevelsSchema, serviceTierSchema } from "./model"
+import { codebaseIndexProviderSchema } from "./codebase-index"
 import {
 	anthropicModels,
 	basetenModels,
@@ -20,7 +20,7 @@ import {
 	xaiModels,
 	internationalZAiModels,
 	minimaxModels,
-} from "./providers/index.js"
+} from "./providers/index"
 
 /**
  * constants

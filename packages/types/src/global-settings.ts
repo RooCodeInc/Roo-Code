@@ -1,20 +1,20 @@
 import { z } from "zod"
 
-import { type Keys } from "./type-fu.js"
+import { type Keys } from "./type-fu"
 import {
 	type ProviderSettings,
 	PROVIDER_SETTINGS_KEYS,
 	providerSettingsEntrySchema,
 	providerSettingsSchema,
-} from "./provider-settings.js"
-import { historyItemSchema } from "./history.js"
-import { codebaseIndexModelsSchema, codebaseIndexConfigSchema } from "./codebase-index.js"
-import { experimentsSchema } from "./experiment.js"
-import { telemetrySettingsSchema } from "./telemetry.js"
-import { modeConfigSchema } from "./mode.js"
-import { customModePromptsSchema, customSupportPromptsSchema } from "./mode.js"
-import { toolNamesSchema } from "./tool.js"
-import { languagesSchema } from "./vscode.js"
+} from "./provider-settings"
+import { historyItemSchema } from "./history"
+import { codebaseIndexModelsSchema, codebaseIndexConfigSchema } from "./codebase-index"
+import { experimentsSchema } from "./experiment"
+import { telemetrySettingsSchema } from "./telemetry"
+import { modeConfigSchema } from "./mode"
+import { customModePromptsSchema, customSupportPromptsSchema } from "./mode"
+import { toolNamesSchema } from "./tool"
+import { languagesSchema } from "./vscode"
 
 /**
  * Default delay in milliseconds after writes to allow diagnostics to detect potential problems.
