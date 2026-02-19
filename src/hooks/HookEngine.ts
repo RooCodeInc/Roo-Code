@@ -578,6 +578,17 @@ export class HookEngine {
 		}
 	}
 
+	private resolveSpecificationReference(intentId: string, intent?: ActiveIntentRecord): string {
+		const candidateKeys = ["specification_id", "requirement_id", "req_id", "spec_id"] as const
+		for (const key of candidateKeys) {
+			const value = intent?.[key]
+			if (typeof value === "string" && value.trim().length > 0) {
+				return value.trim()
+			}
+		}
+		return intentId
+	}
+
 	private async buildTraceRecord(
 		task: Task,
 		context: HookPreToolUseContext,
@@ -615,6 +626,7 @@ export class HookEngine {
 				// Best-effort AST extraction for trace linkage.
 			}
 
+			const specificationRef = this.resolveSpecificationReference(context.intentId!, context.intent)
 			files.push({
 				relative_path: relativePath,
 				...(astSummaryHash
@@ -639,7 +651,7 @@ export class HookEngine {
 								content_hash: rangeHash,
 							},
 						],
-						related: [{ type: "specification" as const, value: context.intentId! }],
+						related: [{ type: "specification" as const, value: specificationRef }],
 					},
 				],
 			})

@@ -1,6 +1,8 @@
 import fs from "fs/promises"
 import path from "path"
+import crypto from "crypto"
 import * as yaml from "yaml"
+import { z } from "zod"
 
 export type IntentStatus = "IN_PROGRESS" | "PENDING" | "COMPLETED" | "BLOCKED" | string
 
@@ -49,6 +51,11 @@ export interface AgentTraceRecord {
 	timestamp: string
 	vcs: { revision_id: string }
 	files: AgentTraceFile[]
+	integrity?: {
+		chain: "sha256"
+		prev_record_hash: string | null
+		record_hash: string
+	}
 }
 
 export interface SidecarDenyMutationRule {
@@ -79,6 +86,61 @@ export interface OrchestrationDirectoryContractStatus {
 	missingRequiredFiles: string[]
 	unexpectedEntries: string[]
 }
+
+const sha256HashRegex = /^sha256:[a-f0-9]{64}$/i
+const uuidV4Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+const traceRangeSchema = z
+	.object({
+		start_line: z.number().int().nonnegative(),
+		end_line: z.number().int().nonnegative(),
+		content_hash: z.string().regex(sha256HashRegex),
+	})
+	.refine((value) => value.end_line >= value.start_line, { message: "end_line must be >= start_line" })
+
+const traceConversationSchema = z.object({
+	url: z.string().min(1),
+	contributor: z.object({
+		entity_type: z.enum(["AI", "HUMAN"]),
+		model_identifier: z.string().min(1),
+	}),
+	ranges: z.array(traceRangeSchema).min(1),
+	related: z
+		.array(
+			z.object({
+				type: z.literal("specification"),
+				value: z.string().min(1),
+			}),
+		)
+		.min(1),
+})
+
+const traceFileSchema = z.object({
+	relative_path: z.string().min(1),
+	ast_fingerprint: z
+		.object({
+			parser: z.literal("tree-sitter"),
+			summary_hash: z.string().regex(sha256HashRegex),
+		})
+		.optional(),
+	conversations: z.array(traceConversationSchema).min(1),
+})
+
+const traceRecordSchema = z.object({
+	id: z.string().regex(uuidV4Regex),
+	timestamp: z.string().datetime({ offset: true }),
+	vcs: z.object({
+		revision_id: z.string().min(1),
+	}),
+	files: z.array(traceFileSchema).min(1),
+	integrity: z
+		.object({
+			chain: z.literal("sha256"),
+			prev_record_hash: z.string().regex(sha256HashRegex).nullable(),
+			record_hash: z.string().regex(sha256HashRegex),
+		})
+		.optional(),
+})
 
 const DEFAULT_ACTIVE_INTENTS_YAML = "active_intents: []\n"
 const DEFAULT_INTENT_MAP_MD = [
@@ -306,7 +368,20 @@ export class OrchestrationStore {
 
 	async appendTraceRecord(record: AgentTraceRecord): Promise<void> {
 		await this.ensureInitialized()
-		await fs.appendFile(this.agentTracePath, `${JSON.stringify(record)}\n`, "utf8")
+		this.validateTraceRecord(record)
+		const prevHash = await this.getLastTraceRecordHash()
+		const canonicalPayload = this.getTraceCanonicalPayload(record, prevHash)
+		const recordHash = this.computeSha256(canonicalPayload)
+		const recordWithIntegrity: AgentTraceRecord = {
+			...record,
+			integrity: {
+				chain: "sha256",
+				prev_record_hash: prevHash,
+				record_hash: recordHash,
+			},
+		}
+		this.validateTraceRecord(recordWithIntegrity)
+		await fs.appendFile(this.agentTracePath, `${JSON.stringify(recordWithIntegrity)}\n`, "utf8")
 	}
 
 	async appendIntentMapEntry(
@@ -490,5 +565,50 @@ export class OrchestrationStore {
 		} catch {
 			await fs.writeFile(filePath, initialContent, "utf8")
 		}
+	}
+
+	private validateTraceRecord(record: AgentTraceRecord): void {
+		const parsed = traceRecordSchema.safeParse(record)
+		if (!parsed.success) {
+			const detail = parsed.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ")
+			throw new Error(`Invalid AgentTraceRecord schema: ${detail}`)
+		}
+	}
+
+	private computeSha256(payload: string): string {
+		return `sha256:${crypto.createHash("sha256").update(payload).digest("hex")}`
+	}
+
+	private getTraceCanonicalPayload(record: AgentTraceRecord, prevHash: string | null): string {
+		const payload = {
+			id: record.id,
+			timestamp: record.timestamp,
+			vcs: record.vcs,
+			files: record.files,
+			prev_record_hash: prevHash,
+		}
+		return JSON.stringify(payload)
+	}
+
+	private async getLastTraceRecordHash(): Promise<string | null> {
+		await this.ensureInitialized()
+		const raw = await fs.readFile(this.agentTracePath, "utf8")
+		const lines = raw
+			.split(/\r?\n/)
+			.map((line) => line.trim())
+			.filter(Boolean)
+		if (lines.length === 0) {
+			return null
+		}
+		const lastLine = lines[lines.length - 1]
+		try {
+			const parsed = JSON.parse(lastLine) as AgentTraceRecord
+			if (parsed.integrity?.record_hash && sha256HashRegex.test(parsed.integrity.record_hash)) {
+				return parsed.integrity.record_hash
+			}
+		} catch {
+			// Fall through to hash the raw line.
+		}
+		return this.computeSha256(lastLine)
 	}
 }
