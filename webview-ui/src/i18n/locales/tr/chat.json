@@ -351,9 +351,9 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"sonnet46": "Claude Sonnet 4.6: Anthropic'in en yeni Claude Sonnet 4.6 modeli için tüm sağlayıcılarda tam destek — Anthropic, Bedrock, Vertex, OpenRouter ve Vercel AI Gateway.",
-			"stabilityFixes": "Kararlılık İyileştirmeleri: Yarış koşullarına karşı delegasyon yaşam döngüsü güçlendirildi, gezinme ve görev devam ettirme sırasında sohbet geçmişi koruması düzeltildi ve daha akıcı bir deneyim için kaydırma sabitleme sorunları çözüldü.",
-			"lockedApiConfig": "Kilitli API Yapılandırması: Yeni kilit düğmesi, API yapılandırmanı bir çalışma alanındaki tüm modlarda sabitlemenizi sağlar, böylece mod değiştirmek artık sağlayıcı ayarlarını sıfırlamaz."
+			"fileChangesPanel": "Dosya Değişiklikleri Paneli: Bir konuşma sırasında yapılan tüm dosya değişikliklerini özel bir panelde takip et, neyin değiştiğini kolayca gözden geçir.",
+			"workspaceIndexing": "Çalışma Alanı İndeksleme Kontrolleri: İndeksleme artık otomatik başlamıyor — basit bir düğmeyle çalışma alanı başına etkinleştir ve istediğin zaman indekslemeyi durdur veya iptal et.",
+			"historyAndScroll": "Geçmiş ve Kaydırma Kararlılığı: Örnekler arası güvenlik için görev bazlı dosya tabanlı geçmiş deposu, ayrıca daha akıcı sohbet yeniden yüklemesi için yeniden tasarlanmış kaydırma yaşam döngüsü."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",

@@ -351,9 +351,9 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"sonnet46": "Claude Sonnet 4.6: Hỗ trợ đầy đủ mô hình Claude Sonnet 4.6 mới nhất của Anthropic trên tất cả nhà cung cấp — Anthropic, Bedrock, Vertex, OpenRouter và Vercel AI Gateway.",
-			"stabilityFixes": "Cải thiện ổn định: Tăng cường vòng đời ủy quyền chống lại điều kiện cạnh tranh, sửa lỗi bảo tồn lịch sử trò chuyện khi điều hướng và tiếp tục tác vụ, đồng thời giải quyết các vấn đề neo cuộn để có trải nghiệm mượt mà hơn.",
-			"lockedApiConfig": "Cấu hình API đã khóa: Nút khóa mới cho phép bạn ghim cấu hình API trên tất cả các chế độ trong workspace, để việc chuyển chế độ không còn đặt lại cài đặt nhà cung cấp nữa."
+			"fileChangesPanel": "Bảng thay đổi tệp: Theo dõi tất cả các sửa đổi tệp được thực hiện trong cuộc trò chuyện trong một bảng chuyên dụng, giúp dễ dàng xem lại những gì đã thay đổi.",
+			"workspaceIndexing": "Điều khiển lập chỉ mục Workspace: Lập chỉ mục không còn tự động bắt đầu — bật cho từng workspace bằng một nút đơn giản, và dừng hoặc hủy lập chỉ mục bất cứ lúc nào.",
+			"historyAndScroll": "Ổn định lịch sử & cuộn: Lưu trữ lịch sử dựa trên tệp cho từng tác vụ để đảm bảo an toàn giữa các phiên, cộng với vòng đời cuộn được thiết kế lại để tải lại cuộc trò chuyện mượt mà hơn."
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

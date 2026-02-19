@@ -351,9 +351,9 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"sonnet46": "Claude Sonnet 4.6：全面支持 Anthropic 最新的 Claude Sonnet 4.6 模型，覆盖所有提供商 — Anthropic、Bedrock、Vertex、OpenRouter 和 Vercel AI Gateway。",
-			"stabilityFixes": "稳定性改进：强化委派生命周期以防止竞态条件，修复导航和任务恢复时的聊天历史保留问题，并解决滚动锚定问题以获得更流畅的体验。",
-			"lockedApiConfig": "锁定 API 配置：新的锁定开关让你可以在工作区的所有模式中固定 API 配置，这样切换模式不再重置你的提供商设置。"
+			"fileChangesPanel": "档案变更面板：在专用面板中追踪对话期间所有档案修改，方便查看哪些内容发生了变化。",
+			"workspaceIndexing": "工作区索引控制：索引不再自动启动——通过简单开关按工作区启用，随时停止或取消索引。",
+			"historyAndScroll": "历史记录与滚动稳定性：基于文件的按任务历史存储确保跨实例安全，加上重新设计的滚动生命周期让聊天重载更流畅。"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",

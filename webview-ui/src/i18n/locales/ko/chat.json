@@ -350,9 +350,9 @@
 		},
 		"release": {
 			"heading": "새로운 기능:",
-			"sonnet46": "Claude Sonnet 4.6: 모든 제공업체에서 Anthropic의 최신 Claude Sonnet 4.6 모델을 완벽 지원 — Anthropic, Bedrock, Vertex, OpenRouter, Vercel AI Gateway.",
-			"stabilityFixes": "안정성 개선: 레이스 컨디션에 대한 위임 수명주기 강화, 탐색 및 작업 재개 시 채팅 기록 보존 수정, 더 부드러운 경험을 위한 스크롤 앵커링 문제 해결.",
-			"lockedApiConfig": "잠긴 API 설정: 새로운 잠금 토글로 워크스페이스의 모든 모드에서 API 구성을 고정할 수 있어, 모드를 전환해도 제공업체 설정이 더 이상 초기화되지 않습니다."
+			"fileChangesPanel": "파일 변경 패널: 대화 중에 이루어진 모든 파일 수정 사항을 전용 패널에서 추적하여, 무엇이 변경되었는지 쉽게 확인할 수 있습니다.",
+			"workspaceIndexing": "워크스페이스 인덱싱 제어: 인덱싱이 더 이상 자동으로 시작되지 않습니다 — 간단한 토글로 워크스페이스별로 활성화하고, 언제든지 인덱싱을 중지하거나 취소할 수 있습니다.",
+			"historyAndScroll": "기록 및 스크롤 안정성: 인스턴스 간 안전을 위한 작업별 파일 기반 기록 저장소와 더 부드러운 채팅 리하이드레이션을 위한 재설계된 스크롤 라이프사이클."
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",

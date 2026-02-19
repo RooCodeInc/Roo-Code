@@ -350,9 +350,9 @@
 		},
 		"release": {
 			"heading": "Co nowego:",
-			"sonnet46": "Claude Sonnet 4.6: Pełne wsparcie dla najnowszego modelu Claude Sonnet 4.6 od Anthropic u wszystkich dostawców — Anthropic, Bedrock, Vertex, OpenRouter i Vercel AI Gateway.",
-			"stabilityFixes": "Ulepszenia stabilności: Wzmocnienie cyklu życia delegacji przeciwko warunkom wyścigu, naprawa zachowania historii czatu podczas nawigacji i wznawiania zadań oraz rozwiązanie problemów z zakotwiczaniem przewijania dla płynniejszego działania.",
-			"lockedApiConfig": "Zablokowana konfiguracja API: Nowy przełącznik blokady pozwala przypiąć konfigurację API we wszystkich trybach w workspace, dzięki czemu przełączanie trybów nie resetuje już ustawień dostawcy."
+			"fileChangesPanel": "Panel zmian plików: Śledź wszystkie modyfikacje plików dokonane podczas rozmowy w dedykowanym panelu, ułatwiając przegląd tego, co się zmieniło.",
+			"workspaceIndexing": "Kontrola indeksowania workspace: Indeksowanie nie uruchamia się już automatycznie — włącz je per workspace prostym przełącznikiem i zatrzymaj lub anuluj indeksowanie w dowolnym momencie.",
+			"historyAndScroll": "Stabilność historii i przewijania: Plikowe przechowywanie historii per zadanie dla bezpieczeństwa między instancjami, plus przeprojektowany cykl życia przewijania dla płynniejszej rehydratacji czatu."
 		},
 		"cloudAgents": {
 			"heading": "Nowości w chmurze:",
