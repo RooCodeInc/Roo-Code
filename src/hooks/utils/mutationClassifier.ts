@@ -1,19 +1,16 @@
 /**
- * utils/mutationClassifier.ts
- * ─────────────────────────────────────────────────────────────
- * Deterministic classification of code mutations.
- *
- * Two classes:
- *   AST_REFACTOR    – Same exported API surface, internal changes only.
- *                     (rename variable, extract helper, format code)
- *   INTENT_EVOLUTION – The exported API surface changed.
- *                     (new function, changed signature, deleted export)
- *
- * The hook computes this — the agent does NOT self-report it.
- * This is what makes the system deterministic.
- * ─────────────────────────────────────────────────────────────
- */
-
+utils/mutationClassifier.ts
+─────────────────────────────────────────────────────────────
+Deterministic classification of code mutations.
+Two classes:
+AST_REFACTOR    – Same exported API surface, internal changes only.
+                (rename variable, extract helper, format code)
+INTENT_EVOLUTION – The exported API surface changed.
+                (new function, changed signature, deleted export)
+The hook computes this — the agent does NOT self-report it.
+This is what makes the system deterministic.
+─────────────────────────────────────────────────────────────
+*/
 import * as path from 'path';
 
 export type MutationClass = 'AST_REFACTOR' | 'INTENT_EVOLUTION' | 'UNKNOWN';
@@ -27,9 +24,9 @@ export interface ClassificationResult {
 }
 
 /**
- * Compare old and new file content and classify the mutation.
- * Falls back to UNKNOWN for non-JS/TS files.
- */
+Compare old and new file content and classify the mutation.
+Falls back to UNKNOWN for non-JS/TS files.
+*/
 export async function classifyMutation(
   oldContent: string,
   newContent: string,
@@ -50,20 +47,29 @@ export async function classifyMutation(
 
   try {
     const { parse } = await import('@typescript-eslint/typescript-estree');
-
-    const oldAST = parse(oldContent, { loc: true, tolerant: true, jsx: ext.includes('x') });
-    const newAST = parse(newContent, { loc: true, tolerant: true, jsx: ext.includes('x') });
+    const oldAST = parse(oldContent, {
+      loc: true,
+      tolerant: true,
+      jsx: ext.includes('x'),
+    });
+    const newAST = parse(newContent, {
+      loc: true,
+      tolerant: true,
+      jsx: ext.includes('x'),
+    });
 
     const oldExports = extractExportSignatures(oldAST);
     const newExports = extractExportSignatures(newAST);
 
-    const added = newExports.filter(s => !oldExports.includes(s));
-    const removed = oldExports.filter(s => !newExports.includes(s));
-
-    // Detect signature changes: same name, different param count
+    const added = newExports.filter((s) => !oldExports.includes(s));
+    const removed = oldExports.filter((s) => !newExports.includes(s));
     const changedSignatures = detectSignatureChanges(oldAST, newAST);
 
-    if (added.length === 0 && removed.length === 0 && changedSignatures.length === 0) {
+    if (
+      added.length === 0 &&
+      removed.length === 0 &&
+      changedSignatures.length === 0
+    ) {
       return {
         mutationClass: 'AST_REFACTOR',
         reason: 'Exported API surface unchanged — internal refactor only',
@@ -93,21 +99,14 @@ export async function classifyMutation(
 }
 
 // ── Internal helpers ───────────────────────────────────────────
-
 type ParsedAST = { body: any[] };
 
-/**
- * Extract all exported symbol signatures as strings.
- * e.g. "fn:authenticate:2" = exported function named "authenticate" with 2 params
- */
 function extractExportSignatures(ast: ParsedAST): string[] {
   const sigs: string[] = [];
-
   for (const node of ast.body) {
     if (node.type === 'ExportNamedDeclaration') {
       const decl = node.declaration;
       if (!decl) {
-        // Re-exports: export { foo, bar }
         for (const spec of node.specifiers ?? []) {
           sigs.push(`reexport:${spec.exported?.name ?? spec.local?.name}`);
         }
@@ -123,7 +122,10 @@ function extractExportSignatures(ast: ParsedAST): string[] {
           const name = declarator.id?.name;
           if (name) {
             const init = declarator.init;
-            if (init?.type === 'ArrowFunctionExpression' || init?.type === 'FunctionExpression') {
+            if (
+              init?.type === 'ArrowFunctionExpression' ||
+              init?.type === 'FunctionExpression'
+            ) {
               sigs.push(`fn:${name}:${init.params?.length ?? 0}`);
             } else {
               sigs.push(`var:${name}`);
@@ -141,30 +143,26 @@ function extractExportSignatures(ast: ParsedAST): string[] {
       sigs.push('default:export');
     }
   }
-
   return sigs;
 }
 
-/**
- * Detect functions that exist in both ASTs but have different param counts.
- */
-function detectSignatureChanges(oldAST: ParsedAST, newAST: ParsedAST): string[] {
+function detectSignatureChanges(
+  oldAST: ParsedAST,
+  newAST: ParsedAST
+): string[] {
   const oldFns = extractFunctionMap(oldAST);
   const newFns = extractFunctionMap(newAST);
   const changes: string[] = [];
-
   for (const [name, paramCount] of Object.entries(oldFns)) {
     if (name in newFns && newFns[name] !== paramCount) {
       changes.push(`${name}: ${paramCount} → ${newFns[name]} params`);
     }
   }
-
   return changes;
 }
 
 function extractFunctionMap(ast: ParsedAST): Record<string, number> {
   const map: Record<string, number> = {};
-
   for (const node of ast.body) {
     if (node.type === 'ExportNamedDeclaration' && node.declaration) {
       const decl = node.declaration;
@@ -173,6 +171,5 @@ function extractFunctionMap(ast: ParsedAST): Record<string, number> {
       }
     }
   }
-
   return map;
 }
