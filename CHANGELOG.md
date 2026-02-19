@@ -1,5 +1,15 @@
 # Roo Code Changelog
 
+## 3.50.0
+
+### Minor Changes
+
+- Add Gemini 3.1 Pro support and set as default Gemini model (PR #11608 by @PeterDaveHello)
+- Add NDJSON stdin protocol, list subcommands, and modularize CLI run command (PR #11597 by @cte)
+- Prepare CLI v0.1.0 release (PR #11599 by @cte)
+- Remove integration tests (PR #11598 by @roomote)
+- Changeset version bump (PR #11596 by @github-actions)
+
 ## 3.49.0
 
 ### Minor Changes
