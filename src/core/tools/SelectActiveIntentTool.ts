@@ -61,6 +61,7 @@ export class SelectActiveIntentTool extends BaseTool<"select_active_intent"> {
 			}
 
 			task.setActiveIntentId(result.context.id)
+			task.authorizeIntentCheckoutForTurn(result.context.id)
 			await intentContextService.markIntentInProgress(result.context.id)
 			task.consecutiveMistakeCount = 0
 			pushToolResult(result.message)

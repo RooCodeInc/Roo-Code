@@ -137,6 +137,7 @@ const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
 const FORCED_CONTEXT_REDUCTION_PERCENT = 75 // Keep 75% of context (remove 25%) on context window errors
 const MAX_CONTEXT_WINDOW_RETRIES = 3 // Maximum retries for context window errors
+export type IntentCheckoutStage = "checkout_required" | "execution_authorized"
 
 export interface TaskOptions extends CreateTaskOptions {
 	provider: ClineProvider
@@ -323,6 +324,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	consecutiveMistakeCountForApplyDiff: Map<string, number> = new Map()
 	consecutiveMistakeCountForEditFile: Map<string, number> = new Map()
 	private _activeIntentId: string | undefined
+	private _intentCheckoutStage: IntentCheckoutStage = "checkout_required"
 	consecutiveNoToolUseCount: number = 0
 	consecutiveNoAssistantMessagesCount: number = 0
 	toolUsage: ToolUsage = {}
@@ -848,6 +850,21 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public setActiveIntentId(intentId: string | undefined): void {
 		this._activeIntentId = intentId?.trim() || undefined
+	}
+
+	public getIntentCheckoutStage(): IntentCheckoutStage {
+		return this._intentCheckoutStage
+	}
+
+	public resetIntentCheckoutForTurn(): void {
+		this._intentCheckoutStage = "checkout_required"
+	}
+
+	public authorizeIntentCheckoutForTurn(intentId?: string): void {
+		if (intentId) {
+			this.setActiveIntentId(intentId)
+		}
+		this._intentCheckoutStage = "execution_authorized"
 	}
 
 	static create(options: TaskOptions): [Task, Promise<void>] {
@@ -2783,6 +2800,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.didRejectTool = false
 				this.didAlreadyUseTool = false
 				this.assistantMessageSavedToHistory = false
+				this.resetIntentCheckoutForTurn()
 				// Reset tool failure flag for each new assistant turn - this ensures that tool failures
 				// only prevent attempt_completion within the same assistant message, not across turns
 				// (e.g., if a tool fails, then user sends a message saying "just complete anyway")

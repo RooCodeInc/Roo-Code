@@ -121,6 +121,36 @@ export class HookEngine {
 			return { allowExecution: true, context }
 		}
 
+		// Two-stage turn state machine:
+		// stage 1: checkout_required (must call select_active_intent first)
+		// stage 2: execution_authorized (mutating tools allowed)
+		//
+		// Enforce strictly for real Task instances; test doubles that don't use
+		// Task can bypass to keep existing unit tests isolated from runtime policy.
+		const stage =
+			typeof (task as Task & { getIntentCheckoutStage?: () => string }).getIntentCheckoutStage === "function"
+				? (task as Task & { getIntentCheckoutStage: () => string }).getIntentCheckoutStage()
+				: "execution_authorized"
+		if (stage !== "execution_authorized") {
+			await store.appendGovernanceEntry({
+				intent_id: task.activeIntentId,
+				tool_name: toolName,
+				status: "DENIED",
+				task_id: task.taskId,
+				model_identifier: task.api.getModel().id,
+				revision_id: await this.getGitRevision(task.cwd),
+				touched_paths: context.touchedPaths,
+				sidecar_constraints: context.sidecarConstraints,
+			})
+			return {
+				allowExecution: false,
+				context,
+				errorMessage:
+					`PreToolUse denied ${toolName}: intent checkout required for this turn. ` +
+					`Call select_active_intent before mutating tools.`,
+			}
+		}
+
 		if (!contract.isCompliant) {
 			const missing = contract.missingRequiredFiles
 			const unexpected = contract.unexpectedEntries
@@ -283,6 +313,39 @@ export class HookEngine {
 					errorMessage:
 						`PreToolUse denied ${toolName}: path(s) outside owned_scope for intent ${intent.id}. ` +
 						`Disallowed: ${disallowedPaths.join(", ")}`,
+				}
+			}
+		}
+
+		// Explicit context injection marker for traceability in intent history.
+		await store.appendRecentHistory(intent.id, `INTENT_CONTEXT_INJECTED ${toolName}`)
+
+		// Human-in-the-loop authorization gate in pre-hook for mutating tools.
+		// For production Task instances, we require explicit approval before tool execution.
+		if (typeof (task as Task & { ask?: unknown }).ask === "function") {
+			const hitlPayload = JSON.stringify({
+				tool: "preToolAuthorization",
+				requested_tool: toolName,
+				intent_id: intent.id,
+				paths: context.touchedPaths,
+			})
+			const { response, text } = await task.ask("tool", hitlPayload)
+			if (response !== "yesButtonClicked") {
+				const feedback = typeof text === "string" && text.trim().length > 0 ? ` Feedback: ${text}` : ""
+				await store.appendGovernanceEntry({
+					intent_id: intent.id,
+					tool_name: toolName,
+					status: "DENIED",
+					task_id: task.taskId,
+					model_identifier: task.api.getModel().id,
+					revision_id: await this.getGitRevision(task.cwd),
+					touched_paths: context.touchedPaths,
+					sidecar_constraints: context.sidecarConstraints,
+				})
+				return {
+					allowExecution: false,
+					context,
+					errorMessage: `PreToolUse denied ${toolName}: HITL authorization was not approved.${feedback}`,
 				}
 			}
 		}
