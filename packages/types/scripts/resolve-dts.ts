@@ -12,8 +12,13 @@ import * as fs from "node:fs"
 import * as path from "node:path"
 import * as ts from "typescript"
 
-const ROOT = path.resolve(import.meta.dirname, "..")
-const DIST = path.join(ROOT, "dist")
+/** Normalize a path to forward slashes (TypeScript API always uses `/`). */
+function normalizePath(p: string): string {
+	return p.replace(/\\/g, "/")
+}
+
+const ROOT = normalizePath(path.resolve(import.meta.dirname, ".."))
+const DIST = normalizePath(path.join(ROOT, "dist"))
 const DTS_FILES = ["index.d.ts", "index.d.cts"]
 
 // ---------------------------------------------------------------------------
@@ -50,14 +55,14 @@ interface ReplacementEntry {
 function buildReplacementMap(program: ts.Program): ReplacementEntry[] {
 	const checker = program.getTypeChecker()
 	const entries: ReplacementEntry[] = []
-	const srcDir = path.join(ROOT, "src")
+	const srcDir = normalizePath(path.join(ROOT, "src"))
 
 	for (const sourceFile of program.getSourceFiles()) {
 		if (sourceFile.isDeclarationFile || sourceFile.fileName.includes("node_modules")) {
 			continue
 		}
 
-		if (!sourceFile.fileName.startsWith(srcDir)) {
+		if (!normalizePath(sourceFile.fileName).startsWith(srcDir)) {
 			continue
 		}
 
