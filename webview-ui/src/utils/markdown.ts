@@ -4,7 +4,7 @@
  * Code fences are stripped before matching to avoid false positives.
  */
 export function countMarkdownHeadings(text: string | undefined): number {
-	if (!text) return 0
+	if (typeof text !== "string" || !text) return 0
 
 	// Remove fenced code blocks to avoid counting headings inside code
 	const withoutCodeBlocks = text.replace(/```[\s\S]*?```/g, "")
