@@ -45,4 +45,22 @@ describe("OrchestrationStore", () => {
 		expect(ledger).toContain("`src/a.ts`")
 		expect(ledger).toContain("No cross-module writes")
 	})
+
+	it("reports orchestration directory contract drift", async () => {
+		const workspacePath = await fs.mkdtemp(path.join(os.tmpdir(), "roo-orch-contract-"))
+		const store = new OrchestrationStore(workspacePath)
+		await store.ensureInitialized()
+
+		const orchestrationDir = path.join(workspacePath, ".orchestration")
+		await fs.rm(path.join(orchestrationDir, "intent_map.md"))
+		await fs.mkdir(path.join(orchestrationDir, "intent_map.md"))
+		await fs.writeFile(path.join(orchestrationDir, "rogue.txt"), "rogue", "utf8")
+		await fs.mkdir(path.join(orchestrationDir, "nested"), { recursive: true })
+
+		const status = await store.getDirectoryContractStatus()
+		expect(status.isCompliant).toBe(false)
+		expect(status.missingRequiredFiles).toContain("intent_map.md")
+		expect(status.unexpectedEntries).toContain("rogue.txt")
+		expect(status.unexpectedEntries).toContain("nested")
+	})
 })

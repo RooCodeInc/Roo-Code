@@ -74,6 +74,12 @@ export interface GovernanceEntry {
 	sidecar_constraints: string[]
 }
 
+export interface OrchestrationDirectoryContractStatus {
+	isCompliant: boolean
+	missingRequiredFiles: string[]
+	unexpectedEntries: string[]
+}
+
 const DEFAULT_ACTIVE_INTENTS_YAML = "active_intents: []\n"
 const DEFAULT_INTENT_MAP_MD = [
 	"# Intent Map",
@@ -183,6 +189,13 @@ export class OrchestrationStore {
 	static readonly SHARED_BRAIN_FILE = "AGENT.md"
 	static readonly GOVERNANCE_LEDGER_FILE = "governance_ledger.md"
 	static readonly SIDECAR_POLICY_FILE = "constraints.sidecar.yaml"
+	static readonly REQUIRED_ORCHESTRATION_FILES = [
+		OrchestrationStore.ACTIVE_INTENTS_FILE,
+		OrchestrationStore.AGENT_TRACE_FILE,
+		OrchestrationStore.INTENT_MAP_FILE,
+		OrchestrationStore.GOVERNANCE_LEDGER_FILE,
+		OrchestrationStore.SIDECAR_POLICY_FILE,
+	] as const
 
 	constructor(private readonly workspacePath: string) {}
 
@@ -382,6 +395,36 @@ export class OrchestrationStore {
 			`  sidecar_constraints=${constraints}`,
 		].join("\n")
 		await fs.appendFile(this.governanceLedgerPath, `${line}\n`, "utf8")
+	}
+
+	async getDirectoryContractStatus(): Promise<OrchestrationDirectoryContractStatus> {
+		await this.ensureInitialized()
+		const requiredFiles = new Set<string>(OrchestrationStore.REQUIRED_ORCHESTRATION_FILES)
+
+		const entries = await fs.readdir(this.orchestrationDirPath, { withFileTypes: true })
+		const unexpectedEntries = entries
+			.filter((entry) => !requiredFiles.has(entry.name) || !entry.isFile())
+			.map((entry) => entry.name)
+			.sort()
+
+		const missingRequiredFiles: string[] = []
+		for (const fileName of requiredFiles) {
+			const filePath = path.join(this.orchestrationDirPath, fileName)
+			try {
+				const stat = await fs.stat(filePath)
+				if (!stat.isFile()) {
+					missingRequiredFiles.push(fileName)
+				}
+			} catch {
+				missingRequiredFiles.push(fileName)
+			}
+		}
+
+		return {
+			isCompliant: unexpectedEntries.length === 0 && missingRequiredFiles.length === 0,
+			missingRequiredFiles,
+			unexpectedEntries,
+		}
 	}
 
 	private async saveIntents(intents: ActiveIntentRecord[]): Promise<void> {

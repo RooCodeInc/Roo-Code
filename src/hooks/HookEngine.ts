@@ -94,6 +94,7 @@ export class HookEngine {
 
 		const store = new OrchestrationStore(workspacePath)
 		await store.ensureInitialized()
+		const contract = await store.getDirectoryContractStatus()
 
 		const extractedPaths = this.extractTouchedPaths(workspacePath, block)
 		const sidecar = await store.loadSidecarPolicy()
@@ -118,6 +119,40 @@ export class HookEngine {
 
 		if (!isMutatingTool) {
 			return { allowExecution: true, context }
+		}
+
+		if (!contract.isCompliant) {
+			const missing = contract.missingRequiredFiles
+			const unexpected = contract.unexpectedEntries
+			const contractErrorParts: string[] = []
+			if (missing.length > 0) {
+				contractErrorParts.push(`missing required files: ${missing.join(", ")}`)
+			}
+			if (unexpected.length > 0) {
+				contractErrorParts.push(`unexpected entries: ${unexpected.join(", ")}`)
+			}
+			const contractError = contractErrorParts.join("; ")
+
+			await store.appendSharedBrainEntry(
+				`Orchestration contract drift detected. Denied ${toolName}. Details: ${contractError}`,
+			)
+			await store.appendGovernanceEntry({
+				intent_id: task.activeIntentId,
+				tool_name: toolName,
+				status: "DENIED",
+				task_id: task.taskId,
+				model_identifier: task.api.getModel().id,
+				revision_id: await this.getGitRevision(task.cwd),
+				touched_paths: context.touchedPaths,
+				sidecar_constraints: context.sidecarConstraints,
+			})
+			return {
+				allowExecution: false,
+				context,
+				errorMessage:
+					`PreToolUse denied ${toolName}: .orchestration directory contract violation (${contractError}). ` +
+					`Restore required control-plane files and remove unexpected entries.`,
+			}
 		}
 
 		if (sidecar.blocked_tools.includes(toolName)) {
