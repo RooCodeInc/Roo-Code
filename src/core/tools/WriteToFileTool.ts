@@ -18,11 +18,14 @@ import type { ToolUse } from "../../shared/tools"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import { classifyTool, isInScope, isIntentIgnored } from "./intent-middleware"
+import { sha256 } from "../utils/hash"
 import fsSync from "fs"
 
 interface WriteToFileParams {
 	path: string
 	content: string
+	intent_id: string
+	mutation_class: "AST_REFACTOR" | "INTENT_EVOLUTION"
 }
 
 export class WriteToFileTool extends BaseTool<"write_to_file"> {
@@ -32,22 +35,26 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		const { pushToolResult, handleError, askApproval } = callbacks
 		const relPath = params.path
 		let newContent = params.content
+		const intentId = params.intent_id
+		const mutationClass = params.mutation_class
 
 		// === INTENT-AWARE PRE-HOOK (Phase 2) ===
 		// 1. Load active intent
-		let activeIntentId = null
+		let activeIntentId = intentId
 		let ownedScope: string[] = []
 		try {
 			const orchestrationPath = path.join(task.cwd, ".orchestration", "active_intents.yaml")
 			if (fsSync.existsSync(orchestrationPath)) {
 				const yamlRaw = fsSync.readFileSync(orchestrationPath, "utf-8")
-				const match = /- id: "([^"]+)"[\s\S]*?owned_scope:\n([\s\S]*?)\n\s*constraints:/m.exec(yamlRaw)
+				const match = new RegExp(`- id: "${intentId}"([\s\S]*?)(?=\n\s*- id:|$)`, "m").exec(yamlRaw)
 				if (match) {
-					activeIntentId = match[1]
-					ownedScope = match[2]
-						.split("\n")
-						.map((l) => l.replace(/^- /, "").trim())
-						.filter(Boolean)
+					const block = match[1]
+					ownedScope =
+						/owned_scope:\n([\s\S]*?)\n\s*constraints:/m
+							.exec(block)?.[1]
+							?.trim()
+							.split("\n")
+							.map((l) => l.replace(/^- /, "").trim()) || []
 				}
 			}
 		} catch {}
@@ -227,6 +234,51 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			task.didEditFile = true
 
 			const message = await task.diffViewProvider.pushToolWriteResult(task, task.cwd, !fileExists)
+
+			// === PHASE 3: POST-HOOK TRACE SERIALIZATION ===
+			try {
+				const tracePath = path.join(task.cwd, ".orchestration", "agent_trace.jsonl")
+				const vcsSha = null // Optionally, get git SHA here
+				const now = new Date().toISOString()
+				const fileContent = newContent
+				const contentHash = sha256(fileContent)
+				const trace = {
+					id: require("crypto").randomUUID ? require("crypto").randomUUID() : now,
+					timestamp: now,
+					vcs: { revision_id: vcsSha },
+					files: [
+						{
+							relative_path: relPath,
+							conversations: [
+								{
+									url: "session_log_id",
+									contributor: {
+										entity_type: "AI",
+										model_identifier: "unknown",
+									},
+									ranges: [
+										{
+											start_line: 1,
+											end_line: fileContent.split("\n").length,
+											content_hash: `sha256:${contentHash}`,
+										},
+									],
+									related: [
+										{
+											type: "specification",
+											value: intentId,
+										},
+									],
+								},
+							],
+						},
+					],
+					mutation_class: mutationClass,
+				}
+				fsSync.appendFileSync(tracePath, JSON.stringify(trace) + "\n")
+			} catch (e) {
+				// fail silently
+			}
 
 			pushToolResult(message)
 
