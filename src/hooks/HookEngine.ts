@@ -10,6 +10,7 @@ import type { ToolUse } from "../shared/tools"
 import { Task } from "../core/task/Task"
 import { type ActiveIntentRecord, type AgentTraceRecord, OrchestrationStore } from "./OrchestrationStore"
 import { IntentContextService } from "./IntentContextService"
+import { parseSourceCodeDefinitionsForFile } from "../services/tree-sitter"
 
 const execFileAsync = promisify(execFile)
 
@@ -37,6 +38,8 @@ export interface HookPreToolUseContext {
 	intentId?: string
 	intent?: ActiveIntentRecord
 	touchedPaths: string[]
+	sidecarConstraints: string[]
+	sidecarVersion: number
 	hadToolFailureBefore: boolean
 }
 
@@ -82,6 +85,8 @@ export class HookEngine {
 					toolName,
 					isMutatingTool,
 					touchedPaths: [],
+					sidecarConstraints: [],
+					sidecarVersion: 1,
 					hadToolFailureBefore: task.didToolFailInCurrentTurn,
 				},
 			}
@@ -91,10 +96,13 @@ export class HookEngine {
 		await store.ensureInitialized()
 
 		const extractedPaths = this.extractTouchedPaths(workspacePath, block)
+		const sidecar = await store.loadSidecarPolicy()
 		const context: HookPreToolUseContext = {
 			toolName,
 			isMutatingTool,
 			touchedPaths: extractedPaths.insideWorkspacePaths,
+			sidecarConstraints: sidecar.architectural_constraints,
+			sidecarVersion: sidecar.version,
 			hadToolFailureBefore: task.didToolFailInCurrentTurn,
 		}
 
@@ -112,7 +120,60 @@ export class HookEngine {
 			return { allowExecution: true, context }
 		}
 
+		if (sidecar.blocked_tools.includes(toolName)) {
+			await store.appendGovernanceEntry({
+				intent_id: task.activeIntentId,
+				tool_name: toolName,
+				status: "DENIED",
+				task_id: task.taskId,
+				model_identifier: task.api.getModel().id,
+				revision_id: await this.getGitRevision(task.cwd),
+				touched_paths: context.touchedPaths,
+				sidecar_constraints: context.sidecarConstraints,
+			})
+			return {
+				allowExecution: false,
+				context,
+				errorMessage: `PreToolUse denied ${toolName}: blocked by sidecar policy v${sidecar.version}.`,
+			}
+		}
+
+		if (extractedPaths.insideWorkspacePaths.length > 0) {
+			const deniedBySidecar = extractedPaths.insideWorkspacePaths.filter((relativePath) =>
+				sidecar.deny_mutations.some((rule) => this.pathMatchesOwnedScope(relativePath, [rule.path_glob])),
+			)
+			if (deniedBySidecar.length > 0) {
+				await store.appendGovernanceEntry({
+					intent_id: task.activeIntentId,
+					tool_name: toolName,
+					status: "DENIED",
+					task_id: task.taskId,
+					model_identifier: task.api.getModel().id,
+					revision_id: await this.getGitRevision(task.cwd),
+					touched_paths: context.touchedPaths,
+					sidecar_constraints: context.sidecarConstraints,
+				})
+				return {
+					allowExecution: false,
+					context,
+					errorMessage:
+						`PreToolUse denied ${toolName}: sidecar policy v${sidecar.version} denies mutation for path(s): ` +
+						`${deniedBySidecar.join(", ")}.`,
+				}
+			}
+		}
+
 		if (extractedPaths.outsideWorkspacePaths.length > 0) {
+			await store.appendGovernanceEntry({
+				intent_id: task.activeIntentId,
+				tool_name: toolName,
+				status: "DENIED",
+				task_id: task.taskId,
+				model_identifier: task.api.getModel().id,
+				revision_id: await this.getGitRevision(task.cwd),
+				touched_paths: context.touchedPaths,
+				sidecar_constraints: context.sidecarConstraints,
+			})
 			return {
 				allowExecution: false,
 				context,
@@ -124,6 +185,15 @@ export class HookEngine {
 
 		const activeIntentId = task.activeIntentId?.trim()
 		if (!activeIntentId) {
+			await store.appendGovernanceEntry({
+				tool_name: toolName,
+				status: "DENIED",
+				task_id: task.taskId,
+				model_identifier: task.api.getModel().id,
+				revision_id: await this.getGitRevision(task.cwd),
+				touched_paths: context.touchedPaths,
+				sidecar_constraints: context.sidecarConstraints,
+			})
 			return {
 				allowExecution: false,
 				context,
@@ -133,6 +203,16 @@ export class HookEngine {
 
 		const intent = await store.findIntentById(activeIntentId)
 		if (!intent) {
+			await store.appendGovernanceEntry({
+				intent_id: activeIntentId,
+				tool_name: toolName,
+				status: "DENIED",
+				task_id: task.taskId,
+				model_identifier: task.api.getModel().id,
+				revision_id: await this.getGitRevision(task.cwd),
+				touched_paths: context.touchedPaths,
+				sidecar_constraints: context.sidecarConstraints,
+			})
 			return {
 				allowExecution: false,
 				context,
@@ -152,6 +232,16 @@ export class HookEngine {
 				await store.appendSharedBrainEntry(
 					`Scope violation blocked for intent ${intent.id}. Disallowed paths: ${disallowedPaths.join(", ")}`,
 				)
+				await store.appendGovernanceEntry({
+					intent_id: intent.id,
+					tool_name: toolName,
+					status: "DENIED",
+					task_id: task.taskId,
+					model_identifier: task.api.getModel().id,
+					revision_id: await this.getGitRevision(task.cwd),
+					touched_paths: context.touchedPaths,
+					sidecar_constraints: context.sidecarConstraints,
+				})
 				return {
 					allowExecution: false,
 					context,
@@ -184,6 +274,16 @@ export class HookEngine {
 			const statusLabel = executionSucceeded ? "OK" : "FAILED"
 			await store.appendRecentHistory(context.intentId, `POST_HOOK ${context.toolName} ${statusLabel}`)
 		}
+		await store.appendGovernanceEntry({
+			intent_id: context.intentId,
+			tool_name: context.toolName,
+			status: executionSucceeded ? "OK" : "FAILED",
+			task_id: task.taskId,
+			model_identifier: task.api.getModel().id,
+			revision_id: await this.getGitRevision(task.cwd),
+			touched_paths: context.touchedPaths,
+			sidecar_constraints: context.sidecarConstraints,
+		})
 
 		if (context.toolName === "attempt_completion" && executionSucceeded && task.activeIntentId) {
 			const intentContextService = new IntentContextService(store)
@@ -339,9 +439,26 @@ export class HookEngine {
 			const contentHash = `sha256:${crypto.createHash("sha256").update(fileBuffer).digest("hex")}`
 			const text = fileBuffer.toString("utf8")
 			const lineCount = text.length === 0 ? 0 : text.split(/\r?\n/).length
+			let astSummaryHash: string | undefined
+			try {
+				const astSummary = await parseSourceCodeDefinitionsForFile(absolutePath)
+				if (astSummary && astSummary.trim().length > 0) {
+					astSummaryHash = `sha256:${crypto.createHash("sha256").update(astSummary).digest("hex")}`
+				}
+			} catch {
+				// Best-effort AST extraction for trace linkage.
+			}
 
 			files.push({
 				relative_path: relativePath,
+				...(astSummaryHash
+					? {
+							ast_fingerprint: {
+								parser: "tree-sitter" as const,
+								summary_hash: astSummaryHash,
+							},
+						}
+					: {}),
 				conversations: [
 					{
 						url: task.taskId,
