@@ -17,6 +17,8 @@ import { convertNewFileToUnifiedDiff, computeDiffStats, sanitizeUnifiedDiff } fr
 import type { ToolUse } from "../../shared/tools"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
+import { classifyTool, isInScope, isIntentIgnored } from "./intent-middleware"
+import fsSync from "fs"
 
 interface WriteToFileParams {
 	path: string
@@ -30,6 +32,57 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		const { pushToolResult, handleError, askApproval } = callbacks
 		const relPath = params.path
 		let newContent = params.content
+
+		// === INTENT-AWARE PRE-HOOK (Phase 2) ===
+		// 1. Load active intent
+		let activeIntentId = null
+		let ownedScope: string[] = []
+		try {
+			const orchestrationPath = path.join(task.cwd, ".orchestration", "active_intents.yaml")
+			if (fsSync.existsSync(orchestrationPath)) {
+				const yamlRaw = fsSync.readFileSync(orchestrationPath, "utf-8")
+				const match = /- id: "([^"]+)"[\s\S]*?owned_scope:\n([\s\S]*?)\n\s*constraints:/m.exec(yamlRaw)
+				if (match) {
+					activeIntentId = match[1]
+					ownedScope = match[2]
+						.split("\n")
+						.map((l) => l.replace(/^- /, "").trim())
+						.filter(Boolean)
+				}
+			}
+		} catch {}
+
+		// 2. Scope enforcement
+		if (activeIntentId && ownedScope.length > 0) {
+			if (!isInScope(relPath, ownedScope)) {
+				pushToolResult({
+					error: `Scope Violation: ${activeIntentId} is not authorized to edit [${relPath}]. Request scope expansion.`,
+				})
+				return
+			}
+		}
+
+		// 3. .intentignore enforcement
+		const ignored = await isIntentIgnored(task.cwd, relPath)
+		if (ignored) {
+			// Allow without approval
+		} else {
+			// 4. UI-blocking authorization for destructive tools
+			if (classifyTool(this.name) === "destructive") {
+				const approved = await askApproval(
+					"intent",
+					`Approve write to ${relPath} for intent ${activeIntentId || "(none)"}?`,
+					undefined,
+					false,
+				)
+				if (!approved) {
+					pushToolResult({
+						error: `Action rejected by user. Autonomous recovery: self-correct or request approval.`,
+					})
+					return
+				}
+			}
+		}
 
 		if (!relPath) {
 			task.consecutiveMistakeCount++
