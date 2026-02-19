@@ -5,6 +5,22 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0] - 2026-02-19
+
+### Added
+
+- **NDJSON Stdin Protocol**: Overhauled the stdin prompt stream from raw text lines to a structured NDJSON command protocol (`start`/`message`/`cancel`/`ping`/`shutdown`) with requestId correlation, ack/done/error lifecycle events, and queue telemetry. See [`stdin-stream.ts`](src/ui/stdin-stream.ts) for implementation.
+- **List Subcommands**: New `list` subcommands (`commands`, `modes`, `models`) for programmatic discovery of available CLI capabilities.
+- **Shared Utilities**: Added `isRecord` guard utility for improved type safety.
+
+### Changed
+
+- **Modularized Architecture**: Extracted stdin stream logic from `run.ts` into dedicated [`stdin-stream.ts`](src/ui/stdin-stream.ts) module for better code organization and maintainability.
+
+### Fixed
+
+- Fixed a bug in `Task.ts` affecting CLI operation.
+
 ## [0.0.55] - 2026-02-17
 
 ### Fixed
