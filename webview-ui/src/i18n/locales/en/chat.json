@@ -33,6 +33,9 @@
 	},
 	"unpin": "Unpin",
 	"pin": "Pin",
+	"fileChangesInConversation": {
+		"header": "{{count}} file(s) changed in this conversation"
+	},
 	"retry": {
 		"title": "Retry",
 		"tooltip": "Try the operation again"
@@ -366,7 +369,9 @@
 		},
 		"release": {
 			"heading": "What's New:",
-			"smartCodeFolding": "Smart Code Folding: Context condensation now preserves a lightweight map of your files: function signatures, class declarations, and type definitions. This provides better continuity after condensing and smarter edits when referencing previous work."
+			"fileChangesPanel": "File Changes Panel: Track all file modifications made during a conversation in a dedicated panel, making it easy to review what changed.",
+			"workspaceIndexing": "Workspace Indexing Controls: Indexing no longer auto-starts — opt in per workspace with a simple toggle, and stop or cancel indexing at any time.",
+			"historyAndScroll": "History & Scroll Stability: Per-task file-based history store for cross-instance safety, plus a redesigned scroll lifecycle for smoother chat rehydration."
 		},
 		"cloudAgents": {
 			"heading": "New in the Cloud:",
@@ -419,7 +424,8 @@
 		"indexing": "Indexing {{percentage}}%",
 		"indexed": "Indexed",
 		"error": "Index error",
-		"status": "Index status"
+		"status": "Index status",
+		"stopping": "Stopping indexing..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Version {{version}} - Click to view release notes"

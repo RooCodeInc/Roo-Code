@@ -1,6 +1,5 @@
 import fs from "fs"
 import path from "path"
-import { createInterface } from "readline"
 import { fileURLToPath } from "url"
 
 import { createElement } from "react"
@@ -28,26 +27,9 @@ import { getDefaultExtensionPath } from "@/lib/utils/extension.js"
 import { VERSION } from "@/lib/utils/version.js"
 
 import { ExtensionHost, ExtensionHostOptions } from "@/agent/index.js"
+import { runStdinStreamMode } from "./stdin-stream.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-async function* readPromptsFromStdinLines(): AsyncGenerator<string> {
-	const lineReader = createInterface({
-		input: process.stdin,
-		crlfDelay: Infinity,
-		terminal: false,
-	})
-
-	try {
-		for await (const line of lineReader) {
-			if (line.trim()) {
-				yield line
-			}
-		}
-	} finally {
-		lineReader.close()
-	}
-}
 
 export async function run(promptArg: string | undefined, flagOptions: FlagOptions) {
 	setLogger({
@@ -210,19 +192,27 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 
 	if (flagOptions.stdinPromptStream && !flagOptions.print) {
 		console.error("[CLI] Error: --stdin-prompt-stream requires --print mode")
-		console.error("[CLI] Usage: roo --print --stdin-prompt-stream [options]")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
+		process.exit(1)
+	}
+
+	if (flagOptions.stdinPromptStream && outputFormat !== "stream-json") {
+		console.error("[CLI] Error: --stdin-prompt-stream requires --output-format=stream-json")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
 		process.exit(1)
 	}
 
 	if (flagOptions.stdinPromptStream && process.stdin.isTTY) {
 		console.error("[CLI] Error: --stdin-prompt-stream requires piped stdin")
-		console.error("[CLI] Example: printf '1+1=?\\n10!=?\\n' | roo --print --stdin-prompt-stream [options]")
+		console.error(
+			'[CLI] Example: printf \'{"command":"start","requestId":"1","prompt":"1+1=?"}\\n\' | roo --print --output-format stream-json --stdin-prompt-stream [options]',
+		)
 		process.exit(1)
 	}
 
 	if (flagOptions.stdinPromptStream && prompt) {
 		console.error("[CLI] Error: cannot use positional prompt or --prompt-file with --stdin-prompt-stream")
-		console.error("[CLI] Usage: roo --print --stdin-prompt-stream [options]")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
 		process.exit(1)
 	}
 
@@ -233,7 +223,9 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			if (flagOptions.print) {
 				console.error("[CLI] Error: no prompt provided")
 				console.error("[CLI] Usage: roo --print [options] <prompt>")
-				console.error("[CLI] For stdin control mode: roo --print --stdin-prompt-stream [options]")
+				console.error(
+					"[CLI] For stdin control mode: roo --print --output-format stream-json --stdin-prompt-stream [options]",
+				)
 			} else {
 				console.error("[CLI] Error: prompt is required in non-interactive mode")
 				console.error("[CLI] Usage: roo <prompt> [options]")
@@ -280,9 +272,13 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		extensionHostOptions.disableOutput = useJsonOutput
 
 		const host = new ExtensionHost(extensionHostOptions)
+		let streamRequestId: string | undefined
 
 		const jsonEmitter = useJsonOutput
-			? new JsonEventEmitter({ mode: outputFormat as "json" | "stream-json" })
+			? new JsonEventEmitter({
+					mode: outputFormat as "json" | "stream-json",
+					requestIdProvider: () => streamRequestId,
+				})
 			: null
 
 		async function shutdown(signal: string, exitCode: number): Promise<void> {
@@ -305,17 +301,17 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			}
 
 			if (useStdinPromptStream) {
-				let hasReceivedStdinPrompt = false
-
-				for await (const stdinPrompt of readPromptsFromStdinLines()) {
-					hasReceivedStdinPrompt = true
-					await host.runTask(stdinPrompt)
-					jsonEmitter?.clear()
+				if (!jsonEmitter || outputFormat !== "stream-json") {
+					throw new Error("--stdin-prompt-stream requires --output-format=stream-json to emit control events")
 				}
 
-				if (!hasReceivedStdinPrompt) {
-					throw new Error("no prompt provided via stdin")
-				}
+				await runStdinStreamMode({
+					host,
+					jsonEmitter,
+					setStreamRequestId: (id) => {
+						streamRequestId = id
+					},
+				})
 			} else {
 				await host.runTask(prompt!)
 			}
@@ -331,6 +327,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 				process.stdout.write(JSON.stringify(errorEvent) + "\n")
 			} else {
 				console.error("[CLI] Error:", errorMessage)
+
 				if (error instanceof Error) {
 					console.error(error.stack)
 				}

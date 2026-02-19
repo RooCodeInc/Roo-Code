@@ -211,7 +211,12 @@
 		"searchMinScoreResetTooltip": "デフォルト値（0.4）にリセット",
 		"searchMaxResultsLabel": "最大検索結果数",
 		"searchMaxResultsDescription": "コードベースインデックスをクエリする際に返される検索結果の最大数。値を高くするとより多くのコンテキストが提供されますが、関連性の低い結果が含まれる可能性があります。",
-		"resetToDefault": "デフォルトにリセット"
+		"resetToDefault": "デフォルトにリセット",
+		"stopIndexingButton": "インデックス作成を停止",
+		"stoppingButton": "停止中...",
+		"workspaceToggleLabel": "このワークスペースのインデックス作成を有効にする",
+		"workspaceDisabledMessage": "インデックス作成は設定済みですが、このワークスペースでは有効になっていません。",
+		"autoEnableDefaultLabel": "新しいワークスペースのインデックス作成を自動的に有効にする"
 	},
 	"autoApprove": {
 		"toggleShortcut": "<SettingsLink>IDEの環境設定</SettingsLink>で、この設定のグローバルショートカットを設定できます。",
@@ -366,11 +371,11 @@
 		"getAnthropicApiKey": "Anthropic APIキーを取得",
 		"anthropicUseAuthToken": "Anthropic APIキーをX-Api-Keyの代わりにAuthorizationヘッダーとして渡す",
 		"anthropic1MContextBetaLabel": "1Mコンテキストウィンドウを有効にする（ベータ版）",
-		"anthropic1MContextBetaDescription": "Claude Sonnet 4のコンテキストウィンドウを100万トークンに拡張します",
+		"anthropic1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6のコンテキストウィンドウを100万トークンに拡張します",
 		"awsBedrock1MContextBetaLabel": "1Mコンテキストウィンドウを有効にする（ベータ版）",
-		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4のコンテキストウィンドウを100万トークンに拡張します",
+		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6のコンテキストウィンドウを100万トークンに拡張します",
 		"vertex1MContextBetaLabel": "1Mコンテキストウィンドウを有効にする（ベータ版）",
-		"vertex1MContextBetaDescription": "Claude Sonnet 4のコンテキストウィンドウを100万トークンに拡張します",
+		"vertex1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6のコンテキストウィンドウを100万トークンに拡張します",
 		"basetenApiKey": "Baseten APIキー",
 		"getBasetenApiKey": "Baseten APIキーを取得",
 		"fireworksApiKey": "Fireworks APIキー",

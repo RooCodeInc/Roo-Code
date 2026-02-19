@@ -33,6 +33,9 @@
 	},
 	"unpin": "Sabitlemeyi iptal et",
 	"pin": "Sabitle",
+	"fileChangesInConversation": {
+		"header": "Bu sohbette {{count}} dosya değiştirildi"
+	},
 	"tokenProgress": {
 		"availableSpace": "Kullanılabilir alan: {{amount}} token",
 		"tokensUsed": "Kullanılan tokenlar: {{used}} / {{total}}",
@@ -348,7 +351,9 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"smartCodeFolding": "Smart Code Folding: Bağlam yoğunlaştırması şimdi dosyalarınızın hafif bir haritasını korur—fonksiyon imzaları, sınıf bildirimleri ve tür tanımları. Bu, yoğunlaştırmadan sonra daha iyi devamlılık ve önceki çalışmaya atıfta bulunurken daha akıllı düzenlemeler sağlar."
+			"fileChangesPanel": "Dosya Değişiklikleri Paneli: Bir konuşma sırasında yapılan tüm dosya değişikliklerini özel bir panelde takip et, neyin değiştiğini kolayca gözden geçir.",
+			"workspaceIndexing": "Çalışma Alanı İndeksleme Kontrolleri: İndeksleme artık otomatik başlamıyor — basit bir düğmeyle çalışma alanı başına etkinleştir ve istediğin zaman indekslemeyi durdur veya iptal et.",
+			"historyAndScroll": "Geçmiş ve Kaydırma Kararlılığı: Örnekler arası güvenlik için görev bazlı dosya tabanlı geçmiş deposu, ayrıca daha akıcı sohbet yeniden yüklemesi için yeniden tasarlanmış kaydırma yaşam döngüsü."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",
@@ -424,7 +429,8 @@
 		"indexing": "İndeksleniyor {{percentage}}%",
 		"indexed": "İndekslendi",
 		"error": "İndeks hatası",
-		"status": "İndeks durumu"
+		"status": "İndeks durumu",
+		"stopping": "İndeksleme durduruluyor..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Sürüm {{version}} - Sürüm notlarını görüntülemek için tıklayın"

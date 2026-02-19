@@ -211,7 +211,12 @@
 		"searchMinScoreResetTooltip": "恢复默认值 (0.4)",
 		"searchMaxResultsLabel": "最大搜索结果数",
 		"searchMaxResultsDescription": "查询代码库索引时返回的最大搜索结果数。较高的值提供更多上下文，但可能包含相关性较低的结果。",
-		"resetToDefault": "恢复默认值"
+		"resetToDefault": "恢复默认值",
+		"stopIndexingButton": "停止索引",
+		"stoppingButton": "正在停止...",
+		"workspaceToggleLabel": "为此工作区启用索引",
+		"workspaceDisabledMessage": "索引已配置，但尚未为此工作区启用。",
+		"autoEnableDefaultLabel": "自动为新工作区启用索引"
 	},
 	"autoApprove": {
 		"toggleShortcut": "您可以<SettingsLink>在 IDE 首选项中</SettingsLink>为此设置配置全局快捷方式。",
@@ -366,11 +371,11 @@
 		"getAnthropicApiKey": "获取 Anthropic API 密钥",
 		"anthropicUseAuthToken": "将 Anthropic API 密钥作为 Authorization 标头传递，而不是 X-Api-Key",
 		"anthropic1MContextBetaLabel": "启用 1M 上下文窗口 (Beta)",
-		"anthropic1MContextBetaDescription": "为 Claude Sonnet 4 将上下文窗口扩展至 100 万个 token",
+		"anthropic1MContextBetaDescription": "为 Claude Sonnet 4.x / Claude Opus 4.6 将上下文窗口扩展至 100 万个 token",
 		"awsBedrock1MContextBetaLabel": "启用 1M 上下文窗口 (Beta)",
-		"awsBedrock1MContextBetaDescription": "为 Claude Sonnet 4 将上下文窗口扩展至 100 万个 token",
+		"awsBedrock1MContextBetaDescription": "为 Claude Sonnet 4.x / Claude Opus 4.6 将上下文窗口扩展至 100 万个 token",
 		"vertex1MContextBetaLabel": "启用 1M 上下文窗口 (Beta)",
-		"vertex1MContextBetaDescription": "为 Claude Sonnet 4 将上下文窗口扩展至 100 万个 token",
+		"vertex1MContextBetaDescription": "为 Claude Sonnet 4.x / Claude Opus 4.6 将上下文窗口扩展至 100 万个 token",
 		"basetenApiKey": "Baseten API 密钥",
 		"getBasetenApiKey": "获取 Baseten API 密钥",
 		"fireworksApiKey": "Fireworks API 密钥",

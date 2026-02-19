@@ -33,6 +33,9 @@
 	},
 	"unpin": "取消釘選",
 	"pin": "釘選",
+	"fileChangesInConversation": {
+		"header": "此對話中已變更 {{count}} 個檔案"
+	},
 	"retry": {
 		"title": "重試",
 		"tooltip": "再次嘗試操作"
@@ -369,7 +372,9 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"smartCodeFolding": "智慧代碼摺疊：上下文壓縮現保留檔案的輕量級對應圖——函數簽章、類別宣告和型別定義。 這提供壓縮後更佳的連續性，以及引用之前工作時更聰慧的編輯。"
+			"fileChangesPanel": "檔案變更面板：在專用面板中追蹤對話期間所有檔案修改，方便查看哪些內容發生了變化。",
+			"workspaceIndexing": "工作區索引控制：索引不再自動啟動——透過簡單開關按工作區啟用，隨時停止或取消索引。",
+			"historyAndScroll": "歷史紀錄與捲動穩定性：基於檔案的按工作歷史儲存確保跨實例安全，加上重新設計的捲動生命週期讓聊天重載更流暢。"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",
@@ -422,7 +427,8 @@
 		"indexing": "索引中 {{percentage}}%",
 		"indexed": "已索引",
 		"error": "索引錯誤",
-		"status": "索引狀態"
+		"status": "索引狀態",
+		"stopping": "正在停止索引..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "版本 {{version}} - 點選查看發布說明"

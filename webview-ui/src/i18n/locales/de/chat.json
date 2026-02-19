@@ -33,6 +33,9 @@
 	},
 	"unpin": "Lösen von oben",
 	"pin": "Anheften",
+	"fileChangesInConversation": {
+		"header": "{{count}} Datei(en) in dieser Unterhaltung geändert"
+	},
 	"tokenProgress": {
 		"availableSpace": "Verfügbarer Speicher: {{amount}} Tokens",
 		"tokensUsed": "Verwendete Tokens: {{used}} von {{total}}",
@@ -347,7 +350,9 @@
 		},
 		"release": {
 			"heading": "Was ist neu:",
-			"smartCodeFolding": "Intelligentes Code-Folding: Kontextkomprimierung bewahrt jetzt eine leichte Karte deiner Dateien—Funktionssignaturen, Klassendeklarationen und Typdefinitionen. Dies ermöglicht bessere Kontinuität nach der Komprimierung und intelligentere Bearbeitungen beim Verweisen auf vorherige Arbeiten."
+			"fileChangesPanel": "Dateiänderungen-Panel: Verfolge alle Dateiänderungen einer Konversation in einem eigenen Panel – so siehst du auf einen Blick, was sich geändert hat.",
+			"workspaceIndexing": "Workspace-Indexierung: Die Indexierung startet nicht mehr automatisch – aktiviere sie pro Workspace mit einem einfachen Schalter, und stoppe oder brich die Indexierung jederzeit ab.",
+			"historyAndScroll": "Verlauf & Scroll-Stabilität: Dateibasierter Verlaufsspeicher pro Aufgabe für Sicherheit über Instanzen hinweg, plus ein überarbeiteter Scroll-Lebenszyklus für flüssigere Chat-Rehydrierung."
 		},
 		"cloudAgents": {
 			"heading": "Neu in der Cloud:",
@@ -423,7 +428,8 @@
 		"indexing": "Indizierung {{percentage}}%",
 		"indexed": "Indiziert",
 		"error": "Index-Fehler",
-		"status": "Index-Status"
+		"status": "Index-Status",
+		"stopping": "Indexierung wird gestoppt..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Version {{version}} - Klicken Sie, um die Versionshinweise anzuzeigen"

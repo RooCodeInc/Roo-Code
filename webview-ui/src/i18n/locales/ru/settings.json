@@ -211,7 +211,12 @@
 		"searchMinScoreResetTooltip": "Сбросить к значению по умолчанию (0.4)",
 		"searchMaxResultsLabel": "Максимальное количество результатов поиска",
 		"searchMaxResultsDescription": "Максимальное количество результатов поиска, возвращаемых при запросе индекса кодовой базы. Более высокие значения предоставляют больше контекста, но могут включать менее релевантные результаты.",
-		"resetToDefault": "Сбросить к значению по умолчанию"
+		"resetToDefault": "Сбросить к значению по умолчанию",
+		"stopIndexingButton": "Остановить индексацию",
+		"stoppingButton": "Остановка...",
+		"workspaceToggleLabel": "Включить индексацию для этого рабочего пространства",
+		"workspaceDisabledMessage": "Индексация настроена, но не включена для этого рабочего пространства.",
+		"autoEnableDefaultLabel": "Автоматически включать индексацию для новых рабочих пространств"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Вы можете настроить глобальное сочетание клавиш для этого параметра <SettingsLink>в настройках вашей IDE</SettingsLink>.",
@@ -366,11 +371,11 @@
 		"getAnthropicApiKey": "Получить Anthropic API-ключ",
 		"anthropicUseAuthToken": "Передавать Anthropic API-ключ как Authorization-заголовок вместо X-Api-Key",
 		"anthropic1MContextBetaLabel": "Включить контекстное окно 1M (бета)",
-		"anthropic1MContextBetaDescription": "Расширяет контекстное окно до 1 миллиона токенов для Claude Sonnet 4",
+		"anthropic1MContextBetaDescription": "Расширяет контекстное окно до 1 миллиона токенов для Claude Sonnet 4.x / Claude Opus 4.6",
 		"awsBedrock1MContextBetaLabel": "Включить контекстное окно 1M (бета)",
-		"awsBedrock1MContextBetaDescription": "Расширяет контекстное окно до 1 миллиона токенов для Claude Sonnet 4",
+		"awsBedrock1MContextBetaDescription": "Расширяет контекстное окно до 1 миллиона токенов для Claude Sonnet 4.x / Claude Opus 4.6",
 		"vertex1MContextBetaLabel": "Включить контекстное окно 1M (бета)",
-		"vertex1MContextBetaDescription": "Расширяет контекстное окно до 1 миллиона токенов для Claude Sonnet 4",
+		"vertex1MContextBetaDescription": "Расширяет контекстное окно до 1 миллиона токенов для Claude Sonnet 4.x / Claude Opus 4.6",
 		"basetenApiKey": "Baseten API-ключ",
 		"getBasetenApiKey": "Получить Baseten API-ключ",
 		"fireworksApiKey": "Fireworks API-ключ",

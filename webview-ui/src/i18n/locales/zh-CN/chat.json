@@ -33,6 +33,9 @@
 	},
 	"unpin": "取消置顶",
 	"pin": "置顶",
+	"fileChangesInConversation": {
+		"header": "此对话中已更改 {{count}} 个文件"
+	},
 	"tokenProgress": {
 		"availableSpace": "可用: {{amount}}",
 		"tokensUsed": "已使用: {{used}} / {{total}}",
@@ -348,7 +351,9 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"smartCodeFolding": "智能代码折叠：上下文压缩现在保留文件的轻量级映射——函数签名、类声明和类型定义。 这在压缩后提供更好的连续性，引用之前工作时编辑更聪明。"
+			"fileChangesPanel": "档案变更面板：在专用面板中追踪对话期间所有档案修改，方便查看哪些内容发生了变化。",
+			"workspaceIndexing": "工作区索引控制：索引不再自动启动——通过简单开关按工作区启用，随时停止或取消索引。",
+			"historyAndScroll": "历史记录与滚动稳定性：基于文件的按任务历史存储确保跨实例安全，加上重新设计的滚动生命周期让聊天重载更流畅。"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",
@@ -424,7 +429,8 @@
 		"indexing": "索引中 {{percentage}}%",
 		"indexed": "已索引",
 		"error": "索引错误",
-		"status": "索引状态"
+		"status": "索引状态",
+		"stopping": "正在停止索引..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "版本 {{version}} - 点击查看发布说明"

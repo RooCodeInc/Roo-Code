@@ -33,6 +33,9 @@
 	},
 	"unpin": "Desfijar",
 	"pin": "Fijar",
+	"fileChangesInConversation": {
+		"header": "{{count}} archivo(s) modificado(s) en esta conversación"
+	},
 	"retry": {
 		"title": "Reintentar",
 		"tooltip": "Intenta la operación de nuevo"
@@ -347,7 +350,9 @@
 		},
 		"release": {
 			"heading": "Qué hay de nuevo:",
-			"smartCodeFolding": "Plegado de código inteligente: La condensación de contexto ahora preserva un mapa ligero de tus archivos—firmas de función, declaraciones de clase y definiciones de tipo. Esto proporciona mejor continuidad después de condensar y ediciones más inteligentes al referenciar trabajo anterior."
+			"fileChangesPanel": "Panel de cambios de archivos: Rastrea todas las modificaciones de archivos realizadas durante una conversación en un panel dedicado, facilitando la revisión de los cambios.",
+			"workspaceIndexing": "Controles de indexación del espacio de trabajo: La indexación ya no se inicia automáticamente — actívala por espacio de trabajo con un simple interruptor, y detén o cancela la indexación en cualquier momento.",
+			"historyAndScroll": "Estabilidad del historial y desplazamiento: Almacenamiento de historial basado en archivos por tarea para seguridad entre instancias, además de un ciclo de vida de desplazamiento rediseñado para una rehidratación del chat más fluida."
 		},
 		"cloudAgents": {
 			"heading": "Novedades en la Nube:",
@@ -423,7 +428,8 @@
 		"indexing": "Indexando {{percentage}}%",
 		"indexed": "Indexado",
 		"error": "Error de índice",
-		"status": "Estado del índice"
+		"status": "Estado del índice",
+		"stopping": "Deteniendo la indexación..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versión {{version}} - Haz clic para ver las notas de la versión"

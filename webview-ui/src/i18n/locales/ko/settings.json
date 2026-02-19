@@ -211,7 +211,12 @@
 		"searchMinScoreResetTooltip": "기본값(0.4)으로 재설정",
 		"searchMaxResultsLabel": "최대 검색 결과",
 		"searchMaxResultsDescription": "코드베이스 인덱스를 쿼리할 때 반환할 최대 검색 결과 수입니다. 값이 높을수록 더 많은 컨텍스트를 제공하지만 관련성이 낮은 결과가 포함될 수 있습니다.",
-		"resetToDefault": "기본값으로 재설정"
+		"resetToDefault": "기본값으로 재설정",
+		"stopIndexingButton": "인덱싱 중지",
+		"stoppingButton": "중지 중...",
+		"workspaceToggleLabel": "이 워크스페이스에 대한 인덱싱 활성화",
+		"workspaceDisabledMessage": "인덱싱이 구성되었지만 이 워크스페이스에서는 활성화되지 않았습니다.",
+		"autoEnableDefaultLabel": "새 워크스페이스에 대한 인덱싱 자동 활성화"
 	},
 	"autoApprove": {
 		"toggleShortcut": "<SettingsLink>IDE 환경 설정</SettingsLink>에서 이 설정에 대한 전역 바로 가기를 구성할 수 있습니다.",
@@ -366,11 +371,11 @@
 		"getAnthropicApiKey": "Anthropic API 키 받기",
 		"anthropicUseAuthToken": "X-Api-Key 대신 Authorization 헤더로 Anthropic API 키 전달",
 		"anthropic1MContextBetaLabel": "1M 컨텍스트 창 활성화 (베타)",
-		"anthropic1MContextBetaDescription": "Claude Sonnet 4의 컨텍스트 창을 100만 토큰으로 확장",
+		"anthropic1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6의 컨텍스트 창을 100만 토큰으로 확장",
 		"awsBedrock1MContextBetaLabel": "1M 컨텍스트 창 활성화 (베타)",
-		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4의 컨텍스트 창을 100만 토큰으로 확장",
+		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6의 컨텍스트 창을 100만 토큰으로 확장",
 		"vertex1MContextBetaLabel": "1M 컨텍스트 창 활성화 (베타)",
-		"vertex1MContextBetaDescription": "Claude Sonnet 4의 컨텍스트 창을 100만 토큰으로 확장",
+		"vertex1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6의 컨텍스트 창을 100만 토큰으로 확장",
 		"basetenApiKey": "Baseten API 키",
 		"getBasetenApiKey": "Baseten API 키 가져오기",
 		"fireworksApiKey": "Fireworks API 키",

@@ -33,6 +33,9 @@
 	},
 	"unpin": "Desfixar",
 	"pin": "Fixar",
+	"fileChangesInConversation": {
+		"header": "{{count}} arquivo(s) alterado(s) nesta conversa"
+	},
 	"tokenProgress": {
 		"availableSpace": "Espaço disponível: {{amount}} tokens",
 		"tokensUsed": "Tokens usados: {{used}} de {{total}}",
@@ -347,7 +350,9 @@
 		},
 		"release": {
 			"heading": "Novidades:",
-			"smartCodeFolding": "Smart Code Folding: A condensação de contexto agora preserva um mapa leve de seus arquivos—assinaturas de função, declarações de classe e definições de tipo. Isso oferece melhor continuidade após condensação e edições mais inteligentes ao referenciar trabalho anterior."
+			"fileChangesPanel": "Painel de alterações de arquivos: Acompanhe todas as modificações de arquivos feitas durante uma conversa em um painel dedicado, facilitando a revisão do que mudou.",
+			"workspaceIndexing": "Controles de indexação do workspace: A indexação não inicia mais automaticamente — ative por workspace com um simples botão, e pare ou cancele a indexação a qualquer momento.",
+			"historyAndScroll": "Estabilidade do histórico e rolagem: Armazenamento de histórico baseado em arquivos por tarefa para segurança entre instâncias, além de um ciclo de vida de rolagem redesenhado para uma reidratação do chat mais suave."
 		},
 		"cloudAgents": {
 			"heading": "Novidades na Nuvem:",
@@ -423,7 +428,8 @@
 		"indexing": "Indexando {{percentage}}%",
 		"indexed": "Indexado",
 		"error": "Erro do índice",
-		"status": "Status do índice"
+		"status": "Status do índice",
+		"stopping": "Parando a indexação..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versão {{version}} - Clique para ver as notas de lançamento"

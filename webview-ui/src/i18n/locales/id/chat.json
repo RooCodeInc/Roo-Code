@@ -36,6 +36,9 @@
 	},
 	"unpin": "Lepas Pin",
 	"pin": "Pin",
+	"fileChangesInConversation": {
+		"header": "{{count}} file diubah dalam percakapan ini"
+	},
 	"retry": {
 		"title": "Coba Lagi",
 		"tooltip": "Coba operasi lagi"
@@ -376,7 +379,9 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"smartCodeFolding": "Smart Code Folding: Kondensasi konteks sekarang mempertahankan peta ringan dari file Anda—tanda tangan fungsi, deklarasi kelas, dan definisi tipe. Ini memberikan kontinuitas yang lebih baik setelah kondensasi dan pengeditan yang lebih cerdas saat merujuk pekerjaan sebelumnya."
+			"fileChangesPanel": "Panel Perubahan File: Lacak semua perubahan file yang dilakukan selama percakapan di panel khusus, sehingga mudah untuk meninjau apa yang berubah.",
+			"workspaceIndexing": "Kontrol Pengindeksan Workspace: Pengindeksan tidak lagi dimulai otomatis — aktifkan per workspace dengan tombol sederhana, dan hentikan atau batalkan pengindeksan kapan saja.",
+			"historyAndScroll": "Stabilitas Riwayat & Scroll: Penyimpanan riwayat berbasis file per tugas untuk keamanan lintas instansi, ditambah siklus hidup scroll yang didesain ulang untuk rehidrasi chat yang lebih mulus."
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",
@@ -429,7 +434,8 @@
 		"indexing": "Mengindeks {{percentage}}%",
 		"indexed": "Terindeks",
 		"error": "Error indeks",
-		"status": "Status indeks"
+		"status": "Status indeks",
+		"stopping": "Menghentikan pengindeksan..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versi {{version}} - Klik untuk melihat catatan rilis"

@@ -508,9 +508,12 @@ export interface WebviewMessage {
 		| "condenseTaskContextRequest"
 		| "requestIndexingStatus"
 		| "startIndexing"
+		| "stopIndexing"
 		| "clearIndexData"
 		| "indexingStatusUpdate"
 		| "indexCleared"
+		| "toggleWorkspaceIndexing"
+		| "setAutoEnableDefault"
 		| "focusPanelRequest"
 		| "openExternal"
 		| "filterMarketplaceItems"
@@ -705,7 +708,7 @@ export const checkoutRestorePayloadSchema = z.object({
 export type CheckpointRestorePayload = z.infer<typeof checkoutRestorePayloadSchema>
 
 export interface IndexingStatusPayload {
-	state: "Standby" | "Indexing" | "Indexed" | "Error"
+	state: "Standby" | "Indexing" | "Indexed" | "Error" | "Stopping"
 	message: string
 }
 
@@ -739,6 +742,8 @@ export interface IndexingStatus {
 	totalItems: number
 	currentItemUnit?: string
 	workspacePath?: string
+	workspaceEnabled?: boolean
+	autoEnableDefault?: boolean
 }
 
 export interface IndexingStatusUpdateMessage {

@@ -33,6 +33,9 @@
 	},
 	"unpin": "Desfixar",
 	"pin": "Fixar",
+	"fileChangesInConversation": {
+		"header": "{{count}} fitxer(s) canviat(s) en aquesta conversa"
+	},
 	"tokenProgress": {
 		"availableSpace": "Espai disponible: {{amount}} tokens",
 		"tokensUsed": "Tokens utilitzats: {{used}} de {{total}}",
@@ -347,7 +350,9 @@
 		},
 		"release": {
 			"heading": "Què hi ha de nou:",
-			"smartCodeFolding": "Plegament intel·ligent de codi: La condensació de context ara preserva un mapa lleuger dels teus fitxers—signatures de funcions, declaracions de classe i definicions de tipus. Això proporciona millor continuïtat després de condensar i edicions més intel·ligents quan es fa referència a feina anterior."
+			"fileChangesPanel": "Panell de canvis de fitxers: Fes un seguiment de totes les modificacions de fitxers fetes durant una conversa en un panell dedicat, facilitant la revisió dels canvis.",
+			"workspaceIndexing": "Controls d'indexació de l'espai de treball: La indexació ja no s'inicia automàticament — activa-la per espai de treball amb un simple commutador, i atura o cancel·la la indexació en qualsevol moment.",
+			"historyAndScroll": "Estabilitat de l'historial i el desplaçament: Emmagatzematge d'historial basat en fitxers per tasca per a seguretat entre instàncies, més un cicle de vida de desplaçament redissenyat per a una rehidratació del xat més fluida."
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",
@@ -423,7 +428,8 @@
 		"indexing": "Indexant {{percentage}}%",
 		"indexed": "Indexat",
 		"error": "Error d'índex",
-		"status": "Estat de l'índex"
+		"status": "Estat de l'índex",
+		"stopping": "Aturant la indexació..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versió {{version}} - Feu clic per veure les notes de llançament"

@@ -33,6 +33,9 @@
 	},
 	"unpin": "고정 해제하기",
 	"pin": "고정하기",
+	"fileChangesInConversation": {
+		"header": "이 대화에서 {{count}}개 파일이 변경됨"
+	},
 	"tokenProgress": {
 		"availableSpace": "사용 가능한 공간: {{amount}} 토큰",
 		"tokensUsed": "사용된 토큰: {{used}} / {{total}}",
@@ -347,7 +350,9 @@
 		},
 		"release": {
 			"heading": "새로운 기능:",
-			"smartCodeFolding": "스마트 코드 폴딩: 컨텍스트 응축이 이제 파일의 경량 맵을 보존합니다—함수 시그니처, 클래스 선언 및 타입 정의를 포함합니다. 이는 응축 후 더 나은 연속성과 이전 작업을 참조할 때 더 스마트한 편집을 제공합니다."
+			"fileChangesPanel": "파일 변경 패널: 대화 중에 이루어진 모든 파일 수정 사항을 전용 패널에서 추적하여, 무엇이 변경되었는지 쉽게 확인할 수 있습니다.",
+			"workspaceIndexing": "워크스페이스 인덱싱 제어: 인덱싱이 더 이상 자동으로 시작되지 않습니다 — 간단한 토글로 워크스페이스별로 활성화하고, 언제든지 인덱싱을 중지하거나 취소할 수 있습니다.",
+			"historyAndScroll": "기록 및 스크롤 안정성: 인스턴스 간 안전을 위한 작업별 파일 기반 기록 저장소와 더 부드러운 채팅 리하이드레이션을 위한 재설계된 스크롤 라이프사이클."
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",
@@ -423,7 +428,8 @@
 		"indexing": "인덱싱 중 {{percentage}}%",
 		"indexed": "인덱싱 완료",
 		"error": "인덱스 오류",
-		"status": "인덱스 상태"
+		"status": "인덱스 상태",
+		"stopping": "인덱싱 중지 중..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "버전 {{version}} - 릴리스 노트를 보려면 클릭하세요"

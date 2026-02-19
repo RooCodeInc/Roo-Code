@@ -211,7 +211,12 @@
 		"searchMinScoreResetTooltip": "डिफ़ॉल्ट मान पर रीसेट करें (0.4)",
 		"searchMaxResultsLabel": "अधिकतम खोज परिणाम",
 		"searchMaxResultsDescription": "कोडबेस इंडेक्स को क्वेरी करते समय वापस करने के लिए खोज परिणामों की अधिकतम संख्या। उच्च मान अधिक संदर्भ प्रदान करते हैं लेकिन कम प्रासंगिक परिणाम शामिल कर सकते हैं।",
-		"resetToDefault": "डिफ़ॉल्ट पर रीसेट करें"
+		"resetToDefault": "डिफ़ॉल्ट पर रीसेट करें",
+		"stopIndexingButton": "इंडेक्सिंग रोकें",
+		"stoppingButton": "रोक रहा है...",
+		"workspaceToggleLabel": "इस वर्कस्पेस के लिए इंडेक्सिंग सक्षम करें",
+		"workspaceDisabledMessage": "इंडेक्सिंग कॉन्फ़िगर की गई है लेकिन इस वर्कस्पेस के लिए सक्षम नहीं है।",
+		"autoEnableDefaultLabel": "नए वर्कस्पेस के लिए स्वचालित रूप से इंडेक्सिंग सक्षम करें"
 	},
 	"autoApprove": {
 		"toggleShortcut": "आप <SettingsLink>अपनी आईडीई वरीयताओं में</SettingsLink> इस सेटिंग के लिए एक वैश्विक शॉर्टकट कॉन्फ़िगर कर सकते हैं।",
@@ -366,11 +371,11 @@
 		"getAnthropicApiKey": "Anthropic API कुंजी प्राप्त करें",
 		"anthropicUseAuthToken": "X-Api-Key के बजाय Anthropic API कुंजी को Authorization हेडर के रूप में पास करें",
 		"anthropic1MContextBetaLabel": "1M संदर्भ विंडो सक्षम करें (बीटा)",
-		"anthropic1MContextBetaDescription": "Claude Sonnet 4 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
+		"anthropic1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
 		"awsBedrock1MContextBetaLabel": "1M संदर्भ विंडो सक्षम करें (बीटा)",
-		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
+		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
 		"vertex1MContextBetaLabel": "1M संदर्भ विंडो सक्षम करें (बीटा)",
-		"vertex1MContextBetaDescription": "Claude Sonnet 4 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
+		"vertex1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
 		"basetenApiKey": "Baseten API कुंजी",
 		"getBasetenApiKey": "Baseten API कुंजी प्राप्त करें",
 		"fireworksApiKey": "Fireworks API कुंजी",

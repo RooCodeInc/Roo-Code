@@ -211,7 +211,12 @@
 		"searchMinScoreResetTooltip": "Varsayılan değere sıfırla (0.4)",
 		"searchMaxResultsLabel": "Maksimum Arama Sonuçları",
 		"searchMaxResultsDescription": "Kod tabanı dizinini sorgularken döndürülecek maksimum arama sonucu sayısı. Daha yüksek değerler daha fazla bağlam sağlar ancak daha az alakalı sonuçlar içerebilir.",
-		"resetToDefault": "Varsayılana sıfırla"
+		"resetToDefault": "Varsayılana sıfırla",
+		"stopIndexingButton": "İndekslemeyi durdur",
+		"stoppingButton": "Durduruluyor...",
+		"workspaceToggleLabel": "Bu çalışma alanı için indekslemeyi etkinleştir",
+		"workspaceDisabledMessage": "İndeksleme yapılandırıldı ancak bu çalışma alanı için etkinleştirilmedi.",
+		"autoEnableDefaultLabel": "Yeni çalışma alanları için indekslemeyi otomatik etkinleştir"
 	},
 	"autoApprove": {
 		"toggleShortcut": "<SettingsLink>IDE tercihlerinizde</SettingsLink> bu ayar için genel bir kısayol yapılandırabilirsiniz.",
@@ -366,11 +371,11 @@
 		"getAnthropicApiKey": "Anthropic API Anahtarı Al",
 		"anthropicUseAuthToken": "Anthropic API Anahtarını X-Api-Key yerine Authorization başlığı olarak geçir",
 		"anthropic1MContextBetaLabel": "1M bağlam penceresini etkinleştir (Beta)",
-		"anthropic1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
+		"anthropic1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6 için bağlam penceresini 1 milyon token'a genişletir",
 		"awsBedrock1MContextBetaLabel": "1M bağlam penceresini etkinleştir (Beta)",
-		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
+		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6 için bağlam penceresini 1 milyon token'a genişletir",
 		"vertex1MContextBetaLabel": "1M bağlam penceresini etkinleştir (Beta)",
-		"vertex1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
+		"vertex1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6 için bağlam penceresini 1 milyon token'a genişletir",
 		"basetenApiKey": "Baseten API Anahtarı",
 		"getBasetenApiKey": "Baseten API Anahtarı Al",
 		"fireworksApiKey": "Fireworks API Anahtarı",

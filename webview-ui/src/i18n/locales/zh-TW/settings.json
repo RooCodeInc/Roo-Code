@@ -221,7 +221,12 @@
 			"baseUrlRequired": "需要基礎 URL",
 			"modelDimensionMinValue": "模型維度必須大於 0"
 		},
-		"optional": "選用"
+		"optional": "選用",
+		"stopIndexingButton": "停止索引",
+		"stoppingButton": "正在停止...",
+		"workspaceToggleLabel": "為此工作區啟用索引",
+		"workspaceDisabledMessage": "索引已設定，但尚未為此工作區啟用。",
+		"autoEnableDefaultLabel": "自動為新工作區啟用索引"
 	},
 	"autoApprove": {
 		"description": "無需詢問許可即可執行下列動作。請僅在您完全信任且了解安全風險的情況下啟用此功能。",
@@ -376,11 +381,11 @@
 		"getAnthropicApiKey": "取得 Anthropic API 金鑰",
 		"anthropicUseAuthToken": "將 Anthropic API 金鑰作為 Authorization 標頭傳遞，而非使用 X-Api-Key",
 		"anthropic1MContextBetaLabel": "啟用 1M 上下文視窗 (Beta)",
-		"anthropic1MContextBetaDescription": "為 Claude Sonnet 4 將上下文視窗擴展至 100 萬個 token",
+		"anthropic1MContextBetaDescription": "為 Claude Sonnet 4.x / Claude Opus 4.6 將上下文視窗擴展至 100 萬個 token",
 		"awsBedrock1MContextBetaLabel": "啟用 1M 上下文視窗 (Beta)",
-		"awsBedrock1MContextBetaDescription": "為 Claude Sonnet 4 將上下文視窗擴展至 100 萬個 token",
+		"awsBedrock1MContextBetaDescription": "為 Claude Sonnet 4.x / Claude Opus 4.6 將上下文視窗擴展至 100 萬個 token",
 		"vertex1MContextBetaLabel": "啟用 1M 上下文視窗 (Beta)",
-		"vertex1MContextBetaDescription": "為 Claude Sonnet 4 將上下文視窗擴展至 100 萬個 token",
+		"vertex1MContextBetaDescription": "為 Claude Sonnet 4.x / Claude Opus 4.6 將上下文視窗擴展至 100 萬個 token",
 		"basetenApiKey": "Baseten API 金鑰",
 		"getBasetenApiKey": "取得 Baseten API 金鑰",
 		"fireworksApiKey": "Fireworks API 金鑰",

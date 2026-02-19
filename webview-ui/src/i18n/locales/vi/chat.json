@@ -33,6 +33,9 @@
 	},
 	"unpin": "Bỏ ghim khỏi đầu",
 	"pin": "Ghim lên đầu",
+	"fileChangesInConversation": {
+		"header": "{{count}} tệp đã thay đổi trong cuộc hội thoại này"
+	},
 	"tokenProgress": {
 		"availableSpace": "Không gian khả dụng: {{amount}} tokens",
 		"tokensUsed": "Tokens đã sử dụng: {{used}} trong {{total}}",
@@ -348,7 +351,9 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"smartCodeFolding": "Smart Code Folding: Nén ngữ cảnh giờ đây bảo tồn một bản đồ nhẹ của các tệp của bạn—chữ ký hàm, khai báo lớp và định nghĩa kiểu. Điều này cung cấp tính liên tục tốt hơn sau nén và chỉnh sửa thông minh hơn khi tham chiếu công việc trước đó."
+			"fileChangesPanel": "Bảng thay đổi tệp: Theo dõi tất cả các sửa đổi tệp được thực hiện trong cuộc trò chuyện trong một bảng chuyên dụng, giúp dễ dàng xem lại những gì đã thay đổi.",
+			"workspaceIndexing": "Điều khiển lập chỉ mục Workspace: Lập chỉ mục không còn tự động bắt đầu — bật cho từng workspace bằng một nút đơn giản, và dừng hoặc hủy lập chỉ mục bất cứ lúc nào.",
+			"historyAndScroll": "Ổn định lịch sử & cuộn: Lưu trữ lịch sử dựa trên tệp cho từng tác vụ để đảm bảo an toàn giữa các phiên, cộng với vòng đời cuộn được thiết kế lại để tải lại cuộc trò chuyện mượt mà hơn."
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",
@@ -424,7 +429,8 @@
 		"indexing": "Đang lập chỉ mục {{percentage}}%",
 		"indexed": "Đã lập chỉ mục",
 		"error": "Lỗi chỉ mục",
-		"status": "Trạng thái chỉ mục"
+		"status": "Trạng thái chỉ mục",
+		"stopping": "Đang dừng lập chỉ mục..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Phiên bản {{version}} - Nhấp để xem ghi chú phát hành"

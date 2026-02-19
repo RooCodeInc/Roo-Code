@@ -33,6 +33,9 @@
 	},
 	"unpin": "Odepnij",
 	"pin": "Przypnij",
+	"fileChangesInConversation": {
+		"header": "{{count}} plik(ów) zmienionych w tej rozmowie"
+	},
 	"tokenProgress": {
 		"availableSpace": "Dostępne miejsce: {{amount}} tokenów",
 		"tokensUsed": "Wykorzystane tokeny: {{used}} z {{total}}",
@@ -347,7 +350,9 @@
 		},
 		"release": {
 			"heading": "Co nowego:",
-			"smartCodeFolding": "Smart Code Folding: Kondensacja kontekstu teraz zachowuje lekką mapę twoich plików—sygnatury funkcji, deklaracje klas i definicje typów. Zapewnia to lepszą ciągłość po kondensacji i mądrzejsze edycje przy odwoływaniu się do poprzedniej pracy."
+			"fileChangesPanel": "Panel zmian plików: Śledź wszystkie modyfikacje plików dokonane podczas rozmowy w dedykowanym panelu, ułatwiając przegląd tego, co się zmieniło.",
+			"workspaceIndexing": "Kontrola indeksowania workspace: Indeksowanie nie uruchamia się już automatycznie — włącz je per workspace prostym przełącznikiem i zatrzymaj lub anuluj indeksowanie w dowolnym momencie.",
+			"historyAndScroll": "Stabilność historii i przewijania: Plikowe przechowywanie historii per zadanie dla bezpieczeństwa między instancjami, plus przeprojektowany cykl życia przewijania dla płynniejszej rehydratacji czatu."
 		},
 		"cloudAgents": {
 			"heading": "Nowości w chmurze:",
@@ -423,7 +428,8 @@
 		"indexing": "Indeksowanie {{percentage}}%",
 		"indexed": "Zaindeksowane",
 		"error": "Błąd indeksu",
-		"status": "Status indeksu"
+		"status": "Status indeksu",
+		"stopping": "Zatrzymywanie indeksowania..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Wersja {{version}} - Kliknij, aby wyświetlić informacje o wydaniu"

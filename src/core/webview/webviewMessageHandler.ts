@@ -44,6 +44,7 @@ import { Package } from "../../shared/package"
 import { type RouterName, toRouterName } from "../../shared/api"
 import { MessageEnhancer } from "./messageEnhancer"
 
+import { CodeIndexManager } from "../../services/code-index/manager"
 import { checkExistKey } from "../../shared/checkExistApiConfig"
 import { experimentDefault } from "../../shared/experiments"
 import { Terminal } from "../../integrations/terminal/Terminal"
@@ -2608,7 +2609,6 @@ export const webviewMessageHandler = async (
 			try {
 				const manager = provider.getCurrentWorkspaceCodeIndexManager()
 				if (!manager) {
-					// No workspace open - send error status
 					provider.postMessageToWebview({
 						type: "indexingStatusUpdate",
 						values: {
@@ -2622,23 +2622,19 @@ export const webviewMessageHandler = async (
 					provider.log("Cannot start indexing: No workspace folder open")
 					return
 				}
+
+				// "Start Indexing" implicitly enables the workspace
+				await manager.setWorkspaceEnabled(true)
+
 				if (manager.isFeatureEnabled && manager.isFeatureConfigured) {
-					// Mimic extension startup behavior: initialize first, which will
-					// check if Qdrant container is active and reuse existing collection
 					await manager.initialize(provider.contextProxy)
 
-					// Only call startIndexing if we're in a state that requires it
-					// (e.g., Standby or Error). If already Indexed or Indexing, the
-					// initialize() call above will have already started the watcher.
 					const currentState = manager.state
 					if (currentState === "Standby" || currentState === "Error") {
-						// startIndexing now handles error recovery internally
 						manager.startIndexing()
 
-						// If startIndexing recovered from error, we need to reinitialize
 						if (!manager.isInitialized) {
 							await manager.initialize(provider.contextProxy)
-							// Try starting again after initialization
 							if (manager.state === "Standby" || manager.state === "Error") {
 								manager.startIndexing()
 							}
@@ -2647,6 +2643,82 @@ export const webviewMessageHandler = async (
 				}
 			} catch (error) {
 				provider.log(`Error starting indexing: ${error instanceof Error ? error.message : String(error)}`)
+			}
+			break
+		}
+		case "stopIndexing": {
+			try {
+				const manager = provider.getCurrentWorkspaceCodeIndexManager()
+				if (!manager) {
+					provider.log("Cannot stop indexing: No workspace folder open")
+					return
+				}
+				manager.stopIndexing()
+				provider.postMessageToWebview({
+					type: "indexingStatusUpdate",
+					values: manager.getCurrentStatus(),
+				})
+			} catch (error) {
+				provider.log(`Error stopping indexing: ${error instanceof Error ? error.message : String(error)}`)
+			}
+			break
+		}
+		case "toggleWorkspaceIndexing": {
+			try {
+				const manager = provider.getCurrentWorkspaceCodeIndexManager()
+				if (!manager) {
+					provider.log("Cannot toggle workspace indexing: No workspace folder open")
+					return
+				}
+				const enabled = message.bool ?? false
+				await manager.setWorkspaceEnabled(enabled)
+				if (enabled && manager.isFeatureEnabled && manager.isFeatureConfigured) {
+					await manager.initialize(provider.contextProxy)
+					manager.startIndexing()
+				} else if (!enabled) {
+					manager.stopIndexing()
+				}
+				provider.postMessageToWebview({
+					type: "indexingStatusUpdate",
+					values: manager.getCurrentStatus(),
+				})
+			} catch (error) {
+				provider.log(
+					`Error toggling workspace indexing: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+			break
+		}
+		case "setAutoEnableDefault": {
+			try {
+				const manager = provider.getCurrentWorkspaceCodeIndexManager()
+				if (!manager) {
+					provider.log("Cannot set auto-enable default: No workspace folder open")
+					return
+				}
+				// Capture prior state for every manager before persisting the global change
+				const allManagers = CodeIndexManager.getAllInstances()
+				const priorStates = new Map(allManagers.map((m) => [m, m.isWorkspaceEnabled]))
+				await manager.setAutoEnableDefault(message.bool ?? true)
+				// Apply stop/start to every affected manager
+				for (const m of allManagers) {
+					const wasEnabled = priorStates.get(m)!
+					const isNowEnabled = m.isWorkspaceEnabled
+					if (wasEnabled && !isNowEnabled) {
+						m.stopIndexing()
+					} else if (!wasEnabled && isNowEnabled && m.isFeatureEnabled && m.isFeatureConfigured) {
+						await m.initialize(provider.contextProxy)
+						m.startIndexing()
+					}
+				}
+				provider.postMessageToWebview({
+					type: "indexingStatusUpdate",
+					values: manager.getCurrentStatus(),
+				})
+			} catch (error) {
+				provider.log(
+					`Error setting auto-enable default: ${error instanceof Error ? error.message : String(error)}`,
+				)
 			}
 			break
 		}
