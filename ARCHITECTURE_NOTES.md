@@ -1,35 +1,22 @@
-<<<<<<< HEAD
-# Phase 0: Architectural Mapping Summary
-=======
-# Architecture Notes for Roo Code Fork (TRP1 Challenge)
+# ARCHITECTURE_NOTES.md
 
-## Repo Structure Overview
+## Phase 0: The Archaeological Dig
 
-- `src/`: Main extension code (extension.ts for activation, core/prompts for prompts, services/command for tools).
-- `packages/`: Shared utilities (core for agent logic, telemetry, types).
-- `apps/`: Related tools like CLI.
-- Key entry: src/extension.ts – activates on command, sets up Webview and providers.
+1. Fork & Run: Forked from RooCodeInc/Roo-Code. Extension runs in VS Code via `npm run dev` or similar.
 
-## Tool Loop Tracing
+2. Trace the Tool Loop: 
+   - Tool execution happens in src/agent/AgentLoop.ts (assumed based on upstream structure; actual may vary).
+   - execute_command and write_to_file are registered in src/tools/ (e.g., fileTool.ts for write_to_file).
 
-- Functions:
-    - write_to_file: In packages/core/tools/file.ts or src/services/command/built-in-commands.ts – async function that uses vscode.workspace.fs.writeFile after approval.
-    - execute_command: In src/services/command/built-in-commands.ts – creates terminal and sends text.
-- Flow: Agent parses tool call → routes to command service in Extension Host → executes with HITL approval.
+3. Locate the Prompt Builder: 
+   - System prompt constructed in src/prompt/PromptBuilder.ts or src/context/ContextFormatter.ts.
+   - Inject hooks here for context enforcement.
 
-## Prompt Builder Location
+4. Architectural Decisions:
+   - Use middleware pattern for hooks to wrap tool calls without modifying core loop.
+   - Diagram: (ASCII art or link to draw.io if added)
+     User Prompt -> Reasoning Intercept (select_active_intent) -> Pre-Hook (Context Injection) -> Tool Call -> Post-Hook (Trace Update)
 
-- Main: src/core/prompts/system.ts – SYSTEM_PROMPT function assembles sections (persona, tools, rules).
-- Customization: src/core/prompts/sections/custom-instructions.ts – loads workspace files.
-- Integration: src/agents/baseAgent.ts – builds full prompt before LLM call.
-
-## Extension Host vs Webview
-
-- Webview: UI only (chat panel), emits postMessage events.
-- Extension Host: Handles logic, API calls, MCP tools, secrets.
-
-## Notes for Hooks
-
-- Inject Pre/Post hooks in tool executor (built-in-commands.ts) for interception.
-- Modify system prompt in system.ts for reasoning enforcement.
->>>>>>> trp1-challenge-week1-initial-setup
+## Hook System Schema
+- Pre-Hook: Intercepts select_active_intent, injects from active_intents.yaml.
+- Post-Hook: Updates agent_trace.jsonl with content hash.
