@@ -169,7 +169,7 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "feb-2026-v3.49.0-file-changes-panel-indexing-controls-history-scroll" // v3.49.0 File Changes Panel, Workspace Indexing Controls, History & Scroll Stability
+	public readonly latestAnnouncementId = "feb-2026-v3.50.0-gemini-31-pro-cli-ndjson-cli-v010" // v3.50.0 Gemini 3.1 Pro Support, CLI NDJSON Protocol, CLI v0.1.0
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 
