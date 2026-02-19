@@ -323,9 +323,9 @@
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
-			"fileChangesPanel": "Bestandswijzigingen-paneel: Volg alle bestandswijzigingen die tijdens een gesprek zijn gemaakt in een speciaal paneel, zodat je eenvoudig kunt zien wat er is gewijzigd.",
-			"workspaceIndexing": "Workspace-indexering: Indexering start niet meer automatisch — schakel het per workspace in met een simpele schakelaar, en stop of annuleer de indexering op elk moment.",
-			"historyAndScroll": "Geschiedenis & scroll-stabiliteit: Bestandsgebaseerde geschiedenisopslag per taak voor veiligheid tussen instanties, plus een herontworpen scroll-levenscyclus voor soepelere chat-rehydratie."
+			"geminiPro": "Gemini 3.1 Pro ondersteuning: Ondersteuning voor het Gemini 3.1 Pro model is toegevoegd en ingesteld als standaard Gemini-model voor betere prestaties.",
+			"cliNdjson": "CLI NDJSON-protocol: Nieuw NDJSON stdin-protocol, list-subopdrachten en gemodulariseerd run-commando voor flexibelere CLI-workflows.",
+			"cliRelease": "CLI v0.1.0: De Roo Code CLI bereikt zijn eerste officiële release met een stabiele opdrachtinterface."
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",

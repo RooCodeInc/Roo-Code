@@ -351,9 +351,9 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"fileChangesPanel": "Bảng thay đổi tệp: Theo dõi tất cả các sửa đổi tệp được thực hiện trong cuộc trò chuyện trong một bảng chuyên dụng, giúp dễ dàng xem lại những gì đã thay đổi.",
-			"workspaceIndexing": "Điều khiển lập chỉ mục Workspace: Lập chỉ mục không còn tự động bắt đầu — bật cho từng workspace bằng một nút đơn giản, và dừng hoặc hủy lập chỉ mục bất cứ lúc nào.",
-			"historyAndScroll": "Ổn định lịch sử & cuộn: Lưu trữ lịch sử dựa trên tệp cho từng tác vụ để đảm bảo an toàn giữa các phiên, cộng với vòng đời cuộn được thiết kế lại để tải lại cuộc trò chuyện mượt mà hơn."
+			"geminiPro": "Hỗ trợ Gemini 3.1 Pro: Đã thêm hỗ trợ model Gemini 3.1 Pro và đặt làm model Gemini mặc định để cải thiện hiệu suất.",
+			"cliNdjson": "Giao thức NDJSON CLI: Giao thức NDJSON stdin mới, lệnh con list, và lệnh run được module hóa cho quy trình CLI linh hoạt hơn.",
+			"cliRelease": "CLI v0.1.0: CLI Roo Code đạt bản phát hành chính thức đầu tiên với giao diện lệnh ổn định."
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

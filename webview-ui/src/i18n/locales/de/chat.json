@@ -350,9 +350,9 @@
 		},
 		"release": {
 			"heading": "Was ist neu:",
-			"fileChangesPanel": "Dateiänderungen-Panel: Verfolge alle Dateiänderungen einer Konversation in einem eigenen Panel – so siehst du auf einen Blick, was sich geändert hat.",
-			"workspaceIndexing": "Workspace-Indexierung: Die Indexierung startet nicht mehr automatisch – aktiviere sie pro Workspace mit einem einfachen Schalter, und stoppe oder brich die Indexierung jederzeit ab.",
-			"historyAndScroll": "Verlauf & Scroll-Stabilität: Dateibasierter Verlaufsspeicher pro Aufgabe für Sicherheit über Instanzen hinweg, plus ein überarbeiteter Scroll-Lebenszyklus für flüssigere Chat-Rehydrierung."
+			"geminiPro": "Gemini 3.1 Pro Unterstützung: Gemini 3.1 Pro wurde als Modell hinzugefügt und als Standard-Gemini-Modell für bessere Leistung festgelegt.",
+			"cliNdjson": "CLI NDJSON-Protokoll: Neues NDJSON-stdin-Protokoll, List-Unterbefehle und modularisierter Run-Befehl für flexiblere CLI-Workflows.",
+			"cliRelease": "CLI v0.1.0: Das Roo Code CLI erreicht seine erste offizielle Veröffentlichung mit einer stabilen Befehlsoberfläche."
 		},
 		"cloudAgents": {
 			"heading": "Neu in der Cloud:",

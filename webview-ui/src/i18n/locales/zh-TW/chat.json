@@ -372,9 +372,9 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"fileChangesPanel": "檔案變更面板：在專用面板中追蹤對話期間所有檔案修改，方便查看哪些內容發生了變化。",
-			"workspaceIndexing": "工作區索引控制：索引不再自動啟動——透過簡單開關按工作區啟用，隨時停止或取消索引。",
-			"historyAndScroll": "歷史紀錄與捲動穩定性：基於檔案的按工作歷史儲存確保跨實例安全，加上重新設計的捲動生命週期讓聊天重載更流暢。"
+			"geminiPro": "Gemini 3.1 Pro 支援：新增 Gemini 3.1 Pro 模型支援，並設為預設 Gemini 模型以提升效能。",
+			"cliNdjson": "CLI NDJSON 協定：新增 NDJSON stdin 協定、list 子指令，以及模組化的 run 指令，提供更彈性的 CLI 工作流程。",
+			"cliRelease": "CLI v0.1.0：Roo Code CLI 以穩定的指令介面達成首個正式版本。"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",

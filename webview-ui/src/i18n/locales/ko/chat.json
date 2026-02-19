@@ -350,9 +350,9 @@
 		},
 		"release": {
 			"heading": "새로운 기능:",
-			"fileChangesPanel": "파일 변경 패널: 대화 중에 이루어진 모든 파일 수정 사항을 전용 패널에서 추적하여, 무엇이 변경되었는지 쉽게 확인할 수 있습니다.",
-			"workspaceIndexing": "워크스페이스 인덱싱 제어: 인덱싱이 더 이상 자동으로 시작되지 않습니다 — 간단한 토글로 워크스페이스별로 활성화하고, 언제든지 인덱싱을 중지하거나 취소할 수 있습니다.",
-			"historyAndScroll": "기록 및 스크롤 안정성: 인스턴스 간 안전을 위한 작업별 파일 기반 기록 저장소와 더 부드러운 채팅 리하이드레이션을 위한 재설계된 스크롤 라이프사이클."
+			"geminiPro": "Gemini 3.1 Pro 지원: Gemini 3.1 Pro 모델 지원이 추가되었으며, 향상된 성능을 위해 기본 Gemini 모델로 설정되었습니다.",
+			"cliNdjson": "CLI NDJSON 프로토콜: 새로운 NDJSON stdin 프로토콜, list 하위 명령어, 더 유연한 CLI 워크플로를 위한 모듈화된 run 명령어.",
+			"cliRelease": "CLI v0.1.0: Roo Code CLI가 안정적인 명령어 인터페이스로 첫 공식 릴리스에 도달했습니다."
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",

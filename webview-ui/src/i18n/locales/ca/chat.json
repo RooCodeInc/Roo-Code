@@ -350,9 +350,9 @@
 		},
 		"release": {
 			"heading": "Què hi ha de nou:",
-			"fileChangesPanel": "Panell de canvis de fitxers: Fes un seguiment de totes les modificacions de fitxers fetes durant una conversa en un panell dedicat, facilitant la revisió dels canvis.",
-			"workspaceIndexing": "Controls d'indexació de l'espai de treball: La indexació ja no s'inicia automàticament — activa-la per espai de treball amb un simple commutador, i atura o cancel·la la indexació en qualsevol moment.",
-			"historyAndScroll": "Estabilitat de l'historial i el desplaçament: Emmagatzematge d'historial basat en fitxers per tasca per a seguretat entre instàncies, més un cicle de vida de desplaçament redissenyat per a una rehidratació del xat més fluida."
+			"geminiPro": "Suport per Gemini 3.1 Pro: S'ha afegit el suport per al model Gemini 3.1 Pro i s'ha establert com a model Gemini per defecte per a un millor rendiment.",
+			"cliNdjson": "Protocol NDJSON del CLI: Nou protocol NDJSON via stdin, subcomandes de llistat i comanda d'execució modularitzada per a fluxos de treball CLI més flexibles.",
+			"cliRelease": "CLI v0.1.0: El CLI de Roo Code arriba a la seva primera versió oficial amb una interfície de comandes estable."
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",
