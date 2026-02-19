@@ -8,7 +8,7 @@ interface SelectActiveIntentParams {
 	intent_id: string
 }
 
-export class SelectActiveIntentTool extends BaseTool<"select_active_intent"> {
+export class SelectActiveIntentTool extends BaseTool<any> {
 	readonly name = "select_active_intent" as const
 
 	async execute(params: SelectActiveIntentParams, task: Task, callbacks: ToolCallbacks): Promise<void> {

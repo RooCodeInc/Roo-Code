@@ -79,5 +79,8 @@
 			"@types/react-dom": "^18.3.5",
 			"zod": "3.25.76"
 		}
+	},
+	"dependencies": {
+		"micromatch": "^4.0.8"
 	}
 }

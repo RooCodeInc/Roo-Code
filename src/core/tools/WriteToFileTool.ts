@@ -55,9 +55,9 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		// 2. Scope enforcement
 		if (activeIntentId && ownedScope.length > 0) {
 			if (!isInScope(relPath, ownedScope)) {
-				pushToolResult({
-					error: `Scope Violation: ${activeIntentId} is not authorized to edit [${relPath}]. Request scope expansion.`,
-				})
+				pushToolResult(
+					`Scope Violation: ${activeIntentId} is not authorized to edit [${relPath}]. Request scope expansion.`,
+				)
 				return
 			}
 		}
@@ -70,15 +70,13 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			// 4. UI-blocking authorization for destructive tools
 			if (classifyTool(this.name) === "destructive") {
 				const approved = await askApproval(
-					"intent",
+					"tool",
 					`Approve write to ${relPath} for intent ${activeIntentId || "(none)"}?`,
 					undefined,
 					false,
 				)
 				if (!approved) {
-					pushToolResult({
-						error: `Action rejected by user. Autonomous recovery: self-correct or request approval.`,
-					})
+					pushToolResult("Action rejected by user. Autonomous recovery: self-correct or request approval.")
 					return
 				}
 			}
