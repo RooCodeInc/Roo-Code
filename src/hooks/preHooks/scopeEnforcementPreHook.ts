@@ -1,7 +1,7 @@
 import * as fs from "fs"
 import * as path from "path"
 import yaml from "js-yaml"
-import minimatch from "minimatch"
+import { minimatch } from "minimatch"
 import { PreHook } from "../interfaces"
 
 export function scopeEnforcementPreHook(root: string): PreHook {

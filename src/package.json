@@ -11,7 +11,7 @@
 	},
 	"engines": {
 		"vscode": "^1.84.0",
-		"node": "20.19.2"
+		"node": ">=20.19.2"
 	},
 	"author": {
 		"name": "Roo Code"
@@ -492,10 +492,12 @@
 		"i18next": "^25.0.0",
 		"ignore": "^7.0.3",
 		"isbinaryfile": "^5.0.2",
+		"js-yaml": "^4.1.1",
 		"json-stream-stringify": "^3.1.6",
 		"jwt-decode": "^4.0.0",
 		"lodash.debounce": "^4.0.8",
 		"mammoth": "^1.9.1",
+		"minimatch": "^10.2.2",
 		"monaco-vscode-textmate-theme-converter": "^0.1.7",
 		"node-cache": "^5.1.2",
 		"node-ipc": "^12.0.0",
@@ -551,7 +553,9 @@
 		"@types/diff": "^5.2.1",
 		"@types/diff-match-patch": "^1.0.36",
 		"@types/glob": "^8.1.0",
+		"@types/js-yaml": "^4.0.9",
 		"@types/lodash.debounce": "^4.0.9",
+		"@types/minimatch": "^6.0.0",
 		"@types/mocha": "^10.0.10",
 		"@types/node": "20.x",
 		"@types/node-cache": "^4.1.3",

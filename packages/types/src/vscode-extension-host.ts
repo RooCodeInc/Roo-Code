@@ -1,27 +1,27 @@
 import { z } from "zod"
 
-import type { GlobalSettings, RooCodeSettings } from "./global-settings"
-import type { ProviderSettings, ProviderSettingsEntry } from "./provider-settings"
-import type { HistoryItem } from "./history"
-import type { ModeConfig, PromptComponent } from "./mode"
-import type { TelemetrySetting } from "./telemetry"
-import type { Experiments } from "./experiment"
-import type { ClineMessage, QueuedMessage } from "./message"
+import type { GlobalSettings, RooCodeSettings } from "./global-settings.js"
+import type { ProviderSettings, ProviderSettingsEntry } from "./provider-settings.js"
+import type { HistoryItem } from "./history.js"
+import type { ModeConfig, PromptComponent } from "./mode.js"
+import type { TelemetrySetting } from "./telemetry.js"
+import type { Experiments } from "./experiment.js"
+import type { ClineMessage, QueuedMessage } from "./message.js"
 import {
 	type MarketplaceItem,
 	type MarketplaceInstalledMetadata,
 	type InstallMarketplaceItemOptions,
 	marketplaceItemSchema,
-} from "./marketplace"
-import type { TodoItem } from "./todo"
-import type { CloudUserInfo, CloudOrganizationMembership, OrganizationAllowList, ShareVisibility } from "./cloud"
-import type { SerializedCustomToolDefinition } from "./custom-tool"
-import type { GitCommit } from "./git"
-import type { McpServer } from "./mcp"
-import type { ModelRecord, RouterModels } from "./model"
-import type { OpenAiCodexRateLimitInfo } from "./providers/openai-codex-rate-limits"
-import type { SkillMetadata } from "./skills"
-import type { WorktreeIncludeStatus } from "./worktree"
+} from "./marketplace.js"
+import type { TodoItem } from "./todo.js"
+import type { CloudUserInfo, CloudOrganizationMembership, OrganizationAllowList, ShareVisibility } from "./cloud.js"
+import type { SerializedCustomToolDefinition } from "./custom-tool.js"
+import type { GitCommit } from "./git.js"
+import type { McpServer } from "./mcp.js"
+import type { ModelRecord, RouterModels } from "./model.js"
+import type { OpenAiCodexRateLimitInfo } from "./providers/openai-codex-rate-limits.js"
+import type { SkillMetadata } from "./skills.js"
+import type { WorktreeIncludeStatus } from "./worktree.js"
 
 /**
  * ExtensionMessage

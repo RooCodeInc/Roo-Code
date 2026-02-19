@@ -1,7 +1,7 @@
 import { z } from "zod"
 
-import { type TaskEvent, taskEventSchema } from "./events"
-import { rooCodeSettingsSchema } from "./global-settings"
+import { type TaskEvent, taskEventSchema } from "./events.js"
+import { rooCodeSettingsSchema } from "./global-settings.js"
 
 /**
  * IpcMessageType
