@@ -16,7 +16,7 @@
 
 import type { ClineMessage } from "@roo-code/types"
 
-import type { JsonEvent, JsonEventCost, JsonFinalOutput } from "@/types/json-events.js"
+import type { JsonEvent, JsonEventCost, JsonEventQueueItem, JsonFinalOutput } from "@/types/json-events.js"
 
 import type { ExtensionClient } from "./extension-client.js"
 import type { AgentStateChangeEvent, TaskCompletedEvent } from "./events.js"
@@ -30,6 +30,14 @@ export interface JsonEventEmitterOptions {
 	mode: "json" | "stream-json"
 	/** Output stream (defaults to process.stdout) */
 	stdout?: NodeJS.WriteStream
+	/** Optional request id provider for correlating stream events */
+	requestIdProvider?: () => string | undefined
+	/** Transport schema version emitted in system:init */
+	schemaVersion?: number
+	/** Transport protocol identifier emitted in system:init */
+	protocol?: string
+	/** Supported stdin protocol capabilities emitted in system:init */
+	capabilities?: string[]
 }
 
 /**
@@ -89,17 +97,33 @@ export class JsonEventEmitter {
 	private events: JsonEvent[] = []
 	private unsubscribers: (() => void)[] = []
 	private lastCost: JsonEventCost | undefined
+	private requestIdProvider: () => string | undefined
+	private schemaVersion: number
+	private protocol: string
+	private capabilities: string[]
 	private seenMessageIds = new Set<number>()
 	// Track previous content for delta computation
 	private previousContent = new Map<number, string>()
 	// Track the completion result content
 	private completionResultContent: string | undefined
+	// Track the latest assistant text as a fallback for result.content.
+	private lastAssistantText: string | undefined
 	// The first non-partial "say:text" per task is the echoed user prompt.
 	private expectPromptEchoAsUser = true
 
 	constructor(options: JsonEventEmitterOptions) {
 		this.mode = options.mode
 		this.stdout = options.stdout ?? process.stdout
+		this.requestIdProvider = options.requestIdProvider ?? (() => undefined)
+		this.schemaVersion = options.schemaVersion ?? 1
+		this.protocol = options.protocol ?? "roo-cli-stream"
+		this.capabilities = options.capabilities ?? [
+			"stdin:start",
+			"stdin:message",
+			"stdin:cancel",
+			"stdin:ping",
+			"stdin:shutdown",
+		]
 	}
 
 	/**
@@ -120,6 +144,48 @@ export class JsonEventEmitter {
 			type: "system",
 			subtype: "init",
 			content: "Task started",
+			schemaVersion: this.schemaVersion,
+			protocol: this.protocol,
+			capabilities: this.capabilities,
+		})
+	}
+
+	emitControl(event: {
+		subtype: "ack" | "done" | "error"
+		requestId?: string
+		command?: string
+		taskId?: string
+		content?: string
+		success?: boolean
+		code?: string
+	}): void {
+		this.emitEvent({
+			type: "control",
+			subtype: event.subtype,
+			requestId: event.requestId,
+			command: event.command,
+			taskId: event.taskId,
+			content: event.content,
+			success: event.success,
+			code: event.code,
+			done: event.subtype === "done" ? true : undefined,
+		})
+	}
+
+	emitQueue(event: {
+		subtype: "snapshot" | "enqueued" | "dequeued" | "drained" | "updated"
+		taskId?: string
+		content?: string
+		queueDepth: number
+		queue: JsonEventQueueItem[]
+	}): void {
+		this.emitEvent({
+			type: "queue",
+			subtype: event.subtype,
+			taskId: event.taskId,
+			content: event.content,
+			queueDepth: event.queueDepth,
+			queue: event.queue,
 		})
 	}
 
@@ -248,6 +314,9 @@ export class JsonEventEmitter {
 					}
 				} else {
 					this.emitEvent(this.buildTextEvent("assistant", msg.ts, contentToSend, isDone))
+					if (msg.text) {
+						this.lastAssistantText = msg.text
+					}
 				}
 				break
 
@@ -387,7 +456,7 @@ export class JsonEventEmitter {
 	 */
 	private handleTaskCompleted(event: TaskCompletedEvent): void {
 		// Use tracked completion result content, falling back to event message
-		const resultContent = this.completionResultContent || event.message?.text
+		const resultContent = this.completionResultContent || event.message?.text || this.lastAssistantText
 
 		this.emitEvent({
 			type: "result",
@@ -421,10 +490,13 @@ export class JsonEventEmitter {
 	 * For json mode: accumulate for final output
 	 */
 	private emitEvent(event: JsonEvent): void {
-		this.events.push(event)
+		const requestId = event.requestId ?? this.requestIdProvider()
+		const payload = requestId ? { ...event, requestId } : event
+
+		this.events.push(payload)
 
 		if (this.mode === "stream-json") {
-			this.outputLine(event)
+			this.outputLine(payload)
 		}
 	}
 
@@ -466,6 +538,7 @@ export class JsonEventEmitter {
 		this.seenMessageIds.clear()
 		this.previousContent.clear()
 		this.completionResultContent = undefined
+		this.lastAssistantText = undefined
 		this.expectPromptEchoAsUser = true
 	}
 }

@@ -27,6 +27,16 @@ async function main() {
 	console.log("[wrapper] Type a message and press Enter to send it.")
 	console.log("[wrapper] Type /exit to close stdin and let the CLI finish.")
 
+	let requestCounter = 0
+	let hasStartedTask = false
+
+	const sendCommand = (payload: Record<string, unknown>) => {
+		if (child.stdin?.destroyed) {
+			return
+		}
+		child.stdin?.write(JSON.stringify(payload) + "\n")
+	}
+
 	const rl = readline.createInterface({
 		input: process.stdin,
 		output: process.stdout,
@@ -36,14 +46,22 @@ async function main() {
 	rl.on("line", (line) => {
 		if (line.trim() === "/exit") {
 			console.log("[wrapper] Closing stdin...")
+			sendCommand({
+				command: "shutdown",
+				requestId: `shutdown-${Date.now()}-${++requestCounter}`,
+			})
 			child.stdin?.end()
 			rl.close()
 			return
 		}
 
-		if (!child.stdin?.destroyed) {
-			child.stdin?.write(`${line}\n`)
-		}
+		const command = hasStartedTask ? "message" : "start"
+		sendCommand({
+			command,
+			requestId: `${command}-${Date.now()}-${++requestCounter}`,
+			prompt: line,
+		})
+		hasStartedTask = true
 	})
 
 	const onSignal = (signal: NodeJS.Signals) => {

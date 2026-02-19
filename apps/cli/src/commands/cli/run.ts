@@ -1,10 +1,8 @@
 import fs from "fs"
 import path from "path"
-import { createInterface } from "readline"
 import { fileURLToPath } from "url"
 
 import { createElement } from "react"
-import pWaitFor from "p-wait-for"
 
 import { setLogger } from "@roo-code/vscode-shim"
 
@@ -29,26 +27,9 @@ import { getDefaultExtensionPath } from "@/lib/utils/extension.js"
 import { VERSION } from "@/lib/utils/version.js"
 
 import { ExtensionHost, ExtensionHostOptions } from "@/agent/index.js"
+import { runStdinStreamMode } from "./stdin-stream.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-async function* readPromptsFromStdinLines(): AsyncGenerator<string> {
-	const lineReader = createInterface({
-		input: process.stdin,
-		crlfDelay: Infinity,
-		terminal: false,
-	})
-
-	try {
-		for await (const line of lineReader) {
-			if (line.trim()) {
-				yield line
-			}
-		}
-	} finally {
-		lineReader.close()
-	}
-}
 
 export async function run(promptArg: string | undefined, flagOptions: FlagOptions) {
 	setLogger({
@@ -211,19 +192,27 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 
 	if (flagOptions.stdinPromptStream && !flagOptions.print) {
 		console.error("[CLI] Error: --stdin-prompt-stream requires --print mode")
-		console.error("[CLI] Usage: roo --print --stdin-prompt-stream [options]")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
+		process.exit(1)
+	}
+
+	if (flagOptions.stdinPromptStream && outputFormat !== "stream-json") {
+		console.error("[CLI] Error: --stdin-prompt-stream requires --output-format=stream-json")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
 		process.exit(1)
 	}
 
 	if (flagOptions.stdinPromptStream && process.stdin.isTTY) {
 		console.error("[CLI] Error: --stdin-prompt-stream requires piped stdin")
-		console.error("[CLI] Example: printf '1+1=?\\n10!=?\\n' | roo --print --stdin-prompt-stream [options]")
+		console.error(
+			'[CLI] Example: printf \'{"command":"start","requestId":"1","prompt":"1+1=?"}\\n\' | roo --print --output-format stream-json --stdin-prompt-stream [options]',
+		)
 		process.exit(1)
 	}
 
 	if (flagOptions.stdinPromptStream && prompt) {
 		console.error("[CLI] Error: cannot use positional prompt or --prompt-file with --stdin-prompt-stream")
-		console.error("[CLI] Usage: roo --print --stdin-prompt-stream [options]")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
 		process.exit(1)
 	}
 
@@ -234,7 +223,9 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			if (flagOptions.print) {
 				console.error("[CLI] Error: no prompt provided")
 				console.error("[CLI] Usage: roo --print [options] <prompt>")
-				console.error("[CLI] For stdin control mode: roo --print --stdin-prompt-stream [options]")
+				console.error(
+					"[CLI] For stdin control mode: roo --print --output-format stream-json --stdin-prompt-stream [options]",
+				)
 			} else {
 				console.error("[CLI] Error: prompt is required in non-interactive mode")
 				console.error("[CLI] Usage: roo <prompt> [options]")
@@ -281,9 +272,13 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		extensionHostOptions.disableOutput = useJsonOutput
 
 		const host = new ExtensionHost(extensionHostOptions)
+		let streamRequestId: string | undefined
 
 		const jsonEmitter = useJsonOutput
-			? new JsonEventEmitter({ mode: outputFormat as "json" | "stream-json" })
+			? new JsonEventEmitter({
+					mode: outputFormat as "json" | "stream-json",
+					requestIdProvider: () => streamRequestId,
+				})
 			: null
 
 		async function shutdown(signal: string, exitCode: number): Promise<void> {
@@ -306,151 +301,17 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			}
 
 			if (useStdinPromptStream) {
-				let hasReceivedStdinPrompt = false
-				// stdin stream mode may start at most one task in this process.
-				let startedTaskFromStdin = false
-				let activeTaskPromise: Promise<void> | null = null
-				let fatalStreamError: Error | null = null
-				// Extension-owned queue depth mirrored from state pushes.
-				// CLI does not maintain its own prompt queue.
-				let extensionQueueDepth = 0
-
-				const waitForInitialState = async () => {
-					// Give the extension a brief chance to publish initial state so
-					// we can continue an existing task instead of creating a new one.
-					await pWaitFor(
-						() => {
-							if (fatalStreamError) {
-								throw fatalStreamError
-							}
-
-							return host.client.isInitialized()
-						},
-						{ interval: 25, timeout: 2_000 },
-					).catch(() => {
-						// Best-effort wait only; continuing preserves previous behavior.
-					})
-
-					if (fatalStreamError) {
-						throw fatalStreamError
-					}
+				if (!jsonEmitter || outputFormat !== "stream-json") {
+					throw new Error("--stdin-prompt-stream requires --output-format=stream-json to emit control events")
 				}
 
-				const waitForActiveTask = async () => {
-					await pWaitFor(
-						() => {
-							if (fatalStreamError) {
-								throw fatalStreamError
-							}
-
-							if (!host.client.hasActiveTask()) {
-								if (!activeTaskPromise && startedTaskFromStdin) {
-									throw new Error("task is no longer active; cannot continue conversation from stdin")
-								}
-
-								return false
-							}
-
-							return true
-						},
-						{ interval: 25, timeout: 5_000 },
-					)
-				}
-
-				const startInitialTask = async (taskPrompt: string) => {
-					startedTaskFromStdin = true
-
-					activeTaskPromise = host
-						.runTask(taskPrompt)
-						.catch((error) => {
-							fatalStreamError = error instanceof Error ? error : new Error(String(error))
-						})
-						.finally(() => {
-							activeTaskPromise = null
-						})
-
-					await waitForActiveTask()
-				}
-
-				const enqueueContinuation = async (text: string) => {
-					if (!host.client.hasActiveTask()) {
-						await waitForActiveTask()
-					}
-
-					// Delegate ordering/drain behavior to the extension message queue.
-					host.sendToExtension({ type: "queueMessage", text })
-				}
-
-				const offClientError = host.client.on("error", (error) => {
-					fatalStreamError = error
+				await runStdinStreamMode({
+					host,
+					jsonEmitter,
+					setStreamRequestId: (id) => {
+						streamRequestId = id
+					},
 				})
-
-				const onExtensionMessage = (message: { type?: string; state?: { messageQueue?: unknown } }) => {
-					if (message.type !== "state") {
-						return
-					}
-
-					const messageQueue = message.state?.messageQueue
-					extensionQueueDepth = Array.isArray(messageQueue) ? messageQueue.length : 0
-				}
-
-				host.on("extensionWebviewMessage", onExtensionMessage)
-
-				try {
-					await waitForInitialState()
-
-					for await (const stdinPrompt of readPromptsFromStdinLines()) {
-						hasReceivedStdinPrompt = true
-
-						// Start once, then always continue via extension queue.
-						if (!host.client.hasActiveTask() && !startedTaskFromStdin) {
-							await startInitialTask(stdinPrompt)
-						} else {
-							await enqueueContinuation(stdinPrompt)
-						}
-
-						if (fatalStreamError) {
-							throw fatalStreamError
-						}
-					}
-
-					if (!hasReceivedStdinPrompt) {
-						throw new Error("no prompt provided via stdin")
-					}
-
-					await pWaitFor(
-						() => {
-							if (fatalStreamError) {
-								throw fatalStreamError
-							}
-
-							const isSettled =
-								!host.client.hasActiveTask() && !activeTaskPromise && extensionQueueDepth === 0
-
-							if (isSettled) {
-								return true
-							}
-
-							if (host.isWaitingForInput() && extensionQueueDepth === 0) {
-								const currentAsk = host.client.getCurrentAsk()
-
-								if (currentAsk === "completion_result") {
-									return true
-								}
-
-								if (currentAsk) {
-									throw new Error(`stdin ended while task was waiting for input (${currentAsk})`)
-								}
-							}
-
-							return false
-						},
-						{ interval: 50 },
-					)
-				} finally {
-					offClientError()
-					host.off("extensionWebviewMessage", onExtensionMessage)
-				}
 			} else {
 				await host.runTask(prompt!)
 			}
