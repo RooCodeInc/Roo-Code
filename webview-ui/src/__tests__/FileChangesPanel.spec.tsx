@@ -44,7 +44,11 @@ vi.mock("@src/components/common/CodeAccordian", () => ({
 	),
 }))
 
-function createFileEditMessage(path: string, diff: string): ClineMessage {
+function createFileEditMessage(
+	path: string,
+	diff: string,
+	diffStats?: { added: number; removed: number },
+): ClineMessage {
 	return {
 		type: "ask",
 		ask: "tool",
@@ -55,6 +59,7 @@ function createFileEditMessage(path: string, diff: string): ClineMessage {
 			tool: "appliedDiff",
 			path,
 			diff,
+			...(diffStats && { diffStats }),
 		}),
 	}
 }
@@ -171,5 +176,24 @@ describe("FileChangesPanel", () => {
 		expect(accordianToggle).toHaveTextContent("collapsed")
 		fireEvent.click(accordianToggle)
 		expect(accordianToggle).toHaveTextContent("expanded")
+	})
+
+	it("hides aggregate stats when no diffStats are present", () => {
+		const messages = [createFileEditMessage("src/a.ts", "diff a"), createFileEditMessage("src/b.ts", "diff b")]
+		renderPanel(messages)
+
+		expect(screen.queryByTestId("total-added")).not.toBeInTheDocument()
+		expect(screen.queryByTestId("total-removed")).not.toBeInTheDocument()
+	})
+
+	it("shows aggregated + and - totals in the header when diffStats are present", () => {
+		const messages = [
+			createFileEditMessage("src/a.ts", "diff a", { added: 3, removed: 1 }),
+			createFileEditMessage("src/b.ts", "diff b", { added: 2, removed: 5 }),
+		]
+		renderPanel(messages)
+
+		expect(screen.getByTestId("total-added")).toHaveTextContent("+5")
+		expect(screen.getByTestId("total-removed")).toHaveTextContent("-6")
 	})
 })

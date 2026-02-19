@@ -40,6 +40,17 @@ const FileChangesPanel = memo(({ clineMessages, className }: FileChangesPanelPro
 		return map
 	}, [fileChanges])
 
+	// Aggregate total lines added/removed across all files for the panel header
+	const totalStats = useMemo(() => {
+		return fileChanges.reduce(
+			(acc, e) => ({
+				added: acc.added + (e.diffStats?.added ?? 0),
+				removed: acc.removed + (e.diffStats?.removed ?? 0),
+			}),
+			{ added: 0, removed: 0 },
+		)
+	}, [fileChanges])
+
 	const togglePath = useCallback((path: string) => {
 		setExpandedPaths((prev) => {
 			const next = new Set(prev)
@@ -69,6 +80,18 @@ const FileChangesPanel = memo(({ clineMessages, className }: FileChangesPanelPro
 				<span className="text-sm font-medium">
 					{t("chat:fileChangesInConversation.header", { count: fileCount })}
 				</span>
+				{totalStats.added > 0 || totalStats.removed > 0 ? (
+					<div
+						className="flex items-center gap-2 ml-auto shrink-0"
+						aria-label={`${totalStats.added} lines added, ${totalStats.removed} lines removed`}>
+						<span className="text-xs font-medium text-vscode-charts-green" data-testid="total-added">
+							+{totalStats.added}
+						</span>
+						<span className="text-xs font-medium text-vscode-charts-red" data-testid="total-removed">
+							-{totalStats.removed}
+						</span>
+					</div>
+				) : null}
 			</CollapsibleTrigger>
 			<CollapsibleContent>
 				<div className="flex flex-col gap-1 pb-2 pl-6">
