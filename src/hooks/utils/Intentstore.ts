@@ -1,13 +1,11 @@
 /**
- * utils/intentStore.ts
- * ─────────────────────────────────────────────────────────────
- * Read/write layer for .orchestration/active_intents.yaml
- *
- * This is the single source of truth for intent state.
- * All hooks that need intent data go through this module.
- * ─────────────────────────────────────────────────────────────
- */
-
+utils/intentStore.ts
+─────────────────────────────────────────────────────────────
+Read/write layer for .orchestration/active_intents.yaml
+This is the single source of truth for intent state.
+All hooks that need intent data go through this module.
+─────────────────────────────────────────────────────────────
+*/
 import * as fs from "fs"
 import * as path from "path"
 import * as yaml from "js-yaml"
@@ -35,9 +33,9 @@ function getIntentsPath(workspacePath: string): string {
 }
 
 /**
- * Load all active intents from the YAML file.
- * Returns empty array if file doesn't exist.
- */
+Load all active intents from the YAML file.
+Returns empty array if file doesn't exist.
+*/
 export function loadIntents(workspacePath: string): ActiveIntent[] {
 	const filePath = getIntentsPath(workspacePath)
 	if (!fs.existsSync(filePath)) return []
@@ -53,16 +51,16 @@ export function loadIntents(workspacePath: string): ActiveIntent[] {
 }
 
 /**
- * Find a single intent by ID. Returns null if not found.
- */
+Find a single intent by ID. Returns null if not found.
+*/
 export function findIntent(workspacePath: string, intentId: string): ActiveIntent | null {
 	const intents = loadIntents(workspacePath)
 	return intents.find((i) => i.id === intentId) ?? null
 }
 
 /**
- * Update the status of a specific intent and write back to disk.
- */
+Update the status of a specific intent and write back to disk.
+*/
 export function updateIntentStatus(workspacePath: string, intentId: string, status: ActiveIntent["status"]): boolean {
 	const filePath = getIntentsPath(workspacePath)
 	const intents = loadIntents(workspacePath)
@@ -79,9 +77,9 @@ export function updateIntentStatus(workspacePath: string, intentId: string, stat
 }
 
 /**
- * Check if a file path matches any of the owned_scope globs for an intent.
- * Supports ** glob patterns.
- */
+Check if a file path matches any of the owned_scope globs for an intent.
+Supports ** glob patterns.
+*/
 export function isFileInScope(intent: ActiveIntent, filePath: string): boolean {
 	// Normalize to forward slashes
 	const normalized = filePath.replace(/\\/g, "/")
@@ -93,8 +91,8 @@ export function isFileInScope(intent: ActiveIntent, filePath: string): boolean {
 }
 
 /**
- * Check if a file path is in a .intentignore file.
- */
+Check if a file path is in a .intentignore file.
+*/
 export function isIntentIgnored(workspacePath: string, filePath: string): boolean {
 	const ignorePath = path.join(workspacePath, ".intentignore")
 	if (!fs.existsSync(ignorePath)) return false
@@ -110,7 +108,6 @@ export function isIntentIgnored(workspacePath: string, filePath: string): boolea
 }
 
 // ── Glob matching ──────────────────────────────────────────────
-
 function matchesGlob(pattern: string, filePath: string): boolean {
 	// Convert glob to regex
 	const regexStr = pattern
