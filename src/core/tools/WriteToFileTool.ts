@@ -134,13 +134,11 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 		const isWriteProtected = task.rooProtectedController?.isWriteProtected(relPath) || false
 
-		let fileExists: boolean
-		const absolutePath = path.resolve(task.cwd, relPath)
-
+		// fileExists and absolutePath already set above for optimistic locking
 		if (task.diffViewProvider.editType !== undefined) {
-			fileExists = task.diffViewProvider.editType === "modify"
+			// Do not override fileExists, just set editType
+			task.diffViewProvider.editType = fileExists ? "modify" : "create"
 		} else {
-			fileExists = await fileExistsAtPath(absolutePath)
 			task.diffViewProvider.editType = fileExists ? "modify" : "create"
 		}
 
