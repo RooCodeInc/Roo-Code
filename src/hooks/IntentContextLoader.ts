@@ -24,8 +24,8 @@
  * @see TRP1 Challenge Week 1, Phase 1: Context Injection Hook
  */
 
-import * as fs from "fs"
-import * as path from "path"
+import * as fs from "node:fs"
+import * as path from "node:path"
 import { parse as parseYaml } from "yaml"
 
 import type { HookContext, PreHookResult, ActiveIntentsFile, IntentEntry } from "./types"
@@ -196,9 +196,9 @@ ${criteriaXml}
  */
 function escapeXml(str: string): string {
 	return str
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;")
-		.replace(/'/g, "&apos;")
+		.replaceAll("&", "&amp;")
+		.replaceAll("<", "&lt;")
+		.replaceAll(">", "&gt;")
+		.replaceAll('"', "&quot;")
+		.replaceAll("'", "&apos;")
 }

@@ -955,6 +955,25 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			// ── HookEngine: Post-Tool Middleware (Phase 2) ───────────────────
+			// Run post-hooks after tool execution completes.
+			// Currently handles: auto-formatting (Prettier) and linting (ESLint).
+			// If errors are found, feedback is appended to the AI's context for
+			// self-correction in the next turn.
+			if (!block.partial) {
+				const postFeedback = await cline.hookEngine.runPostHooks(
+					block.name,
+					(block.nativeArgs as Record<string, unknown>) ?? block.params ?? {},
+				)
+
+				if (postFeedback) {
+					// Append post-hook feedback as supplementary context
+					// The AI will see this and can self-correct if there are lint errors
+					await cline.say("tool", postFeedback)
+				}
+			}
+			// ── End HookEngine Post-Tool Middleware ──────────────────────────
+
 			break
 		}
 	}

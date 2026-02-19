@@ -1,0 +1,19 @@
+# .intentignore — Intent Authorization Bypass List
+# ──────────────────────────────────────────────────────────────────────────
+# List intent IDs that should bypass the UI-blocking authorization gate.
+# 
+# Intents listed here will have their DESTRUCTIVE operations auto-approved
+# (but CRITICAL commands like rm -rf, git push --force still require approval).
+#
+# A codebase is a collection of intents as much as it is a collection of
+# organized code files linked by imports. Some intents may be low-risk
+# enough that manual approval for every write is unnecessary.
+#
+# Format: One intent ID per line. Lines starting with # are comments.
+#
+# See: TRP1 Challenge Week 1, Phase 2 — .intentignore
+# See: AISpec (https://github.com/cbora/aispec) — intent formalization
+# ──────────────────────────────────────────────────────────────────────────
+
+# Example: Uncomment to bypass auth for draft intents
+# INT-003
