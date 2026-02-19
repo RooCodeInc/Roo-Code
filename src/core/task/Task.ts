@@ -325,6 +325,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	consecutiveMistakeCountForEditFile: Map<string, number> = new Map()
 	private _activeIntentId: string | undefined
 	private _intentCheckoutStage: IntentCheckoutStage = "checkout_required"
+	private _pendingIntentHandshakeContext?: string
 	consecutiveNoToolUseCount: number = 0
 	consecutiveNoAssistantMessagesCount: number = 0
 	toolUsage: ToolUsage = {}
@@ -865,6 +866,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.setActiveIntentId(intentId)
 		}
 		this._intentCheckoutStage = "execution_authorized"
+	}
+
+	public setPendingIntentHandshakeContext(context: string | undefined): void {
+		this._pendingIntentHandshakeContext = context?.trim() || undefined
+	}
+
+	public consumePendingIntentHandshakeContext(): string | undefined {
+		const value = this._pendingIntentHandshakeContext
+		this._pendingIntentHandshakeContext = undefined
+		return value
 	}
 
 	static create(options: TaskOptions): [Task, Promise<void>] {

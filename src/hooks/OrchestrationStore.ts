@@ -309,7 +309,11 @@ export class OrchestrationStore {
 		await fs.appendFile(this.agentTracePath, `${JSON.stringify(record)}\n`, "utf8")
 	}
 
-	async appendIntentMapEntry(intent: ActiveIntentRecord, filePaths: string[]): Promise<void> {
+	async appendIntentMapEntry(
+		intent: ActiveIntentRecord,
+		filePaths: string[],
+		astFingerprints?: Record<string, string | undefined>,
+	): Promise<void> {
 		await this.ensureInitialized()
 
 		const normalizedPaths = Array.from(
@@ -320,7 +324,17 @@ export class OrchestrationStore {
 		}
 
 		const header = `## ${intent.id}${intent.name ? ` - ${intent.name}` : ""} (${new Date().toISOString()})`
-		const lines = ["", header, ...normalizedPaths.map((filePath) => `- \`${filePath}\``), ""]
+		const lines = [
+			"",
+			header,
+			...normalizedPaths.map((filePath) => {
+				const astFingerprint = astFingerprints?.[filePath]
+				return astFingerprint
+					? `- \`${filePath}\` (ast_fingerprint: \`${astFingerprint}\`)`
+					: `- \`${filePath}\``
+			}),
+			"",
+		]
 		await fs.appendFile(this.intentMapPath, lines.join("\n"), "utf8")
 	}
 

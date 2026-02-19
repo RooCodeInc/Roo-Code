@@ -111,6 +111,22 @@ export class HookEngine {
 			const requestedIntentId = this.extractRequestedIntentId(block)
 			if (requestedIntentId) {
 				const intentContextService = new IntentContextService(store)
+				const selectedIntent = await intentContextService.selectIntent(requestedIntentId)
+				if (selectedIntent.found && selectedIntent.context) {
+					const sidecarConstraintLines =
+						sidecar.architectural_constraints.length > 0
+							? sidecar.architectural_constraints.map((constraint) => `- ${constraint}`).join("\n")
+							: "- (none)"
+					const handshakeContext = [
+						"Intent reasoning intercept completed.",
+						"",
+						selectedIntent.message,
+						"",
+						"Sidecar architectural constraints:",
+						sidecarConstraintLines,
+					].join("\n")
+					task.setPendingIntentHandshakeContext(handshakeContext)
+				}
 				await intentContextService.markIntentInProgress(requestedIntentId)
 			}
 
@@ -401,14 +417,17 @@ export class HookEngine {
 			return
 		}
 
-		const traceRecord = await this.buildTraceRecord(task, context)
+		const traceRecord = await this.buildTraceRecord(task, context, block)
 		if (traceRecord.files.length === 0) {
 			return
 		}
 
 		await store.appendTraceRecord(traceRecord)
 		if (context.intent) {
-			await store.appendIntentMapEntry(context.intent, context.touchedPaths)
+			const astFingerprints = Object.fromEntries(
+				traceRecord.files.map((file) => [file.relative_path, file.ast_fingerprint?.summary_hash]),
+			)
+			await store.appendIntentMapEntry(context.intent, context.touchedPaths, astFingerprints)
 		}
 	}
 
@@ -521,7 +540,49 @@ export class HookEngine {
 		})
 	}
 
-	private async buildTraceRecord(task: Task, context: HookPreToolUseContext): Promise<AgentTraceRecord> {
+	private extractToolPayloadForPath(block: ToolUse, relativePath: string): string | undefined {
+		const nativeArgs = (block.nativeArgs as Record<string, unknown> | undefined) ?? {}
+		const params = block.params
+		const normalizedRelativePath = relativePath.replace(/\\/g, "/")
+
+		const normalizeCandidatePath = (value: unknown): string | undefined => {
+			const normalized = normalizePathLike(value)
+			return normalized ? normalized.replace(/\\/g, "/").replace(/^\.\//, "") : undefined
+		}
+
+		const toolPath =
+			normalizeCandidatePath(nativeArgs.path) ??
+			normalizeCandidatePath(nativeArgs.file_path) ??
+			normalizeCandidatePath(params.path) ??
+			normalizeCandidatePath(params.file_path)
+
+		const pathMatches = !toolPath || toolPath === normalizedRelativePath
+		if (!pathMatches) {
+			return undefined
+		}
+
+		switch (block.name) {
+			case "write_to_file":
+				return normalizePathLike(nativeArgs.content ?? params.content)
+			case "apply_diff":
+				return normalizePathLike(nativeArgs.diff ?? params.diff)
+			case "edit":
+			case "search_and_replace":
+			case "search_replace":
+			case "edit_file":
+				return normalizePathLike(nativeArgs.new_string ?? params.new_string)
+			case "apply_patch":
+				return normalizePathLike(nativeArgs.patch ?? params.patch)
+			default:
+				return undefined
+		}
+	}
+
+	private async buildTraceRecord(
+		task: Task,
+		context: HookPreToolUseContext,
+		block?: ToolUse,
+	): Promise<AgentTraceRecord> {
 		const files = []
 		for (const relativePath of toUnique(context.touchedPaths)) {
 			const absolutePath = path.join(task.cwd, relativePath)
@@ -537,6 +598,13 @@ export class HookEngine {
 			const contentHash = `sha256:${crypto.createHash("sha256").update(fileBuffer).digest("hex")}`
 			const text = fileBuffer.toString("utf8")
 			const lineCount = text.length === 0 ? 0 : text.split(/\r?\n/).length
+			const payloadText = block ? this.extractToolPayloadForPath(block, relativePath) : undefined
+			const payloadLineCount = payloadText ? payloadText.split(/\r?\n/).length : 0
+			const rangeStart = payloadText ? 1 : lineCount > 0 ? 1 : 0
+			const rangeEnd = payloadText ? payloadLineCount : lineCount
+			const rangeHash = payloadText
+				? `sha256:${crypto.createHash("sha256").update(payloadText).digest("hex")}`
+				: contentHash
 			let astSummaryHash: string | undefined
 			try {
 				const astSummary = await parseSourceCodeDefinitionsForFile(absolutePath)
@@ -566,9 +634,9 @@ export class HookEngine {
 						},
 						ranges: [
 							{
-								start_line: lineCount > 0 ? 1 : 0,
-								end_line: lineCount,
-								content_hash: contentHash,
+								start_line: rangeStart,
+								end_line: rangeEnd,
+								content_hash: rangeHash,
 							},
 						],
 						related: [{ type: "specification" as const, value: context.intentId! }],
