@@ -1,13 +1,13 @@
-
 active_intents:
   - id: "INT-001"
-    name: "JWT Authentication Migration"
+    name: "Build Weather API"
     status: "IN_PROGRESS"
     owned_scope:
-      - "src/auth/**"
-      - "src/middleware/jwt.ts"
+      - "src/api/weather/**"
+      - "src/middleware/weather.ts"
     constraints:
-      - "Must not use external auth providers"
-      - "Must maintain backward compatibility with Basic Auth"
+      - "Use only open APIs, no paid services"
+      - "Maintain RESTful structure"
     acceptance_criteria:
-      - "Unit tests in tests/auth/ pass"
+      - "Unit tests in tests/api/weather/ pass"
+      - "Endpoint responds in < 500ms"
