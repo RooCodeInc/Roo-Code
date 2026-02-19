@@ -26,6 +26,7 @@ interface WriteToFileParams {
 	content: string
 	intent_id: string
 	mutation_class: "AST_REFACTOR" | "INTENT_EVOLUTION"
+	original_content_hash: string // SHA-256 hash of file as read by agent
 }
 
 export class WriteToFileTool extends BaseTool<"write_to_file"> {
@@ -37,6 +38,24 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		let newContent = params.content
 		const intentId = params.intent_id
 		const mutationClass = params.mutation_class
+		const originalContentHash = params.original_content_hash
+		// === PHASE 4: OPTIMISTIC LOCKING ===
+		const absolutePath = path.resolve(task.cwd, relPath)
+		let currentContent = ""
+		let fileExists = false
+		try {
+			fileExists = await fileExistsAtPath(absolutePath)
+			if (fileExists) {
+				currentContent = await fs.readFile(absolutePath, "utf-8")
+			}
+		} catch {}
+		const currentContentHash = sha256(currentContent)
+		if (fileExists && originalContentHash && originalContentHash !== currentContentHash) {
+			pushToolResult(
+				`Stale File: The file [${relPath}] has changed since you last read it. Your write was blocked to prevent overwriting concurrent changes. Please re-read the file and try again.`,
+			)
+			return
+		}
 
 		// === INTENT-AWARE PRE-HOOK (Phase 2) ===
 		// 1. Load active intent
