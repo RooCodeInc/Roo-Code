@@ -198,11 +198,10 @@ function main(): void {
 	console.log(`  Found ${entries.length} z.infer type aliases to resolve`)
 
 	if (entries.length === 0) {
-		console.log("  Nothing to do.")
-		return
+		console.log("  No z.infer type aliases found in source.")
+	} else {
+		applyReplacements(entries)
 	}
-
-	applyReplacements(entries)
 
 	const clean = verifyNoZInfer()
 
