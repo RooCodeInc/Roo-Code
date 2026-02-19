@@ -1,0 +1,179 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# .orchestration/active_intents.yaml
+# ─────────────────────────────────────────────────────────────────────────────
+# PURPOSE:
+#   The single source of truth for all business intents in this workspace.
+#   The Hook System reads this file to enforce scope, inject context, and
+#   validate agent actions. DO NOT let agents read this file directly —
+#   they must call select_active_intent(intent_id) instead.
+#
+# MANAGED BY:
+#   - Humans: define intents, owned_scope, constraints, acceptance_criteria
+#   - Pre-Hook (ContextInjector): reads on every select_active_intent call
+#   - Pre-Hook (ScopeEnforcer): reads owned_scope on every write tool call
+#   - Post-Hook (IntentMapUpdater): updates status when tasks complete
+#
+# STATUS VALUES:
+#   PENDING     → defined but work has not started
+#   IN_PROGRESS → an agent has checked out this intent and is actively working
+#   BLOCKED     → blocked by a dependency or scope violation
+#   COMPLETE    → all acceptance_criteria have been verified and passed
+#
+# SCOPE PATTERNS:
+#   Supports ** glob patterns. All paths are relative to the workspace root.
+#   Example: "src/weather/**" matches all files under src/weather/
+#
+# ─────────────────────────────────────────────────────────────────────────────
+
+active_intents:
+
+  # ── INT-001 ────────────────────────────────────────────────────────────────
+  - id: "INT-001"
+    name: "Build Weather API Endpoint"
+    status: "IN_PROGRESS"
+    created_at: "2026-02-18T00:00:00Z"
+    updated_at: "2026-02-19T09:00:00Z"
+
+    # Files and directories this intent is authorized to modify.
+    # The ScopeEnforcer hook will BLOCK writes to any file not listed here.
+    owned_scope:
+      - "src/weather/**"
+      - "src/api/weather.ts"
+      - "src/types/weather.ts"
+      - "src/routes/weather.ts"
+      - "tests/weather/**"
+
+    # Hard rules the agent must follow while working on this intent.
+    # These are injected into the agent context via select_active_intent.
+    constraints:
+      - "Use OpenWeatherMap API only — no other external weather providers"
+      - "Must return temperatures in both Celsius and Fahrenheit"
+      - "All API calls must go through src/api/weather.ts — no direct fetch() in components"
+      - "Rate limiting: max 60 calls/minute must be enforced at the API layer"
+      - "All public functions must have JSDoc comments"
+      - "TypeScript strict mode must pass with zero errors"
+
+    # The Definition of Done — verified before marking status: COMPLETE
+    acceptance_criteria:
+      - "GET /weather?city=London returns JSON with { temp_c, temp_f, description, humidity }"
+      - "GET /weather?city=InvalidCity returns 404 with { error: 'City not found' }"
+      - "Unit tests in tests/weather/ all pass with >90% coverage"
+      - "TypeScript strict mode passes with zero errors"
+      - "src/types/weather.ts exports WeatherResponse and WeatherError interfaces"
+      - "Rate limiting returns 429 when threshold exceeded"
+
+    # Dependencies on other intents (must be COMPLETE before this can start)
+    depends_on: []
+
+    # Agents that have worked on this intent (auto-populated by TraceLogger)
+    contributors:
+      - entity_type: "AI"
+        model_identifier: "claude-sonnet-4-6"
+        session_id: "sess-abc-001"
+        last_active: "2026-02-19T09:00:00Z"
+
+  # ── INT-002 ────────────────────────────────────────────────────────────────
+  - id: "INT-002"
+    name: "JWT Authentication Middleware"
+    status: "PENDING"
+    created_at: "2026-02-18T00:00:00Z"
+    updated_at: "2026-02-18T00:00:00Z"
+
+    owned_scope:
+      - "src/auth/**"
+      - "src/middleware/jwt.ts"
+      - "src/middleware/authGuard.ts"
+      - "src/types/auth.ts"
+      - "tests/auth/**"
+
+    constraints:
+      - "Must not use external auth providers (no Auth0, Firebase, Cognito, etc.)"
+      - "Must maintain backward compatibility with existing Basic Auth"
+      - "JWT secret must be read from environment variable JWT_SECRET only — never hardcoded"
+      - "Tokens must expire in 24 hours maximum"
+      - "Refresh tokens must be stored in httpOnly cookies — never in localStorage"
+      - "All auth errors must return consistent JSON: { error: string, code: string }"
+
+    acceptance_criteria:
+      - "POST /auth/login returns a signed JWT on valid credentials"
+      - "POST /auth/login returns 401 with { error, code } on invalid credentials"
+      - "Protected routes return 401 when JWT is missing or expired"
+      - "Protected routes return 403 when JWT is valid but role is insufficient"
+      - "Unit tests in tests/auth/ all pass"
+      - "Existing Basic Auth integration tests still pass (no regression)"
+      - "JWT_SECRET env var absence throws a startup error with a clear message"
+
+    depends_on: []
+
+    contributors: []
+
+  # ── INT-003 ────────────────────────────────────────────────────────────────
+  - id: "INT-003"
+    name: "Hook System — Core Engine"
+    status: "IN_PROGRESS"
+    created_at: "2026-02-19T00:00:00Z"
+    updated_at: "2026-02-19T10:00:00Z"
+
+    owned_scope:
+      - "src/hooks/**"
+      - "tests/hooks/**"
+      - ".orchestration/**"
+      - "CLAUDE.md"
+      - ".intentignore"
+
+    constraints:
+      - "HookEngine must remain stateless — no global mutable state outside the singleton"
+      - "Pre-hook errors must BLOCK execution (fail closed, not open)"
+      - "Post-hook errors must be swallowed — never crash the agent turn"
+      - "BlockSignal must include a machine-readable code and a human-readable reason"
+      - "All hooks must be independently testable with no VS Code dependencies"
+      - "ToolContext must be immutable within each hook — hooks return new context objects"
+
+    acceptance_criteria:
+      - "All 4 pre-hooks pass unit tests with 100% branch coverage"
+      - "All 3 post-hooks pass unit tests"
+      - "HookEngine correctly short-circuits on first BlockSignal"
+      - "Post-hook failure does not propagate to the tool result"
+      - "select_active_intent returns valid XML for every intent in active_intents.yaml"
+      - "agent_trace.jsonl entries pass JSON schema validation"
+      - "AST hash is deterministic: same code structure always produces same hash"
+
+    depends_on: []
+
+    contributors:
+      - entity_type: "AI"
+        model_identifier: "claude-sonnet-4-6"
+        session_id: "sess-abc-002"
+        last_active: "2026-02-19T10:00:00Z"
+
+  # ── INT-004 ────────────────────────────────────────────────────────────────
+  - id: "INT-004"
+    name: "Database Layer — User Model"
+    status: "BLOCKED"
+    created_at: "2026-02-18T00:00:00Z"
+    updated_at: "2026-02-19T08:00:00Z"
+    blocked_reason: "Waiting for INT-002 (JWT Auth) to be COMPLETE before user session schema can be finalised"
+
+    owned_scope:
+      - "src/db/**"
+      - "src/models/user.ts"
+      - "src/models/session.ts"
+      - "migrations/**"
+      - "tests/db/**"
+
+    constraints:
+      - "Use Prisma ORM only — no raw SQL queries in application code"
+      - "All migrations must be reversible (have a down migration)"
+      - "Passwords must be hashed with bcrypt (cost factor >= 12) — never stored plain"
+      - "PII fields must be noted in schema comments"
+
+    acceptance_criteria:
+      - "User model supports create, read, update, soft-delete"
+      - "Session model linked to User with cascade delete"
+      - "Migration runs cleanly on a fresh PostgreSQL 15 database"
+      - "Unit tests in tests/db/ all pass"
+
+    depends_on:
+      - "INT-002"
+
+    contributors: []
