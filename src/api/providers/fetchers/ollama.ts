@@ -173,6 +173,7 @@ export interface OllamaExtendedModelInfo extends ModelInfo {
 	size?: number
 	quantizationLevel?: string
 	family?: string
+	supportsNativeTools?: boolean
 }
 
 export interface OllamaModelWithTools {
