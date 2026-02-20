@@ -1,5 +1,6 @@
 import type OpenAI from "openai"
 import accessMcpResource from "./access_mcp_resource"
+import appendLessonToClaude from "./append_lesson_to_claude"
 import { apply_diff } from "./apply_diff"
 import applyPatch from "./apply_patch"
 import askFollowupQuestion from "./ask_followup_question"
@@ -48,6 +49,7 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 
 	return [
 		accessMcpResource,
+		appendLessonToClaude,
 		apply_diff,
 		applyPatch,
 		askFollowupQuestion,

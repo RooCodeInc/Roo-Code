@@ -43,6 +43,11 @@ export default {
 					description:
 						"Classification of the mutation: AST_REFACTOR for syntax-only changes within the same intent, INTENT_EVOLUTION for new features or expanded scope.",
 				},
+				read_hash: {
+					type: "string",
+					description:
+						"SHA-256 hash of the file content you read (from read_file operation). Used for optimistic locking to detect concurrent modifications. Omit for new files.",
+				},
 			},
 			required: ["path", "content", "intent_id", "mutation_class"],
 			additionalProperties: false,
