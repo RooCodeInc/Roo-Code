@@ -10,8 +10,8 @@ export type PromptVariables = {
 
 /**
  * Loads custom system prompt instructions based on mode.
- * - Orchestrator: No task guides (plans and delegates only)
- * - Specialized modes: Must load task guides before execution
+ * - Orchestrator: Strategic coordination and delegation
+ * - Specialized modes: Task-specific guidance with get_task_guides
  */
 export async function loadCustomPromptIndexFile(cwd: string, variables: PromptVariables): Promise<string> {
 	// Orchestrator mode should NOT load task guides - it only plans and delegates
@@ -22,8 +22,7 @@ You are a strategic coordinator. You do NOT execute tasks directly.
 
 **Your Role:**
 1. Analyze the user's request and break it into subtasks
-2. Create a planning file at \`.siid-code/planning/[name]-plan.md\`
-3. Delegate subtasks to specialized modes using \`new_task\` tool
+2. Delegate subtasks to specialized modes using \`new_task\` tool
 
 **Delegation Guidelines:**
 - Use \`salesforce-agent\` mode for: Objects, fields, profiles, permissions, flows, Agentforce, admin config
@@ -34,7 +33,7 @@ You are a strategic coordinator. You do NOT execute tasks directly.
 **Example Delegation:**
 <new_task>
 <mode>salesforce-agent</mode>
-<message>Create the Customer_Feedback__c custom object with required fields. Update planning file with your progress.</message>
+<message>Create the Customer_Feedback__c custom object with required fields.</message>
 </new_task>`
 	}
 
@@ -43,10 +42,7 @@ You are a strategic coordinator. You do NOT execute tasks directly.
 
 **Workflow for Subtasks:**
 1. Use \`get_task_guides\` to load instructions for your task type
-2. Read the planning file if it exists (check \`.siid-code/planning/\`)
-3. Update the planning file with detailed steps from the loaded guides
-4. Execute the task following the guide workflow
-5. Update planning file with progress/completion
+2. Execute the task following the guide workflow
 
 **Available Task Types:**
 

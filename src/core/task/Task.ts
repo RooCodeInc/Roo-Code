@@ -131,6 +131,7 @@ export type TaskOptions = {
 	parentTask?: Task
 	taskNumber?: number
 	onCreated?: (task: Task) => void
+	planningFilePath?: string
 }
 
 export class Task extends EventEmitter<TaskEvents> implements TaskLike {
@@ -198,6 +199,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	pausedModeSlug: string = defaultModeSlug
 	private pauseInterval: NodeJS.Timeout | undefined
 	private isLoopRunning: boolean = false
+	planningFilePath?: string
 
 	// API
 	readonly apiConfiguration: ProviderSettings
@@ -295,6 +297,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		parentTask,
 		taskNumber = -1,
 		onCreated,
+		planningFilePath,
 	}: TaskOptions) {
 		super()
 
@@ -337,6 +340,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.rootTask = rootTask
 		this.parentTask = parentTask
 		this.taskNumber = taskNumber
+		this.planningFilePath = planningFilePath
 
 		// Store the task's mode when it's created.
 		// For history items, use the stored mode; for new tasks, we'll set it
@@ -1107,10 +1111,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Note: We don't show the message here since it's a fresh task start
 		}
 
-		// Store task title for notifications - take first line or first 50 chars
+		// Store task title for notifications - initially use first line
 		if (task) {
 			const firstLine = task.split("\n")[0]
 			this.taskTitle = firstLine.length > 50 ? firstLine.substring(0, 50) + "..." : firstLine
+
+			// Generate a better title based on prompt in background
+			this.generateTaskTitle(task).catch((error) => {
+				// Silently fail - keep the default title if generation fails
+				console.log(`Failed to generate task title: ${error}`)
+			})
 		}
 
 		await this.say("text", task, images)
@@ -1127,6 +1137,49 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			},
 			...imageBlocks,
 		])
+	}
+
+	private async generateTaskTitle(taskPrompt: string): Promise<void> {
+		try {
+			const systemPrompt = `You are a task title generator. Generate a concise, descriptive title (max 50 characters) for the following task. Only respond with the title, nothing else.`
+
+			const stream = this.api.createMessage(
+				systemPrompt,
+				[
+					{
+						role: "user",
+						content: [
+							{
+								type: "text",
+								text: taskPrompt,
+							},
+						],
+					},
+				],
+				{
+					taskId: this.taskId,
+				},
+			)
+
+			let generatedTitle = ""
+			for await (const event of stream) {
+				if (event.type === "text") {
+					generatedTitle += event.text
+				}
+			}
+
+			// Update task title with generated one (trimmed to 50 chars just in case)
+			if (generatedTitle.trim()) {
+				const trimmedTitle = generatedTitle.trim().substring(0, 50)
+				this.taskTitle = trimmedTitle
+				await this.providerRef.deref()?.postStateToWebview()
+			}
+		} catch (error) {
+			// Silently fail - keep the default title
+			console.log(
+				`Failed to generate task title from prompt: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
 	}
 
 	public async resumePausedTask(lastMessage: string) {
@@ -1715,6 +1768,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			cwd: this.cwd,
 			experiments: state?.experiments,
 			taskId: this.taskId,
+			planningFilePath: this.planningFilePath,
 		})
 
 		// Add pre-task details FIRST for higher priority, then parsed content, then environment details

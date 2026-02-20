@@ -31,7 +31,6 @@ describe("experiments", () => {
 				preventFocusDisruption: false,
 				assistantMessageParser: false,
 				multipleToolCalls: false,
-				planningWorkflow: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(false)
 		})
@@ -43,7 +42,6 @@ describe("experiments", () => {
 				preventFocusDisruption: false,
 				assistantMessageParser: false,
 				multipleToolCalls: false,
-				planningWorkflow: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(true)
 		})
@@ -55,7 +53,6 @@ describe("experiments", () => {
 				preventFocusDisruption: false,
 				assistantMessageParser: false,
 				multipleToolCalls: false,
-				planningWorkflow: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(false)
 		})
