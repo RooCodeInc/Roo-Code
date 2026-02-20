@@ -6,6 +6,21 @@ import type { ToolData } from "../types.js"
  * Extract structured ToolData from parsed tool JSON
  * This provides rich data for tool-specific renderers
  */
+
+// src/tools/tool.ts
+
+export interface SelectActiveIntentPayload {
+  intent_id: string;
+}
+
+export const selectActiveIntent = {
+  name: "select_active_intent",
+  description: "Load context for a specific intent before execution",
+  parameters: {
+    intent_id: "string"
+  }
+};
+
 export function extractToolData(toolInfo: Record<string, unknown>): ToolData {
 	const toolName = (toolInfo.tool as string) || "unknown"
 
@@ -111,6 +126,11 @@ export function formatToolOutput(toolInfo: Record<string, unknown>): string {
 			const reason = toolInfo.reason as string
 			return `→ ${mode} mode${reason ? `\n  ${reason}` : ""}`
 		}
+		
+		case "select_active_intent": {
+  		const intentId = toolInfo.intent_id as string;
+  		return `🔑 Selected Intent: ${intentId || "(none)"}`;
+		}
 
 		case "switch_mode": {
 			const mode = (toolInfo.mode_slug as string) || (toolInfo.mode as string) || "unknown"
@@ -206,6 +226,12 @@ export function formatToolAskMessage(toolInfo: Record<string, unknown>): string 
 			const reason = toolInfo.reason as string
 			return `Switch to ${mode} mode?${reason ? `\nReason: ${reason}` : ""}`
 		}
+
+		case "select_active_intent": {
+  		const intentId = toolInfo.intent_id as string;
+  		return `Load context for intent: ${intentId}?`;
+		}
+
 
 		case "execute_command": {
 			const command = toolInfo.command as string
