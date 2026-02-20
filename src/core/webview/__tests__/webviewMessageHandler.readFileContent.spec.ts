@@ -40,6 +40,17 @@ vi.mock("../../../utils/fs")
 vi.mock("../../../utils/path")
 vi.mock("../../../utils/globalContext")
 
+vi.mock("../../../utils/pathUtils", () => ({
+	isPathOutsideWorkspace: vi.fn((filePath: string) => {
+		const normalized = filePath.replace(/\\/g, "/")
+		const workspaceRoot = "/mock/workspace"
+		// Path is inside workspace if it equals or is under workspace root
+		if (normalized === workspaceRoot) return false
+		if (normalized.startsWith(workspaceRoot + "/")) return false
+		return true
+	}),
+}))
+
 vi.mock("../../mentions/resolveImageMentions", () => ({
 	resolveImageMentions: vi.fn(async ({ text, images }: { text: string; images?: string[] }) => ({
 		text,
@@ -84,6 +95,7 @@ describe("webviewMessageHandler - readFileContent path traversal prevention", ()
 	beforeEach(() => {
 		vi.clearAllMocks()
 		vi.mocked(fs.readFile).mockResolvedValue("file content here")
+		mockProvider.getCurrentTask.mockReturnValue({ cwd: MOCK_CWD })
 	})
 
 	it("allows reading a file within the workspace using a relative path", async () => {
