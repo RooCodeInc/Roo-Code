@@ -1162,6 +1162,7 @@ export const webviewMessageHandler = async (
 					break
 				}
 				const absPath = path.resolve(cwd, relPath)
+				// Workspace-boundary validation: prevent path traversal attacks
 				if (isPathOutsideWorkspace(absPath)) {
 					provider.postMessageToWebview({
 						type: "fileContent",
