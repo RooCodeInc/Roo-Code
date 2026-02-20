@@ -1,6 +1,7 @@
 import os from "os"
 import * as path from "path"
 import fs from "fs/promises"
+import crypto from "crypto"
 import EventEmitter from "events"
 
 import { Anthropic } from "@anthropic-ai/sdk"
@@ -46,7 +47,6 @@ import { Mode, defaultModeSlug, getModeBySlug } from "../../shared/modes"
 import { getDefaultModelForMode, getModelsForMode } from "../../shared/mode-models"
 import { experimentDefault } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
-import { analyzeTaskComplexity } from "../task/analyzeTaskComplexity"
 import { WebviewMessage } from "../../shared/WebviewMessage"
 import { EMBEDDING_MODEL_PROFILES } from "../../shared/embeddingModels"
 import { ProfileValidator } from "../../shared/ProfileValidator"
@@ -82,6 +82,8 @@ import { ContextProxy } from "../config/ContextProxy"
 import { ProviderSettingsManager } from "../config/ProviderSettingsManager"
 import { CustomModesManager } from "../config/CustomModesManager"
 import { Task, TaskOptions } from "../task/Task"
+import { analyzeTaskComplexity } from "../task/analyzeTaskComplexity"
+import { planningFileManager } from "../planning/PlanningFileManager"
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
@@ -660,21 +662,9 @@ export class ClineProvider
 			throw new OrganizationAllowListViolationError(t("common:errors.violated_organization_allowlist"))
 		}
 
-		// Analyze task complexity and auto-enable/disable planning workflow
-		// unless experiments are explicitly provided in options (user override)
+		// Use base experiments if not explicitly provided
 		let experiments = baseExperiments
-		let complexity = { isComplex: false, score: 0, factors: [] as string[] }
-
-		if (!options.experiments) {
-			complexity = analyzeTaskComplexity(text)
-			experiments = {
-				...baseExperiments,
-				planningWorkflow: complexity.isComplex,
-			}
-			// Update global state with the new experiments value so toggle reflects in UI
-			await this.updateGlobalState("experiments", experiments)
-		} else {
-			// Use provided experiments, but don't override if planningWorkflow is not explicitly set
+		if (options.experiments) {
 			experiments = { ...baseExperiments, ...options.experiments }
 		}
 
@@ -700,8 +690,46 @@ export class ClineProvider
 
 		await this.addClineToStack(task)
 
+		// Analyze task complexity and create planning file if needed (asynchronously in background)
+		let planningFilePath: string | undefined
+		if (text) {
+			// Run AI analysis asynchronously without blocking task display
+			;(async () => {
+				try {
+					const complexity = await analyzeTaskComplexity(text, apiConfiguration)
+
+					if (complexity.isComplex) {
+						const cwd = getWorkspacePath(path.join(os.homedir(), "Desktop"))
+
+						planningFilePath = await planningFileManager.createPlanningFile(
+							cwd,
+							text,
+							complexity.filename,
+							complexity.planContent,
+						)
+
+						// Update task with planning file path if needed
+						if (task) {
+							task.planningFilePath = planningFilePath
+						}
+					}
+				} catch (error) {
+					console.warn("Error in planning file creation:", error)
+				}
+			})()
+		}
+
 		// Listen for task completion to update webview state
 		task.on(RooCodeEventName.TaskCompleted, async () => {
+			// Delete planning file if it was created for this task
+			if (planningFilePath) {
+				try {
+					await planningFileManager.deletePlanningFile(task.workspacePath, planningFilePath)
+				} catch (error) {
+					const errorMsg = error instanceof Error ? error.message : String(error)
+					this.log(`Warning: Failed to delete planning file: ${errorMsg}`)
+				}
+			}
 			await this.postStateToWebview()
 		})
 
@@ -713,32 +741,7 @@ export class ClineProvider
 			await this.postStateToWebview()
 		})
 
-		// Add complexity analysis message - show in chat after initial task message
-		if (!options.experiments && complexity.score > 0) {
-			const complexityText = complexity.isComplex
-				? `**Creating planning file for better task organization and tracking.**`
-				: `**No plan file required.**`
-
-			// Send message after a small delay to ensure the task's initial say() message is in place
-			setTimeout(() => {
-				const complexityMessage: any = {
-					ts: Date.now(),
-					type: "say",
-					say: "text",
-					text: complexityText,
-				}
-
-				// Add to the task's messages so it appears in the chat history
-				task.clineMessages.push(complexityMessage)
-
-				// Notify webview to update
-				this.postStateToWebview().catch((err: any) => {
-					console.error("Failed to update webview with complexity message:", err)
-				})
-			}, 150)
-		}
-
-		// Update webview with new experiments state
+		// Update webview with new task state
 		await this.postStateToWebview()
 
 		this.log(
