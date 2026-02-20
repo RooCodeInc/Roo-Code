@@ -419,7 +419,7 @@ describe("executeCommand", () => {
 			// Verify: should return a clean tool result, not throw
 			expect(rejected).toBe(false)
 			expect(result).toBe("The command was cancelled by the user.")
-			expect(mockTask.say).toHaveBeenCalledWith("error", "The command was cancelled by the user.")
+			expect(mockTask.say).toHaveBeenCalledWith("command_output", "Command cancelled.")
 			expect(mockTask.didToolFailInCurrentTurn).toBe(true)
 			expect(mockTask.terminalProcess).toBeUndefined()
 			// Verify the flag was reset

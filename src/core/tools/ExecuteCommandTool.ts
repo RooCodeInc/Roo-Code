@@ -373,7 +373,7 @@ export async function executeCommandInTerminal(
 			task.isTerminalAbortedExternally = false
 			const status: CommandExecutionStatus = { executionId, status: "cancelled" }
 			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
-			await task.say("error", "The command was cancelled by the user.")
+			await task.say("command_output", "Command cancelled.")
 			task.didToolFailInCurrentTurn = true
 			task.terminalProcess = undefined
 
