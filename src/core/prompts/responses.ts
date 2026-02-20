@@ -199,6 +199,13 @@ Otherwise, if you have not completed the task and do not need additional informa
 		const prettyPatchLines = lines.slice(4)
 		return prettyPatchLines.join("\n")
 	},
+
+	invalidIntentId: (intentId: string) =>
+		JSON.stringify({
+			status: "error",
+			type: "invalid_intent",
+			intent_id: intentId,
+		}),
 }
 
 // to avoid circular dependency

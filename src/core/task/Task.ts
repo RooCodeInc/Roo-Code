@@ -350,6 +350,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	userMessageContent: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam | Anthropic.ToolResultBlockParam)[] = []
 	userMessageContentReady = false
 
+	// Intent
+	private selectedIntentId?: string
+	private hasSelectedIntent = false
+
 	/**
 	 * Flag indicating whether the assistant message for the current streaming session
 	 * has been saved to API conversation history.
@@ -1261,6 +1265,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		return undefined
+	}
+
+	public setSelectedIntent(intentId: string): void {
+		this.selectedIntentId = intentId
+		this.hasSelectedIntent = true
+	}
+
+	public getHasSelectedIntent(): boolean {
+		return this.hasSelectedIntent
+	}
+
+	public getSelectedIntentId(): string | undefined {
+		return this.selectedIntentId
 	}
 
 	// Note that `partial` has three valid states true (partial message),
@@ -4008,6 +4025,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		Task.lastGlobalApiRequestTime = performance.now()
 
 		const systemPrompt = await this.getSystemPrompt()
+
 		const { contextTokens } = this.getTokenUsage()
 
 		if (contextTokens) {

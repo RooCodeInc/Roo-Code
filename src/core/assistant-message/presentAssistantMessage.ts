@@ -681,6 +681,23 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			// TODO: requiresIntent check should be based on tool definition, not hardcoded list
+			const requiresIntent: ToolName[] = [
+				"apply_diff",
+				"write_to_file",
+				"edit_file",
+				"apply_patch",
+				"execute_command",
+				"search_replace",
+				"edit",
+			]
+
+			if (requiresIntent.includes(block.name as ToolName) && !cline.getHasSelectedIntent()) {
+				const errorMsg = "You must call select_active_intent before using modification tools."
+				pushToolResult(formatResponse.toolError(errorMsg))
+				break
+			}
+
 			switch (block.name) {
 				case "list_active_intents":
 					await listActiveIntentsTool.handle(cline, block as ToolUse<"list_active_intents">, {
