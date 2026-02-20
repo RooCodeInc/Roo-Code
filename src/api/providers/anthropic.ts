@@ -359,6 +359,13 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			}
 		}
 
+		// Anthropic models perform better with the edit tool instead of apply_diff.
+		info = {
+			...info,
+			excludedTools: [...new Set([...(info.excludedTools || []), "apply_diff"])],
+			includedTools: [...new Set([...(info.includedTools || []), "edit"])],
+		}
+
 		const params = getModelParams({
 			format: "anthropic",
 			modelId: id,

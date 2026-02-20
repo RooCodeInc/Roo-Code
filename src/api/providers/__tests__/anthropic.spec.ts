@@ -343,6 +343,20 @@ describe("AnthropicHandler", () => {
 			expect(model.info.inputPrice).toBe(6.0)
 			expect(model.info.outputPrice).toBe(22.5)
 		})
+
+		it("should exclude apply_diff and include edit in tool preferences", () => {
+			const model = handler.getModel()
+			expect(model.info.excludedTools).toContain("apply_diff")
+			expect(model.info.includedTools).toContain("edit")
+		})
+
+		it("should not duplicate tool entries if already present", () => {
+			const model = handler.getModel()
+			const excludedCount = model.info.excludedTools!.filter((t: string) => t === "apply_diff").length
+			const includedCount = model.info.includedTools!.filter((t: string) => t === "edit").length
+			expect(excludedCount).toBe(1)
+			expect(includedCount).toBe(1)
+		})
 	})
 
 	describe("reasoning block filtering", () => {
