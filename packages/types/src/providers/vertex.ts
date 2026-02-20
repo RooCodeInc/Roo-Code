@@ -292,7 +292,7 @@ export const vertexModels = {
 			},
 		],
 	},
-	"claude-sonnet-4-6@20260114": {
+	"claude-sonnet-4-6": {
 		maxTokens: 8192,
 		contextWindow: 200_000, // Default 200K, extendable to 1M with beta flag 'context-1m-2025-08-07'
 		supportsImages: true,
@@ -541,7 +541,7 @@ export const vertexModels = {
 export const VERTEX_1M_CONTEXT_MODEL_IDS = [
 	"claude-sonnet-4@20250514",
 	"claude-sonnet-4-5@20250929",
-	"claude-sonnet-4-6@20260114",
+	"claude-sonnet-4-6",
 	"claude-opus-4-6",
 ] as const
 

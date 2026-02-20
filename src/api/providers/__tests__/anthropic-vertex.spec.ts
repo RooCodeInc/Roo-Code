@@ -901,7 +901,7 @@ describe("VertexHandler", () => {
 
 		it("should enable 1M context for Claude Sonnet 4.6 when beta flag is set", () => {
 			const handler = new AnthropicVertexHandler({
-				apiModelId: "claude-sonnet-4-6@20260114",
+				apiModelId: "claude-sonnet-4-6",
 				vertexProjectId: "test-project",
 				vertexRegion: "us-central1",
 				vertex1MContext: true,
