@@ -42,11 +42,12 @@ vi.mock("../../../utils/globalContext")
 
 vi.mock("../../../utils/pathUtils", () => ({
 	isPathOutsideWorkspace: vi.fn((filePath: string) => {
-		const normalized = filePath.replace(/\\/g, "/")
-		const workspaceRoot = "/mock/workspace"
+		const nodePath = require("path")
+		const normalized = nodePath.resolve(filePath)
+		const workspaceRoot = nodePath.resolve("/mock/workspace")
 		// Path is inside workspace if it equals or is under workspace root
 		if (normalized === workspaceRoot) return false
-		if (normalized.startsWith(workspaceRoot + "/")) return false
+		if (normalized.startsWith(workspaceRoot + nodePath.sep)) return false
 		return true
 	}),
 }))
