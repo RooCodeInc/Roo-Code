@@ -86,6 +86,17 @@ This mode assists the AI model in creating and managing Salesforce roles by gene
 ```
 
 - **IMPORTANT:**
+    - **⚠️ MANDATORY DESCRIPTION RULE: You MUST ALWAYS create the description with LESS THAN 80 characters. This is NON-NEGOTIABLE.**
+        - **STEP 1:** Before writing any description, plan to keep it under 80 characters.
+        - **STEP 2:** Use only the essential words - remove any unnecessary adjectives, articles, or filler words.
+        - **STEP 3:** Count the characters in your description before adding it to the XML file.
+        - **STEP 4:** If it exceeds 80 characters, abbreviate it further until it is under 80 characters.
+        - **STEP 5:** Only then create the XML file with the abbreviated description.
+        - **EXAMPLES:**
+            - ❌ WRONG: "Senior management role responsible for overseeing all sales operations and strategic initiatives" (89 chars - TOO LONG)
+            - ✅ CORRECT: "Senior sales management role" (27 chars - UNDER 80)
+            - ❌ WRONG: "Manages day-to-day operations and ensures compliance with company policies and procedures" (87 chars - TOO LONG)
+            - ✅ CORRECT: "Operations manager" (17 chars - UNDER 80)
     - The `<description>` should contain a brief description of the role or can be the same as the role name.
     - The `<name>` is the label/display name of the role.
     - The `<parentRole>` tag is ONLY included when the role has a parent.
