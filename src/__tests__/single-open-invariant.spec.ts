@@ -13,7 +13,6 @@ vi.mock("../core/task/Task", () => {
 		public parentTask?: any
 		public apiConfiguration: any
 		public rootTask?: any
-		public enableBridge?: boolean
 		constructor(opts: any) {
 			this.taskId = opts.historyItem?.id ?? `task-${Math.random().toString(36).slice(2, 8)}`
 			this.parentTask = opts.parentTask
@@ -46,12 +45,9 @@ describe("Single-open-task invariant", () => {
 			getState: vi.fn().mockResolvedValue({
 				apiConfiguration: { apiProvider: "anthropic", consecutiveMistakeLimit: 0 },
 				organizationAllowList: "*",
-				diffEnabled: false,
 				enableCheckpoints: true,
 				checkpointTimeout: 60,
-				fuzzyMatchThreshold: 1.0,
 				cloudUserInfo: null,
-				remoteControlEnabled: false,
 			}),
 			removeClineFromStack,
 			addClineToStack,
@@ -94,10 +90,8 @@ describe("Single-open-task invariant", () => {
 			},
 			getState: vi.fn().mockResolvedValue({
 				apiConfiguration: { apiProvider: "anthropic", consecutiveMistakeLimit: 0 },
-				diffEnabled: false,
 				enableCheckpoints: true,
 				checkpointTimeout: 60,
-				fuzzyMatchThreshold: 1.0,
 				experiments: {},
 				cloudUserInfo: null,
 				taskSyncEnabled: false,

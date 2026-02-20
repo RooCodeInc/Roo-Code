@@ -11,6 +11,7 @@ vitest.mock("@roo-code/telemetry", () => ({
 }))
 
 import { Anthropic } from "@anthropic-ai/sdk"
+import OpenAI from "openai"
 
 import { ApiProviderError } from "@roo-code/types"
 
@@ -75,6 +76,28 @@ describe("OpenAiNativeHandler", () => {
 				openAiNativeApiKey: "",
 			})
 			expect(handlerWithoutKey).toBeInstanceOf(OpenAiNativeHandler)
+		})
+
+		it("should pass undefined baseURL when openAiNativeBaseUrl is empty string", () => {
+			;(OpenAI as unknown as ReturnType<typeof vitest.fn>).mockClear()
+			new OpenAiNativeHandler({
+				apiModelId: "gpt-4.1",
+				openAiNativeApiKey: "test-key",
+				openAiNativeBaseUrl: "",
+			})
+			expect(OpenAI).toHaveBeenCalledWith(expect.objectContaining({ baseURL: undefined }))
+		})
+
+		it("should pass custom baseURL when openAiNativeBaseUrl is a valid URL", () => {
+			;(OpenAI as unknown as ReturnType<typeof vitest.fn>).mockClear()
+			new OpenAiNativeHandler({
+				apiModelId: "gpt-4.1",
+				openAiNativeApiKey: "test-key",
+				openAiNativeBaseUrl: "https://custom-openai.example.com/v1",
+			})
+			expect(OpenAI).toHaveBeenCalledWith(
+				expect.objectContaining({ baseURL: "https://custom-openai.example.com/v1" }),
+			)
 		})
 	})
 
@@ -220,45 +243,6 @@ describe("OpenAiNativeHandler", () => {
 			const modelInfo = handlerWithoutModel.getModel()
 			expect(modelInfo.id).toBe("gpt-5.1-codex-max") // Default model
 			expect(modelInfo.info).toBeDefined()
-		})
-
-		it("should have defaultToolProtocol: native for all OpenAI Native models", () => {
-			// Test that all models have defaultToolProtocol: native
-			const testModels = [
-				"gpt-5.1-codex-max",
-				"gpt-5.2",
-				"gpt-5.1",
-				"gpt-5",
-				"gpt-5-mini",
-				"gpt-5-nano",
-				"gpt-4.1",
-				"gpt-4.1-mini",
-				"gpt-4.1-nano",
-				"o3",
-				"o3-high",
-				"o3-low",
-				"o4-mini",
-				"o4-mini-high",
-				"o4-mini-low",
-				"o3-mini",
-				"o3-mini-high",
-				"o3-mini-low",
-				"o1",
-				"o1-preview",
-				"o1-mini",
-				"gpt-4o",
-				"gpt-4o-mini",
-				"codex-mini-latest",
-			]
-
-			for (const modelId of testModels) {
-				const testHandler = new OpenAiNativeHandler({
-					openAiNativeApiKey: "test-api-key",
-					apiModelId: modelId,
-				})
-				const modelInfo = testHandler.getModel()
-				expect(modelInfo.info.defaultToolProtocol).toBe("native")
-			}
 		})
 	})
 

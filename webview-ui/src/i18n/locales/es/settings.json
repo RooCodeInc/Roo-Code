@@ -29,8 +29,8 @@
 		"providers": "Proveedores",
 		"modes": "Modos",
 		"mcp": "Servidores MCP",
+		"worktrees": "Worktrees",
 		"autoApprove": "Auto-aprobación",
-		"browser": "Acceso al ordenador",
 		"checkpoints": "Puntos de control",
 		"notifications": "Notificaciones",
 		"contextManagement": "Contexto",
@@ -40,7 +40,8 @@
 		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Idioma",
-		"about": "Acerca de Roo Code"
+		"about": "Acerca de Roo Code",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -67,7 +68,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Gestiona tus comandos de barra para ejecutar rápidamente flujos de trabajo y acciones personalizadas. <DocsLink>Saber más</DocsLink>"
+		"description": "Gestiona tus comandos de barra para ejecutar rápidamente flujos de trabajo y acciones personalizadas. <DocsLink>Saber más</DocsLink>",
+		"workspaceCommands": "Comandos del espacio de trabajo",
+		"globalCommands": "Comandos globales",
+		"noWorkspaceCommands": "Sin comandos en este proyecto aún.",
+		"noGlobalCommands": "Sin comandos globales aún.",
+		"addCommand": "Agregar comando de barra",
+		"editCommand": "Editar comando",
+		"deleteCommand": "Eliminar comando",
+		"deleteDialog": {
+			"title": "Eliminar comando",
+			"description": "¿Estás seguro de que quieres eliminar el comando \"{{name}}\"? Esta acción no se puede deshacer.",
+			"confirm": "Eliminar",
+			"cancel": "Cancelar"
+		},
+		"createDialog": {
+			"title": "Crear nuevo comando de barra",
+			"nameLabel": "Nombre",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "Solo letras minúsculas, números, guiones y guiones bajos",
+			"sourceLabel": "Ubicación",
+			"create": "Crear",
+			"cancel": "Cancelar"
+		},
+		"source": {
+			"global": "Global (disponible en todos los espacios de trabajo)",
+			"project": "Espacio de trabajo"
+		},
+		"validation": {
+			"nameRequired": "El nombre es obligatorio",
+			"nameTooLong": "El nombre debe tener 64 caracteres o menos",
+			"nameInvalid": "El nombre solo puede contener letras, números, guiones y guiones bajos"
+		},
+		"footer": "Usa comandos de barra para acceder rápidamente a indicaciones y flujos de trabajo frecuentemente utilizados."
 	},
 	"prompts": {
 		"description": "Configura indicaciones de soporte que se utilizan para acciones rápidas como mejorar indicaciones, explicar código y solucionar problemas. Estas indicaciones ayudan a Roo a brindar mejor asistencia para tareas comunes de desarrollo."
@@ -178,7 +211,12 @@
 		"searchMinScoreResetTooltip": "Restablecer al valor predeterminado (0.4)",
 		"searchMaxResultsLabel": "Resultados máximos de búsqueda",
 		"searchMaxResultsDescription": "Número máximo de resultados de búsqueda a devolver al consultar el índice de código. Valores más altos proporcionan más contexto pero pueden incluir resultados menos relevantes.",
-		"resetToDefault": "Restablecer al valor predeterminado"
+		"resetToDefault": "Restablecer al valor predeterminado",
+		"stopIndexingButton": "Detener indexación",
+		"stoppingButton": "Deteniendo...",
+		"workspaceToggleLabel": "Activar indexación para este espacio de trabajo",
+		"workspaceDisabledMessage": "La indexación está configurada pero no habilitada para este espacio de trabajo.",
+		"autoEnableDefaultLabel": "Habilitar automáticamente la indexación para nuevos espacios de trabajo"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Puedes configurar un atajo global para esta configuración <SettingsLink>en las preferencias de tu IDE</SettingsLink>.",
@@ -206,10 +244,6 @@
 				"label": "Incluir archivos protegidos",
 				"description": "Permitir a Roo crear y editar archivos protegidos (como .rooignore y archivos de configuración .roo/) sin requerir aprobación."
 			}
-		},
-		"browser": {
-			"label": "Navegador",
-			"description": "Realizar acciones del navegador automáticamente sin requerir aprobación. Nota: Solo se aplica cuando el modelo admite el uso del ordenador"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -242,7 +276,6 @@
 		},
 		"apiRequestLimit": {
 			"title": "Solicitudes máximas",
-			"description": "Realizar automáticamente esta cantidad de solicitudes a la API antes de pedir aprobación para continuar con la tarea.",
 			"unlimited": "Ilimitado"
 		},
 		"selectOptionsFirst": "Selecciona al menos una opción a continuación para habilitar la aprobación automática",
@@ -276,6 +309,7 @@
 		"searchProviderPlaceholder": "Buscar proveedores",
 		"noProviderMatchFound": "No se encontraron proveedores",
 		"noMatchFound": "No se encontraron perfiles coincidentes",
+		"retiredProviderMessage": "Lo sentimos, este proveedor ya no es compatible. Vimos que muy pocos usuarios de Roo lo usaban realmente y necesitamos reducir el alcance de nuestro código para poder seguir avanzando rápido y servir bien a nuestra comunidad en este espacio. Fue una decisión muy difícil, pero nos permite enfocarnos en lo que más te importa. Lo sabemos, es una lástima.",
 		"vscodeLmDescription": "La API del Modelo de Lenguaje de VS Code le permite ejecutar modelos proporcionados por otras extensiones de VS Code (incluido, entre otros, GitHub Copilot). La forma más sencilla de empezar es instalar las extensiones Copilot y Copilot Chat desde el VS Code Marketplace.",
 		"awsCustomArnUse": "Ingrese un ARN de Amazon Bedrock válido para el modelo que desea utilizar. Ejemplos de formato:",
 		"awsCustomArnDesc": "Asegúrese de que la región en el ARN coincida con la región de AWS seleccionada anteriormente.",
@@ -284,6 +318,37 @@
 		"vercelAiGatewayApiKey": "Clave API de Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Obtener clave API de Vercel AI Gateway",
 		"apiKeyStorageNotice": "Las claves API se almacenan de forma segura en el Almacenamiento Secreto de VSCode",
+		"openAiCodexRateLimits": {
+			"title": "Usage Limits for Codex{{planLabel}}",
+			"loading": "Loading usage limits...",
+			"loadError": "Failed to load usage limits",
+			"retry": "Retry",
+			"usedPercent": "{{percent}}% used",
+			"resetsIn": "Resets in {{time}}",
+			"plan": {
+				"default": "",
+				"withType": " ({{planType}})"
+			},
+			"time": {
+				"now": "Now",
+				"notAvailable": "N/A"
+			},
+			"duration": {
+				"daysHours": "{{days}}d {{hours}}h",
+				"hoursMinutes": "{{hours}}h {{minutes}}m",
+				"minutes": "{{minutes}}m"
+			},
+			"window": {
+				"usage": "Usage",
+				"fiveHour": "5h limit",
+				"oneHour": "1h limit",
+				"daily": "Daily limit",
+				"weekly": "Weekly limit",
+				"days": "{{days}}d limit",
+				"hours": "{{hours}}h limit",
+				"minutes": "{{minutes}}m limit"
+			}
+		},
 		"useCustomBaseUrl": "Usar URL base personalizada",
 		"useReasoning": "Habilitar razonamiento",
 		"useHostHeader": "Usar encabezado Host personalizado",
@@ -306,28 +371,17 @@
 		"getAnthropicApiKey": "Obtener clave API de Anthropic",
 		"anthropicUseAuthToken": "Pasar la clave API de Anthropic como encabezado de autorización en lugar de X-Api-Key",
 		"anthropic1MContextBetaLabel": "Habilitar ventana de contexto de 1M (Beta)",
-		"anthropic1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4",
+		"anthropic1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4.x / Claude Opus 4.6",
 		"awsBedrock1MContextBetaLabel": "Habilitar ventana de contexto de 1M (Beta)",
-		"awsBedrock1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4",
+		"awsBedrock1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4.x / Claude Opus 4.6",
 		"vertex1MContextBetaLabel": "Habilitar ventana de contexto de 1M (Beta)",
-		"vertex1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4",
+		"vertex1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4.x / Claude Opus 4.6",
 		"basetenApiKey": "Clave API de Baseten",
 		"getBasetenApiKey": "Obtener clave API de Baseten",
-		"cerebrasApiKey": "Clave API de Cerebras",
-		"getCerebrasApiKey": "Obtener clave API de Cerebras",
-		"chutesApiKey": "Clave API de Chutes",
-		"getChutesApiKey": "Obtener clave API de Chutes",
 		"fireworksApiKey": "Clave API de Fireworks",
 		"getFireworksApiKey": "Obtener clave API de Fireworks",
-		"featherlessApiKey": "Clave API de Featherless",
-		"getFeatherlessApiKey": "Obtener clave API de Featherless",
-		"ioIntelligenceApiKey": "Clave API de IO Intelligence",
-		"ioIntelligenceApiKeyPlaceholder": "Introduce tu clave de API de IO Intelligence",
-		"getIoIntelligenceApiKey": "Obtener clave API de IO Intelligence",
 		"deepSeekApiKey": "Clave API de DeepSeek",
 		"getDeepSeekApiKey": "Obtener clave API de DeepSeek",
-		"doubaoApiKey": "Clave API de Doubao",
-		"getDoubaoApiKey": "Obtener clave API de Doubao",
 		"moonshotApiKey": "Clave API de Moonshot",
 		"getMoonshotApiKey": "Obtener clave API de Moonshot",
 		"moonshotBaseUrl": "Punto de entrada de Moonshot",
@@ -339,23 +393,8 @@
 		"getMiniMaxApiKey": "Obtener clave API de MiniMax",
 		"minimaxBaseUrl": "Punto de entrada de MiniMax",
 		"geminiApiKey": "Clave API de Gemini",
-		"getGroqApiKey": "Obtener clave API de Groq",
-		"groqApiKey": "Clave API de Groq",
 		"getSambaNovaApiKey": "Obtener clave API de SambaNova",
 		"sambaNovaApiKey": "Clave API de SambaNova",
-		"getHuggingFaceApiKey": "Obtener clave API de Hugging Face",
-		"huggingFaceApiKey": "Clave API de Hugging Face",
-		"huggingFaceModelId": "ID del modelo",
-		"huggingFaceLoading": "Cargando...",
-		"huggingFaceModelsCount": "({{count}} modelos)",
-		"huggingFaceSelectModel": "Seleccionar un modelo...",
-		"huggingFaceSearchModels": "Buscar modelos...",
-		"huggingFaceNoModelsFound": "No se encontraron modelos",
-		"huggingFaceProvider": "Proveedor",
-		"huggingFaceProviderAuto": "Automático",
-		"huggingFaceSelectProvider": "Seleccionar un proveedor...",
-		"huggingFaceSearchProviders": "Buscar proveedores...",
-		"huggingFaceNoProvidersFound": "No se encontraron proveedores",
 		"getGeminiApiKey": "Obtener clave API de Gemini",
 		"openAiApiKey": "Clave API de OpenAI",
 		"apiKey": "Clave API",
@@ -397,16 +436,6 @@
 		"cacheUsageNote": "Nota: Si no ve el uso del caché, intente seleccionar un modelo diferente y luego seleccionar nuevamente su modelo deseado.",
 		"vscodeLmModel": "Modelo de lenguaje",
 		"vscodeLmWarning": "Nota: Los modelos a los que se accede a través de la API de modelos de lenguaje de VS Code pueden estar envueltos o ajustados por el proveedor, por lo que su comportamiento puede diferir del uso directo del mismo modelo desde un proveedor o enrutador típico. Para usar un modelo del menú desplegable «Language Model», primero cambia a ese modelo y luego haz clic en «Aceptar» en el aviso de Copilot Chat; de lo contrario, puedes ver un error como 400 «The requested model is not supported».",
-		"geminiParameters": {
-			"urlContext": {
-				"title": "Habilitar contexto de URL",
-				"description": "Permite que Gemini acceda y procese URLs para contexto adicional al generar respuestas. Útil para tareas que requieren análisis de contenido web."
-			},
-			"groundingSearch": {
-				"title": "Habilitar grounding con búsqueda en Google",
-				"description": "Permite que Gemini busque en Google información actual y fundamente las respuestas en datos en tiempo real. Útil para consultas que requieren información actualizada."
-			}
-		},
 		"googleCloudSetup": {
 			"title": "Para usar Google Cloud Vertex AI, necesita:",
 			"step1": "1. Crear una cuenta de Google Cloud, habilitar la API de Vertex AI y habilitar los modelos Claude deseados.",
@@ -437,10 +466,6 @@
 			"description": "Ollama le permite ejecutar modelos localmente en su computadora. Para obtener instrucciones sobre cómo comenzar, consulte la guía de inicio rápido.",
 			"warning": "Nota: Roo Code utiliza prompts complejos y funciona mejor con modelos Claude. Los modelos menos capaces pueden no funcionar como se espera."
 		},
-		"unboundApiKey": "Clave API de Unbound",
-		"getUnboundApiKey": "Obtener clave API de Unbound",
-		"unboundRefreshModelsSuccess": "¡Lista de modelos actualizada! Ahora puede seleccionar entre los últimos modelos.",
-		"unboundInvalidApiKey": "Clave API inválida. Por favor, verifique su clave API e inténtelo de nuevo.",
 		"roo": {
 			"authenticatedMessage": "Autenticado de forma segura a través de tu cuenta de Roo Code Cloud.",
 			"connectButton": "Conectar a Roo Code Cloud"
@@ -527,34 +552,6 @@
 			"placeholder": "Por defecto: claude",
 			"maxTokensLabel": "Tokens máximos de salida",
 			"maxTokensDescription": "Número máximo de tokens de salida para las respuestas de Claude Code. El valor predeterminado es 8000."
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "Habilitar herramienta de navegador",
-			"description": "Cuando está habilitado, Roo puede usar un navegador para interactuar con sitios web cuando se utilizan modelos que admiten el uso del ordenador. <0>Más información</0>"
-		},
-		"viewport": {
-			"label": "Tamaño del viewport",
-			"description": "Seleccione el tamaño del viewport para interacciones del navegador. Esto afecta cómo se muestran e interactúan los sitios web.",
-			"options": {
-				"largeDesktop": "Escritorio grande (1280x800)",
-				"smallDesktop": "Escritorio pequeño (900x600)",
-				"tablet": "Tablet (768x1024)",
-				"mobile": "Móvil (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "Calidad de capturas de pantalla",
-			"description": "Ajuste la calidad WebP de las capturas de pantalla del navegador. Valores más altos proporcionan capturas más claras pero aumentan el uso de token."
-		},
-		"remote": {
-			"label": "Usar conexión remota del navegador",
-			"description": "Conectarse a un navegador Chrome que se ejecuta con depuración remota habilitada (--remote-debugging-port=9222).",
-			"urlPlaceholder": "URL personalizada (ej. http://localhost:9222)",
-			"testButton": "Probar conexión",
-			"testingButton": "Probando...",
-			"instructions": "Ingrese la dirección del host del protocolo DevTools o déjelo vacío para descubrir automáticamente instancias locales de Chrome. El botón Probar Conexión intentará usar la URL personalizada si se proporciona, o descubrirá automáticamente si el campo está vacío."
 		}
 	},
 	"checkpoints": {
@@ -692,6 +689,15 @@
 			"label": "Límite de caracteres del terminal",
 			"description": "Anula el límite de líneas para evitar problemas de memoria imponiendo un límite estricto al tamaño de salida. Si se excede, mantiene el inicio y el final y muestra un marcador a Roo donde se omite el contenido. <0>Más información</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Tamaño de vista previa de salida de comandos",
+			"description": "Controla cuánta salida de comandos ve Roo directamente. La salida completa siempre se guarda y es accesible cuando sea necesario.",
+			"options": {
+				"small": "Pequeño (5KB)",
+				"medium": "Mediano (10KB)",
+				"large": "Grande (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Tiempo de espera de integración del shell del terminal",
 			"description": "Cuánto tiempo esperar la integración del shell de VS Code antes de ejecutar comandos. Aumenta si tu shell inicia lentamente o ves errores 'Integración del Shell No Disponible'. <0>Más información</0>"
@@ -703,10 +709,6 @@
 		"commandDelay": {
 			"label": "Retraso de comando del terminal",
 			"description": "Añade una pausa breve después de cada comando para que el terminal de VS Code pueda vaciar toda la salida (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Usa solo si ves salida final faltante; si no, deja en 0. <0>Más información</0>"
-		},
-		"compressProgressBar": {
-			"label": "Comprimir salida de barra de progreso",
-			"description": "Colapsa barras de progreso/spinners para que solo se mantenga el estado final (ahorra tokens). <0>Más información</0>"
 		},
 		"powershellCounter": {
 			"label": "Activar solución del contador de PowerShell",
@@ -736,14 +738,6 @@
 	"advancedSettings": {
 		"title": "Configuración avanzada"
 	},
-	"toolProtocol": {
-		"label": "Protocolo de llamada a herramientas",
-		"description": "Elija cómo Roo se comunica con la API. Nativo utiliza la API de llamada a funciones del proveedor, mientras que XML utiliza definiciones de herramientas con formato XML.",
-		"default": "Predeterminado",
-		"xml": "XML",
-		"native": "Nativo",
-		"currentDefault": "Predeterminado: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "Habilitar edición a través de diffs",
@@ -760,10 +754,6 @@
 					"unified": "La estrategia de diff unificado toma múltiples enfoques para aplicar diffs y elige el mejor enfoque.",
 					"multiBlock": "La estrategia de diff multi-bloque permite actualizar múltiples bloques de código en un archivo en una sola solicitud."
 				}
-			},
-			"matchPrecision": {
-				"label": "Precisión de coincidencia",
-				"description": "Este control deslizante controla cuán precisamente deben coincidir las secciones de código al aplicar diffs. Valores más bajos permiten coincidencias más flexibles pero aumentan el riesgo de reemplazos incorrectos. Use valores por debajo del 100% con extrema precaución."
 			}
 		},
 		"todoList": {
@@ -780,10 +770,6 @@
 			"name": "Usar herramienta experimental de inserción de contenido",
 			"description": "Habilitar la herramienta experimental de inserción de contenido, permitiendo a Roo insertar contenido en números de línea específicos sin necesidad de crear un diff."
 		},
-		"POWER_STEERING": {
-			"name": "Usar modo experimental de \"dirección asistida\"",
-			"description": "Cuando está habilitado, Roo recordará al modelo los detalles de su definición de modo actual con más frecuencia. Esto llevará a una mayor adherencia a las definiciones de roles e instrucciones personalizadas, pero usará más tokens por mensaje."
-		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Usar herramienta experimental de diff de bloques múltiples",
 			"description": "Cuando está habilitado, Roo usará la herramienta de diff de bloques múltiples. Esto intentará actualizar múltiples bloques de código en el archivo en una sola solicitud."
@@ -795,10 +781,6 @@
 		"MARKETPLACE": {
 			"name": "Habilitar Marketplace",
 			"description": "Cuando está habilitado, puedes instalar MCP y modos personalizados del Marketplace."
-		},
-		"MULTI_FILE_APPLY_DIFF": {
-			"name": "Habilitar ediciones de archivos concurrentes",
-			"description": "Cuando está habilitado, Roo puede editar múltiples archivos en una sola solicitud. Cuando está deshabilitado, Roo debe editar archivos de uno en uno. Deshabilitar esto puede ayudar cuando trabajas con modelos menos capaces o cuando quieres más control sobre las modificaciones de archivos."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Edición en segundo plano",
@@ -828,10 +810,6 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Habilitar comandos slash iniciados por el modelo",
 			"description": "Cuando está habilitado, Roo puede ejecutar tus comandos slash para ejecutar flujos de trabajo."
-		},
-		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "Llamadas paralelas a herramientas",
-			"description": "Cuando está habilitado, el protocolo nativo puede ejecutar múltiples herramientas en un solo turno de mensaje del asistente."
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Habilitar herramientas personalizadas",
@@ -885,7 +863,6 @@
 		"simplifiedExplanation": "Puedes ajustar la configuración detallada del modelo más tarde."
 	},
 	"footer": {
-		"feedback": "Si tiene alguna pregunta o comentario, no dude en abrir un issue en <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unirse a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Permitir informes anónimos de errores y uso",
 			"description": "Ayuda a mejorar Roo Code enviando datos de uso anónimos e informes de errores. Esta telemetría no recopila código, prompts o información personal. Consulta nuestra <privacyLink>política de privacidad</privacyLink> para más detalles."
@@ -979,5 +956,58 @@
 			"label": "Requerir {{primaryMod}}+Enter para enviar mensajes",
 			"description": "Cuando está activado, debes presionar {{primaryMod}}+Enter para enviar mensajes en lugar de solo Enter"
 		}
+	},
+	"skills": {
+		"description": "Gestiona skills que proporcionan instrucciones contextuales al agente. Las skills se aplican automáticamente cuando son relevantes para tus tareas. <DocsLink>Más información</DocsLink>",
+		"workspaceSkills": "Skills del espacio de trabajo",
+		"globalSkills": "Skills globales",
+		"noWorkspaceSkills": "Sin skills en este proyecto aún.",
+		"noGlobalSkills": "Sin skills globales aún.",
+		"addSkill": "Agregar Skill",
+		"editSkill": "Editar skill",
+		"deleteSkill": "Eliminar skill",
+		"configureModes": "Disponibilidad de modo",
+		"modeAny": "Cualquier modo",
+		"modeCount": "{{count}} modos",
+		"deleteDialog": {
+			"title": "Eliminar Skill",
+			"description": "¿Estás seguro de que quieres eliminar la skill \"{{name}}\"? Esta acción no se puede deshacer.",
+			"confirm": "Eliminar",
+			"cancel": "Cancelar"
+		},
+		"modeDialog": {
+			"title": "Configurar modos de Skill",
+			"description": "Elige qué modos pueden usar esta skill",
+			"intro": "Para mantener tu contexto ligero, recomendamos que solo hagas disponibles las skills para los modos que las necesitan.",
+			"anyMode": "Cualquier modo (disponible en todas partes)",
+			"save": "Guardar",
+			"cancel": "Cancelar"
+		},
+		"createDialog": {
+			"title": "Crear Nueva Skill",
+			"nameLabel": "Nombre",
+			"namePlaceholder": "mi-nombre-de-skill",
+			"descriptionLabel": "Descripción",
+			"descriptionPlaceholder": "Describe cuándo debería usarse esta skill...",
+			"sourceLabel": "Ubicación",
+			"modeLabel": "Modo (opcional)",
+			"modePlaceholder": "Cualquier modo",
+			"modeHint": "Restringe esta skill a un modo específico",
+			"modeAny": "Cualquier modo",
+			"create": "Crear",
+			"cancel": "Cancelar"
+		},
+		"source": {
+			"global": "Global (disponible en todos los proyectos)",
+			"project": "Proyecto (solo este espacio de trabajo)"
+		},
+		"validation": {
+			"nameRequired": "El nombre es obligatorio",
+			"nameTooLong": "El nombre debe tener como máximo 64 caracteres",
+			"nameInvalid": "El nombre debe tener entre 1 y 64 caracteres, solo letras minúsculas, números o guiones",
+			"descriptionRequired": "La descripción es obligatoria",
+			"descriptionTooLong": "La descripción debe tener como máximo 1024 caracteres"
+		},
+		"footer": "Crea tus propias skills con el modo Skill Writer, disponible en el <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	}
 }

@@ -62,7 +62,7 @@
 		"condense_not_enough_messages": "Недостаточно сообщений для сжатия контекста",
 		"condensed_recently": "Контекст был недавно сжат; пропускаем эту попытку",
 		"condense_handler_invalid": "Обработчик API для сжатия контекста недействителен",
-		"condense_context_grew": "Размер контекста увеличился во время сжатия; пропускаем эту попытку",
+		"condense_api_failed": "Ошибка вызова API сжатия: {{message}}",
 		"url_timeout": "Веб-сайт слишком долго загружался (таймаут). Это может быть из-за медленного соединения, тяжелого веб-сайта или временной недоступности. Ты можешь попробовать позже или проверить правильность URL.",
 		"url_not_found": "Адрес веб-сайта не найден. Проверь правильность URL и попробуй снова.",
 		"no_internet": "Нет подключения к интернету. Проверь сетевое подключение и попробуй снова.",
@@ -110,15 +110,6 @@
 			"thinking_complete_truncated": "(Размышление завершено, но вывод урезан из-за лимита токенов.)",
 			"thinking_complete_safety": "(Размышление завершено, но вывод заблокирован настройками безопасности.)",
 			"thinking_complete_recitation": "(Размышление завершено, но вывод заблокирован проверкой цитирования.)"
-		},
-		"cerebras": {
-			"authenticationFailed": "Ошибка аутентификации Cerebras API. Убедитесь, что ваш API-ключ действителен и не истек.",
-			"accessForbidden": "Доступ к Cerebras API запрещен. Ваш API-ключ может не иметь доступа к запрашиваемой модели или функции.",
-			"rateLimitExceeded": "Превышен лимит скорости Cerebras API. Подождите перед отправкой следующего запроса.",
-			"serverError": "Ошибка сервера Cerebras API ({{status}}). Попробуйте позже.",
-			"genericError": "Ошибка Cerebras API ({{status}}): {{message}}",
-			"noResponseBody": "Ошибка Cerebras API: Нет тела ответа",
-			"completionError": "Ошибка завершения Cerebras: {{error}}"
 		},
 		"roo": {
 			"authenticationRequired": "Провайдер Roo требует облачной аутентификации. Войдите в Roo Code Cloud."
@@ -205,10 +196,7 @@
 		"task_placeholder": "Введите вашу задачу здесь"
 	},
 	"settings": {
-		"providers": {
-			"groqApiKey": "Ключ API Groq",
-			"getGroqApiKey": "Получить ключ API Groq"
-		}
+		"providers": {}
 	},
 	"customModes": {
 		"errors": {

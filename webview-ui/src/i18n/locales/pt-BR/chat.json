@@ -25,17 +25,22 @@
 		"sharingDisabledByOrganization": "Compartilhamento desabilitado pela organização",
 		"shareSuccessOrganization": "Link da organização copiado para a área de transferência",
 		"shareSuccessPublic": "Link público copiado para a área de transferência",
-		"openInCloud": "Abrir tarefa no Roo Code Cloud",
-		"openInCloudIntro": "Continue monitorando ou interagindo com Roo de qualquer lugar. Escaneie, clique ou copie para abrir.",
 		"openApiHistory": "Abrir histórico da API",
-		"openUiHistory": "Abrir histórico da UI"
+		"openUiHistory": "Abrir histórico da UI",
+		"backToParentTask": "Tarefa pai"
 	},
 	"unpin": "Desfixar",
 	"pin": "Fixar",
+	"fileChangesInConversation": {
+		"header": "{{count}} arquivo(s) alterado(s) nesta conversa"
+	},
 	"tokenProgress": {
 		"availableSpace": "Espaço disponível: {{amount}} tokens",
 		"tokensUsed": "Tokens usados: {{used}} de {{total}}",
-		"reservedForResponse": "Reservado para resposta do modelo: {{amount}} tokens"
+		"reservedForResponse": "Reservado para resposta do modelo: {{amount}} tokens",
+		"tokensUsedLabel": "Tokens usados",
+		"reservedForResponseLabel": "Reservado para resposta",
+		"availableSpaceLabel": "Espaço disponível"
 	},
 	"retry": {
 		"title": "Tentar novamente",
@@ -107,6 +112,8 @@
 	},
 	"selectMode": "Selecionar modo de interação",
 	"selectApiConfig": "Selecionar configuração da API",
+	"lockApiConfigAcrossModes": "Bloquear configuração da API em todos os modos neste workspace",
+	"unlockApiConfigAcrossModes": "A configuração da API está bloqueada em todos os modos neste workspace (clique para desbloquear)",
 	"enhancePrompt": "Aprimorar prompt com contexto adicional",
 	"addImages": "Adicionar imagens à mensagem",
 	"sendMessage": "Enviar mensagem",
@@ -146,14 +153,14 @@
 		"rateLimitWait": "Limitação de taxa",
 		"errorTitle": "Erro do provedor {{code}}",
 		"errorMessage": {
-			"docs": "Documentação",
-			"goToSettings": "Configurações",
 			"400": "O provedor não conseguiu processar a solicitação conforme feita. Interrompa a tarefa e tente uma abordagem diferente.",
 			"401": "Não foi possível autenticar com o provedor. Por favor, verifique a configuração da sua chave API.",
 			"402": "Parece que você ficou sem fundos/créditos em sua conta. Vá ao seu provedor e adicione mais para continuar.",
 			"403": "Não autorizado. Sua chave API é válida, mas o provedor se recusou a concluir esta solicitação.",
 			"429": "Muitas solicitações. Você está sendo limitado pelo provedor. Por favor, aguarde um pouco antes de sua próxima chamada de API.",
 			"500": "Erro do servidor do provedor. Algo está errado do lado do provedor, não há nada de errado com sua solicitação.",
+			"docs": "Documentação",
+			"goToSettings": "Configurações",
 			"unknown": "Erro de API desconhecido. Por favor, entre em contato com o suporte do Roo Code.",
 			"connection": "Erro de conexão. Certifique-se de que você tem uma conexão de internet funcionando.",
 			"claudeCodeNotAuthenticated": "Você precisa fazer login para usar o Claude Code. Vá para Configurações e clique em \"Entrar no Claude Code\" para autenticar."
@@ -214,7 +221,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo quer visualizar os arquivos de nível superior neste diretório (fora do espaço de trabalho)",
 		"didViewTopLevelOutsideWorkspace": "Roo visualizou os arquivos de nível superior neste diretório (fora do espaço de trabalho)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo quer visualizar recursivamente todos os arquivos neste diretório (fora do espaço de trabalho)",
-		"didViewRecursiveOutsideWorkspace": "Roo visualizou recursivamente todos os arquivos neste diretório (fora do espaço de trabalho)"
+		"didViewRecursiveOutsideWorkspace": "Roo visualizou recursivamente todos os arquivos neste diretório (fora do espaço de trabalho)",
+		"wantsToViewMultipleDirectories": "Roo quer visualizar vários diretórios"
 	},
 	"commandOutput": "Saída do comando",
 	"commandExecution": {
@@ -258,7 +266,8 @@
 		"completionContent": "Subtarefa concluída",
 		"resultContent": "Resultados da subtarefa",
 		"defaultResult": "Por favor, continue com a próxima tarefa.",
-		"completionInstructions": "Subtarefa concluída! Você pode revisar os resultados e sugerir correções ou próximos passos. Se tudo parecer bom, confirme para retornar o resultado à tarefa principal."
+		"completionInstructions": "Subtarefa concluída! Você pode revisar os resultados e sugerir correções ou próximos passos. Se tudo parecer bom, confirme para retornar o resultado à tarefa principal.",
+		"goToSubtask": "Ver tarefa"
 	},
 	"questions": {
 		"hasQuestion": "Roo tem uma pergunta"
@@ -319,6 +328,10 @@
 			"description": "Mensagens mais antigas foram removidas da conversa para permanecer dentro do limite da janela de contexto. Esta é uma abordagem rápida, mas menos preservadora de contexto em comparação com a condensação."
 		}
 	},
+	"skill": {
+		"wantsToLoad": "Roo quer carregar uma habilidade",
+		"didLoad": "Roo carregou uma habilidade"
+	},
 	"followUpSuggest": {
 		"copyToInput": "Copiar para entrada (ou Shift + clique)",
 		"timerPrefix": "Aprovação automática ativada. Selecionando em {{seconds}}s…"
@@ -335,9 +348,9 @@
 		},
 		"release": {
 			"heading": "Novidades:",
-			"openaiCodexProvider": "Adicionado o provedor OpenAI - ChatGPT Plus/Pro que oferece acesso baseado em assinatura aos modelos Codex sem custos por token.",
-			"gpt52codexModel": "O novo modelo gpt-5.2-codex foi adicionado ao Roo Code Router, ao provedor OpenAI padrão e muito mais.",
-			"bugFixes": "Corrigidos vazamentos de memória causando telas cinza, problemas de assinatura de pensamento do Gemini e outras melhorias de estabilidade."
+			"geminiPro": "Suporte ao Gemini 3.1 Pro: Adicionado suporte ao modelo Gemini 3.1 Pro e definido como modelo Gemini padrão para melhor desempenho.",
+			"cliNdjson": "Protocolo NDJSON do CLI: Novo protocolo NDJSON via stdin, subcomandos de listagem e comando de execução modularizado para fluxos de trabalho CLI mais flexíveis.",
+			"cliRelease": "CLI v0.1.0: O CLI do Roo Code alcança sua primeira versão oficial com uma interface de comandos estável."
 		},
 		"cloudAgents": {
 			"heading": "Novidades na Nuvem:",
@@ -352,44 +365,6 @@
 		"total": "Custo Total: ${{cost}}",
 		"includesSubtasks": "Inclui custos de subtarefas"
 	},
-	"browser": {
-		"session": "Sessão do Navegador",
-		"active": "Ativo",
-		"rooWantsToUse": "Roo quer usar o navegador",
-		"consoleLogs": "Logs do console",
-		"noNewLogs": "(Sem novos logs)",
-		"screenshot": "Captura de tela do navegador",
-		"cursor": "cursor",
-		"navigation": {
-			"step": "Passo {{current}} de {{total}}",
-			"previous": "Anterior",
-			"next": "Próximo"
-		},
-		"sessionStarted": "Sessão do navegador iniciada",
-		"actions": {
-			"title": "Ação do navegador: ",
-			"launched": "Navegador iniciado",
-			"launch": "Iniciar navegador em {{url}}",
-			"clicked": "Clicado em: {{coordinate}}",
-			"click": "Clique ({{coordinate}})",
-			"typed": "Digitado: {{text}}",
-			"type": "Digitar \"{{text}}\"",
-			"pressed": "Pressionado: {{key}}",
-			"press": "Pressione {{key}}",
-			"scrolledDown": "Rolado para baixo",
-			"scrollDown": "Rolar para baixo",
-			"scrolledUp": "Rolado para cima",
-			"scrollUp": "Rolar para cima",
-			"hovered": "Pairado em: {{coordinate}}",
-			"hover": "Pairar ({{coordinate}})",
-			"resized": "Redimensionado para: {{size}}",
-			"resize": "Redimensionar para {{size}}",
-			"screenshotSaved": "Captura de tela salva",
-			"screenshot": "Salvar captura de tela em {{path}}",
-			"closed": "Navegador fechado",
-			"close": "Fechar navegador"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Expandir bloco de código",
@@ -397,7 +372,6 @@
 			"copy_code": "Copiar código"
 		}
 	},
-	"systemPromptWarning": "AVISO: Substituição personalizada de instrução do sistema ativa. Isso pode comprometer gravemente a funcionalidade e causar comportamento imprevisível.",
 	"profileViolationWarning": "O perfil atual não é compatível com as configurações da sua organização",
 	"shellIntegration": {
 		"title": "Aviso de execução de comando",
@@ -431,12 +405,29 @@
 			"title": "Negar tudo"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Aprovar tudo"
+		},
+		"deny": {
+			"title": "Negar tudo"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Salvar tudo"
+		},
+		"deny": {
+			"title": "Negar tudo"
+		}
+	},
 	"indexingStatus": {
 		"ready": "Índice pronto",
 		"indexing": "Indexando {{percentage}}%",
 		"indexed": "Indexado",
 		"error": "Erro do índice",
-		"status": "Status do índice"
+		"status": "Status do índice",
+		"stopping": "Parando a indexação..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versão {{version}} - Clique para ver as notas de lançamento"
@@ -492,5 +483,22 @@
 		"updated": "A lista de tarefas foi atualizada",
 		"completed": "Concluído",
 		"started": "Iniciado"
+	},
+	"tooManyTools": {
+		"title": "Muitas ferramentas habilitadas",
+		"toolsPart_one": "{{count}} ferramenta",
+		"toolsPart_other": "{{count}} ferramentas",
+		"serversPart_one": "{{count}} servidor MCP",
+		"serversPart_other": "{{count}} servidores MCP",
+		"messageTemplate": "Você tem {{tools}} habilitadas via {{servers}}. Um número tão alto pode confundir o modelo e levar a erros. Tente mantê-lo abaixo de {{threshold}}.",
+		"openMcpSettings": "Abrir Configurações MCP"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Provedor não é mais suportado",
+		"message": "Desculpe, este provedor não é mais suportado. Percebemos que muito poucos usuários do Roo realmente o utilizavam e precisamos reduzir o escopo do nosso código para continuar entregando rápido e servindo bem nossa comunidade. Foi uma decisão muito difícil, mas nos permite focar no que mais importa para você. Sabemos que é chato.",
+		"openSettings": "Abrir configurações"
 	}
 }

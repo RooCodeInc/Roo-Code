@@ -52,6 +52,7 @@
     </category>
     <category name="communication">
       <item>Does the draft comment sound conversational and human?</item>
+      <item>Does the draft comment start with "Hey @roomote-agent,"?</item>
       <item>Have I avoided technical jargon where possible?</item>
       <item>Is the tone helpful and not condescending?</item>
     </category>

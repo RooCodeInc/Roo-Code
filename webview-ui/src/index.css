@@ -131,6 +131,10 @@
 	--color-vscode-inputValidation-infoBackground: var(--vscode-inputValidation-infoBackground);
 	--color-vscode-inputValidation-infoBorder: var(--vscode-inputValidation-infoBorder);
 
+	--color-vscode-inputValidation-warningForeground: var(--vscode-inputValidation-warningForeground);
+	--color-vscode-inputValidation-warningBackground: var(--vscode-inputValidation-warningBackground);
+	--color-vscode-inputValidation-warningBorder: var(--vscode-inputValidation-warningBorder);
+
 	--color-vscode-widget-border: var(--vscode-widget-border);
 	--color-vscode-widget-shadow: var(--vscode-widget-shadow);
 
@@ -163,7 +167,7 @@
 		--accent: var(--vscode-list-hoverBackground);
 		--accent-foreground: var(--vscode-list-hoverForeground);
 		--destructive: var(--vscode-errorForeground);
-		--destructive-foreground: var(--vscode-button-foreground);
+		--destructive-foreground: var(--vscode-editor-background);
 		--border: var(--vscode-input-border, transparent); /* --border gets theme value or transparent fallback */
 		--input: var(--vscode-input-background);
 		--ring: var(--vscode-input-border);

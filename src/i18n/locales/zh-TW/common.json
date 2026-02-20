@@ -62,7 +62,7 @@
 		"condense_not_enough_messages": "沒有足夠的訊息來壓縮上下文",
 		"condensed_recently": "上下文最近已壓縮；跳過此次嘗試",
 		"condense_handler_invalid": "壓縮上下文的 API 處理程式無效",
-		"condense_context_grew": "壓縮過程中上下文大小增加；跳過此次嘗試",
+		"condense_api_failed": "壓縮 API 呼叫失敗：{{message}}",
 		"url_timeout": "網站載入超時。這可能是由於網路連線緩慢、網站負載過重或暫時無法使用。你可以稍後重試或檢查 URL 是否正確。",
 		"url_not_found": "找不到網站位址。請檢查 URL 是否正確並重試。",
 		"no_internet": "無網路連線。請檢查網路連線並重試。",
@@ -109,15 +109,6 @@
 			"thinking_complete_truncated": "（思考完成，但由於 Token 限制輸出被截斷。）",
 			"thinking_complete_safety": "（思考完成，但由於安全設定輸出被阻止。）",
 			"thinking_complete_recitation": "（思考完成，但由於引用檢查輸出被阻止。）"
-		},
-		"cerebras": {
-			"authenticationFailed": "Cerebras API 驗證失敗。請檢查您的 API 金鑰是否有效且未過期。",
-			"accessForbidden": "Cerebras API 存取被拒絕。您的 API 金鑰可能無法存取所請求的模型或功能。",
-			"rateLimitExceeded": "Cerebras API 速率限制已超出。請稍候再發出另一個請求。",
-			"serverError": "Cerebras API 伺服器錯誤 ({{status}})。請稍後重試。",
-			"genericError": "Cerebras API 錯誤 ({{status}})：{{message}}",
-			"noResponseBody": "Cerebras API 錯誤：無回應主體",
-			"completionError": "Cerebras 完成錯誤：{{error}}"
 		},
 		"roo": {
 			"authenticationRequired": "Roo 提供者需要雲端認證。請登入 Roo Code Cloud。"
@@ -205,10 +196,7 @@
 		"task_placeholder": "在這裡輸入工作"
 	},
 	"settings": {
-		"providers": {
-			"groqApiKey": "Groq API 金鑰",
-			"getGroqApiKey": "取得 Groq API 金鑰"
-		}
+		"providers": {}
 	},
 	"customModes": {
 		"errors": {

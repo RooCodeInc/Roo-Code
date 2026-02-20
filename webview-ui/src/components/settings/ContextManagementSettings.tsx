@@ -1,11 +1,23 @@
 import { HTMLAttributes } from "react"
 import React from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
-import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeCheckbox, VSCodeTextArea } from "@vscode/webview-ui-toolkit/react"
 import { FoldVertical } from "lucide-react"
 
+import { supportPrompt } from "@roo/support-prompt"
+
 import { cn } from "@/lib/utils"
-import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Slider, Button } from "@/components/ui"
+import {
+	Input,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	Slider,
+	Button,
+	StandardTooltip,
+} from "@/components/ui"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
@@ -21,10 +33,8 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	maxWorkspaceFiles: number
 	showRooIgnoredFiles?: boolean
 	enableSubfolderRules?: boolean
-	maxReadFileLine?: number
 	maxImageFileSize?: number
 	maxTotalImageSize?: number
-	maxConcurrentFileReads?: number
 	profileThresholds?: Record<string, number>
 	includeDiagnosticMessages?: boolean
 	maxDiagnosticMessages?: number
@@ -32,6 +42,8 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	includeCurrentTime?: boolean
 	includeCurrentCost?: boolean
 	maxGitStatusFiles?: number
+	customSupportPrompts: Record<string, string | undefined>
+	setCustomSupportPrompts: (prompts: Record<string, string | undefined>) => void
 	setCachedStateField: SetCachedStateField<
 		| "autoCondenseContext"
 		| "autoCondenseContextPercent"
@@ -39,10 +51,8 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "maxWorkspaceFiles"
 		| "showRooIgnoredFiles"
 		| "enableSubfolderRules"
-		| "maxReadFileLine"
 		| "maxImageFileSize"
 		| "maxTotalImageSize"
-		| "maxConcurrentFileReads"
 		| "profileThresholds"
 		| "includeDiagnosticMessages"
 		| "maxDiagnosticMessages"
@@ -62,10 +72,8 @@ export const ContextManagementSettings = ({
 	showRooIgnoredFiles,
 	enableSubfolderRules,
 	setCachedStateField,
-	maxReadFileLine,
 	maxImageFileSize,
 	maxTotalImageSize,
-	maxConcurrentFileReads,
 	profileThresholds = {},
 	includeDiagnosticMessages,
 	maxDiagnosticMessages,
@@ -73,11 +81,36 @@ export const ContextManagementSettings = ({
 	includeCurrentTime,
 	includeCurrentCost,
 	maxGitStatusFiles,
+	customSupportPrompts,
+	setCustomSupportPrompts,
 	className,
 	...props
 }: ContextManagementSettingsProps) => {
 	const { t } = useAppTranslation()
 	const [selectedThresholdProfile, setSelectedThresholdProfile] = React.useState<string>("default")
+
+	// Helper function to get the CONDENSE prompt value
+	const getCondensePromptValue = (): string => {
+		return supportPrompt.get(customSupportPrompts, "CONDENSE")
+	}
+
+	// Helper function to update the CONDENSE prompt
+	const updateCondensePrompt = (value: string | undefined) => {
+		const updatedPrompts = { ...customSupportPrompts }
+		if (value === undefined) {
+			delete updatedPrompts["CONDENSE"]
+		} else {
+			updatedPrompts["CONDENSE"] = value
+		}
+		setCustomSupportPrompts(updatedPrompts)
+	}
+
+	// Helper function to reset the CONDENSE prompt to default
+	const handleCondenseReset = () => {
+		const updatedPrompts = { ...customSupportPrompts }
+		delete updatedPrompts["CONDENSE"]
+		setCustomSupportPrompts(updatedPrompts)
+	}
 
 	// Helper function to get the current threshold value based on selected profile
 	const getCurrentThresholdValue = () => {
@@ -180,29 +213,6 @@ export const ContextManagementSettings = ({
 				</SearchableSetting>
 
 				<SearchableSetting
-					settingId="context-max-concurrent-file-reads"
-					section="contextManagement"
-					label={t("settings:contextManagement.maxConcurrentFileReads.label")}>
-					<span className="block font-medium mb-1">
-						{t("settings:contextManagement.maxConcurrentFileReads.label")}
-					</span>
-					<div className="flex items-center gap-2">
-						<Slider
-							min={1}
-							max={100}
-							step={1}
-							value={[Math.max(1, maxConcurrentFileReads ?? 5)]}
-							onValueChange={([value]) => setCachedStateField("maxConcurrentFileReads", value)}
-							data-testid="max-concurrent-file-reads-slider"
-						/>
-						<span className="w-10 text-sm">{Math.max(1, maxConcurrentFileReads ?? 5)}</span>
-					</div>
-					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
-						{t("settings:contextManagement.maxConcurrentFileReads.description")}
-					</div>
-				</SearchableSetting>
-
-				<SearchableSetting
 					settingId="context-show-rooignored-files"
 					section="contextManagement"
 					label={t("settings:contextManagement.rooignore.label")}>
@@ -233,45 +243,6 @@ export const ContextManagementSettings = ({
 					</VSCodeCheckbox>
 					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
 						{t("settings:contextManagement.enableSubfolderRules.description")}
-					</div>
-				</SearchableSetting>
-
-				<SearchableSetting
-					settingId="context-max-read-file"
-					section="contextManagement"
-					label={t("settings:contextManagement.maxReadFile.label")}>
-					<div className="flex flex-col gap-2">
-						<span className="font-medium">{t("settings:contextManagement.maxReadFile.label")}</span>
-						<div className="flex items-center gap-4">
-							<Input
-								type="number"
-								pattern="-?[0-9]*"
-								className="w-24 bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border px-2 py-1 rounded text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50"
-								value={maxReadFileLine ?? -1}
-								min={-1}
-								onChange={(e) => {
-									const newValue = parseInt(e.target.value, 10)
-									if (!isNaN(newValue) && newValue >= -1) {
-										setCachedStateField("maxReadFileLine", newValue)
-									}
-								}}
-								onClick={(e) => e.currentTarget.select()}
-								data-testid="max-read-file-line-input"
-								disabled={maxReadFileLine === -1}
-							/>
-							<span>{t("settings:contextManagement.maxReadFile.lines")}</span>
-							<VSCodeCheckbox
-								checked={maxReadFileLine === -1}
-								onChange={(e: any) =>
-									setCachedStateField("maxReadFileLine", e.target.checked ? -1 : 500)
-								}
-								data-testid="max-read-file-always-full-checkbox">
-								{t("settings:contextManagement.maxReadFile.always_full_read")}
-							</VSCodeCheckbox>
-						</div>
-					</div>
-					<div className="text-vscode-descriptionForeground text-sm mt-2">
-						{t("settings:contextManagement.maxReadFile.description")}
 					</div>
 				</SearchableSetting>
 
@@ -470,6 +441,38 @@ export const ContextManagementSettings = ({
 				</SearchableSetting>
 			</Section>
 			<Section className="pt-2">
+				{/* Context Condensing Prompt Editor */}
+				<SearchableSetting
+					settingId="context-condense-prompt"
+					section="contextManagement"
+					label={t("prompts:supportPrompts.types.CONDENSE.label")}>
+					<div className="flex justify-between items-center mb-1">
+						<label className="block font-medium">{t("prompts:supportPrompts.types.CONDENSE.label")}</label>
+						<StandardTooltip content={t("prompts:supportPrompts.resetPrompt", { promptType: "CONDENSE" })}>
+							<Button variant="ghost" size="icon" onClick={handleCondenseReset}>
+								<span className="codicon codicon-discard"></span>
+							</Button>
+						</StandardTooltip>
+					</div>
+					<div className="text-sm text-vscode-descriptionForeground mb-2">
+						{t("prompts:supportPrompts.types.CONDENSE.description")}
+					</div>
+					<VSCodeTextArea
+						resize="vertical"
+						value={getCondensePromptValue()}
+						onInput={(e) => {
+							const value =
+								(e as unknown as CustomEvent)?.detail?.target?.value ??
+								((e as any).target as HTMLTextAreaElement).value
+							updateCondensePrompt(value)
+						}}
+						rows={6}
+						className="w-full"
+						data-testid="condense-prompt-textarea"
+					/>
+				</SearchableSetting>
+
+				{/* Auto Condense Context */}
 				<SearchableSetting
 					settingId="context-auto-condense"
 					section="contextManagement"

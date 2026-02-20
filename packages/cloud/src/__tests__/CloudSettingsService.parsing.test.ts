@@ -81,7 +81,6 @@ describe("CloudSettingsService - Response Parsing", () => {
 				version: 2,
 				defaultSettings: {
 					maxOpenTabsContext: 10,
-					maxReadFileLine: 1000,
 				},
 				allowList: {
 					allowAll: false,
@@ -106,12 +105,8 @@ describe("CloudSettingsService - Response Parsing", () => {
 				},
 			},
 			user: {
-				features: {
-					roomoteControlEnabled: true,
-				},
-				settings: {
-					extensionBridgeEnabled: true,
-				},
+				features: {},
+				settings: {},
 				version: 1,
 			},
 		}

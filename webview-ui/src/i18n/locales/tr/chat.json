@@ -25,17 +25,22 @@
 		"sharingDisabledByOrganization": "Paylaşım kuruluş tarafından devre dışı bırakıldı",
 		"shareSuccessOrganization": "Organizasyon bağlantısı panoya kopyalandı",
 		"shareSuccessPublic": "Genel bağlantı panoya kopyalandı",
-		"openInCloud": "Görevi Roo Code Cloud'da aç",
-		"openInCloudIntro": "Roo'yu her yerden izlemeye veya etkileşime devam et. Açmak için tara, tıkla veya kopyala.",
 		"openApiHistory": "API Geçmişini Aç",
-		"openUiHistory": "UI Geçmişini Aç"
+		"openUiHistory": "UI Geçmişini Aç",
+		"backToParentTask": "Üst görev"
 	},
 	"unpin": "Sabitlemeyi iptal et",
 	"pin": "Sabitle",
+	"fileChangesInConversation": {
+		"header": "Bu sohbette {{count}} dosya değiştirildi"
+	},
 	"tokenProgress": {
 		"availableSpace": "Kullanılabilir alan: {{amount}} token",
 		"tokensUsed": "Kullanılan tokenlar: {{used}} / {{total}}",
-		"reservedForResponse": "Model yanıtı için ayrılan: {{amount}} token"
+		"reservedForResponse": "Model yanıtı için ayrılan: {{amount}} token",
+		"tokensUsedLabel": "Kullanılan tokenlar",
+		"reservedForResponseLabel": "Yanıt için ayrılan",
+		"availableSpaceLabel": "Kullanılabilir alan"
 	},
 	"retry": {
 		"title": "Yeniden Dene",
@@ -107,6 +112,8 @@
 	},
 	"selectMode": "Etkileşim modunu seçin",
 	"selectApiConfig": "API yapılandırmasını seçin",
+	"lockApiConfigAcrossModes": "Bu çalışma alanındaki tüm modlarda API yapılandırmasını kilitle",
+	"unlockApiConfigAcrossModes": "Bu çalışma alanındaki tüm modlarda API yapılandırması kilitli (kilidi açmak için tıkla)",
 	"enhancePrompt": "Ek bağlamla istemi geliştir",
 	"addImages": "Mesaja resim ekle",
 	"sendMessage": "Mesaj gönder",
@@ -146,14 +153,14 @@
 		"rateLimitWait": "Hız sınırlaması",
 		"errorTitle": "Sağlayıcı Hatası {{code}}",
 		"errorMessage": {
-			"docs": "Belgeler",
-			"goToSettings": "Ayarlar",
 			"400": "Sağlayıcı isteği bu şekilde işleyemedi. Görevi durdur ve farklı bir yaklaşım dene.",
 			"401": "Sağlayıcı ile kimlik doğrulaması yapılamadı. Lütfen API anahtarı yapılandırmanızı kontrol edin.",
 			"402": "Hesabınızda para/kredi bitti gibi görünüyor. Sağlayıcıya git ve devam etmek için daha fazla ekle.",
 			"403": "Yetkisiz. API anahtarınız geçerli ama sağlayıcı bu isteği tamamlamayı reddetti.",
 			"429": "Çok fazla istek. Sağlayıcı tarafından oran sınırlaması uygulanıyor. Lütfen sonraki API çağrısından önce biraz bekle.",
 			"500": "Sağlayıcı sunucu hatası. Sağlayıcı tarafında bir sorun var, isteğinizde sorun yok.",
+			"docs": "Belgeler",
+			"goToSettings": "Ayarlar",
 			"unknown": "Bilinmeyen API hatası. Lütfen Roo Code desteğiyle iletişime geç.",
 			"connection": "Bağlantı hatası. Çalışan bir internet bağlantınız olduğundan emin olun.",
 			"claudeCodeNotAuthenticated": "Claude Code'u kullanmak için oturum açmanız gerekiyor. Ayarlar'a gidin ve kimlik doğrulaması yapmak için \"Claude Code'da Oturum Aç\" seçeneğine tıklayın."
@@ -214,7 +221,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) üst düzey dosyaları görüntülemek istiyor",
 		"didViewTopLevelOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) üst düzey dosyaları görüntüledi",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) tüm dosyaları özyinelemeli olarak görüntülemek istiyor",
-		"didViewRecursiveOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) tüm dosyaları özyinelemeli olarak görüntüledi"
+		"didViewRecursiveOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) tüm dosyaları özyinelemeli olarak görüntüledi",
+		"wantsToViewMultipleDirectories": "Roo birden fazla dizini görüntülemek istiyor"
 	},
 	"commandOutput": "Komut Çıktısı",
 	"commandExecution": {
@@ -259,7 +267,8 @@
 		"completionContent": "Alt Görev Tamamlandı",
 		"resultContent": "Alt Görev Sonuçları",
 		"defaultResult": "Lütfen sonraki göreve devam edin.",
-		"completionInstructions": "Alt görev tamamlandı! Sonuçları inceleyebilir ve düzeltmeler veya sonraki adımlar önerebilirsiniz. Her şey iyi görünüyorsa, sonucu üst göreve döndürmek için onaylayın."
+		"completionInstructions": "Alt görev tamamlandı! Sonuçları inceleyebilir ve düzeltmeler veya sonraki adımlar önerebilirsiniz. Her şey iyi görünüyorsa, sonucu üst göreve döndürmek için onaylayın.",
+		"goToSubtask": "Görevi görüntüle"
 	},
 	"questions": {
 		"hasQuestion": "Roo'nun bir sorusu var"
@@ -320,6 +329,10 @@
 			"description": "Bağlam penceresi sınırında kalmak için eski mesajlar konuşmadan kaldırıldı. Bu, yoğunlaştırmaya kıyasla hızlı ancak daha az bağlam koruyucu bir yaklaşımdır."
 		}
 	},
+	"skill": {
+		"wantsToLoad": "Roo bir beceri yüklemek istiyor",
+		"didLoad": "Roo bir beceri yükledi"
+	},
 	"followUpSuggest": {
 		"copyToInput": "Giriş alanına kopyala (veya Shift + tıklama)",
 		"timerPrefix": "Otomatik onay etkinleştirildi. {{seconds}}s içinde seçim yapılıyor…"
@@ -336,9 +349,9 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"openaiCodexProvider": "Codex modellerine abonelik tabanlı erişim sağlayan OpenAI - ChatGPT Plus/Pro Sağlayıcısı eklendi, token başına maliyet yok.",
-			"gpt52codexModel": "Yeni gpt-5.2-codex modeli Roo Code Router, standart OpenAI sağlayıcısı ve diğerlerine eklendi.",
-			"bugFixes": "Gri ekranlara neden olan bellek sızıntıları, Gemini düşünce imzası sorunları ve diğer stabilite iyileştirmeleri düzeltildi."
+			"geminiPro": "Gemini 3.1 Pro Desteği: Gemini 3.1 Pro model desteği eklendi ve daha iyi performans için varsayılan Gemini modeli olarak ayarlandı.",
+			"cliNdjson": "CLI NDJSON Protokolü: Yeni NDJSON stdin protokolü, list alt komutları ve daha esnek CLI iş akışları için modüler run komutu.",
+			"cliRelease": "CLI v0.1.0: Roo Code CLI, kararlı bir komut arayüzüyle ilk resmi sürümüne ulaştı."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",
@@ -353,44 +366,6 @@
 		"total": "Toplam Maliyet: ${{cost}}",
 		"includesSubtasks": "Alt görev maliyetlerini içerir"
 	},
-	"browser": {
-		"session": "Tarayıcı Oturumu",
-		"active": "Aktif",
-		"rooWantsToUse": "Roo tarayıcıyı kullanmak istiyor",
-		"consoleLogs": "Konsol Kayıtları",
-		"noNewLogs": "(Yeni kayıt yok)",
-		"screenshot": "Tarayıcı ekran görüntüsü",
-		"cursor": "imleç",
-		"navigation": {
-			"step": "Adım {{current}} / {{total}}",
-			"previous": "Önceki",
-			"next": "Sonraki"
-		},
-		"sessionStarted": "Tarayıcı Oturumu Başlatıldı",
-		"actions": {
-			"title": "Tarayıcı Eylemi: ",
-			"launched": "Tarayıcı başlatıldı",
-			"launch": "{{url}} adresinde tarayıcı başlat",
-			"clicked": "Tıklandı ({{coordinate}})",
-			"click": "Tıkla ({{coordinate}})",
-			"typed": "Yazıldı: {{text}}",
-			"type": "Yaz \"{{text}}\"",
-			"pressed": "Basıldı: {{key}}",
-			"press": "{{key}} tuşuna bas",
-			"scrolledDown": "Aşağı kaydırıldı",
-			"scrollDown": "Aşağı kaydır",
-			"scrolledUp": "Yukarı kaydırıldı",
-			"scrollUp": "Yukarı kaydır",
-			"hovered": "Üzerine gelinildi ({{coordinate}})",
-			"hover": "Üzerine gel ({{coordinate}})",
-			"resized": "Boyut değiştirildi: {{size}}",
-			"resize": "Boyutu değiştir {{size}}",
-			"screenshotSaved": "Ekran görüntüsü kaydedildi",
-			"screenshot": "Ekran görüntüsünü {{path}} yoluna kaydet",
-			"closed": "Tarayıcı kapatıldı",
-			"close": "Tarayıcıyı kapat"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Kod bloğunu genişlet",
@@ -398,7 +373,6 @@
 			"copy_code": "Kodu kopyala"
 		}
 	},
-	"systemPromptWarning": "UYARI: Özel sistem komut geçersiz kılma aktif. Bu işlevselliği ciddi şekilde bozabilir ve öngörülemeyen davranışlara neden olabilir.",
 	"profileViolationWarning": "Geçerli profil kuruluşunuzun ayarlarıyla uyumlu değil",
 	"shellIntegration": {
 		"title": "Komut Çalıştırma Uyarısı",
@@ -432,12 +406,29 @@
 			"title": "Tümünü Reddet"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Tümünü Onayla"
+		},
+		"deny": {
+			"title": "Tümünü Reddet"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Tümünü Kaydet"
+		},
+		"deny": {
+			"title": "Tümünü Reddet"
+		}
+	},
 	"indexingStatus": {
 		"ready": "İndeks hazır",
 		"indexing": "İndeksleniyor {{percentage}}%",
 		"indexed": "İndekslendi",
 		"error": "İndeks hatası",
-		"status": "İndeks durumu"
+		"status": "İndeks durumu",
+		"stopping": "İndeksleme durduruluyor..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Sürüm {{version}} - Sürüm notlarını görüntülemek için tıklayın"
@@ -493,5 +484,22 @@
 		"updated": "Yapılacaklar listesi güncellendi",
 		"completed": "Tamamlandı",
 		"started": "Başladı"
+	},
+	"tooManyTools": {
+		"title": "Çok fazla araç etkinleştirildi",
+		"toolsPart_one": "{{count}} araç",
+		"toolsPart_other": "{{count}} araç",
+		"serversPart_one": "{{count}} MCP sunucusu",
+		"serversPart_other": "{{count}} MCP sunucusu",
+		"messageTemplate": "{{servers}} üzerinden {{tools}} etkinleştirilmiş durumda. Bu kadar fazlası modeli kafası karışabilir ve hatalara neden olabilir. {{threshold}} altında tutmaya çalış.",
+		"openMcpSettings": "MCP Ayarlarını Aç"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Sağlayıcı artık desteklenmiyor",
+		"message": "Üzgünüz, bu sağlayıcı artık desteklenmiyor. Çok az Roo kullanıcısının bunu gerçekten kullandığını gördük ve hızlı gelişmeye devam edip topluluğumuza iyi hizmet verebilmek için kod tabanımızın kapsamını daraltmamız gerekiyor. Gerçekten zor bir karardı ama senin için en önemli olana odaklanmamızı sağlıyor. Bunun can sıkıcı olduğunu biliyoruz.",
+		"openSettings": "Ayarları aç"
 	}
 }

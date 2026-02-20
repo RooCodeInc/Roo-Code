@@ -16,7 +16,7 @@ import type { ModelInfo } from "../model.js"
 
 export type OpenAiCodexModelId = keyof typeof openAiCodexModels
 
-export const openAiCodexDefaultModelId: OpenAiCodexModelId = "gpt-5.2-codex"
+export const openAiCodexDefaultModelId: OpenAiCodexModelId = "gpt-5.3-codex"
 
 /**
  * Models available through the Codex OAuth flow.
@@ -27,8 +27,6 @@ export const openAiCodexModels = {
 	"gpt-5.1-codex-max": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
@@ -44,8 +42,6 @@ export const openAiCodexModels = {
 	"gpt-5.1-codex": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
@@ -58,11 +54,37 @@ export const openAiCodexModels = {
 		supportsTemperature: false,
 		description: "GPT-5.1 Codex: GPT-5.1 optimized for agentic coding via ChatGPT subscription",
 	},
+	"gpt-5.3-codex": {
+		maxTokens: 128000,
+		contextWindow: 400000,
+		includedTools: ["apply_patch"],
+		excludedTools: ["apply_diff", "write_to_file"],
+		supportsImages: true,
+		supportsPromptCache: true,
+		supportsReasoningEffort: ["low", "medium", "high", "xhigh"],
+		reasoningEffort: "medium",
+		inputPrice: 0,
+		outputPrice: 0,
+		supportsTemperature: false,
+		description: "GPT-5.3 Codex: OpenAI's flagship coding model via ChatGPT subscription",
+	},
+	"gpt-5.3-codex-spark": {
+		maxTokens: 8192,
+		contextWindow: 128000,
+		includedTools: ["apply_patch"],
+		excludedTools: ["apply_diff", "write_to_file"],
+		supportsImages: false,
+		supportsPromptCache: true,
+		supportsReasoningEffort: ["low", "medium", "high", "xhigh"],
+		reasoningEffort: "medium",
+		inputPrice: 0,
+		outputPrice: 0,
+		supportsTemperature: false,
+		description: "GPT-5.3 Codex Spark: Fast, text-only coding model via ChatGPT subscription",
+	},
 	"gpt-5.2-codex": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
@@ -77,8 +99,6 @@ export const openAiCodexModels = {
 	"gpt-5.1": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
@@ -95,8 +115,6 @@ export const openAiCodexModels = {
 	"gpt-5": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
@@ -113,8 +131,6 @@ export const openAiCodexModels = {
 	"gpt-5-codex": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
@@ -130,8 +146,6 @@ export const openAiCodexModels = {
 	"gpt-5-codex-mini": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
@@ -147,8 +161,6 @@ export const openAiCodexModels = {
 	"gpt-5.1-codex-mini": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
@@ -163,8 +175,6 @@ export const openAiCodexModels = {
 	"gpt-5.2": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,

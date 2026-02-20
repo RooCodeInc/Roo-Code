@@ -162,7 +162,7 @@ describe("VertexHandler", () => {
 			})
 
 			expect(mockCreate).toHaveBeenCalledWith(
-				{
+				expect.objectContaining({
 					model: "claude-3-5-sonnet-v2@20241022",
 					max_tokens: 8192,
 					temperature: 0,
@@ -191,7 +191,10 @@ describe("VertexHandler", () => {
 						},
 					],
 					stream: true,
-				},
+					// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
+					tools: expect.any(Array),
+					tool_choice: expect.any(Object),
+				}),
 				undefined,
 			)
 		})
@@ -896,6 +899,21 @@ describe("VertexHandler", () => {
 			expect(model.betas).toContain("context-1m-2025-08-07")
 		})
 
+		it("should enable 1M context for Claude Sonnet 4.6 when beta flag is set", () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: "claude-sonnet-4-6@20260114",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+				vertex1MContext: true,
+			})
+
+			const model = handler.getModel()
+			expect(model.info.contextWindow).toBe(1_000_000)
+			expect(model.info.inputPrice).toBe(6.0)
+			expect(model.info.outputPrice).toBe(22.5)
+			expect(model.betas).toContain("context-1m-2025-08-07")
+		})
+
 		it("should not enable 1M context when flag is disabled", () => {
 			const handler = new AnthropicVertexHandler({
 				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[0],
@@ -1194,19 +1212,17 @@ describe("VertexHandler", () => {
 							}),
 						}),
 					]),
-					tool_choice: { type: "auto", disable_parallel_tool_use: true },
+					tool_choice: { type: "auto", disable_parallel_tool_use: false },
 				}),
 				undefined,
 			)
 		})
 
-		it("should include tools even when toolProtocol is set to xml (user preference now ignored)", async () => {
-			// XML protocol deprecation: user preference is now ignored when model supports native tools
+		it("should include tools when tools are provided", async () => {
 			handler = new AnthropicVertexHandler({
 				apiModelId: "claude-3-5-sonnet-v2@20241022",
 				vertexProjectId: "test-project",
 				vertexRegion: "us-central1",
-				toolProtocol: "xml",
 			})
 
 			const mockStream = [
@@ -1242,7 +1258,7 @@ describe("VertexHandler", () => {
 				// Just consume
 			}
 
-			// Native is forced when supportsNativeTools===true, so tools should still be included
+			// Tool calling is request-driven: if tools are provided, we should include them.
 			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
 					tools: expect.arrayContaining([

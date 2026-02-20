@@ -62,7 +62,7 @@
 		"condense_not_enough_messages": "컨텍스트를 압축할 메시지가 충분하지 않습니다",
 		"condensed_recently": "컨텍스트가 최근 압축되었습니다; 이 시도를 건너뜁니다",
 		"condense_handler_invalid": "컨텍스트 압축을 위한 API 핸들러가 유효하지 않습니다",
-		"condense_context_grew": "압축 중 컨텍스트 크기가 증가했습니다; 이 시도를 건너뜁니다",
+		"condense_api_failed": "압축 API 호출 실패: {{message}}",
 		"url_timeout": "웹사이트 로딩이 너무 오래 걸렸습니다(타임아웃). 느린 연결, 무거운 웹사이트 또는 일시적으로 사용할 수 없는 상태일 수 있습니다. 나중에 다시 시도하거나 URL이 올바른지 확인해 주세요.",
 		"url_not_found": "웹사이트 주소를 찾을 수 없습니다. URL이 올바른지 확인하고 다시 시도해 주세요.",
 		"no_internet": "인터넷 연결이 없습니다. 네트워크 연결을 확인하고 다시 시도해 주세요.",
@@ -110,15 +110,6 @@
 			"thinking_complete_truncated": "(생각 완료, 토큰 제한으로 출력 잘림)",
 			"thinking_complete_safety": "(생각 완료, 안전 설정으로 출력 차단됨)",
 			"thinking_complete_recitation": "(생각 완료, 암송 확인으로 출력 차단됨)"
-		},
-		"cerebras": {
-			"authenticationFailed": "Cerebras API 인증에 실패했습니다. API 키가 유효하고 만료되지 않았는지 확인하세요.",
-			"accessForbidden": "Cerebras API 액세스가 금지되었습니다. API 키가 요청된 모델이나 기능에 액세스할 수 없을 수 있습니다.",
-			"rateLimitExceeded": "Cerebras API 속도 제한을 초과했습니다. 다른 요청을 하기 전에 기다리세요.",
-			"serverError": "Cerebras API 서버 오류 ({{status}}). 나중에 다시 시도하세요.",
-			"genericError": "Cerebras API 오류 ({{status}}): {{message}}",
-			"noResponseBody": "Cerebras API 오류: 응답 본문 없음",
-			"completionError": "Cerebras 완료 오류: {{error}}"
 		},
 		"roo": {
 			"authenticationRequired": "Roo 제공업체는 클라우드 인증이 필요합니다. Roo Code Cloud에 로그인하세요."
@@ -205,10 +196,7 @@
 		"task_placeholder": "여기에 작업을 입력하세요"
 	},
 	"settings": {
-		"providers": {
-			"groqApiKey": "Groq API 키",
-			"getGroqApiKey": "Groq API 키 받기"
-		}
+		"providers": {}
 	},
 	"customModes": {
 		"errors": {

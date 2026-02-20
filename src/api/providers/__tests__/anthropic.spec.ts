@@ -187,6 +187,28 @@ describe("AnthropicHandler", () => {
 			// Verify API
 			expect(mockCreate).toHaveBeenCalled()
 		})
+
+		it("should include 1M context beta header for Claude Sonnet 4.6 when enabled", async () => {
+			const sonnet46Handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-sonnet-4-6",
+				anthropicBeta1MContext: true,
+			})
+
+			const stream = sonnet46Handler.createMessage(systemPrompt, [
+				{
+					role: "user",
+					content: [{ type: "text" as const, text: "Hello" }],
+				},
+			])
+
+			for await (const _chunk of stream) {
+				// Consume stream
+			}
+
+			const requestOptions = mockCreate.mock.calls[mockCreate.mock.calls.length - 1]?.[1]
+			expect(requestOptions?.headers?.["anthropic-beta"]).toContain("context-1m-2025-08-07")
+		})
 	})
 
 	describe("completePrompt", () => {
@@ -286,10 +308,34 @@ describe("AnthropicHandler", () => {
 			expect(model.info.supportsReasoningBudget).toBe(true)
 		})
 
+		it("should handle Claude 4.6 Sonnet model correctly", () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-sonnet-4-6",
+			})
+			const model = handler.getModel()
+			expect(model.id).toBe("claude-sonnet-4-6")
+			expect(model.info.maxTokens).toBe(64000)
+			expect(model.info.contextWindow).toBe(200000)
+			expect(model.info.supportsReasoningBudget).toBe(true)
+		})
+
 		it("should enable 1M context for Claude 4.5 Sonnet when beta flag is set", () => {
 			const handler = new AnthropicHandler({
 				apiKey: "test-api-key",
 				apiModelId: "claude-sonnet-4-5",
+				anthropicBeta1MContext: true,
+			})
+			const model = handler.getModel()
+			expect(model.info.contextWindow).toBe(1000000)
+			expect(model.info.inputPrice).toBe(6.0)
+			expect(model.info.outputPrice).toBe(22.5)
+		})
+
+		it("should enable 1M context for Claude 4.6 Sonnet when beta flag is set", () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-sonnet-4-6",
 				anthropicBeta1MContext: true,
 			})
 			const model = handler.getModel()
@@ -420,8 +466,7 @@ describe("AnthropicHandler", () => {
 			},
 		]
 
-		it("should include tools in request by default (native is default)", async () => {
-			// Handler uses native protocol by default via model's defaultToolProtocol
+		it("should include tools in request when tools are provided", async () => {
 			const stream = handler.createMessage(systemPrompt, messages, {
 				taskId: "test-task",
 				tools: mockTools,
@@ -451,11 +496,9 @@ describe("AnthropicHandler", () => {
 			)
 		})
 
-		it("should include tools even when toolProtocol is set to xml (user preference now ignored)", async () => {
-			// XML protocol deprecation: user preference is now ignored when model supports native tools
+		it("should include tools when tools are provided", async () => {
 			const xmlHandler = new AnthropicHandler({
 				...mockOptions,
-				toolProtocol: "xml",
 			})
 
 			const stream = xmlHandler.createMessage(systemPrompt, messages, {
@@ -468,7 +511,7 @@ describe("AnthropicHandler", () => {
 				// Just consume
 			}
 
-			// Native is forced when supportsNativeTools===true, so tools should still be included
+			// Tool calling is request-driven: if tools are provided, we should include them.
 			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
 					tools: expect.arrayContaining([
@@ -481,7 +524,7 @@ describe("AnthropicHandler", () => {
 			)
 		})
 
-		it("should not include tools when no tools are provided", async () => {
+		it("should always include tools in request (tools are always present after PR #10841)", async () => {
 			// Handler uses native protocol by default
 			const stream = handler.createMessage(systemPrompt, messages, {
 				taskId: "test-task",
@@ -492,9 +535,11 @@ describe("AnthropicHandler", () => {
 				// Just consume
 			}
 
+			// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
 			expect(mockCreate).toHaveBeenCalledWith(
-				expect.not.objectContaining({
-					tools: expect.anything(),
+				expect.objectContaining({
+					tools: expect.any(Array),
+					tool_choice: expect.any(Object),
 				}),
 				expect.anything(),
 			)
@@ -515,7 +560,7 @@ describe("AnthropicHandler", () => {
 
 			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
-					tool_choice: { type: "auto", disable_parallel_tool_use: true },
+					tool_choice: { type: "auto", disable_parallel_tool_use: false },
 				}),
 				expect.anything(),
 			)
@@ -536,13 +581,13 @@ describe("AnthropicHandler", () => {
 
 			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
-					tool_choice: { type: "any", disable_parallel_tool_use: true },
+					tool_choice: { type: "any", disable_parallel_tool_use: false },
 				}),
 				expect.anything(),
 			)
 		})
 
-		it("should omit both tools and tool_choice when tool_choice is 'none'", async () => {
+		it("should set tool_choice to undefined when tool_choice is 'none' (tools are still passed)", async () => {
 			// Handler uses native protocol by default
 			const stream = handler.createMessage(systemPrompt, messages, {
 				taskId: "test-task",
@@ -555,16 +600,13 @@ describe("AnthropicHandler", () => {
 				// Just consume
 			}
 
-			// Verify that neither tools nor tool_choice are included in the request
+			// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
+			// When tool_choice is 'none', the converter returns undefined for tool_choice
+			// but tools are still passed since they're always present
 			expect(mockCreate).toHaveBeenCalledWith(
-				expect.not.objectContaining({
-					tools: expect.anything(),
-				}),
-				expect.anything(),
-			)
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.not.objectContaining({
-					tool_choice: expect.anything(),
+				expect.objectContaining({
+					tools: expect.any(Array),
+					tool_choice: undefined,
 				}),
 				expect.anything(),
 			)
@@ -585,7 +627,7 @@ describe("AnthropicHandler", () => {
 
 			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
-					tool_choice: { type: "tool", name: "get_weather", disable_parallel_tool_use: true },
+					tool_choice: { type: "tool", name: "get_weather", disable_parallel_tool_use: false },
 				}),
 				expect.anything(),
 			)

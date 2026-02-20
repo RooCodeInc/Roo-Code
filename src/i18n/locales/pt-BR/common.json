@@ -9,8 +9,8 @@
 	},
 	"number_format": {
 		"thousand_suffix": "k",
-		"million_suffix": "m",
-		"billion_suffix": "b"
+		"million_suffix": "M",
+		"billion_suffix": "B"
 	},
 	"welcome": "Bem-vindo(a), {{name}}! Você tem {{count}} notificações.",
 	"items": {
@@ -66,7 +66,7 @@
 		"condense_not_enough_messages": "Não há mensagens suficientes para condensar o contexto",
 		"condensed_recently": "O contexto foi condensado recentemente; pulando esta tentativa",
 		"condense_handler_invalid": "O manipulador de API para condensar o contexto é inválido",
-		"condense_context_grew": "O tamanho do contexto aumentou durante a condensação; pulando esta tentativa",
+		"condense_api_failed": "Chamada de API de condensação falhou: {{message}}",
 		"url_timeout": "O site demorou muito para carregar (timeout). Isso pode ser devido a uma conexão lenta, site pesado ou temporariamente indisponível. Você pode tentar novamente mais tarde ou verificar se a URL está correta.",
 		"url_not_found": "O endereço do site não pôde ser encontrado. Verifique se a URL está correta e tente novamente.",
 		"no_internet": "Sem conexão com a internet. Verifique sua conexão de rede e tente novamente.",
@@ -114,15 +114,6 @@
 			"thinking_complete_truncated": "(Pensamento concluído, mas a saída foi truncada devido ao limite de tokens.)",
 			"thinking_complete_safety": "(Pensamento concluído, mas a saída foi bloqueada devido às configurações de segurança.)",
 			"thinking_complete_recitation": "(Pensamento concluído, mas a saída foi bloqueada devido à verificação de recitação.)"
-		},
-		"cerebras": {
-			"authenticationFailed": "Falha na autenticação da API Cerebras. Verifique se sua chave de API é válida e não expirou.",
-			"accessForbidden": "Acesso à API Cerebras negado. Sua chave de API pode não ter acesso ao modelo ou recurso solicitado.",
-			"rateLimitExceeded": "Limite de taxa da API Cerebras excedido. Aguarde antes de fazer outra solicitação.",
-			"serverError": "Erro do servidor da API Cerebras ({{status}}). Tente novamente mais tarde.",
-			"genericError": "Erro da API Cerebras ({{status}}): {{message}}",
-			"noResponseBody": "Erro da API Cerebras: Sem corpo de resposta",
-			"completionError": "Erro de conclusão do Cerebras: {{error}}"
 		},
 		"roo": {
 			"authenticationRequired": "O provedor Roo requer autenticação na nuvem. Faça login no Roo Code Cloud."
@@ -205,10 +196,7 @@
 		"enter_valid_path": "Por favor, digite um caminho válido"
 	},
 	"settings": {
-		"providers": {
-			"groqApiKey": "Chave de API Groq",
-			"getGroqApiKey": "Obter chave de API Groq"
-		}
+		"providers": {}
 	},
 	"customModes": {
 		"errors": {

@@ -62,7 +62,7 @@
 		"condense_not_enough_messages": "Za mało wiadomości do skondensowania kontekstu",
 		"condensed_recently": "Kontekst został niedawno skondensowany; pomijanie tej próby",
 		"condense_handler_invalid": "Nieprawidłowy handler API do kondensowania kontekstu",
-		"condense_context_grew": "Rozmiar kontekstu wzrósł podczas kondensacji; pomijanie tej próby",
+		"condense_api_failed": "Wywołanie API kondensacji nie powiodło się: {{message}}",
 		"url_timeout": "Strona internetowa ładowała się zbyt długo (timeout). Może to być spowodowane wolnym połączeniem, ciężką stroną lub tymczasową niedostępnością. Możesz spróbować ponownie później lub sprawdzić, czy URL jest poprawny.",
 		"url_not_found": "Nie można znaleźć adresu strony internetowej. Sprawdź, czy URL jest poprawny i spróbuj ponownie.",
 		"no_internet": "Brak połączenia z internetem. Sprawdź połączenie sieciowe i spróbuj ponownie.",
@@ -110,15 +110,6 @@
 			"thinking_complete_truncated": "(Myślenie zakończone, ale dane wyjściowe zostały obcięte z powodu limitu tokenów.)",
 			"thinking_complete_safety": "(Myślenie zakończone, ale dane wyjściowe zostały zablokowane przez ustawienia bezpieczeństwa.)",
 			"thinking_complete_recitation": "(Myślenie zakończone, ale dane wyjściowe zostały zablokowane przez kontrolę recytacji.)"
-		},
-		"cerebras": {
-			"authenticationFailed": "Uwierzytelnianie API Cerebras nie powiodło się. Sprawdź, czy twój klucz API jest ważny i nie wygasł.",
-			"accessForbidden": "Dostęp do API Cerebras zabroniony. Twój klucz API może nie mieć dostępu do żądanego modelu lub funkcji.",
-			"rateLimitExceeded": "Przekroczono limit szybkości API Cerebras. Poczekaj przed wykonaniem kolejnego żądania.",
-			"serverError": "Błąd serwera API Cerebras ({{status}}). Spróbuj ponownie później.",
-			"genericError": "Błąd API Cerebras ({{status}}): {{message}}",
-			"noResponseBody": "Błąd API Cerebras: Brak treści odpowiedzi",
-			"completionError": "Błąd uzupełniania Cerebras: {{error}}"
 		},
 		"roo": {
 			"authenticationRequired": "Dostawca Roo wymaga uwierzytelnienia w chmurze. Zaloguj się do Roo Code Cloud."
@@ -205,10 +196,7 @@
 		"task_placeholder": "Wpisz swoje zadanie tutaj"
 	},
 	"settings": {
-		"providers": {
-			"groqApiKey": "Klucz API Groq",
-			"getGroqApiKey": "Uzyskaj klucz API Groq"
-		}
+		"providers": {}
 	},
 	"customModes": {
 		"errors": {

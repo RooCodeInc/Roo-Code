@@ -7,6 +7,7 @@ import { presentAssistantMessage } from "../presentAssistantMessage"
 vi.mock("../../task/Task")
 vi.mock("../../tools/validateToolUse", () => ({
 	validateToolUse: vi.fn(),
+	isValidToolName: vi.fn(() => false),
 }))
 vi.mock("@roo-code/telemetry", () => ({
 	TelemetryService: {
@@ -34,14 +35,10 @@ describe("presentAssistantMessage - Unknown Tool Handling", () => {
 			didCompleteReadingStream: false,
 			didRejectTool: false,
 			didAlreadyUseTool: false,
-			diffEnabled: false,
 			consecutiveMistakeCount: 0,
 			clineMessages: [],
 			api: {
 				getModel: () => ({ id: "test-model", info: {} }),
-			},
-			browserSession: {
-				closeBrowser: vi.fn().mockResolvedValue(undefined),
 			},
 			recordToolUsage: vi.fn(),
 			recordToolError: vi.fn(),
@@ -74,12 +71,12 @@ describe("presentAssistantMessage - Unknown Tool Handling", () => {
 	})
 
 	it("should return error for unknown tool in native protocol", async () => {
-		// Set up a tool_use block with an unknown tool name and an ID (native protocol)
+		// Set up a tool_use block with an unknown tool name and an ID (native tool calling)
 		const toolCallId = "tool_call_unknown_123"
 		mockTask.assistantMessageContent = [
 			{
 				type: "tool_use",
-				id: toolCallId, // ID indicates native protocol
+				id: toolCallId, // ID indicates native tool calling
 				name: "nonexistent_tool",
 				params: { some: "param" },
 				partial: false,
@@ -114,12 +111,11 @@ describe("presentAssistantMessage - Unknown Tool Handling", () => {
 		expect(mockTask.say).toHaveBeenCalledWith("error", "unknownToolError")
 	})
 
-	it("should return error for unknown tool in XML protocol", async () => {
-		// Set up a tool_use block with an unknown tool name WITHOUT an ID (XML protocol)
+	it("should fail fast when tool_use is missing id (legacy/XML-style tool call)", async () => {
+		// tool_use without an id is treated as legacy/XML-style tool call and must be rejected.
 		mockTask.assistantMessageContent = [
 			{
 				type: "tool_use",
-				// No ID = XML protocol
 				name: "fake_tool_that_does_not_exist",
 				params: { param1: "value1" },
 				partial: false,
@@ -129,16 +125,12 @@ describe("presentAssistantMessage - Unknown Tool Handling", () => {
 		// Execute presentAssistantMessage
 		await presentAssistantMessage(mockTask)
 
-		// For XML protocol, error is pushed as text blocks
+		// Should not execute tool; should surface a clear error message.
 		const textBlocks = mockTask.userMessageContent.filter((item: any) => item.type === "text")
-
-		// There should be text blocks with error message
 		expect(textBlocks.length).toBeGreaterThan(0)
-		const hasErrorMessage = textBlocks.some(
-			(block: any) =>
-				block.text?.includes("fake_tool_that_does_not_exist") && block.text?.includes("does not exist"),
+		expect(textBlocks.some((b: any) => String(b.text).includes("XML tool calls are no longer supported"))).toBe(
+			true,
 		)
-		expect(hasErrorMessage).toBe(true)
 
 		// Verify consecutiveMistakeCount was incremented
 		expect(mockTask.consecutiveMistakeCount).toBe(1)
@@ -146,17 +138,17 @@ describe("presentAssistantMessage - Unknown Tool Handling", () => {
 		// Verify recordToolError was called
 		expect(mockTask.recordToolError).toHaveBeenCalled()
 
-		// Verify error message was shown to user (uses i18n key)
-		expect(mockTask.say).toHaveBeenCalledWith("error", "unknownToolError")
+		// Verify error message was shown to user
+		expect(mockTask.say).toHaveBeenCalledWith("error", expect.anything())
 	})
 
-	it("should handle unknown tool without freezing (native protocol)", async () => {
+	it("should handle unknown tool without freezing (native tool calling)", async () => {
 		// This test ensures the extension doesn't freeze when an unknown tool is called
 		const toolCallId = "tool_call_freeze_test"
 		mockTask.assistantMessageContent = [
 			{
 				type: "tool_use",
-				id: toolCallId, // Native protocol
+				id: toolCallId, // Native tool calling
 				name: "this_tool_definitely_does_not_exist",
 				params: {},
 				partial: false,
@@ -220,32 +212,6 @@ describe("presentAssistantMessage - Unknown Tool Handling", () => {
 
 		// userMessageContentReady should be set after processing
 		expect(mockTask.userMessageContentReady).toBe(true)
-	})
-
-	it("should still work with didAlreadyUseTool flag for unknown tool", async () => {
-		const toolCallId = "tool_call_already_used_test"
-		mockTask.assistantMessageContent = [
-			{
-				type: "tool_use",
-				id: toolCallId,
-				name: "unknown_tool",
-				params: {},
-				partial: false,
-			},
-		]
-
-		mockTask.didAlreadyUseTool = true
-
-		await presentAssistantMessage(mockTask)
-
-		// When didAlreadyUseTool is true, should send error tool_result
-		const toolResult = mockTask.userMessageContent.find(
-			(item: any) => item.type === "tool_result" && item.tool_use_id === toolCallId,
-		)
-
-		expect(toolResult).toBeDefined()
-		expect(toolResult.is_error).toBe(true)
-		expect(toolResult.content).toContain("was not executed because a tool has already been used")
 	})
 
 	it("should still work with didRejectTool flag for unknown tool", async () => {

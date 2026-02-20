@@ -4,16 +4,16 @@ import { apply_diff } from "./apply_diff"
 import applyPatch from "./apply_patch"
 import askFollowupQuestion from "./ask_followup_question"
 import attemptCompletion from "./attempt_completion"
-import browserAction from "./browser_action"
 import codebaseSearch from "./codebase_search"
+import editTool from "./edit"
 import executeCommand from "./execute_command"
-import fetchInstructions from "./fetch_instructions"
 import generateImage from "./generate_image"
 import listFiles from "./list_files"
 import newTask from "./new_task"
+import readCommandOutput from "./read_command_output"
 import { createReadFileTool, type ReadFileToolOptions } from "./read_file"
 import runSlashCommand from "./run_slash_command"
-import searchAndReplace from "./search_and_replace"
+import skill from "./skill"
 import searchReplace from "./search_replace"
 import edit_file from "./edit_file"
 import searchFiles from "./search_files"
@@ -29,10 +29,6 @@ export type { ReadFileToolOptions } from "./read_file"
  * Options for customizing the native tools array.
  */
 export interface NativeToolsOptions {
-	/** Whether to include line_ranges support in read_file tool (default: true) */
-	partialReadsEnabled?: boolean
-	/** Maximum number of files that can be read in a single read_file request (default: 5) */
-	maxConcurrentFileReads?: number
 	/** Whether the model supports image processing (default: false) */
 	supportsImages?: boolean
 }
@@ -44,11 +40,9 @@ export interface NativeToolsOptions {
  * @returns Array of native tool definitions
  */
 export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.ChatCompletionTool[] {
-	const { partialReadsEnabled = true, maxConcurrentFileReads = 5, supportsImages = false } = options
+	const { supportsImages = false } = options
 
 	const readFileOptions: ReadFileToolOptions = {
-		partialReadsEnabled,
-		maxConcurrentFileReads,
 		supportsImages,
 	}
 
@@ -58,18 +52,18 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 		applyPatch,
 		askFollowupQuestion,
 		attemptCompletion,
-		browserAction,
 		codebaseSearch,
 		executeCommand,
-		fetchInstructions,
 		generateImage,
 		listFiles,
 		newTask,
+		readCommandOutput,
 		createReadFileTool(readFileOptions),
 		runSlashCommand,
-		searchAndReplace,
+		skill,
 		searchReplace,
 		edit_file,
+		editTool,
 		searchFiles,
 		switchMode,
 		updateTodoList,

@@ -28,7 +28,7 @@ export class DeepSeekHandler extends OpenAiHandler {
 			...options,
 			openAiApiKey: options.deepSeekApiKey ?? "not-provided",
 			openAiModelId: options.apiModelId ?? deepSeekDefaultModelId,
-			openAiBaseUrl: options.deepSeekBaseUrl ?? "https://api.deepseek.com",
+			openAiBaseUrl: options.deepSeekBaseUrl || "https://api.deepseek.com",
 			openAiStreamingEnabled: true,
 			includeMaxTokens: true,
 		})
@@ -37,7 +37,13 @@ export class DeepSeekHandler extends OpenAiHandler {
 	override getModel() {
 		const id = this.options.apiModelId ?? deepSeekDefaultModelId
 		const info = deepSeekModels[id as keyof typeof deepSeekModels] || deepSeekModels[deepSeekDefaultModelId]
-		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
+		const params = getModelParams({
+			format: "openai",
+			modelId: id,
+			model: info,
+			settings: this.options,
+			defaultTemperature: DEEP_SEEK_DEFAULT_TEMPERATURE,
+		})
 		return { id, info, ...params }
 	}
 
@@ -70,11 +76,9 @@ export class DeepSeekHandler extends OpenAiHandler {
 			stream_options: { include_usage: true },
 			// Enable thinking mode for deepseek-reasoner or when tools are used with thinking model
 			...(isThinkingModel && { thinking: { type: "enabled" } }),
-			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-			...(metadata?.toolProtocol === "native" && {
-				parallel_tool_calls: metadata.parallelToolCalls ?? false,
-			}),
+			tools: this.convertToolsForOpenAI(metadata?.tools),
+			tool_choice: metadata?.tool_choice,
+			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
 		}
 
 		// Add max_tokens if needed

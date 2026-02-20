@@ -89,14 +89,15 @@ export type TaskProviderEvents = {
  */
 
 export interface CreateTaskOptions {
-	enableDiff?: boolean
 	enableCheckpoints?: boolean
-	fuzzyMatchThreshold?: number
 	consecutiveMistakeLimit?: number
 	experiments?: Record<string, boolean>
 	initialTodos?: TodoItem[]
 	/** Initial status for the task's history item (e.g., "active" for child tasks) */
 	initialStatus?: "active" | "delegated" | "completed"
+	/** Whether to start the task loop immediately (default: true).
+	 *  When false, the caller must invoke `task.start()` manually. */
+	startTask?: boolean
 }
 
 export enum TaskStatus {
@@ -156,6 +157,7 @@ export type TaskEvents = {
 	[RooCodeEventName.TaskModeSwitched]: [taskId: string, mode: string]
 	[RooCodeEventName.TaskAskResponded]: []
 	[RooCodeEventName.TaskUserMessage]: [taskId: string]
+	[RooCodeEventName.QueuedMessagesUpdated]: [taskId: string, messages: QueuedMessage[]]
 
 	// Task Analytics
 	[RooCodeEventName.TaskToolFailed]: [taskId: string, tool: ToolName, error: string]

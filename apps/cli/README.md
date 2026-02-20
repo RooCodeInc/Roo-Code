@@ -19,7 +19,7 @@ curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/i
 **Requirements:**
 
 - Node.js 20 or higher
-- macOS (Intel or Apple Silicon) or Linux (x64 or ARM64)
+- macOS Apple Silicon (M1/M2/M3/M4) or Linux x64
 
 **Custom installation directory:**
 
@@ -66,40 +66,57 @@ pnpm --filter @roo-code/cli build
 
 ### Interactive Mode (Default)
 
-By default, the CLI prompts for approval before executing actions:
+By default, the CLI auto-approves actions and runs in interactive TUI mode:
 
 ```bash
 export OPENROUTER_API_KEY=sk-or-v1-...
 
-roo ~/Documents/my-project -P "What is this project?"
+roo "What is this project?" -w ~/Documents/my-project
 ```
 
 You can also run without a prompt and enter it interactively in TUI mode:
 
 ```bash
-roo ~/Documents/my-project
+roo -w ~/Documents/my-project
 ```
 
 In interactive mode:
 
-- Tool executions prompt for yes/no approval
-- Commands prompt for yes/no approval
-- Followup questions show suggestions and wait for user input
-- Browser and MCP actions prompt for approval
+- Tool executions are auto-approved
+- Commands are auto-approved
+- Followup questions show suggestions with a 60-second timeout, then auto-select the first suggestion
+- Browser and MCP actions are auto-approved
 
-### Non-Interactive Mode (`-y`)
+### Approval-Required Mode (`--require-approval`)
 
-For automation and scripts, use `-y` to auto-approve all actions:
+If you want manual approval prompts, enable approval-required mode:
 
 ```bash
-roo ~/Documents/my-project -y -P "Refactor the utils.ts file"
+roo "Refactor the utils.ts file" --require-approval -w ~/Documents/my-project
 ```
 
-In non-interactive mode:
+In approval-required mode:
 
-- Tool, command, browser, and MCP actions are auto-approved
-- Followup questions show a 60-second timeout, then auto-select the first suggestion
-- Typing any key cancels the timeout and allows manual input
+- Tool, command, browser, and MCP actions prompt for yes/no approval
+- Followup questions wait for manual input (no auto-timeout)
+
+### Print Mode (`--print`)
+
+Use `--print` for non-interactive execution and machine-readable output:
+
+```bash
+# Prompt is required
+roo --print "Summarize this repository"
+```
+
+### Stdin Stream Mode (`--stdin-prompt-stream`)
+
+For programmatic control (one process, multiple prompts), use `--stdin-prompt-stream` with `--print`.
+Send one prompt per line via stdin:
+
+```bash
+printf '1+1=?\n10!=?\n' | roo --print --stdin-prompt-stream --output-format stream-json
+```
 
 ### Roo Code Cloud Authentication
 
@@ -147,21 +164,24 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 
 ## Options
 
-| Option                            | Description                                                                             | Default                       |
-| --------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------- |
-| `[workspace]`                     | Workspace path to operate in (positional argument)                                      | Current directory             |
-| `-P, --prompt <prompt>`           | The prompt/task to execute (optional in TUI mode)                                       | None                          |
-| `-e, --extension <path>`          | Path to the extension bundle directory                                                  | Auto-detected                 |
-| `-d, --debug`                     | Enable debug output (includes detailed debug information, prompts, paths, etc)          | `false`                       |
-| `-x, --exit-on-complete`          | Exit the process when task completes (useful for testing)                               | `false`                       |
-| `-y, --yes`                       | Non-interactive mode: auto-approve all actions                                          | `false`                       |
-| `-k, --api-key <key>`             | API key for the LLM provider                                                            | From env var                  |
-| `-p, --provider <provider>`       | API provider (anthropic, openai, openrouter, etc.)                                      | `openrouter`                  |
-| `-m, --model <model>`             | Model to use                                                                            | `anthropic/claude-sonnet-4.5` |
-| `-M, --mode <mode>`               | Mode to start in (code, architect, ask, debug, etc.)                                    | `code`                        |
-| `-r, --reasoning-effort <effort>` | Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh) | `medium`                      |
-| `--ephemeral`                     | Run without persisting state (uses temporary storage)                                   | `false`                       |
-| `--no-tui`                        | Disable TUI, use plain text output                                                      | `false`                       |
+| Option                            | Description                                                                             | Default                                  |
+| --------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `[prompt]`                        | Your prompt (positional argument, optional)                                             | None                                     |
+| `--prompt-file <path>`            | Read prompt from a file instead of command line argument                                | None                                     |
+| `-w, --workspace <path>`          | Workspace path to operate in                                                            | Current directory                        |
+| `-p, --print`                     | Print response and exit (non-interactive mode)                                          | `false`                                  |
+| `--stdin-prompt-stream`           | Read prompts from stdin (one prompt per line, requires `--print`)                       | `false`                                  |
+| `-e, --extension <path>`          | Path to the extension bundle directory                                                  | Auto-detected                            |
+| `-d, --debug`                     | Enable debug output (includes detailed debug information, prompts, paths, etc)          | `false`                                  |
+| `-a, --require-approval`          | Require manual approval before actions execute                                          | `false`                                  |
+| `-k, --api-key <key>`             | API key for the LLM provider                                                            | From env var                             |
+| `--provider <provider>`           | API provider (roo, anthropic, openai, openrouter, etc.)                                 | `openrouter` (or `roo` if authenticated) |
+| `-m, --model <model>`             | Model to use                                                                            | `anthropic/claude-opus-4.6`              |
+| `--mode <mode>`                   | Mode to start in (code, architect, ask, debug, etc.)                                    | `code`                                   |
+| `-r, --reasoning-effort <effort>` | Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh) | `medium`                                 |
+| `--ephemeral`                     | Run without persisting state (uses temporary storage)                                   | `false`                                  |
+| `--oneshot`                       | Exit upon task completion                                                               | `false`                                  |
+| `--output-format <format>`        | Output format with `--print`: `text`, `json`, or `stream-json`                          | `text`                                   |
 
 ## Auth Commands
 
@@ -175,13 +195,14 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 
 The CLI will look for API keys in environment variables if not provided via `--api-key`:
 
-| Provider      | Environment Variable |
-| ------------- | -------------------- |
-| anthropic     | `ANTHROPIC_API_KEY`  |
-| openai        | `OPENAI_API_KEY`     |
-| openrouter    | `OPENROUTER_API_KEY` |
-| google/gemini | `GOOGLE_API_KEY`     |
-| ...           | ...                  |
+| Provider          | Environment Variable        |
+| ----------------- | --------------------------- |
+| roo               | `ROO_API_KEY`               |
+| anthropic         | `ANTHROPIC_API_KEY`         |
+| openai-native     | `OPENAI_API_KEY`            |
+| openrouter        | `OPENROUTER_API_KEY`        |
+| gemini            | `GOOGLE_API_KEY`            |
+| vercel-ai-gateway | `VERCEL_AI_GATEWAY_API_KEY` |
 
 **Authentication Environment Variables:**
 
@@ -231,8 +252,8 @@ The CLI will look for API keys in environment variables if not provided via `--a
 ## Development
 
 ```bash
-# Watch mode for development
-pnpm dev
+# Run directly from source (no build required)
+pnpm dev --provider roo --api-key $ROO_API_KEY --print "Hello"
 
 # Run tests
 pnpm test
@@ -244,19 +265,41 @@ pnpm check-types
 pnpm lint
 ```
 
-## Releasing
-
-To create a new release, execute the /cli-release slash command:
+By default the `start` script points `ROO_CODE_PROVIDER_URL` at `http://localhost:8080/proxy` for local development. To point at the production API instead, override the environment variable:
 
 ```bash
-roo ~/Documents/Roo-Code -P "/cli-release" -y
+ROO_CODE_PROVIDER_URL=https://api.roocode.com/proxy pnpm dev --provider roo --api-key $ROO_API_KEY --print "Hello"
 ```
+
+## Releasing
+
+Official releases are created via the GitHub Actions workflow at `.github/workflows/cli-release.yml`.
+
+To trigger a release:
+
+1. Go to **Actions** → **CLI Release**
+2. Click **Run workflow**
+3. Optionally specify a version (defaults to `package.json` version)
+4. Click **Run workflow**
 
 The workflow will:
 
-1. Bump the version
-2. Update the CHANGELOG
-3. Build the extension and CLI
-4. Create a platform-specific tarball (for your current OS/architecture)
-5. Test the install script
-6. Create a GitHub release with the tarball attached
+1. Build the CLI on all platforms (macOS Apple Silicon, Linux x64)
+2. Create platform-specific tarballs with bundled ripgrep
+3. Verify each tarball
+4. Create a GitHub release with all tarballs attached
+
+### Local Builds
+
+For local development and testing, use the build script:
+
+```bash
+# Build tarball for your current platform
+./apps/cli/scripts/build.sh
+
+# Build and install locally
+./apps/cli/scripts/build.sh --install
+
+# Fast build (skip verification)
+./apps/cli/scripts/build.sh --skip-verify
+```

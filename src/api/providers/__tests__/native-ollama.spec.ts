@@ -265,15 +265,14 @@ describe("NativeOllamaHandler", () => {
 	})
 
 	describe("tool calling", () => {
-		it("should include tools when model supports native tools", async () => {
-			// Mock model with native tool support
+		it("should include tools when tools are provided", async () => {
+			// Model metadata should not gate tool inclusion; metadata.tools controls it.
 			mockGetOllamaModels.mockResolvedValue({
 				"llama3.2": {
 					contextWindow: 128000,
 					maxTokens: 4096,
 					supportsImages: true,
 					supportsPromptCache: false,
-					supportsNativeTools: true,
 				},
 			})
 
@@ -341,15 +340,14 @@ describe("NativeOllamaHandler", () => {
 			)
 		})
 
-		it("should not include tools when model does not support native tools", async () => {
-			// Mock model without native tool support
+		it("should include tools even when model metadata doesn't advertise tool support", async () => {
+			// Model metadata should not gate tool inclusion; metadata.tools controls it.
 			mockGetOllamaModels.mockResolvedValue({
 				llama2: {
 					contextWindow: 4096,
 					maxTokens: 4096,
 					supportsImages: false,
 					supportsPromptCache: false,
-					supportsNativeTools: false,
 				},
 			})
 
@@ -379,23 +377,22 @@ describe("NativeOllamaHandler", () => {
 				// consume stream
 			}
 
-			// Verify tools were NOT passed
+			// Verify tools were passed
 			expect(mockChat).toHaveBeenCalledWith(
-				expect.not.objectContaining({
-					tools: expect.anything(),
+				expect.objectContaining({
+					tools: expect.any(Array),
 				}),
 			)
 		})
 
-		it("should not include tools when toolProtocol is xml", async () => {
-			// Mock model with native tool support
+		it("should not include tools when no tools are provided", async () => {
+			// Model metadata should not gate tool inclusion; metadata.tools controls it.
 			mockGetOllamaModels.mockResolvedValue({
 				"llama3.2": {
 					contextWindow: 128000,
 					maxTokens: 4096,
 					supportsImages: true,
 					supportsPromptCache: false,
-					supportsNativeTools: true,
 				},
 			})
 
@@ -412,21 +409,8 @@ describe("NativeOllamaHandler", () => {
 				yield { message: { content: "Response" } }
 			})
 
-			const tools = [
-				{
-					type: "function" as const,
-					function: {
-						name: "get_weather",
-						description: "Get the weather",
-						parameters: { type: "object", properties: {} },
-					},
-				},
-			]
-
 			const stream = handler.createMessage("System", [{ role: "user" as const, content: "Test" }], {
 				taskId: "test",
-				tools,
-				toolProtocol: "xml",
 			})
 
 			// Consume the stream
@@ -434,7 +418,7 @@ describe("NativeOllamaHandler", () => {
 				// consume stream
 			}
 
-			// Verify tools were NOT passed (XML protocol forces XML format)
+			// Verify tools were NOT passed
 			expect(mockChat).toHaveBeenCalledWith(
 				expect.not.objectContaining({
 					tools: expect.anything(),
@@ -443,14 +427,13 @@ describe("NativeOllamaHandler", () => {
 		})
 
 		it("should yield tool_call_partial when model returns tool calls", async () => {
-			// Mock model with native tool support
+			// Model metadata should not gate tool inclusion; metadata.tools controls it.
 			mockGetOllamaModels.mockResolvedValue({
 				"llama3.2": {
 					contextWindow: 128000,
 					maxTokens: 4096,
 					supportsImages: true,
 					supportsPromptCache: false,
-					supportsNativeTools: true,
 				},
 			})
 
@@ -520,14 +503,13 @@ describe("NativeOllamaHandler", () => {
 		})
 
 		it("should yield tool_call_end events after tool_call_partial chunks", async () => {
-			// Mock model with native tool support
+			// Model metadata should not gate tool inclusion; metadata.tools controls it.
 			mockGetOllamaModels.mockResolvedValue({
 				"llama3.2": {
 					contextWindow: 128000,
 					maxTokens: 4096,
 					supportsImages: true,
 					supportsPromptCache: false,
-					supportsNativeTools: true,
 				},
 			})
 

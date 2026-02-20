@@ -62,7 +62,7 @@
 		"condense_not_enough_messages": "Pas assez de messages pour condenser le contexte",
 		"condensed_recently": "Le contexte a été condensé récemment ; cette tentative est ignorée",
 		"condense_handler_invalid": "Le gestionnaire d'API pour condenser le contexte est invalide",
-		"condense_context_grew": "La taille du contexte a augmenté pendant la condensation ; cette tentative est ignorée",
+		"condense_api_failed": "L'appel API de condensation a échoué : {{message}}",
 		"url_timeout": "Le site web a pris trop de temps à charger (timeout). Cela pourrait être dû à une connexion lente, un site web lourd ou temporairement indisponible. Tu peux réessayer plus tard ou vérifier si l'URL est correcte.",
 		"url_not_found": "L'adresse du site web n'a pas pu être trouvée. Vérifie si l'URL est correcte et réessaie.",
 		"no_internet": "Pas de connexion internet. Vérifie ta connexion réseau et réessaie.",
@@ -110,15 +110,6 @@
 			"thinking_complete_truncated": "(Réflexion terminée, mais la sortie a été tronquée en raison de la limite de jetons.)",
 			"thinking_complete_safety": "(Réflexion terminée, mais la sortie a été bloquée en raison des paramètres de sécurité.)",
 			"thinking_complete_recitation": "(Réflexion terminée, mais la sortie a été bloquée en raison de la vérification de récitation.)"
-		},
-		"cerebras": {
-			"authenticationFailed": "Échec de l'authentification de l'API Cerebras. Vérifiez que votre clé API est valide et n'a pas expiré.",
-			"accessForbidden": "Accès interdit à l'API Cerebras. Votre clé API peut ne pas avoir accès au modèle ou à la fonction demandée.",
-			"rateLimitExceeded": "Limite de débit de l'API Cerebras dépassée. Veuillez attendre avant de faire une autre demande.",
-			"serverError": "Erreur du serveur de l'API Cerebras ({{status}}). Veuillez réessayer plus tard.",
-			"genericError": "Erreur de l'API Cerebras ({{status}}) : {{message}}",
-			"noResponseBody": "Erreur de l'API Cerebras : Aucun corps de réponse",
-			"completionError": "Erreur d'achèvement de Cerebras : {{error}}"
 		},
 		"roo": {
 			"authenticationRequired": "Le fournisseur Roo nécessite une authentification cloud. Veuillez vous connecter à Roo Code Cloud."
@@ -205,10 +196,7 @@
 		"task_placeholder": "Écris ta tâche ici"
 	},
 	"settings": {
-		"providers": {
-			"groqApiKey": "Clé API Groq",
-			"getGroqApiKey": "Obtenir la clé API Groq"
-		}
+		"providers": {}
 	},
 	"customModes": {
 		"errors": {

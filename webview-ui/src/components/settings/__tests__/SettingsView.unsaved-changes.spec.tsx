@@ -29,6 +29,42 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 
 // Mock UI components
 vi.mock("@src/components/ui", () => ({
+	ToggleSwitch: ({ checked, onChange, "aria-label": ariaLabel, "data-testid": dataTestId }: any) => (
+		<button role="switch" aria-checked={checked} aria-label={ariaLabel} data-testid={dataTestId} onClick={onChange}>
+			Toggle
+		</button>
+	),
+	Input: ({ value, onChange, placeholder, id, type, className, ...props }: any) => (
+		<input
+			type={type || "text"}
+			value={value}
+			onChange={onChange}
+			placeholder={placeholder}
+			id={id}
+			className={className}
+			{...props}
+		/>
+	),
+	Textarea: ({ value, onChange, placeholder, id, className, ...props }: any) => (
+		<textarea
+			value={value}
+			onChange={onChange}
+			placeholder={placeholder}
+			id={id}
+			className={className}
+			{...props}
+		/>
+	),
+	Checkbox: ({ checked, onCheckedChange, id, className, ...props }: any) => (
+		<input
+			type="checkbox"
+			checked={checked}
+			onChange={(e) => onCheckedChange?.(e.target.checked)}
+			id={id}
+			className={className}
+			{...props}
+		/>
+	),
 	AlertDialog: ({ children }: any) => <div>{children}</div>,
 	AlertDialogContent: ({ children }: any) => <div>{children}</div>,
 	AlertDialogTitle: ({ children }: any) => <div>{children}</div>,
@@ -50,6 +86,82 @@ vi.mock("@src/components/ui", () => ({
 	Popover: ({ children }: any) => <>{children}</>,
 	PopoverTrigger: ({ children }: any) => <>{children}</>,
 	PopoverContent: ({ children }: any) => <div>{children}</div>,
+	Select: ({ children, value, onValueChange }: any) => (
+		<div data-testid="select" data-value={value}>
+			<button onClick={() => onValueChange && onValueChange("test-change")}>{value}</button>
+			{children}
+		</div>
+	),
+	SelectContent: ({ children }: any) => <div data-testid="select-content">{children}</div>,
+	SelectGroup: ({ children }: any) => <div data-testid="select-group">{children}</div>,
+	SelectItem: ({ children, value }: any) => (
+		<div data-testid={`select-item-${value}`} data-value={value}>
+			{children}
+		</div>
+	),
+	SelectTrigger: ({ children }: any) => <div data-testid="select-trigger">{children}</div>,
+	SelectValue: ({ placeholder }: any) => <div data-testid="select-value">{placeholder}</div>,
+	Slider: ({ value, onValueChange, "data-testid": dataTestId }: any) => (
+		<input
+			type="range"
+			value={value?.[0] ?? 0}
+			onChange={(e) => onValueChange?.([parseFloat(e.target.value)])}
+			data-testid={dataTestId}
+		/>
+	),
+	SearchableSelect: ({ value, onValueChange, options, placeholder }: any) => (
+		<select value={value} onChange={(e) => onValueChange(e.target.value)} data-testid="searchable-select">
+			{placeholder && <option value="">{placeholder}</option>}
+			{options?.map((opt: any) => (
+				<option key={opt.value} value={opt.value}>
+					{opt.label}
+				</option>
+			))}
+		</select>
+	),
+	Collapsible: ({ children, open }: any) => (
+		<div className="collapsible-mock" data-open={open}>
+			{children}
+		</div>
+	),
+	CollapsibleTrigger: ({ children, className, onClick }: any) => (
+		<div className={`collapsible-trigger-mock ${className || ""}`} onClick={onClick}>
+			{children}
+		</div>
+	),
+	CollapsibleContent: ({ children, className }: any) => (
+		<div className={`collapsible-content-mock ${className || ""}`}>{children}</div>
+	),
+	Dialog: ({ children, ...props }: any) => (
+		<div data-testid="dialog" {...props}>
+			{children}
+		</div>
+	),
+	DialogContent: ({ children, ...props }: any) => (
+		<div data-testid="dialog-content" {...props}>
+			{children}
+		</div>
+	),
+	DialogHeader: ({ children, ...props }: any) => (
+		<div data-testid="dialog-header" {...props}>
+			{children}
+		</div>
+	),
+	DialogTitle: ({ children, ...props }: any) => (
+		<div data-testid="dialog-title" {...props}>
+			{children}
+		</div>
+	),
+	DialogDescription: ({ children, ...props }: any) => (
+		<div data-testid="dialog-description" {...props}>
+			{children}
+		</div>
+	),
+	DialogFooter: ({ children, ...props }: any) => (
+		<div data-testid="dialog-footer" {...props}>
+			{children}
+		</div>
+	),
 }))
 
 // Mock ModesView and McpView since they're rendered during indexing
@@ -87,9 +199,6 @@ vi.mock("../ApiOptions", () => ({
 // Mock other settings components - ensure they don't interact with props
 vi.mock("../AutoApproveSettings", () => ({
 	AutoApproveSettings: vi.fn(() => <div>AutoApproveSettings</div>),
-}))
-vi.mock("../BrowserSettings", () => ({
-	BrowserSettings: vi.fn(() => <div>BrowserSettings</div>),
 }))
 vi.mock("../CheckpointSettings", () => ({
 	CheckpointSettings: vi.fn(() => <div>CheckpointSettings</div>),
@@ -153,7 +262,6 @@ describe("SettingsView - Unsaved Changes Detection", () => {
 		allowedMaxRequests: undefined,
 		allowedMaxCost: undefined,
 		language: "en",
-		alwaysAllowBrowser: false,
 		alwaysAllowExecute: false,
 		alwaysAllowMcp: false,
 		alwaysAllowModeSwitch: false,
@@ -163,17 +271,11 @@ describe("SettingsView - Unsaved Changes Detection", () => {
 		alwaysAllowWriteProtected: false,
 		autoCondenseContext: false,
 		autoCondenseContextPercent: 50,
-		browserToolEnabled: false,
-		browserViewportSize: "1280x720",
 		enableCheckpoints: false,
-		diffEnabled: true,
 		experiments: {},
-		fuzzyMatchThreshold: 1.0,
 		maxOpenTabsContext: 10,
 		maxWorkspaceFiles: 200,
 		mcpEnabled: false,
-		remoteBrowserHost: "",
-		screenshotQuality: 75,
 		soundEnabled: false,
 		ttsEnabled: false,
 		ttsSpeed: 1.0,
@@ -191,13 +293,9 @@ describe("SettingsView - Unsaved Changes Detection", () => {
 		terminalZdotdir: false,
 		writeDelayMs: 0,
 		showRooIgnoredFiles: false,
-		remoteBrowserEnabled: false,
 		maxReadFileLine: -1,
 		maxImageFileSize: 5,
 		maxTotalImageSize: 20,
-		terminalCompressProgressBar: false,
-		maxConcurrentFileReads: 5,
-		condensingApiConfigId: "",
 		customCondensingPrompt: "",
 		customSupportPrompts: {},
 		profileThresholds: {},

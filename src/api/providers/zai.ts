@@ -52,8 +52,8 @@ export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
 	) {
 		const { id: modelId, info } = this.getModel()
 
-		// Check if this is a GLM-4.7 model with thinking support
-		const isThinkingModel = modelId === "glm-4.7" && Array.isArray(info.supportsReasoningEffort)
+		// Check if this is a model with thinking support (e.g. GLM-4.7, GLM-5)
+		const isThinkingModel = Array.isArray(info.supportsReasoningEffort)
 
 		if (isThinkingModel) {
 			// For GLM-4.7, thinking is ON by default in the API.
@@ -101,11 +101,9 @@ export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
 			stream_options: { include_usage: true },
 			// For GLM-4.7: thinking is ON by default, so we explicitly disable when needed
 			thinking: useReasoning ? { type: "enabled" } : { type: "disabled" },
-			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-			...(metadata?.toolProtocol === "native" && {
-				parallel_tool_calls: metadata.parallelToolCalls ?? false,
-			}),
+			tools: this.convertToolsForOpenAI(metadata?.tools),
+			tool_choice: metadata?.tool_choice,
+			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
 		}
 
 		return this.client.chat.completions.create(params)

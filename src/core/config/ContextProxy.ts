@@ -16,10 +16,12 @@ import {
 	globalSettingsSchema,
 	isSecretStateKey,
 	isProviderName,
+	isRetiredProvider,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { logger } from "../../utils/logging"
+import { supportPrompt } from "../../shared/support-prompt"
 
 type GlobalStateKey = keyof GlobalState
 type SecretStateKey = keyof SecretState
@@ -92,18 +94,146 @@ export class ContextProxy {
 		// Migration: Sanitize invalid/removed API providers
 		await this.migrateInvalidApiProvider()
 
+		// Migration: Move legacy customCondensingPrompt to customSupportPrompts
+		await this.migrateLegacyCondensingPrompt()
+
+		// Migration: Clear old default condensing prompt so users get the improved v2 default
+		await this.migrateOldDefaultCondensingPrompt()
+
 		this._isInitialized = true
 	}
 
 	/**
-	 * Migrates invalid/removed apiProvider values by clearing them from storage.
-	 * This handles cases where a user had a provider selected that was later removed
-	 * from the extension (e.g., "glama").
+	 * Migrates the legacy customCondensingPrompt to the new customSupportPrompts structure
+	 * and removes the legacy field.
+	 *
+	 * Note: Only true customizations are migrated. If the legacy prompt equals the default,
+	 * we skip the migration to avoid pinning users to an old default if the default changes.
+	 */
+	private async migrateLegacyCondensingPrompt() {
+		try {
+			const legacyPrompt = this.originalContext.globalState.get<string>("customCondensingPrompt")
+			if (legacyPrompt) {
+				const currentSupportPrompts =
+					this.originalContext.globalState.get<Record<string, string>>("customSupportPrompts") || {}
+
+				// Only migrate if:
+				// 1. The new location doesn't already have a value
+				// 2. The legacy prompt is a true customization (not equal to the default)
+				// This prevents pinning users to an old default if the default prompt changes.
+				const isCustomized = legacyPrompt.trim() !== supportPrompt.default.CONDENSE.trim()
+				if (!currentSupportPrompts.CONDENSE && isCustomized) {
+					logger.info("Migrating customized legacy customCondensingPrompt to customSupportPrompts")
+					const updatedPrompts = { ...currentSupportPrompts, CONDENSE: legacyPrompt }
+					await this.originalContext.globalState.update("customSupportPrompts", updatedPrompts)
+					this.stateCache.customSupportPrompts = updatedPrompts
+				} else if (!isCustomized) {
+					logger.info("Skipping migration: legacy customCondensingPrompt equals the default prompt")
+				}
+
+				// Always remove the legacy field
+				await this.originalContext.globalState.update("customCondensingPrompt", undefined)
+				this.stateCache.customCondensingPrompt = undefined
+			}
+		} catch (error) {
+			logger.error(
+				`Error during customCondensingPrompt migration: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+	}
+
+	/**
+	 * Clears the old v1 default condensing prompt from customSupportPrompts.CONDENSE if present.
+	 *
+	 * Before PR #10873 "Intelligent Context Condensation v2", the default condensing prompt was
+	 * a simpler 6-section format. Users who had this old default saved in their settings would
+	 * be stuck with it instead of getting the improved v2 default (which includes analysis tags,
+	 * error tracking, all user messages, and better task continuity).
+	 *
+	 * This migration uses fingerprinting to detect the old v1 default - checking for key
+	 * identifying phrases unique to v1 and absence of v2-specific features. This is more
+	 * lenient than exact matching and handles whitespace variations.
+	 */
+	private async migrateOldDefaultCondensingPrompt() {
+		try {
+			const currentSupportPrompts =
+				this.originalContext.globalState.get<Record<string, string>>("customSupportPrompts") || {}
+
+			const savedCondensePrompt = currentSupportPrompts.CONDENSE
+
+			if (savedCondensePrompt && this.isOldV1DefaultCondensePrompt(savedCondensePrompt)) {
+				logger.info(
+					"Clearing old v1 default condensing prompt from customSupportPrompts.CONDENSE - user will now get the improved v2 default",
+				)
+
+				// Remove the CONDENSE key from customSupportPrompts
+				const { CONDENSE: _, ...remainingPrompts } = currentSupportPrompts
+				const updatedPrompts = Object.keys(remainingPrompts).length > 0 ? remainingPrompts : undefined
+
+				await this.originalContext.globalState.update("customSupportPrompts", updatedPrompts)
+				this.stateCache.customSupportPrompts = updatedPrompts
+			}
+		} catch (error) {
+			logger.error(
+				`Error during old default condensing prompt migration: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+	}
+
+	/**
+	 * Detects if a prompt is the old v1 default condensing prompt using fingerprinting.
+	 * This is more lenient than exact matching - it checks for key identifying phrases
+	 * unique to v1 and absence of v2-specific features.
+	 *
+	 * V1 characteristics:
+	 * - Exactly 6 numbered sections (1-6)
+	 * - Contains specific section headers like "Previous Conversation", "Current Work", etc.
+	 * - Does NOT contain v2-specific features like "<analysis>", "SYSTEM OPERATION", etc.
+	 */
+	private isOldV1DefaultCondensePrompt(prompt: string): boolean {
+		// Key phrases unique to the v1 default (must ALL be present)
+		const v1RequiredPhrases = [
+			"Your task is to create a detailed summary of the conversation so far",
+			"1. Previous Conversation:",
+			"2. Current Work:",
+			"3. Key Technical Concepts:",
+			"4. Relevant Files and Code:",
+			"5. Problem Solving:",
+			"6. Pending Tasks and Next Steps:",
+			"Output only the summary of the conversation so far",
+		]
+
+		// V2-specific features (if ANY are present, this is NOT v1 default)
+		const v2Features = [
+			"<analysis>",
+			"SYSTEM OPERATION",
+			"Errors and fixes",
+			"All user messages",
+			"7.", // v2 has more than 6 sections
+			"8.",
+			"9.",
+		]
+
+		// Check that all v1 required phrases are present
+		const hasAllV1Phrases = v1RequiredPhrases.every((phrase) => prompt.toLowerCase().includes(phrase.toLowerCase()))
+
+		// Check that no v2 features are present
+		const hasNoV2Features = v2Features.every((feature) => !prompt.toLowerCase().includes(feature.toLowerCase()))
+
+		return hasAllV1Phrases && hasNoV2Features
+	}
+
+	/**
+	 * Migrates unknown apiProvider values by clearing them from storage.
+	 * Retired providers are preserved so users can keep historical configuration.
 	 */
 	private async migrateInvalidApiProvider() {
 		try {
 			const apiProvider = this.stateCache.apiProvider
-			if (apiProvider !== undefined && !isProviderName(apiProvider)) {
+			const isKnownProvider =
+				typeof apiProvider === "string" && (isProviderName(apiProvider) || isRetiredProvider(apiProvider))
+
+			if (apiProvider !== undefined && !isKnownProvider) {
 				logger.info(`[ContextProxy] Found invalid provider "${apiProvider}" in storage - clearing it`)
 				// Clear the invalid provider from both cache and storage
 				this.stateCache.apiProvider = undefined
@@ -312,8 +442,8 @@ export class ContextProxy {
 	}
 
 	/**
-	 * Sanitizes provider values by resetting invalid/removed apiProvider values.
-	 * This prevents schema validation errors for removed providers.
+	 * Sanitizes provider values by resetting unknown apiProvider values.
+	 * Active and retired providers are preserved.
 	 */
 	private sanitizeProviderValues(values: RooCodeSettings): RooCodeSettings {
 		// Remove legacy Claude Code CLI wrapper keys that may still exist in global state.
@@ -329,7 +459,11 @@ export class ContextProxy {
 			}
 		}
 
-		if (values.apiProvider !== undefined && !isProviderName(values.apiProvider)) {
+		const isKnownProvider =
+			typeof values.apiProvider === "string" &&
+			(isProviderName(values.apiProvider) || isRetiredProvider(values.apiProvider))
+
+		if (values.apiProvider !== undefined && !isKnownProvider) {
 			logger.info(`[ContextProxy] Sanitizing invalid provider "${values.apiProvider}" - resetting to undefined`)
 			// Return a new values object without the invalid apiProvider
 			const { apiProvider, ...restValues } = sanitizedValues

@@ -62,7 +62,7 @@
 		"condense_not_enough_messages": "No hay suficientes mensajes para condensar el contexto",
 		"condensed_recently": "El contexto se condensó recientemente; se omite este intento",
 		"condense_handler_invalid": "El manejador de API para condensar el contexto no es válido",
-		"condense_context_grew": "El tamaño del contexto aumentó durante la condensación; se omite este intento",
+		"condense_api_failed": "La llamada API de condensación falló: {{message}}",
 		"url_timeout": "El sitio web tardó demasiado en cargar (timeout). Esto podría deberse a una conexión lenta, un sitio web pesado o que esté temporalmente no disponible. Puedes intentarlo más tarde o verificar si la URL es correcta.",
 		"url_not_found": "No se pudo encontrar la dirección del sitio web. Por favor verifica si la URL es correcta e inténtalo de nuevo.",
 		"no_internet": "Sin conexión a internet. Por favor verifica tu conexión de red e inténtalo de nuevo.",
@@ -110,15 +110,6 @@
 			"thinking_complete_truncated": "(Pensamiento completado, pero la salida fue truncada debido al límite de tokens.)",
 			"thinking_complete_safety": "(Pensamiento completado, pero la salida fue bloqueada debido a la configuración de seguridad.)",
 			"thinking_complete_recitation": "(Pensamiento completado, pero la salida fue bloqueada debido a la comprobación de recitación.)"
-		},
-		"cerebras": {
-			"authenticationFailed": "Falló la autenticación de la API de Cerebras. Verifica que tu clave de API sea válida y no haya expirado.",
-			"accessForbidden": "Acceso prohibido a la API de Cerebras. Tu clave de API puede no tener acceso al modelo o función solicitada.",
-			"rateLimitExceeded": "Se excedió el límite de velocidad de la API de Cerebras. Espera antes de hacer otra solicitud.",
-			"serverError": "Error del servidor de la API de Cerebras ({{status}}). Inténtalo de nuevo más tarde.",
-			"genericError": "Error de la API de Cerebras ({{status}}): {{message}}",
-			"noResponseBody": "Error de la API de Cerebras: Sin cuerpo de respuesta",
-			"completionError": "Error de finalización de Cerebras: {{error}}"
 		},
 		"roo": {
 			"authenticationRequired": "El proveedor Roo requiere autenticación en la nube. Por favor, inicia sesión en Roo Code Cloud."
@@ -205,10 +196,7 @@
 		"task_placeholder": "Escribe tu tarea aquí"
 	},
 	"settings": {
-		"providers": {
-			"groqApiKey": "Clave API de Groq",
-			"getGroqApiKey": "Obtener clave API de Groq"
-		}
+		"providers": {}
 	},
 	"customModes": {
 		"errors": {

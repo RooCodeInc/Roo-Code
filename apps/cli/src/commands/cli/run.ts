@@ -11,11 +11,13 @@ import {
 	isSupportedProvider,
 	OnboardingProviderChoice,
 	supportedProviders,
-	ASCII_ROO,
 	DEFAULT_FLAGS,
 	REASONING_EFFORTS,
 	SDK_BASE_URL,
+	OutputFormat,
 } from "@/types/index.js"
+import { isValidOutputFormat } from "@/types/json-events.js"
+import { JsonEventEmitter } from "@/agent/json-event-emitter.js"
 
 import { createClient } from "@/lib/sdk/index.js"
 import { loadToken, loadSettings } from "@/lib/storage/index.js"
@@ -25,6 +27,7 @@ import { getDefaultExtensionPath } from "@/lib/utils/extension.js"
 import { VERSION } from "@/lib/utils/version.js"
 
 import { ExtensionHost, ExtensionHostOptions } from "@/agent/index.js"
+import { runStdinStreamMode } from "./stdin-stream.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -63,8 +66,10 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		flagOptions.reasoningEffort || settings.reasoningEffort || DEFAULT_FLAGS.reasoningEffort
 	const effectiveProvider = flagOptions.provider ?? settings.provider ?? (rooToken ? "roo" : "openrouter")
 	const effectiveWorkspacePath = flagOptions.workspace ? path.resolve(flagOptions.workspace) : process.cwd()
-	const effectiveDangerouslySkipPermissions =
-		flagOptions.yes || flagOptions.dangerouslySkipPermissions || settings.dangerouslySkipPermissions || false
+	const legacyRequireApprovalFromSettings =
+		settings.requireApproval ??
+		(settings.dangerouslySkipPermissions === undefined ? undefined : !settings.dangerouslySkipPermissions)
+	const effectiveRequireApproval = flagOptions.requireApproval || legacyRequireApprovalFromSettings || false
 	const effectiveExitOnComplete = flagOptions.print || flagOptions.oneshot || settings.oneshot || false
 
 	const extensionHostOptions: ExtensionHostOptions = {
@@ -75,7 +80,8 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		model: effectiveModel,
 		workspacePath: effectiveWorkspacePath,
 		extensionPath: path.resolve(flagOptions.extension || getDefaultExtensionPath(__dirname)),
-		nonInteractive: effectiveDangerouslySkipPermissions,
+		nonInteractive: !effectiveRequireApproval,
+		exitOnError: flagOptions.exitOnError,
 		ephemeral: flagOptions.ephemeral,
 		debug: flagOptions.debug,
 		exitOnComplete: effectiveExitOnComplete,
@@ -110,15 +116,18 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 				extensionHostOptions.apiKey = rooToken
 				extensionHostOptions.user = me.user
 			} catch {
-				console.error("[CLI] Your Roo Code Router token is not valid.")
-				console.error("[CLI] Please run: roo auth login")
-				process.exit(1)
+				// If an explicit API key was provided via flag or env var, fall through
+				// to the general API key resolution below instead of exiting.
+				if (!flagOptions.apiKey && !getApiKeyFromEnv(extensionHostOptions.provider)) {
+					console.error("[CLI] Your Roo Code Router token is not valid.")
+					console.error("[CLI] Please run: roo auth login")
+					console.error("[CLI] Or use --api-key or set ROO_API_KEY to provide your own API key.")
+					process.exit(1)
+				}
 			}
-		} else {
-			console.error("[CLI] Your Roo Code Router token is missing.")
-			console.error("[CLI] Please run: roo auth login")
-			process.exit(1)
 		}
+		// If no rooToken, fall through to the general API key resolution below
+		// which will check flagOptions.apiKey and ROO_API_KEY env var.
 	}
 
 	// Validations
@@ -164,11 +173,65 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		process.exit(1)
 	}
 
+	// Validate output format
+	const outputFormat: OutputFormat = (flagOptions.outputFormat as OutputFormat) || "text"
+
+	if (!isValidOutputFormat(outputFormat)) {
+		console.error(
+			`[CLI] Error: Invalid output format: ${flagOptions.outputFormat}; must be one of: text, json, stream-json`,
+		)
+		process.exit(1)
+	}
+
+	// Output format only works with --print mode
+	if (outputFormat !== "text" && !flagOptions.print && isTuiSupported) {
+		console.error("[CLI] Error: --output-format requires --print mode")
+		console.error("[CLI] Usage: roo --print --output-format json")
+		process.exit(1)
+	}
+
+	if (flagOptions.stdinPromptStream && !flagOptions.print) {
+		console.error("[CLI] Error: --stdin-prompt-stream requires --print mode")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
+		process.exit(1)
+	}
+
+	if (flagOptions.stdinPromptStream && outputFormat !== "stream-json") {
+		console.error("[CLI] Error: --stdin-prompt-stream requires --output-format=stream-json")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
+		process.exit(1)
+	}
+
+	if (flagOptions.stdinPromptStream && process.stdin.isTTY) {
+		console.error("[CLI] Error: --stdin-prompt-stream requires piped stdin")
+		console.error(
+			'[CLI] Example: printf \'{"command":"start","requestId":"1","prompt":"1+1=?"}\\n\' | roo --print --output-format stream-json --stdin-prompt-stream [options]',
+		)
+		process.exit(1)
+	}
+
+	if (flagOptions.stdinPromptStream && prompt) {
+		console.error("[CLI] Error: cannot use positional prompt or --prompt-file with --stdin-prompt-stream")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
+		process.exit(1)
+	}
+
+	const useStdinPromptStream = flagOptions.stdinPromptStream
+
 	if (!isTuiEnabled) {
-		if (!prompt) {
-			console.error("[CLI] Error: prompt is required in print mode")
-			console.error("[CLI] Usage: roo <prompt> --print [options]")
-			console.error("[CLI] Run without -p for interactive mode")
+		if (!prompt && !useStdinPromptStream) {
+			if (flagOptions.print) {
+				console.error("[CLI] Error: no prompt provided")
+				console.error("[CLI] Usage: roo --print [options] <prompt>")
+				console.error(
+					"[CLI] For stdin control mode: roo --print --output-format stream-json --stdin-prompt-stream [options]",
+				)
+			} else {
+				console.error("[CLI] Error: prompt is required in non-interactive mode")
+				console.error("[CLI] Usage: roo <prompt> [options]")
+				console.error("[CLI] Run without -p for interactive mode")
+			}
+
 			process.exit(1)
 		}
 
@@ -204,38 +267,73 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			process.exit(1)
 		}
 	} else {
-		console.log(ASCII_ROO)
-		console.log()
-		console.log(
-			`[roo] Running ${extensionHostOptions.model || "default"} (${extensionHostOptions.reasoningEffort || "default"}) on ${extensionHostOptions.provider} in ${extensionHostOptions.mode || "default"} mode in ${extensionHostOptions.workspacePath} [debug = ${extensionHostOptions.debug}]`,
-		)
+		const useJsonOutput = outputFormat === "json" || outputFormat === "stream-json"
+
+		extensionHostOptions.disableOutput = useJsonOutput
 
 		const host = new ExtensionHost(extensionHostOptions)
+		let streamRequestId: string | undefined
 
-		process.on("SIGINT", async () => {
-			console.log("\n[CLI] Received SIGINT, shutting down...")
-			await host.dispose()
-			process.exit(130)
-		})
+		const jsonEmitter = useJsonOutput
+			? new JsonEventEmitter({
+					mode: outputFormat as "json" | "stream-json",
+					requestIdProvider: () => streamRequestId,
+				})
+			: null
 
-		process.on("SIGTERM", async () => {
-			console.log("\n[CLI] Received SIGTERM, shutting down...")
+		async function shutdown(signal: string, exitCode: number): Promise<void> {
+			if (!useJsonOutput) {
+				console.log(`\n[CLI] Received ${signal}, shutting down...`)
+			}
+			jsonEmitter?.detach()
 			await host.dispose()
-			process.exit(143)
-		})
+			process.exit(exitCode)
+		}
+
+		process.on("SIGINT", () => shutdown("SIGINT", 130))
+		process.on("SIGTERM", () => shutdown("SIGTERM", 143))
 
 		try {
 			await host.activate()
-			await host.runTask(prompt!)
+
+			if (jsonEmitter) {
+				jsonEmitter.attachToClient(host.client)
+			}
+
+			if (useStdinPromptStream) {
+				if (!jsonEmitter || outputFormat !== "stream-json") {
+					throw new Error("--stdin-prompt-stream requires --output-format=stream-json to emit control events")
+				}
+
+				await runStdinStreamMode({
+					host,
+					jsonEmitter,
+					setStreamRequestId: (id) => {
+						streamRequestId = id
+					},
+				})
+			} else {
+				await host.runTask(prompt!)
+			}
+
+			jsonEmitter?.detach()
 			await host.dispose()
 			process.exit(0)
 		} catch (error) {
-			console.error("[CLI] Error:", error instanceof Error ? error.message : String(error))
+			const errorMessage = error instanceof Error ? error.message : String(error)
 
-			if (error instanceof Error) {
-				console.error(error.stack)
+			if (useJsonOutput) {
+				const errorEvent = { type: "error", id: Date.now(), content: errorMessage }
+				process.stdout.write(JSON.stringify(errorEvent) + "\n")
+			} else {
+				console.error("[CLI] Error:", errorMessage)
+
+				if (error instanceof Error) {
+					console.error(error.stack)
+				}
 			}
 
+			jsonEmitter?.detach()
 			await host.dispose()
 			process.exit(1)
 		}

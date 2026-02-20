@@ -136,17 +136,6 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 	private didSendPartialToolAsk = false
 	private partialToolAskRelPath: string | undefined
 
-	parseLegacy(params: Partial<Record<string, string>>): EditFileParams {
-		return {
-			file_path: params.file_path || "",
-			old_string: params.old_string || "",
-			new_string: params.new_string || "",
-			expected_replacements: params.expected_replacements
-				? parseInt(params.expected_replacements, 10)
-				: undefined,
-		}
-	}
-
 	async execute(params: EditFileParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		// Coerce old_string/new_string to handle malformed native tool calls where they could be non-strings.
 		// In native mode, malformed calls can pass numbers/objects; normalize those to "" to avoid later crashes.
@@ -154,7 +143,7 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 		const old_string = typeof params.old_string === "string" ? params.old_string : ""
 		const new_string = typeof params.new_string === "string" ? params.new_string : ""
 		const expected_replacements = params.expected_replacements ?? 1
-		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
+		const { askApproval, handleError, pushToolResult } = callbacks
 		let relPathForErrorHandling: string | undefined
 		let operationPreviewForErrorHandling: string | undefined
 
@@ -224,7 +213,7 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 				await finalizePartialToolAskIfNeeded(relPath)
 				task.didToolFailInCurrentTurn = true
 				await task.say("rooignore_error", relPath)
-				pushToolResult(formatResponse.rooIgnoreError(relPath, toolProtocol))
+				pushToolResult(formatResponse.rooIgnoreError(relPath))
 				return
 			}
 

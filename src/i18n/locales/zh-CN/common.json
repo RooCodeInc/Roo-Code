@@ -67,7 +67,7 @@
 		"condense_not_enough_messages": "没有足够的对话来压缩上下文",
 		"condensed_recently": "上下文最近已压缩；跳过此次尝试",
 		"condense_handler_invalid": "压缩上下文的API处理程序无效",
-		"condense_context_grew": "压缩过程中上下文大小增加；跳过此次尝试",
+		"condense_api_failed": "压缩 API 调用失败：{{message}}",
 		"url_timeout": "网站加载超时。这可能是由于网络连接缓慢、网站负载过重或暂时不可用。你可以稍后重试或检查 URL 是否正确。",
 		"url_not_found": "找不到网站地址。请检查 URL 是否正确并重试。",
 		"no_internet": "无网络连接。请检查网络连接并重试。",
@@ -115,15 +115,6 @@
 			"thinking_complete_truncated": "（思考完成，但由于 Token 限制输出被截断。）",
 			"thinking_complete_safety": "（思考完成，但由于安全设置输出被阻止。）",
 			"thinking_complete_recitation": "（思考完成，但由于引用检查输出被阻止。）"
-		},
-		"cerebras": {
-			"authenticationFailed": "Cerebras API 身份验证失败。请检查你的 API 密钥是否有效且未过期。",
-			"accessForbidden": "Cerebras API 访问被禁止。你的 API 密钥可能无法访问请求的模型或功能。",
-			"rateLimitExceeded": "Cerebras API 速率限制已超出。请稍等后再发起另一个请求。",
-			"serverError": "Cerebras API 服务器错误 ({{status}})。请稍后重试。",
-			"genericError": "Cerebras API 错误 ({{status}})：{{message}}",
-			"noResponseBody": "Cerebras API 错误：无响应主体",
-			"completionError": "Cerebras 完成错误：{{error}}"
 		},
 		"roo": {
 			"authenticationRequired": "Roo 提供商需要云认证。请登录 Roo Code Cloud。"
@@ -210,10 +201,7 @@
 		"task_placeholder": "在这里输入任务"
 	},
 	"settings": {
-		"providers": {
-			"groqApiKey": "Groq API 密钥",
-			"getGroqApiKey": "获取 Groq API 密钥"
-		}
+		"providers": {}
 	},
 	"customModes": {
 		"errors": {

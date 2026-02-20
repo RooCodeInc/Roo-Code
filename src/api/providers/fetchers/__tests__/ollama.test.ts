@@ -22,7 +22,6 @@ describe("Ollama Fetcher", () => {
 				contextWindow: 40960,
 				supportsImages: false,
 				supportsPromptCache: true,
-				supportsNativeTools: true,
 				inputPrice: 0,
 				outputPrice: 0,
 				cacheWritesPrice: 0,
@@ -47,7 +46,6 @@ describe("Ollama Fetcher", () => {
 				contextWindow: 40960,
 				supportsImages: false,
 				supportsPromptCache: true,
-				supportsNativeTools: true,
 				inputPrice: 0,
 				outputPrice: 0,
 				cacheWritesPrice: 0,
@@ -77,7 +75,7 @@ describe("Ollama Fetcher", () => {
 			const parsedModel = parseOllamaModel(modelDataWithTools as any)
 
 			expect(parsedModel).not.toBeNull()
-			expect(parsedModel!.supportsNativeTools).toBe(true)
+			expect(parsedModel!.contextWindow).toBeGreaterThan(0)
 		})
 
 		it("should return null when capabilities is undefined (no tool support)", () => {
@@ -114,7 +112,7 @@ describe("Ollama Fetcher", () => {
 
 			expect(parsedModel).not.toBeNull()
 			expect(parsedModel!.supportsImages).toBe(true)
-			expect(parsedModel!.supportsNativeTools).toBe(true)
+			expect(parsedModel!.contextWindow).toBeGreaterThan(0)
 		})
 	})
 

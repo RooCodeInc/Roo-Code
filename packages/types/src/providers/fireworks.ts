@@ -4,17 +4,24 @@ export type FireworksModelId =
 	| "accounts/fireworks/models/kimi-k2-instruct"
 	| "accounts/fireworks/models/kimi-k2-instruct-0905"
 	| "accounts/fireworks/models/kimi-k2-thinking"
+	| "accounts/fireworks/models/kimi-k2p5"
 	| "accounts/fireworks/models/minimax-m2"
+	| "accounts/fireworks/models/minimax-m2p1"
 	| "accounts/fireworks/models/qwen3-235b-a22b-instruct-2507"
 	| "accounts/fireworks/models/qwen3-coder-480b-a35b-instruct"
 	| "accounts/fireworks/models/deepseek-r1-0528"
 	| "accounts/fireworks/models/deepseek-v3"
 	| "accounts/fireworks/models/deepseek-v3p1"
+	| "accounts/fireworks/models/deepseek-v3p2"
 	| "accounts/fireworks/models/glm-4p5"
 	| "accounts/fireworks/models/glm-4p5-air"
 	| "accounts/fireworks/models/glm-4p6"
+	| "accounts/fireworks/models/glm-4p7"
 	| "accounts/fireworks/models/gpt-oss-20b"
 	| "accounts/fireworks/models/gpt-oss-120b"
+	| "accounts/fireworks/models/llama-v3p3-70b-instruct"
+	| "accounts/fireworks/models/llama4-maverick-instruct-basic"
+	| "accounts/fireworks/models/llama4-scout-instruct-basic"
 
 export const fireworksDefaultModelId: FireworksModelId = "accounts/fireworks/models/kimi-k2-instruct-0905"
 
@@ -24,8 +31,6 @@ export const fireworksModels = {
 		contextWindow: 262144,
 		supportsImages: false,
 		supportsPromptCache: true,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.6,
 		outputPrice: 2.5,
 		cacheReadsPrice: 0.15,
@@ -37,8 +42,6 @@ export const fireworksModels = {
 		contextWindow: 128000,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.6,
 		outputPrice: 2.5,
 		description:
@@ -49,7 +52,6 @@ export const fireworksModels = {
 		contextWindow: 256000,
 		supportsImages: false,
 		supportsPromptCache: true,
-		supportsNativeTools: true,
 		supportsTemperature: true,
 		preserveReasoning: true,
 		defaultTemperature: 1.0,
@@ -59,13 +61,22 @@ export const fireworksModels = {
 		description:
 			"The kimi-k2-thinking model is a general-purpose agentic reasoning model developed by Moonshot AI. Thanks to its strength in deep reasoning and multi-turn tool use, it can solve even the hardest problems.",
 	},
+	"accounts/fireworks/models/kimi-k2p5": {
+		maxTokens: 16384,
+		contextWindow: 262144,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 0.6,
+		outputPrice: 3.0,
+		cacheReadsPrice: 0.1,
+		description:
+			"Kimi K2.5 is Moonshot AI's flagship agentic model and a new SOTA open model. It unifies vision and text, thinking and non-thinking modes, and single-agent and multi-agent execution into one model. Fireworks enables users to control the reasoning behavior and inspect its reasoning history for greater transparency.",
+	},
 	"accounts/fireworks/models/minimax-m2": {
 		maxTokens: 4096,
 		contextWindow: 204800,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.3,
 		outputPrice: 1.2,
 		description:
@@ -76,8 +87,6 @@ export const fireworksModels = {
 		contextWindow: 256000,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.22,
 		outputPrice: 0.88,
 		description: "Latest Qwen3 thinking model, competitive against the best closed source models in Jul 2025.",
@@ -87,8 +96,6 @@ export const fireworksModels = {
 		contextWindow: 256000,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.45,
 		outputPrice: 1.8,
 		description: "Qwen3's most agentic code model to date.",
@@ -98,8 +105,6 @@ export const fireworksModels = {
 		contextWindow: 160000,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 3,
 		outputPrice: 8,
 		description:
@@ -110,8 +115,6 @@ export const fireworksModels = {
 		contextWindow: 128000,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.9,
 		outputPrice: 0.9,
 		description:
@@ -122,8 +125,6 @@ export const fireworksModels = {
 		contextWindow: 163840,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.56,
 		outputPrice: 1.68,
 		description:
@@ -134,8 +135,6 @@ export const fireworksModels = {
 		contextWindow: 128000,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.55,
 		outputPrice: 2.19,
 		description:
@@ -146,8 +145,6 @@ export const fireworksModels = {
 		contextWindow: 128000,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.55,
 		outputPrice: 2.19,
 		description:
@@ -158,8 +155,6 @@ export const fireworksModels = {
 		contextWindow: 198000,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.55,
 		outputPrice: 2.19,
 		description:
@@ -170,8 +165,6 @@ export const fireworksModels = {
 		contextWindow: 128000,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.07,
 		outputPrice: 0.3,
 		description:
@@ -182,11 +175,69 @@ export const fireworksModels = {
 		contextWindow: 128000,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.15,
 		outputPrice: 0.6,
 		description:
 			"OpenAI gpt-oss-120b: Production-grade, general-purpose model that fits on a single H100 GPU. Features complex reasoning, configurable effort, full chain-of-thought transparency, and supports function calling, tool use, and structured outputs.",
+	},
+	"accounts/fireworks/models/minimax-m2p1": {
+		maxTokens: 4096,
+		contextWindow: 204800,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.3,
+		outputPrice: 1.2,
+		description:
+			"MiniMax M2.1 is an upgraded version of M2 with improved performance on complex reasoning, coding, and long-context understanding tasks.",
+	},
+	"accounts/fireworks/models/deepseek-v3p2": {
+		maxTokens: 16384,
+		contextWindow: 163840,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.56,
+		outputPrice: 1.68,
+		description:
+			"DeepSeek V3.2 is the latest iteration of the V3 model family with enhanced reasoning capabilities, improved code generation, and better instruction following.",
+	},
+	"accounts/fireworks/models/glm-4p7": {
+		maxTokens: 25344,
+		contextWindow: 198000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.55,
+		outputPrice: 2.19,
+		description:
+			"Z.ai GLM-4.7 is the latest coding model with exceptional performance on complex programming tasks. Features improved reasoning capabilities and enhanced code generation quality.",
+	},
+	"accounts/fireworks/models/llama-v3p3-70b-instruct": {
+		maxTokens: 16384,
+		contextWindow: 131072,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.9,
+		outputPrice: 0.9,
+		description:
+			"Meta Llama 3.3 70B Instruct is a highly capable instruction-tuned model with strong reasoning, coding, and general task performance.",
+	},
+	"accounts/fireworks/models/llama4-maverick-instruct-basic": {
+		maxTokens: 16384,
+		contextWindow: 131072,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0.22,
+		outputPrice: 0.88,
+		description:
+			"Llama 4 Maverick is Meta's latest multimodal model with vision capabilities, optimized for instruction following and coding tasks.",
+	},
+	"accounts/fireworks/models/llama4-scout-instruct-basic": {
+		maxTokens: 16384,
+		contextWindow: 131072,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0.15,
+		outputPrice: 0.6,
+		description:
+			"Llama 4 Scout is a smaller, faster variant of Llama 4 with multimodal capabilities, ideal for quick iterations and cost-effective deployments.",
 	},
 } as const satisfies Record<string, ModelInfo>

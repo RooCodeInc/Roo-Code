@@ -62,7 +62,7 @@
 		"condense_not_enough_messages": "Tidak cukup pesan untuk mengompres konteks",
 		"condensed_recently": "Konteks baru saja dikompres; melewati percobaan ini",
 		"condense_handler_invalid": "Handler API untuk mengompres konteks tidak valid",
-		"condense_context_grew": "Ukuran konteks bertambah saat mengompres; melewati percobaan ini",
+		"condense_api_failed": "Panggilan API pengompresan gagal: {{message}}",
 		"url_timeout": "Situs web membutuhkan waktu terlalu lama untuk dimuat (timeout). Ini bisa disebabkan oleh koneksi lambat, situs web berat, atau sementara tidak tersedia. Kamu bisa mencoba lagi nanti atau memeriksa apakah URL sudah benar.",
 		"url_not_found": "Alamat situs web tidak dapat ditemukan. Silakan periksa apakah URL sudah benar dan coba lagi.",
 		"no_internet": "Tidak ada koneksi internet. Silakan periksa koneksi jaringan kamu dan coba lagi.",
@@ -110,15 +110,6 @@
 			"thinking_complete_truncated": "(Berpikir selesai, tetapi output terpotong karena batas token.)",
 			"thinking_complete_safety": "(Berpikir selesai, tetapi output diblokir karena pengaturan keamanan.)",
 			"thinking_complete_recitation": "(Berpikir selesai, tetapi output diblokir karena pemeriksaan resitasi.)"
-		},
-		"cerebras": {
-			"authenticationFailed": "Autentikasi API Cerebras gagal. Silakan periksa apakah kunci API Anda valid dan belum kedaluwarsa.",
-			"accessForbidden": "Akses API Cerebras ditolak. Kunci API Anda mungkin tidak memiliki akses ke model atau fitur yang diminta.",
-			"rateLimitExceeded": "Batas kecepatan API Cerebras terlampaui. Silakan tunggu sebelum membuat permintaan lain.",
-			"serverError": "Kesalahan server API Cerebras ({{status}}). Silakan coba lagi nanti.",
-			"genericError": "Kesalahan API Cerebras ({{status}}): {{message}}",
-			"noResponseBody": "Kesalahan API Cerebras: Tidak ada isi respons",
-			"completionError": "Kesalahan penyelesaian Cerebras: {{error}}"
 		},
 		"roo": {
 			"authenticationRequired": "Penyedia Roo memerlukan autentikasi cloud. Silakan masuk ke Roo Code Cloud."
@@ -205,10 +196,7 @@
 		"task_placeholder": "Ketik tugas kamu di sini"
 	},
 	"settings": {
-		"providers": {
-			"groqApiKey": "Kunci API Groq",
-			"getGroqApiKey": "Dapatkan Kunci API Groq"
-		}
+		"providers": {}
 	},
 	"customModes": {
 		"errors": {

@@ -33,7 +33,7 @@ type GetModelParamsOptions<T extends Format> = {
 	modelId: string
 	model: ModelInfo
 	settings: ProviderSettings
-	defaultTemperature?: number
+	defaultTemperature: number
 }
 
 type BaseModelParams = {
@@ -77,7 +77,7 @@ export function getModelParams({
 	modelId,
 	model,
 	settings,
-	defaultTemperature = 0,
+	defaultTemperature,
 }: GetModelParamsOptions<Format>): ModelParams {
 	const {
 		modelMaxTokens: customMaxTokens,
@@ -163,7 +163,7 @@ export function getModelParams({
 			format,
 			...params,
 			reasoning: getOpenAiReasoning({ model, reasoningBudget, reasoningEffort, settings }),
-			tools: model.supportsNativeTools,
+			// Whether tools are included is determined by whether the caller provided tool definitions.
 		}
 	} else if (format === "gemini") {
 		return {

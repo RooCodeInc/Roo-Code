@@ -9,7 +9,6 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 
 import { DeleteTaskDialog } from "../history/DeleteTaskDialog"
 import { ShareButton } from "./ShareButton"
-import { CloudTaskButton } from "./CloudTaskButton"
 import { CopyIcon, DownloadIcon, Trash2Icon, FileJsonIcon, MessageSquareCodeIcon } from "lucide-react"
 import { LucideIconButton } from "./LucideIconButton"
 
@@ -64,7 +63,6 @@ export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 				</>
 			)}
 			<ShareButton item={item} disabled={false} />
-			<CloudTaskButton item={item} disabled={buttonsDisabled} />
 			{debug && item?.id && (
 				<>
 					<LucideIconButton

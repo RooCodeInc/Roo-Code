@@ -1,15 +1,6 @@
 import * as vscode from "vscode"
-import * as os from "os"
 
-import {
-	type ModeConfig,
-	type PromptComponent,
-	type CustomModePrompts,
-	type TodoItem,
-	getEffectiveProtocol,
-	isNativeProtocol,
-} from "@roo-code/types"
-import { customToolRegistry, formatXml } from "@roo-code/core"
+import { type ModeConfig, type PromptComponent, type CustomModePrompts, type TodoItem } from "@roo-code/types"
 
 import { Mode, modes, defaultModeSlug, getModeBySlug, getGroupName, getModeSelection } from "../../shared/modes"
 import { DiffStrategy } from "../../shared/tools"
@@ -20,16 +11,12 @@ import { McpHub } from "../../services/mcp/McpHub"
 import { CodeIndexManager } from "../../services/code-index/manager"
 import { SkillsManager } from "../../services/skills/SkillsManager"
 
-import { PromptVariables, loadSystemPromptFile } from "./sections/custom-system-prompt"
-
 import type { SystemPromptSettings } from "./types"
-import { getToolDescriptionsForMode } from "./tools"
 import {
 	getRulesSection,
 	getSystemInfoSection,
 	getObjectiveSection,
 	getSharedToolUseSection,
-	getMcpServersSection,
 	getToolUseGuidelinesSection,
 	getCapabilitiesSection,
 	getModesSection,
@@ -58,16 +45,12 @@ async function generatePrompt(
 	mode: Mode,
 	mcpHub?: McpHub,
 	diffStrategy?: DiffStrategy,
-	browserViewportSize?: string,
 	promptComponent?: PromptComponent,
 	customModeConfigs?: ModeConfig[],
 	globalCustomInstructions?: string,
-	diffEnabled?: boolean,
 	experiments?: Record<string, boolean>,
-	enableMcpServerCreation?: boolean,
 	language?: string,
 	rooIgnoreInstructions?: string,
-	partialReadsEnabled?: boolean,
 	settings?: SystemPromptSettings,
 	todoList?: TodoItem[],
 	modelId?: string,
@@ -76,9 +59,6 @@ async function generatePrompt(
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
 	}
-
-	// If diff is disabled, don't pass the diffStrategy
-	const effectiveDiffStrategy = diffEnabled ? diffStrategy : undefined
 
 	// Get the full mode config to ensure we have the role definition (used for groups, etc.)
 	const modeConfig = getModeBySlug(mode, customModeConfigs) || modes.find((m) => m.slug === mode) || modes[0]
@@ -91,62 +71,24 @@ async function generatePrompt(
 
 	const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
 
-	// Determine the effective protocol (defaults to 'xml')
-	const effectiveProtocol = getEffectiveProtocol(settings?.toolProtocol)
+	// Tool calling is native-only.
+	const effectiveProtocol = "native"
 
-	const [modesSection, mcpServersSection, skillsSection] = await Promise.all([
+	const [modesSection, skillsSection] = await Promise.all([
 		getModesSection(context),
-		shouldIncludeMcp
-			? getMcpServersSection(
-					mcpHub,
-					effectiveDiffStrategy,
-					enableMcpServerCreation,
-					!isNativeProtocol(effectiveProtocol),
-				)
-			: Promise.resolve(""),
 		getSkillsSection(skillsManager, mode as string),
 	])
 
-	// Build tools catalog section only for XML protocol
-	const builtInToolsCatalog = isNativeProtocol(effectiveProtocol)
-		? ""
-		: `\n\n${getToolDescriptionsForMode(
-				mode,
-				cwd,
-				supportsComputerUse,
-				codeIndexManager,
-				effectiveDiffStrategy,
-				browserViewportSize,
-				shouldIncludeMcp ? mcpHub : undefined,
-				customModeConfigs,
-				experiments,
-				partialReadsEnabled,
-				settings,
-				enableMcpServerCreation,
-				modelId,
-			)}`
-
-	let customToolsSection = ""
-
-	if (experiments?.customTools && !isNativeProtocol(effectiveProtocol)) {
-		const customTools = customToolRegistry.getAllSerialized()
-
-		if (customTools.length > 0) {
-			customToolsSection = `\n\n${formatXml(customTools)}`
-		}
-	}
-
-	const toolsCatalog = builtInToolsCatalog + customToolsSection
+	// Tools catalog is not included in the system prompt.
+	const toolsCatalog = ""
 
 	const basePrompt = `${roleDefinition}
 
 ${markdownFormattingSection()}
 
-${getSharedToolUseSection(effectiveProtocol, experiments)}${toolsCatalog}
+${getSharedToolUseSection()}${toolsCatalog}
 
-${getToolUseGuidelinesSection(effectiveProtocol, experiments)}
-
-${mcpServersSection}
+	${getToolUseGuidelinesSection()}
 
 ${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined)}
 
@@ -173,17 +115,13 @@ export const SYSTEM_PROMPT = async (
 	supportsComputerUse: boolean,
 	mcpHub?: McpHub,
 	diffStrategy?: DiffStrategy,
-	browserViewportSize?: string,
 	mode: Mode = defaultModeSlug,
 	customModePrompts?: CustomModePrompts,
 	customModes?: ModeConfig[],
 	globalCustomInstructions?: string,
-	diffEnabled?: boolean,
 	experiments?: Record<string, boolean>,
-	enableMcpServerCreation?: boolean,
 	language?: string,
 	rooIgnoreInstructions?: string,
-	partialReadsEnabled?: boolean,
 	settings?: SystemPromptSettings,
 	todoList?: TodoItem[],
 	modelId?: string,
@@ -193,52 +131,11 @@ export const SYSTEM_PROMPT = async (
 		throw new Error("Extension context is required for generating system prompt")
 	}
 
-	// Try to load custom system prompt from file
-	const variablesForPrompt: PromptVariables = {
-		workspace: cwd,
-		mode: mode,
-		language: language ?? formatLanguage(vscode.env.language),
-		shell: vscode.env.shell,
-		operatingSystem: os.type(),
-	}
-	const fileCustomSystemPrompt = await loadSystemPromptFile(cwd, mode, variablesForPrompt)
-
 	// Check if it's a custom mode
 	const promptComponent = getPromptComponent(customModePrompts, mode)
 
 	// Get full mode config from custom modes or fall back to built-in modes
 	const currentMode = getModeBySlug(mode, customModes) || modes.find((m) => m.slug === mode) || modes[0]
-
-	// If a file-based custom system prompt exists, use it
-	if (fileCustomSystemPrompt) {
-		const { roleDefinition, baseInstructions: baseInstructionsForFile } = getModeSelection(
-			mode,
-			promptComponent,
-			customModes,
-		)
-
-		const customInstructions = await addCustomInstructions(
-			baseInstructionsForFile,
-			globalCustomInstructions || "",
-			cwd,
-			mode,
-			{
-				language: language ?? formatLanguage(vscode.env.language),
-				rooIgnoreInstructions,
-				settings,
-			},
-		)
-
-		// For file-based prompts, don't include the tool sections
-		return `${roleDefinition}
-
-${fileCustomSystemPrompt}
-
-${customInstructions}`
-	}
-
-	// If diff is disabled, don't pass the diffStrategy
-	const effectiveDiffStrategy = diffEnabled ? diffStrategy : undefined
 
 	return generatePrompt(
 		context,
@@ -246,17 +143,13 @@ ${customInstructions}`
 		supportsComputerUse,
 		currentMode.slug,
 		mcpHub,
-		effectiveDiffStrategy,
-		browserViewportSize,
+		diffStrategy,
 		promptComponent,
 		customModes,
 		globalCustomInstructions,
-		diffEnabled,
 		experiments,
-		enableMcpServerCreation,
 		language,
 		rooIgnoreInstructions,
-		partialReadsEnabled,
 		settings,
 		todoList,
 		modelId,

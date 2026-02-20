@@ -66,7 +66,7 @@
 		"condense_not_enough_messages": "No hi ha prou missatges per condensar el context",
 		"condensed_recently": "El context s'ha condensat recentment; s'omet aquest intent",
 		"condense_handler_invalid": "El gestor de l'API per condensar el context no és vàlid",
-		"condense_context_grew": "La mida del context ha augmentat durant la condensació; s'omet aquest intent",
+		"condense_api_failed": "La crida a l'API de condensació ha fallat: {{message}}",
 		"url_timeout": "El lloc web ha trigat massa a carregar (timeout). Això pot ser degut a una connexió lenta, un lloc web pesat o temporalment no disponible. Pots tornar-ho a provar més tard o comprovar si la URL és correcta.",
 		"url_not_found": "No s'ha pogut trobar l'adreça del lloc web. Comprova si la URL és correcta i torna-ho a provar.",
 		"no_internet": "No hi ha connexió a internet. Comprova la teva connexió de xarxa i torna-ho a provar.",
@@ -113,15 +113,6 @@
 			"thinking_complete_truncated": "(Pensament completat, però la sortida s'ha truncat a causa del límit de fitxes.)",
 			"thinking_complete_safety": "(Pensament completat, però la sortida s'ha bloquejat a causa de la configuració de seguretat.)",
 			"thinking_complete_recitation": "(Pensament completat, però la sortida s'ha bloquejat a causa de la comprovació de recitació.)"
-		},
-		"cerebras": {
-			"authenticationFailed": "Ha fallat l'autenticació de l'API de Cerebras. Comproveu que la vostra clau d'API sigui vàlida i no hagi caducat.",
-			"accessForbidden": "Accés denegat a l'API de Cerebras. La vostra clau d'API pot no tenir accés al model o funcionalitat sol·licitats.",
-			"rateLimitExceeded": "S'ha superat el límit de velocitat de l'API de Cerebras. Espereu abans de fer una altra sol·licitud.",
-			"serverError": "Error del servidor de l'API de Cerebras ({{status}}). Torneu-ho a provar més tard.",
-			"genericError": "Error de l'API de Cerebras ({{status}}): {{message}}",
-			"noResponseBody": "Error de l'API de Cerebras: No hi ha cos de resposta",
-			"completionError": "Error de finalització de Cerebras: {{error}}"
 		},
 		"roo": {
 			"authenticationRequired": "El proveïdor Roo requereix autenticació al núvol. Si us plau, inicieu sessió a Roo Code Cloud."
@@ -205,10 +196,7 @@
 		"enter_valid_path": "Introdueix una ruta vàlida"
 	},
 	"settings": {
-		"providers": {
-			"groqApiKey": "Clau API de Groq",
-			"getGroqApiKey": "Obté la clau API de Groq"
-		}
+		"providers": {}
 	},
 	"customModes": {
 		"errors": {

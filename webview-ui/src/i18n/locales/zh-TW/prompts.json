@@ -25,7 +25,6 @@
 		"toolNames": {
 			"read": "讀取檔案",
 			"edit": "編輯檔案",
-			"browser": "使用瀏覽器",
 			"command": "執行命令",
 			"mcp": "使用 MCP"
 		},
@@ -70,13 +69,10 @@
 			"description": "僅在此工作區可用。如果匯出的模式包含規則檔案，則將在 .roo/rules-{slug}/ 資料夾中重新建立這些檔案。"
 		}
 	},
-	"advanced": {
-		"title": "進階：覆寫系統提示"
-	},
 	"globalCustomInstructions": {
 		"title": "所有模式的自訂指令",
 		"description": "這些指令適用於所有模式。它們提供了一套可透過下方特定模式指令強化的基本行為。<0>了解更多</0>",
-		"loadFromFile": "指令也可以從工作區中的<span>.roo/rules/</span>資料夾或全域<0>.roo/rules/</0>載入（.roorules和.clinerules已棄用，即將停止運作）。"
+		"loadFromFile": "指令也可以從工作區中的<span>.roo/rules/</span>資料夾或全域<0>.roo/rules/</0>載入（.roorules 和.clinerules 已棄用，即將停止運作）。"
 	},
 	"systemPrompt": {
 		"preview": "預覽系統提示詞",
@@ -144,10 +140,6 @@
 				"description": "根據使用者輸入開始一個新的任務。可在命令選擇區使用。"
 			}
 		}
-	},
-	"advancedSystemPrompt": {
-		"title": "進階：覆寫系統提示詞",
-		"description": "<2>⚠️ 警告：</2> 此進階功能會繞過安全措施。<1>使用前請詳閱！</1>透過在 <span>.roo/system-prompt-{{slug}}</span> 建立檔案來覆寫預設的系統提示詞。"
 	},
 	"createModeDialog": {
 		"title": "建立新模式",
