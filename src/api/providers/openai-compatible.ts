@@ -12,13 +12,7 @@ import type { ModelInfo } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import {
-	convertToAiSdkMessages,
-	convertToolsForAiSdk,
-	processAiSdkStreamPart,
-	mapToolChoice,
-	handleAiSdkError,
-} from "../transform/ai-sdk"
+import { convertToAiSdkMessages, convertToolsForAiSdk, processAiSdkStreamPart } from "../transform/ai-sdk"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 
 import { DEFAULT_HEADERS } from "./constants"
@@ -110,6 +104,40 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 	}
 
 	/**
+	 * Map OpenAI tool_choice to AI SDK toolChoice format.
+	 */
+	protected mapToolChoice(
+		toolChoice: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"],
+	): "auto" | "none" | "required" | { type: "tool"; toolName: string } | undefined {
+		if (!toolChoice) {
+			return undefined
+		}
+
+		// Handle string values
+		if (typeof toolChoice === "string") {
+			switch (toolChoice) {
+				case "auto":
+					return "auto"
+				case "none":
+					return "none"
+				case "required":
+					return "required"
+				default:
+					return "auto"
+			}
+		}
+
+		// Handle object values (OpenAI ChatCompletionNamedToolChoice format)
+		if (typeof toolChoice === "object" && "type" in toolChoice) {
+			if (toolChoice.type === "function" && "function" in toolChoice && toolChoice.function?.name) {
+				return { type: "tool", toolName: toolChoice.function.name }
+			}
+		}
+
+		return undefined
+	}
+
+	/**
 	 * Get the max tokens parameter to include in the request.
 	 */
 	protected getMaxOutputTokens(): number | undefined {
@@ -145,29 +173,24 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 			temperature: model.temperature ?? this.config.temperature ?? 0,
 			maxOutputTokens: this.getMaxOutputTokens(),
 			tools: aiSdkTools,
-			toolChoice: mapToolChoice(metadata?.tool_choice),
+			toolChoice: this.mapToolChoice(metadata?.tool_choice),
 		}
 
 		// Use streamText for streaming responses
 		const result = streamText(requestOptions)
 
-		try {
-			// Process the full stream to get all events
-			for await (const part of result.fullStream) {
-				// Use the processAiSdkStreamPart utility to convert stream parts
-				for (const chunk of processAiSdkStreamPart(part)) {
-					yield chunk
-				}
+		// Process the full stream to get all events
+		for await (const part of result.fullStream) {
+			// Use the processAiSdkStreamPart utility to convert stream parts
+			for (const chunk of processAiSdkStreamPart(part)) {
+				yield chunk
 			}
+		}
 
-			// Yield usage metrics at the end
-			const usage = await result.usage
-			if (usage) {
-				yield this.processUsageMetrics(usage)
-			}
-		} catch (error) {
-			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
-			throw handleAiSdkError(error, this.config.providerName)
+		// Yield usage metrics at the end
+		const usage = await result.usage
+		if (usage) {
+			yield this.processUsageMetrics(usage)
 		}
 	}
 
@@ -185,9 +208,5 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 		})
 
 		return text
-	}
-
-	override isAiSdkProvider(): boolean {
-		return true
 	}
 }

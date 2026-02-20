@@ -11,8 +11,6 @@
 		"missing_update_modes_fields": "Campos obrigatórios ausentes: skillName ou source",
 		"manager_unavailable": "Gerenciador de habilidades não disponível",
 		"missing_delete_fields": "Campos obrigatórios ausentes: skillName ou source",
-		"skill_not_found": "Habilidade \"{{name}}\" não encontrada",
-		"cannot_modify_builtin": "Habilidades integradas não podem ser criadas ou excluídas",
-		"cannot_open_builtin": "Habilidades integradas não podem ser abertas como arquivos"
+		"skill_not_found": "Habilidade \"{{name}}\" não encontrada"
 	}
 }

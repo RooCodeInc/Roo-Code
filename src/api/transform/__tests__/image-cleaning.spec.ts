@@ -18,7 +18,6 @@ describe("maybeRemoveImageBlocks", () => {
 			}),
 			createMessage: vitest.fn(),
 			countTokens: vitest.fn(),
-			isAiSdkProvider: vitest.fn().mockReturnValue(false),
 		}
 	}
 

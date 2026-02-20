@@ -11,8 +11,6 @@
 		"missing_update_modes_fields": "Champs obligatoires manquants : skillName ou source",
 		"manager_unavailable": "Le gestionnaire de compétences n'est pas disponible",
 		"missing_delete_fields": "Champs obligatoires manquants : skillName ou source",
-		"skill_not_found": "Compétence \"{{name}}\" introuvable",
-		"cannot_modify_builtin": "Les compétences intégrées ne peuvent pas être créées ou supprimées",
-		"cannot_open_builtin": "Les compétences intégrées ne peuvent pas être ouvertes en tant que fichiers"
+		"skill_not_found": "Compétence \"{{name}}\" introuvable"
 	}
 }

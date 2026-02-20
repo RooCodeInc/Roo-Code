@@ -242,7 +242,8 @@ Routes asks to appropriate handlers:
 
 - Uses type guards: `isIdleAsk()`, `isInteractiveAsk()`, etc.
 - Coordinates between `OutputManager` and `PromptManager`
-- In non-interactive mode (`-y` flag), auto-approves everything
+- By default, the CLI auto-approves tool/command/browser/MCP actions
+- In `--require-approval` mode, those actions prompt for manual approval
 
 ### OutputManager
 
@@ -320,7 +321,7 @@ if (isInteractiveAsk(ask)) {
 Enable with `-d` flag. Logs go to `~/.roo/cli-debug.log`:
 
 ```bash
-roo -d -y -P "Build something" --no-tui
+roo -d -P "Build something" --no-tui
 ```
 
 View logs:

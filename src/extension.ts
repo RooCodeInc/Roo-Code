@@ -195,7 +195,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, mdmService)
 
 	// Initialize Roo Code Cloud service.
-	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebview()
+	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebviewWithoutClineMessages()
 
 	authStateChangedHandler = async (data: { state: AuthState; previousState: AuthState }) => {
 		postStateListener()

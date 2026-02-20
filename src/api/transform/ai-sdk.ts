@@ -9,28 +9,13 @@ import { tool as createTool, jsonSchema, type ModelMessage, type TextStreamPart 
 import type { ApiStreamChunk } from "./stream"
 
 /**
- * Options for converting Anthropic messages to AI SDK format.
- */
-export interface ConvertToAiSdkMessagesOptions {
-	/**
-	 * Optional function to transform the converted messages.
-	 * Useful for transformations like flattening message content for models that require string content.
-	 */
-	transform?: (messages: ModelMessage[]) => ModelMessage[]
-}
-
-/**
  * Convert Anthropic messages to AI SDK ModelMessage format.
  * Handles text, images, tool uses, and tool results.
  *
  * @param messages - Array of Anthropic message parameters
- * @param options - Optional conversion options including post-processing function
  * @returns Array of AI SDK ModelMessage objects
  */
-export function convertToAiSdkMessages(
-	messages: Anthropic.Messages.MessageParam[],
-	options?: ConvertToAiSdkMessagesOptions,
-): ModelMessage[] {
+export function convertToAiSdkMessages(messages: Anthropic.Messages.MessageParam[]): ModelMessage[] {
 	const modelMessages: ModelMessage[] = []
 
 	// First pass: build a map of tool call IDs to tool names from assistant messages
@@ -126,123 +111,30 @@ export function convertToAiSdkMessages(
 				}
 			} else if (message.role === "assistant") {
 				const textParts: string[] = []
-				const reasoningParts: string[] = []
-				const reasoningContent = (() => {
-					const maybe = (message as unknown as { reasoning_content?: unknown }).reasoning_content
-					return typeof maybe === "string" && maybe.length > 0 ? maybe : undefined
-				})()
 				const toolCalls: Array<{
 					type: "tool-call"
 					toolCallId: string
 					toolName: string
 					input: unknown
-					providerOptions?: Record<string, Record<string, unknown>>
 				}> = []
-
-				// Capture thinking signature for Anthropic-protocol providers (Bedrock, Anthropic).
-				// Task.ts stores thinking blocks as { type: "thinking", thinking: "...", signature: "..." }.
-				// The signature must be passed back via providerOptions on reasoning parts.
-				let thinkingSignature: string | undefined
-
-				// Extract thoughtSignature from content blocks (Gemini 3 thought signature round-tripping).
-				// Task.ts stores these as { type: "thoughtSignature", thoughtSignature: "..." } blocks.
-				let thoughtSignature: string | undefined
-				for (const part of message.content) {
-					const partAny = part as unknown as { type?: string; thoughtSignature?: string }
-					if (partAny.type === "thoughtSignature" && partAny.thoughtSignature) {
-						thoughtSignature = partAny.thoughtSignature
-					}
-				}
 
 				for (const part of message.content) {
 					if (part.type === "text") {
 						textParts.push(part.text)
-						continue
-					}
-
-					if (part.type === "tool_use") {
-						const toolCall: (typeof toolCalls)[number] = {
+					} else if (part.type === "tool_use") {
+						toolCalls.push({
 							type: "tool-call",
 							toolCallId: part.id,
 							toolName: part.name,
 							input: part.input,
-						}
-
-						// Attach thoughtSignature as providerOptions on tool-call parts.
-						// The AI SDK's @ai-sdk/google provider reads providerOptions.google.thoughtSignature
-						// and attaches it to the Gemini functionCall part.
-						// Per Gemini 3 rules: only the FIRST functionCall in a parallel batch gets the signature.
-						if (thoughtSignature && toolCalls.length === 0) {
-							toolCall.providerOptions = {
-								google: { thoughtSignature },
-								vertex: { thoughtSignature },
-							}
-						}
-
-						toolCalls.push(toolCall)
-						continue
-					}
-
-					// Some providers (DeepSeek, Gemini, etc.) require reasoning to be round-tripped.
-					// Task stores reasoning as a content block (type: "reasoning") and Anthropic extended
-					// thinking as (type: "thinking"). Convert both to AI SDK's reasoning part.
-					if ((part as unknown as { type?: string }).type === "reasoning") {
-						// If message-level reasoning_content is present, treat it as canonical and
-						// avoid mixing it with content-block reasoning (which can cause duplication).
-						if (reasoningContent) continue
-
-						const text = (part as unknown as { text?: string }).text
-						if (typeof text === "string" && text.length > 0) {
-							reasoningParts.push(text)
-						}
-						continue
-					}
-
-					if ((part as unknown as { type?: string }).type === "thinking") {
-						if (reasoningContent) continue
-
-						const thinkingPart = part as unknown as { thinking?: string; signature?: string }
-						if (typeof thinkingPart.thinking === "string" && thinkingPart.thinking.length > 0) {
-							reasoningParts.push(thinkingPart.thinking)
-						}
-						// Capture the signature for round-tripping (Anthropic/Bedrock thinking)
-						if (thinkingPart.signature) {
-							thinkingSignature = thinkingPart.signature
-						}
-						continue
+						})
 					}
 				}
 
 				const content: Array<
-					| { type: "reasoning"; text: string; providerOptions?: Record<string, Record<string, unknown>> }
 					| { type: "text"; text: string }
-					| {
-							type: "tool-call"
-							toolCallId: string
-							toolName: string
-							input: unknown
-							providerOptions?: Record<string, Record<string, unknown>>
-					  }
+					| { type: "tool-call"; toolCallId: string; toolName: string; input: unknown }
 				> = []
-
-				if (reasoningContent) {
-					content.push({ type: "reasoning", text: reasoningContent })
-				} else if (reasoningParts.length > 0) {
-					const reasoningPart: (typeof content)[number] = {
-						type: "reasoning",
-						text: reasoningParts.join(""),
-					}
-					// Attach thinking signature for Anthropic/Bedrock round-tripping.
-					// The AI SDK's @ai-sdk/amazon-bedrock reads providerOptions.bedrock.signature
-					// and attaches it to reasoningContent.reasoningText.signature in the Bedrock request.
-					if (thinkingSignature) {
-						reasoningPart.providerOptions = {
-							bedrock: { signature: thinkingSignature },
-							anthropic: { signature: thinkingSignature },
-						}
-					}
-					content.push(reasoningPart)
-				}
 
 				if (textParts.length > 0) {
 					content.push({ type: "text", text: textParts.join("\n") })
@@ -257,85 +149,7 @@ export function convertToAiSdkMessages(
 		}
 	}
 
-	// Apply transform if provided
-	if (options?.transform) {
-		return options.transform(modelMessages)
-	}
-
 	return modelMessages
-}
-
-/**
- * Options for flattening AI SDK messages.
- */
-export interface FlattenMessagesOptions {
-	/**
-	 * If true, flattens user messages with only text parts to string content.
-	 * Default: true
-	 */
-	flattenUserMessages?: boolean
-	/**
-	 * If true, flattens assistant messages with only text (no tool calls) to string content.
-	 * Default: true
-	 */
-	flattenAssistantMessages?: boolean
-}
-
-/**
- * Flatten AI SDK messages to use string content where possible.
- * Some models (like DeepSeek on SambaNova) require string content instead of array content.
- * This function converts messages that contain only text parts to use simple string content.
- *
- * @param messages - Array of AI SDK ModelMessage objects
- * @param options - Options for controlling which message types to flatten
- * @returns Array of AI SDK ModelMessage objects with flattened content where applicable
- */
-export function flattenAiSdkMessagesToStringContent(
-	messages: ModelMessage[],
-	options: FlattenMessagesOptions = {},
-): ModelMessage[] {
-	const { flattenUserMessages = true, flattenAssistantMessages = true } = options
-
-	return messages.map((message) => {
-		// Skip if content is already a string
-		if (typeof message.content === "string") {
-			return message
-		}
-
-		// Handle user messages
-		if (message.role === "user" && flattenUserMessages && Array.isArray(message.content)) {
-			const parts = message.content as Array<{ type: string; text?: string }>
-			// Only flatten if all parts are text
-			const allText = parts.every((part) => part.type === "text")
-			if (allText && parts.length > 0) {
-				const textContent = parts.map((part) => part.text || "").join("\n")
-				return {
-					...message,
-					content: textContent,
-				}
-			}
-		}
-
-		// Handle assistant messages
-		if (message.role === "assistant" && flattenAssistantMessages && Array.isArray(message.content)) {
-			const parts = message.content as Array<{ type: string; text?: string }>
-			// Only flatten if all parts are text or reasoning (no tool calls)
-			// Reasoning parts are included in text to avoid sending multipart content to string-only models
-			const allTextOrReasoning = parts.every((part) => part.type === "text" || part.type === "reasoning")
-			if (allTextOrReasoning && parts.length > 0) {
-				// Extract only text parts for the flattened content (reasoning is stripped for string-only models)
-				const textParts = parts.filter((part) => part.type === "text")
-				const textContent = textParts.map((part) => part.text || "").join("\n")
-				return {
-					...message,
-					content: textContent,
-				}
-			}
-		}
-
-		// Return unchanged for tool role and messages with non-text content
-		return message
-	})
 }
 
 /**
@@ -414,6 +228,16 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 			}
 			break
 
+		case "tool-call":
+			// Complete tool call - emit for compatibility
+			yield {
+				type: "tool_call",
+				id: part.toolCallId,
+				name: part.toolName,
+				arguments: typeof part.input === "string" ? part.input : JSON.stringify(part.input),
+			}
+			break
+
 		case "source":
 			// Handle both URL and document source types
 			if ("url" in part) {
@@ -438,10 +262,7 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 			}
 			break
 
-		// Ignore lifecycle events that don't need to yield chunks.
-		// Note: tool-call is intentionally ignored because tool-input-start/delta/end already
-		// provide complete tool call information. Emitting tool-call would cause duplicate
-		// tools in the UI for AI SDK providers (e.g., DeepSeek, Moonshot).
+		// Ignore lifecycle events that don't need to yield chunks
 		case "text-start":
 		case "text-end":
 		case "reasoning-start":
@@ -454,130 +275,8 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 		case "file":
 		case "tool-result":
 		case "tool-error":
-		case "tool-call":
 		case "raw":
+			// These events don't need to be yielded
 			break
 	}
-}
-
-/**
- * Type for AI SDK tool choice format.
- */
-export type AiSdkToolChoice = "auto" | "none" | "required" | { type: "tool"; toolName: string } | undefined
-
-/**
- * Map OpenAI-style tool_choice to AI SDK toolChoice format.
- * This is a shared utility to avoid duplication across providers.
- *
- * @param toolChoice - OpenAI-style tool choice (string or object)
- * @returns AI SDK toolChoice format
- */
-export function mapToolChoice(toolChoice: any): AiSdkToolChoice {
-	if (!toolChoice) {
-		return undefined
-	}
-
-	// Handle string values
-	if (typeof toolChoice === "string") {
-		switch (toolChoice) {
-			case "auto":
-				return "auto"
-			case "none":
-				return "none"
-			case "required":
-				return "required"
-			default:
-				return "auto"
-		}
-	}
-
-	// Handle object values (OpenAI ChatCompletionNamedToolChoice format)
-	if (typeof toolChoice === "object" && "type" in toolChoice) {
-		if (toolChoice.type === "function" && "function" in toolChoice && toolChoice.function?.name) {
-			return { type: "tool", toolName: toolChoice.function.name }
-		}
-	}
-
-	return undefined
-}
-
-/**
- * Extract a user-friendly error message from AI SDK errors.
- * The AI SDK wraps errors in types like AI_RetryError and AI_APICallError
- * which need to be unwrapped to get the actual error message.
- *
- * @param error - The error to extract the message from
- * @returns A user-friendly error message
- */
-export function extractAiSdkErrorMessage(error: unknown): string {
-	if (!error) {
-		return "Unknown error"
-	}
-
-	// Cast to access AI SDK error properties
-	const anyError = error as any
-
-	// AI_RetryError has a lastError property with the actual error
-	if (anyError.name === "AI_RetryError") {
-		const retryCount = anyError.errors?.length || 0
-		const lastError = anyError.lastError
-		const lastErrorMessage = lastError?.message || lastError?.toString() || "Unknown error"
-
-		// Extract status code if available
-		const statusCode =
-			lastError?.status || lastError?.statusCode || anyError.status || anyError.statusCode || undefined
-
-		if (statusCode) {
-			return `Failed after ${retryCount} attempts (${statusCode}): ${lastErrorMessage}`
-		}
-		return `Failed after ${retryCount} attempts: ${lastErrorMessage}`
-	}
-
-	// AI_APICallError has message and optional status
-	if (anyError.name === "AI_APICallError") {
-		const statusCode = anyError.status || anyError.statusCode
-		if (statusCode) {
-			return `API Error (${statusCode}): ${anyError.message}`
-		}
-		return anyError.message || "API call failed"
-	}
-
-	// Standard Error
-	if (error instanceof Error) {
-		return error.message
-	}
-
-	// Fallback for non-Error objects
-	return String(error)
-}
-
-/**
- * Handle AI SDK errors by extracting the message and preserving status codes.
- * Returns an Error object with proper status preserved for retry logic.
- *
- * @param error - The AI SDK error to handle
- * @param providerName - The name of the provider for context
- * @returns An Error with preserved status code
- */
-export function handleAiSdkError(error: unknown, providerName: string): Error {
-	const message = extractAiSdkErrorMessage(error)
-	const wrappedError = new Error(`${providerName}: ${message}`)
-
-	// Preserve status code for retry logic
-	const anyError = error as any
-	const statusCode =
-		anyError?.lastError?.status ||
-		anyError?.lastError?.statusCode ||
-		anyError?.status ||
-		anyError?.statusCode ||
-		undefined
-
-	if (statusCode) {
-		;(wrappedError as any).status = statusCode
-	}
-
-	// Preserve the original error for debugging
-	;(wrappedError as any).cause = error
-
-	return wrappedError
 }

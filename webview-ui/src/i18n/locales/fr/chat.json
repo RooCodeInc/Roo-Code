@@ -31,6 +31,9 @@
 	},
 	"unpin": "Désépingler",
 	"pin": "Épingler",
+	"fileChangesInConversation": {
+		"header": "{{count}} fichier(s) modifié(s) dans cette conversation"
+	},
 	"tokenProgress": {
 		"availableSpace": "Espace disponible : {{amount}} tokens",
 		"tokensUsed": "Tokens utilisés : {{used}} sur {{total}}",
@@ -218,7 +221,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo veut voir les fichiers de premier niveau dans ce répertoire (hors espace de travail)",
 		"didViewTopLevelOutsideWorkspace": "Roo a vu les fichiers de premier niveau dans ce répertoire (hors espace de travail)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo veut voir récursivement tous les fichiers dans ce répertoire (hors espace de travail)",
-		"didViewRecursiveOutsideWorkspace": "Roo a vu récursivement tous les fichiers dans ce répertoire (hors espace de travail)"
+		"didViewRecursiveOutsideWorkspace": "Roo a vu récursivement tous les fichiers dans ce répertoire (hors espace de travail)",
+		"wantsToViewMultipleDirectories": "Roo veut voir plusieurs répertoires"
 	},
 	"commandOutput": "Sortie de la Commande",
 	"commandExecution": {
@@ -344,8 +348,9 @@
 		},
 		"release": {
 			"heading": "Quoi de neuf :",
-			"claudeOpus": "Claude Opus 4.6 : Désormais disponible sur tous les fournisseurs—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex et OpenRouter—apportant le modèle le plus capable d'Anthropic à votre plateforme préférée.",
-			"gptCodex": "GPT-5.3-Codex : Le dernier modèle de codage d'OpenAI est maintenant supporté dans le fournisseur OpenAI - ChatGPT, offrant une génération de code de pointe et une compréhension."
+			"geminiPro": "Support de Gemini 3.1 Pro : Le modèle Gemini 3.1 Pro a été ajouté et défini comme modèle Gemini par défaut pour de meilleures performances.",
+			"cliNdjson": "Protocole NDJSON du CLI : Nouveau protocole NDJSON via stdin, sous-commandes de liste et commande d'exécution modularisée pour des workflows CLI plus flexibles.",
+			"cliRelease": "CLI v0.1.0 : Le CLI de Roo Code atteint sa première version officielle avec une interface de commandes stable."
 		},
 		"cloudAgents": {
 			"heading": "Nouveautés dans le Cloud :",
@@ -360,44 +365,6 @@
 		"total": "Coût total : ${{cost}}",
 		"includesSubtasks": "Inclut les coûts des sous-tâches"
 	},
-	"browser": {
-		"session": "Session du navigateur",
-		"active": "Actif",
-		"rooWantsToUse": "Roo veut utiliser le navigateur",
-		"consoleLogs": "Journaux de console",
-		"noNewLogs": "(Pas de nouveaux journaux)",
-		"screenshot": "Capture d'écran du navigateur",
-		"cursor": "curseur",
-		"navigation": {
-			"step": "Étape {{current}} sur {{total}}",
-			"previous": "Précédent",
-			"next": "Suivant"
-		},
-		"sessionStarted": "Session de navigateur démarrée",
-		"actions": {
-			"title": "Action du navigateur : ",
-			"launched": "Navigateur lancé",
-			"launch": "Lancer le navigateur sur {{url}}",
-			"clicked": "Cliqué sur : {{coordinate}}",
-			"click": "Cliquer ({{coordinate}})",
-			"typed": "Saisi : {{text}}",
-			"type": "Saisir \"{{text}}\"",
-			"pressed": "Appuyé sur : {{key}}",
-			"press": "Appuyer sur {{key}}",
-			"scrolledDown": "Défilé vers le bas",
-			"scrollDown": "Défiler vers le bas",
-			"scrolledUp": "Défilé vers le haut",
-			"scrollUp": "Défiler vers le haut",
-			"hovered": "Survolé : {{coordinate}}",
-			"hover": "Survoler ({{coordinate}})",
-			"resized": "Redimensionné à : {{size}}",
-			"resize": "Redimensionner à {{size}}",
-			"screenshotSaved": "Capture d'écran enregistrée",
-			"screenshot": "Enregistrer une capture d'écran dans {{path}}",
-			"closed": "Navigateur fermé",
-			"close": "Fermer le navigateur"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Développer le bloc de code",
@@ -405,7 +372,6 @@
 			"copy_code": "Copier le code"
 		}
 	},
-	"systemPromptWarning": "AVERTISSEMENT : Remplacement d'instructions système personnalisées actif. Cela peut gravement perturber la fonctionnalité et provoquer un comportement imprévisible.",
 	"profileViolationWarning": "Le profil actuel n'est pas compatible avec les paramètres de votre organisation",
 	"shellIntegration": {
 		"title": "Avertissement d'exécution de commande",
@@ -439,12 +405,29 @@
 			"title": "Tout refuser"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Tout approuver"
+		},
+		"deny": {
+			"title": "Tout refuser"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Tout enregistrer"
+		},
+		"deny": {
+			"title": "Tout refuser"
+		}
+	},
 	"indexingStatus": {
 		"ready": "Index prêt",
 		"indexing": "Indexation {{percentage}}%",
 		"indexed": "Indexé",
 		"error": "Erreur d'index",
-		"status": "Statut de l'index"
+		"status": "Statut de l'index",
+		"stopping": "Arrêt de l'indexation..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Version {{version}} - Cliquez pour voir les notes de version"
@@ -512,5 +495,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Fournisseur plus pris en charge",
+		"message": "Désolé, ce fournisseur n'est plus pris en charge. Nous avons constaté que très peu d'utilisateurs de Roo l'utilisaient réellement et nous devons réduire la portée de notre code pour continuer à avancer rapidement et bien servir notre communauté. C'était une décision vraiment difficile, mais elle nous permet de nous concentrer sur ce qui compte le plus pour toi. C'est rageant, on le sait.",
+		"openSettings": "Ouvrir les paramètres"
 	}
 }

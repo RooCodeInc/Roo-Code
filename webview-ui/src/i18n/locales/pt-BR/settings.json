@@ -31,7 +31,6 @@
 		"mcp": "Servidores MCP",
 		"worktrees": "Worktrees",
 		"autoApprove": "Aprovação",
-		"browser": "Navegador",
 		"checkpoints": "Checkpoints",
 		"notifications": "Notificações",
 		"contextManagement": "Contexto",
@@ -212,7 +211,12 @@
 		"searchMinScoreResetTooltip": "Redefinir para o valor padrão (0.4)",
 		"searchMaxResultsLabel": "Resultados máximos de busca",
 		"searchMaxResultsDescription": "Número máximo de resultados de busca a retornar ao consultar o índice de código. Valores mais altos fornecem mais contexto, mas podem incluir resultados menos relevantes.",
-		"resetToDefault": "Redefinir para o padrão"
+		"resetToDefault": "Redefinir para o padrão",
+		"stopIndexingButton": "Parar indexação",
+		"stoppingButton": "Parando...",
+		"workspaceToggleLabel": "Ativar indexação para este workspace",
+		"workspaceDisabledMessage": "A indexação está configurada, mas não ativada para este workspace.",
+		"autoEnableDefaultLabel": "Ativar indexação automaticamente para novos workspaces"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Você pode configurar um atalho global para esta configuração <SettingsLink>nas preferências do seu IDE</SettingsLink>.",
@@ -240,10 +244,6 @@
 				"label": "Incluir arquivos protegidos",
 				"description": "Permitir que o Roo crie e edite arquivos protegidos (como .rooignore e arquivos de configuração .roo/) sem exigir aprovação."
 			}
-		},
-		"browser": {
-			"label": "Navegador",
-			"description": "Realizar ações do navegador automaticamente sem exigir aprovação. Nota: Aplica-se apenas quando o modelo suporta uso do computador"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -309,6 +309,7 @@
 		"searchProviderPlaceholder": "Pesquisar provedores",
 		"noProviderMatchFound": "Nenhum provedor encontrado",
 		"noMatchFound": "Nenhum perfil correspondente encontrado",
+		"retiredProviderMessage": "Desculpe, este provedor não é mais suportado. Percebemos que muito poucos usuários do Roo realmente o utilizavam e precisamos reduzir o escopo do nosso código para continuar entregando rápido e servindo bem nossa comunidade. Foi uma decisão muito difícil, mas nos permite focar no que mais importa para você. Sabemos que é chato.",
 		"vscodeLmDescription": "A API do Modelo de Linguagem do VS Code permite executar modelos fornecidos por outras extensões do VS Code (incluindo, mas não se limitando, ao GitHub Copilot). A maneira mais fácil de começar é instalar as extensões Copilot e Copilot Chat no VS Code Marketplace.",
 		"awsCustomArnUse": "Insira um ARN Amazon Bedrock válido para o modelo que deseja usar. Exemplos de formato:",
 		"awsCustomArnDesc": "Certifique-se de que a região no ARN corresponde à região AWS selecionada acima.",
@@ -370,28 +371,17 @@
 		"getAnthropicApiKey": "Obter chave de API Anthropic",
 		"anthropicUseAuthToken": "Passar a chave de API Anthropic como cabeçalho Authorization em vez de X-Api-Key",
 		"anthropic1MContextBetaLabel": "Ativar janela de contexto de 1M (Beta)",
-		"anthropic1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"anthropic1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4.x / Claude Opus 4.6",
 		"awsBedrock1MContextBetaLabel": "Ativar janela de contexto de 1M (Beta)",
-		"awsBedrock1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"awsBedrock1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4.x / Claude Opus 4.6",
 		"vertex1MContextBetaLabel": "Ativar janela de contexto de 1M (Beta)",
-		"vertex1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"vertex1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4.x / Claude Opus 4.6",
 		"basetenApiKey": "Chave de API Baseten",
 		"getBasetenApiKey": "Obter chave de API Baseten",
-		"cerebrasApiKey": "Chave de API Cerebras",
-		"getCerebrasApiKey": "Obter chave de API Cerebras",
-		"chutesApiKey": "Chave de API Chutes",
-		"getChutesApiKey": "Obter chave de API Chutes",
 		"fireworksApiKey": "Chave de API Fireworks",
 		"getFireworksApiKey": "Obter chave de API Fireworks",
-		"featherlessApiKey": "Chave de API Featherless",
-		"getFeatherlessApiKey": "Obter chave de API Featherless",
-		"ioIntelligenceApiKey": "Chave de API IO Intelligence",
-		"ioIntelligenceApiKeyPlaceholder": "Insira sua chave de API da IO Intelligence",
-		"getIoIntelligenceApiKey": "Obter chave de API IO Intelligence",
 		"deepSeekApiKey": "Chave de API DeepSeek",
 		"getDeepSeekApiKey": "Obter chave de API DeepSeek",
-		"doubaoApiKey": "Chave de API Doubao",
-		"getDoubaoApiKey": "Obter chave de API Doubao",
 		"moonshotApiKey": "Chave de API Moonshot",
 		"getMoonshotApiKey": "Obter chave de API Moonshot",
 		"moonshotBaseUrl": "Ponto de entrada Moonshot",
@@ -403,24 +393,9 @@
 		"getMiniMaxApiKey": "Obter chave de API MiniMax",
 		"minimaxBaseUrl": "Ponto de entrada MiniMax",
 		"geminiApiKey": "Chave de API Gemini",
-		"getGroqApiKey": "Obter chave de API Groq",
-		"groqApiKey": "Chave de API Groq",
 		"getSambaNovaApiKey": "Obter chave de API SambaNova",
 		"sambaNovaApiKey": "Chave de API SambaNova",
 		"getGeminiApiKey": "Obter chave de API Gemini",
-		"getHuggingFaceApiKey": "Obter chave de API Hugging Face",
-		"huggingFaceApiKey": "Chave de API Hugging Face",
-		"huggingFaceModelId": "ID do modelo",
-		"huggingFaceLoading": "Carregando...",
-		"huggingFaceModelsCount": "({{count}} modelos)",
-		"huggingFaceSelectModel": "Selecionar um modelo...",
-		"huggingFaceSearchModels": "Buscar modelos...",
-		"huggingFaceNoModelsFound": "Nenhum modelo encontrado",
-		"huggingFaceProvider": "Provedor",
-		"huggingFaceProviderAuto": "Automático",
-		"huggingFaceSelectProvider": "Selecionar um provedor...",
-		"huggingFaceSearchProviders": "Buscar provedores...",
-		"huggingFaceNoProvidersFound": "Nenhum provedor encontrado",
 		"apiKey": "Chave de API",
 		"openAiApiKey": "Chave de API OpenAI",
 		"openAiBaseUrl": "URL Base",
@@ -491,10 +466,6 @@
 			"description": "O Ollama permite que você execute modelos localmente em seu computador. Para instruções sobre como começar, veja o guia de início rápido deles.",
 			"warning": "Nota: O Roo Code usa prompts complexos e funciona melhor com modelos Claude. Modelos menos capazes podem não funcionar como esperado."
 		},
-		"unboundApiKey": "Chave de API Unbound",
-		"getUnboundApiKey": "Obter chave de API Unbound",
-		"unboundRefreshModelsSuccess": "Lista de modelos atualizada! Agora você pode selecionar entre os modelos mais recentes.",
-		"unboundInvalidApiKey": "Chave API inválida. Por favor, verifique sua chave API e tente novamente.",
 		"roo": {
 			"authenticatedMessage": "Autenticado com segurança através da sua conta Roo Code Cloud.",
 			"connectButton": "Conectar ao Roo Code Cloud"
@@ -581,34 +552,6 @@
 			"placeholder": "Padrão: claude",
 			"maxTokensLabel": "Tokens de saída máximos",
 			"maxTokensDescription": "Número máximo de tokens de saída para respostas do Claude Code. O padrão é 8000."
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "Ativar ferramenta de navegador",
-			"description": "Quando ativado, o Roo pode usar um navegador para interagir com sites ao usar modelos que suportam o uso do computador. <0>Saiba mais</0>"
-		},
-		"viewport": {
-			"label": "Tamanho da viewport",
-			"description": "Selecione o tamanho da viewport para interações do navegador. Isso afeta como os sites são exibidos e como se interage com eles.",
-			"options": {
-				"largeDesktop": "Desktop grande (1280x800)",
-				"smallDesktop": "Desktop pequeno (900x600)",
-				"tablet": "Tablet (768x1024)",
-				"mobile": "Móvel (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "Qualidade das capturas de tela",
-			"description": "Ajuste a qualidade WebP das capturas de tela do navegador. Valores mais altos fornecem capturas mais nítidas, mas aumentam o uso de token."
-		},
-		"remote": {
-			"label": "Usar conexão remota de navegador",
-			"description": "Conectar a um navegador Chrome executando com depuração remota ativada (--remote-debugging-port=9222).",
-			"urlPlaceholder": "URL personalizado (ex. http://localhost:9222)",
-			"testButton": "Testar conexão",
-			"testingButton": "Testando...",
-			"instructions": "Digite o endereço do host do protocolo DevTools ou deixe em branco para descobrir automaticamente instâncias locais do Chrome. O botão Testar Conexão tentará usar o URL personalizado, se fornecido, ou descobrirá automaticamente se o campo estiver vazio."
 		}
 	},
 	"checkpoints": {

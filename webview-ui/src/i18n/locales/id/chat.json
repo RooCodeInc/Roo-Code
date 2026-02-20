@@ -34,6 +34,9 @@
 	},
 	"unpin": "Lepas Pin",
 	"pin": "Pin",
+	"fileChangesInConversation": {
+		"header": "{{count}} file diubah dalam percakapan ini"
+	},
 	"retry": {
 		"title": "Coba Lagi",
 		"tooltip": "Coba operasi lagi"
@@ -73,6 +76,22 @@
 	"read-batch": {
 		"approve": {
 			"title": "Setujui Semua"
+		},
+		"deny": {
+			"title": "Tolak Semua"
+		}
+	},
+	"list-batch": {
+		"approve": {
+			"title": "Setujui Semua"
+		},
+		"deny": {
+			"title": "Tolak Semua"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Simpan Semua"
 		},
 		"deny": {
 			"title": "Tolak Semua"
@@ -246,7 +265,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo ingin melihat file tingkat atas di direktori ini (di luar workspace)",
 		"didViewTopLevelOutsideWorkspace": "Roo melihat file tingkat atas di direktori ini (di luar workspace)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo ingin melihat semua file secara rekursif di direktori ini (di luar workspace)",
-		"didViewRecursiveOutsideWorkspace": "Roo melihat semua file secara rekursif di direktori ini (di luar workspace)"
+		"didViewRecursiveOutsideWorkspace": "Roo melihat semua file secara rekursif di direktori ini (di luar workspace)",
+		"wantsToViewMultipleDirectories": "Roo ingin melihat beberapa direktori"
 	},
 	"codebaseSearch": {
 		"wantsToSearch": "Roo ingin mencari codebase untuk <code>{{query}}</code>",
@@ -357,8 +377,9 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"claudeOpus": "Claude Opus 4.6: Sekarang tersedia di semua penyedia—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex, dan OpenRouter—membawa model paling canggih Anthropic ke platform pilihan Anda.",
-			"gptCodex": "GPT-5.3-Codex: Model coding terbaru OpenAI kini didukung di penyedia OpenAI - ChatGPT, memberikan generasi kode dan pemahaman terdepan."
+			"geminiPro": "Dukungan Gemini 3.1 Pro: Dukungan model Gemini 3.1 Pro telah ditambahkan dan ditetapkan sebagai model Gemini default untuk performa yang lebih baik.",
+			"cliNdjson": "Protokol NDJSON CLI: Protokol NDJSON stdin baru, subperintah list, dan perintah run yang dimodularisasi untuk alur kerja CLI yang lebih fleksibel.",
+			"cliRelease": "CLI v0.1.0: CLI Roo Code mencapai rilis resmi pertamanya dengan antarmuka perintah yang stabil."
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",
@@ -381,44 +402,6 @@
 		"total": "Total Biaya: ${{cost}}",
 		"includesSubtasks": "Termasuk biaya subtugas"
 	},
-	"browser": {
-		"session": "Sesi Browser",
-		"active": "Aktif",
-		"rooWantsToUse": "Roo ingin menggunakan browser",
-		"consoleLogs": "Log Konsol",
-		"noNewLogs": "(Tidak ada log baru)",
-		"screenshot": "Screenshot browser",
-		"cursor": "kursor",
-		"navigation": {
-			"step": "Langkah {{current}} dari {{total}}",
-			"previous": "Sebelumnya",
-			"next": "Selanjutnya"
-		},
-		"sessionStarted": "Sesi Browser Dimulai",
-		"actions": {
-			"title": "Aksi Browser: ",
-			"launched": "Browser diluncurkan",
-			"launch": "Luncurkan browser di {{url}}",
-			"clicked": "Diklik ({{coordinate}})",
-			"click": "Klik ({{coordinate}})",
-			"typed": "Diketik: {{text}}",
-			"type": "Ketik \"{{text}}\"",
-			"pressed": "Ditekan: {{key}}",
-			"press": "Tekan {{key}}",
-			"scrolledDown": "Digulir ke bawah",
-			"scrollDown": "Gulir ke bawah",
-			"scrolledUp": "Digulir ke atas",
-			"scrollUp": "Gulir ke atas",
-			"hovered": "Diarahkan ({{coordinate}})",
-			"hover": "Arahkan ({{coordinate}})",
-			"resized": "Ukuran diubah ke: {{size}}",
-			"resize": "Ubah ukuran ke {{size}}",
-			"screenshotSaved": "Screenshot disimpan",
-			"screenshot": "Simpan screenshot ke {{path}}",
-			"closed": "Browser ditutup",
-			"close": "Tutup browser"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Perluas blok kode",
@@ -426,7 +409,6 @@
 			"copy_code": "Salin kode"
 		}
 	},
-	"systemPromptWarning": "PERINGATAN: Override system prompt kustom aktif. Ini dapat merusak fungsionalitas secara serius dan menyebabkan perilaku yang tidak terduga.",
 	"profileViolationWarning": "Profil saat ini tidak kompatibel dengan pengaturan organisasi kamu",
 	"shellIntegration": {
 		"title": "Peringatan Eksekusi Perintah",
@@ -450,7 +432,8 @@
 		"indexing": "Mengindeks {{percentage}}%",
 		"indexed": "Terindeks",
 		"error": "Error indeks",
-		"status": "Status indeks"
+		"status": "Status indeks",
+		"stopping": "Menghentikan pengindeksan..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versi {{version}} - Klik untuk melihat catatan rilis"
@@ -518,5 +501,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Penyedia tidak lagi didukung",
+		"message": "Maaf, penyedia ini tidak lagi didukung. Kami melihat sangat sedikit pengguna Roo yang benar-benar menggunakannya dan kami perlu mengurangi cakupan kode kami agar bisa terus bergerak cepat dan melayani komunitas kami dengan baik. Ini adalah keputusan yang sangat sulit, tapi ini memungkinkan kami fokus pada apa yang paling penting bagimu. Memang menyebalkan, kami tahu.",
+		"openSettings": "Buka Pengaturan"
 	}
 }

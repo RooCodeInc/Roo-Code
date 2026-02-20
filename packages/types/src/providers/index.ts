@@ -1,16 +1,9 @@
 export * from "./anthropic.js"
 export * from "./baseten.js"
 export * from "./bedrock.js"
-export * from "./cerebras.js"
-export * from "./chutes.js"
 export * from "./deepseek.js"
-export * from "./doubao.js"
-export * from "./featherless.js"
 export * from "./fireworks.js"
 export * from "./gemini.js"
-export * from "./groq.js"
-export * from "./huggingface.js"
-export * from "./io-intelligence.js"
 export * from "./lite-llm.js"
 export * from "./lm-studio.js"
 export * from "./mistral.js"
@@ -24,27 +17,19 @@ export * from "./qwen-code.js"
 export * from "./requesty.js"
 export * from "./roo.js"
 export * from "./sambanova.js"
-export * from "./unbound.js"
 export * from "./vertex.js"
 export * from "./vscode-llm.js"
 export * from "./xai.js"
 export * from "./vercel-ai-gateway.js"
 export * from "./zai.js"
-export * from "./deepinfra.js"
 export * from "./minimax.js"
 
 import { anthropicDefaultModelId } from "./anthropic.js"
 import { basetenDefaultModelId } from "./baseten.js"
 import { bedrockDefaultModelId } from "./bedrock.js"
-import { cerebrasDefaultModelId } from "./cerebras.js"
-import { chutesDefaultModelId } from "./chutes.js"
 import { deepSeekDefaultModelId } from "./deepseek.js"
-import { doubaoDefaultModelId } from "./doubao.js"
-import { featherlessDefaultModelId } from "./featherless.js"
 import { fireworksDefaultModelId } from "./fireworks.js"
 import { geminiDefaultModelId } from "./gemini.js"
-import { groqDefaultModelId } from "./groq.js"
-import { ioIntelligenceDefaultModelId } from "./io-intelligence.js"
 import { litellmDefaultModelId } from "./lite-llm.js"
 import { mistralDefaultModelId } from "./mistral.js"
 import { moonshotDefaultModelId } from "./moonshot.js"
@@ -54,13 +39,11 @@ import { qwenCodeDefaultModelId } from "./qwen-code.js"
 import { requestyDefaultModelId } from "./requesty.js"
 import { rooDefaultModelId } from "./roo.js"
 import { sambaNovaDefaultModelId } from "./sambanova.js"
-import { unboundDefaultModelId } from "./unbound.js"
 import { vertexDefaultModelId } from "./vertex.js"
 import { vscodeLlmDefaultModelId } from "./vscode-llm.js"
 import { xaiDefaultModelId } from "./xai.js"
 import { vercelAiGatewayDefaultModelId } from "./vercel-ai-gateway.js"
 import { internationalZAiDefaultModelId, mainlandZAiDefaultModelId } from "./zai.js"
-import { deepInfraDefaultModelId } from "./deepinfra.js"
 import { minimaxDefaultModelId } from "./minimax.js"
 
 // Import the ProviderName type from provider-settings to avoid duplication
@@ -80,18 +63,10 @@ export function getProviderDefaultModelId(
 			return openRouterDefaultModelId
 		case "requesty":
 			return requestyDefaultModelId
-		case "unbound":
-			return unboundDefaultModelId
 		case "litellm":
 			return litellmDefaultModelId
 		case "xai":
 			return xaiDefaultModelId
-		case "groq":
-			return groqDefaultModelId
-		case "huggingface":
-			return "meta-llama/Llama-3.3-70B-Instruct"
-		case "chutes":
-			return chutesDefaultModelId
 		case "baseten":
 			return basetenDefaultModelId
 		case "bedrock":
@@ -102,8 +77,6 @@ export function getProviderDefaultModelId(
 			return geminiDefaultModelId
 		case "deepseek":
 			return deepSeekDefaultModelId
-		case "doubao":
-			return doubaoDefaultModelId
 		case "moonshot":
 			return moonshotDefaultModelId
 		case "minimax":
@@ -122,20 +95,12 @@ export function getProviderDefaultModelId(
 			return "" // Ollama uses dynamic model selection
 		case "lmstudio":
 			return "" // LMStudio uses dynamic model selection
-		case "deepinfra":
-			return deepInfraDefaultModelId
 		case "vscode-lm":
 			return vscodeLlmDefaultModelId
-		case "cerebras":
-			return cerebrasDefaultModelId
 		case "sambanova":
 			return sambaNovaDefaultModelId
 		case "fireworks":
 			return fireworksDefaultModelId
-		case "featherless":
-			return featherlessDefaultModelId
-		case "io-intelligence":
-			return ioIntelligenceDefaultModelId
 		case "roo":
 			return rooDefaultModelId
 		case "qwen-code":

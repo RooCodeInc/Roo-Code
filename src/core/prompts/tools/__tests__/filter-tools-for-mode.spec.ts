@@ -20,20 +20,19 @@ describe("filterNativeToolsForMode - disabledTools", () => {
 		makeTool("execute_command"),
 		makeTool("read_file"),
 		makeTool("write_to_file"),
-		makeTool("browser_action"),
 		makeTool("apply_diff"),
+		makeTool("edit"),
 	]
 
 	it("removes tools listed in settings.disabledTools", () => {
 		const settings = {
-			disabledTools: ["execute_command", "browser_action"],
+			disabledTools: ["execute_command"],
 		}
 
 		const result = filterNativeToolsForMode(nativeTools, "code", undefined, undefined, undefined, settings)
 
 		const resultNames = result.map((t) => (t as any).function.name)
 		expect(resultNames).not.toContain("execute_command")
-		expect(resultNames).not.toContain("browser_action")
 		expect(resultNames).toContain("read_file")
 		expect(resultNames).toContain("write_to_file")
 		expect(resultNames).toContain("apply_diff")
@@ -50,7 +49,6 @@ describe("filterNativeToolsForMode - disabledTools", () => {
 		expect(resultNames).toContain("execute_command")
 		expect(resultNames).toContain("read_file")
 		expect(resultNames).toContain("write_to_file")
-		expect(resultNames).toContain("browser_action")
 		expect(resultNames).toContain("apply_diff")
 	})
 
@@ -66,7 +64,6 @@ describe("filterNativeToolsForMode - disabledTools", () => {
 
 	it("combines disabledTools with other setting-based exclusions", () => {
 		const settings = {
-			browserToolEnabled: false,
 			disabledTools: ["execute_command"],
 		}
 
@@ -74,7 +71,21 @@ describe("filterNativeToolsForMode - disabledTools", () => {
 
 		const resultNames = result.map((t) => (t as any).function.name)
 		expect(resultNames).not.toContain("execute_command")
-		expect(resultNames).not.toContain("browser_action")
 		expect(resultNames).toContain("read_file")
+	})
+
+	it("disables canonical tool when disabledTools contains alias name", () => {
+		const settings = {
+			disabledTools: ["search_and_replace"],
+			modelInfo: {
+				includedTools: ["search_and_replace"],
+			},
+		}
+
+		const result = filterNativeToolsForMode(nativeTools, "code", undefined, undefined, undefined, settings)
+
+		const resultNames = result.map((t) => (t as any).function.name)
+		expect(resultNames).not.toContain("search_and_replace")
+		expect(resultNames).not.toContain("edit")
 	})
 })

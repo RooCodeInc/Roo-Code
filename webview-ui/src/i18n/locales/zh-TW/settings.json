@@ -31,7 +31,6 @@
 		"mcp": "MCP 伺服器",
 		"worktrees": "Worktree",
 		"autoApprove": "自動核准",
-		"browser": "瀏覽器",
 		"checkpoints": "檢查點",
 		"notifications": "通知",
 		"contextManagement": "上下文",
@@ -222,7 +221,12 @@
 			"baseUrlRequired": "需要基礎 URL",
 			"modelDimensionMinValue": "模型維度必須大於 0"
 		},
-		"optional": "選用"
+		"optional": "選用",
+		"stopIndexingButton": "停止索引",
+		"stoppingButton": "正在停止...",
+		"workspaceToggleLabel": "為此工作區啟用索引",
+		"workspaceDisabledMessage": "索引已設定，但尚未為此工作區啟用。",
+		"autoEnableDefaultLabel": "自動為新工作區啟用索引"
 	},
 	"autoApprove": {
 		"description": "無需詢問許可即可執行下列動作。請僅在您完全信任且了解安全風險的情況下啟用此功能。",
@@ -248,10 +252,6 @@
 				"label": "包含受保護的檔案",
 				"description": "允許 Roo 建立與編輯受保護的檔案（如 .rooignore 和 .roo/ 設定檔）且無需核准。"
 			}
-		},
-		"browser": {
-			"label": "瀏覽器",
-			"description": "無需核准即可自動執行瀏覽器動作。注意：僅適用於支援電腦操作的模型。"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -319,6 +319,7 @@
 		"searchProviderPlaceholder": "搜尋供應商",
 		"noProviderMatchFound": "找不到供應商",
 		"noMatchFound": "找不到符合的設定檔",
+		"retiredProviderMessage": "抱歉，此供應商已不再受支援。我們發現實際使用它的 Roo 使用者非常少，我們需要縮減程式碼庫的範圍，以便繼續快速交付並更好地服務社群。這是一個非常艱難的決定，但它能讓我們專注於對你最重要的事情。我們知道這很遺憾。",
 		"vscodeLmDescription": "VS Code 語言模型 API 可以讓您使用其他擴充功能（如 GitHub Copilot）提供的模型。最簡單的方式是從 VS Code Marketplace 安裝 Copilot 和 Copilot Chat 擴充套件。",
 		"awsCustomArnUse": "輸入您要使用的模型的有效 Amazon Bedrock ARN。格式範例：",
 		"awsCustomArnDesc": "確保 ARN 中的區域與您上面選擇的 AWS 區域相符。",
@@ -380,28 +381,17 @@
 		"getAnthropicApiKey": "取得 Anthropic API 金鑰",
 		"anthropicUseAuthToken": "將 Anthropic API 金鑰作為 Authorization 標頭傳遞，而非使用 X-Api-Key",
 		"anthropic1MContextBetaLabel": "啟用 1M 上下文視窗 (Beta)",
-		"anthropic1MContextBetaDescription": "為 Claude Sonnet 4 / 4.5 / Claude Opus 4.6 將上下文視窗擴展至 100 萬個 token",
+		"anthropic1MContextBetaDescription": "為 Claude Sonnet 4.x / Claude Opus 4.6 將上下文視窗擴展至 100 萬個 token",
 		"awsBedrock1MContextBetaLabel": "啟用 1M 上下文視窗 (Beta)",
-		"awsBedrock1MContextBetaDescription": "為 Claude Sonnet 4 / 4.5 / Claude Opus 4.6 將上下文視窗擴展至 100 萬個 token",
+		"awsBedrock1MContextBetaDescription": "為 Claude Sonnet 4.x / Claude Opus 4.6 將上下文視窗擴展至 100 萬個 token",
 		"vertex1MContextBetaLabel": "啟用 1M 上下文視窗 (Beta)",
-		"vertex1MContextBetaDescription": "為 Claude Sonnet 4 / 4.5 / Claude Opus 4.6 將上下文視窗擴展至 100 萬個 token",
+		"vertex1MContextBetaDescription": "為 Claude Sonnet 4.x / Claude Opus 4.6 將上下文視窗擴展至 100 萬個 token",
 		"basetenApiKey": "Baseten API 金鑰",
 		"getBasetenApiKey": "取得 Baseten API 金鑰",
-		"cerebrasApiKey": "Cerebras API 金鑰",
-		"getCerebrasApiKey": "取得 Cerebras API 金鑰",
-		"chutesApiKey": "Chutes API 金鑰",
-		"getChutesApiKey": "取得 Chutes API 金鑰",
 		"fireworksApiKey": "Fireworks API 金鑰",
 		"getFireworksApiKey": "取得 Fireworks API 金鑰",
-		"featherlessApiKey": "Featherless API 金鑰",
-		"getFeatherlessApiKey": "取得 Featherless API 金鑰",
-		"ioIntelligenceApiKey": "IO Intelligence API 金鑰",
-		"ioIntelligenceApiKeyPlaceholder": "輸入您的 IO Intelligence API 金鑰",
-		"getIoIntelligenceApiKey": "取得 IO Intelligence API 金鑰",
 		"deepSeekApiKey": "DeepSeek API 金鑰",
 		"getDeepSeekApiKey": "取得 DeepSeek API 金鑰",
-		"doubaoApiKey": "豆包 API 金鑰",
-		"getDoubaoApiKey": "取得豆包 API 金鑰",
 		"moonshotApiKey": "Moonshot API 金鑰",
 		"getMoonshotApiKey": "取得 Moonshot API 金鑰",
 		"moonshotBaseUrl": "Moonshot 服務端點",
@@ -413,23 +403,8 @@
 		"zaiEntrypoint": "Z AI 服務端點",
 		"zaiEntrypointDescription": "請根據您的位置選擇適當的 API 服務端點。如果您在中國，請選擇 open.bigmodel.cn。否則，請選擇 api.z.ai。",
 		"geminiApiKey": "Gemini API 金鑰",
-		"getGroqApiKey": "取得 Groq API 金鑰",
-		"groqApiKey": "Groq API 金鑰",
 		"getSambaNovaApiKey": "取得 SambaNova API 金鑰",
 		"sambaNovaApiKey": "SambaNova API 金鑰",
-		"getHuggingFaceApiKey": "取得 Hugging Face API 金鑰",
-		"huggingFaceApiKey": "Hugging Face API 金鑰",
-		"huggingFaceModelId": "模型 ID",
-		"huggingFaceLoading": "載入中...",
-		"huggingFaceModelsCount": "({{count}} 個模型)",
-		"huggingFaceSelectModel": "選擇模型...",
-		"huggingFaceSearchModels": "搜尋模型...",
-		"huggingFaceNoModelsFound": "找不到模型",
-		"huggingFaceProvider": "供應商",
-		"huggingFaceProviderAuto": "自動",
-		"huggingFaceSelectProvider": "選擇供應商...",
-		"huggingFaceSearchProviders": "搜尋供應商...",
-		"huggingFaceNoProvidersFound": "找不到供應商",
 		"getGeminiApiKey": "取得 Gemini API 金鑰",
 		"openAiApiKey": "OpenAI API 金鑰",
 		"apiKey": "API 金鑰",
@@ -501,10 +476,6 @@
 			"description": "Ollama 允許您在本機電腦執行模型。請參閱快速入門指南。",
 			"warning": "注意：Roo Code 使用複雜提示詞，與 Claude 模型搭配最佳。功能較弱的模型可能無法正常運作。"
 		},
-		"unboundApiKey": "Unbound API 金鑰",
-		"getUnboundApiKey": "取得 Unbound API 金鑰",
-		"unboundRefreshModelsSuccess": "模型列表已更新！您現在可以從最新模型中選擇。",
-		"unboundInvalidApiKey": "無效的 API 金鑰。請檢查您的 API 金鑰並重試。",
 		"roo": {
 			"authenticatedMessage": "已透過 Roo Code Cloud 帳戶安全認證。",
 			"connectButton": "連線到 Roo Code Cloud"
@@ -591,34 +562,6 @@
 			"placeholder": "預設：claude",
 			"maxTokensLabel": "最大輸出 Token",
 			"maxTokensDescription": "Claude Code 回應的最大輸出 Token 數量。預設為 8000。"
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "啟用瀏覽器工具",
-			"description": "啟用後，Roo 可在使用支援電腦使用的模型時使用瀏覽器與網站互動。 <0>了解更多</0>"
-		},
-		"viewport": {
-			"label": "視窗大小",
-			"description": "選擇瀏覽器互動的視窗大小。這會影響網站的顯示方式和互動方式。",
-			"options": {
-				"largeDesktop": "大型桌面 (1280x800)",
-				"smallDesktop": "小型桌面 (900x600)",
-				"tablet": "平板 (768x1024)",
-				"mobile": "行動裝置 (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "截圖品質",
-			"description": "調整瀏覽器截圖的 WebP 品質。數值越高截圖越清晰，但會增加 Token 用量。"
-		},
-		"remote": {
-			"label": "使用遠端瀏覽器連線",
-			"description": "連線到啟用遠端除錯的 Chrome 瀏覽器（--remote-debugging-port=9222）。",
-			"urlPlaceholder": "自訂 URL（例如 http://localhost:9222）",
-			"testButton": "測試連線",
-			"testingButton": "測試中...",
-			"instructions": "請輸入 DevTools Protocol 主機位址，或留空以自動偵測本機 Chrome 執行個體。「測試連線」按鈕將嘗試連線至您提供的自訂 URL，若未提供則會自動偵測。"
 		}
 	},
 	"checkpoints": {

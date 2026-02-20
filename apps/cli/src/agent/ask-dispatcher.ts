@@ -244,7 +244,7 @@ export class AskDispatcher {
 	}
 
 	/**
-	 * Handle interactive asks (followup, command, tool, browser_action_launch, use_mcp_server).
+	 * Handle interactive asks (followup, command, tool, use_mcp_server).
 	 * These require user approval or input.
 	 */
 	private async handleInteractiveAsk(ts: number, ask: ClineAsk, text: string): Promise<AskHandleResult> {
@@ -257,9 +257,6 @@ export class AskDispatcher {
 
 			case "tool":
 				return await this.handleToolApproval(ts, text)
-
-			case "browser_action_launch":
-				return await this.handleBrowserApproval(ts, text)
 
 			case "use_mcp_server":
 				return await this.handleMcpApproval(ts, text)
@@ -435,32 +432,6 @@ export class AskDispatcher {
 
 		try {
 			const approved = await this.promptManager.promptForYesNo("Approve this action? (y/n): ")
-			this.sendApprovalResponse(approved)
-			return { handled: true, response: approved ? "yesButtonClicked" : "noButtonClicked" }
-		} catch {
-			this.outputManager.output("[Defaulting to: no]")
-			this.sendApprovalResponse(false)
-			return { handled: true, response: "noButtonClicked" }
-		}
-	}
-
-	/**
-	 * Handle browser action approval.
-	 */
-	private async handleBrowserApproval(ts: number, text: string): Promise<AskHandleResult> {
-		this.outputManager.output("\n[browser action request]")
-		if (text) {
-			this.outputManager.output(`  Action: ${text}`)
-		}
-		this.outputManager.markDisplayed(ts, text || "", false)
-
-		if (this.nonInteractive) {
-			// Auto-approved by extension settings
-			return { handled: true }
-		}
-
-		try {
-			const approved = await this.promptManager.promptForYesNo("Allow browser action? (y/n): ")
 			this.sendApprovalResponse(approved)
 			return { handled: true, response: approved ? "yesButtonClicked" : "noButtonClicked" }
 		} catch {

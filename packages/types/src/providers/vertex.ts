@@ -6,6 +6,35 @@ export type VertexModelId = keyof typeof vertexModels
 export const vertexDefaultModelId: VertexModelId = "claude-sonnet-4-5@20250929"
 
 export const vertexModels = {
+	"gemini-3.1-pro-preview": {
+		maxTokens: 65_536,
+		contextWindow: 1_048_576,
+		supportsImages: true,
+		supportsPromptCache: true,
+		supportsReasoningEffort: ["low", "medium", "high"],
+		reasoningEffort: "low",
+
+		supportsTemperature: true,
+		defaultTemperature: 1,
+		inputPrice: 4.0,
+		outputPrice: 18.0,
+		cacheReadsPrice: 0.4,
+		cacheWritesPrice: 4.5,
+		tiers: [
+			{
+				contextWindow: 200_000,
+				inputPrice: 2.0,
+				outputPrice: 12.0,
+				cacheReadsPrice: 0.2,
+			},
+			{
+				contextWindow: Infinity,
+				inputPrice: 4.0,
+				outputPrice: 18.0,
+				cacheReadsPrice: 0.4,
+			},
+		],
+	},
 	"gemini-3-pro-preview": {
 		maxTokens: 65_536,
 		contextWindow: 1_048_576,
@@ -263,6 +292,27 @@ export const vertexModels = {
 			},
 		],
 	},
+	"claude-sonnet-4-6@20260114": {
+		maxTokens: 8192,
+		contextWindow: 200_000, // Default 200K, extendable to 1M with beta flag 'context-1m-2025-08-07'
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 3.0, // $3 per million input tokens (≤200K context)
+		outputPrice: 15.0, // $15 per million output tokens (≤200K context)
+		cacheWritesPrice: 3.75, // $3.75 per million tokens
+		cacheReadsPrice: 0.3, // $0.30 per million tokens
+		supportsReasoningBudget: true,
+		// Tiered pricing for extended context (requires beta flag 'context-1m-2025-08-07')
+		tiers: [
+			{
+				contextWindow: 1_000_000, // 1M tokens with beta flag
+				inputPrice: 6.0, // $6 per million input tokens (>200K context)
+				outputPrice: 22.5, // $22.50 per million output tokens (>200K context)
+				cacheWritesPrice: 7.5, // $7.50 per million tokens (>200K context)
+				cacheReadsPrice: 0.6, // $0.60 per million tokens (>200K context)
+			},
+		],
+	},
 	"claude-haiku-4-5@20251001": {
 		maxTokens: 8192,
 		contextWindow: 200_000,
@@ -491,6 +541,7 @@ export const vertexModels = {
 export const VERTEX_1M_CONTEXT_MODEL_IDS = [
 	"claude-sonnet-4@20250514",
 	"claude-sonnet-4-5@20250929",
+	"claude-sonnet-4-6@20260114",
 	"claude-opus-4-6",
 ] as const
 

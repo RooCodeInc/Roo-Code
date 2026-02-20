@@ -6,6 +6,8 @@ import type { ClineProvider } from "./ClineProvider"
 import { openFile } from "../../integrations/misc/open-file"
 import { t } from "../../i18n"
 
+type SkillSource = SkillMetadata["source"]
+
 /**
  * Handles the requestSkills message - returns all skills metadata
  */
@@ -36,18 +38,13 @@ export async function handleCreateSkill(
 ): Promise<SkillMetadata[] | undefined> {
 	try {
 		const skillName = message.skillName
-		const source = message.source
+		const source = message.source as SkillSource
 		const skillDescription = message.skillDescription
 		// Support new modeSlugs array or fall back to legacy skillMode
 		const modeSlugs = message.skillModeSlugs ?? (message.skillMode ? [message.skillMode] : undefined)
 
 		if (!skillName || !source || !skillDescription) {
 			throw new Error(t("skills:errors.missing_create_fields"))
-		}
-
-		// Built-in skills cannot be created
-		if (source === "built-in") {
-			throw new Error(t("skills:errors.cannot_modify_builtin"))
 		}
 
 		const skillsManager = provider.getSkillsManager()
@@ -81,17 +78,12 @@ export async function handleDeleteSkill(
 ): Promise<SkillMetadata[] | undefined> {
 	try {
 		const skillName = message.skillName
-		const source = message.source
+		const source = message.source as SkillSource
 		// Support new skillModeSlugs array or fall back to legacy skillMode
 		const skillMode = message.skillModeSlugs?.[0] ?? message.skillMode
 
 		if (!skillName || !source) {
 			throw new Error(t("skills:errors.missing_delete_fields"))
-		}
-
-		// Built-in skills cannot be deleted
-		if (source === "built-in") {
-			throw new Error(t("skills:errors.cannot_modify_builtin"))
 		}
 
 		const skillsManager = provider.getSkillsManager()
@@ -122,17 +114,12 @@ export async function handleMoveSkill(
 ): Promise<SkillMetadata[] | undefined> {
 	try {
 		const skillName = message.skillName
-		const source = message.source
+		const source = message.source as SkillSource
 		const currentMode = message.skillMode
 		const newMode = message.newSkillMode
 
 		if (!skillName || !source) {
 			throw new Error(t("skills:errors.missing_move_fields"))
-		}
-
-		// Built-in skills cannot be moved
-		if (source === "built-in") {
-			throw new Error(t("skills:errors.cannot_modify_builtin"))
 		}
 
 		const skillsManager = provider.getSkillsManager()
@@ -163,16 +150,11 @@ export async function handleUpdateSkillModes(
 ): Promise<SkillMetadata[] | undefined> {
 	try {
 		const skillName = message.skillName
-		const source = message.source
+		const source = message.source as SkillSource
 		const newModeSlugs = message.newSkillModeSlugs
 
 		if (!skillName || !source) {
 			throw new Error(t("skills:errors.missing_update_modes_fields"))
-		}
-
-		// Built-in skills cannot be modified
-		if (source === "built-in") {
-			throw new Error(t("skills:errors.cannot_modify_builtin"))
 		}
 
 		const skillsManager = provider.getSkillsManager()
@@ -200,15 +182,10 @@ export async function handleUpdateSkillModes(
 export async function handleOpenSkillFile(provider: ClineProvider, message: WebviewMessage): Promise<void> {
 	try {
 		const skillName = message.skillName
-		const source = message.source
+		const source = message.source as SkillSource
 
 		if (!skillName || !source) {
 			throw new Error(t("skills:errors.missing_delete_fields"))
-		}
-
-		// Built-in skills cannot be opened as files (they have no file path)
-		if (source === "built-in") {
-			throw new Error(t("skills:errors.cannot_open_builtin"))
 		}
 
 		const skillsManager = provider.getSkillsManager()

@@ -10,14 +10,14 @@ describe("Native Tools Filtering by Mode", () => {
 				slug: "architect",
 				name: "Architect",
 				roleDefinition: "Test architect",
-				groups: ["read", "browser", "mcp"] as const,
+				groups: ["read", "mcp"] as const,
 			}
 
 			const codeMode: ModeConfig = {
 				slug: "code",
 				name: "Code",
 				roleDefinition: "Test code",
-				groups: ["read", "edit", "browser", "command", "mcp"] as const,
+				groups: ["read", "edit", "command", "mcp"] as const,
 			}
 
 			// Import the functions we need to test

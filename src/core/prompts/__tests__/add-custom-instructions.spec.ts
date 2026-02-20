@@ -205,7 +205,6 @@ describe("addCustomInstructions", () => {
 			false, // supportsImages
 			undefined, // mcpHub
 			undefined, // diffStrategy
-			undefined, // browserViewportSize
 			"architect", // mode
 			undefined, // customModePrompts
 			undefined, // customModes
@@ -226,7 +225,6 @@ describe("addCustomInstructions", () => {
 			false, // supportsImages
 			undefined, // mcpHub
 			undefined, // diffStrategy
-			undefined, // browserViewportSize
 			"ask", // mode
 			undefined, // customModePrompts
 			undefined, // customModes
@@ -249,7 +247,6 @@ describe("addCustomInstructions", () => {
 			false, // supportsImages
 			mockMcpHub, // mcpHub
 			undefined, // diffStrategy
-			undefined, // browserViewportSize
 			defaultModeSlug, // mode
 			undefined, // customModePrompts
 			undefined, // customModes,

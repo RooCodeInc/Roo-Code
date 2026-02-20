@@ -2,9 +2,7 @@ import type { ProviderName, ModelInfo, ProviderSettings } from "@roo-code/types"
 import {
 	anthropicDefaultModelId,
 	bedrockDefaultModelId,
-	cerebrasDefaultModelId,
 	deepSeekDefaultModelId,
-	doubaoDefaultModelId,
 	moonshotDefaultModelId,
 	geminiDefaultModelId,
 	mistralDefaultModelId,
@@ -12,12 +10,10 @@ import {
 	qwenCodeDefaultModelId,
 	vertexDefaultModelId,
 	xaiDefaultModelId,
-	groqDefaultModelId,
 	sambaNovaDefaultModelId,
 	internationalZAiDefaultModelId,
 	mainlandZAiDefaultModelId,
 	fireworksDefaultModelId,
-	featherlessDefaultModelId,
 	minimaxDefaultModelId,
 	basetenDefaultModelId,
 } from "@roo-code/types"
@@ -32,9 +28,7 @@ export interface ProviderServiceConfig {
 export const PROVIDER_SERVICE_CONFIG: Partial<Record<ProviderName, ProviderServiceConfig>> = {
 	anthropic: { serviceName: "Anthropic", serviceUrl: "https://console.anthropic.com" },
 	bedrock: { serviceName: "Amazon Bedrock", serviceUrl: "https://aws.amazon.com/bedrock" },
-	cerebras: { serviceName: "Cerebras", serviceUrl: "https://cerebras.ai" },
 	deepseek: { serviceName: "DeepSeek", serviceUrl: "https://platform.deepseek.com" },
-	doubao: { serviceName: "Doubao", serviceUrl: "https://www.volcengine.com/product/doubao" },
 	moonshot: { serviceName: "Moonshot", serviceUrl: "https://platform.moonshot.cn" },
 	gemini: { serviceName: "Google Gemini", serviceUrl: "https://ai.google.dev" },
 	mistral: { serviceName: "Mistral", serviceUrl: "https://console.mistral.ai" },
@@ -42,11 +36,9 @@ export const PROVIDER_SERVICE_CONFIG: Partial<Record<ProviderName, ProviderServi
 	"qwen-code": { serviceName: "Qwen Code", serviceUrl: "https://dashscope.console.aliyun.com" },
 	vertex: { serviceName: "GCP Vertex AI", serviceUrl: "https://console.cloud.google.com/vertex-ai" },
 	xai: { serviceName: "xAI", serviceUrl: "https://x.ai" },
-	groq: { serviceName: "Groq", serviceUrl: "https://console.groq.com" },
 	sambanova: { serviceName: "SambaNova", serviceUrl: "https://sambanova.ai" },
 	zai: { serviceName: "Z.ai", serviceUrl: "https://z.ai" },
 	fireworks: { serviceName: "Fireworks AI", serviceUrl: "https://fireworks.ai" },
-	featherless: { serviceName: "Featherless AI", serviceUrl: "https://featherless.ai" },
 	minimax: { serviceName: "MiniMax", serviceUrl: "https://minimax.chat" },
 	baseten: { serviceName: "Baseten", serviceUrl: "https://baseten.co" },
 	ollama: { serviceName: "Ollama", serviceUrl: "https://ollama.ai" },
@@ -60,9 +52,7 @@ export const PROVIDER_SERVICE_CONFIG: Partial<Record<ProviderName, ProviderServi
 export const PROVIDER_DEFAULT_MODEL_IDS: Partial<Record<ProviderName, string>> = {
 	anthropic: anthropicDefaultModelId,
 	bedrock: bedrockDefaultModelId,
-	cerebras: cerebrasDefaultModelId,
 	deepseek: deepSeekDefaultModelId,
-	doubao: doubaoDefaultModelId,
 	moonshot: moonshotDefaultModelId,
 	gemini: geminiDefaultModelId,
 	mistral: mistralDefaultModelId,
@@ -70,11 +60,9 @@ export const PROVIDER_DEFAULT_MODEL_IDS: Partial<Record<ProviderName, string>> =
 	"qwen-code": qwenCodeDefaultModelId,
 	vertex: vertexDefaultModelId,
 	xai: xaiDefaultModelId,
-	groq: groqDefaultModelId,
 	sambanova: sambaNovaDefaultModelId,
 	zai: internationalZAiDefaultModelId,
 	fireworks: fireworksDefaultModelId,
-	featherless: featherlessDefaultModelId,
 	minimax: minimaxDefaultModelId,
 	baseten: basetenDefaultModelId,
 }
@@ -130,19 +118,14 @@ export const isStaticModelProvider = (provider: ProviderName): boolean => {
 export const PROVIDERS_WITH_CUSTOM_MODEL_UI: ProviderName[] = [
 	"openrouter",
 	"requesty",
-	"unbound",
-	"deepinfra",
 	"openai", // OpenAI Compatible
 	"openai-codex", // OpenAI Codex has custom UI with auth and rate limits
 	"litellm",
-	"io-intelligence",
 	"vercel-ai-gateway",
 	"roo",
-	"chutes",
 	"ollama",
 	"lmstudio",
 	"vscode-lm",
-	"huggingface",
 ]
 
 /**

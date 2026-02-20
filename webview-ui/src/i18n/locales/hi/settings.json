@@ -31,7 +31,6 @@
 		"mcp": "एमसीपी सर्वर",
 		"worktrees": "Worktrees",
 		"autoApprove": "अनुमोदन",
-		"browser": "ब्राउज़र",
 		"checkpoints": "चेकपॉइंट",
 		"notifications": "सूचनाएँ",
 		"contextManagement": "संदर्भ",
@@ -212,7 +211,12 @@
 		"searchMinScoreResetTooltip": "डिफ़ॉल्ट मान पर रीसेट करें (0.4)",
 		"searchMaxResultsLabel": "अधिकतम खोज परिणाम",
 		"searchMaxResultsDescription": "कोडबेस इंडेक्स को क्वेरी करते समय वापस करने के लिए खोज परिणामों की अधिकतम संख्या। उच्च मान अधिक संदर्भ प्रदान करते हैं लेकिन कम प्रासंगिक परिणाम शामिल कर सकते हैं।",
-		"resetToDefault": "डिफ़ॉल्ट पर रीसेट करें"
+		"resetToDefault": "डिफ़ॉल्ट पर रीसेट करें",
+		"stopIndexingButton": "इंडेक्सिंग रोकें",
+		"stoppingButton": "रोक रहा है...",
+		"workspaceToggleLabel": "इस वर्कस्पेस के लिए इंडेक्सिंग सक्षम करें",
+		"workspaceDisabledMessage": "इंडेक्सिंग कॉन्फ़िगर की गई है लेकिन इस वर्कस्पेस के लिए सक्षम नहीं है।",
+		"autoEnableDefaultLabel": "नए वर्कस्पेस के लिए स्वचालित रूप से इंडेक्सिंग सक्षम करें"
 	},
 	"autoApprove": {
 		"toggleShortcut": "आप <SettingsLink>अपनी आईडीई वरीयताओं में</SettingsLink> इस सेटिंग के लिए एक वैश्विक शॉर्टकट कॉन्फ़िगर कर सकते हैं।",
@@ -240,10 +244,6 @@
 				"label": "संरक्षित फाइलें शामिल करें",
 				"description": "Roo को अनुमोदन की आवश्यकता के बिना संरक्षित फाइलें (.rooignore और .roo/ कॉन्फ़िगरेशन फाइलें जैसी) बनाने और संपादित करने की अनुमति दें।"
 			}
-		},
-		"browser": {
-			"label": "ब्राउज़र",
-			"description": "अनुमोदन की आवश्यकता के बिना स्वचालित रूप से ब्राउज़र क्रियाएँ करें — नोट: केवल तभी लागू होता है जब मॉडल कंप्यूटर उपयोग का समर्थन करता है"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -309,6 +309,7 @@
 		"searchProviderPlaceholder": "प्रदाता खोजें",
 		"noProviderMatchFound": "कोई प्रदाता नहीं मिला",
 		"noMatchFound": "कोई मिलान प्रोफ़ाइल नहीं मिला",
+		"retiredProviderMessage": "क्षमा करें, यह प्रदाता अब समर्थित नहीं है। हमने देखा कि बहुत कम Roo उपयोगकर्ता वास्तव में इसका उपयोग कर रहे थे और हमें अपने कोडबेस का दायरा कम करने की आवश्यकता है ताकि हम तेज़ी से काम करना और अपने समुदाय की अच्छी सेवा करना जारी रख सकें। यह वाकई एक कठिन निर्णय था, लेकिन इससे हम उस पर ध्यान केंद्रित कर सकते हैं जो तुम्हारे लिए सबसे ज़्यादा मायने रखता है। हम जानते हैं, यह बुरा लगता है।",
 		"vscodeLmDescription": "VS कोड भाषा मॉडल API आपको अन्य VS कोड एक्सटेंशन (जैसे GitHub Copilot) द्वारा प्रदान किए गए मॉडल चलाने की अनुमति देता है। शुरू करने का सबसे आसान तरीका VS कोड मार्केटप्लेस से Copilot और Copilot चैट एक्सटेंशन इंस्टॉल करना है।",
 		"awsCustomArnUse": "आप जिस मॉडल का उपयोग करना चाहते हैं, उसके लिए एक वैध Amazon बेडरॉक ARN दर्ज करें। प्रारूप उदाहरण:",
 		"awsCustomArnDesc": "सुनिश्चित करें कि ARN में क्षेत्र ऊपर चयनित AWS क्षेत्र से मेल खाता है।",
@@ -370,28 +371,17 @@
 		"getAnthropicApiKey": "Anthropic API कुंजी प्राप्त करें",
 		"anthropicUseAuthToken": "X-Api-Key के बजाय Anthropic API कुंजी को Authorization हेडर के रूप में पास करें",
 		"anthropic1MContextBetaLabel": "1M संदर्भ विंडो सक्षम करें (बीटा)",
-		"anthropic1MContextBetaDescription": "Claude Sonnet 4 / 4.5 / Claude Opus 4.6 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
+		"anthropic1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
 		"awsBedrock1MContextBetaLabel": "1M संदर्भ विंडो सक्षम करें (बीटा)",
-		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4 / 4.5 / Claude Opus 4.6 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
+		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
 		"vertex1MContextBetaLabel": "1M संदर्भ विंडो सक्षम करें (बीटा)",
-		"vertex1MContextBetaDescription": "Claude Sonnet 4 / 4.5 / Claude Opus 4.6 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
+		"vertex1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
 		"basetenApiKey": "Baseten API कुंजी",
 		"getBasetenApiKey": "Baseten API कुंजी प्राप्त करें",
-		"cerebrasApiKey": "Cerebras API कुंजी",
-		"getCerebrasApiKey": "Cerebras API कुंजी प्राप्त करें",
-		"chutesApiKey": "Chutes API कुंजी",
-		"getChutesApiKey": "Chutes API कुंजी प्राप्त करें",
 		"fireworksApiKey": "Fireworks API कुंजी",
 		"getFireworksApiKey": "Fireworks API कुंजी प्राप्त करें",
-		"featherlessApiKey": "Featherless API कुंजी",
-		"getFeatherlessApiKey": "Featherless API कुंजी प्राप्त करें",
-		"ioIntelligenceApiKey": "IO Intelligence API कुंजी",
-		"ioIntelligenceApiKeyPlaceholder": "अपना आईओ इंटेलिजेंस एपीआई कुंजी दर्ज करें",
-		"getIoIntelligenceApiKey": "IO Intelligence API कुंजी प्राप्त करें",
 		"deepSeekApiKey": "DeepSeek API कुंजी",
 		"getDeepSeekApiKey": "DeepSeek API कुंजी प्राप्त करें",
-		"doubaoApiKey": "डौबाओ API कुंजी",
-		"getDoubaoApiKey": "डौबाओ API कुंजी प्राप्त करें",
 		"moonshotApiKey": "Moonshot API कुंजी",
 		"getMoonshotApiKey": "Moonshot API कुंजी प्राप्त करें",
 		"moonshotBaseUrl": "Moonshot प्रवेश बिंदु",
@@ -403,23 +393,8 @@
 		"getMiniMaxApiKey": "MiniMax API कुंजी प्राप्त करें",
 		"minimaxBaseUrl": "MiniMax प्रवेश बिंदु",
 		"geminiApiKey": "Gemini API कुंजी",
-		"getGroqApiKey": "Groq API कुंजी प्राप्त करें",
-		"groqApiKey": "Groq API कुंजी",
 		"getSambaNovaApiKey": "SambaNova API कुंजी प्राप्त करें",
 		"sambaNovaApiKey": "SambaNova API कुंजी",
-		"getHuggingFaceApiKey": "Hugging Face API कुंजी प्राप्त करें",
-		"huggingFaceApiKey": "Hugging Face API कुंजी",
-		"huggingFaceModelId": "मॉडल ID",
-		"huggingFaceLoading": "लोड हो रहा है...",
-		"huggingFaceModelsCount": "({{count}} मॉडल)",
-		"huggingFaceSelectModel": "एक मॉडल चुनें...",
-		"huggingFaceSearchModels": "मॉडल खोजें...",
-		"huggingFaceNoModelsFound": "कोई मॉडल नहीं मिला",
-		"huggingFaceProvider": "प्रदाता",
-		"huggingFaceProviderAuto": "स्वचालित",
-		"huggingFaceSelectProvider": "एक प्रदाता चुनें...",
-		"huggingFaceSearchProviders": "प्रदाता खोजें...",
-		"huggingFaceNoProvidersFound": "कोई प्रदाता नहीं मिला",
 		"getGeminiApiKey": "Gemini API कुंजी प्राप्त करें",
 		"openAiApiKey": "OpenAI API कुंजी",
 		"apiKey": "API कुंजी",
@@ -491,10 +466,6 @@
 			"description": "Ollama आपको अपने कंप्यूटर पर स्थानीय रूप से मॉडल चलाने की अनुमति देता है। आरंभ करने के निर्देशों के लिए, उनकी क्विकस्टार्ट गाइड देखें।",
 			"warning": "नोट: Roo Code जटिल प्रॉम्प्ट्स का उपयोग करता है और Claude मॉडल के साथ सबसे अच्छा काम करता है। कम क्षमता वाले मॉडल अपेक्षित रूप से काम नहीं कर सकते हैं।"
 		},
-		"unboundApiKey": "Unbound API कुंजी",
-		"getUnboundApiKey": "Unbound API कुंजी प्राप्त करें",
-		"unboundRefreshModelsSuccess": "मॉडल सूची अपडेट हो गई है! अब आप नवीनतम मॉडलों में से चुन सकते हैं।",
-		"unboundInvalidApiKey": "अमान्य API कुंजी। कृपया अपनी API कुंजी की जांच करें और पुनः प्रयास करें।",
 		"roo": {
 			"authenticatedMessage": "आपके Roo Code Cloud खाते के माध्यम से सुरक्षित रूप से प्रमाणित।",
 			"connectButton": "Roo Code Cloud से कनेक्ट करें"
@@ -581,34 +552,6 @@
 			"placeholder": "डिफ़ॉल्ट: claude",
 			"maxTokensLabel": "अधिकतम आउटपुट टोकन",
 			"maxTokensDescription": "Claude Code प्रतिक्रियाओं के लिए आउटपुट टोकन की अधिकतम संख्या। डिफ़ॉल्ट 8000 है।"
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "ब्राउज़र टूल सक्षम करें",
-			"description": "जब सक्षम होता है, तो Roo कंप्यूटर उपयोग का समर्थन करने वाले मॉडल का उपयोग करते समय वेबसाइटों के साथ बातचीत करने के लिए ब्राउज़र का उपयोग कर सकता है। <0>अधिक जानें</0>"
-		},
-		"viewport": {
-			"label": "व्यूपोर्ट आकार",
-			"description": "ब्राउज़र इंटरैक्शन के लिए व्यूपोर्ट आकार चुनें। यह वेबसाइटों के प्रदर्शन और उनके साथ बातचीत को प्रभावित करता है।",
-			"options": {
-				"largeDesktop": "बड़ा डेस्कटॉप (1280x800)",
-				"smallDesktop": "छोटा डेस्कटॉप (900x600)",
-				"tablet": "टैबलेट (768x1024)",
-				"mobile": "मोबाइल (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "स्क्रीनशॉट गुणवत्ता",
-			"description": "ब्राउज़र स्क्रीनशॉट की WebP गुणवत्ता समायोजित करें। उच्च मान स्पष्ट स्क्रीनशॉट प्रदान करते हैं लेकिन token उपयोग बढ़ाते हैं।"
-		},
-		"remote": {
-			"label": "दूरस्थ ब्राउज़र कनेक्शन का उपयोग करें",
-			"description": "रिमोट डीबगिंग सक्षम के साथ चल रहे Chrome ब्राउज़र से कनेक्ट करें (--remote-debugging-port=9222)।",
-			"urlPlaceholder": "कस्टम URL (उदा. http://localhost:9222)",
-			"testButton": "कनेक्शन का परीक्षण करें",
-			"testingButton": "परीक्षण हो रहा है...",
-			"instructions": "DevTools प्रोटोकॉल होस्ट पता दर्ज करें या Chrome स्थानीय इंस्टेंस स्वतः खोजने के लिए खाली छोड़ दें। टेस्ट कनेक्शन बटन यदि प्रदान किया गया है तो कस्टम URL का प्रयास करेगा, या यदि फ़ील्ड खाली है तो स्वतः खोज करेगा।"
 		}
 	},
 	"checkpoints": {

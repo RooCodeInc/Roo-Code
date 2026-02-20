@@ -65,6 +65,8 @@ vi.mock("fs/promises", async (importOriginal) => {
 		}),
 		unlink: vi.fn().mockResolvedValue(undefined),
 		rmdir: vi.fn().mockResolvedValue(undefined),
+		stat: vi.fn().mockRejectedValue({ code: "ENOENT" }),
+		readdir: vi.fn().mockResolvedValue([]),
 	}
 
 	return {
@@ -907,7 +909,6 @@ describe("Cline", () => {
 					const { content: processedContent } = await processUserContentMentions({
 						userContent,
 						cwd: cline.cwd,
-						urlContentFetcher: cline.urlContentFetcher,
 						fileContextTracker: cline.fileContextTracker,
 					})
 
@@ -962,9 +963,15 @@ describe("Cline", () => {
 				mockProvider = {
 					context: {
 						globalStorageUri: { fsPath: "/test/storage" },
+						globalState: {
+							get: vi.fn().mockImplementation(() => undefined),
+							update: vi.fn().mockResolvedValue(undefined),
+							keys: vi.fn().mockReturnValue([]),
+						},
 					},
 					getState: vi.fn().mockResolvedValue({
 						apiConfiguration: mockApiConfig,
+						mcpEnabled: false,
 					}),
 					getMcpHub: vi.fn().mockReturnValue(undefined),
 					getSkillsManager: vi.fn().mockReturnValue(undefined),
@@ -996,6 +1003,7 @@ describe("Cline", () => {
 					task: "parent task",
 					startTask: false,
 				})
+				vi.spyOn(parent as any, "getSystemPrompt").mockResolvedValue("mock system prompt")
 
 				// Mock the API stream response
 				const mockStream = {
@@ -1032,6 +1040,7 @@ describe("Cline", () => {
 					rootTask: parent,
 					startTask: false,
 				})
+				vi.spyOn(child as any, "getSystemPrompt").mockResolvedValue("mock system prompt")
 
 				// Spy on child.say to verify the emitted message type
 				const saySpy = vi.spyOn(child, "say")
@@ -1083,6 +1092,7 @@ describe("Cline", () => {
 					task: "parent task",
 					startTask: false,
 				})
+				vi.spyOn(parent as any, "getSystemPrompt").mockResolvedValue("mock system prompt")
 
 				// Mock the API stream response
 				const mockStream = {
@@ -1121,6 +1131,7 @@ describe("Cline", () => {
 					rootTask: parent,
 					startTask: false,
 				})
+				vi.spyOn(child as any, "getSystemPrompt").mockResolvedValue("mock system prompt")
 
 				vi.spyOn(child.api, "createMessage").mockReturnValue(mockStream)
 
@@ -1143,6 +1154,7 @@ describe("Cline", () => {
 					task: "parent task",
 					startTask: false,
 				})
+				vi.spyOn(parent as any, "getSystemPrompt").mockResolvedValue("mock system prompt")
 
 				// Mock the API stream response
 				const mockStream = {
@@ -1176,6 +1188,7 @@ describe("Cline", () => {
 					rootTask: parent,
 					startTask: false,
 				})
+				vi.spyOn(child1 as any, "getSystemPrompt").mockResolvedValue("mock system prompt")
 
 				vi.spyOn(child1.api, "createMessage").mockReturnValue(mockStream)
 
@@ -1199,6 +1212,7 @@ describe("Cline", () => {
 					rootTask: parent,
 					startTask: false,
 				})
+				vi.spyOn(child2 as any, "getSystemPrompt").mockResolvedValue("mock system prompt")
 
 				vi.spyOn(child2.api, "createMessage").mockReturnValue(mockStream)
 
@@ -1215,6 +1229,7 @@ describe("Cline", () => {
 				mockApiConfig.rateLimitSeconds = 0
 				mockProvider.getState.mockResolvedValue({
 					apiConfiguration: mockApiConfig,
+					mcpEnabled: false,
 				})
 
 				// Create parent task
@@ -1224,6 +1239,7 @@ describe("Cline", () => {
 					task: "parent task",
 					startTask: false,
 				})
+				vi.spyOn(parent as any, "getSystemPrompt").mockResolvedValue("mock system prompt")
 
 				// Mock the API stream response
 				const mockStream = {
@@ -1257,6 +1273,7 @@ describe("Cline", () => {
 					rootTask: parent,
 					startTask: false,
 				})
+				vi.spyOn(child as any, "getSystemPrompt").mockResolvedValue("mock system prompt")
 
 				vi.spyOn(child.api, "createMessage").mockReturnValue(mockStream)
 
@@ -1276,6 +1293,7 @@ describe("Cline", () => {
 					task: "test task",
 					startTask: false,
 				})
+				vi.spyOn(task as any, "getSystemPrompt").mockResolvedValue("mock system prompt")
 
 				// Mock the API stream response
 				const mockStream = {
@@ -1799,6 +1817,49 @@ describe("Cline", () => {
 				// Verify cancelCurrentRequest was called
 				expect(cancelSpy).toHaveBeenCalled()
 			})
+		})
+	})
+
+	describe("start()", () => {
+		it("should be a no-op if the task was already started in the constructor", () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			// Manually trigger start
+			const startTaskSpy = vi.spyOn(task as any, "startTask").mockImplementation(async () => {})
+			task.start()
+
+			expect(startTaskSpy).toHaveBeenCalledTimes(1)
+
+			// Calling start() again should be a no-op
+			task.start()
+			expect(startTaskSpy).toHaveBeenCalledTimes(1)
+		})
+
+		it("should not call startTask if already started via constructor", () => {
+			// Create a task that starts immediately (startTask defaults to true)
+			// but mock startTask to prevent actual execution
+			const startTaskSpy = vi.spyOn(Task.prototype as any, "startTask").mockImplementation(async () => {})
+
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: true,
+			})
+
+			// startTask was called by the constructor
+			expect(startTaskSpy).toHaveBeenCalledTimes(1)
+
+			// Calling start() should be a no-op since _started is already true
+			task.start()
+			expect(startTaskSpy).toHaveBeenCalledTimes(1)
+
+			startTaskSpy.mockRestore()
 		})
 	})
 })

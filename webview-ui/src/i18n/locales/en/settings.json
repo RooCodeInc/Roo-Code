@@ -32,7 +32,6 @@
 		"worktrees": "Worktrees",
 		"skills": "Skills",
 		"autoApprove": "Auto-Approve",
-		"browser": "Browser",
 		"checkpoints": "Checkpoints",
 		"notifications": "Notifications",
 		"contextManagement": "Context",
@@ -275,7 +274,12 @@
 			"baseUrlRequired": "Base URL is required",
 			"modelDimensionMinValue": "Model dimension must be greater than 0"
 		},
-		"optional": "optional"
+		"optional": "optional",
+		"stopIndexingButton": "Stop Indexing",
+		"stoppingButton": "Stopping...",
+		"workspaceToggleLabel": "Enable indexing for this workspace",
+		"workspaceDisabledMessage": "Indexing is configured but not enabled for this workspace.",
+		"autoEnableDefaultLabel": "Auto-enable indexing for new workspaces"
 	},
 	"autoApprove": {
 		"description": "Run these actions without asking for permission. Only enable for actions you fully trust and if you understand the security risks.",
@@ -301,10 +305,6 @@
 				"label": "Include protected files",
 				"description": "Allow Roo to create and edit protected files (like .rooignore and .roo/ configuration files) without requiring approval."
 			}
-		},
-		"browser": {
-			"label": "Browser",
-			"description": "Automatically perform browser actions without requiring approval. Note: Only applies when the model supports computer use"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -372,6 +372,7 @@
 		"searchProviderPlaceholder": "Search providers",
 		"noProviderMatchFound": "No providers found",
 		"noMatchFound": "No matching profiles found",
+		"retiredProviderMessage": "Sorry, this provider is no longer supported. We saw very few Roo users actually using it and we need to reduce the surface area of our codebase so we can keep shipping fast and serving our community well in this space. It was a really hard decision but it lets us focus on what matters most to you. It sucks, we know.",
 		"vscodeLmDescription": " The VS Code Language Model API allows you to run models provided by other VS Code extensions (including but not limited to GitHub Copilot). The easiest way to get started is to install the Copilot and Copilot Chat extensions from the VS Code Marketplace.",
 		"awsCustomArnUse": "Enter a valid Amazon Bedrock ARN for the model you want to use. Format examples:",
 		"awsCustomArnDesc": "Make sure the region in the ARN matches your selected AWS Region above.",
@@ -433,28 +434,17 @@
 		"getAnthropicApiKey": "Get Anthropic API Key",
 		"anthropicUseAuthToken": "Pass Anthropic API Key as Authorization header instead of X-Api-Key",
 		"anthropic1MContextBetaLabel": "Enable 1M context window (Beta)",
-		"anthropic1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"anthropic1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4.x / Claude Opus 4.6",
 		"awsBedrock1MContextBetaLabel": "Enable 1M context window (Beta)",
-		"awsBedrock1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"awsBedrock1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4.x / Claude Opus 4.6",
 		"vertex1MContextBetaLabel": "Enable 1M context window (Beta)",
-		"vertex1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"vertex1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4.x / Claude Opus 4.6",
 		"basetenApiKey": "Baseten API Key",
 		"getBasetenApiKey": "Get Baseten API Key",
-		"cerebrasApiKey": "Cerebras API Key",
-		"getCerebrasApiKey": "Get Cerebras API Key",
-		"chutesApiKey": "Chutes API Key",
-		"getChutesApiKey": "Get Chutes API Key",
 		"fireworksApiKey": "Fireworks API Key",
 		"getFireworksApiKey": "Get Fireworks API Key",
-		"featherlessApiKey": "Featherless API Key",
-		"getFeatherlessApiKey": "Get Featherless API Key",
-		"ioIntelligenceApiKey": "IO Intelligence API Key",
-		"ioIntelligenceApiKeyPlaceholder": "Enter your IO Intelligence API key",
-		"getIoIntelligenceApiKey": "Get IO Intelligence API Key",
 		"deepSeekApiKey": "DeepSeek API Key",
 		"getDeepSeekApiKey": "Get DeepSeek API Key",
-		"doubaoApiKey": "Doubao API Key",
-		"getDoubaoApiKey": "Get Doubao API Key",
 		"moonshotApiKey": "Moonshot API Key",
 		"getMoonshotApiKey": "Get Moonshot API Key",
 		"moonshotBaseUrl": "Moonshot Entrypoint",
@@ -466,23 +456,8 @@
 		"zaiEntrypoint": "Z AI Entrypoint",
 		"zaiEntrypointDescription": "Please select the appropriate API entrypoint based on your location. If you are in China, choose open.bigmodel.cn. Otherwise, choose api.z.ai.",
 		"geminiApiKey": "Gemini API Key",
-		"getGroqApiKey": "Get Groq API Key",
-		"groqApiKey": "Groq API Key",
 		"getSambaNovaApiKey": "Get SambaNova API Key",
 		"sambaNovaApiKey": "SambaNova API Key",
-		"getHuggingFaceApiKey": "Get Hugging Face API Key",
-		"huggingFaceApiKey": "Hugging Face API Key",
-		"huggingFaceModelId": "Model ID",
-		"huggingFaceLoading": "Loading...",
-		"huggingFaceModelsCount": "({{count}} models)",
-		"huggingFaceSelectModel": "Select a model...",
-		"huggingFaceSearchModels": "Search models...",
-		"huggingFaceNoModelsFound": "No models found",
-		"huggingFaceProvider": "Provider",
-		"huggingFaceProviderAuto": "Auto",
-		"huggingFaceSelectProvider": "Select a provider...",
-		"huggingFaceSearchProviders": "Search providers...",
-		"huggingFaceNoProvidersFound": "No providers found",
 		"getGeminiApiKey": "Get Gemini API Key",
 		"openAiApiKey": "OpenAI API Key",
 		"apiKey": "API Key",
@@ -554,10 +529,6 @@
 			"description": "Ollama allows you to run models locally on your computer. For instructions on how to get started, see their quickstart guide.",
 			"warning": "Note: Roo Code uses complex prompts and works best with Claude models. Less capable models may not work as expected."
 		},
-		"unboundApiKey": "Unbound API Key",
-		"getUnboundApiKey": "Get Unbound API Key",
-		"unboundRefreshModelsSuccess": "Models list updated! You can now select from the latest models.",
-		"unboundInvalidApiKey": "Invalid API key. Please check your API key and try again.",
 		"roo": {
 			"authenticatedMessage": "Securely authenticated through your Roo Code Cloud account.",
 			"connectButton": "Connect to Roo Code Cloud"
@@ -644,34 +615,6 @@
 			"placeholder": "Default: claude",
 			"maxTokensLabel": "Max Output Tokens",
 			"maxTokensDescription": "Maximum number of output tokens for Claude Code responses. Default is 8000."
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "Enable browser tool",
-			"description": "When enabled, Roo can use a browser to interact with websites when using models that support computer use. <0>Learn more</0>"
-		},
-		"viewport": {
-			"label": "Viewport size",
-			"description": "Select the viewport size for browser interactions. This affects how websites are displayed and interacted with.",
-			"options": {
-				"largeDesktop": "Large Desktop (1280x800)",
-				"smallDesktop": "Small Desktop (900x600)",
-				"tablet": "Tablet (768x1024)",
-				"mobile": "Mobile (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "Screenshot quality",
-			"description": "Adjust the WebP quality of browser screenshots. Higher values provide clearer screenshots but increase token usage."
-		},
-		"remote": {
-			"label": "Use remote browser connection",
-			"description": "Connect to a Chrome browser running with remote debugging enabled (--remote-debugging-port=9222).",
-			"urlPlaceholder": "Custom URL (e.g., http://localhost:9222)",
-			"testButton": "Test Connection",
-			"testingButton": "Testing...",
-			"instructions": "Enter the DevTools Protocol host address or leave empty to auto-discover Chrome local instances. The Test Connection button will try the custom URL if provided, or auto-discover if the field is empty."
 		}
 	},
 	"checkpoints": {

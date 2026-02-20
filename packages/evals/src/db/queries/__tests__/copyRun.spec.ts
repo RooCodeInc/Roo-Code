@@ -138,8 +138,8 @@ describe("copyRun", () => {
 		const toolError3 = await createToolError({
 			runId: sourceRunId,
 			taskId: null,
-			toolName: "browser_action",
-			error: "Browser connection timeout",
+			toolName: "write_to_file",
+			error: "Write timeout",
 		})
 
 		sourceToolErrorIds.push(toolError3.id)
@@ -234,8 +234,8 @@ describe("copyRun", () => {
 		expect(taskToolErrors).toHaveLength(2)
 		expect(runToolErrors).toHaveLength(1)
 
-		const browserError = runToolErrors.find((te) => te.toolName === "browser_action")!
-		expect(browserError.error).toBe("Browser connection timeout")
+		const writeError = runToolErrors.find((te) => te.toolName === "write_to_file")!
+		expect(writeError.error).toBe("Write timeout")
 
 		await db.delete(schema.toolErrors).where(eq(schema.toolErrors.runId, newRunId))
 		await db.delete(schema.tasks).where(eq(schema.tasks.runId, newRunId))

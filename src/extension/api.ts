@@ -4,6 +4,7 @@ import * as path from "path"
 import * as os from "os"
 
 import * as vscode from "vscode"
+import pWaitFor from "p-wait-for"
 
 import {
 	type RooCodeAPI,
@@ -150,6 +151,15 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 						}
 
 						break
+					case TaskCommandName.DeleteQueuedMessage:
+						this.log(`[API] DeleteQueuedMessage -> ${command.data}`)
+						try {
+							this.deleteQueuedMessage(command.data)
+						} catch (error) {
+							const errorMessage = error instanceof Error ? error.message : String(error)
+							this.log(`[API] DeleteQueuedMessage failed for messageId ${command.data}: ${errorMessage}`)
+						}
+						break
 				}
 			})
 		}
@@ -208,9 +218,19 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 	}
 
 	public async resumeTask(taskId: string): Promise<void> {
+		await vscode.commands.executeCommand(`${Package.name}.SidebarProvider.focus`)
+		await this.waitForWebviewLaunch(5_000)
+
 		const { historyItem } = await this.sidebarProvider.getTaskWithId(taskId)
 		await this.sidebarProvider.createTaskWithHistoryItem(historyItem)
-		await this.sidebarProvider.postMessageToWebview({ type: "action", action: "chatButtonClicked" })
+
+		if (this.sidebarProvider.viewLaunched) {
+			await this.sidebarProvider.postMessageToWebview({ type: "action", action: "chatButtonClicked" })
+		} else {
+			this.log(
+				`[API#resumeTask] webview not launched after resume for task ${taskId}; continuing in headless mode`,
+			)
+		}
 	}
 
 	public async isTaskInHistory(taskId: string): Promise<boolean> {
@@ -237,7 +257,33 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 	}
 
 	public async sendMessage(text?: string, images?: string[]) {
+		const currentTask = this.sidebarProvider.getCurrentTask()
+
+		// In headless/sandbox flows the webview may not be launched, so routing
+		// through invoke=sendMessage drops the message. Deliver directly to the
+		// task ask-response channel instead.
+		if (!this.sidebarProvider.viewLaunched) {
+			if (!currentTask) {
+				this.log("[API#sendMessage] no current task in headless mode; message dropped")
+				return
+			}
+
+			await currentTask.submitUserMessage(text ?? "", images)
+			return
+		}
+
 		await this.sidebarProvider.postMessageToWebview({ type: "invoke", invoke: "sendMessage", text, images })
+	}
+
+	public deleteQueuedMessage(messageId: string) {
+		const currentTask = this.sidebarProvider.getCurrentTask()
+
+		if (!currentTask) {
+			this.log(`[API#deleteQueuedMessage] no current task; ignoring delete for messageId ${messageId}`)
+			return
+		}
+
+		currentTask.messageQueueService.removeMessage(messageId)
 	}
 
 	public async pressPrimaryButton() {
@@ -250,6 +296,20 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 
 	public isReady() {
 		return this.sidebarProvider.viewLaunched
+	}
+
+	private async waitForWebviewLaunch(timeoutMs: number): Promise<boolean> {
+		try {
+			await pWaitFor(() => this.sidebarProvider.viewLaunched, {
+				timeout: timeoutMs,
+				interval: 50,
+			})
+
+			return true
+		} catch {
+			this.log(`[API#waitForWebviewLaunch] webview did not launch within ${timeoutMs}ms`)
+			return false
+		}
 	}
 
 	private registerListeners(provider: ClineProvider) {
