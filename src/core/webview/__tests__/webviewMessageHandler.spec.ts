@@ -4,6 +4,7 @@ import type { Mock } from "vitest"
 
 // Mock dependencies - must come before imports
 vi.mock("../../../api/providers/fetchers/modelCache")
+vi.mock("../../../api/providers/fetchers/ollama")
 
 vi.mock("../../../integrations/openai-codex/oauth", () => ({
 	openAiCodexOAuthManager: {
@@ -25,11 +26,14 @@ import type { ModelRecord } from "@roo-code/types"
 
 import { webviewMessageHandler } from "../webviewMessageHandler"
 import type { ClineProvider } from "../ClineProvider"
-import { getModels } from "../../../api/providers/fetchers/modelCache"
+import { getModels, flushModels } from "../../../api/providers/fetchers/modelCache"
+import { discoverOllamaModelsWithSorting } from "../../../api/providers/fetchers/ollama"
 const { openAiCodexOAuthManager } = await import("../../../integrations/openai-codex/oauth")
 const { fetchOpenAiCodexRateLimitInfo } = await import("../../../integrations/openai-codex/rate-limits")
 
 const mockGetModels = getModels as Mock<typeof getModels>
+const mockFlushModels = flushModels as Mock<typeof flushModels>
+const mockDiscoverOllamaModels = discoverOllamaModelsWithSorting as Mock<typeof discoverOllamaModelsWithSorting>
 const mockGetAccessToken = vi.mocked(openAiCodexOAuthManager.getAccessToken)
 const mockGetAccountId = vi.mocked(openAiCodexOAuthManager.getAccountId)
 const mockFetchOpenAiCodexRateLimitInfo = vi.mocked(fetchOpenAiCodexRateLimitInfo)
@@ -228,32 +232,40 @@ describe("webviewMessageHandler - requestOllamaModels", () => {
 	})
 
 	it("successfully fetches models from Ollama", async () => {
-		const mockModels: ModelRecord = {
-			"model-1": {
-				maxTokens: 4096,
-				contextWindow: 8192,
-				supportsPromptCache: false,
-				description: "Test model 1",
-			},
-			"model-2": {
-				maxTokens: 8192,
-				contextWindow: 16384,
-				supportsPromptCache: false,
-				description: "Test model 2",
-			},
+		const mockModelInfo = {
+			maxTokens: 4096,
+			contextWindow: 8192,
+			supportsPromptCache: false,
+			description: "Test model 1",
 		}
 
-		mockGetModels.mockResolvedValue(mockModels)
+		mockFlushModels.mockResolvedValue(undefined)
+		mockDiscoverOllamaModels.mockResolvedValue({
+			modelsWithTools: [
+				{ name: "model-1", modelInfo: mockModelInfo, contextWindow: 8192, supportsImages: false },
+			],
+			modelsWithoutTools: [],
+			totalCount: 1,
+		})
 
 		await webviewMessageHandler(mockClineProvider, {
 			type: "requestOllamaModels",
 		})
 
-		expect(mockGetModels).toHaveBeenCalledWith({ provider: "ollama", baseUrl: "http://localhost:1234" })
+		expect(mockFlushModels).toHaveBeenCalledWith({ provider: "ollama", baseUrl: "http://localhost:1234" }, true)
+		expect(mockDiscoverOllamaModels).toHaveBeenCalledWith(
+			"http://localhost:1234",
+			undefined,
+			expect.objectContaining({}),
+		)
 
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 			type: "ollamaModels",
-			ollamaModels: mockModels,
+			ollamaModels: { "model-1": mockModelInfo },
+			ollamaModelsWithTools: [
+				{ name: "model-1", modelInfo: mockModelInfo, contextWindow: 8192, supportsImages: false },
+			],
+			modelsWithoutTools: [],
 		})
 	})
 })
