@@ -1412,6 +1412,7 @@ export class ClineProvider
 		}
 
 		const { historyItem } = await this.getTaskWithId(cline.taskId)
+		const elapsedBeforeAbort = cline.getTaskDuration()
 		// Preserve parent and root task information for history item.
 		const rootTask = cline.rootTask
 		const parentTask = cline.parentTask
@@ -1446,7 +1447,13 @@ export class ClineProvider
 		// Clears task again, so we need to abortTask manually above.
 		// Re-fetch historyItem since abortTask saved updated duration
 		const { historyItem: updatedHistoryItem } = await this.getTaskWithId(cline.taskId)
-		await this.initClineWithHistoryItem({ ...updatedHistoryItem, rootTask, parentTask })
+		const resumedDuration = Math.max(updatedHistoryItem.duration ?? 0, elapsedBeforeAbort)
+		await this.initClineWithHistoryItem({
+			...updatedHistoryItem,
+			duration: resumedDuration,
+			rootTask,
+			parentTask,
+		})
 	}
 
 	async updateCustomInstructions(instructions?: string) {

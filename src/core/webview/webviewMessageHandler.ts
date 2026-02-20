@@ -521,7 +521,19 @@ export const webviewMessageHandler = async (
 			await provider.postStateToWebview()
 			break
 		case "askResponse":
-			provider.getCurrentCline()?.handleWebviewAskResponse(message.askResponse!, message.text, message.images)
+			{
+				const task = provider.getCurrentCline()
+				if (!task) {
+					break
+				}
+				if (message.taskId && message.taskId !== task.taskId) {
+					provider.log(
+						`[TIMER_TRACE] Ignored askResponse for stale taskId=${message.taskId}; current=${task.taskId}`,
+					)
+					break
+				}
+				task.handleWebviewAskResponse(message.askResponse!, message.text, message.images, message.messageTs)
+			}
 			break
 		case "autoCondenseContext":
 			await updateGlobalState("autoCondenseContext", message.bool)
