@@ -524,4 +524,48 @@ describe("OpenAiNativeHandler done-event fallbacks", () => {
 			name: "attempt_completion",
 		})
 	})
+
+	it("does not duplicate text when delta and output_text.done are both emitted", async () => {
+		const chunks = await collectChunksFromEvents([
+			{ type: "response.output_text.delta", delta: "hello " },
+			{ type: "response.output_text.delta", delta: "world" },
+			{ type: "response.output_text.done", text: "hello world" },
+			{
+				type: "response.completed",
+				response: {
+					id: "resp_delta_done",
+					status: "completed",
+					output: [],
+					usage: { input_tokens: 1, output_tokens: 2 },
+				},
+			},
+		])
+
+		const textChunks = chunks.filter((c) => c.type === "text")
+		expect(textChunks.map((c) => c.text).join("")).toBe("hello world")
+	})
+
+	it("does not duplicate text when delta and content_part.added are both emitted", async () => {
+		const chunks = await collectChunksFromEvents([
+			{ type: "response.output_text.delta", delta: "hello world" },
+			{
+				type: "response.content_part.added",
+				part: { type: "output_text", text: "hello world" },
+				output_index: 0,
+				content_index: 0,
+			},
+			{
+				type: "response.completed",
+				response: {
+					id: "resp_delta_content_part",
+					status: "completed",
+					output: [],
+					usage: { input_tokens: 1, output_tokens: 2 },
+				},
+			},
+		])
+
+		const textChunks = chunks.filter((c) => c.type === "text")
+		expect(textChunks.map((c) => c.text).join("")).toBe("hello world")
+	})
 })

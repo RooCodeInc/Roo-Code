@@ -325,4 +325,84 @@ describe("OpenAiCodexHandler native tool calls", () => {
 		expect(textChunks.length).toBeGreaterThan(0)
 		expect(textChunks.map((c) => c.text).join("")).toContain("content part text")
 	})
+
+	it("does not duplicate text when Codex emits delta and output_text.done", async () => {
+		vi.spyOn(openAiCodexOAuthManager, "getAccessToken").mockResolvedValue("test-token")
+		vi.spyOn(openAiCodexOAuthManager, "getAccountId").mockResolvedValue("acct_test")
+		;(handler as any).client = {
+			responses: {
+				create: vi.fn().mockResolvedValue({
+					async *[Symbol.asyncIterator]() {
+						yield { type: "response.output_text.delta", delta: "hello " }
+						yield { type: "response.output_text.delta", delta: "world" }
+						yield { type: "response.output_text.done", text: "hello world" }
+						yield {
+							type: "response.completed",
+							response: {
+								id: "resp_delta_done",
+								status: "completed",
+								output: [],
+								usage: { input_tokens: 1, output_tokens: 2 },
+							},
+						}
+					},
+				}),
+			},
+		}
+
+		const stream = handler.createMessage("system", [{ role: "user", content: "test" } as any], {
+			taskId: "t",
+			tools: [],
+		})
+
+		const chunks: any[] = []
+		for await (const chunk of stream) {
+			chunks.push(chunk)
+		}
+
+		const textChunks = chunks.filter((c) => c.type === "text")
+		expect(textChunks.map((c) => c.text).join("")).toBe("hello world")
+	})
+
+	it("does not duplicate text when Codex emits delta and content_part.added", async () => {
+		vi.spyOn(openAiCodexOAuthManager, "getAccessToken").mockResolvedValue("test-token")
+		vi.spyOn(openAiCodexOAuthManager, "getAccountId").mockResolvedValue("acct_test")
+		;(handler as any).client = {
+			responses: {
+				create: vi.fn().mockResolvedValue({
+					async *[Symbol.asyncIterator]() {
+						yield { type: "response.output_text.delta", delta: "hello world" }
+						yield {
+							type: "response.content_part.added",
+							part: { type: "output_text", text: "hello world" },
+							output_index: 0,
+							content_index: 0,
+						}
+						yield {
+							type: "response.completed",
+							response: {
+								id: "resp_delta_content_part",
+								status: "completed",
+								output: [],
+								usage: { input_tokens: 1, output_tokens: 2 },
+							},
+						}
+					},
+				}),
+			},
+		}
+
+		const stream = handler.createMessage("system", [{ role: "user", content: "test" } as any], {
+			taskId: "t",
+			tools: [],
+		})
+
+		const chunks: any[] = []
+		for await (const chunk of stream) {
+			chunks.push(chunk)
+		}
+
+		const textChunks = chunks.filter((c) => c.type === "text")
+		expect(textChunks.map((c) => c.text).join("")).toBe("hello world")
+	})
 })

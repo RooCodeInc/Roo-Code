@@ -47,6 +47,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	private pendingToolCallName: string | undefined
 	// Tracks whether this response already emitted text to avoid duplicate done-event rendering.
 	private sawTextOutputInCurrentResponse = false
+	// Tracks whether text arrived through delta events so content_part events can be treated as fallback-only.
+	private sawTextDeltaInCurrentResponse = false
 	// Tracks tool call IDs emitted via streaming partial events to prevent done-event duplicates.
 	private streamedToolCallIds = new Set<string>()
 	// Resolved service tier from Responses API (actual tier used by OpenAI)
@@ -193,6 +195,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		this.pendingToolCallId = undefined
 		this.pendingToolCallName = undefined
 		this.sawTextOutputInCurrentResponse = false
+		this.sawTextDeltaInCurrentResponse = false
 		this.streamedToolCallIds.clear()
 
 		// Use Responses API for ALL models
@@ -710,7 +713,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 								this.lastResponseId = parsed.response.id as string
 							}
 
-							// Delegate standard event types to the shared processor to avoid duplication
+							// Delegate standard event types to the shared processor to avoid duplication.
+							// This applies to both SDK and raw SSE fallback paths.
 							if (parsed?.type && this.coreHandledEventTypes.has(parsed.type)) {
 								for await (const outChunk of this.processEvent(parsed, model)) {
 									// Track whether we've emitted any content so fallback handling can decide appropriately
@@ -1061,13 +1065,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 								// For SSE path, usage often arrives separately; avoid double-emitting here.
 							}
 							// These are structural or status events, we can just log them at a lower level or ignore.
-							else if (
-								parsed.type === "response.created" ||
-								parsed.type === "response.in_progress" ||
-								parsed.type === "response.output_item.done" ||
-								parsed.type === "response.content_part.added" ||
-								parsed.type === "response.content_part.done"
-							) {
+							else if (parsed.type === "response.created" || parsed.type === "response.in_progress") {
 								// Status events - no action needed
 							}
 							// Fallback for older formats or unexpected responses
@@ -1159,6 +1157,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Handle text deltas
 		if (event?.type === "response.text.delta" || event?.type === "response.output_text.delta") {
 			if (event?.delta) {
+				this.sawTextDeltaInCurrentResponse = true
 				this.sawTextOutputInCurrentResponse = true
 				yield { type: "text", text: event.delta }
 			}
@@ -1186,6 +1185,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		if (event?.type === "response.content_part.added" || event?.type === "response.content_part.done") {
 			const part = event?.part
 			if (
+				!this.sawTextDeltaInCurrentResponse &&
 				(part?.type === "text" || part?.type === "output_text") &&
 				(typeof part?.text === "string" || typeof part?.text?.value === "string")
 			) {
@@ -1372,6 +1372,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		// Fallbacks for older formats or unexpected objects
 		if (event?.choices?.[0]?.delta?.content) {
+			this.sawTextDeltaInCurrentResponse = true
 			this.sawTextOutputInCurrentResponse = true
 			yield { type: "text", text: event.choices[0].delta.content }
 			return

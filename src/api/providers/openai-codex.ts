@@ -66,6 +66,8 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 	private pendingToolCallName: string | undefined
 	// Tracks whether this response already emitted text to avoid duplicate done-event rendering.
 	private sawTextOutputInCurrentResponse = false
+	// Tracks whether text arrived through delta events so content_part events can be treated as fallback-only.
+	private sawTextDeltaInCurrentResponse = false
 	// Tracks tool call IDs emitted via streaming partial events to prevent done-event duplicates.
 	private streamedToolCallIds = new Set<string>()
 
@@ -158,6 +160,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 		this.pendingToolCallId = undefined
 		this.pendingToolCallName = undefined
 		this.sawTextOutputInCurrentResponse = false
+		this.sawTextDeltaInCurrentResponse = false
 		this.streamedToolCallIds.clear()
 
 		// Get access token from OAuth manager
@@ -878,6 +881,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 		// Handle text deltas
 		if (event?.type === "response.text.delta" || event?.type === "response.output_text.delta") {
 			if (event?.delta) {
+				this.sawTextDeltaInCurrentResponse = true
 				this.sawTextOutputInCurrentResponse = true
 				yield { type: "text", text: event.delta }
 			}
@@ -903,6 +907,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 		if (event?.type === "response.content_part.added" || event?.type === "response.content_part.done") {
 			const part = event?.part
 			if (
+				!this.sawTextDeltaInCurrentResponse &&
 				(part?.type === "text" || part?.type === "output_text") &&
 				(typeof part?.text === "string" || typeof part?.text?.value === "string")
 			) {
@@ -1090,6 +1095,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 
 		// Fallbacks
 		if (event?.choices?.[0]?.delta?.content) {
+			this.sawTextDeltaInCurrentResponse = true
 			this.sawTextOutputInCurrentResponse = true
 			yield { type: "text", text: event.choices[0].delta.content }
 			return
