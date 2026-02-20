@@ -942,9 +942,7 @@ describe("worktree path comparison", () => {
 
 			// Second init with stubbed worktree returning a trailing newline
 			const service2 = new RepoPerTaskCheckpointService("trim-test-2", shadowDir, workspaceDir, () => {})
-			vitest
-				.spyOn(service2 as any, "getShadowGitConfigWorktree")
-				.mockResolvedValue(workspaceDir + "\n")
+			vitest.spyOn(service2 as any, "getShadowGitConfigWorktree").mockResolvedValue(workspaceDir + "\n")
 
 			await service2.initShadowGit()
 		} finally {
@@ -983,9 +981,7 @@ describe("worktree path comparison", () => {
 
 			// Second init should throw because core.worktree is missing
 			const service2 = new RepoPerTaskCheckpointService("missing-test-2", shadowDir, workspaceDir, () => {})
-			await expect(service2.initShadowGit()).rejects.toThrowError(
-				/core\.worktree to be set/,
-			)
+			await expect(service2.initShadowGit()).rejects.toThrowError(/core\.worktree to be set/)
 		} finally {
 			vitest.restoreAllMocks()
 			await fs.rm(shadowDir, { recursive: true, force: true })
