@@ -34,6 +34,7 @@ import { updateTodoListTool } from "../tools/UpdateTodoListTool"
 import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
 import { skillTool } from "../tools/SkillTool"
 import { generateImageTool } from "../tools/GenerateImageTool"
+import { selectActiveIntentTool } from "../tools/SelectActiveIntentTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
@@ -489,6 +490,13 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 
 				hasToolResult = true
+
+				// Execute post-tool hook after the tool has produced a result.
+				void cline
+					.runPostToolUseHook(block.name, block.nativeArgs || block.params || {}, content)
+					.catch((hookError) => {
+						console.error(`[HookEngine] postToolUse failed for ${block.name}:`, hookError)
+					})
 			}
 
 			const askApproval = async (
@@ -620,6 +628,31 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 
 					break
+				}
+			}
+
+			// Run deterministic pre-tool hook checks before execution.
+			if (!block.partial) {
+				const hookParams = block.nativeArgs || block.params || {}
+				const hookResult = await cline.runPreToolUseHook(block.name, hookParams)
+
+				if (!hookResult.allowed) {
+					cline.consecutiveMistakeCount++
+					const hookError = hookResult.error || `Pre-tool hook rejected ${block.name}`
+					const errorContent = formatResponse.toolError(hookError)
+					cline.pushToolResultToUserContent({
+						type: "tool_result",
+						tool_use_id: sanitizeToolUseId(toolCallId),
+						content: typeof errorContent === "string" ? errorContent : "(hook rejection)",
+						is_error: true,
+					})
+					break
+				}
+
+				// Attach injected intent context to the intent selection tool result.
+				if (block.name === "select_active_intent" && hookResult.injectedContext) {
+					block.params = { ...(block.params || {}), intent_context: hookResult.injectedContext }
+					block.nativeArgs = { ...(block.nativeArgs || {}), intent_context: hookResult.injectedContext }
 				}
 			}
 
@@ -791,6 +824,13 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "ask_followup_question":
 					await askFollowupQuestionTool.handle(cline, block as ToolUse<"ask_followup_question">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "select_active_intent":
+					await selectActiveIntentTool.handle(cline, block as ToolUse<"select_active_intent">, {
 						askApproval,
 						handleError,
 						pushToolResult,

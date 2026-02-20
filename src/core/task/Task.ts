@@ -4665,6 +4665,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
+	public async runPreToolUseHook(
+		toolName: string,
+		params: any,
+	): Promise<{ allowed: boolean; injectedContext?: string; error?: string }> {
+		if (!this.hookEngine) {
+			return { allowed: true }
+		}
+
+		return this.hookEngine.preToolUse(toolName, params)
+	}
+
+	public async runPostToolUseHook(toolName: string, params: any, result?: any): Promise<void> {
+		if (!this.hookEngine) {
+			return
+		}
+
+		await this.hookEngine.postToolUse(toolName, params, result)
+	}
+
 	// Getters
 
 	public get taskStatus(): TaskStatus {

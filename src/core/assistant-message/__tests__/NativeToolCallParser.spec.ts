@@ -291,6 +291,28 @@ describe("NativeToolCallParser", () => {
 				})
 			})
 		})
+
+		describe("select_active_intent tool", () => {
+			it("should parse intent selection args", () => {
+				const toolCall = {
+					id: "toolu_intent_123",
+					name: "select_active_intent" as const,
+					arguments: JSON.stringify({
+						intent_id: "bypass-auth",
+					}),
+				}
+
+				const result = NativeToolCallParser.parseToolCall(toolCall)
+
+				expect(result).not.toBeNull()
+				expect(result?.type).toBe("tool_use")
+				if (result?.type === "tool_use") {
+					expect(result.nativeArgs).toBeDefined()
+					const nativeArgs = result.nativeArgs as { intent_id: string }
+					expect(nativeArgs.intent_id).toBe("bypass-auth")
+				}
+			})
+		})
 	})
 
 	describe("processStreamingChunk", () => {

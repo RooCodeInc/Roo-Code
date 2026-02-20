@@ -1,4 +1,3 @@
-import * as vscode from "vscode"
 import { IntentManager } from "./IntentManager"
 import { TraceLogger } from "./TraceLogger"
 
@@ -20,36 +19,47 @@ export class HookEngine {
 		toolName: string,
 		params: any,
 	): Promise<{ allowed: boolean; injectedContext?: string; error?: string }> {
-		// Mandatory Handshake
-		if (toolName === "select_active_intent") {
-			const intent = await this.intentManager.getIntent(params.intent_id)
-			if (!intent) return { allowed: false, error: `Invalid Intent ID: ${params.intent_id}` }
+		const safeParams = params ?? {}
 
-			this.activeIntentId = params.intent_id
+		// Mandatory handshake.
+		if (toolName === "select_active_intent") {
+			const intentId = safeParams.intent_id
+			if (!intentId || typeof intentId !== "string") {
+				return { allowed: false, error: "Invalid Intent ID: missing intent_id" }
+			}
+
+			const intent = await this.intentManager.getIntent(intentId)
+			if (!intent) return { allowed: false, error: `Invalid Intent ID: ${intentId}` }
+
+			this.activeIntentId = intentId
+
+			const constraints = Array.isArray(intent.constraints) ? intent.constraints : []
+			const scope = Array.isArray(intent.owned_scope) ? intent.owned_scope : []
 
 			const ctx = `<intent_context>
   <id>${intent.id}</id>
   <name>${intent.name}</name>
-  <constraints>${intent.constraints.join(" | ")}</constraints>
-  <scope>${intent.owned_scope.join(" | ")}</scope>
+  <constraints>${constraints.join(" | ")}</constraints>
+  <scope>${scope.join(" | ")}</scope>
 </intent_context>`
 
 			return { allowed: true, injectedContext: ctx }
 		}
 
-		// Gatekeeper for ALL other tools
+		// Gatekeeper for all other tools.
 		if (!this.activeIntentId) {
 			return {
 				allowed: false,
-				error: "❌ YOU MUST FIRST CALL select_active_intent(intent_id) — Intent-Driven Protocol enforced.",
+				error: "YOU MUST FIRST CALL select_active_intent(intent_id) - Intent-Driven Protocol enforced.",
 			}
 		}
 
-		// Scope Enforcement on writes
+		// Scope enforcement on writes.
 		if (["write_to_file", "apply_diff", "edit_file"].includes(toolName)) {
-			const file = params.path || params.file || params.targetFile
+			const file = safeParams.path || safeParams.file || safeParams.targetFile
 			const intent = await this.intentManager.getIntent(this.activeIntentId)
-			const inScope = intent!.owned_scope.some((p: string) => file.includes(p.replace("**", "")))
+			const ownedScope = Array.isArray(intent?.owned_scope) ? intent.owned_scope : []
+			const inScope = ownedScope.some((pattern: string) => file?.includes?.(pattern.replace("**", "")))
 			if (!inScope) {
 				return { allowed: false, error: `Scope Violation: ${this.activeIntentId} cannot edit ${file}` }
 			}
@@ -59,11 +69,18 @@ export class HookEngine {
 	}
 
 	async postToolUse(toolName: string, params: any, result: any) {
+		const safeParams = params ?? {}
+
 		if (["write_to_file", "apply_diff", "edit_file"].includes(toolName)) {
-			const file = params.path || params.file || params.targetFile
-			const start = params.startLine || 1
-			const end = params.endLine || 999999
-			await this.traceLogger.logWrite(this.activeIntentId!, file, start, end)
+			const file = safeParams.path || safeParams.file || safeParams.targetFile
+			const start = safeParams.startLine || 1
+			const end = safeParams.endLine || 999999
+
+			if (!file || !this.activeIntentId) {
+				return
+			}
+
+			await this.traceLogger.logWrite(this.activeIntentId, file, start, end)
 		}
 	}
 }

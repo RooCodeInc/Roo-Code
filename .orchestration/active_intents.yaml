@@ -61,3 +61,18 @@ active_intents:
       - Tests pass
     created_at: "2026-02-18T10:00:00Z"
     updated_at: "2026-02-18T10:00:00Z"
+
+  - id: "bypass-auth"
+    name: "Local Testing"
+    status: "IN_PROGRESS"
+    owned_scope: ["**"]
+    constraints: []
+    acceptance_criteria: []
+
+  - id: "weather-only"
+    name: "Weather Scope Demo"
+    status: "IN_PROGRESS"
+    owned_scope:
+      - "src/weather/**"
+    constraints: []
+    acceptance_criteria: []

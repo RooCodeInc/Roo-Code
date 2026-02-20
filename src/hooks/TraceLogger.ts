@@ -3,14 +3,16 @@ import * as path from "path"
 import { contentHash } from "./utils"
 
 export class TraceLogger {
+	private workspaceRoot: string
 	private tracePath: string
 
 	constructor(workspaceRoot: string) {
+		this.workspaceRoot = workspaceRoot
 		this.tracePath = path.join(workspaceRoot, ".orchestration", "agent_trace.jsonl")
 	}
 
 	async logWrite(intentId: string, filePath: string, startLine: number, endLine: number) {
-		const fullPath = path.join(process.cwd(), filePath) // extension host context
+		const fullPath = path.isAbsolute(filePath) ? filePath : path.join(this.workspaceRoot, filePath)
 		const content = await fs.readFile(fullPath, "utf8")
 		const lines = content.split("\n")
 		const block = lines.slice(startLine - 1, endLine).join("\n")
