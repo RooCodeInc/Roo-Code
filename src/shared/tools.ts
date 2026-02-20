@@ -290,12 +290,13 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	generate_image: "generate images",
 	custom_tool: "use custom tools",
 	select_active_intent: "select the active intent",
+	list_active_intents: "list active intents",
 } as const
 
 // Define available tool groups.
 export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 	read: {
-		tools: ["read_file", "search_files", "list_files", "codebase_search"],
+		tools: ["read_file", "search_files", "list_files", "codebase_search", "select_active_intent"],
 	},
 	edit: {
 		tools: ["apply_diff", "write_to_file", "generate_image"],

@@ -1,25 +1,41 @@
-import { Task } from "../core/task/Task"
-import { OrchestrationStore } from "../orchestration/OrchestrationStore"
-
-interface HookEngineOptions {
-	task: Task
-}
-
 export class HookEngine {
-	private readonly store: OrchestrationStore
+	private preHooks: PreHook[] = []
+	private postHooks: PostHook[] = []
 
-	constructor({ task }: HookEngineOptions) {
-		this.store = new OrchestrationStore({ workspaceRoot: task.cwd })
+	registerPre(hook: PreHook) {
+		this.preHooks.push(hook)
 	}
 
-	/** Called before any tool execution */
-	preToolHook() {
-		this.store.ensureInitialized()
+	registerPost(hook: PostHook) {
+		this.postHooks.push(hook)
 	}
 
-	/** Called after any tool execution */
-	postToolHook() {}
+	/**
+	 * Wrap a tool execution with pre/post hooks.
+	 * `exec` is your existing tool runner: (toolName, args) => result
+	 */
+	async runTool(
+		call: ToolCall,
+		exec: (call: ToolCall) => Promise<ToolResult>,
+		ctx: HookContext,
+	): Promise<ToolResult> {
+		for (const hook of this.preHooks) {
+			const decision = await hook(call, ctx)
+			if (decision.action === "short_circuit") {
+				// Even short-circuited results go through post hooks (optional, but useful)
+				for (const post of this.postHooks) {
+					await post(call, decision.result, ctx)
+				}
+				return decision.result
+			}
+		}
 
-	/** */
-	preLLMHook() {}
+		const result = await exec(call)
+
+		for (const post of this.postHooks) {
+			await post(call, result, ctx)
+		}
+
+		return result
+	}
 }

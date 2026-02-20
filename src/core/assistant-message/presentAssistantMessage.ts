@@ -17,6 +17,7 @@ import { Task } from "../task/Task"
 import { listFilesTool } from "../tools/ListFilesTool"
 import { readFileTool } from "../tools/ReadFileTool"
 import { readCommandOutputTool } from "../tools/ReadCommandOutputTool"
+import { listActiveIntentsTool } from "../tools/ListActiveIntents"
 import { selectActiveIntentTool } from "../tools/SelectActiveIntent"
 import { writeToFileTool } from "../tools/WriteToFileTool"
 import { editTool } from "../tools/EditTool"
@@ -336,8 +337,10 @@ export async function presentAssistantMessage(cline: Task) {
 							return readFileTool.getReadFileToolDescription(block.name, block.nativeArgs)
 						}
 						return readFileTool.getReadFileToolDescription(block.name, block.params)
-					case "select_active_intent":
+					case "list_active_intents":
 						return `[${block.name}]`
+					case "select_active_intent":
+						return `[${block.name}] for '${block.params.path}'`
 					case "write_to_file":
 						return `[${block.name} for '${block.params.path}']`
 					case "apply_diff":
@@ -679,7 +682,19 @@ export async function presentAssistantMessage(cline: Task) {
 			}
 
 			switch (block.name) {
+				case "list_active_intents":
+					await listActiveIntentsTool.handle(cline, block as ToolUse<"list_active_intents">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
 				case "select_active_intent":
+					await selectActiveIntentTool.handle(cline, block as ToolUse<"select_active_intent">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
 					break
 				case "write_to_file":
 					await checkpointSaveAndMark(cline)
