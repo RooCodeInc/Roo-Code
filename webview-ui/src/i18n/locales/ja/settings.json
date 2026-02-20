@@ -356,6 +356,8 @@
 		"headerName": "ヘッダー名",
 		"headerValue": "ヘッダー値",
 		"noCustomHeaders": "カスタムヘッダーが定義されていません。+ ボタンをクリックして追加してください。",
+		"unboundApiKey": "Unbound API キー",
+		"getUnboundApiKey": "Unbound APIキーを取得",
 		"requestyApiKey": "Requesty APIキー",
 		"refreshModels": {
 			"label": "モデルを更新",

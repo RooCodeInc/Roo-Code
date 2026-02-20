@@ -419,6 +419,8 @@
 		"headerName": "Header name",
 		"headerValue": "Header value",
 		"noCustomHeaders": "No custom headers defined. Click the + button to add one.",
+		"unboundApiKey": "Unbound API Key",
+		"getUnboundApiKey": "Get Unbound API Key",
 		"requestyApiKey": "Requesty API Key",
 		"refreshModels": {
 			"label": "Refresh Models",

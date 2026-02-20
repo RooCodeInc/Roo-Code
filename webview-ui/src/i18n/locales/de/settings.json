@@ -356,6 +356,8 @@
 		"headerName": "Header-Name",
 		"headerValue": "Header-Wert",
 		"noCustomHeaders": "Keine benutzerdefinierten Headers definiert. Klicke auf die + Schaltfläche, um einen hinzuzufügen.",
+		"unboundApiKey": "Unbound API-Schlüssel",
+		"getUnboundApiKey": "Unbound API-Schlüssel erhalten",
 		"requestyApiKey": "Requesty API-Schlüssel",
 		"refreshModels": {
 			"label": "Modelle aktualisieren",

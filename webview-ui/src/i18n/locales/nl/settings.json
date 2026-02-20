@@ -356,6 +356,8 @@
 		"headerName": "Headernaam",
 		"headerValue": "Headerwaarde",
 		"noCustomHeaders": "Geen aangepaste headers gedefinieerd. Klik op de + knop om er een toe te voegen.",
+		"unboundApiKey": "Unbound API sleutel",
+		"getUnboundApiKey": "Unbound API-sleutel ophalen",
 		"requestyApiKey": "Requesty API-sleutel",
 		"refreshModels": {
 			"label": "Modellen verversen",

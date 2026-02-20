@@ -356,6 +356,8 @@
 		"headerName": "Nombre del encabezado",
 		"headerValue": "Valor del encabezado",
 		"noCustomHeaders": "No hay encabezados personalizados definidos. Haga clic en el botón + para añadir uno.",
+		"unboundApiKey": "Clave API de Unbound",
+		"getUnboundApiKey": "Obtener clave API de Unbound",
 		"requestyApiKey": "Clave API de Requesty",
 		"refreshModels": {
 			"label": "Actualizar modelos",

@@ -356,6 +356,8 @@
 		"headerName": "Nome intestazione",
 		"headerValue": "Valore intestazione",
 		"noCustomHeaders": "Nessuna intestazione personalizzata definita. Fai clic sul pulsante + per aggiungerne una.",
+		"unboundApiKey": "Chiave API Unbound",
+		"getUnboundApiKey": "Ottieni chiave API Unbound",
 		"requestyApiKey": "Chiave API Requesty",
 		"refreshModels": {
 			"label": "Aggiorna modelli",
