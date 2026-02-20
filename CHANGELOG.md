@@ -1,5 +1,12 @@
 # Roo Code Changelog
 
+## 3.50.3
+
+### Patch Changes
+
+- Fix: Correct Vertex AI claude-sonnet-4-6 model ID (#11625 by @yuvarajl, PR #11626 by @roomote)
+- Restore Unbound as a provider (PR #11624 by @pugazhendhi-m)
+
 ## 3.50.2
 
 ### Patch Changes
