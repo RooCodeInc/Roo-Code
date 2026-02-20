@@ -95,7 +95,7 @@ describe("webviewMessageHandler - readFileContent path traversal prevention", ()
 	beforeEach(() => {
 		vi.clearAllMocks()
 		vi.mocked(fs.readFile).mockResolvedValue("file content here")
-		mockProvider.getCurrentTask.mockReturnValue({ cwd: MOCK_CWD })
+		vi.mocked(mockProvider.getCurrentTask).mockReturnValue({ cwd: MOCK_CWD } as any)
 	})
 
 	it("allows reading a file within the workspace using a relative path", async () => {
