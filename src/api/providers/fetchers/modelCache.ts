@@ -74,10 +74,10 @@ async function fetchModelsFromProvider(options: GetModelsOptions): Promise<Model
 			break
 		case "ollama":
 			models = await getOllamaModels(options.baseUrl, options.apiKey, {
-				modelDiscoveryTimeout: (options as any).ollamaModelDiscoveryTimeout,
-				maxRetries: (options as any).ollamaMaxRetries,
-				retryDelay: (options as any).ollamaRetryDelay,
-				enableLogging: (options as any).ollamaEnableLogging,
+				modelDiscoveryTimeout: options.ollamaModelDiscoveryTimeout,
+				maxRetries: options.ollamaMaxRetries,
+				retryDelay: options.ollamaRetryDelay,
+				enableLogging: options.ollamaEnableLogging,
 			})
 			break
 		case "lmstudio":

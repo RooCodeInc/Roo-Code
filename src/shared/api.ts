@@ -173,7 +173,12 @@ const dynamicProviderExtras = {
 	"vercel-ai-gateway": {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
 	litellm: {} as { apiKey: string; baseUrl: string },
 	requesty: {} as { apiKey?: string; baseUrl?: string },
-	ollama: {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
+	ollama: {} as {
+		ollamaModelDiscoveryTimeout?: number
+		ollamaMaxRetries?: number
+		ollamaRetryDelay?: number
+		ollamaEnableLogging?: boolean
+	},
 	lmstudio: {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
 	roo: {} as { apiKey?: string; baseUrl?: string },
 } as const satisfies Record<RouterName, object>
