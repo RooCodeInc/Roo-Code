@@ -11,8 +11,6 @@
 		"missing_update_modes_fields": "必須フィールドが不足しています：skillNameまたはsource",
 		"manager_unavailable": "スキルマネージャーが利用できません",
 		"missing_delete_fields": "必須フィールドが不足しています：skillNameまたはsource",
-		"skill_not_found": "スキル「{{name}}」が見つかりません",
-		"cannot_modify_builtin": "組み込みスキルは作成または削除できません",
-		"cannot_open_builtin": "組み込みスキルはファイルとして開けません"
+		"skill_not_found": "スキル「{{name}}」が見つかりません"
 	}
 }

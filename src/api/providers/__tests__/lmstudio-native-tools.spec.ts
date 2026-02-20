@@ -1,28 +1,22 @@
 // npx vitest run api/providers/__tests__/lmstudio-native-tools.spec.ts
 
-// Use vi.hoisted to define mock functions that can be referenced in hoisted vi.mock() calls
-const { mockStreamText } = vi.hoisted(() => ({
-	mockStreamText: vi.fn(),
-}))
-
-vi.mock("ai", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("ai")>()
+// Mock OpenAI client - must come before other imports
+const mockCreate = vi.fn()
+vi.mock("openai", () => {
 	return {
-		...actual,
-		streamText: mockStreamText,
+		__esModule: true,
+		default: vi.fn().mockImplementation(() => ({
+			chat: {
+				completions: {
+					create: mockCreate,
+				},
+			},
+		})),
 	}
 })
 
-vi.mock("@ai-sdk/openai-compatible", () => ({
-	createOpenAICompatible: vi.fn(() => {
-		return vi.fn(() => ({
-			modelId: "local-model",
-			provider: "lmstudio",
-		}))
-	}),
-}))
-
 import { LmStudioHandler } from "../lm-studio"
+import { NativeToolCallParser } from "../../../core/assistant-message/NativeToolCallParser"
 import type { ApiHandlerOptions } from "../../../shared/api"
 
 describe("LmStudioHandler Native Tools", () => {
@@ -55,76 +49,128 @@ describe("LmStudioHandler Native Tools", () => {
 			lmStudioBaseUrl: "http://localhost:1234",
 		}
 		handler = new LmStudioHandler(mockOptions)
+
+		// Clear NativeToolCallParser state before each test
+		NativeToolCallParser.clearRawChunkState()
 	})
 
 	describe("Native Tool Calling Support", () => {
-		it("should include tools in request when tools are provided", async () => {
-			async function* mockFullStream() {
-				yield { type: "text-delta", text: "Test response" }
-			}
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream(),
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
-			})
+		it("should include tools in request when model supports native tools and tools are provided", async () => {
+			mockCreate.mockImplementationOnce(() => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [{ delta: { content: "Test response" } }],
+					}
+				},
+			}))
 
 			const stream = handler.createMessage("test prompt", [], {
 				taskId: "test-task-id",
 				tools: testTools,
 			})
-			for await (const _chunk of stream) {
-				// consume stream
-			}
+			await stream.next()
 
-			const callArgs = mockStreamText.mock.calls[0][0]
-			expect(callArgs.tools).toBeDefined()
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					tools: expect.arrayContaining([
+						expect.objectContaining({
+							type: "function",
+							function: expect.objectContaining({
+								name: "test_tool",
+							}),
+						}),
+					]),
+				}),
+			)
+			// parallel_tool_calls should be true by default when not explicitly set
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs).toHaveProperty("parallel_tool_calls", true)
 		})
 
-		it("should include toolChoice when provided", async () => {
-			async function* mockFullStream() {
-				yield { type: "text-delta", text: "Test response" }
-			}
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream(),
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
-			})
+		it("should include tool_choice when provided", async () => {
+			mockCreate.mockImplementationOnce(() => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [{ delta: { content: "Test response" } }],
+					}
+				},
+			}))
 
 			const stream = handler.createMessage("test prompt", [], {
 				taskId: "test-task-id",
 				tools: testTools,
 				tool_choice: "auto",
 			})
-			for await (const _chunk of stream) {
-				// consume stream
-			}
+			await stream.next()
 
-			const callArgs = mockStreamText.mock.calls[0][0]
-			expect(callArgs.toolChoice).toBe("auto")
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					tool_choice: "auto",
+				}),
+			)
 		})
 
-		it("should yield tool_call_start, tool_call_delta, and tool_call_end chunks from AI SDK stream", async () => {
-			async function* mockFullStream() {
-				yield {
-					type: "tool-input-start",
-					id: "call_lmstudio_123",
-					toolName: "test_tool",
-				}
-				yield {
-					type: "tool-input-delta",
-					id: "call_lmstudio_123",
-					delta: '{"arg1":"value"}',
-				}
-				yield {
-					type: "tool-input-end",
-					id: "call_lmstudio_123",
-				}
-			}
+		it("should always include tools and tool_choice in request (tools are always present after PR #10841)", async () => {
+			mockCreate.mockImplementationOnce(() => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [{ delta: { content: "Test response" } }],
+					}
+				},
+			}))
 
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream(),
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+			const stream = handler.createMessage("test prompt", [], {
+				taskId: "test-task-id",
 			})
+			await stream.next()
+
+			const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
+			// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
+			expect(callArgs).toHaveProperty("tools")
+			expect(callArgs).toHaveProperty("tool_choice")
+			// parallel_tool_calls should be true by default when not explicitly set
+			expect(callArgs).toHaveProperty("parallel_tool_calls", true)
+		})
+
+		it("should yield tool_call_partial chunks during streaming", async () => {
+			mockCreate.mockImplementationOnce(() => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											id: "call_lmstudio_123",
+											function: {
+												name: "test_tool",
+												arguments: '{"arg1":',
+											},
+										},
+									],
+								},
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											function: {
+												arguments: '"value"}',
+											},
+										},
+									],
+								},
+							},
+						],
+					}
+				},
+			}))
 
 			const stream = handler.createMessage("test prompt", [], {
 				taskId: "test-task-id",
@@ -136,56 +182,168 @@ describe("LmStudioHandler Native Tools", () => {
 				chunks.push(chunk)
 			}
 
-			const startChunks = chunks.filter((chunk) => chunk.type === "tool_call_start")
-			expect(startChunks).toHaveLength(1)
-			expect(startChunks[0]).toEqual({
-				type: "tool_call_start",
+			expect(chunks).toContainEqual({
+				type: "tool_call_partial",
+				index: 0,
 				id: "call_lmstudio_123",
 				name: "test_tool",
+				arguments: '{"arg1":',
 			})
 
-			const deltaChunks = chunks.filter((chunk) => chunk.type === "tool_call_delta")
-			expect(deltaChunks).toHaveLength(1)
-			expect(deltaChunks[0]).toEqual({
-				type: "tool_call_delta",
-				id: "call_lmstudio_123",
-				delta: '{"arg1":"value"}',
+			expect(chunks).toContainEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: undefined,
+				name: undefined,
+				arguments: '"value"}',
+			})
+		})
+
+		it("should set parallel_tool_calls based on metadata", async () => {
+			mockCreate.mockImplementationOnce(() => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [{ delta: { content: "Test response" } }],
+					}
+				},
+			}))
+
+			const stream = handler.createMessage("test prompt", [], {
+				taskId: "test-task-id",
+				tools: testTools,
+				parallelToolCalls: true,
+			})
+			await stream.next()
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					parallel_tool_calls: true,
+				}),
+			)
+		})
+
+		it("should yield tool_call_end events when finish_reason is tool_calls", async () => {
+			mockCreate.mockImplementationOnce(() => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											id: "call_lmstudio_test",
+											function: {
+												name: "test_tool",
+												arguments: '{"arg1":"value"}',
+											},
+										},
+									],
+								},
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {},
+								finish_reason: "tool_calls",
+							},
+						],
+					}
+				},
+			}))
+
+			const stream = handler.createMessage("test prompt", [], {
+				taskId: "test-task-id",
+				tools: testTools,
 			})
 
+			const chunks = []
+			for await (const chunk of stream) {
+				// Simulate what Task.ts does: when we receive tool_call_partial,
+				// process it through NativeToolCallParser to populate rawChunkTracker
+				if (chunk.type === "tool_call_partial") {
+					NativeToolCallParser.processRawChunk({
+						index: chunk.index,
+						id: chunk.id,
+						name: chunk.name,
+						arguments: chunk.arguments,
+					})
+				}
+				chunks.push(chunk)
+			}
+
+			// Should have tool_call_partial and tool_call_end
+			const partialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
 			const endChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
+
+			expect(partialChunks).toHaveLength(1)
 			expect(endChunks).toHaveLength(1)
-			expect(endChunks[0]).toEqual({
-				type: "tool_call_end",
-				id: "call_lmstudio_123",
+			expect(endChunks[0].id).toBe("call_lmstudio_test")
+		})
+
+		it("should work with parallel tool calls disabled (sends false)", async () => {
+			mockCreate.mockImplementationOnce(() => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [{ delta: { content: "Response" } }],
+					}
+				},
+			}))
+
+			const stream = handler.createMessage("test prompt", [], {
+				taskId: "test-task-id",
+				tools: testTools,
+				parallelToolCalls: false,
 			})
+			await stream.next()
+
+			// When parallelToolCalls is false, the parameter should be sent as false
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs).toHaveProperty("parallel_tool_calls", false)
 		})
 
 		it("should handle reasoning content alongside tool calls", async () => {
-			async function* mockFullStream() {
-				yield {
-					type: "reasoning",
-					text: "Thinking about this...",
-				}
-				yield {
-					type: "tool-input-start",
-					id: "call_after_think",
-					toolName: "test_tool",
-				}
-				yield {
-					type: "tool-input-delta",
-					id: "call_after_think",
-					delta: '{"arg1":"result"}',
-				}
-				yield {
-					type: "tool-input-end",
-					id: "call_after_think",
-				}
-			}
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream(),
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
-			})
+			mockCreate.mockImplementationOnce(() => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: {
+									content: "<think>Thinking about this...</think>",
+								},
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											id: "call_after_think",
+											function: {
+												name: "test_tool",
+												arguments: '{"arg1":"result"}',
+											},
+										},
+									],
+								},
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {},
+								finish_reason: "tool_calls",
+							},
+						],
+					}
+				},
+			}))
 
 			const stream = handler.createMessage("test prompt", [], {
 				taskId: "test-task-id",
@@ -194,60 +352,25 @@ describe("LmStudioHandler Native Tools", () => {
 
 			const chunks = []
 			for await (const chunk of stream) {
+				if (chunk.type === "tool_call_partial") {
+					NativeToolCallParser.processRawChunk({
+						index: chunk.index,
+						id: chunk.id,
+						name: chunk.name,
+						arguments: chunk.arguments,
+					})
+				}
 				chunks.push(chunk)
 			}
 
+			// Should have reasoning, tool_call_partial, and tool_call_end
 			const reasoningChunks = chunks.filter((chunk) => chunk.type === "reasoning")
-			const startChunks = chunks.filter((chunk) => chunk.type === "tool_call_start")
+			const partialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
 			const endChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
 
 			expect(reasoningChunks).toHaveLength(1)
 			expect(reasoningChunks[0].text).toBe("Thinking about this...")
-			expect(startChunks).toHaveLength(1)
-			expect(endChunks).toHaveLength(1)
-		})
-
-		it("should handle text and tool calls in the same response", async () => {
-			async function* mockFullStream() {
-				yield { type: "text-delta", text: "Here's the result: " }
-				yield {
-					type: "tool-input-start",
-					id: "call_mixed",
-					toolName: "test_tool",
-				}
-				yield {
-					type: "tool-input-delta",
-					id: "call_mixed",
-					delta: '{"arg1":"mixed"}',
-				}
-				yield {
-					type: "tool-input-end",
-					id: "call_mixed",
-				}
-			}
-
-			mockStreamText.mockReturnValue({
-				fullStream: mockFullStream(),
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
-			})
-
-			const stream = handler.createMessage("test prompt", [], {
-				taskId: "test-task-id",
-				tools: testTools,
-			})
-
-			const chunks = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			const textChunks = chunks.filter((chunk) => chunk.type === "text")
-			const startChunks = chunks.filter((chunk) => chunk.type === "tool_call_start")
-			const endChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
-
-			expect(textChunks).toHaveLength(1)
-			expect(textChunks[0].text).toBe("Here's the result: ")
-			expect(startChunks).toHaveLength(1)
+			expect(partialChunks).toHaveLength(1)
 			expect(endChunks).toHaveLength(1)
 		})
 	})

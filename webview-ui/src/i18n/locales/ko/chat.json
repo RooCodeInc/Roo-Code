@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "조직에서 공유가 비활성화됨",
 		"shareSuccessOrganization": "조직 링크가 클립보드에 복사되었습니다",
 		"shareSuccessPublic": "공개 링크가 클립보드에 복사되었습니다",
-		"openInCloud": "Roo Code Cloud에서 작업 열기",
-		"openInCloudIntro": "어디서나 Roo를 계속 모니터링하거나 상호작용할 수 있습니다. 스캔, 클릭 또는 복사하여 열기.",
 		"openApiHistory": "API 기록 열기",
 		"openUiHistory": "UI 기록 열기",
 		"backToParentTask": "상위 작업"
 	},
 	"unpin": "고정 해제하기",
 	"pin": "고정하기",
+	"fileChangesInConversation": {
+		"header": "이 대화에서 {{count}}개 파일이 변경됨"
+	},
 	"tokenProgress": {
 		"availableSpace": "사용 가능한 공간: {{amount}} 토큰",
 		"tokensUsed": "사용된 토큰: {{used}} / {{total}}",
@@ -347,8 +348,9 @@
 		},
 		"release": {
 			"heading": "새로운 기능:",
-			"claudeOpus": "Claude Opus 4.6: 이제 모든 제공업체—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex, OpenRouter—에서 이용 가능하며 Anthropic의 가장 강력한 모델을 선호하는 플랫폼으로 가져옵니다.",
-			"gptCodex": "GPT-5.3-Codex: OpenAI의 최신 코딩 모델이 이제 OpenAI - ChatGPT 제공업체에서 지원되어 최첨단 코드 생성 및 이해를 제공합니다."
+			"geminiPro": "Gemini 3.1 Pro 지원: Gemini 3.1 Pro 모델 지원이 추가되었으며, 향상된 성능을 위해 기본 Gemini 모델로 설정되었습니다.",
+			"cliNdjson": "CLI NDJSON 프로토콜: 새로운 NDJSON stdin 프로토콜, list 하위 명령어, 더 유연한 CLI 워크플로를 위한 모듈화된 run 명령어.",
+			"cliRelease": "CLI v0.1.0: Roo Code CLI가 안정적인 명령어 인터페이스로 첫 공식 릴리스에 도달했습니다."
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",
@@ -362,44 +364,6 @@
 		"totalWithSubtasks": "총 비용 (하위 작업 포함): ${{cost}}",
 		"total": "총 비용: ${{cost}}",
 		"includesSubtasks": "하위 작업 비용 포함"
-	},
-	"browser": {
-		"session": "브라우저 세션",
-		"active": "활성",
-		"rooWantsToUse": "Roo가 브라우저를 사용하고 싶어합니다",
-		"consoleLogs": "콘솔 로그",
-		"noNewLogs": "(새 로그 없음)",
-		"screenshot": "브라우저 스크린샷",
-		"cursor": "커서",
-		"navigation": {
-			"step": "단계 {{current}} / {{total}}",
-			"previous": "이전",
-			"next": "다음"
-		},
-		"sessionStarted": "브라우저 세션 시작됨",
-		"actions": {
-			"title": "브라우저 작업: ",
-			"launched": "브라우저 실행됨",
-			"launch": "{{url}}에서 브라우저 실행",
-			"clicked": "클릭함: {{coordinate}}",
-			"click": "클릭 ({{coordinate}})",
-			"typed": "입력함: {{text}}",
-			"type": "입력 \"{{text}}\"",
-			"pressed": "{{key}} 누름",
-			"press": "{{key}} 누르기",
-			"scrolledDown": "아래로 스크롤됨",
-			"scrollDown": "아래로 스크롤",
-			"scrolledUp": "위로 스크롤됨",
-			"scrollUp": "위로 스크롤",
-			"hovered": "가리킴: {{coordinate}}",
-			"hover": "가리키기 ({{coordinate}})",
-			"resized": "크기 조정됨: {{size}}",
-			"resize": "크기를 {{size}}로 조정",
-			"screenshotSaved": "스크린샷 저장됨",
-			"screenshot": "스크린샷을 {{path}}에 저장",
-			"closed": "브라우저 닫음",
-			"close": "브라우저 닫기"
-		}
 	},
 	"codeblock": {
 		"tooltips": {
@@ -462,7 +426,8 @@
 		"indexing": "인덱싱 중 {{percentage}}%",
 		"indexed": "인덱싱 완료",
 		"error": "인덱스 오류",
-		"status": "인덱스 상태"
+		"status": "인덱스 상태",
+		"stopping": "인덱싱 중지 중..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "버전 {{version}} - 릴리스 노트를 보려면 클릭하세요"

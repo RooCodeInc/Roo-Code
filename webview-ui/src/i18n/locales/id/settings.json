@@ -31,7 +31,6 @@
 		"mcp": "Server MCP",
 		"worktrees": "Worktrees",
 		"autoApprove": "Auto-Approve",
-		"browser": "Browser",
 		"checkpoints": "Checkpoint",
 		"notifications": "Notifikasi",
 		"contextManagement": "Konteks",
@@ -212,7 +211,12 @@
 		"searchMinScoreResetTooltip": "Reset ke nilai default (0.4)",
 		"searchMaxResultsLabel": "Hasil Pencarian Maksimum",
 		"searchMaxResultsDescription": "Jumlah maksimum hasil pencarian yang dikembalikan saat melakukan query indeks basis kode. Nilai yang lebih tinggi memberikan lebih banyak konteks tetapi mungkin menyertakan hasil yang kurang relevan.",
-		"resetToDefault": "Reset ke default"
+		"resetToDefault": "Reset ke default",
+		"stopIndexingButton": "Hentikan pengindeksan",
+		"stoppingButton": "Menghentikan...",
+		"workspaceToggleLabel": "Aktifkan pengindeksan untuk ruang kerja ini",
+		"workspaceDisabledMessage": "Pengindeksan dikonfigurasi tetapi tidak diaktifkan untuk ruang kerja ini.",
+		"autoEnableDefaultLabel": "Aktifkan pengindeksan secara otomatis untuk ruang kerja baru"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Anda dapat mengonfigurasi pintasan global untuk pengaturan ini <SettingsLink>di preferensi IDE Anda</SettingsLink>.",
@@ -240,10 +244,6 @@
 				"label": "Sertakan file yang dilindungi",
 				"description": "Izinkan Roo membuat dan mengedit file yang dilindungi (seperti .rooignore dan file konfigurasi .roo/) tanpa memerlukan persetujuan."
 			}
-		},
-		"browser": {
-			"label": "Browser",
-			"description": "Secara otomatis melakukan aksi browser tanpa memerlukan persetujuan. Catatan: Hanya berlaku ketika model mendukung computer use"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -309,7 +309,7 @@
 		"searchProviderPlaceholder": "Cari penyedia",
 		"noProviderMatchFound": "Tidak ada penyedia ditemukan",
 		"noMatchFound": "Tidak ada profil yang cocok ditemukan",
-		"retiredProviderMessage": "Maaf, penyedia ini tidak lagi didukung. Kami melihat sangat sedikit pengguna Roo yang benar-benar menggunakannya dan kami perlu mengurangi cakupan kode kami agar bisa terus bergerak cepat dan melayani komunitas kami dengan baik. Ini adalah keputusan yang sangat sulit, tetapi memungkinkan kami fokus pada hal yang paling penting bagimu. Kami tahu ini menyebalkan.",
+		"retiredProviderMessage": "Maaf, penyedia ini tidak lagi didukung. Kami melihat sangat sedikit pengguna Roo yang benar-benar menggunakannya dan kami perlu mengurangi cakupan kode kami agar bisa terus bergerak cepat dan melayani komunitas kami dengan baik. Ini adalah keputusan yang sangat sulit, tapi ini memungkinkan kami fokus pada apa yang paling penting bagimu. Memang menyebalkan, kami tahu.",
 		"vscodeLmDescription": " API Model Bahasa VS Code memungkinkan kamu menjalankan model yang disediakan oleh ekstensi VS Code lainnya (termasuk namun tidak terbatas pada GitHub Copilot). Cara termudah untuk memulai adalah menginstal ekstensi Copilot dan Copilot Chat dari VS Code Marketplace.",
 		"awsCustomArnUse": "Masukkan ARN Amazon Bedrock yang valid untuk model yang ingin kamu gunakan. Contoh format:",
 		"awsCustomArnDesc": "Pastikan region di ARN cocok dengan AWS Region yang kamu pilih di atas.",
@@ -371,36 +371,17 @@
 		"getAnthropicApiKey": "Dapatkan Anthropic API Key",
 		"anthropicUseAuthToken": "Kirim Anthropic API Key sebagai Authorization header alih-alih X-Api-Key",
 		"anthropic1MContextBetaLabel": "Aktifkan jendela konteks 1M (Beta)",
-		"anthropic1MContextBetaDescription": "Memperluas jendela konteks menjadi 1 juta token untuk Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"anthropic1MContextBetaDescription": "Memperluas jendela konteks menjadi 1 juta token untuk Claude Sonnet 4.x / Claude Opus 4.6",
 		"awsBedrock1MContextBetaLabel": "Aktifkan jendela konteks 1M (Beta)",
-		"awsBedrock1MContextBetaDescription": "Memperluas jendela konteks menjadi 1 juta token untuk Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"awsBedrock1MContextBetaDescription": "Memperluas jendela konteks menjadi 1 juta token untuk Claude Sonnet 4.x / Claude Opus 4.6",
 		"vertex1MContextBetaLabel": "Aktifkan jendela konteks 1M (Beta)",
-		"vertex1MContextBetaDescription": "Memperluas jendela konteks menjadi 1 juta token untuk Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"vertex1MContextBetaDescription": "Memperluas jendela konteks menjadi 1 juta token untuk Claude Sonnet 4.x / Claude Opus 4.6",
 		"basetenApiKey": "Baseten API Key",
 		"getBasetenApiKey": "Dapatkan Baseten API Key",
-		"cerebrasApiKey": "Cerebras API Key",
-		"getCerebrasApiKey": "Dapatkan Cerebras API Key",
-		"azureResourceName": "Nama Resource Azure",
-		"azureResourceNameDescription": "Nama resource Azure AI Foundry Anda (contoh: 'my-openai-resource').",
-		"azureDeploymentName": "Nama Deployment Azure",
-		"azureDeploymentNameDescription": "Nama deployment model dalam resource.",
-		"azureApiKey": "Azure API Key",
-		"getAzureApiKey": "Dapatkan Akses Azure AI Foundry",
-		"azureApiVersion": "Versi API Azure",
-		"azureApiVersionDescription": "Versi API yang akan digunakan (contoh: '2024-10-21'). Biarkan kosong untuk nilai default.",
-		"chutesApiKey": "Chutes API Key",
-		"getChutesApiKey": "Dapatkan Chutes API Key",
 		"fireworksApiKey": "Fireworks API Key",
 		"getFireworksApiKey": "Dapatkan Fireworks API Key",
-		"featherlessApiKey": "Featherless API Key",
-		"getFeatherlessApiKey": "Dapatkan Featherless API Key",
-		"ioIntelligenceApiKey": "IO Intelligence API Key",
-		"ioIntelligenceApiKeyPlaceholder": "Masukkan kunci API IO Intelligence Anda",
-		"getIoIntelligenceApiKey": "Dapatkan IO Intelligence API Key",
 		"deepSeekApiKey": "DeepSeek API Key",
 		"getDeepSeekApiKey": "Dapatkan DeepSeek API Key",
-		"doubaoApiKey": "Kunci API Doubao",
-		"getDoubaoApiKey": "Dapatkan Kunci API Doubao",
 		"moonshotApiKey": "Kunci API Moonshot",
 		"getMoonshotApiKey": "Dapatkan Kunci API Moonshot",
 		"moonshotBaseUrl": "Titik Masuk Moonshot",
@@ -412,24 +393,9 @@
 		"getMiniMaxApiKey": "Dapatkan Kunci API MiniMax",
 		"minimaxBaseUrl": "Titik Masuk MiniMax",
 		"geminiApiKey": "Gemini API Key",
-		"getGroqApiKey": "Dapatkan Groq API Key",
-		"groqApiKey": "Groq API Key",
 		"getSambaNovaApiKey": "Dapatkan SambaNova API Key",
 		"sambaNovaApiKey": "SambaNova API Key",
-		"getHuggingFaceApiKey": "Dapatkan Kunci API Hugging Face",
-		"huggingFaceApiKey": "Kunci API Hugging Face",
-		"huggingFaceModelId": "ID Model",
 		"getGeminiApiKey": "Dapatkan Gemini API Key",
-		"huggingFaceLoading": "Memuat...",
-		"huggingFaceModelsCount": "({{count}} model)",
-		"huggingFaceSelectModel": "Pilih model...",
-		"huggingFaceSearchModels": "Cari model...",
-		"huggingFaceNoModelsFound": "Tidak ada model ditemukan",
-		"huggingFaceProvider": "Penyedia",
-		"huggingFaceProviderAuto": "Otomatis",
-		"huggingFaceSelectProvider": "Pilih penyedia...",
-		"huggingFaceSearchProviders": "Cari penyedia...",
-		"huggingFaceNoProvidersFound": "Tidak ada penyedia ditemukan",
 		"openAiApiKey": "OpenAI API Key",
 		"apiKey": "API Key",
 		"openAiBaseUrl": "Base URL",
@@ -500,10 +466,6 @@
 			"description": "Ollama memungkinkan kamu menjalankan model secara lokal di komputer. Untuk instruksi cara memulai, lihat panduan quickstart mereka.",
 			"warning": "Catatan: Roo Code menggunakan prompt kompleks dan bekerja terbaik dengan model Claude. Model yang kurang mampu mungkin tidak bekerja seperti yang diharapkan."
 		},
-		"unboundApiKey": "Unbound API Key",
-		"getUnboundApiKey": "Dapatkan Unbound API Key",
-		"unboundRefreshModelsSuccess": "Daftar model diperbarui! Kamu sekarang dapat memilih dari model terbaru.",
-		"unboundInvalidApiKey": "API key tidak valid. Silakan periksa API key kamu dan coba lagi.",
 		"roo": {
 			"authenticatedMessage": "Terautentikasi dengan aman melalui akun Roo Code Cloud Anda.",
 			"connectButton": "Hubungkan ke Roo Code Cloud"
@@ -590,34 +552,6 @@
 			"placeholder": "Default: claude",
 			"maxTokensLabel": "Token Output Maks",
 			"maxTokensDescription": "Jumlah maksimum token output untuk respons Claude Code. Default adalah 8000."
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "Aktifkan tool browser",
-			"description": "Ketika diaktifkan, Roo dapat menggunakan browser untuk berinteraksi dengan website ketika menggunakan model yang mendukung computer use. <0>Pelajari lebih lanjut</0>"
-		},
-		"viewport": {
-			"label": "Ukuran viewport",
-			"description": "Pilih ukuran viewport untuk interaksi browser. Ini mempengaruhi bagaimana website ditampilkan dan berinteraksi.",
-			"options": {
-				"largeDesktop": "Desktop Besar (1280x800)",
-				"smallDesktop": "Desktop Kecil (900x600)",
-				"tablet": "Tablet (768x1024)",
-				"mobile": "Mobile (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "Kualitas screenshot",
-			"description": "Sesuaikan kualitas WebP screenshot browser. Nilai yang lebih tinggi memberikan screenshot yang lebih jelas tetapi meningkatkan penggunaan token."
-		},
-		"remote": {
-			"label": "Gunakan koneksi browser remote",
-			"description": "Hubungkan ke browser Chrome yang berjalan dengan remote debugging diaktifkan (--remote-debugging-port=9222).",
-			"urlPlaceholder": "URL Kustom (misalnya, http://localhost:9222)",
-			"testButton": "Test Koneksi",
-			"testingButton": "Testing...",
-			"instructions": "Masukkan alamat host DevTools Protocol atau biarkan kosong untuk auto-discover instance Chrome lokal. Tombol Test Koneksi akan mencoba URL kustom jika disediakan, atau auto-discover jika field kosong."
 		}
 	},
 	"checkpoints": {
@@ -959,9 +893,7 @@
 		"providerNotAllowed": "Provider '{{provider}}' tidak diizinkan oleh organisasi kamu",
 		"modelNotAllowed": "Model '{{model}}' tidak diizinkan untuk provider '{{provider}}' oleh organisasi kamu",
 		"profileInvalid": "Profil ini berisi provider atau model yang tidak diizinkan oleh organisasi kamu",
-		"qwenCodeOauthPath": "Kamu harus memberikan jalur kredensial OAuth yang valid",
-		"azureResourceName": "Kamu harus memberikan nama sumber daya Azure.",
-		"azureDeploymentName": "Kamu harus memberikan nama deployment Azure."
+		"qwenCodeOauthPath": "Kamu harus memberikan jalur kredensial OAuth yang valid"
 	},
 	"placeholders": {
 		"apiKey": "Masukkan API Key...",
@@ -974,8 +906,6 @@
 		"projectId": "Masukkan Project ID...",
 		"customArn": "Masukkan ARN (misalnya arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Masukkan base URL...",
-		"azureResourceName": "e.g. my-openai-resource",
-		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "misalnya meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "misalnya lmstudio-community/llama-3.2-1b-instruct",

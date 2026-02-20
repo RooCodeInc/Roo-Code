@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "组织已禁用分享功能",
 		"shareSuccessOrganization": "组织链接已复制到剪贴板",
 		"shareSuccessPublic": "公开链接已复制到剪贴板",
-		"openInCloud": "在 Roo Code Cloud 中打开任务",
-		"openInCloudIntro": "从任何地方继续监控或与 Roo 交互。扫描、点击或复制以打开。",
 		"openApiHistory": "打开 API 历史",
 		"openUiHistory": "打开 UI 历史",
 		"backToParentTask": "父任务"
 	},
 	"unpin": "取消置顶",
 	"pin": "置顶",
+	"fileChangesInConversation": {
+		"header": "此对话中已更改 {{count}} 个文件"
+	},
 	"tokenProgress": {
 		"availableSpace": "可用: {{amount}}",
 		"tokensUsed": "已使用: {{used}} / {{total}}",
@@ -348,8 +349,9 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"claudeOpus": "Claude Opus 4.6: 现已在所有供应商——Roo Code Router、Anthropic、AWS Bedrock、Google Vertex 和 OpenRouter——提供，将 Anthropic 最强大的模型带到您的首选平台。",
-			"gptCodex": "GPT-5.3-Codex: OpenAI 最新的编码模型现已在 OpenAI - ChatGPT 供应商中支持，提供尖端的代码生成和理解。"
+			"geminiPro": "Gemini 3.1 Pro 支持：添加了 Gemini 3.1 Pro 模型支持，并将其设为默认 Gemini 模型以提升性能。",
+			"cliNdjson": "CLI NDJSON 协议：新增 NDJSON stdin 协议、list 子命令，以及模块化的 run 命令，提供更灵活的 CLI 工作流。",
+			"cliRelease": "CLI v0.1.0：Roo Code CLI 以稳定的命令接口达成首个正式版本。"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",
@@ -363,44 +365,6 @@
 		"totalWithSubtasks": "总成本（包括子任务）: ${{cost}}",
 		"total": "总成本: ${{cost}}",
 		"includesSubtasks": "包括子任务成本"
-	},
-	"browser": {
-		"session": "浏览器会话",
-		"active": "活动中",
-		"rooWantsToUse": "Roo想使用浏览器",
-		"consoleLogs": "控制台日志",
-		"noNewLogs": "(没有新日志)",
-		"screenshot": "浏览器截图",
-		"cursor": "光标",
-		"navigation": {
-			"step": "步骤 {{current}} / {{total}}",
-			"previous": "上一步",
-			"next": "下一步"
-		},
-		"sessionStarted": "浏览器会话已启动",
-		"actions": {
-			"title": "浏览器操作: ",
-			"launched": "浏览器已启动",
-			"launch": "访问 {{url}}",
-			"clicked": "点击位置: {{coordinate}}",
-			"click": "点击 ({{coordinate}})",
-			"typed": "输入: {{text}}",
-			"type": "输入 \"{{text}}\"",
-			"pressed": "已按 {{key}}",
-			"press": "按 {{key}}",
-			"scrolledDown": "已向下滚动",
-			"scrollDown": "向下滚动",
-			"scrolledUp": "已向上滚动",
-			"scrollUp": "向上滚动",
-			"hovered": "悬停位置: {{coordinate}}",
-			"hover": "悬停 ({{coordinate}})",
-			"resized": "大小已更改: {{size}}",
-			"resize": "调整大小为 {{size}}",
-			"screenshotSaved": "截图已保存",
-			"screenshot": "将截图保存到 {{path}}",
-			"closed": "浏览器已关闭",
-			"close": "关闭浏览器"
-		}
 	},
 	"codeblock": {
 		"tooltips": {
@@ -463,7 +427,8 @@
 		"indexing": "索引中 {{percentage}}%",
 		"indexed": "已索引",
 		"error": "索引错误",
-		"status": "索引状态"
+		"status": "索引状态",
+		"stopping": "正在停止索引..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "版本 {{version}} - 点击查看发布说明"

@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "Sharing disabled by organization",
 		"shareSuccessOrganization": "Organization link copied to clipboard",
 		"shareSuccessPublic": "Public link copied to clipboard",
-		"openInCloud": "Open task in Roo Code Cloud",
-		"openInCloudIntro": "Keep monitoring or interacting with Roo from anywhere. Scan, click or copy to open.",
 		"openApiHistory": "Open API History",
 		"openUiHistory": "Open UI History",
 		"backToParentTask": "Parent task"
 	},
 	"unpin": "Unpin",
 	"pin": "Pin",
+	"fileChangesInConversation": {
+		"header": "{{count}} file(s) changed in this conversation"
+	},
 	"retry": {
 		"title": "Retry",
 		"tooltip": "Try the operation again"
@@ -366,8 +367,9 @@
 		},
 		"release": {
 			"heading": "What's New:",
-			"claudeOpus": "Claude Opus 4.6: Now available across all providers—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex, and OpenRouter—bringing Anthropic's most capable model to your preferred platform.",
-			"gptCodex": "GPT-5.3-Codex: OpenAI's latest coding model is now supported in the OpenAI - ChatGPT provider, delivering cutting-edge code generation and understanding."
+			"geminiPro": "Gemini 3.1 Pro Support: Added Gemini 3.1 Pro model support and set it as the default Gemini model for improved performance.",
+			"cliNdjson": "CLI NDJSON Protocol: New NDJSON stdin protocol, list subcommands, and modularized run command for more flexible CLI workflows.",
+			"cliRelease": "CLI v0.1.0: The Roo Code CLI reaches its first official release with a stable command interface."
 		},
 		"cloudAgents": {
 			"heading": "New in the Cloud:",
@@ -389,44 +391,6 @@
 		"totalWithSubtasks": "Total Cost (including subtasks): ${{cost}}",
 		"total": "Total Cost: ${{cost}}",
 		"includesSubtasks": "Includes subtask costs"
-	},
-	"browser": {
-		"session": "Browser Session",
-		"active": "Active",
-		"rooWantsToUse": "Roo wants to use the browser",
-		"consoleLogs": "Console Logs",
-		"noNewLogs": "(No new logs)",
-		"screenshot": "Browser screenshot",
-		"cursor": "cursor",
-		"navigation": {
-			"step": "Step {{current}} of {{total}}",
-			"previous": "Previous",
-			"next": "Next"
-		},
-		"sessionStarted": "Browser Session Started",
-		"actions": {
-			"title": "Browser Action: ",
-			"launched": "Launched browser",
-			"launch": "Launch browser at {{url}}",
-			"clicked": "Clicked at: {{coordinate}}",
-			"click": "Click ({{coordinate}})",
-			"typed": "Typed: {{text}}",
-			"type": "Type \"{{text}}\"",
-			"pressed": "Pressed key: {{key}}",
-			"press": "Press {{key}}",
-			"scrolledDown": "Scrolled down",
-			"scrollDown": "Scroll down",
-			"scrolledUp": "Scrolled up",
-			"scrollUp": "Scroll up",
-			"hovered": "Hovered at: {{coordinate}}",
-			"hover": "Hover ({{coordinate}})",
-			"resized": "Resized to: {{size}}",
-			"resize": "Resize to {{size}}",
-			"screenshotSaved": "Screenshot saved",
-			"screenshot": "Save screenshot to {{path}}",
-			"closed": "Closed browser",
-			"close": "Close browser"
-		}
 	},
 	"codeblock": {
 		"tooltips": {
@@ -458,7 +422,8 @@
 		"indexing": "Indexing {{percentage}}%",
 		"indexed": "Indexed",
 		"error": "Index error",
-		"status": "Index status"
+		"status": "Index status",
+		"stopping": "Stopping indexing..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Version {{version}} - Click to view release notes"

@@ -31,7 +31,6 @@
 		"mcp": "MCP-Server",
 		"worktrees": "Worktrees",
 		"autoApprove": "Auto-Genehmigung",
-		"browser": "Computerzugriff",
 		"checkpoints": "Kontrollpunkte",
 		"notifications": "Benachrichtigungen",
 		"contextManagement": "Kontext",
@@ -212,7 +211,12 @@
 		"searchMinScoreResetTooltip": "Auf Standardwert zurücksetzen (0.4)",
 		"searchMaxResultsLabel": "Maximale Suchergebnisse",
 		"searchMaxResultsDescription": "Maximale Anzahl von Suchergebnissen, die bei der Abfrage des Codebase-Index zurückgegeben werden. Höhere Werte bieten mehr Kontext, können aber weniger relevante Ergebnisse enthalten.",
-		"resetToDefault": "Auf Standard zurücksetzen"
+		"resetToDefault": "Auf Standard zurücksetzen",
+		"stopIndexingButton": "Indexierung stoppen",
+		"stoppingButton": "Wird gestoppt...",
+		"workspaceToggleLabel": "Indexierung für diesen Arbeitsbereich aktivieren",
+		"workspaceDisabledMessage": "Indexierung ist konfiguriert, aber nicht für diesen Arbeitsbereich aktiviert.",
+		"autoEnableDefaultLabel": "Indexierung für neue Arbeitsbereiche automatisch aktivieren"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Du kannst <SettingsLink>in deinen IDE-Einstellungen</SettingsLink> einen globalen Shortcut für diese Einstellung konfigurieren.",
@@ -240,10 +244,6 @@
 				"label": "Geschützte Dateien einbeziehen",
 				"description": "Roo erlauben, geschützte Dateien (wie .rooignore und .roo/ Konfigurationsdateien) ohne Genehmigung zu erstellen und zu bearbeiten."
 			}
-		},
-		"browser": {
-			"label": "Browser",
-			"description": "Browser-Aktionen automatisch ohne Genehmigung durchführen. Hinweis: Gilt nur, wenn das Modell Computer-Nutzung unterstützt"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -309,7 +309,7 @@
 		"searchProviderPlaceholder": "Suchanbieter durchsuchen",
 		"noProviderMatchFound": "Keine Anbieter gefunden",
 		"noMatchFound": "Keine passenden Profile gefunden",
-		"retiredProviderMessage": "Tut uns leid, dieser Anbieter wird nicht mehr unterstützt. Wir haben gesehen, dass nur sehr wenige Roo-Nutzer ihn tatsächlich verwendet haben, und wir müssen den Umfang unserer Codebasis reduzieren, damit wir weiterhin schnell liefern und unserer Community in diesem Bereich gut dienen können. Es war eine wirklich schwere Entscheidung, aber sie lässt uns auf das konzentrieren, was dir am wichtigsten ist. Es ist ärgerlich, das wissen wir.",
+		"retiredProviderMessage": "Leider wird dieser Anbieter nicht mehr unterstützt. Wir haben festgestellt, dass nur sehr wenige Roo-Nutzer ihn tatsächlich verwendet haben, und wir müssen den Umfang unserer Codebasis reduzieren, damit wir weiterhin schnell liefern und unserer Community in diesem Bereich gut dienen können. Es war eine wirklich schwere Entscheidung, aber sie ermöglicht uns, uns auf das zu konzentrieren, was dir am wichtigsten ist. Es ist ärgerlich, das wissen wir.",
 		"vscodeLmDescription": "Die VS Code Language Model API ermöglicht das Ausführen von Modellen, die von anderen VS Code-Erweiterungen bereitgestellt werden (einschließlich, aber nicht beschränkt auf GitHub Copilot). Der einfachste Weg, um zu starten, besteht darin, die Erweiterungen Copilot und Copilot Chat aus dem VS Code Marketplace zu installieren.",
 		"awsCustomArnUse": "Geben Sie eine gültige Amazon Bedrock ARN für das Modell ein, das Sie verwenden möchten. Formatbeispiele:",
 		"awsCustomArnDesc": "Stellen Sie sicher, dass die Region in der ARN mit Ihrer oben ausgewählten AWS-Region übereinstimmt.",
@@ -317,8 +317,6 @@
 		"getOpenRouterApiKey": "OpenRouter API-Schlüssel erhalten",
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API-Schlüssel",
 		"getVercelAiGatewayApiKey": "Vercel AI Gateway API-Schlüssel erhalten",
-		"doubaoApiKey": "Doubao API-Schlüssel",
-		"getDoubaoApiKey": "Doubao API-Schlüssel erhalten",
 		"apiKeyStorageNotice": "API-Schlüssel werden sicher im VSCode Secret Storage gespeichert",
 		"openAiCodexRateLimits": {
 			"title": "Usage Limits for Codex{{planLabel}}",
@@ -373,32 +371,15 @@
 		"getAnthropicApiKey": "Anthropic API-Schlüssel erhalten",
 		"anthropicUseAuthToken": "Anthropic API-Schlüssel als Authorization-Header anstelle von X-Api-Key übergeben",
 		"anthropic1MContextBetaLabel": "1M Kontextfenster aktivieren (Beta)",
-		"anthropic1MContextBetaDescription": "Erweitert das Kontextfenster für Claude Sonnet 4 / 4.5 / Claude Opus 4.6 auf 1 Million Token",
+		"anthropic1MContextBetaDescription": "Erweitert das Kontextfenster für Claude Sonnet 4.x / Claude Opus 4.6 auf 1 Million Token",
 		"awsBedrock1MContextBetaLabel": "1M Kontextfenster aktivieren (Beta)",
-		"awsBedrock1MContextBetaDescription": "Erweitert das Kontextfenster für Claude Sonnet 4 / 4.5 / Claude Opus 4.6 auf 1 Million Token",
+		"awsBedrock1MContextBetaDescription": "Erweitert das Kontextfenster für Claude Sonnet 4.x / Claude Opus 4.6 auf 1 Million Token",
 		"vertex1MContextBetaLabel": "1M Kontextfenster aktivieren (Beta)",
-		"vertex1MContextBetaDescription": "Erweitert das Kontextfenster für Claude Sonnet 4 / 4.5 / Claude Opus 4.6 auf 1 Million Token",
+		"vertex1MContextBetaDescription": "Erweitert das Kontextfenster für Claude Sonnet 4.x / Claude Opus 4.6 auf 1 Million Token",
 		"basetenApiKey": "Baseten API-Schlüssel",
 		"getBasetenApiKey": "Baseten API-Schlüssel erhalten",
-		"cerebrasApiKey": "Cerebras API-Schlüssel",
-		"getCerebrasApiKey": "Cerebras API-Schlüssel erhalten",
-		"azureResourceName": "Azure Ressourcenname",
-		"azureResourceNameDescription": "Der Name Ihrer Azure AI Foundry-Ressource (z.B. 'meine-openai-ressource').",
-		"azureDeploymentName": "Azure Bereitstellungsname",
-		"azureDeploymentNameDescription": "Der Name Ihrer Modellbereitstellung innerhalb der Ressource.",
-		"azureApiKey": "Azure API-Schlüssel",
-		"getAzureApiKey": "Azure AI Foundry-Zugang erhalten",
-		"azureApiVersion": "Azure API-Version",
-		"azureApiVersionDescription": "Die zu verwendende API-Version (z.B. '2024-10-21'). Leer lassen für Standardwert.",
-		"chutesApiKey": "Chutes API-Schlüssel",
-		"getChutesApiKey": "Chutes API-Schlüssel erhalten",
 		"fireworksApiKey": "Fireworks API-Schlüssel",
 		"getFireworksApiKey": "Fireworks API-Schlüssel erhalten",
-		"featherlessApiKey": "Featherless API-Schlüssel",
-		"getFeatherlessApiKey": "Featherless API-Schlüssel erhalten",
-		"ioIntelligenceApiKey": "IO Intelligence API-Schlüssel",
-		"ioIntelligenceApiKeyPlaceholder": "Gib deinen IO Intelligence API-Schlüssel ein",
-		"getIoIntelligenceApiKey": "IO Intelligence API-Schlüssel erhalten",
 		"deepSeekApiKey": "DeepSeek API-Schlüssel",
 		"getDeepSeekApiKey": "DeepSeek API-Schlüssel erhalten",
 		"moonshotApiKey": "Moonshot API-Schlüssel",
@@ -412,23 +393,8 @@
 		"getMiniMaxApiKey": "MiniMax API-Schlüssel erhalten",
 		"minimaxBaseUrl": "MiniMax-Einstiegspunkt",
 		"geminiApiKey": "Gemini API-Schlüssel",
-		"getGroqApiKey": "Groq API-Schlüssel erhalten",
-		"groqApiKey": "Groq API-Schlüssel",
 		"getSambaNovaApiKey": "SambaNova API-Schlüssel erhalten",
 		"sambaNovaApiKey": "SambaNova API-Schlüssel",
-		"getHuggingFaceApiKey": "Hugging Face API-Schlüssel erhalten",
-		"huggingFaceApiKey": "Hugging Face API-Schlüssel",
-		"huggingFaceModelId": "Modell-ID",
-		"huggingFaceLoading": "Lädt...",
-		"huggingFaceModelsCount": "({{count}} Modelle)",
-		"huggingFaceSelectModel": "Modell auswählen...",
-		"huggingFaceSearchModels": "Modelle durchsuchen...",
-		"huggingFaceNoModelsFound": "Keine Modelle gefunden",
-		"huggingFaceProvider": "Anbieter",
-		"huggingFaceProviderAuto": "Automatisch",
-		"huggingFaceSelectProvider": "Anbieter auswählen...",
-		"huggingFaceSearchProviders": "Anbieter durchsuchen...",
-		"huggingFaceNoProvidersFound": "Keine Anbieter gefunden",
 		"getGeminiApiKey": "Gemini API-Schlüssel erhalten",
 		"openAiApiKey": "OpenAI API-Schlüssel",
 		"apiKey": "API-Schlüssel",
@@ -500,10 +466,6 @@
 			"description": "Ollama ermöglicht es dir, Modelle lokal auf deinem Computer auszuführen. Eine Anleitung zum Einstieg findest du im Schnellstart-Guide.",
 			"warning": "Hinweis: Roo Code verwendet komplexe Prompts und funktioniert am besten mit Claude-Modellen. Weniger leistungsfähige Modelle funktionieren möglicherweise nicht wie erwartet."
 		},
-		"unboundApiKey": "Unbound API-Schlüssel",
-		"getUnboundApiKey": "Unbound API-Schlüssel erhalten",
-		"unboundRefreshModelsSuccess": "Modellliste aktualisiert! Sie können jetzt aus den neuesten Modellen auswählen.",
-		"unboundInvalidApiKey": "Ungültiger API-Schlüssel. Bitte überprüfen Sie Ihren API-Schlüssel und versuchen Sie es erneut.",
 		"roo": {
 			"authenticatedMessage": "Sicher authentifiziert über dein Roo Code Cloud-Konto.",
 			"connectButton": "Mit Roo Code Cloud verbinden"
@@ -590,34 +552,6 @@
 			"placeholder": "Standard: claude",
 			"maxTokensLabel": "Maximale Ausgabe-Tokens",
 			"maxTokensDescription": "Maximale Anzahl an Ausgabe-Tokens für Claude Code-Antworten. Standard ist 8000."
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "Browser-Tool aktivieren",
-			"description": "Wenn aktiviert, kann Roo einen Browser verwenden, um mit Websites zu interagieren, wenn Modelle verwendet werden, die Computer-Nutzung unterstützen. <0>Mehr erfahren</0>"
-		},
-		"viewport": {
-			"label": "Viewport-Größe",
-			"description": "Wählen Sie die Viewport-Größe für Browser-Interaktionen. Dies beeinflusst, wie Websites angezeigt und mit ihnen interagiert wird.",
-			"options": {
-				"largeDesktop": "Großer Desktop (1280x800)",
-				"smallDesktop": "Kleiner Desktop (900x600)",
-				"tablet": "Tablet (768x1024)",
-				"mobile": "Mobil (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "Screenshot-Qualität",
-			"description": "Passen Sie die WebP-Qualität von Browser-Screenshots an. Höhere Werte bieten klarere Screenshots, erhöhen aber den Token-Verbrauch."
-		},
-		"remote": {
-			"label": "Remote-Browser-Verbindung verwenden",
-			"description": "Verbindung zu einem Chrome-Browser herstellen, der mit aktiviertem Remote-Debugging läuft (--remote-debugging-port=9222).",
-			"urlPlaceholder": "Benutzerdefinierte URL (z.B. http://localhost:9222)",
-			"testButton": "Verbindung testen",
-			"testingButton": "Teste...",
-			"instructions": "Geben Sie die DevTools-Protokoll-Host-Adresse ein oder lassen Sie das Feld leer, um Chrome lokale Instanzen automatisch zu erkennen. Die Schaltfläche 'Verbindung testen' versucht die benutzerdefinierte URL, wenn angegeben, oder erkennt automatisch, wenn das Feld leer ist."
 		}
 	},
 	"checkpoints": {
@@ -959,9 +893,7 @@
 		"providerNotAllowed": "Anbieter '{{provider}}' ist von deiner Organisation nicht erlaubt",
 		"modelNotAllowed": "Modell '{{model}}' ist für Anbieter '{{provider}}' von deiner Organisation nicht erlaubt",
 		"profileInvalid": "Dieses Profil enthält einen Anbieter oder ein Modell, das von deiner Organisation nicht erlaubt ist",
-		"qwenCodeOauthPath": "Du musst einen gültigen OAuth-Anmeldedaten-Pfad angeben",
-		"azureResourceName": "Du musst einen Azure-Ressourcennamen angeben.",
-		"azureDeploymentName": "Du musst einen Azure-Bereitstellungsnamen angeben."
+		"qwenCodeOauthPath": "Du musst einen gültigen OAuth-Anmeldedaten-Pfad angeben"
 	},
 	"placeholders": {
 		"apiKey": "API-Schlüssel eingeben...",
@@ -974,8 +906,6 @@
 		"projectId": "Projekt-ID eingeben...",
 		"customArn": "ARN eingeben (z.B. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Basis-URL eingeben...",
-		"azureResourceName": "e.g. my-openai-resource",
-		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "z.B. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "z.B. lmstudio-community/llama-3.2-1b-instruct",

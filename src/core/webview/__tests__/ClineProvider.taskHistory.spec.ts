@@ -17,8 +17,11 @@ vi.mock("fs/promises", () => ({
 	mkdir: vi.fn().mockResolvedValue(undefined),
 	writeFile: vi.fn().mockResolvedValue(undefined),
 	readFile: vi.fn().mockResolvedValue(""),
+	readdir: vi.fn().mockResolvedValue([]),
 	unlink: vi.fn().mockResolvedValue(undefined),
 	rmdir: vi.fn().mockResolvedValue(undefined),
+	access: vi.fn().mockResolvedValue(undefined),
+	rm: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock("axios", () => ({
@@ -44,6 +47,11 @@ vi.mock("../../../utils/storage", () => ({
 	getSettingsDirectoryPath: vi.fn().mockResolvedValue("/test/settings/path"),
 	getTaskDirectoryPath: vi.fn().mockResolvedValue("/test/task/path"),
 	getGlobalStoragePath: vi.fn().mockResolvedValue("/test/storage/path"),
+	getStorageBasePath: vi.fn().mockImplementation((defaultPath: string) => defaultPath),
+}))
+
+vi.mock("../../../utils/safeWriteJson", () => ({
+	safeWriteJson: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock("@modelcontextprotocol/sdk/types.js", () => ({
@@ -65,18 +73,6 @@ vi.mock("@modelcontextprotocol/sdk/types.js", () => ({
 			this.name = "McpError"
 		}
 	},
-}))
-
-vi.mock("../../../services/browser/BrowserSession", () => ({
-	BrowserSession: vi.fn().mockImplementation(() => ({
-		testConnection: vi.fn().mockResolvedValue({ success: false }),
-	})),
-}))
-
-vi.mock("../../../services/browser/browserDiscovery", () => ({
-	discoverChromeHostUrl: vi.fn().mockResolvedValue("http://localhost:9222"),
-	tryChromeHostUrl: vi.fn().mockResolvedValue(false),
-	testBrowserConnection: vi.fn(),
 }))
 
 vi.mock("@modelcontextprotocol/sdk/client/index.js", () => ({
@@ -233,9 +229,6 @@ vi.mock("@roo-code/cloud", () => ({
 			}
 		},
 	},
-	BridgeOrchestrator: {
-		isEnabled: vi.fn().mockReturnValue(false),
-	},
 	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.roocode.com"),
 }))
 
@@ -251,7 +244,7 @@ describe("ClineProvider Task History Synchronization", () => {
 	let mockPostMessage: ReturnType<typeof vi.fn>
 	let taskHistoryState: HistoryItem[]
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		vi.clearAllMocks()
 
 		if (!TelemetryService.hasInstance()) {
@@ -327,6 +320,10 @@ describe("ClineProvider Task History Synchronization", () => {
 		} as unknown as vscode.WebviewView
 
 		provider = new ClineProvider(mockContext, mockOutputChannel, "sidebar", new ContextProxy(mockContext))
+
+		// Wait for the async TaskHistoryStore initialization to complete
+		// (fire-and-forget from the constructor; microtasks need to flush)
+		await new Promise((resolve) => setTimeout(resolve, 10))
 
 		// Mock the custom modes manager
 		;(provider as any).customModesManager = {
@@ -508,18 +505,15 @@ describe("ClineProvider Task History Synchronization", () => {
 
 			await provider.updateTaskHistory(updatedItem)
 
-			// Verify the update was persisted
-			expect(mockContext.globalState.update).toHaveBeenCalledWith(
-				"taskHistory",
+			// Verify the update was persisted in the store
+			const storeHistory = provider.taskHistoryStore.getAll()
+			expect(storeHistory).toEqual(
 				expect.arrayContaining([expect.objectContaining({ id: "task-update", task: "Updated task" })]),
 			)
 
 			// Should not have duplicates
-			const allCalls = (mockContext.globalState.update as ReturnType<typeof vi.fn>).mock.calls
-			const lastUpdateCall = allCalls.find((call: any[]) => call[0] === "taskHistory")
-			const historyArray = lastUpdateCall?.[1] as HistoryItem[]
-			const matchingItems = historyArray?.filter((item: HistoryItem) => item.id === "task-update")
-			expect(matchingItems?.length).toBe(1)
+			const matchingItems = storeHistory.filter((item: HistoryItem) => item.id === "task-update")
+			expect(matchingItems.length).toBe(1)
 		})
 
 		it("returns the updated task history array", async () => {
@@ -594,18 +588,14 @@ describe("ClineProvider Task History Synchronization", () => {
 			expect(sentHistory[0].id).toBe("valid")
 		})
 
-		it("reads from global state when no history is provided", async () => {
+		it("reads from store when no history is provided", async () => {
 			await provider.resolveWebviewView(mockWebviewView)
 			provider.isViewLaunched = true
 
-			// Set up task history in global state
+			// Populate the store with an item
 			const now = Date.now()
-			const stateHistory: HistoryItem[] = [createHistoryItem({ id: "from-state", ts: now, task: "State task" })]
-
-			// Update the mock to return our history
-			;(mockContext.globalState.get as ReturnType<typeof vi.fn>).mockImplementation((key: string) => {
-				if (key === "taskHistory") return stateHistory
-				return undefined
+			await provider.updateTaskHistory(createHistoryItem({ id: "from-store", ts: now, task: "Store task" }), {
+				broadcast: false,
 			})
 
 			// Clear previous calls
@@ -617,8 +607,8 @@ describe("ClineProvider Task History Synchronization", () => {
 			const call = calls.find((c) => c[0]?.type === "taskHistoryUpdated")
 			const sentHistory = call?.[0]?.taskHistory as HistoryItem[]
 
-			expect(sentHistory.length).toBe(1)
-			expect(sentHistory[0].id).toBe("from-state")
+			expect(sentHistory.length).toBeGreaterThanOrEqual(1)
+			expect(sentHistory.some((item) => item.id === "from-store")).toBe(true)
 		})
 	})
 
@@ -627,13 +617,18 @@ describe("ClineProvider Task History Synchronization", () => {
 			await provider.resolveWebviewView(mockWebviewView)
 
 			const now = Date.now()
-			const multiWorkspaceHistory: HistoryItem[] = [
+
+			// Populate the store with multi-workspace items
+			await provider.updateTaskHistory(
 				createHistoryItem({
 					id: "ws1-task",
 					ts: now,
 					task: "Workspace 1 task",
 					workspace: "/path/to/workspace1",
 				}),
+				{ broadcast: false },
+			)
+			await provider.updateTaskHistory(
 				createHistoryItem({
 					id: "ws2-task",
 					ts: now - 1000,
@@ -641,6 +636,9 @@ describe("ClineProvider Task History Synchronization", () => {
 					workspace: "/path/to/workspace2",
 					number: 2,
 				}),
+				{ broadcast: false },
+			)
+			await provider.updateTaskHistory(
 				createHistoryItem({
 					id: "ws3-task",
 					ts: now - 2000,
@@ -648,13 +646,8 @@ describe("ClineProvider Task History Synchronization", () => {
 					workspace: "/different/workspace",
 					number: 3,
 				}),
-			]
-
-			// Update the mock to return multi-workspace history
-			;(mockContext.globalState.get as ReturnType<typeof vi.fn>).mockImplementation((key: string) => {
-				if (key === "taskHistory") return multiWorkspaceHistory
-				return undefined
-			})
+				{ broadcast: false },
+			)
 
 			const state = await provider.getStateToPostToWebview()
 
@@ -677,8 +670,8 @@ describe("ClineProvider Task History Synchronization", () => {
 
 			await Promise.all(items.map((item) => provider.updateTaskHistory(item, { broadcast: false })))
 
-			// All 5 entries must survive
-			const history = (provider as any).contextProxy.getGlobalState("taskHistory") as HistoryItem[]
+			// All 5 entries must survive (read from store, not debounced globalState)
+			const history = provider.taskHistoryStore.getAll()
 			const ids = history.map((h: HistoryItem) => h.id)
 			for (const item of items) {
 				expect(ids).toContain(item.id)
@@ -702,34 +695,37 @@ describe("ClineProvider Task History Synchronization", () => {
 				provider.deleteTaskFromState("remove-me"),
 			])
 
-			const history = (provider as any).contextProxy.getGlobalState("taskHistory") as HistoryItem[]
+			const history = provider.taskHistoryStore.getAll()
 			const ids = history.map((h: HistoryItem) => h.id)
 			expect(ids).toContain("keep-me")
 			expect(ids).toContain("new-item")
 			expect(ids).not.toContain("remove-me")
 		})
 
-		it("does not block subsequent writes when a previous write errors", async () => {
+		it("does not block subsequent writes when a previous store write errors", async () => {
 			await provider.resolveWebviewView(mockWebviewView)
 
-			// Temporarily make updateGlobalState throw
-			const origUpdateGlobalState = (provider as any).updateGlobalState.bind(provider)
+			// Temporarily make the store's safeWriteJson throw
+			const { safeWriteJson } = await import("../../../utils/safeWriteJson")
+			const mockSafeWriteJson = vi.mocked(safeWriteJson)
 			let callCount = 0
-			;(provider as any).updateGlobalState = vi.fn().mockImplementation((...args: unknown[]) => {
+			mockSafeWriteJson.mockImplementation(async () => {
 				callCount++
 				if (callCount === 1) {
-					return Promise.reject(new Error("simulated write failure"))
+					throw new Error("simulated write failure")
 				}
-				return origUpdateGlobalState(...args)
 			})
 
-			// First call should fail
+			// First call should fail (store write failure)
 			const item1 = createHistoryItem({ id: "fail-item", task: "Fail" })
 			await expect(provider.updateTaskHistory(item1, { broadcast: false })).rejects.toThrow(
 				"simulated write failure",
 			)
 
-			// Second call should still succeed (lock not stuck)
+			// Restore mock
+			mockSafeWriteJson.mockResolvedValue(undefined)
+
+			// Second call should still succeed (store lock not stuck)
 			const item2 = createHistoryItem({ id: "ok-item", task: "OK" })
 			const result = await provider.updateTaskHistory(item2, { broadcast: false })
 			expect(result.some((h) => h.id === "ok-item")).toBe(true)
@@ -751,7 +747,7 @@ describe("ClineProvider Task History Synchronization", () => {
 				}),
 			])
 
-			const history = (provider as any).contextProxy.getGlobalState("taskHistory") as HistoryItem[]
+			const history = provider.taskHistoryStore.getAll()
 			const item = history.find((h: HistoryItem) => h.id === "race-item")
 			expect(item).toBeDefined()
 			// The second write (tokensIn: 222) should be the last one since writes are serialized

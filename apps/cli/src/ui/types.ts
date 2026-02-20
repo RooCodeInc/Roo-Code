@@ -40,14 +40,6 @@ export interface ToolData {
 	/** Command output */
 	output?: string
 
-	// Browser operation fields
-	/** Browser action type */
-	action?: string
-	/** Browser URL */
-	url?: string
-	/** Click/hover coordinates */
-	coordinate?: string
-
 	// Batch operation fields
 	/** Batch file reads */
 	batchFiles?: Array<{

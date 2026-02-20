@@ -110,9 +110,6 @@ vi.mock("@roo-code/cloud", () => ({
 			}
 		},
 	},
-	BridgeOrchestrator: {
-		isEnabled: vi.fn().mockReturnValue(false),
-	},
 	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.roocode.com"),
 }))
 
@@ -122,7 +119,7 @@ vi.mock("../../../shared/modes", () => {
 			slug: "code",
 			name: "Code Mode",
 			roleDefinition: "You are a code assistant",
-			groups: ["read", "edit", "browser"],
+			groups: ["read", "edit"],
 		},
 		{
 			slug: "architect",
@@ -171,7 +168,7 @@ vi.mock("../../../shared/modes", () => {
 			slug: "code",
 			name: "Code Mode",
 			roleDefinition: "You are a code assistant",
-			groups: ["read", "edit", "browser"],
+			groups: ["read", "edit"],
 		}),
 		defaultModeSlug: "code",
 	}

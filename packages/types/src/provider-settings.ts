@@ -103,7 +103,6 @@ export const providerNames = [
 	...customProviders,
 	...fauxProviders,
 	"anthropic",
-	"azure",
 	"bedrock",
 	"baseten",
 	"deepseek",
@@ -378,20 +377,12 @@ const basetenSchema = apiModelIdProviderModelSchema.extend({
 	basetenApiKey: z.string().optional(),
 })
 
-const azureSchema = apiModelIdProviderModelSchema.extend({
-	azureApiKey: z.string().optional(),
-	azureResourceName: z.string().optional(),
-	azureDeploymentName: z.string().optional(),
-	azureApiVersion: z.string().optional(),
-})
-
 const defaultSchema = z.object({
 	apiProvider: z.undefined(),
 })
 
 export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProvider", [
 	anthropicSchema.merge(z.object({ apiProvider: z.literal("anthropic") })),
-	azureSchema.merge(z.object({ apiProvider: z.literal("azure") })),
 	openRouterSchema.merge(z.object({ apiProvider: z.literal("openrouter") })),
 	bedrockSchema.merge(z.object({ apiProvider: z.literal("bedrock") })),
 	vertexSchema.merge(z.object({ apiProvider: z.literal("vertex") })),
@@ -424,7 +415,6 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 export const providerSettingsSchema = z.object({
 	apiProvider: providerNamesWithRetiredSchema.optional(),
 	...anthropicSchema.shape,
-	...azureSchema.shape,
 	...openRouterSchema.shape,
 	...bedrockSchema.shape,
 	...vertexSchema.shape,
@@ -500,7 +490,6 @@ export const isTypicalProvider = (key: unknown): key is TypicalProvider =>
 
 export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	anthropic: "apiModelId",
-	azure: "apiModelId",
 	openrouter: "openRouterModelId",
 	bedrock: "apiModelId",
 	vertex: "apiModelId",
@@ -567,12 +556,6 @@ export const MODELS_BY_PROVIDER: Record<
 		id: "anthropic",
 		label: "Anthropic",
 		models: Object.keys(anthropicModels),
-	},
-	azure: {
-		id: "azure",
-		label: "Azure AI Foundry",
-		// Azure uses deployment names configured by the user (not a fixed upstream model ID list)
-		models: [],
 	},
 	bedrock: {
 		id: "bedrock",

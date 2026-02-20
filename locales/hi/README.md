@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+      </details>
 
 ---
 
@@ -58,9 +58,8 @@
 - पूछें मोड: त्वरित उत्तर, स्पष्टीकरण और डॉक्स
 - डीबग मोड: समस्याओं का पता लगाएं, लॉग जोड़ें, मूल कारणों को अलग करें
 - कस्टम मोड: अपनी टीम या वर्कफ़्लो के लिए विशेष मोड बनाएं
-- Roomote Control: Roomote Control से तुम अपनी लोकल VS Code इंस्टेंस में चल रही टास्क को रिमोट से कंट्रोल कर सकते हो।
 
-और जानो: [मोड्स का इस्तेमाल](https://docs.roocode.com/basic-usage/using-modes) • [कस्टम मोड्स](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+और जानो: [मोड्स का इस्तेमाल](https://docs.roocode.com/basic-usage/using-modes) • [कस्टम मोड्स](https://docs.roocode.com/advanced-usage/custom-modes)
 
 ## ट्यूटोरियल और फ़ीचर वीडियो
 
@@ -69,7 +68,7 @@
 |                                                                                                                                                                           |                                                                                                                                                                               |                                                                                                                                                                         |
 | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>रू कोड इंस्टॉल करना</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>प्रोफाइल कॉन्फ़िगर करना</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>कोडबेस इंडेक्सिंग</b> |
-|      <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>कस्टम मोड</b>      |       <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>चेकपॉइंट्स</b>        |    <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>संदर्भ प्रबंधन</b>    |
+|      <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>कस्टम मोड</b>      |       <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>चेकपॉइंट्स</b>        |  <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>संदर्भ प्रबंधन</b>   |
 
 </div>
 <p align="center">

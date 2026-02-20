@@ -1,28 +1,20 @@
 // npx vitest run src/api/providers/__tests__/vercel-ai-gateway.spec.ts
 
-// Use vi.hoisted to define mock functions that can be referenced in hoisted vi.mock() calls
-const { mockStreamText, mockGenerateText, mockCreateGateway } = vi.hoisted(() => ({
-	mockStreamText: vi.fn(),
-	mockGenerateText: vi.fn(),
-	mockCreateGateway: vi.fn(),
-}))
+// Mock vscode first to avoid import errors
+vitest.mock("vscode", () => ({}))
 
-vi.mock("vscode", () => ({}))
+import { Anthropic } from "@anthropic-ai/sdk"
+import OpenAI from "openai"
 
-vi.mock("ai", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("ai")>()
-	return {
-		...actual,
-		streamText: mockStreamText,
-		generateText: mockGenerateText,
-		createGateway: mockCreateGateway,
-	}
-})
+import { VercelAiGatewayHandler } from "../vercel-ai-gateway"
+import { ApiHandlerOptions } from "../../../shared/api"
+import { vercelAiGatewayDefaultModelId, VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE } from "@roo-code/types"
 
-vi.mock("delay", () => ({ default: vi.fn(() => Promise.resolve()) }))
-
-vi.mock("../fetchers/modelCache", () => ({
-	getModels: vi.fn().mockImplementation(() => {
+// Mock dependencies
+vitest.mock("openai")
+vitest.mock("delay", () => ({ default: vitest.fn(() => Promise.resolve()) }))
+vitest.mock("../fetchers/modelCache", () => ({
+	getModels: vitest.fn().mockImplementation(() => {
 		return Promise.resolve({
 			"anthropic/claude-sonnet-4": {
 				maxTokens: 64000,
@@ -59,22 +51,30 @@ vi.mock("../fetchers/modelCache", () => ({
 			},
 		})
 	}),
-	getModelsFromCache: vi.fn().mockReturnValue(undefined),
+	getModelsFromCache: vitest.fn().mockReturnValue(undefined),
 }))
 
-import type { Anthropic } from "@anthropic-ai/sdk"
-
-import { VercelAiGatewayHandler } from "../vercel-ai-gateway"
-import type { ApiHandlerOptions } from "../../../shared/api"
-import { vercelAiGatewayDefaultModelId, VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE } from "@roo-code/types"
-
-// Set up the createGateway mock to return a function that creates mock language models
-const mockGatewayProvider = vi.fn((modelId: string) => ({
-	modelId,
-	provider: "gateway",
+vitest.mock("../../transform/caching/vercel-ai-gateway", () => ({
+	addCacheBreakpoints: vitest.fn(),
 }))
 
-mockCreateGateway.mockReturnValue(mockGatewayProvider)
+const mockCreate = vitest.fn()
+const mockConstructor = vitest.fn()
+
+;(OpenAI as any).mockImplementation(() => ({
+	chat: {
+		completions: {
+			create: mockCreate,
+		},
+	},
+}))
+;(OpenAI as any).mockImplementation = mockConstructor.mockReturnValue({
+	chat: {
+		completions: {
+			create: mockCreate,
+		},
+	},
+})
 
 describe("VercelAiGatewayHandler", () => {
 	const mockOptions: ApiHandlerOptions = {
@@ -83,27 +83,24 @@ describe("VercelAiGatewayHandler", () => {
 	}
 
 	beforeEach(() => {
-		vi.clearAllMocks()
-		mockCreateGateway.mockReturnValue(mockGatewayProvider)
+		vitest.clearAllMocks()
+		mockCreate.mockClear()
+		mockConstructor.mockClear()
 	})
 
 	it("initializes with correct options", () => {
 		const handler = new VercelAiGatewayHandler(mockOptions)
 		expect(handler).toBeInstanceOf(VercelAiGatewayHandler)
 
-		expect(mockCreateGateway).toHaveBeenCalledWith({
+		expect(OpenAI).toHaveBeenCalledWith({
+			baseURL: "https://ai-gateway.vercel.sh/v1",
 			apiKey: mockOptions.vercelAiGatewayApiKey,
-			headers: expect.objectContaining({
+			defaultHeaders: expect.objectContaining({
 				"HTTP-Referer": "https://github.com/RooVetGit/Roo-Cline",
 				"X-Title": "Roo Code",
 				"User-Agent": expect.stringContaining("RooCode/"),
 			}),
 		})
-	})
-
-	it("reports as AI SDK provider", () => {
-		const handler = new VercelAiGatewayHandler(mockOptions)
-		expect(handler.isAiSdkProvider()).toBe(true)
 	})
 
 	describe("fetchModel", () => {
@@ -133,41 +130,41 @@ describe("VercelAiGatewayHandler", () => {
 	})
 
 	describe("createMessage", () => {
-		function createMockStreamResult(options?: {
-			usage?: { inputTokens: number; outputTokens: number; details?: Record<string, unknown> }
-			providerMetadata?: Record<string, Record<string, unknown>>
-			fullStream?: AsyncGenerator<any>
-		}) {
-			const defaultUsage = {
-				inputTokens: 10,
-				outputTokens: 5,
-			}
-
-			async function* defaultFullStream() {
-				yield { type: "text-delta", text: "Test response" }
-			}
-
-			return {
-				fullStream: options?.fullStream ?? defaultFullStream(),
-				usage: Promise.resolve(options?.usage ?? defaultUsage),
-				providerMetadata: Promise.resolve(options?.providerMetadata ?? {}),
-			}
-		}
-
-		it("streams text content correctly", async () => {
-			mockStreamText.mockReturnValue(
-				createMockStreamResult({
-					usage: { inputTokens: 10, outputTokens: 5 },
-					providerMetadata: {
-						gateway: {
+		beforeEach(() => {
+			mockCreate.mockImplementation(async () => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: { content: "Test response" },
+								index: 0,
+							},
+						],
+						usage: null,
+					}
+					yield {
+						choices: [
+							{
+								delta: {},
+								index: 0,
+							},
+						],
+						usage: {
+							prompt_tokens: 10,
+							completion_tokens: 5,
+							total_tokens: 15,
 							cache_creation_input_tokens: 2,
-							cached_tokens: 3,
+							prompt_tokens_details: {
+								cached_tokens: 3,
+							},
 							cost: 0.005,
 						},
-					},
-				}),
-			)
+					}
+				},
+			}))
+		})
 
+		it("streams text content correctly", async () => {
 			const handler = new VercelAiGatewayHandler(mockOptions)
 			const systemPrompt = "You are a helpful assistant."
 			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
@@ -195,8 +192,6 @@ describe("VercelAiGatewayHandler", () => {
 
 		it("uses correct temperature from options", async () => {
 			const customTemp = 0.5
-			mockStreamText.mockReturnValue(createMockStreamResult())
-
 			const handler = new VercelAiGatewayHandler({
 				...mockOptions,
 				modelTemperature: customTemp,
@@ -207,7 +202,7 @@ describe("VercelAiGatewayHandler", () => {
 
 			await handler.createMessage(systemPrompt, messages).next()
 
-			expect(mockStreamText).toHaveBeenCalledWith(
+			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
 					temperature: customTemp,
 				}),
@@ -215,8 +210,6 @@ describe("VercelAiGatewayHandler", () => {
 		})
 
 		it("uses default temperature when none provided", async () => {
-			mockStreamText.mockReturnValue(createMockStreamResult())
-
 			const handler = new VercelAiGatewayHandler(mockOptions)
 
 			const systemPrompt = "You are a helpful assistant."
@@ -224,16 +217,29 @@ describe("VercelAiGatewayHandler", () => {
 
 			await handler.createMessage(systemPrompt, messages).next()
 
-			expect(mockStreamText).toHaveBeenCalledWith(
+			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
 					temperature: VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE,
 				}),
 			)
 		})
 
-		it("sets correct maxOutputTokens", async () => {
-			mockStreamText.mockReturnValue(createMockStreamResult())
+		it("adds cache breakpoints for supported models", async () => {
+			const { addCacheBreakpoints } = await import("../../transform/caching/vercel-ai-gateway")
+			const handler = new VercelAiGatewayHandler({
+				...mockOptions,
+				vercelAiGatewayModelId: "anthropic/claude-3.5-haiku",
+			})
 
+			const systemPrompt = "You are a helpful assistant."
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+			await handler.createMessage(systemPrompt, messages).next()
+
+			expect(addCacheBreakpoints).toHaveBeenCalled()
+		})
+
+		it("sets correct max_completion_tokens", async () => {
 			const handler = new VercelAiGatewayHandler(mockOptions)
 
 			const systemPrompt = "You are a helpful assistant."
@@ -241,27 +247,14 @@ describe("VercelAiGatewayHandler", () => {
 
 			await handler.createMessage(systemPrompt, messages).next()
 
-			expect(mockStreamText).toHaveBeenCalledWith(
+			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
-					maxOutputTokens: 64000,
+					max_completion_tokens: 64000, // max tokens for sonnet 4
 				}),
 			)
 		})
 
 		it("handles usage info correctly with all Vercel AI Gateway specific fields", async () => {
-			mockStreamText.mockReturnValue(
-				createMockStreamResult({
-					usage: { inputTokens: 10, outputTokens: 5 },
-					providerMetadata: {
-						gateway: {
-							cache_creation_input_tokens: 2,
-							cached_tokens: 3,
-							cost: 0.005,
-						},
-					},
-				}),
-			)
-
 			const handler = new VercelAiGatewayHandler(mockOptions)
 			const systemPrompt = "You are a helpful assistant."
 			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
@@ -301,9 +294,22 @@ describe("VercelAiGatewayHandler", () => {
 				},
 			]
 
-			it("should include tools when provided", async () => {
-				mockStreamText.mockReturnValue(createMockStreamResult())
+			beforeEach(() => {
+				mockCreate.mockImplementation(async () => ({
+					[Symbol.asyncIterator]: async function* () {
+						yield {
+							choices: [
+								{
+									delta: {},
+									index: 0,
+								},
+							],
+						}
+					},
+				}))
+			})
 
+			it("should include tools when provided", async () => {
 				const handler = new VercelAiGatewayHandler(mockOptions)
 
 				const messageGenerator = handler.createMessage("test prompt", [], {
@@ -312,18 +318,21 @@ describe("VercelAiGatewayHandler", () => {
 				})
 				await messageGenerator.next()
 
-				expect(mockStreamText).toHaveBeenCalledWith(
+				expect(mockCreate).toHaveBeenCalledWith(
 					expect.objectContaining({
-						tools: expect.objectContaining({
-							test_tool: expect.any(Object),
-						}),
+						tools: expect.arrayContaining([
+							expect.objectContaining({
+								type: "function",
+								function: expect.objectContaining({
+									name: "test_tool",
+								}),
+							}),
+						]),
 					}),
 				)
 			})
 
-			it("should include toolChoice when provided", async () => {
-				mockStreamText.mockReturnValue(createMockStreamResult())
-
+			it("should include tool_choice when provided", async () => {
 				const handler = new VercelAiGatewayHandler(mockOptions)
 
 				const messageGenerator = handler.createMessage("test prompt", [], {
@@ -333,42 +342,100 @@ describe("VercelAiGatewayHandler", () => {
 				})
 				await messageGenerator.next()
 
-				expect(mockStreamText).toHaveBeenCalledWith(
+				expect(mockCreate).toHaveBeenCalledWith(
 					expect.objectContaining({
-						toolChoice: "auto",
+						tool_choice: "auto",
 					}),
 				)
 			})
 
-			it("should yield tool call events when streaming tool calls", async () => {
-				async function* toolCallStream() {
-					yield {
-						type: "tool-input-start",
-						id: "call_123",
-						toolName: "test_tool",
-					}
-					yield {
-						type: "tool-input-delta",
-						id: "call_123",
-						delta: '{"arg1":',
-					}
-					yield {
-						type: "tool-input-delta",
-						id: "call_123",
-						delta: '"value"}',
-					}
-					yield {
-						type: "tool-input-end",
-						id: "call_123",
-					}
-				}
+			it("should set parallel_tool_calls when parallelToolCalls is enabled", async () => {
+				const handler = new VercelAiGatewayHandler(mockOptions)
 
-				mockStreamText.mockReturnValue(
-					createMockStreamResult({
-						fullStream: toolCallStream(),
-						usage: { inputTokens: 10, outputTokens: 5 },
+				const messageGenerator = handler.createMessage("test prompt", [], {
+					taskId: "test-task-id",
+					tools: testTools,
+					parallelToolCalls: true,
+				})
+				await messageGenerator.next()
+
+				expect(mockCreate).toHaveBeenCalledWith(
+					expect.objectContaining({
+						parallel_tool_calls: true,
 					}),
 				)
+			})
+
+			it("should include parallel_tool_calls: true by default", async () => {
+				const handler = new VercelAiGatewayHandler(mockOptions)
+
+				const messageGenerator = handler.createMessage("test prompt", [], {
+					taskId: "test-task-id",
+					tools: testTools,
+				})
+				await messageGenerator.next()
+
+				expect(mockCreate).toHaveBeenCalledWith(
+					expect.objectContaining({
+						tools: expect.any(Array),
+						parallel_tool_calls: true,
+					}),
+				)
+			})
+
+			it("should yield tool_call_partial chunks when streaming tool calls", async () => {
+				mockCreate.mockImplementation(async () => ({
+					[Symbol.asyncIterator]: async function* () {
+						yield {
+							choices: [
+								{
+									delta: {
+										tool_calls: [
+											{
+												index: 0,
+												id: "call_123",
+												function: {
+													name: "test_tool",
+													arguments: '{"arg1":',
+												},
+											},
+										],
+									},
+									index: 0,
+								},
+							],
+						}
+						yield {
+							choices: [
+								{
+									delta: {
+										tool_calls: [
+											{
+												index: 0,
+												function: {
+													arguments: '"value"}',
+												},
+											},
+										],
+									},
+									index: 0,
+								},
+							],
+						}
+						yield {
+							choices: [
+								{
+									delta: {},
+									index: 0,
+								},
+							],
+							usage: {
+								prompt_tokens: 10,
+								completion_tokens: 5,
+							},
+						}
+					},
+				}))
 
 				const handler = new VercelAiGatewayHandler(mockOptions)
 
@@ -382,38 +449,25 @@ describe("VercelAiGatewayHandler", () => {
 					chunks.push(chunk)
 				}
 
-				const toolStartChunks = chunks.filter((chunk) => chunk.type === "tool_call_start")
-				expect(toolStartChunks).toHaveLength(1)
-				expect(toolStartChunks[0]).toEqual({
-					type: "tool_call_start",
+				const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+				expect(toolCallChunks).toHaveLength(2)
+				expect(toolCallChunks[0]).toEqual({
+					type: "tool_call_partial",
+					index: 0,
 					id: "call_123",
 					name: "test_tool",
+					arguments: '{"arg1":',
 				})
-
-				const toolDeltaChunks = chunks.filter((chunk) => chunk.type === "tool_call_delta")
-				expect(toolDeltaChunks).toHaveLength(2)
-				expect(toolDeltaChunks[0]).toEqual({
-					type: "tool_call_delta",
-					id: "call_123",
-					delta: '{"arg1":',
-				})
-				expect(toolDeltaChunks[1]).toEqual({
-					type: "tool_call_delta",
-					id: "call_123",
-					delta: '"value"}',
-				})
-
-				const toolEndChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
-				expect(toolEndChunks).toHaveLength(1)
-				expect(toolEndChunks[0]).toEqual({
-					type: "tool_call_end",
-					id: "call_123",
+				expect(toolCallChunks[1]).toEqual({
+					type: "tool_call_partial",
+					index: 0,
+					id: undefined,
+					name: undefined,
+					arguments: '"value"}',
 				})
 			})
 
-			it("should pass system prompt to streamText", async () => {
-				mockStreamText.mockReturnValue(createMockStreamResult())
-
+			it("should include stream_options with include_usage", async () => {
 				const handler = new VercelAiGatewayHandler(mockOptions)
 
 				const messageGenerator = handler.createMessage("test prompt", [], {
@@ -421,9 +475,9 @@ describe("VercelAiGatewayHandler", () => {
 				})
 				await messageGenerator.next()
 
-				expect(mockStreamText).toHaveBeenCalledWith(
+				expect(mockCreate).toHaveBeenCalledWith(
 					expect.objectContaining({
-						system: "test prompt",
+						stream_options: { include_usage: true },
 					}),
 				)
 			})
@@ -431,32 +485,43 @@ describe("VercelAiGatewayHandler", () => {
 	})
 
 	describe("completePrompt", () => {
-		it("completes prompt correctly", async () => {
-			mockGenerateText.mockResolvedValue({
-				text: "Test completion response",
-			})
+		beforeEach(() => {
+			mockCreate.mockImplementation(async () => ({
+				choices: [
+					{
+						message: { role: "assistant", content: "Test completion response" },
+						finish_reason: "stop",
+						index: 0,
+					},
+				],
+				usage: {
+					prompt_tokens: 8,
+					completion_tokens: 4,
+					total_tokens: 12,
+				},
+			}))
+		})
 
+		it("completes prompt correctly", async () => {
 			const handler = new VercelAiGatewayHandler(mockOptions)
 			const prompt = "Complete this: Hello"
 
 			const result = await handler.completePrompt(prompt)
 
 			expect(result).toBe("Test completion response")
-			expect(mockGenerateText).toHaveBeenCalledWith(
+			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
-					prompt,
+					model: "anthropic/claude-sonnet-4",
+					messages: [{ role: "user", content: prompt }],
+					stream: false,
 					temperature: VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE,
-					maxOutputTokens: 64000,
+					max_completion_tokens: 64000,
 				}),
 			)
 		})
 
 		it("uses custom temperature for completion", async () => {
 			const customTemp = 0.8
-			mockGenerateText.mockResolvedValue({
-				text: "Test completion response",
-			})
-
 			const handler = new VercelAiGatewayHandler({
 				...mockOptions,
 				modelTemperature: customTemp,
@@ -464,7 +529,7 @@ describe("VercelAiGatewayHandler", () => {
 
 			await handler.completePrompt("Test prompt")
 
-			expect(mockGenerateText).toHaveBeenCalledWith(
+			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
 					temperature: customTemp,
 				}),
@@ -475,17 +540,27 @@ describe("VercelAiGatewayHandler", () => {
 			const handler = new VercelAiGatewayHandler(mockOptions)
 			const errorMessage = "API error"
 
-			mockGenerateText.mockRejectedValue(new Error(errorMessage))
+			mockCreate.mockImplementation(() => {
+				throw new Error(errorMessage)
+			})
 
-			await expect(handler.completePrompt("Test")).rejects.toThrow("Vercel AI Gateway")
+			await expect(handler.completePrompt("Test")).rejects.toThrow(
+				`Vercel AI Gateway completion error: ${errorMessage}`,
+			)
 		})
 
-		it("returns empty string when generateText returns empty text", async () => {
+		it("returns empty string when no content in response", async () => {
 			const handler = new VercelAiGatewayHandler(mockOptions)
 
-			mockGenerateText.mockResolvedValue({
-				text: "",
-			})
+			mockCreate.mockImplementation(async () => ({
+				choices: [
+					{
+						message: { role: "assistant", content: null },
+						finish_reason: "stop",
+						index: 0,
+					},
+				],
+			}))
 
 			const result = await handler.completePrompt("Test")
 			expect(result).toBe("")
@@ -494,10 +569,6 @@ describe("VercelAiGatewayHandler", () => {
 
 	describe("temperature support", () => {
 		it("applies temperature for supported models", async () => {
-			mockGenerateText.mockResolvedValue({
-				text: "Test response",
-			})
-
 			const handler = new VercelAiGatewayHandler({
 				...mockOptions,
 				vercelAiGatewayModelId: "anthropic/claude-sonnet-4",
@@ -506,7 +577,7 @@ describe("VercelAiGatewayHandler", () => {
 
 			await handler.completePrompt("Test")
 
-			expect(mockGenerateText).toHaveBeenCalledWith(
+			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
 					temperature: 0.9,
 				}),

@@ -31,7 +31,6 @@
 		"mcp": "Servidors MCP",
 		"worktrees": "Worktrees",
 		"autoApprove": "Auto-aprovació",
-		"browser": "Accés a l'ordinador",
 		"checkpoints": "Punts de control",
 		"notifications": "Notificacions",
 		"contextManagement": "Context",
@@ -212,7 +211,12 @@
 		"searchMinScoreResetTooltip": "Restablir al valor per defecte (0.4)",
 		"searchMaxResultsLabel": "Màxim de resultats de cerca",
 		"searchMaxResultsDescription": "Nombre màxim de resultats de cerca a retornar quan es consulta l'índex de la base de codi. Els valors més alts proporcionen més context però poden incloure resultats menys rellevants.",
-		"resetToDefault": "Restablir al valor per defecte"
+		"resetToDefault": "Restablir al valor per defecte",
+		"stopIndexingButton": "Aturar indexació",
+		"stoppingButton": "Aturant...",
+		"workspaceToggleLabel": "Activar la indexació per a aquest espai de treball",
+		"workspaceDisabledMessage": "La indexació està configurada però no habilitada per a aquest espai de treball.",
+		"autoEnableDefaultLabel": "Habilitar automàticament la indexació per a nous espais de treball"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Pots configurar una drecera global per a aquesta configuració <SettingsLink>a les preferències del teu IDE</SettingsLink>.",
@@ -240,10 +244,6 @@
 				"label": "Incloure fitxers protegits",
 				"description": "Permetre a Roo crear i editar fitxers protegits (com .rooignore i fitxers de configuració .roo/) sense requerir aprovació."
 			}
-		},
-		"browser": {
-			"label": "Navegador",
-			"description": "Realitzar accions del navegador automàticament sense requerir aprovació. Nota: Només s'aplica quan el model admet l'ús de l'ordinador"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -309,7 +309,7 @@
 		"searchProviderPlaceholder": "Cerca proveïdors",
 		"noProviderMatchFound": "No s'han trobat proveïdors",
 		"noMatchFound": "No s'han trobat perfils coincidents",
-		"retiredProviderMessage": "Ho sentim, aquest proveïdor ja no és compatible. Hem vist que molt pocs usuaris de Roo l'utilitzaven realment i necessitem reduir la superfície del nostre codi perquè puguem seguir avançant ràpidament i servir bé a la nostra comunitat. Ha estat una decisió molt difícil, però ens permet centrar-nos en el que més t'importa. Ho sabem, és una llàstima.",
+		"retiredProviderMessage": "Ho sentim, aquest proveïdor ja no és compatible. Hem vist molt pocs usuaris de Roo que realment l'utilitzaven i necessitem reduir l'abast del nostre codi per poder seguir avançant ràpidament i servir bé la nostra comunitat en aquest espai. Va ser una decisió molt difícil, però ens permet centrar-nos en el que més t'importa. Ho sabem, és una llàstima.",
 		"vscodeLmDescription": "L'API del model de llenguatge de VS Code us permet executar models proporcionats per altres extensions de VS Code (incloent-hi, però no limitat a, GitHub Copilot). La manera més senzilla de començar és instal·lar les extensions Copilot i Copilot Chat des del VS Code Marketplace.",
 		"awsCustomArnUse": "Introduïu un ARN vàlid d'Amazon Bedrock per al model que voleu utilitzar. Exemples de format:",
 		"awsCustomArnDesc": "Assegureu-vos que la regió a l'ARN coincideix amb la regió d'AWS seleccionada anteriorment.",
@@ -371,36 +371,17 @@
 		"getAnthropicApiKey": "Obtenir clau API d'Anthropic",
 		"anthropicUseAuthToken": "Passar la clau API d'Anthropic com a capçalera d'autorització en lloc de X-Api-Key",
 		"anthropic1MContextBetaLabel": "Activa la finestra de context d'1M (Beta)",
-		"anthropic1MContextBetaDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"anthropic1MContextBetaDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4.x / Claude Opus 4.6",
 		"awsBedrock1MContextBetaLabel": "Activa la finestra de context d'1M (Beta)",
-		"awsBedrock1MContextBetaDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"awsBedrock1MContextBetaDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4.x / Claude Opus 4.6",
 		"vertex1MContextBetaLabel": "Activa la finestra de context d'1M (Beta)",
-		"vertex1MContextBetaDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"vertex1MContextBetaDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4.x / Claude Opus 4.6",
 		"basetenApiKey": "Clau API de Baseten",
 		"getBasetenApiKey": "Obtenir clau API de Baseten",
-		"cerebrasApiKey": "Clau API de Cerebras",
-		"getCerebrasApiKey": "Obtenir clau API de Cerebras",
-		"azureResourceName": "Nom del recurs d'Azure",
-		"azureResourceNameDescription": "El nom del teu recurs Azure AI Foundry (p. ex. 'el-meu-recurs-openai').",
-		"azureDeploymentName": "Nom del desplegament d'Azure",
-		"azureDeploymentNameDescription": "El nom del desplegament del model dins del recurs.",
-		"azureApiKey": "Clau API d'Azure",
-		"getAzureApiKey": "Obtenir accés a Azure AI Foundry",
-		"azureApiVersion": "Versió de l'API d'Azure",
-		"azureApiVersionDescription": "La versió de l'API a utilitzar (p. ex. '2024-10-21'). Deixa buit per al valor per defecte.",
-		"chutesApiKey": "Clau API de Chutes",
-		"getChutesApiKey": "Obtenir clau API de Chutes",
 		"fireworksApiKey": "Clau API de Fireworks",
 		"getFireworksApiKey": "Obtenir clau API de Fireworks",
-		"featherlessApiKey": "Clau API de Featherless",
-		"getFeatherlessApiKey": "Obtenir clau API de Featherless",
-		"ioIntelligenceApiKey": "Clau API d'IO Intelligence",
-		"ioIntelligenceApiKeyPlaceholder": "Introdueix la teva clau d'API de IO Intelligence",
-		"getIoIntelligenceApiKey": "Obtenir clau API d'IO Intelligence",
 		"deepSeekApiKey": "Clau API de DeepSeek",
 		"getDeepSeekApiKey": "Obtenir clau API de DeepSeek",
-		"doubaoApiKey": "Clau API de Doubao",
-		"getDoubaoApiKey": "Obtenir clau API de Doubao",
 		"moonshotApiKey": "Clau API de Moonshot",
 		"getMoonshotApiKey": "Obtenir clau API de Moonshot",
 		"moonshotBaseUrl": "Punt d'entrada de Moonshot",
@@ -412,23 +393,8 @@
 		"getMiniMaxApiKey": "Obtenir clau API de MiniMax",
 		"minimaxBaseUrl": "Punt d'entrada de MiniMax",
 		"geminiApiKey": "Clau API de Gemini",
-		"getGroqApiKey": "Obtenir clau API de Groq",
-		"groqApiKey": "Clau API de Groq",
 		"getSambaNovaApiKey": "Obtenir clau API de SambaNova",
 		"sambaNovaApiKey": "Clau API de SambaNova",
-		"getHuggingFaceApiKey": "Obtenir clau API de Hugging Face",
-		"huggingFaceApiKey": "Clau API de Hugging Face",
-		"huggingFaceModelId": "ID del model",
-		"huggingFaceLoading": "Carregant...",
-		"huggingFaceModelsCount": "({{count}} models)",
-		"huggingFaceSelectModel": "Selecciona un model...",
-		"huggingFaceSearchModels": "Cerca models...",
-		"huggingFaceNoModelsFound": "No s'han trobat models",
-		"huggingFaceProvider": "Proveïdor",
-		"huggingFaceProviderAuto": "Automàtic",
-		"huggingFaceSelectProvider": "Selecciona un proveïdor...",
-		"huggingFaceSearchProviders": "Cerca proveïdors...",
-		"huggingFaceNoProvidersFound": "No s'han trobat proveïdors",
 		"getGeminiApiKey": "Obtenir clau API de Gemini",
 		"openAiApiKey": "Clau API d'OpenAI",
 		"apiKey": "Clau API",
@@ -500,10 +466,6 @@
 			"description": "Ollama permet executar models localment al vostre ordinador. Per a instruccions sobre com començar, consulteu la Guia d'inici ràpid.",
 			"warning": "Nota: Roo Code utilitza prompts complexos i funciona millor amb models Claude. Els models menys capaços poden no funcionar com s'espera."
 		},
-		"unboundApiKey": "Clau API d'Unbound",
-		"getUnboundApiKey": "Obtenir clau API d'Unbound",
-		"unboundRefreshModelsSuccess": "Llista de models actualitzada! Ara podeu seleccionar entre els últims models.",
-		"unboundInvalidApiKey": "Clau API no vàlida. Si us plau, comproveu la vostra clau API i torneu-ho a provar.",
 		"roo": {
 			"authenticatedMessage": "Autenticat de forma segura a través del teu compte de Roo Code Cloud.",
 			"connectButton": "Connecta amb Roo Code Cloud"
@@ -590,34 +552,6 @@
 			"placeholder": "Per defecte: claude",
 			"maxTokensLabel": "Tokens màxims de sortida",
 			"maxTokensDescription": "Nombre màxim de tokens de sortida per a les respostes de Claude Code. El valor per defecte és 8000."
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "Habilitar eina de navegador",
-			"description": "Quan està habilitat, Roo pot utilitzar un navegador per interactuar amb llocs web quan s'utilitzen models que admeten l'ús de l'ordinador. <0>Més informació</0>"
-		},
-		"viewport": {
-			"label": "Mida del viewport",
-			"description": "Seleccioneu la mida del viewport per a interaccions del navegador. Això afecta com es mostren i interactuen els llocs web.",
-			"options": {
-				"largeDesktop": "Escriptori gran (1280x800)",
-				"smallDesktop": "Escriptori petit (900x600)",
-				"tablet": "Tauleta (768x1024)",
-				"mobile": "Mòbil (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "Qualitat de captures de pantalla",
-			"description": "Ajusteu la qualitat WebP de les captures de pantalla del navegador. Valors més alts proporcionen captures més clares però augmenten l'ús de token."
-		},
-		"remote": {
-			"label": "Utilitzar connexió remota del navegador",
-			"description": "Connectar a un navegador Chrome que s'executa amb depuració remota habilitada (--remote-debugging-port=9222).",
-			"urlPlaceholder": "URL personalitzada (ex. http://localhost:9222)",
-			"testButton": "Provar connexió",
-			"testingButton": "Provant...",
-			"instructions": "Introduïu l'adreça d'amfitrió del protocol DevTools o deixeu-la buida per descobrir automàticament instàncies locals de Chrome. El botó Provar Connexió provarà la URL personalitzada si es proporciona, o descobrirà automàticament si el camp està buit."
 		}
 	},
 	"checkpoints": {
@@ -959,9 +893,7 @@
 		"providerNotAllowed": "El proveïdor '{{provider}}' no està permès per la vostra organització",
 		"modelNotAllowed": "El model '{{model}}' no està permès per al proveïdor '{{provider}}' per la vostra organització",
 		"profileInvalid": "Aquest perfil conté un proveïdor o model que no està permès per la vostra organització",
-		"qwenCodeOauthPath": "Has de proporcionar una ruta vàlida de credencials OAuth",
-		"azureResourceName": "Has de proporcionar un nom de recurs d'Azure.",
-		"azureDeploymentName": "Has de proporcionar un nom de desplegament d'Azure."
+		"qwenCodeOauthPath": "Has de proporcionar una ruta vàlida de credencials OAuth"
 	},
 	"placeholders": {
 		"apiKey": "Introduïu la clau API...",
@@ -974,8 +906,6 @@
 		"projectId": "Introduïu l'ID del projecte...",
 		"customArn": "Introduïu l'ARN (p. ex. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Introduïu l'URL base...",
-		"azureResourceName": "e.g. my-openai-resource",
-		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "p. ex. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "p. ex. lmstudio-community/llama-3.2-1b-instruct",

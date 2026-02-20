@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "Delen uitgeschakeld door organisatie",
 		"shareSuccessOrganization": "Organisatielink gekopieerd naar klembord",
 		"shareSuccessPublic": "Openbare link gekopieerd naar klembord",
-		"openInCloud": "Taak openen in Roo Code Cloud",
-		"openInCloudIntro": "Blijf Roo vanaf elke locatie monitoren of ermee interacteren. Scan, klik of kopieer om te openen.",
 		"openApiHistory": "API-geschiedenis openen",
 		"openUiHistory": "UI-geschiedenis openen",
 		"backToParentTask": "Bovenliggende taak"
 	},
 	"unpin": "Losmaken",
 	"pin": "Vastmaken",
+	"fileChangesInConversation": {
+		"header": "{{count}} bestand(en) gewijzigd in dit gesprek"
+	},
 	"retry": {
 		"title": "Opnieuw proberen",
 		"tooltip": "Probeer de bewerking opnieuw"
@@ -320,8 +321,9 @@
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
-			"claudeOpus": "Claude Opus 4.6: Nu beschikbaar bij alle providers—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex en OpenRouter—waardoor Anthropic's meest krachtige model naar je voorkeursplatform wordt gebracht.",
-			"gptCodex": "GPT-5.3-Codex: OpenAI's nieuwste coderingsmodel wordt nu ondersteund in de OpenAI - ChatGPT provider, met geavanceerde code-generatie en begrip."
+			"geminiPro": "Gemini 3.1 Pro ondersteuning: Ondersteuning voor het Gemini 3.1 Pro model is toegevoegd en ingesteld als standaard Gemini-model voor betere prestaties.",
+			"cliNdjson": "CLI NDJSON-protocol: Nieuw NDJSON stdin-protocol, list-subopdrachten en gemodulariseerd run-commando voor flexibelere CLI-workflows.",
+			"cliRelease": "CLI v0.1.0: De Roo Code CLI bereikt zijn eerste officiële release met een stabiele opdrachtinterface."
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",
@@ -362,44 +364,6 @@
 		"totalWithSubtasks": "Totale kosten (inclusief subtaken): ${{cost}}",
 		"total": "Totale kosten: ${{cost}}",
 		"includesSubtasks": "Inclusief kosten van subtaken"
-	},
-	"browser": {
-		"session": "Browsersessie",
-		"active": "Actief",
-		"rooWantsToUse": "Roo wil de browser gebruiken",
-		"consoleLogs": "Console-logboeken",
-		"noNewLogs": "(Geen nieuwe logboeken)",
-		"screenshot": "Browserschermopname",
-		"cursor": "cursor",
-		"navigation": {
-			"step": "Stap {{current}} van {{total}}",
-			"previous": "Vorige",
-			"next": "Volgende"
-		},
-		"sessionStarted": "Browsersessie gestart",
-		"actions": {
-			"title": "Browseractie: ",
-			"launched": "Browser gestart",
-			"launch": "Browser starten op {{url}}",
-			"clicked": "Geklikt ({{coordinate}})",
-			"click": "Klik ({{coordinate}})",
-			"typed": "Getypt: {{text}}",
-			"type": "Typ \"{{text}}\"",
-			"pressed": "Ingedrukt: {{key}}",
-			"press": "Druk op {{key}}",
-			"scrolledDown": "Naar beneden gescrolld",
-			"scrollDown": "Scroll naar beneden",
-			"scrolledUp": "Naar boven gescrolld",
-			"scrollUp": "Scroll naar boven",
-			"hovered": "Zweefde ({{coordinate}})",
-			"hover": "Zweven ({{coordinate}})",
-			"resized": "Grootte gewijzigd naar: {{size}}",
-			"resize": "Grootte wijzigen naar {{size}}",
-			"screenshotSaved": "Schermopname opgeslagen",
-			"screenshot": "Schermopname opslaan naar {{path}}",
-			"closed": "Browser gesloten",
-			"close": "Browser sluiten"
-		}
 	},
 	"codeblock": {
 		"tooltips": {
@@ -462,7 +426,8 @@
 		"indexing": "Indexeren {{percentage}}%",
 		"indexed": "Geïndexeerd",
 		"error": "Index fout",
-		"status": "Index status"
+		"status": "Index status",
+		"stopping": "Indexering wordt gestopt..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versie {{version}} - Klik om release notes te bekijken"

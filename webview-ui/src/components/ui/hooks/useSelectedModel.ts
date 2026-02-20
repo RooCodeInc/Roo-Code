@@ -23,7 +23,6 @@ import {
 	mainlandZAiModels,
 	fireworksModels,
 	basetenModels,
-	azureModels,
 	qwenCodeModels,
 	litellmDefaultModelInfo,
 	lMStudioDefaultModelInfo,
@@ -332,16 +331,6 @@ function getSelectedModel({
 			const info = routerModels["vercel-ai-gateway"]?.[id]
 			return { id, info }
 		}
-		case "azure": {
-			// apiModelId holds the base model selection (from model picker).
-			// azureDeploymentName is the deployment name sent to the Azure API.
-			// Only use apiModelId if it matches a known Azure model (prevents stale values from other providers).
-			const explicitModelId = apiConfiguration.apiModelId
-			const matchesAzureModel = explicitModelId && azureModels[explicitModelId as keyof typeof azureModels]
-			const id = matchesAzureModel ? explicitModelId : defaultModelId
-			const info = azureModels[id as keyof typeof azureModels]
-			return { id, info: info || undefined }
-		}
 		// case "anthropic":
 		// case "fake-ai":
 		default: {
@@ -352,11 +341,14 @@ function getSelectedModel({
 			// Apply 1M context beta tier pricing for supported Claude 4 models
 			if (
 				provider === "anthropic" &&
-				(id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5" || id === "claude-opus-4-6") &&
+				(id === "claude-sonnet-4-20250514" ||
+					id === "claude-sonnet-4-5" ||
+					id === "claude-sonnet-4-6" ||
+					id === "claude-opus-4-6") &&
 				apiConfiguration.anthropicBeta1MContext &&
 				baseInfo
 			) {
-				// Type assertion since we know claude-sonnet-4-20250514 and claude-sonnet-4-5 have tiers
+				// Type assertion since supported Claude 4 models include 1M context pricing tiers.
 				const modelWithTiers = baseInfo as typeof baseInfo & {
 					tiers?: Array<{
 						contextWindow: number

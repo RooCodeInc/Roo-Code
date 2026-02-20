@@ -31,7 +31,6 @@
 		"mcp": "Servidores MCP",
 		"worktrees": "Worktrees",
 		"autoApprove": "Auto-aprobación",
-		"browser": "Acceso al ordenador",
 		"checkpoints": "Puntos de control",
 		"notifications": "Notificaciones",
 		"contextManagement": "Contexto",
@@ -212,7 +211,12 @@
 		"searchMinScoreResetTooltip": "Restablecer al valor predeterminado (0.4)",
 		"searchMaxResultsLabel": "Resultados máximos de búsqueda",
 		"searchMaxResultsDescription": "Número máximo de resultados de búsqueda a devolver al consultar el índice de código. Valores más altos proporcionan más contexto pero pueden incluir resultados menos relevantes.",
-		"resetToDefault": "Restablecer al valor predeterminado"
+		"resetToDefault": "Restablecer al valor predeterminado",
+		"stopIndexingButton": "Detener indexación",
+		"stoppingButton": "Deteniendo...",
+		"workspaceToggleLabel": "Activar indexación para este espacio de trabajo",
+		"workspaceDisabledMessage": "La indexación está configurada pero no habilitada para este espacio de trabajo.",
+		"autoEnableDefaultLabel": "Habilitar automáticamente la indexación para nuevos espacios de trabajo"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Puedes configurar un atajo global para esta configuración <SettingsLink>en las preferencias de tu IDE</SettingsLink>.",
@@ -240,10 +244,6 @@
 				"label": "Incluir archivos protegidos",
 				"description": "Permitir a Roo crear y editar archivos protegidos (como .rooignore y archivos de configuración .roo/) sin requerir aprobación."
 			}
-		},
-		"browser": {
-			"label": "Navegador",
-			"description": "Realizar acciones del navegador automáticamente sin requerir aprobación. Nota: Solo se aplica cuando el modelo admite el uso del ordenador"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -309,7 +309,7 @@
 		"searchProviderPlaceholder": "Buscar proveedores",
 		"noProviderMatchFound": "No se encontraron proveedores",
 		"noMatchFound": "No se encontraron perfiles coincidentes",
-		"retiredProviderMessage": "Lo sentimos, este proveedor ya no es compatible. Vimos que muy pocos usuarios de Roo lo usaban realmente y necesitamos reducir el alcance de nuestro código para poder seguir avanzando rápido y servir bien a nuestra comunidad. Fue una decisión muy difícil, pero nos permite centrarnos en lo que más te importa. Lo sabemos, es una lástima.",
+		"retiredProviderMessage": "Lo sentimos, este proveedor ya no es compatible. Vimos que muy pocos usuarios de Roo lo usaban realmente y necesitamos reducir el alcance de nuestro código para poder seguir avanzando rápido y servir bien a nuestra comunidad en este espacio. Fue una decisión muy difícil, pero nos permite enfocarnos en lo que más te importa. Lo sabemos, es una lástima.",
 		"vscodeLmDescription": "La API del Modelo de Lenguaje de VS Code le permite ejecutar modelos proporcionados por otras extensiones de VS Code (incluido, entre otros, GitHub Copilot). La forma más sencilla de empezar es instalar las extensiones Copilot y Copilot Chat desde el VS Code Marketplace.",
 		"awsCustomArnUse": "Ingrese un ARN de Amazon Bedrock válido para el modelo que desea utilizar. Ejemplos de formato:",
 		"awsCustomArnDesc": "Asegúrese de que la región en el ARN coincida con la región de AWS seleccionada anteriormente.",
@@ -371,36 +371,17 @@
 		"getAnthropicApiKey": "Obtener clave API de Anthropic",
 		"anthropicUseAuthToken": "Pasar la clave API de Anthropic como encabezado de autorización en lugar de X-Api-Key",
 		"anthropic1MContextBetaLabel": "Habilitar ventana de contexto de 1M (Beta)",
-		"anthropic1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"anthropic1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4.x / Claude Opus 4.6",
 		"awsBedrock1MContextBetaLabel": "Habilitar ventana de contexto de 1M (Beta)",
-		"awsBedrock1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"awsBedrock1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4.x / Claude Opus 4.6",
 		"vertex1MContextBetaLabel": "Habilitar ventana de contexto de 1M (Beta)",
-		"vertex1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"vertex1MContextBetaDescription": "Amplía la ventana de contexto a 1 millón de tokens para Claude Sonnet 4.x / Claude Opus 4.6",
 		"basetenApiKey": "Clave API de Baseten",
 		"getBasetenApiKey": "Obtener clave API de Baseten",
-		"cerebrasApiKey": "Clave API de Cerebras",
-		"getCerebrasApiKey": "Obtener clave API de Cerebras",
-		"azureResourceName": "Nombre del recurso Azure",
-		"azureResourceNameDescription": "El nombre de tu recurso Azure AI Foundry (ej. 'mi-recurso-openai').",
-		"azureDeploymentName": "Nombre del despliegue Azure",
-		"azureDeploymentNameDescription": "El nombre del despliegue de tu modelo dentro del recurso.",
-		"azureApiKey": "Clave API de Azure",
-		"getAzureApiKey": "Obtener acceso a Azure AI Foundry",
-		"azureApiVersion": "Versión de API de Azure",
-		"azureApiVersionDescription": "La versión de la API a usar (ej. '2024-10-21'). Dejar vacío para usar el valor predeterminado.",
-		"chutesApiKey": "Clave API de Chutes",
-		"getChutesApiKey": "Obtener clave API de Chutes",
 		"fireworksApiKey": "Clave API de Fireworks",
 		"getFireworksApiKey": "Obtener clave API de Fireworks",
-		"featherlessApiKey": "Clave API de Featherless",
-		"getFeatherlessApiKey": "Obtener clave API de Featherless",
-		"ioIntelligenceApiKey": "Clave API de IO Intelligence",
-		"ioIntelligenceApiKeyPlaceholder": "Introduce tu clave de API de IO Intelligence",
-		"getIoIntelligenceApiKey": "Obtener clave API de IO Intelligence",
 		"deepSeekApiKey": "Clave API de DeepSeek",
 		"getDeepSeekApiKey": "Obtener clave API de DeepSeek",
-		"doubaoApiKey": "Clave API de Doubao",
-		"getDoubaoApiKey": "Obtener clave API de Doubao",
 		"moonshotApiKey": "Clave API de Moonshot",
 		"getMoonshotApiKey": "Obtener clave API de Moonshot",
 		"moonshotBaseUrl": "Punto de entrada de Moonshot",
@@ -412,23 +393,8 @@
 		"getMiniMaxApiKey": "Obtener clave API de MiniMax",
 		"minimaxBaseUrl": "Punto de entrada de MiniMax",
 		"geminiApiKey": "Clave API de Gemini",
-		"getGroqApiKey": "Obtener clave API de Groq",
-		"groqApiKey": "Clave API de Groq",
 		"getSambaNovaApiKey": "Obtener clave API de SambaNova",
 		"sambaNovaApiKey": "Clave API de SambaNova",
-		"getHuggingFaceApiKey": "Obtener clave API de Hugging Face",
-		"huggingFaceApiKey": "Clave API de Hugging Face",
-		"huggingFaceModelId": "ID del modelo",
-		"huggingFaceLoading": "Cargando...",
-		"huggingFaceModelsCount": "({{count}} modelos)",
-		"huggingFaceSelectModel": "Seleccionar un modelo...",
-		"huggingFaceSearchModels": "Buscar modelos...",
-		"huggingFaceNoModelsFound": "No se encontraron modelos",
-		"huggingFaceProvider": "Proveedor",
-		"huggingFaceProviderAuto": "Automático",
-		"huggingFaceSelectProvider": "Seleccionar un proveedor...",
-		"huggingFaceSearchProviders": "Buscar proveedores...",
-		"huggingFaceNoProvidersFound": "No se encontraron proveedores",
 		"getGeminiApiKey": "Obtener clave API de Gemini",
 		"openAiApiKey": "Clave API de OpenAI",
 		"apiKey": "Clave API",
@@ -500,10 +466,6 @@
 			"description": "Ollama le permite ejecutar modelos localmente en su computadora. Para obtener instrucciones sobre cómo comenzar, consulte la guía de inicio rápido.",
 			"warning": "Nota: Roo Code utiliza prompts complejos y funciona mejor con modelos Claude. Los modelos menos capaces pueden no funcionar como se espera."
 		},
-		"unboundApiKey": "Clave API de Unbound",
-		"getUnboundApiKey": "Obtener clave API de Unbound",
-		"unboundRefreshModelsSuccess": "¡Lista de modelos actualizada! Ahora puede seleccionar entre los últimos modelos.",
-		"unboundInvalidApiKey": "Clave API inválida. Por favor, verifique su clave API e inténtelo de nuevo.",
 		"roo": {
 			"authenticatedMessage": "Autenticado de forma segura a través de tu cuenta de Roo Code Cloud.",
 			"connectButton": "Conectar a Roo Code Cloud"
@@ -590,34 +552,6 @@
 			"placeholder": "Por defecto: claude",
 			"maxTokensLabel": "Tokens máximos de salida",
 			"maxTokensDescription": "Número máximo de tokens de salida para las respuestas de Claude Code. El valor predeterminado es 8000."
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "Habilitar herramienta de navegador",
-			"description": "Cuando está habilitado, Roo puede usar un navegador para interactuar con sitios web cuando se utilizan modelos que admiten el uso del ordenador. <0>Más información</0>"
-		},
-		"viewport": {
-			"label": "Tamaño del viewport",
-			"description": "Seleccione el tamaño del viewport para interacciones del navegador. Esto afecta cómo se muestran e interactúan los sitios web.",
-			"options": {
-				"largeDesktop": "Escritorio grande (1280x800)",
-				"smallDesktop": "Escritorio pequeño (900x600)",
-				"tablet": "Tablet (768x1024)",
-				"mobile": "Móvil (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "Calidad de capturas de pantalla",
-			"description": "Ajuste la calidad WebP de las capturas de pantalla del navegador. Valores más altos proporcionan capturas más claras pero aumentan el uso de token."
-		},
-		"remote": {
-			"label": "Usar conexión remota del navegador",
-			"description": "Conectarse a un navegador Chrome que se ejecuta con depuración remota habilitada (--remote-debugging-port=9222).",
-			"urlPlaceholder": "URL personalizada (ej. http://localhost:9222)",
-			"testButton": "Probar conexión",
-			"testingButton": "Probando...",
-			"instructions": "Ingrese la dirección del host del protocolo DevTools o déjelo vacío para descubrir automáticamente instancias locales de Chrome. El botón Probar Conexión intentará usar la URL personalizada si se proporciona, o descubrirá automáticamente si el campo está vacío."
 		}
 	},
 	"checkpoints": {
@@ -959,9 +893,7 @@
 		"providerNotAllowed": "El proveedor '{{provider}}' no está permitido por su organización",
 		"modelNotAllowed": "El modelo '{{model}}' no está permitido para el proveedor '{{provider}}' por su organización",
 		"profileInvalid": "Este perfil contiene un proveedor o modelo que no está permitido por su organización",
-		"qwenCodeOauthPath": "Debes proporcionar una ruta válida de credenciales OAuth",
-		"azureResourceName": "Debes proporcionar un nombre de recurso de Azure.",
-		"azureDeploymentName": "Debes proporcionar un nombre de despliegue de Azure."
+		"qwenCodeOauthPath": "Debes proporcionar una ruta válida de credenciales OAuth"
 	},
 	"placeholders": {
 		"apiKey": "Ingrese clave API...",
@@ -974,8 +906,6 @@
 		"projectId": "Ingrese ID del proyecto...",
 		"customArn": "Ingrese ARN (ej. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Ingrese URL base...",
-		"azureResourceName": "e.g. my-openai-resource",
-		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "ej. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "ej. lmstudio-community/llama-3.2-1b-instruct",

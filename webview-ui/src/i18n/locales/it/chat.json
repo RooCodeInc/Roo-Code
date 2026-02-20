@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "Condivisione disabilitata dall'organizzazione",
 		"shareSuccessOrganization": "Link organizzazione copiato negli appunti",
 		"shareSuccessPublic": "Link pubblico copiato negli appunti",
-		"openInCloud": "Apri attività in Roo Code Cloud",
-		"openInCloudIntro": "Continua a monitorare o interagire con Roo da qualsiasi luogo. Scansiona, clicca o copia per aprire.",
 		"openApiHistory": "Apri cronologia API",
 		"openUiHistory": "Apri cronologia UI",
 		"backToParentTask": "Attività principale"
 	},
 	"unpin": "Rilascia",
 	"pin": "Fissa",
+	"fileChangesInConversation": {
+		"header": "{{count}} file modificati in questa conversazione"
+	},
 	"tokenProgress": {
 		"availableSpace": "Spazio disponibile: {{amount}} tokens",
 		"tokensUsed": "Tokens utilizzati: {{used}} di {{total}}",
@@ -347,8 +348,9 @@
 		},
 		"release": {
 			"heading": "Novità:",
-			"claudeOpus": "Claude Opus 4.6: Ora disponibile su tutti i provider—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex e OpenRouter—portando il modello più capace di Anthropic alla tua piattaforma preferita.",
-			"gptCodex": "GPT-5.3-Codex: Il modello di codifica più recente di OpenAI è ora supportato nel provider OpenAI - ChatGPT, offrendo generazione e comprensione del codice all'avanguardia."
+			"geminiPro": "Supporto Gemini 3.1 Pro: Aggiunto il supporto per il modello Gemini 3.1 Pro e impostato come modello Gemini predefinito per prestazioni migliori.",
+			"cliNdjson": "Protocollo NDJSON del CLI: Nuovo protocollo NDJSON via stdin, sottocomandi di elenco e comando di esecuzione modularizzato per flussi di lavoro CLI più flessibili.",
+			"cliRelease": "CLI v0.1.0: Il CLI di Roo Code raggiunge la sua prima release ufficiale con un'interfaccia di comandi stabile."
 		},
 		"cloudAgents": {
 			"heading": "Novità nel Cloud:",
@@ -362,44 +364,6 @@
 		"totalWithSubtasks": "Costo totale (sottoattività incluse): ${{cost}}",
 		"total": "Costo totale: ${{cost}}",
 		"includesSubtasks": "Include i costi delle sottoattività"
-	},
-	"browser": {
-		"session": "Sessione del browser",
-		"active": "Attivo",
-		"rooWantsToUse": "Roo vuole utilizzare il browser",
-		"consoleLogs": "Log della console",
-		"noNewLogs": "(Nessun nuovo log)",
-		"screenshot": "Screenshot del browser",
-		"cursor": "cursore",
-		"navigation": {
-			"step": "Passo {{current}} di {{total}}",
-			"previous": "Precedente",
-			"next": "Successivo"
-		},
-		"sessionStarted": "Sessione browser avviata",
-		"actions": {
-			"title": "Azione browser: ",
-			"launched": "Browser avviato",
-			"launch": "Avvia browser su {{url}}",
-			"clicked": "Cliccato su: {{coordinate}}",
-			"click": "Clic ({{coordinate}})",
-			"typed": "Digitato: {{text}}",
-			"type": "Digita \"{{text}}\"",
-			"pressed": "Premuto: {{key}}",
-			"press": "Premi {{key}}",
-			"scrolledDown": "Scorso verso il basso",
-			"scrollDown": "Scorri verso il basso",
-			"scrolledUp": "Scorso verso l'alto",
-			"scrollUp": "Scorri verso l'alto",
-			"hovered": "Passato il mouse su: {{coordinate}}",
-			"hover": "Passa il mouse ({{coordinate}})",
-			"resized": "Ridimensionato a: {{size}}",
-			"resize": "Ridimensiona a {{size}}",
-			"screenshotSaved": "Screenshot salvato",
-			"screenshot": "Salva screenshot in {{path}}",
-			"closed": "Browser chiuso",
-			"close": "Chiudi browser"
-		}
 	},
 	"codeblock": {
 		"tooltips": {
@@ -462,7 +426,8 @@
 		"indexing": "Indicizzazione {{percentage}}%",
 		"indexed": "Indicizzato",
 		"error": "Errore indice",
-		"status": "Stato indice"
+		"status": "Stato indice",
+		"stopping": "Interruzione dell'indicizzazione..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versione {{version}} - Clicca per visualizzare le note di rilascio"

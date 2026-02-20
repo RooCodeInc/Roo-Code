@@ -30,7 +30,6 @@ export class StaticTokenAuthService extends EventEmitter<AuthServiceEvents> impl
 		this.userInfo = {
 			id: payload?.r?.u || payload?.sub || undefined,
 			organizationId: payload?.r?.o || undefined,
-			extensionBridgeEnabled: true,
 		}
 	}
 

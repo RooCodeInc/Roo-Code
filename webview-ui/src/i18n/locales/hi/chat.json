@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "संगठन द्वारा साझाकरण अक्षम किया गया",
 		"shareSuccessOrganization": "संगठन लिंक क्लिपबोर्ड में कॉपी किया गया",
 		"shareSuccessPublic": "सार्वजनिक लिंक क्लिपबोर्ड में कॉपी किया गया",
-		"openInCloud": "Roo Code Cloud में कार्य खोलें",
-		"openInCloudIntro": "कहीं से भी Roo की निगरानी या इंटरैक्ट करना जारी रखें। खोलने के लिए स्कैन करें, क्लिक करें या कॉपी करें।",
 		"openApiHistory": "API इतिहास खोलें",
 		"openUiHistory": "UI इतिहास खोलें",
 		"backToParentTask": "मूल कार्य"
 	},
 	"unpin": "पिन करें",
 	"pin": "अवपिन करें",
+	"fileChangesInConversation": {
+		"header": "इस वार्तालाप में {{count}} फ़ाइल(ें) बदली गईं"
+	},
 	"tokenProgress": {
 		"availableSpace": "उपलब्ध स्थान: {{amount}} tokens",
 		"tokensUsed": "प्रयुक्त tokens: {{used}} / {{total}}",
@@ -347,8 +348,9 @@
 		},
 		"release": {
 			"heading": "नया क्या है:",
-			"claudeOpus": "Claude Opus 4.6: अब सभी प्रदाताओं में उपलब्ध—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex, और OpenRouter—Roo Code Router, Anthropic का सबसे सक्षम मॉडल आपके पसंदीदा प्लेटफॉर्म पर लाता है।",
-			"gptCodex": "GPT-5.3-Codex: OpenAI का नवीनतम कोडिंग मॉडल अब OpenAI - ChatGPT प्रदाता में समर्थित है, अत्याधुनिक कोड जनरेशन और समझ प्रदान करता है।"
+			"geminiPro": "Gemini 3.1 Pro सपोर्ट: Gemini 3.1 Pro मॉडल का सपोर्ट जोड़ा गया और बेहतर प्रदर्शन के लिए इसे डिफ़ॉल्ट Gemini मॉडल के रूप में सेट किया गया।",
+			"cliNdjson": "CLI NDJSON प्रोटोकॉल: नया NDJSON stdin प्रोटोकॉल, list सबकमांड, और अधिक लचीले CLI वर्कफ़्लो के लिए मॉड्यूलर run कमांड।",
+			"cliRelease": "CLI v0.1.0: Roo Code CLI एक स्थिर कमांड इंटरफ़ेस के साथ अपनी पहली आधिकारिक रिलीज़ तक पहुँचा।"
 		},
 		"cloudAgents": {
 			"heading": "क्लाउड में नया:",
@@ -362,44 +364,6 @@
 		"totalWithSubtasks": "कुल लागत (उप-कार्यों सहित): ${{cost}}",
 		"total": "कुल लागत: ${{cost}}",
 		"includesSubtasks": "उप-कार्यों की लागत शामिल है"
-	},
-	"browser": {
-		"session": "ब्राउज़र सत्र",
-		"active": "सक्रिय",
-		"rooWantsToUse": "Roo ब्राउज़र का उपयोग करना चाहता है",
-		"consoleLogs": "कंसोल लॉग",
-		"noNewLogs": "(कोई नया लॉग नहीं)",
-		"screenshot": "ब्राउज़र स्क्रीनशॉट",
-		"cursor": "कर्सर",
-		"navigation": {
-			"step": "चरण {{current}} / {{total}}",
-			"previous": "पिछला",
-			"next": "अगला"
-		},
-		"sessionStarted": "ब्राउज़र सत्र शुरू हुआ",
-		"actions": {
-			"title": "ब्राउज़र क्रिया: ",
-			"launched": "ब्राउज़र लॉन्च हुआ",
-			"launch": "{{url}} पर ब्राउज़र लॉन्च करें",
-			"clicked": "क्लिक किया गया ({{coordinate}})",
-			"click": "क्लिक करें ({{coordinate}})",
-			"typed": "टाइप किया गया: {{text}}",
-			"type": "टाइप करें \"{{text}}\"",
-			"pressed": "दबाया गया: {{key}}",
-			"press": "{{key}} दबाएँ",
-			"scrolledDown": "नीचे स्क्रॉल किया गया",
-			"scrollDown": "नीचे स्क्रॉल करें",
-			"scrolledUp": "ऊपर स्क्रॉल किया गया",
-			"scrollUp": "ऊपर स्क्रॉल करें",
-			"hovered": "होवर किया गया ({{coordinate}})",
-			"hover": "होवर करें ({{coordinate}})",
-			"resized": "आकार बदला गया: {{size}}",
-			"resize": "आकार बदलें {{size}}",
-			"screenshotSaved": "स्क्रीनशॉट सहेजा गया",
-			"screenshot": "स्क्रीनशॉट को {{path}} में सहेजें",
-			"closed": "ब्राउज़र बंद किया गया",
-			"close": "ब्राउज़र बंद करें"
-		}
 	},
 	"codeblock": {
 		"tooltips": {
@@ -462,7 +426,8 @@
 		"indexing": "इंडेक्सिंग {{percentage}}%",
 		"indexed": "इंडेक्स किया गया",
 		"error": "इंडेक्स त्रुटि",
-		"status": "इंडेक्स स्थिति"
+		"status": "इंडेक्स स्थिति",
+		"stopping": "इंडेक्सिंग रोक रहा है..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "संस्करण {{version}} - रिलीज़ नोट्स देखने के लिए क्लिक करें"

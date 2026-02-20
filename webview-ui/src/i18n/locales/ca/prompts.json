@@ -25,7 +25,6 @@
 		"toolNames": {
 			"read": "Llegir fitxers",
 			"edit": "Editar fitxers",
-			"browser": "Utilitzar navegador",
 			"command": "Executar comandes",
 			"mcp": "Utilitzar MCP"
 		},

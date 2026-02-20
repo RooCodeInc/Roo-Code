@@ -31,7 +31,6 @@
 		"mcp": "MCP-servers",
 		"worktrees": "Worktrees",
 		"autoApprove": "Auto-goedkeuren",
-		"browser": "Browser",
 		"checkpoints": "Checkpoints",
 		"notifications": "Meldingen",
 		"contextManagement": "Context",
@@ -212,7 +211,12 @@
 		"searchMinScoreResetTooltip": "Reset naar standaardwaarde (0.4)",
 		"searchMaxResultsLabel": "Maximum Zoekresultaten",
 		"searchMaxResultsDescription": "Maximum aantal zoekresultaten dat wordt geretourneerd bij het doorzoeken van de codebase-index. Hogere waarden bieden meer context maar kunnen minder relevante resultaten bevatten.",
-		"resetToDefault": "Reset naar standaard"
+		"resetToDefault": "Reset naar standaard",
+		"stopIndexingButton": "Indexering stoppen",
+		"stoppingButton": "Stoppen...",
+		"workspaceToggleLabel": "Indexering inschakelen voor deze werkruimte",
+		"workspaceDisabledMessage": "Indexering is geconfigureerd maar niet ingeschakeld voor deze werkruimte.",
+		"autoEnableDefaultLabel": "Indexering automatisch inschakelen voor nieuwe werkruimtes"
 	},
 	"autoApprove": {
 		"toggleShortcut": "U kunt een globale sneltoets voor deze instelling configureren <SettingsLink>in de voorkeuren van uw IDE</SettingsLink>.",
@@ -240,10 +244,6 @@
 				"label": "Inclusief beschermde bestanden",
 				"description": "Sta Roo toe om beschermde bestanden (zoals .rooignore en .roo/ configuratiebestanden) aan te maken en te bewerken zonder goedkeuring."
 			}
-		},
-		"browser": {
-			"label": "Browser",
-			"description": "Automatisch browseracties uitvoeren zonder goedkeuring. Let op: geldt alleen als het model computergebruik ondersteunt."
 		},
 		"mcp": {
 			"label": "MCP",
@@ -309,7 +309,7 @@
 		"searchProviderPlaceholder": "Zoek providers",
 		"noProviderMatchFound": "Geen providers gevonden",
 		"noMatchFound": "Geen overeenkomende profielen gevonden",
-		"retiredProviderMessage": "Sorry, deze provider wordt niet meer ondersteund. We zagen dat heel weinig Roo-gebruikers deze daadwerkelijk gebruikten en we moeten de omvang van onze codebase verkleinen zodat we snel kunnen blijven leveren en onze community goed kunnen bedienen. Het was een heel moeilijke beslissing, maar het laat ons focussen op wat het belangrijkst voor je is. Het is vervelend, dat weten we.",
+		"retiredProviderMessage": "Sorry, deze provider wordt niet meer ondersteund. We zagen dat heel weinig Roo-gebruikers het daadwerkelijk gebruikten en we moeten de omvang van onze codebase verkleinen zodat we snel kunnen blijven leveren en onze community goed kunnen blijven bedienen. Het was een heel moeilijke beslissing, maar het stelt ons in staat om ons te richten op wat het belangrijkst voor je is. Het is vervelend, dat weten we.",
 		"vscodeLmDescription": "De VS Code Language Model API stelt je in staat modellen te draaien die door andere VS Code-extensies worden geleverd (waaronder GitHub Copilot). De eenvoudigste manier om te beginnen is door de Copilot- en Copilot Chat-extensies te installeren vanuit de VS Code Marketplace.",
 		"awsCustomArnUse": "Voer een geldige Amazon Bedrock ARN in voor het model dat je wilt gebruiken. Voorbeeldformaten:",
 		"awsCustomArnDesc": "Zorg ervoor dat de regio in de ARN overeenkomt met je geselecteerde AWS-regio hierboven.",
@@ -371,36 +371,17 @@
 		"getAnthropicApiKey": "Anthropic API-sleutel ophalen",
 		"anthropicUseAuthToken": "Anthropic API-sleutel als Authorization-header doorgeven in plaats van X-Api-Key",
 		"anthropic1MContextBetaLabel": "1M contextvenster inschakelen (bèta)",
-		"anthropic1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"anthropic1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4.x / Claude Opus 4.6",
 		"awsBedrock1MContextBetaLabel": "1M contextvenster inschakelen (bèta)",
-		"awsBedrock1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"awsBedrock1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4.x / Claude Opus 4.6",
 		"vertex1MContextBetaLabel": "1M contextvenster inschakelen (bèta)",
-		"vertex1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"vertex1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4.x / Claude Opus 4.6",
 		"basetenApiKey": "Baseten API-sleutel",
 		"getBasetenApiKey": "Baseten API-sleutel verkrijgen",
-		"cerebrasApiKey": "Cerebras API-sleutel",
-		"getCerebrasApiKey": "Cerebras API-sleutel verkrijgen",
-		"azureResourceName": "Azure Resource-naam",
-		"azureResourceNameDescription": "De naam van je Azure AI Foundry resource (bijv. 'mijn-openai-resource').",
-		"azureDeploymentName": "Azure Deployment-naam",
-		"azureDeploymentNameDescription": "De naam van je model deployment binnen de resource.",
-		"azureApiKey": "Azure API-sleutel",
-		"getAzureApiKey": "Azure AI Foundry-toegang verkrijgen",
-		"azureApiVersion": "Azure API-versie",
-		"azureApiVersionDescription": "De API-versie om te gebruiken (bijv. '2024-10-21'). Laat leeg voor standaardwaarde.",
-		"chutesApiKey": "Chutes API-sleutel",
-		"getChutesApiKey": "Chutes API-sleutel ophalen",
 		"fireworksApiKey": "Fireworks API-sleutel",
 		"getFireworksApiKey": "Fireworks API-sleutel ophalen",
-		"featherlessApiKey": "Featherless API-sleutel",
-		"getFeatherlessApiKey": "Featherless API-sleutel ophalen",
-		"ioIntelligenceApiKey": "IO Intelligence API-sleutel",
-		"ioIntelligenceApiKeyPlaceholder": "Voer je IO Intelligence API-sleutel in",
-		"getIoIntelligenceApiKey": "IO Intelligence API-sleutel ophalen",
 		"deepSeekApiKey": "DeepSeek API-sleutel",
 		"getDeepSeekApiKey": "DeepSeek API-sleutel ophalen",
-		"doubaoApiKey": "Doubao API-sleutel",
-		"getDoubaoApiKey": "Doubao API-sleutel ophalen",
 		"moonshotApiKey": "Moonshot API-sleutel",
 		"getMoonshotApiKey": "Moonshot API-sleutel ophalen",
 		"moonshotBaseUrl": "Moonshot-ingangspunt",
@@ -412,24 +393,9 @@
 		"getMiniMaxApiKey": "MiniMax API-sleutel ophalen",
 		"minimaxBaseUrl": "MiniMax-ingangspunt",
 		"geminiApiKey": "Gemini API-sleutel",
-		"getGroqApiKey": "Groq API-sleutel ophalen",
-		"groqApiKey": "Groq API-sleutel",
 		"getSambaNovaApiKey": "SambaNova API-sleutel ophalen",
 		"sambaNovaApiKey": "SambaNova API-sleutel",
 		"getGeminiApiKey": "Gemini API-sleutel ophalen",
-		"getHuggingFaceApiKey": "Hugging Face API-sleutel ophalen",
-		"huggingFaceApiKey": "Hugging Face API-sleutel",
-		"huggingFaceModelId": "Model ID",
-		"huggingFaceLoading": "Laden...",
-		"huggingFaceModelsCount": "({{count}} modellen)",
-		"huggingFaceSelectModel": "Selecteer een model...",
-		"huggingFaceSearchModels": "Zoek modellen...",
-		"huggingFaceNoModelsFound": "Geen modellen gevonden",
-		"huggingFaceProvider": "Provider",
-		"huggingFaceProviderAuto": "Automatisch",
-		"huggingFaceSelectProvider": "Selecteer een provider...",
-		"huggingFaceSearchProviders": "Zoek providers...",
-		"huggingFaceNoProvidersFound": "Geen providers gevonden",
 		"apiKey": "API-sleutel",
 		"openAiApiKey": "OpenAI API-sleutel",
 		"openAiBaseUrl": "Basis-URL",
@@ -500,10 +466,6 @@
 			"description": "Ollama laat je modellen lokaal op je computer draaien. Zie hun quickstart-gids voor instructies.",
 			"warning": "Let op: Roo Code gebruikt complexe prompts en werkt het beste met Claude-modellen. Minder krachtige modellen werken mogelijk niet zoals verwacht."
 		},
-		"unboundApiKey": "Unbound API-sleutel",
-		"getUnboundApiKey": "Unbound API-sleutel ophalen",
-		"unboundRefreshModelsSuccess": "Modellenlijst bijgewerkt! U kunt nu kiezen uit de nieuwste modellen.",
-		"unboundInvalidApiKey": "Ongeldige API-sleutel. Controleer uw API-sleutel en probeer het opnieuw.",
 		"roo": {
 			"authenticatedMessage": "Veilig geauthenticeerd via je Roo Code Cloud-account.",
 			"connectButton": "Verbinden met Roo Code Cloud"
@@ -590,34 +552,6 @@
 			"placeholder": "Standaard: claude",
 			"maxTokensLabel": "Max Output Tokens",
 			"maxTokensDescription": "Maximaal aantal output-tokens voor Claude Code-reacties. Standaard is 8000."
-		}
-	},
-	"browser": {
-		"enable": {
-			"label": "Browserhulpmiddel inschakelen",
-			"description": "Indien ingeschakeld, kan Roo een browser gebruiken om te interageren met websites wanneer modellen computergebruik ondersteunen. <0>Meer informatie</0>"
-		},
-		"viewport": {
-			"label": "Viewport-grootte",
-			"description": "Selecteer de viewport-grootte voor browserinteracties. Dit beïnvloedt hoe websites worden weergegeven en gebruikt.",
-			"options": {
-				"largeDesktop": "Groot bureaublad (1280x800)",
-				"smallDesktop": "Klein bureaublad (900x600)",
-				"tablet": "Tablet (768x1024)",
-				"mobile": "Mobiel (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "Screenshotkwaliteit",
-			"description": "Pas de WebP-kwaliteit van browserscreenshots aan. Hogere waarden geven duidelijkere screenshots maar verhogen het tokengebruik."
-		},
-		"remote": {
-			"label": "Gebruik externe browserverbinding",
-			"description": "Verbind met een Chrome-browser die draait met remote debugging ingeschakeld (--remote-debugging-port=9222).",
-			"urlPlaceholder": "Aangepaste URL (bijv. http://localhost:9222)",
-			"testButton": "Verbinding testen",
-			"testingButton": "Bezig met testen...",
-			"instructions": "Voer het DevTools Protocol hostadres in of laat leeg om lokale Chrome-instanties automatisch te detecteren. De knop Verbinding testen probeert de aangepaste URL als opgegeven, of detecteert automatisch als het veld leeg is."
 		}
 	},
 	"checkpoints": {
@@ -959,9 +893,7 @@
 		"providerNotAllowed": "Provider '{{provider}}' is niet toegestaan door je organisatie",
 		"modelNotAllowed": "Model '{{model}}' is niet toegestaan voor provider '{{provider}}' door je organisatie",
 		"profileInvalid": "Dit profiel bevat een provider of model dat niet is toegestaan door je organisatie",
-		"qwenCodeOauthPath": "Je moet een geldig OAuth-referentiepad opgeven",
-		"azureResourceName": "Je moet een Azure-resourcenaam opgeven.",
-		"azureDeploymentName": "Je moet een Azure-implementatienaam opgeven."
+		"qwenCodeOauthPath": "Je moet een geldig OAuth-referentiepad opgeven"
 	},
 	"placeholders": {
 		"apiKey": "Voer API-sleutel in...",
@@ -974,8 +906,6 @@
 		"projectId": "Voer project-ID in...",
 		"customArn": "Voer ARN in (bijv. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Voer basis-URL in...",
-		"azureResourceName": "e.g. my-openai-resource",
-		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "bijv. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "bijv. lmstudio-community/llama-3.2-1b-instruct",

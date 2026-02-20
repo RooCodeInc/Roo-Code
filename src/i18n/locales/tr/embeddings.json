@@ -69,6 +69,8 @@
 		"fileWatcherStopped": "Dosya izleyici durduruldu.",
 		"failedDuringInitialScan": "İlk tarama sırasında başarısız: {{errorMessage}}",
 		"unknownError": "Bilinmeyen hata",
-		"indexingRequiresWorkspace": "İndeksleme açık bir workspace klasörü gerektirir"
+		"indexingRequiresWorkspace": "İndeksleme açık bir workspace klasörü gerektirir",
+		"indexingStopped": "İndeksleme kullanıcı tarafından durduruldu.",
+		"indexingStoppedPartial": "İndeksleme durduruldu. Kısmi indeks verileri korundu."
 	}
 }

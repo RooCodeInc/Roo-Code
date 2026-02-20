@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+      </details>
 
 ---
 
@@ -58,9 +58,8 @@ Roo Code는 당신의 작업 방식에 맞춰 적응합니다.
 - 질문 모드: 빠른 답변, 설명 및 문서
 - 디버그 모드: 문제 추적, 로그 추가, 근본 원인 격리
 - 사용자 지정 모드: 팀이나 워크플로우를 위한 특수 모드 구축
-- Roomote Control: Roomote Control은 로컬 VS Code 인스턴스에서 실행 중인 작업을 원격으로 제어할 수 있어.
 
-자세히: [모드 사용](https://docs.roocode.com/basic-usage/using-modes) • [사용자 지정 모드](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+자세히: [모드 사용](https://docs.roocode.com/basic-usage/using-modes) • [사용자 지정 모드](https://docs.roocode.com/advanced-usage/custom-modes)
 
 ## 튜토리얼 및 기능 비디오
 
@@ -69,7 +68,7 @@ Roo Code는 당신의 작업 방식에 맞춰 적응합니다.
 |                                                                                                                                                                         |                                                                                                                                                                       |                                                                                                                                                                         |
 | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Roo Code 설치하기</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>프로필 구성하기</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>코드베이스 인덱싱</b> |
-| <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>사용자 지정 모드</b>  |   <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>체크포인트</b>    |    <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>컨텍스트 관리</b>     |
+| <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>사용자 지정 모드</b>  |   <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>체크포인트</b>    |   <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>컨텍스트 관리</b>   |
 
 </div>
 <p align="center">

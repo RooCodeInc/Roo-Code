@@ -18,7 +18,7 @@ if (fs.existsSync(envPath)) {
 }
 
 import type { CloudUserInfo, AuthState } from "@roo-code/types"
-import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
+import { CloudService } from "@roo-code/cloud"
 import { TelemetryService, PostHogTelemetryClient } from "@roo-code/telemetry"
 import { customToolRegistry } from "@roo-code/core"
 
@@ -200,16 +200,6 @@ export async function activate(context: vscode.ExtensionContext) {
 	authStateChangedHandler = async (data: { state: AuthState; previousState: AuthState }) => {
 		postStateListener()
 
-		if (data.state === "logged-out") {
-			try {
-				await provider.remoteControlEnabled(false)
-			} catch (error) {
-				cloudLogger(
-					`[authStateChangedHandler] remoteControlEnabled(false) failed: ${error instanceof Error ? error.message : String(error)}`,
-				)
-			}
-		}
-
 		// Handle Roo models cache based on auth state (ROO-202)
 		const handleRooModelsCache = async () => {
 			try {
@@ -265,36 +255,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	}
 
 	settingsUpdatedHandler = async () => {
-		const userInfo = CloudService.instance.getUserInfo()
-
-		if (userInfo && CloudService.instance.cloudAPI) {
-			try {
-				provider.remoteControlEnabled(CloudService.instance.isTaskSyncEnabled())
-			} catch (error) {
-				cloudLogger(
-					`[settingsUpdatedHandler] remoteControlEnabled failed: ${error instanceof Error ? error.message : String(error)}`,
-				)
-			}
-		}
-
 		postStateListener()
 	}
 
 	userInfoHandler = async ({ userInfo }: { userInfo: CloudUserInfo }) => {
 		postStateListener()
-
-		if (!CloudService.instance.cloudAPI) {
-			cloudLogger("[userInfoHandler] CloudAPI is not initialized")
-			return
-		}
-
-		try {
-			provider.remoteControlEnabled(CloudService.instance.isTaskSyncEnabled())
-		} catch (error) {
-			cloudLogger(
-				`[userInfoHandler] remoteControlEnabled failed: ${error instanceof Error ? error.message : String(error)}`,
-			)
-		}
 	}
 
 	cloudService = await CloudService.createInstance(context, cloudLogger, {
@@ -479,12 +444,6 @@ export async function deactivate() {
 				`Failed to clean up CloudService event handlers: ${error instanceof Error ? error.message : String(error)}`,
 			)
 		}
-	}
-
-	const bridge = BridgeOrchestrator.getInstance()
-
-	if (bridge) {
-		await bridge.disconnect()
 	}
 
 	await McpServerManager.cleanup(extensionContext)

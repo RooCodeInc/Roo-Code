@@ -26,13 +26,14 @@ class ShellIntegrationError extends Error {}
 interface ExecuteCommandParams {
 	command: string
 	cwd?: string
+	timeout?: number | null
 }
 
 export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 	readonly name = "execute_command" as const
 
 	async execute(params: ExecuteCommandParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { command, cwd: customCwd } = params
+		const { command, cwd: customCwd, timeout: timeoutSeconds } = params
 		const { handleError, pushToolResult, askApproval } = callbacks
 
 		try {
@@ -85,12 +86,16 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 			// Convert seconds to milliseconds for internal use, but skip timeout if command is allowlisted
 			const commandExecutionTimeout = isCommandAllowlisted ? 0 : commandExecutionTimeoutSeconds * 1000
 
+			// Convert agent-specified timeout from seconds to milliseconds
+			const agentTimeout = typeof timeoutSeconds === "number" && timeoutSeconds > 0 ? timeoutSeconds * 1000 : 0
+
 			const options: ExecuteCommandOptions = {
 				executionId,
 				command: canonicalCommand,
 				customCwd,
 				terminalShellIntegrationDisabled,
 				commandExecutionTimeout,
+				agentTimeout,
 			}
 
 			try {
@@ -144,6 +149,7 @@ export type ExecuteCommandOptions = {
 	customCwd?: string
 	terminalShellIntegrationDisabled?: boolean
 	commandExecutionTimeout?: number
+	agentTimeout?: number
 }
 
 export async function executeCommandInTerminal(
@@ -154,6 +160,7 @@ export async function executeCommandInTerminal(
 		customCwd,
 		terminalShellIntegrationDisabled = true,
 		commandExecutionTimeout = 0,
+		agentTimeout = 0,
 	}: ExecuteCommandOptions,
 ): Promise<[boolean, ToolResponse]> {
 	// Convert milliseconds back to seconds for display purposes.
@@ -308,49 +315,64 @@ export async function executeCommandInTerminal(
 	const process = terminal.runCommand(command, callbacks)
 	task.terminalProcess = process
 
-	// Implement command execution timeout (skip if timeout is 0).
-	if (commandExecutionTimeout > 0) {
-		let timeoutId: NodeJS.Timeout | undefined
-		let isTimedOut = false
+	// Dual-timeout logic:
+	// - Agent timeout: transitions the command to background (continues running)
+	// - User timeout: aborts the command (kills it)
+	// Both timers run independently — the user timeout remains active as a safety net
+	// even after the agent timeout moves the command to the background.
+	let agentTimeoutId: NodeJS.Timeout | undefined
+	let userTimeoutId: NodeJS.Timeout | undefined
+	let isUserTimedOut = false
 
-		const timeoutPromise = new Promise<void>((_, reject) => {
-			timeoutId = setTimeout(() => {
-				isTimedOut = true
-				task.terminalProcess?.abort()
-				reject(new Error(`Command execution timed out after ${commandExecutionTimeout}ms`))
-			}, commandExecutionTimeout)
-		})
+	try {
+		const racers: Promise<void>[] = [process]
 
-		try {
-			await Promise.race([process, timeoutPromise])
-		} catch (error) {
-			if (isTimedOut) {
-				const status: CommandExecutionStatus = { executionId, status: "timeout" }
-				provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
-				await task.say("error", t("common:errors:command_timeout", { seconds: commandExecutionTimeoutSeconds }))
-				task.didToolFailInCurrentTurn = true
-				task.terminalProcess = undefined
-
-				return [
-					false,
-					`The command was terminated after exceeding a user-configured ${commandExecutionTimeoutSeconds}s timeout. Do not try to re-run the command.`,
-				]
-			}
-			throw error
-		} finally {
-			if (timeoutId) {
-				clearTimeout(timeoutId)
-			}
-
-			task.terminalProcess = undefined
+		// Agent timeout: transition to background (command keeps running)
+		if (agentTimeout > 0) {
+			racers.push(
+				new Promise<void>((resolve) => {
+					agentTimeoutId = setTimeout(() => {
+						runInBackground = true
+						process.continue()
+						task.supersedePendingAsk()
+						resolve()
+					}, agentTimeout)
+				}),
+			)
 		}
-	} else {
-		// No timeout - just wait for the process to complete.
-		try {
-			await process
-		} finally {
-			task.terminalProcess = undefined
+
+		// User timeout: abort the command (existing behavior)
+		if (commandExecutionTimeout > 0) {
+			racers.push(
+				new Promise<void>((_, reject) => {
+					userTimeoutId = setTimeout(() => {
+						isUserTimedOut = true
+						task.terminalProcess?.abort()
+						reject(new Error(`Command execution timed out after ${commandExecutionTimeout}ms`))
+					}, commandExecutionTimeout)
+				}),
+			)
 		}
+
+		await Promise.race(racers)
+	} catch (error) {
+		if (isUserTimedOut) {
+			const status: CommandExecutionStatus = { executionId, status: "timeout" }
+			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
+			await task.say("error", t("common:errors:command_timeout", { seconds: commandExecutionTimeoutSeconds }))
+			task.didToolFailInCurrentTurn = true
+			task.terminalProcess = undefined
+
+			return [
+				false,
+				`The command was terminated after exceeding a user-configured ${commandExecutionTimeoutSeconds}s timeout. Do not try to re-run the command.`,
+			]
+		}
+		throw error
+	} finally {
+		clearTimeout(agentTimeoutId)
+		clearTimeout(userTimeoutId)
+		task.terminalProcess = undefined
 	}
 
 	if (shellIntegrationError) {

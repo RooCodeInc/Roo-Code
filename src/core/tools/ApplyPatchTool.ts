@@ -341,6 +341,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 			tool: "appliedDiff",
 			path: getReadablePath(task.cwd, relPath),
 			diff: sanitizedDiff,
+			originalContent,
 			isOutsideWorkspace,
 		}
 

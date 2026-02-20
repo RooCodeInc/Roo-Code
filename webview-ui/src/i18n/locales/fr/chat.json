@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "Partage désactivé par l'organisation",
 		"shareSuccessOrganization": "Lien d'organisation copié dans le presse-papiers",
 		"shareSuccessPublic": "Lien public copié dans le presse-papiers",
-		"openInCloud": "Ouvrir la tâche dans Roo Code Cloud",
-		"openInCloudIntro": "Continue à surveiller ou interagir avec Roo depuis n'importe où. Scanne, clique ou copie pour ouvrir.",
 		"openApiHistory": "Ouvrir l'historique de l'API",
 		"openUiHistory": "Ouvrir l'historique de l'UI",
 		"backToParentTask": "Tâche parente"
 	},
 	"unpin": "Désépingler",
 	"pin": "Épingler",
+	"fileChangesInConversation": {
+		"header": "{{count}} fichier(s) modifié(s) dans cette conversation"
+	},
 	"tokenProgress": {
 		"availableSpace": "Espace disponible : {{amount}} tokens",
 		"tokensUsed": "Tokens utilisés : {{used}} sur {{total}}",
@@ -347,8 +348,9 @@
 		},
 		"release": {
 			"heading": "Quoi de neuf :",
-			"claudeOpus": "Claude Opus 4.6 : Désormais disponible sur tous les fournisseurs—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex et OpenRouter—apportant le modèle le plus capable d'Anthropic à votre plateforme préférée.",
-			"gptCodex": "GPT-5.3-Codex : Le dernier modèle de codage d'OpenAI est maintenant supporté dans le fournisseur OpenAI - ChatGPT, offrant une génération de code de pointe et une compréhension."
+			"geminiPro": "Support de Gemini 3.1 Pro : Le modèle Gemini 3.1 Pro a été ajouté et défini comme modèle Gemini par défaut pour de meilleures performances.",
+			"cliNdjson": "Protocole NDJSON du CLI : Nouveau protocole NDJSON via stdin, sous-commandes de liste et commande d'exécution modularisée pour des workflows CLI plus flexibles.",
+			"cliRelease": "CLI v0.1.0 : Le CLI de Roo Code atteint sa première version officielle avec une interface de commandes stable."
 		},
 		"cloudAgents": {
 			"heading": "Nouveautés dans le Cloud :",
@@ -362,44 +364,6 @@
 		"totalWithSubtasks": "Coût total (sous-tâches comprises) : ${{cost}}",
 		"total": "Coût total : ${{cost}}",
 		"includesSubtasks": "Inclut les coûts des sous-tâches"
-	},
-	"browser": {
-		"session": "Session du navigateur",
-		"active": "Actif",
-		"rooWantsToUse": "Roo veut utiliser le navigateur",
-		"consoleLogs": "Journaux de console",
-		"noNewLogs": "(Pas de nouveaux journaux)",
-		"screenshot": "Capture d'écran du navigateur",
-		"cursor": "curseur",
-		"navigation": {
-			"step": "Étape {{current}} sur {{total}}",
-			"previous": "Précédent",
-			"next": "Suivant"
-		},
-		"sessionStarted": "Session de navigateur démarrée",
-		"actions": {
-			"title": "Action du navigateur : ",
-			"launched": "Navigateur lancé",
-			"launch": "Lancer le navigateur sur {{url}}",
-			"clicked": "Cliqué sur : {{coordinate}}",
-			"click": "Cliquer ({{coordinate}})",
-			"typed": "Saisi : {{text}}",
-			"type": "Saisir \"{{text}}\"",
-			"pressed": "Appuyé sur : {{key}}",
-			"press": "Appuyer sur {{key}}",
-			"scrolledDown": "Défilé vers le bas",
-			"scrollDown": "Défiler vers le bas",
-			"scrolledUp": "Défilé vers le haut",
-			"scrollUp": "Défiler vers le haut",
-			"hovered": "Survolé : {{coordinate}}",
-			"hover": "Survoler ({{coordinate}})",
-			"resized": "Redimensionné à : {{size}}",
-			"resize": "Redimensionner à {{size}}",
-			"screenshotSaved": "Capture d'écran enregistrée",
-			"screenshot": "Enregistrer une capture d'écran dans {{path}}",
-			"closed": "Navigateur fermé",
-			"close": "Fermer le navigateur"
-		}
 	},
 	"codeblock": {
 		"tooltips": {
@@ -462,7 +426,8 @@
 		"indexing": "Indexation {{percentage}}%",
 		"indexed": "Indexé",
 		"error": "Erreur d'index",
-		"status": "Statut de l'index"
+		"status": "Statut de l'index",
+		"stopping": "Arrêt de l'indexation..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Version {{version}} - Cliquez pour voir les notes de version"

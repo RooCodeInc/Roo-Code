@@ -11,8 +11,6 @@
 		"missing_update_modes_fields": "Отсутствуют обязательные поля: skillName или source",
 		"manager_unavailable": "Менеджер навыков недоступен",
 		"missing_delete_fields": "Отсутствуют обязательные поля: skillName или source",
-		"skill_not_found": "Навык \"{{name}}\" не найден",
-		"cannot_modify_builtin": "Встроенные навыки нельзя создавать или удалять",
-		"cannot_open_builtin": "Встроенные навыки нельзя открыть как файлы"
+		"skill_not_found": "Навык \"{{name}}\" не найден"
 	}
 }

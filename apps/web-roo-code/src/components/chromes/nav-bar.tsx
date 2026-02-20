@@ -123,6 +123,15 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 									<li>
 										<NavigationMenuLink asChild>
 											<Link
+												href="/blog"
+												className="block select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+												Blog
+											</Link>
+										</NavigationMenuLink>
+									</li>
+									<li>
+										<NavigationMenuLink asChild>
+											<Link
 												href="/evals"
 												className="block select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
 												Evals
@@ -269,12 +278,6 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 								Roo Code for Slack
 							</Link>
 							<Link
-								href="/linear"
-								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
-								onClick={() => setIsMenuOpen(false)}>
-								Roo Code for Linear
-							</Link>
-							<Link
 								href="/provider"
 								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
 								onClick={() => setIsMenuOpen(false)}>
@@ -287,6 +290,12 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 							<div className="px-5 pb-2 pt-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
 								Resources
 							</div>
+							<Link
+								href="/blog"
+								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
+								onClick={() => setIsMenuOpen(false)}>
+								Blog
+							</Link>
 							<ScrollButton
 								targetId="faq"
 								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"

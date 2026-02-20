@@ -5,6 +5,50 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0] - 2026-02-19
+
+### Added
+
+- **NDJSON Stdin Protocol**: Overhauled the stdin prompt stream from raw text lines to a structured NDJSON command protocol (`start`/`message`/`cancel`/`ping`/`shutdown`) with requestId correlation, ack/done/error lifecycle events, and queue telemetry. See [`stdin-stream.ts`](src/ui/stdin-stream.ts) for implementation.
+- **List Subcommands**: New `list` subcommands (`commands`, `modes`, `models`) for programmatic discovery of available CLI capabilities.
+- **Shared Utilities**: Added `isRecord` guard utility for improved type safety.
+
+### Changed
+
+- **Modularized Architecture**: Extracted stdin stream logic from `run.ts` into dedicated [`stdin-stream.ts`](src/ui/stdin-stream.ts) module for better code organization and maintainability.
+
+### Fixed
+
+- Fixed a bug in `Task.ts` affecting CLI operation.
+
+## [0.0.55] - 2026-02-17
+
+### Fixed
+
+- **Stdin Stream Mode**: Fixed issue where new tasks were incorrectly being created in stdin-prompt-stream mode. The mode now properly reuses the existing task for subsequent prompts instead of creating new tasks.
+
+## [0.0.54] - 2026-02-15
+
+### Added
+
+- **Stdin Stream Mode**: New `stdin-prompt-stream` mode that reads prompts from stdin, allowing batch processing and piping multiple tasks. Each line of stdin is processed as a separate prompt with streaming JSON output. See [`stdin-prompt-stream.ts`](src/ui/stdin-prompt-stream.ts) for implementation.
+
+### Fixed
+
+- Fixed JSON emitter state not being cleared between tasks in stdin-prompt-stream mode
+- Fixed inconsistent user role for prompt echo partials in stream-json mode
+
+## [0.0.53] - 2026-02-12
+
+### Changed
+
+- **Auto-Approve by Default**: The CLI now auto-approves all actions (tools, commands, browser, MCP) by default. Followup questions auto-select the first suggestion after a 60-second timeout.
+- **New `--require-approval` Flag**: Replaced `-y`/`--yes`/`--dangerously-skip-permissions` flags with a new `-a, --require-approval` flag for users who want manual approval prompts before actions execute.
+
+### Fixed
+
+- Spamming the escape key to cancel a running task no longer crashes the cli.
+
 ## [0.0.52] - 2026-02-09
 
 ### Added
@@ -67,7 +111,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Skip onboarding flow when a provider is explicitly specified via `--provider` flag or saved in settings
-- Unified permission flags: Combined `-y`, `--yes`, and `--dangerously-skip-permissions` into a single option for Claude Code-like CLI compatibility
+- Unified permission flags: Combined approval-skipping flags into a single option for Claude Code-like CLI compatibility
 - Improved Roo Code Router authentication flow and error messaging
 
 ### Fixed

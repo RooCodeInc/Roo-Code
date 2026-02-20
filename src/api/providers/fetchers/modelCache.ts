@@ -62,7 +62,7 @@ async function fetchModelsFromProvider(options: GetModelsOptions): Promise<Model
 
 	switch (provider) {
 		case "openrouter":
-			models = await getOpenRouterModels({ openRouterBaseUrl: options.baseUrl })
+			models = await getOpenRouterModels()
 			break
 		case "requesty":
 			// Requesty models endpoint requires an API key for per-user custom policies.

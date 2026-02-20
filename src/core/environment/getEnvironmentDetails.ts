@@ -226,35 +226,6 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 	details += `<name>${modeDetails.name}</name>\n`
 	details += `<model>${modelId}</model>\n`
 
-	// Add browser session status - Only show when active to prevent cluttering context
-	const isBrowserActive = cline.browserSession.isSessionActive()
-
-	if (isBrowserActive) {
-		// Build viewport info for status (prefer actual viewport if available, else fallback to configured setting)
-		const configuredViewport = (state?.browserViewportSize as string | undefined) ?? "900x600"
-		let configuredWidth: number | undefined
-		let configuredHeight: number | undefined
-		if (configuredViewport.includes("x")) {
-			const parts = configuredViewport.split("x").map((v) => Number(v))
-			configuredWidth = parts[0]
-			configuredHeight = parts[1]
-		}
-
-		let actualWidth: number | undefined
-		let actualHeight: number | undefined
-		const vp = cline.browserSession.getViewportSize?.()
-		if (vp) {
-			actualWidth = vp.width
-			actualHeight = vp.height
-		}
-
-		const width = actualWidth ?? configuredWidth
-		const height = actualHeight ?? configuredHeight
-		const viewportInfo = width && height ? `\nCurrent viewport size: ${width}x${height} pixels.` : ""
-
-		details += `\n# Browser Session Status\nActive - A browser session is currently open and ready for browser_action commands${viewportInfo}\n`
-	}
-
 	if (includeFileDetails) {
 		details += `\n\n# Current Workspace Directory (${cline.cwd.toPosix()}) Files\n`
 		const isDesktop = arePathsEqual(cline.cwd, path.join(os.homedir(), "Desktop"))

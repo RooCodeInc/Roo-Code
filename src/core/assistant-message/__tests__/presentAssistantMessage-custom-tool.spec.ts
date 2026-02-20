@@ -60,9 +60,6 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 			api: {
 				getModel: () => ({ id: "test-model", info: {} }),
 			},
-			browserSession: {
-				closeBrowser: vi.fn().mockResolvedValue(undefined),
-			},
 			recordToolUsage: vi.fn(),
 			recordToolError: vi.fn(),
 			toolRepetitionDetector: {

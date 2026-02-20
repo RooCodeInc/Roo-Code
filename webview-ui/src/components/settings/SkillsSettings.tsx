@@ -164,8 +164,6 @@ export const SkillsSettings: React.FC = () => {
 	// Render a single skill item
 	const renderSkillItem = useCallback(
 		(skill: SkillMetadata) => {
-			const isBuiltIn = skill.source === "built-in"
-
 			return (
 				<div
 					key={`${skill.source}-${skill.name}-${skill.modeSlugs?.join(",") || "any"}`}
@@ -186,14 +184,12 @@ export const SkillsSettings: React.FC = () => {
 
 						{/* Actions */}
 						<div className="flex items-center gap-1 px-0 ml-0 min-[400px]:ml-0 min-[400px]:mt-4 flex-shrink-0">
-							{/* Mode settings button (gear icon) - only for non-built-in skills */}
-							{!isBuiltIn && (
-								<StandardTooltip content={t("settings:skills.configureModes")}>
-									<Button variant="ghost" size="icon" onClick={() => handleOpenModeDialog(skill)}>
-										<Settings className="size-4" />
-									</Button>
-								</StandardTooltip>
-							)}
+							{/* Mode settings button (gear icon) */}
+							<StandardTooltip content={t("settings:skills.configureModes")}>
+								<Button variant="ghost" size="icon" onClick={() => handleOpenModeDialog(skill)}>
+									<Settings className="size-4" />
+								</Button>
+							</StandardTooltip>
 
 							<StandardTooltip content={t("settings:skills.editSkill")}>
 								<Button variant="ghost" size="icon" onClick={() => handleEditClick(skill)}>
@@ -201,13 +197,11 @@ export const SkillsSettings: React.FC = () => {
 								</Button>
 							</StandardTooltip>
 
-							{!isBuiltIn && (
-								<StandardTooltip content={t("settings:skills.deleteSkill")}>
-									<Button variant="ghost" size="icon" onClick={() => handleDeleteClick(skill)}>
-										<Trash2 className="text-destructive" />
-									</Button>
-								</StandardTooltip>
-							)}
+							<StandardTooltip content={t("settings:skills.deleteSkill")}>
+								<Button variant="ghost" size="icon" onClick={() => handleDeleteClick(skill)}>
+									<Trash2 className="text-destructive" />
+								</Button>
+							</StandardTooltip>
 						</div>
 					</div>
 				</div>

@@ -459,6 +459,7 @@ export class NativeToolCallParser {
 					nativeArgs = {
 						command: partialArgs.command,
 						cwd: partialArgs.cwd,
+						timeout: partialArgs.timeout,
 					}
 				}
 				break
@@ -486,19 +487,6 @@ export class NativeToolCallParser {
 					nativeArgs = {
 						path: partialArgs.path,
 						diff: partialArgs.diff,
-					}
-				}
-				break
-
-			case "browser_action":
-				if (partialArgs.action !== undefined) {
-					nativeArgs = {
-						action: partialArgs.action,
-						url: partialArgs.url,
-						coordinate: partialArgs.coordinate,
-						size: partialArgs.size,
-						text: partialArgs.text,
-						path: partialArgs.path,
 					}
 				}
 				break
@@ -800,6 +788,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							command: args.command,
 							cwd: args.cwd,
+							timeout: args.timeout,
 						} as NativeArgsFor<TName>
 					}
 					break
@@ -834,19 +823,6 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							question: args.question,
 							follow_up: args.follow_up,
-						} as NativeArgsFor<TName>
-					}
-					break
-
-				case "browser_action":
-					if (args.action !== undefined) {
-						nativeArgs = {
-							action: args.action,
-							url: args.url,
-							coordinate: args.coordinate,
-							size: args.size,
-							text: args.text,
-							path: args.path,
 						} as NativeArgsFor<TName>
 					}
 					break

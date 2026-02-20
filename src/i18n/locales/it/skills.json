@@ -11,8 +11,6 @@
 		"missing_update_modes_fields": "Campi obbligatori mancanti: skillName o source",
 		"manager_unavailable": "Il gestore delle skill non è disponibile",
 		"missing_delete_fields": "Campi obbligatori mancanti: skillName o source",
-		"skill_not_found": "Skill \"{{name}}\" non trovata",
-		"cannot_modify_builtin": "Le skill integrate non possono essere create o eliminate",
-		"cannot_open_builtin": "Le skill integrate non possono essere aperte come file"
+		"skill_not_found": "Skill \"{{name}}\" non trovata"
 	}
 }

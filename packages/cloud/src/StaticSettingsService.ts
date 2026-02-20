@@ -42,15 +42,12 @@ export class StaticSettingsService implements SettingsService {
 	}
 
 	/**
-	 * Returns static user settings with roomoteControlEnabled and extensionBridgeEnabled as true
+	 * Returns static user settings with task sync enabled
 	 */
 	public getUserSettings(): UserSettingsData | undefined {
 		return {
-			features: {
-				roomoteControlEnabled: true,
-			},
+			features: {},
 			settings: {
-				extensionBridgeEnabled: true,
 				taskSyncEnabled: true,
 			},
 			version: 1,
@@ -58,14 +55,11 @@ export class StaticSettingsService implements SettingsService {
 	}
 
 	public getUserFeatures(): UserFeatures {
-		return {
-			roomoteControlEnabled: true,
-		}
+		return {}
 	}
 
 	public getUserSettingsConfig(): UserSettingsConfig {
 		return {
-			extensionBridgeEnabled: true,
 			taskSyncEnabled: true,
 		}
 	}

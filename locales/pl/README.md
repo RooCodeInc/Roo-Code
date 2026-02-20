@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+      </details>
 
 ---
 
@@ -58,9 +58,8 @@ Roo Code dostosowuje się do Twojego sposobu pracy, a nie odwrotnie:
 - Tryb Zapytaj: szybkie odpowiedzi, wyjaśnienia i dokumenty
 - Tryb Debugowanie: śledzenie problemów, dodawanie logów, izolowanie przyczyn źródłowych
 - Tryby niestandardowe: buduj specjalistyczne tryby dla swojego zespołu lub przepływu pracy
-- Roomote Control: Roomote Control pozwala zdalnie sterować zadaniami uruchomionymi na twojej lokalnej instancji VS Code.
 
-Więcej: [Korzystanie z trybów](https://docs.roocode.com/basic-usage/using-modes) • [Tryby niestandardowe](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+Więcej: [Korzystanie z trybów](https://docs.roocode.com/basic-usage/using-modes) • [Tryby niestandardowe](https://docs.roocode.com/advanced-usage/custom-modes)
 
 ## Filmy instruktażowe i prezentujące funkcje
 
@@ -69,7 +68,7 @@ Więcej: [Korzystanie z trybów](https://docs.roocode.com/basic-usage/using-mode
 |                                                                                                                                                                            |                                                                                                                                                                            |                                                                                                                                                                              |
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Instalacja Roo Code</b>  | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>Konfiguracja profili</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Indeksowanie bazy kodu</b> |
-| <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>Tryby niestandardowe</b> |   <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Punkty kontrolne</b>   |      <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>Zarządzanie Kontekstem</b>       |
+| <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>Tryby niestandardowe</b> |   <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Punkty kontrolne</b>   | <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>Zarządzanie Kontekstem</b> |
 
 </div>
 <p align="center">

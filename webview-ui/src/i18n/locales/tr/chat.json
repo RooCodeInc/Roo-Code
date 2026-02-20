@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "Paylaşım kuruluş tarafından devre dışı bırakıldı",
 		"shareSuccessOrganization": "Organizasyon bağlantısı panoya kopyalandı",
 		"shareSuccessPublic": "Genel bağlantı panoya kopyalandı",
-		"openInCloud": "Görevi Roo Code Cloud'da aç",
-		"openInCloudIntro": "Roo'yu her yerden izlemeye veya etkileşime devam et. Açmak için tara, tıkla veya kopyala.",
 		"openApiHistory": "API Geçmişini Aç",
 		"openUiHistory": "UI Geçmişini Aç",
 		"backToParentTask": "Üst görev"
 	},
 	"unpin": "Sabitlemeyi iptal et",
 	"pin": "Sabitle",
+	"fileChangesInConversation": {
+		"header": "Bu sohbette {{count}} dosya değiştirildi"
+	},
 	"tokenProgress": {
 		"availableSpace": "Kullanılabilir alan: {{amount}} token",
 		"tokensUsed": "Kullanılan tokenlar: {{used}} / {{total}}",
@@ -348,8 +349,9 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"claudeOpus": "Claude Opus 4.6: Artık tüm sağlayıcılarda—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex ve OpenRouter—mevcut olup Anthropic'in en yetkin modelini tercih ettiğin platforma getiriyor.",
-			"gptCodex": "GPT-5.3-Codex: OpenAI'nin en son kodlama modeli artık OpenAI - ChatGPT sağlayıcısında desteklenmiş olup, ileri seviye kod oluşturma ve anlama sunuyor."
+			"geminiPro": "Gemini 3.1 Pro Desteği: Gemini 3.1 Pro model desteği eklendi ve daha iyi performans için varsayılan Gemini modeli olarak ayarlandı.",
+			"cliNdjson": "CLI NDJSON Protokolü: Yeni NDJSON stdin protokolü, list alt komutları ve daha esnek CLI iş akışları için modüler run komutu.",
+			"cliRelease": "CLI v0.1.0: Roo Code CLI, kararlı bir komut arayüzüyle ilk resmi sürümüne ulaştı."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",
@@ -363,44 +365,6 @@
 		"totalWithSubtasks": "Toplam Maliyet (alt görevler dahil): ${{cost}}",
 		"total": "Toplam Maliyet: ${{cost}}",
 		"includesSubtasks": "Alt görev maliyetlerini içerir"
-	},
-	"browser": {
-		"session": "Tarayıcı Oturumu",
-		"active": "Aktif",
-		"rooWantsToUse": "Roo tarayıcıyı kullanmak istiyor",
-		"consoleLogs": "Konsol Kayıtları",
-		"noNewLogs": "(Yeni kayıt yok)",
-		"screenshot": "Tarayıcı ekran görüntüsü",
-		"cursor": "imleç",
-		"navigation": {
-			"step": "Adım {{current}} / {{total}}",
-			"previous": "Önceki",
-			"next": "Sonraki"
-		},
-		"sessionStarted": "Tarayıcı Oturumu Başlatıldı",
-		"actions": {
-			"title": "Tarayıcı Eylemi: ",
-			"launched": "Tarayıcı başlatıldı",
-			"launch": "{{url}} adresinde tarayıcı başlat",
-			"clicked": "Tıklandı ({{coordinate}})",
-			"click": "Tıkla ({{coordinate}})",
-			"typed": "Yazıldı: {{text}}",
-			"type": "Yaz \"{{text}}\"",
-			"pressed": "Basıldı: {{key}}",
-			"press": "{{key}} tuşuna bas",
-			"scrolledDown": "Aşağı kaydırıldı",
-			"scrollDown": "Aşağı kaydır",
-			"scrolledUp": "Yukarı kaydırıldı",
-			"scrollUp": "Yukarı kaydır",
-			"hovered": "Üzerine gelinildi ({{coordinate}})",
-			"hover": "Üzerine gel ({{coordinate}})",
-			"resized": "Boyut değiştirildi: {{size}}",
-			"resize": "Boyutu değiştir {{size}}",
-			"screenshotSaved": "Ekran görüntüsü kaydedildi",
-			"screenshot": "Ekran görüntüsünü {{path}} yoluna kaydet",
-			"closed": "Tarayıcı kapatıldı",
-			"close": "Tarayıcıyı kapat"
-		}
 	},
 	"codeblock": {
 		"tooltips": {
@@ -463,7 +427,8 @@
 		"indexing": "İndeksleniyor {{percentage}}%",
 		"indexed": "İndekslendi",
 		"error": "İndeks hatası",
-		"status": "İndeks durumu"
+		"status": "İndeks durumu",
+		"stopping": "İndeksleme durduruluyor..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Sürüm {{version}} - Sürüm notlarını görüntülemek için tıklayın"

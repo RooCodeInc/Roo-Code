@@ -506,8 +506,9 @@ export const openAiModelInfoSaneDefaults: ModelInfo = {
 	outputPrice: 0,
 }
 
-// https://learn.microsoft.com/en-us/azure/ai-foundry/openai/api-version-lifecycle
-export const azureOpenAiDefaultApiVersion = "2025-04-01-preview"
+// https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-deprecation
+// https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#api-specs
+export const azureOpenAiDefaultApiVersion = "2024-08-01-preview"
 
 export const OPENAI_NATIVE_DEFAULT_TEMPERATURE = 0
 

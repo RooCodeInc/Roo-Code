@@ -79,6 +79,7 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 
 		cacheManager = {
 			clearCacheFile: vi.fn().mockResolvedValue(undefined),
+			flush: vi.fn().mockResolvedValue(undefined),
 		}
 
 		vectorStore = {
@@ -156,5 +157,180 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 		expect(stateManager.setSystemState).toHaveBeenCalled()
 		const lastCall = stateManager.setSystemState.mock.calls[stateManager.setSystemState.mock.calls.length - 1]
 		expect(lastCall[0]).toBe("Error")
+	})
+})
+
+describe("CodeIndexOrchestrator - stopIndexing", () => {
+	const workspacePath = "/test/workspace"
+
+	let configManager: any
+	let stateManager: any
+	let cacheManager: any
+	let vectorStore: any
+	let scanner: any
+	let fileWatcher: any
+
+	beforeEach(() => {
+		vi.clearAllMocks()
+
+		configManager = {
+			isFeatureConfigured: true,
+		}
+
+		let currentState = "Standby"
+		stateManager = {
+			get state() {
+				return currentState
+			},
+			setSystemState: vi.fn().mockImplementation((state: string, _msg: string) => {
+				currentState = state
+			}),
+			reportFileQueueProgress: vi.fn(),
+			reportBlockIndexingProgress: vi.fn(),
+		}
+
+		cacheManager = {
+			clearCacheFile: vi.fn().mockResolvedValue(undefined),
+			flush: vi.fn().mockResolvedValue(undefined),
+		}
+
+		vectorStore = {
+			initialize: vi.fn().mockResolvedValue(false),
+			hasIndexedData: vi.fn().mockResolvedValue(false),
+			markIndexingIncomplete: vi.fn().mockResolvedValue(undefined),
+			markIndexingComplete: vi.fn().mockResolvedValue(undefined),
+			clearCollection: vi.fn().mockResolvedValue(undefined),
+		}
+
+		scanner = {
+			scanDirectory: vi.fn(),
+		}
+
+		fileWatcher = {
+			initialize: vi.fn().mockResolvedValue(undefined),
+			onDidStartBatchProcessing: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+			onBatchProgressUpdate: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+			onDidFinishBatchProcessing: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+			dispose: vi.fn(),
+		}
+	})
+
+	it("should abort indexing when stopIndexing() is called", async () => {
+		// Make scanner hang until aborted
+		scanner.scanDirectory.mockImplementation(
+			async (_dir: string, _onError?: any, _onBlocksIndexed?: any, _onFileParsed?: any, signal?: AbortSignal) => {
+				// Wait for abort signal
+				await new Promise<void>((resolve) => {
+					if (signal?.aborted) {
+						resolve()
+						return
+					}
+					signal?.addEventListener("abort", () => resolve())
+				})
+				return { stats: { processed: 0, skipped: 0 }, totalBlockCount: 0 }
+			},
+		)
+
+		const orchestrator = new CodeIndexOrchestrator(
+			configManager,
+			stateManager,
+			workspacePath,
+			cacheManager,
+			vectorStore,
+			scanner,
+			fileWatcher,
+		)
+
+		// Start indexing (async, don't await)
+		const indexingPromise = orchestrator.startIndexing()
+
+		// Give it a tick to begin
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Stop indexing
+		orchestrator.stopIndexing()
+
+		// Wait for indexing to complete
+		await indexingPromise
+
+		// State should be Standby (not Error)
+		const setStateCalls = stateManager.setSystemState.mock.calls
+		const lastCall = setStateCalls[setStateCalls.length - 1]
+		expect(lastCall[0]).toBe("Standby")
+	})
+
+	it("should set state to Standby after abort, not Error", async () => {
+		// Make scanner throw AbortError when signal is aborted
+		scanner.scanDirectory.mockImplementation(
+			async (_dir: string, _onError?: any, _onBlocksIndexed?: any, _onFileParsed?: any, signal?: AbortSignal) => {
+				await new Promise<void>((resolve) => {
+					if (signal?.aborted) {
+						resolve()
+						return
+					}
+					signal?.addEventListener("abort", () => resolve())
+				})
+				throw new DOMException("Indexing aborted", "AbortError")
+			},
+		)
+
+		const orchestrator = new CodeIndexOrchestrator(
+			configManager,
+			stateManager,
+			workspacePath,
+			cacheManager,
+			vectorStore,
+			scanner,
+			fileWatcher,
+		)
+
+		const indexingPromise = orchestrator.startIndexing()
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		orchestrator.stopIndexing()
+		await indexingPromise
+
+		// Should NOT have set Error state — abort is handled gracefully
+		const errorCalls = stateManager.setSystemState.mock.calls.filter((call: any[]) => call[0] === "Error")
+		expect(errorCalls).toHaveLength(0)
+
+		// Should NOT have cleared collection on abort
+		expect(vectorStore.clearCollection).not.toHaveBeenCalled()
+	})
+
+	it("should preserve partial index data after stop", async () => {
+		scanner.scanDirectory.mockImplementation(
+			async (_dir: string, _onError?: any, _onBlocksIndexed?: any, _onFileParsed?: any, signal?: AbortSignal) => {
+				await new Promise<void>((resolve) => {
+					if (signal?.aborted) {
+						resolve()
+						return
+					}
+					signal?.addEventListener("abort", () => resolve())
+				})
+				return { stats: { processed: 5, skipped: 0 }, totalBlockCount: 5 }
+			},
+		)
+
+		const orchestrator = new CodeIndexOrchestrator(
+			configManager,
+			stateManager,
+			workspacePath,
+			cacheManager,
+			vectorStore,
+			scanner,
+			fileWatcher,
+		)
+
+		const indexingPromise = orchestrator.startIndexing()
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		orchestrator.stopIndexing()
+		await indexingPromise
+
+		// Cache should NOT be cleared on user-initiated stop
+		expect(cacheManager.clearCacheFile).not.toHaveBeenCalled()
+		// Collection should NOT be cleared on user-initiated stop
+		expect(vectorStore.clearCollection).not.toHaveBeenCalled()
 	})
 })

@@ -5,7 +5,7 @@ import type { ToolUse } from "../../shared/tools"
 
 interface SkillParams {
 	skill: string
-	args?: string | null
+	args?: string
 }
 
 export class SkillTool extends BaseTool<"skill"> {

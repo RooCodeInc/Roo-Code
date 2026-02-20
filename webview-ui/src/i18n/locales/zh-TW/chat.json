@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "組織已停用分享功能",
 		"shareSuccessOrganization": "組織連結已複製到剪貼簿",
 		"shareSuccessPublic": "公開連結已複製到剪貼簿",
-		"openInCloud": "在 Roo Code Cloud 中開啟工作",
-		"openInCloudIntro": "從任何地方繼續監控或與 Roo 互動。掃描、點選或複製即可開啟。",
 		"openApiHistory": "開啟 API 歷史紀錄",
 		"openUiHistory": "開啟 UI 歷史紀錄",
 		"backToParentTask": "上層工作"
 	},
 	"unpin": "取消釘選",
 	"pin": "釘選",
+	"fileChangesInConversation": {
+		"header": "此對話中已變更 {{count}} 個檔案"
+	},
 	"retry": {
 		"title": "重試",
 		"tooltip": "再次嘗試操作"
@@ -369,8 +370,9 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"claudeOpus": "Claude Opus 4.6: 現已可在所有供應商——Roo Code Router、Anthropic、AWS Bedrock、Google Vertex 和 OpenRouter——上取得，將 Anthropic 最強大的模型帶到您偏好的平台。",
-			"gptCodex": "GPT-5.3-Codex: OpenAI 最新的編碼模型現已在 OpenAI - ChatGPT 供應商中受支援，提供尖端的程式碼生成和理解。"
+			"geminiPro": "Gemini 3.1 Pro 支援：新增 Gemini 3.1 Pro 模型支援，並設為預設 Gemini 模型以提升效能。",
+			"cliNdjson": "CLI NDJSON 協定：新增 NDJSON stdin 協定、list 子指令，以及模組化的 run 指令，提供更彈性的 CLI 工作流程。",
+			"cliRelease": "CLI v0.1.0：Roo Code CLI 以穩定的指令介面達成首個正式版本。"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",
@@ -392,44 +394,6 @@
 		"totalWithSubtasks": "總成本（包含子任務）：${{cost}}",
 		"total": "總成本：${{cost}}",
 		"includesSubtasks": "包含子任務成本"
-	},
-	"browser": {
-		"session": "瀏覽器工作階段",
-		"active": "使用中",
-		"rooWantsToUse": "Roo 想要使用瀏覽器",
-		"consoleLogs": "主控台記錄",
-		"noNewLogs": "（沒有新記錄）",
-		"screenshot": "瀏覽器螢幕擷圖",
-		"cursor": "游標",
-		"navigation": {
-			"step": "步驟 {{current}}／{{total}}",
-			"previous": "上一步",
-			"next": "下一步"
-		},
-		"sessionStarted": "瀏覽器工作階段已啟動",
-		"actions": {
-			"title": "瀏覽器動作：",
-			"launched": "瀏覽器已啟動",
-			"launch": "在 {{url}} 啟動瀏覽器",
-			"clicked": "點選位置：{{coordinate}}",
-			"click": "點選 ({{coordinate}})",
-			"typed": "輸入：{{text}}",
-			"type": "輸入「{{text}}」",
-			"pressed": "已按下 {{key}}",
-			"press": "按下 {{key}}",
-			"scrolledDown": "已向下捲動",
-			"scrollDown": "向下捲動",
-			"scrolledUp": "已向上捲動",
-			"scrollUp": "向上捲動",
-			"hovered": "滑鼠停留位置：{{coordinate}}",
-			"hover": "滑鼠停留 ({{coordinate}})",
-			"resized": "大小已變更：{{size}}",
-			"resize": "調整大小為 {{size}}",
-			"screenshotSaved": "螢幕擷圖已儲存",
-			"screenshot": "將螢幕擷圖儲存至 {{path}}",
-			"closed": "瀏覽器已關閉",
-			"close": "關閉瀏覽器"
-		}
 	},
 	"codeblock": {
 		"tooltips": {
@@ -461,7 +425,8 @@
 		"indexing": "索引中 {{percentage}}%",
 		"indexed": "已索引",
 		"error": "索引錯誤",
-		"status": "索引狀態"
+		"status": "索引狀態",
+		"stopping": "正在停止索引..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "版本 {{version}} - 點選查看發布說明"
