@@ -2,8 +2,6 @@ import * as vscode from "vscode"
 import * as fs from "fs/promises"
 import * as path from "path"
 import { TaskTypeMapping } from "../../shared/globalFileNames"
-import { PLANNING_WORKFLOW_STEPS, PLANNING_INSTRUCTIONS } from "@siid-code/types"
-import { experiments } from "../../shared/experiments"
 import type { Experiments } from "@siid-code/types"
 import { FileChangesService } from "../../services/file-changes"
 
@@ -14,6 +12,7 @@ export interface PreTaskOptions {
 	cwd?: string
 	experiments?: Experiments
 	taskId?: string
+	planningFilePath?: string
 }
 
 /**
@@ -21,7 +20,14 @@ export interface PreTaskOptions {
  * Content is dynamic based on current task state.
  */
 export async function getPreTaskDetails(globalStorageUri: vscode.Uri | undefined, options?: Partial<PreTaskOptions>) {
-	const { taskGuidesFetched = false, hasTodoList = false, cwd, experiments: exps, taskId } = options || {}
+	const {
+		taskGuidesFetched = false,
+		hasTodoList = false,
+		cwd,
+		experiments: exps,
+		taskId,
+		planningFilePath,
+	} = options || {}
 
 	let preTask = "<pre-task>\n\n"
 
@@ -36,6 +42,14 @@ export async function getPreTaskDetails(globalStorageUri: vscode.Uri | undefined
 		// Dynamic todo list reminder
 		if (hasTodoList) {
 			preTask += `**Todo List:** A todo list exists. UPDATE it as you progress - don't recreate.\n\n`
+		}
+
+		// Planning file instructions if exists
+		if (planningFilePath) {
+			preTask += `**Planning File:** A planning file has been created at \`${planningFilePath}\`. This file contains task phases and a progress log.\n`
+			preTask += `- Read the planning file to understand task phases\n`
+			preTask += `- Update the planning file as you progress through phases\n`
+			preTask += `- Use the write_to_file tool to update the file: write_to_file(path="${planningFilePath}", content=<updated content>)\n\n`
 		}
 
 		// Include modified files list so AI knows what has changed and deploys only those files
@@ -60,41 +74,6 @@ export async function getPreTaskDetails(globalStorageUri: vscode.Uri | undefined
 
 		preTask += `---\n\n`
 
-		// Check if planning workflow is enabled
-		const planningEnabled = exps ? experiments.isEnabled(exps, "planningWorkflow") : false
-
-		if (planningEnabled) {
-			// Check for existing planning files
-			let existingPlanningFiles = ""
-			if (cwd) {
-				try {
-					const planningDir = path.join(cwd, ".siid-code", "planning")
-					const dirExists = await fs
-						.access(planningDir)
-						.then(() => true)
-						.catch(() => false)
-					if (dirExists) {
-						const files = await fs.readdir(planningDir)
-						const planFiles = files.filter((f) => f.endsWith("-plan.md"))
-						if (planFiles.length > 0) {
-							existingPlanningFiles = `\n\n**Existing Planning Files:**\n`
-							for (const file of planFiles) {
-								existingPlanningFiles += `- \`.siid-code/planning/${file}\` (Read and maintain during task)\n`
-							}
-						}
-					}
-				} catch {
-					// Ignore errors
-				}
-			}
-
-			// Include planning workflow steps
-			preTask += PLANNING_WORKFLOW_STEPS
-			preTask += existingPlanningFiles
-			preTask += `\n\n**Detailed Planning Instructions:**\n${PLANNING_INSTRUCTIONS}\n\n`
-			preTask += `---\n\n`
-		}
-		// If planning workflow is disabled, don't include planning instructions at all
 		preTask += `- **code:** Apex, async Apex, LWC, triggers, test classes, development\n\n`
 
 		preTask += `---\n\n`
