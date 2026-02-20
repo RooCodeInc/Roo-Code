@@ -1040,6 +1040,8 @@ export const webviewMessageHandler = async (
 					type: "ollamaConnectionTestResult",
 					success: result.success,
 					message: result.message,
+					messageCode: result.messageCode,
+					messageParams: result.messageParams,
 					durationMs: result.durationMs,
 				})
 			} catch (error) {
@@ -1047,6 +1049,8 @@ export const webviewMessageHandler = async (
 					type: "ollamaConnectionTestResult",
 					success: false,
 					message: `Error testing connection: ${error instanceof Error ? error.message : String(error)}`,
+					messageCode: "connectionTestError",
+					messageParams: { error: error instanceof Error ? error.message : String(error) },
 				})
 			}
 			break
@@ -1112,6 +1116,11 @@ export const webviewMessageHandler = async (
 						type: "ollamaModelsRefreshResult",
 						success: true,
 						message: `Found ${result.modelsWithTools.length} model(s) with tools support (${result.totalCount} total)`,
+						messageCode: "refreshSuccess",
+						messageParams: {
+							count: String(result.modelsWithTools.length),
+							total: String(result.totalCount),
+						},
 						durationMs,
 						modelsWithoutTools: result.modelsWithoutTools,
 					})
@@ -1120,6 +1129,8 @@ export const webviewMessageHandler = async (
 						type: "ollamaModelsRefreshResult",
 						success: false,
 						message: "No models found. Make sure Ollama is running and has models installed.",
+						messageCode: "refreshNoModels",
+						messageParams: {},
 						durationMs,
 						modelsWithoutTools: [],
 					})
@@ -1141,6 +1152,8 @@ export const webviewMessageHandler = async (
 					type: "ollamaModelsRefreshResult",
 					success: false,
 					message: `Failed to refresh models: ${error instanceof Error ? error.message : String(error)}`,
+					messageCode: "refreshFailed",
+					messageParams: { error: error instanceof Error ? error.message : String(error) },
 					durationMs,
 				})
 			}

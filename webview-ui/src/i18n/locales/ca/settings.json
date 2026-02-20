@@ -486,10 +486,8 @@
 			"connectionSettings": "Configuració de connexió",
 			"toolsSupport": "Suport d'eines",
 			"noToolsSupport": "Sense suport d'eines",
-			"models": {
-				"one": "model",
-				"other": "models"
-			},
+			"models_one": "model",
+			"models_other": "models",
 			"noToolsSupportHelp": "Aquests models no admeten crides a eines natives i no es poden utilitzar amb Roo Code. Es mostren només com a referència.",
 			"table": {
 				"modelName": "Nom del model",

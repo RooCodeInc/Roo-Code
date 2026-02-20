@@ -486,10 +486,8 @@
 			"connectionSettings": "连接设置",
 			"toolsSupport": "工具支持",
 			"noToolsSupport": "无工具支持",
-			"models": {
-				"one": "模型",
-				"other": "模型"
-			},
+			"models_one": "模型",
+			"models_other": "模型",
 			"noToolsSupportHelp": "这些模型不支持原生工具调用，无法与 Roo Code 一起使用。它们仅作为参考显示。",
 			"table": {
 				"modelName": "模型名称",

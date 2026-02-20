@@ -486,10 +486,8 @@
 			"connectionSettings": "Verbindungseinstellungen",
 			"toolsSupport": "Tools-Unterstützung",
 			"noToolsSupport": "Keine Tools-Unterstützung",
-			"models": {
-				"one": "Modell",
-				"other": "Modelle"
-			},
+			"models_one": "Modell",
+			"models_other": "Modelle",
 			"noToolsSupportHelp": "Diese Modelle unterstützen keine nativen Tool-Aufrufe und können nicht mit Roo Code verwendet werden. Sie werden nur zur Referenz angezeigt.",
 			"table": {
 				"modelName": "Modellname",

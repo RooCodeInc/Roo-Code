@@ -186,10 +186,12 @@ export interface OllamaModelWithTools {
 	modelInfo: OllamaExtendedModelInfo
 }
 
-export interface OllamaModelsResult {
-	modelsWithTools: Record<string, OllamaExtendedModelInfo>
-	modelsWithoutTools: string[]
-	totalCount: number
+export interface OllamaConnectionTestResult {
+	success: boolean
+	message: string
+	messageCode: string
+	messageParams: Record<string, string>
+	durationMs?: number
 }
 
 export interface OllamaModelsDiscoveryResult {
@@ -298,56 +300,6 @@ export async function getOllamaModels(
 	}
 
 	return models
-}
-
-export async function getOllamaModelsWithFiltering(
-	baseUrl = "http://localhost:11434",
-	apiKey?: string,
-	config?: {
-		timeout?: number
-		modelDiscoveryTimeout?: number
-		maxRetries?: number
-		retryDelay?: number
-		enableLogging?: boolean
-	},
-): Promise<OllamaModelsResult> {
-	const modelsWithTools = await getOllamaModels(baseUrl, apiKey, config)
-	const allModelNames = new Set<string>()
-
-	baseUrl = baseUrl === "" ? "http://localhost:11434" : baseUrl
-
-	try {
-		if (URL.canParse(baseUrl)) {
-			const axiosInstance = createOllamaAxiosInstance({
-				baseUrl,
-				apiKey,
-				timeout: config?.modelDiscoveryTimeout ?? config?.timeout ?? 10000,
-				retries: config?.maxRetries ?? 0,
-				retryDelay: config?.retryDelay ?? 1000,
-				enableLogging: config?.enableLogging ?? false,
-			})
-
-			const response = await axiosInstance.get<OllamaModelsResponse>("/api/tags")
-			const parsedResponse = OllamaModelsResponseSchema.safeParse(response.data)
-
-			if (parsedResponse.success) {
-				for (const ollamaModel of parsedResponse.data.models) {
-					allModelNames.add(ollamaModel.name)
-				}
-			}
-		}
-	} catch (error: any) {
-		console.warn(`Failed to fetch all model names: ${error.message}`)
-	}
-
-	const modelsWithToolsNames = new Set(Object.keys(modelsWithTools))
-	const modelsWithoutTools = Array.from(allModelNames).filter((name) => !modelsWithToolsNames.has(name))
-
-	return {
-		modelsWithTools,
-		modelsWithoutTools,
-		totalCount: allModelNames.size,
-	}
 }
 
 export async function discoverOllamaModelsWithSorting(
@@ -535,7 +487,7 @@ export async function testOllamaConnection(
 		timeout?: number
 		enableLogging?: boolean
 	},
-): Promise<{ success: boolean; message: string; durationMs?: number }> {
+): Promise<OllamaConnectionTestResult> {
 	baseUrl = baseUrl === "" ? "http://localhost:11434" : baseUrl
 	const startTime = Date.now()
 
@@ -544,6 +496,8 @@ export async function testOllamaConnection(
 			return {
 				success: false,
 				message: `Invalid URL: ${baseUrl}`,
+				messageCode: "connectionInvalidUrl",
+				messageParams: { baseUrl },
 				durationMs: Date.now() - startTime,
 			}
 		}
@@ -572,6 +526,8 @@ export async function testOllamaConnection(
 		return {
 			success: true,
 			message: `Successfully connected to Ollama at ${baseUrl}`,
+			messageCode: "connectionSuccess",
+			messageParams: { baseUrl },
 			durationMs,
 		}
 	} catch (error: any) {
@@ -592,24 +548,32 @@ export async function testOllamaConnection(
 			return {
 				success: false,
 				message: `Cannot connect to Ollama at ${baseUrl}. Make sure Ollama is running.`,
+				messageCode: "connectionRefused",
+				messageParams: { baseUrl },
 				durationMs,
 			}
 		} else if (error?.code === "ETIMEDOUT" || error?.code === "ECONNABORTED") {
 			return {
 				success: false,
 				message: `Connection to Ollama timed out. Check if the URL is correct and Ollama is accessible.`,
+				messageCode: "connectionTimeout",
+				messageParams: {},
 				durationMs,
 			}
 		} else if (error?.code === "ERR_NETWORK") {
 			return {
 				success: false,
 				message: `Network error connecting to Ollama. Check your network connection.`,
+				messageCode: "connectionNetworkError",
+				messageParams: {},
 				durationMs,
 			}
 		} else if (error?.response) {
 			return {
 				success: false,
 				message: `Ollama returned error: ${error.response.status} ${error.response.statusText}`,
+				messageCode: "connectionHttpError",
+				messageParams: { status: String(error.response.status), statusText: error.response.statusText },
 				durationMs,
 			}
 		}
@@ -617,6 +581,8 @@ export async function testOllamaConnection(
 		return {
 			success: false,
 			message: `Failed to connect: ${error instanceof Error ? error.message : String(error)}`,
+			messageCode: "connectionFailed",
+			messageParams: { error: error instanceof Error ? error.message : String(error) },
 			durationMs,
 		}
 	}

@@ -486,10 +486,8 @@
 			"connectionSettings": "연결 설정",
 			"toolsSupport": "도구 지원",
 			"noToolsSupport": "도구 지원 없음",
-			"models": {
-				"one": "모델",
-				"other": "모델"
-			},
+			"models_one": "모델",
+			"models_other": "모델",
 			"noToolsSupportHelp": "이 모델들은 네이티브 도구 호출을 지원하지 않으며 Roo Code와 함께 사용할 수 없습니다. 참고용으로만 표시됩니다.",
 			"table": {
 				"modelName": "모델 이름",

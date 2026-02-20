@@ -149,6 +149,8 @@ export interface ExtensionMessage {
 	}>
 	modelsWithoutTools?: string[]
 	message?: string
+	messageCode?: string
+	messageParams?: Record<string, string>
 	durationMs?: number
 	lmStudioModels?: ModelRecord
 	vsCodeLmModels?: { vendor?: string; family?: string; version?: string; id?: string }[]

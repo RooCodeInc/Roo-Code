@@ -486,10 +486,8 @@
 			"connectionSettings": "接続設定",
 			"toolsSupport": "ツールサポート",
 			"noToolsSupport": "ツールサポートなし",
-			"models": {
-				"one": "モデル",
-				"other": "モデル"
-			},
+			"models_one": "モデル",
+			"models_other": "モデル",
 			"noToolsSupportHelp": "これらのモデルはネイティブツール呼び出しをサポートしておらず、Roo Codeでは使用できません。参考としてのみ表示されます。",
 			"table": {
 				"modelName": "モデル名",

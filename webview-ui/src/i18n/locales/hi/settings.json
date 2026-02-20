@@ -486,10 +486,8 @@
 			"connectionSettings": "कनेक्शन सेटिंग्स",
 			"toolsSupport": "टूल्स सपोर्ट",
 			"noToolsSupport": "कोई टूल्स सपोर्ट नहीं",
-			"models": {
-				"one": "मॉडल",
-				"other": "मॉडल"
-			},
+			"models_one": "मॉडल",
+			"models_other": "मॉडल",
 			"noToolsSupportHelp": "ये मॉडल नेटिव टूल कॉलिंग का समर्थन नहीं करते हैं और Roo Code के साथ उपयोग नहीं किए जा सकते हैं। वे केवल संदर्भ के लिए दिखाए गए हैं।",
 			"table": {
 				"modelName": "मॉडल नाम",

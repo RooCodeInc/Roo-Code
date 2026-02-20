@@ -486,10 +486,8 @@
 			"connectionSettings": "Bağlantı ayarları",
 			"toolsSupport": "Araç desteği",
 			"noToolsSupport": "Araç desteği yok",
-			"models": {
-				"one": "model",
-				"other": "modeller"
-			},
+			"models_one": "model",
+			"models_other": "modeller",
 			"noToolsSupportHelp": "Bu modeller yerel araç çağrılarını desteklemez ve Roo Code ile kullanılamaz. Yalnızca referans olarak gösterilirler.",
 			"table": {
 				"modelName": "Model adı",

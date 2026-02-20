@@ -486,10 +486,8 @@
 			"connectionSettings": "Verbindingsinstellingen",
 			"toolsSupport": "Toolondersteuning",
 			"noToolsSupport": "Geen toolondersteuning",
-			"models": {
-				"one": "model",
-				"other": "modellen"
-			},
+			"models_one": "model",
+			"models_other": "modellen",
 			"noToolsSupportHelp": "Deze modellen ondersteunen geen native tool-aanroepen en kunnen niet worden gebruikt met Roo Code. Ze worden alleen ter referentie weergegeven.",
 			"table": {
 				"modelName": "Modelnaam",

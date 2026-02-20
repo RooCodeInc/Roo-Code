@@ -486,12 +486,10 @@
 			"connectionSettings": "Ustawienia połączenia",
 			"toolsSupport": "Obsługa narzędzi",
 			"noToolsSupport": "Brak obsługi narzędzi",
-			"models": {
-				"one": "model",
-				"few": "modele",
-				"many": "modeli",
-				"other": "modeli"
-			},
+			"models_one": "model",
+			"models_few": "modele",
+			"models_many": "modeli",
+			"models_other": "modeli",
 			"noToolsSupportHelp": "Te modele nie obsługują natywnych wywołań narzędzi i nie mogą być używane z Roo Code. Są wyświetlane tylko w celach informacyjnych.",
 			"table": {
 				"modelName": "Nazwa modelu",

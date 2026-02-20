@@ -486,10 +486,8 @@
 			"connectionSettings": "Cài đặt kết nối",
 			"toolsSupport": "Hỗ trợ công cụ",
 			"noToolsSupport": "Không hỗ trợ công cụ",
-			"models": {
-				"one": "mô hình",
-				"other": "mô hình"
-			},
+			"models_one": "mô hình",
+			"models_other": "mô hình",
 			"noToolsSupportHelp": "Các mô hình này không hỗ trợ gọi công cụ gốc và không thể sử dụng với Roo Code. Chúng chỉ được hiển thị để tham khảo.",
 			"table": {
 				"modelName": "Tên mô hình",

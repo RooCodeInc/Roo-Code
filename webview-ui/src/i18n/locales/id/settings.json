@@ -486,10 +486,8 @@
 			"connectionSettings": "Pengaturan koneksi",
 			"toolsSupport": "Dukungan alat",
 			"noToolsSupport": "Tidak ada dukungan alat",
-			"models": {
-				"one": "model",
-				"other": "model"
-			},
+			"models_one": "model",
+			"models_other": "model",
 			"noToolsSupportHelp": "Model-model ini tidak mendukung pemanggilan alat native dan tidak dapat digunakan dengan Roo Code. Mereka ditampilkan hanya sebagai referensi.",
 			"table": {
 				"modelName": "Nama model",

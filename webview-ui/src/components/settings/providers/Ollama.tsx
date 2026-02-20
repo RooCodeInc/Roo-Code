@@ -68,82 +68,20 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 		[setApiConfigurationField],
 	)
 
-	// Helper function to translate backend messages
+	// Translate backend messages using structured message codes.
+	// Falls back to the raw message string if no code is provided.
 	const translateMessage = useCallback(
-		(msg: string): string => {
-			if (!msg) return msg
-
-			// Successfully connected to Ollama at {url}
-			const successMatch = msg.match(/^Successfully connected to Ollama at (.+)$/)
-			if (successMatch) {
-				return t("settings:providers.ollama.messages.connectionSuccess", { baseUrl: successMatch[1] })
+		(msg: string, messageCode?: string, messageParams?: Record<string, string>): string => {
+			if (messageCode) {
+				const i18nKey = `settings:providers.ollama.messages.${messageCode}`
+				const translated = t(i18nKey, messageParams)
+				// If the key was found (translation differs from the key), use it
+				if (translated !== i18nKey) {
+					return translated
+				}
 			}
-
-			// Invalid URL: {url}
-			const invalidUrlMatch = msg.match(/^Invalid URL: (.+)$/)
-			if (invalidUrlMatch) {
-				return t("settings:providers.ollama.messages.connectionInvalidUrl", { baseUrl: invalidUrlMatch[1] })
-			}
-
-			// Cannot connect to Ollama at {url}. Make sure Ollama is running.
-			const refusedMatch = msg.match(/^Cannot connect to Ollama at (.+)\. Make sure Ollama is running\.$/)
-			if (refusedMatch) {
-				return t("settings:providers.ollama.messages.connectionRefused", { baseUrl: refusedMatch[1] })
-			}
-
-			// Connection to Ollama timed out. Check if the URL is correct and Ollama is accessible.
-			if (msg.includes("Connection to Ollama timed out")) {
-				return t("settings:providers.ollama.messages.connectionTimeout")
-			}
-
-			// Network error connecting to Ollama. Check your network connection.
-			if (msg.includes("Network error connecting to Ollama")) {
-				return t("settings:providers.ollama.messages.connectionNetworkError")
-			}
-
-			// Ollama returned error: {status} {statusText}
-			const httpErrorMatch = msg.match(/^Ollama returned error: (\d+) (.+)$/)
-			if (httpErrorMatch) {
-				return t("settings:providers.ollama.messages.connectionHttpError", {
-					status: httpErrorMatch[1],
-					statusText: httpErrorMatch[2],
-				})
-			}
-
-			// Failed to connect: {error}
-			const failedMatch = msg.match(/^Failed to connect: (.+)$/)
-			if (failedMatch) {
-				return t("settings:providers.ollama.messages.connectionFailed", { error: failedMatch[1] })
-			}
-
-			// Error testing connection: {error}
-			const testErrorMatch = msg.match(/^Error testing connection: (.+)$/)
-			if (testErrorMatch) {
-				return t("settings:providers.ollama.messages.connectionTestError", { error: testErrorMatch[1] })
-			}
-
-			// Found {count} model(s) with tools support ({total} total)
-			const refreshSuccessMatch = msg.match(/^Found (\d+) model\(s\) with tools support \((\d+) total\)$/)
-			if (refreshSuccessMatch) {
-				return t("settings:providers.ollama.messages.refreshSuccess", {
-					count: refreshSuccessMatch[1],
-					total: refreshSuccessMatch[2],
-				})
-			}
-
-			// No models found. Make sure Ollama is running and has models installed.
-			if (msg === "No models found. Make sure Ollama is running and has models installed.") {
-				return t("settings:providers.ollama.messages.refreshNoModels")
-			}
-
-			// Failed to refresh models: {error}
-			const refreshFailedMatch = msg.match(/^Failed to refresh models: (.+)$/)
-			if (refreshFailedMatch) {
-				return t("settings:providers.ollama.messages.refreshFailed", { error: refreshFailedMatch[1] })
-			}
-
-			// Unknown message - return as is
-			return msg
+			// Fallback to raw message if no code or key not found
+			return msg || ""
 		},
 		[t],
 	)
@@ -166,7 +104,11 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 				case "ollamaConnectionTestResult":
 					setTestResult({
 						success: message.success ?? false,
-						message: translateMessage(message.message ?? "Unknown error"),
+						message: translateMessage(
+							message.message ?? "Unknown error",
+							message.messageCode,
+							message.messageParams,
+						),
 						durationMs: message.durationMs,
 					})
 					setTestingConnection(false)
@@ -178,7 +120,11 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 				case "ollamaModelsRefreshResult":
 					setRefreshResult({
 						success: message.success ?? false,
-						message: translateMessage(message.message ?? "Unknown error"),
+						message: translateMessage(
+							message.message ?? "Unknown error",
+							message.messageCode,
+							message.messageParams,
+						),
 						durationMs: message.durationMs,
 					})
 					setRefreshingModels(false)
