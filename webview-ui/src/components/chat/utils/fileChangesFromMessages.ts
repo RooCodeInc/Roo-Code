@@ -8,6 +8,8 @@ export interface FileChangeEntry {
 	path: string
 	diff: string
 	diffStats?: { added: number; removed: number }
+	/** Original file content before first edit (for merged diff display) */
+	originalContent?: string
 }
 
 /**
@@ -56,6 +58,7 @@ export function fileChangesFromMessages(messages: ClineMessage[] | undefined): F
 				path: tool.path,
 				diff,
 				diffStats: tool.diffStats,
+				originalContent: tool.originalContent,
 			})
 		}
 	}

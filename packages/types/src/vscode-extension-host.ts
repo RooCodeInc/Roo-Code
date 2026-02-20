@@ -103,7 +103,10 @@ export interface ExtensionMessage {
 		| "branchWorktreeIncludeResult"
 		| "folderSelected"
 		| "skills"
+		| "fileContent"
 	text?: string
+	/** For fileContent: { path, content, error? } */
+	fileContent?: { path: string; content: string | null; error?: string }
 	payload?: any // eslint-disable-line @typescript-eslint/no-explicit-any
 	checkpointWarning?: {
 		type: "WAIT_TIMEOUT" | "INIT_TIMEOUT"
@@ -444,6 +447,7 @@ export interface WebviewMessage {
 		| "openImage"
 		| "saveImage"
 		| "openFile"
+		| "readFileContent"
 		| "openMention"
 		| "cancelTask"
 		| "cancelAutoApproval"
@@ -786,6 +790,8 @@ export interface ClineSayTool {
 	matchCount?: number
 	diff?: string
 	content?: string
+	// Original file content before first edit (for merged diff display in FileChangesPanel)
+	originalContent?: string
 	// Unified diff statistics computed by the extension
 	diffStats?: { added: number; removed: number }
 	regex?: string

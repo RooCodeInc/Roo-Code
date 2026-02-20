@@ -1,8 +1,9 @@
-import { memo, useEffect, useMemo, useState, useCallback } from "react"
+import { memo, useEffect, useMemo, useState, useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { ChevronDown, ChevronRight, FileDiff } from "lucide-react"
+import { createTwoFilesPatch } from "diff"
 
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage, ExtensionMessage } from "@roo-code/types"
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui"
 import { cn } from "@/lib/utils"
@@ -20,10 +21,14 @@ const FileChangesPanel = memo(({ clineMessages, className }: FileChangesPanelPro
 	const { t } = useTranslation()
 	const [panelExpanded, setPanelExpanded] = useState(false)
 	const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set())
+	const [finalContentByPath, setFinalContentByPath] = useState<Record<string, string | null>>({})
+	const pendingPathsRef = useRef<Set<string>>(new Set())
 
-	// Reset expanded file rows when switching to a different task (clineMessages identity change)
+	// Reset expanded file rows and final content cache when switching to a different task
 	useEffect(() => {
 		setExpandedPaths(new Set())
+		setFinalContentByPath({})
+		pendingPathsRef.current = new Set()
 	}, [clineMessages])
 
 	const fileChanges = useMemo(() => fileChangesFromMessages(clineMessages), [clineMessages])
@@ -58,6 +63,38 @@ const FileChangesPanel = memo(({ clineMessages, className }: FileChangesPanelPro
 			else next.add(path)
 			return next
 		})
+	}, [])
+
+	// Request final file content when a row is expanded and we have originalContent
+	useEffect(() => {
+		for (const path of expandedPaths) {
+			const entries = byPath.get(path)
+			if (!entries?.length) continue
+			const originalContent = entries[0].originalContent
+			const lookupPath = path.startsWith("./") ? path.slice(2) : path
+			if (
+				originalContent !== undefined &&
+				!(lookupPath in finalContentByPath) &&
+				!pendingPathsRef.current.has(lookupPath)
+			) {
+				pendingPathsRef.current.add(lookupPath)
+				vscode.postMessage({ type: "readFileContent", text: lookupPath })
+			}
+		}
+	}, [expandedPaths, byPath, finalContentByPath])
+
+	// Listen for fileContent responses
+	useEffect(() => {
+		const handler = (event: MessageEvent) => {
+			const message: ExtensionMessage = event.data
+			if (message.type === "fileContent" && message.fileContent?.path != null) {
+				const fc = message.fileContent
+				pendingPathsRef.current.delete(fc.path)
+				setFinalContentByPath((prev) => ({ ...prev, [fc.path]: fc.content ?? null }))
+			}
+		}
+		window.addEventListener("message", handler)
+		return () => window.removeEventListener("message", handler)
 	}, [])
 
 	if (fileChanges.length === 0) return null
@@ -96,8 +133,14 @@ const FileChangesPanel = memo(({ clineMessages, className }: FileChangesPanelPro
 			<CollapsibleContent>
 				<div className="flex flex-col gap-1 pb-2 pl-6">
 					{Array.from(byPath.entries()).map(([path, entries]) => {
-						// If multiple edits to same file, concatenate diffs with a separator
-						const combinedDiff = entries.map((e) => e.diff).join("\n\n")
+						const originalContent = entries[0].originalContent
+						const lookupPath = path.startsWith("./") ? path.slice(2) : path
+						const finalContent = finalContentByPath[lookupPath]
+						const hasMergedDiff =
+							originalContent !== undefined && finalContent != null && finalContent !== ""
+						const displayDiff = hasMergedDiff
+							? createTwoFilesPatch(path, path, originalContent, finalContent)
+							: entries.map((e) => e.diff).join("\n\n")
 						const combinedStats = entries.reduce(
 							(acc, e) => ({
 								added: acc.added + (e.diffStats?.added ?? 0),
@@ -110,7 +153,7 @@ const FileChangesPanel = memo(({ clineMessages, className }: FileChangesPanelPro
 							<div key={path} className="rounded border border-vscode-panel-border overflow-hidden">
 								<CodeAccordian
 									path={path}
-									code={combinedDiff}
+									code={displayDiff}
 									language="diff"
 									isExpanded={isExpanded}
 									onToggleExpand={() => togglePath(path)}
