@@ -283,9 +283,24 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const [currentFollowUpTs, setCurrentFollowUpTs] = useState<number | null>(null)
 
 	const clineAskRef = useRef(clineAsk)
+	const currentAskTsRef = useRef<number | undefined>(undefined)
 	useEffect(() => {
 		clineAskRef.current = clineAsk
 	}, [clineAsk])
+
+	const postAskResponse = useCallback(
+		(payload: { askResponse: string; text?: string; images?: string[] }, correlate = true) => {
+			vscode.postMessage({
+				type: "askResponse",
+				askResponse: payload.askResponse as any,
+				text: payload.text,
+				images: payload.images,
+				taskId: correlate ? currentTaskItem?.id : undefined,
+				messageTs: correlate ? currentAskTsRef.current : undefined,
+			})
+		},
+		[currentTaskItem?.id],
+	)
 
 	useEffect(() => {
 		isMountedRef.current = true
@@ -363,6 +378,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		if (lastMessage) {
 			switch (lastMessage.type) {
 				case "ask":
+					currentAskTsRef.current = lastMessage.ts
 					// Reset user response flag when a new ask arrives to allow auto-approval
 					userRespondedRef.current = false
 					const isPartial = lastMessage.partial === true
@@ -801,18 +817,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							case "resume_task":
 							case "resume_completed_task":
 							case "mistake_limit_reached":
-								vscode.postMessage({
-									type: "askResponse",
-									askResponse: "messageResponse",
-									text,
-									images,
-								})
+								postAskResponse({ askResponse: "messageResponse", text, images })
 								break
 							// There is no other case that a textfield should be enabled.
 						}
 					} else {
 						// This is a new message in an ongoing task.
-						vscode.postMessage({ type: "askResponse", askResponse: "messageResponse", text, images })
+						postAskResponse({ askResponse: "messageResponse", text, images }, false)
 					}
 
 					handleChatReset()
@@ -827,7 +838,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				// but for now we'll just log it
 			}
 		},
-		[handleChatReset, markFollowUpAsAnswered, sendingDisabled], // messagesRef and clineAskRef are stable
+		[handleChatReset, markFollowUpAsAnswered, sendingDisabled, postAskResponse], // messagesRef and clineAskRef are stable
 	)
 
 	useEffect(() => {
@@ -933,17 +944,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				case "mistake_limit_reached":
 					// Only send text/images if they exist
 					if (trimmedInput || (images && images.length > 0)) {
-						vscode.postMessage({
-							type: "askResponse",
-							askResponse: "yesButtonClicked",
-							text: trimmedInput,
-							images: images,
-						})
+						postAskResponse({ askResponse: "yesButtonClicked", text: trimmedInput, images: images })
 						// Clear input state after sending
 						setInputValue("")
 						setSelectedImages([])
 					} else {
-						vscode.postMessage({ type: "askResponse", askResponse: "yesButtonClicked" })
+						postAskResponse({ askResponse: "yesButtonClicked" })
 					}
 					break
 				case "completion_result":
@@ -960,7 +966,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			setClineAsk(undefined)
 			setEnableButtons(false)
 		},
-		[clineAsk, startNewTask],
+		[clineAsk, startNewTask, postAskResponse],
 	)
 
 	const handleSecondaryButtonClick = useCallback(
@@ -988,18 +994,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				case "use_mcp_server":
 					// Only send text/images if they exist
 					if (trimmedInput || (images && images.length > 0)) {
-						vscode.postMessage({
-							type: "askResponse",
-							askResponse: "noButtonClicked",
-							text: trimmedInput,
-							images: images,
-						})
+						postAskResponse({ askResponse: "noButtonClicked", text: trimmedInput, images: images })
 						// Clear input state after sending
 						setInputValue("")
 						setSelectedImages([])
 					} else {
 						// Responds to the API with a "This operation failed" and lets it try again
-						vscode.postMessage({ type: "askResponse", askResponse: "noButtonClicked" })
+						postAskResponse({ askResponse: "noButtonClicked" })
 					}
 					break
 				case "command_output":
@@ -1010,7 +1011,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			setClineAsk(undefined)
 			setEnableButtons(false)
 		},
-		[clineAsk, startNewTask, isStreaming],
+		[clineAsk, startNewTask, isStreaming, postAskResponse],
 	)
 
 	const { info: model } = useSelectedModel(apiConfiguration)
@@ -1802,10 +1803,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		[handleSendMessage, setInputValue, switchToMode, alwaysAllowModeSwitch, clineAsk, markFollowUpAsAnswered],
 	)
 
-	const handleBatchFileResponse = useCallback((response: { [key: string]: boolean }) => {
-		// Handle batch file response, e.g., for file uploads
-		vscode.postMessage({ type: "askResponse", askResponse: "objectResponse", text: JSON.stringify(response) })
-	}, [])
+	const handleBatchFileResponse = useCallback(
+		(response: { [key: string]: boolean }) => {
+			// Handle batch file response, e.g., for file uploads
+			postAskResponse({ askResponse: "objectResponse", text: JSON.stringify(response) })
+		},
+		[postAskResponse],
+	)
 
 	// Handler for when FollowUpSuggest component unmounts
 	const handleFollowUpUnmount = useCallback(() => {
@@ -1908,14 +1912,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					// Create the localized auto-deny message and send it with the rejection
 					const autoDenyMessage = tSettings("autoApprove.execute.autoDenied", { prefix: deniedPrefix })
 
-					vscode.postMessage({
-						type: "askResponse",
-						askResponse: "noButtonClicked",
-						text: autoDenyMessage,
-					})
+					postAskResponse({ askResponse: "noButtonClicked", text: autoDenyMessage })
 				} else {
 					// Auto-reject denied commands immediately if no prefix found
-					vscode.postMessage({ type: "askResponse", askResponse: "noButtonClicked" })
+					postAskResponse({ askResponse: "noButtonClicked" })
 				}
 
 				setSendingDisabled(true)
@@ -1967,7 +1967,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					})
 				}
 
-				vscode.postMessage({ type: "askResponse", askResponse: "yesButtonClicked" })
+				postAskResponse({ askResponse: "yesButtonClicked" })
 
 				setSendingDisabled(true)
 				setClineAsk(undefined)
@@ -2008,6 +2008,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		isDeniedCommand,
 		getDeniedPrefix,
 		tSettings,
+		postAskResponse,
 	])
 
 	// Function to handle mode switching

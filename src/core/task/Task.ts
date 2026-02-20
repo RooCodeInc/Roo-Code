@@ -345,7 +345,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this._taskMode = historyItem.mode || defaultModeSlug
 			this.taskModeReady = Promise.resolve()
 			// Restore saved duration if available
-			if (historyItem.duration) {
+			if (historyItem.duration !== undefined) {
 				this.taskElapsedMs = historyItem.duration
 			}
 			// Restore task completion status if available
@@ -784,13 +784,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		if (!partial && !isReady && isBlockingAsk(type)) {
 			this.blockingAsk = type
-			this.pauseTaskTimer()
+			if (type !== "command_output") {
+				this.pauseTaskTimer()
+			}
 			this.emit(RooCodeEventName.TaskIdle, this.taskId)
 		}
 
-		console.log(`[Task#${this.taskId}] pWaitFor askResponse(${type}) -> blocking`)
 		await pWaitFor(() => this.askResponse !== undefined || this.lastMessageTs !== askTs, { interval: 100 })
-		console.log(`[Task#${this.taskId}] pWaitFor askResponse(${type}) -> unblocked (${this.askResponse})`)
 
 		if (this.lastMessageTs !== askTs) {
 			// Could happen if we send multiple asks in a row i.e. with
@@ -806,8 +806,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Switch back to an active state.
 		if (this.blockingAsk) {
+			const blockingAskType = this.blockingAsk
 			this.blockingAsk = undefined
-			this.resumeTaskTimer()
+			if (blockingAskType !== "command_output") {
+				this.resumeTaskTimer()
+			}
 			this.emit(RooCodeEventName.TaskActive, this.taskId)
 		}
 
@@ -819,7 +822,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.handleWebviewAskResponse("messageResponse", text, images)
 	}
 
-	handleWebviewAskResponse(askResponse: ClineAskResponse, text?: string, images?: string[]) {
+	handleWebviewAskResponse(askResponse: ClineAskResponse, text?: string, images?: string[], messageTs?: number) {
+		if (messageTs !== undefined) {
+			const lastMessage = this.clineMessages.at(-1)
+			if (!lastMessage || lastMessage.type !== "ask" || lastMessage.ts !== messageTs) {
+				return
+			}
+		}
+
 		this.askResponse = askResponse
 		this.askResponseText = text
 		this.askResponseImages = images
@@ -1132,6 +1142,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	public async resumePausedTask(lastMessage: string) {
 		// Release this Cline instance from paused state.
 		this.isPaused = false
+		this.taskCompleted = false
 		this.emit(RooCodeEventName.TaskUnpaused)
 
 		// Fake an answer from the subtask that it has completed running and
@@ -1277,6 +1288,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		this.isInitialized = true
+		this.taskCompleted = false
 
 		const { response, text, images } = await this.ask(askType) // Calls `postStateToWebview`.
 
