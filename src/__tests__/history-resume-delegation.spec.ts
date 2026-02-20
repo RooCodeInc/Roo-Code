@@ -387,6 +387,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 
 	it("reopenParentFromDelegation emits events in correct order: TaskDelegationCompleted → TaskDelegationResumed", async () => {
 		const emitSpy = vi.fn()
+		const updateTaskHistory = vi.fn().mockResolvedValue([])
 
 		const provider = {
 			contextProxy: { globalStorageUri: { fsPath: "/tmp" } },
@@ -411,7 +412,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
 				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			}),
-			updateTaskHistory: vi.fn().mockResolvedValue([]),
+			updateTaskHistory,
 		} as unknown as ClineProvider
 
 		vi.mocked(readTaskMessages).mockResolvedValue([])
@@ -429,6 +430,92 @@ describe("History resume delegation - parent metadata transitions", () => {
 		expect(eventNames).toContain(RooCodeEventName.TaskDelegationResumed)
 
 		// CRITICAL: verify ordering (TaskDelegationCompleted before TaskDelegationResumed)
+		const completedIdx = emitSpy.mock.calls.findIndex((c) => c[0] === RooCodeEventName.TaskDelegationCompleted)
+		const resumedIdx = emitSpy.mock.calls.findIndex((c) => c[0] === RooCodeEventName.TaskDelegationResumed)
+		expect(completedIdx).toBeGreaterThanOrEqual(0)
+		expect(resumedIdx).toBeGreaterThan(completedIdx)
+
+		// RPD-05: verify parent metadata persistence happens before TaskDelegationCompleted emit
+		const parentUpdateCallIdx = updateTaskHistory.mock.calls.findIndex((call) => {
+			const item = call[0] as { id?: string; status?: string } | undefined
+			return item?.id === "p3" && item.status === "active"
+		})
+		expect(parentUpdateCallIdx).toBeGreaterThanOrEqual(0)
+
+		const parentUpdateCallOrder = updateTaskHistory.mock.invocationCallOrder[parentUpdateCallIdx]
+		const completedEmitCallOrder = emitSpy.mock.invocationCallOrder[completedIdx]
+		expect(parentUpdateCallOrder).toBeLessThan(completedEmitCallOrder)
+	})
+
+	it("reopenParentFromDelegation continues when overwrite operations fail and still resumes/emits (RPD-06)", async () => {
+		const emitSpy = vi.fn()
+		const parentInstance = {
+			resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
+			overwriteClineMessages: vi.fn().mockRejectedValue(new Error("ui overwrite failed")),
+			overwriteApiConversationHistory: vi.fn().mockRejectedValue(new Error("api overwrite failed")),
+		}
+
+		const provider = {
+			contextProxy: { globalStorageUri: { fsPath: "/tmp" } },
+			getTaskWithId: vi.fn().mockImplementation(async (id: string) => {
+				if (id === "parent-rpd06") {
+					return {
+						historyItem: {
+							id: "parent-rpd06",
+							status: "delegated",
+							awaitingChildId: "child-rpd06",
+							childIds: ["child-rpd06"],
+							ts: 800,
+							task: "Parent RPD-06",
+							tokensIn: 0,
+							tokensOut: 0,
+							totalCost: 0,
+						},
+					}
+				}
+
+				return {
+					historyItem: {
+						id: "child-rpd06",
+						status: "active",
+						ts: 801,
+						task: "Child RPD-06",
+						tokensIn: 0,
+						tokensOut: 0,
+						totalCost: 0,
+					},
+				}
+			}),
+			emit: emitSpy,
+			getCurrentTask: vi.fn(() => ({ taskId: "child-rpd06" })),
+			removeClineFromStack: vi.fn().mockResolvedValue(undefined),
+			createTaskWithHistoryItem: vi.fn().mockResolvedValue(parentInstance),
+			updateTaskHistory: vi.fn().mockResolvedValue([]),
+		} as unknown as ClineProvider
+
+		vi.mocked(readTaskMessages).mockResolvedValue([])
+		vi.mocked(readApiMessages).mockResolvedValue([])
+
+		await expect(
+			(ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
+				parentTaskId: "parent-rpd06",
+				childTaskId: "child-rpd06",
+				completionResultSummary: "Subtask finished despite overwrite failures",
+			}),
+		).resolves.toBeUndefined()
+
+		expect(parentInstance.overwriteClineMessages).toHaveBeenCalledTimes(1)
+		expect(parentInstance.overwriteApiConversationHistory).toHaveBeenCalledTimes(1)
+		expect(parentInstance.resumeAfterDelegation).toHaveBeenCalledTimes(1)
+
+		expect(emitSpy).toHaveBeenCalledWith(
+			RooCodeEventName.TaskDelegationCompleted,
+			"parent-rpd06",
+			"child-rpd06",
+			"Subtask finished despite overwrite failures",
+		)
+		expect(emitSpy).toHaveBeenCalledWith(RooCodeEventName.TaskDelegationResumed, "parent-rpd06", "child-rpd06")
+
 		const completedIdx = emitSpy.mock.calls.findIndex((c) => c[0] === RooCodeEventName.TaskDelegationCompleted)
 		const resumedIdx = emitSpy.mock.calls.findIndex((c) => c[0] === RooCodeEventName.TaskDelegationResumed)
 		expect(completedIdx).toBeGreaterThanOrEqual(0)
@@ -478,6 +565,162 @@ describe("History resume delegation - parent metadata transitions", () => {
 		expect(eventNames).not.toContain(RooCodeEventName.TaskPaused)
 		expect(eventNames).not.toContain(RooCodeEventName.TaskUnpaused)
 		expect(eventNames).not.toContain(RooCodeEventName.TaskSpawned)
+	})
+
+	it("reopenParentFromDelegation skips child close when current task differs and still reopens parent (RPD-02)", async () => {
+		const parentInstance = {
+			resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
+			overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
+			overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
+		}
+
+		const updateTaskHistory = vi.fn().mockResolvedValue([])
+		const removeClineFromStack = vi.fn().mockResolvedValue(undefined)
+		const createTaskWithHistoryItem = vi.fn().mockResolvedValue(parentInstance)
+
+		const provider = {
+			contextProxy: { globalStorageUri: { fsPath: "/tmp" } },
+			getTaskWithId: vi.fn().mockImplementation(async (id: string) => {
+				if (id === "parent-rpd02") {
+					return {
+						historyItem: {
+							id: "parent-rpd02",
+							status: "delegated",
+							awaitingChildId: "child-rpd02",
+							childIds: ["child-rpd02"],
+							ts: 600,
+							task: "Parent RPD-02",
+							tokensIn: 0,
+							tokensOut: 0,
+							totalCost: 0,
+						},
+					}
+				}
+				return {
+					historyItem: {
+						id: "child-rpd02",
+						status: "active",
+						ts: 601,
+						task: "Child RPD-02",
+						tokensIn: 0,
+						tokensOut: 0,
+						totalCost: 0,
+					},
+				}
+			}),
+			emit: vi.fn(),
+			getCurrentTask: vi.fn(() => ({ taskId: "different-open-task" })),
+			removeClineFromStack,
+			createTaskWithHistoryItem,
+			updateTaskHistory,
+		} as unknown as ClineProvider
+
+		vi.mocked(readTaskMessages).mockResolvedValue([])
+		vi.mocked(readApiMessages).mockResolvedValue([])
+
+		await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
+			parentTaskId: "parent-rpd02",
+			childTaskId: "child-rpd02",
+			completionResultSummary: "Child done without being current",
+		})
+
+		expect(removeClineFromStack).not.toHaveBeenCalled()
+		expect(updateTaskHistory).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: "child-rpd02",
+				status: "completed",
+			}),
+		)
+		expect(createTaskWithHistoryItem).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: "parent-rpd02",
+				status: "active",
+				completedByChildId: "child-rpd02",
+			}),
+			{ startTask: false },
+		)
+		expect(parentInstance.resumeAfterDelegation).toHaveBeenCalledTimes(1)
+	})
+
+	it("reopenParentFromDelegation logs child status persistence failure and continues reopen flow (RPD-04)", async () => {
+		const logSpy = vi.fn()
+		const emitSpy = vi.fn()
+		const parentInstance = {
+			resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
+			overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
+			overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
+		}
+
+		const updateTaskHistory = vi.fn().mockImplementation(async (historyItem: { id?: string }) => {
+			if (historyItem.id === "child-rpd04") {
+				throw new Error("child status persist failed")
+			}
+			return []
+		})
+
+		const provider = {
+			contextProxy: { globalStorageUri: { fsPath: "/tmp" } },
+			getTaskWithId: vi.fn().mockImplementation(async (id: string) => {
+				if (id === "parent-rpd04") {
+					return {
+						historyItem: {
+							id: "parent-rpd04",
+							status: "delegated",
+							awaitingChildId: "child-rpd04",
+							childIds: ["child-rpd04"],
+							ts: 700,
+							task: "Parent RPD-04",
+							tokensIn: 0,
+							tokensOut: 0,
+							totalCost: 0,
+						},
+					}
+				}
+				return {
+					historyItem: {
+						id: "child-rpd04",
+						status: "active",
+						ts: 701,
+						task: "Child RPD-04",
+						tokensIn: 0,
+						tokensOut: 0,
+						totalCost: 0,
+					},
+				}
+			}),
+			emit: emitSpy,
+			log: logSpy,
+			getCurrentTask: vi.fn(() => ({ taskId: "child-rpd04" })),
+			removeClineFromStack: vi.fn().mockResolvedValue(undefined),
+			createTaskWithHistoryItem: vi.fn().mockResolvedValue(parentInstance),
+			updateTaskHistory,
+		} as unknown as ClineProvider
+
+		vi.mocked(readTaskMessages).mockResolvedValue([])
+		vi.mocked(readApiMessages).mockResolvedValue([])
+
+		await expect(
+			(ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
+				parentTaskId: "parent-rpd04",
+				childTaskId: "child-rpd04",
+				completionResultSummary: "Child completion with persistence failure",
+			}),
+		).resolves.toBeUndefined()
+
+		expect(logSpy).toHaveBeenCalledWith(
+			expect.stringContaining(
+				"[reopenParentFromDelegation] Failed to persist child completed status for child-rpd04:",
+			),
+		)
+		expect(updateTaskHistory).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: "parent-rpd04",
+				status: "active",
+				completedByChildId: "child-rpd04",
+			}),
+		)
+		expect(parentInstance.resumeAfterDelegation).toHaveBeenCalledTimes(1)
+		expect(emitSpy).toHaveBeenCalledWith(RooCodeEventName.TaskDelegationResumed, "parent-rpd04", "child-rpd04")
 	})
 
 	it("handles empty history gracefully when injecting synthetic messages", async () => {

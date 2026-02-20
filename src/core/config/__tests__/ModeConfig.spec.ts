@@ -26,7 +26,7 @@ describe("CustomModeSchema", () => {
 				slug: "test",
 				name: "Test Mode",
 				roleDefinition: "Test role definition",
-				groups: ["read", "edit", "browser"] as const,
+				groups: ["read", "edit"] as const,
 			} satisfies ModeConfig
 
 			expect(() => validateCustomMode(validMode)).not.toThrow()
@@ -121,18 +121,14 @@ describe("CustomModeSchema", () => {
 				slug: "markdown-editor",
 				name: "Markdown Editor",
 				roleDefinition: "Markdown editing mode",
-				groups: ["read", ["edit", { fileRegex: "\\.md$" }], "browser"],
+				groups: ["read", ["edit", { fileRegex: "\\.md$" }]],
 			}
 
 			const modeWithDescription = {
 				slug: "docs-editor",
 				name: "Documentation Editor",
 				roleDefinition: "Documentation editing mode",
-				groups: [
-					"read",
-					["edit", { fileRegex: "\\.(md|txt)$", description: "Documentation files only" }],
-					"browser",
-				],
+				groups: ["read", ["edit", { fileRegex: "\\.(md|txt)$", description: "Documentation files only" }]],
 			}
 
 			expect(() => modeConfigSchema.parse(modeWithJustRegex)).not.toThrow()
@@ -195,7 +191,7 @@ describe("CustomModeSchema", () => {
 		test("accepts multiple groups", () => {
 			const mode = {
 				...validBaseMode,
-				groups: ["read", "edit", "browser"] as const,
+				groups: ["read", "edit"] as const,
 			} satisfies ModeConfig
 
 			expect(() => modeConfigSchema.parse(mode)).not.toThrow()
@@ -204,7 +200,7 @@ describe("CustomModeSchema", () => {
 		test("accepts all available groups", () => {
 			const mode = {
 				...validBaseMode,
-				groups: ["read", "edit", "browser", "command", "mcp"] as const,
+				groups: ["read", "edit", "command", "mcp"] as const,
 			} satisfies ModeConfig
 
 			expect(() => modeConfigSchema.parse(mode)).not.toThrow()
@@ -250,6 +246,48 @@ describe("CustomModeSchema", () => {
 
 			expect(() => modeConfigSchema.parse(modeWithNull)).toThrow()
 			expect(() => modeConfigSchema.parse(modeWithUndefined)).toThrow()
+		})
+	})
+
+	describe("deprecated tool group migration", () => {
+		it("should strip deprecated 'browser' string group from mode config", () => {
+			const result = modeConfigSchema.parse({
+				slug: "test-mode",
+				name: "Test Mode",
+				roleDefinition: "Test role",
+				groups: ["read", "browser", "edit"],
+			})
+			expect(result.groups).toEqual(["read", "edit"])
+		})
+
+		it("should strip deprecated 'browser' tuple group from mode config", () => {
+			const result = modeConfigSchema.parse({
+				slug: "test-mode",
+				name: "Test Mode",
+				roleDefinition: "Test role",
+				groups: ["read", ["browser", { fileRegex: ".*", description: "test" }], "edit"],
+			})
+			expect(result.groups).toEqual(["read", "edit"])
+		})
+
+		it("should handle mode config where all groups are deprecated", () => {
+			const result = modeConfigSchema.parse({
+				slug: "test-mode",
+				name: "Test Mode",
+				roleDefinition: "Test role",
+				groups: ["browser"],
+			})
+			expect(result.groups).toEqual([])
+		})
+
+		it("should still reject other invalid group names", () => {
+			const result = modeConfigSchema.safeParse({
+				slug: "test-mode",
+				name: "Test Mode",
+				roleDefinition: "Test role",
+				groups: ["read", "nonexistent"],
+			})
+			expect(result.success).toBe(false)
 		})
 	})
 })

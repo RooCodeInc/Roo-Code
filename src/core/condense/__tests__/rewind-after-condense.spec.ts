@@ -518,4 +518,56 @@ describe("Rewind After Condense - Issue #8295", () => {
 			})
 		})
 	})
+
+	describe("Resume after condense preserves summary", () => {
+		it("should keep condensed messages filtered when a new user message is added after summary", () => {
+			const condenseId = "summary-resume-test"
+
+			// Simulate post-condensation state: all old messages tagged, summary at end,
+			// then a new user message added after resume (the fix preserves summary)
+			const historyAfterResume: ApiMessage[] = [
+				{ role: "user", content: "Original task", ts: 100, condenseParent: condenseId },
+				{ role: "assistant", content: "Response 1", ts: 200, condenseParent: condenseId },
+				{ role: "user", content: "Follow-up", ts: 300, condenseParent: condenseId },
+				{ role: "assistant", content: "Response 2", ts: 400, condenseParent: condenseId },
+				{
+					role: "user",
+					content: [{ type: "text", text: "## Conversation Summary\nSummary of work done" }],
+					ts: 401,
+					isSummary: true,
+					condenseId,
+				},
+				// New user message added after resume (no isSummary, no condenseId)
+				{ role: "user", content: [{ type: "text", text: "Please continue with the next step" }], ts: 500 },
+			]
+
+			const effective = getEffectiveApiHistory(historyAfterResume)
+
+			// Should only include summary + new message (fresh start model)
+			expect(effective).toHaveLength(2)
+			expect(effective[0].isSummary).toBe(true)
+			expect(effective[1].ts).toBe(500)
+		})
+
+		it("should restore ALL messages if summary is missing (the bug scenario before fix)", () => {
+			const condenseId = "summary-bug-demo"
+
+			// Simulate the bug: summary was stripped during resume, replaced with regular message.
+			// condenseParent tags still exist but point to a non-existent summary.
+			const historyWithoutSummary: ApiMessage[] = [
+				{ role: "user", content: "Original task", ts: 100, condenseParent: condenseId },
+				{ role: "assistant", content: "Response 1", ts: 200, condenseParent: condenseId },
+				{ role: "user", content: "Follow-up", ts: 300, condenseParent: condenseId },
+				{ role: "assistant", content: "Response 2", ts: 400, condenseParent: condenseId },
+				// Summary was REMOVED and replaced with a regular user message (no isSummary)
+				{ role: "user", content: [{ type: "text", text: "Summary content merged with new input" }], ts: 500 },
+			]
+
+			const effective = getEffectiveApiHistory(historyWithoutSummary)
+
+			// Without the summary, ALL messages are restored (orphaned condenseParent)
+			// This demonstrates the bug: condensation is effectively undone
+			expect(effective).toHaveLength(5)
+		})
+	})
 })

@@ -17,17 +17,26 @@ export function getDefaultExtensionPath(dirname: string): string {
 		}
 	}
 
-	// __dirname is apps/cli/dist when bundled
-	// The extension is at src/dist (relative to monorepo root)
-	// So from apps/cli/dist, we need to go ../../../src/dist
-	const monorepoPath = path.resolve(dirname, "../../../src/dist")
+	// Find the CLI package root (apps/cli) by walking up to the nearest package.json.
+	// This works whether called from dist/ (bundled) or src/commands/cli/ (tsx dev).
+	let packageRoot = dirname
 
-	// Try monorepo path first (for development)
+	while (packageRoot !== path.dirname(packageRoot)) {
+		if (fs.existsSync(path.join(packageRoot, "package.json"))) {
+			break
+		}
+
+		packageRoot = path.dirname(packageRoot)
+	}
+
+	// The extension is at ../../src/dist relative to apps/cli (monorepo/src/dist)
+	const monorepoPath = path.resolve(packageRoot, "../../src/dist")
+
 	if (fs.existsSync(path.join(monorepoPath, "extension.js"))) {
 		return monorepoPath
 	}
 
-	// Fallback: when installed via curl script, extension is at ../extension
-	const packagePath = path.resolve(dirname, "../extension")
+	// Fallback: when installed via curl script, extension is at apps/cli/extension
+	const packagePath = path.resolve(packageRoot, "extension")
 	return packagePath
 }

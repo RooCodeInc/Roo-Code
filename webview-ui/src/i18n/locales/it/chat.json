@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "Condivisione disabilitata dall'organizzazione",
 		"shareSuccessOrganization": "Link organizzazione copiato negli appunti",
 		"shareSuccessPublic": "Link pubblico copiato negli appunti",
-		"openInCloud": "Apri attività in Roo Code Cloud",
-		"openInCloudIntro": "Continua a monitorare o interagire con Roo da qualsiasi luogo. Scansiona, clicca o copia per aprire.",
 		"openApiHistory": "Apri cronologia API",
 		"openUiHistory": "Apri cronologia UI",
 		"backToParentTask": "Attività principale"
 	},
 	"unpin": "Rilascia",
 	"pin": "Fissa",
+	"fileChangesInConversation": {
+		"header": "{{count}} file modificati in questa conversazione"
+	},
 	"tokenProgress": {
 		"availableSpace": "Spazio disponibile: {{amount}} tokens",
 		"tokensUsed": "Tokens utilizzati: {{used}} di {{total}}",
@@ -111,6 +112,8 @@
 	},
 	"selectMode": "Seleziona modalità di interazione",
 	"selectApiConfig": "Seleziona la configurazione API",
+	"lockApiConfigAcrossModes": "Blocca la configurazione API per tutte le modalità in questo workspace",
+	"unlockApiConfigAcrossModes": "La configurazione API è bloccata per tutte le modalità in questo workspace (clicca per sbloccare)",
 	"enhancePrompt": "Migliora prompt con contesto aggiuntivo",
 	"addImages": "Aggiungi immagini al messaggio",
 	"sendMessage": "Invia messaggio",
@@ -218,7 +221,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo vuole visualizzare i file di primo livello in questa directory (fuori dall'area di lavoro)",
 		"didViewTopLevelOutsideWorkspace": "Roo ha visualizzato i file di primo livello in questa directory (fuori dall'area di lavoro)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo vuole visualizzare ricorsivamente tutti i file in questa directory (fuori dall'area di lavoro)",
-		"didViewRecursiveOutsideWorkspace": "Roo ha visualizzato ricorsivamente tutti i file in questa directory (fuori dall'area di lavoro)"
+		"didViewRecursiveOutsideWorkspace": "Roo ha visualizzato ricorsivamente tutti i file in questa directory (fuori dall'area di lavoro)",
+		"wantsToViewMultipleDirectories": "Roo vuole visualizzare più directory"
 	},
 	"commandOutput": "Output del Comando",
 	"commandExecution": {
@@ -344,7 +348,9 @@
 		},
 		"release": {
 			"heading": "Novità:",
-			"smartCodeFolding": "Smart Code Folding: La condensazione del contesto mantiene ora una mappa leggera dei tuoi file—firme di funzione, dichiarazioni di classe e definizioni di tipo. Questo fornisce una migliore continuità dopo la condensazione e modifiche più intelligenti quando si fa riferimento al lavoro precedente."
+			"geminiPro": "Supporto Gemini 3.1 Pro: Aggiunto il supporto per il modello Gemini 3.1 Pro e impostato come modello Gemini predefinito per prestazioni migliori.",
+			"cliNdjson": "Protocollo NDJSON del CLI: Nuovo protocollo NDJSON via stdin, sottocomandi di elenco e comando di esecuzione modularizzato per flussi di lavoro CLI più flessibili.",
+			"cliRelease": "CLI v0.1.0: Il CLI di Roo Code raggiunge la sua prima release ufficiale con un'interfaccia di comandi stabile."
 		},
 		"cloudAgents": {
 			"heading": "Novità nel Cloud:",
@@ -359,44 +365,6 @@
 		"total": "Costo totale: ${{cost}}",
 		"includesSubtasks": "Include i costi delle sottoattività"
 	},
-	"browser": {
-		"session": "Sessione del browser",
-		"active": "Attivo",
-		"rooWantsToUse": "Roo vuole utilizzare il browser",
-		"consoleLogs": "Log della console",
-		"noNewLogs": "(Nessun nuovo log)",
-		"screenshot": "Screenshot del browser",
-		"cursor": "cursore",
-		"navigation": {
-			"step": "Passo {{current}} di {{total}}",
-			"previous": "Precedente",
-			"next": "Successivo"
-		},
-		"sessionStarted": "Sessione browser avviata",
-		"actions": {
-			"title": "Azione browser: ",
-			"launched": "Browser avviato",
-			"launch": "Avvia browser su {{url}}",
-			"clicked": "Cliccato su: {{coordinate}}",
-			"click": "Clic ({{coordinate}})",
-			"typed": "Digitato: {{text}}",
-			"type": "Digita \"{{text}}\"",
-			"pressed": "Premuto: {{key}}",
-			"press": "Premi {{key}}",
-			"scrolledDown": "Scorso verso il basso",
-			"scrollDown": "Scorri verso il basso",
-			"scrolledUp": "Scorso verso l'alto",
-			"scrollUp": "Scorri verso l'alto",
-			"hovered": "Passato il mouse su: {{coordinate}}",
-			"hover": "Passa il mouse ({{coordinate}})",
-			"resized": "Ridimensionato a: {{size}}",
-			"resize": "Ridimensiona a {{size}}",
-			"screenshotSaved": "Screenshot salvato",
-			"screenshot": "Salva screenshot in {{path}}",
-			"closed": "Browser chiuso",
-			"close": "Chiudi browser"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Espandi blocco di codice",
@@ -404,7 +372,6 @@
 			"copy_code": "Copia codice"
 		}
 	},
-	"systemPromptWarning": "ATTENZIONE: Sovrascrittura personalizzata delle istruzioni di sistema attiva. Questo può compromettere gravemente le funzionalità e causare comportamenti imprevedibili.",
 	"profileViolationWarning": "Il profilo corrente non è compatibile con le impostazioni della tua organizzazione",
 	"shellIntegration": {
 		"title": "Avviso di esecuzione comando",
@@ -438,12 +405,29 @@
 			"title": "Nega tutto"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Approva tutto"
+		},
+		"deny": {
+			"title": "Nega tutto"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Salva tutto"
+		},
+		"deny": {
+			"title": "Nega tutto"
+		}
+	},
 	"indexingStatus": {
 		"ready": "Indice pronto",
 		"indexing": "Indicizzazione {{percentage}}%",
 		"indexed": "Indicizzato",
 		"error": "Errore indice",
-		"status": "Stato indice"
+		"status": "Stato indice",
+		"stopping": "Interruzione dell'indicizzazione..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versione {{version}} - Clicca per visualizzare le note di rilascio"
@@ -511,5 +495,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Provider non più supportato",
+		"message": "Ci dispiace, questo provider non è più supportato. Abbiamo visto che pochissimi utenti di Roo lo utilizzavano effettivamente e dobbiamo ridurre la portata del nostro codice per continuare a procedere velocemente e servire bene la nostra community. È stata una decisione davvero difficile, ma ci permette di concentrarci su ciò che conta di più per te. Lo sappiamo, è una seccatura.",
+		"openSettings": "Apri impostazioni"
 	}
 }

@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "Chia sẻ bị tổ chức vô hiệu hóa",
 		"shareSuccessOrganization": "Liên kết tổ chức đã được sao chép vào clipboard",
 		"shareSuccessPublic": "Liên kết công khai đã được sao chép vào clipboard",
-		"openInCloud": "Mở tác vụ trong Roo Code Cloud",
-		"openInCloudIntro": "Tiếp tục theo dõi hoặc tương tác với Roo từ bất cứ đâu. Quét, nhấp hoặc sao chép để mở.",
 		"openApiHistory": "Mở lịch sử API",
 		"openUiHistory": "Mở lịch sử UI",
 		"backToParentTask": "Nhiệm vụ cha"
 	},
 	"unpin": "Bỏ ghim khỏi đầu",
 	"pin": "Ghim lên đầu",
+	"fileChangesInConversation": {
+		"header": "{{count}} tệp đã thay đổi trong cuộc hội thoại này"
+	},
 	"tokenProgress": {
 		"availableSpace": "Không gian khả dụng: {{amount}} tokens",
 		"tokensUsed": "Tokens đã sử dụng: {{used}} trong {{total}}",
@@ -111,6 +112,8 @@
 	},
 	"selectMode": "Chọn chế độ tương tác",
 	"selectApiConfig": "Chọn cấu hình API",
+	"lockApiConfigAcrossModes": "Khóa cấu hình API cho tất cả chế độ trong workspace này",
+	"unlockApiConfigAcrossModes": "Cấu hình API đã bị khóa cho tất cả chế độ trong workspace này (nhấn để mở khóa)",
 	"enhancePrompt": "Nâng cao yêu cầu với ngữ cảnh bổ sung",
 	"addImages": "Thêm hình ảnh vào tin nhắn",
 	"sendMessage": "Gửi tin nhắn",
@@ -218,7 +221,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo muốn xem các tệp cấp cao nhất trong thư mục này (ngoài không gian làm việc)",
 		"didViewTopLevelOutsideWorkspace": "Roo đã xem các tệp cấp cao nhất trong thư mục này (ngoài không gian làm việc)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo muốn xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc)",
-		"didViewRecursiveOutsideWorkspace": "Roo đã xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc)"
+		"didViewRecursiveOutsideWorkspace": "Roo đã xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc)",
+		"wantsToViewMultipleDirectories": "Roo muốn xem nhiều thư mục"
 	},
 	"commandOutput": "Kết quả lệnh",
 	"commandExecution": {
@@ -345,7 +349,9 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"smartCodeFolding": "Smart Code Folding: Nén ngữ cảnh giờ đây bảo tồn một bản đồ nhẹ của các tệp của bạn—chữ ký hàm, khai báo lớp và định nghĩa kiểu. Điều này cung cấp tính liên tục tốt hơn sau nén và chỉnh sửa thông minh hơn khi tham chiếu công việc trước đó."
+			"geminiPro": "Hỗ trợ Gemini 3.1 Pro: Đã thêm hỗ trợ model Gemini 3.1 Pro và đặt làm model Gemini mặc định để cải thiện hiệu suất.",
+			"cliNdjson": "Giao thức NDJSON CLI: Giao thức NDJSON stdin mới, lệnh con list, và lệnh run được module hóa cho quy trình CLI linh hoạt hơn.",
+			"cliRelease": "CLI v0.1.0: CLI Roo Code đạt bản phát hành chính thức đầu tiên với giao diện lệnh ổn định."
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",
@@ -360,44 +366,6 @@
 		"total": "Tổng chi phí: ${{cost}}",
 		"includesSubtasks": "Bao gồm chi phí của các tác vụ phụ"
 	},
-	"browser": {
-		"session": "Phiên trình duyệt",
-		"active": "Đang hoạt động",
-		"rooWantsToUse": "Roo muốn sử dụng trình duyệt",
-		"consoleLogs": "Nhật ký bảng điều khiển",
-		"noNewLogs": "(Không có nhật ký mới)",
-		"screenshot": "Ảnh chụp màn hình trình duyệt",
-		"cursor": "con trỏ",
-		"navigation": {
-			"step": "Bước {{current}} / {{total}}",
-			"previous": "Trước",
-			"next": "Tiếp"
-		},
-		"sessionStarted": "Phiên trình duyệt đã bắt đầu",
-		"actions": {
-			"title": "Hành động trình duyệt: ",
-			"launched": "Trình duyệt đã khởi chạy",
-			"launch": "Khởi chạy trình duyệt tại {{url}}",
-			"clicked": "Đã nhấp ({{coordinate}})",
-			"click": "Nhấp ({{coordinate}})",
-			"typed": "Đã gõ: {{text}}",
-			"type": "Gõ \"{{text}}\"",
-			"pressed": "Đã nhấn: {{key}}",
-			"press": "Nhấn {{key}}",
-			"scrolledDown": "Đã cuộn xuống",
-			"scrollDown": "Cuộn xuống",
-			"scrolledUp": "Đã cuộn lên",
-			"scrollUp": "Cuộn lên",
-			"hovered": "Đã di chuột ({{coordinate}})",
-			"hover": "Di chuột ({{coordinate}})",
-			"resized": "Đã thay đổi kích thước: {{size}}",
-			"resize": "Thay đổi kích thước thành {{size}}",
-			"screenshotSaved": "Ảnh chụp màn hình đã được lưu",
-			"screenshot": "Lưu ảnh chụp màn hình vào {{path}}",
-			"closed": "Trình duyệt đã đóng",
-			"close": "Đóng trình duyệt"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Mở rộng khối mã",
@@ -405,7 +373,6 @@
 			"copy_code": "Sao chép mã"
 		}
 	},
-	"systemPromptWarning": "CẢNH BÁO: Đã kích hoạt ghi đè lệnh nhắc hệ thống tùy chỉnh. Điều này có thể phá vỡ nghiêm trọng chức năng và gây ra hành vi không thể dự đoán.",
 	"profileViolationWarning": "Hồ sơ hiện tại không tương thích với cài đặt của tổ chức của bạn",
 	"shellIntegration": {
 		"title": "Cảnh báo thực thi lệnh",
@@ -439,12 +406,29 @@
 			"title": "Từ chối tất cả"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Chấp nhận tất cả"
+		},
+		"deny": {
+			"title": "Từ chối tất cả"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Lưu tất cả"
+		},
+		"deny": {
+			"title": "Từ chối tất cả"
+		}
+	},
 	"indexingStatus": {
 		"ready": "Chỉ mục sẵn sàng",
 		"indexing": "Đang lập chỉ mục {{percentage}}%",
 		"indexed": "Đã lập chỉ mục",
 		"error": "Lỗi chỉ mục",
-		"status": "Trạng thái chỉ mục"
+		"status": "Trạng thái chỉ mục",
+		"stopping": "Đang dừng lập chỉ mục..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Phiên bản {{version}} - Nhấp để xem ghi chú phát hành"
@@ -512,5 +496,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Nhà cung cấp không còn được hỗ trợ",
+		"message": "Xin lỗi, nhà cung cấp này không còn được hỗ trợ. Chúng tôi nhận thấy rất ít người dùng Roo thực sự sử dụng nó và chúng tôi cần thu hẹp phạm vi mã nguồn để tiếp tục phát triển nhanh và phục vụ tốt cộng đồng. Đây là một quyết định thực sự khó khăn nhưng nó cho phép chúng tôi tập trung vào điều quan trọng nhất với bạn. Chúng tôi biết điều này thật phiền, xin thông cảm.",
+		"openSettings": "Mở cài đặt"
 	}
 }

@@ -129,9 +129,6 @@ vi.mock("@roo-code/cloud", () => ({
 			}
 		},
 	},
-	BridgeOrchestrator: {
-		isEnabled: vi.fn().mockReturnValue(false),
-	},
 	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.roocode.com"),
 }))
 
@@ -170,6 +167,11 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 				get: vi.fn().mockImplementation((key: string) => secrets[key]),
 				store: vi.fn().mockImplementation((key: string, value: string | undefined) => (secrets[key] = value)),
 				delete: vi.fn().mockImplementation((key: string) => delete secrets[key]),
+			},
+			workspaceState: {
+				get: vi.fn().mockReturnValue(undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
 			},
 			subscriptions: [],
 			extension: {

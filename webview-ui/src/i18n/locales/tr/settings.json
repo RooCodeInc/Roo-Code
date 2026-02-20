@@ -31,7 +31,6 @@
 		"mcp": "MCP Sunucuları",
 		"worktrees": "Worktrees",
 		"autoApprove": "Oto-Onay",
-		"browser": "Bilgisayar Erişimi",
 		"checkpoints": "Kontrol Noktaları",
 		"notifications": "Bildirimler",
 		"contextManagement": "Bağlam",
@@ -41,7 +40,8 @@
 		"ui": "UI",
 		"experimental": "Deneysel",
 		"language": "Dil",
-		"about": "Roo Code Hakkında"
+		"about": "Roo Code Hakkında",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -68,7 +68,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Özel iş akışlarını ve eylemleri hızlı bir şekilde yürütmek için eğik çizgi komutlarınızı yönetin. <DocsLink>Daha fazla bilgi edinin</DocsLink>"
+		"description": "Özel iş akışlarını ve eylemleri hızlı bir şekilde yürütmek için eğik çizgi komutlarınızı yönetin. <DocsLink>Daha fazla bilgi edinin</DocsLink>",
+		"workspaceCommands": "Çalışma Alanı Komutları",
+		"globalCommands": "Genel Komutlar",
+		"noWorkspaceCommands": "Bu projede henüz komut yok.",
+		"noGlobalCommands": "Henüz genel komut yok.",
+		"addCommand": "Eğik Çizgi Komutu Ekle",
+		"editCommand": "Komutu düzenle",
+		"deleteCommand": "Komutu sil",
+		"deleteDialog": {
+			"title": "Komutu sil",
+			"description": "\"{{name}}\" komutunu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+			"confirm": "Sil",
+			"cancel": "İptal"
+		},
+		"createDialog": {
+			"title": "Yeni Eğik Çizgi Komutu Oluştur",
+			"nameLabel": "Ad",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "Yalnızca küçük harfler, sayılar, tireleme ve alt çizgi",
+			"sourceLabel": "Konum",
+			"create": "Oluştur",
+			"cancel": "İptal"
+		},
+		"source": {
+			"global": "Genel (tüm çalışma alanlarında mevcut)",
+			"project": "Çalışma Alanı"
+		},
+		"validation": {
+			"nameRequired": "Ad gereklidir",
+			"nameTooLong": "Ad en fazla 64 karakter olmalıdır",
+			"nameInvalid": "Ad yalnızca harfleri, sayıları, tirelemeyi ve alt çizgiyi içerebilir"
+		},
+		"footer": "Sık kullanılan komutlara ve iş akışlarına hızlı erişim için eğik çizgi komutlarını kullanın."
 	},
 	"prompts": {
 		"description": "Prompt geliştirme, kod açıklama ve sorun çözme gibi hızlı eylemler için kullanılan destek promptlarını yapılandırın. Bu promptlar, Roo'nun yaygın geliştirme görevleri için daha iyi destek sağlamasına yardımcı olur."
@@ -179,7 +211,12 @@
 		"searchMinScoreResetTooltip": "Varsayılan değere sıfırla (0.4)",
 		"searchMaxResultsLabel": "Maksimum Arama Sonuçları",
 		"searchMaxResultsDescription": "Kod tabanı dizinini sorgularken döndürülecek maksimum arama sonucu sayısı. Daha yüksek değerler daha fazla bağlam sağlar ancak daha az alakalı sonuçlar içerebilir.",
-		"resetToDefault": "Varsayılana sıfırla"
+		"resetToDefault": "Varsayılana sıfırla",
+		"stopIndexingButton": "İndekslemeyi durdur",
+		"stoppingButton": "Durduruluyor...",
+		"workspaceToggleLabel": "Bu çalışma alanı için indekslemeyi etkinleştir",
+		"workspaceDisabledMessage": "İndeksleme yapılandırıldı ancak bu çalışma alanı için etkinleştirilmedi.",
+		"autoEnableDefaultLabel": "Yeni çalışma alanları için indekslemeyi otomatik etkinleştir"
 	},
 	"autoApprove": {
 		"toggleShortcut": "<SettingsLink>IDE tercihlerinizde</SettingsLink> bu ayar için genel bir kısayol yapılandırabilirsiniz.",
@@ -207,10 +244,6 @@
 				"label": "Korumalı dosyaları dahil et",
 				"description": "Roo'nun korumalı dosyaları (.rooignore ve .roo/ yapılandırma dosyaları gibi) onay gerektirmeden oluşturmasına ve düzenlemesine izin ver."
 			}
-		},
-		"browser": {
-			"label": "Tarayıcı",
-			"description": "Onay gerektirmeden otomatik olarak tarayıcı eylemleri gerçekleştir. Not: Yalnızca model bilgisayar kullanımını desteklediğinde geçerlidir"
 		},
 		"mcp": {
 			"label": "MCP",
@@ -243,7 +276,6 @@
 		},
 		"apiRequestLimit": {
 			"title": "Maksimum İstek",
-			"description": "Göreve devam etmek için onay istemeden önce bu sayıda API isteği otomatik olarak yap.",
 			"unlimited": "Sınırsız"
 		},
 		"selectOptionsFirst": "Otomatik onayı etkinleştirmek için aşağıdan en az bir seçenek seçin",
@@ -277,6 +309,7 @@
 		"searchProviderPlaceholder": "Sağlayıcıları ara",
 		"noProviderMatchFound": "Eşleşen sağlayıcı bulunamadı",
 		"noMatchFound": "Eşleşen profil bulunamadı",
+		"retiredProviderMessage": "Üzgünüz, bu sağlayıcı artık desteklenmiyor. Çok az Roo kullanıcısının bunu gerçekten kullandığını gördük ve hızlı gelişmeye devam edip topluluğumuza iyi hizmet verebilmek için kod tabanımızın kapsamını daraltmamız gerekiyor. Gerçekten zor bir karardı ama senin için en önemli olana odaklanmamızı sağlıyor. Bunun can sıkıcı olduğunu biliyoruz.",
 		"vscodeLmDescription": "VS Code Dil Modeli API'si, diğer VS Code uzantıları tarafından sağlanan modelleri çalıştırmanıza olanak tanır (GitHub Copilot dahil ancak bunlarla sınırlı değildir). Başlamanın en kolay yolu, VS Code Marketplace'ten Copilot ve Copilot Chat uzantılarını yüklemektir.",
 		"awsCustomArnUse": "Kullanmak istediğiniz model için geçerli bir Amazon Bedrock ARN'si girin. Format örnekleri:",
 		"awsCustomArnDesc": "ARN içindeki bölgenin yukarıda seçilen AWS Bölgesiyle eşleştiğinden emin olun.",
@@ -338,28 +371,17 @@
 		"getAnthropicApiKey": "Anthropic API Anahtarı Al",
 		"anthropicUseAuthToken": "Anthropic API Anahtarını X-Api-Key yerine Authorization başlığı olarak geçir",
 		"anthropic1MContextBetaLabel": "1M bağlam penceresini etkinleştir (Beta)",
-		"anthropic1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
+		"anthropic1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6 için bağlam penceresini 1 milyon token'a genişletir",
 		"awsBedrock1MContextBetaLabel": "1M bağlam penceresini etkinleştir (Beta)",
-		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
+		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6 için bağlam penceresini 1 milyon token'a genişletir",
 		"vertex1MContextBetaLabel": "1M bağlam penceresini etkinleştir (Beta)",
-		"vertex1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
+		"vertex1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6 için bağlam penceresini 1 milyon token'a genişletir",
 		"basetenApiKey": "Baseten API Anahtarı",
 		"getBasetenApiKey": "Baseten API Anahtarı Al",
-		"cerebrasApiKey": "Cerebras API Anahtarı",
-		"getCerebrasApiKey": "Cerebras API Anahtarını Al",
-		"chutesApiKey": "Chutes API Anahtarı",
-		"getChutesApiKey": "Chutes API Anahtarı Al",
 		"fireworksApiKey": "Fireworks API Anahtarı",
 		"getFireworksApiKey": "Fireworks API Anahtarı Al",
-		"featherlessApiKey": "Featherless API Anahtarı",
-		"getFeatherlessApiKey": "Featherless API Anahtarı Al",
-		"ioIntelligenceApiKey": "IO Intelligence API Anahtarı",
-		"ioIntelligenceApiKeyPlaceholder": "IO Intelligence API anahtarınızı girin",
-		"getIoIntelligenceApiKey": "IO Intelligence API Anahtarı Al",
 		"deepSeekApiKey": "DeepSeek API Anahtarı",
 		"getDeepSeekApiKey": "DeepSeek API Anahtarı Al",
-		"doubaoApiKey": "Doubao API Anahtarı",
-		"getDoubaoApiKey": "Doubao API Anahtarı Al",
 		"moonshotApiKey": "Moonshot API Anahtarı",
 		"getMoonshotApiKey": "Moonshot API Anahtarı Al",
 		"moonshotBaseUrl": "Moonshot Giriş Noktası",
@@ -371,23 +393,8 @@
 		"getMiniMaxApiKey": "MiniMax API Anahtarı Al",
 		"minimaxBaseUrl": "MiniMax Giriş Noktası",
 		"geminiApiKey": "Gemini API Anahtarı",
-		"getGroqApiKey": "Groq API Anahtarı Al",
-		"groqApiKey": "Groq API Anahtarı",
 		"getSambaNovaApiKey": "SambaNova API Anahtarı Al",
 		"sambaNovaApiKey": "SambaNova API Anahtarı",
-		"getHuggingFaceApiKey": "Hugging Face API Anahtarı Al",
-		"huggingFaceApiKey": "Hugging Face API Anahtarı",
-		"huggingFaceModelId": "Model ID",
-		"huggingFaceLoading": "Yükleniyor...",
-		"huggingFaceModelsCount": "({{count}} model)",
-		"huggingFaceSelectModel": "Bir model seç...",
-		"huggingFaceSearchModels": "Modelleri ara...",
-		"huggingFaceNoModelsFound": "Model bulunamadı",
-		"huggingFaceProvider": "Sağlayıcı",
-		"huggingFaceProviderAuto": "Otomatik",
-		"huggingFaceSelectProvider": "Bir sağlayıcı seç...",
-		"huggingFaceSearchProviders": "Sağlayıcıları ara...",
-		"huggingFaceNoProvidersFound": "Sağlayıcı bulunamadı",
 		"getGeminiApiKey": "Gemini API Anahtarı Al",
 		"openAiApiKey": "OpenAI API Anahtarı",
 		"apiKey": "API Anahtarı",
@@ -429,16 +436,6 @@
 		"cacheUsageNote": "Not: Önbellek kullanımını görmüyorsanız, farklı bir model seçip ardından istediğiniz modeli tekrar seçmeyi deneyin.",
 		"vscodeLmModel": "Dil Modeli",
 		"vscodeLmWarning": "Not: VS Code Language Model API üzerinden erişilen modeller sağlayıcı tarafından sarılmış veya ince ayarlanmış olabilir; bu nedenle davranış, aynı modelin tipik bir sağlayıcı ya da yönlendirici üzerinden doğrudan kullanılmasından farklı olabilir. «Language Model» açılır menüsünden bir model kullanmak için önce o modele geçin ve ardından Copilot Chat isteminde «Kabul Et»e tıklayın; aksi takdirde 400 «The requested model is not supported» gibi bir hata görebilirsiniz.",
-		"geminiParameters": {
-			"urlContext": {
-				"title": "URL bağlamını etkinleştir",
-				"description": "Yanıtlar oluşturulurken ek bağlam için Gemini'nin URL'lere erişmesine ve işlemesine izin verir. Web içeriği analizi gerektiren görevler için faydalıdır."
-			},
-			"groundingSearch": {
-				"title": "Google Aramasıyla Grounding Etkinleştir",
-				"description": "Gemini'nin güncel bilgileri almak için Google'da arama yapmasına ve yanıtları gerçek zamanlı verilere dayandırmasına izin verir. Güncel bilgi gerektiren sorgular için kullanışlıdır."
-			}
-		},
 		"googleCloudSetup": {
 			"title": "Google Cloud Vertex AI'yi kullanmak için şunları yapmanız gerekir:",
 			"step1": "1. Google Cloud hesabı oluşturun, Vertex AI API'sini etkinleştirin ve istediğiniz Claude modellerini etkinleştirin.",
@@ -517,10 +514,6 @@
 			"enableLogging": "İstek günlüğünü etkinleştir",
 			"enableLoggingHelp": "Ollama API istekleri, yanıtları ve hatalarının ayrıntılı günlüğünü etkinleştir. Günlükler zaman bilgisi ve bağlantı ayrıntılarını içerir."
 		},
-		"unboundApiKey": "Unbound API Anahtarı",
-		"getUnboundApiKey": "Unbound API Anahtarı Al",
-		"unboundRefreshModelsSuccess": "Model listesi güncellendi! Artık en son modeller arasından seçim yapabilirsiniz.",
-		"unboundInvalidApiKey": "Geçersiz API anahtarı. Lütfen API anahtarınızı kontrol edin ve tekrar deneyin.",
 		"roo": {
 			"authenticatedMessage": "Roo Code Cloud hesabın üzerinden güvenli bir şekilde kimlik doğrulandı.",
 			"connectButton": "Roo Code Cloud'a Bağlan"
@@ -609,34 +602,6 @@
 			"maxTokensDescription": "Claude Code yanıtları için maksimum çıktı token sayısı. Varsayılan 8000'dir."
 		}
 	},
-	"browser": {
-		"enable": {
-			"label": "Tarayıcı aracını etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo bilgisayar kullanımını destekleyen modeller kullanırken web siteleriyle etkileşim kurmak için bir tarayıcı kullanabilir. <0>Daha fazla bilgi</0>"
-		},
-		"viewport": {
-			"label": "Görünüm alanı boyutu",
-			"description": "Tarayıcı etkileşimleri için görünüm alanı boyutunu seçin. Bu, web sitelerinin nasıl görüntülendiğini ve etkileşime girdiğini etkiler.",
-			"options": {
-				"largeDesktop": "Büyük Masaüstü (1280x800)",
-				"smallDesktop": "Küçük Masaüstü (900x600)",
-				"tablet": "Tablet (768x1024)",
-				"mobile": "Mobil (360x640)"
-			}
-		},
-		"screenshotQuality": {
-			"label": "Ekran görüntüsü kalitesi",
-			"description": "Tarayıcı ekran görüntülerinin WebP kalitesini ayarlayın. Daha yüksek değerler daha net ekran görüntüleri sağlar ancak token kullanımını artırır."
-		},
-		"remote": {
-			"label": "Uzak tarayıcı bağlantısı kullan",
-			"description": "Uzaktan hata ayıklama etkinleştirilmiş olarak çalışan bir Chrome tarayıcısına bağlanın (--remote-debugging-port=9222).",
-			"urlPlaceholder": "Özel URL (örn. http://localhost:9222)",
-			"testButton": "Bağlantıyı Test Et",
-			"testingButton": "Test Ediliyor...",
-			"instructions": "DevTools protokolü ana bilgisayar adresini girin veya yerel Chrome örneklerini otomatik olarak keşfetmek için boş bırakın. Bağlantıyı Test Et düğmesi, sağlanmışsa özel URL'yi deneyecek veya alan boşsa otomatik olarak keşfedecektir."
-		}
-	},
 	"checkpoints": {
 		"timeout": {
 			"label": "Kontrol noktası başlatma zaman aşımı (saniye)",
@@ -712,7 +677,6 @@
 				"label": "Maksimum tanı mesajı",
 				"description": "Dosya başına dahil edilecek maksimum tanı mesajı sayısı. Bu sınır hem otomatik dahil etme (onay kutusu etkinleştirildiğinde) hem de manuel @problems bahisleri için geçerlidir. Daha yüksek değerler daha fazla bağlam sağlar ancak jeton kullanımını artırır.",
 				"resetTooltip": "Varsayılan değere sıfırla (50)",
-				"unlimited": "Sınırsız tanı mesajları",
 				"unlimitedLabel": "Sınırsız"
 			},
 			"delayAfterWrite": {
@@ -947,7 +911,6 @@
 		"simplifiedExplanation": "Ayrıntılı model ayarlarını daha sonra ayarlayabilirsiniz."
 	},
 	"footer": {
-		"feedback": "Herhangi bir sorunuz veya geri bildiriminiz varsa, <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> adresinde bir konu açmaktan veya <redditLink>reddit.com/r/RooCode</redditLink> ya da <discordLink>discord.gg/roocode</discordLink>'a katılmaktan çekinmeyin",
 		"telemetry": {
 			"label": "Anonim hata ve kullanım raporlamaya izin ver",
 			"description": "Anonim kullanım verileri ve hata raporları göndererek Roo Code'u geliştirmeye yardım edin. Bu telemetri kod, prompt veya kişisel bilgi toplamaz. Daha fazla ayrıntı için <privacyLink>gizlilik politikamıza</privacyLink> bakın. Bunu istediğiniz zaman kapatabilirsiniz."
@@ -1041,5 +1004,58 @@
 			"label": "Mesaj göndermek için {{primaryMod}}+Enter gerekli",
 			"description": "Etkinleştirildiğinde, sadece Enter yerine mesaj göndermek için {{primaryMod}}+Enter'a basmalısınız"
 		}
+	},
+	"skills": {
+		"description": "Ajana bağlamsal talimatlar sağlayan becerileri yönetin. Beceriler, görevlerinizle ilgili olduklarında otomatik olarak uygulanır. <DocsLink>Daha fazla bilgi</DocsLink>",
+		"workspaceSkills": "Çalışma Alanı Becerileri",
+		"globalSkills": "Genel Beceriler",
+		"noWorkspaceSkills": "Bu projede henüz beceri yok.",
+		"noGlobalSkills": "Yapılandırılmış genel beceri yok. Tüm projelerde kullanılabilir ajan yetenekleri eklemek için bir tane oluşturun.",
+		"addSkill": "Beceri Ekle",
+		"editSkill": "Beceriyi düzenle",
+		"deleteSkill": "Beceriyi sil",
+		"configureModes": "Mod Kullanılabilirliği",
+		"modeAny": "Herhangi bir mod",
+		"modeCount": "{{count}} mod",
+		"deleteDialog": {
+			"title": "Beceriyi Sil",
+			"description": "\"{{name}}\" becerisini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+			"confirm": "Sil",
+			"cancel": "İptal"
+		},
+		"modeDialog": {
+			"title": "Beceri Modlarını Yapılandır",
+			"description": "Bu beceriyi kullanabilecek modları seçin",
+			"intro": "Bağlamınızı hafif tutmak için, becerileri yalnızca onlara ihtiyaç duyan modlar için kullanılabilir hale getirilmesini öneririz.",
+			"anyMode": "Herhangi bir mod (her yerde mevcut)",
+			"save": "Kaydet",
+			"cancel": "İptal"
+		},
+		"createDialog": {
+			"title": "Yeni Beceri Oluştur",
+			"nameLabel": "Ad",
+			"namePlaceholder": "benim-beceri-adim",
+			"descriptionLabel": "Açıklama",
+			"descriptionPlaceholder": "Bu becerinin ne zaman kullanılması gerektiğini açıklayın...",
+			"sourceLabel": "Konum",
+			"modeLabel": "Mod (isteğe bağlı)",
+			"modePlaceholder": "Herhangi bir mod",
+			"modeHint": "Bu beceriyi belirli bir modla sınırlayın",
+			"modeAny": "Herhangi bir mod",
+			"create": "Oluştur",
+			"cancel": "İptal"
+		},
+		"source": {
+			"global": "Genel (tüm projelerde kullanılabilir)",
+			"project": "Proje (yalnızca bu çalışma alanı)"
+		},
+		"validation": {
+			"nameRequired": "Ad gereklidir",
+			"nameTooLong": "Ad en fazla 64 karakter olmalıdır",
+			"nameInvalid": "Ad 1-64 küçük harf, rakam veya kısa çizgi olmalıdır",
+			"descriptionRequired": "Açıklama gereklidir",
+			"descriptionTooLong": "Açıklama en fazla 1024 karakter olmalıdır"
+		},
+		"footer": "Skill Writer modu ile kendi becerilerinizi oluşturun. <MarketplaceLink>Modes Marketplace</MarketplaceLink>'de mevcut."
 	}
 }

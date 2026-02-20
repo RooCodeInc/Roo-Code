@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "Delen uitgeschakeld door organisatie",
 		"shareSuccessOrganization": "Organisatielink gekopieerd naar klembord",
 		"shareSuccessPublic": "Openbare link gekopieerd naar klembord",
-		"openInCloud": "Taak openen in Roo Code Cloud",
-		"openInCloudIntro": "Blijf Roo vanaf elke locatie monitoren of ermee interacteren. Scan, klik of kopieer om te openen.",
 		"openApiHistory": "API-geschiedenis openen",
 		"openUiHistory": "UI-geschiedenis openen",
 		"backToParentTask": "Bovenliggende taak"
 	},
 	"unpin": "Losmaken",
 	"pin": "Vastmaken",
+	"fileChangesInConversation": {
+		"header": "{{count}} bestand(en) gewijzigd in dit gesprek"
+	},
 	"retry": {
 		"title": "Opnieuw proberen",
 		"tooltip": "Probeer de bewerking opnieuw"
@@ -111,6 +112,8 @@
 	},
 	"selectMode": "Selecteer modus voor interactie",
 	"selectApiConfig": "Selecteer API-configuratie",
+	"lockApiConfigAcrossModes": "API-configuratie vergrendelen voor alle modi in deze werkruimte",
+	"unlockApiConfigAcrossModes": "API-configuratie is vergrendeld voor alle modi in deze werkruimte (klik om te ontgrendelen)",
 	"enhancePrompt": "Prompt verbeteren met extra context",
 	"enhancePromptDescription": "De knop 'Prompt verbeteren' helpt je prompt te verbeteren door extra context, verduidelijking of herformulering te bieden. Probeer hier een prompt te typen en klik opnieuw op de knop om te zien hoe het werkt.",
 	"modeSelector": {
@@ -145,14 +148,14 @@
 		"rateLimitWait": "Snelheidsbeperking",
 		"errorTitle": "Fout van provider {{code}}",
 		"errorMessage": {
-			"docs": "Documentatie",
-			"goToSettings": "Instellingen",
 			"400": "De provider kon het verzoek niet verwerken zoals ingediend. Stop de taak en probeer een ander benadering.",
 			"401": "Kon niet authenticeren met provider. Controleer je API-sleutelconfiguratie.",
 			"402": "Het lijkt erop dat je funds/credits op je account op zijn. Ga naar je provider en voeg meer toe om door te gaan.",
 			"403": "Niet geautoriseerd. Je API-sleutel is geldig, maar de provider weigerde dit verzoek in te willigen.",
 			"429": "Te veel verzoeken. Je bent rate-gelimiteerd door de provider. Wacht alsjeblieft even voor je volgende API-aanroep.",
 			"500": "Provider-serverfout. Er is iets mis aan de kant van de provider, er is niets mis met je verzoek.",
+			"docs": "Documentatie",
+			"goToSettings": "Instellingen",
 			"unknown": "Onbekende API-fout. Neem alsjeblieft contact op met Roo Code-ondersteuning.",
 			"connection": "Verbindingsfout. Zorg ervoor dat je een werkende internetverbinding hebt.",
 			"claudeCodeNotAuthenticated": "Je moet inloggen om Claude Code te gebruiken. Ga naar Instellingen en klik op \"Inloggen bij Claude Code\" om te authenticeren."
@@ -213,7 +216,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo wil de bovenliggende bestanden in deze map (buiten werkruimte) bekijken",
 		"didViewTopLevelOutsideWorkspace": "Roo heeft de bovenliggende bestanden in deze map (buiten werkruimte) bekeken",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo wil alle bestanden in deze map (buiten werkruimte) recursief bekijken",
-		"didViewRecursiveOutsideWorkspace": "Roo heeft alle bestanden in deze map (buiten werkruimte) recursief bekeken"
+		"didViewRecursiveOutsideWorkspace": "Roo heeft alle bestanden in deze map (buiten werkruimte) recursief bekeken",
+		"wantsToViewMultipleDirectories": "Roo wil meerdere mappen bekijken"
 	},
 	"commandOutput": "Commando-uitvoer",
 	"commandExecution": {
@@ -317,7 +321,9 @@
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
-			"smartCodeFolding": "Smart Code Folding: Contextcondensatie behoudt nu een lichte kaart van je bestanden—functiehandtekeningen, klasdeclaraties en typedefinities. Dit biedt betere continuïteit na condensatie en slimmere bewerkingen bij verwijzing naar vorig werk."
+			"geminiPro": "Gemini 3.1 Pro ondersteuning: Ondersteuning voor het Gemini 3.1 Pro model is toegevoegd en ingesteld als standaard Gemini-model voor betere prestaties.",
+			"cliNdjson": "CLI NDJSON-protocol: Nieuw NDJSON stdin-protocol, list-subopdrachten en gemodulariseerd run-commando voor flexibelere CLI-workflows.",
+			"cliRelease": "CLI v0.1.0: De Roo Code CLI bereikt zijn eerste officiële release met een stabiele opdrachtinterface."
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",
@@ -359,44 +365,6 @@
 		"total": "Totale kosten: ${{cost}}",
 		"includesSubtasks": "Inclusief kosten van subtaken"
 	},
-	"browser": {
-		"session": "Browsersessie",
-		"active": "Actief",
-		"rooWantsToUse": "Roo wil de browser gebruiken",
-		"consoleLogs": "Console-logboeken",
-		"noNewLogs": "(Geen nieuwe logboeken)",
-		"screenshot": "Browserschermopname",
-		"cursor": "cursor",
-		"navigation": {
-			"step": "Stap {{current}} van {{total}}",
-			"previous": "Vorige",
-			"next": "Volgende"
-		},
-		"sessionStarted": "Browsersessie gestart",
-		"actions": {
-			"title": "Browseractie: ",
-			"launched": "Browser gestart",
-			"launch": "Browser starten op {{url}}",
-			"clicked": "Geklikt ({{coordinate}})",
-			"click": "Klik ({{coordinate}})",
-			"typed": "Getypt: {{text}}",
-			"type": "Typ \"{{text}}\"",
-			"pressed": "Ingedrukt: {{key}}",
-			"press": "Druk op {{key}}",
-			"scrolledDown": "Naar beneden gescrolld",
-			"scrollDown": "Scroll naar beneden",
-			"scrolledUp": "Naar boven gescrolld",
-			"scrollUp": "Scroll naar boven",
-			"hovered": "Zweefde ({{coordinate}})",
-			"hover": "Zweven ({{coordinate}})",
-			"resized": "Grootte gewijzigd naar: {{size}}",
-			"resize": "Grootte wijzigen naar {{size}}",
-			"screenshotSaved": "Schermopname opgeslagen",
-			"screenshot": "Schermopname opslaan naar {{path}}",
-			"closed": "Browser gesloten",
-			"close": "Browser sluiten"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Codeblok uitvouwen",
@@ -404,7 +372,6 @@
 			"copy_code": "Code kopiëren"
 		}
 	},
-	"systemPromptWarning": "WAARSCHUWING: Aangepaste systeemprompt actief. Dit kan de functionaliteit ernstig verstoren en onvoorspelbaar gedrag veroorzaken.",
 	"profileViolationWarning": "Het huidige profiel is niet compatibel met de instellingen van uw organisatie",
 	"shellIntegration": {
 		"title": "Waarschuwing commando-uitvoering",
@@ -438,12 +405,29 @@
 			"title": "Alles weigeren"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Alles goedkeuren"
+		},
+		"deny": {
+			"title": "Alles weigeren"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Alles opslaan"
+		},
+		"deny": {
+			"title": "Alles weigeren"
+		}
+	},
 	"indexingStatus": {
 		"ready": "Index gereed",
 		"indexing": "Indexeren {{percentage}}%",
 		"indexed": "Geïndexeerd",
 		"error": "Index fout",
-		"status": "Index status"
+		"status": "Index status",
+		"stopping": "Indexering wordt gestopt..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versie {{version}} - Klik om release notes te bekijken"
@@ -511,5 +495,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Provider wordt niet meer ondersteund",
+		"message": "Sorry, deze provider wordt niet meer ondersteund. We zagen dat heel weinig Roo-gebruikers het daadwerkelijk gebruikten en we moeten de omvang van onze codebase verkleinen zodat we snel kunnen blijven leveren en onze community goed kunnen blijven bedienen. Het was een heel moeilijke beslissing, maar het stelt ons in staat om ons te richten op wat het belangrijkst voor je is. Het is vervelend, dat weten we.",
+		"openSettings": "Instellingen openen"
 	}
 }

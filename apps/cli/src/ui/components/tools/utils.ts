@@ -73,10 +73,6 @@ export function getToolDisplayName(toolName: string): string {
 		execute_command: "Execute Command",
 		executeCommand: "Execute Command",
 
-		// Browser operations
-		browser_action: "Browser Action",
-		browserAction: "Browser Action",
-
 		// Mode operations
 		switchMode: "Switch Mode",
 		switch_mode: "Switch Mode",
@@ -128,10 +124,6 @@ export function getToolIconName(toolName: string): IconName {
 		// Command operations
 		execute_command: "terminal",
 		executeCommand: "terminal",
-
-		// Browser operations
-		browser_action: "browser",
-		browserAction: "browser",
 
 		// Mode operations
 		switchMode: "switch",

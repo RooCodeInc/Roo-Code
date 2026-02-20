@@ -11,7 +11,6 @@ import React, {
 } from "react"
 import {
 	CheckCheck,
-	SquareMousePointer,
 	GitBranch,
 	Bell,
 	Database,
@@ -29,6 +28,7 @@ import {
 	Users2,
 	ArrowLeft,
 	GitCommitVertical,
+	GraduationCap,
 } from "lucide-react"
 
 import {
@@ -66,7 +66,6 @@ import { SectionHeader } from "./SectionHeader"
 import ApiConfigManager from "./ApiConfigManager"
 import ApiOptions from "./ApiOptions"
 import { AutoApproveSettings } from "./AutoApproveSettings"
-import { BrowserSettings } from "./BrowserSettings"
 import { CheckpointSettings } from "./CheckpointSettings"
 import { NotificationSettings } from "./NotificationSettings"
 import { ContextManagementSettings } from "./ContextManagementSettings"
@@ -77,6 +76,7 @@ import { About } from "./About"
 import { Section } from "./Section"
 import PromptsSettings from "./PromptsSettings"
 import { SlashCommandsSettings } from "./SlashCommandsSettings"
+import { SkillsSettings } from "./SkillsSettings"
 import { UISettings } from "./UISettings"
 import ModesView from "../modes/ModesView"
 import McpView from "../mcp/McpView"
@@ -99,7 +99,7 @@ export const sectionNames = [
 	"providers",
 	"autoApprove",
 	"slashCommands",
-	"browser",
+	"skills",
 	"checkpoints",
 	"notifications",
 	"contextManagement",
@@ -154,7 +154,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		allowedMaxRequests,
 		allowedMaxCost,
 		language,
-		alwaysAllowBrowser,
 		alwaysAllowExecute,
 		alwaysAllowMcp,
 		alwaysAllowModeSwitch,
@@ -164,16 +163,12 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		alwaysAllowWriteProtected,
 		autoCondenseContext,
 		autoCondenseContextPercent,
-		browserToolEnabled,
-		browserViewportSize,
 		enableCheckpoints,
 		checkpointTimeout,
 		experiments,
 		maxOpenTabsContext,
 		maxWorkspaceFiles,
 		mcpEnabled,
-		remoteBrowserHost,
-		screenshotQuality,
 		soundEnabled,
 		ttsEnabled,
 		ttsSpeed,
@@ -191,11 +186,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		writeDelayMs,
 		showRooIgnoredFiles,
 		enableSubfolderRules,
-		remoteBrowserEnabled,
-		maxReadFileLine,
 		maxImageFileSize,
 		maxTotalImageSize,
-		maxConcurrentFileReads,
 		customSupportPrompts,
 		profileThresholds,
 		alwaysAllowFollowupQuestions,
@@ -255,9 +247,19 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 				const previousValue = prevState.apiConfiguration?.[field]
 
+				// Helper to check if two values are semantically equal
+				const areValuesEqual = (a: any, b: any): boolean => {
+					if (a === b) return true
+					if (a == null && b == null) return true
+					if (typeof a !== typeof b) return false
+					if (typeof a === "object" && typeof b === "object") {
+						return JSON.stringify(a) === JSON.stringify(b)
+					}
+					return false
+				}
+
 				// Only skip change detection for automatic initialization (not user actions)
 				// This prevents the dirty state when the component initializes and auto-syncs values
-				// Treat undefined, null, and empty string as uninitialized states
 				const isInitialSync =
 					!isUserAction &&
 					(previousValue === undefined || previousValue === "" || previousValue === null) &&
@@ -265,7 +267,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					value !== "" &&
 					value !== null
 
-				if (!isInitialSync) {
+				// Also skip if it's an automatic sync with semantically equal values
+				const isAutomaticNoOpSync = !isUserAction && areValuesEqual(previousValue, value)
+
+				if (!isInitialSync && !isAutomaticNoOpSync) {
 					setChangeDetected(true)
 				}
 				return { ...prevState, apiConfiguration: { ...prevState.apiConfiguration, [field]: value } }
@@ -365,7 +370,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					alwaysAllowWriteOutsideWorkspace: alwaysAllowWriteOutsideWorkspace ?? undefined,
 					alwaysAllowWriteProtected: alwaysAllowWriteProtected ?? undefined,
 					alwaysAllowExecute: alwaysAllowExecute ?? undefined,
-					alwaysAllowBrowser: alwaysAllowBrowser ?? undefined,
 					alwaysAllowMcp,
 					alwaysAllowModeSwitch,
 					allowedCommands: allowedCommands ?? [],
@@ -377,18 +381,13 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					allowedMaxCost: allowedMaxCost ?? null,
 					autoCondenseContext,
 					autoCondenseContextPercent,
-					browserToolEnabled: browserToolEnabled ?? true,
 					soundEnabled: soundEnabled ?? true,
 					soundVolume: soundVolume ?? 0.5,
 					ttsEnabled,
 					ttsSpeed,
 					enableCheckpoints: enableCheckpoints ?? false,
 					checkpointTimeout: checkpointTimeout ?? DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
-					browserViewportSize: browserViewportSize ?? "900x600",
-					remoteBrowserHost: remoteBrowserEnabled ? remoteBrowserHost : undefined,
-					remoteBrowserEnabled: remoteBrowserEnabled ?? false,
 					writeDelayMs,
-					screenshotQuality: screenshotQuality ?? 75,
 					terminalShellIntegrationTimeout: terminalShellIntegrationTimeout ?? 30_000,
 					terminalShellIntegrationDisabled,
 					terminalCommandDelay,
@@ -403,10 +402,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					maxWorkspaceFiles: Math.min(Math.max(0, maxWorkspaceFiles ?? 200), 500),
 					showRooIgnoredFiles: showRooIgnoredFiles ?? true,
 					enableSubfolderRules: enableSubfolderRules ?? false,
-					maxReadFileLine: maxReadFileLine ?? -1,
 					maxImageFileSize: maxImageFileSize ?? 5,
 					maxTotalImageSize: maxTotalImageSize ?? 20,
-					maxConcurrentFileReads: cachedState.maxConcurrentFileReads ?? 5,
 					includeDiagnosticMessages:
 						includeDiagnosticMessages !== undefined ? includeDiagnosticMessages : true,
 					maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
@@ -513,10 +510,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		() => [
 			{ id: "providers", icon: Plug },
 			{ id: "modes", icon: Users2 },
-			{ id: "mcp", icon: Server },
-			{ id: "autoApprove", icon: CheckCheck },
+			{ id: "skills", icon: GraduationCap },
 			{ id: "slashCommands", icon: SquareSlash },
-			{ id: "browser", icon: SquareMousePointer },
+			{ id: "autoApprove", icon: CheckCheck },
+			{ id: "mcp", icon: Server },
 			{ id: "checkpoints", icon: GitCommitVertical },
 			{ id: "notifications", icon: Bell },
 			{ id: "contextManagement", icon: Database },
@@ -788,7 +785,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								alwaysAllowWrite={alwaysAllowWrite}
 								alwaysAllowWriteOutsideWorkspace={alwaysAllowWriteOutsideWorkspace}
 								alwaysAllowWriteProtected={alwaysAllowWriteProtected}
-								alwaysAllowBrowser={alwaysAllowBrowser}
 								alwaysAllowMcp={alwaysAllowMcp}
 								alwaysAllowModeSwitch={alwaysAllowModeSwitch}
 								alwaysAllowSubtasks={alwaysAllowSubtasks}
@@ -806,17 +802,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						{/* Slash Commands Section */}
 						{renderTab === "slashCommands" && <SlashCommandsSettings />}
 
-						{/* Browser Section */}
-						{renderTab === "browser" && (
-							<BrowserSettings
-								browserToolEnabled={browserToolEnabled}
-								browserViewportSize={browserViewportSize}
-								screenshotQuality={screenshotQuality}
-								remoteBrowserHost={remoteBrowserHost}
-								remoteBrowserEnabled={remoteBrowserEnabled}
-								setCachedStateField={setCachedStateField}
-							/>
-						)}
+						{/* Skills Section */}
+						{renderTab === "skills" && <SkillsSettings />}
 
 						{/* Checkpoints Section */}
 						{renderTab === "checkpoints" && (
@@ -848,10 +835,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								maxWorkspaceFiles={maxWorkspaceFiles ?? 200}
 								showRooIgnoredFiles={showRooIgnoredFiles}
 								enableSubfolderRules={enableSubfolderRules}
-								maxReadFileLine={maxReadFileLine}
 								maxImageFileSize={maxImageFileSize}
 								maxTotalImageSize={maxTotalImageSize}
-								maxConcurrentFileReads={maxConcurrentFileReads}
 								profileThresholds={profileThresholds}
 								includeDiagnosticMessages={includeDiagnosticMessages}
 								maxDiagnosticMessages={maxDiagnosticMessages}

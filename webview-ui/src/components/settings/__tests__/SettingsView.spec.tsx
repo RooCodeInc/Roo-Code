@@ -121,6 +121,26 @@ vi.mock("@/components/ui", () => ({
 			Toggle
 		</button>
 	),
+	Checkbox: ({ checked, onCheckedChange, id, className, ...props }: any) => (
+		<input
+			type="checkbox"
+			checked={checked}
+			onChange={(e) => onCheckedChange?.(e.target.checked)}
+			id={id}
+			className={className}
+			{...props}
+		/>
+	),
+	Textarea: ({ value, onChange, placeholder, id, className, ...props }: any) => (
+		<textarea
+			value={value}
+			onChange={onChange}
+			placeholder={placeholder}
+			id={id}
+			className={className}
+			{...props}
+		/>
+	),
 	Popover: ({ children }: any) => <div data-testid="popover">{children}</div>,
 	PopoverTrigger: ({ children }: any) => <div data-testid="popover-trigger">{children}</div>,
 	PopoverContent: ({ children }: any) => <div data-testid="popover-content">{children}</div>,
@@ -211,6 +231,36 @@ vi.mock("@/components/ui", () => ({
 	),
 	CollapsibleContent: ({ children, className }: any) => (
 		<div className={`collapsible-content-mock ${className || ""}`}>{children}</div>
+	),
+	Dialog: ({ children, ...props }: any) => (
+		<div data-testid="dialog" {...props}>
+			{children}
+		</div>
+	),
+	DialogContent: ({ children, ...props }: any) => (
+		<div data-testid="dialog-content" {...props}>
+			{children}
+		</div>
+	),
+	DialogHeader: ({ children, ...props }: any) => (
+		<div data-testid="dialog-header" {...props}>
+			{children}
+		</div>
+	),
+	DialogTitle: ({ children, ...props }: any) => (
+		<div data-testid="dialog-title" {...props}>
+			{children}
+		</div>
+	),
+	DialogDescription: ({ children, ...props }: any) => (
+		<div data-testid="dialog-description" {...props}>
+			{children}
+		</div>
+	),
+	DialogFooter: ({ children, ...props }: any) => (
+		<div data-testid="dialog-footer" {...props}>
+			{children}
+		</div>
 	),
 }))
 
@@ -593,23 +643,6 @@ describe("SettingsView - Allowed Commands", () => {
 
 			// Check that unsaved changes dialog is shown
 			expect(screen.getByText("settings:unsavedChangesDialog.title")).toBeInTheDocument()
-		})
-
-		it("renders with targetSection prop", () => {
-			// Render with a specific target section
-			render(
-				<ExtensionStateContextProvider>
-					<QueryClientProvider client={new QueryClient()}>
-						<SettingsView onDone={vi.fn()} targetSection="browser" />
-					</QueryClientProvider>
-				</ExtensionStateContextProvider>,
-			)
-
-			// Hydrate initial state
-			mockPostMessage({})
-
-			// Verify browser-related content is visible and API config is not
-			expect(screen.queryByTestId("api-config-management")).not.toBeInTheDocument()
 		})
 	})
 })

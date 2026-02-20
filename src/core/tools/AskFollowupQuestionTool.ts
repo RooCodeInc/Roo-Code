@@ -21,12 +21,21 @@ export class AskFollowupQuestionTool extends BaseTool<"ask_followup_question"> {
 		const { question, follow_up } = params
 		const { handleError, pushToolResult } = callbacks
 
+		const recordMissingParamError = async (paramName: string): Promise<void> => {
+			task.consecutiveMistakeCount++
+			task.recordToolError("ask_followup_question")
+			task.didToolFailInCurrentTurn = true
+			pushToolResult(await task.sayAndCreateMissingParamError("ask_followup_question", paramName))
+		}
+
 		try {
 			if (!question) {
-				task.consecutiveMistakeCount++
-				task.recordToolError("ask_followup_question")
-				task.didToolFailInCurrentTurn = true
-				pushToolResult(await task.sayAndCreateMissingParamError("ask_followup_question", "question"))
+				await recordMissingParamError("question")
+				return
+			}
+
+			if (!follow_up || !Array.isArray(follow_up)) {
+				await recordMissingParamError("follow_up")
 				return
 			}
 

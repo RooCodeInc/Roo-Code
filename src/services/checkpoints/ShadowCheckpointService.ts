@@ -9,6 +9,7 @@ import pWaitFor from "p-wait-for"
 import * as vscode from "vscode"
 
 import { fileExistsAtPath } from "../../utils/fs"
+import { arePathsEqual } from "../../utils/path"
 import { executeRipgrep } from "../../services/search/file-search"
 import { t } from "../../i18n"
 
@@ -155,9 +156,15 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 			this.log(`[${this.constructor.name}#initShadowGit] shadow git repo already exists at ${this.dotGitDir}`)
 			const worktree = await this.getShadowGitConfigWorktree(git)
 
-			if (worktree !== this.workspaceDir) {
+			if (!worktree) {
+				throw new Error("Checkpoints require core.worktree to be set in the shadow git config")
+			}
+
+			const worktreeTrimmed = worktree.trim()
+
+			if (!arePathsEqual(worktreeTrimmed, this.workspaceDir)) {
 				throw new Error(
-					`Checkpoints can only be used in the original workspace: ${worktree} !== ${this.workspaceDir}`,
+					`Checkpoints can only be used in the original workspace: ${worktreeTrimmed} !== ${this.workspaceDir}`,
 				)
 			}
 

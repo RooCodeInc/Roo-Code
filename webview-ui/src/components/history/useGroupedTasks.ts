@@ -1,6 +1,29 @@
 import { useState, useMemo, useCallback } from "react"
 import type { HistoryItem } from "@roo-code/types"
-import type { DisplayHistoryItem, TaskGroup, GroupedTasksResult } from "./types"
+import type { DisplayHistoryItem, SubtaskTreeNode, TaskGroup, GroupedTasksResult } from "./types"
+
+/**
+ * Recursively builds a subtask tree node for the given task.
+ * Pure function — exported for independent testing.
+ *
+ * @param task - The task to build a tree node for
+ * @param childrenMap - Map of parentId → direct children
+ * @param expandedIds - Set of task IDs whose children are currently expanded
+ * @returns A SubtaskTreeNode with recursively built children sorted by ts (newest first)
+ */
+export function buildSubtree(
+	task: HistoryItem,
+	childrenMap: Map<string, HistoryItem[]>,
+	expandedIds: Set<string>,
+): SubtaskTreeNode {
+	const directChildren = (childrenMap.get(task.id) || []).slice().sort((a, b) => b.ts - a.ts)
+
+	return {
+		item: task as DisplayHistoryItem,
+		children: directChildren.map((child) => buildSubtree(child, childrenMap, expandedIds)),
+		isExpanded: expandedIds.has(task.id),
+	}
+}
 
 /**
  * Hook to transform a flat task list into grouped structure based on parent-child relationships.
@@ -31,7 +54,7 @@ export function useGroupedTasks(tasks: HistoryItem[], searchQuery: string): Grou
 			return []
 		}
 
-		// Build children map: parentId -> children[]
+		// Build children map: parentId -> direct children[]
 		const childrenMap = new Map<string, HistoryItem[]>()
 
 		for (const task of tasks) {
@@ -44,19 +67,16 @@ export function useGroupedTasks(tasks: HistoryItem[], searchQuery: string): Grou
 
 		// Identify root tasks - tasks that either:
 		// 1. Have no parentTaskId
-		// 2. Have a parentTaskId that doesn't exist in our task list
+		// 2. Have a parentTaskId that doesn't exist in our task list (orphans promoted to root)
 		const rootTasks = tasks.filter((task) => !task.parentTaskId || !taskMap.has(task.parentTaskId))
 
-		// Build groups from root tasks
+		// Build groups from root tasks with recursively nested subtask trees
 		const taskGroups: TaskGroup[] = rootTasks.map((parent) => {
-			// Get direct children (sorted by timestamp, newest first)
-			const subtasks = (childrenMap.get(parent.id) || [])
-				.slice()
-				.sort((a, b) => b.ts - a.ts) as DisplayHistoryItem[]
+			const directChildren = (childrenMap.get(parent.id) || []).slice().sort((a, b) => b.ts - a.ts)
 
 			return {
 				parent: parent as DisplayHistoryItem,
-				subtasks,
+				subtasks: directChildren.map((child) => buildSubtree(child, childrenMap, expandedIds)),
 				isExpanded: expandedIds.has(parent.id),
 			}
 		})
