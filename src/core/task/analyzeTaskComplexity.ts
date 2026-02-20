@@ -1,150 +1,114 @@
-/**
- * Analyzes a task prompt to determine complexity and whether planning file should be created
- */
+import type { ProviderSettings } from "@siid-code/types"
+import type { Anthropic } from "@anthropic-ai/sdk"
 
-interface ComplexityAnalysis {
+/**
+ * Result of task complexity analysis
+ */
+export interface ComplexityAnalysis {
 	isComplex: boolean
-	score: number
-	factors: string[]
+	reasoning: string
+	filename: string // AI-generated filename for the planning file
+	planContent: string // AI-generated content for the planning file
 }
 
 /**
- * Extracts the original user request from a delegation format message
- * Returns the original request if found, otherwise returns the original prompt
+ * Analyzes task complexity using the same AI model that will execute the task
+ * This call determines if a planning file should be created and what content it should have
+ *
+ * @param prompt - The user's task prompt
+ * @param apiConfig - The user's API configuration (model, provider, credentials)
+ * @returns Complexity analysis result
  */
-function extractOriginalRequest(prompt: string): string {
-	const originalRequestMatch = prompt.match(/\*\*ORIGINAL USER REQUEST:\*\*\s*(.+?)(?=\n\n\*\*|$)/is)
-	if (originalRequestMatch && originalRequestMatch[1]) {
-		return originalRequestMatch[1].trim()
-	}
-	return prompt
-}
-
-/**
- * Analyzes task/prompt text to determine if it's complex enough to warrant a planning file
- * Returns true if the task is complex and would benefit from a planning file
- */
-export function analyzeTaskComplexity(prompt?: string): ComplexityAnalysis {
-	if (!prompt || prompt.trim().length === 0) {
+export async function analyzeTaskComplexity(prompt: string, apiConfig: ProviderSettings): Promise<ComplexityAnalysis> {
+	if (!prompt || !apiConfig) {
 		return {
 			isComplex: false,
-			score: 0,
-			factors: ["No prompt provided"],
+			reasoning: "Unable to analyze - missing prompt or API configuration",
+			filename: "task",
+			planContent: "",
 		}
 	}
 
-	// Extract original request if this is a delegation format message
-	const originalRequest = extractOriginalRequest(prompt)
+	try {
+		// Use the buildApiHandler to get the user's configured model
+		const { buildApiHandler } = await import("../../api")
+		const apiHandler = buildApiHandler(apiConfig)
 
-	let score = 0
-	const factors: string[] = []
-	const lowerPrompt = originalRequest.toLowerCase()
+		if (!apiHandler) {
+			return {
+				isComplex: false,
+				reasoning: "Could not initialize API handler",
+				filename: "task",
+				planContent: "",
+			}
+		}
 
-	// Length check - longer prompts are usually more complex
-	if (originalRequest.length > 500) {
-		score += 2
-		factors.push("Lengthy prompt (>500 chars)")
-	} else if (originalRequest.length > 200) {
-		score += 1
-		factors.push("Medium-length prompt (>200 chars)")
-	}
+		const systemPrompt = `You are a task complexity analyzer and plan generator. 
 
-	// Check for multi-phase keywords
-	const multiPhaseKeywords = [
-		"phase",
-		"step",
-		"then",
-		"after that",
-		"next",
-		"finally",
-		"first",
-		"second",
-		"third",
-		"multiple",
-		"several",
-		"complex",
-		"large",
-		"comprehensive",
-	]
-	const phaseMatches = multiPhaseKeywords.filter((kw) => lowerPrompt.includes(kw))
-	if (phaseMatches.length >= 2) {
-		score += 3
-		factors.push(`Multiple phases/sequential keywords (${phaseMatches.length})`)
-	} else if (phaseMatches.length >= 1) {
-		score += 1
-		factors.push(`Sequential keywords found (${phaseMatches.length})`)
-	}
+Determine if a task requires multi-phase planning. If complex, also generate:
+1. A descriptive filename (2-4 words, lowercase, hyphens only)
+2. The initial plan file content (markdown format showing phases)
 
-	// Check for integration/coordination keywords
-	const integrationKeywords = [
-		"integrate",
-		"connect",
-		"sync",
-		"coordinate",
-		"orchestrate",
-		"workflow",
-		"pipeline",
-		"chain",
-	]
-	const integrationMatches = integrationKeywords.filter((kw) => lowerPrompt.includes(kw))
-	if (integrationMatches.length > 0) {
-		score += 2
-		factors.push("Integration/coordination required")
-	}
+COMPLEX task criteria:
+- Multiple sequential phases with dependencies
+- 3+ different technologies/components (Apex, LWC, Trigger, Flow, etc.)
+- Coordination between multiple parts
+- Complex architectural decisions needed
+- 5+ distinct deliverables
 
-	// Check for multiple components
-	const componentKeywords = [
-		"apex",
-		"lwc",
-		"trigger",
-		"flow",
-		"process",
-		"object",
-		"field",
-		"page",
-		"component",
-		"api",
-		"service",
-		"class",
-		"test",
-	]
-	const componentMatches = componentKeywords.filter((kw) => lowerPrompt.includes(kw))
-	if (componentMatches.length >= 3) {
-		score += 3
-		factors.push(`Multiple components mentioned (${componentMatches.length})`)
-	} else if (componentMatches.length >= 2) {
-		score += 2
-		factors.push(`Multiple components mentioned (${componentMatches.length})`)
-	}
+SIMPLE task criteria:
+- Single component (one class, one LWC, one object, one trigger)
+- Single-step execution
+- Straightforward implementation
+- No dependencies between parts
 
-	// Check for dependency indicators
-	const dependencyKeywords = ["depend", "require", "prerequisite", "before", "after", "only after", "must have"]
-	const dependencyMatches = dependencyKeywords.filter((kw) => lowerPrompt.includes(kw))
-	if (dependencyMatches.length > 0) {
-		score += 2
-		factors.push("Dependencies/prerequisites mentioned")
-	}
+For the plan content, create a markdown structure with:
+- Original Request section
+- Phase breakdown with deliverables
+- Execution log template
 
-	// Check for request analysis indicators
-	const analysisKeywords = ["analyze", "plan", "design", "architecture", "structure", "organize"]
-	const analysisMatches = analysisKeywords.filter((kw) => lowerPrompt.includes(kw))
-	if (analysisMatches.length > 0) {
-		score += 1
-		factors.push("Analysis/planning keywords found")
-	}
+Respond with ONLY this JSON format (no markdown, pure JSON):
+{
+  "isComplex": true/false,
+  "reasoning": "one sentence explanation",
+  "filename": "descriptive-task-name or empty string if not complex",
+  "planContent": "markdown content for plan file or empty string if not complex"
+}`
 
-	// Check for testing/validation requirements
-	if (lowerPrompt.includes("test") || lowerPrompt.includes("validate") || lowerPrompt.includes("verify")) {
-		score += 1
-		factors.push("Testing/validation required")
-	}
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: `Analyze task complexity and generate plan structure if needed:\n\n${prompt}`,
+			},
+		]
 
-	// Complexity threshold: score >= 4 means complex task that needs planning
-	const isComplex = score >= 4
+		// Stream and collect the response
+		let textContent = ""
+		const stream = apiHandler.createMessage(systemPrompt, messages)
 
-	return {
-		isComplex,
-		score,
-		factors,
+		for await (const chunk of stream) {
+			if (chunk.type === "text") {
+				textContent += chunk.text
+			}
+		}
+
+		// Parse the JSON response
+		const parsed = JSON.parse(textContent)
+
+		return {
+			isComplex: parsed.isComplex === true,
+			reasoning: parsed.reasoning || "Task complexity analyzed",
+			filename: parsed.filename || "task",
+			planContent: parsed.planContent || "",
+		}
+	} catch (error) {
+		console.warn("Error analyzing task complexity:", error)
+		// Default to simple if analysis fails
+		return {
+			isComplex: false,
+			reasoning: "Analysis unavailable - proceeding without planning file",
+			filename: "task",
+			planContent: "",
+		}
 	}
 }
