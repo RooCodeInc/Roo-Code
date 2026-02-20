@@ -830,6 +830,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 		}
 
+		// If user provides feedback after completion, mark task active again.
+		if (askResponse === "messageResponse" && this.taskCompleted) {
+			this.taskCompleted = false
+		}
+
 		this.askResponse = askResponse
 		this.askResponseText = text
 		this.askResponseImages = images
