@@ -7,15 +7,9 @@ on:
     pull_request:
         types: [opened, reopened, ready_for_review, synchronize]
         branches: [main]
-    pull_request_review:
-        types: [submitted]
-        branches: [main]
 
 jobs:
     check-translations:
-        if: |
-            github.event_name != 'pull_request_review' ||
-            github.event.review.state == 'approved'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
@@ -26,9 +20,6 @@ jobs:
               run: node scripts/find-missing-translations.js
 
     knip:
-        if: |
-            github.event_name != 'pull_request_review' ||
-            github.event.review.state == 'approved'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
@@ -39,9 +30,6 @@ jobs:
               run: pnpm knip
 
     compile:
-        if: |
-            github.event_name != 'pull_request_review' ||
-            github.event.review.state == 'approved'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
@@ -55,9 +43,6 @@ jobs:
 
     unit-test:
         name: platform-unit-test (${{ matrix.name }})
-        if: |
-            github.event_name != 'pull_request_review' ||
-            github.event.review.state == 'approved'
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
