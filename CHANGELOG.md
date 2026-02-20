@@ -1,5 +1,13 @@
 # Roo Code Changelog
 
+## 3.50.2
+
+### Patch Changes
+
+- Fix: Inline terminal rendering parity with the VSCode Terminal (#10699 by @jerrill-johnson-bitwerx, PR #11361 by @RussellZager)
+- Fix: Enable prompt caching for Bedrock custom ARN and default to ON (#10846 by @wisestmumbler, PR #11373 by @roomote)
+- Feat: Add visual feedback to copy button in task actions (#11401 by @omagoduck, PR #11403 by @omagoduck)
+
 ## 3.50.1
 
 ### Patch Changes
