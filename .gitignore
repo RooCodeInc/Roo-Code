@@ -23,7 +23,7 @@ AGENTS.local.md
 # Test environment
 .test_env
 .vscode-test/
-
+.venv/
 # Docs
 docs/_site/
 
@@ -59,3 +59,11 @@ roo-cli-*.tar.gz*
 
 # VS Code MCP analytics file — do not commit
 .vscode/mcp.json
+
+# --- Orchestration Sidecar (Phase 1) ---
+# We commit the .yaml spec and .py hooks, but NEVER the local data
+.orchestration/*.db
+.orchestration/*.db-journal
+.orchestration/*.db-wal
+.orchestration/zvec_store/
+.orchestration/agent_trace.jsonl
