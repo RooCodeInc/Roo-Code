@@ -213,7 +213,7 @@
               pname = "roo-code-pnpm-deps";
               inherit version src;
               fetcherVersion = 2;
-              hash = "sha256-jtIRL4E4d0QjvQGHAVmcXvEXblRdg58VknaMlh/TxCY=";
+              hash = "sha256-l6MAzyVUiiqiKLvacP0tZZs4WNlcmm3TrtRwauE3TLE=";
             };
 
             vsix = pkgs.stdenvNoCC.mkDerivation (
