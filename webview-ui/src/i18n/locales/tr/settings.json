@@ -356,6 +356,8 @@
 		"headerName": "Başlık adı",
 		"headerValue": "Başlık değeri",
 		"noCustomHeaders": "Tanımlanmış özel başlık yok. Eklemek için + düğmesine tıklayın.",
+		"unboundApiKey": "Unbound API Anahtarı",
+		"getUnboundApiKey": "Unbound API Anahtarı Al",
 		"requestyApiKey": "Requesty API Anahtarı",
 		"refreshModels": {
 			"label": "Modelleri Yenile",

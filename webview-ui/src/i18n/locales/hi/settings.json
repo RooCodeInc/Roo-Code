@@ -356,6 +356,8 @@
 		"headerName": "हेडर नाम",
 		"headerValue": "हेडर मूल्य",
 		"noCustomHeaders": "कोई कस्टम हेडर परिभाषित नहीं है। एक जोड़ने के लिए + बटन पर क्लिक करें।",
+		"unboundApiKey": "Unbound API कुंजी",
+		"getUnboundApiKey": "Unbound API कुंजी प्राप्त करें",
 		"requestyApiKey": "Requesty API कुंजी",
 		"refreshModels": {
 			"label": "मॉडल रिफ्रेश करें",

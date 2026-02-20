@@ -876,6 +876,7 @@ export const webviewMessageHandler = async (
 						"vercel-ai-gateway": {},
 						litellm: {},
 						requesty: {},
+						unbound: {},
 						ollama: {},
 						lmstudio: {},
 						roo: {},
@@ -903,6 +904,13 @@ export const webviewMessageHandler = async (
 						provider: "requesty",
 						apiKey: apiConfiguration.requestyApiKey,
 						baseUrl: apiConfiguration.requestyBaseUrl,
+					},
+				},
+				{
+					key: "unbound",
+					options: {
+						provider: "unbound",
+						apiKey: apiConfiguration.unboundApiKey,
 					},
 				},
 				{ key: "vercel-ai-gateway", options: { provider: "vercel-ai-gateway" } },

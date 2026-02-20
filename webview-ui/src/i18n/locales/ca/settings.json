@@ -356,6 +356,8 @@
 		"headerName": "Nom de la capçalera",
 		"headerValue": "Valor de la capçalera",
 		"noCustomHeaders": "No hi ha capçaleres personalitzades definides. Feu clic al botó + per afegir-ne una.",
+		"unboundApiKey": "Clau API de Unbound",
+		"getUnboundApiKey": "Obtenir clau API de Unbound",
 		"requestyApiKey": "Clau API de Requesty",
 		"refreshModels": {
 			"label": "Actualitzar models",

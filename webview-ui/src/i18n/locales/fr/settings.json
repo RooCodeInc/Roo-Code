@@ -356,6 +356,8 @@
 		"headerName": "Nom de l'en-tête",
 		"headerValue": "Valeur de l'en-tête",
 		"noCustomHeaders": "Aucun en-tête personnalisé défini. Cliquez sur le bouton + pour en ajouter un.",
+		"unboundApiKey": "Clé API Unbound",
+		"getUnboundApiKey": "Obtenir la clé API Unbound",
 		"requestyApiKey": "Clé API Requesty",
 		"refreshModels": {
 			"label": "Actualiser les modèles",

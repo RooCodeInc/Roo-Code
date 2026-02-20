@@ -31,6 +31,7 @@ import {
 	rooDefaultModelId,
 	vercelAiGatewayDefaultModelId,
 	minimaxDefaultModelId,
+	unboundDefaultModelId,
 } from "@roo-code/types"
 
 import {
@@ -83,6 +84,7 @@ import {
 	Requesty,
 	Roo,
 	SambaNova,
+	Unbound,
 	Vertex,
 	VSCodeLM,
 	XAI,
@@ -330,6 +332,7 @@ const ApiOptions = ({
 			> = {
 				openrouter: { field: "openRouterModelId", default: openRouterDefaultModelId },
 				requesty: { field: "requestyModelId", default: requestyDefaultModelId },
+				unbound: { field: "unboundModelId", default: unboundDefaultModelId },
 				litellm: { field: "litellmModelId", default: litellmDefaultModelId },
 				anthropic: { field: "apiModelId", default: anthropicDefaultModelId },
 				"openai-codex": { field: "apiModelId", default: openAiCodexDefaultModelId },
@@ -508,6 +511,18 @@ const ApiOptions = ({
 					{selectedProvider === "requesty" && (
 						<Requesty
 							uriScheme={uriScheme}
+							apiConfiguration={apiConfiguration}
+							setApiConfigurationField={setApiConfigurationField}
+							routerModels={routerModels}
+							refetchRouterModels={refetchRouterModels}
+							organizationAllowList={organizationAllowList}
+							modelValidationError={modelValidationError}
+							simplifySettings={fromWelcomeView}
+						/>
+					)}
+
+					{selectedProvider === "unbound" && (
+						<Unbound
 							apiConfiguration={apiConfiguration}
 							setApiConfigurationField={setApiConfigurationField}
 							routerModels={routerModels}

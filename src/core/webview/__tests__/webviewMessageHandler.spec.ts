@@ -296,6 +296,11 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		// Verify getModels was called for each provider
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "openrouter" })
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "requesty", apiKey: "requesty-key" })
+		expect(mockGetModels).toHaveBeenCalledWith(
+			expect.objectContaining({
+				provider: "unbound",
+			}),
+		)
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "vercel-ai-gateway" })
 		expect(mockGetModels).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -315,6 +320,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			routerModels: {
 				openrouter: mockModels,
 				requesty: mockModels,
+				unbound: mockModels,
 				litellm: mockModels,
 				roo: mockModels,
 				ollama: {},
@@ -399,6 +405,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			routerModels: {
 				openrouter: mockModels,
 				requesty: mockModels,
+				unbound: mockModels,
 				roo: mockModels,
 				litellm: {},
 				ollama: {},
@@ -423,6 +430,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		mockGetModels
 			.mockResolvedValueOnce(mockModels) // openrouter
 			.mockRejectedValueOnce(new Error("Requesty API error")) // requesty
+			.mockResolvedValueOnce(mockModels) // unbound
 			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway
 			.mockResolvedValueOnce(mockModels) // roo
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
@@ -452,6 +460,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			routerModels: {
 				openrouter: mockModels,
 				requesty: {},
+				unbound: mockModels,
 				roo: mockModels,
 				litellm: {},
 				ollama: {},
@@ -467,6 +476,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		mockGetModels
 			.mockRejectedValueOnce(new Error("Structured error message")) // openrouter
 			.mockRejectedValueOnce(new Error("Requesty API error")) // requesty
+			.mockRejectedValueOnce(new Error("Unbound error")) // unbound
 			.mockRejectedValueOnce(new Error("Vercel AI Gateway error")) // vercel-ai-gateway
 			.mockRejectedValueOnce(new Error("Roo API error")) // roo
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
@@ -488,6 +498,13 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			success: false,
 			error: "Requesty API error",
 			values: { provider: "requesty" },
+		})
+
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "singleRouterModelFetchResponse",
+			success: false,
+			error: "Unbound error",
+			values: { provider: "unbound" },
 		})
 
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({

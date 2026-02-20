@@ -356,6 +356,8 @@
 		"headerName": "Nama header",
 		"headerValue": "Nilai header",
 		"noCustomHeaders": "Tidak ada header kustom yang didefinisikan. Klik tombol + untuk menambahkan satu.",
+		"unboundApiKey": "Unbound API Key",
+		"getUnboundApiKey": "Dapatkan Unbound API Key",
 		"requestyApiKey": "Requesty API Key",
 		"refreshModels": {
 			"label": "Refresh Model",

@@ -356,6 +356,8 @@
 		"headerName": "Nome do cabeçalho",
 		"headerValue": "Valor do cabeçalho",
 		"noCustomHeaders": "Nenhum cabeçalho personalizado definido. Clique no botão + para adicionar um.",
+		"unboundApiKey": "Chave de API Unbound",
+		"getUnboundApiKey": "Obter chave de API Unbound",
 		"requestyApiKey": "Chave de API Requesty",
 		"refreshModels": {
 			"label": "Atualizar modelos",
