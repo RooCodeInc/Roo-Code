@@ -1,10 +1,10 @@
 import * as path from "path"
 import * as vscode from "vscode"
 import os from "os"
-import crypto from "crypto"
 import { v7 as uuidv7 } from "uuid"
 import EventEmitter from "events"
-
+import * as crypto from "crypto"
+import * as fs from "fs/promises"
 import { AskIgnoredError } from "./AskIgnoredError"
 
 import { Anthropic } from "@anthropic-ai/sdk"
@@ -177,6 +177,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	readonly taskNumber: number
 	readonly workspacePath: string
 
+	// 1. The Math: Creating the Content Hash
+	private generateContentHash(content: string): string {
+		return crypto.createHash("sha256").update(content).digest("hex")
+	}
 	/**
 	 * The mode associated with this task. Persisted across sessions
 	 * to maintain user context when reopening tasks from history.
