@@ -36,7 +36,10 @@ export class McpServerManager {
 			try {
 				// Double-check instance in case it was created while we were waiting
 				if (!this.instance) {
-					this.instance = new McpHub(provider)
+					const hub = new McpHub(provider)
+					// Wait for all MCP servers to finish connecting (or timing out)
+					await hub.waitUntilReady()
+					this.instance = hub
 					// Store a unique identifier in global state to track the primary instance
 					await context.globalState.update(this.GLOBAL_STATE_KEY, Date.now().toString())
 				}
