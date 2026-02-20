@@ -160,6 +160,10 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 							this.log(`[API] DeleteQueuedMessage failed for messageId ${command.data}: ${errorMessage}`)
 						}
 						break
+					case TaskCommandName.CancelCommand:
+						this.log(`[API] CancelCommand`)
+						this.sidebarProvider.getCurrentTask()?.handleTerminalOperation("abort")
+						break
 				}
 			})
 		}
