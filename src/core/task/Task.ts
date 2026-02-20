@@ -102,7 +102,12 @@ import { restoreTodoListForTask } from "../tools/UpdateTodoListTool"
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { RooProtectedController } from "../protect/RooProtectedController"
-import { type AssistantMessageContent, presentAssistantMessage } from "../assistant-message"
+import { IntentController } from "../intent/IntentController"
+import { HookEngine } from "../../hooks/HookEngine"
+import { IntentValidationHook } from "../../hooks/pre/IntentValidationHook"
+import { ScopeEnforcementHook } from "../../hooks/pre/ScopeEnforcementHook"
+import { TraceLoggingHook } from "../../hooks/post/TraceLoggingHook"
+import { AssistantMessageContent, presentAssistantMessage } from "../assistant-message"
 import { NativeToolCallParser } from "../assistant-message/NativeToolCallParser"
 import { manageContext, willManageContext } from "../context-management"
 import { ClineProvider } from "../webview/ClineProvider"
@@ -298,6 +303,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	toolRepetitionDetector: ToolRepetitionDetector
 	rooIgnoreController?: RooIgnoreController
 	rooProtectedController?: RooProtectedController
+	intentController: IntentController
+	hookEngine: HookEngine
 	fileContextTracker: FileContextTracker
 	terminalProcess?: RooTerminalProcess
 
@@ -486,6 +493,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.rooIgnoreController.initialize().catch((error) => {
 			console.error("Failed to initialize RooIgnoreController:", error)
 		})
+
+		this.intentController = new IntentController(this.cwd)
+		this.intentController.initialize().catch((error) => {
+			console.error("Failed to initialize IntentController:", error)
+		})
+
+		this.hookEngine = new HookEngine()
+		this.hookEngine.registerHook(new IntentValidationHook())
+		this.hookEngine.registerHook(new ScopeEnforcementHook())
+		this.hookEngine.registerHook(new TraceLoggingHook())
 
 		this.apiConfiguration = apiConfiguration
 		this.api = buildApiHandler(this.apiConfiguration)
@@ -3815,6 +3832,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				undefined, // todoList
 				this.api.getModel().id,
 				provider.getSkillsManager(),
+				this.intentController.getAllIntents(),
 			)
 		})()
 	}
