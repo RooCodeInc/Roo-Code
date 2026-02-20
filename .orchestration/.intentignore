@@ -1,0 +1,36 @@
+# .intentignore — Files protected from ALL agent modifications
+# Format identical to .gitignore (one glob per line, # = comment)
+
+# Orchestration files themselves — never let agents modify governance
+.orchestration/**
+
+# Dependency management — humans own these
+node_modules/**
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Version control
+.git/**
+
+# Environment and secrets — NEVER touch
+.env
+.env.*
+*.pem
+*.key
+*.cert
+secrets/**
+
+# CI/CD configuration — require human review
+.github/**
+.gitlab-ci.yml
+Dockerfile
+docker-compose*.yml
+
+# Root config files — require human review
+tsconfig.json
+.eslintrc*
+.prettierrc*
+jest.config.*
+vite.config.*
+webpack.config.*

@@ -1,8 +1,35 @@
 {
 	"name": "roo-code",
+	"displayName": "Roo Code",
+	"publisher": "roo-dev",
+	"version": "1.0.0",
 	"packageManager": "pnpm@10.8.1",
 	"engines": {
-		"node": "20.19.2"
+		"vscode": "^1.84.0"
+	},
+	"main": "./src/dist/extension.js",
+	"activationEvents": [
+		"onView:roo-code.SidebarProvider"
+	],
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "roo-code-sidebar",
+					"title": "Roo Code",
+					"icon": "assets/vscode-material-icons/icon.svg"
+				}
+			]
+		},
+		"views": {
+			"roo-code-sidebar": [
+				{
+					"id": "roo-code.SidebarProvider",
+					"type": "webview",
+					"name": "Chat"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"preinstall": "node scripts/bootstrap.mjs",
@@ -47,7 +74,8 @@
 		"rimraf": "^6.0.1",
 		"tsx": "^4.19.3",
 		"turbo": "^2.5.6",
-		"typescript": "5.8.3"
+		"typescript": "5.8.3",
+		"vite-plugin-node-polyfills": "^0.25.0"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,json,css,md}": [

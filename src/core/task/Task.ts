@@ -1,3 +1,4 @@
+import { HookEngine } from "../../hooks/HookEngine"
 import * as path from "path"
 import * as vscode from "vscode"
 import os from "os"
@@ -393,6 +394,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// No streaming parser is required.
 	assistantMessageParser?: undefined
 	private providerProfileChangeListener?: (config: { name: string; provider?: string }) => void
+	private hookEngine: HookEngine | null = null
 
 	// Native tool call streaming state (track which index each tool is at)
 	private streamingToolCallIndices: Map<string, number> = new Map()
@@ -524,6 +526,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.assistantMessageParser = undefined
 
 		this.messageQueueService = new MessageQueueService()
+
+		// TRP1 HookEngine – Intent-Code Traceability & Governance
+		const workspaceRoot = this.workspacePath // this.cwd is the workspace root
+		this.hookEngine = new HookEngine(workspaceRoot)
+		this.hookEngine.init().catch((err) => {
+			console.error(`[HookEngine] init failed for task ${this.taskId}:`, err)
+		})
 
 		this.messageQueueStateChangedHandler = () => {
 			this.emit(RooCodeEventName.TaskUserMessage, this.taskId)

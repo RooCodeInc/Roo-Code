@@ -1,0 +1,63 @@
+active_intents:
+  - id: INT-001
+    name: JWT Authentication Migration
+    status: PENDING
+    owned_scope:
+      - src/auth/**
+      - src/middleware/jwt.ts
+      - tests/auth/**
+    constraints:
+      - Must not use external auth providers
+      - Must maintain backward compatibility with Basic Auth
+      - All tokens must expire within 24 hours
+      - Must use RS256 algorithm (not HS256)
+    acceptance_criteria:
+      - Unit tests in tests/auth/ pass with coverage >90%
+      - Existing Basic Auth integration tests still pass
+      - No secrets stored in source code
+      - JWT refresh token flow implemented
+    related_requirements:
+      - REQ-042
+      - REQ-043
+    created_at: "2026-02-18T10:00:00Z"
+    updated_at: "2026-02-18T10:00:00Z"
+
+  - id: INT-002
+    name: Weather API Integration
+    status: PENDING
+    owned_scope:
+      - src/weather/**
+      - src/types/weather.ts
+      - tests/weather/**
+    constraints:
+      - Must use only free-tier weather APIs
+      - Must cache responses for at least 10 minutes
+      - Response time must be under 500ms for cached results
+    acceptance_criteria:
+      - getCurrentWeather() returns temp, humidity, conditions
+      - Caching layer functional (Redis or in-memory)
+      - Error handling for API timeout and rate limit
+      - Tests in tests/weather/ pass
+    related_requirements:
+      - REQ-101
+    created_at: "2026-02-18T10:00:00Z"
+    updated_at: "2026-02-18T10:00:00Z"
+
+  - id: INT-003
+    name: User Profile CRUD
+    status: PENDING
+    owned_scope:
+      - src/users/**
+      - src/routes/user.ts
+      - tests/users/**
+    constraints:
+      - Must validate all input with Zod schemas
+      - Passwords must be hashed with bcrypt (cost factor >= 12)
+      - Must not expose password hash in any API response
+    acceptance_criteria:
+      - CRUD endpoints return correct HTTP status codes
+      - Input validation rejects malformed data
+      - Password never returned in GET /users/:id
+      - Tests pass
+    created_at: "2026-02-18T10:00:00Z"
+    updated_at: "2026-02-18T10:00:00Z"

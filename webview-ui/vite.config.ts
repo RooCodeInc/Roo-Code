@@ -1,3 +1,6 @@
+import { createRequire } from "module"
+const require = createRequire(import.meta.url)
+
 import path, { resolve } from "path"
 import fs from "fs"
 import { execSync } from "child_process"
@@ -7,6 +10,7 @@ import react from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
 
 import { sourcemapPlugin } from "./src/vite-plugins/sourcemapPlugin"
+import { nodePolyfills } from "vite-plugin-node-polyfills"
 
 function getGitSha() {
 	let gitSha: string | undefined = undefined
@@ -54,6 +58,10 @@ const persistPortPlugin = (): Plugin => ({
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
 	let outDir = "../src/webview-ui/build"
+	const fsEmptyMock = path.resolve(
+		path.dirname(require.resolve("node-stdlib-browser/package.json")),
+		"esm/mock/empty.js",
+	)
 
 	const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "src", "package.json"), "utf8"))
 	const gitSha = getGitSha()
@@ -82,6 +90,14 @@ export default defineConfig(({ mode }) => {
 	}
 
 	const plugins: PluginOption[] = [
+		nodePolyfills({
+			// This ensures that 'fs', 'path', etc. are polyfilled for the browser
+			include: ["fs", "path", "os", "buffer", "process"],
+			globals: {
+				process: true,
+				Buffer: true,
+			},
+		}),
 		react({
 			babel: {
 				plugins: [["babel-plugin-react-compiler", { target: "18" }]],
@@ -100,6 +116,9 @@ export default defineConfig(({ mode }) => {
 				"@": resolve(__dirname, "./src"),
 				"@src": resolve(__dirname, "./src"),
 				"@roo": resolve(__dirname, "../src/shared"),
+				// Standard polyfill redirects
+				"fs/promises": fsEmptyMock,
+				fs: fsEmptyMock,
 			},
 		},
 		build: {

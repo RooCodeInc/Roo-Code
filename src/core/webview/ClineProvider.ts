@@ -1188,15 +1188,18 @@ export class ClineProvider
 		try {
 			const fs = require("fs")
 			const path = require("path")
-			const portFilePath = path.resolve(__dirname, "../../.vite-port")
+			const portFileCandidates = [
+				path.resolve(this.contextProxy.extensionUri.fsPath, "..", ".vite-port"),
+				path.resolve(this.contextProxy.extensionUri.fsPath, ".vite-port"),
+				path.resolve(__dirname, "../../.vite-port"),
+			]
 
-			if (fs.existsSync(portFilePath)) {
-				localPort = fs.readFileSync(portFilePath, "utf8").trim()
-				console.log(`[ClineProvider:Vite] Using Vite server port from ${portFilePath}: ${localPort}`)
-			} else {
-				console.log(
-					`[ClineProvider:Vite] Port file not found at ${portFilePath}, using default port: ${localPort}`,
-				)
+			for (const portFilePath of portFileCandidates) {
+				if (fs.existsSync(portFilePath)) {
+					localPort = fs.readFileSync(portFilePath, "utf8").trim()
+					console.log(`[ClineProvider:Vite] Using Vite server port from ${portFilePath}: ${localPort}`)
+					break
+				}
 			}
 		} catch (err) {
 			console.error("[ClineProvider:Vite] Failed to read Vite port file:", err)
@@ -1236,8 +1239,7 @@ export class ClineProvider
 		const imagesUri = getUri(webview, this.contextProxy.extensionUri, ["assets", "images"])
 		const audioUri = getUri(webview, this.contextProxy.extensionUri, ["webview-ui", "audio"])
 
-		const file = "src/index.tsx"
-		const scriptUri = `http://${localServerUrl}/${file}`
+		const scriptUri = `http://${localServerUrl}/src/index.tsx`
 
 		const reactRefresh = /*html*/ `
 			<script nonce="${nonce}" type="module">

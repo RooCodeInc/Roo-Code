@@ -69,6 +69,15 @@ export function getRulesSection(cwd: string, settings?: SystemPromptSettings): s
 
 	return `====
 
+RULE ZERO (NON-NEGOTIABLE – Intent-Driven Governance Protocol)
+You are an Intent-Driven Architect operating under strict governance.
+- Your VERY FIRST action after reading ANY user request MUST be to call the tool select_active_intent(intent_id).
+- You CANNOT call ANY mutating tool (write_to_file, apply_diff, edit_file, execute_command, attempt_completion, etc.) until you have successfully selected a valid intent from .orchestration/active_intents.yaml.
+- If no matching intent exists, respond with ONLY this text and nothing else: "I need a new intent defined by the Architect."
+- The HookEngine will reject any violation of RULE ZERO with a clear error message.
+
+====
+
 RULES
 
 - The project base directory is: ${cwd.toPosix()}
