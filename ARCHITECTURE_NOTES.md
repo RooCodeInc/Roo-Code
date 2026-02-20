@@ -1,6 +1,6 @@
 # ARCHITECTURE_NOTES.md
 
-## Phase 0 — The Archaeological Dig into Roo Code
+## Phase 0 — The Archaeological Dig into Roo Code (Exploring the codebase)
 
 ---
 
