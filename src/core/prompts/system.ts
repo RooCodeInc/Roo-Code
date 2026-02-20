@@ -25,6 +25,7 @@ import {
 	getSkillsSection,
 	getIntentProtocolSection,
 } from "./sections"
+import { Intent } from "../intent/IntentController"
 
 // Helper function to get prompt component, filtering out empty objects
 export function getPromptComponent(
@@ -56,6 +57,7 @@ async function generatePrompt(
 	todoList?: TodoItem[],
 	modelId?: string,
 	skillsManager?: SkillsManager,
+	intents?: Intent[],
 ): Promise<string> {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -86,8 +88,8 @@ async function generatePrompt(
 	const basePrompt = `${roleDefinition}
 
 ${markdownFormattingSection()}
-
-${getIntentProtocolSection()}
+ 
+${getIntentProtocolSection(intents || [])}
 
 ${getSharedToolUseSection()}${toolsCatalog}
 
@@ -129,6 +131,7 @@ export const SYSTEM_PROMPT = async (
 	todoList?: TodoItem[],
 	modelId?: string,
 	skillsManager?: SkillsManager,
+	intents?: Intent[],
 ): Promise<string> => {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -157,5 +160,6 @@ export const SYSTEM_PROMPT = async (
 		todoList,
 		modelId,
 		skillsManager,
+		intents,
 	)
 }
