@@ -63,6 +63,7 @@ import { openMention } from "../mentions"
 import { resolveImageMentions } from "../mentions/resolveImageMentions"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { getWorkspacePath } from "../../utils/path"
+import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { Mode, defaultModeSlug } from "../../shared/modes"
 import { getModels, flushModels } from "../../api/providers/fetchers/modelCache"
 import { GetModelsOptions } from "../../shared/api"
@@ -1152,7 +1153,22 @@ export const webviewMessageHandler = async (
 				break
 			}
 			try {
-				const absPath = path.isAbsolute(relPath) ? relPath : path.join(getCurrentCwd(), relPath)
+				const cwd = getCurrentCwd()
+				if (!cwd) {
+					provider.postMessageToWebview({
+						type: "fileContent",
+						fileContent: { path: relPath, content: null, error: "No workspace path available" },
+					})
+					break
+				}
+				const absPath = path.resolve(cwd, relPath)
+				if (isPathOutsideWorkspace(absPath)) {
+					provider.postMessageToWebview({
+						type: "fileContent",
+						fileContent: { path: relPath, content: null, error: "Path is outside workspace" },
+					})
+					break
+				}
 				const content = await fs.readFile(absPath, "utf-8")
 				provider.postMessageToWebview({ type: "fileContent", fileContent: { path: relPath, content } })
 			} catch (err) {
