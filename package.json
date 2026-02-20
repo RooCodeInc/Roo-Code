@@ -1,75 +1,140 @@
 {
-	"name": "roo-code",
-	"packageManager": "pnpm@10.8.1",
-	"engines": {
-		"node": "20.19.2"
-	},
-	"scripts": {
-		"preinstall": "node scripts/bootstrap.mjs",
-		"prepare": "husky",
-		"install": "node scripts/bootstrap.mjs",
-		"install:all": "node scripts/bootstrap.mjs",
-		"lint": "turbo lint --log-order grouped --output-logs new-only",
-		"check-types": "turbo check-types --log-order grouped --output-logs new-only",
-		"test": "turbo test --log-order grouped --output-logs new-only",
-		"format": "turbo format --log-order grouped --output-logs new-only",
-		"build": "turbo build --log-order grouped --output-logs new-only",
-		"bundle": "turbo bundle --log-order grouped --output-logs new-only",
-		"bundle:nightly": "turbo bundle:nightly --log-order grouped --output-logs new-only",
-		"vsix": "turbo vsix --log-order grouped --output-logs new-only",
-		"vsix:nightly": "turbo vsix:nightly --log-order grouped --output-logs new-only",
-		"clean": "turbo clean --log-order grouped --output-logs new-only && rimraf dist out bin .vite-port .turbo",
-		"install:vsix": "pnpm install --frozen-lockfile && pnpm clean && pnpm vsix && node scripts/install-vsix.js",
-		"install:vsix:nightly": "pnpm install --frozen-lockfile && pnpm clean && pnpm vsix:nightly && node scripts/install-vsix.js --nightly",
-		"code-server:install": "node scripts/code-server.js",
-		"changeset:version": "cp CHANGELOG.md src/CHANGELOG.md && changeset version && cp -vf src/CHANGELOG.md .",
-		"knip": "knip --include files",
-		"evals": "dotenvx run -f packages/evals/.env.development packages/evals/.env.local -- docker compose -f packages/evals/docker-compose.yml --profile server --profile runner up --build --scale runner=0",
-		"npm:publish:types": "pnpm --filter @roo-code/types npm:publish"
-	},
-	"devDependencies": {
-		"@changesets/cli": "^2.27.10",
-		"@dotenvx/dotenvx": "^1.34.0",
-		"@roo-code/config-typescript": "workspace:^",
-		"@types/glob": "^9.0.0",
-		"@types/js-yaml": "^4.0.9",
-		"@types/node": "^24.1.0",
-		"@vscode/vsce": "3.3.2",
-		"esbuild": "^0.25.0",
-		"eslint": "^9.27.0",
-		"glob": "^11.1.0",
-		"husky": "^9.1.7",
-		"knip": "^5.44.4",
-		"lint-staged": "^16.0.0",
-		"mkdirp": "^3.0.1",
-		"only-allow": "^1.2.1",
-		"ovsx": "0.10.4",
-		"prettier": "^3.4.2",
-		"rimraf": "^6.0.1",
-		"tsx": "^4.19.3",
-		"turbo": "^2.5.6",
-		"typescript": "5.8.3"
-	},
-	"lint-staged": {
-		"*.{js,jsx,ts,tsx,json,css,md}": [
-			"prettier --write"
-		]
-	},
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"@vscode/ripgrep"
-		],
-		"overrides": {
-			"tar-fs": ">=3.1.1",
-			"esbuild": ">=0.25.0",
-			"undici": ">=5.29.0",
-			"brace-expansion": "^2.0.2",
-			"form-data": ">=4.0.4",
-			"bluebird": ">=3.7.2",
-			"glob": ">=11.1.0",
-			"@types/react": "^18.3.23",
-			"@types/react-dom": "^18.3.5",
-			"zod": "3.25.76"
-		}
-	}
+  "name": "roo-code",
+  "displayName": "Roo Code",
+  "description": "An AI-native IDE extension that can use your CLI and editor",
+  "version": "3.3.2",
+  "icon": "assets/icons/robot.svg",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
+  "publisher": "RooCode",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Roo-Code/Roo-Code"
+  },
+  "categories": [
+    "AI",
+    "Programming Languages",
+    "Education",
+    "Assistant"
+  ],
+  "keywords": [
+    "ai",
+    "llm",
+    "agentic",
+    "coding assistant",
+    "anthropic",
+    "claude",
+    "openai",
+    "gemini",
+    "ollama"
+  ],
+  "activationEvents": [
+    "onView:roo-code.SidebarProvider"
+  ],
+  "main": "./dist/extension.js",
+  "browser": "./dist/extension.js",
+  "bin": {
+    "roo": "./bin/roo.js"
+  },
+  "engines": {
+    "vscode": "^1.84.0"
+  },
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "roo-code-SidebarContainer",
+          "icon": "assets/icons/robot.svg",
+          "title": "Roo Code"
+        }
+      ]
+    },
+    "views": {
+      "roo-code-SidebarContainer": [
+        {
+          "type": "webview",
+          "id": "roo-code.SidebarProvider",
+          "name": ""
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "roo-code.plusButtonClicked",
+        "title": "New Task",
+        "icon": "$(add)"
+      },
+      {
+        "command": "roo-code.mcpButtonClicked",
+        "title": "MCP Servers",
+        "icon": "$(server-process)"
+      },
+      {
+        "command": "roo-code.historyButtonClicked",
+        "title": "History",
+        "icon": "$(history)"
+      },
+      {
+        "command": "roo-code.settingsButtonClicked",
+        "title": "Settings",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "roo-code.openInNewTab",
+        "title": "Open In New Tab"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "roo-code.plusButtonClicked",
+          "group": "navigation@1",
+          "when": "view == roo-code.SidebarProvider"
+        },
+        {
+          "command": "roo-code.mcpButtonClicked",
+          "group": "navigation@2",
+          "when": "view == roo-code.SidebarProvider"
+        },
+        {
+          "command": "roo-code.historyButtonClicked",
+          "group": "navigation@3",
+          "when": "view == roo-code.SidebarProvider"
+        },
+        {
+          "command": "roo-code.settingsButtonClicked",
+          "group": "navigation@4",
+          "when": "view == roo-code.SidebarProvider"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "roo-code.openInNewTab",
+          "when": "true"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Roo Code",
+      "properties": {
+        "roo-code.instructions": {
+          "type": "string",
+          "default": "",
+          "description": "Custom instructions to add to the end of every system prompt.",
+          "editPresentation": "multilineText"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "node esbuild.js",
+    "bundle": "node esbuild.js",
+    "package": "node esbuild.js --production",
+    "watch": "node esbuild.js --watch",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src --ext ts"
+  }
 }
