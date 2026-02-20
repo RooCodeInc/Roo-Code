@@ -356,6 +356,8 @@
 		"headerName": "Имя заголовка",
 		"headerValue": "Значение заголовка",
 		"noCustomHeaders": "Пользовательские заголовки не определены. Нажмите кнопку +, чтобы добавить.",
+		"unboundApiKey": "Unbound API-ключ",
+		"getUnboundApiKey": "Получить Unbound API-ключ",
 		"requestyApiKey": "Requesty API-ключ",
 		"refreshModels": {
 			"label": "Обновить модели",

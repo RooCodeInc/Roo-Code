@@ -356,6 +356,8 @@
 		"headerName": "헤더 이름",
 		"headerValue": "헤더 값",
 		"noCustomHeaders": "정의된 사용자 정의 헤더가 없습니다. + 버튼을 클릭하여 추가하세요.",
+		"unboundApiKey": "Unbound API 키",
+		"getUnboundApiKey": "Unbound API 키 받기",
 		"requestyApiKey": "Requesty API 키",
 		"refreshModels": {
 			"label": "모델 새로고침",

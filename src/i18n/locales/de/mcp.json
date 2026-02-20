@@ -24,5 +24,14 @@
 		"refreshing_all": "Alle MCP-Server werden aktualisiert...",
 		"all_refreshed": "Alle MCP-Server wurden aktualisiert.",
 		"project_config_deleted": "Projekt-MCP-Konfigurationsdatei gelöscht. Alle Projekt-MCP-Server wurden getrennt."
-	}
+	},
+	"tools": [
+		{
+			"name": "search_codebase",
+			"description": "Search the repo for function names and keywords",
+			"parameters": {
+				"query": "string"
+			}
+		}
+	]
 }

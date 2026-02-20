@@ -356,6 +356,8 @@
 		"headerName": "Tên tiêu đề",
 		"headerValue": "Giá trị tiêu đề",
 		"noCustomHeaders": "Chưa có tiêu đề tùy chỉnh nào được định nghĩa. Nhấp vào nút + để thêm.",
+		"unboundApiKey": "Khóa API Unbound",
+		"getUnboundApiKey": "Lấy khóa API Unbound",
 		"requestyApiKey": "Khóa API Requesty",
 		"refreshModels": {
 			"label": "Làm mới mô hình",

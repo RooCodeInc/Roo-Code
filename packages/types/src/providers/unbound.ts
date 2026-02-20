@@ -1,0 +1,16 @@
+import type { ModelInfo } from "../model.js"
+
+// Unbound
+// https://gateway.getunbound.ai
+export const unboundDefaultModelId = "anthropic/claude-sonnet-4-5"
+
+export const unboundDefaultModelInfo: ModelInfo = {
+	maxTokens: 8192,
+	contextWindow: 200_000,
+	supportsImages: true,
+	supportsPromptCache: true,
+	inputPrice: 3.0,
+	outputPrice: 15.0,
+	cacheWritesPrice: 3.75,
+	cacheReadsPrice: 0.3,
+}

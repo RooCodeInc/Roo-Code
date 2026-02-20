@@ -356,6 +356,8 @@
 		"headerName": "标头名称",
 		"headerValue": "标头值",
 		"noCustomHeaders": "暂无自定义标头。点击 + 按钮添加。",
+		"unboundApiKey": "Unbound API 密钥",
+		"getUnboundApiKey": "获取 Unbound API 密钥",
 		"requestyApiKey": "Requesty API 密钥",
 		"refreshModels": {
 			"label": "刷新模型",

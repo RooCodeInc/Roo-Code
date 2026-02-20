@@ -38,6 +38,7 @@
 		"eslint": "^9.27.0",
 		"glob": "^11.1.0",
 		"husky": "^9.1.7",
+		"js-yaml": "4",
 		"knip": "^5.44.4",
 		"lint-staged": "^16.0.0",
 		"mkdirp": "^3.0.1",
@@ -47,7 +48,8 @@
 		"rimraf": "^6.0.1",
 		"tsx": "^4.19.3",
 		"turbo": "^2.5.6",
-		"typescript": "5.8.3"
+		"typescript": "5.8.3",
+		"vitest": "^4.0.18"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,json,css,md}": [
