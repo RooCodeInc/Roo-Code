@@ -29,6 +29,10 @@ export const commandExecutionStatusSchema = z.discriminatedUnion("status", [
 		executionId: z.string(),
 		status: z.literal("timeout"),
 	}),
+	z.object({
+		executionId: z.string(),
+		status: z.literal("cancelled"),
+	}),
 ])
 
 export type CommandExecutionStatus = z.infer<typeof commandExecutionStatusSchema>
