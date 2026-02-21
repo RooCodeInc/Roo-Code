@@ -1,18 +1,26 @@
-import { preHook } from "./preHook"
-import { postHook } from "./postHook"
+import { preWriteHook } from "./preHook"
+import { postWriteHook } from "./postHook"
+import fs from "fs"
 
-export async function runWithHooks(command: string, args: any) {
-	// Pre-Hook intercept
-	const preResult = await preHook(command, args)
-	if (!preResult.allowed) {
-		throw new Error(`Blocked by PreHook: ${preResult.reason}`)
+// Wrap the write_file tool
+export async function writeFileWithHooks(
+	filePath: string,
+	content: string,
+	intentId: string,
+	sessionId: string,
+	contributorModel: string,
+) {
+	// PREHOOK: validate intent + scope
+	const intent = preWriteHook(filePath, intentId)
+
+	// backup old file for AST diff
+	if (fs.existsSync(filePath)) {
+		fs.copyFileSync(filePath, filePath + ".bak")
 	}
 
-	// Execute actual command
-	const result = await executeCommand(command, args)
+	// ACTUAL WRITE
+	fs.writeFileSync(filePath, content, "utf-8")
 
-	// Post-Hook intercept
-	await postHook(command, args, result)
-
-	return result
+	// POSTHOOK: trace log
+	postWriteHook(filePath, intent, sessionId, contributorModel)
 }
