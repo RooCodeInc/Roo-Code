@@ -1,0 +1,25 @@
+﻿# .intentignore
+# Files/patterns excluded from intent ownership checks and trace enforcement.
+# Keep this list small and explicit.
+
+# Dependencies and build artifacts
+node_modules/
+dist/
+build/
+coverage/
+
+# VCS and editor state
+.git/
+.vscode/
+.idea/
+
+# Generated logs and temporary files
+*.log
+*.tmp
+*.bak
+
+# Orchestration machine files (do not mutate via normal feature intents)
+.orchestration/agent_trace.jsonl
+.orchestration/intent_map.md
+
+# Add project-specific exclusions below
