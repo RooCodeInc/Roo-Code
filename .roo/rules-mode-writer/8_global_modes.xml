@@ -1,0 +1,51 @@
+<global_modes_reference>
+  <overview>
+    This reference documents how global (system-wide) modes work, where they live, and how they interact
+    with workspace-scoped modes.
+  </overview>
+
+  <locations>
+    <workspace>
+      <file>.roomodes</file>
+      <scope>Per-workspace (project) modes</scope>
+    </workspace>
+
+    <global>
+      <file>Global custom modes settings file (stored in VS Code globalStorage; exact path is environment-specific)</file>
+      <scope>System-wide modes for Roo Code</scope>
+      <notes>
+        This file is created automatically on Roo Code startup if it does not exist.
+      </notes>
+    </global>
+  </locations>
+
+  <precedence>
+    <rule>
+      When a mode with the same slug exists in both locations, the workspace (.roomodes) version takes precedence.
+    </rule>
+    <implications>
+      <implication>
+        Editing the global mode may have no visible effect inside a workspace that overrides the same slug.
+      </implication>
+      <implication>
+        To change behavior in one repo only, prefer editing .roomodes.
+      </implication>
+    </implications>
+  </precedence>
+
+  <workflow_guidance>
+    <decision>
+      <rule>Default to editing .roomodes unless the user explicitly requests global scope.</rule>
+      <rule>
+        If the user asks for global scope, first check whether a workspace override exists for the same slug.
+        If it does, explain the precedence and offer to edit both.
+      </rule>
+    </decision>
+
+    <safe_editing_principles>
+      <principle>
+        Prefer minimal, targeted changes and preserve YAML formatting.
+      </principle>
+    </safe_editing_principles>
+  </workflow_guidance>
+</global_modes_reference>
