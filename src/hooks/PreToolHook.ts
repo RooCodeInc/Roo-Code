@@ -1,3 +1,6 @@
+import * as fs from "fs/promises"
+import * as path from "path"
+
 import { IntentManager } from "./IntentManager"
 import { ScopeValidator } from "./ScopeValidator"
 import type { ToolExecutionContext, PreHookResult, ActiveIntent } from "./types"
@@ -50,12 +53,17 @@ export class PreToolHook {
 			return { allowed: true }
 		}
 
-		// Check if active intent exists for this task
-		// Use the global IntentManager instance to ensure consistency
 		const intentManager = this.getIntentManager()
 
-		// First check if activeIntentId is provided in context (from task.activeIntentId)
-		// Then fall back to looking it up in IntentManager by taskId
+		// Distinguish "no intents defined in YAML" vs "no intent selected"
+		const intents = await intentManager.loadIntents()
+		if (intents.length === 0) {
+			return {
+				allowed: false,
+				error: "No intents are defined in active_intents.yaml. Please create an intent before performing modifications.",
+			}
+		}
+
 		let activeIntent: ActiveIntent | null = null
 		if (context.activeIntentId) {
 			activeIntent = await intentManager.getIntent(context.activeIntentId)
@@ -64,7 +72,6 @@ export class PreToolHook {
 			}
 		}
 
-		// If not found via activeIntentId, try looking up by taskId
 		if (!activeIntent) {
 			activeIntent = await intentManager.getActiveIntent(context.taskId)
 			if (activeIntent) {
@@ -86,20 +93,51 @@ export class PreToolHook {
 		}
 
 		// Validate scope for file operations
-		if (context.toolName === "write_to_file" || context.toolName === "edit_file") {
-			const filePath = (context.toolParams.path as string) || (context.toolParams.file_path as string)
-			if (filePath) {
-				const isInScope = await this.scopeValidator.validatePath(filePath, activeIntent.ownedScope)
-				if (!isInScope) {
-					return {
-						allowed: false,
-						error: `Scope Violation: Intent ${activeIntent.id} (${activeIntent.name}) is not authorized to edit ${filePath}. Allowed scope: ${activeIntent.ownedScope.join(", ")}`,
+		const filePath = (context.toolParams.path as string) || (context.toolParams.file_path as string)
+		if ((context.toolName === "write_to_file" || context.toolName === "edit_file") && filePath) {
+			const isInScope = await this.scopeValidator.validatePath(filePath, activeIntent.ownedScope)
+			if (!isInScope) {
+				return {
+					allowed: false,
+					error: `Scope Violation: Intent ${activeIntent.id} (${activeIntent.name}) is not authorized to edit ${filePath}. Allowed scope: ${activeIntent.ownedScope.join(", ")}`,
+				}
+			}
+
+			// Optimistic locking: block write if file was modified since last read
+			const store = (global as any).__fileStateLockStore as
+				| {
+						checkStale(filePath: string, currentContent: string): boolean
+						getExpectedHash(filePath: string): string | undefined
+				  }
+				| undefined
+			const workspaceRoot = context.workspacePath
+			if (workspaceRoot) {
+				const absolutePath = path.resolve(workspaceRoot, filePath)
+				if (store && store.getExpectedHash(filePath) !== undefined) {
+					try {
+						const currentContent = await fs.readFile(absolutePath, "utf-8")
+						if (store.checkStale(filePath, currentContent)) {
+							return {
+								allowed: false,
+								error: "Stale file detected. Please re-read file before writing.",
+							}
+						}
+					} catch (err) {
+						// File does not exist (create flow) - no stale check
 					}
+				}
+				// Record whether file existed before write (for trace classification in PostToolHook)
+				try {
+					await fs.access(absolutePath)
+					;(global as any).__lastWriteMutationByPath = (global as any).__lastWriteMutationByPath || {}
+					;(global as any).__lastWriteMutationByPath[`${context.taskId}:${filePath}`] = "MODIFY"
+				} catch {
+					;(global as any).__lastWriteMutationByPath = (global as any).__lastWriteMutationByPath || {}
+					;(global as any).__lastWriteMutationByPath[`${context.taskId}:${filePath}`] = "CREATE"
 				}
 			}
 		}
 
-		// Intent is active and scope is valid, allow execution
 		return { allowed: true }
 	}
 }

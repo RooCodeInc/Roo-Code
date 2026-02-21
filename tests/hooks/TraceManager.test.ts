@@ -51,7 +51,7 @@ describe("TraceManager", () => {
 	})
 
 	describe("appendTraceEntry", () => {
-		it("should create a trace entry and append it to agent_trace.jsonl", async () => {
+		it("should create a trace entry and append it to agent_trace.jsonl in spec format", async () => {
 			const entry: TraceLogEntry = {
 				intentId: "INT-001",
 				contentHash: "abc123def456",
@@ -61,18 +61,24 @@ describe("TraceManager", () => {
 				toolName: "write_to_file",
 			}
 
-			// Mock vscode.workspace.fs.stat to simulate directory exists
 			const vscode = await import("vscode")
 			vi.mocked(vscode.workspace.fs.stat).mockResolvedValueOnce({} as any)
-
-			// Mock OrchestrationStorage.appendFile by mocking fs.appendFile which it uses internally
 			vi.mocked(fs.appendFile).mockResolvedValueOnce(undefined)
 
 			await traceManager.appendTraceEntry(entry)
 
-			// OrchestrationStorage.appendFile resolves "agent_trace.jsonl" to .orchestration/agent_trace.jsonl
 			const expectedPath = path.join(workspaceRoot, ".orchestration", "agent_trace.jsonl")
-			expect(fs.appendFile).toHaveBeenCalledWith(expectedPath, JSON.stringify(entry) + "\n", "utf-8")
+			const written = vi.mocked(fs.appendFile).mock.calls[0][1] as string
+			const parsed = JSON.parse(written.trim())
+			expect(parsed).toMatchObject({
+				timestamp: "2026-02-16T10:00:00.000Z",
+				intent_id: "INT-001",
+				operation: "WRITE",
+				file_path: "src/test.ts",
+				content_hash: "sha256:abc123def456",
+				classification: "INTENT_EVOLUTION",
+			})
+			expect(fs.appendFile).toHaveBeenCalledWith(expectedPath, expect.any(String), "utf-8")
 		})
 
 		it("should determine mutation_class as CREATE when file does not exist", async () => {
@@ -126,7 +132,7 @@ describe("TraceManager", () => {
 			consoleErrorSpy.mockRestore()
 		})
 
-		it("should format trace entry with all required fields", async () => {
+		it("should format trace entry in spec-aligned format (MODIFY -> AST_REFACTOR)", async () => {
 			const entry: TraceLogEntry = {
 				intentId: "INT-001",
 				contentHash: "abc123def4567890123456789012345678901234567890123456789012345678",
@@ -146,14 +152,14 @@ describe("TraceManager", () => {
 			const writtenContent = callArgs[1] as string
 			const parsedEntry = JSON.parse(writtenContent.trim())
 
-			expect(parsedEntry.intentId).toBe("INT-001")
-			expect(parsedEntry.contentHash).toBe("abc123def4567890123456789012345678901234567890123456789012345678")
-			expect(parsedEntry.filePath).toBe("src/test.ts")
-			expect(parsedEntry.mutationClass).toBe("MODIFY")
-			expect(parsedEntry.lineRanges).toEqual([{ start: 1, end: 10 }])
+			expect(parsedEntry.intent_id).toBe("INT-001")
+			expect(parsedEntry.content_hash).toBe(
+				"sha256:abc123def4567890123456789012345678901234567890123456789012345678",
+			)
+			expect(parsedEntry.file_path).toBe("src/test.ts")
+			expect(parsedEntry.operation).toBe("WRITE")
+			expect(parsedEntry.classification).toBe("AST_REFACTOR")
 			expect(parsedEntry.timestamp).toBe("2026-02-16T10:00:00.000Z")
-			expect(parsedEntry.toolName).toBe("write_to_file")
-			expect(parsedEntry.gitSha).toBe("abc123def")
 		})
 	})
 

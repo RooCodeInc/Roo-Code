@@ -43,8 +43,9 @@ import { OrchestrationStorage } from "./hooks/OrchestrationStorage"
 import { IntentManager } from "./hooks/IntentManager"
 import { HookEngine } from "./hooks/HookEngine"
 import { PreToolHook } from "./hooks/PreToolHook"
-import { TraceManager } from "./hooks/TraceManager"
 import { PostToolHook } from "./hooks/PostToolHook"
+import { TraceManager } from "./hooks/TraceManager"
+import { FileStateLockStore } from "./hooks/FileStateLockStore"
 import { initializeSelectActiveIntentTool } from "./core/tools/SelectActiveIntentTool"
 import { initializeGetActiveIntentTool } from "./core/tools/GetActiveIntentTool"
 
@@ -213,10 +214,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	initializeSelectActiveIntentTool(intentManager)
 	initializeGetActiveIntentTool(intentManager)
 
-	// Store hook engine globally for tool execution interception
-	// TODO: Integrate hookEngine into BaseTool.handle() or presentAssistantMessage
+	// Store hook engine and file state lock store globally for tool execution interception
 	;(global as any).__hookEngine = hookEngine
 	;(global as any).__intentManager = intentManager
+	;(global as any).__fileStateLockStore = new FileStateLockStore()
 
 	// Initialize the provider *before* the Roo Code Cloud service.
 	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, mdmService)

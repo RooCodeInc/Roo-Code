@@ -2,7 +2,7 @@ import * as path from "path"
 import * as fs from "fs/promises"
 import * as crypto from "crypto"
 import { OrchestrationStorage } from "./OrchestrationStorage"
-import type { TraceLogEntry, MutationClass } from "./types"
+import type { TraceLogEntry, MutationClass, SpecTraceLogEntry, TraceClassification } from "./types"
 
 /**
  * TraceManager handles logging of file write operations to agent_trace.jsonl.
@@ -51,10 +51,12 @@ export class TraceManager {
 		content: string
 		workspaceRoot: string
 		toolName: string
+		mutationClass?: MutationClass
 		lineRanges?: Array<{ start: number; end: number }>
 		gitSha?: string
 	}): Promise<TraceLogEntry> {
-		const mutationClass = await this.determineMutationClass(params.filePath, params.workspaceRoot)
+		const mutationClass =
+			params.mutationClass ?? (await this.determineMutationClass(params.filePath, params.workspaceRoot))
 		const contentHash = this.computeContentHash(params.content)
 		const timestamp = new Date().toISOString()
 
@@ -71,14 +73,31 @@ export class TraceManager {
 	}
 
 	/**
-	 * Appends a trace log entry to agent_trace.jsonl.
+	 * Converts internal trace entry to spec-aligned format for agent_trace.jsonl.
+	 */
+	private toSpecEntry(entry: TraceLogEntry): SpecTraceLogEntry {
+		const classification: TraceClassification =
+			entry.mutationClass === "CREATE" ? "INTENT_EVOLUTION" : "AST_REFACTOR"
+		return {
+			timestamp: entry.timestamp,
+			intent_id: entry.intentId,
+			operation: "WRITE",
+			file_path: entry.filePath,
+			content_hash: `sha256:${entry.contentHash}`,
+			classification,
+		}
+	}
+
+	/**
+	 * Appends a trace log entry to agent_trace.jsonl in spec-aligned format.
 	 * This operation is non-blocking - failures are logged but don't throw errors.
 	 * @param entry The trace log entry to append
 	 */
 	async appendTraceEntry(entry: TraceLogEntry): Promise<void> {
 		try {
 			const traceFilePath = "agent_trace.jsonl"
-			const jsonLine = JSON.stringify(entry) + "\n"
+			const specEntry = this.toSpecEntry(entry)
+			const jsonLine = JSON.stringify(specEntry) + "\n"
 			await this.storage.appendFile(traceFilePath, jsonLine)
 		} catch (error) {
 			// Log error but don't block operation (non-blocking audit)

@@ -216,6 +216,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					// (they become U+FFFD replacement characters instead of throwing)
 					const buffer = await fs.readFile(fullPath)
 					const fileContent = buffer.toString("utf-8")
+					;(global as any).__fileStateLockStore?.record(relPath, fileContent)
 					const result = this.processTextFile(fileContent, entry)
 
 					await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
@@ -768,6 +769,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 				// Read text file
 				const rawContent = await fs.readFile(fullPath, "utf8")
+				;(global as any).__fileStateLockStore?.record(relPath, rawContent)
 
 				// Handle line ranges if specified
 				let content: string

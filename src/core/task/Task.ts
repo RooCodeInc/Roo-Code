@@ -3796,7 +3796,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			const modelInfo = this.api.getModel().info
 
-			return SYSTEM_PROMPT(
+			let basePrompt = await SYSTEM_PROMPT(
 				provider.context,
 				this.cwd,
 				false,
@@ -3823,6 +3823,33 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.api.getModel().id,
 				provider.getSkillsManager(),
 			)
+
+			// Inject current intent context when an intent is selected (per-task)
+			if (this.activeIntentId) {
+				const intentManager = (global as any).__intentManager as
+					| {
+							getIntent(
+								id: string,
+							): Promise<{
+								id: string
+								name: string
+								description: string
+								ownedScope: string[]
+								constraints: string[]
+								acceptanceCriteria: string[]
+							} | null>
+							formatIntentContext(intent: any): string
+					  }
+					| undefined
+				if (intentManager) {
+					const intent = await intentManager.getIntent(this.activeIntentId)
+					if (intent) {
+						basePrompt = basePrompt + "\n\n" + intentManager.formatIntentContext(intent)
+					}
+				}
+			}
+
+			return basePrompt
 		})()
 	}
 

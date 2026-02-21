@@ -27,7 +27,7 @@ export interface ActiveIntent {
 }
 
 /**
- * Trace Log Entry entity
+ * Trace Log Entry entity (internal).
  */
 export interface TraceLogEntry {
 	intentId: string
@@ -38,6 +38,20 @@ export interface TraceLogEntry {
 	timestamp: string
 	toolName: string
 	gitSha?: string
+}
+
+/**
+ * Spec-aligned trace entry written to agent_trace.jsonl.
+ */
+export type TraceClassification = "INTENT_EVOLUTION" | "AST_REFACTOR"
+
+export interface SpecTraceLogEntry {
+	timestamp: string
+	intent_id: string
+	operation: "WRITE"
+	file_path: string
+	content_hash: string
+	classification: TraceClassification
 }
 
 /**
