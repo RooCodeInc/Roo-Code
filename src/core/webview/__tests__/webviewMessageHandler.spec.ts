@@ -252,7 +252,7 @@ describe("webviewMessageHandler - requestOllamaModels", () => {
 			type: "requestOllamaModels",
 		})
 
-		expect(mockFlushModels).toHaveBeenCalledWith({ provider: "ollama", baseUrl: "http://localhost:1234" }, true)
+		expect(mockFlushModels).toHaveBeenCalledWith({ provider: "ollama", baseUrl: "http://localhost:1234" }, false)
 		expect(mockDiscoverOllamaModels).toHaveBeenCalledWith(
 			"http://localhost:1234",
 			undefined,
