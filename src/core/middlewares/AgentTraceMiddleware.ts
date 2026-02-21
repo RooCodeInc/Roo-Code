@@ -1,43 +1,41 @@
-// src/core/middleware/AgentTraceMiddleware.ts
 import * as fs from "fs/promises"
 import * as path from "path"
-import { generateContentHash } from "../../utils/hash"
+import * as crypto from "crypto"
 import { Task } from "../task/Task"
+import { generateContentHash } from "../../utils/hash"
 import type { ToolMiddleware, MiddlewareResult } from "./ToolMiddleware"
 
 interface AgentTraceEntry {
+	id: string
 	timestamp: string
-	intent_id: string
-	mutation_class: "AST_REFACTOR" | "INTENT_EVOLUTION"
-	file_path: string
-	content_hash: string
-	related: string[] // REQ-IDs
-	ranges: {
-		start: number
-		end: number
-		content_hash: string
-	}[]
-}
-
-interface AgentTraceEntry {
-	timestamp: string
-	intent_id: string
-	mutation_class: "AST_REFACTOR" | "INTENT_EVOLUTION"
-	file_path: string
-	content_hash: string
-	related: string[]
-	ranges: {
-		start: number
-		end: number
-		content_hash: string
-	}[]
+	vcs: {
+		revision_id: string
+	}
+	files: Array<{
+		relative_path: string
+		conversations: Array<{
+			url: string
+			contributor: {
+				entity_type: "AI"
+				model_identifier: string
+			}
+			ranges: Array<{
+				start_line: number
+				end_line: number
+				content_hash: string
+			}>
+			related: Array<{
+				type: "specification"
+				value: string
+			}>
+		}>
+	}>
 }
 
 export class AgentTraceMiddleware implements ToolMiddleware {
 	name = "agentTrace"
 
-	async beforeExecute(params: any, task: Task, toolName: string): Promise<MiddlewareResult> {
-		// No pre-execution logic needed for tracing
+	async beforeExecute(_params: any, _task: Task, _toolName: string): Promise<MiddlewareResult> {
 		return { allow: true }
 	}
 
@@ -47,27 +45,45 @@ export class AgentTraceMiddleware implements ToolMiddleware {
 		}
 
 		try {
-			// Get the last write_file tool use from the conversation
 			const lastToolUse = this.findLastToolUse(task, "write_to_file")
 			if (!lastToolUse) {
 				return { allow: true, modifiedResult: result }
 			}
 
-			const { intent_id, mutation_class, path: filePath } = lastToolUse.params
-			const contentHash = generateContentHash(lastToolUse.params.content)
+			const { intent_id, mutation_class, path: filePath, content } = lastToolUse.params
+			const contentHash = generateContentHash(content)
 
 			const traceEntry: AgentTraceEntry = {
+				id: crypto.randomUUID(),
 				timestamp: new Date().toISOString(),
-				intent_id,
-				mutation_class,
-				file_path: filePath,
-				content_hash: contentHash,
-				related: [intent_id], // Inject REQ-ID into related array
-				ranges: [
+				vcs: {
+					revision_id: await this.getGitSha(task.cwd),
+				},
+				files: [
 					{
-						start: 0,
-						end: lastToolUse.params.content.length,
-						content_hash: contentHash, // Inject content_hash into ranges
+						relative_path: filePath,
+						conversations: [
+							{
+								url: task.taskId, // session_log_id
+								contributor: {
+									entity_type: "AI",
+									model_identifier: await this.getModelIdentifier(task),
+								},
+								ranges: [
+									{
+										start_line: 1,
+										end_line: content.split("\n").length,
+										content_hash: `sha256:${contentHash}`,
+									},
+								],
+								related: [
+									{
+										type: "specification",
+										value: intent_id, // REQ-ID injection
+									},
+								],
+							},
+						],
 					},
 				],
 			}
@@ -76,8 +92,49 @@ export class AgentTraceMiddleware implements ToolMiddleware {
 			return { allow: true, modifiedResult: result }
 		} catch (error) {
 			console.error("Agent trace middleware error:", error)
-			// Don't fail the operation, just log the error
 			return { allow: true, modifiedResult: result }
+		}
+	}
+
+	private async getGitSha(cwd: string): Promise<string> {
+		try {
+			const { execSync } = require("child_process")
+			const gitSha = execSync("git rev-parse HEAD", {
+				cwd,
+				encoding: "utf8",
+			}).trim()
+			return gitSha || "unknown"
+		} catch {
+			return "unknown"
+		}
+	}
+
+	private async getModelIdentifier(task: Task): Promise<string> {
+		try {
+			const provider = task.providerRef.deref()
+			if (!provider) return "unknown"
+
+			const state = await provider.getState()
+			const apiConfiguration = state?.apiConfiguration
+
+			if (apiConfiguration) {
+				switch (apiConfiguration.apiProvider) {
+					case "anthropic":
+						return apiConfiguration.apiModelId || "unknown"
+					case "openrouter":
+						return apiConfiguration.openRouterModelId || "unknown"
+					case "openai":
+						return apiConfiguration.openAiModelId || "unknown"
+					case "lmstudio":
+						return apiConfiguration.lmStudioModelId || "unknown"
+					default:
+						return "unknown"
+				}
+			}
+
+			return "unknown"
+		} catch {
+			return "unknown"
 		}
 	}
 
