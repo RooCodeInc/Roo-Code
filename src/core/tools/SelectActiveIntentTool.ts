@@ -17,23 +17,36 @@ export class SelectActiveIntentTool extends BaseTool<"select_active_intent"> {
 				throw new Error("IntentController not initialized")
 			}
 
-			const intent = task.intentController.getIntent(intent_id)
+			// In this advanced model, search for the intent in the active list first
+			let intent = task.intentController.getIntent(intent_id)
 
 			if (!intent) {
-				pushToolResult(`Error: Intent ID '${intent_id}' not found in intent_map.yaml.`)
+				pushToolResult(
+					`Error: Intent ID '${intent_id}' not found in .orchestration/active_intents.yaml. You may need to ask the user to add it or use an existing one from .orchestration/intent_map.md.`,
+				)
 				return
 			}
 
+			// Update status if it's not already in progress
+			if (intent.status !== "IN_PROGRESS") {
+				await task.intentController.updateIntentStatus(intent_id, "IN_PROGRESS")
+			}
+
+			// Essential: Set the session-level active intent ID for the Hook Engine
 			task.intentController.setActiveIntentId(intent_id)
 
 			const contextBlock = [
 				`<intent_context>`,
 				`ID: ${intent.id}`,
+				`Name: ${intent.name}`,
+				`Status: ${intent.status}`,
 				`Description: ${intent.description}`,
 				`Constraints:`,
-				...intent.constraints.map((c) => `- ${c}`),
-				`Scope:`,
-				...intent.owned_scope.map((s) => `- ${s}`),
+				...(intent.constraints || []).map((c) => `- ${c}`),
+				`Owned Scope:`,
+				...(intent.owned_scope || []).map((s) => `- ${s}`),
+				`Acceptance Criteria:`,
+				...(intent.acceptance_criteria || []).map((ac) => `- ${ac}`),
 				`</intent_context>`,
 			].join("\n")
 

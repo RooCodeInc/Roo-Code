@@ -14,14 +14,12 @@ export class ScopeEnforcementHook implements IToolHook {
 
 		if (toolName === "write_to_file" || toolName === "apply_diff") {
 			const filePath = (toolArgs.path || "") as string
-			const intent = task.intentController.getIntent(intentId)
-
-			if (intent && filePath) {
-				const isScoped = intent.owned_scope.some((scope) => filePath.includes(scope))
+			if (filePath) {
+				const isScoped = task.intentController.validateScope(filePath, intentId)
 				if (!isScoped) {
 					return {
 						allow: false,
-						reason: `Security Violation: File '${filePath}' is outside the owned scope of intent '${intentId}'. You MUST either select a different intent that covers this file or ask the user to adjust the scope in '.orchestration/intent_map.yaml'.`,
+						reason: `Security Violation: File '${filePath}' is outside the owned scope of intent '${intentId}'. You MUST either select a different intent that covers this file or ask the user to adjust the scope in '.orchestration/active_intents.yaml'.`,
 					}
 				}
 			}

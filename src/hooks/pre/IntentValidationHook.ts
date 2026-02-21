@@ -32,7 +32,7 @@ export class IntentValidationHook implements IToolHook {
 
 			if (shouldBlock) {
 				// Only block if the project actually has intents defined (governance is active)
-				const hasIntents = task.intentController.getAllIntents().length > 0
+				const hasIntents = task.intentController.getAllActiveIntents().length > 0
 				if (hasIntents) {
 					return {
 						allow: false,
