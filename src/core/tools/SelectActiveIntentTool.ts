@@ -30,21 +30,22 @@ export class SelectActiveIntentTool extends BaseTool<"select_active_intent"> {
 				return
 			}
 
-			// Verify intent exists
-			const intent = await this.intentManager.getIntent(intent_id)
+			// Verify intent exists in this task's workspace (.orchestration/active_intents.yaml)
+			const workspaceRoot = task.workspacePath
+			const intent = await this.intentManager.getIntent(intent_id, workspaceRoot)
 			if (!intent) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("select_active_intent")
 				pushToolResult(
 					formatResponse.toolError(
-						`Intent ${intent_id} not found. Please select a valid intent from active_intents.yaml.`,
+						`Intent ${intent_id} not found. Please select a valid intent from .orchestration/active_intents.yaml in this workspace.`,
 					),
 				)
 				return
 			}
 
 			// Set active intent for this task
-			await this.intentManager.setActiveIntent(task.taskId, intent_id)
+			await this.intentManager.setActiveIntent(task.taskId, intent_id, workspaceRoot)
 
 			// Update task's activeIntentId property
 			task.activeIntentId = intent_id

@@ -15,20 +15,24 @@ export class OrchestrationStorage {
 	private orchestrationDir: string | null = null
 
 	/**
-	 * Gets the path to the .orchestration directory at the workspace root.
+	 * Gets the path to the .orchestration directory.
+	 * @param workspaceRoot Optional workspace root; when provided, returns that workspace's .orchestration path without caching
 	 * @returns The absolute path to the .orchestration directory
 	 */
-	async getOrchestrationDirectory(): Promise<string> {
+	async getOrchestrationDirectory(workspaceRoot?: string): Promise<string> {
+		if (workspaceRoot) {
+			return path.join(workspaceRoot, ".orchestration")
+		}
 		if (this.orchestrationDir) {
 			return this.orchestrationDir
 		}
 
-		const workspaceRoot = getWorkspacePath()
-		if (!workspaceRoot) {
+		const root = getWorkspacePath()
+		if (!root) {
 			throw new Error("No workspace root found. Please open a workspace folder.")
 		}
 
-		this.orchestrationDir = path.join(workspaceRoot, ".orchestration")
+		this.orchestrationDir = path.join(root, ".orchestration")
 		return this.orchestrationDir
 	}
 
@@ -51,11 +55,16 @@ export class OrchestrationStorage {
 	/**
 	 * Reads a file from the .orchestration directory.
 	 * @param filePath Relative path from .orchestration directory (e.g., "active_intents.yaml")
+	 * @param workspaceRoot Optional workspace root; when provided, read from that workspace's .orchestration (used for task-scoped intent loading)
 	 * @returns The file content as a string
 	 */
-	async readFile(filePath: string): Promise<string> {
-		await this.ensureOrchestrationDirectory()
-		const dir = await this.getOrchestrationDirectory()
+	async readFile(filePath: string, workspaceRoot?: string): Promise<string> {
+		const dir = await this.getOrchestrationDirectory(workspaceRoot)
+		if (workspaceRoot) {
+			await this.ensureOrchestrationDirectoryForPath(dir)
+		} else {
+			await this.ensureOrchestrationDirectory()
+		}
 		const fullPath = path.join(dir, filePath)
 		const uri = vscode.Uri.file(fullPath)
 
@@ -67,10 +76,15 @@ export class OrchestrationStorage {
 	 * Writes a file to the .orchestration directory.
 	 * @param filePath Relative path from .orchestration directory (e.g., "active_intents.yaml")
 	 * @param content The content to write
+	 * @param workspaceRoot Optional workspace root; when provided, write to that workspace's .orchestration
 	 */
-	async writeFile(filePath: string, content: string): Promise<void> {
-		await this.ensureOrchestrationDirectory()
-		const dir = await this.getOrchestrationDirectory()
+	async writeFile(filePath: string, content: string, workspaceRoot?: string): Promise<void> {
+		const dir = await this.getOrchestrationDirectory(workspaceRoot)
+		if (workspaceRoot) {
+			await this.ensureOrchestrationDirectoryForPath(dir)
+		} else {
+			await this.ensureOrchestrationDirectory()
+		}
 		const fullPath = path.join(dir, filePath)
 		const uri = vscode.Uri.file(fullPath)
 
@@ -82,24 +96,42 @@ export class OrchestrationStorage {
 	 * Used for append-only logs like agent_trace.jsonl.
 	 * @param filePath Relative path from .orchestration directory (e.g., "agent_trace.jsonl")
 	 * @param content The content to append
+	 * @param workspaceRoot Optional workspace root; when provided, use this instead of getOrchestrationDirectory() so trace is written to the task's workspace
 	 */
-	async appendFile(filePath: string, content: string): Promise<void> {
-		await this.ensureOrchestrationDirectory()
-		const dir = await this.getOrchestrationDirectory()
+	async appendFile(filePath: string, content: string, workspaceRoot?: string): Promise<void> {
+		const dir = workspaceRoot
+			? path.join(workspaceRoot, ".orchestration")
+			: await this.getOrchestrationDirectory()
+		if (workspaceRoot) {
+			await this.ensureOrchestrationDirectoryForPath(dir)
+		} else {
+			await this.ensureOrchestrationDirectory()
+		}
 		const fullPath = path.join(dir, filePath)
-
-		// Use Node.js fs.appendFile since VS Code workspace.fs doesn't have appendFile
 		await fs.appendFile(fullPath, content, "utf-8")
+	}
+
+	/**
+	 * Ensures a specific .orchestration directory exists (for workspace-scoped append).
+	 */
+	private async ensureOrchestrationDirectoryForPath(dir: string): Promise<void> {
+		const uri = vscode.Uri.file(dir)
+		try {
+			await vscode.workspace.fs.stat(uri)
+		} catch {
+			await vscode.workspace.fs.createDirectory(uri)
+		}
 	}
 
 	/**
 	 * Checks if a file exists in the .orchestration directory.
 	 * @param filePath Relative path from .orchestration directory
+	 * @param workspaceRoot Optional workspace root; when provided, check in that workspace's .orchestration
 	 * @returns true if the file exists, false otherwise
 	 */
-	async fileExists(filePath: string): Promise<boolean> {
+	async fileExists(filePath: string, workspaceRoot?: string): Promise<boolean> {
 		try {
-			const dir = await this.getOrchestrationDirectory()
+			const dir = await this.getOrchestrationDirectory(workspaceRoot)
 			const fullPath = path.join(dir, filePath)
 			const uri = vscode.Uri.file(fullPath)
 

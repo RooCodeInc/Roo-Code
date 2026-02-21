@@ -11,10 +11,10 @@ export async function getIntentGovernanceSection(cwd: string): Promise<string> {
 	const globalIntentManager = (global as any).__intentManager as IntentManager | undefined
 	const intentManager = globalIntentManager || new IntentManager(new OrchestrationStorage())
 
-	// Load available intents to list them in the prompt
+	// Load available intents from the task's workspace (.orchestration/active_intents.yaml)
 	let availableIntents = ""
 	try {
-		const intents = await intentManager.loadIntents()
+		const intents = await intentManager.loadIntents(cwd)
 		if (intents.length > 0) {
 			availableIntents = "\n\n**Available Intents:**\n"
 			for (const intent of intents) {

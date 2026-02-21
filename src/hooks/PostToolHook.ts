@@ -35,6 +35,12 @@ export class PostToolHook {
 			return { success: true }
 		}
 
+		// Only trace and update lock when the write actually succeeded
+		const executionSucceeded = result != null && typeof result === "object" && (result as { success?: boolean }).success !== false
+		if (!executionSucceeded) {
+			return { success: true }
+		}
+
 		const intentManager = this.getIntentManager()
 		let activeIntentId: string | undefined = context.activeIntentId
 		if (!activeIntentId) {
@@ -78,7 +84,7 @@ export class PostToolHook {
 				toolName: context.toolName,
 				mutationClass,
 			})
-			await this.traceManager.appendTraceEntry(traceEntry)
+			await this.traceManager.appendTraceEntry(traceEntry, workspaceRoot)
 
 			// Update file state lock so next write is not incorrectly flagged as stale
 			const store = (global as any).__fileStateLockStore as

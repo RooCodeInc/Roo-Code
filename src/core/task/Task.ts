@@ -3830,6 +3830,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					| {
 							getIntent(
 								id: string,
+								workspaceRoot?: string,
 							): Promise<{
 								id: string
 								name: string
@@ -3842,7 +3843,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					  }
 					| undefined
 				if (intentManager) {
-					const intent = await intentManager.getIntent(this.activeIntentId)
+					const intent = await intentManager.getIntent(this.activeIntentId, this.workspacePath)
 					if (intent) {
 						basePrompt = basePrompt + "\n\n" + intentManager.formatIntentContext(intent)
 					}

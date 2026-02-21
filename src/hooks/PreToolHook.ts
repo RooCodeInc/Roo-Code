@@ -55,8 +55,9 @@ export class PreToolHook {
 
 		const intentManager = this.getIntentManager()
 
-		// Distinguish "no intents defined in YAML" vs "no intent selected"
-		const intents = await intentManager.loadIntents()
+		// Distinguish "no intents defined in YAML" vs "no intent selected"; use task's workspace for .orchestration
+		const workspaceRoot = context.workspacePath
+		const intents = await intentManager.loadIntents(workspaceRoot)
 		if (intents.length === 0) {
 			return {
 				allowed: false,
@@ -66,7 +67,7 @@ export class PreToolHook {
 
 		let activeIntent: ActiveIntent | null = null
 		if (context.activeIntentId) {
-			activeIntent = await intentManager.getIntent(context.activeIntentId)
+			activeIntent = await intentManager.getIntent(context.activeIntentId, workspaceRoot)
 			if (activeIntent) {
 				console.log(`[PreToolHook] Found active intent via context.activeIntentId: ${context.activeIntentId}`)
 			}

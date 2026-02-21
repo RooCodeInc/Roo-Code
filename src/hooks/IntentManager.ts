@@ -8,7 +8,8 @@ import type { ActiveIntent, ActiveIntentsYaml, IntentStatus } from "./types"
  */
 export class IntentManager {
 	private storage: OrchestrationStorage
-	private intentsCache: ActiveIntent[] | null = null
+	/** Cache per workspace root so intent lookup uses the task's .orchestration/active_intents.yaml */
+	private intentsCacheByWorkspace: Map<string, ActiveIntent[]> = new Map()
 	private activeIntentsByTask: Map<string, string> = new Map() // taskId -> intentId
 
 	constructor(storage: OrchestrationStorage) {
@@ -16,34 +17,35 @@ export class IntentManager {
 	}
 
 	/**
-	 * Loads all intents from active_intents.yaml.
-	 * Uses caching to avoid re-parsing on every call.
+	 * Loads all intents from active_intents.yaml for the given workspace.
+	 * When workspaceRoot is provided, reads from workspaceRoot/.orchestration/ so the task's project is used.
+	 * @param workspaceRoot Optional workspace root (e.g. task.workspacePath); when omitted, uses default getWorkspacePath()
 	 * @returns Array of all intents
 	 */
-	async loadIntents(): Promise<ActiveIntent[]> {
-		if (this.intentsCache !== null) {
-			return this.intentsCache
+	async loadIntents(workspaceRoot?: string): Promise<ActiveIntent[]> {
+		const cacheKey = workspaceRoot ?? ""
+		const cached = this.intentsCacheByWorkspace.get(cacheKey)
+		if (cached !== undefined) {
+			return cached
 		}
 
-		const exists = await this.storage.fileExists("active_intents.yaml")
+		const exists = await this.storage.fileExists("active_intents.yaml", workspaceRoot)
 		if (!exists) {
-			// Initialize with empty intents array if file doesn't exist
-			await this.initializeIntentsFile()
-			this.intentsCache = []
+			await this.initializeIntentsFile(workspaceRoot)
+			this.intentsCacheByWorkspace.set(cacheKey, [])
 			return []
 		}
 
 		try {
-			const content = await this.storage.readFile("active_intents.yaml")
+			const content = await this.storage.readFile("active_intents.yaml", workspaceRoot)
 			const parsed = yaml.parse(content) as ActiveIntentsYaml
 
 			if (!parsed || !Array.isArray(parsed.intents)) {
-				this.intentsCache = []
+				this.intentsCacheByWorkspace.set(cacheKey, [])
 				return []
 			}
 
-			// Validate and normalize intents
-			this.intentsCache = parsed.intents.map((intent) => ({
+			const intents = parsed.intents.map((intent) => ({
 				id: intent.id,
 				name: intent.name || "",
 				description: intent.description || "",
@@ -53,8 +55,8 @@ export class IntentManager {
 				acceptanceCriteria: Array.isArray(intent.acceptanceCriteria) ? intent.acceptanceCriteria : [],
 				metadata: intent.metadata || {},
 			}))
-
-			return this.intentsCache
+			this.intentsCacheByWorkspace.set(cacheKey, intents)
+			return intents
 		} catch (error) {
 			throw new Error(
 				`Failed to parse active_intents.yaml: ${error instanceof Error ? error.message : String(error)}`,
@@ -63,12 +65,13 @@ export class IntentManager {
 	}
 
 	/**
-	 * Gets an intent by ID.
+	 * Gets an intent by ID from the given workspace's active_intents.yaml.
 	 * @param intentId The intent ID to look up
+	 * @param workspaceRoot Optional workspace root (e.g. task.workspacePath); when provided, intents are loaded from that workspace's .orchestration/
 	 * @returns The intent if found, null otherwise
 	 */
-	async getIntent(intentId: string): Promise<ActiveIntent | null> {
-		const intents = await this.loadIntents()
+	async getIntent(intentId: string, workspaceRoot?: string): Promise<ActiveIntent | null> {
+		const intents = await this.loadIntents(workspaceRoot)
 		return intents.find((intent) => intent.id === intentId) || null
 	}
 
@@ -78,8 +81,8 @@ export class IntentManager {
 	 * @param taskId The task ID
 	 * @param intentId The intent ID to activate
 	 */
-	async setActiveIntent(taskId: string, intentId: string): Promise<void> {
-		const intent = await this.getIntent(intentId)
+	async setActiveIntent(taskId: string, intentId: string, workspaceRoot?: string): Promise<void> {
+		const intent = await this.getIntent(intentId, workspaceRoot)
 		if (!intent) {
 			throw new Error(`Intent ${intentId} not found`)
 		}
@@ -110,11 +113,15 @@ export class IntentManager {
 	}
 
 	/**
-	 * Invalidates the intents cache, forcing a reload on next access.
+	 * Invalidates the intents cache for a workspace (or all if no key given), forcing a reload on next access.
 	 * Useful when active_intents.yaml is modified externally.
 	 */
-	invalidateCache(): void {
-		this.intentsCache = null
+	invalidateCache(workspaceRoot?: string): void {
+		if (workspaceRoot !== undefined) {
+			this.intentsCacheByWorkspace.delete(workspaceRoot)
+		} else {
+			this.intentsCacheByWorkspace.clear()
+		}
 	}
 
 	/**
@@ -143,7 +150,7 @@ ${intent.acceptanceCriteria.map((criteria) => `  - ${criteria}`).join("\n")}
 	/**
 	 * Initializes the active_intents.yaml file with an empty structure if it doesn't exist.
 	 */
-	private async initializeIntentsFile(): Promise<void> {
+	private async initializeIntentsFile(workspaceRoot?: string): Promise<void> {
 		const defaultContent = `# Active Intents Configuration
 # This file defines the available intents for this workspace.
 # Each intent specifies what files/areas can be modified and what constraints apply.
@@ -151,7 +158,7 @@ ${intent.acceptanceCriteria.map((criteria) => `  - ${criteria}`).join("\n")}
 intents: []
 `
 		try {
-			await this.storage.writeFile("active_intents.yaml", defaultContent)
+			await this.storage.writeFile("active_intents.yaml", defaultContent, workspaceRoot)
 		} catch (error) {
 			console.warn("[IntentManager] Failed to initialize active_intents.yaml:", error)
 		}

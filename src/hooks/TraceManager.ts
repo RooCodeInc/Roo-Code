@@ -90,17 +90,17 @@ export class TraceManager {
 
 	/**
 	 * Appends a trace log entry to agent_trace.jsonl in spec-aligned format.
-	 * This operation is non-blocking - failures are logged but don't throw errors.
+	 * Uses workspaceRoot when provided so the trace is written to the task's workspace .orchestration folder.
 	 * @param entry The trace log entry to append
+	 * @param workspaceRoot Optional workspace root; when provided, write to workspaceRoot/.orchestration/agent_trace.jsonl
 	 */
-	async appendTraceEntry(entry: TraceLogEntry): Promise<void> {
+	async appendTraceEntry(entry: TraceLogEntry, workspaceRoot?: string): Promise<void> {
 		try {
 			const traceFilePath = "agent_trace.jsonl"
 			const specEntry = this.toSpecEntry(entry)
 			const jsonLine = JSON.stringify(specEntry) + "\n"
-			await this.storage.appendFile(traceFilePath, jsonLine)
+			await this.storage.appendFile(traceFilePath, jsonLine, workspaceRoot)
 		} catch (error) {
-			// Log error but don't block operation (non-blocking audit)
 			console.error(`[TraceManager] Failed to append trace entry for ${entry.filePath}:`, error)
 		}
 	}

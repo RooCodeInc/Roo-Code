@@ -18,13 +18,21 @@ export class GetActiveIntentTool extends BaseTool<"get_active_intent"> {
 		const { pushToolResult, handleError } = callbacks
 
 		try {
-			// Get active intent for this task
-			const activeIntent = await this.intentManager.getActiveIntent(task.taskId)
+			const workspaceRoot = task.workspacePath
+			const intents = await this.intentManager.loadIntents(workspaceRoot)
+			if (intents.length === 0) {
+				pushToolResult(
+					`No intents are defined in active_intents.yaml.\n\n` +
+						`Please create at least one intent in .orchestration/active_intents.yaml before selecting or querying an intent.`,
+				)
+				return
+			}
 
+			const activeIntent = await this.intentManager.getActiveIntent(task.taskId)
 			if (!activeIntent) {
 				pushToolResult(
 					`No active intent is currently selected for this task.\n\n` +
-						`To select an intent, use the select_active_intent tool with an intent_id from active_intents.yaml.`,
+						`To select an intent, use the select_active_intent tool with an intent_id from active_intents.yaml (e.g. INT-001).`,
 				)
 				return
 			}
