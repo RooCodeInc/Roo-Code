@@ -81,6 +81,7 @@ export const toolParamNames = [
 	"files",
 	"line_ranges",
 	"intent_id",
+	"lesson",
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -117,6 +118,7 @@ export type NativeToolArgs = {
 	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
 	write_to_file: { path: string; content: string }
 	select_active_intent: { intent_id: string }
+	record_lesson_learned: { lesson: string }
 	// Add more tools as they are migrated to native protocol
 }
 
@@ -296,6 +298,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	skill: "load skill",
 	generate_image: "generate images",
 	select_active_intent: "select active intent",
+	record_lesson_learned: "record lesson learned",
 	custom_tool: "use custom tools",
 } as const
 
@@ -330,6 +333,7 @@ export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
 	"run_slash_command",
 	"skill",
 	"select_active_intent",
+	"record_lesson_learned",
 ] as const
 
 /**
