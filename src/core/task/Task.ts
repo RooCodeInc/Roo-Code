@@ -133,6 +133,7 @@ export type TaskOptions = {
 	parentTask?: Task
 	taskNumber?: number
 	onCreated?: (task: Task) => void
+	planningFilePath?: string
 }
 
 export class Task extends EventEmitter<TaskEvents> implements TaskLike {
@@ -200,6 +201,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	pausedModeSlug: string = defaultModeSlug
 	private pauseInterval: NodeJS.Timeout | undefined
 	private isLoopRunning: boolean = false
+	planningFilePath?: string
 
 	// API
 	readonly apiConfiguration: ProviderSettings
@@ -304,6 +306,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		parentTask,
 		taskNumber = -1,
 		onCreated,
+		planningFilePath,
 	}: TaskOptions) {
 		super()
 
@@ -346,6 +349,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.rootTask = rootTask
 		this.parentTask = parentTask
 		this.taskNumber = taskNumber
+		this.planningFilePath = planningFilePath
 
 		// Store the task's mode when it's created.
 		// For history items, use the stored mode; for new tasks, we'll set it
@@ -354,7 +358,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this._taskMode = historyItem.mode || defaultModeSlug
 			this.taskModeReady = Promise.resolve()
 			// Restore saved duration if available
-			if (historyItem.duration) {
+			if (historyItem.duration !== undefined) {
 				this.taskElapsedMs = historyItem.duration
 			}
 			// Restore task completion status if available
@@ -793,13 +797,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		if (!partial && !isReady && isBlockingAsk(type)) {
 			this.blockingAsk = type
-			this.pauseTaskTimer()
+			if (type !== "command_output") {
+				this.pauseTaskTimer()
+			}
 			this.emit(RooCodeEventName.TaskIdle, this.taskId)
 		}
 
-		console.log(`[Task#${this.taskId}] pWaitFor askResponse(${type}) -> blocking`)
 		await pWaitFor(() => this.askResponse !== undefined || this.lastMessageTs !== askTs, { interval: 100 })
-		console.log(`[Task#${this.taskId}] pWaitFor askResponse(${type}) -> unblocked (${this.askResponse})`)
 
 		if (this.lastMessageTs !== askTs) {
 			// Could happen if we send multiple asks in a row i.e. with
@@ -815,8 +819,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Switch back to an active state.
 		if (this.blockingAsk) {
+			const blockingAskType = this.blockingAsk
 			this.blockingAsk = undefined
-			this.resumeTaskTimer()
+			if (blockingAskType !== "command_output") {
+				this.resumeTaskTimer()
+			}
 			this.emit(RooCodeEventName.TaskActive, this.taskId)
 		}
 
@@ -828,7 +835,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.handleWebviewAskResponse("messageResponse", text, images)
 	}
 
-	handleWebviewAskResponse(askResponse: ClineAskResponse, text?: string, images?: string[]) {
+	handleWebviewAskResponse(askResponse: ClineAskResponse, text?: string, images?: string[], messageTs?: number) {
+		if (messageTs !== undefined) {
+			const lastMessage = this.clineMessages.at(-1)
+			if (!lastMessage || lastMessage.type !== "ask" || lastMessage.ts !== messageTs) {
+				return
+			}
+		}
+
+		// If user provides feedback after completion, mark task active again.
+		if (askResponse === "messageResponse" && this.taskCompleted) {
+			this.taskCompleted = false
+		}
+
 		this.askResponse = askResponse
 		this.askResponseText = text
 		this.askResponseImages = images
@@ -1331,10 +1350,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Note: We don't show the message here since it's a fresh task start
 		}
 
-		// Store task title for notifications - take first line or first 50 chars
+		// Store task title for notifications - initially use first line
 		if (task) {
 			const firstLine = task.split("\n")[0]
 			this.taskTitle = firstLine.length > 50 ? firstLine.substring(0, 50) + "..." : firstLine
+
+			// Generate a better title based on prompt in background
+			this.generateTaskTitle(task).catch((error) => {
+				// Silently fail - keep the default title if generation fails
+				console.log(`Failed to generate task title: ${error}`)
+			})
 		}
 
 		await this.say("text", task, images)
@@ -1353,9 +1378,53 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		])
 	}
 
+	private async generateTaskTitle(taskPrompt: string): Promise<void> {
+		try {
+			const systemPrompt = `You are a task title generator. Generate a concise, descriptive title (max 50 characters) for the following task. Only respond with the title, nothing else.`
+
+			const stream = this.api.createMessage(
+				systemPrompt,
+				[
+					{
+						role: "user",
+						content: [
+							{
+								type: "text",
+								text: taskPrompt,
+							},
+						],
+					},
+				],
+				{
+					taskId: this.taskId,
+				},
+			)
+
+			let generatedTitle = ""
+			for await (const event of stream) {
+				if (event.type === "text") {
+					generatedTitle += event.text
+				}
+			}
+
+			// Update task title with generated one (trimmed to 50 chars just in case)
+			if (generatedTitle.trim()) {
+				const trimmedTitle = generatedTitle.trim().substring(0, 50)
+				this.taskTitle = trimmedTitle
+				await this.providerRef.deref()?.postStateToWebview()
+			}
+		} catch (error) {
+			// Silently fail - keep the default title
+			console.log(
+				`Failed to generate task title from prompt: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+	}
+
 	public async resumePausedTask(lastMessage: string) {
 		// Release this Cline instance from paused state.
 		this.isPaused = false
+		this.taskCompleted = false
 		this.emit(RooCodeEventName.TaskUnpaused)
 
 		// Fake an answer from the subtask that it has completed running and
@@ -1501,6 +1570,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		this.isInitialized = true
+		this.taskCompleted = false
 
 		const { response, text, images } = await this.ask(askType) // Calls `postStateToWebview`.
 
@@ -1942,6 +2012,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			cwd: this.cwd,
 			experiments: state?.experiments,
 			taskId: this.taskId,
+			planningFilePath: this.planningFilePath,
 		})
 
 		// Add pre-task details FIRST for higher priority, then parsed content, then environment details

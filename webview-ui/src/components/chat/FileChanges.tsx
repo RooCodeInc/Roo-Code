@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { vscode } from "@src/utils/vscode"
+import { useExtensionState } from "@src/context/ExtensionStateContext"
 
 export type DeploymentStatus = "local" | "dry-run" | "deploying" | "deployed" | "failed"
 
@@ -117,6 +118,8 @@ export const FileChangeItem: React.FC<FileChangeItemProps> = ({
 	showStats = true,
 	showDeploymentStatus = true,
 }) => {
+	const { cwd } = useExtensionState()
+
 	const handleClick = () => {
 		if (!file.path) {
 			console.warn("FileChangeItem: attempt to open file with undefined path", file)
@@ -130,7 +133,16 @@ export const FileChangeItem: React.FC<FileChangeItemProps> = ({
 
 		// Default behavior: open file in VS Code
 		try {
-			vscode.postMessage({ type: "openFile", text: file.path })
+			const isAbsolutePath = /^(?:[A-Za-z]:[\\/]|\\\\|\/)/.test(file.path)
+			const normalizedRoot = (cwd || "").replace(/[\\/]+$/, "")
+			const separator = normalizedRoot.includes("\\") ? "\\" : "/"
+			const relativePath = file.path.replace(/^[.\\/]+/, "").replace(/[\\/]+/g, separator)
+			const absolutePath =
+				isAbsolutePath || !normalizedRoot ? file.path : `${normalizedRoot}${separator}${relativePath}`
+
+			console.debug("Sending openFile message for", file.path)
+			console.debug("Constructed absolute path for file:", absolutePath)
+			vscode.postMessage({ type: "openFile", text: absolutePath })
 		} catch (err) {
 			console.error("Failed to send openFile message", err, file.path)
 		}

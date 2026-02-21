@@ -12,8 +12,11 @@ import { formatDuration } from "@src/utils/format"
  */
 export function useTaskTimer(taskStartTime?: number, taskElapsedTime?: number): string | null {
 	const [elapsed, setElapsed] = useState<string | null>(() => {
+		if (taskStartTime && taskElapsedTime !== undefined) {
+			return formatDuration(taskElapsedTime)
+		}
 		if (taskStartTime) {
-			return formatDuration(Date.now() - taskStartTime)
+			return formatDuration(0)
 		}
 		if (taskElapsedTime && taskElapsedTime > 0) {
 			return formatDuration(taskElapsedTime)
@@ -24,10 +27,13 @@ export function useTaskTimer(taskStartTime?: number, taskElapsedTime?: number): 
 	useEffect(() => {
 		// Task is running — tick live
 		if (taskStartTime) {
-			setElapsed(formatDuration(Date.now() - taskStartTime))
+			const baseElapsed = taskElapsedTime ?? 0
+			const startedAt = Date.now()
+
+			setElapsed(formatDuration(baseElapsed))
 
 			const interval = setInterval(() => {
-				setElapsed(formatDuration(Date.now() - taskStartTime))
+				setElapsed(formatDuration(baseElapsed + (Date.now() - startedAt)))
 			}, 1000)
 
 			return () => {
