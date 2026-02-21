@@ -22,4 +22,17 @@ export class MiddlewareChain {
 		}
 		return { allow: true }
 	}
+
+	async executeAfter(result: any, task: Task, toolName: ToolName): Promise<MiddlewareResult> {
+		let finalResult = result
+
+		for (const middleware of this.middlewares) {
+			const postResult = await middleware.afterExecute?.(finalResult, task, toolName)
+			if (postResult?.modifiedResult !== undefined) {
+				finalResult = postResult.modifiedResult
+			}
+		}
+
+		return { allow: true, modifiedResult: finalResult }
+	}
 }
