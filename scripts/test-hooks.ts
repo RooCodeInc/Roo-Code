@@ -215,6 +215,23 @@ async function main() {
 		assert(lines.length >= 2, "two or more lines")
 	})
 
+	await run("appendAgentTrace injects REQ-ID into related array", async () => {
+		await appendAgentTrace(cwd, {
+			relativePath: "src/api/trace.ts",
+			content: "// trace",
+			intentId: "INT-001",
+			reqId: "REQ-12345",
+		})
+		const raw = await fs.readFile(tracePath, "utf-8")
+		const lines = raw.trim().split("\n").filter(Boolean)
+		const lastLine = lines[lines.length - 1]
+		assert(lastLine != null, "last line exists")
+		const entry = JSON.parse(lastLine)
+		const conv = entry.files[0].conversations[0]
+		const reqRelated = conv.related?.find((r: { type: string }) => r.type === "request")
+		assert(reqRelated != null && reqRelated.value === "REQ-12345", "REQ-ID in related array")
+	})
+
 	console.log("\n=== 6. middleware (full flow) ===\n")
 
 	activeIntentId = null // reset so we simulate: select_intent then write

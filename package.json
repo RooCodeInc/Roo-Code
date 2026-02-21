@@ -12,6 +12,8 @@
 		"lint": "turbo lint --log-order grouped --output-logs new-only",
 		"check-types": "turbo check-types --log-order grouped --output-logs new-only",
 		"test": "turbo test --log-order grouped --output-logs new-only",
+		"test:hooks": "pnpm exec tsx scripts/test-hooks.ts",
+		"test:trace-scenario": "pnpm exec tsx scripts/test-trace-scenario.ts",
 		"format": "turbo format --log-order grouped --output-logs new-only",
 		"build": "turbo build --log-order grouped --output-logs new-only",
 		"bundle": "turbo bundle --log-order grouped --output-logs new-only",
