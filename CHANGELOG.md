@@ -1,35 +1,25 @@
 # Roo Code Changelog
 
-## 3.50.4
-
-### Patch Changes
+## [3.50.4] - 2026-02-21
 
 - Feat: Add MiniMax M2.5 model support (#11471 by @love8ko, PR #11458 by @roomote)
 
-## 3.50.3
-
-### Patch Changes
+## [3.50.3] - 2026-02-20
 
 - Fix: Correct Vertex AI claude-sonnet-4-6 model ID (#11625 by @yuvarajl, PR #11626 by @roomote)
 - Restore Unbound as a provider (PR #11624 by @pugazhendhi-m)
 
-## 3.50.2
-
-### Patch Changes
+## [3.50.2] - 2026-02-20
 
 - Fix: Inline terminal rendering parity with the VSCode Terminal (#10699 by @jerrill-johnson-bitwerx, PR #11361 by @RussellZager)
 - Fix: Enable prompt caching for Bedrock custom ARN and default to ON (#10846 by @wisestmumbler, PR #11373 by @roomote)
 - Feat: Add visual feedback to copy button in task actions (#11401 by @omagoduck, PR #11403 by @omagoduck)
 
-## 3.50.1
-
-### Patch Changes
+## [3.50.1] - 2026-02-20
 
 - Fix OpenAI Codex and OpenAI Native stream parsing for done-only and `content_part` events, including duplicate-text guards when deltas are already streamed.
 
-## 3.50.0
-
-### Minor Changes
+## [3.50.0] - 2026-02-19
 
 - Add Gemini 3.1 Pro support and set as default Gemini model (PR #11608 by @PeterDaveHello)
 - Add NDJSON stdin protocol, list subcommands, and modularize CLI run command (PR #11597 by @cte)
@@ -37,9 +27,7 @@
 - Remove integration tests (PR #11598 by @roomote)
 - Changeset version bump (PR #11596 by @github-actions)
 
-## 3.49.0
-
-### Minor Changes
+## [3.49.0] - 2026-02-19
 
 - Add file changes panel to track all file modifications per conversation (#11493 by @saneroen, PR #11494 by @saneroen)
 - Add per-workspace indexing opt-in and stop/cancel indexing controls (#11455 by @JamesRobert20, PR #11456 by @JamesRobert20)
@@ -47,15 +35,13 @@
 - Fix: Redesign rehydration scroll lifecycle for smoother chat experience (PR #11483 by @hannesrudolph)
 - Fix: Bump @roo-code/types metadata version to 1.111.0 after revert regression (PR #11588 by @roomote)
 
-## 3.48.1
-
-### Patch Changes
+## [3.48.1] - 2026-02-18
 
 - Fix: Await MCP server initialization before returning McpHub instance, preventing race conditions (PR #11518 by @daniel-lxs)
 - Fix: Correct Bedrock Claude Sonnet 4.6 model ID (#11509 by @PeterDaveHello, PR #11569 by @PeterDaveHello)
 - Add DeleteQueuedMessage IPC command for managing queued messages (PR #11464 by @roomote)
 
-## [3.48.0]
+## [3.48.0] - 2026-02-17
 
 - Add Anthropic Claude Sonnet 4.6 support across all providers — Anthropic, Bedrock, Vertex, OpenRouter, and Vercel AI Gateway (PR #11509 by @PeterDaveHello)
 - Add lock toggle to pin API config across all modes in a workspace (PR #11295 by @hannesrudolph)
