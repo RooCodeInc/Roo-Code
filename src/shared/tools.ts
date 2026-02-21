@@ -116,6 +116,7 @@ export type NativeToolArgs = {
 	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
 	write_to_file: { path: string; content: string }
 	select_active_intent: { intent_id: string }
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 	list_active_intents: {}
 	// Add more tools as they are migrated to native protocol
 }
