@@ -64,7 +64,14 @@ export function detectMutationClass(oldContent: string, newContent: string): "AS
 	return "INTENT_EVOLUTION"
 }
 
-export function postWriteHook(filePath: string, intent: Intent, sessionId: string, contributorModel: string) {
+export function postWriteHook(
+	filePath: string,
+	intent: Intent,
+	sessionId: string,
+	contributorModel: string,
+	status: "SUCCESS" | "FAILED",
+	error?: unknown,
+) {
 	const orchestrationDir = path.resolve(".orchestration")
 	if (!fs.existsSync(orchestrationDir)) {
 		fs.mkdirSync(orchestrationDir)
