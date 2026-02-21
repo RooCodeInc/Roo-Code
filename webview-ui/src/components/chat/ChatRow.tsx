@@ -353,7 +353,6 @@ export const ChatRowContent = ({
 				className={`codicon codicon-${name}`}
 				style={{ color: "var(--vscode-foreground)", marginBottom: "-1.5px" }}></span>
 		)
-		console.log("tool: ", JSON.stringify(tool))
 
 		switch (tool.tool) {
 			case "editedExistingFile":

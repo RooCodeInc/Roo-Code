@@ -946,9 +946,9 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						contextWindow !== undefined &&
 						onCondenseContext &&
 						(() => {
-							const { currentPercent } = calculateTokenDistribution(contextWindow, contextTokens)
+							const { effectivePercent } = calculateTokenDistribution(contextWindow, contextTokens)
 							return (
-								currentPercent > 0 && (
+								effectivePercent > 0 && (
 									<div className="shrink-0">
 										<ContextUsageIndicator
 											contextTokens={contextTokens}

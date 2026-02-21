@@ -16,9 +16,9 @@ const ContextUsageIndicator = memo<ContextUsageIndicatorProps>(
 	({ contextTokens, contextWindow, onCondense, isCondensing, disabled, taskId }) => {
 		const { t } = useTranslation()
 
-		// Calculate context usage percentage
-		const { currentPercent } = calculateTokenDistribution(contextWindow, contextTokens)
-		const percentage = Math.round(currentPercent)
+		// Match backend auto-condense logic: use effective input-window percentage
+		const { effectivePercent } = calculateTokenDistribution(contextWindow, contextTokens)
+		const percentage = Math.round(effectivePercent)
 
 		// Determine color based on usage
 		const getColorClass = (percent: number) => {
