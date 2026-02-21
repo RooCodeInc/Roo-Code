@@ -141,7 +141,7 @@ Deliverable: ARCHITECTURE_NOTES.md.
 Phase 1: The Handshake (Reasoning Loop Implementation)
 Goal: Solve the Context Paradox. Bridge the synchronous LLM with the asynchronous IDE loop.
 Define the Tool: Create a new tool definition: select_active_intent(intent_id: string).
-Context Loader (Pre-Hook): Before the extension sends a prompt to the LLM, intercept the payload. Read the corresponding entries in active_intents.yaml, identify related agent trace entries for the active intent the agent is processing, and prepare a consolidated intent context.
+Context Loader (Pre-Hook): Before the extension sends a prompt to the LLM, intercept the payload. Read the corresponding entries in active_intent.yaml, identify related agent trace entries for the active intent the agent is processing, and prepare a consolidated intent context.
 Prompt Engineering: Modify the System Prompt to enforce the protocol:
 "You are an Intent-Driven Architect. You CANNOT write code immediately. Your first action MUST be to analyze the user request and call select_active_intent to load the necessary context."
 Context Injection Hook:
