@@ -1,0 +1,35 @@
+active_intents:
+  - id: INT-001
+    name: testing PRD
+    description: testing PRD
+    status: IN_PROGRESS
+    owned_scope:
+      - /tests
+    constraints: []
+    acceptance_criteria: []
+  - id: INT-002
+    name: project dependencies
+    description: Updating project dependencies
+    status: CREATED
+    owned_scope:
+      - requirements.txt
+      - pyproject.toml
+    constraints: []
+    acceptance_criteria: []
+  - id: INT-003
+    name: project documentation
+    description: Updating project documentation
+    status: IN_PROGRESS
+    owned_scope:
+      - README.md
+    constraints: []
+    acceptance_criteria: []
+  - id: INT-004
+    name: project bot
+    description: Updating project bot
+    status: CREATED
+    owned_scope:
+      - bot.py
+    constraints: []
+    acceptance_criteria: []
+last_updated: 2026-02-21T19:01:30.984Z
