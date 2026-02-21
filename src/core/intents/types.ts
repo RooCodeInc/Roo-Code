@@ -1,5 +1,9 @@
-enum INTENT_STATUS {
-	IN_PROGRESS,
+export enum INTENT_STATUS {
+	PENDING = "PENDING",
+	IN_PROGRESS = "IN_PROGRESS",
+	BLOCKED = "BLOCKED",
+	COMPLETED = "COMPLETED",
+	CANCELLED = "CANCELLED",
 }
 
 export interface ActiveIntentsFile {

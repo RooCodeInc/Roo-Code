@@ -1,0 +1,67 @@
+- id: "UI-001"
+  name: "UI Component Development"
+  status: "active"
+  description: "Create and modify React components for the application interface"
+  owned_scopes:
+    - "components/"
+    - "app/"
+  constraints:
+    - "Follow TypeScript best practices"
+    - "Use Tailwind CSS for styling"
+    - "Ensure responsive design"
+    - "Include proper accessibility attributes"
+  acceptance_criteria:
+    - "Component is reusable and properly typed"
+    - "Styling is consistent with design system"
+    - "Component passes accessibility tests"
+
+- id: "PAGE-001"
+  name: "Page and Route Development"
+  status: "active"
+  description: "Create and modify application pages and routes using Next.js App Router"
+  owned_scopes:
+    - "app/"
+  constraints:
+    - "Use Next.js App Router conventions"
+    - "Implement proper SEO metadata"
+    - "Ensure proper loading states"
+    - "Follow file-based routing patterns"
+  acceptance_criteria:
+    - "Page renders correctly at designated route"
+    - "Metadata is properly configured"
+    - "Page is performant and SEO-friendly"
+
+- id: "STYLE-001"
+  name: "Styling and Theme Updates"
+  status: "active"
+  description: "Update global styles, themes, and component styling"
+  owned_scopes:
+    - "app/globals.css"
+    - "components/ui/"
+    - "lib/utils.ts"
+  constraints:
+    - "Maintain design system consistency"
+    - "Use CSS custom properties for theming"
+    - "Ensure cross-browser compatibility"
+    - "Optimize for performance"
+  acceptance_criteria:
+    - "Styles are applied consistently"
+    - "Theme switching works properly"
+    - "No style conflicts or regressions"
+
+- id: "UTIL-001"
+  name: "Utility Function Development"
+  status: "active"
+  description: "Create and maintain utility functions and helper libraries"
+  owned_scopes:
+    - "lib/"
+    - "hooks/"
+  constraints:
+    - "Functions must be pure and testable"
+    - "Include comprehensive TypeScript types"
+    - "Document function usage and parameters"
+    - "Handle edge cases appropriately"
+  acceptance_criteria:
+    - "Utility functions are well-tested"
+    - "TypeScript types are comprehensive"
+    - "Performance is optimized"
