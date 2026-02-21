@@ -306,5 +306,234 @@ and return an error.
 - `src/hooks/` — Entire hooks directory (new)
 - `src/core/tools/SelectActiveIntentTool.ts` — The new tool
 - `.orchestration/active_intents.yaml` — Sample intent definitions
-- `.orchestration/agent_trace.jsonl` — Empty ledger (machine-managed)
+- `.orchestration/agent_trace.jsonl` — Append-only trace ledger (machine-managed)
 - `.orchestration/intent_map.md` — Intent-to-file spatial map
+
+---
+
+## 11. Visual System Blueprints
+
+### 11.1 — System Layer Architecture
+
+```mermaid
+graph TD
+    subgraph VSCode["VSCode Extension Host"]
+        UI["Webview UI\n(React Panel)"]
+        Task["Task.ts\n(Agent Brain)"]
+        PM["presentAssistantMessage.ts\n⚡ THE CHOKE POINT"]
+    end
+
+    subgraph HookLayer["Hook Engine Layer (src/hooks/)"]
+        HE["HookEngine\n(Singleton)"]
+        IG["IntentGate\n(Pre-Hook)"]
+        SG["ScopeGuard\n(Pre-Hook)"]
+        TL["TraceLedger\n(Post-Hook)"]
+    end
+
+    subgraph DataLayer[".orchestration/ Data Layer"]
+        AY["active_intents.yaml\n(Authorization Source)"]
+        JL["agent_trace.jsonl\n(Append-Only Ledger)"]
+        IM["intent_map.md\n(Spatial Map)"]
+    end
+
+    subgraph LLM["LLM (Claude / GPT)"]
+        CL["Claude API\n(Tool Call Generator)"]
+    end
+
+    UI -->|"user message"| Task
+    Task -->|"system prompt + history"| CL
+    CL -->|"tool_use blocks"| PM
+    PM -->|"runPreHook()"| HE
+    HE --> IG
+    HE --> SG
+    IG -->|"reads"| AY
+    SG -->|"reads"| AY
+    PM -->|"execute tool"| Tools["write_to_file\nexecute_command\nread_file\nselect_active_intent"]
+    PM -->|"runPostHook()"| TL
+    TL -->|"appends"| JL
+    TL -->|"reads git SHA"| GIT["git rev-parse HEAD"]
+```
+
+---
+
+### 11.2 — Agent Sequence Diagram (The Two-Stage State Machine)
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Task as Task.ts
+    participant LLM as Claude API
+    participant PAM as presentAssistantMessage.ts
+    participant HE as HookEngine
+    participant SAI as SelectActiveIntentTool
+    participant AY as active_intents.yaml
+    participant WTF as WriteToFileTool
+    participant TL as TraceLedger
+    participant JSONL as agent_trace.jsonl
+
+    User->>Task: "Refactor auth middleware"
+    Task->>LLM: systemPrompt + message
+    Note over LLM: LLM reads governance protocol:<br/>"MUST call select_active_intent first"
+    LLM->>PAM: tool_use: select_active_intent("INT-001")
+    PAM->>HE: runPreHook(select_active_intent)
+    Note over HE: select_active_intent is exempt<br/>from IntentGate blocking
+    HE-->>PAM: allowed
+    PAM->>SAI: execute({intent_id:"INT-001"})
+    SAI->>AY: read & parse YAML
+    AY-->>SAI: {owned_scope, constraints, criteria}
+    SAI->>HE: setActiveIntent(taskId, "INT-001")
+    SAI-->>PAM: <intent_context> XML block
+    PAM-->>LLM: intent_context returned
+
+    LLM->>PAM: tool_use: write_to_file("src/auth/middleware.ts", content)
+    PAM->>HE: runPreHook(write_to_file)
+    HE->>HE: IntentGate: activeIntent = "INT-001" ✓
+    HE->>AY: load INT-001 scope
+    HE->>HE: ScopeGuard: src/auth/** matches ✓
+    HE-->>PAM: allowed
+    PAM->>WTF: execute() — file written to disk
+    WTF-->>PAM: success
+    PAM->>TL: runPostHook(write_to_file, content)
+    TL->>TL: SHA-256(content) → hash
+    TL->>TL: git rev-parse HEAD → sha
+    TL->>JSONL: append JSON record
+    JSONL-->>TL: done
+    PAM-->>LLM: tool result: success
+```
+
+---
+
+### 11.3 — Hook Engine State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> NoIntent: Task starts
+
+    NoIntent --> NoIntent: read_file / list_files\n(safe tools — pass through)
+    NoIntent --> BLOCKED_NoIntent: write_to_file / execute_command\n(mutating without intent)
+    BLOCKED_NoIntent --> NoIntent: agent receives error\n"Call select_active_intent first"
+
+    NoIntent --> IntentDeclared: select_active_intent(INT-001)\n✓ found in active_intents.yaml
+
+    IntentDeclared --> ScopeCheck: mutating tool called
+    ScopeCheck --> ToolExecutes: file path ∈ owned_scope ✓
+    ScopeCheck --> BLOCKED_Scope: file path ∉ owned_scope ✗
+
+    BLOCKED_Scope --> IntentDeclared: agent receives\n"Scope Violation" error
+
+    ToolExecutes --> TraceWritten: PostHook fires\nSHA-256 + jsonl append
+    TraceWritten --> IntentDeclared: ready for next action
+
+    IntentDeclared --> NoIntent: task completes\nclearIntent(taskId)
+```
+
+---
+
+### 11.4 — Pre-Hook Interceptor Chain
+
+```mermaid
+flowchart LR
+    TC["Tool Call\narrives"] --> MUT{Is it a\nmutating\ntool?}
+    MUT -->|"No\n(read_file, etc.)"| PASS["✅ Pass Through\nNo hook needed"]
+    MUT -->|"Yes"| IG["IntentGate\nPre-Hook"]
+    IG --> HASINT{Active intent\ndeclared for\nthis task?}
+    HASINT -->|"No"| BLOCK1["🚫 BLOCKED\nReturn error:\nCall select_active_intent"]
+    HASINT -->|"Yes"| SG["ScopeGuard\nPre-Hook"]
+    SG --> INSCOPE{Target file\nin owned_scope?}
+    INSCOPE -->|"No"| BLOCK2["🚫 BLOCKED\nReturn error:\nScope Violation"]
+    INSCOPE -->|"Yes"| EXEC["✅ Execute Tool\nWriteToFileTool / etc."]
+    EXEC --> POST["PostHook:\nTraceLedger\nSHA-256 + jsonl"]
+```
+
+---
+
+### 11.5 — Traceability Chain (Intent → Code → Hash → Git)
+
+```mermaid
+graph LR
+    BR["Business Requirement\n(user request)"]
+    INT["active_intents.yaml\nINT-001: JWT Auth Migration\nowned_scope: src/auth/**"]
+    SAI["select_active_intent\nHandshake Tool"]
+    CODE["src/auth/middleware.ts\n(written by agent)"]
+    HASH["SHA-256 Content Hash\nsha256:ab9f93b3..."]
+    GIT["Git Revision\nef49e624a"]
+    JSONL["agent_trace.jsonl\n{intent_id, file, hash, git_sha}"]
+
+    BR -->|"formalized as"| INT
+    INT -->|"loaded by"| SAI
+    SAI -->|"authorizes"| CODE
+    CODE -->|"hashed by TraceLedger"| HASH
+    GIT -->|"captured at write time"| JSONL
+    HASH -->|"recorded in"| JSONL
+    INT -->|"referenced in"| JSONL
+```
+
+---
+
+### 11.6 — Data Model Class Diagram
+
+```mermaid
+classDiagram
+    class ActiveIntent {
+        +String id
+        +String name
+        +String status
+        +String[] owned_scope
+        +String[] constraints
+        +String[] acceptance_criteria
+    }
+
+    class TraceRecord {
+        +String id (uuid-v4)
+        +String timestamp (ISO-8601)
+        +String intent_id
+        +VCS vcs
+        +FileTrace[] files
+    }
+
+    class VCS {
+        +String revision_id (git SHA)
+    }
+
+    class FileTrace {
+        +String relative_path
+        +Contributor contributor
+        +Range[] ranges
+        +String mutation_class
+        +Related[] related
+    }
+
+    class Contributor {
+        +String entity_type (AI | HUMAN)
+        +String model_identifier
+    }
+
+    class Range {
+        +Int start_line
+        +Int end_line
+        +String content_hash (sha256:hex)
+    }
+
+    class Related {
+        +String type (specification)
+        +String value (INT-001)
+    }
+
+    class HookEngine {
+        -Map intentStateMap
+        +getInstance() HookEngine
+        +setActiveIntent(taskId, intentId)
+        +getActiveIntentId(taskId) String
+        +runPreHook(ctx) HookResult
+        +runPostHook(ctx) void
+        +clearIntent(taskId)
+    }
+
+    TraceRecord "1" --> "1" VCS
+    TraceRecord "1" --> "1..*" FileTrace
+    FileTrace "1" --> "1" Contributor
+    FileTrace "1" --> "1..*" Range
+    FileTrace "1" --> "0..*" Related
+    HookEngine ..> ActiveIntent : loads from YAML
+    HookEngine ..> TraceRecord : generates
+```
