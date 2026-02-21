@@ -31,17 +31,54 @@ export class SelectActiveIntentTool extends BaseTool<"select_active_intent"> {
 			const dataModel = new OrchestrationDataModel(task.cwd)
 			await dataModel.initialize()
 
+			// Phase 2: Check if intent is in .intentignore (protected)
+			const isIgnored = await dataModel.isIntentIgnored(intent_id)
+			if (isIgnored) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("select_active_intent")
+				const errorJson = JSON.stringify(
+					{
+						error_type: "intent_protected",
+						message: `Intent "${intent_id}" is protected and cannot be modified. This intent is listed in .orchestration/.intentignore.`,
+						details: {
+							intent_id: intent_id,
+							reason: "intent_in_ignore_list",
+							file: ".orchestration/.intentignore",
+						},
+						recoverable: false,
+						suggested_action:
+							"Select a different intent or ask user to remove this intent from .intentignore",
+					},
+					null,
+					2,
+				)
+				pushToolResult(errorJson)
+				return
+			}
+
 			// Load the intent from active_intents.yaml
 			const intent = await dataModel.getIntent(intent_id)
 
 			if (!intent) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("select_active_intent")
-				pushToolResult(
-					formatResponse.toolError(
-						`Intent "${intent_id}" not found in active_intents.yaml. Please use a valid intent ID.`,
-					),
+				const intentsData = await dataModel.readActiveIntents()
+				const errorJson = JSON.stringify(
+					{
+						error_type: "intent_not_found",
+						message: `Intent "${intent_id}" not found in active_intents.yaml. Please use a valid intent ID.`,
+						details: {
+							requested_intent_id: intent_id,
+							available_intent_ids: intentsData.active_intents.map((i) => i.id),
+							available_intents_count: intentsData.active_intents.length,
+						},
+						recoverable: true,
+						suggested_action: `Use one of the available intent IDs: ${intentsData.active_intents.map((i) => i.id).join(", ")}`,
+					},
+					null,
+					2,
 				)
+				pushToolResult(errorJson)
 				return
 			}
 
@@ -126,4 +163,3 @@ ${recentHistorySection}
 }
 
 export const selectActiveIntentTool = new SelectActiveIntentTool()
-
