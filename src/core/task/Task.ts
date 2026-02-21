@@ -172,6 +172,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	todoList?: TodoItem[]
 
+	/**
+	 * The currently active intent ID selected by the agent via select_active_intent tool.
+	 * Used to track which intent context is being worked on and for scope validation.
+	 */
+	private activeIntentId?: string
+
 	readonly rootTask: Task | undefined = undefined
 	readonly parentTask: Task | undefined = undefined
 	readonly taskNumber: number
@@ -774,6 +780,29 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		return this._taskMode
+	}
+
+	/**
+	 * Gets the currently active intent ID.
+	 * @returns The active intent ID, or undefined if no intent is selected
+	 */
+	public getActiveIntentId(): string | undefined {
+		return this.activeIntentId
+	}
+
+	/**
+	 * Sets the active intent ID when the agent selects an intent.
+	 * @param intentId - The intent ID to set as active
+	 */
+	public setActiveIntentId(intentId: string): void {
+		this.activeIntentId = intentId
+	}
+
+	/**
+	 * Clears the active intent ID.
+	 */
+	public clearActiveIntentId(): void {
+		this.activeIntentId = undefined
 	}
 
 	/**

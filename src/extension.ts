@@ -48,6 +48,7 @@ import {
 	CodeActionProvider,
 } from "./activate"
 import { initializeI18n } from "./i18n"
+import { registerIntentValidationHook } from "./hooks"
 import { flushModels, initializeModelCacheRefresh, refreshModels } from "./api/providers/fetchers/modelCache"
 
 /**
@@ -122,6 +123,15 @@ export async function activate(context: vscode.ExtensionContext) {
 	outputChannel = vscode.window.createOutputChannel(Package.outputChannel)
 	context.subscriptions.push(outputChannel)
 	outputChannel.appendLine(`${Package.name} extension activated - ${JSON.stringify(Package)}`)
+	console.log("[RooCode] Extension activated")
+
+	// Debug command to verify extension host is alive
+	context.subscriptions.push(
+		vscode.commands.registerCommand("roo-cline.debug", () => {
+			vscode.window.showInformationMessage("Debug: Extension Host is alive")
+			console.log("[RooCode Debug] Extension Host is alive")
+		}),
+	)
 
 	// Initialize network proxy configuration early, before any network requests.
 	// When proxyUrl is configured, all HTTP/HTTPS traffic will be routed through it.
@@ -151,6 +161,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Initialize i18n for internationalization support.
 	initializeI18n(context.globalState.get("language") ?? formatLanguage(vscode.env.language))
+
+	// Register intent validation hook for Intent-Driven Architect protocol
+	const cleanupIntentHook = registerIntentValidationHook()
+	context.subscriptions.push({ dispose: cleanupIntentHook })
+	outputChannel.appendLine("[HookEngine] Intent validation hook registered")
 
 	// Initialize terminal shell execution handlers.
 	TerminalRegistry.initialize()

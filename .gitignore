@@ -56,4 +56,5 @@ plans/
 
 roo-cli-*.tar.gz*
 
-.orchestration/
+# .orchestration/ - REMOVED: This directory must be tracked for TRP1 submission
+# It contains machine-managed state files that demonstrate intent traceability

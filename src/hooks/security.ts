@@ -27,19 +27,8 @@ import type { CommandClassification } from "./types"
  *   const approved = await askUserApproval(classification)
  * }
  */
-export function classifyCommand(
-	command: string,
-	context?: { cwd?: string; env?: Record<string, string> },
-): CommandClassification {
+export function classifyCommand(command: string, context?: { cwd?: string }): CommandClassification {
 	// TODO: Implementation for Phase 1
-	// Risk patterns to detect:
-	// - File deletion (rm, del, Remove-Item)
-	// - System modification (sudo, chmod, chown)
-	// - Network operations (curl, wget with -O)
-	// - Package installation (npm install, pip install)
-	// - Database operations (DROP, DELETE without WHERE)
-
-	// For now, return a safe classification
 	return {
 		command,
 		riskLevel: "safe",
@@ -60,24 +49,73 @@ export function classifyCommand(
  * }
  */
 export function isDangerousCommand(command: string): boolean {
-	// TODO: Implementation for Phase 1
-	// Patterns to check:
-	// - rm -rf (especially with /, /*, or no path)
-	// - dd if=/dev/zero
-	// - chmod 777
-	// - eval() or exec() with user input
-	// - curl | sh (pipe to shell)
-
 	const dangerousPatterns = [
-		/rm\s+-rf\s+(\/|\*|\.\.)/i,
-		/dd\s+if=\/dev\/(zero|random)/i,
+		// File deletion patterns
+		/rm\s+-rf/i,
+		/git\s+push\s+--force/i,
+		/git\s+push\s+-f/i,
+
+		// Permission changes
+		/chmod\s+-R\s+777/i,
 		/chmod\s+777/i,
+
+		// System commands
+		/sudo\s+/i,
+		/dd\s+if=\/dev\/(zero|random)/i,
+
+		// Database operations
+		/drop\s+table/i,
+		/delete\s+from/i,
+		/truncate\s+table/i,
+
+		// Dangerous redirects
 		/>\s*\/dev\/sd[a-z]/i,
 		/\|\s*sh$/i,
 		/\|\s*bash$/i,
+
+		// Package managers without confirmation
+		/npm\s+install.*-g/i,
+		/pip\s+install.*--system/i,
 	]
 
 	return dangerousPatterns.some((pattern) => pattern.test(command))
+}
+
+/**
+ * Classifies a tool by safety level (SAFE or DESTRUCTIVE).
+ * Used by Pre-Hook to determine if HITL approval is needed.
+ *
+ * @param toolName - Name of the tool being executed
+ * @param args - Tool arguments
+ * @returns 'SAFE' or 'DESTRUCTIVE'
+ *
+ * @example
+ * const classification = classifyToolSafety("write_to_file", { path: "test.ts" })
+ * if (classification === 'DESTRUCTIVE') {
+ *   // Request HITL approval
+ * }
+ */
+export function classifyToolSafety(toolName: string, args: any): "SAFE" | "DESTRUCTIVE" {
+	const SAFE_TOOLS = ["read_file", "list_files", "search_files", "codebase_search", "ask_followup_question"]
+	const DESTRUCTIVE_TOOLS = ["write_to_file", "execute_command", "apply_diff", "edit", "search_and_replace"]
+
+	if (SAFE_TOOLS.includes(toolName)) {
+		return "SAFE"
+	}
+
+	if (DESTRUCTIVE_TOOLS.includes(toolName)) {
+		// Additional check for execute_command
+		if (toolName === "execute_command") {
+			const command = args.command || args.cmd || ""
+			if (isDangerousCommand(command)) {
+				return "DESTRUCTIVE"
+			}
+		}
+		return "DESTRUCTIVE"
+	}
+
+	// Default to safe for unknown tools
+	return "SAFE"
 }
 
 /**

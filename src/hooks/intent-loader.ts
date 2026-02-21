@@ -6,7 +6,25 @@
  * what the agent is working on, related files, and objectives.
  */
 
+import * as vscode from "vscode"
+import * as yaml from "yaml"
+import * as path from "path"
 import type { IntentContext } from "./types"
+
+/**
+ * Extended Intent interface matching active_intents.yaml schema
+ */
+interface Intent {
+	id: string
+	name: string
+	status: "active" | "completed" | "blocked" | "pending"
+	owned_scope?: string[]
+	constraints?: string[]
+	acceptance_criteria?: string[]
+	context?: string
+	related_files?: string[]
+	metadata?: Record<string, unknown>
+}
 
 /**
  * Loads intent context from .orchestration/active_intents.yaml
@@ -19,12 +37,29 @@ import type { IntentContext } from "./types"
  * // Returns: <intent_context intent_id="INTENT-001">...</intent_context>
  */
 export async function loadIntentContext(intentId: string): Promise<string> {
-	// TODO: Implementation for Phase 1
-	// 1. Read .orchestration/active_intents.yaml
-	// 2. Parse YAML and find matching intent
-	// 3. Format as XML block
+	try {
+		const intent = await findIntentById(intentId)
+		if (!intent) {
+			return `<intent_context intent_id="${intentId}" error="Intent not found"></intent_context>`
+		}
 
-	return `<intent_context intent_id="${intentId}"><!-- context injected here --></intent_context>`
+		return formatIntentAsXml({
+			intentId: intent.id,
+			title: intent.name,
+			context: intent.context || "",
+			files: intent.related_files,
+			metadata: {
+				status: intent.status,
+				owned_scope: intent.owned_scope,
+				constraints: intent.constraints,
+				acceptance_criteria: intent.acceptance_criteria,
+				...intent.metadata,
+			},
+		})
+	} catch (error) {
+		console.error("[loadIntentContext] Error:", error)
+		return `<intent_context intent_id="${intentId}" error="${error instanceof Error ? error.message : String(error)}"></intent_context>`
+	}
 }
 
 /**
@@ -38,12 +73,25 @@ export async function loadIntentContext(intentId: string): Promise<string> {
  * console.log(intents.map(i => i.intentId))
  */
 export async function parseActiveIntents(cwd: string): Promise<IntentContext[]> {
-	// TODO: Implementation for Phase 1
-	// 1. Check if .orchestration/active_intents.yaml exists
-	// 2. Parse YAML file
-	// 3. Transform into IntentContext objects
-
-	return []
+	try {
+		const intents = await readActiveIntents(cwd)
+		return intents.map((intent) => ({
+			intentId: intent.id,
+			title: intent.name,
+			context: intent.context || "",
+			files: intent.related_files,
+			metadata: {
+				status: intent.status,
+				owned_scope: intent.owned_scope,
+				constraints: intent.constraints,
+				acceptance_criteria: intent.acceptance_criteria,
+				...intent.metadata,
+			},
+		}))
+	} catch (error) {
+		console.error("[parseActiveIntents] Error:", error)
+		return []
+	}
 }
 
 /**
@@ -101,6 +149,63 @@ function escapeXml(text: string): string {
 }
 
 /**
+ * Reads and parses active_intents.yaml from .orchestration directory
+ *
+ * @param cwd - Workspace root directory (optional, uses vscode workspace if not provided)
+ * @returns Array of Intent objects
+ */
+export async function readActiveIntents(cwd?: string): Promise<Intent[]> {
+	try {
+		const workspaceFolder = cwd || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
+		if (!workspaceFolder) {
+			throw new Error("No workspace folder found")
+		}
+
+		const intentFilePath = path.join(workspaceFolder, ".orchestration", "active_intents.yaml")
+		const uri = vscode.Uri.file(intentFilePath)
+
+		// Check if file exists
+		try {
+			await vscode.workspace.fs.stat(uri)
+		} catch {
+			// File doesn't exist, return empty array
+			return []
+		}
+
+		// Read file content
+		const fileContent = await vscode.workspace.fs.readFile(uri)
+		const yamlContent = Buffer.from(fileContent).toString("utf-8")
+
+		// Parse YAML
+		const parsed = yaml.parse(yamlContent)
+
+		// Handle both array and object formats
+		if (Array.isArray(parsed)) {
+			return parsed as Intent[]
+		} else if (parsed && typeof parsed === "object" && "intents" in parsed) {
+			return (parsed as { intents: Intent[] }).intents
+		}
+
+		return []
+	} catch (error) {
+		console.error("[readActiveIntents] Error:", error)
+		return []
+	}
+}
+
+/**
+ * Finds a specific intent by ID
+ *
+ * @param intentId - The intent ID to search for
+ * @param cwd - Workspace root directory (optional)
+ * @returns The matching Intent or null if not found
+ */
+export async function findIntentById(intentId: string, cwd?: string): Promise<Intent | null> {
+	const intents = await readActiveIntents(cwd)
+	return intents.find((intent) => intent.id === intentId) || null
+}
+
+/**
  * Checks if intent context is available for the current workspace.
  *
  * @param cwd - Workspace root directory
@@ -112,8 +217,45 @@ function escapeXml(text: string): string {
  * }
  */
 export async function hasIntentContext(cwd: string): Promise<boolean> {
-	// TODO: Implementation for Phase 1
-	// Check if .orchestration/active_intents.yaml exists
+	try {
+		const intentFilePath = path.join(cwd, ".orchestration", "active_intents.yaml")
+		const uri = vscode.Uri.file(intentFilePath)
+		await vscode.workspace.fs.stat(uri)
+		return true
+	} catch {
+		return false
+	}
+}
 
-	return false
+/**
+ * Validates if a file path is within the owned_scope of an intent.
+ * Uses glob pattern matching to check scope authorization.
+ *
+ * @param filePath - Relative file path to validate
+ * @param intent - Intent with owned_scope patterns
+ * @returns true if file is within scope, false otherwise
+ *
+ * @example
+ * const intent = { owned_scope: ["src/auth/**", "src/middleware/jwt.ts"] }
+ * const valid = validateIntentScope("src/auth/login.ts", intent)  // true
+ * const invalid = validateIntentScope("src/database/user.ts", intent)  // false
+ */
+export function validateIntentScope(filePath: string, intent: Intent): boolean {
+	if (!intent.owned_scope || intent.owned_scope.length === 0) {
+		return false // No scope defined = no access
+	}
+
+	// Normalize file path (remove leading ./ or /)
+	const normalizedPath = filePath.replace(/^\.?\//, "")
+
+	return intent.owned_scope.some((pattern) => {
+		// Convert glob pattern to regex
+		const regexPattern = pattern
+			.replace(/\*\*/g, ".*") // ** matches any depth
+			.replace(/\*/g, "[^/]*") // * matches within directory
+			.replace(/\?/g, ".") // ? matches single character
+
+		const regex = new RegExp(`^${regexPattern}$`)
+		return regex.test(normalizedPath)
+	})
 }

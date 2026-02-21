@@ -82,7 +82,58 @@ export interface IntentContext {
 }
 
 /**
- * Trace record for agent_trace.jsonl
+ * Trace record for agent_trace.jsonl (AI-Native Git specification)
+ *
+ * This schema follows the Agent Trace specification for intent-code correlation.
+ * Each record links code changes to high-level intents via content hashes.
+ */
+export interface TraceRecord {
+	/** Unique identifier (uuid-v4) */
+	id: string
+	/** ISO8601 timestamp */
+	timestamp: string
+	/** Version control system information */
+	vcs: {
+		/** Git commit SHA */
+		revision_id: string
+	}
+	/** Files modified in this trace */
+	files: Array<{
+		/** Relative path from workspace root */
+		relative_path: string
+		/** Conversations that modified this file */
+		conversations: Array<{
+			/** Session log identifier or URL */
+			url: string
+			/** Contributor information */
+			contributor: {
+				/** Entity type */
+				entity_type: "AI" | "Human" | "Mixed" | "Unknown"
+				/** Model identifier (e.g., "claude-3-5-sonnet") */
+				model_identifier: string
+			}
+			/** Code ranges modified */
+			ranges: Array<{
+				/** Starting line number */
+				start_line: number
+				/** Ending line number */
+				end_line: number
+				/** SHA-256 hash of code block (for spatial independence) */
+				content_hash: string
+			}>
+			/** Related specifications/intents */
+			related: Array<{
+				/** Type of relation */
+				type: "specification" | "intent" | "ticket"
+				/** Intent ID or spec reference (e.g., "INT-001") */
+				value: string
+			}>
+		}>
+	}>
+}
+
+/**
+ * Legacy trace record for agent_trace.jsonl (backward compatibility)
  */
 export interface AgentTraceRecord {
 	/** Timestamp of the event */

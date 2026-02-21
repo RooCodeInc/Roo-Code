@@ -9,6 +9,7 @@
  * returns `continue: false`, tool execution is aborted.
  */
 
+import * as vscode from "vscode"
 import type { ToolName } from "@roo-code/types"
 import type { ToolUse } from "../shared/tools"
 import type { Task } from "../core/task/Task"
@@ -20,6 +21,9 @@ import type {
 	PostToolUseHook,
 	HookRegistry,
 } from "./types"
+import * as path from "path"
+import { classifyToolSafety } from "./security"
+import { computeContentHash, computeGitSha, buildTraceRecord, appendTraceRecord } from "./trace-logger"
 
 /**
  * Global registry of hooks.
@@ -122,6 +126,49 @@ export async function executePreToolUseHooks<TName extends ToolName>(
 		continue: true,
 	}
 
+	// --- Governance: classification, HITL, optimistic locking ---
+	try {
+		const safety = classifyToolSafety(toolUse.name as string, params)
+		if (safety === "DESTRUCTIVE") {
+			const approved = await requestHITLAuthorization(toolUse.name as string, params)
+			if (!approved) {
+				return {
+					continue: false,
+					reason: formatRejectionError("User rejected HITL", "Operation cancelled by user", "HITL_REJECTED"),
+				}
+			}
+		}
+
+		// Optimistic locking for write_to_file
+		if (toolUse.name === "write_to_file") {
+			const filePath = String(params["path"] || params["file"] || "")
+			const expected = String(params["expected_content_hash"] || "")
+			if (filePath && expected) {
+				try {
+					const target = path.join(task.cwd, filePath)
+					const uri = vscode.Uri.file(target)
+					const disk = await vscode.workspace.fs.readFile(uri)
+					const diskText = Buffer.from(disk).toString("utf-8")
+					const diskHash = computeContentHash(diskText)
+					if (expected && expected !== diskHash) {
+						return {
+							continue: false,
+							reason: formatRejectionError(
+								"Optimistic Lock Failed",
+								"File changed on disk; reconcile and retry",
+								"OPTIMISTIC_LOCK_FAIL",
+							),
+						}
+					}
+				} catch (e) {
+					// File may not exist or read failed - allow hook chain to continue
+				}
+			}
+		}
+	} catch (err) {
+		console.error("[HookEngine] Governance pre-check failed:", err)
+	}
+
 	// Execute hooks in sequence
 	for (const hook of hookRegistry.preToolUseHooks) {
 		try {
@@ -221,6 +268,38 @@ export async function executePostToolUseHooks<TName extends ToolName>(
 		}
 	}
 
+	// Post-write: build and append trace record for write_to_file
+	try {
+		if (toolUse.name === "write_to_file" && success) {
+			const filePath = String(params["path"] || params["file"] || "")
+			let code = ""
+			if (typeof params["content"] === "string" && params["content"].length > 0) {
+				code = params["content"] as string
+			} else if (filePath) {
+				try {
+					const uri = vscode.Uri.file(path.join(task.cwd, filePath))
+					const disk = await vscode.workspace.fs.readFile(uri)
+					code = Buffer.from(disk).toString("utf-8")
+				} catch (e) {
+					// ignore read errors
+				}
+			}
+
+			const intentId = (task as any).getActiveIntentId
+				? (task as any).getActiveIntentId()
+				: (params["intent_id"] as string | undefined)
+			const modelId =
+				(task as any).cachedStreamingModel?.id ?? (task as any).apiConfiguration?.modelId ?? "unknown"
+			const gitSha = await computeGitSha(task.cwd)
+			const trace = buildTraceRecord(filePath, code, String(intentId || ""), String(modelId), task.taskId)
+			// annotate with vcs revision if available
+			;(trace as any).git_sha = gitSha
+			await appendTraceRecord(trace, task.cwd)
+		}
+	} catch (err) {
+		console.error("[HookEngine] Failed to append trace record:", err)
+	}
+
 	return aggregatedResult
 }
 
@@ -233,9 +312,60 @@ export function clearAllHooks(): void {
 }
 
 /**
- * Gets the current hook registry (for testing/debugging).
- * @internal
+ * Requests Human-in-the-Loop (HITL) authorization for DESTRUCTIVE operations.
+ * Shows a modal dialog requiring user approval before proceeding.
+ *
+ * @param toolName - Name of the tool requiring authorization
+ * @param args - Tool arguments for context
+ * @returns true if approved, false if rejected
+ *
+ * @example
+ * const approved = await requestHITLAuthorization("write_to_file", { path: "src/main.ts" })
+ * if (!approved) {
+ *   return { continue: false, reason: "User rejected operation" }
+ * }
  */
-export function getHookRegistry(): Readonly<HookRegistry> {
-	return hookRegistry
+export async function requestHITLAuthorization(toolName: string, args: any): Promise<boolean> {
+	const options = ["Approve", "Reject"]
+
+	// Format args for display
+	const argsPreview = JSON.stringify(args, null, 2).substring(0, 200)
+	const detail = `This is a DESTRUCTIVE operation.\n\nTool: ${toolName}\nArgs: ${argsPreview}${argsPreview.length >= 200 ? "..." : ""}\n\nDo you approve?`
+
+	const selection = await vscode.window.showWarningMessage(
+		`⚠️ Governance Alert: ${toolName}`,
+		{ modal: true, detail },
+		...options,
+	)
+
+	return selection === "Approve"
+}
+
+/**
+ * Formats a rejection error as structured JSON for LLM self-correction.
+ *
+ * @param reason - Human-readable reason for rejection
+ * @param suggestion - Suggested action for the agent to take
+ * @param blockedReason - Machine-readable error code
+ * @returns JSON-formatted error string
+ *
+ * @example
+ * const error = formatRejectionError(
+ *   "Scope Violation",
+ *   "Request scope expansion via intent update",
+ *   "SCOPE_VIOLATION"
+ * )
+ */
+export function formatRejectionError(reason: string, suggestion: string, blockedReason?: string): string {
+	return JSON.stringify(
+		{
+			error: "HOOK_BLOCKED",
+			reason: reason,
+			suggestion: suggestion,
+			blocked_reason: blockedReason || "VALIDATION_FAILED",
+			timestamp: new Date().toISOString(),
+		},
+		null,
+		2,
+	)
 }

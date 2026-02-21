@@ -26,6 +26,7 @@ export type {
 	PostToolUseHook,
 	HookRegistry,
 	IntentContext,
+	TraceRecord,
 	AgentTraceRecord,
 	CommandClassification,
 } from "./types"
@@ -38,10 +39,28 @@ export {
 	executePostToolUseHooks,
 	clearAllHooks,
 	getHookRegistry,
+	requestHITLAuthorization,
+	formatRejectionError,
+	checkFileCollision,
 } from "./middleware"
 
+// Intent validation hook
+export { registerIntentValidationHook, validateIntentForTool } from "./intent-validation-hook"
+
+// Documentation and lesson recording
+export { appendLesson, createClaudeMd, readLessons } from "./documentation"
+
 // Intent context loading
-export { loadIntentContext, parseActiveIntents, formatIntentAsXml, hasIntentContext } from "./intent-loader"
+export {
+	loadIntentContext,
+	parseActiveIntents,
+	formatIntentAsXml,
+	hasIntentContext,
+	readActiveIntents,
+	findIntentById,
+	validateIntentScope,
+} from "./intent-loader"
+export type { Intent } from "./intent-loader"
 
 // Trace logging
 export {
@@ -52,11 +71,16 @@ export {
 	appendToTraceLog,
 	readTraceLog,
 	analyzeTraceMetrics,
+	computeContentHash,
+	computeGitSha,
+	buildTraceRecord,
+	appendTraceRecord,
 } from "./trace-logger"
 
 // Security classification
 export {
 	classifyCommand,
+	classifyToolSafety,
 	isDangerousCommand,
 	suggestSaferAlternative,
 	classifyFileOperation,
@@ -65,3 +89,15 @@ export {
 	enforceSecurityPolicy,
 	explainRisk,
 } from "./security"
+
+// Session state management
+export {
+	initSessionState,
+	setSessionIntent,
+	getSessionIntent,
+	clearSessionIntent,
+	getAllSessions,
+	clearAllSessions,
+	getSessionState,
+	updateSessionMetadata,
+} from "./session-state"

@@ -37,9 +37,14 @@ import { generateImageTool } from "../tools/GenerateImageTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
+import { SelectActiveIntentTool } from "../tools/SelectActiveIntentTool"
+
+const selectActiveIntentTool = new SelectActiveIntentTool()
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+import { executePreToolUseHooks, executePostToolUseHooks } from "../../hooks"
+import type { PreToolUseContext, PostToolUseContext } from "../../hooks/types"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -676,14 +681,71 @@ export async function presentAssistantMessage(cline: Task) {
 			}
 
 			switch (block.name) {
-				case "write_to_file":
+				case "write_to_file": {
+					// PreToolUse Hook Interception - Intent Governance
+					try {
+						console.log("[HookEngine] PreHook: Intercepting write_to_file")
+						const preHookResult = await executePreToolUseHooks(
+							cline,
+							block as ToolUse<"write_to_file">,
+							block.params,
+						)
+
+						if (!preHookResult.continue) {
+							// Block execution and return error to LLM
+							console.error(`[HookEngine] PreHook BLOCKED: ${preHookResult.reason}`)
+							await cline.say(
+								"error",
+								`⛔ Intent Governance: ${preHookResult.reason || "Tool execution blocked by governance hook"}`,
+							)
+							pushToolResult(
+								formatResponse.toolError(
+									`HOOK_BLOCKED: ${preHookResult.reason || "Tool execution blocked by governance hook"}`,
+								),
+							)
+							break
+						}
+						console.log("[HookEngine] PreHook: Validation passed")
+					} catch (hookError) {
+						// Log error but don't block (fail-safe)
+						console.error("[HookEngine] PreHook fatal error:", hookError)
+						await cline.say(
+							"error",
+							`⚠️ Hook error (proceeding): ${hookError instanceof Error ? hookError.message : String(hookError)}`,
+						)
+					}
+
 					await checkpointSaveAndMark(cline)
 					await writeToFileTool.handle(cline, block as ToolUse<"write_to_file">, {
 						askApproval,
 						handleError,
-						pushToolResult,
+						pushToolResult: async (result) => {
+							// PostToolUse Hook - Trace Logging (fire-and-forget, non-blocking)
+							try {
+								console.log("[HookEngine] PostHook: Logging trace record")
+								// Don't await - fire-and-forget to avoid slowing down UX
+								executePostToolUseHooks(
+									cline,
+									block as ToolUse<"write_to_file">,
+									block.params,
+									result,
+									true, // success
+									undefined, // error
+									Date.now(), // startTime
+								).catch((err) => {
+									console.error("[HookEngine] PostHook async error:", err)
+								})
+							} catch (hookError) {
+								// Log error but never block post-execution
+								console.error("[HookEngine] PostHook fatal error:", hookError)
+							}
+
+							// Call original pushToolResult immediately (don't wait for hooks)
+							pushToolResult(result)
+						},
 					})
 					break
+				}
 				case "update_todo_list":
 					await updateTodoListTool.handle(cline, block as ToolUse<"update_todo_list">, {
 						askApproval,
@@ -761,13 +823,67 @@ export async function presentAssistantMessage(cline: Task) {
 						pushToolResult,
 					})
 					break
-				case "execute_command":
+				case "execute_command": {
+					// PreToolUse Hook Interception - Security Classification
+					try {
+						console.log("[HookEngine] PreHook: Intercepting execute_command")
+						const preHookResult = await executePreToolUseHooks(
+							cline,
+							block as ToolUse<"execute_command">,
+							block.params,
+						)
+
+						if (!preHookResult.continue) {
+							// Block execution and return error to LLM
+							console.error(`[HookEngine] PreHook BLOCKED: ${preHookResult.reason}`)
+							await cline.say(
+								"error",
+								`⛔ Security Boundary: ${preHookResult.reason || "Command blocked by security hook"}`,
+							)
+							pushToolResult(
+								formatResponse.toolError(
+									`HOOK_BLOCKED: ${preHookResult.reason || "Command execution blocked by security hook"}`,
+								),
+							)
+							break
+						}
+						console.log("[HookEngine] PreHook: Security validation passed")
+					} catch (hookError) {
+						// Log error but don't block (fail-safe)
+						console.error("[HookEngine] PreHook fatal error:", hookError)
+						await cline.say(
+							"error",
+							`⚠️ Hook error (proceeding): ${hookError instanceof Error ? hookError.message : String(hookError)}`,
+						)
+					}
+
 					await executeCommandTool.handle(cline, block as ToolUse<"execute_command">, {
 						askApproval,
 						handleError,
-						pushToolResult,
+						pushToolResult: async (result) => {
+							// PostToolUse Hook - Trace Logging (fire-and-forget)
+							try {
+								console.log("[HookEngine] PostHook: Logging command execution trace")
+								executePostToolUseHooks(
+									cline,
+									block as ToolUse<"execute_command">,
+									block.params,
+									result,
+									true, // success
+									undefined, // error
+									Date.now(), // startTime
+								).catch((err) => {
+									console.error("[HookEngine] PostHook async error:", err)
+								})
+							} catch (hookError) {
+								console.error("[HookEngine] PostHook fatal error:", hookError)
+							}
+
+							pushToolResult(result)
+						},
 					})
 					break
+				}
 				case "read_command_output":
 					await readCommandOutputTool.handle(cline, block as ToolUse<"read_command_output">, {
 						askApproval,
@@ -791,6 +907,13 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "ask_followup_question":
 					await askFollowupQuestionTool.handle(cline, block as ToolUse<"ask_followup_question">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "select_active_intent":
+					await selectActiveIntentTool.handle(cline, block as ToolUse<"select_active_intent">, {
 						askApproval,
 						handleError,
 						pushToolResult,

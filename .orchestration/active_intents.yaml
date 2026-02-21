@@ -1,0 +1,26 @@
+intents:
+  - id: "INT-001"
+    name: "JWT Authentication Migration"
+    status: "IN_PROGRESS"
+    owned_scope:
+      - "src/auth/**"
+      - "src/middleware/jwt.ts"
+    constraints:
+      - "Must maintain backward compatibility with Basic Auth"
+      - "No external auth providers"
+    acceptance_criteria:
+      - "Unit tests in tests/auth/ pass"
+      - "No breaking changes to public API"
+  
+  - id: "INT-002"
+    name: "Weather API Integration"
+    status: "DRAFT"
+    owned_scope:
+      - "src/api/weather/**"
+      - "src/services/weather.ts"
+    constraints:
+      - "Rate limit: 100 requests/minute"
+      - "Cache responses for 5 minutes"
+    acceptance_criteria:
+      - "Returns valid forecast JSON"
+      - "Handles API timeout gracefully"

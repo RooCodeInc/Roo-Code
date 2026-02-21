@@ -142,9 +142,14 @@ export async function regexSearchFiles(
 	regex: string,
 	filePattern?: string,
 	rooIgnoreController?: RooIgnoreController,
+	vscodeAppRoot?: string,
 ): Promise<string> {
-	const vscodeAppRoot = vscode.env.appRoot
-	const rgPath = await getBinPath(vscodeAppRoot)
+	// Use provided vscodeAppRoot or get from vscode API if available
+	const appRoot = vscodeAppRoot || (typeof vscode !== "undefined" ? vscode.env.appRoot : undefined)
+	if (!appRoot) {
+		throw new Error("vscodeAppRoot must be provided when vscode API is not available")
+	}
+	const rgPath = await getBinPath(appRoot)
 
 	if (!rgPath) {
 		throw new Error("Could not find ripgrep binary")
