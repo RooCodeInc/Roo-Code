@@ -41,7 +41,7 @@ active_intents:
 
   - id: "INT-003"
     name: "System Prompt Intent Enforcement"
-    status: "PENDING"
+    status: "IN_PROGRESS"
     owned_scope:
       - "src/core/prompts/**"
       - "packages/types/src/tool.ts"
