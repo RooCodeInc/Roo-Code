@@ -1,1 +1,32 @@
-{"timestamp":"2026-02-21T15:11:48.529Z","intent_id":"demo-intent","tool":"write_to_file","file":"demo.txt","sha256":"a948904f2f0f479b8f8197694b30184b0d2ed1c1cd2a1ec0fb85d299a192a447"}
+{
+  "id": "9b41e3b6-8a9c-4f3a-bc22-9e6c55e0f9b2",
+  "timestamp": "2026-02-21T09:15:00Z",
+  "vcs": { "revision_id": "abc123def456" },
+  "files": [
+    {
+      "relative_path": "src/hooks/preToolHook.ts",
+      "conversations": [
+        {
+          "url": "session-001",
+          "contributor": {
+            "entity_type": "AI",
+            "model_identifier": "roo-agent"
+          },
+          "ranges": [
+            {
+              "start_line": 1,
+              "end_line": 45,
+              "content_hash": "sha256:d2f3a1c9a8b7e4f6a5d1c2b3e9f8a7b6c5d4e3f2"
+            }
+          ],
+          "related": [
+            {
+              "type": "intent",
+              "value": "INT-001"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
