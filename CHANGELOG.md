@@ -1,5 +1,11 @@
 # Roo Code Changelog
 
+## 3.50.4
+
+### Patch Changes
+
+- Feat: Add MiniMax M2.5 model support (#11471 by @love8ko, PR #11458 by @roomote)
+
 ## 3.50.3
 
 ### Patch Changes
