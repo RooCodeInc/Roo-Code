@@ -67,6 +67,14 @@ async function runWithHooks<T extends ToolName>(
 ) {
 	if (options?.checkpoint) await checkpointSaveAndMark(cline)
 
+	// ===== BRIDGE START =====
+	// convert Roo Code block/agent info to what your hooks expect
+	const filePath = block.filePath || block.target // actual file being edited
+	const intentId = block.intentId || cline.activeIntentId // pick from your agent context
+	const sessionId = cline.sessionId || crypto.randomUUID() // per-session ID
+	const contributorModel = cline.modelIdentifier || "claude-3-5-sonnet" // agent model name
+	// ===== BRIDGE END =====
+
 	// pre-hook can access cline and block
 	await preWriteHook(cline, block)
 
