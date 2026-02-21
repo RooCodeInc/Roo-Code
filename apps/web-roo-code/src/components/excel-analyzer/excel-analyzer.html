@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Analyzer</title>
+    <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.3.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        .hidden-file-input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Excel Analyzer</h1>
+        
+        <!-- Upload Component -->
+        <div id="uploadComponent" class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Upload Excel File</h2>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div id="uploadArea" class="border-2 border-dashed rounded-lg p-8 text-center transition-all">
+                    <div class="text-4xl text-gray-400 mb-4">
+                        <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Upload Excel File</h3>
+                    <p class="text-gray-500 mb-4">Drag and drop your Excel file here or click to browse</p>
+                    <p class="text-sm text-gray-500 mb-4">Supported formats: .xlsx, .csv</p>
+                    
+                    <input type="file" id="fileInput" class="hidden-file-input" accept=".xlsx,.csv">
+                    <label for="fileInput" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">
+                        Browse Files
+                    </label>
+                </div>
+                
+                <!-- File Preview -->
+                <div id="filePreview" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg hidden">
+                    <h3 class="text-lg font-semibold mb-2">File Preview</h3>
+                    <div class="space-y-2">
+                        <p><strong>Name:</strong> <span id="previewName"></span></p>
+                        <p><strong>Size:</strong> <span id="previewSize"></span> KB</p>
+                        <p><strong>Columns:</strong> <span id="previewColumns"></span></p>
+                        <p><strong>Rows:</strong> <span id="previewRows"></span></p>
+                    </div>
+                </div>
+                
+                <!-- Selected File Info -->
+                <div id="selectedFileInfo" class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg hidden">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-medium">Selected File:</h4>
+                            <p class="text-sm text-gray-600" id="selectedFileName"></p>
+                        </div>
+                        <button id="removeFileBtn" class="text-red-600 hover:text-red-700">
+                            Remove
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Error Message -->
+                <div id="errorMessage" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 hidden"></div>
+                
+                <!-- Upload Button -->
+                <div id="uploadButton" class="mt-4 hidden">
+                    <button id="uploadFileBtn" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
+                        Upload File
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Intent Input Component -->
+        <div id="intentInputComponent" class="mb-8 hidden">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Analyze Your Data</h2>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <!-- Processing Indicator -->
+                <div id="processingIndicator" class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 flex items-center justify-between hidden">
+                    <div class="flex items-center">
+                        <div class="spinner"></div>
+                        <span>Analyzing your request...</span>
+                    </div>
+                </div>
+                
+                <!-- Recognized Intent -->
+                <div id="recognizedIntent" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg hidden">
+                    <h4 class="font-medium mb-2">Recognized Intent:</h4>
+                    <div class="space-y-2">
+                        <p><strong>Type:</strong> <span id="intentType"></span></p>
+                        <p><strong>Context:</strong> <span id="intentContext"></span></p>
+                        <p><strong>Parameters:</strong> <span id="intentParameters"></span></p>
+                    </div>
+                </div>
+                
+                <!-- Suggestions -->
+                <div id="suggestions" class="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg hidden">
+                    <h5 class="font-medium mb-2">Similar Requests:</h5>
+                    <div id="suggestionsList" class="flex flex-wrap gap-2"></div>
+                </div>
+                
+                <!-- Input Area -->
+                <div class="mb-4">
+                    <textarea id="userInput" rows="4" placeholder="Describe what you want to analyze..." class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex justify-between items-center">
+                    <button id="clearIntentBtn" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                        Clear
+                    </button>
+                    
+                    <button id="analyzeBtn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
+                        Analyze
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dashboard Component -->
+        <div id="dashboardComponent" class="mb-8 hidden">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Analysis Results</h2>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <!-- View Selector -->
+                <div class="mb-4 flex space-x-2">
+                    <button id="chartViewBtn" class="px-4 py-2 rounded-lg transition-colors bg-blue-600 text-white">
+                        Chart
+                    </button>
+                    <button id="tableViewBtn" class="px-4 py-2 rounded-lg transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300">
+                        Table
+                    </button>
+                    <button id="summaryViewBtn" class="px-4 py-2 rounded-lg transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300">
+                        Summary
+                    </button>
+                </div>
+                
+                <!-- Export Controls -->
+                <div class="mb-4 flex space-x-2">
+                    <button id="exportExcelBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        Export to Excel
+                    </button>
+                    <button id="exportPDFBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                        Export to PDF
+                    </button>
+                    <button id="exportCSVBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Export to CSV
+                    </button>
+                    <button id="exportJSONBtn" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                        Export to JSON
+                    </button>
+                </div>
+                
+                <!-- Main Content -->
+                <div id="mainContent" class="bg-white rounded-lg shadow-md p-6">
+                    <div class="text-center py-8 text-gray-500">
+                        <p>No analysis results available. Please upload a file and perform analysis.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="excel-analyzer.js"></script>
+</body>
+</html>
