@@ -2,7 +2,7 @@ import path from "path"
 
 import type { HookResult } from "./types"
 import { DESTRUCTIVE_TOOLS } from "./types"
-import { loadIntentContext, buildIntentContextXml } from "./context-loader"
+import { loadIntentContext, buildConsolidatedIntentContextXml } from "./context-loader"
 import { pathInScope } from "./scope"
 
 /** Block paths that escape workspace (.. or absolute outside cwd). */
@@ -41,15 +41,14 @@ export class PreHook {
 			if (!intentId) {
 				return { blocked: true, error: "You must provide a valid intent_id when calling select_active_intent." }
 			}
-			const context = await loadIntentContext(cwd, intentId)
-			if (!context) {
+			const xml = await buildConsolidatedIntentContextXml(cwd, intentId)
+			if (!xml) {
 				return {
 					blocked: true,
 					error: `You must cite a valid active Intent ID. Intent "${intentId}" was not found in .orchestration/active_intents.yaml.`,
 				}
 			}
 			setActiveIntentId(intentId)
-			const xml = buildIntentContextXml(context)
 			return { blocked: false, injectResult: xml }
 		}
 
