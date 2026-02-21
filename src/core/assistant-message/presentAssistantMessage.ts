@@ -13,7 +13,8 @@ import type { ToolParamName, ToolResponse, ToolUse, McpToolUse } from "../../sha
 
 import { AskIgnoredError } from "../task/AskIgnoredError"
 import { Task } from "../task/Task"
-
+import { preWriteHook } from "../../hooks/preHook"
+import { postWriteHook } from "../../hooks/postHook"
 import { listFilesTool } from "../tools/ListFilesTool"
 import { readFileTool } from "../tools/ReadFileTool"
 import { readCommandOutputTool } from "../tools/ReadCommandOutputTool"
@@ -57,6 +58,57 @@ import { sanitizeToolUseId } from "../../utils/tool-id"
  * API response pattern, where content arrives incrementally and needs to be processed
  * as it becomes available.
  */
+
+async function runWithHooks<T extends ToolName>(
+	cline: Task,
+	block: ToolUse<T>,
+	handler: ToolHandler<T>,
+	options?: { checkpoint?: boolean },
+) {
+	if (options?.checkpoint) await checkpointSaveAndMark(cline)
+
+	// pre-hook can access cline and block
+	await preWriteHook(cline, block)
+
+	// Keep helpers in scope so handlers still compile
+	const askApproval = async (
+		type: ClineAsk,
+		partialMessage?: string,
+		progressStatus?: ToolProgressStatus,
+		isProtected?: boolean,
+	) => {
+		const { response, text, images } = await cline.ask(
+			type,
+			partialMessage,
+			false,
+			progressStatus,
+			isProtected || false,
+		)
+		if (response !== "yesButtonClicked") {
+			if (text) {
+				await cline.say("user_feedback", text, images)
+				pushToolResult(formatResponse.toolDeniedWithFeedback(text), images)
+			} else {
+				pushToolResult(formatResponse.toolDenied())
+			}
+			return false
+		}
+		return true
+	}
+
+	const pushToolResult = (content: ToolResponse, images?: string[]) => {
+		cline.pushToolResultToUserContent({ type: "tool_result", tool_use_id: block.id, content })
+		if (images) cline.userMessageContent.push(...images)
+	}
+
+	try {
+		await handler.handle(cline, block, { askApproval, handleError, pushToolResult })
+		await postWriteHook(cline, block, { success: true })
+	} catch (err) {
+		await postWriteHook(cline, block, { success: false, error: err })
+		throw err
+	}
+}
 
 export async function presentAssistantMessage(cline: Task) {
 	if (cline.abort) {
@@ -326,63 +378,81 @@ export async function presentAssistantMessage(cline: Task) {
 
 			const toolDescription = (): string => {
 				switch (block.name) {
-					case "execute_command":
-						return `[${block.name} for '${block.params.command}']`
-					case "read_file":
-						// Prefer native typed args when available; fall back to legacy params
-						// Check if nativeArgs exists (native protocol)
-						if (block.nativeArgs) {
-							return readFileTool.getReadFileToolDescription(block.name, block.nativeArgs)
-						}
-						return readFileTool.getReadFileToolDescription(block.name, block.params)
 					case "write_to_file":
-						return `[${block.name} for '${block.params.path}']`
+						await runWithHooks(cline, block as ToolUse<"write_to_file">, writeToFileTool, {
+							checkpoint: true,
+						})
+						break
+					case "update_todo_list":
+						await runWithHooks(cline, block as ToolUse<"update_todo_list">, updateTodoListTool)
+						break
 					case "apply_diff":
-						// Native-only: tool args are structured (no XML payloads).
-						return block.params?.path ? `[${block.name} for '${block.params.path}']` : `[${block.name}]`
-					case "search_files":
-						return `[${block.name} for '${block.params.regex}'${
-							block.params.file_pattern ? ` in '${block.params.file_pattern}'` : ""
-						}]`
+						await runWithHooks(cline, block as ToolUse<"apply_diff">, applyDiffToolClass, {
+							checkpoint: true,
+						})
+						break
 					case "edit":
 					case "search_and_replace":
-						return `[${block.name} for '${block.params.file_path}']`
+						await runWithHooks(cline, block as ToolUse<"edit">, editTool, { checkpoint: true })
+						break
 					case "search_replace":
-						return `[${block.name} for '${block.params.file_path}']`
+						await runWithHooks(cline, block as ToolUse<"search_replace">, searchReplaceTool, {
+							checkpoint: true,
+						})
+						break
 					case "edit_file":
-						return `[${block.name} for '${block.params.file_path}']`
+						await runWithHooks(cline, block as ToolUse<"edit_file">, editFileTool, { checkpoint: true })
+						break
 					case "apply_patch":
-						return `[${block.name}]`
+						await runWithHooks(cline, block as ToolUse<"apply_patch">, applyPatchTool, { checkpoint: true })
+						break
+					case "read_file":
+						await runWithHooks(cline, block as ToolUse<"read_file">, readFileTool)
+						break
 					case "list_files":
-						return `[${block.name} for '${block.params.path}']`
-					case "use_mcp_tool":
-						return `[${block.name} for '${block.params.server_name}']`
-					case "access_mcp_resource":
-						return `[${block.name} for '${block.params.server_name}']`
-					case "ask_followup_question":
-						return `[${block.name} for '${block.params.question}']`
-					case "attempt_completion":
-						return `[${block.name}]`
-					case "switch_mode":
-						return `[${block.name} to '${block.params.mode_slug}'${block.params.reason ? ` because: ${block.params.reason}` : ""}]`
+						await runWithHooks(cline, block as ToolUse<"list_files">, listFilesTool)
+						break
 					case "codebase_search":
-						return `[${block.name} for '${block.params.query}']`
+						await runWithHooks(cline, block as ToolUse<"codebase_search">, codebaseSearchTool)
+						break
+					case "search_files":
+						await runWithHooks(cline, block as ToolUse<"search_files">, searchFilesTool)
+						break
+					case "execute_command":
+						await runWithHooks(cline, block as ToolUse<"execute_command">, executeCommandTool)
+						break
 					case "read_command_output":
-						return `[${block.name} for '${block.params.artifact_id}']`
-					case "update_todo_list":
-						return `[${block.name}]`
-					case "new_task": {
-						const mode = block.params.mode ?? defaultModeSlug
-						const message = block.params.message ?? "(no message)"
-						const modeName = getModeBySlug(mode, customModes)?.name ?? mode
-						return `[${block.name} in ${modeName} mode: '${message}']`
-					}
+						await runWithHooks(cline, block as ToolUse<"read_command_output">, readCommandOutputTool)
+						break
+					case "use_mcp_tool":
+						await runWithHooks(cline, block as ToolUse<"use_mcp_tool">, useMcpToolTool)
+						break
+					case "access_mcp_resource":
+						await runWithHooks(cline, block as ToolUse<"access_mcp_resource">, accessMcpResourceTool)
+						break
+					case "ask_followup_question":
+						await runWithHooks(cline, block as ToolUse<"ask_followup_question">, askFollowupQuestionTool)
+						break
+					case "switch_mode":
+						await runWithHooks(cline, block as ToolUse<"switch_mode">, switchModeTool)
+						break
+					case "new_task":
+						await runWithHooks(cline, block as ToolUse<"new_task">, newTaskTool, { checkpoint: true })
+						break
+					case "attempt_completion":
+						await runWithHooks(cline, block as ToolUse<"attempt_completion">, attemptCompletionTool)
+						break
 					case "run_slash_command":
-						return `[${block.name} for '${block.params.command}'${block.params.args ? ` with args: ${block.params.args}` : ""}]`
+						await runWithHooks(cline, block as ToolUse<"run_slash_command">, runSlashCommandTool)
+						break
 					case "skill":
-						return `[${block.name} for '${block.params.skill}'${block.params.args ? ` with args: ${block.params.args}` : ""}]`
+						await runWithHooks(cline, block as ToolUse<"skill">, skillTool)
+						break
 					case "generate_image":
-						return `[${block.name} for '${block.params.path}']`
+						await runWithHooks(cline, block as ToolUse<"generate_image">, generateImageTool, {
+							checkpoint: true,
+						})
+						break
 					default:
 						return `[${block.name}]`
 				}
