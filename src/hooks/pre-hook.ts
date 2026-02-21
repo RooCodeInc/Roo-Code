@@ -1,10 +1,17 @@
-import * as vscode from "vscode"
 import path from "path"
 
-import type { HookResult, IntentContext, MutationClass } from "./types"
+import type { HookResult } from "./types"
 import { DESTRUCTIVE_TOOLS } from "./types"
 import { loadIntentContext, buildIntentContextXml } from "./context-loader"
 import { pathInScope } from "./scope"
+
+/** Block paths that escape workspace (.. or absolute outside cwd). */
+function isPathTraversal(relPath: string, cwd: string): boolean {
+	const normalized = path.normalize(relPath)
+	if (normalized.includes("..")) return true
+	const resolved = path.resolve(cwd, relPath)
+	return !resolved.startsWith(cwd)
+}
 
 export interface PreHookOptions {
 	cwd: string
@@ -61,6 +68,13 @@ export class PreHook {
 			// Scope enforcement for write_to_file
 			if (toolName === "write_to_file" && params.path) {
 				const relPath = String(params.path)
+				// Path traversal: block paths that escape workspace (e.g. .. or absolute)
+				if (isPathTraversal(relPath, cwd)) {
+					return {
+						blocked: true,
+						error: `Path traversal not allowed: "${relPath}" would escape the workspace. Use a path relative to the workspace only.`,
+					}
+				}
 				const context = await loadIntentContext(cwd, activeId)
 				if (context && context.owned_scope.length > 0 && !pathInScope(relPath, context.owned_scope, cwd)) {
 					return {
@@ -71,19 +85,7 @@ export class PreHook {
 			}
 		}
 
-		// Optional: HITL for destructive tools (can be wired via askApproval in host)
+		// Optional: HITL for destructive tools (wire via askApproval in host / extension)
 		return { blocked: false }
-	}
-
-	/**
-	 * Optional: prompt for Human-in-the-Loop approval on destructive actions.
-	 * Call this from the host when askApproval is invoked for destructive tools.
-	 */
-	static async askApprovalDestructive(toolName: string, message: string): Promise<boolean> {
-		return new Promise((resolve) => {
-			vscode.window
-				.showWarningMessage(`Approve destructive action: ${toolName}?`, { modal: true }, "Approve", "Reject")
-				.then((choice) => resolve(choice === "Approve"))
-		})
 	}
 }

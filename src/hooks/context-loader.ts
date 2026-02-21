@@ -45,7 +45,7 @@ export function buildIntentContextXml(context: IntentContext): string {
 			? context.owned_scope.map((s) => `  <scope>${escapeXml(s)}</scope>`).join("\n")
 			: "  <scope>No scope restriction</scope>"
 	const criteriaXml =
-		(context.acceptance_criteria?.length ?? 0 > 0)
+		(context.acceptance_criteria?.length ?? 0) > 0
 			? context.acceptance_criteria!.map((a) => `  <criterion>${escapeXml(a)}</criterion>`).join("\n")
 			: "  <criterion>None specified</criterion>"
 
