@@ -1,3 +1,4 @@
+import * as vscode from "vscode"
 import { serializeError } from "serialize-error"
 import { Anthropic } from "@anthropic-ai/sdk"
 
@@ -40,6 +41,9 @@ import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+import { requiresApproval } from "../../hooks/utils/commandClassification"
+import { formatToolError, ErrorFormatters } from "../../hooks/utils/errorFormatter"
+import { findIntentById } from "../../hooks/utils/yamlLoader"
 import { selectActiveIntentPreHook } from "../../hooks/preHooks/selectActiveIntent"
 import { writeFilePreHook } from "../../hooks/preHooks/writeFile"
 import { writeFilePostHook } from "../../hooks/postHooks/writeFile"
@@ -703,43 +707,112 @@ export async function presentAssistantMessage(cline: Task) {
 						{ task: cline, workspaceRoot: cline.cwd },
 					)
 					if (preHookResult.blocked) {
-						pushToolResult(formatResponse.toolError(preHookResult.error ?? "Intent selection blocked."))
+						pushToolResult(
+							formatToolError(
+								"INTENT_SELECTION_FAILED",
+								preHookResult.error ?? "Unknown error",
+								"Check the intent ID in .orchestration/active_intents.yaml",
+							),
+						)
 						break
 					}
 					cline.currentIntentId = intentId
+					// Load and cache the intent's owned_scope for write_file pre-hook
+					try {
+						const intent = await findIntentById(cline.cwd, intentId)
+						if (intent?.owned_scope?.length) {
+							cline.currentIntentScope = intent.owned_scope
+						} else {
+							cline.currentIntentScope = []
+						}
+					} catch (error) {
+						console.error("Error loading intent scope:", error)
+						cline.currentIntentScope = []
+					}
 					if (preHookResult.context) {
 						pushToolResult(preHookResult.context)
 					} else {
-						pushToolResult(
-							`Active intent set to ${intentId}. (Context loading will be implemented in Phase 1.)`,
-						)
+						pushToolResult(`Selected intent: ${intentId}`)
 					}
 					break
 				}
 				case "write_to_file": {
 					await checkpointSaveAndMark(cline)
-					const writeParams = (block.nativeArgs ?? block.params) as { path?: string; content?: string }
-					const writePreResult = await writeFilePreHook(
-						{ path: writeParams?.path ?? "", content: writeParams?.content ?? "" },
-						{
-							intentId: cline.currentIntentId,
-							workspaceRoot: cline.cwd,
-						},
-					)
-					if (writePreResult.blocked) {
+					const writeParams = (block.nativeArgs ?? block.params) as {
+						path?: string
+						content?: string
+					}
+					if (!writeParams?.path || writeParams.content === undefined) {
 						pushToolResult(
-							formatResponse.toolError(writePreResult.error ?? "Write blocked by scope or intent check."),
+							formatToolError(
+								"INVALID_PARAMS",
+								"write_to_file requires path and content",
+								"Check the tool parameters",
+							),
 						)
 						break
 					}
+
+					// Run pre-hook with cached scope
+					const writePreResult = await writeFilePreHook(
+						{ path: writeParams.path, content: writeParams.content },
+						{
+							intentId: cline.currentIntentId,
+							workspaceRoot: cline.cwd,
+							ownedScope: cline.currentIntentScope,
+						},
+					)
+
+					const isScopeViolation = writePreResult.error?.includes("Scope Violation") ?? false
+
+					const needsApproval = requiresApproval("write_to_file", writePreResult.blocked, isScopeViolation)
+
+					if (needsApproval) {
+						let dialogMessage: string
+						if (writePreResult.blocked && writePreResult.error) {
+							dialogMessage = writePreResult.error
+						} else if (isScopeViolation) {
+							dialogMessage = writePreResult.error ?? "This operation may be outside the intent scope."
+						} else {
+							dialogMessage = `This operation will modify: ${writeParams.path}\n\nContinue?`
+						}
+						if (!writePreResult.blocked && !isScopeViolation) {
+							dialogMessage = `⚠️ Destructive Operation\n\n${dialogMessage}`
+						}
+						const approveButton = writePreResult.blocked ? "Approve Anyway" : "Approve"
+						const choice = await vscode.window.showWarningMessage(
+							dialogMessage,
+							{ modal: true },
+							approveButton,
+							"Reject",
+						)
+						if (choice !== approveButton) {
+							pushToolResult(ErrorFormatters.userRejected(`write_file to ${writeParams.path}`))
+							break
+						}
+						if (writePreResult.blocked) {
+							console.warn(`User approved blocked operation: ${writeParams.path}`)
+						}
+					}
+
+					if (writePreResult.blocked && !isScopeViolation) {
+						pushToolResult(
+							formatToolError(
+								"OPERATION_BLOCKED",
+								writePreResult.error ?? "Operation blocked by security policy",
+								"Contact administrator or check intent configuration",
+							),
+						)
+						break
+					}
+
 					await writeToFileTool.handle(cline, block as ToolUse<"write_to_file">, {
 						askApproval,
 						handleError,
 						pushToolResult,
 					})
-					// Post-hook: trace and intent_map (Phase 3); fire-and-forget
 					writeFilePostHook(
-						{ path: writeParams?.path ?? "", content: writeParams?.content ?? "" },
+						{ path: writeParams.path, content: writeParams.content },
 						{ success: true },
 						{ intentId: cline.currentIntentId, workspaceRoot: cline.cwd },
 					).catch((err) => console.error("[hooks] writeFilePostHook error:", err))

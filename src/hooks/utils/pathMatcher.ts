@@ -12,20 +12,14 @@ import * as path from "path"
 /**
  * Check if a file path matches a glob pattern
  * @param filePath - Absolute or relative path to the file
- * @param pattern - Glob pattern (e.g., "src/**/*.ts")
+ * @param pattern - Glob pattern (e.g. "src/**\/*.ts")
  * @param workspaceRoot - Root directory of the workspace (for resolving relative paths)
  * @returns true if the path matches the pattern
  */
-export function matchesGlobPattern(
-	filePath: string,
-	pattern: string,
-	workspaceRoot: string,
-): boolean {
+export function matchesGlobPattern(filePath: string, pattern: string, workspaceRoot: string): boolean {
 	try {
 		// Normalize the file path
-		const absolutePath = path.isAbsolute(filePath)
-			? filePath
-			: path.resolve(workspaceRoot, filePath)
+		const absolutePath = path.isAbsolute(filePath) ? filePath : path.resolve(workspaceRoot, filePath)
 
 		// Normalize workspace root path
 		const normalizedWorkspaceRoot = path.normalize(workspaceRoot)
@@ -60,11 +54,7 @@ export function matchesGlobPattern(
  * @param workspaceRoot - Root directory of the workspace
  * @returns true if the path matches any pattern (considering negations)
  */
-export function matchesAnyGlobPattern(
-	filePath: string,
-	patterns: string[],
-	workspaceRoot: string,
-): boolean {
+export function matchesAnyGlobPattern(filePath: string, patterns: string[], workspaceRoot: string): boolean {
 	if (!patterns || patterns.length === 0) {
 		return false
 	}
