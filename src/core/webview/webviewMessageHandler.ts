@@ -985,12 +985,16 @@ export const webviewMessageHandler = async (
 		case "requestOllamaModels": {
 			const { apiConfiguration: ollamaApiConfig } = await provider.getState()
 			try {
-				const ollamaOptions = {
-					provider: "ollama" as const,
-					baseUrl: ollamaApiConfig.ollamaBaseUrl,
-					apiKey: ollamaApiConfig.ollamaApiKey,
-				}
-				await flushModels(ollamaOptions, true)
+				// Invalidate stale cache without refetching (discoverOllamaModelsWithSorting
+				// will perform the single authoritative API call below)
+				await flushModels(
+					{
+						provider: "ollama" as const,
+						baseUrl: ollamaApiConfig.ollamaBaseUrl,
+						apiKey: ollamaApiConfig.ollamaApiKey,
+					},
+					false,
+				)
 
 				const result = await discoverOllamaModelsWithSorting(
 					ollamaApiConfig.ollamaBaseUrl,
@@ -1004,20 +1008,19 @@ export const webviewMessageHandler = async (
 				)
 
 				// Convert modelsWithTools array to Record for compatibility
-				const modelsWithToolsRecord: Record<string, any> = {}
+				const modelsWithToolsRecord: ModelRecord = {}
 				for (const model of result.modelsWithTools) {
 					modelsWithToolsRecord[model.name] = model.modelInfo
 				}
 
-				// Always send the models message if we have any results
-				if (result.totalCount > 0) {
-					provider.postMessageToWebview({
-						type: "ollamaModels",
-						ollamaModels: modelsWithToolsRecord,
-						ollamaModelsWithTools: result.modelsWithTools,
-						modelsWithoutTools: result.modelsWithoutTools,
-					})
-				}
+				// Always send models to the webview, even when empty, so the UI
+				// can reflect that no models were found instead of silently stalling.
+				provider.postMessageToWebview({
+					type: "ollamaModels",
+					ollamaModels: modelsWithToolsRecord,
+					ollamaModelsWithTools: result.modelsWithTools,
+					modelsWithoutTools: result.modelsWithoutTools,
+				})
 			} catch (error) {
 				console.debug("Ollama models fetch failed:", error)
 			}
@@ -1065,17 +1068,16 @@ export const webviewMessageHandler = async (
 			const apiKey = message.ollamaApiKey ?? ollamaApiConfig.ollamaApiKey
 
 			try {
-				const ollamaOptions = {
-					provider: "ollama" as const,
-					baseUrl: baseUrl,
-					apiKey: apiKey,
-					ollamaModelDiscoveryTimeout: ollamaApiConfig.ollamaModelDiscoveryTimeout,
-					ollamaMaxRetries: ollamaApiConfig.ollamaMaxRetries,
-					ollamaRetryDelay: ollamaApiConfig.ollamaRetryDelay,
-					ollamaEnableLogging: ollamaApiConfig.ollamaEnableLogging,
-				}
-
-				await flushModels(ollamaOptions, true)
+				// Invalidate stale cache without refetching (discoverOllamaModelsWithSorting
+				// will perform the single authoritative API call below)
+				await flushModels(
+					{
+						provider: "ollama" as const,
+						baseUrl: baseUrl,
+						apiKey: apiKey,
+					},
+					false,
+				)
 
 				const result = await discoverOllamaModelsWithSorting(baseUrl, apiKey, {
 					modelDiscoveryTimeout: ollamaApiConfig.ollamaModelDiscoveryTimeout,
@@ -1087,7 +1089,7 @@ export const webviewMessageHandler = async (
 				const durationMs = Date.now() - startTime
 
 				// Convert modelsWithTools array to Record for compatibility
-				const modelsWithToolsRecord: Record<string, any> = {}
+				const modelsWithToolsRecord: ModelRecord = {}
 				for (const model of result.modelsWithTools) {
 					modelsWithToolsRecord[model.name] = model.modelInfo
 				}
@@ -1104,14 +1106,15 @@ export const webviewMessageHandler = async (
 					})
 				}
 
-				// Always send the models message if we have any results
+				// Always send models to the webview so the UI stays in sync
+				provider.postMessageToWebview({
+					type: "ollamaModels",
+					ollamaModels: modelsWithToolsRecord,
+					ollamaModelsWithTools: result.modelsWithTools,
+					modelsWithoutTools: result.modelsWithoutTools,
+				})
+
 				if (result.totalCount > 0) {
-					provider.postMessageToWebview({
-						type: "ollamaModels",
-						ollamaModels: modelsWithToolsRecord,
-						ollamaModelsWithTools: result.modelsWithTools,
-						modelsWithoutTools: result.modelsWithoutTools,
-					})
 					provider.postMessageToWebview({
 						type: "ollamaModelsRefreshResult",
 						success: true,

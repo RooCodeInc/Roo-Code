@@ -25,6 +25,15 @@ interface OllamaAxiosConfig {
 	enableLogging?: boolean
 }
 
+/**
+ * Extended Axios request config with retry count and timing metadata.
+ * Used by retry and logging interceptors to track state across requests.
+ */
+interface OllamaInternalAxiosConfig extends InternalAxiosRequestConfig {
+	__retryCount?: number
+	metadata?: { startTime: number }
+}
+
 export function createOllamaAxiosInstance(config: OllamaAxiosConfig = {}): AxiosInstance {
 	const {
 		baseUrl = "http://localhost:11434",
@@ -64,7 +73,10 @@ function setupRetryInterceptor(instance: AxiosInstance, config: { retries: numbe
 	instance.interceptors.response.use(
 		(response) => response,
 		async (error: AxiosError) => {
-			const axiosConfig = error.config as any
+			const axiosConfig = error.config as OllamaInternalAxiosConfig | undefined
+			if (!axiosConfig) {
+				return Promise.reject(error)
+			}
 
 			axiosConfig.__retryCount = axiosConfig.__retryCount || 0
 			if (axiosConfig.__retryCount >= config.retries) {
@@ -94,7 +106,7 @@ function setupRetryInterceptor(instance: AxiosInstance, config: { retries: numbe
 
 function setupLoggingInterceptor(instance: AxiosInstance) {
 	instance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-		;(config as any).metadata = { startTime: Date.now() }
+		;(config as OllamaInternalAxiosConfig).metadata = { startTime: Date.now() }
 		console.debug("[Ollama] Request:", {
 			method: config.method?.toUpperCase(),
 			url: `${config.baseURL}${config.url}`,
@@ -106,7 +118,7 @@ function setupLoggingInterceptor(instance: AxiosInstance) {
 
 	instance.interceptors.response.use(
 		(response: AxiosResponse) => {
-			const startTime = (response.config as any).metadata?.startTime
+			const startTime = (response.config as OllamaInternalAxiosConfig).metadata?.startTime
 			const duration = startTime ? Date.now() - startTime : undefined
 			console.debug("[Ollama] Response:", {
 				status: response.status,
@@ -118,7 +130,7 @@ function setupLoggingInterceptor(instance: AxiosInstance) {
 			return response
 		},
 		(error: AxiosError) => {
-			const startTime = (error.config as any)?.metadata?.startTime
+			const startTime = (error.config as OllamaInternalAxiosConfig | undefined)?.metadata?.startTime
 			const duration = startTime ? Date.now() - startTime : undefined
 			console.error("[Ollama] Error:", {
 				code: error.code,
@@ -361,7 +373,7 @@ export async function discoverOllamaModelsWithSorting(
 					const parsedDetail = OllamaModelInfoResponseSchema.safeParse(detailResponse.data)
 					if (!parsedDetail.success) {
 						// If validation fails, check if required fields exist in raw data
-						const rawData = detailResponse.data as any
+						const rawData = detailResponse.data as Partial<OllamaModelInfoResponse>
 						if (!rawData?.details?.family || !rawData?.details?.parameter_size) {
 							if (config?.enableLogging) {
 								console.warn(`Invalid response for model ${ollamaModel.name}: missing required fields`)

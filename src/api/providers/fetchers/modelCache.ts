@@ -21,7 +21,7 @@ import { getVercelAiGatewayModels } from "./vercel-ai-gateway"
 import { getRequestyModels } from "./requesty"
 import { getLiteLLMModels } from "./litellm"
 import { GetModelsOptions } from "../../../shared/api"
-import { getOllamaModels } from "./ollama"
+import { discoverOllamaModelsWithSorting } from "./ollama"
 import { getLMStudioModels } from "./lmstudio"
 import { getRooModels } from "./roo"
 
@@ -72,14 +72,21 @@ async function fetchModelsFromProvider(options: GetModelsOptions): Promise<Model
 			// Type safety ensures apiKey and baseUrl are always provided for LiteLLM.
 			models = await getLiteLLMModels(options.apiKey, options.baseUrl)
 			break
-		case "ollama":
-			models = await getOllamaModels(options.baseUrl, options.apiKey, {
+		case "ollama": {
+			// Use discoverOllamaModelsWithSorting as the single discovery path,
+			// extracting only the tools-supporting models for the model cache.
+			const discoveryResult = await discoverOllamaModelsWithSorting(options.baseUrl, options.apiKey, {
 				modelDiscoveryTimeout: options.ollamaModelDiscoveryTimeout,
 				maxRetries: options.ollamaMaxRetries,
 				retryDelay: options.ollamaRetryDelay,
 				enableLogging: options.ollamaEnableLogging,
 			})
+			models = {}
+			for (const m of discoveryResult.modelsWithTools) {
+				models[m.name] = m.modelInfo
+			}
 			break
+		}
 		case "lmstudio":
 			models = await getLMStudioModels(options.baseUrl)
 			break
