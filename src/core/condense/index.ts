@@ -81,35 +81,44 @@ function getMissingSummarySections(summaryText: string): string[] {
 }
 
 const SUMMARY_PROMPT = `\
-You are generating internal memory for task continuation, not a user-facing reply.
-Do not ask questions. Do not offer options. Do not use tools.
+You are writing an internal context snapshot for a coding agent to resume work accurately. This is NOT a user-facing reply.
 
-CRITICAL OUTPUT RULES (MANDATORY):
-- Output plain text only. No XML. No tool-call syntax. No markdown code fences.
-- Do NOT output angle-bracket tags like <tool_name>...</tool_name>, <attempt_completion>, <result>, or any similar tag blocks.
-- Do NOT output raw tool payloads from the conversation.
-- Convert tool calls/results into natural language facts.
-- If you violate any rule, your response is invalid.
+ABSOLUTE OUTPUT RULES:
+- Plain prose only. No XML, no markdown code fences, no angle-bracket tags.
+- Do NOT reproduce raw tool calls or tool results. Translate them into factual statements.
+- Do NOT ask questions or offer options.
+- Any violation renders this output invalid.
 
-Required output format (exact section headers required):
+OUTPUT LENGTH: 500–2000 tokens. Lean toward 800–1200 for typical sessions. Use more only if many files or errors require it.
+
+---
+
+Write the summary using exactly these 7 section headers in order:
+
 1. Previous Conversation:
+Summarize the overall arc of the session in 2–4 sentences: what the user wanted, what approach was taken, and where things stand now.
+
 2. Current Work:
+Describe the most recent task in detail. Include: what was attempted, what succeeded, what is in-progress or blocked, and the exact state of any code being written or modified.
+
 3. Key Technical Concepts:
+List the languages, frameworks, libraries, APIs, design patterns, and architectural constraints active in this session. Be specific (e.g., "TypeScript with strict null checks", "React 18 concurrent mode", "REST API on port 3001").
+
 4. Relevant Files and Code:
+For each file touched: its path, what changed, and why. If a function or class was modified, name it. Keep this grounded — paths and symbol names only, no large code blocks.
+
 5. Errors and Fixes:
+For each error or failure encountered: the error message or symptom, the diagnosed root cause, the fix applied, and whether it is resolved or still open.
+
 6. User Messages (Chronological):
+List every user request in order, one per line, concise but complete. Preserve intent, not just surface phrasing.
+
 7. Pending Tasks and Next Steps:
+List the exact next actions the agent should take when resuming. Quote the user's most recent instruction verbatim at the end of this section as: "Latest user intent: [quote here]"
 
-Section requirements:
-- Previous Conversation: brief overall flow.
-- Current Work: detailed status of the most recent work.
-- Key Technical Concepts: concrete technologies, patterns, constraints.
-- Relevant Files and Code: file paths and what changed/why.
-- Errors and Fixes: failures seen, root cause, fix status.
-- User Messages (Chronological): list every user request in order, concise but complete.
-- Pending Tasks and Next Steps: include exact next actions and quote the latest user intent verbatim where relevant.
+---
 
-Output only the summary content in the exact structure above.
+Output only the 7 sections above. No preamble, no sign-off.
 `
 
 export type SummarizeResponse = {
@@ -182,7 +191,7 @@ export async function summarizeConversation(
 	try {
 		// Use condensing handler if provided, otherwise use main handler
 		const handler = condensingApiHandler ?? apiHandler
-		const prompt = customCondensingPrompt ?? SUMMARY_PROMPT
+		const prompt = SUMMARY_PROMPT
 
 		// If we have too few messages, no need to summarize
 		const MIN_MESSAGES_FOR_SUMMARY = 3 // Need at least 3 messages to make summarization worthwhile
