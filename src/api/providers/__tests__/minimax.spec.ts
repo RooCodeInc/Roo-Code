@@ -96,7 +96,7 @@ describe("MiniMaxHandler", () => {
 			const model = handlerWithModel.getModel()
 			expect(model.id).toBe(testModelId)
 			expect(model.info).toEqual(minimaxModels[testModelId])
-			expect(model.info.contextWindow).toBe(192_000)
+			expect(model.info.contextWindow).toBe(204_800)
 			expect(model.info.maxTokens).toBe(16_384)
 			expect(model.info.supportsPromptCache).toBe(true)
 			expect(model.info.cacheWritesPrice).toBe(0.375)
