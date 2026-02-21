@@ -69,7 +69,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 		}
 
 		try {
-			if (!result) {
+			if (result == null) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("attempt_completion")
 				pushToolResult(await task.sayAndCreateMissingParamError("attempt_completion", "result"))

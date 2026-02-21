@@ -386,6 +386,21 @@ describe("NativeToolCallParser", () => {
 			}
 		})
 
+		it("should reject attempt_completion with null result", () => {
+			const toolCall = {
+				id: "toolu_completion_null",
+				name: "attempt_completion" as const,
+				arguments: JSON.stringify({
+					result: null,
+				}),
+			}
+
+			const result = NativeToolCallParser.parseToolCall(toolCall)
+
+			// null result should be rejected (no nativeArgs produced, parseToolCall returns null)
+			expect(result).toBeNull()
+		})
+
 		it("should handle streaming attempt_completion with empty string result", () => {
 			const id = "toolu_streaming_completion"
 			NativeToolCallParser.startStreamingToolCall(id, "attempt_completion")
