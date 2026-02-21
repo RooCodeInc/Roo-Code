@@ -636,6 +636,29 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "select_active_intent":
+				if (partialArgs.intent_id !== undefined) {
+					nativeArgs = {
+						intent_id: partialArgs.intent_id,
+					}
+				}
+				break
+
+			case "create_intent":
+				if (partialArgs.prompt !== undefined) {
+					nativeArgs = {
+						prompt: partialArgs.prompt,
+						intent_id: partialArgs.intent_id,
+						intent_name: partialArgs.intent_name,
+						owned_scope: Array.isArray(partialArgs.owned_scope) ? partialArgs.owned_scope : undefined,
+						constraints: Array.isArray(partialArgs.constraints) ? partialArgs.constraints : undefined,
+						acceptance_criteria: Array.isArray(partialArgs.acceptance_criteria)
+							? partialArgs.acceptance_criteria
+							: undefined,
+					}
+				}
+				break
+
 			default:
 				break
 		}
@@ -697,7 +720,41 @@ export class NativeToolCallParser {
 
 		try {
 			// Parse the arguments JSON string
-			const args = toolCall.arguments === "" ? {} : JSON.parse(toolCall.arguments)
+			let args: any
+			try {
+				args = toolCall.arguments === "" ? {} : JSON.parse(toolCall.arguments)
+			} catch (parseError) {
+				// Some models/providers may concatenate multiple JSON objects together, e.g.
+				// arguments: "{\"intent_id\":\"INT-008\"}{\"path\":\"...\"}"
+				// In this case, JSON.parse() will fail. Extract only the first valid JSON object.
+				const firstBrace = toolCall.arguments.indexOf("{")
+				if (firstBrace >= 0) {
+					try {
+						let braceCount = 0
+						let endIndex = firstBrace
+						for (let i = firstBrace; i < toolCall.arguments.length; i++) {
+							if (toolCall.arguments[i] === "{") braceCount++
+							if (toolCall.arguments[i] === "}") braceCount--
+							if (braceCount === 0) {
+								endIndex = i + 1
+								break
+							}
+						}
+						const firstJson = toolCall.arguments.substring(firstBrace, endIndex)
+						args = JSON.parse(firstJson)
+						console.warn(
+							`[NativeToolCallParser] Recovered from concatenated JSON arguments for tool '${toolCall.name}'. ` +
+								`Extracted first JSON object (${firstJson.length} chars) from ${toolCall.arguments.length} char input.`,
+						)
+					} catch (extractError) {
+						// If extraction fails, re-throw the original parse error
+						throw parseError
+					}
+				} else {
+					// No JSON object found, re-throw the original parse error
+					throw parseError
+				}
+			}
 
 			// Build stringified params for display/logging.
 			// Tool execution MUST use nativeArgs (typed) and does not support legacy fallbacks.
@@ -980,6 +1037,29 @@ export class NativeToolCallParser {
 							mode: args.mode,
 							message: args.message,
 							todos: args.todos,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "select_active_intent":
+					if (args.intent_id !== undefined) {
+						nativeArgs = {
+							intent_id: args.intent_id,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "create_intent":
+					if (args.prompt !== undefined) {
+						nativeArgs = {
+							prompt: args.prompt,
+							intent_id: args.intent_id,
+							intent_name: args.intent_name,
+							owned_scope: Array.isArray(args.owned_scope) ? args.owned_scope : undefined,
+							constraints: Array.isArray(args.constraints) ? args.constraints : undefined,
+							acceptance_criteria: Array.isArray(args.acceptance_criteria)
+								? args.acceptance_criteria
+								: undefined,
 						} as NativeArgsFor<TName>
 					}
 					break
