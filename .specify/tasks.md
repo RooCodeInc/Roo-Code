@@ -10,6 +10,7 @@ Generated from specs and plans. Use **speckit.tasks** to refresh or regenerate.
 | ------------------------------------------------------------------ | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | [001-intent-orchestration](specs/001-intent-orchestration/spec.md) | [001-intent-orchestration/tasks.md](specs/001-intent-orchestration/tasks.md) | Orchestration layer, `.orchestration/` source of truth, two-stage state machine, hook middleware, traceability                |
 | [002-intent-system](specs/002-intent-system/spec.md)               | [002-intent-system/tasks.md](specs/002-intent-system/tasks.md)               | Intent IDs (INT-XXX), scope, constraints, acceptance criteria, `select_active_intent` tool, gatekeeper, `active_intents.yaml` |
+| [003-hook-middleware-security](specs/003-hook-middleware-security/spec.md) | [003-hook-middleware-security/tasks.md](specs/003-hook-middleware-security/tasks.md) | Hook middleware security boundary, scope enforcement, tool classification (SAFE/DESTRUCTIVE), UI-blocking authorization, structured error recovery |
 
 ---
 
