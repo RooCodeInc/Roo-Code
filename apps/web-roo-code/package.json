@@ -49,7 +49,7 @@
 		"@roo-code/config-eslint": "workspace:^",
 		"@roo-code/config-typescript": "workspace:^",
 		"@tailwindcss/typography": "^0.5.19",
-		"@types/node": "20.x",
+		"@types/node": "~20.17.57",
 		"@types/react": "^18.3.23",
 		"@types/react-dom": "^18.3.7",
 		"autoprefixer": "^10.4.23",

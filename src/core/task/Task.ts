@@ -474,6 +474,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.instanceId = crypto.randomUUID().slice(0, 8)
 		this.taskNumber = -1
 
+		// Initialize the Hook Engine for Intent-Code Traceability
+		try {
+			const { initializeHookEngine } = require("../../hooks/index")
+			initializeHookEngine(this.cwd, this.taskId, this.instanceId)
+		} catch (error) {
+			console.warn("[Task] Failed to initialize Hook Engine:", error)
+		}
+
 		this.rooIgnoreController = new RooIgnoreController(this.cwd)
 		this.rooProtectedController = new RooProtectedController(this.cwd)
 		this.fileContextTracker = new FileContextTracker(provider, this.taskId)
