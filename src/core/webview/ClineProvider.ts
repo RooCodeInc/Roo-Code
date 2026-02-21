@@ -1330,8 +1330,9 @@ export class ClineProvider
 				const task = this.getCurrentCline()
 
 				if (task) {
-					task.api = buildApiHandler(providerSettings)
-					logger.info(`[upsertProviderProfile] Updated API handler for current task`)
+					// Use handleModelChange to automatically condense context if needed
+					await task.handleModelChange(providerSettings)
+					logger.info(`[upsertProviderProfile] Updated API handler for current task (with condensing check)`)
 				}
 			} else {
 				await this.updateGlobalState("listApiConfigMeta", await this.providerSettingsManager.listConfig())
@@ -1393,7 +1394,8 @@ export class ClineProvider
 		const task = this.getCurrentCline()
 
 		if (task) {
-			task.api = buildApiHandler(providerSettings)
+			// Use handleModelChange to automatically condense context if needed
+			await task.handleModelChange(providerSettings)
 		}
 
 		await this.postStateToWebview()
@@ -1618,14 +1620,19 @@ export class ClineProvider
 	async exportTaskDebugJsonWithId(id: string) {
 		const { historyItem, apiConversationHistory } = await this.getTaskWithId(id)
 
-		// Try to get the system prompt from the active task if it matches
+		// Try to get the system prompt and model info from the active task if it matches
 		let systemPrompt: string | undefined
+		let modelId: string | undefined
+		let contextWindow: number | undefined
 		const activeTask = this.clineStack.find((t) => t.taskId === id)
 		if (activeTask) {
 			try {
 				systemPrompt = await activeTask.getSystemPrompt()
+				const modelInfo = activeTask.api.getModel()
+				modelId = modelInfo.id
+				contextWindow = modelInfo.info.contextWindow
 			} catch {
-				// Task may not be in a state to generate system prompt
+				// Task may not be in a state to generate system prompt or get model info
 			}
 		}
 
@@ -1636,6 +1643,8 @@ export class ClineProvider
 			workspace: historyItem.workspace,
 			mode: historyItem.mode,
 			systemPrompt,
+			modelId,
+			contextWindow,
 		})
 	}
 
