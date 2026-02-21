@@ -1,0 +1,12 @@
+active_intents:
+  - id: "INT-001"
+    name: "Governance Hook System"
+    status: "IN_PROGRESS"
+    owned_scope:
+      - "src/hooks/**"
+    constraints:
+      - "Must block destructive tools without intent"
+      - "Must log mutations to agent_trace.jsonl"
+    acceptance_criteria:
+      - "Hook blocks write without intent"
+      - "Trace file updates"
