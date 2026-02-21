@@ -4,8 +4,8 @@
  * @param {string} name - User name
  * @returns {string} greeting
  */
-function greet(name) {
-  return `Hello, ${name}!`;
+function sayHello(name) {
+	return `Hello, ${name}!`
 }
 
 /**
@@ -14,8 +14,8 @@ function greet(name) {
  * @returns {number} factorial result
  */
 function factorial(n) {
-  if (n <= 1) return 1;
-  return n * factorial(n - 1);
+	if (n <= 1) return 1
+	return n * factorial(n - 1)
 }
 
-module.exports = { greet, factorial };
+module.exports = { sayHello, factorial }

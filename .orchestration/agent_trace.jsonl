@@ -1,1 +1,13 @@
-{"intent_id":"INT-001","path":"src/hello.js","sha256":"c4fbb1500d106baea3361c209a200e8f3d7789102a1fa2c0811a58c6c124b8b0","ts":"2026-02-20T20:27:20.667Z","mutation_class":"FEATURE_ADD","description":"Added factorial function"}
+{"intent_id":"INT-001",
+"path":"src/hello.js",
+"sha256":"c4fbb1500d106baea3361c209a200e8f3d7789102a1fa2c0811a58c6c124b8b0",
+"ts":"2026-02-20T20:27:20.667Z",
+"mutation_class":"FEATURE_ADD",
+"description":"Added factorial function"}
+
+{"intent_id":"INT-001",
+"path":"src/hello.js",
+"sha256":"86495a0274f4c6525eef0b2de4798a73c83f3f052a45184b941b2e445e7661ea",
+"ts":"2026-02-21T15:37:58.862Z",
+"mutation_class":"AST_REFACTOR",
+"description":"Renamed greet() to sayHello()"}
