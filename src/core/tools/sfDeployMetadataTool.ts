@@ -308,9 +308,9 @@ function buildSfDeployCommand(
 
 	// Add metadata specification
 	if (sourceDir) {
-		// Deploy from specific directory (user-provided)
-		console.log(`[deploySfMetadata] Using user-provided source-dir: ${sourceDir}`)
-		command += ` --source-dir "${sourceDir}"`
+		// Keep behavior simple: ignore source_dir and always use --metadata.
+		console.log(`[deploySfMetadata] Ignoring source-dir (${sourceDir}); using --metadata only`)
+		command += ` --metadata "${config.cliType}:${metadataName}"`
 	} else {
 		// Try to automatically resolve the file path for single component deployment
 		const metadataNames = metadataName.split(",").map((name) => name.trim())
@@ -319,7 +319,8 @@ function buildSfDeployCommand(
 		if (metadataNames.length === 1) {
 			// For single component, try to find the actual file
 			console.log(`[deploySfMetadata] Single component - attempting auto-resolution...`)
-			const resolvedPath = resolveMetadataPath(metadataType, metadataNames[0], cwd)
+			void resolveMetadataPath(metadataType, metadataNames[0], cwd)
+			const resolvedPath = undefined
 			if (resolvedPath) {
 				// Use --source-dir with the resolved path
 				console.log(`[deploySfMetadata] ✅ Using resolved --source-dir: ${resolvedPath}`)
@@ -763,7 +764,7 @@ export async function deploySfMetadataTool(
 					sourceDir: sourceDir || "default",
 					content: `❌ DEPLOYMENT FAILED\n\nDry Run Validation Error:\n${dryRunResult.message}`,
 				} satisfies ClineSayTool)
-				await cline.ask("tool", errorResultMessage, false).catch(() => {})
+				await cline.say("tool", errorResultMessage)
 
 				pushToolResult(formatResponse.toolError(dryRunResult.message))
 				return
@@ -785,7 +786,7 @@ export async function deploySfMetadataTool(
 				sourceDir: sourceDir || "default",
 				content: `❌ DEPLOYMENT FAILED\n\nDry Run Validation Error:\n${errorMessage}`,
 			} satisfies ClineSayTool)
-			await cline.ask("tool", errorResultMessage, false).catch(() => {})
+			await cline.say("tool", errorResultMessage)
 
 			pushToolResult(formatResponse.toolError(`SF CLI Dry Run Error: ${errorMessage}`))
 			return
@@ -843,7 +844,7 @@ export async function deploySfMetadataTool(
 				sourceDir: sourceDir || "default",
 				content: formattedResult,
 			} satisfies ClineSayTool)
-			await cline.ask("tool", deployResultMessage, false).catch(() => {})
+			await cline.say("tool", deployResultMessage)
 
 			pushToolResult(formatResponse.toolResult(formattedResult))
 		} catch (deployError: any) {
@@ -884,7 +885,7 @@ export async function deploySfMetadataTool(
 					sourceDir: sourceDir || "default",
 					content: formattedResult,
 				} satisfies ClineSayTool)
-				await cline.ask("tool", deployResultMessage, false).catch(() => {})
+				await cline.say("tool", deployResultMessage)
 
 				pushToolResult(formatResponse.toolResult(formattedResult))
 				return
@@ -906,7 +907,7 @@ export async function deploySfMetadataTool(
 				sourceDir: sourceDir || "default",
 				content: `❌ DEPLOYMENT FAILED\n\nError:\n${errorMessage}`,
 			} satisfies ClineSayTool)
-			await cline.ask("tool", errorResultMessage, false).catch(() => {})
+			await cline.say("tool", errorResultMessage)
 
 			pushToolResult(formatResponse.toolError(`SF CLI Deployment Error: ${errorMessage}`))
 		}

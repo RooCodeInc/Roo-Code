@@ -36,6 +36,7 @@ import { codebaseSearchTool } from "../tools/codebaseSearchTool"
 import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
 import { applyDiffToolLegacy } from "../tools/applyDiffTool"
 import { retrieveSfMetadataTool } from "../tools/retrieveSfMetadataTool"
+import { deploySfMetadataTool } from "../tools/sfDeployMetadataTool"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -435,7 +436,7 @@ export async function presentAssistantMessage(cline: Task) {
 					// Add user feedback to userContent.
 					cline.userMessageContent.push({
 						type: "text" as const,
-						text: `Tool repetition limit reached. Hint: repetitionCheck.agentHint`,
+						text: `Tool repetition limit reached. Hint: ${repetitionCheck.agentHint}`,
 					})
 
 					// Return tool result message about the repetition
@@ -578,6 +579,9 @@ export async function presentAssistantMessage(cline: Task) {
 						pushToolResult,
 						removeClosingTag,
 					)
+					break
+				case "sf_deploy_metadata":
+					await deploySfMetadataTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
 					break
 			}
 
