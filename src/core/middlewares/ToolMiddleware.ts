@@ -4,6 +4,7 @@ export interface MiddlewareResult {
 	allow: boolean
 	error?: string
 	modifiedParams?: any
+	modifiedResult?: any
 }
 
 export interface ToolMiddleware {
