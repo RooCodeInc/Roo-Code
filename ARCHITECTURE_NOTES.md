@@ -1,198 +1,303 @@
-# Architecture Notes — Intent-Governed Tool Orchestration
+🧠 Roo-Code Architecture Notes
 
-## Overview
+Intent-Driven Tool Governance & Reasoning Loop
 
-This project introduces an **intent-governed hook system** into the Roo-Code agent runtime.  
-The goal is to ensure that **destructive tools** (file writes, diffs, commands) are only allowed
-after an explicit _intent handshake_ from the user, and that all such actions are **auditable**.
+1. Entry Point (Extension Host)
 
-Key principles:
+Roo Code is implemented as a VS Code extension and follows the standard extension lifecycle.
+The execution begins in:
 
-- Explicit authorization before mutation
-- Central interception of tool execution
-- Tamper-resistant audit trail
-- Minimal coupling to existing tool logic
+`activate(context: ExtensionContext)`
 
----
+During activation:
 
-## Core Components
+The Roo Code WebView chat panel is registered.
 
-### 1. Hook Engine (`src/hooks/hookEngine.ts`)
+The ClientProvider is initialized to manage UI ↔ backend messaging.
 
-Acts as the single execution gateway for all tools.
+The agent runtime (LLM controller) is started.
 
-Flow:
+User interaction begins when:
 
-1. Receives `(toolName, tool, args)`
-2. Runs `preToolHook(toolName, args)`
-3. If allowed → executes tool
-4. Runs `postToolHook(...)` for auditing
+The user opens the Roo Code sidebar panel.
 
-This isolates governance logic from tool implementations.
+The user submits a prompt via the WebView chat UI.
 
----
+The WebView sends the message to the backend through ClientProvider.
 
-### 2. Intent State (`src/hooks/intentState.ts`)
+This establishes the primary entry path:
 
-Maintains the active intent in memory for the current session:
+`WebView UI → ClientProvider → Agent Runtime` 2. Prompt Construction (Prompt Builder)
 
-```ts
-let activeIntent: string | undefined;
-Functions:
+Inside the backend, user input is wrapped into a task context:
 
-setActiveIntent(id)
+Raw user message is captured.
 
-getActiveIntent()
+System role instructions are added.
 
-This is intentionally simple to allow future replacement with
-persistent or cryptographic state.
+Prior conversation history is attached.
 
-3. Pre-Tool Hook (src/hooks/preToolHook.ts)
+Tool schemas are included.
 
-Implements the firewall.
+The resulting structured prompt sent to the LLM contains:
+
+User request
+
+System constraints
+
+Available tools
+
+Conversation memory
+
+At this stage, the agent is prepared to reason about which tool to call, but no tool has yet executed.
+
+3. Tool Execution Handler (Baseline System)
+
+After reasoning, the agent outputs a structured tool call:
+
+Tool name (e.g. writeFile, readFile, execShell)
+
+Arguments (file path, content, shell command)
+
+Originally, Roo Code’s execution pipeline was:
+
+`Agent → Tool`
+
+This meant:
+
+No interception
+
+No validation
+
+No scope control
+
+No intent ownership
+
+No governance
+
+4. Architectural Chokepoint (Phase 0)
+
+The optimal injection point is the boundary between:
+
+Agent tool selection
+and
+Actual tool execution
+
+At this moment:
+
+Tool name is known.
+
+Tool arguments are known.
+
+Execution has not yet happened.
+
+This makes it the ideal chokepoint for introducing governance without modifying:
+
+UI logic
+
+LLM logic
+
+Tool implementations
+
+The modified pipeline becomes:
+
+`Agent → HookEngine → Tool`
+
+This preserves Roo Code’s architecture while enabling control.
+
+5. Hook Engine (Governance Layer)
+
+The Hook Engine mediates between the agent and tools.
+
+It executes:
+
+preToolHook → before execution
+
+postToolHook → after execution
+
+Folder structure:
+
+````src/hooks/
+  preToolHook.ts
+  postToolHook.ts
+  hookEngine.ts```
+6. Pre-Tool Hook (Policy & Gatekeeper)
+
+The Pre-Tool Hook enforces safety and reasoning rules.
 
 Responsibilities:
 
-Handles the handshake tool select_active_intent
+Validate arguments
 
-Blocks destructive tools when no intent is present
+Enforce policies
 
-Produces human-readable error messages for the agent
+Block unsafe actions
 
-Restricted tools:
+Verify intent ownership
 
-write_to_file
+Example failure mode:
 
-apply_diff
+Tool: deleteFile
+Path: "/"
+Decision: DENY
+Reason: Root deletion is unsafe
 
-insert_content
+This introduces a policy enforcement layer without changing tools themselves.
 
-replace_in_file
+7. Reasoning Loop (Phase 1 Handshake)
 
-execute_command
+To prevent reactive validation, a proactive handshake is introduced.
 
-edit_file
+A new tool is defined:
 
-This ensures:
+select_active_intent(intent_id: string)
 
-No mutation without declared intent.
+The system prompt requires:
 
-4. Post-Tool Hook (src/hooks/postToolHook.ts)
+The agent MUST first call select_active_intent
+before any other tool may be executed.
 
-Implements the audit logger.
+Execution flow becomes:
+```User Prompt
+   ↓
+Agent Analysis
+   ↓
+select_active_intent(intent_id)
+   ↓
+Context Injection
+   ↓
+preToolHook (gatekeeper)
+   ↓
+Tool Execution```
 
-For write/diff tools:
+This forces the agent to:
 
-Reads resulting file
+Commit to a goal
 
-Computes SHA-256 hash
+Declare scope
 
-Appends record to .orchestration/agent_trace.jsonl
+Accept constraints
 
-Schema:
+Only then act
 
-{
-  "timestamp": "ISO-8601",
-  "intent_id": "string",
-  "tool": "string",
-  "file": "string",
-  "sha256": "string"
-}
+This resolves the Context Paradox:
+
+asynchronous IDE state vs synchronous LLM reasoning.
+
+8. Context Injection (Intent Loader)
+
+When select_active_intent is called:
+
+active_intents.yaml is read.
+
+Matching intent is located.
+
+Scope and constraints are extracted.
+
+An XML block is constructed:
+```<intent_context>
+  <intent_id>fix-bug-42</intent_id>
+  <scope>src/utils, src/services</scope>
+  <constraints>No new files</constraints>
+</intent_context>```
+
+This block is injected into the agent’s context window.
+
+Result:
+The agent is forced to reason within declared intent boundaries.
+
+9. Gatekeeper Enforcement (Failure Paths)
+
+The Pre-Tool Hook verifies:
+
+An intent has been declared
+
+The intent exists
+
+The tool is permitted under that intent
+
+Failure scenarios:
+
+Case	Result
+No intent declared	Block execution
+Invalid intent ID	Error returned
+Tool outside scope	Deny
+Unsafe operation	Deny
+
+Error message:
+
+"You must cite a valid active Intent ID."
+
+This enforces ownership and prevents uncontrolled execution.
+
+10. Post-Tool Hook (Audit & Traceability)
+
+The Post-Tool Hook runs after execution and records:
+
+Tool name
+
+Timestamp
+
+Result
+
+Associated intent
 
 This enables:
 
-Reproducibility
+Replay
 
-Accountability
+Debugging
 
-Chain-of-custody for agent edits
+Compliance auditing
 
-Orchestration Files
+Behavioral analysis
 
-Located in .orchestration/
+11. Data Stores (Sidecars)
 
-agent_trace.jsonl
+Supporting files:
+````
 
-Append-only audit log of all governed mutations.
-
+.orchestration/
 active_intents.yaml
-
-Human-readable list of allowed intents.
-
+agent_trace.jsonl
 intent_map.md
 
-Mapping of intents → allowed tool behaviors.
+```
+These provide:
 
-Execution Flow (High Level)
-User Prompt
-   ↓
-LLM selects tool
-   ↓
-executeWithHooks(...)
-   ↓
-preToolHook
-   ↓
-[ allowed ? ]
-   ↓
-tool.execute
-   ↓
-postToolHook
-   ↓
-agent_trace.jsonl
-Security Model
+Intent definitions
 
-Authorization is explicit, not inferred
+Action traces
 
-Errors propagate directly to the agent (self-correcting)
+Mapping documentation
 
-Hashes prevent silent tampering
+They decouple reasoning state from tool logic.
 
-Hook engine centralizes enforcement
+12. Architectural Decision Rationale
 
-This model mirrors:
+Hooks were chosen over inline logic because they:
 
-Zero-trust APIs
+Preserve core architecture
 
-Capability-based security
+Enable policy layering
 
-Write barriers in OS kernels
+Improve maintainability
 
-Limitations (Current)
+Support extensibility
 
-Intent state is in-memory only
+Reduce coupling
 
-No cryptographic signature (future work)
+13. Summary
 
-No UI visualization yet
+This design introduces an Intent-Driven Reasoning Loop into Roo Code by:
 
-JSONL file is append-only but not locked
+Injecting a Hook Engine at the agent-to-tool boundary
 
-Future Extensions
+Forcing a proactive handshake before action
 
-Intent expiry / rotation
+Injecting scoped context
 
-Intent scopes
+Enforcing gatekeeping
 
-Cryptographic signing
-
-Visualization of trace in UI
-
-Replay & rollback of changes
-
-Design Philosophy
-
-“Tools are not trusted.
-Intent must be proven.”
-
-This architecture treats tool execution as a privileged operation
-requiring both semantic approval (intent) and technical traceability (hashing).
-
-Summary
-
-This implementation provides:
-✔ Intent handshake
-✔ Tool firewall
-✔ Audit trace
-✔ Separation of concerns
-✔ Extensible design
+Auditing behavior
 ```

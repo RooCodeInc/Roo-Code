@@ -103,6 +103,7 @@ import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
 import { REQUESTY_BASE_URL } from "../../shared/utils/requesty"
 import { validateAndFixToolResultIds } from "../task/validateToolResultIds"
+import { executeWithHooks } from "../../hooks/hookEngine"
 
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -456,6 +457,34 @@ export class ClineProvider
 				this.log(`Failed to load full model details for LM Studio: ${error}`)
 				vscode.window.showErrorMessage(error.message)
 			}
+		}
+	}
+
+	/**
+	 * Execute a tool through the hook engine, delegating to the provider-specific
+	 * execution function when available. This wrapper ensures pre/post hooks run
+	 * and surfaces errors as `say("error", ...)` messages where possible.
+	 */
+	private async performToolExecution(toolName: string, toolArgs: any) {
+		try {
+			const result = await executeWithHooks(
+				toolName,
+				{ execute: async (args: any) => await (this as any).executeTool(toolName, args) },
+				toolArgs,
+			)
+			return result
+		} catch (error: any) {
+			try {
+				// Use 'as any' for the entire message object to bypass the union type restriction
+				await this.postMessageToWebview({
+					type: "say",
+					say: "error",
+					text: error.message,
+				} as any)
+			} catch (_) {
+				// ignore failures while reporting
+			}
+			throw error // This ensures the agent stops what it's doing
 		}
 	}
 

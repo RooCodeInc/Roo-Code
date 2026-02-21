@@ -1,3 +1,4 @@
+// src/hooks/intentState.ts
 let activeIntent: string | undefined
 
 export function setActiveIntent(id: string | undefined) {
