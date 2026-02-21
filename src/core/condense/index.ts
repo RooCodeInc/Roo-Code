@@ -80,6 +80,52 @@ function getMissingSummarySections(summaryText: string): string[] {
 	return REQUIRED_SUMMARY_SECTIONS.filter((section) => !summaryText.includes(section))
 }
 
+function formatMessageContentForTranscript(content: ApiMessage["content"]): string {
+	if (typeof content === "string") {
+		return content
+	}
+
+	return content
+		.map((block) => {
+			switch (block.type) {
+				case "text":
+					return block.text
+				case "tool_use": {
+					const inputSummary =
+						typeof block.input === "string" ? block.input : JSON.stringify(block.input ?? {}, null, 2)
+					return `[tool_use] name=${block.name} id=${block.id}\n${inputSummary}`
+				}
+				case "tool_result": {
+					if (typeof block.content === "string") {
+						return `[tool_result] tool_use_id=${block.tool_use_id}${block.is_error ? " error=true" : ""}\n${block.content}`
+					}
+
+					const nestedContent = (block.content ?? [])
+						.map((nestedBlock: { type: string; text?: string }) =>
+							nestedBlock.type === "text" ? (nestedBlock.text ?? "") : `[${nestedBlock.type} omitted]`,
+						)
+						.join("\n")
+					return `[tool_result] tool_use_id=${block.tool_use_id}${block.is_error ? " error=true" : ""}\n${nestedContent}`
+				}
+				case "image":
+					return "[image omitted]"
+				default:
+					return `[${block.type} omitted]`
+			}
+		})
+		.join("\n")
+}
+
+function buildConversationTranscript(messages: ApiMessage[]): string {
+	return messages
+		.map((message, index) => {
+			const content = formatMessageContentForTranscript(message.content).trim()
+			const safeContent = content.length > 0 ? content : "[empty]"
+			return `[${index + 1}] ${message.role.toUpperCase()}:\n${safeContent}`
+		})
+		.join("\n\n")
+}
+
 const SUMMARY_PROMPT = `\
 You are writing an internal context snapshot for a coding agent to resume work accurately. This is NOT a user-facing reply.
 
@@ -256,6 +302,19 @@ export async function summarizeConversation(
 
 		// Remove images from messages to save tokens
 		const cleanedMessages = maybeRemoveImageBlocks(messagesToSummarize, handler)
+		const transcript = buildConversationTranscript(cleanedMessages)
+		const summarizeTranscriptMessage: Anthropic.Messages.MessageParam = {
+			role: "user",
+			content: [
+				{
+					type: "text",
+					text:
+						"Summarize this transcript exactly per the system instructions.\n\n" +
+						"Conversation transcript:\n" +
+						transcript,
+				},
+			],
+		}
 
 		// Make LLM call to summarize all messages
 		// Collect summary text and usage metrics (supports a single retry on invalid tool-like output)
@@ -275,7 +334,7 @@ export async function summarizeConversation(
 					: `\n\n${buildRetryPromptSuffix(retryValidationError ?? "Invalid summary format", minSummaryChars)}`
 			const attemptPrompt = `${prompt}${retrySuffix}`
 			const metadata = { taskId, mode: "summarize" }
-			const stream = handler.createMessage(attemptPrompt, cleanedMessages, metadata)
+			const stream = handler.createMessage(attemptPrompt, [summarizeTranscriptMessage], metadata)
 
 			let attemptSummaryText = ""
 			let attemptInputTokens = 0
