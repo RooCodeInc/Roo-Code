@@ -107,6 +107,9 @@ import { HookEngine } from "../../hooks/HookEngine"
 import { IntentValidationHook } from "../../hooks/pre/IntentValidationHook"
 import { ScopeEnforcementHook } from "../../hooks/pre/ScopeEnforcementHook"
 import { TraceLoggingHook } from "../../hooks/post/TraceLoggingHook"
+import { ConcurrencyPreHook } from "../../hooks/pre/ConcurrencyPreHook"
+import { ConcurrencyPostHook } from "../../hooks/post/ConcurrencyPostHook"
+import { VerificationLessonHook } from "../../hooks/post/VerificationLessonHook"
 import { AssistantMessageContent, presentAssistantMessage } from "../assistant-message"
 import { NativeToolCallParser } from "../assistant-message/NativeToolCallParser"
 import { manageContext, willManageContext } from "../context-management"
@@ -225,6 +228,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 * @see {@link waitForModeInitialization} - Public method to await this promise
 	 */
 	private taskModeReady: Promise<void>
+	/**
+	 * Promise that resolves when all core controllers (Ignore, Protected, Intent)
+	 * have been fully initialized. Ensures governance hooks have required state.
+	 */
+	public readonly initializationPromise: Promise<void>
 
 	/**
 	 * The API configuration name (provider profile) associated with this task.
@@ -490,19 +498,24 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.rooProtectedController = new RooProtectedController(this.cwd)
 		this.fileContextTracker = new FileContextTracker(provider, this.taskId)
 
-		this.rooIgnoreController.initialize().catch((error) => {
-			console.error("Failed to initialize RooIgnoreController:", error)
-		})
-
-		this.intentController = new IntentController(this.cwd)
-		this.intentController.initialize().catch((error) => {
-			console.error("Failed to initialize IntentController:", error)
-		})
+		// Controllers must be initialized before hooks run to prevent race conditions
+		this.initializationPromise = Promise.all([
+			this.rooIgnoreController.initialize().catch((error) => {
+				console.error("Failed to initialize RooIgnoreController:", error)
+			}),
+			(this.intentController = new IntentController(this.cwd)),
+			this.intentController.initialize().catch((error) => {
+				console.error("Failed to initialize IntentController:", error)
+			}),
+		]).then(() => {})
 
 		this.hookEngine = new HookEngine()
 		this.hookEngine.registerHook(new IntentValidationHook())
 		this.hookEngine.registerHook(new ScopeEnforcementHook())
+		this.hookEngine.registerHook(new ConcurrencyPreHook())
 		this.hookEngine.registerHook(new TraceLoggingHook())
+		this.hookEngine.registerHook(new ConcurrencyPostHook())
+		this.hookEngine.registerHook(new VerificationLessonHook())
 
 		this.apiConfiguration = apiConfiguration
 		this.api = buildApiHandler(this.apiConfiguration)
@@ -3832,7 +3845,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				undefined, // todoList
 				this.api.getModel().id,
 				provider.getSkillsManager(),
-				this.intentController.getAllIntents(),
+				this.intentController.getAllActiveIntents(),
 			)
 		})()
 	}

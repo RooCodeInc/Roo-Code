@@ -636,6 +636,42 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "select_active_intent":
+				if (partialArgs.intent_id !== undefined) {
+					nativeArgs = {
+						intent_id: partialArgs.intent_id,
+					}
+				}
+				break
+
+			case "record_lesson_learned":
+				if (partialArgs.lesson !== undefined) {
+					nativeArgs = {
+						lesson: partialArgs.lesson,
+					}
+				}
+				break
+
+			case "access_mcp_resource":
+				if (partialArgs.server_name !== undefined || partialArgs.uri !== undefined) {
+					nativeArgs = {
+						server_name: partialArgs.server_name,
+						uri: partialArgs.uri,
+					}
+				}
+				break
+
+			case "read_command_output":
+				if (partialArgs.artifact_id !== undefined) {
+					nativeArgs = {
+						artifact_id: partialArgs.artifact_id,
+						search: partialArgs.search,
+						offset: this.coerceOptionalNumber(partialArgs.offset),
+						limit: this.coerceOptionalNumber(partialArgs.limit),
+					}
+				}
+				break
+
 			default:
 				break
 		}
@@ -965,6 +1001,14 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "record_lesson_learned":
+					if (args.lesson !== undefined) {
+						nativeArgs = {
+							lesson: args.lesson,
+						} as NativeArgsFor<TName>
+					}
+					break
+
 				case "list_files":
 					if (args.path !== undefined) {
 						nativeArgs = {
@@ -980,6 +1024,14 @@ export class NativeToolCallParser {
 							mode: args.mode,
 							message: args.message,
 							todos: args.todos,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "select_active_intent":
+					if (args.intent_id !== undefined) {
+						nativeArgs = {
+							intent_id: args.intent_id,
 						} as NativeArgsFor<TName>
 					}
 					break

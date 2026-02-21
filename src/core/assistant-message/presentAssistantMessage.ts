@@ -35,6 +35,7 @@ import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
 import { skillTool } from "../tools/SkillTool"
 import { generateImageTool } from "../tools/GenerateImageTool"
 import { selectActiveIntentTool } from "../tools/SelectActiveIntentTool"
+import { recordLessonTool } from "../tools/RecordLessonTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
@@ -681,6 +682,8 @@ export async function presentAssistantMessage(cline: Task) {
 			}
 
 			// 4. Hook Engine Orchestration
+			await cline.initializationPromise
+
 			const hookContext: HookContext = {
 				task: cline,
 				toolName: block.name,
@@ -811,6 +814,13 @@ export async function presentAssistantMessage(cline: Task) {
 						break
 					case "use_mcp_tool":
 						await useMcpToolTool.handle(cline, block as ToolUse<"use_mcp_tool">, {
+							askApproval,
+							handleError,
+							pushToolResult,
+						})
+						break
+					case "record_lesson_learned":
+						await recordLessonTool.handle(cline, block as ToolUse<"record_lesson_learned">, {
 							askApproval,
 							handleError,
 							pushToolResult,
