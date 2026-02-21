@@ -863,6 +863,31 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		return [instance, promise]
 	}
 
+	private async validateIntentGate(): Promise<boolean> {
+		const lastMessage = this.apiConversationHistory[this.apiConversationHistory.length - 1]
+		const lastMessageContent = lastMessage?.content
+
+		if (Array.isArray(lastMessageContent)) {
+			const hasIntentSection = lastMessageContent.some((block) => {
+				return (
+					block.type === "tool_use" &&
+					(block.name === "select_active_intent" || block.name === "list_active_intents")
+				)
+			})
+
+			if (!hasIntentSection && !this.selectedIntentId) {
+				await this.say(
+					"error",
+					"You must cite a valid Intent ID. Use select_active_intent or list_active_intents first.",
+				)
+				return false
+			}
+			return true
+		}
+
+		return false
+	}
+
 	// API Messages
 
 	private async getSavedApiConversationHistory(): Promise<ApiMessage[]> {
@@ -2792,6 +2817,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.cachedStreamingModel = this.api.getModel()
 				const streamModelInfo = this.cachedStreamingModel.info
 				const cachedModelId = this.cachedStreamingModel.id
+
+				const hasValidIntent = await this.validateIntentGate()
+				if (!hasValidIntent) {
+					return true
+				}
 
 				// Yields only if the first chunk is successful, otherwise will
 				// allow the user to retry the request (most likely due to rate

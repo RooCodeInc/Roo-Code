@@ -42,13 +42,16 @@ import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+import { MiddlewareChain } from "../middlewares/MiddlewareChain"
+import { IntentValidationMiddleware } from "../middlewares/IntentValidationMiddleware"
+import { ScopeEnforcementMiddleware } from "../middlewares/ScopeEnforcementMiddleware"
 
 /**
  * Processes and presents assistant message content to the user interface.
  *
  * This function is the core message handling system that:
  * - Sequentially processes content blocks from the assistant's response.
- * - Displays text content to the user.
+ * - Displays text content to the user
  * - Executes tool use requests with appropriate user approval.
  * - Manages the flow of conversation by determining when to proceed to the next content block.
  * - Coordinates file system checkpointing for modified files.
@@ -681,20 +684,16 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
-			// TODO: requiresIntent check should be based on tool definition, not hardcoded list
-			const requiresIntent: ToolName[] = [
-				"apply_diff",
-				"write_to_file",
-				"edit_file",
-				"apply_patch",
-				"execute_command",
-				"search_replace",
-				"edit",
-			]
+			const middlewareChain = new MiddlewareChain()
+			middlewareChain.add(new IntentValidationMiddleware())
+			middlewareChain.add(new ScopeEnforcementMiddleware())
 
-			if (requiresIntent.includes(block.name as ToolName) && !cline.getHasSelectedIntent()) {
-				const errorMsg = "You must call select_active_intent before using modification tools."
-				pushToolResult(formatResponse.toolError(errorMsg))
+			const middlewareResult = await middlewareChain.executeBefore(block.params, cline, block.name)
+			if (!middlewareResult.allow) {
+				pushToolResult(middlewareResult.error || "Middleware validation failed")
+				cline.consecutiveMistakeCount++
+				cline.didToolFailInCurrentTurn = true
+				cline.recordToolError(block.name as ToolName, middlewareResult.error || "Middleware validation failed")
 				break
 			}
 

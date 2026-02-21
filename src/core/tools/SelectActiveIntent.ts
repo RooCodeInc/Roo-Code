@@ -2,6 +2,7 @@ import { Task } from "../task/Task"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import { Intent } from "../intents/types"
 import { formatResponse } from "../prompts/responses"
+import { ToolUse } from "../../shared/tools"
 
 interface SelectActiveIntentParams {
 	intent_id: string
@@ -25,6 +26,7 @@ export class SelectActiveIntentTool extends BaseTool<"select_active_intent"> {
 
 			const provider = task.providerRef.deref()
 			if (!provider) {
+				// TODO: Figure out what to do when the provider becomes undefined
 				return
 			}
 
@@ -77,6 +79,8 @@ export class SelectActiveIntentTool extends BaseTool<"select_active_intent"> {
 			`</intent_context>`,
 		].join("\n")
 	}
+
+	override async handlePartial(_task: Task, _block: ToolUse<"select_active_intent">): Promise<void> {}
 }
 
 export const selectActiveIntentTool = new SelectActiveIntentTool()
