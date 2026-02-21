@@ -533,6 +533,15 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "append_lesson_learned":
+				if (partialArgs.lesson !== undefined || partialArgs.file_path !== undefined) {
+					nativeArgs = {
+						lesson: partialArgs.lesson,
+						file_path: partialArgs.file_path,
+					}
+				}
+				break
+
 			case "search_files":
 				if (partialArgs.path !== undefined || partialArgs.regex !== undefined) {
 					nativeArgs = {
@@ -917,6 +926,15 @@ export class NativeToolCallParser {
 								| "INTENT_EVOLUTION"
 								| "NEW_FILE"
 								| undefined,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "append_lesson_learned":
+					if (args.lesson !== undefined) {
+						nativeArgs = {
+							lesson: args.lesson,
+							file_path: args.file_path,
 						} as NativeArgsFor<TName>
 					}
 					break

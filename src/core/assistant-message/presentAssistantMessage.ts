@@ -34,6 +34,7 @@ import { updateTodoListTool } from "../tools/UpdateTodoListTool"
 import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
 import { skillTool } from "../tools/SkillTool"
 import { generateImageTool } from "../tools/GenerateImageTool"
+import { appendLessonLearnedTool } from "../tools/AppendLessonLearnedTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
@@ -384,6 +385,8 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.skill}'${block.params.args ? ` with args: ${block.params.args}` : ""}]`
 					case "generate_image":
 						return `[${block.name} for '${block.params.path}']`
+					case "append_lesson_learned":
+						return `[${block.name}]`
 					default:
 						return `[${block.name}]`
 				}
@@ -604,6 +607,17 @@ export async function presentAssistantMessage(cline: Task) {
 						stateExperiments,
 						includedTools,
 					)
+
+					// Hook Engine: Pre-Hook validation for intent enforcement and guardrails
+					const preHookResult = await hookMiddleware.preToolUse(block.name, block.params)
+					if (preHookResult.blocked) {
+						pushToolResult(preHookResult.error || "Tool blocked by pre-hook")
+						break
+					}
+					if (preHookResult.injectResult) {
+						pushToolResult(preHookResult.injectResult)
+						break
+					}
 				} catch (error) {
 					cline.consecutiveMistakeCount++
 					// For validation errors (unknown tool, tool not allowed for mode), we need to:
@@ -870,6 +884,13 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "skill":
 					await skillTool.handle(cline, block as ToolUse<"skill">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "append_lesson_learned":
+					await appendLessonLearnedTool.handle(cline, block as ToolUse<"append_lesson_learned">, {
 						askApproval,
 						handleError,
 						pushToolResult,
