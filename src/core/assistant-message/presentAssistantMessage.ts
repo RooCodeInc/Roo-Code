@@ -41,8 +41,21 @@ import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+import { INVALID_ACTIVE_INTENT_ERROR, loadIntentContext } from "../intent/IntentContextLoader"
+import { isDestructiveCommand } from "../governance/CommandClassifier"
+import { showHITLApproval } from "../governance/HITLAuthorizer"
+import { enforceIntentScope, getToolTargetPaths } from "../governance/ScopeEnforcer"
 
 const selectActiveIntentTool = new SelectActiveIntentTool()
+const GOVERNED_WRITE_TOOLS = new Set<ToolName>([
+	"write_to_file",
+	"apply_patch",
+	"edit_file",
+	"search_replace",
+	"apply_diff",
+	"edit",
+	"search_and_replace",
+])
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -62,6 +75,9 @@ const selectActiveIntentTool = new SelectActiveIntentTool()
  */
 
 export async function presentAssistantMessage(cline: Task) {
+	console.log("🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵")
+	console.log("🔵 presentAssistantMessage.ts LOADED")
+	console.log("🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵")
 	if (cline.abort) {
 		throw new Error(`[Task#presentAssistantMessage] task ${cline.taskId}.${cline.instanceId} aborted`)
 	}
@@ -680,6 +696,78 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			if (!block.partial && GOVERNED_WRITE_TOOLS.has(block.name as ToolName)) {
+				const provider = cline.providerRef.deref()
+				const state = await provider?.getState()
+				const activeIntentId = String((state as any)?.activeIntentId ?? "").trim()
+
+				let activeIntentContext: Awaited<ReturnType<typeof loadIntentContext>> = null
+				if (activeIntentId) {
+					try {
+						activeIntentContext = await loadIntentContext(cline.cwd, activeIntentId)
+					} catch {
+						activeIntentContext = null
+					}
+				}
+
+				if (!activeIntentContext) {
+					cline.consecutiveMistakeCount++
+					cline.recordToolError(block.name as ToolName, INVALID_ACTIVE_INTENT_ERROR)
+					cline.didToolFailInCurrentTurn = true
+					cline.pushToolResultToUserContent({
+						type: "tool_result",
+						tool_use_id: sanitizeToolUseId(toolCallId),
+						content: formatResponse.toolError(INVALID_ACTIVE_INTENT_ERROR),
+						is_error: true,
+					})
+					break
+				}
+
+				const targetPaths = getToolTargetPaths(block.name, (block.nativeArgs ?? {}) as Record<string, unknown>)
+				const scopeCheck = enforceIntentScope(
+					activeIntentContext.intent_id,
+					cline.cwd,
+					activeIntentContext.scope,
+					targetPaths,
+				)
+
+				if (!scopeCheck.allowed) {
+					cline.consecutiveMistakeCount++
+					cline.recordToolError(block.name as ToolName, scopeCheck.error)
+					cline.didToolFailInCurrentTurn = true
+					cline.pushToolResultToUserContent({
+						type: "tool_result",
+						tool_use_id: sanitizeToolUseId(toolCallId),
+						content: formatResponse.toolError(scopeCheck.error),
+						is_error: true,
+					})
+					break
+				}
+			}
+
+			if (!block.partial && isValidToolName(String(block.name), stateExperiments)) {
+				if (isDestructiveCommand(block.name as ToolName)) {
+					const approved = await showHITLApproval(block.name, block.nativeArgs ?? block.params)
+					if (!approved) {
+						const rejectionPayload = JSON.stringify({
+							code: "operation_rejected",
+							tool: block.name,
+							message: "Operation rejected by user",
+						})
+						cline.consecutiveMistakeCount++
+						cline.recordToolError(block.name as ToolName, rejectionPayload)
+						cline.didToolFailInCurrentTurn = true
+						cline.pushToolResultToUserContent({
+							type: "tool_result",
+							tool_use_id: sanitizeToolUseId(toolCallId),
+							content: formatResponse.toolError(rejectionPayload),
+							is_error: true,
+						})
+						break
+					}
+				}
+			}
+
 			switch (block.name) {
 				case "write_to_file":
 					await checkpointSaveAndMark(cline)
@@ -811,7 +899,11 @@ export async function presentAssistantMessage(cline: Task) {
 				case "select_active_intent": {
 					try {
 						const intentId = block.nativeArgs?.intent_id ?? block.params.intent_id ?? ""
-						const result = await selectActiveIntentTool.handle({ intent_id: intentId }, cline.cwd)
+						const result = await selectActiveIntentTool.handle(
+							{ intent_id: intentId },
+							cline.cwd,
+							cline.providerRef.deref(),
+						)
 						pushToolResult(result)
 					} catch (error) {
 						await handleError("loading active intent context", error as Error)

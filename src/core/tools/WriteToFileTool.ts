@@ -15,6 +15,8 @@ import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { convertNewFileToUnifiedDiff, computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 import type { ToolUse } from "../../shared/tools"
+import { INVALID_ACTIVE_INTENT_ERROR } from "../intent/IntentContextLoader"
+import { appendAgentTrace } from "../trace/AgentTraceSerializer"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -25,10 +27,17 @@ interface WriteToFileParams {
 
 export class WriteToFileTool extends BaseTool<"write_to_file"> {
 	readonly name = "write_to_file" as const
+	private initialFileHash: string | undefined
 
 	async execute(params: WriteToFileParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+		try {
+			const tracePath = path.join(task.cwd, ".roo-tool-trace.log")
+			await fs.appendFile(tracePath, `[${new Date().toISOString()}] TOOL EXECUTED: ${this.name}\n`, "utf8")
+		} catch {}
 		const { pushToolResult, handleError, askApproval } = callbacks
 		const relPath = params.path
+		const accessAllowed = task.rooIgnoreController?.validateAccess(relPath || "")
+
 		let newContent = params.content
 
 		if (!relPath) {
@@ -48,8 +57,12 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		}
 
 		const hasSelectedActiveIntent = (task.toolUsage.select_active_intent?.attempts ?? 0) > 0
-		if (!hasSelectedActiveIntent) {
-			const governanceError = "GOVERNANCE ERROR: You must cite a valid active Intent ID before modifying files."
+		const provider = task.providerRef.deref()
+		const state = await provider?.getState()
+		const hasActiveIntentState = !!(state as any)?.activeIntentId
+
+		if (!hasSelectedActiveIntent && !hasActiveIntentState) {
+			const governanceError = `GOVERNANCE ERROR: ${INVALID_ACTIVE_INTENT_ERROR} before modifying files.`
 			task.consecutiveMistakeCount++
 			task.recordToolError("write_to_file", governanceError)
 			task.didToolFailInCurrentTurn = true
@@ -57,8 +70,6 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			await task.diffViewProvider.reset()
 			return
 		}
-
-		const accessAllowed = task.rooIgnoreController?.validateAccess(relPath)
 
 		if (!accessAllowed) {
 			await task.say("rooignore_error", relPath)
@@ -76,6 +87,16 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		} else {
 			fileExists = await fileExistsAtPath(absolutePath)
 			task.diffViewProvider.editType = fileExists ? "modify" : "create"
+		}
+
+		this.initialFileHash = undefined
+		if (fileExists) {
+			try {
+				const { getCurrentHash } = await import("../concurrency/OptimisticLock")
+				this.initialFileHash = await getCurrentHash(absolutePath)
+			} catch {
+				this.initialFileHash = undefined
+			}
 		}
 
 		// Create parent directories early for new files to prevent ENOENT errors
@@ -112,12 +133,37 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 			const provider = task.providerRef.deref()
 			const state = await provider?.getState()
+			const activeIntentId = String((state as any)?.activeIntentId ?? "").trim()
 			const diagnosticsEnabled = state?.diagnosticsEnabled ?? true
 			const writeDelayMs = state?.writeDelayMs ?? DEFAULT_WRITE_DELAY_MS
 			const isPreventFocusDisruptionEnabled = experiments.isEnabled(
 				state?.experiments ?? {},
 				EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION,
 			)
+
+			const validateOptimisticLockOrThrow = async () => {
+				if (!fileExists || !this.initialFileHash) {
+					return
+				}
+
+				try {
+					const { validateLock, getCurrentHash, StaleFileError } = await import(
+						"../concurrency/OptimisticLock"
+					)
+					const isLockValid = await validateLock(this.initialFileHash, absolutePath)
+					if (!isLockValid) {
+						const currentHash = await getCurrentHash(absolutePath).catch(() => "unavailable")
+						throw new StaleFileError(relPath, this.initialFileHash, currentHash)
+					}
+				} catch (error) {
+					const { StaleFileError } = await import("../concurrency/OptimisticLock").catch(() => ({
+						StaleFileError: undefined,
+					}))
+					if (StaleFileError && error instanceof StaleFileError) {
+						throw error
+					}
+				}
+			}
 
 			if (isPreventFocusDisruptionEnabled) {
 				task.diffViewProvider.editType = fileExists ? "modify" : "create"
@@ -141,6 +187,22 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 				const didApprove = await askApproval("tool", completeMessage, undefined, isWriteProtected)
 
 				if (!didApprove) {
+					return
+				}
+
+				try {
+					await validateOptimisticLockOrThrow()
+				} catch (error) {
+					const staleErrorMessage =
+						error instanceof Error
+							? error.message
+							: "STALE_FILE_ERROR: File changed since it was last read. Re-read the file before applying changes."
+					task.consecutiveMistakeCount++
+					task.recordToolError("write_to_file", staleErrorMessage)
+					task.didToolFailInCurrentTurn = true
+					pushToolResult(formatResponse.toolError(staleErrorMessage))
+					await task.diffViewProvider.reset()
+					this.resetPartialState()
 					return
 				}
 
@@ -177,8 +239,27 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 					return
 				}
 
+				try {
+					await validateOptimisticLockOrThrow()
+				} catch (error) {
+					const staleErrorMessage =
+						error instanceof Error
+							? error.message
+							: "STALE_FILE_ERROR: File changed since it was last read. Re-read the file before applying changes."
+					task.consecutiveMistakeCount++
+					task.recordToolError("write_to_file", staleErrorMessage)
+					task.didToolFailInCurrentTurn = true
+					pushToolResult(formatResponse.toolError(staleErrorMessage))
+					await task.diffViewProvider.revertChanges()
+					await task.diffViewProvider.reset()
+					this.resetPartialState()
+					return
+				}
+
 				await task.diffViewProvider.saveChanges(diagnosticsEnabled, writeDelayMs)
 			}
+
+			this.initialFileHash = undefined
 
 			if (relPath) {
 				await task.fileContextTracker.trackFileContext(relPath, "roo_edited" as RecordSource)
@@ -189,6 +270,16 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			const message = await task.diffViewProvider.pushToolWriteResult(task, task.cwd, !fileExists)
 
 			pushToolResult(message)
+
+			if (activeIntentId && relPath) {
+				await appendAgentTrace({
+					workspaceRoot: task.cwd,
+					activeIntentId,
+					filePath: relPath,
+					content: newContent,
+					toolName: this.name,
+				}).catch(() => {})
+			}
 
 			await task.diffViewProvider.reset()
 			this.resetPartialState()
@@ -201,6 +292,8 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			await task.diffViewProvider.reset()
 			this.resetPartialState()
 			return
+		} finally {
+			this.initialFileHash = undefined
 		}
 	}
 

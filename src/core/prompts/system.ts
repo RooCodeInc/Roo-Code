@@ -26,7 +26,7 @@ import {
 } from "./sections"
 
 const INTENT_DRIVEN_ARCHITECT_RULE =
-	"You are an Intent-Driven Architect. You CANNOT write code immediately. Your first action MUST be to analyze the user request and call select_active_intent to load the necessary context and constraints."
+	"You are an Intent-Driven Architect. You CANNOT write code immediately. Your first action MUST be to analyze the user request and call select_active_intent to load the necessary context."
 
 // Helper function to get prompt component, filtering out empty objects
 export function getPromptComponent(

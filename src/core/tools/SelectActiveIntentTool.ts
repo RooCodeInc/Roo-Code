@@ -1,37 +1,43 @@
-import * as fs from "fs"
-import * as path from "path"
-import * as yaml from "yaml"
+import fs from "fs/promises"
+import path from "path"
+
+import { ACTIVE_INTENTS_RELATIVE_PATH, loadIntentContext, renderIntentContextXml } from "../intent/IntentContextLoader"
 
 export class SelectActiveIntentTool {
-	async handle(params: { intent_id: string }, workspaceRoot: string): Promise<string> {
-		if (!params.intent_id?.trim()) {
+	async handle(params: { intent_id: string }, workspaceRoot: string, provider?: any): Promise<string> {
+		const intentId = params.intent_id?.trim()
+
+		if (!intentId) {
 			return "ERROR: Missing required parameter 'intent_id'."
 		}
+
 		try {
-			const content = await fs.promises.readFile(
-				path.join(workspaceRoot, ".orchestration", "active_intents.yaml"),
-				"utf-8",
-			)
-			const data = yaml.parse(content) as any
-			const intents = Array.isArray(data)
-				? data
-				: Array.isArray(data?.active_intents)
-					? data.active_intents
-					: Array.isArray(data?.intents)
-						? data.intents
-						: Object.entries(data ?? {}).map(([intent_id, entry]) => ({ intent_id, ...(entry as object) }))
-			const match = intents.find((intent: any) => (intent?.intent_id ?? intent?.id) === params.intent_id)
-			if (!match) {
-				return `ERROR: Intent '${params.intent_id}' not found in .orchestration/active_intents.yaml.`
+			const context = await loadIntentContext(workspaceRoot, intentId)
+
+			if (!context) {
+				return `ERROR: Intent '${intentId}' not found in .orchestration/active_intents.yaml.`
 			}
-			return `<intent_context>${JSON.stringify(match, null, 2)}</intent_context>`
+
+			await provider?.updateGlobalState("activeIntentId", intentId)
+
+			const tracePath = path.join(workspaceRoot, ".roo-tool-trace.log")
+			await fs
+				.appendFile(
+					tracePath,
+					`[${new Date().toISOString()}] TOOL EXECUTED: select_active_intent [intent:${intentId}] intent_id=${intentId}\n`,
+					"utf8",
+				)
+				.catch(() => {})
+
+			return renderIntentContextXml(context)
 		} catch (error) {
-			if ((error as NodeJS.ErrnoException | undefined)?.code === "ENOENT") {
-				return "ERROR: Governance sidecar not found at .orchestration/active_intents.yaml. Please initialize Phase 0 first."
+			if ((error as any)?.code === "ENOENT") {
+				if ((error as any)?.path?.toString()?.includes(ACTIVE_INTENTS_RELATIVE_PATH)) {
+					return "ERROR: Governance sidecar not found at .orchestration/active_intents.yaml. Please initialize Phase 0 first."
+				}
+				return "ERROR: Governance sidecar not found. Please ensure .orchestration/active_intents.yaml exists."
 			}
-			return `ERROR: Failed to read or parse .orchestration/active_intents.yaml: ${
-				error instanceof Error ? error.message : String(error)
-			}`
+			return `ERROR: Failed to read sidecar: ${error instanceof Error ? error.message : String(error)}`
 		}
 	}
 }

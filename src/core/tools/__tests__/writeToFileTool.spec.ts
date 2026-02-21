@@ -145,6 +145,7 @@ describe("writeToFileTool", () => {
 			originalContent: "",
 			open: vi.fn().mockResolvedValue(undefined),
 			update: vi.fn().mockResolvedValue(undefined),
+			saveDirectly: vi.fn().mockResolvedValue(undefined),
 			reset: vi.fn().mockResolvedValue(undefined),
 			revertChanges: vi.fn().mockResolvedValue(undefined),
 			saveChanges: vi.fn().mockResolvedValue({
