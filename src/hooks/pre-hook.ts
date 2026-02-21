@@ -27,10 +27,18 @@ export interface PreHookOptions {
 /**
  * Pre-Hook: intercepts tool execution to enforce intent context and scope.
  * - select_active_intent: load context, return XML, set active intent.
- * - Destructive tools: require active intent; optional HITL; scope check for write_to_file.
+ * - Destructive tools: require active intent; .intentignore exclusion; scope check for write_to_file; optional UI-blocking approval.
  */
 export class PreHook {
+	private intentIgnoreCache: IntentIgnoreResult | null = null
+
 	constructor(private options: PreHookOptions) {}
+
+	private async getIntentIgnore(): Promise<IntentIgnoreResult> {
+		if (this.intentIgnoreCache) return this.intentIgnoreCache
+		this.intentIgnoreCache = await loadIntentIgnore(this.options.cwd, this.options.intentIgnorePath)
+		return this.intentIgnoreCache
+	}
 
 	async intercept(toolName: string, params: Record<string, unknown>): Promise<HookResult> {
 		const { cwd, getActiveIntentId, setActiveIntentId } = this.options
@@ -54,9 +62,9 @@ export class PreHook {
 
 		const isDestructive = (DESTRUCTIVE_TOOLS as readonly string[]).includes(toolName)
 		const requireIntent = this.options.requireIntentForDestructiveOnly ? isDestructive : true
+		const activeId = getActiveIntentId()
 
 		if (requireIntent) {
-			const activeId = getActiveIntentId()
 			if (!activeId) {
 				return {
 					blocked: true,
@@ -64,27 +72,67 @@ export class PreHook {
 				}
 			}
 
-			// Scope enforcement for write_to_file
-			if (toolName === "write_to_file" && params.path) {
-				const relPath = String(params.path)
-				// Path traversal: block paths that escape workspace (e.g. .. or absolute)
+			const ignore = await this.getIntentIgnore()
+			if (isIntentExcluded(activeId, ignore.excludedIntentIds)) {
+				return {
+					blocked: true,
+					error: formatResponse.toolError(
+						`Intent ${activeId} is listed in .intentignore and cannot be modified. Choose another intent or ask the user to update .intentignore.`,
+					),
+				}
+			}
+
+			// Scope and .intentignore path checks for file-writing tools
+			const filePathParam =
+				toolName === "write_to_file"
+					? params.path
+					: [
+								"edit",
+								"search_and_replace",
+								"search_replace",
+								"edit_file",
+								"apply_patch",
+								"apply_diff",
+						  ].includes(toolName)
+						? (params.file_path ?? params.path)
+						: undefined
+			if (filePathParam) {
+				const relPath = String(filePathParam)
 				if (isPathTraversal(relPath, cwd)) {
 					return {
 						blocked: true,
 						error: `Path traversal not allowed: "${relPath}" would escape the workspace. Use a path relative to the workspace only.`,
 					}
 				}
+				if (isPathIgnored(relPath, ignore.pathPatterns)) {
+					return {
+						blocked: true,
+						error: formatResponse.toolError(
+							`Path "${relPath}" is excluded by .intentignore. You are not authorized to edit it.`,
+						),
+					}
+				}
 				const context = await loadIntentContext(cwd, activeId)
 				if (context && context.owned_scope.length > 0 && !pathInScope(relPath, context.owned_scope, cwd)) {
 					return {
 						blocked: true,
-						error: `Scope Violation: ${activeId} is not authorized to edit "${relPath}". Request scope expansion in active_intents.yaml or choose another intent.`,
+						error: formatResponse.toolErrorScopeViolation(activeId, relPath),
 					}
 				}
 			}
 		}
 
-		// Optional: HITL for destructive tools (wire via askApproval in host / extension)
+		// UI-blocking authorization for destructive tools (e.g. showWarningMessage Approve/Reject)
+		if (isDestructive && this.options.confirmDestructive) {
+			const approved = await this.options.confirmDestructive(toolName, params)
+			if (!approved) {
+				return {
+					blocked: true,
+					error: formatResponse.toolErrorUserRejected(toolName),
+				}
+			}
+		}
+
 		return { blocked: false }
 	}
 }

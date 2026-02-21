@@ -179,6 +179,13 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 			pushToolResult(message)
 
+			const mutationClass = (params as Record<string, unknown>).mutation_class as string | undefined
+			await callbacks.onWriteToFileSuccess?.({
+				path: relPath,
+				content: newContent,
+				mutation_class: mutationClass,
+			})
+
 			await task.diffViewProvider.reset()
 			this.resetPartialState()
 

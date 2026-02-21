@@ -64,6 +64,14 @@ export interface AgentTraceEntry {
 /** Safe = read-only; Destructive = write, delete, execute */
 export type CommandClass = "safe" | "destructive"
 
+/**
+ * Classify a tool name as Safe (read) or Destructive (write, delete, execute).
+ * Used by the Hook Engine for authorization and UI-blocking.
+ */
+export function classifyCommand(toolName: string): CommandClass {
+	return (DESTRUCTIVE_TOOLS as readonly string[]).includes(toolName) ? "destructive" : "safe"
+}
+
 export const DESTRUCTIVE_TOOLS = [
 	"write_to_file",
 	"apply_diff",

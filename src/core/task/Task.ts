@@ -266,6 +266,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	providerRef: WeakRef<ClineProvider>
 	private readonly globalStoragePath: string
+	/** Active intent ID set by select_active_intent (per task/session). Used by Hook Engine for scope enforcement. */
+	private _activeIntentId: string | null = null
 	abort: boolean = false
 	currentRequestAbortController?: AbortController
 	skipPrevResponseIdOnce: boolean = false
@@ -4668,6 +4670,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public get cwd() {
 		return this.workspacePath
+	}
+
+	/** Active intent ID for Hook Engine (select_active_intent / scope enforcement). */
+	public getActiveIntentId(): string | null {
+		return this._activeIntentId
+	}
+
+	public setActiveIntentId(id: string | null): void {
+		this._activeIntentId = id
 	}
 
 	/**

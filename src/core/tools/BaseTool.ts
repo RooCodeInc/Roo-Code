@@ -3,6 +3,13 @@ import type { ToolName } from "@roo-code/types"
 import { Task } from "../task/Task"
 import type { ToolUse, HandleError, PushToolResult, AskApproval, NativeToolArgs } from "../../shared/tools"
 
+/** Params passed to onWriteToFileSuccess after a successful write_to_file (for Hook Engine post-hook). */
+export interface WriteToFileSuccessParams {
+	path: string
+	content: string
+	mutation_class?: string
+}
+
 /**
  * Callbacks passed to tool execution
  */
@@ -11,6 +18,8 @@ export interface ToolCallbacks {
 	handleError: HandleError
 	pushToolResult: PushToolResult
 	toolCallId?: string
+	/** Called after successful write_to_file for Hook Engine agent_trace / post-hook. */
+	onWriteToFileSuccess?: (params: WriteToFileSuccessParams) => void | Promise<void>
 }
 
 /**

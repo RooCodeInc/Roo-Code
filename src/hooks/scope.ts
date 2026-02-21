@@ -37,3 +37,24 @@ function simpleGlobMatch(path: string, pattern: string): boolean {
 	)
 	return re.test(path)
 }
+
+/**
+ * Check if a relative path matches any of the given glob-like patterns.
+ * Used by .intentignore to exclude paths from edits.
+ */
+export function pathMatchesAnyPattern(relativePath: string, patterns: string[]): boolean {
+	if (!patterns || patterns.length === 0) return false
+	const normalized = path.normalize(relativePath).replace(/\\/g, "/")
+	for (const pattern of patterns) {
+		const p = path.normalize(pattern).replace(/\\/g, "/")
+		if (p.endsWith("/**")) {
+			const prefix = p.slice(0, -3)
+			if (normalized === prefix || normalized.startsWith(prefix + "/")) return true
+		} else if (p.includes("*")) {
+			if (simpleGlobMatch(normalized, p)) return true
+		} else {
+			if (normalized === p || normalized.endsWith("/" + p)) return true
+		}
+	}
+	return false
+}
