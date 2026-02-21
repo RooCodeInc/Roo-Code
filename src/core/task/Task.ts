@@ -266,6 +266,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	providerRef: WeakRef<ClineProvider>
 	private readonly globalStoragePath: string
+	/** Active intent ID set by select_active_intent (per task/session). Used by Hook Engine for scope enforcement. */
+	private _activeIntentId: string | null = null
+	/** Per-file content hashes from read_file (path -> sha256 hash). Used for optimistic locking on write_to_file. */
+	private _fileReadHashes: Map<string, string> = new Map()
 	abort: boolean = false
 	currentRequestAbortController?: AbortController
 	skipPrevResponseIdOnce: boolean = false
@@ -4668,6 +4672,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public get cwd() {
 		return this.workspacePath
+	}
+
+	/** Active intent ID for Hook Engine (select_active_intent / scope enforcement). */
+	public getActiveIntentId(): string | null {
+		return this._activeIntentId
+	}
+
+	public setActiveIntentId(id: string | null): void {
+		this._activeIntentId = id
+	}
+
+	/** Record content hash for a file read by read_file (optimistic locking: write compares disk hash to this). */
+	public recordFileReadHash(relativePath: string, contentHash: string): void {
+		this._fileReadHashes.set(relativePath, contentHash)
+	}
+
+	/** Get the content hash recorded when the agent last read this file (if any). */
+	public getFileReadHash(relativePath: string): string | undefined {
+		return this._fileReadHashes.get(relativePath)
 	}
 
 	/**

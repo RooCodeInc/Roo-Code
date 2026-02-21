@@ -1,10 +1,20 @@
-import * as vscode from "vscode"
 import path from "path"
 
-import type { HookResult, IntentContext, MutationClass } from "./types"
+import type { HookResult } from "./types"
 import { DESTRUCTIVE_TOOLS } from "./types"
-import { loadIntentContext, buildIntentContextXml } from "./context-loader"
+import { loadIntentContext, buildConsolidatedIntentContextXml } from "./context-loader"
+import { loadIntentIgnore, isPathIgnored, isIntentExcluded } from "./intent-ignore"
+import type { IntentIgnoreResult } from "./intent-ignore"
 import { pathInScope } from "./scope"
+import { toolErrorFormat } from "./format"
+
+/** Block paths that escape workspace (.. or absolute outside cwd). */
+function isPathTraversal(relPath: string, cwd: string): boolean {
+	const normalized = path.normalize(relPath)
+	if (normalized.includes("..")) return true
+	const resolved = path.resolve(cwd, relPath)
+	return !resolved.startsWith(cwd)
+}
 
 export interface PreHookOptions {
 	cwd: string
@@ -20,10 +30,18 @@ export interface PreHookOptions {
 /**
  * Pre-Hook: intercepts tool execution to enforce intent context and scope.
  * - select_active_intent: load context, return XML, set active intent.
- * - Destructive tools: require active intent; optional HITL; scope check for write_to_file.
+ * - Destructive tools: require active intent; .intentignore exclusion; scope check for write_to_file; optional UI-blocking approval.
  */
 export class PreHook {
+	private intentIgnoreCache: IntentIgnoreResult | null = null
+
 	constructor(private options: PreHookOptions) {}
+
+	private async getIntentIgnore(): Promise<IntentIgnoreResult> {
+		if (this.intentIgnoreCache) return this.intentIgnoreCache
+		this.intentIgnoreCache = await loadIntentIgnore(this.options.cwd, this.options.intentIgnorePath)
+		return this.intentIgnoreCache
+	}
 
 	async intercept(toolName: string, params: Record<string, unknown>): Promise<HookResult> {
 		const { cwd, getActiveIntentId, setActiveIntentId } = this.options
@@ -34,23 +52,22 @@ export class PreHook {
 			if (!intentId) {
 				return { blocked: true, error: "You must provide a valid intent_id when calling select_active_intent." }
 			}
-			const context = await loadIntentContext(cwd, intentId)
-			if (!context) {
+			const xml = await buildConsolidatedIntentContextXml(cwd, intentId)
+			if (!xml) {
 				return {
 					blocked: true,
 					error: `You must cite a valid active Intent ID. Intent "${intentId}" was not found in .orchestration/active_intents.yaml.`,
 				}
 			}
 			setActiveIntentId(intentId)
-			const xml = buildIntentContextXml(context)
 			return { blocked: false, injectResult: xml }
 		}
 
 		const isDestructive = (DESTRUCTIVE_TOOLS as readonly string[]).includes(toolName)
 		const requireIntent = this.options.requireIntentForDestructiveOnly ? isDestructive : true
+		const activeId = getActiveIntentId()
 
 		if (requireIntent) {
-			const activeId = getActiveIntentId()
 			if (!activeId) {
 				return {
 					blocked: true,
@@ -58,32 +75,67 @@ export class PreHook {
 				}
 			}
 
-			// Scope enforcement for write_to_file
-			if (toolName === "write_to_file" && params.path) {
-				const relPath = String(params.path)
+			const ignore = await this.getIntentIgnore()
+			if (isIntentExcluded(activeId, ignore.excludedIntentIds)) {
+				return {
+					blocked: true,
+					error: toolErrorFormat.toolError(
+						`Intent ${activeId} is listed in .intentignore and cannot be modified. Choose another intent or ask the user to update .intentignore.`,
+					),
+				}
+			}
+
+			// Scope and .intentignore path checks for file-writing tools
+			const filePathParam =
+				toolName === "write_to_file"
+					? params.path
+					: [
+								"edit",
+								"search_and_replace",
+								"search_replace",
+								"edit_file",
+								"apply_patch",
+								"apply_diff",
+						  ].includes(toolName)
+						? (params.file_path ?? params.path)
+						: undefined
+			if (filePathParam) {
+				const relPath = String(filePathParam)
+				if (isPathTraversal(relPath, cwd)) {
+					return {
+						blocked: true,
+						error: `Path traversal not allowed: "${relPath}" would escape the workspace. Use a path relative to the workspace only.`,
+					}
+				}
+				if (isPathIgnored(relPath, ignore.pathPatterns)) {
+					return {
+						blocked: true,
+						error: toolErrorFormat.toolError(
+							`Path "${relPath}" is excluded by .intentignore. You are not authorized to edit it.`,
+						),
+					}
+				}
 				const context = await loadIntentContext(cwd, activeId)
 				if (context && context.owned_scope.length > 0 && !pathInScope(relPath, context.owned_scope, cwd)) {
 					return {
 						blocked: true,
-						error: `Scope Violation: ${activeId} is not authorized to edit "${relPath}". Request scope expansion in active_intents.yaml or choose another intent.`,
+						error: toolErrorFormat.toolErrorScopeViolation(activeId, relPath),
 					}
 				}
 			}
 		}
 
-		// Optional: HITL for destructive tools (can be wired via askApproval in host)
-		return { blocked: false }
-	}
+		// UI-blocking authorization for destructive tools (e.g. showWarningMessage Approve/Reject)
+		if (isDestructive && this.options.confirmDestructive) {
+			const approved = await this.options.confirmDestructive(toolName, params)
+			if (!approved) {
+				return {
+					blocked: true,
+					error: toolErrorFormat.toolErrorUserRejected(toolName),
+				}
+			}
+		}
 
-	/**
-	 * Optional: prompt for Human-in-the-Loop approval on destructive actions.
-	 * Call this from the host when askApproval is invoked for destructive tools.
-	 */
-	static async askApprovalDestructive(toolName: string, message: string): Promise<boolean> {
-		return new Promise((resolve) => {
-			vscode.window
-				.showWarningMessage(`Approve destructive action: ${toolName}?`, { modal: true }, "Approve", "Reject")
-				.then((choice) => resolve(choice === "Approve"))
-		})
+		return { blocked: false }
 	}
 }

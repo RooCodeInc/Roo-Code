@@ -30,6 +30,27 @@ export const formatResponse = {
 			error,
 		}),
 
+	/** Standardized JSON for autonomous recovery when user rejects a destructive tool. */
+	toolErrorUserRejected: (toolName?: string) =>
+		JSON.stringify({
+			status: "error",
+			type: "user_rejected",
+			message: "The user rejected this operation.",
+			tool: toolName,
+			suggestion: "Do not retry the same operation; try a different approach or ask the user for permission.",
+		}),
+
+	/** Standardized JSON for scope violation so the LLM can request scope expansion. */
+	toolErrorScopeViolation: (intentId: string, filename: string) =>
+		JSON.stringify({
+			status: "error",
+			type: "scope_violation",
+			message: `Scope Violation: ${intentId} is not authorized to edit [${filename}]. Request scope expansion.`,
+			intent_id: intentId,
+			path: filename,
+			suggestion: "Request scope expansion in .orchestration/active_intents.yaml or choose another intent.",
+		}),
+
 	rooIgnoreError: (path: string) =>
 		JSON.stringify({
 			status: "error",
