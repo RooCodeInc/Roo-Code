@@ -69,11 +69,6 @@ export const UISettings = ({
 				// Clamp the value between 0.5 and 2
 				const clampedValue = Math.max(0.5, Math.min(2, numValue))
 				setCachedStateField("chatFontSizeMultiplier", clampedValue)
-
-				// Track telemetry event
-				telemetryClient.capture("ui_settings_chat_font_size_changed", {
-					multiplier: clampedValue,
-				})
 			}
 		},
 		[setCachedStateField],
@@ -87,6 +82,11 @@ export const UISettings = ({
 		} else {
 			const clampedValue = Math.max(0.5, Math.min(2, numValue))
 			setLocalMultiplier(clampedValue.toString())
+
+			// Track telemetry event on blur to capture only the user's final value
+			telemetryClient.capture("ui_settings_chat_font_size_changed", {
+				multiplier: clampedValue,
+			})
 		}
 	}, [localMultiplier, chatFontSizeMultiplier])
 
