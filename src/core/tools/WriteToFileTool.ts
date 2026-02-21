@@ -180,9 +180,11 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			pushToolResult(message)
 
 			const mutationClass = (params as Record<string, unknown>).mutation_class as string | undefined
+			const intentId = (params as Record<string, unknown>).intent_id as string | undefined
 			await callbacks.onWriteToFileSuccess?.({
 				path: relPath,
 				content: newContent,
+				intent_id: intentId,
 				mutation_class: mutationClass,
 			})
 

@@ -7,6 +7,7 @@ import type { ToolUse, HandleError, PushToolResult, AskApproval, NativeToolArgs 
 export interface WriteToFileSuccessParams {
 	path: string
 	content: string
+	intent_id?: string
 	mutation_class?: string
 }
 

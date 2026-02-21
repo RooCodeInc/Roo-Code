@@ -80,6 +80,9 @@ export const toolParamNames = [
 	// read_file legacy format parameter (backward compatibility)
 	"files",
 	"line_ranges",
+	// write_to_file traceability (AI-Native Git Layer)
+	"intent_id",
+	"mutation_class",
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -114,7 +117,12 @@ export type NativeToolArgs = {
 	switch_mode: { mode_slug: string; reason: string }
 	update_todo_list: { todos: string }
 	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
-	write_to_file: { path: string; content: string }
+	write_to_file: {
+		path: string
+		content: string
+		intent_id?: string
+		mutation_class?: "AST_REFACTOR" | "INTENT_EVOLUTION" | "NEW_FILE"
+	}
 	// Add more tools as they are migrated to native protocol
 }
 

@@ -13,6 +13,8 @@ export interface PostHookWriteParams {
 	content: string
 	intentId: string | null
 	mutationClass?: MutationClass
+	/** REQ-ID from Phase 1 - injected into related array for traceability */
+	reqId?: string
 	sessionLogId?: string
 	modelIdentifier?: string
 	vcsRevisionId?: string
@@ -28,6 +30,7 @@ export async function appendAgentTrace(cwd: string, params: PostHookWriteParams)
 		content,
 		intentId,
 		mutationClass = "UNKNOWN",
+		reqId,
 		sessionLogId,
 		modelIdentifier = "unknown",
 		vcsRevisionId,
@@ -39,11 +42,15 @@ export async function appendAgentTrace(cwd: string, params: PostHookWriteParams)
 
 	const lines = content.split("\n")
 	const fullRangeHash = contentHash(content)
+	const related: Array<{ type: string; value: string }> = []
+	if (intentId) related.push({ type: "specification", value: intentId })
+	if (reqId) related.push({ type: "request", value: reqId })
+
 	const conversation: AgentTraceConversation = {
 		url: sessionLogId,
 		contributor: { entity_type: "AI", model_identifier: modelIdentifier },
 		ranges: [{ start_line: 1, end_line: lines.length, content_hash: fullRangeHash }],
-		related: intentId ? [{ type: "specification", value: intentId }] : [],
+		related,
 	}
 
 	const fileEntry: AgentTraceFileEntry = {

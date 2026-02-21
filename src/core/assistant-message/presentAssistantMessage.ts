@@ -676,18 +676,48 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			// Hook Engine: Post-Hook for write_to_file appends to agent_trace.jsonl
+			const preHook = new PreHook({
+				cwd: cline.cwd,
+				getActiveIntentId: () => cline.getActiveIntentId(),
+				setActiveIntentId: (id) => cline.setActiveIntentId(id),
+				requireIntentForDestructiveOnly: true,
+			})
+			const hookMiddleware = new HookMiddleware({
+				preHook,
+				getActiveIntentId: () => cline.getActiveIntentId(),
+				getCwd: () => cline.cwd,
+				getReqId: () => cline.taskId,
+				getSessionLogId: () => undefined,
+				getModelId: () => cline.api.getModel()?.id,
+				getVcsRevisionId: () => undefined,
+			})
+
 			switch (block.name) {
 				case "select_active_intent":
 					// Handled entirely by pre-hook (injectResult pushed above)
 					break
-				case "write_to_file":
+				case "write_to_file": {
 					await checkpointSaveAndMark(cline)
 					await writeToFileTool.handle(cline, block as ToolUse<"write_to_file">, {
 						askApproval,
 						handleError,
 						pushToolResult,
+						onWriteToFileSuccess: async (p) => {
+							await hookMiddleware.postToolUse(
+								"write_to_file",
+								{
+									path: p.path,
+									content: p.content,
+									intent_id: p.intent_id,
+									mutation_class: p.mutation_class,
+								},
+								{},
+							)
+						},
 					})
 					break
+				}
 				case "update_todo_list":
 					await updateTodoListTool.handle(cline, block as ToolUse<"update_todo_list">, {
 						askApproval,

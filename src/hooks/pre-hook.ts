@@ -3,7 +3,10 @@ import path from "path"
 import type { HookResult } from "./types"
 import { DESTRUCTIVE_TOOLS } from "./types"
 import { loadIntentContext, buildConsolidatedIntentContextXml } from "./context-loader"
+import { loadIntentIgnore, isPathIgnored, isIntentExcluded } from "./intent-ignore"
+import type { IntentIgnoreResult } from "./intent-ignore"
 import { pathInScope } from "./scope"
+import { toolErrorFormat } from "./format"
 
 /** Block paths that escape workspace (.. or absolute outside cwd). */
 function isPathTraversal(relPath: string, cwd: string): boolean {
@@ -76,7 +79,7 @@ export class PreHook {
 			if (isIntentExcluded(activeId, ignore.excludedIntentIds)) {
 				return {
 					blocked: true,
-					error: formatResponse.toolError(
+					error: toolErrorFormat.toolError(
 						`Intent ${activeId} is listed in .intentignore and cannot be modified. Choose another intent or ask the user to update .intentignore.`,
 					),
 				}
@@ -107,7 +110,7 @@ export class PreHook {
 				if (isPathIgnored(relPath, ignore.pathPatterns)) {
 					return {
 						blocked: true,
-						error: formatResponse.toolError(
+						error: toolErrorFormat.toolError(
 							`Path "${relPath}" is excluded by .intentignore. You are not authorized to edit it.`,
 						),
 					}
@@ -116,7 +119,7 @@ export class PreHook {
 				if (context && context.owned_scope.length > 0 && !pathInScope(relPath, context.owned_scope, cwd)) {
 					return {
 						blocked: true,
-						error: formatResponse.toolErrorScopeViolation(activeId, relPath),
+						error: toolErrorFormat.toolErrorScopeViolation(activeId, relPath),
 					}
 				}
 			}
@@ -128,7 +131,7 @@ export class PreHook {
 			if (!approved) {
 				return {
 					blocked: true,
-					error: formatResponse.toolErrorUserRejected(toolName),
+					error: toolErrorFormat.toolErrorUserRejected(toolName),
 				}
 			}
 		}

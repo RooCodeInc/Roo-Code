@@ -6,6 +6,8 @@ export interface HookMiddlewareOptions {
 	preHook: PreHook
 	getActiveIntentId: () => string | null
 	getCwd: () => string
+	/** REQ-ID from Phase 1 - injected into agent_trace related array */
+	getReqId?: () => string | undefined
 	getSessionLogId?: () => string | undefined
 	getModelId?: () => string | undefined
 	getVcsRevisionId?: () => string | undefined
@@ -39,7 +41,8 @@ export class HookMiddleware {
 		const contentParam = params.content
 		if (typeof pathParam !== "string" || typeof contentParam !== "string") return
 
-		const intentId = this.options.getActiveIntentId()
+		const intentId =
+			(typeof params.intent_id === "string" ? params.intent_id.trim() : null) || this.options.getActiveIntentId()
 		const mutationClass = (params.mutation_class as "AST_REFACTOR" | "INTENT_EVOLUTION" | "NEW_FILE") ?? "UNKNOWN"
 
 		await appendAgentTrace(this.options.getCwd(), {
@@ -47,6 +50,7 @@ export class HookMiddleware {
 			content: contentParam,
 			intentId,
 			mutationClass,
+			reqId: this.options.getReqId?.(),
 			sessionLogId: this.options.getSessionLogId?.(),
 			modelIdentifier: this.options.getModelId?.(),
 			vcsRevisionId: this.options.getVcsRevisionId?.(),
