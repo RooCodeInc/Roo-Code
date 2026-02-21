@@ -76,7 +76,7 @@ async function runWithHooks<T extends ToolName>(
 	// ===== BRIDGE END =====
 
 	// pre-hook can access cline and block
-	await preWriteHook(cline, block)
+	await preWriteHook(filePath, intentId)
 
 	// Keep helpers in scope so handlers still compile
 	const askApproval = async (
@@ -111,9 +111,10 @@ async function runWithHooks<T extends ToolName>(
 
 	try {
 		await handler.handle(cline, block, { askApproval, handleError, pushToolResult })
-		await postWriteHook(cline, block, { success: true })
+
+		postWriteHook(filePath, intentId, sessionId, contributorModel, "SUCCESS")
 	} catch (err) {
-		await postWriteHook(cline, block, { success: false, error: err })
+		postWriteHook(filePath, intentId, sessionId, contributorModel, "FAILED", err)
 		throw err
 	}
 }
@@ -755,12 +756,7 @@ export async function presentAssistantMessage(cline: Task) {
 
 			switch (block.name) {
 				case "write_to_file":
-					await checkpointSaveAndMark(cline)
-					await writeToFileTool.handle(cline, block as ToolUse<"write_to_file">, {
-						askApproval,
-						handleError,
-						pushToolResult,
-					})
+					await runWithHooks(cline, block as ToolUse<"write_to_file">, writeToFileTool, { checkpoint: true })
 					break
 				case "update_todo_list":
 					await updateTodoListTool.handle(cline, block as ToolUse<"update_todo_list">, {
