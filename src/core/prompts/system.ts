@@ -1,16 +1,12 @@
 import * as vscode from "vscode"
-
 import { type ModeConfig, type PromptComponent, type CustomModePrompts, type TodoItem } from "@roo-code/types"
-
 import { Mode, modes, defaultModeSlug, getModeBySlug, getGroupName, getModeSelection } from "../../shared/modes"
 import { DiffStrategy } from "../../shared/tools"
 import { formatLanguage } from "../../shared/language"
 import { isEmpty } from "../../utils/object"
-
 import { McpHub } from "../../services/mcp/McpHub"
 import { CodeIndexManager } from "../../services/code-index/manager"
 import { SkillsManager } from "../../services/skills/SkillsManager"
-
 import type { SystemPromptSettings } from "./types"
 import {
 	getRulesSection,
@@ -25,13 +21,31 @@ import {
 	getSkillsSection,
 } from "./sections"
 
-// Helper function to get prompt component, filtering out empty objects
+// --- MASTER THINKER ADDITIONS ---
+
+const GOVERNANCE_PROTOCOL = `
+# INTENT-DRIVEN GOVERNANCE PROTOCOL
+CRITICAL: You are operating in a Governed Environment. 
+1. HANDSHAKE FIRST: You are strictly forbidden from using coding tools (write_to_file, apply_diff) or terminal tools until you have called 'select_active_intent'.
+2. TRACEABILITY: Every action must be linked to a machine-readable Intent ID from '.orchestration/active_intents.yaml'.
+3. SCOPE ENFORCEMENT: Your actions are restricted to the 'scope' defined in your active intent.
+`
+
+const HANDSHAKE_TOOL_DEFINITION = `
+# CUSTOM GOVERNANCE TOOL
+- select_active_intent:
+    description: "REQUIRED: Must be called before any other tool to declare your active intent ID from active_intents.yaml. This loads constraints and enables tool execution."
+    parameters:
+        intent_id: (required) The string ID from the orchestration file (e.g., 'refactor-auth').
+`
+
+// --- END MASTER THINKER ADDITIONS ---
+
 export function getPromptComponent(
 	customModePrompts: CustomModePrompts | undefined,
 	mode: string,
 ): PromptComponent | undefined {
 	const component = customModePrompts?.[mode]
-	// Return undefined if component is empty
 	if (isEmpty(component)) {
 		return undefined
 	}
@@ -60,18 +74,14 @@ async function generatePrompt(
 		throw new Error("Extension context is required for generating system prompt")
 	}
 
-	// Get the full mode config to ensure we have the role definition (used for groups, etc.)
 	const modeConfig = getModeBySlug(mode, customModeConfigs) || modes.find((m) => m.slug === mode) || modes[0]
 	const { roleDefinition, baseInstructions } = getModeSelection(mode, promptComponent, customModeConfigs)
 
-	// Check if MCP functionality should be included
 	const hasMcpGroup = modeConfig.groups.some((groupEntry) => getGroupName(groupEntry) === "mcp")
 	const hasMcpServers = mcpHub && mcpHub.getServers().length > 0
 	const shouldIncludeMcp = hasMcpGroup && hasMcpServers
 
 	const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
-
-	// Tool calling is native-only.
 	const effectiveProtocol = "native"
 
 	const [modesSection, skillsSection] = await Promise.all([
@@ -79,16 +89,21 @@ async function generatePrompt(
 		getSkillsSection(skillsManager, mode as string),
 	])
 
-	// Tools catalog is not included in the system prompt.
 	const toolsCatalog = ""
 
-	const basePrompt = `${roleDefinition}
+	// WE INJECT THE GOVERNANCE PROTOCOL AT THE VERY TOP OF THE BASE PROMPT
+	const basePrompt = `
+${GOVERNANCE_PROTOCOL}
+
+${roleDefinition}
+
+${HANDSHAKE_TOOL_DEFINITION}
 
 ${markdownFormattingSection()}
 
 ${getSharedToolUseSection()}${toolsCatalog}
 
-	${getToolUseGuidelinesSection()}
+    ${getToolUseGuidelinesSection()}
 
 ${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined)}
 
@@ -131,10 +146,7 @@ export const SYSTEM_PROMPT = async (
 		throw new Error("Extension context is required for generating system prompt")
 	}
 
-	// Check if it's a custom mode
 	const promptComponent = getPromptComponent(customModePrompts, mode)
-
-	// Get full mode config from custom modes or fall back to built-in modes
 	const currentMode = getModeBySlug(mode, customModes) || modes.find((m) => m.slug === mode) || modes[0]
 
 	return generatePrompt(

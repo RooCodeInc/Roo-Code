@@ -1,5 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
+import { preToolHook } from "../hooks/preToolHook"
+import { postToolHook } from "../hooks/postToolHook"
 
 import { isRetiredProvider, type ProviderSettings, type ModelInfo } from "@roo-code/types"
 

@@ -11,11 +11,21 @@ import {
 
 import { addCustomInstructions } from "../core/prompts/sections/custom-instructions"
 
-import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS } from "./tools"
+// Import the base tool definitions to extend them
+import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS as BASE_TOOLS } from "./tools"
+
+/**
+ * MASTER THINKER UPGRADE:
+ * We append 'select_active_intent' to the list of tools available in EVERY mode.
+ * This ensures the governance handshake is always valid and reachable.
+ */
+export const ALWAYS_AVAILABLE_TOOLS = [...BASE_TOOLS, "select_active_intent"]
 
 export type Mode = string
 
-// Helper to extract group name regardless of format
+/**
+ * Helper to extract group name regardless of format
+ */
 export function getGroupName(group: GroupEntry): ToolGroup {
 	if (typeof group === "string") {
 		return group
@@ -24,18 +34,20 @@ export function getGroupName(group: GroupEntry): ToolGroup {
 	return group[0]
 }
 
-// Helper to get all tools for a mode
+/**
+ * Helper to get all tools for a mode, now including the governance tool
+ */
 export function getToolsForMode(groups: readonly GroupEntry[]): string[] {
 	const tools = new Set<string>()
 
-	// Add tools from each group (excluding customTools which are opt-in only)
+	// Add tools from each group
 	groups.forEach((group) => {
 		const groupName = getGroupName(group)
 		const groupConfig = TOOL_GROUPS[groupName]
 		groupConfig.tools.forEach((tool: string) => tools.add(tool))
 	})
 
-	// Always add required tools
+	// Add required tools, including our new governance tool
 	ALWAYS_AVAILABLE_TOOLS.forEach((tool) => tools.add(tool))
 
 	return Array.from(tools)
@@ -49,12 +61,10 @@ export const defaultModeSlug = modes[0].slug
 
 // Helper functions
 export function getModeBySlug(slug: string, customModes?: ModeConfig[]): ModeConfig | undefined {
-	// Check custom modes first
 	const customMode = customModes?.find((mode) => mode.slug === slug)
 	if (customMode) {
 		return customMode
 	}
-	// Then check built-in modes
 	return modes.find((mode) => mode.slug === slug)
 }
 
@@ -72,17 +82,13 @@ export function getAllModes(customModes?: ModeConfig[]): ModeConfig[] {
 		return [...modes]
 	}
 
-	// Start with built-in modes
 	const allModes = [...modes]
 
-	// Process custom modes
 	customModes.forEach((customMode) => {
 		const index = allModes.findIndex((mode) => mode.slug === customMode.slug)
 		if (index !== -1) {
-			// Override existing mode
 			allModes[index] = customMode
 		} else {
-			// Add new mode
 			allModes.push(customMode)
 		}
 	})
@@ -90,29 +96,18 @@ export function getAllModes(customModes?: ModeConfig[]): ModeConfig[] {
 	return allModes
 }
 
-// Check if a mode is custom or an override
 export function isCustomMode(slug: string, customModes?: ModeConfig[]): boolean {
 	return !!customModes?.some((mode) => mode.slug === slug)
 }
 
-/**
- * Find a mode by its slug, don't fall back to built-in modes
- */
 export function findModeBySlug(slug: string, modes: readonly ModeConfig[] | undefined): ModeConfig | undefined {
 	return modes?.find((mode) => mode.slug === slug)
 }
 
-/**
- * Get the mode selection based on the provided mode slug, prompt component, and custom modes.
- * If a custom mode is found, it takes precedence over the built-in modes.
- * If no custom mode is found, the built-in mode is used with partial merging from promptComponent.
- * If neither is found, the default mode is used.
- */
 export function getModeSelection(mode: string, promptComponent?: PromptComponent, customModes?: ModeConfig[]) {
 	const customMode = findModeBySlug(mode, customModes)
 	const builtInMode = findModeBySlug(mode, modes)
 
-	// If we have a custom mode, use it entirely
 	if (customMode) {
 		return {
 			roleDefinition: customMode.roleDefinition || "",
@@ -121,8 +116,7 @@ export function getModeSelection(mode: string, promptComponent?: PromptComponent
 		}
 	}
 
-	// Otherwise, use built-in mode as base and merge with promptComponent
-	const baseMode = builtInMode || modes[0] // fallback to default mode
+	const baseMode = builtInMode || modes[0]
 
 	return {
 		roleDefinition: promptComponent?.roleDefinition || baseMode.roleDefinition || "",
@@ -168,7 +162,6 @@ export async function getAllModesWithPrompts(context: vscode.ExtensionContext): 
 		roleDefinition: customModePrompts[mode.slug]?.roleDefinition ?? mode.roleDefinition,
 		whenToUse: customModePrompts[mode.slug]?.whenToUse ?? mode.whenToUse,
 		customInstructions: customModePrompts[mode.slug]?.customInstructions ?? mode.customInstructions,
-		// description is not overridable via customModePrompts, so we keep the original
 	}))
 }
 
@@ -183,18 +176,13 @@ export async function getFullModeDetails(
 		language?: string
 	},
 ): Promise<ModeConfig> {
-	// First get the base mode config from custom modes or built-in modes
 	const baseMode = getModeBySlug(modeSlug, customModes) || modes.find((m) => m.slug === modeSlug) || modes[0]
-
-	// Check for any prompt component overrides
 	const promptComponent = customModePrompts?.[modeSlug]
 
-	// Get the base custom instructions
 	const baseCustomInstructions = promptComponent?.customInstructions || baseMode.customInstructions || ""
 	const baseWhenToUse = promptComponent?.whenToUse || baseMode.whenToUse || ""
 	const baseDescription = promptComponent?.description || baseMode.description || ""
 
-	// If we have cwd, load and combine all custom instructions
 	let fullCustomInstructions = baseCustomInstructions
 	if (options?.cwd) {
 		fullCustomInstructions = await addCustomInstructions(
@@ -206,7 +194,6 @@ export async function getFullModeDetails(
 		)
 	}
 
-	// Return mode with any overrides applied
 	return {
 		...baseMode,
 		roleDefinition: promptComponent?.roleDefinition || baseMode.roleDefinition,
