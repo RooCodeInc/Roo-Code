@@ -215,6 +215,22 @@ describe("ExtensionHost", () => {
 				)
 				expect(updateSettingsCall).toBeDefined()
 			})
+
+			it("should skip updateSettings message when skipInitialSettingsSync is enabled", () => {
+				const host = createTestHost({ skipInitialSettingsSync: true })
+				const emitSpy = vi.spyOn(host, "emit")
+
+				host.markWebviewReady()
+
+				const updateSettingsCall = emitSpy.mock.calls.find(
+					(call) =>
+						call[0] === "webviewMessage" &&
+						typeof call[1] === "object" &&
+						call[1] !== null &&
+						(call[1] as WebviewMessage).type === "updateSettings",
+				)
+				expect(updateSettingsCall).toBeUndefined()
+			})
 		})
 	})
 

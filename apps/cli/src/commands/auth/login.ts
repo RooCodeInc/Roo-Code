@@ -3,18 +3,38 @@ import { randomBytes } from "crypto"
 import net from "net"
 import { exec } from "child_process"
 
+import type { SupportedProvider } from "@/types/index.js"
 import { AUTH_BASE_URL } from "@/types/index.js"
 import { saveToken } from "@/lib/storage/index.js"
+
+import { loginWithOpenAiCodex } from "./openai-codex-auth.js"
+
+type AuthProvider = "roo" | "openai-codex"
+
+function resolveAuthProvider(provider: SupportedProvider | undefined): AuthProvider | null {
+	if (!provider || provider === "roo") {
+		return "roo"
+	}
+
+	if (provider === "openai-codex") {
+		return "openai-codex"
+	}
+
+	return null
+}
 
 export interface LoginOptions {
 	timeout?: number
 	verbose?: boolean
+	provider?: SupportedProvider
+	workspace?: string
+	extension?: string
 }
 
 export type LoginResult =
 	| {
 			success: true
-			token: string
+			token?: string
 	  }
 	| {
 			success: false
@@ -23,7 +43,34 @@ export type LoginResult =
 
 const LOCALHOST = "127.0.0.1"
 
-export async function login({ timeout = 5 * 60 * 1000, verbose = false }: LoginOptions = {}): Promise<LoginResult> {
+export async function login(options: LoginOptions = {}): Promise<LoginResult> {
+	const { timeout = 5 * 60 * 1000, verbose = false, provider, workspace, extension } = options
+	const authProvider = resolveAuthProvider(provider)
+
+	if (!authProvider) {
+		const error = `Unsupported auth provider: ${provider}. Use roo or openai-codex.`
+		console.error(`[CLI] ${error}`)
+		return { success: false, error }
+	}
+
+	if (authProvider === "openai-codex") {
+		const result = await loginWithOpenAiCodex({
+			workspace,
+			extension,
+			debug: verbose,
+			timeoutMs: timeout,
+		})
+
+		if (result.success) {
+			console.log("✓ Successfully authenticated with OpenAI Codex")
+			return { success: true }
+		}
+
+		const error = result.reason ?? "Unknown OpenAI Codex authentication error"
+		console.error(`✗ OpenAI Codex authentication failed: ${error}`)
+		return { success: false, error }
+	}
+
 	const state = randomBytes(16).toString("hex")
 	const port = await getAvailablePort()
 	const host = `http://${LOCALHOST}:${port}`

@@ -1,8 +1,28 @@
+import type { SupportedProvider } from "@/types/index.js"
 import { loadToken, loadCredentials, getCredentialsPath } from "@/lib/storage/index.js"
 import { isTokenExpired, isTokenValid, getTokenExpirationDate } from "@/lib/auth/index.js"
 
+import { statusOpenAiCodex } from "./openai-codex-auth.js"
+
+type AuthProvider = "roo" | "openai-codex"
+
+function resolveAuthProvider(provider: SupportedProvider | undefined): AuthProvider | null {
+	if (!provider || provider === "roo") {
+		return "roo"
+	}
+
+	if (provider === "openai-codex") {
+		return "openai-codex"
+	}
+
+	return null
+}
+
 export interface StatusOptions {
 	verbose?: boolean
+	provider?: SupportedProvider
+	workspace?: string
+	extension?: string
 }
 
 export interface StatusResult {
@@ -16,7 +36,34 @@ export interface StatusResult {
 }
 
 export async function status(options: StatusOptions = {}): Promise<StatusResult> {
-	const { verbose = false } = options
+	const { verbose = false, provider, workspace, extension } = options
+	const authProvider = resolveAuthProvider(provider)
+
+	if (!authProvider) {
+		console.error(`[CLI] Unsupported auth provider: ${provider}. Use roo or openai-codex.`)
+		return { authenticated: false }
+	}
+
+	if (authProvider === "openai-codex") {
+		const codexStatus = await statusOpenAiCodex({
+			workspace,
+			extension,
+			debug: verbose,
+		})
+
+		if (codexStatus.authenticated) {
+			console.log("✓ Authenticated with OpenAI Codex")
+			return { authenticated: true }
+		}
+
+		console.log("✗ Not authenticated with OpenAI Codex")
+		console.log("")
+		console.log("Run: roo auth login --provider openai-codex")
+		if (codexStatus.reason && verbose) {
+			console.log(`Reason: ${codexStatus.reason}`)
+		}
+		return { authenticated: false }
+	}
 
 	const token = await loadToken()
 

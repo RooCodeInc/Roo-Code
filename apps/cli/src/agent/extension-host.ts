@@ -93,6 +93,11 @@ export interface ExtensionHostOptions {
 	 * running in an integration test and we want to see the output.
 	 */
 	integrationTest?: boolean
+	/**
+	 * When true, skip sending initial settings into extension runtime state.
+	 * Useful for auth/status utility flows that should not mutate persisted settings.
+	 */
+	skipInitialSettingsSync?: boolean
 }
 
 interface ExtensionModule {
@@ -429,12 +434,14 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 	public markWebviewReady(): void {
 		this.isReady = true
 
-		// Apply CLI settings to the runtime config and context proxy BEFORE
-		// sending webviewDidLaunch. This prevents a race condition where the
-		// webviewDidLaunch handler's first-time init sync reads default state
-		// (apiProvider: "anthropic") instead of the CLI-provided settings.
-		setRuntimeConfigValues("roo-cline", this.initialSettings as Record<string, unknown>)
-		this.sendToExtension({ type: "updateSettings", updatedSettings: this.initialSettings })
+		if (!this.options.skipInitialSettingsSync) {
+			// Apply CLI settings to the runtime config and context proxy BEFORE
+			// sending webviewDidLaunch. This prevents a race condition where the
+			// webviewDidLaunch handler's first-time init sync reads default state
+			// (apiProvider: "anthropic") instead of the CLI-provided settings.
+			setRuntimeConfigValues("roo-cline", this.initialSettings as Record<string, unknown>)
+			this.sendToExtension({ type: "updateSettings", updatedSettings: this.initialSettings })
+		}
 
 		// Now trigger extension initialization. The context proxy should already
 		// have CLI-provided values when the webviewDidLaunch handler runs.
