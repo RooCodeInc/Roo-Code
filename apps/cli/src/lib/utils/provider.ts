@@ -2,9 +2,31 @@ import { RooCodeSettings } from "@roo-code/types"
 
 import type { SupportedProvider } from "@/types/index.js"
 
+export type ProviderAuthMode = "api-key" | "oauth" | "roo-token"
+
+export function getProviderAuthMode(provider: SupportedProvider): ProviderAuthMode {
+	switch (provider) {
+		case "openai-codex":
+			return "oauth"
+		case "roo":
+			return "roo-token"
+		default:
+			return "api-key"
+	}
+}
+
+export function providerRequiresApiKey(provider: SupportedProvider): boolean {
+	return getProviderAuthMode(provider) === "api-key"
+}
+
+export function providerSupportsOAuth(provider: SupportedProvider): boolean {
+	return getProviderAuthMode(provider) === "oauth"
+}
+
 const envVarMap: Record<SupportedProvider, string> = {
 	anthropic: "ANTHROPIC_API_KEY",
 	"openai-native": "OPENAI_API_KEY",
+	"openai-codex": "OPENAI_API_KEY",
 	gemini: "GOOGLE_API_KEY",
 	openrouter: "OPENROUTER_API_KEY",
 	"vercel-ai-gateway": "VERCEL_AI_GATEWAY_API_KEY",
@@ -34,6 +56,9 @@ export function getProviderSettings(
 			break
 		case "openai-native":
 			if (apiKey) config.openAiNativeApiKey = apiKey
+			if (model) config.apiModelId = model
+			break
+		case "openai-codex":
 			if (model) config.apiModelId = model
 			break
 		case "gemini":
