@@ -285,6 +285,60 @@ describe("ExtensionHost", () => {
 		})
 	})
 
+	describe("ensureOpenAiCodexAuthenticated", () => {
+		it("should return success for non-openai-codex providers", async () => {
+			const host = createTestHost({ provider: "openrouter" })
+
+			await expect(host.ensureOpenAiCodexAuthenticated()).resolves.toEqual({ success: true })
+		})
+
+		it("should return success immediately when already authenticated", async () => {
+			const host = createTestHost({ provider: "openai-codex" })
+			host.markWebviewReady()
+
+			host.client.handleMessage({
+				type: "state",
+				state: { clineMessages: [], openAiCodexIsAuthenticated: true },
+			} as ExtensionMessage)
+
+			const emitSpy = vi.spyOn(host, "emit")
+
+			await expect(host.ensureOpenAiCodexAuthenticated()).resolves.toEqual({ success: true })
+			expect(emitSpy).not.toHaveBeenCalledWith("webviewMessage", { type: "openAiCodexSignIn" })
+		})
+
+		it("should trigger sign-in and resolve when authentication state becomes true", async () => {
+			const host = createTestHost({ provider: "openai-codex" })
+			host.markWebviewReady()
+			const emitSpy = vi.spyOn(host, "emit")
+			emitSpy.mockClear()
+
+			const authPromise = host.ensureOpenAiCodexAuthenticated({ timeoutMs: 500 })
+
+			setTimeout(() => {
+				host.emit("extensionWebviewMessage", {
+					type: "state",
+					state: { openAiCodexIsAuthenticated: true },
+				} as ExtensionMessage)
+			}, 10)
+
+			await expect(authPromise).resolves.toEqual({ success: true })
+			expect(emitSpy).toHaveBeenCalledWith("webviewMessage", { type: "openAiCodexSignIn" })
+		})
+
+		it("should return timeout failure when authentication does not complete", async () => {
+			const host = createTestHost({ provider: "openai-codex" })
+			host.markWebviewReady()
+
+			const result = await host.ensureOpenAiCodexAuthenticated({ timeoutMs: 10 })
+
+			expect(result.success).toBe(false)
+			if (!result.success) {
+				expect(result.reason).toContain("timed out")
+			}
+		})
+	})
+
 	describe("quiet mode", () => {
 		describe("setupQuietMode", () => {
 			it("should not modify console when integrationTest is true", () => {
@@ -483,6 +537,41 @@ describe("ExtensionHost", () => {
 			setTimeout(() => client.getEmitter().emit("taskCompleted", taskCompletedEvent), 10)
 
 			await expect(taskPromise).resolves.toBeUndefined()
+		})
+
+		it("should ensure openai-codex authentication before starting a task", async () => {
+			const host = createTestHost({ provider: "openai-codex" })
+			host.markWebviewReady()
+
+			const ensureAuthSpy = vi.spyOn(host, "ensureOpenAiCodexAuthenticated").mockResolvedValue({ success: true })
+			const emitSpy = vi.spyOn(host, "emit")
+			const client = getPrivate(host, "client") as ExtensionClient
+
+			const taskPromise = host.runTask("test prompt")
+
+			const taskCompletedEvent = {
+				success: true,
+				stateInfo: {
+					state: AgentLoopState.IDLE,
+					isWaitingForInput: false,
+					isRunning: false,
+					isStreaming: false,
+					requiredAction: "start_task" as const,
+					description: "Task completed",
+				},
+			}
+			setTimeout(() => client.getEmitter().emit("taskCompleted", taskCompletedEvent), 10)
+
+			await taskPromise
+
+			expect(ensureAuthSpy).toHaveBeenCalled()
+			const newTaskCallIndex = emitSpy.mock.calls.findIndex(
+				(call) => call[0] === "webviewMessage" && (call[1] as WebviewMessage)?.type === "newTask",
+			)
+			expect(newTaskCallIndex).toBeGreaterThanOrEqual(0)
+			const newTaskCallOrder = emitSpy.mock.invocationCallOrder[newTaskCallIndex]
+			expect(newTaskCallOrder).toBeDefined()
+			expect(ensureAuthSpy.mock.invocationCallOrder[0]).toBeLessThan(newTaskCallOrder!)
 		})
 	})
 

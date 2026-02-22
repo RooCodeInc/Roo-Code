@@ -14,8 +14,15 @@ function createMessage(overrides: Partial<ClineMessage>): ClineMessage {
 	return { ts: Date.now() + Math.random() * 1000, type: "say", ...overrides }
 }
 
-function createStateMessage(messages: ClineMessage[], mode?: string): ExtensionMessage {
-	return { type: "state", state: { clineMessages: messages, mode } } as ExtensionMessage
+function createStateMessage(
+	messages: ClineMessage[],
+	mode?: string,
+	openAiCodexIsAuthenticated?: boolean,
+): ExtensionMessage {
+	return {
+		type: "state",
+		state: { clineMessages: messages, mode, openAiCodexIsAuthenticated },
+	} as ExtensionMessage
 }
 
 describe("detectAgentState", () => {
@@ -546,6 +553,28 @@ describe("ExtensionClient", () => {
 			client.clearTask()
 			// Mode should be preserved after clear
 			expect(client.getCurrentMode()).toBe("architect")
+		})
+	})
+
+	describe("Provider auth state", () => {
+		it("should track OpenAI Codex auth state from extension state messages", () => {
+			const { client } = createMockClient()
+
+			client.handleMessage(createStateMessage([], "code", true))
+			expect(client.getProviderAuthState().openAiCodexIsAuthenticated).toBe(true)
+
+			client.handleMessage(createStateMessage([], "code", false))
+			expect(client.getProviderAuthState().openAiCodexIsAuthenticated).toBe(false)
+		})
+
+		it("should clear provider auth state on reset", () => {
+			const { client } = createMockClient()
+
+			client.handleMessage(createStateMessage([], "code", true))
+			expect(client.getProviderAuthState().openAiCodexIsAuthenticated).toBe(true)
+
+			client.reset()
+			expect(client.getProviderAuthState().openAiCodexIsAuthenticated).toBeUndefined()
 		})
 	})
 })
