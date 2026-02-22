@@ -2300,7 +2300,12 @@ export const webviewMessageHandler = async (
 				const authUrl = openAiCodexOAuthManager.startAuthorizationFlow()
 
 				// Open the authorization URL in the browser
-				await vscode.env.openExternal(vscode.Uri.parse(authUrl))
+				const opened = await vscode.env.openExternal(vscode.Uri.parse(authUrl))
+				if (!opened) {
+					vscode.window.showErrorMessage(
+						`Could not open browser automatically. Open this URL manually to continue OpenAI Codex sign-in: ${authUrl}`,
+					)
+				}
 
 				// Wait for the callback in a separate promise (non-blocking)
 				openAiCodexOAuthManager
