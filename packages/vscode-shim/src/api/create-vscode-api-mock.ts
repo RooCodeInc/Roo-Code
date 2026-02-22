@@ -2,7 +2,7 @@
  * Main factory function for creating VSCode API mock
  */
 
-import { exec } from "child_process"
+import { execFile } from "child_process"
 
 import { machineIdSync } from "../utils/machine-id.js"
 import { logs } from "../utils/logger.js"
@@ -89,16 +89,15 @@ export function createVSCodeAPIMock(
 	options?: VSCodeAPIMockOptions,
 ) {
 	const openExternalUrl = async (url: string): Promise<boolean> => {
-		const escapedUrl = url.replace(/"/g, '\\"')
-		const command =
+		const { command, args } =
 			process.platform === "darwin"
-				? `open "${escapedUrl}"`
+				? { command: "open", args: [url] }
 				: process.platform === "win32"
-					? `start "" "${escapedUrl}"`
-					: `xdg-open "${escapedUrl}"`
+					? { command: "explorer.exe", args: [url] }
+					: { command: "xdg-open", args: [url] }
 
 		return await new Promise<boolean>((resolve) => {
-			exec(command, (error) => {
+			execFile(command, args, { windowsHide: true }, (error) => {
 				if (error) {
 					logs.warn(`Failed to open external URL (${command}): ${error.message}`, "VSCode.Env")
 					resolve(false)
