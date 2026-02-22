@@ -89,51 +89,63 @@ authCommand
 	.command("login")
 	.description("Authenticate with Roo Code Cloud or OpenAI Codex")
 	.option("-v, --verbose", "Enable verbose output", false)
-	.option("--provider <provider>", "Auth provider (roo or openai-codex)", "roo")
+	.option("--provider <provider>", "Auth provider (roo or openai-codex)")
 	.option("-w, --workspace <path>", "Workspace directory path (defaults to current working directory)")
 	.option("-e, --extension <path>", "Path to the extension bundle directory")
-	.action(async (options: { verbose: boolean; provider: string; workspace?: string; extension?: string }) => {
-		const result = await login({
-			verbose: options.verbose,
-			provider: options.provider as SupportedProvider,
-			workspace: options.workspace,
-			extension: options.extension,
-		})
-		process.exit(result.success ? 0 : 1)
-	})
+	.action(
+		async (options: { verbose: boolean; provider?: string; workspace?: string; extension?: string }, command) => {
+			const provider = (options.provider ?? command.optsWithGlobals().provider ?? "roo") as SupportedProvider
+
+			const result = await login({
+				verbose: options.verbose,
+				provider,
+				workspace: options.workspace,
+				extension: options.extension,
+			})
+			process.exit(result.success ? 0 : 1)
+		},
+	)
 
 authCommand
 	.command("logout")
 	.description("Log out from Roo Code Cloud or OpenAI Codex")
 	.option("-v, --verbose", "Enable verbose output", false)
-	.option("--provider <provider>", "Auth provider (roo or openai-codex)", "roo")
+	.option("--provider <provider>", "Auth provider (roo or openai-codex)")
 	.option("-w, --workspace <path>", "Workspace directory path (defaults to current working directory)")
 	.option("-e, --extension <path>", "Path to the extension bundle directory")
-	.action(async (options: { verbose: boolean; provider: string; workspace?: string; extension?: string }) => {
-		const result = await logout({
-			verbose: options.verbose,
-			provider: options.provider as SupportedProvider,
-			workspace: options.workspace,
-			extension: options.extension,
-		})
-		process.exit(result.success ? 0 : 1)
-	})
+	.action(
+		async (options: { verbose: boolean; provider?: string; workspace?: string; extension?: string }, command) => {
+			const provider = (options.provider ?? command.optsWithGlobals().provider ?? "roo") as SupportedProvider
+
+			const result = await logout({
+				verbose: options.verbose,
+				provider,
+				workspace: options.workspace,
+				extension: options.extension,
+			})
+			process.exit(result.success ? 0 : 1)
+		},
+	)
 
 authCommand
 	.command("status")
 	.description("Show authentication status")
 	.option("-v, --verbose", "Enable verbose output", false)
-	.option("--provider <provider>", "Auth provider (roo or openai-codex)", "roo")
+	.option("--provider <provider>", "Auth provider (roo or openai-codex)")
 	.option("-w, --workspace <path>", "Workspace directory path (defaults to current working directory)")
 	.option("-e, --extension <path>", "Path to the extension bundle directory")
-	.action(async (options: { verbose: boolean; provider: string; workspace?: string; extension?: string }) => {
-		const result = await status({
-			verbose: options.verbose,
-			provider: options.provider as SupportedProvider,
-			workspace: options.workspace,
-			extension: options.extension,
-		})
-		process.exit(result.authenticated ? 0 : 1)
-	})
+	.action(
+		async (options: { verbose: boolean; provider?: string; workspace?: string; extension?: string }, command) => {
+			const provider = (options.provider ?? command.optsWithGlobals().provider ?? "roo") as SupportedProvider
+
+			const result = await status({
+				verbose: options.verbose,
+				provider,
+				workspace: options.workspace,
+				extension: options.extension,
+			})
+			process.exit(result.authenticated ? 0 : 1)
+		},
+	)
 
 program.parse()
