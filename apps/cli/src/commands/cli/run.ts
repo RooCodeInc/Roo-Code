@@ -178,9 +178,17 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		let { onboardingProviderChoice } = settings
 
 		if (!onboardingProviderChoice) {
-			const { choice, token } = await runOnboarding()
+			const { choice, token, provider, apiKey } = await runOnboarding()
 			onboardingProviderChoice = choice
 			rooToken = token ?? null
+
+			if (provider) {
+				extensionHostOptions.provider = provider
+			}
+
+			if (apiKey) {
+				extensionHostOptions.apiKey = apiKey
+			}
 		}
 
 		if (onboardingProviderChoice === OnboardingProviderChoice.Roo) {
