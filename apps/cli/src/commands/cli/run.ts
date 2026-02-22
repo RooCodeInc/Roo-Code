@@ -114,7 +114,10 @@ export async function assertAuthReady(params: {
 		}
 	} else {
 		console.error(`[CLI] Error: No API key provided. Use --api-key or set the appropriate environment variable.`)
-		console.error(`[CLI] For ${provider}, set ${getEnvVarName(provider)}`)
+		const envVarName = getEnvVarName(provider)
+		if (envVarName) {
+			console.error(`[CLI] For ${provider}, set ${envVarName}`)
+		}
 	}
 
 	process.exit(1)

@@ -196,11 +196,11 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 
 ## Auth Commands
 
-| Command                          | Description    |
-| -------------------------------- | -------------- | ---------------------------------------------------------------- |
-| `roo auth login [--provider roo  | openai-codex]` | Authenticate with Roo Code Cloud or OpenAI Codex OAuth           |
-| `roo auth logout [--provider roo | openai-codex]` | Sign out from Roo Code Cloud token or OpenAI Codex OAuth session |
-| `roo auth status [--provider roo | openai-codex]` | Show authentication status for Roo Code Cloud or OpenAI Codex    |
+| Command                                              | Description                                                      |
+| ---------------------------------------------------- | ---------------------------------------------------------------- |
+| `roo auth login [--provider <roo-or-openai-codex>]`  | Authenticate with Roo Code Cloud or OpenAI Codex OAuth           |
+| `roo auth logout [--provider <roo-or-openai-codex>]` | Sign out from Roo Code Cloud token or OpenAI Codex OAuth session |
+| `roo auth status [--provider <roo-or-openai-codex>]` | Show authentication status for Roo Code Cloud or OpenAI Codex    |
 
 ## Environment Variables
 
@@ -215,6 +215,8 @@ The CLI will look for API keys in environment variables if not provided via `--a
 | openrouter        | `OPENROUTER_API_KEY`                |
 | gemini            | `GOOGLE_API_KEY`                    |
 | vercel-ai-gateway | `VERCEL_AI_GATEWAY_API_KEY`         |
+
+`openai-codex` uses OAuth session auth and does not read `OPENAI_API_KEY`; that variable is for `openai-native`.
 
 **Authentication Environment Variables:**
 

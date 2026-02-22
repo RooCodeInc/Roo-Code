@@ -74,9 +74,9 @@ describe("getApiKeyFromEnv", () => {
 		expect(getApiKeyFromEnv("openai-native")).toBe("test-openai-key")
 	})
 
-	it("should return API key from environment variable for openai-codex", () => {
+	it("should not read API key from environment variable for openai-codex", () => {
 		process.env.OPENAI_API_KEY = "test-openai-codex-key"
-		expect(getApiKeyFromEnv("openai-codex")).toBe("test-openai-codex-key")
+		expect(getApiKeyFromEnv("openai-codex")).toBeUndefined()
 	})
 
 	it("should return undefined when API key is not set", () => {

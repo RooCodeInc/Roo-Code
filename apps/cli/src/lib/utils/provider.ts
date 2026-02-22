@@ -23,22 +23,24 @@ export function providerSupportsOAuth(provider: SupportedProvider): boolean {
 	return getProviderAuthMode(provider) === "oauth"
 }
 
-const envVarMap: Record<SupportedProvider, string> = {
+const envVarMap: Partial<Record<SupportedProvider, string>> = {
 	anthropic: "ANTHROPIC_API_KEY",
 	"openai-native": "OPENAI_API_KEY",
-	"openai-codex": "OPENAI_API_KEY",
 	gemini: "GOOGLE_API_KEY",
 	openrouter: "OPENROUTER_API_KEY",
 	"vercel-ai-gateway": "VERCEL_AI_GATEWAY_API_KEY",
 	roo: "ROO_API_KEY",
 }
 
-export function getEnvVarName(provider: SupportedProvider): string {
+export function getEnvVarName(provider: SupportedProvider): string | undefined {
 	return envVarMap[provider]
 }
 
 export function getApiKeyFromEnv(provider: SupportedProvider): string | undefined {
 	const envVar = getEnvVarName(provider)
+	if (!envVar) {
+		return undefined
+	}
 	return process.env[envVar]
 }
 
