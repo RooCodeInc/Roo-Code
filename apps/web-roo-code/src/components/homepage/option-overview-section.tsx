@@ -8,7 +8,10 @@ export function OptionOverviewSection() {
 			<div className="container px-4 mx-auto sm:px-6 lg:px-8">
 				<div className="text-center mb-16">
 					<h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-						Different form factors for different ways of working.
+						Different form factors for{" "}
+						<span className="bg-gradient-to-r from-blue-600 to-fuchsia-600 dark:from-blue-400 dark:to-fuchsia-400 bg-clip-text text-transparent">
+							different ways of working.
+						</span>
 					</h2>
 					<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
 						Roo&apos;s always there to help you get stuff done.
@@ -16,7 +19,7 @@ export function OptionOverviewSection() {
 				</div>
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl mx-auto relative z-1">
 					<div className="absolute left-1/2 top-[140px] -translate-x-1/2 z-1">
-						<div className="rounded-full size-[300px] border-[10px] border-dashed animate-[spin_10s_linear_infinite] blur-[5px]" />
+						<div className="rounded-full size-[300px] border-[10px] border-dashed border-violet-400/30 dark:border-violet-500/20 animate-[spin_10s_linear_infinite] blur-[5px]" />
 					</div>
 
 					<div className="rounded-3xl bg-card outline outline-border/50 hover:outline-8 shadow-xl p-8 h-full group transition-all hover:shadow-2xl hover:shadow-blue-800/30 relative">

@@ -21,11 +21,13 @@ export default async function Home() {
 			<StructuredData />
 			<section className="relative flex flex-col items-center overflow-hidden pt-20 pb-12 md:pt-32 md:pb-16">
 				<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1200px] -translate-x-1/2 z-1">
-					<div className="absolute left-1/2 top-1/2 h-[400px] w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/10 dark:bg-violet-700/20 blur-[140px]" />
+					<div className="absolute left-1/2 top-1/2 h-[400px] w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-r from-violet-500/15 via-blue-500/15 to-fuchsia-500/15 dark:from-violet-700/25 dark:via-blue-700/25 dark:to-fuchsia-700/25 blur-[140px]" />
 				</div>
 				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
 					<h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground max-w-4xl mb-6">
-						Your AI Software Engineering Team is here.
+						<span className="bg-gradient-to-r from-violet-600 via-blue-600 to-fuchsia-600 dark:from-violet-400 dark:via-blue-400 dark:to-fuchsia-400 bg-clip-text text-transparent">
+							Your AI Software Engineering Team is here.
+						</span>
 						<br />
 						<span className="text-muted-foreground">Interactive in the IDE, autonomous in the cloud.</span>
 					</h1>
@@ -39,7 +41,9 @@ export default async function Home() {
 					</div>
 					<div className="flex flex-col sm:flex-row gap-4 mb-16">
 						<div className="flex flex-col items-center gap-2">
-							<Button size="xl" className="w-full">
+							<Button
+								size="xl"
+								className="w-full bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white shadow-lg shadow-blue-500/25">
 								<a
 									href={EXTERNAL_LINKS.MARKETPLACE}
 									target="_blank"
@@ -53,7 +57,9 @@ export default async function Home() {
 						</div>
 
 						<div className="flex flex-col items-center gap-2">
-							<Button size="xl" className="w-full">
+							<Button
+								size="xl"
+								className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-lg shadow-violet-500/25">
 								<a
 									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_HOME}
 									className="flex items-center justify-center">

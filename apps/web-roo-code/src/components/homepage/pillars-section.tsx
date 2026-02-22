@@ -47,12 +47,15 @@ export function PillarsSection() {
 	return (
 		<section className="py-24 bg-muted/30 relative">
 			<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1200px] -translate-x-1/2">
-				<div className="absolute left-1/2 top-1/2 h-[800px] w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/10 dark:bg-blue-700/20 blur-[140px]" />
+				<div className="absolute left-1/2 top-1/2 h-[800px] w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-blue-500/10 via-violet-500/10 to-fuchsia-500/10 dark:from-blue-700/20 dark:via-violet-700/20 dark:to-fuchsia-700/20 blur-[140px]" />
 			</div>
 			<div className="container px-4 mx-auto sm:px-6 lg:px-8">
 				<div className="text-center mb-16">
 					<h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-						To trust an agent, you have to do it on your own terms.
+						To trust an agent, you have to do it on{" "}
+						<span className="bg-gradient-to-r from-blue-600 to-violet-600 dark:from-blue-400 dark:to-violet-400 bg-clip-text text-transparent">
+							your own terms.
+						</span>
 					</h2>
 					<p className="text-xl text-muted-foreground max-w-xl mx-auto">
 						Roo is designed from the ground up to give you the confidence to do ever more with AI.
@@ -61,9 +64,9 @@ export function PillarsSection() {
 
 				<div className="flex flex-col md:grid md:grid-cols-8 gap-8">
 					<div className="relative md:col-span-3 h-full">
-						<div className="rounded-2xl bg-card outline outline-border/50 hover:outline-8 shadow-lg p-8 h-full group transition-all hover:shadow-2xl">
-							<div className="absolute -right-3 -top-5 bg-card border shadow-md rounded-full p-3 transition-all  group-hover:-top-4  group-hover:-right-2 group-hover:scale-110 group-hover:shadow-xl">
-								<Brain className="size-8 text-violet-600 shrink-0 mt-1" strokeWidth={1.5} />
+						<div className="rounded-2xl bg-card outline outline-border/50 hover:outline-8 shadow-lg p-8 h-full group transition-all hover:shadow-2xl hover:shadow-violet-500/10">
+							<div className="absolute -right-3 -top-5 bg-gradient-to-br from-violet-500 to-purple-600 border border-violet-400/30 shadow-md shadow-violet-500/20 rounded-full p-3 transition-all  group-hover:-top-4  group-hover:-right-2 group-hover:scale-110 group-hover:shadow-xl group-hover:shadow-violet-500/30">
+								<Brain className="size-8 text-white shrink-0 mt-1" strokeWidth={1.5} />
 							</div>
 							<div>
 								<h3 className="text-2xl font-bold mb-1">Model-agnostic by design</h3>
@@ -104,9 +107,9 @@ export function PillarsSection() {
 					</div>
 
 					<div className="relative col-span-5 h-full">
-						<div className="rounded-2xl bg-card outline outline-border/50 hover:outline-8 shadow-lg p-8 h-full group transition-all hover:shadow-2xl">
-							<div className="absolute -right-3 -top-5 bg-card border shadow-lg rounded-full p-3 transition-all  group-hover:-top-4  group-hover:-right-2 group-hover:scale-110 group-hover:shadow-xl">
-								<Users2 className="size-8 text-violet-600 shrink-0 mt-1" strokeWidth={1.5} />
+						<div className="rounded-2xl bg-card outline outline-border/50 hover:outline-8 shadow-lg p-8 h-full group transition-all hover:shadow-2xl hover:shadow-blue-500/10">
+							<div className="absolute -right-3 -top-5 bg-gradient-to-br from-blue-500 to-cyan-600 border border-blue-400/30 shadow-md shadow-blue-500/20 rounded-full p-3 transition-all  group-hover:-top-4  group-hover:-right-2 group-hover:scale-110 group-hover:shadow-xl group-hover:shadow-blue-500/30">
+								<Users2 className="size-8 text-white shrink-0 mt-1" strokeWidth={1.5} />
 							</div>
 							<div>
 								<h3 className="text-2xl font-bold mb-1">Role-specific Modes</h3>
@@ -152,9 +155,9 @@ export function PillarsSection() {
 					</div>
 
 					<div className="relative col-span-4 h-full">
-						<div className="rounded-2xl bg-card outline outline-border/50 hover:outline-8 shadow-lg p-8 h-full group transition-all hover:shadow-2xl">
-							<div className="absolute -right-3 -top-5 bg-card border shadow-lg rounded-full p-3 transition-all  group-hover:-top-4  group-hover:-right-2 group-hover:scale-110 group-hover:shadow-xl">
-								<Keyboard className="size-8 text-violet-600 shrink-0 mt-1" strokeWidth={1.5} />
+						<div className="rounded-2xl bg-card outline outline-border/50 hover:outline-8 shadow-lg p-8 h-full group transition-all hover:shadow-2xl hover:shadow-amber-500/10">
+							<div className="absolute -right-3 -top-5 bg-gradient-to-br from-amber-500 to-orange-600 border border-amber-400/30 shadow-md shadow-amber-500/20 rounded-full p-3 transition-all  group-hover:-top-4  group-hover:-right-2 group-hover:scale-110 group-hover:shadow-xl group-hover:shadow-amber-500/30">
+								<Keyboard className="size-8 text-white shrink-0 mt-1" strokeWidth={1.5} />
 							</div>
 							<div>
 								<h3 className="text-2xl font-bold mb-1">Highly configurable</h3>
@@ -171,9 +174,9 @@ export function PillarsSection() {
 					</div>
 
 					<div className="relative col-span-4 h-full">
-						<div className="rounded-2xl bg-card outline outline-border/50 hover:outline-8 shadow-lg p-8 h-full group transition-all hover:shadow-2xl">
-							<div className="absolute -right-3 -top-5 bg-card border shadow-lg rounded-full p-3 transition-all  group-hover:-top-4  group-hover:-right-2 group-hover:scale-110 group-hover:shadow-xl">
-								<Shield className="size-8 text-violet-600 shrink-0 mt-1" strokeWidth={1.5} />
+						<div className="rounded-2xl bg-card outline outline-border/50 hover:outline-8 shadow-lg p-8 h-full group transition-all hover:shadow-2xl hover:shadow-emerald-500/10">
+							<div className="absolute -right-3 -top-5 bg-gradient-to-br from-emerald-500 to-teal-600 border border-emerald-400/30 shadow-md shadow-emerald-500/20 rounded-full p-3 transition-all  group-hover:-top-4  group-hover:-right-2 group-hover:scale-110 group-hover:shadow-xl group-hover:shadow-emerald-500/30">
+								<Shield className="size-8 text-white shrink-0 mt-1" strokeWidth={1.5} />
 							</div>
 							<div>
 								<h3 className="text-2xl font-bold mb-1">Secure and transparent</h3>

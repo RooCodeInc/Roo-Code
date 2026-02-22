@@ -253,7 +253,11 @@ export function FAQSection() {
 							duration: 0.6,
 							ease: [0.21, 0.45, 0.27, 0.9],
 						}}>
-						<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">Frequently Asked Questions</h2>
+						<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
+							<span className="bg-gradient-to-r from-blue-600 via-violet-600 to-fuchsia-600 dark:from-blue-400 dark:via-violet-400 dark:to-fuchsia-400 bg-clip-text text-transparent">
+								Frequently Asked Questions
+							</span>
+						</h2>
 						<p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
 							Everything you need to know about Roo Code and how it can transform your development
 							workflow.
@@ -274,7 +278,7 @@ export function FAQSection() {
 									delay: index * 0.1,
 									ease: [0.21, 0.45, 0.27, 0.9],
 								}}>
-								<div className="group relative rounded-lg border border-border/50 bg-background/30 backdrop-blur-xl transition-all duration-300 hover:border-border">
+								<div className="group relative rounded-lg border border-border/50 bg-background/30 backdrop-blur-xl transition-all duration-300 hover:border-violet-500/30 hover:shadow-sm hover:shadow-violet-500/5">
 									<button
 										onClick={() => toggleFAQ(index)}
 										className="flex w-full items-center justify-between p-6 text-left"
