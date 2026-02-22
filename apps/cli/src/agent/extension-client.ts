@@ -122,6 +122,9 @@ export class ExtensionClient {
 	private store: StateStore
 	private processor: MessageProcessor
 	private emitter: TypedEventEmitter
+	private providerAuthState: {
+		openAiCodexIsAuthenticated?: boolean
+	} = {}
 	private sendMessage: (message: WebviewMessage) => void
 	private debug: boolean
 
@@ -165,6 +168,10 @@ export class ExtensionClient {
 			}
 		} else {
 			parsed = message
+		}
+
+		if (parsed.type === "state" && parsed.state) {
+			this.providerAuthState.openAiCodexIsAuthenticated = parsed.state.openAiCodexIsAuthenticated
 		}
 
 		this.processor.processMessage(parsed)
@@ -266,6 +273,14 @@ export class ExtensionClient {
 	 */
 	getCurrentMode(): string | undefined {
 		return this.store.getCurrentMode()
+	}
+
+	getProviderAuthState(): {
+		openAiCodexIsAuthenticated?: boolean
+	} {
+		return {
+			openAiCodexIsAuthenticated: this.providerAuthState.openAiCodexIsAuthenticated,
+		}
 	}
 
 	// ===========================================================================
@@ -495,6 +510,7 @@ export class ExtensionClient {
 	 */
 	reset(): void {
 		this.store.reset()
+		this.providerAuthState = {}
 		this.emitter.removeAllListeners()
 	}
 

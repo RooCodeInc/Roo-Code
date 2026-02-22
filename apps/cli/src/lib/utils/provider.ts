@@ -2,7 +2,28 @@ import { RooCodeSettings } from "@roo-code/types"
 
 import type { SupportedProvider } from "@/types/index.js"
 
-const envVarMap: Record<SupportedProvider, string> = {
+export type ProviderAuthMode = "api-key" | "oauth" | "roo-token"
+
+export function getProviderAuthMode(provider: SupportedProvider): ProviderAuthMode {
+	switch (provider) {
+		case "openai-codex":
+			return "oauth"
+		case "roo":
+			return "roo-token"
+		default:
+			return "api-key"
+	}
+}
+
+export function providerRequiresApiKey(provider: SupportedProvider): boolean {
+	return getProviderAuthMode(provider) === "api-key"
+}
+
+export function providerSupportsOAuth(provider: SupportedProvider): boolean {
+	return getProviderAuthMode(provider) === "oauth"
+}
+
+const envVarMap: Partial<Record<SupportedProvider, string>> = {
 	anthropic: "ANTHROPIC_API_KEY",
 	"openai-native": "OPENAI_API_KEY",
 	gemini: "GOOGLE_API_KEY",
@@ -11,12 +32,15 @@ const envVarMap: Record<SupportedProvider, string> = {
 	roo: "ROO_API_KEY",
 }
 
-export function getEnvVarName(provider: SupportedProvider): string {
+export function getEnvVarName(provider: SupportedProvider): string | undefined {
 	return envVarMap[provider]
 }
 
 export function getApiKeyFromEnv(provider: SupportedProvider): string | undefined {
 	const envVar = getEnvVarName(provider)
+	if (!envVar) {
+		return undefined
+	}
 	return process.env[envVar]
 }
 
@@ -34,6 +58,9 @@ export function getProviderSettings(
 			break
 		case "openai-native":
 			if (apiKey) config.openAiNativeApiKey = apiKey
+			if (model) config.apiModelId = model
+			break
+		case "openai-codex":
 			if (model) config.apiModelId = model
 			break
 		case "gemini":

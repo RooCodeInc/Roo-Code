@@ -2,6 +2,8 @@
  * Main factory function for creating VSCode API mock
  */
 
+import { execFile } from "child_process"
+
 import { machineIdSync } from "../utils/machine-id.js"
 import { logs } from "../utils/logger.js"
 
@@ -86,6 +88,27 @@ export function createVSCodeAPIMock(
 	identity?: IdentityInfo,
 	options?: VSCodeAPIMockOptions,
 ) {
+	const openExternalUrl = async (url: string): Promise<boolean> => {
+		const { command, args } =
+			process.platform === "darwin"
+				? { command: "open", args: [url] }
+				: process.platform === "win32"
+					? { command: "explorer.exe", args: [url] }
+					: { command: "xdg-open", args: [url] }
+
+		return await new Promise<boolean>((resolve) => {
+			execFile(command, args, { windowsHide: true }, (error) => {
+				if (error) {
+					logs.warn(`Failed to open external URL (${command}): ${error.message}`, "VSCode.Env")
+					resolve(false)
+					return
+				}
+
+				resolve(true)
+			})
+		})
+	}
+
 	const context = new ExtensionContextImpl({
 		extensionPath: extensionRootPath,
 		workspacePath: workspacePath,
@@ -110,8 +133,9 @@ export function createVSCodeAPIMock(
 		uriScheme: "vscode",
 		uiKind: 1, // Desktop
 		openExternal: async (uri: Uri): Promise<boolean> => {
-			logs.info(`Would open external URL: ${uri.toString()}`, "VSCode.Env")
-			return true
+			const url = uri.toString()
+			logs.info(`Opening external URL: ${url}`, "VSCode.Env")
+			return await openExternalUrl(url)
 		},
 		clipboard: {
 			readText: async (): Promise<string> => {

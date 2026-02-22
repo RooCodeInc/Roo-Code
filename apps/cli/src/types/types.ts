@@ -4,6 +4,7 @@ import type { OutputFormat } from "./json-events.js"
 export const supportedProviders = [
 	"anthropic",
 	"openai-native",
+	"openai-codex",
 	"gemini",
 	"openrouter",
 	"vercel-ai-gateway",
@@ -11,6 +12,8 @@ export const supportedProviders = [
 ] as const satisfies ProviderName[]
 
 export type SupportedProvider = (typeof supportedProviders)[number]
+
+export type ByokProvider = Exclude<SupportedProvider, "roo">
 
 export function isSupportedProvider(provider: string): provider is SupportedProvider {
 	return supportedProviders.includes(provider as SupportedProvider)
@@ -42,9 +45,14 @@ export enum OnboardingProviderChoice {
 	Byok = "byok",
 }
 
+export type OnboardingAuthMethod = "roo-token" | "api-key" | "oauth"
+
 export interface OnboardingResult {
 	choice: OnboardingProviderChoice
+	authMethod?: OnboardingAuthMethod
 	token?: string
+	provider?: SupportedProvider
+	apiKey?: string
 	skipped: boolean
 }
 

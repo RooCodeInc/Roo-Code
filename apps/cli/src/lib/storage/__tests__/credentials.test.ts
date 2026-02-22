@@ -18,7 +18,16 @@ vi.mock("../config-dir.js", () => ({
 }))
 
 // Import after mocking
-import { saveToken, loadToken, loadCredentials, clearToken, hasToken, getCredentialsPath } from "../credentials.js"
+import {
+	saveToken,
+	loadToken,
+	loadCredentials,
+	clearToken,
+	hasToken,
+	getCredentialsPath,
+	saveProviderApiKey,
+	loadProviderApiKey,
+} from "../credentials.js"
 
 // Re-derive the test config dir for use in tests (must match the hoisted one)
 const actualTestConfigDir = getTestConfigDir()
@@ -134,6 +143,16 @@ describe("Token Storage", () => {
 		it("should not throw if no token exists", async () => {
 			await expect(clearToken()).resolves.not.toThrow()
 		})
+
+		it("should preserve provider API keys when clearing token", async () => {
+			await saveToken("test-token")
+			await saveProviderApiKey("openrouter", "or-key")
+
+			await clearToken()
+
+			expect(await loadToken()).toBeNull()
+			expect(await loadProviderApiKey("openrouter")).toBe("or-key")
+		})
 	})
 
 	describe("hasToken", () => {
@@ -147,6 +166,28 @@ describe("Token Storage", () => {
 		it("should return false if no token exists", async () => {
 			const exists = await hasToken()
 			expect(exists).toBe(false)
+		})
+	})
+
+	describe("provider API keys", () => {
+		it("should save and load provider API keys", async () => {
+			await saveProviderApiKey("anthropic", "anthropic-key")
+
+			const loaded = await loadProviderApiKey("anthropic")
+			expect(loaded).toBe("anthropic-key")
+		})
+
+		it("should return null for missing provider API key", async () => {
+			const loaded = await loadProviderApiKey("gemini")
+			expect(loaded).toBeNull()
+		})
+
+		it("should preserve token data when saving provider API keys", async () => {
+			await saveToken("token-123", { userId: "user_1" })
+			await saveProviderApiKey("openai-native", "openai-key")
+
+			expect(await loadToken()).toBe("token-123")
+			expect(await loadProviderApiKey("openai-native")).toBe("openai-key")
 		})
 	})
 })

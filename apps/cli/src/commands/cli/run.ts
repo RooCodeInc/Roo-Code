@@ -3,13 +3,16 @@ import path from "path"
 import { fileURLToPath } from "url"
 
 import { createElement } from "react"
+import pWaitFor from "p-wait-for"
 
 import { setLogger } from "@roo-code/vscode-shim"
 
 import {
+	CliSettings,
 	FlagOptions,
 	isSupportedProvider,
 	OnboardingProviderChoice,
+	SupportedProvider,
 	supportedProviders,
 	DEFAULT_FLAGS,
 	REASONING_EFFORTS,
@@ -20,8 +23,8 @@ import { isValidOutputFormat } from "@/types/json-events.js"
 import { JsonEventEmitter } from "@/agent/json-event-emitter.js"
 
 import { createClient } from "@/lib/sdk/index.js"
-import { loadToken, loadSettings } from "@/lib/storage/index.js"
-import { getEnvVarName, getApiKeyFromEnv } from "@/lib/utils/provider.js"
+import { loadProviderApiKey, loadToken, loadSettings } from "@/lib/storage/index.js"
+import { getEnvVarName, getApiKeyFromEnv, getProviderAuthMode } from "@/lib/utils/provider.js"
 import { runOnboarding } from "@/lib/utils/onboarding.js"
 import { getDefaultExtensionPath } from "@/lib/utils/extension.js"
 import { VERSION } from "@/lib/utils/version.js"
@@ -30,6 +33,109 @@ import { ExtensionHost, ExtensionHostOptions } from "@/agent/index.js"
 import { runStdinStreamMode } from "./stdin-stream.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+type ProviderAuthentication = {
+	apiKey?: string
+	rooUser?: NonNullable<ExtensionHostOptions["user"]>
+	needsOAuthBootstrap?: boolean
+	invalidRooToken?: boolean
+}
+
+const OPENAI_CODEX_NON_INTERACTIVE_AUTH_MESSAGE =
+	"openai-codex requires interactive OAuth. Run in TTY or pre-auth with roo auth login --provider openai-codex."
+
+export async function resolveProviderAuthentication(params: {
+	provider: SupportedProvider
+	flagApiKey?: string
+	preloadedApiKey?: string
+	rooToken: string | null
+	settings: CliSettings
+	host?: ExtensionHost
+	interactive: boolean
+}): Promise<ProviderAuthentication> {
+	const { provider, flagApiKey, preloadedApiKey, rooToken } = params
+
+	const authMode = getProviderAuthMode(provider)
+	const auth: ProviderAuthentication = {
+		needsOAuthBootstrap: authMode === "oauth",
+	}
+
+	if (provider === "roo" && rooToken) {
+		try {
+			const client = createClient({ url: SDK_BASE_URL, authToken: rooToken })
+			const me = await client.auth.me.query()
+
+			if (me?.type !== "user") {
+				throw new Error("Invalid token")
+			}
+
+			auth.apiKey = rooToken
+			auth.rooUser = me.user
+		} catch {
+			auth.invalidRooToken = true
+		}
+	}
+
+	auth.apiKey =
+		auth.apiKey ||
+		preloadedApiKey ||
+		flagApiKey ||
+		(await loadProviderApiKey(provider)) ||
+		getApiKeyFromEnv(provider)
+
+	return auth
+}
+
+export async function assertAuthReady(params: {
+	provider: SupportedProvider
+	auth: ProviderAuthentication
+	interactive: boolean
+}): Promise<void> {
+	const { provider, auth } = params
+	const authMode = getProviderAuthMode(provider)
+
+	if (authMode === "oauth") {
+		return
+	}
+
+	if (auth.apiKey) {
+		return
+	}
+
+	if (authMode === "roo-token") {
+		if (auth.invalidRooToken) {
+			console.error("[CLI] Your Roo Code Router token is not valid.")
+			console.error("[CLI] Please run: roo auth login")
+			console.error("[CLI] Or use --api-key or set ROO_API_KEY to provide your own API key.")
+		} else {
+			console.error("[CLI] Error: Authentication with Roo Code Cloud failed or was cancelled.")
+			console.error("[CLI] Please run: roo auth login")
+			console.error("[CLI] Or use --api-key to provide your own API key.")
+		}
+	} else {
+		console.error(`[CLI] Error: No API key provided. Use --api-key or set the appropriate environment variable.`)
+		const envVarName = getEnvVarName(provider)
+		if (envVarName) {
+			console.error(`[CLI] For ${provider}, set ${envVarName}`)
+		}
+	}
+
+	process.exit(1)
+}
+
+export function assertNonInteractiveOAuthReady(params: {
+	provider: SupportedProvider
+	interactive: boolean
+	providerAuthState: { openAiCodexIsAuthenticated?: boolean }
+}): void {
+	if (
+		params.provider === "openai-codex" &&
+		!params.interactive &&
+		params.providerAuthState.openAiCodexIsAuthenticated !== true
+	) {
+		throw new Error(OPENAI_CODEX_NON_INTERACTIVE_AUTH_MESSAGE)
+	}
+}
 
 export async function run(promptArg: string | undefined, flagOptions: FlagOptions) {
 	setLogger({
@@ -93,41 +199,22 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		let { onboardingProviderChoice } = settings
 
 		if (!onboardingProviderChoice) {
-			const { choice, token } = await runOnboarding()
+			const { choice, token, provider, apiKey } = await runOnboarding()
 			onboardingProviderChoice = choice
 			rooToken = token ?? null
+
+			if (provider) {
+				extensionHostOptions.provider = provider
+			}
+
+			if (apiKey) {
+				extensionHostOptions.apiKey = apiKey
+			}
 		}
 
 		if (onboardingProviderChoice === OnboardingProviderChoice.Roo) {
 			extensionHostOptions.provider = "roo"
 		}
-	}
-
-	if (extensionHostOptions.provider === "roo") {
-		if (rooToken) {
-			try {
-				const client = createClient({ url: SDK_BASE_URL, authToken: rooToken })
-				const me = await client.auth.me.query()
-
-				if (me?.type !== "user") {
-					throw new Error("Invalid token")
-				}
-
-				extensionHostOptions.apiKey = rooToken
-				extensionHostOptions.user = me.user
-			} catch {
-				// If an explicit API key was provided via flag or env var, fall through
-				// to the general API key resolution below instead of exiting.
-				if (!flagOptions.apiKey && !getApiKeyFromEnv(extensionHostOptions.provider)) {
-					console.error("[CLI] Your Roo Code Router token is not valid.")
-					console.error("[CLI] Please run: roo auth login")
-					console.error("[CLI] Or use --api-key or set ROO_API_KEY to provide your own API key.")
-					process.exit(1)
-				}
-			}
-		}
-		// If no rooToken, fall through to the general API key resolution below
-		// which will check flagOptions.apiKey and ROO_API_KEY env var.
 	}
 
 	// Validations
@@ -141,25 +228,26 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		process.exit(1)
 	}
 
-	extensionHostOptions.apiKey =
-		extensionHostOptions.apiKey || flagOptions.apiKey || getApiKeyFromEnv(extensionHostOptions.provider)
+	const auth = await resolveProviderAuthentication({
+		provider: extensionHostOptions.provider,
+		flagApiKey: flagOptions.apiKey,
+		preloadedApiKey: extensionHostOptions.apiKey,
+		rooToken,
+		settings,
+		interactive: isTuiEnabled,
+	})
 
-	if (!extensionHostOptions.apiKey) {
-		if (extensionHostOptions.provider === "roo") {
-			console.error("[CLI] Error: Authentication with Roo Code Cloud failed or was cancelled.")
-			console.error("[CLI] Please run: roo auth login")
-			console.error("[CLI] Or use --api-key to provide your own API key.")
-		} else {
-			console.error(
-				`[CLI] Error: No API key provided. Use --api-key or set the appropriate environment variable.`,
-			)
-			console.error(
-				`[CLI] For ${extensionHostOptions.provider}, set ${getEnvVarName(extensionHostOptions.provider)}`,
-			)
-		}
+	extensionHostOptions.apiKey = auth.apiKey
 
-		process.exit(1)
+	if (auth.rooUser) {
+		extensionHostOptions.user = auth.rooUser
 	}
+
+	await assertAuthReady({
+		provider: extensionHostOptions.provider,
+		auth,
+		interactive: isTuiEnabled,
+	})
 
 	if (!fs.existsSync(extensionHostOptions.workspacePath)) {
 		console.error(`[CLI] Error: Workspace path does not exist: ${extensionHostOptions.workspacePath}`)
@@ -295,6 +383,19 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 
 		try {
 			await host.activate()
+
+			if (!isTuiEnabled && extensionHostOptions.provider === "openai-codex") {
+				await pWaitFor(() => host.client.getProviderAuthState().openAiCodexIsAuthenticated !== undefined, {
+					interval: 25,
+					timeout: 2_000,
+				}).catch(() => undefined)
+			}
+
+			assertNonInteractiveOAuthReady({
+				provider: extensionHostOptions.provider,
+				interactive: isTuiEnabled,
+				providerAuthState: host.client.getProviderAuthState(),
+			})
 
 			if (jsonEmitter) {
 				jsonEmitter.attachToClient(host.client)

@@ -93,6 +93,11 @@ export interface ExtensionHostOptions {
 	 * running in an integration test and we want to see the output.
 	 */
 	integrationTest?: boolean
+	/**
+	 * When true, skip sending initial settings into extension runtime state.
+	 * Useful for auth/status utility flows that should not mutate persisted settings.
+	 */
+	skipInitialSettingsSync?: boolean
 }
 
 interface ExtensionModule {
@@ -107,6 +112,9 @@ interface WebviewViewProvider {
 export interface ExtensionHostInterface extends IExtensionHost<ExtensionHostEventMap> {
 	client: ExtensionClient
 	activate(): Promise<void>
+	ensureOpenAiCodexAuthenticated(options?: {
+		timeoutMs?: number
+	}): Promise<{ success: true } | { success: false; reason: string }>
 	runTask(prompt: string): Promise<void>
 	sendToExtension(message: WebviewMessage): void
 	dispose(): Promise<void>
@@ -426,12 +434,14 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 	public markWebviewReady(): void {
 		this.isReady = true
 
-		// Apply CLI settings to the runtime config and context proxy BEFORE
-		// sending webviewDidLaunch. This prevents a race condition where the
-		// webviewDidLaunch handler's first-time init sync reads default state
-		// (apiProvider: "anthropic") instead of the CLI-provided settings.
-		setRuntimeConfigValues("roo-cline", this.initialSettings as Record<string, unknown>)
-		this.sendToExtension({ type: "updateSettings", updatedSettings: this.initialSettings })
+		if (!this.options.skipInitialSettingsSync) {
+			// Apply CLI settings to the runtime config and context proxy BEFORE
+			// sending webviewDidLaunch. This prevents a race condition where the
+			// webviewDidLaunch handler's first-time init sync reads default state
+			// (apiProvider: "anthropic") instead of the CLI-provided settings.
+			setRuntimeConfigValues("roo-cline", this.initialSettings as Record<string, unknown>)
+			this.sendToExtension({ type: "updateSettings", updatedSettings: this.initialSettings })
+		}
 
 		// Now trigger extension initialization. The context proxy should already
 		// have CLI-provided values when the webviewDidLaunch handler runs.
@@ -459,6 +469,14 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 	// ==========================================================================
 
 	public async runTask(prompt: string): Promise<void> {
+		if (this.options.provider === "openai-codex") {
+			const oauthAuthResult = await this.ensureOpenAiCodexAuthenticated()
+
+			if (!oauthAuthResult.success) {
+				throw new Error(oauthAuthResult.reason)
+			}
+		}
+
 		this.sendToExtension({ type: "newTask", text: prompt })
 
 		return new Promise((resolve, reject) => {
@@ -498,6 +516,65 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 
 			this.client.once("taskCompleted", completeHandler)
 			this.client.once("error", errorHandler)
+		})
+	}
+
+	public async ensureOpenAiCodexAuthenticated(options?: {
+		timeoutMs?: number
+	}): Promise<{ success: true } | { success: false; reason: string }> {
+		if (this.options.provider !== "openai-codex") {
+			return { success: true }
+		}
+
+		if (this.client.getProviderAuthState().openAiCodexIsAuthenticated) {
+			return { success: true }
+		}
+
+		const timeoutMs = options?.timeoutMs ?? 300_000
+
+		return await new Promise((resolve) => {
+			let settled = false
+
+			const cleanup = (timer: NodeJS.Timeout) => {
+				if (settled) {
+					return
+				}
+
+				settled = true
+				clearTimeout(timer)
+				this.off("extensionWebviewMessage", handleStateMessage)
+			}
+
+			const handleStateMessage = (message: ExtensionMessage) => {
+				if (message.type !== "state" || !message.state) {
+					return
+				}
+
+				if (message.state.openAiCodexIsAuthenticated) {
+					cleanup(timer)
+					resolve({ success: true })
+				}
+			}
+
+			const timer = setTimeout(() => {
+				cleanup(timer)
+				resolve({
+					success: false,
+					reason: "OpenAI Codex sign-in timed out. Complete OAuth in your browser and retry. If this persists, verify localhost port 1455 is available.",
+				})
+			}, timeoutMs)
+
+			this.on("extensionWebviewMessage", handleStateMessage)
+
+			try {
+				this.sendToExtension({ type: "openAiCodexSignIn" })
+			} catch (error) {
+				cleanup(timer)
+				resolve({
+					success: false,
+					reason: `Failed to start OpenAI Codex sign-in: ${error instanceof Error ? error.message : String(error)}`,
+				})
+			}
 		})
 	}
 
