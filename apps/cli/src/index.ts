@@ -26,7 +26,7 @@ program
 	.option("-d, --debug", "Enable debug output (includes detailed debug information)", false)
 	.option("-a, --require-approval", "Require manual approval for actions", false)
 	.option("-k, --api-key <key>", "API key for the LLM provider")
-	.option("--provider <provider>", "API provider (roo, anthropic, openai, openrouter, etc.)")
+	.option("--provider <provider>", "API provider (roo, anthropic, openai-native, openai-codex, openrouter, etc.)")
 	.option("-m, --model <model>", "Model to use", DEFAULT_FLAGS.model)
 	.option("--mode <mode>", "Mode to start in (code, architect, ask, debug, etc.)", DEFAULT_FLAGS.mode)
 	.option(

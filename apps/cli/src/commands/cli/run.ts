@@ -3,6 +3,7 @@ import path from "path"
 import { fileURLToPath } from "url"
 
 import { createElement } from "react"
+import pWaitFor from "p-wait-for"
 
 import { setLogger } from "@roo-code/vscode-shim"
 
@@ -39,6 +40,9 @@ type ProviderAuthentication = {
 	needsOAuthBootstrap?: boolean
 	invalidRooToken?: boolean
 }
+
+const OPENAI_CODEX_NON_INTERACTIVE_AUTH_MESSAGE =
+	"openai-codex requires interactive OAuth. Run in TTY or pre-auth with roo auth login --provider openai-codex."
 
 export async function resolveProviderAuthentication(params: {
 	provider: SupportedProvider
@@ -114,6 +118,20 @@ export async function assertAuthReady(params: {
 	}
 
 	process.exit(1)
+}
+
+export function assertNonInteractiveOAuthReady(params: {
+	provider: SupportedProvider
+	interactive: boolean
+	providerAuthState: { openAiCodexIsAuthenticated?: boolean }
+}): void {
+	if (
+		params.provider === "openai-codex" &&
+		!params.interactive &&
+		params.providerAuthState.openAiCodexIsAuthenticated !== true
+	) {
+		throw new Error(OPENAI_CODEX_NON_INTERACTIVE_AUTH_MESSAGE)
+	}
 }
 
 export async function run(promptArg: string | undefined, flagOptions: FlagOptions) {
@@ -362,6 +380,19 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 
 		try {
 			await host.activate()
+
+			if (!isTuiEnabled && extensionHostOptions.provider === "openai-codex") {
+				await pWaitFor(() => host.client.getProviderAuthState().openAiCodexIsAuthenticated !== undefined, {
+					interval: 25,
+					timeout: 2_000,
+				}).catch(() => undefined)
+			}
+
+			assertNonInteractiveOAuthReady({
+				provider: extensionHostOptions.provider,
+				interactive: isTuiEnabled,
+				providerAuthState: host.client.getProviderAuthState(),
+			})
 
 			if (jsonEmitter) {
 				jsonEmitter.attachToClient(host.client)

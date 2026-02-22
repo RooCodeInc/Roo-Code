@@ -109,6 +109,12 @@ Use `--print` for non-interactive execution and machine-readable output:
 roo --print "Summarize this repository"
 ```
 
+If you use `--provider openai-codex` in non-interactive mode, you must pre-authenticate first:
+
+```bash
+roo auth login --provider openai-codex
+```
+
 ### Stdin Stream Mode (`--stdin-prompt-stream`)
 
 For programmatic control (one process, multiple prompts), use `--stdin-prompt-stream` with `--print`.
@@ -131,6 +137,11 @@ roo auth status
 
 # Log out
 roo auth logout
+
+# OpenAI Codex OAuth (ChatGPT Plus/Pro)
+roo auth login --provider openai-codex
+roo auth status --provider openai-codex
+roo auth logout --provider openai-codex
 ```
 
 The `auth login` command:
@@ -175,7 +186,7 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 | `-d, --debug`                     | Enable debug output (includes detailed debug information, prompts, paths, etc)          | `false`                                  |
 | `-a, --require-approval`          | Require manual approval before actions execute                                          | `false`                                  |
 | `-k, --api-key <key>`             | API key for the LLM provider                                                            | From env var                             |
-| `--provider <provider>`           | API provider (roo, anthropic, openai, openrouter, etc.)                                 | `openrouter` (or `roo` if authenticated) |
+| `--provider <provider>`           | API provider (roo, anthropic, openai-native, openai-codex, openrouter, etc.)            | `openrouter` (or `roo` if authenticated) |
 | `-m, --model <model>`             | Model to use                                                                            | `anthropic/claude-opus-4.6`              |
 | `--mode <mode>`                   | Mode to start in (code, architect, ask, debug, etc.)                                    | `code`                                   |
 | `-r, --reasoning-effort <effort>` | Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh) | `medium`                                 |
@@ -185,24 +196,25 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 
 ## Auth Commands
 
-| Command           | Description                        |
-| ----------------- | ---------------------------------- |
-| `roo auth login`  | Authenticate with Roo Code Cloud   |
-| `roo auth logout` | Clear stored authentication token  |
-| `roo auth status` | Show current authentication status |
+| Command                          | Description    |
+| -------------------------------- | -------------- | ---------------------------------------------------------------- |
+| `roo auth login [--provider roo  | openai-codex]` | Authenticate with Roo Code Cloud or OpenAI Codex OAuth           |
+| `roo auth logout [--provider roo | openai-codex]` | Sign out from Roo Code Cloud token or OpenAI Codex OAuth session |
+| `roo auth status [--provider roo | openai-codex]` | Show authentication status for Roo Code Cloud or OpenAI Codex    |
 
 ## Environment Variables
 
 The CLI will look for API keys in environment variables if not provided via `--api-key`:
 
-| Provider          | Environment Variable        |
-| ----------------- | --------------------------- |
-| roo               | `ROO_API_KEY`               |
-| anthropic         | `ANTHROPIC_API_KEY`         |
-| openai-native     | `OPENAI_API_KEY`            |
-| openrouter        | `OPENROUTER_API_KEY`        |
-| gemini            | `GOOGLE_API_KEY`            |
-| vercel-ai-gateway | `VERCEL_AI_GATEWAY_API_KEY` |
+| Provider          | Environment Variable                |
+| ----------------- | ----------------------------------- |
+| roo               | `ROO_API_KEY`                       |
+| anthropic         | `ANTHROPIC_API_KEY`                 |
+| openai-native     | `OPENAI_API_KEY`                    |
+| openai-codex      | OAuth session (no API key required) |
+| openrouter        | `OPENROUTER_API_KEY`                |
+| gemini            | `GOOGLE_API_KEY`                    |
+| vercel-ai-gateway | `VERCEL_AI_GATEWAY_API_KEY`         |
 
 **Authentication Environment Variables:**
 

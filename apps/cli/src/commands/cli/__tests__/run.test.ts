@@ -7,7 +7,7 @@ import type { User } from "@/lib/sdk/index.js"
 import * as sdk from "@/lib/sdk/index.js"
 import * as storage from "@/lib/storage/index.js"
 
-import { assertAuthReady, resolveProviderAuthentication } from "../run.js"
+import { assertAuthReady, assertNonInteractiveOAuthReady, resolveProviderAuthentication } from "../run.js"
 
 describe("run auth helpers", () => {
 	const originalEnv = process.env
@@ -126,6 +126,38 @@ describe("run auth helpers", () => {
 			"[CLI] Error: No API key provided. Use --api-key or set the appropriate environment variable.",
 		)
 		expect(errorSpy).toHaveBeenCalledWith("[CLI] For openai-native, set OPENAI_API_KEY")
+	})
+
+	it("fails fast for unauthenticated openai-codex in non-interactive mode", () => {
+		expect(() =>
+			assertNonInteractiveOAuthReady({
+				provider: "openai-codex",
+				interactive: false,
+				providerAuthState: { openAiCodexIsAuthenticated: false },
+			}),
+		).toThrow(
+			"openai-codex requires interactive OAuth. Run in TTY or pre-auth with roo auth login --provider openai-codex.",
+		)
+	})
+
+	it("allows non-interactive openai-codex when already authenticated", () => {
+		expect(() =>
+			assertNonInteractiveOAuthReady({
+				provider: "openai-codex",
+				interactive: false,
+				providerAuthState: { openAiCodexIsAuthenticated: true },
+			}),
+		).not.toThrow()
+	})
+
+	it("does not apply oauth fail-fast check to non-oauth providers", () => {
+		expect(() =>
+			assertNonInteractiveOAuthReady({
+				provider: "openrouter",
+				interactive: false,
+				providerAuthState: {},
+			}),
+		).not.toThrow()
 	})
 })
 
