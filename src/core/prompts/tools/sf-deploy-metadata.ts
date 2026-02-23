@@ -2,50 +2,107 @@ import { ToolArgs } from "./types"
 
 export function getSfDeployMetadataDescription(args: ToolArgs): string {
 	return `## sf_deploy_metadata
-Description: Deploys Salesforce metadata to an org with mandatory dry-run validation. This tool follows a two-phase deployment process to ensure safe deployments.
+Description: Deploy Salesforce metadata with mandatory dry-run validation first, then actual deploy only if validation succeeds.
 
-⚠️ **IMPORTANT: ONE TOOL CALL DOES EVERYTHING** - You only need to call this tool once. It automatically:
-1. Executes dry-run validation (Phase 1)
-2. If validation passes, proceeds with deployment (Phase 2)
-3. If validation fails, aborts and returns errors
-
-**Phase 1 (DRY RUN):** Validates metadata, runs tests, checks for conflicts
-**Phase 2 (DEPLOY):** Only executes if dry run passes successfully
-
-This ensures safe deployments by catching errors before they affect the org. The tool will NOT proceed with deployment if the dry run fails.
+IMPORTANT:
+1. This tool always runs in two phases:
+   - Phase 1: Dry run validation
+   - Phase 2: Actual deployment (only if phase 1 passes)
+2. If dry run fails, deployment is aborted and error details are returned.
+3. Prefer deploying one metadata component at a time to isolate failures quickly.
 
 Supported Metadata Types:
-- **Apex**: ApexClass, ApexTrigger, ApexPage, ApexComponent
-- **Lightning**: LightningComponentBundle, AuraDefinitionBundle, FlexiPage
-- **Objects**: CustomObject, CustomField, ValidationRule, RecordType
-- **Security**: PermissionSet, Profile, Role
-- **Configuration**: Layout, CustomTab, CustomApplication, Flow
-- **Automation**: AssignmentRule, AssignmentRules, PathAssistant
-- **AI & Bots**: GenAiPlannerBundle, Bot
-- **Resources**: StaticResource
+- ApexClass
+- ApexTrigger
+- ApexPage
+- ApexComponent
+- LightningComponentBundle
+- AuraDefinitionBundle
+- FlexiPage
+- CustomObject
+- CustomField
+- ValidationRule
+- RecordType
+- PermissionSet
+- Profile
+- Role
+- Layout
+- CustomTab
+- CustomApplication
+- Flow
+- AssignmentRule
+- AssignmentRules
+- PathAssistant
+- GenAiPlannerBundle
+- Bot
+- StaticResource
 
 Parameters:
-
+- metadata_type: (required) Salesforce metadata type from the supported list above.
+- metadata_name: (required) Component API name(s). For best reliability, deploy one component at a time.
+  - For CustomField use ObjectApi.FieldApi (example: Patient__c.Email__c)
+  - For ValidationRule use ObjectApi.RuleApi
+  - For RecordType use ObjectApi.RecordTypeApi
+  - For Layout use ObjectApi-Layout Name
+  - For AssignmentRule use ObjectApi.RuleApi
+  - For AssignmentRules use ObjectApi (example: Lead)
+- test_level: (optional) NoTestRun | RunLocalTests | RunAllTestsInOrg | RunSpecifiedTests
+- tests: (optional) Required only with RunSpecifiedTests (comma-separated test class names)
+- ignore_warnings: (optional) true | false
+- source_dir: (optional) currently ignored by the tool command builder
 
 Usage:
+Single metadata (recommended):
+<sf_deploy_metadata>
+<metadata_type>CustomObject</metadata_type>
+<metadata_name>Patient__c</metadata_name>
+</sf_deploy_metadata>
 
+Same metadata type, different components (call tool separately for each):
+<sf_deploy_metadata>
+<metadata_type>CustomObject</metadata_type>
+<metadata_name>Patient__c</metadata_name>
+</sf_deploy_metadata>
 
-IMPORTANT DEPLOYMENT WORKFLOW:
-1. The tool will first execute a DRY RUN to validate the deployment
-2. If the dry run PASSES:
-   - All metadata syntax is valid
-   - All tests pass with sufficient code coverage
-   - No conflicts detected
-   - Then actual deployment proceeds
-3. If the dry run FAILS:
-   - Deployment is ABORTED
-   - Error details are returned
-   - You must fix the issues before attempting deployment again
+<sf_deploy_metadata>
+<metadata_type>CustomObject</metadata_type>
+<metadata_name>Appointment__c</metadata_name>
+</sf_deploy_metadata>
 
-SAFETY FEATURES:
-- Mandatory dry-run validation cannot be bypassed
-- Test execution is required (configurable via test_level)
-- Detailed error messages for failed validations
-- Code coverage requirements enforced
-- Conflict detection before deployment`
+Custom fields, one at a time:
+<sf_deploy_metadata>
+<metadata_type>CustomField</metadata_type>
+<metadata_name>Medical_History__c.Visit_Date__c</metadata_name>
+</sf_deploy_metadata>
+
+<sf_deploy_metadata>
+<metadata_type>CustomField</metadata_type>
+<metadata_name>Medical_History__c.Diagnosis__c</metadata_name>
+</sf_deploy_metadata>
+
+Optional: multiple components in one call (same metadata_type, comma-separated names):
+<sf_deploy_metadata>
+<metadata_type>CustomObject</metadata_type>
+<metadata_name>Patient__c,Appointment__c,Prescription__c</metadata_name>
+</sf_deploy_metadata>
+
+With explicit test level:
+<sf_deploy_metadata>
+<metadata_type>ApexClass</metadata_type>
+<metadata_name>AppointmentReminderBatch</metadata_name>
+<test_level>RunLocalTests</test_level>
+</sf_deploy_metadata>
+
+With specified tests:
+<sf_deploy_metadata>
+<metadata_type>ApexClass</metadata_type>
+<metadata_name>AppointmentReminderBatch</metadata_name>
+<test_level>RunSpecifiedTests</test_level>
+<tests>AppointmentReminderBatchTest,PrescriptionRefillBatchTest</tests>
+</sf_deploy_metadata>
+
+Workflow guidance:
+1. Deploy dependencies first (objects before fields, fields before rules/layouts where applicable).
+2. Use one-component deploys while debugging.
+3. If dry run fails, fix the reported issue before retrying.`
 }

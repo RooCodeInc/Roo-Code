@@ -10,6 +10,13 @@ export interface TokenDistributionResult {
 	currentPercent: number
 
 	/**
+	 * Percentage of the effective input window used by current tokens.
+	 * Effective input window = contextWindow - reservedForOutput.
+	 * This matches backend auto-condense threshold logic.
+	 */
+	effectivePercent: number
+
+	/**
 	 * Percentage of context window reserved for model output (0-100)
 	 */
 	reservedPercent: number
@@ -55,11 +62,13 @@ export const calculateTokenDistribution = (
 
 	// Calculate sizes directly without buffer display
 	const availableSize = Math.max(0, safeContextWindow - safeContextTokens - reservedForOutput)
+	const effectiveInputWindow = safeContextWindow - reservedForOutput
 
 	// Safeguard against division by zero or invalid context window
 	if (safeContextWindow <= 0) {
 		return {
 			currentPercent: 0,
+			effectivePercent: 0,
 			reservedPercent: 0,
 			availablePercent: 0,
 			reservedForOutput,
@@ -70,11 +79,14 @@ export const calculateTokenDistribution = (
 	// Calculate percentages based on the context window
 	// This shows the actual percentage of the context window being used
 	const currentPercent = (safeContextTokens / safeContextWindow) * 100
+	const effectivePercent =
+		effectiveInputWindow > 0 ? (safeContextTokens / effectiveInputWindow) * 100 : safeContextTokens > 0 ? 100 : 0
 	const reservedPercent = (reservedForOutput / safeContextWindow) * 100
 	const availablePercent = (availableSize / safeContextWindow) * 100
 
 	return {
 		currentPercent,
+		effectivePercent,
 		reservedPercent,
 		availablePercent,
 		reservedForOutput,
