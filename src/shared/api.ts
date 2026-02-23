@@ -72,7 +72,10 @@ export const getModelMaxOutputTokens = ({
 	}
 
 	if (shouldUseReasoningBudget({ model, settings })) {
-		return settings?.modelMaxTokens || DEFAULT_HYBRID_REASONING_MODEL_MAX_TOKENS
+		// Keep reasoning-budget models from reserving an excessive output budget
+		// that would make usable context artificially tiny.
+		const requested = settings?.modelMaxTokens || DEFAULT_HYBRID_REASONING_MODEL_MAX_TOKENS
+		return Math.min(requested, Math.ceil(model.contextWindow * 0.2))
 	}
 
 	const isAnthropicContext =

@@ -211,7 +211,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	} = useExtensionState()
 
 	const selectedModel = useSelectedModel(apiConfiguration)
-	const contextWindow = selectedModel?.info?.contextWindow || 1
+	// Keep undefined while model metadata is loading to avoid false auto-condense triggers.
+	const contextWindow = selectedModel?.info?.contextWindow
 
 	const messagesRef = useRef(messages)
 	useEffect(() => {
@@ -702,6 +703,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	}, [expandedRows])
 
 	const isStreaming = useMemo(() => {
+		if (isCondensing) {
+			return false
+		}
+
 		// Checking clineAsk isn't enough since messages effect may be called
 		// again for a tool for example, set clineAsk to its value, and if the
 		// next message is not an ask then it doesn't reset. This is likely due
@@ -743,7 +748,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 
 		return false
-	}, [modifiedMessages, clineAsk, enableButtons, primaryButtonText])
+	}, [isCondensing, modifiedMessages, clineAsk, enableButtons, primaryButtonText])
 
 	const markFollowUpAsAnswered = useCallback(() => {
 		const lastFollowUpMessage = messagesRef.current.findLast((msg: ClineMessage) => msg.ask === "followup")
@@ -1211,6 +1216,17 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					if (hasMultipleThinking && message.ts !== latestApiReqStarted?.ts) {
 						return false
 					}
+					// While condensing, hide unresolved api request row to avoid showing stale "API Request..." state.
+					if (isCondensing && message.text) {
+						try {
+							const apiReq = JSON.parse(message.text)
+							if (apiReq?.cost === undefined) {
+								return false
+							}
+						} catch {
+							return false
+						}
+					}
 					// Hide api_req_started when task is completed
 					if (lastCompletionResult) {
 						return false
@@ -1226,7 +1242,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			.forEach((msg: ClineMessage) => everVisibleMessagesTsRef.current.set(msg.ts, true))
 
 		return newVisibleMessages
-	}, [modifiedMessages])
+	}, [isCondensing, modifiedMessages])
 
 	useEffect(() => {
 		const cleanupInterval = setInterval(() => {
@@ -2073,6 +2089,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 		setIsCondensing(true)
 		setSendingDisabled(true)
+		setClineAsk(undefined)
+		setEnableButtons(false)
+		setPrimaryButtonText(undefined)
+		setSecondaryButtonText(undefined)
 		vscode.postMessage({ type: "condenseTaskContextRequest", text: taskId })
 	}
 
