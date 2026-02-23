@@ -2,6 +2,10 @@ import axios from "axios"
 import { ModelInfo, ollamaDefaultModelInfo } from "@roo-code/types"
 import { z } from "zod"
 
+// 10-second timeout for Ollama HTTP requests. This prevents indefinite hangs
+// when connecting to unreachable external servers (TCP default is ~30s).
+const OLLAMA_REQUEST_TIMEOUT_MS = 10_000
+
 const OllamaModelDetailsSchema = z.object({
 	family: z.string(),
 	families: z.array(z.string()).nullable().optional(),
@@ -68,18 +72,21 @@ export async function getOllamaModels(
 	// clearing the input can leave an empty string; use the default in that case
 	baseUrl = baseUrl === "" ? "http://localhost:11434" : baseUrl
 
+	if (!URL.canParse(baseUrl)) {
+		throw new Error(`Invalid Ollama URL: ${baseUrl}`)
+	}
+
+	// Prepare headers with optional API key
+	const headers: Record<string, string> = {}
+	if (apiKey) {
+		headers["Authorization"] = `Bearer ${apiKey}`
+	}
+
 	try {
-		if (!URL.canParse(baseUrl)) {
-			return models
-		}
-
-		// Prepare headers with optional API key
-		const headers: Record<string, string> = {}
-		if (apiKey) {
-			headers["Authorization"] = `Bearer ${apiKey}`
-		}
-
-		const response = await axios.get<OllamaModelsResponse>(`${baseUrl}/api/tags`, { headers })
+		const response = await axios.get<OllamaModelsResponse>(`${baseUrl}/api/tags`, {
+			headers,
+			timeout: OLLAMA_REQUEST_TIMEOUT_MS,
+		})
 		const parsedResponse = OllamaModelsResponseSchema.safeParse(response.data)
 		let modelInfoPromises = []
 
@@ -92,9 +99,9 @@ export async function getOllamaModels(
 							{
 								model: ollamaModel.model,
 							},
-							{ headers },
+							{ headers, timeout: OLLAMA_REQUEST_TIMEOUT_MS },
 						)
-						.then((ollamaModelInfo) => {
+						.then((ollamaModelInfo: { data: OllamaModelInfoResponse }) => {
 							const modelInfo = parseOllamaModel(ollamaModelInfo.data)
 							// Only include models that support native tools
 							if (modelInfo) {
@@ -108,13 +115,23 @@ export async function getOllamaModels(
 		} else {
 			console.error(`Error parsing Ollama models response: ${JSON.stringify(parsedResponse.error, null, 2)}`)
 		}
-	} catch (error) {
-		if (error.code === "ECONNREFUSED") {
-			console.warn(`Failed connecting to Ollama at ${baseUrl}`)
-		} else {
-			console.error(
-				`Error fetching Ollama models: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
+	} catch (error: any) {
+		// Build a user-friendly error message based on the failure type
+		const code = error?.code
+		const status = error?.response?.status
+
+		if (code === "ECONNREFUSED") {
+			throw new Error(`Connection refused by Ollama at ${baseUrl}. Is the server running and accessible?`)
+		} else if (code === "ECONNABORTED" || code === "ETIMEDOUT" || error?.message?.includes("timeout")) {
+			throw new Error(
+				`Connection to Ollama at ${baseUrl} timed out after ${OLLAMA_REQUEST_TIMEOUT_MS / 1000}s. The server may be unreachable (check firewall settings).`,
 			)
+		} else if (code === "ENOTFOUND") {
+			throw new Error(`Could not resolve hostname for Ollama at ${baseUrl}. Check the URL.`)
+		} else if (status) {
+			throw new Error(`Ollama at ${baseUrl} returned HTTP ${status}.`)
+		} else {
+			throw new Error(`Failed to connect to Ollama at ${baseUrl}: ${error?.message || String(error)}`)
 		}
 	}
 

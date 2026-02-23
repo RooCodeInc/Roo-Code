@@ -256,6 +256,35 @@ describe("webviewMessageHandler - requestOllamaModels", () => {
 			ollamaModels: mockModels,
 		})
 	})
+
+	it("always sends a response even when models list is empty", async () => {
+		mockGetModels.mockResolvedValue({})
+
+		await webviewMessageHandler(mockClineProvider, {
+			type: "requestOllamaModels",
+		})
+
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "ollamaModels",
+			ollamaModels: {},
+		})
+	})
+
+	it("sends error message to webview when connection fails", async () => {
+		mockGetModels.mockRejectedValue(
+			new Error("Connection refused by Ollama at http://localhost:1234. Is the server running and accessible?"),
+		)
+
+		await webviewMessageHandler(mockClineProvider, {
+			type: "requestOllamaModels",
+		})
+
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "ollamaModels",
+			ollamaModels: {},
+			error: "Connection refused by Ollama at http://localhost:1234. Is the server running and accessible?",
+		})
+	})
 })
 
 describe("webviewMessageHandler - requestRouterModels", () => {
