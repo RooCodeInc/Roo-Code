@@ -558,8 +558,8 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						// Handle slash command - request fresh commands
 						const query = newValue
 						setSearchQuery(query)
-						// Set to first selectable item (skip section headers)
-						setSelectedMenuIndex(1) // Section header is at 0, first command is at 1
+						// Don't auto-select when user is typing custom input
+						setSelectedMenuIndex(-1)
 						// Request commands fresh each time slash menu is shown
 						vscode.postMessage({ type: "requestCommands" })
 					} else {
@@ -570,7 +570,8 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 						// Send file search request if query is not empty.
 						if (query.length > 0) {
-							setSelectedMenuIndex(0)
+							// Don't auto-select when user is typing custom input
+							setSelectedMenuIndex(-1)
 
 							// Don't clear results until we have new ones. This
 							// prevents flickering.
@@ -595,7 +596,8 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								})
 							}, 200) // 200ms debounce.
 						} else {
-							setSelectedMenuIndex(3) // Set to "File" option by default.
+							// When query is empty (just "@" typed), show default options but don't select
+							setSelectedMenuIndex(-1)
 						}
 					}
 				} else {
@@ -612,6 +614,14 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				setSelectedType(null)
 			}
 		}, [showContextMenu])
+
+		// Ensure no option is selected when user types custom input
+		useEffect(() => {
+			if (showContextMenu && searchQuery.length > 0) {
+				// When user has typed a custom query, don't auto-select any option
+				setSelectedMenuIndex(-1)
+			}
+		}, [showContextMenu, searchQuery])
 
 		const handleBlur = useCallback(() => {
 			// Only hide the context menu if the user didn't click on it.
