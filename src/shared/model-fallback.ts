@@ -115,8 +115,14 @@ export function getNextModelOnError(
 	// Find current position in chain
 	const currentIndex = chain.indexOf(currentModel)
 
-	// If not found in chain or at primary, switch to first fallback
-	if (currentIndex === -1 || currentIndex === 0) {
+	// If current model is not in the free fallback chain (e.g. paid model),
+	// do not perform automatic fallback switching.
+	if (currentIndex === -1) {
+		return { model: null, isFallback: false, message: "" }
+	}
+
+	// If on primary, switch to first fallback
+	if (currentIndex === 0) {
 		if (chain.length > 1) {
 			modelIndexTracker[mode] = 1
 			modelActivationTimeTracker[mode] = Date.now()
@@ -263,7 +269,29 @@ export function getCurrentActiveModel(mode: string, config: ProviderSettings): s
 }
 
 /**
+ * Checks whether fallback switching is eligible for the current model.
+ * Automatic fallback is allowed only for models that are part of the free fallback chain.
+ */
+export function isFallbackEligible(mode: string, currentModel: string): boolean {
+	const chain = getFallbackChainForMode(mode)
+	return chain.includes(currentModel)
+}
+
+/**
+ * Checks whether the mode is currently on an active fallback model.
+ * Used to ensure timeout reset only applies to actual fallback sessions.
+ */
+export function isFallbackActiveForModel(mode: string, currentModel: string): boolean {
+	const chain = getFallbackChainForMode(mode)
+	if (!chain.length) return false
+
+	const currentIndex = modelIndexTracker[mode] ?? 0
+	return currentIndex > 0 && chain[currentIndex] === currentModel
+}
+
+/**
  * Increments error count and returns true if we should try fallback
+ * NOTE: Callers should first verify eligibility via `isFallbackEligible`.
  */
 export function shouldSwitchToFallback(mode: string): boolean {
 	const currentCount = errorCountTracker[mode] ?? 0
