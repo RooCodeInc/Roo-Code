@@ -25,7 +25,7 @@ import { CloudService } from "@roo-code/cloud"
 
 import { Package } from "../shared/package"
 import { ClineProvider } from "../core/webview/ClineProvider"
-import { openClineInNewTab } from "../activate/registerCommands"
+import { openClineInNewTab, setOnTabProviderCreated } from "../activate/registerCommands"
 import { getCommands } from "../services/command/commands"
 import { getModels } from "../api/providers/fetchers/modelCache"
 
@@ -61,6 +61,9 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 		}
 
 		this.registerListeners(this.sidebarProvider)
+
+		// Ensure tab providers created via commands also get event listeners.
+		setOnTabProviderCreated((provider) => this.registerListeners(provider))
 
 		if (socketPath) {
 			const ipc = (this.ipc = new IpcServer(socketPath, this.log))
@@ -192,7 +195,6 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 			await vscode.commands.executeCommand("workbench.action.closeAllEditors")
 
 			provider = await openClineInNewTab({ context: this.context, outputChannel: this.outputChannel })
-			this.registerListeners(provider)
 		} else {
 			await vscode.commands.executeCommand(`${Package.name}.SidebarProvider.focus`)
 
