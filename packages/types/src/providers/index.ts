@@ -1,5 +1,6 @@
 export * from "./anthropic.js"
 export * from "./baseten.js"
+export * from "./brainiall.js"
 export * from "./bedrock.js"
 export * from "./deepseek.js"
 export * from "./fireworks.js"
@@ -27,6 +28,7 @@ export * from "./minimax.js"
 
 import { anthropicDefaultModelId } from "./anthropic.js"
 import { basetenDefaultModelId } from "./baseten.js"
+import { brainiallDefaultModelId } from "./brainiall.js"
 import { bedrockDefaultModelId } from "./bedrock.js"
 import { deepSeekDefaultModelId } from "./deepseek.js"
 import { fireworksDefaultModelId } from "./fireworks.js"
@@ -71,6 +73,8 @@ export function getProviderDefaultModelId(
 			return xaiDefaultModelId
 		case "baseten":
 			return basetenDefaultModelId
+		case "brainiall":
+			return brainiallDefaultModelId
 		case "bedrock":
 			return bedrockDefaultModelId
 		case "vertex":

@@ -408,6 +408,8 @@
 		"codestralBaseUrlDesc": "Codestral 모델의 대체 URL을 설정합니다.",
 		"xaiApiKey": "xAI API 키",
 		"getXaiApiKey": "xAI API 키 받기",
+		"brainiallApiKey": "Brainiall API Key",
+		"getBrainiallApiKey": "Get Brainiall API Key",
 		"litellmApiKey": "LiteLLM API 키",
 		"litellmBaseUrl": "LiteLLM 기본 URL",
 		"awsCredentials": "AWS 자격 증명",

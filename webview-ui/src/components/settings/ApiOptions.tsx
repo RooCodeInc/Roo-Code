@@ -22,6 +22,7 @@ import {
 	mistralDefaultModelId,
 	xaiDefaultModelId,
 	basetenDefaultModelId,
+	brainiallDefaultModelId,
 	bedrockDefaultModelId,
 	vertexDefaultModelId,
 	sambaNovaDefaultModelId,
@@ -68,6 +69,7 @@ import {
 import {
 	Anthropic,
 	Baseten,
+	Brainiall,
 	Bedrock,
 	DeepSeek,
 	Gemini,
@@ -345,6 +347,7 @@ const ApiOptions = ({
 				mistral: { field: "apiModelId", default: mistralDefaultModelId },
 				xai: { field: "apiModelId", default: xaiDefaultModelId },
 				baseten: { field: "apiModelId", default: basetenDefaultModelId },
+				brainiall: { field: "apiModelId", default: brainiallDefaultModelId },
 				bedrock: { field: "apiModelId", default: bedrockDefaultModelId },
 				vertex: { field: "apiModelId", default: vertexDefaultModelId },
 				sambanova: { field: "apiModelId", default: sambaNovaDefaultModelId },
@@ -572,6 +575,13 @@ const ApiOptions = ({
 							apiConfiguration={apiConfiguration}
 							setApiConfigurationField={setApiConfigurationField}
 							simplifySettings={fromWelcomeView}
+						/>
+					)}
+
+					{selectedProvider === "brainiall" && (
+						<Brainiall
+							apiConfiguration={apiConfiguration}
+							setApiConfigurationField={setApiConfigurationField}
 						/>
 					)}
 

@@ -408,6 +408,8 @@
 		"codestralBaseUrlDesc": "Укажите альтернативный URL для модели Codestral.",
 		"xaiApiKey": "xAI API-ключ",
 		"getXaiApiKey": "Получить xAI API-ключ",
+		"brainiallApiKey": "Brainiall API Key",
+		"getBrainiallApiKey": "Get Brainiall API Key",
 		"litellmApiKey": "API-ключ LiteLLM",
 		"litellmBaseUrl": "Базовый URL LiteLLM",
 		"awsCredentials": "AWS-учётные данные",

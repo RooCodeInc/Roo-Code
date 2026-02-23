@@ -408,6 +408,8 @@
 		"codestralBaseUrlDesc": "Stel een alternatieve URL in voor het Codestral-model.",
 		"xaiApiKey": "xAI API-sleutel",
 		"getXaiApiKey": "xAI API-sleutel ophalen",
+		"brainiallApiKey": "Brainiall API Key",
+		"getBrainiallApiKey": "Get Brainiall API Key",
 		"litellmApiKey": "LiteLLM API-sleutel",
 		"litellmBaseUrl": "LiteLLM basis-URL",
 		"awsCredentials": "AWS-inloggegevens",

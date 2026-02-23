@@ -408,6 +408,8 @@
 		"codestralBaseUrlDesc": "Codestral modeli için alternatif URL ayarlayın.",
 		"xaiApiKey": "xAI API Anahtarı",
 		"getXaiApiKey": "xAI API Anahtarı Al",
+		"brainiallApiKey": "Brainiall API Key",
+		"getBrainiallApiKey": "Get Brainiall API Key",
 		"litellmApiKey": "LiteLLM API Anahtarı",
 		"litellmBaseUrl": "LiteLLM Temel URL",
 		"awsCredentials": "AWS Kimlik Bilgileri",

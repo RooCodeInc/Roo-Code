@@ -5,6 +5,7 @@ import { codebaseIndexProviderSchema } from "./codebase-index.js"
 import {
 	anthropicModels,
 	basetenModels,
+	brainiallModels,
 	bedrockModels,
 	deepSeekModels,
 	fireworksModels,
@@ -105,6 +106,7 @@ export const providerNames = [
 	"anthropic",
 	"bedrock",
 	"baseten",
+	"brainiall",
 	"deepseek",
 	"fireworks",
 	"gemini",
@@ -377,6 +379,10 @@ const vercelAiGatewaySchema = baseProviderSettingsSchema.extend({
 	vercelAiGatewayModelId: z.string().optional(),
 })
 
+const brainiallSchema = apiModelIdProviderModelSchema.extend({
+	brainiallApiKey: z.string().optional(),
+})
+
 const basetenSchema = apiModelIdProviderModelSchema.extend({
 	basetenApiKey: z.string().optional(),
 })
@@ -407,6 +413,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	fakeAiSchema.merge(z.object({ apiProvider: z.literal("fake-ai") })),
 	xaiSchema.merge(z.object({ apiProvider: z.literal("xai") })),
 	basetenSchema.merge(z.object({ apiProvider: z.literal("baseten") })),
+	brainiallSchema.merge(z.object({ apiProvider: z.literal("brainiall") })),
 	litellmSchema.merge(z.object({ apiProvider: z.literal("litellm") })),
 	sambaNovaSchema.merge(z.object({ apiProvider: z.literal("sambanova") })),
 	zaiSchema.merge(z.object({ apiProvider: z.literal("zai") })),
@@ -440,6 +447,7 @@ export const providerSettingsSchema = z.object({
 	...fakeAiSchema.shape,
 	...xaiSchema.shape,
 	...basetenSchema.shape,
+	...brainiallSchema.shape,
 	...litellmSchema.shape,
 	...sambaNovaSchema.shape,
 	...zaiSchema.shape,
@@ -515,6 +523,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	unbound: "unboundModelId",
 	xai: "apiModelId",
 	baseten: "apiModelId",
+	brainiall: "apiModelId",
 	litellm: "litellmModelId",
 	sambanova: "apiModelId",
 	zai: "apiModelId",
@@ -630,6 +639,7 @@ export const MODELS_BY_PROVIDER: Record<
 	xai: { id: "xai", label: "xAI (Grok)", models: Object.keys(xaiModels) },
 	zai: { id: "zai", label: "Z.ai", models: Object.keys(internationalZAiModels) },
 	baseten: { id: "baseten", label: "Baseten", models: Object.keys(basetenModels) },
+	brainiall: { id: "brainiall", label: "Brainiall", models: Object.keys(brainiallModels) },
 
 	// Dynamic providers; models pulled from remote APIs.
 	litellm: { id: "litellm", label: "LiteLLM", models: [] },

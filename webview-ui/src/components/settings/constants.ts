@@ -17,11 +17,13 @@ import {
 	fireworksModels,
 	minimaxModels,
 	basetenModels,
+	brainiallModels,
 } from "@roo-code/types"
 
 export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, ModelInfo>>> = {
 	anthropic: anthropicModels,
 	bedrock: bedrockModels,
+	brainiall: brainiallModels,
 	deepseek: deepSeekModels,
 	moonshot: moonshotModels,
 	gemini: geminiModels,
@@ -64,5 +66,6 @@ export const PROVIDERS = [
 	{ value: "vercel-ai-gateway", label: "Vercel AI Gateway", proxy: false },
 	{ value: "minimax", label: "MiniMax", proxy: false },
 	{ value: "baseten", label: "Baseten", proxy: false },
+	{ value: "brainiall", label: "Brainiall", proxy: false },
 	{ value: "unbound", label: "Unbound", proxy: false },
 ].sort((a, b) => a.label.localeCompare(b.label))

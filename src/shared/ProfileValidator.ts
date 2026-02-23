@@ -61,6 +61,7 @@ export class ProfileValidator {
 			case "mistral":
 			case "deepseek":
 			case "xai":
+			case "brainiall":
 			case "sambanova":
 			case "fireworks":
 				return profile.apiModelId

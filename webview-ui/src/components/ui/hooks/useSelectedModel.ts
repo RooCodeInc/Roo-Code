@@ -23,6 +23,7 @@ import {
 	mainlandZAiModels,
 	fireworksModels,
 	basetenModels,
+	brainiallModels,
 	qwenCodeModels,
 	litellmDefaultModelInfo,
 	lMStudioDefaultModelInfo,
@@ -178,6 +179,11 @@ function getSelectedModel({
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const info = basetenModels[id as keyof typeof basetenModels]
 			return { id, info }
+		}
+		case "brainiall": {
+			const id = apiConfiguration.apiModelId ?? defaultModelId
+			const info = brainiallModels[id as keyof typeof brainiallModels]
+			return info ? { id, info } : { id, info: undefined }
 		}
 		case "bedrock": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId

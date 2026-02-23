@@ -418,6 +418,8 @@
 		"codestralBaseUrlDesc": "設定 Codestral 模型的替代 URL。",
 		"xaiApiKey": "xAI API 金鑰",
 		"getXaiApiKey": "取得 xAI API 金鑰",
+		"brainiallApiKey": "Brainiall API Key",
+		"getBrainiallApiKey": "Get Brainiall API Key",
 		"litellmApiKey": "LiteLLM API 金鑰",
 		"litellmBaseUrl": "LiteLLM 基礎 URL",
 		"awsCredentials": "AWS 認證",
