@@ -58,7 +58,7 @@ export const CommandPatternSelector: React.FC<CommandPatternSelectorProps> = ({
 	const setEditState = (pattern: string, isEditing: boolean, value?: string) => {
 		setEditingStates((prev) => ({
 			...prev,
-			[pattern]: { isEditing, value: value ?? pattern },
+			[pattern]: { isEditing, value: value ?? prev[pattern]?.value ?? pattern },
 		}))
 	}
 
