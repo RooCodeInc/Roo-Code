@@ -21,7 +21,9 @@
 		"alwaysAllow": "Always allow",
 		"parameters": "Parameters",
 		"noDescription": "No description",
-		"togglePromptInclusion": "Toggle inclusion in prompt"
+		"togglePromptInclusion": "Toggle inclusion in prompt",
+		"expand": "Expand description",
+		"collapse": "Collapse description"
 	},
 	"tabs": {
 		"tools": "Tools",

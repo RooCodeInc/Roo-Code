@@ -20,7 +20,9 @@
 		"alwaysAllow": "Permet sempre",
 		"parameters": "Paràmetres",
 		"noDescription": "Sense descripció",
-		"togglePromptInclusion": "Canviar inclusió al prompt"
+		"togglePromptInclusion": "Canviar inclusió al prompt",
+		"expand": "Ampliar descripció",
+		"collapse": "Reduir descripció"
 	},
 	"tabs": {
 		"tools": "Eines",
