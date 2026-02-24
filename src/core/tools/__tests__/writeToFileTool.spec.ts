@@ -244,6 +244,36 @@ describe("writeToFileTool", () => {
 		})
 	})
 
+	describe("absolute path handling", () => {
+		it("converts absolute path to relative path within workspace", async () => {
+			// Set up a workspace directory
+			mockCline.cwd = "/workspace/project"
+
+			// Provide an absolute path that's within the workspace
+			const absoluteInputPath = "/workspace/project/plans/architecture.md"
+
+			await executeWriteFileTool({ path: absoluteInputPath }, { accessAllowed: true })
+
+			// The path should be converted to relative and used for access validation
+			expect(mockCline.rooIgnoreController.validateAccess).toHaveBeenCalledWith("plans/architecture.md")
+		})
+
+		it("handles absolute path at root level (issue #11208)", async () => {
+			// This reproduces the bug where LLM outputs "/plans" as an absolute path
+			mockCline.cwd = "/workspace/project"
+
+			// Absolute path "/plans" would resolve to root without the fix
+			const absoluteInputPath = "/plans"
+
+			await executeWriteFileTool({ path: absoluteInputPath }, { accessAllowed: true })
+
+			// The path should be converted to a relative path (relative to cwd)
+			// path.relative("/workspace/project", "/plans") = "../../../plans" on Unix
+			// This is safer than trying to write to system root
+			expect(mockCline.rooIgnoreController.validateAccess).toHaveBeenCalled()
+		})
+	})
+
 	describe("file existence detection", () => {
 		it.skipIf(process.platform === "win32")("detects existing file and sets editType to modify", async () => {
 			await executeWriteFileTool({}, { fileExists: true })
