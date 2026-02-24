@@ -317,15 +317,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			messages: openAiMessages,
 			stream: true,
 			stream_options: { include_usage: true },
-			// Only include provider if openRouterSpecificProvider is not "[default]".
-			...(this.options.openRouterSpecificProvider &&
-				this.options.openRouterSpecificProvider !== OPENROUTER_DEFAULT_PROVIDER_NAME && {
-					provider: {
-						order: [this.options.openRouterSpecificProvider],
-						only: [this.options.openRouterSpecificProvider],
-						allow_fallbacks: false,
-					},
-				}),
+			...(this.buildProviderOptions() && { provider: this.buildProviderOptions() }),
 			...(reasoning && { reasoning }),
 			tools: this.convertToolsForOpenAI(metadata?.tools),
 			tool_choice: metadata?.tool_choice,
@@ -574,6 +566,47 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		return { id, info, topP: isDeepSeekR1 ? 0.95 : undefined, ...params }
 	}
 
+	/**
+	 * Build the `provider` options object for OpenRouter requests.
+	 * Combines specific provider routing and quantization filtering.
+	 */
+	private buildProviderOptions():
+		| {
+				order?: string[]
+				only?: string[]
+				allow_fallbacks?: boolean
+				quantizations?: string[]
+		  }
+		| undefined {
+		const hasSpecificProvider =
+			this.options.openRouterSpecificProvider &&
+			this.options.openRouterSpecificProvider !== OPENROUTER_DEFAULT_PROVIDER_NAME
+		const excludeLowQuantization = this.options.openRouterExcludeLowQuantization
+
+		if (!hasSpecificProvider && !excludeLowQuantization) {
+			return undefined
+		}
+
+		const provider: {
+			order?: string[]
+			only?: string[]
+			allow_fallbacks?: boolean
+			quantizations?: string[]
+		} = {}
+
+		if (hasSpecificProvider) {
+			provider.order = [this.options.openRouterSpecificProvider!]
+			provider.only = [this.options.openRouterSpecificProvider!]
+			provider.allow_fallbacks = false
+		}
+
+		if (excludeLowQuantization) {
+			provider.quantizations = ["fp16", "bf16", "fp8", "int8"]
+		}
+
+		return provider
+	}
+
 	async completePrompt(prompt: string) {
 		let { id: modelId, maxTokens, temperature, reasoning } = await this.fetchModel()
 
@@ -583,15 +616,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			temperature,
 			messages: [{ role: "user", content: prompt }],
 			stream: false,
-			// Only include provider if openRouterSpecificProvider is not "[default]".
-			...(this.options.openRouterSpecificProvider &&
-				this.options.openRouterSpecificProvider !== OPENROUTER_DEFAULT_PROVIDER_NAME && {
-					provider: {
-						order: [this.options.openRouterSpecificProvider],
-						only: [this.options.openRouterSpecificProvider],
-						allow_fallbacks: false,
-					},
-				}),
+			...(this.buildProviderOptions() && { provider: this.buildProviderOptions() }),
 			...(reasoning && { reasoning }),
 		}
 
