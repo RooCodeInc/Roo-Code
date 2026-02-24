@@ -102,11 +102,16 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
-		const { currentConfigId, displayName } = useMemo(() => {
+		const { currentConfigId, displayName, tooltipContent } = useMemo(() => {
 			const currentConfig = listApiConfigMeta?.find((config) => config.name === currentApiConfigName)
+			const configName = currentApiConfigName || ""
+			const modelId = currentConfig?.modelId
 			return {
 				currentConfigId: currentConfig?.id || "",
-				displayName: currentApiConfigName || "", // Use the name directly for display.
+				displayName: modelId ? `${configName} · ${modelId}` : configName,
+				tooltipContent: modelId
+					? `${configName}${currentConfig?.apiProvider ? ` (${currentConfig.apiProvider})` : ""} · ${modelId}`
+					: configName,
 			}
 		}, [listApiConfigMeta, currentApiConfigName])
 
@@ -1311,7 +1316,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							value={currentConfigId}
 							displayName={displayName}
 							disabled={selectApiConfigDisabled}
-							title={t("chat:selectApiConfig")}
+							title={tooltipContent || t("chat:selectApiConfig")}
 							onChange={handleApiConfigChange}
 							triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink"
 							listApiConfigMeta={listApiConfigMeta || []}
