@@ -21,6 +21,7 @@ import { JsonEventEmitter } from "@/agent/json-event-emitter.js"
 
 import { createClient } from "@/lib/sdk/index.js"
 import { loadToken, loadSettings } from "@/lib/storage/index.js"
+import { isRecord } from "@/lib/utils/guards.js"
 import { getEnvVarName, getApiKeyFromEnv } from "@/lib/utils/provider.js"
 import { runOnboarding } from "@/lib/utils/onboarding.js"
 import { getDefaultExtensionPath } from "@/lib/utils/extension.js"
@@ -30,6 +31,60 @@ import { ExtensionHost, ExtensionHostOptions } from "@/agent/index.js"
 import { runStdinStreamMode } from "./stdin-stream.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const ROO_MODEL_WARMUP_TIMEOUT_MS = 10_000
+
+async function warmRooModels(host: ExtensionHost): Promise<void> {
+	await new Promise<void>((resolve, reject) => {
+		let settled = false
+
+		const cleanup = () => {
+			clearTimeout(timeoutId)
+			host.off("extensionWebviewMessage", onMessage)
+		}
+
+		const finish = (fn: () => void) => {
+			if (settled) return
+			settled = true
+			cleanup()
+			fn()
+		}
+
+		const onMessage = (message: unknown) => {
+			if (!isRecord(message)) {
+				return
+			}
+
+			if (message.type !== "singleRouterModelFetchResponse") {
+				return
+			}
+
+			const values = isRecord(message.values) ? message.values : undefined
+
+			if (values?.provider !== "roo") {
+				return
+			}
+
+			if (message.success === false) {
+				const errorMessage =
+					typeof message.error === "string" && message.error.length > 0
+						? message.error
+						: "failed to refresh Roo models"
+
+				finish(() => reject(new Error(errorMessage)))
+				return
+			}
+
+			finish(() => resolve())
+		}
+
+		const timeoutId = setTimeout(() => {
+			finish(() => reject(new Error(`timed out waiting for Roo models after ${ROO_MODEL_WARMUP_TIMEOUT_MS}ms`)))
+		}, ROO_MODEL_WARMUP_TIMEOUT_MS)
+
+		host.on("extensionWebviewMessage", onMessage)
+		host.sendToExtension({ type: "requestRooModels" })
+	})
+}
 
 export async function run(promptArg: string | undefined, flagOptions: FlagOptions) {
 	setLogger({
@@ -295,6 +350,16 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 
 		try {
 			await host.activate()
+			if (extensionHostOptions.provider === "roo") {
+				try {
+					await warmRooModels(host)
+				} catch (warmupError) {
+					if (flagOptions.debug) {
+						const message = warmupError instanceof Error ? warmupError.message : String(warmupError)
+						console.error(`[CLI] Warning: Roo model warmup failed: ${message}`)
+					}
+				}
+			}
 
 			if (jsonEmitter) {
 				jsonEmitter.attachToClient(host.client)
