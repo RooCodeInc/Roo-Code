@@ -294,7 +294,7 @@ export function validateApiConfigurationExcludingModelErrors(
 		organizationAllowList,
 	)
 
-	// Inly return organization errors if they're not model-specific.
+	// Only return organization errors if they're not model-specific.
 	if (organizationAllowListError && organizationAllowListError.code === "PROVIDER_NOT_ALLOWED") {
 		return organizationAllowListError.message
 	}

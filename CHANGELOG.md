@@ -562,7 +562,7 @@
 - Refactor: Consolidate ThinkingBudget components and fix disable handling (PR #9930 by @hannesrudolph)
 - Forbid time estimates in architect mode for more focused planning (PR #9931 by @app/roomote)
 - Web: Add product pages (PR #9865 by @brunobergher)
-- Make eval runs deleteable in the web UI (PR #9909 by @mrubens)
+- Make eval runs deletable in the web UI (PR #9909 by @mrubens)
 - Feat: Change defaultToolProtocol default from xml to native (later reverted) (PR #9892 by @app/roomote)
 
 ## [3.36.2] - 2025-12-04
@@ -1610,7 +1610,7 @@
 - Add: Mistral embedding provider (thanks @SannidhyaSah!)
 - Fix: add run parameter to vitest command in rules (thanks @KJ7LNW!)
 - Update: the max_tokens fallback logic in the sliding window
-- Fix: Bedrock and Vertext token counting improvements (thanks @daniel-lxs!)
+- Fix: Bedrock and Vertex token counting improvements (thanks @daniel-lxs!)
 - Add: llama-4-maverick model to Vertex AI provider (thanks @MuriloFP!)
 - Fix: properly distinguish between user cancellations and API failures
 - Fix: add case sensitivity mention to suggested fixes in apply_diff error message
@@ -1920,7 +1920,7 @@
 - Sync BatchDiffApproval styling with BatchFilePermission for UI consistency (thanks @samhvw8!)
 - Add max height constraint to MCP execution response for better UX (thanks @samhvw8!)
 - Prevent MCP 'installed' label from being squeezed #4630 (thanks @daniel-lxs!)
-- Allow a lower context condesning threshold (thanks @SECKainersdorfer!)
+- Allow a lower context condensing threshold (thanks @SECKainersdorfer!)
 - Avoid type system duplication for cleaner codebase (thanks @EamonNerbonne!)
 
 ## [3.20.1] - 2025-06-12
@@ -2077,7 +2077,7 @@
 
 ## [3.18.2] - 2025-05-23
 
-- Fix vscode-material-icons in the filer picker
+- Fix vscode-material-icons in the file picker
 - Fix global settings export
 - Respect user-configured terminal integration timeout (thanks @KJ7LNW)
 - Context condensing enhancements (thanks @SannidhyaSah)
@@ -2195,7 +2195,7 @@
 - Add vertical tab navigation to the settings (thanks @dlab-anton)
 - Add Groq and Chutes API providers (thanks @shariqriazz)
 - Clickable code references in code block (thanks @KJ7LNW)
-- Improve accessibility of ato-approve toggles (thanks @Deon588)
+- Improve accessibility of auto-approve toggles (thanks @Deon588)
 - Requesty provider fixes (thanks @dtrugman)
 - Fix migration and persistence of per-mode API profiles (thanks @alasano)
 - Fix usage of `path.basename` in the extension webview (thanks @samhvw8)
@@ -2257,7 +2257,7 @@
 - Fix file mentions for filenames containing spaces
 - Improve the auto-approve toggle buttons for some high-contrast VSCode themes
 - Offload expensive count token operations to a web worker (thanks @samhvw8)
-- Improve support for mult-root workspaces (thanks @snoyiatk)
+- Improve support for multi-root workspaces (thanks @snoyiatk)
 - Simplify and streamline Roo Code's quick actions
 - Allow Roo Code settings to be imported from the welcome screen (thanks @julionav)
 - Remove unused types (thanks @wkordalski)
@@ -2663,7 +2663,7 @@
 - Custom ARNs in Amazon Bedrock (thanks @Smartsheet-JB-Brown!)
 - Update MCP servers directory path for platform compatibility (thanks @hannesrudolph!)
 - Fix browser system prompt inclusion rules (thanks @cannuri!)
-- Publish git tags to github from CI (thanks @pdecat!)
+- Publish git tags to GitHub from CI (thanks @pdecat!)
 - Fixes to OpenAI-style cost calculations (thanks @dtrugman!)
 - Fix to allow using an excluded directory as your working directory (thanks @Szpadel!)
 - Kotlin language support in list_code_definition_names tool (thanks @kohii!)
@@ -2768,7 +2768,7 @@
 
 ## [3.7.6] - 2025-02-26
 
-- Handle really long text better in the in the ChatRow similar to TaskHeader (thanks @joemanley201!)
+- Handle really long text better in the ChatRow similar to TaskHeader (thanks @joemanley201!)
 - Support multiple files in drag-and-drop
 - Truncate search_file output to avoid crashing the extension
 - Better OpenRouter error handling (no more "Provider Error")
