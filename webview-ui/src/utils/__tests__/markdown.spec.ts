@@ -8,6 +8,16 @@ describe("markdown heading helpers", () => {
 		expect(countMarkdownHeadings("")).toBe(0)
 	})
 
+	it("returns 0 for non-string values", () => {
+		// These simulate runtime scenarios where a non-string truthy value
+		// is passed due to unexpected API data (see issue #11605)
+		expect(countMarkdownHeadings(42 as unknown as string)).toBe(0)
+		expect(countMarkdownHeadings({ key: "value" } as unknown as string)).toBe(0)
+		expect(countMarkdownHeadings(["# heading"] as unknown as string)).toBe(0)
+		expect(countMarkdownHeadings(true as unknown as string)).toBe(0)
+		expect(countMarkdownHeadings(null as unknown as string)).toBe(0)
+	})
+
 	it("counts single and multiple headings", () => {
 		expect(countMarkdownHeadings("# One")).toBe(1)
 		expect(countMarkdownHeadings("# One\nContent")).toBe(1)
