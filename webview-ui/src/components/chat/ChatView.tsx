@@ -763,9 +763,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			clearTimeout(autoApproveTimeoutRef.current)
 			autoApproveTimeoutRef.current = null
 		}
-		// Do NOT reset user response flag here - it should persist until the next follow-up question arrives
-		// Resetting it too early can cause race conditions where auto-approval fires after user has manually responded
-		// userRespondedRef.current = false
 
 		// Only reset message-specific state, preserving mode.
 		setInputValue("")
