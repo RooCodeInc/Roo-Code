@@ -267,24 +267,33 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 						style={{ marginRight: "8px" }}
 					/>
 				)}
-				<span style={{ flex: 1 }}>
-					{server.name}
-					{server.source && (
-						<span
-							style={{
-								marginLeft: "8px",
-								padding: "1px 6px",
-								fontSize: "11px",
-								borderRadius: "4px",
-								background: "var(--vscode-badge-background)",
-								color: "var(--vscode-badge-foreground)",
-							}}>
-							{server.source}
-						</span>
-					)}
-				</span>
+				<StandardTooltip content={server.name}>
+					<span
+						style={{
+							flex: 1,
+							overflow: "hidden",
+							textOverflow: "ellipsis",
+							whiteSpace: "nowrap",
+							minWidth: 0,
+						}}>
+						{server.name}
+						{server.source && (
+							<span
+								style={{
+									marginLeft: "8px",
+									padding: "1px 6px",
+									fontSize: "11px",
+									borderRadius: "4px",
+									background: "var(--vscode-badge-background)",
+									color: "var(--vscode-badge-foreground)",
+								}}>
+								{server.source}
+							</span>
+						)}
+					</span>
+				</StandardTooltip>
 				<div
-					style={{ display: "flex", alignItems: "center", marginRight: "8px" }}
+					style={{ display: "flex", alignItems: "center", marginRight: "8px", flexShrink: 0 }}
 					onClick={(e) => e.stopPropagation()}>
 					<Button
 						variant="ghost"
