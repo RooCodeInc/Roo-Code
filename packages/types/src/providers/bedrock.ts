@@ -520,6 +520,16 @@ export const BEDROCK_REGIONS = [
 	{ value: "us-gov-west-1", label: "us-gov-west-1" },
 ].sort((a, b) => a.value.localeCompare(b.value))
 
+// Older Claude 3 models on Bedrock that do NOT support the fine-grained-tool-streaming beta.
+// Sending this beta flag to these models causes Bedrock to reject the request with
+// "invalid beta flag". See: https://github.com/RooCodeInc/Roo-Code/issues/11715
+export const BEDROCK_FINE_GRAINED_STREAMING_UNSUPPORTED_IDS = [
+	"anthropic.claude-3-haiku-20240307-v1:0",
+	"anthropic.claude-3-opus-20240229-v1:0",
+	"anthropic.claude-3-sonnet-20240229-v1:0",
+	"anthropic.claude-3-5-sonnet-20240620-v1:0",
+] as const
+
 export const BEDROCK_1M_CONTEXT_MODEL_IDS = [
 	"anthropic.claude-sonnet-4-20250514-v1:0",
 	"anthropic.claude-sonnet-4-5-20250929-v1:0",
