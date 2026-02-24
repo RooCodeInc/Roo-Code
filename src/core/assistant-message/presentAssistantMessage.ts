@@ -8,6 +8,7 @@ import { customToolRegistry } from "@roo-code/core"
 
 import { t } from "../../i18n"
 
+import { SUBAGENT_STATUS_THINKING } from "../../shared/subagent"
 import { defaultModeSlug, getModeBySlug } from "../../shared/modes"
 import type { ToolParamName, ToolResponse, ToolUse, McpToolUse } from "../../shared/tools"
 
@@ -30,6 +31,7 @@ import { askFollowupQuestionTool } from "../tools/AskFollowupQuestionTool"
 import { switchModeTool } from "../tools/SwitchModeTool"
 import { attemptCompletionTool, AttemptCompletionCallbacks } from "../tools/AttemptCompletionTool"
 import { newTaskTool } from "../tools/NewTaskTool"
+import { subagentTool } from "../tools/SubagentTool"
 import { updateTodoListTool } from "../tools/UpdateTodoListTool"
 import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
 import { skillTool } from "../tools/SkillTool"
@@ -292,6 +294,7 @@ export async function presentAssistantMessage(cline: Task) {
 				content = content.replace(/\s?<\/thinking>/g, "")
 			}
 
+			cline.subagentProgressCallback?.(SUBAGENT_STATUS_THINKING)
 			await cline.say("text", content, undefined, block.partial)
 			break
 		}
@@ -383,6 +386,8 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.skill}'${block.params.args ? ` with args: ${block.params.args}` : ""}]`
 					case "generate_image":
 						return `[${block.name} for '${block.params.path}']`
+					case "subagent":
+						return `[${block.name}: ${block.params.description ?? "(no description)"}]`
 					default:
 						return `[${block.name}]`
 				}
@@ -675,6 +680,7 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			cline.subagentProgressCallback?.(toolDescription())
 			switch (block.name) {
 				case "write_to_file":
 					await checkpointSaveAndMark(cline)
@@ -806,6 +812,14 @@ export async function presentAssistantMessage(cline: Task) {
 				case "new_task":
 					await checkpointSaveAndMark(cline)
 					await newTaskTool.handle(cline, block as ToolUse<"new_task">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						toolCallId: block.id,
+					})
+					break
+				case "subagent":
+					await subagentTool.handle(cline, block as ToolUse<"subagent">, {
 						askApproval,
 						handleError,
 						pushToolResult,

@@ -89,3 +89,55 @@ describe("filterNativeToolsForMode - disabledTools", () => {
 		expect(resultNames).not.toContain("edit")
 	})
 })
+
+describe("filterNativeToolsForMode - subagent experiment", () => {
+	const codeMode = {
+		slug: "code",
+		name: "Code",
+		roleDefinition: "Test",
+		groups: ["read", "edit", "command", "mcp"] as ("read" | "edit" | "command" | "mcp")[],
+	}
+
+	const mockSubagentTool: OpenAI.Chat.ChatCompletionTool = {
+		type: "function",
+		function: {
+			name: "subagent",
+			description: "Run subagent",
+			parameters: {},
+		},
+	}
+
+	const mockNativeTools: OpenAI.Chat.ChatCompletionTool[] = [
+		makeTool("read_file"),
+		makeTool("write_to_file"),
+		mockSubagentTool,
+	]
+
+	it("should exclude subagent when experiment is not enabled", () => {
+		const filtered = filterNativeToolsForMode(
+			mockNativeTools,
+			"code",
+			[codeMode],
+			{ subagent: false },
+			undefined,
+			{},
+			undefined,
+		)
+		const toolNames = filtered.map((t) => ("function" in t ? t.function.name : ""))
+		expect(toolNames).not.toContain("subagent")
+	})
+
+	it("should include subagent when experiment is enabled", () => {
+		const filtered = filterNativeToolsForMode(
+			mockNativeTools,
+			"code",
+			[codeMode],
+			{ subagent: true },
+			undefined,
+			{},
+			undefined,
+		)
+		const toolNames = filtered.map((t) => ("function" in t ? t.function.name : ""))
+		expect(toolNames).toContain("subagent")
+	})
+})

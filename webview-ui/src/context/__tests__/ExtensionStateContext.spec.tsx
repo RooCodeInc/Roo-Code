@@ -234,6 +234,7 @@ describe("mergeExtensionState", () => {
 				imageGeneration: false,
 				runSlashCommand: false,
 				customTools: false,
+				subagent: false,
 			} as Record<ExperimentId, boolean>,
 			checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS + 5,
 		}
@@ -250,6 +251,7 @@ describe("mergeExtensionState", () => {
 			imageGeneration: false,
 			runSlashCommand: false,
 			customTools: false,
+			subagent: false,
 		})
 	})
 

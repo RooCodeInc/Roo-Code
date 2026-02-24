@@ -269,6 +269,36 @@
 		"completionInstructions": "하위 작업 완료! 결과를 검토하고 수정 사항이나 다음 단계를 제안할 수 있습니다. 모든 것이 괜찮아 보이면, 부모 작업에 결과를 반환하기 위해 확인해주세요.",
 		"goToSubtask": "작업 보기"
 	},
+	"subagents": {
+		"runningLabel": "Running subagent: {{description}}",
+		"completedLabel": "Subagent completed",
+		"cancelledByUser": "Subagent was cancelled by the user.",
+		"starting": "Starting...",
+		"thinking": "Thinking...",
+		"toolDisplayNames": {
+			"read_file": "Read file",
+			"write_to_file": "Write file",
+			"apply_diff": "Apply diff",
+			"search_files": "Search files",
+			"search_and_replace": "Search and replace",
+			"search_replace": "Search replace",
+			"edit_file": "Edit file",
+			"list_files": "List files",
+			"codebase_search": "Codebase search",
+			"execute_command": "Run command",
+			"run_slash_command": "Slash command",
+			"ask_followup_question": "Ask question",
+			"attempt_completion": "Complete",
+			"update_todo_list": "Update todos",
+			"switch_mode": "Switch mode",
+			"new_task": "New task",
+			"generate_image": "Generate image",
+			"use_mcp_tool": "MCP tool",
+			"access_mcp_resource": "MCP resource",
+			"apply_patch": "Apply patch",
+			"subagent": "Subagent"
+		}
+	},
 	"questions": {
 		"hasQuestion": "Roo에게 질문이 있습니다"
 	},

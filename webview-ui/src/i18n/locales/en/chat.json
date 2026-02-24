@@ -311,6 +311,36 @@
 		"completionInstructions": "You can review the results and suggest any corrections or next steps. If everything looks good, confirm to return the result to the parent task.",
 		"goToSubtask": "View task"
 	},
+	"subagents": {
+		"runningLabel": "Running subagent: {{description}}",
+		"completedLabel": "Subagent completed",
+		"cancelledByUser": "Subagent was cancelled by the user.",
+		"starting": "Starting...",
+		"thinking": "Thinking...",
+		"toolDisplayNames": {
+			"read_file": "Read file",
+			"write_to_file": "Write file",
+			"apply_diff": "Apply diff",
+			"search_files": "Search files",
+			"search_and_replace": "Search and replace",
+			"search_replace": "Search replace",
+			"edit_file": "Edit file",
+			"list_files": "List files",
+			"codebase_search": "Codebase search",
+			"execute_command": "Run command",
+			"run_slash_command": "Slash command",
+			"ask_followup_question": "Ask question",
+			"attempt_completion": "Complete",
+			"update_todo_list": "Update todos",
+			"switch_mode": "Switch mode",
+			"new_task": "New task",
+			"generate_image": "Generate image",
+			"use_mcp_tool": "MCP tool",
+			"access_mcp_resource": "MCP resource",
+			"apply_patch": "Apply patch",
+			"subagent": "Subagent"
+		}
+	},
 	"questions": {
 		"hasQuestion": "Roo has a question"
 	},

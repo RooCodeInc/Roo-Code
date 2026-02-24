@@ -823,6 +823,10 @@
 			"refreshSuccess": "Làm mới công cụ thành công",
 			"refreshError": "Không thể làm mới công cụ",
 			"toolParameters": "Thông số"
+		},
+		"SUBAGENT": {
+			"name": "Subagent tool",
+			"description": "When enabled, the model can run subagents in the background for research or sub-tasks. The subagent's result is returned to the main task. Use \"explore\" for read-only sub-tasks or \"general\" when the sub-task may edit files or run commands."
 		}
 	},
 	"promptCaching": {
