@@ -780,6 +780,8 @@ export interface ClineSayTool {
 		| "runSlashCommand"
 		| "updateTodoList"
 		| "skill"
+		| "subagentRunning"
+		| "subagentCompleted"
 	path?: string
 	// For readCommandOutput
 	readStart?: number
@@ -837,6 +839,13 @@ export interface ClineSayTool {
 	description?: string
 	// Properties for skill tool
 	skill?: string
+	// Properties for subagent tool (subagentRunning / subagentCompleted)
+	currentTask?: string
+	result?: string
+	error?: string
+	/** When set (e.g. CANCELLED), webview shows t(messageKey) instead of result/error. */
+	resultCode?: string
+	messageKey?: string
 }
 
 export interface ClineAskUseMcpServer {

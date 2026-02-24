@@ -823,6 +823,10 @@
 			"refreshSuccess": "Narzędzia odświeżone pomyślnie",
 			"refreshError": "Nie udało się odświeżyć narzędzi",
 			"toolParameters": "Parametry"
+		},
+		"SUBAGENT": {
+			"name": "Subagent tool",
+			"description": "When enabled, the model can run subagents in the background for research or sub-tasks. The subagent's result is returned to the main task. Use \"explore\" for read-only sub-tasks or \"general\" when the sub-task may edit files or run commands."
 		}
 	},
 	"promptCaching": {
