@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "組織已停用分享功能",
 		"shareSuccessOrganization": "組織連結已複製到剪貼簿",
 		"shareSuccessPublic": "公開連結已複製到剪貼簿",
-		"openInCloud": "在 Roo Code Cloud 中開啟工作",
-		"openInCloudIntro": "從任何地方繼續監控或與 Roo 互動。掃描、點選或複製即可開啟。",
 		"openApiHistory": "開啟 API 歷史紀錄",
 		"openUiHistory": "開啟 UI 歷史紀錄",
 		"backToParentTask": "上層工作"
 	},
 	"unpin": "取消釘選",
 	"pin": "釘選",
+	"fileChangesInConversation": {
+		"header": "此對話中已變更 {{count}} 個檔案"
+	},
 	"retry": {
 		"title": "重試",
 		"tooltip": "再次嘗試操作"
@@ -69,6 +70,22 @@
 	"read-batch": {
 		"approve": {
 			"title": "全部核准"
+		},
+		"deny": {
+			"title": "全部拒絕"
+		}
+	},
+	"list-batch": {
+		"approve": {
+			"title": "全部核准"
+		},
+		"deny": {
+			"title": "全部拒絕"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "全部儲存"
 		},
 		"deny": {
 			"title": "全部拒絕"
@@ -122,6 +139,8 @@
 	},
 	"selectMode": "選擇互動模式",
 	"selectApiConfig": "選取 API 設定",
+	"lockApiConfigAcrossModes": "鎖定此工作區所有模式的 API 設定",
+	"unlockApiConfigAcrossModes": "此工作區所有模式的 API 設定已鎖定（點擊解鎖）",
 	"enhancePrompt": "使用額外內容強化提示詞",
 	"modeSelector": {
 		"title": "模式",
@@ -156,14 +175,14 @@
 		"rateLimitWait": "速率限制",
 		"errorTitle": "供應商錯誤 {{code}}",
 		"errorMessage": {
-			"docs": "說明文件",
-			"goToSettings": "設定",
 			"400": "供應商無法按照此方式處理請求。請停止工作並嘗試其他方法。",
 			"401": "無法向供應商進行身份驗證。請檢查您的 API 金鑰設定。",
 			"402": "您的帳戶資金／額度似乎已用盡。請前往供應商增加額度以繼續。",
 			"403": "無權存取。您的 API 金鑰有效，但供應商拒絕完成此請求。",
 			"429": "請求次數過多。供應商已對您的請求進行速率限制。請在下一次 API 呼叫前稍候。",
 			"500": "供應商伺服器錯誤。伺服器端發生問題，您的請求沒有問題。",
+			"docs": "說明文件",
+			"goToSettings": "設定",
 			"connection": "連線錯誤。請確保您有可用的網際網路連線。",
 			"unknown": "未知 API 錯誤。請聯絡 Roo Code 技術支援。",
 			"claudeCodeNotAuthenticated": "您需要登入才能使用 Claude Code。前往設定並點選「登入 Claude Code」以進行驗證。"
@@ -203,6 +222,10 @@
 			"description": "為保持在上下文視窗限制內，已從對話中移除較舊的訊息。與壓縮相比，這是一種快速但上下文保留較少的方法。"
 		}
 	},
+	"skill": {
+		"wantsToLoad": "Roo 想要載入技能",
+		"didLoad": "Roo 載入了技能"
+	},
 	"instructions": {
 		"wantsToFetch": "Roo 想要取得詳細指示以協助目前工作"
 	},
@@ -237,7 +260,8 @@
 		"wantsToSearch": "Roo 想要在此目錄中搜尋 <code>{{regex}}</code>",
 		"didSearch": "Roo 已在此目錄中搜尋 <code>{{regex}}</code>",
 		"wantsToSearchOutsideWorkspace": "Roo 想要在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "Roo 已在此目錄（工作區外）中搜尋 <code>{{regex}}</code>"
+		"didSearchOutsideWorkspace": "Roo 已在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
+		"wantsToViewMultipleDirectories": "Roo 想要查看多個目錄"
 	},
 	"codebaseSearch": {
 		"wantsToSearch": "Roo 想要在程式碼庫中搜尋 <code>{{query}}</code>",
@@ -346,7 +370,9 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"intelligentContextCondensation": "智慧上下文壓縮 v2：完全重寫管理上下文視窗的演算法。現在您可以更長時間地執行任務，而不會讓 Roo 失去品質。"
+			"geminiPro": "Gemini 3.1 Pro 支援：新增 Gemini 3.1 Pro 模型支援，並設為預設 Gemini 模型以提升效能。",
+			"cliNdjson": "CLI NDJSON 協定：新增 NDJSON stdin 協定、list 子指令，以及模組化的 run 指令，提供更彈性的 CLI 工作流程。",
+			"cliRelease": "CLI v0.1.0：Roo Code CLI 以穩定的指令介面達成首個正式版本。"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",
@@ -369,44 +395,6 @@
 		"total": "總成本：${{cost}}",
 		"includesSubtasks": "包含子任務成本"
 	},
-	"browser": {
-		"session": "瀏覽器工作階段",
-		"active": "使用中",
-		"rooWantsToUse": "Roo 想要使用瀏覽器",
-		"consoleLogs": "主控台記錄",
-		"noNewLogs": "（沒有新記錄）",
-		"screenshot": "瀏覽器螢幕擷圖",
-		"cursor": "游標",
-		"navigation": {
-			"step": "步驟 {{current}}／{{total}}",
-			"previous": "上一步",
-			"next": "下一步"
-		},
-		"sessionStarted": "瀏覽器工作階段已啟動",
-		"actions": {
-			"title": "瀏覽器動作：",
-			"launched": "瀏覽器已啟動",
-			"launch": "在 {{url}} 啟動瀏覽器",
-			"clicked": "點選位置：{{coordinate}}",
-			"click": "點選 ({{coordinate}})",
-			"typed": "輸入：{{text}}",
-			"type": "輸入「{{text}}」",
-			"pressed": "已按下 {{key}}",
-			"press": "按下 {{key}}",
-			"scrolledDown": "已向下捲動",
-			"scrollDown": "向下捲動",
-			"scrolledUp": "已向上捲動",
-			"scrollUp": "向上捲動",
-			"hovered": "滑鼠停留位置：{{coordinate}}",
-			"hover": "滑鼠停留 ({{coordinate}})",
-			"resized": "大小已變更：{{size}}",
-			"resize": "調整大小為 {{size}}",
-			"screenshotSaved": "螢幕擷圖已儲存",
-			"screenshot": "將螢幕擷圖儲存至 {{path}}",
-			"closed": "瀏覽器已關閉",
-			"close": "關閉瀏覽器"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "展開程式碼區塊",
@@ -414,7 +402,6 @@
 			"copy_code": "複製程式碼"
 		}
 	},
-	"systemPromptWarning": "警告：自訂系統提示詞覆寫已啟用。這可能嚴重破壞功能並導致不可預測的行為。",
 	"profileViolationWarning": "目前設定檔與您的組織設定不相容",
 	"shellIntegration": {
 		"title": "命令執行警告",
@@ -438,7 +425,8 @@
 		"indexing": "索引中 {{percentage}}%",
 		"indexed": "已索引",
 		"error": "索引錯誤",
-		"status": "索引狀態"
+		"status": "索引狀態",
+		"stopping": "正在停止索引..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "版本 {{version}} - 點選查看發布說明"
@@ -495,5 +483,13 @@
 		"serversPart_other": "{{count}} 個 MCP 伺服器",
 		"messageTemplate": "您已啟用 {{tools}}（透過 {{servers}}）。這麼多的工具可能會混淆模型並導致錯誤。請嘗試保持在 {{threshold}} 以下。",
 		"openMcpSettings": "開啟 MCP 設定"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "供應商不再受支援",
+		"message": "抱歉，此供應商已不再受支援。我們發現實際使用它的 Roo 使用者非常少，我們需要縮減程式碼庫的範圍，以便繼續快速交付並更好地服務社群。這是一個非常艱難的決定，但它能讓我們專注於對你最重要的事情。我們知道這很遺憾。",
+		"openSettings": "開啟設定"
 	}
 }

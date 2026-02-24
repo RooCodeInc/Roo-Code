@@ -89,6 +89,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			modelId: id,
 			model: info,
 			settings: this.options,
+			defaultTemperature: 0,
 		})
 
 		return { id, info, ...params }

@@ -64,10 +64,10 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 			return undefined // Model is available locally
 		}
 
-		// If we have router models data for Ollama
-		if (routerModels.data?.ollama) {
+		// Only validate against router models if they actually contain data (not just an empty placeholder)
+		if (routerModels.data?.ollama && Object.keys(routerModels.data.ollama).length > 0) {
 			const availableModels = Object.keys(routerModels.data.ollama)
-			// Show warning if model is not in the list (regardless of how many models there are)
+			// Show warning if model is not in the list
 			if (!availableModels.includes(selectedModel)) {
 				return t("settings:validation.modelAvailability", { modelId: selectedModel })
 			}

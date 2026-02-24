@@ -46,20 +46,14 @@ function getModelIdForProvider(config: ProviderSettings): string | undefined {
 			return config.openAiModelId
 		case "requesty":
 			return config.requestyModelId
-		case "litellm":
-			return config.litellmModelId
-		case "deepinfra":
-			return config.deepInfraModelId
-		case "huggingface":
-			return config.huggingFaceModelId
 		case "unbound":
 			return config.unboundModelId
+		case "litellm":
+			return config.litellmModelId
 		case "vercel-ai-gateway":
 			return config.vercelAiGatewayModelId
-		case "io-intelligence":
-			return config.ioIntelligenceModelId
 		default:
-			// For anthropic, bedrock, vertex, gemini, xai, groq, etc.
+			// For anthropic, bedrock, vertex, gemini, xai, etc.
 			return config.apiModelId
 	}
 }

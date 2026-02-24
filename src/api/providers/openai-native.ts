@@ -45,6 +45,12 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	 */
 	private pendingToolCallId: string | undefined
 	private pendingToolCallName: string | undefined
+	// Tracks whether this response already emitted text to avoid duplicate done-event rendering.
+	private sawTextOutputInCurrentResponse = false
+	// Tracks whether text arrived through delta events so content_part events can be treated as fallback-only.
+	private sawTextDeltaInCurrentResponse = false
+	// Tracks tool call IDs emitted via streaming partial events to prevent done-event duplicates.
+	private streamedToolCallIds = new Set<string>()
 	// Resolved service tier from Responses API (actual tier used by OpenAI)
 	private lastServiceTier: ServiceTier | undefined
 	// Complete response output array (includes reasoning items with encrypted_content)
@@ -58,6 +64,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	private readonly coreHandledEventTypes = new Set<string>([
 		"response.text.delta",
 		"response.output_text.delta",
+		"response.text.done",
+		"response.output_text.done",
+		"response.content_part.added",
+		"response.content_part.done",
 		"response.reasoning.delta",
 		"response.reasoning_text.delta",
 		"response.reasoning_summary.delta",
@@ -87,7 +97,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Include originator, session_id, and User-Agent headers for API tracking and debugging
 		const userAgent = `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`
 		this.client = new OpenAI({
-			baseURL: this.options.openAiNativeBaseUrl,
+			baseURL: this.options.openAiNativeBaseUrl || undefined,
 			apiKey,
 			defaultHeaders: {
 				originator: "roo-code",
@@ -184,6 +194,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Reset pending tool identity for this request
 		this.pendingToolCallId = undefined
 		this.pendingToolCallName = undefined
+		this.sawTextOutputInCurrentResponse = false
+		this.sawTextDeltaInCurrentResponse = false
+		this.streamedToolCallIds.clear()
 
 		// Use Responses API for ALL models
 		const { verbosity, reasoning } = this.getModel()
@@ -378,7 +391,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					}
 				}),
 			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? false,
+			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
 		}
 
 		// Include text.verbosity only when the model explicitly supports it
@@ -700,7 +713,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 								this.lastResponseId = parsed.response.id as string
 							}
 
-							// Delegate standard event types to the shared processor to avoid duplication
+							// Delegate standard event types to the shared processor to avoid duplication.
+							// This applies to both SDK and raw SSE fallback paths.
 							if (parsed?.type && this.coreHandledEventTypes.has(parsed.type)) {
 								for await (const outChunk of this.processEvent(parsed, model)) {
 									// Track whether we've emitted any content so fallback handling can decide appropriately
@@ -1051,13 +1065,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 								// For SSE path, usage often arrives separately; avoid double-emitting here.
 							}
 							// These are structural or status events, we can just log them at a lower level or ignore.
-							else if (
-								parsed.type === "response.created" ||
-								parsed.type === "response.in_progress" ||
-								parsed.type === "response.output_item.done" ||
-								parsed.type === "response.content_part.added" ||
-								parsed.type === "response.content_part.done"
-							) {
+							else if (parsed.type === "response.created" || parsed.type === "response.in_progress") {
 								// Status events - no action needed
 							}
 							// Fallback for older formats or unexpected responses
@@ -1146,10 +1154,46 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			this.lastResponseId = event.response.id as string
 		}
 
-		// Handle known streaming text deltas
+		// Handle text deltas
 		if (event?.type === "response.text.delta" || event?.type === "response.output_text.delta") {
 			if (event?.delta) {
+				this.sawTextDeltaInCurrentResponse = true
+				this.sawTextOutputInCurrentResponse = true
 				yield { type: "text", text: event.delta }
+			}
+			return
+		}
+
+		// Handle done-only text for variants that skip delta events.
+		if (event?.type === "response.text.done" || event?.type === "response.output_text.done") {
+			const doneText =
+				typeof event?.text === "string"
+					? event.text
+					: typeof event?.output_text === "string"
+						? event.output_text
+						: typeof event?.delta === "string"
+							? event.delta
+							: undefined
+			if (!this.sawTextOutputInCurrentResponse && doneText) {
+				this.sawTextOutputInCurrentResponse = true
+				yield { type: "text", text: doneText }
+			}
+			return
+		}
+
+		// Handle content-part text for structured streaming payloads.
+		if (event?.type === "response.content_part.added" || event?.type === "response.content_part.done") {
+			const part = event?.part
+			if (
+				!this.sawTextDeltaInCurrentResponse &&
+				(part?.type === "text" || part?.type === "output_text") &&
+				(typeof part?.text === "string" || typeof part?.text?.value === "string")
+			) {
+				const partText = typeof part.text === "string" ? part.text : part.text.value
+				if (partText) {
+					this.sawTextOutputInCurrentResponse = true
+					yield { type: "text", text: partText }
+				}
 			}
 			return
 		}
@@ -1170,6 +1214,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Handle refusal deltas
 		if (event?.type === "response.refusal.delta") {
 			if (event?.delta) {
+				this.sawTextOutputInCurrentResponse = true
 				yield { type: "text", text: `[Refusal] ${event.delta}` }
 			}
 			return
@@ -1189,6 +1234,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			// Avoid emitting incomplete tool_call_partial chunks; the downstream
 			// NativeToolCallParser needs a name to start a call.
 			if (typeof name === "string" && name.length > 0 && typeof callId === "string" && callId.length > 0) {
+				this.streamedToolCallIds.add(callId)
 				yield {
 					type: "tool_call_partial",
 					index: event.index ?? 0,
@@ -1223,11 +1269,15 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					}
 				}
 
-				// For "added" events, yield text/reasoning content (streaming path)
-				// For "done" events, do NOT yield text/reasoning - it's already been streamed via deltas
-				// and would cause double-emission (A, B, C, ABC).
+				// For "added" events, yield text/reasoning content (streaming path).
+				// For "done" events, normally text was already streamed via deltas, but some models
+				// only provide assistant text on done events. Emit fallback text only if none was emitted yet.
 				if (event.type === "response.output_item.added") {
 					if (item.type === "text" && item.text) {
+						this.sawTextOutputInCurrentResponse = true
+						yield { type: "text", text: item.text }
+					} else if (item.type === "output_text" && item.text) {
+						this.sawTextOutputInCurrentResponse = true
 						yield { type: "text", text: item.text }
 					} else if (item.type === "reasoning" && item.text) {
 						yield { type: "reasoning", text: item.text }
@@ -1235,36 +1285,83 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 						for (const content of item.content) {
 							// Some implementations send 'text'; others send 'output_text'
 							if ((content?.type === "text" || content?.type === "output_text") && content?.text) {
+								this.sawTextOutputInCurrentResponse = true
+								yield { type: "text", text: content.text }
+							}
+						}
+					}
+				} else if (
+					event.type === "response.output_item.done" &&
+					(item.type === "function_call" || item.type === "tool_call")
+				) {
+					const callId = item.call_id || item.tool_call_id || item.id
+					const name = item.name || item.function?.name || item.function_name
+					const argsRaw = item.arguments || item.function?.arguments || item.input
+					const args =
+						typeof argsRaw === "string"
+							? argsRaw
+							: argsRaw && typeof argsRaw === "object"
+								? JSON.stringify(argsRaw)
+								: ""
+
+					// Fallback for models that only emit a complete function_call in output_item.done.
+					// If we already streamed partials for this ID, skip to avoid duplicate tool execution.
+					if (
+						typeof callId === "string" &&
+						callId.length > 0 &&
+						typeof name === "string" &&
+						name.length > 0 &&
+						!this.streamedToolCallIds.has(callId)
+					) {
+						yield {
+							type: "tool_call",
+							id: callId,
+							name,
+							arguments: args,
+						}
+					}
+				} else if (!this.sawTextOutputInCurrentResponse) {
+					if ((item.type === "text" || item.type === "output_text") && item.text) {
+						this.sawTextOutputInCurrentResponse = true
+						yield { type: "text", text: item.text }
+					} else if (item.type === "message" && Array.isArray(item.content)) {
+						for (const content of item.content) {
+							if ((content?.type === "text" || content?.type === "output_text") && content?.text) {
+								this.sawTextOutputInCurrentResponse = true
 								yield { type: "text", text: content.text }
 							}
 						}
 					}
 				}
 
-				// Only handle tool/function calls from done events (to ensure arguments are complete)
-				if (
-					(item.type === "function_call" || item.type === "tool_call") &&
-					event.type === "response.output_item.done"
-				) {
-					// Handle complete tool/function call item
-					// Emit as tool_call for backward compatibility with non-streaming tool handling
-					const callId = item.call_id || item.tool_call_id || item.id
-					if (callId) {
-						const args = item.arguments || item.function?.arguments || item.function_arguments
-						yield {
-							type: "tool_call",
-							id: callId,
-							name: item.name || item.function?.name || item.function_name || "",
-							arguments: typeof args === "string" ? args : "{}",
-						}
-					}
-				}
+				// Note: We intentionally do NOT emit tool_call from response.output_item.done
+				// for function_call/tool_call items if we already saw streaming partials.
 			}
 			return
 		}
 
 		// Completion events that may carry usage
 		if (event?.type === "response.done" || event?.type === "response.completed") {
+			// Some OpenAI variants only provide assistant text in the final completed payload.
+			if (!this.sawTextOutputInCurrentResponse && Array.isArray(event?.response?.output)) {
+				for (const outputItem of event.response.output) {
+					if ((outputItem?.type === "text" || outputItem?.type === "output_text") && outputItem?.text) {
+						this.sawTextOutputInCurrentResponse = true
+						yield { type: "text", text: outputItem.text }
+						continue
+					}
+
+					if (outputItem?.type === "message" && Array.isArray(outputItem.content)) {
+						for (const content of outputItem.content) {
+							if ((content?.type === "text" || content?.type === "output_text") && content?.text) {
+								this.sawTextOutputInCurrentResponse = true
+								yield { type: "text", text: content.text }
+							}
+						}
+					}
+				}
+			}
+
 			const usage = event?.response?.usage || event?.usage || undefined
 			const usageData = this.normalizeUsage(usage, model)
 			if (usageData) {
@@ -1275,6 +1372,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		// Fallbacks for older formats or unexpected objects
 		if (event?.choices?.[0]?.delta?.content) {
+			this.sawTextDeltaInCurrentResponse = true
+			this.sawTextOutputInCurrentResponse = true
 			yield { type: "text", text: event.choices[0].delta.content }
 			return
 		}

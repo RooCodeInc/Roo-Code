@@ -359,6 +359,13 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			defaultTemperature: info.defaultTemperature ?? 1,
 		})
 
+		// Gemini models perform better with the edit tool instead of apply_diff.
+		info = {
+			...info,
+			excludedTools: [...new Set([...(info.excludedTools || []), "apply_diff"])],
+			includedTools: [...new Set([...(info.includedTools || []), "edit"])],
+		}
+
 		// The `:thinking` suffix indicates that the model is a "Hybrid"
 		// reasoning model and that reasoning is required to be enabled.
 		// The actual model ID honored by Gemini's API does not have this
@@ -404,14 +411,6 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		const { id: model, info } = this.getModel()
 
 		try {
-			const tools: GenerateContentConfig["tools"] = []
-			if (this.options.enableUrlContext) {
-				tools.push({ urlContext: {} })
-			}
-			if (this.options.enableGrounding) {
-				tools.push({ googleSearch: {} })
-			}
-
 			const supportsTemperature = info.supportsTemperature !== false
 			const temperatureConfig: number | undefined = supportsTemperature
 				? (this.options.modelTemperature ?? info.defaultTemperature ?? 1)
@@ -422,7 +421,6 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 					? { baseUrl: this.options.googleGeminiBaseUrl }
 					: undefined,
 				temperature: temperatureConfig,
-				...(tools.length > 0 ? { tools } : {}),
 			}
 
 			const request = {

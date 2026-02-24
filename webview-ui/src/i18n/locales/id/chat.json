@@ -25,8 +25,6 @@
 		"sharingDisabledByOrganization": "Berbagi dinonaktifkan oleh organisasi",
 		"shareSuccessOrganization": "Tautan organisasi disalin ke clipboard",
 		"shareSuccessPublic": "Tautan publik disalin ke clipboard",
-		"openInCloud": "Buka tugas di Roo Code Cloud",
-		"openInCloudIntro": "Terus pantau atau berinteraksi dengan Roo dari mana saja. Pindai, klik atau salin untuk membuka.",
 		"openApiHistory": "Buka Riwayat API",
 		"openUiHistory": "Buka Riwayat UI",
 		"backToParentTask": "Tugas Induk"
@@ -36,6 +34,9 @@
 	},
 	"unpin": "Lepas Pin",
 	"pin": "Pin",
+	"fileChangesInConversation": {
+		"header": "{{count}} file diubah dalam percakapan ini"
+	},
 	"retry": {
 		"title": "Coba Lagi",
 		"tooltip": "Coba operasi lagi"
@@ -75,6 +76,22 @@
 	"read-batch": {
 		"approve": {
 			"title": "Setujui Semua"
+		},
+		"deny": {
+			"title": "Tolak Semua"
+		}
+	},
+	"list-batch": {
+		"approve": {
+			"title": "Setujui Semua"
+		},
+		"deny": {
+			"title": "Tolak Semua"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Simpan Semua"
 		},
 		"deny": {
 			"title": "Tolak Semua"
@@ -125,6 +142,8 @@
 	},
 	"selectMode": "Pilih mode untuk interaksi",
 	"selectApiConfig": "Pilih konfigurasi API",
+	"lockApiConfigAcrossModes": "Kunci konfigurasi API di semua mode dalam workspace ini",
+	"unlockApiConfigAcrossModes": "Konfigurasi API terkunci di semua mode dalam workspace ini (klik untuk membuka kunci)",
 	"enhancePrompt": "Tingkatkan prompt dengan konteks tambahan",
 	"enhancePromptDescription": "Tombol 'Tingkatkan Prompt' membantu memperbaiki prompt kamu dengan memberikan konteks tambahan, klarifikasi, atau penyusunan ulang. Coba ketik prompt di sini dan klik tombol lagi untuk melihat cara kerjanya.",
 	"modeSelector": {
@@ -206,6 +225,10 @@
 			"description": "Pesan lama telah dihapus dari percakapan untuk tetap dalam batas jendela konteks. Ini adalah pendekatan yang cepat tetapi kurang mempertahankan konteks dibandingkan dengan kondensasi."
 		}
 	},
+	"skill": {
+		"wantsToLoad": "Roo ingin memuat keterampilan",
+		"didLoad": "Roo telah memuat keterampilan"
+	},
 	"instructions": {
 		"wantsToFetch": "Roo ingin mengambil instruksi detail untuk membantu tugas saat ini"
 	},
@@ -242,7 +265,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo ingin melihat file tingkat atas di direktori ini (di luar workspace)",
 		"didViewTopLevelOutsideWorkspace": "Roo melihat file tingkat atas di direktori ini (di luar workspace)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo ingin melihat semua file secara rekursif di direktori ini (di luar workspace)",
-		"didViewRecursiveOutsideWorkspace": "Roo melihat semua file secara rekursif di direktori ini (di luar workspace)"
+		"didViewRecursiveOutsideWorkspace": "Roo melihat semua file secara rekursif di direktori ini (di luar workspace)",
+		"wantsToViewMultipleDirectories": "Roo ingin melihat beberapa direktori"
 	},
 	"codebaseSearch": {
 		"wantsToSearch": "Roo ingin mencari codebase untuk <code>{{query}}</code>",
@@ -353,7 +377,9 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"intelligentContextCondensation": "Kondensasi Konteks Cerdas v2: Penulisan ulang lengkap algoritma yang mengelola jendela konteks. Sekarang Anda dapat menjalankan tugas lebih lama tanpa Roo kehilangan kualitas."
+			"geminiPro": "Dukungan Gemini 3.1 Pro: Dukungan model Gemini 3.1 Pro telah ditambahkan dan ditetapkan sebagai model Gemini default untuk performa yang lebih baik.",
+			"cliNdjson": "Protokol NDJSON CLI: Protokol NDJSON stdin baru, subperintah list, dan perintah run yang dimodularisasi untuk alur kerja CLI yang lebih fleksibel.",
+			"cliRelease": "CLI v0.1.0: CLI Roo Code mencapai rilis resmi pertamanya dengan antarmuka perintah yang stabil."
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",
@@ -376,44 +402,6 @@
 		"total": "Total Biaya: ${{cost}}",
 		"includesSubtasks": "Termasuk biaya subtugas"
 	},
-	"browser": {
-		"session": "Sesi Browser",
-		"active": "Aktif",
-		"rooWantsToUse": "Roo ingin menggunakan browser",
-		"consoleLogs": "Log Konsol",
-		"noNewLogs": "(Tidak ada log baru)",
-		"screenshot": "Screenshot browser",
-		"cursor": "kursor",
-		"navigation": {
-			"step": "Langkah {{current}} dari {{total}}",
-			"previous": "Sebelumnya",
-			"next": "Selanjutnya"
-		},
-		"sessionStarted": "Sesi Browser Dimulai",
-		"actions": {
-			"title": "Aksi Browser: ",
-			"launched": "Browser diluncurkan",
-			"launch": "Luncurkan browser di {{url}}",
-			"clicked": "Diklik ({{coordinate}})",
-			"click": "Klik ({{coordinate}})",
-			"typed": "Diketik: {{text}}",
-			"type": "Ketik \"{{text}}\"",
-			"pressed": "Ditekan: {{key}}",
-			"press": "Tekan {{key}}",
-			"scrolledDown": "Digulir ke bawah",
-			"scrollDown": "Gulir ke bawah",
-			"scrolledUp": "Digulir ke atas",
-			"scrollUp": "Gulir ke atas",
-			"hovered": "Diarahkan ({{coordinate}})",
-			"hover": "Arahkan ({{coordinate}})",
-			"resized": "Ukuran diubah ke: {{size}}",
-			"resize": "Ubah ukuran ke {{size}}",
-			"screenshotSaved": "Screenshot disimpan",
-			"screenshot": "Simpan screenshot ke {{path}}",
-			"closed": "Browser ditutup",
-			"close": "Tutup browser"
-		}
-	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Perluas blok kode",
@@ -421,7 +409,6 @@
 			"copy_code": "Salin kode"
 		}
 	},
-	"systemPromptWarning": "PERINGATAN: Override system prompt kustom aktif. Ini dapat merusak fungsionalitas secara serius dan menyebabkan perilaku yang tidak terduga.",
 	"profileViolationWarning": "Profil saat ini tidak kompatibel dengan pengaturan organisasi kamu",
 	"shellIntegration": {
 		"title": "Peringatan Eksekusi Perintah",
@@ -445,7 +432,8 @@
 		"indexing": "Mengindeks {{percentage}}%",
 		"indexed": "Terindeks",
 		"error": "Error indeks",
-		"status": "Status indeks"
+		"status": "Status indeks",
+		"stopping": "Menghentikan pengindeksan..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versi {{version}} - Klik untuk melihat catatan rilis"
@@ -510,5 +498,13 @@
 		"serversPart_other": "{{count}} server MCP",
 		"messageTemplate": "Anda memiliki {{tools}} diaktifkan melalui {{servers}}. Jumlah yang begitu besar dapat membingungkan model dan menyebabkan kesalahan. Cobalah untuk menjaganya di bawah {{threshold}}.",
 		"openMcpSettings": "Buka Pengaturan MCP"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Penyedia tidak lagi didukung",
+		"message": "Maaf, penyedia ini tidak lagi didukung. Kami melihat sangat sedikit pengguna Roo yang benar-benar menggunakannya dan kami perlu mengurangi cakupan kode kami agar bisa terus bergerak cepat dan melayani komunitas kami dengan baik. Ini adalah keputusan yang sangat sulit, tapi ini memungkinkan kami fokus pada apa yang paling penting bagimu. Memang menyebalkan, kami tahu.",
+		"openSettings": "Buka Pengaturan"
 	}
 }

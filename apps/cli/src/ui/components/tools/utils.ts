@@ -50,8 +50,7 @@ export function getToolDisplayName(toolName: string): string {
 		// File read operations
 		readFile: "Read",
 		read_file: "Read",
-		fetchInstructions: "Fetch Instructions",
-		fetch_instructions: "Fetch Instructions",
+		skill: "Load Skill",
 		listFilesTopLevel: "List Files",
 		listFilesRecursive: "List Files (Recursive)",
 		list_files: "List Files",
@@ -73,10 +72,6 @@ export function getToolDisplayName(toolName: string): string {
 		// Command operations
 		execute_command: "Execute Command",
 		executeCommand: "Execute Command",
-
-		// Browser operations
-		browser_action: "Browser Action",
-		browserAction: "Browser Action",
 
 		// Mode operations
 		switchMode: "Switch Mode",
@@ -107,8 +102,7 @@ export function getToolIconName(toolName: string): IconName {
 		// File read operations
 		readFile: "file",
 		read_file: "file",
-		fetchInstructions: "file",
-		fetch_instructions: "file",
+		skill: "file",
 		listFilesTopLevel: "folder",
 		listFilesRecursive: "folder",
 		list_files: "folder",
@@ -130,10 +124,6 @@ export function getToolIconName(toolName: string): IconName {
 		// Command operations
 		execute_command: "terminal",
 		executeCommand: "terminal",
-
-		// Browser operations
-		browser_action: "browser",
-		browserAction: "browser",
 
 		// Mode operations
 		switchMode: "switch",

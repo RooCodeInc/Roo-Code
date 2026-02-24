@@ -53,6 +53,19 @@ export const moonshotModels = {
 		defaultTemperature: 1.0,
 		description: `The kimi-k2-thinking model is a general-purpose agentic reasoning model developed by Moonshot AI. Thanks to its strength in deep reasoning and multi-turn tool use, it can solve even the hardest problems.`,
 	},
+	"kimi-k2.5": {
+		maxTokens: 16_384,
+		contextWindow: 262_144,
+		supportsImages: false,
+		supportsPromptCache: true,
+		inputPrice: 0.6, // $0.60 per million tokens (cache miss)
+		outputPrice: 3.0, // $3.00 per million tokens
+		cacheReadsPrice: 0.1, // $0.10 per million tokens (cache hit)
+		supportsTemperature: true,
+		defaultTemperature: 1.0,
+		description:
+			"Kimi K2.5 is the latest generation of Moonshot AI's Kimi series, featuring improved reasoning capabilities and enhanced performance across diverse tasks.",
+	},
 } as const satisfies Record<string, ModelInfo>
 
 export const MOONSHOT_DEFAULT_TEMPERATURE = 0.6

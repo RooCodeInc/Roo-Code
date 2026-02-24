@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+      </details>
 
 ---
 
@@ -58,9 +58,8 @@ Roo Code s'adapta a la teva manera de treballar, no a l'inrevés:
 - Mode Pregunta: respostes ràpides, explicacions i documents
 - Mode Depuració: rastrejar problemes, afegir registres, aïllar les causes arrel
 - Modes personalitzats: crea modes especialitzats per al teu equip o flux de treball
-- Roomote Control: Roomote Control et permet controlar a distància tasques que s'executen a la teva instància local de VS Code.
 
-Més informació: [Ús de Modes](https://docs.roocode.com/basic-usage/using-modes) • [Modes personalitzats](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+Més informació: [Ús de Modes](https://docs.roocode.com/basic-usage/using-modes) • [Modes personalitzats](https://docs.roocode.com/advanced-usage/custom-modes)
 
 ## Tutorials i vídeos de funcionalitats
 
@@ -69,7 +68,7 @@ Més informació: [Ús de Modes](https://docs.roocode.com/basic-usage/using-mode
 |                                                                                                                                                                            |                                                                                                                                                                           |                                                                                                                                                                                    |
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Instal·lant Roo Code</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>Configurant perfils</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Indexació de la base de codi</b> |
-| <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>Modes personalitzats</b> |  <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Punts de control</b>   |      <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>Gestió de Context</b>      |
+| <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>Modes personalitzats</b> |  <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Punts de control</b>   |      <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>Gestió de Context</b>       |
 
 </div>
 <p align="center">

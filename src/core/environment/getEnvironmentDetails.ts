@@ -6,7 +6,6 @@ import pWaitFor from "p-wait-for"
 import delay from "delay"
 
 import type { ExperimentId } from "@roo-code/types"
-import { DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT } from "@roo-code/types"
 
 import { formatLanguage } from "../../shared/language"
 import { defaultModeSlug, getFullModeDetails } from "../../shared/modes"
@@ -26,11 +25,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 
 	const clineProvider = cline.providerRef.deref()
 	const state = await clineProvider?.getState()
-	const {
-		terminalOutputLineLimit = 500,
-		terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
-		maxWorkspaceFiles = 200,
-	} = state ?? {}
+	const { maxWorkspaceFiles = 200 } = state ?? {}
 
 	// It could be useful for cline to know if the user went from one or no
 	// file to another between messages, so we always include this context.
@@ -112,11 +107,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 			let newOutput = TerminalRegistry.getUnretrievedOutput(busyTerminal.id)
 
 			if (newOutput) {
-				newOutput = Terminal.compressTerminalOutput(
-					newOutput,
-					terminalOutputLineLimit,
-					terminalOutputCharacterLimit,
-				)
+				newOutput = Terminal.compressTerminalOutput(newOutput)
 				terminalDetails += `\n### New Output\n${newOutput}`
 			}
 		}
@@ -144,11 +135,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 				let output = process.getUnretrievedOutput()
 
 				if (output) {
-					output = Terminal.compressTerminalOutput(
-						output,
-						terminalOutputLineLimit,
-						terminalOutputCharacterLimit,
-					)
+					output = Terminal.compressTerminalOutput(output)
 					terminalOutputs.push(`Command: \`${process.command}\`\n${output}`)
 				}
 			}
@@ -234,42 +221,10 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		language: language ?? formatLanguage(vscode.env.language),
 	})
 
-	const toolFormat = "native"
-
 	details += `\n\n# Current Mode\n`
 	details += `<slug>${currentMode}</slug>\n`
 	details += `<name>${modeDetails.name}</name>\n`
 	details += `<model>${modelId}</model>\n`
-	details += `<tool_format>${toolFormat}</tool_format>\n`
-
-	// Add browser session status - Only show when active to prevent cluttering context
-	const isBrowserActive = cline.browserSession.isSessionActive()
-
-	if (isBrowserActive) {
-		// Build viewport info for status (prefer actual viewport if available, else fallback to configured setting)
-		const configuredViewport = (state?.browserViewportSize as string | undefined) ?? "900x600"
-		let configuredWidth: number | undefined
-		let configuredHeight: number | undefined
-		if (configuredViewport.includes("x")) {
-			const parts = configuredViewport.split("x").map((v) => Number(v))
-			configuredWidth = parts[0]
-			configuredHeight = parts[1]
-		}
-
-		let actualWidth: number | undefined
-		let actualHeight: number | undefined
-		const vp = cline.browserSession.getViewportSize?.()
-		if (vp) {
-			actualWidth = vp.width
-			actualHeight = vp.height
-		}
-
-		const width = actualWidth ?? configuredWidth
-		const height = actualHeight ?? configuredHeight
-		const viewportInfo = width && height ? `\nCurrent viewport size: ${width}x${height} pixels.` : ""
-
-		details += `\n# Browser Session Status\nActive - A browser session is currently open and ready for browser_action commands${viewportInfo}\n`
-	}
 
 	if (includeFileDetails) {
 		details += `\n\n# Current Workspace Directory (${cline.cwd.toPosix()}) Files\n`

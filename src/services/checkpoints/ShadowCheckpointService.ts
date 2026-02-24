@@ -9,6 +9,7 @@ import pWaitFor from "p-wait-for"
 import * as vscode from "vscode"
 
 import { fileExistsAtPath } from "../../utils/fs"
+import { arePathsEqual } from "../../utils/path"
 import { executeRipgrep } from "../../services/search/file-search"
 import { t } from "../../i18n"
 
@@ -38,7 +39,8 @@ function createSanitizedGit(baseDir: string): SimpleGit {
 			key === "GIT_INDEX_FILE" ||
 			key === "GIT_OBJECT_DIRECTORY" ||
 			key === "GIT_ALTERNATE_OBJECT_DIRECTORIES" ||
-			key === "GIT_CEILING_DIRECTORIES"
+			key === "GIT_CEILING_DIRECTORIES" ||
+			key === "GIT_TEMPLATE_DIR"
 		) {
 			removedVars.push(`${key}=${value}`)
 			continue
@@ -155,9 +157,15 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 			this.log(`[${this.constructor.name}#initShadowGit] shadow git repo already exists at ${this.dotGitDir}`)
 			const worktree = await this.getShadowGitConfigWorktree(git)
 
-			if (worktree !== this.workspaceDir) {
+			if (!worktree) {
+				throw new Error("Checkpoints require core.worktree to be set in the shadow git config")
+			}
+
+			const worktreeTrimmed = worktree.trim()
+
+			if (!arePathsEqual(worktreeTrimmed, this.workspaceDir)) {
 				throw new Error(
-					`Checkpoints can only be used in the original workspace: ${worktree} !== ${this.workspaceDir}`,
+					`Checkpoints can only be used in the original workspace: ${worktreeTrimmed} !== ${this.workspaceDir}`,
 				)
 			}
 
@@ -165,7 +173,7 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 			this.baseHash = await git.revparse(["HEAD"])
 		} else {
 			this.log(`[${this.constructor.name}#initShadowGit] creating shadow git repo at ${this.checkpointsDir}`)
-			await git.init()
+			await git.init({ "--template": "" })
 			await git.addConfig("core.worktree", this.workspaceDir) // Sets the working tree to the current workspace.
 			await git.addConfig("commit.gpgSign", "false") // Disable commit signing for shadow repo.
 			await git.addConfig("user.name", "Roo Code")

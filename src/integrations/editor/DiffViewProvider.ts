@@ -98,7 +98,11 @@ export class DiffViewProvider {
 
 		for (const tab of tabs) {
 			if (!tab.isDirty) {
-				await vscode.window.tabGroups.close(tab)
+				try {
+					await vscode.window.tabGroups.close(tab)
+				} catch (err) {
+					console.error(`Failed to close tab ${tab.label}`, err)
+				}
 			}
 			this.documentWasOpen = true
 		}
@@ -390,7 +394,7 @@ export class DiffViewProvider {
 
 			edit.replace(updatedDocument.uri, fullRange, this.stripAllBOMs(this.originalContent ?? ""))
 
-			// Apply the edit and save, since contents shouldnt have changed
+			// Apply the edit and save, since contents shouldn't have changed
 			// this won't show in local history unless of course the user made
 			// changes and saved during the edit.
 			await vscode.workspace.applyEdit(edit)

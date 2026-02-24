@@ -701,6 +701,21 @@ describe("AwsBedrockHandler", () => {
 			expect(model.info.contextWindow).toBe(1_000_000)
 		})
 
+		it("should apply 1M tier pricing when awsBedrock1MContext is true for Claude Sonnet 4.6", () => {
+			const handler = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-sonnet-4-6",
+				awsAccessKey: "test",
+				awsSecretKey: "test",
+				awsRegion: "us-east-1",
+				awsBedrock1MContext: true,
+			})
+
+			const model = handler.getModel()
+			expect(model.info.contextWindow).toBe(1_000_000)
+			expect(model.info.inputPrice).toBe(6.0)
+			expect(model.info.outputPrice).toBe(22.5)
+		})
+
 		it("should use default context window when awsBedrock1MContext is false for Claude Sonnet 4", () => {
 			const handler = new AwsBedrockHandler({
 				apiModelId: BEDROCK_1M_CONTEXT_MODEL_IDS[0],
@@ -1258,6 +1273,58 @@ describe("AwsBedrockHandler", () => {
 
 			// Telemetry should have been captured before the error was thrown
 			expect(mockCaptureException).toHaveBeenCalled()
+		})
+	})
+
+	describe("prompt cache default behavior", () => {
+		beforeEach(() => {
+			mockConverseStreamCommand.mockReset()
+		})
+
+		// System prompt must exceed minTokensPerCachePoint (1024) for cache points to be placed
+		const longSystemPrompt = "You are a helpful assistant. ".repeat(200)
+		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+		it("should enable prompt caching by default when awsUsePromptCache is undefined", async () => {
+			const defaultHandler = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test-access-key",
+				awsSecretKey: "test-secret-key",
+				awsRegion: "us-east-1",
+				// awsUsePromptCache is intentionally omitted (undefined)
+			})
+
+			const generator = defaultHandler.createMessage(longSystemPrompt, messages)
+			await generator.next() // Start the generator
+
+			expect(mockConverseStreamCommand).toHaveBeenCalled()
+			const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
+
+			// System content should include a cachePoint entry since prompt caching defaults to ON
+			const systemBlocks = commandArg.system
+			const hasCachePoint = systemBlocks?.some((block: any) => block.cachePoint !== undefined)
+			expect(hasCachePoint).toBe(true)
+		})
+
+		it("should disable prompt caching when awsUsePromptCache is explicitly false", async () => {
+			const disabledHandler = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test-access-key",
+				awsSecretKey: "test-secret-key",
+				awsRegion: "us-east-1",
+				awsUsePromptCache: false,
+			})
+
+			const generator = disabledHandler.createMessage(longSystemPrompt, messages)
+			await generator.next() // Start the generator
+
+			expect(mockConverseStreamCommand).toHaveBeenCalled()
+			const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
+
+			// System content should NOT include cachePoint since caching is explicitly disabled
+			const systemBlocks = commandArg.system
+			const hasCachePoint = systemBlocks?.some((block: any) => block.cachePoint !== undefined)
+			expect(hasCachePoint).toBe(false)
 		})
 	})
 })

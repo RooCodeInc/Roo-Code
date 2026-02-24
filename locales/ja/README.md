@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+      </details>
 
 ---
 
@@ -58,9 +58,8 @@ Roo Codeは、あなたの働き方に合わせるように適応します。
 - 質問モード：迅速な回答、説明、ドキュメント
 - デバッグモード：問題の追跡、ログの追加、根本原因の特定
 - カスタムモード：チームやワークフローに特化したモードの構築
-- Roomote Control: Roomote Control はローカルの VS Code で実行中のタスクをリモート操作できます。
 
-詳しくは: [モードの使い方](https://docs.roocode.com/basic-usage/using-modes) • [カスタムモード](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+詳しくは: [モードの使い方](https://docs.roocode.com/basic-usage/using-modes) • [カスタムモード](https://docs.roocode.com/advanced-usage/custom-modes)
 
 ## チュートリアルと機能のビデオ
 
@@ -69,7 +68,7 @@ Roo Codeは、あなたの働き方に合わせるように適応します。
 |                                                                                                                                                                              |                                                                                                                                                                          |                                                                                                                                                                                      |
 | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Roo Codeのインストール</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>プロファイルの設定</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>コードベースのインデックス作成</b> |
-|     <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>カスタムモード</b>     |  <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>チェックポイント</b>  |           <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>コンテキスト管理</b>           |
+|     <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>カスタムモード</b>     |  <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>チェックポイント</b>  |        <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>コンテキスト管理</b>        |
 
 </div>
 <p align="center">

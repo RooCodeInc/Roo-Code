@@ -13,11 +13,10 @@ import { isWriteToolAction, isReadOnlyToolAction } from "./tools"
 import { isMcpToolAlwaysAllowed } from "./mcp"
 import { getCommandDecision } from "./commands"
 
-// We have 10 different actions that can be auto-approved.
+// We have auto-approval actions for different categories.
 export type AutoApprovalState =
 	| "alwaysAllowReadOnly"
 	| "alwaysAllowWrite"
-	| "alwaysAllowBrowser"
 	| "alwaysAllowMcp"
 	| "alwaysAllowModeSwitch"
 	| "alwaysAllowSubtasks"
@@ -90,10 +89,6 @@ export async function checkAutoApproval({
 		}
 	}
 
-	if (ask === "browser_action_launch") {
-		return state.alwaysAllowBrowser === true ? { decision: "approve" } : { decision: "ask" }
-	}
-
 	if (ask === "use_mcp_server") {
 		if (!text) {
 			return { decision: "ask" }
@@ -151,14 +146,11 @@ export async function checkAutoApproval({
 			return { decision: "approve" }
 		}
 
-		if (tool?.tool === "fetchInstructions") {
-			if (tool.content === "create_mode") {
-				return state.alwaysAllowModeSwitch === true ? { decision: "approve" } : { decision: "ask" }
-			}
-
-			if (tool.content === "create_mcp_server") {
-				return state.alwaysAllowMcp === true ? { decision: "approve" } : { decision: "ask" }
-			}
+		// The skill tool only loads pre-defined instructions from global or project skills.
+		// It does not read arbitrary files - skills must be explicitly installed/defined by the user.
+		// Auto-approval is intentional to provide a seamless experience when loading task instructions.
+		if (tool.tool === "skill") {
+			return { decision: "approve" }
 		}
 
 		if (tool?.tool === "switchMode") {

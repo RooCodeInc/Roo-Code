@@ -15,6 +15,10 @@ import {
 	cleanupAfterTruncation,
 	extractCommandBlocks,
 	injectSyntheticToolResults,
+	toolUseToText,
+	toolResultToText,
+	convertToolBlocksToText,
+	transformMessagesForCondensing,
 } from "../index"
 
 vi.mock("../../../api/transform/image-cleaning", () => ({
@@ -252,38 +256,36 @@ describe("getMessagesSinceLastSummary", () => {
 		expect(result).toEqual(messages)
 	})
 
-	it("should return messages since the last summary (preserves original first user message when needed)", () => {
+	it("should return messages since the last summary", () => {
 		const messages: ApiMessage[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there", ts: 2 },
-			{ role: "assistant", content: "Summary of conversation", ts: 3, isSummary: true },
-			{ role: "user", content: "How are you?", ts: 4 },
-			{ role: "assistant", content: "I'm good", ts: 5 },
+			{ role: "user", content: "Summary of conversation", ts: 3, isSummary: true },
+			{ role: "assistant", content: "How are you?", ts: 4 },
+			{ role: "user", content: "I'm good", ts: 5 },
 		]
 
 		const result = getMessagesSinceLastSummary(messages)
 		expect(result).toEqual([
-			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Summary of conversation", ts: 3, isSummary: true },
-			{ role: "user", content: "How are you?", ts: 4 },
-			{ role: "assistant", content: "I'm good", ts: 5 },
+			{ role: "user", content: "Summary of conversation", ts: 3, isSummary: true },
+			{ role: "assistant", content: "How are you?", ts: 4 },
+			{ role: "user", content: "I'm good", ts: 5 },
 		])
 	})
 
 	it("should handle multiple summary messages and return since the last one", () => {
 		const messages: ApiMessage[] = [
 			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "First summary", ts: 2, isSummary: true },
-			{ role: "user", content: "How are you?", ts: 3 },
-			{ role: "assistant", content: "Second summary", ts: 4, isSummary: true },
-			{ role: "user", content: "What's new?", ts: 5 },
+			{ role: "user", content: "First summary", ts: 2, isSummary: true },
+			{ role: "assistant", content: "How are you?", ts: 3 },
+			{ role: "user", content: "Second summary", ts: 4, isSummary: true },
+			{ role: "assistant", content: "What's new?", ts: 5 },
 		]
 
 		const result = getMessagesSinceLastSummary(messages)
 		expect(result).toEqual([
-			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Second summary", ts: 4, isSummary: true },
-			{ role: "user", content: "What's new?", ts: 5 },
+			{ role: "user", content: "Second summary", ts: 4, isSummary: true },
+			{ role: "assistant", content: "What's new?", ts: 5 },
 		])
 	})
 
@@ -712,7 +714,12 @@ describe("summarizeConversation", () => {
 	it("should not summarize when there are not enough messages", async () => {
 		const messages: ApiMessage[] = [{ role: "user", content: "Hello", ts: 1 }]
 
-		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 		expect(result.messages).toEqual(messages)
 		expect(result.cost).toBe(0)
 		expect(result.summary).toBe("")
@@ -732,7 +739,12 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "Tell me more", ts: 7 },
 		]
 
-		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		// Check that the API was called correctly
 		expect(mockApiHandler.createMessage).toHaveBeenCalled()
@@ -786,7 +798,12 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "What's new?", ts: 5 },
 		]
 
-		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
@@ -809,7 +826,12 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "What's new?", ts: 5 },
 		]
 
-		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
@@ -846,7 +868,12 @@ describe("summarizeConversation", () => {
 			return messages.map(({ role, content }: { role: string; content: any }) => ({ role, content }))
 		})
 
-		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		// Should return original messages when summary is empty
 		expect(result.messages).toEqual(messages)
@@ -867,7 +894,12 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "Tell me more", ts: 7 },
 		]
 
-		await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		// Verify that createMessage was called with the SUMMARY_PROMPT (which contains CRITICAL instructions), messages array, and optional metadata
 		expect(mockApiHandler.createMessage).toHaveBeenCalledWith(
@@ -899,7 +931,12 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "Newest", ts: 7 },
 		]
 
-		await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		const mockCallArgs = (maybeRemoveImageBlocks as Mock).mock.calls[0][0] as any[]
 
@@ -937,7 +974,12 @@ describe("summarizeConversation", () => {
 		// Override the mock for this test
 		mockApiHandler.createMessage = vi.fn().mockReturnValue(streamWithUsage) as any
 
-		const result = await summarizeConversation(messages, mockApiHandler, systemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt,
+			taskId,
+		})
 
 		// Verify that countTokens was called with system prompt + summary message
 		expect(mockApiHandler.countTokens).toHaveBeenCalled()
@@ -972,7 +1014,12 @@ describe("summarizeConversation", () => {
 		// Mock countTokens to return a small value
 		mockApiHandler.countTokens = vi.fn().mockImplementation(() => Promise.resolve(30)) as any
 
-		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		// Result contains all messages plus summary
 		expect(result.messages.length).toBe(messages.length + 1)
@@ -1012,7 +1059,12 @@ describe("summarizeConversation", () => {
 		const mockError = vi.fn()
 		console.error = mockError
 
-		const result = await summarizeConversation(messages, invalidHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: invalidHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		// Should return original messages when handler is invalid
 		expect(result.messages).toEqual(messages)
@@ -1037,7 +1089,12 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "Thanks", ts: 5 },
 		]
 
-		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
@@ -1058,7 +1115,12 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "Thanks", ts: 5 },
 		]
 
-		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		// Summary should be the last message
 		const lastMessage = result.messages[result.messages.length - 1]
@@ -1122,14 +1184,14 @@ describe("summarizeConversation with custom settings", () => {
 	it("should use custom prompt when provided", async () => {
 		const customPrompt = "Custom summarization prompt"
 
-		await summarizeConversation(
-			sampleMessages,
-			mockMainApiHandler,
-			defaultSystemPrompt,
-			localTaskId,
-			false,
-			customPrompt,
-		)
+		await summarizeConversation({
+			messages: sampleMessages,
+			apiHandler: mockMainApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId: localTaskId,
+			isAutomaticTrigger: false,
+			customCondensingPrompt: customPrompt,
+		})
 
 		// Verify the custom prompt was used in the user message content
 		const createMessageCalls = (mockMainApiHandler.createMessage as Mock).mock.calls
@@ -1146,7 +1208,14 @@ describe("summarizeConversation with custom settings", () => {
 	 */
 	it("should use default systemPrompt when custom prompt is empty or not provided", async () => {
 		// Test with empty string
-		await summarizeConversation(sampleMessages, mockMainApiHandler, defaultSystemPrompt, localTaskId, false, "  ")
+		await summarizeConversation({
+			messages: sampleMessages,
+			apiHandler: mockMainApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId: localTaskId,
+			isAutomaticTrigger: false,
+			customCondensingPrompt: "  ",
+		})
 
 		// Verify the default SUMMARY_PROMPT was used (contains CRITICAL instructions)
 		let createMessageCalls = (mockMainApiHandler.createMessage as Mock).mock.calls
@@ -1158,14 +1227,13 @@ describe("summarizeConversation with custom settings", () => {
 
 		// Reset mock and test with undefined
 		vi.clearAllMocks()
-		await summarizeConversation(
-			sampleMessages,
-			mockMainApiHandler,
-			defaultSystemPrompt,
-			localTaskId,
-			false,
-			undefined,
-		)
+		await summarizeConversation({
+			messages: sampleMessages,
+			apiHandler: mockMainApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId: localTaskId,
+			isAutomaticTrigger: false,
+		})
 
 		// Verify the default SUMMARY_PROMPT was used again (contains CRITICAL instructions)
 		createMessageCalls = (mockMainApiHandler.createMessage as Mock).mock.calls
@@ -1180,14 +1248,14 @@ describe("summarizeConversation with custom settings", () => {
 	 * Test that telemetry is called for custom prompt usage
 	 */
 	it("should capture telemetry when using custom prompt", async () => {
-		await summarizeConversation(
-			sampleMessages,
-			mockMainApiHandler,
-			defaultSystemPrompt,
-			localTaskId,
-			false,
-			"Custom prompt",
-		)
+		await summarizeConversation({
+			messages: sampleMessages,
+			apiHandler: mockMainApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId: localTaskId,
+			isAutomaticTrigger: false,
+			customCondensingPrompt: "Custom prompt",
+		})
 
 		// Verify telemetry was called with custom prompt flag
 		expect(TelemetryService.instance.captureContextCondensed).toHaveBeenCalledWith(
@@ -1201,14 +1269,14 @@ describe("summarizeConversation with custom settings", () => {
 	 * Test that telemetry is called with isAutomaticTrigger flag
 	 */
 	it("should capture telemetry with isAutomaticTrigger flag", async () => {
-		await summarizeConversation(
-			sampleMessages,
-			mockMainApiHandler,
-			defaultSystemPrompt,
-			localTaskId,
-			true, // isAutomaticTrigger
-			"Custom prompt",
-		)
+		await summarizeConversation({
+			messages: sampleMessages,
+			apiHandler: mockMainApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId: localTaskId,
+			isAutomaticTrigger: true,
+			customCondensingPrompt: "Custom prompt",
+		})
 
 		// Verify telemetry was called with isAutomaticTrigger flag
 		expect(TelemetryService.instance.captureContextCondensed).toHaveBeenCalledWith(
@@ -1216,5 +1284,308 @@ describe("summarizeConversation with custom settings", () => {
 			true, // isAutomaticTrigger
 			true, // usedCustomPrompt
 		)
+	})
+})
+
+describe("toolUseToText", () => {
+	it("should convert tool_use block with object input to text", () => {
+		const block: Anthropic.Messages.ToolUseBlockParam = {
+			type: "tool_use",
+			id: "tool-123",
+			name: "read_file",
+			input: { path: "test.ts", encoding: "utf-8" },
+		}
+
+		const result = toolUseToText(block)
+
+		expect(result).toBe("[Tool Use: read_file]\npath: test.ts\nencoding: utf-8")
+	})
+
+	it("should convert tool_use block with nested object input to text", () => {
+		const block: Anthropic.Messages.ToolUseBlockParam = {
+			type: "tool_use",
+			id: "tool-456",
+			name: "write_file",
+			input: {
+				path: "output.json",
+				content: { key: "value", nested: { a: 1 } },
+			},
+		}
+
+		const result = toolUseToText(block)
+
+		expect(result).toContain("[Tool Use: write_file]")
+		expect(result).toContain("path: output.json")
+		expect(result).toContain("content:")
+		expect(result).toContain('"key"')
+		expect(result).toContain('"value"')
+	})
+
+	it("should convert tool_use block with string input to text", () => {
+		const block: Anthropic.Messages.ToolUseBlockParam = {
+			type: "tool_use",
+			id: "tool-789",
+			name: "execute_command",
+			input: "ls -la" as unknown as Record<string, unknown>,
+		}
+
+		const result = toolUseToText(block)
+
+		expect(result).toBe("[Tool Use: execute_command]\nls -la")
+	})
+
+	it("should handle empty object input", () => {
+		const block: Anthropic.Messages.ToolUseBlockParam = {
+			type: "tool_use",
+			id: "tool-empty",
+			name: "some_tool",
+			input: {},
+		}
+
+		const result = toolUseToText(block)
+
+		expect(result).toBe("[Tool Use: some_tool]\n")
+	})
+})
+
+describe("toolResultToText", () => {
+	it("should convert tool_result with string content to text", () => {
+		const block: Anthropic.Messages.ToolResultBlockParam = {
+			type: "tool_result",
+			tool_use_id: "tool-123",
+			content: "File contents here",
+		}
+
+		const result = toolResultToText(block)
+
+		expect(result).toBe("[Tool Result]\nFile contents here")
+	})
+
+	it("should convert tool_result with error flag to text", () => {
+		const block: Anthropic.Messages.ToolResultBlockParam = {
+			type: "tool_result",
+			tool_use_id: "tool-456",
+			content: "File not found",
+			is_error: true,
+		}
+
+		const result = toolResultToText(block)
+
+		expect(result).toBe("[Tool Result (Error)]\nFile not found")
+	})
+
+	it("should convert tool_result with array content to text", () => {
+		const block: Anthropic.Messages.ToolResultBlockParam = {
+			type: "tool_result",
+			tool_use_id: "tool-789",
+			content: [
+				{ type: "text", text: "First line" },
+				{ type: "text", text: "Second line" },
+			],
+		}
+
+		const result = toolResultToText(block)
+
+		expect(result).toBe("[Tool Result]\nFirst line\nSecond line")
+	})
+
+	it("should handle tool_result with image in array content", () => {
+		const block: Anthropic.Messages.ToolResultBlockParam = {
+			type: "tool_result",
+			tool_use_id: "tool-img",
+			content: [
+				{ type: "text", text: "Screenshot:" },
+				{ type: "image", source: { type: "base64", media_type: "image/png", data: "abc123" } },
+			],
+		}
+
+		const result = toolResultToText(block)
+
+		expect(result).toBe("[Tool Result]\nScreenshot:\n[Image]")
+	})
+
+	it("should handle tool_result with no content", () => {
+		const block: Anthropic.Messages.ToolResultBlockParam = {
+			type: "tool_result",
+			tool_use_id: "tool-empty",
+		}
+
+		const result = toolResultToText(block)
+
+		expect(result).toBe("[Tool Result]")
+	})
+})
+
+describe("convertToolBlocksToText", () => {
+	it("should return string content unchanged", () => {
+		const content = "Simple text content"
+
+		const result = convertToolBlocksToText(content)
+
+		expect(result).toBe("Simple text content")
+	})
+
+	it("should convert tool_use blocks to text blocks", () => {
+		const content: Anthropic.Messages.ContentBlockParam[] = [
+			{
+				type: "tool_use",
+				id: "tool-123",
+				name: "read_file",
+				input: { path: "test.ts" },
+			},
+		]
+
+		const result = convertToolBlocksToText(content)
+
+		expect(Array.isArray(result)).toBe(true)
+		expect((result as Anthropic.Messages.ContentBlockParam[])[0].type).toBe("text")
+		expect((result as Anthropic.Messages.TextBlockParam[])[0].text).toContain("[Tool Use: read_file]")
+	})
+
+	it("should convert tool_result blocks to text blocks", () => {
+		const content: Anthropic.Messages.ContentBlockParam[] = [
+			{
+				type: "tool_result",
+				tool_use_id: "tool-123",
+				content: "File contents",
+			},
+		]
+
+		const result = convertToolBlocksToText(content)
+
+		expect(Array.isArray(result)).toBe(true)
+		expect((result as Anthropic.Messages.ContentBlockParam[])[0].type).toBe("text")
+		expect((result as Anthropic.Messages.TextBlockParam[])[0].text).toContain("[Tool Result]")
+	})
+
+	it("should preserve non-tool blocks unchanged", () => {
+		const content: Anthropic.Messages.ContentBlockParam[] = [
+			{ type: "text", text: "Hello" },
+			{
+				type: "tool_use",
+				id: "tool-123",
+				name: "read_file",
+				input: { path: "test.ts" },
+			},
+			{ type: "text", text: "World" },
+		]
+
+		const result = convertToolBlocksToText(content)
+
+		expect(Array.isArray(result)).toBe(true)
+		const resultArray = result as Anthropic.Messages.ContentBlockParam[]
+		expect(resultArray).toHaveLength(3)
+		expect(resultArray[0]).toEqual({ type: "text", text: "Hello" })
+		expect(resultArray[1].type).toBe("text")
+		expect((resultArray[1] as Anthropic.Messages.TextBlockParam).text).toContain("[Tool Use: read_file]")
+		expect(resultArray[2]).toEqual({ type: "text", text: "World" })
+	})
+
+	it("should handle mixed content with multiple tool blocks", () => {
+		const content: Anthropic.Messages.ContentBlockParam[] = [
+			{
+				type: "tool_use",
+				id: "tool-1",
+				name: "read_file",
+				input: { path: "a.ts" },
+			},
+			{
+				type: "tool_result",
+				tool_use_id: "tool-1",
+				content: "contents of a.ts",
+			},
+		]
+
+		const result = convertToolBlocksToText(content)
+
+		expect(Array.isArray(result)).toBe(true)
+		const resultArray = result as Anthropic.Messages.ContentBlockParam[]
+		expect(resultArray).toHaveLength(2)
+		expect((resultArray[0] as Anthropic.Messages.TextBlockParam).text).toContain("[Tool Use: read_file]")
+		expect((resultArray[1] as Anthropic.Messages.TextBlockParam).text).toContain("[Tool Result]")
+		expect((resultArray[1] as Anthropic.Messages.TextBlockParam).text).toContain("contents of a.ts")
+	})
+})
+
+describe("transformMessagesForCondensing", () => {
+	it("should transform all messages with tool blocks to text", () => {
+		const messages = [
+			{ role: "user" as const, content: "Hello" },
+			{
+				role: "assistant" as const,
+				content: [
+					{
+						type: "tool_use" as const,
+						id: "tool-1",
+						name: "read_file",
+						input: { path: "test.ts" },
+					},
+				],
+			},
+			{
+				role: "user" as const,
+				content: [
+					{
+						type: "tool_result" as const,
+						tool_use_id: "tool-1",
+						content: "file contents",
+					},
+				],
+			},
+		]
+
+		const result = transformMessagesForCondensing(messages)
+
+		expect(result).toHaveLength(3)
+		expect(result[0].content).toBe("Hello")
+		expect(Array.isArray(result[1].content)).toBe(true)
+		expect((result[1].content as any[])[0].type).toBe("text")
+		expect((result[1].content as any[])[0].text).toContain("[Tool Use: read_file]")
+		expect(Array.isArray(result[2].content)).toBe(true)
+		expect((result[2].content as any[])[0].type).toBe("text")
+		expect((result[2].content as any[])[0].text).toContain("[Tool Result]")
+	})
+
+	it("should preserve message role and other properties", () => {
+		const messages = [
+			{
+				role: "assistant" as const,
+				content: [
+					{
+						type: "tool_use" as const,
+						id: "tool-1",
+						name: "execute",
+						input: { cmd: "ls" },
+					},
+				],
+			},
+		]
+
+		const result = transformMessagesForCondensing(messages)
+
+		expect(result[0].role).toBe("assistant")
+	})
+
+	it("should handle empty messages array", () => {
+		const result = transformMessagesForCondensing([])
+
+		expect(result).toEqual([])
+	})
+
+	it("should not mutate original messages", () => {
+		const originalContent = [
+			{
+				type: "tool_use" as const,
+				id: "tool-1",
+				name: "read_file",
+				input: { path: "test.ts" },
+			},
+		]
+		const messages = [{ role: "assistant" as const, content: originalContent }]
+
+		transformMessagesForCondensing(messages)
+
+		// Original should still have tool_use type
+		expect(messages[0].content[0].type).toBe("tool_use")
 	})
 })

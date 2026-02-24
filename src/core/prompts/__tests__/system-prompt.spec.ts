@@ -220,41 +220,16 @@ describe("SYSTEM_PROMPT", () => {
 			false, // supportsImages
 			undefined, // mcpHub
 			undefined, // diffStrategy
-			undefined, // browserViewportSize
 			defaultModeSlug, // mode
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
 			experiments,
-			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 		)
 
 		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/consistent-system-prompt.snap")
-	})
-
-	it("should include browser actions when supportsImages is true", async () => {
-		const prompt = await SYSTEM_PROMPT(
-			mockContext,
-			"/test/path",
-			true, // supportsImages
-			undefined, // mcpHub
-			undefined, // diffStrategy
-			"1280x800", // browserViewportSize
-			defaultModeSlug, // mode
-			undefined, // customModePrompts
-			undefined, // customModes,
-			undefined, // globalCustomInstructions
-			experiments,
-			true, // enableMcpServerCreation
-			undefined, // language
-			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
-		)
-
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-computer-use-support.snap")
 	})
 
 	it("should include MCP server info when mcpHub is provided", async () => {
@@ -266,16 +241,13 @@ describe("SYSTEM_PROMPT", () => {
 			false,
 			mockMcpHub, // mcpHub
 			undefined, // diffStrategy
-			undefined, // browserViewportSize
 			defaultModeSlug, // mode
 			undefined, // customModePrompts
 			undefined, // customModes,
 			undefined, // globalCustomInstructions
 			experiments,
-			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 		)
 
 		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-mcp-hub-provided.snap")
@@ -288,42 +260,18 @@ describe("SYSTEM_PROMPT", () => {
 			false,
 			undefined, // explicitly undefined mcpHub
 			undefined, // diffStrategy
-			undefined, // browserViewportSize
 			defaultModeSlug, // mode
 			undefined, // customModePrompts
 			undefined, // customModes,
 			undefined, // globalCustomInstructions
 			experiments,
-			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 		)
 
 		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-undefined-mcp-hub.snap")
 	})
 
-	it("should handle different browser viewport sizes", async () => {
-		const prompt = await SYSTEM_PROMPT(
-			mockContext,
-			"/test/path",
-			false,
-			undefined, // mcpHub
-			undefined, // diffStrategy
-			"900x600", // different viewport size
-			defaultModeSlug, // mode
-			undefined, // customModePrompts
-			undefined, // customModes,
-			undefined, // globalCustomInstructions
-			experiments,
-			true, // enableMcpServerCreation
-			undefined, // language
-			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
-		)
-
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-different-viewport-size.snap")
-	})
 	it("should include vscode language in custom instructions", async () => {
 		// Mock vscode.env.language
 		const vscode = vi.mocked(await import("vscode")) as any
@@ -358,16 +306,13 @@ describe("SYSTEM_PROMPT", () => {
 			false,
 			undefined, // mcpHub
 			undefined, // diffStrategy
-			undefined, // browserViewportSize
 			defaultModeSlug, // mode
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
 			undefined, // experiments
-			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 		)
 
 		expect(prompt).toContain("Language Preference:")
@@ -418,16 +363,13 @@ describe("SYSTEM_PROMPT", () => {
 			false,
 			undefined, // mcpHub
 			undefined, // diffStrategy
-			undefined, // browserViewportSize
 			"custom-mode", // mode
 			undefined, // customModePrompts
 			customModes, // customModes
 			"Global instructions", // globalCustomInstructions
 			experiments,
-			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 		)
 
 		// Role definition should be at the top
@@ -455,16 +397,13 @@ describe("SYSTEM_PROMPT", () => {
 			false,
 			undefined, // mcpHub
 			undefined, // diffStrategy
-			undefined, // browserViewportSize
 			defaultModeSlug as Mode, // mode
 			customModePrompts, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
 			undefined, // experiments
-			false, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 		)
 
 		// Role definition from promptComponent should be at the top
@@ -487,16 +426,13 @@ describe("SYSTEM_PROMPT", () => {
 			false,
 			undefined, // mcpHub
 			undefined, // diffStrategy
-			undefined, // browserViewportSize
 			defaultModeSlug as Mode, // mode
 			customModePrompts, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
 			undefined, // experiments
-			false, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 		)
 
 		// Should use the default mode's role definition
@@ -505,7 +441,6 @@ describe("SYSTEM_PROMPT", () => {
 
 	it("should exclude update_todo_list tool when todoListEnabled is false", async () => {
 		const settings = {
-			maxConcurrentFileReads: 5,
 			todoListEnabled: false,
 			useAgentRules: true,
 			newTaskRequireTodos: false,
@@ -517,16 +452,13 @@ describe("SYSTEM_PROMPT", () => {
 			false,
 			undefined, // mcpHub
 			undefined, // diffStrategy
-			undefined, // browserViewportSize
 			defaultModeSlug, // mode
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
 			experiments,
-			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 			settings, // settings
 		)
 
@@ -537,7 +469,6 @@ describe("SYSTEM_PROMPT", () => {
 
 	it("should include update_todo_list tool when todoListEnabled is true", async () => {
 		const settings = {
-			maxConcurrentFileReads: 5,
 			todoListEnabled: true,
 			useAgentRules: true,
 			newTaskRequireTodos: false,
@@ -549,16 +480,13 @@ describe("SYSTEM_PROMPT", () => {
 			false,
 			undefined, // mcpHub
 			undefined, // diffStrategy
-			undefined, // browserViewportSize
 			defaultModeSlug, // mode
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
 			experiments,
-			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 			settings, // settings
 		)
 
@@ -569,7 +497,6 @@ describe("SYSTEM_PROMPT", () => {
 
 	it("should include update_todo_list tool when todoListEnabled is undefined", async () => {
 		const settings = {
-			maxConcurrentFileReads: 5,
 			todoListEnabled: true,
 			useAgentRules: true,
 			newTaskRequireTodos: false,
@@ -581,16 +508,13 @@ describe("SYSTEM_PROMPT", () => {
 			false,
 			undefined, // mcpHub
 			undefined, // diffStrategy
-			undefined, // browserViewportSize
 			defaultModeSlug, // mode
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
 			experiments,
-			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 			settings, // settings
 		)
 
@@ -601,7 +525,6 @@ describe("SYSTEM_PROMPT", () => {
 
 	it("should include native tool instructions", async () => {
 		const settings = {
-			maxConcurrentFileReads: 5,
 			todoListEnabled: true,
 			useAgentRules: true,
 			newTaskRequireTodos: false,
@@ -613,16 +536,13 @@ describe("SYSTEM_PROMPT", () => {
 			false,
 			undefined, // mcpHub
 			undefined, // diffStrategy
-			undefined, // browserViewportSize
 			defaultModeSlug, // mode
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
 			experiments,
-			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 			settings, // settings
 		)
 
@@ -654,6 +574,7 @@ describe("SYSTEM_PROMPT", () => {
 		expect(prompt).toContain("SYSTEM INFORMATION")
 		expect(prompt).toContain("OBJECTIVE")
 	})
+
 	afterAll(() => {
 		vi.restoreAllMocks()
 	})

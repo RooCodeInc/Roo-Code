@@ -229,15 +229,21 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 			return 0
 		}
 
-		if (!this.currentRequestCancellation) {
-			console.warn("Roo Code <Language Model API>: No cancellation token available for token counting")
-			return 0
-		}
-
 		// Validate input
 		if (!text) {
 			console.debug("Roo Code <Language Model API>: Empty text provided for token counting")
 			return 0
+		}
+
+		// Create a temporary cancellation token if we don't have one (e.g., when called outside a request)
+		let cancellationToken: vscode.CancellationToken
+		let tempCancellation: vscode.CancellationTokenSource | null = null
+
+		if (this.currentRequestCancellation) {
+			cancellationToken = this.currentRequestCancellation.token
+		} else {
+			tempCancellation = new vscode.CancellationTokenSource()
+			cancellationToken = tempCancellation.token
 		}
 
 		try {
@@ -245,7 +251,7 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 			let tokenCount: number
 
 			if (typeof text === "string") {
-				tokenCount = await this.client.countTokens(text, this.currentRequestCancellation.token)
+				tokenCount = await this.client.countTokens(text, cancellationToken)
 			} else if (text instanceof vscode.LanguageModelChatMessage) {
 				// For chat messages, ensure we have content
 				if (!text.content || (Array.isArray(text.content) && text.content.length === 0)) {
@@ -253,7 +259,7 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 					return 0
 				}
 				const countMessage = extractTextCountFromMessage(text)
-				tokenCount = await this.client.countTokens(countMessage, this.currentRequestCancellation.token)
+				tokenCount = await this.client.countTokens(countMessage, cancellationToken)
 			} else {
 				console.warn("Roo Code <Language Model API>: Invalid input type for token counting")
 				return 0
@@ -287,6 +293,11 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 			}
 
 			return 0 // Fallback to prevent stream interruption
+		} finally {
+			// Clean up temporary cancellation token
+			if (tempCancellation) {
+				tempCancellation.dispose()
+			}
 		}
 	}
 

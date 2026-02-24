@@ -281,7 +281,7 @@ describe("CustomToolRegistry", () => {
 			const result = await registry.loadFromDirectory(TEST_FIXTURES_DIR)
 
 			expect(result.loaded).toContain("cached")
-		}, 30000)
+		}, 120_000)
 	})
 
 	describe.sequential("loadFromDirectories", () => {

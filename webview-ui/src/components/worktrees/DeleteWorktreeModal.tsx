@@ -18,7 +18,7 @@ export const DeleteWorktreeModal = ({ open, onClose, worktree, onSuccess }: Dele
 	const { t } = useAppTranslation()
 
 	const [isDeleting, setIsDeleting] = useState(false)
-	const [forceDelete, setForceDelete] = useState(false)
+	const [forceDeleteLocked, setForceDeleteLocked] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 
 	useEffect(() => {
@@ -44,12 +44,15 @@ export const DeleteWorktreeModal = ({ open, onClose, worktree, onSuccess }: Dele
 		setError(null)
 		setIsDeleting(true)
 
+		// Always force delete unless worktree is locked and user hasn't opted in
+		const shouldForce = worktree.isLocked ? forceDeleteLocked : true
+
 		vscode.postMessage({
 			type: "deleteWorktree",
 			worktreePath: worktree.path,
-			worktreeForce: forceDelete,
+			worktreeForce: shouldForce,
 		})
-	}, [worktree.path, forceDelete])
+	}, [worktree.path, worktree.isLocked, forceDeleteLocked])
 
 	return (
 		<Dialog open={open} onOpenChange={(isOpen: boolean) => !isOpen && onClose()}>
@@ -90,13 +93,13 @@ export const DeleteWorktreeModal = ({ open, onClose, worktree, onSuccess }: Dele
 						</div>
 					</div>
 
-					{/* Force delete option (if worktree is locked) */}
+					{/* Force delete option (only shown if worktree is locked) */}
 					{worktree.isLocked && (
 						<div className="flex items-center gap-2">
 							<Checkbox
 								id="force-delete"
-								checked={forceDelete}
-								onCheckedChange={(checked) => setForceDelete(checked === true)}
+								checked={forceDeleteLocked}
+								onCheckedChange={(checked) => setForceDeleteLocked(checked === true)}
 							/>
 							<label htmlFor="force-delete" className="text-sm text-vscode-foreground cursor-pointer">
 								{t("worktrees:forceDelete")}

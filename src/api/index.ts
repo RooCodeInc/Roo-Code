@@ -1,14 +1,13 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import type { ProviderSettings, ModelInfo } from "@roo-code/types"
+import { isRetiredProvider, type ProviderSettings, type ModelInfo } from "@roo-code/types"
 
 import { ApiStream } from "./transform/stream"
 
 import {
 	AnthropicHandler,
 	AwsBedrockHandler,
-	CerebrasHandler,
 	OpenRouterHandler,
 	VertexHandler,
 	AnthropicVertexHandler,
@@ -21,24 +20,17 @@ import {
 	MoonshotHandler,
 	MistralHandler,
 	VsCodeLmHandler,
-	UnboundHandler,
 	RequestyHandler,
+	UnboundHandler,
 	FakeAIHandler,
 	XAIHandler,
-	GroqHandler,
-	HuggingFaceHandler,
-	ChutesHandler,
 	LiteLLMHandler,
 	QwenCodeHandler,
 	SambaNovaHandler,
-	IOIntelligenceHandler,
-	DoubaoHandler,
 	ZAiHandler,
 	FireworksHandler,
 	RooHandler,
-	FeatherlessHandler,
 	VercelAiGatewayHandler,
-	DeepInfraHandler,
 	MiniMaxHandler,
 	BasetenHandler,
 } from "./providers"
@@ -51,16 +43,13 @@ export interface SingleCompletionHandler {
 export interface ApiHandlerCreateMessageMetadata {
 	/**
 	 * Task ID used for tracking and provider-specific features:
-	 * - DeepInfra: Used as prompt_cache_key for caching
 	 * - Roo: Sent as X-Roo-Task-ID header
 	 * - Requesty: Sent as trace_id
-	 * - Unbound: Sent in unbound_metadata
 	 */
 	taskId: string
 	/**
 	 * Current mode slug for provider-specific tracking:
 	 * - Requesty: Sent in extra metadata
-	 * - Unbound: Sent in unbound_metadata
 	 */
 	mode?: string
 	suppressPreviousResponseId?: boolean
@@ -84,8 +73,8 @@ export interface ApiHandlerCreateMessageMetadata {
 	tool_choice?: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"]
 	/**
 	 * Controls whether the model can return multiple tool calls in a single response.
-	 * When true, parallel tool calls are enabled (OpenAI's parallel_tool_calls=true).
-	 * When false (default), only one tool call is returned per response.
+	 * When true (default), parallel tool calls are enabled (OpenAI's parallel_tool_calls=true).
+	 * When false, only one tool call is returned per response.
 	 */
 	parallelToolCalls?: boolean
 	/**
@@ -122,6 +111,12 @@ export interface ApiHandler {
 export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 	const { apiProvider, ...options } = configuration
 
+	if (apiProvider && isRetiredProvider(apiProvider)) {
+		throw new Error(
+			`Sorry, this provider is no longer supported. We saw very few Roo users actually using it and we need to reduce the surface area of our codebase so we can keep shipping fast and serving our community well in this space. It was a really hard decision but it lets us focus on what matters most to you. It sucks, we know.\n\nPlease select a different provider in your API profile settings.`,
+		)
+	}
+
 	switch (apiProvider) {
 		case "anthropic":
 			return new AnthropicHandler(options)
@@ -147,8 +142,6 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new OpenAiNativeHandler(options)
 		case "deepseek":
 			return new DeepSeekHandler(options)
-		case "doubao":
-			return new DoubaoHandler(options)
 		case "qwen-code":
 			return new QwenCodeHandler(options)
 		case "moonshot":
@@ -157,40 +150,26 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new VsCodeLmHandler(options)
 		case "mistral":
 			return new MistralHandler(options)
-		case "unbound":
-			return new UnboundHandler(options)
 		case "requesty":
 			return new RequestyHandler(options)
+		case "unbound":
+			return new UnboundHandler(options)
 		case "fake-ai":
 			return new FakeAIHandler(options)
 		case "xai":
 			return new XAIHandler(options)
-		case "groq":
-			return new GroqHandler(options)
-		case "deepinfra":
-			return new DeepInfraHandler(options)
-		case "huggingface":
-			return new HuggingFaceHandler(options)
-		case "chutes":
-			return new ChutesHandler(options)
 		case "litellm":
 			return new LiteLLMHandler(options)
-		case "cerebras":
-			return new CerebrasHandler(options)
 		case "sambanova":
 			return new SambaNovaHandler(options)
 		case "zai":
 			return new ZAiHandler(options)
 		case "fireworks":
 			return new FireworksHandler(options)
-		case "io-intelligence":
-			return new IOIntelligenceHandler(options)
 		case "roo":
 			// Never throw exceptions from provider constructors
 			// The provider-proxy server will handle authentication and return appropriate error codes
 			return new RooHandler(options)
-		case "featherless":
-			return new FeatherlessHandler(options)
 		case "vercel-ai-gateway":
 			return new VercelAiGatewayHandler(options)
 		case "minimax":

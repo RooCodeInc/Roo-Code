@@ -9,6 +9,104 @@ import { ApiMessage } from "../task-persistence/apiMessages"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
+import { RooIgnoreController } from "../ignore/RooIgnoreController"
+import { generateFoldedFileContext } from "./foldedFileContext"
+
+export type { FoldedFileContextResult, FoldedFileContextOptions } from "./foldedFileContext"
+
+/**
+ * Converts a tool_use block to a text representation.
+ * This allows the conversation to be summarized without requiring the tools parameter.
+ */
+export function toolUseToText(block: Anthropic.Messages.ToolUseBlockParam): string {
+	let input: string
+	if (typeof block.input === "object" && block.input !== null) {
+		input = Object.entries(block.input)
+			.map(([key, value]) => {
+				const formattedValue =
+					typeof value === "object" && value !== null ? JSON.stringify(value, null, 2) : String(value)
+				return `${key}: ${formattedValue}`
+			})
+			.join("\n")
+	} else {
+		input = String(block.input)
+	}
+	return `[Tool Use: ${block.name}]\n${input}`
+}
+
+/**
+ * Converts a tool_result block to a text representation.
+ * This allows the conversation to be summarized without requiring the tools parameter.
+ */
+export function toolResultToText(block: Anthropic.Messages.ToolResultBlockParam): string {
+	const errorSuffix = block.is_error ? " (Error)" : ""
+	if (typeof block.content === "string") {
+		return `[Tool Result${errorSuffix}]\n${block.content}`
+	} else if (Array.isArray(block.content)) {
+		const contentText = block.content
+			.map((contentBlock) => {
+				if (contentBlock.type === "text") {
+					return contentBlock.text
+				}
+				if (contentBlock.type === "image") {
+					return "[Image]"
+				}
+				// Handle any other content block types
+				return `[${(contentBlock as { type: string }).type}]`
+			})
+			.join("\n")
+		return `[Tool Result${errorSuffix}]\n${contentText}`
+	}
+	return `[Tool Result${errorSuffix}]`
+}
+
+/**
+ * Converts all tool_use and tool_result blocks in a message's content to text representations.
+ * This is necessary for providers like Bedrock that require the tools parameter when tool blocks are present.
+ * By converting to text, we can send the conversation for summarization without the tools parameter.
+ *
+ * @param content - The message content (string or array of content blocks)
+ * @returns The transformed content with tool blocks converted to text blocks
+ */
+export function convertToolBlocksToText(
+	content: string | Anthropic.Messages.ContentBlockParam[],
+): string | Anthropic.Messages.ContentBlockParam[] {
+	if (typeof content === "string") {
+		return content
+	}
+
+	return content.map((block) => {
+		if (block.type === "tool_use") {
+			return {
+				type: "text" as const,
+				text: toolUseToText(block),
+			}
+		}
+		if (block.type === "tool_result") {
+			return {
+				type: "text" as const,
+				text: toolResultToText(block),
+			}
+		}
+		return block
+	})
+}
+
+/**
+ * Transforms all messages by converting tool_use and tool_result blocks to text representations.
+ * This ensures the conversation can be sent for summarization without requiring the tools parameter.
+ *
+ * @param messages - The messages to transform
+ * @returns The transformed messages with tool blocks converted to text
+ */
+export function transformMessagesForCondensing<
+	T extends { role: string; content: string | Anthropic.Messages.ContentBlockParam[] },
+>(messages: T[]): T[] {
+	return messages.map((msg) => ({
+		...msg,
+		content: convertToolBlocksToText(msg.content),
+	}))
+}
 
 export const MIN_CONDENSE_THRESHOLD = 5 // Minimum percentage of context window to trigger condensing
 export const MAX_CONDENSE_THRESHOLD = 100 // Maximum percentage of context window to trigger condensing
@@ -123,6 +221,20 @@ export type SummarizeResponse = {
 	condenseId?: string // The unique ID of the created Summary message, for linking to condense_context clineMessage
 }
 
+export type SummarizeConversationOptions = {
+	messages: ApiMessage[]
+	apiHandler: ApiHandler
+	systemPrompt: string
+	taskId: string
+	isAutomaticTrigger?: boolean
+	customCondensingPrompt?: string
+	metadata?: ApiHandlerCreateMessageMetadata
+	environmentDetails?: string
+	filesReadByRoo?: string[]
+	cwd?: string
+	rooIgnoreController?: RooIgnoreController
+}
+
 /**
  * Summarizes the conversation messages using an LLM call.
  *
@@ -131,6 +243,7 @@ export type SummarizeResponse = {
  * - Post-condense, the model sees only the summary (true fresh start)
  * - All messages are still stored but tagged with condenseParent
  * - <command> blocks from the original task are preserved across condensings
+ * - File context (folded code definitions) can be preserved for continuity
  *
  * Environment details handling:
  * - For AUTOMATIC condensing (isAutomaticTrigger=true): Environment details are included
@@ -139,27 +252,21 @@ export type SummarizeResponse = {
  * - For MANUAL condensing (isAutomaticTrigger=false): Environment details are NOT included
  *   because fresh environment details will be injected on the very next turn via
  *   getEnvironmentDetails() in recursivelyMakeClineRequests().
- *
- * @param {ApiMessage[]} messages - The conversation messages
- * @param {ApiHandler} apiHandler - The API handler to use for summarization and token counting
- * @param {string} systemPrompt - The system prompt for API requests (fallback if customCondensingPrompt not provided)
- * @param {string} taskId - The task ID for the conversation, used for telemetry
- * @param {boolean} isAutomaticTrigger - Whether the summarization is triggered automatically
- * @param {string} customCondensingPrompt - Optional custom prompt to use for condensing
- * @param {ApiHandlerCreateMessageMetadata} metadata - Optional metadata to pass to createMessage (tools, taskId, etc.)
- * @param {string} environmentDetails - Optional environment details string to include in the summary (only used when isAutomaticTrigger=true)
- * @returns {SummarizeResponse} - The result of the summarization operation (see above)
  */
-export async function summarizeConversation(
-	messages: ApiMessage[],
-	apiHandler: ApiHandler,
-	systemPrompt: string,
-	taskId: string,
-	isAutomaticTrigger?: boolean,
-	customCondensingPrompt?: string,
-	metadata?: ApiHandlerCreateMessageMetadata,
-	environmentDetails?: string,
-): Promise<SummarizeResponse> {
+export async function summarizeConversation(options: SummarizeConversationOptions): Promise<SummarizeResponse> {
+	const {
+		messages,
+		apiHandler,
+		systemPrompt,
+		taskId,
+		isAutomaticTrigger,
+		customCondensingPrompt,
+		metadata,
+		environmentDetails,
+		filesReadByRoo,
+		cwd,
+		rooIgnoreController,
+	} = options
 	TelemetryService.instance.captureContextCondensed(
 		taskId,
 		isAutomaticTrigger ?? false,
@@ -200,9 +307,15 @@ export async function summarizeConversation(
 	// (e.g., when user triggers condense after receiving attempt_completion but before responding)
 	const messagesWithToolResults = injectSyntheticToolResults(messagesToSummarize)
 
-	const requestMessages = maybeRemoveImageBlocks([...messagesWithToolResults, finalRequestMessage], apiHandler).map(
-		({ role, content }) => ({ role, content }),
+	// Transform tool_use and tool_result blocks to text representations.
+	// This is necessary because some providers (like Bedrock via LiteLLM) require the `tools` parameter
+	// when tool blocks are present. By converting them to text, we can send the conversation for
+	// summarization without needing to pass the tools parameter.
+	const messagesWithTextToolBlocks = transformMessagesForCondensing(
+		maybeRemoveImageBlocks([...messagesWithToolResults, finalRequestMessage], apiHandler),
 	)
+
+	const requestMessages = messagesWithTextToolBlocks.map(({ role, content }) => ({ role, content }))
 
 	// Note: this doesn't need to be a stream, consider using something like apiHandler.completePrompt
 	const promptToUse = SUMMARY_PROMPT
@@ -289,7 +402,7 @@ export async function summarizeConversation(
 		{ type: "text", text: `## Conversation Summary\n${summary}` },
 	]
 
-	// Add command blocks as a separate text block if present
+	// Add command blocks (active workflows) in their own system-reminder block if present
 	if (commandBlocks) {
 		summaryContent.push({
 			type: "text",
@@ -299,6 +412,30 @@ The following directives must be maintained across all future condensings:
 ${commandBlocks}
 </system-reminder>`,
 		})
+	}
+
+	// Generate and add folded file context (smart code folding) if file paths are provided
+	// Each file gets its own <system-reminder> block as a separate content block
+	if (filesReadByRoo && filesReadByRoo.length > 0 && cwd) {
+		try {
+			const foldedResult = await generateFoldedFileContext(filesReadByRoo, {
+				cwd,
+				rooIgnoreController,
+			})
+			if (foldedResult.sections.length > 0) {
+				for (const section of foldedResult.sections) {
+					if (section.trim()) {
+						summaryContent.push({
+							type: "text",
+							text: section,
+						})
+					}
+				}
+			}
+		} catch (error) {
+			console.error("[summarizeConversation] Failed to generate folded file context:", error)
+			// Continue without folded context - non-critical failure
+		}
 	}
 
 	// Add environment details as a separate text block if provided AND this is an automatic trigger.
@@ -372,38 +509,22 @@ ${commandBlocks}
 	return { messages: newMessages, summary, cost, newContextTokens, condenseId }
 }
 
-/* Returns the list of all messages since the last summary message, including the summary. Returns all messages if there is no summary. */
+/**
+ * Returns the list of all messages since the last summary message, including the summary.
+ * Returns all messages if there is no summary.
+ *
+ * Note: Summary messages are always created with role: "user" (fresh-start model),
+ * so the first message since the last summary is guaranteed to be a user message.
+ */
 export function getMessagesSinceLastSummary(messages: ApiMessage[]): ApiMessage[] {
-	let lastSummaryIndexReverse = [...messages].reverse().findIndex((message) => message.isSummary)
+	const lastSummaryIndexReverse = [...messages].reverse().findIndex((message) => message.isSummary)
 
 	if (lastSummaryIndexReverse === -1) {
 		return messages
 	}
 
 	const lastSummaryIndex = messages.length - lastSummaryIndexReverse - 1
-	const messagesSinceSummary = messages.slice(lastSummaryIndex)
-
-	// Bedrock requires the first message to be a user message.
-	// We preserve the original first message to maintain context.
-	// See https://github.com/RooCodeInc/Roo-Code/issues/4147
-	if (messagesSinceSummary.length > 0 && messagesSinceSummary[0].role !== "user") {
-		// Get the original first message (should always be a user message with the task)
-		const originalFirstMessage = messages[0]
-		if (originalFirstMessage && originalFirstMessage.role === "user") {
-			// Use the original first message unchanged to maintain full context
-			return [originalFirstMessage, ...messagesSinceSummary]
-		} else {
-			// Fallback to generic message if no original first message exists (shouldn't happen)
-			const userMessage: ApiMessage = {
-				role: "user",
-				content: "Please continue from the following summary:",
-				ts: messages[0]?.ts ? messages[0].ts - 1 : Date.now(),
-			}
-			return [userMessage, ...messagesSinceSummary]
-		}
-	}
-
-	return messagesSinceSummary
+	return messages.slice(lastSummaryIndex)
 }
 
 /**

@@ -4,6 +4,7 @@ import {
 	type ProviderSettings,
 	type ExperimentId,
 	type ExtensionState,
+	type ClineMessage,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 } from "@roo-code/types"
 
@@ -187,7 +188,6 @@ describe("mergeExtensionState", () => {
 		const baseState: ExtensionState = {
 			version: "",
 			mcpEnabled: false,
-			enableMcpServerCreation: false,
 			clineMessages: [],
 			taskHistory: [],
 			shouldShowAnnouncement: false,
@@ -203,7 +203,6 @@ describe("mergeExtensionState", () => {
 			showRooIgnoredFiles: true,
 			enableSubfolderRules: false,
 			renderContext: "sidebar",
-			maxReadFileLine: 500,
 			cloudUserInfo: null,
 			organizationAllowList: { allowAll: true, providers: {} },
 			autoCondenseContext: true,
@@ -215,11 +214,9 @@ describe("mergeExtensionState", () => {
 			hasOpenedModeSelector: false, // Add the new required property
 			maxImageFileSize: 5,
 			maxTotalImageSize: 20,
-			remoteControlEnabled: false,
 			taskSyncEnabled: false,
-			featureRoomoteControlEnabled: false,
-			isBrowserSessionActive: false,
 			checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS, // Add the checkpoint timeout property
+			maxReadFileLine: -1,
 		}
 
 		const prevState: ExtensionState = {
@@ -233,14 +230,9 @@ describe("mergeExtensionState", () => {
 			...baseState,
 			apiConfiguration: { modelMaxThinkingTokens: 456, modelTemperature: 0.3 },
 			experiments: {
-				powerSteering: true,
-				marketplace: false,
-				disableCompletionCommand: false,
-				concurrentFileReads: true,
 				preventFocusDisruption: false,
 				imageGeneration: false,
 				runSlashCommand: false,
-				multipleNativeToolCalls: false,
 				customTools: false,
 			} as Record<ExperimentId, boolean>,
 			checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS + 5,
@@ -254,15 +246,157 @@ describe("mergeExtensionState", () => {
 		})
 
 		expect(result.experiments).toEqual({
-			powerSteering: true,
-			marketplace: false,
-			disableCompletionCommand: false,
-			concurrentFileReads: true,
 			preventFocusDisruption: false,
 			imageGeneration: false,
 			runSlashCommand: false,
-			multipleNativeToolCalls: false,
 			customTools: false,
+		})
+	})
+
+	describe("clineMessagesSeq protection", () => {
+		const baseState: ExtensionState = {
+			version: "",
+			mcpEnabled: false,
+			clineMessages: [],
+			taskHistory: [],
+			shouldShowAnnouncement: false,
+			enableCheckpoints: true,
+			writeDelayMs: 1000,
+			mode: "default",
+			experiments: {} as Record<ExperimentId, boolean>,
+			customModes: [],
+			maxOpenTabsContext: 20,
+			maxWorkspaceFiles: 100,
+			apiConfiguration: {},
+			telemetrySetting: "unset",
+			showRooIgnoredFiles: true,
+			enableSubfolderRules: false,
+			renderContext: "sidebar",
+			cloudUserInfo: null,
+			organizationAllowList: { allowAll: true, providers: {} },
+			autoCondenseContext: true,
+			autoCondenseContextPercent: 100,
+			cloudIsAuthenticated: false,
+			sharingEnabled: false,
+			publicSharingEnabled: false,
+			profileThresholds: {},
+			hasOpenedModeSelector: false,
+			maxImageFileSize: 5,
+			maxTotalImageSize: 20,
+			taskSyncEnabled: false,
+			checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
+			maxReadFileLine: -1,
+		}
+
+		const makeMessage = (ts: number, text: string): ClineMessage =>
+			({ ts, type: "say", say: "text", text }) as ClineMessage
+
+		it("rejects stale clineMessages when seq is not newer", () => {
+			const newerMessages = [makeMessage(1, "hello"), makeMessage(2, "world")]
+			const staleMessages = [makeMessage(1, "hello")]
+
+			const prevState: ExtensionState = {
+				...baseState,
+				clineMessages: newerMessages,
+				clineMessagesSeq: 5,
+			}
+
+			const result = mergeExtensionState(prevState, {
+				clineMessages: staleMessages,
+				clineMessagesSeq: 3, // stale seq
+			})
+
+			// Should keep the newer messages
+			expect(result.clineMessages).toBe(newerMessages)
+			expect(result.clineMessagesSeq).toBe(5)
+		})
+
+		it("rejects clineMessages when seq equals current (not strictly greater)", () => {
+			const currentMessages = [makeMessage(1, "hello"), makeMessage(2, "world")]
+			const sameSeqMessages = [makeMessage(1, "hello")]
+
+			const prevState: ExtensionState = {
+				...baseState,
+				clineMessages: currentMessages,
+				clineMessagesSeq: 5,
+			}
+
+			const result = mergeExtensionState(prevState, {
+				clineMessages: sameSeqMessages,
+				clineMessagesSeq: 5, // same seq, not strictly greater
+			})
+
+			expect(result.clineMessages).toBe(currentMessages)
+			expect(result.clineMessagesSeq).toBe(5)
+		})
+
+		it("accepts clineMessages when seq is strictly greater", () => {
+			const oldMessages = [makeMessage(1, "hello")]
+			const newMessages = [makeMessage(1, "hello"), makeMessage(2, "world")]
+
+			const prevState: ExtensionState = {
+				...baseState,
+				clineMessages: oldMessages,
+				clineMessagesSeq: 3,
+			}
+
+			const result = mergeExtensionState(prevState, {
+				clineMessages: newMessages,
+				clineMessagesSeq: 4, // newer seq
+			})
+
+			expect(result.clineMessages).toBe(newMessages)
+			expect(result.clineMessagesSeq).toBe(4)
+		})
+
+		it("preserves clineMessages when newState does not include them (cloud event path)", () => {
+			const existingMessages = [makeMessage(1, "hello"), makeMessage(2, "world")]
+
+			const prevState: ExtensionState = {
+				...baseState,
+				clineMessages: existingMessages,
+				clineMessagesSeq: 5,
+			}
+
+			// Simulate a cloud event push that omits clineMessages and clineMessagesSeq
+			const result = mergeExtensionState(prevState, {
+				cloudIsAuthenticated: true,
+			})
+
+			expect(result.clineMessages).toBe(existingMessages)
+			expect(result.clineMessagesSeq).toBe(5)
+		})
+
+		it("applies clineMessages normally when neither state has seq (backward compat)", () => {
+			const oldMessages = [makeMessage(1, "hello")]
+			const newMessages = [makeMessage(1, "hello"), makeMessage(2, "world")]
+
+			const prevState: ExtensionState = {
+				...baseState,
+				clineMessages: oldMessages,
+			}
+
+			const result = mergeExtensionState(prevState, {
+				clineMessages: newMessages,
+			})
+
+			expect(result.clineMessages).toBe(newMessages)
+		})
+
+		it("applies clineMessages when prevState has no seq but newState does (first push)", () => {
+			const prevState: ExtensionState = {
+				...baseState,
+				clineMessages: [],
+			}
+
+			const newMessages = [makeMessage(1, "hello")]
+			const result = mergeExtensionState(prevState, {
+				clineMessages: newMessages,
+				clineMessagesSeq: 1,
+			})
+
+			expect(result.clineMessages).toBe(newMessages)
+			expect(result.clineMessagesSeq).toBe(1)
 		})
 	})
 })

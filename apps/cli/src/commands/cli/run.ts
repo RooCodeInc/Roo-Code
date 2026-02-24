@@ -21,14 +21,70 @@ import { JsonEventEmitter } from "@/agent/json-event-emitter.js"
 
 import { createClient } from "@/lib/sdk/index.js"
 import { loadToken, loadSettings } from "@/lib/storage/index.js"
+import { isRecord } from "@/lib/utils/guards.js"
 import { getEnvVarName, getApiKeyFromEnv } from "@/lib/utils/provider.js"
 import { runOnboarding } from "@/lib/utils/onboarding.js"
 import { getDefaultExtensionPath } from "@/lib/utils/extension.js"
 import { VERSION } from "@/lib/utils/version.js"
 
 import { ExtensionHost, ExtensionHostOptions } from "@/agent/index.js"
+import { runStdinStreamMode } from "./stdin-stream.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const ROO_MODEL_WARMUP_TIMEOUT_MS = 10_000
+
+async function warmRooModels(host: ExtensionHost): Promise<void> {
+	await new Promise<void>((resolve, reject) => {
+		let settled = false
+
+		const cleanup = () => {
+			clearTimeout(timeoutId)
+			host.off("extensionWebviewMessage", onMessage)
+		}
+
+		const finish = (fn: () => void) => {
+			if (settled) return
+			settled = true
+			cleanup()
+			fn()
+		}
+
+		const onMessage = (message: unknown) => {
+			if (!isRecord(message)) {
+				return
+			}
+
+			if (message.type !== "singleRouterModelFetchResponse") {
+				return
+			}
+
+			const values = isRecord(message.values) ? message.values : undefined
+
+			if (values?.provider !== "roo") {
+				return
+			}
+
+			if (message.success === false) {
+				const errorMessage =
+					typeof message.error === "string" && message.error.length > 0
+						? message.error
+						: "failed to refresh Roo models"
+
+				finish(() => reject(new Error(errorMessage)))
+				return
+			}
+
+			finish(() => resolve())
+		}
+
+		const timeoutId = setTimeout(() => {
+			finish(() => reject(new Error(`timed out waiting for Roo models after ${ROO_MODEL_WARMUP_TIMEOUT_MS}ms`)))
+		}, ROO_MODEL_WARMUP_TIMEOUT_MS)
+
+		host.on("extensionWebviewMessage", onMessage)
+		host.sendToExtension({ type: "requestRooModels" })
+	})
+}
 
 export async function run(promptArg: string | undefined, flagOptions: FlagOptions) {
 	setLogger({
@@ -65,8 +121,10 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		flagOptions.reasoningEffort || settings.reasoningEffort || DEFAULT_FLAGS.reasoningEffort
 	const effectiveProvider = flagOptions.provider ?? settings.provider ?? (rooToken ? "roo" : "openrouter")
 	const effectiveWorkspacePath = flagOptions.workspace ? path.resolve(flagOptions.workspace) : process.cwd()
-	const effectiveDangerouslySkipPermissions =
-		flagOptions.yes || flagOptions.dangerouslySkipPermissions || settings.dangerouslySkipPermissions || false
+	const legacyRequireApprovalFromSettings =
+		settings.requireApproval ??
+		(settings.dangerouslySkipPermissions === undefined ? undefined : !settings.dangerouslySkipPermissions)
+	const effectiveRequireApproval = flagOptions.requireApproval || legacyRequireApprovalFromSettings || false
 	const effectiveExitOnComplete = flagOptions.print || flagOptions.oneshot || settings.oneshot || false
 
 	const extensionHostOptions: ExtensionHostOptions = {
@@ -77,7 +135,8 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		model: effectiveModel,
 		workspacePath: effectiveWorkspacePath,
 		extensionPath: path.resolve(flagOptions.extension || getDefaultExtensionPath(__dirname)),
-		nonInteractive: effectiveDangerouslySkipPermissions,
+		nonInteractive: !effectiveRequireApproval,
+		exitOnError: flagOptions.exitOnError,
 		ephemeral: flagOptions.ephemeral,
 		debug: flagOptions.debug,
 		exitOnComplete: effectiveExitOnComplete,
@@ -112,15 +171,18 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 				extensionHostOptions.apiKey = rooToken
 				extensionHostOptions.user = me.user
 			} catch {
-				console.error("[CLI] Your Roo Code Router token is not valid.")
-				console.error("[CLI] Please run: roo auth login")
-				process.exit(1)
+				// If an explicit API key was provided via flag or env var, fall through
+				// to the general API key resolution below instead of exiting.
+				if (!flagOptions.apiKey && !getApiKeyFromEnv(extensionHostOptions.provider)) {
+					console.error("[CLI] Your Roo Code Router token is not valid.")
+					console.error("[CLI] Please run: roo auth login")
+					console.error("[CLI] Or use --api-key or set ROO_API_KEY to provide your own API key.")
+					process.exit(1)
+				}
 			}
-		} else {
-			console.error("[CLI] Your Roo Code Router token is missing.")
-			console.error("[CLI] Please run: roo auth login")
-			process.exit(1)
 		}
+		// If no rooToken, fall through to the general API key resolution below
+		// which will check flagOptions.apiKey and ROO_API_KEY env var.
 	}
 
 	// Validations
@@ -179,15 +241,52 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 	// Output format only works with --print mode
 	if (outputFormat !== "text" && !flagOptions.print && isTuiSupported) {
 		console.error("[CLI] Error: --output-format requires --print mode")
-		console.error("[CLI] Usage: roo <prompt> --print --output-format json")
+		console.error("[CLI] Usage: roo --print --output-format json")
 		process.exit(1)
 	}
 
+	if (flagOptions.stdinPromptStream && !flagOptions.print) {
+		console.error("[CLI] Error: --stdin-prompt-stream requires --print mode")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
+		process.exit(1)
+	}
+
+	if (flagOptions.stdinPromptStream && outputFormat !== "stream-json") {
+		console.error("[CLI] Error: --stdin-prompt-stream requires --output-format=stream-json")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
+		process.exit(1)
+	}
+
+	if (flagOptions.stdinPromptStream && process.stdin.isTTY) {
+		console.error("[CLI] Error: --stdin-prompt-stream requires piped stdin")
+		console.error(
+			'[CLI] Example: printf \'{"command":"start","requestId":"1","prompt":"1+1=?"}\\n\' | roo --print --output-format stream-json --stdin-prompt-stream [options]',
+		)
+		process.exit(1)
+	}
+
+	if (flagOptions.stdinPromptStream && prompt) {
+		console.error("[CLI] Error: cannot use positional prompt or --prompt-file with --stdin-prompt-stream")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
+		process.exit(1)
+	}
+
+	const useStdinPromptStream = flagOptions.stdinPromptStream
+
 	if (!isTuiEnabled) {
-		if (!prompt) {
-			console.error("[CLI] Error: prompt is required in print mode")
-			console.error("[CLI] Usage: roo <prompt> --print [options]")
-			console.error("[CLI] Run without -p for interactive mode")
+		if (!prompt && !useStdinPromptStream) {
+			if (flagOptions.print) {
+				console.error("[CLI] Error: no prompt provided")
+				console.error("[CLI] Usage: roo --print [options] <prompt>")
+				console.error(
+					"[CLI] For stdin control mode: roo --print --output-format stream-json --stdin-prompt-stream [options]",
+				)
+			} else {
+				console.error("[CLI] Error: prompt is required in non-interactive mode")
+				console.error("[CLI] Usage: roo <prompt> [options]")
+				console.error("[CLI] Run without -p for interactive mode")
+			}
+
 			process.exit(1)
 		}
 
@@ -228,9 +327,13 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		extensionHostOptions.disableOutput = useJsonOutput
 
 		const host = new ExtensionHost(extensionHostOptions)
+		let streamRequestId: string | undefined
 
 		const jsonEmitter = useJsonOutput
-			? new JsonEventEmitter({ mode: outputFormat as "json" | "stream-json" })
+			? new JsonEventEmitter({
+					mode: outputFormat as "json" | "stream-json",
+					requestIdProvider: () => streamRequestId,
+				})
 			: null
 
 		async function shutdown(signal: string, exitCode: number): Promise<void> {
@@ -247,12 +350,37 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 
 		try {
 			await host.activate()
+			if (extensionHostOptions.provider === "roo") {
+				try {
+					await warmRooModels(host)
+				} catch (warmupError) {
+					if (flagOptions.debug) {
+						const message = warmupError instanceof Error ? warmupError.message : String(warmupError)
+						console.error(`[CLI] Warning: Roo model warmup failed: ${message}`)
+					}
+				}
+			}
 
 			if (jsonEmitter) {
 				jsonEmitter.attachToClient(host.client)
 			}
 
-			await host.runTask(prompt!)
+			if (useStdinPromptStream) {
+				if (!jsonEmitter || outputFormat !== "stream-json") {
+					throw new Error("--stdin-prompt-stream requires --output-format=stream-json to emit control events")
+				}
+
+				await runStdinStreamMode({
+					host,
+					jsonEmitter,
+					setStreamRequestId: (id) => {
+						streamRequestId = id
+					},
+				})
+			} else {
+				await host.runTask(prompt!)
+			}
+
 			jsonEmitter?.detach()
 			await host.dispose()
 			process.exit(0)
@@ -264,6 +392,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 				process.stdout.write(JSON.stringify(errorEvent) + "\n")
 			} else {
 				console.error("[CLI] Error:", errorMessage)
+
 				if (error instanceof Error) {
 					console.error(error.stack)
 				}

@@ -44,7 +44,9 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 					<div className="mb-4">
 						<p className="mb-3">{t("chat:announcement.release.heading")}</p>
 						<ul className="list-disc list-inside text-sm space-y-1.5">
-							<li>{t("chat:announcement.release.intelligentContextCondensation")}</li>
+							<li>{t("chat:announcement.release.geminiPro")}</li>
+							<li>{t("chat:announcement.release.cliNdjson")}</li>
+							<li>{t("chat:announcement.release.cliRelease")}</li>
 						</ul>
 					</div>
 

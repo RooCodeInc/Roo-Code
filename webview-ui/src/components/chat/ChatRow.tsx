@@ -26,7 +26,7 @@ import { formatPathTooltip } from "@src/utils/formatPathTooltip"
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import UpdateTodoListToolBlock from "./UpdateTodoListToolBlock"
 import { TodoChangeDisplay } from "./TodoChangeDisplay"
-import CodeAccordian from "../common/CodeAccordian"
+import CodeAccordion from "../common/CodeAccordion"
 import MarkdownBlock from "../common/MarkdownBlock"
 import { ReasoningBlock } from "./ReasoningBlock"
 import Thumbnails from "../common/Thumbnails"
@@ -143,11 +143,12 @@ const ChatRow = memo(
 		)
 
 		useEffect(() => {
+			const isHeightValid = height !== 0 && height !== Infinity
 			// used for partials, command output, etc.
 			// NOTE: it's important we don't distinguish between partial or complete here since our scroll effects in chatview need to handle height change during partial -> complete
 			const isInitialRender = prevHeightRef.current === 0 // prevents scrolling when new element is added since we already scroll for that
 			// height starts off at Infinity
-			if (isLast && height !== 0 && height !== Infinity && height !== prevHeightRef.current) {
+			if (isLast && isHeightValid && height !== prevHeightRef.current) {
 				if (!isInitialRender) {
 					onHeightChange(height > prevHeightRef.current)
 				}
@@ -249,7 +250,7 @@ export const ChatRowContent = ({
 		return [undefined, undefined, undefined]
 	}, [message.text, message.say])
 
-	// When resuming task, last wont be api_req_failed but a resume_task
+	// When resuming task, last won't be api_req_failed but a resume_task
 	// message, so api_req_started will show loading spinner. That's why we just
 	// remove the last api_req_started that failed without streaming anything.
 	const apiRequestFailedMessage =
@@ -405,6 +406,14 @@ export const ChatRowContent = ({
 		return (tool.content ?? tool.diff) as string | undefined
 	}, [tool])
 
+	const onJumpToCreatedFile = useMemo(() => {
+		if (!tool || tool.tool !== "newFileCreated" || !tool.path) {
+			return undefined
+		}
+
+		return () => vscode.postMessage({ type: "openFile", text: "./" + tool.path })
+	}, [tool])
+
 	const followUpData = useMemo(() => {
 		if (message.type === "ask" && message.ask === "followup" && !message.partial) {
 			return safeJsonParse<FollowUpData>(message.text)
@@ -422,6 +431,14 @@ export const ChatRowContent = ({
 		switch (tool.tool as string) {
 			case "editedExistingFile":
 			case "appliedDiff":
+			case "newFileCreated":
+			case "searchAndReplace":
+			case "search_and_replace":
+			case "search_replace":
+			case "edit":
+			case "edit_file":
+			case "apply_patch":
+			case "apply_diff":
 				// Check if this is a batch diff request
 				if (message.type === "ask" && tool.batchDiffs && Array.isArray(tool.batchDiffs)) {
 					return (
@@ -447,7 +464,7 @@ export const ChatRowContent = ({
 									style={{ color: "var(--vscode-editorWarning-foreground)", marginBottom: "-1.5px" }}
 								/>
 							) : (
-								toolIcon(tool.tool === "appliedDiff" ? "diff" : "edit")
+								toolIcon("diff")
 							)}
 							<span style={{ fontWeight: "bold" }}>
 								{tool.isProtected
@@ -458,14 +475,15 @@ export const ChatRowContent = ({
 							</span>
 						</div>
 						<div className="pl-6">
-							<CodeAccordian
+							<CodeAccordion
 								path={tool.path}
-								code={unifiedDiff ?? tool.content ?? tool.diff}
+								code={unifiedDiff ?? tool.content ?? tool.diff ?? ""}
 								language="diff"
 								progressStatus={message.progressStatus}
 								isLoading={message.partial}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
+								onJumpToFile={onJumpToCreatedFile}
 								diffStats={tool.diffStats}
 							/>
 						</div>
@@ -496,41 +514,7 @@ export const ChatRowContent = ({
 							</span>
 						</div>
 						<div className="pl-6">
-							<CodeAccordian
-								path={tool.path}
-								code={unifiedDiff ?? tool.diff}
-								language="diff"
-								progressStatus={message.progressStatus}
-								isLoading={message.partial}
-								isExpanded={isExpanded}
-								onToggleExpand={handleToggleExpand}
-								diffStats={tool.diffStats}
-							/>
-						</div>
-					</>
-				)
-			case "searchAndReplace":
-				return (
-					<>
-						<div style={headerStyle}>
-							{tool.isProtected ? (
-								<span
-									className="codicon codicon-lock"
-									style={{ color: "var(--vscode-editorWarning-foreground)", marginBottom: "-1.5px" }}
-								/>
-							) : (
-								toolIcon("replace")
-							)}
-							<span style={{ fontWeight: "bold" }}>
-								{tool.isProtected && message.type === "ask"
-									? t("chat:fileOperations.wantsToEditProtected")
-									: message.type === "ask"
-										? t("chat:fileOperations.wantsToSearchReplace")
-										: t("chat:fileOperations.didSearchReplace")}
-							</span>
-						</div>
-						<div className="pl-6">
-							<CodeAccordian
+							<CodeAccordion
 								path={tool.path}
 								code={unifiedDiff ?? tool.diff}
 								language="diff"
@@ -572,38 +556,6 @@ export const ChatRowContent = ({
 
 				return <TodoChangeDisplay previousTodos={previousTodos} newTodos={todos} />
 			}
-			case "newFileCreated":
-				return (
-					<>
-						<div style={headerStyle}>
-							{tool.isProtected ? (
-								<span
-									className="codicon codicon-lock"
-									style={{ color: "var(--vscode-editorWarning-foreground)", marginBottom: "-1.5px" }}
-								/>
-							) : (
-								toolIcon("new-file")
-							)}
-							<span style={{ fontWeight: "bold" }}>
-								{tool.isProtected
-									? t("chat:fileOperations.wantsToEditProtected")
-									: t("chat:fileOperations.wantsToCreate")}
-							</span>
-						</div>
-						<div className="pl-6">
-							<CodeAccordian
-								path={tool.path}
-								code={unifiedDiff ?? ""}
-								language="diff"
-								isLoading={message.partial}
-								isExpanded={isExpanded}
-								onToggleExpand={handleToggleExpand}
-								onJumpToFile={() => vscode.postMessage({ type: "openFile", text: "./" + tool.path })}
-								diffStats={tool.diffStats}
-							/>
-						</div>
-					</>
-				)
 			case "readFile":
 				// Check if this is a batch file permission request
 				const isBatchRequest = message.type === "ask" && tool.batchFiles && Array.isArray(tool.batchFiles)
@@ -649,7 +601,13 @@ export const ChatRowContent = ({
 							<ToolUseBlock>
 								<ToolUseBlockHeader
 									className="group"
-									onClick={() => vscode.postMessage({ type: "openFile", text: tool.content })}>
+									onClick={() =>
+										vscode.postMessage({
+											type: "openFile",
+											text: tool.content,
+											values: tool.startLine ? { line: tool.startLine } : undefined,
+										})
+									}>
 									{tool.path?.startsWith(".") && <span>.</span>}
 									<PathTooltip content={formatPathTooltip(tool.path, tool.reason)}>
 										<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
@@ -666,24 +624,75 @@ export const ChatRowContent = ({
 						</div>
 					</>
 				)
-			case "fetchInstructions":
+			case "skill": {
+				const skillInfo = tool
 				return (
 					<>
 						<div style={headerStyle}>
-							{toolIcon("file-code")}
-							<span style={{ fontWeight: "bold" }}>{t("chat:instructions.wantsToFetch")}</span>
+							{toolIcon("book")}
+							<span style={{ fontWeight: "bold" }}>
+								{message.type === "ask" ? t("chat:skill.wantsToLoad") : t("chat:skill.didLoad")}
+							</span>
 						</div>
-						<div className="pl-6">
-							<CodeAccordian
-								code={tool.content}
-								language="markdown"
-								isLoading={message.partial}
-								isExpanded={isExpanded}
-								onToggleExpand={handleToggleExpand}
-							/>
+						<div
+							style={{
+								marginTop: "4px",
+								backgroundColor: "var(--vscode-editor-background)",
+								border: "1px solid var(--vscode-editorGroup-border)",
+								borderRadius: "4px",
+								overflow: "hidden",
+								cursor: "pointer",
+							}}
+							onClick={handleToggleExpand}>
+							<ToolUseBlockHeader
+								className="group"
+								style={{
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "space-between",
+									padding: "10px 12px",
+								}}>
+								<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+									<span style={{ fontWeight: "500", fontSize: "var(--vscode-font-size)" }}>
+										{skillInfo.skill}
+									</span>
+									{skillInfo.source && (
+										<VSCodeBadge style={{ fontSize: "calc(var(--vscode-font-size) - 2px)" }}>
+											{skillInfo.source}
+										</VSCodeBadge>
+									)}
+								</div>
+								<span
+									className={`codicon codicon-chevron-${isExpanded ? "up" : "down"} opacity-0 group-hover:opacity-100 transition-opacity duration-200`}></span>
+							</ToolUseBlockHeader>
+							{isExpanded && (skillInfo.args || skillInfo.description) && (
+								<div
+									style={{
+										padding: "12px 16px",
+										borderTop: "1px solid var(--vscode-editorGroup-border)",
+										display: "flex",
+										flexDirection: "column",
+										gap: "8px",
+									}}>
+									{skillInfo.description && (
+										<div style={{ color: "var(--vscode-descriptionForeground)" }}>
+											{skillInfo.description}
+										</div>
+									)}
+									{skillInfo.args && (
+										<div>
+											<span style={{ fontWeight: "500" }}>Arguments: </span>
+											<span style={{ color: "var(--vscode-descriptionForeground)" }}>
+												{skillInfo.args}
+											</span>
+										</div>
+									)}
+								</div>
+							)}
 						</div>
 					</>
 				)
+			}
 			case "listFilesTopLevel":
 				return (
 					<>
@@ -700,7 +709,7 @@ export const ChatRowContent = ({
 							</span>
 						</div>
 						<div className="pl-6">
-							<CodeAccordian
+							<CodeAccordion
 								path={tool.path}
 								code={tool.content}
 								language="shell-session"
@@ -726,7 +735,7 @@ export const ChatRowContent = ({
 							</span>
 						</div>
 						<div className="pl-6">
-							<CodeAccordian
+							<CodeAccordion
 								path={tool.path}
 								code={tool.content}
 								language="shellsession"
@@ -766,7 +775,7 @@ export const ChatRowContent = ({
 							</span>
 						</div>
 						<div className="pl-6">
-							<CodeAccordian
+							<CodeAccordion
 								path={tool.path! + (tool.filePattern ? `/(${tool.filePattern})` : "")}
 								code={tool.content}
 								language="shellsession"
@@ -1269,7 +1278,7 @@ export const ChatRowContent = ({
 					const tool = safeJsonParse<ClineSayTool>(message.text)
 					return (
 						<div style={{ marginTop: -10, width: "100%" }}>
-							<CodeAccordian
+							<CodeAccordion
 								code={tool?.diff}
 								language="diff"
 								isFeedback={true}
@@ -1464,6 +1473,51 @@ export const ChatRowContent = ({
 								</>
 							)
 						}
+						case "readCommandOutput": {
+							const formatBytes = (bytes: number) => {
+								if (bytes < 1024) return `${bytes} B`
+								if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+								return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+							}
+
+							// Determine if this is a search operation
+							const isSearch = sayTool.searchPattern !== undefined
+
+							let infoText = ""
+							if (isSearch) {
+								// Search mode: show pattern and match count
+								const matchText =
+									sayTool.matchCount !== undefined
+										? sayTool.matchCount === 1
+											? "1 match"
+											: `${sayTool.matchCount} matches`
+										: ""
+								infoText = `search: "${sayTool.searchPattern}"${matchText ? ` • ${matchText}` : ""}`
+							} else if (
+								sayTool.readStart !== undefined &&
+								sayTool.readEnd !== undefined &&
+								sayTool.totalBytes !== undefined
+							) {
+								// Read mode: show byte range
+								infoText = `${formatBytes(sayTool.readStart)} - ${formatBytes(sayTool.readEnd)} of ${formatBytes(sayTool.totalBytes)}`
+							} else if (sayTool.totalBytes !== undefined) {
+								infoText = formatBytes(sayTool.totalBytes)
+							}
+
+							return (
+								<div style={headerStyle}>
+									<FileCode2 className="w-4 shrink-0" aria-label="Read command output icon" />
+									<span style={{ fontWeight: "bold" }}>{t("chat:readCommandOutput.title")}</span>
+									{infoText && (
+										<span
+											className="text-xs ml-1"
+											style={{ color: "var(--vscode-descriptionForeground)" }}>
+											({infoText})
+										</span>
+									)}
+								</div>
+							)
+						}
 						default:
 							return null
 					}
@@ -1478,10 +1532,6 @@ export const ChatRowContent = ({
 							<ImageBlock imageUri={imageInfo.imageUri} imagePath={imageInfo.imagePath} />
 						</div>
 					)
-				case "browser_action":
-				case "browser_action_result":
-					// Handled by BrowserSessionRow; prevent raw JSON (action/result) from rendering here
-					return null
 				case "too_many_tools_warning": {
 					const warningData = safeJsonParse<{
 						toolCount: number

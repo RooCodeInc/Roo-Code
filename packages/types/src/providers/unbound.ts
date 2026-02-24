@@ -1,5 +1,7 @@
 import type { ModelInfo } from "../model.js"
 
+// Unbound
+// https://gateway.getunbound.ai
 export const unboundDefaultModelId = "anthropic/claude-sonnet-4-5"
 
 export const unboundDefaultModelInfo: ModelInfo = {

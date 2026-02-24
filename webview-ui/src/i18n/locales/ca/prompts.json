@@ -25,7 +25,6 @@
 		"toolNames": {
 			"read": "Llegir fitxers",
 			"edit": "Editar fitxers",
-			"browser": "Utilitzar navegador",
 			"command": "Executar comandes",
 			"mcp": "Utilitzar MCP"
 		},
@@ -70,9 +69,6 @@
 			"label": "Nivell de projecte",
 			"description": "Només disponible en aquest espai de treball. Si el mode exportat contenia fitxers de regles, es tornaran a crear a la carpeta .roo/rules-{slug}/."
 		}
-	},
-	"advanced": {
-		"title": "Avançat"
 	},
 	"globalCustomInstructions": {
 		"title": "Instruccions personalitzades per a tots els modes",
@@ -145,10 +141,6 @@
 				"description": "Inicieu una nova tasca amb l'entrada proporcionada. Disponible a la paleta de comandes."
 			}
 		}
-	},
-	"advancedSystemPrompt": {
-		"title": "Avançat: Sobreescriure prompt del sistema",
-		"description": "<2>⚠️ Avís:</2> Aquesta funcionalitat avançada eludeix les salvaguardes. <1>LLEGIU AIXÒ ABANS D'UTILITZAR!</1>Sobreescriviu el prompt del sistema per defecte creant un fitxer a <span>.roo/system-prompt-{{slug}}</span>."
 	},
 	"createModeDialog": {
 		"title": "Crear nou mode",

@@ -11,13 +11,36 @@ export interface DisplayHistoryItem extends HistoryItem {
 }
 
 /**
- * A group of tasks consisting of a parent task and its subtasks
+ * A node in the subtask tree, representing a task and its recursively nested children.
+ */
+export interface SubtaskTreeNode {
+	/** The task at this tree node */
+	item: DisplayHistoryItem
+	/** Recursively nested child subtasks */
+	children: SubtaskTreeNode[]
+	/** Whether this node's children are expanded in the UI */
+	isExpanded: boolean
+}
+
+/**
+ * Recursively counts all subtasks in a tree of SubtaskTreeNodes.
+ */
+export function countAllSubtasks(nodes: SubtaskTreeNode[]): number {
+	let count = 0
+	for (const node of nodes) {
+		count += 1 + countAllSubtasks(node.children)
+	}
+	return count
+}
+
+/**
+ * A group of tasks consisting of a parent task and its nested subtask tree
  */
 export interface TaskGroup {
 	/** The parent task */
 	parent: DisplayHistoryItem
-	/** List of direct subtasks */
-	subtasks: DisplayHistoryItem[]
+	/** Tree of subtasks (supports arbitrary nesting depth) */
+	subtasks: SubtaskTreeNode[]
 	/** Whether the subtask list is expanded */
 	isExpanded: boolean
 }
