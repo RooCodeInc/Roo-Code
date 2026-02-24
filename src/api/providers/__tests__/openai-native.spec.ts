@@ -236,6 +236,19 @@ describe("OpenAiNativeHandler", () => {
 			expect(modelInfo.info.contextWindow).toBe(1047576)
 		})
 
+		it("should return GPT-5.3 Codex model info when selected", () => {
+			const codexHandler = new OpenAiNativeHandler({
+				...mockOptions,
+				apiModelId: "gpt-5.3-codex",
+			})
+
+			const modelInfo = codexHandler.getModel()
+			expect(modelInfo.id).toBe("gpt-5.3-codex")
+			expect(modelInfo.info.maxTokens).toBe(128000)
+			expect(modelInfo.info.contextWindow).toBe(400000)
+			expect(modelInfo.info.supportsReasoningEffort).toEqual(["low", "medium", "high", "xhigh"])
+		})
+
 		it("should handle undefined model ID", () => {
 			const handlerWithoutModel = new OpenAiNativeHandler({
 				openAiNativeApiKey: "test-api-key",
