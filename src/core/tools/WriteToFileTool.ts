@@ -17,11 +17,6 @@ import { convertNewFileToUnifiedDiff, computeDiffStats, sanitizeUnifiedDiff } fr
 import type { ToolUse } from "../../shared/tools"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
-// Hooks integration
-import { PreHook } from "../../hooks/engines/PreHook"
-import { PostHook } from "../../hooks/engines/PostHook"
-import { globMatch } from "../../hooks/utilities/glob"
-import type { MutationClass } from "../../hooks/models/AgentTrace"
 
 interface WriteToFileParams {
 	path: string
@@ -35,29 +30,6 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		const { pushToolResult, handleError, askApproval } = callbacks
 		const relPath = params.path
 		let newContent = params.content
-
-		// Governance: validate active intent and enforce scope before any side effect
-		let intentIdForTrace: string | undefined
-		try {
-			// Select intent: first IN_PROGRESS in .orchestration/active_intents.yaml
-			const intent = await PreHook.validate(task.providerRef.deref() ? (await task.providerRef.deref()!.getState())?.activeIntentId ?? "INT-001")
-			intentIdForTrace = intent.id
-			// Scope enforcement: ensure relPath matches owned_scope
-			if (relPath && intent.owned_scope?.length) {
-				const inScope = intent.owned_scope.some((pattern) => globMatch(relPath, pattern))
-				if (!inScope) {
-					pushToolResult(
-						`Scope Violation: ${intent.id} is not authorized to edit ${relPath}. Request scope expansion.`,
-					)
-					await task.diffViewProvider.reset()
-					return
-				}
-			}
-		} catch (e) {
-			pushToolResult((e as Error).message)
-			await task.diffViewProvider.reset()
-			return
-		}
 
 		if (!relPath) {
 			task.consecutiveMistakeCount++
@@ -162,18 +134,6 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 				}
 
 				await task.diffViewProvider.saveDirectly(relPath, newContent, false, diagnosticsEnabled, writeDelayMs)
-
-				// PostHook trace logging for direct saves
-				if (intentIdForTrace) {
-					const mutationClass: MutationClass = fileExists ? "AST_REFACTOR" : "INTENT_EVOLUTION"
-					await PostHook.log({
-						filePath: relPath,
-						content: newContent,
-						intentId: intentIdForTrace,
-						mutationClass,
-						contributorModel: task.api.getModel().id,
-					})
-				}
 			} else {
 				if (!task.diffViewProvider.isEditing) {
 					const partialMessage = JSON.stringify(sharedMessageProps)
@@ -207,18 +167,6 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 				}
 
 				await task.diffViewProvider.saveChanges(diagnosticsEnabled, writeDelayMs)
-
-				// PostHook trace logging after diff save
-				if (intentIdForTrace) {
-					const mutationClass: MutationClass = fileExists ? "AST_REFACTOR" : "INTENT_EVOLUTION"
-					await PostHook.log({
-						filePath: relPath,
-						content: newContent,
-						intentId: intentIdForTrace,
-						mutationClass,
-						contributorModel: task.api.getModel().id,
-					})
-				}
 			}
 
 			if (relPath) {
