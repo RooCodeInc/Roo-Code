@@ -25,7 +25,7 @@ vi.mock("react-i18next", () => ({
 }))
 
 // Lightweight mock so we don't pull in CodeBlock/DiffView
-vi.mock("@src/components/common/CodeAccordian", () => ({
+vi.mock("@src/components/common/CodeAccordion", () => ({
 	default: ({
 		path,
 		isExpanded,

@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils"
 import { vscode } from "@src/utils/vscode"
 
 import { fileChangesFromMessages, type FileChangeEntry } from "./utils/fileChangesFromMessages"
-import CodeAccordian from "../common/CodeAccordian"
+import CodeAccordion from "../common/CodeAccordion"
 
 interface FileChangesPanelProps {
 	clineMessages: ClineMessage[] | undefined
@@ -151,7 +151,7 @@ const FileChangesPanel = memo(({ clineMessages, className }: FileChangesPanelPro
 						const isExpanded = expandedPaths.has(path)
 						return (
 							<div key={path} className="rounded border border-vscode-panel-border overflow-hidden">
-								<CodeAccordian
+								<CodeAccordion
 									path={path}
 									code={displayDiff}
 									language="diff"
