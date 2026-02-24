@@ -70,3 +70,48 @@
 		@apply bg-background text-foreground;
 	}
 }
+
+/* Valentine's Day Theme Animations */
+@keyframes heartbeat {
+	0%,
+	100% {
+		transform: scale(1);
+	}
+	15% {
+		transform: scale(1.2);
+	}
+	30% {
+		transform: scale(1);
+	}
+	45% {
+		transform: scale(1.15);
+	}
+	60% {
+		transform: scale(1);
+	}
+}
+
+@keyframes float-up {
+	0% {
+		transform: translateY(0) rotate(0deg);
+		opacity: 0;
+	}
+	10% {
+		opacity: 1;
+	}
+	90% {
+		opacity: 1;
+	}
+	100% {
+		transform: translateY(-100vh) rotate(360deg);
+		opacity: 0;
+	}
+}
+
+.animate-heartbeat {
+	animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+.animate-float-up {
+	animation: float-up linear infinite;
+}
