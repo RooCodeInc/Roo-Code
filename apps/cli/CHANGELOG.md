@@ -5,6 +5,13 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-02-24
+
+### Added
+
+- **Roo Model Warmup**: When configured with the Roo provider, the CLI now proactively fetches and warms the model list during activation so that model information is available before the first prompt is sent. The warmup has a 10s timeout and failures are logged only in debug mode.
+- **Unbound Provider**: Added Unbound as an available provider option.
+
 ## [0.1.0] - 2026-02-19
 
 ### Added
