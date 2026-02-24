@@ -50,7 +50,7 @@ vi.mock("vscode", () => ({
 		visibleTextEditors: [],
 	},
 	commands: {
-		executeCommand: vi.fn(),
+		executeCommand: vi.fn().mockResolvedValue(undefined),
 	},
 	languages: {
 		getDiagnostics: vi.fn(() => []),
@@ -84,6 +84,7 @@ vi.mock("vscode", () => ({
 	TextEditorRevealType: {
 		InCenter: 2,
 	},
+	TabInputText: class TabInputText {},
 	TabInputTextDiff: class TabInputTextDiff {},
 	Uri: {
 		file: vi.fn((path) => ({ fsPath: path })),
@@ -515,6 +516,211 @@ describe("DiffViewProvider", () => {
 			// Verify custom delay was used
 			expect(mockDelay).toHaveBeenCalledWith(5000)
 			expect(vscode.languages.getDiagnostics).toHaveBeenCalled()
+		})
+	})
+
+	describe("pinned tab preservation", () => {
+		describe("open method - pin state capture", () => {
+			it("should capture pinned state when closing a pinned tab", async () => {
+				const absolutePath = `${mockCwd}/test.txt`
+
+				// Setup a pinned tab
+				const pinnedTab = {
+					input: { uri: { scheme: "file", fsPath: absolutePath } },
+					isDirty: false,
+					isPinned: true,
+				}
+
+				// Make the tab look like a TabInputText instance
+				Object.setPrototypeOf(pinnedTab.input, vscode.TabInputText?.prototype ?? {})
+
+				Object.defineProperty(vscode.window.tabGroups, "all", {
+					get: () => [{ tabs: [pinnedTab] }],
+					configurable: true,
+				})
+
+				vi.mocked(vscode.window.tabGroups.close).mockResolvedValue(true as any)
+
+				// Mock for openDiffEditor
+				const mockEditor = {
+					document: {
+						uri: { fsPath: absolutePath, scheme: "file" },
+						getText: vi.fn().mockReturnValue(""),
+						lineCount: 0,
+					},
+					selection: { active: { line: 0, character: 0 }, anchor: { line: 0, character: 0 } },
+					edit: vi.fn().mockResolvedValue(true),
+					revealRange: vi.fn(),
+				}
+
+				vi.mocked(vscode.window.showTextDocument).mockResolvedValue(mockEditor as any)
+
+				vi.mocked(vscode.workspace.onDidOpenTextDocument).mockImplementation((callback) => {
+					setTimeout(() => {
+						callback({ uri: { fsPath: absolutePath, scheme: "file" } } as any)
+					}, 0)
+					return { dispose: vi.fn() }
+				})
+
+				vi.mocked(vscode.window).visibleTextEditors = [mockEditor as any]
+				;(diffViewProvider as any).editType = "modify"
+
+				await diffViewProvider.open("test.txt")
+
+				expect((diffViewProvider as any).documentWasPinned).toBe(true)
+				expect((diffViewProvider as any).documentWasOpen).toBe(true)
+			})
+
+			it("should not set pinned state when closing an unpinned tab", async () => {
+				const absolutePath = `${mockCwd}/test.txt`
+
+				const unpinnedTab = {
+					input: { uri: { scheme: "file", fsPath: absolutePath } },
+					isDirty: false,
+					isPinned: false,
+				}
+
+				Object.setPrototypeOf(unpinnedTab.input, vscode.TabInputText?.prototype ?? {})
+
+				Object.defineProperty(vscode.window.tabGroups, "all", {
+					get: () => [{ tabs: [unpinnedTab] }],
+					configurable: true,
+				})
+
+				vi.mocked(vscode.window.tabGroups.close).mockResolvedValue(true as any)
+
+				const mockEditor = {
+					document: {
+						uri: { fsPath: absolutePath, scheme: "file" },
+						getText: vi.fn().mockReturnValue(""),
+						lineCount: 0,
+					},
+					selection: { active: { line: 0, character: 0 }, anchor: { line: 0, character: 0 } },
+					edit: vi.fn().mockResolvedValue(true),
+					revealRange: vi.fn(),
+				}
+
+				vi.mocked(vscode.window.showTextDocument).mockResolvedValue(mockEditor as any)
+
+				vi.mocked(vscode.workspace.onDidOpenTextDocument).mockImplementation((callback) => {
+					setTimeout(() => {
+						callback({ uri: { fsPath: absolutePath, scheme: "file" } } as any)
+					}, 0)
+					return { dispose: vi.fn() }
+				})
+
+				vi.mocked(vscode.window).visibleTextEditors = [mockEditor as any]
+				;(diffViewProvider as any).editType = "modify"
+
+				await diffViewProvider.open("test.txt")
+
+				expect((diffViewProvider as any).documentWasPinned).toBe(false)
+				expect((diffViewProvider as any).documentWasOpen).toBe(true)
+			})
+		})
+
+		describe("saveChanges - pin state restoration", () => {
+			beforeEach(() => {
+				;(diffViewProvider as any).relPath = "test.ts"
+				;(diffViewProvider as any).newContent = "new content"
+				;(diffViewProvider as any).activeDiffEditor = {
+					document: {
+						getText: vi.fn().mockReturnValue("new content"),
+						isDirty: false,
+						save: vi.fn().mockResolvedValue(undefined),
+					},
+				}
+				;(diffViewProvider as any).preDiagnostics = []
+				;(diffViewProvider as any).closeAllDiffViews = vi.fn().mockResolvedValue(undefined)
+
+				vi.mocked(vscode.window.showTextDocument).mockResolvedValue({} as any)
+				vi.mocked(vscode.languages.getDiagnostics).mockReturnValue([])
+				vi.mocked(vscode.commands.executeCommand).mockResolvedValue(undefined)
+			})
+
+			it("should pin the editor after saving when documentWasPinned is true", async () => {
+				;(diffViewProvider as any).documentWasPinned = true
+
+				await diffViewProvider.saveChanges(false)
+
+				expect(vscode.commands.executeCommand).toHaveBeenCalledWith("workbench.action.pinEditor")
+			})
+
+			it("should not pin the editor after saving when documentWasPinned is false", async () => {
+				;(diffViewProvider as any).documentWasPinned = false
+
+				await diffViewProvider.saveChanges(false)
+
+				expect(vscode.commands.executeCommand).not.toHaveBeenCalledWith("workbench.action.pinEditor")
+			})
+		})
+
+		describe("revertChanges - pin state restoration", () => {
+			beforeEach(() => {
+				;(diffViewProvider as any).relPath = "test.ts"
+				;(diffViewProvider as any).newContent = "new content"
+				;(diffViewProvider as any).originalContent = "original content"
+				;(diffViewProvider as any).editType = "modify"
+				;(diffViewProvider as any).activeDiffEditor = {
+					document: {
+						uri: { fsPath: `${mockCwd}/test.ts` },
+						getText: vi.fn().mockReturnValue("new content"),
+						positionAt: vi.fn().mockReturnValue({ line: 0, character: 0 }),
+						isDirty: false,
+						save: vi.fn().mockResolvedValue(undefined),
+					},
+				}
+
+				vi.mocked(vscode.workspace.applyEdit).mockResolvedValue(true)
+				vi.mocked(vscode.window.showTextDocument).mockResolvedValue({} as any)
+				vi.mocked(vscode.commands.executeCommand).mockResolvedValue(undefined)
+
+				// Mock closeAllDiffViews
+				;(diffViewProvider as any).closeAllDiffViews = vi.fn().mockResolvedValue(undefined)
+			})
+
+			it("should pin the editor after reverting when documentWasPinned is true", async () => {
+				;(diffViewProvider as any).documentWasOpen = true
+				;(diffViewProvider as any).documentWasPinned = true
+
+				await diffViewProvider.revertChanges()
+
+				expect(vscode.commands.executeCommand).toHaveBeenCalledWith("workbench.action.pinEditor")
+			})
+
+			it("should not pin the editor after reverting when documentWasPinned is false", async () => {
+				;(diffViewProvider as any).documentWasOpen = true
+				;(diffViewProvider as any).documentWasPinned = false
+
+				await diffViewProvider.revertChanges()
+
+				expect(vscode.commands.executeCommand).not.toHaveBeenCalledWith("workbench.action.pinEditor")
+			})
+
+			it("should not pin the editor when document was not open", async () => {
+				;(diffViewProvider as any).documentWasOpen = false
+				;(diffViewProvider as any).documentWasPinned = true
+
+				await diffViewProvider.revertChanges()
+
+				expect(vscode.commands.executeCommand).not.toHaveBeenCalledWith("workbench.action.pinEditor")
+			})
+		})
+
+		describe("reset - pin state cleanup", () => {
+			it("should reset documentWasPinned to false", async () => {
+				;(diffViewProvider as any).documentWasPinned = true
+
+				// Mock tabGroups.all to return empty for closeAllDiffViews
+				Object.defineProperty(vscode.window.tabGroups, "all", {
+					get: () => [],
+					configurable: true,
+				})
+
+				await (diffViewProvider as any).reset()
+
+				expect((diffViewProvider as any).documentWasPinned).toBe(false)
+			})
 		})
 	})
 })
