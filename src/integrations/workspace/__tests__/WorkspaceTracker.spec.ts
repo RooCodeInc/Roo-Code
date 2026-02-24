@@ -240,7 +240,7 @@ describe("WorkspaceTracker", () => {
 		vitest.runAllTimers()
 
 		// Should initialize file paths for new workspace
-		expect(listFiles).toHaveBeenCalledWith("/test/new-workspace", true, 1000, true)
+		expect(listFiles).toHaveBeenCalledWith("/test/new-workspace", true, 1000)
 		vitest.runAllTimers()
 	})
 

@@ -30,14 +30,7 @@ class WorkspaceTracker {
 			return
 		}
 		const tempCwd = this.cwd
-		let respectGitIgnore = true
-		try {
-			const state = await this.providerRef.deref()?.getState()
-			respectGitIgnore = state?.codebaseIndexConfig?.codebaseIndexRespectGitIgnore ?? true
-		} catch {
-			// Fall back to default (respect .gitignore) if state is not available
-		}
-		const [files, _] = await listFiles(tempCwd, true, MAX_INITIAL_FILES, respectGitIgnore)
+		const [files, _] = await listFiles(tempCwd, true, MAX_INITIAL_FILES)
 		if (this.prevWorkSpacePath !== tempCwd) {
 			return
 		}
