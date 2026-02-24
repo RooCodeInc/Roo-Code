@@ -1,3 +1,5 @@
+import { CloudService } from "@roo-code/cloud"
+
 import { ApiHandlerOptions } from "../../shared/api"
 import { ContextProxy } from "../../core/config/ContextProxy"
 import { EmbedderProvider } from "./interfaces/manager"
@@ -120,6 +122,8 @@ export class CodeIndexConfigManager {
 			this.embedderProvider = "bedrock"
 		} else if (codebaseIndexEmbedderProvider === "openrouter") {
 			this.embedderProvider = "openrouter"
+		} else if (codebaseIndexEmbedderProvider === "roo") {
+			this.embedderProvider = "roo"
 		} else {
 			this.embedderProvider = "openai"
 		}
@@ -272,6 +276,12 @@ export class CodeIndexConfigManager {
 			const qdrantUrl = this.qdrantUrl
 			const isConfigured = !!(apiKey && qdrantUrl)
 			return isConfigured
+		} else if (this.embedderProvider === "roo") {
+			// Roo Code Router uses CloudService session token for auth.
+			// Use isAuthenticated() for a stable auth check (not raw session token parsing).
+			const qdrantUrl = this.qdrantUrl
+			const isAuthenticated = CloudService.hasInstance() && CloudService.instance.isAuthenticated()
+			return !!(isAuthenticated && qdrantUrl)
 		}
 		return false // Should not happen if embedderProvider is always set correctly
 	}

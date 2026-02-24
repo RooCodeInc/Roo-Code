@@ -31,6 +31,7 @@ export const codebaseIndexConfigSchema = z.object({
 			"vercel-ai-gateway",
 			"bedrock",
 			"openrouter",
+			"roo",
 		])
 		.optional(),
 	codebaseIndexEmbedderBaseUrl: z.string().optional(),
@@ -67,6 +68,7 @@ export const codebaseIndexModelsSchema = z.object({
 	"vercel-ai-gateway": z.record(z.string(), z.object({ dimension: z.number() })).optional(),
 	openrouter: z.record(z.string(), z.object({ dimension: z.number() })).optional(),
 	bedrock: z.record(z.string(), z.object({ dimension: z.number() })).optional(),
+	roo: z.record(z.string(), z.object({ dimension: z.number() })).optional(),
 })
 
 export type CodebaseIndexModels = z.infer<typeof codebaseIndexModelsSchema>
