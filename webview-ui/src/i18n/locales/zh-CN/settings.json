@@ -479,8 +479,8 @@
 				"learnMore": "了解更多"
 			},
 			"excludeLowQuantization": {
-				"label": "Exclude low-bit quantization (FP4/FP6/Int4)",
-				"description": "Only allow higher precision providers (FP8/FP16/BF16/Int8). Helps prevent broken CJK (Korean/Chinese/Japanese) encoding from aggressively quantized models."
+				"label": "排除低位量化 (FP4/FP6/Int4)",
+				"description": "仅允许高精度提供商 (FP8/FP16/BF16/Int8)。有助于防止激进量化模型导致的 CJK（韩文/中文/日文）编码问题。"
 			}
 		},
 		"customModel": {

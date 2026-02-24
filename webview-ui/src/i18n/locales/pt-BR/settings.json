@@ -479,8 +479,8 @@
 				"learnMore": "Saiba mais sobre roteamento de provedores"
 			},
 			"excludeLowQuantization": {
-				"label": "Exclude low-bit quantization (FP4/FP6/Int4)",
-				"description": "Only allow higher precision providers (FP8/FP16/BF16/Int8). Helps prevent broken CJK (Korean/Chinese/Japanese) encoding from aggressively quantized models."
+				"label": "Excluir quantização de baixa precisão (FP4/FP6/Int4)",
+				"description": "Permitir apenas provedores de maior precisão (FP8/FP16/BF16/Int8). Ajuda a prevenir problemas de codificação CJK (coreano/chinês/japonês) em modelos quantizados agressivamente."
 			}
 		},
 		"customModel": {

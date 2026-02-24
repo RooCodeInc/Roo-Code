@@ -479,8 +479,8 @@
 				"learnMore": "Més informació sobre l'encaminament de proveïdors"
 			},
 			"excludeLowQuantization": {
-				"label": "Exclude low-bit quantization (FP4/FP6/Int4)",
-				"description": "Only allow higher precision providers (FP8/FP16/BF16/Int8). Helps prevent broken CJK (Korean/Chinese/Japanese) encoding from aggressively quantized models."
+				"label": "Excloure la quantització de baixa precisió (FP4/FP6/Int4)",
+				"description": "Permet només proveïdors d'alta precisió (FP8/FP16/BF16/Int8). Ajuda a prevenir problemes de codificació CJK (coreà/xinès/japonès) amb models agressivament quantitzats."
 			}
 		},
 		"customModel": {

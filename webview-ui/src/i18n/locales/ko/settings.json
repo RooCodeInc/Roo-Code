@@ -479,8 +479,8 @@
 				"learnMore": "제공자 라우팅에 대해 자세히 알아보기"
 			},
 			"excludeLowQuantization": {
-				"label": "Exclude low-bit quantization (FP4/FP6/Int4)",
-				"description": "Only allow higher precision providers (FP8/FP16/BF16/Int8). Helps prevent broken CJK (Korean/Chinese/Japanese) encoding from aggressively quantized models."
+				"label": "저비트 양자화 제외 (FP4/FP6/Int4)",
+				"description": "고정밀 제공자만 허용합니다 (FP8/FP16/BF16/Int8). 과도하게 양자화된 모델로 인한 CJK (한국어/중국어/일본어) 인코딩 오류를 방지하는 데 도움이 됩니다."
 			}
 		},
 		"customModel": {

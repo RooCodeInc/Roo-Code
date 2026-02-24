@@ -479,8 +479,8 @@
 				"learnMore": "プロバイダールーティングについて詳しく知る"
 			},
 			"excludeLowQuantization": {
-				"label": "Exclude low-bit quantization (FP4/FP6/Int4)",
-				"description": "Only allow higher precision providers (FP8/FP16/BF16/Int8). Helps prevent broken CJK (Korean/Chinese/Japanese) encoding from aggressively quantized models."
+				"label": "低ビット量子化を除外する (FP4/FP6/Int4)",
+				"description": "高精度プロバイダーのみを許可します (FP8/FP16/BF16/Int8)。積極的に量子化されたモデルによるCJK（韓国語/中国語/日本語）エンコーディングの問題を防ぎます。"
 			}
 		},
 		"customModel": {

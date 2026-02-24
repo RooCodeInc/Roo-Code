@@ -479,8 +479,8 @@
 				"learnMore": "Mehr über Anbieter-Routing erfahren"
 			},
 			"excludeLowQuantization": {
-				"label": "Exclude low-bit quantization (FP4/FP6/Int4)",
-				"description": "Only allow higher precision providers (FP8/FP16/BF16/Int8). Helps prevent broken CJK (Korean/Chinese/Japanese) encoding from aggressively quantized models."
+				"label": "Niedrigbit-Quantisierung ausschließen (FP4/FP6/Int4)",
+				"description": "Nur Anbieter mit höherer Präzision erlauben (FP8/FP16/BF16/Int8). Hilft, fehlerhafte CJK-Kodierung (Koreanisch/Chinesisch/Japanisch) durch aggressiv quantisierte Modelle zu vermeiden."
 			}
 		},
 		"customModel": {
