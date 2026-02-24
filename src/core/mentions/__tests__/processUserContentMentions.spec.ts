@@ -194,6 +194,7 @@ describe("processUserContentMentions", () => {
 				false, // showRooIgnoredFiles should default to false
 				true, // includeDiagnosticMessages
 				50, // maxDiagnosticMessages
+				undefined, // maxReadFileLine
 			)
 		})
 
@@ -220,6 +221,7 @@ describe("processUserContentMentions", () => {
 				false,
 				true, // includeDiagnosticMessages
 				50, // maxDiagnosticMessages
+				undefined, // maxReadFileLine
 			)
 		})
 	})

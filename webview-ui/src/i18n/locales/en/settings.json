@@ -588,6 +588,11 @@
 			"label": "Rate limit",
 			"description": "Minimum time between API requests."
 		},
+		"maxReadFileLine": {
+			"label": "Max file read lines",
+			"unit": "lines",
+			"description": "Maximum number of lines returned when reading a file. Lower values reduce prompt size and help slower providers avoid timeouts. Leave empty to use the default (2000)."
+		},
 		"consecutiveMistakeLimit": {
 			"label": "Error & Repetition Limit",
 			"description": "Number of consecutive errors or repeated actions before showing 'Roo is having trouble' dialog. Set to 0 to disable this safety mechanism (it will never trigger).",

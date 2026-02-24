@@ -216,7 +216,8 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					// (they become U+FFFD replacement characters instead of throwing)
 					const buffer = await fs.readFile(fullPath)
 					const fileContent = buffer.toString("utf-8")
-					const result = this.processTextFile(fileContent, entry)
+					const providerMaxReadFileLine = task.apiConfiguration?.maxReadFileLine
+					const result = this.processTextFile(fileContent, entry, providerMaxReadFileLine)
 
 					await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
 
@@ -265,20 +266,30 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 	/**
 	 * Process a text file according to the requested mode.
+	 *
+	 * @param content - The raw file content
+	 * @param entry - The parsed file entry parameters
+	 * @param providerMaxReadFileLine - Optional provider-level cap on returned lines
 	 */
-	private processTextFile(content: string, entry: InternalFileEntry): string {
+	private processTextFile(content: string, entry: InternalFileEntry, providerMaxReadFileLine?: number): string {
 		const mode = entry.mode || "slice"
+		const defaultLimit = providerMaxReadFileLine ?? DEFAULT_LINE_LIMIT
 
 		if (mode === "indentation") {
 			// Indentation mode: semantic block extraction
 			// When anchor_line is not provided, default to offset (which defaults to 1)
 			const anchorLine = entry.anchor_line ?? entry.offset ?? 1
+			// Clamp the limit: if the provider has a max, enforce it even when the model requests more
+			const requestedLimit = entry.limit ?? defaultLimit
+			const effectiveLimit = providerMaxReadFileLine
+				? Math.min(requestedLimit, providerMaxReadFileLine)
+				: requestedLimit
 			const result = readWithIndentation(content, {
 				anchorLine,
 				maxLevels: entry.max_levels,
 				includeSiblings: entry.include_siblings,
 				includeHeader: entry.include_header,
-				limit: entry.limit ?? DEFAULT_LINE_LIMIT,
+				limit: effectiveLimit,
 				maxLines: entry.max_lines,
 			})
 
@@ -287,7 +298,6 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			if (result.wasTruncated && result.includedRanges.length > 0) {
 				const [start, end] = result.includedRanges[0]
 				const nextOffset = end + 1
-				const effectiveLimit = entry.limit ?? DEFAULT_LINE_LIMIT
 				// Put truncation warning at TOP (before content) to match @ mention format
 				output = `IMPORTANT: File content truncated.
 	Status: Showing lines ${start}-${end} of ${result.totalLines} total lines.
@@ -306,7 +316,11 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 		// NOTE: read_file offset is 1-based externally; convert to 0-based for readWithSlice.
 		const offset1 = entry.offset ?? 1
 		const offset0 = Math.max(0, offset1 - 1)
-		const limit = entry.limit ?? DEFAULT_LINE_LIMIT
+		// Clamp the limit: if the provider has a max, enforce it even when the model requests more
+		const requestedSliceLimit = entry.limit ?? defaultLimit
+		const limit = providerMaxReadFileLine
+			? Math.min(requestedSliceLimit, providerMaxReadFileLine)
+			: requestedSliceLimit
 
 		const result = readWithSlice(content, offset0, limit)
 
@@ -786,8 +800,10 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					}
 					content = selectedLines.join("\n")
 				} else {
-					// Read with default limits using slice mode
-					const result = readWithSlice(rawContent, 0, DEFAULT_LINE_LIMIT)
+					// Read with default limits using slice mode, clamped by provider setting
+					const providerMaxReadFileLine = task.apiConfiguration?.maxReadFileLine
+					const legacyLimit = providerMaxReadFileLine ?? DEFAULT_LINE_LIMIT
+					const result = readWithSlice(rawContent, 0, legacyLimit)
 					content = result.content
 					if (result.wasTruncated) {
 						content += `\n\n[File truncated: showing ${result.returnedLines} of ${result.totalLines} total lines]`
