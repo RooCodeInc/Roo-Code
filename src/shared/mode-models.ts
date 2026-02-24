@@ -18,22 +18,22 @@ export interface ModeModelInfo {
 export const MODE_TO_MODELS: Record<string, ModeModelInfo[]> = {
 	"salesforce-agent": [
 		{
-			modelId: "openai/gpt-oss-120b:free",
-			displayName: "OpenAI: gpt-oss-120b (Free)",
+			modelId: "z-ai/glm-4.5-air:free",
+			displayName: "GLM 4.5 Air (Free, Recommended)",
 			provider: "openrouter",
 			tier: "free",
 			priority: 1, // Primary
 		},
 		{
-			modelId: "openai/gpt-oss-20b:free",
-			displayName: "OpenAI: gpt-oss-20b (Free)",
+			modelId: "openai/gpt-oss-120b:free",
+			displayName: "OpenAI: gpt-oss-120b (Free)",
 			provider: "openrouter",
 			tier: "free",
 			priority: 2, // Fallback 1
 		},
 		{
-			modelId: "z-ai/glm-4.5-air:free",
-			displayName: "GLM 4.5 Air (Free, Recommended)",
+			modelId: "openai/gpt-oss-20b:free",
+			displayName: "OpenAI: gpt-oss-20b (Free)",
 			provider: "openrouter",
 			tier: "free",
 			priority: 3, // Fallback 2
@@ -97,29 +97,29 @@ export const MODE_TO_MODELS: Record<string, ModeModelInfo[]> = {
 	],
 	code: [
 		{
+			modelId: "z-ai/glm-4.5-air:free",
+			displayName: "GLM 4.5 Air (Free)",
+			provider: "openrouter",
+			tier: "free",
+			priority: 1, // Primary
+		},
+		{
 			modelId: "openai/gpt-oss-120b:free",
 			displayName: "OpenAI: gpt-oss-120b (Free)",
 			provider: "openrouter",
 			tier: "free",
-			priority: 1, // Primary
+			priority: 2, // Fallback 1
 		},
 		{
 			modelId: "openai/gpt-oss-20b:free",
 			displayName: "OpenAI: gpt-oss-20b (Free)",
 			provider: "openrouter",
 			tier: "free",
-			priority: 2, // Fallback 1
+			priority: 3, // Fallback 2
 		},
 		{
 			modelId: "qwen/qwen3-coder:free",
 			displayName: "Qwen3 Coder (Free, Recommended)",
-			provider: "openrouter",
-			tier: "free",
-			priority: 3, // Fallback 2
-		},
-		{
-			modelId: "z-ai/glm-4.5-air:free",
-			displayName: "GLM 4.5 Air (Free)",
 			provider: "openrouter",
 			tier: "free",
 			priority: 4, // Fallback 3
