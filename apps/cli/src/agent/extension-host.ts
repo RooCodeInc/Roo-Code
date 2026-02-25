@@ -135,6 +135,7 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 
 	// Ephemeral storage.
 	private ephemeralStorageDir: string | null = null
+	private previousCliRuntimeEnv: string | undefined
 
 	// ==========================================================================
 	// Managers - These do all the heavy lifting
@@ -172,6 +173,10 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 		super()
 
 		this.options = options
+		// Mark this process as CLI runtime so extension code can apply
+		// CLI-specific behavior without affecting VS Code desktop usage.
+		this.previousCliRuntimeEnv = process.env.ROO_CLI_RUNTIME
+		process.env.ROO_CLI_RUNTIME = "1"
 
 		// Enable file-based debug logging only when --debug is passed.
 		if (options.debug) {
@@ -569,6 +574,13 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 			} catch {
 				// NO-OP
 			}
+		}
+
+		// Restore previous CLI runtime marker for process hygiene in tests.
+		if (this.previousCliRuntimeEnv === undefined) {
+			delete process.env.ROO_CLI_RUNTIME
+		} else {
+			process.env.ROO_CLI_RUNTIME = this.previousCliRuntimeEnv
 		}
 	}
 }

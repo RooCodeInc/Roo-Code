@@ -963,6 +963,12 @@ export class ClineProvider
 		historyItem: HistoryItem & { rootTask?: Task; parentTask?: Task },
 		options?: { startTask?: boolean },
 	) {
+		const isCliRuntime = process.env.ROO_CLI_RUNTIME === "1"
+		// CLI injects runtime provider settings from command flags/env at startup.
+		// Restoring provider profiles from task history can overwrite those
+		// runtime settings with stale/incomplete persisted profiles.
+		const skipProfileRestoreFromHistory = isCliRuntime
+
 		// Check if we're rehydrating the current task to avoid flicker
 		const currentTask = this.getCurrentTask()
 		const isRehydratingCurrentTask = currentTask && currentTask.taskId === historyItem.id
@@ -991,7 +997,8 @@ export class ClineProvider
 			// Skip mode-based profile activation if historyItem.apiConfigName exists,
 			// since the task's specific provider profile will override it anyway.
 			const lockApiConfigAcrossModes = this.context.workspaceState.get("lockApiConfigAcrossModes", false)
-			if (!historyItem.apiConfigName && !lockApiConfigAcrossModes) {
+
+			if (!historyItem.apiConfigName && !lockApiConfigAcrossModes && !skipProfileRestoreFromHistory) {
 				const savedConfigId = await this.providerSettingsManager.getModeConfigId(historyItem.mode)
 				const listApiConfig = await this.providerSettingsManager.listConfig()
 
@@ -1033,7 +1040,7 @@ export class ClineProvider
 		// If the history item has a saved API config name (provider profile), restore it.
 		// This overrides any mode-based config restoration above, because the task's
 		// specific provider profile takes precedence over mode defaults.
-		if (historyItem.apiConfigName) {
+		if (historyItem.apiConfigName && !skipProfileRestoreFromHistory) {
 			const listApiConfig = await this.providerSettingsManager.listConfig()
 			// Keep global state/UI in sync with latest profiles for parity with mode restoration above.
 			await this.updateGlobalState("listApiConfigMeta", listApiConfig)
@@ -1059,6 +1066,10 @@ export class ClineProvider
 					`Provider profile '${historyItem.apiConfigName}' from history no longer exists. Using current configuration.`,
 				)
 			}
+		} else if (historyItem.apiConfigName && skipProfileRestoreFromHistory) {
+			this.log(
+				`Skipping restore of provider profile '${historyItem.apiConfigName}' for task ${historyItem.id} in CLI runtime.`,
+			)
 		}
 
 		const { apiConfiguration, enableCheckpoints, checkpointTimeout, experiments, cloudUserInfo, taskSyncEnabled } =

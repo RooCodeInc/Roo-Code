@@ -80,11 +80,26 @@ function spyOnPrivate(host: ExtensionHost, method: string) {
 }
 
 describe("ExtensionHost", () => {
+	const initialRooCliRuntimeEnv = process.env.ROO_CLI_RUNTIME
+
 	beforeEach(() => {
 		vi.resetAllMocks()
+		if (initialRooCliRuntimeEnv === undefined) {
+			delete process.env.ROO_CLI_RUNTIME
+		} else {
+			process.env.ROO_CLI_RUNTIME = initialRooCliRuntimeEnv
+		}
 		// Clean up globals
 		delete (global as Record<string, unknown>).vscode
 		delete (global as Record<string, unknown>).__extensionHost
+	})
+
+	afterAll(() => {
+		if (initialRooCliRuntimeEnv === undefined) {
+			delete process.env.ROO_CLI_RUNTIME
+		} else {
+			process.env.ROO_CLI_RUNTIME = initialRooCliRuntimeEnv
+		}
 	})
 
 	describe("constructor", () => {
@@ -134,6 +149,12 @@ describe("ExtensionHost", () => {
 			expect(getPrivate(host, "outputManager")).toBeDefined()
 			expect(getPrivate(host, "promptManager")).toBeDefined()
 			expect(getPrivate(host, "askDispatcher")).toBeDefined()
+		})
+
+		it("should mark process as CLI runtime", () => {
+			delete process.env.ROO_CLI_RUNTIME
+			createTestHost()
+			expect(process.env.ROO_CLI_RUNTIME).toBe("1")
 		})
 	})
 
@@ -428,6 +449,26 @@ describe("ExtensionHost", () => {
 			await host.dispose()
 
 			expect(restoreConsoleSpy).toHaveBeenCalled()
+		})
+
+		it("should clear ROO_CLI_RUNTIME on dispose when it was previously unset", async () => {
+			delete process.env.ROO_CLI_RUNTIME
+			host = createTestHost()
+			expect(process.env.ROO_CLI_RUNTIME).toBe("1")
+
+			await host.dispose()
+
+			expect(process.env.ROO_CLI_RUNTIME).toBeUndefined()
+		})
+
+		it("should restore prior ROO_CLI_RUNTIME value on dispose", async () => {
+			process.env.ROO_CLI_RUNTIME = "preexisting-value"
+			host = createTestHost()
+			expect(process.env.ROO_CLI_RUNTIME).toBe("1")
+
+			await host.dispose()
+
+			expect(process.env.ROO_CLI_RUNTIME).toBe("preexisting-value")
 		})
 	})
 

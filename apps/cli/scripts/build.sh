@@ -193,6 +193,7 @@ create_tarball() {
 
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { existsSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -200,7 +201,10 @@ const __dirname = dirname(__filename);
 // Set environment variables for the CLI
 process.env.ROO_CLI_ROOT = join(__dirname, '..');
 process.env.ROO_EXTENSION_PATH = join(__dirname, '..', 'extension');
-process.env.ROO_RIPGREP_PATH = join(__dirname, 'rg');
+const ripgrepPath = join(__dirname, 'rg');
+if (existsSync(ripgrepPath)) {
+  process.env.ROO_RIPGREP_PATH = ripgrepPath;
+}
 
 // Import and run the actual CLI
 await import(join(__dirname, '..', 'lib', 'index.js'));
@@ -211,10 +215,21 @@ WRAPPER_EOF
     # Create empty .env file
     touch "$RELEASE_DIR/.env"
 
+    # Strip macOS metadata artifacts before packaging.
+    find "$RELEASE_DIR" -type f -name "._*" -delete
+    find "$RELEASE_DIR" -type f -name ".DS_Store" -delete
+    find "$RELEASE_DIR" -type d -name "__MACOSX" -prune -exec rm -rf {} +
+
     # Create tarball
     info "Creating tarball..."
     cd "$REPO_ROOT"
-    tar -czvf "$TARBALL" "$(basename "$RELEASE_DIR")"
+    COPYFILE_DISABLE=1 tar \
+        --exclude="._*" \
+        --exclude=".DS_Store" \
+        --exclude="__MACOSX" \
+        --exclude="*/._*" \
+        --exclude="*/.DS_Store" \
+        -czvf "$TARBALL" "$(basename "$RELEASE_DIR")"
 
     # Clean up release directory
     rm -rf "$RELEASE_DIR"
