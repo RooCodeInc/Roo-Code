@@ -1183,96 +1183,9 @@ export class ClineProvider
 
 		await this.updateGlobalState("mode", newMode)
 
-		// Auto-switch model to the default/recommended model for this mode
-		// Respect useFreeModels setting when selecting the model
-		const { useFreeModels } = await this.getState()
-		const allModels = getModelsForMode(newMode)
-
-		console.log("[ClineProvider.handleModeSwitch] Mode:", newMode)
-		console.log("[ClineProvider.handleModeSwitch] useFreeModels:", useFreeModels)
-		console.log(
-			"[ClineProvider.handleModeSwitch] All models:",
-			allModels.map((m) => ({ id: m.modelId, tier: m.tier })),
-		)
-
-		// Filter models based on useFreeModels setting
-		let availableModels = allModels
-		if (useFreeModels === true) {
-			// Only include free models when useFreeModels is true
-			availableModels = allModels.filter((model) => model.tier === "free")
-			console.log(
-				"[ClineProvider.handleModeSwitch] Filtered to free models only:",
-				availableModels.map((m) => ({ id: m.modelId, tier: m.tier })),
-			)
-		} else {
-			// Show all models when useFreeModels is false
-			console.log("[ClineProvider.handleModeSwitch] Showing all models (useFreeModels=false)")
-		}
-
-		const defaultModel = availableModels[0] // Pick first available model after filtering
-
-		if (defaultModel) {
-			console.log(
-				"[ClineProvider.handleModeSwitch] Selected model:",
-				defaultModel.modelId,
-				"tier:",
-				defaultModel.tier,
-			)
-			logger.info(
-				`ClineProvider.handleModeSwitch: auto-switching to model ${defaultModel.modelId} (tier=${defaultModel.tier}) for mode ${newMode} with useFreeModels=${useFreeModels}`,
-			)
-
-			const { apiConfiguration, currentApiConfigName } = await this.getState()
-
-			// Update the correct model field based on the provider
-			let newConfiguration: ProviderSettings
-			switch (apiConfiguration.apiProvider) {
-				case "openrouter":
-					newConfiguration = { ...apiConfiguration, openRouterModelId: defaultModel.modelId }
-					break
-				case "anthropic":
-				case "vertex":
-				case "bedrock":
-				case "gemini":
-				case "gemini-cli":
-				case "openai-native":
-				case "mistral":
-				case "deepseek":
-				case "doubao":
-				case "moonshot":
-				case "claude-code":
-					newConfiguration = { ...apiConfiguration, apiModelId: defaultModel.modelId }
-					break
-				case "openai":
-					newConfiguration = { ...apiConfiguration, openAiModelId: defaultModel.modelId }
-					break
-				case "ollama":
-					newConfiguration = { ...apiConfiguration, ollamaModelId: defaultModel.modelId }
-					break
-				case "lmstudio":
-					newConfiguration = { ...apiConfiguration, lmStudioModelId: defaultModel.modelId }
-					break
-				case "glama":
-					newConfiguration = { ...apiConfiguration, glamaModelId: defaultModel.modelId }
-					break
-				case "unbound":
-					newConfiguration = { ...apiConfiguration, unboundModelId: defaultModel.modelId }
-					break
-				case "requesty":
-					newConfiguration = { ...apiConfiguration, requestyModelId: defaultModel.modelId }
-					break
-				default:
-					logger.warn(
-						`ClineProvider.handleModeSwitch: Unknown provider ${apiConfiguration.apiProvider}, using apiModelId`,
-					)
-					newConfiguration = { ...apiConfiguration, apiModelId: defaultModel.modelId }
-			}
-
-			// Save the updated configuration
-			// Note: upsertProviderProfile already calls postStateToWebview, so we don't need to call it again
-			await this.upsertProviderProfile(currentApiConfigName, newConfiguration, true)
-			return // Early return since state is already posted
-		}
+		// Mode switch complete - keep the current model unchanged
+		// The model is now mode-agnostic and will remain the same across mode switches
+		logger.info(`ClineProvider.handleModeSwitch: Switched to mode ${newMode} without changing the model`)
 
 		await this.postStateToWebview()
 	}

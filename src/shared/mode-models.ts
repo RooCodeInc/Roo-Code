@@ -19,35 +19,35 @@ export const MODE_TO_MODELS: Record<string, ModeModelInfo[]> = {
 	"salesforce-agent": [
 		{
 			modelId: "z-ai/glm-4.5-air:free",
-			displayName: "GLM 4.5 Air (Free, Recommended)",
+			displayName: "GLM 4.5 Air (Free)",
 			provider: "openrouter",
 			tier: "free",
 			priority: 1, // Primary
+		},
+		{
+			modelId: "qwen/qwen3-coder:free",
+			displayName: "Qwen3 Coder (Free, Recommended)",
+			provider: "openrouter",
+			tier: "free",
+			priority: 2, // Fallback 1
+		},
+		{
+			modelId: "deepseek/deepseek-r1-0528:free",
+			displayName: "DeepSeek R1 (Free)",
+			provider: "openrouter",
+			tier: "free",
+			priority: 3, // Fallback 2
 		},
 		{
 			modelId: "openai/gpt-oss-120b:free",
 			displayName: "OpenAI: gpt-oss-120b (Free)",
 			provider: "openrouter",
 			tier: "free",
-			priority: 2, // Fallback 1
+			priority: 4, // Fallback 3
 		},
 		{
 			modelId: "openai/gpt-oss-20b:free",
 			displayName: "OpenAI: gpt-oss-20b (Free)",
-			provider: "openrouter",
-			tier: "free",
-			priority: 3, // Fallback 2
-		},
-		{
-			modelId: "meta-llama/llama-3.3-70b-instruct:free",
-			displayName: "Llama 3.3 70B (Free)",
-			provider: "openrouter",
-			tier: "free",
-			priority: 4, // Fallback 3
-		},
-		{
-			modelId: "deepseek/deepseek-r1-0528:free",
-			displayName: "DeepSeek R1 (Free)",
 			provider: "openrouter",
 			tier: "free",
 			priority: 5, // Fallback 4
@@ -104,29 +104,29 @@ export const MODE_TO_MODELS: Record<string, ModeModelInfo[]> = {
 			priority: 1, // Primary
 		},
 		{
-			modelId: "openai/gpt-oss-120b:free",
-			displayName: "OpenAI: gpt-oss-120b (Free)",
+			modelId: "qwen/qwen3-coder:free",
+			displayName: "Qwen3 Coder (Free, Recommended)",
 			provider: "openrouter",
 			tier: "free",
 			priority: 2, // Fallback 1
 		},
 		{
-			modelId: "openai/gpt-oss-20b:free",
-			displayName: "OpenAI: gpt-oss-20b (Free)",
+			modelId: "deepseek/deepseek-r1-0528:free",
+			displayName: "DeepSeek R1 (Free)",
 			provider: "openrouter",
 			tier: "free",
 			priority: 3, // Fallback 2
 		},
 		{
-			modelId: "qwen/qwen3-coder:free",
-			displayName: "Qwen3 Coder (Free, Recommended)",
+			modelId: "openai/gpt-oss-120b:free",
+			displayName: "OpenAI: gpt-oss-120b (Free)",
 			provider: "openrouter",
 			tier: "free",
 			priority: 4, // Fallback 3
 		},
 		{
-			modelId: "deepseek/deepseek-r1-0528:free",
-			displayName: "DeepSeek R1 (Free)",
+			modelId: "openai/gpt-oss-20b:free",
+			displayName: "OpenAI: gpt-oss-20b (Free)",
 			provider: "openrouter",
 			tier: "free",
 			priority: 5, // Fallback 4
@@ -177,14 +177,14 @@ export const MODE_TO_MODELS: Record<string, ModeModelInfo[]> = {
 	orchestrator: [
 		{
 			modelId: "z-ai/glm-4.5-air:free",
-			displayName: "GLM 4.5 Air (Free, Recommended)",
+			displayName: "GLM 4.5 Air (Free)",
 			provider: "openrouter",
 			tier: "free",
 			priority: 1, // Primary
 		},
 		{
-			modelId: "meta-llama/llama-3.3-70b-instruct:free",
-			displayName: "Llama 3.3 70B (Free)",
+			modelId: "qwen/qwen3-coder:free",
+			displayName: "Qwen3 Coder (Free, Recommended)",
 			provider: "openrouter",
 			tier: "free",
 			priority: 2, // Fallback 1
@@ -201,28 +201,56 @@ export const MODE_TO_MODELS: Record<string, ModeModelInfo[]> = {
 			displayName: "OpenAI: gpt-oss-120b (Free)",
 			provider: "openrouter",
 			tier: "free",
-			priority: 3, // Fallback 2
+			priority: 4, // Fallback 3
 		},
 		{
 			modelId: "openai/gpt-oss-20b:free",
 			displayName: "OpenAI: gpt-oss-20b (Free)",
 			provider: "openrouter",
 			tier: "free",
-			priority: 3, // Fallback 2
+			priority: 5, // Fallback 4
 		},
 		{
-			modelId: "x-ai/grok-code-fast-1",
-			displayName: "xAI: Grok Code Fast 1",
+			modelId: "openai/gpt-5-mini",
+			displayName: "GPT-5 Mini",
 			provider: "openrouter",
 			tier: "medium",
-			priority: 11, // Premium option
+			priority: 6, // Premium option
+		},
+		{
+			modelId: "moonshotai/kimi-k2.5",
+			displayName: "Kimi K2.5",
+			provider: "openrouter",
+			tier: "medium",
+			priority: 7, // Premium option
+		},
+		{
+			modelId: "qwen/qwen3-32b:nitro",
+			displayName: "Qwen3 32B (nitro)",
+			provider: "openrouter",
+			tier: "medium",
+			priority: 8, // Premium option
+		},
+		{
+			modelId: "meta-llama/llama-3.3-70b-instruct:nitro",
+			displayName: "Llama 3.3 70B Instruct (nitro)",
+			provider: "openrouter",
+			tier: "medium",
+			priority: 9, // Premium option
+		},
+		{
+			modelId: "deepseek/deepseek-v3.2",
+			displayName: "DeepSeek V3.2",
+			provider: "openrouter",
+			tier: "medium",
+			priority: 10, // Premium option
 		},
 		{
 			modelId: "openai/gpt-5",
 			displayName: "GPT-5",
 			provider: "openrouter",
 			tier: "advanced",
-			priority: 20, // Premium option
+			priority: 11, // Premium option
 		},
 	],
 }
