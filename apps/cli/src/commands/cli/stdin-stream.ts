@@ -1,4 +1,5 @@
 import { createInterface } from "readline"
+import { randomUUID } from "crypto"
 
 import { isRecord } from "@/lib/utils/guards.js"
 
@@ -182,6 +183,31 @@ function isCancellationLikeError(error: unknown): boolean {
 	return normalized.includes("aborted") || normalized.includes("cancelled") || normalized.includes("canceled")
 }
 
+const RESUME_ASKS = new Set(["resume_task", "resume_completed_task"])
+const CANCEL_RECOVERY_WAIT_TIMEOUT_MS = 8_000
+const CANCEL_RECOVERY_POLL_INTERVAL_MS = 100
+
+function isResumableState(host: ExtensionHost): boolean {
+	const agentState = host.client.getAgentState()
+	return (
+		agentState.isWaitingForInput &&
+		typeof agentState.currentAsk === "string" &&
+		RESUME_ASKS.has(agentState.currentAsk)
+	)
+}
+
+async function waitForPostCancelRecovery(host: ExtensionHost): Promise<void> {
+	const deadline = Date.now() + CANCEL_RECOVERY_WAIT_TIMEOUT_MS
+
+	while (Date.now() < deadline) {
+		if (isResumableState(host)) {
+			return
+		}
+
+		await new Promise((resolve) => setTimeout(resolve, CANCEL_RECOVERY_POLL_INTERVAL_MS))
+	}
+}
+
 export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId }: StdinStreamModeOptions) {
 	let hasReceivedStdinCommand = false
 	let shouldShutdown = false
@@ -191,6 +217,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 	let activeTaskCommand: "start" | undefined
 	let latestTaskId: string | undefined
 	let cancelRequestedForActiveTask = false
+	let awaitingPostCancelRecovery = false
 	let hasSeenQueueState = false
 	let lastQueueDepth = 0
 	let lastQueueMessageIds: string[] = []
@@ -242,6 +269,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 	const onExtensionMessage = (message: {
 		type?: string
 		state?: {
+			currentTaskId?: unknown
 			currentTaskItem?: { id?: unknown }
 			messageQueue?: unknown
 		}
@@ -250,7 +278,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 			return
 		}
 
-		const currentTaskId = message.state?.currentTaskItem?.id
+		const currentTaskId = message.state?.currentTaskId ?? message.state?.currentTaskItem?.id
 		if (typeof currentTaskId === "string" && currentTaskId.trim().length > 0) {
 			latestTaskId = currentTaskId
 		}
@@ -378,8 +406,9 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 					activeRequestId = stdinCommand.requestId
 					activeTaskCommand = "start"
 					setStreamRequestId(stdinCommand.requestId)
-					latestTaskId = undefined
+					latestTaskId = randomUUID()
 					cancelRequestedForActiveTask = false
+					awaitingPostCancelRecovery = false
 
 					jsonEmitter.emitControl({
 						subtype: "ack",
@@ -392,7 +421,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 					})
 
 					activeTaskPromise = host
-						.runTask(stdinCommand.prompt)
+						.runTask(stdinCommand.prompt, latestTaskId)
 						.catch((error) => {
 							const message = error instanceof Error ? error.message : String(error)
 
@@ -434,7 +463,14 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 						})
 					break
 
-				case "message":
+				case "message": {
+					// If cancel was requested, wait briefly for the task to be rehydrated
+					// so message prompts don't race into the pre-cancel task instance.
+					if (awaitingPostCancelRecovery) {
+						await waitForPostCancelRecovery(host)
+					}
+					const wasResumable = isResumableState(host)
+
 					if (!host.client.hasActiveTask()) {
 						jsonEmitter.emitControl({
 							subtype: "error",
@@ -464,11 +500,13 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 						requestId: stdinCommand.requestId,
 						command: "message",
 						taskId: latestTaskId,
-						content: "message queued",
-						code: "queued",
+						content: wasResumable ? "resume message queued" : "message queued",
+						code: wasResumable ? "resumed" : "queued",
 						success: true,
 					})
+					awaitingPostCancelRecovery = false
 					break
+				}
 
 				case "cancel": {
 					setStreamRequestId(stdinCommand.requestId)
@@ -500,6 +538,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 					}
 
 					cancelRequestedForActiveTask = true
+					awaitingPostCancelRecovery = true
 					jsonEmitter.emitControl({
 						subtype: "ack",
 						requestId: stdinCommand.requestId,

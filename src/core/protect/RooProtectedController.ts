@@ -43,11 +43,16 @@ export class RooProtectedController {
 			const absolutePath = path.resolve(this.cwd, filePath)
 			const relativePath = path.relative(this.cwd, absolutePath).toPosix()
 
+			// Paths outside the cwd start with ".." and can't match any protected pattern.
+			// The ignore library throws RangeError for such paths, so skip them early.
+			if (relativePath.startsWith("..")) {
+				return false
+			}
+
 			// Use ignore library to check if file matches any protected pattern
 			return this.ignoreInstance.ignores(relativePath)
 		} catch (error) {
 			// If there's an error processing the path, err on the side of caution
-			// Ignore is designed to work with relative file paths, so will throw error for paths outside cwd
 			console.error(`Error checking protection for ${filePath}:`, error)
 			return false
 		}

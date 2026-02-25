@@ -423,6 +423,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		enableCheckpoints = true,
 		checkpointTimeout = DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 		consecutiveMistakeLimit = DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
+		taskId,
 		task,
 		images,
 		historyItem,
@@ -456,7 +457,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			)
 		}
 
-		this.taskId = historyItem ? historyItem.id : uuidv7()
+		this.taskId = historyItem ? historyItem.id : (taskId ?? uuidv7())
 		this.rootTaskId = historyItem ? historyItem.rootTaskId : rootTask?.taskId
 		this.parentTaskId = historyItem ? historyItem.parentTaskId : parentTask?.taskId
 		this.childTaskId = undefined
@@ -4431,6 +4432,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			await this.say("api_req_retry_delayed", headerText, undefined, false)
 		} catch (err) {
+			const message = err instanceof Error ? err.message : String(err)
+
+			if (this.abort && message.includes("Aborted during retry countdown")) {
+				return
+			}
+
 			console.error("Exponential backoff failed:", err)
 		}
 	}

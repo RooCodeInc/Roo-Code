@@ -194,6 +194,10 @@ export class CloudTelemetryClient extends BaseTelemetryClient {
 	}
 
 	public async backfillMessages(messages: ClineMessage[], taskId: string): Promise<void> {
+		if (!this.isTelemetryEnabled()) {
+			return
+		}
+
 		if (!this.authService.isAuthenticated()) {
 			if (this.debug) {
 				console.info(`[TelemetryClient#backfillMessages] Skipping: Not authenticated`)
@@ -260,6 +264,10 @@ export class CloudTelemetryClient extends BaseTelemetryClient {
 	public override updateTelemetryState(_didUserOptIn: boolean) {}
 
 	public override isTelemetryEnabled(): boolean {
+		if (process.env.ROO_CODE_DISABLE_TELEMETRY === "1") {
+			return false
+		}
+
 		return true
 	}
 

@@ -554,7 +554,9 @@ export const webviewMessageHandler = async (
 			// task. This essentially creates a fresh slate for the new task.
 			try {
 				const resolved = await resolveIncomingImages({ text: message.text, images: message.images })
-				await provider.createTask(resolved.text, resolved.images)
+				await provider.createTask(resolved.text, resolved.images, undefined, {
+					taskId: message.taskId,
+				})
 				// Task created successfully - notify the UI to reset
 				await provider.postMessageToWebview({ type: "invoke", invoke: "newChat" })
 			} catch (error) {
