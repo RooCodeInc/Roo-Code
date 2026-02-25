@@ -16,6 +16,7 @@ interface FollowUpSuggestProps {
 	ts: number
 	onCancelAutoApproval?: () => void
 	isAnswered?: boolean
+	inputValue?: string
 }
 
 export const FollowUpSuggest = ({
@@ -24,6 +25,7 @@ export const FollowUpSuggest = ({
 	ts = 1,
 	onCancelAutoApproval,
 	isAnswered = false,
+	inputValue: _inputValue = "",
 }: FollowUpSuggestProps) => {
 	const { autoApprovalEnabled, alwaysAllowFollowupQuestions, followupAutoApproveTimeoutMs } = useExtensionState()
 	const [countdown, setCountdown] = useState<number | null>(null)
@@ -85,14 +87,6 @@ export const FollowUpSuggest = ({
 		isAnswered,
 	])
 
-	// When question is marked as answered (by auto-approval), set the first suggestion as selected
-	useEffect(() => {
-		if (isAnswered && !selectedSuggestion && suggestions.length > 0) {
-			setSelectedSuggestion(suggestions[0])
-			setSuggestionSelected(true)
-		}
-	}, [isAnswered, selectedSuggestion, suggestions])
-
 	const handleSuggestionClick = useCallback(
 		(suggestion: SuggestionItem, event: React.MouseEvent) => {
 			// Prevent double-processing
@@ -104,7 +98,7 @@ export const FollowUpSuggest = ({
 			if (!event.shiftKey) {
 				isProcessingClick.current = true
 
-				// Update state immediately
+				// Update state immediately so UI shows checkmark
 				setSuggestionSelected(true)
 				setSelectedSuggestion(suggestion)
 
@@ -112,8 +106,9 @@ export const FollowUpSuggest = ({
 				// This prevents race conditions between visual countdown and actual timeout
 				onCancelAutoApproval?.()
 
-				// Pass the suggestion object to the parent component
-				// The parent component will handle mode switching if needed
+				// Send the suggestion to the AI, same as how we handle custom input
+				// This will trigger markFollowUpAsAnswered which will set isAnswered=true
+				// and the UI will show the checkmark confirmation
 				onSuggestionClick?.(suggestion, event)
 			} else {
 				// For shift-click, just call the handler (copying to input)
@@ -123,36 +118,44 @@ export const FollowUpSuggest = ({
 		[onSuggestionClick, onCancelAutoApproval],
 	)
 
-	// Don't render if there are no suggestions or no click handler.
+	// Don't render if there are no suggestions or no click handler
 	if (!suggestions?.length || !onSuggestionClick) {
 		return null
 	}
 
-	// If answered or a suggestion was selected, show only the selected option
-	if ((isAnswered || suggestionSelected) && selectedSuggestion) {
-		return (
-			<div className="flex mb-2 flex-col h-full gap-2">
-				<div className="w-full relative">
-					<Button
-						variant="outline"
-						className="text-left whitespace-normal break-words w-full h-auto py-3 justify-start pr-8 opacity-100"
-						disabled
-						aria-label={selectedSuggestion.answer}>
-						<span className="flex items-center gap-2">
-							<span className="codicon codicon-check text-vscode-charts-green" />
-							{selectedSuggestion.answer}
-						</span>
-					</Button>
-					{selectedSuggestion.mode && (
-						<div className="absolute bottom-0 right-0 text-[10px] bg-vscode-badge-background text-vscode-badge-foreground px-1 py-0.5 border border-vscode-badge-background flex items-center gap-0.5">
-							<span className="codicon codicon-arrow-right" style={{ fontSize: "8px" }} />
-							{selectedSuggestion.mode}
-						</div>
-					)}
+	// If the follow-up question has been answered, hide all suggestions
+	// This applies both when a suggestion was selected OR when user sent custom input
+	if (isAnswered) {
+		// Only show the selected suggestion if one was clicked
+		if (selectedSuggestion) {
+			return (
+				<div className="flex mb-2 flex-col h-full gap-2">
+					<div className="w-full relative">
+						<Button
+							variant="outline"
+							className="text-left whitespace-normal break-words w-full h-auto py-3 justify-start pr-8 opacity-100"
+							disabled
+							aria-label={selectedSuggestion.answer}>
+							<span className="flex items-center gap-2">
+								<span className="codicon codicon-check text-vscode-charts-green" />
+								{selectedSuggestion.answer}
+							</span>
+						</Button>
+						{selectedSuggestion.mode && (
+							<div className="absolute bottom-0 right-0 text-[10px] bg-vscode-badge-background text-vscode-badge-foreground px-1 py-0.5 border border-vscode-badge-background flex items-center gap-0.5">
+								<span className="codicon codicon-arrow-right" style={{ fontSize: "8px" }} />
+								{selectedSuggestion.mode}
+							</div>
+						)}
+					</div>
 				</div>
-			</div>
-		)
+			)
+		}
+		// If answered but no suggestion was selected (user sent custom input), hide all suggestions
+		return null
 	}
+
+	// Show all suggestions with countdown timer
 
 	return (
 		<div className="flex mb-2 flex-col h-full gap-2">
