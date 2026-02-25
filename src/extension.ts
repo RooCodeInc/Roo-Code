@@ -35,6 +35,7 @@ import { TerminalRegistry } from "./integrations/terminal/TerminalRegistry"
 import { openAiCodexOAuthManager } from "./integrations/openai-codex/oauth"
 import { McpServerManager } from "./services/mcp/McpServerManager"
 import { CodeIndexManager } from "./services/code-index/manager"
+import { AugmentEngine } from "./services/augment/AugmentEngine"
 import { MdmService } from "./services/mdm/MdmService"
 import { migrateSettings } from "./utils/migrateSettings"
 import { autoImportSettings } from "./utils/autoImportSettings"
@@ -188,6 +189,22 @@ export async function activate(context: vscode.ExtensionContext) {
 
 				context.subscriptions.push(manager)
 			}
+		}
+	}
+
+	// Initialize Joe AI Augment Engine for all workspace folders.
+	// This powers: persistent memory, continuous indexing, smart context, proactive analysis.
+	if (vscode.workspace.workspaceFolders) {
+		for (const folder of vscode.workspace.workspaceFolders) {
+			AugmentEngine.initialize(context, folder.uri.fsPath).then((engine) => {
+				engine.onReady(() => {
+					outputChannel.appendLine(`[AugmentEngine] Joe AI context engine ready for ${folder.uri.fsPath}`)
+				})
+				context.subscriptions.push({ dispose: () => engine.dispose() })
+			}).catch((error) => {
+				const message = error instanceof Error ? error.message : String(error)
+				outputChannel.appendLine(`[AugmentEngine] Initialization error for ${folder.uri.fsPath}: ${message}`)
+			})
 		}
 	}
 
@@ -449,4 +466,5 @@ export async function deactivate() {
 	await McpServerManager.cleanup(extensionContext)
 	TelemetryService.instance.shutdown()
 	TerminalRegistry.cleanup()
+	AugmentEngine.disposeAll()
 }

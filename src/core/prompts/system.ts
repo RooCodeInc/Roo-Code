@@ -9,6 +9,7 @@ import { isEmpty } from "../../utils/object"
 
 import { McpHub } from "../../services/mcp/McpHub"
 import { CodeIndexManager } from "../../services/code-index/manager"
+import { AugmentEngine } from "../../services/augment/AugmentEngine"
 import { SkillsManager } from "../../services/skills/SkillsManager"
 
 import type { SystemPromptSettings } from "./types"
@@ -82,6 +83,25 @@ async function generatePrompt(
 	// Tools catalog is not included in the system prompt.
 	const toolsCatalog = ""
 
+	// Inject Augment Engine context when in augment mode (high-context AI)
+	let augmentContextBlock = ""
+	if (mode === "augment") {
+		const engine = AugmentEngine.getInstance(cwd)
+		if (engine) {
+			try {
+				const activeFile = vscode.window.activeTextEditor?.document.uri.fsPath
+				const enriched = await engine.buildEnrichedContext(
+					"system-prompt-initialization",
+					activeFile,
+				)
+				augmentContextBlock = enriched.formattedForPrompt
+			} catch (err) {
+				// Non-fatal: augment context is supplemental, not required
+				console.warn("[system.ts] Failed to build augment context:", err)
+			}
+		}
+	}
+
 	const basePrompt = `${roleDefinition}
 
 ${markdownFormattingSection()}
@@ -99,7 +119,7 @@ ${getRulesSection(cwd, settings)}
 ${getSystemInfoSection(cwd)}
 
 ${getObjectiveSection()}
-
+${augmentContextBlock}
 ${await addCustomInstructions(baseInstructions, globalCustomInstructions || "", cwd, mode, {
 	language: language ?? formatLanguage(vscode.env.language),
 	rooIgnoreInstructions,
