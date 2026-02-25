@@ -15,6 +15,7 @@ export { ContinuousIndexer } from "./ContinuousIndexer"
 export { SmartContextSelector } from "./SmartContextSelector"
 export { ProactiveAnalyzer } from "./ProactiveAnalyzer"
 export { MultiFileRefactorAnalyzer } from "./MultiFileRefactorAnalyzer"
+export { JoeInlineCompletionProvider, registerJoeInlineCompletionProvider } from "./JoeInlineCompletionProvider"
 
 export type { AugmentEngineOptions, EnrichedContext } from "./AugmentEngine"
 export type { FileMemory, SessionMemory, WorkspaceMemory } from "./MemoryManager"

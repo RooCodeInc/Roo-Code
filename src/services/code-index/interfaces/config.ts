@@ -19,6 +19,11 @@ export interface CodeIndexConfig {
 	openRouterOptions?: { apiKey: string; specificProvider?: string }
 	qdrantUrl?: string
 	qdrantApiKey?: string
+	// TiDB Cloud vector store settings (alternative to Qdrant)
+	tidbHost?: string
+	tidbUsername?: string
+	tidbPassword?: string
+	tidbDatabase?: string
 	searchMinScore?: number
 	searchMaxResults?: number
 }

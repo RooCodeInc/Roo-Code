@@ -21,6 +21,7 @@ import { VercelAiGatewayEmbedder } from "./embedders/vercel-ai-gateway"
 import { BedrockEmbedder } from "./embedders/bedrock"
 import { OpenRouterEmbedder } from "./embedders/openrouter"
 import { QdrantVectorStore } from "./vector-store/qdrant-client"
+import { TiDBVectorStore } from "./vector-store/tidb-vector-store"
 import { codeParser, DirectoryScanner, FileWatcher } from "./processors"
 import { ICodeParser, IEmbedder, IFileWatcher, IVectorStore } from "./interfaces"
 import { CodeIndexConfigManager } from "./config-manager"
@@ -163,6 +164,19 @@ export class CodeIndexServiceFactory {
 			} else {
 				throw new Error(t("embeddings:serviceFactory.vectorDimensionNotDetermined", { modelId, provider }))
 			}
+		}
+
+		// Prefer TiDB Cloud if configured, otherwise fall back to Qdrant
+		if (config.tidbHost && config.tidbUsername && config.tidbPassword) {
+			console.log("[CodeIndexServiceFactory] Using TiDB Cloud vector store")
+			return new TiDBVectorStore(
+				this.workspacePath,
+				config.tidbHost,
+				config.tidbDatabase ?? "joe_code_index",
+				config.tidbUsername,
+				config.tidbPassword,
+				vectorSize,
+			)
 		}
 
 		if (!config.qdrantUrl) {

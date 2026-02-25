@@ -36,6 +36,7 @@ import { openAiCodexOAuthManager } from "./integrations/openai-codex/oauth"
 import { McpServerManager } from "./services/mcp/McpServerManager"
 import { CodeIndexManager } from "./services/code-index/manager"
 import { AugmentEngine } from "./services/augment/AugmentEngine"
+import { registerJoeInlineCompletionProvider } from "./services/augment/JoeInlineCompletionProvider"
 import { MdmService } from "./services/mdm/MdmService"
 import { migrateSettings } from "./utils/migrateSettings"
 import { autoImportSettings } from "./utils/autoImportSettings"
@@ -194,6 +195,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Initialize Joe AI Augment Engine for all workspace folders.
 	// This powers: persistent memory, continuous indexing, smart context, proactive analysis.
+	const primaryWorkspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
 	if (vscode.workspace.workspaceFolders) {
 		for (const folder of vscode.workspace.workspaceFolders) {
 			AugmentEngine.initialize(context, folder.uri.fsPath).then((engine) => {
@@ -206,6 +208,14 @@ export async function activate(context: vscode.ExtensionContext) {
 				outputChannel.appendLine(`[AugmentEngine] Initialization error for ${folder.uri.fsPath}: ${message}`)
 			})
 		}
+	}
+
+	// Register Joe AI inline completion provider (ghost text completions).
+	// Uses the primary workspace for AugmentEngine context lookups.
+	if (primaryWorkspacePath) {
+		const completionDisposable = registerJoeInlineCompletionProvider(context, primaryWorkspacePath)
+		context.subscriptions.push(completionDisposable)
+		outputChannel.appendLine("[JoeInlineCompletion] Ghost text completion provider registered")
 	}
 
 	// Initialize the provider *before* the Roo Code Cloud service.

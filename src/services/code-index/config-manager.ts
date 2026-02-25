@@ -24,6 +24,11 @@ export class CodeIndexConfigManager {
 	private openRouterOptions?: { apiKey: string; specificProvider?: string }
 	private qdrantUrl?: string = "http://localhost:6333"
 	private qdrantApiKey?: string
+	// TiDB Cloud vector store settings
+	private tidbHost?: string
+	private tidbUsername?: string
+	private tidbPassword?: string
+	private tidbDatabase?: string
 	private searchMinScore?: number
 	private searchMaxResults?: number
 
@@ -79,10 +84,20 @@ export class CodeIndexConfigManager {
 		const bedrockProfile = codebaseIndexConfig.codebaseIndexBedrockProfile ?? ""
 		const openRouterApiKey = this.contextProxy?.getSecret("codebaseIndexOpenRouterApiKey") ?? ""
 		const openRouterSpecificProvider = codebaseIndexConfig.codebaseIndexOpenRouterSpecificProvider ?? ""
+		// TiDB Cloud settings
+		const tidbHost = codebaseIndexConfig.codebaseIndexTidbHost ?? ""
+		const tidbUsername = codebaseIndexConfig.codebaseIndexTidbUsername ?? ""
+		const tidbPassword = this.contextProxy?.getSecret("codebaseIndexTidbPassword") ?? ""
+		const tidbDatabase = codebaseIndexConfig.codebaseIndexTidbDatabase ?? "joe_code_index"
 
 		// Update instance variables with configuration
 		this.codebaseIndexEnabled = codebaseIndexEnabled ?? false
 		this.qdrantUrl = codebaseIndexQdrantUrl
+		// TiDB
+		this.tidbHost = tidbHost || undefined
+		this.tidbUsername = tidbUsername || undefined
+		this.tidbPassword = tidbPassword || undefined
+		this.tidbDatabase = tidbDatabase || "joe_code_index"
 		this.qdrantApiKey = qdrantApiKey ?? ""
 		this.searchMinScore = codebaseIndexSearchMinScore
 		this.searchMaxResults = codebaseIndexSearchMaxResults
@@ -230,48 +245,52 @@ export class CodeIndexConfigManager {
 	/**
 	 * Checks if the service is properly configured based on the embedder type.
 	 */
+	/** True if TiDB Cloud settings are provided (alternative to Qdrant for vector storage) */
+	public get tidbConfigured(): boolean {
+		return !!(this.tidbHost && this.tidbUsername && this.tidbPassword)
+	}
+
+	/** TiDB connection options (host, username, password, database) */
+	public get tidbConfig(): { host: string; username: string; password: string; database: string } | undefined {
+		if (!this.tidbConfigured) return undefined
+		return {
+			host: this.tidbHost!,
+			username: this.tidbUsername!,
+			password: this.tidbPassword!,
+			database: this.tidbDatabase ?? "joe_code_index",
+		}
+	}
+
 	public isConfigured(): boolean {
+		// A vector store is required — either Qdrant or TiDB
+		const hasVectorStore = this.tidbConfigured || !!this.qdrantUrl
 		if (this.embedderProvider === "openai") {
 			const openAiKey = this.openAiOptions?.openAiNativeApiKey
-			const qdrantUrl = this.qdrantUrl
-			return !!(openAiKey && qdrantUrl)
+			return !!(openAiKey && hasVectorStore)
 		} else if (this.embedderProvider === "ollama") {
 			// Ollama model ID has a default, so only base URL is strictly required for config
 			const ollamaBaseUrl = this.ollamaOptions?.ollamaBaseUrl
-			const qdrantUrl = this.qdrantUrl
-			return !!(ollamaBaseUrl && qdrantUrl)
+			return !!(ollamaBaseUrl && hasVectorStore)
 		} else if (this.embedderProvider === "openai-compatible") {
 			const baseUrl = this.openAiCompatibleOptions?.baseUrl
 			const apiKey = this.openAiCompatibleOptions?.apiKey
-			const qdrantUrl = this.qdrantUrl
-			const isConfigured = !!(baseUrl && apiKey && qdrantUrl)
-			return isConfigured
+			return !!(baseUrl && apiKey && hasVectorStore)
 		} else if (this.embedderProvider === "gemini") {
 			const apiKey = this.geminiOptions?.apiKey
-			const qdrantUrl = this.qdrantUrl
-			const isConfigured = !!(apiKey && qdrantUrl)
-			return isConfigured
+			return !!(apiKey && hasVectorStore)
 		} else if (this.embedderProvider === "mistral") {
 			const apiKey = this.mistralOptions?.apiKey
-			const qdrantUrl = this.qdrantUrl
-			const isConfigured = !!(apiKey && qdrantUrl)
-			return isConfigured
+			return !!(apiKey && hasVectorStore)
 		} else if (this.embedderProvider === "vercel-ai-gateway") {
 			const apiKey = this.vercelAiGatewayOptions?.apiKey
-			const qdrantUrl = this.qdrantUrl
-			const isConfigured = !!(apiKey && qdrantUrl)
-			return isConfigured
+			return !!(apiKey && hasVectorStore)
 		} else if (this.embedderProvider === "bedrock") {
 			// Only region is required for Bedrock (profile is optional)
 			const region = this.bedrockOptions?.region
-			const qdrantUrl = this.qdrantUrl
-			const isConfigured = !!(region && qdrantUrl)
-			return isConfigured
+			return !!(region && hasVectorStore)
 		} else if (this.embedderProvider === "openrouter") {
 			const apiKey = this.openRouterOptions?.apiKey
-			const qdrantUrl = this.qdrantUrl
-			const isConfigured = !!(apiKey && qdrantUrl)
-			return isConfigured
+			return !!(apiKey && hasVectorStore)
 		}
 		return false // Should not happen if embedderProvider is always set correctly
 	}
@@ -458,6 +477,10 @@ export class CodeIndexConfigManager {
 			openRouterOptions: this.openRouterOptions,
 			qdrantUrl: this.qdrantUrl,
 			qdrantApiKey: this.qdrantApiKey,
+			tidbHost: this.tidbHost,
+			tidbUsername: this.tidbUsername,
+			tidbPassword: this.tidbPassword,
+			tidbDatabase: this.tidbDatabase,
 			searchMinScore: this.currentSearchMinScore,
 			searchMaxResults: this.currentSearchMaxResults,
 		}
