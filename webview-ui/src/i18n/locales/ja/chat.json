@@ -1,5 +1,5 @@
 {
-	"greeting": "Roo Code へようこそ",
+	"greeting": "Joe Code へようこそ",
 	"task": {
 		"title": "タスク",
 		"expand": "タスクを展開",
@@ -21,7 +21,7 @@
 		"sharePublicly": "公開で共有",
 		"sharePubliclyDescription": "リンクを持つ誰でもアクセスできます",
 		"connectToCloud": "クラウドに接続",
-		"connectToCloudDescription": "タスクを共有するためにRoo Code Cloudにサインイン",
+		"connectToCloudDescription": "タスクを共有するためにJoe Code Cloudにサインイン",
 		"sharingDisabledByOrganization": "組織により共有が無効化されています",
 		"shareSuccessOrganization": "組織リンクをクリップボードにコピーしました",
 		"shareSuccessPublic": "公開リンクをクリップボードにコピーしました",
@@ -97,7 +97,7 @@
 	},
 	"enqueueMessage": "メッセージをキューに追加（現在のタスク完了後に送信されます）",
 	"scrollToBottom": "チャットの最下部にスクロール",
-	"about": "Roo Codeは、エディタに常駐するAI開発チームです。",
+	"about": "Joe Codeは、エディタに常駐するAI開発チームです。",
 	"docs": "詳細については、<DocsLink>ドキュメント</DocsLink>をご確認ください。",
 	"onboarding": "このワークスペースのタスクリストは空です。",
 	"rooTips": {
@@ -161,7 +161,7 @@
 			"500": "プロバイダー サーバー エラー。プロバイダー側に問題があり、リクエスト自体に問題はありません。",
 			"docs": "ドキュメント",
 			"goToSettings": "設定",
-			"unknown": "不明な API エラー。Roo Code のサポートにお問い合わせください。",
+			"unknown": "不明な API エラー。Joe Code のサポートにお問い合わせください。",
 			"connection": "接続エラー。インターネット接続が機能していることを確認してください。",
 			"claudeCodeNotAuthenticated": "Claude Codeを使用するにはサインインが必要です。設定に移動して「Claude Codeにサインイン」をクリックして認証してください。"
 		}
@@ -337,20 +337,20 @@
 		"timerPrefix": "自動承認が有効です。{{seconds}}秒後に選択中…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} リリース",
-		"support": "<githubLink>GitHub</githubLink>でスターを付けてRoo Codeを応援してください。",
+		"title": "Joe Code {{version}} リリース",
+		"support": "<githubLink>GitHub</githubLink>でスターを付けてJoe Codeを応援してください。",
 		"stealthModel": {
-			"feature": "<bold>期間限定無料ステルスモデル</bold> - Code Supernova：<bold>1Mトークンコンテキストウィンドウ</bold>にアップグレード！画像入力をサポートする多目的エージェントコーディングモデル、Roo Code Cloud 経由で利用可能。",
+			"feature": "<bold>期間限定無料ステルスモデル</bold> - Code Supernova：<bold>1Mトークンコンテキストウィンドウ</bold>にアップグレード！画像入力をサポートする多目的エージェントコーディングモデル、Joe Code Cloud 経由で利用可能。",
 			"note": "(注意：プロンプトと補完はモデル作成者によってログに記録され、モデルの改善に使用されます)",
-			"connectButton": "Roo Code Cloud に接続",
-			"selectModel": "設定で Roo Code Cloud プロバイダーから <code>roo/code-supernova</code> を選択して開始してください。",
+			"connectButton": "Joe Code Cloud に接続",
+			"selectModel": "設定で Joe Code Cloud プロバイダーから <code>roo/code-supernova</code> を選択して開始してください。",
 			"goToSettingsButton": "設定に移動"
 		},
 		"release": {
 			"heading": "新機能:",
 			"geminiPro": "Gemini 3.1 Pro サポート: Gemini 3.1 Pro モデルのサポートを追加し、パフォーマンス向上のためデフォルトの Gemini モデルに設定しました。",
 			"cliNdjson": "CLI NDJSON プロトコル: 新しい NDJSON stdin プロトコル、list サブコマンド、より柔軟な CLI ワークフローのためのモジュール化された run コマンド。",
-			"cliRelease": "CLI v0.1.0: Roo Code CLI が安定したコマンドインターフェースで初の正式リリースに到達しました。"
+			"cliRelease": "CLI v0.1.0: Joe Code CLI が安定したコマンドインターフェースで初の正式リリースに到達しました。"
 		},
 		"cloudAgents": {
 			"heading": "クラウドの新機能:",
@@ -375,7 +375,7 @@
 	"profileViolationWarning": "現在のプロファイルは組織の設定と互換性がありません",
 	"shellIntegration": {
 		"title": "コマンド実行警告",
-		"description": "コマンドはVSCodeターミナルシェル統合なしで実行されています。この警告を非表示にするには、<settingsLink>Roo Code設定</settingsLink>の<strong>Terminal</strong>セクションでシェル統合を無効にするか、以下のリンクを使用してVSCodeターミナル統合のトラブルシューティングを行ってください。",
+		"description": "コマンドはVSCodeターミナルシェル統合なしで実行されています。この警告を非表示にするには、<settingsLink>Joe Code設定</settingsLink>の<strong>Terminal</strong>セクションでシェル統合を無効にするか、以下のリンクを使用してVSCodeターミナル統合のトラブルシューティングを行ってください。",
 		"troubleshooting": "シェル統合のドキュメントはこちらをクリック"
 	},
 	"ask": {
@@ -433,7 +433,7 @@
 		"ariaLabel": "バージョン {{version}} - クリックしてリリースノートを表示"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud が進化中！",
+		"title": "Joe Code Cloud が進化中！",
 		"description": "クラウドでリモートエージェントを実行し、どこからでもタスクにアクセスし、他の人と協力し、その他多くの機能を利用できます。",
 		"joinWaitlist": "最新のアップデートを受け取るためにサインアップしてください。"
 	},

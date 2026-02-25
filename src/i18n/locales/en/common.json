@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Joe Code",
 		"description": "A whole dev team of AI agents in your editor."
 	},
 	"number_format": {
@@ -112,7 +112,7 @@
 			"thinking_complete_recitation": "(Thinking complete, but output was blocked due to recitation check.)"
 		},
 		"roo": {
-			"authenticationRequired": "Roo provider requires cloud authentication. Please sign in to Roo Code Cloud."
+			"authenticationRequired": "Joe provider requires cloud authentication. Please sign in to Joe Code Cloud."
 		},
 		"openAiCodex": {
 			"notAuthenticated": "Not authenticated with OpenAI Codex. Please sign in using the OpenAI Codex OAuth flow.",
@@ -145,7 +145,7 @@
 	"warnings": {
 		"no_terminal_content": "No terminal content selected",
 		"missing_task_files": "This task's files are missing. Would you like to remove it from the task list?",
-		"auto_import_failed": "Failed to auto-import RooCode settings: {{error}}"
+		"auto_import_failed": "Failed to auto-import Joe Code settings: {{error}}"
 	},
 	"info": {
 		"no_changes": "No changes found.",
@@ -154,7 +154,7 @@
 		"custom_storage_path_set": "Custom storage path set: {{path}}",
 		"default_storage_path": "Reverted to using default storage path",
 		"settings_imported": "Settings imported successfully.",
-		"auto_import_success": "RooCode settings automatically imported from {{filename}}",
+		"auto_import_success": "Joe Code settings automatically imported from {{filename}}",
 		"share_link_copied": "Share link copied to clipboard",
 		"organization_share_link_copied": "Organization share link copied to clipboard!",
 		"public_share_link_copied": "Public share link copied to clipboard!",
@@ -187,12 +187,12 @@
 	},
 	"storage": {
 		"prompt_custom_path": "Enter custom conversation history storage path, leave empty to use default location",
-		"path_placeholder": "D:\\RooCodeStorage",
-		"enter_absolute_path": "Please enter an absolute path (e.g. D:\\RooCodeStorage or /home/user/storage)",
+		"path_placeholder": "D:\\JoeCodeStorage",
+		"enter_absolute_path": "Please enter an absolute path (e.g. D:\\JoeCodeStorage or /home/user/storage)",
 		"enter_valid_path": "Please enter a valid path"
 	},
 	"input": {
-		"task_prompt": "What should Roo do?",
+		"task_prompt": "What should Joe do?",
 		"task_placeholder": "Type your task here"
 	},
 	"customModes": {
@@ -219,8 +219,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "Your organization requires Roo Code Cloud authentication. Please sign in to continue.",
-			"organization_mismatch": "You must be authenticated with your organization's Roo Code Cloud account.",
+			"cloud_auth_required": "Your organization requires Joe Code Cloud authentication. Please sign in to continue.",
+			"organization_mismatch": "You must be authenticated with your organization's Joe Code Cloud account.",
 			"verification_failed": "Unable to verify organization authentication."
 		},
 		"info": {

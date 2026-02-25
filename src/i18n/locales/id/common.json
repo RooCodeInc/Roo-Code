@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Joe Code",
 		"description": "Tim pengembang AI lengkap di editor kamu."
 	},
 	"number_format": {
@@ -112,7 +112,7 @@
 			"thinking_complete_recitation": "(Berpikir selesai, tetapi output diblokir karena pemeriksaan resitasi.)"
 		},
 		"roo": {
-			"authenticationRequired": "Penyedia Roo memerlukan autentikasi cloud. Silakan masuk ke Roo Code Cloud."
+			"authenticationRequired": "Penyedia Roo memerlukan autentikasi cloud. Silakan masuk ke Joe Code Cloud."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "Kunci API mengandung karakter tidak valid.",
@@ -187,8 +187,8 @@
 	},
 	"storage": {
 		"prompt_custom_path": "Masukkan path penyimpanan riwayat percakapan kustom, biarkan kosong untuk menggunakan lokasi default",
-		"path_placeholder": "D:\\RooCodeStorage",
-		"enter_absolute_path": "Silakan masukkan path absolut (misalnya D:\\RooCodeStorage atau /home/user/storage)",
+		"path_placeholder": "D:\\JoeCodeStorage",
+		"enter_absolute_path": "Silakan masukkan path absolut (misalnya D:\\JoeCodeStorage atau /home/user/storage)",
 		"enter_valid_path": "Silakan masukkan path yang valid"
 	},
 	"input": {
@@ -222,8 +222,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "Organisasi kamu memerlukan autentikasi Roo Code Cloud. Silakan masuk untuk melanjutkan.",
-			"organization_mismatch": "Kamu harus diautentikasi dengan akun Roo Code Cloud organisasi kamu.",
+			"cloud_auth_required": "Organisasi kamu memerlukan autentikasi Joe Code Cloud. Silakan masuk untuk melanjutkan.",
+			"organization_mismatch": "Kamu harus diautentikasi dengan akun Joe Code Cloud organisasi kamu.",
 			"manual_url_empty": "Silakan masukkan URL callback yang valid",
 			"manual_url_no_query": "URL callback tidak valid: parameter query hilang",
 			"manual_url_missing_params": "URL callback tidak valid: parameter yang diperlukan hilang (code dan state)",

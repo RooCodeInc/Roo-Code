@@ -1,5 +1,5 @@
 {
-	"greeting": "Welkom bij Roo Code",
+	"greeting": "Welkom bij Joe Code",
 	"task": {
 		"title": "Taak",
 		"expand": "Taak uitvouwen",
@@ -21,7 +21,7 @@
 		"sharePublicly": "Openbaar delen",
 		"sharePubliclyDescription": "Iedereen met de link kan toegang krijgen",
 		"connectToCloud": "Verbind met Cloud",
-		"connectToCloudDescription": "Meld je aan bij Roo Code Cloud om taken te delen",
+		"connectToCloudDescription": "Meld je aan bij Joe Code Cloud om taken te delen",
 		"sharingDisabledByOrganization": "Delen uitgeschakeld door organisatie",
 		"shareSuccessOrganization": "Organisatielink gekopieerd naar klembord",
 		"shareSuccessPublic": "Openbare link gekopieerd naar klembord",
@@ -97,7 +97,7 @@
 	},
 	"enqueueMessage": "Bericht aan de wachtrij toevoegen (wordt verzonden nadat de huidige taak is voltooid)",
 	"scrollToBottom": "Scroll naar onderaan de chat",
-	"about": "Roo Code is een heel AI-ontwikkelteam in je editor.",
+	"about": "Joe Code is een heel AI-ontwikkelteam in je editor.",
 	"docs": "Bekijk onze <DocsLink>documentatie</DocsLink> voor meer informatie.",
 	"onboarding": "Je takenlijst in deze werkruimte is leeg.",
 	"rooTips": {
@@ -156,7 +156,7 @@
 			"500": "Provider-serverfout. Er is iets mis aan de kant van de provider, er is niets mis met je verzoek.",
 			"docs": "Documentatie",
 			"goToSettings": "Instellingen",
-			"unknown": "Onbekende API-fout. Neem alsjeblieft contact op met Roo Code-ondersteuning.",
+			"unknown": "Onbekende API-fout. Neem alsjeblieft contact op met Joe Code-ondersteuning.",
 			"connection": "Verbindingsfout. Zorg ervoor dat je een werkende internetverbinding hebt.",
 			"claudeCodeNotAuthenticated": "Je moet inloggen om Claude Code te gebruiken. Ga naar Instellingen en klik op \"Inloggen bij Claude Code\" om te authenticeren."
 		}
@@ -251,8 +251,8 @@
 	"modes": {
 		"wantsToSwitch": "Roo wil overschakelen naar {{mode}} modus",
 		"wantsToSwitchWithReason": "Roo wil overschakelen naar {{mode}} modus omdat: {{reason}}",
-		"didSwitch": "Roo is overgeschakeld naar {{mode}} modus",
-		"didSwitchWithReason": "Roo is overgeschakeld naar {{mode}} modus omdat: {{reason}}"
+		"didSwitch": "Joe is overgeschakeld naar {{mode}} modus",
+		"didSwitchWithReason": "Joe is overgeschakeld naar {{mode}} modus omdat: {{reason}}"
 	},
 	"subtasks": {
 		"wantsToCreate": "Roo wil een nieuwe subtaak aanmaken in {{mode}} modus",
@@ -310,20 +310,20 @@
 		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} uitgebracht",
-		"support": "Steun Roo Code door ons een ster te geven op <githubLink>GitHub</githubLink>.",
+		"title": "Joe Code {{version}} uitgebracht",
+		"support": "Steun Joe Code door ons een ster te geven op <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
-			"feature": "<bold>Beperkt tijd GRATIS stealth model</bold> - Code Supernova: Nu geüpgraded met een <bold>1M token contextvenster</bold>! Een veelzijdig agentisch codeermodel dat beeldinvoer ondersteunt, beschikbaar via Roo Code Cloud.",
+			"feature": "<bold>Beperkt tijd GRATIS stealth model</bold> - Code Supernova: Nu geüpgraded met een <bold>1M token contextvenster</bold>! Een veelzijdig agentisch codeermodel dat beeldinvoer ondersteunt, beschikbaar via Joe Code Cloud.",
 			"note": "(Opmerking: prompts en aanvullingen worden gelogd door de modelmaker en gebruikt om het model te verbeteren)",
-			"connectButton": "Verbinden met Roo Code Cloud",
-			"selectModel": "Selecteer <code>roo/code-supernova</code> van de Roo Code Cloud provider in Instellingen om te beginnen.",
+			"connectButton": "Verbinden met Joe Code Cloud",
+			"selectModel": "Selecteer <code>roo/code-supernova</code> van de Joe Code Cloud provider in Instellingen om te beginnen.",
 			"goToSettingsButton": "Ga naar Instellingen"
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
 			"geminiPro": "Gemini 3.1 Pro ondersteuning: Ondersteuning voor het Gemini 3.1 Pro model is toegevoegd en ingesteld als standaard Gemini-model voor betere prestaties.",
 			"cliNdjson": "CLI NDJSON-protocol: Nieuw NDJSON stdin-protocol, list-subopdrachten en gemodulariseerd run-commando voor flexibelere CLI-workflows.",
-			"cliRelease": "CLI v0.1.0: De Roo Code CLI bereikt zijn eerste officiële release met een stabiele opdrachtinterface."
+			"cliRelease": "CLI v0.1.0: De Joe Code CLI bereikt zijn eerste officiële release met een stabiele opdrachtinterface."
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",
@@ -375,7 +375,7 @@
 	"profileViolationWarning": "Het huidige profiel is niet compatibel met de instellingen van uw organisatie",
 	"shellIntegration": {
 		"title": "Waarschuwing commando-uitvoering",
-		"description": "Je commando wordt uitgevoerd zonder VSCode-terminal shell-integratie. Om deze waarschuwing te onderdrukken kun je shell-integratie uitschakelen in het gedeelte <strong>Terminal</strong> van de <settingsLink>Roo Code-instellingen</settingsLink> of de VSCode-terminalintegratie oplossen via de onderstaande link.",
+		"description": "Je commando wordt uitgevoerd zonder VSCode-terminal shell-integratie. Om deze waarschuwing te onderdrukken kun je shell-integratie uitschakelen in het gedeelte <strong>Terminal</strong> van de <settingsLink>Joe Code-instellingen</settingsLink> of de VSCode-terminalintegratie oplossen via de onderstaande link.",
 		"troubleshooting": "Klik hier voor shell-integratie documentatie."
 	},
 	"ask": {
@@ -433,7 +433,7 @@
 		"ariaLabel": "Versie {{version}} - Klik om release notes te bekijken"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud evolueert!",
+		"title": "Joe Code Cloud evolueert!",
 		"description": "Voer externe agenten uit in de cloud, krijg overal toegang tot je taken, werk samen met anderen en nog veel meer.",
 		"joinWaitlist": "Meld je aan om de laatste updates te ontvangen."
 	},

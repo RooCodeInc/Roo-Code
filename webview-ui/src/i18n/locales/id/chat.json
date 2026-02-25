@@ -1,5 +1,5 @@
 {
-	"greeting": "Selamat datang di Roo Code",
+	"greeting": "Selamat datang di Joe Code",
 	"task": {
 		"title": "Tugas",
 		"expand": "Perluas tugas",
@@ -21,7 +21,7 @@
 		"sharePublicly": "Bagikan secara publik",
 		"sharePubliclyDescription": "Siapa pun dengan tautan dapat mengakses",
 		"connectToCloud": "Hubungkan ke Cloud",
-		"connectToCloudDescription": "Masuk ke Roo Code Cloud untuk berbagi tugas",
+		"connectToCloudDescription": "Masuk ke Joe Code Cloud untuk berbagi tugas",
 		"sharingDisabledByOrganization": "Berbagi dinonaktifkan oleh organisasi",
 		"shareSuccessOrganization": "Tautan organisasi disalin ke clipboard",
 		"shareSuccessPublic": "Tautan publik disalin ke clipboard",
@@ -127,7 +127,7 @@
 	},
 	"enqueueMessage": "Tambahkan pesan ke antrean (akan dikirim setelah tugas saat ini selesai)",
 	"scrollToBottom": "Gulir ke bawah chat",
-	"about": "Roo Code adalah seluruh tim pengembang AI di editor Anda.",
+	"about": "Joe Code adalah seluruh tim pengembang AI di editor Anda.",
 	"docs": "Lihat <DocsLink>dokumentasi</DocsLink> kami untuk mempelajari lebih lanjut.",
 	"onboarding": "Daftar tugas Anda di ruang kerja ini kosong.",
 	"rooTips": {
@@ -186,7 +186,7 @@
 			"500": "Kesalahan server penyedia. Ada yang salah di sisi penyedia, tidak ada yang salah dengan permintaan Anda.",
 			"docs": "Dokumentasi",
 			"goToSettings": "Pengaturan",
-			"unknown": "Kesalahan API yang tidak diketahui. Harap hubungi dukungan Roo Code.",
+			"unknown": "Kesalahan API yang tidak diketahui. Harap hubungi dukungan Joe Code.",
 			"connection": "Kesalahan koneksi. Pastikan Anda memiliki koneksi internet yang berfungsi.",
 			"claudeCodeNotAuthenticated": "Anda perlu masuk untuk menggunakan Claude Code. Buka Pengaturan dan klik \"Masuk ke Claude Code\" untuk mengautentikasi."
 		}
@@ -366,20 +366,20 @@
 		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} Dirilis",
-		"support": "Dukung Roo Code dengan memberi kami bintang di <githubLink>GitHub</githubLink>.",
+		"title": "Joe Code {{version}} Dirilis",
+		"support": "Dukung Joe Code dengan memberi kami bintang di <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
-			"feature": "<bold>Model stealth GRATIS waktu terbatas</bold> - Code Supernova: Sekarang diupgrade dengan <bold>jendela konteks 1M token</bold>! Model coding agentik serbaguna yang mendukung input gambar, tersedia melalui Roo Code Cloud.",
+			"feature": "<bold>Model stealth GRATIS waktu terbatas</bold> - Code Supernova: Sekarang diupgrade dengan <bold>jendela konteks 1M token</bold>! Model coding agentik serbaguna yang mendukung input gambar, tersedia melalui Joe Code Cloud.",
 			"note": "(Catatan: prompt dan completion dicatat oleh pembuat model dan digunakan untuk meningkatkan model)",
-			"connectButton": "Hubungkan ke Roo Code Cloud",
-			"selectModel": "Pilih <code>roo/code-supernova</code> dari penyedia Roo Code Cloud di Pengaturan untuk memulai.",
+			"connectButton": "Hubungkan ke Joe Code Cloud",
+			"selectModel": "Pilih <code>roo/code-supernova</code> dari penyedia Joe Code Cloud di Pengaturan untuk memulai.",
 			"goToSettingsButton": "Pergi ke Pengaturan"
 		},
 		"release": {
 			"heading": "Yang Baru:",
 			"geminiPro": "Dukungan Gemini 3.1 Pro: Dukungan model Gemini 3.1 Pro telah ditambahkan dan ditetapkan sebagai model Gemini default untuk performa yang lebih baik.",
 			"cliNdjson": "Protokol NDJSON CLI: Protokol NDJSON stdin baru, subperintah list, dan perintah run yang dimodularisasi untuk alur kerja CLI yang lebih fleksibel.",
-			"cliRelease": "CLI v0.1.0: CLI Roo Code mencapai rilis resmi pertamanya dengan antarmuka perintah yang stabil."
+			"cliRelease": "CLI v0.1.0: CLI Joe Code mencapai rilis resmi pertamanya dengan antarmuka perintah yang stabil."
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",
@@ -412,7 +412,7 @@
 	"profileViolationWarning": "Profil saat ini tidak kompatibel dengan pengaturan organisasi kamu",
 	"shellIntegration": {
 		"title": "Peringatan Eksekusi Perintah",
-		"description": "Perintah kamu dijalankan tanpa integrasi shell terminal VSCode. Untuk menekan peringatan ini kamu bisa menonaktifkan integrasi shell di bagian <strong>Terminal</strong> dari <settingsLink>pengaturan Roo Code</settingsLink> atau troubleshoot integrasi terminal VSCode menggunakan link di bawah.",
+		"description": "Perintah kamu dijalankan tanpa integrasi shell terminal VSCode. Untuk menekan peringatan ini kamu bisa menonaktifkan integrasi shell di bagian <strong>Terminal</strong> dari <settingsLink>pengaturan Joe Code</settingsLink> atau troubleshoot integrasi terminal VSCode menggunakan link di bawah.",
 		"troubleshooting": "Klik di sini untuk dokumentasi integrasi shell."
 	},
 	"ask": {
@@ -439,7 +439,7 @@
 		"ariaLabel": "Versi {{version}} - Klik untuk melihat catatan rilis"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud sedang berkembang!",
+		"title": "Joe Code Cloud sedang berkembang!",
 		"description": "Jalankan agen jarak jauh di cloud, akses tugas Anda dari mana saja, berkolaborasi dengan orang lain, dan banyak lagi.",
 		"joinWaitlist": "Daftar untuk mendapatkan pembaruan terbaru."
 	},

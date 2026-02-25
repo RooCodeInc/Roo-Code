@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Joe Code",
 		"description": "您编辑器中的完整AI开发团队。"
 	},
 	"number_format": {
@@ -117,7 +117,7 @@
 			"thinking_complete_recitation": "（思考完成，但由于引用检查输出被阻止。）"
 		},
 		"roo": {
-			"authenticationRequired": "Roo 提供商需要云认证。请登录 Roo Code Cloud。"
+			"authenticationRequired": "Roo 提供商需要云认证。请登录 Joe Code Cloud。"
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API 密钥包含无效字符.",
@@ -192,8 +192,8 @@
 	},
 	"storage": {
 		"prompt_custom_path": "输入自定义会话历史存储路径，留空以使用默认位置",
-		"path_placeholder": "D:\\RooCodeStorage",
-		"enter_absolute_path": "请输入绝对路径（例如 D:\\RooCodeStorage 或 /home/user/storage）",
+		"path_placeholder": "D:\\JoeCodeStorage",
+		"enter_absolute_path": "请输入绝对路径（例如 D:\\JoeCodeStorage 或 /home/user/storage）",
 		"enter_valid_path": "请输入有效的路径"
 	},
 	"input": {
@@ -227,8 +227,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "您的组织需要 Roo Code Cloud 身份验证。请登录以继续。",
-			"organization_mismatch": "您必须使用组织的 Roo Code Cloud 账户进行身份验证。",
+			"cloud_auth_required": "您的组织需要 Joe Code Cloud 身份验证。请登录以继续。",
+			"organization_mismatch": "您必须使用组织的 Joe Code Cloud 账户进行身份验证。",
 			"manual_url_empty": "请输入有效的回调 URL",
 			"manual_url_no_query": "无效的回调 URL：缺少查询参数",
 			"manual_url_missing_params": "无效的回调 URL：缺少必需参数（code 和 state）",

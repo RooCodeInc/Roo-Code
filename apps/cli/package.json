@@ -1,12 +1,12 @@
 {
 	"name": "@roo-code/cli",
 	"version": "0.1.1",
-	"description": "Roo Code CLI - Run the Roo Code agent from the command line",
+	"description": "Joe Code CLI - Run the Joe AI agent from the command line",
 	"private": true,
 	"type": "module",
 	"main": "dist/index.js",
 	"bin": {
-		"roo": "dist/index.js"
+		"joe": "dist/index.js"
 	},
 	"scripts": {
 		"format": "prettier --write 'src/**/*.ts'",
@@ -14,8 +14,8 @@
 		"check-types": "tsc --noEmit",
 		"test": "vitest run",
 		"build": "tsup",
-		"build:extension": "pnpm --filter roo-cline bundle",
-		"dev": "ROO_AUTH_BASE_URL=https://app.roocode.com ROO_SDK_BASE_URL=https://cloud-api.roocode.com ROO_CODE_PROVIDER_URL=https://api.roocode.com/proxy tsx src/index.ts",
+		"build:extension": "pnpm --filter joe-code bundle",
+		"dev": "ROO_AUTH_BASE_URL=https://app.joe-code.dev ROO_SDK_BASE_URL=https://cloud-api.joe-code.dev ROO_CODE_PROVIDER_URL=https://api.joe-code.dev/proxy tsx src/index.ts",
 		"dev:local": "ROO_AUTH_BASE_URL=http://localhost:3000 ROO_SDK_BASE_URL=http://localhost:3001 ROO_CODE_PROVIDER_URL=http://localhost:8080/proxy tsx src/index.ts",
 		"dev:test-stdin": "tsx scripts/test-stdin-stream.ts",
 		"clean": "rimraf dist .turbo"

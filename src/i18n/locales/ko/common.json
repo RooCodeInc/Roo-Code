@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Joe Code",
 		"description": "에디터 내에서 동작하는 AI 개발팀 전체입니다."
 	},
 	"number_format": {
@@ -112,7 +112,7 @@
 			"thinking_complete_recitation": "(생각 완료, 암송 확인으로 출력 차단됨)"
 		},
 		"roo": {
-			"authenticationRequired": "Roo 제공업체는 클라우드 인증이 필요합니다. Roo Code Cloud에 로그인하세요."
+			"authenticationRequired": "Roo 제공업체는 클라우드 인증이 필요합니다. Joe Code Cloud에 로그인하세요."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API 키에 유효하지 않은 문자가 포함되어 있습니다.",
@@ -187,8 +187,8 @@
 	},
 	"storage": {
 		"prompt_custom_path": "대화 내역을 위한 사용자 지정 저장 경로를 입력하세요. 기본 위치를 사용하려면 비워두세요",
-		"path_placeholder": "D:\\RooCodeStorage",
-		"enter_absolute_path": "절대 경로를 입력하세요 (예: D:\\RooCodeStorage 또는 /home/user/storage)",
+		"path_placeholder": "D:\\JoeCodeStorage",
+		"enter_absolute_path": "절대 경로를 입력하세요 (예: D:\\JoeCodeStorage 또는 /home/user/storage)",
 		"enter_valid_path": "유효한 경로를 입력하세요"
 	},
 	"input": {
@@ -222,8 +222,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "조직에서 Roo Code Cloud 인증이 필요합니다. 계속하려면 로그인하세요.",
-			"organization_mismatch": "조직의 Roo Code Cloud 계정으로 인증해야 합니다.",
+			"cloud_auth_required": "조직에서 Joe Code Cloud 인증이 필요합니다. 계속하려면 로그인하세요.",
+			"organization_mismatch": "조직의 Joe Code Cloud 계정으로 인증해야 합니다.",
 			"manual_url_empty": "유효한 콜백 URL을 입력하세요",
 			"manual_url_no_query": "유효하지 않은 콜백 URL: 쿼리 매개변수 누락",
 			"manual_url_missing_params": "유효하지 않은 콜백 URL: 필요한 매개변수 누락 (code와 state)",

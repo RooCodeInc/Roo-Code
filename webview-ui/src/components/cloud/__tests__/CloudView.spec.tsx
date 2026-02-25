@@ -9,8 +9,8 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 			const translations: Record<string, string> = {
 				"cloud:title": "Cloud",
 				"settings:common.done": "Done",
-				"cloud:signIn": "Connect to Roo Code Cloud",
-				"cloud:cloudBenefitsTitle": "Try Roo Code Cloud",
+				"cloud:signIn": "Connect to Joe Code Cloud",
+				"cloud:cloudBenefitsTitle": "Try Joe Code Cloud",
 				"cloud:cloudBenefitProvider": "Access free and paid models that work great with Roo",
 				"cloud:cloudBenefitCloudAgents": "Give tasks to autonomous Cloud agents",
 				"cloud:cloudBenefitTriggers": "Get code reviews on Github, start tasks from Slack and more",
@@ -19,13 +19,13 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 				"cloud:cloudBenefitMetrics": "Get a holistic view of your token consumption",
 				"cloud:logOut": "Log out",
 				"cloud:connect": "Get started",
-				"cloud:visitCloudWebsite": "Visit Roo Code Cloud",
+				"cloud:visitCloudWebsite": "Visit Joe Code Cloud",
 				"cloud:taskSync": "Task sync",
-				"cloud:taskSyncDescription": "Sync your tasks for viewing and sharing on Roo Code Cloud",
+				"cloud:taskSyncDescription": "Sync your tasks for viewing and sharing on Joe Code Cloud",
 				"cloud:taskSyncManagedByOrganization": "Task sync is managed by your organization",
 				"cloud:usageMetricsAlwaysReported": "Model usage info is always reported when logged in",
 				"cloud:profilePicture": "Profile picture",
-				"cloud:cloudUrlPillLabel": "Roo Code Cloud URL: ",
+				"cloud:cloudUrlPillLabel": "Joe Code Cloud URL: ",
 			}
 			return translations[key] || key
 		},
@@ -67,7 +67,7 @@ describe("CloudView", () => {
 		render(<CloudView userInfo={null} isAuthenticated={false} cloudApiUrl="https://app.roocode.com" />)
 
 		// Check that the benefits section is displayed
-		expect(screen.getByRole("heading", { name: "Try Roo Code Cloud" })).toBeInTheDocument()
+		expect(screen.getByRole("heading", { name: "Try Joe Code Cloud" })).toBeInTheDocument()
 		expect(screen.getByText("Access free and paid models that work great with Roo")).toBeInTheDocument()
 		expect(screen.getByText("Give tasks to autonomous Cloud agents")).toBeInTheDocument()
 		expect(screen.getByText("Get code reviews on Github, start tasks from Slack and more")).toBeInTheDocument()
@@ -117,7 +117,7 @@ describe("CloudView", () => {
 		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.roocode.com" />)
 
 		// Check that the cloud URL pill is NOT displayed for production URL
-		expect(screen.queryByText(/Roo Code Cloud URL:/)).not.toBeInTheDocument()
+		expect(screen.queryByText(/Joe Code Cloud URL:/)).not.toBeInTheDocument()
 	})
 
 	it("should display cloud URL pill when pointing to non-production environment", () => {
@@ -129,7 +129,7 @@ describe("CloudView", () => {
 		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://staging.roocode.com" />)
 
 		// Check that the cloud URL pill is displayed with the staging URL
-		expect(screen.getByText(/Roo Code Cloud URL:/)).toBeInTheDocument()
+		expect(screen.getByText(/Joe Code Cloud URL:/)).toBeInTheDocument()
 		expect(screen.getByText("https://staging.roocode.com")).toBeInTheDocument()
 	})
 
@@ -137,7 +137,7 @@ describe("CloudView", () => {
 		render(<CloudView userInfo={null} isAuthenticated={false} cloudApiUrl="https://dev.roocode.com" />)
 
 		// Check that the cloud URL pill is displayed even when not authenticated
-		expect(screen.getByText(/Roo Code Cloud URL:/)).toBeInTheDocument()
+		expect(screen.getByText(/Joe Code Cloud URL:/)).toBeInTheDocument()
 		expect(screen.getByText("https://dev.roocode.com")).toBeInTheDocument()
 	})
 
@@ -150,7 +150,7 @@ describe("CloudView", () => {
 		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} />)
 
 		// Check that the cloud URL pill is NOT displayed when cloudApiUrl is undefined
-		expect(screen.queryByText(/Roo Code Cloud URL:/)).not.toBeInTheDocument()
+		expect(screen.queryByText(/Joe Code Cloud URL:/)).not.toBeInTheDocument()
 	})
 
 	it("should disable task sync toggle for organization users", () => {

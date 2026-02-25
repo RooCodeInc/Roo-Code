@@ -14,13 +14,16 @@ export const REASONING_EFFORTS = [...reasoningEffortsExtended, "unspecified", "d
  */
 export const FOLLOWUP_TIMEOUT_SECONDS = 60
 
-export const ASCII_ROO = `  _,'   ___
- <__\\__/   \\
-    \\_  /  _\\
-      \\,\\ / \\\\
-        //   \\\\
-      ,/'     \`\\_,`
+export const ASCII_JOE = `
+     _     _
+    | |___| |   Joe AI
+    | / _ \\ |
+    | \\___/ |
+    |_|   |_|
+`
 
-export const AUTH_BASE_URL = process.env.ROO_AUTH_BASE_URL ?? "https://app.roocode.com"
+export const ASCII_ROO = ASCII_JOE
 
-export const SDK_BASE_URL = process.env.ROO_SDK_BASE_URL ?? "https://cloud-api.roocode.com"
+export const AUTH_BASE_URL = process.env.ROO_AUTH_BASE_URL ?? "https://app.joe-code.dev"
+
+export const SDK_BASE_URL = process.env.ROO_SDK_BASE_URL ?? "https://cloud-api.joe-code.dev"

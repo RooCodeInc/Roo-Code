@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Joe Code",
 		"description": "Целая команда ИИ-разработчиков в вашем редакторе."
 	},
 	"number_format": {
@@ -112,7 +112,7 @@
 			"thinking_complete_recitation": "(Размышление завершено, но вывод заблокирован проверкой цитирования.)"
 		},
 		"roo": {
-			"authenticationRequired": "Провайдер Roo требует облачной аутентификации. Войдите в Roo Code Cloud."
+			"authenticationRequired": "Провайдер Roo требует облачной аутентификации. Войдите в Joe Code Cloud."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API-ключ содержит недопустимые символы.",
@@ -187,8 +187,8 @@
 	},
 	"storage": {
 		"prompt_custom_path": "Введите пользовательский путь хранения истории разговоров, оставьте пустым для использования расположения по умолчанию",
-		"path_placeholder": "D:\\RooCodeStorage",
-		"enter_absolute_path": "Пожалуйста, введите абсолютный путь (например, D:\\RooCodeStorage или /home/user/storage)",
+		"path_placeholder": "D:\\JoeCodeStorage",
+		"enter_absolute_path": "Пожалуйста, введите абсолютный путь (например, D:\\JoeCodeStorage или /home/user/storage)",
 		"enter_valid_path": "Пожалуйста, введите корректный путь"
 	},
 	"input": {
@@ -222,8 +222,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "Ваша организация требует аутентификации Roo Code Cloud. Войдите в систему, чтобы продолжить.",
-			"organization_mismatch": "Вы должны быть аутентифицированы с учетной записью Roo Code Cloud вашей организации.",
+			"cloud_auth_required": "Ваша организация требует аутентификации Joe Code Cloud. Войдите в систему, чтобы продолжить.",
+			"organization_mismatch": "Вы должны быть аутентифицированы с учетной записью Joe Code Cloud вашей организации.",
 			"manual_url_empty": "Введи действительный URL обратного вызова",
 			"manual_url_no_query": "Недействительный URL обратного вызова: отсутствуют параметры запроса",
 			"manual_url_missing_params": "Недействительный URL обратного вызова: отсутствуют обязательные параметры (code и state)",

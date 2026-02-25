@@ -1,7 +1,7 @@
 {
 	"title": "Worktrees",
 	"done": "Done",
-	"description": "Git worktrees are great for agentic coding, because they allow you to work on multiple branches of a repo at the same time, by keeping them in different directories. Each worktree gets its own VS Code window with Roo Code.",
+	"description": "Git worktrees are great for agentic coding, because they allow you to work on multiple branches of a repo at the same time, by keeping them in different directories. Each worktree gets its own VS Code window with Joe Code.",
 
 	"notGitRepo": "This workspace is not a Git repository. Open a workspace with a Git repository to set up worktrees.",
 	"multiRootNotSupported": "Worktrees are not supported in multi-root workspaces. Please open a single folder to use worktrees.",

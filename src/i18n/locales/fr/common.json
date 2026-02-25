@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Joe Code",
 		"description": "Une équipe complète de développeurs IA dans votre éditeur."
 	},
 	"number_format": {
@@ -112,7 +112,7 @@
 			"thinking_complete_recitation": "(Réflexion terminée, mais la sortie a été bloquée en raison de la vérification de récitation.)"
 		},
 		"roo": {
-			"authenticationRequired": "Le fournisseur Roo nécessite une authentification cloud. Veuillez vous connecter à Roo Code Cloud."
+			"authenticationRequired": "Le fournisseur Roo nécessite une authentification cloud. Veuillez vous connecter à Joe Code Cloud."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "La clé API contient des caractères invalides.",
@@ -187,8 +187,8 @@
 	},
 	"storage": {
 		"prompt_custom_path": "Entrez le chemin de stockage personnalisé pour l'historique des conversations, laissez vide pour utiliser l'emplacement par défaut",
-		"path_placeholder": "D:\\RooCodeStorage",
-		"enter_absolute_path": "Veuillez entrer un chemin absolu (ex. D:\\RooCodeStorage ou /home/user/storage)",
+		"path_placeholder": "D:\\JoeCodeStorage",
+		"enter_absolute_path": "Veuillez entrer un chemin absolu (ex. D:\\JoeCodeStorage ou /home/user/storage)",
 		"enter_valid_path": "Veuillez entrer un chemin valide"
 	},
 	"input": {
@@ -222,8 +222,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "Votre organisation nécessite une authentification Roo Code Cloud. Veuillez vous connecter pour continuer.",
-			"organization_mismatch": "Vous devez être authentifié avec le compte Roo Code Cloud de votre organisation.",
+			"cloud_auth_required": "Votre organisation nécessite une authentification Joe Code Cloud. Veuillez vous connecter pour continuer.",
+			"organization_mismatch": "Vous devez être authentifié avec le compte Joe Code Cloud de votre organisation.",
 			"manual_url_empty": "Veuillez entrer une URL de callback valide",
 			"manual_url_no_query": "URL de callback invalide : paramètres de requête manquants",
 			"manual_url_missing_params": "URL de callback invalide : paramètres requis manquants (code et state)",

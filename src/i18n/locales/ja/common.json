@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Joe Code",
 		"description": "エディター内のAIデベロッパーチーム全体。"
 	},
 	"number_format": {
@@ -112,7 +112,7 @@
 			"thinking_complete_recitation": "（思考完了、引用チェックにより出力ブロック）"
 		},
 		"roo": {
-			"authenticationRequired": "Rooプロバイダーはクラウド認証が必要です。Roo Code Cloudにサインインしてください。"
+			"authenticationRequired": "Rooプロバイダーはクラウド認証が必要です。Joe Code Cloudにサインインしてください。"
 		},
 		"api": {
 			"invalidKeyInvalidChars": "APIキーに無効な文字が含まれています。",
@@ -187,8 +187,8 @@
 	},
 	"storage": {
 		"prompt_custom_path": "会話履歴のカスタムストレージパスを入力してください。デフォルトの場所を使用する場合は空のままにしてください",
-		"path_placeholder": "D:\\RooCodeStorage",
-		"enter_absolute_path": "絶対パスを入力してください（例：D:\\RooCodeStorage または /home/user/storage）",
+		"path_placeholder": "D:\\JoeCodeStorage",
+		"enter_absolute_path": "絶対パスを入力してください（例：D:\\JoeCodeStorage または /home/user/storage）",
 		"enter_valid_path": "有効なパスを入力してください"
 	},
 	"input": {
@@ -222,8 +222,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "あなたの組織では Roo Code Cloud 認証が必要です。続行するにはサインインしてください。",
-			"organization_mismatch": "組織の Roo Code Cloud アカウントで認証する必要があります。",
+			"cloud_auth_required": "あなたの組織では Joe Code Cloud 認証が必要です。続行するにはサインインしてください。",
+			"organization_mismatch": "組織の Joe Code Cloud アカウントで認証する必要があります。",
 			"manual_url_empty": "有効なコールバック URL を入力してください",
 			"manual_url_no_query": "無効なコールバック URL：クエリパラメータがありません",
 			"manual_url_missing_params": "無効なコールバック URL：必要なパラメータ（code と state）がありません",

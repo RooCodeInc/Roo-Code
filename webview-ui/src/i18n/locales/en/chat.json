@@ -1,5 +1,5 @@
 {
-	"greeting": "Welcome to Roo Code!",
+	"greeting": "Welcome to Joe Code!",
 	"task": {
 		"title": "Task",
 		"expand": "Expand task",
@@ -21,7 +21,7 @@
 		"sharePublicly": "Share Publicly",
 		"sharePubliclyDescription": "Anyone with the link can access",
 		"connectToCloud": "Connect to Cloud",
-		"connectToCloudDescription": "Sign in to Roo Code Cloud to share tasks",
+		"connectToCloudDescription": "Sign in to Joe Code Cloud to share tasks",
 		"sharingDisabledByOrganization": "Sharing disabled by organization",
 		"shareSuccessOrganization": "Organization link copied to clipboard",
 		"shareSuccessPublic": "Public link copied to clipboard",
@@ -124,7 +124,7 @@
 		"placeholder": "Edit your message..."
 	},
 	"scrollToBottom": "Scroll to bottom of chat",
-	"about": "Roo is a whole AI dev team in your editor",
+	"about": "Joe is a whole AI dev team in your editor",
 	"docs": "Check our <DocsLink>docs</DocsLink> to get started",
 	"onboarding": "What would you like to do?",
 	"rooTips": {
@@ -184,7 +184,7 @@
 			"docs": "Docs",
 			"goToSettings": "Settings",
 			"connection": "Connection error. Make sure you have a working internet connection.",
-			"unknown": "Unknown API error. Please contact Roo Code support.",
+			"unknown": "Unknown API error. Please contact Joe Code support.",
 			"claudeCodeNotAuthenticated": "You need to sign in to use Claude Code. Go to Settings and click \"Sign in to Claude Code\" to authenticate."
 		}
 	},
@@ -334,7 +334,7 @@
 	"diffError": {
 		"title": "Edit Unsuccessful"
 	},
-	"troubleMessage": "Roo is having trouble...",
+	"troubleMessage": "Joe is having trouble...",
 	"powershell": {
 		"issues": "It seems like you're having Windows PowerShell issues, please see this"
 	},
@@ -356,20 +356,20 @@
 		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} Released",
-		"support": "Please support Roo Code by starring us on <githubLink>GitHub</githubLink>.",
+		"title": "Joe Code {{version}} Released",
+		"support": "Please support Joe Code by starring us on <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
-			"feature": "<bold>Limited-time FREE stealth model</bold> - Code Supernova: Now upgraded with a <bold>1M token context window</bold>! A versatile agentic coding model that supports image inputs, accessible through Roo Code Cloud.",
+			"feature": "<bold>Limited-time FREE stealth model</bold> - Code Supernova: Now upgraded with a <bold>1M token context window</bold>! A versatile agentic coding model that supports image inputs, accessible through Joe Code Cloud.",
 			"note": "(Note: prompts and completions are logged by the model creator and used to improve the model)",
-			"connectButton": "Connect to Roo Code Cloud",
-			"selectModel": "Select <code>roo/code-supernova</code> from the Roo Code Cloud provider in Settings to get started.",
+			"connectButton": "Connect to Joe Code Cloud",
+			"selectModel": "Select <code>roo/code-supernova</code> from the Joe Code Cloud provider in Settings to get started.",
 			"goToSettingsButton": "Go to Settings"
 		},
 		"release": {
 			"heading": "What's New:",
 			"geminiPro": "Gemini 3.1 Pro Support: Added Gemini 3.1 Pro model support and set it as the default Gemini model for improved performance.",
 			"cliNdjson": "CLI NDJSON Protocol: New NDJSON stdin protocol, list subcommands, and modularized run command for more flexible CLI workflows.",
-			"cliRelease": "CLI v0.1.0: The Roo Code CLI reaches its first official release with a stable command interface."
+			"cliRelease": "CLI v0.1.0: The Joe Code CLI reaches its first official release with a stable command interface."
 		},
 		"cloudAgents": {
 			"heading": "New in the Cloud:",
@@ -402,7 +402,7 @@
 	"profileViolationWarning": "The current profile isn't compatible with your organization's settings",
 	"shellIntegration": {
 		"title": "Command Execution Warning",
-		"description": "Your command is being executed without VSCode terminal shell integration. To suppress this warning you can disable shell integration in the <strong>Terminal</strong> section of the <settingsLink>Roo Code settings</settingsLink> or troubleshoot VSCode terminal integration using the link below.",
+		"description": "Your command is being executed without VSCode terminal shell integration. To suppress this warning you can disable shell integration in the <strong>Terminal</strong> section of the <settingsLink>Joe Code settings</settingsLink> or troubleshoot VSCode terminal integration using the link below.",
 		"troubleshooting": "Click here for shell integration documentation."
 	},
 	"ask": {
@@ -486,7 +486,7 @@
 	},
 	"retiredProvider": {
 		"title": "Provider no longer supported",
-		"message": "Sorry, this provider is no longer supported. We saw very few Roo users actually using it and we need to reduce the surface area of our codebase so we can keep shipping fast and serving our community well in this space. It was a really hard decision but it lets us focus on what matters most to you. It sucks, we know.",
+		"message": "Sorry, this provider is no longer supported. We saw very few Joe users actually using it and we need to reduce the surface area of our codebase so we can keep shipping fast and serving our community well in this space. It was a really hard decision but it lets us focus on what matters most to you. It sucks, we know.",
 		"openSettings": "Open Settings"
 	}
 }

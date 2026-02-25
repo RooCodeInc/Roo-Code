@@ -1,5 +1,5 @@
 {
-	"greeting": "歡迎使用 Roo Code！",
+	"greeting": "歡迎使用 Joe Code！",
 	"task": {
 		"title": "工作",
 		"expand": "展開工作",
@@ -21,7 +21,7 @@
 		"sharePublicly": "公開分享",
 		"sharePubliclyDescription": "任何擁有連結的人都可存取",
 		"connectToCloud": "連線至雲端",
-		"connectToCloudDescription": "登入 Roo Code Cloud 以分享工作",
+		"connectToCloudDescription": "登入 Joe Code Cloud 以分享工作",
 		"sharingDisabledByOrganization": "組織已停用分享功能",
 		"shareSuccessOrganization": "組織連結已複製到剪貼簿",
 		"shareSuccessPublic": "公開連結已複製到剪貼簿",
@@ -184,7 +184,7 @@
 			"docs": "說明文件",
 			"goToSettings": "設定",
 			"connection": "連線錯誤。請確保您有可用的網際網路連線。",
-			"unknown": "未知 API 錯誤。請聯絡 Roo Code 技術支援。",
+			"unknown": "未知 API 錯誤。請聯絡 Joe Code 技術支援。",
 			"claudeCodeNotAuthenticated": "您需要登入才能使用 Claude Code。前往設定並點選「登入 Claude Code」以進行驗證。"
 		}
 	},
@@ -359,20 +359,20 @@
 		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} 已發布",
-		"support": "請在 <githubLink>GitHub</githubLink> 上給 Roo Code 星星支持我們。",
+		"title": "Joe Code {{version}} 已發布",
+		"support": "請在 <githubLink>GitHub</githubLink> 上給 Joe Code 星星支持我們。",
 		"stealthModel": {
-			"feature": "<bold>限時免費隱形模型</bold> - Code Supernova：現已升級為 <bold>1M Token 上下文視窗</bold>！一個支援影像輸入的多功能代理程式設計模型，透過 Roo Code Cloud 提供。",
+			"feature": "<bold>限時免費隱形模型</bold> - Code Supernova：現已升級為 <bold>1M Token 上下文視窗</bold>！一個支援影像輸入的多功能代理程式設計模型，透過 Joe Code Cloud 提供。",
 			"note": "（注意：提示詞和回應會被模型建立者記錄並用於改進模型）",
-			"connectButton": "連線到 Roo Code Cloud",
-			"selectModel": "在設定中從 Roo Code Cloud 供應商選擇 <code>roo/code-supernova</code> 開始使用。",
+			"connectButton": "連線到 Joe Code Cloud",
+			"selectModel": "在設定中從 Joe Code Cloud 供應商選擇 <code>roo/code-supernova</code> 開始使用。",
 			"goToSettingsButton": "前往設定"
 		},
 		"release": {
 			"heading": "新增功能：",
 			"geminiPro": "Gemini 3.1 Pro 支援：新增 Gemini 3.1 Pro 模型支援，並設為預設 Gemini 模型以提升效能。",
 			"cliNdjson": "CLI NDJSON 協定：新增 NDJSON stdin 協定、list 子指令，以及模組化的 run 指令，提供更彈性的 CLI 工作流程。",
-			"cliRelease": "CLI v0.1.0：Roo Code CLI 以穩定的指令介面達成首個正式版本。"
+			"cliRelease": "CLI v0.1.0：Joe Code CLI 以穩定的指令介面達成首個正式版本。"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",
@@ -405,7 +405,7 @@
 	"profileViolationWarning": "目前設定檔與您的組織設定不相容",
 	"shellIntegration": {
 		"title": "命令執行警告",
-		"description": "命令正在沒有 VS Code 終端機 Shell 整合的情況下執行。若要隱藏此警告，可在 <settingsLink>Roo Code 設定</settingsLink> 的 <strong>終端機</strong> 區塊中停用 Shell 整合，或使用下方連結排解 VS Code 終端機整合問題。",
+		"description": "命令正在沒有 VS Code 終端機 Shell 整合的情況下執行。若要隱藏此警告，可在 <settingsLink>Joe Code 設定</settingsLink> 的 <strong>終端機</strong> 區塊中停用 Shell 整合，或使用下方連結排解 VS Code 終端機整合問題。",
 		"troubleshooting": "點選此處查看 Shell 整合說明文件。"
 	},
 	"ask": {

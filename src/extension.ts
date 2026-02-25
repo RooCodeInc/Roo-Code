@@ -68,7 +68,7 @@ let settingsUpdatedHandler: (() => void) | undefined
 let userInfoHandler: ((data: { userInfo: CloudUserInfo }) => Promise<void>) | undefined
 
 /**
- * Check if we should auto-open the Roo Code sidebar after switching to a worktree.
+ * Check if we should auto-open the Joe Code sidebar after switching to a worktree.
  * This is called during extension activation to handle the worktree auto-open flow.
  */
 async function checkWorktreeAutoOpen(
@@ -96,9 +96,9 @@ async function checkWorktreeAutoOpen(
 			// Clear the state first to prevent re-triggering
 			await context.globalState.update("worktreeAutoOpenPath", undefined)
 
-			outputChannel.appendLine(`[Worktree] Auto-opening Roo Code sidebar for worktree: ${worktreeAutoOpenPath}`)
+			outputChannel.appendLine(`[Worktree] Auto-opening Joe Code sidebar for worktree: ${worktreeAutoOpenPath}`)
 
-			// Open the Roo Code sidebar with a slight delay to ensure UI is ready
+			// Open the Joe Code sidebar with a slight delay to ensure UI is ready
 			setTimeout(async () => {
 				try {
 					await vscode.commands.executeCommand("roo-cline.plusButtonClicked")
@@ -217,7 +217,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	authStateChangedHandler = async (data: { state: AuthState; previousState: AuthState }) => {
 		postStateListener()
 
-		// Handle Roo models cache based on auth state (ROO-202)
+		// Handle Joe models cache based on auth state (ROO-202)
 		const handleRooModelsCache = async () => {
 			try {
 				if (data.state === "active-session") {
@@ -227,7 +227,7 @@ export async function activate(context: vscode.ExtensionContext) {
 						: undefined
 					await refreshModels({
 						provider: "roo",
-						baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+						baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.joe-code.dev/proxy",
 						apiKey: sessionToken,
 					})
 				} else {
@@ -236,7 +236,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				}
 			} catch (error) {
 				cloudLogger(
-					`[authStateChangedHandler] Failed to handle Roo models cache: ${error instanceof Error ? error.message : String(error)}`,
+					`[authStateChangedHandler] Failed to handle Joe models cache: ${error instanceof Error ? error.message : String(error)}`,
 				)
 			}
 		}

@@ -1,7 +1,7 @@
 /**
  * Network Proxy Configuration Module
  *
- * Provides proxy configuration for all outbound HTTP/HTTPS requests from the Roo Code extension.
+ * Provides proxy configuration for all outbound HTTP/HTTPS requests from the Joe Code extension.
  * When running in debug mode (F5), a proxy can be enabled for outbound traffic.
  * Optionally, TLS certificate verification can be disabled (debug only) to allow
  * MITM proxy inspection.

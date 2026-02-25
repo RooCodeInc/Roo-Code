@@ -40,7 +40,7 @@
 		"ui": "UI",
 		"experimental": "Sperimentale",
 		"language": "Lingua",
-		"about": "Informazioni su Roo Code",
+		"about": "Informazioni su Joe Code",
 		"skills": "Skills"
 	},
 	"about": {
@@ -59,7 +59,7 @@
 		"contact": {
 			"label": "Hai bisogno di parlarci? Scrivi"
 		},
-		"community": "Vuoi consigli o semplicemente uscire con altri utenti di Roo Code? Unisciti a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
+		"community": "Vuoi consigli o semplicemente uscire con altri utenti di Joe Code? Unisciti a <redditLink>reddit.com/r/JoeCode</redditLink> o <discordLink>discord.gg/joecode</discordLink>",
 		"contactAndCommunity": "Contatti e Comunità",
 		"manageSettings": "Gestisci Impostazioni",
 		"debugMode": {
@@ -456,7 +456,7 @@
 			"draftModelDesc": "Per un corretto funzionamento della decodifica speculativa, il modello bozza deve provenire dalla stessa famiglia di modelli.",
 			"selectDraftModel": "Seleziona modello bozza",
 			"noModelsFound": "Nessun modello bozza trovato. Assicurati che LM Studio sia in esecuzione con la modalità server abilitata.",
-			"description": "LM Studio ti permette di eseguire modelli localmente sul tuo computer. Per iniziare, consulta la loro <a>guida rapida</a>. Dovrai anche avviare la funzionalità <b>server locale</b> di LM Studio per utilizzarlo con questa estensione. <span>Nota:</span> Roo Code utilizza prompt complessi e funziona meglio con i modelli Claude. I modelli con capacità inferiori potrebbero non funzionare come previsto."
+			"description": "LM Studio ti permette di eseguire modelli localmente sul tuo computer. Per iniziare, consulta la loro <a>guida rapida</a>. Dovrai anche avviare la funzionalità <b>server locale</b> di LM Studio per utilizzarlo con questa estensione. <span>Nota:</span> Joe Code utilizza prompt complessi e funziona meglio con i modelli Claude. I modelli con capacità inferiori potrebbero non funzionare come previsto."
 		},
 		"ollama": {
 			"baseUrl": "URL base (opzionale)",
@@ -466,11 +466,11 @@
 			"numCtx": "Dimensione della finestra di contesto (num_ctx)",
 			"numCtxHelp": "Sovrascrive la dimensione predefinita della finestra di contesto del modello. Lasciare vuoto per utilizzare la configurazione del Modelfile del modello. Il valore minimo è 128.",
 			"description": "Ollama ti permette di eseguire modelli localmente sul tuo computer. Per iniziare, consulta la guida rapida.",
-			"warning": "Nota: Roo Code utiliza prompt complessi e funziona meglio con i modelli Claude. I modelli con capacità inferiori potrebbero non funzionare come previsto."
+			"warning": "Nota: Joe Code utiliza prompt complessi e funziona meglio con i modelli Claude. I modelli con capacità inferiori potrebbero non funzionare come previsto."
 		},
 		"roo": {
-			"authenticatedMessage": "Autenticato in modo sicuro tramite il tuo account Roo Code Cloud.",
-			"connectButton": "Connetti a Roo Code Cloud"
+			"authenticatedMessage": "Autenticato in modo sicuro tramite il tuo account Joe Code Cloud.",
+			"connectButton": "Connetti a Joe Code Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -480,7 +480,7 @@
 			}
 		},
 		"customModel": {
-			"capabilities": "Configura le capacità e i prezzi del tuo modello personalizzato compatibile con OpenAI. Fai attenzione quando specifichi le capacità del modello, poiché possono influenzare le prestazioni di Roo Code.",
+			"capabilities": "Configura le capacità e i prezzi del tuo modello personalizzato compatibile con OpenAI. Fai attenzione quando specifichi le capacità del modello, poiché possono influenzare le prestazioni di Joe Code.",
 			"maxTokens": {
 				"label": "Token di output massimi",
 				"description": "Numero massimo di token che il modello può generare in una risposta. (Specifica -1 per lasciare che il server imposti il massimo token.)"
@@ -857,7 +857,7 @@
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "L'estensione recupera automaticamente l'elenco più recente dei modelli disponibili su <serviceLink>{{serviceName}}</serviceLink>. Se non sei sicuro di quale modello scegliere, Roo Code funziona meglio con <defaultModelLink>{{defaultModelId}}</defaultModelLink>. Puoi anche cercare \"free\" per opzioni gratuite attualmente disponibili.",
+		"automaticFetch": "L'estensione recupera automaticamente l'elenco più recente dei modelli disponibili su <serviceLink>{{serviceName}}</serviceLink>. Se non sei sicuro di quale modello scegliere, Joe Code funziona meglio con <defaultModelLink>{{defaultModelId}}</defaultModelLink>. Puoi anche cercare \"free\" per opzioni gratuite attualmente disponibili.",
 		"label": "Modello",
 		"searchPlaceholder": "Cerca",
 		"noMatchFound": "Nessuna corrispondenza trovata",
@@ -867,7 +867,7 @@
 	"footer": {
 		"telemetry": {
 			"label": "Consenti segnalazioni anonime di errori e utilizzo",
-			"description": "Aiuta a migliorare Roo Code inviando dati di utilizzo anonimi e segnalazioni di errori. Questa telemetria non raccoglie codice, prompt o informazioni personali. Consulta la nostra <privacyLink>informativa sulla privacy</privacyLink> per maggiori dettagli."
+			"description": "Aiuta a migliorare Joe Code inviando dati di utilizzo anonimi e segnalazioni di errori. Questa telemetria non raccoglie codice, prompt o informazioni personali. Consulta la nostra <privacyLink>informativa sulla privacy</privacyLink> per maggiori dettagli."
 		},
 		"settings": {
 			"import": "Importa",
