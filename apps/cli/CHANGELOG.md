@@ -5,6 +5,12 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2026-02-25
+
+### Fixed
+
+- **Task Resumption**: Fixed an issue where resuming a previously suspended task could fail due to state initialization timing in the extension host.
+
 ## [0.1.2] - 2026-02-25
 
 ### Changed
