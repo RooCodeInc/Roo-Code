@@ -17,10 +17,12 @@ import {
 
 import {
 	type AnthropicReasoningParams,
+	type AnthropicOutputConfig,
 	type OpenAiReasoningParams,
 	type GeminiReasoningParams,
 	type OpenRouterReasoningParams,
 	getAnthropicReasoning,
+	getAnthropicOutputConfig,
 	getOpenAiReasoning,
 	getGeminiReasoning,
 	getOpenRouterReasoning,
@@ -48,6 +50,7 @@ type BaseModelParams = {
 type AnthropicModelParams = {
 	format: "anthropic"
 	reasoning: AnthropicReasoningParams | undefined
+	outputConfig: AnthropicOutputConfig | undefined
 } & BaseModelParams
 
 type OpenAiModelParams = {
@@ -151,6 +154,7 @@ export function getModelParams({
 			format,
 			...params,
 			reasoning: getAnthropicReasoning({ model, reasoningBudget, reasoningEffort, settings }),
+			outputConfig: getAnthropicOutputConfig({ model, settings }),
 		}
 	} else if (format === "openai") {
 		// Special case for o1 and o3-mini, which don't support temperature.

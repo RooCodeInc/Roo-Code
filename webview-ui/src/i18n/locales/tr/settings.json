@@ -877,7 +877,15 @@
 	},
 	"thinkingBudget": {
 		"maxTokens": "Maksimum token",
-		"maxThinkingTokens": "Maksimum düşünme tokeni"
+		"maxThinkingTokens": "Maksimum düşünme tokeni",
+		"useAdaptiveThinking": "Uyarlamalı Düşünmeyi Kullan",
+		"adaptiveThinkingDescription": "Claude'un istek karmaşıklığına göre ne zaman ve ne kadar düşüneceğini dinamik olarak belirlemesine izin verin.",
+		"adaptiveEffort": {
+			"low": "Düşük",
+			"medium": "Orta",
+			"high": "Yüksek (Varsayılan)",
+			"max": "Maksimum (Yalnızca Opus 4.6)"
+		}
 	},
 	"validation": {
 		"apiKey": "Geçerli bir API anahtarı sağlamalısınız.",
