@@ -256,6 +256,11 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 			await task.diffViewProvider.reset()
 			this.resetPartialState()
 
+			// Joe AI: track edited file in Augment Engine memory + continuous indexer
+			if (relPath) {
+				task.trackAugmentFileEdit(path.resolve(task.cwd, relPath))
+			}
+
 			// Process any queued messages after file edit completes
 			task.processQueuedMessages()
 

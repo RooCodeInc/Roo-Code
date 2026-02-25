@@ -171,6 +171,9 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 			if (relPath) {
 				await task.fileContextTracker.trackFileContext(relPath, "roo_edited" as RecordSource)
+				// Joe AI: track in Augment Engine memory + continuous indexer
+				const absPath = path.isAbsolute(relPath) ? relPath : path.join(task.cwd, relPath)
+				task.trackAugmentFileEdit(absPath)
 			}
 
 			task.didEditFile = true

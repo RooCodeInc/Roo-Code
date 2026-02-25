@@ -56,6 +56,8 @@ async function generatePrompt(
 	todoList?: TodoItem[],
 	modelId?: string,
 	skillsManager?: SkillsManager,
+	/** The user's actual task/query — used by Augment Engine for query-relevant context selection */
+	userQuery?: string,
 ): Promise<string> {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -83,17 +85,18 @@ async function generatePrompt(
 	// Tools catalog is not included in the system prompt.
 	const toolsCatalog = ""
 
-	// Inject Augment Engine context when in augment mode (high-context AI)
+	// Inject Augment Engine context when in augment mode (high-context AI).
+	// Uses the actual user query for query-relevant RAG selection — this is what makes
+	// Joe AI context-aware like Augment Code (not a static generic context injection).
 	let augmentContextBlock = ""
 	if (mode === "augment") {
 		const engine = AugmentEngine.getInstance(cwd)
 		if (engine) {
 			try {
 				const activeFile = vscode.window.activeTextEditor?.document.uri.fsPath
-				const enriched = await engine.buildEnrichedContext(
-					"system-prompt-initialization",
-					activeFile,
-				)
+				// Use real user query when available (set by Task.ts), fall back to active file context
+				const query = userQuery || (activeFile ? `context for ${activeFile}` : "general codebase context")
+				const enriched = await engine.buildEnrichedContext(query, activeFile)
 				augmentContextBlock = enriched.formattedForPrompt
 			} catch (err) {
 				// Non-fatal: augment context is supplemental, not required
@@ -146,6 +149,8 @@ export const SYSTEM_PROMPT = async (
 	todoList?: TodoItem[],
 	modelId?: string,
 	skillsManager?: SkillsManager,
+	/** The user's actual task text — passed by Task.ts for query-relevant RAG in augment mode */
+	userQuery?: string,
 ): Promise<string> => {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -174,5 +179,6 @@ export const SYSTEM_PROMPT = async (
 		todoList,
 		modelId,
 		skillsManager,
+		userQuery,
 	)
 }

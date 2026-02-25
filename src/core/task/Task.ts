@@ -95,6 +95,7 @@ import { getTaskDirectoryPath } from "../../utils/storage"
 import { formatResponse } from "../prompts/responses"
 import { SYSTEM_PROMPT } from "../prompts/system"
 import { buildNativeToolsArrayWithRestrictions } from "./build-tools"
+import { AugmentEngine } from "../../services/augment/AugmentEngine"
 
 // core modules
 import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
@@ -304,6 +305,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	diffViewProvider: DiffViewProvider
 	diffStrategy?: DiffStrategy
 	didEditFile: boolean = false
+
+	// Joe AI Augment Engine — stores user's task query for query-relevant RAG context
+	private _augmentUserQuery: string | undefined
+	private _augmentEditedFiles: string[] = []
 
 	// LLM Messages & Chat Messages
 	apiConversationHistory: ApiMessage[] = []
@@ -1418,6 +1423,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						if (message) {
 							this.idleAsk = message
 							this.emit(RooCodeEventName.TaskIdle, this.taskId)
+							// Joe AI Augment Engine: task reached idle (completion_result ask) — save memory
+							const resultText = typeof message.text === "string" ? message.text.slice(0, 300) : ""
+							this._finalizeAugmentSession(resultText || "Task completed")
 						}
 					}, statusMutationTimeout),
 				)
@@ -2269,6 +2277,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.emit(RooCodeEventName.TaskAborted)
 
+		// Joe AI Augment Engine: end the memory session when task aborts
+		this._finalizeAugmentSession("Task aborted")
+
 		try {
 			this.dispose() // Call the centralized dispose method
 		} catch (error) {
@@ -2468,6 +2479,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private async initiateTaskLoop(userContent: Anthropic.Messages.ContentBlockParam[]): Promise<void> {
 		// Kicks off the checkpoints initialization process in the background.
 		getCheckpointService(this)
+
+		// Extract user query text for Joe AI Augment Engine RAG context selection.
+		// Store it so getSystemPrompt() can pass it to SYSTEM_PROMPT() for query-relevant file retrieval.
+		if (!this._augmentUserQuery && userContent.length > 0) {
+			const textBlock = userContent.find((b) => b.type === "text") as { type: "text"; text: string } | undefined
+			if (textBlock?.text) {
+				this._augmentUserQuery = textBlock.text.slice(0, 500) // cap at 500 chars for embedding
+			}
+		}
 
 		let nextUserContent = userContent
 		let includeFileDetails = true
@@ -3780,6 +3800,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			const modelInfo = this.api.getModel().info
 
+			// Extract user query text for Augment Engine RAG context selection.
+			// This passes the actual task text so the engine retrieves query-relevant files.
+			const augmentUserQuery = (mode ?? defaultModeSlug) === "augment"
+				? this._augmentUserQuery
+				: undefined
+
 			return SYSTEM_PROMPT(
 				provider.context,
 				this.cwd,
@@ -3806,6 +3832,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				undefined, // todoList
 				this.api.getModel().id,
 				provider.getSkillsManager(),
+				augmentUserQuery,
 			)
 		})()
 	}
@@ -4711,6 +4738,77 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 		} catch (e) {
 			console.error(`[Task] Queue processing error:`, e)
+		}
+	}
+
+	// ─── Joe AI Augment Engine Integration ──────────────────────────────────────
+
+	/**
+	 * Track a file edit in the Augment Engine memory + continuous indexer.
+	 * Called from write_to_file / edit_file / apply_diff tool handlers after
+	 * a successful file write so memory and the index stay current in real time.
+	 */
+	public trackAugmentFileEdit(filePath: string, summary?: string): void {
+		try {
+			const engine = AugmentEngine.getInstance(this.cwd)
+			if (!engine) return
+			const ext = filePath.split(".").pop() ?? "unknown"
+			engine.recordFileEdit(
+				filePath,
+				summary ?? `Edited during task: ${this._augmentUserQuery?.slice(0, 80) ?? ""}`,
+				ext,
+			)
+			if (!this._augmentEditedFiles.includes(filePath)) {
+				this._augmentEditedFiles.push(filePath)
+			}
+		} catch {
+			// Non-fatal — Augment Engine features are supplemental
+		}
+	}
+
+	/**
+	 * Called at task completion (idle ask) or abort.
+	 * Persists the session summary to cross-session memory and runs proactive
+	 * analysis on files changed during this task.
+	 */
+	private _finalizeAugmentSession(summary: string): void {
+		try {
+			const engine = AugmentEngine.getInstance(this.cwd)
+			if (!engine) return
+
+			// Persist session to cross-session memory
+			engine.endSession(summary)
+
+			// Run proactive analysis on files changed this session (fire-and-forget)
+			if (this._augmentEditedFiles.length > 0) {
+				engine.proactiveAnalyzer
+					.analyzeChanges(this._augmentEditedFiles)
+					.then((analysis) => {
+						if (analysis.suggestions.length > 0) {
+							const topSuggestions = analysis.suggestions
+								.slice(0, 3)
+								.map((s) => `• ${s.title}`)
+								.join("\n")
+							vscode.window
+								.showInformationMessage(
+									`Joe AI: ${analysis.suggestions.length} suggestion${analysis.suggestions.length > 1 ? "s" : ""} for your changes:\n${topSuggestions}`,
+									"Show Details",
+									"Dismiss",
+								)
+								.then((choice) => {
+									if (choice === "Show Details") {
+										const details = analysis.suggestions
+											.map((s) => `${s.title}: ${s.description}`)
+											.join("\n\n")
+										vscode.window.showInformationMessage(details)
+									}
+								})
+						}
+					})
+					.catch(() => {/* non-fatal */})
+			}
+		} catch {
+			// Non-fatal — Augment Engine features are supplemental
 		}
 	}
 }
