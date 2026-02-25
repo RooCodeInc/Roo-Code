@@ -59,6 +59,7 @@ interface ChatRowProps {
 	onBatchFileResponse?: (response: { [key: string]: boolean }) => void
 	onFollowUpUnmount?: () => void
 	isFollowUpAnswered?: boolean
+	inputValue?: string
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -111,6 +112,7 @@ export const ChatRowContent = ({
 	onFollowUpUnmount,
 	onBatchFileResponse,
 	isFollowUpAnswered,
+	inputValue,
 }: ChatRowContentProps) => {
 	const { t } = useTranslation()
 	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode, developerMode } = useExtensionState()
@@ -1613,6 +1615,7 @@ export const ChatRowContent = ({
 								ts={message?.ts}
 								onCancelAutoApproval={onFollowUpUnmount}
 								isAnswered={isFollowUpAnswered}
+								inputValue={inputValue}
 							/>
 						</>
 					)
