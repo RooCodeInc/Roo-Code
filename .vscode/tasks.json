@@ -1,1 +1,13 @@
-﻿{"version":"2.0.0","tasks":[{"label":"watch","type":"shell","command":"echo","args":["pre-built"],"group":{"kind":"build","isDefault":true},"presentation":{"reveal":"never"}}]}
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "watch",
+			"type": "shell",
+			"command": "echo",
+			"args": ["pre-built"],
+			"group": { "kind": "build", "isDefault": true },
+			"presentation": { "reveal": "never" }
+		}
+	]
+}

@@ -65,7 +65,8 @@
 				{
 					"type": "webview",
 					"id": "joe-code.SidebarProvider",
-					"name": "%views.sidebar.name%"
+					"name": "%views.sidebar.name%",
+					"visibility": "visible"
 				}
 			]
 		},

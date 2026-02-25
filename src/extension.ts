@@ -355,6 +355,15 @@ export async function activate(context: vscode.ExtensionContext) {
 	registerCodeActions(context)
 	registerTerminalActions(context)
 
+	// Auto-open the Joe-Code sidebar on startup.
+	setTimeout(async () => {
+		try {
+			await vscode.commands.executeCommand(`workbench.view.extension.joe-code-ActivityBar`)
+		} catch (error) {
+			// Silently fail if unable to auto-open sidebar.
+		}
+	}, 1000)
+
 	// Allows other extensions to activate once Roo is ready.
 	vscode.commands.executeCommand(`${Package.name}.activationCompleted`)
 

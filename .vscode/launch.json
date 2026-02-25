@@ -1,4 +1,4 @@
-﻿// A launch configuration that compiles the extension and then opens it inside a new window
+// A launch configuration that compiles the extension and then opens it inside a new window
 // Use IntelliSense to learn about possible attributes.
 // Hover to view descriptions of existing attributes.
 // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
@@ -10,7 +10,7 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
-			"args": ["--extensionDevelopmentPath=${workspaceFolder}/src"],
+			"args": ["--extensionDevelopmentPath=${workspaceFolder}/src", "${workspaceFolder}"],
 			"sourceMaps": true,
 			"outFiles": ["${workspaceFolder}/src/dist/**/*.js"],
 			"env": {
@@ -26,5 +26,3 @@
 		}
 	]
 }
-
-
