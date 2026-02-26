@@ -1,4 +1,9 @@
-import { containsDangerousSubstitution, getCommandDecision } from "../commands"
+import {
+	containsDangerousSubstitution,
+	getCommandDecision,
+	findLongestPrefixMatch,
+	isAutoApprovedSingleCommand,
+} from "../commands"
 
 describe("containsDangerousSubstitution", () => {
 	describe("zsh array assignments (should NOT be flagged)", () => {
@@ -97,5 +102,72 @@ describe("getCommandDecision — integration with dangerous substitution checks"
 
 	it("should ask user for dangerous parameter expansion even when command is allowed", () => {
 		expect(getCommandDecision('echo "${var@P}"', allowedCommands)).toBe("ask_user")
+	})
+})
+
+describe("findLongestPrefixMatch — trailing wildcard support", () => {
+	it("should match 'git*' against 'git commit -m \"Fix nav bar\"'", () => {
+		expect(findLongestPrefixMatch('git commit -m "Fix nav bar"', ["git*"])).toBe("git*")
+	})
+
+	it("should match 'git *' against 'git commit' but not 'gitk'", () => {
+		// "git *" normalizes to "git " (with trailing space)
+		expect(findLongestPrefixMatch("git commit", ["git *"])).toBe("git *")
+		expect(findLongestPrefixMatch("gitk", ["git *"])).toBeNull()
+	})
+
+	it("should match 'git*' against 'gitk' (no space required)", () => {
+		expect(findLongestPrefixMatch("gitk", ["git*"])).toBe("git*")
+	})
+
+	it("should strip multiple trailing asterisks", () => {
+		expect(findLongestPrefixMatch("git status", ["git**"])).toBe("git**")
+	})
+
+	it("should prefer a longer trailing-wildcard prefix over a shorter one", () => {
+		expect(findLongestPrefixMatch("git push origin", ["git*", "git push*"])).toBe("git push*")
+	})
+
+	it("should prefer a specific trailing-wildcard prefix over standalone '*'", () => {
+		expect(findLongestPrefixMatch("git status", ["*", "git*"])).toBe("git*")
+	})
+
+	it("should still match standalone '*' when no other prefix matches", () => {
+		expect(findLongestPrefixMatch("unknown command", ["*", "git*"])).toBe("*")
+	})
+
+	it("should return null when no prefix matches and no wildcard present", () => {
+		expect(findLongestPrefixMatch("npm install", ["git*"])).toBeNull()
+	})
+})
+
+describe("isAutoApprovedSingleCommand — trailing wildcard support", () => {
+	it("should auto-approve 'git commit -m ...' when allowedCommands has 'git*'", () => {
+		expect(isAutoApprovedSingleCommand('git commit -m "Fix dark mode"', ["git*"])).toBe(true)
+	})
+
+	it("should not auto-approve 'npm install' when allowedCommands has 'git*'", () => {
+		expect(isAutoApprovedSingleCommand("npm install", ["git*"])).toBe(false)
+	})
+
+	it("should auto-approve 'git commit' with 'git *' but not 'gitk'", () => {
+		expect(isAutoApprovedSingleCommand("git commit", ["git *"])).toBe(true)
+		expect(isAutoApprovedSingleCommand("gitk", ["git *"])).toBe(false)
+	})
+})
+
+describe("getCommandDecision — trailing wildcard with deny list", () => {
+	it("should auto-approve 'git status' with 'git*' in allowlist", () => {
+		expect(getCommandDecision("git status", ["git*"], [])).toBe("auto_approve")
+	})
+
+	it("should deny 'git push' when denied and allowed with equal-length prefixes", () => {
+		// "git*" (length 4) vs "git push" (length 8) in denylist -> deny wins (longer)
+		expect(getCommandDecision("git push origin", ["git*"], ["git push"])).toBe("auto_deny")
+	})
+
+	it("should approve 'git status' when denied prefix is less specific", () => {
+		// "git status*" (length 11) vs "git*" (length 4) in denylist -> allow wins (longer)
+		expect(getCommandDecision("git status", ["git status*"], ["git*"])).toBe("auto_approve")
 	})
 })
