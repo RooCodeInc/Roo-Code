@@ -3,6 +3,7 @@ import path from "path"
 import { fileURLToPath } from "url"
 
 import { createElement } from "react"
+import pWaitFor from "p-wait-for"
 import type { HistoryItem } from "@roo-code/types"
 
 import { setLogger } from "@roo-code/vscode-shim"
@@ -35,6 +36,7 @@ import { runStdinStreamMode } from "./stdin-stream.js"
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROO_MODEL_WARMUP_TIMEOUT_MS = 10_000
 const SIGNAL_ONLY_EXIT_KEEPALIVE_MS = 60_000
+const TASK_HISTORY_WAIT_TIMEOUT_MS = 2_000
 
 function normalizeError(error: unknown): Error {
 	return error instanceof Error ? error : new Error(String(error))
@@ -406,11 +408,13 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		let isShuttingDown = false
 		let hostDisposed = false
 		let taskHistorySnapshot: HistoryItem[] = []
+		let hasReceivedTaskHistory = false
 
 		const onExtensionMessage = (message: unknown) => {
 			const taskHistory = extractTaskHistoryFromMessage(message)
 			if (taskHistory) {
 				taskHistorySnapshot = taskHistory
+				hasReceivedTaskHistory = true
 			}
 		}
 
@@ -560,11 +564,20 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 				})
 			} else {
 				if (isResumeRequested) {
+					// Request initial state from extension to get task history.
+					host.sendToExtension({ type: "requestCommands" })
+
+					// Wait for task history to arrive before attempting to resolve the session.
+					await pWaitFor(() => hasReceivedTaskHistory, {
+						interval: 25,
+						timeout: TASK_HISTORY_WAIT_TIMEOUT_MS,
+					}).catch(() => undefined)
+
 					const resolvedSessionId =
 						requestedSessionId ||
 						getMostRecentTaskIdInWorkspace(taskHistorySnapshot, effectiveWorkspacePath)
 
-					if (requestedSessionId && taskHistorySnapshot.length > 0) {
+					if (requestedSessionId && hasReceivedTaskHistory) {
 						const hasRequestedTask = taskHistorySnapshot.some((item) => item.id === requestedSessionId)
 						if (!hasRequestedTask) {
 							throw new Error(`Session not found in task history: ${requestedSessionId}`)

@@ -5,6 +5,18 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5] - 2026-02-26
+
+### Added
+
+- **Session History**: New `list sessions` subcommand to view past tasks from the current workspace. Lists session IDs, dates, and summaries for easy reference.
+- **Session Resume**: New `--resume` (`-r`) flag to continue a previous task. Use `--resume` alone to resume the most recent session, or `--resume <session-id>` to resume a specific session.
+- **Upgrade Command**: New `upgrade` subcommand for self-updating the CLI to the latest version. Supports checking for updates without installing via `--check` flag.
+
+### Fixed
+
+- **Session Resume Timing**: Fixed race condition where resuming a session could fail if task history hadn't loaded yet. The CLI now properly waits for task history before attempting to resolve the session.
+
 ## [0.1.4] - 2026-02-26
 
 ### Fixed
