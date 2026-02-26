@@ -3390,6 +3390,7 @@ export const webviewMessageHandler = async (
 							copyProgressItemName: progress.itemName,
 						})
 					},
+					message.worktreeUseHardLinks,
 				)
 
 				await provider.postMessageToWebview({ type: "worktreeResult", success, text })
