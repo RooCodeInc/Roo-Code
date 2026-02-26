@@ -43,6 +43,8 @@
 	"creating": "Đang tạo...",
 	"copyingFiles": "Đang sao chép tệp...",
 	"copyingProgress": "{{item}} — {{copied}} đã sao chép",
+	"useHardLinks": "Sử dụng liên kết cứng cho các tệp được bao gồm",
+	"useHardLinksTooltip": "Tạo liên kết cứng thay vì bản sao, tiết kiệm dung lượng đĩa và tăng tốc tạo worktree. Tắt nếu nguồn và đích nằm trên các hệ thống tệp khác nhau.",
 	"cancel": "Hủy",
 
 	"deleteWorktree": "Xóa Worktree",

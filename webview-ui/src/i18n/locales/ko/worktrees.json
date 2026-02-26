@@ -43,6 +43,8 @@
 	"creating": "만드는 중...",
 	"copyingFiles": "파일 복사 중...",
 	"copyingProgress": "{{item}} — {{copied}} 복사됨",
+	"useHardLinks": "포함된 파일에 하드 링크 사용",
+	"useHardLinksTooltip": "복사 대신 하드 링크를 생성하여 디스크 공간을 절약하고 worktree 생성 속도를 높입니다. 소스와 대상이 다른 파일 시스템에 있는 경우 비활성화하세요.",
 	"cancel": "취소",
 
 	"deleteWorktree": "Worktree 삭제",
