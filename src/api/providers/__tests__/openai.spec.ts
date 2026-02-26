@@ -391,6 +391,190 @@ describe("OpenAiHandler", () => {
 			expect(callArgs.reasoning_effort).toBeUndefined()
 		})
 
+		it("should yield reasoning chunks from streaming response with reasoning_content field", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [{ delta: { reasoning_content: "Step 1: Think about it" }, index: 0 }],
+						usage: null,
+					}
+					yield {
+						choices: [{ delta: { content: "Final answer" }, index: 0 }],
+						usage: null,
+					}
+					yield {
+						choices: [{ delta: {}, index: 0 }],
+						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+					}
+				},
+			}))
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+			expect(reasoningChunks).toHaveLength(1)
+			expect(reasoningChunks[0]).toEqual({ type: "reasoning", text: "Step 1: Think about it" })
+
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks.some((c) => c.text === "Final answer")).toBe(true)
+		})
+
+		it("should yield reasoning chunks from streaming response with reasoning field", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [{ delta: { reasoning: "Step 1: Think about it via reasoning field" }, index: 0 }],
+						usage: null,
+					}
+					yield {
+						choices: [{ delta: { content: "Final answer" }, index: 0 }],
+						usage: null,
+					}
+					yield {
+						choices: [{ delta: {}, index: 0 }],
+						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+					}
+				},
+			}))
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+			expect(reasoningChunks).toHaveLength(1)
+			expect(reasoningChunks[0]).toEqual({
+				type: "reasoning",
+				text: "Step 1: Think about it via reasoning field",
+			})
+		})
+
+		it("should prefer reasoning_content over reasoning when both are present in streaming delta", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: { reasoning_content: "From reasoning_content", reasoning: "From reasoning" },
+								index: 0,
+							},
+						],
+						usage: null,
+					}
+					yield {
+						choices: [{ delta: {}, index: 0 }],
+						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+					}
+				},
+			}))
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+			expect(reasoningChunks).toHaveLength(1)
+			expect(reasoningChunks[0]).toEqual({ type: "reasoning", text: "From reasoning_content" })
+		})
+
+		it("should not yield reasoning chunk for empty or whitespace-only reasoning in streaming", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [{ delta: { reasoning_content: "   " }, index: 0 }],
+						usage: null,
+					}
+					yield {
+						choices: [{ delta: { content: "Answer" }, index: 0 }],
+						usage: null,
+					}
+					yield {
+						choices: [{ delta: {}, index: 0 }],
+						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+					}
+				},
+			}))
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+			expect(reasoningChunks).toHaveLength(0)
+		})
+
+		it("should yield reasoning from non-streaming response with reasoning_content field", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				choices: [
+					{
+						message: {
+							role: "assistant",
+							content: "Final answer",
+							reasoning_content: "Non-streaming reasoning",
+						},
+						finish_reason: "stop",
+						index: 0,
+					},
+				],
+				usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+			}))
+
+			const nonStreamHandler = new OpenAiHandler({ ...mockOptions, openAiStreamingEnabled: false })
+			const stream = nonStreamHandler.createMessage(systemPrompt, messages)
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+			expect(reasoningChunks).toHaveLength(1)
+			expect(reasoningChunks[0]).toEqual({ type: "reasoning", text: "Non-streaming reasoning" })
+
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks.some((c) => c.text === "Final answer")).toBe(true)
+		})
+
+		it("should yield reasoning from non-streaming response with reasoning field", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				choices: [
+					{
+						message: {
+							role: "assistant",
+							content: "Final answer",
+							reasoning: "Non-streaming reasoning via reasoning field",
+						},
+						finish_reason: "stop",
+						index: 0,
+					},
+				],
+				usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+			}))
+
+			const nonStreamHandler = new OpenAiHandler({ ...mockOptions, openAiStreamingEnabled: false })
+			const stream = nonStreamHandler.createMessage(systemPrompt, messages)
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+			expect(reasoningChunks).toHaveLength(1)
+			expect(reasoningChunks[0]).toEqual({
+				type: "reasoning",
+				text: "Non-streaming reasoning via reasoning field",
+			})
+		})
+
 		it("should include max_tokens when includeMaxTokens is true", async () => {
 			const optionsWithMaxTokens: ApiHandlerOptions = {
 				...mockOptions,
