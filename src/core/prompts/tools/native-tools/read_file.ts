@@ -34,6 +34,8 @@ function getReadFileSupportsNote(supportsImages: boolean): string {
 export interface ReadFileToolOptions {
 	/** Whether the model supports image processing (default: false) */
 	supportsImages?: boolean
+	/** Maximum line limit for read_file tool. -1 or undefined = DEFAULT_LINE_LIMIT, 0 = no limit */
+	maxReadFileLine?: number
 }
 
 // ─── Schema Builder ───────────────────────────────────────────────────────────
@@ -58,7 +60,21 @@ export interface ReadFileToolOptions {
  * @returns Native tool definition for read_file
  */
 export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Chat.ChatCompletionTool {
-	const { supportsImages = false } = options
+	const { supportsImages = false, maxReadFileLine } = options
+
+	// Resolve the effective line limit for the tool description.
+	// -1 or undefined: use DEFAULT_LINE_LIMIT (2000)
+	// 0: no limit (read entire file)
+	// positive number: use that value
+	const hasNoLimit = maxReadFileLine === 0
+	const effectiveLimit =
+		maxReadFileLine === undefined || maxReadFileLine === -1
+			? DEFAULT_LINE_LIMIT
+			: maxReadFileLine === 0
+				? undefined // no limit
+				: maxReadFileLine > 0
+					? maxReadFileLine
+					: DEFAULT_LINE_LIMIT
 
 	// Build description based on capabilities
 	const descriptionIntro =
@@ -70,7 +86,9 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 		` PREFER indentation mode when you have a specific line number from search results, error messages, or definition lookups - it guarantees complete, syntactically valid code blocks without mid-function truncation.` +
 		` IMPORTANT: Indentation mode requires anchor_line to be useful. Without it, only header content (imports) is returned.`
 
-	const limitNote = ` By default, returns up to ${DEFAULT_LINE_LIMIT} lines per file. Lines longer than ${MAX_LINE_LENGTH} characters are truncated.`
+	const limitNote = hasNoLimit
+		? ` Reads the entire file by default (no line limit). Lines longer than ${MAX_LINE_LENGTH} characters are truncated.`
+		: ` By default, returns up to ${effectiveLimit} lines per file. Lines longer than ${MAX_LINE_LENGTH} characters are truncated.`
 
 	const description =
 		descriptionIntro +
@@ -125,7 +143,9 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 		},
 		limit: {
 			type: "integer",
-			description: `Maximum number of lines to return (slice mode, default: ${DEFAULT_LINE_LIMIT})`,
+			description: hasNoLimit
+				? `Maximum number of lines to return (slice mode, default: no limit - reads entire file)`
+				: `Maximum number of lines to return (slice mode, default: ${effectiveLimit})`,
 		},
 		indentation: {
 			type: "object",
