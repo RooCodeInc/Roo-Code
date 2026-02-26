@@ -309,6 +309,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		// https://openrouter.ai/docs/transforms
+		const providerOptions = this.buildProviderOptions()
 		const completionParams: OpenRouterChatCompletionParams = {
 			model: modelId,
 			...(maxTokens && maxTokens > 0 && { max_tokens: maxTokens }),
@@ -317,7 +318,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			messages: openAiMessages,
 			stream: true,
 			stream_options: { include_usage: true },
-			...(this.buildProviderOptions() && { provider: this.buildProviderOptions() }),
+			...(providerOptions && { provider: providerOptions }),
 			...(reasoning && { reasoning }),
 			tools: this.convertToolsForOpenAI(metadata?.tools),
 			tool_choice: metadata?.tool_choice,
@@ -610,13 +611,14 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	async completePrompt(prompt: string) {
 		let { id: modelId, maxTokens, temperature, reasoning } = await this.fetchModel()
 
+		const providerOptions = this.buildProviderOptions()
 		const completionParams: OpenRouterChatCompletionParams = {
 			model: modelId,
 			max_tokens: maxTokens,
 			temperature,
 			messages: [{ role: "user", content: prompt }],
 			stream: false,
-			...(this.buildProviderOptions() && { provider: this.buildProviderOptions() }),
+			...(providerOptions && { provider: providerOptions }),
 			...(reasoning && { reasoning }),
 		}
 
