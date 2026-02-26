@@ -14,7 +14,10 @@
 	},
 	"apiConfiguration": {
 		"title": "Configuració d'API",
-		"select": "Seleccioneu quina configuració d'API utilitzar per a aquest mode"
+		"select": "Seleccioneu quina configuració d'API utilitzar per a aquest mode",
+		"scope": "Abast",
+		"global": "Global",
+		"workspace": "Espai de treball"
 	},
 	"tools": {
 		"title": "Eines disponibles",

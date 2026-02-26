@@ -14,7 +14,10 @@
 	},
 	"apiConfiguration": {
 		"title": "API-configuratie",
-		"select": "Selecteer welke API-configuratie voor deze modus gebruikt moet worden"
+		"select": "Selecteer welke API-configuratie voor deze modus gebruikt moet worden",
+		"scope": "Bereik",
+		"global": "Globaal",
+		"workspace": "Werkruimte"
 	},
 	"tools": {
 		"title": "Beschikbare tools",
