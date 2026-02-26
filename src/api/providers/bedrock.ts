@@ -923,6 +923,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		 *  - Prompt Router: arn:aws:bedrock:us-west-2:123456789012:prompt-router/anthropic-claude
 		 *  - Inference Profile: arn:aws:bedrock:us-west-2:123456789012:inference-profile/anthropic.claude-v2
 		 *  - Cross Region Inference Profile: arn:aws:bedrock:us-west-2:123456789012:inference-profile/us.anthropic.claude-3-5-sonnet-20241022-v2:0
+		 *  - Application Inference Profile: arn:aws:bedrock:eu-west-1:123456789012:application-inference-profile/my-profile-id
 		 *  - Custom Model (Provisioned Throughput): arn:aws:bedrock:us-west-2:123456789012:provisioned-model/my-custom-model
 		 *  - Imported Model: arn:aws:bedrock:us-west-2:123456789012:imported-model/my-imported-model
 		 *
@@ -1024,6 +1025,18 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			model = {
 				id: bedrockDefaultPromptRouterModelId,
 				info: JSON.parse(JSON.stringify(bedrockModels[bedrockDefaultPromptRouterModelId])),
+			}
+		} else if (modelType === "application-inference-profile") {
+			// Application inference profiles use opaque IDs (often UUIDs) that don't reveal the underlying model.
+			// Provide reasonable defaults assuming the underlying model is likely a modern Claude model,
+			// since that's the most common use case for Bedrock application inference profiles.
+			model = {
+				id: bedrockDefaultModelId,
+				info: {
+					...JSON.parse(JSON.stringify(bedrockModels[bedrockDefaultModelId])),
+					supportsImages: true,
+					supportsPromptCache: false,
+				},
 			}
 		} else {
 			// Use heuristics for model info, then allow overrides from ProviderSettings
@@ -1318,7 +1331,8 @@ Please verify:
 2. If using an ARN, verify the ARN is correct and points to a valid model
 3. Your AWS credentials have permission to access this model (check IAM policies)
 4. The region in the ARN matches the region where the model is deployed
-5. If using a provisioned model, ensure it's active and not in a failed state`,
+5. If using a provisioned model, ensure it's active and not in a failed state
+6. If using an application inference profile, enter the full ARN in the "Custom ARN" field (not the model selector)`,
 			logLevel: "error",
 		},
 		NOT_FOUND: {
