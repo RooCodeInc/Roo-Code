@@ -1,4 +1,13 @@
-import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react"
+import React, {
+	forwardRef,
+	useCallback,
+	useEffect,
+	useImperativeHandle,
+	useMemo,
+	useReducer,
+	useRef,
+	useState,
+} from "react"
 import { useDeepCompareEffect, useEvent } from "react-use"
 import { Virtuoso, type VirtuosoHandle } from "react-virtuoso"
 import removeMd from "remove-markdown"
@@ -62,6 +71,64 @@ export interface ChatViewRef {
 }
 
 export const MAX_IMAGES_PER_MESSAGE = 20 // This is the Anthropic limit.
+
+// --- Button state reducer (replaces 5 separate useState calls) ---
+
+interface ButtonState {
+	sendingDisabled: boolean
+	clineAsk: ClineAsk | undefined
+	enableButtons: boolean
+	primaryButtonText: string | undefined
+	secondaryButtonText: string | undefined
+}
+
+type ButtonStateAction =
+	| {
+			type: "SET_ASK_STATE"
+			sendingDisabled: boolean
+			clineAsk: ClineAsk | undefined
+			enableButtons: boolean
+			primaryButtonText: string | undefined
+			secondaryButtonText: string | undefined
+	  }
+	| { type: "SET_SENDING_DISABLED"; sendingDisabled: boolean }
+	| { type: "SET_BUTTON_TEXT"; primaryButtonText: string | undefined; secondaryButtonText: string | undefined }
+	| { type: "RESET_WITHOUT_BUTTON_TEXT" }
+
+const initialButtonState: ButtonState = {
+	sendingDisabled: false,
+	clineAsk: undefined,
+	enableButtons: false,
+	primaryButtonText: undefined,
+	secondaryButtonText: undefined,
+}
+
+function buttonStateReducer(state: ButtonState, action: ButtonStateAction): ButtonState {
+	switch (action.type) {
+		case "SET_ASK_STATE":
+			return {
+				sendingDisabled: action.sendingDisabled,
+				clineAsk: action.clineAsk,
+				enableButtons: action.enableButtons,
+				primaryButtonText: action.primaryButtonText,
+				secondaryButtonText: action.secondaryButtonText,
+			}
+		case "SET_SENDING_DISABLED":
+			return { ...state, sendingDisabled: action.sendingDisabled }
+		case "SET_BUTTON_TEXT":
+			return {
+				...state,
+				primaryButtonText: action.primaryButtonText,
+				secondaryButtonText: action.secondaryButtonText,
+			}
+		case "RESET_WITHOUT_BUTTON_TEXT":
+			return { ...state, sendingDisabled: true, clineAsk: undefined, enableButtons: false }
+		default:
+			return state
+	}
+}
+
+// --- End button state reducer ---
 
 const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
 
@@ -139,17 +206,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const [inputValue, setInputValue] = useState("")
 	const inputValueRef = useRef(inputValue)
 	const textAreaRef = useRef<HTMLTextAreaElement>(null)
-	const [sendingDisabled, setSendingDisabled] = useState(false)
-	const [selectedImages, setSelectedImages] = useState<string[]>([])
-
+	// Button state managed by a single reducer to eliminate partial-update race conditions.
 	// We need to hold on to the ask because useEffect > lastMessage will always
 	// let us know when an ask comes in and handle it, but by the time
 	// handleMessage is called, the last message might not be the ask anymore
 	// (it could be a say that followed).
-	const [clineAsk, setClineAsk] = useState<ClineAsk | undefined>(undefined)
-	const [enableButtons, setEnableButtons] = useState<boolean>(false)
-	const [primaryButtonText, setPrimaryButtonText] = useState<string | undefined>(undefined)
-	const [secondaryButtonText, setSecondaryButtonText] = useState<string | undefined>(undefined)
+	const [buttonState, dispatch] = useReducer(buttonStateReducer, initialButtonState)
+	const { clineAsk, enableButtons, sendingDisabled, primaryButtonText, secondaryButtonText } = buttonState
+	const [selectedImages, setSelectedImages] = useState<string[]>([])
 	const [_didClickCancel, setDidClickCancel] = useState(false)
 	const virtuosoRef = useRef<VirtuosoHandle>(null)
 	const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({})
@@ -281,101 +345,127 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					switch (lastMessage.ask) {
 						case "api_req_failed":
 							playSound("progress_loop")
-							setSendingDisabled(true)
-							setClineAsk("api_req_failed")
-							setEnableButtons(true)
-							setPrimaryButtonText(t("chat:retry.title"))
-							setSecondaryButtonText(t("chat:startNewTask.title"))
+							dispatch({
+								type: "SET_ASK_STATE",
+								sendingDisabled: true,
+								clineAsk: "api_req_failed",
+								enableButtons: true,
+								primaryButtonText: t("chat:retry.title"),
+								secondaryButtonText: t("chat:startNewTask.title"),
+							})
 							break
 						case "mistake_limit_reached":
 							playSound("progress_loop")
-							setSendingDisabled(false)
-							setClineAsk("mistake_limit_reached")
-							setEnableButtons(true)
-							setPrimaryButtonText(t("chat:proceedAnyways.title"))
-							setSecondaryButtonText(t("chat:startNewTask.title"))
+							dispatch({
+								type: "SET_ASK_STATE",
+								sendingDisabled: false,
+								clineAsk: "mistake_limit_reached",
+								enableButtons: true,
+								primaryButtonText: t("chat:proceedAnyways.title"),
+								secondaryButtonText: t("chat:startNewTask.title"),
+							})
 							break
 						case "followup":
-							setSendingDisabled(isPartial)
-							setClineAsk("followup")
 							// setting enable buttons to `false` would trigger a focus grab when
 							// the text area is enabled which is undesirable.
 							// We have no buttons for this tool, so no problem having them "enabled"
 							// to workaround this issue.  See #1358.
-							setEnableButtons(true)
-							setPrimaryButtonText(undefined)
-							setSecondaryButtonText(undefined)
+							dispatch({
+								type: "SET_ASK_STATE",
+								sendingDisabled: isPartial,
+								clineAsk: "followup",
+								enableButtons: true,
+								primaryButtonText: undefined,
+								secondaryButtonText: undefined,
+							})
 							break
-						case "tool":
-							setSendingDisabled(isPartial)
-							setClineAsk("tool")
-							setEnableButtons(!isPartial)
+						case "tool": {
 							const tool = JSON.parse(lastMessage.text || "{}") as ClineSayTool
+							let toolPrimaryText: string | undefined
+							let toolSecondaryText: string | undefined
 							switch (tool.tool) {
 								case "editedExistingFile":
 								case "appliedDiff":
 								case "newFileCreated":
 									if (tool.batchDiffs && Array.isArray(tool.batchDiffs)) {
-										setPrimaryButtonText(t("chat:edit-batch.approve.title"))
-										setSecondaryButtonText(t("chat:edit-batch.deny.title"))
+										toolPrimaryText = t("chat:edit-batch.approve.title")
+										toolSecondaryText = t("chat:edit-batch.deny.title")
 									} else {
-										setPrimaryButtonText(t("chat:save.title"))
-										setSecondaryButtonText(t("chat:reject.title"))
+										toolPrimaryText = t("chat:save.title")
+										toolSecondaryText = t("chat:reject.title")
 									}
 									break
 								case "generateImage":
-									setPrimaryButtonText(t("chat:save.title"))
-									setSecondaryButtonText(t("chat:reject.title"))
+									toolPrimaryText = t("chat:save.title")
+									toolSecondaryText = t("chat:reject.title")
 									break
 								case "finishTask":
-									setPrimaryButtonText(t("chat:completeSubtaskAndReturn"))
-									setSecondaryButtonText(undefined)
+									toolPrimaryText = t("chat:completeSubtaskAndReturn")
+									toolSecondaryText = undefined
 									break
 								case "readFile":
 									if (tool.batchFiles && Array.isArray(tool.batchFiles)) {
-										setPrimaryButtonText(t("chat:read-batch.approve.title"))
-										setSecondaryButtonText(t("chat:read-batch.deny.title"))
+										toolPrimaryText = t("chat:read-batch.approve.title")
+										toolSecondaryText = t("chat:read-batch.deny.title")
 									} else {
-										setPrimaryButtonText(t("chat:approve.title"))
-										setSecondaryButtonText(t("chat:reject.title"))
+										toolPrimaryText = t("chat:approve.title")
+										toolSecondaryText = t("chat:reject.title")
 									}
 									break
 								case "listFilesTopLevel":
 								case "listFilesRecursive":
 									if (tool.batchDirs && Array.isArray(tool.batchDirs)) {
-										setPrimaryButtonText(t("chat:list-batch.approve.title"))
-										setSecondaryButtonText(t("chat:list-batch.deny.title"))
+										toolPrimaryText = t("chat:list-batch.approve.title")
+										toolSecondaryText = t("chat:list-batch.deny.title")
 									} else {
-										setPrimaryButtonText(t("chat:approve.title"))
-										setSecondaryButtonText(t("chat:reject.title"))
+										toolPrimaryText = t("chat:approve.title")
+										toolSecondaryText = t("chat:reject.title")
 									}
 									break
 								default:
-									setPrimaryButtonText(t("chat:approve.title"))
-									setSecondaryButtonText(t("chat:reject.title"))
+									toolPrimaryText = t("chat:approve.title")
+									toolSecondaryText = t("chat:reject.title")
 									break
 							}
+							dispatch({
+								type: "SET_ASK_STATE",
+								sendingDisabled: isPartial,
+								clineAsk: "tool",
+								enableButtons: !isPartial,
+								primaryButtonText: toolPrimaryText,
+								secondaryButtonText: toolSecondaryText,
+							})
 							break
+						}
 						case "command":
-							setSendingDisabled(isPartial)
-							setClineAsk("command")
-							setEnableButtons(!isPartial)
-							setPrimaryButtonText(t("chat:runCommand.title"))
-							setSecondaryButtonText(t("chat:reject.title"))
+							dispatch({
+								type: "SET_ASK_STATE",
+								sendingDisabled: isPartial,
+								clineAsk: "command",
+								enableButtons: !isPartial,
+								primaryButtonText: t("chat:runCommand.title"),
+								secondaryButtonText: t("chat:reject.title"),
+							})
 							break
 						case "command_output":
-							setSendingDisabled(false)
-							setClineAsk("command_output")
-							setEnableButtons(true)
-							setPrimaryButtonText(t("chat:proceedWhileRunning.title"))
-							setSecondaryButtonText(t("chat:killCommand.title"))
+							dispatch({
+								type: "SET_ASK_STATE",
+								sendingDisabled: false,
+								clineAsk: "command_output",
+								enableButtons: true,
+								primaryButtonText: t("chat:proceedWhileRunning.title"),
+								secondaryButtonText: t("chat:killCommand.title"),
+							})
 							break
 						case "use_mcp_server":
-							setSendingDisabled(isPartial)
-							setClineAsk("use_mcp_server")
-							setEnableButtons(!isPartial)
-							setPrimaryButtonText(t("chat:approve.title"))
-							setSecondaryButtonText(t("chat:reject.title"))
+							dispatch({
+								type: "SET_ASK_STATE",
+								sendingDisabled: isPartial,
+								clineAsk: "use_mcp_server",
+								enableButtons: !isPartial,
+								primaryButtonText: t("chat:approve.title"),
+								secondaryButtonText: t("chat:reject.title"),
+							})
 							break
 						case "completion_result":
 							// Extension waiting for feedback, but we can just present a new task button.
@@ -383,16 +473,16 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							if (!isPartial && messageQueue.length === 0) {
 								playSound("celebration")
 							}
-							setSendingDisabled(isPartial)
-							setClineAsk("completion_result")
-							setEnableButtons(!isPartial)
-							setPrimaryButtonText(t("chat:startNewTask.title"))
-							setSecondaryButtonText(undefined)
+							dispatch({
+								type: "SET_ASK_STATE",
+								sendingDisabled: isPartial,
+								clineAsk: "completion_result",
+								enableButtons: !isPartial,
+								primaryButtonText: t("chat:startNewTask.title"),
+								secondaryButtonText: undefined,
+							})
 							break
-						case "resume_task":
-							setSendingDisabled(false)
-							setClineAsk("resume_task")
-							setEnableButtons(true)
+						case "resume_task": {
 							// For completed subtasks, show "Start New Task" instead of "Resume"
 							// A subtask is considered completed if:
 							// - It has a parentTaskId AND
@@ -403,20 +493,36 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 									(msg) => msg.ask === "completion_result" || msg.say === "completion_result",
 								)
 							if (isCompletedSubtask) {
-								setPrimaryButtonText(t("chat:startNewTask.title"))
-								setSecondaryButtonText(undefined)
+								dispatch({
+									type: "SET_ASK_STATE",
+									sendingDisabled: false,
+									clineAsk: "resume_task",
+									enableButtons: true,
+									primaryButtonText: t("chat:startNewTask.title"),
+									secondaryButtonText: undefined,
+								})
 							} else {
-								setPrimaryButtonText(t("chat:resumeTask.title"))
-								setSecondaryButtonText(t("chat:terminate.title"))
+								dispatch({
+									type: "SET_ASK_STATE",
+									sendingDisabled: false,
+									clineAsk: "resume_task",
+									enableButtons: true,
+									primaryButtonText: t("chat:resumeTask.title"),
+									secondaryButtonText: t("chat:terminate.title"),
+								})
 							}
 							setDidClickCancel(false) // special case where we reset the cancel button state
 							break
+						}
 						case "resume_completed_task":
-							setSendingDisabled(false)
-							setClineAsk("resume_completed_task")
-							setEnableButtons(true)
-							setPrimaryButtonText(t("chat:startNewTask.title"))
-							setSecondaryButtonText(undefined)
+							dispatch({
+								type: "SET_ASK_STATE",
+								sendingDisabled: false,
+								clineAsk: "resume_completed_task",
+								enableButtons: true,
+								primaryButtonText: t("chat:startNewTask.title"),
+								secondaryButtonText: undefined,
+							})
 							setDidClickCancel(false)
 							break
 					}
@@ -427,21 +533,24 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					switch (lastMessage.say) {
 						case "api_req_retry_delayed":
 						case "api_req_rate_limit_wait":
-							setSendingDisabled(true)
+							dispatch({ type: "SET_SENDING_DISABLED", sendingDisabled: true })
 							break
 						case "api_req_started":
 							// Clear button state when a new API request starts
 							// This fixes buttons persisting when the task continues
-							setSendingDisabled(true)
 							// Note: Do NOT clear selectedImages here. This handler fires
 							// every time the backend starts an API call, which would wipe
 							// images the user has pasted while the chat is in progress.
 							// Images are already cleared in the appropriate user-action
 							// handlers (handleSendMessage, handlePrimaryButtonClick, etc.).
-							setClineAsk(undefined)
-							setEnableButtons(false)
-							setPrimaryButtonText(undefined)
-							setSecondaryButtonText(undefined)
+							dispatch({
+								type: "SET_ASK_STATE",
+								sendingDisabled: true,
+								clineAsk: undefined,
+								enableButtons: false,
+								primaryButtonText: undefined,
+								secondaryButtonText: undefined,
+							})
 							break
 						case "api_req_finished":
 						case "error":
@@ -464,19 +573,25 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				(msg) => msg.ask === "completion_result" || msg.say === "completion_result",
 			)
 			if (hasCompletionResult) {
-				setPrimaryButtonText(t("chat:startNewTask.title"))
-				setSecondaryButtonText(undefined)
+				dispatch({
+					type: "SET_BUTTON_TEXT",
+					primaryButtonText: t("chat:startNewTask.title"),
+					secondaryButtonText: undefined,
+				})
 			}
 		}
 	}, [clineAsk, currentTaskItem?.parentTaskId, messages, t])
 
 	useEffect(() => {
 		if (messages.length === 0) {
-			setSendingDisabled(false)
-			setClineAsk(undefined)
-			setEnableButtons(false)
-			setPrimaryButtonText(undefined)
-			setSecondaryButtonText(undefined)
+			dispatch({
+				type: "SET_ASK_STATE",
+				sendingDisabled: false,
+				clineAsk: undefined,
+				enableButtons: false,
+				primaryButtonText: undefined,
+				secondaryButtonText: undefined,
+			})
 		}
 	}, [messages.length])
 
@@ -582,13 +697,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 		// Only reset message-specific state, preserving mode.
 		setInputValue("")
-		setSendingDisabled(true)
 		setSelectedImages([])
-		setClineAsk(undefined)
-		setEnableButtons(false)
 		// Do not reset mode here as it should persist.
-		// setPrimaryButtonText(undefined)
-		// setSecondaryButtonText(undefined)
+		// Intentionally does NOT clear button text.
+		dispatch({ type: "RESET_WITHOUT_BUTTON_TEXT" })
 	}, [])
 
 	/**
@@ -790,11 +902,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					break
 			}
 
-			setSendingDisabled(true)
-			setClineAsk(undefined)
-			setEnableButtons(false)
-			setPrimaryButtonText(undefined)
-			setSecondaryButtonText(undefined)
+			dispatch({
+				type: "SET_ASK_STATE",
+				sendingDisabled: true,
+				clineAsk: undefined,
+				enableButtons: false,
+				primaryButtonText: undefined,
+				secondaryButtonText: undefined,
+			})
 		},
 		[clineAsk, startNewTask, currentTaskItem?.parentTaskId],
 	)
@@ -806,6 +921,23 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 			const trimmedInput = text?.trim()
 
+			// Handle "Start New Task" cases first — these must take priority over
+			// the isStreaming guard because isStreaming can be stale-true after
+			// api_req_failed or mistake_limit_reached, causing clicks to route
+			// to cancelTask instead of startNewTask.
+			if (clineAsk === "api_req_failed" || clineAsk === "mistake_limit_reached" || clineAsk === "resume_task") {
+				startNewTask()
+				dispatch({
+					type: "SET_ASK_STATE",
+					sendingDisabled: true,
+					clineAsk: undefined,
+					enableButtons: false,
+					primaryButtonText: undefined,
+					secondaryButtonText: undefined,
+				})
+				return
+			}
+
 			if (isStreaming) {
 				vscode.postMessage({ type: "cancelTask" })
 				setDidClickCancel(true)
@@ -813,11 +945,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			}
 
 			switch (clineAsk) {
-				case "api_req_failed":
-				case "mistake_limit_reached":
-				case "resume_task":
-					startNewTask()
-					break
 				case "command":
 				case "tool":
 				case "use_mcp_server":
@@ -841,9 +968,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					vscode.postMessage({ type: "terminalOperation", terminalOperation: "abort" })
 					break
 			}
-			setSendingDisabled(true)
-			setClineAsk(undefined)
-			setEnableButtons(false)
+			dispatch({ type: "RESET_WITHOUT_BUTTON_TEXT" })
 		},
 		[clineAsk, startNewTask, isStreaming, setDidClickCancel],
 	)
@@ -915,7 +1040,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					// Same reasoning as above - we trust this is for the current task
 					if (message.text) {
 						if (isCondensing && sendingDisabled) {
-							setSendingDisabled(false)
+							dispatch({ type: "SET_SENDING_DISABLED", sendingDisabled: false })
 						}
 						setIsCondensing(false)
 					}
@@ -1518,7 +1643,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			return
 		}
 		setIsCondensing(true)
-		setSendingDisabled(true)
+		dispatch({ type: "SET_SENDING_DISABLED", sendingDisabled: true })
 		vscode.postMessage({ type: "condenseTaskContextRequest", text: taskId })
 	}
 
