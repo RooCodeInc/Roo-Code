@@ -1,4 +1,5 @@
 export { solidityQuery } from "./solidity"
+export { default as dartQuery } from "./dart"
 export { default as phpQuery } from "./php"
 export { vueQuery } from "./vue"
 export { default as typescriptQuery } from "./typescript"

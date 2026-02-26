@@ -28,6 +28,7 @@ import {
 	embeddedTemplateQuery,
 	elispQuery,
 	elixirQuery,
+	dartQuery,
 } from "./queries"
 
 export interface LanguageParser {
@@ -136,6 +137,10 @@ export async function loadRequiredLanguageParsers(filesToParse: string[], source
 			case "cs":
 				language = await loadLanguage("c_sharp", sourceDirectory)
 				query = new Query(language, csharpQuery)
+				break
+			case "dart":
+				language = await loadLanguage("dart", sourceDirectory)
+				query = new Query(language, dartQuery)
 				break
 			case "rb":
 				language = await loadLanguage("ruby", sourceDirectory)
