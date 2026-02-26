@@ -2232,27 +2232,30 @@ for(Account acc : accountList) {
 
 ---
 
-### 9. (**!! IMPORTANT**)Dry run and Deployment:
+### 9. ⚠️ (**!! MANDATORY**) DEPLOYMENT:
 
-After creation of all required apex classes and LWC components then first do dry run on apex using this command:
-`sf project deploy start --dry-run --source-dir force-app/main/default/classes/<classname.cls> --json`
-Replace <classname.cls> with the actual classes.
+**AFTER EVERY APEX CLASS CREATION, YOU MUST IMMEDIATELY DEPLOY USING `<sf_deploy_metadata>` TOOL**
 
-- If got any errors after dry run solve them.
-- After successful dry run of apex classes then immediatly proceed with deloyment of apex classes.
-  `sf project deploy start --source-dir force-app/main/default/objects/<classname.cls> --json`
-- Replace <classname.cls> with the all classes that are created like below format for multiple apex classes deployment:
-    # Deploy multiple specific Apex classes in order
-    ```
-    sf project deploy start --dry-run --source-dir force-app/main/default/objects/MyCustomObject__c --source-dir force-app/main/default/classes/HelperClass.cls --source-dir force-app/main/default/classes/MainService.cls --source-dir force-app/main/default/triggers/AccountTrigger.trigger --json
-    ```
-- (**!IMPORTANT**)Before Going for LWC first dry-run and deploy Apex Classes.
+**THIS IS NOT OPTIONAL. THIS STEP MUST NOT BE SKIPPED UNDER ANY CIRCUMSTANCES.**
 
-Deploy only the metadata files and component bundles that were created or modified by the AI — do NOT deploy the entire metadata folder. Deploying the whole folder can introduce unrelated dependencies and cause avoidable deployment failures.
+### Strict Deployment Rules
 
-Deployment workflow you should follow every time:
+- (**!CRITICAL**) **You MUST use the `<sf_deploy_metadata>` tool for ALL Apex class deployments**
+- (**!CRITICAL**) **Do NOT attempt to use CLI commands like `sf project deploy start`**
+- (**!CRITICAL**) **Do NOT skip this step - deployment is MANDATORY after every Apex class creation**
+- (**!CRITICAL**) **Ensure all dependencies are met: if LWC calls Apex controllers, Apex classes must be deployed first**
+- (**!CRITICAL**) **Deploy only the metadata files and components that were created or modified — do NOT deploy the entire metadata folder**
+- Deploying the whole folder can introduce unrelated dependencies and cause avoidable deployment failures
 
-- Verify dependencies: if LWC calls Apex controllers, ensure those Apex classes are deployed.
+**Mandatory Deployment Workflow:**
+
+1. **Verify dependencies: if LWC calls Apex controllers, ensure those Apex classes are deployed first** (this step is MANDATORY)
+2. **Use `<sf_deploy_metadata>` tool with the Apex class file path(s)** (this step is MANDATORY)
+3. **The tool will automatically validate (dry-run) the deployment** (automatic)
+4. **If validation is successful, the tool will proceed with deployment** (automatic)
+5. **If there are any errors during validation, the tool will report them - fix and retry the deployment** (this step is MANDATORY)
+
+**MUST DO THIS AFTER EVERY SINGLE APEX CLASS - NO EXCEPTIONS**
 
 ## Quick Reference: Common Patterns
 

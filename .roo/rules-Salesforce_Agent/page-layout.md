@@ -151,38 +151,34 @@ Before deploying the updated page layout:
 
 ### **8. Dry Run and Deployment** (!IMPORTANT)
 
-#### **Dry Run**
+Use the `<sf_deploy_metadata>` tool to validate and deploy the updated page layout:
 
-Before deploying, execute a dry run on the page layout:
+**How to Deploy:**
 
-```bash
-sf project deploy start --dry-run --source-dir force-app/main/default/layouts/{ObjectApiName}-{LayoutName}.layout-meta.xml
-```
+- Provide the page layout metadata file path to the `<sf_deploy_metadata>` tool
+- The tool will automatically handle both dry-run validation and actual deployment
+- For the deployment, use:
+    - `{ObjectApiName}`: The object's API name (e.g., `Invoice__c`)
+    - `{LayoutName}`: The page layout name (e.g., `Invoice__c-Invoice Layout`)
 
-Replace:
+**Handle Deployment Errors:**
 
-- `{ObjectApiName}`: The object's API name (e.g., `Invoice__c`)
-- `{LayoutName}`: The page layout name (e.g., `Invoice__c-Invoice Layout`)
-
-#### **Handle Dry Run Errors**
-
-- If errors occur, display them to the user
-- Most common error: **"Too many columns for section style"** - This means you modified the layout structure
+- If errors occur, the tool will display them to the user
+- Most common error: **"Too many columns for section style"** - This means the layout structure was modified
     - **FIX**: Only add `<layoutItems>` blocks, do NOT modify `<layoutColumns>` or `<layoutSection>` structure
 - Other common issues:
     - Field API names spelled incorrectly
     - Fields that don't exist on the object
-- Correct the errors and retry the dry run
+- Correct the errors and retry the deployment using the tool
 
-#### **Deployment**
+**Deployment Process:**
 
-After successful dry run, deploy the updated page layout(s):
+The `<sf_deploy_metadata>` tool will:
 
-```bash
-sf project deploy start --source-dir force-app/main/default/layouts/{ObjectApiName}-{LayoutName}.layout-meta.xml
-```
-
-Deploy all updated layouts at once if multiple exist.
+1. Validate the page layout XML
+2. Run a dry-run deployment to check for errors
+3. If successful, deploy the updated page layout(s) to the org
+4. Deploy all updated layouts at once if multiple exist
 
 ### **10. User Communication**
 
@@ -223,13 +219,13 @@ After completing all page layout updates, provide this final comprehensive summa
 ✓ **Phase 1 - Object Creation** (for each object):
 
 - Custom object XML created
-- Object dry run successful
+- Object validated using `<sf_deploy_metadata>` tool
 - Object deployed to org
 
 ✓ **Phase 2 - Tab Creation** (for each object):
 
 - Custom tab XML created
-- Tab dry run successful
+- Tab validated using `<sf_deploy_metadata>` tool
 - Tab deployed to org
 - Tab permission added to Admin profile
 - Admin profile deployed
@@ -237,7 +233,7 @@ After completing all page layout updates, provide this final comprehensive summa
 ✓ **Phase 3 - Field Creation** (for each field on each object):
 
 - Field XML created
-- Field dry run successful
+- Field validated using `<sf_deploy_metadata>` tool
 - Field deployed to org
 - Field permission added to Admin profile
 - Admin profile deployed
@@ -246,7 +242,7 @@ After completing all page layout updates, provide this final comprehensive summa
 
 - Page layout retrieved
 - Fields added to page layout
-- Page layout dry run successful
+- Page layout validated using `<sf_deploy_metadata>` tool
 - Page layout deployed to org
 
 ### **Final Status:**
@@ -271,28 +267,40 @@ After completing all page layout updates, provide this final comprehensive summa
 ### **12. Compliance**
 
 - Page layout XML must follow Salesforce Metadata API standards
-- The updated layout must be deployable via:
-    - Salesforce CLI (`sf project deploy start`)
-    - VS Code Salesforce Extensions
-    - Salesforce Change Sets
+- The updated layout must be deployable via the `<sf_deploy_metadata>` tool
 - Field references must match exactly with created field API names
 - No special characters or invalid XML syntax allowed
 
+## **⚠️ MANDATORY DEPLOYMENT (!!**CRITICAL - MUST FOLLOW EVERY TIME**)**
+
+**AFTER UPDATING PAGE LAYOUTS WITH FIELDS, YOU MUST IMMEDIATELY DEPLOY USING `<sf_deploy_metadata>` TOOL**
+
+**THIS IS NOT OPTIONAL. THIS STEP MUST NOT BE SKIPPED UNDER ANY CIRCUMSTANCES.**
+
+### Strict Deployment Rules
+
+- (**!CRITICAL**) **You MUST use the `<sf_deploy_metadata>` tool for ALL page layout deployments**
+- (**!CRITICAL**) **Do NOT skip this step - deployment is MANDATORY after every page layout update**
+- (**!CRITICAL**) **Deploy only the page layout files that were updated - do NOT deploy the entire layouts folder**
+- (**!CRITICAL**) **The tool will automatically handle both dry-run validation and actual deployment**
+- If there are any errors during validation, the tool will report them - fix and retry the deployment
+- After successful deployment, updated page layouts will reflect the new field additions
+
 ## **Complete Workflow Integration**
 
-This instruction should be executed as **Step 9 (Final Step)** in the custom field creation process:
+This instruction should be executed as **Step 9 (FINAL MANDATORY STEP)** in the custom field creation process:
 
 1. ✓ Check target object exists
 2. ✓ Create field XML file
 3. ✓ Assign field permissions
 4. ✓ Validate field configuration
-5. ✓ Perform dry run on field
-6. ✓ Deploy field to org
-7. ✓ Confirm field creation
-8. → **Retrieve page layout**
-9. → **Add fields to page layout**
-10. → **Dry run page layout**
-11. → **Deploy page layout**
-12. → **Confirm page layout update**
+5. ✓ Deploy field using `<sf_deploy_metadata>` tool
+6. ✓ Confirm field creation
+7. ✓ **Retrieve page layout**
+8. ✓ **Add fields to page layout**
+9. ✓ **Deploy page layout using `<sf_deploy_metadata>` tool (THIS STEP IS MANDATORY - NO EXCEPTIONS)**
+10. ✓ **Confirm page layout update**
 
-This ensures a complete and seamless field creation experience where fields are immediately available in the user interface.
+**This ensures a complete and seamless field creation experience where fields are immediately available in the user interface.**
+
+**MUST DO THIS AFTER EVERY PAGE LAYOUT UPDATE - NO EXCEPTIONS**

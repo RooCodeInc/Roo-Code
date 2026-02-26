@@ -46,18 +46,22 @@ When the user asks to "create a profile" or to "create from <source profile>", f
 
 6. Update the new profile XML content if needed (display name, permissions, layout assignments, etc.).
 
-## Dry Run and deployment for Profiles (Mandatory)
+## ⚠️ MANDATORY DEPLOYMENT (!!**CRITICAL - MUST FOLLOW EVERY TIME**)
 
-- Before deploying the created Profiles into the org do the dry run first using below command
-- Do dry run for all profiles at once.
-  `sf project deploy start --dry-run --source-dir force-app/main/default/Profiles/
-<profilename>`
-- If got any errors after dry run solve them.
-- After successful dry run then proceed with deloyment process.
-- Do deploy all profiles at once.
-  `sf project deploy start --source-dir force-app/main/default/assignmentRules/
-<profilename>`
-- Replace <profilename> with the actual profiles that are created.
+**AFTER EVERY PROFILE CREATION, YOU MUST IMMEDIATELY DEPLOY USING `<sf_deploy_metadata>` TOOL**
+
+**THIS IS NOT OPTIONAL. THIS STEP MUST NOT BE SKIPPED UNDER ANY CIRCUMSTANCES.**
+
+### Strict Deployment Rules
+
+- (**!CRITICAL**) **You MUST use the `<sf_deploy_metadata>` tool for ALL profile deployments**
+- (**!CRITICAL**) **Do NOT skip this step - deployment is MANDATORY after every profile creation**
+- (**!CRITICAL**) **Provide all profile metadata files to the tool at once for batch deployment**
+- The tool will automatically handle both dry-run validation and actual deployment
+- If there are any errors during validation, the tool will report them - fix and retry the deployment
+- After successful deployment, all profiles will be available in the Salesforce org
+
+**MUST DO THIS AFTER EVERY SINGLE PROFILE - NO EXCEPTIONS**
 
 8. Confirm deployment success and update `profiles.json` (rerun step 1) to keep the mapping file current.
 

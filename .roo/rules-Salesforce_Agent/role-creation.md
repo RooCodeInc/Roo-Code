@@ -113,19 +113,18 @@ This mode assists the AI model in creating and managing Salesforce roles by gene
           - Employee_2: `<parentRole>Manager</parentRole>`
           - Employee_3: `<parentRole>Manager</parentRole>`
         - Create each role with its folder and XML file, then deploy each one individually.
-    - **Deployment Commands (execute for each child role):**
-
-        `sf project deploy start --source-dir force-app/main/default/roles/<ChildRole1>`
-        `sf project deploy start --source-dir force-app/main/default/roles/<ChildRole2>`
-        `sf project deploy start --source-dir force-app/main/default/roles/<ChildRole3>`
-        ... (continue for all sibling roles)
-    - **MANDATORY: After creating each child role's folder and XML file, immediately execute its deployment command. Do not skip this step for any role.**
+    - **Deployment:** Use the `<sf_deploy_metadata>` tool to deploy each child role
+        - Provide each role metadata file path to the tool
+        - The tool will handle both dry-run validation and actual deployment
+        - Example: Deploy ChildRole1, ChildRole2, ChildRole3, etc.
+    - **MANDATORY: After creating each child role's folder and XML file, immediately use the `<sf_deploy_metadata>` tool to deploy it. Do not skip this step for any role.**
 
     ### Scenario 2: Creating a Child Role (with Parent)
     - If creating a single role that is a **child of an existing role**, specify the parent role using the `<parentRole>` tag: `<parentRole>Parent_Role_Developer_Name</parentRole>`
-    - **Deployment Command:**
-        `sf project deploy start --source-dir force-app/main/default/roles/<ChildRoleDeveloperName>`
-    - **MANDATORY: After creating the role folder and XML file, immediately execute the deployment command. Do not skip this step.**
+    - **Deployment:** Use the `<sf_deploy_metadata>` tool to deploy the child role
+        - Provide the role metadata file path to the tool
+        - The tool will handle both dry-run validation and actual deployment
+    - **MANDATORY: After creating the role folder and XML file, immediately use the `<sf_deploy_metadata>` tool to deploy it. Do not skip this step.**
 
     ### Scenario 3: Creating a Parent Role (with Child)
     - If creating a role that will be the **parent of an existing role**:
@@ -139,10 +138,11 @@ This mode assists the AI model in creating and managing Salesforce roles by gene
         ```
         - Update the child role XML to include the `<parentRole>` tag pointing to the new parent: `<parentRole>Parent_Role_Developer_Name</parentRole>`
         - Deploy both the new parent role and the updated child role.
-    - **Deployment Commands:**
-        Deploying parent role: `sf project deploy start --source-dir force-app/main/default/roles/<ParentRoleDeveloperName>`
-        Deploying child role: `sf project deploy start --source-dir force-app/main/default/roles/<ChildRoleDeveloperName>`
-    - **MANDATORY: Execute both deployment commands in order. First deploy the parent role, then deploy the child role. Do not skip this step.**
+    - **Deployment:** Use the `<sf_deploy_metadata>` tool to deploy both roles
+        - First deploy the parent role metadata file
+        - Then deploy the updated child role metadata file
+        - The tool will handle both dry-run validation and actual deployment
+    - **MANDATORY: Deploy in order - parent role first, then child role. Use the `<sf_deploy_metadata>` tool for both deployments. Do not skip this step.**
 
     ### Scenario 4: Creating a Middle Role (Both Parent and Child)
     - If creating a role that is **both a child of one role AND a parent of another role**:
@@ -158,29 +158,32 @@ This mode assists the AI model in creating and managing Salesforce roles by gene
         - Deploy all affected roles in the correct order:
         1. Deploy the new middle role first
         2. Deploy the updated child role second
-    - **Deployment Commands:**
-        Deploying Middle Role: `sf project deploy start --source-dir force-app/main/default/roles/<MiddleRoleDeveloperName>`
-        Deploying Child Role: `sf project deploy start --source-dir force-app/main/default/roles/<ChildRoleDeveloperName>`
-    - **MANDATORY: Execute both deployment commands in order. First deploy the middle role, then deploy the child role. Do not skip this step.**
+    - **Deployment:** Use the `<sf_deploy_metadata>` tool to deploy both roles
+        - First deploy the middle role metadata file
+        - Then deploy the updated child role metadata file
+        - The tool will handle both dry-run validation and actual deployment
+    - **MANDATORY: Deploy in order - middle role first, then child role. Use the `<sf_deploy_metadata>` tool for both deployments. Do not skip this step.**
 
     ### Scenario 5: Standalone Role
     - If no parent/child relationship is specified, create the role without the `<parentRole>` tag.
-    - **Deployment Command:**
-       Deploying the developer role: `sf project deploy start --source-dir force-app/main/default/roles/<RoleDeveloperName>`
-    - **MANDATORY: After creating the role folder and XML file, immediately execute the deployment command. Do not skip this step.**
+    - **Deployment:** Use the `<sf_deploy_metadata>` tool to deploy the role
+        - Provide the role metadata file path to the tool
+        - The tool will handle both dry-run validation and actual deployment
+    - **MANDATORY: After creating the role folder and XML file, immediately use the `<sf_deploy_metadata>` tool to deploy it. Do not skip this step.**
 
 ## Automatic Deployment (CRITICAL - MUST FOLLOW)
 
-- **After creating or updating ANY role XML file, you MUST immediately execute the corresponding deployment command.**
+- **After creating or updating ANY role XML file, you MUST immediately use the `<sf_deploy_metadata>` tool to deploy it.**
 - **This is not optional. Deployment must happen automatically after every role creation or update.**
-- **Never skip the deployment step. Always run the sf deploy command after file creation.**
-- **For scenarios involving multiple roles, deploy them in the specified order.**
-- **EXECUTE THE DEPLOYMENT COMMAND EVERY SINGLE TIME WITHOUT EXCEPTION.**
+- **Never skip the deployment step. Always use the `<sf_deploy_metadata>` tool after file creation.**
+- **For scenarios involving multiple roles, deploy them in the specified order using the tool.**
+- **USE THE `<sf_deploy_metadata>` TOOL EVERY SINGLE TIME WITHOUT EXCEPTION.**
 
-### Dry Run Before Deployment (Pre-check)
+### Validation Before Deployment
 
-- Before executing any deployment command, first perform a dry run using the same deployment command with the `--dry-run` flag.
-- If there are multiple roles to deploy, perform a single consolidated dry run for all of them at once by adding all intended targets to the same command along with `--dry-run`.
+- The `<sf_deploy_metadata>` tool automatically performs dry-run validation before deploying
+- If there are any errors, the tool will report them - fix and retry
+- If there are multiple roles to deploy, provide all role metadata files to the tool at once
 
 ## Scenario Detection(IMPORTANT!!)
 
@@ -206,10 +209,7 @@ This mode assists the AI model in creating and managing Salesforce roles by gene
 ## Compliance
 
 - The XML must follow Salesforce Metadata API standards.
-- The XML must be deployable via:
-    - Salesforce Change Sets
-    - VS Code Salesforce Extensions
-    - Salesforce CLI (sfdx)
+- The XML must be deployable via the `<sf_deploy_metadata>` tool.
 
 ## Session Behavior
 
@@ -218,5 +218,5 @@ This mode assists the AI model in creating and managing Salesforce roles by gene
     - Detect and inform the user (in natural language) what is being created.
     - Check for existing roles if parent/child relationships are involved.
     - Create folder first, then create the role XML file inside it with the proper XML structure.
-    - **Deploy automatically in the correct order - THIS STEP IS MANDATORY AND MUST NOT BE SKIPPED.**
-    - **EVERY ROLE CREATION MUST BE FOLLOWED BY ITS DEPLOYMENT COMMAND EXECUTION.**
+    - **Deploy automatically using `<sf_deploy_metadata>` tool in the correct order - THIS STEP IS MANDATORY AND MUST NOT BE SKIPPED.**
+    - **EVERY ROLE CREATION MUST BE FOLLOWED BY ITS DEPLOYMENT USING THE `<sf_deploy_metadata>` TOOL.**

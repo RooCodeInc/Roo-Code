@@ -418,38 +418,27 @@ An Aura component requires a `.cmp` file and a `.cmp-meta.xml` file:
 
 ## Step 6: Dry Run & Deployment {#step-6-dry-run-deployment}
 
-### Dry Run Commands
+### Dry Run and Deployment
 
-Always perform a dry run before deployment:
+Use the `<sf_deploy_metadata>` tool to validate and deploy Aura components:
 
-```bash
-# Dry run for single Aura component
-sf project deploy start --dry-run --source-dir force-app/main/default/aura/contactForm
+**How to Deploy:**
 
-# Dry run for multiple Aura components
-sf project deploy start --dry-run \
-  --source-dir force-app/main/default/aura/contactForm \
-  --source-dir force-app/main/default/aura/opportunityList
-```
+- Provide the Aura component bundle path(s) to the `<sf_deploy_metadata>` tool
+- The tool will automatically handle both dry-run validation and actual deployment
+- You can deploy:
+    - Single Aura component
+    - Multiple Aura components at once
+    - Component with related Apex controller
 
-### Deployment Commands
+**Important Notes:**
 
-After successful dry run, deploy to the org:
-
-```bash
-# Deploy single Aura component
-sf project deploy start --source-dir force-app/main/default/aura/contactForm
-
-# Deploy multiple Aura components
-sf project deploy start \
-  --source-dir force-app/main/default/aura/contactForm \
-  --source-dir force-app/main/default/aura/opportunityList
-
-# Deploy component with related Apex controller
-sf project deploy start \
-  --source-dir force-app/main/default/aura/contactForm \
+- Always validate before deployment using the `<sf_deploy_metadata>` tool
+- Ensure all Apex dependencies are deployed before the Aura component if needed
+- Deploy only the metadata files and component bundles that were created or modified
   --source-dir force-app/main/default/classes/ContactFormController.cls
-```
+
+````
 
 ### Deployment Notes
 
@@ -517,7 +506,7 @@ public class ContactFormController {
         }
     }
 }
-```
+````
 
 ### Key Annotations
 

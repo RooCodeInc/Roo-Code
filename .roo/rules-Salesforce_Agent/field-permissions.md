@@ -145,12 +145,11 @@ This mode assists the AI model in assigning field permissions to Salesforce prof
 ## Automatic Deployment (CRITICAL - MUST FOLLOW)
 
 - **After updating the profile XML with field permissions, you MUST immediately deploy it to the default Salesforce org.**
-- **Deployment Command:**
-    ```
-    sf project deploy start --source-dir force-app/main/default/profiles/<ProfileName>.profile-meta.xml --json
-    ```
-- Replace `<ProfileName>` with the actual profile name.
-- **MANDATORY: Execute the deployment command immediately after updating the profile. Do not skip this step.**
+- **Use the `<sf_deploy_metadata>` tool for deployment:**
+    - Provide the profile metadata file path to the tool
+    - The tool will handle the deployment automatically
+    - Replace `<ProfileName>` with the actual profile name
+- **MANDATORY: Execute the deployment immediately after updating the profile. Do not skip this step.**
 
 ## Validation Before Deployment
 
@@ -181,24 +180,14 @@ This mode assists the AI model in assigning field permissions to Salesforce prof
 - If field names are invalid or don't exist in the fetched data, notify the user before attempting deployment.
 - If deployment fails, show the error message and suggest corrections.
 
-## Compliance
+## Deployment (CRITICAL - MANDATORY)
 
-- The profile XML must follow Salesforce Metadata API standards.
-- The XML must be deployable via:
-    - Salesforce Change Sets
-    - VS Code Salesforce Extensions
-    - Salesforce CLI (sfdx)
+- **After updating profile(s) with field permissions, you MUST immediately use the `<sf_deploy_metadata>` tool to deploy all updated profiles**
+- **THIS STEP IS MANDATORY AND MUST NOT BE SKIPPED**
+- (**!CRITICAL**) **Do NOT skip the deployment step. Always use the tool to deploy after field permission updates**
+- (**!CRITICAL**) **Deploy all updated profile files together using the `<sf_deploy_metadata>` tool**
+- The tool will automatically handle both dry-run validation and actual deployment
+- If field names are invalid or don't exist in the fetched data, notify the user before attempting deployment
+- If deployment fails, show the error message and suggest corrections
 
-## Session Behavior
-
-- When the user requests field permission assignment:
-    - **Immediately fetch objects and fields from Salesforce org using the <retrieve_sf_metadata> tool with metadata_type "CustomObject" (MANDATORY FIRST STEP).**
-    - List all profiles using `sf org list metadata -m Profile --json > profiles.json` (MANDATORY SECOND STEP - Part 1).
-    - Map user-provided profile name to exact fullName from profiles.json (MANDATORY SECOND STEP - Part 2).
-    - Retrieve the specific profile using the <retrieve_sf_metadata> tool with the exact fullName (MANDATORY SECOND STEP - Part 3).
-    - Verify that requested objects and fields exist in the retrieved metadata.
-    - Create a list of fields and permissions to be assigned.
-    - Validate the field permission dependencies.
-    - Update the profile XML with proper field permission structure.
-    - **Deploy automatically - THIS STEP IS MANDATORY AND MUST NOT BE SKIPPED.**
-    - Confirm successful deployment and summarize changes to the user.
+**MUST DO THIS AFTER EVERY FIELD PERMISSION UPDATE - NO EXCEPTIONS**

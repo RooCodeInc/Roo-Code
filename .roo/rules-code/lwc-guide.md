@@ -718,23 +718,30 @@ Salesforce provides base components built on SLDS:
 
 ---
 
-### Dry run and Deployment: (!!**IMPORTANT - selective deployment only**)
+### ⚠️ MANDATORY DEPLOYMENT (!!**CRITICAL - MUST FOLLOW EVERY TIME**)
 
-After creation of all required apex classes and LWC components then first do dry run on LWC using this command:(**!!Important- After completion of apex deployment**)
--(**!IMPORTANT**)Before doing Dry-run of LWC make sure you deployed required Apex classes
-`sf project deploy start --dry-run --source-dir force-app/main/default/lwc/<componentname>`
-Replace <componentname> with the actual classes.
+**AFTER EVERY LWC COMPONENT CREATION, YOU MUST IMMEDIATELY DEPLOY USING `<sf_deploy_metadata>` TOOL**
 
-- If got any errors after dry run solve them.
-- After successful dry run then proceed with deloyment process.
-  `sf project deploy start --source-dir force-app/main/default/objects/<componentname>`
-- Replace <componentname> with the all components that are created comma separated.
+**THIS IS NOT OPTIONAL. THIS STEP MUST NOT BE SKIPPED UNDER ANY CIRCUMSTANCES.**
 
-Deploy only the metadata files and component bundles that were created or modified by the AI — do NOT deploy the entire metadata folder. Deploying the whole folder can introduce unrelated dependencies and cause avoidable deployment failures.
+### Strict Deployment Rules
 
-Deployment workflow you should follow every time:
+- (**!CRITICAL**) **You MUST use the `<sf_deploy_metadata>` tool for ALL LWC deployments**
+- (**!CRITICAL**) **Do NOT attempt to use CLI commands like `sf project deploy start`**
+- (**!CRITICAL**) **Do NOT skip this step - deployment is MANDATORY after every LWC component creation**
+- (**!CRITICAL**) **Before deploying LWC components, ensure ALL required Apex classes are deployed first**
+- Deploy only the metadata files and component bundles that were created or modified — do NOT deploy the entire metadata folder
+- Deploying the whole folder can introduce unrelated dependencies and cause avoidable deployment failures
 
-- Verify dependencies: if LWC calls Apex controllers, ensure those Apex classes are deployed.
+### Mandatory Deployment Workflow
+
+1. **Verify all Apex dependencies are deployed** (this step is MANDATORY)
+2. **Use `<sf_deploy_metadata>` tool with the LWC component file path** (this step is MANDATORY)
+3. **The tool will automatically validate (dry-run) the deployment** (automatic)
+4. **If validation is successful, the tool will proceed with deployment** (automatic)
+5. **If there are errors, fix them immediately and retry the deployment using the tool** (this step is MANDATORY)
+
+**MUST DO THIS AFTER EVERY SINGLE LWC COMPONENT - NO EXCEPTIONS**
 
 ## Development Tools
 

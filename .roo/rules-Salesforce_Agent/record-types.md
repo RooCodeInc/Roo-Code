@@ -337,50 +337,28 @@ sf project deploy start --source-dir force-app/main/default/objects/<ObjectName>
 
 - Always dry-run before final deploy. Two common deployment approaches exist in Salesforce CLI (source format and manifest format). The "Not in package.xml" error appears when using the metadata/manifest deployment flow without including the RecordType entry in the `package.xml`. To avoid that error, you can either deploy in source format (no package.xml required) or ensure your manifest includes the RecordType member.
 
-Source-format (recommended when you have files in `force-app/main/default`):
+### Deployment Process
 
-- Dry-run a single record type file (source format):
+Use the `<sf_deploy_metadata>` tool to validate and deploy record types:
 
-```powershell
-# dry-run a single record type file (source format)
-sf project deploy start --dry-run --source-dir "force-app/main/default/objects/<Object>/recordTypes/<DevName>.recordType-meta.xml"
-```
+**How to Deploy:**
 
-- If you need to deploy multiple files (BusinessProcess → RecordType → Profiles) in order, include them in the `--source-dir` separated by `;` (PowerShell):
+- Provide the record type metadata file(s) to the `<sf_deploy_metadata>` tool
+- The tool will automatically handle both dry-run validation and actual deployment
+- You can deploy:
+    - Single record type file
+    - Multiple files (BusinessProcess → RecordType → Profiles) at once
 
-````powershell
-# dry-run business process + record type
-sf project deploy start --dry-run --source-dir "force-app/main/default/objects/<Object>/businessProcesses/<BP>.businessProcess-meta.xml;force-app/main/default/objects/<Object>/recordTypes/<DevName>.recordType-meta.xml"
+**Important Notes:**
 
-Manifest/metadata XML approach (when deploying a zip/manifest):
-
-- If you prefer the manifest approach, the `package.xml` must list the `RecordType` member. The error you saw indicates the RecordType being deployed was not present in the manifest. Add the following to your `package.xml` (inside `<types>`):
-
-```xml
-<types>
-    <members>Contact.contype001</members>
-    <name>RecordType</name>
-</types>
-````
-
-- After updating `package.xml`, dry-run using the manifest:
-
-````powershell
-# dry-run using manifest
-sf project deploy start --dry-run --manifest "path\to\package.xml"
-
-Notes on the error you reported: "RecordType Contact.Contact.contype001 Not in package.xml"
-
-- Root cause: the deployment used a manifest/metadata API that requires `package.xml`, and that manifest did not include the new `RecordType` fullName entry (Object.DeveloperName).
-- Fix options:
-    1. Use source-format deploy with `--source-dir` that points directly at the record type file (no package.xml needed).
-    2. Or add the `RecordType` element to your `package.xml` as shown above and re-run the manifest deploy.
-
-- Make sure the `fullName`/member format matches exactly: use `<Object>.<DeveloperName>` (for example: `Contact.contype001` or `Contact.contype_001` depending on your DevName). The package member must match the `fullName` inside the recordType metadata file.
+- Always validate before deployment using the `<sf_deploy_metadata>` tool
+- Ensure the record type metadata includes correct fullName format: `<Object>.<DeveloperName>` (e.g., `Contact.contype001`)
+- If deploying profiles with record types, ensure the order is correct: BusinessProcess first, then RecordType, then Profiles
+- The tool will automatically handle package.xml generation if needed
 
 - On dry-run success, perform the actual deploy (same commands without `--dry-run`):
 
-```powershell
+````powershell
 # source-format deploy
 sf project deploy start --source-dir "force-app/main/default/objects/<Object>/recordTypes/<DevName>.recordType-meta.xml"
 
@@ -604,4 +582,20 @@ After deployment, present a short summary:
 
 ---
 
-This file defines the exact UI-driven flow to create record types using MultiSelect controls in the webview and ensures deterministic input collection (no free-text selection parsing). Implement the webview handlers to fetch object metadata, present MultiSelect options in the order above, and pass canonical API values back to the backend for XML generation and deployments.
+## ⚠️ MANDATORY DEPLOYMENT (!!**CRITICAL - MUST FOLLOW EVERY TIME**)
+
+**AFTER EVERY RECORD TYPE CREATION, YOU MUST IMMEDIATELY DEPLOY USING `<sf_deploy_metadata>` TOOL**
+
+**THIS IS NOT OPTIONAL. THIS STEP MUST NOT BE SKIPPED UNDER ANY CIRCUMSTANCES.**
+
+### Strict Deployment Rules
+
+- (**!CRITICAL**) **You MUST use the `<sf_deploy_metadata>` tool for ALL record type deployments**
+- (**!CRITICAL**) **Do NOT skip this step - deployment is MANDATORY after every record type creation**
+- (**!CRITICAL**) **Deploy in the correct order: BusinessProcess (#1) → RecordType (#2) → Profiles (#3) if needed**
+- (**!CRITICAL**) **The tool will automatically handle both dry-run validation and actual deployment**
+- (**!CRITICAL**) **Do NOT deploy the entire metadata folder - deploy only created/modified files**
+- If there are any errors during validation, the tool will report them - fix and retry the deployment
+- After successful deployment, all record types and business processes will be available in the Salesforce org
+
+**MUST DO THIS AFTER EVERY SINGLE RECORD TYPE - NO EXCEPTIONS**

@@ -209,30 +209,29 @@ public String searchTerm;
 
 ---
 
-## Deployment
+## ⚠️ MANDATORY DEPLOYMENT (!!**CRITICAL - MUST FOLLOW EVERY TIME**)
 
-Deploy your Apex invocable action class using the Salesforce CLI:
+**AFTER EVERY APEX INVOCABLE ACTION CLASS CREATION, YOU MUST IMMEDIATELY DEPLOY USING `<sf_deploy_metadata>` TOOL**
 
-```bash
-# Deploy a single Apex class
-sf project deploy start --source-dir force-app/main/default/classes/AgentforceAccountAction.cls --json
-```
+**THIS IS NOT OPTIONAL. THIS STEP MUST NOT BE SKIPPED UNDER ANY CIRCUMSTANCES.**
 
-### Deploying Multiple Apex Classes
+### Strict Deployment Rules
 
-When deploying multiple Apex classes, use this format:
+- (**!CRITICAL**) **You MUST use the `<sf_deploy_metadata>` tool for ALL Apex class deployments**
+- (**!CRITICAL**) **Do NOT attempt to use CLI commands like `sf project deploy start`**
+- (**!CRITICAL**) **Do NOT skip this step - deployment is MANDATORY after every Apex class creation**
+- (**!CRITICAL**) **For multiple Apex classes, deploy all metadata files together in a single operation**
+- Ensure all `.cls` and `.cls-meta.xml` files are created before deployment
 
-```bash
-# Deploy multiple specific Apex classes (replace with actual class names)
-sf project deploy start --source-dir force-app/main/default/classes/AgentforceAccountAction.cls force-app/main/default/classes/AgentforceContactAction.cls force-app/main/default/classes/AgentforceOpportunityAction.cls --json
-```
+### Mandatory Deployment Workflow
 
-**Or deploy all classes at once:**
+1. **Ensure all `.cls` and `.cls-meta.xml` files are created** (this step is MANDATORY)
+2. **Use `<sf_deploy_metadata>` tool with the class file path(s)** (this step is MANDATORY)
+3. **The tool will automatically validate (dry-run) the deployment** (automatic)
+4. **If validation is successful, the tool will proceed with deployment** (automatic)
+5. **If there are errors, fix them immediately and retry the deployment using the tool** (this step is MANDATORY)
 
-```bash
-# Deploy all Apex classes in the classes directory
-sf project deploy start --source-dir force-app/main/default/classes --json
-```
+**MUST DO THIS AFTER EVERY SINGLE APEX INVOCABLE ACTION CLASS - NO EXCEPTIONS**
 
 ---
 
