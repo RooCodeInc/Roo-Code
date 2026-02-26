@@ -1986,6 +1986,81 @@ describe("Queued message processing after condense", () => {
 	})
 })
 
+describe("condenseContext metadata does not include tools (#11743)", () => {
+	function createProvider(): any {
+		const storageUri = { fsPath: path.join(os.tmpdir(), "test-storage") }
+		const ctx = {
+			globalState: {
+				get: vi.fn().mockImplementation((_key: keyof GlobalState) => undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
+			},
+			globalStorageUri: storageUri,
+			workspaceState: {
+				get: vi.fn().mockImplementation((_key: any) => undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
+			},
+			secrets: {
+				get: vi.fn().mockResolvedValue(undefined),
+				store: vi.fn().mockResolvedValue(undefined),
+				delete: vi.fn().mockResolvedValue(undefined),
+			},
+			extensionUri: { fsPath: "/mock/extension/path" },
+			extension: { packageJSON: { version: "1.0.0" } },
+		} as unknown as vscode.ExtensionContext
+
+		const output = {
+			appendLine: vi.fn(),
+			append: vi.fn(),
+			clear: vi.fn(),
+			show: vi.fn(),
+			hide: vi.fn(),
+			dispose: vi.fn(),
+		}
+
+		const provider = new ClineProvider(ctx, output as any, "sidebar", new ContextProxy(ctx)) as any
+		provider.postMessageToWebview = vi.fn().mockResolvedValue(undefined)
+		provider.postStateToWebview = vi.fn().mockResolvedValue(undefined)
+		provider.postStateToWebviewWithoutTaskHistory = vi.fn().mockResolvedValue(undefined)
+		provider.getState = vi.fn().mockResolvedValue({})
+		return provider
+	}
+
+	const apiConfig: ProviderSettings = {
+		apiProvider: "anthropic",
+		apiModelId: "claude-3-5-sonnet-20241022",
+		apiKey: "test-api-key",
+	} as any
+
+	it("does not pass tools, tool_choice, or parallelToolCalls to summarizeConversation", async () => {
+		const { summarizeConversation } = await import("../../condense")
+		const mockSummarize = vi.mocked(summarizeConversation)
+		mockSummarize.mockClear()
+
+		const provider = createProvider()
+		const task = new Task({
+			provider,
+			apiConfiguration: apiConfig,
+			task: "test task",
+			startTask: false,
+		})
+
+		vi.spyOn(task as any, "getSystemPrompt").mockResolvedValue("system")
+
+		await task.condenseContext()
+
+		expect(mockSummarize).toHaveBeenCalledTimes(1)
+		const callArgs = mockSummarize.mock.calls[0][0]
+		const metadata = callArgs.metadata
+		expect(metadata).toBeDefined()
+		expect(metadata).not.toHaveProperty("tools")
+		expect(metadata).not.toHaveProperty("tool_choice")
+		expect(metadata).not.toHaveProperty("parallelToolCalls")
+		expect(metadata).toHaveProperty("taskId")
+	})
+})
+
 describe("pushToolResultToUserContent", () => {
 	let mockProvider: any
 	let mockApiConfig: ProviderSettings

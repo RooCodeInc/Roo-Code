@@ -1656,36 +1656,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		const { contextTokens: prevContextTokens } = this.getTokenUsage()
 
-		// Build tools for condensing metadata (same tools used for normal API calls)
-		const provider = this.providerRef.deref()
-		let allTools: import("openai").default.Chat.ChatCompletionTool[] = []
-		if (provider) {
-			const modelInfo = this.api.getModel().info
-			const toolsResult = await buildNativeToolsArrayWithRestrictions({
-				provider,
-				cwd: this.cwd,
-				mode,
-				customModes: state?.customModes,
-				experiments: state?.experiments,
-				apiConfiguration,
-				disabledTools: state?.disabledTools,
-				modelInfo,
-				includeAllToolsWithRestrictions: false,
-			})
-			allTools = toolsResult.tools
-		}
-
-		// Build metadata with tools and taskId for the condensing API call
+		// Build metadata for the condensing API call.
+		// NOTE: We intentionally omit tools/tool_choice/parallelToolCalls here because
+		// the condensation flow converts all tool_use/tool_result blocks to plain text
+		// and the SUMMARY_PROMPT instructs the model not to call tools. Including tool
+		// definitions with tool_choice:"auto" but no tool blocks in messages causes
+		// 500 errors on some proxies (e.g. Roo Code Router). See #11743.
 		const metadata: ApiHandlerCreateMessageMetadata = {
 			mode,
 			taskId: this.taskId,
-			...(allTools.length > 0
-				? {
-						tools: allTools,
-						tool_choice: "auto",
-						parallelToolCalls: true,
-					}
-				: {}),
 		}
 		// Generate environment details to include in the condensed summary
 		const environmentDetails = await getEnvironmentDetails(this, true)
@@ -3845,35 +3824,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Send condenseTaskContextStarted to show in-progress indicator
 		await this.providerRef.deref()?.postMessageToWebview({ type: "condenseTaskContextStarted", text: this.taskId })
 
-		// Build tools for condensing metadata (same tools used for normal API calls)
-		const provider = this.providerRef.deref()
-		let allTools: import("openai").default.Chat.ChatCompletionTool[] = []
-		if (provider) {
-			const toolsResult = await buildNativeToolsArrayWithRestrictions({
-				provider,
-				cwd: this.cwd,
-				mode,
-				customModes: state?.customModes,
-				experiments: state?.experiments,
-				apiConfiguration,
-				disabledTools: state?.disabledTools,
-				modelInfo,
-				includeAllToolsWithRestrictions: false,
-			})
-			allTools = toolsResult.tools
-		}
-
-		// Build metadata with tools and taskId for the condensing API call
+		// Build metadata for the condensing API call.
+		// NOTE: We intentionally omit tools/tool_choice/parallelToolCalls here because
+		// the condensation flow converts all tool_use/tool_result blocks to plain text
+		// and the SUMMARY_PROMPT instructs the model not to call tools. Including tool
+		// definitions with tool_choice:"auto" but no tool blocks in messages causes
+		// 500 errors on some proxies (e.g. Roo Code Router). See #11743.
 		const metadata: ApiHandlerCreateMessageMetadata = {
 			mode,
 			taskId: this.taskId,
-			...(allTools.length > 0
-				? {
-						tools: allTools,
-						tool_choice: "auto",
-						parallelToolCalls: true,
-					}
-				: {}),
 		}
 
 		try {
@@ -4057,38 +4016,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					?.postMessageToWebview({ type: "condenseTaskContextStarted", text: this.taskId })
 			}
 
-			// Build tools for condensing metadata (same tools used for normal API calls)
-			// This ensures the condensing API call includes tool definitions for providers that need them
-			let contextMgmtTools: import("openai").default.Chat.ChatCompletionTool[] = []
-			{
-				const provider = this.providerRef.deref()
-				if (provider) {
-					const toolsResult = await buildNativeToolsArrayWithRestrictions({
-						provider,
-						cwd: this.cwd,
-						mode,
-						customModes: state?.customModes,
-						experiments: state?.experiments,
-						apiConfiguration,
-						disabledTools: state?.disabledTools,
-						modelInfo,
-						includeAllToolsWithRestrictions: false,
-					})
-					contextMgmtTools = toolsResult.tools
-				}
-			}
-
-			// Build metadata with tools and taskId for the condensing API call
+			// Build metadata for the condensing API call.
+			// NOTE: We intentionally omit tools/tool_choice/parallelToolCalls here because
+			// the condensation flow converts all tool_use/tool_result blocks to plain text
+			// and the SUMMARY_PROMPT instructs the model not to call tools. Including tool
+			// definitions with tool_choice:"auto" but no tool blocks in messages causes
+			// 500 errors on some proxies (e.g. Roo Code Router). See #11743.
 			const contextMgmtMetadata: ApiHandlerCreateMessageMetadata = {
 				mode,
 				taskId: this.taskId,
-				...(contextMgmtTools.length > 0
-					? {
-							tools: contextMgmtTools,
-							tool_choice: "auto",
-							parallelToolCalls: true,
-						}
-					: {}),
 			}
 
 			// Only generate environment details when context management will actually run.
