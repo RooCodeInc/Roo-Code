@@ -502,6 +502,37 @@ describe("ExtensionHost", () => {
 			expect(emitSpy).toHaveBeenCalledWith("webviewMessage", { type: "newTask", text: "test prompt" })
 		})
 
+		it("should include taskId when provided", async () => {
+			const host = createTestHost()
+			host.markWebviewReady()
+
+			const emitSpy = vi.spyOn(host, "emit")
+			const client = getPrivate(host, "client") as ExtensionClient
+
+			const taskPromise = host.runTask("test prompt", "task-123")
+
+			const taskCompletedEvent = {
+				success: true,
+				stateInfo: {
+					state: AgentLoopState.IDLE,
+					isWaitingForInput: false,
+					isRunning: false,
+					isStreaming: false,
+					requiredAction: "start_task" as const,
+					description: "Task completed",
+				},
+			}
+			setTimeout(() => client.getEmitter().emit("taskCompleted", taskCompletedEvent), 10)
+
+			await taskPromise
+
+			expect(emitSpy).toHaveBeenCalledWith("webviewMessage", {
+				type: "newTask",
+				text: "test prompt",
+				taskId: "task-123",
+			})
+		})
+
 		it("should resolve when taskCompleted is emitted on client", async () => {
 			const host = createTestHost()
 			host.markWebviewReady()
@@ -524,6 +555,33 @@ describe("ExtensionHost", () => {
 			setTimeout(() => client.getEmitter().emit("taskCompleted", taskCompletedEvent), 10)
 
 			await expect(taskPromise).resolves.toBeUndefined()
+		})
+
+		it("should send showTaskWithId for resumeTask and resolve on completion", async () => {
+			const host = createTestHost()
+			host.markWebviewReady()
+
+			const emitSpy = vi.spyOn(host, "emit")
+			const client = getPrivate(host, "client") as ExtensionClient
+
+			const taskPromise = host.resumeTask("task-abc")
+
+			const taskCompletedEvent = {
+				success: true,
+				stateInfo: {
+					state: AgentLoopState.IDLE,
+					isWaitingForInput: false,
+					isRunning: false,
+					isStreaming: false,
+					requiredAction: "start_task" as const,
+					description: "Task completed",
+				},
+			}
+			setTimeout(() => client.getEmitter().emit("taskCompleted", taskCompletedEvent), 10)
+
+			await taskPromise
+
+			expect(emitSpy).toHaveBeenCalledWith("webviewMessage", { type: "showTaskWithId", text: "task-abc" })
 		})
 	})
 

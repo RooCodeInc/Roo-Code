@@ -3,6 +3,7 @@ import path from "path"
 import { fileURLToPath } from "url"
 
 import { createElement } from "react"
+import type { HistoryItem } from "@roo-code/types"
 
 import { setLogger } from "@roo-code/vscode-shim"
 
@@ -22,6 +23,7 @@ import { JsonEventEmitter } from "@/agent/json-event-emitter.js"
 import { createClient } from "@/lib/sdk/index.js"
 import { loadToken, loadSettings } from "@/lib/storage/index.js"
 import { isRecord } from "@/lib/utils/guards.js"
+import { arePathsEqual } from "@/lib/utils/path.js"
 import { getEnvVarName, getApiKeyFromEnv } from "@/lib/utils/provider.js"
 import { runOnboarding } from "@/lib/utils/onboarding.js"
 import { getDefaultExtensionPath } from "@/lib/utils/extension.js"
@@ -91,6 +93,38 @@ async function warmRooModels(host: ExtensionHost): Promise<void> {
 	})
 }
 
+function extractTaskHistoryFromMessage(message: unknown): HistoryItem[] | undefined {
+	if (!isRecord(message)) {
+		return undefined
+	}
+
+	if (message.type === "state") {
+		const state = isRecord(message.state) ? message.state : undefined
+		if (Array.isArray(state?.taskHistory)) {
+			return state.taskHistory as HistoryItem[]
+		}
+	}
+
+	if (message.type === "taskHistoryUpdated" && Array.isArray(message.taskHistory)) {
+		return message.taskHistory as HistoryItem[]
+	}
+
+	return undefined
+}
+
+function getMostRecentTaskIdInWorkspace(taskHistory: HistoryItem[], workspacePath: string): string | undefined {
+	const workspaceTasks = taskHistory.filter(
+		(item) => typeof item.workspace === "string" && arePathsEqual(item.workspace, workspacePath),
+	)
+
+	if (workspaceTasks.length === 0) {
+		return undefined
+	}
+
+	const sorted = [...workspaceTasks].sort((a, b) => b.ts - a.ts)
+	return sorted[0]?.id
+}
+
 export async function run(promptArg: string | undefined, flagOptions: FlagOptions) {
 	setLogger({
 		info: () => {},
@@ -108,6 +142,26 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		}
 
 		prompt = fs.readFileSync(flagOptions.promptFile, "utf-8")
+	}
+
+	const requestedSessionId = flagOptions.sessionId?.trim()
+	const shouldContinueSession = flagOptions.continue
+	const isResumeRequested = Boolean(requestedSessionId || shouldContinueSession)
+
+	if (flagOptions.sessionId !== undefined && !requestedSessionId) {
+		console.error("[CLI] Error: --session-id requires a non-empty task id")
+		process.exit(1)
+	}
+
+	if (requestedSessionId && shouldContinueSession) {
+		console.error("[CLI] Error: cannot use --session-id with --continue")
+		process.exit(1)
+	}
+
+	if (isResumeRequested && prompt) {
+		console.error("[CLI] Error: cannot use prompt or --prompt-file with --session-id/--continue")
+		console.error("[CLI] Usage: roo [--session-id <task-id> | --continue] [options]")
+		process.exit(1)
 	}
 
 	// Options
@@ -282,10 +336,16 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		process.exit(1)
 	}
 
+	if (flagOptions.stdinPromptStream && isResumeRequested) {
+		console.error("[CLI] Error: cannot use --session-id/--continue with --stdin-prompt-stream")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
+		process.exit(1)
+	}
+
 	const useStdinPromptStream = flagOptions.stdinPromptStream
 
 	if (!isTuiEnabled) {
-		if (!prompt && !useStdinPromptStream) {
+		if (!prompt && !useStdinPromptStream && !isResumeRequested) {
 			if (flagOptions.print) {
 				console.error("[CLI] Error: no prompt provided")
 				console.error("[CLI] Usage: roo --print [options] <prompt>")
@@ -317,6 +377,8 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 				createElement(App, {
 					...extensionHostOptions,
 					initialPrompt: prompt,
+					initialSessionId: requestedSessionId,
+					continueSession: shouldContinueSession,
 					version: VERSION,
 					createExtensionHost: (opts: ExtensionHostOptions) => new ExtensionHost(opts),
 				}),
@@ -343,6 +405,16 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		let keepAliveInterval: NodeJS.Timeout | undefined
 		let isShuttingDown = false
 		let hostDisposed = false
+		let taskHistorySnapshot: HistoryItem[] = []
+
+		const onExtensionMessage = (message: unknown) => {
+			const taskHistory = extractTaskHistoryFromMessage(message)
+			if (taskHistory) {
+				taskHistorySnapshot = taskHistory
+			}
+		}
+
+		host.on("extensionWebviewMessage", onExtensionMessage)
 
 		const jsonEmitter = useJsonOutput
 			? new JsonEventEmitter({
@@ -387,6 +459,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			}
 
 			hostDisposed = true
+			host.off("extensionWebviewMessage", onExtensionMessage)
 			jsonEmitter?.detach()
 			await host.dispose()
 		}
@@ -486,7 +559,26 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 					},
 				})
 			} else {
-				await host.runTask(prompt!)
+				if (isResumeRequested) {
+					const resolvedSessionId =
+						requestedSessionId ||
+						getMostRecentTaskIdInWorkspace(taskHistorySnapshot, effectiveWorkspacePath)
+
+					if (requestedSessionId && taskHistorySnapshot.length > 0) {
+						const hasRequestedTask = taskHistorySnapshot.some((item) => item.id === requestedSessionId)
+						if (!hasRequestedTask) {
+							throw new Error(`Session not found in task history: ${requestedSessionId}`)
+						}
+					}
+
+					if (!resolvedSessionId) {
+						throw new Error("No previous tasks found to continue in this workspace.")
+					}
+
+					await host.resumeTask(resolvedSessionId)
+				} else {
+					await host.runTask(prompt!)
+				}
 			}
 
 			await disposeHost()

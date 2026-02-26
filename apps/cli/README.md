@@ -41,6 +41,12 @@ Re-run the install script to update to the latest version:
 curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/install.sh | sh
 ```
 
+Or run:
+
+```bash
+roo upgrade
+```
+
 ### Uninstalling
 
 ```bash

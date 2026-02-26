@@ -1,15 +1,46 @@
 import { useEffect, useRef, useCallback, useMemo } from "react"
 import { useApp } from "ink"
 import { randomUUID } from "crypto"
-import type { ExtensionMessage, WebviewMessage } from "@roo-code/types"
+import pWaitFor from "p-wait-for"
+import type { ExtensionMessage, HistoryItem, WebviewMessage } from "@roo-code/types"
 
 import { ExtensionHostInterface, ExtensionHostOptions } from "@/agent/index.js"
+import { arePathsEqual } from "@/lib/utils/path.js"
 
 import { useCLIStore } from "../store.js"
+
+const TASK_HISTORY_WAIT_TIMEOUT_MS = 2_000
+
+function extractTaskHistory(message: ExtensionMessage): HistoryItem[] | undefined {
+	if (message.type === "state" && Array.isArray(message.state?.taskHistory)) {
+		return message.state.taskHistory as HistoryItem[]
+	}
+
+	if (message.type === "taskHistoryUpdated" && Array.isArray(message.taskHistory)) {
+		return message.taskHistory as HistoryItem[]
+	}
+
+	return undefined
+}
+
+function getMostRecentTaskId(taskHistory: HistoryItem[], workspacePath: string): string | undefined {
+	const workspaceTasks = taskHistory.filter(
+		(item) => typeof item.workspace === "string" && arePathsEqual(item.workspace, workspacePath),
+	)
+
+	if (workspaceTasks.length === 0) {
+		return undefined
+	}
+
+	const sorted = [...workspaceTasks].sort((a, b) => b.ts - a.ts)
+	return sorted[0]?.id
+}
 
 // TODO: Unify with TUIAppProps?
 export interface UseExtensionHostOptions extends ExtensionHostOptions {
 	initialPrompt?: string
+	initialSessionId?: string
+	continueSession?: boolean
 	onExtensionMessage: (msg: ExtensionMessage) => void
 	createExtensionHost: (options: ExtensionHostOptions) => ExtensionHostInterface
 }
@@ -32,6 +63,8 @@ export interface UseExtensionHostReturn {
  */
 export function useExtensionHost({
 	initialPrompt,
+	initialSessionId,
+	continueSession,
 	mode,
 	reasoningEffort,
 	user,
@@ -48,7 +81,8 @@ export function useExtensionHost({
 	createExtensionHost,
 }: UseExtensionHostOptions): UseExtensionHostReturn {
 	const { exit } = useApp()
-	const { addMessage, setComplete, setLoading, setHasStartedTask, setError } = useCLIStore()
+	const { addMessage, setComplete, setLoading, setHasStartedTask, setError, setCurrentTaskId, setIsResumingTask } =
+		useCLIStore()
 
 	const hostRef = useRef<ExtensionHostInterface | null>(null)
 	const isReadyRef = useRef(false)
@@ -64,6 +98,10 @@ export function useExtensionHost({
 	useEffect(() => {
 		const init = async () => {
 			try {
+				const requestedSessionId = initialSessionId?.trim()
+				let taskHistorySnapshot: HistoryItem[] = []
+				let hasReceivedTaskHistory = false
+
 				const host = createExtensionHost({
 					mode,
 					user,
@@ -83,7 +121,17 @@ export function useExtensionHost({
 				hostRef.current = host
 				isReadyRef.current = true
 
-				host.on("extensionWebviewMessage", (msg) => onExtensionMessage(msg as ExtensionMessage))
+				host.on("extensionWebviewMessage", (msg) => {
+					const extensionMessage = msg as ExtensionMessage
+					const taskHistory = extractTaskHistory(extensionMessage)
+
+					if (taskHistory) {
+						taskHistorySnapshot = taskHistory
+						hasReceivedTaskHistory = true
+					}
+
+					onExtensionMessage(extensionMessage)
+				})
 
 				host.client.on("taskCompleted", async () => {
 					setComplete(true)
@@ -107,6 +155,37 @@ export function useExtensionHost({
 				// postStateToWebview which includes taskHistory).
 				host.sendToExtension({ type: "requestCommands" })
 				host.sendToExtension({ type: "requestModes" })
+
+				if (requestedSessionId || continueSession) {
+					await pWaitFor(() => hasReceivedTaskHistory, {
+						interval: 25,
+						timeout: TASK_HISTORY_WAIT_TIMEOUT_MS,
+					}).catch(() => undefined)
+
+					if (requestedSessionId && hasReceivedTaskHistory) {
+						const hasRequestedTask = taskHistorySnapshot.some((item) => item.id === requestedSessionId)
+
+						if (!hasRequestedTask) {
+							throw new Error(`Session not found in task history: ${requestedSessionId}`)
+						}
+					}
+
+					const resolvedSessionId =
+						requestedSessionId || getMostRecentTaskId(taskHistorySnapshot, workspacePath)
+
+					if (continueSession && !resolvedSessionId) {
+						throw new Error("No previous tasks found to continue in this workspace.")
+					}
+
+					if (resolvedSessionId) {
+						setCurrentTaskId(resolvedSessionId)
+						setIsResumingTask(true)
+						setHasStartedTask(true)
+						setLoading(true)
+						host.sendToExtension({ type: "showTaskWithId", text: resolvedSessionId })
+						return
+					}
+				}
 
 				setLoading(false)
 

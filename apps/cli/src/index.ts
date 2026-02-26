@@ -2,7 +2,17 @@ import { Command } from "commander"
 
 import { DEFAULT_FLAGS } from "@/types/constants.js"
 import { VERSION } from "@/lib/utils/version.js"
-import { run, login, logout, status, listCommands, listModes, listModels } from "@/commands/index.js"
+import {
+	run,
+	login,
+	logout,
+	status,
+	listCommands,
+	listModes,
+	listModels,
+	listSessions,
+	upgrade,
+} from "@/commands/index.js"
 
 const program = new Command()
 
@@ -14,6 +24,8 @@ program
 program
 	.argument("[prompt]", "Your prompt")
 	.option("--prompt-file <path>", "Read prompt from a file instead of command line argument")
+	.option("--session-id <task-id>", "Resume a specific task by task ID")
+	.option("-c, --continue", "Resume the most recent task in the current workspace", false)
 	.option("-w, --workspace <path>", "Workspace directory path (defaults to current working directory)")
 	.option("-p, --print", "Print response and exit (non-interactive mode)", false)
 	.option(
@@ -48,7 +60,7 @@ program
 	)
 	.action(run)
 
-const listCommand = program.command("list").description("List commands, modes, or models")
+const listCommand = program.command("list").description("List commands, modes, models, or sessions")
 
 const applyListOptions = (command: Command) =>
 	command
@@ -59,6 +71,17 @@ const applyListOptions = (command: Command) =>
 		.option("-d, --debug", "Enable debug output", false)
 
 const runListAction = async (action: () => Promise<void>) => {
+	try {
+		await action()
+		process.exit(0)
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error)
+		console.error(`[CLI] Error: ${message}`)
+		process.exit(1)
+	}
+}
+
+const runUpgradeAction = async (action: () => Promise<void>) => {
 	try {
 		await action()
 		process.exit(0)
@@ -86,6 +109,19 @@ applyListOptions(listCommand.command("models").description("List available Roo m
 		await runListAction(() => listModels(options))
 	},
 )
+
+applyListOptions(listCommand.command("sessions").description("List task sessions")).action(
+	async (options: Parameters<typeof listSessions>[0]) => {
+		await runListAction(() => listSessions(options))
+	},
+)
+
+program
+	.command("upgrade")
+	.description("Upgrade Roo Code CLI to the latest version")
+	.action(async () => {
+		await runUpgradeAction(() => upgrade())
+	})
 
 const authCommand = program.command("auth").description("Manage authentication for Roo Code Cloud")
 

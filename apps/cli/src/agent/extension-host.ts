@@ -108,6 +108,7 @@ export interface ExtensionHostInterface extends IExtensionHost<ExtensionHostEven
 	client: ExtensionClient
 	activate(): Promise<void>
 	runTask(prompt: string, taskId?: string): Promise<void>
+	resumeTask(taskId: string): Promise<void>
 	sendToExtension(message: WebviewMessage): void
 	dispose(): Promise<void>
 }
@@ -466,9 +467,7 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 	// Task Management
 	// ==========================================================================
 
-	public async runTask(prompt: string, taskId?: string): Promise<void> {
-		this.sendToExtension({ type: "newTask", text: prompt, taskId })
-
+	private waitForTaskCompletion(): Promise<void> {
 		return new Promise((resolve, reject) => {
 			const completeHandler = () => {
 				cleanup()
@@ -507,6 +506,16 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 			this.client.once("taskCompleted", completeHandler)
 			this.client.once("error", errorHandler)
 		})
+	}
+
+	public async runTask(prompt: string, taskId?: string): Promise<void> {
+		this.sendToExtension({ type: "newTask", text: prompt, taskId })
+		return this.waitForTaskCompletion()
+	}
+
+	public async resumeTask(taskId: string): Promise<void> {
+		this.sendToExtension({ type: "showTaskWithId", text: taskId })
+		return this.waitForTaskCompletion()
 	}
 
 	// ==========================================================================
