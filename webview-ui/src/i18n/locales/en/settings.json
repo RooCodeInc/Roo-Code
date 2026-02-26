@@ -754,6 +754,10 @@
 			"label": "Terminal character limit",
 			"description": "Overrides the line limit to prevent memory issues by enforcing a hard cap on output size. If exceeded, keeps the beginning and end and shows a placeholder to Roo where content is skipped. <0>Learn more</0>"
 		},
+		"outputFilterEnabled": {
+			"label": "Smart output filtering",
+			"description": "Automatically filters terminal output before sending to the AI, reducing token usage by removing noise (passing tests, progress bars, verbose logs) while preserving errors, failures, and summaries. Inspired by RTK."
+		},
 		"outputPreviewSize": {
 			"label": "Command output preview size",
 			"description": "Controls how much command output Roo sees directly. Full output is always saved and accessible when needed.",

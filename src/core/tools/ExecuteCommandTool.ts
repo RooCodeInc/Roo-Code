@@ -16,6 +16,7 @@ import { ExitCodeDetails, RooTerminalCallbacks, RooTerminalProcess } from "../..
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { Terminal } from "../../integrations/terminal/Terminal"
 import { OutputInterceptor } from "../../integrations/terminal/OutputInterceptor"
+import { filterTerminalOutput, formatFilterIndicator } from "../../integrations/terminal/TerminalOutputFilter"
 import { Package } from "../../shared/package"
 import { t } from "../../i18n"
 import { getTaskDirectoryPath } from "../../utils/storage"
@@ -192,16 +193,19 @@ export async function executeCommandInTerminal(
 
 	const terminalProvider = terminalShellIntegrationDisabled ? "execa" : "vscode"
 	const provider = await task.providerRef.deref()
+	const providerState = await provider?.getState()
 
 	// Get global storage path for persisted output artifacts
 	const globalStoragePath = provider?.context?.globalStorageUri?.fsPath
 	let interceptor: OutputInterceptor | undefined
 
+	// Check if terminal output filtering is enabled (default: true)
+	const terminalOutputFilterEnabled = providerState?.terminalOutputFilterEnabled !== false
+
 	// Create OutputInterceptor if we have storage available
 	if (globalStoragePath) {
 		const taskDir = await getTaskDirectoryPath(globalStoragePath, task.taskId)
 		const storageDir = path.join(taskDir, "command-output")
-		const providerState = await provider?.getState()
 		const terminalOutputPreviewSize =
 			providerState?.terminalOutputPreviewSize ?? DEFAULT_TERMINAL_OUTPUT_PREVIEW_SIZE
 
@@ -413,6 +417,17 @@ export async function executeCommandInTerminal(
 
 		// Use persisted output format when output was truncated and spilled to disk
 		if (persistedResult?.truncated) {
+			// Apply command-aware filtering to persisted preview if enabled
+			if (terminalOutputFilterEnabled) {
+				const filterResult = filterTerminalOutput(command, persistedResult.preview)
+				if (filterResult) {
+					const indicator = formatFilterIndicator(filterResult, true)
+					persistedResult = {
+						...persistedResult,
+						preview: filterResult.output + "\n\n" + indicator,
+					}
+				}
+			}
 			return [false, formatPersistedOutput(persistedResult, exitDetails, currentWorkingDir)]
 		}
 
@@ -441,9 +456,20 @@ export async function executeCommandInTerminal(
 			exitStatus = `Exit code: <undefined, notify user>`
 		}
 
+		// Apply command-aware output filtering for inline results if enabled
+		let outputForLlm = result
+		let filterIndicator = ""
+		if (terminalOutputFilterEnabled) {
+			const filterResult = filterTerminalOutput(command, result)
+			if (filterResult) {
+				outputForLlm = filterResult.output
+				filterIndicator = "\n" + formatFilterIndicator(filterResult, !!persistedResult?.artifactPath)
+			}
+		}
+
 		return [
 			false,
-			`Command executed in terminal within working directory '${currentWorkingDir}'. ${exitStatus}\nOutput:\n${result}`,
+			`Command executed in terminal within working directory '${currentWorkingDir}'. ${exitStatus}\nOutput:\n${outputForLlm}${filterIndicator}`,
 		]
 	} else {
 		return [
