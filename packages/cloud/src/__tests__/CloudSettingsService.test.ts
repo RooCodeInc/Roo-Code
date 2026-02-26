@@ -89,9 +89,9 @@ describe("CloudSettingsService", () => {
 			expect(cloudSettingsService).toBeInstanceOf(CloudSettingsService)
 			expect(RefreshTimer).toHaveBeenCalledWith({
 				callback: expect.any(Function),
-				successInterval: 30000,
+				successInterval: 3_600_000,
 				initialBackoffMs: 1000,
-				maxBackoffMs: 30000,
+				maxBackoffMs: 3_600_000,
 			})
 		})
 
