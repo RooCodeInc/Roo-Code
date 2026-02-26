@@ -23,6 +23,7 @@ export type FlagOptions = {
 	workspace?: string
 	print: boolean
 	stdinPromptStream: boolean
+	signalOnlyExit: boolean
 	extension?: string
 	debug: boolean
 	requireApproval: boolean

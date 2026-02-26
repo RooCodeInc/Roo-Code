@@ -32,6 +32,11 @@ import { runStdinStreamMode } from "./stdin-stream.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROO_MODEL_WARMUP_TIMEOUT_MS = 10_000
+const SIGNAL_ONLY_EXIT_KEEPALIVE_MS = 60_000
+
+function normalizeError(error: unknown): Error {
+	return error instanceof Error ? error : new Error(String(error))
+}
 
 async function warmRooModels(host: ExtensionHost): Promise<void> {
 	await new Promise<void>((resolve, reject) => {
@@ -251,6 +256,12 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		process.exit(1)
 	}
 
+	if (flagOptions.signalOnlyExit && !flagOptions.stdinPromptStream) {
+		console.error("[CLI] Error: --signal-only-exit requires --stdin-prompt-stream")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream --signal-only-exit")
+		process.exit(1)
+	}
+
 	if (flagOptions.stdinPromptStream && outputFormat !== "stream-json") {
 		console.error("[CLI] Error: --stdin-prompt-stream requires --output-format=stream-json")
 		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
@@ -323,11 +334,15 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		}
 	} else {
 		const useJsonOutput = outputFormat === "json" || outputFormat === "stream-json"
+		const signalOnlyExit = flagOptions.signalOnlyExit
 
 		extensionHostOptions.disableOutput = useJsonOutput
 
 		const host = new ExtensionHost(extensionHostOptions)
 		let streamRequestId: string | undefined
+		let keepAliveInterval: NodeJS.Timeout | undefined
+		let isShuttingDown = false
+		let hostDisposed = false
 
 		const jsonEmitter = useJsonOutput
 			? new JsonEventEmitter({
@@ -336,17 +351,110 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 				})
 			: null
 
+		const emitRuntimeError = (error: Error, source?: string) => {
+			const errorMessage = source ? `${source}: ${error.message}` : error.message
+
+			if (useJsonOutput) {
+				const errorEvent = { type: "error", id: Date.now(), content: errorMessage }
+				process.stdout.write(JSON.stringify(errorEvent) + "\n")
+				return
+			}
+
+			console.error("[CLI] Error:", errorMessage)
+			console.error(error.stack)
+		}
+
+		const clearKeepAliveInterval = () => {
+			if (!keepAliveInterval) {
+				return
+			}
+
+			clearInterval(keepAliveInterval)
+			keepAliveInterval = undefined
+		}
+
+		const ensureKeepAliveInterval = () => {
+			if (!signalOnlyExit || keepAliveInterval) {
+				return
+			}
+
+			keepAliveInterval = setInterval(() => {}, SIGNAL_ONLY_EXIT_KEEPALIVE_MS)
+		}
+
+		const disposeHost = async () => {
+			if (hostDisposed) {
+				return
+			}
+
+			hostDisposed = true
+			jsonEmitter?.detach()
+			await host.dispose()
+		}
+
+		const onSigint = () => {
+			void shutdown("SIGINT", 130)
+		}
+
+		const onSigterm = () => {
+			void shutdown("SIGTERM", 143)
+		}
+
+		const onUncaughtException = (error: Error) => {
+			emitRuntimeError(error, "uncaughtException")
+
+			if (signalOnlyExit) {
+				return
+			}
+
+			void shutdown("uncaughtException", 1)
+		}
+
+		const onUnhandledRejection = (reason: unknown) => {
+			const error = normalizeError(reason)
+			emitRuntimeError(error, "unhandledRejection")
+
+			if (signalOnlyExit) {
+				return
+			}
+
+			void shutdown("unhandledRejection", 1)
+		}
+
+		const parkUntilSignal = async (reason: string): Promise<never> => {
+			ensureKeepAliveInterval()
+
+			if (!useJsonOutput) {
+				console.error(`[CLI] ${reason} (--signal-only-exit active; waiting for SIGINT/SIGTERM).`)
+			}
+
+			await new Promise<void>(() => {})
+			throw new Error("unreachable")
+		}
+
 		async function shutdown(signal: string, exitCode: number): Promise<void> {
+			if (isShuttingDown) {
+				return
+			}
+
+			isShuttingDown = true
+			process.off("SIGINT", onSigint)
+			process.off("SIGTERM", onSigterm)
+			process.off("uncaughtException", onUncaughtException)
+			process.off("unhandledRejection", onUnhandledRejection)
+			clearKeepAliveInterval()
+
 			if (!useJsonOutput) {
 				console.log(`\n[CLI] Received ${signal}, shutting down...`)
 			}
-			jsonEmitter?.detach()
-			await host.dispose()
+
+			await disposeHost()
 			process.exit(exitCode)
 		}
 
-		process.on("SIGINT", () => shutdown("SIGINT", 130))
-		process.on("SIGTERM", () => shutdown("SIGTERM", 143))
+		process.on("SIGINT", onSigint)
+		process.on("SIGTERM", onSigterm)
+		process.on("uncaughtException", onUncaughtException)
+		process.on("unhandledRejection", onUnhandledRejection)
 
 		try {
 			await host.activate()
@@ -381,25 +489,29 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 				await host.runTask(prompt!)
 			}
 
-			jsonEmitter?.detach()
-			await host.dispose()
-			process.exit(0)
-		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error)
+			await disposeHost()
 
-			if (useJsonOutput) {
-				const errorEvent = { type: "error", id: Date.now(), content: errorMessage }
-				process.stdout.write(JSON.stringify(errorEvent) + "\n")
-			} else {
-				console.error("[CLI] Error:", errorMessage)
-
-				if (error instanceof Error) {
-					console.error(error.stack)
-				}
+			if (signalOnlyExit) {
+				await parkUntilSignal("Task loop completed")
 			}
 
-			jsonEmitter?.detach()
-			await host.dispose()
+			process.off("SIGINT", onSigint)
+			process.off("SIGTERM", onSigterm)
+			process.off("uncaughtException", onUncaughtException)
+			process.off("unhandledRejection", onUnhandledRejection)
+			process.exit(0)
+		} catch (error) {
+			emitRuntimeError(normalizeError(error))
+			await disposeHost()
+
+			if (signalOnlyExit) {
+				await parkUntilSignal("Task loop failed")
+			}
+
+			process.off("SIGINT", onSigint)
+			process.off("SIGTERM", onSigterm)
+			process.off("uncaughtException", onUncaughtException)
+			process.off("unhandledRejection", onUnhandledRejection)
 			process.exit(1)
 		}
 	}
