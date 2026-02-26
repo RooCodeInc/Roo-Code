@@ -17,6 +17,7 @@ import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { Terminal } from "../../integrations/terminal/Terminal"
 import { OutputInterceptor } from "../../integrations/terminal/OutputInterceptor"
 import { Package } from "../../shared/package"
+import { SandboxManager } from "../../integrations/terminal/sandbox"
 import { t } from "../../i18n"
 import { getTaskDirectoryPath } from "../../utils/storage"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
@@ -312,7 +313,12 @@ export async function executeCommandInTerminal(
 		workingDir = terminal.getCurrentWorkingDirectory()
 	}
 
-	const process = terminal.runCommand(command, callbacks)
+	// Wrap the command through the sandbox manager if sandboxing is enabled.
+	// This uses the `srt` CLI tool to provide network/filesystem isolation.
+	const sandboxManager = SandboxManager.getInstance()
+	const sandboxedCommand = sandboxManager.wrapCommand(command, workingDir)
+
+	const process = terminal.runCommand(sandboxedCommand, callbacks)
 	task.terminalProcess = process
 
 	// Dual-timeout logic:
