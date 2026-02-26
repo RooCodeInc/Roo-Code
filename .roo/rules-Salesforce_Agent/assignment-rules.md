@@ -243,18 +243,23 @@ force-app/main/default/assignmentRules/<ObjectApiName>.assignmentRules-meta.xml
 
 <template>{FolderName/DeveloperName}</template>
 
-## Dry Run and deployment for Assignment-Rules(Mandatory)
+## ⚠️ MANDATORY DEPLOYMENT (!!**CRITICAL - MUST FOLLOW EVERY TIME**)
 
-- Before deploying the created Assignmentrules into the org do the dry run first using below command
-- Do dry run for all assignment rules at once.
-  `sf project deploy start --dry-run --source-dir force-app/main/default/assignmentRules /
-<obj.Assignmentrules-meta.xml>`
-- If got any errors after dry run solve them.
-- After successful dry run then proceed with deloyment process.
-- Do deploy all assignment rules at once.
-  `sf project deploy start --source-dir force-app/main/default/assignmentRules/
-<obj.Assignmentrules-meta.xml>`
-- Replace <obj.Assignmentrules-meta.xml> with the actual assignment rules that are created.
+**AFTER EVERY ASSIGNMENT RULE CREATION, YOU MUST IMMEDIATELY DEPLOY USING `<sf_deploy_metadata>` TOOL**
+
+**THIS IS NOT OPTIONAL. THIS STEP MUST NOT BE SKIPPED UNDER ANY CIRCUMSTANCES.**
+
+### Strict Deployment Rules
+
+- (**!CRITICAL**) **You MUST use the `<sf_deploy_metadata>` tool for ALL assignment rule deployments**
+- (**!CRITICAL**) **Do NOT skip this step - deployment is MANDATORY after every assignment rule creation**
+- (**!CRITICAL**) **Deploy all assignment rule metadata files to the tool at once for batch deployment**
+- Provide all `.assignmentRules-meta.xml` files to the tool
+- The tool will automatically handle both dry-run validation and actual deployment
+- If there are any errors during validation, the tool will report them - fix and retry the deployment
+- After successful deployment, all assignment rules will be active in the Salesforce org
+
+**MUST DO THIS AFTER EVERY SINGLE ASSIGNMENT RULE - NO EXCEPTIONS**
 
 ## 9. Validations
 

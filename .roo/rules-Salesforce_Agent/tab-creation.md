@@ -87,23 +87,21 @@ File: `force-app/main/default/profiles/System Administrator.profile-meta.xml`
 - `visibility` = `DefaultOn` (makes tab visible by default for System Admin)
 - Tab name must match tab fullName
 
-### **5. Deployment**
+### **5. ⚠️ MANDATORY DEPLOYMENT (!!**CRITICAL - MUST FOLLOW EVERY TIME**)**
 
-**Dry Run:**
+**AFTER EVERY CUSTOM TAB CREATION, YOU MUST IMMEDIATELY DEPLOY USING `<sf_deploy_metadata>` TOOL**
 
-```bash
-sf project deploy start --dry-run --source-dir force-app/main/default/tabs/<TabApiName>.tab-meta.xml --json
-sf project deploy start --dry-run --source-dir "force-app/main/default/profiles/System Administrator.profile-meta.xml" --json
-```
+**THIS IS NOT OPTIONAL. THIS STEP MUST NOT BE SKIPPED UNDER ANY CIRCUMSTANCES.**
 
-**Deploy:**
+**Use the `<sf_deploy_metadata>` tool for deployment:**
 
-```bash
-sf project deploy start --source-dir force-app/main/default/tabs/<TabApiName>.tab-meta.xml --json
-sf project deploy start --source-dir "force-app/main/default/profiles/System Administrator.profile-meta.xml" --json
-```
+- (**!CRITICAL**) **Provide the tab metadata file (`force-app/main/default/tabs/<TabApiName>.tab-meta.xml`) to the tool**
+- (**!CRITICAL**) **Also provide the System Administrator profile file for permission updates**
+- (**!CRITICAL**) **The tool will automatically handle both dry-run validation and actual deployment**
+- (**!CRITICAL**) **Deploy both tab and profile together for complete setup**
+- After successful deployment, the tab will be visible to System Admin users
 
-Deploy both tab and profile together for complete setup.
+**MUST DO THIS AFTER EVERY SINGLE CUSTOM TAB - NO EXCEPTIONS**
 
 ---
 

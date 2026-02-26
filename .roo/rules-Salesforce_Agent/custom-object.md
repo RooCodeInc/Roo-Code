@@ -108,36 +108,41 @@ force-app/main/default/tabs/<ObjectApiName>.tab-meta.xml
 - Profile must be deployed together with the tab for complete setup
 - Profile metadata name is exactly: "Admin"
 
-## Dry Run and deployment for objects(Mandatory)
+## ⚠️ MANDATORY DEPLOYMENT FOR OBJECTS (!!**CRITICAL - MUST FOLLOW EVERY TIME**)
 
-- Before deploying the created objects and tabs into the org do the dry run first using below command
-- Do dry run for all objects at once.
-  `sf project deploy start --dry-run --source-dir force-app/main/default/objects/<ObjectApiName>` --json
-- If got any errors after dry run solve them.
-- After successful dry run then proceed with deloyment process.
-- Do deploy all objects at once.
-  `sf project deploy start --source-dir force-app/main/default/objects/<ObjectApiNames>` --json
-- Replace <ObjectApiName> with the actual object API name (e.g., Invoice_Item\_\_c).
+**AFTER EVERY CUSTOM OBJECT CREATION, YOU MUST IMMEDIATELY DEPLOY USING `<sf_deploy_metadata>` TOOL**
 
-## Dry Run and deployment for tabs(Mandatory)
+**THIS IS NOT OPTIONAL. THIS STEP MUST NOT BE SKIPPED UNDER ANY CIRCUMSTANCES.**
 
-- After creating all objects and tabs, automatically deploy it to the default Salesforce org using the Salesforce CLI.
-- Run the deployment command after creating all objects and tabs creation
-- Do dry run for all tabs at once.
-  `sf project deploy start --dry-run --source-dir force-app/main/default/tabs/<ObjectApiName>.tab-meta.xml` --json
-- If got any errors after dry run solve them.
-- After successful dry run then proceed with deloyment process.
-- Do deploy all tabs at once.
-  `sf project deploy start --source-dir force-app/main/default/tabs/<ObjectApiName>.tab-meta.xml` --json
-- Replace <ObjectApiNames> with the all objects that are created comma separated.
+- (**!CRITICAL**) **You MUST use the `<sf_deploy_metadata>` tool for ALL custom object deployments**
+- (**!CRITICAL**) **Do NOT attempt to use CLI commands like `sf project deploy start`**
+- (**!CRITICAL**) **Provide all object metadata files to the tool at once for batch deployment**
+- The tool will automatically handle both dry-run validation and actual deployment
+- If there are any errors, the tool will report them - fix and retry the deployment
+- After successful deployment, all objects will be available in the Salesforce org
+
+**MUST DO THIS AFTER EVERY SINGLE CUSTOM OBJECT - NO EXCEPTIONS**
+
+## ⚠️ MANDATORY DEPLOYMENT FOR TABS (!!**CRITICAL - MUST FOLLOW EVERY TIME**)
+
+**AFTER EVERY CUSTOM TAB CREATION, YOU MUST IMMEDIATELY DEPLOY USING `<sf_deploy_metadata>` TOOL**
+
+**THIS IS NOT OPTIONAL. THIS STEP MUST NOT BE SKIPPED UNDER ANY CIRCUMSTANCES.**
+
+- (**!CRITICAL**) **You MUST use the `<sf_deploy_metadata>` tool for ALL custom tab deployments**
+- (**!CRITICAL**) **Provide all tab metadata files to the tool at once for batch deployment**
+- The tool will automatically handle both dry-run validation and actual deployment
+- If there are any errors during validation, the tool will report them - fix and retry the deployment
+- After successful deployment, all tabs will be visible to Admin users
+
+**MUST DO THIS AFTER EVERY SINGLE CUSTOM TAB - NO EXCEPTIONS**
+
+- Replace `<ObjectApiNames>` with all the objects that are created
 
 ## Compliance
 
 - The XML must follow Salesforce Metadata API standards.
-- The XML must be deployable via:
-    - Salesforce Change Sets
-    - VS Code Salesforce Extensions
-    - Salesforce CLI (sfdx)
+- The XML must be deployable via the `<sf_deploy_metadata>` tool.
 
 ## Session Behavior
 
@@ -187,18 +192,16 @@ When creating a custom object named "Test", follow these steps:
 
 - Step 4: Dry Run and Deployment
 
-For Objects:
-bash# Dry run
-sf project deploy start --dry-run --source-dir force-app/main/default/objects/Test\_\_c --json
+Use the `<sf_deploy_metadata>` tool for both objects and tabs:
 
-# Actual deployment (after successful dry run)
+**For Objects:**
 
-sf project deploy start --source-dir force-app/main/default/objects/Test\_\_c --json
+- Provide the object metadata file to the `<sf_deploy_metadata>` tool
+- Example: `force-app/main/default/objects/Test__c`
+- The tool will automatically validate (dry-run) and deploy the object
 
-For Tabs:
-bash# Dry run
-sf project deploy start --dry-run --source-dir force-app/main/default/tabs/Test\_\_c.tab-meta.xml --json
+**For Tabs:**
 
-# Actual deployment (after successful dry run)
-
-sf project deploy start --source-dir force-app/main/default/tabs/Test\_\_c.tab-meta.xml --json
+- Provide the tab metadata file to the `<sf_deploy_metadata>` tool
+- Example: `force-app/main/default/tabs/Test__c.tab-meta.xml`
+- The tool will automatically validate (dry-run) and deploy the tab

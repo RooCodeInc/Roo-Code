@@ -1237,70 +1237,40 @@ START: I need to run code asynchronously
 
 ---
 
-### 10. (**!! IMPORTANT**)Dry run and Deployment:
+### 10. (**!! IMPORTANT**) Dry run and Deployment:
 
 **Important Notes:**
 
 - All async Apex classes (Future, Queueable, Batch, Scheduled) should be created in `force-app/main/default/classes/`
 - (**!IMPORTANT**) Always create corresponding XML metadata files (.cls-meta.xml) for each Apex class file
-- (**!IMPORTANT**) Always execute DRY RUN FIRST to validate all changes BEFORE deploying
-- After successful dry-run with NO ERRORS, then immediately deploy to production
+- (**!IMPORTANT**) Always validate changes BEFORE deploying using the `<sf_deploy_metadata>` tool
+- After successful validation with NO ERRORS, proceed with deployment using `<sf_deploy_metadata>`
 
 ---
 
-#### Step 1: Run DRY RUN (REQUIRED - Do NOT skip this step!)
-
-**For Single Async Apex Class:**
-
-```
-sf project deploy start --dry-run --source-dir force-app/main/default/classes/ClassName.cls --json
-```
-
-**For Multiple Async Apex Classes:**
-
-```
-sf project deploy start --dry-run --source-dir force-app/main/default/classes/FutureEmailService.cls --source-dir force-app/main/default/classes/DataProcessingQueueable.cls --source-dir force-app/main/default/classes/BatchDataProcessor.cls --source-dir force-app/main/default/classes/DailyReportScheduler.cls --json
-```
-
-**Wait for the response and check:**
-
-- If deployment has **SUCCESS** status → proceed to Step 2 (Deployment)
-- If deployment has **ERRORS** → fix the errors in your code and re-run dry-run again
-
----
-
-#### Step 2: Deploy ONLY after successful DRY RUN
-
-**For Single Async Apex Class:**
-
-```
-sf project deploy start --source-dir force-app/main/default/classes/ClassName.cls --json
-```
-
-**For Multiple Async Apex Classes (same order as dry-run):**
-
-```
-sf project deploy start --source-dir force-app/main/default/classes/FutureEmailService.cls --source-dir force-app/main/default/classes/DataProcessingQueueable.cls --source-dir force-app/main/default/classes/BatchDataProcessor.cls --source-dir force-app/main/default/classes/DailyReportScheduler.cls --json
-```
-
----
-
-#### Deployment Workflow:
+#### Deployment Process:
 
 1. **Create async Apex classes** (Future, Queueable, Batch, Scheduled)
 2. **Create corresponding XML metadata files** (.cls-meta.xml) for each Apex class
-3. **Always run DRY RUN FIRST** to validate all changes
-4. **Verify dry-run result** — must show SUCCESS status
-5. **THEN proceed with actual deployment** using same source-dir parameters (without --dry-run flag)
-6. **Monitor deployment** — check for completion and success status
-7. **Query AsyncApexJob** after deployment to monitor job execution status
+3. **Use `<sf_deploy_metadata>` tool** to validate and deploy all changes
+4. **Verify deployment result** — must show SUCCESS status
+5. **Monitor deployment** — check for completion and success status
+6. **Query AsyncApexJob** after deployment to monitor job execution status
+
+**How to Deploy:**
+
+- Use the `<sf_deploy_metadata>` tool with the metadata components (Apex classes)
+- The tool will handle both dry-run validation and actual deployment automatically
+- Provide the list of Apex class files to be deployed (e.g., `FutureEmailService.cls`, `DataProcessingQueueable.cls`, etc.)
 
 **Important Warnings:**
 
 - Deploy only the metadata files that were created or modified — do NOT deploy the entire metadata folder
 - Deploying the whole folder can introduce unrelated dependencies and cause avoidable deployment failures
-- Never skip dry-run validation — always run dry-run first before deploying
-- (**!IMPORTANT**) Deploy async Apex classes immediately after successful dry-run to ensure all jobs, schedules, and related dependencies are properly registered in your Salesforce org
+- (**!CRITICAL**) **ALWAYS use the `<sf_deploy_metadata>` tool for ALL async Apex deployments - THIS IS MANDATORY**
+- (**!CRITICAL**) **Deploy async Apex classes IMMEDIATELY after successful validation - DO NOT DELAY**
+- (**!CRITICAL**) **Ensure all jobs, schedules, and related dependencies are properly registered in your Salesforce org - THIS STEP IS NOT OPTIONAL**
+- (**!CRITICAL**) **Do NOT attempt to use CLI commands like `sf project deploy start` - USE THE TOOL ONLY**
 
 ---
 

@@ -507,43 +507,42 @@ Step 6: sf project deploy start --source-dir force-app/main/default/pathAssistan
 
 **ONE OPERATION AT A TIME - ALWAYS**
 
-## Automatic Deployment (CRITICAL - MUST FOLLOW)
+## ⚠️ MANDATORY DEPLOYMENT (!!**CRITICAL - MUST FOLLOW EVERY TIME**)
 
-- **After creating the complete path XML file (with all fields and customizations), you MUST immediately execute the deployment command.**
-- **This is not optional. Deployment must happen automatically after path creation.**
-- **Never skip the deployment step. Always run the sf deploy command after file creation.**
-- **EXECUTE THE DEPLOYMENT COMMAND EVERY SINGLE TIME WITHOUT EXCEPTION.**
-- **Deploy only ONCE - after the complete path XML with all fields is created.**
+**AFTER EVERY PATH CREATION, YOU MUST IMMEDIATELY DEPLOY USING `<sf_deploy_metadata>` TOOL**
 
-## Deployment Command
+**THIS IS NOT OPTIONAL. THIS STEP MUST NOT BE SKIPPED UNDER ANY CIRCUMSTANCES.**
 
-- **After creating the complete path XML file with all customizations, deploy it immediately:**
-    ```bash
-    sf project deploy start --source-dir force-app/main/default/pathAssistants/<CleanObjectName>_<CleanFieldName>.pathAssistant-meta.xml --json
-    ```
+### Strict Deployment Rules
+
+- (**!CRITICAL**) **After creating the complete path XML file (with all fields and customizations), you MUST immediately use the `<sf_deploy_metadata>` tool to deploy it**
+- (**!CRITICAL**) **This is MANDATORY - Deployment must happen automatically after path creation - NO EXCEPTIONS**
+- (**!CRITICAL**) **Never skip the deployment step. Always use the tool to deploy after file creation**
+- (**!CRITICAL**) **EXECUTE THE DEPLOYMENT COMMAND EVERY SINGLE TIME WITHOUT EXCEPTION**
+- (**!CRITICAL**) **Deploy only ONCE - after the complete path XML with all fields is created**
+
+## Mandatory Deployment Instructions
+
+- **After creating the complete path XML file with all customizations, deploy it immediately using the `<sf_deploy_metadata>` tool:**
+    - Provide the path metadata file to the tool
+    - Replace `<CleanObjectName>_<CleanFieldName>` with the actual object and field names
 - **CRITICAL: Use underscores (\_) in the file name, NOT dots (.)**
 - **CRITICAL: Remove `__c` from custom object and field names to avoid consecutive underscores**
-- **Examples:**
-    ```bash
-    sf project deploy start --source-dir force-app/main/default/pathAssistants/Opportunity_StageName.pathAssistant-meta.xml --json
-    ```
-    ```bash
-    sf project deploy start --source-dir force-app/main/default/pathAssistants/Account_Rating.pathAssistant-meta.xml --json
-    ```
-    ```bash
-    sf project deploy start --source-dir force-app/main/default/pathAssistants/Nineteen_Mic_Color.pathAssistant-meta.xml --json
-    ```
-    ```bash
-    sf project deploy start --source-dir force-app/main/default/pathAssistants/Custom_Object_Stage.pathAssistant-meta.xml --json
-    ```
-- **MANDATORY: Execute this command immediately after file creation. Do not skip this step.**
+- **Examples of file paths to deploy:**
+    - `force-app/main/default/pathAssistants/Opportunity_StageName.pathAssistant-meta.xml`
+    - `force-app/main/default/pathAssistants/Account_Rating.pathAssistant-meta.xml`
+    - `force-app/main/default/pathAssistants/Nineteen_Mic_Color.pathAssistant-meta.xml`
+    - `force-app/main/default/pathAssistants/Custom_Object_Stage.pathAssistant-meta.xml`
+
+**MUST DO THIS AFTER EVERY SINGLE PATH - NO EXCEPTIONS**
+
 - **Deploy ONLY ONCE with the complete, finalized path XML.**
 - **WAIT for deployment completion before confirming success.**
 
 ### Dry Run Before Deployment (Pre-check)
 
-- Before executing the deployment, perform a dry run using the same deployment command with the `--dry-run` flag.
-- If you have multiple path files to deploy, perform a single consolidated dry run for all of them at once by including all intended targets in one command along with `--dry-run`.
+- The `<sf_deploy_metadata>` tool will automatically perform a dry-run validation before deployment.
+- If you have multiple path files to deploy, provide all of them to the tool at once for batch deployment and validation.
 
 ## Path Activation
 

@@ -92,18 +92,15 @@
          Save XML to: force-app/main/default/objects/[ObjectName]/validationRules/[RuleName].validationRule-meta.xml
 
      Important: create all required validation rule XML files first (for one object or across objects). Do NOT run dry runs or deployments per-rule.
-     Do dry run for all created validation rules at once
 
-     ## Dry Run and deployment for Assignment-Rules(Mandatory)
+     ## Dry Run and deployment for Validation-Rules (Mandatory)
 
-    - Before deploying the created validaiton rules into the org do the dry run first using below command
-    - Do dry run for all validation rules at once.
-    `sf project deploy start --dry-run --source-dir force-app/main/default/objects/[ObjectName]/validationRules/[RuleName].validationRule-meta.xml`
-    - If got any errors after dry run solve them.
-    - After successful dry run then proceed with deloyment process.
-    - Do deploy  all validation rules at once.
-    `sf project deploy start --source-dir force-app/main/default/objects/[ObjectName]/validationRules/[RuleName].validationRule-meta.xml`
-    - Replace [RuleName] with the actual  rules that are created.
+     - Before deploying the created validation rules into the org, use the `<sf_deploy_metadata>` tool
+     - Provide all validation rule metadata files to the tool at once for batch deployment
+     - The tool will automatically handle both dry-run validation and actual deployment
+     - If there are any errors during validation, the tool will report them - fix and retry the deployment
+     - Replace [RuleName] with the actual rules that are created
+     - After successful deployment, all validation rules will be active in the Salesforce org
 
 ## Common Formula Patterns to Recognize
 

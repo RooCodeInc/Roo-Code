@@ -287,47 +287,36 @@ Visualforce uses expression language `{! }` to bind page elements to controller 
 
 ---
 
-## Step 4: Dry Run & Deployment {#step-4-dry-run-deployment}
+## ⚠️ MANDATORY DEPLOYMENT (!!**CRITICAL - MUST FOLLOW EVERY TIME**) {#step-4-dry-run-deployment}
 
-### Dry Run Commands
+**AFTER EVERY VISUALFORCE PAGE AND CONTROLLER CREATION, YOU MUST IMMEDIATELY DEPLOY USING `<sf_deploy_metadata>` TOOL**
 
-Always perform a dry run before deployment:
+**THIS IS NOT OPTIONAL. THIS STEP MUST NOT BE SKIPPED UNDER ANY CIRCUMSTANCES.**
 
-```bash
-# Dry run for Apex controller
-sf project deploy start --dry-run --source-dir force-app/main/default/classes/ContactController.cls
+### Strict Deployment Rules
 
-# Dry run for Visualforce page
-sf project deploy start --dry-run --source-dir force-app/main/default/pages/ContactForm.page
+- (**!CRITICAL**) **You MUST use the `<sf_deploy_metadata>` tool for ALL Visualforce deployments**
+- (**!CRITICAL**) **Do NOT attempt to use CLI commands like `sf project deploy start`**
+- (**!CRITICAL**) **Do NOT skip this step - deployment is MANDATORY after every Visualforce page and controller creation**
+- (**!CRITICAL**) **Deploy Apex controller BEFORE the Visualforce page that references it**
+- (**!CRITICAL**) **Deploy only the metadata files that were created or modified — do NOT deploy the entire metadata folder**
 
-# Dry run for both controller and page together
-sf project deploy start --dry-run \
-  --source-dir force-app/main/default/classes/ContactController.cls \
-  --source-dir force-app/main/default/pages/ContactForm.page
-```
+### Mandatory Deployment Workflow
 
-### Deployment Commands
+1. **Verify all Apex controller dependencies are deployed first** (this step is MANDATORY)
+2. **Use `<sf_deploy_metadata>` tool with the Visualforce page and/or controller file paths** (this step is MANDATORY)
+3. **The tool will automatically validate (dry-run) the deployment** (automatic)
+4. **If validation is successful, the tool will proceed with deployment** (automatic)
+5. **If there are errors, fix them immediately and retry the deployment using the tool** (this step is MANDATORY)
 
-After successful dry run, deploy to the org:
+**Supported Deployment Combinations:**
 
-```bash
-# Deploy single Visualforce page
-sf project deploy start --source-dir force-app/main/default/pages/ContactForm.page
+- Single Visualforce page
+- Apex controller alone
+- Both controller and page together
+- Multiple pages and controllers at once
 
-# Deploy Apex controller
-sf project deploy start --source-dir force-app/main/default/classes/ContactController.cls
-
-# Deploy both controller and page together
-sf project deploy start \
-  --source-dir force-app/main/default/classes/ContactController.cls \
-  --source-dir force-app/main/default/pages/ContactForm.page
-
-# Deploy multiple pages and controllers
-sf project deploy start \
-  --source-dir force-app/main/default/classes/ContactController.cls \
-  --source-dir force-app/main/default/pages/ContactForm.page \
-  --source-dir force-app/main/default/pages/AccountSummary.page
-```
+**MUST DO THIS AFTER EVERY SINGLE VISUALFORCE PAGE AND CONTROLLER - NO EXCEPTIONS**
 
 ### Deployment Notes
 
