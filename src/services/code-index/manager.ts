@@ -370,20 +370,31 @@ export class CodeIndexManager {
 			return
 		}
 
-		// Create .gitignore instance
-		const ignorePath = path.join(workspacePath, ".gitignore")
+		// Read the respectGitIgnore setting from the codebaseIndexConfig
+		let respectGitIgnore = true
 		try {
-			const content = await fs.readFile(ignorePath, "utf8")
-			ignoreInstance.add(content)
-			ignoreInstance.add(".gitignore")
-		} catch (error) {
-			// Should never happen: reading file failed even though it exists
-			console.error("Unexpected error loading .gitignore:", error)
-			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
-				location: "_recreateServices",
-			})
+			const codebaseIndexConfig = this._configManager!.getContextProxy()?.getGlobalState("codebaseIndexConfig")
+			respectGitIgnore = codebaseIndexConfig?.codebaseIndexRespectGitIgnore ?? true
+		} catch {
+			// Fall back to default (respect .gitignore) if config proxy is not available
+		}
+
+		// Create .gitignore instance (only when respecting .gitignore)
+		if (respectGitIgnore) {
+			const ignorePath = path.join(workspacePath, ".gitignore")
+			try {
+				const content = await fs.readFile(ignorePath, "utf8")
+				ignoreInstance.add(content)
+				ignoreInstance.add(".gitignore")
+			} catch (error) {
+				// Should never happen: reading file failed even though it exists
+				console.error("Unexpected error loading .gitignore:", error)
+				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+					location: "_recreateServices",
+				})
+			}
 		}
 
 		// Create RooIgnoreController instance
@@ -396,6 +407,7 @@ export class CodeIndexManager {
 			this._cacheManager!,
 			ignoreInstance,
 			rooIgnoreController,
+			respectGitIgnore,
 		)
 
 		// Validate embedder configuration before proceeding
