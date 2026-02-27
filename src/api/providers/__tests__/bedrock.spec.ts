@@ -38,6 +38,7 @@ import { AwsBedrockHandler } from "../bedrock"
 import { ConverseStreamCommand, BedrockRuntimeClient, ConverseCommand } from "@aws-sdk/client-bedrock-runtime"
 import {
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
+	BEDROCK_FINE_GRAINED_STREAMING_UNSUPPORTED_IDS,
 	BEDROCK_SERVICE_TIER_MODEL_IDS,
 	bedrockModels,
 	ApiProviderError,
@@ -841,6 +842,68 @@ describe("AwsBedrockHandler", () => {
 			)
 			// Should NOT include 1M context beta for non-Sonnet 4 models
 			expect(commandArg.additionalModelRequestFields.anthropic_beta).not.toContain("context-1m-2025-08-07")
+		})
+
+		it("should NOT include fine-grained-tool-streaming beta for older Claude 3 models", async () => {
+			// Test with Claude 3 Haiku - the model from the original bug report
+			for (const unsupportedModelId of BEDROCK_FINE_GRAINED_STREAMING_UNSUPPORTED_IDS) {
+				const handler = new AwsBedrockHandler({
+					apiModelId: unsupportedModelId,
+					awsAccessKey: "test",
+					awsSecretKey: "test",
+					awsRegion: "us-east-1",
+				})
+
+				const messages: Anthropic.Messages.MessageParam[] = [
+					{
+						role: "user",
+						content: "Test message",
+					},
+				]
+
+				mockConverseStreamCommand.mockClear()
+
+				const generator = handler.createMessage("", messages)
+				await generator.next()
+
+				expect(mockConverseStreamCommand).toHaveBeenCalled()
+				const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
+
+				// Older Claude 3 models should NOT have fine-grained-tool-streaming beta
+				if (commandArg.additionalModelRequestFields?.anthropic_beta) {
+					expect(commandArg.additionalModelRequestFields.anthropic_beta).not.toContain(
+						"fine-grained-tool-streaming-2025-05-14",
+					)
+				}
+			}
+		})
+
+		it("should still include fine-grained-tool-streaming beta for newer Claude models", async () => {
+			const handler = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test",
+				awsSecretKey: "test",
+				awsRegion: "us-east-1",
+			})
+
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: "Test message",
+				},
+			]
+
+			const generator = handler.createMessage("", messages)
+			await generator.next()
+
+			expect(mockConverseStreamCommand).toHaveBeenCalled()
+			const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
+
+			// Newer Claude models should still have the beta
+			expect(commandArg.additionalModelRequestFields).toBeDefined()
+			expect(commandArg.additionalModelRequestFields.anthropic_beta).toContain(
+				"fine-grained-tool-streaming-2025-05-14",
+			)
 		})
 
 		it("should enable 1M context window with cross-region inference for Claude Sonnet 4", () => {
