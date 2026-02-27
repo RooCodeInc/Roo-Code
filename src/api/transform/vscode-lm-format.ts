@@ -194,3 +194,143 @@ export function extractTextCountFromMessage(message: vscode.LanguageModelChatMes
 	}
 	return text
 }
+
+/**
+ * Helper function to extract tool call IDs from a message's content.
+ * Returns an array of call IDs from LanguageModelToolCallPart instances.
+ */
+function getToolCallIds(message: vscode.LanguageModelChatMessage): string[] {
+	const callIds: string[] = []
+	if (Array.isArray(message.content)) {
+		for (const part of message.content) {
+			if (part instanceof vscode.LanguageModelToolCallPart) {
+				callIds.push(part.callId)
+			}
+		}
+	}
+	return callIds
+}
+
+/**
+ * Helper function to extract tool result IDs from a message's content.
+ * Returns an array of call IDs from LanguageModelToolResultPart instances.
+ */
+function getToolResultIds(message: vscode.LanguageModelChatMessage): string[] {
+	const callIds: string[] = []
+	if (Array.isArray(message.content)) {
+		for (const part of message.content) {
+			if (part instanceof vscode.LanguageModelToolResultPart) {
+				callIds.push(part.callId)
+			}
+		}
+	}
+	return callIds
+}
+
+/**
+ * Validates and repairs the tool call/result sequence in VSCode LM messages.
+ *
+ * The VSCode Language Model API requires that:
+ * - When an Assistant message contains LanguageModelToolCallPart(s)
+ * - The immediately next message MUST be a User message with LanguageModelToolResultPart(s)
+ *   with matching callIds
+ *
+ * This function:
+ * 1. Identifies assistant messages with tool calls
+ * 2. Checks that the next message is a user message with matching tool results
+ * 3. If mismatches are found:
+ *    - Missing tool results: Adds placeholder ToolResultParts to the user message
+ *    - Orphaned tool results (no preceding tool call): Removes them
+ *    - No following user message: Creates one with the necessary tool results
+ *
+ * @param messages - Array of VSCode LanguageModelChatMessage to validate and repair
+ * @returns The validated and repaired array of messages
+ */
+export function validateAndRepairToolSequence(
+	messages: vscode.LanguageModelChatMessage[],
+): vscode.LanguageModelChatMessage[] {
+	if (!messages || messages.length === 0) {
+		return messages
+	}
+
+	const repairedMessages: vscode.LanguageModelChatMessage[] = []
+
+	for (let i = 0; i < messages.length; i++) {
+		const currentMessage = messages[i]
+		const isAssistant = currentMessage.role === vscode.LanguageModelChatMessageRole.Assistant
+		const toolCallIds = getToolCallIds(currentMessage)
+
+		// If this is an assistant message with tool calls
+		if (isAssistant && toolCallIds.length > 0) {
+			repairedMessages.push(currentMessage)
+
+			const nextMessage = messages[i + 1]
+			const isNextUser = nextMessage?.role === vscode.LanguageModelChatMessageRole.User
+
+			if (isNextUser) {
+				// Check if the next user message has matching tool results
+				const toolResultIds = getToolResultIds(nextMessage)
+				const missingResultIds = toolCallIds.filter((id) => !toolResultIds.includes(id))
+
+				if (missingResultIds.length > 0) {
+					// Need to add placeholder tool results for missing IDs
+					// Filter existing content to only include valid user message parts (TextPart and ToolResultPart)
+					const existingContent: (vscode.LanguageModelTextPart | vscode.LanguageModelToolResultPart)[] = []
+					if (Array.isArray(nextMessage.content)) {
+						for (const part of nextMessage.content) {
+							if (
+								part instanceof vscode.LanguageModelTextPart ||
+								part instanceof vscode.LanguageModelToolResultPart
+							) {
+								existingContent.push(part)
+							}
+						}
+					}
+
+					// Add placeholder results at the beginning (tool results come first)
+					const placeholderResults = missingResultIds.map(
+						(callId) =>
+							new vscode.LanguageModelToolResultPart(callId, [
+								new vscode.LanguageModelTextPart("[Tool result not available]"),
+							]),
+					)
+
+					// Create new user message with placeholders prepended
+					const repairedUserMessage = vscode.LanguageModelChatMessage.User([
+						...placeholderResults,
+						...existingContent,
+					])
+					repairedMessages.push(repairedUserMessage)
+					i++ // Skip the next message since we've processed it
+
+					console.warn(
+						`Roo Code <Language Model API>: Added ${missingResultIds.length} placeholder tool result(s) for missing call IDs: ${missingResultIds.join(", ")}`,
+					)
+				} else {
+					// All tool results are present, keep the message as-is
+					repairedMessages.push(nextMessage)
+					i++ // Skip the next message since we've processed it
+				}
+			} else {
+				// No user message follows - create one with placeholder tool results
+				const placeholderResults = toolCallIds.map(
+					(callId) =>
+						new vscode.LanguageModelToolResultPart(callId, [
+							new vscode.LanguageModelTextPart("[Tool result not available]"),
+						]),
+				)
+				const newUserMessage = vscode.LanguageModelChatMessage.User(placeholderResults)
+				repairedMessages.push(newUserMessage)
+
+				console.warn(
+					`Roo Code <Language Model API>: Created user message with ${toolCallIds.length} placeholder tool result(s) for call IDs: ${toolCallIds.join(", ")}`,
+				)
+			}
+		} else {
+			// For non-tool-call messages, just add them directly
+			repairedMessages.push(currentMessage)
+		}
+	}
+
+	return repairedMessages
+}

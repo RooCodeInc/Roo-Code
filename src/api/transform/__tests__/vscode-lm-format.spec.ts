@@ -3,7 +3,12 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import * as vscode from "vscode"
 
-import { convertToVsCodeLmMessages, convertToAnthropicRole, extractTextCountFromMessage } from "../vscode-lm-format"
+import {
+	convertToVsCodeLmMessages,
+	convertToAnthropicRole,
+	extractTextCountFromMessage,
+	validateAndRepairToolSequence,
+} from "../vscode-lm-format"
 
 // Mock crypto using Vitest
 vitest.stubGlobal("crypto", {
@@ -344,5 +349,169 @@ describe("extractTextCountFromMessage", () => {
 
 		const result = extractTextCountFromMessage(message)
 		expect(result).toBe("result-id")
+	})
+})
+
+describe("validateAndRepairToolSequence", () => {
+	it("should return empty array for empty input", () => {
+		const result = validateAndRepairToolSequence([])
+		expect(result).toEqual([])
+	})
+
+	it("should return messages unchanged when no tool calls present", () => {
+		const mockTextPart = new (vitest.mocked(vscode).LanguageModelTextPart)("Hello")
+		const messages = [
+			{
+				role: vitest.mocked(vscode).LanguageModelChatMessageRole.User,
+				content: [mockTextPart],
+			},
+			{
+				role: vitest.mocked(vscode).LanguageModelChatMessageRole.Assistant,
+				content: [mockTextPart],
+			},
+		] as vscode.LanguageModelChatMessage[]
+
+		const result = validateAndRepairToolSequence(messages)
+		expect(result).toHaveLength(2)
+		expect(result[0]).toBe(messages[0])
+		expect(result[1]).toBe(messages[1])
+	})
+
+	it("should return messages unchanged when tool call is followed by matching tool result", () => {
+		const mockTextPart = new (vitest.mocked(vscode).LanguageModelTextPart)("I'll help")
+		const mockToolCallPart = new (vitest.mocked(vscode).LanguageModelToolCallPart)("call-1", "test-tool", {})
+		const mockToolResultPart = new (vitest.mocked(vscode).LanguageModelToolResultPart)("call-1", [
+			new (vitest.mocked(vscode).LanguageModelTextPart)("result"),
+		])
+
+		const assistantMessage = {
+			role: vitest.mocked(vscode).LanguageModelChatMessageRole.Assistant,
+			content: [mockTextPart, mockToolCallPart],
+		} as vscode.LanguageModelChatMessage
+
+		const userMessage = {
+			role: vitest.mocked(vscode).LanguageModelChatMessageRole.User,
+			content: [mockToolResultPart],
+		} as vscode.LanguageModelChatMessage
+
+		const messages = [assistantMessage, userMessage]
+
+		const result = validateAndRepairToolSequence(messages)
+		expect(result).toHaveLength(2)
+		expect(result[0]).toBe(assistantMessage)
+		expect(result[1]).toBe(userMessage)
+	})
+
+	it("should add placeholder tool result when assistant tool call is not followed by user message", () => {
+		const mockTextPart = new (vitest.mocked(vscode).LanguageModelTextPart)("I'll help")
+		const mockToolCallPart = new (vitest.mocked(vscode).LanguageModelToolCallPart)("call-1", "test-tool", {})
+
+		const assistantMessage = {
+			role: vitest.mocked(vscode).LanguageModelChatMessageRole.Assistant,
+			content: [mockTextPart, mockToolCallPart],
+		} as vscode.LanguageModelChatMessage
+
+		const messages = [assistantMessage]
+
+		const result = validateAndRepairToolSequence(messages)
+
+		// Should have original assistant message plus new user message with placeholder
+		expect(result).toHaveLength(2)
+		expect(result[0]).toBe(assistantMessage)
+		expect(result[1].role).toBe(vitest.mocked(vscode).LanguageModelChatMessageRole.User)
+		// The new user message should have a tool result part
+		expect(result[1].content).toHaveLength(1)
+		expect((result[1].content[0] as MockLanguageModelToolResultPart).callId).toBe("call-1")
+	})
+
+	it("should add placeholder tool result when tool call is followed by user message without matching result", () => {
+		const mockTextPart = new (vitest.mocked(vscode).LanguageModelTextPart)("I'll help")
+		const mockToolCallPart = new (vitest.mocked(vscode).LanguageModelToolCallPart)("call-1", "test-tool", {})
+		const mockUserTextPart = new (vitest.mocked(vscode).LanguageModelTextPart)("Continue please")
+
+		const assistantMessage = {
+			role: vitest.mocked(vscode).LanguageModelChatMessageRole.Assistant,
+			content: [mockTextPart, mockToolCallPart],
+		} as vscode.LanguageModelChatMessage
+
+		const userMessage = {
+			role: vitest.mocked(vscode).LanguageModelChatMessageRole.User,
+			content: [mockUserTextPart],
+		} as vscode.LanguageModelChatMessage
+
+		const messages = [assistantMessage, userMessage]
+
+		const result = validateAndRepairToolSequence(messages)
+
+		expect(result).toHaveLength(2)
+		expect(result[0]).toBe(assistantMessage)
+		// The repaired user message should have placeholder result prepended
+		expect(result[1].content).toHaveLength(2)
+		expect((result[1].content[0] as MockLanguageModelToolResultPart).callId).toBe("call-1")
+		expect((result[1].content[1] as MockLanguageModelTextPart).value).toBe("Continue please")
+	})
+
+	it("should handle multiple tool calls with partial matching results", () => {
+		const mockTextPart = new (vitest.mocked(vscode).LanguageModelTextPart)("I'll help")
+		const mockToolCallPart1 = new (vitest.mocked(vscode).LanguageModelToolCallPart)("call-1", "tool-1", {})
+		const mockToolCallPart2 = new (vitest.mocked(vscode).LanguageModelToolCallPart)("call-2", "tool-2", {})
+		const mockToolResultPart1 = new (vitest.mocked(vscode).LanguageModelToolResultPart)("call-1", [
+			new (vitest.mocked(vscode).LanguageModelTextPart)("result-1"),
+		])
+
+		const assistantMessage = {
+			role: vitest.mocked(vscode).LanguageModelChatMessageRole.Assistant,
+			content: [mockTextPart, mockToolCallPart1, mockToolCallPart2],
+		} as vscode.LanguageModelChatMessage
+
+		const userMessage = {
+			role: vitest.mocked(vscode).LanguageModelChatMessageRole.User,
+			content: [mockToolResultPart1], // Only has result for call-1, missing call-2
+		} as vscode.LanguageModelChatMessage
+
+		const messages = [assistantMessage, userMessage]
+
+		const result = validateAndRepairToolSequence(messages)
+
+		expect(result).toHaveLength(2)
+		expect(result[0]).toBe(assistantMessage)
+		// The repaired user message should have placeholder for call-2 prepended
+		expect(result[1].content).toHaveLength(2)
+		// Placeholder for missing call-2 should be first
+		expect((result[1].content[0] as MockLanguageModelToolResultPart).callId).toBe("call-2")
+		// Original result for call-1 should still be present
+		expect((result[1].content[1] as MockLanguageModelToolResultPart).callId).toBe("call-1")
+	})
+
+	it("should handle tool call followed by another assistant message", () => {
+		const mockTextPart = new (vitest.mocked(vscode).LanguageModelTextPart)("I'll help")
+		const mockToolCallPart = new (vitest.mocked(vscode).LanguageModelToolCallPart)("call-1", "test-tool", {})
+		const mockTextPart2 = new (vitest.mocked(vscode).LanguageModelTextPart)("More assistant text")
+
+		const assistantMessage1 = {
+			role: vitest.mocked(vscode).LanguageModelChatMessageRole.Assistant,
+			content: [mockTextPart, mockToolCallPart],
+		} as vscode.LanguageModelChatMessage
+
+		const assistantMessage2 = {
+			role: vitest.mocked(vscode).LanguageModelChatMessageRole.Assistant,
+			content: [mockTextPart2],
+		} as vscode.LanguageModelChatMessage
+
+		const messages = [assistantMessage1, assistantMessage2]
+
+		const result = validateAndRepairToolSequence(messages)
+
+		// Should insert a user message with placeholder between the two assistant messages
+		expect(result).toHaveLength(3)
+		expect(result[0]).toBe(assistantMessage1)
+		expect(result[1].role).toBe(vitest.mocked(vscode).LanguageModelChatMessageRole.User)
+		expect((result[1].content[0] as MockLanguageModelToolResultPart).callId).toBe("call-1")
+		expect(result[2]).toBe(assistantMessage2)
+	})
+
+	it("should handle null/undefined input gracefully", () => {
+		expect(validateAndRepairToolSequence(null as any)).toEqual(null)
+		expect(validateAndRepairToolSequence(undefined as any)).toEqual(undefined)
 	})
 })
