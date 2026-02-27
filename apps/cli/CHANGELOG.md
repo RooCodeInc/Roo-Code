@@ -5,6 +5,21 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] - 2026-02-27
+
+### Added
+
+- **Consecutive Mistake Limit**: New `--mistake-limit` flag to configure the maximum number of consecutive mistakes before the agent pauses for intervention.
+
+### Changed
+
+- **Workspace-Scoped Sessions**: The `list sessions` command and `--resume` flag now only show and resume sessions from the current workspace directory.
+
+### Fixed
+
+- **Task Configuration Forwarding**: Task configuration (custom modes, disabled tools, etc.) passed via the stdin-prompt-stream protocol is now correctly forwarded to the extension host instead of being silently dropped.
+- **Stream Error Recovery**: Improved recovery from streaming errors to prevent task interruption.
+
 ## [0.1.5] - 2026-02-26
 
 ### Added
