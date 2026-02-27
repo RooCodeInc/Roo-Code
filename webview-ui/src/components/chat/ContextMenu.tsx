@@ -46,6 +46,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 }) => {
 	const [materialIconsBaseUri, setMaterialIconsBaseUri] = useState("")
 	const menuRef = useRef<HTMLDivElement>(null)
+	const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
 	const filteredOptions = useMemo(() => {
 		return getContextMenuOptions(searchQuery, selectedType, queryItems, dynamicSearchResults, modes, commands)
@@ -72,6 +73,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 		const w = window as any
 		setMaterialIconsBaseUri(w.MATERIAL_ICONS_BASE_URI)
 	}, [])
+
+	// Reset hover state when menu opens/closes
+	useEffect(() => {
+		setHoveredIndex(null)
+	}, [searchQuery])
 
 	const renderOptionContent = (option: ContextMenuQueryItem) => {
 		switch (option.type) {
@@ -340,14 +346,18 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 					filteredOptions.map((option, index) => (
 						<div
 							key={`${option.type}-${option.value || index}`}
-							onClick={() => isOptionSelectable(option) && onSelect(option.type, option.value)}
+							onClick={() => {
+								if (isOptionSelectable(option)) {
+									setSelectedIndex(index)
+									onSelect(option.type, option.value)
+								}
+							}}
 							style={{
 								padding:
 									option.type === ContextMenuOptionType.SectionHeader
 										? "16px 8px 4px 8px"
 										: "4px 8px",
 								cursor: isOptionSelectable(option) ? "pointer" : "default",
-								color: "var(--vscode-dropdown-foreground)",
 								display: "flex",
 								alignItems: "center",
 								justifyContent: "space-between",
@@ -358,14 +368,31 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 											marginBottom: "2px",
 										}
 									: {}),
+								// Show different styles for selection vs hover
 								...(index === selectedIndex && isOptionSelectable(option)
 									? {
 											backgroundColor: "var(--vscode-list-activeSelectionBackground)",
 											color: "var(--vscode-list-activeSelectionForeground)",
 										}
-									: {}),
+									: index === hoveredIndex && isOptionSelectable(option)
+										? {
+												backgroundColor: "var(--vscode-list-hoverBackground)",
+												color: "var(--vscode-dropdown-foreground)",
+											}
+										: {
+												color: "var(--vscode-dropdown-foreground)",
+											}),
 							}}
-							onMouseEnter={() => isOptionSelectable(option) && setSelectedIndex(index)}>
+							onMouseEnter={() => {
+								if (isOptionSelectable(option)) {
+									setHoveredIndex(index)
+								}
+							}}
+							onMouseLeave={() => {
+								if (index === hoveredIndex) {
+									setHoveredIndex(null)
+								}
+							}}>
 							<div
 								style={{
 									display: "flex",
