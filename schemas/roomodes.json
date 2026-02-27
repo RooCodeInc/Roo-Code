@@ -1,0 +1,122 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://github.com/RooCodeInc/Roo-Code/blob/main/schemas/roomodes.json",
+	"title": "Roo Code Custom Modes",
+	"description": "Schema for .roomodes configuration files used by Roo Code to define custom modes.",
+	"type": "object",
+	"required": ["customModes"],
+	"additionalProperties": false,
+	"properties": {
+		"customModes": {
+			"type": "array",
+			"description": "List of custom mode definitions.",
+			"items": {
+				"$ref": "#/definitions/CustomMode"
+			}
+		}
+	},
+	"definitions": {
+		"ToolGroup": {
+			"type": "string",
+			"enum": ["read", "edit", "browser", "command", "mcp", "modes"],
+			"description": "A tool group name that grants the mode access to a set of tools. Note: 'browser' is deprecated but still accepted for backward compatibility."
+		},
+		"GroupOptions": {
+			"type": "object",
+			"description": "Options that restrict a tool group's file access.",
+			"properties": {
+				"fileRegex": {
+					"type": "string",
+					"description": "A regular expression pattern to restrict which files the tool group can access."
+				},
+				"description": {
+					"type": "string",
+					"description": "A human-readable description of the file restriction."
+				}
+			},
+			"additionalProperties": false
+		},
+		"GroupEntryTuple": {
+			"type": "array",
+			"description": "A tuple of [toolGroupName, options] for tool groups with file restrictions.",
+			"items": [{ "$ref": "#/definitions/ToolGroup" }, { "$ref": "#/definitions/GroupOptions" }],
+			"additionalItems": false,
+			"minItems": 2,
+			"maxItems": 2
+		},
+		"GroupEntry": {
+			"description": "A tool group permission entry. Either a simple tool group name string, or a [toolGroupName, options] tuple for groups with file restrictions.",
+			"oneOf": [{ "$ref": "#/definitions/ToolGroup" }, { "$ref": "#/definitions/GroupEntryTuple" }]
+		},
+		"RuleFile": {
+			"type": "object",
+			"description": "A rules file associated with a mode, used during import/export.",
+			"required": ["relativePath"],
+			"additionalProperties": false,
+			"properties": {
+				"relativePath": {
+					"type": "string",
+					"description": "The relative file path for the rules file."
+				},
+				"content": {
+					"type": "string",
+					"description": "The text content of the rules file."
+				}
+			}
+		},
+		"CustomMode": {
+			"type": "object",
+			"description": "A custom mode definition.",
+			"required": ["slug", "name", "roleDefinition", "groups"],
+			"additionalProperties": false,
+			"properties": {
+				"slug": {
+					"type": "string",
+					"pattern": "^[a-zA-Z0-9-]+$",
+					"description": "A unique identifier for the mode, containing only letters, numbers, and dashes."
+				},
+				"name": {
+					"type": "string",
+					"minLength": 1,
+					"description": "The display name of the mode."
+				},
+				"roleDefinition": {
+					"type": "string",
+					"minLength": 1,
+					"description": "The system prompt that defines the mode's role and behavior."
+				},
+				"whenToUse": {
+					"type": "string",
+					"description": "A description of when this mode should be used, shown in the mode selection UI."
+				},
+				"description": {
+					"type": "string",
+					"description": "A short description of the mode."
+				},
+				"customInstructions": {
+					"type": "string",
+					"description": "Additional instructions appended to the system prompt."
+				},
+				"groups": {
+					"type": "array",
+					"description": "The tool groups this mode has access to.",
+					"items": {
+						"$ref": "#/definitions/GroupEntry"
+					}
+				},
+				"source": {
+					"type": "string",
+					"enum": ["global", "project"],
+					"description": "Where this mode was defined. Automatically set by Roo Code."
+				},
+				"rulesFiles": {
+					"type": "array",
+					"description": "Rules files associated with this mode, used during import/export.",
+					"items": {
+						"$ref": "#/definitions/RuleFile"
+					}
+				}
+			}
+		}
+	}
+}
