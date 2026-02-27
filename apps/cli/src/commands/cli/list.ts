@@ -1,15 +1,15 @@
 import fs from "fs"
-import os from "os"
 import path from "path"
 import { fileURLToPath } from "url"
 
 import pWaitFor from "p-wait-for"
 
-import { readTaskSessionsFromStoragePath, type TaskSessionEntry } from "@roo-code/core/cli"
+import type { TaskSessionEntry } from "@roo-code/core/cli"
 import type { Command, ModelRecord, WebviewMessage } from "@roo-code/types"
 import { getProviderDefaultModelId } from "@roo-code/types"
 
 import { ExtensionHost, type ExtensionHostOptions } from "@/agent/index.js"
+import { readWorkspaceTaskSessions } from "@/lib/task-history/index.js"
 import { loadToken } from "@/lib/storage/index.js"
 import { getDefaultExtensionPath } from "@/lib/utils/extension.js"
 import { getApiKeyFromEnv } from "@/lib/utils/provider.js"
@@ -33,7 +33,6 @@ type CommandLike = Pick<Command, "name" | "source" | "filePath" | "description" 
 type ModeLike = { slug: string; name: string }
 type SessionLike = TaskSessionEntry
 type ListHostOptions = { ephemeral: boolean }
-const DEFAULT_CLI_TASK_STORAGE_PATH = path.join(os.homedir(), ".vscode-mock", "global-storage")
 
 export function parseFormat(rawFormat: string | undefined): ListFormat {
 	const format = (rawFormat ?? "json").toLowerCase()
@@ -313,10 +312,11 @@ export async function listModels(options: BaseListOptions): Promise<void> {
 
 export async function listSessions(options: BaseListOptions): Promise<void> {
 	const format = parseFormat(options.format)
-	const sessions = await readTaskSessionsFromStoragePath(DEFAULT_CLI_TASK_STORAGE_PATH)
+	const workspacePath = resolveWorkspacePath(options.workspace)
+	const sessions = await readWorkspaceTaskSessions(workspacePath)
 
 	if (format === "json") {
-		outputJson({ sessions })
+		outputJson({ workspace: workspacePath, sessions })
 		return
 	}
 

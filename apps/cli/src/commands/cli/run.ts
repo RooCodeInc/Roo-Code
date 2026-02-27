@@ -3,7 +3,7 @@ import path from "path"
 import { fileURLToPath } from "url"
 
 import { createElement } from "react"
-import type { HistoryItem } from "@roo-code/types"
+import pWaitFor from "p-wait-for"
 
 import { setLogger } from "@roo-code/vscode-shim"
 
@@ -22,8 +22,8 @@ import { JsonEventEmitter } from "@/agent/json-event-emitter.js"
 
 import { createClient } from "@/lib/sdk/index.js"
 import { loadToken, loadSettings } from "@/lib/storage/index.js"
+import { readWorkspaceTaskSessions, resolveWorkspaceResumeSessionId } from "@/lib/task-history/index.js"
 import { isRecord } from "@/lib/utils/guards.js"
-import { arePathsEqual } from "@/lib/utils/path.js"
 import { getEnvVarName, getApiKeyFromEnv } from "@/lib/utils/provider.js"
 import { runOnboarding } from "@/lib/utils/onboarding.js"
 import { getDefaultExtensionPath } from "@/lib/utils/extension.js"
@@ -35,6 +35,17 @@ import { runStdinStreamMode } from "./stdin-stream.js"
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROO_MODEL_WARMUP_TIMEOUT_MS = 10_000
 const SIGNAL_ONLY_EXIT_KEEPALIVE_MS = 60_000
+const STREAM_RESUME_WAIT_TIMEOUT_MS = 2_000
+
+async function bootstrapResumeForStdinStream(host: ExtensionHost, sessionId: string): Promise<void> {
+	host.sendToExtension({ type: "showTaskWithId", text: sessionId })
+
+	// Best-effort wait so early stdin "message" commands can target the resumed task.
+	await pWaitFor(() => host.client.hasActiveTask() || host.isWaitingForInput(), {
+		interval: 25,
+		timeout: STREAM_RESUME_WAIT_TIMEOUT_MS,
+	}).catch(() => undefined)
+}
 
 function normalizeError(error: unknown): Error {
 	return error instanceof Error ? error : new Error(String(error))
@@ -91,38 +102,6 @@ async function warmRooModels(host: ExtensionHost): Promise<void> {
 		host.on("extensionWebviewMessage", onMessage)
 		host.sendToExtension({ type: "requestRooModels" })
 	})
-}
-
-function extractTaskHistoryFromMessage(message: unknown): HistoryItem[] | undefined {
-	if (!isRecord(message)) {
-		return undefined
-	}
-
-	if (message.type === "state") {
-		const state = isRecord(message.state) ? message.state : undefined
-		if (Array.isArray(state?.taskHistory)) {
-			return state.taskHistory as HistoryItem[]
-		}
-	}
-
-	if (message.type === "taskHistoryUpdated" && Array.isArray(message.taskHistory)) {
-		return message.taskHistory as HistoryItem[]
-	}
-
-	return undefined
-}
-
-function getMostRecentTaskIdInWorkspace(taskHistory: HistoryItem[], workspacePath: string): string | undefined {
-	const workspaceTasks = taskHistory.filter(
-		(item) => typeof item.workspace === "string" && arePathsEqual(item.workspace, workspacePath),
-	)
-
-	if (workspaceTasks.length === 0) {
-		return undefined
-	}
-
-	const sorted = [...workspaceTasks].sort((a, b) => b.ts - a.ts)
-	return sorted[0]?.id
 }
 
 export async function run(promptArg: string | undefined, flagOptions: FlagOptions) {
@@ -185,10 +164,21 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		(settings.dangerouslySkipPermissions === undefined ? undefined : !settings.dangerouslySkipPermissions)
 	const effectiveRequireApproval = flagOptions.requireApproval || legacyRequireApprovalFromSettings || false
 	const effectiveExitOnComplete = flagOptions.print || flagOptions.oneshot || settings.oneshot || false
+	const rawConsecutiveMistakeLimit =
+		flagOptions.consecutiveMistakeLimit ?? settings.consecutiveMistakeLimit ?? DEFAULT_FLAGS.consecutiveMistakeLimit
+	const effectiveConsecutiveMistakeLimit = Number(rawConsecutiveMistakeLimit)
+
+	if (!Number.isInteger(effectiveConsecutiveMistakeLimit) || effectiveConsecutiveMistakeLimit < 0) {
+		console.error(
+			`[CLI] Error: Invalid consecutive mistake limit: ${rawConsecutiveMistakeLimit}; must be a non-negative integer`,
+		)
+		process.exit(1)
+	}
 
 	const extensionHostOptions: ExtensionHostOptions = {
 		mode: effectiveMode,
 		reasoningEffort: effectiveReasoningEffort === "unspecified" ? undefined : effectiveReasoningEffort,
+		consecutiveMistakeLimit: effectiveConsecutiveMistakeLimit,
 		user: null,
 		provider: effectiveProvider,
 		model: effectiveModel,
@@ -336,13 +326,19 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		process.exit(1)
 	}
 
-	if (flagOptions.stdinPromptStream && isResumeRequested) {
-		console.error("[CLI] Error: cannot use --session-id/--continue with --stdin-prompt-stream")
-		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
-		process.exit(1)
-	}
-
 	const useStdinPromptStream = flagOptions.stdinPromptStream
+	let resolvedResumeSessionId: string | undefined
+
+	if (isResumeRequested) {
+		const workspaceSessions = await readWorkspaceTaskSessions(effectiveWorkspacePath)
+		try {
+			resolvedResumeSessionId = resolveWorkspaceResumeSessionId(workspaceSessions, requestedSessionId)
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error)
+			console.error(`[CLI] Error: ${message}`)
+			process.exit(1)
+		}
+	}
 
 	if (!isTuiEnabled) {
 		if (!prompt && !useStdinPromptStream && !isResumeRequested) {
@@ -377,8 +373,8 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 				createElement(App, {
 					...extensionHostOptions,
 					initialPrompt: prompt,
-					initialSessionId: requestedSessionId,
-					continueSession: shouldContinueSession,
+					initialSessionId: resolvedResumeSessionId,
+					continueSession: false,
 					version: VERSION,
 					createExtensionHost: (opts: ExtensionHostOptions) => new ExtensionHost(opts),
 				}),
@@ -405,16 +401,6 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		let keepAliveInterval: NodeJS.Timeout | undefined
 		let isShuttingDown = false
 		let hostDisposed = false
-		let taskHistorySnapshot: HistoryItem[] = []
-
-		const onExtensionMessage = (message: unknown) => {
-			const taskHistory = extractTaskHistoryFromMessage(message)
-			if (taskHistory) {
-				taskHistorySnapshot = taskHistory
-			}
-		}
-
-		host.on("extensionWebviewMessage", onExtensionMessage)
 
 		const jsonEmitter = useJsonOutput
 			? new JsonEventEmitter({
@@ -445,6 +431,27 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			keepAliveInterval = undefined
 		}
 
+		const flushStdout = async () => {
+			try {
+				if (!process.stdout.writable || process.stdout.destroyed) {
+					return
+				}
+
+				await new Promise<void>((resolve, reject) => {
+					process.stdout.write("", (error?: Error | null) => {
+						if (error) {
+							reject(error)
+							return
+						}
+
+						resolve()
+					})
+				})
+			} catch {
+				// Best effort: shutdown should proceed even if stdout flush fails.
+			}
+		}
+
 		const ensureKeepAliveInterval = () => {
 			if (!signalOnlyExit || keepAliveInterval) {
 				return
@@ -459,7 +466,6 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			}
 
 			hostDisposed = true
-			host.off("extensionWebviewMessage", onExtensionMessage)
 			jsonEmitter?.detach()
 			await host.dispose()
 		}
@@ -521,6 +527,10 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			}
 
 			await disposeHost()
+			if (jsonEmitter) {
+				await jsonEmitter.flush()
+			}
+			await flushStdout()
 			process.exit(exitCode)
 		}
 
@@ -551,6 +561,10 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 					throw new Error("--stdin-prompt-stream requires --output-format=stream-json to emit control events")
 				}
 
+				if (isResumeRequested) {
+					await bootstrapResumeForStdinStream(host, resolvedResumeSessionId!)
+				}
+
 				await runStdinStreamMode({
 					host,
 					jsonEmitter,
@@ -560,28 +574,17 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 				})
 			} else {
 				if (isResumeRequested) {
-					const resolvedSessionId =
-						requestedSessionId ||
-						getMostRecentTaskIdInWorkspace(taskHistorySnapshot, effectiveWorkspacePath)
-
-					if (requestedSessionId && taskHistorySnapshot.length > 0) {
-						const hasRequestedTask = taskHistorySnapshot.some((item) => item.id === requestedSessionId)
-						if (!hasRequestedTask) {
-							throw new Error(`Session not found in task history: ${requestedSessionId}`)
-						}
-					}
-
-					if (!resolvedSessionId) {
-						throw new Error("No previous tasks found to continue in this workspace.")
-					}
-
-					await host.resumeTask(resolvedSessionId)
+					await host.resumeTask(resolvedResumeSessionId!)
 				} else {
 					await host.runTask(prompt!)
 				}
 			}
 
 			await disposeHost()
+			if (jsonEmitter) {
+				await jsonEmitter.flush()
+			}
+			await flushStdout()
 
 			if (signalOnlyExit) {
 				await parkUntilSignal("Task loop completed")
@@ -595,6 +598,10 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		} catch (error) {
 			emitRuntimeError(normalizeError(error))
 			await disposeHost()
+			if (jsonEmitter) {
+				await jsonEmitter.flush()
+			}
+			await flushStdout()
 
 			if (signalOnlyExit) {
 				await parkUntilSignal("Task loop failed")

@@ -1,15 +1,12 @@
-import * as os from "os"
-import * as path from "path"
-
-import { readTaskSessionsFromStoragePath } from "@roo-code/core/cli"
+import { readWorkspaceTaskSessions } from "@/lib/task-history/index.js"
 
 import { listSessions, parseFormat } from "../list.js"
 
-vi.mock("@roo-code/core/cli", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("@roo-code/core/cli")>()
+vi.mock("@/lib/task-history/index.js", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("@/lib/task-history/index.js")>()
 	return {
 		...actual,
-		readTaskSessionsFromStoragePath: vi.fn(),
+		readWorkspaceTaskSessions: vi.fn(),
 	}
 })
 
@@ -42,7 +39,7 @@ describe("parseFormat", () => {
 })
 
 describe("listSessions", () => {
-	const storagePath = path.join(os.homedir(), ".vscode-mock", "global-storage")
+	const workspacePath = process.cwd()
 
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -60,25 +57,26 @@ describe("listSessions", () => {
 	}
 
 	it("uses the CLI runtime storage path and prints JSON output", async () => {
-		vi.mocked(readTaskSessionsFromStoragePath).mockResolvedValue([
+		vi.mocked(readWorkspaceTaskSessions).mockResolvedValue([
 			{ id: "s1", task: "Task 1", ts: 1_700_000_000_000, mode: "code" },
 		])
 
-		const output = await captureStdout(() => listSessions({ format: "json" }))
+		const output = await captureStdout(() => listSessions({ format: "json", workspace: workspacePath }))
 
-		expect(readTaskSessionsFromStoragePath).toHaveBeenCalledWith(storagePath)
+		expect(readWorkspaceTaskSessions).toHaveBeenCalledWith(workspacePath)
 		expect(JSON.parse(output)).toEqual({
+			workspace: workspacePath,
 			sessions: [{ id: "s1", task: "Task 1", ts: 1_700_000_000_000, mode: "code" }],
 		})
 	})
 
 	it("prints tab-delimited text output with ISO timestamps and formatted titles", async () => {
-		vi.mocked(readTaskSessionsFromStoragePath).mockResolvedValue([
+		vi.mocked(readWorkspaceTaskSessions).mockResolvedValue([
 			{ id: "s1", task: "Task 1", ts: Date.UTC(2024, 0, 1, 0, 0, 0) },
 			{ id: "s2", task: "   ", ts: Date.UTC(2024, 0, 1, 1, 0, 0) },
 		])
 
-		const output = await captureStdout(() => listSessions({ format: "text" }))
+		const output = await captureStdout(() => listSessions({ format: "text", workspace: workspacePath }))
 		const lines = output.trim().split("\n")
 
 		expect(lines).toEqual(["s1\t2024-01-01T00:00:00.000Z\tTask 1", "s2\t2024-01-01T01:00:00.000Z\t(untitled)"])

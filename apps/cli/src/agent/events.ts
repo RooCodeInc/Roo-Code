@@ -260,7 +260,7 @@ export function streamingEnded(previous: AgentStateInfo, current: AgentStateInfo
  * Helper to determine if task completed.
  */
 export function taskCompleted(previous: AgentStateInfo, current: AgentStateInfo): boolean {
-	const completionAsks = ["completion_result", "api_req_failed", "mistake_limit_reached"]
+	const completionAsks = ["completion_result", "resume_completed_task"]
 	const wasNotComplete = !previous.currentAsk || !completionAsks.includes(previous.currentAsk)
 	const isNowComplete = current.currentAsk !== undefined && completionAsks.includes(current.currentAsk)
 	return wasNotComplete && isNowComplete

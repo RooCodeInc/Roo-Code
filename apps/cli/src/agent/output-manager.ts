@@ -86,6 +86,12 @@ export class OutputManager {
 	private currentlyStreamingTs: number | null = null
 
 	/**
+	 * Track whether a say:completion_result has been streamed,
+	 * so the subsequent ask:completion_result doesn't duplicate the text.
+	 */
+	private completionResultStreamed = false
+
+	/**
 	 * Track first partial logs (for debugging first/last pattern).
 	 */
 	private loggedFirstPartial = new Set<number>()
@@ -197,6 +203,7 @@ export class OutputManager {
 		this.displayedMessages.clear()
 		this.streamedContent.clear()
 		this.currentlyStreamingTs = null
+		this.completionResultStreamed = false
 		this.loggedFirstPartial.clear()
 		this.streamingState.next({ ts: null, isStreaming: false })
 	}
@@ -248,8 +255,13 @@ export class OutputManager {
 				this.outputCommandOutput(ts, text, isPartial, alreadyDisplayedComplete)
 				break
 
-			// Note: completion_result is an "ask" type, not a "say" type.
-			// It is handled via the TaskCompleted event in extension-host.ts
+			case "completion_result":
+				// completion_result can arrive as both a "say" (with streamed text)
+				// and an "ask" (handled via TaskCompleted in extension-host.ts).
+				// Stream the say variant here; the ask variant is handled by
+				// outputCompletionResult which will skip if already displayed.
+				this.outputCompletionSayMessage(ts, text, isPartial, alreadyDisplayedComplete)
+				break
 
 			case "error":
 				if (!alreadyDisplayedComplete) {
@@ -402,12 +414,49 @@ export class OutputManager {
 	}
 
 	/**
+	 * Output a say:completion_result message (streamed text of the completion).
+	 * The subsequent ask:completion_result is handled by outputCompletionResult.
+	 */
+	private outputCompletionSayMessage(
+		ts: number,
+		text: string,
+		isPartial: boolean,
+		alreadyDisplayedComplete: boolean | undefined,
+	): void {
+		if (isPartial && text) {
+			this.streamContent(ts, text, "[assistant]")
+			this.displayedMessages.set(ts, { ts, text, partial: true })
+			this.completionResultStreamed = true
+		} else if (!isPartial && text && !alreadyDisplayedComplete) {
+			const streamed = this.streamedContent.get(ts)
+
+			if (streamed) {
+				if (text.length > streamed.text.length && text.startsWith(streamed.text)) {
+					const delta = text.slice(streamed.text.length)
+					this.writeRaw(delta)
+				}
+				this.finishStream(ts)
+			} else {
+				this.output("\n[assistant]", text)
+			}
+
+			this.displayedMessages.set(ts, { ts, text, partial: false })
+			this.completionResultStreamed = true
+		}
+	}
+
+	/**
 	 * Output completion message (called from TaskCompleted handler).
 	 */
 	outputCompletionResult(ts: number, text: string): void {
 		const previousDisplay = this.displayedMessages.get(ts)
 		if (!previousDisplay || previousDisplay.partial) {
-			this.output("\n[task complete]", text || "")
+			if (this.completionResultStreamed) {
+				// Text was already streamed via say:completion_result.
+				this.output("\n[task complete]")
+			} else {
+				this.output("\n[task complete]", text || "")
+			}
 			this.displayedMessages.set(ts, { ts, text: text || "", partial: false })
 		}
 	}

@@ -35,6 +35,7 @@ export type FlagOptions = {
 	model?: string
 	mode?: string
 	reasoningEffort?: ReasoningEffortFlagOptions
+	consecutiveMistakeLimit?: number
 	ephemeral: boolean
 	oneshot: boolean
 	outputFormat?: OutputFormat
@@ -61,6 +62,8 @@ export interface CliSettings {
 	model?: string
 	/** Default reasoning effort level */
 	reasoningEffort?: ReasoningEffortFlagOptions
+	/** Default consecutive error/repetition limit before guidance prompts */
+	consecutiveMistakeLimit?: number
 	/** Require manual approval for tools/commands/browser/MCP actions */
 	requireApproval?: boolean
 	/** @deprecated Legacy inverse setting kept for backward compatibility */
