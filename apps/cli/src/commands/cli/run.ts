@@ -462,6 +462,27 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			keepAliveInterval = undefined
 		}
 
+		const flushStdout = async () => {
+			try {
+				if (!process.stdout.writable || process.stdout.destroyed) {
+					return
+				}
+
+				await new Promise<void>((resolve, reject) => {
+					process.stdout.write("", (error?: Error | null) => {
+						if (error) {
+							reject(error)
+							return
+						}
+
+						resolve()
+					})
+				})
+			} catch {
+				// Best effort: shutdown should proceed even if stdout flush fails.
+			}
+		}
+
 		const ensureKeepAliveInterval = () => {
 			if (!signalOnlyExit || keepAliveInterval) {
 				return
@@ -538,6 +559,10 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			}
 
 			await disposeHost()
+			if (jsonEmitter) {
+				await jsonEmitter.flush()
+			}
+			await flushStdout()
 			process.exit(exitCode)
 		}
 
@@ -618,6 +643,10 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			}
 
 			await disposeHost()
+			if (jsonEmitter) {
+				await jsonEmitter.flush()
+			}
+			await flushStdout()
 
 			if (signalOnlyExit) {
 				await parkUntilSignal("Task loop completed")
@@ -631,6 +660,10 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		} catch (error) {
 			emitRuntimeError(normalizeError(error))
 			await disposeHost()
+			if (jsonEmitter) {
+				await jsonEmitter.flush()
+			}
+			await flushStdout()
 
 			if (signalOnlyExit) {
 				await parkUntilSignal("Task loop failed")

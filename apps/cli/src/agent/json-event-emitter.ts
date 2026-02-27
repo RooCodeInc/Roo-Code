@@ -96,6 +96,7 @@ export class JsonEventEmitter {
 	private stdout: NodeJS.WriteStream
 	private events: JsonEvent[] = []
 	private unsubscribers: (() => void)[] = []
+	private pendingWrites = new Set<Promise<void>>()
 	private lastCost: JsonEventCost | undefined
 	private requestIdProvider: () => string | undefined
 	private schemaVersion: number
@@ -598,8 +599,9 @@ export class JsonEventEmitter {
 	 * Handle task completion and emit result event.
 	 */
 	private handleTaskCompleted(event: TaskCompletedEvent): void {
-		// Use tracked completion result content, falling back to event message
-		const resultContent = this.completionResultContent || event.message?.text || this.lastAssistantText
+		// Prefer the completion payload from the current event. If it is empty,
+		// fall back to the most recent tracked completion text, then assistant text.
+		const resultContent = event.message?.text || this.completionResultContent || this.lastAssistantText
 
 		this.emitEvent({
 			type: "result",
@@ -609,6 +611,10 @@ export class JsonEventEmitter {
 			success: event.success,
 			cost: this.lastCost,
 		})
+
+		// Prevent stale completion content from leaking into later turns.
+		this.completionResultContent = undefined
+		this.lastAssistantText = undefined
 
 		// For "json" mode, output the final accumulated result
 		if (this.mode === "json") {
@@ -647,7 +653,7 @@ export class JsonEventEmitter {
 	 * Output a single JSON line (NDJSON format).
 	 */
 	private outputLine(data: unknown): void {
-		this.stdout.write(JSON.stringify(data) + "\n")
+		this.writeToStdout(JSON.stringify(data) + "\n")
 	}
 
 	/**
@@ -662,7 +668,31 @@ export class JsonEventEmitter {
 			events: this.events.filter((e) => e.type !== "result"), // Exclude the result event itself
 		}
 
-		this.stdout.write(JSON.stringify(output, null, 2) + "\n")
+		this.writeToStdout(JSON.stringify(output, null, 2) + "\n")
+	}
+
+	private writeToStdout(content: string): void {
+		const writePromise = new Promise<void>((resolve, reject) => {
+			this.stdout.write(content, (error?: Error | null) => {
+				if (error) {
+					reject(error)
+					return
+				}
+				resolve()
+			})
+		})
+
+		this.pendingWrites.add(writePromise)
+
+		void writePromise.finally(() => {
+			this.pendingWrites.delete(writePromise)
+		})
+	}
+
+	async flush(): Promise<void> {
+		while (this.pendingWrites.size > 0) {
+			await Promise.all([...this.pendingWrites])
+		}
 	}
 
 	/**
