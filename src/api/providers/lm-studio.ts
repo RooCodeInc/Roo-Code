@@ -10,6 +10,7 @@ import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCal
 import { TagMatcher } from "../../utils/tag-matcher"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
+import { convertToZAiFormat } from "../transform/zai-format"
 import { ApiStream } from "../transform/stream"
 
 import { BaseProvider } from "./base-provider"
@@ -17,11 +18,13 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { getModelsFromCache } from "./fetchers/modelCache"
 import { getApiRequestTimeout } from "./utils/timeout-config"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { detectGlmModel, logGlmDetection, type GlmModelConfig } from "./utils/glm-model-detection"
 
 export class LmStudioHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
 	private readonly providerName = "LM Studio"
+	private glmConfig: GlmModelConfig | null = null
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -35,6 +38,13 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 			apiKey: apiKey,
 			timeout: getApiRequestTimeout(),
 		})
+
+		// Detect GLM model on construction if model ID is available
+		const modelId = this.options.lmStudioModelId || ""
+		if (modelId) {
+			this.glmConfig = detectGlmModel(modelId)
+			logGlmDetection(this.providerName, modelId, this.glmConfig)
+		}
 	}
 
 	override async *createMessage(
@@ -42,9 +52,23 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		const modelId = this.getModel().id
+
+		// Re-detect GLM model if not already done or if model ID changed
+		if (!this.glmConfig || this.glmConfig.originalModelId !== modelId) {
+			this.glmConfig = detectGlmModel(modelId)
+			logGlmDetection(this.providerName, modelId, this.glmConfig)
+		}
+
+		// Convert messages based on whether this is a GLM model
+		// GLM models benefit from mergeToolResultText to prevent reasoning_content loss
+		const convertedMessages = this.glmConfig.isGlmModel
+			? convertToZAiFormat(messages, { mergeToolResultText: this.glmConfig.mergeToolResultText })
+			: convertToOpenAiMessages(messages)
+
 		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages),
+			...convertedMessages,
 		]
 
 		// -------------------------
@@ -83,14 +107,24 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		let assistantText = ""
 
 		try {
+			// Determine parallel_tool_calls setting
+			// Disable for GLM models as they may not support it properly
+			let parallelToolCalls: boolean
+			if (this.glmConfig?.isGlmModel && this.glmConfig.disableParallelToolCalls) {
+				parallelToolCalls = false
+				console.log(`[${this.providerName}] parallel_tool_calls disabled for GLM model`)
+			} else {
+				parallelToolCalls = metadata?.parallelToolCalls ?? true
+			}
+
 			const params: OpenAI.Chat.ChatCompletionCreateParamsStreaming & { draft_model?: string } = {
-				model: this.getModel().id,
+				model: modelId,
 				messages: openAiMessages,
 				temperature: this.options.modelTemperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
 				stream: true,
 				tools: this.convertToolsForOpenAI(metadata?.tools),
 				tool_choice: metadata?.tool_choice,
-				parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+				parallel_tool_calls: parallelToolCalls,
 			}
 
 			if (this.options.lmStudioSpeculativeDecodingEnabled && this.options.lmStudioDraftModelId) {
@@ -121,6 +155,14 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 					assistantText += delta.content
 					for (const processedChunk of matcher.update(delta.content)) {
 						yield processedChunk
+					}
+				}
+
+				// Handle reasoning_content for GLM models with thinking support
+				if (delta && this.glmConfig?.supportsThinking) {
+					const deltaAny = delta as any
+					if (deltaAny.reasoning_content) {
+						yield { type: "reasoning", text: deltaAny.reasoning_content }
 					}
 				}
 
@@ -186,10 +228,22 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
+		const modelId = this.getModel().id
+
+		// Re-detect GLM model if not already done or if model ID changed
+		if (!this.glmConfig || this.glmConfig.originalModelId !== modelId) {
+			this.glmConfig = detectGlmModel(modelId)
+			logGlmDetection(this.providerName, modelId, this.glmConfig)
+		}
+
 		try {
+			// Determine parallel_tool_calls setting for GLM models
+			const parallelToolCalls =
+				this.glmConfig?.isGlmModel && this.glmConfig.disableParallelToolCalls ? false : true
+
 			// Create params object with optional draft model
 			const params: any = {
-				model: this.getModel().id,
+				model: modelId,
 				messages: [{ role: "user", content: prompt }],
 				temperature: this.options.modelTemperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
 				stream: false,
