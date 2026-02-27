@@ -64,6 +64,7 @@
 		"installError": "Cài đặt \"{{itemName}}\" thất bại: {{errorMessage}}",
 		"removing": "Đang xóa mục: \"{{itemName}}\"",
 		"removeSuccess": "\"{{itemName}}\" đã được xóa thành công",
-		"removeError": "Xóa \"{{itemName}}\" thất bại: {{errorMessage}}"
+		"removeError": "Xóa \"{{itemName}}\" thất bại: {{errorMessage}}",
+		"notInstalledForTarget": "Không tìm thấy chế độ"
 	}
 }

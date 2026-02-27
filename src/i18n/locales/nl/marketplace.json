@@ -64,6 +64,7 @@
 		"installError": "Installatie van \"{{itemName}}\" mislukt: {{errorMessage}}",
 		"removing": "Item verwijderen: \"{{itemName}}\"",
 		"removeSuccess": "\"{{itemName}}\" succesvol verwijderd",
-		"removeError": "Verwijdering van \"{{itemName}}\" mislukt: {{errorMessage}}"
+		"removeError": "Verwijdering van \"{{itemName}}\" mislukt: {{errorMessage}}",
+		"notInstalledForTarget": "Modus niet gevonden"
 	}
 }

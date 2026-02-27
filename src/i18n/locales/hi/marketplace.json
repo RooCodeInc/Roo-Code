@@ -64,6 +64,7 @@
 		"installError": "\"{{itemName}}\" इंस्टॉल करने में विफल: {{errorMessage}}",
 		"removing": "आइटम हटा रहे हैं: \"{{itemName}}\"",
 		"removeSuccess": "\"{{itemName}}\" सफलतापूर्वक हटाया गया",
-		"removeError": "\"{{itemName}}\" हटाने में विफल: {{errorMessage}}"
+		"removeError": "\"{{itemName}}\" हटाने में विफल: {{errorMessage}}",
+		"notInstalledForTarget": "मोड नहीं मिला"
 	}
 }
