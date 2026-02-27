@@ -184,6 +184,9 @@ const baseProviderSettingsSchema = z.object({
 	reasoningEffort: reasoningEffortSettingSchema.optional(),
 	modelMaxTokens: z.number().optional(),
 	modelMaxThinkingTokens: z.number().optional(),
+	// Adaptive thinking (Claude Sonnet 4.6 / Opus 4.6 only)
+	useAdaptiveThinking: z.boolean().optional(),
+	adaptiveThinkingEffort: z.enum(["low", "medium", "high", "max"]).optional(),
 
 	// Model verbosity.
 	verbosity: verbosityLevelsSchema.optional(),

@@ -877,7 +877,15 @@
 	},
 	"thinkingBudget": {
 		"maxTokens": "Tokens màxims",
-		"maxThinkingTokens": "Tokens de pensament màxims"
+		"maxThinkingTokens": "Tokens de pensament màxims",
+		"useAdaptiveThinking": "Usa el pensament adaptatiu",
+		"adaptiveThinkingDescription": "Deixa que Claude determini dinàmicament quan i quant pensar en funció de la complexitat de la sol·licitud.",
+		"adaptiveEffort": {
+			"low": "Baix",
+			"medium": "Mitjà",
+			"high": "Alt (per defecte)",
+			"max": "Màxim (només Opus 4.6)"
+		}
 	},
 	"validation": {
 		"apiKey": "Heu de proporcionar una clau API vàlida.",
