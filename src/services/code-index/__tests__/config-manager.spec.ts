@@ -1018,6 +1018,120 @@ describe("CodeIndexConfigManager", () => {
 					expect(maxManager.currentSearchMaxResults).toBe(200)
 				})
 			})
+
+			describe("currentFileWatcherDebounceMs", () => {
+				it("should return user setting when provided", async () => {
+					mockContextProxy.getGlobalState.mockReturnValue({
+						codebaseIndexEnabled: true,
+						codebaseIndexQdrantUrl: "http://qdrant.local",
+						codebaseIndexEmbedderProvider: "openai",
+						codebaseIndexEmbedderModelId: "text-embedding-3-small",
+						codebaseIndexFileWatcherDebounceMs: 1000, // User setting
+					})
+
+					await configManager.loadConfiguration()
+					expect(configManager.currentFileWatcherDebounceMs).toBe(1000) // User setting
+				})
+
+				it("should return default when no user setting", async () => {
+					mockContextProxy.getGlobalState.mockReturnValue({
+						codebaseIndexEnabled: true,
+						codebaseIndexQdrantUrl: "http://qdrant.local",
+						codebaseIndexEmbedderProvider: "openai",
+						codebaseIndexEmbedderModelId: "text-embedding-3-small",
+						// No file watcher debounce setting
+					})
+
+					const newManager = new CodeIndexConfigManager(mockContextProxy)
+					await newManager.loadConfiguration()
+					expect(newManager.currentFileWatcherDebounceMs).toBe(500) // Default (DEFAULT_FILE_WATCHER_DEBOUNCE_MS)
+				})
+
+				it("should respect minimum and maximum bounds", async () => {
+					// Test minimum value
+					mockContextProxy.getGlobalState.mockReturnValue({
+						codebaseIndexEnabled: true,
+						codebaseIndexQdrantUrl: "http://qdrant.local",
+						codebaseIndexEmbedderProvider: "openai",
+						codebaseIndexEmbedderModelId: "text-embedding-3-small",
+						codebaseIndexFileWatcherDebounceMs: 100, // Minimum allowed
+					})
+
+					const minManager = new CodeIndexConfigManager(mockContextProxy)
+					await minManager.loadConfiguration()
+					expect(minManager.currentFileWatcherDebounceMs).toBe(100)
+
+					// Test maximum value
+					mockContextProxy.getGlobalState.mockReturnValue({
+						codebaseIndexEnabled: true,
+						codebaseIndexQdrantUrl: "http://qdrant.local",
+						codebaseIndexEmbedderProvider: "openai",
+						codebaseIndexEmbedderModelId: "text-embedding-3-small",
+						codebaseIndexFileWatcherDebounceMs: 5000, // Maximum allowed
+					})
+
+					const maxManager = new CodeIndexConfigManager(mockContextProxy)
+					await maxManager.loadConfiguration()
+					expect(maxManager.currentFileWatcherDebounceMs).toBe(5000)
+				})
+			})
+
+			describe("currentFileWatcherConcurrency", () => {
+				it("should return user setting when provided", async () => {
+					mockContextProxy.getGlobalState.mockReturnValue({
+						codebaseIndexEnabled: true,
+						codebaseIndexQdrantUrl: "http://qdrant.local",
+						codebaseIndexEmbedderProvider: "openai",
+						codebaseIndexEmbedderModelId: "text-embedding-3-small",
+						codebaseIndexFileWatcherConcurrency: 5, // User setting - lower for multi-worktree
+					})
+
+					await configManager.loadConfiguration()
+					expect(configManager.currentFileWatcherConcurrency).toBe(5) // User setting
+				})
+
+				it("should return default when no user setting", async () => {
+					mockContextProxy.getGlobalState.mockReturnValue({
+						codebaseIndexEnabled: true,
+						codebaseIndexQdrantUrl: "http://qdrant.local",
+						codebaseIndexEmbedderProvider: "openai",
+						codebaseIndexEmbedderModelId: "text-embedding-3-small",
+						// No file watcher concurrency setting
+					})
+
+					const newManager = new CodeIndexConfigManager(mockContextProxy)
+					await newManager.loadConfiguration()
+					expect(newManager.currentFileWatcherConcurrency).toBe(10) // Default (DEFAULT_FILE_WATCHER_CONCURRENCY)
+				})
+
+				it("should respect minimum and maximum bounds", async () => {
+					// Test minimum value
+					mockContextProxy.getGlobalState.mockReturnValue({
+						codebaseIndexEnabled: true,
+						codebaseIndexQdrantUrl: "http://qdrant.local",
+						codebaseIndexEmbedderProvider: "openai",
+						codebaseIndexEmbedderModelId: "text-embedding-3-small",
+						codebaseIndexFileWatcherConcurrency: 1, // Minimum allowed
+					})
+
+					const minManager = new CodeIndexConfigManager(mockContextProxy)
+					await minManager.loadConfiguration()
+					expect(minManager.currentFileWatcherConcurrency).toBe(1)
+
+					// Test maximum value
+					mockContextProxy.getGlobalState.mockReturnValue({
+						codebaseIndexEnabled: true,
+						codebaseIndexQdrantUrl: "http://qdrant.local",
+						codebaseIndexEmbedderProvider: "openai",
+						codebaseIndexEmbedderModelId: "text-embedding-3-small",
+						codebaseIndexFileWatcherConcurrency: 20, // Maximum allowed
+					})
+
+					const maxManager = new CodeIndexConfigManager(mockContextProxy)
+					await maxManager.loadConfiguration()
+					expect(maxManager.currentFileWatcherConcurrency).toBe(20)
+				})
+			})
 		})
 
 		describe("empty/missing API key handling", () => {

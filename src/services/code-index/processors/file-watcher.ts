@@ -5,6 +5,8 @@ import {
 	BATCH_SEGMENT_THRESHOLD,
 	MAX_BATCH_RETRIES,
 	INITIAL_RETRY_DELAY_MS,
+	DEFAULT_FILE_WATCHER_DEBOUNCE_MS,
+	DEFAULT_FILE_WATCHER_CONCURRENCY,
 } from "../constants"
 import { createHash } from "crypto"
 import { RooIgnoreController } from "../../../core/ignore/RooIgnoreController"
@@ -37,8 +39,8 @@ export class FileWatcher implements IFileWatcher {
 	private ignoreController: RooIgnoreController
 	private accumulatedEvents: Map<string, { uri: vscode.Uri; type: "create" | "change" | "delete" }> = new Map()
 	private batchProcessDebounceTimer?: NodeJS.Timeout
-	private readonly BATCH_DEBOUNCE_DELAY_MS = 500
-	private readonly FILE_PROCESSING_CONCURRENCY_LIMIT = 10
+	private readonly batchDebounceDelayMs: number
+	private readonly fileProcessingConcurrencyLimit: number
 	private readonly batchSegmentThreshold: number
 
 	private readonly _onDidStartBatchProcessing = new vscode.EventEmitter<string[]>()
@@ -68,9 +70,14 @@ export class FileWatcher implements IFileWatcher {
 	 * Creates a new file watcher
 	 * @param workspacePath Path to the workspace
 	 * @param context VS Code extension context
+	 * @param cacheManager Cache manager
 	 * @param embedder Optional embedder
 	 * @param vectorStore Optional vector store
-	 * @param cacheManager Cache manager
+	 * @param ignoreInstance Optional ignore instance for .gitignore filtering
+	 * @param ignoreController Optional RooIgnoreController for .rooignore filtering
+	 * @param batchSegmentThreshold Optional batch segment threshold for embeddings
+	 * @param debounceMs Optional debounce delay in ms (default 500ms). Higher values reduce CPU usage in multi-worktree scenarios.
+	 * @param concurrencyLimit Optional concurrency limit for file processing (default 10). Lower values reduce CPU usage in multi-worktree scenarios.
 	 */
 	constructor(
 		private workspacePath: string,
@@ -81,6 +88,8 @@ export class FileWatcher implements IFileWatcher {
 		ignoreInstance?: Ignore,
 		ignoreController?: RooIgnoreController,
 		batchSegmentThreshold?: number,
+		debounceMs?: number,
+		concurrencyLimit?: number,
 	) {
 		this.ignoreController = ignoreController || new RooIgnoreController(workspacePath)
 		if (ignoreInstance) {
@@ -100,6 +109,14 @@ export class FileWatcher implements IFileWatcher {
 				this.batchSegmentThreshold = BATCH_SEGMENT_THRESHOLD
 			}
 		}
+
+		// Set configurable debounce delay for multi-worktree optimization
+		// Higher values batch more file changes together, reducing CPU spikes
+		this.batchDebounceDelayMs = debounceMs ?? DEFAULT_FILE_WATCHER_DEBOUNCE_MS
+
+		// Set configurable concurrency limit for multi-worktree optimization
+		// Lower values process fewer files in parallel, reducing peak CPU usage
+		this.fileProcessingConcurrencyLimit = concurrencyLimit ?? DEFAULT_FILE_WATCHER_CONCURRENCY
 	}
 
 	/**
@@ -162,12 +179,13 @@ export class FileWatcher implements IFileWatcher {
 
 	/**
 	 * Schedules batch processing with debounce
+	 * Uses configurable debounce delay for multi-worktree optimization
 	 */
 	private scheduleBatchProcessing(): void {
 		if (this.batchProcessDebounceTimer) {
 			clearTimeout(this.batchProcessDebounceTimer)
 		}
-		this.batchProcessDebounceTimer = setTimeout(() => this.triggerBatchProcessing(), this.BATCH_DEBOUNCE_DELAY_MS)
+		this.batchProcessDebounceTimer = setTimeout(() => this.triggerBatchProcessing(), this.batchDebounceDelayMs)
 	}
 
 	/**
@@ -265,8 +283,9 @@ export class FileWatcher implements IFileWatcher {
 		const successfullyProcessedForUpsert: Array<{ path: string; newHash?: string }> = []
 		const filesToProcessConcurrently = [...filesToUpsertDetails]
 
-		for (let i = 0; i < filesToProcessConcurrently.length; i += this.FILE_PROCESSING_CONCURRENCY_LIMIT) {
-			const chunkToProcess = filesToProcessConcurrently.slice(i, i + this.FILE_PROCESSING_CONCURRENCY_LIMIT)
+		// Use configurable concurrency limit for multi-worktree optimization
+		for (let i = 0; i < filesToProcessConcurrently.length; i += this.fileProcessingConcurrencyLimit) {
+			const chunkToProcess = filesToProcessConcurrently.slice(i, i + this.fileProcessingConcurrencyLimit)
 
 			const chunkProcessingPromises = chunkToProcess.map(async (fileDetail) => {
 				this._onBatchProgressUpdate.fire({
