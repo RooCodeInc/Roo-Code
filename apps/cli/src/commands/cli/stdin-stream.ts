@@ -186,6 +186,10 @@ function isCancellationLikeError(error: unknown): boolean {
 const RESUME_ASKS = new Set(["resume_task", "resume_completed_task"])
 const CANCEL_RECOVERY_WAIT_TIMEOUT_MS = 8_000
 const CANCEL_RECOVERY_POLL_INTERVAL_MS = 100
+const STDIN_EOF_RESUME_WAIT_TIMEOUT_MS = 2_000
+const STDIN_EOF_POLL_INTERVAL_MS = 100
+const STDIN_EOF_IDLE_ASKS = new Set(["completion_result", "resume_completed_task"])
+const STDIN_EOF_IDLE_STABLE_POLLS = 2
 
 function isResumableState(host: ExtensionHost): boolean {
 	const agentState = host.client.getAgentState()
@@ -205,6 +209,69 @@ async function waitForPostCancelRecovery(host: ExtensionHost): Promise<void> {
 		}
 
 		await new Promise((resolve) => setTimeout(resolve, CANCEL_RECOVERY_POLL_INTERVAL_MS))
+	}
+}
+
+async function waitForTaskProgressAfterStdinClosed(
+	host: ExtensionHost,
+	getQueueState: () => { hasSeenQueueState: boolean; queueDepth: number },
+): Promise<void> {
+	while (host.client.hasActiveTask()) {
+		if (!host.isWaitingForInput()) {
+			await new Promise((resolve) => setTimeout(resolve, STDIN_EOF_POLL_INTERVAL_MS))
+			continue
+		}
+
+		const deadline = Date.now() + STDIN_EOF_RESUME_WAIT_TIMEOUT_MS
+
+		while (Date.now() < deadline) {
+			if (!host.client.hasActiveTask() || !host.isWaitingForInput()) {
+				break
+			}
+
+			await new Promise((resolve) => setTimeout(resolve, STDIN_EOF_POLL_INTERVAL_MS))
+		}
+
+		if (host.client.hasActiveTask() && host.isWaitingForInput()) {
+			const currentAsk = host.client.getCurrentAsk()
+			const { hasSeenQueueState, queueDepth } = getQueueState()
+
+			// EOF is allowed when the task has reached an idle completion boundary and
+			// there is no queued user input waiting to be processed.
+			if (
+				hasSeenQueueState &&
+				queueDepth === 0 &&
+				typeof currentAsk === "string" &&
+				STDIN_EOF_IDLE_ASKS.has(currentAsk)
+			) {
+				let isStable = true
+				for (let i = 1; i < STDIN_EOF_IDLE_STABLE_POLLS; i++) {
+					await new Promise((resolve) => setTimeout(resolve, STDIN_EOF_POLL_INTERVAL_MS))
+
+					if (!host.client.hasActiveTask() || !host.isWaitingForInput()) {
+						isStable = false
+						break
+					}
+
+					const nextAsk = host.client.getCurrentAsk()
+					const nextQueueState = getQueueState()
+					if (
+						nextAsk !== currentAsk ||
+						!nextQueueState.hasSeenQueueState ||
+						nextQueueState.queueDepth !== 0
+					) {
+						isStable = false
+						break
+					}
+				}
+
+				if (isStable) {
+					return
+				}
+			}
+
+			throw new Error(`stdin ended while task was waiting for input (${currentAsk ?? "unknown"})`)
+		}
 	}
 }
 
@@ -633,13 +700,15 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 			host.client.cancelTask()
 		}
 
-		if (!shouldShutdown && host.client.hasActiveTask() && host.isWaitingForInput()) {
-			const currentAsk = host.client.getCurrentAsk()
-			throw new Error(`stdin ended while task was waiting for input (${currentAsk ?? "unknown"})`)
-		}
-
-		if (!shouldShutdown && activeTaskPromise) {
-			await activeTaskPromise
+		if (!shouldShutdown) {
+			if (activeTaskPromise) {
+				await activeTaskPromise
+			} else if (host.client.hasActiveTask()) {
+				await waitForTaskProgressAfterStdinClosed(host, () => ({
+					hasSeenQueueState,
+					queueDepth: lastQueueDepth,
+				}))
+			}
 		}
 	} finally {
 		offClientError()

@@ -5,6 +5,8 @@ import fs from "fs"
 
 import type { ExtensionMessage, WebviewMessage } from "@roo-code/types"
 
+import { DEFAULT_FLAGS } from "@/types/index.js"
+
 import { type ExtensionHostOptions, ExtensionHost } from "../extension-host.js"
 import { ExtensionClient } from "../extension-client.js"
 import { AgentLoopState } from "../agent-state.js"
@@ -591,6 +593,20 @@ describe("ExtensionHost", () => {
 
 			const initialSettings = getPrivate<Record<string, unknown>>(host, "initialSettings")
 			expect(initialSettings.mode).toBe("architect")
+		})
+
+		it("should use default consecutiveMistakeLimit when not provided", () => {
+			const host = createTestHost()
+
+			const initialSettings = getPrivate<Record<string, unknown>>(host, "initialSettings")
+			expect(initialSettings.consecutiveMistakeLimit).toBe(DEFAULT_FLAGS.consecutiveMistakeLimit)
+		})
+
+		it("should set consecutiveMistakeLimit from options", () => {
+			const host = createTestHost({ consecutiveMistakeLimit: 8 })
+
+			const initialSettings = getPrivate<Record<string, unknown>>(host, "initialSettings")
+			expect(initialSettings.consecutiveMistakeLimit).toBe(8)
 		})
 
 		it("should enable auto-approval in non-interactive mode", () => {

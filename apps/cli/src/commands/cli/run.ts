@@ -3,6 +3,7 @@ import path from "path"
 import { fileURLToPath } from "url"
 
 import { createElement } from "react"
+import pWaitFor from "p-wait-for"
 
 import { setLogger } from "@roo-code/vscode-shim"
 
@@ -34,6 +35,17 @@ import { runStdinStreamMode } from "./stdin-stream.js"
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROO_MODEL_WARMUP_TIMEOUT_MS = 10_000
 const SIGNAL_ONLY_EXIT_KEEPALIVE_MS = 60_000
+const STREAM_RESUME_WAIT_TIMEOUT_MS = 2_000
+
+async function bootstrapResumeForStdinStream(host: ExtensionHost, sessionId: string): Promise<void> {
+	host.sendToExtension({ type: "showTaskWithId", text: sessionId })
+
+	// Best-effort wait so early stdin "message" commands can target the resumed task.
+	await pWaitFor(() => host.client.hasActiveTask() || host.isWaitingForInput(), {
+		interval: 25,
+		timeout: STREAM_RESUME_WAIT_TIMEOUT_MS,
+	}).catch(() => undefined)
+}
 
 function normalizeError(error: unknown): Error {
 	return error instanceof Error ? error : new Error(String(error))
@@ -152,10 +164,21 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		(settings.dangerouslySkipPermissions === undefined ? undefined : !settings.dangerouslySkipPermissions)
 	const effectiveRequireApproval = flagOptions.requireApproval || legacyRequireApprovalFromSettings || false
 	const effectiveExitOnComplete = flagOptions.print || flagOptions.oneshot || settings.oneshot || false
+	const rawConsecutiveMistakeLimit =
+		flagOptions.consecutiveMistakeLimit ?? settings.consecutiveMistakeLimit ?? DEFAULT_FLAGS.consecutiveMistakeLimit
+	const effectiveConsecutiveMistakeLimit = Number(rawConsecutiveMistakeLimit)
+
+	if (!Number.isInteger(effectiveConsecutiveMistakeLimit) || effectiveConsecutiveMistakeLimit < 0) {
+		console.error(
+			`[CLI] Error: Invalid consecutive mistake limit: ${rawConsecutiveMistakeLimit}; must be a non-negative integer`,
+		)
+		process.exit(1)
+	}
 
 	const extensionHostOptions: ExtensionHostOptions = {
 		mode: effectiveMode,
 		reasoningEffort: effectiveReasoningEffort === "unspecified" ? undefined : effectiveReasoningEffort,
+		consecutiveMistakeLimit: effectiveConsecutiveMistakeLimit,
 		user: null,
 		provider: effectiveProvider,
 		model: effectiveModel,
@@ -303,12 +326,6 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		process.exit(1)
 	}
 
-	if (flagOptions.stdinPromptStream && isResumeRequested) {
-		console.error("[CLI] Error: cannot use --session-id/--continue with --stdin-prompt-stream")
-		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
-		process.exit(1)
-	}
-
 	const useStdinPromptStream = flagOptions.stdinPromptStream
 	let resolvedResumeSessionId: string | undefined
 
@@ -414,6 +431,27 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			keepAliveInterval = undefined
 		}
 
+		const flushStdout = async () => {
+			try {
+				if (!process.stdout.writable || process.stdout.destroyed) {
+					return
+				}
+
+				await new Promise<void>((resolve, reject) => {
+					process.stdout.write("", (error?: Error | null) => {
+						if (error) {
+							reject(error)
+							return
+						}
+
+						resolve()
+					})
+				})
+			} catch {
+				// Best effort: shutdown should proceed even if stdout flush fails.
+			}
+		}
+
 		const ensureKeepAliveInterval = () => {
 			if (!signalOnlyExit || keepAliveInterval) {
 				return
@@ -489,6 +527,10 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			}
 
 			await disposeHost()
+			if (jsonEmitter) {
+				await jsonEmitter.flush()
+			}
+			await flushStdout()
 			process.exit(exitCode)
 		}
 
@@ -519,6 +561,10 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 					throw new Error("--stdin-prompt-stream requires --output-format=stream-json to emit control events")
 				}
 
+				if (isResumeRequested) {
+					await bootstrapResumeForStdinStream(host, resolvedResumeSessionId!)
+				}
+
 				await runStdinStreamMode({
 					host,
 					jsonEmitter,
@@ -535,6 +581,10 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			}
 
 			await disposeHost()
+			if (jsonEmitter) {
+				await jsonEmitter.flush()
+			}
+			await flushStdout()
 
 			if (signalOnlyExit) {
 				await parkUntilSignal("Task loop completed")
@@ -548,6 +598,10 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		} catch (error) {
 			emitRuntimeError(normalizeError(error))
 			await disposeHost()
+			if (jsonEmitter) {
+				await jsonEmitter.flush()
+			}
+			await flushStdout()
 
 			if (signalOnlyExit) {
 				await parkUntilSignal("Task loop failed")
