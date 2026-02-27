@@ -137,6 +137,7 @@ export async function handleCreateWorktree(
 		createNewBranch?: boolean
 	},
 	onCopyProgress?: CopyProgressCallback,
+	useHardLinks?: boolean,
 ): Promise<WorktreeResult> {
 	const cwd = provider.cwd
 
@@ -158,6 +159,7 @@ export async function handleCreateWorktree(
 				cwd,
 				result.worktree.path,
 				onCopyProgress,
+				useHardLinks,
 			)
 			if (copiedItems.length > 0) {
 				result.message += ` (copied ${copiedItems.length} item(s) from .worktreeinclude)`

@@ -43,6 +43,8 @@
 	"creating": "Wird erstellt...",
 	"copyingFiles": "Dateien werden kopiert...",
 	"copyingProgress": "{{item}} — {{copied}} kopiert",
+	"useHardLinks": "Hardlinks für eingeschlossene Dateien verwenden",
+	"useHardLinksTooltip": "Erstellt Hardlinks statt Kopien, spart Speicherplatz und beschleunigt die Worktree-Erstellung. Deaktiviere dies, wenn Quelle und Ziel auf verschiedenen Dateisystemen liegen.",
 	"cancel": "Abbrechen",
 
 	"deleteWorktree": "Worktree löschen",

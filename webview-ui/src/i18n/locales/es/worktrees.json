@@ -43,6 +43,8 @@
 	"creating": "Creando...",
 	"copyingFiles": "Copiando archivos...",
 	"copyingProgress": "{{item}} — {{copied}} copiado",
+	"useHardLinks": "Usar enlaces duros para archivos incluidos",
+	"useHardLinksTooltip": "Crea enlaces duros en lugar de copias, ahorrando espacio en disco y acelerando la creación del worktree. Desactívalo si el origen y el destino están en sistemas de archivos diferentes.",
 	"cancel": "Cancelar",
 
 	"deleteWorktree": "Eliminar Worktree",

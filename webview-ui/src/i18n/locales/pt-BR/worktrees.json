@@ -43,6 +43,8 @@
 	"creating": "Criando...",
 	"copyingFiles": "Copiando arquivos...",
 	"copyingProgress": "{{item}} — {{copied}} copiado",
+	"useHardLinks": "Usar hard links para arquivos incluídos",
+	"useHardLinksTooltip": "Cria hard links em vez de cópias, economizando espaço em disco e acelerando a criação do worktree. Desative se a origem e o destino estiverem em sistemas de arquivos diferentes.",
 	"cancel": "Cancelar",
 
 	"deleteWorktree": "Excluir Worktree",
