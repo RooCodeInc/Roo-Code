@@ -1,5 +1,16 @@
 # Roo Code Changelog
 
+## 3.50.5
+
+### Patch Changes
+
+- Add OpenAI's GPT-5.3-Codex model support
+- Add OpenAI's GPT-5.3-Codex model support (PR #11728 by @PeterDaveHello)
+- Warm Roo models on CLI startup for faster initial responses (PR #11722 by @cte)
+- Fix spelling/grammar and casing inconsistencies (#11478 by @PeterDaveHello, PR #11485 by @PeterDaveHello)
+- Fix: Restore Linear integration page (PR #11725 by @roomote)
+- Chore: Prepare CLI release v0.1.1 (PR #11723 by @cte)
+
 ## [3.50.4] - 2026-02-21
 
 - Feat: Add MiniMax M2.5 model support (#11471 by @love8ko, PR #11458 by @roomote)
