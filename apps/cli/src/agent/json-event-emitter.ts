@@ -156,7 +156,7 @@ export class JsonEventEmitter {
 	emitControl(event: {
 		subtype: "ack" | "done" | "error"
 		requestId?: string
-		command?: string
+		command?: JsonEvent["command"]
 		taskId?: string
 		content?: string
 		success?: boolean

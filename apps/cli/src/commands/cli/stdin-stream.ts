@@ -1,7 +1,12 @@
 import { createInterface } from "readline"
 import { randomUUID } from "crypto"
 
-import type { RooCodeSettings } from "@roo-code/types"
+import {
+	rooCliCommandNames,
+	type RooCliCommandName,
+	type RooCliInputCommand,
+	type RooCliStartCommand,
+} from "@roo-code/types"
 
 import { isRecord } from "@/lib/utils/guards.js"
 
@@ -12,20 +17,15 @@ import type { JsonEventEmitter } from "@/agent/json-event-emitter.js"
 // Types
 // ---------------------------------------------------------------------------
 
-export type StdinStreamCommandName = "start" | "message" | "cancel" | "ping" | "shutdown"
+export type StdinStreamCommandName = RooCliCommandName
 
-export type StdinStreamCommand =
-	| { command: "start"; requestId: string; prompt: string; configuration?: RooCodeSettings }
-	| { command: "message"; requestId: string; prompt: string }
-	| { command: "cancel"; requestId: string }
-	| { command: "ping"; requestId: string }
-	| { command: "shutdown"; requestId: string }
+export type StdinStreamCommand = RooCliInputCommand
 
 // ---------------------------------------------------------------------------
 // Parsing
 // ---------------------------------------------------------------------------
 
-export const VALID_STDIN_COMMANDS = new Set<StdinStreamCommandName>(["start", "message", "cancel", "ping", "shutdown"])
+export const VALID_STDIN_COMMANDS = new Set<StdinStreamCommandName>(rooCliCommandNames)
 
 export function parseStdinStreamCommand(line: string, lineNumber: number): StdinStreamCommand {
 	let parsed: unknown
@@ -67,7 +67,12 @@ export function parseStdinStreamCommand(line: string, lineNumber: number): Stdin
 		}
 
 		if (command === "start" && isRecord(parsed.configuration)) {
-			return { command, requestId, prompt: promptRaw, configuration: parsed.configuration as RooCodeSettings }
+			return {
+				command,
+				requestId,
+				prompt: promptRaw,
+				configuration: parsed.configuration as RooCliStartCommand["configuration"],
+			}
 		}
 
 		return { command, requestId, prompt: promptRaw }
