@@ -1,6 +1,8 @@
 import { createInterface } from "readline"
 import { randomUUID } from "crypto"
 
+import type { RooCodeSettings } from "@roo-code/types"
+
 import { isRecord } from "@/lib/utils/guards.js"
 
 import type { ExtensionHost } from "@/agent/index.js"
@@ -13,7 +15,7 @@ import type { JsonEventEmitter } from "@/agent/json-event-emitter.js"
 export type StdinStreamCommandName = "start" | "message" | "cancel" | "ping" | "shutdown"
 
 export type StdinStreamCommand =
-	| { command: "start"; requestId: string; prompt: string }
+	| { command: "start"; requestId: string; prompt: string; configuration?: RooCodeSettings }
 	| { command: "message"; requestId: string; prompt: string }
 	| { command: "cancel"; requestId: string }
 	| { command: "ping"; requestId: string }
@@ -62,6 +64,10 @@ export function parseStdinStreamCommand(line: string, lineNumber: number): Stdin
 		const promptRaw = parsed.prompt
 		if (typeof promptRaw !== "string" || promptRaw.trim().length === 0) {
 			throw new Error(`stdin command line ${lineNumber}: "${command}" requires non-empty string "prompt"`)
+		}
+
+		if (command === "start" && isRecord(parsed.configuration)) {
+			return { command, requestId, prompt: promptRaw, configuration: parsed.configuration as RooCodeSettings }
 		}
 
 		return { command, requestId, prompt: promptRaw }
@@ -421,7 +427,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 					})
 
 					activeTaskPromise = host
-						.runTask(stdinCommand.prompt, latestTaskId)
+						.runTask(stdinCommand.prompt, latestTaskId, stdinCommand.configuration)
 						.catch((error) => {
 							const message = error instanceof Error ? error.message : String(error)
 
