@@ -232,13 +232,17 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		// Convert Anthropic messages to OpenAI format.
-		// Pass normalization function for Mistral compatibility (requires 9-char alphanumeric IDs)
-		const isMistral = modelId.toLowerCase().includes("mistral")
+		// Pass normalization function for Mistral/Devstral compatibility (requires 9-char alphanumeric IDs)
+		// Also merge tool result text to avoid "Unexpected role 'user' after role 'tool'" errors
+		const modelIdLower = modelId.toLowerCase()
+		const isMistralFamily = modelIdLower.includes("mistral") || modelIdLower.includes("devstral")
 		let openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
 			...convertToOpenAiMessages(
 				messages,
-				isMistral ? { normalizeToolCallId: normalizeMistralToolCallId } : undefined,
+				isMistralFamily
+					? { normalizeToolCallId: normalizeMistralToolCallId, mergeToolResultText: true }
+					: undefined,
 			),
 		]
 
