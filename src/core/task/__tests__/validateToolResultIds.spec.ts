@@ -994,4 +994,159 @@ describe("validateAndFixToolResultIds", () => {
 			expect(TelemetryService.instance.captureException).not.toHaveBeenCalled()
 		})
 	})
+
+	describe("cross-message orphan filtering (GitHub #10494)", () => {
+		it("should filter out tool_result in second user message that references already-paired tool_use", () => {
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [
+					{
+						type: "tool_use",
+						id: "tooluse_PbLZjpT1QZSfWtIIWnMF4Q",
+						name: "execute_command",
+						input: { command: "npm test" },
+					},
+				],
+			}
+
+			const existingUserMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [
+					{
+						type: "tool_result",
+						tool_use_id: "tooluse_PbLZjpT1QZSfWtIIWnMF4Q",
+						content: "✅ 21 passed",
+					},
+				],
+			}
+
+			const orphanUserMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [
+					{
+						type: "tool_result",
+						tool_use_id: "tooluse_PbLZjpT1QZSfWtIIWnMF4Q",
+						content: "deleted message text that should not appear",
+					},
+				],
+			}
+
+			const conversationHistory = [assistantMessage, existingUserMessage]
+			const result = validateAndFixToolResultIds(orphanUserMessage, conversationHistory)
+
+			expect(Array.isArray(result.content)).toBe(true)
+			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			expect(resultContent.filter((b) => b.type === "tool_result")).toHaveLength(0)
+		})
+
+		it("should keep tool_results in separate messages if they reference different tool_uses", () => {
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [
+					{ type: "tool_use", id: "tool-1", name: "read_file", input: { path: "a.txt" } },
+					{ type: "tool_use", id: "tool-2", name: "read_file", input: { path: "b.txt" } },
+				],
+			}
+
+			const existingUserMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [{ type: "tool_result", tool_use_id: "tool-1", content: "Content A" }],
+			}
+
+			const secondUserMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [{ type: "tool_result", tool_use_id: "tool-2", content: "Content B" }],
+			}
+
+			const conversationHistory = [assistantMessage, existingUserMessage]
+			const result = validateAndFixToolResultIds(secondUserMessage, conversationHistory)
+
+			expect(Array.isArray(result.content)).toBe(true)
+			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			expect(resultContent.filter((b) => b.type === "tool_result")).toHaveLength(1)
+			expect(resultContent[0].tool_use_id).toBe("tool-2")
+		})
+
+		it("should preserve non-tool_result content when filtering orphaned tool_results", () => {
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [{ type: "tool_use", id: "tool-123", name: "execute_command", input: { command: "npm test" } }],
+			}
+
+			const existingUserMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [{ type: "tool_result", tool_use_id: "tool-123", content: "Command output" }],
+			}
+
+			const orphanUserMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [
+					{ type: "tool_result", tool_use_id: "tool-123", content: "Orphan result" },
+					{ type: "text", text: "Environment details here" },
+				],
+			}
+
+			const conversationHistory = [assistantMessage, existingUserMessage]
+			const result = validateAndFixToolResultIds(orphanUserMessage, conversationHistory)
+
+			expect(Array.isArray(result.content)).toBe(true)
+			const resultContent = result.content as Array<Anthropic.ToolResultBlockParam | Anthropic.TextBlockParam>
+			expect(resultContent.filter((b) => b.type === "tool_result")).toHaveLength(0)
+			expect(resultContent.filter((b) => b.type === "text")).toHaveLength(1)
+			expect((resultContent.find((b) => b.type === "text") as Anthropic.TextBlockParam).text).toBe("Environment details here")
+		})
+
+		it("should handle multiple tool_uses with mixed valid and orphaned results", () => {
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [
+					{ type: "tool_use", id: "tool-1", name: "read_file", input: { path: "a.txt" } },
+					{ type: "tool_use", id: "tool-2", name: "read_file", input: { path: "b.txt" } },
+				],
+			}
+
+			const existingUserMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [{ type: "tool_result", tool_use_id: "tool-1", content: "Content A" }],
+			}
+
+			const mixedUserMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [
+					{ type: "tool_result", tool_use_id: "tool-1", content: "Orphan content for tool-1" },
+					{ type: "tool_result", tool_use_id: "tool-2", content: "Valid content for tool-2" },
+				],
+			}
+
+			const conversationHistory = [assistantMessage, existingUserMessage]
+			const result = validateAndFixToolResultIds(mixedUserMessage, conversationHistory)
+
+			expect(Array.isArray(result.content)).toBe(true)
+			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			const toolResults = resultContent.filter((b) => b.type === "tool_result")
+			expect(toolResults).toHaveLength(1)
+			expect(toolResults[0].tool_use_id).toBe("tool-2")
+			expect(toolResults[0].content).toBe("Valid content for tool-2")
+		})
+
+		it("should not filter when there are no previous user messages after the assistant message", () => {
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [{ type: "tool_use", id: "tool-123", name: "read_file", input: { path: "test.txt" } }],
+			}
+
+			const userMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [{ type: "tool_result", tool_use_id: "tool-123", content: "File content" }],
+			}
+
+			const conversationHistory = [assistantMessage]
+			const result = validateAndFixToolResultIds(userMessage, conversationHistory)
+
+			expect(Array.isArray(result.content)).toBe(true)
+			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			expect(resultContent.filter((b) => b.type === "tool_result")).toHaveLength(1)
+			expect(resultContent[0].tool_use_id).toBe("tool-123")
+		})
+	})
 })
