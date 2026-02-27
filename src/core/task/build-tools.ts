@@ -24,6 +24,8 @@ interface BuildToolsOptions {
 	apiConfiguration: ProviderSettings | undefined
 	disabledTools?: string[]
 	modelInfo?: ModelInfo
+	/** Maximum line limit for read_file tool. -1 or undefined = DEFAULT_LINE_LIMIT, 0 = no limit */
+	maxReadFileLine?: number
 	/**
 	 * If true, returns all tools without mode filtering, but also includes
 	 * the list of allowed tool names for use with allowedFunctionNames.
@@ -89,6 +91,7 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 		apiConfiguration,
 		disabledTools,
 		modelInfo,
+		maxReadFileLine,
 		includeAllToolsWithRestrictions,
 	} = options
 
@@ -111,6 +114,7 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 	// Build native tools with dynamic read_file tool based on settings.
 	const nativeTools = getNativeTools({
 		supportsImages,
+		maxReadFileLine,
 	})
 
 	// Filter native tools based on mode restrictions.
