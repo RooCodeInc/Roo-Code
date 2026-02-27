@@ -3,7 +3,7 @@
 import { motion } from "framer-motion"
 import Image from "next/image"
 
-const logos = ["Apple", "Netflix", "Microsoft", "Amazon", "ByteDance", "Rakuten", "Carvana"]
+const logos = ["Apple", "Microsoft", "Amazon", "ByteDance", "Rakuten", "Carvana"]
 
 export function CompanyLogos() {
 	return (
