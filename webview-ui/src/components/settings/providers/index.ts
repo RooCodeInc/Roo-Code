@@ -1,4 +1,5 @@
 export { Anthropic } from "./Anthropic"
+export { Avian } from "./Avian"
 export { Bedrock } from "./Bedrock"
 export { DeepSeek } from "./DeepSeek"
 export { Gemini } from "./Gemini"

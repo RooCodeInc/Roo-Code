@@ -388,6 +388,8 @@
 		"awsBedrock1MContextBetaDescription": "為 Claude Sonnet 4.x / Claude Opus 4.6 將上下文視窗擴展至 100 萬個 token",
 		"vertex1MContextBetaLabel": "啟用 1M 上下文視窗 (Beta)",
 		"vertex1MContextBetaDescription": "為 Claude Sonnet 4.x / Claude Opus 4.6 將上下文視窗擴展至 100 萬個 token",
+		"avianApiKey": "Avian API Key",
+		"getAvianApiKey": "Get Avian API Key",
 		"basetenApiKey": "Baseten API 金鑰",
 		"getBasetenApiKey": "取得 Baseten API 金鑰",
 		"fireworksApiKey": "Fireworks API 金鑰",

@@ -54,6 +54,7 @@ export class ProfileValidator {
 			case "openai":
 				return profile.openAiModelId
 			case "anthropic":
+			case "avian":
 			case "openai-native":
 			case "bedrock":
 			case "vertex":

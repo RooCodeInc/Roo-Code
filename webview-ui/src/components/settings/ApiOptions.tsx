@@ -15,6 +15,7 @@ import {
 	openAiNativeDefaultModelId,
 	openAiCodexDefaultModelId,
 	anthropicDefaultModelId,
+	avianDefaultModelId,
 	qwenCodeDefaultModelId,
 	geminiDefaultModelId,
 	deepSeekDefaultModelId,
@@ -67,6 +68,7 @@ import {
 
 import {
 	Anthropic,
+	Avian,
 	Baseten,
 	Bedrock,
 	DeepSeek,
@@ -335,6 +337,7 @@ const ApiOptions = ({
 				unbound: { field: "unboundModelId", default: unboundDefaultModelId },
 				litellm: { field: "litellmModelId", default: litellmDefaultModelId },
 				anthropic: { field: "apiModelId", default: anthropicDefaultModelId },
+				avian: { field: "apiModelId", default: avianDefaultModelId },
 				"openai-codex": { field: "apiModelId", default: openAiCodexDefaultModelId },
 				"qwen-code": { field: "apiModelId", default: qwenCodeDefaultModelId },
 				"openai-native": { field: "apiModelId", default: openAiNativeDefaultModelId },
@@ -538,6 +541,13 @@ const ApiOptions = ({
 							apiConfiguration={apiConfiguration}
 							setApiConfigurationField={setApiConfigurationField}
 							simplifySettings={fromWelcomeView}
+						/>
+					)}
+
+					{selectedProvider === "avian" && (
+						<Avian
+							apiConfiguration={apiConfiguration}
+							setApiConfigurationField={setApiConfigurationField}
 						/>
 					)}
 

@@ -378,6 +378,8 @@
 		"awsBedrock1MContextBetaDescription": "Rozszerza okno kontekstowe do 1 miliona tokenów dla Claude Sonnet 4.x / Claude Opus 4.6",
 		"vertex1MContextBetaLabel": "Włącz okno kontekstowe 1M (Beta)",
 		"vertex1MContextBetaDescription": "Rozszerza okno kontekstowe do 1 miliona tokenów dla Claude Sonnet 4.x / Claude Opus 4.6",
+		"avianApiKey": "Avian API Key",
+		"getAvianApiKey": "Get Avian API Key",
 		"basetenApiKey": "Klucz API Baseten",
 		"getBasetenApiKey": "Uzyskaj klucz API Baseten",
 		"fireworksApiKey": "Klucz API Fireworks",

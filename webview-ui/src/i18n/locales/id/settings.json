@@ -378,6 +378,8 @@
 		"awsBedrock1MContextBetaDescription": "Memperluas jendela konteks menjadi 1 juta token untuk Claude Sonnet 4.x / Claude Opus 4.6",
 		"vertex1MContextBetaLabel": "Aktifkan jendela konteks 1M (Beta)",
 		"vertex1MContextBetaDescription": "Memperluas jendela konteks menjadi 1 juta token untuk Claude Sonnet 4.x / Claude Opus 4.6",
+		"avianApiKey": "Avian API Key",
+		"getAvianApiKey": "Get Avian API Key",
 		"basetenApiKey": "Baseten API Key",
 		"getBasetenApiKey": "Dapatkan Baseten API Key",
 		"fireworksApiKey": "Fireworks API Key",
