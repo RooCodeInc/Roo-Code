@@ -50,6 +50,11 @@ program
 		"Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh)",
 		DEFAULT_FLAGS.reasoningEffort,
 	)
+	.option(
+		"--consecutive-mistake-limit <limit>",
+		"Consecutive error/repetition limit before guidance prompt (0 disables the limit)",
+		(value) => Number.parseInt(value, 10),
+	)
 	.option("--exit-on-error", "Exit on API request errors instead of retrying", false)
 	.option("--ephemeral", "Run without persisting state (uses temporary storage)", false)
 	.option("--oneshot", "Exit upon task completion", false)

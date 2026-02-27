@@ -3,8 +3,9 @@ import path from "path"
 import { fileURLToPath } from "url"
 
 import { createElement } from "react"
-import type { HistoryItem } from "@roo-code/types"
+import pWaitFor from "p-wait-for"
 
+import type { HistoryItem } from "@roo-code/types"
 import { setLogger } from "@roo-code/vscode-shim"
 
 import {
@@ -35,6 +36,17 @@ import { runStdinStreamMode } from "./stdin-stream.js"
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROO_MODEL_WARMUP_TIMEOUT_MS = 10_000
 const SIGNAL_ONLY_EXIT_KEEPALIVE_MS = 60_000
+const STREAM_RESUME_WAIT_TIMEOUT_MS = 2_000
+
+async function bootstrapResumeForStdinStream(host: ExtensionHost, sessionId: string): Promise<void> {
+	host.sendToExtension({ type: "showTaskWithId", text: sessionId })
+
+	// Best-effort wait so early stdin "message" commands can target the resumed task.
+	await pWaitFor(() => host.client.hasActiveTask() || host.isWaitingForInput(), {
+		interval: 25,
+		timeout: STREAM_RESUME_WAIT_TIMEOUT_MS,
+	}).catch(() => undefined)
+}
 
 function normalizeError(error: unknown): Error {
 	return error instanceof Error ? error : new Error(String(error))
@@ -185,10 +197,21 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		(settings.dangerouslySkipPermissions === undefined ? undefined : !settings.dangerouslySkipPermissions)
 	const effectiveRequireApproval = flagOptions.requireApproval || legacyRequireApprovalFromSettings || false
 	const effectiveExitOnComplete = flagOptions.print || flagOptions.oneshot || settings.oneshot || false
+	const rawConsecutiveMistakeLimit =
+		flagOptions.consecutiveMistakeLimit ?? settings.consecutiveMistakeLimit ?? DEFAULT_FLAGS.consecutiveMistakeLimit
+	const effectiveConsecutiveMistakeLimit = Number(rawConsecutiveMistakeLimit)
+
+	if (!Number.isInteger(effectiveConsecutiveMistakeLimit) || effectiveConsecutiveMistakeLimit < 0) {
+		console.error(
+			`[CLI] Error: Invalid consecutive mistake limit: ${rawConsecutiveMistakeLimit}; must be a non-negative integer`,
+		)
+		process.exit(1)
+	}
 
 	const extensionHostOptions: ExtensionHostOptions = {
 		mode: effectiveMode,
 		reasoningEffort: effectiveReasoningEffort === "unspecified" ? undefined : effectiveReasoningEffort,
+		consecutiveMistakeLimit: effectiveConsecutiveMistakeLimit,
 		user: null,
 		provider: effectiveProvider,
 		model: effectiveModel,
@@ -332,12 +355,6 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 
 	if (flagOptions.stdinPromptStream && prompt) {
 		console.error("[CLI] Error: cannot use positional prompt or --prompt-file with --stdin-prompt-stream")
-		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
-		process.exit(1)
-	}
-
-	if (flagOptions.stdinPromptStream && isResumeRequested) {
-		console.error("[CLI] Error: cannot use --session-id/--continue with --stdin-prompt-stream")
 		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
 		process.exit(1)
 	}
@@ -549,6 +566,25 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			if (useStdinPromptStream) {
 				if (!jsonEmitter || outputFormat !== "stream-json") {
 					throw new Error("--stdin-prompt-stream requires --output-format=stream-json to emit control events")
+				}
+
+				if (isResumeRequested) {
+					const resolvedSessionId =
+						requestedSessionId ||
+						getMostRecentTaskIdInWorkspace(taskHistorySnapshot, effectiveWorkspacePath)
+
+					if (requestedSessionId && taskHistorySnapshot.length > 0) {
+						const hasRequestedTask = taskHistorySnapshot.some((item) => item.id === requestedSessionId)
+						if (!hasRequestedTask) {
+							throw new Error(`Session not found in task history: ${requestedSessionId}`)
+						}
+					}
+
+					if (!resolvedSessionId) {
+						throw new Error("No previous tasks found to continue in this workspace.")
+					}
+
+					await bootstrapResumeForStdinStream(host, resolvedSessionId)
 				}
 
 				await runStdinStreamMode({
