@@ -10,6 +10,7 @@ import { isEmpty } from "../../utils/object"
 import { McpHub } from "../../services/mcp/McpHub"
 import { CodeIndexManager } from "../../services/code-index/manager"
 import { SkillsManager } from "../../services/skills/SkillsManager"
+import { INTENT_DRIVEN_PROMPT_SNIPPET } from "../../hooks/intent-prompt-snippet"
 
 import type { SystemPromptSettings } from "./types"
 import {
@@ -83,6 +84,8 @@ async function generatePrompt(
 	const toolsCatalog = ""
 
 	const basePrompt = `${roleDefinition}
+
+${INTENT_DRIVEN_PROMPT_SNIPPET}
 
 ${markdownFormattingSection()}
 

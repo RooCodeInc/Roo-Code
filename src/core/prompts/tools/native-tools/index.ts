@@ -1,4 +1,5 @@
 import type OpenAI from "openai"
+import { selectActiveIntentToolDefinition } from "../../../../hooks/select-active-intent-tool"
 import accessMcpResource from "./access_mcp_resource"
 import { apply_diff } from "./apply_diff"
 import applyPatch from "./apply_patch"
@@ -20,6 +21,7 @@ import searchFiles from "./search_files"
 import switchMode from "./switch_mode"
 import updateTodoList from "./update_todo_list"
 import writeToFile from "./write_to_file"
+import appendLessonLearned from "./append_lesson_learned"
 
 export { getMcpServerTools } from "./mcp_server"
 export { convertOpenAIToolToAnthropic, convertOpenAIToolsToAnthropic } from "./converters"
@@ -47,6 +49,7 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 	}
 
 	return [
+		selectActiveIntentToolDefinition,
 		accessMcpResource,
 		apply_diff,
 		applyPatch,
@@ -68,6 +71,7 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 		switchMode,
 		updateTodoList,
 		writeToFile,
+		appendLessonLearned,
 	] satisfies OpenAI.Chat.ChatCompletionTool[]
 }
 
