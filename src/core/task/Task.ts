@@ -3403,14 +3403,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// the assistant message is already in history. Otherwise, tool_result blocks would appear
 				// BEFORE their corresponding tool_use blocks, causing API errors.
 
-				// Check if we have any content to process (text or tool uses)
+				// Check if we have any content to process (text, reasoning, or tool uses)
+				// Thinking models (e.g., Kimi K2, DeepSeek-R1, QwQ) may produce only
+				// reasoning_content with no regular text content. This should not be
+				// treated as an empty/failed response — the model did respond, just
+				// entirely in reasoning tokens.
 				const hasTextContent = assistantMessage.length > 0
+				const hasReasoningContent = reasoningMessage.length > 0
 
 				const hasToolUses = this.assistantMessageContent.some(
 					(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
 				)
 
-				if (hasTextContent || hasToolUses) {
+				if (hasTextContent || hasToolUses || hasReasoningContent) {
 					// Reset counter when we get a successful response with content
 					this.consecutiveNoAssistantMessagesCount = 0
 					// Display grounding sources to the user if they exist
@@ -3561,22 +3566,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					presentAssistantMessage(this)
 				}
 
-				if (hasTextContent || hasToolUses) {
-					// NOTE: This comment is here for future reference - this was a
-					// workaround for `userMessageContent` not getting set to true.
-					// It was due to it not recursively calling for partial blocks
-					// when `didRejectTool`, so it would get stuck waiting for a
-					// partial block to complete before it could continue.
-					// In case the content blocks finished it may be the api stream
-					// finished after the last parsed content block was executed, so
-					// we are able to detect out of bounds and set
-					// `userMessageContentReady` to true (note you should not call
-					// `presentAssistantMessage` since if the last block i
-					//  completed it will be presented again).
-					// const completeBlocks = this.assistantMessageContent.filter((block) => !block.partial) // If there are any partial blocks after the stream ended we can consider them invalid.
-					// if (this.currentStreamingContentIndex >= completeBlocks.length) {
-					// 	this.userMessageContentReady = true
-					// }
+				if (hasTextContent || hasToolUses || hasReasoningContent) {
+					// When the model produces only reasoning content (no text blocks,
+					// no tool uses), assistantMessageContent is empty. In that case,
+					// presentAssistantMessage is never called, so userMessageContentReady
+					// would never be set to true. We must set it directly to avoid
+					// blocking forever on the pWaitFor below.
+					if (this.assistantMessageContent.length === 0) {
+						this.userMessageContentReady = true
+					}
 
 					await pWaitFor(() => this.userMessageContentReady)
 
