@@ -410,6 +410,8 @@
 		"getXaiApiKey": "Obtener clave API de xAI",
 		"litellmApiKey": "Clave API de LiteLLM",
 		"litellmBaseUrl": "URL base de LiteLLM",
+		"litellmFlattenContent": "Aplanar contenido del mensaje",
+		"litellmFlattenContentDescription": "Convierte el contenido del mensaje en formato de matriz a cadenas de texto simples. Habilite esto para compatibilidad con auto_router de LiteLLM y funciones de enrutamiento basadas en embeddings. Deshabilite solo si necesita contenido multimodal (imágenes).",
 		"awsCredentials": "Credenciales de AWS",
 		"awsProfile": "Perfil de AWS",
 		"awsApiKey": "Clave de API de Amazon Bedrock",

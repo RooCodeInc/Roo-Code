@@ -344,6 +344,7 @@ const litellmSchema = baseProviderSettingsSchema.extend({
 	litellmApiKey: z.string().optional(),
 	litellmModelId: z.string().optional(),
 	litellmUsePromptCache: z.boolean().optional(),
+	litellmFlattenContent: z.boolean().optional(),
 })
 
 const sambaNovaSchema = apiModelIdProviderModelSchema.extend({

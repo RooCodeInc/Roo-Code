@@ -420,6 +420,8 @@
 		"getXaiApiKey": "取得 xAI API 金鑰",
 		"litellmApiKey": "LiteLLM API 金鑰",
 		"litellmBaseUrl": "LiteLLM 基礎 URL",
+		"litellmFlattenContent": "展平訊息內容",
+		"litellmFlattenContentDescription": "將陣列格式的訊息內容轉換為純字串。啟用此選項以相容 LiteLLM 的 auto_router 和基於嵌入的路由功能。僅在需要多模態內容（圖像）時停用。",
 		"awsCredentials": "AWS 認證",
 		"awsProfile": "AWS Profile",
 		"awsApiKey": "Amazon Bedrock API 金鑰",
