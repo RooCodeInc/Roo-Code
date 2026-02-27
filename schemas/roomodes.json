@@ -18,8 +18,8 @@
 	"definitions": {
 		"ToolGroup": {
 			"type": "string",
-			"enum": ["read", "edit", "command", "mcp", "modes"],
-			"description": "A tool group name that grants the mode access to a set of tools."
+			"enum": ["read", "edit", "browser", "command", "mcp", "modes"],
+			"description": "A tool group name that grants the mode access to a set of tools. Note: 'browser' is deprecated but still accepted for backward compatibility."
 		},
 		"GroupOptions": {
 			"type": "object",
@@ -47,6 +47,22 @@
 		"GroupEntry": {
 			"description": "A tool group permission entry. Either a simple tool group name string, or a [toolGroupName, options] tuple for groups with file restrictions.",
 			"oneOf": [{ "$ref": "#/definitions/ToolGroup" }, { "$ref": "#/definitions/GroupEntryTuple" }]
+		},
+		"RuleFile": {
+			"type": "object",
+			"description": "A rules file associated with a mode, used during import/export.",
+			"required": ["relativePath", "content"],
+			"additionalProperties": false,
+			"properties": {
+				"relativePath": {
+					"type": "string",
+					"description": "The relative file path for the rules file."
+				},
+				"content": {
+					"type": "string",
+					"description": "The text content of the rules file."
+				}
+			}
 		},
 		"CustomMode": {
 			"type": "object",
@@ -92,6 +108,13 @@
 					"type": "string",
 					"enum": ["global", "project"],
 					"description": "Where this mode was defined. Automatically set by Roo Code."
+				},
+				"rulesFiles": {
+					"type": "array",
+					"description": "Rules files associated with this mode, used during import/export.",
+					"items": {
+						"$ref": "#/definitions/RuleFile"
+					}
 				}
 			}
 		}

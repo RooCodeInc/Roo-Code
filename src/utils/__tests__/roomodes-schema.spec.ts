@@ -273,6 +273,119 @@ describe("roomodes JSON schema", () => {
 		expect(valid).toBe(true)
 	})
 
+	it("should accept the browser tool group (deprecated but valid)", () => {
+		const config = {
+			customModes: [
+				{
+					slug: "browser-mode",
+					name: "Browser Mode",
+					roleDefinition: "A mode that uses the browser tool group.",
+					groups: ["read", "browser", "command"],
+				},
+			],
+		}
+
+		const valid = validate(config)
+		expect(validate.errors).toBeNull()
+		expect(valid).toBe(true)
+	})
+
+	it("should accept a browser tuple group entry", () => {
+		const config = {
+			customModes: [
+				{
+					slug: "browser-tuple",
+					name: "Browser Tuple",
+					roleDefinition: "A mode with browser tuple.",
+					groups: [["browser", { fileRegex: "\\.html$", description: "HTML files only" }]],
+				},
+			],
+		}
+
+		const valid = validate(config)
+		expect(validate.errors).toBeNull()
+		expect(valid).toBe(true)
+	})
+
+	it("should accept a mode with rulesFiles", () => {
+		const config = {
+			customModes: [
+				{
+					slug: "rules-mode",
+					name: "Rules Mode",
+					roleDefinition: "A mode with rules files.",
+					groups: ["read"],
+					rulesFiles: [
+						{
+							relativePath: "rule1.md",
+							content: "# Rule 1\nFollow this rule.",
+						},
+						{
+							relativePath: "subfolder/rule2.md",
+							content: "# Rule 2\nFollow this other rule.",
+						},
+					],
+				},
+			],
+		}
+
+		const valid = validate(config)
+		expect(validate.errors).toBeNull()
+		expect(valid).toBe(true)
+	})
+
+	it("should accept a mode with empty rulesFiles array", () => {
+		const config = {
+			customModes: [
+				{
+					slug: "empty-rules",
+					name: "Empty Rules",
+					roleDefinition: "A mode with empty rules files.",
+					groups: ["read"],
+					rulesFiles: [],
+				},
+			],
+		}
+
+		const valid = validate(config)
+		expect(validate.errors).toBeNull()
+		expect(valid).toBe(true)
+	})
+
+	it("should reject rulesFiles entries missing required fields", () => {
+		const config = {
+			customModes: [
+				{
+					slug: "bad-rules",
+					name: "Bad Rules",
+					roleDefinition: "A mode with invalid rules files.",
+					groups: ["read"],
+					rulesFiles: [{ relativePath: "rule1.md" }],
+				},
+			],
+		}
+
+		const valid = validate(config)
+		expect(valid).toBe(false)
+	})
+
+	it("should reject rulesFiles entries with extra properties", () => {
+		const config = {
+			customModes: [
+				{
+					slug: "extra-rules",
+					name: "Extra Rules",
+					roleDefinition: "A mode with extra rule properties.",
+					groups: ["read"],
+					rulesFiles: [{ relativePath: "rule1.md", content: "content", extra: true }],
+				},
+			],
+		}
+
+		const valid = validate(config)
+		expect(valid).toBe(false)
+	})
+
 	it("should accept multiple modes", () => {
 		const config = {
 			customModes: [
