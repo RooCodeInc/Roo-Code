@@ -150,6 +150,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const [enableButtons, setEnableButtons] = useState<boolean>(false)
 	const [primaryButtonText, setPrimaryButtonText] = useState<string | undefined>(undefined)
 	const [secondaryButtonText, setSecondaryButtonText] = useState<string | undefined>(undefined)
+	const [showSeeAllChangesButton, setShowSeeAllChangesButton] = useState<boolean>(false)
 	const [_didClickCancel, setDidClickCancel] = useState(false)
 	const virtuosoRef = useRef<VirtuosoHandle>(null)
 	const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({})
@@ -388,6 +389,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setEnableButtons(!isPartial)
 							setPrimaryButtonText(t("chat:startNewTask.title"))
 							setSecondaryButtonText(undefined)
+							// Show "See All Changes" button if there are checkpoints
+							const hasCheckpoints = messages.some((msg) => msg.say === "checkpoint_saved")
+							setShowSeeAllChangesButton(!isPartial && hasCheckpoints)
 							break
 						case "resume_task":
 							setSendingDisabled(false)
@@ -442,6 +446,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setEnableButtons(false)
 							setPrimaryButtonText(undefined)
 							setSecondaryButtonText(undefined)
+							setShowSeeAllChangesButton(false)
 							break
 						case "api_req_finished":
 						case "error":
@@ -847,6 +852,26 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		},
 		[clineAsk, startNewTask, isStreaming, setDidClickCancel],
 	)
+
+	// Handler for "See All Changes" button
+	const handleSeeAllChangesClick = useCallback(() => {
+		// Find the first checkpoint hash to use for the "full" diff
+		const checkpoints = messagesRef.current.filter((msg) => msg.say === "checkpoint_saved")
+		if (checkpoints.length > 0) {
+			// The checkpointDiff with mode "full" needs the first checkpoint's hash as commitHash
+			// It will compare from the first checkpoint to current workspace
+			const firstCheckpointHash = checkpoints[0].text
+			if (firstCheckpointHash) {
+				vscode.postMessage({
+					type: "checkpointDiff",
+					payload: {
+						commitHash: firstCheckpointHash,
+						mode: "full",
+					},
+				})
+			}
+		}
+	}, [])
 
 	const { info: model } = useSelectedModel(apiConfiguration)
 
@@ -1522,7 +1547,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		vscode.postMessage({ type: "condenseTaskContextRequest", text: taskId })
 	}
 
-	const areButtonsVisible = showScrollToBottom || primaryButtonText || secondaryButtonText
+	const areButtonsVisible = showScrollToBottom || primaryButtonText || secondaryButtonText || showSeeAllChangesButton
 
 	return (
 		<div
@@ -1677,9 +1702,24 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 											<Button
 												variant="primary"
 												disabled={!enableButtons}
-												className={secondaryButtonText ? "flex-1 mr-[6px]" : "flex-[2] mr-0"}
+												className={
+													secondaryButtonText || showSeeAllChangesButton
+														? "flex-1 mr-[6px]"
+														: "flex-[2] mr-0"
+												}
 												onClick={() => handlePrimaryButtonClick(inputValue, selectedImages)}>
 												{primaryButtonText}
+											</Button>
+										</StandardTooltip>
+									)}
+									{showSeeAllChangesButton && (
+										<StandardTooltip content={t("chat:seeAllChanges.tooltip")}>
+											<Button
+												variant="secondary"
+												disabled={!enableButtons}
+												className="flex-1 ml-[6px]"
+												onClick={handleSeeAllChangesClick}>
+												{t("chat:seeAllChanges.title")}
 											</Button>
 										</StandardTooltip>
 									)}
