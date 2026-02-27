@@ -5,6 +5,7 @@ import { type ClineSayTool, DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 
 import { getReadablePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
+import { readFileWithEncoding, writeFileWithEncoding } from "../../utils/fileEncoding"
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
@@ -88,7 +89,8 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 			// Process each hunk
 			const readFile = async (filePath: string): Promise<string> => {
 				const absolutePath = path.resolve(task.cwd, filePath)
-				return await fs.readFile(absolutePath, "utf8")
+				const { content } = await readFileWithEncoding(absolutePath)
+				return content
 			}
 
 			let changes: ApplyPatchFileChange[]
@@ -417,10 +419,10 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 					writeDelayMs,
 				)
 			} else {
-				// Write to new path and delete old file
+				// Write to new path and delete old file with proper encoding
 				const parentDir = path.dirname(moveAbsolutePath)
 				await fs.mkdir(parentDir, { recursive: true })
-				await fs.writeFile(moveAbsolutePath, newContent, "utf8")
+				await writeFileWithEncoding(moveAbsolutePath, newContent)
 			}
 
 			// Delete the original file
