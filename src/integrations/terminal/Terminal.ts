@@ -159,6 +159,18 @@ export class Terminal extends BaseTerminal {
 			VTE_VERSION: "0",
 		}
 
+		// Add Windows-specific UTF-8 environment variables to prevent character corruption
+		// when the system uses non-UTF-8 encodings like GBK (code page 936)
+		// See: https://github.com/RooCodeInc/Roo-Code/issues/10709
+		if (process.platform === "win32") {
+			// Python: Force UTF-8 encoding for stdin/stdout/stderr
+			env.PYTHONIOENCODING = "utf-8"
+			// Python 3.7+: Enable UTF-8 mode
+			env.PYTHONUTF8 = "1"
+			// Ruby: Force UTF-8 encoding
+			env.RUBYOPT = "-EUTF-8"
+		}
+
 		// Set Oh My Zsh shell integration if enabled
 		if (Terminal.getTerminalZshOhMy()) {
 			env.ITERM_SHELL_INTEGRATION_INSTALLED = "Yes"
