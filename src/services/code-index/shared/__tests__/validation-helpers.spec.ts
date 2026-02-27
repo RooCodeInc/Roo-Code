@@ -1,4 +1,21 @@
-import { sanitizeErrorMessage } from "../validation-helpers"
+import { sanitizeErrorMessage, handleValidationError } from "../validation-helpers"
+
+vi.mock("../../../../i18n", () => ({
+	t: (key: string) => {
+		// Return the key itself for testing purposes
+		const translations: Record<string, string> = {
+			"common:errors.api.invalidKeyInvalidChars": "API key contains invalid characters.",
+			"embeddings:validation.connectionFailed": "Connection failed",
+			"embeddings:validation.invalidResponse": "Invalid response",
+			"embeddings:validation.configurationError": "Configuration error",
+			"embeddings:validation.authenticationFailed": "Authentication failed",
+			"embeddings:validation.modelNotAvailable": "Model not available",
+			"embeddings:validation.invalidEndpoint": "Invalid endpoint",
+			"embeddings:validation.serviceUnavailable": "Service unavailable",
+		}
+		return translations[key] || key
+	},
+}))
 
 describe("sanitizeErrorMessage", () => {
 	it("should sanitize Unix-style file paths", () => {
@@ -88,5 +105,108 @@ describe("sanitizeErrorMessage", () => {
 		const input = "Copy from /src/file1.js to /dest/file2.js failed"
 		const expected = "Copy from [REDACTED_PATH] to [REDACTED_PATH] failed"
 		expect(sanitizeErrorMessage(input)).toBe(expected)
+	})
+})
+
+describe("handleValidationError", () => {
+	it("should handle ByteString conversion error with user-friendly message", () => {
+		const error = new Error(
+			"Cannot convert argument to a ByteString because the character at index 8 has a value of 1040 which is greater than 255",
+		)
+		const result = handleValidationError(error, "openai-compatible")
+		expect(result.valid).toBe(false)
+		expect(result.error).toBe("API key contains invalid characters.")
+	})
+
+	it("should handle ByteString error with various character indices", () => {
+		const error = new Error(
+			"Cannot convert argument to a ByteString because the character at index 0 has a value of 256",
+		)
+		const result = handleValidationError(error, "openai")
+		expect(result.valid).toBe(false)
+		expect(result.error).toBe("API key contains invalid characters.")
+	})
+
+	it("should handle connection refused errors", () => {
+		const error = new Error("ECONNREFUSED 127.0.0.1:11434")
+		const result = handleValidationError(error, "ollama")
+		expect(result.valid).toBe(false)
+		expect(result.error).toBe("Connection failed")
+	})
+
+	it("should handle ENOTFOUND errors", () => {
+		const error = new Error("getaddrinfo ENOTFOUND api.example.com")
+		const result = handleValidationError(error, "openai")
+		expect(result.valid).toBe(false)
+		expect(result.error).toBe("Connection failed")
+	})
+
+	it("should handle timeout errors", () => {
+		const error = new Error("ETIMEDOUT")
+		const result = handleValidationError(error, "openai")
+		expect(result.valid).toBe(false)
+		expect(result.error).toBe("Connection failed")
+	})
+
+	it("should handle invalid JSON response errors", () => {
+		const error = new Error("Failed to parse response JSON")
+		const result = handleValidationError(error, "openai")
+		expect(result.valid).toBe(false)
+		expect(result.error).toBe("Invalid response")
+	})
+
+	it("should preserve generic error messages", () => {
+		const error = new Error("Something went wrong")
+		const result = handleValidationError(error, "openai")
+		expect(result.valid).toBe(false)
+		expect(result.error).toBe("Something went wrong")
+	})
+
+	it("should handle errors with status codes", () => {
+		const error = { status: 401, message: "Unauthorized" }
+		const result = handleValidationError(error, "openai")
+		expect(result.valid).toBe(false)
+		expect(result.error).toBe("Authentication failed")
+	})
+
+	it("should handle 404 errors for openai provider", () => {
+		const error = { status: 404, message: "Not Found" }
+		const result = handleValidationError(error, "openai")
+		expect(result.valid).toBe(false)
+		expect(result.error).toBe("Model not available")
+	})
+
+	it("should handle 404 errors for non-openai providers", () => {
+		const error = { status: 404, message: "Not Found" }
+		const result = handleValidationError(error, "ollama")
+		expect(result.valid).toBe(false)
+		expect(result.error).toBe("Invalid endpoint")
+	})
+
+	it("should handle rate limit errors", () => {
+		const error = { status: 429, message: "Too Many Requests" }
+		const result = handleValidationError(error, "openai")
+		expect(result.valid).toBe(false)
+		expect(result.error).toBe("Service unavailable")
+	})
+
+	it("should allow custom handlers to override standard handling", () => {
+		const error = new Error("Custom error")
+		const customHandlers = {
+			beforeStandardHandling: () => ({ valid: false, error: "Custom handled error" }),
+		}
+		const result = handleValidationError(error, "openai", customHandlers)
+		expect(result.valid).toBe(false)
+		expect(result.error).toBe("Custom handled error")
+	})
+
+	it("should continue with standard handling if custom handler returns undefined", () => {
+		const error = new Error("ECONNREFUSED")
+		const customHandlers = {
+			beforeStandardHandling: () => undefined,
+		}
+		const result = handleValidationError(error, "openai", customHandlers)
+		expect(result.valid).toBe(false)
+		expect(result.error).toBe("Connection failed")
 	})
 })
