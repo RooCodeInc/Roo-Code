@@ -104,6 +104,7 @@ import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { RooProtectedController } from "../protect/RooProtectedController"
 import { type AssistantMessageContent, presentAssistantMessage } from "../assistant-message"
 import { NativeToolCallParser } from "../assistant-message/NativeToolCallParser"
+import { XmlToolCallParser } from "../assistant-message/XmlToolCallParser"
 import { manageContext, willManageContext } from "../context-management"
 import { ClineProvider } from "../webview/ClineProvider"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
@@ -392,6 +393,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	// Native tool call streaming state (track which index each tool is at)
 	private streamingToolCallIndices: Map<string, number> = new Map()
+
+	// XML-style tool call parser for models like Qwen3-Coder-Next that output XML tool calls
+	private xmlToolCallParser: XmlToolCallParser = new XmlToolCallParser()
 
 	// Cached model info for current streaming session (set at start of each API request)
 	// This prevents excessive getModel() calls during tool execution
@@ -2769,6 +2773,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Clear any leftover streaming tool call state from previous interrupted streams
 				NativeToolCallParser.clearAllStreamingToolCalls()
 				NativeToolCallParser.clearRawChunkState()
+				// Reset XML tool call parser for models that output XML-style tool calls
+				this.xmlToolCallParser.reset()
 
 				await this.diffViewProvider.reset()
 
@@ -3008,22 +3014,36 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								break
 							}
 							case "text": {
-								assistantMessage += chunk.text
+								// Check for XML-style tool calls in the text (e.g., from Qwen3-Coder-Next)
+								// These models output <function=TOOL_NAME><parameter=PARAM>VALUE</parameter></function>
+								// instead of native JSON tool calls
+								const xmlResult = this.xmlToolCallParser.processChunk(chunk.text)
 
-								// Native tool calling: text chunks are plain text.
-								// Create or update a text content block directly
-								const lastBlock = this.assistantMessageContent[this.assistantMessageContent.length - 1]
-								if (lastBlock?.type === "text" && lastBlock.partial) {
-									lastBlock.content = assistantMessage
-								} else {
-									this.assistantMessageContent.push({
-										type: "text",
-										content: assistantMessage,
-										partial: true,
-									})
-									this.userMessageContentReady = false
+								// Process any XML tool call events
+								for (const event of xmlResult.events) {
+									this.handleToolCallEvent(event)
 								}
-								presentAssistantMessage(this)
+
+								// Only accumulate non-tool-call text
+								if (xmlResult.textContent) {
+									assistantMessage += xmlResult.textContent
+
+									// Native tool calling: text chunks are plain text.
+									// Create or update a text content block directly
+									const lastBlock =
+										this.assistantMessageContent[this.assistantMessageContent.length - 1]
+									if (lastBlock?.type === "text" && lastBlock.partial) {
+										lastBlock.content = assistantMessage
+									} else {
+										this.assistantMessageContent.push({
+											type: "text",
+											content: assistantMessage,
+											partial: true,
+										})
+										this.userMessageContentReady = false
+									}
+									presentAssistantMessage(this)
+								}
 								break
 							}
 						}
@@ -3362,6 +3382,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							presentAssistantMessage(this)
 						}
 					}
+				}
+
+				// Finalize XML tool call parser for models like Qwen3-Coder-Next
+				// This handles any incomplete tool calls at the end of the stream
+				const xmlFinalResult = this.xmlToolCallParser.finalize()
+				for (const event of xmlFinalResult.events) {
+					this.handleToolCallEvent(event)
 				}
 
 				// IMPORTANT: Capture partialBlocks AFTER finalizeRawChunks() to avoid double-presentation.
