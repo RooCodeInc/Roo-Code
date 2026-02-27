@@ -10,6 +10,7 @@ import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCal
 import { TagMatcher } from "../../utils/tag-matcher"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
+import { convertToZAiFormat } from "../transform/zai-format"
 import { ApiStream } from "../transform/stream"
 
 import { BaseProvider } from "./base-provider"
@@ -17,11 +18,13 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { getModelsFromCache } from "./fetchers/modelCache"
 import { getApiRequestTimeout } from "./utils/timeout-config"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { detectGlmModel, logGlmDetection, type GlmModelConfig } from "./utils/glm-model-detection"
 
 export class LmStudioHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
 	private readonly providerName = "LM Studio"
+	private glmConfig: GlmModelConfig | null = null
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -35,6 +38,13 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 			apiKey: apiKey,
 			timeout: getApiRequestTimeout(),
 		})
+
+		// Detect GLM model on construction if model ID is available
+		const modelId = this.options.lmStudioModelId || ""
+		if (modelId) {
+			this.glmConfig = detectGlmModel(modelId)
+			logGlmDetection(this.providerName, modelId, this.glmConfig)
+		}
 	}
 
 	override async *createMessage(
@@ -42,9 +52,23 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		const model = this.getModel()
+
+		// Re-detect GLM model if not already done or if model ID changed
+		if (!this.glmConfig || this.glmConfig.originalModelId !== model.id) {
+			this.glmConfig = detectGlmModel(model.id)
+			logGlmDetection(this.providerName, model.id, this.glmConfig)
+		}
+
+		// Convert messages based on whether this is a GLM model
+		// GLM models benefit from mergeToolResultText to prevent reasoning_content loss
+		const convertedMessages = this.glmConfig.isGlmModel
+			? convertToZAiFormat(messages, { mergeToolResultText: this.glmConfig.mergeToolResultText })
+			: convertToOpenAiMessages(messages)
+
 		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages),
+			...convertedMessages,
 		]
 
 		// -------------------------
@@ -83,18 +107,35 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		let assistantText = ""
 
 		try {
+			// Determine parallel_tool_calls setting
+			// Disable for GLM models as they may not support it properly
+			let parallelToolCalls: boolean
+			if (this.glmConfig.isGlmModel && this.glmConfig.disableParallelToolCalls) {
+				parallelToolCalls = false
+				console.log(`[${this.providerName}] parallel_tool_calls disabled for GLM model`)
+			} else {
+				parallelToolCalls = metadata?.parallelToolCalls ?? true
+			}
+
 			const params: OpenAI.Chat.ChatCompletionCreateParamsStreaming & { draft_model?: string } = {
-				model: this.getModel().id,
+				model: model.id,
 				messages: openAiMessages,
 				temperature: this.options.modelTemperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
 				stream: true,
 				tools: this.convertToolsForOpenAI(metadata?.tools),
 				tool_choice: metadata?.tool_choice,
-				parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+				parallel_tool_calls: parallelToolCalls,
 			}
 
 			if (this.options.lmStudioSpeculativeDecodingEnabled && this.options.lmStudioDraftModelId) {
 				params.draft_model = this.options.lmStudioDraftModelId
+			}
+
+			// For GLM-4.7 models with thinking support, add thinking parameter
+			if (this.glmConfig.isGlmModel && this.glmConfig.supportsThinking) {
+				const useReasoning = this.options.enableReasoningEffort !== false // Default to enabled for GLM-4.7
+				;(params as any).thinking = useReasoning ? { type: "enabled" } : { type: "disabled" }
+				console.log(`[${this.providerName}] GLM-4.7 thinking mode: ${useReasoning ? "enabled" : "disabled"}`)
 			}
 
 			let results
@@ -121,6 +162,19 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 					assistantText += delta.content
 					for (const processedChunk of matcher.update(delta.content)) {
 						yield processedChunk
+					}
+				}
+
+				// Handle reasoning_content for GLM models (similar to Z.ai)
+				if (delta) {
+					for (const key of ["reasoning_content", "reasoning"] as const) {
+						if (key in delta) {
+							const reasoning_content = ((delta as any)[key] as string | undefined) || ""
+							if (reasoning_content?.trim()) {
+								yield { type: "reasoning", text: reasoning_content }
+							}
+							break
+						}
 					}
 				}
 
