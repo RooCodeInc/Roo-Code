@@ -313,6 +313,7 @@ export type ExtensionState = Pick<
 	currentTaskItem?: HistoryItem
 	currentTaskTodos?: TodoItem[] // Initial todos for the current task
 	apiConfiguration: ProviderSettings
+	currentConfigScope?: "global" | "workspace" // Current configuration scope
 	uriScheme?: string
 	shouldShowAnnouncement: boolean
 
@@ -586,6 +587,7 @@ export interface WebviewMessage {
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
 	disabled?: boolean
 	context?: string
+	scope?: "global" | "workspace"
 	dataUri?: string
 	askResponse?: ClineAskResponse
 	apiConfiguration?: ProviderSettings

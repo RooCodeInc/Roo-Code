@@ -14,7 +14,10 @@
 	},
 	"apiConfiguration": {
 		"title": "API Configuration",
-		"select": "Select which API configuration to use for this mode"
+		"select": "Select which API configuration to use for this mode",
+		"scope": "Scope",
+		"global": "Global",
+		"workspace": "Workspace"
 	},
 	"tools": {
 		"title": "Available Tools",

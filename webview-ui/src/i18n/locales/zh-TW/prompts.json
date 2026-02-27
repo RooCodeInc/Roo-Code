@@ -14,7 +14,10 @@
 	},
 	"apiConfiguration": {
 		"title": "API 設定",
-		"select": "選擇此模式要使用的 API 設定"
+		"select": "選擇此模式要使用的 API 設定",
+		"scope": "範圍",
+		"global": "全域",
+		"workspace": "工作區"
 	},
 	"tools": {
 		"title": "可用工具",
