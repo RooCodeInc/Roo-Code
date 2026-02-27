@@ -56,6 +56,7 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 				type: "use_mcp_tool",
 				serverName,
 				toolName: resolvedToolName,
+				toolTitle: toolValidation.resolvedToolTitle,
 				arguments: params.arguments ? JSON.stringify(params.arguments) : undefined,
 			} satisfies ClineAskUseMcpServer)
 
@@ -142,7 +143,7 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 		serverName: string,
 		toolName: string,
 		pushToolResult: (content: string) => void,
-	): Promise<{ isValid: boolean; availableTools?: string[]; resolvedToolName?: string }> {
+	): Promise<{ isValid: boolean; availableTools?: string[]; resolvedToolName?: string; resolvedToolTitle?: string }> {
 		try {
 			// Get the MCP hub to access server information
 			const provider = task.providerRef.deref()
@@ -238,7 +239,12 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			}
 
 			// Tool exists and is enabled - return the original tool name for use with the MCP server
-			return { isValid: true, availableTools: server.tools.map((t) => t.name), resolvedToolName: tool.name }
+			return {
+				isValid: true,
+				availableTools: server.tools.map((t) => t.name),
+				resolvedToolName: tool.name,
+				resolvedToolTitle: tool.annotations?.title,
+			}
 		} catch (error) {
 			// If there's an error during validation, log it but don't block the tool execution
 			// The actual tool call might still fail with a proper error

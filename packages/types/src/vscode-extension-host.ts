@@ -845,6 +845,7 @@ export interface ClineAskUseMcpServer {
 	serverName: string
 	type: "use_mcp_tool" | "access_mcp_resource"
 	toolName?: string
+	toolTitle?: string
 	arguments?: string
 	uri?: string
 	response?: string
