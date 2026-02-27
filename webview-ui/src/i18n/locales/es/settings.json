@@ -477,6 +477,10 @@
 				"title": "Enrutamiento de Proveedores de OpenRouter",
 				"description": "OpenRouter dirige las solicitudes a los mejores proveedores disponibles para su modelo. Por defecto, las solicitudes se equilibran entre los principales proveedores para maximizar el tiempo de actividad. Sin embargo, puede elegir un proveedor específico para este modelo.",
 				"learnMore": "Más información sobre el enrutamiento de proveedores"
+			},
+			"excludeLowQuantization": {
+				"label": "Excluir cuantización de baja precisión (FP4/FP6/Int4)",
+				"description": "Solo permitir proveedores de mayor precisión (FP8/FP16/BF16/Int8). Ayuda a prevenir problemas de codificación CJK (coreano/chino/japonés) con modelos agresivamente cuantizados."
 			}
 		},
 		"customModel": {

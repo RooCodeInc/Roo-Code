@@ -487,6 +487,10 @@
 				"title": "OpenRouter 供應商路由",
 				"description": "OpenRouter 會將請求路由到適合您模型的最佳可用供應商。預設情況下，請求會在頂尖供應商之間進行負載平衡以最大化正常運作時間。您也可以為此模型選擇特定的供應商。",
 				"learnMore": "了解更多關於供應商路由的資訊"
+			},
+			"excludeLowQuantization": {
+				"label": "排除低位元量化 (FP4/FP6/Int4)",
+				"description": "僅允許高精度供應商 (FP8/FP16/BF16/Int8)。有助於防止激進量化模型導致的 CJK（韓文/中文/日文）編碼問題。"
 			}
 		},
 		"customModel": {
