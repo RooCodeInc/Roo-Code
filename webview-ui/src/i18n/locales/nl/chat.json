@@ -222,6 +222,7 @@
 	"commandOutput": "Commando-uitvoer",
 	"commandExecution": {
 		"running": "Lopend",
+		"executed": "Uitgevoerd",
 		"abort": "Afbreken",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "Afgesloten met status {{exitCode}}",

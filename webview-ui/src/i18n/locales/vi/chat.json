@@ -227,6 +227,7 @@
 	"commandOutput": "Kết quả lệnh",
 	"commandExecution": {
 		"running": "Đang chạy",
+		"executed": "Đã thực thi",
 		"abort": "Hủy bỏ",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "Đã thoát với trạng thái {{exitCode}}",

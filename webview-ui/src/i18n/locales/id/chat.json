@@ -279,6 +279,7 @@
 	"commandExecution": {
 		"abort": "Batalkan",
 		"running": "Menjalankan",
+		"executed": "Dijalankan",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "Keluar dengan status {{exitCode}}",
 		"manageCommands": "Perintah yang disetujui secara otomatis",

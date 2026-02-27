@@ -228,6 +228,7 @@
 	"commandExecution": {
 		"abort": "中止",
 		"running": "実行中",
+		"executed": "実行済み",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "ステータス {{exitCode}} で終了しました",
 		"manageCommands": "自動承認されたコマンド",
