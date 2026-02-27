@@ -4,6 +4,7 @@ import { modelInfoSchema, reasoningEffortSettingSchema, verbosityLevelsSchema, s
 import { codebaseIndexProviderSchema } from "./codebase-index.js"
 import {
 	anthropicModels,
+	avianModels,
 	basetenModels,
 	bedrockModels,
 	deepSeekModels,
@@ -103,6 +104,7 @@ export const providerNames = [
 	...customProviders,
 	...fauxProviders,
 	"anthropic",
+	"avian",
 	"bedrock",
 	"baseten",
 	"deepseek",
@@ -359,6 +361,10 @@ const zaiSchema = apiModelIdProviderModelSchema.extend({
 	zaiApiLine: zaiApiLineSchema.optional(),
 })
 
+const avianSchema = apiModelIdProviderModelSchema.extend({
+	avianApiKey: z.string().optional(),
+})
+
 const fireworksSchema = apiModelIdProviderModelSchema.extend({
 	fireworksApiKey: z.string().optional(),
 })
@@ -387,6 +393,7 @@ const defaultSchema = z.object({
 
 export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProvider", [
 	anthropicSchema.merge(z.object({ apiProvider: z.literal("anthropic") })),
+	avianSchema.merge(z.object({ apiProvider: z.literal("avian") })),
 	openRouterSchema.merge(z.object({ apiProvider: z.literal("openrouter") })),
 	bedrockSchema.merge(z.object({ apiProvider: z.literal("bedrock") })),
 	vertexSchema.merge(z.object({ apiProvider: z.literal("vertex") })),
@@ -420,6 +427,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 export const providerSettingsSchema = z.object({
 	apiProvider: providerNamesWithRetiredSchema.optional(),
 	...anthropicSchema.shape,
+	...avianSchema.shape,
 	...openRouterSchema.shape,
 	...bedrockSchema.shape,
 	...vertexSchema.shape,
@@ -497,6 +505,7 @@ export const isTypicalProvider = (key: unknown): key is TypicalProvider =>
 
 export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	anthropic: "apiModelId",
+	avian: "apiModelId",
 	openrouter: "openRouterModelId",
 	bedrock: "apiModelId",
 	vertex: "apiModelId",
@@ -564,6 +573,11 @@ export const MODELS_BY_PROVIDER: Record<
 		id: "anthropic",
 		label: "Anthropic",
 		models: Object.keys(anthropicModels),
+	},
+	avian: {
+		id: "avian",
+		label: "Avian",
+		models: Object.keys(avianModels),
 	},
 	bedrock: {
 		id: "bedrock",

@@ -5,6 +5,7 @@ import {
 	type ModelRecord,
 	type RouterModels,
 	anthropicModels,
+	avianModels,
 	bedrockModels,
 	deepSeekModels,
 	moonshotModels,
@@ -301,6 +302,11 @@ function getSelectedModel({
 			const modelFamily = apiConfiguration?.vsCodeLmModelSelector?.family ?? vscodeLlmDefaultModelId
 			const info = vscodeLlmModels[modelFamily as keyof typeof vscodeLlmModels]
 			return { id, info: { ...openAiModelInfoSaneDefaults, ...info, supportsImages: false } } // VSCode LM API currently doesn't support images.
+		}
+		case "avian": {
+			const id = apiConfiguration.apiModelId ?? defaultModelId
+			const info = avianModels[id as keyof typeof avianModels]
+			return { id, info }
 		}
 		case "sambanova": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId

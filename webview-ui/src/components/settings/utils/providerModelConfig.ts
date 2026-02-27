@@ -1,6 +1,7 @@
 import type { ProviderName, ModelInfo, ProviderSettings } from "@roo-code/types"
 import {
 	anthropicDefaultModelId,
+	avianDefaultModelId,
 	bedrockDefaultModelId,
 	deepSeekDefaultModelId,
 	moonshotDefaultModelId,
@@ -27,6 +28,7 @@ export interface ProviderServiceConfig {
 
 export const PROVIDER_SERVICE_CONFIG: Partial<Record<ProviderName, ProviderServiceConfig>> = {
 	anthropic: { serviceName: "Anthropic", serviceUrl: "https://console.anthropic.com" },
+	avian: { serviceName: "Avian", serviceUrl: "https://avian.io" },
 	bedrock: { serviceName: "Amazon Bedrock", serviceUrl: "https://aws.amazon.com/bedrock" },
 	deepseek: { serviceName: "DeepSeek", serviceUrl: "https://platform.deepseek.com" },
 	moonshot: { serviceName: "Moonshot", serviceUrl: "https://platform.moonshot.cn" },
@@ -51,6 +53,7 @@ export const PROVIDER_SERVICE_CONFIG: Partial<Record<ProviderName, ProviderServi
 
 export const PROVIDER_DEFAULT_MODEL_IDS: Partial<Record<ProviderName, string>> = {
 	anthropic: anthropicDefaultModelId,
+	avian: avianDefaultModelId,
 	bedrock: bedrockDefaultModelId,
 	deepseek: deepSeekDefaultModelId,
 	moonshot: moonshotDefaultModelId,

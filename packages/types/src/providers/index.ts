@@ -1,4 +1,5 @@
 export * from "./anthropic.js"
+export * from "./avian.js"
 export * from "./baseten.js"
 export * from "./bedrock.js"
 export * from "./deepseek.js"
@@ -26,6 +27,7 @@ export * from "./zai.js"
 export * from "./minimax.js"
 
 import { anthropicDefaultModelId } from "./anthropic.js"
+import { avianDefaultModelId } from "./avian.js"
 import { basetenDefaultModelId } from "./baseten.js"
 import { bedrockDefaultModelId } from "./bedrock.js"
 import { deepSeekDefaultModelId } from "./deepseek.js"
@@ -101,6 +103,8 @@ export function getProviderDefaultModelId(
 			return vscodeLlmDefaultModelId
 		case "sambanova":
 			return sambaNovaDefaultModelId
+		case "avian":
+			return avianDefaultModelId
 		case "fireworks":
 			return fireworksDefaultModelId
 		case "roo":
