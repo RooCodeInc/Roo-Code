@@ -34,6 +34,7 @@ export const BedrockCustomArn = ({ apiConfiguration, setApiConfigurationField }:
 					<li>
 						arn:aws:bedrock:eu-west-1:123456789012:inference-profile/eu.anthropic.claude-3-7-sonnet-20250219-v1:0
 					</li>
+					<li>arn:aws:bedrock:eu-west-1:123456789012:application-inference-profile/your-profile-id</li>
 					<li>arn:aws:bedrock:us-west-2:123456789012:provisioned-model/my-provisioned-model</li>
 					<li>arn:aws:bedrock:us-east-1:123456789012:default-prompt-router/anthropic.claude:1</li>
 				</ul>
