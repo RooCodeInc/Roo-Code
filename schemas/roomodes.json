@@ -51,7 +51,7 @@
 		"RuleFile": {
 			"type": "object",
 			"description": "A rules file associated with a mode, used during import/export.",
-			"required": ["relativePath", "content"],
+			"required": ["relativePath"],
 			"additionalProperties": false,
 			"properties": {
 				"relativePath": {

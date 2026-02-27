@@ -352,7 +352,25 @@ describe("roomodes JSON schema", () => {
 		expect(valid).toBe(true)
 	})
 
-	it("should reject rulesFiles entries missing required fields", () => {
+	it("should accept rulesFiles entries with only relativePath (content is optional)", () => {
+		const config = {
+			customModes: [
+				{
+					slug: "path-only-rules",
+					name: "Path Only Rules",
+					roleDefinition: "A mode with rules files that only have relativePath.",
+					groups: ["read"],
+					rulesFiles: [{ relativePath: "rule1.md" }],
+				},
+			],
+		}
+
+		const valid = validate(config)
+		expect(validate.errors).toBeNull()
+		expect(valid).toBe(true)
+	})
+
+	it("should reject rulesFiles entries missing required relativePath", () => {
 		const config = {
 			customModes: [
 				{
@@ -360,7 +378,7 @@ describe("roomodes JSON schema", () => {
 					name: "Bad Rules",
 					roleDefinition: "A mode with invalid rules files.",
 					groups: ["read"],
-					rulesFiles: [{ relativePath: "rule1.md" }],
+					rulesFiles: [{ content: "some content" }],
 				},
 			],
 		}
