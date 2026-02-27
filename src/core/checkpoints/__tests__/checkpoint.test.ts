@@ -467,35 +467,39 @@ describe("Checkpoint functionality", () => {
 
 			// Simulate the condition function that runs inside pWaitFor
 			let warningShown = false
+			const checkpointTimeoutMs = mockTask.checkpointTimeout * 1000 // 15000ms
 			const simulateConditionCheck = (elapsedMs: number) => {
 				// This simulates what happens inside the pWaitFor condition function (lines 85-100)
-				if (!warningShown && elapsedMs >= 5000) {
+				// The warning is shown when elapsed time exceeds the configured timeout
+				if (!warningShown && elapsedMs >= checkpointTimeoutMs) {
 					warningShown = true
 					// This is what the actual code does at line 91-94
 					const provider = mockTask.providerRef.deref()
 					provider?.postMessageToWebview({
 						type: "checkpointInitWarning",
-						checkpointWarning: i18nModule.t("common:errors.wait_checkpoint_long_time", { timeout: 5 }),
+						checkpointWarning: i18nModule.t("common:errors.wait_checkpoint_long_time", {
+							timeout: mockTask.checkpointTimeout,
+						}),
 					})
 				}
 
 				return !!mockTask.checkpointService && !!mockTask.checkpointService.isInitialized
 			}
 
-			// Test: At 4 seconds, no warning should be sent
-			expect(simulateConditionCheck(4000)).toBe(false)
+			// Test: At 14 seconds (just under configured timeout of 15s), no warning should be sent
+			expect(simulateConditionCheck(14000)).toBe(false)
 			expect(mockProvider.postMessageToWebview).not.toHaveBeenCalled()
 
-			// Test: At 5 seconds, warning should be sent
-			expect(simulateConditionCheck(5000)).toBe(false)
+			// Test: At 15 seconds (configured timeout), warning should be sent with configured timeout
+			expect(simulateConditionCheck(15000)).toBe(false)
 			expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith({
 				type: "checkpointInitWarning",
-				checkpointWarning: "Checkpoint initialization is taking longer than 5 seconds...",
+				checkpointWarning: "Checkpoint initialization is taking longer than 15 seconds...",
 			})
 
-			// Test: At 6 seconds, warning should not be sent again (warningShown is true)
+			// Test: At 16 seconds, warning should not be sent again (warningShown is true)
 			vi.clearAllMocks()
-			expect(simulateConditionCheck(6000)).toBe(false)
+			expect(simulateConditionCheck(16000)).toBe(false)
 			expect(mockProvider.postMessageToWebview).not.toHaveBeenCalled()
 		})
 
@@ -557,11 +561,16 @@ describe("Checkpoint functionality", () => {
 			})
 		})
 
-		it("should use WARNING_THRESHOLD_MS constant of 5000ms", () => {
-			// Verify the warning threshold is 5 seconds by checking the implementation
-			const WARNING_THRESHOLD_MS = 5000
-			expect(WARNING_THRESHOLD_MS).toBe(5000)
-			expect(WARNING_THRESHOLD_MS / 1000).toBe(5) // Used in the i18n call
+		it("should use configured checkpointTimeout for warning threshold", () => {
+			// The warning threshold now uses the configured checkpointTimeout value
+			// This ensures the warning message matches when it actually appears
+			mockTask.checkpointTimeout = 15
+			const checkpointTimeoutMs = mockTask.checkpointTimeout * 1000
+			expect(checkpointTimeoutMs).toBe(15000)
+
+			mockTask.checkpointTimeout = 30
+			const checkpointTimeoutMs30 = mockTask.checkpointTimeout * 1000
+			expect(checkpointTimeoutMs30).toBe(30000)
 		})
 
 		it("should convert checkpointTimeout to milliseconds", () => {
@@ -581,11 +590,11 @@ describe("Checkpoint functionality", () => {
 			const i18nModule = await import("../../../i18n")
 			vi.clearAllMocks()
 
-			// Test warning message i18n key
-			const warningMessage = i18nModule.t("common:errors.wait_checkpoint_long_time", { timeout: 5 })
-			expect(warningMessage).toBe("Checkpoint initialization is taking longer than 5 seconds...")
+			// Test warning message i18n key - should use configured timeout
+			const warningMessage = i18nModule.t("common:errors.wait_checkpoint_long_time", { timeout: 15 })
+			expect(warningMessage).toBe("Checkpoint initialization is taking longer than 15 seconds...")
 
-			// Test timeout error message i18n key
+			// Test timeout error message i18n key - should use configured timeout
 			const errorMessage = i18nModule.t("common:errors.init_checkpoint_fail_long_time", { timeout: 30 })
 			expect(errorMessage).toBe("Checkpoint initialization failed after 30 seconds")
 		})

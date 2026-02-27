@@ -83,10 +83,10 @@ export async function getCheckpointService(task: Task, { interval = 250 }: { int
 				() => {
 					const elapsed = Date.now() - checkpointInitStartTime
 
-					// Show warning if we're past the threshold and haven't shown it yet
-					if (!warningShown && elapsed >= WARNING_THRESHOLD_MS) {
+					// Show warning if we're past the configured timeout and haven't shown it yet
+					if (!warningShown && elapsed >= checkpointTimeoutMs) {
 						warningShown = true
-						sendCheckpointInitWarn(task, "WAIT_TIMEOUT", WARNING_THRESHOLD_MS / 1000)
+						sendCheckpointInitWarn(task, "WAIT_TIMEOUT", task.checkpointTimeout)
 					}
 
 					console.log(
