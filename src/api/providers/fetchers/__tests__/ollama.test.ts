@@ -15,9 +15,9 @@ describe("Ollama Fetcher", () => {
 	describe("parseOllamaModel", () => {
 		it("should correctly parse Ollama model info", () => {
 			const modelData = ollamaModelsData["qwen3-2to16:latest"]
-			const parsedModel = parseOllamaModel(modelData)
+			const { modelInfo } = parseOllamaModel(modelData)
 
-			expect(parsedModel).toEqual({
+			expect(modelInfo).toEqual({
 				maxTokens: 40960,
 				contextWindow: 40960,
 				supportsImages: false,
@@ -39,9 +39,9 @@ describe("Ollama Fetcher", () => {
 				},
 			}
 
-			const parsedModel = parseOllamaModel(modelDataWithNullFamilies as any)
+			const { modelInfo } = parseOllamaModel(modelDataWithNullFamilies as any)
 
-			expect(parsedModel).toEqual({
+			expect(modelInfo).toEqual({
 				maxTokens: 40960,
 				contextWindow: 40960,
 				supportsImages: false,
@@ -54,16 +54,18 @@ describe("Ollama Fetcher", () => {
 			})
 		})
 
-		it("should return null when capabilities does not include 'tools'", () => {
+		it("should return null with reason when capabilities does not include 'tools'", () => {
 			const modelDataWithoutTools = {
 				...ollamaModelsData["qwen3-2to16:latest"],
 				capabilities: ["completion"], // No "tools" capability
 			}
 
-			const parsedModel = parseOllamaModel(modelDataWithoutTools as any)
+			const { modelInfo, filteredReason } = parseOllamaModel(modelDataWithoutTools as any, "test-model")
 
 			// Models without tools capability are filtered out (return null)
-			expect(parsedModel).toBeNull()
+			expect(modelInfo).toBeNull()
+			expect(filteredReason).toContain("test-model")
+			expect(filteredReason).toContain("do not include 'tools'")
 		})
 
 		it("should return model info when capabilities includes 'tools'", () => {
@@ -72,22 +74,25 @@ describe("Ollama Fetcher", () => {
 				capabilities: ["completion", "tools"], // Has "tools" capability
 			}
 
-			const parsedModel = parseOllamaModel(modelDataWithTools as any)
+			const { modelInfo, filteredReason } = parseOllamaModel(modelDataWithTools as any)
 
-			expect(parsedModel).not.toBeNull()
-			expect(parsedModel!.contextWindow).toBeGreaterThan(0)
+			expect(modelInfo).not.toBeNull()
+			expect(modelInfo!.contextWindow).toBeGreaterThan(0)
+			expect(filteredReason).toBeUndefined()
 		})
 
-		it("should return null when capabilities is undefined (no tool support)", () => {
+		it("should return null with reason when capabilities is undefined (no tool support)", () => {
 			const modelDataWithoutCapabilities = {
 				...ollamaModelsData["qwen3-2to16:latest"],
 				capabilities: undefined, // No capabilities array
 			}
 
-			const parsedModel = parseOllamaModel(modelDataWithoutCapabilities as any)
+			const { modelInfo, filteredReason } = parseOllamaModel(modelDataWithoutCapabilities as any, "test-model")
 
 			// Models without explicit tools capability are filtered out
-			expect(parsedModel).toBeNull()
+			expect(modelInfo).toBeNull()
+			expect(filteredReason).toContain("test-model")
+			expect(filteredReason).toContain("no capabilities reported")
 		})
 
 		it("should return null when model has vision but no tools capability", () => {
@@ -96,10 +101,10 @@ describe("Ollama Fetcher", () => {
 				capabilities: ["completion", "vision"],
 			}
 
-			const parsedModel = parseOllamaModel(modelDataWithVision as any)
+			const { modelInfo } = parseOllamaModel(modelDataWithVision as any)
 
 			// No "tools" capability means filtered out
-			expect(parsedModel).toBeNull()
+			expect(modelInfo).toBeNull()
 		})
 
 		it("should return model with both vision and tools when both capabilities present", () => {
@@ -108,11 +113,11 @@ describe("Ollama Fetcher", () => {
 				capabilities: ["completion", "vision", "tools"],
 			}
 
-			const parsedModel = parseOllamaModel(modelDataWithBoth as any)
+			const { modelInfo } = parseOllamaModel(modelDataWithBoth as any)
 
-			expect(parsedModel).not.toBeNull()
-			expect(parsedModel!.supportsImages).toBe(true)
-			expect(parsedModel!.contextWindow).toBeGreaterThan(0)
+			expect(modelInfo).not.toBeNull()
+			expect(modelInfo!.supportsImages).toBe(true)
+			expect(modelInfo!.contextWindow).toBeGreaterThan(0)
 		})
 	})
 
@@ -177,7 +182,7 @@ describe("Ollama Fetcher", () => {
 			expect(Object.keys(result).length).toBe(1)
 			expect(result[modelName]).toBeDefined()
 
-			const expectedParsedDetails = parseOllamaModel(mockApiShowResponse as any)
+			const { modelInfo: expectedParsedDetails } = parseOllamaModel(mockApiShowResponse as any)
 			expect(result[modelName]).toEqual(expectedParsedDetails)
 		})
 
