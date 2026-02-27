@@ -343,4 +343,122 @@ describe("NativeToolCallParser", () => {
 			})
 		})
 	})
+
+	describe("processFinishReason", () => {
+		describe("hasStarted check", () => {
+			it("should emit tool_call_end for started tool calls", () => {
+				// Simulate a tool call that has been properly started
+				NativeToolCallParser.processRawChunk({
+					index: 0,
+					id: "call_started",
+					name: "read_file",
+					arguments: '{"path":"test.ts"}',
+				})
+
+				const events = NativeToolCallParser.processFinishReason("tool_calls")
+
+				expect(events).toHaveLength(1)
+				expect(events[0]).toEqual({
+					type: "tool_call_end",
+					id: "call_started",
+				})
+			})
+
+			it("should NOT emit tool_call_end for unstarted tool calls", () => {
+				// Simulate a tool call that received an ID but no name (not started)
+				NativeToolCallParser.processRawChunk({
+					index: 0,
+					id: "call_unstarted",
+					// No name provided - tool call is tracked but not started
+				})
+
+				const events = NativeToolCallParser.processFinishReason("tool_calls")
+
+				// Should not emit any events because the tool call wasn't started
+				expect(events).toHaveLength(0)
+			})
+
+			it("should handle mixed started and unstarted tool calls", () => {
+				// First tool call: properly started
+				NativeToolCallParser.processRawChunk({
+					index: 0,
+					id: "call_started_1",
+					name: "read_file",
+					arguments: '{"path":"test1.ts"}',
+				})
+
+				// Second tool call: tracked but not started (no name)
+				NativeToolCallParser.processRawChunk({
+					index: 1,
+					id: "call_unstarted",
+					// No name - won't be started
+				})
+
+				// Third tool call: properly started
+				NativeToolCallParser.processRawChunk({
+					index: 2,
+					id: "call_started_2",
+					name: "write_to_file",
+					arguments: '{"path":"output.ts"}',
+				})
+
+				const events = NativeToolCallParser.processFinishReason("tool_calls")
+
+				// Should only emit end events for the two started tool calls
+				expect(events).toHaveLength(2)
+				expect(events[0]).toEqual({
+					type: "tool_call_end",
+					id: "call_started_1",
+				})
+				expect(events[1]).toEqual({
+					type: "tool_call_end",
+					id: "call_started_2",
+				})
+			})
+
+			it("should not emit events when finish_reason is not tool_calls", () => {
+				// Set up a started tool call
+				NativeToolCallParser.processRawChunk({
+					index: 0,
+					id: "call_started",
+					name: "read_file",
+					arguments: '{"path":"test.ts"}',
+				})
+
+				// Process with different finish reason
+				const events = NativeToolCallParser.processFinishReason("stop")
+
+				expect(events).toHaveLength(0)
+			})
+
+			it("should handle tool call that receives name in a separate chunk", () => {
+				// First chunk: ID only
+				NativeToolCallParser.processRawChunk({
+					index: 0,
+					id: "call_delayed_name",
+				})
+
+				// At this point, tool call is tracked but not started
+				let events = NativeToolCallParser.processFinishReason("tool_calls")
+				expect(events).toHaveLength(0)
+
+				// Clear state and try again with name
+				NativeToolCallParser.clearRawChunkState()
+
+				// Simulate proper sequence with name
+				NativeToolCallParser.processRawChunk({
+					index: 0,
+					id: "call_delayed_name",
+					name: "read_file",
+				})
+
+				events = NativeToolCallParser.processFinishReason("tool_calls")
+				expect(events).toHaveLength(1)
+				expect(events[0]).toEqual({
+					type: "tool_call_end",
+					id: "call_delayed_name",
+				})
+			})
+		})
+	})
 })
