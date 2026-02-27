@@ -378,6 +378,8 @@
 		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6 için bağlam penceresini 1 milyon token'a genişletir",
 		"vertex1MContextBetaLabel": "1M bağlam penceresini etkinleştir (Beta)",
 		"vertex1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6 için bağlam penceresini 1 milyon token'a genişletir",
+		"avianApiKey": "Avian API Key",
+		"getAvianApiKey": "Get Avian API Key",
 		"basetenApiKey": "Baseten API Anahtarı",
 		"getBasetenApiKey": "Baseten API Anahtarı Al",
 		"fireworksApiKey": "Fireworks API Anahtarı",

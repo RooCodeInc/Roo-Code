@@ -378,6 +378,8 @@
 		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
 		"vertex1MContextBetaLabel": "1M संदर्भ विंडो सक्षम करें (बीटा)",
 		"vertex1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
+		"avianApiKey": "Avian API Key",
+		"getAvianApiKey": "Get Avian API Key",
 		"basetenApiKey": "Baseten API कुंजी",
 		"getBasetenApiKey": "Baseten API कुंजी प्राप्त करें",
 		"fireworksApiKey": "Fireworks API कुंजी",

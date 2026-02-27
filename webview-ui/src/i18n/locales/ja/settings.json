@@ -378,6 +378,8 @@
 		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6のコンテキストウィンドウを100万トークンに拡張します",
 		"vertex1MContextBetaLabel": "1Mコンテキストウィンドウを有効にする（ベータ版）",
 		"vertex1MContextBetaDescription": "Claude Sonnet 4.x / Claude Opus 4.6のコンテキストウィンドウを100万トークンに拡張します",
+		"avianApiKey": "Avian API Key",
+		"getAvianApiKey": "Get Avian API Key",
 		"basetenApiKey": "Baseten APIキー",
 		"getBasetenApiKey": "Baseten APIキーを取得",
 		"fireworksApiKey": "Fireworks APIキー",

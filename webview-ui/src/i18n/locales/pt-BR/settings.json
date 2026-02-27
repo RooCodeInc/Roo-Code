@@ -378,6 +378,8 @@
 		"awsBedrock1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4.x / Claude Opus 4.6",
 		"vertex1MContextBetaLabel": "Ativar janela de contexto de 1M (Beta)",
 		"vertex1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4.x / Claude Opus 4.6",
+		"avianApiKey": "Avian API Key",
+		"getAvianApiKey": "Get Avian API Key",
 		"basetenApiKey": "Chave de API Baseten",
 		"getBasetenApiKey": "Obter chave de API Baseten",
 		"fireworksApiKey": "Chave de API Fireworks",
