@@ -16,6 +16,7 @@ import { TagMatcher } from "../../utils/tag-matcher"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { convertToR1Format } from "../transform/r1-format"
+import { convertToZAiFormat } from "../transform/zai-format"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -24,6 +25,7 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { getApiRequestTimeout } from "./utils/timeout-config"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { detectGlmModel, logGlmDetection, type GlmModelConfig } from "./utils/glm-model-detection"
 
 // TODO: Rename this to OpenAICompatibleHandler. Also, I think the
 // `OpenAINativeHandler` can subclass from this, since it's obviously
@@ -31,7 +33,8 @@ import { handleOpenAIError } from "./utils/openai-error-handler"
 export class OpenAiHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	protected client: OpenAI
-	private readonly providerName = "OpenAI"
+	private readonly providerName = "OpenAI Compatible"
+	private glmConfig: GlmModelConfig
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -77,6 +80,12 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				timeout,
 			})
 		}
+
+		// Detect if this is a GLM model and apply optimizations
+		this.glmConfig = detectGlmModel(this.options.openAiModelId)
+		if (this.options.openAiModelId) {
+			logGlmDetection(this.providerName, this.options.openAiModelId, this.glmConfig)
+		}
 	}
 
 	override async *createMessage(
@@ -106,6 +115,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			if (deepseekReasoner) {
 				convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
+			} else if (this.glmConfig.isGlm && this.glmConfig.mergeToolResultText) {
+				// For GLM models, use Z.ai format with mergeToolResultText to prevent conversation flow disruption
+				const zaiMessages = convertToZAiFormat(messages, { mergeToolResultText: true })
+				convertedMessages = [systemMessage, ...zaiMessages]
 			} else {
 				if (modelInfo.supportsPromptCache) {
 					systemMessage = {
@@ -152,16 +165,37 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			const isGrokXAI = this._isGrokXAI(this.options.openAiBaseUrl)
 
+			// Determine temperature: use GLM default (0.6) for GLM models, DeepSeek default for DeepSeek, otherwise 0
+			let temperature: number | undefined
+			if (this.options.modelTemperature !== undefined) {
+				temperature = this.options.modelTemperature
+			} else if (this.glmConfig.isGlm) {
+				temperature = this.glmConfig.temperature
+			} else if (deepseekReasoner) {
+				temperature = DEEP_SEEK_DEFAULT_TEMPERATURE
+			} else {
+				temperature = 0
+			}
+
+			// For GLM models, disable parallel_tool_calls as GLM models may not support it
+			const parallelToolCalls = this.glmConfig.isGlm && this.glmConfig.disableParallelToolCalls
+				? false
+				: (metadata?.parallelToolCalls ?? true)
+
+			if (this.glmConfig.isGlm && this.glmConfig.disableParallelToolCalls) {
+				console.log(`[${this.providerName}] parallel_tool_calls disabled for GLM model`)
+			}
+
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 				model: modelId,
-				temperature: this.options.modelTemperature ?? (deepseekReasoner ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
+				temperature,
 				messages: convertedMessages,
 				stream: true as const,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 				...(reasoning && reasoning),
 				tools: this.convertToolsForOpenAI(metadata?.tools),
 				tool_choice: metadata?.tool_choice,
-				parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+				parallel_tool_calls: parallelToolCalls,
 			}
 
 			// Add max_tokens if needed
@@ -221,15 +255,30 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				yield this.processUsageMetrics(lastUsage, modelInfo)
 			}
 		} else {
+			// Non-streaming: also apply GLM-specific settings
+			let nonStreamingMessages
+			if (deepseekReasoner) {
+				nonStreamingMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
+			} else if (this.glmConfig.isGlm && this.glmConfig.mergeToolResultText) {
+				// For GLM models, use Z.ai format with mergeToolResultText
+				const zaiMessages = convertToZAiFormat(messages, { mergeToolResultText: true })
+				nonStreamingMessages = [systemMessage, ...zaiMessages]
+			} else {
+				nonStreamingMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
+			}
+
+			// For GLM models, disable parallel_tool_calls
+			const nonStreamingParallelToolCalls = this.glmConfig.isGlm && this.glmConfig.disableParallelToolCalls
+				? false
+				: (metadata?.parallelToolCalls ?? true)
+
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: modelId,
-				messages: deepseekReasoner
-					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
-					: [systemMessage, ...convertToOpenAiMessages(messages)],
+				messages: nonStreamingMessages,
 				// Tools are always present (minimum ALWAYS_AVAILABLE_TOOLS)
 				tools: this.convertToolsForOpenAI(metadata?.tools),
 				tool_choice: metadata?.tool_choice,
-				parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+				parallel_tool_calls: nonStreamingParallelToolCalls,
 			}
 
 			// Add max_tokens if needed
