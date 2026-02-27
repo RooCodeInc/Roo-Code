@@ -395,6 +395,7 @@ describe("ZAiHandler", () => {
 					model: modelId,
 					max_tokens: expectedMaxTokens,
 					temperature: ZAI_DEFAULT_TEMPERATURE,
+					top_p: 0.95,
 					messages: expect.arrayContaining([{ role: "system", content: systemPrompt }]),
 					stream: true,
 					stream_options: { include_usage: true },
