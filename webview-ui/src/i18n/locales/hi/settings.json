@@ -823,6 +823,10 @@
 			"refreshSuccess": "टूल्स सफलतापूर्वक रिफ्रेश हुए",
 			"refreshError": "टूल्स रिफ्रेश करने में विफल",
 			"toolParameters": "पैरामीटर्स"
+		},
+		"SUBAGENT": {
+			"name": "Subagent tool",
+			"description": "When enabled, the model can run subagents in the background for research or sub-tasks. The subagent's result is returned to the main task. Use \"explore\" for read-only sub-tasks or \"general\" when the sub-task may edit files or run commands."
 		}
 	},
 	"promptCaching": {
