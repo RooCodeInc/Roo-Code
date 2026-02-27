@@ -129,7 +129,19 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 				}
 			}
 
-			this.emit("shell_execution_complete", { exitCode: 0 })
+			// Await the subprocess to get the actual exit code
+			// Stream iteration completes successfully regardless of exit code
+			try {
+				const result = await this.subprocess
+				this.emit("shell_execution_complete", { exitCode: result?.exitCode ?? 0 })
+			} catch (error) {
+				// Handle case where subprocess threw during await
+				if (error instanceof ExecaError) {
+					this.emit("shell_execution_complete", { exitCode: error.exitCode ?? 1, signalName: error.signal })
+				} else {
+					this.emit("shell_execution_complete", { exitCode: 1 })
+				}
+			}
 		} catch (error) {
 			if (error instanceof ExecaError) {
 				console.error(`[ExecaTerminalProcess#run] shell execution error: ${error.message}`)
