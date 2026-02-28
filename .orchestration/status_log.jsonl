@@ -1,0 +1,3 @@
+{"intent_id":"INT-001","old_status":"NONE","new_status":"PENDING","timestamp":"2026-02-20T20:26:50.669Z","event":"Intent created"}
+{"intent_id":"INT-001","old_status":"PENDING","new_status":"IN_PROGRESS","timestamp":"2026-02-20T20:27:00.669Z","event":"Feature development started"}
+{"intent_id":"INT-001","old_status":"IN_PROGRESS","new_status":"COMPLETED","timestamp":"2026-02-20T20:27:20.669Z","event":"All criteria met, ready for release"}

@@ -6,6 +6,21 @@ import type { ToolData } from "../types.js"
  * Extract structured ToolData from parsed tool JSON
  * This provides rich data for tool-specific renderers
  */
+
+// src/tools/tool.ts
+
+export interface SelectActiveIntentPayload {
+  intent_id: string;
+}
+
+export const selectActiveIntent = {
+  name: "select_active_intent",
+  description: "Load context for a specific intent before execution",
+  parameters: {
+    intent_id: "string"
+  }
+};
+
 export function extractToolData(toolInfo: Record<string, unknown>): ToolData {
 	const toolName = (toolInfo.tool as string) || "unknown"
 
