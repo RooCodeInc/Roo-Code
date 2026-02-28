@@ -47,6 +47,10 @@ export const commandIds = [
 	"acceptInput",
 	"focusPanel",
 	"toggleAutoApprove",
+
+	"increaseChatFontSize",
+	"decreaseChatFontSize",
+	"resetChatFontSize",
 ] as const
 
 export type CommandId = (typeof commandIds)[number]
