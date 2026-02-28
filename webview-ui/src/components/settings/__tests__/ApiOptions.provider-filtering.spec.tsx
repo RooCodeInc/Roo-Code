@@ -80,6 +80,8 @@ vi.mock("@src/components/ui", () => ({
 	CollapsibleContent: ({ children }: any) => <div>{children}</div>,
 	Slider: ({ children, ...props }: any) => <div {...props}>{children}</div>,
 	Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+	// Add StandardTooltip for Anthropic custom headers UI
+	StandardTooltip: ({ children, content }: any) => <div title={content}>{children}</div>,
 	// Add Popover components for ModelPicker
 	Popover: ({ children }: any) => <div>{children}</div>,
 	PopoverTrigger: ({ children }: any) => <div>{children}</div>,
