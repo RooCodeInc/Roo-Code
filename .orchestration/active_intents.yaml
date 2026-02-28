@@ -1,0 +1,31 @@
+active_intents:
+    - id: "INT-001"
+        name: "Weather API Implementation"
+        status: "IN_PROGRESS"
+        owned_scope:
+            - "src/weather/**"
+            - "*.js"
+            - "*.ts"
+        constraints:
+            - "Use async/await for all async operations"
+            - "Include error handling with try/catch"
+            - "Return JSON format responses"
+            - "Add input validation"
+        acceptance_criteria:
+            - "Unit tests pass with >80% coverage"
+            - "API returns correct weather data"
+            - "Error cases handled gracefully"
+
+    - id: "INT-002"
+        name: "Authentication Middleware"
+        status: "PLANNED"
+        owned_scope:
+            - "src/auth/**"
+            - "src/middleware/auth.ts"
+        constraints:
+            - "Use JWT tokens"
+            - "Implement rate limiting"
+            - "Log all auth attempts"
+        acceptance_criteria:
+            - "Auth tests pass"
+            - "Security audit passed"

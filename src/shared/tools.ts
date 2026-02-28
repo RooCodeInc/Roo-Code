@@ -58,6 +58,7 @@ export const toolParamNames = [
 	"todos",
 	"prompt",
 	"image",
+	"intent_id",
 	// read_file parameters (native protocol)
 	"operations", // search_and_replace parameter for multiple operations
 	"patch", // apply_patch parameter
@@ -113,6 +114,7 @@ export type NativeToolArgs = {
 	skill: { skill: string; args?: string }
 	search_files: { path: string; regex: string; file_pattern?: string | null }
 	switch_mode: { mode_slug: string; reason: string }
+	select_active_intent: { intent_id: string }
 	update_todo_list: { todos: string }
 	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
 	write_to_file: { path: string; content: string }
@@ -283,6 +285,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	ask_followup_question: "ask questions",
 	attempt_completion: "complete tasks",
 	switch_mode: "switch modes",
+	select_active_intent: "load intent context",
 	new_task: "create new task",
 	codebase_search: "codebase search",
 	update_todo_list: "update todo list",
@@ -308,7 +311,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 		tools: ["use_mcp_tool", "access_mcp_resource"],
 	},
 	modes: {
-		tools: ["switch_mode", "new_task"],
+		tools: ["switch_mode", "select_active_intent", "new_task"],
 		alwaysAvailable: true,
 	},
 }
@@ -318,6 +321,7 @@ export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
 	"ask_followup_question",
 	"attempt_completion",
 	"switch_mode",
+	"select_active_intent",
 	"new_task",
 	"update_todo_list",
 	"run_slash_command",

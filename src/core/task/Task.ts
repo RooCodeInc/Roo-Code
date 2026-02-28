@@ -132,6 +132,7 @@ import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
 import { MessageManager } from "../message-manager"
 import { validateAndFixToolResultIds } from "./validateToolResultIds"
 import { mergeConsecutiveApiMessages } from "./mergeConsecutiveApiMessages"
+import { INVALID_ACTIVE_INTENT_ERROR, loadIntentContext, renderIntentPreHookXml } from "../intent/IntentContextLoader"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -2636,9 +2637,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				return true
 			})
 
-			// Add environment details as its own text block, separate from tool
-			// results.
-			let finalUserContent = [...contentWithoutEnvDetails, { type: "text" as const, text: environmentDetails }]
+			const intentPreHookContext = await this.buildIntentPreHookContext()
+
+			// Add environment details and pre-hook intent context as dedicated text blocks.
+			let finalUserContent = [
+				...contentWithoutEnvDetails,
+				{ type: "text" as const, text: environmentDetails },
+				{ type: "text" as const, text: intentPreHookContext },
+			]
 			// Only add user message to conversation history if:
 			// 1. This is the first attempt (retryAttempt === 0), AND
 			// 2. The original userContent was not empty (empty signals delegation resume where
@@ -3809,6 +3815,26 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				provider.getSkillsManager(),
 			)
 		})()
+	}
+
+	private async buildIntentPreHookContext(): Promise<string> {
+		const state = await this.providerRef.deref()?.getState()
+		const activeIntentId = String((state as any)?.activeIntentId ?? "").trim()
+
+		if (!activeIntentId) {
+			return `<intent_gatekeeper_error>${INVALID_ACTIVE_INTENT_ERROR}</intent_gatekeeper_error>`
+		}
+
+		try {
+			const context = await loadIntentContext(this.cwd, activeIntentId)
+			if (!context) {
+				return `<intent_gatekeeper_error>${INVALID_ACTIVE_INTENT_ERROR}</intent_gatekeeper_error>`
+			}
+
+			return renderIntentPreHookXml(context)
+		} catch {
+			return `<intent_gatekeeper_error>${INVALID_ACTIVE_INTENT_ERROR}</intent_gatekeeper_error>`
+		}
 	}
 
 	private getCurrentProfileId(state: any): string {

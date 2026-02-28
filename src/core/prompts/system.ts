@@ -25,6 +25,9 @@ import {
 	getSkillsSection,
 } from "./sections"
 
+const INTENT_DRIVEN_ARCHITECT_RULE =
+	"You are an Intent-Driven Architect. You CANNOT write code immediately. Your first action MUST be to analyze the user request and call select_active_intent to load the necessary context."
+
 // Helper function to get prompt component, filtering out empty objects
 export function getPromptComponent(
 	customModePrompts: CustomModePrompts | undefined,
@@ -82,7 +85,9 @@ async function generatePrompt(
 	// Tools catalog is not included in the system prompt.
 	const toolsCatalog = ""
 
-	const basePrompt = `${roleDefinition}
+	const basePrompt = `${INTENT_DRIVEN_ARCHITECT_RULE}
+
+${roleDefinition}
 
 ${markdownFormattingSection()}
 

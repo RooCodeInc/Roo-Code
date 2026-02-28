@@ -137,6 +137,14 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 	private partialToolAskRelPath: string | undefined
 
 	async execute(params: EditFileParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+		console.log("%c🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡", "color: orange; font-size: 16px")
+		console.log("%c🟡 TOOL EXECUTED: " + this.name, "color: orange; font-size: 16px; font-weight: bold")
+		console.log("%c🟡 File operation in progress", "color: orange; font-size: 16px")
+		console.log("%c🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡", "color: orange; font-size: 16px")
+		try {
+			const tracePath = path.join(task.cwd, ".roo-tool-trace.log")
+			await fs.appendFile(tracePath, `[${new Date().toISOString()}] TOOL EXECUTED: ${this.name}\n`, "utf8")
+		} catch {}
 		// Coerce old_string/new_string to handle malformed native tool calls where they could be non-strings.
 		// In native mode, malformed calls can pass numbers/objects; normalize those to "" to avoid later crashes.
 		const file_path = params.file_path
