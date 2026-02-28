@@ -395,6 +395,63 @@ describe("executeCommand", () => {
 		})
 	})
 
+	describe("External Abort Handling", () => {
+		it("should handle externally-triggered abort cleanly when isTerminalAbortedExternally is set", async () => {
+			// Setup: Process rejects (simulating SIGKILL from external abort)
+			const rejectingProcess = Promise.reject(new Error("process was killed")) as any
+			rejectingProcess.continue = vitest.fn()
+			rejectingProcess.catch(() => {}) // prevent unhandled rejection
+
+			mockTask.isTerminalAbortedExternally = true
+
+			mockTerminal.runCommand.mockReturnValue(rejectingProcess)
+			mockTerminal.getCurrentWorkingDirectory.mockReturnValue("/test/project")
+
+			const options: ExecuteCommandOptions = {
+				executionId: "test-123",
+				command: "long-running-command",
+				terminalShellIntegrationDisabled: true,
+			}
+
+			// Execute
+			const [rejected, result] = await executeCommandInTerminal(mockTask, options)
+
+			// Verify: should return a clean tool result, not throw
+			expect(rejected).toBe(false)
+			expect(result).toBe("The command was cancelled by the user.")
+			expect(mockTask.say).toHaveBeenCalledWith("command_output", "Command cancelled.")
+			expect(mockTask.didToolFailInCurrentTurn).toBe(true)
+			expect(mockTask.terminalProcess).toBeUndefined()
+			// Verify the flag was reset
+			expect(mockTask.isTerminalAbortedExternally).toBe(false)
+			// Verify cancelled status was sent to webview
+			expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith({
+				type: "commandExecutionStatus",
+				text: JSON.stringify({ executionId: "test-123", status: "cancelled" }),
+			})
+		})
+
+		it("should still throw unexpected errors when isTerminalAbortedExternally is not set", async () => {
+			// Setup: Process rejects but flag is NOT set (unexpected crash)
+			const rejectingProcess = Promise.reject(new Error("unexpected crash")) as any
+			rejectingProcess.continue = vitest.fn()
+			rejectingProcess.catch(() => {}) // prevent unhandled rejection
+
+			mockTask.isTerminalAbortedExternally = false
+
+			mockTerminal.runCommand.mockReturnValue(rejectingProcess)
+
+			const options: ExecuteCommandOptions = {
+				executionId: "test-123",
+				command: "crashing-command",
+				terminalShellIntegrationDisabled: true,
+			}
+
+			// Execute: should throw since it's not an external abort
+			await expect(executeCommandInTerminal(mockTask, options)).rejects.toThrow("unexpected crash")
+		})
+	})
+
 	describe("Terminal Working Directory Updates", () => {
 		it("should update working directory when terminal returns different cwd", async () => {
 			// Setup: Terminal initially at project root, but getCurrentWorkingDirectory returns different path

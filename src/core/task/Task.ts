@@ -299,6 +299,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	rooProtectedController?: RooProtectedController
 	fileContextTracker: FileContextTracker
 	terminalProcess?: RooTerminalProcess
+	isTerminalAbortedExternally: boolean = false
 
 	// Editing
 	diffViewProvider: DiffViewProvider
@@ -1629,6 +1630,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		if (terminalOperation === "continue") {
 			this.terminalProcess?.continue()
 		} else if (terminalOperation === "abort") {
+			this.isTerminalAbortedExternally = true
 			this.terminalProcess?.abort()
 		}
 	}

@@ -368,6 +368,18 @@ export async function executeCommandInTerminal(
 				`The command was terminated after exceeding a user-configured ${commandExecutionTimeoutSeconds}s timeout. Do not try to re-run the command.`,
 			]
 		}
+
+		if (task.isTerminalAbortedExternally) {
+			task.isTerminalAbortedExternally = false
+			const status: CommandExecutionStatus = { executionId, status: "cancelled" }
+			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
+			await task.say("command_output", "Command cancelled.")
+			task.didToolFailInCurrentTurn = true
+			task.terminalProcess = undefined
+
+			return [false, "The command was cancelled by the user."]
+		}
+
 		throw error
 	} finally {
 		clearTimeout(agentTimeoutId)
