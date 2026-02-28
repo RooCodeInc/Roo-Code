@@ -1,0 +1,9 @@
+.vscode/
+.roo/
+
+releases/
+
+.git/
+.github/
+
+__tests__/

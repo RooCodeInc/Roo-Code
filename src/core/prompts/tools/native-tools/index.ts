@@ -20,6 +20,8 @@ import searchFiles from "./search_files"
 import switchMode from "./switch_mode"
 import updateTodoList from "./update_todo_list"
 import writeToFile from "./write_to_file"
+import selectActiveIntent from "./select_active_intent"
+import listActiveIntents from "./list_active_intents"
 
 export { getMcpServerTools } from "./mcp_server"
 export { convertOpenAIToolToAnthropic, convertOpenAIToolsToAnthropic } from "./converters"
@@ -68,6 +70,8 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 		switchMode,
 		updateTodoList,
 		writeToFile,
+		selectActiveIntent,
+		listActiveIntents,
 	] satisfies OpenAI.Chat.ChatCompletionTool[]
 }
 

@@ -346,6 +346,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	userMessageContent: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam | Anthropic.ToolResultBlockParam)[] = []
 	userMessageContentReady = false
 
+	// Intent
+	private selectedIntentId?: string
+	private hasSelectedIntent = false
+
 	/**
 	 * Flag indicating whether the assistant message for the current streaming session
 	 * has been saved to API conversation history.
@@ -854,6 +858,31 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		return [instance, promise]
 	}
 
+	private async validateIntentGate(): Promise<boolean> {
+		const lastMessage = this.apiConversationHistory[this.apiConversationHistory.length - 1]
+		const lastMessageContent = lastMessage?.content
+
+		if (Array.isArray(lastMessageContent)) {
+			const hasIntentSection = lastMessageContent.some((block) => {
+				return (
+					block.type === "tool_use" &&
+					(block.name === "select_active_intent" || block.name === "list_active_intents")
+				)
+			})
+
+			if (!hasIntentSection && !this.selectedIntentId) {
+				await this.say(
+					"error",
+					"You must cite a valid Intent ID. Use select_active_intent or list_active_intents first.",
+				)
+				return false
+			}
+			return true
+		}
+
+		return false
+	}
+
 	// API Messages
 
 	private async getSavedApiConversationHistory(): Promise<ApiMessage[]> {
@@ -1256,6 +1285,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		return undefined
+	}
+
+	public setSelectedIntent(intentId: string): void {
+		this.selectedIntentId = intentId
+		this.hasSelectedIntent = true
+	}
+
+	public getHasSelectedIntent(): boolean {
+		return this.hasSelectedIntent
+	}
+
+	public getSelectedIntentId(): string | undefined {
+		return this.selectedIntentId
 	}
 
 	// Note that `partial` has three valid states true (partial message),
@@ -2778,6 +2820,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				const streamModelInfo = this.cachedStreamingModel.info
 				const cachedModelId = this.cachedStreamingModel.id
 
+				const hasValidIntent = await this.validateIntentGate()
+				if (!hasValidIntent) {
+					return true
+				}
+
 				// Yields only if the first chunk is successful, otherwise will
 				// allow the user to retry the request (most likely due to rate
 				// limit error, which gets thrown on the first chunk).
@@ -4010,6 +4057,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		Task.lastGlobalApiRequestTime = performance.now()
 
 		const systemPrompt = await this.getSystemPrompt()
+
 		const { contextTokens } = this.getTokenUsage()
 
 		if (contextTokens) {

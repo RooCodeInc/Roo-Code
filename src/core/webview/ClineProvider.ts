@@ -103,6 +103,7 @@ import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
 import { REQUESTY_BASE_URL } from "../../shared/utils/requesty"
 import { validateAndFixToolResultIds } from "../task/validateToolResultIds"
+import { IntentLoader } from "../intents/IntentLoader"
 
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -172,6 +173,11 @@ export class ClineProvider
 	public readonly latestAnnouncementId = "feb-2026-v3.50.0-gemini-31-pro-cli-ndjson-cli-v010" // v3.50.0 Gemini 3.1 Pro Support, CLI NDJSON Protocol, CLI v0.1.0
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
+
+	/**
+	 * Intent Loader
+	 */
+	private intentLoader?: IntentLoader
 
 	constructor(
 		readonly context: vscode.ExtensionContext,
@@ -464,6 +470,14 @@ export class ClineProvider
 		}
 	}
 
+	public getIntentLoader(): IntentLoader {
+		if (!this.intentLoader) {
+			const cwd = this.currentWorkspacePath || process.cwd()
+			this.intentLoader = new IntentLoader(cwd)
+		}
+		return this.intentLoader
+	}
+
 	// Adds a new Task instance to clineStack, marking the start of a new task.
 	// The instance is pushed to the top of the stack (LIFO order).
 	// When the task is completed, the top instance is removed, reactivating the
@@ -703,6 +717,7 @@ export class ClineProvider
 			}
 		}
 
+		this.intentLoader = undefined
 		this._workspaceTracker?.dispose()
 		this._workspaceTracker = undefined
 		await this.mcpHub?.unregisterClient()
