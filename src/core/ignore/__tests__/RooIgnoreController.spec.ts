@@ -199,14 +199,14 @@ describe("RooIgnoreController", () => {
 		})
 
 		/**
-		 * Tests handling of paths outside cwd
+		 * Tests handling of paths outside cwd - should deny access (fail closed)
 		 */
-		it("should allow access to paths outside cwd", () => {
+		it("should deny access to paths outside cwd", () => {
 			// Path traversal outside cwd
-			expect(controller.validateAccess("../outside-project/file.txt")).toBe(true)
+			expect(controller.validateAccess("../outside-project/file.txt")).toBe(false)
 
 			// Completely different path
-			expect(controller.validateAccess("/etc/hosts")).toBe(true)
+			expect(controller.validateAccess("/etc/hosts")).toBe(false)
 		})
 
 		/**
@@ -243,6 +243,43 @@ describe("RooIgnoreController", () => {
 
 			// Symlink to ignored file should also be blocked
 			expect(controller.validateAccess("config.json")).toBe(false)
+		})
+
+		/**
+		 * Tests that when realpathSync resolves outside cwd (e.g. submodules),
+		 * the original path is used for ignore checking instead.
+		 */
+		it("should fall back to original path when realpath resolves outside cwd", () => {
+			const mockRealpathSync = vi.mocked(fsSync.realpathSync)
+			mockRealpathSync.mockImplementation((filePath) => {
+				// Simulate a submodule file resolving to a path outside the workspace
+				if (filePath.toString().includes("node_modules/submod/file.js")) {
+					return "/some/other/location/file.js"
+				}
+				return filePath.toString()
+			})
+
+			// Even though realpath resolves outside cwd, the original relative path
+			// should be used for .rooignore checking, and node_modules is ignored
+			expect(controller.validateAccess("node_modules/submod/file.js")).toBe(false)
+		})
+
+		/**
+		 * Tests that unexpected errors in validateAccess fail closed (deny access)
+		 */
+		it("should deny access on unexpected errors (fail closed)", () => {
+			// Force the ignoreInstance.ignores method to throw an error
+			// by corrupting the internal ignore instance
+			const originalIgnores = controller["ignoreInstance"].ignores
+			controller["ignoreInstance"].ignores = () => {
+				throw new Error("Unexpected ignore error")
+			}
+
+			// Should deny access on error (fail closed)
+			expect(controller.validateAccess("src/app.ts")).toBe(false)
+
+			// Restore
+			controller["ignoreInstance"].ignores = originalIgnores
 		})
 	})
 
