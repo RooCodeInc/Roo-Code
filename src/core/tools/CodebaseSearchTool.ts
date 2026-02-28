@@ -77,6 +77,8 @@ export class CodebaseSearchTool extends BaseTool<"codebase_search"> {
 			// during indexing (e.g. due to symlink/submodule path resolution).
 			const filteredResults = task.rooIgnoreController
 				? searchResults.filter((result) => {
+						// Guard clause: skip entries without a valid payload/filePath.
+						// These are structural no-ops (not an ignore decision).
 						if (!result.payload || !("filePath" in result.payload)) return false
 						const relativePath = vscode.workspace.asRelativePath(result.payload.filePath, false)
 						return task.rooIgnoreController!.validateAccess(relativePath)
