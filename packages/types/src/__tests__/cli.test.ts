@@ -76,5 +76,28 @@ describe("CLI types", () => {
 
 			expect(result.success).toBe(true)
 		})
+
+		it("preserves context usage fields in result cost", () => {
+			const result = rooCliFinalOutputSchema.safeParse({
+				type: "result",
+				success: true,
+				cost: {
+					totalCost: 0.01,
+					inputTokens: 100,
+					outputTokens: 50,
+					contextTokens: 150,
+					contextWindow: 200_000,
+					contextUsagePercent: 0.075,
+				},
+				events: [],
+			})
+
+			expect(result.success).toBe(true)
+			if (result.success) {
+				expect(result.data.cost?.contextTokens).toBe(150)
+				expect(result.data.cost?.contextWindow).toBe(200_000)
+				expect(result.data.cost?.contextUsagePercent).toBe(0.075)
+			}
+		})
 	})
 })

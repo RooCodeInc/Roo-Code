@@ -32,6 +32,13 @@ function emitMessage(emitter: JsonEventEmitter, message: ClineMessage): void {
 	)
 }
 
+function emitMessageUpdate(emitter: JsonEventEmitter, message: ClineMessage): void {
+	;(emitter as unknown as { handleMessage: (msg: ClineMessage, isUpdate: boolean) => void }).handleMessage(
+		message,
+		true,
+	)
+}
+
 function emitTaskCompleted(emitter: JsonEventEmitter, event: TaskCompletedEvent): void {
 	;(emitter as unknown as { handleTaskCompleted: (taskCompleted: TaskCompletedEvent) => void }).handleTaskCompleted(
 		event,
@@ -63,6 +70,178 @@ function createCompletedStateInfo(message: ClineMessage): AgentStateInfo {
 }
 
 describe("JsonEventEmitter result emission", () => {
+	it("reports context usage when context window is configured", () => {
+		const { stdout, lines } = createMockStdout()
+		const emitter = new JsonEventEmitter({ mode: "stream-json", stdout, contextWindow: 200 })
+
+		emitMessage(emitter, {
+			ts: 5,
+			type: "say",
+			say: "api_req_started",
+			partial: false,
+			text: JSON.stringify({
+				cost: 0.001,
+				tokensIn: 40,
+				tokensOut: 20,
+			}),
+		} as ClineMessage)
+
+		emitMessage(emitter, {
+			ts: 6,
+			type: "say",
+			say: "api_req_started",
+			partial: false,
+			text: JSON.stringify({
+				cost: 0.002,
+				tokensIn: 30,
+				tokensOut: 10,
+			}),
+		} as ClineMessage)
+
+		const completionMessage = createAskCompletionMessage(7, "done")
+		emitTaskCompleted(emitter, {
+			success: true,
+			stateInfo: createCompletedStateInfo(completionMessage),
+			message: completionMessage,
+		})
+
+		const result = lines().find((line) => line.type === "result")
+		const cost = result?.cost as Record<string, unknown>
+
+		expect(cost?.contextWindow).toBe(200)
+		expect(cost?.contextTokens).toBe(40)
+		expect(cost?.contextUsagePercent).toBe(20)
+	})
+
+	it("reports token usage and context usage when api_req_started has no cost field", () => {
+		const { stdout, lines } = createMockStdout()
+		const emitter = new JsonEventEmitter({ mode: "stream-json", stdout, contextWindow: 1000 })
+
+		emitMessage(emitter, {
+			ts: 8,
+			type: "say",
+			say: "api_req_started",
+			partial: false,
+			text: JSON.stringify({
+				tokensIn: 120,
+				tokensOut: 30,
+				cacheWrites: 10,
+				cacheReads: 5,
+			}),
+		} as ClineMessage)
+
+		const completionMessage = createAskCompletionMessage(9, "done")
+		emitTaskCompleted(emitter, {
+			success: true,
+			stateInfo: createCompletedStateInfo(completionMessage),
+			message: completionMessage,
+		})
+
+		const result = lines().find((line) => line.type === "result")
+		const cost = result?.cost as Record<string, unknown>
+
+		expect(cost?.inputTokens).toBe(120)
+		expect(cost?.outputTokens).toBe(30)
+		expect(cost?.cacheWrites).toBe(10)
+		expect(cost?.cacheReads).toBe(5)
+		expect(cost).not.toHaveProperty("totalCost")
+		expect(cost?.contextTokens).toBe(150)
+		expect(cost?.contextWindow).toBe(1000)
+		expect(cost?.contextUsagePercent).toBe(15)
+	})
+
+	it("aggregates token usage and cost across api requests in a completion turn", () => {
+		const { stdout, lines } = createMockStdout()
+		const emitter = new JsonEventEmitter({ mode: "stream-json", stdout })
+
+		emitMessage(emitter, {
+			ts: 10,
+			type: "say",
+			say: "api_req_started",
+			partial: false,
+			text: JSON.stringify({
+				cost: 0.01,
+				tokensIn: 100,
+				tokensOut: 50,
+				cacheWrites: 20,
+				cacheReads: 10,
+			}),
+		} as ClineMessage)
+
+		emitMessage(emitter, {
+			ts: 11,
+			type: "say",
+			say: "api_req_started",
+			partial: false,
+			text: JSON.stringify({
+				cost: 0.02,
+				tokensIn: 25,
+				tokensOut: 10,
+				cacheWrites: 5,
+				cacheReads: 2,
+			}),
+		} as ClineMessage)
+
+		const completionMessage = createAskCompletionMessage(12, "done")
+		emitTaskCompleted(emitter, {
+			success: true,
+			stateInfo: createCompletedStateInfo(completionMessage),
+			message: completionMessage,
+		})
+
+		const result = lines().find((line) => line.type === "result")
+		expect(result).toBeDefined()
+		expect(result?.cost).toMatchObject({
+			totalCost: 0.03,
+			inputTokens: 125,
+			outputTokens: 60,
+			cacheWrites: 25,
+			cacheReads: 12,
+		})
+	})
+
+	it("captures cost from updated api_req_started messages with the same message id", () => {
+		const { stdout, lines } = createMockStdout()
+		const emitter = new JsonEventEmitter({ mode: "stream-json", stdout })
+
+		// Placeholder message without final usage.
+		emitMessage(emitter, {
+			ts: 20,
+			type: "say",
+			say: "api_req_started",
+			partial: false,
+			text: JSON.stringify({ apiProtocol: "openai" }),
+		} as ClineMessage)
+
+		// Later update of the same message with finalized usage/cost.
+		emitMessageUpdate(emitter, {
+			ts: 20,
+			type: "say",
+			say: "api_req_started",
+			partial: false,
+			text: JSON.stringify({
+				apiProtocol: "openai",
+				cost: 0.004,
+				tokensIn: 40,
+				tokensOut: 10,
+			}),
+		} as ClineMessage)
+
+		const completionMessage = createAskCompletionMessage(21, "done")
+		emitTaskCompleted(emitter, {
+			success: true,
+			stateInfo: createCompletedStateInfo(completionMessage),
+			message: completionMessage,
+		})
+
+		const result = lines().find((line) => line.type === "result")
+		expect(result?.cost).toMatchObject({
+			totalCost: 0.004,
+			inputTokens: 40,
+			outputTokens: 10,
+		})
+	})
+
 	it("prefers current completion message content over stale cached completion text", () => {
 		const { stdout, lines } = createMockStdout()
 		const emitter = new JsonEventEmitter({ mode: "stream-json", stdout })
@@ -125,5 +304,6 @@ describe("JsonEventEmitter result emission", () => {
 		expect(output).toHaveLength(2)
 		expect(output[0]?.content).toBe("FIRST")
 		expect(output[1]).not.toHaveProperty("content")
+		expect(output[1]).not.toHaveProperty("cost")
 	})
 })

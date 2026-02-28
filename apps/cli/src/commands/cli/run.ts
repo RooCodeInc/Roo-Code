@@ -6,6 +6,7 @@ import { createElement } from "react"
 import pWaitFor from "p-wait-for"
 
 import { setLogger } from "@roo-code/vscode-shim"
+import type { ModelRecord } from "@roo-code/types"
 
 import {
 	FlagOptions,
@@ -51,8 +52,8 @@ function normalizeError(error: unknown): Error {
 	return error instanceof Error ? error : new Error(String(error))
 }
 
-async function warmRooModels(host: ExtensionHost): Promise<void> {
-	await new Promise<void>((resolve, reject) => {
+async function fetchRooModels(host: ExtensionHost): Promise<ModelRecord> {
+	return new Promise<ModelRecord>((resolve, reject) => {
 		let settled = false
 
 		const cleanup = () => {
@@ -92,7 +93,7 @@ async function warmRooModels(host: ExtensionHost): Promise<void> {
 				return
 			}
 
-			finish(() => resolve())
+			finish(() => resolve(isRecord(values?.models) ? (values.models as ModelRecord) : {}))
 		}
 
 		const timeoutId = setTimeout(() => {
@@ -102,6 +103,14 @@ async function warmRooModels(host: ExtensionHost): Promise<void> {
 		host.on("extensionWebviewMessage", onMessage)
 		host.sendToExtension({ type: "requestRooModels" })
 	})
+}
+
+function resolveRooModelContextWindow(models: ModelRecord, modelId: string): number | undefined {
+	const contextWindow = models[modelId]?.contextWindow
+	if (typeof contextWindow !== "number" || !Number.isFinite(contextWindow) || contextWindow <= 0) {
+		return undefined
+	}
+	return contextWindow
 }
 
 export async function run(promptArg: string | undefined, flagOptions: FlagOptions) {
@@ -541,15 +550,28 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 
 		try {
 			await host.activate()
+			let rooContextWindow: number | undefined
+
 			if (extensionHostOptions.provider === "roo") {
 				try {
-					await warmRooModels(host)
+					const rooModels = await fetchRooModels(host)
+					rooContextWindow = resolveRooModelContextWindow(rooModels, extensionHostOptions.model)
+
+					if (flagOptions.debug && rooContextWindow === undefined) {
+						console.error(
+							`[CLI] Warning: Roo model context window unavailable for model: ${extensionHostOptions.model}`,
+						)
+					}
 				} catch (warmupError) {
 					if (flagOptions.debug) {
 						const message = warmupError instanceof Error ? warmupError.message : String(warmupError)
 						console.error(`[CLI] Warning: Roo model warmup failed: ${message}`)
 					}
 				}
+			}
+
+			if (rooContextWindow !== undefined) {
+				jsonEmitter?.setContextWindow(rooContextWindow)
 			}
 
 			if (jsonEmitter) {
