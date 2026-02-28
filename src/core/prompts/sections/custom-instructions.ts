@@ -388,6 +388,7 @@ export async function addCustomInstructions(
 		language?: string
 		rooIgnoreInstructions?: string
 		settings?: SystemPromptSettings
+		disableDefaultRules?: boolean
 	} = {},
 ): Promise<string> {
 	const sections = []
@@ -472,19 +473,23 @@ export async function addCustomInstructions(
 		rules.push(options.rooIgnoreInstructions)
 	}
 
-	// Add AGENTS.md content if enabled (default: true)
-	// Load from root and optionally subdirectories with .roo folders based on enableSubfolderRules setting
-	if (options.settings?.useAgentRules !== false) {
-		const agentRulesContent = await loadAllAgentRulesFiles(cwd, enableSubfolderRules)
-		if (agentRulesContent && agentRulesContent.trim()) {
-			rules.push(agentRulesContent.trim())
+	// When disableDefaultRules is true, skip AGENTS.md and generic rules —
+	// only mode-specific rules (loaded above) are included.
+	if (!options.disableDefaultRules) {
+		// Add AGENTS.md content if enabled (default: true)
+		// Load from root and optionally subdirectories with .roo folders based on enableSubfolderRules setting
+		if (options.settings?.useAgentRules !== false) {
+			const agentRulesContent = await loadAllAgentRulesFiles(cwd, enableSubfolderRules)
+			if (agentRulesContent && agentRulesContent.trim()) {
+				rules.push(agentRulesContent.trim())
+			}
 		}
-	}
 
-	// Add generic rules
-	const genericRuleContent = await loadRuleFiles(cwd, enableSubfolderRules)
-	if (genericRuleContent && genericRuleContent.trim()) {
-		rules.push(genericRuleContent.trim())
+		// Add generic rules
+		const genericRuleContent = await loadRuleFiles(cwd, enableSubfolderRules)
+		if (genericRuleContent && genericRuleContent.trim()) {
+			rules.push(genericRuleContent.trim())
+		}
 	}
 
 	if (rules.length > 0) {

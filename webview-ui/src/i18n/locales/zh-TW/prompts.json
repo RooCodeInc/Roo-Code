@@ -51,6 +51,10 @@
 		"description": "為 {{modeName}} 模式新增專屬的行為指南。",
 		"loadFromFile": "{{mode}}模式的特定自訂指令也可以從工作區中的<span>.roo/rules-{{slug}}/</span>資料夾或全域<0>.roo/rules-{{slug}}/</0>載入（.roorules-{{slug}}和.clinerules-{{slug}}已棄用，即將停止運作）。"
 	},
+	"disableDefaultRules": {
+		"label": "停用預設規則",
+		"description": "啟用後，僅載入模式專屬規則（.roo/rules-{{slug}}/）。預設規則（.roo/rules/、AGENTS.md、.roorules）將被略過。"
+	},
 	"exportMode": {
 		"title": "匯出模式",
 		"description": "將此模式與 .roo/rules-{{slug}}/ 資料夾中的規則匯出，並合併成一個可分享的 YAML 檔案。原始檔案將維持不變。",

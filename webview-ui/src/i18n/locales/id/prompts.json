@@ -51,6 +51,10 @@
 		"description": "Tambahkan panduan perilaku khusus untuk mode {{modeName}}.",
 		"loadFromFile": "Instruksi khusus untuk mode {{mode}} juga dapat dimuat dari folder <span>.roo/rules-{{slug}}/</span> di ruang kerja Anda atau dari global <0>.roo/rules-{{slug}}/</0> (.roorules-{{slug}} dan .clinerules-{{slug}} sudah usang dan akan segera berhenti berfungsi)."
 	},
+	"disableDefaultRules": {
+		"label": "Nonaktifkan aturan default",
+		"description": "Saat diaktifkan, hanya aturan khusus mode (.roo/rules-{{slug}}/) yang dimuat. Aturan default (.roo/rules/, AGENTS.md, .roorules) dilewati."
+	},
 	"exportMode": {
 		"title": "Ekspor Mode",
 		"description": "Ekspor mode ini ke file YAML dengan semua aturan yang disertakan untuk berbagi dengan mudah dengan orang lain.",

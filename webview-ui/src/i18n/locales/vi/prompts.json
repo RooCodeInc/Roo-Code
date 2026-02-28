@@ -51,6 +51,10 @@
 		"description": "Thêm hướng dẫn hành vi dành riêng cho chế độ {{modeName}}.",
 		"loadFromFile": "Hướng dẫn tùy chỉnh cụ thể cho chế độ {{mode}} cũng có thể được tải từ thư mục <span>.roo/rules-{{slug}}/</span> trong không gian làm việc của bạn hoặc từ toàn cục <0>.roo/rules-{{slug}}/</0> (.roorules-{{slug}} và .clinerules-{{slug}} đã lỗi thời và sẽ ngừng hoạt động sớm)."
 	},
+	"disableDefaultRules": {
+		"label": "Tắt quy tắc mặc định",
+		"description": "Khi bật, chỉ các quy tắc dành riêng cho chế độ (.roo/rules-{{slug}}/) được tải. Các quy tắc mặc định (.roo/rules/, AGENTS.md, .roorules) bị bỏ qua."
+	},
 	"exportMode": {
 		"title": "Xuất chế độ",
 		"description": "Xuất chế độ này sang tệp YAML với tất cả các quy tắc được bao gồm để dễ dàng chia sẻ với người khác.",

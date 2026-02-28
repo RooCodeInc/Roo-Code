@@ -51,6 +51,10 @@
 		"description": "{{modeName}} 모드에 대한 특정 행동 지침을 추가하세요.",
 		"loadFromFile": "{{mode}} 모드에 특정한 사용자 지정 지침은 작업 공간의 <span>.roo/rules-{{slug}}/</span> 폴더 또는 전역 <0>.roo/rules-{{slug}}/</0>에서도 로드할 수 있습니다 (.roorules-{{slug}} 및 .clinerules-{{slug}}는 더 이상 사용되지 않으며 곧 작동을 중지합니다)."
 	},
+	"disableDefaultRules": {
+		"label": "기본 규칙 비활성화",
+		"description": "활성화하면 모드별 규칙(.roo/rules-{{slug}}/)만 로드됩니다. 기본 규칙(.roo/rules/, AGENTS.md, .roorules)은 건너뜁니다."
+	},
 	"exportMode": {
 		"title": "모드 내보내기",
 		"description": "이 모드를 모든 규칙이 포함된 YAML 파일로 내보내어 다른 사람들과 쉽게 공유할 수 있습니다.",

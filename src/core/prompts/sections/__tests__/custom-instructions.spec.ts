@@ -1719,4 +1719,97 @@ describe("Rules directory reading", () => {
 		expect(result).toContain("Base rules from AGENTS.md only")
 		expect(result).not.toContain("AGENTS.local.md")
 	})
+
+	it("should skip generic rules and AGENTS.md when disableDefaultRules is true", async () => {
+		// Simulate .roo/rules-test-mode directory exists with mode-specific rules
+		statMock.mockResolvedValueOnce({
+			isDirectory: () => true,
+		} as any)
+
+		readdirMock.mockResolvedValueOnce([
+			{
+				name: "mode-rule.md",
+				isFile: () => true,
+				isSymbolicLink: () => false,
+				parentPath: "/fake/path/.roo/rules-test-mode",
+			},
+		] as any)
+
+		statMock.mockResolvedValueOnce({
+			isFile: () => true,
+		} as any)
+
+		readFileMock.mockImplementation((filePath: PathLike) => {
+			const pathStr = filePath.toString().replace(/\\/g, "/")
+			if (pathStr === "/fake/path/.roo/rules-test-mode/mode-rule.md") {
+				return Promise.resolve("mode specific rule content")
+			}
+			if (pathStr.endsWith("AGENTS.md")) {
+				return Promise.resolve("Agent rules that should be skipped")
+			}
+			if (pathStr.endsWith(".roorules")) {
+				return Promise.resolve("Generic rules that should be skipped")
+			}
+			return Promise.reject({ code: "ENOENT" })
+		})
+
+		const result = await addCustomInstructions(
+			"mode instructions",
+			"global instructions",
+			"/fake/path",
+			"test-mode",
+			{
+				disableDefaultRules: true,
+				settings: {
+					todoListEnabled: true,
+					useAgentRules: true,
+					newTaskRequireTodos: false,
+				},
+			},
+		)
+
+		// Should contain mode-specific rules
+		expect(result).toContain("mode specific rule content")
+		// Should NOT contain AGENTS.md or generic rules
+		expect(result).not.toContain("Agent rules that should be skipped")
+		expect(result).not.toContain("Generic rules that should be skipped")
+		expect(result).not.toContain("# Agent Rules Standard")
+		expect(result).not.toContain("# Rules from .roo directories")
+		expect(result).not.toContain("# Rules from .roorules")
+		// Should still contain custom instructions
+		expect(result).toContain("Mode-specific Instructions:\nmode instructions")
+		expect(result).toContain("Global Instructions:\nglobal instructions")
+	})
+
+	it("should load generic rules when disableDefaultRules is false", async () => {
+		// Simulate no .roo/rules-test-mode directory
+		statMock.mockRejectedValueOnce({ code: "ENOENT" })
+		// Simulate no .roo/rules directory
+		statMock.mockRejectedValueOnce({ code: "ENOENT" })
+
+		readFileMock.mockImplementation((filePath: PathLike) => {
+			const pathStr = filePath.toString()
+			if (pathStr.endsWith(".roorules")) {
+				return Promise.resolve("Generic rules content")
+			}
+			return Promise.reject({ code: "ENOENT" })
+		})
+
+		lstatMock.mockImplementation(() => {
+			return Promise.reject({ code: "ENOENT" })
+		})
+
+		const result = await addCustomInstructions("", "", "/fake/path", "test-mode", {
+			disableDefaultRules: false,
+			settings: {
+				todoListEnabled: true,
+				useAgentRules: false,
+				newTaskRequireTodos: false,
+			},
+		})
+
+		// Should contain generic rules when disableDefaultRules is false
+		expect(result).toContain("Generic rules content")
+		expect(result).toContain("# Rules from .roorules")
+	})
 })
