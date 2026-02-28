@@ -45,6 +45,8 @@ export interface ExtensionMessage {
 		| "routerModels"
 		| "openAiModels"
 		| "ollamaModels"
+		| "ollamaConnectionTestResult"
+		| "ollamaModelsRefreshResult"
 		| "lmStudioModels"
 		| "vsCodeLmModels"
 		| "vsCodeLmApiAvailable"
@@ -139,6 +141,18 @@ export interface ExtensionMessage {
 	routerModels?: RouterModels
 	openAiModels?: string[]
 	ollamaModels?: ModelRecord
+	ollamaModelsWithTools?: Array<{
+		name: string
+		contextWindow: number
+		size?: number
+		quantizationLevel?: string
+		family?: string
+		supportsImages: boolean
+		modelInfo: ModelRecord[string]
+	}>
+	modelsWithoutTools?: string[]
+	message?: string
+	durationMs?: number
 	lmStudioModels?: ModelRecord
 	vsCodeLmModels?: { vendor?: string; family?: string; version?: string; id?: string }[]
 	mcpServers?: McpServer[]
@@ -439,6 +453,8 @@ export interface WebviewMessage {
 		| "requestRouterModels"
 		| "requestOpenAiModels"
 		| "requestOllamaModels"
+		| "testOllamaConnection"
+		| "refreshOllamaModels"
 		| "requestLmStudioModels"
 		| "requestRooModels"
 		| "requestRooCreditBalance"
@@ -635,6 +651,8 @@ export interface WebviewMessage {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	settings?: any
 	url?: string // For openExternal
+	ollamaBaseUrl?: string // For testOllamaConnection and refreshOllamaModels - allows passing current value from UI
+	ollamaApiKey?: string // For testOllamaConnection and refreshOllamaModels - allows passing current value from UI
 	mpItem?: MarketplaceItem
 	mpInstallOptions?: InstallMarketplaceItemOptions
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
