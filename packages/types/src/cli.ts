@@ -125,6 +125,9 @@ export const rooCliCostSchema = z.object({
 	outputTokens: z.number().optional(),
 	cacheWrites: z.number().optional(),
 	cacheReads: z.number().optional(),
+	contextTokens: z.number().optional(),
+	contextWindow: z.number().optional(),
+	contextUsagePercent: z.number().optional(),
 })
 
 export type RooCliCost = z.infer<typeof rooCliCostSchema>

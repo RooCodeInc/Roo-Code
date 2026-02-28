@@ -38,6 +38,8 @@ export interface JsonEventEmitterOptions {
 	protocol?: string
 	/** Supported stdin protocol capabilities emitted in system:init */
 	capabilities?: string[]
+	/** Optional context window for reporting context usage in result.cost */
+	contextWindow?: number
 }
 
 /**
@@ -55,21 +57,31 @@ function parseToolInfo(text: string | undefined): { name: string; input: Record<
 }
 
 /**
- * Parse API request cost information from api_req_started message text.
+ * Parse API request usage information from api_req_started message text.
  */
 function parseApiReqCost(text: string | undefined): JsonEventCost | undefined {
 	if (!text) return undefined
 	try {
 		const parsed = JSON.parse(text)
-		return parsed.cost !== undefined
-			? {
-					totalCost: parsed.cost,
-					inputTokens: parsed.tokensIn,
-					outputTokens: parsed.tokensOut,
-					cacheWrites: parsed.cacheWrites,
-					cacheReads: parsed.cacheReads,
-				}
-			: undefined
+		const usage: JsonEventCost = {}
+
+		if (typeof parsed.cost === "number") {
+			usage.totalCost = parsed.cost
+		}
+		if (typeof parsed.tokensIn === "number") {
+			usage.inputTokens = parsed.tokensIn
+		}
+		if (typeof parsed.tokensOut === "number") {
+			usage.outputTokens = parsed.tokensOut
+		}
+		if (typeof parsed.cacheWrites === "number") {
+			usage.cacheWrites = parsed.cacheWrites
+		}
+		if (typeof parsed.cacheReads === "number") {
+			usage.cacheReads = parsed.cacheReads
+		}
+
+		return Object.keys(usage).length > 0 ? usage : undefined
 	} catch {
 		return undefined
 	}
@@ -97,12 +109,14 @@ export class JsonEventEmitter {
 	private events: JsonEvent[] = []
 	private unsubscribers: (() => void)[] = []
 	private pendingWrites = new Set<Promise<void>>()
-	private lastCost: JsonEventCost | undefined
 	private requestIdProvider: () => string | undefined
 	private schemaVersion: number
 	private protocol: string
 	private capabilities: string[]
+	private contextWindow: number | undefined
 	private seenMessageIds = new Set<number>()
+	// Track finalized api_req_started usage for the current completion turn.
+	private currentTurnApiReqCosts = new Map<number, JsonEventCost>()
 	// Track previous content for delta computation
 	private previousContent = new Map<number, string>()
 	// Track previous tool-use content for structured (non-append-only) delta computation.
@@ -127,6 +141,19 @@ export class JsonEventEmitter {
 			"stdin:ping",
 			"stdin:shutdown",
 		]
+		this.contextWindow =
+			typeof options.contextWindow === "number" &&
+			Number.isFinite(options.contextWindow) &&
+			options.contextWindow > 0
+				? options.contextWindow
+				: undefined
+	}
+
+	setContextWindow(contextWindow: number | undefined): void {
+		this.contextWindow =
+			typeof contextWindow === "number" && Number.isFinite(contextWindow) && contextWindow > 0
+				? contextWindow
+				: undefined
 	}
 
 	/**
@@ -326,6 +353,84 @@ export class JsonEventEmitter {
 		return event
 	}
 
+	private updateCurrentTurnApiCost(msgId: number, cost: JsonEventCost): void {
+		this.currentTurnApiReqCosts.set(msgId, cost)
+	}
+
+	private getCurrentTurnCost(): JsonEventCost | undefined {
+		if (this.currentTurnApiReqCosts.size === 0) {
+			return undefined
+		}
+
+		let totalCost = 0
+		let inputTokens = 0
+		let outputTokens = 0
+		let cacheWrites = 0
+		let cacheReads = 0
+
+		let hasTotalCost = false
+		let hasInputTokens = false
+		let hasOutputTokens = false
+		let hasCacheWrites = false
+		let hasCacheReads = false
+
+		for (const value of this.currentTurnApiReqCosts.values()) {
+			if (typeof value.totalCost === "number") {
+				totalCost += value.totalCost
+				hasTotalCost = true
+			}
+			if (typeof value.inputTokens === "number") {
+				inputTokens += value.inputTokens
+				hasInputTokens = true
+			}
+			if (typeof value.outputTokens === "number") {
+				outputTokens += value.outputTokens
+				hasOutputTokens = true
+			}
+			if (typeof value.cacheWrites === "number") {
+				cacheWrites += value.cacheWrites
+				hasCacheWrites = true
+			}
+			if (typeof value.cacheReads === "number") {
+				cacheReads += value.cacheReads
+				hasCacheReads = true
+			}
+		}
+
+		const aggregated: JsonEventCost = {}
+		if (hasTotalCost) aggregated.totalCost = totalCost
+		if (hasInputTokens) aggregated.inputTokens = inputTokens
+		if (hasOutputTokens) aggregated.outputTokens = outputTokens
+		if (hasCacheWrites) aggregated.cacheWrites = cacheWrites
+		if (hasCacheReads) aggregated.cacheReads = cacheReads
+
+		if (this.contextWindow !== undefined) {
+			let latestMessageId = Number.NEGATIVE_INFINITY
+			let latestRequestCost: JsonEventCost | undefined
+
+			for (const [messageId, usage] of this.currentTurnApiReqCosts.entries()) {
+				if (messageId > latestMessageId) {
+					latestMessageId = messageId
+					latestRequestCost = usage
+				}
+			}
+
+			if (latestRequestCost) {
+				const contextTokensIn =
+					typeof latestRequestCost.inputTokens === "number" ? latestRequestCost.inputTokens : 0
+				const contextTokensOut =
+					typeof latestRequestCost.outputTokens === "number" ? latestRequestCost.outputTokens : 0
+				const contextTokens = contextTokensIn + contextTokensOut
+
+				aggregated.contextTokens = contextTokens
+				aggregated.contextWindow = this.contextWindow
+				aggregated.contextUsagePercent = (contextTokens / this.contextWindow) * 100
+			}
+		}
+
+		return Object.keys(aggregated).length > 0 ? aggregated : undefined
+	}
+
 	/**
 	 * Handle a ClineMessage and emit the appropriate JSON event.
 	 */
@@ -339,6 +444,14 @@ export class JsonEventEmitter {
 
 		// Skip duplicate complete messages
 		if (isDone && this.seenMessageIds.has(msg.ts)) {
+			// api_req_started messages are updated in-place (same ts) with final usage/cost.
+			// We still need to process those updates for result metrics, even if we skip re-emitting.
+			if (msg.type === "say" && msg.say === "api_req_started") {
+				const cost = parseApiReqCost(msg.text)
+				if (cost) {
+					this.updateCurrentTurnApiCost(msg.ts, cost)
+				}
+			}
 			return
 		}
 
@@ -409,7 +522,7 @@ export class JsonEventEmitter {
 			case "api_req_started": {
 				const cost = parseApiReqCost(msg.text)
 				if (cost) {
-					this.lastCost = cost
+					this.updateCurrentTurnApiCost(msg.ts, cost)
 				}
 				break
 			}
@@ -602,6 +715,7 @@ export class JsonEventEmitter {
 		// Prefer the completion payload from the current event. If it is empty,
 		// fall back to the most recent tracked completion text, then assistant text.
 		const resultContent = event.message?.text || this.completionResultContent || this.lastAssistantText
+		const resultCost = this.getCurrentTurnCost()
 
 		this.emitEvent({
 			type: "result",
@@ -609,16 +723,17 @@ export class JsonEventEmitter {
 			content: resultContent,
 			done: true,
 			success: event.success,
-			cost: this.lastCost,
+			cost: resultCost,
 		})
 
 		// Prevent stale completion content from leaking into later turns.
 		this.completionResultContent = undefined
 		this.lastAssistantText = undefined
+		this.currentTurnApiReqCosts.clear()
 
 		// For "json" mode, output the final accumulated result
 		if (this.mode === "json") {
-			this.outputFinalResult(event.success, resultContent)
+			this.outputFinalResult(event.success, resultContent, resultCost)
 		}
 	}
 
@@ -659,12 +774,12 @@ export class JsonEventEmitter {
 	/**
 	 * Output the final accumulated result (for "json" mode).
 	 */
-	private outputFinalResult(success: boolean, content?: string): void {
+	private outputFinalResult(success: boolean, content?: string, cost?: JsonEventCost): void {
 		const output: JsonFinalOutput = {
 			type: "result",
 			success,
 			content,
-			cost: this.lastCost,
+			cost,
 			events: this.events.filter((e) => e.type !== "result"), // Exclude the result event itself
 		}
 
@@ -707,10 +822,10 @@ export class JsonEventEmitter {
 	 */
 	clear(): void {
 		this.events = []
-		this.lastCost = undefined
 		this.seenMessageIds.clear()
 		this.previousContent.clear()
 		this.previousToolUseContent.clear()
+		this.currentTurnApiReqCosts.clear()
 		this.completionResultContent = undefined
 		this.lastAssistantText = undefined
 		this.expectPromptEchoAsUser = true
