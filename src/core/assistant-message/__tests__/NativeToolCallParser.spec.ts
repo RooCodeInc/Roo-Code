@@ -343,4 +343,59 @@ describe("NativeToolCallParser", () => {
 			})
 		})
 	})
+
+	describe("attempt_completion tool", () => {
+		it("should parse attempt_completion with empty string result", () => {
+			// Regression test for issue #11404: empty string result should be valid
+			const toolCall = {
+				id: "toolu_completion_empty",
+				name: "attempt_completion" as const,
+				arguments: JSON.stringify({
+					result: "",
+				}),
+			}
+
+			const result = NativeToolCallParser.parseToolCall(toolCall)
+
+			expect(result).not.toBeNull()
+			expect(result?.type).toBe("tool_use")
+			if (result?.type === "tool_use") {
+				expect(result.nativeArgs).toBeDefined()
+				const nativeArgs = result.nativeArgs as { result: string }
+				expect(nativeArgs.result).toBe("")
+			}
+		})
+
+		it("should parse attempt_completion with non-empty result", () => {
+			const toolCall = {
+				id: "toolu_completion_full",
+				name: "attempt_completion" as const,
+				arguments: JSON.stringify({
+					result: "Task completed successfully",
+				}),
+			}
+
+			const result = NativeToolCallParser.parseToolCall(toolCall)
+
+			expect(result).not.toBeNull()
+			expect(result?.type).toBe("tool_use")
+			if (result?.type === "tool_use") {
+				expect(result.nativeArgs).toBeDefined()
+				const nativeArgs = result.nativeArgs as { result: string }
+				expect(nativeArgs.result).toBe("Task completed successfully")
+			}
+		})
+
+		it("should handle streaming attempt_completion with empty string result", () => {
+			const id = "toolu_streaming_completion"
+			NativeToolCallParser.startStreamingToolCall(id, "attempt_completion")
+
+			const result = NativeToolCallParser.processStreamingChunk(id, JSON.stringify({ result: "" }))
+
+			expect(result).not.toBeNull()
+			expect(result?.nativeArgs).toBeDefined()
+			const nativeArgs = result?.nativeArgs as { result: string }
+			expect(nativeArgs.result).toBe("")
+		})
+	})
 })
