@@ -36,6 +36,10 @@ vi.mock("../../prompts/responses", () => ({
 		toolError: vi.fn((msg) => `Error: ${msg}`),
 		rooIgnoreError: vi.fn((path) => `Access denied: ${path}`),
 		createPrettyPatch: vi.fn(() => "mock-diff"),
+		writeToFileMissingContentError: vi.fn(
+			() =>
+				"Missing value for required parameter 'content'. This most commonly happens when the file content is too large and your response was truncated.",
+		),
 	},
 }))
 
@@ -439,6 +443,63 @@ describe("writeToFileTool", () => {
 				"user_feedback_diff",
 				expect.stringContaining("editedExistingFile"),
 			)
+		})
+	})
+
+	describe("missing parameter handling", () => {
+		it("returns enhanced error when content is missing, suggesting alternatives to large file writes", async () => {
+			// Directly build a toolUse with nativeArgs.content = undefined to simulate truncation
+			const toolUse: ToolUse = {
+				type: "tool_use",
+				name: "write_to_file",
+				params: { path: testFilePath },
+				nativeArgs: { path: testFilePath, content: undefined } as any,
+				partial: false,
+			}
+
+			mockPushToolResult = vi.fn()
+
+			await writeToFileTool.handle(mockCline, toolUse as ToolUse<"write_to_file">, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+			})
+
+			expect(mockCline.consecutiveMistakeCount).toBe(1)
+			expect(mockCline.recordToolError).toHaveBeenCalledWith("write_to_file")
+			expect(mockCline.say).toHaveBeenCalledWith(
+				"error",
+				expect.stringContaining("without value for required parameter 'content'"),
+			)
+			expect(mockCline.say).toHaveBeenCalledWith("error", expect.stringContaining("output token limits"))
+			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("truncated"))
+			expect(mockCline.diffViewProvider.reset).toHaveBeenCalled()
+			// Should NOT call the generic sayAndCreateMissingParamError
+			expect(mockCline.sayAndCreateMissingParamError).not.toHaveBeenCalled()
+		})
+
+		it("returns generic error when path is missing", async () => {
+			// Directly build a toolUse with nativeArgs.path = undefined
+			const toolUse: ToolUse = {
+				type: "tool_use",
+				name: "write_to_file",
+				params: {},
+				nativeArgs: { path: undefined, content: testContent } as any,
+				partial: false,
+			}
+
+			mockPushToolResult = vi.fn()
+
+			await writeToFileTool.handle(mockCline, toolUse as ToolUse<"write_to_file">, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+			})
+
+			expect(mockCline.consecutiveMistakeCount).toBe(1)
+			expect(mockCline.recordToolError).toHaveBeenCalledWith("write_to_file")
+			expect(mockCline.sayAndCreateMissingParamError).toHaveBeenCalledWith("write_to_file", "path")
+			expect(mockCline.diffViewProvider.reset).toHaveBeenCalled()
 		})
 	})
 

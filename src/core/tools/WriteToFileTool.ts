@@ -42,7 +42,13 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		if (newContent === undefined) {
 			task.consecutiveMistakeCount++
 			task.recordToolError("write_to_file")
-			pushToolResult(await task.sayAndCreateMissingParamError("write_to_file", "content"))
+			await task.say(
+				"error",
+				`Roo tried to use write_to_file${
+					relPath ? ` for '${relPath.toPosix()}'` : ""
+				} without value for required parameter 'content'. This is likely due to output token limits. Retrying...`,
+			)
+			pushToolResult(formatResponse.toolError(formatResponse.writeToFileMissingContentError()))
 			await task.diffViewProvider.reset()
 			return
 		}
