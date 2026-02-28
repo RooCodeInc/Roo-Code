@@ -29,10 +29,10 @@ Localize all strings into the following locale files: ca, de, en, es, fr, hi, id
 
 The VSCode extension has two main areas that require localization:
 
-| Component | Path | Purpose |
-|-----------|------|---------|
-| **Core Extension** | `src/i18n/locales/` | Extension backend strings |
-| **WebView UI** | `webview-ui/src/i18n/locales/` | User interface strings |
+| Component          | Path                           | Purpose                   |
+| ------------------ | ------------------------------ | ------------------------- |
+| **Core Extension** | `src/i18n/locales/`            | Extension backend strings |
+| **WebView UI**     | `webview-ui/src/i18n/locales/` | User interface strings    |
 
 ## Brand Voice, Tone, and Word Choice
 
@@ -77,17 +77,19 @@ This guidance file is loaded at runtime and should be consulted for the latest b
 ### Trans Component Example
 
 Translation string:
+
 ```json
 "changeSettings": "You can always change this at the bottom of the <settingsLink>settings</settingsLink>"
 ```
 
 React component usage:
+
 ```tsx
 <Trans
-  i18nKey="welcome:telemetry.changeSettings"
-  components={{
-    settingsLink: <VSCodeLink href="#" onClick={handleOpenSettings} />
-  }}
+	i18nKey="welcome:telemetry.changeSettings"
+	components={{
+		settingsLink: <VSCodeLink href="#" onClick={handleOpenSettings} />,
+	}}
 />
 ```
 
@@ -105,19 +107,21 @@ React component usage:
 
 1. First add or modify English strings, then ask for confirmation before translating to all other languages
 2. Use this process for each localization task:
-   1. Identify where the string appears in the UI/codebase
-   2. Understand the context and purpose of the string
-   3. Update English translation first
-   4. Use the `search_files` tool to find JSON keys that are near new keys in English translations but do not yet exist in the other language files for `apply_diff` SEARCH context
-   5. Create appropriate translations for all other supported languages utilizing the `search_files` result using `apply_diff` without reading every file
-   6. Do not output the translated text into the chat, just modify the files
-   7. Validate your changes with the missing translations script
+
+    1. Identify where the string appears in the UI/codebase
+    2. Understand the context and purpose of the string
+    3. Update English translation first
+    4. Use the `search_files` tool to find JSON keys that are near new keys in English translations but do not yet exist in the other language files for `apply_diff` SEARCH context
+    5. Create appropriate translations for all other supported languages utilizing the `search_files` result using `apply_diff` without reading every file
+    6. Do not output the translated text into the chat, just modify the files
+    7. Validate your changes with the missing translations script
 
 3. Flag or comment if an English source string is incomplete ("please see this...") to avoid truncated or unclear translations
 
 4. For UI elements, distinguish between:
-   - Button labels: Use short imperative commands ("Save", "Cancel")
-   - Tooltip text: Can be slightly more descriptive
+
+    - Button labels: Use short imperative commands ("Save", "Cancel")
+    - Tooltip text: Can be slightly more descriptive
 
 5. Preserve the original perspective: If text is a user command directed at the software, ensure the translation maintains this direction
 

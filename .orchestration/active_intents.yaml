@@ -1,0 +1,15 @@
+active_intents:
+  - id: "INT-001"
+    name: "Initialize TRACE Governance"
+    status: "COMPLETED"
+    owned_scope: ["src/hooks/**"]
+    # ... other fields ...
+
+  - id: "INT-002"
+    name: "Refactor Auth Middleware"
+    status: "IN_PROGRESS"
+    owned_scope: ["src/auth/**", "src/middleware/jwt.ts"]
+    constraints:
+      - "Must maintain backward compatibility with Basic Auth"
+    acceptance_criteria:
+      - "JWT rotation tests pass"

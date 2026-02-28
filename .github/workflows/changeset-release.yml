@@ -2,131 +2,131 @@ name: Changeset Release
 run-name: Changeset Release ${{ github.actor != 'R00-B0T' && '- Create PR' || '- Update Changelog' }}
 
 on:
-  workflow_dispatch:
-  pull_request:
-    types: [closed, opened, labeled]
+    workflow_dispatch:
+    pull_request:
+        types: [closed, opened, labeled]
 
 env:
-  REPO_PATH: ${{ github.repository }}
-  GIT_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+    REPO_PATH: ${{ github.repository }}
+    GIT_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
 
 jobs:
-  # Job 1: Create version bump PR when changesets are merged to main
-  changeset-pr-version-bump:
-    if: >
-      ( github.event_name == 'pull_request' &&
-      github.event.pull_request.merged == true &&
-      github.event.pull_request.base.ref == 'main' &&
-      github.actor != 'R00-B0T' ) ||
-      github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - name: Git Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ env.GIT_REF }}
-      - name: Setup Node.js and pnpm
-        uses: ./.github/actions/setup-node-pnpm
+    # Job 1: Create version bump PR when changesets are merged to main
+    changeset-pr-version-bump:
+        if: >
+            ( github.event_name == 'pull_request' &&
+            github.event.pull_request.merged == true &&
+            github.event.pull_request.base.ref == 'main' &&
+            github.actor != 'R00-B0T' ) ||
+            github.event_name == 'workflow_dispatch'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            pull-requests: write
+        steps:
+            - name: Git Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  ref: ${{ env.GIT_REF }}
+            - name: Setup Node.js and pnpm
+              uses: ./.github/actions/setup-node-pnpm
 
-      # Check if there are any new changesets to process
-      - name: Check for changesets
-        id: check-changesets
-        run: |
-          NEW_CHANGESETS=$(find .changeset -name "*.md" ! -name "README.md" | wc -l | tr -d ' ')
-          echo "Changesets diff with previous version: $NEW_CHANGESETS"
-          echo "new_changesets=$NEW_CHANGESETS" >> $GITHUB_OUTPUT
+            # Check if there are any new changesets to process
+            - name: Check for changesets
+              id: check-changesets
+              run: |
+                  NEW_CHANGESETS=$(find .changeset -name "*.md" ! -name "README.md" | wc -l | tr -d ' ')
+                  echo "Changesets diff with previous version: $NEW_CHANGESETS"
+                  echo "new_changesets=$NEW_CHANGESETS" >> $GITHUB_OUTPUT
 
-      # Create version bump PR using changesets/action if there are new changesets
-      - name: Changeset Pull Request
-        if: steps.check-changesets.outputs.new_changesets != '0'
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          commit: "changeset version bump"
-          title: "Changeset version bump"
-          version: pnpm changeset:version # This performs the changeset version bump
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            # Create version bump PR using changesets/action if there are new changesets
+            - name: Changeset Pull Request
+              if: steps.check-changesets.outputs.new_changesets != '0'
+              id: changesets
+              uses: changesets/action@v1
+              with:
+                  commit: "changeset version bump"
+                  title: "Changeset version bump"
+                  version: pnpm changeset:version # This performs the changeset version bump
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # Job 2: Process version bump PR created by R00-B0T
-  changeset-pr-edit-approve:
-    name: Auto approve and merge Bump version PRs
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-    if: >
-        github.event_name == 'pull_request' &&
-        github.event.pull_request.base.ref == 'main' &&
-        github.actor == 'R00-B0T' &&
-        contains(github.event.pull_request.title, 'Changeset version bump')
-    steps:
-      - name: Determine checkout ref
-        id: checkout-ref
-        run: |
-          echo "Event action: ${{ github.event.action }}"
-          echo "Actor: ${{ github.actor }}"
-          echo "Head ref: ${{ github.head_ref }}"
-          echo "PR SHA: ${{ github.event.pull_request.head.sha }}"
+    # Job 2: Process version bump PR created by R00-B0T
+    changeset-pr-edit-approve:
+        name: Auto approve and merge Bump version PRs
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            pull-requests: write
+        if: >
+            github.event_name == 'pull_request' &&
+            github.event.pull_request.base.ref == 'main' &&
+            github.actor == 'R00-B0T' &&
+            contains(github.event.pull_request.title, 'Changeset version bump')
+        steps:
+            - name: Determine checkout ref
+              id: checkout-ref
+              run: |
+                  echo "Event action: ${{ github.event.action }}"
+                  echo "Actor: ${{ github.actor }}"
+                  echo "Head ref: ${{ github.head_ref }}"
+                  echo "PR SHA: ${{ github.event.pull_request.head.sha }}"
 
-          if [[ "${{ github.event.action }}" == "opened" && "${{ github.actor }}" == "R00-B0T" ]]; then
-            echo "Using branch ref: ${{ github.head_ref }}"  
-            echo "git_ref=${{ github.head_ref }}" >> $GITHUB_OUTPUT
-          else
-            echo "Using SHA ref: ${{ github.event.pull_request.head.sha }}"
-            echo "git_ref=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
-          fi
+                  if [[ "${{ github.event.action }}" == "opened" && "${{ github.actor }}" == "R00-B0T" ]]; then
+                    echo "Using branch ref: ${{ github.head_ref }}"  
+                    echo "git_ref=${{ github.head_ref }}" >> $GITHUB_OUTPUT
+                  else
+                    echo "Using SHA ref: ${{ github.event.pull_request.head.sha }}"
+                    echo "git_ref=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
+                  fi
 
-      - name: Checkout Repo
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
-          ref: ${{ steps.checkout-ref.outputs.git_ref }}
+            - name: Checkout Repo
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  fetch-depth: 0
+                  ref: ${{ steps.checkout-ref.outputs.git_ref }}
 
-      # Commit and push changelog updates
-      - name: Push Changelog updates
-        if: ${{ !contains(github.event.pull_request.labels.*.name, 'changelog-ready') }}
-        run: |
-          git config user.name "R00-B0T"
-          git config user.email github-actions@github.com
-          echo "Running git add and commit..."
-          git add CHANGELOG.md
-          git commit -m "Updating CHANGELOG.md format"
-          git status
-          echo "--------------------------------------------------------------------------------"
-          echo "Pushing to remote..."
-          echo "--------------------------------------------------------------------------------"
-          git push
+            # Commit and push changelog updates
+            - name: Push Changelog updates
+              if: ${{ !contains(github.event.pull_request.labels.*.name, 'changelog-ready') }}
+              run: |
+                  git config user.name "R00-B0T"
+                  git config user.email github-actions@github.com
+                  echo "Running git add and commit..."
+                  git add CHANGELOG.md
+                  git commit -m "Updating CHANGELOG.md format"
+                  git status
+                  echo "--------------------------------------------------------------------------------"
+                  echo "Pushing to remote..."
+                  echo "--------------------------------------------------------------------------------"
+                  git push
 
-      # Add label to indicate changelog has been formatted
-      - name: Add changelog-ready label
-        if: ${{ !contains(github.event.pull_request.labels.*.name, 'changelog-ready') }}
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            await github.rest.issues.addLabels({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              labels: ['changelog-ready']
-            });
+            # Add label to indicate changelog has been formatted
+            - name: Add changelog-ready label
+              if: ${{ !contains(github.event.pull_request.labels.*.name, 'changelog-ready') }}
+              uses: actions/github-script@v7
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      await github.rest.issues.addLabels({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                        labels: ['changelog-ready']
+                      });
 
-      # Auto-approve PR only after it has been labeled
-      - name: Auto approve PR
-        if: contains(github.event.pull_request.labels.*.name, 'changelog-ready')
-        uses: hmarr/auto-approve-action@v4
-        with:
-          review-message: "I'm approving since it's a bump version PR"
-      
-      # Auto-merge PR
-      - name: Automerge on PR
-        if: false # Needs enablePullRequestAutoMerge in repo settings to work contains(github.event.pull_request.labels.*.name, 'changelog-ready')
-        run: gh pr merge --auto --merge ${{ github.event.pull_request.number }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            # Auto-approve PR only after it has been labeled
+            - name: Auto approve PR
+              if: contains(github.event.pull_request.labels.*.name, 'changelog-ready')
+              uses: hmarr/auto-approve-action@v4
+              with:
+                  review-message: "I'm approving since it's a bump version PR"
+
+            # Auto-merge PR
+            - name: Automerge on PR
+              if: false # Needs enablePullRequestAutoMerge in repo settings to work contains(github.event.pull_request.labels.*.name, 'changelog-ready')
+              run: gh pr merge --auto --merge ${{ github.event.pull_request.number }}
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

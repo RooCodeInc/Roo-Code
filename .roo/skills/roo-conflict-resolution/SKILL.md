@@ -105,16 +105,16 @@ Verify the resolution and prepare for commit:
 
 ## Git Commands Reference
 
-| Command | Purpose |
-|---------|---------|
-| `gh pr checkout [PR_NUMBER] --force` | Force checkout the PR branch |
-| `git fetch origin main` | Get the latest main branch |
-| `GIT_EDITOR=true git rebase origin/main` | Rebase current branch onto main (non-interactive) |
-| `git blame -L [start],[end] [commit] -- [file]` | Get commit information for specific lines |
-| `git show --format="%H%n%an%n%ae%n%ad%n%s%n%b" --no-patch [sha]` | Get commit metadata |
-| `git show [sha] -- [file]` | Get the actual changes made in a commit |
-| `git ls-files -u` | List unmerged files with stage information |
-| `GIT_EDITOR=true git rebase --continue` | Continue rebase after resolving conflicts |
+| Command                                                          | Purpose                                           |
+| ---------------------------------------------------------------- | ------------------------------------------------- |
+| `gh pr checkout [PR_NUMBER] --force`                             | Force checkout the PR branch                      |
+| `git fetch origin main`                                          | Get the latest main branch                        |
+| `GIT_EDITOR=true git rebase origin/main`                         | Rebase current branch onto main (non-interactive) |
+| `git blame -L [start],[end] [commit] -- [file]`                  | Get commit information for specific lines         |
+| `git show --format="%H%n%an%n%ae%n%ad%n%s%n%b" --no-patch [sha]` | Get commit metadata                               |
+| `git show [sha] -- [file]`                                       | Get the actual changes made in a commit           |
+| `git ls-files -u`                                                | List unmerged files with stage information        |
+| `GIT_EDITOR=true git rebase --continue`                          | Continue rebase after resolving conflicts         |
 
 ## Best Practices
 
@@ -141,12 +141,12 @@ Look beyond the immediate conflict to understand related changes in tests, docum
 
 ## Resolution Heuristics
 
-| Category | Rule | Exception |
-|----------|------|-----------|
-| Bugfix vs Feature | Bugfixes generally take precedence | When features include the fix |
-| Recent vs Old | More recent changes are often more relevant | When older changes are security patches |
-| Test Updates | Changes with test updates are likely more complete | - |
-| Formatting vs Logic | Logic changes take precedence over formatting | - |
+| Category            | Rule                                               | Exception                               |
+| ------------------- | -------------------------------------------------- | --------------------------------------- |
+| Bugfix vs Feature   | Bugfixes generally take precedence                 | When features include the fix           |
+| Recent vs Old       | More recent changes are often more relevant        | When older changes are security patches |
+| Test Updates        | Changes with test updates are likely more complete | -                                       |
+| Formatting vs Logic | Logic changes take precedence over formatting      | -                                       |
 
 ## Common Pitfalls
 

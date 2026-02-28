@@ -1,67 +1,67 @@
 name: Update Contributors # Refresh contrib.rocks image cache
 
 on:
-  workflow_dispatch:
+    workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: write
+    contents: write
+    pull-requests: write
 
 jobs:
-  refresh-contrib-cache:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    refresh-contrib-cache:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Bump cacheBust in all README files
-        run: |
-          set -euo pipefail
-          TS="$(date +%s)"
-          # Target only the root README.md and localized READMEs under locales/*/README.md
-          mapfile -t FILES < <(git ls-files README.md 'locales/*/README.md' || true)
+            - name: Bump cacheBust in all README files
+              run: |
+                  set -euo pipefail
+                  TS="$(date +%s)"
+                  # Target only the root README.md and localized READMEs under locales/*/README.md
+                  mapfile -t FILES < <(git ls-files README.md 'locales/*/README.md' || true)
 
-          if [ "${#FILES[@]}" -eq 0 ]; then
-            echo "No target README files found." >&2
-            exit 1
-          fi
+                  if [ "${#FILES[@]}" -eq 0 ]; then
+                    echo "No target README files found." >&2
+                    exit 1
+                  fi
 
-          UPDATED=0
-          for f in "${FILES[@]}"; do
-            if grep -q 'cacheBust=' "$f"; then
-              # Use portable sed in GNU environment of ubuntu-latest
-              sed -i -E "s/cacheBust=[0-9]+/cacheBust=${TS}/g" "$f"
-              echo "Updated cacheBust in $f"
-              UPDATED=1
-            else
-              echo "Warning: cacheBust parameter not found in $f" >&2
-            fi
-          done
+                  UPDATED=0
+                  for f in "${FILES[@]}"; do
+                    if grep -q 'cacheBust=' "$f"; then
+                      # Use portable sed in GNU environment of ubuntu-latest
+                      sed -i -E "s/cacheBust=[0-9]+/cacheBust=${TS}/g" "$f"
+                      echo "Updated cacheBust in $f"
+                      UPDATED=1
+                    else
+                      echo "Warning: cacheBust parameter not found in $f" >&2
+                    fi
+                  done
 
-          if [ "$UPDATED" -eq 0 ]; then
-            echo "No files were updated. Ensure READMEs embed contrib.rocks with cacheBust param." >&2
-            exit 1
-          fi
+                  if [ "$UPDATED" -eq 0 ]; then
+                    echo "No files were updated. Ensure READMEs embed contrib.rocks with cacheBust param." >&2
+                    exit 1
+                  fi
 
-      - name: Detect changes
-        id: changes
-        run: |
-          if git diff --quiet; then
-            echo "changed=false" >> $GITHUB_OUTPUT
-          else
-            echo "changed=true" >> $GITHUB_OUTPUT
-          fi
+            - name: Detect changes
+              id: changes
+              run: |
+                  if git diff --quiet; then
+                    echo "changed=false" >> $GITHUB_OUTPUT
+                  else
+                    echo "changed=true" >> $GITHUB_OUTPUT
+                  fi
 
-      - name: Create Pull Request
-        if: steps.changes.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "docs: update contributors list [skip ci]"
-          committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
-          branch: refresh-contrib-cache
-          delete-branch: true
-          title: "Refresh contrib.rocks image cache (all READMEs)"
-          body: |
-            Automated refresh of the contrib.rocks image cache by bumping the cacheBust parameter in README.md and locales/*/README.md.
-          base: main
+            - name: Create Pull Request
+              if: steps.changes.outputs.changed == 'true'
+              uses: peter-evans/create-pull-request@v7
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  commit-message: "docs: update contributors list [skip ci]"
+                  committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+                  branch: refresh-contrib-cache
+                  delete-branch: true
+                  title: "Refresh contrib.rocks image cache (all READMEs)"
+                  body: |
+                      Automated refresh of the contrib.rocks image cache by bumping the cacheBust parameter in README.md and locales/*/README.md.
+                  base: main
