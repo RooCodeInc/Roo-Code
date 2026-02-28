@@ -575,6 +575,144 @@ describe("SYSTEM_PROMPT", () => {
 		expect(prompt).toContain("OBJECTIVE")
 	})
 
+	describe("overrideSystemPrompt", () => {
+		it("should use only roleDefinition + custom instructions when overrideSystemPrompt is true", async () => {
+			const customModes: ModeConfig[] = [
+				{
+					slug: "custom-override",
+					name: "Custom Override",
+					roleDefinition: "You are a fully custom assistant with complete override.",
+					customInstructions: "Follow these custom mode instructions.",
+					groups: ["read", "edit"],
+					overrideSystemPrompt: true,
+				},
+			]
+
+			const prompt = await SYSTEM_PROMPT(
+				mockContext,
+				"/test/path",
+				false,
+				undefined, // mcpHub
+				undefined, // diffStrategy
+				"custom-override" as Mode,
+				undefined, // customModePrompts
+				customModes,
+				"Global instructions here", // globalCustomInstructions
+				experiments,
+				undefined, // language
+				undefined, // rooIgnoreInstructions
+			)
+
+			// Should contain the roleDefinition
+			expect(prompt).toContain("You are a fully custom assistant with complete override.")
+
+			// Should NOT contain standard sections
+			expect(prompt).not.toContain("CAPABILITIES")
+			expect(prompt).not.toContain("TOOL USE")
+			expect(prompt).not.toContain("MODES")
+			expect(prompt).not.toContain("SYSTEM INFORMATION")
+			expect(prompt).not.toContain("OBJECTIVE")
+			expect(prompt).not.toContain("MARKDOWN RULES")
+		})
+
+		it("should still include custom instructions when overrideSystemPrompt is true", async () => {
+			const customModes: ModeConfig[] = [
+				{
+					slug: "custom-override-instructions",
+					name: "Custom Override With Instructions",
+					roleDefinition: "You are a specialized assistant.",
+					customInstructions: "Mode-specific instructions here.",
+					groups: ["read"],
+					overrideSystemPrompt: true,
+				},
+			]
+
+			const prompt = await SYSTEM_PROMPT(
+				mockContext,
+				"/test/path",
+				false,
+				undefined, // mcpHub
+				undefined, // diffStrategy
+				"custom-override-instructions" as Mode,
+				undefined, // customModePrompts
+				customModes,
+				"Global custom instructions.", // globalCustomInstructions
+				experiments,
+				undefined, // language
+				undefined, // rooIgnoreInstructions
+			)
+
+			// Should contain custom instructions section
+			expect(prompt).toContain("USER'S CUSTOM INSTRUCTIONS")
+			expect(prompt).toContain("Mode-specific instructions here.")
+		})
+
+		it("should behave normally when overrideSystemPrompt is false", async () => {
+			const customModes: ModeConfig[] = [
+				{
+					slug: "custom-normal",
+					name: "Custom Normal",
+					roleDefinition: "You are a normal custom assistant.",
+					groups: ["read", "edit"],
+					overrideSystemPrompt: false,
+				},
+			]
+
+			const prompt = await SYSTEM_PROMPT(
+				mockContext,
+				"/test/path",
+				false,
+				undefined, // mcpHub
+				undefined, // diffStrategy
+				"custom-normal" as Mode,
+				undefined, // customModePrompts
+				customModes,
+				undefined, // globalCustomInstructions
+				experiments,
+				undefined, // language
+				undefined, // rooIgnoreInstructions
+			)
+
+			// Should contain standard sections
+			expect(prompt).toContain("CAPABILITIES")
+			expect(prompt).toContain("TOOL USE")
+			expect(prompt).toContain("SYSTEM INFORMATION")
+			expect(prompt).toContain("OBJECTIVE")
+		})
+
+		it("should behave normally when overrideSystemPrompt is not set", async () => {
+			const customModes: ModeConfig[] = [
+				{
+					slug: "custom-unset",
+					name: "Custom Unset",
+					roleDefinition: "You are a custom assistant without override flag.",
+					groups: ["read"],
+				},
+			]
+
+			const prompt = await SYSTEM_PROMPT(
+				mockContext,
+				"/test/path",
+				false,
+				undefined, // mcpHub
+				undefined, // diffStrategy
+				"custom-unset" as Mode,
+				undefined, // customModePrompts
+				customModes,
+				undefined, // globalCustomInstructions
+				experiments,
+				undefined, // language
+				undefined, // rooIgnoreInstructions
+			)
+
+			// Should contain standard sections (default behavior)
+			expect(prompt).toContain("CAPABILITIES")
+			expect(prompt).toContain("TOOL USE")
+			expect(prompt).toContain("SYSTEM INFORMATION")
+			expect(prompt).toContain("OBJECTIVE")
+		})
+	})
+
 	afterAll(() => {
 		vi.restoreAllMocks()
 	})
