@@ -86,6 +86,9 @@ import {
 	handleCheckBranchWorktreeInclude,
 	handleCreateWorktreeInclude,
 	handleCheckoutBranch,
+	handleGetWeaveMergeDriverStatus,
+	handleConfigureWeaveMergeDriver,
+	handleUnconfigureWeaveMergeDriver,
 } from "./worktree"
 
 export const webviewMessageHandler = async (
@@ -3556,6 +3559,59 @@ export const webviewMessageHandler = async (
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error)
 				await provider.postMessageToWebview({ type: "worktreeResult", success: false, text: errorMessage })
+			}
+
+			break
+		}
+
+		case "getWeaveMergeDriverStatus": {
+			try {
+				const weaveMergeDriverStatus = await handleGetWeaveMergeDriverStatus(provider)
+				await provider.postMessageToWebview({ type: "weaveMergeDriverStatus", weaveMergeDriverStatus })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error getting weave merge driver status: ${errorMessage}`)
+				await provider.postMessageToWebview({
+					type: "weaveMergeDriverStatus",
+					weaveMergeDriverStatus: {
+						isInstalled: false,
+						isConfiguredInGitConfig: false,
+						isConfiguredInGitattributes: false,
+						isFullyConfigured: false,
+					},
+				})
+			}
+
+			break
+		}
+
+		case "configureWeaveMergeDriver": {
+			try {
+				const { success, message: text } = await handleConfigureWeaveMergeDriver(provider)
+				await provider.postMessageToWebview({ type: "weaveMergeDriverResult", success, text })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				await provider.postMessageToWebview({
+					type: "weaveMergeDriverResult",
+					success: false,
+					text: errorMessage,
+				})
+			}
+
+			break
+		}
+
+		case "unconfigureWeaveMergeDriver": {
+			try {
+				const { success, message: text } = await handleUnconfigureWeaveMergeDriver(provider)
+				await provider.postMessageToWebview({ type: "weaveMergeDriverResult", success, text })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				await provider.postMessageToWebview({
+					type: "weaveMergeDriverResult",
+					success: false,
+					text: errorMessage,
+				})
 			}
 
 			break
