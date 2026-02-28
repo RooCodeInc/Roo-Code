@@ -196,6 +196,7 @@ describe("CodeIndexOllamaEmbedder", () => {
 
 			expect(result.valid).toBe(true)
 			expect(result.error).toBeUndefined()
+			expect(result.detectedDimension).toBe(3) // Auto-detected from test embedding
 			expect(mockFetch).toHaveBeenCalledTimes(2)
 
 			// Check first call (GET /api/tags)
@@ -212,6 +213,38 @@ describe("CodeIndexOllamaEmbedder", () => {
 			expect(secondCall[1]?.headers).toEqual({ "Content-Type": "application/json" })
 			expect(secondCall[1]?.body).toBe(JSON.stringify({ model: "nomic-embed-text", input: ["test"] }))
 			expect(secondCall[1]?.signal).toBeDefined() // AbortSignal for timeout
+		})
+
+		it("should detect dimension from realistic embedding size", async () => {
+			// Mock successful /api/tags call
+			mockFetch.mockImplementationOnce(() =>
+				Promise.resolve({
+					ok: true,
+					status: 200,
+					json: () =>
+						Promise.resolve({
+							models: [{ name: "nomic-embed-text:latest" }],
+						}),
+				} as Response),
+			)
+
+			// Mock successful /api/embed test call with 4096-dimension embedding (like qwen3-embedding)
+			const largeEmbedding = new Array(4096).fill(0).map((_, i) => i * 0.001)
+			mockFetch.mockImplementationOnce(() =>
+				Promise.resolve({
+					ok: true,
+					status: 200,
+					json: () =>
+						Promise.resolve({
+							embeddings: [largeEmbedding],
+						}),
+				} as Response),
+			)
+
+			const result = await embedder.validateConfiguration()
+
+			expect(result.valid).toBe(true)
+			expect(result.detectedDimension).toBe(4096)
 		})
 
 		it("should fail validation when service is not available", async () => {
