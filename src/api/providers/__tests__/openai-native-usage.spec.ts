@@ -387,6 +387,60 @@ describe("OpenAiNativeHandler - normalizeUsage", () => {
 			const body = buildRequestBodyForModel(modelId)
 			expect(body.prompt_cache_retention).toBeUndefined()
 		})
+
+		it("should not set prompt_cache_retention when using Azure .azure.com endpoints", () => {
+			const azureHandler = new OpenAiNativeHandler({
+				openAiNativeApiKey: "test-key",
+				openAiNativeBaseUrl: "https://myinstance.openai.azure.com",
+				apiModelId: "gpt-5.1",
+			} as any)
+			const model = azureHandler.getModel()
+			const body = (azureHandler as any).buildRequestBody(model, [], "", model.verbosity, undefined, undefined)
+			expect(body.prompt_cache_retention).toBeUndefined()
+		})
+
+		it("should not set prompt_cache_retention when using Azure AI Foundry endpoints", () => {
+			const azureHandler = new OpenAiNativeHandler({
+				openAiNativeApiKey: "test-key",
+				openAiNativeBaseUrl: "https://myinstance.services.ai.azure.com",
+				apiModelId: "gpt-5.1",
+			} as any)
+			const model = azureHandler.getModel()
+			const body = (azureHandler as any).buildRequestBody(model, [], "", model.verbosity, undefined, undefined)
+			expect(body.prompt_cache_retention).toBeUndefined()
+		})
+
+		it("should not set prompt_cache_retention when using Azure API Management endpoints", () => {
+			const azureHandler = new OpenAiNativeHandler({
+				openAiNativeApiKey: "test-key",
+				openAiNativeBaseUrl: "https://myapi.azure-api.net/openai",
+				apiModelId: "gpt-5.1",
+			} as any)
+			const model = azureHandler.getModel()
+			const body = (azureHandler as any).buildRequestBody(model, [], "", model.verbosity, undefined, undefined)
+			expect(body.prompt_cache_retention).toBeUndefined()
+		})
+
+		it("should set prompt_cache_retention for non-Azure endpoints with eligible models", () => {
+			const normalHandler = new OpenAiNativeHandler({
+				openAiNativeApiKey: "test-key",
+				openAiNativeBaseUrl: "https://api.openai.com/v1",
+				apiModelId: "gpt-5.1",
+			} as any)
+			const model = normalHandler.getModel()
+			const body = (normalHandler as any).buildRequestBody(model, [], "", model.verbosity, undefined, undefined)
+			expect(body.prompt_cache_retention).toBe("24h")
+		})
+
+		it("should set prompt_cache_retention when no base URL is configured (default OpenAI)", () => {
+			const defaultHandler = new OpenAiNativeHandler({
+				openAiNativeApiKey: "test-key",
+				apiModelId: "gpt-5.1",
+			} as any)
+			const model = defaultHandler.getModel()
+			const body = (defaultHandler as any).buildRequestBody(model, [], "", model.verbosity, undefined, undefined)
+			expect(body.prompt_cache_retention).toBe("24h")
+		})
 	})
 
 	describe("cost calculation", () => {
