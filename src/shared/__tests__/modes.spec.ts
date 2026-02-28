@@ -9,7 +9,7 @@ vi.mock("../../core/prompts/sections/custom-instructions", () => ({
 	addCustomInstructions: vi.fn().mockResolvedValue("Combined instructions"),
 }))
 
-import { FileRestrictionError, getFullModeDetails, modes, getModeSelection } from "../modes"
+import { FileRestrictionError, CommandRestrictionError, getFullModeDetails, modes, getModeSelection } from "../modes"
 import { isToolAllowedForMode } from "../../core/tools/validateToolUse"
 import { addCustomInstructions } from "../../core/prompts/sections/custom-instructions"
 
@@ -923,5 +923,42 @@ describe("getModeSelection", () => {
 		const selection = getModeSelection("ask", promptComponentAsk, undefined)
 		expect(selection.roleDefinition).toBe(promptComponentAsk.roleDefinition)
 		expect(selection.baseInstructions).toBe(promptComponentAsk.customInstructions)
+	})
+})
+
+describe("CommandRestrictionError", () => {
+	it("formats error message with pattern when no description provided", () => {
+		const error = new CommandRestrictionError("NPM Mode", "^npm\\s", undefined, "git push")
+		expect(error.message).toBe(
+			"This mode (NPM Mode) can only execute commands matching pattern: ^npm\\s. Got: git push",
+		)
+		expect(error.name).toBe("CommandRestrictionError")
+	})
+
+	it("formats error message with description when provided", () => {
+		const error = new CommandRestrictionError("NPM Mode", "^npm\\s", "Only npm commands", "git push")
+		expect(error.message).toBe(
+			"This mode (NPM Mode) can only execute commands matching pattern: ^npm\\s (Only npm commands). Got: git push",
+		)
+	})
+
+	it("formats error message with tool name when provided", () => {
+		const error = new CommandRestrictionError("NPM Mode", "^npm\\s", undefined, "git push", "execute_command")
+		expect(error.message).toBe(
+			"Tool 'execute_command' in mode 'NPM Mode' can only execute commands matching pattern: ^npm\\s. Got: git push",
+		)
+	})
+
+	it("formats error message with tool name and description when both provided", () => {
+		const error = new CommandRestrictionError(
+			"NPM Mode",
+			"^npm\\s",
+			"Only npm commands",
+			"git push",
+			"execute_command",
+		)
+		expect(error.message).toBe(
+			"Tool 'execute_command' in mode 'NPM Mode' can only execute commands matching pattern: ^npm\\s (Only npm commands). Got: git push",
+		)
 	})
 })

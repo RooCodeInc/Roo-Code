@@ -2,7 +2,13 @@ import type { ToolName, ModeConfig, ExperimentId, GroupOptions, GroupEntry } fro
 import { toolNames as validToolNames } from "@roo-code/types"
 import { customToolRegistry } from "@roo-code/core"
 
-import { type Mode, FileRestrictionError, getModeBySlug, getGroupName } from "../../shared/modes"
+import {
+	type Mode,
+	FileRestrictionError,
+	CommandRestrictionError,
+	getModeBySlug,
+	getGroupName,
+} from "../../shared/modes"
 import { EXPERIMENT_IDS } from "../../shared/experiments"
 import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS, TOOL_ALIASES } from "../../shared/tools"
 
@@ -111,6 +117,16 @@ function doesFileMatchRegex(filePath: string, pattern: string): boolean {
 	try {
 		const regex = new RegExp(pattern)
 		return regex.test(filePath)
+	} catch (error) {
+		console.error(`Invalid regex pattern: ${pattern}`, error)
+		return false
+	}
+}
+
+function doesCommandMatchRegex(command: string, pattern: string): boolean {
+	try {
+		const regex = new RegExp(pattern)
+		return regex.test(command)
 	} catch (error) {
 		console.error(`Invalid regex pattern: ${pattern}`, error)
 		return false
@@ -230,6 +246,14 @@ export function isToolAllowedForMode(
 			}
 
 			// Native-only: multi-file edits provide structured params; no legacy XML args parsing.
+		}
+
+		// For the command group, check command regex if specified
+		if (groupName === "command" && options.commandRegex) {
+			const command = toolParams?.command
+			if (command && !doesCommandMatchRegex(command, options.commandRegex)) {
+				throw new CommandRestrictionError(mode.name, options.commandRegex, options.description, command, tool)
+			}
 		}
 
 		return true
