@@ -580,6 +580,7 @@ export interface WebviewMessage {
 		| "moveSkill"
 		| "updateSkillModes"
 		| "openSkillFile"
+		| "steeringAdvice"
 	text?: string
 	taskId?: string
 	editedMessageContent?: string

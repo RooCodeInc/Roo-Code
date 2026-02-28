@@ -128,6 +128,7 @@ import {
 import { processUserContentMentions } from "../mentions/processUserContentMentions"
 import { getMessagesSinceLastSummary, summarizeConversation, getEffectiveApiHistory } from "../condense"
 import { MessageQueueService } from "../message-queue/MessageQueueService"
+import { SteeringQueue } from "../steering/SteeringQueue"
 import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
 import { MessageManager } from "../message-manager"
 import { validateAndFixToolResultIds } from "./validateToolResultIds"
@@ -334,6 +335,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// Message Queue Service
 	public readonly messageQueueService: MessageQueueService
 	private messageQueueStateChangedHandler: (() => void) | undefined
+
+	// Steering Queue - allows users to send real-time advice during task execution
+	public readonly steeringQueue: SteeringQueue = new SteeringQueue()
 
 	// Streaming
 	isWaitingForFirstChunk = false
@@ -2639,6 +2643,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Add environment details as its own text block, separate from tool
 			// results.
 			let finalUserContent = [...contentWithoutEnvDetails, { type: "text" as const, text: environmentDetails }]
+
+			// Inject any pending steering advice into the prompt.
+			// This is the zero-overhead path: when no advice is pending, drain()
+			// returns undefined and nothing is added.
+			const steeringInjection = this.steeringQueue.drain()
+			if (steeringInjection) {
+				finalUserContent.push({ type: "text" as const, text: steeringInjection })
+			}
+
 			// Only add user message to conversation history if:
 			// 1. This is the first attempt (retryAttempt === 0), AND
 			// 2. The original userContent was not empty (empty signals delegation resume where

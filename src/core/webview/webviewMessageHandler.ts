@@ -3164,6 +3164,16 @@ export const webviewMessageHandler = async (
 		 * Chat Message Queue
 		 */
 
+		case "steeringAdvice": {
+			const task = provider.getCurrentTask()
+			if (task && message.text) {
+				task.steeringQueue.enqueue(message.text)
+				// Show the advice in chat as a steering_advice message
+				await task.say("steering_advice", message.text)
+			}
+			break
+		}
+
 		case "queueMessage": {
 			const resolved = await resolveIncomingImages({ text: message.text, images: message.images })
 			provider.getCurrentTask()?.messageQueueService.addMessage(resolved.text, resolved.images)

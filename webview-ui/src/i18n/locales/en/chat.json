@@ -120,6 +120,11 @@
 		"tooltip": "Stop the current task"
 	},
 	"enqueueMessage": "Add message to queue (will be sent after current task completes)",
+	"sendSteeringAdvice": "Send steering advice (will be included in the next API call)",
+	"steeringAdvice": {
+		"label": "Steering",
+		"youAdvised": "You advised"
+	},
 	"editMessage": {
 		"placeholder": "Edit your message..."
 	},

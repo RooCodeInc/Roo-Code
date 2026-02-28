@@ -71,6 +71,7 @@ import {
 	Split,
 	ArrowRight,
 	Check,
+	Compass,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PathTooltip } from "../ui/PathTooltip"
@@ -1271,6 +1272,23 @@ export const ChatRowContent = ({
 								{!isEditing && message.images && message.images.length > 0 && (
 									<Thumbnails images={message.images} style={{ marginTop: "8px" }} />
 								)}
+							</div>
+						</div>
+					)
+				case "steering_advice":
+					return (
+						<div className="group">
+							<div style={headerStyle}>
+								<Compass className="w-4 shrink-0" aria-label="Steering icon" />
+								<span style={{ fontWeight: "bold" }}>{t("chat:steeringAdvice.youAdvised")}</span>
+								<VSCodeBadge>{t("chat:steeringAdvice.label")}</VSCodeBadge>
+							</div>
+							<div
+								className={cn(
+									"ml-6 border rounded-sm overflow-hidden whitespace-pre-wrap",
+									"cursor-text p-1 bg-vscode-editor-foreground/70 text-vscode-editor-background",
+								)}>
+								<div className="flex-grow px-2 py-1 wrap-anywhere rounded-lg">{message.text}</div>
 							</div>
 						</div>
 					)

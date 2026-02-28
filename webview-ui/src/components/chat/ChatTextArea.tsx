@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useEvent } from "react-use"
 import DynamicTextArea from "react-textarea-autosize"
-import { VolumeX, Image, WandSparkles, SendHorizontal, X, ListEnd, Square } from "lucide-react"
+import { VolumeX, Image, WandSparkles, SendHorizontal, X, ListEnd, Square, Compass } from "lucide-react"
 
 import type { ExtensionMessage } from "@roo-code/types"
 
@@ -56,6 +56,7 @@ interface ChatTextAreaProps {
 	isStreaming?: boolean
 	onStop?: () => void
 	onEnqueueMessage?: () => void
+	onSendSteeringAdvice?: () => void
 }
 
 export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
@@ -79,6 +80,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			isStreaming = false,
 			onStop,
 			onEnqueueMessage,
+			onSendSteeringAdvice,
 		},
 		ref,
 	) => {
@@ -1193,6 +1195,29 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 											<WandSparkles
 												className={cn("w-4 h-4", isEnhancingPrompt && "animate-spin")}
 											/>
+										</button>
+									</StandardTooltip>
+								)}
+								{/* Steering advice button - shown when streaming and user has typed content */}
+								{!isEditMode && isStreaming && hasInputContent && onSendSteeringAdvice && (
+									<StandardTooltip content={t("chat:sendSteeringAdvice")}>
+										<button
+											aria-label={t("chat:sendSteeringAdvice")}
+											disabled={false}
+											onClick={onSendSteeringAdvice}
+											className={cn(
+												"relative inline-flex items-center justify-center",
+												"bg-transparent border-none p-1.5",
+												"rounded-md min-w-[28px] min-h-[28px]",
+												"text-vscode-descriptionForeground hover:text-vscode-foreground",
+												"transition-all duration-200",
+												"opacity-100 hover:opacity-100 pointer-events-auto",
+												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+												"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+												"active:bg-[rgba(255,255,255,0.1)]",
+												"cursor-pointer",
+											)}>
+											<Compass className="w-4 h-4" />
 										</button>
 									</StandardTooltip>
 								)}

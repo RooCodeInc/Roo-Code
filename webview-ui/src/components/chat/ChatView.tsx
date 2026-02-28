@@ -722,6 +722,19 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 	}, [inputValue, selectedImages])
 
+	// Handle steering advice button click from textarea
+	const handleSendSteeringAdvice = useCallback(() => {
+		const text = inputValue.trim()
+		if (text) {
+			vscode.postMessage({
+				type: "steeringAdvice",
+				text,
+			})
+			setInputValue("")
+			setSelectedImages([])
+		}
+	}, [inputValue])
+
 	// This logic depends on the useEffect[messages] above to set clineAsk,
 	// after which buttons are shown and we then send an askResponse to the
 	// extension.
@@ -1761,6 +1774,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				isStreaming={isStreaming}
 				onStop={handleStopTask}
 				onEnqueueMessage={handleEnqueueCurrentMessage}
+				onSendSteeringAdvice={handleSendSteeringAdvice}
 			/>
 
 			{isProfileDisabled && (
