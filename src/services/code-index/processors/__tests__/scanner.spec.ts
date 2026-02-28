@@ -457,5 +457,55 @@ describe("DirectoryScanner", () => {
 			// Deleted file cleanup should not have run
 			expect(mockVectorStore.deletePointsByFilePath).not.toHaveBeenCalled()
 		})
+
+		it("should use the provided RooIgnoreController and not create a new one", async () => {
+			const { RooIgnoreController } = await import("../../../../core/ignore/RooIgnoreController")
+			const { listFiles } = await import("../../../glob/list-files")
+			vi.mocked(listFiles).mockResolvedValue([["test/file1.js"], false])
+
+			// Create a mock controller with a spy on filterPaths
+			const providedController = new RooIgnoreController("/test")
+			const filterPathsSpy = vi.spyOn(providedController, "filterPaths").mockReturnValue(["test/file1.js"])
+			const initializeSpy = vi.spyOn(providedController, "initialize")
+
+			// Create scanner WITH the provided controller
+			const scannerWithController = new DirectoryScanner(
+				mockEmbedder,
+				mockVectorStore,
+				mockCodeParser,
+				mockCacheManager,
+				mockIgnoreInstance,
+				undefined,
+				providedController,
+			)
+
+			await scannerWithController.scanDirectory("/test")
+
+			// The provided controller's filterPaths should have been called
+			expect(filterPathsSpy).toHaveBeenCalled()
+			// The provided controller should NOT have been re-initialized
+			// (it was already initialized by the manager)
+			expect(initializeSpy).not.toHaveBeenCalled()
+		})
+
+		it("should create and initialize a new RooIgnoreController when none is provided", async () => {
+			const { RooIgnoreController } = await import("../../../../core/ignore/RooIgnoreController")
+			const { listFiles } = await import("../../../glob/list-files")
+			vi.mocked(listFiles).mockResolvedValue([["test/file1.js"], false])
+
+			// Spy on the prototype's initialize and filterPaths methods
+			const initSpy = vi.spyOn(RooIgnoreController.prototype, "initialize")
+			const filterSpy = vi.spyOn(RooIgnoreController.prototype, "filterPaths")
+
+			// Scanner without a provided controller (default from beforeEach)
+			await scanner.scanDirectory("/test")
+
+			// A new RooIgnoreController should have been created and initialized internally
+			expect(initSpy).toHaveBeenCalled()
+			expect(filterSpy).toHaveBeenCalled()
+
+			initSpy.mockRestore()
+			filterSpy.mockRestore()
+		})
 	})
 })

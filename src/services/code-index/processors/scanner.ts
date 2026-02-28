@@ -41,6 +41,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 		private readonly cacheManager: CacheManager,
 		private readonly ignoreInstance: Ignore,
 		batchSegmentThreshold?: number,
+		private readonly rooIgnoreController?: RooIgnoreController,
 	) {
 		// Get the configurable batch size from VSCode settings, fallback to default
 		// If not provided in constructor, try to get from VSCode settings
@@ -83,10 +84,16 @@ export class DirectoryScanner implements IDirectoryScanner {
 		// Filter out directories (marked with trailing '/')
 		const filePaths = allPaths.filter((p) => !p.endsWith("/"))
 
-		// Initialize RooIgnoreController if not provided
-		const ignoreController = new RooIgnoreController(directoryPath)
-
-		await ignoreController.initialize()
+		// Use the provided RooIgnoreController if available, otherwise create a new one.
+		// Reusing the manager's controller ensures .rooignore is loaded from the
+		// workspace root, not from the scan directory (which may differ for submodules).
+		let ignoreController: RooIgnoreController
+		if (this.rooIgnoreController) {
+			ignoreController = this.rooIgnoreController
+		} else {
+			ignoreController = new RooIgnoreController(directoryPath)
+			await ignoreController.initialize()
+		}
 
 		// Filter paths using .rooignore
 		const allowedPaths = ignoreController.filterPaths(filePaths)
