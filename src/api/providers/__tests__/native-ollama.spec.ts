@@ -605,4 +605,233 @@ describe("NativeOllamaHandler", () => {
 			expect(firstEndIndex).toBeGreaterThan(lastPartialIndex)
 		})
 	})
+
+	describe("native thinking support", () => {
+		it("should yield reasoning from native thinking field", async () => {
+			// Mock response with native thinking field (Ollama 0.5.0+)
+			mockChat.mockImplementation(async function* () {
+				yield {
+					message: {
+						content: "",
+						thinking: "Let me analyze this problem...",
+					},
+				}
+				yield {
+					message: {
+						content: "",
+						thinking: " First, I need to consider X.",
+					},
+				}
+				yield {
+					message: {
+						content: "The answer is 42",
+					},
+				}
+			})
+
+			const stream = handler.createMessage("System", [{ role: "user" as const, content: "What is the answer?" }])
+			const results = []
+
+			for await (const chunk of stream) {
+				results.push(chunk)
+			}
+
+			// Should have reasoning chunks from native thinking field
+			const reasoningChunks = results.filter((r) => r.type === "reasoning")
+			expect(reasoningChunks).toHaveLength(2)
+			expect(reasoningChunks[0]).toEqual({ type: "reasoning", text: "Let me analyze this problem..." })
+			expect(reasoningChunks[1]).toEqual({ type: "reasoning", text: " First, I need to consider X." })
+
+			// Should also have the text response
+			const textChunks = results.filter((r) => r.type === "text")
+			expect(textChunks.some((c) => c.text === "The answer is 42")).toBe(true)
+		})
+
+		it("should pass think option when reasoning is enabled with model support", async () => {
+			mockGetOllamaModels.mockResolvedValue({
+				"thinking-model": {
+					contextWindow: 4096,
+					maxTokens: 4096,
+					supportsImages: false,
+					supportsPromptCache: false,
+					supportsReasoningEffort: true,
+				},
+			})
+
+			const options: ApiHandlerOptions = {
+				apiModelId: "thinking-model",
+				ollamaModelId: "thinking-model",
+				ollamaBaseUrl: "http://localhost:11434",
+				enableReasoningEffort: true,
+				reasoningEffort: "high",
+			}
+
+			handler = new NativeOllamaHandler(options)
+
+			mockChat.mockImplementation(async function* () {
+				yield { message: { content: "Response" } }
+			})
+
+			const stream = handler.createMessage("System", [{ role: "user" as const, content: "Test" }])
+
+			for await (const _ of stream) {
+				// consume stream
+			}
+
+			// Verify think option was passed with high value
+			expect(mockChat).toHaveBeenCalledWith(
+				expect.objectContaining({
+					think: "high",
+				}),
+			)
+		})
+
+		it("should pass think: medium when reasoningEffort is medium", async () => {
+			mockGetOllamaModels.mockResolvedValue({
+				"thinking-model": {
+					contextWindow: 4096,
+					maxTokens: 4096,
+					supportsImages: false,
+					supportsPromptCache: false,
+					supportsReasoningEffort: true,
+				},
+			})
+
+			const options: ApiHandlerOptions = {
+				apiModelId: "thinking-model",
+				ollamaModelId: "thinking-model",
+				ollamaBaseUrl: "http://localhost:11434",
+				enableReasoningEffort: true,
+				reasoningEffort: "medium",
+			}
+
+			handler = new NativeOllamaHandler(options)
+
+			mockChat.mockImplementation(async function* () {
+				yield { message: { content: "Response" } }
+			})
+
+			const stream = handler.createMessage("System", [{ role: "user" as const, content: "Test" }])
+
+			for await (const _ of stream) {
+				// consume stream
+			}
+
+			expect(mockChat).toHaveBeenCalledWith(
+				expect.objectContaining({
+					think: "medium",
+				}),
+			)
+		})
+
+		it("should pass think: low when reasoningEffort is low or minimal", async () => {
+			mockGetOllamaModels.mockResolvedValue({
+				"thinking-model": {
+					contextWindow: 4096,
+					maxTokens: 4096,
+					supportsImages: false,
+					supportsPromptCache: false,
+					supportsReasoningEffort: true,
+				},
+			})
+
+			const options: ApiHandlerOptions = {
+				apiModelId: "thinking-model",
+				ollamaModelId: "thinking-model",
+				ollamaBaseUrl: "http://localhost:11434",
+				enableReasoningEffort: true,
+				reasoningEffort: "low",
+			}
+
+			handler = new NativeOllamaHandler(options)
+
+			mockChat.mockImplementation(async function* () {
+				yield { message: { content: "Response" } }
+			})
+
+			const stream = handler.createMessage("System", [{ role: "user" as const, content: "Test" }])
+
+			for await (const _ of stream) {
+				// consume stream
+			}
+
+			expect(mockChat).toHaveBeenCalledWith(
+				expect.objectContaining({
+					think: "low",
+				}),
+			)
+		})
+
+		it("should not pass think option when reasoning is not enabled", async () => {
+			mockGetOllamaModels.mockResolvedValue({
+				llama2: {
+					contextWindow: 4096,
+					maxTokens: 4096,
+					supportsImages: false,
+					supportsPromptCache: false,
+					// No supportsReasoningEffort
+				},
+			})
+
+			const options: ApiHandlerOptions = {
+				apiModelId: "llama2",
+				ollamaModelId: "llama2",
+				ollamaBaseUrl: "http://localhost:11434",
+				// No enableReasoningEffort
+			}
+
+			handler = new NativeOllamaHandler(options)
+
+			mockChat.mockImplementation(async function* () {
+				yield { message: { content: "Response" } }
+			})
+
+			const stream = handler.createMessage("System", [{ role: "user" as const, content: "Test" }])
+
+			for await (const _ of stream) {
+				// consume stream
+			}
+
+			// Verify think option was NOT passed (or is undefined)
+			expect(mockChat).toHaveBeenCalledWith(
+				expect.objectContaining({
+					think: undefined,
+				}),
+			)
+		})
+
+		it("should handle both native thinking and tag-based reasoning", async () => {
+			// Some models might use both methods
+			mockChat.mockImplementation(async function* () {
+				yield {
+					message: {
+						content: "",
+						thinking: "Native thinking here",
+					},
+				}
+				yield {
+					message: {
+						content: "<think>Tag-based thinking</think>The final answer",
+					},
+				}
+			})
+
+			const stream = handler.createMessage("System", [{ role: "user" as const, content: "Test" }])
+			const results = []
+
+			for await (const chunk of stream) {
+				results.push(chunk)
+			}
+
+			// Should have reasoning from both sources
+			const reasoningChunks = results.filter((r) => r.type === "reasoning")
+			expect(reasoningChunks.length).toBeGreaterThanOrEqual(2)
+
+			// Check native thinking was captured
+			expect(reasoningChunks.some((c) => c.text === "Native thinking here")).toBe(true)
+
+			// Check tag-based thinking was captured
+			expect(reasoningChunks.some((c) => c.text === "Tag-based thinking")).toBe(true)
+		})
+	})
 })
