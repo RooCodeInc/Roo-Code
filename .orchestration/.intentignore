@@ -1,0 +1,9 @@
+# Intent Ignore File
+# List intent IDs that should be protected from modifications
+# One intent ID per line
+# Lines starting with # are comments
+#
+# Example:
+# INT-005  # Legacy system - deprecated
+# INT-010  # Production critical - manual changes only
+

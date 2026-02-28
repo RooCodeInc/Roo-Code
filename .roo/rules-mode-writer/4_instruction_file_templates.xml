@@ -1,0 +1,293 @@
+<instruction_file_templates>
+  <overview>
+    Templates and examples for creating XML instruction files that provide
+    detailed guidance for each mode's behavior and workflows.
+
+    Requirements:
+    - Do not reference runtime implementation details (function names, command names, UI entry points, or execution syntax).
+    - Do not duplicate operational policies that are already defined by the runtime/system prompt.
+    - Focus on workflow intent, required artifacts, decision criteria, and validation expectations.
+  </overview>
+
+  <file_organization>
+    <principle>Number files to indicate execution order</principle>
+    <principle>Use descriptive names that indicate content</principle>
+    <principle>Keep related instructions together</principle>
+    <standard_structure>
+      <file>1_workflow.xml - Main workflow and processes</file>
+      <file>2_best_practices.xml - Guidelines and conventions</file>
+      <file>3_common_patterns.xml - Reusable code patterns</file>
+      <file>4_decision_guidance.xml - Decision criteria and guardrails</file>
+      <file>5_examples.xml - Complete workflow examples</file>
+      <file>6_error_handling.xml - Error scenarios and recovery</file>
+      <file>7_communication.xml - User interaction guidelines</file>
+    </standard_structure>
+  </file_organization>
+
+  <workflow_file_template>
+    <description>Template for main workflow files (1_workflow.xml)</description>
+    <template>
+<workflow_instructions>
+  <mode_overview>
+    Brief description of what this mode does and its primary purpose
+  </mode_overview>
+
+  <initialization_steps>
+    <step number="1">
+      <action>Understand the user's request</action>
+      <details>
+        Parse the user's input to identify:
+        - Primary objective
+        - Specific requirements
+        - Constraints or limitations
+      </details>
+    </step>
+
+    <step number="2">
+      <action>Gather necessary context</action>
+      <details>
+        Review the minimal set of repository materials needed to act safely.
+        Prefer extending existing guidance over introducing duplicated rules.
+      </details>
+    </step>
+  </initialization_steps>
+
+  <main_workflow>
+    <phase name="analysis">
+      <description>Analyze the current state and requirements</description>
+      <steps>
+        <step>Identify affected components</step>
+        <step>Assess impact of changes</step>
+        <step>Plan implementation approach</step>
+      </steps>
+    </phase>
+
+    <phase name="implementation">
+      <description>Execute the planned changes</description>
+      <steps>
+        <step>Create/modify necessary files</step>
+        <step>Ensure consistency across codebase</step>
+        <step>Add appropriate documentation</step>
+      </steps>
+    </phase>
+
+    <phase name="validation">
+      <description>Verify the implementation</description>
+      <steps>
+        <step>Check for errors or inconsistencies</step>
+        <step>Validate against requirements</step>
+        <step>Ensure no regressions</step>
+      </steps>
+    </phase>
+  </main_workflow>
+
+  <completion_criteria>
+    <criterion>All requirements have been addressed</criterion>
+    <criterion>Code follows project conventions</criterion>
+    <criterion>Changes are properly documented</criterion>
+    <criterion>No breaking changes introduced</criterion>
+  </completion_criteria>
+</workflow_instructions>
+    </template>
+  </workflow_file_template>
+
+  <best_practices_template>
+    <description>Template for best practices files (2_best_practices.xml)</description>
+    <template>
+<best_practices>
+  <general_principles>
+    <principle priority="high">
+      <name>Principle Name</name>
+      <description>Detailed explanation of the principle</description>
+      <rationale>Why this principle is important</rationale>
+      <example>
+        <scenario>When this applies</scenario>
+        <good>Correct approach</good>
+        <bad>What to avoid</bad>
+      </example>
+    </principle>
+  </general_principles>
+
+  <code_conventions>
+    <convention category="naming">
+      <rule>Specific naming convention</rule>
+      <examples>
+        <good>goodExampleName</good>
+        <bad>bad_example-name</bad>
+      </examples>
+    </convention>
+
+    <convention category="structure">
+      <rule>How to structure code/files</rule>
+      <template>
+        // Example structure
+      </template>
+    </convention>
+  </code_conventions>
+
+  <common_pitfalls>
+    <pitfall>
+      <description>Common mistake to avoid</description>
+      <why_problematic>Explanation of issues it causes</why_problematic>
+      <correct_approach>How to do it properly</correct_approach>
+    </pitfall>
+  </common_pitfalls>
+
+  <quality_checklist>
+    <category name="before_starting">
+      <item>Understand requirements fully</item>
+      <item>Check existing implementations</item>
+    </category>
+    <category name="during_implementation">
+      <item>Follow established patterns</item>
+      <item>Write clear documentation</item>
+    </category>
+    <category name="before_completion">
+      <item>Review all changes</item>
+      <item>Verify requirements met</item>
+    </category>
+  </quality_checklist>
+</best_practices>
+    </template>
+  </best_practices_template>
+
+  <decision_guidance_template>
+    <description>Template for decision criteria and guardrails (4_decision_guidance.xml)</description>
+    <template>
+<decision_guidance>
+  <principles>
+    <principle>Do not include runtime implementation details (no function names, command names, UI entry points, or execution syntax)</principle>
+    <principle>Prefer the smallest change that satisfies the request</principle>
+    <principle>Prefer a single source of truth; avoid duplicated rules across files</principle>
+    <principle>Ask a clarifying question only when critical ambiguity remains</principle>
+  </principles>
+
+  <boundaries>
+    <rule>Define clear responsibilities and explicit handoff points to other modes</rule>
+  </boundaries>
+
+  <validation>
+    <rule>After changes, scan for contradictions and update examples to match</rule>
+  </validation>
+</decision_guidance>
+    </template>
+  </decision_guidance_template>
+
+  <examples_file_template>
+    <description>Template for example files (5_examples.xml)</description>
+    <template>
+<complete_examples>
+  <example name="descriptive_example_name">
+    <scenario>
+      Detailed description of the use case this example covers
+    </scenario>
+
+    <user_request>
+      The initial request from the user
+    </user_request>
+
+    <workflow>
+      <step number="1">
+        <description>First step description</description>
+        <approach>
+          Identify the relevant existing files/sections that need to change.
+          Outcome: a shortlist of candidate paths or sections.
+        </approach>
+        <expected_outcome>What we learn from this step</expected_outcome>
+      </step>
+
+      <step number="2">
+        <description>Second step description</description>
+        <approach>
+          Review the top candidates and confirm the exact area to modify.
+          Outcome: precise target sections and constraints.
+        </approach>
+        <analysis>How we interpret the results</analysis>
+      </step>
+
+      <step number="3">
+        <description>Implementation step</description>
+        <approach>
+          Apply the planned changes (localized edits when possible; full rewrites only when intentional).
+          Outcome: required changes applied to the repository.
+        </approach>
+      </step>
+    </workflow>
+
+    <completion>
+      Provide a concise summary of what was accomplished and how it addresses the user's request.
+    </completion>
+
+    <key_takeaways>
+      <takeaway>Important lesson from this example</takeaway>
+      <takeaway>Pattern that can be reused</takeaway>
+    </key_takeaways>
+  </example>
+</complete_examples>
+    </template>
+  </examples_file_template>
+
+  <communication_template>
+    <description>Template for communication guidelines (7_communication.xml)</description>
+    <template>
+<communication_guidelines>
+  <tone_and_style>
+    <principle>Be direct and technical, not conversational</principle>
+    <principle>Focus on actions taken and results achieved</principle>
+    <avoid>
+      <phrase>Great! I'll help you with that...</phrase>
+      <phrase>Certainly! Let me...</phrase>
+      <phrase>Sure thing!</phrase>
+    </avoid>
+    <prefer>
+      <phrase>I'll analyze the codebase to...</phrase>
+      <phrase>Implementing the requested changes...</phrase>
+      <phrase>The analysis shows...</phrase>
+    </prefer>
+  </tone_and_style>
+
+  <verbosity>
+    <policy>Keep narrative brief; prefer concise status updates</policy>
+    <policy>Provide high detail only inside code/diffs and structured outputs</policy>
+    <policy>Favor clarity over cleverness; avoid code-golf and cryptic names</policy>
+  </verbosity>
+
+  <user_interaction>
+    <when_to_ask_questions>
+      <scenario>Missing critical information</scenario>
+      <scenario>Multiple valid approaches exist</scenario>
+      <scenario>Potential breaking changes</scenario>
+    </when_to_ask_questions>
+
+    <question_format>
+      <guideline>Be specific about what you need</guideline>
+      <guideline>Provide actionable options</guideline>
+      <guideline>Explain implications of choices</guideline>
+    </question_format>
+  </user_interaction>
+
+  <progress_updates>
+    <when>During long-running operations</when>
+    <format>
+      <update>Analyzing [X] files for [purpose]...</update>
+      <update>Implementing [feature] in [location]...</update>
+      <update>Validating changes against [criteria]...</update>
+    </format>
+  </progress_updates>
+
+  <completion_messages>
+    <structure>
+      <element>What was accomplished</element>
+      <element>Key changes made</element>
+      <element>Any important notes or warnings</element>
+    </structure>
+    <avoid>
+      <element>Questions at the end</element>
+      <element>Offers for further assistance</element>
+      <element>Conversational closings</element>
+    </avoid>
+  </completion_messages>
+</communication_guidelines>
+    </template>
+  </communication_template>
+</instruction_file_templates>
