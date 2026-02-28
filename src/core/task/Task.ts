@@ -1,10 +1,10 @@
 import * as path from "path"
 import * as vscode from "vscode"
 import os from "os"
-import crypto from "crypto"
 import { v7 as uuidv7 } from "uuid"
 import EventEmitter from "events"
-
+import * as crypto from "crypto"
+import * as fs from "fs/promises"
 import { AskIgnoredError } from "./AskIgnoredError"
 
 import { Anthropic } from "@anthropic-ai/sdk"
