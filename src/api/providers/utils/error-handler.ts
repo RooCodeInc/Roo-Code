@@ -49,13 +49,14 @@ export function handleProviderError(
 	if (error instanceof Error) {
 		const anyErr = error as any
 		const msg = anyErr?.error?.metadata?.raw || error.message || ""
+		const status = anyErr.status
 
 		// Log the original error details for debugging
 		console.error(`[${providerName}] API error:`, {
 			message: msg,
 			name: error.name,
 			stack: error.stack,
-			status: anyErr.status,
+			status,
 		})
 
 		let wrapped: Error
@@ -66,17 +67,26 @@ export function handleProviderError(
 			wrapped = new Error(i18n.t("common:errors.api.invalidKeyInvalidChars"))
 		} else {
 			// Apply custom transformer if provided, otherwise use default format
-			const finalMessage = options?.messageTransformer
-				? options.messageTransformer(msg)
-				: `${providerName} ${messagePrefix} error: ${msg}`
+			// IMPORTANT: When HTTP status is available, prefix the message with the status code
+			// This allows the UI (ChatRow.tsx) to parse the status and show user-friendly error messages
+			// for known status codes (e.g., 402 = insufficient balance, 429 = rate limit)
+			let finalMessage: string
+			if (options?.messageTransformer) {
+				finalMessage = options.messageTransformer(msg)
+			} else if (typeof status === "number" && status >= 400) {
+				// Prefix with status code for UI parsing (e.g., "402 - DeepSeek completion error: ...")
+				finalMessage = `${status} - ${providerName} ${messagePrefix} error: ${msg}`
+			} else {
+				finalMessage = `${providerName} ${messagePrefix} error: ${msg}`
+			}
 			wrapped = new Error(finalMessage)
 		}
 
 		// Preserve HTTP status and structured details for retry/backoff + UI
 		// These fields are used by Task.backoffAndAnnounce() and ChatRow/ErrorRow
 		// to provide status-aware error messages and handling
-		if (anyErr.status !== undefined) {
-			;(wrapped as any).status = anyErr.status
+		if (status !== undefined) {
+			;(wrapped as any).status = status
 		}
 		if (anyErr.errorDetails !== undefined) {
 			;(wrapped as any).errorDetails = anyErr.errorDetails
