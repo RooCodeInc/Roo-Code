@@ -72,7 +72,18 @@ export class CodebaseSearchTool extends BaseTool<"codebase_search"> {
 
 			const searchResults: VectorStoreSearchResult[] = await manager.searchIndex(query, directoryPrefix)
 
-			if (!searchResults || searchResults.length === 0) {
+			// Post-filter results through .rooignore to exclude files that were
+			// indexed before being added to .rooignore, or that bypassed filtering
+			// during indexing (e.g. due to symlink/submodule path resolution).
+			const filteredResults = task.rooIgnoreController
+				? searchResults.filter((result) => {
+						if (!result.payload || !("filePath" in result.payload)) return false
+						const relativePath = vscode.workspace.asRelativePath(result.payload.filePath, false)
+						return task.rooIgnoreController!.validateAccess(relativePath)
+					})
+				: searchResults
+
+			if (!filteredResults || filteredResults.length === 0) {
 				pushToolResult(`No relevant code snippets found for the query: "${query}"`)
 				return
 			}
@@ -91,7 +102,7 @@ export class CodebaseSearchTool extends BaseTool<"codebase_search"> {
 				}>
 			}
 
-			searchResults.forEach((result) => {
+			filteredResults.forEach((result) => {
 				if (!result.payload) return
 				if (!("filePath" in result.payload)) return
 
