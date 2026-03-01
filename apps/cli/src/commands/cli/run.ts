@@ -30,6 +30,7 @@ import { getDefaultExtensionPath } from "@/lib/utils/extension.js"
 import { VERSION } from "@/lib/utils/version.js"
 
 import { ExtensionHost, ExtensionHostOptions } from "@/agent/index.js"
+import { isExpectedControlFlowError } from "./cancellation.js"
 import { runStdinStreamMode } from "./stdin-stream.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -479,6 +480,16 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		}
 
 		const onUncaughtException = (error: Error) => {
+			if (
+				isExpectedControlFlowError(error, {
+					stdinStreamMode: useStdinPromptStream,
+					shuttingDown: isShuttingDown,
+					operation: "runtime",
+				})
+			) {
+				return
+			}
+
 			emitRuntimeError(error, "uncaughtException")
 
 			if (signalOnlyExit) {
@@ -489,6 +500,16 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		}
 
 		const onUnhandledRejection = (reason: unknown) => {
+			if (
+				isExpectedControlFlowError(reason, {
+					stdinStreamMode: useStdinPromptStream,
+					shuttingDown: isShuttingDown,
+					operation: "runtime",
+				})
+			) {
+				return
+			}
+
 			const error = normalizeError(reason)
 			emitRuntimeError(error, "unhandledRejection")
 

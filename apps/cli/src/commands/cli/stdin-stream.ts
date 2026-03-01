@@ -9,6 +9,7 @@ import {
 } from "@roo-code/types"
 
 import { isRecord } from "@/lib/utils/guards.js"
+import { isCancellationLikeError, isExpectedControlFlowError, isNoActiveTaskLikeError } from "./cancellation.js"
 
 import type { ExtensionHost } from "@/agent/index.js"
 import type { JsonEventEmitter } from "@/agent/json-event-emitter.js"
@@ -188,12 +189,6 @@ export interface StdinStreamModeOptions {
 	setStreamRequestId: (id: string | undefined) => void
 }
 
-function isCancellationLikeError(error: unknown): boolean {
-	const message = error instanceof Error ? error.message : String(error)
-	const normalized = message.toLowerCase()
-	return normalized.includes("aborted") || normalized.includes("cancelled") || normalized.includes("canceled")
-}
-
 const RESUME_ASKS = new Set(["resume_task", "resume_completed_task"])
 const CANCEL_RECOVERY_WAIT_TIMEOUT_MS = 8_000
 const CANCEL_RECOVERY_POLL_INTERVAL_MS = 100
@@ -313,8 +308,15 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 	}
 
 	const offClientError = host.client.on("error", (error) => {
-		if (cancelRequestedForActiveTask && isCancellationLikeError(error)) {
-			if (activeTaskCommand === "start") {
+		if (
+			isExpectedControlFlowError(error, {
+				stdinStreamMode: true,
+				cancelRequested: cancelRequestedForActiveTask,
+				shuttingDown: shouldShutdown,
+				operation: "client",
+			})
+		) {
+			if (activeTaskCommand === "start" && (cancelRequestedForActiveTask || isCancellationLikeError(error))) {
 				jsonEmitter.emitControl({
 					subtype: "done",
 					requestId: activeRequestId,
@@ -329,6 +331,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 			activeRequestId = undefined
 			setStreamRequestId(undefined)
 			cancelRequestedForActiveTask = false
+			awaitingPostCancelRecovery = false
 			return
 		}
 
@@ -443,6 +446,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 				code: completionCode,
 				success: event.success,
 			})
+
 			activeTaskCommand = undefined
 			activeRequestId = undefined
 			setStreamRequestId(undefined)
@@ -478,6 +482,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 							code: "task_busy",
 							success: false,
 						})
+
 						break
 					}
 
@@ -503,8 +508,18 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 						.catch((error) => {
 							const message = error instanceof Error ? error.message : String(error)
 
-							if (cancelRequestedForActiveTask || isCancellationLikeError(error)) {
-								if (activeTaskCommand === "start") {
+							if (
+								isExpectedControlFlowError(error, {
+									stdinStreamMode: true,
+									cancelRequested: cancelRequestedForActiveTask,
+									shuttingDown: shouldShutdown,
+									operation: "client",
+								})
+							) {
+								if (
+									activeTaskCommand === "start" &&
+									(cancelRequestedForActiveTask || isCancellationLikeError(error))
+								) {
 									jsonEmitter.emitControl({
 										subtype: "done",
 										requestId: stdinCommand.requestId,
@@ -515,10 +530,12 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 										success: false,
 									})
 								}
+
 								activeTaskCommand = undefined
 								activeRequestId = undefined
 								setStreamRequestId(undefined)
 								cancelRequestedForActiveTask = false
+								awaitingPostCancelRecovery = false
 								return
 							}
 
@@ -526,6 +543,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 							activeTaskCommand = undefined
 							activeRequestId = undefined
 							setStreamRequestId(undefined)
+
 							jsonEmitter.emitControl({
 								subtype: "error",
 								requestId: stdinCommand.requestId,
@@ -539,6 +557,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 						.finally(() => {
 							activeTaskPromise = null
 						})
+
 					break
 
 				case "message": {
@@ -547,6 +566,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 					if (awaitingPostCancelRecovery) {
 						await waitForPostCancelRecovery(host)
 					}
+
 					const wasResumable = isResumableState(host)
 
 					if (!host.client.hasActiveTask()) {
@@ -559,10 +579,12 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 							code: "no_active_task",
 							success: false,
 						})
+
 						break
 					}
 
 					setStreamRequestId(stdinCommand.requestId)
+
 					jsonEmitter.emitControl({
 						subtype: "ack",
 						requestId: stdinCommand.requestId,
@@ -572,7 +594,9 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 						code: "accepted",
 						success: true,
 					})
+
 					host.sendToExtension({ type: "queueMessage", text: stdinCommand.prompt })
+
 					jsonEmitter.emitControl({
 						subtype: "done",
 						requestId: stdinCommand.requestId,
@@ -582,6 +606,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 						code: wasResumable ? "resumed" : "queued",
 						success: true,
 					})
+
 					awaitingPostCancelRecovery = false
 					break
 				}
@@ -603,6 +628,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 							code: "accepted",
 							success: true,
 						})
+
 						jsonEmitter.emitControl({
 							subtype: "done",
 							requestId: stdinCommand.requestId,
@@ -612,11 +638,13 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 							code: "no_active_task",
 							success: true,
 						})
+
 						break
 					}
 
 					cancelRequestedForActiveTask = true
 					awaitingPostCancelRecovery = true
+
 					jsonEmitter.emitControl({
 						subtype: "ack",
 						requestId: stdinCommand.requestId,
@@ -626,8 +654,10 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 						code: "accepted",
 						success: true,
 					})
+
 					try {
 						host.client.cancelTask()
+
 						jsonEmitter.emitControl({
 							subtype: "done",
 							requestId: stdinCommand.requestId,
@@ -638,7 +668,32 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 							success: true,
 						})
 					} catch (error) {
-						if (!isCancellationLikeError(error)) {
+						if (
+							isExpectedControlFlowError(error, {
+								stdinStreamMode: true,
+								cancelRequested: true,
+								shuttingDown: shouldShutdown,
+								operation: "cancel",
+							})
+						) {
+							const noActiveTask = isNoActiveTaskLikeError(error)
+
+							jsonEmitter.emitControl({
+								subtype: "done",
+								requestId: stdinCommand.requestId,
+								command: "cancel",
+								taskId: latestTaskId,
+								content: noActiveTask ? "cancel ignored (task already settled)" : "cancel handled",
+								code: noActiveTask ? "no_active_task" : "cancel_requested",
+								success: true,
+							})
+
+							if (noActiveTask) {
+								awaitingPostCancelRecovery = false
+							}
+
+							cancelRequestedForActiveTask = false
+						} else {
 							const message = error instanceof Error ? error.message : String(error)
 							jsonEmitter.emitControl({
 								subtype: "error",
