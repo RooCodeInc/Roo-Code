@@ -13,7 +13,7 @@ const getOllamaModels = async () =>
 		const timeout = setTimeout(() => {
 			cleanup()
 			reject(new Error("Ollama models request timed out"))
-		}, 10000)
+		}, 15000) // Allow extra time for backend timeout (10s) + overhead
 
 		const handler = (event: MessageEvent) => {
 			const message: ExtensionMessage = event.data
@@ -22,7 +22,12 @@ const getOllamaModels = async () =>
 				clearTimeout(timeout)
 				cleanup()
 
-				if (message.ollamaModels) {
+				// The backend now always sends a response, even on error.
+				// If there's an error field, reject with the server's error message
+				// so callers get actionable diagnostics.
+				if (message.error) {
+					reject(new Error(message.error))
+				} else if (message.ollamaModels) {
 					resolve(message.ollamaModels)
 				} else {
 					reject(new Error("No Ollama models in response"))
