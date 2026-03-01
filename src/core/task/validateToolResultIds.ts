@@ -122,8 +122,16 @@ export function validateAndFixToolResultIds(
 	// Check if any tool_result has an invalid ID
 	const hasInvalidIds = toolResults.some((result) => !validToolUseIds.has(result.tool_use_id))
 
-	// If no missing tool_results and no invalid IDs, no changes needed
+	// If no missing tool_results and no invalid IDs, check if reordering is needed
 	if (missingToolUseIds.length === 0 && !hasInvalidIds) {
+		// Reorder tool_result blocks to match tool_use order (required by Anthropic API)
+		const reordered = reorderToolResults(
+			userMessage.content as Anthropic.Messages.ContentBlockParam[],
+			toolUseBlocks,
+		)
+		if (reordered) {
+			return { ...userMessage, content: reordered }
+		}
 		return userMessage
 	}
 
@@ -223,12 +231,90 @@ export function validateAndFixToolResultIds(
 		content: "Tool execution was interrupted before completion.",
 	}))
 
-	// Insert missing tool_results at the beginning of the content array
-	// This ensures they come before any text blocks that may summarize the results
-	const finalContent = missingToolResults.length > 0 ? [...missingToolResults, ...correctedContent] : correctedContent
+	// Combine missing tool_results with corrected content
+	const combinedContent =
+		missingToolResults.length > 0 ? [...missingToolResults, ...correctedContent] : correctedContent
+
+	// Reorder tool_result blocks to match the tool_use order (required by Anthropic API).
+	// This handles the case where tool results were appended in completion order rather
+	// than the original tool_use order.
+	const finalContent = reorderToolResults(combinedContent, toolUseBlocks) ?? combinedContent
 
 	return {
 		...userMessage,
 		content: finalContent,
 	}
+}
+
+/**
+ * Reorders tool_result blocks within a content array to match the order of
+ * their corresponding tool_use blocks from the assistant message.
+ *
+ * Non-tool-result blocks (text, image, etc.) remain in their original
+ * positions relative to the tool_result blocks -- only tool_results are
+ * reordered among themselves.
+ *
+ * Returns `null` if the tool_results are already in the correct order
+ * (no reordering needed).
+ */
+function reorderToolResults(
+	content: Anthropic.Messages.ContentBlockParam[],
+	toolUseBlocks: Anthropic.ToolUseBlock[],
+): Anthropic.Messages.ContentBlockParam[] | null {
+	if (toolUseBlocks.length === 0) {
+		return null
+	}
+
+	// Build an order map: tool_use_id -> position index
+	const orderMap = new Map<string, number>()
+	toolUseBlocks.forEach((block, index) => {
+		orderMap.set(block.id, index)
+	})
+
+	// Separate tool_result blocks from non-tool-result blocks, preserving indices
+	const toolResultEntries: { index: number; block: Anthropic.ToolResultBlockParam }[] = []
+	const nonToolResultEntries: { index: number; block: Anthropic.Messages.ContentBlockParam }[] = []
+
+	content.forEach((block, index) => {
+		if (block.type === "tool_result") {
+			toolResultEntries.push({ index, block: block as Anthropic.ToolResultBlockParam })
+		} else {
+			nonToolResultEntries.push({ index, block })
+		}
+	})
+
+	if (toolResultEntries.length <= 1) {
+		return null // Nothing to reorder
+	}
+
+	// Sort tool_result blocks by their corresponding tool_use order
+	const sortedToolResults = [...toolResultEntries].sort((a, b) => {
+		const orderA = orderMap.get(a.block.tool_use_id) ?? Number.MAX_SAFE_INTEGER
+		const orderB = orderMap.get(b.block.tool_use_id) ?? Number.MAX_SAFE_INTEGER
+		return orderA - orderB
+	})
+
+	// Check if already in correct order
+	const alreadyOrdered = sortedToolResults.every((entry, i) => entry === toolResultEntries[i])
+	if (alreadyOrdered) {
+		return null
+	}
+
+	// Reconstruct the array: place sorted tool_results into the original
+	// tool_result positions, keeping non-tool-result blocks where they were.
+	const result: Anthropic.Messages.ContentBlockParam[] = new Array(content.length)
+
+	// First, place non-tool-result blocks back at their original indices
+	for (const entry of nonToolResultEntries) {
+		result[entry.index] = entry.block
+	}
+
+	// Then, place sorted tool_results into the slots that were originally
+	// occupied by tool_result blocks (preserving relative position of non-tool blocks)
+	const toolResultSlots = toolResultEntries.map((e) => e.index)
+	sortedToolResults.forEach((entry, i) => {
+		result[toolResultSlots[i]] = entry.block
+	})
+
+	return result
 }

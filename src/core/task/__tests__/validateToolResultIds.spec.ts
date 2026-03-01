@@ -611,11 +611,10 @@ describe("validateAndFixToolResultIds", () => {
 			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
 			// Should now have 2 tool_results: one fixed and one added for the missing tool_use
 			expect(resultContent.length).toBe(2)
-			// The missing tool_result is prepended
-			expect(resultContent[0].tool_use_id).toBe("tool-2")
-			expect(resultContent[0].content).toBe("Tool execution was interrupted before completion.")
-			// The original is fixed
-			expect(resultContent[1].tool_use_id).toBe("tool-1")
+			// Reordered to match tool_use order: tool-1 first (fixed from wrong-1), tool-2 second (injected)
+			expect(resultContent[0].tool_use_id).toBe("tool-1")
+			expect(resultContent[1].tool_use_id).toBe("tool-2")
+			expect(resultContent[1].content).toBe("Tool execution was interrupted before completion.")
 		})
 	})
 
@@ -736,12 +735,11 @@ describe("validateAndFixToolResultIds", () => {
 			expect(Array.isArray(result.content)).toBe(true)
 			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
 			expect(resultContent.length).toBe(2)
-			// Missing tool_result for tool-2 should be prepended
-			expect(resultContent[0].tool_use_id).toBe("tool-2")
-			expect(resultContent[0].content).toBe("Tool execution was interrupted before completion.")
-			// Existing tool_result should be preserved
-			expect(resultContent[1].tool_use_id).toBe("tool-1")
-			expect(resultContent[1].content).toBe("Content for tool 1")
+			// Reordered to match tool_use order: tool-1 first (existing), tool-2 second (injected)
+			expect(resultContent[0].tool_use_id).toBe("tool-1")
+			expect(resultContent[0].content).toBe("Content for tool 1")
+			expect(resultContent[1].tool_use_id).toBe("tool-2")
+			expect(resultContent[1].content).toBe("Tool execution was interrupted before completion.")
 		})
 
 		it("should handle empty user content array by adding all missing tool_results", () => {
@@ -992,6 +990,118 @@ describe("validateAndFixToolResultIds", () => {
 			validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(TelemetryService.instance.captureException).not.toHaveBeenCalled()
+		})
+	})
+
+	describe("tool_result reordering to match tool_use order", () => {
+		it("should reorder out-of-order tool_results to match tool_use order", () => {
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [
+					{ type: "tool_use", id: "tool-A", name: "read_file", input: { path: "a.txt" } },
+					{ type: "tool_use", id: "tool-B", name: "read_file", input: { path: "b.txt" } },
+					{ type: "tool_use", id: "tool-C", name: "read_file", input: { path: "c.txt" } },
+				],
+			}
+
+			// tool_results arrive in reverse order (C, B, A) instead of (A, B, C)
+			const userMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [
+					{ type: "tool_result", tool_use_id: "tool-C", content: "Result C" },
+					{ type: "tool_result", tool_use_id: "tool-B", content: "Result B" },
+					{ type: "tool_result", tool_use_id: "tool-A", content: "Result A" },
+				],
+			}
+
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const content = result.content as Anthropic.ToolResultBlockParam[]
+
+			expect(content[0].tool_use_id).toBe("tool-A")
+			expect(content[1].tool_use_id).toBe("tool-B")
+			expect(content[2].tool_use_id).toBe("tool-C")
+		})
+
+		it("should keep non-tool-result blocks in their original positions when reordering", () => {
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [
+					{ type: "tool_use", id: "tool-1", name: "read_file", input: { path: "a.txt" } },
+					{ type: "tool_use", id: "tool-2", name: "write_file", input: { path: "b.txt" } },
+				],
+			}
+
+			// tool_results are reversed, with a text block in between
+			const userMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [
+					{ type: "tool_result", tool_use_id: "tool-2", content: "Result 2" },
+					{ type: "text", text: "Here are the results" },
+					{ type: "tool_result", tool_use_id: "tool-1", content: "Result 1" },
+				],
+			}
+
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const content = result.content as Anthropic.Messages.ContentBlockParam[]
+
+			// tool_results should be reordered, but text block stays at index 1
+			expect(content[0]).toEqual({ type: "tool_result", tool_use_id: "tool-1", content: "Result 1" })
+			expect(content[1]).toEqual({ type: "text", text: "Here are the results" })
+			expect(content[2]).toEqual({ type: "tool_result", tool_use_id: "tool-2", content: "Result 2" })
+		})
+
+		it("should not modify content when tool_results are already in correct order", () => {
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [
+					{ type: "tool_use", id: "tool-X", name: "read_file", input: { path: "x.txt" } },
+					{ type: "tool_use", id: "tool-Y", name: "read_file", input: { path: "y.txt" } },
+				],
+			}
+
+			const userMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [
+					{ type: "tool_result", tool_use_id: "tool-X", content: "Result X" },
+					{ type: "tool_result", tool_use_id: "tool-Y", content: "Result Y" },
+				],
+			}
+
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+
+			expect(result).toEqual(userMessage)
+		})
+
+		it("should reorder tool_results even when mixed with missing result injection", () => {
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [
+					{ type: "tool_use", id: "tool-1", name: "read_file", input: { path: "a.txt" } },
+					{ type: "tool_use", id: "tool-2", name: "write_file", input: { path: "b.txt" } },
+					{ type: "tool_use", id: "tool-3", name: "list_files", input: { path: "." } },
+				],
+			}
+
+			// Only tool-3 and tool-1 have results (out of order), tool-2 is missing
+			const userMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [
+					{ type: "tool_result", tool_use_id: "tool-3", content: "Result 3" },
+					{ type: "tool_result", tool_use_id: "tool-1", content: "Result 1" },
+				],
+			}
+
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+			const toolResults = (result.content as Anthropic.Messages.ContentBlockParam[]).filter(
+				(b): b is Anthropic.ToolResultBlockParam => b.type === "tool_result",
+			)
+
+			// Should have 3 tool_results (including injected one for tool-2)
+			expect(toolResults).toHaveLength(3)
+			// They should be in tool_use order: tool-1, tool-2, tool-3
+			expect(toolResults[0].tool_use_id).toBe("tool-1")
+			expect(toolResults[1].tool_use_id).toBe("tool-2")
+			expect(toolResults[2].tool_use_id).toBe("tool-3")
 		})
 	})
 })
