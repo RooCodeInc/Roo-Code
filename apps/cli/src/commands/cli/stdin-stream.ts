@@ -63,8 +63,20 @@ export function parseStdinStreamCommand(line: string, lineNumber: number): Stdin
 
 	if (command === "start" || command === "message") {
 		const promptRaw = parsed.prompt
+
 		if (typeof promptRaw !== "string" || promptRaw.trim().length === 0) {
 			throw new Error(`stdin command line ${lineNumber}: "${command}" requires non-empty string "prompt"`)
+		}
+
+		const imagesRaw = parsed.images
+		let images: string[] | undefined
+
+		if (imagesRaw !== undefined) {
+			if (!Array.isArray(imagesRaw) || !imagesRaw.every((image) => typeof image === "string")) {
+				throw new Error(`stdin command line ${lineNumber}: "${command}" images must be an array of strings`)
+			}
+
+			images = imagesRaw
 		}
 
 		if (command === "start" && isRecord(parsed.configuration)) {
@@ -72,11 +84,17 @@ export function parseStdinStreamCommand(line: string, lineNumber: number): Stdin
 				command,
 				requestId,
 				prompt: promptRaw,
+				...(images !== undefined ? { images } : {}),
 				configuration: parsed.configuration as RooCliStartCommand["configuration"],
 			}
 		}
 
-		return { command, requestId, prompt: promptRaw }
+		return {
+			command,
+			requestId,
+			prompt: promptRaw,
+			...(images !== undefined ? { images } : {}),
+		}
 	}
 
 	return { command, requestId }
@@ -601,7 +619,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 					}
 
 					activeTaskPromise = host
-						.runTask(stdinCommand.prompt, latestTaskId, taskConfiguration)
+						.runTask(stdinCommand.prompt, latestTaskId, taskConfiguration, stdinCommand.images)
 						.catch((error) => {
 							const message = error instanceof Error ? error.message : String(error)
 
@@ -691,7 +709,11 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 						success: true,
 					})
 
-					host.sendToExtension({ type: "queueMessage", text: stdinCommand.prompt })
+					host.sendToExtension({
+						type: "queueMessage",
+						text: stdinCommand.prompt,
+						images: stdinCommand.images,
+					})
 					pendingQueuedMessageRequestIds.push(stdinCommand.requestId)
 					if (host.isWaitingForInput()) {
 						setStreamRequestId(stdinCommand.requestId)

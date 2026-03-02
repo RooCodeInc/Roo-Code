@@ -12,7 +12,19 @@ describe("CLI types", () => {
 				command: "start",
 				requestId: "req-1",
 				prompt: "hello",
+				images: ["data:image/png;base64,abc"],
 				configuration: {},
+			})
+
+			expect(result.success).toBe(true)
+		})
+
+		it("validates a message command with images", () => {
+			const result = rooCliInputCommandSchema.safeParse({
+				command: "message",
+				requestId: "req-2a",
+				prompt: "follow up",
+				images: ["data:image/png;base64,xyz"],
 			})
 
 			expect(result.success).toBe(true)

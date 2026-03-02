@@ -18,6 +18,40 @@ describe("parseStdinStreamCommand", () => {
 			expect(result).toEqual({ command: "message", requestId: "req-2", prompt: "follow up" })
 		})
 
+		it("parses start and message images", () => {
+			const start = parseStdinStreamCommand(
+				JSON.stringify({
+					command: "start",
+					requestId: "req-img-start",
+					prompt: "hello",
+					images: ["data:image/jpeg;base64,abc123"],
+				}),
+				1,
+			)
+			expect(start).toEqual({
+				command: "start",
+				requestId: "req-img-start",
+				prompt: "hello",
+				images: ["data:image/jpeg;base64,abc123"],
+			})
+
+			const message = parseStdinStreamCommand(
+				JSON.stringify({
+					command: "message",
+					requestId: "req-img-msg",
+					prompt: "follow up",
+					images: ["data:image/png;base64,xyz456"],
+				}),
+				1,
+			)
+			expect(message).toEqual({
+				command: "message",
+				requestId: "req-img-msg",
+				prompt: "follow up",
+				images: ["data:image/png;base64,xyz456"],
+			})
+		})
+
 		it.each(["cancel", "ping", "shutdown"] as const)("parses a %s command (no prompt required)", (command) => {
 			const result = parseStdinStreamCommand(JSON.stringify({ command, requestId: "req-3" }), 1)
 			expect(result).toEqual({ command, requestId: "req-3" })
@@ -99,6 +133,32 @@ describe("parseStdinStreamCommand", () => {
 			expect(() =>
 				parseStdinStreamCommand(JSON.stringify({ command: "message", requestId: "req", prompt: "  " }), 1),
 			).toThrow('"message" requires non-empty string "prompt"')
+		})
+
+		it("throws when start or message images are not string arrays", () => {
+			expect(() =>
+				parseStdinStreamCommand(
+					JSON.stringify({
+						command: "start",
+						requestId: "req-start-img",
+						prompt: "hello",
+						images: "not-an-array",
+					}),
+					1,
+				),
+			).toThrow('"start" images must be an array of strings')
+
+			expect(() =>
+				parseStdinStreamCommand(
+					JSON.stringify({
+						command: "message",
+						requestId: "req-msg-img",
+						prompt: "follow up",
+						images: ["ok", 123],
+					}),
+					1,
+				),
+			).toThrow('"message" images must be an array of strings')
 		})
 	})
 })

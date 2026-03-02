@@ -30,6 +30,7 @@ export type StreamCommand = {
 	command: "start" | "message" | "cancel" | "ping" | "shutdown"
 	requestId: string
 	prompt?: string
+	images?: string[]
 }
 
 export interface StreamCaseContext {
