@@ -80,15 +80,12 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 
 			await task.say("completion_result", result, undefined, false)
 
-			// Force final token usage update before emitting TaskCompleted
-			// This ensures the most recent stats are captured regardless of throttle timer
-			// and properly updates the snapshot to prevent redundant emissions
-			task.emitFinalTokenUsageUpdate()
-
-			TelemetryService.instance.captureTaskCompleted(task.taskId)
-			task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
-
 			if (task.backgroundCompletionResolve) {
+				// Subagent path: emit TaskCompleted and telemetry once, then resolve and abort.
+				// Do not run this for normal tasks—emitTaskCompleted() runs on delegation (line 124) or user acceptance (line 151).
+				task.emitFinalTokenUsageUpdate()
+				TelemetryService.instance.captureTaskCompleted(task.taskId)
+				task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
 				task.subagentProgressCallback = undefined
 				task.backgroundCompletionResolve(result)
 				task.backgroundCompletionResolve = undefined

@@ -87,6 +87,7 @@ export async function presentAssistantMessage(cline: Task) {
 	}
 
 	let block: any
+	let blocksConsumed = 1
 	try {
 		// Performance optimization: Use shallow copy instead of deep clone.
 		// The block is used read-only throughout this function - we never mutate its properties.
@@ -410,8 +411,36 @@ export async function presentAssistantMessage(cline: Task) {
 				break
 			}
 
-			// Track if we've already pushed a tool result for this tool call (native tool calling only)
-			let hasToolResult = false
+			// Track which tool_use_ids have already received a tool_result (native tool calling only)
+			const toolResultsPushed = new Set<string>()
+			const pushToolResultFor = (id: string, content: ToolResponse) => {
+				if (toolResultsPushed.has(id)) {
+					console.warn(`[presentAssistantMessage] Skipping duplicate tool_result for tool_use_id: ${id}`)
+					return
+				}
+				let resultContent: string
+				const imageBlocks: Anthropic.ImageBlockParam[] = []
+				if (typeof content === "string") {
+					resultContent = content || "(tool did not return anything)"
+				} else {
+					const textBlocks = content.filter((item) => item.type === "text")
+					imageBlocks.push(
+						...(content.filter((item) => item.type === "image") as Anthropic.ImageBlockParam[]),
+					)
+					resultContent =
+						textBlocks.map((item) => (item as Anthropic.TextBlockParam).text).join("\n") ||
+						"(tool did not return anything)"
+				}
+				cline.pushToolResultToUserContent({
+					type: "tool_result",
+					tool_use_id: sanitizeToolUseId(id),
+					content: resultContent,
+				})
+				if (imageBlocks.length > 0) {
+					cline.userMessageContent.push(...imageBlocks)
+				}
+				toolResultsPushed.add(id)
+			}
 
 			// If this is a native tool call but the parser couldn't construct nativeArgs
 			// (e.g., malformed/unfinished JSON in a streaming tool call), we must NOT attempt to
@@ -452,17 +481,8 @@ export async function presentAssistantMessage(cline: Task) {
 			let approvalFeedback: { text: string; images?: string[] } | undefined
 
 			const pushToolResult = (content: ToolResponse) => {
-				// Native tool calling: only allow ONE tool_result per tool call
-				if (hasToolResult) {
-					console.warn(
-						`[presentAssistantMessage] Skipping duplicate tool_result for tool_use_id: ${toolCallId}`,
-					)
-					return
-				}
-
 				let resultContent: string
 				let imageBlocks: Anthropic.ImageBlockParam[] = []
-
 				if (typeof content === "string") {
 					resultContent = content || "(tool did not return anything)"
 				} else {
@@ -472,7 +492,6 @@ export async function presentAssistantMessage(cline: Task) {
 						textBlocks.map((item) => (item as Anthropic.TextBlockParam).text).join("\n") ||
 						"(tool did not return anything)"
 				}
-
 				// Merge approval feedback into tool result (GitHub #10465)
 				if (approvalFeedback) {
 					const feedbackText = formatResponse.toolApprovedWithFeedback(approvalFeedback.text)
@@ -482,18 +501,9 @@ export async function presentAssistantMessage(cline: Task) {
 						imageBlocks = [...feedbackImageBlocks, ...imageBlocks]
 					}
 				}
-
-				cline.pushToolResultToUserContent({
-					type: "tool_result",
-					tool_use_id: sanitizeToolUseId(toolCallId),
-					content: resultContent,
-				})
-
-				if (imageBlocks.length > 0) {
-					cline.userMessageContent.push(...imageBlocks)
-				}
-
-				hasToolResult = true
+				const mergedContent: ToolResponse =
+					imageBlocks.length > 0 ? [{ type: "text", text: resultContent }, ...imageBlocks] : resultContent
+				pushToolResultFor(toolCallId, mergedContent)
 			}
 
 			const askApproval = async (
@@ -818,14 +828,92 @@ export async function presentAssistantMessage(cline: Task) {
 						toolCallId: block.id,
 					})
 					break
-				case "subagent":
-					await subagentTool.handle(cline, block as ToolUse<"subagent">, {
-						askApproval,
-						handleError,
-						pushToolResult,
-						toolCallId: block.id,
-					})
+				case "subagent": {
+					if (block.partial) {
+						break
+					}
+					// Collect consecutive subagent tool_use blocks for potential parallel execution
+					const subagentBlocks: (typeof block)[] = [block]
+					for (
+						let i = cline.currentStreamingContentIndex + 1;
+						i < cline.assistantMessageContent.length;
+						i++
+					) {
+						const b = cline.assistantMessageContent[i]
+						if (b?.type === "tool_use" && b?.name === "subagent" && !b.partial) {
+							subagentBlocks.push(b)
+						} else {
+							break
+						}
+					}
+					if (subagentBlocks.length === 1) {
+						await subagentTool.handle(cline, block as ToolUse<"subagent">, {
+							askApproval,
+							handleError,
+							pushToolResult,
+							toolCallId: block.id,
+						})
+					} else {
+						// Parallel subagent batch: start all, await all, finish each
+						const subagentCallbacks = (subagentBlock: typeof block) => ({
+							askApproval,
+							handleError,
+							pushToolResult: (content: ToolResponse) => pushToolResultFor(subagentBlock.id, content),
+							toolCallId: subagentBlock.id,
+						})
+						const getParams = (
+							b: typeof block,
+						): { description: string; prompt: string; subagent_type: "general" | "explore" } => {
+							if (b.nativeArgs && typeof b.nativeArgs === "object") {
+								const a = b.nativeArgs as Record<string, string>
+								return {
+									description: a.description ?? "",
+									prompt: a.prompt ?? "",
+									subagent_type: (a.subagent_type === "explore" ? "explore" : "general") as
+										| "general"
+										| "explore",
+								}
+							}
+							return subagentTool.parseLegacy((b.params ?? {}) as Record<string, string>)
+						}
+						const promises = subagentBlocks.map((subagentBlock) =>
+							subagentTool.startAndReturnPromise(
+								cline,
+								getParams(subagentBlock),
+								subagentCallbacks(subagentBlock),
+							),
+						)
+						const results = await Promise.allSettled(promises)
+						for (let i = 0; i < subagentBlocks.length; i++) {
+							const subagentBlock = subagentBlocks[i]
+							const settled = results[i]
+							if (settled?.status === "fulfilled") {
+								await subagentTool.finish(
+									cline,
+									getParams(subagentBlock),
+									settled.value,
+									subagentCallbacks(subagentBlock),
+								)
+							}
+							if (settled?.status === "rejected") {
+								cline.finalizeSubagentRunning(subagentBlock.id)
+								// startAndReturnPromise already pushed error for missing params; other errors need a tool_result
+								if (
+									settled.reason?.message !== "Missing description" &&
+									settled.reason?.message !== "Missing prompt" &&
+									settled.reason?.message !== "Provider reference lost"
+								) {
+									pushToolResultFor(
+										subagentBlock.id,
+										formatResponse.toolError("The subagent failed."),
+									)
+								}
+							}
+						}
+						blocksConsumed = subagentBlocks.length
+					}
 					break
+				}
 				case "attempt_completion": {
 					const completionCallbacks: AttemptCompletionCallbacks = {
 						askApproval,
@@ -953,7 +1041,7 @@ export async function presentAssistantMessage(cline: Task) {
 	// (instead of preemptively doing it in iterator).
 	if (!block.partial || cline.didRejectTool || cline.didAlreadyUseTool) {
 		// Block is finished streaming and executing.
-		if (cline.currentStreamingContentIndex === cline.assistantMessageContent.length - 1) {
+		if (cline.currentStreamingContentIndex + blocksConsumed >= cline.assistantMessageContent.length) {
 			// It's okay that we increment if !didCompleteReadingStream, it'll
 			// just return because out of bounds and as streaming continues it
 			// will call `presentAssitantMessage` if a new block is ready. If
@@ -966,9 +1054,8 @@ export async function presentAssistantMessage(cline: Task) {
 
 		// Call next block if it exists (if not then read stream will call it
 		// when it's ready).
-		// Need to increment regardless, so when read stream calls this function
-		// again it will be streaming the next block.
-		cline.currentStreamingContentIndex++
+		// Need to increment by blocksConsumed (e.g. 1 normally, or N when we processed a parallel subagent batch).
+		cline.currentStreamingContentIndex += blocksConsumed
 
 		if (cline.currentStreamingContentIndex < cline.assistantMessageContent.length) {
 			// There are already more content blocks to stream, so we'll call

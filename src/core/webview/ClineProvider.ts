@@ -2992,19 +2992,21 @@ export class ClineProvider
 			return
 		}
 
-		// If the current task has a running subagent, cancel only the subagent and return the cancellation result to the parent.
-		const subagentChild = task.activeSubagentChild
-		if (subagentChild) {
-			task.activeSubagentChild = undefined
-			subagentChild.subagentProgressCallback = undefined
-			if (subagentChild.backgroundCompletionResolve) {
-				subagentChild.backgroundCompletionResolve(SUBAGENT_CANCELLED_STRUCTURED_RESULT)
-				subagentChild.backgroundCompletionResolve = undefined
+		// If the current task has running subagents, cancel all of them and return (do not cancel the parent).
+		if (task.activeSubagentChildren.size > 0) {
+			const children = Array.from(task.activeSubagentChildren.entries())
+			task.activeSubagentChildren.clear()
+			for (const [_toolCallId, subagentChild] of children) {
+				subagentChild.subagentProgressCallback = undefined
+				if (subagentChild.backgroundCompletionResolve) {
+					subagentChild.backgroundCompletionResolve(SUBAGENT_CANCELLED_STRUCTURED_RESULT)
+					subagentChild.backgroundCompletionResolve = undefined
+				}
+				subagentChild.abandoned = true
+				subagentChild.cancelCurrentRequest()
+				subagentChild.abortTask()
+				this.log(`[cancelTask] cancelled subagent ${subagentChild.taskId}.${subagentChild.instanceId}`)
 			}
-			subagentChild.abandoned = true
-			subagentChild.cancelCurrentRequest()
-			subagentChild.abortTask()
-			this.log(`[cancelTask] cancelled subagent ${subagentChild.taskId}.${subagentChild.instanceId}`)
 			return
 		}
 
@@ -3388,7 +3390,10 @@ export class ClineProvider
 	public async runSubagentInBackground(
 		params: RunSubagentInBackgroundParams,
 	): Promise<string | SubagentStructuredResult> {
-		const { parentTaskId, prompt, subagentType, onProgress } = params
+		const { parentTaskId, prompt, subagentType, onProgress, toolCallId } = params
+		if (!toolCallId) {
+			throw new Error("[runSubagentInBackground] toolCallId is required")
+		}
 		const parent = this.getCurrentTask()
 		if (!parent) {
 			throw new Error("[runSubagentInBackground] No current task")
@@ -3427,14 +3432,17 @@ export class ClineProvider
 			child.subagentProgressCallback = onProgress
 		}
 
-		parent.activeSubagentChild = child
+		parent.activeSubagentChildren.set(toolCallId, child)
 
 		return new Promise<string | SubagentStructuredResult>((resolve, reject) => {
+			const removeChild = () => {
+				parent.activeSubagentChildren.delete(toolCallId)
+			}
 			let settled = false
 			child.backgroundCompletionResolve = (result: string | SubagentStructuredResult) => {
 				if (!settled) {
 					settled = true
-					parent.activeSubagentChild = undefined
+					removeChild()
 					resolve(result)
 				}
 			}
@@ -3443,19 +3451,19 @@ export class ClineProvider
 				.then(() => {
 					if (!settled) {
 						settled = true
-						parent.activeSubagentChild = undefined
+						removeChild()
 						reject(new Error("Subagent ended without attempt_completion"))
 					}
 				})
 				.catch((err) => {
 					if (!settled) {
 						settled = true
-						parent.activeSubagentChild = undefined
+						removeChild()
 						reject(err)
 					}
 				})
 				.finally(() => {
-					parent.activeSubagentChild = undefined
+					removeChild()
 				})
 		})
 	}

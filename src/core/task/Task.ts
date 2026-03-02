@@ -430,8 +430,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	public subagentProgressCallback?: (currentTask: string) => void
 	/** When false, saveClineMessages does not call updateTaskHistory (e.g. subagents). */
 	private readonly needUpdateHistory: boolean
-	/** When this task is the parent of a running subagent, holds the child task until it completes or is cancelled. */
-	public activeSubagentChild?: Task
+	/** When this task is the parent of running subagents, holds child tasks keyed by toolCallId until they complete or are cancelled. */
+	public activeSubagentChildren = new Map<string, Task>()
 
 	constructor({
 		provider,
@@ -1282,19 +1282,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	/**
-	 * Updates the last "subagentRunning" say message with currentTask so the UI can show it in real time.
-	 * No-op if no such message exists.
+	 * Updates a "subagentRunning" say message with currentTask so the UI can show it in real time.
+	 * When runId is set, updates the last message whose payload has that runId (for parallel subagents).
+	 * When runId is not set, updates the last subagentRunning message (backward compatibility).
+	 * No-op if no matching message exists.
 	 */
-	public reportSubagentProgress(currentTask: string): void {
-		const idx = findLastIndex(this.clineMessages, (m) => {
-			if (m.type !== "say" || m.say !== "tool" || !m.text) return false
-			try {
-				const parsed = JSON.parse(m.text) as { tool?: string }
-				return parsed.tool === SUBAGENT_TOOL_NAMES.running
-			} catch {
-				return false
-			}
-		})
+	public reportSubagentProgress(currentTask: string, runId?: string): void {
+		const idx = this.findSubagentRunningIndex(runId)
 		if (idx === -1) return
 		const msg = this.clineMessages[idx]
 		try {
@@ -1305,6 +1299,31 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} catch {
 			// ignore malformed message
 		}
+	}
+
+	/**
+	 * Removes a "subagentRunning" message entirely so only the completed message remains.
+	 * Called when the subagent finishes (success or error).
+	 */
+	public finalizeSubagentRunning(runId?: string): void {
+		const idx = this.findSubagentRunningIndex(runId)
+		if (idx === -1) return
+		this.clineMessages.splice(idx, 1)
+		void this.saveClineMessages()
+	}
+
+	private findSubagentRunningIndex(runId?: string): number {
+		return findLastIndex(this.clineMessages, (m) => {
+			if (m.type !== "say" || m.say !== "tool" || !m.text) return false
+			try {
+				const parsed = JSON.parse(m.text) as SubagentRunningPayload
+				if (parsed.tool !== SUBAGENT_TOOL_NAMES.running) return false
+				if (runId !== undefined) return parsed.runId === runId
+				return true
+			} catch {
+				return false
+			}
+		})
 	}
 
 	// Note that `partial` has three valid states true (partial message),

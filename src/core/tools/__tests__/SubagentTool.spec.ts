@@ -20,6 +20,7 @@ const mockRunSubagentInBackground =
 			parentTaskId: string
 			prompt: string
 			subagentType: "general" | "explore"
+			toolCallId: string
 		}) => Promise<string | SubagentStructuredResult>
 	>()
 const mockSay = vi.fn()
@@ -28,6 +29,7 @@ const mockHandleError = vi.fn()
 const mockSayAndCreateMissingParamError = vi.fn().mockResolvedValue("Missing param error")
 const mockRecordToolError = vi.fn()
 const mockReportSubagentProgress = vi.fn()
+const mockFinalizeSubagentRunning = vi.fn()
 
 const mockTask = {
 	taskId: "parent-1",
@@ -37,6 +39,7 @@ const mockTask = {
 	sayAndCreateMissingParamError: mockSayAndCreateMissingParamError,
 	say: mockSay,
 	reportSubagentProgress: mockReportSubagentProgress,
+	finalizeSubagentRunning: mockFinalizeSubagentRunning,
 	providerRef: {
 		deref: () => ({
 			runSubagentInBackground: mockRunSubagentInBackground,
@@ -191,6 +194,48 @@ describe("SubagentTool", () => {
 			expect(completedCall).toBeDefined()
 			const payload = JSON.parse(completedCall![1])
 			expect(payload.error).toBe(SUBAGENT_FAILED_MODEL_MESSAGE)
+		})
+	})
+
+	describe("startAndReturnPromise and finish", () => {
+		it("startAndReturnPromise returns a Promise that resolves with the result and finish says completed and pushes", async () => {
+			mockRunSubagentInBackground.mockResolvedValue("Result from subagent")
+			mockSay.mockResolvedValue(undefined)
+			const params = { description: "Do X", prompt: "Do it", subagent_type: "general" as const }
+			const callbacks = {
+				askApproval: vi.fn(),
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				toolCallId: "tool-call-123",
+			}
+
+			const promise = subagentTool.startAndReturnPromise(mockTask as any, params, callbacks)
+			const result = await promise
+			expect(result).toBe("Result from subagent")
+			expect(mockRunSubagentInBackground).toHaveBeenCalledWith(
+				expect.objectContaining({
+					parentTaskId: "parent-1",
+					prompt: "Do it",
+					subagentType: "general",
+					toolCallId: "tool-call-123",
+				}),
+			)
+
+			mockSay.mockClear()
+			mockPushToolResult.mockClear()
+			await subagentTool.finish(mockTask as any, params, result, callbacks)
+			const sayCalls = mockSay.mock.calls
+			const completedCall = sayCalls.find((c) => {
+				try {
+					const payload = JSON.parse(c[1])
+					return payload.tool === "subagentCompleted"
+				} catch {
+					return false
+				}
+			})
+			expect(completedCall).toBeDefined()
+			expect(JSON.parse(completedCall![1]).result).toBe("Result from subagent")
+			expect(mockPushToolResult).toHaveBeenCalledWith("Result from subagent")
 		})
 	})
 })

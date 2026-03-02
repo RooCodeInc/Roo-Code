@@ -574,4 +574,38 @@ describe("reportSubagentProgress", () => {
 			clineMessage: lastToolMsg,
 		})
 	})
+
+	it("updates only the subagentRunning message with matching runId when runId is provided", () => {
+		const task = new Task({
+			provider: mockProvider,
+			apiConfiguration: mockApiConfig,
+			task: "parent task",
+			startTask: false,
+		})
+		task.clineMessages = [
+			{
+				type: "say",
+				say: "tool",
+				text: JSON.stringify({ tool: "subagentRunning", description: "Sub A", runId: "id-a" }),
+				ts: 1,
+			},
+			{
+				type: "say",
+				say: "tool",
+				text: JSON.stringify({ tool: "subagentRunning", description: "Sub B", runId: "id-b" }),
+				ts: 2,
+			},
+		]
+
+		task.reportSubagentProgress("Progress for B only", "id-b")
+
+		const msgA = JSON.parse(task.clineMessages[0].text!)
+		const msgB = JSON.parse(task.clineMessages[1].text!)
+		expect(msgA.currentTask).toBeUndefined()
+		expect(msgB.currentTask).toBe("Progress for B only")
+		expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "messageUpdated",
+			clineMessage: task.clineMessages[1],
+		})
+	})
 })

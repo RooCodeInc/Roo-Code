@@ -36,6 +36,8 @@ export interface SubagentRunningPayload {
 	tool: typeof SUBAGENT_TOOL_NAMES.running
 	description?: string
 	currentTask?: string
+	/** Identifies this run for progress updates when multiple subagents run in parallel (e.g. block.id). */
+	runId?: string
 }
 
 /** Payload for the "subagentCompleted" tool message (result or error). */
@@ -57,6 +59,8 @@ export interface RunSubagentInBackgroundParams {
 	prompt: string
 	subagentType: SubagentType
 	onProgress?: (currentTask: string) => void
+	/** Required: keys the child in activeSubagentChildren and ties completion to the correct tool_use_id. */
+	toolCallId: string
 }
 
 /** Provider interface for running a subagent. Allows SubagentTool to call without type assertion. */
