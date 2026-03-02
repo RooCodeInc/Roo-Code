@@ -7,7 +7,7 @@ import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { SuggestionItem } from "@siid-code/types"
 
-const DEFAULT_FOLLOWUP_TIMEOUT_MS = 60000
+// const DEFAULT_FOLLOWUP_TIMEOUT_MS = 60000
 const COUNTDOWN_INTERVAL_MS = 1000
 
 interface FollowUpSuggestProps {
