@@ -48,6 +48,7 @@ describe("executeCommandTool", () => {
 	let mockHandleError: any
 	let mockPushToolResult: any
 	let mockToolUse: ToolUse<"execute_command">
+	const originalCliRuntime = process.env.ROO_CLI_RUNTIME
 
 	beforeEach(() => {
 		// Reset mocks
@@ -104,6 +105,10 @@ describe("executeCommandTool", () => {
 			},
 			partial: false,
 		}
+	})
+
+	afterEach(() => {
+		process.env.ROO_CLI_RUNTIME = originalCliRuntime
 	})
 
 	/**
@@ -284,6 +289,16 @@ describe("executeCommandTool", () => {
 			expect(mockOptions.executionId).toBeDefined()
 			expect(mockOptions.command).toBeDefined()
 			expect(mockOptions.commandExecutionTimeout).toBeDefined()
+		})
+
+		it("should ignore model timeout in CLI runtime", () => {
+			process.env.ROO_CLI_RUNTIME = "1"
+			expect(executeCommandModule.resolveAgentTimeoutMs(30)).toBe(0)
+		})
+
+		it("should honor model timeout outside CLI runtime", () => {
+			delete process.env.ROO_CLI_RUNTIME
+			expect(executeCommandModule.resolveAgentTimeoutMs(30)).toBe(30_000)
 		})
 	})
 })

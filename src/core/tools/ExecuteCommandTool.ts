@@ -29,6 +29,15 @@ interface ExecuteCommandParams {
 	timeout?: number | null
 }
 
+export function resolveAgentTimeoutMs(timeoutSeconds: number | null | undefined): number {
+	const requestedAgentTimeout = typeof timeoutSeconds === "number" && timeoutSeconds > 0 ? timeoutSeconds * 1000 : 0
+
+	// In CLI runtime, stdin harnesses expect command lifetime to be governed
+	// solely by commandExecutionTimeout (user setting), not model-provided
+	// background timeouts.
+	return process.env.ROO_CLI_RUNTIME === "1" ? 0 : requestedAgentTimeout
+}
+
 export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 	readonly name = "execute_command" as const
 
@@ -87,7 +96,7 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 			const commandExecutionTimeout = isCommandAllowlisted ? 0 : commandExecutionTimeoutSeconds * 1000
 
 			// Convert agent-specified timeout from seconds to milliseconds
-			const agentTimeout = typeof timeoutSeconds === "number" && timeoutSeconds > 0 ? timeoutSeconds * 1000 : 0
+			const agentTimeout = resolveAgentTimeoutMs(timeoutSeconds)
 
 			const options: ExecuteCommandOptions = {
 				executionId,
