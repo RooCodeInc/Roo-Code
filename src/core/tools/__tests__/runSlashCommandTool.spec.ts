@@ -31,6 +31,7 @@ describe("runSlashCommandTool", () => {
 							runSlashCommand: true,
 						},
 					}),
+					getSkillsManager: vi.fn().mockReturnValue(undefined),
 				}),
 			},
 		}
