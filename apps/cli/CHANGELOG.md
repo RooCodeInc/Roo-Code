@@ -16,14 +16,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Slash Command Resolution Priority**: Command precedence is preserved, with skill fallback only used when no matching slash command is found.
 
-### Fixed
-
-- None.
-
-### Removed
-
-- None.
-
 ### Tests
 
 - Added and updated tests for slash command + skill fallback behavior, including command precedence and duplicate skill-slug handling.
