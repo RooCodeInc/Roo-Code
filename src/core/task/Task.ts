@@ -2639,6 +2639,31 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Add environment details as its own text block, separate from tool
 			// results.
 			let finalUserContent = [...contentWithoutEnvDetails, { type: "text" as const, text: environmentDetails }]
+
+			// Inject any queued user messages into this API call.
+			// This allows users to provide mid-task guidance that the agent
+			// picks up immediately on the next API request, rather than
+			// waiting for the current turn to fully complete.
+			if (!this.messageQueueService.isEmpty()) {
+				const queuedTexts: string[] = []
+
+				while (!this.messageQueueService.isEmpty()) {
+					const msg = this.messageQueueService.dequeueMessage()
+
+					if (msg?.text) {
+						queuedTexts.push(msg.text)
+					}
+				}
+
+				if (queuedTexts.length > 0) {
+					const injection =
+						"\n[USER_MID_TASK_MESSAGE]\nThe user has sent the following message(s) while you were working. " +
+						"Please acknowledge and incorporate this feedback into your current task:\n" +
+						queuedTexts.join("\n") +
+						"\n[/USER_MID_TASK_MESSAGE]"
+					finalUserContent.push({ type: "text" as const, text: injection })
+				}
+			}
 			// Only add user message to conversation history if:
 			// 1. This is the first attempt (retryAttempt === 0), AND
 			// 2. The original userContent was not empty (empty signals delegation resume where
