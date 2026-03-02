@@ -82,6 +82,8 @@ export async function getLatestCliVersion(fetchImpl: typeof fetch = fetch): Prom
 		throw new Error("Invalid release response from GitHub.")
 	}
 
+	let latestVersion: string | undefined
+
 	for (const release of releases) {
 		if (!isRecord(release)) {
 			continue
@@ -89,16 +91,28 @@ export async function getLatestCliVersion(fetchImpl: typeof fetch = fetch): Prom
 
 		const tagName = release.tag_name
 		if (typeof tagName === "string" && tagName.startsWith("cli-v")) {
-			return tagName.slice("cli-v".length)
+			const candidate = tagName.slice("cli-v".length)
+			try {
+				if (!latestVersion || compareVersions(candidate, latestVersion) > 0) {
+					latestVersion = candidate
+				}
+			} catch {
+				// Ignore malformed CLI tags and keep scanning other releases.
+			}
 		}
+	}
+
+	if (latestVersion) {
+		return latestVersion
 	}
 
 	throw new Error("Could not determine the latest CLI release version.")
 }
 
-export function runUpgradeInstaller(spawnImpl: typeof spawn = spawn): Promise<void> {
+export function runUpgradeInstaller(version?: string, spawnImpl: typeof spawn = spawn): Promise<void> {
 	return new Promise((resolve, reject) => {
-		const child = spawnImpl("sh", ["-c", INSTALL_SCRIPT_COMMAND], { stdio: "inherit" })
+		const env = version ? { ...process.env, ROO_VERSION: version } : process.env
+		const child = spawnImpl("sh", ["-c", INSTALL_SCRIPT_COMMAND], { stdio: "inherit", env })
 
 		child.once("error", (error) => {
 			reject(error)
@@ -119,7 +133,7 @@ export function runUpgradeInstaller(spawnImpl: typeof spawn = spawn): Promise<vo
 export async function upgrade(options: UpgradeOptions = {}): Promise<void> {
 	const currentVersion = options.currentVersion ?? VERSION
 	const fetchImpl = options.fetchImpl ?? fetch
-	const runInstaller = options.runInstaller ?? (() => runUpgradeInstaller())
+	const runInstaller = options.runInstaller
 
 	console.log(`Current version: ${currentVersion}`)
 
@@ -132,6 +146,10 @@ export async function upgrade(options: UpgradeOptions = {}): Promise<void> {
 	}
 
 	console.log(`Upgrading Roo CLI from ${currentVersion} to ${latestVersion}...`)
-	await runInstaller()
+	if (runInstaller) {
+		await runInstaller()
+	} else {
+		await runUpgradeInstaller(latestVersion)
+	}
 	console.log("✓ Upgrade completed.")
 }

@@ -26,18 +26,23 @@ describe("compareVersions", () => {
 		expect(compareVersions("cli-v1.2.3", "1.2.2")).toBe(1)
 		expect(compareVersions("1.2.3-beta.1", "1.2.3")).toBe(0)
 	})
+
+	it("compares multi-digit patch versions numerically", () => {
+		expect(compareVersions("0.1.10", "0.1.9")).toBe(1)
+	})
 })
 
 describe("getLatestCliVersion", () => {
-	it("returns the first cli-v release tag from GitHub releases", async () => {
+	it("returns the highest cli-v release tag from GitHub releases", async () => {
 		const fetchImpl = (async () =>
 			createFetchResponse([
+				{ tag_name: "cli-v0.1.9" },
 				{ tag_name: "v9.9.9" },
-				{ tag_name: "cli-v0.3.1" },
-				{ tag_name: "cli-v0.3.0" },
+				{ tag_name: "cli-v0.1.10" },
+				{ tag_name: "cli-v0.1.8" },
 			])) as typeof fetch
 
-		await expect(getLatestCliVersion(fetchImpl)).resolves.toBe("0.3.1")
+		await expect(getLatestCliVersion(fetchImpl)).resolves.toBe("0.1.10")
 	})
 
 	it("throws when release check fails", async () => {
