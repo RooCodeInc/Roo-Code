@@ -37,7 +37,10 @@ type OllamaModelsResponse = z.infer<typeof OllamaModelsResponseSchema>
 
 type OllamaModelInfoResponse = z.infer<typeof OllamaModelInfoResponseSchema>
 
-export const parseOllamaModel = (rawModel: OllamaModelInfoResponse): ModelInfo | null => {
+export const parseOllamaModel = (
+	rawModel: OllamaModelInfoResponse,
+	modelName?: string,
+): { modelInfo: ModelInfo | null; filteredReason?: string } => {
 	const contextKey = Object.keys(rawModel.model_info).find((k) => k.includes("context_length"))
 	const contextWindow =
 		contextKey && typeof rawModel.model_info[contextKey] === "number" ? rawModel.model_info[contextKey] : undefined
@@ -45,7 +48,10 @@ export const parseOllamaModel = (rawModel: OllamaModelInfoResponse): ModelInfo |
 	// Filter out models that don't support tools. Models without tool capability won't work.
 	const supportsTools = rawModel.capabilities?.includes("tools") ?? false
 	if (!supportsTools) {
-		return null
+		const reason = rawModel.capabilities
+			? `Model '${modelName || "unknown"}' capabilities (${rawModel.capabilities.join(", ")}) do not include 'tools'`
+			: `Model '${modelName || "unknown"}' has no capabilities reported (Ollama may need to be updated)`
+		return { modelInfo: null, filteredReason: reason }
 	}
 
 	const modelInfo: ModelInfo = Object.assign({}, ollamaDefaultModelInfo, {
@@ -56,7 +62,7 @@ export const parseOllamaModel = (rawModel: OllamaModelInfoResponse): ModelInfo |
 		maxTokens: contextWindow || ollamaDefaultModelInfo.contextWindow,
 	})
 
-	return modelInfo
+	return { modelInfo }
 }
 
 export async function getOllamaModels(
@@ -84,6 +90,8 @@ export async function getOllamaModels(
 		let modelInfoPromises = []
 
 		if (parsedResponse.success) {
+			const filteredModels: string[] = []
+
 			for (const ollamaModel of parsedResponse.data.models) {
 				modelInfoPromises.push(
 					axios
@@ -95,16 +103,28 @@ export async function getOllamaModels(
 							{ headers },
 						)
 						.then((ollamaModelInfo) => {
-							const modelInfo = parseOllamaModel(ollamaModelInfo.data)
+							const { modelInfo, filteredReason } = parseOllamaModel(
+								ollamaModelInfo.data,
+								ollamaModel.name,
+							)
 							// Only include models that support native tools
 							if (modelInfo) {
 								models[ollamaModel.name] = modelInfo
+							} else if (filteredReason) {
+								filteredModels.push(filteredReason)
 							}
 						}),
 				)
 			}
 
 			await Promise.all(modelInfoPromises)
+
+			// Log filtered models to help users understand why models aren't appearing
+			if (filteredModels.length > 0) {
+				console.warn(
+					`[Ollama] ${filteredModels.length} model(s) filtered out due to missing tool support:\n${filteredModels.join("\n")}`,
+				)
+			}
 		} else {
 			console.error(`Error parsing Ollama models response: ${JSON.stringify(parsedResponse.error, null, 2)}`)
 		}
