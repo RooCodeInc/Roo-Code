@@ -1,3 +1,11 @@
+/**
+ * Validates the generated schemas/roomodes.json against sample configurations
+ * using AJV. The schema itself is dynamically generated from the Zod types in
+ * packages/types/src/mode.ts -- see packages/types/scripts/generate-roomodes-schema.ts.
+ *
+ * A separate drift-detection test in packages/types ensures the checked-in
+ * schema stays in sync with the Zod source of truth.
+ */
 import { describe, it, expect, beforeAll } from "vitest"
 import Ajv from "ajv"
 import * as fs from "fs"
