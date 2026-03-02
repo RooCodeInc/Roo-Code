@@ -5,6 +5,16 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9] - 2026-03-02
+
+### Fixed
+
+- **Stdin Stream Cancel Race**: Fixed a race condition during startup cancellation in stdin-stream mode that could cause unexpected behavior when canceling tasks immediately after starting them.
+
+### Tests
+
+- **Integration Test Suite**: Added comprehensive integration test suite for stdin-stream protocol covering cancel, followup, multi-message queue, and shutdown scenarios.
+
 ## [0.1.8] - 2026-03-02
 
 ### Changed
