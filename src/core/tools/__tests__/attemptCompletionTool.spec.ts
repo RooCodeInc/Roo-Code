@@ -1,4 +1,4 @@
-import { TodoItem } from "@roo-code/types"
+import { RooCodeEventName, TodoItem } from "@roo-code/types"
 
 import { AttemptCompletionToolUse } from "../../../shared/tools"
 
@@ -6,6 +6,19 @@ import { AttemptCompletionToolUse } from "../../../shared/tools"
 vi.mock("../../prompts/responses", () => ({
 	formatResponse: {
 		toolError: vi.fn((msg: string) => `Error: ${msg}`),
+		toolResult: vi.fn((msg: string) => `Result: ${msg}`),
+		toolDenied: vi.fn(() => "Denied"),
+	},
+}))
+
+const { mockCaptureTaskCompleted } = vi.hoisted(() => ({
+	mockCaptureTaskCompleted: vi.fn(),
+}))
+vi.mock("@roo-code/telemetry", () => ({
+	TelemetryService: {
+		instance: {
+			captureTaskCompleted: mockCaptureTaskCompleted,
+		},
 	},
 }))
 
@@ -39,6 +52,7 @@ describe("attemptCompletionTool", () => {
 	let mockGetConfiguration: ReturnType<typeof vi.fn>
 
 	beforeEach(() => {
+		mockCaptureTaskCompleted.mockReset()
 		mockPushToolResult = vi.fn()
 		mockAskApproval = vi.fn()
 		mockHandleError = vi.fn()
@@ -466,6 +480,75 @@ describe("attemptCompletionTool", () => {
 
 				expect(mockTask.consecutiveMistakeCount).toBe(0)
 				expect(mockTask.recordToolError).not.toHaveBeenCalled()
+			})
+		})
+
+		describe("completion lifecycle", () => {
+			it("emits TaskCompleted only when completion is accepted", async () => {
+				const block: AttemptCompletionToolUse = {
+					type: "tool_use",
+					name: "attempt_completion",
+					params: { result: "2" },
+					nativeArgs: { result: "2" },
+					partial: false,
+				}
+
+				mockTask.ask = vi.fn().mockResolvedValue({ response: "yesButtonClicked", text: "", images: [] })
+
+				const callbacks: AttemptCompletionCallbacks = {
+					askApproval: mockAskApproval,
+					handleError: mockHandleError,
+					pushToolResult: mockPushToolResult,
+					askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+					toolDescription: mockToolDescription,
+				}
+
+				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+				expect(mockHandleError).not.toHaveBeenCalled()
+				expect(mockCaptureTaskCompleted).toHaveBeenCalledWith("task_1")
+				expect(mockTask.emit).toHaveBeenCalledWith(
+					RooCodeEventName.TaskCompleted,
+					"task_1",
+					expect.anything(),
+					expect.anything(),
+				)
+			})
+
+			it("does not emit TaskCompleted when user provides follow-up feedback", async () => {
+				const block: AttemptCompletionToolUse = {
+					type: "tool_use",
+					name: "attempt_completion",
+					params: { result: "2" },
+					nativeArgs: { result: "2" },
+					partial: false,
+				}
+
+				mockTask.ask = vi.fn().mockResolvedValue({
+					response: "messageResponse",
+					text: "Different question now: what is 3+3?",
+					images: [],
+				})
+
+				const callbacks: AttemptCompletionCallbacks = {
+					askApproval: mockAskApproval,
+					handleError: mockHandleError,
+					pushToolResult: mockPushToolResult,
+					askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+					toolDescription: mockToolDescription,
+				}
+
+				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+				expect(mockHandleError).not.toHaveBeenCalled()
+				expect(mockCaptureTaskCompleted).not.toHaveBeenCalled()
+				expect(mockTask.emit).not.toHaveBeenCalledWith(
+					RooCodeEventName.TaskCompleted,
+					expect.anything(),
+					expect.anything(),
+					expect.anything(),
+				)
+				expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("<user_message>"))
 			})
 		})
 	})

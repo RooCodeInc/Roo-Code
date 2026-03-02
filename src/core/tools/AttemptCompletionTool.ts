@@ -80,14 +80,6 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 
 			await task.say("completion_result", result, undefined, false)
 
-			// Force final token usage update before emitting TaskCompleted
-			// This ensures the most recent stats are captured regardless of throttle timer
-			// and properly updates the snapshot to prevent redundant emissions
-			task.emitFinalTokenUsageUpdate()
-
-			TelemetryService.instance.captureTaskCompleted(task.taskId)
-			task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
-
 			// Check for subtask using parentTaskId (metadata-driven delegation)
 			if (task.parentTaskId) {
 				// Check if this subtask has already completed and returned to parent
@@ -105,14 +97,17 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 							// without injecting another tool_result to the parent
 						} else if (status === "active") {
 							// Normal subtask completion - do delegation
-							const delegated = await this.delegateToParent(
+							const delegation = await this.delegateToParent(
 								task,
 								result,
 								provider,
 								askFinishSubTaskApproval,
 								pushToolResult,
 							)
-							if (delegated) return
+							if (delegation === "delegated") {
+								this.emitTaskCompleted(task)
+							}
+							if (delegation !== "continue") return
 						} else {
 							// Unexpected status (undefined or "delegated") - log error and skip delegation
 							// undefined indicates a bug in status persistence during child creation
@@ -137,6 +132,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			const { response, text, images } = await task.ask("completion_result", "", false)
 
 			if (response === "yesButtonClicked") {
+				this.emitTaskCompleted(task)
 				return
 			}
 
@@ -152,7 +148,10 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 
 	/**
 	 * Handles the common delegation flow when a subtask completes.
-	 * Returns true if delegation was performed and the caller should return early.
+	 * Returns:
+	 * - "delegated" when completion was approved and parent resumed
+	 * - "denied" when user denied finishing the subtask
+	 * - "continue" when caller should fall through to normal completion ask flow
 	 */
 	private async delegateToParent(
 		task: Task,
@@ -160,12 +159,12 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 		provider: DelegationProvider,
 		askFinishSubTaskApproval: () => Promise<boolean>,
 		pushToolResult: (result: string) => void,
-	): Promise<boolean> {
+	): Promise<"delegated" | "denied" | "continue"> {
 		const didApprove = await askFinishSubTaskApproval()
 
 		if (!didApprove) {
 			pushToolResult(formatResponse.toolDenied())
-			return true
+			return "denied"
 		}
 
 		pushToolResult("")
@@ -176,7 +175,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			completionResultSummary: result,
 		})
 
-		return true
+		return "delegated"
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"attempt_completion">): Promise<void> {
@@ -190,18 +189,20 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 				await task.ask("command", command ?? "", block.partial).catch(() => {})
 			} else {
 				await task.say("completion_result", result ?? "", undefined, false)
-
-				// Force final token usage update before emitting TaskCompleted for consistency
-				task.emitFinalTokenUsageUpdate()
-
-				TelemetryService.instance.captureTaskCompleted(task.taskId)
-				task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
-
 				await task.ask("command", command ?? "", block.partial).catch(() => {})
 			}
 		} else {
 			await task.say("completion_result", result ?? "", undefined, block.partial)
 		}
+	}
+
+	private emitTaskCompleted(task: Task): void {
+		// Force final token usage update before emitting TaskCompleted.
+		// This ensures the latest stats are captured regardless of throttle timer.
+		task.emitFinalTokenUsageUpdate()
+
+		TelemetryService.instance.captureTaskCompleted(task.taskId)
+		task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
 	}
 }
 

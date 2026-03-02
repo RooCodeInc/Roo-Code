@@ -294,6 +294,43 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 	let hasSeenQueueState = false
 	let lastQueueDepth = 0
 	let lastQueueMessageIds: string[] = []
+	const pendingQueuedMessageRequestIds: string[] = []
+	const queueMessageRequestIdByMessageId = new Map<string, string>()
+
+	const assignRequestIdsToNewQueueMessages = (queueMessageIds: string[]) => {
+		for (const messageId of queueMessageIds) {
+			if (queueMessageRequestIdByMessageId.has(messageId)) {
+				continue
+			}
+
+			const requestId = pendingQueuedMessageRequestIds.shift()
+			if (!requestId) {
+				continue
+			}
+
+			queueMessageRequestIdByMessageId.set(messageId, requestId)
+		}
+	}
+
+	const promoteRequestIdForDequeuedMessages = (queueMessageIds: string[]) => {
+		if (lastQueueMessageIds.length === 0) {
+			return
+		}
+
+		const remainingIds = new Set(queueMessageIds)
+
+		for (const dequeuedMessageId of lastQueueMessageIds) {
+			if (remainingIds.has(dequeuedMessageId)) {
+				continue
+			}
+
+			const requestId = queueMessageRequestIdByMessageId.get(dequeuedMessageId)
+			if (requestId) {
+				setStreamRequestId(requestId)
+			}
+			queueMessageRequestIdByMessageId.delete(dequeuedMessageId)
+		}
+	}
 
 	const waitForPreviousTaskToSettle = async () => {
 		if (!activeTaskPromise) {
@@ -407,6 +444,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 		const queueMessageIds = queueSnapshot.map((item) => item.id)
 
 		if (!hasSeenQueueState) {
+			assignRequestIdsToNewQueueMessages(queueMessageIds)
 			hasSeenQueueState = true
 			lastQueueDepth = queueDepth
 			lastQueueMessageIds = queueMessageIds
@@ -431,6 +469,9 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 		if (!depthChanged && !idsChanged) {
 			return
 		}
+
+		promoteRequestIdForDequeuedMessages(queueMessageIds)
+		assignRequestIdsToNewQueueMessages(queueMessageIds)
 
 		const subtype: "enqueued" | "dequeued" | "drained" | "updated" = depthChanged
 			? queueDepth > lastQueueDepth
@@ -481,9 +522,19 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 				success: event.success,
 			})
 
+			// If user messages were queued while the task was still running, shift
+			// event attribution to the oldest pending message request as soon as the
+			// task turn completes so prompt echo/user feedback events are tagged.
+			const oldestQueuedMessageId = lastQueueMessageIds[0]
+			const nextQueuedRequestId =
+				pendingQueuedMessageRequestIds[0] ??
+				(oldestQueuedMessageId ? queueMessageRequestIdByMessageId.get(oldestQueuedMessageId) : undefined)
+			if (nextQueuedRequestId) {
+				setStreamRequestId(nextQueuedRequestId)
+			}
+
 			activeTaskCommand = undefined
 			activeRequestId = undefined
-			setStreamRequestId(undefined)
 			cancelRequestedForActiveTask = false
 		}
 	})
@@ -626,8 +677,6 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 						break
 					}
 
-					setStreamRequestId(stdinCommand.requestId)
-
 					jsonEmitter.emitControl({
 						subtype: "ack",
 						requestId: stdinCommand.requestId,
@@ -639,6 +688,10 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 					})
 
 					host.sendToExtension({ type: "queueMessage", text: stdinCommand.prompt })
+					pendingQueuedMessageRequestIds.push(stdinCommand.requestId)
+					if (host.isWaitingForInput()) {
+						setStreamRequestId(stdinCommand.requestId)
+					}
 
 					jsonEmitter.emitControl({
 						subtype: "done",
