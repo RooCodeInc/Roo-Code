@@ -26,7 +26,13 @@ interface MockLanguageModelToolCallPart {
 interface MockLanguageModelToolResultPart {
 	type: "tool_result"
 	callId: string
-	content: MockLanguageModelTextPart[]
+	content: (MockLanguageModelTextPart | MockLanguageModelDataPart)[]
+}
+
+interface MockLanguageModelDataPart {
+	type: "data"
+	data: Uint8Array
+	mimeType: string
 }
 
 // Mock vscode namespace
@@ -54,8 +60,30 @@ vitest.mock("vscode", () => {
 		type = "tool_result"
 		constructor(
 			public callId: string,
-			public content: MockLanguageModelTextPart[],
+			public content: (MockLanguageModelTextPart | MockLanguageModelDataPart)[],
 		) {}
+	}
+
+	class MockLanguageModelDataPart {
+		type = "data"
+		constructor(
+			public data: Uint8Array,
+			public mimeType: string,
+		) {}
+
+		static image(data: Uint8Array, mime: string) {
+			return new MockLanguageModelDataPart(data, mime)
+		}
+
+		static json(value: any, mime?: string) {
+			const bytes = new TextEncoder().encode(JSON.stringify(value))
+			return new MockLanguageModelDataPart(bytes, mime || "application/json")
+		}
+
+		static text(value: string, mime?: string) {
+			const bytes = new TextEncoder().encode(value)
+			return new MockLanguageModelDataPart(bytes, mime || "text/plain")
+		}
 	}
 
 	return {
@@ -75,6 +103,7 @@ vitest.mock("vscode", () => {
 		LanguageModelTextPart: MockLanguageModelTextPart,
 		LanguageModelToolCallPart: MockLanguageModelToolCallPart,
 		LanguageModelToolResultPart: MockLanguageModelToolResultPart,
+		LanguageModelDataPart: MockLanguageModelDataPart,
 	}
 })
 
@@ -150,7 +179,7 @@ describe("convertToVsCodeLmMessages", () => {
 		expect(toolCall.type).toBe("tool_call")
 	})
 
-	it("should handle image blocks with appropriate placeholders", () => {
+	it("should convert image blocks to LanguageModelDataPart", () => {
 		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
@@ -161,7 +190,7 @@ describe("convertToVsCodeLmMessages", () => {
 						source: {
 							type: "base64",
 							media_type: "image/png",
-							data: "base64data",
+							data: "dGVzdA==", // "test" in base64
 						},
 					},
 				],
@@ -171,8 +200,123 @@ describe("convertToVsCodeLmMessages", () => {
 		const result = convertToVsCodeLmMessages(messages)
 
 		expect(result).toHaveLength(1)
+		expect(result[0].content).toHaveLength(2)
+
+		// First part should be text
+		const textPart = result[0].content[0] as MockLanguageModelTextPart
+		expect(textPart.type).toBe("text")
+		expect(textPart.value).toBe("Look at this:")
+
+		// Second part should be a LanguageModelDataPart for the image
+		const imagePart = result[0].content[1] as unknown as MockLanguageModelDataPart
+		expect(imagePart.type).toBe("data")
+		expect(imagePart.mimeType).toBe("image/png")
+		expect(imagePart.data).toBeInstanceOf(Uint8Array)
+	})
+
+	it("should handle images in tool results", () => {
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [
+					{
+						type: "tool_result",
+						tool_use_id: "tool-1",
+						content: [
+							{ type: "text", text: "Screenshot result:" },
+							{
+								type: "image",
+								source: {
+									type: "base64",
+									media_type: "image/jpeg",
+									data: "dGVzdA==",
+								},
+							},
+						],
+					},
+				],
+			},
+		]
+
+		const result = convertToVsCodeLmMessages(messages)
+
+		expect(result).toHaveLength(1)
+		expect(result[0].content).toHaveLength(1)
+
+		const toolResult = result[0].content[0] as MockLanguageModelToolResultPart
+		expect(toolResult.type).toBe("tool_result")
+		expect(toolResult.content).toHaveLength(2)
+
+		// First item in tool result should be text
+		const textPart = toolResult.content[0] as MockLanguageModelTextPart
+		expect(textPart.type).toBe("text")
+
+		// Second item should be image data
+		const imagePart = toolResult.content[1] as MockLanguageModelDataPart
+		expect(imagePart.type).toBe("data")
+		expect(imagePart.mimeType).toBe("image/jpeg")
+	})
+
+	it("should return text placeholder for URL-based images", () => {
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [
+					{ type: "text", text: "Check this image:" },
+					{
+						type: "image",
+						source: {
+							type: "url",
+							url: "https://example.com/image.png",
+						} as any,
+					},
+				],
+			},
+		]
+
+		const result = convertToVsCodeLmMessages(messages)
+
+		expect(result).toHaveLength(1)
+		expect(result[0].content).toHaveLength(2)
+
+		// First part should be text
+		const textPart = result[0].content[0] as MockLanguageModelTextPart
+		expect(textPart.type).toBe("text")
+		expect(textPart.value).toBe("Check this image:")
+
+		// Second part should be a text placeholder (not an empty DataPart)
 		const imagePlaceholder = result[0].content[1] as MockLanguageModelTextPart
-		expect(imagePlaceholder.value).toContain("[Image (base64): image/png not supported by VSCode LM API]")
+		expect(imagePlaceholder.type).toBe("text")
+		expect(imagePlaceholder.value).toContain("URL not supported")
+		expect(imagePlaceholder.value).toContain("https://example.com/image.png")
+	})
+
+	it("should return text placeholder for unknown image source types", () => {
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [
+					{
+						type: "image",
+						source: {
+							type: "unknown",
+							media_type: "image/png",
+							data: "", // Required by type but ignored for unknown source types
+						} as any,
+					},
+				],
+			},
+		]
+
+		const result = convertToVsCodeLmMessages(messages)
+
+		expect(result).toHaveLength(1)
+		expect(result[0].content).toHaveLength(1)
+
+		// Should return a text placeholder for unknown source types
+		const placeholder = result[0].content[0] as MockLanguageModelTextPart
+		expect(placeholder.type).toBe("text")
+		expect(placeholder.value).toContain("unsupported source type")
 	})
 })
 
