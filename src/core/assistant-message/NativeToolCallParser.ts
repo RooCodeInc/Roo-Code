@@ -166,16 +166,27 @@ export class NativeToolCallParser {
 	/**
 	 * Process stream finish reason.
 	 * Emits end events when finish_reason is 'tool_calls'.
+	 * Only emits events for tool calls that have been properly started (have a name).
 	 */
 	public static processFinishReason(finishReason: string | null | undefined): ToolCallStreamEvent[] {
 		const events: ToolCallStreamEvent[] = []
 
 		if (finishReason === "tool_calls" && this.rawChunkTracker.size > 0) {
 			for (const [, tracked] of this.rawChunkTracker.entries()) {
-				events.push({
-					type: "tool_call_end",
-					id: tracked.id,
-				})
+				// Only emit end event if the tool call was properly started
+				// (i.e., we received a name and emitted tool_call_start)
+				if (tracked.hasStarted) {
+					events.push({
+						type: "tool_call_end",
+						id: tracked.id,
+					})
+				} else {
+					// Log diagnostic warning for unstarted tool calls
+					console.warn(
+						`[NativeToolCallParser] Skipping tool_call_end for unstarted tool call: ${tracked.id} ` +
+							`(no name received, hasStarted=false)`,
+					)
+				}
 			}
 		}
 
