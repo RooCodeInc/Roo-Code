@@ -27,7 +27,7 @@ export const FollowUpSuggest = ({
 	isAnswered = false,
 	inputValue: _inputValue = "",
 }: FollowUpSuggestProps) => {
-	const { autoApprovalEnabled, alwaysAllowFollowupQuestions, followupAutoApproveTimeoutMs } = useExtensionState()
+	const { autoApprovalEnabled } = useExtensionState()
 	const [countdown, setCountdown] = useState<number | null>(null)
 	const [suggestionSelected, setSuggestionSelected] = useState(false)
 	const [selectedSuggestion, setSelectedSuggestion] = useState<SuggestionItem | null>(null)
@@ -42,19 +42,15 @@ export const FollowUpSuggest = ({
 		// Also stop countdown if the question has been answered
 		if (
 			autoApprovalEnabled &&
-			alwaysAllowFollowupQuestions &&
 			suggestions.length > 0 &&
 			!suggestionSelected &&
 			!isAnswered
 		) {
 			// Start with the configured timeout in seconds
-			const timeoutMs =
-				typeof followupAutoApproveTimeoutMs === "number" && !isNaN(followupAutoApproveTimeoutMs)
-					? followupAutoApproveTimeoutMs
-					: DEFAULT_FOLLOWUP_TIMEOUT_MS
+			
 
 			// Convert milliseconds to seconds for the countdown
-			setCountdown(Math.floor(timeoutMs / 1000))
+			
 
 			// Update countdown every second
 			const intervalId = setInterval(() => {
@@ -79,9 +75,9 @@ export const FollowUpSuggest = ({
 		}
 	}, [
 		autoApprovalEnabled,
-		alwaysAllowFollowupQuestions,
+		
 		suggestions,
-		followupAutoApproveTimeoutMs,
+		
 		suggestionSelected,
 		onCancelAutoApproval,
 		isAnswered,

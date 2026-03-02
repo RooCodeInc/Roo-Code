@@ -60,8 +60,7 @@ describe("AutoApproveMenu", () => {
 		alwaysAllowModeSwitch: false,
 		alwaysAllowSubtasks: false,
 		alwaysApproveResubmit: false,
-		alwaysAllowFollowupQuestions: false,
-		alwaysAllowUpdateTodoList: false,
+		
 		writeDelayMs: 3000,
 		allowedMaxRequests: undefined,
 		setAutoApprovalEnabled: vi.fn(),
@@ -73,8 +72,7 @@ describe("AutoApproveMenu", () => {
 		setAlwaysAllowModeSwitch: vi.fn(),
 		setAlwaysAllowSubtasks: vi.fn(),
 		setAlwaysApproveResubmit: vi.fn(),
-		setAlwaysAllowFollowupQuestions: vi.fn(),
-		setAlwaysAllowUpdateTodoList: vi.fn(),
+		
 		setAllowedMaxRequests: vi.fn(),
 	}
 

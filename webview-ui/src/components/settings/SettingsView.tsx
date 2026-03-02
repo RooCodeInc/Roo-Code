@@ -177,11 +177,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		customCondensingPrompt,
 		customSupportPrompts,
 		profileThresholds,
-		alwaysAllowFollowupQuestions,
-		alwaysAllowUpdateTodoList,
+		
 		alwaysAllowDeploySfMetadata,
 		alwaysAllowRetrieveSfMetadata,
-		followupAutoApproveTimeoutMs,
+	
 		includeDiagnosticMessages,
 		maxDiagnosticMessages,
 		includeTaskHistoryInEnhance,
@@ -339,9 +338,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			vscode.postMessage({ type: "updateExperimental", values: experiments })
 			vscode.postMessage({ type: "alwaysAllowModeSwitch", bool: alwaysAllowModeSwitch })
 			vscode.postMessage({ type: "alwaysAllowSubtasks", bool: alwaysAllowSubtasks })
-			vscode.postMessage({ type: "alwaysAllowFollowupQuestions", bool: alwaysAllowFollowupQuestions })
-			vscode.postMessage({ type: "alwaysAllowUpdateTodoList", bool: alwaysAllowUpdateTodoList })
-			vscode.postMessage({ type: "followupAutoApproveTimeoutMs", value: followupAutoApproveTimeoutMs })
+			
 			vscode.postMessage({ type: "condensingApiConfigId", text: condensingApiConfigId || "" })
 			vscode.postMessage({ type: "updateCondensingPrompt", text: customCondensingPrompt || "" })
 			vscode.postMessage({ type: "updateSupportPrompt", values: customSupportPrompts || {} })
@@ -637,11 +634,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							alwaysAllowModeSwitch={alwaysAllowModeSwitch}
 							alwaysAllowSubtasks={alwaysAllowSubtasks}
 							alwaysAllowExecute={alwaysAllowExecute}
-							alwaysAllowFollowupQuestions={alwaysAllowFollowupQuestions}
-							alwaysAllowUpdateTodoList={alwaysAllowUpdateTodoList}
+							
 							alwaysAllowDeploySfMetadata={alwaysAllowDeploySfMetadata}
 							alwaysAllowRetrieveSfMetadata={alwaysAllowRetrieveSfMetadata}
-							followupAutoApproveTimeoutMs={followupAutoApproveTimeoutMs}
 							allowedCommands={allowedCommands}
 							deniedCommands={deniedCommands}
 							setCachedStateField={setCachedStateField}

@@ -192,14 +192,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		allowedCommands,
 		deniedCommands,
 		writeDelayMs,
-		followupAutoApproveTimeoutMs,
+		
 		mode,
 		setMode,
 		autoApprovalEnabled,
 		alwaysAllowModeSwitch,
 		alwaysAllowSubtasks,
-		alwaysAllowFollowupQuestions,
-		alwaysAllowUpdateTodoList,
+		
 		alwaysAllowDeploySfMetadata,
 		alwaysAllowRetrieveSfMetadata,
 		customModes,
@@ -1392,9 +1391,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				return false
 			}
 
-			if (message.ask === "followup") {
-				return alwaysAllowFollowupQuestions
-			}
+			
 
 			if (message.ask === "browser_action_launch") {
 				return alwaysAllowBrowser
@@ -1423,9 +1420,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					return false
 				}
 
-				if (tool?.tool === "updateTodoList") {
-					return alwaysAllowUpdateTodoList
-				}
+				
 
 				if (tool?.tool === "deploySfMetadata") {
 					return alwaysAllowDeploySfMetadata
@@ -1481,9 +1476,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			isAllowedCommand,
 			alwaysAllowMcp,
 			isMcpToolAlwaysAllowed,
-			alwaysAllowFollowupQuestions,
+			
 			alwaysAllowSubtasks,
-			alwaysAllowUpdateTodoList,
+			
 			alwaysAllowDeploySfMetadata,
 			alwaysAllowRetrieveSfMetadata,
 		],
@@ -1943,38 +1938,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			// Then check for auto-approve
 			if (lastMessage?.ask && isAutoApproved(lastMessage)) {
 				// Special handling for follow-up questions
-				if (lastMessage.ask === "followup") {
-					// Handle invalid JSON
-					let followUpData: FollowUpData = {}
-					try {
-						followUpData = JSON.parse(lastMessage.text || "{}") as FollowUpData
-					} catch (error) {
-						console.error("Failed to parse follow-up data:", error)
-						return
-					}
-
-					if (followUpData && followUpData.suggest && followUpData.suggest.length > 0) {
-						// Wait for the configured timeout before auto-selecting the first suggestion
-						await new Promise<void>((resolve) => {
-							autoApproveTimeoutRef.current = setTimeout(() => {
-								autoApproveTimeoutRef.current = null
-								resolve()
-							}, followupAutoApproveTimeoutMs)
-						})
-
-						// Check if user responded manually
-						if (userRespondedRef.current) {
-							return
-						}
-
-						// Get the first suggestion
-						const firstSuggestion = followUpData.suggest[0]
-
-						// Handle the suggestion click
-						handleSuggestionClickInRow(firstSuggestion)
-						return
-					}
-				} else if (lastMessage.ask === "tool" && isWriteToolAction(lastMessage)) {
+				if (lastMessage.ask === "tool" && isWriteToolAction(lastMessage)) {
 					await new Promise<void>((resolve) => {
 						autoApproveTimeoutRef.current = setTimeout(() => {
 							autoApproveTimeoutRef.current = null
@@ -2008,7 +1972,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		alwaysAllowWrite,
 		alwaysAllowWriteOutsideWorkspace,
 		alwaysAllowExecute,
-		followupAutoApproveTimeoutMs,
+		
 		alwaysAllowMcp,
 		messages,
 		allowedCommands,
@@ -2018,7 +1982,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		lastMessage,
 		writeDelayMs,
 		isWriteToolAction,
-		alwaysAllowFollowupQuestions,
+		
 		handleSuggestionClickInRow,
 		isAllowedCommand,
 		isDeniedCommand,

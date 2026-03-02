@@ -14,8 +14,7 @@ type AutoApproveToggles = Pick<
 	| "alwaysAllowModeSwitch"
 	| "alwaysAllowSubtasks"
 	| "alwaysAllowExecute"
-	| "alwaysAllowFollowupQuestions"
-	| "alwaysAllowUpdateTodoList"
+	
 	| "alwaysAllowDeploySfMetadata"
 	| "alwaysAllowRetrieveSfMetadata"
 >
@@ -87,20 +86,7 @@ export const autoApproveSettingsConfig: Record<AutoApproveSetting, AutoApproveCo
 		icon: "terminal",
 		testId: "always-allow-execute-toggle",
 	},
-	alwaysAllowFollowupQuestions: {
-		key: "alwaysAllowFollowupQuestions",
-		labelKey: "settings:autoApprove.followupQuestions.label",
-		descriptionKey: "settings:autoApprove.followupQuestions.description",
-		icon: "question",
-		testId: "always-allow-followup-questions-toggle",
-	},
-	alwaysAllowUpdateTodoList: {
-		key: "alwaysAllowUpdateTodoList",
-		labelKey: "settings:autoApprove.updateTodoList.label",
-		descriptionKey: "settings:autoApprove.updateTodoList.description",
-		icon: "checklist",
-		testId: "always-allow-update-todo-list-toggle",
-	},
+	
 	alwaysAllowDeploySfMetadata: {
 		key: "alwaysAllowDeploySfMetadata",
 		labelKey: "settings:autoApprove.deploySfMetadata.label",

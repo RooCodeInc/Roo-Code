@@ -59,10 +59,8 @@ describe("MarketplaceView", () => {
 			sharingEnabled: false,
 			hasOpenedModeSelector: false,
 			setHasOpenedModeSelector: vi.fn(),
-			alwaysAllowFollowupQuestions: false,
-			setAlwaysAllowFollowupQuestions: vi.fn(),
-			followupAutoApproveTimeoutMs: 60000,
-			setFollowupAutoApproveTimeoutMs: vi.fn(),
+			
+			
 			profileThresholds: {},
 			setProfileThresholds: vi.fn(),
 			// ... other required context properties

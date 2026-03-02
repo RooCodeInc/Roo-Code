@@ -13,8 +13,7 @@ describe("useAutoApprovalState", () => {
 				alwaysAllowModeSwitch: false,
 				alwaysAllowSubtasks: false,
 				alwaysApproveResubmit: false,
-				alwaysAllowFollowupQuestions: false,
-				alwaysAllowUpdateTodoList: false,
+				
 			}
 
 			const { result } = renderHook(() => useAutoApprovalState(toggles, true))
@@ -32,8 +31,7 @@ describe("useAutoApprovalState", () => {
 				alwaysAllowModeSwitch: undefined,
 				alwaysAllowSubtasks: undefined,
 				alwaysApproveResubmit: undefined,
-				alwaysAllowFollowupQuestions: undefined,
-				alwaysAllowUpdateTodoList: undefined,
+				
 			}
 
 			const { result } = renderHook(() => useAutoApprovalState(toggles, true))
@@ -51,9 +49,8 @@ describe("useAutoApprovalState", () => {
 				alwaysAllowModeSwitch: false,
 				alwaysAllowSubtasks: false,
 				alwaysApproveResubmit: false,
-				alwaysAllowFollowupQuestions: false,
-				alwaysAllowUpdateTodoList: false,
-			}
+			
+			 }
 
 			const { result } = renderHook(() => useAutoApprovalState(toggles, true))
 
@@ -70,8 +67,7 @@ describe("useAutoApprovalState", () => {
 				alwaysAllowModeSwitch: false,
 				alwaysAllowSubtasks: false,
 				alwaysApproveResubmit: false,
-				alwaysAllowFollowupQuestions: false,
-				alwaysAllowUpdateTodoList: false,
+				
 			}
 
 			const { result } = renderHook(() => useAutoApprovalState(toggles, true))
@@ -89,8 +85,7 @@ describe("useAutoApprovalState", () => {
 				alwaysAllowModeSwitch: true,
 				alwaysAllowSubtasks: true,
 				alwaysApproveResubmit: true,
-				alwaysAllowFollowupQuestions: true,
-				alwaysAllowUpdateTodoList: true,
+			
 			}
 
 			const { result } = renderHook(() => useAutoApprovalState(toggles, true))
@@ -134,8 +129,7 @@ describe("useAutoApprovalState", () => {
 				alwaysAllowModeSwitch: false,
 				alwaysAllowSubtasks: false,
 				alwaysApproveResubmit: false,
-				alwaysAllowFollowupQuestions: false,
-				alwaysAllowUpdateTodoList: false,
+				
 			}
 
 			const { result } = renderHook(() => useAutoApprovalState(toggles, true))
