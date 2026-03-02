@@ -5,6 +5,12 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.10] - 2026-03-02
+
+### Added
+
+- **Command Exit Code in Events**: The `tool_result` event for command executions now includes an `exitCode` field, allowing CLI consumers to programmatically distinguish between successful and failed command executions without parsing output text.
+
 ## [0.1.9] - 2026-03-02
 
 ### Fixed
