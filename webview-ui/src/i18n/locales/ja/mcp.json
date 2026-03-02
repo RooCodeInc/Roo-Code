@@ -20,7 +20,9 @@
 		"alwaysAllow": "常に許可",
 		"parameters": "パラメータ",
 		"noDescription": "説明なし",
-		"togglePromptInclusion": "プロンプトへの含有を切り替える"
+		"togglePromptInclusion": "プロンプトへの含有を切り替える",
+		"expand": "説明を展開",
+		"collapse": "説明を折りたたむ"
 	},
 	"tabs": {
 		"tools": "ツール",

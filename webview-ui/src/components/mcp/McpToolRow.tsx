@@ -1,9 +1,12 @@
+import { useState } from "react"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
+import { ChevronDown } from "lucide-react"
 
 import type { McpTool } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { vscode } from "@src/utils/vscode"
+import { cn } from "@src/lib/utils"
 import { StandardTooltip, ToggleSwitch } from "@/components/ui"
 
 type McpToolRowProps = {
@@ -17,6 +20,7 @@ type McpToolRowProps = {
 const McpToolRow = ({ tool, serverName, serverSource, alwaysAllowMcp, isInChatContext = false }: McpToolRowProps) => {
 	const { t } = useAppTranslation()
 	const isToolEnabled = tool.enabledForPrompt ?? true
+	const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
 
 	const handleAlwaysAllowChange = () => {
 		if (!serverName) return
@@ -99,10 +103,39 @@ const McpToolRow = ({ tool, serverName, serverSource, alwaysAllowMcp, isInChatCo
 			</div>
 			{tool.description && (
 				<div
-					className={`mt-1 text-xs text-vscode-descriptionForeground ${
-						isToolEnabled ? "opacity-80" : "opacity-40"
-					}`}>
-					{tool.description}
+					className={cn("mt-1 text-xs text-vscode-descriptionForeground", {
+						"opacity-80": isToolEnabled,
+						"opacity-40": !isToolEnabled,
+					})}>
+					{isInChatContext ? (
+						<div className="flex items-start gap-1">
+							<StandardTooltip
+								content={isDescriptionExpanded ? t("mcp:tool.collapse") : t("mcp:tool.expand")}>
+								<button
+									onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+									className="flex items-center p-0.5 -ml-0.5 rounded hover:bg-vscode-list-hoverBackground"
+									data-testid="description-toggle">
+									<ChevronDown
+										className={cn("size-3 transition-transform duration-200", {
+											"rotate-0": isDescriptionExpanded,
+											"-rotate-90": !isDescriptionExpanded,
+										})}
+									/>
+								</button>
+							</StandardTooltip>
+							<StandardTooltip content={tool.description}>
+								<span
+									className={cn("cursor-pointer", {
+										"line-clamp-2": !isDescriptionExpanded,
+									})}
+									onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
+									{tool.description}
+								</span>
+							</StandardTooltip>
+						</div>
+					) : (
+						tool.description
+					)}
 				</div>
 			)}
 			{isToolEnabled &&
