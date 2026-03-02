@@ -2,6 +2,11 @@ import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
+import {
+	buildSkillApprovalMessage,
+	buildSkillResult,
+	resolveSkillContentForMode,
+} from "../../services/skills/skillInvocation"
 
 interface SkillParams {
 	skill: string
@@ -43,7 +48,7 @@ export class SkillTool extends BaseTool<"skill"> {
 			const currentMode = state?.mode ?? "code"
 
 			// Fetch skill content
-			const skillContent = await skillsManager.getSkillContent(skillName, currentMode)
+			const skillContent = await resolveSkillContentForMode(skillsManager, skillName, currentMode)
 
 			if (!skillContent) {
 				// Get available skills for error message
@@ -61,13 +66,7 @@ export class SkillTool extends BaseTool<"skill"> {
 			}
 
 			// Build approval message
-			const toolMessage = JSON.stringify({
-				tool: "skill",
-				skill: skillName,
-				args: args,
-				source: skillContent.source,
-				description: skillContent.description,
-			})
+			const toolMessage = buildSkillApprovalMessage(skillName, args, skillContent)
 
 			const didApprove = await askApproval("tool", toolMessage)
 
@@ -75,21 +74,7 @@ export class SkillTool extends BaseTool<"skill"> {
 				return
 			}
 
-			// Build the result message
-			let result = `Skill: ${skillName}`
-
-			if (skillContent.description) {
-				result += `\nDescription: ${skillContent.description}`
-			}
-
-			if (args) {
-				result += `\nProvided arguments: ${args}`
-			}
-
-			result += `\nSource: ${skillContent.source}`
-			result += `\n\n--- Skill Instructions ---\n\n${skillContent.instructions}`
-
-			pushToolResult(result)
+			pushToolResult(buildSkillResult(skillName, args, skillContent))
 		} catch (error) {
 			await handleError("executing skill", error as Error)
 		}

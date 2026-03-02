@@ -13,6 +13,7 @@ import {
 	type TelemetrySetting,
 	type UserSettingsConfig,
 	type ModelRecord,
+	type Command as SlashCommand,
 	type WebviewMessage,
 	type EditQueuedMessagePayload,
 	TelemetryEventName,
@@ -100,6 +101,72 @@ export const webviewMessageHandler = async (
 
 	const getCurrentCwd = () => {
 		return provider.getCurrentTask()?.cwd || provider.cwd
+	}
+
+	const getCurrentMode = async (): Promise<string> => {
+		const currentTask = provider.getCurrentTask()
+
+		if (currentTask) {
+			try {
+				return await currentTask.getTaskMode()
+			} catch (error) {
+				provider.log(
+					`Error resolving current task mode for command discovery: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
+				)
+			}
+		}
+
+		try {
+			const state = await provider.getState()
+			if (typeof state.mode === "string" && state.mode.length > 0) {
+				return state.mode
+			}
+		} catch (error) {
+			provider.log(
+				`Error resolving global mode for command discovery: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
+			)
+		}
+
+		return defaultModeSlug
+	}
+
+	const getDiscoveredCommands = async (): Promise<SlashCommand[]> => {
+		const { getCommands } = await import("../../services/command/commands")
+		const commands = await getCommands(getCurrentCwd())
+
+		const commandList: SlashCommand[] = commands.map((command) => ({
+			name: command.name,
+			source: command.source,
+			filePath: command.filePath,
+			description: command.description,
+			argumentHint: command.argumentHint,
+		}))
+
+		const existingCommandNames = new Set(commandList.map((command) => command.name))
+		const skillsManager = provider.getSkillsManager()
+
+		if (!skillsManager) {
+			return commandList
+		}
+
+		const currentMode = await getCurrentMode()
+		const availableSkills = skillsManager.getSkillsForMode(currentMode)
+
+		for (const skill of availableSkills) {
+			if (existingCommandNames.has(skill.name)) {
+				continue
+			}
+
+			existingCommandNames.add(skill.name)
+			commandList.push({
+				name: skill.name,
+				source: skill.source,
+				filePath: skill.path,
+				description: skill.description,
+			})
+		}
+
+		return commandList
 	}
 
 	/**
@@ -2931,17 +2998,7 @@ export const webviewMessageHandler = async (
 		}
 		case "requestCommands": {
 			try {
-				const { getCommands } = await import("../../services/command/commands")
-				const commands = await getCommands(getCurrentCwd())
-
-				const commandList = commands.map((command) => ({
-					name: command.name,
-					source: command.source,
-					filePath: command.filePath,
-					description: command.description,
-					argumentHint: command.argumentHint,
-				}))
-
+				const commandList = await getDiscoveredCommands()
 				await provider.postMessageToWebview({ type: "commands", commands: commandList })
 			} catch (error) {
 				provider.log(`Error fetching commands: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)

@@ -2592,11 +2592,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}),
 			)
 
-			const {
-				showRooIgnoredFiles = false,
-				includeDiagnosticMessages = true,
-				maxDiagnosticMessages = 50,
-			} = (await this.providerRef.deref()?.getState()) ?? {}
+			const provider = this.providerRef.deref()
+			const state = provider ? await provider.getState() : undefined
+
+			const showRooIgnoredFiles = state?.showRooIgnoredFiles ?? false
+			const includeDiagnosticMessages = state?.includeDiagnosticMessages ?? true
+			const maxDiagnosticMessages = state?.maxDiagnosticMessages ?? 50
+			const currentMode = state?.mode ?? defaultModeSlug
 
 			const { content: parsedUserContent, mode: slashCommandMode } = await processUserContentMentions({
 				userContent: currentUserContent,
@@ -2606,6 +2608,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				showRooIgnoredFiles,
 				includeDiagnosticMessages,
 				maxDiagnosticMessages,
+				skillsManager: provider?.getSkillsManager(),
+				currentMode,
 			})
 
 			// Switch mode if specified in a slash command's frontmatter

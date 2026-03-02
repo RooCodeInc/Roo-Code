@@ -102,6 +102,76 @@ describe("Command Mentions", () => {
 			expect(result.text).not.toContain("Command 'nonexistent' not found")
 		})
 
+		it("should load skill content when command is missing and mode skill exists", async () => {
+			mockGetCommand.mockResolvedValue(undefined)
+
+			const skillsManager = {
+				getSkillContent: vi.fn().mockResolvedValue({
+					name: "skill-only",
+					description: "Skill-generated command",
+					path: "/mock/.roo/skills/skill-only/SKILL.md",
+					source: "project" as const,
+					instructions: "Use skill workflow",
+				}),
+			}
+
+			const result = await parseMentions(
+				"/skill-only run",
+				"/test/cwd",
+				undefined,
+				undefined,
+				false,
+				true,
+				50,
+				skillsManager,
+				"code",
+			)
+
+			expect(mockGetCommand).toHaveBeenCalledWith("/test/cwd", "skill-only")
+			expect(skillsManager.getSkillContent).toHaveBeenCalledWith("skill-only", "code")
+			expect(result.text).toContain("Command 'skill-only' (see below for command content)")
+			expect(result.slashCommandHelp).toContain("Skill: skill-only")
+			expect(result.slashCommandHelp).toContain("Description: Skill-generated command")
+			expect(result.slashCommandHelp).toContain("Source: project")
+			expect(result.slashCommandHelp).toContain("--- Skill Instructions ---")
+			expect(result.slashCommandHelp).toContain("Use skill workflow")
+		})
+
+		it("should preserve command precedence over skill fallback", async () => {
+			mockGetCommand.mockResolvedValue({
+				name: "setup",
+				content: "# Command wins",
+				source: "project",
+				filePath: "/project/.roo/commands/setup.md",
+			})
+
+			const skillsManager = {
+				getSkillContent: vi.fn().mockResolvedValue({
+					name: "setup",
+					description: "Setup skill",
+					path: "/mock/.roo/skills/setup/SKILL.md",
+					source: "project" as const,
+					instructions: "Skill should not be used",
+				}),
+			}
+
+			const result = await parseMentions(
+				"/setup now",
+				"/test/cwd",
+				undefined,
+				undefined,
+				false,
+				true,
+				50,
+				skillsManager,
+				"code",
+			)
+
+			expect(skillsManager.getSkillContent).not.toHaveBeenCalled()
+			expect(result.slashCommandHelp).toContain('<command name="setup">')
+			expect(result.slashCommandHelp).not.toContain("Skill: setup")
+		})
+
 		it("should handle command loading errors during existence check", async () => {
 			mockGetCommand.mockReset()
 			mockGetCommand.mockRejectedValue(new Error("Failed to load command"))

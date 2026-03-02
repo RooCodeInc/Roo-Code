@@ -5,6 +5,11 @@ import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
 import { getModeBySlug } from "../../shared/modes"
+import {
+	buildSkillApprovalMessage,
+	buildSkillResult,
+	resolveSkillContentForMode,
+} from "../../services/skills/skillInvocation"
 
 interface RunSlashCommandParams {
 	command: string
@@ -50,6 +55,22 @@ export class RunSlashCommandTool extends BaseTool<"run_slash_command"> {
 			const command = await getCommand(task.cwd, commandName)
 
 			if (!command) {
+				const currentMode = state?.mode ?? "code"
+				const skillsManager = provider?.getSkillsManager?.()
+				const skillContent = await resolveSkillContentForMode(skillsManager, commandName, currentMode)
+
+				if (skillContent) {
+					const skillMessage = buildSkillApprovalMessage(commandName, args, skillContent)
+					const didApprove = await askApproval("tool", skillMessage)
+
+					if (!didApprove) {
+						return
+					}
+
+					pushToolResult(buildSkillResult(commandName, args, skillContent))
+					return
+				}
+
 				// Get available commands for error message
 				const availableCommands = await getCommandNames(task.cwd)
 				task.recordToolError("run_slash_command")

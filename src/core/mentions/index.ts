@@ -17,6 +17,8 @@ import { FileContextTracker } from "../context-tracking/FileContextTracker"
 
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { getCommand, type Command } from "../../services/command/commands"
+import { buildSkillResult, resolveSkillContentForMode, type SkillLookup } from "../../services/skills/skillInvocation"
+import type { SkillContent } from "../../shared/skills"
 
 export async function openMention(cwd: string, mention?: string): Promise<void> {
 	if (!mention) {
@@ -102,9 +104,12 @@ export async function parseMentions(
 	showRooIgnoredFiles: boolean = false,
 	includeDiagnosticMessages: boolean = true,
 	maxDiagnosticMessages: number = 50,
+	skillsManager?: SkillLookup,
+	currentMode: string = "code",
 ): Promise<ParseMentionsResult> {
 	const mentions: Set<string> = new Set()
 	const validCommands: Map<string, Command> = new Map()
+	const validSkills: Map<string, SkillContent> = new Map()
 	const contentBlocks: MentionContentBlock[] = []
 	let commandMode: string | undefined // Track mode from the first slash command that has one
 
@@ -116,29 +121,39 @@ export async function parseMentions(
 		Array.from(uniqueCommandNames).map(async (commandName) => {
 			try {
 				const command = await getCommand(cwd, commandName)
-				return { commandName, command }
+				if (command) {
+					return { commandName, command, skillContent: null }
+				}
+
+				const skillContent = await resolveSkillContentForMode(skillsManager, commandName, currentMode)
+				return { commandName, command: undefined, skillContent }
 			} catch (error) {
 				// If there's an error checking command existence, treat it as non-existent
-				return { commandName, command: undefined }
+				return { commandName, command: undefined, skillContent: null }
 			}
 		}),
 	)
 
 	// Store valid commands for later use and capture the first mode found
-	for (const { commandName, command } of commandExistenceChecks) {
+	for (const { commandName, command, skillContent } of commandExistenceChecks) {
 		if (command) {
 			validCommands.set(commandName, command)
 			// Capture the mode from the first command that has one
 			if (!commandMode && command.mode) {
 				commandMode = command.mode
 			}
+			continue
+		}
+
+		if (skillContent) {
+			validSkills.set(commandName, skillContent)
 		}
 	}
 
 	// Only replace text for commands that actually exist (keep "see below" for commands)
 	let parsedText = text
 	for (const [match, commandName] of commandMatches) {
-		if (validCommands.has(commandName)) {
+		if (validCommands.has(commandName) || validSkills.has(commandName)) {
 			parsedText = parsedText.replace(match, `Command '${commandName}' (see below for command content)`)
 		}
 	}
@@ -229,6 +244,10 @@ export async function parseMentions(
 		} catch (error) {
 			slashCommandHelp += `\n\n<command name="${commandName}">\nError loading command '${commandName}': ${error.message}\n</command>`
 		}
+	}
+
+	for (const [skillName, skillContent] of validSkills) {
+		slashCommandHelp += `\n\n${buildSkillResult(skillName, undefined, skillContent)}`
 	}
 
 	return {
