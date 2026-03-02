@@ -302,7 +302,7 @@ describe("JsonEventEmitter streaming deltas", () => {
 
 		emitter.emitCommandOutputChunk("line1\n")
 		emitter.emitCommandOutputChunk("line1\nline2\n")
-		emitter.emitCommandOutputDone()
+		emitter.emitCommandOutputDone(17)
 
 		// This completion say is expected from the extension, but should be suppressed
 		// because we already streamed and completed via commandExecutionStatus.
@@ -339,7 +339,7 @@ describe("JsonEventEmitter streaming deltas", () => {
 			type: "tool_result",
 			id: commandId,
 			subtype: "command",
-			tool_result: { name: "execute_command" },
+			tool_result: { name: "execute_command", exitCode: 17 },
 			done: true,
 		})
 	})

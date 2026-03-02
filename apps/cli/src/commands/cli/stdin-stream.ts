@@ -419,7 +419,11 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 				parsedStatus.status === "timeout" ||
 				parsedStatus.status === "fallback"
 			) {
-				jsonEmitter.emitCommandOutputDone()
+				const exitCode =
+					parsedStatus.status === "exited" && typeof parsedStatus.exitCode === "number"
+						? parsedStatus.exitCode
+						: undefined
+				jsonEmitter.emitCommandOutputDone(exitCode)
 				return
 			}
 

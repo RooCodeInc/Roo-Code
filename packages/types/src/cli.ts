@@ -115,6 +115,7 @@ export const rooCliToolResultSchema = z.object({
 	name: z.string(),
 	output: z.string().optional(),
 	error: z.string().optional(),
+	exitCode: z.number().optional(),
 })
 
 export type RooCliToolResult = z.infer<typeof rooCliToolResultSchema>

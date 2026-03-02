@@ -310,7 +310,12 @@ export class JsonEventEmitter {
 		return normalized.startsWith(previous) ? normalized.slice(previous.length) : normalized
 	}
 
-	private emitCommandOutputEvent(commandId: number, fullOutput: string | undefined, isDone: boolean): void {
+	private emitCommandOutputEvent(
+		commandId: number,
+		fullOutput: string | undefined,
+		isDone: boolean,
+		exitCode?: number,
+	): void {
 		if (this.mode === "stream-json") {
 			const outputDelta = this.computeCommandOutputDelta(commandId, fullOutput)
 			const event: JsonEvent = {
@@ -322,6 +327,13 @@ export class JsonEventEmitter {
 
 			if (outputDelta !== null && outputDelta.length > 0) {
 				event.tool_result = { name: "execute_command", output: outputDelta }
+			}
+
+			if (isDone && exitCode !== undefined) {
+				event.tool_result = {
+					...(event.tool_result ?? { name: "execute_command" }),
+					exitCode,
+				}
 			}
 
 			if (isDone) {
@@ -347,7 +359,11 @@ export class JsonEventEmitter {
 			type: "tool_result",
 			id: commandId,
 			subtype: "command",
-			tool_result: { name: "execute_command", output: fullOutput },
+			tool_result: {
+				name: "execute_command",
+				output: fullOutput,
+				...(isDone && exitCode !== undefined ? { exitCode } : {}),
+			},
 			...(isDone ? { done: true } : {}),
 		})
 
@@ -371,7 +387,7 @@ export class JsonEventEmitter {
 		this.emitCommandOutputEvent(commandId, outputSnapshot, false)
 	}
 
-	public emitCommandOutputDone(): void {
+	public emitCommandOutputDone(exitCode?: number): void {
 		const commandId = this.activeCommandToolUseId
 		if (commandId === undefined) {
 			return
@@ -379,7 +395,7 @@ export class JsonEventEmitter {
 
 		this.statusDrivenCommandOutputIds.add(commandId)
 		this.suppressNextCommandOutputSay = true
-		this.emitCommandOutputEvent(commandId, undefined, true)
+		this.emitCommandOutputEvent(commandId, undefined, true, exitCode)
 	}
 
 	/**
