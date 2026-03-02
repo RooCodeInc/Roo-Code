@@ -5,6 +5,16 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.11] - 2026-03-02
+
+### Added
+
+- **Image Support in Stdin Stream**: The `start` and `message` commands in stdin-stream mode now support an optional `images` field (array of base64 data URIs) to attach images to prompts.
+
+### Fixed
+
+- **Upgrade Version Detection**: Fixed version detection in the `upgrade` command to correctly identify when updates are available.
+
 ## [0.1.10] - 2026-03-02
 
 ### Added
