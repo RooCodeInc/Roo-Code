@@ -43,12 +43,11 @@ export interface WebviewMessage {
 		| "alwaysAllowWriteOutsideWorkspace"
 		| "alwaysAllowWriteProtected"
 		| "alwaysAllowExecute"
-		| "alwaysAllowFollowupQuestions"
-		| "alwaysAllowUpdateTodoList"
+		
 		| "alwaysAllowDeploySfMetadata"
 		| "alwaysAllowRetrieveSfMetadata"
 		| "useFreeModels"
-		| "followupAutoApproveTimeoutMs"
+		
 		| "webviewDidLaunch"
 		| "debugStopTimer"
 		| "newTask"
@@ -88,7 +87,7 @@ export interface WebviewMessage {
 		| "allowedMaxRequests"
 		| "allowedMaxCost"
 		| "alwaysAllowSubtasks"
-		| "alwaysAllowUpdateTodoList"
+	
 		| "alwaysAllowDeploySfMetadata"
 		| "alwaysAllowRetrieveSfMetadata"
 		| "autoCondenseContext"

@@ -60,9 +60,8 @@ export const globalSettingsSchema = z.object({
 	alwaysAllowModeSwitch: z.boolean().optional(),
 	alwaysAllowSubtasks: z.boolean().optional(),
 	alwaysAllowExecute: z.boolean().optional(),
-	alwaysAllowFollowupQuestions: z.boolean().optional(),
-	followupAutoApproveTimeoutMs: z.number().optional(),
-	alwaysAllowUpdateTodoList: z.boolean().optional(),
+	
+	
 	alwaysAllowDeploySfMetadata: z.boolean().optional(),
 	alwaysAllowRetrieveSfMetadata: z.boolean().optional(),
 	allowedCommands: z.array(z.string()).optional(),
@@ -265,9 +264,8 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	alwaysAllowModeSwitch: true,
 	alwaysAllowSubtasks: true,
 	alwaysAllowExecute: true,
-	alwaysAllowFollowupQuestions: true,
-	alwaysAllowUpdateTodoList: true,
-	followupAutoApproveTimeoutMs: 0,
+	
+
 	allowedCommands: ["*"],
 	commandExecutionTimeout: 20,
 	commandTimeoutAllowlist: [],

@@ -29,8 +29,7 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 		setAlwaysAllowModeSwitch,
 		setAlwaysAllowSubtasks,
 		setAlwaysApproveResubmit,
-		setAlwaysAllowFollowupQuestions,
-		setAlwaysAllowUpdateTodoList,
+		
 		setAlwaysAllowDeploySfMetadata,
 		setAlwaysAllowRetrieveSfMetadata,
 	} = useExtensionState()
@@ -80,12 +79,7 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 				case "alwaysApproveResubmit":
 					setAlwaysApproveResubmit(value)
 					break
-				case "alwaysAllowFollowupQuestions":
-					setAlwaysAllowFollowupQuestions(value)
-					break
-				case "alwaysAllowUpdateTodoList":
-					setAlwaysAllowUpdateTodoList(value)
-					break
+				
 				case "alwaysAllowDeploySfMetadata":
 					setAlwaysAllowDeploySfMetadata(value)
 					break
@@ -122,8 +116,7 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 			setAlwaysAllowModeSwitch,
 			setAlwaysAllowSubtasks,
 			setAlwaysApproveResubmit,
-			setAlwaysAllowFollowupQuestions,
-			setAlwaysAllowUpdateTodoList,
+			
 			setAlwaysAllowDeploySfMetadata,
 			setAlwaysAllowRetrieveSfMetadata,
 			setAutoApprovalEnabled,

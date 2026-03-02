@@ -15,8 +15,7 @@ export function useAutoApprovalToggles() {
 		alwaysAllowModeSwitch,
 		alwaysAllowSubtasks,
 		alwaysApproveResubmit,
-		alwaysAllowFollowupQuestions,
-		alwaysAllowUpdateTodoList,
+		
 		alwaysAllowDeploySfMetadata,
 		alwaysAllowRetrieveSfMetadata,
 	} = useExtensionState()
@@ -31,8 +30,7 @@ export function useAutoApprovalToggles() {
 			alwaysAllowModeSwitch,
 			alwaysAllowSubtasks,
 			alwaysApproveResubmit,
-			alwaysAllowFollowupQuestions,
-			alwaysAllowUpdateTodoList,
+			
 			alwaysAllowDeploySfMetadata,
 			alwaysAllowRetrieveSfMetadata,
 		}),
@@ -45,8 +43,7 @@ export function useAutoApprovalToggles() {
 			alwaysAllowModeSwitch,
 			alwaysAllowSubtasks,
 			alwaysApproveResubmit,
-			alwaysAllowFollowupQuestions,
-			alwaysAllowUpdateTodoList,
+		
 			alwaysAllowDeploySfMetadata,
 			alwaysAllowRetrieveSfMetadata,
 		],

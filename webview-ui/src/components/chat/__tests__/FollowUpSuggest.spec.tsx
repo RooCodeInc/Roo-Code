@@ -27,8 +27,8 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 // Test-specific extension state context that only provides the values needed by FollowUpSuggest
 interface TestExtensionState {
 	autoApprovalEnabled: boolean
-	alwaysAllowFollowupQuestions: boolean
-	followupAutoApproveTimeoutMs: number
+	
+	
 }
 
 const TestExtensionStateContext = createContext<TestExtensionState | undefined>(undefined)
@@ -70,8 +70,7 @@ describe("FollowUpSuggest", () => {
 	// Default test state with auto-approval enabled
 	const defaultTestState: TestExtensionState = {
 		autoApprovalEnabled: true,
-		alwaysAllowFollowupQuestions: true,
-		followupAutoApproveTimeoutMs: 3000, // 3 seconds for testing
+		
 	}
 
 	beforeEach(() => {
@@ -155,7 +154,6 @@ describe("FollowUpSuggest", () => {
 	it("should not show countdown when alwaysAllowFollowupQuestions is false", () => {
 		const testState: TestExtensionState = {
 			...defaultTestState,
-			alwaysAllowFollowupQuestions: false,
 		}
 
 		renderWithTestProviders(
@@ -175,7 +173,7 @@ describe("FollowUpSuggest", () => {
 	it("should use custom timeout value from extension state", () => {
 		const testState: TestExtensionState = {
 			...defaultTestState,
-			followupAutoApproveTimeoutMs: 5000, // 5 seconds
+			
 		}
 
 		renderWithTestProviders(
@@ -195,8 +193,8 @@ describe("FollowUpSuggest", () => {
 	it("should render suggestions without countdown when both auto-approval settings are disabled", () => {
 		const testState: TestExtensionState = {
 			autoApprovalEnabled: false,
-			alwaysAllowFollowupQuestions: false,
-			followupAutoApproveTimeoutMs: 3000,
+			
+			
 		}
 
 		renderWithTestProviders(

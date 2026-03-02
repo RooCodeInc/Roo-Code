@@ -9,8 +9,7 @@ interface AutoApprovalToggles {
 	alwaysAllowModeSwitch?: boolean
 	alwaysAllowSubtasks?: boolean
 	alwaysApproveResubmit?: boolean
-	alwaysAllowFollowupQuestions?: boolean
-	alwaysAllowUpdateTodoList?: boolean
+	
 	alwaysAllowDeploySfMetadata?: boolean
 	alwaysAllowRetrieveSfMetadata?: boolean
 }

@@ -247,8 +247,7 @@ export type ExtensionState = Pick<
 	| "alwaysAllowModeSwitch"
 	| "alwaysAllowSubtasks"
 	| "alwaysAllowExecute"
-	| "alwaysAllowFollowupQuestions"
-	| "alwaysAllowUpdateTodoList"
+	
 	| "alwaysAllowDeploySfMetadata"
 	| "alwaysAllowRetrieveSfMetadata"
 	| "allowedCommands"

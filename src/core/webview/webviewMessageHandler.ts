@@ -508,10 +508,7 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("alwaysAllowSubtasks", message.bool)
 			await provider.postStateToWebview()
 			break
-		case "alwaysAllowUpdateTodoList":
-			await updateGlobalState("alwaysAllowUpdateTodoList", message.bool)
-			await provider.postStateToWebview()
-			break
+		
 		case "alwaysAllowDeploySfMetadata":
 			await updateGlobalState("alwaysAllowDeploySfMetadata", message.bool)
 			await provider.postStateToWebview()
@@ -1590,14 +1587,8 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("maxWorkspaceFiles", fileCount)
 			await provider.postStateToWebview()
 			break
-		case "alwaysAllowFollowupQuestions":
-			await updateGlobalState("alwaysAllowFollowupQuestions", message.bool ?? false)
-			await provider.postStateToWebview()
-			break
-		case "followupAutoApproveTimeoutMs":
-			await updateGlobalState("followupAutoApproveTimeoutMs", message.value)
-			await provider.postStateToWebview()
-			break
+		
+		
 		case "browserToolEnabled":
 			await updateGlobalState("browserToolEnabled", message.bool ?? true)
 			await provider.postStateToWebview()
