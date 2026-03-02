@@ -221,7 +221,7 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 		const baseSettings: RooCodeSettings = {
 			mode: this.options.mode,
 			consecutiveMistakeLimit: this.options.consecutiveMistakeLimit ?? DEFAULT_FLAGS.consecutiveMistakeLimit,
-			commandExecutionTimeout: 30,
+			commandExecutionTimeout: 300,
 			enableCheckpoints: false,
 			experiments: {
 				customTools: true,
