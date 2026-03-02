@@ -74,6 +74,7 @@ Step 2: Branching Decision
 CONSTRAINTS:
 - Do NOT load every skill up front.
 - Load skills ONLY after a skill is selected.
+- Do NOT reload a skill whose instructions already appear in this conversation.
 - Do NOT skip this check.
 - FAILURE to perform this check is an error.
 </mandatory_skill_check>
