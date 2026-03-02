@@ -349,12 +349,46 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 
 	const onExtensionMessage = (message: {
 		type?: string
+		text?: unknown
 		state?: {
 			currentTaskId?: unknown
 			currentTaskItem?: { id?: unknown }
 			messageQueue?: unknown
 		}
 	}) => {
+		if (message.type === "commandExecutionStatus") {
+			if (typeof message.text !== "string") {
+				return
+			}
+
+			let parsedStatus: unknown
+			try {
+				parsedStatus = JSON.parse(message.text)
+			} catch {
+				return
+			}
+
+			if (!isRecord(parsedStatus) || typeof parsedStatus.status !== "string") {
+				return
+			}
+
+			if (parsedStatus.status === "output" && typeof parsedStatus.output === "string") {
+				jsonEmitter.emitCommandOutputChunk(parsedStatus.output)
+				return
+			}
+
+			if (
+				parsedStatus.status === "exited" ||
+				parsedStatus.status === "timeout" ||
+				parsedStatus.status === "fallback"
+			) {
+				jsonEmitter.emitCommandOutputDone()
+				return
+			}
+
+			return
+		}
+
 		if (message.type !== "state") {
 			return
 		}
@@ -463,7 +497,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 			}
 
 			switch (stdinCommand.command) {
-				case "start":
+				case "start": {
 					// A task can emit completion events before runTask() finalizers run.
 					// Wait for full settlement to avoid false "task_busy" on immediate next start.
 					// Safe from races: `for await` processes stdin commands serially, so no
@@ -503,8 +537,16 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 						success: true,
 					})
 
+					// In CLI stdin-stream mode, default to the execa terminal provider so
+					// command output can be streamed deterministically. Explicit per-request
+					// config still wins.
+					const taskConfiguration = {
+						terminalShellIntegrationDisabled: true,
+						...(stdinCommand.configuration ?? {}),
+					}
+
 					activeTaskPromise = host
-						.runTask(stdinCommand.prompt, latestTaskId, stdinCommand.configuration)
+						.runTask(stdinCommand.prompt, latestTaskId, taskConfiguration)
 						.catch((error) => {
 							const message = error instanceof Error ? error.message : String(error)
 
@@ -559,6 +601,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 						})
 
 					break
+				}
 
 				case "message": {
 					// If cancel was requested, wait briefly for the task to be rehydrated

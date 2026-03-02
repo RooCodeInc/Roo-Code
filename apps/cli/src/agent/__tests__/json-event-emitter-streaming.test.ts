@@ -215,4 +215,132 @@ describe("JsonEventEmitter streaming deltas", () => {
 		expect(output[0]).toMatchObject({ content: "gh" })
 		expect(output[1]).toMatchObject({ content: " pr" })
 	})
+
+	it("streams say:command_output as deltas and correlates tool_result id to execute_command", () => {
+		const { stdout, lines } = createMockStdout()
+		const emitter = new JsonEventEmitter({ mode: "stream-json", stdout })
+		const commandId = 404
+		const outputTs = 405
+
+		emitMessage(
+			emitter,
+			createAskMessage({
+				ts: commandId,
+				ask: "command",
+				partial: false,
+				text: "echo hello",
+			}),
+		)
+
+		emitMessage(emitter, {
+			ts: outputTs,
+			type: "say",
+			say: "command_output",
+			partial: true,
+			text: "line1\n",
+		} as ClineMessage)
+		emitMessage(emitter, {
+			ts: outputTs,
+			type: "say",
+			say: "command_output",
+			partial: true,
+			text: "line1\nline2\n",
+		} as ClineMessage)
+		emitMessage(emitter, {
+			ts: outputTs,
+			type: "say",
+			say: "command_output",
+			partial: false,
+			text: "line1\nline2\n",
+		} as ClineMessage)
+
+		const output = lines()
+		expect(output).toHaveLength(4)
+		expect(output[0]).toMatchObject({
+			type: "tool_use",
+			id: commandId,
+			subtype: "command",
+			tool_use: { name: "execute_command", input: { command: "echo hello" } },
+			done: true,
+		})
+		expect(output[1]).toMatchObject({
+			type: "tool_result",
+			id: commandId,
+			subtype: "command",
+			tool_result: { name: "execute_command", output: "line1\n" },
+		})
+		expect(output[2]).toMatchObject({
+			type: "tool_result",
+			id: commandId,
+			subtype: "command",
+			tool_result: { name: "execute_command", output: "line2\n" },
+		})
+		expect(output[3]).toMatchObject({
+			type: "tool_result",
+			id: commandId,
+			subtype: "command",
+			tool_result: { name: "execute_command" },
+			done: true,
+		})
+		expect(output[3]).not.toHaveProperty("tool_result.output")
+	})
+
+	it("prefers status-driven command output streaming and suppresses duplicate say completion", () => {
+		const { stdout, lines } = createMockStdout()
+		const emitter = new JsonEventEmitter({ mode: "stream-json", stdout })
+		const commandId = 505
+
+		emitMessage(
+			emitter,
+			createAskMessage({
+				ts: commandId,
+				ask: "command",
+				partial: false,
+				text: "echo streamed",
+			}),
+		)
+
+		emitter.emitCommandOutputChunk("line1\n")
+		emitter.emitCommandOutputChunk("line1\nline2\n")
+		emitter.emitCommandOutputDone()
+
+		// This completion say is expected from the extension, but should be suppressed
+		// because we already streamed and completed via commandExecutionStatus.
+		emitMessage(emitter, {
+			ts: 999,
+			type: "say",
+			say: "command_output",
+			partial: false,
+			text: "line1\nline2\n",
+		} as ClineMessage)
+
+		const output = lines()
+		expect(output).toHaveLength(4)
+		expect(output[0]).toMatchObject({
+			type: "tool_use",
+			id: commandId,
+			subtype: "command",
+			tool_use: { name: "execute_command", input: { command: "echo streamed" } },
+			done: true,
+		})
+		expect(output[1]).toMatchObject({
+			type: "tool_result",
+			id: commandId,
+			subtype: "command",
+			tool_result: { name: "execute_command", output: "line1\n" },
+		})
+		expect(output[2]).toMatchObject({
+			type: "tool_result",
+			id: commandId,
+			subtype: "command",
+			tool_result: { name: "execute_command", output: "line2\n" },
+		})
+		expect(output[3]).toMatchObject({
+			type: "tool_result",
+			id: commandId,
+			subtype: "command",
+			tool_result: { name: "execute_command" },
+			done: true,
+		})
+	})
 })
