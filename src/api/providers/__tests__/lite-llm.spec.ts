@@ -920,4 +920,206 @@ describe("LiteLLMHandler", () => {
 			expect(id1).not.toBe(id2)
 		})
 	})
+
+	describe("content flattening for auto_router compatibility", () => {
+		it("should flatten array content to string by default (when litellmFlattenContent is undefined)", async () => {
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{ type: "text", text: "Hello" },
+						{ type: "text", text: "World" },
+					],
+				},
+			]
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { content: "Hi!" } }],
+						usage: { prompt_tokens: 10, completion_tokens: 5 },
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const generator = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of generator) {
+				// Consume
+			}
+
+			const createCall = mockCreate.mock.calls[0][0]
+			const userMessage = createCall.messages.find((msg: any) => msg.role === "user")
+
+			// Content should be flattened to a string
+			expect(typeof userMessage.content).toBe("string")
+			expect(userMessage.content).toBe("Hello\n\nWorld")
+		})
+
+		it("should flatten array content to string when litellmFlattenContent is true", async () => {
+			const optionsWithFlatten: ApiHandlerOptions = {
+				...mockOptions,
+				litellmFlattenContent: true,
+			}
+			handler = new LiteLLMHandler(optionsWithFlatten)
+
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [{ type: "text", text: "Single block" }],
+				},
+			]
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { content: "Response" } }],
+						usage: { prompt_tokens: 10, completion_tokens: 5 },
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const generator = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of generator) {
+				// Consume
+			}
+
+			const createCall = mockCreate.mock.calls[0][0]
+			const userMessage = createCall.messages.find((msg: any) => msg.role === "user")
+
+			expect(typeof userMessage.content).toBe("string")
+			expect(userMessage.content).toBe("Single block")
+		})
+
+		it("should NOT flatten array content when litellmFlattenContent is false", async () => {
+			const optionsWithoutFlatten: ApiHandlerOptions = {
+				...mockOptions,
+				litellmFlattenContent: false,
+			}
+			handler = new LiteLLMHandler(optionsWithoutFlatten)
+
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{ type: "text", text: "Hello" },
+						{ type: "text", text: "World" },
+					],
+				},
+			]
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { content: "Hi!" } }],
+						usage: { prompt_tokens: 10, completion_tokens: 5 },
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const generator = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of generator) {
+				// Consume
+			}
+
+			const createCall = mockCreate.mock.calls[0][0]
+			const userMessage = createCall.messages.find((msg: any) => msg.role === "user")
+
+			// Content should remain as array
+			expect(Array.isArray(userMessage.content)).toBe(true)
+			expect(userMessage.content).toHaveLength(2)
+		})
+
+		it("should preserve string content unchanged regardless of flatten setting", async () => {
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: "Simple string message",
+				},
+			]
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { content: "Response" } }],
+						usage: { prompt_tokens: 10, completion_tokens: 5 },
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const generator = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of generator) {
+				// Consume
+			}
+
+			const createCall = mockCreate.mock.calls[0][0]
+			const userMessage = createCall.messages.find((msg: any) => msg.role === "user")
+
+			expect(typeof userMessage.content).toBe("string")
+			expect(userMessage.content).toBe("Simple string message")
+		})
+
+		it("should NOT flatten array content if it contains non-text blocks (images)", async () => {
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{ type: "text", text: "Look at this image:" },
+						{
+							type: "image",
+							source: {
+								type: "base64",
+								media_type: "image/png",
+								data: "iVBORw0KGgo=",
+							},
+						},
+					],
+				},
+			]
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { content: "I see..." } }],
+						usage: { prompt_tokens: 10, completion_tokens: 5 },
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const generator = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of generator) {
+				// Consume
+			}
+
+			const createCall = mockCreate.mock.calls[0][0]
+			const userMessage = createCall.messages.find((msg: any) => msg.role === "user")
+
+			// Content should remain as array since it contains image
+			expect(Array.isArray(userMessage.content)).toBe(true)
+		})
+	})
 })

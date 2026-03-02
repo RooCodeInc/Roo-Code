@@ -410,6 +410,8 @@
 		"getXaiApiKey": "xAI API-sleutel ophalen",
 		"litellmApiKey": "LiteLLM API-sleutel",
 		"litellmBaseUrl": "LiteLLM basis-URL",
+		"litellmFlattenContent": "Berichtinhoud afvlakken",
+		"litellmFlattenContentDescription": "Converteert berichtinhoud in array-formaat naar platte tekst. Schakel dit in voor compatibiliteit met LiteLLM's auto_router en op embedding gebaseerde routeringsfuncties. Schakel alleen uit als u multimodale inhoud (afbeeldingen) nodig heeft.",
 		"awsCredentials": "AWS-inloggegevens",
 		"awsProfile": "AWS-profiel",
 		"awsApiKey": "Amazon Bedrock API-sleutel",
