@@ -34,6 +34,8 @@ function getReadFileSupportsNote(supportsImages: boolean): string {
 export interface ReadFileToolOptions {
 	/** Whether the model supports image processing (default: false) */
 	supportsImages?: boolean
+	/** Provider-specific override for the maximum lines returned per read (default: DEFAULT_LINE_LIMIT) */
+	maxReadFileLine?: number
 }
 
 // ─── Schema Builder ───────────────────────────────────────────────────────────
@@ -58,7 +60,10 @@ export interface ReadFileToolOptions {
  * @returns Native tool definition for read_file
  */
 export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Chat.ChatCompletionTool {
-	const { supportsImages = false } = options
+	const { supportsImages = false, maxReadFileLine } = options
+
+	// Compute the effective line limit for the tool description
+	const effectiveLineLimit = maxReadFileLine ?? DEFAULT_LINE_LIMIT
 
 	// Build description based on capabilities
 	const descriptionIntro =
@@ -70,7 +75,7 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 		` PREFER indentation mode when you have a specific line number from search results, error messages, or definition lookups - it guarantees complete, syntactically valid code blocks without mid-function truncation.` +
 		` IMPORTANT: Indentation mode requires anchor_line to be useful. Without it, only header content (imports) is returned.`
 
-	const limitNote = ` By default, returns up to ${DEFAULT_LINE_LIMIT} lines per file. Lines longer than ${MAX_LINE_LENGTH} characters are truncated.`
+	const limitNote = ` By default, returns up to ${effectiveLineLimit} lines per file. Lines longer than ${MAX_LINE_LENGTH} characters are truncated.`
 
 	const description =
 		descriptionIntro +
@@ -125,7 +130,7 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 		},
 		limit: {
 			type: "integer",
-			description: `Maximum number of lines to return (slice mode, default: ${DEFAULT_LINE_LIMIT})`,
+			description: `Maximum number of lines to return (slice mode, default: ${effectiveLineLimit})`,
 		},
 		indentation: {
 			type: "object",

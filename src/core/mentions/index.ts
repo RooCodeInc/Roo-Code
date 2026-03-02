@@ -74,7 +74,8 @@ export interface ParseMentionsResult {
  * Formats file content to look like a read_file tool result.
  * Includes Gemini-style truncation warning when content is truncated.
  */
-function formatFileReadResult(filePath: string, result: ExtractTextResult): string {
+function formatFileReadResult(filePath: string, result: ExtractTextResult, maxReadFileLine?: number): string {
+	const effectiveLimit = maxReadFileLine ?? DEFAULT_LINE_LIMIT
 	const header = `[read_file for '${filePath}']`
 
 	if (result.wasTruncated && result.linesShown) {
@@ -83,7 +84,7 @@ function formatFileReadResult(filePath: string, result: ExtractTextResult): stri
 		return `${header}
 IMPORTANT: File content truncated.
 Status: Showing lines ${start}-${end} of ${result.totalLines} total lines.
-To read more: Use the read_file tool with offset=${nextOffset} and limit=${DEFAULT_LINE_LIMIT}.
+To read more: Use the read_file tool with offset=${nextOffset} and limit=${effectiveLimit}.
 
 File: ${filePath}
 ${result.content}`
@@ -102,6 +103,7 @@ export async function parseMentions(
 	showRooIgnoredFiles: boolean = false,
 	includeDiagnosticMessages: boolean = true,
 	maxDiagnosticMessages: number = 50,
+	maxReadFileLine?: number,
 ): Promise<ParseMentionsResult> {
 	const mentions: Set<string> = new Set()
 	const validCommands: Map<string, Command> = new Map()
@@ -175,6 +177,7 @@ export async function parseMentions(
 					rooIgnoreController,
 					showRooIgnoredFiles,
 					fileContextTracker,
+					maxReadFileLine,
 				)
 				contentBlocks.push(fileResult)
 			} catch (error) {
@@ -249,6 +252,7 @@ async function getFileOrFolderContentWithMetadata(
 	rooIgnoreController?: any,
 	showRooIgnoredFiles: boolean = false,
 	fileContextTracker?: FileContextTracker,
+	maxReadFileLine?: number,
 ): Promise<MentionContentBlock> {
 	const unescapedPath = unescapeSpaces(mentionPath)
 	const absPath = path.resolve(cwd, unescapedPath)
@@ -276,7 +280,8 @@ async function getFileOrFolderContentWithMetadata(
 				}
 			}
 			try {
-				const result = await extractTextFromFileWithMetadata(absPath)
+				const effectiveLimit = maxReadFileLine ?? DEFAULT_LINE_LIMIT
+				const result = await extractTextFromFileWithMetadata(absPath, effectiveLimit)
 
 				// Track file context
 				if (fileContextTracker) {
@@ -286,7 +291,7 @@ async function getFileOrFolderContentWithMetadata(
 				return {
 					type: "file",
 					path: mentionPath,
-					content: formatFileReadResult(mentionPath, result),
+					content: formatFileReadResult(mentionPath, result, maxReadFileLine),
 					metadata: {
 						totalLines: result.totalLines,
 						returnedLines: result.returnedLines,
@@ -333,8 +338,12 @@ async function getFileOrFolderContentWithMetadata(
 						try {
 							const isBinary = await isBinaryFile(absoluteFilePath).catch(() => false)
 							if (!isBinary) {
-								const result = await extractTextFromFileWithMetadata(absoluteFilePath)
-								fileReadResults.push(formatFileReadResult(filePath.toPosix(), result))
+								const effectiveFolderLimit = maxReadFileLine ?? DEFAULT_LINE_LIMIT
+								const result = await extractTextFromFileWithMetadata(
+									absoluteFilePath,
+									effectiveFolderLimit,
+								)
+								fileReadResults.push(formatFileReadResult(filePath.toPosix(), result, maxReadFileLine))
 							}
 						} catch (error) {
 							// Skip files that can't be read

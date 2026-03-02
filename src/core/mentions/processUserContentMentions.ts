@@ -40,6 +40,7 @@ export async function processUserContentMentions({
 	showRooIgnoredFiles = false,
 	includeDiagnosticMessages = true,
 	maxDiagnosticMessages = 50,
+	maxReadFileLine,
 }: {
 	userContent: Anthropic.Messages.ContentBlockParam[]
 	cwd: string
@@ -48,6 +49,7 @@ export async function processUserContentMentions({
 	showRooIgnoredFiles?: boolean
 	includeDiagnosticMessages?: boolean
 	maxDiagnosticMessages?: number
+	maxReadFileLine?: number
 }): Promise<ProcessUserContentMentionsResult> {
 	// Track the first mode found from slash commands
 	let commandMode: string | undefined
@@ -69,6 +71,7 @@ export async function processUserContentMentions({
 							showRooIgnoredFiles,
 							includeDiagnosticMessages,
 							maxDiagnosticMessages,
+							maxReadFileLine,
 						)
 						// Capture the first mode found
 						if (!commandMode && result.mode) {
@@ -112,6 +115,7 @@ export async function processUserContentMentions({
 								showRooIgnoredFiles,
 								includeDiagnosticMessages,
 								maxDiagnosticMessages,
+								maxReadFileLine,
 							)
 							// Capture the first mode found
 							if (!commandMode && result.mode) {
@@ -161,6 +165,7 @@ export async function processUserContentMentions({
 											showRooIgnoredFiles,
 											includeDiagnosticMessages,
 											maxDiagnosticMessages,
+											maxReadFileLine,
 										)
 										// Capture the first mode found
 										if (!commandMode && result.mode) {

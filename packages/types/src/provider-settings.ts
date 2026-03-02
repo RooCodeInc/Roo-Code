@@ -187,6 +187,9 @@ const baseProviderSettingsSchema = z.object({
 
 	// Model verbosity.
 	verbosity: verbosityLevelsSchema.optional(),
+
+	// File reading limits.
+	maxReadFileLine: z.number().int().min(1).optional(),
 })
 
 // Several of the providers share common model config properties.

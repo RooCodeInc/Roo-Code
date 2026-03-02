@@ -103,6 +103,7 @@ import { Verbosity } from "./Verbosity"
 import { TodoListSettingsControl } from "./TodoListSettingsControl"
 import { TemperatureControl } from "./TemperatureControl"
 import { RateLimitSecondsControl } from "./RateLimitSecondsControl"
+import { MaxReadFileLineControl } from "./MaxReadFileLineControl"
 import { ConsecutiveMistakeLimitControl } from "./ConsecutiveMistakeLimitControl"
 import { BedrockCustomArn } from "./providers/BedrockCustomArn"
 import { RooBalanceDisplay } from "./providers/RooBalanceDisplay"
@@ -791,6 +792,10 @@ const ApiOptions = ({
 								<RateLimitSecondsControl
 									value={apiConfiguration.rateLimitSeconds || 0}
 									onChange={(value) => setApiConfigurationField("rateLimitSeconds", value)}
+								/>
+								<MaxReadFileLineControl
+									value={apiConfiguration.maxReadFileLine}
+									onChange={(value) => setApiConfigurationField("maxReadFileLine", value)}
 								/>
 								<ConsecutiveMistakeLimitControl
 									value={
