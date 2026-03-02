@@ -4,7 +4,7 @@ import axios from "axios"
 
 import { type ModelInfo, openAiModelInfoSaneDefaults, LMSTUDIO_DEFAULT_TEMPERATURE } from "@roo-code/types"
 
-import type { ApiHandlerOptions } from "../../shared/api"
+import { type ApiHandlerOptions, shouldUseReasoningEffort } from "../../shared/api"
 
 import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
 import { TagMatcher } from "../../utils/tag-matcher"
@@ -17,6 +17,13 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { getModelsFromCache } from "./fetchers/modelCache"
 import { getApiRequestTimeout } from "./utils/timeout-config"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { getGlmModelOptions } from "./utils/glm-model-detection"
+
+// Extended chat completion params to support thinking mode for GLM-4.7+
+type ChatCompletionParamsWithThinking = OpenAI.Chat.ChatCompletionCreateParamsStreaming & {
+	thinking?: { type: "enabled" | "disabled" }
+	draft_model?: string
+}
 
 export class LmStudioHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
@@ -42,9 +49,16 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		const { id: modelId, info: modelInfo } = this.getModel()
+
+		// Check if this is a GLM model and get recommended options
+		const glmOptions = getGlmModelOptions(modelId)
+
 		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages),
+			...convertToOpenAiMessages(messages, {
+				mergeToolResultText: glmOptions?.mergeToolResultText ?? false,
+			}),
 		]
 
 		// -------------------------
@@ -83,18 +97,29 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		let assistantText = ""
 
 		try {
-			const params: OpenAI.Chat.ChatCompletionCreateParamsStreaming & { draft_model?: string } = {
-				model: this.getModel().id,
+			// For GLM models, disable parallel_tool_calls as they may not support it
+			const parallelToolCalls = glmOptions?.disableParallelToolCalls
+				? false
+				: (metadata?.parallelToolCalls ?? true)
+
+			const params: ChatCompletionParamsWithThinking = {
+				model: modelId,
 				messages: openAiMessages,
 				temperature: this.options.modelTemperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
 				stream: true,
 				tools: this.convertToolsForOpenAI(metadata?.tools),
 				tool_choice: metadata?.tool_choice,
-				parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+				parallel_tool_calls: parallelToolCalls,
 			}
 
 			if (this.options.lmStudioSpeculativeDecodingEnabled && this.options.lmStudioDraftModelId) {
 				params.draft_model = this.options.lmStudioDraftModelId
+			}
+
+			// For GLM-4.7+ models, add thinking mode support similar to Z.ai
+			if (glmOptions?.supportsThinking) {
+				const useReasoning = shouldUseReasoningEffort({ model: modelInfo, settings: this.options })
+				params.thinking = useReasoning ? { type: "enabled" } : { type: "disabled" }
 			}
 
 			let results
