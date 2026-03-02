@@ -54,6 +54,7 @@
 		"geminiConfigMissing": "Gemini configuration missing for embedder creation",
 		"mistralConfigMissing": "Mistral configuration missing for embedder creation",
 		"openRouterConfigMissing": "OpenRouter configuration missing for embedder creation",
+		"rooConfigMissing": "Roo Code Cloud authentication required for embedder creation. Please sign in to Roo Code Cloud.",
 		"vercelAiGatewayConfigMissing": "Vercel AI Gateway configuration missing for embedder creation",
 		"bedrockConfigMissing": "Amazon Bedrock configuration missing for embedder creation",
 		"invalidEmbedderType": "Invalid embedder type configured: {{embedderProvider}}",

@@ -85,6 +85,11 @@ export const EMBEDDING_MODEL_PROFILES: EmbeddingModelProfiles = {
 		"qwen/qwen3-embedding-4b": { dimension: 2560, scoreThreshold: 0.4 },
 		"qwen/qwen3-embedding-8b": { dimension: 4096, scoreThreshold: 0.4 },
 	},
+	roo: {
+		// Roo Code Router proxies OpenAI embedding models
+		"text-embedding-3-small": { dimension: 1536, scoreThreshold: 0.4 },
+		"text-embedding-3-large": { dimension: 3072, scoreThreshold: 0.4 },
+	},
 }
 
 /**
@@ -182,6 +187,9 @@ export function getDefaultModelId(provider: EmbedderProvider): string {
 			return "amazon.titan-embed-text-v2:0"
 		case "openrouter":
 			return "openai/text-embedding-3-large"
+
+		case "roo":
+			return "text-embedding-3-small"
 
 		default:
 			// Fallback for unknown providers
