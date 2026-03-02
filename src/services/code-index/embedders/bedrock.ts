@@ -1,5 +1,5 @@
 import { BedrockRuntimeClient, InvokeModelCommand, InvokeModelCommandInput } from "@aws-sdk/client-bedrock-runtime"
-import { fromEnv, fromIni } from "@aws-sdk/credential-providers"
+import { fromIni, fromNodeProviderChain } from "@aws-sdk/credential-providers"
 import { IEmbedder, EmbeddingResponse, EmbedderInfo } from "../interfaces"
 import {
 	MAX_BATCH_TOKENS,
@@ -38,7 +38,7 @@ export class BedrockEmbedder implements IEmbedder {
 
 		// Initialize the Bedrock client with credentials
 		// If profile is specified, use it; otherwise use default credential chain
-		const credentials = this.profile ? fromIni({ profile: this.profile }) : fromEnv()
+		const credentials = this.profile ? fromIni({ profile: this.profile }) : fromNodeProviderChain()
 
 		this.bedrockClient = new BedrockRuntimeClient({
 			userAgentAppId: `RooCode#${Package.version}`,
@@ -209,10 +209,18 @@ export class BedrockEmbedder implements IEmbedder {
 			requestBody = {
 				inputText: text,
 			}
-		} else if (model.startsWith("cohere.embed")) {
+		} else if (model.startsWith("cohere.embed-v4")) {
+			// Cohere Embed v4 requires embedding_types parameter
 			requestBody = {
 				texts: [text],
-				input_type: "search_document", // or "search_query" depending on use case
+				input_type: "search_document",
+				embedding_types: ["float"],
+			}
+		} else if (model.startsWith("cohere.embed")) {
+			// Cohere Embed v3 format
+			requestBody = {
+				texts: [text],
+				input_type: "search_document",
 			}
 		} else {
 			// Default to Titan format
@@ -248,10 +256,15 @@ export class BedrockEmbedder implements IEmbedder {
 				embedding: responseBody.embedding,
 				inputTextTokenCount: responseBody.inputTextTokenCount,
 			}
+		} else if (model.startsWith("cohere.embed-v4")) {
+			// Cohere Embed v4 returns { embeddings: { float: [[...]] } }
+			return {
+				embedding: responseBody.embeddings?.float?.[0] || responseBody.embeddings?.[0],
+			}
 		} else if (model.startsWith("cohere.embed")) {
+			// Cohere Embed v3 returns { embeddings: [[...]] }
 			return {
 				embedding: responseBody.embeddings[0],
-				// Cohere doesn't provide token count in response
 			}
 		} else {
 			// Default to Titan format
