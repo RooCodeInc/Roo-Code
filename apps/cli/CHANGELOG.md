@@ -5,6 +5,29 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.13] - 2026-03-02
+
+### Added
+
+- **Skills as Slash Commands**: Skills are now exposed as slash commands, so you can invoke skill workflows directly from command-style input.
+- **Skill Fallback Execution**: When a slash command does not match a command file but matches a skill slug, the CLI can resolve and execute that skill path.
+
+### Changed
+
+- **Slash Command Resolution Priority**: Command precedence is preserved, with skill fallback only used when no matching slash command is found.
+
+### Fixed
+
+- None.
+
+### Removed
+
+- None.
+
+### Tests
+
+- Added and updated tests for slash command + skill fallback behavior, including command precedence and duplicate skill-slug handling.
+
 ## [0.1.12] - 2026-03-02
 
 ### Fixed
