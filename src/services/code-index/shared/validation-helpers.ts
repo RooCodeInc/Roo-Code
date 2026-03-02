@@ -170,8 +170,14 @@ export function handleValidationError(
 		return { valid: false, error: statusError }
 	}
 
-	// Check for connection errors
+	// Check for connection errors and special error cases
 	if (errorMessage) {
+		// ByteString conversion error indicates invalid characters in API key or base URL
+		// This happens when non-ASCII characters (e.g., Cyrillic) are present in configuration
+		if (errorMessage.includes("Cannot convert argument to a ByteString")) {
+			return { valid: false, error: t("common:errors.api.invalidKeyInvalidChars") }
+		}
+
 		if (
 			errorMessage.includes("ENOTFOUND") ||
 			errorMessage.includes("ECONNREFUSED") ||
