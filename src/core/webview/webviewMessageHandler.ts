@@ -66,6 +66,7 @@ import { getWorkspacePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { Mode, defaultModeSlug } from "../../shared/modes"
 import { getModels, flushModels } from "../../api/providers/fetchers/modelCache"
+import { discoverOllamaModelsWithSorting } from "../../api/providers/fetchers/ollama"
 import { GetModelsOptions } from "../../shared/api"
 import { generateSystemPrompt } from "./generateSystemPrompt"
 import { resolveDefaultSaveUri, saveLastExportPath } from "../../utils/export"
@@ -997,7 +998,6 @@ export const webviewMessageHandler = async (
 			})
 			break
 		case "requestOllamaModels": {
-			// Specific handler for Ollama models only.
 			const { apiConfiguration: ollamaApiConfig } = await provider.getState()
 			try {
 				const ollamaOptions = {
@@ -1005,17 +1005,159 @@ export const webviewMessageHandler = async (
 					baseUrl: ollamaApiConfig.ollamaBaseUrl,
 					apiKey: ollamaApiConfig.ollamaApiKey,
 				}
-				// Flush cache and refresh to ensure fresh models.
 				await flushModels(ollamaOptions, true)
 
-				const ollamaModels = await getModels(ollamaOptions)
+				const result = await discoverOllamaModelsWithSorting(
+					ollamaApiConfig.ollamaBaseUrl,
+					ollamaApiConfig.ollamaApiKey,
+					{
+						modelDiscoveryTimeout: ollamaApiConfig.ollamaModelDiscoveryTimeout,
+						maxRetries: ollamaApiConfig.ollamaMaxRetries,
+						retryDelay: ollamaApiConfig.ollamaRetryDelay,
+						enableLogging: ollamaApiConfig.ollamaEnableLogging,
+					},
+				)
 
-				if (Object.keys(ollamaModels).length > 0) {
-					provider.postMessageToWebview({ type: "ollamaModels", ollamaModels: ollamaModels })
+				// Convert modelsWithTools array to Record for compatibility
+				const modelsWithToolsRecord: Record<string, any> = {}
+				for (const model of result.modelsWithTools) {
+					modelsWithToolsRecord[model.name] = model.modelInfo
+				}
+
+				// Always send the models message if we have any results
+				if (result.totalCount > 0) {
+					provider.postMessageToWebview({
+						type: "ollamaModels",
+						ollamaModels: modelsWithToolsRecord,
+						ollamaModelsWithTools: result.modelsWithTools,
+						modelsWithoutTools: result.modelsWithoutTools,
+					})
 				}
 			} catch (error) {
-				// Silently fail - user hasn't configured Ollama yet
 				console.debug("Ollama models fetch failed:", error)
+			}
+			break
+		}
+		case "testOllamaConnection": {
+			const { testOllamaConnection } = await import("../../api/providers/fetchers/ollama")
+			const { apiConfiguration: ollamaApiConfig } = await provider.getState()
+			// Use the baseUrl and apiKey from the message if provided (current UI values),
+			// otherwise fall back to saved state
+			const baseUrl = message.ollamaBaseUrl ?? ollamaApiConfig.ollamaBaseUrl
+			const apiKey = message.ollamaApiKey ?? ollamaApiConfig.ollamaApiKey
+			try {
+				const result = await testOllamaConnection(baseUrl, apiKey, {
+					timeout: ollamaApiConfig.ollamaModelDiscoveryTimeout ?? 10000,
+					enableLogging: ollamaApiConfig.ollamaEnableLogging ?? false,
+				})
+
+				provider.postMessageToWebview({
+					type: "ollamaConnectionTestResult",
+					success: result.success,
+					message: result.message,
+					durationMs: result.durationMs,
+				})
+			} catch (error) {
+				provider.postMessageToWebview({
+					type: "ollamaConnectionTestResult",
+					success: false,
+					message: `Error testing connection: ${error instanceof Error ? error.message : String(error)}`,
+				})
+			}
+			break
+		}
+		case "refreshOllamaModels": {
+			const { apiConfiguration: ollamaApiConfig } = await provider.getState()
+			const startTime = Date.now()
+
+			// Use the baseUrl and apiKey from the message if provided (current UI values),
+			// otherwise fall back to saved state
+			const baseUrl = message.ollamaBaseUrl ?? ollamaApiConfig.ollamaBaseUrl
+			const apiKey = message.ollamaApiKey ?? ollamaApiConfig.ollamaApiKey
+
+			try {
+				const ollamaOptions = {
+					provider: "ollama" as const,
+					baseUrl: baseUrl,
+					apiKey: apiKey,
+					ollamaModelDiscoveryTimeout: ollamaApiConfig.ollamaModelDiscoveryTimeout,
+					ollamaMaxRetries: ollamaApiConfig.ollamaMaxRetries,
+					ollamaRetryDelay: ollamaApiConfig.ollamaRetryDelay,
+					ollamaEnableLogging: ollamaApiConfig.ollamaEnableLogging,
+				}
+
+				await flushModels(ollamaOptions, true)
+
+				const result = await discoverOllamaModelsWithSorting(baseUrl, apiKey, {
+					modelDiscoveryTimeout: ollamaApiConfig.ollamaModelDiscoveryTimeout,
+					maxRetries: ollamaApiConfig.ollamaMaxRetries,
+					retryDelay: ollamaApiConfig.ollamaRetryDelay,
+					enableLogging: ollamaApiConfig.ollamaEnableLogging,
+				})
+
+				const durationMs = Date.now() - startTime
+
+				// Convert modelsWithTools array to Record for compatibility
+				const modelsWithToolsRecord: Record<string, any> = {}
+				for (const model of result.modelsWithTools) {
+					modelsWithToolsRecord[model.name] = model.modelInfo
+				}
+
+				if (ollamaApiConfig.ollamaEnableLogging) {
+					console.debug("[Ollama Model Refresh]", {
+						baseUrl: baseUrl,
+						modelsWithTools: result.modelsWithTools.length,
+						modelsWithoutTools: result.modelsWithoutTools.length,
+						totalCount: result.totalCount,
+						durationMs,
+						models: result.modelsWithTools.map((m) => m.name),
+						timestamp: new Date().toISOString(),
+					})
+				}
+
+				// Always send the models message if we have any results
+				if (result.totalCount > 0) {
+					provider.postMessageToWebview({
+						type: "ollamaModels",
+						ollamaModels: modelsWithToolsRecord,
+						ollamaModelsWithTools: result.modelsWithTools,
+						modelsWithoutTools: result.modelsWithoutTools,
+					})
+					provider.postMessageToWebview({
+						type: "ollamaModelsRefreshResult",
+						success: true,
+						message: `Found ${result.modelsWithTools.length} model(s) with tools support (${result.totalCount} total)`,
+						durationMs,
+						modelsWithoutTools: result.modelsWithoutTools,
+					})
+				} else {
+					provider.postMessageToWebview({
+						type: "ollamaModelsRefreshResult",
+						success: false,
+						message: "No models found. Make sure Ollama is running and has models installed.",
+						durationMs,
+						modelsWithoutTools: [],
+					})
+				}
+			} catch (error) {
+				const durationMs = Date.now() - startTime
+
+				if (ollamaApiConfig.ollamaEnableLogging) {
+					console.debug("[Ollama Model Refresh]", {
+						baseUrl: ollamaApiConfig.ollamaBaseUrl,
+						success: false,
+						durationMs,
+						error: error instanceof Error ? error.message : String(error),
+						timestamp: new Date().toISOString(),
+					})
+				}
+
+				provider.postMessageToWebview({
+					type: "ollamaModelsRefreshResult",
+					success: false,
+					message: `Failed to refresh models: ${error instanceof Error ? error.message : String(error)}`,
+					durationMs,
+				})
 			}
 			break
 		}
