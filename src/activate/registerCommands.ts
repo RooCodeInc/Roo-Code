@@ -105,6 +105,7 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 		return openClineInNewTab({ context, outputChannel })
 	},
 	openInNewTab: () => openClineInNewTab({ context, outputChannel }),
+	openInCurrentTab: () => openClineInCurrentTab({ context, outputChannel }),
 	settingsButtonClicked: () => {
 		const visibleProvider = getVisibleProviderOrLog(outputChannel)
 
@@ -269,6 +270,68 @@ export const openClineInNewTab = async ({ context, outputChannel }: Omit<Registe
 	// Lock the editor group so clicking on files doesn't open them over the panel.
 	await delay(100)
 	await vscode.commands.executeCommand("workbench.action.lockEditorGroup")
+
+	return tabProvider
+}
+
+export const openClineInCurrentTab = async ({ context, outputChannel }: Omit<RegisterCommandOptions, "provider">) => {
+	const contextProxy = await ContextProxy.getInstance(context)
+	const codeIndexManager = CodeIndexManager.getInstance(context)
+
+	// Get the existing MDM service instance to ensure consistent policy enforcement
+	let mdmService: MdmService | undefined
+	try {
+		mdmService = MdmService.getInstance()
+	} catch (error) {
+		// MDM service not initialized, which is fine - extension can work without it
+		mdmService = undefined
+	}
+
+	const tabProvider = new ClineProvider(context, outputChannel, "editor", contextProxy, mdmService)
+
+	// Use ViewColumn.Active to open in the current editor column instead of creating a new split
+	const targetCol = vscode.ViewColumn.Active
+
+	const newPanel = vscode.window.createWebviewPanel(ClineProvider.tabPanelId, "Roo Code", targetCol, {
+		enableScripts: true,
+		retainContextWhenHidden: true,
+		localResourceRoots: [context.extensionUri],
+	})
+
+	// Save as tab type panel.
+	setPanel(newPanel, "tab")
+
+	// TODO: Use better svg icon with light and dark variants (see
+	// https://stackoverflow.com/questions/58365687/vscode-extension-iconpath).
+	newPanel.iconPath = {
+		light: vscode.Uri.joinPath(context.extensionUri, "assets", "icons", "panel_light.png"),
+		dark: vscode.Uri.joinPath(context.extensionUri, "assets", "icons", "panel_dark.png"),
+	}
+
+	await tabProvider.resolveWebviewView(newPanel)
+
+	// Add listener for visibility changes to notify webview
+	newPanel.onDidChangeViewState(
+		(e) => {
+			const panel = e.webviewPanel
+			if (panel.visible) {
+				panel.webview.postMessage({ type: "action", action: "didBecomeVisible" })
+			}
+		},
+		null,
+		context.subscriptions,
+	)
+
+	// Handle panel closing events.
+	newPanel.onDidDispose(
+		() => {
+			setPanel(undefined, "tab")
+		},
+		null,
+		context.subscriptions,
+	)
+
+	// Do NOT lock the editor group - allow files to open over the panel like normal tabs
 
 	return tabProvider
 }
