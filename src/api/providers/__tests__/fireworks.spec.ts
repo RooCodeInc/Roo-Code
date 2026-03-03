@@ -308,6 +308,30 @@ describe("FireworksHandler", () => {
 		)
 	})
 
+	it("should return GLM-5 model with correct configuration", () => {
+		const testModelId: FireworksModelId = "accounts/fireworks/models/glm-5"
+		const handlerWithModel = new FireworksHandler({
+			apiModelId: testModelId,
+			fireworksApiKey: "test-fireworks-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 16384,
+				contextWindow: 202752,
+				supportsImages: false,
+				supportsPromptCache: true,
+				supportsReasoningEffort: ["disable", "medium"],
+				reasoningEffort: "medium",
+				preserveReasoning: true,
+				inputPrice: 0.55,
+				outputPrice: 2.19,
+				description: expect.stringContaining("Z.ai GLM-5 is Zhipu's next-generation model"),
+			}),
+		)
+	})
+
 	it("should return gpt-oss-20b model with correct configuration", () => {
 		const testModelId: FireworksModelId = "accounts/fireworks/models/gpt-oss-20b"
 		const handlerWithModel = new FireworksHandler({
@@ -568,6 +592,78 @@ describe("FireworksHandler", () => {
 							delta: {},
 							index: 0,
 						},
+					],
+					usage: {
+						prompt_tokens: 5,
+						completion_tokens: 10,
+						total_tokens: 15,
+					},
+				}
+			},
+		}))
+
+		const systemPrompt = "You are a helpful assistant."
+		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hi" }]
+
+		const stream = handler.createMessage(systemPrompt, messages)
+		const chunks = []
+		for await (const chunk of stream) {
+			chunks.push(chunk)
+		}
+
+		expect(chunks[0]).toEqual({ type: "text", text: "Hello" })
+		expect(chunks[1]).toEqual({ type: "text", text: " world" })
+		expect(chunks[2]).toMatchObject({ type: "usage", inputTokens: 5, outputTokens: 10 })
+	})
+})
+					],
+					usage: {
+						prompt_tokens: 5,
+						completion_tokens: 10,
+						total_tokens: 15,
+					},
+				}
+			},
+		}))
+
+		const systemPrompt = "You are a helpful assistant."
+		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hi" }]
+
+		const stream = handler.createMessage(systemPrompt, messages)
+		const chunks = []
+		for await (const chunk of stream) {
+			chunks.push(chunk)
+		}
+
+		expect(chunks[0]).toEqual({ type: "text", text: "Hello" })
+		expect(chunks[1]).toEqual({ type: "text", text: " world" })
+		expect(chunks[2]).toMatchObject({ type: "usage", inputTokens: 5, outputTokens: 10 })
+	})
+})
+					],
+					usage: {
+						prompt_tokens: 5,
+						completion_tokens: 10,
+						total_tokens: 15,
+					},
+				}
+			},
+		}))
+
+		const systemPrompt = "You are a helpful assistant."
+		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hi" }]
+
+		const stream = handler.createMessage(systemPrompt, messages)
+		const chunks = []
+		for await (const chunk of stream) {
+			chunks.push(chunk)
+		}
+
+		expect(chunks[0]).toEqual({ type: "text", text: "Hello" })
+		expect(chunks[1]).toEqual({ type: "text", text: " world" })
+		expect(chunks[2]).toMatchObject({ type: "usage", inputTokens: 5, outputTokens: 10 })
+	})
+})
 					],
 					usage: {
 						prompt_tokens: 5,
