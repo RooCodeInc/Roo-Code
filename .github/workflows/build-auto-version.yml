@@ -4,9 +4,11 @@ on:
   push:
     branches: 
       - main
+      - main-stable-agent
   pull_request:
     branches:
       - main
+      - main-stable-agent
     types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
@@ -136,10 +138,10 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "✨ **This PR is ready for review and merge!**" >> $GITHUB_STEP_SUMMARY
 
-  # Job 2: Auto-Version and Release (runs on push to main)
+  # Job 2: Auto-Version and Release (runs on push to main branches)
   auto-version-and-release:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/main-stable-agent')
     
     steps:
       - name: Checkout repository
@@ -170,14 +172,19 @@ jobs:
           # Filter to ONLY CalVer versions (YEAR >= 2000)
           LATEST_TAG=$(echo "$ALL_TAGS" | while read tag; do
             if [ -n "$tag" ]; then
-              VERSION=${tag#v}
+              # Strip suffixes like -agent or -alpha.X before numeric parsing
+              BASE_TAG=${tag%%-*}
+              VERSION=${BASE_TAG#v}
               IFS='.' read -r YEAR MAJOR MINOR <<< "$VERSION"
               # Only include tags where YEAR >= 2000 (CalVer versions)
-              if [ "$YEAR" -eq "$YEAR" ] 2>/dev/null && [ "$YEAR" -ge 2000 ]; then
-                echo "$tag"
+              if [ "$YEAR" -eq "$YEAR" ] 2>/dev/null && \
+                 [ "$MAJOR" -eq "$MAJOR" ] 2>/dev/null && \
+                 [ "$MINOR" -eq "$MINOR" ] 2>/dev/null && \
+                 [ "$YEAR" -ge 2000 ]; then
+                echo "$YEAR $MAJOR $MINOR $tag"
               fi
             fi
-          done | sed 's/^v//' | sort -t. -k1,1n -k2,2n -k3,3n | tail -n 1 | sed 's/^/v/')
+          done | sort -k1,1n -k2,2n -k3,3n | tail -n 1 | awk '{print $4}')
           
           # Get current year
           CURRENT_YEAR=$(date +'%Y')
@@ -193,8 +200,9 @@ jobs:
             IS_FIRST_RELEASE="false"
           fi
           
-          # Extract version numbers (remove 'v' prefix)
+          # Extract version numbers (remove 'v' prefix and any suffix)
           VERSION=${LATEST_TAG#v}
+          VERSION=${VERSION%%-*}
           
           echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
           echo "current_version=$VERSION" >> $GITHUB_OUTPUT
@@ -310,8 +318,15 @@ jobs:
             fi
           fi
           
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          TAG_SUFFIX=""
+          if [ "$BRANCH_NAME" = "main-stable-agent" ]; then
+            TAG_SUFFIX="-agent"
+          fi
+          NEW_TAG="v$NEW_VERSION$TAG_SUFFIX"
+
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "new_tag=v$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
           
       - name: Check if version already exists
         id: check_version
@@ -502,12 +517,19 @@ jobs:
           fi
           
           echo "contributors=$CONTRIBUTORS" >> $GITHUB_OUTPUT
+
+      - name: Get release quality
+        id: release_quality
+        run: |
+          QUALITY=$(node -p "require('./src/package.json').releaseQuality || 'stable'")
+          echo "quality=$QUALITY" >> $GITHUB_OUTPUT
+          echo "Using release quality: $QUALITY"
           
       - name: Create Release
         if: steps.check_version.outputs.version_exists == 'false'
         uses: softprops/action-gh-release@v1
         with:
-          name: "SIID Code Extension v${{ steps.calc_version.outputs.new_version }}"
+          name: "SIID Code Extension v${{ steps.calc_version.outputs.new_version }} (${{ steps.release_quality.outputs.quality }})"
           tag_name: ${{ steps.calc_version.outputs.new_tag }}
           draft: false
           prerelease: ${{ github.event.inputs.prerelease || 'false' }}
@@ -518,6 +540,7 @@ jobs:
             **Build Date:** ${{ steps.timestamp.outputs.build_date }}
             **Version:** v${{ steps.calc_version.outputs.new_version }}
             **Version Bump:** ${{ steps.analyze_commits.outputs.bump_type }}
+            **Release Quality:** ${{ steps.release_quality.outputs.quality }}
             
             ---
             
@@ -563,7 +586,7 @@ jobs:
         if: steps.check_version.outputs.version_exists == 'false'
         uses: actions/upload-artifact@v4
         with:
-          name: siid-code-extension-v${{ steps.calc_version.outputs.new_version }}
+          name: siid-code-extension-v${{ steps.calc_version.outputs.new_version }}-${{ steps.release_quality.outputs.quality }}
           path: |
             ${{ steps.find_vsix.outputs.vsix_path }}
             ${{ steps.find_vsix.outputs.vsix_path }}.sha256
