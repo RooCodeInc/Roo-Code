@@ -43,7 +43,13 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 			if (!diffContent) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("apply_diff")
-				pushToolResult(await task.sayAndCreateMissingParamError("apply_diff", "diff"))
+				await task.say(
+					"error",
+					`Roo tried to use apply_diff${
+						relPath ? ` for '${relPath.toPosix()}'` : ""
+					} without value for required parameter 'diff'. This is likely due to output token limits. Retrying...`,
+				)
+				pushToolResult(formatResponse.toolError(formatResponse.applyDiffMissingDiffError()))
 				return
 			}
 
