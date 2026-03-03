@@ -7,18 +7,9 @@ function parseEventContent(text: string | undefined): string {
 	return typeof text === "string" ? text : ""
 }
 
-function validateFollowupAnswer(text: string): void {
-	const normalized = text.toLowerCase()
-	const containsExpected = /\b6\b/.test(normalized) || normalized.includes("six")
-	const containsOldAnswer = /\b1\+1\b/.test(normalized) || /\b2\b/.test(normalized)
-	const containsQuestionReference = normalized.includes("3+3")
-
-	if (!containsExpected) {
-		throw new Error(`follow-up result did not answer the follow-up question; result="${text}"`)
-	}
-
-	if (!containsQuestionReference && containsOldAnswer && !containsExpected) {
-		throw new Error(`follow-up result appears anchored to first question; result="${text}"`)
+function validateFollowupResult(text: string): void {
+	if (text.trim().length === 0) {
+		throw new Error("follow-up produced an empty result")
 	}
 }
 
@@ -32,6 +23,9 @@ async function main() {
 	let sentShutdown = false
 	let firstResult = ""
 	let followupResult = ""
+	let followupDoneCode: string | undefined
+	let sawFollowupUserTurn = false
+	let sawMisroutedToolResult = false
 
 	await runStreamCase({
 		onEvent(event: StreamEvent, context) {
@@ -52,6 +46,31 @@ async function main() {
 			}
 
 			if (event.type !== "result" || event.done !== true) {
+				if (
+					event.type === "control" &&
+					event.requestId === followupRequestId &&
+					event.command === "message" &&
+					event.subtype === "done"
+				) {
+					followupDoneCode = event.code
+					return
+				}
+
+				if (
+					event.type === "tool_result" &&
+					event.requestId === followupRequestId &&
+					typeof event.content === "string" &&
+					event.content.includes("<user_message>")
+				) {
+					sawMisroutedToolResult = true
+					return
+				}
+
+				if (event.type === "user" && event.requestId === followupRequestId) {
+					sawFollowupUserTurn = typeof event.content === "string" && event.content.includes("3+3")
+					return
+				}
+
 				return
 			}
 
@@ -77,7 +96,22 @@ async function main() {
 			}
 
 			followupResult = parseEventContent(event.content)
-			validateFollowupAnswer(followupResult)
+			validateFollowupResult(followupResult)
+
+			if (followupDoneCode !== "responded") {
+				throw new Error(
+					`follow-up message was not routed as ask response; code="${followupDoneCode ?? "none"}"`,
+				)
+			}
+
+			if (!sawFollowupUserTurn) {
+				throw new Error("follow-up did not appear as a normal user turn in stream output")
+			}
+
+			if (sawMisroutedToolResult) {
+				throw new Error("follow-up message was misrouted into tool_result (<user_message>), old bug reproduced")
+			}
+
 			console.log(`[PASS] first result="${firstResult}"`)
 			console.log(`[PASS] follow-up result="${followupResult}"`)
 

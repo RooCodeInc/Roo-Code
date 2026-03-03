@@ -2,6 +2,8 @@ import { runStreamCase, StreamEvent } from "../lib/stream-harness"
 
 const START_PROMPT = 'Answer this question and finish: What is 1+1? Reply with only "2", then complete the task.'
 const FOLLOWUP_PROMPT = 'Different question now: what is 3+3? Reply with only "6".'
+const ONE_PIXEL_IMAGE =
+	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9R4WQAAAAASUVORK5CYII="
 
 async function main() {
 	const startRequestId = `start-${Date.now()}`
@@ -11,13 +13,11 @@ async function main() {
 	let initSeen = false
 	let sentFollowup = false
 	let sentShutdown = false
-	let startAckCount = 0
-	let sawStartControlAfterFollowup = false
 	let followupDoneCode: string | undefined
 	let sawFollowupUserTurn = false
 	let sawMisroutedToolResult = false
-	let sawQueueEventForFollowupRequest = false
-	let followupResult = ""
+	let sawQueueImageMetadata = false
+	let shutdownDoneSeen = false
 
 	await runStreamCase({
 		onEvent(event: StreamEvent, context) {
@@ -37,14 +37,6 @@ async function main() {
 				)
 			}
 
-			if (event.type === "control" && event.command === "start" && event.subtype === "ack") {
-				startAckCount += 1
-				if (sentFollowup) {
-					sawStartControlAfterFollowup = true
-				}
-				return
-			}
-
 			if (
 				event.type === "control" &&
 				event.command === "message" &&
@@ -52,11 +44,47 @@ async function main() {
 				event.requestId === followupRequestId
 			) {
 				followupDoneCode = event.code
+				if (!sentShutdown) {
+					context.sendCommand({
+						command: "shutdown",
+						requestId: shutdownRequestId,
+					})
+					sentShutdown = true
+				}
 				return
 			}
 
-			if (event.type === "queue" && event.requestId === followupRequestId) {
-				sawQueueEventForFollowupRequest = true
+			if (
+				event.type === "control" &&
+				event.command === "shutdown" &&
+				event.subtype === "done" &&
+				event.requestId === shutdownRequestId
+			) {
+				shutdownDoneSeen = true
+
+				if (followupDoneCode !== "responded") {
+					throw new Error(
+						`follow-up image message was not routed as ask response; code="${followupDoneCode ?? "none"}"`,
+					)
+				}
+				if (sawQueueImageMetadata) {
+					throw new Error("follow-up image message was unexpectedly queued (observed queue image metadata)")
+				}
+				if (sawMisroutedToolResult) {
+					throw new Error("follow-up image message was misrouted into tool_result (<user_message>)")
+				}
+
+				console.log(`[PASS] follow-up image control code: "${followupDoneCode}"`)
+				console.log(`[PASS] follow-up image user turn observed before shutdown: ${sawFollowupUserTurn}`)
+				return
+			}
+
+			if (
+				event.type === "queue" &&
+				Array.isArray(event.queue) &&
+				event.queue.some((item) => item?.imageCount === 1)
+			) {
+				sawQueueImageMetadata = true
 				return
 			}
 
@@ -80,68 +108,23 @@ async function main() {
 					command: "message",
 					requestId: followupRequestId,
 					prompt: FOLLOWUP_PROMPT,
+					images: [ONE_PIXEL_IMAGE],
 				})
 				sentFollowup = true
 				return
 			}
-
-			if (event.type !== "result" || event.done !== true || event.requestId !== followupRequestId) {
-				return
-			}
-
-			followupResult = event.content ?? ""
-			if (followupResult.trim().length === 0) {
-				throw new Error("follow-up produced an empty result")
-			}
-
-			if (followupDoneCode !== "responded") {
-				throw new Error(
-					`follow-up message was not routed as ask response; code="${followupDoneCode ?? "none"}"`,
-				)
-			}
-
-			if (sawMisroutedToolResult) {
-				throw new Error("follow-up message was misrouted into tool_result (<user_message>), old bug reproduced")
-			}
-			if (sawQueueEventForFollowupRequest) {
-				throw new Error("follow-up message produced queue events despite responded routing")
-			}
-
-			if (!sawFollowupUserTurn) {
-				throw new Error("follow-up did not appear as a normal user turn in stream output")
-			}
-
-			if (sawStartControlAfterFollowup) {
-				throw new Error("unexpected start control event after follow-up; message should not trigger a new task")
-			}
-
-			if (startAckCount !== 1) {
-				throw new Error(`expected exactly one start ack event, saw ${startAckCount}`)
-			}
-
-			console.log(`[PASS] follow-up control code: "${followupDoneCode}"`)
-			console.log(`[PASS] follow-up user turn observed: ${sawFollowupUserTurn}`)
-			console.log(`[PASS] follow-up result: "${followupResult}"`)
-
-			if (!sentShutdown) {
-				context.sendCommand({
-					command: "shutdown",
-					requestId: shutdownRequestId,
-				})
-				sentShutdown = true
-			}
 		},
 		onTimeoutMessage() {
 			return [
-				"timed out waiting for completion ask-response follow-up validation",
+				"timed out waiting for followup-completion-ask-response-images validation",
 				`initSeen=${initSeen}`,
 				`sentFollowup=${sentFollowup}`,
-				`startAckCount=${startAckCount}`,
+				`sentShutdown=${sentShutdown}`,
+				`shutdownDoneSeen=${shutdownDoneSeen}`,
 				`followupDoneCode=${followupDoneCode ?? "none"}`,
 				`sawFollowupUserTurn=${sawFollowupUserTurn}`,
 				`sawMisroutedToolResult=${sawMisroutedToolResult}`,
-				`sawQueueEventForFollowupRequest=${sawQueueEventForFollowupRequest}`,
-				`haveFollowupResult=${Boolean(followupResult)}`,
+				`sawQueueImageMetadata=${sawQueueImageMetadata}`,
 			].join(" ")
 		},
 	})

@@ -168,8 +168,16 @@ describe("shouldSendMessageAsAskResponse", () => {
 		expect(shouldSendMessageAsAskResponse(true, "completion_result")).toBe(true)
 	})
 
-	it("routes followup asks as ask responses", () => {
-		expect(shouldSendMessageAsAskResponse(true, "followup")).toBe(true)
+	it.each([
+		"followup",
+		"tool",
+		"command",
+		"use_mcp_server",
+		"resume_task",
+		"resume_completed_task",
+		"mistake_limit_reached",
+	])("routes %s asks as ask responses", (ask) => {
+		expect(shouldSendMessageAsAskResponse(true, ask)).toBe(true)
 	})
 
 	it("does not route when not waiting for input", () => {
