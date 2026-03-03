@@ -1,4 +1,4 @@
-import { parseStdinStreamCommand } from "../stdin-stream.js"
+import { parseStdinStreamCommand, shouldSendMessageAsAskResponse } from "../stdin-stream.js"
 
 describe("parseStdinStreamCommand", () => {
 	describe("valid commands", () => {
@@ -160,5 +160,24 @@ describe("parseStdinStreamCommand", () => {
 				),
 			).toThrow('"message" images must be an array of strings')
 		})
+	})
+})
+
+describe("shouldSendMessageAsAskResponse", () => {
+	it("routes completion_result asks as ask responses", () => {
+		expect(shouldSendMessageAsAskResponse(true, "completion_result")).toBe(true)
+	})
+
+	it("routes followup asks as ask responses", () => {
+		expect(shouldSendMessageAsAskResponse(true, "followup")).toBe(true)
+	})
+
+	it("does not route when not waiting for input", () => {
+		expect(shouldSendMessageAsAskResponse(false, "completion_result")).toBe(false)
+	})
+
+	it("does not route unknown asks", () => {
+		expect(shouldSendMessageAsAskResponse(true, "unknown")).toBe(false)
+		expect(shouldSendMessageAsAskResponse(true, undefined)).toBe(false)
 	})
 })
