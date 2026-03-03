@@ -180,7 +180,6 @@ describe("OpenRouterHandler", () => {
 					stream_options: { include_usage: true },
 					temperature: 0,
 					top_p: undefined,
-					transforms: ["middle-out"],
 				}),
 			)
 		})
@@ -266,6 +265,37 @@ describe("OpenRouterHandler", () => {
 
 			const generator = handler.createMessage("test", [])
 			await expect(generator.next()).rejects.toThrow("OpenRouter API Error 500: API Error")
+		})
+
+		it("handles usage-only chunks without delta", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { reasoning: "thinking..." } }],
+					}
+					yield {
+						id: "test-id",
+						usage: { prompt_tokens: 5, completion_tokens: 7, cost: 0.0001 },
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const chunks = []
+			for await (const chunk of handler.createMessage("test", [])) {
+				chunks.push(chunk)
+			}
+
+			expect(chunks).toEqual([
+				{ type: "reasoning", text: "thinking..." },
+				{ type: "usage", inputTokens: 5, outputTokens: 7, totalCost: 0.0001 },
+			])
 		})
 	})
 
