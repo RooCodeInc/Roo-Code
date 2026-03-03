@@ -302,10 +302,10 @@ describe("JsonEventEmitter streaming deltas", () => {
 
 		emitter.emitCommandOutputChunk("line1\n")
 		emitter.emitCommandOutputChunk("line1\nline2\n")
-		emitter.emitCommandOutputDone(17)
+		emitter.markCommandOutputExited(17)
 
-		// This completion say is expected from the extension, but should be suppressed
-		// because we already streamed and completed via commandExecutionStatus.
+		// This completion say is expected from the extension and should finalize
+		// the status-driven command_output stream without duplicating content.
 		emitMessage(emitter, {
 			ts: 999,
 			type: "say",
@@ -340,6 +340,49 @@ describe("JsonEventEmitter streaming deltas", () => {
 			id: commandId,
 			subtype: "command",
 			tool_result: { name: "execute_command", exitCode: 17 },
+			done: true,
+		})
+	})
+
+	it("flushes remaining output on final say completion after fast status:exited", () => {
+		const { stdout, lines } = createMockStdout()
+		const emitter = new JsonEventEmitter({ mode: "stream-json", stdout })
+		const commandId = 606
+
+		emitMessage(
+			emitter,
+			createAskMessage({
+				ts: commandId,
+				ask: "command",
+				partial: false,
+				text: "aws sts get-caller-identity",
+			}),
+		)
+
+		emitter.emitCommandOutputChunk("{\n")
+		emitter.markCommandOutputExited(0)
+
+		emitMessage(emitter, {
+			ts: 607,
+			type: "say",
+			say: "command_output",
+			partial: false,
+			text: '{\n  "Account": "123"\n}\n',
+		} as ClineMessage)
+
+		const output = lines()
+		expect(output).toHaveLength(3)
+		expect(output[1]).toMatchObject({
+			type: "tool_result",
+			id: commandId,
+			subtype: "command",
+			tool_result: { name: "execute_command", output: "{\n" },
+		})
+		expect(output[2]).toMatchObject({
+			type: "tool_result",
+			id: commandId,
+			subtype: "command",
+			tool_result: { name: "execute_command", output: '  "Account": "123"\n}\n', exitCode: 0 },
 			done: true,
 		})
 	})

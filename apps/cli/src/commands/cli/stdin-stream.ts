@@ -432,16 +432,22 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 				return
 			}
 
-			if (
-				parsedStatus.status === "exited" ||
-				parsedStatus.status === "timeout" ||
-				parsedStatus.status === "fallback"
-			) {
+			if (parsedStatus.status === "exited") {
 				const exitCode =
 					parsedStatus.status === "exited" && typeof parsedStatus.exitCode === "number"
 						? parsedStatus.exitCode
 						: undefined
-				jsonEmitter.emitCommandOutputDone(exitCode)
+
+				if (typeof parsedStatus.output === "string") {
+					jsonEmitter.emitCommandOutputChunk(parsedStatus.output)
+				}
+
+				jsonEmitter.markCommandOutputExited(exitCode)
+				return
+			}
+
+			if (parsedStatus.status === "timeout" || parsedStatus.status === "fallback") {
+				jsonEmitter.emitCommandOutputDone(undefined)
 				return
 			}
 

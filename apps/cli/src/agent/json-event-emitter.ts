@@ -90,6 +90,8 @@ const SKIP_SAY_TYPES = new Set([
 
 /** Key offset for reasoning content to avoid collision with text content delta tracking */
 const REASONING_KEY_OFFSET = 1_000_000_000
+/** Grace period to wait for final say:command_output after status:exited */
+const COMMAND_OUTPUT_EXIT_GRACE_MS = 250
 
 export class JsonEventEmitter {
 	private mode: "json" | "stream-json"
@@ -115,8 +117,8 @@ export class JsonEventEmitter {
 	private statusDrivenCommandOutputIds = new Set<number>()
 	// Track command ids that already emitted a terminal command_output done event.
 	private completedCommandOutputIds = new Set<number>()
-	// Suppress the next say:command_output completion message after status-driven streaming.
-	private suppressNextCommandOutputSay = false
+	// Track exited commands awaiting final say:command_output completion.
+	private pendingCommandCompletionByToolUseId = new Map<number, { exitCode?: number; timer: NodeJS.Timeout }>()
 	// Track the completion result content
 	private completionResultContent: string | undefined
 	// Track the latest assistant text as a fallback for result.content.
@@ -338,6 +340,7 @@ export class JsonEventEmitter {
 
 			if (isDone) {
 				event.done = true
+				this.clearPendingCommandCompletion(commandId)
 				this.previousCommandOutputByToolUseId.delete(commandId)
 				this.statusDrivenCommandOutputIds.delete(commandId)
 				this.completedCommandOutputIds.add(commandId)
@@ -368,6 +371,7 @@ export class JsonEventEmitter {
 		})
 
 		if (isDone) {
+			this.clearPendingCommandCompletion(commandId)
 			this.previousCommandOutputByToolUseId.delete(commandId)
 			this.statusDrivenCommandOutputIds.delete(commandId)
 			this.completedCommandOutputIds.add(commandId)
@@ -387,6 +391,28 @@ export class JsonEventEmitter {
 		this.emitCommandOutputEvent(commandId, outputSnapshot, false)
 	}
 
+	public markCommandOutputExited(exitCode?: number): void {
+		const commandId = this.activeCommandToolUseId
+		if (commandId === undefined) {
+			return
+		}
+
+		this.statusDrivenCommandOutputIds.add(commandId)
+		this.clearPendingCommandCompletion(commandId)
+
+		const timer = setTimeout(() => {
+			// Fallback close if final say:command_output never arrives.
+			if (!this.pendingCommandCompletionByToolUseId.has(commandId)) {
+				return
+			}
+			this.pendingCommandCompletionByToolUseId.delete(commandId)
+			this.emitCommandOutputEvent(commandId, undefined, true, exitCode)
+		}, COMMAND_OUTPUT_EXIT_GRACE_MS)
+		timer.unref?.()
+
+		this.pendingCommandCompletionByToolUseId.set(commandId, { exitCode, timer })
+	}
+
 	public emitCommandOutputDone(exitCode?: number): void {
 		const commandId = this.activeCommandToolUseId
 		if (commandId === undefined) {
@@ -394,8 +420,16 @@ export class JsonEventEmitter {
 		}
 
 		this.statusDrivenCommandOutputIds.add(commandId)
-		this.suppressNextCommandOutputSay = true
 		this.emitCommandOutputEvent(commandId, undefined, true, exitCode)
+	}
+
+	private clearPendingCommandCompletion(commandId: number): void {
+		const pending = this.pendingCommandCompletionByToolUseId.get(commandId)
+		if (!pending) {
+			return
+		}
+		clearTimeout(pending.timer)
+		this.pendingCommandCompletionByToolUseId.delete(commandId)
 	}
 
 	/**
@@ -624,9 +658,19 @@ export class JsonEventEmitter {
 		const toolInfo = parseToolInfo(msg.text)
 
 		if (subtype === "command") {
+			if (this.activeCommandToolUseId !== undefined && this.activeCommandToolUseId !== msg.ts) {
+				const previousCommandId = this.activeCommandToolUseId
+				const pending = this.pendingCommandCompletionByToolUseId.get(previousCommandId)
+				if (pending) {
+					clearTimeout(pending.timer)
+					this.pendingCommandCompletionByToolUseId.delete(previousCommandId)
+					this.emitCommandOutputEvent(previousCommandId, undefined, true, pending.exitCode)
+				}
+			}
+
 			this.activeCommandToolUseId = msg.ts
 			this.completedCommandOutputIds.delete(msg.ts)
-			this.suppressNextCommandOutputSay = false
+			this.clearPendingCommandCompletion(msg.ts)
 
 			if (isStreamingPartial) {
 				const commandDelta = this.computeStructuredDelta(msg.ts, msg.text)
@@ -707,17 +751,26 @@ export class JsonEventEmitter {
 	}
 
 	private handleCommandOutputMessage(msg: ClineMessage, isDone: boolean): void {
-		if (this.suppressNextCommandOutputSay) {
-			if (isDone) {
-				this.suppressNextCommandOutputSay = false
-			}
+		const commandId = this.activeCommandToolUseId ?? msg.ts
+		if (this.completedCommandOutputIds.has(commandId)) {
 			return
 		}
 
-		const commandId = this.activeCommandToolUseId ?? msg.ts
-		if (this.statusDrivenCommandOutputIds.has(commandId) || this.completedCommandOutputIds.has(commandId)) {
+		const pending = this.pendingCommandCompletionByToolUseId.get(commandId)
+		if (pending) {
+			if (!isDone) {
+				return
+			}
+			clearTimeout(pending.timer)
+			this.pendingCommandCompletionByToolUseId.delete(commandId)
+			this.emitCommandOutputEvent(commandId, msg.text, true, pending.exitCode)
 			return
 		}
+
+		if (this.statusDrivenCommandOutputIds.has(commandId)) {
+			return
+		}
+
 		this.emitCommandOutputEvent(commandId, msg.text, isDone)
 	}
 
@@ -841,7 +894,10 @@ export class JsonEventEmitter {
 		this.previousCommandOutputByToolUseId.clear()
 		this.statusDrivenCommandOutputIds.clear()
 		this.completedCommandOutputIds.clear()
-		this.suppressNextCommandOutputSay = false
+		for (const pending of this.pendingCommandCompletionByToolUseId.values()) {
+			clearTimeout(pending.timer)
+		}
+		this.pendingCommandCompletionByToolUseId.clear()
 		this.completionResultContent = undefined
 		this.lastAssistantText = undefined
 		this.expectPromptEchoAsUser = true
