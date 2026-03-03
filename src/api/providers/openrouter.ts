@@ -186,9 +186,9 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				throw new Error(`OpenRouter API Error ${error?.code}: ${error?.message}`)
 			}
 
-			const delta = chunk.choices[0]?.delta
+			const delta = chunk.choices?.[0]?.delta
 
-			if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
+			if (delta && "reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
 				yield { type: "reasoning", text: delta.reasoning }
 			}
 
