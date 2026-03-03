@@ -3,6 +3,7 @@ import * as path from "path"
 import * as vscode from "vscode"
 
 import delay from "delay"
+import { parse } from "shell-quote"
 
 import { CommandExecutionStatus, DEFAULT_TERMINAL_OUTPUT_PREVIEW_SIZE, PersistedCommandOutput } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -27,6 +28,53 @@ interface ExecuteCommandParams {
 	command: string
 	cwd?: string
 	timeout?: number | null
+}
+
+function isTrailingBackgroundOperatorToken(token: unknown): boolean {
+	if (typeof token !== "object" || token === null) {
+		return false
+	}
+	const entry = token as Record<string, unknown>
+	return entry.op === "&"
+}
+
+function isSkippableTrailingToken(token: unknown): boolean {
+	if (typeof token === "string") {
+		return token.trim().length === 0
+	}
+	if (typeof token !== "object" || token === null) {
+		return false
+	}
+	const entry = token as Record<string, unknown>
+	return typeof entry.comment === "string"
+}
+
+/**
+ * Detect explicit shell backgrounding intent, e.g. `pnpm dev &`.
+ *
+ * We only treat a trailing standalone `&` as background intent so commands like
+ * `foo && bar` or `sleep 1 & echo done` remain foreground in agent execution flow.
+ */
+export function hasTrailingBackgroundOperator(command: string): boolean {
+	const trimmed = command.trim()
+	if (!trimmed) {
+		return false
+	}
+
+	try {
+		const tokens = parse(trimmed)
+		for (let i = tokens.length - 1; i >= 0; i--) {
+			const token = tokens[i]
+			if (isSkippableTrailingToken(token)) {
+				continue
+			}
+			return isTrailingBackgroundOperatorToken(token)
+		}
+		return false
+	} catch {
+		// If parsing fails, default to foreground behavior.
+		return false
+	}
 }
 
 export function resolveAgentTimeoutMs(timeoutSeconds: number | null | undefined): number {
@@ -192,6 +240,7 @@ export async function executeCommandInTerminal(
 
 	let message: { text?: string; images?: string[] } | undefined
 	let runInBackground = false
+	const requestedBackgroundExecution = hasTrailingBackgroundOperator(command)
 	let completed = false
 	let result: string = ""
 	let persistedResult: PersistedCommandOutput | undefined
@@ -379,6 +428,11 @@ export async function executeCommandInTerminal(
 
 	const process = terminal.runCommand(command, callbacks)
 	task.terminalProcess = process
+
+	if (requestedBackgroundExecution) {
+		runInBackground = true
+		process.continue()
+	}
 
 	// Dual-timeout logic:
 	// - Agent timeout: transitions the command to background (continues running)
