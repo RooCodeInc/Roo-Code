@@ -378,6 +378,9 @@ describe("OpenAiNativeHandler - normalizeUsage", () => {
 
 			const fourOBody = buildRequestBodyForModel("gpt-4o")
 			expect(fourOBody.prompt_cache_retention).toBeUndefined()
+
+			const chatModelBody = buildRequestBodyForModel("gpt-5.3-chat-latest")
+			expect(chatModelBody.prompt_cache_retention).toBeUndefined()
 		})
 
 		it("should not set prompt_cache_retention when the model does not support prompt caching", () => {

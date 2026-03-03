@@ -93,6 +93,18 @@ export const openAiNativeModels = {
 		cacheReadsPrice: 0.175,
 		description: "GPT-5.2 Chat: Optimized for conversational AI and chat use cases",
 	},
+	"gpt-5.3-chat-latest": {
+		maxTokens: 16_384,
+		contextWindow: 128_000,
+		includedTools: ["apply_patch"],
+		excludedTools: ["apply_diff", "write_to_file"],
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 1.75,
+		outputPrice: 14.0,
+		cacheReadsPrice: 0.175,
+		description: "GPT-5.3 Chat: Optimized for conversational AI and chat use cases",
+	},
 	"gpt-5.1": {
 		maxTokens: 128000,
 		contextWindow: 400000,
