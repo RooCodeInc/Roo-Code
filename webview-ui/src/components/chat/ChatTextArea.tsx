@@ -16,6 +16,7 @@ import {
 	ContextMenuOptionType,
 	getContextMenuOptions,
 	insertMention,
+	needsSpaceBeforeMention,
 	removeMention,
 	shouldShowContextMenu,
 	SearchResult,
@@ -165,8 +166,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 						// Check if we need to add a space before the command
 						const textBefore = currentValue.slice(0, cursorPos)
-						const needsSpaceBefore = textBefore.length > 0 && !textBefore.endsWith(" ")
-						const prefix = needsSpaceBefore ? " " : ""
+						const prefix = needsSpaceBeforeMention(textBefore) ? " " : ""
 
 						// Insert the text at cursor position
 						const newValue =
@@ -825,6 +825,13 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						// Process each line as a separate file path
 						let newValue = inputValue.slice(0, cursorPosition)
 						let totalLength = 0
+
+						// Check if we need to add a space before the first mention
+						const textBefore = inputValue.slice(0, cursorPosition)
+						if (needsSpaceBeforeMention(textBefore)) {
+							newValue += " "
+							totalLength += 1
+						}
 
 						// Using a standard for loop instead of forEach for potential performance gains.
 						for (let i = 0; i < lines.length; i++) {
