@@ -1,0 +1,22 @@
+active_intents:
+  - id: INT-001
+    name: Add Feature to hello.js
+    status: COMPLETED
+    owned_scope:
+      - src/**/*.js
+      - tests/**/hello.test.js
+    constraints:
+      - Must preserve backward compatibility
+      - Add proper JSDoc comments
+      - All tests must pass
+    acceptance_criteria:
+      - Function executes without errors
+      - Lint check passes
+      - Unit tests pass
+      - No out-of-scope modifications
+    created_at: '2026-02-20T20:27:20.663Z'
+    metadata:
+      phase: 5
+      governance: hitl-approval
+      requires_review: true
+    completed_at: '2026-02-20T20:27:20.670Z'

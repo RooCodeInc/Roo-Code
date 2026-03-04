@@ -12,11 +12,5 @@ export { useTaskSubmit } from "./useTaskSubmit.js"
 export { useGlobalInput } from "./useGlobalInput.js"
 export { usePickerHandlers } from "./usePickerHandlers.js"
 
-// Export types
-export type { UseFollowupCountdownOptions } from "./useFollowupCountdown.js"
-export type { UseFocusManagementOptions, UseFocusManagementReturn } from "./useFocusManagement.js"
-export type { UseMessageHandlersOptions, UseMessageHandlersReturn } from "./useMessageHandlers.js"
-export type { UseExtensionHostOptions, UseExtensionHostReturn } from "./useExtensionHost.js"
-export type { UseTaskSubmitOptions, UseTaskSubmitReturn } from "./useTaskSubmit.js"
-export type { UseGlobalInputOptions } from "./useGlobalInput.js"
-export type { UsePickerHandlersOptions, UsePickerHandlersReturn } from "./usePickerHandlers.js"
+// Export intent hooks
+export { IntentHookEngine } from "./intentHooks.js"
