@@ -34,7 +34,7 @@ describe("validateTerminalShellPath", () => {
 	})
 
 	it("returns invalid when the shell path cannot be accessed", async () => {
-		vi.mocked(fs.access).mockRejectedValueOnce(new Error("ENOENT"))
+		vi.mocked(fs.stat).mockRejectedValueOnce(new Error("ENOENT"))
 		const result = await validateTerminalShellPath("/missing/shell")
 
 		expect(result.valid).toBe(false)
