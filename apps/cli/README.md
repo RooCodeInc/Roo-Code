@@ -113,15 +113,21 @@ Use `--print` for non-interactive execution and machine-readable output:
 ```bash
 # Prompt is required
 roo --print "Summarize this repository"
+
+# Create a new task with a specific session ID (UUID)
+roo --print --create-with-session-id 018f7fc8-7c96-7f7c-98aa-2ec4ff7f6d87 "Summarize this repository"
 ```
 
 ### Stdin Stream Mode (`--stdin-prompt-stream`)
 
 For programmatic control (one process, multiple prompts), use `--stdin-prompt-stream` with `--print`.
-Send one prompt per line via stdin:
+Send NDJSON commands via stdin:
 
 ```bash
-printf '1+1=?\n10!=?\n' | roo --print --stdin-prompt-stream --output-format stream-json
+printf '{"command":"start","requestId":"1","prompt":"1+1=?"}\n' | roo --print --stdin-prompt-stream --output-format stream-json
+
+# Optional: provide taskId per start command
+printf '{"command":"start","requestId":"1","taskId":"018f7fc8-7c96-7f7c-98aa-2ec4ff7f6d87","prompt":"1+1=?"}\n' | roo --print --stdin-prompt-stream --output-format stream-json
 ```
 
 ### Roo Code Cloud Authentication
@@ -170,26 +176,27 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 
 ## Options
 
-| Option                            | Description                                                                             | Default                                  |
-| --------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------- |
-| `[prompt]`                        | Your prompt (positional argument, optional)                                             | None                                     |
-| `--prompt-file <path>`            | Read prompt from a file instead of command line argument                                | None                                     |
-| `-w, --workspace <path>`          | Workspace path to operate in                                                            | Current directory                        |
-| `-p, --print`                     | Print response and exit (non-interactive mode)                                          | `false`                                  |
-| `--stdin-prompt-stream`           | Read prompts from stdin (one prompt per line, requires `--print`)                       | `false`                                  |
-| `-e, --extension <path>`          | Path to the extension bundle directory                                                  | Auto-detected                            |
-| `-d, --debug`                     | Enable debug output (includes detailed debug information, prompts, paths, etc)          | `false`                                  |
-| `-a, --require-approval`          | Require manual approval before actions execute                                          | `false`                                  |
-| `-k, --api-key <key>`             | API key for the LLM provider                                                            | From env var                             |
-| `--provider <provider>`           | API provider (roo, anthropic, openai, openrouter, etc.)                                 | `openrouter` (or `roo` if authenticated) |
-| `-m, --model <model>`             | Model to use                                                                            | `anthropic/claude-opus-4.6`              |
-| `--mode <mode>`                   | Mode to start in (code, architect, ask, debug, etc.)                                    | `code`                                   |
-| `--terminal-shell <path>`         | Absolute shell path for inline terminal command execution                               | Auto-detected shell                      |
-| `-r, --reasoning-effort <effort>` | Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh) | `medium`                                 |
-| `--consecutive-mistake-limit <n>` | Consecutive error/repetition limit before guidance prompt (`0` disables the limit)      | `10`                                     |
-| `--ephemeral`                     | Run without persisting state (uses temporary storage)                                   | `false`                                  |
-| `--oneshot`                       | Exit upon task completion                                                               | `false`                                  |
-| `--output-format <format>`        | Output format with `--print`: `text`, `json`, or `stream-json`                          | `text`                                   |
+| Option                                  | Description                                                                             | Default                                  |
+| --------------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `[prompt]`                              | Your prompt (positional argument, optional)                                             | None                                     |
+| `--prompt-file <path>`                  | Read prompt from a file instead of command line argument                                | None                                     |
+| `--create-with-session-id <session-id>` | Create a new task using the provided session ID (UUID)                                  | None                                     |
+| `-w, --workspace <path>`                | Workspace path to operate in                                                            | Current directory                        |
+| `-p, --print`                           | Print response and exit (non-interactive mode)                                          | `false`                                  |
+| `--stdin-prompt-stream`                 | Read NDJSON control commands from stdin (requires `--print`)                            | `false`                                  |
+| `-e, --extension <path>`                | Path to the extension bundle directory                                                  | Auto-detected                            |
+| `-d, --debug`                           | Enable debug output (includes detailed debug information, prompts, paths, etc)          | `false`                                  |
+| `-a, --require-approval`                | Require manual approval before actions execute                                          | `false`                                  |
+| `-k, --api-key <key>`                   | API key for the LLM provider                                                            | From env var                             |
+| `--provider <provider>`                 | API provider (roo, anthropic, openai, openrouter, etc.)                                 | `openrouter` (or `roo` if authenticated) |
+| `-m, --model <model>`                   | Model to use                                                                            | `anthropic/claude-opus-4.6`              |
+| `--mode <mode>`                         | Mode to start in (code, architect, ask, debug, etc.)                                    | `code`                                   |
+| `--terminal-shell <path>`               | Absolute shell path for inline terminal command execution                               | Auto-detected shell                      |
+| `-r, --reasoning-effort <effort>`       | Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh) | `medium`                                 |
+| `--consecutive-mistake-limit <n>`       | Consecutive error/repetition limit before guidance prompt (`0` disables the limit)      | `10`                                     |
+| `--ephemeral`                           | Run without persisting state (uses temporary storage)                                   | `false`                                  |
+| `--oneshot`                             | Exit upon task completion                                                               | `false`                                  |
+| `--output-format <format>`              | Output format with `--print`: `text`, `json`, or `stream-json`                          | `text`                                   |
 
 ## Auth Commands
 

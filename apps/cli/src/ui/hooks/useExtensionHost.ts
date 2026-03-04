@@ -39,6 +39,7 @@ function getMostRecentTaskId(taskHistory: HistoryItem[], workspacePath: string):
 // TODO: Unify with TUIAppProps?
 export interface UseExtensionHostOptions extends ExtensionHostOptions {
 	initialPrompt?: string
+	initialTaskId?: string
 	initialSessionId?: string
 	continueSession?: boolean
 	onExtensionMessage: (msg: ExtensionMessage) => void
@@ -63,6 +64,7 @@ export interface UseExtensionHostReturn {
  */
 export function useExtensionHost({
 	initialPrompt,
+	initialTaskId,
 	initialSessionId,
 	continueSession,
 	mode,
@@ -86,6 +88,7 @@ export function useExtensionHost({
 
 	const hostRef = useRef<ExtensionHostInterface | null>(null)
 	const isReadyRef = useRef(false)
+	const pendingInitialTaskIdRef = useRef<string | undefined>(initialTaskId?.trim() || undefined)
 
 	const cleanup = useCallback(async () => {
 		if (hostRef.current) {
@@ -193,7 +196,9 @@ export function useExtensionHost({
 					setHasStartedTask(true)
 					setLoading(true)
 					addMessage({ id: randomUUID(), role: "user", content: initialPrompt })
-					await host.runTask(initialPrompt)
+					const taskId = pendingInitialTaskIdRef.current
+					pendingInitialTaskIdRef.current = undefined
+					await host.runTask(initialPrompt, taskId)
 				}
 			} catch (err) {
 				setError(err instanceof Error ? err.message : String(err))
@@ -221,7 +226,9 @@ export function useExtensionHost({
 			return Promise.reject(new Error("Extension host not ready"))
 		}
 
-		return hostRef.current.runTask(prompt)
+		const taskId = pendingInitialTaskIdRef.current
+		pendingInitialTaskIdRef.current = undefined
+		return hostRef.current.runTask(prompt, taskId)
 	}, [])
 
 	// Memoized return object to prevent unnecessary re-renders in consumers.

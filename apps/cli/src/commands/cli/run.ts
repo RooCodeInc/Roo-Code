@@ -28,6 +28,7 @@ import { getEnvVarName, getApiKeyFromEnv } from "@/lib/utils/provider.js"
 import { runOnboarding } from "@/lib/utils/onboarding.js"
 import { validateTerminalShellPath } from "@/lib/utils/shell.js"
 import { getDefaultExtensionPath } from "@/lib/utils/extension.js"
+import { isValidSessionId } from "@/lib/utils/session-id.js"
 import { VERSION } from "@/lib/utils/version.js"
 
 import { ExtensionHost, ExtensionHostOptions } from "@/agent/index.js"
@@ -126,11 +127,32 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 	}
 
 	const requestedSessionId = flagOptions.sessionId?.trim()
+	const requestedCreateSessionId = flagOptions.createWithSessionId?.trim()
 	const shouldContinueSession = flagOptions.continue
 	const isResumeRequested = Boolean(requestedSessionId || shouldContinueSession)
 
+	if (flagOptions.createWithSessionId !== undefined && !requestedCreateSessionId) {
+		console.error("[CLI] Error: --create-with-session-id requires a non-empty session id")
+		process.exit(1)
+	}
+
 	if (flagOptions.sessionId !== undefined && !requestedSessionId) {
-		console.error("[CLI] Error: --session-id requires a non-empty task id")
+		console.error("[CLI] Error: --session-id requires a non-empty session id")
+		process.exit(1)
+	}
+
+	if (requestedCreateSessionId && !isValidSessionId(requestedCreateSessionId)) {
+		console.error("[CLI] Error: --create-with-session-id must be a valid UUID session id")
+		process.exit(1)
+	}
+
+	if (requestedSessionId && !isValidSessionId(requestedSessionId)) {
+		console.error("[CLI] Error: --session-id must be a valid UUID session id")
+		process.exit(1)
+	}
+
+	if (requestedCreateSessionId && isResumeRequested) {
+		console.error("[CLI] Error: cannot use --create-with-session-id with --session-id/--continue")
 		process.exit(1)
 	}
 
@@ -141,7 +163,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 
 	if (isResumeRequested && prompt) {
 		console.error("[CLI] Error: cannot use prompt or --prompt-file with --session-id/--continue")
-		console.error("[CLI] Usage: roo [--session-id <task-id> | --continue] [options]")
+		console.error("[CLI] Usage: roo [--session-id <session-id> | --continue] [options]")
 		process.exit(1)
 	}
 
@@ -342,6 +364,12 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		process.exit(1)
 	}
 
+	if (flagOptions.stdinPromptStream && requestedCreateSessionId) {
+		console.error("[CLI] Error: --create-with-session-id is not supported with --stdin-prompt-stream")
+		console.error('[CLI] Use per-request "taskId" in stdin start commands instead.')
+		process.exit(1)
+	}
+
 	const useStdinPromptStream = flagOptions.stdinPromptStream
 	let resolvedResumeSessionId: string | undefined
 
@@ -389,6 +417,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 				createElement(App, {
 					...extensionHostOptions,
 					initialPrompt: prompt,
+					initialTaskId: requestedCreateSessionId,
 					initialSessionId: resolvedResumeSessionId,
 					continueSession: false,
 					version: VERSION,
@@ -612,7 +641,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 				if (isResumeRequested) {
 					await host.resumeTask(resolvedResumeSessionId!)
 				} else {
-					await host.runTask(prompt!)
+					await host.runTask(prompt!, requestedCreateSessionId)
 				}
 			}
 

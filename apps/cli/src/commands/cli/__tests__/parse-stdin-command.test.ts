@@ -10,6 +10,24 @@ describe("parseStdinStreamCommand", () => {
 			expect(result).toEqual({ command: "start", requestId: "req-1", prompt: "hello" })
 		})
 
+		it("parses a start command with taskId", () => {
+			const result = parseStdinStreamCommand(
+				JSON.stringify({
+					command: "start",
+					requestId: "req-task-id",
+					prompt: "hello",
+					taskId: "018f7fc8-7c96-7f7c-98aa-2ec4ff7f6d87",
+				}),
+				1,
+			)
+			expect(result).toEqual({
+				command: "start",
+				requestId: "req-task-id",
+				prompt: "hello",
+				taskId: "018f7fc8-7c96-7f7c-98aa-2ec4ff7f6d87",
+			})
+		})
+
 		it("parses a message command", () => {
 			const result = parseStdinStreamCommand(
 				JSON.stringify({ command: "message", requestId: "req-2", prompt: "follow up" }),
@@ -127,6 +145,44 @@ describe("parseStdinStreamCommand", () => {
 			expect(() => parseStdinStreamCommand(JSON.stringify({ command: "start", requestId: "req" }), 1)).toThrow(
 				'"start" requires non-empty string "prompt"',
 			)
+		})
+
+		it("throws when start taskId is empty, not a string, or not a UUID", () => {
+			expect(() =>
+				parseStdinStreamCommand(
+					JSON.stringify({
+						command: "start",
+						requestId: "req-start-task-id-empty",
+						prompt: "hello",
+						taskId: "   ",
+					}),
+					1,
+				),
+			).toThrow('"start" taskId must be a non-empty string')
+
+			expect(() =>
+				parseStdinStreamCommand(
+					JSON.stringify({
+						command: "start",
+						requestId: "req-start-task-id-num",
+						prompt: "hello",
+						taskId: 123,
+					}),
+					1,
+				),
+			).toThrow('"start" taskId must be a non-empty string')
+
+			expect(() =>
+				parseStdinStreamCommand(
+					JSON.stringify({
+						command: "start",
+						requestId: "req-start-task-id-invalid-format",
+						prompt: "hello",
+						taskId: "task-123",
+					}),
+					1,
+				),
+			).toThrow('"start" taskId must be a valid UUID')
 		})
 
 		it("throws when message command has empty prompt", () => {

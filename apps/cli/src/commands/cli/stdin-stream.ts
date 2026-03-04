@@ -9,6 +9,7 @@ import {
 } from "@roo-code/types"
 
 import { isRecord } from "@/lib/utils/guards.js"
+import { isValidSessionId } from "@/lib/utils/session-id.js"
 import { isCancellationLikeError, isExpectedControlFlowError, isNoActiveTaskLikeError } from "./cancellation.js"
 
 import type { ExtensionHost } from "@/agent/index.js"
@@ -79,13 +80,38 @@ export function parseStdinStreamCommand(line: string, lineNumber: number): Stdin
 			images = imagesRaw
 		}
 
-		if (command === "start" && isRecord(parsed.configuration)) {
+		if (command === "start") {
+			const taskIdRaw = parsed.taskId
+			let taskId: string | undefined
+
+			if (taskIdRaw !== undefined) {
+				if (typeof taskIdRaw !== "string" || taskIdRaw.trim().length === 0) {
+					throw new Error(`stdin command line ${lineNumber}: "start" taskId must be a non-empty string`)
+				}
+				taskId = taskIdRaw.trim()
+
+				if (!isValidSessionId(taskId)) {
+					throw new Error(`stdin command line ${lineNumber}: "start" taskId must be a valid UUID`)
+				}
+			}
+
+			if (isRecord(parsed.configuration)) {
+				return {
+					command,
+					requestId,
+					prompt: promptRaw,
+					...(taskId !== undefined ? { taskId } : {}),
+					...(images !== undefined ? { images } : {}),
+					configuration: parsed.configuration as RooCliStartCommand["configuration"],
+				}
+			}
+
 			return {
 				command,
 				requestId,
 				prompt: promptRaw,
+				...(taskId !== undefined ? { taskId } : {}),
 				...(images !== undefined ? { images } : {}),
-				configuration: parsed.configuration as RooCliStartCommand["configuration"],
 			}
 		}
 
@@ -616,7 +642,7 @@ export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId
 					activeRequestId = stdinCommand.requestId
 					activeTaskCommand = "start"
 					setStreamRequestId(stdinCommand.requestId)
-					latestTaskId = randomUUID()
+					latestTaskId = stdinCommand.taskId ?? randomUUID()
 					cancelRequestedForActiveTask = false
 					awaitingPostCancelRecovery = false
 

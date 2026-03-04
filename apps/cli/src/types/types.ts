@@ -20,6 +20,7 @@ export type ReasoningEffortFlagOptions = ReasoningEffortExtended | "unspecified"
 
 export type FlagOptions = {
 	promptFile?: string
+	createWithSessionId?: string
 	sessionId?: string
 	continue: boolean
 	workspace?: string
