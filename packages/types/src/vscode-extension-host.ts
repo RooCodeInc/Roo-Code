@@ -274,6 +274,7 @@ export type ExtensionState = Pick<
 	| "soundEnabled"
 	| "soundVolume"
 	| "terminalOutputPreviewSize"
+	| "terminalOutputFilterEnabled"
 	| "terminalShellIntegrationTimeout"
 	| "terminalShellIntegrationDisabled"
 	| "terminalCommandDelay"
