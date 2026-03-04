@@ -5,6 +5,16 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.16] - 2026-03-04
+
+### Added
+
+- **Custom Shell Selection**: New `--terminal-shell` flag to specify which shell to use for inline command execution. The shell path is validated at the CLI layer and passed through the standard settings mechanism.
+
+### Tests
+
+- Added integration coverage for stdin stream routing and race invariants.
+
 ## [0.1.15] - 2026-03-03
 
 ### Fixed
