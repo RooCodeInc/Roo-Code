@@ -31,6 +31,8 @@ export type { ReadFileToolOptions } from "./read_file"
 export interface NativeToolsOptions {
 	/** Whether the model supports image processing (default: false) */
 	supportsImages?: boolean
+	/** Maximum line limit for read_file tool. -1 or undefined = DEFAULT_LINE_LIMIT, 0 = no limit */
+	maxReadFileLine?: number
 }
 
 /**
@@ -40,10 +42,11 @@ export interface NativeToolsOptions {
  * @returns Array of native tool definitions
  */
 export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.ChatCompletionTool[] {
-	const { supportsImages = false } = options
+	const { supportsImages = false, maxReadFileLine } = options
 
 	const readFileOptions: ReadFileToolOptions = {
 		supportsImages,
+		maxReadFileLine,
 	}
 
 	return [

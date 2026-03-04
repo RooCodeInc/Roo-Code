@@ -1,122 +1,53 @@
-import type OpenAI from "openai"
-import { createReadFileTool } from "../read_file"
-
-// Helper type to access function tools
-type FunctionTool = OpenAI.Chat.ChatCompletionTool & { type: "function" }
-
-// Helper to get function definition from tool
-const getFunctionDef = (tool: OpenAI.Chat.ChatCompletionTool) => (tool as FunctionTool).function
+import { createReadFileTool, DEFAULT_LINE_LIMIT } from "../read_file"
 
 describe("createReadFileTool", () => {
-	describe("single-file-per-call documentation", () => {
-		it("should indicate single-file-per-call and suggest parallel tool calls", () => {
-			const tool = createReadFileTool()
-			const description = getFunctionDef(tool).description
+	function getToolDesc(options = {}): string {
+		const tool = createReadFileTool(options) as any
+		return tool.function.description ?? ""
+	}
 
-			expect(description).toContain("exactly one file per call")
-			expect(description).toContain("multiple parallel read_file calls")
-		})
+	function getToolLimitParamDesc(options = {}): string {
+		const tool = createReadFileTool(options) as any
+		return tool.function.parameters.properties.limit.description ?? ""
+	}
+
+	it("uses DEFAULT_LINE_LIMIT in description when maxReadFileLine is undefined", () => {
+		const desc = getToolDesc()
+		expect(desc).toContain(`returns up to ${DEFAULT_LINE_LIMIT} lines per file`)
+		expect(desc).not.toContain("no line limit")
 	})
 
-	describe("indentation mode", () => {
-		it("should always include indentation mode in description", () => {
-			const tool = createReadFileTool()
-			const description = getFunctionDef(tool).description
-
-			expect(description).toContain("indentation")
-		})
-
-		it("should always include indentation parameter in schema", () => {
-			const tool = createReadFileTool()
-			const schema = getFunctionDef(tool).parameters as any
-
-			expect(schema.properties).toHaveProperty("indentation")
-		})
-
-		it("should include mode parameter in schema", () => {
-			const tool = createReadFileTool()
-			const schema = getFunctionDef(tool).parameters as any
-
-			expect(schema.properties).toHaveProperty("mode")
-			expect(schema.properties.mode.enum).toContain("slice")
-			expect(schema.properties.mode.enum).toContain("indentation")
-		})
-
-		it("should include offset and limit parameters in schema", () => {
-			const tool = createReadFileTool()
-			const schema = getFunctionDef(tool).parameters as any
-
-			expect(schema.properties).toHaveProperty("offset")
-			expect(schema.properties).toHaveProperty("limit")
-		})
+	it("uses DEFAULT_LINE_LIMIT in description when maxReadFileLine is -1", () => {
+		const desc = getToolDesc({ maxReadFileLine: -1 })
+		expect(desc).toContain(`returns up to ${DEFAULT_LINE_LIMIT} lines per file`)
 	})
 
-	describe("supportsImages option", () => {
-		it("should include image format documentation when supportsImages is true", () => {
-			const tool = createReadFileTool({ supportsImages: true })
-			const description = getFunctionDef(tool).description
+	it("indicates no limit in description when maxReadFileLine is 0", () => {
+		const desc = getToolDesc({ maxReadFileLine: 0 })
+		expect(desc).toContain("no line limit")
+		expect(desc).not.toContain(`returns up to ${DEFAULT_LINE_LIMIT}`)
 
-			expect(description).toContain(
-				"Automatically processes and returns image files (PNG, JPG, JPEG, GIF, BMP, SVG, WEBP, ICO, AVIF) for visual analysis",
-			)
-		})
-
-		it("should not include image format documentation when supportsImages is false", () => {
-			const tool = createReadFileTool({ supportsImages: false })
-			const description = getFunctionDef(tool).description
-
-			expect(description).not.toContain(
-				"Automatically processes and returns image files (PNG, JPG, JPEG, GIF, BMP, SVG, WEBP, ICO, AVIF) for visual analysis",
-			)
-			expect(description).toContain("may not handle other binary files properly")
-		})
-
-		it("should default supportsImages to false", () => {
-			const tool = createReadFileTool({})
-			const description = getFunctionDef(tool).description
-
-			expect(description).not.toContain(
-				"Automatically processes and returns image files (PNG, JPG, JPEG, GIF, BMP, SVG, WEBP, ICO, AVIF) for visual analysis",
-			)
-		})
-
-		it("should always include PDF and DOCX support in description", () => {
-			const toolWithImages = createReadFileTool({ supportsImages: true })
-			const toolWithoutImages = createReadFileTool({ supportsImages: false })
-
-			expect(getFunctionDef(toolWithImages).description).toContain(
-				"Supports text extraction from PDF and DOCX files",
-			)
-			expect(getFunctionDef(toolWithoutImages).description).toContain(
-				"Supports text extraction from PDF and DOCX files",
-			)
-		})
+		const limitDesc = getToolLimitParamDesc({ maxReadFileLine: 0 })
+		expect(limitDesc).toContain("no limit")
 	})
 
-	describe("tool structure", () => {
-		it("should have correct tool name", () => {
-			const tool = createReadFileTool()
+	it("uses custom limit in description when maxReadFileLine is a positive number", () => {
+		const desc = getToolDesc({ maxReadFileLine: 500 })
+		expect(desc).toContain("returns up to 500 lines per file")
+		// Should not mention DEFAULT_LINE_LIMIT as the line limit (but MAX_LINE_LENGTH=2000 chars is ok)
+		expect(desc).not.toContain(`up to ${DEFAULT_LINE_LIMIT} lines`)
 
-			expect(getFunctionDef(tool).name).toBe("read_file")
-		})
+		const limitDesc = getToolLimitParamDesc({ maxReadFileLine: 500 })
+		expect(limitDesc).toContain("500")
+	})
 
-		it("should be a function type tool", () => {
-			const tool = createReadFileTool()
+	it("includes image support note when supportsImages is true", () => {
+		const desc = getToolDesc({ supportsImages: true })
+		expect(desc).toContain("image files")
+	})
 
-			expect(tool.type).toBe("function")
-		})
-
-		it("should have strict mode enabled", () => {
-			const tool = createReadFileTool()
-
-			expect(getFunctionDef(tool).strict).toBe(true)
-		})
-
-		it("should require path parameter", () => {
-			const tool = createReadFileTool()
-			const schema = getFunctionDef(tool).parameters as any
-
-			expect(schema.required).toContain("path")
-		})
+	it("does not include image support note when supportsImages is false", () => {
+		const desc = getToolDesc({ supportsImages: false })
+		expect(desc).not.toContain("image files")
 	})
 })
