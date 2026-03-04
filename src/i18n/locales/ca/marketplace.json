@@ -64,6 +64,7 @@
 		"installError": "Error en instal·lar \"{{itemName}}\": {{errorMessage}}",
 		"removing": "Eliminant element: \"{{itemName}}\"",
 		"removeSuccess": "\"{{itemName}}\" eliminat correctament",
-		"removeError": "Error en eliminar \"{{itemName}}\": {{errorMessage}}"
+		"removeError": "Error en eliminar \"{{itemName}}\": {{errorMessage}}",
+		"notInstalledForTarget": "Mode no trobat"
 	}
 }
