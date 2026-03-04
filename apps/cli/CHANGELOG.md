@@ -5,6 +5,16 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.17] - 2026-03-04
+
+### Added
+
+- **Custom Session ID Support**: New `--create-with-session-id` flag allows specifying a custom UUID session ID when creating tasks. Session IDs are now validated as UUIDs for both create and resume operations, as well as for `start.taskId` in stdin-stream mode.
+
+### Tests
+
+- Added integration coverage for create+resume loading the correct session.
+
 ## [0.1.16] - 2026-03-04
 
 ### Added
