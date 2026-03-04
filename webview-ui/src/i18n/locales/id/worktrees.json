@@ -43,6 +43,8 @@
 	"creating": "Membuat...",
 	"copyingFiles": "Menyalin file...",
 	"copyingProgress": "{{item}} — {{copied}} disalin",
+	"useHardLinks": "Gunakan hard link untuk file yang disertakan",
+	"useHardLinksTooltip": "Membuat hard link alih-alih salinan, menghemat ruang disk dan mempercepat pembuatan worktree. Nonaktifkan jika sumber dan target berada di sistem file yang berbeda.",
 	"cancel": "Batal",
 
 	"deleteWorktree": "Hapus Worktree",

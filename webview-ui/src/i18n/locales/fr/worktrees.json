@@ -43,6 +43,8 @@
 	"creating": "Création...",
 	"copyingFiles": "Copie des fichiers...",
 	"copyingProgress": "{{item}} — {{copied}} copié",
+	"useHardLinks": "Utiliser des liens physiques pour les fichiers inclus",
+	"useHardLinksTooltip": "Crée des liens physiques au lieu de copies, économisant de l'espace disque et accélérant la création du worktree. Désactive cette option si la source et la cible sont sur des systèmes de fichiers différents.",
 	"cancel": "Annuler",
 
 	"deleteWorktree": "Supprimer le worktree",

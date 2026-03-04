@@ -43,6 +43,8 @@
 	"creating": "正在创建...",
 	"copyingFiles": "正在复制文件...",
 	"copyingProgress": "{{item}} — {{copied}} 已复制",
+	"useHardLinks": "为包含的文件使用硬链接",
+	"useHardLinksTooltip": "创建硬链接而非副本，节省磁盘空间并加快 worktree 创建速度。如果源和目标位于不同的文件系统上，请禁用此选项。",
 	"cancel": "取消",
 
 	"deleteWorktree": "删除 Worktree",

@@ -43,6 +43,8 @@
 	"creating": "Tworzenie...",
 	"copyingFiles": "Kopiowanie plików...",
 	"copyingProgress": "{{item}} — {{copied}} skopiowano",
+	"useHardLinks": "Użyj twardych dowiązań dla dołączonych plików",
+	"useHardLinksTooltip": "Tworzy twarde dowiązania zamiast kopii, oszczędzając miejsce na dysku i przyspieszając tworzenie worktree. Wyłącz, jeśli źródło i cel znajdują się na różnych systemach plików.",
 	"cancel": "Anuluj",
 
 	"deleteWorktree": "Usuń Worktree",

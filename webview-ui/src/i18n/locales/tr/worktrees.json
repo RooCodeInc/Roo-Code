@@ -43,6 +43,8 @@
 	"creating": "Oluşturuluyor...",
 	"copyingFiles": "Dosyalar kopyalanıyor...",
 	"copyingProgress": "{{item}} — {{copied}} kopyalandı",
+	"useHardLinks": "Dahil edilen dosyalar için sabit bağlantı kullan",
+	"useHardLinksTooltip": "Kopya yerine sabit bağlantılar oluşturur, disk alanından tasarruf sağlar ve worktree oluşturmayı hızlandırır. Kaynak ve hedef farklı dosya sistemlerindeyse devre dışı bırak.",
 	"cancel": "İptal",
 
 	"deleteWorktree": "Worktree'yi sil",
