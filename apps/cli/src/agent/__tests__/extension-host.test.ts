@@ -158,6 +158,22 @@ describe("ExtensionHost", () => {
 			createTestHost()
 			expect(process.env.ROO_CLI_RUNTIME).toBe("1")
 		})
+
+		it("should set execaShellPath in initialSettings when terminalShell is provided", () => {
+			const host = createTestHost({ terminalShell: "/bin/bash" })
+			const emitSpy = vi.spyOn(host, "emit")
+			host.markWebviewReady()
+			const updateSettingsCall = emitSpy.mock.calls.find(
+				(call) =>
+					call[0] === "webviewMessage" &&
+					typeof call[1] === "object" &&
+					call[1] !== null &&
+					(call[1] as WebviewMessage).type === "updateSettings",
+			)
+			expect(updateSettingsCall).toBeDefined()
+			const payload = updateSettingsCall?.[1] as WebviewMessage
+			expect(payload.updatedSettings?.execaShellPath).toBe("/bin/bash")
+		})
 	})
 
 	describe("webview provider registration", () => {
@@ -237,6 +253,26 @@ describe("ExtensionHost", () => {
 						(call[1] as WebviewMessage).type === "updateSettings",
 				)
 				expect(updateSettingsCall).toBeDefined()
+			})
+
+			it("should force terminalShellIntegrationDisabled when terminalShell is provided", () => {
+				const host = createTestHost({ terminalShell: "/bin/bash" })
+				const emitSpy = vi.spyOn(host, "emit")
+
+				host.markWebviewReady()
+
+				const updateSettingsCall = emitSpy.mock.calls.find(
+					(call) =>
+						call[0] === "webviewMessage" &&
+						typeof call[1] === "object" &&
+						call[1] !== null &&
+						(call[1] as WebviewMessage).type === "updateSettings",
+				)
+
+				expect(updateSettingsCall).toBeDefined()
+				const payload = updateSettingsCall?.[1] as WebviewMessage
+				expect(payload.type).toBe("updateSettings")
+				expect(payload.updatedSettings?.terminalShellIntegrationDisabled).toBe(true)
 			})
 		})
 	})

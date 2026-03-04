@@ -184,6 +184,7 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 | `--provider <provider>`           | API provider (roo, anthropic, openai, openrouter, etc.)                                 | `openrouter` (or `roo` if authenticated) |
 | `-m, --model <model>`             | Model to use                                                                            | `anthropic/claude-opus-4.6`              |
 | `--mode <mode>`                   | Mode to start in (code, architect, ask, debug, etc.)                                    | `code`                                   |
+| `--terminal-shell <path>`         | Absolute shell path for inline terminal command execution                               | Auto-detected shell                      |
 | `-r, --reasoning-effort <effort>` | Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh) | `medium`                                 |
 | `--consecutive-mistake-limit <n>` | Consecutive error/repetition limit before guidance prompt (`0` disables the limit)      | `10`                                     |
 | `--ephemeral`                     | Run without persisting state (uses temporary storage)                                   | `false`                                  |

@@ -26,6 +26,7 @@ import { readWorkspaceTaskSessions, resolveWorkspaceResumeSessionId } from "@/li
 import { isRecord } from "@/lib/utils/guards.js"
 import { getEnvVarName, getApiKeyFromEnv } from "@/lib/utils/provider.js"
 import { runOnboarding } from "@/lib/utils/onboarding.js"
+import { validateTerminalShellPath } from "@/lib/utils/shell.js"
 import { getDefaultExtensionPath } from "@/lib/utils/extension.js"
 import { VERSION } from "@/lib/utils/version.js"
 
@@ -176,6 +177,19 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		process.exit(1)
 	}
 
+	let terminalShell: string | undefined
+	if (flagOptions.terminalShell !== undefined) {
+		const validatedTerminalShell = await validateTerminalShellPath(flagOptions.terminalShell)
+
+		if (!validatedTerminalShell.valid) {
+			console.error(
+				`[CLI] Warning: ignoring --terminal-shell "${flagOptions.terminalShell}" (${validatedTerminalShell.reason})`,
+			)
+		} else {
+			terminalShell = validatedTerminalShell.shellPath
+		}
+	}
+
 	const extensionHostOptions: ExtensionHostOptions = {
 		mode: effectiveMode,
 		reasoningEffort: effectiveReasoningEffort === "unspecified" ? undefined : effectiveReasoningEffort,
@@ -190,6 +204,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		ephemeral: flagOptions.ephemeral,
 		debug: flagOptions.debug,
 		exitOnComplete: effectiveExitOnComplete,
+		terminalShell,
 	}
 
 	// Roo Code Cloud Authentication

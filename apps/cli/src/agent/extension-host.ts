@@ -80,6 +80,7 @@ export interface ExtensionHostOptions {
 	ephemeral: boolean
 	debug: boolean
 	exitOnComplete: boolean
+	terminalShell?: string
 	/**
 	 * When true, exit the process on API request errors instead of retrying.
 	 */
@@ -256,6 +257,11 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 				this.initialSettings.enableReasoningEffort = true
 				this.initialSettings.reasoningEffort = this.options.reasoningEffort
 			}
+		}
+
+		if (this.options.terminalShell) {
+			this.initialSettings.terminalShellIntegrationDisabled = true
+			this.initialSettings.execaShellPath = this.options.terminalShell
 		}
 	}
 

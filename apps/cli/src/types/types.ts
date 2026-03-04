@@ -34,6 +34,7 @@ export type FlagOptions = {
 	provider?: SupportedProvider
 	model?: string
 	mode?: string
+	terminalShell?: string
 	reasoningEffort?: ReasoningEffortFlagOptions
 	consecutiveMistakeLimit?: number
 	ephemeral: boolean

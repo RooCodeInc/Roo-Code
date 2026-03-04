@@ -176,6 +176,7 @@ export const globalSettingsSchema = z.object({
 	terminalZshOhMy: z.boolean().optional(),
 	terminalZshP10k: z.boolean().optional(),
 	terminalZdotdir: z.boolean().optional(),
+	execaShellPath: z.string().optional(),
 
 	diagnosticsEnabled: z.boolean().optional(),
 
