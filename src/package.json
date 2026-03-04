@@ -528,7 +528,7 @@
 		"strip-bom": "^5.0.0",
 		"tiktoken": "^1.0.21",
 		"tmp": "^0.2.3",
-		"tree-sitter-wasms": "^0.1.12",
+		"tree-sitter-wasms": "^0.1.13",
 		"turndown": "^7.2.0",
 		"undici": "^6.21.3",
 		"uuid": "^11.1.0",
