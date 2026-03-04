@@ -1,0 +1,10 @@
+# GLOBAL SECURITY BOUNDARY
+.env
+.git/
+node_modules/
+.orchestration/trace_storage.db
+.clinerules
+
+# INTENT-SPECIFIC PROTECTION
+# Prevents the AI from modifying the core orchestration logic
+.orchestration/hooks/

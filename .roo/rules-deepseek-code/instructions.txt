@@ -1,0 +1,17 @@
+TOOL EXECUTION RULES (CRITICAL):
+
+Always use Roo tools when interacting with the workspace.
+
+After EVERY tool call, you MUST provide a short confirmation message describing the result before continuing.
+
+Workflow:
+1. Call ONE tool at a time.
+2. Wait for the result.
+3. Briefly summarize the result.
+4. Then decide the next action.
+
+Never call multiple tools in one response.
+Never end a response immediately after a tool call.
+Always include a short natural-language confirmation after tool usage.
+
+Prefer small sequential actions over complex plans.

@@ -11,10 +11,10 @@ Resolve merge conflicts for a specific pull request by analyzing git history, co
 1. **Provide a PR number** (e.g., `#123` or just `123`)
 
 2. The workflow will automatically:
-   - Fetch PR information (title, description, branches)
-   - Checkout the PR branch
-   - Rebase onto the target branch to reveal conflicts
-   - Analyze and resolve conflicts using git history
+    - Fetch PR information (title, description, branches)
+    - Checkout the PR branch
+    - Rebase onto the target branch to reveal conflicts
+    - Analyze and resolve conflicts using git history
 
 ## Workflow Steps
 
@@ -39,6 +39,7 @@ git status --porcelain | grep "^UU"
 ### 3. Analyze Each Conflict
 
 For each conflicted file:
+
 - Read the conflict markers
 - Run `git blame` on conflicting sections
 - Fetch commit messages for context
@@ -47,6 +48,7 @@ For each conflicted file:
 ### 4. Apply Resolution Strategy
 
 Based on the analysis:
+
 - **Bugfixes** generally take precedence over features
 - **Recent changes** are often more relevant (unless older is a security fix)
 - **Combine** non-conflicting changes when possible
