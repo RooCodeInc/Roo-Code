@@ -342,6 +342,45 @@
 					"default": [],
 					"description": "%commands.commandTimeoutAllowlist.description%"
 				},
+				"roo-cline.commandSandboxEnabled": {
+					"type": "boolean",
+					"default": false,
+					"description": "%commands.commandSandboxEnabled.description%"
+				},
+				"roo-cline.commandSandboxNetworkPolicy": {
+					"type": "string",
+					"enum": [
+						"allow",
+						"deny"
+					],
+					"default": "deny",
+					"description": "%commands.commandSandboxNetworkPolicy.description%"
+				},
+				"roo-cline.commandSandboxWritePolicy": {
+					"type": "string",
+					"enum": [
+						"allow",
+						"deny"
+					],
+					"default": "allow",
+					"description": "%commands.commandSandboxWritePolicy.description%"
+				},
+				"roo-cline.commandSandboxAllowedPaths": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"description": "%commands.commandSandboxAllowedPaths.description%"
+				},
+				"roo-cline.commandSandboxDeniedPaths": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"description": "%commands.commandSandboxDeniedPaths.description%"
+				},
 				"roo-cline.preventCompletionWithOpenTodos": {
 					"type": "boolean",
 					"default": false,
