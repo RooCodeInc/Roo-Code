@@ -16,6 +16,9 @@ export {
 	handleCheckBranchWorktreeInclude,
 	handleCreateWorktreeInclude,
 	handleCheckoutBranch,
+	handleGetWeaveMergeDriverStatus,
+	handleConfigureWeaveMergeDriver,
+	handleUnconfigureWeaveMergeDriver,
 } from "./handlers"
 
 // Re-export types from @roo-code/types for convenience
