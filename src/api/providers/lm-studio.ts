@@ -17,6 +17,7 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { getModelsFromCache } from "./fetchers/modelCache"
 import { getApiRequestTimeout } from "./utils/timeout-config"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { getGlmModelOptions } from "./utils/glm-model-detection"
 
 export class LmStudioHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
@@ -42,9 +43,16 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		const modelId = this.getModel().id
+
+		// Check if this is a GLM model and get recommended options
+		const glmOptions = getGlmModelOptions(modelId)
+
 		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages),
+			...convertToOpenAiMessages(messages, {
+				mergeToolResultText: glmOptions?.mergeToolResultText ?? false,
+			}),
 		]
 
 		// -------------------------
@@ -83,14 +91,19 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		let assistantText = ""
 
 		try {
+			// For GLM models, disable parallel_tool_calls as they may not support it
+			const parallelToolCalls = glmOptions?.disableParallelToolCalls
+				? false
+				: (metadata?.parallelToolCalls ?? true)
+
 			const params: OpenAI.Chat.ChatCompletionCreateParamsStreaming & { draft_model?: string } = {
-				model: this.getModel().id,
+				model: modelId,
 				messages: openAiMessages,
 				temperature: this.options.modelTemperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
 				stream: true,
 				tools: this.convertToolsForOpenAI(metadata?.tools),
 				tool_choice: metadata?.tool_choice,
-				parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+				parallel_tool_calls: parallelToolCalls,
 			}
 
 			if (this.options.lmStudioSpeculativeDecodingEnabled && this.options.lmStudioDraftModelId) {
