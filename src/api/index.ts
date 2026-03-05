@@ -18,6 +18,7 @@ import {
 	OpenAiNativeHandler,
 	DeepSeekHandler,
 	MoonshotHandler,
+	InceptionHandler,
 	MistralHandler,
 	VsCodeLmHandler,
 	RequestyHandler,
@@ -146,6 +147,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new QwenCodeHandler(options)
 		case "moonshot":
 			return new MoonshotHandler(options)
+		case "inception":
+			return new InceptionHandler(options)
 		case "vscode-lm":
 			return new VsCodeLmHandler(options)
 		case "mistral":
