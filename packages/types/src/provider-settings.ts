@@ -11,6 +11,7 @@ import {
 	geminiModels,
 	mistralModels,
 	moonshotModels,
+	inceptionModels,
 	openAiCodexModels,
 	openAiNativeModels,
 	qwenCodeModels,
@@ -516,6 +517,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	"gemini-cli": "apiModelId",
 	mistral: "apiModelId",
 	moonshot: "apiModelId",
+	inception: "apiModelId",
 	minimax: "apiModelId",
 	deepseek: "apiModelId",
 	"qwen-code": "apiModelId",
@@ -602,6 +604,11 @@ export const MODELS_BY_PROVIDER: Record<
 		id: "moonshot",
 		label: "Moonshot",
 		models: Object.keys(moonshotModels),
+	},
+	inception: {
+		id: "inception",
+		label: "Inception",
+		models: Object.keys(inceptionModels),
 	},
 	minimax: {
 		id: "minimax",
