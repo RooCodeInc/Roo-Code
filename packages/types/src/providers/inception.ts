@@ -24,7 +24,6 @@ export const inceptionModels = {
 		supportsPromptCache: false,
 		inputPrice: 0.25,
 		outputPrice: 0.75,
-		cacheReadsPrice: 0.025,
 		supportsTemperature: true,
 		description: "Mercury Edit: A code editing LLM for autocomplete (FIM), apply edit, and next edit suggestions",
 	},

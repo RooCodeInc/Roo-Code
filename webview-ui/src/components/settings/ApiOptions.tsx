@@ -19,6 +19,7 @@ import {
 	geminiDefaultModelId,
 	deepSeekDefaultModelId,
 	moonshotDefaultModelId,
+	inceptionDefaultModelId,
 	mistralDefaultModelId,
 	xaiDefaultModelId,
 	basetenDefaultModelId,
@@ -75,6 +76,7 @@ import {
 	LiteLLM,
 	Mistral,
 	Moonshot,
+	Inception,
 	Ollama,
 	OpenAI,
 	OpenAICompatible,
@@ -341,6 +343,7 @@ const ApiOptions = ({
 				gemini: { field: "apiModelId", default: geminiDefaultModelId },
 				deepseek: { field: "apiModelId", default: deepSeekDefaultModelId },
 				moonshot: { field: "apiModelId", default: moonshotDefaultModelId },
+				inception: { field: "apiModelId", default: inceptionDefaultModelId },
 				minimax: { field: "apiModelId", default: minimaxDefaultModelId },
 				mistral: { field: "apiModelId", default: mistralDefaultModelId },
 				xai: { field: "apiModelId", default: xaiDefaultModelId },
@@ -633,6 +636,14 @@ const ApiOptions = ({
 
 					{selectedProvider === "moonshot" && (
 						<Moonshot
+							apiConfiguration={apiConfiguration}
+							setApiConfigurationField={setApiConfigurationField}
+							simplifySettings={fromWelcomeView}
+						/>
+					)}
+
+					{selectedProvider === "inception" && (
+						<Inception
 							apiConfiguration={apiConfiguration}
 							setApiConfigurationField={setApiConfigurationField}
 							simplifySettings={fromWelcomeView}

@@ -1,4 +1,4 @@
-import { inceptionModels, inceptionDefaultModelId, type ModelInfo } from "@roo-code/types"
+import { inceptionModels, inceptionDefaultModelId, inceptionModelInfoSaneDefaults, INCEPTION_DEFAULT_TEMPERATURE, type ModelInfo } from "@roo-code/types"
 import type { ApiHandlerOptions } from "../../shared/api"
 import { getModelParams } from "../transform/model-params"
 import { OpenAICompatibleHandler, OpenAICompatibleConfig } from "./openai-compatible"
@@ -6,7 +6,7 @@ import { OpenAICompatibleHandler, OpenAICompatibleConfig } from "./openai-compat
 export class InceptionHandler extends OpenAICompatibleHandler {
 	constructor(options: ApiHandlerOptions) {
 		const modelId = options.apiModelId ?? inceptionDefaultModelId
-		const modelInfo = inceptionModels[modelId as keyof typeof inceptionModels] || inceptionModels[inceptionDefaultModelId]
+		const modelInfo = inceptionModels[modelId as keyof typeof inceptionModels] || inceptionModelInfoSaneDefaults
 
 		const config: OpenAICompatibleConfig = {
 			providerName: "inception",
@@ -23,14 +23,14 @@ export class InceptionHandler extends OpenAICompatibleHandler {
 
 	override getModel() {
 		const id = this.options.apiModelId ?? inceptionDefaultModelId
-		const info = inceptionModels[id as keyof typeof inceptionModels] || inceptionModels[inceptionDefaultModelId]
+		const info = inceptionModels[id as keyof typeof inceptionModels] || inceptionModelInfoSaneDefaults
 
 		const params = getModelParams({
 			format: "openai",
 			modelId: id,
 			model: info,
 			settings: this.options,
-			defaultTemperature: 0.7,
+			defaultTemperature: INCEPTION_DEFAULT_TEMPERATURE,
 		})
 
 		return { id, info, ...params }
