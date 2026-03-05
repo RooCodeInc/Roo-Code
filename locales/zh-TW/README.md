@@ -13,6 +13,11 @@
 
 > 您的 AI 驅動開發團隊，就在您的編輯器中
 
+## v3.51.0 新功能
+
+- 已新增對 OpenAI GPT-5.4 和 GPT-5.3 Chat Latest 的支援，讓你可以在 Roo Code 中使用 OpenAI 最新的聊天模型。
+- 現在可以將 skills 公開為 slash 指令，並支援 fallback execution，讓可重用工作流程觸發得更快。
+
 <details>
   <summary>🌐 支援語言</summary>
 
@@ -35,7 +40,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-    </details>
+      </details>
 
 ---
 

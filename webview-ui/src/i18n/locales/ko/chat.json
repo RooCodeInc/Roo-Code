@@ -348,6 +348,8 @@
 		},
 		"release": {
 			"heading": "새로운 기능:",
+			"gpt54": "OpenAI GPT-5.4 지원: OpenAI GPT-5.4와 GPT-5.3 Chat Latest를 추가해 Roo Code에서 최신 OpenAI 채팅 모델을 사용할 수 있게 했어요.",
+			"slashSkills": "슬래시 명령어 스킬: 이제 스킬을 슬래시 명령어로 노출하고 fallback 실행도 지원해 워크플로를 더 빠르게 실행할 수 있어요.",
 			"geminiPro": "Gemini 3.1 Pro 지원: Gemini 3.1 Pro 모델 지원이 추가되었으며, 향상된 성능을 위해 기본 Gemini 모델로 설정되었습니다.",
 			"cliNdjson": "CLI NDJSON 프로토콜: 새로운 NDJSON stdin 프로토콜, list 하위 명령어, 더 유연한 CLI 워크플로를 위한 모듈화된 run 명령어.",
 			"cliRelease": "CLI v0.1.0: Roo Code CLI가 안정적인 명령어 인터페이스로 첫 공식 릴리스에 도달했습니다."

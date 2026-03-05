@@ -13,6 +13,11 @@
 
 > AI destekli dev ekibin, doğrudan editörünün içinde
 
+## v3.51.0'daki Yenilikler
+
+- Roo Code içinde en yeni OpenAI sohbet modellerini kullanabilmen için OpenAI GPT-5.4 ve GPT-5.3 Chat Latest desteği eklendi.
+- Skills artık fallback yürütmeyle slash komutları olarak sunulabiliyor, böylece yeniden kullanılabilir iş akışları daha hızlı tetiklenebiliyor.
+
 <details>
   <summary>🌐 Mevcut diller</summary>
 
@@ -35,7 +40,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+  </details>
 
 ---
 

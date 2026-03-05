@@ -13,6 +13,11 @@
 
 > Seu time de desenvolvimento com IA, direto no seu editor
 
+## Novidades na v3.51.0
+
+- Adicionamos suporte ao OpenAI GPT-5.4 e ao GPT-5.3 Chat Latest para você usar os modelos de chat mais novos da OpenAI no Roo Code.
+- Agora as skills podem ser expostas como comandos slash com execução de fallback para acionar workflows reutilizáveis mais rápido.
+
 <details>
   <summary>🌐 Idiomas disponíveis</summary>
 
@@ -35,7 +40,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+  </details>
 
 ---
 

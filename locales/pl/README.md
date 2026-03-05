@@ -13,6 +13,11 @@
 
 > Twój zespół deweloperski zasilany AI — prosto w edytorze
 
+## Nowości w v3.51.0
+
+- Dodano obsługę OpenAI GPT-5.4 i GPT-5.3 Chat Latest, żebyś mógł używać najnowszych modeli czatu OpenAI w Roo Code.
+- Skills można teraz udostępniać jako slash commandy z wykonaniem awaryjnym, żeby szybciej uruchamiać wielokrotnego użytku workflowy.
+
 <details>
   <summary>🌐 Dostępne języki</summary>
 
@@ -35,7 +40,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+  </details>
 
 ---
 

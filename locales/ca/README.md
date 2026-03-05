@@ -13,6 +13,11 @@
 
 > El teu equip de desenvolupament impulsat per IA, directament al teu editor
 
+## Novetats de la v3.51.0
+
+- S'ha afegit compatibilitat amb OpenAI GPT-5.4 i GPT-5.3 Chat Latest perquè puguis utilitzar els models de xat més nous d'OpenAI a Roo Code.
+- Les skills es poden exposar com a ordres slash amb execució de reserva perquè els fluxos de treball reutilitzables s'activin més de pressa.
+
 <details>
   <summary>🌐 Idiomes disponibles</summary>
 
@@ -35,7 +40,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+  </details>
 
 ---
 

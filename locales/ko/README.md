@@ -13,6 +13,11 @@
 
 > AI로 강화된 너의 개발 팀, 네 에디터 안에
 
+## v3.51.0의 새로운 기능
+
+- OpenAI GPT-5.4와 GPT-5.3 Chat Latest 지원을 추가해 Roo Code에서 최신 OpenAI 채팅 모델을 사용할 수 있어요.
+- 이제 스킬을 슬래시 명령어로 노출하고 fallback 실행도 지원해 재사용 가능한 워크플로를 더 빠르게 트리거할 수 있어요.
+
 <details>
   <summary>🌐 사용 가능한 언어</summary>
 
@@ -35,7 +40,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+  </details>
 
 ---
 

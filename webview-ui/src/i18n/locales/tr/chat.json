@@ -349,6 +349,8 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
+			"gpt54": "OpenAI GPT-5.4 Desteği: Roo Code içinde en yeni OpenAI sohbet modellerini kullanabilmen için OpenAI GPT-5.4 ve GPT-5.3 Chat Latest eklendi.",
+			"slashSkills": "Slash komutu olarak skills: Skills artık daha hızlı iş akışları için fallback yürütmeyle slash komutları olarak kullanılabiliyor.",
 			"geminiPro": "Gemini 3.1 Pro Desteği: Gemini 3.1 Pro model desteği eklendi ve daha iyi performans için varsayılan Gemini modeli olarak ayarlandı.",
 			"cliNdjson": "CLI NDJSON Protokolü: Yeni NDJSON stdin protokolü, list alt komutları ve daha esnek CLI iş akışları için modüler run komutu.",
 			"cliRelease": "CLI v0.1.0: Roo Code CLI, kararlı bir komut arayüzüyle ilk resmi sürümüne ulaştı."

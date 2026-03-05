@@ -13,6 +13,11 @@
 
 > Đội ngũ dev dùng AI của bạn, ngay trong trình chỉnh sửa
 
+## Điểm mới trong v3.51.0
+
+- Đã thêm hỗ trợ cho OpenAI GPT-5.4 và GPT-5.3 Chat Latest để bạn có thể dùng các mô hình chat OpenAI mới nhất trong Roo Code.
+- Skills giờ có thể được cung cấp dưới dạng lệnh slash kèm thực thi dự phòng để kích hoạt các quy trình tái sử dụng nhanh hơn.
+
 <details>
   <summary>🌐 Các ngôn ngữ có sẵn</summary>
 
@@ -35,7 +40,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+  </details>
 
 ---
 

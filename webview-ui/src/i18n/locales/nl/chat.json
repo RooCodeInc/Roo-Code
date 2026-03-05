@@ -321,6 +321,8 @@
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
+			"gpt54": "Ondersteuning voor OpenAI GPT-5.4: OpenAI GPT-5.4 en GPT-5.3 Chat Latest zijn toegevoegd, zodat je de nieuwste OpenAI-chatmodellen in Roo Code kunt gebruiken.",
+			"slashSkills": "Skills als slash-commands: Skills kunnen nu als slash-commands worden aangeboden met fallback-uitvoering voor snellere workflows.",
 			"geminiPro": "Gemini 3.1 Pro ondersteuning: Ondersteuning voor het Gemini 3.1 Pro model is toegevoegd en ingesteld als standaard Gemini-model voor betere prestaties.",
 			"cliNdjson": "CLI NDJSON-protocol: Nieuw NDJSON stdin-protocol, list-subopdrachten en gemodulariseerd run-commando voor flexibelere CLI-workflows.",
 			"cliRelease": "CLI v0.1.0: De Roo Code CLI bereikt zijn eerste officiële release met een stabiele opdrachtinterface."
