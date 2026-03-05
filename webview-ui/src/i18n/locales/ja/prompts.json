@@ -14,7 +14,10 @@
 	},
 	"apiConfiguration": {
 		"title": "API設定",
-		"select": "このモードで使用するAPI設定を選択してください"
+		"select": "このモードで使用するAPI設定を選択してください",
+		"scope": "スコープ",
+		"global": "グローバル",
+		"workspace": "ワークスペース"
 	},
 	"tools": {
 		"title": "利用可能なツール",
