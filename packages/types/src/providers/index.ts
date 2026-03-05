@@ -35,6 +35,7 @@ import { geminiDefaultModelId } from "./gemini.js"
 import { litellmDefaultModelId } from "./lite-llm.js"
 import { mistralDefaultModelId } from "./mistral.js"
 import { moonshotDefaultModelId } from "./moonshot.js"
+import { inceptionDefaultModelId } from "./inception.js"
 import { openAiCodexDefaultModelId } from "./openai-codex.js"
 import { openRouterDefaultModelId } from "./openrouter.js"
 import { qwenCodeDefaultModelId } from "./qwen-code.js"
@@ -82,6 +83,8 @@ export function getProviderDefaultModelId(
 			return deepSeekDefaultModelId
 		case "moonshot":
 			return moonshotDefaultModelId
+		case "inception":
+			return inceptionDefaultModelId
 		case "minimax":
 			return minimaxDefaultModelId
 		case "zai":

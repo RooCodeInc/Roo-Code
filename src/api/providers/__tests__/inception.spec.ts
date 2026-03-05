@@ -120,7 +120,7 @@ describe("InceptionHandler", () => {
 	})
 
 	describe("createMessage", () => {
-		it("should create a non-streaming message", async () => {
+		it("should create a message and yield text chunks", async () => {
 			const systemPrompt = "You are a helpful assistant"
 			const messages: Anthropic.MessageParam[] = [
 				{
@@ -129,10 +129,17 @@ describe("InceptionHandler", () => {
 				},
 			]
 
-			const result = await handler.createMessage(systemPrompt, messages)
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: string[] = []
+
+			for await (const chunk of stream) {
+				if (chunk.type === "text") {
+					chunks.push(chunk.text)
+				}
+			}
 
 			expect(mockCreate).toHaveBeenCalled()
-			expect(result.text).toBe("Test response")
+			expect(chunks.join("")).toContain("Test response")
 		})
 
 		it("should handle streaming messages", async () => {

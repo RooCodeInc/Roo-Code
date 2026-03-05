@@ -8,6 +8,7 @@ import {
 	bedrockModels,
 	deepSeekModels,
 	moonshotModels,
+	inceptionModels,
 	minimaxModels,
 	geminiModels,
 	mistralModels,
@@ -239,6 +240,11 @@ function getSelectedModel({
 		case "moonshot": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const info = moonshotModels[id as keyof typeof moonshotModels]
+			return { id, info }
+		}
+		case "inception": {
+			const id = apiConfiguration.apiModelId ?? defaultModelId
+			const info = inceptionModels[id as keyof typeof inceptionModels]
 			return { id, info }
 		}
 		case "minimax": {

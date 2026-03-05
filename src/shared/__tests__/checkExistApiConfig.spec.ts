@@ -52,6 +52,7 @@ describe("checkExistKey", () => {
 			openAiNativeApiKey: undefined,
 			deepSeekApiKey: undefined,
 			moonshotApiKey: undefined,
+			inceptionApiKey: undefined,
 			mistralApiKey: undefined,
 			vsCodeLmModelSelector: undefined,
 			requestyApiKey: undefined,
