@@ -314,6 +314,11 @@ const moonshotSchema = apiModelIdProviderModelSchema.extend({
 	moonshotApiKey: z.string().optional(),
 })
 
+const inceptionSchema = apiModelIdProviderModelSchema.extend({
+	inceptionBaseUrl: z.string().optional(),
+	inceptionApiKey: z.string().optional(),
+})
+
 const minimaxSchema = apiModelIdProviderModelSchema.extend({
 	minimaxBaseUrl: z
 		.union([z.literal("https://api.minimax.io/v1"), z.literal("https://api.minimaxi.com/v1")])
@@ -402,6 +407,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	mistralSchema.merge(z.object({ apiProvider: z.literal("mistral") })),
 	deepSeekSchema.merge(z.object({ apiProvider: z.literal("deepseek") })),
 	moonshotSchema.merge(z.object({ apiProvider: z.literal("moonshot") })),
+	inceptionSchema.merge(z.object({ apiProvider: z.literal("inception") })),
 	minimaxSchema.merge(z.object({ apiProvider: z.literal("minimax") })),
 	requestySchema.merge(z.object({ apiProvider: z.literal("requesty") })),
 	unboundSchema.merge(z.object({ apiProvider: z.literal("unbound") })),
@@ -435,6 +441,7 @@ export const providerSettingsSchema = z.object({
 	...mistralSchema.shape,
 	...deepSeekSchema.shape,
 	...moonshotSchema.shape,
+	...inceptionSchema.shape,
 	...minimaxSchema.shape,
 	...requestySchema.shape,
 	...unboundSchema.shape,
