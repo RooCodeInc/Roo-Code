@@ -111,6 +111,7 @@ export const providerNames = [
 	"gemini-cli",
 	"mistral",
 	"moonshot",
+	"inception",
 	"minimax",
 	"openai-codex",
 	"openai-native",
