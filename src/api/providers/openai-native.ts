@@ -148,6 +148,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			totalOutputTokens,
 			cacheWriteTokens,
 			cacheReadTokens,
+			effectiveTier,
 		)
 
 		const reasoningTokens =

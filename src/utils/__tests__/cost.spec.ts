@@ -221,5 +221,86 @@ describe("Cost Utility", () => {
 			expect(result.totalInputTokens).toBe(6000) // Total already includes cache
 			expect(result.totalOutputTokens).toBe(500)
 		})
+
+		it("should not apply long-context pricing at the threshold", () => {
+			const modelWithLongContextPricing: ModelInfo = {
+				...mockModelInfo,
+				longContextPricing: {
+					thresholdTokens: 272_000,
+					inputPriceMultiplier: 2,
+					outputPriceMultiplier: 1.5,
+					cacheWritesPriceMultiplier: 2,
+					cacheReadsPriceMultiplier: 2,
+				},
+			}
+
+			const result = calculateApiCostOpenAI(modelWithLongContextPricing, 272_000, 1_000, undefined, 100_000)
+
+			// Input cost: (3.0 / 1_000_000) * (272000 - 100000) = 0.516
+			// Output cost: (15.0 / 1_000_000) * 1000 = 0.015
+			// Cache reads: (0.3 / 1_000_000) * 100000 = 0.03
+			// Total: 0.516 + 0.015 + 0.03 = 0.561
+			expect(result.totalCost).toBeCloseTo(0.561, 6)
+		})
+
+		it("should apply long-context pricing above the threshold", () => {
+			const modelWithLongContextPricing: ModelInfo = {
+				maxTokens: 128_000,
+				contextWindow: 1_050_000,
+				supportsPromptCache: true,
+				inputPrice: 2.5,
+				outputPrice: 15.0,
+				cacheWritesPrice: 5.0,
+				cacheReadsPrice: 0.25,
+				longContextPricing: {
+					thresholdTokens: 272_000,
+					inputPriceMultiplier: 2,
+					outputPriceMultiplier: 1.5,
+					cacheWritesPriceMultiplier: 2,
+					cacheReadsPriceMultiplier: 2,
+				},
+			}
+
+			const result = calculateApiCostOpenAI(modelWithLongContextPricing, 300_000, 1_000, 20_000, 100_000)
+
+			// Input cost: (5.0 / 1_000_000) * (300000 - 20000 - 100000) = 0.9
+			// Output cost: (22.5 / 1_000_000) * 1000 = 0.0225
+			// Cache writes: (10.0 / 1_000_000) * 20000 = 0.2
+			// Cache reads: (0.5 / 1_000_000) * 100000 = 0.05
+			// Total: 0.9 + 0.0225 + 0.2 + 0.05 = 1.1725
+			expect(result.totalCost).toBeCloseTo(1.1725, 6)
+		})
+
+		it("should skip long-context pricing for service tiers outside the allowed list", () => {
+			const modelWithLongContextPricing: ModelInfo = {
+				maxTokens: 128_000,
+				contextWindow: 1_050_000,
+				supportsPromptCache: true,
+				inputPrice: 5.0,
+				outputPrice: 30.0,
+				cacheReadsPrice: 0.5,
+				longContextPricing: {
+					thresholdTokens: 272_000,
+					inputPriceMultiplier: 2,
+					outputPriceMultiplier: 1.5,
+					appliesToServiceTiers: ["default", "flex"],
+				},
+			}
+
+			const result = calculateApiCostOpenAI(
+				modelWithLongContextPricing,
+				300_000,
+				1_000,
+				undefined,
+				100_000,
+				"priority",
+			)
+
+			// Input cost: (5.0 / 1_000_000) * (300000 - 100000) = 1.0
+			// Output cost: (30.0 / 1_000_000) * 1000 = 0.03
+			// Cache reads: (0.5 / 1_000_000) * 100000 = 0.05
+			// Total: 1.0 + 0.03 + 0.05 = 1.08
+			expect(result.totalCost).toBeCloseTo(1.08, 6)
+		})
 	})
 })

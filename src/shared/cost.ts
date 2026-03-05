@@ -1,9 +1,42 @@
 import type { ModelInfo } from "@roo-code/types"
+import type { ServiceTier } from "@roo-code/types"
 
 export interface ApiCostResult {
 	totalInputTokens: number
 	totalOutputTokens: number
 	totalCost: number
+}
+
+function applyLongContextPricing(modelInfo: ModelInfo, totalInputTokens: number, serviceTier?: ServiceTier): ModelInfo {
+	const pricing = modelInfo.longContextPricing
+	if (!pricing || totalInputTokens <= pricing.thresholdTokens) {
+		return modelInfo
+	}
+
+	const effectiveServiceTier = serviceTier ?? "default"
+	if (pricing.appliesToServiceTiers && !pricing.appliesToServiceTiers.includes(effectiveServiceTier)) {
+		return modelInfo
+	}
+
+	return {
+		...modelInfo,
+		inputPrice:
+			modelInfo.inputPrice !== undefined && pricing.inputPriceMultiplier !== undefined
+				? modelInfo.inputPrice * pricing.inputPriceMultiplier
+				: modelInfo.inputPrice,
+		outputPrice:
+			modelInfo.outputPrice !== undefined && pricing.outputPriceMultiplier !== undefined
+				? modelInfo.outputPrice * pricing.outputPriceMultiplier
+				: modelInfo.outputPrice,
+		cacheWritesPrice:
+			modelInfo.cacheWritesPrice !== undefined && pricing.cacheWritesPriceMultiplier !== undefined
+				? modelInfo.cacheWritesPrice * pricing.cacheWritesPriceMultiplier
+				: modelInfo.cacheWritesPrice,
+		cacheReadsPrice:
+			modelInfo.cacheReadsPrice !== undefined && pricing.cacheReadsPriceMultiplier !== undefined
+				? modelInfo.cacheReadsPrice * pricing.cacheReadsPriceMultiplier
+				: modelInfo.cacheReadsPrice,
+	}
 }
 
 function calculateApiCostInternal(
@@ -62,15 +95,17 @@ export function calculateApiCostOpenAI(
 	outputTokens: number,
 	cacheCreationInputTokens?: number,
 	cacheReadInputTokens?: number,
+	serviceTier?: ServiceTier,
 ): ApiCostResult {
 	const cacheCreationInputTokensNum = cacheCreationInputTokens || 0
 	const cacheReadInputTokensNum = cacheReadInputTokens || 0
 	const nonCachedInputTokens = Math.max(0, inputTokens - cacheCreationInputTokensNum - cacheReadInputTokensNum)
+	const effectiveModelInfo = applyLongContextPricing(modelInfo, inputTokens, serviceTier)
 
 	// For OpenAI: inputTokens ALREADY includes all tokens (cached + non-cached)
 	// So we pass the original inputTokens as the total
 	return calculateApiCostInternal(
-		modelInfo,
+		effectiveModelInfo,
 		nonCachedInputTokens,
 		outputTokens,
 		cacheCreationInputTokensNum,

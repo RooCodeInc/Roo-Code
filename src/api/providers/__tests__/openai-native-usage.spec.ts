@@ -8,6 +8,10 @@ describe("OpenAiNativeHandler - normalizeUsage", () => {
 		id: "gpt-4o",
 		info: openAiNativeModels["gpt-4o"],
 	}
+	const gpt54Model = {
+		id: "gpt-5.4",
+		info: openAiNativeModels["gpt-5.4"],
+	}
 
 	beforeEach(() => {
 		handler = new OpenAiNativeHandler({
@@ -379,6 +383,9 @@ describe("OpenAiNativeHandler - normalizeUsage", () => {
 			const fourOBody = buildRequestBodyForModel("gpt-4o")
 			expect(fourOBody.prompt_cache_retention).toBeUndefined()
 
+			const gpt54Body = buildRequestBodyForModel("gpt-5.4")
+			expect(gpt54Body.prompt_cache_retention).toBeUndefined()
+
 			const chatModelBody = buildRequestBodyForModel("gpt-5.3-chat-latest")
 			expect(chatModelBody.prompt_cache_retention).toBeUndefined()
 		})
@@ -420,6 +427,65 @@ describe("OpenAiNativeHandler - normalizeUsage", () => {
 			expect(result).toHaveProperty("totalCost")
 			expect(result.totalCost).toBeGreaterThan(0)
 			// Cost should be calculated with full input tokens since no cache reads
+		})
+
+		it("should use standard GPT-5.4 pricing within the base context threshold", () => {
+			const usage = {
+				input_tokens: 100_000,
+				output_tokens: 1_000,
+				cache_read_input_tokens: 20_000,
+			}
+
+			const result = (handler as any).normalizeUsage(usage, gpt54Model)
+
+			expect(result).toMatchObject({
+				type: "usage",
+				inputTokens: 100_000,
+				outputTokens: 1_000,
+				cacheReadTokens: 20_000,
+			})
+			expect(result.totalCost).toBeCloseTo(0.22, 6)
+		})
+
+		it("should apply GPT-5.4 long-context pricing above the threshold", () => {
+			const usage = {
+				input_tokens: 300_000,
+				output_tokens: 1_000,
+				cache_read_input_tokens: 100_000,
+			}
+
+			const result = (handler as any).normalizeUsage(usage, gpt54Model)
+
+			expect(result).toMatchObject({
+				type: "usage",
+				inputTokens: 300_000,
+				outputTokens: 1_000,
+				cacheReadTokens: 100_000,
+			})
+			expect(result.totalCost).toBeCloseTo(1.0475, 6)
+		})
+
+		it("should not apply GPT-5.4 long-context pricing to priority tier", () => {
+			handler = new OpenAiNativeHandler({
+				openAiNativeApiKey: "test-key",
+				openAiNativeServiceTier: "priority",
+			})
+
+			const usage = {
+				input_tokens: 300_000,
+				output_tokens: 1_000,
+				cache_read_input_tokens: 100_000,
+			}
+
+			const result = (handler as any).normalizeUsage(usage, gpt54Model)
+
+			expect(result).toMatchObject({
+				type: "usage",
+				inputTokens: 300_000,
+				outputTokens: 1_000,
+				cacheReadTokens: 100_000,
+			})
+			expect(result.totalCost).toBeCloseTo(1.08, 6)
 		})
 	})
 })
