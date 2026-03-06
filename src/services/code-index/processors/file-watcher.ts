@@ -72,6 +72,8 @@ export class FileWatcher implements IFileWatcher {
 	 * @param vectorStore Optional vector store
 	 * @param cacheManager Cache manager
 	 */
+	private ignoreControllerIsOwned = false
+
 	constructor(
 		private workspacePath: string,
 		private context: vscode.ExtensionContext,
@@ -82,7 +84,14 @@ export class FileWatcher implements IFileWatcher {
 		ignoreController?: RooIgnoreController,
 		batchSegmentThreshold?: number,
 	) {
-		this.ignoreController = ignoreController || new RooIgnoreController(workspacePath)
+		if (ignoreController) {
+			this.ignoreController = ignoreController
+		} else {
+			// Fallback: create a local controller. It must be initialized in initialize()
+			// before it can enforce .rooignore rules. Prefer passing the manager's controller.
+			this.ignoreController = new RooIgnoreController(workspacePath)
+			this.ignoreControllerIsOwned = true
+		}
 		if (ignoreInstance) {
 			this.ignoreInstance = ignoreInstance
 		}
@@ -106,6 +115,12 @@ export class FileWatcher implements IFileWatcher {
 	 * Initializes the file watcher
 	 */
 	async initialize(): Promise<void> {
+		// If we created a fallback RooIgnoreController in the constructor,
+		// initialize it now so it loads .rooignore patterns before use.
+		if (this.ignoreControllerIsOwned) {
+			await this.ignoreController.initialize()
+		}
+
 		// Create file watcher
 		const filePattern = new vscode.RelativePattern(
 			this.workspacePath,
