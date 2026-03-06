@@ -46,6 +46,8 @@ export const toolNames = [
 	"skill",
 	"generate_image",
 	"custom_tool",
+	// Intent-Driven Governance: mandatory intent declaration tool
+	"select_active_intent",
 ] as const
 
 export const toolNamesSchema = z.enum(toolNames)
