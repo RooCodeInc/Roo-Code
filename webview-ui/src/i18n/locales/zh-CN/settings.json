@@ -477,6 +477,10 @@
 				"title": "OpenRouter 提供商路由",
 				"description": "OpenRouter 将请求路由到适合您模型的最佳可用提供商。默认情况下，请求会在顶级提供商之间进行负载均衡以最大化正常运行时间。但是，您可以为此模型选择特定的提供商。",
 				"learnMore": "了解更多"
+			},
+			"excludeLowQuantization": {
+				"label": "排除低位量化 (FP4/FP6/Int4)",
+				"description": "仅允许高精度提供商 (FP8/FP16/BF16/Int8)。有助于防止激进量化模型导致的 CJK（韩文/中文/日文）编码问题。"
 			}
 		},
 		"customModel": {
