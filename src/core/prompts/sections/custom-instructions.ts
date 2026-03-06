@@ -84,8 +84,19 @@ async function resolveSymLink(
 	try {
 		// Get the symlink target
 		const linkTarget = await fs.readlink(symlinkPath)
-		// Resolve the target path (relative to the symlink location)
-		const resolvedTarget = path.resolve(path.dirname(symlinkPath), linkTarget)
+		// Resolve the target path relative to the symlink's real parent directory.
+		// We must use realpath on the parent directory because the symlink itself
+		// may be inside a symlinked directory. Relative symlink targets are resolved
+		// by the filesystem relative to the symlink's actual location, not the path
+		// used to access it.
+		const symlinkDir = path.dirname(symlinkPath)
+		let realSymlinkDir: string
+		try {
+			realSymlinkDir = await fs.realpath(symlinkDir)
+		} catch {
+			realSymlinkDir = symlinkDir
+		}
+		const resolvedTarget = path.resolve(realSymlinkDir, linkTarget)
 
 		// Check if the target is a file
 		const stats = await fs.stat(resolvedTarget)
