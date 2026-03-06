@@ -172,6 +172,55 @@ describe("CustomModeSchema", () => {
 		})
 	})
 
+	describe("commandRegex", () => {
+		it("validates a mode with command restrictions and descriptions", () => {
+			const modeWithJustRegex = {
+				slug: "npm-only",
+				name: "NPM Only",
+				roleDefinition: "NPM command mode",
+				groups: ["read", ["command", { commandRegex: "^npm\\s" }]],
+			}
+
+			const modeWithDescription = {
+				slug: "package-manager",
+				name: "Package Manager",
+				roleDefinition: "Package manager command mode",
+				groups: [
+					"read",
+					["command", { commandRegex: "^(npm|yarn|pnpm)\\s", description: "Package manager commands only" }],
+				],
+			}
+
+			expect(() => modeConfigSchema.parse(modeWithJustRegex)).not.toThrow()
+			expect(() => modeConfigSchema.parse(modeWithDescription)).not.toThrow()
+		})
+
+		it("validates command regex patterns", () => {
+			const validPatterns = ["^npm\\s", "^git\\s", ".*", "npm|yarn|pnpm", "^docker\\s+", "[a-z]+"]
+			const invalidPatterns = ["[", "(unclosed", "\\", "*", "+*", "?"]
+
+			validPatterns.forEach((pattern) => {
+				const mode = {
+					slug: "test",
+					name: "Test",
+					roleDefinition: "Test",
+					groups: ["read", ["command", { commandRegex: pattern }]],
+				}
+				expect(() => modeConfigSchema.parse(mode)).not.toThrow()
+			})
+
+			invalidPatterns.forEach((pattern) => {
+				const mode = {
+					slug: "test",
+					name: "Test",
+					roleDefinition: "Test",
+					groups: ["read", ["command", { commandRegex: pattern }]],
+				}
+				expect(() => modeConfigSchema.parse(mode)).toThrow()
+			})
+		})
+	})
+
 	const validBaseMode = {
 		slug: "123e4567-e89b-12d3-a456-426614174000",
 		name: "Test Mode",
