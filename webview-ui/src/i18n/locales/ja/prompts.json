@@ -51,6 +51,10 @@
 		"description": "{{modeName}}モードに特化した行動ガイドラインを追加します。",
 		"loadFromFile": "{{mode}}モード固有のカスタム指示は、ワークスペースの<span>.roo/rules-{{slug}}/</span>フォルダまたはグローバル<0>.roo/rules-{{slug}}/</0>からも読み込むことができます（.roorules-{{slug}}と.clinerules-{{slug}}は非推奨で、まもなく動作しなくなります）。"
 	},
+	"disableDefaultRules": {
+		"label": "デフォルトルールを無効化",
+		"description": "有効にすると、モード固有のルール（.roo/rules-{{slug}}/）のみが読み込まれます。デフォルトルール（.roo/rules/、AGENTS.md、.roorules）はスキップされます。"
+	},
 	"exportMode": {
 		"title": "モードをエクスポート",
 		"description": "このモードをすべてのルールを含むYAMLファイルにエクスポートして、他のユーザーと簡単に共有できます。",

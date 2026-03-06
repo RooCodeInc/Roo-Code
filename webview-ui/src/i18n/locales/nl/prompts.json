@@ -51,6 +51,10 @@
 		"description": "Voeg gedragsrichtlijnen toe die specifiek zijn voor de modus {{modeName}}.",
 		"loadFromFile": "Aangepaste instructies specifiek voor de {{mode}} modus kunnen ook worden geladen vanuit de map <span>.roo/rules-{{slug}}/</span> in je werkruimte of vanuit de globale <0>.roo/rules-{{slug}}/</0> (.roorules-{{slug}} en .clinerules-{{slug}} zijn verouderd en zullen binnenkort niet meer werken)."
 	},
+	"disableDefaultRules": {
+		"label": "Standaardregels uitschakelen",
+		"description": "Wanneer ingeschakeld worden alleen modusspecifieke regels (.roo/rules-{{slug}}/) geladen. Standaardregels (.roo/rules/, AGENTS.md, .roorules) worden overgeslagen."
+	},
 	"exportMode": {
 		"title": "Modus exporteren",
 		"description": "Exporteer deze modus naar een YAML-bestand met alle regels inbegrepen voor eenvoudig delen met anderen.",
