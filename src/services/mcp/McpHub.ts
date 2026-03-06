@@ -70,6 +70,7 @@ const BaseConfigSchema = z.object({
 	alwaysAllow: z.array(z.string()).default([]),
 	watchPaths: z.array(z.string()).optional(), // paths to watch for changes and restart server
 	disabledTools: z.array(z.string()).default([]),
+	serverInstructions: z.string().optional(), // user-defined instructions that supplement or override protocol-provided instructions
 })
 
 // Custom error messages for better user feedback
@@ -632,6 +633,7 @@ export class McpHub {
 				disabled: reason === DisableReason.SERVER_DISABLED ? true : config.disabled,
 				source,
 				projectPath: source === "project" ? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath : undefined,
+				instructions: config.serverInstructions,
 				errorHistory: [],
 			},
 			client: null,
@@ -878,7 +880,16 @@ export class McpHub {
 			await client.connect(transport)
 			connection.server.status = "connected"
 			connection.server.error = ""
-			connection.server.instructions = client.getInstructions()
+
+			// Merge user-defined serverInstructions from config with protocol-provided instructions.
+			// Config-defined serverInstructions take precedence; if both exist, they are combined.
+			const protocolInstructions = client.getInstructions()
+			const configInstructions = configInjected.serverInstructions
+			if (configInstructions && protocolInstructions) {
+				connection.server.instructions = `${configInstructions}\n\n${protocolInstructions}`
+			} else {
+				connection.server.instructions = configInstructions || protocolInstructions
+			}
 
 			// Initial fetch of tools and resources
 			connection.server.tools = await this.fetchToolsList(name, source)
