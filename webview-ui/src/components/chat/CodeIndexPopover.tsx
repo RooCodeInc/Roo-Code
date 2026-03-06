@@ -81,6 +81,9 @@ interface LocalCodeIndexSettings {
 	codebaseIndexVercelAiGatewayApiKey?: string
 	codebaseIndexOpenRouterApiKey?: string
 	codebaseIndexOpenRouterSpecificProvider?: string
+
+	warpGrepEnabled: boolean
+	warpGrepApiKey?: string
 }
 
 // Validation schema for codebase index settings
@@ -225,6 +228,8 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexVercelAiGatewayApiKey: "",
 		codebaseIndexOpenRouterApiKey: "",
 		codebaseIndexOpenRouterSpecificProvider: "",
+		warpGrepEnabled: false,
+		warpGrepApiKey: "",
 	})
 
 	// Initial settings state - stores the settings when popover opens
@@ -265,6 +270,8 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 				codebaseIndexOpenRouterApiKey: "",
 				codebaseIndexOpenRouterSpecificProvider:
 					codebaseIndexConfig.codebaseIndexOpenRouterSpecificProvider || "",
+				warpGrepEnabled: codebaseIndexConfig.warpGrepEnabled ?? false,
+				warpGrepApiKey: "",
 			}
 			setInitialSettings(settings)
 			setCurrentSettings(settings)
@@ -388,6 +395,9 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 						updated.codebaseIndexOpenRouterApiKey = secretStatus.hasOpenRouterApiKey
 							? SECRET_PLACEHOLDER
 							: ""
+					}
+					if (!prev.warpGrepApiKey || prev.warpGrepApiKey === SECRET_PLACEHOLDER) {
+						updated.warpGrepApiKey = secretStatus.hasWarpGrepApiKey ? SECRET_PLACEHOLDER : ""
 					}
 
 					return updated
@@ -553,8 +563,9 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 			settingsToSave[key] = value
 		}
 
-		// Always include codebaseIndexEnabled to ensure it's persisted
+		// Always include toggle states to ensure they're persisted
 		settingsToSave.codebaseIndexEnabled = currentSettings.codebaseIndexEnabled
+		settingsToSave.warpGrepEnabled = currentSettings.warpGrepEnabled
 
 		// Save settings to backend
 		vscode.postMessage({
@@ -1586,6 +1597,40 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 											</VSCodeButton>
 										</div>
 									</div>
+								</div>
+							)}
+						</div>
+
+						{/* WarpGrep Section */}
+						<div className="mt-4 pt-4 border-t border-vscode-dropdown-border">
+							<h4 className="text-sm font-semibold mb-2">WarpGrep</h4>
+							<p className="text-xs text-vscode-descriptionForeground mb-3">
+								Alternative codebase search backend that uses an agentic loop with ripgrep and file
+								reads to find relevant code spans.
+							</p>
+							<div className="mb-3">
+								<VSCodeCheckbox
+									checked={currentSettings.warpGrepEnabled}
+									onChange={(e: any) => updateSetting("warpGrepEnabled", e.target.checked)}>
+									<span className="font-medium">Enable WarpGrep</span>
+								</VSCodeCheckbox>
+							</div>
+							{currentSettings.warpGrepEnabled && (
+								<div className="space-y-2">
+									<label className="text-sm font-medium">API Key</label>
+									<VSCodeTextField
+										type="password"
+										value={currentSettings.warpGrepApiKey || ""}
+										onInput={(e: any) => updateSetting("warpGrepApiKey", e.target.value)}
+										placeholder="Enter your Morph API key"
+										className="w-full"
+									/>
+									<p className="text-xs text-vscode-descriptionForeground mt-1 mb-0">
+										Get your API key at{" "}
+										<VSCodeLink href="https://morphllm.com" style={{ display: "inline" }}>
+											morphllm.com
+										</VSCodeLink>
+									</p>
 								</div>
 							)}
 						</div>
