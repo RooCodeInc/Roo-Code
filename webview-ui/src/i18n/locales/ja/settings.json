@@ -877,7 +877,15 @@
 	},
 	"thinkingBudget": {
 		"maxTokens": "最大 tokens",
-		"maxThinkingTokens": "最大思考 tokens"
+		"maxThinkingTokens": "最大思考 tokens",
+		"useAdaptiveThinking": "アダプティブ思考を使用",
+		"adaptiveThinkingDescription": "リクエストの複雑さに基づいて、Claudeがいつどれだけ考えるかを動的に決定できるようにします。",
+		"adaptiveEffort": {
+			"low": "低",
+			"medium": "中",
+			"high": "高（デフォルト）",
+			"max": "最大（Opus 4.6のみ）"
+		}
 	},
 	"validation": {
 		"apiKey": "有効なAPIキーを入力してください。",
