@@ -1,0 +1,34 @@
+active_intents:
+  - id: "INT-001"
+    name: "JWT Authentication Migration"
+    status: "IN_PROGRESS"
+    owned_scope:
+      - "src/auth/**"
+      - "src/middleware/jwt.ts"
+    constraints:
+      - "Must not use external auth providers"
+      - "Must maintain backward compatibility with Basic Auth"
+    acceptance_criteria:
+      - "Unit tests in tests/auth/ pass"
+
+  - id: "INT-002"
+    name: "Refactor Billing Service"
+    status: "IN_PROGRESS"
+    owned_scope:
+      - "src/billing/**"
+    constraints:
+      - "Preserve API endpoints"
+      - "Maintain decimal precision"
+    acceptance_criteria:
+      - "Integration tests in tests/billing/ pass"
+
+  - id: "INT-003"
+    name: "Add Logging Middleware"
+    status: "IN_PROGRESS"
+    owned_scope:
+      - "src/middleware/logging.ts"
+    constraints:
+      - "Log only request metadata"
+      - "Must be async non-blocking"
+    acceptance_criteria:
+      - "Logs appear in console without delaying response"
