@@ -54,6 +54,23 @@ Otherwise, if you have not completed the task and do not need additional informa
 (This is an automated message, so do not respond to it conversationally.)`
 	},
 
+	reasoningRepetitionDetected: () => {
+		const instructions = getToolInstructionsReminder()
+
+		return `[ERROR] Your reasoning/thinking output was stuck in a repetitive loop, repeating the same lines over and over. The response was aborted to save tokens.
+
+IMPORTANT: Do NOT repeat the same thoughts or plans. Take a different approach or proceed directly with action.
+
+${instructions}
+
+# Next Steps
+
+If you have completed the user's task, use the attempt_completion tool.
+If you require additional information from the user, use the ask_followup_question tool.
+Otherwise, proceed with the next step of the task using a tool call. Do NOT repeat your previous reasoning.
+(This is an automated message, so do not respond to it conversationally.)`
+	},
+
 	tooManyMistakes: (feedback?: string) =>
 		JSON.stringify({
 			status: "guidance",
