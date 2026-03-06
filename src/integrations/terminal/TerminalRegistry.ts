@@ -51,14 +51,19 @@ export class TerminalRegistry {
 					// Get a handle to the stream as early as possible:
 					const stream = e.execution.read()
 					const terminal = this.getTerminalByVSCETerminal(e.terminal)
+					const eventCommand = e.execution?.commandLine?.value
 
 					console.info("[onDidStartTerminalShellExecution]", {
-						command: e.execution?.commandLine?.value,
+						command: eventCommand,
 						terminalId: terminal?.id,
+						processCommand: terminal?.process?.command,
 					})
 
 					if (terminal) {
-						terminal.setActiveStream(stream)
+						// Pass the eventCommand to setActiveStream for verification.
+						// This prevents conda/pyenv/other auto-activation commands from
+						// hijacking the stream when the terminal first opens.
+						terminal.setActiveStream(stream, undefined, eventCommand)
 						terminal.busy = true // Mark terminal as busy when shell execution starts
 					} else {
 						console.error(
