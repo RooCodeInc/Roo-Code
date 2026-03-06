@@ -21,7 +21,7 @@ vitest.mock("../../../integrations/terminal/Terminal")
 vitest.mock("../../../integrations/terminal/ExecaTerminal")
 
 // Import the actual executeCommand function (not mocked)
-import { executeCommandInTerminal } from "../ExecuteCommandTool"
+import { executeCommandInTerminal, hasTrailingBackgroundOperator } from "../ExecuteCommandTool"
 
 // Tests for the executeCommand function
 describe("executeCommand", () => {
@@ -73,6 +73,28 @@ describe("executeCommand", () => {
 
 		// Mock TerminalRegistry.getOrCreateTerminal
 		;(TerminalRegistry.getOrCreateTerminal as any).mockResolvedValue(mockTerminal)
+	})
+
+	describe("Background Command Detection", () => {
+		it("detects a trailing standalone background operator", () => {
+			expect(hasTrailingBackgroundOperator("pnpm dev &")).toBe(true)
+		})
+
+		it("does not treat && as background execution", () => {
+			expect(hasTrailingBackgroundOperator("pnpm lint && pnpm test")).toBe(false)
+		})
+
+		it("does not treat quoted ampersands as background execution", () => {
+			expect(hasTrailingBackgroundOperator('echo "a & b"')).toBe(false)
+		})
+
+		it("does not treat mid-command backgrounding as trailing background execution", () => {
+			expect(hasTrailingBackgroundOperator("sleep 1 & echo done")).toBe(false)
+		})
+
+		it("ignores parse failures and defaults to foreground", () => {
+			expect(hasTrailingBackgroundOperator("echo 'unterminated")).toBe(false)
+		})
 	})
 
 	describe("Working Directory Behavior", () => {
@@ -311,6 +333,30 @@ describe("executeCommand", () => {
 	})
 
 	describe("Command Execution States", () => {
+		it("continues immediately for explicit trailing background commands", async () => {
+			let resolveProcess: (() => void) | undefined
+			const continueSpy = vitest.fn(() => resolveProcess?.())
+			const backgroundProcess = new Promise<void>((resolve) => {
+				resolveProcess = resolve
+			}) as Promise<void> & { continue: () => void }
+
+			backgroundProcess.continue = continueSpy
+
+			mockTerminal.runCommand.mockReturnValue(backgroundProcess)
+
+			const options: ExecuteCommandOptions = {
+				executionId: "test-123",
+				command: "pnpm dev &",
+				terminalShellIntegrationDisabled: true,
+			}
+
+			const [rejected, result] = await executeCommandInTerminal(mockTask, options)
+
+			expect(rejected).toBe(false)
+			expect(continueSpy).toHaveBeenCalledTimes(1)
+			expect(result).toContain("Command is still running in terminal")
+		})
+
 		it("should handle completed command with exit code 0", async () => {
 			mockTerminal.getCurrentWorkingDirectory.mockReturnValue("/test/project")
 			mockTerminal.runCommand.mockImplementation((command: string, callbacks: RooTerminalCallbacks) => {
