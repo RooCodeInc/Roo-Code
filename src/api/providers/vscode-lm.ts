@@ -15,6 +15,40 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 /**
+ * The vendor string used by GitHub Copilot models in the VS Code LM API.
+ */
+const COPILOT_VENDOR = "copilot"
+
+/**
+ * Checks whether the given model client is backed by GitHub Copilot.
+ *
+ * @param client - A VS Code LanguageModelChat instance (may be null during init).
+ * @returns `true` when the model's vendor matches the Copilot vendor string.
+ */
+function isCopilotModel(client: vscode.LanguageModelChat | null): boolean {
+	return client?.vendor?.toLowerCase() === COPILOT_VENDOR
+}
+
+/**
+ * Builds model-specific options for GitHub Copilot requests.
+ *
+ * These options are forwarded by the VS Code Copilot Chat extension to the
+ * Copilot backend and help it properly categorise requests that originate
+ * from agent/extension activity (as opposed to direct user chat).
+ *
+ * Requires VS Code >= 1.96 where `modelOptions` on
+ * `LanguageModelChatRequestOptions` became stable.  On older versions the
+ * extra property is silently ignored.
+ *
+ * @see https://github.com/RooCodeInc/Roo-Code/issues/11289
+ */
+function buildCopilotModelOptions(): Record<string, unknown> {
+	return {
+		"copilot-integration-id": "roo-code",
+	}
+}
+
+/**
  * Converts OpenAI-format tools to VSCode Language Model tools.
  * Normalizes the JSON Schema to draft 2020-12 compliant format required by
  * GitHub Copilot's backend, converting type: ["T", "null"] to anyOf format.
@@ -393,11 +427,17 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 		let accumulatedText: string = ""
 
 		try {
-			// Create the response stream with required options
+			// Create the response stream with required options.
+			// When the model is backed by GitHub Copilot we attach
+			// modelOptions so that the Copilot backend can properly
+			// categorise agent-initiated requests for billing purposes.
+			// `modelOptions` requires VS Code >= 1.96; older versions
+			// silently ignore the extra property.
 			const requestOptions: vscode.LanguageModelChatRequestOptions = {
 				justification: `Roo Code would like to use '${client.name}' from '${client.vendor}', Click 'Allow' to proceed.`,
 				tools: convertToVsCodeLmTools(metadata?.tools ?? []),
-			}
+				...(isCopilotModel(client) ? { modelOptions: buildCopilotModelOptions() } : {}),
+			} as vscode.LanguageModelChatRequestOptions
 
 			const response: vscode.LanguageModelChatResponse = await client.sendRequest(
 				vsCodeLmMessages,
@@ -565,9 +605,12 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 	async completePrompt(prompt: string): Promise<string> {
 		try {
 			const client = await this.getClient()
+			const requestOptions = {
+				...(isCopilotModel(client) ? { modelOptions: buildCopilotModelOptions() } : {}),
+			} as vscode.LanguageModelChatRequestOptions
 			const response = await client.sendRequest(
 				[vscode.LanguageModelChatMessage.User(prompt)],
-				{},
+				requestOptions,
 				new vscode.CancellationTokenSource().token,
 			)
 			let result = ""

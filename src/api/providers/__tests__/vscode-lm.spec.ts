@@ -391,6 +391,63 @@ describe("VsCodeLmHandler", () => {
 
 			await expect(handler.createMessage(systemPrompt, messages).next()).rejects.toThrow("API Error")
 		})
+
+		it("should include modelOptions when model vendor is copilot", async () => {
+			// Create a Copilot-vendor mock model
+			const copilotModel = {
+				...mockLanguageModelChat,
+				vendor: "copilot",
+				name: "GPT-4o",
+			}
+			handler["client"] = copilotModel as any
+
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user" as const, content: "Hello" }]
+
+			copilotModel.sendRequest.mockResolvedValueOnce({
+				stream: (async function* () {
+					yield new vscode.LanguageModelTextPart("Hi there")
+				})(),
+			})
+			copilotModel.countTokens.mockResolvedValue(5)
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			expect(copilotModel.sendRequest).toHaveBeenCalledWith(
+				expect.any(Array),
+				expect.objectContaining({
+					modelOptions: { "copilot-integration-id": "roo-code" },
+				}),
+				expect.anything(),
+			)
+		})
+
+		it("should NOT include modelOptions when model vendor is not copilot", async () => {
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user" as const, content: "Hello" }]
+
+			mockLanguageModelChat.sendRequest.mockResolvedValueOnce({
+				stream: (async function* () {
+					yield new vscode.LanguageModelTextPart("Hi there")
+				})(),
+			})
+			mockLanguageModelChat.countTokens.mockResolvedValue(5)
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// sendRequest should have been called without modelOptions
+			const callArgs = mockLanguageModelChat.sendRequest.mock.calls[0]
+			const requestOptions = callArgs[1]
+			expect(requestOptions.modelOptions).toBeUndefined()
+		})
 	})
 
 	describe("getModel", () => {
@@ -534,6 +591,54 @@ describe("VsCodeLmHandler", () => {
 
 			const promise = handler.completePrompt("Test prompt")
 			await expect(promise).rejects.toThrow("VSCode LM completion error: Completion failed")
+		})
+
+		it("should include modelOptions in completePrompt when model vendor is copilot", async () => {
+			const copilotModel = {
+				...mockLanguageModelChat,
+				vendor: "copilot",
+				name: "GPT-4o",
+				sendRequest: vi.fn(),
+				countTokens: vi.fn(),
+			}
+			handler["client"] = copilotModel as any
+
+			const responseText = "Completed text"
+			copilotModel.sendRequest.mockResolvedValueOnce({
+				stream: (async function* () {
+					yield new vscode.LanguageModelTextPart(responseText)
+					return
+				})(),
+			})
+
+			const result = await handler.completePrompt("Test prompt")
+			expect(result).toBe(responseText)
+			expect(copilotModel.sendRequest).toHaveBeenCalledWith(
+				expect.any(Array),
+				expect.objectContaining({
+					modelOptions: { "copilot-integration-id": "roo-code" },
+				}),
+				expect.anything(),
+			)
+		})
+
+		it("should NOT include modelOptions in completePrompt when model vendor is not copilot", async () => {
+			handler["client"] = mockLanguageModelChat
+
+			const responseText = "Completed text"
+			mockLanguageModelChat.sendRequest.mockResolvedValueOnce({
+				stream: (async function* () {
+					yield new vscode.LanguageModelTextPart(responseText)
+					return
+				})(),
+			})
+
+			const result = await handler.completePrompt("Test prompt")
+			expect(result).toBe(responseText)
+
+			const callArgs = mockLanguageModelChat.sendRequest.mock.calls[0]
+			const requestOptions = callArgs[1]
+			expect(requestOptions.modelOptions).toBeUndefined()
 		})
 	})
 })
