@@ -1,0 +1,93 @@
+Overview
+
+This task focused on improving my AI coding agent’s behavior by refining its rules file, informed by best practices from experienced users such as Boris Cherny, creator of Claude Code. The objective was not heavy customization, but thoughtful alignment between developer intent and agent behavior.
+
+🔹 What I Did
+
+Studied reference material
+
+Reviewed Boris Cherny’s workflow insights, especially his emphasis on minimal configuration and strong defaults.
+
+Noted that experienced users rely more on clear intent than strict procedural enforcement.
+
+Reviewed existing rules
+
+Identified that my original copilot-instructions.md was overly rigid and tool-focused.
+
+The rules emphasized mandatory triggers and enforcement over collaboration and reasoning.
+
+Refactored the rules file
+
+Simplified the structure into clear, human-readable sections.
+
+Shifted focus from command enforcement to:
+
+Planning before action
+
+Clarifying questions
+
+Incremental, reversible changes
+
+Reframed tool usage as optional and value-driven rather than mandatory.
+
+Tested agent behavior
+
+Observed how the agent responded to tasks after rule changes.
+
+Compared behavior before and after simplification.
+
+🔹 What Worked
+
+The agent asked better clarifying questions before acting.
+
+Responses became more structured and predictable.
+
+The AI produced clearer TODO plans and explanations.
+
+Reduced friction during problem-solving.
+
+The agent aligned more closely with my thought process and workflow.
+
+🔹 What Didn’t Work
+
+Overly strict, trigger-heavy rules reduced reasoning quality.
+
+Mandatory tool invocation created unnecessary complexity.
+
+Excessive enforcement made the interaction feel brittle and unnatural.
+
+To troubleshoot this, I progressively removed rigid constraints and replaced them with intent-based guidance.
+
+🔹 Insights Gained
+
+Rules act as behavioral priors for AI agents.
+
+Lighter, intent-focused rules outperform heavy procedural control.
+
+Good defaults + clear expectations lead to better alignment.
+
+AI agents are most effective when treated as collaborators rather than autonomous systems.
+
+Simplicity improves trust, predictability, and productivity.
+
+This aligns strongly with Boris Cherny’s philosophy that Claude Code (and similar agents) work best with minimal but thoughtful configuration.
+
+🔹 Artifacts Included
+
+Final copilot-instructions.md
+
+This reflection report
+
+## Agent Behavior Testing
+
+After updating the rules file, I tested the AI agent using deliberately ambiguous and high-risk prompts to observe behavioral alignment.
+
+### Observations
+- The agent consistently summarized tasks before acting
+- It asked clarifying questions when requirements were unclear
+- It proposed TODO plans instead of immediately modifying code
+- It avoided assumptions and highlighted risks
+- Tool usage was suggested only when appropriate
+
+### Conclusion
+The updated rules successfully influenced the agent’s behavior to align with my intent, thought process, and expectations as a developer.
