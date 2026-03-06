@@ -66,6 +66,21 @@ Otherwise, if you have not completed the task and do not need additional informa
 		return `Missing value for required parameter '${paramName}'. Please retry with complete response.\n\n${instructions}`
 	},
 
+	writeToFileMissingContentError: () => {
+		const instructions = getToolInstructionsReminder()
+
+		return `Missing value for required parameter 'content'. This most commonly happens when the file content is too large and your response was truncated before the 'content' parameter could be fully generated.
+
+To recover, try one of these approaches:
+1. **Create a smaller file first**: Write a minimal version of the file with write_to_file, then use edit_file or apply_diff to add the remaining content incrementally.
+2. **Use edit_file instead**: If modifying an existing file, use edit_file with targeted changes rather than rewriting the entire file.
+3. **Split into multiple files**: If the content is genuinely large, consider splitting it across multiple smaller files.
+
+Do NOT simply retry write_to_file with the same large content — it will likely fail again for the same reason.
+
+${instructions}`
+	},
+
 	invalidMcpToolArgumentError: (serverName: string, toolName: string) =>
 		JSON.stringify({
 			status: "error",
