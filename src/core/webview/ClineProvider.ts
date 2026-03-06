@@ -60,6 +60,11 @@ import { experimentDefault } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
 import { WebviewMessage } from "../../shared/WebviewMessage"
 import { EMBEDDING_MODEL_PROFILES } from "../../shared/embeddingModels"
+import {
+	SUBAGENT_CANCELLED_STRUCTURED_RESULT,
+	type RunSubagentInBackgroundParams,
+	type SubagentStructuredResult,
+} from "../../shared/subagent"
 import { ProfileValidator } from "../../shared/ProfileValidator"
 
 import { Terminal } from "../../integrations/terminal/Terminal"
@@ -2987,6 +2992,24 @@ export class ClineProvider
 			return
 		}
 
+		// If the current task has running subagents, cancel all of them and return (do not cancel the parent).
+		if (task.activeSubagentChildren.size > 0) {
+			const children = Array.from(task.activeSubagentChildren.entries())
+			task.activeSubagentChildren.clear()
+			for (const [_toolCallId, subagentChild] of children) {
+				subagentChild.subagentProgressCallback = undefined
+				if (subagentChild.backgroundCompletionResolve) {
+					subagentChild.backgroundCompletionResolve(SUBAGENT_CANCELLED_STRUCTURED_RESULT)
+					subagentChild.backgroundCompletionResolve = undefined
+				}
+				subagentChild.abandoned = true
+				subagentChild.cancelCurrentRequest()
+				subagentChild.abortTask()
+				this.log(`[cancelTask] cancelled subagent ${subagentChild.taskId}.${subagentChild.instanceId}`)
+			}
+			return
+		}
+
 		console.log(`[cancelTask] cancelling task ${task.taskId}.${task.instanceId}`)
 
 		let historyItem: HistoryItem | undefined
@@ -3358,6 +3381,91 @@ export class ClineProvider
 		}
 
 		return child
+	}
+
+	/**
+	 * Runs a subagent in the background. Parent stays current; child runs until attempt_completion.
+	 * Resolves with the completion result string, or rejects on error.
+	 */
+	public async runSubagentInBackground(
+		params: RunSubagentInBackgroundParams,
+	): Promise<string | SubagentStructuredResult> {
+		const { parentTaskId, prompt, subagentType, onProgress, toolCallId } = params
+		if (!toolCallId) {
+			throw new Error("[runSubagentInBackground] toolCallId is required")
+		}
+		const parent = this.getCurrentTask()
+		if (!parent) {
+			throw new Error("[runSubagentInBackground] No current task")
+		}
+		if (parent.taskId !== parentTaskId) {
+			throw new Error(
+				`[runSubagentInBackground] Parent mismatch: expected ${parentTaskId}, current ${parent.taskId}`,
+			)
+		}
+
+		const { apiConfiguration, organizationAllowList, enableCheckpoints, checkpointTimeout, experiments } =
+			await this.getState()
+
+		if (!ProfileValidator.isProfileAllowed(apiConfiguration, organizationAllowList)) {
+			throw new OrganizationAllowListViolationError(t("common:errors.violated_organization_allowlist"))
+		}
+
+		const child = new Task({
+			provider: this,
+			apiConfiguration,
+			enableCheckpoints,
+			checkpointTimeout,
+			consecutiveMistakeLimit: apiConfiguration.consecutiveMistakeLimit,
+			task: prompt,
+			images: undefined,
+			experiments,
+			rootTask: this.clineStack.length > 0 ? this.clineStack[0] : undefined,
+			parentTask: parent,
+			taskNumber: this.clineStack.length + 1,
+			onCreated: this.taskCreationCallback,
+			startTask: false,
+			subagentType,
+			initialStatus: "active",
+		})
+		if (onProgress) {
+			child.subagentProgressCallback = onProgress
+		}
+
+		parent.activeSubagentChildren.set(toolCallId, child)
+
+		return new Promise<string | SubagentStructuredResult>((resolve, reject) => {
+			const removeChild = () => {
+				parent.activeSubagentChildren.delete(toolCallId)
+			}
+			let settled = false
+			child.backgroundCompletionResolve = (result: string | SubagentStructuredResult) => {
+				if (!settled) {
+					settled = true
+					removeChild()
+					resolve(result)
+				}
+			}
+			child
+				.runBackgroundSubagentLoop(prompt)
+				.then(() => {
+					if (!settled) {
+						settled = true
+						removeChild()
+						reject(new Error("Subagent ended without attempt_completion"))
+					}
+				})
+				.catch((err) => {
+					if (!settled) {
+						settled = true
+						removeChild()
+						reject(err)
+					}
+				})
+				.finally(() => {
+					removeChild()
+				})
+		})
 	}
 
 	/**

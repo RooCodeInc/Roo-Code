@@ -291,6 +291,10 @@ export function filterNativeToolsForMode(
 		allowedToolNames.delete("run_slash_command")
 	}
 
+	if (!experiments?.subagent) {
+		allowedToolNames.delete("subagent")
+	}
+
 	// Remove tools that are explicitly disabled via the disabledTools setting
 	if (settings?.disabledTools?.length) {
 		for (const toolName of settings.disabledTools) {
@@ -378,6 +382,9 @@ export function isToolAllowedInMode(
 		}
 		if (toolName === "run_slash_command") {
 			return experiments?.runSlashCommand === true
+		}
+		if (toolName === "subagent") {
+			return experiments?.subagent === true
 		}
 		return true
 	}

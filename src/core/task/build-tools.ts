@@ -2,7 +2,7 @@ import path from "path"
 
 import type OpenAI from "openai"
 
-import type { ProviderSettings, ModeConfig, ModelInfo } from "@roo-code/types"
+import type { ProviderSettings, ModeConfig, ModelInfo, ToolName } from "@roo-code/types"
 import { customToolRegistry, formatNative } from "@roo-code/core"
 
 import type { ClineProvider } from "../webview/ClineProvider"
@@ -14,6 +14,42 @@ import {
 	filterMcpToolsForMode,
 	resolveToolAlias,
 } from "../prompts/tools/filter-tools-for-mode"
+import type { SubagentType } from "../../shared/subagent"
+import { TOOL_GROUPS } from "../../shared/tools"
+
+/** Tools that require user interaction or affect parent-level UI. Disallowed for all subagents (general and explore). */
+const SUBAGENT_EXCLUDE_TOOLS: Set<string> = new Set([
+	"ask_followup_question",
+	"new_task",
+	"switch_mode",
+	"update_todo_list",
+] as ToolName[])
+
+/**
+ * Applies subagent-specific tool restrictions: for "explore" only read-only tools + attempt_completion;
+ * for any subagent, excludes nested subagent and tools that require user interaction.
+ */
+function applySubagentToolRestrictions<T extends OpenAI.Chat.ChatCompletionTool>(
+	tools: T[],
+	subagentType: SubagentType | undefined,
+	getName: (t: T) => string,
+	resolveName: (name: string) => string,
+): T[] {
+	let result = tools
+	if (subagentType === "explore") {
+		const readOnlyNames = new Set([...TOOL_GROUPS.read.tools, "attempt_completion"])
+		result = result.filter((t) => readOnlyNames.has(resolveName(getName(t))))
+	}
+	if (subagentType !== undefined) {
+		result = result.filter((t) => {
+			const name = resolveName(getName(t))
+			if (name === "subagent") return false
+			if (SUBAGENT_EXCLUDE_TOOLS.has(name)) return false
+			return true
+		})
+	}
+	return result
+}
 
 interface BuildToolsOptions {
 	provider: ClineProvider
@@ -31,6 +67,8 @@ interface BuildToolsOptions {
 	 * to pass all tool definitions while restricting callable tools.
 	 */
 	includeAllToolsWithRestrictions?: boolean
+	/** When "explore", only read-only tools are allowed (no edit/command) */
+	subagentType?: "general" | "explore"
 }
 
 interface BuildToolsResult {
@@ -90,6 +128,7 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 		disabledTools,
 		modelInfo,
 		includeAllToolsWithRestrictions,
+		subagentType,
 	} = options
 
 	const mcpHub = provider.getMcpHub()
@@ -141,8 +180,9 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 		}
 	}
 
-	// Combine filtered tools (for backward compatibility and for allowedFunctionNames)
-	const filteredTools = [...filteredNativeTools, ...filteredMcpTools, ...nativeCustomTools]
+	// Combine filtered tools, then apply subagent restrictions when this task is a subagent
+	const combined = [...filteredNativeTools, ...filteredMcpTools, ...nativeCustomTools]
+	const filteredTools = applySubagentToolRestrictions(combined, subagentType, getToolName, resolveToolAlias)
 
 	// If includeAllToolsWithRestrictions is true, return ALL tools but provide
 	// allowed names based on mode filtering
@@ -150,7 +190,7 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 		// Combine ALL tools (unfiltered native + all MCP + custom)
 		const allTools = [...nativeTools, ...mcpTools, ...nativeCustomTools]
 
-		// Extract names of tools that are allowed based on mode filtering.
+		// Extract names of tools that are allowed based on mode filtering and subagent restrictions.
 		// Resolve any alias names to canonical names to ensure consistency with allTools
 		// (which uses canonical names). This prevents Gemini errors when tools are renamed
 		// to aliases in filteredTools but allTools contains the original canonical names.

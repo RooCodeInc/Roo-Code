@@ -80,6 +80,19 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 
 			await task.say("completion_result", result, undefined, false)
 
+			if (task.backgroundCompletionResolve) {
+				// Subagent path: emit TaskCompleted and telemetry once, then resolve and abort.
+				// Do not run this for normal tasks—emitTaskCompleted() runs on delegation (line 124) or user acceptance (line 151).
+				task.emitFinalTokenUsageUpdate()
+				TelemetryService.instance.captureTaskCompleted(task.taskId)
+				task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
+				task.subagentProgressCallback = undefined
+				task.backgroundCompletionResolve(result)
+				task.backgroundCompletionResolve = undefined
+				task.abortTask()
+				return
+			}
+
 			// Check for subtask using parentTaskId (metadata-driven delegation)
 			if (task.parentTaskId) {
 				// Check if this subtask has already completed and returned to parent

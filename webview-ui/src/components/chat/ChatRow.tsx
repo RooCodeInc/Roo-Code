@@ -76,6 +76,50 @@ import { cn } from "@/lib/utils"
 import { PathTooltip } from "../ui/PathTooltip"
 import { OpenMarkdownPreviewButton } from "./OpenMarkdownPreviewButton"
 
+/** i18n keys backend sends as currentTask; we pass to t() for display. */
+const SUBAGENT_STATUS_KEYS = ["chat:subagents.starting", "chat:subagents.thinking"] as const
+
+interface ParsedSubagentTask {
+	toolLabel: string
+	purpose: string | null
+	isGeneric: boolean
+}
+
+/**
+ * Parses backend progress strings like "[read_file for 15 files]" or "Thinking..." into
+ * tool label and purpose for highlighted display. getToolLabel(key) returns the localized tool name.
+ */
+function parseSubagentCurrentTask(raw: string, getToolLabel: (toolKey: string) => string): ParsedSubagentTask {
+	const s = raw.trim()
+	if (!s) return { toolLabel: "", purpose: "...", isGeneric: true }
+
+	const fallbackFormat = (str: string) => str.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+
+	// Generic status (no brackets) – show as-is
+	if (!s.startsWith("[")) {
+		return { toolLabel: "", purpose: s.endsWith("...") ? s : s + "...", isGeneric: true }
+	}
+
+	// Strip brackets and parse "[tool_name for purpose]"
+	const inner = s.slice(1, s.endsWith("]") ? s.length - 1 : s.length).trim()
+	const forIndex = inner.indexOf(" for ")
+	if (forIndex === -1) {
+		const toolKey = inner.replace(/\s+/g, "_").toLowerCase()
+		const toolLabel = getToolLabel(toolKey) || fallbackFormat(inner)
+		return { toolLabel, purpose: null, isGeneric: false }
+	}
+
+	const toolPart = inner.slice(0, forIndex).trim()
+	const purposePart = inner.slice(forIndex + 5).trim()
+	const toolKey = toolPart.replace(/\s+/g, "_").toLowerCase()
+	const toolLabel = getToolLabel(toolKey) || fallbackFormat(toolPart)
+	let purpose = purposePart
+	if ((purpose.startsWith("'") && purpose.endsWith("'")) || (purpose.startsWith('"') && purpose.endsWith('"'))) {
+		purpose = purpose.slice(1, -1)
+	}
+	return { toolLabel, purpose: purpose || null, isGeneric: false }
+}
+
 // Helper function to get previous todos before a specific message
 function getPreviousTodos(messages: ClineMessage[], currentMessageTs: number): any[] {
 	// Find the previous updateTodoList message before the current one
@@ -1516,6 +1560,91 @@ export const ChatRowContent = ({
 										</span>
 									)}
 								</div>
+							)
+						}
+						case "subagentRunning": {
+							const desc = sayTool.description ?? ""
+							const currentTask = sayTool.currentTask
+							const getToolLabel = (key: string) =>
+								t("chat:subagents.toolDisplayNames." + key, {
+									defaultValue: key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+								})
+							const parsed = currentTask ? parseSubagentCurrentTask(currentTask, getToolLabel) : null
+							const purposeKey = parsed?.purpose?.replace(/\.\.\.$/, "")
+							const displayPurpose =
+								purposeKey &&
+								SUBAGENT_STATUS_KEYS.includes(purposeKey as (typeof SUBAGENT_STATUS_KEYS)[number])
+									? t(purposeKey)
+									: parsed?.purpose
+							return (
+								<div>
+									<div className="flex items-center gap-2.5 mb-1 break-words">
+										{message.progressStatus?.icon && (
+											<span
+												className={cn(
+													"codicon",
+													`codicon-${message.progressStatus.icon}`,
+													"mr-1.5 text-vscode-foreground",
+													message.progressStatus.spin && "codicon-modifier-spin",
+												)}
+											/>
+										)}
+										<span>{t("chat:subagents.runningLabel", { description: desc })}</span>
+									</div>
+									{parsed && (
+										<div className="pl-6 mt-1.5 text-sm text-vscode-descriptionForeground">
+											{parsed.toolLabel ? (
+												displayPurpose ? (
+													<>
+														{parsed.toolLabel}: {displayPurpose}
+														{!parsed.purpose?.endsWith("...") && "..."}
+													</>
+												) : (
+													<>{parsed.toolLabel}...</>
+												)
+											) : (
+												<>
+													{displayPurpose?.endsWith("...")
+														? displayPurpose
+														: `${displayPurpose ?? ""}...`}
+												</>
+											)}
+										</div>
+									)}
+								</div>
+							)
+						}
+						case "subagentCompleted": {
+							const hasError = !!sayTool.error
+							return (
+								<>
+									<div className="flex items-center gap-2.5 mb-1 break-words">
+										<span
+											className={cn(
+												`codicon codicon-${hasError ? "error" : "check-all"}`,
+												"mr-1.5",
+												hasError ? "text-vscode-errorForeground" : "text-vscode-foreground",
+											)}
+										/>
+										<span>{t("chat:subagents.completedLabel")}</span>
+										{sayTool.description && (
+											<span className="text-vscode-descriptionForeground ml-2">
+												{sayTool.description}
+											</span>
+										)}
+									</div>
+									{(sayTool.result ||
+										sayTool.error ||
+										(sayTool.resultCode && sayTool.messageKey)) && (
+										<div className="pl-6 mt-2 text-vscode-descriptionForeground whitespace-pre-wrap">
+											{sayTool.resultCode === "CANCELLED" && sayTool.messageKey
+												? t(sayTool.messageKey)
+												: hasError
+													? sayTool.error
+													: sayTool.result}
+										</div>
+									)}
+								</>
 							)
 						}
 						default:
