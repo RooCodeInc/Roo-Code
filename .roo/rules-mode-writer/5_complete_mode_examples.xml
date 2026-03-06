@@ -1,0 +1,91 @@
+<complete_examples>
+  <overview>
+    Canonical examples for creating and editing Roo Code modes. Each example demonstrates structured workflows, least-privilege configuration, contradiction resolution, and completion formatting, without referencing runtime implementation details.
+  </overview>
+
+  <example name="mode_editing_enhancement">
+    <scenario>
+      Edit the Test mode to add benchmark testing and performance guidance using Vitest's bench API.
+    </scenario>
+    <user_request>
+      I want to edit the test mode to add benchmark testing support.
+    </user_request>
+    <workflow>
+      <step number="1">
+        <description>Clarify scope and features</description>
+        <guidance>
+          Ask the user a focused clarifying question to confirm which scope/features to include; provide 2–4 actionable options. Outcome: selected scope.
+        </guidance>
+        <expected_outcome>User selects: Add benchmark testing with Vitest bench API</expected_outcome>
+      </step>
+
+      <step number="2">
+        <description>Immerse in current mode config and instructions</description>
+        <guidance>
+          Review .roomodes, inventory .roo/rules-test recursively, and review .roo/rules-test/1_workflow.xml. Outcome: confirm roleDefinition, file restrictions, and existing workflows.
+        </guidance>
+        <analysis>Confirm roleDefinition, file restrictions, and existing workflows.</analysis>
+      </step>
+
+      <step number="3">
+        <description>Update roleDefinition in .roomodes</description>
+        <guidance>
+          Edit .roomodes to update the roleDefinition, adding benchmark testing and performance guidance topics. Outcome: roleDefinition updated to include performance/bench themes.
+        </guidance>
+      </step>
+
+      <step number="4">
+        <description>Extend file restrictions to include .bench files</description>
+        <guidance>
+          Edit .roomodes to extend the fileRegex to include .bench.(ts|tsx|js|jsx) and update the description accordingly. Outcome: file restrictions now cover benchmark files.
+        </guidance>
+      </step>
+
+      <step number="5">
+        <description>Create benchmark guidance file</description>
+        <guidance>
+          Create a new file at .roo/rules-test/5_benchmark_testing.xml with guidance and examples. Outcome: new guidance file available to the mode.
+        </guidance>
+        <artifact_sample>
+          <benchmark_testing_guide>
+            <overview>Guidelines for performance benchmarks using Vitest bench API</overview>
+            <benchmark_patterns>
+              <pattern name="basic_benchmark">
+                <description>Basic structure</description>
+                <example>
+import { bench, describe } from 'vitest';
+
+
+describe('Array operations', () => {
+  bench('Array.push', () => {
+    const arr: number[] = [];
+    for (let i = 0; i < 1000; i++) arr.push(i);
+  });
+
+  bench('Array spread', () => {
+    let arr: number[] = [];
+    for (let i = 0; i < 1000; i++) arr = [...arr, i];
+  });
+});
+                </example>
+              </pattern>
+            </benchmark_patterns>
+            <best_practices>
+              <practice>Use meaningful names and isolate benchmarks</practice>
+              <practice>Document expectations and thresholds</practice>
+            </best_practices>
+          </benchmark_testing_guide>
+        </artifact_sample>
+      </step>
+    </workflow>
+
+    <completion>
+      Provide a concise summary of what was accomplished and how it addresses the user's request.
+    </completion>
+
+    <key_takeaways>
+      <takeaway>Important lesson from this example</takeaway>
+      <takeaway>Pattern that can be reused</takeaway>
+    </key_takeaways>
+  </example>
+</complete_examples>

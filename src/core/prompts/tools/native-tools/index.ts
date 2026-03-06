@@ -20,6 +20,9 @@ import searchFiles from "./search_files"
 import switchMode from "./switch_mode"
 import updateTodoList from "./update_todo_list"
 import writeToFile from "./write_to_file"
+import selectActiveIntent from "./select_active_intent"
+import createIntent from "./create_intent"
+import recordLesson from "./record_lesson"
 
 export { getMcpServerTools } from "./mcp_server"
 export { convertOpenAIToolToAnthropic, convertOpenAIToolsToAnthropic } from "./converters"
@@ -47,6 +50,9 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 	}
 
 	return [
+		selectActiveIntent, // Must be first - required before code changes
+		createIntent, // Create new intents based on prompts
+		recordLesson, // Record lessons learned to AGENT.md (Phase 4)
 		accessMcpResource,
 		apply_diff,
 		applyPatch,
