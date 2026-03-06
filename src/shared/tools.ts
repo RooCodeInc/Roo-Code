@@ -26,6 +26,7 @@ export interface TextContent {
 export const toolParamNames = [
 	"command",
 	"path",
+	"paths",
 	"content",
 	"regex",
 	"file_pattern",
@@ -102,6 +103,7 @@ export type NativeToolArgs = {
 	edit_file: { file_path: string; old_string: string; new_string: string; expected_replacements?: number }
 	apply_patch: { patch: string }
 	list_files: { path: string; recursive?: boolean }
+	read_lints: { paths?: string[] }
 	new_task: { mode: string; message: string; todos?: string }
 	ask_followup_question: {
 		question: string
@@ -278,6 +280,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	apply_patch: "apply patches using codex format",
 	search_files: "search files",
 	list_files: "list files",
+	read_lints: "read lints",
 	use_mcp_tool: "use mcp tools",
 	access_mcp_resource: "access mcp resources",
 	ask_followup_question: "ask questions",
@@ -295,7 +298,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 // Define available tool groups.
 export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 	read: {
-		tools: ["read_file", "search_files", "list_files", "codebase_search"],
+		tools: ["read_file", "search_files", "list_files", "codebase_search", "read_lints"],
 	},
 	edit: {
 		tools: ["apply_diff", "write_to_file", "generate_image"],
