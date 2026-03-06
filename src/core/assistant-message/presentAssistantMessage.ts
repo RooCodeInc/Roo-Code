@@ -300,22 +300,27 @@ export async function presentAssistantMessage(cline: Task) {
 			// A tool_use block without an id is invalid and cannot be executed.
 			const toolCallId = (block as any).id as string | undefined
 			if (!toolCallId) {
-				const errorMessage =
-					"Invalid tool call: missing tool_use.id. XML tool calls are no longer supported. Remove any XML tool markup (e.g. <read_file>...</read_file>) and use native tool calling instead."
+				const userFacingError =
+					"XML tool calls are no longer supported. Remove any XML tool markup (e.g. <read_file>...</read_file>) and use native tool calling instead."
 				// Record a tool error for visibility/telemetry. Use the reported tool name if present.
 				try {
 					if (
 						typeof (cline as any).recordToolError === "function" &&
 						typeof (block as any).name === "string"
 					) {
-						;(cline as any).recordToolError((block as any).name as ToolName, errorMessage)
+						;(cline as any).recordToolError((block as any).name as ToolName, userFacingError)
 					}
 				} catch {
 					// Best-effort only
 				}
 				cline.consecutiveMistakeCount++
-				await cline.say("error", errorMessage)
-				cline.userMessageContent.push({ type: "text", text: errorMessage })
+				await cline.say("error", userFacingError)
+				// Push comprehensive error with tool-use instructions so the model
+				// can self-correct on the next turn (see #11106).
+				cline.userMessageContent.push({
+					type: "text",
+					text: formatResponse.xmlToolCallError(),
+				})
 				cline.didAlreadyUseTool = true
 				break
 			}
