@@ -985,7 +985,7 @@ export class McpHub {
 			// and hits the same broken URL for path-prefixed issuers (see
 			// utils/oauth.ts for upstream issue links).
 			await authProvider.exchangeCodeForTokens(code)
-			await authProvider.close()
+			authProvider.close().catch(console.error)
 
 			// Recover the validated server config stored on the connection so we
 			// can pass it directly to connectToServer without re-reading the file.
