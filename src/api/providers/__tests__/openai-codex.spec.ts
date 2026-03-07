@@ -3,25 +3,52 @@
 import { OpenAiCodexHandler } from "../openai-codex"
 
 describe("OpenAiCodexHandler.getModel", () => {
-	it.each(["gpt-5.1", "gpt-5", "gpt-5.1-codex", "gpt-5-codex", "gpt-5-codex-mini", "gpt-5.3-codex-spark"])(
-		"should return specified model when a valid model id is provided: %s",
-		(apiModelId) => {
-			const handler = new OpenAiCodexHandler({ apiModelId })
-			const model = handler.getModel()
+	it.each([
+		"gpt-5.1",
+		"gpt-5",
+		"gpt-5.1-codex",
+		"gpt-5-codex",
+		"gpt-5-codex-mini",
+		"gpt-5.3-codex-spark",
+		"gpt-5.4-codex",
+	])("should return specified model when a valid model id is provided: %s", (apiModelId) => {
+		const handler = new OpenAiCodexHandler({ apiModelId })
+		const model = handler.getModel()
 
-			expect(model.id).toBe(apiModelId)
-			expect(model.info).toBeDefined()
-			// Default reasoning effort for GPT-5 family
-			expect(model.info.reasoningEffort).toBe("medium")
-		},
-	)
+		expect(model.id).toBe(apiModelId)
+		expect(model.info).toBeDefined()
+		// Default reasoning effort for GPT-5 family
+		expect(model.info.reasoningEffort).toBe("medium")
+	})
 
 	it("should fall back to default model when an invalid model id is provided", () => {
 		const handler = new OpenAiCodexHandler({ apiModelId: "not-a-real-model" })
 		const model = handler.getModel()
 
-		expect(model.id).toBe("gpt-5.3-codex")
+		expect(model.id).toBe("gpt-5.4-codex")
 		expect(model.info).toBeDefined()
+	})
+
+	it("should use GPT-5.4 with thinking/non-thinking reasoning effort levels", () => {
+		const handler = new OpenAiCodexHandler({ apiModelId: "gpt-5.4" })
+		const model = handler.getModel()
+
+		expect(model.id).toBe("gpt-5.4")
+		expect(model.info.contextWindow).toBe(1_050_000)
+		expect(model.info.supportsReasoningEffort).toContain("none")
+		expect(model.info.supportsReasoningEffort).toContain("xhigh")
+		expect(model.info.reasoningEffort).toBe("none")
+	})
+
+	it("should use GPT-5.4 Codex with 1M token context window", () => {
+		const handler = new OpenAiCodexHandler({ apiModelId: "gpt-5.4-codex" })
+		const model = handler.getModel()
+
+		expect(model.id).toBe("gpt-5.4-codex")
+		expect(model.info.contextWindow).toBe(1_050_000)
+		expect(model.info.reasoningEffort).toBe("medium")
+		expect(model.info.inputPrice).toBe(0)
+		expect(model.info.outputPrice).toBe(0)
 	})
 
 	it("should use Spark-specific limits and capabilities", () => {
