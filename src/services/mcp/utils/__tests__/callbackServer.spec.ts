@@ -40,6 +40,9 @@ describe("startCallbackServer", () => {
 		const mockRes = {
 			writeHead: vi.fn(),
 			end: vi.fn(),
+			on: vi.fn((event, cb) => {
+				if (event === "finish") setImmediate(cb)
+			}),
 		}
 
 		requestHandler(mockReq, mockRes)
@@ -75,6 +78,9 @@ describe("startCallbackServer", () => {
 		const mockRes = {
 			writeHead: vi.fn(),
 			end: vi.fn(),
+			on: vi.fn((event, cb) => {
+				if (event === "finish") setImmediate(cb)
+			}),
 		}
 
 		requestHandler(mockReq, mockRes)
