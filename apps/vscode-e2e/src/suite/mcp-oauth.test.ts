@@ -128,7 +128,13 @@ suite("Roo Code MCP OAuth", function () {
 
 			// SDK constructs: new URL("/.well-known/oauth-authorization-server", "http://host/auth")
 			// which resolves to http://host/.well-known/oauth-authorization-server (origin-relative)
-			if (url === "/.well-known/oauth-authorization-server") {
+			// Our custom fetchOAuthAuthServerMetadata constructs the RFC 8414 URL with issuer path:
+			//   /.well-known/oauth-authorization-server/auth  (with issuer path)
+			// Handle BOTH forms so our provider gets _authServerMeta.
+			if (
+				url === "/.well-known/oauth-authorization-server" ||
+				url === "/.well-known/oauth-authorization-server/auth"
+			) {
 				endpointsHit.add("auth-metadata")
 				res.writeHead(200, { "Content-Type": "application/json" })
 				res.end(
