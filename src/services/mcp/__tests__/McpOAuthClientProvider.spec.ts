@@ -39,6 +39,7 @@ mockFetch.mockResolvedValue({
 			issuer: "https://auth.example.com",
 			authorization_endpoint: "https://auth.example.com/authorize",
 			token_endpoint: "https://auth.example.com/token",
+			registration_endpoint: "https://auth.example.com/register",
 			response_types_supported: ["code"],
 			token_endpoint_auth_methods_supported: ["none"],
 			grant_types_supported: ["authorization_code", "refresh_token"],
@@ -541,6 +542,74 @@ describe("McpOAuthClientProvider", () => {
 			await provider.close()
 
 			expect(stopCallbackServer).toHaveBeenCalledTimes(1)
+		})
+	})
+
+	describe("registerClientIfNeeded", () => {
+		it("should reuse cached client_id when redirect_uri matches", async () => {
+			setupCallbackServerMock()
+			const secretStorage = createMockSecretStorage()
+
+			// Pre-populate storage with cached data
+			await secretStorage.saveOAuthData("https://example.com/mcp", {
+				tokens: { access_token: "cached-token", token_type: "Bearer" },
+				expires_at: Date.now() + 3600000,
+				client_id: "cached-client-id",
+				redirect_uri: "http://localhost:12345/callback",
+			})
+
+			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", secretStorage)
+			await provider.registerClientIfNeeded()
+
+			expect((await provider.clientInformation())?.client_id).toBe("cached-client-id")
+			await provider.close()
+		})
+
+		it("should not reuse cached client_id when redirect_uri does not match", async () => {
+			setupCallbackServerMock()
+			const secretStorage = createMockSecretStorage()
+
+			// Clear previous mocks and set up for this test
+			mockFetch.mockClear()
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: () =>
+					Promise.resolve({
+						issuer: "https://auth.example.com",
+						authorization_endpoint: "https://auth.example.com/authorize",
+						token_endpoint: "https://auth.example.com/token",
+						registration_endpoint: "https://auth.example.com/register",
+						response_types_supported: ["code"],
+						token_endpoint_auth_methods_supported: ["none"],
+						grant_types_supported: ["authorization_code", "refresh_token"],
+					}),
+			})
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: () =>
+					Promise.resolve({
+						client_id: "new-client-id",
+						redirect_uris: ["http://localhost:12345/callback"],
+						client_name: "Roo Code",
+						grant_types: ["authorization_code", "refresh_token"],
+						response_types: ["code"],
+						token_endpoint_auth_method: "none",
+					}),
+			})
+
+			// Pre-populate storage with cached data with different redirect_uri
+			await secretStorage.saveOAuthData("https://example.com/mcp", {
+				tokens: { access_token: "cached-token", token_type: "Bearer" },
+				expires_at: Date.now() + 3600000,
+				client_id: "cached-client-id",
+				redirect_uri: "http://localhost:99999/callback", // different port
+			})
+
+			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", secretStorage)
+			await provider.registerClientIfNeeded()
+
+			expect((await provider.clientInformation())?.client_id).toBe("new-client-id")
+			await provider.close()
 		})
 	})
 })

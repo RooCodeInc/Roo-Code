@@ -156,6 +156,21 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 	 */
 	async registerClientIfNeeded(): Promise<void> {
 		if (this._clientInfo) return // already registered
+
+		// Check if we have a cached client_id from previous registration
+		const cachedData = await this._secretStorage.getOAuthData(this._serverUrl)
+		if (cachedData?.client_id && cachedData.redirect_uri === this.redirectUrl) {
+			this._clientInfo = {
+				client_id: cachedData.client_id,
+				redirect_uris: [this.redirectUrl],
+				client_name: this._clientName,
+				grant_types: this._grantTypes,
+				response_types: ["code"],
+				token_endpoint_auth_method: this._tokenEndpointAuthMethod,
+			}
+			return
+		}
+
 		if (!this._authServerMeta?.registration_endpoint) return // DCR not supported
 
 		const response = await fetch(this._authServerMeta.registration_endpoint as string, {
@@ -185,7 +200,12 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 
 	async saveTokens(tokens: OAuthTokens): Promise<void> {
 		const expires_at = tokens.expires_in ? Date.now() + tokens.expires_in * 1000 : Date.now() + 3600 * 1000 // default 1 hour when server omits expires_in
-		await this._secretStorage.saveOAuthData(this._serverUrl, { tokens, expires_at })
+		await this._secretStorage.saveOAuthData(this._serverUrl, {
+			tokens,
+			expires_at,
+			client_id: this._clientInfo?.client_id,
+			redirect_uri: this.redirectUrl,
+		})
 	}
 
 	async redirectToAuthorization(authorizationUrl: URL): Promise<void> {
