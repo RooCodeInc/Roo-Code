@@ -96,18 +96,57 @@ export function startCallbackServer(
 						// Send HTML response
 						res.writeHead(200, { "Content-Type": "text/html" })
 						res.end(`
-              <!DOCTYPE html>
-              <html>
-                <head>
-                  <title>OAuth Callback</title>
-                </head>
-                <body>
-                  <h1>OAuth Authentication ${error ? "Failed" : "Successful"}</h1>
-                  <p>
-                    ${error ? `Error: ${error}${errorDescription ? ` - ${errorDescription}` : ""}` : "You can close this window."}
-                  </p>
-                </body>
-              </html>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>OAuth Callback - Roo Code</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 400px; margin: 50px auto; text-align: center; padding: 20px; }
+      h1 { color: #28a745; }
+      .error h1 { color: #dc3545; }
+      .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #28a745; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      button { background: #007acc; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 16px; }
+      .countdown { font-size: 18px; margin: 10px 0; }
+    </style>
+  </head>
+  <body>
+    <h1 id="title">${error ? "Failed" : "Success!"}</h1>
+    <div class="spinner" id="spinner" style="${error ? "display:none;" : ""}"></div>
+    <p id="message">
+      ${
+			error
+				? "Authentication failed. Please check the MCP server logs."
+				: "MCP server authenticated successfully. You can now close this browser tab."
+		}
+    </p>
+    <div id="countdown" class="countdown" style="${error ? "display:none;" : ""}">The server connection is complete.</div>
+    <script>
+      const isError = ${error ? "true" : "false"};
+      if (!isError) {
+        let count = 5;
+        const countEl = document.getElementById('count');
+        const countdownEl = document.getElementById('countdown');
+        if (countdownEl) {
+          countdownEl.innerHTML = 'This tab will attempt to close in <span id="count">5</span>s...';
+        }
+        const timer = setInterval(() => {
+          count--;
+          const currentCountEl = document.getElementById('count');
+          if (currentCountEl) currentCountEl.textContent = count;
+          if (count <= 0) {
+            clearInterval(timer);
+            window.close();
+            if (countdownEl) {
+               countdownEl.textContent = 'If the tab did not close, you can safely close it manually.';
+            }
+          }
+        }, 1000);
+      }
+    </script>
+  </body>
+</html>
             `)
 
 						resolveResult({
@@ -117,8 +156,10 @@ export function startCallbackServer(
 							state: state || undefined,
 						})
 
-						// Close server after a short delay to allow response to be sent
-						setTimeout(() => server.close(), 1000)
+						// Close server immediately after response drains
+						res.on("finish", () => {
+							server.close()
+						})
 					} else {
 						res.writeHead(404)
 						res.end("Not found")
