@@ -10,7 +10,6 @@ describe("OpenAiCodexHandler.getModel", () => {
 		"gpt-5-codex",
 		"gpt-5-codex-mini",
 		"gpt-5.3-codex-spark",
-		"gpt-5.4-codex",
 	])("should return specified model when a valid model id is provided: %s", (apiModelId) => {
 		const handler = new OpenAiCodexHandler({ apiModelId })
 		const model = handler.getModel()
@@ -25,7 +24,7 @@ describe("OpenAiCodexHandler.getModel", () => {
 		const handler = new OpenAiCodexHandler({ apiModelId: "not-a-real-model" })
 		const model = handler.getModel()
 
-		expect(model.id).toBe("gpt-5.4-codex")
+		expect(model.id).toBe("gpt-5.4")
 		expect(model.info).toBeDefined()
 	})
 
@@ -38,17 +37,6 @@ describe("OpenAiCodexHandler.getModel", () => {
 		expect(model.info.supportsReasoningEffort).toContain("none")
 		expect(model.info.supportsReasoningEffort).toContain("xhigh")
 		expect(model.info.reasoningEffort).toBe("none")
-	})
-
-	it("should use GPT-5.4 Codex with 1M token context window", () => {
-		const handler = new OpenAiCodexHandler({ apiModelId: "gpt-5.4-codex" })
-		const model = handler.getModel()
-
-		expect(model.id).toBe("gpt-5.4-codex")
-		expect(model.info.contextWindow).toBe(1_050_000)
-		expect(model.info.reasoningEffort).toBe("medium")
-		expect(model.info.inputPrice).toBe(0)
-		expect(model.info.outputPrice).toBe(0)
 	})
 
 	it("should use Spark-specific limits and capabilities", () => {
