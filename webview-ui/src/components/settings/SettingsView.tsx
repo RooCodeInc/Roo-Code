@@ -175,6 +175,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		soundVolume,
 		telemetrySetting,
 		terminalOutputPreviewSize,
+		terminalOutputFilterEnabled,
 		terminalShellIntegrationTimeout,
 		terminalShellIntegrationDisabled, // Added from upstream
 		terminalCommandDelay,
@@ -397,6 +398,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					terminalZshP10k,
 					terminalZdotdir,
 					terminalOutputPreviewSize: terminalOutputPreviewSize ?? "medium",
+					terminalOutputFilterEnabled: terminalOutputFilterEnabled !== false,
 					mcpEnabled,
 					maxOpenTabsContext: Math.min(Math.max(0, maxOpenTabsContext ?? 20), 500),
 					maxWorkspaceFiles: Math.min(Math.max(0, maxWorkspaceFiles ?? 200), 500),
@@ -854,6 +856,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						{renderTab === "terminal" && (
 							<TerminalSettings
 								terminalOutputPreviewSize={terminalOutputPreviewSize}
+								terminalOutputFilterEnabled={terminalOutputFilterEnabled}
 								terminalShellIntegrationTimeout={terminalShellIntegrationTimeout}
 								terminalShellIntegrationDisabled={terminalShellIntegrationDisabled}
 								terminalCommandDelay={terminalCommandDelay}

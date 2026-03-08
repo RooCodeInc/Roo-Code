@@ -168,6 +168,14 @@ export const globalSettingsSchema = z.object({
 	maxTotalImageSize: z.number().optional(),
 
 	terminalOutputPreviewSize: z.enum(["small", "medium", "large"]).optional(),
+	/**
+	 * Whether to enable command-aware output filtering for terminal output.
+	 * When enabled, command output is semantically filtered before reaching the LLM,
+	 * reducing token usage by stripping noise (passing tests, progress bars, verbose logs)
+	 * while preserving actionable information (errors, failures, summaries).
+	 * @default true
+	 */
+	terminalOutputFilterEnabled: z.boolean().optional(),
 	terminalShellIntegrationTimeout: z.number().optional(),
 	terminalShellIntegrationDisabled: z.boolean().optional(),
 	terminalCommandDelay: z.number().optional(),
