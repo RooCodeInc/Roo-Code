@@ -104,14 +104,26 @@ export class RooIgnoreController {
 				realPath = absolutePath
 			}
 
-			// Convert real path to relative for .rooignore checking
-			const relativePath = path.relative(this.cwd, realPath).toPosix()
+			// If realpath resolved outside cwd (e.g. symlinks, submodules),
+			// fall back to the original absolute path for relative computation.
+			// This prevents path.relative from producing "../" paths that the
+			// ignore library cannot match against .rooignore patterns.
+			const relativeFromReal = path.relative(this.cwd, realPath)
+			const effectivePath = relativeFromReal.startsWith("..") ? absolutePath : realPath
+
+			// Convert to relative for .rooignore checking
+			const relativePath = path.relative(this.cwd, effectivePath).toPosix()
+
+			// If the path is still outside cwd after fallback, deny access (fail closed)
+			if (relativePath.startsWith("..")) {
+				return false
+			}
 
 			// Check if the real path is ignored
 			return !this.ignoreInstance.ignores(relativePath)
 		} catch (error) {
-			// Allow access to files outside cwd or on errors (backward compatibility)
-			return true
+			// Fail closed: deny access on unexpected errors for security
+			return false
 		}
 	}
 
