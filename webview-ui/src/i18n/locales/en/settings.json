@@ -940,7 +940,15 @@
 	},
 	"thinkingBudget": {
 		"maxTokens": "Max Tokens",
-		"maxThinkingTokens": "Max Thinking Tokens"
+		"maxThinkingTokens": "Max Thinking Tokens",
+		"useAdaptiveThinking": "Use Adaptive Thinking",
+		"adaptiveThinkingDescription": "Let Claude dynamically determine when and how much to think based on request complexity.",
+		"adaptiveEffort": {
+			"low": "Low",
+			"medium": "Medium",
+			"high": "High (Default)",
+			"max": "Max (Opus 4.6 only)"
+		}
 	},
 	"validation": {
 		"apiKey": "You must provide a valid API key.",

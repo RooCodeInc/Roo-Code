@@ -877,7 +877,15 @@
 	},
 	"thinkingBudget": {
 		"maxTokens": "최대 tokens",
-		"maxThinkingTokens": "최대 사고 tokens"
+		"maxThinkingTokens": "최대 사고 tokens",
+		"useAdaptiveThinking": "적응형 사고 사용",
+		"adaptiveThinkingDescription": "Claude가 요청 복잡성에 따라 언제, 얼마나 생각할지를 동적으로 결정하도록 합니다.",
+		"adaptiveEffort": {
+			"low": "낮음",
+			"medium": "중간",
+			"high": "높음 (기본값)",
+			"max": "최대 (Opus 4.6만 해당)"
+		}
 	},
 	"validation": {
 		"apiKey": "유효한 API 키를 입력해야 합니다.",

@@ -19,6 +19,8 @@ export type RooReasoningParams = {
 
 export type AnthropicReasoningParams = BetaThinkingConfigParam
 
+export type AnthropicOutputConfig = { effort: "low" | "medium" | "high" | "max" }
+
 export type OpenAiReasoningParams = { reasoning_effort: OpenAI.Chat.ChatCompletionCreateParams["reasoning_effort"] }
 
 // Valid Gemini thinking levels for effort-based reasoning
@@ -108,8 +110,41 @@ export const getAnthropicReasoning = ({
 	model,
 	reasoningBudget,
 	settings,
-}: GetModelReasoningOptions): AnthropicReasoningParams | undefined =>
-	shouldUseReasoningBudget({ model, settings }) ? { type: "enabled", budget_tokens: reasoningBudget! } : undefined
+}: GetModelReasoningOptions): AnthropicReasoningParams | undefined => {
+	// Adaptive thinking: Claude determines dynamically when and how much to use extended thinking.
+	// Supported on claude-sonnet-4-6 and claude-opus-4-6 only.
+	if (settings?.useAdaptiveThinking && model.supportsAdaptiveThinking) {
+		return { type: "adaptive" as any } as any
+	}
+
+	// Manual mode: fixed budget_tokens
+	return shouldUseReasoningBudget({ model, settings })
+		? { type: "enabled", budget_tokens: reasoningBudget! }
+		: undefined
+}
+
+/**
+ * Returns the `output_config` top-level parameter for Anthropic API calls when adaptive thinking
+ * is enabled with an effort level. This is a SEPARATE top-level parameter from `thinking`.
+ * See: https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking#adaptive-thinking
+ */
+export const getAnthropicOutputConfig = ({
+	model,
+	settings,
+}: Pick<GetModelReasoningOptions, "model" | "settings">): AnthropicOutputConfig | undefined => {
+	if (!settings?.useAdaptiveThinking || !model.supportsAdaptiveThinking) {
+		return undefined
+	}
+	const effort = settings.adaptiveThinkingEffort
+	if (!effort) {
+		return undefined
+	}
+	// "max" effort is only supported on claude-opus-4-6; fall back to "high" otherwise
+	if (effort === "max" && !model.supportsAdaptiveThinkingMaxEffort) {
+		return { effort: "high" }
+	}
+	return { effort }
+}
 
 export const getOpenAiReasoning = ({
 	model,

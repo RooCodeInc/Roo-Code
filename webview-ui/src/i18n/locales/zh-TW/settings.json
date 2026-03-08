@@ -887,7 +887,15 @@
 	},
 	"thinkingBudget": {
 		"maxTokens": "最大 Token 數",
-		"maxThinkingTokens": "最大思考 Token 數"
+		"maxThinkingTokens": "最大思考 Token 數",
+		"useAdaptiveThinking": "使用自適應思考",
+		"adaptiveThinkingDescription": "讓 Claude 根據請求複雜性動態決定何時以及思考多少。",
+		"adaptiveEffort": {
+			"low": "低",
+			"medium": "中",
+			"high": "高（預設）",
+			"max": "最大（僅 Opus 4.6）"
+		}
 	},
 	"validation": {
 		"apiKey": "請提供有效的 API 金鑰。",
