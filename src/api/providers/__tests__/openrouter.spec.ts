@@ -698,4 +698,77 @@ describe("OpenRouterHandler", () => {
 			)
 		})
 	})
+
+	describe("buildProviderOptions", () => {
+		it("returns undefined when no specific provider and no quantization filter", () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "anthropic/claude-sonnet-4",
+			})
+			const result = (handler as any).buildProviderOptions()
+			expect(result).toBeUndefined()
+		})
+
+		it("returns provider routing when specific provider is set", () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "anthropic/claude-sonnet-4",
+				openRouterSpecificProvider: "Anthropic",
+			})
+			const result = (handler as any).buildProviderOptions()
+			expect(result).toEqual({
+				order: ["Anthropic"],
+				only: ["Anthropic"],
+				allow_fallbacks: false,
+			})
+		})
+
+		it("returns quantizations when excludeLowQuantization is enabled", () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "anthropic/claude-sonnet-4",
+				openRouterExcludeLowQuantization: true,
+			})
+			const result = (handler as any).buildProviderOptions()
+			expect(result).toEqual({
+				quantizations: ["fp16", "bf16", "fp8", "int8"],
+			})
+		})
+
+		it("combines specific provider and quantization filter", () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "anthropic/claude-sonnet-4",
+				openRouterSpecificProvider: "Anthropic",
+				openRouterExcludeLowQuantization: true,
+			})
+			const result = (handler as any).buildProviderOptions()
+			expect(result).toEqual({
+				order: ["Anthropic"],
+				only: ["Anthropic"],
+				allow_fallbacks: false,
+				quantizations: ["fp16", "bf16", "fp8", "int8"],
+			})
+		})
+
+		it("returns undefined when specific provider is the default", () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "anthropic/claude-sonnet-4",
+				openRouterSpecificProvider: "[default]",
+			})
+			const result = (handler as any).buildProviderOptions()
+			expect(result).toBeUndefined()
+		})
+
+		it("returns undefined when excludeLowQuantization is false", () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "anthropic/claude-sonnet-4",
+				openRouterExcludeLowQuantization: false,
+			})
+			const result = (handler as any).buildProviderOptions()
+			expect(result).toBeUndefined()
+		})
+	})
 })
