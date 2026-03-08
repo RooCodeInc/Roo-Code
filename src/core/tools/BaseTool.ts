@@ -142,10 +142,15 @@ export abstract class BaseTool<TName extends ToolName> {
 				})()
 				if (paramsText.includes("<") && paramsText.includes(">")) {
 					throw new Error(
-						"XML tool calls are no longer supported. Use native tool calling (nativeArgs) instead.",
+						"XML tool calls are no longer supported. " +
+							"Do not embed tool invocations as XML tags in your text response. " +
+							"Use the platform's native tool calling mechanism (nativeArgs) instead.",
 					)
 				}
-				throw new Error("Tool call is missing native arguments (nativeArgs).")
+				throw new Error(
+					"Tool call is missing native arguments (nativeArgs). " +
+						"Use the platform's native tool calling mechanism to invoke tools.",
+				)
 			}
 		} catch (error) {
 			console.error(`Error parsing parameters:`, error)
