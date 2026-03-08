@@ -199,10 +199,16 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					}
 				}
 
-				if ("reasoning_content" in delta && delta.reasoning_content) {
+				// Handle reasoning/thinking tokens from various providers:
+				// - reasoning_content: DeepSeek, OpenAI (standard)
+				// - reasoning: Ollama /v1/ (non-standard, used by Kimi K2.5, etc.)
+				const reasoningText =
+					("reasoning_content" in delta && (delta as any).reasoning_content) ||
+					("reasoning" in delta && (delta as any).reasoning)
+				if (reasoningText) {
 					yield {
 						type: "reasoning",
-						text: (delta.reasoning_content as string | undefined) || "",
+						text: String(reasoningText),
 					}
 				}
 
@@ -257,6 +263,18 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 							arguments: toolCall.function.arguments,
 						}
 					}
+				}
+			}
+
+			// Yield reasoning content from non-streaming responses
+			// Thinking models (Kimi K2.5, DeepSeek-R1) may return reasoning
+			// in the message alongside (or instead of) regular content
+			const messageAny = message as any
+			const nonStreamReasoning = messageAny?.reasoning_content || messageAny?.reasoning
+			if (nonStreamReasoning) {
+				yield {
+					type: "reasoning",
+					text: String(nonStreamReasoning),
 				}
 			}
 
