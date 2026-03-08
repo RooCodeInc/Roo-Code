@@ -28,6 +28,10 @@ import {
 
 export const DEFAULT_CONSECUTIVE_MISTAKE_LIMIT = 3
 
+export const DEFAULT_MAX_FOLLOW_UP_SUGGESTIONS = 4
+export const MIN_MAX_FOLLOW_UP_SUGGESTIONS = 1
+export const MAX_MAX_FOLLOW_UP_SUGGESTIONS = 10
+
 /**
  * DynamicProvider
  *
@@ -178,6 +182,7 @@ const baseProviderSettingsSchema = z.object({
 	modelTemperature: z.number().nullish(),
 	rateLimitSeconds: z.number().optional(),
 	consecutiveMistakeLimit: z.number().min(0).optional(),
+	maxFollowUpSuggestions: z.number().min(1).max(10).optional(),
 
 	// Model reasoning.
 	enableReasoningEffort: z.boolean().optional(),

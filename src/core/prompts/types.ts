@@ -9,4 +9,6 @@ export interface SystemPromptSettings {
 	newTaskRequireTodos: boolean
 	/** When true, model should hide vendor/company identity in responses */
 	isStealthModel?: boolean
+	/** Maximum number of follow-up suggestions the model can provide (default: 4, range: 1-10) */
+	maxFollowUpSuggestions?: number
 }
