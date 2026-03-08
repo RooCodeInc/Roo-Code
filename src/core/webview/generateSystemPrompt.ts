@@ -60,6 +60,7 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 				.getConfiguration(Package.name)
 				.get<boolean>("newTaskRequireTodos", false),
 			isStealthModel: modelInfo?.isStealthModel,
+			maxFollowUpSuggestions: apiConfiguration?.maxFollowUpSuggestions,
 		},
 		undefined, // todoList
 		undefined, // modelId
