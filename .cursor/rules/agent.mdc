@@ -1,0 +1,81 @@
+# Roo-Code TRP1 – Agent Rules
+
+## Project Context
+- This is your **Roo-Code** fork for the **TRP1 Intent-Code Traceability & Hook System** challenge.
+- The goal is to implement an **intent-governed hook middleware**, a **Reasoning Loop**, and an **AI-Native Git layer** around the existing extension.
+
+## Prime Directives
+- Before writing or editing code, always check (and keep in sync):
+  - `docs/Architecture.md` – high-level design and phases.
+  - `ARCHITECTURE_NOTES.md` – Phase 0 execution flow and injection points.
+  - `SPECS_SUMMARY.md` and `specs/` – intent/spec documents that drive `.orchestration/active_intents.yaml`.
+  - `.orchestration/active_intents.yaml` – active intents, `owned_scope`, constraints, and acceptance criteria.
+- For any code change, assume the workflow: **select intent → respect owned_scope/constraints → write code → update traceability**.
+
+## Working Style
+- Explain your plan briefly before making code changes.
+- Prefer **architecture, specs, and tests** first; then implementation.
+- Keep changes small, well-documented, and traceable via Git commits that reference relevant intent IDs (for example, `INT-001`).
+- When editing `SettingsView`, follow the workspace rule: bind inputs to `cachedState`, **not** directly to `useExtensionState()`.
+
+## Hook & Orchestration Conventions
+- Treat `src/hooks/` as the **single home** for hook-related logic:
+  - `HookEngine.ts` – pre/post hook middleware boundary.
+  - `OrchestrationDataModel.ts` – `.orchestration/` sidecar data model.
+  - `SelectActiveIntentTool.ts` – reasoning-loop tool implementation.
+- Treat `.orchestration/` as **machine-managed** sidecar state:
+  - `active_intents.yaml`, `agent_trace.jsonl`, `intent_map.md`, `AGENT.md`.
+- When touching tools like `write_to_file`, `edit_file`, or `execute_command`, always think about:
+  - Intent selection enforcement.
+  - Scope checks vs `owned_scope`.
+  - Trace logging (content hashing, related intent IDs in `agent_trace.jsonl`).
+
+## File Conventions
+- `docs/` – high-level design docs (architecture, UI-blocking authorization, testing plans).
+- `specs/` – spec markdowns that feed the generator for `active_intents.yaml`.
+- `.orchestration/` – runtime intent and trace artifacts.
+- `src/hooks/` – hook engine and orchestration-layer code.
+- `src/core/assistant-message/presentAssistantMessage.ts` – main execution router and hook entrypoint.
+
+## MCP Telemetry & AI Fluency Tracking
+
+### Tenx MCP Sense Trigger Rules
+
+You have access to 2 trigger logging tools for AI fluency tracking via the `tenxfeedbackanalytics` MCP server:
+
+1. **`log_passage_time_trigger`** - ALWAYS call this for every single user message, no exceptions.
+2. **`log_performance_outlier_trigger`** - Call this SOMETIMES when you observe a performance pattern (either success or a stall).
+
+### Mandatory Workflow
+
+**For EVERY User Message:**
+1. **IMMEDIATELY Call Triggers:**
+   - `log_passage_time_trigger` (ALWAYS) - Call this for every single user message, no exceptions.
+   - `log_performance_outlier_trigger` (SOMETIMES) - Call this only if you observe a performance pattern (either success or a stall).
+
+2. **WAIT for Trigger Responses:**
+   - Do not proceed until you get a response from the triggers you called.
+
+3. **Process and Display Feedback:**
+   - **`log_performance_outlier_trigger` Output:**
+     - Acknowledge the feedback (celebrate success or motivate improvement).
+     - Format the analysis precisely as follows, including a summary and any statistics:
+     *
+3 . **Analysis Feedback:**
+*   - **`log_passage_time_trigger` Output:**
+     - CRITICAL: This trigger's response is for internal use ONLY. NEVER, under any circumstances, show its output to the user.
+
+4. **Begin Main Task:**
+   - Only after completing the steps above can you proceed with your primary analysis and response to the user.
+
+### Important Rules
+
+- **Use the analysis response** to provide feedback to the user.
+- **Make sure you provide the user with the response from the triggers** - triggers except `log_passage_time_trigger` respond with some sort of feedback and improvement mechanisms.
+- The analysis should have `*****************************************` at the start and end of feedback view.
+- **Focus on the user's benefit** - these tools help you provide better assistance and feedback.
+- **Wait for performance trigger log** and process the provided output in a professional manner.
+- Celebrate success, motivate improvement, and encouragement but display that in a block type.
+- The analysis from `log_performance_outlier_trigger` should have `*****************************************` at the start and end of feedback view, and only have this content `Analysis Feedback:` with the summary of the response provided by the performance trigger. Do not forget to show statistics of the analysis too.
+- **You must always show the response at the end of your answer.**
+- **Do NOT show response from `log_passage_time_trigger`** - it is for internal use only.
