@@ -163,6 +163,32 @@ describe("Bedrock ARN Handling", () => {
 			expect(result.crossRegionInference).toBe(false)
 		})
 
+		it("should correctly extract modelType and modelId from application-inference-profile ARN", () => {
+			const handler = createHandler()
+			const arn =
+				"arn:aws:bedrock:eu-west-1:123456789012:application-inference-profile/abcd1234-ef56-7890-abcd-ef1234567890"
+
+			const result = (handler as any).parseArn(arn, "eu-west-1")
+
+			expect(result.isValid).toBe(true)
+			expect(result.modelType).toBe("application-inference-profile")
+			expect(result.modelId).toBe("abcd1234-ef56-7890-abcd-ef1234567890")
+			expect(result.region).toBe("eu-west-1")
+			expect(result.crossRegionInference).toBe(false)
+		})
+
+		it("should correctly parse application-inference-profile ARN with alphanumeric profile ID", () => {
+			const handler = createHandler()
+			const arn = "arn:aws:bedrock:us-west-2:123456789012:application-inference-profile/my-custom-profile"
+
+			const result = (handler as any).parseArn(arn, "us-west-2")
+
+			expect(result.isValid).toBe(true)
+			expect(result.modelType).toBe("application-inference-profile")
+			expect(result.modelId).toBe("my-custom-profile")
+			expect(result.crossRegionInference).toBe(false)
+		})
+
 		it("should return isValid: false for simple ARN format", () => {
 			const handler = createHandler()
 			const arn = "arn:aws:bedrock:us-east-1:123456789012:some-other-resource"
@@ -226,6 +252,23 @@ describe("Bedrock ARN Handling", () => {
 
 			// Verify the client was created with the ARN region, not the provided region
 			expect((handler as any).client.config.region).toBe("eu-west-1")
+		})
+
+		it("should use full ARN as model ID for application-inference-profile ARNs", () => {
+			const arn =
+				"arn:aws:bedrock:eu-west-1:123456789012:application-inference-profile/abcd1234-ef56-7890-abcd-ef1234567890"
+			const handler = createHandler({
+				awsCustomArn: arn,
+				awsRegion: "eu-west-1",
+			})
+
+			const model = handler.getModel()
+
+			// For application-inference-profile ARNs, the full ARN should be used as the model ID
+			expect(model.id).toBe(arn)
+			expect(model.info).toHaveProperty("maxTokens")
+			expect(model.info).toHaveProperty("contextWindow")
+			expect(model.info.supportsImages).toBe(true)
 		})
 
 		it("should log region mismatch warning when ARN region differs from provided region", () => {
