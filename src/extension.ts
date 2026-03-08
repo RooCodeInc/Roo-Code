@@ -194,6 +194,28 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Initialize the provider *before* the Roo Code Cloud service.
 	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, mdmService)
 
+	// Clear stale intent state on startup so governance checks don't pass due to
+	// an old activeIntentId from a previous session/workspace state.
+	try {
+		const state = await provider.getState()
+		const activeIntentId = String((state as any)?.activeIntentId ?? "").trim()
+		const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
+
+		if (activeIntentId && workspaceRoot) {
+			const { loadIntentContext } = await import("./core/intent/IntentContextLoader")
+			const context = await loadIntentContext(workspaceRoot, activeIntentId).catch(() => null)
+
+			if (!context) {
+				await provider.contextProxy.updateGlobalState("activeIntentId" as any, undefined as any)
+				outputChannel.appendLine(`[Governance] Cleared stale activeIntentId: ${activeIntentId}`)
+			}
+		}
+	} catch (error) {
+		outputChannel.appendLine(
+			`[Governance] Failed stale activeIntentId check: ${error instanceof Error ? error.message : String(error)}`,
+		)
+	}
+
 	// Initialize Roo Code Cloud service.
 	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebviewWithoutClineMessages()
 

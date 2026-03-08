@@ -123,6 +123,10 @@ describe("writeToFileTool", () => {
 		mockCline.cwd = "/"
 		mockCline.consecutiveMistakeCount = 0
 		mockCline.didEditFile = false
+		mockCline.didToolFailInCurrentTurn = false
+		mockCline.toolUsage = {
+			select_active_intent: { attempts: 1, failures: 0 },
+		}
 		mockCline.diffStrategy = undefined
 		mockCline.providerRef = {
 			deref: vi.fn().mockReturnValue({
@@ -141,6 +145,7 @@ describe("writeToFileTool", () => {
 			originalContent: "",
 			open: vi.fn().mockResolvedValue(undefined),
 			update: vi.fn().mockResolvedValue(undefined),
+			saveDirectly: vi.fn().mockResolvedValue(undefined),
 			reset: vi.fn().mockResolvedValue(undefined),
 			revertChanges: vi.fn().mockResolvedValue(undefined),
 			saveChanges: vi.fn().mockResolvedValue({
@@ -236,6 +241,22 @@ describe("writeToFileTool", () => {
 	}
 
 	describe("access control", () => {
+		it("blocks write when no active intent has been selected in this session", async () => {
+			mockCline.toolUsage = {}
+
+			const result = await executeWriteFileTool({})
+
+			expect(result).toBe(
+				"Error: GOVERNANCE ERROR: You must cite a valid active Intent ID before modifying files.",
+			)
+			expect(mockCline.recordToolError).toHaveBeenCalledWith(
+				"write_to_file",
+				"GOVERNANCE ERROR: You must cite a valid active Intent ID before modifying files.",
+			)
+			expect(mockCline.diffViewProvider.saveChanges).not.toHaveBeenCalled()
+			expect(mockCline.diffViewProvider.saveDirectly).not.toHaveBeenCalled()
+		})
+
 		it("validates and allows access when rooIgnoreController permits", async () => {
 			await executeWriteFileTool({}, { accessAllowed: true })
 
