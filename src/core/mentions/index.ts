@@ -19,6 +19,7 @@ import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { getCommand, type Command } from "../../services/command/commands"
 import { buildSkillResult, resolveSkillContentForMode, type SkillLookup } from "../../services/skills/skillInvocation"
 import type { SkillContent } from "../../shared/skills"
+import { fetchUrlContent } from "./fetchUrlContent"
 
 export async function openMention(cwd: string, mention?: string): Promise<void> {
 	if (!mention) {
@@ -163,7 +164,7 @@ export async function parseMentions(
 	parsedText = parsedText.replace(mentionRegexGlobal, (match, mention) => {
 		mentions.add(mention)
 		if (mention.startsWith("http")) {
-			return `'${mention}'`
+			return `'${mention}' (see below for fetched content)`
 		} else if (mention.startsWith("/")) {
 			// Clean path reference - no "see below" since we format like tool results
 			const mentionPath = mention.slice(1)
@@ -220,6 +221,21 @@ export async function parseMentions(
 				parsedText += `\n\n<git_commit hash="${mention}">\n${commitInfo}\n</git_commit>`
 			} catch (error) {
 				parsedText += `\n\n<git_commit hash="${mention}">\nError fetching commit info: ${error.message}\n</git_commit>`
+			}
+		} else if (mention.startsWith("http")) {
+			try {
+				const result = await fetchUrlContent(mention)
+				const truncationNote = result.truncated ? "\n[Content truncated due to length]" : ""
+				contentBlocks.push({
+					type: "url",
+					content: `[url_content for '${mention}']\n${result.content}${truncationNote}`,
+				})
+			} catch (error) {
+				const errorMsg = error instanceof Error ? error.message : String(error)
+				contentBlocks.push({
+					type: "url",
+					content: `[url_content for '${mention}']\nError fetching URL content: ${errorMsg}`,
+				})
 			}
 		} else if (mention === "terminal") {
 			try {
