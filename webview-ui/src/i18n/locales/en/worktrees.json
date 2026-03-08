@@ -43,6 +43,8 @@
 	"creating": "Creating...",
 	"copyingFiles": "Copying files...",
 	"copyingProgress": "{{item}} — {{copied}} copied",
+	"useHardLinks": "Use hard links for included files",
+	"useHardLinksTooltip": "Creates hard links instead of copies, saving disk space and speeding up worktree creation. Disable if source and target are on different filesystems.",
 	"cancel": "Cancel",
 
 	"deleteWorktree": "Delete Worktree",

@@ -689,6 +689,7 @@ export interface WebviewMessage {
 	worktreeCreateNewBranch?: boolean
 	worktreeForce?: boolean
 	worktreeNewWindow?: boolean
+	worktreeUseHardLinks?: boolean
 	worktreeIncludeContent?: string
 }
 

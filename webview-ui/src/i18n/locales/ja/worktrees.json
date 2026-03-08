@@ -43,6 +43,8 @@
 	"creating": "作成中...",
 	"copyingFiles": "ファイルをコピー中...",
 	"copyingProgress": "{{item}} — {{copied}} コピー済み",
+	"useHardLinks": "インクルードファイルにハードリンクを使用する",
+	"useHardLinksTooltip": "コピーの代わりにハードリンクを作成し、ディスク容量を節約してworktreeの作成を高速化します。ソースとターゲットが異なるファイルシステムにある場合は無効にしてください。",
 	"cancel": "キャンセル",
 
 	"deleteWorktree": "Worktree を削除",

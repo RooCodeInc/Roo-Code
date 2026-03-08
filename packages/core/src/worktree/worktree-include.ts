@@ -112,12 +112,14 @@ export class WorktreeIncludeService {
 	 * @param sourceDir - The source directory containing the files to copy
 	 * @param targetDir - The target directory where files will be copied
 	 * @param onProgress - Optional callback to report copy progress (size-based)
+	 * @param useHardLinks - If true, use hard links instead of copies when possible (defaults to false)
 	 * @returns Array of copied file/directory paths
 	 */
 	async copyWorktreeIncludeFiles(
 		sourceDir: string,
 		targetDir: string,
 		onProgress?: CopyProgressCallback,
+		useHardLinks?: boolean,
 	): Promise<string[]> {
 		const worktreeIncludePath = path.join(sourceDir, ".worktreeinclude")
 		const gitignorePath = path.join(sourceDir, ".gitignore")
@@ -180,21 +182,37 @@ export class WorktreeIncludeService {
 				const stats = await fs.stat(sourcePath)
 
 				if (stats.isDirectory()) {
-					// Copy directory with progress tracking
-					bytesCopied = await this.copyDirectoryWithProgress(
-						sourcePath,
-						targetPath,
-						item,
-						bytesCopied,
-						onProgress,
-					)
+					if (useHardLinks) {
+						// Recursively hard-link directory contents
+						bytesCopied = await this.hardLinkDirectoryWithProgress(
+							sourcePath,
+							targetPath,
+							item,
+							bytesCopied,
+							onProgress,
+						)
+					} else {
+						// Copy directory with progress tracking
+						bytesCopied = await this.copyDirectoryWithProgress(
+							sourcePath,
+							targetPath,
+							item,
+							bytesCopied,
+							onProgress,
+						)
+					}
 				} else {
 					// Report progress before copying
 					onProgress?.({ bytesCopied, itemName: item })
 
 					// Ensure parent directory exists
 					await fs.mkdir(path.dirname(targetPath), { recursive: true })
-					await fs.copyFile(sourcePath, targetPath)
+
+					if (useHardLinks) {
+						await this.hardLinkWithFallback(sourcePath, targetPath)
+					} else {
+						await fs.copyFile(sourcePath, targetPath)
+					}
 
 					// Update bytes copied
 					bytesCopied += this.getSizeOnDisk(stats)
@@ -370,6 +388,90 @@ export class WorktreeIncludeService {
 		// Get the final size of the copied directory
 		const finalSize = await this.getPathSize(target)
 		return bytesCopiedBefore + finalSize
+	}
+
+	/**
+	 * Create a hard link for a single file, falling back to copy if hard linking fails
+	 * (e.g., cross-device link, unsupported filesystem, or permissions issue).
+	 */
+	private async hardLinkWithFallback(source: string, target: string): Promise<void> {
+		try {
+			await fs.link(source, target)
+		} catch {
+			// Fallback to regular copy if hard link fails
+			await fs.copyFile(source, target)
+		}
+	}
+
+	/**
+	 * Recursively hard-link all files in a directory from source to target.
+	 * Creates the directory structure with fs.mkdir and hard-links each file.
+	 * Falls back to copyDirectoryWithProgress if the initial hard-link attempt fails.
+	 * Returns the updated bytesCopied count.
+	 */
+	private async hardLinkDirectoryWithProgress(
+		source: string,
+		target: string,
+		itemName: string,
+		bytesCopiedBefore: number,
+		onProgress?: CopyProgressCallback,
+	): Promise<number> {
+		try {
+			const bytesCopied = await this.hardLinkDirectoryRecursive(
+				source,
+				target,
+				itemName,
+				bytesCopiedBefore,
+				onProgress,
+			)
+			return bytesCopied
+		} catch {
+			// If recursive hard-linking fails entirely, fall back to native copy
+			return this.copyDirectoryWithProgress(source, target, itemName, bytesCopiedBefore, onProgress)
+		}
+	}
+
+	/**
+	 * Recursively walk a directory, creating directories and hard-linking files.
+	 * Reports progress as files are linked.
+	 */
+	private async hardLinkDirectoryRecursive(
+		source: string,
+		target: string,
+		itemName: string,
+		bytesCopiedBefore: number,
+		onProgress?: CopyProgressCallback,
+	): Promise<number> {
+		await fs.mkdir(target, { recursive: true })
+
+		const entries = await fs.readdir(source, { withFileTypes: true })
+		let bytesCopied = bytesCopiedBefore
+
+		for (const entry of entries) {
+			const sourcePath = path.join(source, entry.name)
+			const targetPath = path.join(target, entry.name)
+
+			if (entry.isDirectory()) {
+				bytesCopied = await this.hardLinkDirectoryRecursive(
+					sourcePath,
+					targetPath,
+					itemName,
+					bytesCopied,
+					onProgress,
+				)
+			} else if (entry.isFile()) {
+				await this.hardLinkWithFallback(sourcePath, targetPath)
+				const stats = await fs.stat(sourcePath)
+				bytesCopied += this.getSizeOnDisk(stats)
+
+				onProgress?.({
+					bytesCopied,
+					itemName,
+				})
+			}
+		}
+
+		return bytesCopied
 	}
 
 	/**

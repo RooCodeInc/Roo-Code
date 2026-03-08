@@ -43,6 +43,8 @@
 	"creating": "S'està creant...",
 	"copyingFiles": "S'estan copiant fitxers...",
 	"copyingProgress": "{{item}} — {{copied}} copiat",
+	"useHardLinks": "Utilitza enllaços durs per als fitxers inclosos",
+	"useHardLinksTooltip": "Crea enllaços durs en lloc de còpies, estalviant espai de disc i accelerant la creació del worktree. Desactiva-ho si l'origen i el destí són en sistemes de fitxers diferents.",
 	"cancel": "Cancel·la",
 
 	"deleteWorktree": "Suprimeix worktree",

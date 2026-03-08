@@ -43,6 +43,8 @@
 	"creating": "Bezig met aanmaken...",
 	"copyingFiles": "Bestanden kopiëren...",
 	"copyingProgress": "{{item}} — {{copied}} gekopieerd",
+	"useHardLinks": "Gebruik harde links voor meegeleverde bestanden",
+	"useHardLinksTooltip": "Maakt harde links aan in plaats van kopieën, bespaart schijfruimte en versnelt het aanmaken van de worktree. Schakel uit als bron en doel op verschillende bestandssystemen staan.",
 	"cancel": "Annuleren",
 
 	"deleteWorktree": "Worktree verwijderen",
