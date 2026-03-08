@@ -1,6 +1,15 @@
 import { t } from "i18next"
 import { FunctionCallingConfigMode } from "@google/genai"
 
+// Mock TelemetryService - must come before other imports
+vi.mock("@roo-code/telemetry", () => ({
+	TelemetryService: {
+		instance: {
+			captureException: vi.fn(),
+		},
+	},
+}))
+
 import { GeminiHandler } from "../gemini"
 import type { ApiHandlerOptions } from "../../../shared/api"
 
@@ -293,6 +302,173 @@ describe("GeminiHandler backend support", () => {
 			const config = stub.mock.calls[0][0].config
 			// No toolConfig should be set when neither allowedFunctionNames nor tool_choice is provided
 			expect(config.toolConfig).toBeUndefined()
+		})
+	})
+
+	describe("empty and reasoning-only response handling", () => {
+		it("should throw when finishReason is non-STOP and no content was produced", async () => {
+			const options = {
+				apiProvider: "gemini",
+			} as ApiHandlerOptions
+			const handler = new GeminiHandler(options)
+
+			const mockStream = async function* () {
+				yield {
+					candidates: [
+						{
+							finishReason: "SAFETY",
+							content: { parts: [] },
+						},
+					],
+					usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 0 },
+				}
+			}
+
+			const stub = vi.fn().mockReturnValue(mockStream())
+			// @ts-ignore access private client
+			handler["client"].models.generateContentStream = stub
+
+			await expect(async () => {
+				const messages = []
+				for await (const chunk of handler.createMessage("test", [] as any)) {
+					messages.push(chunk)
+				}
+			}).rejects.toThrow(
+				t("common:errors.gemini.generate_stream", {
+					error: "Gemini response blocked or incomplete (finishReason: SAFETY). No content was returned.",
+				}),
+			)
+		})
+
+		it("should not throw when finishReason is STOP even with no content", async () => {
+			const options = {
+				apiProvider: "gemini",
+			} as ApiHandlerOptions
+			const handler = new GeminiHandler(options)
+
+			const mockStream = async function* () {
+				yield {
+					candidates: [
+						{
+							finishReason: "STOP",
+							content: { parts: [] },
+						},
+					],
+					usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 0 },
+				}
+			}
+
+			const stub = vi.fn().mockReturnValue(mockStream())
+			// @ts-ignore access private client
+			handler["client"].models.generateContentStream = stub
+
+			const messages = []
+			for await (const chunk of handler.createMessage("test", [] as any)) {
+				messages.push(chunk)
+			}
+
+			// Should complete without throwing, yielding only usage
+			expect(messages.some((m) => m.type === "usage")).toBe(true)
+			expect(messages.some((m) => m.type === "text")).toBe(false)
+		})
+
+		it("should yield reasoning chunks but no text for reasoning-only responses", async () => {
+			const options = {
+				apiProvider: "gemini",
+			} as ApiHandlerOptions
+			const handler = new GeminiHandler(options)
+
+			const mockStream = async function* () {
+				yield {
+					candidates: [
+						{
+							finishReason: "STOP",
+							content: {
+								parts: [{ thought: true, text: "Let me think about this..." }],
+							},
+						},
+					],
+					usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 0, thoughtsTokenCount: 20 },
+				}
+			}
+
+			const stub = vi.fn().mockReturnValue(mockStream())
+			// @ts-ignore access private client
+			handler["client"].models.generateContentStream = stub
+
+			const messages = []
+			for await (const chunk of handler.createMessage("test", [] as any)) {
+				messages.push(chunk)
+			}
+
+			// Should have reasoning but no text content
+			expect(messages.some((m) => m.type === "reasoning")).toBe(true)
+			expect(messages.some((m) => m.type === "text")).toBe(false)
+			// Should not throw since finishReason is STOP
+		})
+
+		it("should throw for RECITATION finishReason with no content", async () => {
+			const options = {
+				apiProvider: "gemini",
+			} as ApiHandlerOptions
+			const handler = new GeminiHandler(options)
+
+			const mockStream = async function* () {
+				yield {
+					candidates: [
+						{
+							finishReason: "RECITATION",
+							content: { parts: [] },
+						},
+					],
+					usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 0 },
+				}
+			}
+
+			const stub = vi.fn().mockReturnValue(mockStream())
+			// @ts-ignore access private client
+			handler["client"].models.generateContentStream = stub
+
+			await expect(async () => {
+				for await (const chunk of handler.createMessage("test", [] as any)) {
+					// consume stream
+				}
+			}).rejects.toThrow(
+				t("common:errors.gemini.generate_stream", {
+					error: "Gemini response blocked or incomplete (finishReason: RECITATION). No content was returned.",
+				}),
+			)
+		})
+
+		it("should not throw for non-STOP finishReason when content was produced", async () => {
+			const options = {
+				apiProvider: "gemini",
+			} as ApiHandlerOptions
+			const handler = new GeminiHandler(options)
+
+			const mockStream = async function* () {
+				yield {
+					candidates: [
+						{
+							finishReason: "MAX_TOKENS",
+							content: { parts: [{ text: "partial response..." }] },
+						},
+					],
+					usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 },
+				}
+			}
+
+			const stub = vi.fn().mockReturnValue(mockStream())
+			// @ts-ignore access private client
+			handler["client"].models.generateContentStream = stub
+
+			const messages = []
+			for await (const chunk of handler.createMessage("test", [] as any)) {
+				messages.push(chunk)
+			}
+
+			// Should have text content and not throw
+			expect(messages.some((m) => m.type === "text" && m.text === "partial response...")).toBe(true)
 		})
 	})
 })
