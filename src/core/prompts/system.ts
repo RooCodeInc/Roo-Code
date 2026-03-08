@@ -64,6 +64,23 @@ async function generatePrompt(
 	const modeConfig = getModeBySlug(mode, customModeConfigs) || modes.find((m) => m.slug === mode) || modes[0]
 	const { roleDefinition, baseInstructions } = getModeSelection(mode, promptComponent, customModeConfigs)
 
+	// When overrideSystemPrompt is true, use roleDefinition as the entire system prompt
+	// body, only appending custom instructions. All standard sections are skipped.
+	if (modeConfig.overrideSystemPrompt) {
+		const customInstructionsSection = await addCustomInstructions(
+			baseInstructions,
+			globalCustomInstructions || "",
+			cwd,
+			mode,
+			{
+				language: language ?? formatLanguage(vscode.env.language),
+				rooIgnoreInstructions,
+				settings,
+			},
+		)
+		return `${roleDefinition}${customInstructionsSection}`
+	}
+
 	// Check if MCP functionality should be included
 	const hasMcpGroup = modeConfig.groups.some((groupEntry) => getGroupName(groupEntry) === "mcp")
 	const hasMcpServers = mcpHub && mcpHub.getServers().length > 0
