@@ -483,6 +483,68 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				await fs.rm(shadowDir, { recursive: true, force: true })
 				await fs.rm(workspaceDir, { recursive: true, force: true })
 			})
+
+			it("succeeds when workspace has no root .git but has sibling git repos in subdirectories", async () => {
+				// This test covers the issue #10636 scenario where a user opens a parent folder
+				// that contains multiple sibling projects (e.g., frontend and backend), each with
+				// their own independent git repositories.
+
+				// Create a new temporary workspace WITHOUT a root .git directory.
+				const shadowDir = path.join(tmpDir, `${prefix}-sibling-git-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-sibling-git-${Date.now()}`)
+				await fs.mkdir(workspaceDir, { recursive: true })
+
+				// Create sibling git repos inside the workspace (simulating frontend/backend structure)
+				const frontendDir = path.join(workspaceDir, "frontend")
+				await fs.mkdir(frontendDir, { recursive: true })
+				const frontendGit = simpleGit(frontendDir)
+				await frontendGit.init()
+				await frontendGit.addConfig("user.name", "Roo Code")
+				await frontendGit.addConfig("user.email", "support@roocode.com")
+				const frontendFile = path.join(frontendDir, "index.ts")
+				await fs.writeFile(frontendFile, "console.log('frontend');")
+				await frontendGit.add(".")
+				await frontendGit.commit("Initial frontend commit")
+
+				const backendDir = path.join(workspaceDir, "backend")
+				await fs.mkdir(backendDir, { recursive: true })
+				const backendGit = simpleGit(backendDir)
+				await backendGit.init()
+				await backendGit.addConfig("user.name", "Roo Code")
+				await backendGit.addConfig("user.email", "support@roocode.com")
+				const backendFile = path.join(backendDir, "server.ts")
+				await fs.writeFile(backendFile, "console.log('backend');")
+				await backendGit.add(".")
+				await backendGit.commit("Initial backend commit")
+
+				// Note: We do NOT create a .git directory at the workspace root
+				// This simulates the user's scenario of opening the parent folder
+
+				// Use klass.create() like other tests do
+				const service = await klass.create({ taskId, shadowDir, workspaceDir, log: () => {} })
+
+				// Verify that initialization succeeds because there's no root .git
+				// The sibling git repos should NOT be considered "nested"
+				await expect(service.initShadowGit()).resolves.not.toThrow()
+				expect(service.isInitialized).toBe(true)
+				expect(service.baseHash).toBeTruthy()
+
+				// Verify we can create a checkpoint with a file in the root workspace
+				// (not inside the sibling repos, to ensure tracking works)
+				const rootFile = path.join(workspaceDir, "readme.txt")
+				await fs.writeFile(rootFile, "Root workspace file")
+				const commit = await service.saveCheckpoint("Add root file")
+				expect(commit?.commit).toBeTruthy()
+
+				// Verify we can restore the checkpoint
+				await fs.writeFile(rootFile, "Modified root file")
+				await service.restoreCheckpoint(commit!.commit)
+				expect(await fs.readFile(rootFile, "utf-8")).toBe("Root workspace file")
+
+				// Clean up.
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
 		})
 
 		describe(`${klass.name}#events`, () => {
