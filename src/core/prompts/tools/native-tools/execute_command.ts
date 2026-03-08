@@ -2,6 +2,8 @@ import type OpenAI from "openai"
 
 const EXECUTE_COMMAND_DESCRIPTION = `Request to execute a CLI command on the system. Use this when you need to perform system operations or run specific commands to accomplish any step in the user's task. You must tailor your command to the user's system and provide a clear explanation of what the command does. For command chaining, use the appropriate chaining syntax for the user's shell. Prefer to execute complex CLI commands over creating executable scripts, as they are more flexible and easier to run. Prefer relative commands and paths that avoid location sensitivity for terminal consistency.
 
+**Important:** Do not use this tool to modify file contents (e.g., via sed, echo, cat, printf, tee, or shell scripts). Use the dedicated file editing tools (apply_diff, edit, or write_to_file) instead.
+
 Parameters:
 - command: (required) The CLI command to execute. This should be valid for the current operating system. Ensure the command is properly formatted and does not contain any harmful instructions.
 - cwd: (optional) The working directory to execute the command in
