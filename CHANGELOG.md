@@ -1,5 +1,13 @@
 # Roo Code Changelog
 
+## 3.51.1
+
+### Patch Changes
+
+- Feat: Add Cohere Embed v4 model support for Bedrock and improve credential handling (#11823 by @cscvenkatmadurai, PR #11824 by @cscvenkatmadurai)
+- Feat: Add Gemini 3.1 Pro customtools model to Vertex AI provider (PR #11857 by @NVolcz)
+- Feat: Add gpt-5.4 to ChatGPT Plus/Pro (Codex) model catalog (PR #11876 by @roomote-v0)
+
 ## 3.51.0
 
 ### Minor Changes
