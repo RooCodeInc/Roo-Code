@@ -50,7 +50,11 @@ export function consolidateReasoningDetails(reasoningDetails: ReasoningDetail[])
 		// Drop corrupted encrypted reasoning blocks that would otherwise trigger:
 		// "Invalid input: expected string, received undefined" for reasoning_details.*.data
 		// See: https://github.com/cline/cline/issues/8214
-		if (detail.type === "reasoning.encrypted" && !detail.data) {
+		// Only drop if it truly has no usable content (no `data` AND no `text`).
+		// A mislabeled entry with `type: "reasoning.encrypted"` but a valid `text`
+		// field should be preserved (it's a text entry with incorrect type).
+		// See: https://github.com/RooCodeInc/Roo-Code/issues/11629
+		if (detail.type === "reasoning.encrypted" && !detail.data && !detail.text) {
 			continue
 		}
 
@@ -65,46 +69,66 @@ export function consolidateReasoningDetails(reasoningDetails: ReasoningDetail[])
 	const consolidated: ReasoningDetail[] = []
 
 	for (const [index, details] of groupedByIndex.entries()) {
-		// Concatenate all text parts
+		// Concatenate all text parts.
+		// Track types separately for text/summary entries vs encrypted entries,
+		// because a group can contain both a reasoning.text and a reasoning.encrypted
+		// entry at the same index. Using a single shared `type` variable would cause
+		// the last entry's type to overwrite earlier ones, mislabeling text entries
+		// as "reasoning.encrypted".
+		// See: https://github.com/RooCodeInc/Roo-Code/issues/11629
 		let concatenatedText = ""
 		let concatenatedSummary = ""
-		let signature: string | undefined
-		let id: string | undefined
-		let format = "unknown"
-		let type = "reasoning.text"
+		let textSignature: string | undefined
+		let textId: string | undefined
+		let textFormat = "unknown"
+		let textType = "reasoning.text"
 
 		for (const detail of details) {
 			if (detail.text) {
 				concatenatedText += detail.text
+				// Track type/metadata from text-bearing entries only
+				if (detail.type) {
+					textType = detail.type === "reasoning.encrypted" ? "reasoning.text" : detail.type
+				}
+				if (detail.signature) {
+					textSignature = detail.signature
+				}
+				if (detail.id) {
+					textId = detail.id
+				}
+				if (detail.format) {
+					textFormat = detail.format
+				}
 			}
 			if (detail.summary) {
 				concatenatedSummary += detail.summary
-			}
-			// Keep the signature from the last item that has one
-			if (detail.signature) {
-				signature = detail.signature
-			}
-			// Keep the id from the last item that has one
-			if (detail.id) {
-				id = detail.id
-			}
-			// Keep format and type from any item (they should all be the same)
-			if (detail.format) {
-				format = detail.format
-			}
-			if (detail.type) {
-				type = detail.type
+				// Use text entry metadata for summaries too, but don't overwrite
+				// if we already got it from a text entry
+				if (!concatenatedText) {
+					if (detail.type) {
+						textType = detail.type
+					}
+					if (detail.signature) {
+						textSignature = detail.signature
+					}
+					if (detail.id) {
+						textId = detail.id
+					}
+					if (detail.format) {
+						textFormat = detail.format
+					}
+				}
 			}
 		}
 
 		// Create consolidated entry for text
 		if (concatenatedText) {
 			const consolidatedEntry: ReasoningDetail = {
-				type: type,
+				type: textType,
 				text: concatenatedText,
-				signature: signature ?? undefined,
-				id: id ?? undefined,
-				format: format,
+				signature: textSignature ?? undefined,
+				id: textId ?? undefined,
+				format: textFormat,
 				index: index,
 			}
 			consolidated.push(consolidatedEntry)
@@ -113,11 +137,11 @@ export function consolidateReasoningDetails(reasoningDetails: ReasoningDetail[])
 		// Create consolidated entry for summary (used by some providers)
 		if (concatenatedSummary && !concatenatedText) {
 			const consolidatedEntry: ReasoningDetail = {
-				type: type,
+				type: textType,
 				summary: concatenatedSummary,
-				signature: signature ?? undefined,
-				id: id ?? undefined,
-				format: format,
+				signature: textSignature ?? undefined,
+				id: textId ?? undefined,
+				format: textFormat,
 				index: index,
 			}
 			consolidated.push(consolidatedEntry)
