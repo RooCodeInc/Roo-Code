@@ -14,7 +14,10 @@
 	},
 	"apiConfiguration": {
 		"title": "Configuração de API",
-		"select": "Selecione qual configuração de API usar para este modo"
+		"select": "Selecione qual configuração de API usar para este modo",
+		"scope": "Escopo",
+		"global": "Global",
+		"workspace": "Área de trabalho"
 	},
 	"tools": {
 		"title": "Ferramentas disponíveis",

@@ -506,6 +506,15 @@ export class ContextProxy {
 			: this.updateGlobalState(key as GlobalStateKey, value)
 	}
 
+	/**
+	 * Update a value only in the in-memory cache without persisting to globalState.
+	 * Use this when a value should be reflected locally (e.g. webview display)
+	 * but should not leak to other VS Code windows via shared globalState.
+	 */
+	public setLocalValue<K extends GlobalStateKey>(key: K, value: GlobalState[K]) {
+		this.stateCache[key] = value
+	}
+
 	public getValue<K extends RooCodeSettingsKey>(key: K): RooCodeSettings[K] {
 		return isSecretStateKey(key)
 			? (this.getSecret(key as SecretStateKey) as RooCodeSettings[K])
