@@ -25,6 +25,24 @@ export const groupOptionsSchema = z.object({
 			},
 			{ message: "Invalid regular expression pattern" },
 		),
+	commandRegex: z
+		.string()
+		.optional()
+		.refine(
+			(pattern) => {
+				if (!pattern) {
+					return true // Optional, so empty is valid.
+				}
+
+				try {
+					new RegExp(pattern)
+					return true
+				} catch {
+					return false
+				}
+			},
+			{ message: "Invalid regular expression pattern" },
+		),
 	description: z.string().optional(),
 })
 

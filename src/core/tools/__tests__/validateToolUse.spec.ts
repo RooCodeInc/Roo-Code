@@ -2,7 +2,7 @@
 
 import type { ModeConfig } from "@roo-code/types"
 
-import { modes } from "../../../shared/modes"
+import { modes, CommandRestrictionError } from "../../../shared/modes"
 import { TOOL_GROUPS } from "../../../shared/tools"
 
 import { validateToolUse, isToolAllowedForMode } from "../validateToolUse"
@@ -249,6 +249,166 @@ describe("mode-validator", () => {
 			)
 
 			expect(() => validateToolUse("execute_command", codeMode, [], toolRequirements)).not.toThrow()
+		})
+
+		describe("commandRegex restrictions", () => {
+			it("should allow commands matching the regex", () => {
+				const customModes: ModeConfig[] = [
+					{
+						slug: "npm-only",
+						name: "NPM Only",
+						roleDefinition: "You can only run npm commands",
+						groups: [
+							"read",
+							["command", { commandRegex: "^npm\\s", description: "Only npm commands" }],
+						] as const,
+					},
+				]
+				expect(
+					isToolAllowedForMode("execute_command", "npm-only", customModes, undefined, {
+						command: "npm install",
+					}),
+				).toBe(true)
+			})
+
+			it("should block commands not matching the regex", () => {
+				const customModes: ModeConfig[] = [
+					{
+						slug: "npm-only",
+						name: "NPM Only",
+						roleDefinition: "You can only run npm commands",
+						groups: [
+							"read",
+							["command", { commandRegex: "^npm\\s", description: "Only npm commands" }],
+						] as const,
+					},
+				]
+				expect(() =>
+					isToolAllowedForMode("execute_command", "npm-only", customModes, undefined, {
+						command: "git push",
+					}),
+				).toThrow()
+			})
+
+			it("should include description in error message", () => {
+				const customModes: ModeConfig[] = [
+					{
+						slug: "npm-only",
+						name: "NPM Only",
+						roleDefinition: "You can only run npm commands",
+						groups: [
+							"read",
+							["command", { commandRegex: "^npm\\s", description: "Only npm commands" }],
+						] as const,
+					},
+				]
+				try {
+					isToolAllowedForMode("execute_command", "npm-only", customModes, undefined, { command: "git push" })
+					expect(true).toBe(false) // Should not reach here
+				} catch (error) {
+					expect(error).toBeInstanceOf(CommandRestrictionError)
+					expect(error.message).toContain("Only npm commands")
+				}
+			})
+
+			it("should work without commandRegex (no restriction)", () => {
+				const customModes: ModeConfig[] = [
+					{
+						slug: "command-mode",
+						name: "Command Mode",
+						roleDefinition: "You can run any commands",
+						groups: ["read", "command"] as const,
+					},
+				]
+				// Should allow all commands when no commandRegex is specified
+				expect(
+					isToolAllowedForMode("execute_command", "command-mode", customModes, undefined, {
+						command: "git push",
+					}),
+				).toBe(true)
+				expect(
+					isToolAllowedForMode("execute_command", "command-mode", customModes, undefined, {
+						command: "npm install",
+					}),
+				).toBe(true)
+				expect(
+					isToolAllowedForMode("execute_command", "command-mode", customModes, undefined, {
+						command: "ls -la",
+					}),
+				).toBe(true)
+			})
+
+			it("should allow commands when commandRegex is undefined in options", () => {
+				const customModes: ModeConfig[] = [
+					{
+						slug: "command-mode",
+						name: "Command Mode",
+						roleDefinition: "You can run any commands",
+						groups: ["read", ["command", { description: "All commands allowed" }]] as const,
+					},
+				]
+				// Should allow all commands when commandRegex is not specified
+				expect(
+					isToolAllowedForMode("execute_command", "command-mode", customModes, undefined, {
+						command: "any command",
+					}),
+				).toBe(true)
+			})
+
+			it("should handle multiple regex patterns", () => {
+				const customModes: ModeConfig[] = [
+					{
+						slug: "package-manager",
+						name: "Package Manager",
+						roleDefinition: "You can run package manager commands",
+						groups: [
+							"read",
+							[
+								"command",
+								{ commandRegex: "^(npm|yarn|pnpm)\\s", description: "Package manager commands" },
+							],
+						] as const,
+					},
+				]
+				expect(
+					isToolAllowedForMode("execute_command", "package-manager", customModes, undefined, {
+						command: "npm install",
+					}),
+				).toBe(true)
+				expect(
+					isToolAllowedForMode("execute_command", "package-manager", customModes, undefined, {
+						command: "yarn add lodash",
+					}),
+				).toBe(true)
+				expect(
+					isToolAllowedForMode("execute_command", "package-manager", customModes, undefined, {
+						command: "pnpm build",
+					}),
+				).toBe(true)
+				expect(() =>
+					isToolAllowedForMode("execute_command", "package-manager", customModes, undefined, {
+						command: "git push",
+					}),
+				).toThrow()
+			})
+
+			it("should throw CommandRestrictionError with correct tool name", () => {
+				const customModes: ModeConfig[] = [
+					{
+						slug: "npm-only",
+						name: "NPM Only",
+						roleDefinition: "You can only run npm commands",
+						groups: ["read", ["command", { commandRegex: "^npm\\s" }]] as const,
+					},
+				]
+				try {
+					isToolAllowedForMode("execute_command", "npm-only", customModes, undefined, { command: "git push" })
+					expect(true).toBe(false) // Should not reach here
+				} catch (error) {
+					expect(error).toBeInstanceOf(CommandRestrictionError)
+					expect(error.message).toContain("execute_command")
+				}
+			})
 		})
 	})
 })
