@@ -3,7 +3,7 @@ vi.mock("axios")
 
 import type { Mock } from "vitest"
 import axios from "axios"
-import { getLiteLLMModels } from "../litellm"
+import { getLiteLLMModels, parseModelInfoResponse, parseModelsListResponse } from "../litellm"
 import { DEFAULT_HEADERS } from "../../constants"
 
 const mockedAxios = axios as typeof axios & {
@@ -323,63 +323,6 @@ describe("getLiteLLMModels", () => {
 		})
 	})
 
-	it("throws error for unexpected response format", async () => {
-		const mockResponse = {
-			data: {
-				// Missing 'data' field
-				models: [],
-			},
-		}
-
-		mockedAxios.get.mockResolvedValue(mockResponse)
-
-		await expect(getLiteLLMModels("test-api-key", "http://localhost:4000")).rejects.toThrow(
-			"Failed to fetch LiteLLM models: Unexpected response format.",
-		)
-	})
-
-	it("throws detailed error for HTTP error responses", async () => {
-		const axiosError = {
-			response: {
-				status: 401,
-				statusText: "Unauthorized",
-			},
-			isAxiosError: true,
-		}
-
-		mockedAxios.isAxiosError.mockReturnValue(true)
-		mockedAxios.get.mockRejectedValue(axiosError)
-
-		await expect(getLiteLLMModels(DUMMY_INVALID_KEY, "http://localhost:4000")).rejects.toThrow(
-			"Failed to fetch LiteLLM models: 401 Unauthorized. Check base URL and API key.",
-		)
-	})
-
-	it("throws network error for request failures", async () => {
-		const axiosError = {
-			request: {},
-			isAxiosError: true,
-		}
-
-		mockedAxios.isAxiosError.mockReturnValue(true)
-		mockedAxios.get.mockRejectedValue(axiosError)
-
-		await expect(getLiteLLMModels("test-api-key", "http://invalid-url")).rejects.toThrow(
-			"Failed to fetch LiteLLM models: No response from server. Check LiteLLM server status and base URL.",
-		)
-	})
-
-	it("throws generic error for other failures", async () => {
-		const genericError = new Error("Network timeout")
-
-		mockedAxios.isAxiosError.mockReturnValue(false)
-		mockedAxios.get.mockRejectedValue(genericError)
-
-		await expect(getLiteLLMModels("test-api-key", "http://localhost:4000")).rejects.toThrow(
-			"Failed to fetch LiteLLM models: Network timeout",
-		)
-	})
-
 	it("handles timeout parameter correctly", async () => {
 		const mockResponse = { data: { data: [] } }
 		mockedAxios.get.mockResolvedValue(mockResponse)
@@ -696,5 +639,329 @@ describe("getLiteLLMModels", () => {
 			cacheReadsPrice: undefined,
 			description: "model-with-only-max-output-tokens via LiteLLM proxy",
 		})
+	})
+
+	describe("fallback to /v1/models", () => {
+		it("falls back to /v1/models when /v1/model/info returns 403", async () => {
+			const forbiddenError = {
+				response: { status: 403, statusText: "Forbidden" },
+				isAxiosError: true,
+				message: "Request failed with status code 403",
+			}
+
+			const fallbackResponse = {
+				data: {
+					object: "list",
+					data: [
+						{ id: "gpt-4", object: "model", created: 1687882411, owned_by: "openai" },
+						{ id: "claude-3-opus", object: "model", created: 1687882411, owned_by: "anthropic" },
+					],
+				},
+			}
+
+			mockedAxios.get
+				.mockRejectedValueOnce(forbiddenError) // /v1/model/info fails
+				.mockResolvedValueOnce(fallbackResponse) // /v1/models succeeds
+
+			const result = await getLiteLLMModels("test-api-key", "http://localhost:4000")
+
+			expect(mockedAxios.get).toHaveBeenCalledTimes(2)
+			expect(mockedAxios.get).toHaveBeenNthCalledWith(
+				1,
+				"http://localhost:4000/v1/model/info",
+				expect.any(Object),
+			)
+			expect(mockedAxios.get).toHaveBeenNthCalledWith(2, "http://localhost:4000/v1/models", expect.any(Object))
+
+			expect(result).toEqual({
+				"gpt-4": {
+					maxTokens: 8192,
+					contextWindow: 200000,
+					supportsImages: false,
+					supportsPromptCache: false,
+					inputPrice: undefined,
+					outputPrice: undefined,
+					cacheWritesPrice: undefined,
+					cacheReadsPrice: undefined,
+					description: "gpt-4 via LiteLLM proxy",
+				},
+				"claude-3-opus": {
+					maxTokens: 8192,
+					contextWindow: 200000,
+					supportsImages: false,
+					supportsPromptCache: false,
+					inputPrice: undefined,
+					outputPrice: undefined,
+					cacheWritesPrice: undefined,
+					cacheReadsPrice: undefined,
+					description: "claude-3-opus via LiteLLM proxy",
+				},
+			})
+		})
+
+		it("falls back to /v1/models when /v1/model/info returns 500", async () => {
+			const serverError = {
+				response: { status: 500, statusText: "Internal Server Error" },
+				isAxiosError: true,
+				message: "Request failed with status code 500",
+			}
+
+			const fallbackResponse = {
+				data: {
+					object: "list",
+					data: [{ id: "gpt-4", object: "model", created: 1687882411, owned_by: "openai" }],
+				},
+			}
+
+			mockedAxios.get
+				.mockRejectedValueOnce(serverError) // /v1/model/info fails
+				.mockResolvedValueOnce(fallbackResponse) // /v1/models succeeds
+
+			const result = await getLiteLLMModels("test-api-key", "http://localhost:4000")
+
+			expect(mockedAxios.get).toHaveBeenCalledTimes(2)
+			expect(Object.keys(result)).toEqual(["gpt-4"])
+		})
+
+		it("falls back to /v1/models when /v1/model/info returns unexpected format", async () => {
+			// /v1/model/info returns successfully but with unexpected format
+			const unexpectedResponse = {
+				data: {
+					models: [], // Wrong field name - no 'data' array
+				},
+			}
+
+			const fallbackResponse = {
+				data: {
+					object: "list",
+					data: [{ id: "gpt-4", object: "model", created: 1687882411, owned_by: "openai" }],
+				},
+			}
+
+			mockedAxios.get
+				.mockResolvedValueOnce(unexpectedResponse) // /v1/model/info returns unexpected format
+				.mockResolvedValueOnce(fallbackResponse) // /v1/models succeeds
+
+			const result = await getLiteLLMModels("test-api-key", "http://localhost:4000")
+
+			expect(mockedAxios.get).toHaveBeenCalledTimes(2)
+			expect(result).toEqual({
+				"gpt-4": {
+					maxTokens: 8192,
+					contextWindow: 200000,
+					supportsImages: false,
+					supportsPromptCache: false,
+					inputPrice: undefined,
+					outputPrice: undefined,
+					cacheWritesPrice: undefined,
+					cacheReadsPrice: undefined,
+					description: "gpt-4 via LiteLLM proxy",
+				},
+			})
+		})
+
+		it("throws error when both /v1/model/info and /v1/models fail with HTTP errors", async () => {
+			const modelInfoError = {
+				response: { status: 403, statusText: "Forbidden" },
+				isAxiosError: true,
+				message: "Request failed with status code 403",
+			}
+
+			const modelsError = {
+				response: { status: 401, statusText: "Unauthorized" },
+				isAxiosError: true,
+				message: "Request failed with status code 401",
+			}
+
+			mockedAxios.isAxiosError.mockReturnValue(true)
+			mockedAxios.get
+				.mockRejectedValueOnce(modelInfoError) // /v1/model/info fails
+				.mockRejectedValueOnce(modelsError) // /v1/models also fails
+
+			await expect(getLiteLLMModels(DUMMY_INVALID_KEY, "http://localhost:4000")).rejects.toThrow(
+				"Failed to fetch LiteLLM models: Both /v1/model/info and /v1/models failed. Last error: 401 Unauthorized. Check base URL and API key.",
+			)
+
+			expect(mockedAxios.get).toHaveBeenCalledTimes(2)
+		})
+
+		it("throws network error when both endpoints have no response", async () => {
+			const networkError = {
+				request: {},
+				isAxiosError: true,
+				message: "Network Error",
+			}
+
+			mockedAxios.isAxiosError.mockReturnValue(true)
+			mockedAxios.get
+				.mockRejectedValueOnce(networkError) // /v1/model/info fails
+				.mockRejectedValueOnce(networkError) // /v1/models also fails
+
+			await expect(getLiteLLMModels("test-api-key", "http://invalid-url")).rejects.toThrow(
+				"Failed to fetch LiteLLM models: No response from server. Check LiteLLM server status and base URL.",
+			)
+		})
+
+		it("throws generic error when both endpoints fail with unknown errors", async () => {
+			const genericError = new Error("Network timeout")
+
+			mockedAxios.isAxiosError.mockReturnValue(false)
+			mockedAxios.get
+				.mockRejectedValueOnce(genericError) // /v1/model/info fails
+				.mockRejectedValueOnce(genericError) // /v1/models also fails
+
+			await expect(getLiteLLMModels("test-api-key", "http://localhost:4000")).rejects.toThrow(
+				"Failed to fetch LiteLLM models: Network timeout",
+			)
+		})
+
+		it("does not call /v1/models when /v1/model/info succeeds", async () => {
+			const mockResponse = {
+				data: {
+					data: [],
+				},
+			}
+
+			mockedAxios.get.mockResolvedValue(mockResponse)
+
+			await getLiteLLMModels("test-api-key", "http://localhost:4000")
+
+			// Should only call /v1/model/info, not /v1/models
+			expect(mockedAxios.get).toHaveBeenCalledTimes(1)
+			expect(mockedAxios.get).toHaveBeenCalledWith("http://localhost:4000/v1/model/info", expect.any(Object))
+		})
+
+		it("skips models without valid id in /v1/models fallback response", async () => {
+			const modelInfoError = new Error("Failed")
+			const fallbackResponse = {
+				data: {
+					object: "list",
+					data: [
+						{ id: "valid-model", object: "model" },
+						{ id: "", object: "model" }, // empty id
+						{ id: null, object: "model" }, // null id
+						{ object: "model" }, // missing id
+						{ id: 123, object: "model" }, // non-string id
+					],
+				},
+			}
+
+			mockedAxios.get.mockRejectedValueOnce(modelInfoError).mockResolvedValueOnce(fallbackResponse)
+
+			const result = await getLiteLLMModels("test-api-key", "http://localhost:4000")
+
+			expect(Object.keys(result)).toEqual(["valid-model"])
+		})
+
+		it("preserves URL structure in fallback request", async () => {
+			const modelInfoError = new Error("Failed")
+			const fallbackResponse = {
+				data: {
+					object: "list",
+					data: [{ id: "model-1", object: "model" }],
+				},
+			}
+
+			mockedAxios.get.mockRejectedValueOnce(modelInfoError).mockResolvedValueOnce(fallbackResponse)
+
+			await getLiteLLMModels("test-api-key", "http://localhost:4000/litellm/")
+
+			expect(mockedAxios.get).toHaveBeenNthCalledWith(
+				2,
+				"http://localhost:4000/litellm/v1/models",
+				expect.any(Object),
+			)
+		})
+	})
+})
+
+describe("parseModelInfoResponse", () => {
+	it("throws on unexpected format", () => {
+		expect(() => parseModelInfoResponse({ models: [] })).toThrow("Unexpected response format")
+		expect(() => parseModelInfoResponse(null)).toThrow("Unexpected response format")
+		expect(() => parseModelInfoResponse(undefined)).toThrow("Unexpected response format")
+	})
+
+	it("parses valid model info response", () => {
+		const data = {
+			data: [
+				{
+					model_name: "test-model",
+					model_info: {
+						max_tokens: 4096,
+						max_input_tokens: 128000,
+						supports_vision: true,
+						supports_prompt_caching: true,
+						input_cost_per_token: 0.000003,
+						output_cost_per_token: 0.000015,
+					},
+					litellm_params: { model: "provider/test-model" },
+				},
+			],
+		}
+
+		const result = parseModelInfoResponse(data)
+
+		expect(result["test-model"]).toEqual({
+			maxTokens: 4096,
+			contextWindow: 128000,
+			supportsImages: true,
+			supportsPromptCache: true,
+			inputPrice: 3,
+			outputPrice: 15,
+			cacheWritesPrice: undefined,
+			cacheReadsPrice: undefined,
+			description: "test-model via LiteLLM proxy",
+		})
+	})
+})
+
+describe("parseModelsListResponse", () => {
+	it("throws on unexpected format", () => {
+		expect(() => parseModelsListResponse({ models: [] })).toThrow("Unexpected response format from /v1/models")
+		expect(() => parseModelsListResponse(null)).toThrow("Unexpected response format from /v1/models")
+		expect(() => parseModelsListResponse(undefined)).toThrow("Unexpected response format from /v1/models")
+	})
+
+	it("parses valid /v1/models response with default values", () => {
+		const data = {
+			object: "list",
+			data: [
+				{ id: "gpt-4", object: "model", created: 1687882411, owned_by: "openai" },
+				{ id: "claude-3-opus", object: "model", created: 1687882411, owned_by: "anthropic" },
+			],
+		}
+
+		const result = parseModelsListResponse(data)
+
+		expect(result).toEqual({
+			"gpt-4": {
+				maxTokens: 8192,
+				contextWindow: 200000,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: undefined,
+				outputPrice: undefined,
+				cacheWritesPrice: undefined,
+				cacheReadsPrice: undefined,
+				description: "gpt-4 via LiteLLM proxy",
+			},
+			"claude-3-opus": {
+				maxTokens: 8192,
+				contextWindow: 200000,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: undefined,
+				outputPrice: undefined,
+				cacheWritesPrice: undefined,
+				cacheReadsPrice: undefined,
+				description: "claude-3-opus via LiteLLM proxy",
+			},
+		})
+	})
+
+	it("returns empty object for empty data array", () => {
+		const result = parseModelsListResponse({ data: [] })
+		expect(result).toEqual({})
 	})
 })
