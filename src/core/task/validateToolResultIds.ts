@@ -248,13 +248,14 @@ export function validateAndFixToolResultIds(
 
 /**
  * Reorders tool_result blocks within a content array to match the order of
- * their corresponding tool_use blocks from the assistant message.
+ * their corresponding tool_use blocks from the assistant message, and ensures
+ * ALL tool_result blocks appear at the very beginning of the content array.
  *
- * Non-tool-result blocks (text, image, etc.) remain in their original
- * positions relative to the tool_result blocks -- only tool_results are
- * reordered among themselves.
+ * This is critical for strict API providers like Vertex AI, which require that
+ * the first block in the next message immediately following a `tool_use` is
+ * the corresponding `tool_result` (with no intervening text blocks).
  *
- * Returns `null` if the tool_results are already in the correct order
+ * Returns `null` if the tool_results are already in the correct order and position
  * (no reordering needed).
  */
 function reorderToolResults(
@@ -271,50 +272,38 @@ function reorderToolResults(
 		orderMap.set(block.id, index)
 	})
 
-	// Separate tool_result blocks from non-tool-result blocks, preserving indices
-	const toolResultEntries: { index: number; block: Anthropic.ToolResultBlockParam }[] = []
-	const nonToolResultEntries: { index: number; block: Anthropic.Messages.ContentBlockParam }[] = []
+	// Separate tool_result blocks from non-tool-result blocks
+	const toolResultBlocks: Anthropic.ToolResultBlockParam[] = []
+	const nonToolResultBlocks: Anthropic.Messages.ContentBlockParam[] = []
 
-	content.forEach((block, index) => {
+	content.forEach((block) => {
 		if (block.type === "tool_result") {
-			toolResultEntries.push({ index, block: block as Anthropic.ToolResultBlockParam })
+			toolResultBlocks.push(block as Anthropic.ToolResultBlockParam)
 		} else {
-			nonToolResultEntries.push({ index, block })
+			nonToolResultBlocks.push(block)
 		}
 	})
 
-	if (toolResultEntries.length <= 1) {
+	if (toolResultBlocks.length === 0) {
 		return null // Nothing to reorder
 	}
 
 	// Sort tool_result blocks by their corresponding tool_use order
-	const sortedToolResults = [...toolResultEntries].sort((a, b) => {
-		const orderA = orderMap.get(a.block.tool_use_id) ?? Number.MAX_SAFE_INTEGER
-		const orderB = orderMap.get(b.block.tool_use_id) ?? Number.MAX_SAFE_INTEGER
+	const sortedToolResults = [...toolResultBlocks].sort((a, b) => {
+		const orderA = orderMap.get(a.tool_use_id) ?? Number.MAX_SAFE_INTEGER
+		const orderB = orderMap.get(b.tool_use_id) ?? Number.MAX_SAFE_INTEGER
 		return orderA - orderB
 	})
 
-	// Check if already in correct order
-	const alreadyOrdered = sortedToolResults.every((entry, i) => entry === toolResultEntries[i])
-	if (alreadyOrdered) {
+	// Reconstruct the array: ALL tool_result blocks first (in correct order),
+	// followed by ALL non-tool-result blocks.
+	const result = [...sortedToolResults, ...nonToolResultBlocks]
+
+	// Check if already in correct order AND position
+	const isUnchanged = result.every((block, i) => block === content[i])
+	if (isUnchanged) {
 		return null
 	}
-
-	// Reconstruct the array: place sorted tool_results into the original
-	// tool_result positions, keeping non-tool-result blocks where they were.
-	const result: Anthropic.Messages.ContentBlockParam[] = new Array(content.length)
-
-	// First, place non-tool-result blocks back at their original indices
-	for (const entry of nonToolResultEntries) {
-		result[entry.index] = entry.block
-	}
-
-	// Then, place sorted tool_results into the slots that were originally
-	// occupied by tool_result blocks (preserving relative position of non-tool blocks)
-	const toolResultSlots = toolResultEntries.map((e) => e.index)
-	sortedToolResults.forEach((entry, i) => {
-		result[toolResultSlots[i]] = entry.block
-	})
 
 	return result
 }
