@@ -1022,7 +1022,7 @@ describe("validateAndFixToolResultIds", () => {
 			expect(content[2].tool_use_id).toBe("tool-C")
 		})
 
-		it("should keep non-tool-result blocks in their original positions when reordering", () => {
+		it("should move tool_result blocks before non-tool-result blocks when reordering", () => {
 			const assistantMessage: Anthropic.MessageParam = {
 				role: "assistant",
 				content: [
@@ -1044,10 +1044,10 @@ describe("validateAndFixToolResultIds", () => {
 			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 			const content = result.content as Anthropic.Messages.ContentBlockParam[]
 
-			// tool_results should be reordered, but text block stays at index 1
+			// tool_results should be reordered and moved to the front
 			expect(content[0]).toEqual({ type: "tool_result", tool_use_id: "tool-1", content: "Result 1" })
-			expect(content[1]).toEqual({ type: "text", text: "Here are the results" })
-			expect(content[2]).toEqual({ type: "tool_result", tool_use_id: "tool-2", content: "Result 2" })
+			expect(content[1]).toEqual({ type: "tool_result", tool_use_id: "tool-2", content: "Result 2" })
+			expect(content[2]).toEqual({ type: "text", text: "Here are the results" })
 		})
 
 		it("should not modify content when tool_results are already in correct order", () => {
