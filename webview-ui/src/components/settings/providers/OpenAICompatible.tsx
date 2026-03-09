@@ -1,6 +1,7 @@
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useMemo } from "react"
 import { useEvent } from "react-use"
 import { Checkbox } from "vscrui"
+import { ChevronsUpDown, Check } from "lucide-react"
 import { VSCodeButton, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
 import {
@@ -11,10 +12,24 @@ import {
 	type ExtensionMessage,
 	azureOpenAiDefaultApiVersion,
 	openAiModelInfoSaneDefaults,
+	modelCapabilityPresets,
 } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
-import { Button, StandardTooltip } from "@src/components/ui"
+import {
+	Button,
+	StandardTooltip,
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@src/components/ui"
+import { cn } from "@src/lib/utils"
 
 import { convertHeadersToObject } from "../utils/headers"
 import { inputEventTransform, noTransform } from "../transforms"
@@ -44,8 +59,39 @@ export const OpenAICompatible = ({
 	const { t } = useAppTranslation()
 
 	const [azureApiVersionSelected, setAzureApiVersionSelected] = useState(!!apiConfiguration?.azureApiVersion)
+	const [presetPickerOpen, setPresetPickerOpen] = useState(false)
+	const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null)
 
 	const [openAiModels, setOpenAiModels] = useState<Record<string, ModelInfo> | null>(null)
+
+	// Group presets by provider for organized display
+	const groupedPresets = useMemo(() => {
+		const groups: Record<string, typeof modelCapabilityPresets> = {}
+		for (const preset of modelCapabilityPresets) {
+			if (!groups[preset.provider]) {
+				groups[preset.provider] = []
+			}
+			groups[preset.provider].push(preset)
+		}
+		return groups
+	}, [])
+
+	const handlePresetSelect = useCallback(
+		(presetKey: string) => {
+			if (presetKey === "custom") {
+				setSelectedPresetId(null)
+				setApiConfigurationField("openAiCustomModelInfo", openAiModelInfoSaneDefaults)
+			} else {
+				const preset = modelCapabilityPresets.find((p) => `${p.provider}/${p.modelId}` === presetKey)
+				if (preset) {
+					setSelectedPresetId(presetKey)
+					setApiConfigurationField("openAiCustomModelInfo", { ...preset.info })
+				}
+			}
+			setPresetPickerOpen(false)
+		},
+		[setApiConfigurationField],
+	)
 
 	const [customHeaders, setCustomHeaders] = useState<[string, string][]>(() => {
 		const headers = apiConfiguration?.openAiHeaders || {}
@@ -278,6 +324,82 @@ export const OpenAICompatible = ({
 				)}
 			</div>
 			<div className="flex flex-col gap-3">
+				<div>
+					<label className="block font-medium mb-1">
+						{t("settings:providers.customModel.capabilityPreset.label")}
+					</label>
+					<div className="text-sm text-vscode-descriptionForeground mb-2">
+						{t("settings:providers.customModel.capabilityPreset.description")}
+					</div>
+					<Popover open={presetPickerOpen} onOpenChange={setPresetPickerOpen}>
+						<PopoverTrigger asChild>
+							<Button
+								variant="combobox"
+								role="combobox"
+								aria-expanded={presetPickerOpen}
+								className="w-full justify-between">
+								<span className="truncate">
+									{selectedPresetId ?? t("settings:providers.customModel.capabilityPreset.custom")}
+								</span>
+								<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+							</Button>
+						</PopoverTrigger>
+						<PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+							<Command>
+								<CommandInput
+									placeholder={t("settings:providers.customModel.capabilityPreset.searchPlaceholder")}
+								/>
+								<CommandList>
+									<CommandEmpty>
+										{t("settings:providers.customModel.capabilityPreset.noResults")}
+									</CommandEmpty>
+									<CommandGroup heading={t("settings:providers.customModel.capabilityPreset.custom")}>
+										<CommandItem value="custom" onSelect={() => handlePresetSelect("custom")}>
+											<Check
+												className={cn(
+													"mr-2 h-4 w-4",
+													selectedPresetId === null ? "opacity-100" : "opacity-0",
+												)}
+											/>
+											{t("settings:providers.customModel.capabilityPreset.custom")}
+										</CommandItem>
+									</CommandGroup>
+									{Object.entries(groupedPresets).map(([provider, presets]) => (
+										<CommandGroup key={provider} heading={provider}>
+											{presets.map((preset) => {
+												const presetKey = `${preset.provider}/${preset.modelId}`
+												return (
+													<CommandItem
+														key={presetKey}
+														value={presetKey}
+														onSelect={() => handlePresetSelect(presetKey)}>
+														<Check
+															className={cn(
+																"mr-2 h-4 w-4",
+																selectedPresetId === presetKey
+																	? "opacity-100"
+																	: "opacity-0",
+															)}
+														/>
+														{preset.modelId}
+														{preset.info.description && (
+															<span className="ml-2 text-xs text-vscode-descriptionForeground truncate">
+																{preset.info.contextWindow
+																	? `${Math.round(preset.info.contextWindow / 1000)}K ctx`
+																	: ""}
+															</span>
+														)}
+													</CommandItem>
+												)
+											})}
+										</CommandGroup>
+									))}
+								</CommandList>
+							</Command>
+						</PopoverContent>
+					</Popover>
+				</div>
+
 				<div className="text-sm text-vscode-descriptionForeground whitespace-pre-line">
 					{t("settings:providers.customModel.capabilities")}
 				</div>

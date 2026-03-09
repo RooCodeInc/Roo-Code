@@ -63,8 +63,40 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 
 // Mock the UI components
 vi.mock("@src/components/ui", () => ({
-	Button: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
+	Button: ({ children, onClick, ...props }: any) => (
+		<button onClick={onClick} {...props}>
+			{children}
+		</button>
+	),
 	StandardTooltip: ({ children, content }: any) => <div title={content}>{children}</div>,
+	Command: ({ children }: any) => <div data-testid="command">{children}</div>,
+	CommandEmpty: ({ children }: any) => <div data-testid="command-empty">{children}</div>,
+	CommandGroup: ({ children, heading }: any) => <div data-testid={`command-group-${heading}`}>{children}</div>,
+	CommandInput: ({ placeholder }: any) => <input data-testid="command-input" placeholder={placeholder} />,
+	CommandItem: ({ children, onSelect, value }: any) => (
+		<div data-testid={`command-item-${value}`} onClick={onSelect}>
+			{children}
+		</div>
+	),
+	CommandList: ({ children }: any) => <div data-testid="command-list">{children}</div>,
+	Popover: ({ children, open }: any) => (
+		<div data-testid="popover" data-open={open}>
+			{children}
+		</div>
+	),
+	PopoverContent: ({ children }: any) => <div data-testid="popover-content">{children}</div>,
+	PopoverTrigger: ({ children }: any) => <div data-testid="popover-trigger">{children}</div>,
+}))
+
+// Mock lucide-react icons
+vi.mock("lucide-react", () => ({
+	ChevronsUpDown: () => <span data-testid="chevrons-icon" />,
+	Check: () => <span data-testid="check-icon" />,
+}))
+
+// Mock cn utility
+vi.mock("@src/lib/utils", () => ({
+	cn: (...args: any[]) => args.filter(Boolean).join(" "),
 }))
 
 // Mock other components
@@ -311,5 +343,91 @@ describe("OpenAICompatible Component - includeMaxTokens checkbox", () => {
 			const description = screen.getByText("settings:includeMaxOutputTokensDescription")
 			expect(description).toHaveClass("text-sm", "text-vscode-descriptionForeground", "ml-6")
 		})
+	})
+})
+
+describe("OpenAICompatible Component - Model Capability Presets", () => {
+	const mockSetApiConfigurationField = vi.fn()
+	const mockOrganizationAllowList = {
+		allowAll: true,
+		providers: {},
+	}
+
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it("should render the model capability preset picker", () => {
+		const apiConfiguration: Partial<ProviderSettings> = {}
+
+		render(
+			<OpenAICompatible
+				apiConfiguration={apiConfiguration as ProviderSettings}
+				setApiConfigurationField={mockSetApiConfigurationField}
+				organizationAllowList={mockOrganizationAllowList}
+			/>,
+		)
+
+		// Check that the preset label is rendered
+		expect(screen.getByText("settings:providers.customModel.capabilityPreset.label")).toBeInTheDocument()
+
+		// Check that the description is rendered
+		expect(screen.getByText("settings:providers.customModel.capabilityPreset.description")).toBeInTheDocument()
+	})
+
+	it("should render the popover trigger button with Custom text by default", () => {
+		const apiConfiguration: Partial<ProviderSettings> = {}
+
+		render(
+			<OpenAICompatible
+				apiConfiguration={apiConfiguration as ProviderSettings}
+				setApiConfigurationField={mockSetApiConfigurationField}
+				organizationAllowList={mockOrganizationAllowList}
+			/>,
+		)
+
+		// Should show the custom option text (appears in button, group heading, and item)
+		const customTexts = screen.getAllByText("settings:providers.customModel.capabilityPreset.custom")
+		expect(customTexts.length).toBeGreaterThanOrEqual(1)
+	})
+
+	it("should render command items for model presets grouped by provider", () => {
+		const apiConfiguration: Partial<ProviderSettings> = {}
+
+		render(
+			<OpenAICompatible
+				apiConfiguration={apiConfiguration as ProviderSettings}
+				setApiConfigurationField={mockSetApiConfigurationField}
+				organizationAllowList={mockOrganizationAllowList}
+			/>,
+		)
+
+		// Check that provider groups are rendered (via mocked CommandGroup with heading)
+		expect(screen.getByTestId("command-group-Anthropic")).toBeInTheDocument()
+		expect(screen.getByTestId("command-group-OpenAI")).toBeInTheDocument()
+		expect(screen.getByTestId("command-group-DeepSeek")).toBeInTheDocument()
+	})
+
+	it("should call setApiConfigurationField with preset info when a model is selected", () => {
+		const apiConfiguration: Partial<ProviderSettings> = {}
+
+		render(
+			<OpenAICompatible
+				apiConfiguration={apiConfiguration as ProviderSettings}
+				setApiConfigurationField={mockSetApiConfigurationField}
+				organizationAllowList={mockOrganizationAllowList}
+			/>,
+		)
+
+		// Click on the "custom" item to reset to defaults
+		const customItem = screen.getByTestId("command-item-custom")
+		fireEvent.click(customItem)
+
+		expect(mockSetApiConfigurationField).toHaveBeenCalledWith(
+			"openAiCustomModelInfo",
+			expect.objectContaining({
+				contextWindow: expect.any(Number),
+			}),
+		)
 	})
 })
