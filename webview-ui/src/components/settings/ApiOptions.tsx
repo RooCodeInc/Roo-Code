@@ -25,6 +25,7 @@ import {
 	bedrockDefaultModelId,
 	vertexDefaultModelId,
 	sambaNovaDefaultModelId,
+	nvidiaDefaultModelId,
 	internationalZAiDefaultModelId,
 	mainlandZAiDefaultModelId,
 	fireworksDefaultModelId,
@@ -84,6 +85,7 @@ import {
 	Requesty,
 	Roo,
 	SambaNova,
+	Nvidia,
 	Unbound,
 	Vertex,
 	VSCodeLM,
@@ -348,6 +350,7 @@ const ApiOptions = ({
 				bedrock: { field: "apiModelId", default: bedrockDefaultModelId },
 				vertex: { field: "apiModelId", default: vertexDefaultModelId },
 				sambanova: { field: "apiModelId", default: sambaNovaDefaultModelId },
+				nvidia: { field: "apiModelId", default: nvidiaDefaultModelId },
 				zai: {
 					field: "apiModelId",
 					default:
@@ -676,6 +679,13 @@ const ApiOptions = ({
 
 					{selectedProvider === "sambanova" && (
 						<SambaNova
+							apiConfiguration={apiConfiguration}
+							setApiConfigurationField={setApiConfigurationField}
+						/>
+					)}
+
+					{selectedProvider === "nvidia" && (
+						<Nvidia
 							apiConfiguration={apiConfiguration}
 							setApiConfigurationField={setApiConfigurationField}
 						/>

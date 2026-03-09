@@ -17,6 +17,7 @@ export * from "./qwen-code.js"
 export * from "./requesty.js"
 export * from "./roo.js"
 export * from "./sambanova.js"
+export * from "./nvidia.js"
 export * from "./unbound.js"
 export * from "./vertex.js"
 export * from "./vscode-llm.js"
@@ -40,6 +41,7 @@ import { qwenCodeDefaultModelId } from "./qwen-code.js"
 import { requestyDefaultModelId } from "./requesty.js"
 import { rooDefaultModelId } from "./roo.js"
 import { sambaNovaDefaultModelId } from "./sambanova.js"
+import { nvidiaDefaultModelId } from "./nvidia.js"
 import { unboundDefaultModelId } from "./unbound.js"
 import { vertexDefaultModelId } from "./vertex.js"
 import { vscodeLlmDefaultModelId } from "./vscode-llm.js"
@@ -101,6 +103,8 @@ export function getProviderDefaultModelId(
 			return vscodeLlmDefaultModelId
 		case "sambanova":
 			return sambaNovaDefaultModelId
+		case "nvidia":
+			return nvidiaDefaultModelId
 		case "fireworks":
 			return fireworksDefaultModelId
 		case "roo":

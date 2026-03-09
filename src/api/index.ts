@@ -27,6 +27,7 @@ import {
 	LiteLLMHandler,
 	QwenCodeHandler,
 	SambaNovaHandler,
+	NvidiaHandler,
 	ZAiHandler,
 	FireworksHandler,
 	RooHandler,
@@ -162,6 +163,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new LiteLLMHandler(options)
 		case "sambanova":
 			return new SambaNovaHandler(options)
+		case "nvidia":
+			return new NvidiaHandler(options)
 		case "zai":
 			return new ZAiHandler(options)
 		case "fireworks":
