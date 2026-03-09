@@ -347,6 +347,7 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 
 			// Mock service factory instance
 			mockServiceFactoryInstance = {
+				createEmbedder: vi.fn().mockReturnValue(mockEmbedder),
 				createServices: vi.fn().mockReturnValue({
 					embedder: mockEmbedder,
 					vectorStore: mockVectorStore,
@@ -389,9 +390,9 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 			await (manager as any)._recreateServices()
 
 			// Assert
+			expect(mockServiceFactoryInstance.createEmbedder).toHaveBeenCalled()
+			expect(mockServiceFactoryInstance.validateEmbedder).toHaveBeenCalledWith(mockEmbedder)
 			expect(mockServiceFactoryInstance.createServices).toHaveBeenCalled()
-			const createdEmbedder = mockServiceFactoryInstance.createServices.mock.results[0].value.embedder
-			expect(mockServiceFactoryInstance.validateEmbedder).toHaveBeenCalledWith(createdEmbedder)
 			expect(mockStateManager.setSystemState).not.toHaveBeenCalledWith("Error", expect.any(String))
 		})
 
@@ -408,9 +409,8 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 			)
 
 			// Assert other expectations
-			expect(mockServiceFactoryInstance.createServices).toHaveBeenCalled()
-			const createdEmbedder = mockServiceFactoryInstance.createServices.mock.results[0].value.embedder
-			expect(mockServiceFactoryInstance.validateEmbedder).toHaveBeenCalledWith(createdEmbedder)
+			expect(mockServiceFactoryInstance.createEmbedder).toHaveBeenCalled()
+			expect(mockServiceFactoryInstance.validateEmbedder).toHaveBeenCalledWith(mockEmbedder)
 			expect(mockStateManager.setSystemState).toHaveBeenCalledWith(
 				"Error",
 				"embeddings:validation.authenticationFailed",
@@ -431,9 +431,8 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 			)
 
 			// Assert other expectations
-			expect(mockServiceFactoryInstance.createServices).toHaveBeenCalled()
-			const createdEmbedder = mockServiceFactoryInstance.createServices.mock.results[0].value.embedder
-			expect(mockServiceFactoryInstance.validateEmbedder).toHaveBeenCalledWith(createdEmbedder)
+			expect(mockServiceFactoryInstance.createEmbedder).toHaveBeenCalled()
+			expect(mockServiceFactoryInstance.validateEmbedder).toHaveBeenCalledWith(mockEmbedder)
 			expect(mockStateManager.setSystemState).toHaveBeenCalledWith(
 				"Error",
 				"embeddings:validation.configurationError",
@@ -441,8 +440,8 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 		})
 
 		it("should handle embedder creation failure", async () => {
-			// Arrange
-			mockServiceFactoryInstance.createServices.mockImplementation(() => {
+			// Arrange - createEmbedder is now called before createServices
+			mockServiceFactoryInstance.createEmbedder.mockImplementation(() => {
 				throw new Error("Invalid configuration")
 			})
 
@@ -540,6 +539,7 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 		it("should allow re-initialization after recovery", async () => {
 			// Setup mock for re-initialization
 			const mockServiceFactoryInstance = {
+				createEmbedder: vi.fn().mockReturnValue({ embedderInfo: { name: "openai" } }),
 				createServices: vi.fn().mockReturnValue({
 					embedder: { embedderInfo: { name: "openai" } },
 					vectorStore: {},
