@@ -480,6 +480,14 @@
 			}
 		},
 		"customModel": {
+			"capabilityPreset": {
+				"label": "Preset de capacités du modèle",
+				"description": "Sélectionne un modèle connu pour configurer automatiquement les capacités (fenêtre de contexte, tokens maximum, support d'images, etc.). Choisis \"Personnalisé\" pour configurer manuellement.",
+				"custom": "Personnalisé (configurer manuellement)",
+				"searchPlaceholder": "Rechercher des modèles...",
+				"noResults": "Aucun modèle correspondant trouvé.",
+				"applied": "Capacités de {{model}} appliquées"
+			},
 			"capabilities": "Configurez les capacités et les prix pour votre modèle personnalisé compatible OpenAI. Soyez prudent lors de la spécification des capacités du modèle, car elles peuvent affecter le fonctionnement de Roo Code.",
 			"maxTokens": {
 				"label": "Tokens de sortie maximum",

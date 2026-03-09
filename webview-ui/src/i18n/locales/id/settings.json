@@ -480,6 +480,14 @@
 			}
 		},
 		"customModel": {
+			"capabilityPreset": {
+				"label": "Preset Kemampuan Model",
+				"description": "Pilih model yang dikenal untuk mengonfigurasi kemampuan secara otomatis (jendela konteks, token maksimum, dukungan gambar, dll.). Pilih \"Kustom\" untuk mengonfigurasi secara manual.",
+				"custom": "Kustom (konfigurasi manual)",
+				"searchPlaceholder": "Cari model...",
+				"noResults": "Tidak ada model yang cocok ditemukan.",
+				"applied": "Kemampuan dari {{model}} diterapkan"
+			},
 			"capabilities": "Konfigurasi kemampuan dan harga untuk model kustom yang kompatibel dengan OpenAI. Hati-hati saat menentukan kemampuan model, karena dapat mempengaruhi performa Roo Code.",
 			"maxTokens": {
 				"label": "Token Output Maksimum",

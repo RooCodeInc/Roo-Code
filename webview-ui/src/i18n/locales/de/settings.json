@@ -480,6 +480,14 @@
 			}
 		},
 		"customModel": {
+			"capabilityPreset": {
+				"label": "Modellfähigkeiten-Preset",
+				"description": "Wähle ein bekanntes Modell, um die Fähigkeiten automatisch zu konfigurieren (Kontextfenster, maximale Token, Bildunterstützung usw.). Wähle \"Benutzerdefiniert\" für manuelle Konfiguration.",
+				"custom": "Benutzerdefiniert (manuell konfigurieren)",
+				"searchPlaceholder": "Modelle suchen...",
+				"noResults": "Keine passenden Modelle gefunden.",
+				"applied": "Fähigkeiten von {{model}} angewendet"
+			},
 			"capabilities": "Konfiguriere die Fähigkeiten und Preise für dein benutzerdefiniertes OpenAI-kompatibles Modell. Sei vorsichtig bei der Angabe der Modellfähigkeiten, da diese beeinflussen können, wie Roo Code funktioniert.",
 			"maxTokens": {
 				"label": "Maximale Ausgabe-Tokens",

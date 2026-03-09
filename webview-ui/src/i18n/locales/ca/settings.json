@@ -480,6 +480,14 @@
 			}
 		},
 		"customModel": {
+			"capabilityPreset": {
+				"label": "Preset de capacitats del model",
+				"description": "Selecciona un model conegut per configurar automàticament les capacitats (finestra de context, tokens màxims, suport d'imatges, etc.). Tria \"Personalitzat\" per configurar manualment.",
+				"custom": "Personalitzat (configura manualment)",
+				"searchPlaceholder": "Cerca models...",
+				"noResults": "No s'han trobat models coincidents.",
+				"applied": "S'han aplicat les capacitats de {{model}}"
+			},
 			"capabilities": "Configureu les capacitats i preus per al vostre model personalitzat compatible amb OpenAI. Tingueu cura en especificar les capacitats del model, ja que poden afectar com funciona Roo Code.",
 			"maxTokens": {
 				"label": "Màxim de tokens de sortida",

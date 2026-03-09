@@ -480,6 +480,14 @@
 			}
 		},
 		"customModel": {
+			"capabilityPreset": {
+				"label": "Preset możliwości modelu",
+				"description": "Wybierz znany model, aby automatycznie skonfigurować możliwości (okno kontekstu, maksymalna liczba tokenów, obsługa obrazów itp.). Wybierz \"Niestandardowy\" aby skonfigurować ręcznie.",
+				"custom": "Niestandardowy (konfiguruj ręcznie)",
+				"searchPlaceholder": "Szukaj modeli...",
+				"noResults": "Nie znaleziono pasujących modeli.",
+				"applied": "Zastosowano możliwości z {{model}}"
+			},
 			"capabilities": "Skonfiguruj możliwości i ceny swojego niestandardowego modelu zgodnego z OpenAI. Zachowaj ostrożność podczas określania możliwości modelu, ponieważ mogą one wpływać na wydajność Roo Code.",
 			"maxTokens": {
 				"label": "Maksymalna liczba tokenów wyjściowych",

@@ -480,6 +480,14 @@
 			}
 		},
 		"customModel": {
+			"capabilityPreset": {
+				"label": "Model Yetenek Ön Ayarı",
+				"description": "Yetenekleri otomatik olarak yapılandırmak için bilinen bir model seç (bağlam penceresi, maksimum token, görüntü desteği vb.). Manuel yapılandırma için \"Özel\" seç.",
+				"custom": "Özel (manuel yapılandır)",
+				"searchPlaceholder": "Model ara...",
+				"noResults": "Eşleşen model bulunamadı.",
+				"applied": "{{model}} yetenekleri uygulandı"
+			},
 			"capabilities": "Özel OpenAI uyumlu modelinizin yeteneklerini ve fiyatlandırmasını yapılandırın. Model yeteneklerini belirtirken dikkatli olun, çünkü bunlar Roo Code'un performansını etkileyebilir.",
 			"maxTokens": {
 				"label": "Maksimum Çıktı Token'ları",

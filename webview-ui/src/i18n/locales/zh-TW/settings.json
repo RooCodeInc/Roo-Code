@@ -490,6 +490,14 @@
 			}
 		},
 		"customModel": {
+			"capabilityPreset": {
+				"label": "模型能力預設",
+				"description": "選擇一個已知模型來自動設定能力（上下文視窗、最大 token 數、圖片支援等）。選擇「自訂」以手動設定。",
+				"custom": "自訂（手動設定）",
+				"searchPlaceholder": "搜尋模型...",
+				"noResults": "找不到符合的模型。",
+				"applied": "已套用 {{model}} 的能力設定"
+			},
 			"capabilities": "設定自訂 OpenAI 相容模型的功能和定價。請謹慎設定模型功能，因為這會影響 Roo Code 的運作方式。",
 			"maxTokens": {
 				"label": "最大輸出 Token",

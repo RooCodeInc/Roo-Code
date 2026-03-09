@@ -480,6 +480,14 @@
 			}
 		},
 		"customModel": {
+			"capabilityPreset": {
+				"label": "Preset khả năng mô hình",
+				"description": "Chọn một mô hình đã biết để tự động cấu hình các khả năng (cửa sổ ngữ cảnh, token tối đa, hỗ trợ hình ảnh, v.v.). Chọn \"Tùy chỉnh\" để cấu hình thủ công.",
+				"custom": "Tùy chỉnh (cấu hình thủ công)",
+				"searchPlaceholder": "Tìm kiếm mô hình...",
+				"noResults": "Không tìm thấy mô hình phù hợp.",
+				"applied": "Đã áp dụng khả năng từ {{model}}"
+			},
 			"capabilities": "Cấu hình các khả năng và giá cả cho mô hình tương thích OpenAI tùy chỉnh của bạn. Hãy cẩn thận khi chỉ định khả năng của mô hình, vì chúng có thể ảnh hưởng đến cách Roo Code hoạt động.",
 			"maxTokens": {
 				"label": "Số token đầu ra tối đa",
