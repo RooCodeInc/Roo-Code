@@ -1,4 +1,5 @@
-import { modelCapabilityPresets } from "../providers/all-model-capabilities"
+import { modelCapabilityPresets } from "../providers/all-model-capabilities.js"
+import type { ModelCapabilityPreset } from "../providers/all-model-capabilities.js"
 
 describe("modelCapabilityPresets", () => {
 	it("should be a non-empty array", () => {
@@ -23,22 +24,22 @@ describe("modelCapabilityPresets", () => {
 	})
 
 	it("should include models from multiple providers", () => {
-		const providers = new Set(modelCapabilityPresets.map((p) => p.provider))
+		const providers = new Set(modelCapabilityPresets.map((p: ModelCapabilityPreset) => p.provider))
 		expect(providers.size).toBeGreaterThan(5)
 	})
 
 	it("should include well-known models", () => {
-		const modelIds = modelCapabilityPresets.map((p) => p.modelId)
+		const modelIds = modelCapabilityPresets.map((p: ModelCapabilityPreset) => p.modelId)
 
 		// Check for some well-known models
-		expect(modelIds.some((id) => id.includes("claude"))).toBe(true)
-		expect(modelIds.some((id) => id.includes("gpt"))).toBe(true)
-		expect(modelIds.some((id) => id.includes("deepseek"))).toBe(true)
-		expect(modelIds.some((id) => id.includes("gemini"))).toBe(true)
+		expect(modelIds.some((id: string) => id.includes("claude"))).toBe(true)
+		expect(modelIds.some((id: string) => id.includes("gpt"))).toBe(true)
+		expect(modelIds.some((id: string) => id.includes("deepseek"))).toBe(true)
+		expect(modelIds.some((id: string) => id.includes("gemini"))).toBe(true)
 	})
 
 	it("should have unique provider/modelId combinations", () => {
-		const keys = modelCapabilityPresets.map((p) => `${p.provider}/${p.modelId}`)
+		const keys = modelCapabilityPresets.map((p: ModelCapabilityPreset) => `${p.provider}/${p.modelId}`)
 		const uniqueKeys = new Set(keys)
 		expect(uniqueKeys.size).toBe(keys.length)
 	})
@@ -58,7 +59,7 @@ describe("modelCapabilityPresets", () => {
 			"ZAi (GLM)",
 		]
 
-		const providers = new Set(modelCapabilityPresets.map((p) => p.provider))
+		const providers = new Set(modelCapabilityPresets.map((p: ModelCapabilityPreset) => p.provider))
 
 		for (const known of knownProviders) {
 			expect(providers.has(known)).toBe(true)
