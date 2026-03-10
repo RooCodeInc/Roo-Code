@@ -430,4 +430,45 @@ describe("OpenAICompatible Component - Model Capability Presets", () => {
 			}),
 		)
 	})
+
+	it("should reset openAiR1FormatEnabled when selecting custom preset", () => {
+		const apiConfiguration: Partial<ProviderSettings> = {}
+
+		render(
+			<OpenAICompatible
+				apiConfiguration={apiConfiguration as ProviderSettings}
+				setApiConfigurationField={mockSetApiConfigurationField}
+				organizationAllowList={mockOrganizationAllowList}
+			/>,
+		)
+
+		const customItem = screen.getByTestId("command-item-custom")
+		fireEvent.click(customItem)
+
+		expect(mockSetApiConfigurationField).toHaveBeenCalledWith("openAiR1FormatEnabled", false)
+	})
+
+	it("should auto-enable openAiR1FormatEnabled when selecting a model with preserveReasoning", () => {
+		const apiConfiguration: Partial<ProviderSettings> = {}
+
+		render(
+			<OpenAICompatible
+				apiConfiguration={apiConfiguration as ProviderSettings}
+				setApiConfigurationField={mockSetApiConfigurationField}
+				organizationAllowList={mockOrganizationAllowList}
+			/>,
+		)
+
+		// Click on a Kimi K2.5 model which has preserveReasoning: true
+		const kimiItem = screen.getByTestId("command-item-Moonshot (Kimi)/kimi-k2.5")
+		fireEvent.click(kimiItem)
+
+		expect(mockSetApiConfigurationField).toHaveBeenCalledWith("openAiR1FormatEnabled", true)
+		expect(mockSetApiConfigurationField).toHaveBeenCalledWith(
+			"openAiCustomModelInfo",
+			expect.objectContaining({
+				preserveReasoning: true,
+			}),
+		)
+	})
 })

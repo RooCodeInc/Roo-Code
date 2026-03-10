@@ -64,6 +64,22 @@ export const OpenAICompatible = ({
 
 	const [openAiModels, setOpenAiModels] = useState<Record<string, ModelInfo> | null>(null)
 
+	// Compute applied capability flags for the selected preset
+	const appliedCapabilityFlags = useMemo(() => {
+		if (!selectedPresetId) return null
+		const preset = modelCapabilityPresets.find((p) => `${p.provider}/${p.modelId}` === selectedPresetId)
+		if (!preset) return null
+		const flags: string[] = []
+		if (preset.info.preserveReasoning)
+			flags.push(t("settings:providers.customModel.capabilityPreset.flags.reasoning"))
+		if (preset.info.supportsImages) flags.push(t("settings:providers.customModel.capabilityPreset.flags.images"))
+		if (preset.info.supportsPromptCache)
+			flags.push(t("settings:providers.customModel.capabilityPreset.flags.promptCache"))
+		if (preset.info.supportsTemperature)
+			flags.push(t("settings:providers.customModel.capabilityPreset.flags.temperature"))
+		return flags.length > 0 ? flags : null
+	}, [selectedPresetId, t])
+
 	// Group presets by provider for organized display
 	const groupedPresets = useMemo(() => {
 		const groups: Record<string, typeof modelCapabilityPresets> = {}
@@ -81,11 +97,17 @@ export const OpenAICompatible = ({
 			if (presetKey === "custom") {
 				setSelectedPresetId(null)
 				setApiConfigurationField("openAiCustomModelInfo", openAiModelInfoSaneDefaults)
+				setApiConfigurationField("openAiR1FormatEnabled", false)
 			} else {
 				const preset = modelCapabilityPresets.find((p) => `${p.provider}/${p.modelId}` === presetKey)
 				if (preset) {
 					setSelectedPresetId(presetKey)
 					setApiConfigurationField("openAiCustomModelInfo", { ...preset.info })
+
+					// Auto-enable R1 format for models that use reasoning/thinking blocks
+					if (preset.info.preserveReasoning) {
+						setApiConfigurationField("openAiR1FormatEnabled", true)
+					}
 				}
 			}
 			setPresetPickerOpen(false)
@@ -398,6 +420,12 @@ export const OpenAICompatible = ({
 							</Command>
 						</PopoverContent>
 					</Popover>
+					{appliedCapabilityFlags && (
+						<div className="text-xs text-vscode-descriptionForeground mt-1">
+							{t("settings:providers.customModel.capabilityPreset.appliedFlags")}:{" "}
+							{appliedCapabilityFlags.join(", ")}
+						</div>
+					)}
 				</div>
 
 				<div className="text-sm text-vscode-descriptionForeground whitespace-pre-line">
