@@ -487,13 +487,13 @@
 				"searchPlaceholder": "Cerca models...",
 				"noResults": "No s'han trobat models coincidents.",
 				"applied": "S'han aplicat les capacitats de {{model}}",
-				"appliedFlags": "Applied capabilities",
+				"appliedFlags": "Capacitats aplicades",
 				"flags": {
-					"reasoning": "Reasoning/Thinking",
-					"images": "Image Support",
+					"reasoning": "Raonament/Pensament",
+					"images": "Suport d'imatges",
 					"promptCache": "Prompt Cache",
-					"temperature": "Temperature Control",
-					"defaultTemp": "Default Temperature: {{temp}}"
+					"temperature": "Control de temperatura",
+					"defaultTemp": "Temperatura per defecte: {{temp}}"
 				}
 			},
 			"capabilities": "Configureu les capacitats i preus per al vostre model personalitzat compatible amb OpenAI. Tingueu cura en especificar les capacitats del model, ja que poden afectar com funciona Roo Code.",

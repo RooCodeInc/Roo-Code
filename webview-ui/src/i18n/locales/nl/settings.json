@@ -487,13 +487,13 @@
 				"searchPlaceholder": "Modellen zoeken...",
 				"noResults": "Geen overeenkomende modellen gevonden.",
 				"applied": "Mogelijkheden van {{model}} toegepast",
-				"appliedFlags": "Applied capabilities",
+				"appliedFlags": "Toegepaste mogelijkheden",
 				"flags": {
-					"reasoning": "Reasoning/Thinking",
-					"images": "Image Support",
+					"reasoning": "Redeneren/Denken",
+					"images": "Afbeeldingsondersteuning",
 					"promptCache": "Prompt Cache",
-					"temperature": "Temperature Control",
-					"defaultTemp": "Default Temperature: {{temp}}"
+					"temperature": "Temperatuurregeling",
+					"defaultTemp": "Standaardtemperatuur: {{temp}}"
 				}
 			},
 			"capabilities": "Stel de mogelijkheden en prijzen in voor je aangepaste OpenAI-compatibele model. Wees voorzichtig met het opgeven van de modelmogelijkheden, want deze kunnen de prestaties van Roo Code beïnvloeden.",

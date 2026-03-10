@@ -487,13 +487,13 @@
 				"searchPlaceholder": "モデルを検索...",
 				"noResults": "一致するモデルが見つかりません。",
 				"applied": "{{model}}の機能を適用しました",
-				"appliedFlags": "Applied capabilities",
+				"appliedFlags": "適用された機能",
 				"flags": {
-					"reasoning": "Reasoning/Thinking",
-					"images": "Image Support",
-					"promptCache": "Prompt Cache",
-					"temperature": "Temperature Control",
-					"defaultTemp": "Default Temperature: {{temp}}"
+					"reasoning": "推論/思考",
+					"images": "画像サポート",
+					"promptCache": "プロンプトキャッシュ",
+					"temperature": "Temperature制御",
+					"defaultTemp": "デフォルトTemperature: {{temp}}"
 				}
 			},
 			"capabilities": "カスタムOpenAI互換モデルの機能と価格を設定します。モデルの機能はRoo Codeのパフォーマンスに影響を与える可能性があるため、慎重に指定してください。",

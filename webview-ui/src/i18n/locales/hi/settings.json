@@ -487,13 +487,13 @@
 				"searchPlaceholder": "मॉडल खोजें...",
 				"noResults": "कोई मेल खाने वाला मॉडल नहीं मिला।",
 				"applied": "{{model}} से क्षमताएं लागू की गईं",
-				"appliedFlags": "Applied capabilities",
+				"appliedFlags": "लागू की गई क्षमताएं",
 				"flags": {
-					"reasoning": "Reasoning/Thinking",
-					"images": "Image Support",
+					"reasoning": "रीज़निंग/थिंकिंग",
+					"images": "इमेज सपोर्ट",
 					"promptCache": "Prompt Cache",
-					"temperature": "Temperature Control",
-					"defaultTemp": "Default Temperature: {{temp}}"
+					"temperature": "तापमान नियंत्रण",
+					"defaultTemp": "डिफ़ॉल्ट तापमान: {{temp}}"
 				}
 			},
 			"capabilities": "अपने कस्टम OpenAI-संगत मॉडल के लिए क्षमताओं और मूल्य निर्धारण को कॉन्फ़िगर करें। मॉडल क्षमताओं को निर्दिष्ट करते समय सावधान रहें, क्योंकि वे Roo Code के प्रदर्शन को प्रभावित कर सकती हैं।",

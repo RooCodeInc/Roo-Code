@@ -487,13 +487,13 @@
 				"searchPlaceholder": "Cerca modelli...",
 				"noResults": "Nessun modello corrispondente trovato.",
 				"applied": "Capacità di {{model}} applicate",
-				"appliedFlags": "Applied capabilities",
+				"appliedFlags": "Capacità applicate",
 				"flags": {
-					"reasoning": "Reasoning/Thinking",
-					"images": "Image Support",
+					"reasoning": "Ragionamento/Pensiero",
+					"images": "Supporto immagini",
 					"promptCache": "Prompt Cache",
-					"temperature": "Temperature Control",
-					"defaultTemp": "Default Temperature: {{temp}}"
+					"temperature": "Controllo temperatura",
+					"defaultTemp": "Temperatura predefinita: {{temp}}"
 				}
 			},
 			"capabilities": "Configura le capacità e i prezzi del tuo modello personalizzato compatibile con OpenAI. Fai attenzione quando specifichi le capacità del modello, poiché possono influenzare le prestazioni di Roo Code.",

@@ -487,13 +487,13 @@
 				"searchPlaceholder": "Szukaj modeli...",
 				"noResults": "Nie znaleziono pasujących modeli.",
 				"applied": "Zastosowano możliwości z {{model}}",
-				"appliedFlags": "Applied capabilities",
+				"appliedFlags": "Zastosowane możliwości",
 				"flags": {
-					"reasoning": "Reasoning/Thinking",
-					"images": "Image Support",
+					"reasoning": "Rozumowanie/Myślenie",
+					"images": "Obsługa obrazów",
 					"promptCache": "Prompt Cache",
-					"temperature": "Temperature Control",
-					"defaultTemp": "Default Temperature: {{temp}}"
+					"temperature": "Kontrola temperatury",
+					"defaultTemp": "Domyślna temperatura: {{temp}}"
 				}
 			},
 			"capabilities": "Skonfiguruj możliwości i ceny swojego niestandardowego modelu zgodnego z OpenAI. Zachowaj ostrożność podczas określania możliwości modelu, ponieważ mogą one wpływać na wydajność Roo Code.",

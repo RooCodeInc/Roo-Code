@@ -487,13 +487,13 @@
 				"searchPlaceholder": "Model ara...",
 				"noResults": "Eşleşen model bulunamadı.",
 				"applied": "{{model}} yetenekleri uygulandı",
-				"appliedFlags": "Applied capabilities",
+				"appliedFlags": "Uygulanan yetenekler",
 				"flags": {
-					"reasoning": "Reasoning/Thinking",
-					"images": "Image Support",
+					"reasoning": "Akıl Yürütme/Düşünme",
+					"images": "Görüntü desteği",
 					"promptCache": "Prompt Cache",
-					"temperature": "Temperature Control",
-					"defaultTemp": "Default Temperature: {{temp}}"
+					"temperature": "Sıcaklık kontrolü",
+					"defaultTemp": "Varsayılan sıcaklık: {{temp}}"
 				}
 			},
 			"capabilities": "Özel OpenAI uyumlu modelinizin yeteneklerini ve fiyatlandırmasını yapılandırın. Model yeteneklerini belirtirken dikkatli olun, çünkü bunlar Roo Code'un performansını etkileyebilir.",

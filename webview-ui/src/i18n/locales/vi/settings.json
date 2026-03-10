@@ -487,13 +487,13 @@
 				"searchPlaceholder": "Tìm kiếm mô hình...",
 				"noResults": "Không tìm thấy mô hình phù hợp.",
 				"applied": "Đã áp dụng khả năng từ {{model}}",
-				"appliedFlags": "Applied capabilities",
+				"appliedFlags": "Khả năng đã áp dụng",
 				"flags": {
-					"reasoning": "Reasoning/Thinking",
-					"images": "Image Support",
+					"reasoning": "Suy luận/Tư duy",
+					"images": "Hỗ trợ hình ảnh",
 					"promptCache": "Prompt Cache",
-					"temperature": "Temperature Control",
-					"defaultTemp": "Default Temperature: {{temp}}"
+					"temperature": "Điều khiển temperature",
+					"defaultTemp": "Temperature mặc định: {{temp}}"
 				}
 			},
 			"capabilities": "Cấu hình các khả năng và giá cả cho mô hình tương thích OpenAI tùy chỉnh của bạn. Hãy cẩn thận khi chỉ định khả năng của mô hình, vì chúng có thể ảnh hưởng đến cách Roo Code hoạt động.",

@@ -497,13 +497,13 @@
 				"searchPlaceholder": "搜尋模型...",
 				"noResults": "找不到符合的模型。",
 				"applied": "已套用 {{model}} 的能力設定",
-				"appliedFlags": "Applied capabilities",
+				"appliedFlags": "已套用的能力",
 				"flags": {
-					"reasoning": "Reasoning/Thinking",
-					"images": "Image Support",
-					"promptCache": "Prompt Cache",
-					"temperature": "Temperature Control",
-					"defaultTemp": "Default Temperature: {{temp}}"
+					"reasoning": "推理/思考",
+					"images": "圖片支援",
+					"promptCache": "Prompt 快取",
+					"temperature": "Temperature 控制",
+					"defaultTemp": "預設 Temperature: {{temp}}"
 				}
 			},
 			"capabilities": "設定自訂 OpenAI 相容模型的功能和定價。請謹慎設定模型功能，因為這會影響 Roo Code 的運作方式。",
