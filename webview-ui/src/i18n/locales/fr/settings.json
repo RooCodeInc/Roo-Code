@@ -486,7 +486,15 @@
 				"custom": "Personnalisé (configurer manuellement)",
 				"searchPlaceholder": "Rechercher des modèles...",
 				"noResults": "Aucun modèle correspondant trouvé.",
-				"applied": "Capacités de {{model}} appliquées"
+				"applied": "Capacités de {{model}} appliquées",
+				"appliedFlags": "Applied capabilities",
+				"flags": {
+					"reasoning": "Reasoning/Thinking",
+					"images": "Image Support",
+					"promptCache": "Prompt Cache",
+					"temperature": "Temperature Control",
+					"defaultTemp": "Default Temperature: {{temp}}"
+				}
 			},
 			"capabilities": "Configurez les capacités et les prix pour votre modèle personnalisé compatible OpenAI. Soyez prudent lors de la spécification des capacités du modèle, car elles peuvent affecter le fonctionnement de Roo Code.",
 			"maxTokens": {

@@ -431,7 +431,7 @@ describe("OpenAICompatible Component - Model Capability Presets", () => {
 		)
 	})
 
-	it("should reset openAiR1FormatEnabled when selecting custom preset", () => {
+	it("should reset openAiR1FormatEnabled and modelTemperature when selecting custom preset", () => {
 		const apiConfiguration: Partial<ProviderSettings> = {}
 
 		render(
@@ -446,9 +446,10 @@ describe("OpenAICompatible Component - Model Capability Presets", () => {
 		fireEvent.click(customItem)
 
 		expect(mockSetApiConfigurationField).toHaveBeenCalledWith("openAiR1FormatEnabled", false)
+		expect(mockSetApiConfigurationField).toHaveBeenCalledWith("modelTemperature", null)
 	})
 
-	it("should auto-enable openAiR1FormatEnabled when selecting a model with preserveReasoning", () => {
+	it("should auto-enable openAiR1FormatEnabled and set temperature when selecting a model with preserveReasoning", () => {
 		const apiConfiguration: Partial<ProviderSettings> = {}
 
 		render(
@@ -459,7 +460,7 @@ describe("OpenAICompatible Component - Model Capability Presets", () => {
 			/>,
 		)
 
-		// Click on a Kimi K2.5 model which has preserveReasoning: true
+		// Click on a Kimi K2.5 model which has preserveReasoning: true and defaultTemperature: 1.0
 		const kimiItem = screen.getByTestId("command-item-Moonshot (Kimi)/kimi-k2.5")
 		fireEvent.click(kimiItem)
 
@@ -470,5 +471,26 @@ describe("OpenAICompatible Component - Model Capability Presets", () => {
 				preserveReasoning: true,
 			}),
 		)
+		// Should auto-apply the default temperature from the model preset
+		expect(mockSetApiConfigurationField).toHaveBeenCalledWith("modelTemperature", 1.0)
+	})
+
+	it("should reset openAiR1FormatEnabled to false when selecting a non-reasoning model", () => {
+		const apiConfiguration: Partial<ProviderSettings> = {}
+
+		render(
+			<OpenAICompatible
+				apiConfiguration={apiConfiguration as ProviderSettings}
+				setApiConfigurationField={mockSetApiConfigurationField}
+				organizationAllowList={mockOrganizationAllowList}
+			/>,
+		)
+
+		// Click on a DeepSeek model (no preserveReasoning)
+		const deepseekItems = document.querySelectorAll('[data-testid^="command-item-DeepSeek/"]')
+		if (deepseekItems.length > 0) {
+			fireEvent.click(deepseekItems[0])
+			expect(mockSetApiConfigurationField).toHaveBeenCalledWith("openAiR1FormatEnabled", false)
+		}
 	})
 })

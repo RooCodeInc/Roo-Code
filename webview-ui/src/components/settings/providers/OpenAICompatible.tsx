@@ -77,6 +77,12 @@ export const OpenAICompatible = ({
 			flags.push(t("settings:providers.customModel.capabilityPreset.flags.promptCache"))
 		if (preset.info.supportsTemperature)
 			flags.push(t("settings:providers.customModel.capabilityPreset.flags.temperature"))
+		if (preset.info.defaultTemperature !== undefined)
+			flags.push(
+				t("settings:providers.customModel.capabilityPreset.flags.defaultTemp", {
+					temp: preset.info.defaultTemperature,
+				}),
+			)
 		return flags.length > 0 ? flags : null
 	}, [selectedPresetId, t])
 
@@ -98,15 +104,21 @@ export const OpenAICompatible = ({
 				setSelectedPresetId(null)
 				setApiConfigurationField("openAiCustomModelInfo", openAiModelInfoSaneDefaults)
 				setApiConfigurationField("openAiR1FormatEnabled", false)
+				setApiConfigurationField("modelTemperature", null)
 			} else {
 				const preset = modelCapabilityPresets.find((p) => `${p.provider}/${p.modelId}` === presetKey)
 				if (preset) {
 					setSelectedPresetId(presetKey)
 					setApiConfigurationField("openAiCustomModelInfo", { ...preset.info })
 
-					// Auto-enable R1 format for models that use reasoning/thinking blocks
-					if (preset.info.preserveReasoning) {
-						setApiConfigurationField("openAiR1FormatEnabled", true)
+					// Auto-enable/disable R1 format based on whether model uses reasoning/thinking blocks
+					setApiConfigurationField("openAiR1FormatEnabled", !!preset.info.preserveReasoning)
+
+					// Auto-apply default temperature when the model specifies one (e.g. Kimi K2 models require temperature=1.0)
+					if (preset.info.defaultTemperature !== undefined) {
+						setApiConfigurationField("modelTemperature", preset.info.defaultTemperature)
+					} else {
+						setApiConfigurationField("modelTemperature", null)
 					}
 				}
 			}

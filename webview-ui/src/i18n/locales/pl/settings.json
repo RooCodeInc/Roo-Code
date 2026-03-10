@@ -486,7 +486,15 @@
 				"custom": "Niestandardowy (konfiguruj ręcznie)",
 				"searchPlaceholder": "Szukaj modeli...",
 				"noResults": "Nie znaleziono pasujących modeli.",
-				"applied": "Zastosowano możliwości z {{model}}"
+				"applied": "Zastosowano możliwości z {{model}}",
+				"appliedFlags": "Applied capabilities",
+				"flags": {
+					"reasoning": "Reasoning/Thinking",
+					"images": "Image Support",
+					"promptCache": "Prompt Cache",
+					"temperature": "Temperature Control",
+					"defaultTemp": "Default Temperature: {{temp}}"
+				}
 			},
 			"capabilities": "Skonfiguruj możliwości i ceny swojego niestandardowego modelu zgodnego z OpenAI. Zachowaj ostrożność podczas określania możliwości modelu, ponieważ mogą one wpływać na wydajność Roo Code.",
 			"maxTokens": {

@@ -486,7 +486,15 @@
 				"custom": "Benutzerdefiniert (manuell konfigurieren)",
 				"searchPlaceholder": "Modelle suchen...",
 				"noResults": "Keine passenden Modelle gefunden.",
-				"applied": "Fähigkeiten von {{model}} angewendet"
+				"applied": "Fähigkeiten von {{model}} angewendet",
+				"appliedFlags": "Applied capabilities",
+				"flags": {
+					"reasoning": "Reasoning/Thinking",
+					"images": "Image Support",
+					"promptCache": "Prompt Cache",
+					"temperature": "Temperature Control",
+					"defaultTemp": "Default Temperature: {{temp}}"
+				}
 			},
 			"capabilities": "Konfiguriere die Fähigkeiten und Preise für dein benutzerdefiniertes OpenAI-kompatibles Modell. Sei vorsichtig bei der Angabe der Modellfähigkeiten, da diese beeinflussen können, wie Roo Code funktioniert.",
 			"maxTokens": {

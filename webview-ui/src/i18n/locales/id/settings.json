@@ -486,7 +486,15 @@
 				"custom": "Kustom (konfigurasi manual)",
 				"searchPlaceholder": "Cari model...",
 				"noResults": "Tidak ada model yang cocok ditemukan.",
-				"applied": "Kemampuan dari {{model}} diterapkan"
+				"applied": "Kemampuan dari {{model}} diterapkan",
+				"appliedFlags": "Applied capabilities",
+				"flags": {
+					"reasoning": "Reasoning/Thinking",
+					"images": "Image Support",
+					"promptCache": "Prompt Cache",
+					"temperature": "Temperature Control",
+					"defaultTemp": "Default Temperature: {{temp}}"
+				}
 			},
 			"capabilities": "Konfigurasi kemampuan dan harga untuk model kustom yang kompatibel dengan OpenAI. Hati-hati saat menentukan kemampuan model, karena dapat mempengaruhi performa Roo Code.",
 			"maxTokens": {

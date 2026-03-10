@@ -486,7 +486,15 @@
 				"custom": "Пользовательский (настроить вручную)",
 				"searchPlaceholder": "Поиск моделей...",
 				"noResults": "Подходящие модели не найдены.",
-				"applied": "Применены возможности из {{model}}"
+				"applied": "Применены возможности из {{model}}",
+				"appliedFlags": "Applied capabilities",
+				"flags": {
+					"reasoning": "Reasoning/Thinking",
+					"images": "Image Support",
+					"promptCache": "Prompt Cache",
+					"temperature": "Temperature Control",
+					"defaultTemp": "Default Temperature: {{temp}}"
+				}
 			},
 			"capabilities": "Настройте возможности и стоимость вашей пользовательской модели, совместимой с OpenAI. Будьте осторожны при указании возможностей модели, это может повлиять на работу Roo Code.",
 			"maxTokens": {

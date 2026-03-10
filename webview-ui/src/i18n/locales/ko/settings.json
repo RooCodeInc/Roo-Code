@@ -486,7 +486,15 @@
 				"custom": "사용자 정의 (수동 구성)",
 				"searchPlaceholder": "모델 검색...",
 				"noResults": "일치하는 모델을 찾을 수 없습니다.",
-				"applied": "{{model}}의 기능이 적용되었습니다"
+				"applied": "{{model}}의 기능이 적용되었습니다",
+				"appliedFlags": "Applied capabilities",
+				"flags": {
+					"reasoning": "Reasoning/Thinking",
+					"images": "Image Support",
+					"promptCache": "Prompt Cache",
+					"temperature": "Temperature Control",
+					"defaultTemp": "Default Temperature: {{temp}}"
+				}
 			},
 			"capabilities": "사용자 정의 OpenAI 호환 모델의 기능과 가격을 구성하세요. 모델 기능이 Roo Code의 성능에 영향을 미칠 수 있으므로 신중하게 지정하세요.",
 			"maxTokens": {
