@@ -25,9 +25,12 @@ export default async function Home() {
 				</div>
 				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
 					<h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground max-w-4xl mb-6">
-						Your AI Software Engineering Team is here.
+						Your AI Software Engineering Team just clocked in.
 						<br />
-						<span className="text-muted-foreground">Interactive in the IDE, autonomous in the cloud.</span>
+						<span className="text-muted-foreground">
+							Interactive in the IDE, autonomous in the cloud, and suspiciously good at clearing your
+							backlog.
+						</span>
 					</h1>
 					<div className="mt-2 max-w-3xl text-lg text-muted-foreground mb-10 space-y-3">
 						<p>
