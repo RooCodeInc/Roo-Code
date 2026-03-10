@@ -80,9 +80,40 @@ vitest.mock("../fetchers/modelCache", () => ({
 				excludedTools: ["existing_excluded"],
 				includedTools: ["existing_included"],
 			},
+			"mistralai/mistral-large-latest": {
+				maxTokens: 8192,
+				contextWindow: 128000,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 2,
+				outputPrice: 6,
+				description: "Mistral Large",
+			},
+			"mistralai/devstral-2512": {
+				maxTokens: 8192,
+				contextWindow: 128000,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 1,
+				outputPrice: 3,
+				description: "Devstral",
+			},
 		})
 	}),
 }))
+
+const mockConvertToOpenAiMessages = vitest.fn().mockReturnValue([])
+
+vitest.mock("../../transform/openai-format", async (importOriginal) => {
+	const actual = (await importOriginal()) as Record<string, unknown>
+	return {
+		...actual,
+		convertToOpenAiMessages: (...args: unknown[]) => {
+			mockConvertToOpenAiMessages(...args)
+			return (actual.convertToOpenAiMessages as (...a: unknown[]) => unknown)(...args)
+		},
+	}
+})
 
 describe("OpenRouterHandler", () => {
 	const mockOptions: ApiHandlerOptions = {
@@ -524,6 +555,93 @@ describe("OpenRouterHandler", () => {
 			expect(partialChunks).toHaveLength(1)
 			expect(endChunks).toHaveLength(1)
 			expect(endChunks[0].id).toBe("call_openrouter_test")
+		})
+	})
+
+	describe("Mistral/Devstral model detection", () => {
+		const createMockStream = () => ({
+			async *[Symbol.asyncIterator]() {
+				yield {
+					id: "test-id",
+					choices: [{ delta: { content: "response" } }],
+				}
+				yield {
+					id: "test-id",
+					choices: [{ delta: {} }],
+					usage: { prompt_tokens: 10, completion_tokens: 5 },
+				}
+			},
+		})
+
+		const setupMockCreate = () => {
+			const mockCreate = vitest.fn().mockResolvedValue(createMockStream())
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+			return mockCreate
+		}
+
+		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user" as const, content: "test" }]
+
+		beforeEach(() => {
+			mockConvertToOpenAiMessages.mockClear()
+		})
+
+		it("passes mergeToolResultText and normalizeToolCallId for Mistral models", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "mistralai/mistral-large-latest",
+			})
+			setupMockCreate()
+
+			const generator = handler.createMessage("system", messages)
+			for await (const _chunk of generator) {
+				// consume stream
+			}
+
+			expect(mockConvertToOpenAiMessages).toHaveBeenCalledWith(
+				messages,
+				expect.objectContaining({
+					normalizeToolCallId: expect.any(Function),
+					mergeToolResultText: true,
+				}),
+			)
+		})
+
+		it("passes mergeToolResultText and normalizeToolCallId for Devstral models", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "mistralai/devstral-2512",
+			})
+			setupMockCreate()
+
+			const generator = handler.createMessage("system", messages)
+			for await (const _chunk of generator) {
+				// consume stream
+			}
+
+			expect(mockConvertToOpenAiMessages).toHaveBeenCalledWith(
+				messages,
+				expect.objectContaining({
+					normalizeToolCallId: expect.any(Function),
+					mergeToolResultText: true,
+				}),
+			)
+		})
+
+		it("does not pass Mistral options for non-Mistral models", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "anthropic/claude-sonnet-4",
+			})
+			setupMockCreate()
+
+			const generator = handler.createMessage("system", messages)
+			for await (const _chunk of generator) {
+				// consume stream
+			}
+
+			expect(mockConvertToOpenAiMessages).toHaveBeenCalledWith(messages, undefined)
 		})
 	})
 
