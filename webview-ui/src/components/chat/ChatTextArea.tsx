@@ -245,7 +245,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		}, [selectedType, searchQuery])
 
 		const handleEnhancePrompt = useCallback(() => {
-			const trimmedInput = inputValue.trim()
+			const trimmedInput = (inputValue || "").trim()
 
 			if (trimmedInput) {
 				setIsEnhancingPrompt(true)
@@ -259,7 +259,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 		// Memoized check for whether the input has content (text or images)
 		const hasInputContent = useMemo(() => {
-			return inputValue.trim().length > 0 || selectedImages.length > 0
+			return (inputValue || "").trim().length > 0 || selectedImages.length > 0
 		}, [inputValue, selectedImages])
 
 		// Compute the key combination text for the send button tooltip based on enterBehavior
