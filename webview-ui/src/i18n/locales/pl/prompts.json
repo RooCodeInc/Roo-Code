@@ -51,6 +51,10 @@
 		"description": "Dodaj wytyczne dotyczące zachowania specyficzne dla trybu {{modeName}}.",
 		"loadFromFile": "Niestandardowe instrukcje specyficzne dla trybu {{mode}} można również załadować z folderu <span>.roo/rules-{{slug}}/</span> w twoim obszarze roboczym lub z globalnego <0>.roo/rules-{{slug}}/</0> (.roorules-{{slug}} i .clinerules-{{slug}} są przestarzałe i wkrótce przestaną działać)."
 	},
+	"disableDefaultRules": {
+		"label": "Wyłącz domyślne reguły",
+		"description": "Po włączeniu ładowane są tylko reguły specyficzne dla trybu (.roo/rules-{{slug}}/). Domyślne reguły (.roo/rules/, AGENTS.md, .roorules) są pomijane."
+	},
 	"exportMode": {
 		"title": "Eksportuj tryb",
 		"description": "Eksportuj ten tryb do pliku YAML ze wszystkimi regułami w celu łatwego udostępniania innym.",

@@ -51,6 +51,10 @@
 		"description": "Add behavioral guidelines specific to {{modeName}} mode.",
 		"loadFromFile": "Custom instructions specific to {{mode}} mode can also be loaded from the <span>.roo/rules-{{slug}}/</span> folder in your workspace or from the global <0>.roo/rules-{{slug}}/</0> (.roorules-{{slug}} and .clinerules-{{slug}} are deprecated and will stop working soon)."
 	},
+	"disableDefaultRules": {
+		"label": "Disable default rules",
+		"description": "When enabled, only mode-specific rules (.roo/rules-{{slug}}/) are loaded. Default rules (.roo/rules/, AGENTS.md, .roorules) are skipped."
+	},
 	"exportMode": {
 		"title": "Export Mode",
 		"description": "Export this mode with rules from the .roo/rules-{{slug}}/ folder combined into a shareable YAML file. The original files remain unchanged.",

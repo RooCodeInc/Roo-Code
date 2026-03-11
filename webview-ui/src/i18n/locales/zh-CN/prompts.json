@@ -51,6 +51,10 @@
 		"description": "{{modeName}}模式的专属规则",
 		"loadFromFile": "{{mode}}模式的特定自定义指令也可以从工作区中的<span>.roo/rules-{{slug}}/</span>文件夹或全局<0>.roo/rules-{{slug}}/</0>加载（.roorules-{{slug}}和.clinerules-{{slug}}已弃用，即将停止工作）。"
 	},
+	"disableDefaultRules": {
+		"label": "禁用默认规则",
+		"description": "启用后，仅加载模式特定规则（.roo/rules-{{slug}}/）。默认规则（.roo/rules/、AGENTS.md、.roorules）将被跳过。"
+	},
 	"exportMode": {
 		"title": "导出模式",
 		"description": "将此模式导出为包含所有规则的 YAML 文件，以便与他人轻松共享。",
