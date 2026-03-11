@@ -20,6 +20,7 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 	const { t } = useAppTranslation()
 
 	const [ollamaModels, setOllamaModels] = useState<ModelRecord>({})
+	const [connectionError, setConnectionError] = useState<string | undefined>()
 	const routerModels = useRouterModels()
 
 	const handleInputChange = useCallback(
@@ -41,6 +42,8 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 				{
 					const newModels = message.ollamaModels ?? {}
 					setOllamaModels(newModels)
+					// Surface connection errors from the backend
+					setConnectionError(message.error)
 				}
 				break
 		}
@@ -100,6 +103,7 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 					</div>
 				</VSCodeTextField>
 			)}
+			{connectionError && <div className="text-sm text-vscode-errorForeground">{connectionError}</div>}
 			<ModelPicker
 				apiConfiguration={apiConfiguration}
 				setApiConfigurationField={setApiConfigurationField}
@@ -108,7 +112,7 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 				modelIdKey="ollamaModelId"
 				serviceName="Ollama"
 				serviceUrl="https://ollama.ai"
-				errorMessage={modelNotAvailableError}
+				errorMessage={connectionError ?? modelNotAvailableError}
 				hidePricing
 			/>
 			<VSCodeTextField
