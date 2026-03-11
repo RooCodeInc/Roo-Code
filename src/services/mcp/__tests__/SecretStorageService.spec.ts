@@ -47,7 +47,7 @@ describe("SecretStorageService", () => {
 
 		it("should return undefined for malformed JSON", async () => {
 			// Manually store garbage via the underlying mock
-			context.secrets.store("mcp.oauth.example.com.data", "not-json")
+			context.secrets.store("mcp.oauth.example.com.mcp.data", "not-json")
 
 			const result = await service.getOAuthData("https://example.com/mcp")
 			expect(result).toBeUndefined()
@@ -55,12 +55,22 @@ describe("SecretStorageService", () => {
 	})
 
 	describe("saveOAuthData", () => {
-		it("should persist data under host-based key", async () => {
+		it("should persist data under host and path-based key", async () => {
 			const data: StoredMcpOAuthData = {
 				tokens: { access_token: "abc", token_type: "Bearer" },
 				expires_at: 12345,
 			}
 			await service.saveOAuthData("https://example.com/mcp", data)
+
+			expect(context.secrets.store).toHaveBeenCalledWith("mcp.oauth.example.com.mcp.data", JSON.stringify(data))
+		})
+
+		it("should handle root path correctly", async () => {
+			const data: StoredMcpOAuthData = {
+				tokens: { access_token: "abc", token_type: "Bearer" },
+				expires_at: 12345,
+			}
+			await service.saveOAuthData("https://example.com/", data)
 
 			expect(context.secrets.store).toHaveBeenCalledWith("mcp.oauth.example.com.data", JSON.stringify(data))
 		})
@@ -76,7 +86,7 @@ describe("SecretStorageService", () => {
 
 			await service.deleteOAuthData("https://example.com/mcp")
 
-			expect(context.secrets.delete).toHaveBeenCalledWith("mcp.oauth.example.com.data")
+			expect(context.secrets.delete).toHaveBeenCalledWith("mcp.oauth.example.com.mcp.data")
 			const result = await service.getOAuthData("https://example.com/mcp")
 			expect(result).toBeUndefined()
 		})
@@ -97,6 +107,22 @@ describe("SecretStorageService", () => {
 
 			expect((await service.getOAuthData("https://host1.com/mcp"))?.tokens.access_token).toBe("a")
 			expect((await service.getOAuthData("https://host2.com/mcp"))?.tokens.access_token).toBe("b")
+		})
+
+		it("should isolate data by path on the same host", async () => {
+			const data1: StoredMcpOAuthData = {
+				tokens: { access_token: "path1", token_type: "Bearer" },
+				expires_at: 1,
+			}
+			const data2: StoredMcpOAuthData = {
+				tokens: { access_token: "path2", token_type: "Bearer" },
+				expires_at: 2,
+			}
+			await service.saveOAuthData("https://example.com/service1", data1)
+			await service.saveOAuthData("https://example.com/service2", data2)
+
+			expect((await service.getOAuthData("https://example.com/service1"))?.tokens.access_token).toBe("path1")
+			expect((await service.getOAuthData("https://example.com/service2"))?.tokens.access_token).toBe("path2")
 		})
 	})
 })

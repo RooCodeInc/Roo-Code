@@ -25,7 +25,12 @@ export class SecretStorageService {
 	}
 
 	private _key(serverUrl: string): string {
-		return `${this._namespace}${new URL(serverUrl).host}.data`
+		const url = new URL(serverUrl)
+		// Use host + pathname for stricter isolation between different MCP servers on the same host.
+		// We sanitize the pathname to ensure it's a valid key component.
+		const sanitizedPath = url.pathname.replace(/[^a-zA-Z0-9]/g, "_").replace(/^_+|_+$/g, "")
+		const pathSuffix = sanitizedPath ? `.${sanitizedPath}` : ""
+		return `${this._namespace}${url.host}${pathSuffix}.data`
 	}
 
 	async getOAuthData(serverUrl: string): Promise<StoredMcpOAuthData | undefined> {

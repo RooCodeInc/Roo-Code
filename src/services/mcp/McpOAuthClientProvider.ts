@@ -36,13 +36,14 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 	// when the redirect URI port changes between sessions.
 	private _clientInfo?: OAuthClientInformationFull
 	private _closed = false
+	private _refreshPromise: Promise<OAuthTokens> | null = null
 
 	private constructor(
 		private readonly _serverUrl: string,
 		private readonly _secretStorage: SecretStorageService,
-		private readonly _server: http.Server,
-		private readonly _port: number,
-		private readonly _authCodePromise: Promise<string>,
+		private _server: http.Server | null,
+		private _port: number,
+		private _authCodePromise: Promise<string> | null,
 		private readonly _tokenEndpointAuthMethod: string,
 		private readonly _grantTypes: string[],
 		private readonly _scopes: string[],
@@ -120,6 +121,20 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 		return `http://localhost:${this._port}/callback`
 	}
 
+	private async _ensureCallbackServer(): Promise<void> {
+		if (this._server && !this._closed) return
+
+		this._closed = false
+		const { server, port, result } = await startCallbackServer(this._port, this._state)
+		this._server = server
+		this._port = port
+		this._authCodePromise = result.then((r) => {
+			if (r.error) throw new Error(`OAuth authorization failed: ${r.error}`)
+			if (!r.code) throw new Error("No authorization code received in callback")
+			return r.code
+		})
+	}
+
 	state(): string {
 		return this._state
 	}
@@ -192,10 +207,33 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 	async tokens(): Promise<OAuthTokens | undefined> {
 		const data = await this._secretStorage.getOAuthData(this._serverUrl)
 		if (!data) return undefined
-		// Return undefined 5 minutes before expiry so the SDK triggers re-auth
-		// before the server actually rejects requests.
-		if (Date.now() >= data.expires_at - 5 * 60 * 1000) return undefined
-		return data.tokens
+
+		// If the access token is still valid (with 5m buffer), return it.
+		if (Date.now() < data.expires_at - 5 * 60 * 1000) {
+			return data.tokens
+		}
+
+		// Access token is expired or near expiry. Try to refresh if we have a refresh token.
+		if (data.tokens.refresh_token) {
+			if (this._refreshPromise) {
+				return this._refreshPromise
+			}
+
+			this._refreshPromise = this.refreshAccessToken(data.tokens.refresh_token).finally(() => {
+				this._refreshPromise = null
+			})
+
+			try {
+				return await this._refreshPromise
+			} catch (error) {
+				console.error(`Failed to refresh MCP OAuth token for ${this._serverUrl}:`, error)
+				// Clear stale tokens on refresh failure so we don't keep retrying a dead refresh token
+				await this._secretStorage.deleteOAuthData(this._serverUrl)
+				// Fall through to return undefined, which triggers full re-auth
+			}
+		}
+
+		return undefined
 	}
 
 	async saveTokens(tokens: OAuthTokens): Promise<void> {
@@ -209,6 +247,10 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 	}
 
 	async redirectToAuthorization(authorizationUrl: URL): Promise<void> {
+		// Ensure the callback server is running before opening the browser.
+		// This handles mid-session re-auth where the initial server was closed.
+		await this._ensureCallbackServer()
+
 		// Workaround for SDK metadata discovery bug (see utils/oauth.ts for issue links).
 		// The SDK's discoverOAuthMetadata() builds a wrong well-known URL for issuers
 		// with path components, causing it to fall back to a default "/authorize" path.
@@ -267,8 +309,11 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 	 * browser flow and the local callback server receives the redirect.
 	 * Rejects on error or 5-minute timeout.
 	 */
-	waitForAuthCode(): Promise<string> {
-		return this._authCodePromise
+	async waitForAuthCode(): Promise<string> {
+		if (!this._authCodePromise) {
+			await this._ensureCallbackServer()
+		}
+		return this._authCodePromise!
 	}
 
 	/**
@@ -327,11 +372,54 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 		await this.saveTokens(tokens)
 	}
 
+	/**
+	 * Refreshes the access token using a refresh token.
+	 * @param refreshToken The refresh token to use.
+	 * @returns The new tokens.
+	 */
+	async refreshAccessToken(refreshToken: string): Promise<OAuthTokens> {
+		if (!this._authServerMeta?.token_endpoint) {
+			throw new Error("No token_endpoint in auth server metadata — cannot refresh token")
+		}
+		if (!this._clientInfo) {
+			throw new Error("No client information — registerClientIfNeeded() must be called first")
+		}
+
+		const params: Record<string, string> = {
+			grant_type: "refresh_token",
+			refresh_token: refreshToken,
+			client_id: this._clientInfo.client_id,
+		}
+
+		if (this._tokenEndpointAuthMethod === "client_secret_post" && this._clientInfo.client_secret) {
+			params.client_secret = this._clientInfo.client_secret
+		}
+
+		const response = await fetch(this._authServerMeta.token_endpoint as string, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+				Accept: "application/json",
+			},
+			body: new URLSearchParams(params).toString(),
+		})
+
+		if (!response.ok) {
+			throw new Error(`Token refresh failed: HTTP ${response.status}`)
+		}
+
+		const tokens = (await response.json()) as OAuthTokens
+		await this.saveTokens(tokens)
+		return tokens
+	}
+
 	/** Close the local callback server. Always call this when done. */
 	async close(): Promise<void> {
-		if (!this._closed) {
+		if (!this._closed && this._server) {
 			this._closed = true
 			await stopCallbackServer(this._server).catch(() => {})
+			this._server = null
+			this._authCodePromise = null
 		}
 	}
 }

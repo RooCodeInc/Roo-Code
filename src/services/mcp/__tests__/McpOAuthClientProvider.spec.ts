@@ -178,7 +178,46 @@ describe("McpOAuthClientProvider", () => {
 			await provider.close()
 		})
 
-		it("should return undefined for expired tokens", async () => {
+		it("should refresh tokens when access token is expired but refresh token exists", async () => {
+			setupCallbackServerMock()
+			const secretStorage = createMockSecretStorage()
+			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", secretStorage)
+
+			const initialTokens = {
+				access_token: "expired-access",
+				refresh_token: "valid-refresh",
+				token_type: "Bearer",
+			}
+			const refreshedTokens = {
+				access_token: "new-access",
+				refresh_token: "new-refresh",
+				token_type: "Bearer",
+				expires_in: 3600,
+			}
+
+			await provider.saveClientInformation({ client_id: "id", redirect_uris: [] } as any)
+			await secretStorage.saveOAuthData("https://example.com/mcp", {
+				tokens: initialTokens,
+				expires_at: Date.now() - 1000,
+			})
+
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: () => Promise.resolve(refreshedTokens),
+			})
+
+			const result = await provider.tokens()
+			expect(result).toEqual(refreshedTokens)
+			expect(mockFetch).toHaveBeenCalledWith(
+				expect.stringContaining("/token"),
+				expect.objectContaining({
+					body: expect.stringContaining("grant_type=refresh_token"),
+				}),
+			)
+			await provider.close()
+		})
+
+		it("should return undefined for expired tokens without refresh token", async () => {
 			setupCallbackServerMock()
 			const secretStorage = createMockSecretStorage()
 			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", secretStorage)

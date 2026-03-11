@@ -49,6 +49,7 @@ export type ConnectedMcpConnection = {
 	server: McpServer
 	client: Client
 	transport: StdioClientTransport | SSEClientTransport | StreamableHTTPClientTransport
+	authProvider?: McpOAuthClientProvider
 }
 
 export type DisconnectedMcpConnection = {
@@ -166,6 +167,7 @@ export class McpHub {
 	private sanitizedNameRegistry: Map<string, string> = new Map()
 	private initializationPromise: Promise<void>
 	private secretStorage?: SecretStorageService
+	private reauthPromises: Map<string, Promise<void>> = new Map()
 
 	constructor(provider: ClineProvider) {
 		this.providerRef = new WeakRef(provider)
@@ -822,6 +824,31 @@ export class McpHub {
 					console.error(`Transport error for "${name}" (streamable-http):`, error)
 					const connection = this.findConnection(name, source)
 					if (connection) {
+						if (error instanceof UnauthorizedError && authProvider) {
+							// Mid-session re-auth triggered by a tool call (401)
+							connection.server.status = "connecting"
+
+							const reauthKey = `${name}:${source}`
+							let reauthPromise = this.reauthPromises.get(reauthKey)
+							if (!reauthPromise) {
+								reauthPromise = this._completeOAuthFlow(
+									authProvider,
+									transport as StreamableHTTPClientTransport,
+									connection as ConnectedMcpConnection,
+									name,
+									source,
+								)
+									.catch((err) => {
+										console.error(`OAuth flow failed for "${name}":`, err)
+									})
+									.finally(() => {
+										this.reauthPromises.delete(reauthKey)
+									})
+								this.reauthPromises.set(reauthKey, reauthPromise)
+							}
+							return
+						}
+
 						connection.server.status = "disconnected"
 						this.appendErrorMessage(connection, error instanceof Error ? error.message : `${error}`)
 					}
@@ -905,6 +932,7 @@ export class McpHub {
 				},
 				client,
 				transport,
+				authProvider: streamableHttpAuthProvider,
 			}
 			this.connections.push(connection)
 
@@ -935,6 +963,7 @@ export class McpHub {
 			}
 
 			// Successful connection — close callback server if it was started.
+			// We keep the authProvider on the connection so it can handle mid-session 401s.
 			await streamableHttpAuthProvider?.close()
 
 			connection.server.status = "connected"
@@ -1203,9 +1232,10 @@ export class McpHub {
 				if (connection.type === "connected") {
 					await connection.transport.close()
 					await connection.client.close()
+					await connection.authProvider?.close()
 				}
 			} catch (error) {
-				console.error(`Failed to close transport for ${name}:`, error)
+				console.error(`Failed to close transport or auth provider for ${name}:`, error)
 			}
 		}
 
@@ -1876,19 +1906,66 @@ export class McpHub {
 			timeout = 60 * 1000
 		}
 
-		return await connection.client.request(
-			{
-				method: "tools/call",
-				params: {
-					name: toolName,
-					arguments: toolArguments,
+		try {
+			return await connection.client.request(
+				{
+					method: "tools/call",
+					params: {
+						name: toolName,
+						arguments: toolArguments,
+					},
 				},
-			},
-			CallToolResultSchema,
-			{
-				timeout,
-			},
-		)
+				CallToolResultSchema,
+				{
+					timeout,
+				},
+			)
+		} catch (error) {
+			if (error instanceof UnauthorizedError && connection.authProvider) {
+				// Mid-session re-auth triggered by a tool call (401)
+				connection.server.status = "connecting"
+
+				const reauthKey = `${serverName}:${source || connection.server.source || "global"}`
+				let reauthPromise = this.reauthPromises.get(reauthKey)
+
+				if (!reauthPromise) {
+					reauthPromise = this._completeOAuthFlow(
+						connection.authProvider,
+						connection.transport as StreamableHTTPClientTransport,
+						connection,
+						serverName,
+						source || connection.server.source || "global",
+					).finally(() => {
+						this.reauthPromises.delete(reauthKey)
+					})
+					this.reauthPromises.set(reauthKey, reauthPromise)
+				}
+
+				await reauthPromise
+
+				// After re-auth completes, the connection has been replaced.
+				// We need to find the new connection and retry the tool call.
+				const newConnection = this.findConnection(serverName, source)
+				if (!newConnection || newConnection.type !== "connected") {
+					throw new Error(`Failed to reconnect to server ${serverName} after OAuth`)
+				}
+
+				return await newConnection.client.request(
+					{
+						method: "tools/call",
+						params: {
+							name: toolName,
+							arguments: toolArguments,
+						},
+					},
+					CallToolResultSchema,
+					{
+						timeout,
+					},
+				)
+			}
+			throw error
+		}
 	}
 
 	/**
