@@ -56,11 +56,8 @@
 			"label": "脆弱性を発見しましたか？",
 			"link": "開示プロセスに従ってください"
 		},
-		"contact": {
-			"label": "お問い合わせが必要ですか？メールを送信"
-		},
 		"community": "ヒントが欲しいですか、または他のRoo Codeユーザーと交流したいですか？<redditLink>reddit.com/r/RooCode</redditLink>または<discordLink>discord.gg/roocode</discordLink>に参加してください",
-		"contactAndCommunity": "お問い合わせとコミュニティ",
+		"communityHeader": "コミュニティ",
 		"manageSettings": "設定を管理",
 		"debugMode": {
 			"label": "デバッグモードを有効にする",
