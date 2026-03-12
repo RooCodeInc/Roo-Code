@@ -330,6 +330,8 @@ export type ExtensionState = Pick<
 	maxReadFileLine?: number // Maximum line limit for read_file tool (-1 for default)
 	maxImageFileSize: number // Maximum size of image files to process in MB
 	maxTotalImageSize: number // Maximum total size for all images in a single read operation in MB
+	maxImageDimension?: number // Maximum dimension (width or height) in pixels for image downscaling (0 = disabled)
+	imageDownscaleQuality?: number // JPEG/WebP quality (1-100) for re-encoding resized images (default 85)
 
 	experiments: Experiments // Map of experiment IDs to their enabled state
 

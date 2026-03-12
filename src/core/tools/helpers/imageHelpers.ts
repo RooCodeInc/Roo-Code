@@ -2,6 +2,7 @@ import path from "path"
 import * as fs from "fs/promises"
 import { t } from "../../../i18n"
 import prettyBytes from "pretty-bytes"
+import { maybeResizeImage, DEFAULT_IMAGE_DOWNSCALE_QUALITY } from "../../../integrations/misc/resize-image"
 
 /**
  * Default maximum allowed image file size in bytes (5MB)
@@ -69,15 +70,37 @@ export interface ImageProcessingResult {
 	notice: string
 }
 
-/**
- * Reads an image file and returns both the data URL and buffer
- */
-export async function readImageAsDataUrlWithBuffer(filePath: string): Promise<{ dataUrl: string; buffer: Buffer }> {
-	const fileBuffer = await fs.readFile(filePath)
-	const base64 = fileBuffer.toString("base64")
-	const ext = path.extname(filePath).toLowerCase()
+export interface ReadImageOptions {
+	/** Maximum dimension (width or height) in pixels for downscaling. 0 = disabled. */
+	maxDimension?: number
+	/** JPEG/WebP quality (1-100) for re-encoding resized images. */
+	quality?: number
+}
 
+/**
+ * Reads an image file and returns both the data URL and buffer.
+ * Optionally downscales the image if maxDimension is set.
+ */
+export async function readImageAsDataUrlWithBuffer(
+	filePath: string,
+	options?: ReadImageOptions,
+): Promise<{ dataUrl: string; buffer: Buffer }> {
+	let fileBuffer = await fs.readFile(filePath)
+	const ext = path.extname(filePath).toLowerCase()
 	const mimeType = IMAGE_MIME_TYPES[ext] || "image/png"
+
+	// Downscale if configured
+	if (options?.maxDimension && options.maxDimension > 0) {
+		const resizeResult = await maybeResizeImage({
+			buffer: fileBuffer,
+			mimeType,
+			maxDimension: options.maxDimension,
+			quality: options.quality ?? DEFAULT_IMAGE_DOWNSCALE_QUALITY,
+		})
+		fileBuffer = resizeResult.buffer
+	}
+
+	const base64 = fileBuffer.toString("base64")
 	const dataUrl = `data:${mimeType};base64,${base64}`
 
 	return { dataUrl, buffer: fileBuffer }
@@ -145,11 +168,12 @@ export async function validateImageForProcessing(
 }
 
 /**
- * Processes an image file and returns the result
+ * Processes an image file and returns the result.
+ * Optionally downscales the image if resize options are provided.
  */
-export async function processImageFile(fullPath: string): Promise<ImageProcessingResult> {
+export async function processImageFile(fullPath: string, options?: ReadImageOptions): Promise<ImageProcessingResult> {
 	const imageStats = await fs.stat(fullPath)
-	const { dataUrl, buffer } = await readImageAsDataUrlWithBuffer(fullPath)
+	const { dataUrl, buffer } = await readImageAsDataUrlWithBuffer(fullPath, options)
 	const imageSizeInKB = Math.round(imageStats.size / 1024)
 	const imageSizeInMB = imageStats.size / (1024 * 1024)
 	const noticeText = t("tools:readFile.imageWithSize", { size: imageSizeInKB })
