@@ -174,7 +174,7 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 
 		// Check if we have a cached client_id from previous registration
 		const cachedData = await this._secretStorage.getOAuthData(this._serverUrl)
-		if (cachedData?.client_id && cachedData.redirect_uri === this.redirectUrl) {
+		if (cachedData?.client_id) {
 			this._clientInfo = {
 				client_id: cachedData.client_id,
 				redirect_uris: [this.redirectUrl],
@@ -219,9 +219,17 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 				return this._refreshPromise
 			}
 
-			this._refreshPromise = this.refreshAccessToken(data.tokens.refresh_token).finally(() => {
-				this._refreshPromise = null
-			})
+			// Use the client_id stored alongside the tokens — it is the one the
+			// auth server bound the refresh token to.  `this._clientInfo.client_id`
+			// may differ if a fresh DCR was performed (e.g. after stale token
+			// cleanup removed the cached data).
+			const clientIdForRefresh = data.client_id ?? this._clientInfo?.client_id
+
+			this._refreshPromise = this.refreshAccessToken(data.tokens.refresh_token, clientIdForRefresh).finally(
+				() => {
+					this._refreshPromise = null
+				},
+			)
 
 			try {
 				return await this._refreshPromise
@@ -236,13 +244,12 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 		return undefined
 	}
 
-	async saveTokens(tokens: OAuthTokens): Promise<void> {
+	async saveTokens(tokens: OAuthTokens, clientIdOverride?: string): Promise<void> {
 		const expires_at = tokens.expires_in ? Date.now() + tokens.expires_in * 1000 : Date.now() + 3600 * 1000 // default 1 hour when server omits expires_in
 		await this._secretStorage.saveOAuthData(this._serverUrl, {
 			tokens,
 			expires_at,
-			client_id: this._clientInfo?.client_id,
-			redirect_uri: this.redirectUrl,
+			client_id: clientIdOverride ?? this._clientInfo?.client_id,
 		})
 	}
 
@@ -374,24 +381,30 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 
 	/**
 	 * Refreshes the access token using a refresh token.
+	 *
 	 * @param refreshToken The refresh token to use.
+	 * @param clientIdOverride Optional client_id to use instead of `this._clientInfo.client_id`.
+	 *   This is used when the stored tokens were issued to a different client_id than the
+	 *   current in-memory registration (e.g. after a port change caused a new DCR).
 	 * @returns The new tokens.
 	 */
-	async refreshAccessToken(refreshToken: string): Promise<OAuthTokens> {
+	async refreshAccessToken(refreshToken: string, clientIdOverride?: string): Promise<OAuthTokens> {
 		if (!this._authServerMeta?.token_endpoint) {
 			throw new Error("No token_endpoint in auth server metadata — cannot refresh token")
 		}
-		if (!this._clientInfo) {
+
+		const clientId = clientIdOverride ?? this._clientInfo?.client_id
+		if (!clientId) {
 			throw new Error("No client information — registerClientIfNeeded() must be called first")
 		}
 
 		const params: Record<string, string> = {
 			grant_type: "refresh_token",
 			refresh_token: refreshToken,
-			client_id: this._clientInfo.client_id,
+			client_id: clientId,
 		}
 
-		if (this._tokenEndpointAuthMethod === "client_secret_post" && this._clientInfo.client_secret) {
+		if (this._tokenEndpointAuthMethod === "client_secret_post" && this._clientInfo?.client_secret) {
 			params.client_secret = this._clientInfo.client_secret
 		}
 
@@ -405,11 +418,12 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 		})
 
 		if (!response.ok) {
-			throw new Error(`Token refresh failed: HTTP ${response.status}`)
+			const errorBody = await response.text().catch(() => "")
+			throw new Error(`Token refresh failed: HTTP ${response.status} ${errorBody}`)
 		}
 
 		const tokens = (await response.json()) as OAuthTokens
-		await this.saveTokens(tokens)
+		await this.saveTokens(tokens, clientId)
 		return tokens
 	}
 

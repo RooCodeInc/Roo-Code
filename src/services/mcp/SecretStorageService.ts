@@ -7,8 +7,6 @@ export interface StoredMcpOAuthData {
 	expires_at: number
 	/** The client_id used to obtain these tokens (for token reuse without re-registration). */
 	client_id?: string
-	/** The redirect_uri used during client registration (to detect port changes). */
-	redirect_uri?: string
 }
 
 /**
