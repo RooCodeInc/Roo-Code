@@ -823,7 +823,7 @@ export class McpHub {
 				transport.onerror = async (error) => {
 					console.error(`Transport error for "${name}" (streamable-http):`, error)
 					const connection = this.findConnection(name, source)
-					if (connection) {
+					if (connection && connection.type === "connected") {
 						if (error instanceof UnauthorizedError && authProvider) {
 							// Mid-session re-auth triggered by a tool call (401)
 							connection.server.status = "connecting"
@@ -849,6 +849,9 @@ export class McpHub {
 							return
 						}
 
+						connection.server.status = "disconnected"
+						this.appendErrorMessage(connection, error instanceof Error ? error.message : `${error}`)
+					} else if (connection) {
 						connection.server.status = "disconnected"
 						this.appendErrorMessage(connection, error instanceof Error ? error.message : `${error}`)
 					}
@@ -1950,19 +1953,29 @@ export class McpHub {
 					throw new Error(`Failed to reconnect to server ${serverName} after OAuth`)
 				}
 
-				return await newConnection.client.request(
-					{
-						method: "tools/call",
-						params: {
-							name: toolName,
-							arguments: toolArguments,
+				try {
+					return await newConnection.client.request(
+						{
+							method: "tools/call",
+							params: {
+								name: toolName,
+								arguments: toolArguments,
+							},
 						},
-					},
-					CallToolResultSchema,
-					{
-						timeout,
-					},
-				)
+						CallToolResultSchema,
+						{
+							timeout,
+						},
+					)
+				} catch (retryError) {
+					if (retryError instanceof UnauthorizedError) {
+						throw new Error(
+							`Authentication succeeded but server "${serverName}" still rejected the request. ` +
+								`This may indicate a token audience mismatch or server-side configuration issue.`,
+						)
+					}
+					throw retryError
+				}
 			}
 			throw error
 		}

@@ -585,7 +585,7 @@ describe("McpOAuthClientProvider", () => {
 	})
 
 	describe("registerClientIfNeeded", () => {
-		it("should reuse cached client_id when redirect_uri matches", async () => {
+		it("should reuse cached client_id from previous registration", async () => {
 			setupCallbackServerMock()
 			const secretStorage = createMockSecretStorage()
 
@@ -594,7 +594,6 @@ describe("McpOAuthClientProvider", () => {
 				tokens: { access_token: "cached-token", token_type: "Bearer" },
 				expires_at: Date.now() + 3600000,
 				client_id: "cached-client-id",
-				redirect_uri: "http://localhost:12345/callback",
 			})
 
 			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", secretStorage)
@@ -604,7 +603,28 @@ describe("McpOAuthClientProvider", () => {
 			await provider.close()
 		})
 
-		it("should not reuse cached client_id when redirect_uri does not match", async () => {
+		it("should reuse cached client_id even when callback server port has changed", async () => {
+			setupCallbackServerMock()
+			const secretStorage = createMockSecretStorage()
+
+			// Pre-populate storage with cached data — the callback server port (12345)
+			// may differ from the port used in the original registration, but we still
+			// reuse the client_id to avoid "refresh token not issued to this client" errors.
+			await secretStorage.saveOAuthData("https://example.com/mcp", {
+				tokens: { access_token: "cached-token", token_type: "Bearer" },
+				expires_at: Date.now() + 3600000,
+				client_id: "cached-client-id",
+			})
+
+			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", secretStorage)
+			await provider.registerClientIfNeeded()
+
+			// Should still reuse the cached client_id, NOT perform a new DCR
+			expect((await provider.clientInformation())?.client_id).toBe("cached-client-id")
+			await provider.close()
+		})
+
+		it("should perform DCR when no cached client_id exists", async () => {
 			setupCallbackServerMock()
 			const secretStorage = createMockSecretStorage()
 
@@ -636,12 +656,10 @@ describe("McpOAuthClientProvider", () => {
 					}),
 			})
 
-			// Pre-populate storage with cached data with different redirect_uri
+			// No cached client_id in storage
 			await secretStorage.saveOAuthData("https://example.com/mcp", {
 				tokens: { access_token: "cached-token", token_type: "Bearer" },
 				expires_at: Date.now() + 3600000,
-				client_id: "cached-client-id",
-				redirect_uri: "http://localhost:99999/callback", // different port
 			})
 
 			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", secretStorage)
