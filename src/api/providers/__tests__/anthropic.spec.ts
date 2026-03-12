@@ -144,6 +144,29 @@ describe("AnthropicHandler", () => {
 			expect(mockAnthropicConstructor.mock.calls[0]![0]!.authToken).toEqual("test-api-key")
 			expect(mockAnthropicConstructor.mock.calls[0]![0]!.apiKey).toBeUndefined()
 		})
+
+		it("should pass custom headers to the SDK when anthropicHeaders is provided", () => {
+			const customHeaders = {
+				"x-portkey-metadata": "test-metadata",
+				"x-custom-header": "custom-value",
+			}
+			const handlerWithHeaders = new AnthropicHandler({
+				...mockOptions,
+				anthropicHeaders: customHeaders,
+			})
+			expect(handlerWithHeaders).toBeInstanceOf(AnthropicHandler)
+			expect(mockAnthropicConstructor).toHaveBeenCalledTimes(1)
+			expect(mockAnthropicConstructor.mock.calls[0]![0]!.defaultHeaders).toEqual(customHeaders)
+		})
+
+		it("should pass undefined defaultHeaders when anthropicHeaders is not provided", () => {
+			const handlerWithoutHeaders = new AnthropicHandler({
+				...mockOptions,
+			})
+			expect(handlerWithoutHeaders).toBeInstanceOf(AnthropicHandler)
+			expect(mockAnthropicConstructor).toHaveBeenCalledTimes(1)
+			expect(mockAnthropicConstructor.mock.calls[0]![0]!.defaultHeaders).toBeUndefined()
+		})
 	})
 
 	describe("createMessage", () => {
