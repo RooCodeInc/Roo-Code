@@ -410,6 +410,8 @@
 		"getXaiApiKey": "xAI API कुंजी प्राप्त करें",
 		"litellmApiKey": "LiteLLM API कुंजी",
 		"litellmBaseUrl": "LiteLLM आधार URL",
+		"litellmFlattenContent": "संदेश सामग्री को सपाट करें",
+		"litellmFlattenContentDescription": "ऐरे प्रारूप में संदेश सामग्री को सादा स्ट्रिंग में बदलें। LiteLLM के auto_router और एम्बेडिंग-आधारित रूटिंग सुविधाओं के साथ संगतता के लिए इसे सक्षम करें। केवल तभी अक्षम करें जब आपको मल्टीमॉडल सामग्री (छवियां) की आवश्यकता हो।",
 		"awsCredentials": "AWS क्रेडेंशियल्स",
 		"awsProfile": "AWS प्रोफाइल",
 		"awsApiKey": "Amazon बेडरॉक API कुंजी",

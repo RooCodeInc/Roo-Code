@@ -410,6 +410,8 @@
 		"getXaiApiKey": "xAI API Anahtarı Al",
 		"litellmApiKey": "LiteLLM API Anahtarı",
 		"litellmBaseUrl": "LiteLLM Temel URL",
+		"litellmFlattenContent": "Mesaj içeriğini düzleştir",
+		"litellmFlattenContentDescription": "Dizi formatındaki mesaj içeriğini düz metin dizelerine dönüştürür. LiteLLM'in auto_router ve gömme tabanlı yönlendirme özellikleriyle uyumluluk için etkinleştirin. Yalnızca çok modlu içeriğe (görüntüler) ihtiyacınız varsa devre dışı bırakın.",
 		"awsCredentials": "AWS Kimlik Bilgileri",
 		"awsProfile": "AWS Profili",
 		"awsApiKey": "Amazon Bedrock API Anahtarı",

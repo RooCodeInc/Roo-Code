@@ -410,6 +410,8 @@
 		"getXaiApiKey": "获取 xAI API 密钥",
 		"litellmApiKey": "LiteLLM API 密钥",
 		"litellmBaseUrl": "LiteLLM 基础 URL",
+		"litellmFlattenContent": "展平消息内容",
+		"litellmFlattenContentDescription": "将数组格式的消息内容转换为纯字符串。启用此选项以兼容 LiteLLM 的 auto_router 和基于嵌入的路由功能。仅在需要多模态内容（图像）时禁用。",
 		"awsCredentials": "AWS 凭证",
 		"awsProfile": "AWS 配置文件",
 		"awsApiKey": "Amazon Bedrock API 密钥",
