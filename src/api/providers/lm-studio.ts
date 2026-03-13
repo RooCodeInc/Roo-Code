@@ -42,9 +42,12 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		// Enable mergeToolResultText to prevent text content after tool_results from creating
+		// separate user messages that can disrupt the model's conversation flow.
+		// This helps models like GLM4.5 avoid getting stuck in repeated file read loops.
 		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages),
+			...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
 		]
 
 		// -------------------------
