@@ -64,6 +64,7 @@
 		"installError": "「{{itemName}}」安裝失敗：{{errorMessage}}",
 		"removing": "正在移除項目：「{{itemName}}」",
 		"removeSuccess": "「{{itemName}}」移除成功",
-		"removeError": "「{{itemName}}」移除失敗：{{errorMessage}}"
+		"removeError": "「{{itemName}}」移除失敗：{{errorMessage}}",
+		"notInstalledForTarget": "找不到模式"
 	}
 }
