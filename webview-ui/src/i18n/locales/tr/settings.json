@@ -657,6 +657,16 @@
 			"mb": "MB",
 			"description": "Tek bir read_file işleminde işlenen tüm görüntüler için maksimum kümülatif boyut sınırı (MB cinsinden). Birden çok görüntü okurken, her görüntünün boyutu toplama eklenir. Başka bir görüntü eklemek bu sınırı aşacaksa, atlanacaktır."
 		},
+		"maxImageDimension": {
+			"label": "Görüntü küçültme maksimum boyutu",
+			"px": "px",
+			"description": "LLM'ye göndermeden önce görüntüler için maksimum genişlik veya yükseklik (piksel cinsinden). Bu boyutu aşan görüntüler en-boy oranı korunarak orantılı olarak küçültülür. Küçültmeyi devre dışı bırakmak için 0 olarak ayarlayın.",
+			"disabled": "Devre dışı"
+		},
+		"imageDownscaleQuality": {
+			"label": "Görüntü küçültme kalitesi",
+			"description": "Küçültülmüş görüntüleri yeniden kodlarken kullanılan JPEG/WebP kodlama kalitesi (1-100). Daha yüksek değerler daha fazla ayrıntı korur ancak daha büyük dosyalar üretir. Yalnızca görüntü küçültme etkinleştirildiğinde geçerlidir."
+		},
 		"includeCurrentTime": {
 			"label": "Mevcut zamanı bağlama dahil et",
 			"description": "Etkinleştirildiğinde, mevcut zaman ve saat dilimi bilgileri sistem istemine dahil edilecektir. Modeller zaman endişeleri nedeniyle çalışmayı durdurursa bunu devre dışı bırakın."

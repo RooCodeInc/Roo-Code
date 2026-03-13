@@ -632,6 +632,16 @@
 			"mb": "MB",
 			"description": "Maximale cumulatieve groottelimiet (in MB) voor alle afbeeldingen die in één read_file-bewerking worden verwerkt. Bij het lezen van meerdere afbeeldingen wordt de grootte van elke afbeelding bij het totaal opgeteld. Als het toevoegen van een andere afbeelding deze limiet zou overschrijden, wordt deze overgeslagen."
 		},
+		"maxImageDimension": {
+			"label": "Maximale afbeeldingsverkleiningsdimensie",
+			"px": "px",
+			"description": "Maximale breedte of hoogte (in pixels) voor afbeeldingen voordat ze naar het LLM worden gestuurd. Afbeeldingen die deze dimensie overschrijden worden proportioneel verkleind, met behoud van de beeldverhouding. Stel in op 0 om verkleining uit te schakelen.",
+			"disabled": "Uitgeschakeld"
+		},
+		"imageDownscaleQuality": {
+			"label": "Afbeeldingsverkleiningskwaliteit",
+			"description": "JPEG/WebP-coderingskwaliteit (1-100) die wordt gebruikt bij het hercoderen van verkleinde afbeeldingen. Hogere waarden behouden meer detail maar produceren grotere bestanden. Geldt alleen wanneer afbeeldingsverkleining is ingeschakeld."
+		},
 		"diagnostics": {
 			"includeMessages": {
 				"label": "Automatisch diagnostiek opnemen in context",

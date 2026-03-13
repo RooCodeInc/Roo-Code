@@ -657,6 +657,16 @@
 			"mb": "MB",
 			"description": "Batas ukuran kumulatif maksimum (dalam MB) untuk semua gambar yang diproses dalam satu operasi read_file. Saat membaca beberapa gambar, ukuran setiap gambar ditambahkan ke total. Jika menyertakan gambar lain akan melebihi batas ini, gambar tersebut akan dilewati."
 		},
+		"maxImageDimension": {
+			"label": "Dimensi maksimum perkecilan gambar",
+			"px": "px",
+			"description": "Lebar atau tinggi maksimum (dalam piksel) untuk gambar sebelum dikirim ke LLM. Gambar yang melebihi dimensi ini akan diperkecil secara proporsional, mempertahankan rasio aspek. Atur ke 0 untuk menonaktifkan perkecilan.",
+			"disabled": "Dinonaktifkan"
+		},
+		"imageDownscaleQuality": {
+			"label": "Kualitas perkecilan gambar",
+			"description": "Kualitas encoding JPEG/WebP (1-100) yang digunakan saat mengenkode ulang gambar yang diperkecil. Nilai lebih tinggi mempertahankan lebih banyak detail tetapi menghasilkan file lebih besar. Hanya berlaku ketika perkecilan gambar diaktifkan."
+		},
 		"includeCurrentTime": {
 			"label": "Sertakan waktu saat ini dalam konteks",
 			"description": "Ketika diaktifkan, waktu saat ini dan informasi zona waktu akan disertakan dalam prompt sistem. Nonaktifkan ini jika model berhenti bekerja karena masalah waktu."

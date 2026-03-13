@@ -167,6 +167,20 @@ export const globalSettingsSchema = z.object({
 	maxImageFileSize: z.number().optional(),
 	maxTotalImageSize: z.number().optional(),
 
+	/**
+	 * Maximum dimension (width or height) in pixels for image downscaling before LLM upload.
+	 * Images exceeding this dimension are proportionally resized, preserving aspect ratio.
+	 * Set to 0 (default) to disable downscaling.
+	 */
+	maxImageDimension: z.number().min(0).optional(),
+
+	/**
+	 * JPEG/WebP quality (1-100) used when re-encoding resized images.
+	 * Only applies when maxImageDimension is set and the image is downscaled.
+	 * @default 85
+	 */
+	imageDownscaleQuality: z.number().min(1).max(100).optional(),
+
 	terminalOutputPreviewSize: z.enum(["small", "medium", "large"]).optional(),
 	terminalShellIntegrationTimeout: z.number().optional(),
 	terminalShellIntegrationDisabled: z.boolean().optional(),
