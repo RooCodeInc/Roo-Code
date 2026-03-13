@@ -172,10 +172,10 @@ export async function validateImageForProcessing(
  * Optionally downscales the image if resize options are provided.
  */
 export async function processImageFile(fullPath: string, options?: ReadImageOptions): Promise<ImageProcessingResult> {
-	const imageStats = await fs.stat(fullPath)
 	const { dataUrl, buffer } = await readImageAsDataUrlWithBuffer(fullPath, options)
-	const imageSizeInKB = Math.round(imageStats.size / 1024)
-	const imageSizeInMB = imageStats.size / (1024 * 1024)
+	// Use actual buffer length (which reflects resized size) for accurate tracking
+	const imageSizeInKB = Math.round(buffer.length / 1024)
+	const imageSizeInMB = buffer.length / (1024 * 1024)
 	const noticeText = t("tools:readFile.imageWithSize", { size: imageSizeInKB })
 
 	return {

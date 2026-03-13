@@ -643,14 +643,14 @@
 			"description": "單次 read_file 操作中處理的所有圖片的最大累計大小限制（MB）。讀取多張圖片時，每張圖片的大小會累加到總大小中。如果包含另一張圖片會超過此限制，則會跳過該圖片。"
 		},
 		"maxImageDimension": {
-					"label": "圖片縮放最大尺寸",
-					"px": "px",
-					"description": "傳送給 LLM 之前圖片的最大寬度或高度（像素）。超過此尺寸的圖片會按比例縮小，保持長寬比。設為 0 停用縮放。",
-					"disabled": "已停用"
+			"label": "圖片縮放最大尺寸",
+			"px": "px",
+			"description": "傳送給 LLM 之前圖片的最大寬度或高度（像素）。超過此尺寸的圖片會按比例縮小，保持長寬比。設為 0 停用縮放。",
+			"disabled": "已停用"
 		},
 		"imageDownscaleQuality": {
-					"label": "圖片縮放品質",
-					"description": "重新編碼縮小後的圖片時使用的 JPEG/WebP 編碼品質（1-100）。較高的值保留更多細節，但會產生更大的檔案。僅在啟用圖片縮放時適用。"
+			"label": "圖片縮放品質",
+			"description": "重新編碼縮小後的圖片時使用的 JPEG/WebP 編碼品質（1-100）。較高的值保留更多細節，但會產生更大的檔案。僅在啟用圖片縮放時適用。"
 		},
 		"diagnostics": {
 			"includeMessages": {

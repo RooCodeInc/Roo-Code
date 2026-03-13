@@ -753,8 +753,8 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						const {
 							maxImageFileSize = DEFAULT_MAX_IMAGE_FILE_SIZE_MB,
 							maxTotalImageSize = DEFAULT_MAX_TOTAL_IMAGE_SIZE_MB,
-							maxImageDimension: legacyMaxDim,
-							imageDownscaleQuality: legacyQuality,
+							maxImageDimension,
+							imageDownscaleQuality,
 						} = state ?? {}
 						const validation = await validateImageForProcessing(
 							fullPath,
@@ -768,8 +768,8 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 							continue
 						}
 						const imageResult = await processImageFile(fullPath, {
-							maxDimension: legacyMaxDim,
-							quality: legacyQuality,
+							maxDimension: maxImageDimension,
+							quality: imageDownscaleQuality,
 						})
 						if (imageResult) {
 							results.push(`File: ${relPath}\n[Image file - content processed for vision model]`)
