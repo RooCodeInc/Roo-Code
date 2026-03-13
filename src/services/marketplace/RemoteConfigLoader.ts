@@ -1,4 +1,3 @@
-import axios from "axios"
 import * as yaml from "yaml"
 import { z } from "zod"
 
@@ -88,14 +87,28 @@ export class RemoteConfigLoader {
 
 		for (let i = 0; i < maxRetries; i++) {
 			try {
-				const response = await axios.get(url, {
-					timeout: 10000, // 10 second timeout
+				// Use AbortController for timeout - fetch does not have built-in timeout
+				const controller = new AbortController()
+				const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+
+				const response = await fetch(url, {
+					signal: controller.signal,
 					headers: {
 						Accept: "application/json",
 						"Content-Type": "application/json",
 					},
 				})
-				return response.data as T
+
+				clearTimeout(timeoutId)
+
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`)
+				}
+
+				// Using fetch with native fetch API in VS Code automatically respects
+				// VS Code's http.proxy settings, unlike axios which requires manual
+				// proxy agent configuration
+				return (await response.text()) as T
 			} catch (error) {
 				lastError = error as Error
 				if (i < maxRetries - 1) {
