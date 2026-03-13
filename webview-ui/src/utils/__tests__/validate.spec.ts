@@ -158,6 +158,38 @@ describe("Model Validation Functions", () => {
 			expect(result).toBeUndefined() // Should not return model validation error
 		})
 
+		it("returns undefined for litellm with base URL but no API key", () => {
+			const config: ProviderSettings = {
+				apiProvider: "litellm",
+				litellmBaseUrl: "http://localhost:4000",
+				// No litellmApiKey - should be valid for self-hosted instances
+			}
+
+			const result = validateApiConfigurationExcludingModelErrors(config, mockRouterModels, allowAllOrganization)
+			expect(result).toBeUndefined()
+		})
+
+		it("returns error for litellm without base URL", () => {
+			const config: ProviderSettings = {
+				apiProvider: "litellm",
+				// No litellmBaseUrl
+			}
+
+			const result = validateApiConfigurationExcludingModelErrors(config, mockRouterModels, allowAllOrganization)
+			expect(result).toBe("settings:validation.baseUrl")
+		})
+
+		it("returns undefined for litellm with both base URL and API key", () => {
+			const config: ProviderSettings = {
+				apiProvider: "litellm",
+				litellmBaseUrl: "http://localhost:4000",
+				litellmApiKey: "some-key",
+			}
+
+			const result = validateApiConfigurationExcludingModelErrors(config, mockRouterModels, allowAllOrganization)
+			expect(result).toBeUndefined()
+		})
+
 		it("excludes model-specific organization errors", () => {
 			const config: ProviderSettings = {
 				apiProvider: "openrouter",
