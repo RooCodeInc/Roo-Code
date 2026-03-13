@@ -54,8 +54,8 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 			}
 			break
 		case "litellm":
-			if (!apiConfiguration.litellmApiKey) {
-				return i18next.t("settings:validation.apiKey")
+			if (!apiConfiguration.litellmBaseUrl) {
+				return i18next.t("settings:validation.baseUrl")
 			}
 			break
 		case "anthropic":
