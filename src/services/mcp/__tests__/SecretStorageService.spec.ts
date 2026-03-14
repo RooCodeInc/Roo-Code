@@ -6,17 +6,30 @@ import { SecretStorageService, StoredMcpOAuthData } from "../SecretStorageServic
 
 function createMockContext() {
 	const store = new Map<string, string>()
-	return {
-		secrets: {
-			get: vi.fn(async (key: string) => store.get(key)),
-			store: vi.fn(async (key: string, value: string) => {
-				store.set(key, value)
-			}),
-			delete: vi.fn(async (key: string) => {
-				store.delete(key)
-			}),
+	// Listeners registered via onDidChange; keyed by arbitrary id for disposal.
+	const listeners = new Map<number, (e: { key: string }) => void>()
+	let nextId = 0
+
+	const secrets = {
+		get: vi.fn(async (key: string) => store.get(key)),
+		store: vi.fn(async (key: string, value: string) => {
+			store.set(key, value)
+		}),
+		delete: vi.fn(async (key: string) => {
+			store.delete(key)
+		}),
+		onDidChange: vi.fn((handler: (e: { key: string }) => void) => {
+			const id = nextId++
+			listeners.set(id, handler)
+			return { dispose: () => listeners.delete(id) }
+		}),
+		/** Test helper: simulate a storage change event. */
+		_emit: (key: string) => {
+			for (const handler of listeners.values()) handler({ key })
 		},
-	} as any
+	}
+
+	return { secrets } as any
 }
 
 describe("SecretStorageService", () => {
@@ -89,6 +102,36 @@ describe("SecretStorageService", () => {
 			expect(context.secrets.delete).toHaveBeenCalledWith("mcp.oauth.example.com.mcp.data")
 			const result = await service.getOAuthData("https://example.com/mcp")
 			expect(result).toBeUndefined()
+		})
+
+		describe("onDidChange", () => {
+			it("should call the callback when the key for the given URL changes", () => {
+				const cb = vi.fn()
+				service.onDidChange("https://example.com/mcp", cb)
+
+				context.secrets._emit("mcp.oauth.example.com.mcp.data")
+
+				expect(cb).toHaveBeenCalledTimes(1)
+			})
+
+			it("should not call the callback for a different URL's key", () => {
+				const cb = vi.fn()
+				service.onDidChange("https://example.com/mcp", cb)
+
+				context.secrets._emit("mcp.oauth.other.com.mcp.data")
+
+				expect(cb).not.toHaveBeenCalled()
+			})
+
+			it("should stop calling the callback after the returned dispose function is called", () => {
+				const cb = vi.fn()
+				const unsubscribe = service.onDidChange("https://example.com/mcp", cb)
+
+				unsubscribe()
+				context.secrets._emit("mcp.oauth.example.com.mcp.data")
+
+				expect(cb).not.toHaveBeenCalled()
+			})
 		})
 	})
 

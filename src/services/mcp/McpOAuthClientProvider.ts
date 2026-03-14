@@ -37,6 +37,10 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 	private _clientInfo?: OAuthClientInformationFull
 	private _closed = false
 	private _refreshPromise: Promise<OAuthTokens> | null = null
+	/** Stored by redirectToAuthorization(); opened on-demand via openBrowser(). */
+	private _pendingAuthorizationUrl: URL | null = null
+	/** Deduplicates concurrent _ensureCallbackServer() calls. */
+	private _ensureServerPromise: Promise<void> | null = null
 
 	private constructor(
 		private readonly _serverUrl: string,
@@ -88,23 +92,15 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 			.map((b) => b.toString(16).padStart(2, "0"))
 			.join("")
 
-		// Start the callback server now so the port is known and stable.
-		// The SDK reads `redirectUrl` synchronously when building the authorization
-		// URL, so the port must be available before any connect attempt.
-		const { server, port, result } = await startCallbackServer(undefined, state)
-
-		const authCodePromise = result.then((r) => {
-			if (r.error) throw new Error(`OAuth authorization failed: ${r.error}`)
-			if (!r.code) throw new Error("No authorization code received in callback")
-			return r.code
-		})
+		// We start the callback server lazily in `redirectToAuthorization()` or `waitForAuthCode()`.
+		// We use a default port (0) initially; it will be updated when the server starts.
 
 		return new McpOAuthClientProvider(
 			serverUrl,
 			secretStorage,
-			server,
-			port,
-			authCodePromise,
+			null,
+			0,
+			null,
 			tokenEndpointAuthMethod,
 			grantTypes,
 			scopes,
@@ -121,9 +117,20 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 		return `http://localhost:${this._port}/callback`
 	}
 
-	private async _ensureCallbackServer(): Promise<void> {
-		if (this._server && !this._closed) return
+	private _ensureCallbackServer(): Promise<void> {
+		// Guard against concurrent callers (e.g. redirectToAuthorization + registerClientIfNeeded
+		// called in parallel) both passing the "server not yet started" check and each launching
+		// their own startCallbackServer(), which would bind two ports and lose one handle.
+		if (this._server && !this._closed) return Promise.resolve()
+		if (!this._ensureServerPromise) {
+			this._ensureServerPromise = this._doStartCallbackServer().finally(() => {
+				this._ensureServerPromise = null
+			})
+		}
+		return this._ensureServerPromise
+	}
 
+	private async _doStartCallbackServer(): Promise<void> {
 		this._closed = false
 		const { server, port, result } = await startCallbackServer(this._port, this._state)
 		this._server = server
@@ -187,6 +194,10 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 		}
 
 		if (!this._authServerMeta?.registration_endpoint) return // DCR not supported
+
+		// For Dynamic Client Registration, we MUST have a stable redirect URI.
+		// Ensure the callback server is started so we have a real port.
+		await this._ensureCallbackServer()
 
 		const response = await fetch(this._authServerMeta.registration_endpoint as string, {
 			method: "POST",
@@ -254,8 +265,11 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 	}
 
 	async redirectToAuthorization(authorizationUrl: URL): Promise<void> {
-		// Ensure the callback server is running before opening the browser.
-		// This handles mid-session re-auth where the initial server was closed.
+		// Ensure the callback server is running so redirectUrl has a real port.
+		// The server must be started here because the SDK calls this method as
+		// part of its internal auth flow (before throwing UnauthorizedError back
+		// to our caller).  We do NOT open the browser here — that is deferred to
+		// openBrowser(), which McpHub calls only after the user confirms the toast.
 		await this._ensureCallbackServer()
 
 		// Workaround for SDK metadata discovery bug (see utils/oauth.ts for issue links).
@@ -290,13 +304,25 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 			}
 		}
 
-		void vscode.window.showInformationMessage("MCP server requires authentication. Opening browser for OAuth…")
+		// Store the (possibly corrected) URL; it will be opened by openBrowser()
+		// once the user confirms the "Authenticate" toast in McpHub.
+		this._pendingAuthorizationUrl = correctedUrl
+	}
+
+	/**
+	 * Opens the pending OAuth authorization URL in the system browser.
+	 * Must be called after `redirectToAuthorization()` has been invoked by the SDK.
+	 * McpHub calls this only after the user confirms the authentication toast.
+	 */
+	async openBrowser(): Promise<void> {
+		const url = this._pendingAuthorizationUrl
+		if (!url) {
+			throw new Error("No pending authorization URL — redirectToAuthorization() was not called")
+		}
 		try {
-			await vscode.env.openExternal(vscode.Uri.parse(correctedUrl.toString()))
+			await vscode.env.openExternal(vscode.Uri.parse(url.toString()))
 		} catch {
-			void vscode.window.showInformationMessage(
-				`Please open this URL in your browser to authenticate: ${correctedUrl}`,
-			)
+			void vscode.window.showInformationMessage(`Please open this URL in your browser to authenticate: ${url}`)
 		}
 	}
 
@@ -429,6 +455,11 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 
 	/** Close the local callback server. Always call this when done. */
 	async close(): Promise<void> {
+		// If a server startup is in flight, wait for it to finish so we don't
+		// close before _server is set (which would leave a dangling server).
+		if (this._ensureServerPromise) {
+			await this._ensureServerPromise.catch(() => {})
+		}
 		if (!this._closed && this._server) {
 			this._closed = true
 			await stopCallbackServer(this._server).catch(() => {})
