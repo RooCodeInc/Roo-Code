@@ -85,15 +85,26 @@ describe("McpOAuthClientProvider", () => {
 	})
 
 	describe("create", () => {
-		it("should start a callback server and return a provider", async () => {
+		it("should return a provider without starting a callback server", async () => {
 			setupCallbackServerMock()
 
 			const secretStorage = createMockSecretStorage()
 			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", secretStorage)
 
-			expect(startCallbackServer).toHaveBeenCalledWith(undefined, expect.any(String))
-			expect(provider.redirectUrl).toBe("http://localhost:12345/callback")
+			expect(startCallbackServer).not.toHaveBeenCalled()
+			expect(provider.redirectUrl).toBe("http://localhost:0/callback")
 			await provider.close()
+		})
+	})
+
+	describe("redirectUrl (pre-server-start)", () => {
+		it("should return localhost:0 before the callback server is started (intentional lazy-init behaviour)", async () => {
+			const secretStorage = createMockSecretStorage()
+			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", secretStorage)
+			// Port 0 is intentional: the server starts lazily in _ensureCallbackServer().
+			// DCR and authorization flows always call _ensureCallbackServer() first to obtain
+			// a real port before using redirectUrl, so port 0 is never sent to an OAuth server.
+			expect(provider.redirectUrl).toBe("http://localhost:0/callback")
 		})
 	})
 
@@ -105,7 +116,7 @@ describe("McpOAuthClientProvider", () => {
 			const metadata = provider.clientMetadata
 
 			expect(metadata.client_name).toBe("Roo Code")
-			expect(metadata.redirect_uris).toEqual(["http://localhost:12345/callback"])
+			expect(metadata.redirect_uris).toEqual(["http://localhost:0/callback"])
 			expect(metadata.grant_types).toContain("authorization_code")
 			expect(metadata.response_types).toContain("code")
 			expect(metadata.token_endpoint_auth_method).toBe("none")
@@ -253,17 +264,29 @@ describe("McpOAuthClientProvider", () => {
 	})
 
 	describe("redirectToAuthorization", () => {
-		it("should open browser with the authorization URL", async () => {
+		it("should store the authorization URL without opening the browser", async () => {
 			setupCallbackServerMock()
 			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", createMockSecretStorage())
 
 			const authUrl = new URL("https://auth.example.com/authorize?client_id=test")
 			await provider.redirectToAuthorization(authUrl)
 
+			// Browser must NOT have been opened yet — it is deferred to openBrowser()
+			expect(vscode.env.openExternal).not.toHaveBeenCalled()
+			await provider.close()
+		})
+	})
+
+	describe("openBrowser", () => {
+		it("should open the pending authorization URL in the browser", async () => {
+			setupCallbackServerMock()
+			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", createMockSecretStorage())
+
+			const authUrl = new URL("https://auth.example.com/authorize?client_id=test")
+			await provider.redirectToAuthorization(authUrl)
+			await provider.openBrowser()
+
 			expect(vscode.env.openExternal).toHaveBeenCalled()
-			expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(
-				expect.stringContaining("Opening browser for OAuth"),
-			)
 			await provider.close()
 		})
 
@@ -274,10 +297,18 @@ describe("McpOAuthClientProvider", () => {
 
 			const authUrl = new URL("https://auth.example.com/authorize?client_id=test")
 			await provider.redirectToAuthorization(authUrl)
+			await provider.openBrowser()
 
 			expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(
 				expect.stringContaining("Please open this URL"),
 			)
+			await provider.close()
+		})
+
+		it("should throw if called before redirectToAuthorization", async () => {
+			setupCallbackServerMock()
+			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", createMockSecretStorage())
+			await expect(provider.openBrowser()).rejects.toThrow("No pending authorization URL")
 			await provider.close()
 		})
 
@@ -309,6 +340,7 @@ describe("McpOAuthClientProvider", () => {
 			// Simulate the SDK building the wrong base URL (using bare /authorize) and omitting scope
 			const sdkWrongUrl = new URL("https://mcp.kapa.ai/authorize?client_id=abc&code_challenge=xyz&state=123")
 			await provider.redirectToAuthorization(sdkWrongUrl)
+			await provider.openBrowser()
 
 			// The provider should have corrected the URL to use the real authorization_endpoint
 			const openedUri = (vscode.env.openExternal as any).mock.calls[0][0].toString()
@@ -351,6 +383,7 @@ describe("McpOAuthClientProvider", () => {
 
 			const sdkUrl = new URL("https://mcp.kapa.ai/authorize?client_id=abc&state=123")
 			await provider.redirectToAuthorization(sdkUrl)
+			await provider.openBrowser()
 
 			const openedUri = (vscode.env.openExternal as any).mock.calls[0][0].toString()
 			// The resource indicator from the protected resource metadata must appear
@@ -368,6 +401,7 @@ describe("McpOAuthClientProvider", () => {
 				"https://auth.example.com/authorize?client_id=abc&resource=https%3A%2F%2Fexample.com%2F&state=123",
 			)
 			await provider.redirectToAuthorization(sdkUrl)
+			await provider.openBrowser()
 
 			const openedUri = (vscode.env.openExternal as any).mock.calls[0][0].toString()
 			const resourceMatches = (openedUri.match(/resource=/g) || []).length
@@ -382,6 +416,7 @@ describe("McpOAuthClientProvider", () => {
 			// SDK URL already includes scope=openid
 			const sdkUrl = new URL("https://auth.example.com/authorize?client_id=abc&scope=openid&state=123")
 			await provider.redirectToAuthorization(sdkUrl)
+			await provider.openBrowser()
 
 			// scope should appear exactly once
 			const openedUri = (vscode.env.openExternal as any).mock.calls[0][0].toString()
@@ -445,7 +480,7 @@ describe("McpOAuthClientProvider", () => {
 			expect(body.get("client_id")).toBe("client-id-123")
 			expect(body.get("client_secret")).toBe("client-secret-abc")
 			expect(body.get("code_verifier")).toBe("pkce-verifier-123")
-			expect(body.get("redirect_uri")).toBe("http://localhost:12345/callback")
+			expect(body.get("redirect_uri")).toBe("http://localhost:0/callback")
 
 			// Verify tokens were saved
 			const saved = await provider.tokens()
@@ -564,9 +599,12 @@ describe("McpOAuthClientProvider", () => {
 	})
 
 	describe("close", () => {
-		it("should stop the callback server", async () => {
+		it("should stop the callback server if it was started", async () => {
 			const { mockServer } = setupCallbackServerMock()
 			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", createMockSecretStorage())
+
+			// Start server lazily
+			await provider.waitForAuthCode().catch(() => {})
 
 			await provider.close()
 
@@ -577,10 +615,22 @@ describe("McpOAuthClientProvider", () => {
 			setupCallbackServerMock()
 			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", createMockSecretStorage())
 
+			// Start server lazily
+			await provider.waitForAuthCode().catch(() => {})
+
 			await provider.close()
 			await provider.close()
 
 			expect(stopCallbackServer).toHaveBeenCalledTimes(1)
+		})
+
+		it("should not call stopCallbackServer if server was never started", async () => {
+			setupCallbackServerMock()
+			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", createMockSecretStorage())
+
+			await provider.close()
+
+			expect(stopCallbackServer).not.toHaveBeenCalled()
 		})
 	})
 
@@ -666,6 +716,49 @@ describe("McpOAuthClientProvider", () => {
 			await provider.registerClientIfNeeded()
 
 			expect((await provider.clientInformation())?.client_id).toBe("new-client-id")
+			await provider.close()
+		})
+
+		it("should use the same redirect URI in DCR and authorization flow", async () => {
+			setupCallbackServerMock()
+			const secretStorage = createMockSecretStorage()
+
+			mockFetch.mockClear()
+			// Auth server metadata
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: () =>
+					Promise.resolve({
+						issuer: "https://auth.example.com",
+						authorization_endpoint: "https://auth.example.com/authorize",
+						token_endpoint: "https://auth.example.com/token",
+						registration_endpoint: "https://auth.example.com/register",
+						response_types_supported: ["code"],
+						token_endpoint_auth_methods_supported: ["none"],
+						grant_types_supported: ["authorization_code", "refresh_token"],
+					}),
+			})
+			// DCR response
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: () =>
+					Promise.resolve({
+						client_id: "consistency-client-id",
+						redirect_uris: ["http://localhost:12345/callback"],
+						client_name: "Roo Code",
+						grant_types: ["authorization_code", "refresh_token"],
+						response_types: ["code"],
+						token_endpoint_auth_method: "none",
+					}),
+			})
+
+			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", secretStorage)
+			await provider.registerClientIfNeeded()
+
+			// The redirect_uri sent in the DCR body must equal the redirectUrl property
+			// used during the authorization redirect so RFC 6749 §4.1.3 validation passes.
+			const dcrBody = JSON.parse(mockFetch.mock.calls[1][1]?.body as string)
+			expect(dcrBody.redirect_uris).toContain(provider.redirectUrl)
 			await provider.close()
 		})
 	})

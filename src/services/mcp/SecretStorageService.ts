@@ -48,4 +48,21 @@ export class SecretStorageService {
 	async deleteOAuthData(serverUrl: string): Promise<void> {
 		await this._storage.delete(this._key(serverUrl))
 	}
+
+	/**
+	 * Subscribe to changes for a specific server URL's OAuth data.
+	 * The callback fires (in all VS Code windows) immediately when another
+	 * window writes or deletes the token for this server.
+	 *
+	 * @returns A dispose function — call it to stop listening.
+	 */
+	onDidChange(serverUrl: string, callback: () => void): () => void {
+		const key = this._key(serverUrl)
+		const disposable = this._storage.onDidChange((e) => {
+			if (e.key === key) {
+				callback()
+			}
+		})
+		return () => disposable.dispose()
+	}
 }
