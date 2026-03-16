@@ -241,7 +241,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 						type: "tool_use",
 						name: "new_task",
 						id: "toolu_abc123",
-						input: { mode: "code", message: "Do something" },
+						input: { mode_slug: "code", message: "Do something" },
 					},
 				],
 				ts: 50,

@@ -19,7 +19,7 @@ export default {
 		parameters: {
 			type: "object",
 			properties: {
-				mode: {
+				mode_slug: {
 					type: "string",
 					description: MODE_PARAMETER_DESCRIPTION,
 				},
@@ -32,7 +32,7 @@ export default {
 					description: TODOS_PARAMETER_DESCRIPTION,
 				},
 			},
-			required: ["mode", "message", "todos"],
+			required: ["mode_slug", "message", "todos"],
 			additionalProperties: false,
 		},
 	},
