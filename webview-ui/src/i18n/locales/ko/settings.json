@@ -881,6 +881,7 @@
 	},
 	"validation": {
 		"apiKey": "유효한 API 키를 입력해야 합니다.",
+		"baseUrl": "유효한 기본 URL을 입력해야 합니다.",
 		"awsRegion": "Amazon Bedrock을 사용하려면 리전을 선택해야 합니다.",
 		"googleCloud": "유효한 Google Cloud 프로젝트 ID와 리전을 입력해야 합니다.",
 		"modelId": "유효한 모델 ID를 입력해야 합니다.",

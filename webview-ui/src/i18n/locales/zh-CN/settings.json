@@ -881,6 +881,7 @@
 	},
 	"validation": {
 		"apiKey": "您必须提供有效的 API 密钥。",
+		"baseUrl": "您必须提供有效的基础 URL。",
 		"awsRegion": "您必须选择一个区域来使用 Amazon Bedrock。",
 		"googleCloud": "您必须提供有效的 Google Cloud 项目 ID 和区域。",
 		"modelId": "您必须提供有效的模型 ID。",
