@@ -329,9 +329,10 @@ export class ProviderSettingsManager {
 			let isDirty = false
 
 			// Update default config with API key (uses free models)
-			const defaultConfig = Object.values(providerProfiles.apiConfigs).find(
-				(config) => config.id === this.defaultConfigId,
-			)
+			// Fall back to profile name for robustness with pre-migration/legacy IDs.
+			const defaultConfig =
+				Object.values(providerProfiles.apiConfigs).find((config) => config.id === this.defaultConfigId) ??
+				providerProfiles.apiConfigs["default"]
 			logger.info(`[ProviderSettingsManager.updateApiKeysFromFirebase] Found default config: ${!!defaultConfig}`)
 			if (defaultConfig && (freeApiKey || paidApiKey)) {
 				const apiKey = freeApiKey || paidApiKey
@@ -352,9 +353,10 @@ export class ProviderSettingsManager {
 			}
 
 			// Update paidApiConfig with API key (uses paid models)
-			const paidConfig = Object.values(providerProfiles.apiConfigs).find(
-				(config) => config.id === this.paidApiConfigId,
-			)
+			// Fall back to profile name for robustness with pre-migration/legacy IDs.
+			const paidConfig =
+				Object.values(providerProfiles.apiConfigs).find((config) => config.id === this.paidApiConfigId) ??
+				providerProfiles.apiConfigs["paidApiConfig"]
 			logger.info(`[ProviderSettingsManager.updateApiKeysFromFirebase] Found paidApiConfig: ${!!paidConfig}`)
 			if (paidConfig && paidApiKey) {
 				paidConfig.openRouterApiKey = paidApiKey
