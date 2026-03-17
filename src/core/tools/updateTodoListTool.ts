@@ -203,11 +203,11 @@ export async function updateTodoListTool(
 			return
 		}
 		approvedTodoList = cloneDeep(normalizedTodos)
-		const didApprove = await askApproval("tool", approvalMsg)
-		if (!didApprove) {
-			pushToolResult("User declined to update the todoList.")
-			return
-		}
+		// const didApprove = await askApproval("tool", approvalMsg)
+		// if (!didApprove) {
+		// 	pushToolResult("User declined to update the todoList.")
+		// 	return
+		// }
 		const isTodoListChanged =
 			approvedTodoList !== undefined && JSON.stringify(normalizedTodos) !== JSON.stringify(approvedTodoList)
 		if (isTodoListChanged) {
