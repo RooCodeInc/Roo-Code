@@ -6,8 +6,19 @@ import { DEFAULT_SEARCH_MIN_SCORE, DEFAULT_MAX_SEARCH_RESULTS } from "./constant
 import { getDefaultModelId, getModelDimension, getModelScoreThreshold } from "../../shared/embeddingModels"
 
 /**
+ * A function that resolves workspace-specific config and secrets.
+ * When it returns undefined, the global config is used instead.
+ */
+export type WorkspaceConfigResolver = () => { config: Record<string, any>; secrets: Record<string, string> } | undefined
+
+/**
  * Manages configuration state and validation for the code indexing feature.
  * Handles loading, validating, and providing access to configuration values.
+ *
+ * Supports both global configuration (via ContextProxy) and per-workspace
+ * configuration overrides (via WorkspaceConfigResolver). When a workspace
+ * config resolver is provided and returns a value, it takes priority over
+ * the global configuration.
  */
 export class CodeIndexConfigManager {
 	private codebaseIndexEnabled: boolean = false
@@ -27,7 +38,10 @@ export class CodeIndexConfigManager {
 	private searchMinScore?: number
 	private searchMaxResults?: number
 
-	constructor(private readonly contextProxy: ContextProxy) {
+	constructor(
+		private readonly contextProxy: ContextProxy,
+		private readonly workspaceConfigResolver?: WorkspaceConfigResolver,
+	) {
 		// Initialize with current configuration to avoid false restart triggers
 		this._loadAndSetConfiguration()
 	}
@@ -44,8 +58,10 @@ export class CodeIndexConfigManager {
 	 * This eliminates code duplication between initializeWithCurrentConfig() and loadConfiguration().
 	 */
 	private _loadAndSetConfiguration(): void {
-		// Load configuration from storage
-		const codebaseIndexConfig = this.contextProxy?.getGlobalState("codebaseIndexConfig") ?? {
+		// Check for workspace-specific config first, fall back to global config
+		const workspaceSource = this.workspaceConfigResolver?.()
+
+		const defaultConfig: Record<string, any> = {
 			codebaseIndexEnabled: false,
 			codebaseIndexQdrantUrl: "http://localhost:6333",
 			codebaseIndexEmbedderProvider: "openai",
@@ -57,6 +73,12 @@ export class CodeIndexConfigManager {
 			codebaseIndexBedrockProfile: "",
 		}
 
+		// Load configuration from workspace source or global state.
+		// Use Record<string, any> to allow flexible property access for both
+		// workspace config (which is a plain object) and global config.
+		const codebaseIndexConfig: Record<string, any> =
+			workspaceSource?.config ?? this.contextProxy?.getGlobalState("codebaseIndexConfig") ?? defaultConfig
+
 		const {
 			codebaseIndexEnabled,
 			codebaseIndexQdrantUrl,
@@ -67,17 +89,25 @@ export class CodeIndexConfigManager {
 			codebaseIndexSearchMaxResults,
 		} = codebaseIndexConfig
 
-		const openAiKey = this.contextProxy?.getSecret("codeIndexOpenAiKey") ?? ""
-		const qdrantApiKey = this.contextProxy?.getSecret("codeIndexQdrantApiKey") ?? ""
+		// Helper to resolve secrets: workspace source takes priority over global secrets
+		const getSecret = (key: string): string => {
+			if (workspaceSource?.secrets[key] !== undefined) {
+				return workspaceSource.secrets[key]
+			}
+			return this.contextProxy?.getSecret(key as any) ?? ""
+		}
+
+		const openAiKey = getSecret("codeIndexOpenAiKey")
+		const qdrantApiKey = getSecret("codeIndexQdrantApiKey")
 		// Fix: Read OpenAI Compatible settings from the correct location within codebaseIndexConfig
 		const openAiCompatibleBaseUrl = codebaseIndexConfig.codebaseIndexOpenAiCompatibleBaseUrl ?? ""
-		const openAiCompatibleApiKey = this.contextProxy?.getSecret("codebaseIndexOpenAiCompatibleApiKey") ?? ""
-		const geminiApiKey = this.contextProxy?.getSecret("codebaseIndexGeminiApiKey") ?? ""
-		const mistralApiKey = this.contextProxy?.getSecret("codebaseIndexMistralApiKey") ?? ""
-		const vercelAiGatewayApiKey = this.contextProxy?.getSecret("codebaseIndexVercelAiGatewayApiKey") ?? ""
+		const openAiCompatibleApiKey = getSecret("codebaseIndexOpenAiCompatibleApiKey")
+		const geminiApiKey = getSecret("codebaseIndexGeminiApiKey")
+		const mistralApiKey = getSecret("codebaseIndexMistralApiKey")
+		const vercelAiGatewayApiKey = getSecret("codebaseIndexVercelAiGatewayApiKey")
 		const bedrockRegion = codebaseIndexConfig.codebaseIndexBedrockRegion ?? "us-east-1"
 		const bedrockProfile = codebaseIndexConfig.codebaseIndexBedrockProfile ?? ""
-		const openRouterApiKey = this.contextProxy?.getSecret("codebaseIndexOpenRouterApiKey") ?? ""
+		const openRouterApiKey = getSecret("codebaseIndexOpenRouterApiKey")
 		const openRouterSpecificProvider = codebaseIndexConfig.codebaseIndexOpenRouterSpecificProvider ?? ""
 
 		// Update instance variables with configuration

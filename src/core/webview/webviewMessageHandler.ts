@@ -2495,16 +2495,15 @@ export const webviewMessageHandler = async (
 			}
 
 			const settings = message.codeIndexSettings
+			const saveToWorkspace = settings.useWorkspaceConfig === true
 
 			try {
 				// Check if embedder provider has changed
 				const currentConfig = getGlobalState("codebaseIndexConfig") || {}
-				const embedderProviderChanged =
-					currentConfig.codebaseIndexEmbedderProvider !== settings.codebaseIndexEmbedderProvider
+				const currentCodeIndexManager = provider.getCurrentWorkspaceCodeIndexManager()
 
-				// Save global state settings atomically
-				const globalStateConfig = {
-					...currentConfig,
+				// Build the config object (used for both global and workspace saves)
+				const configObject = {
 					codebaseIndexEnabled: settings.codebaseIndexEnabled,
 					codebaseIndexQdrantUrl: settings.codebaseIndexQdrantUrl,
 					codebaseIndexEmbedderProvider: settings.codebaseIndexEmbedderProvider,
@@ -2519,59 +2518,71 @@ export const webviewMessageHandler = async (
 					codebaseIndexOpenRouterSpecificProvider: settings.codebaseIndexOpenRouterSpecificProvider,
 				}
 
-				// Save global state first
-				await updateGlobalState("codebaseIndexConfig", globalStateConfig)
-
-				// Save secrets directly using context proxy
+				// Build secrets map
+				const secretEntries: Record<string, string> = {}
 				if (settings.codeIndexOpenAiKey !== undefined) {
-					await provider.contextProxy.storeSecret("codeIndexOpenAiKey", settings.codeIndexOpenAiKey)
+					secretEntries.codeIndexOpenAiKey = settings.codeIndexOpenAiKey
 				}
 				if (settings.codeIndexQdrantApiKey !== undefined) {
-					await provider.contextProxy.storeSecret("codeIndexQdrantApiKey", settings.codeIndexQdrantApiKey)
+					secretEntries.codeIndexQdrantApiKey = settings.codeIndexQdrantApiKey
 				}
 				if (settings.codebaseIndexOpenAiCompatibleApiKey !== undefined) {
-					await provider.contextProxy.storeSecret(
-						"codebaseIndexOpenAiCompatibleApiKey",
-						settings.codebaseIndexOpenAiCompatibleApiKey,
-					)
+					secretEntries.codebaseIndexOpenAiCompatibleApiKey = settings.codebaseIndexOpenAiCompatibleApiKey
 				}
 				if (settings.codebaseIndexGeminiApiKey !== undefined) {
-					await provider.contextProxy.storeSecret(
-						"codebaseIndexGeminiApiKey",
-						settings.codebaseIndexGeminiApiKey,
-					)
+					secretEntries.codebaseIndexGeminiApiKey = settings.codebaseIndexGeminiApiKey
 				}
 				if (settings.codebaseIndexMistralApiKey !== undefined) {
-					await provider.contextProxy.storeSecret(
-						"codebaseIndexMistralApiKey",
-						settings.codebaseIndexMistralApiKey,
-					)
+					secretEntries.codebaseIndexMistralApiKey = settings.codebaseIndexMistralApiKey
 				}
 				if (settings.codebaseIndexVercelAiGatewayApiKey !== undefined) {
-					await provider.contextProxy.storeSecret(
-						"codebaseIndexVercelAiGatewayApiKey",
-						settings.codebaseIndexVercelAiGatewayApiKey,
-					)
+					secretEntries.codebaseIndexVercelAiGatewayApiKey = settings.codebaseIndexVercelAiGatewayApiKey
 				}
 				if (settings.codebaseIndexOpenRouterApiKey !== undefined) {
-					await provider.contextProxy.storeSecret(
-						"codebaseIndexOpenRouterApiKey",
-						settings.codebaseIndexOpenRouterApiKey,
-					)
+					secretEntries.codebaseIndexOpenRouterApiKey = settings.codebaseIndexOpenRouterApiKey
+				}
+
+				// Determine effective previous config for change detection
+				const effectivePreviousProvider = saveToWorkspace
+					? currentCodeIndexManager?.getWorkspaceConfig()?.codebaseIndexEmbedderProvider
+					: currentConfig.codebaseIndexEmbedderProvider
+				const embedderProviderChanged = effectivePreviousProvider !== settings.codebaseIndexEmbedderProvider
+
+				if (saveToWorkspace && currentCodeIndexManager) {
+					// Save to workspace-specific storage
+					await currentCodeIndexManager.saveWorkspaceConfig(configObject)
+
+					// Merge new secrets with existing workspace secrets
+					const existingSecrets = currentCodeIndexManager.getWorkspaceSecrets()
+					await currentCodeIndexManager.saveWorkspaceSecrets({
+						...existingSecrets,
+						...secretEntries,
+					})
+				} else {
+					// Save to global state (existing behavior)
+					const globalStateConfig = {
+						...currentConfig,
+						...configObject,
+					}
+					await updateGlobalState("codebaseIndexConfig", globalStateConfig)
+
+					// Save secrets to global secret store
+					for (const [key, value] of Object.entries(secretEntries)) {
+						await provider.contextProxy.storeSecret(key as any, value)
+					}
 				}
 
 				// Send success response first - settings are saved regardless of validation
 				await provider.postMessageToWebview({
 					type: "codeIndexSettingsSaved",
 					success: true,
-					settings: globalStateConfig,
+					settings: configObject,
 				})
 
 				// Update webview state
 				await provider.postStateToWebview()
 
 				// Then handle validation and initialization for the current workspace
-				const currentCodeIndexManager = provider.getCurrentWorkspaceCodeIndexManager()
 				if (currentCodeIndexManager) {
 					// If embedder provider changed, perform proactive validation
 					if (embedderProviderChanged) {
@@ -2792,6 +2803,42 @@ export const webviewMessageHandler = async (
 			} catch (error) {
 				provider.log(
 					`Error toggling workspace indexing: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+			break
+		}
+		case "setUseWorkspaceConfig": {
+			try {
+				const manager = provider.getCurrentWorkspaceCodeIndexManager()
+				if (!manager) {
+					provider.log("Cannot toggle workspace config: No workspace folder open")
+					return
+				}
+				const enabled = message.bool ?? false
+				await manager.setUseWorkspaceConfig(enabled)
+
+				if (enabled && !manager.getWorkspaceConfig()) {
+					// When enabling workspace config for the first time, copy global config as starting point
+					const globalConfig = getGlobalState("codebaseIndexConfig") || {}
+					await manager.saveWorkspaceConfig(globalConfig)
+				}
+
+				// Force config manager re-creation to pick up the new config source
+				await manager.recoverFromError()
+				if (manager.isFeatureEnabled && manager.isFeatureConfigured && manager.isWorkspaceEnabled) {
+					await manager.initialize(provider.contextProxy)
+				}
+
+				provider.postMessageToWebview({
+					type: "indexingStatusUpdate",
+					values: manager.getCurrentStatus(),
+				})
+
+				// Refresh webview state so it picks up the effective config
+				await provider.postStateToWebview()
+			} catch (error) {
+				provider.log(
+					`Error toggling workspace config: ${error instanceof Error ? error.message : String(error)}`,
 				)
 			}
 			break
