@@ -16,12 +16,12 @@ describe("OpenAiCodexHandler.getModel", () => {
 		},
 	)
 
-	it("should fall back to default model when an invalid model id is provided", () => {
+	it("should preserve custom model id when not in known models", () => {
 		const handler = new OpenAiCodexHandler({ apiModelId: "not-a-real-model" })
 		const model = handler.getModel()
 
-		expect(model.id).toBe("gpt-5.3-codex")
-		expect(model.info).toBeDefined()
+		expect(model.id).toBe("not-a-real-model") // Custom model ID is preserved
+		expect(model.info).toBeDefined() // Falls back to default model info
 	})
 
 	it("should use Spark-specific limits and capabilities", () => {

@@ -1435,10 +1435,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	override getModel() {
 		const modelId = this.options.apiModelId
 
-		let id =
-			modelId && modelId in openAiNativeModels ? (modelId as OpenAiNativeModelId) : openAiNativeDefaultModelId
+		let id = modelId ?? openAiNativeDefaultModelId
 
-		const info: ModelInfo = openAiNativeModels[id]
+		const info: ModelInfo =
+			openAiNativeModels[id as OpenAiNativeModelId] ?? openAiNativeModels[openAiNativeDefaultModelId]
 
 		const params = getModelParams({
 			format: "openai",
