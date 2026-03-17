@@ -33,4 +33,12 @@ describe("OpenAiCodexHandler.getModel", () => {
 		expect(model.info.maxTokens).toBe(8192)
 		expect(model.info.supportsImages).toBe(false)
 	})
+
+	it("should use GPT-5.4 Mini capabilities when selected", () => {
+		const handler = new OpenAiCodexHandler({ apiModelId: "gpt-5.4-mini" })
+		const model = handler.getModel()
+
+		expect(model.id).toBe("gpt-5.4-mini")
+		expect(model.info).toBeDefined()
+	})
 })

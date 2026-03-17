@@ -264,6 +264,45 @@ describe("OpenAiNativeHandler", () => {
 			expect(modelInfo.info.reasoningEffort).toBe("none")
 		})
 
+		it("should return GPT-5.4 Mini model info when selected", () => {
+			const gpt54MiniHandler = new OpenAiNativeHandler({
+				...mockOptions,
+				apiModelId: "gpt-5.4-mini",
+			})
+
+			const modelInfo = gpt54MiniHandler.getModel()
+			expect(modelInfo.id).toBe("gpt-5.4-mini")
+			expect(modelInfo.info.maxTokens).toBe(128000)
+			expect(modelInfo.info.contextWindow).toBe(400000)
+			expect(modelInfo.info.supportsVerbosity).toBe(true)
+			expect(modelInfo.info.supportsReasoningEffort).toEqual(["none", "low", "medium", "high", "xhigh"])
+			expect(modelInfo.info.reasoningEffort).toBe("none")
+			expect(modelInfo.info.longContextPricing).toBeUndefined()
+		})
+
+		it("should return GPT-5.4 Nano model info when selected", () => {
+			const gpt54NanoHandler = new OpenAiNativeHandler({
+				...mockOptions,
+				apiModelId: "gpt-5.4-nano",
+			})
+
+			const modelInfo = gpt54NanoHandler.getModel()
+			expect(modelInfo.id).toBe("gpt-5.4-nano")
+			expect(modelInfo.info.maxTokens).toBe(128000)
+			expect(modelInfo.info.contextWindow).toBe(400000)
+			expect(modelInfo.info.supportsVerbosity).toBe(true)
+			expect(modelInfo.info.supportsReasoningEffort).toEqual(["none", "low", "medium", "high", "xhigh"])
+			expect(modelInfo.info.reasoningEffort).toBe("none")
+			expect(modelInfo.info.outputPrice).toBe(1.25)
+			expect(modelInfo.info.longContextPricing).toBeUndefined()
+			expect(modelInfo.info.tiers).toEqual([
+				expect.objectContaining({
+					name: "flex",
+					outputPrice: 0.625,
+				}),
+			])
+		})
+
 		it("should return GPT-5.3 Chat model info when selected", () => {
 			const chatHandler = new OpenAiNativeHandler({
 				...mockOptions,
