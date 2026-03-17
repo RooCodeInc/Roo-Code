@@ -49,6 +49,7 @@ export enum TaskCommandName {
 	GetCommands = "GetCommands",
 	GetModes = "GetModes",
 	GetModels = "GetModels",
+	DeleteQueuedMessage = "DeleteQueuedMessage",
 }
 
 /**
@@ -90,6 +91,10 @@ export const taskCommandSchema = z.discriminatedUnion("commandName", [
 	}),
 	z.object({
 		commandName: z.literal(TaskCommandName.GetModels),
+	}),
+	z.object({
+		commandName: z.literal(TaskCommandName.DeleteQueuedMessage),
+		data: z.string(), // messageId
 	}),
 ])
 

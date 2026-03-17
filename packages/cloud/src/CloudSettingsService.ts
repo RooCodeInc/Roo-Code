@@ -69,9 +69,9 @@ export class CloudSettingsService extends EventEmitter<SettingsServiceEvents> im
 			callback: async () => {
 				return await this.fetchSettings()
 			},
-			successInterval: 30000,
+			successInterval: 3_600_000,
 			initialBackoffMs: 1000,
-			maxBackoffMs: 30000,
+			maxBackoffMs: 3_600_000,
 		})
 	}
 

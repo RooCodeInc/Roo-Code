@@ -394,5 +394,68 @@ describe("DirectoryScanner", () => {
 			expect(points[1].payload.segmentHash).toBe("unique-segment-hash-2")
 			expect(points[2].payload.segmentHash).toBe("unique-segment-hash-3")
 		})
+
+		it("should stop processing files when signal is aborted", async () => {
+			const { listFiles } = await import("../../../glob/list-files")
+			vi.mocked(listFiles).mockResolvedValue([["test/file1.js", "test/file2.js", "test/file3.js"], false])
+
+			// Create an already-aborted signal
+			const controller = new AbortController()
+			controller.abort()
+
+			const result = await scanner.scanDirectory("/test", undefined, undefined, undefined, controller.signal)
+
+			// No files should have been processed since signal was already aborted
+			expect(mockCodeParser.parseFile).not.toHaveBeenCalled()
+			expect(result.stats.processed).toBe(0)
+		})
+
+		it("should stop processing batches when signal is aborted mid-scan", async () => {
+			const { listFiles } = await import("../../../glob/list-files")
+			vi.mocked(listFiles).mockResolvedValue([["test/file1.js", "test/file2.js"], false])
+
+			const controller = new AbortController()
+
+			const mockBlocks: any[] = [
+				{
+					file_path: "test/file1.js",
+					content: "function hello() {}",
+					start_line: 1,
+					end_line: 3,
+					identifier: "hello",
+					type: "function",
+					fileHash: "hash1",
+					segmentHash: "seg-hash-1",
+				},
+			]
+
+			// Abort after first file is parsed
+			;(mockCodeParser.parseFile as any).mockImplementation(async () => {
+				controller.abort()
+				return mockBlocks
+			})
+
+			// AbortError should propagate up (the orchestrator handles it in its catch block)
+			await expect(
+				scanner.scanDirectory("/test", undefined, undefined, undefined, controller.signal),
+			).rejects.toThrow("Indexing aborted")
+		})
+
+		it("should not process deleted files when signal is aborted", async () => {
+			const { listFiles } = await import("../../../glob/list-files")
+			vi.mocked(listFiles).mockResolvedValue([[], false])
+
+			// Set up cached files that would normally be detected as deleted
+			;(mockCacheManager.getAllHashes as any).mockReturnValue({ "old/file.js": "old-hash" })
+
+			// Create an already-aborted signal
+			const controller = new AbortController()
+			controller.abort()
+
+			await scanner.scanDirectory("/test", undefined, undefined, undefined, controller.signal)
+
+			// Deleted file cleanup should not have run
+			expect(mockVectorStore.deletePointsByFilePath).not.toHaveBeenCalled()
+		})
 	})
 })

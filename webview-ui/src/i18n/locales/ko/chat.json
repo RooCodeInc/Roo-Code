@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "조직에서 공유가 비활성화됨",
 		"shareSuccessOrganization": "조직 링크가 클립보드에 복사되었습니다",
 		"shareSuccessPublic": "공개 링크가 클립보드에 복사되었습니다",
-		"openInCloud": "Roo Code Cloud에서 작업 열기",
-		"openInCloudIntro": "어디서나 Roo를 계속 모니터링하거나 상호작용할 수 있습니다. 스캔, 클릭 또는 복사하여 열기.",
 		"openApiHistory": "API 기록 열기",
 		"openUiHistory": "UI 기록 열기",
 		"backToParentTask": "상위 작업"
 	},
 	"unpin": "고정 해제하기",
 	"pin": "고정하기",
+	"fileChangesInConversation": {
+		"header": "이 대화에서 {{count}}개 파일이 변경됨"
+	},
 	"tokenProgress": {
 		"availableSpace": "사용 가능한 공간: {{amount}} 토큰",
 		"tokensUsed": "사용된 토큰: {{used}} / {{total}}",
@@ -347,7 +348,11 @@
 		},
 		"release": {
 			"heading": "새로운 기능:",
-			"smartCodeFolding": "스마트 코드 폴딩: 컨텍스트 응축이 이제 파일의 경량 맵을 보존합니다—함수 시그니처, 클래스 선언 및 타입 정의를 포함합니다. 이는 응축 후 더 나은 연속성과 이전 작업을 참조할 때 더 스마트한 편집을 제공합니다."
+			"gpt54": "OpenAI GPT-5.4 지원: OpenAI GPT-5.4와 GPT-5.3 Chat Latest를 추가해 Roo Code에서 최신 OpenAI 채팅 모델을 사용할 수 있게 했어요.",
+			"slashSkills": "슬래시 명령어 스킬: 이제 스킬을 슬래시 명령어로 노출하고 fallback 실행도 지원해 워크플로를 더 빠르게 실행할 수 있어요.",
+			"geminiPro": "Gemini 3.1 Pro 지원: Gemini 3.1 Pro 모델 지원이 추가되었으며, 향상된 성능을 위해 기본 Gemini 모델로 설정되었습니다.",
+			"cliNdjson": "CLI NDJSON 프로토콜: 새로운 NDJSON stdin 프로토콜, list 하위 명령어, 더 유연한 CLI 워크플로를 위한 모듈화된 run 명령어.",
+			"cliRelease": "CLI v0.1.0: Roo Code CLI가 안정적인 명령어 인터페이스로 첫 공식 릴리스에 도달했습니다."
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",
@@ -423,7 +428,8 @@
 		"indexing": "인덱싱 중 {{percentage}}%",
 		"indexed": "인덱싱 완료",
 		"error": "인덱스 오류",
-		"status": "인덱스 상태"
+		"status": "인덱스 상태",
+		"stopping": "인덱싱 중지 중..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "버전 {{version}} - 릴리스 노트를 보려면 클릭하세요"

@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "Udostępnianie wyłączone przez organizację",
 		"shareSuccessOrganization": "Link organizacji skopiowany do schowka",
 		"shareSuccessPublic": "Link publiczny skopiowany do schowka",
-		"openInCloud": "Otwórz zadanie w Roo Code Cloud",
-		"openInCloudIntro": "Kontynuuj monitorowanie lub interakcję z Roo z dowolnego miejsca. Zeskanuj, kliknij lub skopiuj, aby otworzyć.",
 		"openApiHistory": "Otwórz historię API",
 		"openUiHistory": "Otwórz historię UI",
 		"backToParentTask": "Zadanie nadrzędne"
 	},
 	"unpin": "Odepnij",
 	"pin": "Przypnij",
+	"fileChangesInConversation": {
+		"header": "{{count}} plik(ów) zmienionych w tej rozmowie"
+	},
 	"tokenProgress": {
 		"availableSpace": "Dostępne miejsce: {{amount}} tokenów",
 		"tokensUsed": "Wykorzystane tokeny: {{used}} z {{total}}",
@@ -347,7 +348,11 @@
 		},
 		"release": {
 			"heading": "Co nowego:",
-			"smartCodeFolding": "Smart Code Folding: Kondensacja kontekstu teraz zachowuje lekką mapę twoich plików—sygnatury funkcji, deklaracje klas i definicje typów. Zapewnia to lepszą ciągłość po kondensacji i mądrzejsze edycje przy odwoływaniu się do poprzedniej pracy."
+			"gpt54": "Obsługa OpenAI GPT-5.4: Dodaliśmy OpenAI GPT-5.4 i GPT-5.3 Chat Latest, żebyś mógł używać najnowszych modeli czatu OpenAI w Roo Code.",
+			"slashSkills": "Umiejętności jako slash commandy: Skills można teraz udostępniać jako slash commandy z wykonaniem awaryjnym, żeby szybciej uruchamiać workflowy.",
+			"geminiPro": "Wsparcie dla Gemini 3.1 Pro: Dodano wsparcie dla modelu Gemini 3.1 Pro i ustawiono go jako domyślny model Gemini dla lepszej wydajności.",
+			"cliNdjson": "Protokół NDJSON w CLI: Nowy protokół NDJSON przez stdin, podkomendy list oraz zmodularyzowana komenda run dla bardziej elastycznych przepływów pracy CLI.",
+			"cliRelease": "CLI v0.1.0: CLI Roo Code osiąga swoją pierwszą oficjalną wersję ze stabilnym interfejsem poleceń."
 		},
 		"cloudAgents": {
 			"heading": "Nowości w chmurze:",
@@ -423,7 +428,8 @@
 		"indexing": "Indeksowanie {{percentage}}%",
 		"indexed": "Zaindeksowane",
 		"error": "Błąd indeksu",
-		"status": "Status indeksu"
+		"status": "Status indeksu",
+		"stopping": "Zatrzymywanie indeksowania..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Wersja {{version}} - Kliknij, aby wyświetlić informacje o wydaniu"

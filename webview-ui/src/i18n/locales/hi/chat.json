@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "संगठन द्वारा साझाकरण अक्षम किया गया",
 		"shareSuccessOrganization": "संगठन लिंक क्लिपबोर्ड में कॉपी किया गया",
 		"shareSuccessPublic": "सार्वजनिक लिंक क्लिपबोर्ड में कॉपी किया गया",
-		"openInCloud": "Roo Code Cloud में कार्य खोलें",
-		"openInCloudIntro": "कहीं से भी Roo की निगरानी या इंटरैक्ट करना जारी रखें। खोलने के लिए स्कैन करें, क्लिक करें या कॉपी करें।",
 		"openApiHistory": "API इतिहास खोलें",
 		"openUiHistory": "UI इतिहास खोलें",
 		"backToParentTask": "मूल कार्य"
 	},
 	"unpin": "पिन करें",
 	"pin": "अवपिन करें",
+	"fileChangesInConversation": {
+		"header": "इस वार्तालाप में {{count}} फ़ाइल(ें) बदली गईं"
+	},
 	"tokenProgress": {
 		"availableSpace": "उपलब्ध स्थान: {{amount}} tokens",
 		"tokensUsed": "प्रयुक्त tokens: {{used}} / {{total}}",
@@ -347,7 +348,11 @@
 		},
 		"release": {
 			"heading": "नया क्या है:",
-			"smartCodeFolding": "स्मार्ट कोड फोल्डिंग: संदर्भ संघनन अब आपकी फ़ाइलों का एक हल्का मानचित्र संरक्षित करता है—फ़ंक्शन सिग्नेचर, क्लास घोषणाएँ, और टाइप परिभाषाएँ। यह संघनन के बाद बेहतर निरंतरता और पिछले काम को संदर्भित करते समय स्मार्ट संपादन प्रदान करता है।"
+			"gpt54": "OpenAI GPT-5.4 सपोर्ट: OpenAI GPT-5.4 और GPT-5.3 Chat Latest जोड़े गए हैं, ताकि आप Roo Code में OpenAI के सबसे नए chat models इस्तेमाल कर सकें।",
+			"slashSkills": "Slash command skills: अब skills को slash commands के रूप में fallback execution के साथ expose किया जा सकता है, जिससे workflows तेज़ हो जाते हैं।",
+			"geminiPro": "Gemini 3.1 Pro सपोर्ट: Gemini 3.1 Pro मॉडल का सपोर्ट जोड़ा गया और बेहतर प्रदर्शन के लिए इसे डिफ़ॉल्ट Gemini मॉडल के रूप में सेट किया गया।",
+			"cliNdjson": "CLI NDJSON प्रोटोकॉल: नया NDJSON stdin प्रोटोकॉल, list सबकमांड, और अधिक लचीले CLI वर्कफ़्लो के लिए मॉड्यूलर run कमांड।",
+			"cliRelease": "CLI v0.1.0: Roo Code CLI एक स्थिर कमांड इंटरफ़ेस के साथ अपनी पहली आधिकारिक रिलीज़ तक पहुँचा।"
 		},
 		"cloudAgents": {
 			"heading": "क्लाउड में नया:",
@@ -423,7 +428,8 @@
 		"indexing": "इंडेक्सिंग {{percentage}}%",
 		"indexed": "इंडेक्स किया गया",
 		"error": "इंडेक्स त्रुटि",
-		"status": "इंडेक्स स्थिति"
+		"status": "इंडेक्स स्थिति",
+		"stopping": "इंडेक्सिंग रोक रहा है..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "संस्करण {{version}} - रिलीज़ नोट्स देखने के लिए क्लिक करें"

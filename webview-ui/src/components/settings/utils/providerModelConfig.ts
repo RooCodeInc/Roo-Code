@@ -118,6 +118,7 @@ export const isStaticModelProvider = (provider: ProviderName): boolean => {
 export const PROVIDERS_WITH_CUSTOM_MODEL_UI: ProviderName[] = [
 	"openrouter",
 	"requesty",
+	"unbound",
 	"openai", // OpenAI Compatible
 	"openai-codex", // OpenAI Codex has custom UI with auth and rate limits
 	"litellm",

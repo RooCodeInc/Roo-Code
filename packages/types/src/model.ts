@@ -98,6 +98,16 @@ export const modelInfoSchema = z.object({
 	outputPrice: z.number().optional(),
 	cacheWritesPrice: z.number().optional(),
 	cacheReadsPrice: z.number().optional(),
+	longContextPricing: z
+		.object({
+			thresholdTokens: z.number(),
+			inputPriceMultiplier: z.number().optional(),
+			outputPriceMultiplier: z.number().optional(),
+			cacheWritesPriceMultiplier: z.number().optional(),
+			cacheReadsPriceMultiplier: z.number().optional(),
+			appliesToServiceTiers: z.array(serviceTierSchema).optional(),
+		})
+		.optional(),
 	description: z.string().optional(),
 	// Default effort value for models that support reasoning effort
 	reasoningEffort: reasoningEffortExtendedSchema.optional(),

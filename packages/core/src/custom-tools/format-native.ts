@@ -17,6 +17,10 @@ export function formatNative(tool: SerializedCustomToolDefinition): OpenAI.Chat.
 		if (!parameters.required) {
 			parameters.required = []
 		}
+	} else {
+		// Tools without parameters still need a valid JSON Schema object.
+		// APIs (e.g. Anthropic, OpenAI with strict mode) require inputSchema.type to be "object".
+		parameters = { type: "object", properties: {}, required: [], additionalProperties: false }
 	}
 
 	return { type: "function", function: { ...tool, strict: true, parameters } }

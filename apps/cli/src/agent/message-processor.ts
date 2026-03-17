@@ -343,13 +343,16 @@ export class MessageProcessor {
 
 		// Task completed
 		if (taskCompleted(previousState, currentState)) {
+			const completedSuccessfully =
+				currentState.currentAsk === "completion_result" || currentState.currentAsk === "resume_completed_task"
+
 			if (this.options.debug) {
 				debugLog("[MessageProcessor] EMIT taskCompleted", {
-					success: currentState.currentAsk === "completion_result",
+					success: completedSuccessfully,
 				})
 			}
 			const completedEvent: TaskCompletedEvent = {
-				success: currentState.currentAsk === "completion_result",
+				success: completedSuccessfully,
 				stateInfo: currentState,
 				message: currentState.lastMessage,
 			}

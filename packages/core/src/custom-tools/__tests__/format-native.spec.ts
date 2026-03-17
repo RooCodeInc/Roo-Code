@@ -38,7 +38,8 @@ describe("formatNative", () => {
 			function: {
 				name: "simple_tool",
 				description: "A simple tool",
-				parameters: undefined,
+				parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
+				source: undefined,
 				strict: true,
 			},
 		})

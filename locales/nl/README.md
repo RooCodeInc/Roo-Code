@@ -13,6 +13,11 @@
 
 > Jouw AI-aangedreven dev-team, rechtstreeks in je editor
 
+## Nieuw in v3.51.0
+
+- Ondersteuning toegevoegd voor OpenAI GPT-5.4 en GPT-5.3 Chat Latest, zodat je de nieuwste OpenAI-chatmodellen in Roo Code kunt gebruiken.
+- Skills beschikbaar gemaakt als slash-commands met fallback-uitvoering, zodat herbruikbare workflows sneller te starten zijn.
+
 <details>
   <summary>🌐 Beschikbare talen</summary>
 
@@ -58,9 +63,8 @@ Roo Code past zich aan jouw werkwijze aan, niet andersom:
 - Vraag Modus: snelle antwoorden, uitleg en documenten
 - Debug Modus: spoor problemen op, voeg logs toe, isoleer de oorzaak
 - Aangepaste Modi: bouw gespecialiseerde modi voor je team of workflow
-- Roomote Control: Roomote Control laat je taken op je lokale VS Code-instantie op afstand besturen.
 
-Meer info: [Modi gebruiken](https://docs.roocode.com/basic-usage/using-modes) • [Aangepaste modi](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+Meer info: [Modi gebruiken](https://docs.roocode.com/basic-usage/using-modes) • [Aangepaste modi](https://docs.roocode.com/advanced-usage/custom-modes)
 
 ## Tutorial & Feature Videos
 

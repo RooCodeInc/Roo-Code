@@ -1,3 +1,15 @@
+import {
+	rooCliOutputFormats,
+	type RooCliCost,
+	type RooCliEventType,
+	type RooCliFinalOutput,
+	type RooCliOutputFormat,
+	type RooCliQueueItem,
+	type RooCliStreamEvent,
+	type RooCliToolResult,
+	type RooCliToolUse,
+} from "@roo-code/types"
+
 /**
  * JSON Event Types for Structured CLI Output
  *
@@ -14,9 +26,9 @@
 /**
  * Output format options for the CLI.
  */
-export const OUTPUT_FORMATS = ["text", "json", "stream-json"] as const
+export const OUTPUT_FORMATS = rooCliOutputFormats
 
-export type OutputFormat = (typeof OUTPUT_FORMATS)[number]
+export type OutputFormat = RooCliOutputFormat
 
 export function isValidOutputFormat(format: string): format is OutputFormat {
 	return (OUTPUT_FORMATS as readonly string[]).includes(format)
@@ -25,53 +37,24 @@ export function isValidOutputFormat(format: string): format is OutputFormat {
 /**
  * Event type discriminators for JSON output.
  */
-export type JsonEventType =
-	| "system" // System messages (init, ready, shutdown)
-	| "assistant" // Assistant text messages
-	| "user" // User messages (echoed input)
-	| "tool_use" // Tool invocations (file ops, commands, browser, MCP)
-	| "tool_result" // Results from tool execution
-	| "thinking" // Reasoning/thinking content
-	| "error" // Errors
-	| "result" // Final task result
+export type JsonEventType = RooCliEventType
+
+export type JsonEventQueueItem = RooCliQueueItem
 
 /**
  * Tool use information for tool_use events.
  */
-export interface JsonEventToolUse {
-	/** Tool name (e.g., "read_file", "write_to_file", "execute_command") */
-	name: string
-	/** Tool input parameters */
-	input?: Record<string, unknown>
-}
+export type JsonEventToolUse = RooCliToolUse
 
 /**
  * Tool result information for tool_result events.
  */
-export interface JsonEventToolResult {
-	/** Tool name that produced this result */
-	name: string
-	/** Tool output (for successful execution) */
-	output?: string
-	/** Error message (for failed execution) */
-	error?: string
-}
+export type JsonEventToolResult = RooCliToolResult
 
 /**
  * Cost and token usage information.
  */
-export interface JsonEventCost {
-	/** Total cost in USD */
-	totalCost?: number
-	/** Input tokens used */
-	inputTokens?: number
-	/** Output tokens generated */
-	outputTokens?: number
-	/** Cache write tokens */
-	cacheWrites?: number
-	/** Cache read tokens */
-	cacheReads?: number
-}
+export type JsonEventCost = RooCliCost
 
 /**
  * Base JSON event structure.
@@ -81,17 +64,35 @@ export interface JsonEventCost {
  * - Each delta includes `id` for easy correlation
  * - Final message has `done: true`
  */
-export interface JsonEvent {
+export type JsonEvent = RooCliStreamEvent & {
 	/** Event type discriminator */
 	type: JsonEventType
+	/** Protocol schema version (included on system.init) */
+	schemaVersion?: number
+	/** Transport protocol identifier (included on system.init) */
+	protocol?: string
+	/** Capability names supported by the current process */
+	capabilities?: string[]
 	/** Message ID - included on first delta and final message */
 	id?: number
+	/** Active task ID when available */
+	taskId?: string
+	/** Request ID for correlating streamed output to stdin commands */
+	requestId?: string
+	/** Command name for control events */
+	command?: string
 	/** Content text (for text-based events) */
 	content?: string
 	/** True when this is the final message (stream complete) */
 	done?: boolean
 	/** Optional subtype for more specific categorization */
 	subtype?: string
+	/** Optional machine-readable status/error code */
+	code?: string
+	/** Current queue depth (for queue events) */
+	queueDepth?: number
+	/** Queue item snapshots (for queue events) */
+	queue?: JsonEventQueueItem[]
 	/** Tool use information (for tool_use events) */
 	tool_use?: JsonEventToolUse
 	/** Tool result information (for tool_result events) */
@@ -106,7 +107,7 @@ export interface JsonEvent {
  * Final JSON output for "json" mode (single object at end).
  * Contains the result and accumulated messages.
  */
-export interface JsonFinalOutput {
+export type JsonFinalOutput = RooCliFinalOutput & {
 	/** Final result type */
 	type: "result"
 	/** Whether the task succeeded */

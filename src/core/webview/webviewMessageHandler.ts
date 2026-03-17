@@ -13,6 +13,7 @@ import {
 	type TelemetrySetting,
 	type UserSettingsConfig,
 	type ModelRecord,
+	type Command as SlashCommand,
 	type WebviewMessage,
 	type EditQueuedMessagePayload,
 	TelemetryEventName,
@@ -44,6 +45,7 @@ import { Package } from "../../shared/package"
 import { type RouterName, toRouterName } from "../../shared/api"
 import { MessageEnhancer } from "./messageEnhancer"
 
+import { CodeIndexManager } from "../../services/code-index/manager"
 import { checkExistKey } from "../../shared/checkExistApiConfig"
 import { experimentDefault } from "../../shared/experiments"
 import { Terminal } from "../../integrations/terminal/Terminal"
@@ -62,6 +64,7 @@ import { openMention } from "../mentions"
 import { resolveImageMentions } from "../mentions/resolveImageMentions"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { getWorkspacePath } from "../../utils/path"
+import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { Mode, defaultModeSlug } from "../../shared/modes"
 import { getModels, flushModels } from "../../api/providers/fetchers/modelCache"
 import { GetModelsOptions } from "../../shared/api"
@@ -98,6 +101,72 @@ export const webviewMessageHandler = async (
 
 	const getCurrentCwd = () => {
 		return provider.getCurrentTask()?.cwd || provider.cwd
+	}
+
+	const getCurrentMode = async (): Promise<string> => {
+		const currentTask = provider.getCurrentTask()
+
+		if (currentTask) {
+			try {
+				return await currentTask.getTaskMode()
+			} catch (error) {
+				provider.log(
+					`Error resolving current task mode for command discovery: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
+				)
+			}
+		}
+
+		try {
+			const state = await provider.getState()
+			if (typeof state.mode === "string" && state.mode.length > 0) {
+				return state.mode
+			}
+		} catch (error) {
+			provider.log(
+				`Error resolving global mode for command discovery: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
+			)
+		}
+
+		return defaultModeSlug
+	}
+
+	const getDiscoveredCommands = async (): Promise<SlashCommand[]> => {
+		const { getCommands } = await import("../../services/command/commands")
+		const commands = await getCommands(getCurrentCwd())
+
+		const commandList: SlashCommand[] = commands.map((command) => ({
+			name: command.name,
+			source: command.source,
+			filePath: command.filePath,
+			description: command.description,
+			argumentHint: command.argumentHint,
+		}))
+
+		const existingCommandNames = new Set(commandList.map((command) => command.name))
+		const skillsManager = provider.getSkillsManager()
+
+		if (!skillsManager) {
+			return commandList
+		}
+
+		const currentMode = await getCurrentMode()
+		const availableSkills = skillsManager.getSkillsForMode(currentMode)
+
+		for (const skill of availableSkills) {
+			if (existingCommandNames.has(skill.name)) {
+				continue
+			}
+
+			existingCommandNames.add(skill.name)
+			commandList.push({
+				name: skill.name,
+				source: skill.source,
+				filePath: skill.path,
+				description: skill.description,
+			})
+		}
+
+		return commandList
 	}
 
 	/**
@@ -552,7 +621,13 @@ export const webviewMessageHandler = async (
 			// task. This essentially creates a fresh slate for the new task.
 			try {
 				const resolved = await resolveIncomingImages({ text: message.text, images: message.images })
-				await provider.createTask(resolved.text, resolved.images)
+				await provider.createTask(
+					resolved.text,
+					resolved.images,
+					undefined,
+					{ taskId: message.taskId },
+					message.taskConfiguration,
+				)
 				// Task created successfully - notify the UI to reset
 				await provider.postMessageToWebview({ type: "invoke", invoke: "newChat" })
 			} catch (error) {
@@ -643,6 +718,8 @@ export const webviewMessageHandler = async (
 						if (value !== undefined) {
 							Terminal.setTerminalZdotdir(value as boolean)
 						}
+					} else if (key === "execaShellPath") {
+						Terminal.setExecaShellPath(value as string | undefined)
 					} else if (key === "mcpEnabled") {
 						newValue = value ?? true
 						const mcpHub = provider.getMcpHub()
@@ -874,6 +951,7 @@ export const webviewMessageHandler = async (
 						"vercel-ai-gateway": {},
 						litellm: {},
 						requesty: {},
+						unbound: {},
 						ollama: {},
 						lmstudio: {},
 						roo: {},
@@ -901,6 +979,13 @@ export const webviewMessageHandler = async (
 						provider: "requesty",
 						apiKey: apiConfiguration.requestyApiKey,
 						baseUrl: apiConfiguration.requestyBaseUrl,
+					},
+				},
+				{
+					key: "unbound",
+					options: {
+						provider: "unbound",
+						apiKey: apiConfiguration.unboundApiKey,
 					},
 				},
 				{ key: "vercel-ai-gateway", options: { provider: "vercel-ai-gateway" } },
@@ -1141,6 +1226,44 @@ export const webviewMessageHandler = async (
 			}
 			openFile(filePath, message.values as { create?: boolean; content?: string; line?: number })
 			break
+		case "readFileContent": {
+			const relPath = message.text || ""
+			if (!relPath) {
+				provider.postMessageToWebview({
+					type: "fileContent",
+					fileContent: { path: relPath, content: null, error: "No path provided" },
+				})
+				break
+			}
+			try {
+				const cwd = getCurrentCwd()
+				if (!cwd) {
+					provider.postMessageToWebview({
+						type: "fileContent",
+						fileContent: { path: relPath, content: null, error: "No workspace path available" },
+					})
+					break
+				}
+				const absPath = path.resolve(cwd, relPath)
+				// Workspace-boundary validation: prevent path traversal attacks
+				if (isPathOutsideWorkspace(absPath)) {
+					provider.postMessageToWebview({
+						type: "fileContent",
+						fileContent: { path: relPath, content: null, error: "Path is outside workspace" },
+					})
+					break
+				}
+				const content = await fs.readFile(absPath, "utf-8")
+				provider.postMessageToWebview({ type: "fileContent", fileContent: { path: relPath, content } })
+			} catch (err) {
+				const errorMsg = err instanceof Error ? err.message : String(err)
+				provider.postMessageToWebview({
+					type: "fileContent",
+					fileContent: { path: relPath, content: null, error: errorMsg },
+				})
+			}
+			break
+		}
 		case "openMention":
 			openMention(getCurrentCwd(), message.text)
 			break
@@ -1351,24 +1474,9 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
-		case "remoteControlEnabled":
-			try {
-				await CloudService.instance.updateUserSettings({ extensionBridgeEnabled: message.bool ?? false })
-			} catch (error) {
-				provider.log(
-					`CloudService#updateUserSettings failed: ${error instanceof Error ? error.message : String(error)}`,
-				)
-			}
-			break
-
 		case "taskSyncEnabled":
 			const enabled = message.bool ?? false
 			const updatedSettings: Partial<UserSettingsConfig> = { taskSyncEnabled: enabled }
-
-			// If disabling task sync, also disable remote control.
-			if (!enabled) {
-				updatedSettings.extensionBridgeEnabled = false
-			}
 
 			try {
 				await CloudService.instance.updateUserSettings(updatedSettings)
@@ -2608,7 +2716,6 @@ export const webviewMessageHandler = async (
 			try {
 				const manager = provider.getCurrentWorkspaceCodeIndexManager()
 				if (!manager) {
-					// No workspace open - send error status
 					provider.postMessageToWebview({
 						type: "indexingStatusUpdate",
 						values: {
@@ -2622,23 +2729,19 @@ export const webviewMessageHandler = async (
 					provider.log("Cannot start indexing: No workspace folder open")
 					return
 				}
+
+				// "Start Indexing" implicitly enables the workspace
+				await manager.setWorkspaceEnabled(true)
+
 				if (manager.isFeatureEnabled && manager.isFeatureConfigured) {
-					// Mimic extension startup behavior: initialize first, which will
-					// check if Qdrant container is active and reuse existing collection
 					await manager.initialize(provider.contextProxy)
 
-					// Only call startIndexing if we're in a state that requires it
-					// (e.g., Standby or Error). If already Indexed or Indexing, the
-					// initialize() call above will have already started the watcher.
 					const currentState = manager.state
 					if (currentState === "Standby" || currentState === "Error") {
-						// startIndexing now handles error recovery internally
 						manager.startIndexing()
 
-						// If startIndexing recovered from error, we need to reinitialize
 						if (!manager.isInitialized) {
 							await manager.initialize(provider.contextProxy)
-							// Try starting again after initialization
 							if (manager.state === "Standby" || manager.state === "Error") {
 								manager.startIndexing()
 							}
@@ -2647,6 +2750,82 @@ export const webviewMessageHandler = async (
 				}
 			} catch (error) {
 				provider.log(`Error starting indexing: ${error instanceof Error ? error.message : String(error)}`)
+			}
+			break
+		}
+		case "stopIndexing": {
+			try {
+				const manager = provider.getCurrentWorkspaceCodeIndexManager()
+				if (!manager) {
+					provider.log("Cannot stop indexing: No workspace folder open")
+					return
+				}
+				manager.stopIndexing()
+				provider.postMessageToWebview({
+					type: "indexingStatusUpdate",
+					values: manager.getCurrentStatus(),
+				})
+			} catch (error) {
+				provider.log(`Error stopping indexing: ${error instanceof Error ? error.message : String(error)}`)
+			}
+			break
+		}
+		case "toggleWorkspaceIndexing": {
+			try {
+				const manager = provider.getCurrentWorkspaceCodeIndexManager()
+				if (!manager) {
+					provider.log("Cannot toggle workspace indexing: No workspace folder open")
+					return
+				}
+				const enabled = message.bool ?? false
+				await manager.setWorkspaceEnabled(enabled)
+				if (enabled && manager.isFeatureEnabled && manager.isFeatureConfigured) {
+					await manager.initialize(provider.contextProxy)
+					manager.startIndexing()
+				} else if (!enabled) {
+					manager.stopIndexing()
+				}
+				provider.postMessageToWebview({
+					type: "indexingStatusUpdate",
+					values: manager.getCurrentStatus(),
+				})
+			} catch (error) {
+				provider.log(
+					`Error toggling workspace indexing: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+			break
+		}
+		case "setAutoEnableDefault": {
+			try {
+				const manager = provider.getCurrentWorkspaceCodeIndexManager()
+				if (!manager) {
+					provider.log("Cannot set auto-enable default: No workspace folder open")
+					return
+				}
+				// Capture prior state for every manager before persisting the global change
+				const allManagers = CodeIndexManager.getAllInstances()
+				const priorStates = new Map(allManagers.map((m) => [m, m.isWorkspaceEnabled]))
+				await manager.setAutoEnableDefault(message.bool ?? true)
+				// Apply stop/start to every affected manager
+				for (const m of allManagers) {
+					const wasEnabled = priorStates.get(m)!
+					const isNowEnabled = m.isWorkspaceEnabled
+					if (wasEnabled && !isNowEnabled) {
+						m.stopIndexing()
+					} else if (!wasEnabled && isNowEnabled && m.isFeatureEnabled && m.isFeatureConfigured) {
+						await m.initialize(provider.contextProxy)
+						m.startIndexing()
+					}
+				}
+				provider.postMessageToWebview({
+					type: "indexingStatusUpdate",
+					values: manager.getCurrentStatus(),
+				})
+			} catch (error) {
+				provider.log(
+					`Error setting auto-enable default: ${error instanceof Error ? error.message : String(error)}`,
+				)
 			}
 			break
 		}
@@ -2821,17 +3000,7 @@ export const webviewMessageHandler = async (
 		}
 		case "requestCommands": {
 			try {
-				const { getCommands } = await import("../../services/command/commands")
-				const commands = await getCommands(getCurrentCwd())
-
-				const commandList = commands.map((command) => ({
-					name: command.name,
-					source: command.source,
-					filePath: command.filePath,
-					description: command.description,
-					argumentHint: command.argumentHint,
-				}))
-
+				const commandList = await getDiscoveredCommands()
 				await provider.postMessageToWebview({ type: "commands", commands: commandList })
 			} catch (error) {
 				provider.log(`Error fetching commands: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)

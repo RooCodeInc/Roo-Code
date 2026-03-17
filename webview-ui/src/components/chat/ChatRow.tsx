@@ -26,7 +26,7 @@ import { formatPathTooltip } from "@src/utils/formatPathTooltip"
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import UpdateTodoListToolBlock from "./UpdateTodoListToolBlock"
 import { TodoChangeDisplay } from "./TodoChangeDisplay"
-import CodeAccordian from "../common/CodeAccordian"
+import CodeAccordion from "../common/CodeAccordion"
 import MarkdownBlock from "../common/MarkdownBlock"
 import { ReasoningBlock } from "./ReasoningBlock"
 import Thumbnails from "../common/Thumbnails"
@@ -143,11 +143,12 @@ const ChatRow = memo(
 		)
 
 		useEffect(() => {
+			const isHeightValid = height !== 0 && height !== Infinity
 			// used for partials, command output, etc.
 			// NOTE: it's important we don't distinguish between partial or complete here since our scroll effects in chatview need to handle height change during partial -> complete
 			const isInitialRender = prevHeightRef.current === 0 // prevents scrolling when new element is added since we already scroll for that
 			// height starts off at Infinity
-			if (isLast && height !== 0 && height !== Infinity && height !== prevHeightRef.current) {
+			if (isLast && isHeightValid && height !== prevHeightRef.current) {
 				if (!isInitialRender) {
 					onHeightChange(height > prevHeightRef.current)
 				}
@@ -249,7 +250,7 @@ export const ChatRowContent = ({
 		return [undefined, undefined, undefined]
 	}, [message.text, message.say])
 
-	// When resuming task, last wont be api_req_failed but a resume_task
+	// When resuming task, last won't be api_req_failed but a resume_task
 	// message, so api_req_started will show loading spinner. That's why we just
 	// remove the last api_req_started that failed without streaming anything.
 	const apiRequestFailedMessage =
@@ -474,7 +475,7 @@ export const ChatRowContent = ({
 							</span>
 						</div>
 						<div className="pl-6">
-							<CodeAccordian
+							<CodeAccordion
 								path={tool.path}
 								code={unifiedDiff ?? tool.content ?? tool.diff ?? ""}
 								language="diff"
@@ -513,7 +514,7 @@ export const ChatRowContent = ({
 							</span>
 						</div>
 						<div className="pl-6">
-							<CodeAccordian
+							<CodeAccordion
 								path={tool.path}
 								code={unifiedDiff ?? tool.diff}
 								language="diff"
@@ -708,7 +709,7 @@ export const ChatRowContent = ({
 							</span>
 						</div>
 						<div className="pl-6">
-							<CodeAccordian
+							<CodeAccordion
 								path={tool.path}
 								code={tool.content}
 								language="shell-session"
@@ -734,7 +735,7 @@ export const ChatRowContent = ({
 							</span>
 						</div>
 						<div className="pl-6">
-							<CodeAccordian
+							<CodeAccordion
 								path={tool.path}
 								code={tool.content}
 								language="shellsession"
@@ -774,7 +775,7 @@ export const ChatRowContent = ({
 							</span>
 						</div>
 						<div className="pl-6">
-							<CodeAccordian
+							<CodeAccordion
 								path={tool.path! + (tool.filePattern ? `/(${tool.filePattern})` : "")}
 								code={tool.content}
 								language="shellsession"
@@ -1277,7 +1278,7 @@ export const ChatRowContent = ({
 					const tool = safeJsonParse<ClineSayTool>(message.text)
 					return (
 						<div style={{ marginTop: -10, width: "100%" }}>
-							<CodeAccordian
+							<CodeAccordion
 								code={tool?.diff}
 								language="diff"
 								isFeedback={true}

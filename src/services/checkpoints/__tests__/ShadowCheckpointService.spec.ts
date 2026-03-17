@@ -824,6 +824,55 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				expect(await fs.readFile(testFile, "utf-8")).toBe("Hello, world!")
 			})
 
+			it("does not apply git templates when initializing shadow repo", async () => {
+				// This test verifies that git init uses --template="" and GIT_TEMPLATE_DIR
+				// is stripped, preventing system/user git hooks from leaking into the shadow repo.
+				const templateDir = path.join(tmpDir, `git-template-${Date.now()}`)
+				const hooksDir = path.join(templateDir, "hooks")
+				await fs.mkdir(hooksDir, { recursive: true })
+				await fs.writeFile(path.join(hooksDir, "pre-commit"), "#!/bin/sh\nexit 1", { mode: 0o755 })
+
+				const testShadowDir = path.join(tmpDir, `shadow-template-test-${Date.now()}`)
+				const testWorkspaceDir = path.join(tmpDir, `workspace-template-test-${Date.now()}`)
+				await initWorkspaceRepo({ workspaceDir: testWorkspaceDir })
+
+				const originalTemplateDir = process.env.GIT_TEMPLATE_DIR
+				process.env.GIT_TEMPLATE_DIR = templateDir
+
+				try {
+					const testService = await klass.create({
+						taskId: `test-template-${Date.now()}`,
+						shadowDir: testShadowDir,
+						workspaceDir: testWorkspaceDir,
+						log: () => {},
+					})
+					await testService.initShadowGit()
+
+					// Verify no hooks were copied from the template
+					const shadowHooksDir = path.join(testShadowDir, ".git", "hooks")
+					let hookFiles: string[] = []
+
+					try {
+						hookFiles = await fs.readdir(shadowHooksDir)
+					} catch {
+						// hooks dir may not exist at all, which is fine
+					}
+
+					// The pre-commit hook from the template should NOT be present
+					expect(hookFiles).not.toContain("pre-commit")
+				} finally {
+					if (originalTemplateDir !== undefined) {
+						process.env.GIT_TEMPLATE_DIR = originalTemplateDir
+					} else {
+						delete process.env.GIT_TEMPLATE_DIR
+					}
+
+					await fs.rm(testShadowDir, { recursive: true, force: true })
+					await fs.rm(testWorkspaceDir, { recursive: true, force: true })
+					await fs.rm(templateDir, { recursive: true, force: true })
+				}
+			})
+
 			it("isolates checkpoint operations from GIT_DIR environment variable", async () => {
 				// This test verifies the fix for the issue where GIT_DIR environment variable
 				// causes checkpoint commits to go to the wrong repository.
@@ -942,9 +991,7 @@ describe("worktree path comparison", () => {
 
 			// Second init with stubbed worktree returning a trailing newline
 			const service2 = new RepoPerTaskCheckpointService("trim-test-2", shadowDir, workspaceDir, () => {})
-			vitest
-				.spyOn(service2 as any, "getShadowGitConfigWorktree")
-				.mockResolvedValue(workspaceDir + "\n")
+			vitest.spyOn(service2 as any, "getShadowGitConfigWorktree").mockResolvedValue(workspaceDir + "\n")
 
 			await service2.initShadowGit()
 		} finally {
@@ -983,9 +1030,7 @@ describe("worktree path comparison", () => {
 
 			// Second init should throw because core.worktree is missing
 			const service2 = new RepoPerTaskCheckpointService("missing-test-2", shadowDir, workspaceDir, () => {})
-			await expect(service2.initShadowGit()).rejects.toThrowError(
-				/core\.worktree to be set/,
-			)
+			await expect(service2.initShadowGit()).rejects.toThrowError(/core\.worktree to be set/)
 		} finally {
 			vitest.restoreAllMocks()
 			await fs.rm(shadowDir, { recursive: true, force: true })

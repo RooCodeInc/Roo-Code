@@ -1,4 +1,3 @@
-import stripAnsi from "strip-ansi"
 import * as vscode from "vscode"
 import { inspect } from "util"
 
@@ -245,7 +244,7 @@ export class TerminalProcess extends BaseTerminalProcess {
 		// command is finished, we still want to consider it 'hot' in case
 		// so that api request stalls to let diagnostics catch up").
 		this.stopHotTimer()
-		this.emit("completed", this.removeEscapeSequences(this.fullOutput))
+		this.emit("completed", this.stripCursorSequences(this.removeVSCodeShellIntegration(this.fullOutput)))
 		this.emit("continue")
 	}
 
@@ -311,7 +310,7 @@ export class TerminalProcess extends BaseTerminalProcess {
 		outputToProcess = outputToProcess.slice(0, endIndex)
 
 		// Clean and return output
-		return this.removeEscapeSequences(outputToProcess)
+		return this.stripCursorSequences(this.removeVSCodeShellIntegration(outputToProcess))
 	}
 
 	private emitRemainingBufferIfListening() {
@@ -375,17 +374,45 @@ export class TerminalProcess extends BaseTerminalProcess {
 		return data.slice(contentStart, endIndex)
 	}
 
-	// Removes ANSI escape sequences and VSCode-specific terminal control codes from output.
-	// While stripAnsi handles most ANSI codes, VSCode's shell integration adds custom
-	// escape sequences (OSC 633) that need special handling. These sequences control
-	// terminal features like marking command start/end and setting prompts.
-	//
-	// This method could be extended to handle other escape sequences, but any additions
-	// should be carefully considered to ensure they only remove control codes and don't
-	// alter the actual content or behavior of the output stream.
-	private removeEscapeSequences(str: string): string {
-		// eslint-disable-next-line no-control-regex
-		return stripAnsi(str.replace(/\x1b\]633;[^\x07]+\x07/gs, "").replace(/\x1b\]133;[^\x07]+\x07/gs, ""))
+	/**
+	 * Remove only VSCode shell integration sequences (OSC 633/133) while
+	 * preserving standard ANSI SGR escape codes for color/formatting.
+	 *
+	 * VSCode shell integration uses OSC 633 and OSC 133 sequences to mark
+	 * prompt boundaries, command starts/ends, etc. These are not useful
+	 * for inline display and should be stripped.
+	 *
+	 * Standard ANSI SGR sequences (e.g., \x1B[32m for green) are preserved
+	 * so the frontend can render them as styled HTML.
+	 */
+	private removeVSCodeShellIntegration(text: string): string {
+		// Remove OSC 633 sequences: \x1B]633;....\x07 or \x1B]633;....\x1B\\
+		// Remove OSC 133 sequences: \x1B]133;....\x07 or \x1B]133;....\x1B\\
+		return (
+			text
+				// eslint-disable-next-line no-control-regex
+				.replace(/\x1B\]633;[^\x07\x1B]*(?:\x07|\x1B\\)/g, "")
+				// eslint-disable-next-line no-control-regex
+				.replace(/\x1B\]133;[^\x07\x1B]*(?:\x07|\x1B\\)/g, "")
+				// eslint-disable-next-line no-control-regex
+				.replace(/\x1B\][0-9]+;[^\x07\x1B]*(?:\x07|\x1B\\)/g, "")
+		) // Also remove other common OSC sequences that aren't color-related
+	}
+
+	private stripCursorSequences(text: string): string {
+		return (
+			text
+				// eslint-disable-next-line no-control-regex
+				.replace(/\x1B\[\d*[ABCDEFGHJ]/g, "") // Remove cursor movement: up, down, forward, back
+				// eslint-disable-next-line no-control-regex
+				.replace(/\x1B\[su/g, "") // Remove cursor position save/restore
+				// eslint-disable-next-line no-control-regex
+				.replace(/\x1B\[\d*[KJ]/g, "") // Remove erase in line/display
+				// eslint-disable-next-line no-control-regex
+				.replace(/\x1B\[\?25[hl]/g, "") // Remove cursor show/hide
+				// eslint-disable-next-line no-control-regex
+				.replace(/\x1B\[\d*;\d*r/g, "") // Remove scroll region
+		)
 	}
 
 	/**

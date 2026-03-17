@@ -23,6 +23,7 @@ vitest.mock("ps-tree", () => ({
 
 import { execa } from "execa"
 import { ExecaTerminalProcess } from "../ExecaTerminalProcess"
+import { BaseTerminal } from "../BaseTerminal"
 import type { RooTerminal } from "../types"
 
 describe("ExecaTerminalProcess", () => {
@@ -32,6 +33,7 @@ describe("ExecaTerminalProcess", () => {
 
 	beforeEach(() => {
 		originalEnv = { ...process.env }
+		BaseTerminal.setExecaShellPath(undefined)
 		mockTerminal = {
 			provider: "execa",
 			id: 1,
@@ -90,6 +92,28 @@ describe("ExecaTerminalProcess", () => {
 			const calledOptions = execaMock.mock.calls[0][0] as any
 			expect(calledOptions.env.LANG).toBe("en_US.UTF-8")
 			expect(calledOptions.env.LC_ALL).toBe("en_US.UTF-8")
+		})
+
+		it("should use execaShellPath when set", async () => {
+			BaseTerminal.setExecaShellPath("/bin/bash")
+			await terminalProcess.run("echo test")
+			const execaMock = vitest.mocked(execa)
+			expect(execaMock).toHaveBeenCalledWith(
+				expect.objectContaining({
+					shell: "/bin/bash",
+				}),
+			)
+		})
+
+		it("should fall back to shell=true when execaShellPath is undefined", async () => {
+			BaseTerminal.setExecaShellPath(undefined)
+			await terminalProcess.run("echo test")
+			const execaMock = vitest.mocked(execa)
+			expect(execaMock).toHaveBeenCalledWith(
+				expect.objectContaining({
+					shell: true,
+				}),
+			)
 		})
 	})
 

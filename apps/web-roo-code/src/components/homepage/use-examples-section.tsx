@@ -54,7 +54,7 @@ const SOURCES = {
 		icon: Pointer,
 	},
 	github: {
-		name: "Github",
+		name: "GitHub",
 		icon: Github,
 	},
 	extension: {
@@ -161,7 +161,7 @@ const USE_CASES: UseCase[] = [
 	},
 	{
 		role: "Support Engineer",
-		use: "What's causing this stack trace? The customer is on MacOS 26.1.",
+		use: "What's causing this stack trace? The customer is on macOS 26.1.",
 		agent: AGENTS.explainer,
 		context: SOURCES.web,
 	},

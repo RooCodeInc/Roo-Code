@@ -15,7 +15,7 @@ export class VertexHandler extends GeminiHandler implements SingleCompletionHand
 	override getModel() {
 		const modelId = this.options.apiModelId
 		let id = modelId && modelId in vertexModels ? (modelId as VertexModelId) : vertexDefaultModelId
-		const info: ModelInfo = vertexModels[id]
+		let info: ModelInfo = vertexModels[id]
 		const params = getModelParams({
 			format: "gemini",
 			modelId: id,
@@ -23,6 +23,13 @@ export class VertexHandler extends GeminiHandler implements SingleCompletionHand
 			settings: this.options,
 			defaultTemperature: info.defaultTemperature ?? 1,
 		})
+
+		// Vertex Gemini models perform better with the edit tool instead of apply_diff.
+		info = {
+			...info,
+			excludedTools: [...new Set([...(info.excludedTools || []), "apply_diff"])],
+			includedTools: [...new Set([...(info.includedTools || []), "edit"])],
+		}
 
 		// The `:thinking` suffix indicates that the model is a "Hybrid"
 		// reasoning model and that reasoning is required to be enabled.

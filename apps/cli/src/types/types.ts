@@ -20,9 +20,13 @@ export type ReasoningEffortFlagOptions = ReasoningEffortExtended | "unspecified"
 
 export type FlagOptions = {
 	promptFile?: string
+	createWithSessionId?: string
+	sessionId?: string
+	continue: boolean
 	workspace?: string
 	print: boolean
 	stdinPromptStream: boolean
+	signalOnlyExit: boolean
 	extension?: string
 	debug: boolean
 	requireApproval: boolean
@@ -31,7 +35,9 @@ export type FlagOptions = {
 	provider?: SupportedProvider
 	model?: string
 	mode?: string
+	terminalShell?: string
 	reasoningEffort?: ReasoningEffortFlagOptions
+	consecutiveMistakeLimit?: number
 	ephemeral: boolean
 	oneshot: boolean
 	outputFormat?: OutputFormat
@@ -58,6 +64,8 @@ export interface CliSettings {
 	model?: string
 	/** Default reasoning effort level */
 	reasoningEffort?: ReasoningEffortFlagOptions
+	/** Default consecutive error/repetition limit before guidance prompts */
+	consecutiveMistakeLimit?: number
 	/** Require manual approval for tools/commands/browser/MCP actions */
 	requireApproval?: boolean
 	/** @deprecated Legacy inverse setting kept for backward compatibility */

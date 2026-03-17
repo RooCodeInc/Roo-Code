@@ -5,6 +5,8 @@ import fs from "fs"
 
 import type { ExtensionMessage, WebviewMessage } from "@roo-code/types"
 
+import { DEFAULT_FLAGS } from "@/types/index.js"
+
 import { type ExtensionHostOptions, ExtensionHost } from "../extension-host.js"
 import { ExtensionClient } from "../extension-client.js"
 import { AgentLoopState } from "../agent-state.js"
@@ -80,11 +82,26 @@ function spyOnPrivate(host: ExtensionHost, method: string) {
 }
 
 describe("ExtensionHost", () => {
+	const initialRooCliRuntimeEnv = process.env.ROO_CLI_RUNTIME
+
 	beforeEach(() => {
 		vi.resetAllMocks()
+		if (initialRooCliRuntimeEnv === undefined) {
+			delete process.env.ROO_CLI_RUNTIME
+		} else {
+			process.env.ROO_CLI_RUNTIME = initialRooCliRuntimeEnv
+		}
 		// Clean up globals
 		delete (global as Record<string, unknown>).vscode
 		delete (global as Record<string, unknown>).__extensionHost
+	})
+
+	afterAll(() => {
+		if (initialRooCliRuntimeEnv === undefined) {
+			delete process.env.ROO_CLI_RUNTIME
+		} else {
+			process.env.ROO_CLI_RUNTIME = initialRooCliRuntimeEnv
+		}
 	})
 
 	describe("constructor", () => {
@@ -134,6 +151,28 @@ describe("ExtensionHost", () => {
 			expect(getPrivate(host, "outputManager")).toBeDefined()
 			expect(getPrivate(host, "promptManager")).toBeDefined()
 			expect(getPrivate(host, "askDispatcher")).toBeDefined()
+		})
+
+		it("should mark process as CLI runtime", () => {
+			delete process.env.ROO_CLI_RUNTIME
+			createTestHost()
+			expect(process.env.ROO_CLI_RUNTIME).toBe("1")
+		})
+
+		it("should set execaShellPath in initialSettings when terminalShell is provided", () => {
+			const host = createTestHost({ terminalShell: "/bin/bash" })
+			const emitSpy = vi.spyOn(host, "emit")
+			host.markWebviewReady()
+			const updateSettingsCall = emitSpy.mock.calls.find(
+				(call) =>
+					call[0] === "webviewMessage" &&
+					typeof call[1] === "object" &&
+					call[1] !== null &&
+					(call[1] as WebviewMessage).type === "updateSettings",
+			)
+			expect(updateSettingsCall).toBeDefined()
+			const payload = updateSettingsCall?.[1] as WebviewMessage
+			expect(payload.updatedSettings?.execaShellPath).toBe("/bin/bash")
 		})
 	})
 
@@ -214,6 +253,26 @@ describe("ExtensionHost", () => {
 						(call[1] as WebviewMessage).type === "updateSettings",
 				)
 				expect(updateSettingsCall).toBeDefined()
+			})
+
+			it("should force terminalShellIntegrationDisabled when terminalShell is provided", () => {
+				const host = createTestHost({ terminalShell: "/bin/bash" })
+				const emitSpy = vi.spyOn(host, "emit")
+
+				host.markWebviewReady()
+
+				const updateSettingsCall = emitSpy.mock.calls.find(
+					(call) =>
+						call[0] === "webviewMessage" &&
+						typeof call[1] === "object" &&
+						call[1] !== null &&
+						(call[1] as WebviewMessage).type === "updateSettings",
+				)
+
+				expect(updateSettingsCall).toBeDefined()
+				const payload = updateSettingsCall?.[1] as WebviewMessage
+				expect(payload.type).toBe("updateSettings")
+				expect(payload.updatedSettings?.terminalShellIntegrationDisabled).toBe(true)
 			})
 		})
 	})
@@ -429,6 +488,26 @@ describe("ExtensionHost", () => {
 
 			expect(restoreConsoleSpy).toHaveBeenCalled()
 		})
+
+		it("should clear ROO_CLI_RUNTIME on dispose when it was previously unset", async () => {
+			delete process.env.ROO_CLI_RUNTIME
+			host = createTestHost()
+			expect(process.env.ROO_CLI_RUNTIME).toBe("1")
+
+			await host.dispose()
+
+			expect(process.env.ROO_CLI_RUNTIME).toBeUndefined()
+		})
+
+		it("should restore prior ROO_CLI_RUNTIME value on dispose", async () => {
+			process.env.ROO_CLI_RUNTIME = "preexisting-value"
+			host = createTestHost()
+			expect(process.env.ROO_CLI_RUNTIME).toBe("1")
+
+			await host.dispose()
+
+			expect(process.env.ROO_CLI_RUNTIME).toBe("preexisting-value")
+		})
 	})
 
 	describe("runTask", () => {
@@ -461,6 +540,37 @@ describe("ExtensionHost", () => {
 			expect(emitSpy).toHaveBeenCalledWith("webviewMessage", { type: "newTask", text: "test prompt" })
 		})
 
+		it("should include taskId when provided", async () => {
+			const host = createTestHost()
+			host.markWebviewReady()
+
+			const emitSpy = vi.spyOn(host, "emit")
+			const client = getPrivate(host, "client") as ExtensionClient
+
+			const taskPromise = host.runTask("test prompt", "task-123")
+
+			const taskCompletedEvent = {
+				success: true,
+				stateInfo: {
+					state: AgentLoopState.IDLE,
+					isWaitingForInput: false,
+					isRunning: false,
+					isStreaming: false,
+					requiredAction: "start_task" as const,
+					description: "Task completed",
+				},
+			}
+			setTimeout(() => client.getEmitter().emit("taskCompleted", taskCompletedEvent), 10)
+
+			await taskPromise
+
+			expect(emitSpy).toHaveBeenCalledWith("webviewMessage", {
+				type: "newTask",
+				text: "test prompt",
+				taskId: "task-123",
+			})
+		})
+
 		it("should resolve when taskCompleted is emitted on client", async () => {
 			const host = createTestHost()
 			host.markWebviewReady()
@@ -484,6 +594,33 @@ describe("ExtensionHost", () => {
 
 			await expect(taskPromise).resolves.toBeUndefined()
 		})
+
+		it("should send showTaskWithId for resumeTask and resolve on completion", async () => {
+			const host = createTestHost()
+			host.markWebviewReady()
+
+			const emitSpy = vi.spyOn(host, "emit")
+			const client = getPrivate(host, "client") as ExtensionClient
+
+			const taskPromise = host.resumeTask("task-abc")
+
+			const taskCompletedEvent = {
+				success: true,
+				stateInfo: {
+					state: AgentLoopState.IDLE,
+					isWaitingForInput: false,
+					isRunning: false,
+					isStreaming: false,
+					requiredAction: "start_task" as const,
+					description: "Task completed",
+				},
+			}
+			setTimeout(() => client.getEmitter().emit("taskCompleted", taskCompletedEvent), 10)
+
+			await taskPromise
+
+			expect(emitSpy).toHaveBeenCalledWith("webviewMessage", { type: "showTaskWithId", text: "task-abc" })
+		})
 	})
 
 	describe("initial settings", () => {
@@ -492,6 +629,20 @@ describe("ExtensionHost", () => {
 
 			const initialSettings = getPrivate<Record<string, unknown>>(host, "initialSettings")
 			expect(initialSettings.mode).toBe("architect")
+		})
+
+		it("should use default consecutiveMistakeLimit when not provided", () => {
+			const host = createTestHost()
+
+			const initialSettings = getPrivate<Record<string, unknown>>(host, "initialSettings")
+			expect(initialSettings.consecutiveMistakeLimit).toBe(DEFAULT_FLAGS.consecutiveMistakeLimit)
+		})
+
+		it("should set consecutiveMistakeLimit from options", () => {
+			const host = createTestHost({ consecutiveMistakeLimit: 8 })
+
+			const initialSettings = getPrivate<Record<string, unknown>>(host, "initialSettings")
+			expect(initialSettings.consecutiveMistakeLimit).toBe(8)
 		})
 
 		it("should enable auto-approval in non-interactive mode", () => {

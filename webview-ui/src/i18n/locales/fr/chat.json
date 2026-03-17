@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "Partage désactivé par l'organisation",
 		"shareSuccessOrganization": "Lien d'organisation copié dans le presse-papiers",
 		"shareSuccessPublic": "Lien public copié dans le presse-papiers",
-		"openInCloud": "Ouvrir la tâche dans Roo Code Cloud",
-		"openInCloudIntro": "Continue à surveiller ou interagir avec Roo depuis n'importe où. Scanne, clique ou copie pour ouvrir.",
 		"openApiHistory": "Ouvrir l'historique de l'API",
 		"openUiHistory": "Ouvrir l'historique de l'UI",
 		"backToParentTask": "Tâche parente"
 	},
 	"unpin": "Désépingler",
 	"pin": "Épingler",
+	"fileChangesInConversation": {
+		"header": "{{count}} fichier(s) modifié(s) dans cette conversation"
+	},
 	"tokenProgress": {
 		"availableSpace": "Espace disponible : {{amount}} tokens",
 		"tokensUsed": "Tokens utilisés : {{used}} sur {{total}}",
@@ -347,7 +348,11 @@
 		},
 		"release": {
 			"heading": "Quoi de neuf :",
-			"smartCodeFolding": "Pliage de code intelligent : La condensation du contexte préserve maintenant une carte légère de vos fichiers—signatures de fonctions, déclarations de classes et définitions de types. Cela offre une meilleure continuité après la condensation et des éditions plus intelligentes lors du référencement de travail antérieur."
+			"gpt54": "Prise en charge d’OpenAI GPT-5.4 : OpenAI GPT-5.4 et GPT-5.3 Chat Latest ont été ajoutés pour que tu puisses utiliser les modèles de chat OpenAI les plus récents dans Roo Code.",
+			"slashSkills": "Skills en slash commands : Les skills peuvent maintenant être exposées comme slash commands avec une exécution de secours pour accélérer les workflows.",
+			"geminiPro": "Support de Gemini 3.1 Pro : Le modèle Gemini 3.1 Pro a été ajouté et défini comme modèle Gemini par défaut pour de meilleures performances.",
+			"cliNdjson": "Protocole NDJSON du CLI : Nouveau protocole NDJSON via stdin, sous-commandes de liste et commande d'exécution modularisée pour des workflows CLI plus flexibles.",
+			"cliRelease": "CLI v0.1.0 : Le CLI de Roo Code atteint sa première version officielle avec une interface de commandes stable."
 		},
 		"cloudAgents": {
 			"heading": "Nouveautés dans le Cloud :",
@@ -423,7 +428,8 @@
 		"indexing": "Indexation {{percentage}}%",
 		"indexed": "Indexé",
 		"error": "Erreur d'index",
-		"status": "Statut de l'index"
+		"status": "Statut de l'index",
+		"stopping": "Arrêt de l'indexation..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Version {{version}} - Cliquez pour voir les notes de version"

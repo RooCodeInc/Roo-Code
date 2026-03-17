@@ -77,6 +77,8 @@ export class ProfileValidator {
 				return profile.ollamaModelId
 			case "requesty":
 				return profile.requestyModelId
+			case "unbound":
+				return profile.unboundModelId
 			case "fake-ai":
 			default:
 				return undefined

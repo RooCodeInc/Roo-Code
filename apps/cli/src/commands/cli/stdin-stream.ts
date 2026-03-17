@@ -1,0 +1,977 @@
+import { createInterface } from "readline"
+import { randomUUID } from "crypto"
+
+import {
+	rooCliCommandNames,
+	type RooCliCommandName,
+	type RooCliInputCommand,
+	type RooCliStartCommand,
+} from "@roo-code/types"
+
+import { isRecord } from "@/lib/utils/guards.js"
+import { isValidSessionId } from "@/lib/utils/session-id.js"
+import { isCancellationLikeError, isExpectedControlFlowError, isNoActiveTaskLikeError } from "./cancellation.js"
+
+import type { ExtensionHost } from "@/agent/index.js"
+import type { JsonEventEmitter } from "@/agent/json-event-emitter.js"
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+export type StdinStreamCommandName = RooCliCommandName
+
+export type StdinStreamCommand = RooCliInputCommand
+
+// ---------------------------------------------------------------------------
+// Parsing
+// ---------------------------------------------------------------------------
+
+export const VALID_STDIN_COMMANDS = new Set<StdinStreamCommandName>(rooCliCommandNames)
+
+export function parseStdinStreamCommand(line: string, lineNumber: number): StdinStreamCommand {
+	let parsed: unknown
+
+	try {
+		parsed = JSON.parse(line)
+	} catch {
+		throw new Error(`stdin command line ${lineNumber}: invalid JSON`)
+	}
+
+	if (!isRecord(parsed)) {
+		throw new Error(`stdin command line ${lineNumber}: expected JSON object`)
+	}
+
+	const commandRaw = parsed.command
+	const requestIdRaw = parsed.requestId
+
+	if (typeof commandRaw !== "string") {
+		throw new Error(`stdin command line ${lineNumber}: missing string "command"`)
+	}
+
+	if (!VALID_STDIN_COMMANDS.has(commandRaw as StdinStreamCommandName)) {
+		throw new Error(
+			`stdin command line ${lineNumber}: unsupported command "${commandRaw}" (expected start|message|cancel|ping|shutdown)`,
+		)
+	}
+
+	if (typeof requestIdRaw !== "string" || requestIdRaw.trim().length === 0) {
+		throw new Error(`stdin command line ${lineNumber}: missing non-empty string "requestId"`)
+	}
+
+	const command = commandRaw as StdinStreamCommandName
+	const requestId = requestIdRaw.trim()
+
+	if (command === "start" || command === "message") {
+		const promptRaw = parsed.prompt
+
+		if (typeof promptRaw !== "string" || promptRaw.trim().length === 0) {
+			throw new Error(`stdin command line ${lineNumber}: "${command}" requires non-empty string "prompt"`)
+		}
+
+		const imagesRaw = parsed.images
+		let images: string[] | undefined
+
+		if (imagesRaw !== undefined) {
+			if (!Array.isArray(imagesRaw) || !imagesRaw.every((image) => typeof image === "string")) {
+				throw new Error(`stdin command line ${lineNumber}: "${command}" images must be an array of strings`)
+			}
+
+			images = imagesRaw
+		}
+
+		if (command === "start") {
+			const taskIdRaw = parsed.taskId
+			let taskId: string | undefined
+
+			if (taskIdRaw !== undefined) {
+				if (typeof taskIdRaw !== "string" || taskIdRaw.trim().length === 0) {
+					throw new Error(`stdin command line ${lineNumber}: "start" taskId must be a non-empty string`)
+				}
+				taskId = taskIdRaw.trim()
+
+				if (!isValidSessionId(taskId)) {
+					throw new Error(`stdin command line ${lineNumber}: "start" taskId must be a valid UUID`)
+				}
+			}
+
+			if (isRecord(parsed.configuration)) {
+				return {
+					command,
+					requestId,
+					prompt: promptRaw,
+					...(taskId !== undefined ? { taskId } : {}),
+					...(images !== undefined ? { images } : {}),
+					configuration: parsed.configuration as RooCliStartCommand["configuration"],
+				}
+			}
+
+			return {
+				command,
+				requestId,
+				prompt: promptRaw,
+				...(taskId !== undefined ? { taskId } : {}),
+				...(images !== undefined ? { images } : {}),
+			}
+		}
+
+		return {
+			command,
+			requestId,
+			prompt: promptRaw,
+			...(images !== undefined ? { images } : {}),
+		}
+	}
+
+	return { command, requestId }
+}
+
+// ---------------------------------------------------------------------------
+// NDJSON stdin reader
+// ---------------------------------------------------------------------------
+
+async function* readCommandsFromStdinNdjson(): AsyncGenerator<StdinStreamCommand> {
+	const lineReader = createInterface({
+		input: process.stdin,
+		crlfDelay: Infinity,
+		terminal: false,
+	})
+
+	let lineNumber = 0
+
+	try {
+		for await (const line of lineReader) {
+			lineNumber += 1
+			const trimmed = line.trim()
+			if (!trimmed) {
+				continue
+			}
+			yield parseStdinStreamCommand(trimmed, lineNumber)
+		}
+	} finally {
+		lineReader.close()
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Queue snapshot helpers
+// ---------------------------------------------------------------------------
+
+interface StreamQueueItem {
+	id: string
+	text?: string
+	imageCount: number
+	timestamp?: number
+}
+
+function normalizeQueueText(text: string | undefined): string | undefined {
+	if (!text) {
+		return undefined
+	}
+
+	const compact = text.replace(/\s+/g, " ").trim()
+	if (!compact) {
+		return undefined
+	}
+
+	return compact.length <= 180 ? compact : `${compact.slice(0, 177)}...`
+}
+
+function parseQueueSnapshot(rawQueue: unknown): StreamQueueItem[] | undefined {
+	if (!Array.isArray(rawQueue)) {
+		return undefined
+	}
+
+	const snapshot: StreamQueueItem[] = []
+
+	for (const entry of rawQueue) {
+		if (!isRecord(entry)) {
+			continue
+		}
+
+		const idRaw = entry.id
+		if (typeof idRaw !== "string" || idRaw.trim().length === 0) {
+			continue
+		}
+
+		const imagesRaw = entry.images
+		const timestampRaw = entry.timestamp
+		const imageCount = Array.isArray(imagesRaw) ? imagesRaw.length : 0
+
+		snapshot.push({
+			id: idRaw,
+			text: normalizeQueueText(typeof entry.text === "string" ? entry.text : undefined),
+			imageCount,
+			timestamp: typeof timestampRaw === "number" ? timestampRaw : undefined,
+		})
+	}
+
+	return snapshot
+}
+
+function areStringArraysEqual(a: string[], b: string[]): boolean {
+	if (a.length !== b.length) {
+		return false
+	}
+
+	for (let i = 0; i < a.length; i++) {
+		if (a[i] !== b[i]) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// ---------------------------------------------------------------------------
+// Orchestrator
+// ---------------------------------------------------------------------------
+
+export interface StdinStreamModeOptions {
+	host: ExtensionHost
+	jsonEmitter: JsonEventEmitter
+	setStreamRequestId: (id: string | undefined) => void
+}
+
+const RESUME_ASKS = new Set(["resume_task", "resume_completed_task"])
+const CANCEL_RECOVERY_WAIT_TIMEOUT_MS = 8_000
+const CANCEL_RECOVERY_POLL_INTERVAL_MS = 100
+const STDIN_EOF_RESUME_WAIT_TIMEOUT_MS = 2_000
+const STDIN_EOF_POLL_INTERVAL_MS = 100
+const STDIN_EOF_IDLE_ASKS = new Set(["completion_result", "resume_completed_task"])
+const STDIN_EOF_IDLE_STABLE_POLLS = 2
+const MESSAGE_AS_ASK_RESPONSE_ASKS = new Set([
+	"followup",
+	"tool",
+	"command",
+	"use_mcp_server",
+	"completion_result",
+	"resume_task",
+	"resume_completed_task",
+	"mistake_limit_reached",
+])
+
+export function shouldSendMessageAsAskResponse(waitingForInput: boolean, currentAsk: string | undefined): boolean {
+	return waitingForInput && typeof currentAsk === "string" && MESSAGE_AS_ASK_RESPONSE_ASKS.has(currentAsk)
+}
+
+function isResumableState(host: ExtensionHost): boolean {
+	const agentState = host.client.getAgentState()
+	return (
+		agentState.isWaitingForInput &&
+		typeof agentState.currentAsk === "string" &&
+		RESUME_ASKS.has(agentState.currentAsk)
+	)
+}
+
+async function waitForPostCancelRecovery(host: ExtensionHost): Promise<void> {
+	const deadline = Date.now() + CANCEL_RECOVERY_WAIT_TIMEOUT_MS
+
+	while (Date.now() < deadline) {
+		if (isResumableState(host)) {
+			return
+		}
+
+		await new Promise((resolve) => setTimeout(resolve, CANCEL_RECOVERY_POLL_INTERVAL_MS))
+	}
+}
+
+async function waitForTaskProgressAfterStdinClosed(
+	host: ExtensionHost,
+	getQueueState: () => { hasSeenQueueState: boolean; queueDepth: number },
+): Promise<void> {
+	while (host.client.hasActiveTask()) {
+		if (!host.isWaitingForInput()) {
+			await new Promise((resolve) => setTimeout(resolve, STDIN_EOF_POLL_INTERVAL_MS))
+			continue
+		}
+
+		const deadline = Date.now() + STDIN_EOF_RESUME_WAIT_TIMEOUT_MS
+
+		while (Date.now() < deadline) {
+			if (!host.client.hasActiveTask() || !host.isWaitingForInput()) {
+				break
+			}
+
+			await new Promise((resolve) => setTimeout(resolve, STDIN_EOF_POLL_INTERVAL_MS))
+		}
+
+		if (host.client.hasActiveTask() && host.isWaitingForInput()) {
+			const currentAsk = host.client.getCurrentAsk()
+			const { hasSeenQueueState, queueDepth } = getQueueState()
+
+			// EOF is allowed when the task has reached an idle completion boundary and
+			// there is no queued user input waiting to be processed.
+			if (
+				hasSeenQueueState &&
+				queueDepth === 0 &&
+				typeof currentAsk === "string" &&
+				STDIN_EOF_IDLE_ASKS.has(currentAsk)
+			) {
+				let isStable = true
+				for (let i = 1; i < STDIN_EOF_IDLE_STABLE_POLLS; i++) {
+					await new Promise((resolve) => setTimeout(resolve, STDIN_EOF_POLL_INTERVAL_MS))
+
+					if (!host.client.hasActiveTask() || !host.isWaitingForInput()) {
+						isStable = false
+						break
+					}
+
+					const nextAsk = host.client.getCurrentAsk()
+					const nextQueueState = getQueueState()
+					if (
+						nextAsk !== currentAsk ||
+						!nextQueueState.hasSeenQueueState ||
+						nextQueueState.queueDepth !== 0
+					) {
+						isStable = false
+						break
+					}
+				}
+
+				if (isStable) {
+					return
+				}
+			}
+
+			throw new Error(`stdin ended while task was waiting for input (${currentAsk ?? "unknown"})`)
+		}
+	}
+}
+
+export async function runStdinStreamMode({ host, jsonEmitter, setStreamRequestId }: StdinStreamModeOptions) {
+	let hasReceivedStdinCommand = false
+	let shouldShutdown = false
+	let activeTaskPromise: Promise<void> | null = null
+	let fatalStreamError: Error | null = null
+	let activeRequestId: string | undefined
+	let activeTaskCommand: "start" | undefined
+	let latestTaskId: string | undefined
+	let cancelRequestedForActiveTask = false
+	let awaitingPostCancelRecovery = false
+	let hasSeenQueueState = false
+	let lastQueueDepth = 0
+	let lastQueueMessageIds: string[] = []
+	const pendingQueuedMessageRequestIds: string[] = []
+	const queueMessageRequestIdByMessageId = new Map<string, string>()
+
+	const assignRequestIdsToNewQueueMessages = (queueMessageIds: string[]) => {
+		for (const messageId of queueMessageIds) {
+			if (queueMessageRequestIdByMessageId.has(messageId)) {
+				continue
+			}
+
+			const requestId = pendingQueuedMessageRequestIds.shift()
+			if (!requestId) {
+				continue
+			}
+
+			queueMessageRequestIdByMessageId.set(messageId, requestId)
+		}
+	}
+
+	const promoteRequestIdForDequeuedMessages = (queueMessageIds: string[]) => {
+		if (lastQueueMessageIds.length === 0) {
+			return
+		}
+
+		const remainingIds = new Set(queueMessageIds)
+
+		for (const dequeuedMessageId of lastQueueMessageIds) {
+			if (remainingIds.has(dequeuedMessageId)) {
+				continue
+			}
+
+			const requestId = queueMessageRequestIdByMessageId.get(dequeuedMessageId)
+			if (requestId) {
+				setStreamRequestId(requestId)
+			}
+			queueMessageRequestIdByMessageId.delete(dequeuedMessageId)
+		}
+	}
+
+	const waitForPreviousTaskToSettle = async () => {
+		if (!activeTaskPromise) {
+			return
+		}
+
+		try {
+			await activeTaskPromise
+		} catch {
+			// Errors are emitted through control/error events.
+		}
+	}
+
+	const offClientError = host.client.on("error", (error) => {
+		if (
+			isExpectedControlFlowError(error, {
+				stdinStreamMode: true,
+				cancelRequested: cancelRequestedForActiveTask,
+				shuttingDown: shouldShutdown,
+				operation: "client",
+			})
+		) {
+			if (activeTaskCommand === "start" && (cancelRequestedForActiveTask || isCancellationLikeError(error))) {
+				jsonEmitter.emitControl({
+					subtype: "done",
+					requestId: activeRequestId,
+					command: "start",
+					taskId: latestTaskId,
+					content: "task cancelled",
+					code: "task_aborted",
+					success: false,
+				})
+			}
+			activeTaskCommand = undefined
+			activeRequestId = undefined
+			setStreamRequestId(undefined)
+			cancelRequestedForActiveTask = false
+			awaitingPostCancelRecovery = false
+			return
+		}
+
+		fatalStreamError = error
+		jsonEmitter.emitControl({
+			subtype: "error",
+			requestId: activeRequestId,
+			command: activeTaskCommand,
+			taskId: latestTaskId,
+			content: error.message,
+			code: "client_error",
+			success: false,
+		})
+	})
+
+	const onExtensionMessage = (message: {
+		type?: string
+		text?: unknown
+		state?: {
+			currentTaskId?: unknown
+			currentTaskItem?: { id?: unknown }
+			messageQueue?: unknown
+		}
+	}) => {
+		if (message.type === "commandExecutionStatus") {
+			if (typeof message.text !== "string") {
+				return
+			}
+
+			let parsedStatus: unknown
+			try {
+				parsedStatus = JSON.parse(message.text)
+			} catch {
+				return
+			}
+
+			if (!isRecord(parsedStatus) || typeof parsedStatus.status !== "string") {
+				return
+			}
+
+			if (parsedStatus.status === "output" && typeof parsedStatus.output === "string") {
+				jsonEmitter.emitCommandOutputChunk(parsedStatus.output)
+				return
+			}
+
+			if (parsedStatus.status === "exited") {
+				const exitCode =
+					parsedStatus.status === "exited" && typeof parsedStatus.exitCode === "number"
+						? parsedStatus.exitCode
+						: undefined
+
+				if (typeof parsedStatus.output === "string") {
+					jsonEmitter.emitCommandOutputChunk(parsedStatus.output)
+				}
+
+				jsonEmitter.markCommandOutputExited(exitCode)
+				return
+			}
+
+			if (parsedStatus.status === "timeout" || parsedStatus.status === "fallback") {
+				jsonEmitter.emitCommandOutputDone(undefined)
+				return
+			}
+
+			return
+		}
+
+		if (message.type !== "state") {
+			return
+		}
+
+		const currentTaskId = message.state?.currentTaskId ?? message.state?.currentTaskItem?.id
+		if (typeof currentTaskId === "string" && currentTaskId.trim().length > 0) {
+			latestTaskId = currentTaskId
+		}
+
+		const queueSnapshot = parseQueueSnapshot(message.state?.messageQueue)
+		if (!queueSnapshot) {
+			return
+		}
+
+		const queueDepth = queueSnapshot.length
+		const queueMessageIds = queueSnapshot.map((item) => item.id)
+
+		if (!hasSeenQueueState) {
+			assignRequestIdsToNewQueueMessages(queueMessageIds)
+			hasSeenQueueState = true
+			lastQueueDepth = queueDepth
+			lastQueueMessageIds = queueMessageIds
+
+			if (queueDepth === 0) {
+				return
+			}
+
+			jsonEmitter.emitQueue({
+				subtype: "snapshot",
+				taskId: latestTaskId,
+				content: `queue snapshot (${queueDepth} item${queueDepth === 1 ? "" : "s"})`,
+				queueDepth,
+				queue: queueSnapshot,
+			})
+			return
+		}
+
+		const depthChanged = queueDepth !== lastQueueDepth
+		const idsChanged = !areStringArraysEqual(queueMessageIds, lastQueueMessageIds)
+
+		if (!depthChanged && !idsChanged) {
+			return
+		}
+
+		promoteRequestIdForDequeuedMessages(queueMessageIds)
+		assignRequestIdsToNewQueueMessages(queueMessageIds)
+
+		const subtype: "enqueued" | "dequeued" | "drained" | "updated" = depthChanged
+			? queueDepth > lastQueueDepth
+				? "enqueued"
+				: queueDepth === 0
+					? "drained"
+					: "dequeued"
+			: "updated"
+
+		const content =
+			subtype === "drained"
+				? "queue drained"
+				: `queue ${subtype} (${queueDepth} item${queueDepth === 1 ? "" : "s"})`
+
+		jsonEmitter.emitQueue({
+			subtype,
+			taskId: latestTaskId,
+			content,
+			queueDepth,
+			queue: queueSnapshot,
+		})
+
+		lastQueueDepth = queueDepth
+		lastQueueMessageIds = queueMessageIds
+	}
+
+	host.on("extensionWebviewMessage", onExtensionMessage)
+
+	const offTaskCompleted = host.client.on("taskCompleted", (event) => {
+		if (activeTaskCommand === "start") {
+			const completionCode = event.success
+				? "task_completed"
+				: cancelRequestedForActiveTask
+					? "task_aborted"
+					: "task_failed"
+
+			jsonEmitter.emitControl({
+				subtype: "done",
+				requestId: activeRequestId,
+				command: "start",
+				taskId: latestTaskId,
+				content: event.success
+					? "task completed"
+					: cancelRequestedForActiveTask
+						? "task cancelled"
+						: "task failed",
+				code: completionCode,
+				success: event.success,
+			})
+
+			// If user messages were queued while the task was still running, shift
+			// event attribution to the oldest pending message request as soon as the
+			// task turn completes so prompt echo/user feedback events are tagged.
+			const oldestQueuedMessageId = lastQueueMessageIds[0]
+			const nextQueuedRequestId =
+				pendingQueuedMessageRequestIds[0] ??
+				(oldestQueuedMessageId ? queueMessageRequestIdByMessageId.get(oldestQueuedMessageId) : undefined)
+			if (nextQueuedRequestId) {
+				setStreamRequestId(nextQueuedRequestId)
+			}
+
+			activeTaskCommand = undefined
+			activeRequestId = undefined
+			cancelRequestedForActiveTask = false
+		}
+	})
+
+	try {
+		for await (const stdinCommand of readCommandsFromStdinNdjson()) {
+			hasReceivedStdinCommand = true
+
+			if (fatalStreamError) {
+				throw fatalStreamError
+			}
+
+			switch (stdinCommand.command) {
+				case "start": {
+					// A task can emit completion events before runTask() finalizers run.
+					// Wait for full settlement to avoid false "task_busy" on immediate next start.
+					// Safe from races: `for await` processes stdin commands serially, so no
+					// concurrent command can mutate state between the check and the await.
+					if (activeTaskPromise && !host.client.hasActiveTask()) {
+						await waitForPreviousTaskToSettle()
+					}
+
+					if (activeTaskPromise || host.client.hasActiveTask()) {
+						jsonEmitter.emitControl({
+							subtype: "error",
+							requestId: stdinCommand.requestId,
+							command: "start",
+							taskId: latestTaskId,
+							content: "cannot start a new task while another task is active",
+							code: "task_busy",
+							success: false,
+						})
+
+						break
+					}
+
+					activeRequestId = stdinCommand.requestId
+					activeTaskCommand = "start"
+					setStreamRequestId(stdinCommand.requestId)
+					latestTaskId = stdinCommand.taskId ?? randomUUID()
+					cancelRequestedForActiveTask = false
+					awaitingPostCancelRecovery = false
+
+					jsonEmitter.emitControl({
+						subtype: "ack",
+						requestId: stdinCommand.requestId,
+						command: "start",
+						taskId: latestTaskId,
+						content: "starting task",
+						code: "accepted",
+						success: true,
+					})
+
+					// In CLI stdin-stream mode, default to the execa terminal provider so
+					// command output can be streamed deterministically. Explicit per-request
+					// config still wins.
+					const taskConfiguration = {
+						terminalShellIntegrationDisabled: true,
+						...(stdinCommand.configuration ?? {}),
+					}
+
+					activeTaskPromise = host
+						.runTask(stdinCommand.prompt, latestTaskId, taskConfiguration, stdinCommand.images)
+						.catch((error) => {
+							const message = error instanceof Error ? error.message : String(error)
+
+							if (
+								isExpectedControlFlowError(error, {
+									stdinStreamMode: true,
+									cancelRequested: cancelRequestedForActiveTask,
+									shuttingDown: shouldShutdown,
+									operation: "client",
+								})
+							) {
+								if (
+									activeTaskCommand === "start" &&
+									(cancelRequestedForActiveTask || isCancellationLikeError(error))
+								) {
+									jsonEmitter.emitControl({
+										subtype: "done",
+										requestId: stdinCommand.requestId,
+										command: "start",
+										taskId: latestTaskId,
+										content: "task cancelled",
+										code: "task_aborted",
+										success: false,
+									})
+								}
+
+								activeTaskCommand = undefined
+								activeRequestId = undefined
+								setStreamRequestId(undefined)
+								cancelRequestedForActiveTask = false
+								awaitingPostCancelRecovery = false
+								return
+							}
+
+							fatalStreamError = error instanceof Error ? error : new Error(message)
+							activeTaskCommand = undefined
+							activeRequestId = undefined
+							setStreamRequestId(undefined)
+
+							jsonEmitter.emitControl({
+								subtype: "error",
+								requestId: stdinCommand.requestId,
+								command: "start",
+								taskId: latestTaskId,
+								content: message,
+								code: "task_error",
+								success: false,
+							})
+						})
+						.finally(() => {
+							activeTaskPromise = null
+						})
+
+					break
+				}
+
+				case "message": {
+					// If cancel was requested, wait briefly for the task to be rehydrated
+					// so message prompts don't race into the pre-cancel task instance.
+					if (awaitingPostCancelRecovery) {
+						await waitForPostCancelRecovery(host)
+					}
+
+					const wasResumable = isResumableState(host)
+					const currentAsk = host.client.getCurrentAsk()
+					const shouldSendAsAskResponse = shouldSendMessageAsAskResponse(host.isWaitingForInput(), currentAsk)
+
+					if (!host.client.hasActiveTask()) {
+						jsonEmitter.emitControl({
+							subtype: "error",
+							requestId: stdinCommand.requestId,
+							command: "message",
+							taskId: latestTaskId,
+							content: "no active task; send a start command first",
+							code: "no_active_task",
+							success: false,
+						})
+
+						break
+					}
+
+					jsonEmitter.emitControl({
+						subtype: "ack",
+						requestId: stdinCommand.requestId,
+						command: "message",
+						taskId: latestTaskId,
+						content: "message accepted",
+						code: "accepted",
+						success: true,
+					})
+
+					if (shouldSendAsAskResponse) {
+						// Match webview behavior: if there is an active ask, route message directly as an ask response.
+						host.sendToExtension({
+							type: "askResponse",
+							askResponse: "messageResponse",
+							text: stdinCommand.prompt,
+							images: stdinCommand.images,
+						})
+
+						setStreamRequestId(stdinCommand.requestId)
+						jsonEmitter.emitControl({
+							subtype: "done",
+							requestId: stdinCommand.requestId,
+							command: "message",
+							taskId: latestTaskId,
+							content: "message sent to current ask",
+							code: "responded",
+							success: true,
+						})
+						awaitingPostCancelRecovery = false
+						break
+					}
+
+					host.sendToExtension({
+						type: "queueMessage",
+						text: stdinCommand.prompt,
+						images: stdinCommand.images,
+					})
+					pendingQueuedMessageRequestIds.push(stdinCommand.requestId)
+					if (host.isWaitingForInput()) {
+						setStreamRequestId(stdinCommand.requestId)
+					}
+
+					jsonEmitter.emitControl({
+						subtype: "done",
+						requestId: stdinCommand.requestId,
+						command: "message",
+						taskId: latestTaskId,
+						content: wasResumable ? "resume message queued" : "message queued",
+						code: wasResumable ? "resumed" : "queued",
+						success: true,
+					})
+
+					awaitingPostCancelRecovery = false
+					break
+				}
+
+				case "cancel": {
+					setStreamRequestId(stdinCommand.requestId)
+
+					const hasTaskInFlight = Boolean(
+						activeTaskPromise || activeTaskCommand === "start" || host.client.hasActiveTask(),
+					)
+
+					if (!hasTaskInFlight) {
+						jsonEmitter.emitControl({
+							subtype: "ack",
+							requestId: stdinCommand.requestId,
+							command: "cancel",
+							taskId: latestTaskId,
+							content: "no active task to cancel",
+							code: "accepted",
+							success: true,
+						})
+
+						jsonEmitter.emitControl({
+							subtype: "done",
+							requestId: stdinCommand.requestId,
+							command: "cancel",
+							taskId: latestTaskId,
+							content: "cancel ignored (no active task)",
+							code: "no_active_task",
+							success: true,
+						})
+
+						break
+					}
+
+					cancelRequestedForActiveTask = true
+					awaitingPostCancelRecovery = true
+
+					jsonEmitter.emitControl({
+						subtype: "ack",
+						requestId: stdinCommand.requestId,
+						command: "cancel",
+						taskId: latestTaskId,
+						content: host.client.hasActiveTask() ? "cancel requested" : "cancel requested (task starting)",
+						code: "accepted",
+						success: true,
+					})
+
+					try {
+						host.client.cancelTask()
+
+						jsonEmitter.emitControl({
+							subtype: "done",
+							requestId: stdinCommand.requestId,
+							command: "cancel",
+							taskId: latestTaskId,
+							content: "cancel signal sent",
+							code: "cancel_requested",
+							success: true,
+						})
+					} catch (error) {
+						if (
+							isExpectedControlFlowError(error, {
+								stdinStreamMode: true,
+								cancelRequested: true,
+								shuttingDown: shouldShutdown,
+								operation: "cancel",
+							})
+						) {
+							const noActiveTask = isNoActiveTaskLikeError(error)
+
+							jsonEmitter.emitControl({
+								subtype: "done",
+								requestId: stdinCommand.requestId,
+								command: "cancel",
+								taskId: latestTaskId,
+								content: noActiveTask ? "cancel ignored (task already settled)" : "cancel handled",
+								code: noActiveTask ? "no_active_task" : "cancel_requested",
+								success: true,
+							})
+
+							if (noActiveTask) {
+								awaitingPostCancelRecovery = false
+							}
+
+							cancelRequestedForActiveTask = false
+						} else {
+							const message = error instanceof Error ? error.message : String(error)
+							jsonEmitter.emitControl({
+								subtype: "error",
+								requestId: stdinCommand.requestId,
+								command: "cancel",
+								taskId: latestTaskId,
+								content: message,
+								code: "cancel_error",
+								success: false,
+							})
+						}
+					}
+					break
+				}
+
+				case "ping":
+					jsonEmitter.emitControl({
+						subtype: "ack",
+						requestId: stdinCommand.requestId,
+						command: "ping",
+						taskId: latestTaskId,
+						content: "pong",
+						code: "accepted",
+						success: true,
+					})
+					jsonEmitter.emitControl({
+						subtype: "done",
+						requestId: stdinCommand.requestId,
+						command: "ping",
+						taskId: latestTaskId,
+						content: "pong",
+						code: "pong",
+						success: true,
+					})
+					break
+
+				case "shutdown":
+					jsonEmitter.emitControl({
+						subtype: "ack",
+						requestId: stdinCommand.requestId,
+						command: "shutdown",
+						taskId: latestTaskId,
+						content: "shutdown requested",
+						code: "accepted",
+						success: true,
+					})
+					jsonEmitter.emitControl({
+						subtype: "done",
+						requestId: stdinCommand.requestId,
+						command: "shutdown",
+						taskId: latestTaskId,
+						content: "shutting down process",
+						code: "shutdown_requested",
+						success: true,
+					})
+					shouldShutdown = true
+					break
+			}
+
+			if (shouldShutdown) {
+				break
+			}
+		}
+
+		if (!hasReceivedStdinCommand) {
+			throw new Error("no stdin command provided")
+		}
+
+		if (shouldShutdown && host.client.hasActiveTask()) {
+			host.client.cancelTask()
+		}
+
+		if (!shouldShutdown) {
+			if (activeTaskPromise) {
+				await activeTaskPromise
+			} else if (host.client.hasActiveTask()) {
+				await waitForTaskProgressAfterStdinClosed(host, () => ({
+					hasSeenQueueState,
+					queueDepth: lastQueueDepth,
+				}))
+			}
+		}
+	} finally {
+		offClientError()
+		host.off("extensionWebviewMessage", onExtensionMessage)
+		offTaskCompleted()
+	}
+}

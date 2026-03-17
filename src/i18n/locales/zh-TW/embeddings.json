@@ -69,6 +69,8 @@
 		"fileWatcherStopped": "檔案監控已停止。",
 		"failedDuringInitialScan": "初始掃描失敗：{{errorMessage}}",
 		"unknownError": "未知錯誤",
-		"indexingRequiresWorkspace": "索引需要開啟的工作區資料夾"
+		"indexingRequiresWorkspace": "索引需要開啟的工作區資料夾",
+		"indexingStopped": "使用者已停止索引。",
+		"indexingStoppedPartial": "索引已停止。部分索引資料已保留。"
 	}
 }

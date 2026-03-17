@@ -39,7 +39,8 @@ function createSanitizedGit(baseDir: string): SimpleGit {
 			key === "GIT_INDEX_FILE" ||
 			key === "GIT_OBJECT_DIRECTORY" ||
 			key === "GIT_ALTERNATE_OBJECT_DIRECTORIES" ||
-			key === "GIT_CEILING_DIRECTORIES"
+			key === "GIT_CEILING_DIRECTORIES" ||
+			key === "GIT_TEMPLATE_DIR"
 		) {
 			removedVars.push(`${key}=${value}`)
 			continue
@@ -172,7 +173,7 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 			this.baseHash = await git.revparse(["HEAD"])
 		} else {
 			this.log(`[${this.constructor.name}#initShadowGit] creating shadow git repo at ${this.checkpointsDir}`)
-			await git.init()
+			await git.init({ "--template": "" })
 			await git.addConfig("core.worktree", this.workspaceDir) // Sets the working tree to the current workspace.
 			await git.addConfig("commit.gpgSign", "false") // Disable commit signing for shadow repo.
 			await git.addConfig("user.name", "Roo Code")

@@ -91,6 +91,11 @@ describe("RooProtectedController", () => {
 			expect(controller.isWriteProtected(".roo\\config.json")).toBe(true)
 			expect(controller.isWriteProtected(".roo/config.json")).toBe(true)
 		})
+
+		it("should not throw for absolute paths outside cwd", () => {
+			expect(controller.isWriteProtected("/tmp/comment-2-pr63.json")).toBe(false)
+			expect(controller.isWriteProtected("/etc/passwd")).toBe(false)
+		})
 	})
 
 	describe("getProtectedFiles", () => {

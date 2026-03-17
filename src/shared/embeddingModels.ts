@@ -66,7 +66,9 @@ export const EMBEDDING_MODEL_PROFILES: EmbeddingModelProfiles = {
 		"amazon.titan-embed-image-v1": { dimension: 1024, scoreThreshold: 0.4 },
 		// Amazon Nova Embed models
 		"amazon.nova-2-multimodal-embeddings-v1:0": { dimension: 1024, scoreThreshold: 0.4 },
-		// Cohere models available through Bedrock
+		// Cohere Embed v4 (supports only text for now; multimodal image support planned)
+		"cohere.embed-v4:0": { dimension: 1536, scoreThreshold: 0.4 },
+		// Cohere Embed v3 models available through Bedrock
 		"cohere.embed-english-v3": { dimension: 1024, scoreThreshold: 0.4 },
 		"cohere.embed-multilingual-v3": { dimension: 1024, scoreThreshold: 0.4 },
 	},

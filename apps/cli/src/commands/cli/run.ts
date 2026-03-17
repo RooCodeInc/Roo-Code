@@ -1,9 +1,9 @@
 import fs from "fs"
 import path from "path"
-import { createInterface } from "readline"
 import { fileURLToPath } from "url"
 
 import { createElement } from "react"
+import pWaitFor from "p-wait-for"
 
 import { setLogger } from "@roo-code/vscode-shim"
 
@@ -22,31 +22,89 @@ import { JsonEventEmitter } from "@/agent/json-event-emitter.js"
 
 import { createClient } from "@/lib/sdk/index.js"
 import { loadToken, loadSettings } from "@/lib/storage/index.js"
+import { readWorkspaceTaskSessions, resolveWorkspaceResumeSessionId } from "@/lib/task-history/index.js"
+import { isRecord } from "@/lib/utils/guards.js"
 import { getEnvVarName, getApiKeyFromEnv } from "@/lib/utils/provider.js"
 import { runOnboarding } from "@/lib/utils/onboarding.js"
+import { validateTerminalShellPath } from "@/lib/utils/shell.js"
 import { getDefaultExtensionPath } from "@/lib/utils/extension.js"
+import { isValidSessionId } from "@/lib/utils/session-id.js"
 import { VERSION } from "@/lib/utils/version.js"
 
 import { ExtensionHost, ExtensionHostOptions } from "@/agent/index.js"
+import { isExpectedControlFlowError } from "./cancellation.js"
+import { runStdinStreamMode } from "./stdin-stream.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const ROO_MODEL_WARMUP_TIMEOUT_MS = 10_000
+const SIGNAL_ONLY_EXIT_KEEPALIVE_MS = 60_000
+const STREAM_RESUME_WAIT_TIMEOUT_MS = 2_000
 
-async function* readPromptsFromStdinLines(): AsyncGenerator<string> {
-	const lineReader = createInterface({
-		input: process.stdin,
-		crlfDelay: Infinity,
-		terminal: false,
-	})
+async function bootstrapResumeForStdinStream(host: ExtensionHost, sessionId: string): Promise<void> {
+	host.sendToExtension({ type: "showTaskWithId", text: sessionId })
 
-	try {
-		for await (const line of lineReader) {
-			if (line.trim()) {
-				yield line
-			}
+	// Best-effort wait so early stdin "message" commands can target the resumed task.
+	await pWaitFor(() => host.client.hasActiveTask() || host.isWaitingForInput(), {
+		interval: 25,
+		timeout: STREAM_RESUME_WAIT_TIMEOUT_MS,
+	}).catch(() => undefined)
+}
+
+function normalizeError(error: unknown): Error {
+	return error instanceof Error ? error : new Error(String(error))
+}
+
+async function warmRooModels(host: ExtensionHost): Promise<void> {
+	await new Promise<void>((resolve, reject) => {
+		let settled = false
+
+		const cleanup = () => {
+			clearTimeout(timeoutId)
+			host.off("extensionWebviewMessage", onMessage)
 		}
-	} finally {
-		lineReader.close()
-	}
+
+		const finish = (fn: () => void) => {
+			if (settled) return
+			settled = true
+			cleanup()
+			fn()
+		}
+
+		const onMessage = (message: unknown) => {
+			if (!isRecord(message)) {
+				return
+			}
+
+			if (message.type !== "singleRouterModelFetchResponse") {
+				return
+			}
+
+			const values = isRecord(message.values) ? message.values : undefined
+
+			if (values?.provider !== "roo") {
+				return
+			}
+
+			if (message.success === false) {
+				const errorMessage =
+					typeof message.error === "string" && message.error.length > 0
+						? message.error
+						: "failed to refresh Roo models"
+
+				finish(() => reject(new Error(errorMessage)))
+				return
+			}
+
+			finish(() => resolve())
+		}
+
+		const timeoutId = setTimeout(() => {
+			finish(() => reject(new Error(`timed out waiting for Roo models after ${ROO_MODEL_WARMUP_TIMEOUT_MS}ms`)))
+		}, ROO_MODEL_WARMUP_TIMEOUT_MS)
+
+		host.on("extensionWebviewMessage", onMessage)
+		host.sendToExtension({ type: "requestRooModels" })
+	})
 }
 
 export async function run(promptArg: string | undefined, flagOptions: FlagOptions) {
@@ -66,6 +124,47 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		}
 
 		prompt = fs.readFileSync(flagOptions.promptFile, "utf-8")
+	}
+
+	const requestedSessionId = flagOptions.sessionId?.trim()
+	const requestedCreateSessionId = flagOptions.createWithSessionId?.trim()
+	const shouldContinueSession = flagOptions.continue
+	const isResumeRequested = Boolean(requestedSessionId || shouldContinueSession)
+
+	if (flagOptions.createWithSessionId !== undefined && !requestedCreateSessionId) {
+		console.error("[CLI] Error: --create-with-session-id requires a non-empty session id")
+		process.exit(1)
+	}
+
+	if (flagOptions.sessionId !== undefined && !requestedSessionId) {
+		console.error("[CLI] Error: --session-id requires a non-empty session id")
+		process.exit(1)
+	}
+
+	if (requestedCreateSessionId && !isValidSessionId(requestedCreateSessionId)) {
+		console.error("[CLI] Error: --create-with-session-id must be a valid UUID session id")
+		process.exit(1)
+	}
+
+	if (requestedSessionId && !isValidSessionId(requestedSessionId)) {
+		console.error("[CLI] Error: --session-id must be a valid UUID session id")
+		process.exit(1)
+	}
+
+	if (requestedCreateSessionId && isResumeRequested) {
+		console.error("[CLI] Error: cannot use --create-with-session-id with --session-id/--continue")
+		process.exit(1)
+	}
+
+	if (requestedSessionId && shouldContinueSession) {
+		console.error("[CLI] Error: cannot use --session-id with --continue")
+		process.exit(1)
+	}
+
+	if (isResumeRequested && prompt) {
+		console.error("[CLI] Error: cannot use prompt or --prompt-file with --session-id/--continue")
+		console.error("[CLI] Usage: roo [--session-id <session-id> | --continue] [options]")
+		process.exit(1)
 	}
 
 	// Options
@@ -89,10 +188,34 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		(settings.dangerouslySkipPermissions === undefined ? undefined : !settings.dangerouslySkipPermissions)
 	const effectiveRequireApproval = flagOptions.requireApproval || legacyRequireApprovalFromSettings || false
 	const effectiveExitOnComplete = flagOptions.print || flagOptions.oneshot || settings.oneshot || false
+	const rawConsecutiveMistakeLimit =
+		flagOptions.consecutiveMistakeLimit ?? settings.consecutiveMistakeLimit ?? DEFAULT_FLAGS.consecutiveMistakeLimit
+	const effectiveConsecutiveMistakeLimit = Number(rawConsecutiveMistakeLimit)
+
+	if (!Number.isInteger(effectiveConsecutiveMistakeLimit) || effectiveConsecutiveMistakeLimit < 0) {
+		console.error(
+			`[CLI] Error: Invalid consecutive mistake limit: ${rawConsecutiveMistakeLimit}; must be a non-negative integer`,
+		)
+		process.exit(1)
+	}
+
+	let terminalShell: string | undefined
+	if (flagOptions.terminalShell !== undefined) {
+		const validatedTerminalShell = await validateTerminalShellPath(flagOptions.terminalShell)
+
+		if (!validatedTerminalShell.valid) {
+			console.error(
+				`[CLI] Warning: ignoring --terminal-shell "${flagOptions.terminalShell}" (${validatedTerminalShell.reason})`,
+			)
+		} else {
+			terminalShell = validatedTerminalShell.shellPath
+		}
+	}
 
 	const extensionHostOptions: ExtensionHostOptions = {
 		mode: effectiveMode,
 		reasoningEffort: effectiveReasoningEffort === "unspecified" ? undefined : effectiveReasoningEffort,
+		consecutiveMistakeLimit: effectiveConsecutiveMistakeLimit,
 		user: null,
 		provider: effectiveProvider,
 		model: effectiveModel,
@@ -103,6 +226,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		ephemeral: flagOptions.ephemeral,
 		debug: flagOptions.debug,
 		exitOnComplete: effectiveExitOnComplete,
+		terminalShell,
 	}
 
 	// Roo Code Cloud Authentication
@@ -210,30 +334,64 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 
 	if (flagOptions.stdinPromptStream && !flagOptions.print) {
 		console.error("[CLI] Error: --stdin-prompt-stream requires --print mode")
-		console.error("[CLI] Usage: roo --print --stdin-prompt-stream [options]")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
+		process.exit(1)
+	}
+
+	if (flagOptions.signalOnlyExit && !flagOptions.stdinPromptStream) {
+		console.error("[CLI] Error: --signal-only-exit requires --stdin-prompt-stream")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream --signal-only-exit")
+		process.exit(1)
+	}
+
+	if (flagOptions.stdinPromptStream && outputFormat !== "stream-json") {
+		console.error("[CLI] Error: --stdin-prompt-stream requires --output-format=stream-json")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
 		process.exit(1)
 	}
 
 	if (flagOptions.stdinPromptStream && process.stdin.isTTY) {
 		console.error("[CLI] Error: --stdin-prompt-stream requires piped stdin")
-		console.error("[CLI] Example: printf '1+1=?\\n10!=?\\n' | roo --print --stdin-prompt-stream [options]")
+		console.error(
+			'[CLI] Example: printf \'{"command":"start","requestId":"1","prompt":"1+1=?"}\\n\' | roo --print --output-format stream-json --stdin-prompt-stream [options]',
+		)
 		process.exit(1)
 	}
 
 	if (flagOptions.stdinPromptStream && prompt) {
 		console.error("[CLI] Error: cannot use positional prompt or --prompt-file with --stdin-prompt-stream")
-		console.error("[CLI] Usage: roo --print --stdin-prompt-stream [options]")
+		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
+		process.exit(1)
+	}
+
+	if (flagOptions.stdinPromptStream && requestedCreateSessionId) {
+		console.error("[CLI] Error: --create-with-session-id is not supported with --stdin-prompt-stream")
+		console.error('[CLI] Use per-request "taskId" in stdin start commands instead.')
 		process.exit(1)
 	}
 
 	const useStdinPromptStream = flagOptions.stdinPromptStream
+	let resolvedResumeSessionId: string | undefined
+
+	if (isResumeRequested) {
+		const workspaceSessions = await readWorkspaceTaskSessions(effectiveWorkspacePath)
+		try {
+			resolvedResumeSessionId = resolveWorkspaceResumeSessionId(workspaceSessions, requestedSessionId)
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error)
+			console.error(`[CLI] Error: ${message}`)
+			process.exit(1)
+		}
+	}
 
 	if (!isTuiEnabled) {
-		if (!prompt && !useStdinPromptStream) {
+		if (!prompt && !useStdinPromptStream && !isResumeRequested) {
 			if (flagOptions.print) {
 				console.error("[CLI] Error: no prompt provided")
 				console.error("[CLI] Usage: roo --print [options] <prompt>")
-				console.error("[CLI] For stdin control mode: roo --print --stdin-prompt-stream [options]")
+				console.error(
+					"[CLI] For stdin control mode: roo --print --output-format stream-json --stdin-prompt-stream [options]",
+				)
 			} else {
 				console.error("[CLI] Error: prompt is required in non-interactive mode")
 				console.error("[CLI] Usage: roo <prompt> [options]")
@@ -259,6 +417,9 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 				createElement(App, {
 					...extensionHostOptions,
 					initialPrompt: prompt,
+					initialTaskId: requestedCreateSessionId,
+					initialSessionId: resolvedResumeSessionId,
+					continueSession: false,
 					version: VERSION,
 					createExtensionHost: (opts: ExtensionHostOptions) => new ExtensionHost(opts),
 				}),
@@ -276,68 +437,245 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		}
 	} else {
 		const useJsonOutput = outputFormat === "json" || outputFormat === "stream-json"
+		const signalOnlyExit = flagOptions.signalOnlyExit
 
 		extensionHostOptions.disableOutput = useJsonOutput
 
 		const host = new ExtensionHost(extensionHostOptions)
+		let streamRequestId: string | undefined
+		let keepAliveInterval: NodeJS.Timeout | undefined
+		let isShuttingDown = false
+		let hostDisposed = false
 
 		const jsonEmitter = useJsonOutput
-			? new JsonEventEmitter({ mode: outputFormat as "json" | "stream-json" })
+			? new JsonEventEmitter({
+					mode: outputFormat as "json" | "stream-json",
+					requestIdProvider: () => streamRequestId,
+				})
 			: null
 
+		const emitRuntimeError = (error: Error, source?: string) => {
+			const errorMessage = source ? `${source}: ${error.message}` : error.message
+
+			if (useJsonOutput) {
+				const errorEvent = { type: "error", id: Date.now(), content: errorMessage }
+				process.stdout.write(JSON.stringify(errorEvent) + "\n")
+				return
+			}
+
+			console.error("[CLI] Error:", errorMessage)
+			console.error(error.stack)
+		}
+
+		const clearKeepAliveInterval = () => {
+			if (!keepAliveInterval) {
+				return
+			}
+
+			clearInterval(keepAliveInterval)
+			keepAliveInterval = undefined
+		}
+
+		const flushStdout = async () => {
+			try {
+				if (!process.stdout.writable || process.stdout.destroyed) {
+					return
+				}
+
+				await new Promise<void>((resolve, reject) => {
+					process.stdout.write("", (error?: Error | null) => {
+						if (error) {
+							reject(error)
+							return
+						}
+
+						resolve()
+					})
+				})
+			} catch {
+				// Best effort: shutdown should proceed even if stdout flush fails.
+			}
+		}
+
+		const ensureKeepAliveInterval = () => {
+			if (!signalOnlyExit || keepAliveInterval) {
+				return
+			}
+
+			keepAliveInterval = setInterval(() => {}, SIGNAL_ONLY_EXIT_KEEPALIVE_MS)
+		}
+
+		const disposeHost = async () => {
+			if (hostDisposed) {
+				return
+			}
+
+			hostDisposed = true
+			jsonEmitter?.detach()
+			await host.dispose()
+		}
+
+		const onSigint = () => {
+			void shutdown("SIGINT", 130)
+		}
+
+		const onSigterm = () => {
+			void shutdown("SIGTERM", 143)
+		}
+
+		const onUncaughtException = (error: Error) => {
+			if (
+				isExpectedControlFlowError(error, {
+					stdinStreamMode: useStdinPromptStream,
+					shuttingDown: isShuttingDown,
+					operation: "runtime",
+				})
+			) {
+				return
+			}
+
+			emitRuntimeError(error, "uncaughtException")
+
+			if (signalOnlyExit) {
+				return
+			}
+
+			void shutdown("uncaughtException", 1)
+		}
+
+		const onUnhandledRejection = (reason: unknown) => {
+			if (
+				isExpectedControlFlowError(reason, {
+					stdinStreamMode: useStdinPromptStream,
+					shuttingDown: isShuttingDown,
+					operation: "runtime",
+				})
+			) {
+				return
+			}
+
+			const error = normalizeError(reason)
+			emitRuntimeError(error, "unhandledRejection")
+
+			if (signalOnlyExit) {
+				return
+			}
+
+			void shutdown("unhandledRejection", 1)
+		}
+
+		const parkUntilSignal = async (reason: string): Promise<never> => {
+			ensureKeepAliveInterval()
+
+			if (!useJsonOutput) {
+				console.error(`[CLI] ${reason} (--signal-only-exit active; waiting for SIGINT/SIGTERM).`)
+			}
+
+			await new Promise<void>(() => {})
+			throw new Error("unreachable")
+		}
+
 		async function shutdown(signal: string, exitCode: number): Promise<void> {
+			if (isShuttingDown) {
+				return
+			}
+
+			isShuttingDown = true
+			process.off("SIGINT", onSigint)
+			process.off("SIGTERM", onSigterm)
+			process.off("uncaughtException", onUncaughtException)
+			process.off("unhandledRejection", onUnhandledRejection)
+			clearKeepAliveInterval()
+
 			if (!useJsonOutput) {
 				console.log(`\n[CLI] Received ${signal}, shutting down...`)
 			}
-			jsonEmitter?.detach()
-			await host.dispose()
+
+			await disposeHost()
+			if (jsonEmitter) {
+				await jsonEmitter.flush()
+			}
+			await flushStdout()
 			process.exit(exitCode)
 		}
 
-		process.on("SIGINT", () => shutdown("SIGINT", 130))
-		process.on("SIGTERM", () => shutdown("SIGTERM", 143))
+		process.on("SIGINT", onSigint)
+		process.on("SIGTERM", onSigterm)
+		process.on("uncaughtException", onUncaughtException)
+		process.on("unhandledRejection", onUnhandledRejection)
 
 		try {
 			await host.activate()
+			if (extensionHostOptions.provider === "roo") {
+				try {
+					await warmRooModels(host)
+				} catch (warmupError) {
+					if (flagOptions.debug) {
+						const message = warmupError instanceof Error ? warmupError.message : String(warmupError)
+						console.error(`[CLI] Warning: Roo model warmup failed: ${message}`)
+					}
+				}
+			}
 
 			if (jsonEmitter) {
 				jsonEmitter.attachToClient(host.client)
 			}
 
 			if (useStdinPromptStream) {
-				let hasReceivedStdinPrompt = false
-
-				for await (const stdinPrompt of readPromptsFromStdinLines()) {
-					hasReceivedStdinPrompt = true
-					await host.runTask(stdinPrompt)
-					jsonEmitter?.clear()
+				if (!jsonEmitter || outputFormat !== "stream-json") {
+					throw new Error("--stdin-prompt-stream requires --output-format=stream-json to emit control events")
 				}
 
-				if (!hasReceivedStdinPrompt) {
-					throw new Error("no prompt provided via stdin")
+				if (isResumeRequested) {
+					await bootstrapResumeForStdinStream(host, resolvedResumeSessionId!)
 				}
+
+				await runStdinStreamMode({
+					host,
+					jsonEmitter,
+					setStreamRequestId: (id) => {
+						streamRequestId = id
+					},
+				})
 			} else {
-				await host.runTask(prompt!)
+				if (isResumeRequested) {
+					await host.resumeTask(resolvedResumeSessionId!)
+				} else {
+					await host.runTask(prompt!, requestedCreateSessionId)
+				}
 			}
 
-			jsonEmitter?.detach()
-			await host.dispose()
+			await disposeHost()
+			if (jsonEmitter) {
+				await jsonEmitter.flush()
+			}
+			await flushStdout()
+
+			if (signalOnlyExit) {
+				await parkUntilSignal("Task loop completed")
+			}
+
+			process.off("SIGINT", onSigint)
+			process.off("SIGTERM", onSigterm)
+			process.off("uncaughtException", onUncaughtException)
+			process.off("unhandledRejection", onUnhandledRejection)
 			process.exit(0)
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error)
+			emitRuntimeError(normalizeError(error))
+			await disposeHost()
+			if (jsonEmitter) {
+				await jsonEmitter.flush()
+			}
+			await flushStdout()
 
-			if (useJsonOutput) {
-				const errorEvent = { type: "error", id: Date.now(), content: errorMessage }
-				process.stdout.write(JSON.stringify(errorEvent) + "\n")
-			} else {
-				console.error("[CLI] Error:", errorMessage)
-				if (error instanceof Error) {
-					console.error(error.stack)
-				}
+			if (signalOnlyExit) {
+				await parkUntilSignal("Task loop failed")
 			}
 
-			jsonEmitter?.detach()
-			await host.dispose()
+			process.off("SIGINT", onSigint)
+			process.off("SIGTERM", onSigterm)
+			process.off("uncaughtException", onUncaughtException)
+			process.off("unhandledRejection", onUnhandledRejection)
 			process.exit(1)
 		}
 	}

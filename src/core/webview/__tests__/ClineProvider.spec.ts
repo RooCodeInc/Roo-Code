@@ -301,9 +301,6 @@ vi.mock("@roo-code/cloud", () => ({
 			}
 		},
 	},
-	BridgeOrchestrator: {
-		isEnabled: vi.fn().mockReturnValue(false),
-	},
 	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.roocode.com"),
 }))
 
@@ -554,9 +551,7 @@ describe("ClineProvider", () => {
 			diagnosticsEnabled: true,
 			openRouterImageApiKey: undefined,
 			openRouterImageGenerationSelectedModel: undefined,
-			remoteControlEnabled: false,
 			taskSyncEnabled: false,
-			featureRoomoteControlEnabled: false,
 			checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 		}
 
@@ -2473,6 +2468,7 @@ describe("ClineProvider - Router Models", () => {
 		// Verify getModels was called for each provider with correct options
 		expect(getModels).toHaveBeenCalledWith({ provider: "openrouter" })
 		expect(getModels).toHaveBeenCalledWith({ provider: "requesty", apiKey: "requesty-key" })
+		expect(getModels).toHaveBeenCalledWith({ provider: "unbound" })
 		expect(getModels).toHaveBeenCalledWith({ provider: "vercel-ai-gateway" })
 		expect(getModels).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -2492,6 +2488,7 @@ describe("ClineProvider - Router Models", () => {
 			routerModels: {
 				openrouter: mockModels,
 				requesty: mockModels,
+				unbound: mockModels,
 				roo: mockModels,
 				litellm: mockModels,
 				ollama: {},
@@ -2524,6 +2521,7 @@ describe("ClineProvider - Router Models", () => {
 		vi.mocked(getModels)
 			.mockResolvedValueOnce(mockModels) // openrouter success
 			.mockRejectedValueOnce(new Error("Requesty API error")) // requesty fail
+			.mockResolvedValueOnce(mockModels) // unbound success
 			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway success
 			.mockResolvedValueOnce(mockModels) // roo success
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm fail
@@ -2536,6 +2534,7 @@ describe("ClineProvider - Router Models", () => {
 			routerModels: {
 				openrouter: mockModels,
 				requesty: {},
+				unbound: mockModels,
 				roo: mockModels,
 				ollama: {},
 				lmstudio: {},
@@ -2629,6 +2628,7 @@ describe("ClineProvider - Router Models", () => {
 			routerModels: {
 				openrouter: mockModels,
 				requesty: mockModels,
+				unbound: mockModels,
 				roo: mockModels,
 				litellm: {},
 				ollama: {},

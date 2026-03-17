@@ -60,6 +60,9 @@ const PICKER_HEIGHT = 10
 
 export interface TUIAppProps extends ExtensionHostOptions {
 	initialPrompt?: string
+	initialTaskId?: string
+	initialSessionId?: string
+	continueSession?: boolean
 	version: string
 	// Create extension host factory for dependency injection.
 	createExtensionHost: (options: ExtensionHostOptions) => ExtensionHostInterface
@@ -71,6 +74,9 @@ export interface TUIAppProps extends ExtensionHostOptions {
 function AppInner({ createExtensionHost, ...extensionHostOptions }: TUIAppProps) {
 	const {
 		initialPrompt,
+		initialTaskId,
+		initialSessionId,
+		continueSession,
 		workspacePath,
 		extensionPath,
 		user,
@@ -170,6 +176,9 @@ function AppInner({ createExtensionHost, ...extensionHostOptions }: TUIAppProps)
 
 	const { sendToExtension, runTask, cleanup } = useExtensionHost({
 		initialPrompt,
+		initialTaskId,
+		initialSessionId,
+		continueSession,
 		mode,
 		reasoningEffort,
 		user,

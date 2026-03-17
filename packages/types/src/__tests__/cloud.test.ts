@@ -21,43 +21,9 @@ describe("organizationFeaturesSchema", () => {
 		expect(result.data).toEqual({})
 	})
 
-	it("should validate with roomoteControlEnabled as true", () => {
-		const input = { roomoteControlEnabled: true }
-		const result = organizationFeaturesSchema.safeParse(input)
-		expect(result.success).toBe(true)
-		expect(result.data).toEqual(input)
-	})
-
-	it("should validate with roomoteControlEnabled as false", () => {
-		const input = { roomoteControlEnabled: false }
-		const result = organizationFeaturesSchema.safeParse(input)
-		expect(result.success).toBe(true)
-		expect(result.data).toEqual(input)
-	})
-
-	it("should reject non-boolean roomoteControlEnabled", () => {
-		const input = { roomoteControlEnabled: "true" }
-		const result = organizationFeaturesSchema.safeParse(input)
-		expect(result.success).toBe(false)
-	})
-
-	it("should allow additional properties (for future extensibility)", () => {
-		const input = { roomoteControlEnabled: true, futureProperty: "test" }
-		const result = organizationFeaturesSchema.safeParse(input)
-		expect(result.success).toBe(true)
-		expect(result.data?.roomoteControlEnabled).toBe(true)
-		// Note: Additional properties are stripped by Zod, which is expected behavior
-	})
-
 	it("should have correct TypeScript type", () => {
-		// Type-only test to ensure TypeScript compilation
-		const features: OrganizationFeatures = {
-			roomoteControlEnabled: true,
-		}
-		expect(features.roomoteControlEnabled).toBe(true)
-
 		const emptyFeatures: OrganizationFeatures = {}
-		expect(emptyFeatures.roomoteControlEnabled).toBeUndefined()
+		expect(emptyFeatures).toEqual({})
 	})
 })
 
@@ -87,43 +53,7 @@ describe("organizationSettingsSchema with features", () => {
 		expect(result.data?.features).toEqual({})
 	})
 
-	it("should validate with features.roomoteControlEnabled as true", () => {
-		const input = {
-			...validBaseSettings,
-			features: {
-				roomoteControlEnabled: true,
-			},
-		}
-		const result = organizationSettingsSchema.safeParse(input)
-		expect(result.success).toBe(true)
-		expect(result.data?.features?.roomoteControlEnabled).toBe(true)
-	})
-
-	it("should validate with features.roomoteControlEnabled as false", () => {
-		const input = {
-			...validBaseSettings,
-			features: {
-				roomoteControlEnabled: false,
-			},
-		}
-		const result = organizationSettingsSchema.safeParse(input)
-		expect(result.success).toBe(true)
-		expect(result.data?.features?.roomoteControlEnabled).toBe(false)
-	})
-
-	it("should reject invalid features object", () => {
-		const input = {
-			...validBaseSettings,
-			features: {
-				roomoteControlEnabled: "invalid",
-			},
-		}
-		const result = organizationSettingsSchema.safeParse(input)
-		expect(result.success).toBe(false)
-	})
-
 	it("should have correct TypeScript type for features", () => {
-		// Type-only test to ensure TypeScript compilation
 		const settings: OrganizationSettings = {
 			version: 1,
 			defaultSettings: {},
@@ -131,11 +61,9 @@ describe("organizationSettingsSchema with features", () => {
 				allowAll: true,
 				providers: {},
 			},
-			features: {
-				roomoteControlEnabled: true,
-			},
+			features: {},
 		}
-		expect(settings.features?.roomoteControlEnabled).toBe(true)
+		expect(settings.features).toEqual({})
 
 		const settingsWithoutFeatures: OrganizationSettings = {
 			version: 1,
@@ -165,9 +93,7 @@ describe("organizationSettingsSchema with features", () => {
 					},
 				},
 			},
-			features: {
-				roomoteControlEnabled: true,
-			},
+			features: {},
 			hiddenMcps: ["test-mcp"],
 			hideMarketplaceMcps: true,
 			mcps: [],
@@ -415,7 +341,6 @@ describe("organizationCloudSettingsSchema with llmEnhancedFeaturesEnabled", () =
 describe("userSettingsConfigSchema with llmEnhancedFeaturesEnabled", () => {
 	it("should validate without llmEnhancedFeaturesEnabled property", () => {
 		const input = {
-			extensionBridgeEnabled: true,
 			taskSyncEnabled: true,
 		}
 		const result = userSettingsConfigSchema.safeParse(input)
@@ -425,7 +350,6 @@ describe("userSettingsConfigSchema with llmEnhancedFeaturesEnabled", () => {
 
 	it("should validate with llmEnhancedFeaturesEnabled as true", () => {
 		const input = {
-			extensionBridgeEnabled: true,
 			taskSyncEnabled: true,
 			llmEnhancedFeaturesEnabled: true,
 		}
@@ -436,7 +360,6 @@ describe("userSettingsConfigSchema with llmEnhancedFeaturesEnabled", () => {
 
 	it("should validate with llmEnhancedFeaturesEnabled as false", () => {
 		const input = {
-			extensionBridgeEnabled: true,
 			taskSyncEnabled: true,
 			llmEnhancedFeaturesEnabled: false,
 		}
@@ -456,15 +379,12 @@ describe("userSettingsConfigSchema with llmEnhancedFeaturesEnabled", () => {
 	it("should have correct TypeScript type", () => {
 		// Type-only test to ensure TypeScript compilation
 		const settings: UserSettingsConfig = {
-			extensionBridgeEnabled: true,
 			taskSyncEnabled: true,
 			llmEnhancedFeaturesEnabled: true,
 		}
 		expect(settings.llmEnhancedFeaturesEnabled).toBe(true)
 
-		const settingsWithoutLlmFeatures: UserSettingsConfig = {
-			extensionBridgeEnabled: false,
-		}
+		const settingsWithoutLlmFeatures: UserSettingsConfig = {}
 		expect(settingsWithoutLlmFeatures.llmEnhancedFeaturesEnabled).toBeUndefined()
 	})
 

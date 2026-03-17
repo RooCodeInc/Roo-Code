@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "Condivisione disabilitata dall'organizzazione",
 		"shareSuccessOrganization": "Link organizzazione copiato negli appunti",
 		"shareSuccessPublic": "Link pubblico copiato negli appunti",
-		"openInCloud": "Apri attività in Roo Code Cloud",
-		"openInCloudIntro": "Continua a monitorare o interagire con Roo da qualsiasi luogo. Scansiona, clicca o copia per aprire.",
 		"openApiHistory": "Apri cronologia API",
 		"openUiHistory": "Apri cronologia UI",
 		"backToParentTask": "Attività principale"
 	},
 	"unpin": "Rilascia",
 	"pin": "Fissa",
+	"fileChangesInConversation": {
+		"header": "{{count}} file modificati in questa conversazione"
+	},
 	"tokenProgress": {
 		"availableSpace": "Spazio disponibile: {{amount}} tokens",
 		"tokensUsed": "Tokens utilizzati: {{used}} di {{total}}",
@@ -347,7 +348,11 @@
 		},
 		"release": {
 			"heading": "Novità:",
-			"smartCodeFolding": "Smart Code Folding: La condensazione del contesto mantiene ora una mappa leggera dei tuoi file—firme di funzione, dichiarazioni di classe e definizioni di tipo. Questo fornisce una migliore continuità dopo la condensazione e modifiche più intelligenti quando si fa riferimento al lavoro precedente."
+			"gpt54": "Supporto per OpenAI GPT-5.4: abbiamo aggiunto OpenAI GPT-5.4 e GPT-5.3 Chat Latest così puoi usare i modelli di chat OpenAI più recenti in Roo Code.",
+			"slashSkills": "Skill come slash command: ora le skill possono essere esposte come slash command con esecuzione di fallback per attivare i workflow più rapidamente.",
+			"geminiPro": "Supporto Gemini 3.1 Pro: Aggiunto il supporto per il modello Gemini 3.1 Pro e impostato come modello Gemini predefinito per prestazioni migliori.",
+			"cliNdjson": "Protocollo NDJSON del CLI: Nuovo protocollo NDJSON via stdin, sottocomandi di elenco e comando di esecuzione modularizzato per flussi di lavoro CLI più flessibili.",
+			"cliRelease": "CLI v0.1.0: Il CLI di Roo Code raggiunge la sua prima release ufficiale con un'interfaccia di comandi stabile."
 		},
 		"cloudAgents": {
 			"heading": "Novità nel Cloud:",
@@ -423,7 +428,8 @@
 		"indexing": "Indicizzazione {{percentage}}%",
 		"indexed": "Indicizzato",
 		"error": "Errore indice",
-		"status": "Stato indice"
+		"status": "Stato indice",
+		"stopping": "Interruzione dell'indicizzazione..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versione {{version}} - Clicca per visualizzare le note di rilascio"

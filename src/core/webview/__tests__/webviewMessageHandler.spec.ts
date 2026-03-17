@@ -16,6 +16,22 @@ vi.mock("../../../integrations/openai-codex/rate-limits", () => ({
 	fetchOpenAiCodexRateLimitInfo: vi.fn(),
 }))
 
+vi.mock("../../../services/command/commands", () => ({
+	getCommands: vi.fn(),
+}))
+
+vi.mock("@anthropic-ai/vertex-sdk", () => ({
+	AnthropicVertex: vi.fn(),
+}))
+
+vi.mock("google-auth-library", () => ({
+	GoogleAuth: vi.fn(),
+}))
+
+vi.mock("ollama", () => ({
+	Ollama: vi.fn(),
+}))
+
 // Mock the diagnosticsHandler module
 vi.mock("../diagnosticsHandler", () => ({
 	generateErrorDiagnostics: vi.fn().mockResolvedValue({ success: true, filePath: "/tmp/diagnostics.json" }),
@@ -26,10 +42,12 @@ import type { ModelRecord } from "@roo-code/types"
 import { webviewMessageHandler } from "../webviewMessageHandler"
 import type { ClineProvider } from "../ClineProvider"
 import { getModels } from "../../../api/providers/fetchers/modelCache"
+import { getCommands } from "../../../services/command/commands"
 const { openAiCodexOAuthManager } = await import("../../../integrations/openai-codex/oauth")
 const { fetchOpenAiCodexRateLimitInfo } = await import("../../../integrations/openai-codex/rate-limits")
 
 const mockGetModels = getModels as Mock<typeof getModels>
+const mockGetCommands = vi.mocked(getCommands)
 const mockGetAccessToken = vi.mocked(openAiCodexOAuthManager.getAccessToken)
 const mockGetAccountId = vi.mocked(openAiCodexOAuthManager.getAccountId)
 const mockFetchOpenAiCodexRateLimitInfo = vi.mocked(fetchOpenAiCodexRateLimitInfo)
@@ -59,6 +77,8 @@ const mockClineProvider = {
 	getCurrentTask: vi.fn(),
 	getTaskWithId: vi.fn(),
 	createTaskWithHistoryItem: vi.fn(),
+	getSkillsManager: vi.fn(),
+	cwd: "/mock/workspace",
 } as unknown as ClineProvider
 
 import { t } from "../../../i18n"
@@ -296,6 +316,11 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		// Verify getModels was called for each provider
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "openrouter" })
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "requesty", apiKey: "requesty-key" })
+		expect(mockGetModels).toHaveBeenCalledWith(
+			expect.objectContaining({
+				provider: "unbound",
+			}),
+		)
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "vercel-ai-gateway" })
 		expect(mockGetModels).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -315,6 +340,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			routerModels: {
 				openrouter: mockModels,
 				requesty: mockModels,
+				unbound: mockModels,
 				litellm: mockModels,
 				roo: mockModels,
 				ollama: {},
@@ -399,6 +425,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			routerModels: {
 				openrouter: mockModels,
 				requesty: mockModels,
+				unbound: mockModels,
 				roo: mockModels,
 				litellm: {},
 				ollama: {},
@@ -423,6 +450,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		mockGetModels
 			.mockResolvedValueOnce(mockModels) // openrouter
 			.mockRejectedValueOnce(new Error("Requesty API error")) // requesty
+			.mockResolvedValueOnce(mockModels) // unbound
 			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway
 			.mockResolvedValueOnce(mockModels) // roo
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
@@ -452,6 +480,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			routerModels: {
 				openrouter: mockModels,
 				requesty: {},
+				unbound: mockModels,
 				roo: mockModels,
 				litellm: {},
 				ollama: {},
@@ -467,6 +496,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		mockGetModels
 			.mockRejectedValueOnce(new Error("Structured error message")) // openrouter
 			.mockRejectedValueOnce(new Error("Requesty API error")) // requesty
+			.mockRejectedValueOnce(new Error("Unbound error")) // unbound
 			.mockRejectedValueOnce(new Error("Vercel AI Gateway error")) // vercel-ai-gateway
 			.mockRejectedValueOnce(new Error("Roo API error")) // roo
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
@@ -488,6 +518,13 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			success: false,
 			error: "Requesty API error",
 			values: { provider: "requesty" },
+		})
+
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "singleRouterModelFetchResponse",
+			success: false,
+			error: "Unbound error",
+			values: { provider: "unbound" },
 		})
 
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
@@ -789,6 +826,182 @@ describe("webviewMessageHandler - mcpEnabled", () => {
 
 		expect((mockClineProvider as any).getMcpHub).toHaveBeenCalledTimes(1)
 		expect(mockClineProvider.postStateToWebview).toHaveBeenCalledTimes(1)
+	})
+})
+
+describe("webviewMessageHandler - requestCommands", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it("includes skill slug commands and dedupes duplicate skill names while preserving first skill entry", async () => {
+		mockGetCommands.mockResolvedValue([])
+
+		const getTaskMode = vi.fn().mockResolvedValue("code")
+		vi.mocked(mockClineProvider.getCurrentTask).mockReturnValue({
+			cwd: "/mock/workspace",
+			getTaskMode,
+		} as unknown as ReturnType<ClineProvider["getCurrentTask"]>)
+
+		const getSkillsForMode = vi.fn().mockReturnValue([
+			{
+				name: "skill-slug-entry",
+				description: "Primary skill slug",
+				path: "/mock/.roo/skills/skill-slug-entry/SKILL.md",
+				source: "project",
+				modeSlugs: ["code"],
+			},
+			{
+				name: "skill-slug-entry",
+				description: "Duplicate skill slug",
+				path: "/mock/.roo/skills/duplicate-skill/SKILL.md",
+				source: "global",
+				modeSlugs: ["code"],
+			},
+			{
+				name: "another-skill-slug",
+				description: "Another skill-generated command",
+				path: "/mock/.roo/skills/another-skill-slug/SKILL.md",
+				source: "global",
+				modeSlugs: ["code"],
+			},
+		])
+
+		vi.mocked(mockClineProvider.getSkillsManager).mockReturnValue({
+			getSkillsForMode,
+		} as unknown as ReturnType<ClineProvider["getSkillsManager"]>)
+
+		await webviewMessageHandler(mockClineProvider, { type: "requestCommands" })
+
+		const commandMessageCall = vi
+			.mocked(mockClineProvider.postMessageToWebview)
+			.mock.calls.find(([postedMessage]) => postedMessage.type === "commands")
+		expect(commandMessageCall).toBeDefined()
+
+		const commandMessage = commandMessageCall?.[0]
+		expect(commandMessage?.commands).toEqual(
+			expect.arrayContaining([
+				{
+					name: "skill-slug-entry",
+					source: "project",
+					filePath: "/mock/.roo/skills/skill-slug-entry/SKILL.md",
+					description: "Primary skill slug",
+				},
+				{
+					name: "another-skill-slug",
+					source: "global",
+					filePath: "/mock/.roo/skills/another-skill-slug/SKILL.md",
+					description: "Another skill-generated command",
+				},
+			]),
+		)
+
+		expect(commandMessage?.commands?.filter((command) => command.name === "skill-slug-entry")).toHaveLength(1)
+	})
+
+	it("adds skill-backed command entries without overriding existing command names", async () => {
+		mockGetCommands.mockResolvedValue([
+			{
+				name: "deploy",
+				content: "existing command",
+				source: "project",
+				filePath: "/mock/workspace/.roo/commands/deploy.md",
+				description: "Deploy command",
+				argumentHint: "staging | production",
+			},
+		])
+
+		const getTaskMode = vi.fn().mockResolvedValue("code")
+		vi.mocked(mockClineProvider.getCurrentTask).mockReturnValue({
+			cwd: "/mock/workspace",
+			getTaskMode,
+		} as unknown as ReturnType<ClineProvider["getCurrentTask"]>)
+
+		const getSkillsForMode = vi.fn().mockReturnValue([
+			{
+				name: "deploy",
+				description: "Deploy skill",
+				path: "/mock/.roo/skills/deploy/SKILL.md",
+				source: "global",
+				modeSlugs: ["code"],
+			},
+			{
+				name: "skill-only",
+				description: "Skill-generated command",
+				path: "/mock/.roo/skills/skill-only/SKILL.md",
+				source: "project",
+				modeSlugs: ["code"],
+			},
+		])
+
+		vi.mocked(mockClineProvider.getSkillsManager).mockReturnValue({
+			getSkillsForMode,
+		} as unknown as ReturnType<ClineProvider["getSkillsManager"]>)
+
+		await webviewMessageHandler(mockClineProvider, { type: "requestCommands" })
+
+		expect(getSkillsForMode).toHaveBeenCalledWith("code")
+
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "commands",
+			commands: expect.arrayContaining([
+				{
+					name: "deploy",
+					source: "project",
+					filePath: "/mock/workspace/.roo/commands/deploy.md",
+					description: "Deploy command",
+					argumentHint: "staging | production",
+				},
+				{
+					name: "skill-only",
+					source: "project",
+					filePath: "/mock/.roo/skills/skill-only/SKILL.md",
+					description: "Skill-generated command",
+				},
+			]),
+		})
+
+		const commandMessageCall = vi
+			.mocked(mockClineProvider.postMessageToWebview)
+			.mock.calls.find(([postedMessage]) => postedMessage.type === "commands")
+		expect(commandMessageCall).toBeDefined()
+
+		const commandMessage = commandMessageCall?.[0]
+		expect(commandMessage?.commands?.filter((command) => command.name === "deploy")).toHaveLength(1)
+	})
+
+	it("preserves existing behavior when skills manager is unavailable", async () => {
+		mockGetCommands.mockResolvedValue([
+			{
+				name: "build",
+				content: "build command",
+				source: "built-in",
+				filePath: "<built-in:build>",
+				description: "Build command",
+				argumentHint: "target",
+			},
+		])
+
+		vi.mocked(mockClineProvider.getCurrentTask).mockReturnValue({
+			cwd: "/mock/workspace",
+		} as unknown as ReturnType<ClineProvider["getCurrentTask"]>)
+
+		vi.mocked(mockClineProvider.getSkillsManager).mockReturnValue(undefined)
+
+		await webviewMessageHandler(mockClineProvider, { type: "requestCommands" })
+
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "commands",
+			commands: [
+				{
+					name: "build",
+					source: "built-in",
+					filePath: "<built-in:build>",
+					description: "Build command",
+					argumentHint: "target",
+				},
+			],
+		})
 	})
 })
 

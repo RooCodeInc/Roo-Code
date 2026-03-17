@@ -69,6 +69,8 @@
 		"fileWatcherStopped": "Trình theo dõi tệp đã dừng.",
 		"failedDuringInitialScan": "Thất bại trong quá trình quét ban đầu: {{errorMessage}}",
 		"unknownError": "Lỗi không xác định",
-		"indexingRequiresWorkspace": "Lập chỉ mục yêu cầu một thư mục workspace đang mở"
+		"indexingRequiresWorkspace": "Lập chỉ mục yêu cầu một thư mục workspace đang mở",
+		"indexingStopped": "Lập chỉ mục đã bị dừng bởi người dùng.",
+		"indexingStoppedPartial": "Lập chỉ mục đã dừng. Dữ liệu chỉ mục một phần được bảo toàn."
 	}
 }

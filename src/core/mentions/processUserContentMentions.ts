@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk"
 
 import { parseMentions, ParseMentionsResult, MentionContentBlock } from "./index"
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
+import type { SkillLookup } from "../../services/skills/skillInvocation"
 
 // Internal aliases for the Anthropic content block subtypes used during processing.
 type TextPart = Anthropic.Messages.TextBlockParam
@@ -40,6 +41,8 @@ export async function processUserContentMentions({
 	showRooIgnoredFiles = false,
 	includeDiagnosticMessages = true,
 	maxDiagnosticMessages = 50,
+	skillsManager,
+	currentMode = "code",
 }: {
 	userContent: Anthropic.Messages.ContentBlockParam[]
 	cwd: string
@@ -48,6 +51,8 @@ export async function processUserContentMentions({
 	showRooIgnoredFiles?: boolean
 	includeDiagnosticMessages?: boolean
 	maxDiagnosticMessages?: number
+	skillsManager?: SkillLookup
+	currentMode?: string
 }): Promise<ProcessUserContentMentionsResult> {
 	// Track the first mode found from slash commands
 	let commandMode: string | undefined
@@ -69,6 +74,8 @@ export async function processUserContentMentions({
 							showRooIgnoredFiles,
 							includeDiagnosticMessages,
 							maxDiagnosticMessages,
+							skillsManager,
+							currentMode,
 						)
 						// Capture the first mode found
 						if (!commandMode && result.mode) {
@@ -112,6 +119,8 @@ export async function processUserContentMentions({
 								showRooIgnoredFiles,
 								includeDiagnosticMessages,
 								maxDiagnosticMessages,
+								skillsManager,
+								currentMode,
 							)
 							// Capture the first mode found
 							if (!commandMode && result.mode) {
@@ -161,6 +170,8 @@ export async function processUserContentMentions({
 											showRooIgnoredFiles,
 											includeDiagnosticMessages,
 											maxDiagnosticMessages,
+											skillsManager,
+											currentMode,
 										)
 										// Capture the first mode found
 										if (!commandMode && result.mode) {

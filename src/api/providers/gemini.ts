@@ -359,6 +359,13 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			defaultTemperature: info.defaultTemperature ?? 1,
 		})
 
+		// Gemini models perform better with the edit tool instead of apply_diff.
+		info = {
+			...info,
+			excludedTools: [...new Set([...(info.excludedTools || []), "apply_diff"])],
+			includedTools: [...new Set([...(info.includedTools || []), "edit"])],
+		}
+
 		// The `:thinking` suffix indicates that the model is a "Hybrid"
 		// reasoning model and that reasoning is required to be enabled.
 		// The actual model ID honored by Gemini's API does not have this

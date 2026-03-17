@@ -1,5 +1,167 @@
 # Roo Code Changelog
 
+## 3.51.1
+
+### Patch Changes
+
+- Feat: Add Cohere Embed v4 model support for Bedrock and improve credential handling (#11823 by @cscvenkatmadurai, PR #11824 by @cscvenkatmadurai)
+- Feat: Add Gemini 3.1 Pro customtools model to Vertex AI provider (PR #11857 by @NVolcz)
+- Feat: Add gpt-5.4 to ChatGPT Plus/Pro (Codex) model catalog (PR #11876 by @roomote-v0)
+
+## 3.51.0
+
+### Minor Changes
+
+- Add OpenAI GPT-5.4 and GPT-5.3 Chat Latest model support so Roo Code can use the newest OpenAI chat models (PR #11848 by @PeterDaveHello)
+- Add support for exposing skills as slash commands with skill fallback execution for faster workflows (PR #11834 by @hannesrudolph)
+- Add CLI support for `--create-with-session-id` plus UUID session validation for more controlled session creation (PR #11859 by @cte)
+- Add support for choosing a specific shell when running terminal commands (PR #11851 by @jr)
+- Feature: Add the `ROO_ACTIVE` environment variable to terminal session settings for safer terminal guardrails (#11864 by @ajjuaire, PR #11862 by @ajjuaire)
+- Improve cloud settings freshness by updating the refresh interval to one hour (PR #11749 by @roomote-v0)
+- Add CLI session resume/history support plus an upgrade command for better long-running workflows (PR #11768 by @cte)
+- Add support for images in CLI stdin stream commands (PR #11831 by @cte)
+- Include `exitCode` in CLI command `tool_result` events for more reliable automation (PR #11820 by @cte)
+- Add CLI types to improve development ergonomics and type safety (PR #11781 by @cte)
+- Add CLI integration coverage for stdin stream routing and race-condition invariants (PR #11846 by @cte)
+- Fix the CLI stdin-stream cancel race and add an integration test suite to prevent regressions (PR #11817 by @cte)
+- Improve CLI stream recovery and add a configurable consecutive mistake limit (PR #11775 by @cte)
+- Fix CLI streaming deltas, task ID propagation, cancel recovery, and other runtime edge cases (PR #11736 by @cte)
+- Fix CLI task resumption so paused work can reliably continue (PR #11739 by @cte)
+- Recover from unhandled exceptions in the CLI instead of failing hard (PR #11750 by @cte)
+- Scope CLI session and resume flags to the current workspace to avoid cross-workspace confusion (PR #11774 by @cte)
+- Fix stdin prompt streaming to forward task configuration correctly (PR #11778 by @daniel-lxs)
+- Handle stdin-stream control-flow errors gracefully in the CLI runtime (PR #11811 by @cte)
+- Fix stdin stream queued messages and command output streaming in the CLI (PR #11814 by @cte)
+- Increase the CLI command execution timeout for long-running commands (PR #11815 by @cte)
+- Fix knip checks to keep repository validation green (PR #11819 by @cte)
+- Fix CLI upgrade version detection so upgrades resolve the correct target version (PR #11829 by @cte)
+- Ignore model-provided timeout values in the CLI runtime to keep command handling consistent (PR #11835 by @cte)
+- Fix redundant skill reloading during conversations to reduce duplicate work (PR #11838 by @hannesrudolph)
+- Ensure full command output is streamed before the CLI reports completion (PR #11842 by @cte)
+- Fix CLI follow-up routing after completion prompts so next actions land in the right place (PR #11844 by @cte)
+- Remove the Netflix logo from the homepage (PR #11787 by @roomote-v0)
+- Chore: Prepare CLI release v0.1.2 (PR #11737 by @cte)
+- Chore: Prepare CLI release v0.1.3 (PR #11740 by @cte)
+- Chore: Prepare CLI release v0.1.4 (PR #11751 by @cte)
+- Chore: Prepare CLI release v0.1.5 (PR #11772 by @cte)
+- Chore: Prepare CLI release v0.1.6 (PR #11780 by @cte)
+- Release Roo Code v1.113.0 (PR #11782 by @cte)
+- Chore: Prepare CLI release v0.1.7 (PR #11812 by @cte)
+- Chore: Prepare CLI release v0.1.8 (PR #11816 by @cte)
+- Chore: Prepare CLI release v0.1.9 (PR #11818 by @cte)
+- Chore: Prepare CLI release v0.1.10 (PR #11821 by @cte)
+- Release Roo Code v1.114.0 (PR #11822 by @cte)
+- Chore: Prepare CLI release v0.1.11 (PR #11832 by @cte)
+- Release Roo Code v1.115.0 (PR #11833 by @cte)
+- Chore: Prepare CLI release v0.1.12 (PR #11836 by @cte)
+- Chore: Prepare CLI release v0.1.13 (PR #11837 by @hannesrudolph)
+- Chore: Prepare CLI release v0.1.14 (PR #11843 by @cte)
+- Chore: Prepare CLI release v0.1.15 (PR #11845 by @cte)
+- Chore: Prepare CLI release v0.1.16 (PR #11852 by @cte)
+- Chore: Prepare CLI release v0.1.17 (PR #11860 by @cte)
+
+### Patch Changes
+
+- Add OpenAI's GPT-5.3-Chat-Latest model support
+- Add OpenAI's GPT-5.3-Codex model support
+- Add OpenAI's GPT-5.4 model support
+- Add OpenAI's GPT-5.3-Codex model support (PR #11728 by @PeterDaveHello)
+- Warm Roo models on CLI startup for faster initial responses (PR #11722 by @cte)
+- Fix spelling/grammar and casing inconsistencies (#11478 by @PeterDaveHello, PR #11485 by @PeterDaveHello)
+- Fix: Restore Linear integration page (PR #11725 by @roomote)
+- Chore: Prepare CLI release v0.1.1 (PR #11723 by @cte)
+
+## [3.50.4] - 2026-02-21
+
+- Feat: Add MiniMax M2.5 model support (#11471 by @love8ko, PR #11458 by @roomote)
+
+## [3.50.3] - 2026-02-20
+
+- Fix: Correct Vertex AI claude-sonnet-4-6 model ID (#11625 by @yuvarajl, PR #11626 by @roomote)
+- Restore Unbound as a provider (PR #11624 by @pugazhendhi-m)
+
+## [3.50.2] - 2026-02-20
+
+- Fix: Inline terminal rendering parity with the VSCode Terminal (#10699 by @jerrill-johnson-bitwerx, PR #11361 by @RussellZager)
+- Fix: Enable prompt caching for Bedrock custom ARN and default to ON (#10846 by @wisestmumbler, PR #11373 by @roomote)
+- Feat: Add visual feedback to copy button in task actions (#11401 by @omagoduck, PR #11403 by @omagoduck)
+
+## [3.50.1] - 2026-02-20
+
+- Fix OpenAI Codex and OpenAI Native stream parsing for done-only and `content_part` events, including duplicate-text guards when deltas are already streamed.
+
+## [3.50.0] - 2026-02-19
+
+- Add Gemini 3.1 Pro support and set as default Gemini model (PR #11608 by @PeterDaveHello)
+- Add NDJSON stdin protocol, list subcommands, and modularize CLI run command (PR #11597 by @cte)
+- Prepare CLI v0.1.0 release (PR #11599 by @cte)
+- Remove integration tests (PR #11598 by @roomote)
+- Changeset version bump (PR #11596 by @github-actions)
+
+## [3.49.0] - 2026-02-19
+
+- Add file changes panel to track all file modifications per conversation (#11493 by @saneroen, PR #11494 by @saneroen)
+- Add per-workspace indexing opt-in and stop/cancel indexing controls (#11455 by @JamesRobert20, PR #11456 by @JamesRobert20)
+- Add per-task file-based history store for cross-instance safety (PR #11490 by @roomote)
+- Fix: Redesign rehydration scroll lifecycle for smoother chat experience (PR #11483 by @hannesrudolph)
+- Fix: Bump @roo-code/types metadata version to 1.111.0 after revert regression (PR #11588 by @roomote)
+
+## [3.48.1] - 2026-02-18
+
+- Fix: Await MCP server initialization before returning McpHub instance, preventing race conditions (PR #11518 by @daniel-lxs)
+- Fix: Correct Bedrock Claude Sonnet 4.6 model ID (#11509 by @PeterDaveHello, PR #11569 by @PeterDaveHello)
+- Add DeleteQueuedMessage IPC command for managing queued messages (PR #11464 by @roomote)
+
+## [3.48.0] - 2026-02-17
+
+- Add Anthropic Claude Sonnet 4.6 support across all providers — Anthropic, Bedrock, Vertex, OpenRouter, and Vercel AI Gateway (PR #11509 by @PeterDaveHello)
+- Add lock toggle to pin API config across all modes in a workspace (PR #11295 by @hannesrudolph)
+- Fix: Prevent parent task state loss during orchestrator delegation (PR #11281 by @hannesrudolph)
+- Fix: Resolve race condition in new_task delegation that loses parent task history (PR #11331 by @daniel-lxs)
+- Fix: Serialize taskHistory writes and fix delegation status overwrite race (PR #11335 by @hannesrudolph)
+- Fix: Prevent chat history loss during cloud/settings navigation (#11371 by @SannidhyaSah, PR #11372 by @SannidhyaSah)
+- Fix: Preserve condensation summary during task resume (#11487 by @SannidhyaSah, PR #11488 by @SannidhyaSah)
+- Fix: Resolve chat scroll anchoring and task-switch scroll race conditions (PR #11385 by @hannesrudolph)
+- Fix: Preserve pasted images in chatbox during chat activity (PR #11375 by @app/roomote)
+- Add disabledTools setting to globally disable native tools (PR #11277 by @daniel-lxs)
+- Rename search_and_replace tool to edit and unify edit-family UI (PR #11296 by @hannesrudolph)
+- Render nested subtasks as recursive tree in history view (PR #11299 by @hannesrudolph)
+- Remove 9 low-usage providers and add retired-provider UX (PR #11297 by @hannesrudolph)
+- Remove browser use functionality entirely (PR #11392 by @hannesrudolph)
+- Remove built-in skills and built-in skills mechanism (PR #11414 by @hannesrudolph)
+- Remove footgun prompting (file-based system prompt override) (PR #11387 by @hannesrudolph)
+- Batch consecutive tool calls in chat UI with shared utility (PR #11245 by @hannesrudolph)
+- Validate Gemini thinkingLevel against model capabilities and handle empty streams (PR #11303 by @hannesrudolph)
+- Add GLM-5 model support to Z.ai provider (PR #11440 by @app/roomote)
+- Fix: Prevent double notification sound playback (PR #11283 by @hannesrudolph)
+- Fix: Prevent false unsaved changes prompt with OpenAI Compatible headers (#8230 by @hannesrudolph, PR #11334 by @daniel-lxs)
+- Fix: Cancel backend auto-approval timeout when auto-approve is toggled off mid-countdown (PR #11439 by @SannidhyaSah)
+- Fix: Add follow_up param validation in AskFollowupQuestionTool (PR #11484 by @rossdonald)
+- Fix: Prevent webview postMessage crashes and make dispose idempotent (PR #11313 by @0xMink)
+- Fix: Avoid zsh process-substitution false positives in assignments (PR #11365 by @hannesrudolph)
+- Fix: Harden command auto-approval against inline JS false positives (PR #11382 by @hannesrudolph)
+- Fix: Make tab close best-effort in DiffViewProvider.open (PR #11363 by @0xMink)
+- Fix: Canonicalize core.worktree comparison to prevent Windows path mismatch failures (PR #11346 by @0xMink)
+- Fix: Make removeClineFromStack() delegation-aware to prevent orphaned parent tasks (PR #11302 by @app/roomote)
+- Fix task resumption in the API module (PR #11369 by @cte)
+- Make defaultTemperature required in getModelParams to prevent silent temperature overrides (PR #11218 by @app/roomote)
+- Remove noisy console.warn logs from NativeToolCallParser (PR #11264 by @daniel-lxs)
+- Consolidate getState calls in resolveWebviewView (PR #11320 by @0xMink)
+- Clean up repo-facing mode rules (PR #11410 by @hannesrudolph)
+- Implement ModelMessage storage layer with AI SDK response messages (PR #11409 by @daniel-lxs)
+- Extract translation and merge resolver modes into reusable skills (PR #11215 by @app/roomote)
+- Add blog section with initial posts to roocode.com (PR #11127 by @app/roomote)
+- Replace Roomote Control with Linear Integration in cloud features grid (PR #11280 by @app/roomote)
+- Add IPC query handlers for commands, modes, and models (PR #11279 by @cte)
+- Add stdin stream mode for the CLI (PR #11476 by @cte)
+- Make CLI auto-approve by default with require-approval opt-in (PR #11424 by @cte)
+- Update CLI default model from Opus 4.5 to Opus 4.6 (PR #11273 by @app/roomote)
+- Add linux-arm64 support for the Roo CLI (PR #11314 by @cte)
+- CLI release: v0.0.51 (PR #11274 by @cte)
+- CLI release: v0.0.52 (PR #11324 by @cte)
+- CLI release: v0.0.53 (PR #11425 by @cte)
+- CLI release: v0.0.54 (PR #11477 by @cte)
+
 ## [3.45.0] - 2026-01-27
 
 ![3.45.0 Release - Smart Code Folding](/releases/3.45.0-release.png)
@@ -471,7 +633,7 @@
 - Refactor: Consolidate ThinkingBudget components and fix disable handling (PR #9930 by @hannesrudolph)
 - Forbid time estimates in architect mode for more focused planning (PR #9931 by @app/roomote)
 - Web: Add product pages (PR #9865 by @brunobergher)
-- Make eval runs deleteable in the web UI (PR #9909 by @mrubens)
+- Make eval runs deletable in the web UI (PR #9909 by @mrubens)
 - Feat: Change defaultToolProtocol default from xml to native (later reverted) (PR #9892 by @app/roomote)
 
 ## [3.36.2] - 2025-12-04
@@ -1519,7 +1681,7 @@
 - Add: Mistral embedding provider (thanks @SannidhyaSah!)
 - Fix: add run parameter to vitest command in rules (thanks @KJ7LNW!)
 - Update: the max_tokens fallback logic in the sliding window
-- Fix: Bedrock and Vertext token counting improvements (thanks @daniel-lxs!)
+- Fix: Bedrock and Vertex token counting improvements (thanks @daniel-lxs!)
 - Add: llama-4-maverick model to Vertex AI provider (thanks @MuriloFP!)
 - Fix: properly distinguish between user cancellations and API failures
 - Fix: add case sensitivity mention to suggested fixes in apply_diff error message
@@ -1829,7 +1991,7 @@
 - Sync BatchDiffApproval styling with BatchFilePermission for UI consistency (thanks @samhvw8!)
 - Add max height constraint to MCP execution response for better UX (thanks @samhvw8!)
 - Prevent MCP 'installed' label from being squeezed #4630 (thanks @daniel-lxs!)
-- Allow a lower context condesning threshold (thanks @SECKainersdorfer!)
+- Allow a lower context condensing threshold (thanks @SECKainersdorfer!)
 - Avoid type system duplication for cleaner codebase (thanks @EamonNerbonne!)
 
 ## [3.20.1] - 2025-06-12
@@ -1986,7 +2148,7 @@
 
 ## [3.18.2] - 2025-05-23
 
-- Fix vscode-material-icons in the filer picker
+- Fix vscode-material-icons in the file picker
 - Fix global settings export
 - Respect user-configured terminal integration timeout (thanks @KJ7LNW)
 - Context condensing enhancements (thanks @SannidhyaSah)
@@ -2104,7 +2266,7 @@
 - Add vertical tab navigation to the settings (thanks @dlab-anton)
 - Add Groq and Chutes API providers (thanks @shariqriazz)
 - Clickable code references in code block (thanks @KJ7LNW)
-- Improve accessibility of ato-approve toggles (thanks @Deon588)
+- Improve accessibility of auto-approve toggles (thanks @Deon588)
 - Requesty provider fixes (thanks @dtrugman)
 - Fix migration and persistence of per-mode API profiles (thanks @alasano)
 - Fix usage of `path.basename` in the extension webview (thanks @samhvw8)
@@ -2166,7 +2328,7 @@
 - Fix file mentions for filenames containing spaces
 - Improve the auto-approve toggle buttons for some high-contrast VSCode themes
 - Offload expensive count token operations to a web worker (thanks @samhvw8)
-- Improve support for mult-root workspaces (thanks @snoyiatk)
+- Improve support for multi-root workspaces (thanks @snoyiatk)
 - Simplify and streamline Roo Code's quick actions
 - Allow Roo Code settings to be imported from the welcome screen (thanks @julionav)
 - Remove unused types (thanks @wkordalski)
@@ -2572,7 +2734,7 @@
 - Custom ARNs in Amazon Bedrock (thanks @Smartsheet-JB-Brown!)
 - Update MCP servers directory path for platform compatibility (thanks @hannesrudolph!)
 - Fix browser system prompt inclusion rules (thanks @cannuri!)
-- Publish git tags to github from CI (thanks @pdecat!)
+- Publish git tags to GitHub from CI (thanks @pdecat!)
 - Fixes to OpenAI-style cost calculations (thanks @dtrugman!)
 - Fix to allow using an excluded directory as your working directory (thanks @Szpadel!)
 - Kotlin language support in list_code_definition_names tool (thanks @kohii!)
@@ -2677,7 +2839,7 @@
 
 ## [3.7.6] - 2025-02-26
 
-- Handle really long text better in the in the ChatRow similar to TaskHeader (thanks @joemanley201!)
+- Handle really long text better in the ChatRow similar to TaskHeader (thanks @joemanley201!)
 - Support multiple files in drag-and-drop
 - Truncate search_file output to avoid crashing the extension
 - Better OpenRouter error handling (no more "Provider Error")

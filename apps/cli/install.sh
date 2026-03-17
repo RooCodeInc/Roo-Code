@@ -104,12 +104,60 @@ get_version() {
         error "Failed to fetch releases from GitHub. Check your internet connection."
     }
     
-    # Extract the latest cli-v* tag
-    VERSION=$(echo "$RELEASES_JSON" |
-              grep -o '"tag_name": "cli-v[^"]*"' |
-              head -1 |
-              sed 's/"tag_name": "cli-v//' |
-              sed 's/"//')
+    # Extract highest cli-v* tag by semantic version (do not rely on API ordering)
+    VERSION=$(printf "%s" "$RELEASES_JSON" | node -e '
+const fs = require("fs")
+const input = fs.readFileSync(0, "utf8")
+let releases
+try {
+  releases = JSON.parse(input)
+} catch {
+  process.exit(1)
+}
+
+function parseVersion(version) {
+  const core = String(version).trim().split("+", 1)[0].split("-", 1)[0]
+  if (!core) return null
+  const parts = core.split(".")
+  if (parts.length === 0 || parts.some((part) => !/^\d+$/.test(part))) {
+    return null
+  }
+  return parts.map((part) => Number.parseInt(part, 10))
+}
+
+function compareVersions(a, b) {
+  const maxLength = Math.max(a.length, b.length)
+  for (let i = 0; i < maxLength; i++) {
+    const aPart = a[i] ?? 0
+    const bPart = b[i] ?? 0
+    if (aPart > bPart) return 1
+    if (aPart < bPart) return -1
+  }
+  return 0
+}
+
+let latestVersion = ""
+let latestParts = null
+
+if (Array.isArray(releases)) {
+  for (const release of releases) {
+    if (!release || typeof release.tag_name !== "string" || !release.tag_name.startsWith("cli-v")) {
+      continue
+    }
+    const candidate = release.tag_name.slice("cli-v".length)
+    const candidateParts = parseVersion(candidate)
+    if (!candidateParts) continue
+    if (!latestParts || compareVersions(candidateParts, latestParts) > 0) {
+      latestVersion = candidate
+      latestParts = candidateParts
+    }
+  }
+}
+
+if (latestVersion) {
+  process.stdout.write(latestVersion)
+}
+')
     
     if [ -z "$VERSION" ]; then
         error "Could not find any CLI releases. The CLI may not have been released yet."

@@ -3,18 +3,45 @@ import { CodeIndexServiceFactory } from "../service-factory"
 import type { MockedClass } from "vitest"
 import * as path from "path"
 
+// Helper: create a mock vscode.Uri from an fsPath
+function mockUri(fsPath: string, scheme = "file") {
+	return {
+		fsPath,
+		scheme,
+		authority: "",
+		path: fsPath,
+		toString: (skipEncoding?: boolean) => `${scheme}://${fsPath}`,
+	}
+}
+
 // Mock vscode module
 vi.mock("vscode", () => {
 	const testPath = require("path")
 	const testWorkspacePath = testPath.join(testPath.sep, "test", "workspace")
 	return {
+		Uri: {
+			file: (p: string) => ({
+				fsPath: p,
+				scheme: "file",
+				authority: "",
+				path: p,
+				toString: (_skipEncoding?: boolean) => `file://${p}`,
+			}),
+			joinPath: vi.fn((...args: any[]) => ({ fsPath: args.join("/") })),
+		},
 		window: {
 			activeTextEditor: null,
 		},
 		workspace: {
 			workspaceFolders: [
 				{
-					uri: { fsPath: testWorkspacePath },
+					uri: {
+						fsPath: testWorkspacePath,
+						scheme: "file",
+						authority: "",
+						path: testWorkspacePath,
+						toString: (_skipEncoding?: boolean) => `file://${testWorkspacePath}`,
+					},
 					name: "test",
 					index: 0,
 				},
@@ -25,8 +52,9 @@ vi.mock("vscode", () => {
 				onDidDelete: vi.fn().mockReturnValue({ dispose: vi.fn() }),
 				dispose: vi.fn(),
 			}),
+			getWorkspaceFolder: vi.fn(),
 		},
-		RelativePattern: vi.fn().mockImplementation((base, pattern) => ({ base, pattern })),
+		RelativePattern: vi.fn().mockImplementation((base: any, pattern: any) => ({ base, pattern })),
 	}
 })
 
@@ -95,10 +123,22 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 		// Clear all instances before each test
 		CodeIndexManager.disposeAll()
 
+		const workspaceStateStore: Record<string, any> = {}
+		const globalStateStore: Record<string, any> = {}
 		mockContext = {
 			subscriptions: [],
-			workspaceState: {} as any,
-			globalState: {} as any,
+			workspaceState: {
+				get: vi.fn((key: string, defaultValue?: any) => workspaceStateStore[key] ?? defaultValue),
+				update: vi.fn(async (key: string, value: any) => {
+					workspaceStateStore[key] = value
+				}),
+			} as any,
+			globalState: {
+				get: vi.fn((key: string, defaultValue?: any) => globalStateStore[key] ?? defaultValue),
+				update: vi.fn(async (key: string, value: any) => {
+					globalStateStore[key] = value
+				}),
+			} as any,
 			extensionUri: {} as any,
 			extensionPath: testExtensionPath,
 			asAbsolutePath: vi.fn(),
@@ -222,7 +262,7 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 			;(manager as any)._cacheManager = mockCacheManager
 
 			// Simulate an initialized manager by setting the required properties
-			;(manager as any)._orchestrator = { stopWatcher: vi.fn() }
+			;(manager as any)._orchestrator = { stopWatcher: vi.fn(), stopIndexing: vi.fn() }
 			;(manager as any)._searchService = {}
 
 			// Verify manager is considered initialized
@@ -456,7 +496,7 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 			})
 
 			// Mock orchestrator and search service to simulate initialized state
-			;(manager as any)._orchestrator = { stopWatcher: vi.fn(), state: "Error" }
+			;(manager as any)._orchestrator = { stopWatcher: vi.fn(), stopIndexing: vi.fn(), state: "Error" }
 			;(manager as any)._searchService = {}
 			;(manager as any)._serviceFactory = {}
 		})
@@ -540,6 +580,9 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 				}),
 			}
 
+			// Enable workspace indexing before re-initialization
+			await manager.setWorkspaceEnabled(true)
+
 			// Re-initialize
 			await manager.initialize(mockContextProxy as any)
 
@@ -583,7 +626,7 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 			// Setup manager with service instances
 			;(manager as any)._configManager = mockConfigManager
 			;(manager as any)._serviceFactory = {}
-			;(manager as any)._orchestrator = { stopWatcher: vi.fn() }
+			;(manager as any)._orchestrator = { stopWatcher: vi.fn(), stopIndexing: vi.fn() }
 			;(manager as any)._searchService = {}
 
 			// Spy on console.error
@@ -606,6 +649,157 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 
 			// Cleanup
 			consoleErrorSpy.mockRestore()
+		})
+	})
+
+	describe("workspace-enabled gating", () => {
+		it("should not start indexing when workspace is not enabled", async () => {
+			await manager.setAutoEnableDefault(false)
+
+			const mockStateManager = (manager as any)._stateManager
+			mockStateManager.setSystemState = vi.fn()
+			mockStateManager.getCurrentStatus = vi.fn().mockReturnValue({
+				systemStatus: "Standby",
+				message: "",
+				processedItems: 0,
+				totalItems: 0,
+				currentItemUnit: "items",
+			})
+
+			expect(manager.isWorkspaceEnabled).toBe(false)
+
+			await manager.startIndexing()
+
+			expect(mockStateManager.setSystemState).not.toHaveBeenCalledWith("Indexing", expect.any(String))
+		})
+
+		it("should include workspaceEnabled in getCurrentStatus", async () => {
+			await manager.setAutoEnableDefault(false)
+
+			const mockStateManager = (manager as any)._stateManager
+			mockStateManager.getCurrentStatus = vi.fn().mockReturnValue({
+				systemStatus: "Standby",
+				message: "",
+				processedItems: 0,
+				totalItems: 0,
+				currentItemUnit: "items",
+			})
+
+			const status = manager.getCurrentStatus()
+			expect(status.workspaceEnabled).toBe(false)
+		})
+
+		it("should persist workspace enabled state", async () => {
+			await manager.setAutoEnableDefault(false)
+			expect(manager.isWorkspaceEnabled).toBe(false)
+
+			await manager.setWorkspaceEnabled(true)
+			expect(manager.isWorkspaceEnabled).toBe(true)
+
+			await manager.setWorkspaceEnabled(false)
+			expect(manager.isWorkspaceEnabled).toBe(false)
+		})
+
+		it("should store enablement per folder URI, not per window", async () => {
+			CodeIndexManager.disposeAll()
+
+			const vscode = await import("vscode")
+
+			const folderAPath = path.join(path.sep, "test", "folderA")
+			const folderBPath = path.join(path.sep, "test", "folderB")
+			const folderAUri = mockUri(folderAPath)
+			const folderBUri = mockUri(folderBPath)
+
+			// Both folders share the same workspaceState (same window)
+			const sharedStore: Record<string, any> = {}
+			const sharedContext = {
+				...mockContext,
+				workspaceState: {
+					get: vi.fn((key: string, defaultValue?: any) => sharedStore[key] ?? defaultValue),
+					update: vi.fn(async (key: string, value: any) => {
+						sharedStore[key] = value
+					}),
+				} as any,
+				globalState: {
+					get: vi.fn((_key: string, _defaultValue?: any) => false),
+					update: vi.fn(),
+				} as any,
+			}
+
+			// Patch workspaceFolders to include both folders
+			;(vscode.workspace as any).workspaceFolders = [
+				{ uri: folderAUri, name: "folderA", index: 0 },
+				{ uri: folderBUri, name: "folderB", index: 1 },
+			]
+
+			const managerA = CodeIndexManager.getInstance(sharedContext as any, folderAPath)!
+			const managerB = CodeIndexManager.getInstance(sharedContext as any, folderBPath)!
+
+			// Both start disabled (autoEnableDefault is false via globalState mock)
+			expect(managerA.isWorkspaceEnabled).toBe(false)
+			expect(managerB.isWorkspaceEnabled).toBe(false)
+
+			// Enable A only
+			await managerA.setWorkspaceEnabled(true)
+
+			expect(managerA.isWorkspaceEnabled).toBe(true)
+			expect(managerB.isWorkspaceEnabled).toBe(false)
+
+			// Enable B, disable A
+			await managerB.setWorkspaceEnabled(true)
+			await managerA.setWorkspaceEnabled(false)
+
+			expect(managerA.isWorkspaceEnabled).toBe(false)
+			expect(managerB.isWorkspaceEnabled).toBe(true)
+
+			CodeIndexManager.disposeAll()
+		})
+	})
+
+	describe("stopIndexing", () => {
+		it("should delegate to orchestrator.stopIndexing()", () => {
+			const mockOrchestrator = {
+				stopIndexing: vi.fn(),
+				stopWatcher: vi.fn(),
+				state: "Indexing",
+			}
+			;(manager as any)._orchestrator = mockOrchestrator
+
+			manager.stopIndexing()
+
+			expect(mockOrchestrator.stopIndexing).toHaveBeenCalled()
+		})
+
+		it("should be safe to call when orchestrator is not set", () => {
+			;(manager as any)._orchestrator = undefined
+
+			expect(() => manager.stopIndexing()).not.toThrow()
+		})
+	})
+
+	describe("handleSettingsChange - disable toggle bug fix", () => {
+		it("should abort active indexing when feature is disabled", async () => {
+			const mockOrchestrator = {
+				stopIndexing: vi.fn(),
+				stopWatcher: vi.fn(),
+				state: "Indexing",
+			}
+			;(manager as any)._orchestrator = mockOrchestrator
+
+			const mockConfigManager = {
+				loadConfiguration: vi.fn().mockResolvedValue({ requiresRestart: false }),
+				isFeatureConfigured: true,
+				isFeatureEnabled: false,
+			}
+			;(manager as any)._configManager = mockConfigManager
+
+			const mockStateManager = (manager as any)._stateManager
+			mockStateManager.setSystemState = vi.fn()
+
+			await manager.handleSettingsChange()
+
+			expect(mockOrchestrator.stopIndexing).toHaveBeenCalled()
+			expect(mockStateManager.setSystemState).toHaveBeenCalledWith("Standby", "Code indexing is disabled")
 		})
 	})
 })

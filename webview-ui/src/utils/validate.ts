@@ -48,6 +48,11 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
+		case "unbound":
+			if (!apiConfiguration.unboundApiKey) {
+				return i18next.t("settings:validation.apiKey")
+			}
+			break
 		case "litellm":
 			if (!apiConfiguration.litellmApiKey) {
 				return i18next.t("settings:validation.apiKey")
@@ -289,7 +294,7 @@ export function validateApiConfigurationExcludingModelErrors(
 		organizationAllowList,
 	)
 
-	// Inly return organization errors if they're not model-specific.
+	// Only return organization errors if they're not model-specific.
 	if (organizationAllowListError && organizationAllowListError.code === "PROVIDER_NOT_ALLOWED") {
 		return organizationAllowListError.message
 	}

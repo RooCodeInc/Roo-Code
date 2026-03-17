@@ -69,6 +69,8 @@
 		"fileWatcherStopped": "Monitor de arquivos parado.",
 		"failedDuringInitialScan": "Falhou durante a varredura inicial: {{errorMessage}}",
 		"unknownError": "Erro desconhecido",
-		"indexingRequiresWorkspace": "A indexação requer uma pasta de workspace aberta"
+		"indexingRequiresWorkspace": "A indexação requer uma pasta de workspace aberta",
+		"indexingStopped": "Indexação interrompida pelo usuário.",
+		"indexingStoppedPartial": "Indexação interrompida. Dados de índice parciais preservados."
 	}
 }

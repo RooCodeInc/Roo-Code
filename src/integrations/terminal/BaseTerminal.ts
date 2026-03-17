@@ -161,6 +161,7 @@ export abstract class BaseTerminal implements RooTerminal {
 	private static terminalZshOhMy: boolean = false
 	private static terminalZshP10k: boolean = false
 	private static terminalZdotdir: boolean = false
+	private static execaShellPath: string | undefined = undefined
 
 	/**
 	 * Compresses terminal output by applying run-length encoding and truncating to line limit
@@ -293,5 +294,13 @@ export abstract class BaseTerminal implements RooTerminal {
 	 */
 	public static getTerminalZdotdir(): boolean {
 		return BaseTerminal.terminalZdotdir
+	}
+
+	public static setExecaShellPath(shellPath: string | undefined): void {
+		BaseTerminal.execaShellPath = shellPath
+	}
+
+	public static getExecaShellPath(): string | undefined {
+		return BaseTerminal.execaShellPath
 	}
 }

@@ -1,6 +1,6 @@
 import * as vscode from "vscode"
 
-export type IndexingState = "Standby" | "Indexing" | "Indexed" | "Error"
+export type IndexingState = "Standby" | "Indexing" | "Indexed" | "Error" | "Stopping"
 
 export class CodeIndexStateManager {
 	private _systemStatus: IndexingState = "Standby"
@@ -58,6 +58,8 @@ export class CodeIndexStateManager {
 	public reportBlockIndexingProgress(processedItems: number, totalItems: number): void {
 		const progressChanged = processedItems !== this._processedItems || totalItems !== this._totalItems
 
+		// Don't override Stopping state with progress updates
+		if (this._systemStatus === "Stopping") return
 		// Update if progress changes OR if the system wasn't already in 'Indexing' state
 		if (progressChanged || this._systemStatus !== "Indexing") {
 			this._processedItems = processedItems
@@ -81,6 +83,8 @@ export class CodeIndexStateManager {
 	public reportFileQueueProgress(processedFiles: number, totalFiles: number, currentFileBasename?: string): void {
 		const progressChanged = processedFiles !== this._processedItems || totalFiles !== this._totalItems
 
+		// Don't override Stopping state with progress updates
+		if (this._systemStatus === "Stopping") return
 		if (progressChanged || this._systemStatus !== "Indexing") {
 			this._processedItems = processedFiles
 			this._totalItems = totalFiles

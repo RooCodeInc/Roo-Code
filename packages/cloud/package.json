@@ -15,7 +15,6 @@
 		"ioredis": "^5.6.1",
 		"jwt-decode": "^4.0.0",
 		"p-wait-for": "^5.0.2",
-		"socket.io-client": "^4.8.1",
 		"zod": "^3.25.76"
 	},
 	"devDependencies": {

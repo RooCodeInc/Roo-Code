@@ -46,6 +46,8 @@ function getModelIdForProvider(config: ProviderSettings): string | undefined {
 			return config.openAiModelId
 		case "requesty":
 			return config.requestyModelId
+		case "unbound":
+			return config.unboundModelId
 		case "litellm":
 			return config.litellmModelId
 		case "vercel-ai-gateway":

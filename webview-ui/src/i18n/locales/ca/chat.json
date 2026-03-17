@@ -25,14 +25,15 @@
 		"sharingDisabledByOrganization": "Compartició deshabilitada per l'organització",
 		"shareSuccessOrganization": "Enllaç d'organització copiat al porta-retalls",
 		"shareSuccessPublic": "Enllaç públic copiat al porta-retalls",
-		"openInCloud": "Obrir tasca a Roo Code Cloud",
-		"openInCloudIntro": "Continua monitoritzant o interactuant amb Roo des de qualsevol lloc. Escaneja, fes clic o copia per obrir.",
 		"openApiHistory": "Obrir historial d'API",
 		"openUiHistory": "Obrir historial d'UI",
 		"backToParentTask": "Tasca principal"
 	},
 	"unpin": "Desfixar",
 	"pin": "Fixar",
+	"fileChangesInConversation": {
+		"header": "{{count}} fitxer(s) canviat(s) en aquesta conversa"
+	},
 	"tokenProgress": {
 		"availableSpace": "Espai disponible: {{amount}} tokens",
 		"tokensUsed": "Tokens utilitzats: {{used}} de {{total}}",
@@ -347,7 +348,11 @@
 		},
 		"release": {
 			"heading": "Què hi ha de nou:",
-			"smartCodeFolding": "Plegament intel·ligent de codi: La condensació de context ara preserva un mapa lleuger dels teus fitxers—signatures de funcions, declaracions de classe i definicions de tipus. Això proporciona millor continuïtat després de condensar i edicions més intel·ligents quan es fa referència a feina anterior."
+			"gpt54": "Compatibilitat amb OpenAI GPT-5.4: Hem afegit OpenAI GPT-5.4 i GPT-5.3 Chat Latest perquè puguis fer servir els models de xat més nous d’OpenAI a Roo Code.",
+			"slashSkills": "Skills com a ordres slash: Ara les skills es poden exposar com a ordres slash amb execució de reserva per accelerar els fluxos de treball.",
+			"geminiPro": "Suport per Gemini 3.1 Pro: S'ha afegit el suport per al model Gemini 3.1 Pro i s'ha establert com a model Gemini per defecte per a un millor rendiment.",
+			"cliNdjson": "Protocol NDJSON del CLI: Nou protocol NDJSON via stdin, subcomandes de llistat i comanda d'execució modularitzada per a fluxos de treball CLI més flexibles.",
+			"cliRelease": "CLI v0.1.0: El CLI de Roo Code arriba a la seva primera versió oficial amb una interfície de comandes estable."
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",
@@ -423,7 +428,8 @@
 		"indexing": "Indexant {{percentage}}%",
 		"indexed": "Indexat",
 		"error": "Error d'índex",
-		"status": "Estat de l'índex"
+		"status": "Estat de l'índex",
+		"stopping": "Aturant la indexació..."
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versió {{version}} - Feu clic per veure les notes de llançament"

@@ -114,9 +114,6 @@ vi.mock("@roo-code/cloud", () => ({
 			}
 		},
 	},
-	BridgeOrchestrator: {
-		isEnabled: vi.fn().mockReturnValue(false),
-	},
 	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.roocode.com"),
 }))
 
@@ -166,9 +163,22 @@ vi.mock("fs/promises", () => ({
 	mkdir: vi.fn().mockResolvedValue(undefined),
 	writeFile: vi.fn().mockResolvedValue(undefined),
 	readFile: vi.fn().mockResolvedValue(""),
+	readdir: vi.fn().mockResolvedValue([]),
 	unlink: vi.fn().mockResolvedValue(undefined),
 	rmdir: vi.fn().mockResolvedValue(undefined),
+	access: vi.fn().mockResolvedValue(undefined),
+	rm: vi.fn().mockResolvedValue(undefined),
 }))
+
+vi.mock("../../../utils/storage", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("../../../utils/storage")>()
+	return {
+		...actual,
+		getStorageBasePath: vi.fn().mockImplementation((defaultPath: string) => defaultPath),
+		getSettingsDirectoryPath: vi.fn().mockResolvedValue("/test/settings/path"),
+		getTaskDirectoryPath: vi.fn().mockResolvedValue("/test/task/path"),
+	}
+})
 
 vi.mock("@roo-code/telemetry", () => ({
 	TelemetryService: {
@@ -191,10 +201,13 @@ describe("ClineProvider - Sticky Provider Profile", () => {
 	let mockOutputChannel: vscode.OutputChannel
 	let mockWebviewView: vscode.WebviewView
 	let mockPostMessage: any
+	let originalRooCliRuntimeEnv: string | undefined
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		vi.clearAllMocks()
 		taskIdCounter = 0
+		originalRooCliRuntimeEnv = process.env.ROO_CLI_RUNTIME
+		delete process.env.ROO_CLI_RUNTIME
 
 		if (!TelemetryService.hasInstance()) {
 			TelemetryService.createInstance([])
@@ -270,6 +283,9 @@ describe("ClineProvider - Sticky Provider Profile", () => {
 
 		provider = new ClineProvider(mockContext, mockOutputChannel, "sidebar", new ContextProxy(mockContext))
 
+		// Wait for the async TaskHistoryStore initialization to complete
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
 		// Mock getMcpHub method
 		provider.getMcpHub = vi.fn().mockReturnValue({
 			listTools: vi.fn().mockResolvedValue([]),
@@ -278,6 +294,14 @@ describe("ClineProvider - Sticky Provider Profile", () => {
 			readResource: vi.fn().mockResolvedValue({ contents: [] }),
 			getAllServers: vi.fn().mockReturnValue([]),
 		})
+	})
+
+	afterEach(() => {
+		if (originalRooCliRuntimeEnv === undefined) {
+			delete process.env.ROO_CLI_RUNTIME
+		} else {
+			process.env.ROO_CLI_RUNTIME = originalRooCliRuntimeEnv
+		}
 	})
 
 	describe("activateProviderProfile", () => {
@@ -301,20 +325,16 @@ describe("ClineProvider - Sticky Provider Profile", () => {
 			// Add task to provider stack
 			await provider.addClineToStack(mockTask as any)
 
-			// Mock getGlobalState to return task history
-			vi.spyOn(provider as any, "getGlobalState").mockReturnValue([
-				{
-					id: mockTask.taskId,
-					ts: Date.now(),
-					task: "Test task",
-					number: 1,
-					tokensIn: 0,
-					tokensOut: 0,
-					cacheWrites: 0,
-					cacheReads: 0,
-					totalCost: 0,
-				},
-			])
+			// Populate the store so persistStickyProviderProfileToCurrentTask finds the task
+			await provider.taskHistoryStore.upsert({
+				id: mockTask.taskId,
+				ts: Date.now(),
+				task: "Test task",
+				number: 1,
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+			})
 
 			// Mock updateTaskHistory to track calls
 			const updateTaskHistorySpy = vi
@@ -448,7 +468,7 @@ describe("ClineProvider - Sticky Provider Profile", () => {
 	})
 
 	describe("createTaskWithHistoryItem", () => {
-		it("should restore provider profile from history item when reopening task", async () => {
+		it("should restore provider profile from history item when reopening task outside CLI runtime", async () => {
 			await provider.resolveWebviewView(mockWebviewView)
 
 			// Create a history item with saved provider profile
@@ -484,6 +504,71 @@ describe("ClineProvider - Sticky Provider Profile", () => {
 				{ name: "saved-profile" },
 				{ persistModeConfig: false, persistTaskHistory: false },
 			)
+		})
+
+		it("should skip restoring task apiConfigName from history in CLI runtime", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+			process.env.ROO_CLI_RUNTIME = "1"
+
+			const historyItem: HistoryItem = {
+				id: "test-task-id",
+				number: 1,
+				ts: Date.now(),
+				task: "Test task",
+				tokensIn: 100,
+				tokensOut: 200,
+				cacheWrites: 0,
+				cacheReads: 0,
+				totalCost: 0.001,
+				apiConfigName: "saved-profile",
+			}
+
+			const activateProviderProfileSpy = vi
+				.spyOn(provider, "activateProviderProfile")
+				.mockResolvedValue(undefined)
+			const logSpy = vi.spyOn(provider, "log")
+
+			vi.spyOn(provider.providerSettingsManager, "listConfig").mockResolvedValue([
+				{ name: "saved-profile", id: "saved-profile-id", apiProvider: "anthropic" },
+			])
+
+			await provider.createTaskWithHistoryItem(historyItem)
+
+			expect(activateProviderProfileSpy).not.toHaveBeenCalledWith({ name: "saved-profile" }, expect.anything())
+			expect(logSpy).toHaveBeenCalledWith(
+				expect.stringContaining("Skipping restore of provider profile 'saved-profile'"),
+			)
+		})
+
+		it("should skip restoring mode-based provider config from history in CLI runtime", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+			process.env.ROO_CLI_RUNTIME = "1"
+
+			const historyItem: HistoryItem = {
+				id: "test-task-id",
+				number: 1,
+				ts: Date.now(),
+				task: "Test task",
+				tokensIn: 100,
+				tokensOut: 200,
+				cacheWrites: 0,
+				cacheReads: 0,
+				totalCost: 0.001,
+				mode: "code",
+			}
+
+			const activateProviderProfileSpy = vi
+				.spyOn(provider, "activateProviderProfile")
+				.mockResolvedValue(undefined)
+
+			vi.spyOn(provider.providerSettingsManager, "getModeConfigId").mockResolvedValue("mode-config-id")
+			vi.spyOn(provider.providerSettingsManager, "listConfig").mockResolvedValue([
+				{ name: "mode-profile", id: "mode-config-id", apiProvider: "anthropic" },
+			])
+
+			await provider.createTaskWithHistoryItem(historyItem)
+
+			expect(activateProviderProfileSpy).not.toHaveBeenCalled()
 		})
 
 		it("should use current profile if history item has no saved apiConfigName", async () => {
@@ -608,20 +693,16 @@ describe("ClineProvider - Sticky Provider Profile", () => {
 				updateApiConfiguration: vi.fn(),
 			}
 
-			// Mock getGlobalState to return task history with our task
-			vi.spyOn(provider as any, "getGlobalState").mockReturnValue([
-				{
-					id: mockTask.taskId,
-					ts: Date.now(),
-					task: "Test task",
-					number: 1,
-					tokensIn: 0,
-					tokensOut: 0,
-					cacheWrites: 0,
-					cacheReads: 0,
-					totalCost: 0,
-				},
-			])
+			// Populate the store so persistStickyProviderProfileToCurrentTask finds the task
+			await provider.taskHistoryStore.upsert({
+				id: mockTask.taskId,
+				ts: Date.now(),
+				task: "Test task",
+				number: 1,
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+			})
 
 			// Mock updateTaskHistory to capture the updated history item
 			let updatedHistoryItem: any
@@ -720,7 +801,10 @@ describe("ClineProvider - Sticky Provider Profile", () => {
 				},
 			]
 
-			vi.spyOn(provider as any, "getGlobalState").mockReturnValue(taskHistory)
+			// Populate the store
+			for (const item of taskHistory) {
+				await provider.taskHistoryStore.upsert(item as any)
+			}
 
 			// Mock updateTaskHistory
 			vi.spyOn(provider, "updateTaskHistory").mockImplementation((item) => {
@@ -776,20 +860,16 @@ describe("ClineProvider - Sticky Provider Profile", () => {
 			// Add task to provider stack
 			await provider.addClineToStack(mockTask as any)
 
-			// Mock getGlobalState
-			vi.spyOn(provider as any, "getGlobalState").mockReturnValue([
-				{
-					id: mockTask.taskId,
-					ts: Date.now(),
-					task: "Test task",
-					number: 1,
-					tokensIn: 0,
-					tokensOut: 0,
-					cacheWrites: 0,
-					cacheReads: 0,
-					totalCost: 0,
-				},
-			])
+			// Populate the store
+			await provider.taskHistoryStore.upsert({
+				id: mockTask.taskId,
+				ts: Date.now(),
+				task: "Test task",
+				number: 1,
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+			})
 
 			// Mock updateTaskHistory to throw error
 			vi.spyOn(provider, "updateTaskHistory").mockRejectedValue(new Error("Save failed"))

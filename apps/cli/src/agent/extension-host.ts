@@ -26,7 +26,7 @@ import type {
 import { createVSCodeAPI, IExtensionHost, ExtensionHostEventMap, setRuntimeConfigValues } from "@roo-code/vscode-shim"
 import { DebugLogger, setDebugLogEnabled } from "@roo-code/core/cli"
 
-import type { SupportedProvider } from "@/types/index.js"
+import { DEFAULT_FLAGS, type SupportedProvider } from "@/types/index.js"
 import type { User } from "@/lib/sdk/index.js"
 import { getProviderSettings } from "@/lib/utils/provider.js"
 import { createEphemeralStorageDir } from "@/lib/storage/index.js"
@@ -66,6 +66,7 @@ const CLI_PACKAGE_ROOT = process.env.ROO_CLI_ROOT || findCliPackageRoot()
 export interface ExtensionHostOptions {
 	mode: string
 	reasoningEffort?: ReasoningEffortExtended | "unspecified" | "disabled"
+	consecutiveMistakeLimit?: number
 	user: User | null
 	provider: SupportedProvider
 	apiKey?: string
@@ -79,6 +80,7 @@ export interface ExtensionHostOptions {
 	ephemeral: boolean
 	debug: boolean
 	exitOnComplete: boolean
+	terminalShell?: string
 	/**
 	 * When true, exit the process on API request errors instead of retrying.
 	 */
@@ -107,7 +109,8 @@ interface WebviewViewProvider {
 export interface ExtensionHostInterface extends IExtensionHost<ExtensionHostEventMap> {
 	client: ExtensionClient
 	activate(): Promise<void>
-	runTask(prompt: string): Promise<void>
+	runTask(prompt: string, taskId?: string, configuration?: RooCodeSettings, images?: string[]): Promise<void>
+	resumeTask(taskId: string): Promise<void>
 	sendToExtension(message: WebviewMessage): void
 	dispose(): Promise<void>
 }
@@ -135,6 +138,7 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 
 	// Ephemeral storage.
 	private ephemeralStorageDir: string | null = null
+	private previousCliRuntimeEnv: string | undefined
 
 	// ==========================================================================
 	// Managers - These do all the heavy lifting
@@ -172,6 +176,10 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 		super()
 
 		this.options = options
+		// Mark this process as CLI runtime so extension code can apply
+		// CLI-specific behavior without affecting VS Code desktop usage.
+		this.previousCliRuntimeEnv = process.env.ROO_CLI_RUNTIME
+		process.env.ROO_CLI_RUNTIME = "1"
 
 		// Enable file-based debug logging only when --debug is passed.
 		if (options.debug) {
@@ -213,8 +221,12 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 		// Populate initial settings.
 		const baseSettings: RooCodeSettings = {
 			mode: this.options.mode,
-			commandExecutionTimeout: 30,
+			consecutiveMistakeLimit: this.options.consecutiveMistakeLimit ?? DEFAULT_FLAGS.consecutiveMistakeLimit,
+			commandExecutionTimeout: 300,
 			enableCheckpoints: false,
+			experiments: {
+				customTools: true,
+			},
 			...getProviderSettings(this.options.provider, this.options.apiKey, this.options.model),
 		}
 
@@ -245,6 +257,11 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 				this.initialSettings.enableReasoningEffort = true
 				this.initialSettings.reasoningEffort = this.options.reasoningEffort
 			}
+		}
+
+		if (this.options.terminalShell) {
+			this.initialSettings.terminalShellIntegrationDisabled = true
+			this.initialSettings.execaShellPath = this.options.terminalShell
 		}
 	}
 
@@ -458,9 +475,7 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 	// Task Management
 	// ==========================================================================
 
-	public async runTask(prompt: string): Promise<void> {
-		this.sendToExtension({ type: "newTask", text: prompt })
-
+	private waitForTaskCompletion(): Promise<void> {
 		return new Promise((resolve, reject) => {
 			const completeHandler = () => {
 				cleanup()
@@ -499,6 +514,27 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 			this.client.once("taskCompleted", completeHandler)
 			this.client.once("error", errorHandler)
 		})
+	}
+
+	public async runTask(
+		prompt: string,
+		taskId?: string,
+		configuration?: RooCodeSettings,
+		images?: string[],
+	): Promise<void> {
+		this.sendToExtension({
+			type: "newTask",
+			text: prompt,
+			taskId,
+			taskConfiguration: configuration,
+			...(images !== undefined ? { images } : {}),
+		})
+		return this.waitForTaskCompletion()
+	}
+
+	public async resumeTask(taskId: string): Promise<void> {
+		this.sendToExtension({ type: "showTaskWithId", text: taskId })
+		return this.waitForTaskCompletion()
 	}
 
 	// ==========================================================================
@@ -566,6 +602,13 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 			} catch {
 				// NO-OP
 			}
+		}
+
+		// Restore previous CLI runtime marker for process hygiene in tests.
+		if (this.previousCliRuntimeEnv === undefined) {
+			delete process.env.ROO_CLI_RUNTIME
+		} else {
+			process.env.ROO_CLI_RUNTIME = this.previousCliRuntimeEnv
 		}
 	}
 }

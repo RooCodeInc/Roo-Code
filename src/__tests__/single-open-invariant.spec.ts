@@ -13,13 +13,13 @@ vi.mock("../core/task/Task", () => {
 		public parentTask?: any
 		public apiConfiguration: any
 		public rootTask?: any
-		public enableBridge?: boolean
 		constructor(opts: any) {
 			this.taskId = opts.historyItem?.id ?? `task-${Math.random().toString(36).slice(2, 8)}`
 			this.parentTask = opts.parentTask
 			this.apiConfiguration = opts.apiConfiguration ?? { apiProvider: "anthropic" }
 			opts.onCreated?.(this)
 		}
+		start() {}
 		on() {}
 		off() {}
 		emit() {}
@@ -49,7 +49,6 @@ describe("Single-open-task invariant", () => {
 				enableCheckpoints: true,
 				checkpointTimeout: 60,
 				cloudUserInfo: null,
-				remoteControlEnabled: false,
 			}),
 			removeClineFromStack,
 			addClineToStack,

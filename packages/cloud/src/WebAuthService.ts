@@ -625,8 +625,6 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 			)?.email_address
 		}
 
-		let extensionBridgeEnabled = true
-
 		// Fetch organization info if user is in organization context
 		try {
 			const storedOrgId = this.getStoredOrganizationId()
@@ -640,8 +638,6 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 
 					if (userMembership) {
 						this.setUserOrganizationInfo(userInfo, userMembership)
-
-						extensionBridgeEnabled = await this.isExtensionBridgeEnabledForOrganization(storedOrgId)
 
 						this.log("[auth] User in organization context:", {
 							id: userMembership.organization.id,
@@ -662,10 +658,6 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 				if (primaryOrgMembership) {
 					this.setUserOrganizationInfo(userInfo, primaryOrgMembership)
 
-					extensionBridgeEnabled = await this.isExtensionBridgeEnabledForOrganization(
-						primaryOrgMembership.organization.id,
-					)
-
 					this.log("[auth] Legacy credentials: Found organization membership:", {
 						id: primaryOrgMembership.organization.id,
 						name: primaryOrgMembership.organization.name,
@@ -679,9 +671,6 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 			this.log("[auth] Failed to fetch organization info:", error)
 			// Don't throw - organization info is optional
 		}
-
-		// Set the extension bridge enabled flag
-		userInfo.extensionBridgeEnabled = extensionBridgeEnabled
 
 		return userInfo
 	}
@@ -727,36 +716,6 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 		const errorMessage = `Failed to get organization memberships: ${response.status} ${response.statusText}`
 		this.log(`[auth] ${errorMessage}`)
 		throw new Error(errorMessage)
-	}
-
-	private async getOrganizationMetadata(
-		organizationId: string,
-	): Promise<{ public_metadata?: Record<string, unknown> } | null> {
-		try {
-			const response = await fetch(`${getClerkBaseUrl()}/v1/organizations/${organizationId}`, {
-				headers: {
-					Authorization: `Bearer ${this.credentials!.clientToken}`,
-					"User-Agent": this.userAgent(),
-				},
-				signal: AbortSignal.timeout(10000),
-			})
-
-			if (!response.ok) {
-				this.log(`[auth] Failed to fetch organization metadata: ${response.status} ${response.statusText}`)
-				return null
-			}
-
-			const data = await response.json()
-			return data.response || data
-		} catch (error) {
-			this.log("[auth] Error fetching organization metadata:", error)
-			return null
-		}
-	}
-
-	private async isExtensionBridgeEnabledForOrganization(organizationId: string): Promise<boolean> {
-		const orgMetadata = await this.getOrganizationMetadata(organizationId)
-		return orgMetadata?.public_metadata?.extension_bridge_enabled === true
 	}
 
 	private async clerkLogout(credentials: AuthCredentials): Promise<void> {
