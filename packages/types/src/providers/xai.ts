@@ -3,9 +3,36 @@ import type { ModelInfo } from "../model.js"
 // https://docs.x.ai/docs/api-reference
 export type XAIModelId = keyof typeof xaiModels
 
-export const xaiDefaultModelId: XAIModelId = "grok-code-fast-1"
+export const xaiDefaultModelId: XAIModelId = "grok-4.20-beta-0309-reasoning"
 
 export const xaiModels = {
+	"grok-4.20-beta-0309-reasoning": {
+		maxTokens: 65_536,
+		contextWindow: 2_000_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 2.0,
+		outputPrice: 6.0,
+		cacheWritesPrice: 0.5,
+		cacheReadsPrice: 0.5,
+		description:
+			"xAI's Grok 4.20 reasoning model with 2M context. Reasoning is internal (not exposed via Chat Completions API).",
+		includedTools: ["search_replace"],
+		excludedTools: ["apply_diff"],
+	},
+	"grok-4.20-beta-0309-non-reasoning": {
+		maxTokens: 65_536,
+		contextWindow: 2_000_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 2.0,
+		outputPrice: 6.0,
+		cacheWritesPrice: 0.5,
+		cacheReadsPrice: 0.5,
+		description: "xAI's Grok 4.20 non-reasoning model - faster inference with 2M context.",
+		includedTools: ["search_replace"],
+		excludedTools: ["apply_diff"],
+	},
 	"grok-code-fast-1": {
 		maxTokens: 16_384,
 		contextWindow: 256_000,
