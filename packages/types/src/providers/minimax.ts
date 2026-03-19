@@ -5,9 +5,39 @@ import type { ModelInfo } from "../model.js"
 // https://platform.minimax.io/docs/api-reference/text-openai-api
 // https://platform.minimax.io/docs/api-reference/text-anthropic-api
 export type MinimaxModelId = keyof typeof minimaxModels
-export const minimaxDefaultModelId: MinimaxModelId = "MiniMax-M2.5"
+export const minimaxDefaultModelId: MinimaxModelId = "MiniMax-M2.7"
 
 export const minimaxModels = {
+	"MiniMax-M2.7": {
+		maxTokens: 16_384,
+		contextWindow: 204_800,
+		supportsImages: false,
+		supportsPromptCache: true,
+		includedTools: ["search_and_replace"],
+		excludedTools: ["apply_diff"],
+		preserveReasoning: true,
+		inputPrice: 0.3,
+		outputPrice: 1.2,
+		cacheWritesPrice: 0.375,
+		cacheReadsPrice: 0.06,
+		description:
+			"MiniMax M2.7, the latest flagship model with enhanced reasoning and coding capabilities.",
+	},
+	"MiniMax-M2.7-highspeed": {
+		maxTokens: 16_384,
+		contextWindow: 204_800,
+		supportsImages: false,
+		supportsPromptCache: true,
+		includedTools: ["search_and_replace"],
+		excludedTools: ["apply_diff"],
+		preserveReasoning: true,
+		inputPrice: 0.6,
+		outputPrice: 2.4,
+		cacheWritesPrice: 0.375,
+		cacheReadsPrice: 0.06,
+		description:
+			"High-speed version of M2.7 for low-latency scenarios.",
+	},
 	"MiniMax-M2.5": {
 		maxTokens: 16_384,
 		contextWindow: 204_800,
@@ -21,7 +51,7 @@ export const minimaxModels = {
 		cacheWritesPrice: 0.375,
 		cacheReadsPrice: 0.03,
 		description:
-			"MiniMax M2.5, the latest MiniMax model with enhanced coding and agentic capabilities, building on the strengths of the M2 series.",
+			"MiniMax M2.5, a capable model with strong coding and agentic capabilities, building on the strengths of the M2 series.",
 	},
 	"MiniMax-M2": {
 		maxTokens: 16_384,
