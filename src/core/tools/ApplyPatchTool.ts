@@ -173,10 +173,9 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 		const state = await provider?.getState()
 		const diagnosticsEnabled = state?.diagnosticsEnabled ?? true
 		const writeDelayMs = state?.writeDelayMs ?? DEFAULT_WRITE_DELAY_MS
-		const isPreventFocusDisruptionEnabled = experiments.isEnabled(
-			state?.experiments ?? {},
-			EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION,
-		)
+		const isPreventFocusDisruptionEnabled =
+			experiments.isEnabled(state?.experiments ?? {}, EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION) ||
+			(state?.autoApprovalEnabled === true && state?.alwaysAllowWrite === true)
 
 		const sanitizedDiff = sanitizeUnifiedDiff(diff || "")
 		const diffStats = computeDiffStats(sanitizedDiff) || undefined
@@ -329,10 +328,9 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 		const state = await provider?.getState()
 		const diagnosticsEnabled = state?.diagnosticsEnabled ?? true
 		const writeDelayMs = state?.writeDelayMs ?? DEFAULT_WRITE_DELAY_MS
-		const isPreventFocusDisruptionEnabled = experiments.isEnabled(
-			state?.experiments ?? {},
-			EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION,
-		)
+		const isPreventFocusDisruptionEnabled =
+			experiments.isEnabled(state?.experiments ?? {}, EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION) ||
+			(state?.autoApprovalEnabled === true && state?.alwaysAllowWrite === true)
 
 		const sanitizedDiff = sanitizeUnifiedDiff(diff)
 		const diffStats = computeDiffStats(sanitizedDiff) || undefined
