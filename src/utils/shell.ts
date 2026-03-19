@@ -205,8 +205,9 @@ function getWindowsShellFromVSCode(): string | null {
 			// If the profile is sourced from PowerShell, assume the newest
 			return SHELL_PATHS.POWERSHELL_7
 		}
-		// Otherwise, assume legacy Windows PowerShell
-		return SHELL_PATHS.POWERSHELL_LEGACY
+		// Otherwise, default to PowerShell 7 (modern) since VS Code auto-discovers
+		// PS7 profiles without setting an explicit path or source property
+		return SHELL_PATHS.POWERSHELL_7
 	}
 
 	// If there's a specific path, return that immediately
