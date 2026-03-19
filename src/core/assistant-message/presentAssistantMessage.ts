@@ -37,6 +37,10 @@ import { generateImageTool } from "../tools/GenerateImageTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
+import { goToDefinitionTool } from "../tools/GoToDefinitionTool"
+import { findReferencesTool } from "../tools/FindReferencesTool"
+import { workspaceSymbolsTool } from "../tools/WorkspaceSymbolsTool"
+import { documentSymbolsTool } from "../tools/DocumentSymbolsTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
@@ -382,6 +386,14 @@ export async function presentAssistantMessage(cline: Task) {
 					case "skill":
 						return `[${block.name} for '${block.params.skill}'${block.params.args ? ` with args: ${block.params.args}` : ""}]`
 					case "generate_image":
+						return `[${block.name} for '${block.params.path}']`
+					case "go_to_definition":
+						return `[${block.name} for '${block.params.path}:${block.params.line}:${block.params.character}']`
+					case "find_references":
+						return `[${block.name} for '${block.params.path}:${block.params.line}:${block.params.character}']`
+					case "workspace_symbols":
+						return `[${block.name} for '${block.params.query}']`
+					case "document_symbols":
 						return `[${block.name} for '${block.params.path}']`
 					default:
 						return `[${block.name}]`
@@ -756,6 +768,34 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "search_files":
 					await searchFilesTool.handle(cline, block as ToolUse<"search_files">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "go_to_definition":
+					await goToDefinitionTool.handle(cline, block as ToolUse<"go_to_definition">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "find_references":
+					await findReferencesTool.handle(cline, block as ToolUse<"find_references">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "workspace_symbols":
+					await workspaceSymbolsTool.handle(cline, block as ToolUse<"workspace_symbols">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "document_symbols":
+					await documentSymbolsTool.handle(cline, block as ToolUse<"document_symbols">, {
 						askApproval,
 						handleError,
 						pushToolResult,
