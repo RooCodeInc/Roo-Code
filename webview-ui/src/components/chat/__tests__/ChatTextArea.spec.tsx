@@ -1081,7 +1081,7 @@ describe("ChatTextArea", () => {
 				expect(shiftEnterEvent.defaultPrevented).toBe(false)
 			})
 
-			it("should treat Ctrl/Cmd/Shift+Enter as send and plain Enter as newline in newline mode", () => {
+			it("should treat Ctrl/Cmd+Enter as send and plain Enter/Shift+Enter as newline in newline mode", () => {
 				const onSend = vi.fn()
 
 				;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -1096,11 +1096,13 @@ describe("ChatTextArea", () => {
 
 				const textarea = container.querySelector("textarea")!
 
+				// Plain Enter should NOT send (allows newline)
 				const plainEnterEvent = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })
 				fireEvent(textarea, plainEnterEvent)
 				expect(onSend).not.toHaveBeenCalled()
 				expect(plainEnterEvent.defaultPrevented).toBe(false)
 
+				// Ctrl+Enter SHOULD send
 				const ctrlEnterEvent = new KeyboardEvent("keydown", {
 					key: "Enter",
 					ctrlKey: true,
@@ -1111,6 +1113,7 @@ describe("ChatTextArea", () => {
 				expect(onSend).toHaveBeenCalledTimes(1)
 				expect(ctrlEnterEvent.defaultPrevented).toBe(true)
 
+				// Shift+Enter should NOT send (allows newline, consistent with standard text editing)
 				const shiftEnterEvent = new KeyboardEvent("keydown", {
 					key: "Enter",
 					shiftKey: true,
@@ -1118,8 +1121,19 @@ describe("ChatTextArea", () => {
 					cancelable: true,
 				})
 				fireEvent(textarea, shiftEnterEvent)
+				expect(onSend).toHaveBeenCalledTimes(1) // Still 1, not incremented
+				expect(shiftEnterEvent.defaultPrevented).toBe(false) // Should not prevent default
+
+				// Cmd+Enter (metaKey) SHOULD send
+				const metaEnterEvent = new KeyboardEvent("keydown", {
+					key: "Enter",
+					metaKey: true,
+					bubbles: true,
+					cancelable: true,
+				})
+				fireEvent(textarea, metaEnterEvent)
 				expect(onSend).toHaveBeenCalledTimes(2)
-				expect(shiftEnterEvent.defaultPrevented).toBe(true)
+				expect(metaEnterEvent.defaultPrevented).toBe(true)
 			})
 		})
 	})
