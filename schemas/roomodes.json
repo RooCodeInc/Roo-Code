@@ -1,0 +1,96 @@
+{
+	"type": "object",
+	"properties": {
+		"customModes": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"slug": {
+						"type": "string",
+						"pattern": "^[a-zA-Z0-9-]+$"
+					},
+					"name": {
+						"type": "string",
+						"minLength": 1
+					},
+					"roleDefinition": {
+						"type": "string",
+						"minLength": 1
+					},
+					"whenToUse": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"customInstructions": {
+						"type": "string"
+					},
+					"source": {
+						"type": "string",
+						"enum": ["global", "project"]
+					},
+					"groups": {
+						"type": "array",
+						"items": {
+							"anyOf": [
+								{
+									"type": "string",
+									"enum": ["read", "edit", "command", "mcp", "modes", "browser"]
+								},
+								{
+									"type": "array",
+									"minItems": 2,
+									"maxItems": 2,
+									"items": [
+										{
+											"type": "string",
+											"enum": ["read", "edit", "command", "mcp", "modes", "browser"]
+										},
+										{
+											"type": "object",
+											"properties": {
+												"fileRegex": {
+													"type": "string"
+												},
+												"description": {
+													"type": "string"
+												}
+											},
+											"additionalProperties": false
+										}
+									]
+								}
+							]
+						}
+					},
+					"rulesFiles": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"relativePath": {
+									"type": "string"
+								},
+								"content": {
+									"type": "string"
+								}
+							},
+							"required": ["relativePath"],
+							"additionalProperties": false
+						}
+					}
+				},
+				"required": ["slug", "name", "roleDefinition", "groups"],
+				"additionalProperties": false
+			}
+		}
+	},
+	"required": ["customModes"],
+	"additionalProperties": false,
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://github.com/RooCodeInc/Roo-Code/blob/main/schemas/roomodes.json",
+	"title": "Roo Code Custom Modes",
+	"description": "Schema for .roomodes configuration files used by Roo Code to define custom modes."
+}
