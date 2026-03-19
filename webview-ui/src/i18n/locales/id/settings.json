@@ -881,6 +881,7 @@
 	},
 	"validation": {
 		"apiKey": "Kamu harus menyediakan API key yang valid.",
+		"baseUrl": "Kamu harus menyediakan base URL yang valid.",
 		"awsRegion": "Kamu harus memilih region untuk digunakan dengan Amazon Bedrock.",
 		"googleCloud": "Kamu harus menyediakan Google Cloud Project ID dan Region yang valid.",
 		"modelId": "Kamu harus menyediakan model ID yang valid.",

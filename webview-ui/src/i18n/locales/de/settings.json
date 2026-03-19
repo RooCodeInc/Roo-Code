@@ -881,6 +881,7 @@
 	},
 	"validation": {
 		"apiKey": "Du musst einen gültigen API-Schlüssel angeben.",
+		"baseUrl": "Du musst eine gültige Basis-URL angeben.",
 		"awsRegion": "Du musst eine Region für die Verwendung mit Amazon Bedrock auswählen.",
 		"googleCloud": "Du musst eine gültige Google Cloud Projekt-ID und Region angeben.",
 		"modelId": "Du musst eine gültige Modell-ID angeben.",

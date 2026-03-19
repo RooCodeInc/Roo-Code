@@ -881,6 +881,7 @@
 	},
 	"validation": {
 		"apiKey": "有効なAPIキーを入力してください。",
+		"baseUrl": "有効なベースURLを入力してください。",
 		"awsRegion": "Amazon Bedrockを使用するにはリージョンを選択してください。",
 		"googleCloud": "有効なGoogle CloudプロジェクトIDとリージョンを入力してください。",
 		"modelId": "有効なモデルIDを入力してください。",
