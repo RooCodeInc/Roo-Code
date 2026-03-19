@@ -5,6 +5,7 @@ import type { SupportedProvider } from "@/types/index.js"
 const envVarMap: Record<SupportedProvider, string> = {
 	anthropic: "ANTHROPIC_API_KEY",
 	"openai-native": "OPENAI_API_KEY",
+	openai: "OPENAI_API_KEY",
 	gemini: "GOOGLE_API_KEY",
 	openrouter: "OPENROUTER_API_KEY",
 	"vercel-ai-gateway": "VERCEL_AI_GATEWAY_API_KEY",
@@ -35,6 +36,11 @@ export function getProviderSettings(
 		case "openai-native":
 			if (apiKey) config.openAiNativeApiKey = apiKey
 			if (model) config.apiModelId = model
+			break
+		case "openai":
+			if (apiKey) config.openAiApiKey = apiKey
+			if (model) config.openAiModelId = model
+			if (process.env.OPENAI_BASE_URL) config.openAiBaseUrl = process.env.OPENAI_BASE_URL
 			break
 		case "gemini":
 			if (apiKey) config.geminiApiKey = apiKey

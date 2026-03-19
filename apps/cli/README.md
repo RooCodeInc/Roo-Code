@@ -215,9 +215,12 @@ The CLI will look for API keys in environment variables if not provided via `--a
 | roo               | `ROO_API_KEY`               |
 | anthropic         | `ANTHROPIC_API_KEY`         |
 | openai-native     | `OPENAI_API_KEY`            |
+| openai            | `OPENAI_API_KEY`            |
 | openrouter        | `OPENROUTER_API_KEY`        |
 | gemini            | `GOOGLE_API_KEY`            |
 | vercel-ai-gateway | `VERCEL_AI_GATEWAY_API_KEY` |
+
+The `openai` provider also reads `OPENAI_BASE_URL` to set a custom API endpoint (e.g., `http://localhost:8080/v1` for locally deployed models).
 
 **Authentication Environment Variables:**
 
