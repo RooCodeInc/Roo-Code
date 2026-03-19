@@ -207,8 +207,8 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 
 	getModel() {
 		const modelId = this.options.apiModelId
-		let id = modelId && modelId in vertexModels ? (modelId as VertexModelId) : vertexDefaultModelId
-		let info: ModelInfo = vertexModels[id]
+		let id = modelId ?? vertexDefaultModelId
+		let info: ModelInfo = vertexModels[id as VertexModelId] ?? vertexModels[vertexDefaultModelId]
 
 		// Check if 1M context beta should be enabled for supported models
 		const supports1MContext = VERTEX_1M_CONTEXT_MODEL_IDS.includes(
