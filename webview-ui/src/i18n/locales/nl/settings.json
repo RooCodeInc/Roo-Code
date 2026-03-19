@@ -477,6 +477,10 @@
 				"title": "OpenRouter-providerroutering",
 				"description": "OpenRouter stuurt verzoeken naar de best beschikbare providers voor je model. Standaard worden verzoeken gebalanceerd over de beste providers voor maximale uptime. Je kunt echter een specifieke provider kiezen voor dit model.",
 				"learnMore": "Meer informatie over providerroutering"
+			},
+			"excludeLowQuantization": {
+				"label": "Lagebit-kwantisatie uitsluiten (FP4/FP6/Int4)",
+				"description": "Sta alleen hogere-precisieproviders toe (FP8/FP16/BF16/Int8). Helpt problemen met CJK-codering (Koreaans/Chinees/Japans) door agressief gekwantiseerde modellen te voorkomen."
 			}
 		},
 		"customModel": {

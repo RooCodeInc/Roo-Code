@@ -477,6 +477,10 @@
 				"title": "OpenRouter Sağlayıcı Yönlendirmesi",
 				"description": "OpenRouter, modeliniz için mevcut en iyi sağlayıcılara istekleri yönlendirir. Varsayılan olarak, istekler çalışma süresini en üst düzeye çıkarmak için en iyi sağlayıcılar arasında dengelenir. Ancak, bu model için kullanılacak belirli bir sağlayıcı seçebilirsiniz.",
 				"learnMore": "Sağlayıcı yönlendirmesi hakkında daha fazla bilgi edinin"
+			},
+			"excludeLowQuantization": {
+				"label": "Düşük bit kuantalamayı hariç tut (FP4/FP6/Int4)",
+				"description": "Yalnızca yüksek hassasiyetli sağlayıcılara izin ver (FP8/FP16/BF16/Int8). Agresif şekilde kuantalanmış modellerden kaynaklanan CJK (Korece/Çince/Japonca) kodlama sorunlarını önlemeye yardımcı olur."
 			}
 		},
 		"customModel": {
