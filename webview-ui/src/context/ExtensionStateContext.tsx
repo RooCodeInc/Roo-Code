@@ -373,11 +373,38 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 				case "messageUpdated": {
 					const clineMessage = message.clineMessage!
 					setState((prevState) => {
-						// worth noting it will never be possible for a more up-to-date message to be sent here or in normal messages post since the presentAssistantContent function uses lock
-						const lastIndex = findLastIndex(prevState.clineMessages, (msg) => msg.ts === clineMessage.ts)
-						if (lastIndex !== -1) {
+						// For subagentRunning updates, match by runId so parallel subagents (same ts) each update their own row
+						let index = -1
+						if (
+							clineMessage.type === "say" &&
+							clineMessage.say === "tool" &&
+							typeof clineMessage.text === "string"
+						) {
+							try {
+								const payload = JSON.parse(clineMessage.text) as { tool?: string; runId?: string }
+								if (payload.tool === "subagentRunning" && payload.runId != null) {
+									index = prevState.clineMessages.findIndex((msg) => {
+										if (msg.type !== "say" || msg.say !== "tool" || typeof msg.text !== "string")
+											return false
+										try {
+											const p = JSON.parse(msg.text) as { tool?: string; runId?: string }
+											return p.tool === "subagentRunning" && p.runId === payload.runId
+										} catch {
+											return false
+										}
+									})
+								}
+							} catch {
+								// fall through to ts match
+							}
+						}
+						if (index === -1) {
+							// worth noting it will never be possible for a more up-to-date message to be sent here or in normal messages post since the presentAssistantContent function uses lock
+							index = findLastIndex(prevState.clineMessages, (msg) => msg.ts === clineMessage.ts)
+						}
+						if (index !== -1) {
 							const newClineMessages = [...prevState.clineMessages]
-							newClineMessages[lastIndex] = clineMessage
+							newClineMessages[index] = clineMessage
 							return { ...prevState, clineMessages: newClineMessages }
 						}
 						// Log a warning if messageUpdated arrives for a timestamp not in the

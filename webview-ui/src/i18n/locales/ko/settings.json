@@ -823,6 +823,10 @@
 			"refreshSuccess": "도구가 성공적으로 새로고침되었습니다",
 			"refreshError": "도구 새로고침에 실패했습니다",
 			"toolParameters": "매개변수"
+		},
+		"SUBAGENT": {
+			"name": "Subagent tool",
+			"description": "When enabled, the model can run subagents in the background for research or sub-tasks. The subagent's result is returned to the main task. Use \"explore\" for read-only sub-tasks or \"general\" when the sub-task may edit files or run commands."
 		}
 	},
 	"promptCaching": {
