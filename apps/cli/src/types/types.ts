@@ -4,6 +4,7 @@ import type { OutputFormat } from "./json-events.js"
 export const supportedProviders = [
 	"anthropic",
 	"openai-native",
+	"openai-codex",
 	"gemini",
 	"openrouter",
 	"vercel-ai-gateway",
