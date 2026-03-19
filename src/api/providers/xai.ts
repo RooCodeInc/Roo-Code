@@ -4,12 +4,11 @@ import OpenAI from "openai"
 import { type XAIModelId, xaiDefaultModelId, xaiModels, ApiProviderError } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
-import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import { ApiStream } from "../transform/stream"
-import { convertToOpenAiMessages } from "../transform/openai-format"
-import { getModelParams } from "../transform/model-params"
+import { convertToResponsesApiInput } from "../transform/responses-api-input"
+import { processResponsesApiStream, createUsageNormalizer } from "../transform/responses-api-stream"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
@@ -42,15 +41,27 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 				? (this.options.apiModelId as XAIModelId)
 				: xaiDefaultModelId
 
-		const info = xaiModels[id]
-		const params = getModelParams({
-			format: "openai",
-			modelId: id,
-			model: info,
-			settings: this.options,
-			defaultTemperature: XAI_DEFAULT_TEMPERATURE,
-		})
-		return { id, info, ...params }
+		return { id, info: xaiModels[id] }
+	}
+
+	/**
+	 * Convert tools from OpenAI Chat Completions format to Responses API format.
+	 * Chat Completions: { type: "function", function: { name, description, parameters } }
+	 * Responses API: { type: "function", name, description, parameters }
+	 */
+	private mapResponseTools(tools?: any[]): any[] | undefined {
+		if (!tools?.length) {
+			return undefined
+		}
+		return tools
+			.filter((tool) => tool?.type === "function")
+			.map((tool) => ({
+				type: "function",
+				name: tool.function.name,
+				description: tool.function.description,
+				parameters: tool.function.parameters ?? null,
+				strict: false,
+			}))
 	}
 
 	override async *createMessage(
@@ -58,113 +69,64 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const { id: modelId, info: modelInfo, reasoning } = this.getModel()
+		const model = this.getModel()
 
-		// Use the OpenAI-compatible API.
-		const requestOptions = {
-			model: modelId,
-			max_tokens: modelInfo.maxTokens,
-			temperature: this.options.modelTemperature ?? XAI_DEFAULT_TEMPERATURE,
-			messages: [
-				{ role: "system", content: systemPrompt },
-				...convertToOpenAiMessages(messages),
-			] as OpenAI.Chat.ChatCompletionMessageParam[],
-			stream: true as const,
-			stream_options: { include_usage: true },
-			...(reasoning && reasoning),
-			tools: this.convertToolsForOpenAI(metadata?.tools),
-			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
-		}
+		// Convert directly from Anthropic format to Responses API input format
+		const input = convertToResponsesApiInput(messages)
+		const responseTools = this.mapResponseTools(metadata?.tools)
 
 		let stream
 		try {
-			stream = await this.client.chat.completions.create(requestOptions)
+			stream = await this.client.responses.create({
+				model: model.id,
+				instructions: systemPrompt,
+				input: input,
+				max_output_tokens: model.info.maxTokens,
+				temperature: this.options.modelTemperature ?? XAI_DEFAULT_TEMPERATURE,
+				stream: true,
+				store: false, // Don't store responses server-side for privacy
+				tools: responseTools,
+				tool_choice: responseTools ? "auto" : undefined,
+				include: ["reasoning.encrypted_content"],
+			})
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
-			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage")
+			const apiError = new ApiProviderError(errorMessage, this.providerName, model.id, "createMessage")
 			TelemetryService.instance.captureException(apiError)
 			throw handleOpenAIError(error, this.providerName)
 		}
 
-		for await (const chunk of stream) {
-			const delta = chunk.choices[0]?.delta
-			const finishReason = chunk.choices[0]?.finish_reason
-
-			if (delta?.content) {
-				yield {
-					type: "text",
-					text: delta.content,
-				}
-			}
-
-			if (delta && "reasoning_content" in delta && delta.reasoning_content) {
-				yield {
-					type: "reasoning",
-					text: delta.reasoning_content as string,
-				}
-			}
-
-			// Handle tool calls in stream - emit partial chunks for NativeToolCallParser
-			if (delta?.tool_calls) {
-				for (const toolCall of delta.tool_calls) {
-					yield {
-						type: "tool_call_partial",
-						index: toolCall.index,
-						id: toolCall.id,
-						name: toolCall.function?.name,
-						arguments: toolCall.function?.arguments,
-					}
-				}
-			}
-
-			// Process finish_reason to emit tool_call_end events
-			// This ensures tool calls are finalized even if the stream doesn't properly close
-			if (finishReason) {
-				const endEvents = NativeToolCallParser.processFinishReason(finishReason)
-				for (const event of endEvents) {
-					yield event
-				}
-			}
-
-			if (chunk.usage) {
-				// Extract detailed token information if available
-				// First check for prompt_tokens_details structure (real API response)
-				const promptDetails = "prompt_tokens_details" in chunk.usage ? chunk.usage.prompt_tokens_details : null
-				const cachedTokens = promptDetails && "cached_tokens" in promptDetails ? promptDetails.cached_tokens : 0
-
-				// Fall back to direct fields in usage (used in test mocks)
-				const readTokens =
-					cachedTokens ||
-					("cache_read_input_tokens" in chunk.usage ? (chunk.usage as any).cache_read_input_tokens : 0)
-				const writeTokens =
-					"cache_creation_input_tokens" in chunk.usage ? (chunk.usage as any).cache_creation_input_tokens : 0
-
-				yield {
-					type: "usage",
-					inputTokens: chunk.usage.prompt_tokens || 0,
-					outputTokens: chunk.usage.completion_tokens || 0,
-					cacheReadTokens: readTokens,
-					cacheWriteTokens: writeTokens,
-				}
-			}
-		}
+		const normalizeUsage = createUsageNormalizer(model.info)
+		yield* processResponsesApiStream(stream, normalizeUsage)
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
-		const { id: modelId, reasoning } = this.getModel()
+		const model = this.getModel()
 
 		try {
-			const response = await this.client.chat.completions.create({
-				model: modelId,
-				messages: [{ role: "user", content: prompt }],
-				...(reasoning && reasoning),
+			const response = await this.client.responses.create({
+				model: model.id,
+				input: [{ role: "user", content: [{ type: "input_text", text: prompt }] }],
+				store: false,
 			})
 
-			return response.choices[0]?.message.content || ""
+			// Extract text from the response output
+			const output = (response as any).output
+			if (Array.isArray(output)) {
+				for (const item of output) {
+					if (item.type === "message" && Array.isArray(item.content)) {
+						for (const content of item.content) {
+							if (content.type === "output_text" && content.text) {
+								return content.text
+							}
+						}
+					}
+				}
+			}
+			return (response as any).output_text || ""
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
-			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "completePrompt")
+			const apiError = new ApiProviderError(errorMessage, this.providerName, model.id, "completePrompt")
 			TelemetryService.instance.captureException(apiError)
 			throw handleOpenAIError(error, this.providerName)
 		}
