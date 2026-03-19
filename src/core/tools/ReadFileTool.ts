@@ -24,6 +24,7 @@ import { extractTextFromFile, addLineNumbers, getSupportedBinaryFormats } from "
 import { readWithIndentation, readWithSlice } from "../../integrations/misc/indentation-reader"
 import { DEFAULT_LINE_LIMIT } from "../prompts/tools/native-tools/read_file"
 import type { ToolUse, PushToolResult } from "../../shared/tools"
+import { contentHash } from "../../hooks/content-hash"
 
 import {
 	DEFAULT_MAX_IMAGE_FILE_SIZE_MB,
@@ -219,6 +220,8 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					const result = this.processTextFile(fileContent, entry)
 
 					await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+					// Optimistic locking: record hash so write_to_file can detect parallel edits
+					task.recordFileReadHash(relPath, contentHash(fileContent))
 
 					updateFileResult(relPath, {
 						nativeContent: `File: ${relPath}\n${result}`,
@@ -393,6 +396,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				const lineCount = content.split("\n").length
 
 				await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+				task.recordFileReadHash(relPath, contentHash(content))
 
 				updateFileResult(relPath, {
 					nativeContent:
@@ -798,6 +802,8 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 				// Track file in context
 				await task.fileContextTracker.trackFileContext(relPath, "read_tool")
+				// Optimistic locking: record full-file hash for write_to_file stale detection
+				task.recordFileReadHash(relPath, contentHash(rawContent))
 			} catch (error) {
 				const errorMsg = error instanceof Error ? error.message : String(error)
 				results.push(`File: ${relPath}\nError: ${errorMsg}`)
