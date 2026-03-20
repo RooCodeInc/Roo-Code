@@ -470,4 +470,26 @@ describe("TaskHeader", () => {
 			expect(screen.getByText("0%")).toBeInTheDocument()
 		})
 	})
+
+	describe("Root orchestration cost", () => {
+		it("should display orchestration cost when rootOrchestrationCost is provided and > 0", () => {
+			renderTaskHeader({ rootOrchestrationCost: 1.5 })
+			expect(screen.getByText("chat:costs.orchestrationLabel: $1.50")).toBeInTheDocument()
+		})
+
+		it("should not display orchestration cost when rootOrchestrationCost is undefined", () => {
+			renderTaskHeader({ rootOrchestrationCost: undefined })
+			expect(screen.queryByText(/chat:costs.orchestrationLabel/)).not.toBeInTheDocument()
+		})
+
+		it("should not display orchestration cost when rootOrchestrationCost is 0", () => {
+			renderTaskHeader({ rootOrchestrationCost: 0 })
+			expect(screen.queryByText(/chat:costs.orchestrationLabel/)).not.toBeInTheDocument()
+		})
+
+		it("should display orchestration cost tooltip with correct text", () => {
+			renderTaskHeader({ rootOrchestrationCost: 2.75 })
+			expect(screen.getByText("chat:costs.orchestrationLabel: $2.75")).toBeInTheDocument()
+		})
+	})
 })

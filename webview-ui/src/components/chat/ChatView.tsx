@@ -505,7 +505,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				text: currentTaskItem.id,
 			})
 		}
-	}, [taskTs, currentTaskItem?.id, currentTaskItem?.childIds])
+		// When viewing a subtask, also request aggregated costs for the root orchestration task
+		const rootId = currentTaskItem?.rootTaskId
+		if (taskTs && rootId && rootId !== currentTaskItem?.id) {
+			vscode.postMessage({
+				type: "getTaskWithAggregatedCosts",
+				text: rootId,
+			})
+		}
+	}, [taskTs, currentTaskItem?.id, currentTaskItem?.childIds, currentTaskItem?.rootTaskId])
 
 	useEffect(() => {
 		if (isHidden) {
@@ -1563,6 +1571,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							)
 						}
 						parentTaskId={currentTaskItem?.parentTaskId}
+						rootOrchestrationCost={
+							currentTaskItem?.rootTaskId &&
+							currentTaskItem.rootTaskId !== currentTaskItem.id &&
+							aggregatedCostsMap.has(currentTaskItem.rootTaskId)
+								? aggregatedCostsMap.get(currentTaskItem.rootTaskId)!.totalCost
+								: undefined
+						}
 						costBreakdown={
 							currentTaskItem?.id && aggregatedCostsMap.has(currentTaskItem.id)
 								? getCostBreakdownIfNeeded(aggregatedCostsMap.get(currentTaskItem.id)!, {
