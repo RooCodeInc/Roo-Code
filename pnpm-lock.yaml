@@ -875,6 +875,9 @@ importers:
       i18next:
         specifier: ^25.0.0
         version: 25.2.1(typescript@5.8.3)
+      iconv-lite:
+        specifier: ^0.6.3
+        version: 0.6.3
       ignore:
         specifier: ^7.0.3
         version: 7.0.4
