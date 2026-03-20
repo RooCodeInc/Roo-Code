@@ -268,6 +268,17 @@ describe("AnthropicHandler", () => {
 			expect(model.info.supportsPromptCache).toBe(true)
 		})
 
+		it("should preserve custom model ID and use default model info for unknown models", () => {
+			const customHandler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-custom-model-v1",
+			})
+			const model = customHandler.getModel()
+			expect(model.id).toBe("claude-custom-model-v1")
+			expect(model.info).toBeDefined()
+			expect(model.info.contextWindow).toBeDefined()
+		})
+
 		it("honors custom maxTokens for thinking models", () => {
 			const handler = new AnthropicHandler({
 				apiKey: "test-api-key",

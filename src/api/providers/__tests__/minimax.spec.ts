@@ -134,6 +134,17 @@ describe("MiniMaxHandler", () => {
 			expect(model.info.cacheWritesPrice).toBe(0.375)
 			expect(model.info.cacheReadsPrice).toBe(0.03)
 		})
+
+		it("should preserve custom model ID and use default model info for unknown models", () => {
+			const handlerWithCustom = new MiniMaxHandler({
+				apiModelId: "MiniMax-M2.7-custom",
+				minimaxApiKey: "test-minimax-api-key",
+			})
+			const model = handlerWithCustom.getModel()
+			expect(model.id).toBe("MiniMax-M2.7-custom")
+			expect(model.info).toBeDefined()
+			expect(model.info).toEqual(minimaxModels[minimaxDefaultModelId])
+		})
 	})
 
 	describe("China MiniMax", () => {

@@ -80,6 +80,14 @@ describe("XAIHandler", () => {
 		expect(model.info).toEqual(xaiModels[testModelId])
 	})
 
+	it("should preserve custom model ID and use default model info for unknown models", () => {
+		const customHandler = new XAIHandler({ apiModelId: "grok-custom-model" })
+		const model = customHandler.getModel()
+		expect(model.id).toBe("grok-custom-model")
+		expect(model.info).toBeDefined()
+		expect(model.info).toEqual(xaiModels[xaiDefaultModelId])
+	})
+
 	it("should include reasoning_effort parameter for mini models", async () => {
 		const miniModelHandler = new XAIHandler({
 			apiModelId: "grok-3-mini",

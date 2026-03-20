@@ -270,9 +270,8 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 	}
 
 	getModel() {
-		const modelId = this.options.apiModelId
-		const id = modelId && modelId in minimaxModels ? (modelId as MinimaxModelId) : minimaxDefaultModelId
-		const info = minimaxModels[id]
+		const id = this.options.apiModelId ?? minimaxDefaultModelId
+		const info = minimaxModels[id as MinimaxModelId] || minimaxModels[minimaxDefaultModelId]
 
 		const params = getModelParams({
 			format: "anthropic",

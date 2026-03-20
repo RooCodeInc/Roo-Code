@@ -841,6 +841,18 @@ describe("VertexHandler", () => {
 			expect(modelInfo.info.contextWindow).toBe(200_000)
 		})
 
+		it("should preserve custom model ID and use default model info for unknown models", () => {
+			const customHandler = new AnthropicVertexHandler({
+				apiModelId: "claude-custom-vertex-model",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			})
+			const modelInfo = customHandler.getModel()
+			expect(modelInfo.id).toBe("claude-custom-vertex-model")
+			expect(modelInfo.info).toBeDefined()
+			expect(modelInfo.info.contextWindow).toBeDefined()
+		})
+
 		it("honors custom maxTokens for thinking models", () => {
 			const handler = new AnthropicVertexHandler({
 				apiKey: "test-api-key",
