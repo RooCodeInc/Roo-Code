@@ -131,8 +131,8 @@ export function createUsageNormalizer(
 			type: "usage",
 			inputTokens,
 			outputTokens,
-			cacheReadTokens,
 			cacheWriteTokens,
+			cacheReadTokens,
 			...(typeof reasoningTokens === "number" ? { reasoningTokens } : {}),
 			...(typeof totalCost === "number" ? { totalCost } : {}),
 		}

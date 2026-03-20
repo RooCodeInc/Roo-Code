@@ -239,12 +239,7 @@ describe("XAIHandler", () => {
 	it("completePrompt should return text from Responses API", async () => {
 		const expectedResponse = "This is a test response"
 		mockResponsesCreate.mockResolvedValueOnce({
-			output: [
-				{
-					type: "message",
-					content: [{ type: "output_text", text: expectedResponse }],
-				},
-			],
+			output_text: expectedResponse,
 		})
 
 		const result = await handler.completePrompt("test prompt")
@@ -256,6 +251,41 @@ describe("XAIHandler", () => {
 		mockResponsesCreate.mockRejectedValueOnce(new Error(errorMessage))
 
 		await expect(handler.completePrompt("test prompt")).rejects.toThrow(`xAI completion error: ${errorMessage}`)
+	})
+
+	it("should include reasoning_effort for mini models", async () => {
+		const miniModelHandler = new XAIHandler({
+			apiModelId: "grok-3-mini",
+			reasoningEffort: "high",
+		})
+
+		mockResponsesCreate.mockResolvedValueOnce(mockStream([]))
+
+		const stream = miniModelHandler.createMessage("test prompt", [])
+		await stream.next()
+
+		expect(mockResponsesCreate).toHaveBeenCalledWith(
+			expect.objectContaining({
+				reasoning: expect.objectContaining({
+					reasoning_effort: "high",
+				}),
+			}),
+		)
+	})
+
+	it("should not include reasoning for non-mini models", async () => {
+		const regularHandler = new XAIHandler({
+			apiModelId: "grok-3",
+			reasoningEffort: "high",
+		})
+
+		mockResponsesCreate.mockResolvedValueOnce(mockStream([]))
+
+		const stream = regularHandler.createMessage("test prompt", [])
+		await stream.next()
+
+		const callArgs = mockResponsesCreate.mock.calls[mockResponsesCreate.mock.calls.length - 1][0]
+		expect(callArgs).not.toHaveProperty("reasoning")
 	})
 
 	it("should handle errors in createMessage", async () => {
