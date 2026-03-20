@@ -545,4 +545,43 @@ describe("BaseOpenAiCompatibleProvider", () => {
 			expect(endChunks).toHaveLength(0)
 		})
 	})
+
+	describe("getModel", () => {
+		it("should return the default model when no apiModelId is set", () => {
+			const model = handler.getModel()
+			expect(model.id).toBe("test-model")
+			expect(model.info).toBeDefined()
+		})
+
+		it("should preserve custom model ID and use default model info for unknown models", () => {
+			const customHandler = new (class extends BaseOpenAiCompatibleProvider<"test-model"> {
+				constructor() {
+					const testModels: Record<"test-model", ModelInfo> = {
+						"test-model": {
+							maxTokens: 4096,
+							contextWindow: 128000,
+							supportsImages: false,
+							supportsPromptCache: false,
+							inputPrice: 0.5,
+							outputPrice: 1.5,
+						},
+					}
+
+					super({
+						providerName: "TestProvider",
+						baseURL: "https://test.example.com/v1",
+						defaultProviderModelId: "test-model",
+						providerModels: testModels,
+						apiKey: "test-key",
+						apiModelId: "custom-unknown-model",
+					})
+				}
+			})()
+
+			const model = customHandler.getModel()
+			expect(model.id).toBe("custom-unknown-model")
+			expect(model.info).toBeDefined()
+			expect(model.info.contextWindow).toBe(128000)
+		})
+	})
 })

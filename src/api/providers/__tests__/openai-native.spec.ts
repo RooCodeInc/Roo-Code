@@ -324,6 +324,17 @@ describe("OpenAiNativeHandler", () => {
 			expect(modelInfo.id).toBe("gpt-5.1-codex-max") // Default model
 			expect(modelInfo.info).toBeDefined()
 		})
+
+		it("should preserve custom model ID and use default model info for unknown models", () => {
+			const customHandler = new OpenAiNativeHandler({
+				...mockOptions,
+				apiModelId: "gpt-custom-model",
+			})
+			const modelInfo = customHandler.getModel()
+			expect(modelInfo.id).toBe("gpt-custom-model")
+			expect(modelInfo.info).toBeDefined()
+			expect(modelInfo.info.contextWindow).toBeDefined()
+		})
 	})
 
 	describe("GPT-5 models", () => {
