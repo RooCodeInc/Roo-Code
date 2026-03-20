@@ -5,6 +5,7 @@ import process from "process"
 import type { RooTerminal } from "./types"
 import { BaseTerminal } from "./BaseTerminal"
 import { BaseTerminalProcess } from "./BaseTerminalProcess"
+import { getShell } from "../../utils/shell"
 
 export class ExecaTerminalProcess extends BaseTerminalProcess {
 	private terminalRef: WeakRef<RooTerminal>
@@ -40,7 +41,7 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 			this.isHot = true
 
 			this.subprocess = execa({
-				shell: BaseTerminal.getExecaShellPath() || true,
+				shell: BaseTerminal.getExecaShellPath() || getShell(),
 				cwd: this.terminal.getCurrentWorkingDirectory(),
 				all: true,
 				// Ignore stdin to ensure non-interactive mode and prevent hanging

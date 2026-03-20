@@ -21,6 +21,10 @@ vitest.mock("ps-tree", () => ({
 	default: vitest.fn((_: number, cb: any) => cb(null, [])),
 }))
 
+vitest.mock("../../../utils/shell", () => ({
+	getShell: vitest.fn(() => "/mocked/default/shell"),
+}))
+
 import { execa } from "execa"
 import { ExecaTerminalProcess } from "../ExecaTerminalProcess"
 import { BaseTerminal } from "../BaseTerminal"
@@ -63,7 +67,7 @@ describe("ExecaTerminalProcess", () => {
 			const execaMock = vitest.mocked(execa)
 			expect(execaMock).toHaveBeenCalledWith(
 				expect.objectContaining({
-					shell: true,
+					shell: "/mocked/default/shell",
 					cwd: "/test/cwd",
 					all: true,
 					env: expect.objectContaining({
@@ -105,13 +109,13 @@ describe("ExecaTerminalProcess", () => {
 			)
 		})
 
-		it("should fall back to shell=true when execaShellPath is undefined", async () => {
+		it("should fall back to getShell() when execaShellPath is undefined", async () => {
 			BaseTerminal.setExecaShellPath(undefined)
 			await terminalProcess.run("echo test")
 			const execaMock = vitest.mocked(execa)
 			expect(execaMock).toHaveBeenCalledWith(
 				expect.objectContaining({
-					shell: true,
+					shell: "/mocked/default/shell",
 				}),
 			)
 		})

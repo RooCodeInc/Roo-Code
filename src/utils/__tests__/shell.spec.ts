@@ -139,11 +139,11 @@ describe("Shell Detection Tests", () => {
 			expect(getShell()).toBe("C:\\Program Files\\PowerShell\\7\\pwsh.exe")
 		})
 
-		it("falls back to legacy PowerShell if profile includes 'powershell' but no path/source", () => {
+		it("falls back to PowerShell 7 if profile includes 'powershell' but no path/source", () => {
 			mockVsCodeConfig("windows", "PowerShell", {
 				PowerShell: {},
 			})
-			expect(getShell()).toBe("C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe")
+			expect(getShell()).toBe("C:\\Program Files\\PowerShell\\7\\pwsh.exe")
 		})
 
 		it("uses WSL bash when profile indicates WSL source", () => {
