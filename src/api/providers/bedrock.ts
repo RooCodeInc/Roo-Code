@@ -27,6 +27,7 @@ import {
 	BEDROCK_DEFAULT_CONTEXT,
 	AWS_INFERENCE_PROFILE_MAPPING,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
+	BEDROCK_FINE_GRAINED_STREAMING_UNSUPPORTED_IDS,
 	BEDROCK_GLOBAL_INFERENCE_MODEL_IDS,
 	BEDROCK_SERVICE_TIER_MODEL_IDS,
 	BEDROCK_SERVICE_TIER_PRICING,
@@ -436,9 +437,14 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			anthropicBetas.push("context-1m-2025-08-07")
 		}
 
-		// Add fine-grained tool streaming beta for Claude models
-		// This enables proper tool use streaming for Anthropic models on Bedrock
-		if (baseModelId.includes("claude")) {
+		// Add fine-grained tool streaming beta for Claude models that support it.
+		// Older Claude 3 models (Haiku, Opus, Sonnet, and original 3.5 Sonnet) do not
+		// support this beta flag and Bedrock rejects the request with "invalid beta flag".
+		// See: https://github.com/RooCodeInc/Roo-Code/issues/11715
+		if (
+			baseModelId.includes("claude") &&
+			!BEDROCK_FINE_GRAINED_STREAMING_UNSUPPORTED_IDS.includes(baseModelId as any)
+		) {
 			anthropicBetas.push("fine-grained-tool-streaming-2025-05-14")
 		}
 
