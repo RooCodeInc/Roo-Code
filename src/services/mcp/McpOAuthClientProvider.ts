@@ -88,7 +88,8 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 		const scopes: string[] = authServerMeta?.scopes_supported ?? []
 
 		// Generate a CSRF state token for the OAuth flow.
-		const state = Array.from(crypto.getRandomValues(new Uint8Array(8)))
+		// Use 16 bytes (128 bits) to meet OAuth 2.1 entropy recommendations.
+		const state = Array.from(crypto.getRandomValues(new Uint8Array(16)))
 			.map((b) => b.toString(16).padStart(2, "0"))
 			.join("")
 

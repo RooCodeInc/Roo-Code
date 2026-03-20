@@ -21,8 +21,10 @@ export function startCallbackServer(
 	port: number
 	result: Promise<CallbackResult>
 }> {
-	// In test mode, immediately resolve with mock data
-	if (process.env.MCP_OAUTH_TEST_MODE === "true") {
+	// In test mode (only active in VS Code e2e test runner), immediately resolve
+	// with mock data so the OAuth flow can complete without a real browser.
+	// This env var is set exclusively by the e2e test suite (mcp-oauth.test.ts).
+	if (process.env.MCP_OAUTH_TEST_MODE === "true" && process.env.VSCODE_PID) {
 		return new Promise((resolve) => {
 			const mockServer = http.createServer()
 			resolve({
@@ -77,6 +79,10 @@ export function startCallbackServer(
 						// Verify state for CSRF protection
 						if (expectedState && state !== expectedState) {
 							res.writeHead(400, { "Content-Type": "text/html" })
+							// Close the server after rejecting -- no valid callback will follow.
+							res.on("finish", () => {
+								server.close()
+							})
 							res.end(`
                 <!DOCTYPE html>
                 <html>
@@ -93,8 +99,12 @@ export function startCallbackServer(
 							return
 						}
 
-						// Send HTML response
-						res.writeHead(200, { "Content-Type": "text/html" })
+						// Send HTML response with CSP to restrict inline script to this page only.
+						res.writeHead(200, {
+							"Content-Type": "text/html",
+							"Content-Security-Policy":
+								"default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'",
+						})
 						res.end(`
 <!DOCTYPE html>
 <html>
@@ -192,6 +202,11 @@ export function startCallbackServer(
  */
 export function stopCallbackServer(server: http.Server): Promise<void> {
 	return new Promise((resolve) => {
-		server.close(() => resolve())
+		try {
+			server.close(() => resolve())
+		} catch {
+			// Server may already be closed; resolve immediately.
+			resolve()
+		}
 	})
 }
