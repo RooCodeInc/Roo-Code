@@ -18,10 +18,19 @@ export function convertToResponsesApiInput(messages: Anthropic.Messages.MessageP
 
 	for (const message of messages) {
 		if (typeof message.content === "string") {
-			input.push({
-				role: message.role,
-				content: [{ type: "input_text", text: message.content }],
-			})
+			if (message.role === "assistant") {
+				// Assistant messages use output_text in the Responses API format
+				input.push({
+					type: "message",
+					role: "assistant",
+					content: [{ type: "output_text", text: message.content }],
+				})
+			} else {
+				input.push({
+					role: message.role,
+					content: [{ type: "input_text", text: message.content }],
+				})
+			}
 			continue
 		}
 

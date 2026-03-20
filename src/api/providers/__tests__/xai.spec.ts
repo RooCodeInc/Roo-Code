@@ -82,7 +82,7 @@ describe("XAIHandler", () => {
 		expect(model.info).toEqual(xaiModels[xaiDefaultModelId])
 	})
 
-	test("should return specified model when valid model is provided", () => {
+	it("should return specified model when valid model is provided", () => {
 		const testModelId = "grok-3"
 		const handlerWithModel = new XAIHandler({ apiModelId: testModelId })
 		const model = handlerWithModel.getModel()
@@ -227,9 +227,11 @@ describe("XAIHandler", () => {
 						type: "function",
 						name: "test_tool",
 						description: "A test tool",
+						strict: true,
 					}),
 				],
 				tool_choice: "auto",
+				parallel_tool_calls: true,
 			}),
 		)
 	})

@@ -291,16 +291,14 @@ describe("processResponsesApiStream", () => {
 })
 
 describe("createUsageNormalizer", () => {
-	const mockModelInfo = { contextWindow: 128000, supportsPromptCache: false } as any
-
 	it("should return undefined for null/undefined usage", () => {
-		const normalize = createUsageNormalizer(mockModelInfo)
+		const normalize = createUsageNormalizer()
 		expect(normalize(null)).toBeUndefined()
 		expect(normalize(undefined)).toBeUndefined()
 	})
 
 	it("should extract input and output tokens", () => {
-		const normalize = createUsageNormalizer(mockModelInfo)
+		const normalize = createUsageNormalizer()
 
 		const result = normalize({ input_tokens: 100, output_tokens: 50 })
 
@@ -314,7 +312,7 @@ describe("createUsageNormalizer", () => {
 	})
 
 	it("should extract cached tokens from input_tokens_details", () => {
-		const normalize = createUsageNormalizer(mockModelInfo)
+		const normalize = createUsageNormalizer()
 
 		const result = normalize({
 			input_tokens: 100,
@@ -325,8 +323,20 @@ describe("createUsageNormalizer", () => {
 		expect(result?.cacheReadTokens).toBe(30)
 	})
 
+	it("should extract cache write tokens", () => {
+		const normalize = createUsageNormalizer()
+
+		const result = normalize({
+			input_tokens: 100,
+			output_tokens: 50,
+			cache_creation_input_tokens: 15,
+		})
+
+		expect(result?.cacheWriteTokens).toBe(15)
+	})
+
 	it("should extract reasoning tokens from output_tokens_details", () => {
-		const normalize = createUsageNormalizer(mockModelInfo)
+		const normalize = createUsageNormalizer()
 
 		const result = normalize({
 			input_tokens: 100,
@@ -338,7 +348,7 @@ describe("createUsageNormalizer", () => {
 	})
 
 	it("should not include reasoningTokens when not present", () => {
-		const normalize = createUsageNormalizer(mockModelInfo)
+		const normalize = createUsageNormalizer()
 
 		const result = normalize({ input_tokens: 100, output_tokens: 50 })
 
@@ -347,7 +357,7 @@ describe("createUsageNormalizer", () => {
 
 	it("should compute totalCost when calculateCost is provided", () => {
 		const calculateCost = (input: number, output: number, cached: number) => 0.42
-		const normalize = createUsageNormalizer(mockModelInfo, calculateCost)
+		const normalize = createUsageNormalizer(calculateCost)
 
 		const result = normalize({ input_tokens: 100, output_tokens: 50 })
 
@@ -355,7 +365,7 @@ describe("createUsageNormalizer", () => {
 	})
 
 	it("should not include totalCost when calculateCost is not provided", () => {
-		const normalize = createUsageNormalizer(mockModelInfo)
+		const normalize = createUsageNormalizer()
 
 		const result = normalize({ input_tokens: 100, output_tokens: 50 })
 
@@ -363,7 +373,7 @@ describe("createUsageNormalizer", () => {
 	})
 
 	it("should handle Chat Completions style field names as fallback", () => {
-		const normalize = createUsageNormalizer(mockModelInfo)
+		const normalize = createUsageNormalizer()
 
 		const result = normalize({
 			prompt_tokens: 100,

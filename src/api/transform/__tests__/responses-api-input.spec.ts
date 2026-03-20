@@ -15,12 +15,18 @@ describe("convertToResponsesApiInput", () => {
 			expect(result).toEqual([{ role: "user", content: [{ type: "input_text", text: "Hello" }] }])
 		})
 
-		it("should convert assistant string content", () => {
+		it("should convert assistant string content to output_text message format", () => {
 			const messages: Anthropic.Messages.MessageParam[] = [{ role: "assistant", content: "Hi there" }]
 
 			const result = convertToResponsesApiInput(messages)
 
-			expect(result).toEqual([{ role: "assistant", content: [{ type: "input_text", text: "Hi there" }] }])
+			expect(result).toEqual([
+				{
+					type: "message",
+					role: "assistant",
+					content: [{ type: "output_text", text: "Hi there" }],
+				},
+			])
 		})
 	})
 

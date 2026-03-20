@@ -14,6 +14,7 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { isMcpTool } from "../../utils/mcp-name"
 
 const XAI_DEFAULT_TEMPERATURE = 0
 
@@ -48,6 +49,9 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 	 * Convert tools from OpenAI Chat Completions format to Responses API format.
 	 * Chat Completions: { type: "function", function: { name, description, parameters } }
 	 * Responses API: { type: "function", name, description, parameters }
+	 *
+	 * Uses base provider's convertToolSchemaForOpenAI() for schema hardening
+	 * (additionalProperties: false, ensureAllRequired) and handles MCP tools.
 	 */
 	private mapResponseTools(tools?: any[]): any[] | undefined {
 		if (!tools?.length) {
@@ -55,13 +59,18 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 		}
 		return tools
 			.filter((tool) => tool?.type === "function")
-			.map((tool) => ({
-				type: "function",
-				name: tool.function.name,
-				description: tool.function.description,
-				parameters: tool.function.parameters ?? null,
-				strict: false,
-			}))
+			.map((tool) => {
+				const isMcp = isMcpTool(tool.function.name)
+				return {
+					type: "function",
+					name: tool.function.name,
+					description: tool.function.description,
+					parameters: isMcp
+						? tool.function.parameters
+						: this.convertToolSchemaForOpenAI(tool.function.parameters),
+					strict: !isMcp,
+				}
+			})
 	}
 
 	override async *createMessage(
@@ -86,7 +95,9 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 				stream: true,
 				store: false, // Don't store responses server-side for privacy
 				tools: responseTools,
-				tool_choice: responseTools ? "auto" : undefined,
+				// Cast tool_choice since metadata uses Chat Completions types but Responses API has its own type
+				tool_choice: (metadata?.tool_choice ?? (responseTools ? "auto" : undefined)) as any,
+				parallel_tool_calls: metadata?.parallelToolCalls ?? true,
 				include: ["reasoning.encrypted_content"],
 			})
 		} catch (error) {
@@ -96,7 +107,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 			throw handleOpenAIError(error, this.providerName)
 		}
 
-		const normalizeUsage = createUsageNormalizer(model.info)
+		const normalizeUsage = createUsageNormalizer()
 		yield* processResponsesApiStream(stream, normalizeUsage)
 	}
 

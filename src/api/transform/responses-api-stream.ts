@@ -1,5 +1,3 @@
-import type { ModelInfo } from "@roo-code/types"
-
 import type { ApiStream, ApiStreamUsageChunk } from "./stream"
 
 /**
@@ -106,11 +104,9 @@ export async function* processResponsesApiStream(
  * Creates a standard usage normalizer for providers with per-token pricing.
  * Extracts input/output tokens, cache tokens, reasoning tokens, and computes cost.
  *
- * @param modelInfo - Model info with pricing details
  * @param calculateCost - Optional function to compute total cost from token counts
  */
 export function createUsageNormalizer(
-	modelInfo: ModelInfo,
 	calculateCost?: (inputTokens: number, outputTokens: number, cacheReadTokens: number) => number,
 ): (usage: any) => ApiStreamUsageChunk | undefined {
 	return (usage: any): ApiStreamUsageChunk | undefined => {
@@ -122,6 +118,7 @@ export function createUsageNormalizer(
 		const inputTokens = usage.input_tokens ?? usage.prompt_tokens ?? 0
 		const outputTokens = usage.output_tokens ?? usage.completion_tokens ?? 0
 		const cacheReadTokens = usage.cache_read_input_tokens ?? cachedTokens ?? 0
+		const cacheWriteTokens = usage.cache_creation_input_tokens ?? usage.cache_write_tokens ?? 0
 
 		const reasoningTokens =
 			typeof usage.output_tokens_details?.reasoning_tokens === "number"
@@ -135,6 +132,7 @@ export function createUsageNormalizer(
 			inputTokens,
 			outputTokens,
 			cacheReadTokens,
+			cacheWriteTokens,
 			...(typeof reasoningTokens === "number" ? { reasoningTokens } : {}),
 			...(typeof totalCost === "number" ? { totalCost } : {}),
 		}
