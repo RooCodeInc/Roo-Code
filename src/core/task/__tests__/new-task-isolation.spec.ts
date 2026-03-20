@@ -61,7 +61,7 @@ describe("new_task Tool Isolation Enforcement", () => {
 					type: "tool_use",
 					id: "toolu_new_task_1",
 					name: "new_task",
-					input: { mode: "code", message: "Do something" },
+					input: { mode_slug: "code", message: "Do something" },
 				},
 			]
 
@@ -83,7 +83,7 @@ describe("new_task Tool Isolation Enforcement", () => {
 					type: "tool_use",
 					id: "toolu_new_task_1",
 					name: "new_task",
-					input: { mode: "code", message: "Do something" },
+					input: { mode_slug: "code", message: "Do something" },
 				},
 			]
 
@@ -123,7 +123,7 @@ describe("new_task Tool Isolation Enforcement", () => {
 					type: "tool_use",
 					id: "toolu_new_task_1",
 					name: "new_task",
-					input: { mode: "code", message: "Do something" },
+					input: { mode_slug: "code", message: "Do something" },
 				},
 				{
 					type: "tool_use",
@@ -146,7 +146,7 @@ describe("new_task Tool Isolation Enforcement", () => {
 					type: "tool_use",
 					id: "toolu_new_task_1",
 					name: "new_task",
-					input: { mode: "code", message: "Do something" },
+					input: { mode_slug: "code", message: "Do something" },
 				},
 				{
 					type: "tool_use",
@@ -173,7 +173,7 @@ describe("new_task Tool Isolation Enforcement", () => {
 					type: "tool_use",
 					id: "toolu_new_task_1",
 					name: "new_task",
-					input: { mode: "code", message: "Do something" },
+					input: { mode_slug: "code", message: "Do something" },
 				},
 				{
 					type: "tool_use",
@@ -219,7 +219,7 @@ describe("new_task Tool Isolation Enforcement", () => {
 					type: "tool_use",
 					id: "toolu_new_task_1",
 					name: "new_task",
-					input: { mode: "code", message: "Do something" },
+					input: { mode_slug: "code", message: "Do something" },
 				},
 				{
 					type: "tool_use",
@@ -253,7 +253,7 @@ describe("new_task Tool Isolation Enforcement", () => {
 					type: "tool_use",
 					id: "toolu_new_task_1",
 					name: "new_task",
-					input: { mode: "code", message: "Do something" },
+					input: { mode_slug: "code", message: "Do something" },
 				},
 				{
 					type: "tool_use",
@@ -284,7 +284,7 @@ describe("new_task Tool Isolation Enforcement", () => {
 					type: "tool_use",
 					id: "toolu_new_task_1",
 					name: "new_task",
-					input: { mode: "code", message: "Do something" },
+					input: { mode_slug: "code", message: "Do something" },
 				},
 				{
 					type: "text",
@@ -316,7 +316,7 @@ describe("new_task Tool Isolation Enforcement", () => {
 					type: "tool_use",
 					id: "toolu_new_task_1",
 					name: "new_task",
-					input: { mode: "code", message: "Do something" },
+					input: { mode_slug: "code", message: "Do something" },
 				},
 				// Simulating a malformed tool without ID (shouldn't happen, but defensive)
 				{
@@ -345,13 +345,13 @@ describe("new_task Tool Isolation Enforcement", () => {
 					type: "tool_use",
 					id: "toolu_new_task_1",
 					name: "new_task",
-					input: { mode: "code", message: "First task" },
+					input: { mode_slug: "code", message: "First task" },
 				},
 				{
 					type: "tool_use",
 					id: "toolu_new_task_2",
 					name: "new_task",
-					input: { mode: "debug", message: "Second task" },
+					input: { mode_slug: "debug", message: "Second task" },
 				},
 			]
 
@@ -375,7 +375,7 @@ describe("new_task Tool Isolation Enforcement", () => {
 					type: "tool_use",
 					id: "toolu_new_task_1",
 					name: "new_task",
-					input: { mode: "code", message: "Do something" },
+					input: { mode_slug: "code", message: "Do something" },
 				},
 				{
 					type: "tool_use",
@@ -397,7 +397,7 @@ describe("new_task Tool Isolation Enforcement", () => {
 					type: "tool_use",
 					id: "toolu_new_task_1",
 					name: "new_task",
-					input: { mode: "code", message: "Do something" },
+					input: { mode_slug: "code", message: "Do something" },
 				},
 				{
 					type: "tool_use",

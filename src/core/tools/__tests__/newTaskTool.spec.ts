@@ -117,7 +117,7 @@ const withNativeArgs = (block: ToolUse<"new_task">): ToolUse<"new_task"> => ({
 	// These tests intentionally exercise missing-param behavior, so we allow undefined
 	// values and let the tool's runtime validation handle it.
 	nativeArgs: {
-		mode: block.params.mode,
+		mode_slug: block.params.mode_slug,
 		message: block.params.message,
 		todos: block.params.todos,
 	} as unknown as NativeToolArgs["new_task"],
@@ -148,7 +148,7 @@ describe("newTaskTool", () => {
 			type: "tool_use", // Add required 'type' property
 			name: "new_task", // Correct property name
 			params: {
-				mode: "code",
+				mode_slug: "code",
 				message: "Review this: \\\\@file1.txt and also \\\\\\\\@file2.txt", // Input with \\@ and \\\\@
 				todos: "[ ] First task\n[ ] Second task",
 			},
@@ -183,7 +183,7 @@ describe("newTaskTool", () => {
 			type: "tool_use", // Add required 'type' property
 			name: "new_task", // Correct property name
 			params: {
-				mode: "code",
+				mode_slug: "code",
 				message: "This is already unescaped: \\@file1.txt",
 				todos: "[ ] Test todo",
 			},
@@ -208,7 +208,7 @@ describe("newTaskTool", () => {
 			type: "tool_use", // Add required 'type' property
 			name: "new_task", // Correct property name
 			params: {
-				mode: "code",
+				mode_slug: "code",
 				message: "A normal mention @file1.txt",
 				todos: "[ ] Test todo",
 			},
@@ -233,7 +233,7 @@ describe("newTaskTool", () => {
 			type: "tool_use", // Add required 'type' property
 			name: "new_task", // Correct property name
 			params: {
-				mode: "code",
+				mode_slug: "code",
 				message: "Mix: @file0.txt, \\@file1.txt, \\\\@file2.txt, \\\\\\\\@file3.txt",
 				todos: "[ ] Test todo",
 			},
@@ -258,7 +258,7 @@ describe("newTaskTool", () => {
 			type: "tool_use",
 			name: "new_task",
 			params: {
-				mode: "code",
+				mode_slug: "code",
 				message: "Test message",
 				// todos missing - should work for backward compatibility
 			},
@@ -288,7 +288,7 @@ describe("newTaskTool", () => {
 			type: "tool_use",
 			name: "new_task",
 			params: {
-				mode: "code",
+				mode_slug: "code",
 				message: "Test message with todos",
 				todos: "[ ] First task\n[ ] Second task",
 			},
@@ -332,7 +332,7 @@ describe("newTaskTool", () => {
 			pushToolResult: mockPushToolResult,
 		})
 
-		expect(mockSayAndCreateMissingParamError).toHaveBeenCalledWith("new_task", "mode")
+		expect(mockSayAndCreateMissingParamError).toHaveBeenCalledWith("new_task", "mode_slug")
 		expect(mockCline.consecutiveMistakeCount).toBe(1)
 		expect(mockCline.recordToolError).toHaveBeenCalledWith("new_task")
 	})
@@ -342,7 +342,7 @@ describe("newTaskTool", () => {
 			type: "tool_use",
 			name: "new_task",
 			params: {
-				mode: "code",
+				mode_slug: "code",
 				// message missing
 				todos: "[ ] Test todo",
 			},
@@ -365,7 +365,7 @@ describe("newTaskTool", () => {
 			type: "tool_use",
 			name: "new_task",
 			params: {
-				mode: "code",
+				mode_slug: "code",
 				message: "Test message",
 				todos: "[ ] Pending task\n[x] Completed task\n[-] In progress task",
 			},
@@ -401,7 +401,7 @@ describe("newTaskTool", () => {
 				type: "tool_use",
 				name: "new_task",
 				params: {
-					mode: "code",
+					mode_slug: "code",
 					message: "Test message",
 					// todos missing - should work when setting is disabled
 				},
@@ -437,7 +437,7 @@ describe("newTaskTool", () => {
 				type: "tool_use",
 				name: "new_task",
 				params: {
-					mode: "code",
+					mode_slug: "code",
 					message: "Test message",
 					// todos missing - should error when setting is enabled
 				},
@@ -473,7 +473,7 @@ describe("newTaskTool", () => {
 				type: "tool_use",
 				name: "new_task",
 				params: {
-					mode: "code",
+					mode_slug: "code",
 					message: "Test message",
 					todos: "[ ] First task\n[ ] Second task",
 				},
@@ -515,7 +515,7 @@ describe("newTaskTool", () => {
 				type: "tool_use",
 				name: "new_task",
 				params: {
-					mode: "code",
+					mode_slug: "code",
 					message: "Test message",
 					todos: "", // Empty string should be accepted
 				},
@@ -550,7 +550,7 @@ describe("newTaskTool", () => {
 				type: "tool_use",
 				name: "new_task",
 				params: {
-					mode: "code",
+					mode_slug: "code",
 					message: "Test message",
 				},
 				partial: false,
@@ -583,7 +583,7 @@ describe("newTaskTool", () => {
 				type: "tool_use",
 				name: "new_task",
 				params: {
-					mode: "code",
+					mode_slug: "code",
 					message: "Test message",
 				},
 				partial: false,
@@ -640,7 +640,7 @@ describe("newTaskTool delegation flow", () => {
 			type: "tool_use",
 			name: "new_task",
 			params: {
-				mode: "code",
+				mode_slug: "code",
 				message: "Do something",
 				// no todos -> should default to []
 			},
