@@ -284,6 +284,49 @@ Please analyze this codebase and create an AGENTS.md file containing:
 
 Remember: The goal is to create documentation that enables AI assistants to be immediately productive in this codebase, focusing on project-specific knowledge that isn't obvious from the code structure alone.`,
 	},
+	plugin: {
+		name: "plugin",
+		description: "Install, remove, or list plugins from GitHub repositories",
+		argumentHint: "<install|remove|list> [owner/repo or plugin-name] [--global]",
+		content: `<task>
+Manage Roo Code plugins. Plugins are installable packages from GitHub repositories that bundle
+slash commands, custom modes, MCP server configurations, and skills.
+
+Parse the user's arguments to determine the subcommand:
+
+1. **install owner/repo** - Install a plugin from a GitHub repository
+   - Fetches the plugin.json manifest from the repo root
+   - Installs all bundled extension points (commands, modes, MCP servers, skills)
+   - Tracks the installation in .roo/plugins.json
+   - Optional: Add @ref to specify a branch/tag (e.g., owner/repo@v1.0.0)
+   - Optional: Add --global to install globally (~/.roo/) instead of project-level
+
+2. **remove plugin-name** - Remove an installed plugin
+   - Cleans up all extension points that were installed by the plugin
+   - Removes the tracking record from plugins.json
+   - Optional: Add --global to remove from global installation
+
+3. **list** - List all installed plugins
+   - Shows both project-level and global plugins
+   - Displays name, version, source, and installed extension points
+
+A plugin repository must contain a plugin.json manifest at its root with this structure:
+{
+  "name": "plugin-name",
+  "version": "1.0.0",
+  "description": "What this plugin does",
+  "author": "author-name",
+  "commands": [{ "name": "command-name", "file": "commands/command-name.md" }],
+  "modes": [{ "file": "modes/mode-name.yaml" }],
+  "mcpServers": { "server-name": { "command": "npx", "args": ["-y", "package-name"] } },
+  "skills": [{ "name": "skill-name", "directory": "skills/skill-name" }]
+}
+
+IMPORTANT: Use the PluginManager service to perform these operations. Do not attempt to
+manually create or modify plugin files. The PluginManager handles all validation,
+file operations, and tracking automatically.
+</task>`,
+	},
 }
 
 /**
