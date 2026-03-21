@@ -657,6 +657,16 @@
 			"mb": "MB",
 			"description": "Límit de mida acumulativa màxima (en MB) per a totes les imatges processades en una sola operació read_file. Quan es llegeixen múltiples imatges, la mida de cada imatge s'afegeix al total. Si incloure una altra imatge excediria aquest límit, serà omesa."
 		},
+		"maxImageDimension": {
+			"label": "Dimensió màxima de reducció d'imatge",
+			"px": "px",
+			"description": "Amplada o alçada màxima (en píxels) per a les imatges abans d'enviar-les al LLM. Les imatges que superin aquesta dimensió es redueixen proporcionalment, preservant la relació d'aspecte. Estableix a 0 per desactivar la reducció.",
+			"disabled": "Desactivat"
+		},
+		"imageDownscaleQuality": {
+			"label": "Qualitat de reducció d'imatge",
+			"description": "Qualitat de codificació JPEG/WebP (1-100) utilitzada quan es recodifiquen imatges reduïdes. Valors més alts preserven més detall però produeixen arxius més grans. Només s'aplica quan la reducció d'imatge està activada."
+		},
 		"includeCurrentTime": {
 			"label": "Inclou l'hora actual en el context",
 			"description": "Quan està activat, l'hora actual i la informació del fus horari s'inclouran a la indicació del sistema. Desactiveu-ho si els models deixen de funcionar per problemes amb l'hora."

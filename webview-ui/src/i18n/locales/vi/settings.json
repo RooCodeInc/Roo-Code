@@ -657,6 +657,16 @@
 			"mb": "MB",
 			"description": "Giới hạn kích thước tích lũy tối đa (tính bằng MB) cho tất cả hình ảnh được xử lý trong một thao tác read_file duy nhất. Khi đọc nhiều hình ảnh, kích thước của mỗi hình ảnh được cộng vào tổng. Nếu việc thêm một hình ảnh khác sẽ vượt quá giới hạn này, nó sẽ bị bỏ qua."
 		},
+		"maxImageDimension": {
+			"label": "Kích thước tối đa thu nhỏ ảnh",
+			"px": "px",
+			"description": "Chiều rộng hoặc chiều cao tối đa (tính bằng pixel) cho ảnh trước khi gửi đến LLM. Ảnh vượt quá kích thước này được thu nhỏ tỷ lệ, giữ nguyên tỷ lệ khung hình. Đặt thành 0 để tắt thu nhỏ.",
+			"disabled": "Đã tắt"
+		},
+		"imageDownscaleQuality": {
+			"label": "Chất lượng thu nhỏ ảnh",
+			"description": "Chất lượng mã hóa JPEG/WebP (1-100) được sử dụng khi mã hóa lại ảnh đã thu nhỏ. Giá trị cao hơn giữ nhiều chi tiết hơn nhưng tạo ra file lớn hơn. Chỉ áp dụng khi tính năng thu nhỏ ảnh được bật."
+		},
 		"includeCurrentTime": {
 			"label": "Bao gồm thời gian hiện tại trong ngữ cảnh",
 			"description": "Khi được bật, thời gian hiện tại và thông tin múi giờ sẽ được bao gồm trong lời nhắc hệ thống. Tắt nếu các mô hình ngừng hoạt động do lo ngại về thời gian."

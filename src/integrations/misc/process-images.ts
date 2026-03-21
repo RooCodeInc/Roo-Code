@@ -1,9 +1,17 @@
 import * as vscode from "vscode"
 import fs from "fs/promises"
 import * as path from "path"
+import { maybeResizeImage, DEFAULT_IMAGE_DOWNSCALE_QUALITY } from "./resize-image"
 
-export async function selectImages(): Promise<string[]> {
-	const options: vscode.OpenDialogOptions = {
+export interface SelectImagesOptions {
+	/** Maximum dimension (width or height) in pixels for downscaling. 0 = disabled. */
+	maxDimension?: number
+	/** JPEG/WebP quality (1-100) for re-encoding resized images. */
+	quality?: number
+}
+
+export async function selectImages(options?: SelectImagesOptions): Promise<string[]> {
+	const dialogOptions: vscode.OpenDialogOptions = {
 		canSelectMany: true,
 		openLabel: "Select",
 		filters: {
@@ -11,7 +19,7 @@ export async function selectImages(): Promise<string[]> {
 		},
 	}
 
-	const fileUris = await vscode.window.showOpenDialog(options)
+	const fileUris = await vscode.window.showOpenDialog(dialogOptions)
 
 	if (!fileUris || fileUris.length === 0) {
 		return []
@@ -20,9 +28,21 @@ export async function selectImages(): Promise<string[]> {
 	return await Promise.all(
 		fileUris.map(async (uri) => {
 			const imagePath = uri.fsPath
-			const buffer = await fs.readFile(imagePath)
-			const base64 = buffer.toString("base64")
+			let buffer = await fs.readFile(imagePath)
 			const mimeType = getMimeType(imagePath)
+
+			// Downscale if configured
+			if (options?.maxDimension && options.maxDimension > 0) {
+				const resizeResult = await maybeResizeImage({
+					buffer,
+					mimeType,
+					maxDimension: options.maxDimension,
+					quality: options.quality ?? DEFAULT_IMAGE_DOWNSCALE_QUALITY,
+				})
+				buffer = resizeResult.buffer
+			}
+
+			const base64 = buffer.toString("base64")
 			const dataUrl = `data:${mimeType};base64,${base64}`
 			return dataUrl
 		}),

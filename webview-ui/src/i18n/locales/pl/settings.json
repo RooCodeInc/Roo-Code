@@ -657,6 +657,16 @@
 			"mb": "MB",
 			"description": "Maksymalny skumulowany limit rozmiaru (w MB) dla wszystkich obrazów przetwarzanych w jednej operacji read_file. Podczas odczytu wielu obrazów rozmiar każdego obrazu jest dodawany do sumy. Jeśli dołączenie kolejnego obrazu przekroczyłoby ten limit, zostanie on pominięty."
 		},
+		"maxImageDimension": {
+			"label": "Maksymalny wymiar zmniejszania obrazu",
+			"px": "px",
+			"description": "Maksymalna szerokość lub wysokość (w pikselach) dla obrazów przed wysłaniem do LLM. Obrazy przekraczające ten wymiar są proporcjonalnie zmniejszane z zachowaniem proporcji. Ustaw na 0, aby wyłączyć zmniejszanie.",
+			"disabled": "Wyłączony"
+		},
+		"imageDownscaleQuality": {
+			"label": "Jakość zmniejszania obrazu",
+			"description": "Jakość kodowania JPEG/WebP (1-100) używana podczas ponownego kodowania zmniejszonych obrazów. Wyższe wartości zachowują więcej szczegółów, ale tworzą większe pliki. Dotyczy tylko gdy zmniejszanie obrazu jest włączone."
+		},
 		"includeCurrentTime": {
 			"label": "Uwzględnij bieżący czas w kontekście",
 			"description": "Gdy włączone, bieżący czas i informacje o strefie czasowej zostaną uwzględnione w promptcie systemowym. Wyłącz, jeśli modele przestają działać z powodu problemów z czasem."

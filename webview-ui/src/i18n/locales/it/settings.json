@@ -657,6 +657,16 @@
 			"mb": "MB",
 			"description": "Limite di dimensione cumulativa massima (in MB) per tutte le immagini elaborate in una singola operazione read_file. Durante la lettura di più immagini, la dimensione di ogni immagine viene aggiunta al totale. Se l'inclusione di un'altra immagine supererebbe questo limite, verrà saltata."
 		},
+		"maxImageDimension": {
+			"label": "Dimensione massima riduzione immagine",
+			"px": "px",
+			"description": "Larghezza o altezza massima (in pixel) per le immagini prima dell'invio al LLM. Le immagini che superano questa dimensione vengono ridotte proporzionalmente, preservando le proporzioni. Imposta a 0 per disabilitare la riduzione.",
+			"disabled": "Disabilitato"
+		},
+		"imageDownscaleQuality": {
+			"label": "Qualità riduzione immagine",
+			"description": "Qualità di codifica JPEG/WebP (1-100) utilizzata durante la ricodifica delle immagini ridotte. Valori più alti preservano più dettagli ma producono file più grandi. Si applica solo quando la riduzione delle immagini è abilitata."
+		},
 		"includeCurrentTime": {
 			"label": "Includi l'ora corrente nel contesto",
 			"description": "Se abilitato, l'ora corrente e le informazioni sul fuso orario verranno incluse nel prompt di sistema. Disabilita questa opzione se i modelli smettono di funzionare a causa di problemi di orario."
