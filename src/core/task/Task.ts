@@ -3814,6 +3814,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				undefined, // todoList
 				this.api.getModel().id,
 				provider.getSkillsManager(),
+				apiConfiguration?.useXmlToolCalling,
 			)
 		})()
 	}
@@ -4266,6 +4267,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						...(allowedFunctionNames ? { allowedFunctionNames } : {}),
 					}
 				: {}),
+			// Thread useXmlToolCalling from provider settings to the API handler.
+			// When enabled, providers omit native tool definitions from the API request,
+			// forcing the model to use XML text-based tool calling instead.
+			...(apiConfiguration?.useXmlToolCalling ? { useXmlToolCalling: true } : {}),
 		}
 
 		// Create an AbortController to allow cancelling the request mid-stream

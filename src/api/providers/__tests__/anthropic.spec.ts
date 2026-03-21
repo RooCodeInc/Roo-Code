@@ -787,5 +787,63 @@ describe("AnthropicHandler", () => {
 				arguments: '"London"}',
 			})
 		})
+
+		it("should omit tools and tool_choice when useXmlToolCalling is true", async () => {
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test-task",
+				tools: mockTools,
+				tool_choice: "auto",
+				useXmlToolCalling: true,
+			})
+
+			// Consume the stream to trigger the API call
+			for await (const _chunk of stream) {
+				// Just consume
+			}
+
+			const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
+			// When useXmlToolCalling is true, the tools and tool_choice should NOT be in the request
+			expect(callArgs.tools).toBeUndefined()
+			expect(callArgs.tool_choice).toBeUndefined()
+		})
+
+		it("should include tools when useXmlToolCalling is false", async () => {
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test-task",
+				tools: mockTools,
+				tool_choice: "auto",
+				useXmlToolCalling: false,
+			})
+
+			// Consume the stream to trigger the API call
+			for await (const _chunk of stream) {
+				// Just consume
+			}
+
+			const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
+			// When useXmlToolCalling is false, tools should be included normally
+			expect(callArgs.tools).toBeDefined()
+			expect(callArgs.tools.length).toBeGreaterThan(0)
+			expect(callArgs.tool_choice).toBeDefined()
+		})
+
+		it("should include tools when useXmlToolCalling is undefined", async () => {
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test-task",
+				tools: mockTools,
+				tool_choice: "auto",
+			})
+
+			// Consume the stream to trigger the API call
+			for await (const _chunk of stream) {
+				// Just consume
+			}
+
+			const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
+			// Default behavior: tools should be included
+			expect(callArgs.tools).toBeDefined()
+			expect(callArgs.tools.length).toBeGreaterThan(0)
+			expect(callArgs.tool_choice).toBeDefined()
+		})
 	})
 })
