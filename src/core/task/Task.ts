@@ -104,6 +104,7 @@ import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { RooProtectedController } from "../protect/RooProtectedController"
 import { type AssistantMessageContent, presentAssistantMessage } from "../assistant-message"
 import { NativeToolCallParser } from "../assistant-message/NativeToolCallParser"
+import { XmlToolCallParser } from "../assistant-message/XmlToolCallParser"
 import { manageContext, willManageContext } from "../context-management"
 import { ClineProvider } from "../webview/ClineProvider"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
@@ -368,6 +369,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 * @returns true if added, false if duplicate was skipped
 	 */
 	public pushToolResultToUserContent(toolResult: Anthropic.ToolResultBlockParam): boolean {
+		// When XML tool calling is enabled, convert tool_result blocks to text blocks.
+		// The API doesn't have native tool_use blocks in XML mode, so tool_result blocks
+		// would cause API errors. Instead, send results as plain text.
+		if (this.apiConfiguration?.useXmlToolCalling) {
+			const resultText =
+				typeof toolResult.content === "string" ? toolResult.content : JSON.stringify(toolResult.content)
+			const prefix = toolResult.is_error ? "[Tool Error]" : "[Tool Result]"
+			this.userMessageContent.push({
+				type: "text",
+				text: `${prefix}\n${resultText}`,
+			})
+			return true
+		}
+
 		const existingResult = this.userMessageContent.find(
 			(block): block is Anthropic.ToolResultBlockParam =>
 				block.type === "tool_result" && block.tool_use_id === toolResult.tool_use_id,
@@ -392,6 +407,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	// Native tool call streaming state (track which index each tool is at)
 	private streamingToolCallIndices: Map<string, number> = new Map()
+
+	// XML tool call parser instance (used when useXmlToolCalling is enabled)
+	xmlToolCallParser?: XmlToolCallParser
 
 	// Cached model info for current streaming session (set at start of each API request)
 	// This prevents excessive getModel() calls during tool execution
@@ -1873,7 +1891,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				relPath ? ` for '${relPath.toPosix()}'` : ""
 			} without value for required parameter '${paramName}'. Retrying...`,
 		)
-		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName))
+		return formatResponse.toolError(
+			formatResponse.missingToolParameterError(paramName, !!this.apiConfiguration?.useXmlToolCalling),
+		)
 	}
 
 	// Lifecycle
@@ -2498,7 +2518,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// the user hits max requests and denies resetting the count.
 				break
 			} else {
-				nextUserContent = [{ type: "text", text: formatResponse.noToolsUsed() }]
+				nextUserContent = [
+					{ type: "text", text: formatResponse.noToolsUsed(!!this.apiConfiguration?.useXmlToolCalling) },
+				]
 			}
 		}
 	}
@@ -2776,6 +2798,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Clear any leftover streaming tool call state from previous interrupted streams
 				NativeToolCallParser.clearAllStreamingToolCalls()
 				NativeToolCallParser.clearRawChunkState()
+				// Reset XML tool call parser for new stream
+				if (this.xmlToolCallParser) {
+					this.xmlToolCallParser.reset()
+				}
 
 				await this.diffViewProvider.reset()
 
@@ -3017,20 +3043,86 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							case "text": {
 								assistantMessage += chunk.text
 
-								// Native tool calling: text chunks are plain text.
-								// Create or update a text content block directly
-								const lastBlock = this.assistantMessageContent[this.assistantMessageContent.length - 1]
-								if (lastBlock?.type === "text" && lastBlock.partial) {
-									lastBlock.content = assistantMessage
+								// When XML tool calling is enabled, parse text for XML tool call blocks
+								if (this.apiConfiguration?.useXmlToolCalling) {
+									if (!this.xmlToolCallParser) {
+										this.xmlToolCallParser = new XmlToolCallParser()
+									}
+
+									const parseResult = this.xmlToolCallParser.parse(assistantMessage)
+
+									// Display any text before tool calls
+									if (parseResult.textBeforeToolCall) {
+										const lastBlock =
+											this.assistantMessageContent[this.assistantMessageContent.length - 1]
+										if (lastBlock?.type === "text" && lastBlock.partial) {
+											lastBlock.content = parseResult.textBeforeToolCall
+										} else if (parseResult.textBeforeToolCall.trim()) {
+											this.assistantMessageContent.push({
+												type: "text",
+												content: parseResult.textBeforeToolCall,
+												partial: true,
+											})
+											this.userMessageContentReady = false
+										}
+									}
+
+									// Add any completed tool calls
+									for (const toolCall of parseResult.toolCalls) {
+										// Finalize any preceding text block
+										const prevBlock =
+											this.assistantMessageContent[this.assistantMessageContent.length - 1]
+										if (prevBlock?.type === "text" && prevBlock.partial) {
+											prevBlock.partial = false
+										}
+
+										// Add the tool call to content
+										this.assistantMessageContent.push(toolCall)
+										this.userMessageContentReady = false
+									}
+
+									// If there's still a partial XML tool tag being streamed,
+									// don't display it yet — keep it in the accumulator.
+									// Check both: hasPartialToolCall (complete opening tag, no close)
+									// and remainingText (parser detected a partial tag prefix like "<ask_followup")
+									if (
+										parseResult.toolCalls.length === 0 &&
+										!this.xmlToolCallParser.hasPartialToolCall(assistantMessage) &&
+										!parseResult.remainingText
+									) {
+										// No tool calls and no partial tag — display as regular text
+										const lastBlock =
+											this.assistantMessageContent[this.assistantMessageContent.length - 1]
+										if (lastBlock?.type === "text" && lastBlock.partial) {
+											lastBlock.content = assistantMessage
+										} else {
+											this.assistantMessageContent.push({
+												type: "text",
+												content: assistantMessage,
+												partial: true,
+											})
+											this.userMessageContentReady = false
+										}
+									}
+
+									presentAssistantMessage(this)
 								} else {
-									this.assistantMessageContent.push({
-										type: "text",
-										content: assistantMessage,
-										partial: true,
-									})
-									this.userMessageContentReady = false
+									// Native tool calling: text chunks are plain text.
+									// Create or update a text content block directly
+									const lastBlock =
+										this.assistantMessageContent[this.assistantMessageContent.length - 1]
+									if (lastBlock?.type === "text" && lastBlock.partial) {
+										lastBlock.content = assistantMessage
+									} else {
+										this.assistantMessageContent.push({
+											type: "text",
+											content: assistantMessage,
+											partial: true,
+										})
+										this.userMessageContentReady = false
+									}
+									presentAssistantMessage(this)
 								}
-								presentAssistantMessage(this)
 								break
 							}
 						}
@@ -3379,7 +3471,22 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Can't just do this b/c a tool could be in the middle of executing.
 				// this.assistantMessageContent.forEach((e) => (e.partial = false))
 
-				// No legacy streaming parser to finalize.
+				// Finalize XML tool call parsing: when the stream ends, do one final
+				// parse of the accumulated text to catch any remaining complete tool calls.
+				if (this.apiConfiguration?.useXmlToolCalling && this.xmlToolCallParser && assistantMessage) {
+					const finalResult = this.xmlToolCallParser.parse(assistantMessage)
+					for (const toolCall of finalResult.toolCalls) {
+						const prevBlock = this.assistantMessageContent[this.assistantMessageContent.length - 1]
+						if (prevBlock?.type === "text" && prevBlock.partial) {
+							prevBlock.partial = false
+						}
+						this.assistantMessageContent.push(toolCall)
+						this.userMessageContentReady = false
+					}
+					if (finalResult.toolCalls.length > 0) {
+						presentAssistantMessage(this)
+					}
+				}
 
 				// Note: updateApiReqMsg() is now called from within drainStreamInBackgroundToFindAllUsage
 				// to ensure usage data is captured even when the stream is interrupted. The background task
@@ -3441,15 +3548,22 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						})
 					}
 
+					// When XML tool calling is enabled, the assistant's text already contains
+					// the XML tool calls. We do NOT add tool_use blocks to the API history
+					// because the API never received native tool definitions.
+					const skipNativeToolUseBlocks = !!this.apiConfiguration?.useXmlToolCalling
+
 					// Add tool_use blocks with their IDs for native protocol
 					// This handles both regular ToolUse and McpToolUse types
 					// IMPORTANT: Track seen IDs to prevent duplicates in the API request.
 					// Duplicate tool_use IDs cause Anthropic API 400 errors:
 					// "tool_use ids must be unique"
 					const seenToolUseIds = new Set<string>()
-					const toolUseBlocks = this.assistantMessageContent.filter(
-						(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
-					)
+					const toolUseBlocks = skipNativeToolUseBlocks
+						? []
+						: this.assistantMessageContent.filter(
+								(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
+							)
 					for (const block of toolUseBlocks) {
 						if (block.type === "mcp_tool_use") {
 							// McpToolUse already has the original tool name (e.g., "mcp_serverName_toolName")
@@ -3594,21 +3708,47 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					)
 
 					if (!didToolUse) {
-						// Increment consecutive no-tool-use counter
 						this.consecutiveNoToolUseCount++
+						this.consecutiveMistakeCount++
 
-						// Only show error and count toward mistake limit after 2 consecutive failures
-						if (this.consecutiveNoToolUseCount >= 2) {
-							await this.say("error", "MODEL_NO_TOOLS_USED")
-							// Only count toward mistake limit after second consecutive failure
-							this.consecutiveMistakeCount++
+						// Get any text from this response
+						const textBlock = this.assistantMessageContent.find(
+							(b) => b.type === "text" && b.content?.trim(),
+						)
+						const responseText =
+							textBlock && textBlock.type === "text" ? textBlock.content!.trim() : undefined
+
+						// If the model produced text, present a followup prompt so the user can respond.
+						// The text is already displayed above as "Roo said", so don't repeat it.
+						if (responseText) {
+							this.consecutiveNoToolUseCount = 0
+							this.consecutiveMistakeCount = 0
+
+							// Use the model's own text as the followup question.
+							// First, remove the "Roo said" text message so it's not duplicated —
+							// it will appear only as "Roo has a question" instead.
+							const lastSayIndex = this.clineMessages.length - 1
+							if (lastSayIndex >= 0 && this.clineMessages[lastSayIndex].say === "text") {
+								this.clineMessages.splice(lastSayIndex, 1)
+							}
+
+							const followUpJson = { question: responseText, suggest: [] }
+							const { text, images } = await this.ask("followup", JSON.stringify(followUpJson), false)
+							await this.say("user_feedback", text ?? "", images)
+							this.userMessageContent.push({
+								type: "text",
+								text: `<user_message>\n${text}\n</user_message>`,
+							})
+						} else {
+							// Empty response — retry with instructions (but only once)
+							if (this.consecutiveNoToolUseCount >= 2) {
+								await this.say("error", "MODEL_NO_TOOLS_USED")
+							}
+							this.userMessageContent.push({
+								type: "text",
+								text: formatResponse.noToolsUsed(!!this.apiConfiguration?.useXmlToolCalling),
+							})
 						}
-
-						// Use the task's locked protocol for consistent behavior
-						this.userMessageContent.push({
-							type: "text",
-							text: formatResponse.noToolsUsed(),
-						})
 					} else {
 						// Reset counter when tools are used successfully
 						this.consecutiveNoToolUseCount = 0

@@ -1,18 +1,18 @@
 export function getToolUseGuidelinesSection(useXmlToolCalling?: boolean): string {
-	const xmlReinforcement = useXmlToolCalling
-		? `
-4. Formulate your tool use using the XML format specified for each tool. The tool name becomes the outermost XML tag, with each parameter as a nested child tag.
-5. After each tool use, the user will respond with the result of that tool use. This result will provide you with the necessary information to continue your task or make further decisions.
-6. ALWAYS wait for user confirmation after each tool use before proceeding. Never assume the success of a tool use without explicit confirmation of the result from the user.
+	if (useXmlToolCalling) {
+		return `# Tool Use Guidelines
 
-**REMINDER: You MUST format all tool calls as XML.** Do not use JSON, function-call syntax, or any other format. Each tool call must use the exact XML structure: \`<tool_name><param>value</param></tool_name>\`.`
-		: ""
+1. Assess what information you need, then choose the most appropriate tool.
+2. Use one tool at a time per message. Each step must be informed by the previous result.
+3. Formulate tool calls as XML: \`<tool_name><param>value</param></tool_name>\`
+4. After each tool use, wait for the result before proceeding.
+5. When done, use attempt_completion. To ask the user, use ask_followup_question.`
+	}
 
 	return `# Tool Use Guidelines
 
 1. Assess what information you already have and what information you need to proceed with the task.
 2. Choose the most appropriate tool based on the task and the tool descriptions provided. Assess if you need additional information to proceed, and which of the available tools would be most effective for gathering this information. For example using the list_files tool is more effective than running a command like \`ls\` in the terminal. It's critical that you think about each available tool and use the one that best fits the current step in the task.
 3. If multiple actions are needed, you may use multiple tools in a single message when appropriate, or use tools iteratively across messages. Each tool use should be informed by the results of previous tool uses. Do not assume the outcome of any tool use. Each step must be informed by the previous step's result.
-${xmlReinforcement}
 By carefully considering the user's response after tool executions, you can react accordingly and make informed decisions about how to proceed with the task. This iterative process helps ensure the overall success and accuracy of your work.`
 }

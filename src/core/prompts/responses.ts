@@ -39,8 +39,8 @@ export const formatResponse = {
 			suggestion: "Try to continue without this file, or ask the user to update the .rooignore file",
 		}),
 
-	noToolsUsed: () => {
-		const instructions = getToolInstructionsReminder()
+	noToolsUsed: (useXmlToolCalling?: boolean) => {
+		const instructions = useXmlToolCalling ? toolUseInstructionsReminderXml : toolUseInstructionsReminderNative
 
 		return `[ERROR] You did not use a tool in your previous response! Please retry with a tool use.
 
@@ -60,8 +60,8 @@ Otherwise, if you have not completed the task and do not need additional informa
 			feedback,
 		}),
 
-	missingToolParameterError: (paramName: string) => {
-		const instructions = getToolInstructionsReminder()
+	missingToolParameterError: (paramName: string, useXmlToolCalling?: boolean) => {
+		const instructions = useXmlToolCalling ? toolUseInstructionsReminderXml : toolUseInstructionsReminderNative
 
 		return `Missing value for required parameter '${paramName}'. Please retry with complete response.\n\n${instructions}`
 	},
@@ -222,9 +222,38 @@ Tools are invoked using the platform's native tool calling mechanism. Each tool 
 
 Always ensure you provide all required parameters for the tool you wish to use.`
 
-/**
- * Gets the tool use instructions reminder.
- */
-function getToolInstructionsReminder(): string {
-	return toolUseInstructionsReminderNative
-}
+const toolUseInstructionsReminderXml = `# Reminder: Instructions for Tool Use
+
+Tools MUST be invoked using XML-style tags. The tool name becomes the outermost XML tag, with each parameter as a nested child tag.
+
+IMPORTANT: You MUST output EXACTLY ONE of these tool calls in your response. Do NOT respond with only text.
+
+If you have completed the user's task, output:
+<attempt_completion>
+<result>Description of what you accomplished</result>
+</attempt_completion>
+
+If you need to ask the user something, output:
+<ask_followup_question>
+<question>Your question here</question>
+<follow_up>
+<suggest>Option 1</suggest>
+<suggest>Option 2</suggest>
+</follow_up>
+</ask_followup_question>
+
+If you need to read a file, output:
+<read_file>
+<path>path/to/file</path>
+</read_file>
+
+If you need to run a command, output:
+<execute_command>
+<command>your command here</command>
+</execute_command>
+
+Rules:
+- Every opening tag MUST have a matching closing tag
+- Do NOT wrap tool calls in markdown code blocks
+- Do NOT use JSON format for tool calls
+- Output the XML tool call directly in your response`

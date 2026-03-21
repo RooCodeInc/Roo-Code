@@ -125,26 +125,18 @@ export abstract class BaseTool<TName extends ToolName> {
 			return
 		}
 
-		// Native-only: obtain typed parameters from `nativeArgs`.
+		// Obtain typed parameters from `nativeArgs` (native protocol) or `params` (XML protocol).
 		let params: ToolParams<TName>
 		try {
 			if (block.nativeArgs !== undefined) {
-				// Native: typed args provided by NativeToolCallParser.
+				// Typed args provided by NativeToolCallParser (native or XML-parsed).
 				params = block.nativeArgs as ToolParams<TName>
+			} else if (task.xmlToolCallParser !== undefined) {
+				// XML tool calling mode: params were extracted by XmlToolCallParser
+				// from XML tags in the text stream. Convert string params to the
+				// expected typed format.
+				params = (block.params ?? {}) as ToolParams<TName>
 			} else {
-				// If legacy/XML markup was provided via params, surface a clear error.
-				const paramsText = (() => {
-					try {
-						return JSON.stringify(block.params ?? {})
-					} catch {
-						return ""
-					}
-				})()
-				if (paramsText.includes("<") && paramsText.includes(">")) {
-					throw new Error(
-						"XML tool calls are no longer supported. Use native tool calling (nativeArgs) instead.",
-					)
-				}
 				throw new Error("Tool call is missing native arguments (nativeArgs).")
 			}
 		} catch (error) {
