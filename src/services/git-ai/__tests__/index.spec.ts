@@ -50,7 +50,7 @@ function createMockProcess() {
 
 function mockExecSuccess(stdout: string) {
 	;(childProcess.exec as any).mockImplementation(
-		(_cmd: string, _opts: any, callback?: Function) => {
+		(_cmd: string, _opts: any, callback?: (...args: any[]) => void) => {
 			const cb = callback || _opts
 			if (typeof cb === "function") {
 				cb(null, stdout, "")
@@ -61,7 +61,7 @@ function mockExecSuccess(stdout: string) {
 
 function mockExecFailure(message = "not found") {
 	;(childProcess.exec as any).mockImplementation(
-		(_cmd: string, _opts: any, callback?: Function) => {
+		(_cmd: string, _opts: any, callback?: (...args: any[]) => void) => {
 			const cb = callback || _opts
 			if (typeof cb === "function") {
 				cb(new Error(message), "", "")
@@ -133,7 +133,7 @@ describe("git-ai service", () => {
 			// Second call: git rev-parse fails
 			let callCount = 0
 			;(childProcess.exec as any).mockImplementation(
-				(_cmd: string, _opts: any, callback?: Function) => {
+				(_cmd: string, _opts: any, callback?: (...args: any[]) => void) => {
 					const cb = callback || _opts
 					callCount++
 					if (callCount === 1) {
@@ -155,7 +155,7 @@ describe("git-ai service", () => {
 			// which git-ai succeeds, git rev-parse succeeds
 			let callCount = 0
 			;(childProcess.exec as any).mockImplementation(
-				(_cmd: string, _opts: any, callback?: Function) => {
+				(_cmd: string, _opts: any, callback?: (...args: any[]) => void) => {
 					const cb = callback || _opts
 					callCount++
 					if (callCount <= 1) {
@@ -204,7 +204,7 @@ describe("git-ai service", () => {
 		it("sends correct post-edit payload via stdin", async () => {
 			let callCount = 0
 			;(childProcess.exec as any).mockImplementation(
-				(_cmd: string, _opts: any, callback?: Function) => {
+				(_cmd: string, _opts: any, callback?: (...args: any[]) => void) => {
 					const cb = callback || _opts
 					callCount++
 					if (callCount <= 1) {
@@ -242,7 +242,7 @@ describe("git-ai service", () => {
 		it("gitAiBeforeEdit never throws", async () => {
 			let callCount = 0
 			;(childProcess.exec as any).mockImplementation(
-				(_cmd: string, _opts: any, callback?: Function) => {
+				(_cmd: string, _opts: any, callback?: (...args: any[]) => void) => {
 					const cb = callback || _opts
 					callCount++
 					if (callCount <= 1) {
@@ -268,7 +268,7 @@ describe("git-ai service", () => {
 		it("gitAiAfterEdit never throws", async () => {
 			let callCount = 0
 			;(childProcess.exec as any).mockImplementation(
-				(_cmd: string, _opts: any, callback?: Function) => {
+				(_cmd: string, _opts: any, callback?: (...args: any[]) => void) => {
 					const cb = callback || _opts
 					callCount++
 					if (callCount <= 1) {
