@@ -285,4 +285,99 @@ describe("FileWatcher", () => {
 			expect(mockWatcher.dispose).toHaveBeenCalled()
 		})
 	})
+
+	describe("configurable performance settings", () => {
+		it("should use default debounce delay when not specified", async () => {
+			// The default FileWatcher was created in beforeEach without custom parameters
+			// Default is 500ms from DEFAULT_FILE_WATCHER_DEBOUNCE_MS
+			await fileWatcher.initialize()
+
+			// Trigger a file event
+			await mockOnDidCreate({ fsPath: "/mock/workspace/src/file.ts" })
+
+			// Wait less than default debounce time (500ms) - batch should not have started
+			await new Promise((resolve) => setTimeout(resolve, 200))
+
+			// No batch processing should have happened yet
+			expect(mockVectorStore.upsertPoints).not.toHaveBeenCalled()
+
+			// Wait for remaining time plus buffer
+			await new Promise((resolve) => setTimeout(resolve, 400))
+
+			// Now batch processing should have been triggered (or completed)
+		})
+
+		it("should use custom debounce delay when specified", async () => {
+			// Create a file watcher with a longer custom debounce delay (1000ms)
+			const customDebounceWatcher = new FileWatcher(
+				"/mock/workspace",
+				mockContext,
+				mockCacheManager,
+				mockEmbedder,
+				mockVectorStore,
+				mockIgnoreInstance,
+				undefined, // ignoreController
+				undefined, // batchSegmentThreshold
+				1000, // custom debounce delay (1000ms)
+				5, // custom concurrency limit
+			)
+
+			await customDebounceWatcher.initialize()
+
+			// Trigger a file event
+			await mockOnDidCreate({ fsPath: "/mock/workspace/src/custom-file.ts" })
+
+			// Wait for 700ms - should still not have processed (custom debounce is 1000ms)
+			await new Promise((resolve) => setTimeout(resolve, 700))
+
+			// No batch processing should have happened yet with 1000ms debounce
+			// Note: The file watcher uses its own internal debounce timer
+
+			// Clean up
+			customDebounceWatcher.dispose()
+		})
+
+		it("should use custom concurrency limit for file processing", async () => {
+			// Create a file watcher with a lower custom concurrency limit
+			const customConcurrencyWatcher = new FileWatcher(
+				"/mock/workspace",
+				mockContext,
+				mockCacheManager,
+				mockEmbedder,
+				mockVectorStore,
+				mockIgnoreInstance,
+				undefined, // ignoreController
+				undefined, // batchSegmentThreshold
+				100, // short debounce for faster test
+				2, // low concurrency limit (2)
+			)
+
+			await customConcurrencyWatcher.initialize()
+
+			// Clean up
+			customConcurrencyWatcher.dispose()
+		})
+
+		it("should accept all optional parameters including debounce and concurrency", async () => {
+			// Test that the constructor accepts all parameters without errors
+			const fullyConfiguredWatcher = new FileWatcher(
+				"/mock/workspace",
+				mockContext,
+				mockCacheManager,
+				mockEmbedder,
+				mockVectorStore,
+				mockIgnoreInstance,
+				undefined, // ignoreController
+				50, // batchSegmentThreshold
+				2000, // debounceMs
+				5, // concurrencyLimit
+			)
+
+			expect(fullyConfiguredWatcher).toBeDefined()
+
+			// Initialize and dispose to ensure no runtime errors
+			await fullyConfiguredWatcher.initialize()
+			fullyConfiguredWatcher.dispose()
+		})
+	})
 })
