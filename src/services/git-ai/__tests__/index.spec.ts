@@ -6,8 +6,8 @@ import { EventEmitter } from "events"
 import { Writable } from "stream"
 
 import {
-	checkpointBeforeEdit,
-	checkpointAfterEdit,
+	gitAiBeforeEdit,
+	gitAiAfterEdit,
 	isGitAiAvailable,
 	resetGitAiCache,
 } from "../index"
@@ -119,11 +119,11 @@ describe("git-ai service", () => {
 		})
 	})
 
-	describe("checkpointBeforeEdit", () => {
+	describe("gitAiBeforeEdit", () => {
 		it("no-ops when git-ai is not installed", async () => {
 			mockExecFailure("not found")
 
-			await checkpointBeforeEdit("/test/workspace", ["src/file.ts"])
+			await gitAiBeforeEdit("/test/workspace", ["src/file.ts"])
 
 			expect(childProcess.spawn).not.toHaveBeenCalled()
 		})
@@ -146,7 +146,7 @@ describe("git-ai service", () => {
 				},
 			)
 
-			await checkpointBeforeEdit("/not/a/repo", ["src/file.ts"])
+			await gitAiBeforeEdit("/not/a/repo", ["src/file.ts"])
 
 			expect(childProcess.spawn).not.toHaveBeenCalled()
 		})
@@ -169,7 +169,7 @@ describe("git-ai service", () => {
 			const { proc, stdinData } = createMockProcess()
 			;(childProcess.spawn as any).mockReturnValue(proc)
 
-			const promise = checkpointBeforeEdit("/test/workspace", ["src/file.ts"])
+			const promise = gitAiBeforeEdit("/test/workspace", ["src/file.ts"])
 
 			// Simulate successful exit
 			setTimeout(() => proc.emit("close", 0), 10)
@@ -191,12 +191,12 @@ describe("git-ai service", () => {
 		})
 	})
 
-	describe("checkpointAfterEdit", () => {
+	describe("gitAiAfterEdit", () => {
 		it("no-ops when git-ai is not installed", async () => {
 			mockExecFailure("not found")
 
 			const task = createMockTask()
-			await checkpointAfterEdit("/test/workspace", task, ["src/file.ts"])
+			await gitAiAfterEdit("/test/workspace", task, ["src/file.ts"])
 
 			expect(childProcess.spawn).not.toHaveBeenCalled()
 		})
@@ -219,7 +219,7 @@ describe("git-ai service", () => {
 			;(childProcess.spawn as any).mockReturnValue(proc)
 
 			const task = createMockTask()
-			const promise = checkpointAfterEdit("/test/workspace", task, ["src/file.ts"])
+			const promise = gitAiAfterEdit("/test/workspace", task, ["src/file.ts"])
 
 			setTimeout(() => proc.emit("close", 0), 10)
 
@@ -239,7 +239,7 @@ describe("git-ai service", () => {
 	})
 
 	describe("error handling", () => {
-		it("checkpointBeforeEdit never throws", async () => {
+		it("gitAiBeforeEdit never throws", async () => {
 			let callCount = 0
 			;(childProcess.exec as any).mockImplementation(
 				(_cmd: string, _opts: any, callback?: Function) => {
@@ -256,7 +256,7 @@ describe("git-ai service", () => {
 			const { proc } = createMockProcess()
 			;(childProcess.spawn as any).mockReturnValue(proc)
 
-			const promise = checkpointBeforeEdit("/test/workspace", ["file.ts"])
+			const promise = gitAiBeforeEdit("/test/workspace", ["file.ts"])
 
 			// Simulate failure exit
 			setTimeout(() => proc.emit("close", 1), 10)
@@ -265,7 +265,7 @@ describe("git-ai service", () => {
 			await expect(promise).resolves.toBeUndefined()
 		})
 
-		it("checkpointAfterEdit never throws", async () => {
+		it("gitAiAfterEdit never throws", async () => {
 			let callCount = 0
 			;(childProcess.exec as any).mockImplementation(
 				(_cmd: string, _opts: any, callback?: Function) => {
@@ -287,7 +287,7 @@ describe("git-ai service", () => {
 
 			// Should not throw
 			await expect(
-				checkpointAfterEdit("/test/workspace", task, ["file.ts"]),
+				gitAiAfterEdit("/test/workspace", task, ["file.ts"]),
 			).resolves.toBeUndefined()
 		})
 	})

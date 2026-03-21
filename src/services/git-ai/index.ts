@@ -8,7 +8,7 @@ import { buildTranscript } from "./transcript"
 const execAsync = promisify(exec)
 
 /**
- * Narrow interface for the Task data needed by checkpointAfterEdit.
+ * Narrow interface for the Task data needed by gitAiAfterEdit.
  * Avoids coupling the git-ai service to the full Task class.
  */
 export interface GitAiTaskContext {
@@ -87,7 +87,7 @@ function execWithStdin(command: string, args: string[], input: string, cwd: stri
  * Must be awaited before the file save to correctly attribute prior changes.
  * Never throws — failures are logged and silently ignored.
  */
-export async function checkpointBeforeEdit(cwd: string, filepaths: string[]): Promise<void> {
+export async function gitAiBeforeEdit(cwd: string, filepaths: string[]): Promise<void> {
 	try {
 		if (!(await isGitAiAvailable())) {
 			return
@@ -105,7 +105,7 @@ export async function checkpointBeforeEdit(cwd: string, filepaths: string[]): Pr
 
 		await execWithStdin("git-ai", ["checkpoint", "agent-v1", "--hook-input", "stdin"], payload, repoRoot)
 	} catch (error) {
-		console.error("[git-ai] checkpointBeforeEdit failed:", error)
+		console.error("[git-ai] gitAiBeforeEdit failed:", error)
 	}
 }
 
@@ -115,7 +115,7 @@ export async function checkpointBeforeEdit(cwd: string, filepaths: string[]): Pr
  *
  * Never throws — failures are logged and silently ignored.
  */
-export async function checkpointAfterEdit(cwd: string, task: GitAiTaskContext, filepaths: string[]): Promise<void> {
+export async function gitAiAfterEdit(cwd: string, task: GitAiTaskContext, filepaths: string[]): Promise<void> {
 	try {
 		if (!(await isGitAiAvailable())) {
 			return
@@ -139,7 +139,7 @@ export async function checkpointAfterEdit(cwd: string, task: GitAiTaskContext, f
 
 		await execWithStdin("git-ai", ["checkpoint", "agent-v1", "--hook-input", "stdin"], payload, repoRoot)
 	} catch (error) {
-		console.error("[git-ai] checkpointAfterEdit failed:", error)
+		console.error("[git-ai] gitAiAfterEdit failed:", error)
 	}
 }
 

@@ -16,7 +16,7 @@ import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { convertNewFileToUnifiedDiff, computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 import type { ToolUse } from "../../shared/tools"
 
-import { checkpointBeforeEdit, checkpointAfterEdit } from "../../services/git-ai"
+import { gitAiBeforeEdit, gitAiAfterEdit } from "../../services/git-ai"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -27,11 +27,11 @@ interface WriteToFileParams {
 
 export class WriteToFileTool extends BaseTool<"write_to_file"> {
 	readonly name = "write_to_file" as const
-	private didCheckpointBeforeEdit = false
+	private didGitAiBeforeEdit = false
 
 	override resetPartialState(): void {
 		super.resetPartialState()
-		this.didCheckpointBeforeEdit = false
+		this.didGitAiBeforeEdit = false
 	}
 
 	async execute(params: WriteToFileParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
@@ -141,12 +141,12 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 					return
 				}
 
-				await checkpointBeforeEdit(task.cwd, [relPath])
+				await gitAiBeforeEdit(task.cwd, [relPath])
 				await task.diffViewProvider.saveDirectly(relPath, newContent, false, diagnosticsEnabled, writeDelayMs)
-				await checkpointAfterEdit(task.cwd, task, [relPath])
+				await gitAiAfterEdit(task.cwd, task, [relPath])
 			} else {
-				if (!this.didCheckpointBeforeEdit) {
-					await checkpointBeforeEdit(task.cwd, [relPath])
+				if (!this.didGitAiBeforeEdit) {
+					await gitAiBeforeEdit(task.cwd, [relPath])
 				}
 
 				if (!task.diffViewProvider.isEditing) {
@@ -181,7 +181,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 				}
 
 				await task.diffViewProvider.saveChanges(diagnosticsEnabled, writeDelayMs)
-				await checkpointAfterEdit(task.cwd, task, [relPath])
+				await gitAiAfterEdit(task.cwd, task, [relPath])
 			}
 
 			if (relPath) {
@@ -261,9 +261,9 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 		if (newContent) {
 			if (!task.diffViewProvider.isEditing) {
-				if (!this.didCheckpointBeforeEdit) {
-					await checkpointBeforeEdit(task.cwd, [relPath!])
-					this.didCheckpointBeforeEdit = true
+				if (!this.didGitAiBeforeEdit) {
+					await gitAiBeforeEdit(task.cwd, [relPath!])
+					this.didGitAiBeforeEdit = true
 				}
 				await task.diffViewProvider.open(relPath!)
 			}
