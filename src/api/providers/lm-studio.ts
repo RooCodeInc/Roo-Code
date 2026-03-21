@@ -88,9 +88,14 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 				messages: openAiMessages,
 				temperature: this.options.modelTemperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
 				stream: true,
-				tools: this.convertToolsForOpenAI(metadata?.tools),
-				tool_choice: metadata?.tool_choice,
-				parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+				// When useXmlToolCalling is enabled, omit native tool definitions from the API request.
+				...(metadata?.useXmlToolCalling
+					? {}
+					: {
+							tools: this.convertToolsForOpenAI(metadata?.tools),
+							tool_choice: metadata?.tool_choice,
+							parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+						}),
 			}
 
 			if (this.options.lmStudioSpeculativeDecodingEnabled && this.options.lmStudioDraftModelId) {

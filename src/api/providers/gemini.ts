@@ -128,19 +128,22 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			.map((message) => convertAnthropicMessageToGemini(message, { includeThoughtSignatures, toolIdToName }))
 			.flat()
 
+		// When useXmlToolCalling is enabled, omit native tool definitions from the API request.
 		// Tools are always present (minimum ALWAYS_AVAILABLE_TOOLS).
 		// Google built-in tools (Grounding, URL Context) are mutually exclusive
 		// with function declarations in the Gemini API, so we always use
 		// function declarations when tools are provided.
-		const tools: GenerateContentConfig["tools"] = [
-			{
-				functionDeclarations: (metadata?.tools ?? []).map((tool) => ({
-					name: (tool as any).function.name,
-					description: (tool as any).function.description,
-					parametersJsonSchema: (tool as any).function.parameters,
-				})),
-			},
-		]
+		const tools: GenerateContentConfig["tools"] = metadata?.useXmlToolCalling
+			? []
+			: [
+					{
+						functionDeclarations: (metadata?.tools ?? []).map((tool) => ({
+							name: (tool as any).function.name,
+							description: (tool as any).function.description,
+							parametersJsonSchema: (tool as any).function.parameters,
+						})),
+					},
+				]
 
 		// Determine temperature respecting model capabilities and defaults:
 		// - If supportsTemperature is explicitly false, ignore user overrides
@@ -165,7 +168,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		// When provided, all tool definitions are passed to the model (so it can reference
 		// historical tool calls in conversation), but only the specified tools can be invoked.
 		// This takes precedence over tool_choice to ensure mode restrictions are honored.
-		if (metadata?.allowedFunctionNames && metadata.allowedFunctionNames.length > 0) {
+		if (metadata?.useXmlToolCalling) {
+			// Skip toolConfig entirely when using XML tool calling
+		} else if (metadata?.allowedFunctionNames && metadata.allowedFunctionNames.length > 0) {
 			config.toolConfig = {
 				functionCallingConfig: {
 					// Use ANY mode to allow calling any of the allowed functions

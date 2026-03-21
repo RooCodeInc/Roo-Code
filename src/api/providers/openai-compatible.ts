@@ -172,8 +172,13 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 			messages: aiSdkMessages,
 			temperature: model.temperature ?? this.config.temperature ?? 0,
 			maxOutputTokens: this.getMaxOutputTokens(),
-			tools: aiSdkTools,
-			toolChoice: this.mapToolChoice(metadata?.tool_choice),
+			// When useXmlToolCalling is enabled, omit native tool definitions from the API request.
+			...(metadata?.useXmlToolCalling
+				? {}
+				: {
+						tools: aiSdkTools,
+						toolChoice: this.mapToolChoice(metadata?.tool_choice),
+					}),
 		}
 
 		// Use streamText for streaming responses

@@ -72,9 +72,14 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 			stream: true as const,
 			stream_options: { include_usage: true },
 			...(reasoning && reasoning),
-			tools: this.convertToolsForOpenAI(metadata?.tools),
-			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+			// When useXmlToolCalling is enabled, omit native tool definitions from the API request.
+			...(metadata?.useXmlToolCalling
+				? {}
+				: {
+						tools: this.convertToolsForOpenAI(metadata?.tools),
+						tool_choice: metadata?.tool_choice,
+						parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+					}),
 		}
 
 		let stream

@@ -76,9 +76,14 @@ export class DeepSeekHandler extends OpenAiHandler {
 			stream_options: { include_usage: true },
 			// Enable thinking mode for deepseek-reasoner or when tools are used with thinking model
 			...(isThinkingModel && { thinking: { type: "enabled" } }),
-			tools: this.convertToolsForOpenAI(metadata?.tools),
-			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+			// When useXmlToolCalling is enabled, omit native tool definitions from the API request.
+			...(metadata?.useXmlToolCalling
+				? {}
+				: {
+						tools: this.convertToolsForOpenAI(metadata?.tools),
+						tool_choice: metadata?.tool_choice,
+						parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+					}),
 		}
 
 		// Add max_tokens if needed
