@@ -64,6 +64,7 @@
 		"installError": "Gagal menginstal \"{{itemName}}\": {{errorMessage}}",
 		"removing": "Menghapus item: \"{{itemName}}\"",
 		"removeSuccess": "\"{{itemName}}\" berhasil dihapus",
-		"removeError": "Gagal menghapus \"{{itemName}}\": {{errorMessage}}"
+		"removeError": "Gagal menghapus \"{{itemName}}\": {{errorMessage}}",
+		"notInstalledForTarget": "Mode tidak ditemukan"
 	}
 }
