@@ -205,6 +205,35 @@ Just some text
 		})
 	})
 
+	describe("literal escape sequence normalization", () => {
+		it("should parse items separated by literal \\n escape sequences", () => {
+			const md = "[ ] Task 1\\n[x] Task 2\\n[-] Task 3"
+			const result = parseMarkdownChecklist(md)
+			expect(result).toHaveLength(3)
+			expect(result[0].content).toBe("Task 1")
+			expect(result[0].status).toBe("pending")
+			expect(result[1].content).toBe("Task 2")
+			expect(result[1].status).toBe("completed")
+			expect(result[2].content).toBe("Task 3")
+			expect(result[2].status).toBe("in_progress")
+		})
+
+		it("should parse items separated by literal \\r\\n escape sequences", () => {
+			const md = "[ ] Task 1\\r\\n- [x] Task 2\\r\\n[~] Task 3"
+			const result = parseMarkdownChecklist(md)
+			expect(result).toHaveLength(3)
+			expect(result[0].content).toBe("Task 1")
+			expect(result[1].content).toBe("Task 2")
+			expect(result[2].content).toBe("Task 3")
+		})
+
+		it("should handle a mix of literal and actual newlines", () => {
+			const md = "[ ] Task 1\\n[x] Task 2\n[-] Task 3"
+			const result = parseMarkdownChecklist(md)
+			expect(result).toHaveLength(3)
+		})
+	})
+
 	describe("ID generation", () => {
 		it("should generate consistent IDs for the same content and status", () => {
 			const md1 = `[ ] Task 1
