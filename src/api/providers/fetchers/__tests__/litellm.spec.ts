@@ -262,6 +262,26 @@ describe("getLiteLLMModels", () => {
 		})
 	})
 
+	it("makes request without authorization header when API key is undefined", async () => {
+		const mockResponse = {
+			data: {
+				data: [],
+			},
+		}
+
+		mockedAxios.get.mockResolvedValue(mockResponse)
+
+		await getLiteLLMModels(undefined, "http://localhost:4000")
+
+		expect(mockedAxios.get).toHaveBeenCalledWith("http://localhost:4000/v1/model/info", {
+			headers: {
+				"Content-Type": "application/json",
+				...DEFAULT_HEADERS,
+			},
+			timeout: 5000,
+		})
+	})
+
 	it("handles computer use models correctly", async () => {
 		const mockResponse = {
 			data: {
