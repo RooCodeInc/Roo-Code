@@ -269,9 +269,16 @@ export function filterNativeToolsForMode(
 	allowedToolNames = customizedTools
 
 	// Conditionally exclude codebase_search if feature is disabled or not configured
+	// WarpGrep can serve as an alternative backend for codebase_search
+	const warpGrepEnabled = settings?.codebaseIndexConfig?.warpGrepEnabled === true
 	if (
-		!codeIndexManager ||
-		!(codeIndexManager.isFeatureEnabled && codeIndexManager.isFeatureConfigured && codeIndexManager.isInitialized)
+		!warpGrepEnabled &&
+		(!codeIndexManager ||
+			!(
+				codeIndexManager.isFeatureEnabled &&
+				codeIndexManager.isFeatureConfigured &&
+				codeIndexManager.isInitialized
+			))
 	) {
 		allowedToolNames.delete("codebase_search")
 	}
@@ -363,11 +370,15 @@ export function isToolAllowedInMode(
 	if (ALWAYS_AVAILABLE_TOOLS.includes(toolName)) {
 		// But still check for conditional exclusions
 		if (toolName === "codebase_search") {
-			return !!(
-				codeIndexManager &&
-				codeIndexManager.isFeatureEnabled &&
-				codeIndexManager.isFeatureConfigured &&
-				codeIndexManager.isInitialized
+			const warpGrepEnabled = settings?.codebaseIndexConfig?.warpGrepEnabled === true
+			return (
+				warpGrepEnabled ||
+				!!(
+					codeIndexManager &&
+					codeIndexManager.isFeatureEnabled &&
+					codeIndexManager.isFeatureConfigured &&
+					codeIndexManager.isInitialized
+				)
 			)
 		}
 		if (toolName === "update_todo_list") {
