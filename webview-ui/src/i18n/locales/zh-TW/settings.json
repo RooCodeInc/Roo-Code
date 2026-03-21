@@ -750,7 +750,9 @@
 		}
 	},
 	"advancedSettings": {
-		"title": "進階設定"
+		"title": "進階設定",
+		"useXmlToolCalling": "Use XML tool calling",
+		"useXmlToolCallingDescription": "Use XML-style formatting for tool calls instead of native tool calling. Enable this if your model responds better with XML tool formatting."
 	},
 	"advanced": {
 		"diff": {
