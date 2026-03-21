@@ -13,6 +13,8 @@ import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { sanitizeUnifiedDiff, computeDiffStats } from "../diff/stats"
 import type { ToolUse } from "../../shared/tools"
 
+import { gitAiBeforeEdit, gitAiAfterEdit } from "../../services/git-ai"
+
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
 interface SearchReplaceParams {
@@ -186,6 +188,8 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 				diffStats,
 			} satisfies ClineSayTool)
 
+			await gitAiBeforeEdit(task.cwd, [relPath])
+
 			// Show diff view if focus disruption prevention is disabled
 			if (!isPreventFocusDisruptionEnabled) {
 				await task.diffViewProvider.open(relPath)
@@ -213,6 +217,7 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 				// Call saveChanges to update the DiffViewProvider properties
 				await task.diffViewProvider.saveChanges(diagnosticsEnabled, writeDelayMs)
 			}
+			await gitAiAfterEdit(task.cwd, task, [relPath])
 
 			// Track file edit operation
 			if (relPath) {
