@@ -554,7 +554,9 @@
 			"placeholder": "Por defecto: claude",
 			"maxTokensLabel": "Tokens máximos de salida",
 			"maxTokensDescription": "Número máximo de tokens de salida para las respuestas de Claude Code. El valor predeterminado es 8000."
-		}
+		},
+		"useXmlToolCalling": "Use XML tool calling",
+		"useXmlToolCallingDescription": "Use XML-style formatting for tool calls instead of native tool calling. Enable this if your model responds better with XML tool formatting."
 	},
 	"checkpoints": {
 		"timeout": {
