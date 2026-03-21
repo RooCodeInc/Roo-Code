@@ -70,6 +70,12 @@ const BaseConfigSchema = z.object({
 	alwaysAllow: z.array(z.string()).default([]),
 	watchPaths: z.array(z.string()).optional(), // paths to watch for changes and restart server
 	disabledTools: z.array(z.string()).default([]),
+	/**
+	 * Allowlist of tool names. When non-empty, ONLY these tools will be enabled
+	 * (enabledForPrompt=true). All other tools on the server are disabled.
+	 * Takes precedence over disabledTools.
+	 */
+	onlyAllow: z.array(z.string()).optional(),
 })
 
 // Custom error messages for better user feedback
@@ -993,6 +999,7 @@ export class McpHub {
 			let configPath: string
 			let alwaysAllowConfig: string[] = []
 			let disabledToolsList: string[] = []
+			let onlyAllowList: string[] | undefined = undefined
 
 			// Read from the appropriate config file based on the actual source
 			try {
@@ -1014,6 +1021,8 @@ export class McpHub {
 				if (serverConfigData) {
 					alwaysAllowConfig = serverConfigData.mcpServers?.[serverName]?.alwaysAllow || []
 					disabledToolsList = serverConfigData.mcpServers?.[serverName]?.disabledTools || []
+					// onlyAllow is undefined when not set (distinct from empty array)
+					onlyAllowList = serverConfigData.mcpServers?.[serverName]?.onlyAllow
 				}
 			} catch (error) {
 				console.error(`Failed to read tool configuration for ${serverName}:`, error)
@@ -1023,11 +1032,18 @@ export class McpHub {
 			// Check if wildcard "*" is in the alwaysAllow config
 			const hasWildcard = alwaysAllowConfig.includes("*")
 
-			// Mark tools as always allowed and enabled for prompt based on settings
+			// Determine if onlyAllow mode is active (list is defined and non-empty)
+			const hasOnlyAllow = Array.isArray(onlyAllowList) && onlyAllowList.length > 0
+
+			// Mark tools as always allowed and enabled for prompt based on settings.
+			// onlyAllow takes precedence over disabledTools: when onlyAllow is active,
+			// a tool is enabled only if its name is in the onlyAllow list.
 			const tools = (response?.tools || []).map((tool) => ({
 				...tool,
 				alwaysAllow: hasWildcard || alwaysAllowConfig.includes(tool.name),
-				enabledForPrompt: !disabledToolsList.includes(tool.name),
+				enabledForPrompt: hasOnlyAllow
+					? onlyAllowList!.includes(tool.name)
+					: !disabledToolsList.includes(tool.name),
 			}))
 
 			return tools
