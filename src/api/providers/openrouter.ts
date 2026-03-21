@@ -46,6 +46,8 @@ type OpenRouterChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParams & {
 	include_reasoning?: boolean
 	// https://openrouter.ai/docs/use-cases/reasoning-tokens
 	reasoning?: OpenRouterReasoningParams
+	// https://openrouter.ai/docs/features/provider-routing
+	provider?: Record<string, unknown>
 }
 
 // Zod schema for OpenRouter error response structure (for caught exceptions)
@@ -308,6 +310,27 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			}
 		}
 
+		// Build the provider configuration.
+		// Always include require_parameters to ensure OpenRouter passes tool-calling
+		// parameters through to the model, even when the model's metadata doesn't
+		// list "tools" in supported_parameters. Without this, OpenRouter may strip
+		// tool parameters or apply prompt-based transforms that produce poor results
+		// for models that actually support native tool calling (e.g. Nemotron 3 Super).
+		// See: https://github.com/RooCodeInc/Roo-Code/issues/11968
+		const providerConfig: Record<string, unknown> = {
+			require_parameters: ["tools", "tool_choice"],
+		}
+
+		// Add specific provider routing if configured.
+		if (
+			this.options.openRouterSpecificProvider &&
+			this.options.openRouterSpecificProvider !== OPENROUTER_DEFAULT_PROVIDER_NAME
+		) {
+			providerConfig.order = [this.options.openRouterSpecificProvider]
+			providerConfig.only = [this.options.openRouterSpecificProvider]
+			providerConfig.allow_fallbacks = false
+		}
+
 		// https://openrouter.ai/docs/transforms
 		const completionParams: OpenRouterChatCompletionParams = {
 			model: modelId,
@@ -317,15 +340,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			messages: openAiMessages,
 			stream: true,
 			stream_options: { include_usage: true },
-			// Only include provider if openRouterSpecificProvider is not "[default]".
-			...(this.options.openRouterSpecificProvider &&
-				this.options.openRouterSpecificProvider !== OPENROUTER_DEFAULT_PROVIDER_NAME && {
-					provider: {
-						order: [this.options.openRouterSpecificProvider],
-						only: [this.options.openRouterSpecificProvider],
-						allow_fallbacks: false,
-					},
-				}),
+			provider: providerConfig,
 			...(reasoning && { reasoning }),
 			tools: this.convertToolsForOpenAI(metadata?.tools),
 			tool_choice: metadata?.tool_choice,
