@@ -14,6 +14,8 @@ import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 import type { ToolUse } from "../../shared/tools"
 
+import { checkpointBeforeEdit, checkpointAfterEdit } from "../../services/git-ai"
+
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
 interface ApplyDiffParams {
@@ -176,6 +178,7 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 				// Save directly without showing diff view or opening the file
 				task.diffViewProvider.editType = "modify"
 				task.diffViewProvider.originalContent = originalContent
+				await checkpointBeforeEdit(task.cwd, [relPath])
 				await task.diffViewProvider.saveDirectly(
 					relPath,
 					diffResult.content,
@@ -183,8 +186,11 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 					diagnosticsEnabled,
 					writeDelayMs,
 				)
+				await checkpointAfterEdit(task.cwd, task, [relPath])
 			} else {
 				// Original behavior with diff view
+				await checkpointBeforeEdit(task.cwd, [relPath])
+
 				// Show diff view before asking for approval
 				task.diffViewProvider.editType = "modify"
 				await task.diffViewProvider.open(relPath)
@@ -222,6 +228,7 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 
 				// Call saveChanges to update the DiffViewProvider properties
 				await task.diffViewProvider.saveChanges(diagnosticsEnabled, writeDelayMs)
+				await checkpointAfterEdit(task.cwd, task, [relPath])
 			}
 
 			// Track file edit operation

@@ -11,6 +11,8 @@ import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { fileExistsAtPath } from "../../utils/fs"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { sanitizeUnifiedDiff, computeDiffStats } from "../diff/stats"
+import { checkpointBeforeEdit, checkpointAfterEdit } from "../../services/git-ai"
+
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
 import { parsePatch, ParseError, processAllHunks } from "./apply-patch"
@@ -195,6 +197,8 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 			diffStats,
 		} satisfies ClineSayTool)
 
+		await checkpointBeforeEdit(task.cwd, [relPath])
+
 		// Show diff view if focus disruption prevention is disabled
 		if (!isPreventFocusDisruptionEnabled) {
 			await task.diffViewProvider.open(relPath)
@@ -219,6 +223,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 		} else {
 			await task.diffViewProvider.saveChanges(diagnosticsEnabled, writeDelayMs)
 		}
+		await checkpointAfterEdit(task.cwd, task, [relPath])
 
 		// Track file edit operation
 		await task.fileContextTracker.trackFileContext(relPath, "roo_edited" as RecordSource)
@@ -273,6 +278,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 		}
 
 		// Delete the file
+		await checkpointBeforeEdit(task.cwd, [relPath])
 		try {
 			await fs.unlink(absolutePath)
 		} catch (error) {
@@ -281,6 +287,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 			pushToolResult(formatResponse.toolError(errorMessage))
 			return
 		}
+		await checkpointAfterEdit(task.cwd, task, [relPath])
 
 		task.didEditFile = true
 		pushToolResult(`Successfully deleted ${relPath}`)
@@ -351,6 +358,8 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 			isProtected: isWriteProtected,
 			diffStats,
 		} satisfies ClineSayTool)
+
+		await checkpointBeforeEdit(task.cwd, [relPath])
 
 		// Show diff view if focus disruption prevention is disabled
 		if (!isPreventFocusDisruptionEnabled) {
@@ -429,6 +438,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 			} catch (error) {
 				console.error(`Failed to delete original file after move: ${error}`)
 			}
+			await checkpointAfterEdit(task.cwd, task, [relPath, change.movePath])
 
 			await task.fileContextTracker.trackFileContext(change.movePath, "roo_edited" as RecordSource)
 		} else {
@@ -438,6 +448,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 			} else {
 				await task.diffViewProvider.saveChanges(diagnosticsEnabled, writeDelayMs)
 			}
+			await checkpointAfterEdit(task.cwd, task, [relPath])
 
 			await task.fileContextTracker.trackFileContext(relPath, "roo_edited" as RecordSource)
 		}
