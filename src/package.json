@@ -522,6 +522,7 @@
 		"shell-quote": "^1.8.2",
 		"simple-git": "^3.27.0",
 		"sound-play": "^1.1.0",
+		"sql.js": "^1.14.1",
 		"stream-json": "^1.8.0",
 		"string-similarity": "^4.0.4",
 		"strip-ansi": "^7.1.0",
