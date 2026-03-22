@@ -1,8 +1,3 @@
-// src/core/memory/memory-writer.ts
-// STUB: This file is a minimal stub created by the pipeline agent.
-// The data-layer agent will replace this with the full implementation
-// including PII filter, dedup (Jaccard similarity), and workspace scoping.
-
 import type { Observation, MemoryCategorySlug } from "./types"
 import { MEMORY_CONSTANTS, DEFAULT_MEMORY_CATEGORIES } from "./types"
 import type { MemoryStore } from "./memory-store"
@@ -17,10 +12,12 @@ const PII_PATTERNS = [
 	/-----BEGIN (RSA |EC )?PRIVATE KEY-----/,
 ]
 
+/** Return true if content matches any known PII/secret pattern. */
 export function containsPII(content: string): boolean {
 	return PII_PATTERNS.some((pattern) => pattern.test(content))
 }
 
+/** Compute Jaccard similarity between two strings (word-level, case-insensitive). */
 export function jaccardSimilarity(a: string, b: string): number {
 	const tokenize = (s: string) =>
 		new Set(
@@ -59,6 +56,7 @@ export interface WriteResult {
 	entriesSkipped: number
 }
 
+/** Write validated observations into the store with PII filtering and dedup. */
 export function processObservations(
 	store: MemoryStore,
 	observations: Observation[],

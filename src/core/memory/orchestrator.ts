@@ -1,4 +1,3 @@
-// src/core/memory/orchestrator.ts
 import * as crypto from "crypto"
 import * as path from "path"
 import { execSync } from "child_process"
@@ -26,6 +25,7 @@ function getWorkspaceId(workspacePath: string): string {
 	return crypto.createHash("sha256").update(raw).digest("hex").slice(0, 16)
 }
 
+/** Top-level coordinator that drives the memory analysis pipeline. */
 export class MemoryOrchestrator {
 	private store: MemoryStore
 	private messageCounter = 0
@@ -68,7 +68,7 @@ export class MemoryOrchestrator {
 	 * Returns true if an analysis cycle was triggered.
 	 */
 	onUserMessage(
-		messages: any[],
+		messages: unknown[],
 		taskId: string | null,
 		providerSettings: ProviderSettings | null,
 	): boolean {
@@ -89,7 +89,7 @@ export class MemoryOrchestrator {
 	 * Call on session end to catch remaining unanalyzed messages.
 	 */
 	onSessionEnd(
-		messages: any[],
+		messages: unknown[],
 		taskId: string | null,
 		providerSettings: ProviderSettings | null,
 	): void {
@@ -100,7 +100,7 @@ export class MemoryOrchestrator {
 	}
 
 	private async triggerAnalysis(
-		messages: any[],
+		messages: unknown[],
 		taskId: string | null,
 		providerSettings: ProviderSettings,
 	): Promise<void> {
@@ -119,7 +119,7 @@ export class MemoryOrchestrator {
 			if (batch.length === 0) return
 
 			// Preprocess
-			const preprocessed = preprocessMessages(batch)
+			const preprocessed = preprocessMessages(batch as MessageLike[])
 			if (preprocessed.cleaned.trim().length === 0) return
 
 			// Get existing memory for context

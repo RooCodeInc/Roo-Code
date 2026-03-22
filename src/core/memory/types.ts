@@ -1,5 +1,4 @@
-// src/core/memory/types.ts
-
+/** A single persisted memory entry. */
 export interface MemoryEntry {
 	id: string
 	workspaceId: string | null

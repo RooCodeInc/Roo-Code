@@ -1,5 +1,4 @@
-// src/core/memory/memory-store.ts
-import initSqlJs, { type Database } from "sql.js"
+import initSqlJs, { type Database, type SqlValue } from "sql.js"
 import * as fs from "fs"
 import * as path from "path"
 import * as crypto from "crypto"
@@ -51,6 +50,7 @@ CREATE INDEX IF NOT EXISTS idx_entries_workspace ON memory_entries(workspace_id)
 CREATE INDEX IF NOT EXISTS idx_entries_last_reinforced ON memory_entries(last_reinforced);
 `
 
+/** SQLite-backed persistent store for user memory entries. */
 export class MemoryStore {
 	private db: Database | null = null
 	private dbPath: string
@@ -63,13 +63,25 @@ export class MemoryStore {
 		this.dbPath = path.join(memoryDir, "user_memory.db")
 	}
 
+	/** Initialize the database, running schema creation and migrations. */
 	async init(): Promise<void> {
-		// In a bundled VS Code extension, we need to tell sql.js where to find the WASM file.
-		// The WASM is copied to the dist/ directory by the build pipeline (copyWasms).
+		// sql.js needs to locate its WASM file. In a bundled extension, it's in dist/.
+		// During tests/dev, resolve from node_modules.
 		const SQL = await initSqlJs({
 			locateFile: (file: string) => {
-				// __dirname in the bundled extension points to dist/
-				return path.join(__dirname, file)
+				// Try bundled location first (dist/)
+				const bundledPath = path.join(__dirname, file)
+				if (fs.existsSync(bundledPath)) {
+					return bundledPath
+				}
+				// Fallback: resolve from node_modules (for tests/dev)
+				try {
+					const sqlJsMain = require.resolve("sql.js")
+					const sqlJsDistDir = path.dirname(sqlJsMain)
+					return path.join(sqlJsDistDir, file)
+				} catch {
+					return bundledPath
+				}
 			},
 		})
 
@@ -125,10 +137,12 @@ export class MemoryStore {
 		fs.renameSync(tmpPath, this.dbPath)
 	}
 
+	/** Generate a random UUID for new entries. */
 	generateId(): string {
 		return crypto.randomUUID()
 	}
 
+	/** Insert a new memory entry, returning its ID. */
 	insertEntry(entry: Omit<MemoryEntry, "id"> & { id?: string }): string {
 		const id = entry.id || this.generateId()
 		this.db!.run(
@@ -152,6 +166,7 @@ export class MemoryStore {
 		return id
 	}
 
+	/** Bump the reinforcement count and timestamp for an existing entry. */
 	reinforceEntry(id: string, taskId: string | null): void {
 		this.db!.run(
 			`UPDATE memory_entries SET last_reinforced = ?, reinforcement_count = reinforcement_count + 1, source_task_id = ? WHERE id = ?`,
@@ -160,6 +175,7 @@ export class MemoryStore {
 		this.persist()
 	}
 
+	/** Update the content and significance of an existing entry. */
 	updateEntry(id: string, content: string, significance: number, taskId: string | null): void {
 		this.db!.run(
 			`UPDATE memory_entries SET content = ?, significance = ?, last_reinforced = ?, reinforcement_count = reinforcement_count + 1, source_task_id = ? WHERE id = ?`,
@@ -168,21 +184,24 @@ export class MemoryStore {
 		this.persist()
 	}
 
+	/** Retrieve a single entry by ID, or null if not found. */
 	getEntry(id: string): MemoryEntry | null {
 		const result = this.db!.exec("SELECT * FROM memory_entries WHERE id = ?", [id])
 		if (result.length === 0 || result[0].values.length === 0) return null
 		return this.rowToEntry(result[0].columns, result[0].values[0])
 	}
 
+	/** List entries matching the given category and workspace scope. */
 	getEntriesByCategory(category: string, workspaceId: string | null): MemoryEntry[] {
 		const result = this.db!.exec(
 			"SELECT * FROM memory_entries WHERE category = ? AND (workspace_id IS NULL OR workspace_id = ?) ORDER BY last_reinforced DESC",
 			[category, workspaceId],
 		)
 		if (result.length === 0) return []
-		return result[0].values.map((row) => this.rowToEntry(result[0].columns, row))
+		return result[0].values.map((row: SqlValue[]) => this.rowToEntry(result[0].columns, row))
 	}
 
+	/** Return all entries ranked by computed relevance score. */
 	getScoredEntries(workspaceId: string | null): ScoredMemoryEntry[] {
 		const result = this.db!.exec(
 			`SELECT e.*, c.priority_weight, c.label as category_label
@@ -222,6 +241,7 @@ export class MemoryStore {
 		return entries.slice(0, MEMORY_CONSTANTS.MAX_QUERY_ENTRIES)
 	}
 
+	/** Record an analysis run in the audit log. */
 	logAnalysis(entry: AnalysisLogEntry): void {
 		this.db!.run(
 			`INSERT INTO analysis_log (id, timestamp, task_id, messages_analyzed, tokens_used, entries_created, entries_reinforced)
@@ -239,6 +259,7 @@ export class MemoryStore {
 		this.persist()
 	}
 
+	/** Remove stale, low-score, unpinned entries and enforce the hard cap. */
 	garbageCollect(): number {
 		const now = Math.floor(Date.now() / 1000)
 		const cutoff = now - MEMORY_CONSTANTS.GARBAGE_COLLECTION_DAYS * 86400
@@ -322,11 +343,13 @@ export class MemoryStore {
 		return toDelete.length
 	}
 
+	/** Return the total number of stored entries. */
 	getEntryCount(): number {
 		const result = this.db!.exec("SELECT COUNT(*) FROM memory_entries")
 		return result[0].values[0][0] as number
 	}
 
+	/** Close the database connection. */
 	close(): void {
 		if (this.db) {
 			this.db.close()
@@ -334,7 +357,7 @@ export class MemoryStore {
 		}
 	}
 
-	private rowToEntry(columns: string[], row: any[]): MemoryEntry {
+	private rowToEntry(columns: string[], row: unknown[]): MemoryEntry {
 		const get = (col: string) => row[columns.indexOf(col)]
 		return {
 			id: get("id") as string,

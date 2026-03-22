@@ -1,5 +1,4 @@
-// src/core/memory/analysis-agent.ts
-import type { AnalysisResult, Observation, MemoryCategorySlug } from "./types"
+import type { AnalysisResult, Observation, ObservationAction, MemoryCategorySlug } from "./types"
 import { buildApiHandler, type SingleCompletionHandler } from "../../api"
 import type { ProviderSettings } from "@roo-code/types"
 
@@ -62,6 +61,7 @@ Respond in this exact JSON format (no markdown fences, just raw JSON):
   "session_summary": "<1-2 sentences about what the user was doing this session>"
 }`
 
+/** Send a preprocessed conversation to the LLM for memory extraction. */
 export async function runAnalysis(
 	providerSettings: ProviderSettings,
 	cleanedConversation: string,
@@ -89,6 +89,7 @@ export async function runAnalysis(
 	}
 }
 
+/** Parse and validate the LLM's JSON response into typed observations. */
 function parseAnalysisResponse(response: string): AnalysisResult | null {
 	try {
 		// Strip markdown code fences if present
@@ -101,24 +102,24 @@ function parseAnalysisResponse(response: string): AnalysisResult | null {
 
 		// Validate and filter observations
 		const validObservations: Observation[] = parsed.observations
-			.filter((obs: any) => {
+			.filter((obs: Record<string, unknown>) => {
 				return (
-					VALID_ACTIONS.has(obs.action) &&
-					VALID_CATEGORIES.has(obs.category) &&
+					VALID_ACTIONS.has(obs.action as string) &&
+					VALID_CATEGORIES.has(obs.category as string) &&
 					typeof obs.content === "string" &&
-					obs.content.length > 0 &&
+					(obs.content as string).length > 0 &&
 					typeof obs.significance === "number" &&
-					obs.significance >= 0 &&
-					obs.significance <= 1
+					(obs.significance as number) >= 0 &&
+					(obs.significance as number) <= 1
 				)
 			})
-			.map((obs: any) => ({
-				action: obs.action,
+			.map((obs: Record<string, unknown>) => ({
+				action: obs.action as ObservationAction,
 				category: obs.category as MemoryCategorySlug,
-				content: obs.content,
-				significance: obs.significance,
-				existingEntryId: obs.existing_entry_id || null,
-				reasoning: obs.reasoning || "",
+				content: obs.content as string,
+				significance: obs.significance as number,
+				existingEntryId: (obs.existing_entry_id as string) || null,
+				reasoning: (obs.reasoning as string) || "",
 			}))
 
 		return {

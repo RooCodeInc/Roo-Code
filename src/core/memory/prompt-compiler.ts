@@ -1,4 +1,3 @@
-// src/core/memory/prompt-compiler.ts
 import type { ScoredMemoryEntry } from "./types"
 import { MEMORY_CONSTANTS } from "./types"
 
@@ -7,6 +6,7 @@ function estimateTokens(text: string): number {
 	return Math.ceil(text.length / 4)
 }
 
+/** Compile scored entries into a prose user-profile section for the system prompt. */
 export function compileMemoryPrompt(entries: ScoredMemoryEntry[]): string {
 	if (entries.length === 0) return ""
 
@@ -36,6 +36,7 @@ export function compileMemoryPrompt(entries: ScoredMemoryEntry[]): string {
 	return `USER PROFILE & PREFERENCES\n(Learned through conversation — continuously updated)\n\n${prose}`
 }
 
+/** Compile entries into a machine-readable list for the analysis agent. */
 export function compileMemoryForAgent(entries: ScoredMemoryEntry[]): string {
 	if (entries.length === 0) return "No existing memory entries."
 

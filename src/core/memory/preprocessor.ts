@@ -1,4 +1,3 @@
-// src/core/memory/preprocessor.ts
 import type { PreprocessResult } from "./types"
 
 // Tool names that produce filename references
@@ -22,7 +21,7 @@ function stripLongCodeBlocks(text: string): string {
 	})
 }
 
-function processUserContent(content: any): string {
+function processUserContent(content: unknown): string {
 	if (typeof content === "string") return content
 
 	if (!Array.isArray(content)) return ""
@@ -38,7 +37,7 @@ function processUserContent(content: any): string {
 	return parts.join("\n")
 }
 
-function processAssistantContent(content: any): string {
+function processAssistantContent(content: unknown): string {
 	if (typeof content === "string") return stripLongCodeBlocks(content)
 
 	if (!Array.isArray(content)) return ""
@@ -64,7 +63,13 @@ function processAssistantContent(content: any): string {
 	return parts.join("\n")
 }
 
-export function preprocessMessages(messages: any[]): PreprocessResult {
+/** Clean raw conversation messages, stripping tool noise and large code blocks. */
+export interface MessageLike {
+	role: string
+	content: unknown
+}
+
+export function preprocessMessages(messages: MessageLike[]): PreprocessResult {
 	if (messages.length === 0) {
 		return { cleaned: "", originalTokenEstimate: 0, cleanedTokenEstimate: 0 }
 	}

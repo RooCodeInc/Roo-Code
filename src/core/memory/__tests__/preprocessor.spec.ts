@@ -1,13 +1,17 @@
-// src/core/memory/__tests__/preprocessor.spec.ts
 import { preprocessMessages } from "../preprocessor"
 
 // Minimal ApiMessage mock shape matching Anthropic.MessageParam
-const makeUserMsg = (text: string): any => ({
+interface MockMessage {
+	role: "user" | "assistant"
+	content: unknown
+}
+
+const makeUserMsg = (text: string): MockMessage => ({
 	role: "user" as const,
 	content: [{ type: "text", text }],
 })
 
-const makeAssistantMsg = (content: any[]): any => ({
+const makeAssistantMsg = (content: Record<string, unknown>[]): MockMessage => ({
 	role: "assistant" as const,
 	content,
 })
@@ -53,7 +57,7 @@ describe("preprocessMessages", () => {
 	})
 
 	it("should strip base64 image data from user messages", () => {
-		const msg: any = {
+		const msg: MockMessage = {
 			role: "user" as const,
 			content: [
 				{ type: "image", source: { type: "base64", data: "abc123longdata..." } },

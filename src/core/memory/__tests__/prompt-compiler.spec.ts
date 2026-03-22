@@ -1,6 +1,5 @@
-// src/core/memory/__tests__/prompt-compiler.spec.ts
 import { compileMemoryPrompt, compileMemoryForAgent } from "../prompt-compiler"
-import type { ScoredMemoryEntry } from "../types"
+import type { ScoredMemoryEntry, MemoryCategorySlug } from "../types"
 
 const makeScoredEntry = (
 	category: string,
@@ -10,7 +9,7 @@ const makeScoredEntry = (
 ): ScoredMemoryEntry => ({
 	id: `test-${Math.random().toString(36).slice(2)}`,
 	workspaceId: null,
-	category: category as any,
+	category: category as MemoryCategorySlug,
 	content,
 	significance: 0.8,
 	firstSeen: 1000,
