@@ -33,8 +33,8 @@ export function jaccardSimilarity(a: string, b: string): number {
 	const setB = tokenize(b)
 	if (setA.size === 0 && setB.size === 0) return 1.0
 	if (setA.size === 0 || setB.size === 0) return 0.0
-	const intersection = new Set([...setA].filter((x) => setB.has(x)))
-	const union = new Set([...setA, ...setB])
+	const intersection = new Set(Array.from(setA).filter((x) => setB.has(x)))
+	const union = new Set([...Array.from(setA), ...Array.from(setB)])
 	return intersection.size / union.size
 }
 

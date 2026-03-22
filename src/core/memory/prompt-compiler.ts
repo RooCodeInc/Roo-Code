@@ -21,7 +21,7 @@ export function compileMemoryPrompt(entries: ScoredMemoryEntry[]): string {
 
 	// Build prose sections
 	const sections: string[] = []
-	for (const [label, contents] of groups) {
+	for (const [label, contents] of Array.from(groups.entries())) {
 		sections.push(`${label}: ${contents.join(". ")}.`)
 	}
 
