@@ -1,148 +1,135 @@
-import React, { useState, useCallback, useMemo } from "react"
-
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import React, { useState, useMemo } from "react"
+import type { HistoryItem } from "@roo-code/types"
+import { formatTimeAgo } from "@src/utils/format"
 import {
 	Dialog,
 	DialogContent,
-	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog"
-import { formatTimeAgo } from "@/utils/format"
+	DialogDescription,
+	DialogFooter,
+	Button,
+	Checkbox,
+} from "@src/components/ui"
 
 interface MemoryChatPickerProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
-	taskHistory: Array<{ id: string; task: string; ts: number }>
+	taskHistory: HistoryItem[]
 	onStartSync: (taskIds: string[]) => void
-	isSyncing: boolean
 }
 
-const MemoryChatPicker: React.FC<MemoryChatPickerProps> = ({
+export const MemoryChatPicker: React.FC<MemoryChatPickerProps> = ({
 	open,
 	onOpenChange,
 	taskHistory,
 	onStartSync,
-	isSyncing,
 }) => {
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
-	const allSelected = taskHistory.length > 0 && selectedIds.size === taskHistory.length
+	const allSelected = useMemo(
+		() => taskHistory.length > 0 && selectedIds.size === taskHistory.length,
+		[taskHistory.length, selectedIds.size],
+	)
 
-	const toggleItem = useCallback((id: string, checked: boolean) => {
+	const toggleAll = () => {
+		if (allSelected) {
+			setSelectedIds(new Set())
+		} else {
+			setSelectedIds(new Set(taskHistory.map((t) => t.id)))
+		}
+	}
+
+	const toggleOne = (id: string) => {
 		setSelectedIds((prev) => {
 			const next = new Set(prev)
-			checked ? next.add(id) : next.delete(id)
+			if (next.has(id)) {
+				next.delete(id)
+			} else {
+				next.add(id)
+			}
 			return next
 		})
-	}, [])
+	}
 
-	const toggleAll = useCallback(
-		(checked: boolean) => {
-			setSelectedIds(checked ? new Set(taskHistory.map((t) => t.id)) : new Set())
-		},
-		[taskHistory],
-	)
-
-	const handleLearn = useCallback(() => {
-		if (selectedIds.size === 0) return
+	const handleLearn = () => {
 		onStartSync(Array.from(selectedIds))
-	}, [selectedIds, onStartSync])
-
-	const handleOpenChange = useCallback(
-		(nextOpen: boolean) => {
-			if (!nextOpen) {
-				setSelectedIds(new Set())
-			}
-			onOpenChange(nextOpen)
-		},
-		[onOpenChange],
-	)
-
-	const sortedHistory = useMemo(
-		() => [...taskHistory].sort((a, b) => b.ts - a.ts),
-		[taskHistory],
-	)
+	}
 
 	return (
-		<Dialog open={open} onOpenChange={handleOpenChange}>
-			<DialogContent className="sm:max-w-[500px] flex flex-col gap-0 p-0">
-				<DialogHeader className="px-6 pt-6 pb-0">
-					<DialogTitle>Select Chats to Analyze</DialogTitle>
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent style={{ maxWidth: "520px", maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
+				<DialogHeader>
+					<DialogTitle>Browse Chats</DialogTitle>
+					<DialogDescription>Select conversations to analyze for building your profile.</DialogDescription>
 				</DialogHeader>
 
-				{/* Select All bar */}
-				<div
-					className="flex items-center gap-3 px-6 py-3 border-b"
-					style={{ borderColor: "var(--vscode-panel-border)" }}>
-					<Checkbox
-						checked={allSelected}
-						onCheckedChange={(checked) => toggleAll(checked === true)}
-						variant="description"
-					/>
-					<span className="text-sm text-vscode-foreground">
+				<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0" }}>
+					<button
+						onClick={toggleAll}
+						style={{
+							background: "none",
+							border: "none",
+							color: "var(--vscode-textLink-foreground)",
+							cursor: "pointer",
+							fontSize: "12px",
+							padding: 0,
+						}}>
 						{allSelected ? "Deselect All" : "Select All"}
-					</span>
-					<span className="ml-auto text-xs text-vscode-descriptionForeground">
+					</button>
+					<span style={{ fontSize: "12px", opacity: 0.7 }}>
 						{selectedIds.size} of {taskHistory.length} selected
 					</span>
 				</div>
 
-				{/* Scrollable chat list */}
-				<div
-					className="overflow-y-auto px-2"
-					style={{
-						maxHeight: "400px",
-						backgroundColor: "var(--vscode-input-background)",
-					}}>
-					{sortedHistory.length === 0 ? (
-						<div className="flex items-center justify-center py-8 text-sm text-vscode-descriptionForeground">
-							No chat history available
+				<div style={{ flex: 1, overflowY: "auto", minHeight: 0, maxHeight: "400px" }}>
+					{taskHistory.map((item) => (
+						<div
+							key={item.id}
+							style={{
+								display: "flex",
+								alignItems: "flex-start",
+								gap: "8px",
+								padding: "8px 4px",
+								borderBottom: "1px solid var(--vscode-input-border)",
+								cursor: "pointer",
+							}}
+							onClick={() => toggleOne(item.id)}>
+							<Checkbox
+								checked={selectedIds.has(item.id)}
+								onCheckedChange={() => toggleOne(item.id)}
+								style={{ marginTop: "2px" }}
+							/>
+							<div style={{ flex: 1, minWidth: 0 }}>
+								<div
+									style={{
+										fontSize: "12px",
+										overflow: "hidden",
+										textOverflow: "ellipsis",
+										whiteSpace: "nowrap",
+									}}>
+									{item.task || "(no message)"}
+								</div>
+								<div style={{ fontSize: "11px", opacity: 0.5 }}>{formatTimeAgo(item.ts)}</div>
+							</div>
 						</div>
-					) : (
-						sortedHistory.map((chat) => {
-							const isChecked = selectedIds.has(chat.id)
-							return (
-								<label
-									key={chat.id}
-									className="flex items-start gap-3 px-4 py-2.5 cursor-pointer rounded-md hover:bg-vscode-list-hoverBackground transition-colors"
-									style={{ opacity: isSyncing ? 0.6 : 1 }}>
-									<Checkbox
-										checked={isChecked}
-										onCheckedChange={(checked) => toggleItem(chat.id, checked === true)}
-										disabled={isSyncing}
-										className="mt-0.5"
-									/>
-									<div className="flex flex-col gap-0.5 min-w-0">
-										<span className="text-sm text-vscode-foreground truncate">
-											{chat.task || "Untitled chat"}
-										</span>
-										<span className="text-xs text-vscode-descriptionForeground">
-											{formatTimeAgo(chat.ts)}
-										</span>
-									</div>
-								</label>
-							)
-						})
+					))}
+					{taskHistory.length === 0 && (
+						<p style={{ fontSize: "12px", opacity: 0.5, textAlign: "center", padding: "24px 0" }}>
+							No conversations found.
+						</p>
 					)}
 				</div>
 
-				{/* Footer */}
-				<DialogFooter className="px-6 py-4 border-t" style={{ borderColor: "var(--vscode-panel-border)" }}>
-					<Button variant="secondary" onClick={() => handleOpenChange(false)} disabled={isSyncing}>
+				<DialogFooter>
+					<Button variant="secondary" onClick={() => onOpenChange(false)}>
 						Cancel
 					</Button>
-					<Button
-						variant="primary"
-						onClick={handleLearn}
-						disabled={isSyncing || selectedIds.size === 0}>
-						{isSyncing ? "Learning…" : "Learn"}
+					<Button onClick={handleLearn} disabled={selectedIds.size === 0}>
+						Learn
 					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
 	)
 }
-
-export default MemoryChatPicker

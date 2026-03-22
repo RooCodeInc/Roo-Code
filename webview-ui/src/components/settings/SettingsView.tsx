@@ -30,6 +30,7 @@ import {
 	GitCommitVertical,
 	GraduationCap,
 	Brain,
+	Loader2,
 } from "lucide-react"
 
 import {
@@ -84,6 +85,7 @@ import McpView from "../mcp/McpView"
 import { WorktreesView } from "../worktrees/WorktreesView"
 import { SettingsSearch } from "./SettingsSearch"
 import { useSearchIndexRegistry, SearchIndexProvider } from "./useSettingsSearch"
+import { MemoryChatPicker } from "./MemoryChatPicker"
 
 export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
 export const settingsTabList =
@@ -127,11 +129,19 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const { t } = useAppTranslation()
 
 	const extensionState = useExtensionState()
-	const { currentApiConfigName, listApiConfigMeta, uriScheme, settingsImportedAt } = extensionState
+	const { currentApiConfigName, listApiConfigMeta, uriScheme, settingsImportedAt, taskHistory } = extensionState
 
 	const [isDiscardDialogShow, setDiscardDialogShow] = useState(false)
 	const [isChangeDetected, setChangeDetected] = useState(false)
 	const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined)
+
+	// Memory sync state
+	const [isSyncing, setIsSyncing] = useState(false)
+	const [syncProgress, setSyncProgress] = useState({ completed: 0, total: 0 })
+	const [syncDone, setSyncDone] = useState(false)
+	const [pickerOpen, setPickerOpen] = useState(false)
+	const [clearDialogOpen, setClearDialogOpen] = useState(false)
+
 	const [activeTab, setActiveTab] = useState<SectionName>(
 		targetSection && sectionNames.includes(targetSection as SectionName)
 			? (targetSection as SectionName)
@@ -228,6 +238,40 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			setChangeDetected(false)
 		}
 	}, [settingsImportedAt, extensionState])
+
+	// Memory sync message listener
+	useEffect(() => {
+		const handler = (event: MessageEvent) => {
+			const msg = event.data
+			if (msg.type === "memorySyncProgress") {
+				const data = JSON.parse(msg.text)
+				setSyncProgress(data)
+			}
+			if (msg.type === "memorySyncComplete") {
+				setIsSyncing(false)
+				setSyncDone(true)
+			}
+			if (msg.type === "memoryCleared") {
+				setSyncDone(false)
+				setSyncProgress({ completed: 0, total: 0 })
+			}
+		}
+		window.addEventListener("message", handler)
+		return () => window.removeEventListener("message", handler)
+	}, [])
+
+	const handleStartSync = (taskIds: string[]) => {
+		setIsSyncing(true)
+		setSyncDone(false)
+		setSyncProgress({ completed: 0, total: taskIds.length })
+		setPickerOpen(false)
+		vscode.postMessage({ type: "startMemorySync", text: JSON.stringify({ taskIds }) })
+	}
+
+	const handleClearMemory = () => {
+		vscode.postMessage({ type: "clearMemory" })
+		setClearDialogOpen(false)
+	}
 
 	const setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType> = useCallback((field, value) => {
 		setCachedState((prevState) => {
@@ -1002,33 +1046,110 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 											</select>
 										</div>
 
-										{/* Default enabled checkbox */}
-										<div
-											style={{
-												display: "flex",
-												alignItems: "center",
-												gap: "8px",
-											}}>
-											<input
-												type="checkbox"
-												checked={
-													cachedState.memoryLearningDefaultEnabled ?? true
-												}
-												onChange={(e) => {
-													setCachedStateField(
-														"memoryLearningDefaultEnabled",
-														e.target.checked,
-													)
-												}}
-											/>
-											<label style={{ fontSize: "13px" }}>
-												Enable by default for new sessions
-											</label>
-										</div>
+									{/* Default enabled checkbox */}
+									<div
+										style={{
+											display: "flex",
+											alignItems: "center",
+											gap: "8px",
+										}}>
+										<input
+											type="checkbox"
+											checked={
+												cachedState.memoryLearningDefaultEnabled ?? true
+											}
+											onChange={(e) => {
+												setCachedStateField(
+													"memoryLearningDefaultEnabled",
+													e.target.checked,
+												)
+											}}
+										/>
+										<label style={{ fontSize: "13px" }}>
+											Enable by default for new sessions
+										</label>
 									</div>
-								</Section>
-							</div>
-						)}
+
+									{/* Prior Chat Analysis */}
+									<div style={{ borderTop: "1px solid var(--vscode-input-border)", paddingTop: "16px" }}>
+										<label style={{ fontSize: "13px", fontWeight: 500 }}>Prior Chat Analysis</label>
+										<p style={{ fontSize: "11px", opacity: 0.6, marginBottom: "8px" }}>
+											Analyze your existing conversations to build your profile instantly.
+										</p>
+
+										<div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}>
+											<Button variant="secondary" onClick={() => setPickerOpen(true)} disabled={isSyncing}>
+												Browse Chats
+											</Button>
+											{isSyncing ? (
+												<Loader2 className="w-4 h-4 animate-spin" />
+											) : syncDone ? (
+												<span className="inline-block w-3 h-3 rounded-full bg-green-500" />
+											) : null}
+											{isSyncing && (
+												<span style={{ fontSize: "11px", opacity: 0.7 }}>
+													{syncProgress.completed} of {syncProgress.total} analyzed
+												</span>
+											)}
+										</div>
+
+										{/* Progress bar — visible while syncing */}
+										{isSyncing && syncProgress.total > 0 && (
+											<div style={{ width: "100%", height: "6px", background: "var(--vscode-input-background)", borderRadius: "3px", overflow: "hidden", marginBottom: "12px" }}>
+												<div style={{
+													width: `${(syncProgress.completed / syncProgress.total) * 100}%`,
+													height: "100%",
+													background: "var(--vscode-button-background)",
+													transition: "width 0.3s ease",
+												}} />
+											</div>
+										)}
+									</div>
+
+									{/* Clear Memory */}
+									<div style={{ borderTop: "1px solid var(--vscode-input-border)", paddingTop: "16px" }}>
+										<Button variant="destructive" onClick={() => setClearDialogOpen(true)} disabled={isSyncing}>
+											Clear Memory
+										</Button>
+										<p style={{ fontSize: "11px", opacity: 0.5, marginTop: "4px" }}>
+											Reset all learned preferences and start fresh.
+										</p>
+									</div>
+								</div>
+
+								{/* Memory Chat Picker Dialog */}
+								<MemoryChatPicker
+									open={pickerOpen}
+									onOpenChange={setPickerOpen}
+									taskHistory={taskHistory}
+									onStartSync={handleStartSync}
+								/>
+
+								{/* Clear Memory Confirmation Dialog */}
+								<AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
+									<AlertDialogContent>
+										<AlertDialogHeader>
+											<AlertDialogTitle>
+												<AlertTriangle className="w-5 h-5 text-yellow-500" />
+												Clear Memory
+											</AlertDialogTitle>
+											<AlertDialogDescription>
+												This will reset all learned preferences and start fresh. Are you sure?
+											</AlertDialogDescription>
+										</AlertDialogHeader>
+										<AlertDialogFooter>
+											<AlertDialogCancel onClick={() => setClearDialogOpen(false)}>
+												Cancel
+											</AlertDialogCancel>
+											<AlertDialogAction onClick={handleClearMemory}>
+												Clear Memory
+											</AlertDialogAction>
+										</AlertDialogFooter>
+									</AlertDialogContent>
+								</AlertDialog>
+							</Section>
+						</div>
+					)}
 
 						{/* Language Section */}
 						{renderTab === "language" && (
