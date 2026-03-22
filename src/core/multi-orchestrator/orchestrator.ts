@@ -238,14 +238,24 @@ export class MultiOrchestrator {
 			this.state.phase = "running"
 			notify()
 
-			// Start all simultaneously
-			await this.coordinator.startAll()
-
-			// Monitor: update state on each agent completion
+			// Attach event listeners BEFORE starting so we never miss
+			// early completions or failures that fire during startAll().
 			this.coordinator.on("agentCompleted", () => notify())
 			this.coordinator.on("agentFailed", () => notify())
 
-			// Wait for all to complete
+			// Verify at least one agent was successfully registered
+			if (this.coordinator.totalAgents === 0) {
+				throw new Error(
+					"No agents were registered with the coordinator — " +
+						"all panels may have failed to spawn or all tasks failed to create.",
+				)
+			}
+
+			// Start all agents simultaneously (synchronous — each task.start()
+			// is fire-and-forget; failures are handled inside startAll()).
+			this.coordinator.startAll()
+
+			// Wait for all to complete (with timeout)
 			await this.coordinator.waitForAll()
 
 			// PHASE 4: MERGE (if needed and worktrees were actually created)

@@ -5,6 +5,9 @@ import type { AgentState } from "./types"
 import type { TokenUsage, ToolUsage } from "@roo-code/types"
 import { RooCodeEventName } from "@roo-code/types"
 
+/** Default timeout for waitForAll(): 10 minutes in milliseconds. */
+const DEFAULT_WAIT_TIMEOUT_MS = 10 * 60 * 1000
+
 export interface AgentCoordinatorEvents {
 	agentCompleted: [taskId: string]
 	agentFailed: [taskId: string]
@@ -14,7 +17,7 @@ export interface AgentCoordinatorEvents {
 export class AgentCoordinator extends EventEmitter<AgentCoordinatorEvents> {
 	private agents: Map<string, AgentState> = new Map()
 	private providers: Map<string, ClineProvider> = new Map()
-	private completionCount = 0
+	private completedSet: Set<string> = new Set()
 
 	/** Register an agent and attach event listeners to its provider */
 	registerAgent(agent: AgentState, provider: ClineProvider): void {
@@ -26,72 +29,101 @@ export class AgentCoordinator extends EventEmitter<AgentCoordinatorEvents> {
 		provider.on(
 			RooCodeEventName.TaskCompleted,
 			(taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage) => {
-				const agentState = this.agents.get(agent.taskId)
-				if (agentState) {
-					agentState.status = "completed"
-					agentState.completedAt = Date.now()
-					agentState.tokenUsage = {
-						input: tokenUsage.totalTokensIn,
-						output: tokenUsage.totalTokensOut,
-					}
-					this.completionCount++
-					this.emit("agentCompleted", agent.taskId)
-
-					if (this.allComplete()) {
-						this.emit("allCompleted")
-					}
-				}
+				this.handleAgentFinished(agent.taskId, "completed", tokenUsage)
 			},
 		)
 
 		// ClineProvider emits TaskAborted with (taskId).
 		provider.on(RooCodeEventName.TaskAborted, (_taskId: string) => {
-			const agentState = this.agents.get(agent.taskId)
-			if (agentState) {
-				agentState.status = "failed"
-				agentState.completedAt = Date.now()
-				this.completionCount++
-				this.emit("agentFailed", agent.taskId)
-
-				if (this.allComplete()) {
-					this.emit("allCompleted")
-				}
-			}
+			this.handleAgentFinished(agent.taskId, "failed")
 		})
+	}
+
+	/**
+	 * Centralized handler for agent completion/failure.
+	 * Guards against duplicate events for the same agent.
+	 */
+	private handleAgentFinished(
+		agentTaskId: string,
+		status: "completed" | "failed",
+		tokenUsage?: TokenUsage,
+	): void {
+		// Guard: ignore duplicate events for the same agent
+		if (this.completedSet.has(agentTaskId)) {
+			return
+		}
+
+		const agentState = this.agents.get(agentTaskId)
+		if (!agentState) {
+			return
+		}
+
+		this.completedSet.add(agentTaskId)
+		agentState.status = status
+		agentState.completedAt = Date.now()
+
+		if (status === "completed" && tokenUsage) {
+			agentState.tokenUsage = {
+				input: tokenUsage.totalTokensIn,
+				output: tokenUsage.totalTokensOut,
+			}
+		}
+
+		this.emit(status === "completed" ? "agentCompleted" : "agentFailed", agentTaskId)
+
+		if (this.allComplete()) {
+			this.emit("allCompleted")
+		}
 	}
 
 	/**
 	 * Start all agents simultaneously.
 	 * Each provider should already have a task created with startTask=false.
+	 * Agents whose provider has no current task, or whose start() throws,
+	 * are marked as failed immediately so waitForAll() never hangs.
 	 */
-	async startAll(): Promise<void> {
-		const startPromises: Promise<void>[] = []
-
+	startAll(): void {
 		for (const [taskId, provider] of this.providers) {
 			const agent = this.agents.get(taskId)
+
+			const currentTask = provider.getCurrentTask()
+			if (!currentTask) {
+				// Task was never created or was already removed from the stack.
+				console.error(
+					`[AgentCoordinator] getCurrentTask() returned undefined for agent ${taskId}. ` +
+						`The task may not have been created yet or was removed from the stack.`,
+				)
+				this.handleAgentFinished(taskId, "failed")
+				continue
+			}
+
 			if (agent) {
 				agent.status = "running"
 				agent.startedAt = Date.now()
 			}
 
-			const currentTask = provider.getCurrentTask()
-			if (currentTask) {
-				startPromises.push(
-					new Promise<void>((resolve) => {
-						currentTask.start()
-						resolve()
-					}),
+			// start() is synchronous (fire-and-forget) — wrap in try/catch so a
+			// throw doesn't skip remaining agents or leave this one un-accounted.
+			try {
+				currentTask.start()
+			} catch (err) {
+				console.error(
+					`[AgentCoordinator] start() threw for agent ${taskId}: ${
+						(err as Error)?.message ?? String(err)
+					}`,
 				)
+				this.handleAgentFinished(taskId, "failed")
 			}
 		}
-
-		// Start all simultaneously
-		await Promise.all(startPromises)
 	}
 
 	/** Check if all agents have finished (completed or failed) */
 	allComplete(): boolean {
-		return this.completionCount >= this.agents.size
+		// If no agents registered, not "complete" — avoids vacuous-truth bugs
+		if (this.agents.size === 0) {
+			return false
+		}
+		return this.completedSet.size >= this.agents.size
 	}
 
 	/** Get current state of all agents */
@@ -104,11 +136,48 @@ export class AgentCoordinator extends EventEmitter<AgentCoordinatorEvents> {
 		return this.agents.get(taskId)
 	}
 
-	/** Wait for all agents to complete (returns a promise) */
-	waitForAll(): Promise<void> {
+	/**
+	 * Wait for all agents to complete (returns a promise).
+	 * @param timeoutMs Maximum time to wait in ms. Defaults to 10 minutes.
+	 *                  Pass 0 or Infinity to wait indefinitely.
+	 * @throws Error if the timeout is reached before all agents complete.
+	 */
+	waitForAll(timeoutMs: number = DEFAULT_WAIT_TIMEOUT_MS): Promise<void> {
 		if (this.allComplete()) return Promise.resolve()
-		return new Promise((resolve) => {
-			this.once("allCompleted", resolve)
+
+		return new Promise<void>((resolve, reject) => {
+			let timer: ReturnType<typeof setTimeout> | undefined
+
+			const cleanup = () => {
+				if (timer !== undefined) {
+					clearTimeout(timer)
+					timer = undefined
+				}
+			}
+
+			const onComplete = () => {
+				cleanup()
+				resolve()
+			}
+
+			this.once("allCompleted", onComplete)
+
+			// Set up timeout if a finite positive value is provided
+			if (timeoutMs > 0 && timeoutMs < Infinity) {
+				timer = setTimeout(() => {
+					this.off("allCompleted", onComplete)
+					const pending = Array.from(this.agents.entries())
+						.filter(([id]) => !this.completedSet.has(id))
+						.map(([id, agent]) => `${id} (${agent.title})`)
+					reject(
+						new Error(
+							`AgentCoordinator.waitForAll() timed out after ${timeoutMs}ms. ` +
+								`${this.completedSet.size}/${this.agents.size} agents completed. ` +
+								`Pending: ${pending.join(", ")}`,
+						),
+					)
+				}, timeoutMs)
+			}
 		})
 	}
 
@@ -119,6 +188,6 @@ export class AgentCoordinator extends EventEmitter<AgentCoordinatorEvents> {
 
 	/** Get completed agent count */
 	get completedAgents(): number {
-		return this.completionCount
+		return this.completedSet.size
 	}
 }
