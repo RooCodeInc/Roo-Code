@@ -27,16 +27,18 @@ export const MemoryChatPicker: React.FC<MemoryChatPickerProps> = ({
 }) => {
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
+	const safeHistory = taskHistory ?? []
+
 	const allSelected = useMemo(
-		() => taskHistory.length > 0 && selectedIds.size === taskHistory.length,
-		[taskHistory.length, selectedIds.size],
+		() => safeHistory.length > 0 && selectedIds.size === safeHistory.length,
+		[safeHistory.length, selectedIds.size],
 	)
 
 	const toggleAll = () => {
 		if (allSelected) {
 			setSelectedIds(new Set())
 		} else {
-			setSelectedIds(new Set(taskHistory.map((t) => t.id)))
+			setSelectedIds(new Set(safeHistory.map((t) => t.id)))
 		}
 	}
 
@@ -78,12 +80,12 @@ export const MemoryChatPicker: React.FC<MemoryChatPickerProps> = ({
 						{allSelected ? "Deselect All" : "Select All"}
 					</button>
 					<span style={{ fontSize: "12px", opacity: 0.7 }}>
-						{selectedIds.size} of {taskHistory.length} selected
+						{selectedIds.size} of {safeHistory.length} selected
 					</span>
 				</div>
 
 				<div style={{ flex: 1, overflowY: "auto", minHeight: 0, maxHeight: "400px" }}>
-					{taskHistory.map((item) => (
+					{safeHistory.map((item) => (
 						<div
 							key={item.id}
 							style={{
@@ -114,7 +116,7 @@ export const MemoryChatPicker: React.FC<MemoryChatPickerProps> = ({
 							</div>
 						</div>
 					))}
-					{taskHistory.length === 0 && (
+					{safeHistory.length === 0 && (
 						<p style={{ fontSize: "12px", opacity: 0.5, textAlign: "center", padding: "24px 0" }}>
 							No conversations found.
 						</p>
