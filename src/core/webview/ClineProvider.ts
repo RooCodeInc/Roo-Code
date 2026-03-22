@@ -2231,6 +2231,9 @@ export class ClineProvider
 			memoryApiConfigId,
 			memoryAnalysisFrequency,
 			memoryLearningDefaultEnabled,
+			multiOrchMaxAgents,
+			multiOrchPlanReviewEnabled,
+			multiOrchMergeEnabled,
 		} = await this.getState()
 
 		let cloudOrganizations: CloudOrganizationMembership[] = []
@@ -2382,6 +2385,9 @@ export class ClineProvider
 			memoryApiConfigId,
 			memoryAnalysisFrequency,
 			memoryLearningDefaultEnabled: memoryLearningDefaultEnabled ?? false,
+			multiOrchMaxAgents,
+			multiOrchPlanReviewEnabled,
+			multiOrchMergeEnabled,
 			openAiCodexIsAuthenticated: await (async () => {
 				try {
 					const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
@@ -2606,6 +2612,9 @@ export class ClineProvider
 			memoryApiConfigId: stateValues.memoryApiConfigId,
 			memoryAnalysisFrequency: stateValues.memoryAnalysisFrequency,
 			memoryLearningDefaultEnabled: stateValues.memoryLearningDefaultEnabled ?? false,
+			multiOrchMaxAgents: stateValues.multiOrchMaxAgents,
+			multiOrchPlanReviewEnabled: stateValues.multiOrchPlanReviewEnabled,
+			multiOrchMergeEnabled: stateValues.multiOrchMergeEnabled,
 		}
 	}
 
