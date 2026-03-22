@@ -1,5 +1,6 @@
 import { compileMemoryPrompt, compileMemoryForAgent } from "../prompt-compiler"
 import type { ScoredMemoryEntry, MemoryCategorySlug } from "../types"
+import { MEMORY_CONSTANTS } from "../types"
 
 const makeScoredEntry = (
 	category: string,
@@ -60,7 +61,7 @@ describe("compileMemoryPrompt", () => {
 	})
 
 	it("should respect token cap by dropping lowest-priority sections", () => {
-		// Create many entries to exceed 1500 token cap
+		// Create many entries to exceed the token cap
 		const entries: ScoredMemoryEntry[] = []
 		for (let i = 0; i < 100; i++) {
 			entries.push(
@@ -74,7 +75,7 @@ describe("compileMemoryPrompt", () => {
 		}
 		const result = compileMemoryPrompt(entries)
 		const estimatedTokens = Math.ceil(result.length / 4)
-		expect(estimatedTokens).toBeLessThanOrEqual(1500)
+		expect(estimatedTokens).toBeLessThanOrEqual(MEMORY_CONSTANTS.PROMPT_TOKEN_CAP)
 	})
 })
 

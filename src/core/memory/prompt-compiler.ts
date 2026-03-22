@@ -1,8 +1,10 @@
 import type { ScoredMemoryEntry } from "./types"
 import { MEMORY_CONSTANTS } from "./types"
 
-// Rough token estimate
-function estimateTokens(text: string): number {
+const HEADER = "USER PROFILE & PREFERENCES\n(Learned through conversation — continuously updated)\n\n"
+
+// Rough token estimate (~chars/4)
+export function estimateTokens(text: string): number {
 	return Math.ceil(text.length / 4)
 }
 
@@ -25,15 +27,23 @@ export function compileMemoryPrompt(entries: ScoredMemoryEntry[]): string {
 		sections.push(`${label}: ${contents.join(". ")}.`)
 	}
 
-	let prose = sections.join("\n\n")
+	const headerTokens = estimateTokens(HEADER)
+	const cap = MEMORY_CONSTANTS.PROMPT_TOKEN_CAP - headerTokens
 
-	// Token cap — drop from the end (lowest priority sections) until within budget
-	while (estimateTokens(prose) > MEMORY_CONSTANTS.PROMPT_TOKEN_CAP && sections.length > 1) {
+	// Token cap — drop lowest-priority sections (from the end) until within budget
+	let prose = sections.join("\n\n")
+	while (estimateTokens(prose) > cap && sections.length > 1) {
 		sections.pop()
 		prose = sections.join("\n\n")
 	}
 
-	return `USER PROFILE & PREFERENCES\n(Learned through conversation — continuously updated)\n\n${prose}`
+	// Edge case: single remaining section still exceeds cap — hard-truncate by chars
+	if (estimateTokens(prose) > cap) {
+		const maxChars = cap * 4
+		prose = prose.slice(0, maxChars)
+	}
+
+	return `${HEADER}${prose}`
 }
 
 /** Compile entries into a machine-readable list for the analysis agent. */

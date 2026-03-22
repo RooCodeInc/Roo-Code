@@ -911,7 +911,7 @@ describe("E2E: Prompt Compiler Token Cap", () => {
 		fs.rmSync(tmpDir, { recursive: true, force: true })
 	})
 
-	it("should respect the 1500-token cap", () => {
+	it("should respect the 2000-token cap (header included)", () => {
 		// Insert a lot of entries to exceed the token budget
 		for (let i = 0; i < 40; i++) {
 			store.insertEntry(
@@ -927,9 +927,9 @@ describe("E2E: Prompt Compiler Token Cap", () => {
 		const entries = store.getScoredEntries(null)
 		const prose = compileMemoryPrompt(entries)
 
-		// The token estimate for the compiled prose should be within the cap
+		// Total output (header + prose) must be within the token cap
 		const tokenEstimate = Math.ceil(prose.length / 4)
-		expect(tokenEstimate).toBeLessThanOrEqual(MEMORY_CONSTANTS.PROMPT_TOKEN_CAP + 200) // small buffer for header
+		expect(tokenEstimate).toBeLessThanOrEqual(MEMORY_CONSTANTS.PROMPT_TOKEN_CAP)
 	})
 
 	it("should return empty string when no entries exist", () => {
