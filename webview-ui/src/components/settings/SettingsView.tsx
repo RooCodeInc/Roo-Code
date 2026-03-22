@@ -29,6 +29,7 @@ import {
 	ArrowLeft,
 	GitCommitVertical,
 	GraduationCap,
+	Brain,
 } from "lucide-react"
 
 import {
@@ -110,6 +111,7 @@ export const sectionNames = [
 	"prompts",
 	"ui",
 	"experimental",
+	"memory",
 	"language",
 	"about",
 ] as const
@@ -422,6 +424,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					openRouterImageGenerationSelectedModel,
 					experiments,
 					customSupportPrompts,
+					memoryApiConfigId: cachedState.memoryApiConfigId,
+					memoryAnalysisFrequency: cachedState.memoryAnalysisFrequency,
+					memoryLearningDefaultEnabled: cachedState.memoryLearningDefaultEnabled,
 				},
 			})
 
@@ -522,6 +527,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "worktrees", icon: GitBranch },
 			{ id: "ui", icon: Glasses },
 			{ id: "experimental", icon: FlaskConical },
+			{ id: "memory", icon: Brain },
 			{ id: "language", icon: Globe },
 			{ id: "about", icon: Info },
 		],
@@ -912,6 +918,116 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								setOpenRouterImageApiKey={setOpenRouterImageApiKey}
 								setImageGenerationSelectedModel={setImageGenerationSelectedModel}
 							/>
+						)}
+
+						{/* Memory Section */}
+						{renderTab === "memory" && (
+							<div>
+								<SectionHeader>Memory Learning</SectionHeader>
+								<Section>
+									<div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+										<p style={{ fontSize: "13px", opacity: 0.7 }}>
+											When enabled, Roo learns your preferences and coding
+											style from conversations to personalize responses over
+											time.
+										</p>
+
+										{/* Analysis model profile selector */}
+										<div>
+											<label style={{ fontSize: "13px", fontWeight: 500 }}>
+												Analysis Model Profile
+											</label>
+											<p style={{ fontSize: "11px", opacity: 0.6, marginBottom: "4px" }}>
+												Select a model configuration for memory analysis
+												(requires at least 50K context window).
+											</p>
+											<select
+												value={cachedState.memoryApiConfigId || ""}
+												onChange={(e) => {
+													setCachedStateField(
+														"memoryApiConfigId",
+														e.target.value || undefined,
+													)
+												}}
+												style={{
+													width: "100%",
+													padding: "6px 8px",
+													background: "var(--vscode-input-background)",
+													color: "var(--vscode-input-foreground)",
+													border: "1px solid var(--vscode-input-border)",
+													borderRadius: "2px",
+												}}>
+												<option value="">Not configured</option>
+												{(cachedState.listApiConfigMeta || []).map(
+													(config: { id: string; name: string }) => (
+														<option
+															key={config.id || config.name}
+															value={config.id || config.name}>
+															{config.name}
+														</option>
+													),
+												)}
+											</select>
+										</div>
+
+										{/* Analysis frequency selector */}
+										<div>
+											<label style={{ fontSize: "13px", fontWeight: 500 }}>
+												Analysis Frequency
+											</label>
+											<p style={{ fontSize: "11px", opacity: 0.6, marginBottom: "4px" }}>
+												Analyze conversation every N user messages.
+											</p>
+											<select
+												value={cachedState.memoryAnalysisFrequency || 8}
+												onChange={(e) => {
+													setCachedStateField(
+														"memoryAnalysisFrequency",
+														parseInt(e.target.value),
+													)
+												}}
+												style={{
+													width: "100%",
+													padding: "6px 8px",
+													background: "var(--vscode-input-background)",
+													color: "var(--vscode-input-foreground)",
+													border: "1px solid var(--vscode-input-border)",
+													borderRadius: "2px",
+												}}>
+												{[4, 6, 8, 10, 15, 20].map((n) => (
+													<option key={n} value={n}>
+														Every {n} messages
+													</option>
+												))}
+											</select>
+										</div>
+
+										{/* Default enabled checkbox */}
+										<div
+											style={{
+												display: "flex",
+												alignItems: "center",
+												gap: "8px",
+											}}>
+											<input
+												type="checkbox"
+												checked={
+													cachedState.memoryLearningDefaultEnabled ?? true
+												}
+												onChange={(e) => {
+													setCachedStateField(
+														"memoryLearningDefaultEnabled",
+														e.target.checked,
+													)
+												}}
+											/>
+											<label style={{ fontSize: "13px" }}>
+												Enable by default for new sessions
+											</label>
+										</div>
+									</div>
+								</Section>
+							</div>
 						)}
 
 						{/* Language Section */}
