@@ -96,6 +96,7 @@ import { CustomModesManager } from "../config/CustomModesManager"
 import { Task } from "../task/Task"
 
 import { MemoryOrchestrator } from "../memory/orchestrator"
+import type { MultiOrchestrator } from "../multi-orchestrator/orchestrator"
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import type { ClineMessage, TodoItem } from "@roo-code/types"
 import { readApiMessages, saveApiMessages, saveTaskMessages, TaskHistoryStore } from "../task-persistence"
@@ -150,6 +151,7 @@ export class ClineProvider
 	private currentWorkspacePath: string | undefined
 	private _disposed = false
 	private memoryOrchestrator?: MemoryOrchestrator
+	private multiOrchestrator?: MultiOrchestrator
 
 	private recentTasksCache?: string[]
 	public readonly taskHistoryStore: TaskHistoryStore
@@ -735,6 +737,11 @@ export class ClineProvider
 
 	public static getVisibleInstance(): ClineProvider | undefined {
 		return findLast(Array.from(this.activeInstances), (instance) => instance.view?.visible === true)
+	}
+
+	/** Get all active ClineProvider instances (for multi-orchestrator coordination) */
+	public static getAllInstances(): ReadonlySet<ClineProvider> {
+		return this.activeInstances
 	}
 
 	public static async getInstance(): Promise<ClineProvider | undefined> {
@@ -2779,6 +2786,16 @@ export class ClineProvider
 
 	public getMemoryOrchestrator(): MemoryOrchestrator | undefined {
 		return this.memoryOrchestrator
+	}
+
+	/** Get or lazily set the MultiOrchestrator instance (for multi-orchestrator coordination) */
+	public getMultiOrchestrator(): MultiOrchestrator | undefined {
+		return this.multiOrchestrator
+	}
+
+	/** Set the MultiOrchestrator instance (called during multi-orchestrator initialization) */
+	public setMultiOrchestrator(orchestrator: MultiOrchestrator): void {
+		this.multiOrchestrator = orchestrator
 	}
 
 	/**
