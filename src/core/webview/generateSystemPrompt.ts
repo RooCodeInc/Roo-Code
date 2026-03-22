@@ -41,7 +41,7 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 
 	// Get memory profile section if orchestrator is active
 	const memoryOrchestrator = provider.getMemoryOrchestrator()
-	const userProfileSection = memoryOrchestrator?.getUserProfileSection() || undefined
+	const userProfileSection = (await memoryOrchestrator?.getUserProfileSection()) || undefined
 
 	const systemPrompt = await SYSTEM_PROMPT(
 		provider.context,

@@ -203,7 +203,8 @@ export class MemoryStore {
 
 	/** Return all entries ranked by computed relevance score. */
 	getScoredEntries(workspaceId: string | null): ScoredMemoryEntry[] {
-		const result = this.db!.exec(
+		if (!this.db) return []
+		const result = this.db.exec(
 			`SELECT e.*, c.priority_weight, c.label as category_label
 			 FROM memory_entries e
 			 JOIN memory_categories c ON e.category = c.slug
@@ -257,6 +258,11 @@ export class MemoryStore {
 			],
 		)
 		this.persist()
+	}
+
+	/** Return true when the database has been initialized. */
+	isReady(): boolean {
+		return this.db !== null
 	}
 
 	/** Delete all entries from memory_entries and analysis_log tables. */
@@ -353,6 +359,13 @@ export class MemoryStore {
 	/** Return the total number of stored entries. */
 	getEntryCount(): number {
 		const result = this.db!.exec("SELECT COUNT(*) FROM memory_entries")
+		return result[0].values[0][0] as number
+	}
+
+	/** Return the most recent analysis timestamp, or null if no analyses have been run. */
+	getLastAnalysisTimestamp(): number | null {
+		const result = this.db!.exec("SELECT MAX(timestamp) FROM analysis_log")
+		if (result.length === 0 || !result[0].values[0][0]) return null
 		return result[0].values[0][0] as number
 	}
 

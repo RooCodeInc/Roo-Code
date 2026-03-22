@@ -39,6 +39,7 @@ export class MemoryOrchestrator {
 	private enabled = false
 	private workspaceId: string | null = null
 	private analysisFrequency: number
+	private initPromise: Promise<void>
 
 	constructor(
 		private storagePath: string,
@@ -50,10 +51,18 @@ export class MemoryOrchestrator {
 		if (workspacePath) {
 			this.workspaceId = getWorkspaceId(workspacePath)
 		}
+		// Placeholder; replaced by the real init promise when init() is called.
+		this.initPromise = Promise.resolve()
 	}
 
 	async init(): Promise<void> {
-		await this.store.init()
+		this.initPromise = this.store.init()
+		await this.initPromise
+	}
+
+	/** Wait for the store to be fully initialized. Resolves immediately after init completes. */
+	async waitForReady(): Promise<void> {
+		await this.initPromise
 	}
 
 	setEnabled(enabled: boolean): void {
@@ -119,6 +128,14 @@ export class MemoryOrchestrator {
 		taskId: string | null,
 		providerSettings: ProviderSettings,
 	): Promise<void> {
+		// Ensure the store is initialized before any DB access
+		try {
+			await this.initPromise
+		} catch {
+			// init() failed – bail out rather than crash
+			return
+		}
+
 		if (this.analysisInFlight) {
 			this.analysisQueued = true
 			return
@@ -201,6 +218,8 @@ export class MemoryOrchestrator {
 		}
 
 		this.syncInProgress = true
+		this.syncCompleted = 0
+		this.syncTotal = taskIds.length
 
 		let totalAnalyzed = 0
 		let entriesCreated = 0
@@ -268,6 +287,7 @@ export class MemoryOrchestrator {
 				console.error(`[MemoryOrchestrator] Batch analysis error for task ${taskId}:`, error)
 			}
 
+			this.syncCompleted = i + 1
 			onProgress(i + 1, taskIds.length)
 		}
 
@@ -277,6 +297,8 @@ export class MemoryOrchestrator {
 		return { totalAnalyzed, entriesCreated, entriesReinforced }
 		} finally {
 			this.syncInProgress = false
+			this.syncCompleted = 0
+			this.syncTotal = 0
 		}
 	}
 
@@ -289,9 +311,15 @@ export class MemoryOrchestrator {
 
 	/**
 	 * Get the compiled user profile section for the system prompt.
+	 * Awaits store initialization so early calls (before init resolves) return
+	 * real data instead of an empty string.
 	 */
-	getUserProfileSection(): string {
-		if (!this.store) return ""
+	async getUserProfileSection(): Promise<string> {
+		try {
+			await this.initPromise
+		} catch {
+			// init() failed – store has no DB, getScoredEntries will return []
+		}
 		const entries = this.store.getScoredEntries(this.workspaceId)
 		const compiled = compileMemoryPrompt(entries)
 		console.log(`[Memory] getUserProfileSection: ${entries.length} entries, compiled prompt length=${compiled.length}`)

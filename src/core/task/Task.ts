@@ -3984,9 +3984,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			const modelInfo = this.api.getModel().info
 
-			// Get memory profile section if orchestrator is active
+			// Get memory profile section if orchestrator is active.
+			// getUserProfileSection() is async – it awaits store initialization so
+			// the first message of a session doesn't silently get an empty profile.
 			const memoryOrchestrator = provider.getMemoryOrchestrator()
-			const userProfileSection = memoryOrchestrator?.getUserProfileSection() || undefined
+			const userProfileSection = (await memoryOrchestrator?.getUserProfileSection()) || undefined
 			console.log(`[Memory] Task.systemPrompt: userProfileSection ${userProfileSection ? `present, length=${userProfileSection.length}` : "empty/undefined"}`)
 
 			return SYSTEM_PROMPT(
