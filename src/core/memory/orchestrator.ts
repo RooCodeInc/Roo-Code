@@ -8,6 +8,7 @@ import { runAnalysis } from "./analysis-agent"
 import { processObservations } from "./memory-writer"
 import { compileMemoryPrompt, compileMemoryForAgent } from "./prompt-compiler"
 import { MEMORY_CONSTANTS } from "./types"
+import { readApiMessages } from "../task-persistence/apiMessages"
 
 function getWorkspaceId(workspacePath: string): string {
 	const folderName = path.basename(workspacePath)
@@ -162,6 +163,90 @@ export class MemoryOrchestrator {
 				this.triggerAnalysis(messages, taskId, providerSettings)
 			}
 		}
+	}
+
+	/**
+	 * Analyze a batch of prior chat histories to bootstrap the memory database.
+	 * Processes each task sequentially to avoid API rate limits.
+	 */
+	async batchAnalyzeHistory(
+		taskIds: string[],
+		globalStoragePath: string,
+		providerSettings: ProviderSettings,
+		onProgress: (completed: number, total: number) => void,
+	): Promise<{ totalAnalyzed: number; entriesCreated: number; entriesReinforced: number }> {
+		let totalAnalyzed = 0
+		let entriesCreated = 0
+		let entriesReinforced = 0
+
+		for (let i = 0; i < taskIds.length; i++) {
+			const taskId = taskIds[i]
+
+			try {
+				// Read conversation history for this task
+				const messages = await readApiMessages({ taskId, globalStoragePath })
+
+				if (!messages || messages.length === 0) {
+					onProgress(i + 1, taskIds.length)
+					continue
+				}
+
+				// Preprocess
+				const preprocessed = preprocessMessages(messages as MessageLike[])
+				if (preprocessed.cleaned.trim().length === 0) {
+					onProgress(i + 1, taskIds.length)
+					continue
+				}
+
+				// Get existing memory for context
+				const scoredEntries = this.store.getScoredEntries(this.workspaceId)
+				const existingReport = compileMemoryForAgent(scoredEntries)
+
+				// Run analysis
+				const result = await runAnalysis(providerSettings, preprocessed.cleaned, existingReport)
+
+				if (result && result.observations.length > 0) {
+					const writeResult = processObservations(
+						this.store,
+						result.observations,
+						this.workspaceId,
+						taskId,
+					)
+
+					entriesCreated += writeResult.entriesCreated
+					entriesReinforced += writeResult.entriesReinforced
+
+					// Log the analysis
+					this.store.logAnalysis({
+						id: crypto.randomUUID(),
+						timestamp: Math.floor(Date.now() / 1000),
+						taskId,
+						messagesAnalyzed: messages.length,
+						tokensUsed: preprocessed.cleanedTokenEstimate * 2,
+						entriesCreated: writeResult.entriesCreated,
+						entriesReinforced: writeResult.entriesReinforced,
+					})
+				}
+
+				totalAnalyzed++
+			} catch (error) {
+				console.error(`[MemoryOrchestrator] Batch analysis error for task ${taskId}:`, error)
+			}
+
+			onProgress(i + 1, taskIds.length)
+		}
+
+		// Run garbage collection after all tasks
+		this.store.garbageCollect()
+
+		return { totalAnalyzed, entriesCreated, entriesReinforced }
+	}
+
+	/**
+	 * Clear all memory entries and analysis logs.
+	 */
+	clearAllMemory(): void {
+		this.store.deleteAllEntries()
 	}
 
 	/**
