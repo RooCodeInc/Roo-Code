@@ -68,7 +68,16 @@ export async function generatePlan(
 			`${PLAN_SYSTEM_PROMPT}\n\n${prompt}`,
 		)
 
-		return parsePlanResponse(response)
+		const plan = parsePlanResponse(response)
+
+		// Post-processing: consolidate overly granular tasks for simple requests
+		if (plan && plan.tasks.length > 3 && userRequest.split(" ").length < 20) {
+			// Short request with many tasks = over-decomposed
+			// Keep only the most important 2
+			plan.tasks = plan.tasks.slice(0, 2)
+		}
+
+		return plan
 	} catch (error) {
 		console.error("[MultiOrch] Plan generation failed:", error)
 		return null
