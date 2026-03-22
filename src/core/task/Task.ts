@@ -3928,6 +3928,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			const modelInfo = this.api.getModel().info
 
+			// Get memory profile section if orchestrator is active
+			const memoryOrchestrator = provider.getMemoryOrchestrator()
+			const userProfileSection = memoryOrchestrator?.getUserProfileSection() || undefined
+
 			return SYSTEM_PROMPT(
 				provider.context,
 				this.cwd,
@@ -3955,6 +3959,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.api.getModel().id,
 				provider.getSkillsManager(),
 				apiConfiguration?.useXmlToolCalling,
+				userProfileSection,
 			)
 		})()
 	}

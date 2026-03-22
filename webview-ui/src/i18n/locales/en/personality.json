@@ -1,0 +1,19 @@
+{
+	"title": "Personality Traits",
+	"description": "Toggle traits to shape how Roo communicates in this mode. Combine multiple traits for a unique personality.",
+	"previewPrompt": "Preview combined prompt",
+	"noActiveTraits": "No traits are active. Toggle a trait above to see the combined prompt.",
+	"createTrait": "Create a Trait",
+	"editTrait": "Edit trait",
+	"editTraitTitle": "Edit Trait",
+	"deleteTrait": "Delete trait",
+	"emojiLabel": "Emoji",
+	"titleLabel": "Title",
+	"promptLabel": "Description / Prompt",
+	"labelPlaceholder": "e.g., Flamboyant",
+	"promptPlaceholder": "Describe the personality trait, or type a few words and click Enhance...",
+	"enhanceTooltip": "Enhance: expand a few words into a full personality prompt",
+	"enhancerSettingsTooltip": "View/edit the enhancer meta-prompt",
+	"enhancerPromptLabel": "Enhancer Meta-Prompt (controls how brief descriptions are expanded)",
+	"addTraitButton": "Add Trait"
+}
