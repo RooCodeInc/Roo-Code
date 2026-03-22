@@ -1,4 +1,3 @@
-import type { ModeConfig } from "@roo-code/types"
 import * as crypto from "crypto"
 
 export interface OrchestratorPlan {

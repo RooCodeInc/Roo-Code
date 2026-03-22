@@ -3849,10 +3849,20 @@ export const webviewMessageHandler = async (
 					})
 				})
 				.then(() => {
-					provider.postMessageToWebview({
-						type: "multiOrchComplete",
-						text: JSON.stringify(orchestrator.getState()),
-					})
+					const finalState = orchestrator.getState()
+					if (planReview && finalState.phase !== "complete" && finalState.plan) {
+						// Plan review mode: execute() returned early after planning.
+						// Send the plan to the webview for user approval.
+						provider.postMessageToWebview({
+							type: "multiOrchPlanReady",
+							text: JSON.stringify(finalState),
+						})
+					} else {
+						provider.postMessageToWebview({
+							type: "multiOrchComplete",
+							text: JSON.stringify(finalState),
+						})
+					}
 				})
 				.catch((error) => {
 					provider.postMessageToWebview({
@@ -3866,19 +3876,32 @@ export const webviewMessageHandler = async (
 		case "multiOrchApprovePlan": {
 			const orchestrator = provider.getMultiOrchestrator?.()
 			if (!orchestrator) break
-			const state = orchestrator.getState()
-			if (!state.plan) break
+			const orchState = orchestrator.getState()
+			if (!orchState.plan) break
 
 			const mergeMode =
 				(getGlobalState("multiOrchMergeEnabled") as "auto" | "always" | "never") ?? "auto"
 			const providerSettings = provider.contextProxy.getProviderSettings()
 
-			orchestrator.executeFromPlan(state.plan, providerSettings, mergeMode, (newState) => {
-				provider.postMessageToWebview({
-					type: "multiOrchStatusUpdate",
-					text: JSON.stringify(newState),
+			orchestrator
+				.executeFromPlan(orchState.plan, providerSettings, mergeMode, (newState) => {
+					provider.postMessageToWebview({
+						type: "multiOrchStatusUpdate",
+						text: JSON.stringify(newState),
+					})
 				})
-			})
+				.then(() => {
+					provider.postMessageToWebview({
+						type: "multiOrchComplete",
+						text: JSON.stringify(orchestrator.getState()),
+					})
+				})
+				.catch((error) => {
+					provider.postMessageToWebview({
+						type: "multiOrchError",
+						text: String(error),
+					})
+				})
 			break
 		}
 

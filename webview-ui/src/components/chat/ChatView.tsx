@@ -50,6 +50,9 @@ import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { useScrollLifecycle } from "@src/hooks/useScrollLifecycle"
 import { Cloud } from "lucide-react"
+import { PlanReviewPanel } from "../multi-orchestrator/PlanReviewPanel"
+import { MultiOrchStatusPanel } from "../multi-orchestrator/MultiOrchStatusPanel"
+import type { OrchestratorState } from "../multi-orchestrator/types"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -97,6 +100,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	// Show a WarningRow when the user sends a message with a retired provider.
 	const [showRetiredProviderWarning, setShowRetiredProviderWarning] = useState(false)
+
+	// Multi-orchestrator state
+	const [multiOrchState, setMultiOrchState] = useState<OrchestratorState | null>(null)
+	const [multiOrchPlanPending, setMultiOrchPlanPending] = useState(false)
 
 	// When the provider changes, clear the retired-provider warning.
 	const providerName = apiConfiguration?.apiProvider
@@ -636,9 +643,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				// Mark that user has responded - this prevents any pending auto-approvals.
 				userRespondedRef.current = true
 
-				if (messagesRef.current.length === 0) {
+			if (messagesRef.current.length === 0) {
+				if (mode === "multi-orchestrator") {
+					vscode.postMessage({ type: "multiOrchStartPlan", text })
+				} else {
 					vscode.postMessage({ type: "newTask", text, images })
-				} else if (clineAskRef.current) {
+				}
+			} else if (clineAskRef.current) {
 					if (clineAskRef.current === "followup") {
 						markFollowUpAsAnswered()
 					}
@@ -679,6 +690,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			isStreaming,
 			messageQueue.length,
 			apiConfiguration?.apiProvider,
+			mode,
 		], // messagesRef and clineAskRef are stable
 	)
 
@@ -926,16 +938,41 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				case "interactionRequired":
 					playSound("notification")
 					break
-				case "taskWithAggregatedCosts":
-					if (message.text && message.aggregatedCosts) {
-						setAggregatedCostsMap((prev) => {
-							const newMap = new Map(prev)
-							newMap.set(message.text!, message.aggregatedCosts!)
-							return newMap
-						})
-					}
-					break
-			}
+			case "taskWithAggregatedCosts":
+				if (message.text && message.aggregatedCosts) {
+					setAggregatedCostsMap((prev) => {
+						const newMap = new Map(prev)
+						newMap.set(message.text!, message.aggregatedCosts!)
+						return newMap
+					})
+				}
+				break
+			case "multiOrchPlanReady":
+				if (message.text) {
+					const orchState = JSON.parse(message.text) as OrchestratorState
+					setMultiOrchState(orchState)
+					setMultiOrchPlanPending(true)
+				}
+				break
+			case "multiOrchStatusUpdate":
+				if (message.text) {
+					const orchState = JSON.parse(message.text) as OrchestratorState
+					setMultiOrchState(orchState)
+					setMultiOrchPlanPending(false)
+				}
+				break
+			case "multiOrchComplete":
+				if (message.text) {
+					const orchState = JSON.parse(message.text) as OrchestratorState
+					setMultiOrchState(orchState)
+					setMultiOrchPlanPending(false)
+				}
+				break
+			case "multiOrchError":
+				setMultiOrchState(null)
+				setMultiOrchPlanPending(false)
+				break
+		}
 			// textAreaRef.current is not explicitly required here since React
 			// guarantees that ref will be stable across re-renders, and we're
 			// not using its value but its reference.
@@ -1710,6 +1747,36 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						</div>
 					)}
 				</>
+			)}
+
+			{/* Multi-orchestrator: plan review awaiting user approval */}
+			{multiOrchPlanPending && multiOrchState?.plan && (
+				<div className="px-[15px] py-2">
+					<PlanReviewPanel
+						plan={multiOrchState.plan}
+						onApprove={() => {
+							setMultiOrchPlanPending(false)
+							vscode.postMessage({ type: "multiOrchApprovePlan" })
+						}}
+						onCancel={() => {
+							setMultiOrchPlanPending(false)
+							setMultiOrchState(null)
+							vscode.postMessage({ type: "multiOrchAbort" })
+						}}
+					/>
+				</div>
+			)}
+
+			{/* Multi-orchestrator: live status panel */}
+			{!multiOrchPlanPending && multiOrchState && multiOrchState.phase !== "idle" && (
+				<div className="px-[15px] py-2">
+					<MultiOrchStatusPanel
+						state={multiOrchState}
+						onAbort={() => {
+							vscode.postMessage({ type: "multiOrchAbort" })
+						}}
+					/>
+				</div>
 			)}
 
 			<QueuedMessages
