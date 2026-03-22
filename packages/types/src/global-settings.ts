@@ -199,6 +199,12 @@ export const globalSettingsSchema = z.object({
 	customSupportPrompts: customSupportPromptsSchema.optional(),
 	enhancementApiConfigId: z.string().optional(),
 	includeTaskHistoryInEnhance: z.boolean().optional(),
+
+	/**
+	 * Custom meta-prompt for the personality trait enhancer.
+	 * Used to expand brief descriptions into structured personality prompts.
+	 */
+	personalityTraitEnhancerPrompt: z.string().optional(),
 	historyPreviewCollapsed: z.boolean().optional(),
 	reasoningBlockCollapsed: z.boolean().optional(),
 	/**
@@ -232,6 +238,12 @@ export const globalSettingsSchema = z.object({
 	 * Tools in this list will be excluded from prompt generation and rejected at execution time.
 	 */
 	disabledTools: z.array(toolNamesSchema).optional(),
+
+	// Memory Learning
+	memoryLearningEnabled: z.boolean().optional(),
+	memoryApiConfigId: z.string().optional(),
+	memoryAnalysisFrequency: z.number().optional(),
+	memoryLearningDefaultEnabled: z.boolean().optional(),
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>

@@ -40,6 +40,7 @@ export interface ExtensionMessage {
 		| "messageUpdated"
 		| "mcpServers"
 		| "enhancedPrompt"
+		| "enhancedPersonalityTrait"
 		| "commitSearchResults"
 		| "listApiConfig"
 		| "routerModels"
@@ -104,6 +105,7 @@ export interface ExtensionMessage {
 		| "folderSelected"
 		| "skills"
 		| "fileContent"
+		| "memoryLearningState"
 	text?: string
 	/** For fileContent: { path, content, error? } */
 	fileContent?: { path: string; content: string | null; error?: string }
@@ -298,6 +300,7 @@ export type ExtensionState = Pick<
 	| "imageGenerationProvider"
 	| "openRouterImageGenerationSelectedModel"
 	| "includeTaskHistoryInEnhance"
+	| "personalityTraitEnhancerPrompt"
 	| "reasoningBlockCollapsed"
 	| "enterBehavior"
 	| "includeCurrentTime"
@@ -306,6 +309,10 @@ export type ExtensionState = Pick<
 	| "requestDelaySeconds"
 	| "showWorktreesInHomeScreen"
 	| "disabledTools"
+	| "memoryLearningEnabled"
+	| "memoryApiConfigId"
+	| "memoryAnalysisFrequency"
+	| "memoryLearningDefaultEnabled"
 > & {
 	lockApiConfigAcrossModes?: boolean
 	version: string
@@ -471,6 +478,7 @@ export interface WebviewMessage {
 		| "updateMcpTimeout"
 		| "enhancePrompt"
 		| "enhancedPrompt"
+		| "enhancePersonalityTrait"
 		| "draggedImages"
 		| "deleteMessage"
 		| "deleteMessageConfirm"
@@ -581,6 +589,8 @@ export interface WebviewMessage {
 		| "moveSkill"
 		| "updateSkillModes"
 		| "openSkillFile"
+		| "toggleMemoryLearning"
+		| "updateMemorySettings"
 	text?: string
 	taskId?: string
 	editedMessageContent?: string
