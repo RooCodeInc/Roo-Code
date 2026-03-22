@@ -50,12 +50,13 @@ The system is invisible by design — no dashboards, no management UI. A green/r
 
 ### Key Design Decisions
 
-- **Storage**: SQLite via `better-sqlite3` — enables relational queries for the tiered scoring algorithm, atomic transactions, and clean global+workspace scoping.
+- **Storage**: SQLite via `sql.js` (SQLite compiled to WASM) — enables relational queries for the tiered scoring algorithm, atomic transactions, and clean global+workspace scoping. WASM avoids native binary packaging issues across platforms (no `better-sqlite3` build matrix needed). The DB is persisted to disk as a flat file and loaded into memory on init.
 - **LLM Provider**: User selects from their existing configuration profiles (no new API key fields). Minimum 50K context window with a soft gate (note + filter, not hard-blocked).
 - **Noise Reduction**: Rule-based preprocessing strips tool_use/tool_result blocks, code blocks, and command outputs before the LLM sees anything. File operations are reduced to filename-only references.
-- **Memory Scope**: Global base profile + workspace-scoped entries. Global entries follow the user everywhere; workspace entries are project-specific.
-- **Privacy**: Enforced at the LLM prompt level. The analysis agent is instructed to never extract personal information (names, emails, keys, health/financial data).
+- **Memory Scope**: Global base profile + workspace-scoped entries. Global entries follow the user everywhere; workspace entries are project-specific. Workspace identity uses a stable hash of the workspace folder name + `.git` remote URL (if available), stored in a `workspace_identity` lookup table. This survives folder renames and symlink differences.
+- **Privacy**: Defense in depth — LLM prompt instructions forbid PII extraction, AND a rule-based post-filter in the memory writer scans observations for common PII patterns (emails, API keys, phone numbers) and rejects matches before they reach the database.
 - **Visibility**: Invisible by design. Toggle on chat interface is the only UI surface. Data is in files if users want to look.
+- **Multi-window safety**: Since `sql.js` runs in-process (WASM), each VS Code window operates on its own in-memory copy. Writes are serialized to disk via an atomic temp-file-rename pattern. On DB load, the file is read fresh, so cross-window consistency is eventual (next prompt compilation picks up changes from other windows).
 
 ---
 
@@ -64,6 +65,22 @@ The system is invisible by design — no dashboards, no management UI. A green/r
 **Database location**: `{globalStoragePath}/memory/user_memory.db`
 
 **File**: `src/core/memory/memory-store.ts`
+
+**Library**: `sql.js` (SQLite compiled to WASM, zero native dependencies)
+
+**Persistence model**: The `.db` file is a flat binary. On init, `sql.js` loads it into memory. After each write transaction, the in-memory DB is exported and written to disk via atomic temp-file-rename (`write to .db.tmp` → `rename to .db`). This prevents corruption on crash.
+
+### Schema Versioning
+
+```sql
+CREATE TABLE IF NOT EXISTS schema_meta (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
+-- Seeded: INSERT INTO schema_meta VALUES ('version', '1');
+```
+
+On init, `memory-store.ts` checks the `version` value and runs sequential migrations if needed (e.g., v1→v2→v3). Each migration is a function in a `migrations` array. This ensures schema evolution is safe across extension updates.
 
 ### Schema
 
@@ -93,7 +110,7 @@ The system is invisible by design — no dashboards, no management UI. A green/r
 | Column                | Type              | Description                                        |
 | --------------------- | ----------------- | -------------------------------------------------- |
 | `id`                  | TEXT PRIMARY KEY  | UUID                                               |
-| `workspace_id`        | TEXT NULL         | `NULL` = global, workspace path = workspace-scoped |
+| `workspace_id`        | TEXT NULL         | `NULL` = global, stable workspace hash = workspace-scoped |
 | `category`            | TEXT NOT NULL     | FK → `memory_categories.slug`                      |
 | `content`             | TEXT NOT NULL     | The learned fact as a concise statement            |
 | `significance`        | REAL NOT NULL     | 0.0–1.0, set by analysis agent                     |
@@ -133,6 +150,39 @@ where:
 
 Entries with `computed_score < 0.05` are excluded from prompt compilation (noise threshold).
 
+### Garbage Collection
+
+After each analysis cycle, the orchestrator runs a cleanup pass:
+
+```sql
+DELETE FROM memory_entries
+WHERE is_pinned = 0
+AND last_reinforced < strftime('%s','now') - (90 * 86400)
+AND (
+  significance
+  * (SELECT priority_weight FROM memory_categories WHERE slug = category)
+  * MIN(LOG2(reinforcement_count + 1), 3.0)
+  * EXP(-decay_rate * ((strftime('%s','now') - last_reinforced) / 86400.0))
+) < 0.01
+```
+
+Additionally, a hard cap of **500 entries** is enforced. If the count exceeds 500 after an analysis cycle, the lowest-scored entries are pruned until the count is within the cap.
+
+### Workspace Identity
+
+The `workspace_id` uses a stable hash rather than a raw file path. Computed as:
+
+```typescript
+function getWorkspaceId(workspacePath: string): string {
+  const folderName = path.basename(workspacePath)
+  const gitRemote = tryGetGitRemoteUrl(workspacePath) // null if no git
+  const raw = gitRemote ? `${gitRemote}::${folderName}` : folderName
+  return createHash('sha256').update(raw).digest('hex').slice(0, 16)
+}
+```
+
+This survives folder moves (if git remote is the same) and normalizes away symlink/mount differences.
+
 ---
 
 ## Component 2: Message Preprocessor
@@ -170,8 +220,8 @@ FOR EACH message in the batch:
 ```typescript
 interface PreprocessResult {
 	cleaned: string
-	originalTokenEstimate: number
-	cleanedTokenEstimate: number
+	originalTokenEstimate: number  // via tiktoken o200k_base (reuses existing countTokens worker)
+	cleanedTokenEstimate: number   // via tiktoken o200k_base
 }
 ```
 
@@ -305,13 +355,60 @@ Takes the analysis agent's structured JSON output and upserts entries into SQLit
 
 **UPDATE**: Replace `content` and `significance`, update `last_reinforced`, increment `reinforcement_count`. For when user preferences genuinely change.
 
+### PII Post-Filter (Defense in Depth)
+
+Before any observation is written to the database, the memory writer runs a rule-based scan on the `content` field. If any pattern matches, the observation is silently rejected:
+
+```typescript
+const PII_PATTERNS = [
+  /\S+@\S+\.\S+/,                          // email addresses
+  /sk-[a-zA-Z0-9]{20,}/,                    // OpenAI-style API keys
+  /ghp_[a-zA-Z0-9]{36}/,                    // GitHub PATs
+  /\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/,          // phone numbers (US)
+  /\b\d{3}-\d{2}-\d{4}\b/,                  // SSN pattern
+  /AKIA[0-9A-Z]{16}/,                       // AWS access keys
+  /-----BEGIN (RSA |EC )?PRIVATE KEY-----/,  // private keys
+]
+```
+
+This costs nothing at runtime and provides a safety net when the LLM ignores its instructions.
+
 ### Deduplication Safety
 
-Before inserting any NEW entry, query existing entries in the same category and workspace scope. Run basic string similarity check (normalized Levenshtein or keyword overlap). If similarity > 0.7, convert the NEW to a REINFORCE on the matched entry.
+Before inserting any NEW entry, query existing entries in the same category and workspace scope:
+
+```sql
+SELECT id, content FROM memory_entries
+WHERE category = ? AND (workspace_id IS ? OR workspace_id IS NULL)
+ORDER BY last_reinforced DESC
+```
+
+Then compute **Jaccard similarity** on tokenized content:
+
+```typescript
+function jaccardSimilarity(a: string, b: string): number {
+  const tokenize = (s: string) => new Set(s.toLowerCase().split(/\s+/).filter(w => w.length > 2))
+  const setA = tokenize(a)
+  const setB = tokenize(b)
+  const intersection = new Set([...setA].filter(x => setB.has(x)))
+  return intersection.size / new Set([...setA, ...setB]).size
+}
+```
+
+If Jaccard similarity ≥ 0.6, convert the NEW to a REINFORCE on the matched entry.
+
+### Invalid Entry ID Handling
+
+For REINFORCE and UPDATE actions referencing `existing_entry_id`:
+1. Verify the ID exists in the database
+2. Verify it belongs to the expected category
+3. If invalid: REINFORCE → silently skip (no-op), UPDATE → treat as NEW with dedup check
+
+This guards against LLM hallucinating entry IDs.
 
 ### Transaction Safety
 
-All inserts/updates/log entry run inside a single SQLite transaction via `better-sqlite3`'s `db.transaction()`. Full rollback on any failure.
+All inserts/updates/log entry run inside a single transaction. Full rollback on any failure. With `sql.js`, this is managed via `db.run("BEGIN TRANSACTION")` / `db.run("COMMIT")` with try/catch rollback.
 
 ---
 
@@ -348,16 +445,30 @@ Technical Level: Advanced TypeScript and React. Intermediate Python.
 
 ### System Prompt Integration
 
-Injected in `system.ts`'s `generatePrompt()`:
+Injected in `system.ts`'s `generatePrompt()`. The current template is:
 
-```
-${roleDefinition}
-${personalityParts.top}          ← how Roo talks (static traits)
-${userProfileSection}            ← who Roo is talking to (learned memory)
-${markdownFormattingSection}
+```typescript
+const basePrompt = `${roleDefinition}
+${personalityParts.top}
+${markdownFormattingSection()}
+${getSharedToolUseSection(...)}
 ...
-${personalityParts.bottom}       ← personality reminder
+${await addCustomInstructions(...)}${personalityParts.bottom}`
 ```
+
+The `userProfileSection` is inserted as a new line between `personalityParts.top` and `markdownFormattingSection()`:
+
+```typescript
+const basePrompt = `${roleDefinition}
+${personalityParts.top}
+${userProfileSection}              // ← NEW: learned user memory
+${markdownFormattingSection()}
+${getSharedToolUseSection(...)}
+...
+${await addCustomInstructions(...)}${personalityParts.bottom}`
+```
+
+This positions user knowledge immediately after personality voice, so the LLM processes "here's how I talk" then "here's who I'm talking to" before any tool/capability context.
 
 ### Analysis Agent Variant
 
@@ -389,15 +500,18 @@ State persisted in `globalState` as `memoryLearningEnabled: boolean`.
 
 ### Settings Configuration
 
-**File**: `webview-ui/src/components/modes/ModesView.tsx`
+**File**: `webview-ui/src/components/settings/SettingsView.tsx` (global settings area, NOT ModesView)
 
-New section in mode settings:
+Memory is a global feature — it applies across all modes and conversations. Its configuration lives alongside other extension-wide settings (like auto-approval, TTS, sound) rather than in per-mode config.
+
+New section in global settings:
 
 ```
 Memory Learning
 ├── Profile: [Select configuration profile ▼]
 │             Filtered to profiles with models ≥ 50K context
 │             Note: "Select a model with at least 50K context window"
+│             If selected model's context window is unknown, show warning
 ├── Analysis frequency: [Every __ messages ▼]  (default: 8)
 └── [Enabled by default for new sessions: ☑]
 ```
@@ -433,10 +547,14 @@ Coordinates the full pipeline lifecycle.
    → Increment counter on each user message
    → Track watermark: which message index was last analyzed
 
-3. TRIGGER (counter hits N threshold)
+3. TRIGGER (counter hits N threshold OR session ends)
    → Grab messages from watermark to current
    → Validate: is config profile selected? Is context window ≥ 50K?
    → If invalid: skip silently, reset counter
+   → Session-end trigger: when a task completes or is abandoned, if there
+     are any unanalyzed messages since the last watermark, fire one final
+     analysis cycle. This catches short but info-rich conversations that
+     never hit the N-message threshold.
 
 4. ANALYSIS PIPELINE (async, non-blocking)
    → preprocessMessages(batch) → cleaned text + token counts
@@ -498,15 +616,15 @@ src/core/memory/
 ### Modified Files
 
 ```
-packages/types/src/global-settings.ts         # + memory settings fields
-packages/types/src/vscode-extension-host.ts   # + memory message types
-src/core/prompts/system.ts                    # + userProfileSection insertion
-src/core/prompts/sections/index.ts            # + re-export prompt compiler
-src/core/webview/ClineProvider.ts             # + orchestrator init, toggle
-src/core/webview/webviewMessageHandler.ts     # + toggleMemoryLearning msg
+packages/types/src/global-settings.ts              # + memory settings fields
+packages/types/src/vscode-extension-host.ts        # + memory message types
+src/core/prompts/system.ts                         # + userProfileSection insertion
+src/core/prompts/sections/index.ts                 # + re-export prompt compiler
+src/core/webview/ClineProvider.ts                  # + orchestrator init, toggle
+src/core/webview/webviewMessageHandler.ts          # + toggleMemoryLearning msg
 webview-ui/src/components/chat/ChatTextArea.tsx    # + toggle indicator
-webview-ui/src/components/modes/ModesView.tsx      # + memory config section
-package.json                                  # + better-sqlite3 dependency
+webview-ui/src/components/settings/SettingsView.tsx # + memory config section (global settings)
+package.json                                       # + sql.js dependency
 ```
 
 ### Runtime Files
