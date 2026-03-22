@@ -62,13 +62,13 @@ export async function generatePlan(
 			.map((m) => `- ${m.slug}: ${m.description || m.name}`)
 			.join("\n")
 
-		const prompt = `Available modes:\n${modeList}\n\nMax parallel tasks: ${maxAgents}\n\nUser request:\n${userRequest}`
+		const prompt = `Available modes:\n${modeList}\n\nYou MUST create EXACTLY ${maxAgents} or fewer tasks. NEVER exceed this limit.\n\nUser request:\n${userRequest}`
 
 		const response = await (handler as unknown as SingleCompletionHandler).completePrompt(
 			`${PLAN_SYSTEM_PROMPT}\n\n${prompt}`,
 		)
 
-		const plan = parsePlanResponse(response)
+		const plan = parsePlanResponse(response, maxAgents)
 
 		// Post-processing: consolidate overly granular tasks for simple requests
 		if (plan && plan.tasks.length > 3 && userRequest.split(" ").length < 20) {
@@ -84,14 +84,14 @@ export async function generatePlan(
 	}
 }
 
-function parsePlanResponse(response: string): OrchestratorPlan | null {
+function parsePlanResponse(response: string, maxAgents: number): OrchestratorPlan | null {
 	try {
 		const cleaned = response.replace(/^```json?\n?/m, "").replace(/\n?```$/m, "").trim()
 		const parsed = JSON.parse(cleaned)
 
 		if (!parsed.tasks || !Array.isArray(parsed.tasks)) return null
 
-		const tasks: PlannedTask[] = parsed.tasks.map((t: Record<string, unknown>, i: number) => ({
+		let tasks: PlannedTask[] = parsed.tasks.map((t: Record<string, unknown>, i: number) => ({
 			id: generateAgentId(),
 			mode: (t.mode as string) || "code",
 			title: (t.title as string) || `Task ${i + 1}`,
@@ -99,6 +99,11 @@ function parsePlanResponse(response: string): OrchestratorPlan | null {
 			assignedFiles: (t.assignedFiles as string[]) || [],
 			priority: (t.priority as number) || i + 1,
 		}))
+
+		// Hard-enforce the agent limit
+		if (tasks.length > maxAgents) {
+			tasks = tasks.slice(0, maxAgents)
+		}
 
 		return {
 			tasks,

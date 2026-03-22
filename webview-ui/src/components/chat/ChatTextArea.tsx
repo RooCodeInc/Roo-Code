@@ -100,10 +100,11 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			commands,
 			cloudUserInfo,
 			enterBehavior,
-			lockApiConfigAcrossModes,
-			memoryLearningEnabled,
-			memoryApiConfigId,
-		} = useExtensionState()
+		lockApiConfigAcrossModes,
+		memoryLearningEnabled,
+		memoryApiConfigId,
+		multiOrchMaxAgents,
+	} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
 		const { currentConfigId, displayName } = useMemo(() => {
@@ -1345,7 +1346,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
 						{mode === "multi-orchestrator" && (
 							<AgentCountSelector
-								value={4}
+								value={multiOrchMaxAgents ?? 4}
 								onChange={(count) => {
 									vscode.postMessage({
 										type: "updateSettings",
