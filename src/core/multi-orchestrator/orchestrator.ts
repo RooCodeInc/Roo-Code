@@ -44,24 +44,43 @@ export class MultiOrchestrator {
 		onStateChange: (state: OrchestratorState) => void,
 	): Promise<void> {
 		this.aborted = false
-		const notify = () => onStateChange({ ...this.state })
+		const notify = () => {
+			console.log("[MultiOrch:Handler] notify() → phase:", this.state.phase, "agents:", this.state.agents.length)
+			onStateChange({ ...this.state })
+		}
 
 		try {
 			// PHASE 1: PLAN
 			this.state.phase = "planning"
 			notify()
 
-			console.log("[MultiOrch] execute() called with maxAgents:", maxAgents)
+			console.log("[MultiOrch:Handler] execute() entry ──────────────────────")
+			console.log("[MultiOrch:Handler]   userRequest:", JSON.stringify(userRequest).slice(0, 200))
+			console.log("[MultiOrch:Handler]   maxAgents:", maxAgents, "typeof:", typeof maxAgents)
+			console.log("[MultiOrch:Handler]   providerSettings.apiProvider:", providerSettings.apiProvider)
+			console.log("[MultiOrch:Handler]   providerSettings.apiModelId:", providerSettings.apiModelId)
+			console.log("[MultiOrch:Handler]   providerSettings has apiKey:", !!providerSettings.apiKey)
+			console.log("[MultiOrch:Handler]   availableModes:", availableModes.length, "modes")
+			console.log("[MultiOrch:Handler]   planReviewEnabled:", planReviewEnabled)
+			console.log("[MultiOrch:Handler]   mergeMode:", mergeMode)
+			console.log("[MultiOrch:Handler]   workspacePath:", this.workspacePath)
 
 			const clampedMaxAgents = Math.min(
 				Math.max(1, maxAgents),
 				MULTI_ORCHESTRATOR_CONSTANTS.MAX_AGENTS,
 			)
-			console.log("[MultiOrch] clampedMaxAgents:", clampedMaxAgents)
+			console.log("[MultiOrch:Handler]   clampedMaxAgents:", clampedMaxAgents, "(MAX_AGENTS constant:", MULTI_ORCHESTRATOR_CONSTANTS.MAX_AGENTS, ")")
 
+			console.log("[MultiOrch:Handler] calling generatePlan() ...")
 			const plan = await generatePlan(userRequest, availableModes, clampedMaxAgents, providerSettings)
-			console.log("[MultiOrch] plan has", plan?.tasks.length ?? 0, "tasks after generatePlan")
+			console.log("[MultiOrch:Handler] generatePlan() returned:", plan ? `${plan.tasks.length} tasks` : "null/undefined")
+			if (plan && plan.tasks.length > 0) {
+				for (const t of plan.tasks) {
+					console.log("[MultiOrch:Handler]   task:", t.id, "mode:", t.mode, "title:", t.title)
+				}
+			}
 			if (!plan || plan.tasks.length === 0) {
+				console.log("[MultiOrch:Handler] ⚠ empty plan — setting phase=complete")
 				this.state.phase = "complete"
 				this.state.finalReport = "Could not decompose the request into parallel tasks."
 				notify()
@@ -74,13 +93,17 @@ export class MultiOrchestrator {
 
 			// If plan review enabled, stop here and wait for approval
 			if (planReviewEnabled) {
+				console.log("[MultiOrch:Handler] planReview ON → returning early for user approval")
 				// The onStateChange callback will trigger UI to show the plan
 				// The execute() caller should handle the approval flow
 				return
 			}
 
+			console.log("[MultiOrch:Handler] planReview OFF → continuing to executeFromPlan()")
 			await this.executeFromPlan(plan, providerSettings, mergeMode, onStateChange)
 		} catch (error) {
+			console.error("[MultiOrch:Handler] execute() CAUGHT error:", error)
+			console.error("[MultiOrch:Handler] error stack:", (error as Error)?.stack ?? "no stack")
 			this.state.phase = "complete"
 			this.state.finalReport = `Orchestration failed: ${error}`
 			notify()
@@ -139,7 +162,12 @@ export class MultiOrchestrator {
 			const titles = plan.tasks.map((t) => t.title)
 			const panels = await this.panelSpawner.spawnPanels(plan.tasks.length, titles)
 
-			// Create tasks in each provider (startTask=false)
+			if (panels.size === 0) {
+				throw new Error("No panels were spawned — cannot proceed with orchestration.")
+			}
+
+			// Build a lookup so we can match tasks to successfully-spawned panels.
+			// If some panels failed to spawn, the corresponding tasks are marked failed.
 			const panelEntries = Array.from(panels.entries())
 			this.coordinator = new AgentCoordinator()
 
@@ -166,8 +194,17 @@ export class MultiOrchestrator {
 				if (this.aborted) return
 
 				const task = plan.tasks[i]
-				const [panelId, spawned] = panelEntries[i]
 				const agent = this.state.agents[i]
+
+				// Panel index may not exist if that panel failed to spawn
+				if (i >= panelEntries.length) {
+					console.warn(`[MultiOrch] No panel available for task ${task.id} ("${task.title}") — skipping`)
+					agent.status = "failed"
+					agent.completionReport = "Panel failed to spawn"
+					continue
+				}
+
+				const [panelId, spawned] = panelEntries[i]
 
 				agent.providerId = panelId
 				agent.panelId = panelId
