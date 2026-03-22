@@ -1626,7 +1626,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						</div>
 					)}
 				</>
-			) : (
+			) : /* Hide home screen when multi-orchestrator panels are active */
+			mode === "multi-orchestrator" && (multiOrchPlanPending || multiOrchState) ? null : (
 				<div className="flex flex-col h-full justify-center p-6 min-h-0 overflow-y-auto gap-4 relative">
 					<div className="flex flex-col items-start gap-2 justify-center h-full min-[400px]:px-6">
 						<VersionIndicator
@@ -1661,6 +1662,35 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			)}
 
 			{!task && showWorktreesInHomeScreen && <WorktreeSelector />}
+
+			{/* Multi-orchestrator: show panels as main content when no task exists */}
+			{!task && mode === "multi-orchestrator" && (multiOrchPlanPending || multiOrchState) && (
+				<div className="grow flex flex-col overflow-y-auto px-[15px] py-4 gap-3">
+					{multiOrchPlanPending && multiOrchState?.plan && (
+						<PlanReviewPanel
+							plan={multiOrchState.plan}
+							onApprove={() => {
+								setMultiOrchPlanPending(false)
+								vscode.postMessage({ type: "multiOrchApprovePlan" })
+							}}
+							onCancel={() => {
+								setMultiOrchPlanPending(false)
+								setMultiOrchState(null)
+								vscode.postMessage({ type: "multiOrchAbort" })
+							}}
+						/>
+					)}
+
+					{!multiOrchPlanPending && multiOrchState && multiOrchState.phase !== "idle" && (
+						<MultiOrchStatusPanel
+							state={multiOrchState}
+							onAbort={() => {
+								vscode.postMessage({ type: "multiOrchAbort" })
+							}}
+						/>
+					)}
+				</div>
+			)}
 
 			{task && (
 				<>
@@ -1753,36 +1783,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						</div>
 					)}
 				</>
-			)}
-
-			{/* Multi-orchestrator: plan review awaiting user approval */}
-			{multiOrchPlanPending && multiOrchState?.plan && (
-				<div className="px-[15px] py-2">
-					<PlanReviewPanel
-						plan={multiOrchState.plan}
-						onApprove={() => {
-							setMultiOrchPlanPending(false)
-							vscode.postMessage({ type: "multiOrchApprovePlan" })
-						}}
-						onCancel={() => {
-							setMultiOrchPlanPending(false)
-							setMultiOrchState(null)
-							vscode.postMessage({ type: "multiOrchAbort" })
-						}}
-					/>
-				</div>
-			)}
-
-			{/* Multi-orchestrator: live status panel */}
-			{!multiOrchPlanPending && multiOrchState && multiOrchState.phase !== "idle" && (
-				<div className="px-[15px] py-2">
-					<MultiOrchStatusPanel
-						state={multiOrchState}
-						onAbort={() => {
-							vscode.postMessage({ type: "multiOrchAbort" })
-						}}
-					/>
-				</div>
 			)}
 
 			<QueuedMessages
