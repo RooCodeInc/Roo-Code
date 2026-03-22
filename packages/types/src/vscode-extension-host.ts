@@ -323,6 +323,9 @@ export type ExtensionState = Pick<
 	| "memoryApiConfigId"
 	| "memoryAnalysisFrequency"
 	| "memoryLearningDefaultEnabled"
+	| "multiOrchMaxAgents"
+	| "multiOrchPlanReviewEnabled"
+	| "multiOrchMergeEnabled"
 > & {
 	lockApiConfigAcrossModes?: boolean
 	version: string

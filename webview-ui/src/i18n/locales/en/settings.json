@@ -41,6 +41,7 @@
 		"ui": "UI",
 		"experimental": "Experimental",
 		"memory": "Memory",
+		"multiOrch": "Multi-Orchestrator",
 		"language": "Language",
 		"about": "About Roo Code"
 	},

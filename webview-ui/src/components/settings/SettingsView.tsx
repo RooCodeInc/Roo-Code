@@ -31,6 +31,7 @@ import {
 	GraduationCap,
 	Brain,
 	Loader2,
+	Zap,
 } from "lucide-react"
 
 import {
@@ -114,6 +115,7 @@ export const sectionNames = [
 	"ui",
 	"experimental",
 	"memory",
+	"multiOrch",
 	"language",
 	"about",
 ] as const
@@ -523,6 +525,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					memoryApiConfigId: cachedState.memoryApiConfigId,
 					memoryAnalysisFrequency: cachedState.memoryAnalysisFrequency,
 					memoryLearningDefaultEnabled: cachedState.memoryLearningDefaultEnabled,
+					multiOrchMaxAgents: cachedState.multiOrchMaxAgents,
+					multiOrchPlanReviewEnabled: cachedState.multiOrchPlanReviewEnabled,
+					multiOrchMergeEnabled: cachedState.multiOrchMergeEnabled,
 				},
 			})
 
@@ -624,6 +629,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "ui", icon: Glasses },
 			{ id: "experimental", icon: FlaskConical },
 			{ id: "memory", icon: Brain },
+			{ id: "multiOrch", icon: Zap },
 			{ id: "language", icon: Globe },
 			{ id: "about", icon: Info },
 		],
@@ -1215,6 +1221,80 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							</Section>
 						</div>
 					)}
+
+						{/* Multi-Orchestrator Section */}
+						{renderTab === "multiOrch" && (
+							<div>
+								<SectionHeader>Multi-Orchestrator</SectionHeader>
+								<Section>
+									<div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+										<p style={{ fontSize: "13px", opacity: 0.7 }}>
+											Configure parallel task execution across multiple agents.
+										</p>
+
+										{/* Max agents */}
+										<div>
+											<label style={{ fontSize: "13px", fontWeight: 500 }}>Default Max Agents</label>
+											<p style={{ fontSize: "11px", opacity: 0.6, marginBottom: "4px" }}>
+												Maximum number of parallel agents (1-6).
+											</p>
+											<select
+												value={cachedState.multiOrchMaxAgents || 4}
+												onChange={(e) => setCachedStateField("multiOrchMaxAgents", parseInt(e.target.value))}
+												style={{
+													width: "100%",
+													padding: "6px 8px",
+													background: "var(--vscode-input-background)",
+													color: "var(--vscode-input-foreground)",
+													border: "1px solid var(--vscode-input-border)",
+													borderRadius: "2px",
+												}}>
+												{[1, 2, 3, 4, 5, 6].map((n) => (
+													<option key={n} value={n}>
+														{n} agents
+													</option>
+												))}
+											</select>
+										</div>
+
+										{/* Plan review toggle */}
+										<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+											<input
+												type="checkbox"
+												checked={cachedState.multiOrchPlanReviewEnabled ?? false}
+												onChange={(e) => setCachedStateField("multiOrchPlanReviewEnabled", e.target.checked)}
+											/>
+											<label style={{ fontSize: "13px" }}>
+												Review execution plan before starting (plan-review mode)
+											</label>
+										</div>
+
+										{/* Merge mode */}
+										<div>
+											<label style={{ fontSize: "13px", fontWeight: 500 }}>Merge Conflict Resolution</label>
+											<p style={{ fontSize: "11px", opacity: 0.6, marginBottom: "4px" }}>
+												When to run the merge phase after agents complete.
+											</p>
+											<select
+												value={cachedState.multiOrchMergeEnabled || "auto"}
+												onChange={(e) => setCachedStateField("multiOrchMergeEnabled", e.target.value)}
+												style={{
+													width: "100%",
+													padding: "6px 8px",
+													background: "var(--vscode-input-background)",
+													color: "var(--vscode-input-foreground)",
+													border: "1px solid var(--vscode-input-border)",
+													borderRadius: "2px",
+												}}>
+												<option value="auto">Auto-detect (merge only if code agents used)</option>
+												<option value="always">Always merge</option>
+												<option value="never">Never merge</option>
+											</select>
+										</div>
+									</div>
+								</Section>
+							</div>
+						)}
 
 						{/* Language Section */}
 						{renderTab === "language" && (
