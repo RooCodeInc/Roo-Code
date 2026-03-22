@@ -615,6 +615,16 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					return
 				}
 
+				// Multi-orchestrator mode: always use dedicated send path.
+				// This bypasses the standard task queue / sendingDisabled guards
+				// because multi-orchestrator has its own lifecycle (no Cline ask/response).
+				if (mode === "multi-orchestrator") {
+					vscode.postMessage({ type: "multiOrchStartPlan", text })
+					setInputValue("")
+					setSelectedImages([])
+					return
+				}
+
 				// Queue message if:
 				// - Task is busy (sendingDisabled)
 				// - API request in progress (isStreaming)
@@ -644,11 +654,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				userRespondedRef.current = true
 
 			if (messagesRef.current.length === 0) {
-				if (mode === "multi-orchestrator") {
-					vscode.postMessage({ type: "multiOrchStartPlan", text })
-				} else {
-					vscode.postMessage({ type: "newTask", text, images })
-				}
+				vscode.postMessage({ type: "newTask", text, images })
 			} else if (clineAskRef.current) {
 					if (clineAskRef.current === "followup") {
 						markFollowUpAsAnswered()

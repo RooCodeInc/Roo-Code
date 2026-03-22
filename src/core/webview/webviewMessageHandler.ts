@@ -3874,6 +3874,7 @@ export const webviewMessageHandler = async (
 
 		case "multiOrchApprovePlan": {
 			const orchestrator = provider.getMultiOrchestrator()
+			if (!orchestrator) break
 			const orchState = orchestrator.getState()
 			if (!orchState.plan) break
 
@@ -3905,6 +3906,7 @@ export const webviewMessageHandler = async (
 
 		case "multiOrchAbort": {
 			const orchestrator = provider.getMultiOrchestrator()
+			if (!orchestrator) break
 			await orchestrator.abort()
 			await provider.postMessageToWebview({
 				type: "multiOrchComplete",
@@ -3915,6 +3917,7 @@ export const webviewMessageHandler = async (
 
 		case "multiOrchGetStatus": {
 			const orchestrator = provider.getMultiOrchestrator()
+			if (!orchestrator) break
 			await provider.postMessageToWebview({
 				type: "multiOrchStatusUpdate",
 				text: JSON.stringify(orchestrator.getState()),
