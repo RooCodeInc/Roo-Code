@@ -2290,11 +2290,27 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Notify memory orchestrator of session end
 		try {
-			const memOrch = this.providerRef.deref()?.getMemoryOrchestrator()
+			const provider = this.providerRef.deref()
+			const memOrch = provider?.getMemoryOrchestrator()
 			if (memOrch?.isEnabled()) {
-				const providerSettings =
-					this.providerRef.deref()?.contextProxy?.getProviderSettings() ?? null
-				memOrch.onSessionEnd(this.apiConversationHistory, this.taskId, providerSettings)
+				const memoryConfigId = provider?.contextProxy?.getValue("memoryApiConfigId")
+				let memoryProviderSettings: ProviderSettings | null = null
+
+				if (memoryConfigId) {
+					try {
+						const { name: _, ...settings } =
+							await provider!.providerSettingsManager.getProfile({
+								id: memoryConfigId,
+							})
+						if (settings.apiProvider) {
+							memoryProviderSettings = settings
+						}
+					} catch {
+						// Profile not found or deleted — skip silently
+					}
+				}
+
+				memOrch.onSessionEnd(this.apiConversationHistory, this.taskId, memoryProviderSettings)
 			}
 		} catch {
 			// Memory analysis is best-effort; never block abort
@@ -2695,11 +2711,27 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				// Notify memory orchestrator of new user message
 				try {
-					const memOrch = this.providerRef.deref()?.getMemoryOrchestrator()
+					const provider = this.providerRef.deref()
+					const memOrch = provider?.getMemoryOrchestrator()
 					if (memOrch?.isEnabled()) {
-						const providerSettings =
-							this.providerRef.deref()?.contextProxy?.getProviderSettings() ?? null
-						memOrch.onUserMessage(this.apiConversationHistory, this.taskId, providerSettings)
+						const memoryConfigId = provider?.contextProxy?.getValue("memoryApiConfigId")
+						let memoryProviderSettings: ProviderSettings | null = null
+
+						if (memoryConfigId) {
+							try {
+								const { name: _, ...settings } =
+									await provider!.providerSettingsManager.getProfile({
+										id: memoryConfigId,
+									})
+								if (settings.apiProvider) {
+									memoryProviderSettings = settings
+								}
+							} catch {
+								// Profile not found or deleted — skip silently
+							}
+						}
+
+						memOrch.onUserMessage(this.apiConversationHistory, this.taskId, memoryProviderSettings)
 					}
 				} catch {
 					// Memory analysis is best-effort; never block the request loop
