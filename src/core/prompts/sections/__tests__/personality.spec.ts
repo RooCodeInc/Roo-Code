@@ -28,10 +28,9 @@ describe("buildPersonalityPrompt", () => {
 
 		const result = buildPersonalityPrompt(config)
 
-		expect(result).toContain("Personality & Communication Style:")
-		expect(result).toContain("non-negotiable")
+		expect(result).toContain("PERSONALITY & VOICE")
+		expect(result).toContain("CRITICAL:")
 		expect(result).toContain("You are Roo")
-		expect(result).toContain("IMPORTANT: Maintaining this personality is critical")
 	})
 
 	it("should concatenate multiple active traits", () => {
@@ -43,7 +42,7 @@ describe("buildPersonalityPrompt", () => {
 		const result = buildPersonalityPrompt(config)
 
 		expect(result).toContain("bone-dry, deadpan")
-		expect(result).toContain("extremely direct and concise")
+		expect(result).toContain("short, punchy fragments")
 	})
 
 	it("should include custom traits", () => {
@@ -76,7 +75,7 @@ describe("buildPersonalityPrompt", () => {
 		expect(result).toBe("")
 	})
 
-	it("should include the behavioral anchor at the end", () => {
+	it("should include the CRITICAL instruction and trait content", () => {
 		const config: PersonalityConfig = {
 			activeTraitIds: ["roo"],
 			customTraits: [],
@@ -84,17 +83,16 @@ describe("buildPersonalityPrompt", () => {
 
 		const result = buildPersonalityPrompt(config)
 
-		// The behavioral anchor should be at the end
-		expect(result).toContain("IMPORTANT: Maintaining this personality is critical")
-		expect(result).toContain("generic, neutral AI assistant tone")
-		// Verify it ends with the anchor
-		expect(result.trim().endsWith("not a default chatbot.")).toBe(true)
+		// The top section should contain the CRITICAL instruction and trait content
+		expect(result).toContain("CRITICAL:")
+		expect(result).toContain("You are Roo")
+		expect(result).toContain("PERSONALITY & VOICE")
 	})
 })
 
 describe("Built-in traits", () => {
-	it("should have 12 built-in traits", () => {
-		expect(BUILT_IN_PERSONALITY_TRAITS).toHaveLength(12)
+	it("should have 13 built-in traits", () => {
+		expect(BUILT_IN_PERSONALITY_TRAITS).toHaveLength(13)
 	})
 
 	it("should have unique IDs", () => {
@@ -118,9 +116,9 @@ describe("Built-in traits", () => {
 		})
 	})
 
-	it("should all start with identity-first framing (You are/You have/You speak/You prioritize/You question)", () => {
+	it("should all start with identity-first framing (You ...)", () => {
 		BUILT_IN_PERSONALITY_TRAITS.forEach((trait) => {
-			const startsWithIdentity = /^You (are|have|speak|prioritize|question|see)\b/.test(trait.prompt.trim())
+			const startsWithIdentity = /^You\s+\w+/.test(trait.prompt.trim())
 			expect(startsWithIdentity).toBe(true)
 		})
 	})

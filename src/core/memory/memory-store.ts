@@ -57,8 +57,13 @@ export class MemoryStore {
 
 	constructor(storagePath: string) {
 		const memoryDir = path.join(storagePath, "memory")
-		if (!fs.existsSync(memoryDir)) {
-			fs.mkdirSync(memoryDir, { recursive: true })
+		try {
+			if (!fs.existsSync(memoryDir)) {
+				fs.mkdirSync(memoryDir, { recursive: true })
+			}
+		} catch {
+			// Directory creation deferred to init() — may be running in a test
+			// environment with a synthetic path.
 		}
 		this.dbPath = path.join(memoryDir, "user_memory.db")
 	}

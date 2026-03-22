@@ -91,8 +91,7 @@ async function generatePrompt(
 	// Generate personality sandwich (top + bottom) for maximum adherence
 	const personalityParts = buildPersonalityPromptParts(modeConfig.personalityConfig)
 
-	const basePrompt = `${roleDefinition}
-${personalityParts.top}
+	const basePrompt = `${roleDefinition}${personalityParts.top ? `\n${personalityParts.top}` : ""}
 ${userProfileSection || ""}
 ${markdownFormattingSection()}
 
