@@ -244,6 +244,11 @@ export const globalSettingsSchema = z.object({
 	memoryApiConfigId: z.string().optional(),
 	memoryAnalysisFrequency: z.number().optional(),
 	memoryLearningDefaultEnabled: z.boolean().optional(),
+
+	// Multi-Orchestrator
+	multiOrchMaxAgents: z.number().min(1).max(6).optional(),
+	multiOrchPlanReviewEnabled: z.boolean().optional(),
+	multiOrchMergeEnabled: z.enum(["auto", "always", "never"]).optional(),
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>

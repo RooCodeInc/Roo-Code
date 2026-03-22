@@ -112,6 +112,10 @@ export interface ExtensionMessage {
 		| "memorySyncAlreadyRunning"
 		| "memorySyncStatus"
 		| "memoryStatus"
+		| "multiOrchPlanReady"
+		| "multiOrchStatusUpdate"
+		| "multiOrchComplete"
+		| "multiOrchError"
 	text?: string
 	/** For fileContent: { path, content, error? } */
 	fileContent?: { path: string; content: string | null; error?: string }
@@ -601,6 +605,10 @@ export interface WebviewMessage {
 		| "clearMemory"
 		| "getMemorySyncStatus"
 		| "getMemoryStatus"
+		| "multiOrchStartPlan"
+		| "multiOrchApprovePlan"
+		| "multiOrchAbort"
+		| "multiOrchGetStatus"
 	text?: string
 	taskId?: string
 	editedMessageContent?: string
