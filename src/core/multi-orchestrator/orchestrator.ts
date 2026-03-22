@@ -51,12 +51,16 @@ export class MultiOrchestrator {
 			this.state.phase = "planning"
 			notify()
 
+			console.log("[MultiOrch] execute() called with maxAgents:", maxAgents)
+
 			const clampedMaxAgents = Math.min(
 				Math.max(1, maxAgents),
 				MULTI_ORCHESTRATOR_CONSTANTS.MAX_AGENTS,
 			)
+			console.log("[MultiOrch] clampedMaxAgents:", clampedMaxAgents)
 
 			const plan = await generatePlan(userRequest, availableModes, clampedMaxAgents, providerSettings)
+			console.log("[MultiOrch] plan has", plan?.tasks.length ?? 0, "tasks after generatePlan")
 			if (!plan || plan.tasks.length === 0) {
 				this.state.phase = "complete"
 				this.state.finalReport = "Could not decompose the request into parallel tasks."

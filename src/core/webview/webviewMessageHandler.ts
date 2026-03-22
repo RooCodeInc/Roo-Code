@@ -3832,6 +3832,7 @@ export const webviewMessageHandler = async (
 			const orchestrator = provider.getMultiOrchestrator()
 
 			const maxAgents = getGlobalState("multiOrchMaxAgents") ?? 4
+			console.log("[MultiOrch] maxAgents from settings:", maxAgents)
 			const planReview = getGlobalState("multiOrchPlanReviewEnabled") ?? false
 			const mergeMode =
 				(getGlobalState("multiOrchMergeEnabled") as "auto" | "always" | "never") ?? "auto"

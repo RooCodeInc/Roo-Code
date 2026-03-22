@@ -50,6 +50,7 @@ export async function generatePlan(
 	providerSettings: ProviderSettings,
 ): Promise<OrchestratorPlan | null> {
 	try {
+		console.log("[MultiOrch] generatePlan called with maxAgents:", maxAgents)
 		const handler = buildApiHandler(providerSettings)
 
 		if (!("completePrompt" in handler)) {
@@ -63,15 +64,18 @@ export async function generatePlan(
 			.join("\n")
 
 		const prompt = `Available modes:\n${modeList}\n\nYou MUST create EXACTLY ${maxAgents} or fewer tasks. NEVER exceed this limit.\n\nUser request:\n${userRequest}`
+		console.log("[MultiOrch] Prompt sent to LLM:", prompt.substring(0, 200))
 
 		const response = await (handler as unknown as SingleCompletionHandler).completePrompt(
 			`${PLAN_SYSTEM_PROMPT}\n\n${prompt}`,
 		)
 
 		const plan = parsePlanResponse(response, maxAgents)
+		console.log("[MultiOrch] Plan generated:", plan?.tasks.length, "tasks")
 
 		// Post-processing: consolidate overly granular tasks for simple requests
 		if (plan && plan.tasks.length > 3 && userRequest.split(" ").length < 20) {
+			console.log("[MultiOrch] ⚠️ Short-request heuristic SLICING tasks from", plan.tasks.length, "to 2 (request was", userRequest.split(" ").length, "words)")
 			// Short request with many tasks = over-decomposed
 			// Keep only the most important 2
 			plan.tasks = plan.tasks.slice(0, 2)
