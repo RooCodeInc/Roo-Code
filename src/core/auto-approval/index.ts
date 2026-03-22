@@ -76,6 +76,14 @@ export async function checkAutoApproval({
 		return { decision: "ask" }
 	}
 
+	// Multi-orchestrator spawned agents: approve ALL tool/command/followup
+	// operations unconditionally. Nobody is watching these panels to click
+	// approve, so every ask must be auto-approved to avoid deadlocks.
+	if ((state as Record<string, unknown>).multiOrchForceApproveAll === true) {
+		console.log(`[checkAutoApproval] multiOrchForceApproveAll=true → auto-approving ask="${ask}"`)
+		return { decision: "approve" }
+	}
+
 	if (ask === "followup") {
 		if (state.alwaysAllowFollowupQuestions === true) {
 			try {
