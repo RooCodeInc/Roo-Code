@@ -335,17 +335,18 @@ describe("E2E: Plan generator parsing", () => {
 
 		const plan = await generatePlan("Do nothing", sampleModes, 2, sampleProvider)
 
-		// Empty array is valid — tasks is an array
-		expect(plan).not.toBeNull()
-		expect(plan!.tasks).toHaveLength(0)
+		// Empty tasks array is rejected by the parser as invalid
+		expect(plan).toBeNull()
 	})
 
-	it("should return null for malformed JSON with trailing garbage", async () => {
+	it("should extract valid JSON even with trailing garbage", async () => {
 		const garbage = '{"tasks": [{"mode": "code"}]} %%% extra stuff {{{'
 		mockBuildApiHandler.mockReturnValue({ completePrompt: vi.fn().mockResolvedValue(garbage) } as any)
 
 		const plan = await generatePlan("Bad json", sampleModes, 2, sampleProvider)
-		expect(plan).toBeNull()
+		// The parser now uses brace-matching to extract JSON despite trailing garbage
+		expect(plan).not.toBeNull()
+		expect(plan!.tasks).toHaveLength(1)
 	})
 
 	it("should return null for completely empty response", async () => {
@@ -416,8 +417,8 @@ describe("E2E: Plan generator parsing", () => {
 		expect(plan!.tasks[0].title).toBe("Fenced task")
 	})
 
-	it("should return null when response is wrapped in plain fences without json tag", async () => {
-		// The parser regex `json?` requires at least "jso" — plain ``` fences are not stripped.
+	it("should parse response wrapped in plain fences without json tag", async () => {
+		// The parser regex `(?:json)?` makes "json" optional, so plain ``` fences are also stripped.
 		const fenced =
 			"```\n" +
 			JSON.stringify({
@@ -431,8 +432,9 @@ describe("E2E: Plan generator parsing", () => {
 
 		const plan = await generatePlan("Plain fences", sampleModes, 2, sampleProvider)
 
-		// Current implementation only strips ```json, not plain ```
-		expect(plan).toBeNull()
+		// Current implementation strips both ```json and plain ``` fences
+		expect(plan).not.toBeNull()
+		expect(plan!.tasks[0].title).toBe("No lang tag")
 	})
 
 	it("should infer requiresMerge from task modes when not provided", async () => {

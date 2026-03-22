@@ -97,10 +97,10 @@ describe("generatePlan", () => {
 		expect(mockCompletePrompt).toHaveBeenCalledTimes(1)
 		const promptArg = mockCompletePrompt.mock.calls[0][0] as string
 		expect(promptArg).toContain("Build a feature")
-		expect(promptArg).toContain("Max parallel tasks: 3")
+		expect(promptArg).toContain("Max agents available: 3")
 	})
 
-	it("should filter out multi-orchestrator and orchestrator from available modes in prompt", async () => {
+	it("should filter out multi-orchestrator, orchestrator, and architect from available modes in prompt", async () => {
 		const mockCompletePrompt = vi.fn().mockResolvedValue(
 			JSON.stringify({
 				tasks: [{ mode: "code", title: "T", description: "D", assignedFiles: [], priority: 1 }],
@@ -115,7 +115,8 @@ describe("generatePlan", () => {
 
 		const promptArg = mockCompletePrompt.mock.calls[0][0] as string
 		expect(promptArg).toContain("- code:")
-		expect(promptArg).toContain("- architect:")
+		// architect is now also filtered out per CRITICAL RULES
+		expect(promptArg).not.toContain("- architect:")
 		expect(promptArg).not.toContain("- multi-orchestrator:")
 		expect(promptArg).not.toContain("- orchestrator:")
 	})
