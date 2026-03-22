@@ -21,6 +21,10 @@ export class AgentCoordinator extends EventEmitter<AgentCoordinatorEvents> {
 
 	/** Register an agent and attach event listeners to its provider */
 	registerAgent(agent: AgentState, provider: ClineProvider): void {
+		console.log(
+			`[AgentCoordinator] registerAgent: taskId=${agent.taskId}, title="${agent.title}", ` +
+				`getCurrentTask exists=${!!provider.getCurrentTask()}`,
+		)
 		this.agents.set(agent.taskId, agent)
 		this.providers.set(agent.taskId, provider)
 
@@ -29,12 +33,20 @@ export class AgentCoordinator extends EventEmitter<AgentCoordinatorEvents> {
 		provider.on(
 			RooCodeEventName.TaskCompleted,
 			(taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage) => {
+				console.log(
+					`[AgentCoordinator] TaskCompleted received for agent ${agent.taskId} ` +
+						`(event taskId=${taskId})`,
+				)
 				this.handleAgentFinished(agent.taskId, "completed", tokenUsage)
 			},
 		)
 
 		// ClineProvider emits TaskAborted with (taskId).
 		provider.on(RooCodeEventName.TaskAborted, (_taskId: string) => {
+			console.log(
+				`[AgentCoordinator] TaskAborted received for agent ${agent.taskId} ` +
+					`(event taskId=${_taskId})`,
+			)
 			this.handleAgentFinished(agent.taskId, "failed")
 		})
 	}
@@ -48,6 +60,11 @@ export class AgentCoordinator extends EventEmitter<AgentCoordinatorEvents> {
 		status: "completed" | "failed",
 		tokenUsage?: TokenUsage,
 	): void {
+		console.log(
+			`[AgentCoordinator] handleAgentFinished: agentTaskId=${agentTaskId}, ` +
+				`status=${status}, already completed=${this.completedSet.has(agentTaskId)}, ` +
+				`completedSet size=${this.completedSet.size}/${this.agents.size}`,
+		)
 		// Guard: ignore duplicate events for the same agent
 		if (this.completedSet.has(agentTaskId)) {
 			return
@@ -83,10 +100,18 @@ export class AgentCoordinator extends EventEmitter<AgentCoordinatorEvents> {
 	 * are marked as failed immediately so waitForAll() never hangs.
 	 */
 	startAll(): void {
+		console.log(
+			`[AgentCoordinator] startAll() — ${this.providers.size} providers registered`,
+		)
 		for (const [taskId, provider] of this.providers) {
 			const agent = this.agents.get(taskId)
 
 			const currentTask = provider.getCurrentTask()
+			console.log(
+				`[AgentCoordinator] startAll() — agent ${taskId}: ` +
+					`getCurrentTask()=${currentTask ? `Task#${currentTask.taskId}` : "UNDEFINED"}, ` +
+					`provider.clineStack size=${provider.getTaskStackSize?.() ?? "N/A"}`,
+			)
 			if (!currentTask) {
 				// Task was never created or was already removed from the stack.
 				console.error(

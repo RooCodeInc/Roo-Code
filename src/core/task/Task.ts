@@ -1950,7 +1950,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 * race on globalState).
 	 */
 	public start(): void {
+		console.log(
+			`[Task#${this.taskId}.${this.instanceId}] start() called — _started=${this._started}, ` +
+				`hasTask=${!!this.metadata.task}, hasImages=${!!this.metadata.images}, ` +
+				`abort=${this.abort}, abandoned=${this.abandoned}`,
+		)
+
 		if (this._started) {
+			console.log(`[Task#${this.taskId}.${this.instanceId}] start() — already started, returning`)
 			return
 		}
 		this._started = true
@@ -1958,11 +1965,26 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const { task, images } = this.metadata
 
 		if (task || images) {
+			console.log(
+				`[Task#${this.taskId}.${this.instanceId}] start() — calling startTask() ` +
+					`(task length=${task?.length ?? 0})`,
+			)
 			this.startTask(task ?? undefined, images ?? undefined)
+		} else {
+			console.warn(
+				`[Task#${this.taskId}.${this.instanceId}] start() — NO task or images in metadata, ` +
+					`startTask() will NOT be called. This task will never emit TaskStarted/TaskCompleted.`,
+			)
 		}
 	}
 
 	private async startTask(task?: string, images?: string[]): Promise<void> {
+		console.log(
+			`[Task#${this.taskId}.${this.instanceId}] startTask() ENTERED — ` +
+				`task length=${task?.length ?? 0}, images=${images?.length ?? 0}, ` +
+				`abort=${this.abort}, abandoned=${this.abandoned}, ` +
+				`providerRef alive=${!!this.providerRef.deref()}`,
+		)
 		try {
 			// `conversationHistory` (for API) and `clineMessages` (for webview)
 			// need to be in sync.
@@ -1998,6 +2020,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				)
 			}
 			this.isInitialized = true
+			console.log(
+				`[Task#${this.taskId}.${this.instanceId}] startTask() — initialized, ` +
+					`about to call initiateTaskLoop()`,
+			)
 
 			const imageBlocks: Anthropic.ImageBlockParam[] = formatResponse.imageBlocks(images)
 
@@ -2284,6 +2310,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public async abortTask(isAbandoned = false) {
 		// Aborting task
+		console.log(
+			`[Task#${this.taskId}.${this.instanceId}] abortTask() called — ` +
+				`isAbandoned=${isAbandoned}, alreadyAbort=${this.abort}, ` +
+				`_started=${this._started}, isInitialized=${this.isInitialized}`,
+		)
+		console.trace(`[Task#${this.taskId}.${this.instanceId}] abortTask() call stack`)
 
 		// Will stop any autonomously running promises.
 		if (isAbandoned) {
@@ -2327,6 +2359,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Force final token usage update before abort event
 		this.emitFinalTokenUsageUpdate()
 
+		console.log(
+			`[Task#${this.taskId}.${this.instanceId}] EMITTING TaskAborted — ` +
+				`abortReason=${this.abortReason}, abandoned=${this.abandoned}`,
+		)
 		this.emit(RooCodeEventName.TaskAborted)
 
 		try {
