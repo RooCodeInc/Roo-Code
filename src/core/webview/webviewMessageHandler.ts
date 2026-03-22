@@ -3829,8 +3829,7 @@ export const webviewMessageHandler = async (
 		case "multiOrchStartPlan": {
 			// User submitted a request in multi-orchestrator mode
 			const userRequest = message.text || ""
-			const orchestrator = provider.getMultiOrchestrator?.()
-			if (!orchestrator) break
+			const orchestrator = provider.getMultiOrchestrator()
 
 			const maxAgents = getGlobalState("multiOrchMaxAgents") ?? 4
 			const planReview = getGlobalState("multiOrchPlanReviewEnabled") ?? false
@@ -3874,8 +3873,7 @@ export const webviewMessageHandler = async (
 		}
 
 		case "multiOrchApprovePlan": {
-			const orchestrator = provider.getMultiOrchestrator?.()
-			if (!orchestrator) break
+			const orchestrator = provider.getMultiOrchestrator()
 			const orchState = orchestrator.getState()
 			if (!orchState.plan) break
 
@@ -3906,25 +3904,21 @@ export const webviewMessageHandler = async (
 		}
 
 		case "multiOrchAbort": {
-			const orchestrator = provider.getMultiOrchestrator?.()
-			if (orchestrator) {
-				await orchestrator.abort()
-				await provider.postMessageToWebview({
-					type: "multiOrchComplete",
-					text: JSON.stringify(orchestrator.getState()),
-				})
-			}
+			const orchestrator = provider.getMultiOrchestrator()
+			await orchestrator.abort()
+			await provider.postMessageToWebview({
+				type: "multiOrchComplete",
+				text: JSON.stringify(orchestrator.getState()),
+			})
 			break
 		}
 
 		case "multiOrchGetStatus": {
-			const orchestrator = provider.getMultiOrchestrator?.()
-			if (orchestrator) {
-				await provider.postMessageToWebview({
-					type: "multiOrchStatusUpdate",
-					text: JSON.stringify(orchestrator.getState()),
-				})
-			}
+			const orchestrator = provider.getMultiOrchestrator()
+			await provider.postMessageToWebview({
+				type: "multiOrchStatusUpdate",
+				text: JSON.stringify(orchestrator.getState()),
+			})
 			break
 		}
 

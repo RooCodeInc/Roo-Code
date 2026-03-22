@@ -2788,18 +2788,8 @@ export class ClineProvider
 		return this.memoryOrchestrator
 	}
 
-	/** Get or lazily set the MultiOrchestrator instance (for multi-orchestrator coordination) */
-	public getMultiOrchestrator(): MultiOrchestrator | undefined {
-		return this.multiOrchestrator
-	}
-
-	/** Set the MultiOrchestrator instance (called during multi-orchestrator initialization) */
-	public setMultiOrchestrator(orchestrator: MultiOrchestrator): void {
-		this.multiOrchestrator = orchestrator
-	}
-
 	/** Get or lazily create the MultiOrchestrator instance (on-demand, not auto-initialized in constructor) */
-	public getOrCreateMultiOrchestrator(): MultiOrchestrator {
+	public getMultiOrchestrator(): MultiOrchestrator {
 		if (!this.multiOrchestrator) {
 			this.multiOrchestrator = new MultiOrchestrator(
 				this.context,
