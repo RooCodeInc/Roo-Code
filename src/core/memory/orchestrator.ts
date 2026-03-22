@@ -33,6 +33,9 @@ export class MemoryOrchestrator {
 	private watermark = 0
 	private analysisInFlight = false
 	private analysisQueued = false
+	private syncInProgress = false
+	private syncCompleted = 0
+	private syncTotal = 0
 	private enabled = false
 	private workspaceId: string | null = null
 	private analysisFrequency: number
@@ -64,6 +67,15 @@ export class MemoryOrchestrator {
 		return this.enabled
 	}
 
+	/** Return the current sync status so the webview can restore progress on re-mount. */
+	getSyncStatus(): { inProgress: boolean; completed: number; total: number } {
+		return {
+			inProgress: this.syncInProgress,
+			completed: this.syncCompleted,
+			total: this.syncTotal,
+		}
+	}
+
 	/**
 	 * Call this on each user message during an active chat session.
 	 * Returns true if an analysis cycle was triggered.
@@ -76,8 +88,10 @@ export class MemoryOrchestrator {
 		if (!this.enabled || !providerSettings) return false
 
 		this.messageCounter++
+		console.log(`[Memory] onUserMessage: counter=${this.messageCounter}/${this.analysisFrequency}`)
 
 		if (this.messageCounter >= this.analysisFrequency) {
+			console.log(`[Memory] onUserMessage: trigger threshold reached, firing analysis`)
 			this.triggerAnalysis(messages, taskId, providerSettings)
 			this.messageCounter = 0
 			return true
@@ -117,10 +131,13 @@ export class MemoryOrchestrator {
 			const batch = messages.slice(this.watermark)
 			this.watermark = messages.length
 
+			console.log(`[Memory] triggerAnalysis: batch size=${batch.length}, watermark=${this.watermark}`)
+
 			if (batch.length === 0) return
 
 			// Preprocess
 			const preprocessed = preprocessMessages(batch as MessageLike[])
+			console.log(`[Memory] triggerAnalysis: preprocessed token estimate=${preprocessed.cleanedTokenEstimate}, cleaned length=${preprocessed.cleaned.trim().length}`)
 			if (preprocessed.cleaned.trim().length === 0) return
 
 			// Get existing memory for context
@@ -169,31 +186,47 @@ export class MemoryOrchestrator {
 	 * Analyze a batch of prior chat histories to bootstrap the memory database.
 	 * Processes each task sequentially to avoid API rate limits.
 	 */
+	isSyncInProgress(): boolean {
+		return this.syncInProgress
+	}
+
 	async batchAnalyzeHistory(
 		taskIds: string[],
 		globalStoragePath: string,
 		providerSettings: ProviderSettings,
 		onProgress: (completed: number, total: number) => void,
 	): Promise<{ totalAnalyzed: number; entriesCreated: number; entriesReinforced: number }> {
+		if (this.syncInProgress) {
+			return { totalAnalyzed: 0, entriesCreated: 0, entriesReinforced: 0 }
+		}
+
+		this.syncInProgress = true
+
 		let totalAnalyzed = 0
 		let entriesCreated = 0
 		let entriesReinforced = 0
 
-		for (let i = 0; i < taskIds.length; i++) {
+		try {
+			for (let i = 0; i < taskIds.length; i++) {
 			const taskId = taskIds[i]
+			console.log(`[Memory] batchAnalyzeHistory: processing task ${i + 1}/${taskIds.length}, taskId=${taskId}`)
 
 			try {
 				// Read conversation history for this task
 				const messages = await readApiMessages({ taskId, globalStoragePath })
 
 				if (!messages || messages.length === 0) {
+					console.log(`[Memory] batchAnalyzeHistory: no messages found for task ${taskId}`)
 					onProgress(i + 1, taskIds.length)
 					continue
 				}
 
+				console.log(`[Memory] batchAnalyzeHistory: found ${messages.length} messages for task ${taskId}`)
+
 				// Preprocess
 				const preprocessed = preprocessMessages(messages as MessageLike[])
 				if (preprocessed.cleaned.trim().length === 0) {
+					console.log(`[Memory] batchAnalyzeHistory: preprocessed to empty for task ${taskId}`)
 					onProgress(i + 1, taskIds.length)
 					continue
 				}
@@ -204,6 +237,8 @@ export class MemoryOrchestrator {
 
 				// Run analysis
 				const result = await runAnalysis(providerSettings, preprocessed.cleaned, existingReport)
+
+				console.log(`[Memory] batchAnalyzeHistory: analysis returned ${result ? result.observations.length : 0} observations for task ${taskId}`)
 
 				if (result && result.observations.length > 0) {
 					const writeResult = processObservations(
@@ -240,6 +275,9 @@ export class MemoryOrchestrator {
 		this.store.garbageCollect()
 
 		return { totalAnalyzed, entriesCreated, entriesReinforced }
+		} finally {
+			this.syncInProgress = false
+		}
 	}
 
 	/**
@@ -255,7 +293,9 @@ export class MemoryOrchestrator {
 	getUserProfileSection(): string {
 		if (!this.store) return ""
 		const entries = this.store.getScoredEntries(this.workspaceId)
-		return compileMemoryPrompt(entries)
+		const compiled = compileMemoryPrompt(entries)
+		console.log(`[Memory] getUserProfileSection: ${entries.length} entries, compiled prompt length=${compiled.length}`)
+		return compiled
 	}
 
 	getStore(): MemoryStore {

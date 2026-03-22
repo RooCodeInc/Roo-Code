@@ -68,13 +68,15 @@ export async function runAnalysis(
 	existingMemoryReport: string,
 ): Promise<AnalysisResult | null> {
 	try {
+		console.log(`[Memory] runAnalysis: called with conversation length=${cleanedConversation.length}, existing report length=${existingMemoryReport.length}`)
 		const handler = buildApiHandler(providerSettings)
 
 		// Check if handler supports single completion
 		if (!("completePrompt" in handler)) {
-			console.error("[MemoryAgent] Handler does not support completePrompt")
+			console.error("[Memory] runAnalysis: handler does not support completePrompt")
 			return null
 		}
+		console.log(`[Memory] runAnalysis: handler supports completePrompt, sending request...`)
 
 		const prompt = `EXISTING MEMORY:\n${existingMemoryReport}\n\n---\n\nCONVERSATION TRANSCRIPT:\n${cleanedConversation}`
 
@@ -82,9 +84,12 @@ export async function runAnalysis(
 			`${ANALYSIS_SYSTEM_PROMPT}\n\n${prompt}`,
 		)
 
-		return parseAnalysisResponse(response)
+		console.log(`[Memory] runAnalysis: got response, length=${response.length}`)
+		const result = parseAnalysisResponse(response)
+		console.log(`[Memory] runAnalysis: parsed ${result ? result.observations.length : 0} observations`)
+		return result
 	} catch (error) {
-		console.error("[MemoryAgent] Analysis failed:", error)
+		console.error("[Memory] runAnalysis: failed:", error)
 		return null
 	}
 }
@@ -127,7 +132,8 @@ function parseAnalysisResponse(response: string): AnalysisResult | null {
 			sessionSummary: parsed.session_summary || "",
 		}
 	} catch (error) {
-		console.error("[MemoryAgent] Failed to parse response:", error)
+		console.error(`[Memory] parseAnalysisResponse: JSON parse failed. Raw response (first 200 chars): ${response.substring(0, 200)}`)
+		console.error("[Memory] parseAnalysisResponse: error:", error)
 		return null
 	}
 }

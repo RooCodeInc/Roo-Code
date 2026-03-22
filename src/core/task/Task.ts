@@ -3987,6 +3987,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Get memory profile section if orchestrator is active
 			const memoryOrchestrator = provider.getMemoryOrchestrator()
 			const userProfileSection = memoryOrchestrator?.getUserProfileSection() || undefined
+			console.log(`[Memory] Task.systemPrompt: userProfileSection ${userProfileSection ? `present, length=${userProfileSection.length}` : "empty/undefined"}`)
 
 			return SYSTEM_PROMPT(
 				provider.context,
