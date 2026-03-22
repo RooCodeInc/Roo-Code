@@ -106,6 +106,9 @@ export interface ExtensionMessage {
 		| "skills"
 		| "fileContent"
 		| "memoryLearningState"
+		| "memorySyncProgress"
+		| "memorySyncComplete"
+		| "memoryCleared"
 	text?: string
 	/** For fileContent: { path, content, error? } */
 	fileContent?: { path: string; content: string | null; error?: string }
@@ -591,6 +594,8 @@ export interface WebviewMessage {
 		| "openSkillFile"
 		| "toggleMemoryLearning"
 		| "updateMemorySettings"
+		| "startMemorySync"
+		| "clearMemory"
 	text?: string
 	taskId?: string
 	editedMessageContent?: string
