@@ -1700,6 +1700,51 @@ export const webviewMessageHandler = async (
 				}
 			}
 			break
+		case "enhancePersonalityTrait":
+			if (message.text) {
+				try {
+					const state = await provider.getState()
+
+					const {
+						apiConfiguration,
+						listApiConfigMeta = [],
+						enhancementApiConfigId,
+						personalityTraitEnhancerPrompt,
+					} = state
+
+					// Determine which API configuration to use
+					let configToUse = apiConfiguration
+
+					if (enhancementApiConfigId && listApiConfigMeta.find(({ id }) => id === enhancementApiConfigId)) {
+						const { name: _, ...providerSettings } = await provider.providerSettingsManager.getProfile({
+							id: enhancementApiConfigId,
+						})
+
+						if (providerSettings.apiProvider) {
+							configToUse = providerSettings
+						}
+					}
+
+					// Use custom enhancer prompt or default
+					const { DEFAULT_PERSONALITY_TRAIT_ENHANCER_PROMPT } = await import(
+						"../../shared/personality-traits"
+					)
+					const metaPrompt = (personalityTraitEnhancerPrompt || DEFAULT_PERSONALITY_TRAIT_ENHANCER_PROMPT)
+						.replace("{input}", message.text)
+
+					const { singleCompletionHandler } = await import("../../utils/single-completion-handler")
+					const enhancedText = await singleCompletionHandler(configToUse, metaPrompt)
+
+					await provider.postMessageToWebview({ type: "enhancedPersonalityTrait", text: enhancedText })
+				} catch (error) {
+					provider.log(
+						`Error enhancing personality trait: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
+					)
+					vscode.window.showErrorMessage("Failed to enhance personality trait. Please try again.")
+					await provider.postMessageToWebview({ type: "enhancedPersonalityTrait" })
+				}
+			}
+			break
 		case "getSystemPrompt":
 			try {
 				const systemPrompt = await generateSystemPrompt(provider, message)
@@ -3645,6 +3690,44 @@ export const webviewMessageHandler = async (
 				provider.log(`Error opening folder picker: ${errorMessage}`)
 			}
 
+			break
+		}
+
+		case "toggleMemoryLearning": {
+			const currentMemoryState = getGlobalState("memoryLearningEnabled") ?? false
+			const newMemoryState = !currentMemoryState
+			await updateGlobalState("memoryLearningEnabled", newMemoryState)
+			const orchestrator = provider.getMemoryOrchestrator()
+			if (orchestrator) {
+				orchestrator.setEnabled(newMemoryState)
+			}
+			await provider.postMessageToWebview({
+				type: "memoryLearningState",
+				text: String(newMemoryState),
+			})
+			break
+		}
+
+		case "updateMemorySettings": {
+			if (message.text) {
+				try {
+					const memorySettings = JSON.parse(message.text)
+					if (memorySettings.memoryApiConfigId !== undefined) {
+						await updateGlobalState("memoryApiConfigId", memorySettings.memoryApiConfigId)
+					}
+					if (memorySettings.memoryAnalysisFrequency !== undefined) {
+						await updateGlobalState("memoryAnalysisFrequency", memorySettings.memoryAnalysisFrequency)
+					}
+					if (memorySettings.memoryLearningDefaultEnabled !== undefined) {
+						await updateGlobalState(
+							"memoryLearningDefaultEnabled",
+							memorySettings.memoryLearningDefaultEnabled,
+						)
+					}
+				} catch (e) {
+					console.error("[Memory] Failed to parse settings:", e)
+				}
+			}
 			break
 		}
 

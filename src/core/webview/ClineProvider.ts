@@ -95,6 +95,7 @@ import { ProviderSettingsManager } from "../config/ProviderSettingsManager"
 import { CustomModesManager } from "../config/CustomModesManager"
 import { Task } from "../task/Task"
 
+import { MemoryOrchestrator } from "../memory/orchestrator"
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import type { ClineMessage, TodoItem } from "@roo-code/types"
 import { readApiMessages, saveApiMessages, saveTaskMessages, TaskHistoryStore } from "../task-persistence"
@@ -148,6 +149,7 @@ export class ClineProvider
 	private taskEventListeners: WeakMap<Task, Array<() => void>> = new WeakMap()
 	private currentWorkspacePath: string | undefined
 	private _disposed = false
+	private memoryOrchestrator?: MemoryOrchestrator
 
 	private recentTasksCache?: string[]
 	public readonly taskHistoryStore: TaskHistoryStore
@@ -232,6 +234,15 @@ export class ClineProvider
 		})
 
 		this.marketplaceManager = new MarketplaceManager(this.context, this.customModesManager)
+
+		// Initialize memory orchestrator
+		this.memoryOrchestrator = new MemoryOrchestrator(
+			this.contextProxy.globalStorageUri.fsPath,
+			this.currentWorkspacePath || null,
+		)
+		this.memoryOrchestrator.init().catch((err) => this.log(`[Memory] Init failed: ${err}`))
+		const memoryEnabled = this.contextProxy.getValue("memoryLearningEnabled") ?? false
+		this.memoryOrchestrator.setEnabled(memoryEnabled)
 
 		// Forward <most> task events to the provider.
 		// We do something fairly similar for the IPC-based API.
@@ -2200,6 +2211,7 @@ export class ClineProvider
 			includeDiagnosticMessages,
 			maxDiagnosticMessages,
 			includeTaskHistoryInEnhance,
+			personalityTraitEnhancerPrompt,
 			includeCurrentTime,
 			includeCurrentCost,
 			maxGitStatusFiles,
@@ -2347,6 +2359,7 @@ export class ClineProvider
 			includeDiagnosticMessages: includeDiagnosticMessages ?? true,
 			maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
 			includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
+			personalityTraitEnhancerPrompt,
 			includeCurrentTime: includeCurrentTime ?? true,
 			includeCurrentCost: includeCurrentCost ?? true,
 			maxGitStatusFiles: maxGitStatusFiles ?? 0,
@@ -2566,6 +2579,7 @@ export class ClineProvider
 			includeDiagnosticMessages: stateValues.includeDiagnosticMessages ?? true,
 			maxDiagnosticMessages: stateValues.maxDiagnosticMessages ?? 50,
 			includeTaskHistoryInEnhance: stateValues.includeTaskHistoryInEnhance ?? true,
+			personalityTraitEnhancerPrompt: stateValues.personalityTraitEnhancerPrompt,
 			includeCurrentTime: stateValues.includeCurrentTime ?? true,
 			includeCurrentCost: stateValues.includeCurrentCost ?? true,
 			maxGitStatusFiles: stateValues.maxGitStatusFiles ?? 0,
@@ -2749,6 +2763,10 @@ export class ClineProvider
 
 	public getSkillsManager(): SkillsManager | undefined {
 		return this.skillsManager
+	}
+
+	public getMemoryOrchestrator(): MemoryOrchestrator | undefined {
+		return this.memoryOrchestrator
 	}
 
 	/**
