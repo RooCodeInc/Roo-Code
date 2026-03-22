@@ -1,6 +1,6 @@
 // src/core/multi-orchestrator/orchestrator.ts
 import * as vscode from "vscode"
-import type { ProviderSettings, ModeConfig } from "@roo-code/types"
+import type { ProviderSettings, ModeConfig, RooCodeSettings } from "@roo-code/types"
 import { PanelSpawner } from "./panel-spawner"
 import { MultiWorktreeManager } from "./worktree-manager"
 import { generatePlan } from "./plan-generator"
@@ -143,6 +143,25 @@ export class MultiOrchestrator {
 			const panelEntries = Array.from(panels.entries())
 			this.coordinator = new AgentCoordinator()
 
+			// Auto-approval settings so spawned agents don't block on tool approval prompts.
+			// The user interacts with the orchestrator sidebar — nobody is clicking approve
+			// in the spawned panels, so every tool operation must be pre-approved.
+			const autoApprovalConfig: RooCodeSettings = {
+				autoApprovalEnabled: true,
+				alwaysAllowReadOnly: true,
+				alwaysAllowReadOnlyOutsideWorkspace: false,
+				alwaysAllowWrite: true,
+				alwaysAllowWriteOutsideWorkspace: false,
+				alwaysAllowWriteProtected: false,
+				alwaysAllowExecute: true,
+				alwaysAllowMcp: true,
+				alwaysAllowModeSwitch: true,
+				alwaysAllowSubtasks: true,
+				alwaysAllowFollowupQuestions: true,
+				writeDelayMs: 0,
+				requestDelaySeconds: 0,
+			}
+
 			for (let i = 0; i < plan.tasks.length; i++) {
 				if (this.aborted) return
 
@@ -167,10 +186,10 @@ export class MultiOrchestrator {
 					)
 				}
 
-				// Create the task in this provider but don't start it yet
+				// Create the task with auto-approval so agents never block on tool prompts.
 				await spawned.provider.createTask(task.description, undefined, undefined, {
 					startTask: false,
-				})
+				}, autoApprovalConfig)
 
 				// Register with coordinator
 				this.coordinator.registerAgent(agent, spawned.provider)
