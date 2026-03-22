@@ -259,6 +259,13 @@ export class MemoryStore {
 		this.persist()
 	}
 
+	/** Delete all entries from memory_entries and analysis_log tables. */
+	deleteAllEntries(): void {
+		this.db!.run("DELETE FROM memory_entries")
+		this.db!.run("DELETE FROM analysis_log")
+		this.persist()
+	}
+
 	/** Remove stale, low-score, unpinned entries and enforce the hard cap. */
 	garbageCollect(): number {
 		const now = Math.floor(Date.now() / 1000)
@@ -341,6 +348,12 @@ export class MemoryStore {
 
 		if (toDelete.length > 0) this.persist()
 		return toDelete.length
+	}
+
+	/** Delete all memory entries and persist the change. */
+	deleteAllEntries(): void {
+		this.db!.run("DELETE FROM memory_entries")
+		this.persist()
 	}
 
 	/** Return the total number of stored entries. */
