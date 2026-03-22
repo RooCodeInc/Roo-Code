@@ -14,7 +14,10 @@
 	},
 	"apiConfiguration": {
 		"title": "API Yapılandırması",
-		"select": "Bu mod için hangi API yapılandırmasının kullanılacağını seçin"
+		"select": "Bu mod için hangi API yapılandırmasının kullanılacağını seçin",
+		"scope": "Kapsam",
+		"global": "Genel",
+		"workspace": "Çalışma Alanı"
 	},
 	"tools": {
 		"title": "Kullanılabilir Araçlar",

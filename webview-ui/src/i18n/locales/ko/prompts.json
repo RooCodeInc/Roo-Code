@@ -14,7 +14,10 @@
 	},
 	"apiConfiguration": {
 		"title": "API 구성",
-		"select": "이 모드에 사용할 API 구성 선택"
+		"select": "이 모드에 사용할 API 구성 선택",
+		"scope": "범위",
+		"global": "전역",
+		"workspace": "워크스페이스"
 	},
 	"tools": {
 		"title": "사용 가능한 도구",
