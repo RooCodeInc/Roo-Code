@@ -2288,6 +2288,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.consecutiveNoToolUseCount = 0
 		this.consecutiveNoAssistantMessagesCount = 0
 
+		// Notify memory orchestrator of session end
+		try {
+			const memOrch = this.providerRef.deref()?.getMemoryOrchestrator()
+			if (memOrch?.isEnabled()) {
+				const providerSettings =
+					this.providerRef.deref()?.contextProxy?.getProviderSettings() ?? null
+				memOrch.onSessionEnd(this.apiConversationHistory, this.taskId, providerSettings)
+			}
+		} catch {
+			// Memory analysis is best-effort; never block abort
+		}
+
 		// Force final token usage update before abort event
 		this.emitFinalTokenUsageUpdate()
 
@@ -2680,6 +2692,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			if (shouldAddUserMessage) {
 				await this.addToApiConversationHistory({ role: "user", content: finalUserContent })
 				TelemetryService.instance.captureConversationMessage(this.taskId, "user")
+
+				// Notify memory orchestrator of new user message
+				try {
+					const memOrch = this.providerRef.deref()?.getMemoryOrchestrator()
+					if (memOrch?.isEnabled()) {
+						const providerSettings =
+							this.providerRef.deref()?.contextProxy?.getProviderSettings() ?? null
+						memOrch.onUserMessage(this.apiConversationHistory, this.taskId, providerSettings)
+					}
+				} catch {
+					// Memory analysis is best-effort; never block the request loop
+				}
 			}
 
 			// Since we sent off a placeholder api_req_started message to update the

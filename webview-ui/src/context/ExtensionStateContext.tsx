@@ -398,6 +398,14 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					}
 					break
 				}
+				case "memoryLearningState": {
+					const enabled = message.text === "true"
+					setState((prevState) => ({
+						...prevState,
+						memoryLearningEnabled: enabled,
+					}))
+					break
+				}
 				case "mcpServers": {
 					setMcpServers(message.mcpServers ?? [])
 					break

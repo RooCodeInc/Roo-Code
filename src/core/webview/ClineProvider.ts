@@ -2220,6 +2220,10 @@ export class ClineProvider
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
 			lockApiConfigAcrossModes,
+			memoryLearningEnabled,
+			memoryApiConfigId,
+			memoryAnalysisFrequency,
+			memoryLearningDefaultEnabled,
 		} = await this.getState()
 
 		let cloudOrganizations: CloudOrganizationMembership[] = []
@@ -2367,6 +2371,10 @@ export class ClineProvider
 			imageGenerationProvider,
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
+			memoryLearningEnabled: memoryLearningEnabled ?? false,
+			memoryApiConfigId,
+			memoryAnalysisFrequency,
+			memoryLearningDefaultEnabled: memoryLearningDefaultEnabled ?? false,
 			openAiCodexIsAuthenticated: await (async () => {
 				try {
 					const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
@@ -2587,6 +2595,10 @@ export class ClineProvider
 			imageGenerationProvider: stateValues.imageGenerationProvider,
 			openRouterImageApiKey: stateValues.openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel: stateValues.openRouterImageGenerationSelectedModel,
+			memoryLearningEnabled: stateValues.memoryLearningEnabled ?? false,
+			memoryApiConfigId: stateValues.memoryApiConfigId,
+			memoryAnalysisFrequency: stateValues.memoryAnalysisFrequency,
+			memoryLearningDefaultEnabled: stateValues.memoryLearningDefaultEnabled ?? false,
 		}
 	}
 
