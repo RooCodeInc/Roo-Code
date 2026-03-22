@@ -74,7 +74,7 @@ export async function generatePlan(
 
 		console.log("[MultiOrch:Plan] Available modes for plan:\n", modeList)
 
-		const prompt = `Available modes:\n${modeList}\n\nMax agents available: ${maxAgents}. You SHOULD use up to ${maxAgents} tasks if the request warrants it. You MUST NOT exceed ${maxAgents} tasks.\n\nUser request:\n${userRequest}`
+		const prompt = `Available modes:\n${modeList}\n\nNumber of agents requested: ${maxAgents}. You MUST create EXACTLY ${maxAgents} tasks. The user has explicitly chosen this number. Split the work across exactly ${maxAgents} independent tasks, each handling a different aspect of the request. If the request seems simple, create ${maxAgents} tasks that each handle a different angle (e.g., implementation, testing, documentation, error handling, edge cases, refactoring).\n\nUser request:\n${userRequest}`
 
 		const fullPrompt = `${PLAN_SYSTEM_PROMPT}\n\n${prompt}`
 		console.log(`[MultiOrch:Plan] Sending prompt (${fullPrompt.length} chars)`)
