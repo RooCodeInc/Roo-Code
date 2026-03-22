@@ -39,6 +39,10 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		console.error("Error fetching model info for system prompt preview:", error)
 	}
 
+	// Get memory profile section if orchestrator is active
+	const memoryOrchestrator = provider.getMemoryOrchestrator()
+	const userProfileSection = memoryOrchestrator?.getUserProfileSection() || undefined
+
 	const systemPrompt = await SYSTEM_PROMPT(
 		provider.context,
 		cwd,
@@ -65,6 +69,7 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		undefined, // modelId
 		provider.getSkillsManager(),
 		apiConfiguration?.useXmlToolCalling,
+		userProfileSection,
 	)
 
 	return systemPrompt
