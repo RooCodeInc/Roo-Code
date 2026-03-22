@@ -129,7 +129,7 @@ function createMockProvider() {
 
 /** Build a mock TokenUsage for completion events. */
 function makeTokenUsage(input: number, output: number): TokenUsage {
-	return { totalTokensIn: input, totalTokensOut: output, totalCost: 0.01 }
+	return { totalTokensIn: input, totalTokensOut: output, totalCost: 0.01, contextTokens: 0 }
 }
 
 /** Build a mock ToolUsage for completion events. */
@@ -1027,6 +1027,130 @@ describe("E2E: Agent coordinator", () => {
 		expect(coordinator.allComplete()).toBe(true)
 		expect(coordinator.totalAgents).toBe(3)
 		expect(coordinator.completedAgents).toBe(3)
+	})
+
+	it("should ignore duplicate TaskCompleted events for the same agent", () => {
+		const agent = createInitialAgentState(makeTask({ id: "dup-1" }))
+		const { provider } = createMockProvider()
+
+		coordinator.registerAgent(agent, provider)
+
+		const completedSpy = vi.fn()
+		coordinator.on("agentCompleted", completedSpy)
+
+		// Fire TaskCompleted twice for the same agent
+		provider.emit(RooCodeEventName.TaskCompleted, "dup-1", makeTokenUsage(100, 50), makeToolUsage())
+		provider.emit(RooCodeEventName.TaskCompleted, "dup-1", makeTokenUsage(200, 100), makeToolUsage())
+
+		// Should only count once
+		expect(completedSpy).toHaveBeenCalledTimes(1)
+		expect(coordinator.completedAgents).toBe(1)
+		// Token usage should be from the first event, not overwritten
+		expect(coordinator.getState("dup-1")!.tokenUsage).toEqual({ input: 100, output: 50 })
+	})
+
+	it("should ignore duplicate TaskAborted events for the same agent", () => {
+		const agent = createInitialAgentState(makeTask({ id: "dup-abort" }))
+		const { provider } = createMockProvider()
+
+		coordinator.registerAgent(agent, provider)
+
+		const failedSpy = vi.fn()
+		coordinator.on("agentFailed", failedSpy)
+
+		provider.emit(RooCodeEventName.TaskAborted, "dup-abort")
+		provider.emit(RooCodeEventName.TaskAborted, "dup-abort")
+
+		expect(failedSpy).toHaveBeenCalledTimes(1)
+		expect(coordinator.completedAgents).toBe(1)
+	})
+
+	it("should not fire allCompleted twice from duplicate events", () => {
+		const agent1 = createInitialAgentState(makeTask({ id: "d1" }))
+		const agent2 = createInitialAgentState(makeTask({ id: "d2" }))
+		const { provider: prov1 } = createMockProvider()
+		const { provider: prov2 } = createMockProvider()
+
+		coordinator.registerAgent(agent1, prov1)
+		coordinator.registerAgent(agent2, prov2)
+
+		const allCompleteSpy = vi.fn()
+		coordinator.on("allCompleted", allCompleteSpy)
+
+		// Complete both normally
+		prov1.emit(RooCodeEventName.TaskCompleted, "d1", makeTokenUsage(10, 5), makeToolUsage())
+		prov2.emit(RooCodeEventName.TaskCompleted, "d2", makeTokenUsage(20, 10), makeToolUsage())
+
+		// Fire duplicates — should NOT trigger allCompleted again
+		prov1.emit(RooCodeEventName.TaskCompleted, "d1", makeTokenUsage(10, 5), makeToolUsage())
+		prov2.emit(RooCodeEventName.TaskAborted, "d2")
+
+		expect(allCompleteSpy).toHaveBeenCalledTimes(1)
+	})
+
+	it("should reject waitForAll() when timeout expires", async () => {
+		const agent = createInitialAgentState(makeTask({ id: "timeout-1" }))
+		const { provider } = createMockProvider()
+
+		coordinator.registerAgent(agent, provider)
+
+		// Use a very short timeout
+		await expect(coordinator.waitForAll(50)).rejects.toThrow(/timed out/)
+	})
+
+	it("should resolve waitForAll() before timeout if agents complete in time", async () => {
+		const agent = createInitialAgentState(makeTask({ id: "fast-1" }))
+		const { provider } = createMockProvider()
+
+		coordinator.registerAgent(agent, provider)
+
+		const waitPromise = coordinator.waitForAll(5000)
+
+		// Complete the agent quickly
+		setTimeout(() => {
+			provider.emit(RooCodeEventName.TaskCompleted, "fast-1", makeTokenUsage(10, 5), makeToolUsage())
+		}, 10)
+
+		await waitPromise
+		expect(coordinator.allComplete()).toBe(true)
+	})
+
+	it("should mark agent as failed when getCurrentTask() returns undefined during startAll()", async () => {
+		const agent = createInitialAgentState(makeTask({ id: "no-task" }))
+		const emitter = new EventEmitter()
+		;(emitter as any).getCurrentTask = vi.fn().mockReturnValue(undefined)
+
+		coordinator.registerAgent(agent, emitter as any)
+
+		const failedSpy = vi.fn()
+		coordinator.on("agentFailed", failedSpy)
+
+		await coordinator.startAll()
+
+		expect(failedSpy).toHaveBeenCalledWith("no-task")
+		expect(coordinator.getState("no-task")!.status).toBe("failed")
+		expect(coordinator.completedAgents).toBe(1)
+	})
+
+	it("should return false from allComplete() when no agents are registered", () => {
+		expect(coordinator.allComplete()).toBe(false)
+	})
+
+	it("should wait indefinitely when timeoutMs is 0", async () => {
+		const agent = createInitialAgentState(makeTask({ id: "inf-1" }))
+		const { provider } = createMockProvider()
+
+		coordinator.registerAgent(agent, provider)
+
+		const waitPromise = coordinator.waitForAll(0)
+
+		// Complete after a small delay — should resolve fine
+		setTimeout(() => {
+			provider.emit(RooCodeEventName.TaskCompleted, "inf-1", makeTokenUsage(10, 5), makeToolUsage())
+		}, 10)
+
+		await waitPromise
+		expect(coordinator.allComplete()).toBe(true)
 	})
 })
 
