@@ -1,3 +1,4 @@
+
 import React, { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useEvent } from "react-use"
 import DynamicTextArea from "react-textarea-autosize"
@@ -99,6 +100,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			cloudUserInfo,
 			enterBehavior,
 			lockApiConfigAcrossModes,
+			memoryLearningEnabled,
+			memoryApiConfigId,
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
@@ -1347,6 +1350,43 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								</button>
 							</StandardTooltip>
 						)}
+						{!isEditMode && (() => {
+							const memoryConfigured = !!memoryApiConfigId
+							const memoryEnabled = memoryLearningEnabled ?? false
+							const dotColor = !memoryConfigured
+								? "bg-gray-400"
+								: memoryEnabled
+									? "bg-green-500"
+									: "bg-red-500"
+							const label = !memoryConfigured
+								? "Memory: Off"
+								: memoryEnabled
+									? "Memory"
+									: "Memory: Paused"
+							const tooltip = !memoryConfigured
+								? "Select a model profile in Settings → Memory to enable"
+								: memoryEnabled
+									? "Roo learns your preferences. Click to pause."
+									: "Memory paused. Click to resume."
+							return (
+								<StandardTooltip content={tooltip}>
+									<button
+										onClick={() => {
+											if (memoryConfigured) {
+												vscode.postMessage({ type: "toggleMemoryLearning" })
+											}
+										}}
+										className={cn(
+											"flex items-center gap-1 text-[10px] px-1",
+											"opacity-60 hover:opacity-100 transition-opacity",
+											memoryConfigured ? "cursor-pointer" : "cursor-default",
+										)}>
+										<span className={`inline-block w-1.5 h-1.5 rounded-full ${dotColor}`} />
+										<span>{label}</span>
+									</button>
+								</StandardTooltip>
+							)
+						})()}
 						{!isEditMode ? <IndexingStatusBadge /> : null}
 						{!isEditMode && cloudUserInfo && <CloudAccountSwitcher />}
 					</div>
