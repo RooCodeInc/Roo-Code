@@ -23,6 +23,7 @@ import {
 	addCustomInstructions,
 	markdownFormattingSection,
 	getSkillsSection,
+	buildPersonalityPromptParts,
 } from "./sections"
 import { getNativeTools } from "./tools/native-tools"
 import { generateXmlToolCatalog } from "./tools/xml-tool-catalog"
@@ -58,6 +59,7 @@ async function generatePrompt(
 	modelId?: string,
 	skillsManager?: SkillsManager,
 	useXmlToolCalling?: boolean,
+	userProfileSection?: string,
 ): Promise<string> {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -86,8 +88,12 @@ async function generatePrompt(
 	// since native tool definitions are omitted from the API request.
 	const toolsCatalog = useXmlToolCalling ? generateXmlToolCatalog(getNativeTools()) : ""
 
-	const basePrompt = `${roleDefinition}
+	// Generate personality sandwich (top + bottom) for maximum adherence
+	const personalityParts = buildPersonalityPromptParts(modeConfig.personalityConfig)
 
+	const basePrompt = `${roleDefinition}
+${personalityParts.top}
+${userProfileSection || ""}
 ${markdownFormattingSection()}
 
 ${getSharedToolUseSection(useXmlToolCalling)}${toolsCatalog}
@@ -108,7 +114,7 @@ ${await addCustomInstructions(baseInstructions, globalCustomInstructions || "", 
 	language: language ?? formatLanguage(vscode.env.language),
 	rooIgnoreInstructions,
 	settings,
-})}`
+})}${personalityParts.bottom}`
 
 	return basePrompt
 }
@@ -131,6 +137,7 @@ export const SYSTEM_PROMPT = async (
 	modelId?: string,
 	skillsManager?: SkillsManager,
 	useXmlToolCalling?: boolean,
+	userProfileSection?: string,
 ): Promise<string> => {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -160,5 +167,6 @@ export const SYSTEM_PROMPT = async (
 		modelId,
 		skillsManager,
 		useXmlToolCalling,
+		userProfileSection,
 	)
 }
