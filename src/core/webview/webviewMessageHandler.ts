@@ -3736,6 +3736,14 @@ export const webviewMessageHandler = async (
 			const orchestrator = provider.getMemoryOrchestrator()
 			if (!orchestrator) break
 
+			// Guard against concurrent syncs
+			if (orchestrator.isSyncInProgress()) {
+				await provider.postMessageToWebview({
+					type: "memorySyncAlreadyRunning",
+				})
+				break
+			}
+
 			const memoryConfigId = getGlobalState("memoryApiConfigId")
 			if (!memoryConfigId) break
 
@@ -3786,6 +3794,35 @@ export const webviewMessageHandler = async (
 				orchestrator.clearAllMemory()
 				await provider.postMessageToWebview({ type: "memoryCleared" })
 			}
+			break
+		}
+
+		case "getMemoryStatus": {
+			const orch = provider.getMemoryOrchestrator()
+			if (orch) {
+				const store = orch.getStore()
+				const count = store.getEntryCount()
+				const lastLog = store.getLastAnalysisTimestamp()
+				await provider.postMessageToWebview({
+					type: "memoryStatus",
+					text: JSON.stringify({ entryCount: count, lastAnalyzedAt: lastLog }),
+				})
+			} else {
+				await provider.postMessageToWebview({
+					type: "memoryStatus",
+					text: JSON.stringify({ entryCount: 0, lastAnalyzedAt: null }),
+				})
+			}
+			break
+		}
+
+		case "getMemorySyncStatus": {
+			const orchestrator = provider.getMemoryOrchestrator()
+			const status = orchestrator?.getSyncStatus() ?? { inProgress: false, completed: 0, total: 0 }
+			await provider.postMessageToWebview({
+				type: "memorySyncStatus",
+				text: JSON.stringify(status),
+			})
 			break
 		}
 

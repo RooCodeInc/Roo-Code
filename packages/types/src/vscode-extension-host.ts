@@ -109,6 +109,9 @@ export interface ExtensionMessage {
 		| "memorySyncProgress"
 		| "memorySyncComplete"
 		| "memoryCleared"
+		| "memorySyncAlreadyRunning"
+		| "memorySyncStatus"
+		| "memoryStatus"
 	text?: string
 	/** For fileContent: { path, content, error? } */
 	fileContent?: { path: string; content: string | null; error?: string }
@@ -596,6 +599,8 @@ export interface WebviewMessage {
 		| "updateMemorySettings"
 		| "startMemorySync"
 		| "clearMemory"
+		| "getMemorySyncStatus"
+		| "getMemoryStatus"
 	text?: string
 	taskId?: string
 	editedMessageContent?: string

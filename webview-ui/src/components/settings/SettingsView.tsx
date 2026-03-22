@@ -139,6 +139,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const [isSyncing, setIsSyncing] = useState(false)
 	const [syncProgress, setSyncProgress] = useState({ completed: 0, total: 0 })
 	const [syncDone, setSyncDone] = useState(false)
+	const [memoryStats, setMemoryStats] = useState<{ entryCount: number; lastAnalyzedAt: number | null }>({ entryCount: 0, lastAnalyzedAt: null })
 	const [pickerOpen, setPickerOpen] = useState(false)
 	const [clearDialogOpen, setClearDialogOpen] = useState(false)
 
@@ -239,6 +240,11 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		}
 	}, [settingsImportedAt, extensionState])
 
+	// Request initial memory status on mount
+	useEffect(() => {
+		vscode.postMessage({ type: "getMemoryStatus" })
+	}, [])
+
 	// Memory sync message listener
 	useEffect(() => {
 		const handler = (event: MessageEvent) => {
@@ -250,17 +256,52 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			if (msg.type === "memorySyncComplete") {
 				setIsSyncing(false)
 				setSyncDone(true)
+				// Refresh status so entry count and button states update immediately
+				vscode.postMessage({ type: "getMemoryStatus" })
 			}
 			if (msg.type === "memoryCleared") {
 				setSyncDone(false)
 				setSyncProgress({ completed: 0, total: 0 })
+				setMemoryStats({ entryCount: 0, lastAnalyzedAt: null })
+			}
+			if (msg.type === "memorySyncAlreadyRunning") {
+				// Sync was rejected because one is already in progress — keep UI in syncing state
+				// (this is a defensive fallback; buttons should already be disabled)
+			}
+			if (msg.type === "memorySyncStatus") {
+				const status = JSON.parse(msg.text)
+				if (status.inProgress) {
+					setIsSyncing(true)
+					setSyncProgress({ completed: status.completed, total: status.total })
+				}
+			}
+			if (msg.type === "memoryStatus") {
+				const data = JSON.parse(msg.text)
+				setMemoryStats({
+					entryCount: data.entryCount ?? 0,
+					lastAnalyzedAt: data.lastAnalyzedAt ?? null,
+				})
+				// If memory exists from a previous session, show the green indicator
+				if ((data.entryCount ?? 0) > 0) {
+					setSyncDone(true)
+				}
 			}
 		}
 		window.addEventListener("message", handler)
 		return () => window.removeEventListener("message", handler)
 	}, [])
 
+	// When the memory tab becomes active, ask the backend for current sync status
+	// so the progress bar is restored after tab switches, and refresh memory stats.
+	useEffect(() => {
+		if (activeTab === "memory") {
+			vscode.postMessage({ type: "getMemorySyncStatus" })
+			vscode.postMessage({ type: "getMemoryStatus" })
+		}
+	}, [activeTab])
+
 	const handleStartSync = (taskIds: string[]) => {
+		if (isSyncing) return
 		setIsSyncing(true)
 		setSyncDone(false)
 		setSyncProgress({ completed: 0, total: taskIds.length })
@@ -1079,7 +1120,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 										<div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}>
 											<Button variant="secondary" onClick={() => setPickerOpen(true)} disabled={isSyncing}>
-												Browse Chats
+												{isSyncing ? "Analysis in progress..." : memoryEntryCount > 0 ? "Add More Chats" : "Browse Chats"}
 											</Button>
 											{isSyncing ? (
 												<Loader2 className="w-4 h-4 animate-spin" />
@@ -1108,8 +1149,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 									{/* Clear Memory */}
 									<div style={{ borderTop: "1px solid var(--vscode-input-border)", paddingTop: "16px" }}>
-										<Button variant="destructive" onClick={() => setClearDialogOpen(true)} disabled={isSyncing}>
-											Clear Memory
+										<Button variant="destructive" onClick={() => setClearDialogOpen(true)} disabled={isSyncing || memoryEntryCount === 0} style={{ opacity: memoryEntryCount === 0 ? 0.5 : 1 }}>
+											Clear Memory{memoryEntryCount > 0 ? ` (${memoryEntryCount} entries)` : ""}
 										</Button>
 										<p style={{ fontSize: "11px", opacity: 0.5, marginTop: "4px" }}>
 											Reset all learned preferences and start fresh.
