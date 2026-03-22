@@ -1,4 +1,5 @@
 import { MemoryStore } from "../memory-store"
+import { MemoryOrchestrator } from "../orchestrator"
 import { preprocessMessages } from "../preprocessor"
 import { processObservations } from "../memory-writer"
 import { compileMemoryPrompt } from "../prompt-compiler"
@@ -176,5 +177,141 @@ describe("Memory System Integration", () => {
 		expect(result.entriesSkipped).toBe(1)
 		expect(result.entriesCreated).toBe(0)
 		expect(store.getEntryCount()).toBe(0)
+	})
+})
+
+describe("clearAllMemory", () => {
+	let store: MemoryStore
+	let tmpDir: string
+
+	beforeEach(async () => {
+		tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "memory-clear-test-"))
+		store = new MemoryStore(tmpDir)
+		await store.init()
+	})
+
+	afterEach(() => {
+		store.close()
+		fs.rmSync(tmpDir, { recursive: true, force: true })
+	})
+
+	it("should delete all entries", async () => {
+		// Insert several entries
+		store.insertEntry({
+			workspaceId: null,
+			category: "coding-style",
+			content: "Prefers TypeScript",
+			significance: 0.9,
+			firstSeen: 1000,
+			lastReinforced: 1000,
+			reinforcementCount: 1,
+			decayRate: 0.05,
+			sourceTaskId: null,
+			isPinned: false,
+		})
+		store.insertEntry({
+			workspaceId: null,
+			category: "communication-prefs",
+			content: "Likes concise responses",
+			significance: 0.85,
+			firstSeen: 2000,
+			lastReinforced: 2000,
+			reinforcementCount: 1,
+			decayRate: 0.05,
+			sourceTaskId: null,
+			isPinned: false,
+		})
+		store.insertEntry({
+			workspaceId: null,
+			category: "tool-preferences",
+			content: "Uses VS Code with Vim keybindings",
+			significance: 0.7,
+			firstSeen: 3000,
+			lastReinforced: 3000,
+			reinforcementCount: 1,
+			decayRate: 0.12,
+			sourceTaskId: null,
+			isPinned: false,
+		})
+
+		// Verify entries were inserted
+		expect(store.getEntryCount()).toBe(3)
+
+		// Clear all entries
+		store.deleteAllEntries()
+
+		// Verify all entries are gone
+		expect(store.getEntryCount()).toBe(0)
+	})
+
+	it("should persist the cleared state", async () => {
+		// Insert entries
+		store.insertEntry({
+			workspaceId: null,
+			category: "coding-style",
+			content: "Prefers functional components",
+			significance: 0.8,
+			firstSeen: 1000,
+			lastReinforced: 1000,
+			reinforcementCount: 1,
+			decayRate: 0.05,
+			sourceTaskId: null,
+			isPinned: false,
+		})
+		store.insertEntry({
+			workspaceId: null,
+			category: "active-projects",
+			content: "Working on memory system",
+			significance: 0.75,
+			firstSeen: 2000,
+			lastReinforced: 2000,
+			reinforcementCount: 1,
+			decayRate: 0.3,
+			sourceTaskId: null,
+			isPinned: false,
+		})
+
+		expect(store.getEntryCount()).toBe(2)
+
+		// Delete all entries and close the store
+		store.deleteAllEntries()
+		expect(store.getEntryCount()).toBe(0)
+		store.close()
+
+		// Reopen store on the same path
+		const store2 = new MemoryStore(tmpDir)
+		await store2.init()
+
+		// Verify cleared state persisted across instances
+		expect(store2.getEntryCount()).toBe(0)
+		store2.close()
+	})
+})
+
+describe("MemoryOrchestrator.onUserMessage", () => {
+	let orchestrator: MemoryOrchestrator
+	let tmpDir: string
+
+	beforeEach(async () => {
+		tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "memory-orch-test-"))
+		orchestrator = new MemoryOrchestrator(tmpDir, null)
+		await orchestrator.init()
+	})
+
+	afterEach(() => {
+		orchestrator.close()
+		fs.rmSync(tmpDir, { recursive: true, force: true })
+	})
+
+	it("should skip analysis when provider settings is null", () => {
+		orchestrator.setEnabled(true)
+		const result = orchestrator.onUserMessage([], "task-1", null)
+		expect(result).toBe(false)
+	})
+
+	it("should skip analysis when not enabled", () => {
+		orchestrator.setEnabled(false)
+		const result = orchestrator.onUserMessage([], "task-1", { apiProvider: "openai" } as any)
+		expect(result).toBe(false)
 	})
 })

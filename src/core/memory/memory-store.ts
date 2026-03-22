@@ -350,12 +350,6 @@ export class MemoryStore {
 		return toDelete.length
 	}
 
-	/** Delete all memory entries and persist the change. */
-	deleteAllEntries(): void {
-		this.db!.run("DELETE FROM memory_entries")
-		this.persist()
-	}
-
 	/** Return the total number of stored entries. */
 	getEntryCount(): number {
 		const result = this.db!.exec("SELECT COUNT(*) FROM memory_entries")
