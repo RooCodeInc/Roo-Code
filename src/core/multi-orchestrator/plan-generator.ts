@@ -116,14 +116,6 @@ export async function generatePlan(
 			console.warn("[MultiOrch:Plan] ⚠️ WARNING: LLM returned only 1 task but maxAgents=" + maxAgents + ". The prompt may not be eliciting multi-task plans. Review system prompt or user request complexity.")
 		}
 
-		// Post-processing: consolidate overly granular tasks for simple requests
-		if (plan && plan.tasks.length > 3 && userRequest.split(" ").length < 20) {
-			console.log("[MultiOrch:Plan] ⚠️ Short-request heuristic SLICING tasks from", plan.tasks.length, "to 2 (request was", userRequest.split(" ").length, "words)")
-			// Short request with many tasks = over-decomposed
-			// Keep only the most important 2
-			plan.tasks = plan.tasks.slice(0, 2)
-		}
-
 		console.log("[MultiOrch:Plan] ========== PLAN GENERATION END (returning", plan.tasks.length, "tasks) ==========")
 		return plan
 	} catch (error) {
