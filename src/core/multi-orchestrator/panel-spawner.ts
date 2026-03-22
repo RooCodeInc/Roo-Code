@@ -33,22 +33,23 @@ export class PanelSpawner {
 	 */
 	async spawnPanels(count: number, titles: string[]): Promise<Map<string, SpawnedPanel>> {
 		const contextProxy = await ContextProxy.getInstance(this.context)
-		const MAX_VIEW_COLUMNS = 9 // vscode.ViewColumn.One (1) through .Nine (9)
 
-		const promises = Array.from({ length: count }, (_, i) => {
+		// Spawn panels SEQUENTIALLY to avoid VS Code ViewColumn race conditions.
+		// Each panel uses ViewColumn.Beside to create a new split to the RIGHT
+		// of whatever is currently focused, avoiding overlap with existing editors.
+		const errors: Array<{ index: number; title: string; error: Error }> = []
+
+		for (let i = 0; i < count; i++) {
 			const id = `agent-${i}`
 			const title = titles[i] || `Agent ${i + 1}`
-			const viewColumn = ((i % MAX_VIEW_COLUMNS) + 1) as vscode.ViewColumn
-			return this.spawnSinglePanel(id, title, viewColumn, contextProxy)
-		})
-
-		const results = await Promise.all(promises)
-
-		const errors: Array<{ index: number; title: string; error: Error }> = []
-		for (let i = 0; i < results.length; i++) {
-			const result = results[i]
+			// Use ViewColumn.Beside for all panels — each one splits beside the previous
+			const result = await this.spawnSinglePanel(id, title, vscode.ViewColumn.Beside, contextProxy)
 			if (result.error) {
-				errors.push({ index: i, title: titles[i] || `Agent ${i + 1}`, error: result.error })
+				errors.push({ index: i, title, error: result.error })
+			}
+			// Small delay between panels to let VS Code settle its layout
+			if (i < count - 1) {
+				await new Promise((resolve) => setTimeout(resolve, 200))
 			}
 		}
 
