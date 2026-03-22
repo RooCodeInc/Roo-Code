@@ -2800,11 +2800,14 @@ export class ClineProvider
 	/** Get or lazily create the MultiOrchestrator instance (on-demand, not auto-initialized in constructor) */
 	public getMultiOrchestrator(): MultiOrchestrator {
 		if (!this.multiOrchestrator) {
+			console.log("[MultiOrch:Handler] getMultiOrchestrator() → creating NEW instance, workspacePath:", this.currentWorkspacePath || "(empty)")
 			this.multiOrchestrator = new MultiOrchestrator(
 				this.context,
 				this.outputChannel,
 				this.currentWorkspacePath || "",
 			)
+		} else {
+			console.log("[MultiOrch:Handler] getMultiOrchestrator() → reusing existing instance")
 		}
 		return this.multiOrchestrator
 	}
@@ -3029,10 +3032,16 @@ export class ClineProvider
 		})
 
 		await this.addClineToStack(task)
-		task.start()
+
+		// Only auto-start if the caller didn't explicitly request deferred start.
+		// The multi-orchestrator passes startTask: false to create all tasks first,
+		// then calls task.start() on each one simultaneously via AgentCoordinator.
+		if (options.startTask !== false) {
+			task.start()
+		}
 
 		this.log(
-			`[createTask] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
+			`[createTask] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated (started=${options.startTask !== false})`,
 		)
 
 		return task

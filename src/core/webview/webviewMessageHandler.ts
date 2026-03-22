@@ -3828,21 +3828,40 @@ export const webviewMessageHandler = async (
 
 		case "multiOrchStartPlan": {
 			// User submitted a request in multi-orchestrator mode
+			console.log("[MultiOrch:Handler] ── ENTER multiOrchStartPlan ──")
 			const userRequest = message.text || ""
-			const orchestrator = provider.getMultiOrchestrator()
+			console.log("[MultiOrch:Handler] userRequest:", JSON.stringify(userRequest).slice(0, 200))
 
-			const maxAgents = getGlobalState("multiOrchMaxAgents") ?? 4
-			console.log("[MultiOrch] maxAgents from settings:", maxAgents)
-			const planReview = getGlobalState("multiOrchPlanReviewEnabled") ?? false
-			const mergeMode =
-				(getGlobalState("multiOrchMergeEnabled") as "auto" | "always" | "never") ?? "auto"
+			const orchestrator = provider.getMultiOrchestrator()
+			console.log("[MultiOrch:Handler] orchestrator instance:", orchestrator ? "OK" : "NULL/UNDEFINED")
+
+			const maxAgentsRaw = getGlobalState("multiOrchMaxAgents")
+			const maxAgents = maxAgentsRaw ?? 4
+			console.log("[MultiOrch:Handler] multiOrchMaxAgents raw from globalState:", maxAgentsRaw, "→ resolved:", maxAgents)
+
+			const planReviewRaw = getGlobalState("multiOrchPlanReviewEnabled")
+			const planReview = planReviewRaw ?? false
+			console.log("[MultiOrch:Handler] planReview raw:", planReviewRaw, "→ resolved:", planReview)
+
+			const mergeModeRaw = getGlobalState("multiOrchMergeEnabled")
+			const mergeMode = (mergeModeRaw as "auto" | "always" | "never") ?? "auto"
+			console.log("[MultiOrch:Handler] mergeMode raw:", mergeModeRaw, "→ resolved:", mergeMode)
+
 			const providerSettings = provider.contextProxy.getProviderSettings()
+			console.log("[MultiOrch:Handler] providerSettings.apiProvider:", providerSettings.apiProvider)
+			console.log("[MultiOrch:Handler] providerSettings.apiModelId:", providerSettings.apiModelId)
+			console.log("[MultiOrch:Handler] providerSettings has apiKey:", !!providerSettings.apiKey)
+			console.log("[MultiOrch:Handler] providerSettings keys:", Object.keys(providerSettings).filter((k) => (providerSettings as Record<string, unknown>)[k] !== undefined).join(", "))
+
 			const { getAllModes } = await import("../../shared/modes")
 			const customModes = await provider.customModesManager.getCustomModes()
 			const allModes = getAllModes(customModes)
+			console.log("[MultiOrch:Handler] allModes count:", allModes.length, "names:", allModes.map((m) => m.slug).join(", "))
 
+			console.log("[MultiOrch:Handler] calling orchestrator.execute() ...")
 			orchestrator
 				.execute(userRequest, maxAgents, providerSettings, allModes, planReview, mergeMode, (state) => {
+					console.log("[MultiOrch:Handler] onStateChange → phase:", state.phase, "agents:", state.agents?.length ?? 0)
 					provider.postMessageToWebview({
 						type: "multiOrchStatusUpdate",
 						text: JSON.stringify(state),
@@ -3850,14 +3869,17 @@ export const webviewMessageHandler = async (
 				})
 				.then(() => {
 					const finalState = orchestrator.getState()
+					console.log("[MultiOrch:Handler] execute() resolved. finalState.phase:", finalState.phase, "hasPlan:", !!finalState.plan)
 					if (planReview && finalState.phase !== "complete" && finalState.plan) {
 						// Plan review mode: execute() returned early after planning.
 						// Send the plan to the webview for user approval.
+						console.log("[MultiOrch:Handler] → posting multiOrchPlanReady")
 						provider.postMessageToWebview({
 							type: "multiOrchPlanReady",
 							text: JSON.stringify(finalState),
 						})
 					} else {
+						console.log("[MultiOrch:Handler] → posting multiOrchComplete")
 						provider.postMessageToWebview({
 							type: "multiOrchComplete",
 							text: JSON.stringify(finalState),
@@ -3865,6 +3887,8 @@ export const webviewMessageHandler = async (
 					}
 				})
 				.catch((error) => {
+					console.error("[MultiOrch:Handler] execute() REJECTED with error:", error)
+					console.error("[MultiOrch:Handler] error stack:", (error as Error)?.stack ?? "no stack")
 					provider.postMessageToWebview({
 						type: "multiOrchError",
 						text: String(error),
