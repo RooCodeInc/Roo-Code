@@ -319,22 +319,27 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 						},
 					}
 				: {}),
-			tools: (metadata?.tools ?? [])
-				.filter((tool) => tool.type === "function")
-				.map((tool) => {
-					const isMcp = isMcpTool(tool.function.name)
-					return {
-						type: "function",
-						name: tool.function.name,
-						description: tool.function.description,
-						parameters: isMcp
-							? ensureAdditionalPropertiesFalse(tool.function.parameters)
-							: ensureAllRequired(tool.function.parameters),
-						strict: !isMcp,
-					}
-				}),
-			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+			// When useXmlToolCalling is enabled, omit native tool definitions from the API request.
+			...(metadata?.useXmlToolCalling
+				? {}
+				: {
+						tools: (metadata?.tools ?? [])
+							.filter((tool) => tool.type === "function")
+							.map((tool) => {
+								const isMcp = isMcpTool(tool.function.name)
+								return {
+									type: "function",
+									name: tool.function.name,
+									description: tool.function.description,
+									parameters: isMcp
+										? ensureAdditionalPropertiesFalse(tool.function.parameters)
+										: ensureAllRequired(tool.function.parameters),
+									strict: !isMcp,
+								}
+							}),
+						tool_choice: metadata?.tool_choice,
+						parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+					}),
 		}
 
 		return body

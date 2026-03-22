@@ -499,6 +499,133 @@ describe("OpenAiHandler", () => {
 		})
 	})
 
+	describe("useXmlToolCalling", () => {
+		const systemPrompt = "You are a helpful assistant."
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [{ type: "text" as const, text: "Hello!" }],
+			},
+		]
+
+		const mockTools: OpenAI.Chat.ChatCompletionTool[] = [
+			{
+				type: "function",
+				function: {
+					name: "read_file",
+					description: "Read a file",
+					parameters: {
+						type: "object",
+						properties: { path: { type: "string" } },
+						required: ["path"],
+					},
+				},
+			},
+		]
+
+		it("should omit tools and tool_choice when useXmlToolCalling is true (streaming)", async () => {
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test",
+				tools: mockTools,
+				tool_choice: "auto",
+				useXmlToolCalling: true,
+			})
+
+			for await (const _chunk of stream) {
+			}
+
+			const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
+			// When useXmlToolCalling is true, the tools and tool_choice should NOT be in the request
+			expect(callArgs.tools).toBeUndefined()
+			expect(callArgs.tool_choice).toBeUndefined()
+			expect(callArgs.parallel_tool_calls).toBeUndefined()
+		})
+
+		it("should omit tools and tool_choice when useXmlToolCalling is true (non-streaming)", async () => {
+			const nonStreamHandler = new OpenAiHandler({
+				...mockOptions,
+				openAiStreamingEnabled: false,
+			})
+
+			const stream = nonStreamHandler.createMessage(systemPrompt, messages, {
+				taskId: "test",
+				tools: mockTools,
+				tool_choice: "auto",
+				useXmlToolCalling: true,
+			})
+
+			for await (const _chunk of stream) {
+			}
+
+			const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
+			expect(callArgs.tools).toBeUndefined()
+			expect(callArgs.tool_choice).toBeUndefined()
+			expect(callArgs.parallel_tool_calls).toBeUndefined()
+		})
+
+		it("should include tools when useXmlToolCalling is false", async () => {
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test",
+				tools: mockTools,
+				tool_choice: "auto",
+				useXmlToolCalling: false,
+			})
+
+			for await (const _chunk of stream) {
+			}
+
+			const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
+			expect(callArgs.tools).toBeDefined()
+			expect(callArgs.tools.length).toBeGreaterThan(0)
+			expect(callArgs.tool_choice).toBe("auto")
+			expect(callArgs.parallel_tool_calls).toBe(true)
+		})
+
+		it("should include tools when useXmlToolCalling is undefined", async () => {
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test",
+				tools: mockTools,
+				tool_choice: "auto",
+			})
+
+			for await (const _chunk of stream) {
+			}
+
+			const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
+			expect(callArgs.tools).toBeDefined()
+			expect(callArgs.tools.length).toBeGreaterThan(0)
+			expect(callArgs.tool_choice).toBe("auto")
+		})
+
+		it("should omit tools and tool_choice for O3 family when useXmlToolCalling is true", async () => {
+			const o3Handler = new OpenAiHandler({
+				...mockOptions,
+				openAiModelId: "o3-mini",
+				openAiCustomModelInfo: {
+					contextWindow: 128_000,
+					maxTokens: 65536,
+					supportsPromptCache: false,
+					reasoningEffort: "medium" as "low" | "medium" | "high",
+				},
+			})
+
+			const stream = o3Handler.createMessage(systemPrompt, messages, {
+				taskId: "test",
+				tools: mockTools,
+				tool_choice: "auto",
+				useXmlToolCalling: true,
+			})
+
+			for await (const _chunk of stream) {
+			}
+
+			const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
+			expect(callArgs.tools).toBeUndefined()
+			expect(callArgs.tool_choice).toBeUndefined()
+			expect(callArgs.parallel_tool_calls).toBeUndefined()
+		})
+	})
+
 	describe("error handling", () => {
 		const testMessages: Anthropic.Messages.MessageParam[] = [
 			{

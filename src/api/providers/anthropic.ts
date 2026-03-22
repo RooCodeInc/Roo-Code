@@ -75,10 +75,15 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			betas.push("context-1m-2025-08-07")
 		}
 
-		const nativeToolParams = {
-			tools: convertOpenAIToolsToAnthropic(metadata?.tools ?? []),
-			tool_choice: convertOpenAIToolChoiceToAnthropic(metadata?.tool_choice, metadata?.parallelToolCalls),
-		}
+		// When useXmlToolCalling is enabled, omit native tool definitions from the API request.
+		// The model will rely on XML tool documentation in the system prompt instead,
+		// and output tool calls as raw XML text parsed by TagMatcher.
+		const nativeToolParams = metadata?.useXmlToolCalling
+			? {}
+			: {
+					tools: convertOpenAIToolsToAnthropic(metadata?.tools ?? []),
+					tool_choice: convertOpenAIToolChoiceToAnthropic(metadata?.tool_choice, metadata?.parallelToolCalls),
+				}
 
 		switch (modelId) {
 			case "claude-sonnet-4-6":

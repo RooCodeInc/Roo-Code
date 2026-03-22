@@ -296,12 +296,13 @@ export async function presentAssistantMessage(cline: Task) {
 			break
 		}
 		case "tool_use": {
-			// Native tool calling is the only supported tool calling mechanism.
-			// A tool_use block without an id is invalid and cannot be executed.
+			// A tool_use block without an id is invalid for native tool calling.
+			// However, when useXmlToolCalling is enabled, the XmlToolCallParser assigns
+			// synthetic IDs (prefixed with "xml-tool-") so this check still passes.
 			const toolCallId = (block as any).id as string | undefined
 			if (!toolCallId) {
 				const errorMessage =
-					"Invalid tool call: missing tool_use.id. XML tool calls are no longer supported. Remove any XML tool markup (e.g. <read_file>...</read_file>) and use native tool calling instead."
+					"Invalid tool call: missing tool_use.id. Tool call block is missing its identifier. This may indicate a parsing error."
 				// Record a tool error for visibility/telemetry. Use the reported tool name if present.
 				try {
 					if (
@@ -388,34 +389,38 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			// Detect if XML tool calling is active
+			const isXmlToolCalling = cline.xmlToolCallParser !== undefined
+
 			if (cline.didRejectTool) {
 				// Ignore any tool content after user has rejected tool once.
-				// For native tool calling, we must send a tool_result for every tool_use to avoid API errors
 				const errorMessage = !block.partial
 					? `Skipping tool ${toolDescription()} due to user rejecting a previous tool.`
 					: `Tool ${toolDescription()} was interrupted and not executed due to user rejecting a previous tool.`
 
-				cline.pushToolResultToUserContent({
-					type: "tool_result",
-					tool_use_id: sanitizeToolUseId(toolCallId),
-					content: errorMessage,
-					is_error: true,
-				})
+				if (isXmlToolCalling) {
+					// XML mode: push as text since the API has no tool_use to match
+					cline.userMessageContent.push({ type: "text", text: `[Tool Error] ${errorMessage}` })
+				} else {
+					// Native mode: push tool_result for every tool_use to avoid API errors
+					cline.pushToolResultToUserContent({
+						type: "tool_result",
+						tool_use_id: sanitizeToolUseId(toolCallId),
+						content: errorMessage,
+						is_error: true,
+					})
+				}
 
 				break
 			}
 
-			// Track if we've already pushed a tool result for this tool call (native tool calling only)
+			// Track if we've already pushed a tool result for this tool call
 			let hasToolResult = false
 
 			// If this is a native tool call but the parser couldn't construct nativeArgs
 			// (e.g., malformed/unfinished JSON in a streaming tool call), we must NOT attempt to
-			// execute the tool. Instead, emit exactly one structured tool_result so the provider
-			// receives a matching tool_result for the tool_use_id.
-			//
-			// This avoids executing an invalid tool_use block and prevents duplicate/fragmented
-			// error reporting.
-			if (!block.partial) {
+			// execute the tool. Skip this check in XML mode since XML tools use params, not nativeArgs.
+			if (!block.partial && !isXmlToolCalling) {
 				const customTool = stateExperiments?.customTools ? customToolRegistry.get(block.name) : undefined
 				const isKnownTool = isValidToolName(String(block.name), stateExperiments)
 				if (isKnownTool && !block.nativeArgs && !customTool) {
@@ -447,7 +452,7 @@ export async function presentAssistantMessage(cline: Task) {
 			let approvalFeedback: { text: string; images?: string[] } | undefined
 
 			const pushToolResult = (content: ToolResponse) => {
-				// Native tool calling: only allow ONE tool_result per tool call
+				// Only allow ONE tool_result per tool call
 				if (hasToolResult) {
 					console.warn(
 						`[presentAssistantMessage] Skipping duplicate tool_result for tool_use_id: ${toolCallId}`,
@@ -478,11 +483,23 @@ export async function presentAssistantMessage(cline: Task) {
 					}
 				}
 
-				cline.pushToolResultToUserContent({
-					type: "tool_result",
-					tool_use_id: sanitizeToolUseId(toolCallId),
-					content: resultContent,
-				})
+				if (isXmlToolCalling) {
+					// XML mode: push tool results as plain text since there are no
+					// native tool_use blocks in the assistant message for the API to match.
+					// Format the result with the tool name for clarity.
+					const toolName = block.name || "unknown_tool"
+					cline.userMessageContent.push({
+						type: "text",
+						text: `[${toolName} Result]\n${resultContent}`,
+					})
+				} else {
+					// Native mode: push as structured tool_result
+					cline.pushToolResultToUserContent({
+						type: "tool_result",
+						tool_use_id: sanitizeToolUseId(toolCallId),
+						content: resultContent,
+					})
+				}
 
 				if (imageBlocks.length > 0) {
 					cline.userMessageContent.push(...imageBlocks)

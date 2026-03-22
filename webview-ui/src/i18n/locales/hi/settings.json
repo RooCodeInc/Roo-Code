@@ -554,7 +554,9 @@
 			"placeholder": "डिफ़ॉल्ट: claude",
 			"maxTokensLabel": "अधिकतम आउटपुट टोकन",
 			"maxTokensDescription": "Claude Code प्रतिक्रियाओं के लिए आउटपुट टोकन की अधिकतम संख्या। डिफ़ॉल्ट 8000 है।"
-		}
+		},
+		"useXmlToolCalling": "Use XML tool calling",
+		"useXmlToolCallingDescription": "Use XML-style formatting for tool calls instead of native tool calling. Enable this if your model responds better with XML tool formatting."
 	},
 	"checkpoints": {
 		"timeout": {
@@ -738,7 +740,9 @@
 		}
 	},
 	"advancedSettings": {
-		"title": "उन्नत सेटिंग्स"
+		"title": "उन्नत सेटिंग्स",
+		"useXmlToolCalling": "Use XML tool calling",
+		"useXmlToolCallingDescription": "Use XML-style formatting for tool calls instead of native tool calling. Enable this if your model responds better with XML tool formatting."
 	},
 	"advanced": {
 		"diff": {

@@ -86,6 +86,13 @@ export interface ApiHandlerCreateMessageMetadata {
 	 * Only applies to providers that support function calling restrictions (e.g., Gemini).
 	 */
 	allowedFunctionNames?: string[]
+	/**
+	 * When true, native tool definitions are omitted from the API request body.
+	 * The model relies solely on XML tool documentation in the system prompt
+	 * and outputs tool calls as raw XML text, which the existing TagMatcher
+	 * in presentAssistantMessage() parses into ToolUse objects.
+	 */
+	useXmlToolCalling?: boolean
 }
 
 export interface ApiHandler {

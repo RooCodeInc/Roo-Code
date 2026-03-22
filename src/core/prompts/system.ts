@@ -24,6 +24,8 @@ import {
 	markdownFormattingSection,
 	getSkillsSection,
 } from "./sections"
+import { getNativeTools } from "./tools/native-tools"
+import { generateXmlToolCatalog } from "./tools/xml-tool-catalog"
 
 // Helper function to get prompt component, filtering out empty objects
 export function getPromptComponent(
@@ -55,6 +57,7 @@ async function generatePrompt(
 	todoList?: TodoItem[],
 	modelId?: string,
 	skillsManager?: SkillsManager,
+	useXmlToolCalling?: boolean,
 ): Promise<string> {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -79,16 +82,17 @@ async function generatePrompt(
 		getSkillsSection(skillsManager, mode as string),
 	])
 
-	// Tools catalog is not included in the system prompt.
-	const toolsCatalog = ""
+	// When XML tool calling is enabled, embed tool descriptions in the system prompt
+	// since native tool definitions are omitted from the API request.
+	const toolsCatalog = useXmlToolCalling ? generateXmlToolCatalog(getNativeTools()) : ""
 
 	const basePrompt = `${roleDefinition}
 
 ${markdownFormattingSection()}
 
-${getSharedToolUseSection()}${toolsCatalog}
+${getSharedToolUseSection(useXmlToolCalling)}${toolsCatalog}
 
-	${getToolUseGuidelinesSection()}
+	${getToolUseGuidelinesSection(useXmlToolCalling)}
 
 ${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined)}
 
@@ -126,6 +130,7 @@ export const SYSTEM_PROMPT = async (
 	todoList?: TodoItem[],
 	modelId?: string,
 	skillsManager?: SkillsManager,
+	useXmlToolCalling?: boolean,
 ): Promise<string> => {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -154,5 +159,6 @@ export const SYSTEM_PROMPT = async (
 		todoList,
 		modelId,
 		skillsManager,
+		useXmlToolCalling,
 	)
 }

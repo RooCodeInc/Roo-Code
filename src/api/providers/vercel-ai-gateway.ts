@@ -61,9 +61,14 @@ export class VercelAiGatewayHandler extends RouterProvider implements SingleComp
 			max_completion_tokens: info.maxTokens,
 			stream: true,
 			stream_options: { include_usage: true },
-			tools: this.convertToolsForOpenAI(metadata?.tools),
-			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+			// When useXmlToolCalling is enabled, omit native tool definitions from the API request.
+			...(metadata?.useXmlToolCalling
+				? {}
+				: {
+						tools: this.convertToolsForOpenAI(metadata?.tools),
+						tool_choice: metadata?.tool_choice,
+						parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+					}),
 		}
 
 		const completion = await this.client.chat.completions.create(body)

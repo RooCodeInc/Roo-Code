@@ -109,8 +109,13 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 			system: systemBlocks,
 			messages: supportsPromptCache ? this.addCacheControl(processedMessages, cacheControl) : processedMessages,
 			stream: true,
-			tools: convertOpenAIToolsToAnthropic(metadata?.tools ?? []),
-			tool_choice: convertOpenAIToolChoice(metadata?.tool_choice),
+			// When useXmlToolCalling is enabled, omit native tool definitions from the API request.
+			...(metadata?.useXmlToolCalling
+				? {}
+				: {
+						tools: convertOpenAIToolsToAnthropic(metadata?.tools ?? []),
+						tool_choice: convertOpenAIToolChoice(metadata?.tool_choice),
+					}),
 		}
 
 		stream = await this.client.messages.create(requestParams)

@@ -187,6 +187,9 @@ const baseProviderSettingsSchema = z.object({
 
 	// Model verbosity.
 	verbosity: verbosityLevelsSchema.optional(),
+
+	// Tool calling protocol.
+	useXmlToolCalling: z.boolean().optional(),
 })
 
 // Several of the providers share common model config properties.

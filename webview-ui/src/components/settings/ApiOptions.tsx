@@ -1,6 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react"
 import { convertHeadersToObject } from "./utils/headers"
 import { useDebounce } from "react-use"
+import { Checkbox } from "vscrui"
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { ExternalLinkIcon } from "@radix-ui/react-icons"
 
@@ -800,6 +801,16 @@ const ApiOptions = ({
 									}
 									onChange={(value) => setApiConfigurationField("consecutiveMistakeLimit", value)}
 								/>
+								<div>
+									<Checkbox
+										checked={apiConfiguration?.useXmlToolCalling ?? false}
+										onChange={handleInputChange("useXmlToolCalling", noTransform)}>
+										{t("settings:advancedSettings.useXmlToolCalling")}
+									</Checkbox>
+									<div className="text-sm text-vscode-descriptionForeground ml-6">
+										{t("settings:advancedSettings.useXmlToolCallingDescription")}
+									</div>
+								</div>
 								{selectedProvider === "openrouter" &&
 									openRouterModelProviders &&
 									Object.keys(openRouterModelProviders).length > 0 && (
