@@ -150,8 +150,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const [isSyncing, setIsSyncing] = useState(false)
 	const [syncProgress, setSyncProgress] = useState({ completed: 0, total: 0 })
 	const [syncDone, setSyncDone] = useState(false)
-	const [memoryEntryCount, setMemoryEntryCount] = useState(0)
-	const [memoryLastAnalyzedAt, setMemoryLastAnalyzedAt] = useState<number | null>(null)
+	const [memoryStats, setMemoryStats] = useState<{ entryCount: number; lastAnalyzedAt: number | null }>({ entryCount: 0, lastAnalyzedAt: null })
 	const [pickerOpen, setPickerOpen] = useState(false)
 	const [clearDialogOpen, setClearDialogOpen] = useState(false)
 
@@ -274,10 +273,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			if (msg.type === "memoryCleared") {
 				setSyncDone(false)
 				setSyncProgress({ completed: 0, total: 0 })
-				setMemoryEntryCount(0)
-				setMemoryLastAnalyzedAt(null)
-				// Refresh status (will show 0 entries, dim the clear button)
-				vscode.postMessage({ type: "getMemoryStatus" })
+				setMemoryStats({ entryCount: 0, lastAnalyzedAt: null })
 			}
 			if (msg.type === "memorySyncAlreadyRunning") {
 				// Sync was rejected because one is already in progress — keep UI in syncing state
@@ -292,11 +288,12 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			}
 			if (msg.type === "memoryStatus") {
 				const data = JSON.parse(msg.text)
-				const count = data.entryCount ?? 0
-				setMemoryEntryCount(count)
-				setMemoryLastAnalyzedAt(data.lastAnalyzedAt ?? null)
+				setMemoryStats({
+					entryCount: data.entryCount ?? 0,
+					lastAnalyzedAt: data.lastAnalyzedAt ?? null,
+				})
 				// If memory exists from a previous session, show the green indicator
-				if (count > 0) {
+				if ((data.entryCount ?? 0) > 0) {
 					setSyncDone(true)
 				}
 			}
@@ -1032,11 +1029,11 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 									</p>
 
 									{/* Memory status indicator */}
-									{memoryEntryCount > 0 ? (
+									{memoryStats.entryCount > 0 ? (
 										<div style={{ fontSize: "12px", opacity: 0.7, padding: "8px 12px", background: "var(--vscode-input-background)", borderRadius: "4px" }}>
 											<span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#22c55e", marginRight: "6px", verticalAlign: "middle" }} />
-											{memoryEntryCount} {memoryEntryCount === 1 ? "memory" : "memories"} stored
-											{memoryLastAnalyzedAt && ` · Last updated ${formatTimeAgo(memoryLastAnalyzedAt)}`}
+											{memoryStats.entryCount} {memoryStats.entryCount === 1 ? "memory" : "memories"} stored
+											{memoryStats.lastAnalyzedAt && ` · Last updated ${formatTimeAgo(memoryStats.lastAnalyzedAt)}`}
 										</div>
 									) : (
 										<div style={{ fontSize: "12px", opacity: 0.4, padding: "8px 12px", background: "var(--vscode-input-background)", borderRadius: "4px" }}>
@@ -1147,7 +1144,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 										<div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}>
 											<Button variant="secondary" onClick={() => setPickerOpen(true)} disabled={isSyncing}>
-												{isSyncing ? "Syncing..." : memoryEntryCount > 0 ? "Add More Chats" : "Browse Chats"}
+												{isSyncing ? "Syncing..." : memoryStats.entryCount > 0 ? "Add More Chats" : "Browse Chats"}
 											</Button>
 											{isSyncing ? (
 												<Loader2 className="w-4 h-4 animate-spin" />
@@ -1176,8 +1173,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 									{/* Clear Memory */}
 									<div style={{ borderTop: "1px solid var(--vscode-input-border)", paddingTop: "16px" }}>
-										<Button variant="destructive" onClick={() => setClearDialogOpen(true)} disabled={isSyncing || memoryEntryCount === 0} style={{ opacity: memoryEntryCount === 0 ? 0.5 : 1 }}>
-											Clear Memory{memoryEntryCount > 0 ? ` (${memoryEntryCount} entries)` : ""}
+										<Button variant="destructive" onClick={() => setClearDialogOpen(true)} disabled={isSyncing || memoryStats.entryCount === 0} style={{ opacity: memoryStats.entryCount > 0 ? 1 : 0.4 }}>
+											Clear Memory{memoryStats.entryCount > 0 ? ` (${memoryStats.entryCount} entries)` : ""}
 										</Button>
 										<p style={{ fontSize: "11px", opacity: 0.5, marginTop: "4px" }}>
 											Reset all learned preferences and start fresh.
