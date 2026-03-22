@@ -104,11 +104,22 @@ export class MultiOrchestrator {
 				(mergeMode === "auto" && plan.requiresMerge) ||
 				false
 
-			// Create worktrees if merge is needed
+			// Check if we CAN use worktrees (requires git repo)
+			let canUseWorktrees = false
 			if (needsMerge) {
 				this.worktreeManager = new MultiWorktreeManager(this.workspacePath)
+				canUseWorktrees = await this.worktreeManager.isGitRepo()
+
+				if (!canUseWorktrees) {
+					console.log("[MultiOrch] No git repo found, skipping worktree isolation")
+					// Agents will work on the same directory — this is fine if files don't overlap
+				}
+			}
+
+			// Only create worktrees if git is available
+			if (canUseWorktrees && needsMerge) {
 				const agentIds = plan.tasks.map((t) => t.id)
-				const worktrees = await this.worktreeManager.createWorktrees(agentIds)
+				const worktrees = await this.worktreeManager!.createWorktrees(agentIds)
 
 				// Update agent states with worktree info
 				for (const agent of this.state.agents) {
@@ -138,6 +149,20 @@ export class MultiOrchestrator {
 				agent.providerId = panelId
 				agent.panelId = panelId
 
+				// Switch provider to the correct mode BEFORE creating the task.
+				// The Task constructor initializes its mode from provider.getState()
+				// during initializeTaskMode(), so the mode must already be set.
+				// (Mirrors the pattern in ClineProvider.delegateParentAndOpenChild)
+				try {
+					await spawned.provider.handleModeSwitch(task.mode)
+				} catch (e) {
+					console.warn(
+						`[MultiOrch] handleModeSwitch failed for agent ${task.id} mode '${task.mode}': ${
+							(e as Error)?.message ?? String(e)
+						}`,
+					)
+				}
+
 				// Create the task in this provider but don't start it yet
 				await spawned.provider.createTask(task.description, undefined, undefined, {
 					startTask: false,
@@ -163,8 +188,8 @@ export class MultiOrchestrator {
 			// Wait for all to complete
 			await this.coordinator.waitForAll()
 
-			// PHASE 4: MERGE (if needed)
-			if (needsMerge && mergeMode !== "never") {
+			// PHASE 4: MERGE (if needed and worktrees were actually created)
+			if (canUseWorktrees && needsMerge && mergeMode !== "never") {
 				this.state.phase = "merging"
 				notify()
 
