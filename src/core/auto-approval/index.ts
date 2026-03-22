@@ -59,7 +59,20 @@ export async function checkAutoApproval({
 		return { decision: "approve" }
 	}
 
+	console.log(
+		`[checkAutoApproval] ask="${ask}"`,
+		`autoApprovalEnabled=${state?.autoApprovalEnabled}`,
+		`alwaysAllowReadOnly=${state?.alwaysAllowReadOnly}`,
+		`alwaysAllowWrite=${state?.alwaysAllowWrite}`,
+		`alwaysAllowExecute=${state?.alwaysAllowExecute}`,
+		`alwaysAllowMcp=${state?.alwaysAllowMcp}`,
+		`alwaysAllowModeSwitch=${state?.alwaysAllowModeSwitch}`,
+		`alwaysAllowSubtasks=${state?.alwaysAllowSubtasks}`,
+		`stateExists=${!!state}`,
+	)
+
 	if (!state || !state.autoApprovalEnabled) {
+		console.log(`[checkAutoApproval] BLOCKING — autoApprovalEnabled is falsy (${state?.autoApprovalEnabled}), returning "ask" for ask="${ask}"`)
 		return { decision: "ask" }
 	}
 

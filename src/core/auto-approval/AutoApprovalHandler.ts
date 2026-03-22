@@ -15,6 +15,10 @@ export class AutoApprovalHandler {
 	private consecutiveAutoApprovedRequestsCount: number = 0
 	private consecutiveAutoApprovedCost: number = 0
 
+	constructor() {
+		console.log(`[AutoApprovalHandler] Initialized (limit handler — approval decisions are in checkAutoApproval)`)
+	}
+
 	/**
 	 * Check if auto-approval limits have been reached and handle user approval if needed
 	 */
@@ -138,6 +142,7 @@ export class AutoApprovalHandler {
 	 * Reset the tracking (typically called when starting a new task)
 	 */
 	resetRequestCount(): void {
+		console.log(`[AutoApprovalHandler] resetRequestCount called (was: requests=${this.consecutiveAutoApprovedRequestsCount}, cost=${this.consecutiveAutoApprovedCost})`)
 		this.lastResetMessageIndex = 0
 		this.consecutiveAutoApprovedRequestsCount = 0
 		this.consecutiveAutoApprovedCost = 0

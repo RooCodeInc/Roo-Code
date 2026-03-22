@@ -190,10 +190,12 @@ export class MultiOrchestrator {
 				requestDelaySeconds: 0,
 			}
 
-			for (let i = 0; i < plan.tasks.length; i++) {
+			// All panels are already spawned. Now create tasks in parallel —
+			// each task targets a different ClineProvider so there are no
+			// shared-state conflicts between the concurrent createTask() calls.
+			const taskPromises = plan.tasks.map(async (task, i) => {
 				if (this.aborted) return
 
-				const task = plan.tasks[i]
 				const agent = this.state.agents[i]
 
 				// Panel index may not exist if that panel failed to spawn
@@ -201,7 +203,7 @@ export class MultiOrchestrator {
 					console.warn(`[MultiOrch] No panel available for task ${task.id} ("${task.title}") — skipping`)
 					agent.status = "failed"
 					agent.completionReport = "Panel failed to spawn"
-					continue
+					return
 				}
 
 				const [panelId, spawned] = panelEntries[i]
@@ -224,13 +226,38 @@ export class MultiOrchestrator {
 				}
 
 				// Create the task with auto-approval so agents never block on tool prompts.
+				console.log(
+					`[MultiOrch:Spawn] Setting autoApproval config: autoApprovalEnabled=${autoApprovalConfig.autoApprovalEnabled}`,
+					`alwaysAllowWrite=${autoApprovalConfig.alwaysAllowWrite}`,
+					`alwaysAllowExecute=${autoApprovalConfig.alwaysAllowExecute}`,
+					`alwaysAllowMcp=${autoApprovalConfig.alwaysAllowMcp}`,
+					`alwaysAllowModeSwitch=${autoApprovalConfig.alwaysAllowModeSwitch}`,
+					`alwaysAllowSubtasks=${autoApprovalConfig.alwaysAllowSubtasks}`,
+					`for task="${task.id}" panel="${panelId}"`,
+				)
 				await spawned.provider.createTask(task.description, undefined, undefined, {
 					startTask: false,
 				}, autoApprovalConfig)
+				// Verify approval state survived createTask by reading it back from the provider
+				try {
+					const postCreateState = await spawned.provider.getState()
+					console.log(
+						`[MultiOrch:Spawn] Task created, checking approval state...`,
+						`autoApprovalEnabled=${postCreateState?.autoApprovalEnabled}`,
+						`alwaysAllowWrite=${postCreateState?.alwaysAllowWrite}`,
+						`alwaysAllowExecute=${postCreateState?.alwaysAllowExecute}`,
+						`alwaysAllowReadOnly=${postCreateState?.alwaysAllowReadOnly}`,
+						`alwaysAllowMcp=${postCreateState?.alwaysAllowMcp}`,
+						`task="${task.id}"`,
+					)
+				} catch (stateErr) {
+					console.warn(`[MultiOrch:Spawn] Could not read back state after createTask: ${stateErr}`)
+				}
 
 				// Register with coordinator
-				this.coordinator.registerAgent(agent, spawned.provider)
-			}
+				this.coordinator!.registerAgent(agent, spawned.provider)
+			})
+			await Promise.all(taskPromises)
 
 			notify()
 

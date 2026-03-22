@@ -2957,6 +2957,14 @@ export class ClineProvider
 	): Promise<Task> {
 		if (configuration) {
 			await this.setValues(configuration)
+			console.log(
+				`[ClineProvider:createTask] setValues complete, checking autoApprovalEnabled: ${this.contextProxy.getValue("autoApprovalEnabled")}`,
+				`alwaysAllowWrite: ${this.contextProxy.getValue("alwaysAllowWrite")}`,
+				`alwaysAllowExecute: ${this.contextProxy.getValue("alwaysAllowExecute")}`,
+				`alwaysAllowReadOnly: ${this.contextProxy.getValue("alwaysAllowReadOnly")}`,
+				`alwaysAllowMcp: ${this.contextProxy.getValue("alwaysAllowMcp")}`,
+				`(configuration keys passed: ${Object.keys(configuration).join(", ")})`,
+			)
 
 			if (configuration.allowedCommands) {
 				await vscode.workspace
@@ -3005,6 +3013,11 @@ export class ClineProvider
 			} catch {
 				// Non-fatal
 			}
+			// Check if removeClineFromStack reset auto-approval settings
+			console.log(
+				`[ClineProvider:createTask] After removeClineFromStack, autoApprovalEnabled: ${this.contextProxy.getValue("autoApprovalEnabled")}`,
+				`(parentTask=${!!parentTask})`,
+			)
 		}
 
 		if (!ProfileValidator.isProfileAllowed(apiConfiguration, organizationAllowList)) {

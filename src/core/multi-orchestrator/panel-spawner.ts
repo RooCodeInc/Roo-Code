@@ -24,6 +24,9 @@ export class PanelSpawner {
 	 * exceeds 9, columns are reused (panels stack in the same column group —
 	 * standard VS Code behaviour, no existing panels are overwritten).
 	 *
+	 * All panels are created in parallel via `Promise.all` — each panel uses
+	 * a different ViewColumn so there are no serialisation constraints.
+	 *
 	 * Individual panel failures are logged and skipped so that a single
 	 * failure does not orphan the entire batch. If *all* panels fail, the
 	 * method throws with the first error encountered.
@@ -31,45 +34,21 @@ export class PanelSpawner {
 	async spawnPanels(count: number, titles: string[]): Promise<Map<string, SpawnedPanel>> {
 		const contextProxy = await ContextProxy.getInstance(this.context)
 		const MAX_VIEW_COLUMNS = 9 // vscode.ViewColumn.One (1) through .Nine (9)
-		const errors: Array<{ index: number; title: string; error: Error }> = []
 
-		for (let i = 0; i < count; i++) {
+		const promises = Array.from({ length: count }, (_, i) => {
 			const id = `agent-${i}`
 			const title = titles[i] || `Agent ${i + 1}`
-			// Cycle through columns 1-9; panels beyond 9 share a column
 			const viewColumn = ((i % MAX_VIEW_COLUMNS) + 1) as vscode.ViewColumn
+			return this.spawnSinglePanel(id, title, viewColumn, contextProxy)
+		})
 
-			try {
-				// Create independent ClineProvider
-				const provider = new ClineProvider(this.context, this.outputChannel, "editor", contextProxy)
+		const results = await Promise.all(promises)
 
-				// Create WebviewPanel — can throw if no editor area is visible
-				const panel = vscode.window.createWebviewPanel(
-					ClineProvider.tabPanelId,
-					`⚡ ${title}`,
-					viewColumn,
-					{
-						enableScripts: true,
-						retainContextWhenHidden: true,
-						localResourceRoots: [this.context.extensionUri],
-					},
-				)
-
-				// Wire provider to panel — must complete before panel is usable
-				await provider.resolveWebviewView(panel)
-
-				// Track for cleanup (onDidDispose also registered inside
-				// resolveWebviewView, which handles provider disposal in tab mode)
-				panel.onDidDispose(() => {
-					this.panels.delete(id)
-				})
-
-				this.panels.set(id, { id, provider, panel })
-			} catch (error) {
-				const err = error instanceof Error ? error : new Error(String(error))
-				console.error(`[PanelSpawner] Failed to spawn panel ${id} ("${title}"): ${err.message}`)
-				errors.push({ index: i, title, error: err })
-				// Continue spawning remaining panels — one failure should not kill the batch
+		const errors: Array<{ index: number; title: string; error: Error }> = []
+		for (let i = 0; i < results.length; i++) {
+			const result = results[i]
+			if (result.error) {
+				errors.push({ index: i, title: titles[i] || `Agent ${i + 1}`, error: result.error })
 			}
 		}
 
@@ -88,6 +67,52 @@ export class PanelSpawner {
 		}
 
 		return new Map(this.panels)
+	}
+
+	/**
+	 * Spawn a single editor panel with its own ClineProvider.
+	 *
+	 * Returns `{ error: undefined }` on success or `{ error: Error }` on
+	 * failure. Never throws — callers aggregate errors from the batch.
+	 */
+	private async spawnSinglePanel(
+		id: string,
+		title: string,
+		viewColumn: vscode.ViewColumn,
+		contextProxy: ContextProxy,
+	): Promise<{ error: Error | undefined }> {
+		try {
+			// Create independent ClineProvider
+			const provider = new ClineProvider(this.context, this.outputChannel, "editor", contextProxy)
+
+			// Create WebviewPanel — can throw if no editor area is visible
+			const panel = vscode.window.createWebviewPanel(
+				ClineProvider.tabPanelId,
+				`⚡ ${title}`,
+				viewColumn,
+				{
+					enableScripts: true,
+					retainContextWhenHidden: true,
+					localResourceRoots: [this.context.extensionUri],
+				},
+			)
+
+			// Wire provider to panel — must complete before panel is usable
+			await provider.resolveWebviewView(panel)
+
+			// Track for cleanup (onDidDispose also registered inside
+			// resolveWebviewView, which handles provider disposal in tab mode)
+			panel.onDidDispose(() => {
+				this.panels.delete(id)
+			})
+
+			this.panels.set(id, { id, provider, panel })
+			return { error: undefined }
+		} catch (error) {
+			const err = error instanceof Error ? error : new Error(String(error))
+			console.error(`[PanelSpawner] Failed to spawn panel ${id} ("${title}"): ${err.message}`)
+			return { error: err }
+		}
 	}
 
 	/**
