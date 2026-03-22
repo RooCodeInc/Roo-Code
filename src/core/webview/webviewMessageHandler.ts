@@ -3826,6 +3826,85 @@ export const webviewMessageHandler = async (
 			break
 		}
 
+		case "multiOrchStartPlan": {
+			// User submitted a request in multi-orchestrator mode
+			const userRequest = message.text || ""
+			const orchestrator = provider.getMultiOrchestrator?.()
+			if (!orchestrator) break
+
+			const maxAgents = getGlobalState("multiOrchMaxAgents") ?? 4
+			const planReview = getGlobalState("multiOrchPlanReviewEnabled") ?? false
+			const mergeMode =
+				(getGlobalState("multiOrchMergeEnabled") as "auto" | "always" | "never") ?? "auto"
+			const providerSettings = provider.contextProxy.getProviderSettings()
+			const { getAllModes } = await import("../../shared/modes")
+			const customModes = await provider.customModesManager.getCustomModes()
+			const allModes = getAllModes(customModes)
+
+			orchestrator
+				.execute(userRequest, maxAgents, providerSettings, allModes, planReview, mergeMode, (state) => {
+					provider.postMessageToWebview({
+						type: "multiOrchStatusUpdate",
+						text: JSON.stringify(state),
+					})
+				})
+				.then(() => {
+					provider.postMessageToWebview({
+						type: "multiOrchComplete",
+						text: JSON.stringify(orchestrator.getState()),
+					})
+				})
+				.catch((error) => {
+					provider.postMessageToWebview({
+						type: "multiOrchError",
+						text: String(error),
+					})
+				})
+			break
+		}
+
+		case "multiOrchApprovePlan": {
+			const orchestrator = provider.getMultiOrchestrator?.()
+			if (!orchestrator) break
+			const state = orchestrator.getState()
+			if (!state.plan) break
+
+			const mergeMode =
+				(getGlobalState("multiOrchMergeEnabled") as "auto" | "always" | "never") ?? "auto"
+			const providerSettings = provider.contextProxy.getProviderSettings()
+
+			orchestrator.executeFromPlan(state.plan, providerSettings, mergeMode, (newState) => {
+				provider.postMessageToWebview({
+					type: "multiOrchStatusUpdate",
+					text: JSON.stringify(newState),
+				})
+			})
+			break
+		}
+
+		case "multiOrchAbort": {
+			const orchestrator = provider.getMultiOrchestrator?.()
+			if (orchestrator) {
+				await orchestrator.abort()
+				await provider.postMessageToWebview({
+					type: "multiOrchComplete",
+					text: JSON.stringify(orchestrator.getState()),
+				})
+			}
+			break
+		}
+
+		case "multiOrchGetStatus": {
+			const orchestrator = provider.getMultiOrchestrator?.()
+			if (orchestrator) {
+				await provider.postMessageToWebview({
+					type: "multiOrchStatusUpdate",
+					text: JSON.stringify(orchestrator.getState()),
+				})
+			}
+			break
+		}
+
 		default: {
 			// console.log(`Unhandled message type: ${message.type}`)
 			//
