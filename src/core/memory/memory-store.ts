@@ -64,7 +64,14 @@ export class MemoryStore {
 	}
 
 	async init(): Promise<void> {
-		const SQL = await initSqlJs()
+		// In a bundled VS Code extension, we need to tell sql.js where to find the WASM file.
+		// The WASM is copied to the dist/ directory by the build pipeline (copyWasms).
+		const SQL = await initSqlJs({
+			locateFile: (file: string) => {
+				// __dirname in the bundled extension points to dist/
+				return path.join(__dirname, file)
+			},
+		})
 
 		if (fs.existsSync(this.dbPath)) {
 			const fileBuffer = fs.readFileSync(this.dbPath)
