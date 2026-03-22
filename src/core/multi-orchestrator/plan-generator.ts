@@ -7,10 +7,26 @@ import { generateAgentId } from "./types"
 const PLAN_SYSTEM_PROMPT = `You are a task decomposition engine. Given a user request, break it into independent parallel tasks.
 
 For each task:
-- Assign the most appropriate mode: "code" (implementation), "architect" (design/planning), "ask" (research/questions), "debug" (fixing issues)
+- Assign the most appropriate mode from the available modes list
 - Write a clear, self-contained task description that an agent can execute independently
 - List expected files the agent will touch (for merge conflict prevention)
 - Ensure tasks are as independent as possible — minimize file overlap
+
+TASK COUNT GUIDELINES:
+- Simple single-file tasks (e.g., "make a calculator"): 1 task
+- Small multi-file tasks (e.g., "add a login page"): 2 tasks
+- Medium features (e.g., "build user auth with tests"): 3-4 tasks
+- Large multi-module features: up to the max agent count
+- NEVER create a separate task for documentation unless explicitly requested
+- NEVER create separate tasks for HTML, CSS, and JS of the same component — that's ONE task
+- Each task should produce a COMPLETE, working piece of functionality
+
+CRITICAL RULES:
+- Do NOT assign "architect" mode as a parallel task. Architecture decisions should be embedded in the task descriptions themselves.
+- The orchestrator has already analyzed the request — each code task should include the architectural context it needs.
+- Only use these modes for parallel tasks: "code" (implementation), "ask" (research), "debug" (fixing)
+- For simple tasks (like "make a calculator"), don't over-decompose. A single "code" agent is fine.
+- Never create more tasks than necessary. A simple single-file app should be 1-2 tasks, not 5.
 
 Respond in this exact JSON format (no markdown fences):
 {
@@ -42,7 +58,7 @@ export async function generatePlan(
 		}
 
 		const modeList = availableModes
-			.filter((m) => m.slug !== "multi-orchestrator" && m.slug !== "orchestrator")
+			.filter((m) => !["multi-orchestrator", "orchestrator", "architect"].includes(m.slug))
 			.map((m) => `- ${m.slug}: ${m.description || m.name}`)
 			.join("\n")
 
