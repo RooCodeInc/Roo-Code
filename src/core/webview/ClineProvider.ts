@@ -96,7 +96,7 @@ import { CustomModesManager } from "../config/CustomModesManager"
 import { Task } from "../task/Task"
 
 import { MemoryOrchestrator } from "../memory/orchestrator"
-import type { MultiOrchestrator } from "../multi-orchestrator/orchestrator"
+import { MultiOrchestrator } from "../multi-orchestrator/orchestrator"
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import type { ClineMessage, TodoItem } from "@roo-code/types"
 import { readApiMessages, saveApiMessages, saveTaskMessages, TaskHistoryStore } from "../task-persistence"
@@ -2796,6 +2796,18 @@ export class ClineProvider
 	/** Set the MultiOrchestrator instance (called during multi-orchestrator initialization) */
 	public setMultiOrchestrator(orchestrator: MultiOrchestrator): void {
 		this.multiOrchestrator = orchestrator
+	}
+
+	/** Get or lazily create the MultiOrchestrator instance (on-demand, not auto-initialized in constructor) */
+	public getOrCreateMultiOrchestrator(): MultiOrchestrator {
+		if (!this.multiOrchestrator) {
+			this.multiOrchestrator = new MultiOrchestrator(
+				this.context,
+				this.outputChannel,
+				this.currentWorkspacePath || "",
+			)
+		}
+		return this.multiOrchestrator
 	}
 
 	/**
