@@ -162,7 +162,7 @@ const PersonalityTraitsPanel: React.FC<PersonalityTraitsPanelProps> = ({
 
 		if (editingTraitId) {
 			// Editing existing trait — update in customTraits
-			const isBuiltInOverride = BUILT_IN_PERSONALITY_TRAITS.some((t) => t.id === editingTraitId)
+			const _isBuiltInOverride = BUILT_IN_PERSONALITY_TRAITS.some((t) => t.id === editingTraitId)
 			const updatedTrait: PersonalityTrait = {
 				id: editingTraitId,
 				emoji: formEmoji || "✨",
@@ -204,7 +204,7 @@ const PersonalityTraitsPanel: React.FC<PersonalityTraitsPanelProps> = ({
 	const handleDeleteTrait = useCallback(
 		(traitId: string) => {
 			const isBuiltIn = BUILT_IN_PERSONALITY_TRAITS.some((t) => t.id === traitId)
-			let newConfig = { ...personalityConfig }
+			const newConfig = { ...personalityConfig }
 
 			if (isBuiltIn) {
 				// Mark built-in as deleted (can be restored later)
