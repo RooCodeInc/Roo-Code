@@ -174,7 +174,17 @@ export class MultiOrchestrator {
 			// Auto-approval settings so spawned agents don't block on tool approval prompts.
 			// The user interacts with the orchestrator sidebar — nobody is clicking approve
 			// in the spawned panels, so every tool operation must be pre-approved.
-			const autoApprovalConfig: RooCodeSettings = {
+			//
+			// CRITICAL FIX: These are set as per-provider overrides (NOT via
+			// setValues/ContextProxy). ContextProxy is a singleton shared by ALL
+			// providers — any concurrent activity (main sidebar, other panels, mode
+			// switches) can overwrite values that were set via setValues(), causing
+			// auto-approval to silently disappear by the time the Task's
+			// checkAutoApproval() reads provider.getState().
+			//
+			// Per-provider overrides are held in instance memory and merged LAST
+			// in getState(), so they always win regardless of ContextProxy mutations.
+			const autoApprovalOverrides: Partial<RooCodeSettings> = {
 				autoApprovalEnabled: true,
 				alwaysAllowReadOnly: true,
 				alwaysAllowReadOnlyOutsideWorkspace: false,
@@ -211,6 +221,11 @@ export class MultiOrchestrator {
 				agent.providerId = panelId
 				agent.panelId = panelId
 
+				// Set per-provider auto-approval overrides BEFORE creating the task.
+				// These persist in provider instance memory and are immune to
+				// ContextProxy mutations from other providers.
+				spawned.provider.setAutoApprovalOverrides(autoApprovalOverrides)
+
 				// Switch provider to the correct mode BEFORE creating the task.
 				// The Task constructor initializes its mode from provider.getState()
 				// during initializeTaskMode(), so the mode must already be set.
@@ -225,33 +240,26 @@ export class MultiOrchestrator {
 					)
 				}
 
-				// Create the task with auto-approval so agents never block on tool prompts.
-				console.log(
-					`[MultiOrch:Spawn] Setting autoApproval config: autoApprovalEnabled=${autoApprovalConfig.autoApprovalEnabled}`,
-					`alwaysAllowWrite=${autoApprovalConfig.alwaysAllowWrite}`,
-					`alwaysAllowExecute=${autoApprovalConfig.alwaysAllowExecute}`,
-					`alwaysAllowMcp=${autoApprovalConfig.alwaysAllowMcp}`,
-					`alwaysAllowModeSwitch=${autoApprovalConfig.alwaysAllowModeSwitch}`,
-					`alwaysAllowSubtasks=${autoApprovalConfig.alwaysAllowSubtasks}`,
-					`for task="${task.id}" panel="${panelId}"`,
-				)
+				// Create the task WITHOUT passing configuration — auto-approval is
+				// guaranteed by the per-provider overrides set above.
 				await spawned.provider.createTask(task.description, undefined, undefined, {
 					startTask: false,
-				}, autoApprovalConfig)
-				// Verify approval state survived createTask by reading it back from the provider
+				})
+
+				// Verify auto-approval is active after task creation.
+				// This catches regressions where createTask() might reset state.
 				try {
 					const postCreateState = await spawned.provider.getState()
 					console.log(
-						`[MultiOrch:Spawn] Task created, checking approval state...`,
-						`autoApprovalEnabled=${postCreateState?.autoApprovalEnabled}`,
-						`alwaysAllowWrite=${postCreateState?.alwaysAllowWrite}`,
-						`alwaysAllowExecute=${postCreateState?.alwaysAllowExecute}`,
-						`alwaysAllowReadOnly=${postCreateState?.alwaysAllowReadOnly}`,
-						`alwaysAllowMcp=${postCreateState?.alwaysAllowMcp}`,
-						`task="${task.id}"`,
+						`[MultiOrch] Agent ${task.id} post-createTask auto-approval check: ` +
+							`autoApprovalEnabled=${postCreateState?.autoApprovalEnabled}, ` +
+							`alwaysAllowWrite=${postCreateState?.alwaysAllowWrite}, ` +
+							`alwaysAllowExecute=${postCreateState?.alwaysAllowExecute}, ` +
+							`alwaysAllowReadOnly=${postCreateState?.alwaysAllowReadOnly}, ` +
+							`alwaysAllowMcp=${postCreateState?.alwaysAllowMcp}`,
 					)
 				} catch (stateErr) {
-					console.warn(`[MultiOrch:Spawn] Could not read back state after createTask: ${stateErr}`)
+					console.warn(`[MultiOrch] Could not read back state after createTask: ${stateErr}`)
 				}
 
 				// Register with coordinator

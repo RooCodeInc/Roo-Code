@@ -166,6 +166,19 @@ export class ClineProvider
 	private static readonly CLOUD_ORGANIZATIONS_CACHE_DURATION_MS = 5 * 1000 // 5 seconds
 
 	/**
+	 * Per-provider auto-approval overrides.
+	 *
+	 * The multi-orchestrator needs each spawned panel's provider to have
+	 * auto-approval enabled regardless of what the shared ContextProxy says.
+	 * Because ContextProxy is a singleton, any concurrent provider activity
+	 * (main sidebar, other panels) can overwrite the values that were set via
+	 * `setValues()`.
+	 *
+	 * These overrides are merged last in `getState()`, so they always win.
+	 */
+	private _autoApprovalOverrides: Partial<RooCodeSettings> | null = null
+
+	/**
 	 * Monotonically increasing sequence number for clineMessages state pushes.
 	 * Used by the frontend to reject stale state that arrives out-of-order.
 	 */
@@ -2615,6 +2628,10 @@ export class ClineProvider
 			multiOrchMaxAgents: stateValues.multiOrchMaxAgents,
 			multiOrchPlanReviewEnabled: stateValues.multiOrchPlanReviewEnabled,
 			multiOrchMergeEnabled: stateValues.multiOrchMergeEnabled,
+
+			// Per-provider auto-approval overrides (set by multi-orchestrator).
+			// Merged last so they always win over ContextProxy values.
+			...(this._autoApprovalOverrides ?? {}),
 		}
 	}
 
@@ -2729,6 +2746,24 @@ export class ClineProvider
 
 	public async setValues(values: RooCodeSettings) {
 		await this.contextProxy.setValues(values)
+	}
+
+	/**
+	 * Set per-provider auto-approval overrides that persist across ContextProxy changes.
+	 *
+	 * Unlike `setValues()`, which writes to the shared ContextProxy singleton
+	 * (and can be overwritten by any other provider), these overrides are held
+	 * in per-instance memory and merged last in `getState()`.
+	 *
+	 * Used by the multi-orchestrator to guarantee spawned agent panels always
+	 * have auto-approval enabled, even if the shared ContextProxy is mutated.
+	 */
+	public setAutoApprovalOverrides(overrides: Partial<RooCodeSettings> | null): void {
+		this._autoApprovalOverrides = overrides
+		console.log(
+			`[ClineProvider] setAutoApprovalOverrides: autoApprovalEnabled=${overrides?.autoApprovalEnabled}, ` +
+				`alwaysAllowWrite=${overrides?.alwaysAllowWrite}, alwaysAllowExecute=${overrides?.alwaysAllowExecute}`,
+		)
 	}
 
 	// dev
