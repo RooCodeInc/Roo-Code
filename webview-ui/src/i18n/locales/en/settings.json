@@ -594,6 +594,10 @@
 			"unlimitedDescription": "Unlimited retries enabled (auto-proceed). The dialog will never appear.",
 			"warning": "⚠️ Setting to 0 allows unlimited retries which may consume significant API usage"
 		},
+		"maxFollowUpSuggestions": {
+			"label": "Max Follow-Up Suggestions",
+			"description": "Maximum number of suggested answers the model can offer when asking a question ({{value}})."
+		},
 		"reasoningEffort": {
 			"label": "Model Reasoning Effort",
 			"none": "None",

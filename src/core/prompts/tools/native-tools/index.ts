@@ -2,7 +2,7 @@ import type OpenAI from "openai"
 import accessMcpResource from "./access_mcp_resource"
 import { apply_diff } from "./apply_diff"
 import applyPatch from "./apply_patch"
-import askFollowupQuestion from "./ask_followup_question"
+import askFollowupQuestion, { createAskFollowupQuestionTool } from "./ask_followup_question"
 import attemptCompletion from "./attempt_completion"
 import codebaseSearch from "./codebase_search"
 import editTool from "./edit"
@@ -31,6 +31,8 @@ export type { ReadFileToolOptions } from "./read_file"
 export interface NativeToolsOptions {
 	/** Whether the model supports image processing (default: false) */
 	supportsImages?: boolean
+	/** Maximum number of follow-up suggestions allowed in ask_followup_question (default: 4) */
+	maxFollowUpSuggestions?: number
 }
 
 /**
@@ -40,7 +42,7 @@ export interface NativeToolsOptions {
  * @returns Array of native tool definitions
  */
 export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.ChatCompletionTool[] {
-	const { supportsImages = false } = options
+	const { supportsImages = false, maxFollowUpSuggestions } = options
 
 	const readFileOptions: ReadFileToolOptions = {
 		supportsImages,
@@ -50,7 +52,7 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 		accessMcpResource,
 		apply_diff,
 		applyPatch,
-		askFollowupQuestion,
+		maxFollowUpSuggestions ? createAskFollowupQuestionTool(maxFollowUpSuggestions) : askFollowupQuestion,
 		attemptCompletion,
 		codebaseSearch,
 		executeCommand,

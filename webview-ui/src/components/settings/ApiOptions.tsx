@@ -9,6 +9,7 @@ import {
 	type ProviderSettings,
 	isRetiredProvider,
 	DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
+	DEFAULT_MAX_FOLLOW_UP_SUGGESTIONS,
 	openRouterDefaultModelId,
 	requestyDefaultModelId,
 	litellmDefaultModelId,
@@ -104,6 +105,7 @@ import { TodoListSettingsControl } from "./TodoListSettingsControl"
 import { TemperatureControl } from "./TemperatureControl"
 import { RateLimitSecondsControl } from "./RateLimitSecondsControl"
 import { ConsecutiveMistakeLimitControl } from "./ConsecutiveMistakeLimitControl"
+import { MaxFollowUpSuggestionsControl } from "./MaxFollowUpSuggestionsControl"
 import { BedrockCustomArn } from "./providers/BedrockCustomArn"
 import { RooBalanceDisplay } from "./providers/RooBalanceDisplay"
 import { buildDocLink } from "@src/utils/docLinks"
@@ -799,6 +801,14 @@ const ApiOptions = ({
 											: DEFAULT_CONSECUTIVE_MISTAKE_LIMIT
 									}
 									onChange={(value) => setApiConfigurationField("consecutiveMistakeLimit", value)}
+								/>
+								<MaxFollowUpSuggestionsControl
+									value={
+										apiConfiguration.maxFollowUpSuggestions !== undefined
+											? apiConfiguration.maxFollowUpSuggestions
+											: DEFAULT_MAX_FOLLOW_UP_SUGGESTIONS
+									}
+									onChange={(value) => setApiConfigurationField("maxFollowUpSuggestions", value)}
 								/>
 								{selectedProvider === "openrouter" &&
 									openRouterModelProviders &&
