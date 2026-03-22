@@ -66,6 +66,66 @@ Otherwise, if you have not completed the task and do not need additional informa
 		return `Missing value for required parameter '${paramName}'. Please retry with complete response.\n\n${instructions}`
 	},
 
+	/**
+	 * Progressive error for write_to_file when the 'content' parameter is missing.
+	 * Uses tiered messaging to break infinite retry loops:
+	 * - Tier 1 (first failure): Helpful suggestions
+	 * - Tier 2 (second failure): Stronger guidance to use alternative tools
+	 * - Tier 3+ (third+ failure): Critical stop with explicit instructions
+	 *
+	 * @param relPath - The file path that was being written to
+	 * @param failureCount - How many consecutive times this has failed (1-based)
+	 * @param contextUsagePercent - Optional context window usage percentage
+	 */
+	writeToFileMissingContentError: (relPath: string, failureCount: number, contextUsagePercent?: number): string => {
+		const toolUseInstructionsReminder = getToolInstructionsReminder()
+
+		const baseError =
+			`[write_to_file for '${relPath}'] The 'content' parameter was empty. ` +
+			`This usually means the file content was too large for the model's output token limits, ` +
+			`causing it to be truncated or dropped entirely.`
+
+		const contextWarning =
+			contextUsagePercent !== undefined && contextUsagePercent > 50
+				? `\n\nContext window is ${contextUsagePercent}% full — output capacity is reduced.`
+				: ""
+
+		// Tier 3: Critical stop after 3+ failures
+		if (failureCount >= 3) {
+			return (
+				`CRITICAL: ${baseError}${contextWarning}\n\n` +
+				`This has now failed ${failureCount} times in a row — do NOT retry write_to_file for this file.\n\n` +
+				`Required action:\n` +
+				`1. **Use apply_diff or edit** to make targeted changes to the file instead of rewriting it entirely\n` +
+				`2. **If creating a new file**, write a minimal skeleton first (just imports and function/class signatures, no implementations — keep it under 50-100 lines), then use apply_diff or edit to fill in each section incrementally\n` +
+				`3. **Break the task into smaller steps** — write one function or section at a time`
+			)
+		}
+
+		// Tier 2: Stronger guidance after 2nd failure
+		if (failureCount >= 2) {
+			return (
+				`${baseError}${contextWarning}\n\n` +
+				`This is the 2nd failed attempt — you must use a different strategy.\n\n` +
+				`Recommended approaches:\n` +
+				`1. **Use write_to_file with a minimal skeleton** (just the structure — imports, class/function signatures, no implementations), then use apply_diff or edit to fill in each section incrementally\n` +
+				`2. **Use apply_diff or edit with smaller chunks** — if the file already exists, make targeted edits instead of rewriting the entire file\n` +
+				`3. **Break the task into smaller steps** — write one function or section at a time\n\n` +
+				`Do NOT attempt to write the full file content in a single write_to_file call again.`
+			)
+		}
+
+		// Tier 1: Helpful guidance on first failure
+		return (
+			`${baseError}${contextWarning}\n\n` +
+			`Suggestions:\n` +
+			`- If the file is large, try breaking down the task into smaller steps. Write a skeleton first, then fill in sections using apply_diff or edit.\n` +
+			`- If the file already exists, prefer apply_diff or edit to make targeted edits instead of rewriting the entire file.\n` +
+			`- Ensure the 'content' parameter contains the complete file content before closing the tool tag.\n\n` +
+			toolUseInstructionsReminder
+		)
+	},
+
 	invalidMcpToolArgumentError: (serverName: string, toolName: string) =>
 		JSON.stringify({
 			status: "error",
