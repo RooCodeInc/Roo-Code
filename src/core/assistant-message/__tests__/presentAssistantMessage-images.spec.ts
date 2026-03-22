@@ -179,9 +179,7 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calling", () =
 
 		const textBlocks = mockTask.userMessageContent.filter((item: any) => item.type === "text")
 		expect(textBlocks.length).toBeGreaterThan(0)
-		expect(textBlocks.some((b: any) => String(b.text).includes("XML tool calls are no longer supported"))).toBe(
-			true,
-		)
+		expect(textBlocks.some((b: any) => String(b.text).includes("missing tool_use.id"))).toBe(true)
 		// Should not proceed to execute tool or add images as tool output.
 		expect(mockTask.userMessageContent.some((item: any) => item.type === "image")).toBe(false)
 	})
@@ -283,9 +281,7 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calling", () =
 			await presentAssistantMessage(mockTask)
 
 			const textBlocks = mockTask.userMessageContent.filter((item: any) => item.type === "text")
-			expect(textBlocks.some((b: any) => String(b.text).includes("XML tool calls are no longer supported"))).toBe(
-				true,
-			)
+			expect(textBlocks.some((b: any) => String(b.text).includes("missing tool_use.id"))).toBe(true)
 			// Ensure no tool_result blocks were added
 			expect(mockTask.userMessageContent.some((item: any) => item.type === "tool_result")).toBe(false)
 		})
