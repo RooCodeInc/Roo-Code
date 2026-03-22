@@ -34,6 +34,7 @@ import ContextMenu from "./ContextMenu"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
 import { usePromptHistory } from "./hooks/usePromptHistory"
 import { CloudAccountSwitcher } from "../cloud/CloudAccountSwitcher"
+import { AgentCountSelector } from "../multi-orchestrator/AgentCountSelector"
 
 interface ChatTextAreaProps {
 	inputValue: string
@@ -1342,6 +1343,17 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							onToggleLockApiConfig={handleToggleLockApiConfig}
 						/>
 						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
+						{mode === "multi-orchestrator" && (
+							<AgentCountSelector
+								value={4}
+								onChange={(count) => {
+									vscode.postMessage({
+										type: "updateSettings",
+										updatedSettings: { multiOrchMaxAgents: count },
+									})
+								}}
+							/>
+						)}
 					</div>
 					<div
 						className={cn(
