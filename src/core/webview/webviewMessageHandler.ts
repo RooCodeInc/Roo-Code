@@ -3731,6 +3731,64 @@ export const webviewMessageHandler = async (
 			break
 		}
 
+		case "startMemorySync": {
+			const { taskIds } = JSON.parse(message.text || "{}") as { taskIds: string[] }
+			const orchestrator = provider.getMemoryOrchestrator()
+			if (!orchestrator) break
+
+			const memoryConfigId = getGlobalState("memoryApiConfigId")
+			if (!memoryConfigId) break
+
+			try {
+				const { name: _, ...memSettings } = await provider.providerSettingsManager.getProfile({
+					id: memoryConfigId,
+				})
+
+				const globalStoragePath = provider.contextProxy.globalStorageUri.fsPath
+
+				orchestrator
+					.batchAnalyzeHistory(
+						taskIds,
+						globalStoragePath,
+						memSettings,
+						(completed, total) => {
+							provider.postMessageToWebview({
+								type: "memorySyncProgress",
+								text: JSON.stringify({ completed, total }),
+							})
+						},
+					)
+					.then((result) => {
+						provider.postMessageToWebview({
+							type: "memorySyncComplete",
+							text: JSON.stringify(result),
+						})
+					})
+					.catch(() => {
+						provider.postMessageToWebview({
+							type: "memorySyncComplete",
+							text: JSON.stringify({
+								totalAnalyzed: 0,
+								entriesCreated: 0,
+								entriesReinforced: 0,
+							}),
+						})
+					})
+			} catch {
+				// Profile not found
+			}
+			break
+		}
+
+		case "clearMemory": {
+			const orchestrator = provider.getMemoryOrchestrator()
+			if (orchestrator) {
+				orchestrator.clearAllMemory()
+				await provider.postMessageToWebview({ type: "memoryCleared" })
+			}
+			break
+		}
+
 		default: {
 			// console.log(`Unhandled message type: ${message.type}`)
 			//
