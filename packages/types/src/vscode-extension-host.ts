@@ -326,6 +326,7 @@ export type ExtensionState = Pick<
 	| "multiOrchMaxAgents"
 	| "multiOrchPlanReviewEnabled"
 	| "multiOrchMergeEnabled"
+	| "multiOrchVerifyEnabled"
 > & {
 	lockApiConfigAcrossModes?: boolean
 	version: string

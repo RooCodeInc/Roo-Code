@@ -123,8 +123,13 @@ function makeMerge(overrides: Partial<MergeResult> = {}): MergeResult {
 function createMockProvider() {
 	const emitter = new EventEmitter()
 	const mockStart = vi.fn()
-	;(emitter as any).getCurrentTask = vi.fn().mockReturnValue({ start: mockStart })
-	return { provider: emitter as any, mockStart }
+	const mockAbortTask = vi.fn().mockResolvedValue(undefined)
+	;(emitter as any).getCurrentTask = vi.fn().mockReturnValue({
+		start: mockStart,
+		abortTask: mockAbortTask,
+		clineMessages: [],
+	})
+	return { provider: emitter as any, mockStart, mockAbortTask }
 }
 
 /** Build a mock TokenUsage for completion events. */

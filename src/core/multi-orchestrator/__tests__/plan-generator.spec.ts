@@ -97,7 +97,7 @@ describe("generatePlan", () => {
 		expect(mockCompletePrompt).toHaveBeenCalledTimes(1)
 		const promptArg = mockCompletePrompt.mock.calls[0][0] as string
 		expect(promptArg).toContain("Build a feature")
-		expect(promptArg).toContain("Max agents available: 3")
+		expect(promptArg).toContain("Number of agents requested: 3")
 	})
 
 	it("should filter out multi-orchestrator, orchestrator, and architect from available modes in prompt", async () => {

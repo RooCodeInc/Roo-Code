@@ -2264,6 +2264,7 @@ export class ClineProvider
 			multiOrchMaxAgents,
 			multiOrchPlanReviewEnabled,
 			multiOrchMergeEnabled,
+			multiOrchVerifyEnabled,
 		} = await this.getState()
 
 		let cloudOrganizations: CloudOrganizationMembership[] = []
@@ -2418,6 +2419,7 @@ export class ClineProvider
 			multiOrchMaxAgents,
 			multiOrchPlanReviewEnabled,
 			multiOrchMergeEnabled,
+			multiOrchVerifyEnabled,
 			// BUG-005: Expose force-approve flag to the webview so it can suppress
 			// approve/deny button rendering entirely, preventing visual flicker.
 			multiOrchForceApproveAll:
@@ -2649,6 +2651,7 @@ export class ClineProvider
 			multiOrchMaxAgents: stateValues.multiOrchMaxAgents,
 			multiOrchPlanReviewEnabled: stateValues.multiOrchPlanReviewEnabled,
 			multiOrchMergeEnabled: stateValues.multiOrchMergeEnabled,
+			multiOrchVerifyEnabled: stateValues.multiOrchVerifyEnabled,
 
 			// Per-provider auto-approval overrides (set by multi-orchestrator).
 			// Merged last so they always win over ContextProxy values.
