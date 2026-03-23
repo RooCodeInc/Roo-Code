@@ -114,11 +114,6 @@ export class PanelSpawner {
 		try {
 			const provider = new ClineProvider(this.context, this.outputChannel, "editor", contextProxy)
 
-			// Thread the ViewColumn to the provider so that file operations
-			// (diffs, showTextDocument) target this specific editor column
-			// instead of the globally active editor group. (BUG-001 fix)
-			provider.viewColumn = viewColumn
-
 			const panel = vscode.window.createWebviewPanel(
 				ClineProvider.tabPanelId,
 				`⚡ ${title}`,
@@ -130,13 +125,28 @@ export class PanelSpawner {
 				},
 			)
 
+			// CRITICAL: Read the ACTUAL ViewColumn that VS Code assigned to this panel.
+			// The input `viewColumn` may be a symbolic value like ViewColumn.Active (-1)
+			// which VS Code resolves internally. The panel.viewColumn gives us the real
+			// column number (1, 2, 3...) which we need for targeting file operations.
+			const actualViewColumn = panel.viewColumn ?? viewColumn
+			provider.viewColumn = actualViewColumn
+			console.log(`[PanelSpawner] Panel "${title}" placed at ViewColumn ${actualViewColumn} (requested: ${viewColumn})`)
+
+			// Also update viewColumn if the panel moves to a different column
+			panel.onDidChangeViewState((e) => {
+				if (e.webviewPanel.viewColumn !== undefined) {
+					provider.viewColumn = e.webviewPanel.viewColumn
+				}
+			})
+
 			await provider.resolveWebviewView(panel)
 
 			panel.onDidDispose(() => {
 				this.panels.delete(id)
 			})
 
-			this.panels.set(id, { id, provider, panel, viewColumn })
+			this.panels.set(id, { id, provider, panel, viewColumn: actualViewColumn })
 			return { error: undefined }
 		} catch (error) {
 			const err = error instanceof Error ? error : new Error(String(error))
