@@ -22,9 +22,10 @@ export class PanelSpawner {
 	 * Spawn N editor tab panels in equal-width columns.
 	 *
 	 * Uses `vscode.setEditorLayout` to create an N-column layout FIRST,
-	 * then places each panel into its assigned ViewColumn. This ensures
-	 * all panels appear side-by-side in equal proportions without
-	 * overlapping existing editors.
+	 * then walks focus across editor groups using `focusNextGroup`,
+	 * placing each panel at `ViewColumn.Active`. This avoids relying on
+	 * explicit ViewColumn numbers whose group-index mapping is unreliable
+	 * in VS Code after a programmatic layout change (BUG-003).
 	 */
 	async spawnPanels(count: number, titles: string[]): Promise<Map<string, SpawnedPanel>> {
 		const contextProxy = await ContextProxy.getInstance(this.context)
@@ -49,28 +50,36 @@ export class PanelSpawner {
 				groups,
 			})
 			console.log(`[PanelSpawner] Set editor layout to ${count} equal columns`)
-			// Brief delay for VS Code to apply the layout
-			await new Promise((resolve) => setTimeout(resolve, 300))
+			// Wait for VS Code to fully apply the layout before placing panels
+			await new Promise((resolve) => setTimeout(resolve, 500))
 		} catch (err) {
 			console.warn("[PanelSpawner] Failed to set editor layout:", err)
 		}
 
-		// Create each panel in its designated ViewColumn (1-based).
-		// Sequential creation avoids race conditions in VS Code's panel placement.
+		// Focus the first editor group so panel placement starts at the leftmost column
+		try {
+			await vscode.commands.executeCommand("workbench.action.focusFirstEditorGroup")
+			await new Promise((resolve) => setTimeout(resolve, 100))
+		} catch {
+			console.warn("[PanelSpawner] Could not focus first editor group")
+		}
+
+		// Walk focus across groups, creating each panel at ViewColumn.Active.
+		// This guarantees each panel lands in the correct column regardless of
+		// how VS Code internally indexes its editor groups after setEditorLayout.
 		for (let i = 0; i < count; i++) {
 			const id = `agent-${i}`
 			const title = titles[i] || `Agent ${i + 1}`
-			// ViewColumn is 1-indexed: column 1, 2, 3, ...
-			const viewColumn = (i + 1) as vscode.ViewColumn
 
-			const result = await this.spawnSinglePanel(id, title, viewColumn, contextProxy)
-			if (result.error) {
-				errors.push({ index: i, title, error: result.error })
+			if (i > 0) {
+				// Move focus to the next editor group (next column)
+				await vscode.commands.executeCommand("workbench.action.focusNextGroup")
+				await new Promise((resolve) => setTimeout(resolve, 100))
 			}
 
-			// Minimal delay between panels for layout stability
-			if (i < count - 1) {
-				await new Promise((resolve) => setTimeout(resolve, 100))
+			const result = await this.spawnSinglePanel(id, title, vscode.ViewColumn.Active, contextProxy)
+			if (result.error) {
+				errors.push({ index: i, title, error: result.error })
 			}
 		}
 
