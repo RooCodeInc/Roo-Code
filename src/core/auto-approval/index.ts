@@ -79,7 +79,17 @@ export async function checkAutoApproval({
 	// Multi-orchestrator spawned agents: approve ALL tool/command/followup
 	// operations unconditionally. Nobody is watching these panels to click
 	// approve, so every ask must be auto-approved to avoid deadlocks.
+	//
+	// EXCEPTION: completion_result and resume_completed_task must NOT be
+	// force-approved. Approving completion_result means "accept and stop" (which
+	// is correct — handled below). But resume_completed_task approval would
+	// restart a finished task, causing an infinite loop.
 	if ((state as Record<string, unknown>).multiOrchForceApproveAll === true) {
+		if (ask === "resume_completed_task" || ask === "resume_task") {
+			// Don't auto-approve task resumption — the task is done.
+			console.log(`[checkAutoApproval] multiOrchForceApproveAll=true but ask="${ask}" is a resume — NOT auto-approving`)
+			return { decision: "ask" }
+		}
 		console.log(`[checkAutoApproval] multiOrchForceApproveAll=true → auto-approving ask="${ask}"`)
 		return { decision: "approve" }
 	}
