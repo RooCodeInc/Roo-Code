@@ -7,6 +7,8 @@ export interface SpawnedPanel {
 	id: string
 	provider: ClineProvider
 	panel: vscode.WebviewPanel
+	/** The ViewColumn this panel was placed in (1-indexed) */
+	viewColumn: vscode.ViewColumn
 }
 
 export class PanelSpawner {
@@ -112,6 +114,11 @@ export class PanelSpawner {
 		try {
 			const provider = new ClineProvider(this.context, this.outputChannel, "editor", contextProxy)
 
+			// Thread the ViewColumn to the provider so that file operations
+			// (diffs, showTextDocument) target this specific editor column
+			// instead of the globally active editor group. (BUG-001 fix)
+			provider.viewColumn = viewColumn
+
 			const panel = vscode.window.createWebviewPanel(
 				ClineProvider.tabPanelId,
 				`⚡ ${title}`,
@@ -129,7 +136,7 @@ export class PanelSpawner {
 				this.panels.delete(id)
 			})
 
-			this.panels.set(id, { id, provider, panel })
+			this.panels.set(id, { id, provider, panel, viewColumn })
 			return { error: undefined }
 		} catch (error) {
 			const err = error instanceof Error ? error : new Error(String(error))

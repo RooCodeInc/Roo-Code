@@ -153,6 +153,14 @@ export class ClineProvider
 	private memoryOrchestrator?: MemoryOrchestrator
 	private multiOrchestrator?: MultiOrchestrator
 
+	/**
+	 * The VS Code ViewColumn this provider's panel lives in.
+	 * Set by PanelSpawner for multi-orchestrator agent panels so that
+	 * file operations (diffs, file opens) target the correct editor column
+	 * instead of the globally active editor group.
+	 */
+	public viewColumn?: vscode.ViewColumn
+
 	private recentTasksCache?: string[]
 	public readonly taskHistoryStore: TaskHistoryStore
 	private taskHistoryStoreInitialized = false
@@ -2410,6 +2418,10 @@ export class ClineProvider
 			multiOrchMaxAgents,
 			multiOrchPlanReviewEnabled,
 			multiOrchMergeEnabled,
+			// BUG-005: Expose force-approve flag to the webview so it can suppress
+			// approve/deny button rendering entirely, preventing visual flicker.
+			multiOrchForceApproveAll:
+				(this._autoApprovalOverrides as Record<string, unknown> | null)?.multiOrchForceApproveAll === true,
 			openAiCodexIsAuthenticated: await (async () => {
 				try {
 					const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
