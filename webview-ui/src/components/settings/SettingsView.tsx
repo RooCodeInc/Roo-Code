@@ -528,6 +528,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					multiOrchMaxAgents: cachedState.multiOrchMaxAgents,
 					multiOrchPlanReviewEnabled: cachedState.multiOrchPlanReviewEnabled,
 					multiOrchMergeEnabled: cachedState.multiOrchMergeEnabled,
+					multiOrchVerifyEnabled: cachedState.multiOrchVerifyEnabled,
 				},
 			})
 
@@ -1290,6 +1291,24 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 												<option value="always">Always merge</option>
 												<option value="never">Never merge</option>
 											</select>
+										</div>
+
+										{/* Post-completion verification toggle */}
+										<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+											<input
+												type="checkbox"
+												checked={cachedState.multiOrchVerifyEnabled ?? false}
+												onChange={(e) => setCachedStateField("multiOrchVerifyEnabled", e.target.checked)}
+											/>
+											<div>
+												<label style={{ fontSize: "13px" }}>
+													Enable post-completion verification
+												</label>
+												<p style={{ fontSize: "11px", opacity: 0.6, marginTop: "2px" }}>
+													After all agents complete, spawn a verification agent to review
+													changed files for bugs, inconsistencies, and integration issues.
+												</p>
+											</div>
 										</div>
 									</div>
 								</Section>

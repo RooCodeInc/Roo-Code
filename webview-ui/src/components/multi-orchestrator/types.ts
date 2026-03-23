@@ -47,10 +47,17 @@ export interface MergeResult {
 	filesChanged: string[]
 }
 
+export interface VerificationFinding {
+	agentTaskId: string
+	findings: string
+	severity: "info" | "warning" | "error"
+}
+
 export interface OrchestratorState {
-	phase: "idle" | "planning" | "spawning" | "running" | "merging" | "reporting" | "complete"
+	phase: "idle" | "planning" | "spawning" | "running" | "merging" | "verifying" | "reporting" | "complete"
 	plan: OrchestratorPlan | null
 	agents: AgentState[]
 	mergeResults: MergeResult[]
+	verificationFindings: VerificationFinding[]
 	finalReport: string | null
 }

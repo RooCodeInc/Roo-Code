@@ -11,6 +11,7 @@ const STATUS_ICONS: Record<string, string> = {
 	failed: "❌",
 	running: "🔄",
 	merging: "🔀",
+	verifying: "🔍",
 	pending: "⏳",
 }
 

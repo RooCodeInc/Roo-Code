@@ -10,6 +10,7 @@ import { aggregateReports } from "./report-aggregator"
 import {
 	type OrchestratorState,
 	type OrchestratorPlan,
+	type VerificationFinding,
 	createInitialOrchestratorState,
 	createInitialAgentState,
 	MULTI_ORCHESTRATOR_CONSTANTS,
@@ -43,6 +44,7 @@ export class MultiOrchestrator {
 		planReviewEnabled: boolean,
 		mergeMode: "auto" | "always" | "never",
 		onStateChange: (state: OrchestratorState) => void,
+		verifyEnabled: boolean = false,
 	): Promise<void> {
 		this.aborted = false
 		const notify = () => {
@@ -101,7 +103,7 @@ export class MultiOrchestrator {
 			}
 
 			console.log("[MultiOrch:Handler] planReview OFF → continuing to executeFromPlan()")
-			await this.executeFromPlan(plan, providerSettings, mergeMode, onStateChange)
+			await this.executeFromPlan(plan, providerSettings, mergeMode, onStateChange, verifyEnabled)
 		} catch (error) {
 			console.error("[MultiOrch:Handler] execute() CAUGHT error:", error)
 			console.error("[MultiOrch:Handler] error stack:", (error as Error)?.stack ?? "no stack")
@@ -119,6 +121,7 @@ export class MultiOrchestrator {
 		providerSettings: ProviderSettings,
 		mergeMode: "auto" | "always" | "never",
 		onStateChange: (state: OrchestratorState) => void,
+		verifyEnabled: boolean = false,
 	): Promise<void> {
 		const notify = () => onStateChange({ ...this.state })
 
@@ -328,11 +331,20 @@ export class MultiOrchestrator {
 				)
 			}
 
-			// PHASE 5: REPORT
+			// PHASE 5: VERIFY (optional — controlled by multiOrchVerifyEnabled setting)
+			if (verifyEnabled && !this.aborted) {
+				await this.executeVerificationPhase(providerSettings, onStateChange)
+			}
+
+			// PHASE 6: REPORT
 			this.state.phase = "reporting"
 			notify()
 
-			this.state.finalReport = aggregateReports(this.state.agents, this.state.mergeResults)
+			this.state.finalReport = aggregateReports(
+				this.state.agents,
+				this.state.mergeResults,
+				this.state.verificationFindings,
+			)
 
 			// Cleanup worktrees
 			if (this.worktreeManager) {
@@ -357,6 +369,226 @@ export class MultiOrchestrator {
 			this.state.finalReport = `Orchestration failed: ${error}`
 			onStateChange({ ...this.state })
 		}
+	}
+
+	/**
+	 * Phase 5: VERIFY — spawn a single verification agent in "debug" mode
+	 * to review all files changed by the original agents.
+	 *
+	 * The verification agent receives:
+	 *   - All completion reports from the original agents
+	 *   - The list of files changed (from merge results or agent reports)
+	 *   - A task prompt asking it to check for bugs, inconsistencies,
+	 *     missing error handling, and integration issues.
+	 *
+	 * Its findings are stored in `state.verificationFindings` and included
+	 * in the final aggregated report.
+	 */
+	private async executeVerificationPhase(
+		providerSettings: ProviderSettings,
+		onStateChange: (state: OrchestratorState) => void,
+	): Promise<void> {
+		const notify = () => onStateChange({ ...this.state })
+
+		this.state.phase = "verifying"
+		notify()
+
+		console.log("[MultiOrch] Starting verification phase")
+
+		try {
+			// ── Build context for the verification agent ──────────────
+			const completionSummaries = this.state.agents
+				.map((agent) => {
+					const status = agent.status === "completed" ? "✅ Completed" : "❌ Failed"
+					const report = agent.completionReport ?? "(no report)"
+					return `### Agent: ${agent.title} (${agent.mode} mode)\n- Status: ${status}\n- Report:\n${report}`
+				})
+				.join("\n\n")
+
+			// Collect changed files from merge results OR agent reports
+			const changedFiles = new Set<string>()
+			for (const mr of this.state.mergeResults) {
+				for (const f of mr.filesChanged) {
+					changedFiles.add(f)
+				}
+			}
+			// If no merge results, try to extract file references from completion reports
+			if (changedFiles.size === 0) {
+				for (const agent of this.state.agents) {
+					if (agent.completionReport) {
+						// Simple heuristic: look for file paths in completion reports
+						const filePatterns = agent.completionReport.match(/(?:^|\s)([\w./-]+\.\w{1,10})(?:\s|$|,|\))/gm)
+						if (filePatterns) {
+							for (const match of filePatterns) {
+								changedFiles.add(match.trim())
+							}
+						}
+					}
+				}
+			}
+
+			const filesListing = changedFiles.size > 0
+				? `## Files Changed\n${[...changedFiles].map((f) => `- \`${f}\``).join("\n")}`
+				: "## Files Changed\n(No specific files identified from merge results — review completion reports for details.)"
+
+			const verifyTaskDescription = [
+				"# Post-Completion Verification Task",
+				"",
+				"You are a verification agent spawned after a parallel multi-agent orchestration.",
+				"Your job is to review the code changes made by the agents listed below.",
+				"",
+				"## Instructions",
+				"1. Read through the completion reports below to understand what each agent did.",
+				"2. Review the changed files listed below for:",
+				"   - Bugs or logic errors",
+				"   - Missing error handling",
+				"   - Inconsistencies between what different agents produced",
+				"   - Integration issues (e.g., imports that reference code from another agent's work)",
+				"   - Type errors or missing type definitions",
+				"   - Dead code or unused imports",
+				"3. Report your findings clearly. For each issue, specify:",
+				"   - The file and approximate location",
+				"   - What the issue is",
+				"   - Suggested fix",
+				"",
+				"If everything looks correct, state that the code passes verification.",
+				"",
+				"## Agent Completion Reports",
+				"",
+				completionSummaries,
+				"",
+				filesListing,
+			].join("\n")
+
+			// ── Spawn a single verification panel ─────────────────────
+			const verifyPanels = await this.panelSpawner.spawnPanels(1, ["🔍 Verification"])
+
+			if (verifyPanels.size === 0) {
+				console.warn("[MultiOrch] Could not spawn verification panel — skipping verification")
+				this.state.verificationFindings.push({
+					agentTaskId: "verify-0",
+					findings: "Verification skipped: could not spawn verification panel.",
+					severity: "warning",
+				})
+				return
+			}
+
+			const [panelId, spawned] = Array.from(verifyPanels.entries())[0]
+
+			// Apply the same auto-approval overrides
+			const autoApprovalOverrides: Partial<import("@roo-code/types").RooCodeSettings> & { multiOrchForceApproveAll: boolean } = {
+				autoApprovalEnabled: true,
+				multiOrchForceApproveAll: true,
+				alwaysAllowReadOnly: true,
+				alwaysAllowReadOnlyOutsideWorkspace: true,
+				alwaysAllowWrite: true,
+				alwaysAllowWriteOutsideWorkspace: true,
+				alwaysAllowWriteProtected: true,
+				alwaysAllowExecute: true,
+				alwaysAllowMcp: true,
+				alwaysAllowModeSwitch: true,
+				alwaysAllowSubtasks: true,
+				alwaysAllowFollowupQuestions: true,
+				followupAutoApproveTimeoutMs: 1,
+				writeDelayMs: 0,
+				requestDelaySeconds: 0,
+			}
+			spawned.provider.setAutoApprovalOverrides(autoApprovalOverrides)
+
+			// Switch to "debug" mode (or fall back to "code" if debug doesn't exist)
+			try {
+				await spawned.provider.handleModeSwitch("debug")
+			} catch {
+				try {
+					await spawned.provider.handleModeSwitch("code")
+				} catch (e2) {
+					console.warn(`[MultiOrch] Verification agent mode switch failed: ${e2}`)
+				}
+			}
+
+			// Create the verification task
+			await spawned.provider.createTask(verifyTaskDescription, undefined, undefined, {
+				startTask: false,
+			})
+
+			// Set up a coordinator for just the verification agent
+			const verifyCoordinator = new AgentCoordinator()
+			const verifyAgentState = {
+				taskId: "verify-0",
+				providerId: panelId,
+				panelId: panelId,
+				worktreePath: null,
+				worktreeBranch: null,
+				mode: "debug",
+				status: "pending" as const,
+				title: "Verification Agent",
+				completionReport: null,
+				tokenUsage: null,
+				startedAt: null,
+				completedAt: null,
+			}
+			verifyCoordinator.registerAgent(verifyAgentState, spawned.provider)
+
+			// Start and wait
+			verifyCoordinator.startAll()
+			console.log("[MultiOrch] Verification agent started — waiting for completion")
+
+			await verifyCoordinator.waitForAll()
+
+			console.log("[MultiOrch] Verification agent completed")
+
+			// Capture findings from the verification agent's completion report
+			const findings = verifyAgentState.completionReport ?? "No findings reported by verification agent."
+			const severity = this.classifyFindingSeverity(findings)
+
+			this.state.verificationFindings.push({
+				agentTaskId: "verify-0",
+				findings,
+				severity,
+			})
+
+			// Close the verification panel
+			try {
+				await this.panelSpawner.closeAllPanels()
+				console.log("[MultiOrch] Verification panel closed")
+			} catch (err) {
+				console.error("[MultiOrch] Failed to close verification panel:", err)
+			}
+		} catch (error) {
+			console.error("[MultiOrch] Verification phase failed:", error)
+			this.state.verificationFindings.push({
+				agentTaskId: "verify-0",
+				findings: `Verification phase encountered an error: ${error}`,
+				severity: "error",
+			})
+		}
+	}
+
+	/**
+	 * Classify the severity of verification findings based on content heuristics.
+	 */
+	private classifyFindingSeverity(findings: string): "info" | "warning" | "error" {
+		const lower = findings.toLowerCase()
+		if (
+			lower.includes("passes verification") ||
+			lower.includes("no issues") ||
+			lower.includes("looks correct") ||
+			lower.includes("no bugs found") ||
+			lower.includes("everything looks good")
+		) {
+			return "info"
+		}
+		if (
+			lower.includes("error") ||
+			lower.includes("bug") ||
+			lower.includes("crash") ||
+			lower.includes("type error") ||
+			lower.includes("undefined") ||
+			lower.includes("null reference")
+		) {
+			return "error"
+		}
+		return "warning"
 	}
 
 	/** Abort the current orchestration */

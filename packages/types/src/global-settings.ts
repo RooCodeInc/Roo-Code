@@ -249,6 +249,13 @@ export const globalSettingsSchema = z.object({
 	multiOrchMaxAgents: z.number().min(1).max(6).optional(),
 	multiOrchPlanReviewEnabled: z.boolean().optional(),
 	multiOrchMergeEnabled: z.enum(["auto", "always", "never"]).optional(),
+	/**
+	 * Whether to spawn a verification agent after all sub-agents complete.
+	 * The verification agent reviews changed files for bugs, inconsistencies,
+	 * and integration issues before the final report is produced.
+	 * @default false
+	 */
+	multiOrchVerifyEnabled: z.boolean().optional(),
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>

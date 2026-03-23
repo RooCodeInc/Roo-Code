@@ -1,12 +1,14 @@
 // src/core/multi-orchestrator/report-aggregator.ts
-import type { AgentState, MergeResult } from "./types"
+import type { AgentState, MergeResult, VerificationFinding } from "./types"
 
 /**
- * Aggregate all agent reports and merge results into a unified markdown summary.
+ * Aggregate all agent reports, merge results, and verification findings
+ * into a unified markdown summary.
  */
 export function aggregateReports(
 	agents: AgentState[],
 	mergeResults: MergeResult[],
+	verificationFindings: VerificationFinding[] = [],
 ): string {
 	const sections: string[] = []
 
@@ -51,6 +53,20 @@ export function aggregateReports(
 		}
 	}
 
+	// Verification findings (if any)
+	if (verificationFindings.length > 0) {
+		sections.push(`## Verification Results\n`)
+		for (const finding of verificationFindings) {
+			const severityIcon =
+				finding.severity === "error" ? "🔴" :
+				finding.severity === "warning" ? "🟡" :
+				"🟢"
+			sections.push(`### ${severityIcon} Verification (${finding.severity})`)
+			sections.push(finding.findings)
+			sections.push("")
+		}
+	}
+
 	// Summary stats
 	const completed = agents.filter((a) => a.status === "completed").length
 	const failed = agents.filter((a) => a.status === "failed").length
@@ -61,6 +77,12 @@ export function aggregateReports(
 	sections.push(`- **Agents:** ${completed} completed, ${failed} failed`)
 	if (mergeResults.length > 0) {
 		sections.push(`- **Merges:** ${mergeSuccesses} succeeded, ${mergeFailures} had conflicts`)
+	}
+	if (verificationFindings.length > 0) {
+		const hasErrors = verificationFindings.some((f) => f.severity === "error")
+		const hasWarnings = verificationFindings.some((f) => f.severity === "warning")
+		const verifyStatus = hasErrors ? "⚠️ Issues found" : hasWarnings ? "🟡 Minor concerns" : "✅ Passed"
+		sections.push(`- **Verification:** ${verifyStatus}`)
 	}
 
 	return sections.join("\n")

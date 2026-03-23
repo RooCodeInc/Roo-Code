@@ -3847,6 +3847,10 @@ export const webviewMessageHandler = async (
 			const mergeMode = (mergeModeRaw as "auto" | "always" | "never") ?? "auto"
 			console.log("[MultiOrch:Handler] mergeMode raw:", mergeModeRaw, "→ resolved:", mergeMode)
 
+			const verifyEnabledRaw = getGlobalState("multiOrchVerifyEnabled")
+			const verifyEnabled = verifyEnabledRaw ?? false
+			console.log("[MultiOrch:Handler] verifyEnabled raw:", verifyEnabledRaw, "→ resolved:", verifyEnabled)
+
 			const providerSettings = provider.contextProxy.getProviderSettings()
 			console.log("[MultiOrch:Handler] providerSettings.apiProvider:", providerSettings.apiProvider)
 			console.log("[MultiOrch:Handler] providerSettings.apiModelId:", providerSettings.apiModelId)
@@ -3866,7 +3870,7 @@ export const webviewMessageHandler = async (
 						type: "multiOrchStatusUpdate",
 						text: JSON.stringify(state),
 					})
-				})
+				}, verifyEnabled)
 				.then(() => {
 					const finalState = orchestrator.getState()
 					console.log("[MultiOrch:Handler] execute() resolved. finalState.phase:", finalState.phase, "hasPlan:", !!finalState.plan)
@@ -3905,6 +3909,7 @@ export const webviewMessageHandler = async (
 
 			const mergeMode =
 				(getGlobalState("multiOrchMergeEnabled") as "auto" | "always" | "never") ?? "auto"
+			const verifyEnabledResume = (getGlobalState("multiOrchVerifyEnabled") as boolean) ?? false
 			const providerSettings = provider.contextProxy.getProviderSettings()
 
 			orchestrator
@@ -3913,7 +3918,7 @@ export const webviewMessageHandler = async (
 						type: "multiOrchStatusUpdate",
 						text: JSON.stringify(newState),
 					})
-				})
+				}, verifyEnabledResume)
 				.then(() => {
 					provider.postMessageToWebview({
 						type: "multiOrchComplete",
