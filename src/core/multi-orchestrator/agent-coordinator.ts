@@ -129,7 +129,7 @@ export class AgentCoordinator extends EventEmitter<AgentCoordinatorEvents> {
 	 * we collect all start thunks first, then fire them all at the same instant
 	 * so no agent gets a head-start over another.
 	 */
-	startAll(): void {
+	async startAll(): Promise<void> {
 		console.log(
 			`[AgentCoordinator] startAll() — ${this.providers.size} providers registered`,
 		)
@@ -173,9 +173,19 @@ export class AgentCoordinator extends EventEmitter<AgentCoordinatorEvents> {
 			})
 		}
 
-		// Fire ALL start() calls at the same instant — eliminates sequential
-		// dispatch gap that caused Agent 1 to start 1-3s before Agent N.
-		for (const fn of starts) fn()
+		// Stagger starts with a 2-second gap between each agent.
+		// Simultaneous API calls from N agents to the same provider cause rate
+		// limiting ("Provider ended the request: terminated") which cascades
+		// into retry loops. A 2s stagger lets each agent's first API request
+		// complete before the next one fires, avoiding provider throttling.
+		console.log(`[AgentCoordinator] Staggering ${starts.length} agent starts (2s apart)`)
+		for (let i = 0; i < starts.length; i++) {
+			if (i > 0) {
+				await new Promise((resolve) => setTimeout(resolve, 2000))
+			}
+			console.log(`[AgentCoordinator] Starting agent ${i + 1}/${starts.length}`)
+			starts[i]()
+		}
 	}
 
 	/** Check if all agents have finished (completed or failed) */

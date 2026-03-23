@@ -204,6 +204,10 @@ export class MultiOrchestrator {
 				followupAutoApproveTimeoutMs: 1,
 				writeDelayMs: 0,
 				requestDelaySeconds: 0,
+				// Force PREVENT_FOCUS_DISRUPTION so file edits save directly without
+				// opening diff views. Diff views fight with the agent's webview panel
+				// for the same ViewColumn, causing layout chaos.
+				experiments: { preventFocusDisruption: true },
 			}
 
 			// All panels are already spawned. Now create tasks in parallel —
@@ -312,9 +316,9 @@ export class MultiOrchestrator {
 				)
 			}
 
-			// Start all agents simultaneously (synchronous — each task.start()
-			// is fire-and-forget; failures are handled inside startAll()).
-			this.coordinator.startAll()
+			// Start agents with staggered 2s delay between each to avoid API rate limiting.
+			// The stagger prevents all agents from hitting the same provider simultaneously.
+			await this.coordinator.startAll()
 
 			// Wait for all to complete (with timeout)
 			await this.coordinator.waitForAll()
