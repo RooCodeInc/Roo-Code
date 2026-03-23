@@ -122,16 +122,21 @@ export class AgentCoordinator extends EventEmitter<AgentCoordinatorEvents> {
 	/**
 	 * Start all agents simultaneously.
 	 * Each provider should already have a task created with startTask=false.
-	 * Agents whose provider has no current task, or whose start() throws,
-	 * are marked as failed immediately so waitForAll() never hangs.
+	 * Agents whose provider has no current task are marked as failed immediately
+	 * so waitForAll() never hangs.
+	 *
+	 * BUG-002 fix: Instead of calling start() sequentially inside the loop,
+	 * we collect all start thunks first, then fire them all at the same instant
+	 * so no agent gets a head-start over another.
 	 */
 	startAll(): void {
 		console.log(
 			`[AgentCoordinator] startAll() — ${this.providers.size} providers registered`,
 		)
-		for (const [taskId, provider] of this.providers) {
-			const agent = this.agents.get(taskId)
 
+		const starts: Array<() => void> = []
+
+		for (const [taskId, provider] of this.providers) {
 			const currentTask = provider.getCurrentTask()
 			console.log(
 				`[AgentCoordinator] startAll() — agent ${taskId}: ` +
@@ -148,24 +153,29 @@ export class AgentCoordinator extends EventEmitter<AgentCoordinatorEvents> {
 				continue
 			}
 
+			const agent = this.agents.get(taskId)
 			if (agent) {
 				agent.status = "running"
 				agent.startedAt = Date.now()
 			}
 
-			// start() is synchronous (fire-and-forget) — wrap in try/catch so a
-			// throw doesn't skip remaining agents or leave this one un-accounted.
-			try {
-				currentTask.start()
-			} catch (err) {
-				console.error(
-					`[AgentCoordinator] start() threw for agent ${taskId}: ${
-						(err as Error)?.message ?? String(err)
-					}`,
-				)
-				this.handleAgentFinished(taskId, "failed")
-			}
+			starts.push(() => {
+				try {
+					currentTask.start()
+				} catch (err) {
+					console.error(
+						`[AgentCoordinator] start() threw for agent ${taskId}: ${
+							(err as Error)?.message ?? String(err)
+						}`,
+					)
+					this.handleAgentFinished(taskId, "failed")
+				}
+			})
 		}
+
+		// Fire ALL start() calls at the same instant — eliminates sequential
+		// dispatch gap that caused Agent 1 to start 1-3s before Agent N.
+		for (const fn of starts) fn()
 	}
 
 	/** Check if all agents have finished (completed or failed) */
