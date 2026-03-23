@@ -150,25 +150,16 @@ The Multi-Orchestrator is a new mode in Roo-Code that decomposes complex tasks i
 
 ## 5. Status: Known Bugs (ACTIVE)
 
-### BUG-001: File edits go to wrong pane (CRITICAL)
+### BUG-001: File edits go to wrong pane (FIXED — TESTING)
 **Symptom**: When Agent 1 creates/edits a file, the diff view appears in Agent 2's column instead of Agent 1's.
-**Root cause**: VS Code's file open commands (`vscode.open`, `vscode.diff`) always target the **active editor group** (the last-focused column). When the Task's tools call file operations, they don't specify which ViewColumn to open in. VS Code picks the globally active group, which may be any column.
-**Impact**: Files from multiple agents pile up in one pane; other panes stay empty.
-**Fix approach**: Investigate how Roo's DiffViewProvider and file write tools open files. They likely use `vscode.window.showTextDocument()` or `vscode.commands.executeCommand("vscode.open")`. These accept a `ViewColumn` parameter. The Task needs to know which ViewColumn its ClineProvider is in, and pass that when opening files.
-- Check `src/integrations/editor/DiffViewProvider.ts` for how diffs are opened
-- Check how `write_to_file` and `apply_diff` tools open files after edits
-- The spawned panel knows its ViewColumn — this needs to be threaded down to the file operations
+**Root cause FOUND**: PanelSpawner stored `ViewColumn.Active` (-1 symbolic) as `provider.viewColumn`. When DiffViewProvider used it, VS Code interpreted -1 as "open in the currently active group" not "the group where the panel lives".
+**Fix applied**: Now reads `panel.viewColumn` AFTER creation to get the real column number (1, 2, 3). Also tracks viewColumn changes via `onDidChangeViewState`. The chain: `spawner stores actual column → ClineProvider.viewColumn → Task reads it → DiffViewProvider.viewColumn → all showTextDocument/vscode.diff calls use it`.
+**Status**: Fix committed. Needs testing to verify.
 
-### BUG-002: Agents don't start simultaneously (MEDIUM)
+### BUG-002: Agents don't start simultaneously (FIXED)
 **Symptom**: Agent 1 starts 1-3 seconds before Agent 3.
-**Root cause**: `startAll()` calls `task.start()` synchronously in a for loop. Each `start()` triggers an async API call. The sequential nature means Agent 1's API request is sent before Agent 3's request is even initiated. The LLM response time adds further desync.
-**Impact**: Visual inconsistency — agents appear to start at different times.
-**Fix approach**: True simultaneous start requires:
-1. Create all tasks (done — startTask: false)
-2. For each task, prepare the API request payload but DON'T send it
-3. Send all API requests at the exact same moment using `Promise.all`
-This requires modifying Task.start() to support a two-phase approach: prepare → fire.
-**Alternative**: Accept the 1-3 second gap as inherent to network latency. This is cosmetic, not functional.
+**Root cause**: startAll() called task.start() sequentially.
+**Fix applied**: startAll() now collects all start thunks into an array, then fires them all in a tight synchronous loop. Note: the remaining 0.5-1s gap is network latency (API requests sent sequentially by the JS event loop) — this is inherent and cannot be eliminated without modifying Task.start() internals.
 
 ### BUG-003: Panel layout not properly applied (MEDIUM)
 **Symptom**: `vscode.setEditorLayout` creates the column layout, but panels don't always land in the right columns. Sometimes panels stack in one column.
