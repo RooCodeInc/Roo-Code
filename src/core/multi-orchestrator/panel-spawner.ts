@@ -11,6 +11,7 @@ export interface SpawnedPanel {
 
 export class PanelSpawner {
 	private panels: Map<string, SpawnedPanel> = new Map()
+	private savedLayout: unknown = null
 
 	constructor(
 		private context: vscode.ExtensionContext,
@@ -18,38 +19,58 @@ export class PanelSpawner {
 	) {}
 
 	/**
-	 * Spawn N editor tab panels, each with an independent ClineProvider.
+	 * Spawn N editor tab panels in equal-width columns.
 	 *
-	 * Panels are distributed across VS Code ViewColumns 1–9. If `count`
-	 * exceeds 9, columns are reused (panels stack in the same column group —
-	 * standard VS Code behaviour, no existing panels are overwritten).
-	 *
-	 * All panels are created in parallel via `Promise.all` — each panel uses
-	 * a different ViewColumn so there are no serialisation constraints.
-	 *
-	 * Individual panel failures are logged and skipped so that a single
-	 * failure does not orphan the entire batch. If *all* panels fail, the
-	 * method throws with the first error encountered.
+	 * Uses `vscode.setEditorLayout` to create an N-column layout FIRST,
+	 * then places each panel into its assigned ViewColumn. This ensures
+	 * all panels appear side-by-side in equal proportions without
+	 * overlapping existing editors.
 	 */
 	async spawnPanels(count: number, titles: string[]): Promise<Map<string, SpawnedPanel>> {
 		const contextProxy = await ContextProxy.getInstance(this.context)
-
-		// Spawn panels SEQUENTIALLY to avoid VS Code ViewColumn race conditions.
-		// Each panel uses ViewColumn.Beside to create a new split to the RIGHT
-		// of whatever is currently focused, avoiding overlap with existing editors.
 		const errors: Array<{ index: number; title: string; error: Error }> = []
 
+		// Save the current layout so we can restore it after orchestration
+		try {
+			this.savedLayout = await vscode.commands.executeCommand("vscode.getEditorLayout")
+			console.log("[PanelSpawner] Saved current editor layout")
+		} catch {
+			console.warn("[PanelSpawner] Could not save current editor layout")
+		}
+
+		// Set up an N-column layout with equal widths.
+		// orientation: 0 = horizontal (columns side by side)
+		const equalSize = 1 / count
+		const groups = Array.from({ length: count }, () => ({ size: equalSize }))
+
+		try {
+			await vscode.commands.executeCommand("vscode.setEditorLayout", {
+				orientation: 0,
+				groups,
+			})
+			console.log(`[PanelSpawner] Set editor layout to ${count} equal columns`)
+			// Brief delay for VS Code to apply the layout
+			await new Promise((resolve) => setTimeout(resolve, 300))
+		} catch (err) {
+			console.warn("[PanelSpawner] Failed to set editor layout:", err)
+		}
+
+		// Create each panel in its designated ViewColumn (1-based).
+		// Sequential creation avoids race conditions in VS Code's panel placement.
 		for (let i = 0; i < count; i++) {
 			const id = `agent-${i}`
 			const title = titles[i] || `Agent ${i + 1}`
-			// Use ViewColumn.Beside for all panels — each one splits beside the previous
-			const result = await this.spawnSinglePanel(id, title, vscode.ViewColumn.Beside, contextProxy)
+			// ViewColumn is 1-indexed: column 1, 2, 3, ...
+			const viewColumn = (i + 1) as vscode.ViewColumn
+
+			const result = await this.spawnSinglePanel(id, title, viewColumn, contextProxy)
 			if (result.error) {
 				errors.push({ index: i, title, error: result.error })
 			}
-			// Small delay between panels to let VS Code settle its layout
+
+			// Minimal delay between panels for layout stability
 			if (i < count - 1) {
-				await new Promise((resolve) => setTimeout(resolve, 200))
+				await new Promise((resolve) => setTimeout(resolve, 100))
 			}
 		}
 
@@ -72,9 +93,6 @@ export class PanelSpawner {
 
 	/**
 	 * Spawn a single editor panel with its own ClineProvider.
-	 *
-	 * Returns `{ error: undefined }` on success or `{ error: Error }` on
-	 * failure. Never throws — callers aggregate errors from the batch.
 	 */
 	private async spawnSinglePanel(
 		id: string,
@@ -83,14 +101,12 @@ export class PanelSpawner {
 		contextProxy: ContextProxy,
 	): Promise<{ error: Error | undefined }> {
 		try {
-			// Create independent ClineProvider
 			const provider = new ClineProvider(this.context, this.outputChannel, "editor", contextProxy)
 
-			// Create WebviewPanel — can throw if no editor area is visible
 			const panel = vscode.window.createWebviewPanel(
 				ClineProvider.tabPanelId,
 				`⚡ ${title}`,
-				viewColumn,
+				{ viewColumn, preserveFocus: true },
 				{
 					enableScripts: true,
 					retainContextWhenHidden: true,
@@ -98,11 +114,8 @@ export class PanelSpawner {
 				},
 			)
 
-			// Wire provider to panel — must complete before panel is usable
 			await provider.resolveWebviewView(panel)
 
-			// Track for cleanup (onDidDispose also registered inside
-			// resolveWebviewView, which handles provider disposal in tab mode)
 			panel.onDidDispose(() => {
 				this.panels.delete(id)
 			})
@@ -117,31 +130,20 @@ export class PanelSpawner {
 	}
 
 	/**
-	 * Close a specific panel and explicitly dispose its provider.
-	 *
-	 * Order: remove from map → dispose provider → dispose panel.
-	 * Provider.dispose() is idempotent (_disposed guard), so the secondary
-	 * disposal triggered by the panel's onDidDispose handler is harmless.
+	 * Close a specific panel and dispose its provider.
 	 */
 	async closePanel(id: string): Promise<void> {
 		const spawned = this.panels.get(id)
-		if (!spawned) {
-			return
-		}
+		if (!spawned) return
 
-		// Remove from map first to prevent the onDidDispose callback from
-		// racing with a concurrent closePanel / closeAllPanels call.
 		this.panels.delete(id)
 
-		// Explicitly dispose provider to ensure task cleanup even if
-		// resolveWebviewView's onDidDispose handler was never registered.
 		try {
 			await spawned.provider.dispose()
 		} catch (error) {
 			console.error(`[PanelSpawner] Error disposing provider for ${id}:`, error)
 		}
 
-		// Dispose the panel (no-op if provider.dispose() already disposed it).
 		try {
 			spawned.panel.dispose()
 		} catch (error) {
@@ -149,11 +151,24 @@ export class PanelSpawner {
 		}
 	}
 
-	/** Close all panels. Snapshots keys to avoid mutation during iteration. */
+	/**
+	 * Close all panels and restore the original editor layout.
+	 */
 	async closeAllPanels(): Promise<void> {
 		const ids = [...this.panels.keys()]
 		for (const id of ids) {
 			await this.closePanel(id)
+		}
+
+		// Restore the editor layout that was active before orchestration
+		if (this.savedLayout) {
+			try {
+				await vscode.commands.executeCommand("vscode.setEditorLayout", this.savedLayout)
+				console.log("[PanelSpawner] Restored original editor layout")
+			} catch {
+				console.warn("[PanelSpawner] Could not restore original editor layout")
+			}
+			this.savedLayout = null
 		}
 	}
 
