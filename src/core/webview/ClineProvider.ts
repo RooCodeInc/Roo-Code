@@ -1997,6 +1997,15 @@ export class ClineProvider
 		await this.postStateToWebview()
 	}
 
+	/**
+	 * Override the working directory for this provider.
+	 * Used by the multi-orchestrator to point each spawned provider
+	 * at its own git worktree directory for file isolation.
+	 */
+	public setWorkingDirectory(dir: string): void {
+		this.currentWorkspacePath = dir
+	}
+
 	async postStateToWebview() {
 		const state = await this.getStateToPostToWebview()
 		this.clineMessagesSeq++

@@ -228,6 +228,13 @@ export class MultiOrchestrator {
 				// ContextProxy mutations from other providers.
 				spawned.provider.setAutoApprovalOverrides(autoApprovalOverrides)
 
+				// Point this provider at its worktree directory (if worktrees are in use).
+				// This must happen BEFORE createTask so the Task's cwd is isolated.
+				if (agent.worktreePath) {
+					spawned.provider.setWorkingDirectory(agent.worktreePath)
+					console.log(`[MultiOrch] Agent ${task.id} cwd set to worktree: ${agent.worktreePath}`)
+				}
+
 				// Switch provider to the correct mode BEFORE creating the task.
 				// The Task constructor initializes its mode from provider.getState()
 				// during initializeTaskMode(), so the mode must already be set.
