@@ -159,6 +159,15 @@ export function copyWasms(srcDir: string, distDir: string): void {
 
 	console.log(`[copyWasms] Copied ${wasmFiles.length} tree-sitter language wasms to ${distDir}`)
 
+	// sql.js WASM file for memory system SQLite.
+	const sqlJsWasmPath = path.join(nodeModulesDir, "sql.js", "dist", "sql-wasm.wasm")
+	if (fs.existsSync(sqlJsWasmPath)) {
+		fs.copyFileSync(sqlJsWasmPath, path.join(distDir, "sql-wasm.wasm"))
+		console.log(`[copyWasms] Copied sql.js WASM to ${distDir}`)
+	} else {
+		console.warn(`[copyWasms] sql.js WASM not found at ${sqlJsWasmPath}, skipping`)
+	}
+
 	// Copy esbuild-wasm files for custom tool transpilation (cross-platform).
 	copyEsbuildWasmFiles(nodeModulesDir, distDir)
 }

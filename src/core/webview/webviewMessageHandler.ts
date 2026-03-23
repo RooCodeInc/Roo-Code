@@ -1700,6 +1700,51 @@ export const webviewMessageHandler = async (
 				}
 			}
 			break
+		case "enhancePersonalityTrait":
+			if (message.text) {
+				try {
+					const state = await provider.getState()
+
+					const {
+						apiConfiguration,
+						listApiConfigMeta = [],
+						enhancementApiConfigId,
+						personalityTraitEnhancerPrompt,
+					} = state
+
+					// Determine which API configuration to use
+					let configToUse = apiConfiguration
+
+					if (enhancementApiConfigId && listApiConfigMeta.find(({ id }) => id === enhancementApiConfigId)) {
+						const { name: _, ...providerSettings } = await provider.providerSettingsManager.getProfile({
+							id: enhancementApiConfigId,
+						})
+
+						if (providerSettings.apiProvider) {
+							configToUse = providerSettings
+						}
+					}
+
+					// Use custom enhancer prompt or default
+					const { DEFAULT_PERSONALITY_TRAIT_ENHANCER_PROMPT } = await import(
+						"../../shared/personality-traits"
+					)
+					const metaPrompt = (personalityTraitEnhancerPrompt || DEFAULT_PERSONALITY_TRAIT_ENHANCER_PROMPT)
+						.replace("{input}", message.text)
+
+					const { singleCompletionHandler } = await import("../../utils/single-completion-handler")
+					const enhancedText = await singleCompletionHandler(configToUse, metaPrompt)
+
+					await provider.postMessageToWebview({ type: "enhancedPersonalityTrait", text: enhancedText })
+				} catch (error) {
+					provider.log(
+						`Error enhancing personality trait: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
+					)
+					vscode.window.showErrorMessage("Failed to enhance personality trait. Please try again.")
+					await provider.postMessageToWebview({ type: "enhancedPersonalityTrait" })
+				}
+			}
+			break
 		case "getSystemPrompt":
 			try {
 				const systemPrompt = await generateSystemPrompt(provider, message)
@@ -3645,6 +3690,268 @@ export const webviewMessageHandler = async (
 				provider.log(`Error opening folder picker: ${errorMessage}`)
 			}
 
+			break
+		}
+
+		case "toggleMemoryLearning": {
+			const currentMemoryState = getGlobalState("memoryLearningEnabled") ?? false
+			const newMemoryState = !currentMemoryState
+			await updateGlobalState("memoryLearningEnabled", newMemoryState)
+			const orchestrator = provider.getMemoryOrchestrator()
+			if (orchestrator) {
+				orchestrator.setEnabled(newMemoryState)
+			}
+			await provider.postMessageToWebview({
+				type: "memoryLearningState",
+				text: String(newMemoryState),
+			})
+			break
+		}
+
+		case "updateMemorySettings": {
+			if (message.text) {
+				try {
+					const memorySettings = JSON.parse(message.text)
+					if (memorySettings.memoryApiConfigId !== undefined) {
+						await updateGlobalState("memoryApiConfigId", memorySettings.memoryApiConfigId)
+					}
+					if (memorySettings.memoryAnalysisFrequency !== undefined) {
+						await updateGlobalState("memoryAnalysisFrequency", memorySettings.memoryAnalysisFrequency)
+					}
+					if (memorySettings.memoryLearningDefaultEnabled !== undefined) {
+						await updateGlobalState(
+							"memoryLearningDefaultEnabled",
+							memorySettings.memoryLearningDefaultEnabled,
+						)
+					}
+				} catch (e) {
+					console.error("[Memory] Failed to parse settings:", e)
+				}
+			}
+			break
+		}
+
+		case "startMemorySync": {
+			const { taskIds } = JSON.parse(message.text || "{}") as { taskIds: string[] }
+			const orchestrator = provider.getMemoryOrchestrator()
+			if (!orchestrator) break
+
+			// Guard against concurrent syncs
+			if (orchestrator.isSyncInProgress()) {
+				await provider.postMessageToWebview({
+					type: "memorySyncAlreadyRunning",
+				})
+				break
+			}
+
+			const memoryConfigId = getGlobalState("memoryApiConfigId")
+			if (!memoryConfigId) break
+
+			try {
+				const { name: _, ...memSettings } = await provider.providerSettingsManager.getProfile({
+					id: memoryConfigId,
+				})
+
+				const globalStoragePath = provider.contextProxy.globalStorageUri.fsPath
+
+				orchestrator
+					.batchAnalyzeHistory(
+						taskIds,
+						globalStoragePath,
+						memSettings,
+						(completed, total) => {
+							provider.postMessageToWebview({
+								type: "memorySyncProgress",
+								text: JSON.stringify({ completed, total }),
+							})
+						},
+					)
+					.then((result) => {
+						provider.postMessageToWebview({
+							type: "memorySyncComplete",
+							text: JSON.stringify(result),
+						})
+					})
+					.catch(() => {
+						provider.postMessageToWebview({
+							type: "memorySyncComplete",
+							text: JSON.stringify({
+								totalAnalyzed: 0,
+								entriesCreated: 0,
+								entriesReinforced: 0,
+							}),
+						})
+					})
+			} catch {
+				// Profile not found
+			}
+			break
+		}
+
+		case "clearMemory": {
+			const orchestrator = provider.getMemoryOrchestrator()
+			if (orchestrator) {
+				orchestrator.clearAllMemory()
+				await provider.postMessageToWebview({ type: "memoryCleared" })
+			}
+			break
+		}
+
+		case "getMemoryStatus": {
+			const orch = provider.getMemoryOrchestrator()
+			if (orch) {
+				const store = orch.getStore()
+				const count = store.getEntryCount()
+				const lastLog = store.getLastAnalysisTimestamp()
+				await provider.postMessageToWebview({
+					type: "memoryStatus",
+					text: JSON.stringify({ entryCount: count, lastAnalyzedAt: lastLog }),
+				})
+			} else {
+				await provider.postMessageToWebview({
+					type: "memoryStatus",
+					text: JSON.stringify({ entryCount: 0, lastAnalyzedAt: null }),
+				})
+			}
+			break
+		}
+
+		case "getMemorySyncStatus": {
+			const orchestrator = provider.getMemoryOrchestrator()
+			const status = orchestrator?.getSyncStatus() ?? { inProgress: false, completed: 0, total: 0 }
+			await provider.postMessageToWebview({
+				type: "memorySyncStatus",
+				text: JSON.stringify(status),
+			})
+			break
+		}
+
+		case "multiOrchStartPlan": {
+			// User submitted a request in multi-orchestrator mode
+			console.log("[MultiOrch:Handler] ── ENTER multiOrchStartPlan ──")
+			const userRequest = message.text || ""
+			console.log("[MultiOrch:Handler] userRequest:", JSON.stringify(userRequest).slice(0, 200))
+
+			const orchestrator = provider.getMultiOrchestrator()
+			console.log("[MultiOrch:Handler] orchestrator instance:", orchestrator ? "OK" : "NULL/UNDEFINED")
+
+			const maxAgentsRaw = getGlobalState("multiOrchMaxAgents")
+			const maxAgents = maxAgentsRaw ?? 4
+			console.log("[MultiOrch:Handler] multiOrchMaxAgents raw from globalState:", maxAgentsRaw, "→ resolved:", maxAgents)
+
+			const planReviewRaw = getGlobalState("multiOrchPlanReviewEnabled")
+			const planReview = planReviewRaw ?? false
+			console.log("[MultiOrch:Handler] planReview raw:", planReviewRaw, "→ resolved:", planReview)
+
+			const mergeModeRaw = getGlobalState("multiOrchMergeEnabled")
+			const mergeMode = (mergeModeRaw as "auto" | "always" | "never") ?? "auto"
+			console.log("[MultiOrch:Handler] mergeMode raw:", mergeModeRaw, "→ resolved:", mergeMode)
+
+			const verifyEnabledRaw = getGlobalState("multiOrchVerifyEnabled")
+			const verifyEnabled = verifyEnabledRaw ?? false
+			console.log("[MultiOrch:Handler] verifyEnabled raw:", verifyEnabledRaw, "→ resolved:", verifyEnabled)
+
+			const providerSettings = provider.contextProxy.getProviderSettings()
+			console.log("[MultiOrch:Handler] providerSettings.apiProvider:", providerSettings.apiProvider)
+			console.log("[MultiOrch:Handler] providerSettings.apiModelId:", providerSettings.apiModelId)
+			console.log("[MultiOrch:Handler] providerSettings has apiKey:", !!providerSettings.apiKey)
+			console.log("[MultiOrch:Handler] providerSettings keys:", Object.keys(providerSettings).filter((k) => (providerSettings as Record<string, unknown>)[k] !== undefined).join(", "))
+
+			const { getAllModes } = await import("../../shared/modes")
+			const customModes = await provider.customModesManager.getCustomModes()
+			const allModes = getAllModes(customModes)
+			console.log("[MultiOrch:Handler] allModes count:", allModes.length, "names:", allModes.map((m) => m.slug).join(", "))
+
+			console.log("[MultiOrch:Handler] calling orchestrator.execute() ...")
+			orchestrator
+				.execute(userRequest, maxAgents, providerSettings, allModes, planReview, mergeMode, (state) => {
+					console.log("[MultiOrch:Handler] onStateChange → phase:", state.phase, "agents:", state.agents?.length ?? 0)
+					provider.postMessageToWebview({
+						type: "multiOrchStatusUpdate",
+						text: JSON.stringify(state),
+					})
+				}, verifyEnabled)
+				.then(() => {
+					const finalState = orchestrator.getState()
+					console.log("[MultiOrch:Handler] execute() resolved. finalState.phase:", finalState.phase, "hasPlan:", !!finalState.plan)
+					if (planReview && finalState.phase !== "complete" && finalState.plan) {
+						// Plan review mode: execute() returned early after planning.
+						// Send the plan to the webview for user approval.
+						console.log("[MultiOrch:Handler] → posting multiOrchPlanReady")
+						provider.postMessageToWebview({
+							type: "multiOrchPlanReady",
+							text: JSON.stringify(finalState),
+						})
+					} else {
+						console.log("[MultiOrch:Handler] → posting multiOrchComplete")
+						provider.postMessageToWebview({
+							type: "multiOrchComplete",
+							text: JSON.stringify(finalState),
+						})
+					}
+				})
+				.catch((error) => {
+					console.error("[MultiOrch:Handler] execute() REJECTED with error:", error)
+					console.error("[MultiOrch:Handler] error stack:", (error as Error)?.stack ?? "no stack")
+					provider.postMessageToWebview({
+						type: "multiOrchError",
+						text: String(error),
+					})
+				})
+			break
+		}
+
+		case "multiOrchApprovePlan": {
+			const orchestrator = provider.getMultiOrchestrator()
+			if (!orchestrator) break
+			const orchState = orchestrator.getState()
+			if (!orchState.plan) break
+
+			const mergeMode =
+				(getGlobalState("multiOrchMergeEnabled") as "auto" | "always" | "never") ?? "auto"
+			const verifyEnabledResume = (getGlobalState("multiOrchVerifyEnabled") as boolean) ?? false
+			const providerSettings = provider.contextProxy.getProviderSettings()
+
+			orchestrator
+				.executeFromPlan(orchState.plan, providerSettings, mergeMode, (newState) => {
+					provider.postMessageToWebview({
+						type: "multiOrchStatusUpdate",
+						text: JSON.stringify(newState),
+					})
+				}, verifyEnabledResume)
+				.then(() => {
+					provider.postMessageToWebview({
+						type: "multiOrchComplete",
+						text: JSON.stringify(orchestrator.getState()),
+					})
+				})
+				.catch((error) => {
+					provider.postMessageToWebview({
+						type: "multiOrchError",
+						text: String(error),
+					})
+				})
+			break
+		}
+
+		case "multiOrchAbort": {
+			const orchestrator = provider.getMultiOrchestrator()
+			if (!orchestrator) break
+			await orchestrator.abort()
+			await provider.postMessageToWebview({
+				type: "multiOrchComplete",
+				text: JSON.stringify(orchestrator.getState()),
+			})
+			break
+		}
+
+		case "multiOrchGetStatus": {
+			const orchestrator = provider.getMultiOrchestrator()
+			if (!orchestrator) break
+			await provider.postMessageToWebview({
+				type: "multiOrchStatusUpdate",
+				text: JSON.stringify(orchestrator.getState()),
+			})
 			break
 		}
 

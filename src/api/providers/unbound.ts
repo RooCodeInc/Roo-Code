@@ -143,8 +143,13 @@ export class UnboundHandler extends BaseProvider implements SingleCompletionHand
 			stream: true,
 			stream_options: { include_usage: true },
 			unbound_metadata: { originApp: "roo-code", taskId: metadata?.taskId, mode: metadata?.mode },
-			tools: this.convertToolsForOpenAI(metadata?.tools),
-			tool_choice: metadata?.tool_choice,
+			// When useXmlToolCalling is enabled, omit native tool definitions from the API request.
+			...(metadata?.useXmlToolCalling
+				? {}
+				: {
+						tools: this.convertToolsForOpenAI(metadata?.tools),
+						tool_choice: metadata?.tool_choice,
+					}),
 		}
 
 		let stream

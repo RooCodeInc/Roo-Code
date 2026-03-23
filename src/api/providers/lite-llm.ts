@@ -207,8 +207,13 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 			stream_options: {
 				include_usage: true,
 			},
-			tools: this.convertToolsForOpenAI(metadata?.tools),
-			tool_choice: metadata?.tool_choice,
+			// When useXmlToolCalling is enabled, omit native tool definitions from the API request.
+			...(metadata?.useXmlToolCalling
+				? {}
+				: {
+						tools: this.convertToolsForOpenAI(metadata?.tools),
+						tool_choice: metadata?.tool_choice,
+					}),
 		}
 
 		// GPT-5 models require max_completion_tokens instead of the deprecated max_tokens parameter

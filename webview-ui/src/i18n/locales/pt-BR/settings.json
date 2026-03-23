@@ -554,7 +554,9 @@
 			"placeholder": "Padrão: claude",
 			"maxTokensLabel": "Tokens de saída máximos",
 			"maxTokensDescription": "Número máximo de tokens de saída para respostas do Claude Code. O padrão é 8000."
-		}
+		},
+		"useXmlToolCalling": "Use XML tool calling",
+		"useXmlToolCallingDescription": "Use XML-style formatting for tool calls instead of native tool calling. Enable this if your model responds better with XML tool formatting."
 	},
 	"checkpoints": {
 		"timeout": {
@@ -738,7 +740,9 @@
 		}
 	},
 	"advancedSettings": {
-		"title": "Configurações avançadas"
+		"title": "Configurações avançadas",
+		"useXmlToolCalling": "Use XML tool calling",
+		"useXmlToolCallingDescription": "Use XML-style formatting for tool calls instead of native tool calling. Enable this if your model responds better with XML tool formatting."
 	},
 	"advanced": {
 		"diff": {

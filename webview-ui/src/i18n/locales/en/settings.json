@@ -40,6 +40,8 @@
 		"prompts": "Prompts",
 		"ui": "UI",
 		"experimental": "Experimental",
+		"memory": "Memory",
+		"multiOrch": "Multi-Orchestrator",
 		"language": "Language",
 		"about": "About Roo Code"
 	},
@@ -801,7 +803,9 @@
 		}
 	},
 	"advancedSettings": {
-		"title": "Advanced settings"
+		"title": "Advanced settings",
+		"useXmlToolCalling": "Use XML tool calling",
+		"useXmlToolCallingDescription": "Use XML-style formatting for tool calls instead of native tool calling. Enable this if your model responds better with XML tool formatting."
 	},
 	"advanced": {
 		"diff": {

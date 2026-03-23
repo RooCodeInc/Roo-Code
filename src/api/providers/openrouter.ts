@@ -327,8 +327,13 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 					},
 				}),
 			...(reasoning && { reasoning }),
-			tools: this.convertToolsForOpenAI(metadata?.tools),
-			tool_choice: metadata?.tool_choice,
+			// When useXmlToolCalling is enabled, omit native tool definitions from the API request.
+			...(metadata?.useXmlToolCalling
+				? {}
+				: {
+						tools: this.convertToolsForOpenAI(metadata?.tools),
+						tool_choice: metadata?.tool_choice,
+					}),
 		}
 
 		// Add Anthropic beta header for fine-grained tool streaming when using Anthropic models

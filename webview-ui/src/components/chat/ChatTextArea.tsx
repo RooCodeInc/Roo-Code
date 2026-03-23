@@ -1,3 +1,4 @@
+
 import React, { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useEvent } from "react-use"
 import DynamicTextArea from "react-textarea-autosize"
@@ -33,6 +34,7 @@ import ContextMenu from "./ContextMenu"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
 import { usePromptHistory } from "./hooks/usePromptHistory"
 import { CloudAccountSwitcher } from "../cloud/CloudAccountSwitcher"
+import { AgentCountSelector } from "../multi-orchestrator/AgentCountSelector"
 
 interface ChatTextAreaProps {
 	inputValue: string
@@ -98,8 +100,11 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			commands,
 			cloudUserInfo,
 			enterBehavior,
-			lockApiConfigAcrossModes,
-		} = useExtensionState()
+		lockApiConfigAcrossModes,
+		memoryLearningEnabled,
+		memoryApiConfigId,
+		multiOrchMaxAgents,
+	} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
 		const { currentConfigId, displayName } = useMemo(() => {
@@ -110,11 +115,29 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			}
 		}, [listApiConfigMeta, currentApiConfigName])
 
+		const [memoryEntryCount, setMemoryEntryCount] = useState(0)
 		const [gitCommits, setGitCommits] = useState<any[]>([])
 		const [showDropdown, setShowDropdown] = useState(false)
 		const [fileSearchResults, setFileSearchResults] = useState<SearchResult[]>([])
 		const [searchLoading, setSearchLoading] = useState(false)
 		const [searchRequestId, setSearchRequestId] = useState<string>("")
+
+		// Request memory status on mount and listen for updates
+		useEffect(() => {
+			vscode.postMessage({ type: "getMemoryStatus" })
+			const handler = (event: MessageEvent) => {
+				const msg = event.data
+				if (msg.type === "memoryStatus") {
+					const data = JSON.parse(msg.text)
+					setMemoryEntryCount(data.entryCount ?? 0)
+				}
+				if (msg.type === "memoryCleared") {
+					setMemoryEntryCount(0)
+				}
+			}
+			window.addEventListener("message", handler)
+			return () => window.removeEventListener("message", handler)
+		}, [])
 
 		// Close dropdown when clicking outside.
 		useEffect(() => {
@@ -1321,6 +1344,17 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							onToggleLockApiConfig={handleToggleLockApiConfig}
 						/>
 						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
+						{mode === "multi-orchestrator" && (
+							<AgentCountSelector
+								value={multiOrchMaxAgents ?? 4}
+								onChange={(count) => {
+									vscode.postMessage({
+										type: "updateSettings",
+										updatedSettings: { multiOrchMaxAgents: count },
+									})
+								}}
+							/>
+						)}
 					</div>
 					<div
 						className={cn(
@@ -1347,6 +1381,50 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								</button>
 							</StandardTooltip>
 						)}
+					{!isEditMode && (() => {
+						const memoryConfigured = !!memoryApiConfigId
+						const memoryEnabled = memoryLearningEnabled ?? false
+						const hasEntries = memoryEntryCount > 0
+						const dotColor = !memoryConfigured
+							? "bg-gray-400"
+							: memoryEnabled && hasEntries
+								? "bg-green-500"
+								: memoryEnabled && !hasEntries
+									? "bg-amber-400"
+									: "bg-red-500"
+						const label = !memoryConfigured
+							? "Memory: Off"
+							: memoryEnabled && hasEntries
+								? "Memory"
+								: memoryEnabled && !hasEntries
+									? "Memory: Learning"
+									: "Memory: Paused"
+						const tooltip = !memoryConfigured
+							? "Select a model profile in Settings → Memory to enable"
+							: memoryEnabled && hasEntries
+								? "Roo learns your preferences. Click to pause."
+								: memoryEnabled && !hasEntries
+									? "Learning enabled, no data yet. Chat to build your profile."
+									: "Memory paused. Click to resume."
+							return (
+								<StandardTooltip content={tooltip}>
+									<button
+										onClick={() => {
+											if (memoryConfigured) {
+												vscode.postMessage({ type: "toggleMemoryLearning" })
+											}
+										}}
+										className={cn(
+											"flex items-center gap-1 text-[10px] px-1",
+											"opacity-60 hover:opacity-100 transition-opacity",
+											memoryConfigured ? "cursor-pointer" : "cursor-default",
+										)}>
+										<span className={`inline-block w-1.5 h-1.5 rounded-full ${dotColor}`} />
+										<span>{label}</span>
+									</button>
+								</StandardTooltip>
+							)
+						})()}
 						{!isEditMode ? <IndexingStatusBadge /> : null}
 						{!isEditMode && cloudUserInfo && <CloudAccountSwitcher />}
 					</div>

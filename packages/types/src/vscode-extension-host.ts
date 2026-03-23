@@ -40,6 +40,7 @@ export interface ExtensionMessage {
 		| "messageUpdated"
 		| "mcpServers"
 		| "enhancedPrompt"
+		| "enhancedPersonalityTrait"
 		| "commitSearchResults"
 		| "listApiConfig"
 		| "routerModels"
@@ -104,6 +105,17 @@ export interface ExtensionMessage {
 		| "folderSelected"
 		| "skills"
 		| "fileContent"
+		| "memoryLearningState"
+		| "memorySyncProgress"
+		| "memorySyncComplete"
+		| "memoryCleared"
+		| "memorySyncAlreadyRunning"
+		| "memorySyncStatus"
+		| "memoryStatus"
+		| "multiOrchPlanReady"
+		| "multiOrchStatusUpdate"
+		| "multiOrchComplete"
+		| "multiOrchError"
 	text?: string
 	/** For fileContent: { path, content, error? } */
 	fileContent?: { path: string; content: string | null; error?: string }
@@ -298,6 +310,7 @@ export type ExtensionState = Pick<
 	| "imageGenerationProvider"
 	| "openRouterImageGenerationSelectedModel"
 	| "includeTaskHistoryInEnhance"
+	| "personalityTraitEnhancerPrompt"
 	| "reasoningBlockCollapsed"
 	| "enterBehavior"
 	| "includeCurrentTime"
@@ -306,6 +319,14 @@ export type ExtensionState = Pick<
 	| "requestDelaySeconds"
 	| "showWorktreesInHomeScreen"
 	| "disabledTools"
+	| "memoryLearningEnabled"
+	| "memoryApiConfigId"
+	| "memoryAnalysisFrequency"
+	| "memoryLearningDefaultEnabled"
+	| "multiOrchMaxAgents"
+	| "multiOrchPlanReviewEnabled"
+	| "multiOrchMergeEnabled"
+	| "multiOrchVerifyEnabled"
 > & {
 	lockApiConfigAcrossModes?: boolean
 	version: string
@@ -374,6 +395,13 @@ export type ExtensionState = Pick<
 	taskSyncEnabled: boolean
 	openAiCodexIsAuthenticated?: boolean
 	debug?: boolean
+
+	/**
+	 * When true, this provider is a multi-orchestrator agent panel with
+	 * force-approve-all enabled. The webview should suppress approve/deny
+	 * button rendering entirely to prevent visual flicker (BUG-005).
+	 */
+	multiOrchForceApproveAll?: boolean
 
 	/**
 	 * Monotonically increasing sequence number for clineMessages state pushes.
@@ -471,6 +499,7 @@ export interface WebviewMessage {
 		| "updateMcpTimeout"
 		| "enhancePrompt"
 		| "enhancedPrompt"
+		| "enhancePersonalityTrait"
 		| "draggedImages"
 		| "deleteMessage"
 		| "deleteMessageConfirm"
@@ -581,6 +610,16 @@ export interface WebviewMessage {
 		| "moveSkill"
 		| "updateSkillModes"
 		| "openSkillFile"
+		| "toggleMemoryLearning"
+		| "updateMemorySettings"
+		| "startMemorySync"
+		| "clearMemory"
+		| "getMemorySyncStatus"
+		| "getMemoryStatus"
+		| "multiOrchStartPlan"
+		| "multiOrchApprovePlan"
+		| "multiOrchAbort"
+		| "multiOrchGetStatus"
 	text?: string
 	taskId?: string
 	editedMessageContent?: string

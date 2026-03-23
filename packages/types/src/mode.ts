@@ -93,6 +93,32 @@ export const groupEntryArraySchema = z.preprocess((val) => {
 	return val.filter((entry) => !isDeprecatedGroupEntry(entry))
 }, rawGroupEntryArraySchema) as z.ZodType<GroupEntry[], z.ZodTypeDef, GroupEntry[]>
 
+/**
+ * PersonalityTrait
+ */
+
+export const personalityTraitSchema = z.object({
+	id: z.string().min(1, "Trait ID is required"),
+	emoji: z.string().min(1, "Emoji is required"),
+	label: z.string().min(1, "Label is required"),
+	prompt: z.string().min(1, "Prompt is required"),
+	isBuiltIn: z.boolean(),
+})
+
+export type PersonalityTrait = z.infer<typeof personalityTraitSchema>
+
+/**
+ * PersonalityConfig
+ */
+
+export const personalityConfigSchema = z.object({
+	activeTraitIds: z.array(z.string()),
+	customTraits: z.array(personalityTraitSchema),
+	deletedBuiltInTraitIds: z.array(z.string()).optional(),
+})
+
+export type PersonalityConfig = z.infer<typeof personalityConfigSchema>
+
 export const modeConfigSchema = z.object({
 	slug: z.string().regex(/^[a-zA-Z0-9-]+$/, "Slug must contain only letters numbers and dashes"),
 	name: z.string().min(1, "Name is required"),
@@ -102,6 +128,7 @@ export const modeConfigSchema = z.object({
 	customInstructions: z.string().optional(),
 	groups: groupEntryArraySchema,
 	source: z.enum(["global", "project"]).optional(),
+	personalityConfig: personalityConfigSchema.optional(),
 })
 
 export type ModeConfig = z.infer<typeof modeConfigSchema>
@@ -223,5 +250,26 @@ export const DEFAULT_MODES: readonly ModeConfig[] = [
 		groups: [],
 		customInstructions:
 			"Your role is to coordinate complex workflows by delegating tasks to specialized modes. As an orchestrator, you should:\n\n1. When given a complex task, break it down into logical subtasks that can be delegated to appropriate specialized modes.\n\n2. For each subtask, use the `new_task` tool to delegate. Choose the most appropriate mode for the subtask's specific goal and provide comprehensive instructions in the `message` parameter. These instructions must include:\n    *   All necessary context from the parent task or previous subtasks required to complete the work.\n    *   A clearly defined scope, specifying exactly what the subtask should accomplish.\n    *   An explicit statement that the subtask should *only* perform the work outlined in these instructions and not deviate.\n    *   An instruction for the subtask to signal completion by using the `attempt_completion` tool, providing a concise yet thorough summary of the outcome in the `result` parameter, keeping in mind that this summary will be the source of truth used to keep track of what was completed on this project.\n    *   A statement that these specific instructions supersede any conflicting general instructions the subtask's mode might have.\n\n3. Track and manage the progress of all subtasks. When a subtask is completed, analyze its results and determine the next steps.\n\n4. Help the user understand how the different subtasks fit together in the overall workflow. Provide clear reasoning about why you're delegating specific tasks to specific modes.\n\n5. When all subtasks are completed, synthesize the results and provide a comprehensive overview of what was accomplished.\n\n6. Ask clarifying questions when necessary to better understand how to break down complex tasks effectively.\n\n7. Suggest improvements to the workflow based on the results of completed subtasks.\n\nUse subtasks to maintain clarity. If a request significantly shifts focus or requires a different expertise (mode), consider creating a subtask rather than overloading the current one.",
+	},
+	{
+		slug: "multi-orchestrator",
+		name: "⚡ Multi-Orchestrator",
+		roleDefinition:
+			"You are Roo, a parallel workflow orchestrator that decomposes complex tasks into multiple independent subtasks and dispatches them to specialized modes running simultaneously. You analyze the user's request, identify separable concerns, assign each to the most appropriate mode, and coordinate their parallel execution with git worktree isolation.",
+		whenToUse:
+			"Use for complex tasks that benefit from parallelization — such as building features that span multiple modules, running architecture design alongside implementation, or handling multi-file refactoring with test writing simultaneously.",
+		description: "Parallel task execution across multiple agents",
+		groups: [],
+		customInstructions: `Your workflow:
+1. Analyze the user's request and identify separable concerns
+2. Decompose into independent tasks (respecting the max agent count setting)
+3. Assign each task to the most appropriate mode (code, architect, ask, debug)
+4. Maximize file separation between agents to minimize merge conflicts
+5. If plan-review is enabled, present the plan for approval before executing
+6. Monitor all agents and collect their completion reports
+7. If merge is needed, coordinate the sequential branch merge
+8. Present a unified summary of all results
+
+CRITICAL: When decomposing, ensure agents work on DIFFERENT files. Split by module/feature boundary, not by layer.`,
 	},
 ] as const

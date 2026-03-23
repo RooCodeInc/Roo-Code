@@ -374,25 +374,30 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			// Enable extended prompt cache retention for models that support it.
 			// This uses the OpenAI Responses API `prompt_cache_retention` parameter.
 			...(promptCacheRetention ? { prompt_cache_retention: promptCacheRetention } : {}),
-			tools: (metadata?.tools ?? [])
-				.filter((tool) => tool.type === "function")
-				.map((tool) => {
-					// MCP tools use the 'mcp--' prefix - disable strict mode for them
-					// to preserve optional parameters from the MCP server schema
-					// But we still need to add additionalProperties: false for OpenAI Responses API
-					const isMcp = isMcpTool(tool.function.name)
-					return {
-						type: "function",
-						name: tool.function.name,
-						description: tool.function.description,
-						parameters: isMcp
-							? ensureAdditionalPropertiesFalse(tool.function.parameters)
-							: ensureAllRequired(tool.function.parameters),
-						strict: !isMcp,
-					}
-				}),
-			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+			// When useXmlToolCalling is enabled, omit native tool definitions from the API request.
+			...(metadata?.useXmlToolCalling
+				? {}
+				: {
+						tools: (metadata?.tools ?? [])
+							.filter((tool) => tool.type === "function")
+							.map((tool) => {
+								// MCP tools use the 'mcp--' prefix - disable strict mode for them
+								// to preserve optional parameters from the MCP server schema
+								// But we still need to add additionalProperties: false for OpenAI Responses API
+								const isMcp = isMcpTool(tool.function.name)
+								return {
+									type: "function",
+									name: tool.function.name,
+									description: tool.function.description,
+									parameters: isMcp
+										? ensureAdditionalPropertiesFalse(tool.function.parameters)
+										: ensureAllRequired(tool.function.parameters),
+									strict: !isMcp,
+								}
+							}),
+						tool_choice: metadata?.tool_choice,
+						parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+					}),
 		}
 
 		// Include text.verbosity only when the model explicitly supports it

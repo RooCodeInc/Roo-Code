@@ -95,6 +95,8 @@ import { ProviderSettingsManager } from "../config/ProviderSettingsManager"
 import { CustomModesManager } from "../config/CustomModesManager"
 import { Task } from "../task/Task"
 
+import { MemoryOrchestrator } from "../memory/orchestrator"
+import { MultiOrchestrator } from "../multi-orchestrator/orchestrator"
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import type { ClineMessage, TodoItem } from "@roo-code/types"
 import { readApiMessages, saveApiMessages, saveTaskMessages, TaskHistoryStore } from "../task-persistence"
@@ -148,6 +150,16 @@ export class ClineProvider
 	private taskEventListeners: WeakMap<Task, Array<() => void>> = new WeakMap()
 	private currentWorkspacePath: string | undefined
 	private _disposed = false
+	private memoryOrchestrator?: MemoryOrchestrator
+	private multiOrchestrator?: MultiOrchestrator
+
+	/**
+	 * The VS Code ViewColumn this provider's panel lives in.
+	 * Set by PanelSpawner for multi-orchestrator agent panels so that
+	 * file operations (diffs, file opens) target the correct editor column
+	 * instead of the globally active editor group.
+	 */
+	public viewColumn?: vscode.ViewColumn
 
 	private recentTasksCache?: string[]
 	public readonly taskHistoryStore: TaskHistoryStore
@@ -160,6 +172,19 @@ export class ClineProvider
 	private cloudOrganizationsCache: CloudOrganizationMembership[] | null = null
 	private cloudOrganizationsCacheTimestamp: number | null = null
 	private static readonly CLOUD_ORGANIZATIONS_CACHE_DURATION_MS = 5 * 1000 // 5 seconds
+
+	/**
+	 * Per-provider auto-approval overrides.
+	 *
+	 * The multi-orchestrator needs each spawned panel's provider to have
+	 * auto-approval enabled regardless of what the shared ContextProxy says.
+	 * Because ContextProxy is a singleton, any concurrent provider activity
+	 * (main sidebar, other panels) can overwrite the values that were set via
+	 * `setValues()`.
+	 *
+	 * These overrides are merged last in `getState()`, so they always win.
+	 */
+	private _autoApprovalOverrides: Partial<RooCodeSettings> | null = null
 
 	/**
 	 * Monotonically increasing sequence number for clineMessages state pushes.
@@ -232,6 +257,15 @@ export class ClineProvider
 		})
 
 		this.marketplaceManager = new MarketplaceManager(this.context, this.customModesManager)
+
+		// Initialize memory orchestrator
+		this.memoryOrchestrator = new MemoryOrchestrator(
+			this.contextProxy.globalStorageUri.fsPath,
+			this.currentWorkspacePath || null,
+		)
+		this.memoryOrchestrator.init().catch((err) => this.log(`[Memory] Init failed: ${err}`))
+		const memoryEnabled = this.contextProxy.getValue("memoryLearningEnabled") ?? false
+		this.memoryOrchestrator.setEnabled(memoryEnabled)
 
 		// Forward <most> task events to the provider.
 		// We do something fairly similar for the IPC-based API.
@@ -724,6 +758,11 @@ export class ClineProvider
 
 	public static getVisibleInstance(): ClineProvider | undefined {
 		return findLast(Array.from(this.activeInstances), (instance) => instance.view?.visible === true)
+	}
+
+	/** Get all active ClineProvider instances (for multi-orchestrator coordination) */
+	public static getAllInstances(): ReadonlySet<ClineProvider> {
+		return this.activeInstances
 	}
 
 	public static async getInstance(): Promise<ClineProvider | undefined> {
@@ -1966,6 +2005,15 @@ export class ClineProvider
 		await this.postStateToWebview()
 	}
 
+	/**
+	 * Override the working directory for this provider.
+	 * Used by the multi-orchestrator to point each spawned provider
+	 * at its own git worktree directory for file isolation.
+	 */
+	public setWorkingDirectory(dir: string): void {
+		this.currentWorkspacePath = dir
+	}
+
 	async postStateToWebview() {
 		const state = await this.getStateToPostToWebview()
 		this.clineMessagesSeq++
@@ -2200,6 +2248,7 @@ export class ClineProvider
 			includeDiagnosticMessages,
 			maxDiagnosticMessages,
 			includeTaskHistoryInEnhance,
+			personalityTraitEnhancerPrompt,
 			includeCurrentTime,
 			includeCurrentCost,
 			maxGitStatusFiles,
@@ -2208,6 +2257,14 @@ export class ClineProvider
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
 			lockApiConfigAcrossModes,
+			memoryLearningEnabled,
+			memoryApiConfigId,
+			memoryAnalysisFrequency,
+			memoryLearningDefaultEnabled,
+			multiOrchMaxAgents,
+			multiOrchPlanReviewEnabled,
+			multiOrchMergeEnabled,
+			multiOrchVerifyEnabled,
 		} = await this.getState()
 
 		let cloudOrganizations: CloudOrganizationMembership[] = []
@@ -2347,6 +2404,7 @@ export class ClineProvider
 			includeDiagnosticMessages: includeDiagnosticMessages ?? true,
 			maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
 			includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
+			personalityTraitEnhancerPrompt,
 			includeCurrentTime: includeCurrentTime ?? true,
 			includeCurrentCost: includeCurrentCost ?? true,
 			maxGitStatusFiles: maxGitStatusFiles ?? 0,
@@ -2354,6 +2412,18 @@ export class ClineProvider
 			imageGenerationProvider,
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
+			memoryLearningEnabled: memoryLearningEnabled ?? false,
+			memoryApiConfigId,
+			memoryAnalysisFrequency,
+			memoryLearningDefaultEnabled: memoryLearningDefaultEnabled ?? false,
+			multiOrchMaxAgents,
+			multiOrchPlanReviewEnabled,
+			multiOrchMergeEnabled,
+			multiOrchVerifyEnabled,
+			// BUG-005: Expose force-approve flag to the webview so it can suppress
+			// approve/deny button rendering entirely, preventing visual flicker.
+			multiOrchForceApproveAll:
+				(this._autoApprovalOverrides as Record<string, unknown> | null)?.multiOrchForceApproveAll === true,
 			openAiCodexIsAuthenticated: await (async () => {
 				try {
 					const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
@@ -2566,6 +2636,7 @@ export class ClineProvider
 			includeDiagnosticMessages: stateValues.includeDiagnosticMessages ?? true,
 			maxDiagnosticMessages: stateValues.maxDiagnosticMessages ?? 50,
 			includeTaskHistoryInEnhance: stateValues.includeTaskHistoryInEnhance ?? true,
+			personalityTraitEnhancerPrompt: stateValues.personalityTraitEnhancerPrompt,
 			includeCurrentTime: stateValues.includeCurrentTime ?? true,
 			includeCurrentCost: stateValues.includeCurrentCost ?? true,
 			maxGitStatusFiles: stateValues.maxGitStatusFiles ?? 0,
@@ -2573,6 +2644,18 @@ export class ClineProvider
 			imageGenerationProvider: stateValues.imageGenerationProvider,
 			openRouterImageApiKey: stateValues.openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel: stateValues.openRouterImageGenerationSelectedModel,
+			memoryLearningEnabled: stateValues.memoryLearningEnabled ?? false,
+			memoryApiConfigId: stateValues.memoryApiConfigId,
+			memoryAnalysisFrequency: stateValues.memoryAnalysisFrequency,
+			memoryLearningDefaultEnabled: stateValues.memoryLearningDefaultEnabled ?? false,
+			multiOrchMaxAgents: stateValues.multiOrchMaxAgents,
+			multiOrchPlanReviewEnabled: stateValues.multiOrchPlanReviewEnabled,
+			multiOrchMergeEnabled: stateValues.multiOrchMergeEnabled,
+			multiOrchVerifyEnabled: stateValues.multiOrchVerifyEnabled,
+
+			// Per-provider auto-approval overrides (set by multi-orchestrator).
+			// Merged last so they always win over ContextProxy values.
+			...(this._autoApprovalOverrides ?? {}),
 		}
 	}
 
@@ -2689,6 +2772,24 @@ export class ClineProvider
 		await this.contextProxy.setValues(values)
 	}
 
+	/**
+	 * Set per-provider auto-approval overrides that persist across ContextProxy changes.
+	 *
+	 * Unlike `setValues()`, which writes to the shared ContextProxy singleton
+	 * (and can be overwritten by any other provider), these overrides are held
+	 * in per-instance memory and merged last in `getState()`.
+	 *
+	 * Used by the multi-orchestrator to guarantee spawned agent panels always
+	 * have auto-approval enabled, even if the shared ContextProxy is mutated.
+	 */
+	public setAutoApprovalOverrides(overrides: Partial<RooCodeSettings> | null): void {
+		this._autoApprovalOverrides = overrides
+		console.log(
+			`[ClineProvider] setAutoApprovalOverrides: autoApprovalEnabled=${overrides?.autoApprovalEnabled}, ` +
+				`alwaysAllowWrite=${overrides?.alwaysAllowWrite}, alwaysAllowExecute=${overrides?.alwaysAllowExecute}`,
+		)
+	}
+
 	// dev
 
 	async resetState() {
@@ -2749,6 +2850,25 @@ export class ClineProvider
 
 	public getSkillsManager(): SkillsManager | undefined {
 		return this.skillsManager
+	}
+
+	public getMemoryOrchestrator(): MemoryOrchestrator | undefined {
+		return this.memoryOrchestrator
+	}
+
+	/** Get or lazily create the MultiOrchestrator instance (on-demand, not auto-initialized in constructor) */
+	public getMultiOrchestrator(): MultiOrchestrator {
+		if (!this.multiOrchestrator) {
+			console.log("[MultiOrch:Handler] getMultiOrchestrator() → creating NEW instance, workspacePath:", this.currentWorkspacePath || "(empty)")
+			this.multiOrchestrator = new MultiOrchestrator(
+				this.context,
+				this.outputChannel,
+				this.currentWorkspacePath || "",
+			)
+		} else {
+			console.log("[MultiOrch:Handler] getMultiOrchestrator() → reusing existing instance")
+		}
+		return this.multiOrchestrator
 	}
 
 	/**
@@ -2896,6 +3016,14 @@ export class ClineProvider
 	): Promise<Task> {
 		if (configuration) {
 			await this.setValues(configuration)
+			console.log(
+				`[ClineProvider:createTask] setValues complete, checking autoApprovalEnabled: ${this.contextProxy.getValue("autoApprovalEnabled")}`,
+				`alwaysAllowWrite: ${this.contextProxy.getValue("alwaysAllowWrite")}`,
+				`alwaysAllowExecute: ${this.contextProxy.getValue("alwaysAllowExecute")}`,
+				`alwaysAllowReadOnly: ${this.contextProxy.getValue("alwaysAllowReadOnly")}`,
+				`alwaysAllowMcp: ${this.contextProxy.getValue("alwaysAllowMcp")}`,
+				`(configuration keys passed: ${Object.keys(configuration).join(", ")})`,
+			)
 
 			if (configuration.allowedCommands) {
 				await vscode.workspace
@@ -2944,6 +3072,11 @@ export class ClineProvider
 			} catch {
 				// Non-fatal
 			}
+			// Check if removeClineFromStack reset auto-approval settings
+			console.log(
+				`[ClineProvider:createTask] After removeClineFromStack, autoApprovalEnabled: ${this.contextProxy.getValue("autoApprovalEnabled")}`,
+				`(parentTask=${!!parentTask})`,
+			)
 		}
 
 		if (!ProfileValidator.isProfileAllowed(apiConfiguration, organizationAllowList)) {
@@ -2971,10 +3104,16 @@ export class ClineProvider
 		})
 
 		await this.addClineToStack(task)
-		task.start()
+
+		// Only auto-start if the caller didn't explicitly request deferred start.
+		// The multi-orchestrator passes startTask: false to create all tasks first,
+		// then calls task.start() on each one simultaneously via AgentCoordinator.
+		if (options.startTask !== false) {
+			task.start()
+		}
 
 		this.log(
-			`[createTask] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
+			`[createTask] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated (started=${options.startTask !== false})`,
 		)
 
 		return task

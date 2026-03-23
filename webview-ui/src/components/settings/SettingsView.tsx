@@ -29,6 +29,9 @@ import {
 	ArrowLeft,
 	GitCommitVertical,
 	GraduationCap,
+	Brain,
+	Loader2,
+	Zap,
 } from "lucide-react"
 
 import {
@@ -83,6 +86,7 @@ import McpView from "../mcp/McpView"
 import { WorktreesView } from "../worktrees/WorktreesView"
 import { SettingsSearch } from "./SettingsSearch"
 import { useSearchIndexRegistry, SearchIndexProvider } from "./useSettingsSearch"
+import { MemoryChatPicker } from "./MemoryChatPicker"
 
 export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
 export const settingsTabList =
@@ -110,6 +114,8 @@ export const sectionNames = [
 	"prompts",
 	"ui",
 	"experimental",
+	"memory",
+	"multiOrch",
 	"language",
 	"about",
 ] as const
@@ -121,15 +127,35 @@ type SettingsViewProps = {
 	targetSection?: string
 }
 
+/** Format a unix timestamp (seconds) into a human-readable relative time string. */
+function formatTimeAgo(unixSeconds: number): string {
+	const now = Math.floor(Date.now() / 1000)
+	const diff = now - unixSeconds
+	if (diff < 60) return "just now"
+	if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+	if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+	if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`
+	return new Date(unixSeconds * 1000).toLocaleDateString()
+}
+
 const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, targetSection }, ref) => {
 	const { t } = useAppTranslation()
 
 	const extensionState = useExtensionState()
-	const { currentApiConfigName, listApiConfigMeta, uriScheme, settingsImportedAt } = extensionState
+	const { currentApiConfigName, listApiConfigMeta, uriScheme, settingsImportedAt, taskHistory } = extensionState
 
 	const [isDiscardDialogShow, setDiscardDialogShow] = useState(false)
 	const [isChangeDetected, setChangeDetected] = useState(false)
 	const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined)
+
+	// Memory sync state
+	const [isSyncing, setIsSyncing] = useState(false)
+	const [syncProgress, setSyncProgress] = useState({ completed: 0, total: 0 })
+	const [syncDone, setSyncDone] = useState(false)
+	const [memoryStats, setMemoryStats] = useState<{ entryCount: number; lastAnalyzedAt: number | null }>({ entryCount: 0, lastAnalyzedAt: null })
+	const [pickerOpen, setPickerOpen] = useState(false)
+	const [clearDialogOpen, setClearDialogOpen] = useState(false)
+
 	const [activeTab, setActiveTab] = useState<SectionName>(
 		targetSection && sectionNames.includes(targetSection as SectionName)
 			? (targetSection as SectionName)
@@ -226,6 +252,80 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			setChangeDetected(false)
 		}
 	}, [settingsImportedAt, extensionState])
+
+	// Request initial memory status on mount
+	useEffect(() => {
+		vscode.postMessage({ type: "getMemoryStatus" })
+	}, [])
+
+	// Memory sync message listener
+	useEffect(() => {
+		const handler = (event: MessageEvent) => {
+			const msg = event.data
+			if (msg.type === "memorySyncProgress") {
+				const data = JSON.parse(msg.text)
+				setSyncProgress(data)
+			}
+			if (msg.type === "memorySyncComplete") {
+				setIsSyncing(false)
+				setSyncDone(true)
+				// Refresh status so entry count and button states update immediately
+				vscode.postMessage({ type: "getMemoryStatus" })
+			}
+			if (msg.type === "memoryCleared") {
+				setSyncDone(false)
+				setSyncProgress({ completed: 0, total: 0 })
+				setMemoryStats({ entryCount: 0, lastAnalyzedAt: null })
+			}
+			if (msg.type === "memorySyncAlreadyRunning") {
+				// Sync was rejected because one is already in progress — keep UI in syncing state
+				// (this is a defensive fallback; buttons should already be disabled)
+			}
+			if (msg.type === "memorySyncStatus") {
+				const status = JSON.parse(msg.text)
+				if (status.inProgress) {
+					setIsSyncing(true)
+					setSyncProgress({ completed: status.completed, total: status.total })
+				}
+			}
+			if (msg.type === "memoryStatus") {
+				const data = JSON.parse(msg.text)
+				setMemoryStats({
+					entryCount: data.entryCount ?? 0,
+					lastAnalyzedAt: data.lastAnalyzedAt ?? null,
+				})
+				// If memory exists from a previous session, show the green indicator
+				if ((data.entryCount ?? 0) > 0) {
+					setSyncDone(true)
+				}
+			}
+		}
+		window.addEventListener("message", handler)
+		return () => window.removeEventListener("message", handler)
+	}, [])
+
+	// When the memory tab becomes active, ask the backend for current sync status
+	// so the progress bar is restored after tab switches, and refresh memory stats.
+	useEffect(() => {
+		if (activeTab === "memory") {
+			vscode.postMessage({ type: "getMemorySyncStatus" })
+			vscode.postMessage({ type: "getMemoryStatus" })
+		}
+	}, [activeTab])
+
+	const handleStartSync = (taskIds: string[]) => {
+		if (isSyncing) return
+		setIsSyncing(true)
+		setSyncDone(false)
+		setSyncProgress({ completed: 0, total: taskIds.length })
+		setPickerOpen(false)
+		vscode.postMessage({ type: "startMemorySync", text: JSON.stringify({ taskIds }) })
+	}
+
+	const handleClearMemory = () => {
+		vscode.postMessage({ type: "clearMemory" })
+		setClearDialogOpen(false)
+	}
 
 	const setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType> = useCallback((field, value) => {
 		setCachedState((prevState) => {
@@ -422,6 +522,13 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					openRouterImageGenerationSelectedModel,
 					experiments,
 					customSupportPrompts,
+					memoryApiConfigId: cachedState.memoryApiConfigId,
+					memoryAnalysisFrequency: cachedState.memoryAnalysisFrequency,
+					memoryLearningDefaultEnabled: cachedState.memoryLearningDefaultEnabled,
+					multiOrchMaxAgents: cachedState.multiOrchMaxAgents,
+					multiOrchPlanReviewEnabled: cachedState.multiOrchPlanReviewEnabled,
+					multiOrchMergeEnabled: cachedState.multiOrchMergeEnabled,
+					multiOrchVerifyEnabled: cachedState.multiOrchVerifyEnabled,
 				},
 			})
 
@@ -522,6 +629,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "worktrees", icon: GitBranch },
 			{ id: "ui", icon: Glasses },
 			{ id: "experimental", icon: FlaskConical },
+			{ id: "memory", icon: Brain },
+			{ id: "multiOrch", icon: Zap },
 			{ id: "language", icon: Globe },
 			{ id: "about", icon: Info },
 		],
@@ -912,6 +1021,298 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								setOpenRouterImageApiKey={setOpenRouterImageApiKey}
 								setImageGenerationSelectedModel={setImageGenerationSelectedModel}
 							/>
+						)}
+
+						{/* Memory Section */}
+						{renderTab === "memory" && (
+							<div>
+								<SectionHeader>Memory Learning</SectionHeader>
+								<Section>
+									<div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+									<p style={{ fontSize: "13px", opacity: 0.7 }}>
+										When enabled, Roo learns your preferences and coding
+										style from conversations to personalize responses over
+										time.
+									</p>
+
+									{/* Memory status indicator */}
+									{memoryStats.entryCount > 0 ? (
+										<div style={{ fontSize: "12px", opacity: 0.7, padding: "8px 12px", background: "var(--vscode-input-background)", borderRadius: "4px" }}>
+											<span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#22c55e", marginRight: "6px", verticalAlign: "middle" }} />
+											{memoryStats.entryCount} {memoryStats.entryCount === 1 ? "memory" : "memories"} stored
+											{memoryStats.lastAnalyzedAt && ` · Last updated ${formatTimeAgo(memoryStats.lastAnalyzedAt)}`}
+										</div>
+									) : (
+										<div style={{ fontSize: "12px", opacity: 0.4, padding: "8px 12px", background: "var(--vscode-input-background)", borderRadius: "4px" }}>
+											No memories yet — analyze some chats below to get started.
+										</div>
+									)}
+
+									{/* Analysis model profile selector */}
+										<div>
+											<label style={{ fontSize: "13px", fontWeight: 500 }}>
+												Analysis Model Profile
+											</label>
+											<p style={{ fontSize: "11px", opacity: 0.6, marginBottom: "4px" }}>
+												Select a model configuration for memory analysis
+												(requires at least 50K context window).
+											</p>
+											<select
+												value={cachedState.memoryApiConfigId || ""}
+												onChange={(e) => {
+													setCachedStateField(
+														"memoryApiConfigId",
+														e.target.value || undefined,
+													)
+												}}
+												style={{
+													width: "100%",
+													padding: "6px 8px",
+													background: "var(--vscode-input-background)",
+													color: "var(--vscode-input-foreground)",
+													border: "1px solid var(--vscode-input-border)",
+													borderRadius: "2px",
+												}}>
+												<option value="">Not configured</option>
+												{(cachedState.listApiConfigMeta || []).map(
+													(config: { id: string; name: string }) => (
+														<option
+															key={config.id || config.name}
+															value={config.id || config.name}>
+															{config.name}
+														</option>
+													),
+												)}
+											</select>
+										</div>
+
+										{/* Analysis frequency selector */}
+										<div>
+											<label style={{ fontSize: "13px", fontWeight: 500 }}>
+												Analysis Frequency
+											</label>
+											<p style={{ fontSize: "11px", opacity: 0.6, marginBottom: "4px" }}>
+												Analyze conversation every N user messages.
+											</p>
+											<select
+												value={cachedState.memoryAnalysisFrequency || 8}
+												onChange={(e) => {
+													setCachedStateField(
+														"memoryAnalysisFrequency",
+														parseInt(e.target.value),
+													)
+												}}
+												style={{
+													width: "100%",
+													padding: "6px 8px",
+													background: "var(--vscode-input-background)",
+													color: "var(--vscode-input-foreground)",
+													border: "1px solid var(--vscode-input-border)",
+													borderRadius: "2px",
+												}}>
+												{[4, 6, 8, 10, 15, 20].map((n) => (
+													<option key={n} value={n}>
+														Every {n} messages
+													</option>
+												))}
+											</select>
+										</div>
+
+									{/* Default enabled checkbox */}
+									<div
+										style={{
+											display: "flex",
+											alignItems: "center",
+											gap: "8px",
+										}}>
+										<input
+											type="checkbox"
+											checked={
+												cachedState.memoryLearningDefaultEnabled ?? true
+											}
+											onChange={(e) => {
+												setCachedStateField(
+													"memoryLearningDefaultEnabled",
+													e.target.checked,
+												)
+											}}
+										/>
+										<label style={{ fontSize: "13px" }}>
+											Enable by default for new sessions
+										</label>
+									</div>
+
+									{/* Prior Chat Analysis */}
+									<div style={{ borderTop: "1px solid var(--vscode-input-border)", paddingTop: "16px" }}>
+										<label style={{ fontSize: "13px", fontWeight: 500 }}>Prior Chat Analysis</label>
+										<p style={{ fontSize: "11px", opacity: 0.6, marginBottom: "8px" }}>
+											Analyze your existing conversations to build your profile instantly.
+										</p>
+
+										<div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}>
+											<Button variant="secondary" onClick={() => setPickerOpen(true)} disabled={isSyncing}>
+												{isSyncing ? "Syncing..." : memoryStats.entryCount > 0 ? "Add More Chats" : "Browse Chats"}
+											</Button>
+											{isSyncing ? (
+												<Loader2 className="w-4 h-4 animate-spin" />
+											) : syncDone ? (
+												<span className="inline-block w-3 h-3 rounded-full bg-green-500" />
+											) : null}
+											{isSyncing && (
+												<span style={{ fontSize: "11px", opacity: 0.7 }}>
+													{syncProgress.completed} of {syncProgress.total} analyzed
+												</span>
+											)}
+										</div>
+
+										{/* Progress bar — visible while syncing */}
+										{isSyncing && syncProgress.total > 0 && (
+											<div style={{ width: "100%", height: "6px", background: "var(--vscode-input-background)", borderRadius: "3px", overflow: "hidden", marginBottom: "12px" }}>
+												<div style={{
+													width: `${(syncProgress.completed / syncProgress.total) * 100}%`,
+													height: "100%",
+													background: "var(--vscode-button-background)",
+													transition: "width 0.3s ease",
+												}} />
+											</div>
+										)}
+									</div>
+
+									{/* Clear Memory */}
+									<div style={{ borderTop: "1px solid var(--vscode-input-border)", paddingTop: "16px" }}>
+										<Button variant="destructive" onClick={() => setClearDialogOpen(true)} disabled={isSyncing || memoryStats.entryCount === 0} style={{ opacity: memoryStats.entryCount > 0 ? 1 : 0.4 }}>
+											Clear Memory{memoryStats.entryCount > 0 ? ` (${memoryStats.entryCount} entries)` : ""}
+										</Button>
+										<p style={{ fontSize: "11px", opacity: 0.5, marginTop: "4px" }}>
+											Reset all learned preferences and start fresh.
+										</p>
+									</div>
+								</div>
+
+								{/* Memory Chat Picker Dialog */}
+								<MemoryChatPicker
+									open={pickerOpen}
+									onOpenChange={setPickerOpen}
+									taskHistory={taskHistory}
+									onStartSync={handleStartSync}
+								/>
+
+								{/* Clear Memory Confirmation Dialog */}
+								<AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
+									<AlertDialogContent>
+										<AlertDialogHeader>
+											<AlertDialogTitle>
+												<AlertTriangle className="w-5 h-5 text-yellow-500" />
+												Clear Memory
+											</AlertDialogTitle>
+											<AlertDialogDescription>
+												This will reset all learned preferences and start fresh. Are you sure?
+											</AlertDialogDescription>
+										</AlertDialogHeader>
+										<AlertDialogFooter>
+											<AlertDialogCancel onClick={() => setClearDialogOpen(false)}>
+												Cancel
+											</AlertDialogCancel>
+											<AlertDialogAction onClick={handleClearMemory}>
+												Clear Memory
+											</AlertDialogAction>
+										</AlertDialogFooter>
+									</AlertDialogContent>
+								</AlertDialog>
+							</Section>
+						</div>
+					)}
+
+						{/* Multi-Orchestrator Section */}
+						{renderTab === "multiOrch" && (
+							<div>
+								<SectionHeader>Multi-Orchestrator</SectionHeader>
+								<Section>
+									<div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+										<p style={{ fontSize: "13px", opacity: 0.7 }}>
+											Configure parallel task execution across multiple agents.
+										</p>
+
+										{/* Max agents */}
+										<div>
+											<label style={{ fontSize: "13px", fontWeight: 500 }}>Default Max Agents</label>
+											<p style={{ fontSize: "11px", opacity: 0.6, marginBottom: "4px" }}>
+												Maximum number of parallel agents (1-6).
+											</p>
+											<select
+												value={cachedState.multiOrchMaxAgents || 4}
+												onChange={(e) => setCachedStateField("multiOrchMaxAgents", parseInt(e.target.value))}
+												style={{
+													width: "100%",
+													padding: "6px 8px",
+													background: "var(--vscode-input-background)",
+													color: "var(--vscode-input-foreground)",
+													border: "1px solid var(--vscode-input-border)",
+													borderRadius: "2px",
+												}}>
+												{[1, 2, 3, 4, 5, 6].map((n) => (
+													<option key={n} value={n}>
+														{n} agents
+													</option>
+												))}
+											</select>
+										</div>
+
+										{/* Plan review toggle */}
+										<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+											<input
+												type="checkbox"
+												checked={cachedState.multiOrchPlanReviewEnabled ?? false}
+												onChange={(e) => setCachedStateField("multiOrchPlanReviewEnabled", e.target.checked)}
+											/>
+											<label style={{ fontSize: "13px" }}>
+												Review execution plan before starting (plan-review mode)
+											</label>
+										</div>
+
+										{/* Merge mode */}
+										<div>
+											<label style={{ fontSize: "13px", fontWeight: 500 }}>Merge Conflict Resolution</label>
+											<p style={{ fontSize: "11px", opacity: 0.6, marginBottom: "4px" }}>
+												When to run the merge phase after agents complete.
+											</p>
+											<select
+												value={cachedState.multiOrchMergeEnabled || "auto"}
+												onChange={(e) => setCachedStateField("multiOrchMergeEnabled", e.target.value)}
+												style={{
+													width: "100%",
+													padding: "6px 8px",
+													background: "var(--vscode-input-background)",
+													color: "var(--vscode-input-foreground)",
+													border: "1px solid var(--vscode-input-border)",
+													borderRadius: "2px",
+												}}>
+												<option value="auto">Auto-detect (merge only if code agents used)</option>
+												<option value="always">Always merge</option>
+												<option value="never">Never merge</option>
+											</select>
+										</div>
+
+										{/* Post-completion verification toggle */}
+										<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+											<input
+												type="checkbox"
+												checked={cachedState.multiOrchVerifyEnabled ?? false}
+												onChange={(e) => setCachedStateField("multiOrchVerifyEnabled", e.target.checked)}
+											/>
+											<div>
+												<label style={{ fontSize: "13px" }}>
+													Enable post-completion verification
+												</label>
+												<p style={{ fontSize: "11px", opacity: 0.6, marginTop: "2px" }}>
+													After all agents complete, spawn a verification agent to review
+													changed files for bugs, inconsistencies, and integration issues.
+												</p>
+											</div>
+										</div>
+									</div>
+								</Section>
+							</div>
 						)}
 
 						{/* Language Section */}

@@ -149,8 +149,13 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			stream: true,
 			stream_options: { include_usage: true },
 			requesty: { trace_id: metadata?.taskId, extra: { mode: metadata?.mode } },
-			tools: this.convertToolsForOpenAI(metadata?.tools),
-			tool_choice: metadata?.tool_choice,
+			// When useXmlToolCalling is enabled, omit native tool definitions from the API request.
+			...(metadata?.useXmlToolCalling
+				? {}
+				: {
+						tools: this.convertToolsForOpenAI(metadata?.tools),
+						tool_choice: metadata?.tool_choice,
+					}),
 		}
 
 		let stream

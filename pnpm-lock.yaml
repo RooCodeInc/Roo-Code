@@ -600,7 +600,7 @@ importers:
         version: 0.13.0
       drizzle-orm:
         specifier: ^0.44.1
-        version: 0.44.1(@libsql/client@0.15.8)(@opentelemetry/api@1.9.0)(better-sqlite3@11.10.0)(gel@2.1.0)(postgres@3.4.7)
+        version: 0.44.1(@libsql/client@0.15.8)(@opentelemetry/api@1.9.0)(better-sqlite3@11.10.0)(gel@2.1.0)(postgres@3.4.7)(sql.js@1.14.1)
       execa:
         specifier: ^9.6.0
         version: 9.6.0
@@ -971,6 +971,9 @@ importers:
       sound-play:
         specifier: ^1.1.0
         version: 1.1.0
+      sql.js:
+        specifier: ^1.14.1
+        version: 1.14.1
       stream-json:
         specifier: ^1.8.0
         version: 1.9.1
@@ -5130,6 +5133,7 @@ packages:
   basic-ftp@5.0.5:
     resolution: {integrity: sha512-4Bcg1P8xhUuqcii/S0Z9wiHIrQVPMermM1any+MX5GeGD7faD3/msQUDGLol9wOcz4/jbg/WJnGqoJF6LiBdtg==}
     engines: {node: '>=10.0.0'}
+    deprecated: Security vulnerability fixed in 5.2.0, please upgrade
 
   better-path-resolve@1.0.0:
     resolution: {integrity: sha512-pbnl5XzGBdrFU/wT4jqmJVPn2B6UHPBOhzMQkY/SPUPB6QtUXtmBHBIwCbXJol93mOpGMnQyP/+BB19q04xj7g==}
@@ -8976,6 +8980,7 @@ packages:
   prebuild-install@7.1.3:
     resolution: {integrity: sha512-8Mf2cbV7x1cXPUILADGI3wuhfqWvtiLA1iclTDbFRZkgRQS0NqsPZphna9V+HyTEadheuPmjaJMsbzKQFOzLug==}
     engines: {node: '>=10'}
+    deprecated: No longer maintained. Please contact the author of the relevant native addon; alternatives are available.
     hasBin: true
 
   prelude-ls@1.2.1:
@@ -9757,6 +9762,9 @@ packages:
 
   sprintf-js@1.1.3:
     resolution: {integrity: sha512-Oo+0REFV59/rz3gfJNKQiBlwfHaSESl1pcGyABQsnnIfWOFt6JNj5gCog2U6MLZ//IGYD+nA8nI+mTShREReaA==}
+
+  sql.js@1.14.1:
+    resolution: {integrity: sha512-gcj8zBWU5cFsi9WUP+4bFNXAyF1iRpA3LLyS/DP5xlrNzGmPIizUeBggKa8DbDwdqaKwUcTEnChtd2grWo/x/A==}
 
   stack-generator@2.0.10:
     resolution: {integrity: sha512-mwnua/hkqM6pF4k8SnmZ2zfETsRUpWXREfA/goT8SLCV4iOFa4bzOX2nDipWAZFPTjLvQB82f5yaodMVhK0yJQ==}
@@ -14974,7 +14982,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.14
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.2.1)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@20.17.50)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -16340,13 +16348,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.44.1(@libsql/client@0.15.8)(@opentelemetry/api@1.9.0)(better-sqlite3@11.10.0)(gel@2.1.0)(postgres@3.4.7):
+  drizzle-orm@0.44.1(@libsql/client@0.15.8)(@opentelemetry/api@1.9.0)(better-sqlite3@11.10.0)(gel@2.1.0)(postgres@3.4.7)(sql.js@1.14.1):
     optionalDependencies:
       '@libsql/client': 0.15.8
       '@opentelemetry/api': 1.9.0
       better-sqlite3: 11.10.0
       gel: 2.1.0
       postgres: 3.4.7
+      sql.js: 1.14.1
 
   duck@0.1.12:
     dependencies:
@@ -20791,6 +20800,8 @@ snapshots:
   sprintf-js@1.0.3: {}
 
   sprintf-js@1.1.3: {}
+
+  sql.js@1.14.1: {}
 
   stack-generator@2.0.10:
     dependencies:

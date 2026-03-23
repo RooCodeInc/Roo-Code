@@ -199,6 +199,12 @@ export const globalSettingsSchema = z.object({
 	customSupportPrompts: customSupportPromptsSchema.optional(),
 	enhancementApiConfigId: z.string().optional(),
 	includeTaskHistoryInEnhance: z.boolean().optional(),
+
+	/**
+	 * Custom meta-prompt for the personality trait enhancer.
+	 * Used to expand brief descriptions into structured personality prompts.
+	 */
+	personalityTraitEnhancerPrompt: z.string().optional(),
 	historyPreviewCollapsed: z.boolean().optional(),
 	reasoningBlockCollapsed: z.boolean().optional(),
 	/**
@@ -232,6 +238,24 @@ export const globalSettingsSchema = z.object({
 	 * Tools in this list will be excluded from prompt generation and rejected at execution time.
 	 */
 	disabledTools: z.array(toolNamesSchema).optional(),
+
+	// Memory Learning
+	memoryLearningEnabled: z.boolean().optional(),
+	memoryApiConfigId: z.string().optional(),
+	memoryAnalysisFrequency: z.number().optional(),
+	memoryLearningDefaultEnabled: z.boolean().optional(),
+
+	// Multi-Orchestrator
+	multiOrchMaxAgents: z.number().min(1).max(6).optional(),
+	multiOrchPlanReviewEnabled: z.boolean().optional(),
+	multiOrchMergeEnabled: z.enum(["auto", "always", "never"]).optional(),
+	/**
+	 * Whether to spawn a verification agent after all sub-agents complete.
+	 * The verification agent reviews changed files for bugs, inconsistencies,
+	 * and integration issues before the final report is produced.
+	 * @default false
+	 */
+	multiOrchVerifyEnabled: z.boolean().optional(),
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>

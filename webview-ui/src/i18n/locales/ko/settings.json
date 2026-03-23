@@ -554,7 +554,9 @@
 			"placeholder": "기본값: claude",
 			"maxTokensLabel": "최대 출력 토큰",
 			"maxTokensDescription": "Claude Code 응답의 최대 출력 토큰 수. 기본값은 8000입니다."
-		}
+		},
+		"useXmlToolCalling": "Use XML tool calling",
+		"useXmlToolCallingDescription": "Use XML-style formatting for tool calls instead of native tool calling. Enable this if your model responds better with XML tool formatting."
 	},
 	"checkpoints": {
 		"timeout": {
@@ -738,7 +740,9 @@
 		}
 	},
 	"advancedSettings": {
-		"title": "고급 설정"
+		"title": "고급 설정",
+		"useXmlToolCalling": "Use XML tool calling",
+		"useXmlToolCallingDescription": "Use XML-style formatting for tool calls instead of native tool calling. Enable this if your model responds better with XML tool formatting."
 	},
 	"advanced": {
 		"diff": {

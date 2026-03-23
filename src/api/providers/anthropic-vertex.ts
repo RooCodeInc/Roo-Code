@@ -75,10 +75,15 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 		// Filter out non-Anthropic blocks (reasoning, thoughtSignature, etc.) before sending to the API
 		const sanitizedMessages = filterNonAnthropicBlocks(messages)
 
-		const nativeToolParams = {
-			tools: convertOpenAIToolsToAnthropic(metadata?.tools ?? []),
-			tool_choice: convertOpenAIToolChoiceToAnthropic(metadata?.tool_choice, metadata?.parallelToolCalls),
-		}
+		// When useXmlToolCalling is enabled, omit native tool definitions from the API request.
+		// The model will rely on XML tool documentation in the system prompt instead,
+		// and output tool calls as raw XML text parsed by TagMatcher.
+		const nativeToolParams = metadata?.useXmlToolCalling
+			? {}
+			: {
+					tools: convertOpenAIToolsToAnthropic(metadata?.tools ?? []),
+					tool_choice: convertOpenAIToolChoiceToAnthropic(metadata?.tool_choice, metadata?.parallelToolCalls),
+				}
 
 		/**
 		 * Vertex API has specific limitations for prompt caching:

@@ -59,8 +59,38 @@ export async function checkAutoApproval({
 		return { decision: "approve" }
 	}
 
+	console.log(
+		`[checkAutoApproval] ask="${ask}"`,
+		`autoApprovalEnabled=${state?.autoApprovalEnabled}`,
+		`alwaysAllowReadOnly=${state?.alwaysAllowReadOnly}`,
+		`alwaysAllowWrite=${state?.alwaysAllowWrite}`,
+		`alwaysAllowExecute=${state?.alwaysAllowExecute}`,
+		`alwaysAllowMcp=${state?.alwaysAllowMcp}`,
+		`alwaysAllowModeSwitch=${state?.alwaysAllowModeSwitch}`,
+		`alwaysAllowSubtasks=${state?.alwaysAllowSubtasks}`,
+		`stateExists=${!!state}`,
+	)
+
 	if (!state || !state.autoApprovalEnabled) {
+		console.log(`[checkAutoApproval] BLOCKING — autoApprovalEnabled is falsy (${state?.autoApprovalEnabled}), returning "ask" for ask="${ask}"`)
 		return { decision: "ask" }
+	}
+
+	// Multi-orchestrator spawned agents: approve ALL tool/command/followup
+	// operations unconditionally. Nobody is watching these panels to click
+	// approve, so every ask must be auto-approved to avoid deadlocks.
+	//
+	// EXCEPTION: completion_result — we approve it (which triggers "yesButtonClicked"
+	// → emitTaskCompleted → return from tool), but we ALSO need to abort the
+	// task to prevent the outer while-loop from sending another API request.
+	// resume_completed_task/resume_task must NOT be approved to prevent restarts.
+	if ((state as Record<string, unknown>).multiOrchForceApproveAll === true) {
+		if (ask === "resume_completed_task" || ask === "resume_task") {
+			console.log(`[checkAutoApproval] multiOrchForceApproveAll=true but ask="${ask}" is a resume — NOT auto-approving`)
+			return { decision: "ask" }
+		}
+		console.log(`[checkAutoApproval] multiOrchForceApproveAll=true → auto-approving ask="${ask}"`)
+		return { decision: "approve" }
 	}
 
 	if (ask === "followup") {
