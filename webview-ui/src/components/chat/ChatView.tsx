@@ -96,6 +96,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		cloudIsAuthenticated,
 		messageQueue = [],
 		showWorktreesInHomeScreen,
+		multiOrchForceApproveAll,
 	} = useExtensionState()
 
 	// Show a WarningRow when the user sends a message with a retired provider.
@@ -1548,7 +1549,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				return
 			}
 
-			if (enableButtons && primaryButtonText) {
+			if (enableButtons && primaryButtonText && !multiOrchForceApproveAll) {
 				handlePrimaryButtonClick(inputValue, selectedImages)
 			} else if (!sendingDisabled && !isProfileDisabled && hasInput) {
 				handleSendMessage(inputValue, selectedImages)
@@ -1565,7 +1566,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		vscode.postMessage({ type: "condenseTaskContextRequest", text: taskId })
 	}
 
-	const areButtonsVisible = showScrollToBottom || primaryButtonText || secondaryButtonText
+	// BUG-005: When multiOrchForceApproveAll is true, suppress approve/deny
+	// buttons entirely. The backend auto-approves all asks within milliseconds,
+	// but the webview renders buttons in the interim causing a yellow flash.
+	const areButtonsVisible =
+		!multiOrchForceApproveAll && (showScrollToBottom || primaryButtonText || secondaryButtonText)
 
 	return (
 		<div

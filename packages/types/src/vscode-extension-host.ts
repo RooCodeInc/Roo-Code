@@ -396,6 +396,13 @@ export type ExtensionState = Pick<
 	debug?: boolean
 
 	/**
+	 * When true, this provider is a multi-orchestrator agent panel with
+	 * force-approve-all enabled. The webview should suppress approve/deny
+	 * button rendering entirely to prevent visual flicker (BUG-005).
+	 */
+	multiOrchForceApproveAll?: boolean
+
+	/**
 	 * Monotonically increasing sequence number for clineMessages state pushes.
 	 * When present, the frontend should only apply clineMessages from a state push
 	 * if its seq is greater than the last applied seq. This prevents stale state
