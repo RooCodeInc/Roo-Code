@@ -5,8 +5,8 @@ describe("Built-in Commands", () => {
 		it("should return all built-in commands", async () => {
 			const commands = await getBuiltInCommands()
 
-			expect(commands).toHaveLength(1)
-			expect(commands.map((cmd) => cmd.name)).toEqual(expect.arrayContaining(["init"]))
+			expect(commands).toHaveLength(2)
+			expect(commands.map((cmd) => cmd.name)).toEqual(expect.arrayContaining(["init", "plugin"]))
 
 			// Verify all commands have required properties
 			commands.forEach((command) => {
@@ -31,6 +31,12 @@ describe("Built-in Commands", () => {
 			expect(initCommand!.description).toBe(
 				"Analyze codebase and create concise AGENTS.md files for AI assistants",
 			)
+
+			const pluginCommand = commands.find((cmd) => cmd.name === "plugin")
+			expect(pluginCommand).toBeDefined()
+			expect(pluginCommand!.content).toContain("plugin.json")
+			expect(pluginCommand!.content).toContain("PluginManager")
+			expect(pluginCommand!.description).toBe("Install, remove, or list plugins from GitHub repositories")
 		})
 	})
 
@@ -63,10 +69,10 @@ describe("Built-in Commands", () => {
 		it("should return all built-in command names", async () => {
 			const names = await getBuiltInCommandNames()
 
-			expect(names).toHaveLength(1)
-			expect(names).toEqual(expect.arrayContaining(["init"]))
+			expect(names).toHaveLength(2)
+			expect(names).toEqual(expect.arrayContaining(["init", "plugin"]))
 			// Order doesn't matter since it's based on filesystem order
-			expect(names.sort()).toEqual(["init"])
+			expect(names.sort()).toEqual(["init", "plugin"])
 		})
 
 		it("should return array of strings", async () => {
