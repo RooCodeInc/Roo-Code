@@ -644,7 +644,101 @@ Removed the heuristic entirely. The `maxAgents` hard cap at `tasks.slice(0, maxA
 
 ---
 
-## 25. VS Code API Constraints
+## 25. Bug #21: Finished Sub-Tasks Don't Flow Back To Multi-Orchestrator
+**Severity**: CRITICAL
+**Status**: REGRESSION — was working briefly, now broken again
+
+### Symptom
+After all 3 agents complete their tasks and show "Task Completed", the multi-orchestrator sidebar does NOT proceed to the next phases (merge, verify, report). The sidebar shows "Multi-Orchestration: running" with "0/3 agents complete" or similar stale state. The orchestrator never receives the completion signals and never generates the final aggregated report.
+
+In an earlier session iteration, this DID work — the orchestrator collected all reports and displayed a unified summary in the sidebar. Something in the subsequent fixes broke the flow.
+
+### Root Cause Analysis
+
+The completion flow has multiple potential failure points:
+
+**Point 1 — TaskCompleted event not emitted by ClineProvider**: The `AgentCoordinator` listens for `RooCodeEventName.TaskCompleted` on the ClineProvider instance. But TaskCompleted is emitted by the Task object, and ClineProvider forwards it. If the event forwarding chain is broken (e.g., because the task was aborted before the event could propagate), the coordinator never hears about it.
+
+**Point 2 — abortTask() kills the event chain**: When `TaskCompleted` fires, the coordinator calls `currentTask.abortTask(false)` to prevent the while-loop from continuing. But `abortTask()` also emits `TaskAborted` and calls `dispose()` on the task. If `dispose()` removes event listeners BEFORE the `TaskCompleted` event fully propagates through the ClineProvider, the coordinator's handler may not execute completely.
+
+The sequence might be:
+1. Task calls `attempt_completion` → auto-approved → `emitTaskCompleted()` emits TaskCompleted
+2. Coordinator receives TaskCompleted → starts handling
+3. Coordinator calls `currentTask.abortTask(false)` DURING the handler
+4. `abortTask()` → sets `this.abort = true` → emits TaskAborted → calls `dispose()`
+5. `dispose()` removes all event listeners on the Task
+6. But the coordinator's handler is still running... or is it?
+
+The problem: `abortTask()` is async and is called with `.catch(() => {})` (fire-and-forget). It might race with the completion handling.
+
+**Point 3 — waitForAll() never resolves**: The `waitForAll()` method waits for the `allCompleted` event. This event fires when `completedSet.size >= agents.size`. If even ONE agent's completion is missed (due to the race condition above), `allCompleted` never fires, and the orchestrator hangs at `await this.coordinator.waitForAll()` forever. The 10-minute timeout eventually fires and marks it as failed.
+
+**Point 4 — The stagger may have broken event ordering**: The recent change to stagger agent starts (2-second gaps) made `startAll()` async. The orchestrator now `await`s it. But event listeners for `agentCompleted` and `agentFailed` are attached BEFORE `startAll()` is called (line 301-302). If an agent completes DURING the stagger (e.g., Agent 1 finishes before Agent 3 even starts), the coordinator might miss the early completion.
+
+Wait — actually looking at the code, event listeners are attached at line 301-302, BEFORE `startAll()` at line 317. So early completions SHOULD be caught. Unless the stagger introduces a different issue...
+
+**Point 5 — Panel closure interferes**: The 2-second delayed `closeAllPanels()` at line 338-348 fires after completion. But if `waitForAll()` hasn't resolved yet (because completions are missed), the panels are never closed, and the orchestrator hangs.
+
+### Evidence From User Testing
+- The screenshots show all 3 agent panels with "Task Completed" visible
+- The orchestrator sidebar shows the correct number of agents and their names
+- But the sidebar doesn't show the aggregated report or "Multi-Orchestration: complete"
+- In a previous iteration (before the stagger and abort fixes), reports DID flow back successfully
+
+### What Changed Between "Working" and "Not Working"
+The regression likely came from ONE of these commits:
+1. `fix(multi-orch): stop task completion loop + add agent system prompt` — Added `abortTask()` call in the TaskCompleted handler
+2. `fix(multi-orch): stagger agent starts + suppress diff views` — Changed `startAll()` to async with delays
+3. `fix(multi-orch): prevent task completion loop by excluding resume asks` — Modified auto-approval flow
+
+### Recommended Fix
+
+**Option A — Remove abortTask() from the completion handler**:
+Instead of calling `abortTask()` to break the while loop, set `task.abort = true` DIRECTLY without calling the full `abortTask()` method (which emits events and disposes):
+```typescript
+// In agent-coordinator.ts TaskCompleted handler:
+const currentTask = provider.getCurrentTask()
+if (currentTask) {
+    // Set abort flag directly — DON'T call abortTask() which
+    // emits TaskAborted and disposes the task, potentially
+    // interfering with completion event propagation.
+    (currentTask as any).abort = true
+    console.log(`[AgentCoordinator] Set abort=true on task for agent ${agent.taskId}`)
+}
+```
+
+**Option B — Ensure completion handling finishes before abort**:
+```typescript
+// In agent-coordinator.ts TaskCompleted handler:
+// Handle completion FULLY first
+this.handleAgentFinished(agent.taskId, "completed", tokenUsage)
+
+// Only THEN abort, and do it on the next tick so the current
+// event processing completes first
+setTimeout(() => {
+    const currentTask = provider.getCurrentTask()
+    if (currentTask) {
+        currentTask.abortTask(false).catch(() => {})
+    }
+}, 100)
+```
+
+**Option C — Don't abort at all, rely on the while-loop's natural exit**:
+The while loop at Task.ts:2573 is `while (!this.abort)`. After `attempt_completion` returns, the loop calls `recursivelyMakeClineRequests` again. If `attempt_completion` was the last tool use and returned successfully, the next API call should produce another `attempt_completion` (the LLM knows the task is done). The auto-approval handles this. The loop would naturally exit when the max request limit is hit or when the LLM stops producing tool calls.
+
+This is wasteful (extra API calls) but simpler and avoids the abort race condition.
+
+### Files Involved
+- `src/core/multi-orchestrator/agent-coordinator.ts` (TaskCompleted handler, ~line 33-55)
+- `src/core/multi-orchestrator/orchestrator.ts` (waitForAll at ~line 320, event listeners at ~line 301-302)
+- `src/core/task/Task.ts` (abortTask at ~line 2311, while loop at ~line 2573)
+
+### Priority
+CRITICAL — This is the most user-visible failure. The entire purpose of the multi-orchestrator (collect reports, merge, verify) depends on completions flowing back. Without this, the feature is essentially broken.
+
+---
+
+## 26. VS Code API Constraints
 
 These are HARD limitations of the VS Code Extension API that cannot be worked around:
 
