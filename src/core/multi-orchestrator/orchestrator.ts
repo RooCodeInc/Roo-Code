@@ -339,6 +339,17 @@ export class MultiOrchestrator {
 				await this.worktreeManager.cleanupWorktrees()
 			}
 
+			// Close all agent panels — the work is done, reports are collected.
+			// Delay slightly so the user can see the final state before panels vanish.
+			setTimeout(async () => {
+				try {
+					await this.panelSpawner.closeAllPanels()
+					console.log("[MultiOrch] All agent panels closed after completion")
+				} catch (err) {
+					console.error("[MultiOrch] Failed to close panels:", err)
+				}
+			}, 2000)
+
 			this.state.phase = "complete"
 			notify()
 		} catch (error) {

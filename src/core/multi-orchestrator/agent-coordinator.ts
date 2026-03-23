@@ -37,12 +37,29 @@ export class AgentCoordinator extends EventEmitter<AgentCoordinatorEvents> {
 					`[AgentCoordinator] TaskCompleted received for agent ${agent.taskId} ` +
 						`(event taskId=${taskId})`,
 				)
+				// Capture the completion report from the task's messages before aborting.
+				// The last "completion_result" say message contains the agent's summary.
+				const currentTask = provider.getCurrentTask()
+				if (currentTask) {
+					try {
+						const messages = currentTask.clineMessages || []
+						const completionMsg = [...messages].reverse().find(
+							(m) => m.say === "completion_result" && m.text,
+						)
+						const agentState = this.agents.get(agent.taskId)
+						if (agentState && completionMsg?.text) {
+							agentState.completionReport = completionMsg.text
+							console.log(`[AgentCoordinator] Captured completion report for agent ${agent.taskId} (${completionMsg.text.length} chars)`)
+						}
+					} catch (err) {
+						console.warn(`[AgentCoordinator] Failed to capture completion report: ${err}`)
+					}
+				}
+
 				this.handleAgentFinished(agent.taskId, "completed", tokenUsage)
 
 				// CRITICAL: Abort the task to prevent the while(!abort) loop from
 				// making another API request after attempt_completion succeeds.
-				// Without this, the task loops: complete → auto-approve → continue → complete...
-				const currentTask = provider.getCurrentTask()
 				if (currentTask) {
 					currentTask.abortTask(false).catch(() => {})
 					console.log(`[AgentCoordinator] Aborted task for agent ${agent.taskId} to prevent completion loop`)
