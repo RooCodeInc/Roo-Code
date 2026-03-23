@@ -38,6 +38,15 @@ export class AgentCoordinator extends EventEmitter<AgentCoordinatorEvents> {
 						`(event taskId=${taskId})`,
 				)
 				this.handleAgentFinished(agent.taskId, "completed", tokenUsage)
+
+				// CRITICAL: Abort the task to prevent the while(!abort) loop from
+				// making another API request after attempt_completion succeeds.
+				// Without this, the task loops: complete → auto-approve → continue → complete...
+				const currentTask = provider.getCurrentTask()
+				if (currentTask) {
+					currentTask.abortTask(false).catch(() => {})
+					console.log(`[AgentCoordinator] Aborted task for agent ${agent.taskId} to prevent completion loop`)
+				}
 			},
 		)
 

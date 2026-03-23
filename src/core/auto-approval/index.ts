@@ -80,13 +80,12 @@ export async function checkAutoApproval({
 	// operations unconditionally. Nobody is watching these panels to click
 	// approve, so every ask must be auto-approved to avoid deadlocks.
 	//
-	// EXCEPTION: completion_result and resume_completed_task must NOT be
-	// force-approved. Approving completion_result means "accept and stop" (which
-	// is correct — handled below). But resume_completed_task approval would
-	// restart a finished task, causing an infinite loop.
+	// EXCEPTION: completion_result — we approve it (which triggers "yesButtonClicked"
+	// → emitTaskCompleted → return from tool), but we ALSO need to abort the
+	// task to prevent the outer while-loop from sending another API request.
+	// resume_completed_task/resume_task must NOT be approved to prevent restarts.
 	if ((state as Record<string, unknown>).multiOrchForceApproveAll === true) {
 		if (ask === "resume_completed_task" || ask === "resume_task") {
-			// Don't auto-approve task resumption — the task is done.
 			console.log(`[checkAutoApproval] multiOrchForceApproveAll=true but ask="${ask}" is a resume — NOT auto-approving`)
 			return { decision: "ask" }
 		}

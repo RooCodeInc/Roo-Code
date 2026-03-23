@@ -14,6 +14,7 @@ import {
 	createInitialAgentState,
 	MULTI_ORCHESTRATOR_CONSTANTS,
 } from "./types"
+import { buildAgentSystemPromptPrefix } from "./agent-system-prompt"
 
 export class MultiOrchestrator {
 	private state: OrchestratorState = createInitialOrchestratorState()
@@ -249,9 +250,22 @@ export class MultiOrchestrator {
 					)
 				}
 
+				// Build the agent's system prompt prefix with parallel execution context
+				const agentPromptPrefix = buildAgentSystemPromptPrefix({
+					agentTitle: task.title,
+					agentMode: task.mode,
+					totalAgents: plan.tasks.length,
+					otherAgentTitles: plan.tasks.filter((t) => t.id !== task.id).map((t) => t.title),
+					assignedFiles: task.assignedFiles,
+					isGitWorktreeIsolated: !!agent.worktreePath,
+				})
+
+				// Prepend the multi-agent context to the task description
+				const fullTaskDescription = `${agentPromptPrefix}${task.description}`
+
 				// Create the task WITHOUT passing configuration — auto-approval is
 				// guaranteed by the per-provider overrides set above.
-				await spawned.provider.createTask(task.description, undefined, undefined, {
+				await spawned.provider.createTask(fullTaskDescription, undefined, undefined, {
 					startTask: false,
 				})
 
