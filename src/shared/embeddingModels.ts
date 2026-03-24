@@ -2,7 +2,7 @@
  * Defines profiles for different embedding models, including their dimensions.
  */
 
-import type { EmbedderProvider, EmbeddingModelProfiles } from "@roo-code/types"
+import type { EmbedderProvider, EmbeddingModelProfiles, EmbeddingPurpose } from "@roo-code/types"
 
 // Example profiles - expand this list as needed
 export const EMBEDDING_MODEL_PROFILES: EmbeddingModelProfiles = {
@@ -17,6 +17,8 @@ export const EMBEDDING_MODEL_PROFILES: EmbeddingModelProfiles = {
 			dimension: 3584,
 			scoreThreshold: 0.15,
 			queryPrefix: "Represent this query for searching relevant code: ",
+			// documentPrefix is intentionally omitted (undefined) -- nomic-embed-code
+			// does not require a prefix when embedding documents for indexing.
 		},
 		"mxbai-embed-large": { dimension: 1024, scoreThreshold: 0.4 },
 		"all-minilm": { dimension: 384, scoreThreshold: 0.4 },
@@ -31,6 +33,8 @@ export const EMBEDDING_MODEL_PROFILES: EmbeddingModelProfiles = {
 			dimension: 3584,
 			scoreThreshold: 0.15,
 			queryPrefix: "Represent this query for searching relevant code: ",
+			// documentPrefix is intentionally omitted (undefined) -- nomic-embed-code
+			// does not require a prefix when embedding documents for indexing.
 		},
 	},
 	gemini: {
@@ -142,6 +146,45 @@ export function getModelQueryPrefix(provider: EmbedderProvider, modelId: string)
 
 	const modelProfile = providerProfiles[modelId]
 	return modelProfile?.queryPrefix
+}
+
+/**
+ * Retrieves the document prefix for a given provider and model ID.
+ * This prefix is used when embedding documents for indexing (as opposed to search queries).
+ * @param provider The embedder provider (e.g., "ollama").
+ * @param modelId The specific model ID (e.g., "nomic-embed-code").
+ * @returns The document prefix or undefined if the model doesn't require one.
+ */
+export function getModelDocumentPrefix(provider: EmbedderProvider, modelId: string): string | undefined {
+	const providerProfiles = EMBEDDING_MODEL_PROFILES[provider]
+	if (!providerProfiles) {
+		return undefined
+	}
+
+	const modelProfile = providerProfiles[modelId]
+	return modelProfile?.documentPrefix
+}
+
+/**
+ * Retrieves the appropriate prefix for a given purpose (indexing or querying).
+ * When purpose is "index", returns the documentPrefix.
+ * When purpose is "query", returns the queryPrefix.
+ * When purpose is undefined, falls back to queryPrefix for backward compatibility.
+ * @param provider The embedder provider.
+ * @param modelId The specific model ID.
+ * @param purpose The embedding purpose ("index" or "query").
+ * @returns The appropriate prefix or undefined.
+ */
+export function getModelPrefixForPurpose(
+	provider: EmbedderProvider,
+	modelId: string,
+	purpose?: EmbeddingPurpose,
+): string | undefined {
+	if (purpose === "index") {
+		return getModelDocumentPrefix(provider, modelId)
+	}
+	// For "query" or undefined (backward compatibility), use queryPrefix
+	return getModelQueryPrefix(provider, modelId)
 }
 
 /**

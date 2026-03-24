@@ -1,3 +1,4 @@
+import type { EmbeddingPurpose } from "@roo-code/types"
 import { OpenAI } from "openai"
 import { OpenAiNativeHandler } from "../../../api/providers/openai-native"
 import { ApiHandlerOptions } from "../../../shared/api"
@@ -8,7 +9,7 @@ import {
 	MAX_BATCH_RETRIES as MAX_RETRIES,
 	INITIAL_RETRY_DELAY_MS as INITIAL_DELAY_MS,
 } from "../constants"
-import { getModelQueryPrefix } from "../../../shared/embeddingModels"
+import { getModelPrefixForPurpose } from "../../../shared/embeddingModels"
 import { t } from "../../../i18n"
 import { withValidationErrorHandling, formatEmbeddingError, HttpError } from "../shared/validation-helpers"
 import { TelemetryEventName } from "@roo-code/types"
@@ -47,11 +48,11 @@ export class OpenAiEmbedder extends OpenAiNativeHandler implements IEmbedder {
 	 * @param model Optional model identifier
 	 * @returns Promise resolving to embedding response
 	 */
-	async createEmbeddings(texts: string[], model?: string): Promise<EmbeddingResponse> {
+	async createEmbeddings(texts: string[], model?: string, purpose?: EmbeddingPurpose): Promise<EmbeddingResponse> {
 		const modelToUse = model || this.defaultModelId
 
-		// Apply model-specific query prefix if required
-		const queryPrefix = getModelQueryPrefix("openai", modelToUse)
+		// Apply model-specific prefix based on purpose (query vs index)
+		const queryPrefix = getModelPrefixForPurpose("openai", modelToUse, purpose)
 		const processedTexts = queryPrefix
 			? texts.map((text, index) => {
 					// Prevent double-prefixing

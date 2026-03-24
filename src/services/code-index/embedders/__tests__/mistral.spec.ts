@@ -104,7 +104,7 @@ describe("MistralEmbedder", () => {
 				const result = await embedder.createEmbeddings(texts)
 
 				// Assert
-				expect(mockCreateEmbeddings).toHaveBeenCalledWith(texts, "codestral-embed-2505")
+				expect(mockCreateEmbeddings).toHaveBeenCalledWith(texts, "codestral-embed-2505", undefined)
 				expect(result).toEqual(mockResponse)
 			})
 
@@ -124,7 +124,7 @@ describe("MistralEmbedder", () => {
 				const result = await embedder.createEmbeddings(texts, "codestral-embed-2505")
 
 				// Assert
-				expect(mockCreateEmbeddings).toHaveBeenCalledWith(texts, "codestral-embed-2505")
+				expect(mockCreateEmbeddings).toHaveBeenCalledWith(texts, "codestral-embed-2505", undefined)
 				expect(result).toEqual(mockResponse)
 			})
 
