@@ -24,5 +24,18 @@
 		"refreshing_all": "Alle MCP-Server werden aktualisiert...",
 		"all_refreshed": "Alle MCP-Server wurden aktualisiert.",
 		"project_config_deleted": "Projekt-MCP-Konfigurationsdatei gelöscht. Alle Projekt-MCP-Server wurden getrennt."
+	},
+	"oauth": {
+		"callback": {
+			"title": "OAuth Callback - Roo Code",
+			"success": "Erfolg!",
+			"failed": "Fehlgeschlagen",
+			"auth_failed": "Authentifizierung fehlgeschlagen. Bitte überprüfe die MCP-Server-Logs.",
+			"auth_success": "MCP-Server erfolgreich authentifiziert. Du kannst diesen Browser-Tab jetzt schließen.",
+			"server_connection_complete": "Die Serververbindung ist abgeschlossen.",
+			"tab_closing_in": "Dieser Tab wird in <span id=\"count\">{{count}}</span>s geschlossen...",
+			"safe_to_close": "Falls sich der Tab nicht automatisch geschlossen hat, kannst du ihn jetzt manuell schließen.",
+			"invalid_state": "Fehler: Ungültiger State-Parameter"
+		}
 	}
 }

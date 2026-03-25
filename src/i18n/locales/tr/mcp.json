@@ -24,5 +24,18 @@
 		"refreshing_all": "Tüm MCP sunucuları yenileniyor...",
 		"all_refreshed": "Tüm MCP sunucuları yenilendi.",
 		"project_config_deleted": "Proje MCP yapılandırma dosyası silindi. Tüm proje MCP sunucuları bağlantısı kesildi."
+	},
+	"oauth": {
+		"callback": {
+			"title": "OAuth Geri Çağırma - Roo Code",
+			"success": "Başarılı!",
+			"failed": "Başarısız",
+			"auth_failed": "Kimlik doğrulama başarısız oldu. Lütfen MCP sunucu günlüklerini kontrol edin.",
+			"auth_success": "MCP sunucusu başarıyla doğrulandı. Artık bu tarayıcı sekmesini kapatabilirsiniz.",
+			"server_connection_complete": "Sunucu bağlantısı tamamlandı.",
+			"tab_closing_in": "Bu sekme <span id=\"count\">{{count}}</span> saniye içinde kapanmaya çalışacak...",
+			"safe_to_close": "Sekme kapanmadıysa, manuel olarak güvenle kapatabilirsiniz.",
+			"invalid_state": "Hata: Geçersiz durum parametresi"
+		}
 	}
 }

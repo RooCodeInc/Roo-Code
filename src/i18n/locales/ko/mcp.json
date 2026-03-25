@@ -24,5 +24,18 @@
 		"refreshing_all": "모든 MCP 서버를 새로 고치는 중...",
 		"all_refreshed": "모든 MCP 서버가 새로 고쳐졌습니다.",
 		"project_config_deleted": "프로젝트 MCP 구성 파일이 삭제되었습니다. 모든 프로젝트 MCP 서버가 연결 해제되었습니다."
+	},
+	"oauth": {
+		"callback": {
+			"title": "OAuth 콜백 - Roo Code",
+			"success": "성공!",
+			"failed": "실패",
+			"auth_failed": "인증에 실패했습니다. MCP 서버 로그를 확인해 주세요.",
+			"auth_success": "MCP 서버 인증에 성공했습니다. 이제 이 브라우저 탭을 닫으셔도 됩니다.",
+			"server_connection_complete": "서버 연결이 완료되었습니다.",
+			"tab_closing_in": "이 탭은 <span id=\"count\">{{count}}</span>초 후에 닫힙니다...",
+			"safe_to_close": "탭이 자동으로 닫히지 않으면 직접 닫아주세요.",
+			"invalid_state": "오류: 유효하지 않은 state 파라미터"
+		}
 	}
 }

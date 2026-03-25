@@ -24,5 +24,18 @@
 		"refreshing_all": "Odświeżanie wszystkich serwerów MCP...",
 		"all_refreshed": "Wszystkie serwery MCP zostały odświeżone.",
 		"project_config_deleted": "Plik konfiguracyjny MCP projektu został usunięty. Wszystkie serwery MCP projektu zostały odłączone."
+	},
+	"oauth": {
+		"callback": {
+			"title": "Wywołanie zwrotne OAuth - Roo Code",
+			"success": "Sukces!",
+			"failed": "Niepowodzenie",
+			"auth_failed": "Uwierzytelnianie nie powiodło się. Sprawdź dzienniki serwera MCP.",
+			"auth_success": "Serwer MCP został pomyślnie uwierzytelniony. Możesz teraz zamknąć tę kartę przeglądarki.",
+			"server_connection_complete": "Połączenie z serwerem zostało zakończone.",
+			"tab_closing_in": "Ta karta spróbuje się zamknąć za <span id=\"count\">{{count}}</span>s...",
+			"safe_to_close": "Jeśli karta nie zamknęła się automatycznie, możesz ją bezpiecznie zamknąć ręcznie.",
+			"invalid_state": "Błąd: Nieprawidłowy parametr stanu"
+		}
 	}
 }

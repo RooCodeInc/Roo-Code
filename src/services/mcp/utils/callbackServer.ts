@@ -1,4 +1,5 @@
 import * as http from "http"
+import { t } from "../../../i18n"
 
 export interface CallbackResult {
 	code?: string
@@ -73,22 +74,23 @@ export function startCallbackServer(
 						const error = url.searchParams.get("error")
 						const errorDescription = url.searchParams.get("error_description")
 						const state = url.searchParams.get("state")
+						const hasError = !!error
 
 						// Verify state for CSRF protection
 						if (expectedState && state !== expectedState) {
 							res.writeHead(400, { "Content-Type": "text/html" })
 							res.end(`
-                <!DOCTYPE html>
-                <html>
-                  <head>
-                    <title>OAuth Callback</title>
-                  </head>
-                  <body>
-                    <h1>OAuth Authentication Failed</h1>
-                    <p>Error: Invalid state parameter</p>
-                  </body>
-                </html>
-              `)
+							         <!DOCTYPE html>
+							         <html>
+							           <head>
+							             <title>${t("mcp:oauth.callback.title")}</title>
+							           </head>
+							           <body>
+							             <h1>${t("mcp:oauth.callback.failed")}</h1>
+							             <p>${t("mcp:oauth.callback.invalid_state")}</p>
+							           </body>
+							         </html>
+							       `)
 							rejectResult(new Error("Invalid state parameter"))
 							return
 						}
@@ -99,7 +101,7 @@ export function startCallbackServer(
 <!DOCTYPE html>
 <html>
   <head>
-    <title>OAuth Callback - Roo Code</title>
+    <title>${t("mcp:oauth.callback.title")}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
       body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 400px; margin: 50px auto; text-align: center; padding: 20px; }
@@ -112,24 +114,20 @@ export function startCallbackServer(
     </style>
   </head>
   <body>
-    <h1 id="title">${error ? "Failed" : "Success!"}</h1>
-    <div class="spinner" id="spinner" style="${error ? "display:none;" : ""}"></div>
+    <h1 id="title">${hasError ? t("mcp:oauth.callback.failed") : t("mcp:oauth.callback.success")}</h1>
+    <div class="spinner" id="spinner" style="${hasError ? "display:none;" : ""}"></div>
     <p id="message">
-      ${
-			error
-				? "Authentication failed. Please check the MCP server logs."
-				: "MCP server authenticated successfully. You can now close this browser tab."
-		}
+      ${hasError ? t("mcp:oauth.callback.auth_failed") : t("mcp:oauth.callback.auth_success")}
     </p>
-    <div id="countdown" class="countdown" style="${error ? "display:none;" : ""}">The server connection is complete.</div>
+    <div id="countdown" class="countdown" style="${hasError ? "display:none;" : ""}">${t("mcp:oauth.callback.server_connection_complete")}</div>
     <script>
-      const isError = ${error ? "true" : "false"};
+      const isError = ${hasError ? "true" : "false"};
       if (!isError) {
         let count = 5;
         const countEl = document.getElementById('count');
         const countdownEl = document.getElementById('countdown');
         if (countdownEl) {
-          countdownEl.innerHTML = 'This tab will attempt to close in <span id="count">5</span>s...';
+          countdownEl.innerHTML = \`${t("mcp:oauth.callback.tab_closing_in", { count: 5 })}\`;
         }
         const timer = setInterval(() => {
           count--;
@@ -139,7 +137,7 @@ export function startCallbackServer(
             clearInterval(timer);
             window.close();
             if (countdownEl) {
-               countdownEl.textContent = 'If the tab did not close, you can safely close it manually.';
+               countdownEl.textContent = \`${t("mcp:oauth.callback.safe_to_close")}\`;
             }
           }
         }, 1000);

@@ -24,5 +24,18 @@
 		"refreshing_all": "Đang làm mới tất cả các máy chủ MCP...",
 		"all_refreshed": "Tất cả các máy chủ MCP đã được làm mới.",
 		"project_config_deleted": "Tệp cấu hình MCP của dự án đã bị xóa. Tất cả các máy chủ MCP của dự án đã bị ngắt kết nối."
+	},
+	"oauth": {
+		"callback": {
+			"title": "OAuth Callback - Roo Code",
+			"success": "Thành công!",
+			"failed": "Thất bại",
+			"auth_failed": "Xác thực thất bại. Vui lòng kiểm tra nhật ký máy chủ MCP.",
+			"auth_success": "Máy chủ MCP đã được xác thực thành công. Bây giờ bạn có thể đóng tab trình duyệt này.",
+			"server_connection_complete": "Kết nối máy chủ đã hoàn tất.",
+			"tab_closing_in": "Tab này sẽ cố gắng đóng sau <span id=\"count\">{{count}}</span> giây...",
+			"safe_to_close": "Nếu tab không đóng, bạn có thể đóng nó một cách thủ công an toàn.",
+			"invalid_state": "Lỗi: Tham số trạng thái không hợp lệ"
+		}
 	}
 }

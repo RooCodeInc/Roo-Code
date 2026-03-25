@@ -24,5 +24,18 @@
 		"refreshing_all": "Aggiornamento di tutti i server MCP...",
 		"all_refreshed": "Tutti i server MCP sono stati aggiornati.",
 		"project_config_deleted": "File di configurazione MCP del progetto eliminato. Tutti i server MCP del progetto sono stati disconnessi."
+	},
+	"oauth": {
+		"callback": {
+			"title": "Callback OAuth - Roo Code",
+			"success": "Successo!",
+			"failed": "Fallito",
+			"auth_failed": "Autenticazione fallita. Controlla i log del server MCP.",
+			"auth_success": "Server MCP autenticato con successo. Ora puoi chiudere questa scheda del browser.",
+			"server_connection_complete": "La connessione al server è completa.",
+			"tab_closing_in": "Questa scheda tenterà di chiudersi tra <span id=\"count\">{{count}}</span>s...",
+			"safe_to_close": "Se la scheda non si è chiusa, puoi chiuderla manualmente in sicurezza.",
+			"invalid_state": "Errore: Parametro di stato non valido"
+		}
 	}
 }
