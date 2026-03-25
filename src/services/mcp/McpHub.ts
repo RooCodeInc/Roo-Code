@@ -839,12 +839,13 @@ export class McpHub {
 							const reauthKey = `${name}:${source}`
 							let reauthPromise = this.reauthPromises.get(reauthKey)
 							if (!reauthPromise) {
-								reauthPromise = this._completeOAuthFlow(
+								reauthPromise = this._initiateOAuthFlow(
+									name,
+									source,
+									JSON.parse(connection.server.config),
 									authProvider,
 									transport as StreamableHTTPClientTransport,
 									connection as ConnectedMcpConnection,
-									name,
-									source,
 								)
 									.catch((err) => {
 										console.error(`OAuth flow failed for "${name}":`, err)
@@ -964,61 +965,14 @@ export class McpHub {
 					const serverUrl = configInjected.url
 					connection.server.status = "connecting"
 
-					void (async () => {
-						const TOKEN_EXPIRY_BUFFER_MS = 5 * 60 * 1000
-
-						// Check if another window already saved valid tokens
-						const existing = await this.secretStorage!.getOAuthData(serverUrl)
-						if (existing && Date.now() < existing.expires_at - TOKEN_EXPIRY_BUFFER_MS) {
-							await streamableHttpAuthProvider.close()
-							await this.deleteConnection(name, source)
-							await this.connectToServer(name, config, source)
-							await this.notifyWebviewOfServerChanges()
-							return
-						}
-
-						// Show a confirmation toast so the user can decide whether to authenticate.
-						// This resolves immediately when the user responds — but connectToServer
-						// has already returned so the panel is not blocked.
-						const choice = await vscode.window.showInformationMessage(
-							`MCP server "${name}" requires authentication.`,
-							"Authenticate",
-						)
-
-						if (choice === "Authenticate") {
-							// Check tokens again — another window may have authed while toast was showing
-							const tokens = await this.secretStorage!.getOAuthData(serverUrl)
-							if (tokens && Date.now() < tokens.expires_at - TOKEN_EXPIRY_BUFFER_MS) {
-								await streamableHttpAuthProvider.close()
-								await this.deleteConnection(name, source)
-								await this.connectToServer(name, config, source)
-								await this.notifyWebviewOfServerChanges()
-								return
-							}
-							void this._completeOAuthFlow(
-								streamableHttpAuthProvider,
-								transport as StreamableHTTPClientTransport,
-								connection,
-								name,
-								source,
-							)
-						} else {
-							// Toast was dismissed or auto-timed-out.
-							// First do an immediate check — another window may have already
-							// completed auth while the toast was showing.
-							const tokens = await this.secretStorage!.getOAuthData(serverUrl)
-							if (tokens && Date.now() < tokens.expires_at - TOKEN_EXPIRY_BUFFER_MS) {
-								await streamableHttpAuthProvider.close()
-								await this.deleteConnection(name, source)
-								await this.connectToServer(name, config, source)
-								await this.notifyWebviewOfServerChanges()
-								return
-							}
-							// Tokens not available yet — start watching for them
-							await streamableHttpAuthProvider.close()
-							this._watchForOAuthTokens(name, source, serverUrl, config)
-						}
-					})()
+					void this._initiateOAuthFlow(
+						name,
+						source,
+						config,
+						streamableHttpAuthProvider,
+						transport as StreamableHTTPClientTransport,
+						connection,
+					)
 
 					return
 				}
@@ -1065,6 +1019,64 @@ export class McpHub {
 	 * This runs detached from the initialization path so `waitUntilReady()`
 	 * and the rest of the extension are not blocked by the user's browser session.
 	 */
+	private async _initiateOAuthFlow(
+		name: string,
+		source: "global" | "project",
+		config: z.infer<typeof ServerConfigSchema>,
+		authProvider: McpOAuthClientProvider,
+		transport: StreamableHTTPClientTransport,
+		connection: ConnectedMcpConnection,
+	): Promise<void> {
+		const serverUrl = "url" in config ? (config as any).url : undefined
+		if (!serverUrl || !this.secretStorage) {
+			return
+		}
+
+		const TOKEN_EXPIRY_BUFFER_MS = 5 * 60 * 1000
+
+		// Check if another window already saved valid tokens
+		const existing = await this.secretStorage.getOAuthData(serverUrl)
+		if (existing && Date.now() < existing.expires_at - TOKEN_EXPIRY_BUFFER_MS) {
+			await authProvider.close()
+			await this.deleteConnection(name, source)
+			await this.connectToServer(name, config, source)
+			await this.notifyWebviewOfServerChanges()
+			return
+		}
+
+		// Show a confirmation toast so the user can decide whether to authenticate.
+		const choice = await vscode.window.showInformationMessage(
+			`MCP server "${name}" requires authentication.`,
+			"Authenticate",
+		)
+
+		if (choice === "Authenticate") {
+			// Check tokens again — another window may have authed while toast was showing
+			const tokens = await this.secretStorage.getOAuthData(serverUrl)
+			if (tokens && Date.now() < tokens.expires_at - TOKEN_EXPIRY_BUFFER_MS) {
+				await authProvider.close()
+				await this.deleteConnection(name, source)
+				await this.connectToServer(name, config, source)
+				await this.notifyWebviewOfServerChanges()
+				return
+			}
+			await this._completeOAuthFlow(authProvider, transport, connection, name, source)
+		} else {
+			// Toast was dismissed or auto-timed-out.
+			const tokens = await this.secretStorage.getOAuthData(serverUrl)
+			if (tokens && Date.now() < tokens.expires_at - TOKEN_EXPIRY_BUFFER_MS) {
+				await authProvider.close()
+				await this.deleteConnection(name, source)
+				await this.connectToServer(name, config, source)
+				await this.notifyWebviewOfServerChanges()
+				return
+			}
+			// Tokens not available yet — start watching for them
+			await authProvider.close()
+			this._watchForOAuthTokens(name, source, serverUrl, config)
+		}
+	}
+
 	private async _completeOAuthFlow(
 		authProvider: McpOAuthClientProvider,
 		transport: StreamableHTTPClientTransport,
@@ -2084,12 +2096,13 @@ export class McpHub {
 				let reauthPromise = this.reauthPromises.get(reauthKey)
 
 				if (!reauthPromise) {
-					reauthPromise = this._completeOAuthFlow(
+					reauthPromise = this._initiateOAuthFlow(
+						serverName,
+						source || connection.server.source || "global",
+						JSON.parse(connection.server.config),
 						connection.authProvider,
 						connection.transport as StreamableHTTPClientTransport,
 						connection,
-						serverName,
-						source || connection.server.source || "global",
 					).finally(() => {
 						this.reauthPromises.delete(reauthKey)
 					})
