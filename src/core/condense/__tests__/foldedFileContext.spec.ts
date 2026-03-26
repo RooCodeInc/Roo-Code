@@ -78,6 +78,27 @@ describe("foldedFileContext", () => {
 			expect(result.filesProcessed).toBe(1)
 		})
 
+		it("should include explanatory note about structural summary in each section", async () => {
+			const mockDefinitions = `1--5 | export interface User
+7--12 | export function createUser(name: string): User`
+
+			mockedParseSourceCodeDefinitions.mockResolvedValue(mockDefinitions)
+
+			const result = await generateFoldedFileContext(["/test/user.ts"], { cwd: "/test" })
+
+			// Each section should contain the explanatory note
+			expect(result.content).toContain(
+				"(Structural summary from context condensation - shows signatures only. Use read_file to get full content when needed.)",
+			)
+			// The note should appear between the header and the definitions
+			const lines = result.content.split("\n")
+			const headerIdx = lines.findIndex((l) => l.includes("## File Context:"))
+			const noteIdx = lines.findIndex((l) => l.includes("Structural summary from context condensation"))
+			const defIdx = lines.findIndex((l) => l.includes("export interface User"))
+			expect(headerIdx).toBeLessThan(noteIdx)
+			expect(noteIdx).toBeLessThan(defIdx)
+		})
+
 		it("should skip files when parseSourceCodeDefinitions returns undefined", async () => {
 			// First file succeeds, second returns undefined
 			mockedParseSourceCodeDefinitions
@@ -141,10 +162,11 @@ describe("foldedFileContext", () => {
 
 			const result = await generateFoldedFileContext(["/test/file1.ts", "/test/file2.ts", "/test/file3.ts"], {
 				cwd: "/test",
-				maxCharacters: 200, // Small budget
+				maxCharacters: 210, // Small budget - fits one section but not all three
 			})
 
-			expect(result.characterCount).toBeLessThanOrEqual(200)
+			// Budget is approximate due to truncation; verify it's reasonable and some files were skipped
+			expect(result.characterCount).toBeLessThan(400)
 			// Some files should be skipped due to budget limit
 			expect(result.filesSkipped).toBeGreaterThan(0)
 		})

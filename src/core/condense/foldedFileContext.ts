@@ -64,6 +64,7 @@ export interface FoldedFileContextOptions {
  * // result.content contains individual <system-reminder> blocks for each file:
  * // <system-reminder>
  * // ## File Context: src/utils/helpers.ts
+ * // (Structural summary from context condensation - shows signatures only. Use read_file to get full content when needed.)
  * // 1--15 | export function formatDate(...)
  * // 17--45 | export class DateHelper {...}
  * // </system-reminder>
@@ -113,6 +114,7 @@ export async function generateFoldedFileContext(
 			// Wrap each file in its own <system-reminder> block
 			const sectionContent = `<system-reminder>
 ## File Context: ${filePath}
+(Structural summary from context condensation - shows signatures only. Use read_file to get full content when needed.)
 ${definitions}
 </system-reminder>`
 
@@ -127,9 +129,10 @@ ${definitions}
 				}
 
 				// Truncate the definitions to fit within the system-reminder block
-				const truncatedDefinitions = definitions.substring(0, remainingChars - 100) + "\n... (truncated)"
+				const truncatedDefinitions = definitions.substring(0, remainingChars - 200) + "\n... (truncated)"
 				const truncatedContent = `<system-reminder>
 ## File Context: ${filePath}
+(Structural summary from context condensation - shows signatures only. Use read_file to get full content when needed.)
 ${truncatedDefinitions}
 </system-reminder>`
 				foldedSections.push(truncatedContent)
