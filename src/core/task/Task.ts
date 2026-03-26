@@ -2149,6 +2149,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const stream = this.attemptApiRequest()
 			let assistantMessage = ""
 			let reasoningMessage = ""
+			let isInsideThinkingTags = false
 			this.isStreaming = true
 
 			try {
@@ -2189,10 +2190,26 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								// false in case previous content set this to true.
 								this.userMessageContentReady = false
 							}
-							// Do not present partial assistant content while the
-							// model is still streaming reasoning; we'll present a
-							// single final assistant message after the stream
-							// completes to ensure thinking appears first.
+
+							// Check if we're currently inside <thinking> tags
+							const openThinkingTagIndex = assistantMessage.lastIndexOf("<thinking>")
+							const closeThinkingTagIndex = assistantMessage.lastIndexOf("</thinking>")
+							const currentlyInsideThinking = openThinkingTagIndex > closeThinkingTagIndex
+
+							// If we were inside thinking tags but are no longer, start presenting
+							if (isInsideThinkingTags && !currentlyInsideThinking) {
+								// Thinking has just closed, present accumulated content
+								presentAssistantMessage(this)
+							}
+
+							// Update thinking state
+							isInsideThinkingTags = currentlyInsideThinking
+
+							// Present assistant content immediately if we're not inside thinking tags
+							if (!isInsideThinkingTags) {
+								presentAssistantMessage(this)
+							}
+							// Note: If inside thinking tags, we don't present to prevent thinking content leakage
 							break
 						}
 					}
