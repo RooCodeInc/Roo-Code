@@ -565,6 +565,15 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "delegate_to_agent":
+				if (partialArgs.agent_name !== undefined || partialArgs.message !== undefined) {
+					nativeArgs = {
+						agent_name: partialArgs.agent_name,
+						message: partialArgs.message,
+					}
+				}
+				break
+
 			case "apply_patch":
 				if (partialArgs.patch !== undefined) {
 					nativeArgs = {
@@ -917,6 +926,15 @@ export class NativeToolCallParser {
 							server_name: args.server_name,
 							tool_name: args.tool_name,
 							arguments: args.arguments,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "delegate_to_agent":
+					if (args.agent_name !== undefined && args.message !== undefined) {
+						nativeArgs = {
+							agent_name: args.agent_name,
+							message: args.message,
 						} as NativeArgsFor<TName>
 					}
 					break

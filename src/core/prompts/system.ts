@@ -8,6 +8,7 @@ import { formatLanguage } from "../../shared/language"
 import { isEmpty } from "../../utils/object"
 
 import { McpHub } from "../../services/mcp/McpHub"
+import { A2aHub } from "../../services/a2a/A2aHub"
 import { CodeIndexManager } from "../../services/code-index/manager"
 import { SkillsManager } from "../../services/skills/SkillsManager"
 
@@ -55,6 +56,7 @@ async function generatePrompt(
 	todoList?: TodoItem[],
 	modelId?: string,
 	skillsManager?: SkillsManager,
+	a2aHub?: A2aHub,
 ): Promise<string> {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -68,6 +70,11 @@ async function generatePrompt(
 	const hasMcpGroup = modeConfig.groups.some((groupEntry) => getGroupName(groupEntry) === "mcp")
 	const hasMcpServers = mcpHub && mcpHub.getServers().length > 0
 	const shouldIncludeMcp = hasMcpGroup && hasMcpServers
+
+	// Check if A2A functionality should be included
+	const hasA2aGroup = modeConfig.groups.some((groupEntry) => getGroupName(groupEntry) === "a2a")
+	const hasA2aAgents = a2aHub && a2aHub.getAgents().length > 0
+	const shouldIncludeA2a = hasA2aGroup && hasA2aAgents
 
 	const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
 
@@ -90,7 +97,7 @@ ${getSharedToolUseSection()}${toolsCatalog}
 
 	${getToolUseGuidelinesSection()}
 
-${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined)}
+${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined, shouldIncludeA2a ? a2aHub : undefined)}
 
 ${modesSection}
 ${skillsSection ? `\n${skillsSection}` : ""}
@@ -126,6 +133,7 @@ export const SYSTEM_PROMPT = async (
 	todoList?: TodoItem[],
 	modelId?: string,
 	skillsManager?: SkillsManager,
+	a2aHub?: A2aHub,
 ): Promise<string> => {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -154,5 +162,6 @@ export const SYSTEM_PROMPT = async (
 		todoList,
 		modelId,
 		skillsManager,
+		a2aHub,
 	)
 }
