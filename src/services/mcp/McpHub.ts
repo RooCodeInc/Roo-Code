@@ -36,6 +36,7 @@ import { GlobalFileNames } from "../../shared/globalFileNames"
 import { UnauthorizedError } from "@modelcontextprotocol/sdk/client/auth.js"
 
 import { fileExistsAtPath } from "../../utils/fs"
+import { TOKEN_EXPIRY_BUFFER_MS } from "./constants"
 import { SecretStorageService } from "./SecretStorageService"
 import { McpOAuthClientProvider } from "./McpOAuthClientProvider"
 import { arePathsEqual, getWorkspacePath } from "../../utils/path"
@@ -1053,8 +1054,6 @@ export class McpHub {
 			return
 		}
 
-		const TOKEN_EXPIRY_BUFFER_MS = 5 * 60 * 1000
-
 		// Check if another window already saved valid tokens
 		const existing = await this.secretStorage.getOAuthData(serverUrl)
 		if (existing && Date.now() < existing.expires_at - TOKEN_EXPIRY_BUFFER_MS) {
@@ -1162,8 +1161,6 @@ export class McpHub {
 			clearTimeout(existing.abortHandle)
 			this._oauthWatchers.delete(watcherKey)
 		}
-
-		const TOKEN_EXPIRY_BUFFER_MS = 5 * 60 * 1000
 
 		// Called when SecretStorage fires onDidChange for this server's key.
 		// Runs in all VS Code windows the instant tokens are saved — no polling delay.

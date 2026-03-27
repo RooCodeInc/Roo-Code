@@ -9,6 +9,7 @@ import type {
 	OAuthTokens,
 } from "@modelcontextprotocol/sdk/shared/auth.js"
 
+import { TOKEN_EXPIRY_BUFFER_MS } from "./constants"
 import { SecretStorageService } from "./SecretStorageService"
 import { startCallbackServer, stopCallbackServer } from "./utils/callbackServer"
 import { fetchOAuthAuthServerMetadata } from "./utils/oauth"
@@ -265,7 +266,7 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 		if (!data) return undefined
 
 		// If the access token is still valid (with 5m buffer), return it.
-		if (Date.now() < data.expires_at - 5 * 60 * 1000) {
+		if (Date.now() < data.expires_at - TOKEN_EXPIRY_BUFFER_MS) {
 			return data.tokens
 		}
 
