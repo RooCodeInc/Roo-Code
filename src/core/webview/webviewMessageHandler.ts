@@ -955,6 +955,7 @@ export const webviewMessageHandler = async (
 						ollama: {},
 						lmstudio: {},
 						roo: {},
+						poe: {},
 					}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
@@ -1015,6 +1016,21 @@ export const webviewMessageHandler = async (
 				candidates.push({
 					key: "litellm",
 					options: { provider: "litellm", apiKey: litellmApiKey, baseUrl: litellmBaseUrl },
+				})
+			}
+
+			// Poe is conditional on apiKey
+			const poeApiKey = apiConfiguration.poeApiKey || message?.values?.poeApiKey
+			const poeBaseUrl = apiConfiguration.poeBaseUrl || message?.values?.poeBaseUrl
+
+			if (poeApiKey) {
+				if (message?.values?.poeApiKey || message?.values?.poeBaseUrl) {
+					await flushModels({ provider: "poe", apiKey: poeApiKey, baseUrl: poeBaseUrl }, true)
+				}
+
+				candidates.push({
+					key: "poe",
+					options: { provider: "poe", apiKey: poeApiKey, baseUrl: poeBaseUrl },
 				})
 			}
 

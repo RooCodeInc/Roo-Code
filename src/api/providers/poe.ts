@@ -54,15 +54,16 @@ export class PoeHandler extends BaseProvider implements SingleCompletionHandler 
 
 		// Only pass temperature when the user explicitly configured it.
 		let temperature: number | undefined = this.options.modelTemperature ?? undefined
-		// Only pass maxOutputTokens when reasoning is active and the user configured it via the UI toggles.
-		const maxOutputTokens: number | undefined =
-			(useBudget || useEffort) && this.options.modelMaxTokens ? this.options.modelMaxTokens : undefined
+		let maxOutputTokens: number | undefined
 		const providerOptions: NonNullable<Parameters<typeof streamText>[0]["providerOptions"]> & {
 			poe?: PoeScopedProviderOptions
 		} = {}
 
 		if (useBudget) {
 			const requestedBudget = this.options.modelMaxThinkingTokens ?? DEFAULT_THINKING_BUDGET
+			// maxOutputTokens is the text-only budget; reasoningBudgetTokens is
+			// separate, so total output = maxOutputTokens + reasoningBudgetTokens.
+			maxOutputTokens = this.options.modelMaxTokens ?? Math.max(0, (info.maxTokens ?? 0) - requestedBudget)
 			providerOptions.poe = {
 				reasoningBudgetTokens: requestedBudget,
 			}
@@ -77,6 +78,9 @@ export class PoeHandler extends BaseProvider implements SingleCompletionHandler 
 			providerOptions.poe = {
 				reasoningEffort: effort,
 				reasoningSummary: "auto",
+			}
+			if (this.options.modelMaxTokens) {
+				maxOutputTokens = this.options.modelMaxTokens
 			}
 		}
 
