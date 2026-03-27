@@ -1,31 +1,31 @@
 {
 	"readFile": {
-		"linesRange": " (lines {{start}}-{{end}})",
-		"definitionsOnly": " (definitions only)",
-		"maxLines": " (max {{max}} lines)",
-		"imageTooLarge": "Image file is too large ({{size}} MB). The maximum allowed size is {{max}} MB.",
-		"imageWithSize": "Image file ({{size}} KB)"
+		"linesRange": " (שורות {{start}}-{{end}})",
+		"definitionsOnly": " (הגדרות בלבד)",
+		"maxLines": " (מקסימום {{max}} שורות)",
+		"imageTooLarge": "קובץ התמונה גדול מדי ({{size}} MB). הגודל המקסימלי המותר הוא {{max}} MB.",
+		"imageWithSize": "קובץ תמונה ({{size}} KB)"
 	},
-	"toolRepetitionLimitReached": "Roo appears to be stuck in a loop, attempting the same action ({{toolName}}) repeatedly. This might indicate a problem with its current strategy. Consider rephrasing the task, providing more specific instructions, or guiding it towards a different approach.",
-	"unknownToolError": "Roo tried to use an unknown tool: \"{{toolName}}\". Retrying...",
+	"toolRepetitionLimitReached": "נראה ש-Roo תקוע בלולאה ומנסה את אותה פעולה ({{toolName}}) שוב ושוב. זה עשוי להעיד על בעיה באסטרטגיה הנוכחית. נסה לנסח מחדש את המשימה, לתת הוראות מדויקות יותר, או לכוון לגישה אחרת.",
+	"unknownToolError": "Roo ניסה להשתמש בכלי לא מוכר: \"{{toolName}}\". מנסה שוב...",
 	"codebaseSearch": {
-		"approval": "Searching for '{{query}}' in codebase..."
+		"approval": "מחפש '{{query}}' בקוד המקור..."
 	},
 	"newTask": {
 		"errors": {
-			"policy_restriction": "Failed to create new task due to policy restrictions."
+			"policy_restriction": "יצירת משימה חדשה נכשלה בגלל מגבלות מדיניות."
 		}
 	},
 	"generateImage": {
-		"openRouterApiKeyRequired": "OpenRouter API key is required for image generation with OpenRouter models. Please configure it in the Image Generation experimental settings.",
-		"failedWithStatus": "Failed to generate image: {{status}} {{statusText}}",
-		"failedWithMessage": "Failed to generate image: {{message}}",
-		"noImageGenerated": "No image was generated in the response",
-		"invalidImageData": "Invalid image data in response",
-		"invalidImageFormat": "Invalid image format received",
-		"unknownError": "Unknown error occurred",
+		"openRouterApiKeyRequired": "נדרש מפתח API של OpenRouter ליצירת תמונות עם מודלים של OpenRouter. הגדר אותו בהגדרות הניסיוניות של יצירת תמונות.",
+		"failedWithStatus": "יצירת תמונה נכשלה: {{status}} {{statusText}}",
+		"failedWithMessage": "יצירת תמונה נכשלה: {{message}}",
+		"noImageGenerated": "לא נוצרה תמונה בתגובה",
+		"invalidImageData": "נתוני תמונה לא תקינים בתגובה",
+		"invalidImageFormat": "פורמט תמונה לא תקין התקבל",
+		"unknownError": "אירעה שגיאה לא ידועה",
 		"roo": {
-			"authRequired": "Roo Code Cloud authentication is required for image generation. Please sign in to Roo Code Cloud."
+			"authRequired": "נדרש אימות Roo Code Cloud ליצירת תמונות. התחבר ל-Roo Code Cloud."
 		}
 	}
 }

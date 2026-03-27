@@ -1,18 +1,18 @@
 {
 	"errorBoundary": {
-		"title": "Something went wrong",
-		"reportText": "Please help us improve by reporting this error on",
-		"githubText": "our GitHub Issues page",
-		"copyInstructions": "Copy and paste the following error message to include it as part of your submission:",
-		"errorStack": "Error Stack:",
-		"componentStack": "Component Stack:"
+		"title": "משהו השתבש",
+		"reportText": "עזור לנו להשתפר על ידי דיווח על שגיאה זו ב",
+		"githubText": "עמוד ה-Issues שלנו ב-GitHub",
+		"copyInstructions": "העתק והדבק את הודעת השגיאה הבאה כחלק מהדיווח שלך:",
+		"errorStack": "מחסנית שגיאה:",
+		"componentStack": "מחסנית רכיב:"
 	},
 	"answers": {
-		"yes": "Yes",
-		"no": "No",
-		"cancel": "Cancel",
-		"remove": "Remove",
-		"keep": "Keep"
+		"yes": "כן",
+		"no": "לא",
+		"cancel": "ביטול",
+		"remove": "הסר",
+		"keep": "שמור"
 	},
 	"number_format": {
 		"thousand_suffix": "k",
@@ -20,95 +20,95 @@
 		"billion_suffix": "b"
 	},
 	"ui": {
-		"search_placeholder": "Search...",
-		"no_results": "No results found"
+		"search_placeholder": "חפש...",
+		"no_results": "לא נמצאו תוצאות"
 	},
 	"mermaid": {
-		"loading": "Generating mermaid diagram...",
-		"render_error": "Unable to Render Diagram",
+		"loading": "מייצר דיאגרמת mermaid...",
+		"render_error": "לא ניתן לרנדר דיאגרמה",
 		"buttons": {
-			"zoom": "Zoom",
-			"zoomIn": "Zoom In",
-			"zoomOut": "Zoom Out",
-			"copy": "Copy",
-			"save": "Save Image",
-			"viewCode": "View Code",
-			"viewDiagram": "View Diagram",
-			"close": "Close"
+			"zoom": "זום",
+			"zoomIn": "הגדל",
+			"zoomOut": "הקטן",
+			"copy": "העתק",
+			"save": "שמור תמונה",
+			"viewCode": "הצג קוד",
+			"viewDiagram": "הצג דיאגרמה",
+			"close": "סגור"
 		},
 		"modal": {
-			"codeTitle": "Mermaid Code"
+			"codeTitle": "קוד Mermaid"
 		},
 		"tabs": {
-			"diagram": "Diagram",
-			"code": "Code"
+			"diagram": "דיאגרמה",
+			"code": "קוד"
 		},
 		"feedback": {
-			"imageCopied": "Image copied to clipboard",
-			"copyError": "Error copying image"
+			"imageCopied": "התמונה הועתקה ללוח",
+			"copyError": "שגיאה בהעתקת תמונה"
 		}
 	},
 	"image": {
 		"tabs": {
-			"view": "Image"
+			"view": "תמונה"
 		},
-		"noData": "No image data"
+		"noData": "אין נתוני תמונה"
 	},
 	"file": {
 		"errors": {
-			"invalidDataUri": "Invalid data URI format",
-			"copyingImage": "Error copying image: {{error}}",
-			"openingImage": "Error opening image: {{error}}",
-			"pathNotExists": "Path does not exist: {{path}}",
-			"couldNotOpen": "Could not open file: {{error}}",
-			"couldNotOpenGeneric": "Could not open file!"
+			"invalidDataUri": "פורמט data URI לא תקין",
+			"copyingImage": "שגיאה בהעתקת תמונה: {{error}}",
+			"openingImage": "שגיאה בפתיחת תמונה: {{error}}",
+			"pathNotExists": "הנתיב לא קיים: {{path}}",
+			"couldNotOpen": "לא ניתן לפתוח קובץ: {{error}}",
+			"couldNotOpenGeneric": "לא ניתן לפתוח קובץ!"
 		},
 		"success": {
-			"imageDataUriCopied": "Image data URI copied to clipboard"
+			"imageDataUriCopied": "data URI של תמונה הועתק ללוח"
 		}
 	},
 	"confirmation": {
-		"deleteMessage": "Delete Message",
-		"deleteWarning": "Deleting this message will delete all subsequent messages in the conversation. Do you want to proceed?",
-		"editMessage": "Edit Message",
-		"editWarning": "Editing this message will delete all subsequent messages in the conversation. Do you want to proceed?",
-		"editQuestionWithCheckpoint": "Editing this message will delete all later messages in the conversation. Do you also want to undo all changes back to this checkpoint?",
-		"deleteQuestionWithCheckpoint": "Deleting this message will delete all later messages in the conversation. Do you also want to undo all changes back to this checkpoint?",
-		"editOnly": "No, edit message only",
-		"deleteOnly": "No, delete message only",
-		"restoreToCheckpoint": "Yes, restore the checkpoint",
-		"proceed": "Proceed",
-		"dontShowAgain": "Don't show this again"
+		"deleteMessage": "מחק הודעה",
+		"deleteWarning": "מחיקת הודעה זו תמחק את כל ההודעות שאחריה בשיחה. האם להמשיך?",
+		"editMessage": "ערוך הודעה",
+		"editWarning": "עריכת הודעה זו תמחק את כל ההודעות שאחריה בשיחה. האם להמשיך?",
+		"editQuestionWithCheckpoint": "עריכת הודעה זו תמחק את כל ההודעות המאוחרות יותר בשיחה. האם ברצונך גם לבטל את כל השינויים עד ל-checkpoint זה?",
+		"deleteQuestionWithCheckpoint": "מחיקת הודעה זו תמחק את כל ההודעות המאוחרות יותר בשיחה. האם ברצונך גם לבטל את כל השינויים עד ל-checkpoint זה?",
+		"editOnly": "לא, ערוך הודעה בלבד",
+		"deleteOnly": "לא, מחק הודעה בלבד",
+		"restoreToCheckpoint": "כן, שחזר את ה-checkpoint",
+		"proceed": "המשך",
+		"dontShowAgain": "אל תציג שוב"
 	},
 	"time_ago": {
-		"just_now": "just now",
-		"seconds_ago": "{{count}} seconds ago",
-		"minute_ago": "a minute ago",
-		"minutes_ago": "{{count}} minutes ago",
-		"hour_ago": "an hour ago",
-		"hours_ago": "{{count}} hours ago",
-		"day_ago": "a day ago",
-		"days_ago": "{{count}} days ago",
-		"week_ago": "a week ago",
-		"weeks_ago": "{{count}} weeks ago",
-		"month_ago": "a month ago",
-		"months_ago": "{{count}} months ago",
-		"year_ago": "a year ago",
-		"years_ago": "{{count}} years ago"
+		"just_now": "הרגע",
+		"seconds_ago": "לפני {{count}} שניות",
+		"minute_ago": "לפני דקה",
+		"minutes_ago": "לפני {{count}} דקות",
+		"hour_ago": "לפני שעה",
+		"hours_ago": "לפני {{count}} שעות",
+		"day_ago": "לפני יום",
+		"days_ago": "לפני {{count}} ימים",
+		"week_ago": "לפני שבוע",
+		"weeks_ago": "לפני {{count}} שבועות",
+		"month_ago": "לפני חודש",
+		"months_ago": "לפני {{count}} חודשים",
+		"year_ago": "לפני שנה",
+		"years_ago": "לפני {{count}} שנים"
 	},
 	"errors": {
-		"wait_checkpoint_long_time": "Waited {{timeout}} seconds for checkpoint initialization. If you don't need the checkpoint feature, please turn it off in <settingsLink>the checkpoint settings</settingsLink>.",
-		"init_checkpoint_fail_long_time": "Checkpoint initialization has taken more than {{timeout}} seconds, so checkpoints are disabled for this task. You can disable checkpoints or extend the waiting time in <settingsLink>the checkpoint settings</settingsLink>.",
-		"attempt_completion_tool_failed": "Cannot execute attempt_completion because a previous tool call failed in this turn. Please address the tool failure before attempting completion."
+		"wait_checkpoint_long_time": "המתנו {{timeout}} שניות לאתחול checkpoint. אם אין לך צורך בתכונת ה-checkpoint, כבה אותה ב<settingsLink>הגדרות ה-checkpoint</settingsLink>.",
+		"init_checkpoint_fail_long_time": "אתחול checkpoint נמשך יותר מ-{{timeout}} שניות, לכן checkpoints מושבתים למשימה זו. ניתן להשבית checkpoints או להאריך את זמן ההמתנה ב<settingsLink>הגדרות ה-checkpoint</settingsLink>.",
+		"attempt_completion_tool_failed": "לא ניתן להפעיל attempt_completion כי קריאת כלי קודמת נכשלה בתור זה. טפל בכשל הכלי לפני ניסיון ההשלמה."
 	},
 	"tasks": {
-		"delegated": "Delegated to subtask",
-		"delegated_to": "Delegated to task {{childId}}",
-		"delegation_completed": "Subtask completed, resuming parent",
-		"awaiting_child": "Awaiting child task {{childId}}"
+		"delegated": "הועבר לתת-משימה",
+		"delegated_to": "הועבר למשימה {{childId}}",
+		"delegation_completed": "תת-משימה הושלמה, ממשיך את ההורה",
+		"awaiting_child": "ממתין למשימת ילד {{childId}}"
 	},
 	"costs": {
-		"own": "Own",
-		"subtasks": "Subtasks"
+		"own": "עצמי",
+		"subtasks": "תת-משימות"
 	}
 }

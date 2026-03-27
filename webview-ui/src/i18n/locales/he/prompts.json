@@ -1,202 +1,202 @@
 {
-	"title": "Modes",
-	"done": "Done",
+	"title": "מצבים",
+	"done": "סיום",
 	"modes": {
-		"title": "Modes",
-		"createNewMode": "Create new mode",
-		"importMode": "Import Mode",
-		"editModesConfig": "Edit modes configuration",
-		"editGlobalModes": "Edit Global Modes",
-		"editProjectModes": "Edit Project Modes (.roomodes)",
-		"createModeHelpText": "Modes are specialized personas that tailor Roo's behavior. <0>Learn about Using Modes</0> or <1>Customizing Modes.</1>",
-		"selectMode": "Search modes",
-		"noMatchFound": "No modes found"
+		"title": "מצבים",
+		"createNewMode": "צור מצב חדש",
+		"importMode": "ייבא מצב",
+		"editModesConfig": "ערוך הגדרות מצבים",
+		"editGlobalModes": "ערוך מצבים גלובליים",
+		"editProjectModes": "ערוך מצבי פרויקט (.roomodes)",
+		"createModeHelpText": "מצבים הם פרסונות מתמחות שמתאימות את ההתנהגות של Roo. <0>למד על שימוש במצבים</0> או <1>התאמה אישית של מצבים.</1>",
+		"selectMode": "חפש מצבים",
+		"noMatchFound": "לא נמצאו מצבים"
 	},
 	"apiConfiguration": {
-		"title": "API Configuration",
-		"select": "Select which API configuration to use for this mode"
+		"title": "הגדרות API",
+		"select": "בחר באיזו הגדרת API להשתמש עבור מצב זה"
 	},
 	"tools": {
-		"title": "Available Tools",
-		"builtInModesText": "Tools for built-in modes cannot be modified",
-		"editTools": "Edit tools",
-		"doneEditing": "Done editing",
-		"allowedFiles": "Allowed files:",
+		"title": "כלים זמינים",
+		"builtInModesText": "לא ניתן לשנות כלים עבור מצבים מובנים",
+		"editTools": "ערוך כלים",
+		"doneEditing": "סיום עריכה",
+		"allowedFiles": "קבצים מותרים:",
 		"toolNames": {
-			"read": "Read Files",
-			"edit": "Edit Files",
-			"command": "Run Commands",
-			"mcp": "Use MCP"
+			"read": "קריאת קבצים",
+			"edit": "עריכת קבצים",
+			"command": "הרצת פקודות",
+			"mcp": "שימוש ב-MCP"
 		},
-		"noTools": "None"
+		"noTools": "אין"
 	},
 	"roleDefinition": {
-		"title": "Role Definition",
-		"resetToDefault": "Reset to default",
-		"description": "Define Roo's expertise and personality for this mode. This description shapes how Roo presents itself and approaches tasks."
+		"title": "הגדרת תפקיד",
+		"resetToDefault": "אפס לברירת מחדל",
+		"description": "הגדר את המומחיות והאישיות של Roo עבור מצב זה. תיאור זה מעצב כיצד Roo מציג את עצמו וניגש למשימות."
 	},
 	"description": {
-		"title": "Short description (for humans)",
-		"resetToDefault": "Reset to default description",
-		"description": "A brief description shown in the mode selector dropdown."
+		"title": "תיאור קצר (למשתמשים)",
+		"resetToDefault": "אפס לתיאור ברירת מחדל",
+		"description": "תיאור קצר שמוצג בתפריט בחירת המצב."
 	},
 	"whenToUse": {
-		"title": "When to Use (optional)",
-		"description": "Guidance for Roo for when this mode should be used. This helps the Orchestrator choose the right mode for a task.",
-		"resetToDefault": "Reset to default 'When to Use' description"
+		"title": "מתי להשתמש (אופציונלי)",
+		"description": "הנחיות ל-Roo מתי להשתמש במצב זה. זה עוזר ל-Orchestrator לבחור את המצב הנכון למשימה.",
+		"resetToDefault": "אפס לתיאור 'מתי להשתמש' ברירת מחדל"
 	},
 	"customInstructions": {
-		"title": "Mode-specific Custom Instructions (optional)",
-		"resetToDefault": "Reset to default",
-		"description": "Add behavioral guidelines specific to {{modeName}} mode.",
-		"loadFromFile": "Custom instructions specific to {{mode}} mode can also be loaded from the <span>.roo/rules-{{slug}}/</span> folder in your workspace or from the global <0>.roo/rules-{{slug}}/</0> (.roorules-{{slug}} and .clinerules-{{slug}} are deprecated and will stop working soon)."
+		"title": "הוראות מותאמות ספציפיות למצב (אופציונלי)",
+		"resetToDefault": "אפס לברירת מחדל",
+		"description": "הוסף הנחיות התנהגות ספציפיות למצב {{modeName}}.",
+		"loadFromFile": "הוראות מותאמות ספציפיות למצב {{mode}} ניתנות גם לטעינה מתיקיית <span>.roo/rules-{{slug}}/</span> בסביבת העבודה שלך או מהתיקייה הגלובלית <0>.roo/rules-{{slug}}/</0> (.roorules-{{slug}} ו-.clinerules-{{slug}} הוצאו משימוש ויפסיקו לעבוד בקרוב)."
 	},
 	"exportMode": {
-		"title": "Export Mode",
-		"description": "Export this mode with rules from the .roo/rules-{{slug}}/ folder combined into a shareable YAML file. The original files remain unchanged.",
-		"exporting": "Exporting..."
+		"title": "ייצוא מצב",
+		"description": "ייצא מצב זה עם כללים מתיקיית .roo/rules-{{slug}}/ משולבים לקובץ YAML לשיתוף. הקבצים המקוריים אינם משתנים.",
+		"exporting": "מייצא..."
 	},
 	"importMode": {
-		"selectLevel": "Choose where to import this mode:",
-		"import": "Import",
-		"importing": "Importing...",
+		"selectLevel": "בחר לאן לייבא מצב זה:",
+		"import": "ייבא",
+		"importing": "מייבא...",
 		"global": {
-			"label": "Global Level",
-			"description": "Available across all projects. If the exported mode contained rules files, they will be recreated in the global .roo/rules-{slug}/ folder."
+			"label": "רמה גלובלית",
+			"description": "זמין בכל הפרויקטים. אם המצב המיוצא הכיל קבצי כללים, הם ייווצרו מחדש בתיקייה הגלובלית .roo/rules-{slug}/."
 		},
 		"project": {
-			"label": "Project Level",
-			"description": "Only available in this workspace. If the exported mode contained rules files, they will be recreated in .roo/rules-{slug}/ folder."
+			"label": "רמת פרויקט",
+			"description": "זמין רק בסביבת עבודה זו. אם המצב המיוצא הכיל קבצי כללים, הם ייווצרו מחדש בתיקייה .roo/rules-{slug}/."
 		}
 	},
 	"globalCustomInstructions": {
-		"title": "Custom Instructions for All Modes",
-		"description": "These instructions apply to all modes. They provide a base set of behaviors that can be enhanced by mode-specific instructions below. <0>Learn more</0>",
-		"loadFromFile": "Instructions can also be loaded from the <span>.roo/rules/</span> folder in your workspace or from the global <0>.roo/rules/</0> (.roorules and .clinerules are deprecated and will stop working soon)."
+		"title": "הוראות מותאמות לכל המצבים",
+		"description": "הוראות אלו חלות על כל המצבים. הן מספקות מערכת התנהגויות בסיסית שניתן להרחיב עם הוראות ספציפיות למצב למטה. <0>למד עוד</0>",
+		"loadFromFile": "ניתן גם לטעון הוראות מתיקיית <span>.roo/rules/</span> בסביבת העבודה שלך או מהתיקייה הגלובלית <0>.roo/rules/</0> (.roorules ו-.clinerules הוצאו משימוש ויפסיקו לעבוד בקרוב)."
 	},
 	"systemPrompt": {
-		"preview": "Preview System Prompt",
-		"copy": "Copy system prompt to clipboard",
-		"title": "System Prompt ({{modeName}} mode)"
+		"preview": "תצוגה מקדימה של System Prompt",
+		"copy": "העתק system prompt ללוח",
+		"title": "System Prompt (מצב {{modeName}})"
 	},
 	"supportPrompts": {
-		"title": "Support Prompts",
-		"resetPrompt": "Reset {{promptType}} prompt to default",
+		"title": "Prompts תמיכה",
+		"resetPrompt": "אפס prompt {{promptType}} לברירת מחדל",
 		"prompt": "Prompt",
 		"enhance": {
-			"apiConfiguration": "API Configuration",
-			"apiConfigDescription": "You can select an API configuration to always use for enhancing prompts, or just use whatever is currently selected",
-			"useCurrentConfig": "Use currently selected API configuration",
-			"testPromptPlaceholder": "Enter a prompt to test the enhancement",
-			"previewButton": "Preview Prompt Enhancement",
-			"testEnhancement": "Test Enhancement",
-			"includeTaskHistory": "Include task history as context",
-			"includeTaskHistoryDescription": "When enabled, the last 10 messages from the current conversation will be included as context when enhancing prompts, helping to generate more relevant and context-aware suggestions."
+			"apiConfiguration": "הגדרות API",
+			"apiConfigDescription": "אפשר לבחור הגדרת API שתשמש תמיד לשיפור prompts, או להשתמש במה שנבחר כרגע",
+			"useCurrentConfig": "השתמש בהגדרת API שנבחרה כרגע",
+			"testPromptPlaceholder": "הזן prompt לבדיקת השיפור",
+			"previewButton": "תצוגה מקדימה של שיפור Prompt",
+			"testEnhancement": "בדוק שיפור",
+			"includeTaskHistory": "כלול היסטוריית משימות כהקשר",
+			"includeTaskHistoryDescription": "כשמופעל, 10 ההודעות האחרונות מהשיחה הנוכחית ייכללו כהקשר בעת שיפור prompts, מה שעוזר ליצור הצעות רלוונטיות ומותאמות יותר."
 		},
 		"condense": {
-			"apiConfiguration": "API Configuration for Context Condensing",
-			"apiConfigDescription": "Select which API configuration to use for context condensing operations. Leave unselected to use the current active configuration.",
-			"useCurrentConfig": "Use currently selected API configuration"
+			"apiConfiguration": "הגדרות API לעיבוי הקשר",
+			"apiConfigDescription": "בחר באיזו הגדרת API להשתמש לפעולות עיבוי הקשר. השאר ללא בחירה כדי להשתמש בהגדרה הפעילה הנוכחית.",
+			"useCurrentConfig": "השתמש בהגדרת API שנבחרה כרגע"
 		},
 		"types": {
 			"ENHANCE": {
-				"label": "Enhance Prompt",
-				"description": "Use prompt enhancement to get tailored suggestions or improvements for your inputs. This ensures Roo understands your intent and provides the best possible responses. Available via the ✨ icon in chat."
+				"label": "שפר Prompt",
+				"description": "השתמש בשיפור prompt כדי לקבל הצעות או שיפורים מותאמים לקלט שלך. זה מבטיח ש-Roo מבין את הכוונה שלך ומספק את התגובות הטובות ביותר. זמין דרך סמל ✨ בצ'אט."
 			},
 			"CONDENSE": {
-				"label": "Context Condensing",
-				"description": "Configure how conversation context is condensed to manage token limits. This prompt is used for both manual and automatic context condensing operations."
+				"label": "עיבוי הקשר",
+				"description": "הגדר כיצד הקשר השיחה מעובה כדי לנהל מגבלות token. prompt זה משמש לפעולות עיבוי הקשר ידניות ואוטומטיות."
 			},
 			"EXPLAIN": {
-				"label": "Explain Code",
-				"description": "Get detailed explanations of code snippets, functions, or entire files. Useful for understanding complex code or learning new patterns. Available in code actions (lightbulb icon in the editor) and the editor context menu (right-click on selected code)."
+				"label": "הסבר קוד",
+				"description": "קבל הסברים מפורטים על קטעי קוד, פונקציות או קבצים שלמים. שימושי להבנת קוד מורכב או ללימוד דפוסים חדשים. זמין בפעולות קוד (סמל נורה בעורך) ובתפריט ההקשר של העורך (לחיצה ימנית על קוד נבחר)."
 			},
 			"FIX": {
-				"label": "Fix Issues",
-				"description": "Get help identifying and resolving bugs, errors, or code quality issues. Provides step-by-step guidance for fixing problems. Available in code actions (lightbulb icon in the editor) and the editor context menu (right-click on selected code)."
+				"label": "תקן בעיות",
+				"description": "קבל עזרה בזיהוי ופתרון באגים, שגיאות או בעיות איכות קוד. מספק הדרכה שלב אחר שלב לתיקון בעיות. זמין בפעולות קוד (סמל נורה בעורך) ובתפריט ההקשר של העורך (לחיצה ימנית על קוד נבחר)."
 			},
 			"IMPROVE": {
-				"label": "Improve Code",
-				"description": "Receive suggestions for code optimization, better practices, and architectural improvements while maintaining functionality. Available in code actions (lightbulb icon in the editor) and the editor context menu (right-click on selected code)."
+				"label": "שפר קוד",
+				"description": "קבל הצעות לאופטימיזציה של קוד, שיטות טובות יותר ושיפורי ארכיטקטורה תוך שמירה על פונקציונליות. זמין בפעולות קוד (סמל נורה בעורך) ובתפריט ההקשר של העורך (לחיצה ימנית על קוד נבחר)."
 			},
 			"ADD_TO_CONTEXT": {
-				"label": "Add to Context",
-				"description": "Add context to your current task or conversation. Useful for providing additional information or clarifications. Available in code actions (lightbulb icon in the editor) and the editor context menu (right-click on selected code)."
+				"label": "הוסף להקשר",
+				"description": "הוסף הקשר למשימה או לשיחה הנוכחית. שימושי לספק מידע נוסף או הבהרות. זמין בפעולות קוד (סמל נורה בעורך) ובתפריט ההקשר של העורך (לחיצה ימנית על קוד נבחר)."
 			},
 			"TERMINAL_ADD_TO_CONTEXT": {
-				"label": "Add Terminal Content to Context",
-				"description": "Add terminal output to your current task or conversation. Useful for providing command outputs or logs. Available in the terminal context menu (right-click on selected terminal content)."
+				"label": "הוסף תוכן טרמינל להקשר",
+				"description": "הוסף פלט טרמינל למשימה או לשיחה הנוכחית. שימושי לספק פלט פקודות או לוגים. זמין בתפריט ההקשר של הטרמינל (לחיצה ימנית על תוכן טרמינל נבחר)."
 			},
 			"TERMINAL_FIX": {
-				"label": "Fix Terminal Command",
-				"description": "Get help fixing terminal commands that failed or need improvement. Available in the terminal context menu (right-click on selected terminal content)."
+				"label": "תקן פקודת טרמינל",
+				"description": "קבל עזרה בתיקון פקודות טרמינל שנכשלו או צריכות שיפור. זמין בתפריט ההקשר של הטרמינל (לחיצה ימנית על תוכן טרמינל נבחר)."
 			},
 			"TERMINAL_EXPLAIN": {
-				"label": "Explain Terminal Command",
-				"description": "Get detailed explanations of terminal commands and their outputs. Available in the terminal context menu (right-click on selected terminal content)."
+				"label": "הסבר פקודת טרמינל",
+				"description": "קבל הסברים מפורטים על פקודות טרמינל והפלט שלהן. זמין בתפריט ההקשר של הטרמינל (לחיצה ימנית על תוכן טרמינל נבחר)."
 			},
 			"NEW_TASK": {
-				"label": "Start New Task",
-				"description": "Start a new task with user input. Available in the Command Palette."
+				"label": "התחל משימה חדשה",
+				"description": "התחל משימה חדשה עם קלט משתמש. זמין בלוח הפקודות."
 			}
 		}
 	},
 	"createModeDialog": {
-		"title": "Create New Mode",
-		"close": "Close",
+		"title": "צור מצב חדש",
+		"close": "סגור",
 		"name": {
-			"label": "Name",
-			"placeholder": "Enter mode name"
+			"label": "שם",
+			"placeholder": "הזן שם מצב"
 		},
 		"slug": {
 			"label": "Slug",
-			"description": "The slug is used in URLs and file names. It should be lowercase and contain only letters, numbers, and hyphens."
+			"description": "ה-slug משמש בכתובות URL ושמות קבצים. הוא צריך להיות באותיות קטנות ולהכיל רק אותיות, מספרים ומקפים."
 		},
 		"saveLocation": {
-			"label": "Save Location",
-			"description": "Choose where to save this mode. Project-specific modes take precedence over global modes.",
+			"label": "מיקום שמירה",
+			"description": "בחר היכן לשמור מצב זה. מצבים ספציפיים לפרויקט מקבלים עדיפות על מצבים גלובליים.",
 			"global": {
-				"label": "Global",
-				"description": "Available in all workspaces"
+				"label": "גלובלי",
+				"description": "זמין בכל סביבות העבודה"
 			},
 			"project": {
-				"label": "Project-specific (.roomodes)",
-				"description": "Only available in this workspace, takes precedence over global"
+				"label": "ספציפי לפרויקט (.roomodes)",
+				"description": "זמין רק בסביבת עבודה זו, מקבל עדיפות על גלובלי"
 			}
 		},
 		"roleDefinition": {
-			"label": "Role Definition",
-			"description": "Define Roo's expertise and personality for this mode."
+			"label": "הגדרת תפקיד",
+			"description": "הגדר את המומחיות והאישיות של Roo עבור מצב זה."
 		},
 		"description": {
-			"label": "Short description (for humans)",
-			"description": "A brief description shown in the mode selector dropdown."
+			"label": "תיאור קצר (למשתמשים)",
+			"description": "תיאור קצר שמוצג בתפריט בחירת המצב."
 		},
 		"whenToUse": {
-			"label": "When to Use (optional)",
-			"description": "Guidance for Roo for when this mode should be used. This helps the Orchestrator choose the right mode for a task."
+			"label": "מתי להשתמש (אופציונלי)",
+			"description": "הנחיות ל-Roo מתי להשתמש במצב זה. זה עוזר ל-Orchestrator לבחור את המצב הנכון למשימה."
 		},
 		"tools": {
-			"label": "Available Tools",
-			"description": "Select which tools this mode can use."
+			"label": "כלים זמינים",
+			"description": "בחר באילו כלים מצב זה יכול להשתמש."
 		},
 		"customInstructions": {
-			"label": "Custom Instructions (optional)",
-			"description": "Add behavioral guidelines specific to this mode."
+			"label": "הוראות מותאמות (אופציונלי)",
+			"description": "הוסף הנחיות התנהגות ספציפיות למצב זה."
 		},
 		"buttons": {
-			"cancel": "Cancel",
-			"create": "Create Mode"
+			"cancel": "ביטול",
+			"create": "צור מצב"
 		},
-		"deleteMode": "Delete mode"
+		"deleteMode": "מחק מצב"
 	},
-	"allFiles": "all files",
+	"allFiles": "כל הקבצים",
 	"deleteMode": {
-		"title": "Delete Mode",
-		"message": "Are you sure you want to delete the mode \"{{modeName}}\"?",
-		"rulesFolder": "This mode has a rules folder at {{folderPath}} that will also be deleted.",
-		"descriptionNoRules": "Are you sure you want to delete this custom mode?",
-		"confirm": "Delete",
-		"cancel": "Cancel"
+		"title": "מחק מצב",
+		"message": "האם אתה בטוח שברצונך למחוק את המצב \"{{modeName}}\"?",
+		"rulesFolder": "למצב זה יש תיקיית כללים ב-{{folderPath}} שתימחק גם היא.",
+		"descriptionNoRules": "האם אתה בטוח שברצונך למחוק מצב מותאם זה?",
+		"confirm": "מחק",
+		"cancel": "ביטול"
 	}
 }

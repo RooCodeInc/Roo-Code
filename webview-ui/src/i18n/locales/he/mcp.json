@@ -1,65 +1,65 @@
 {
-	"title": "MCP Servers",
-	"done": "Done",
-	"marketplace": "MCP Marketplace",
-	"description": "The <0>Model Context Protocol</0> enables communication with locally running MCP servers that provide additional tools and resources to extend Roo's capabilities. You can use <1>community-made servers</1> or ask Roo to create new tools specific to your workflow (e.g., \"add a tool that gets the latest npm docs\").",
-	"instructions": "Instructions",
+	"title": "שרתי MCP",
+	"done": "סיום",
+	"marketplace": "חנות MCP",
+	"description": "<0>Model Context Protocol</0> מאפשר תקשורת עם שרתי MCP מקומיים שמספקים כלים ומשאבים נוספים להרחבת היכולות של Roo. אפשר להשתמש ב<1>שרתים מהקהילה</1> או לבקש מ-Roo ליצור כלים חדשים ספציפיים לתהליך העבודה שלך (למשל, \"הוסף כלי שמביא את תיעוד npm העדכני\").",
+	"instructions": "הוראות",
 	"enableToggle": {
-		"title": "Enable MCP Servers",
-		"description": "Turn this ON to let Roo use tools from connected MCP servers. This gives Roo more capabilities. If you don't plan to use these extra tools, turn it OFF to help reduce API token costs."
+		"title": "הפעל שרתי MCP",
+		"description": "הפעל כדי לאפשר ל-Roo להשתמש בכלים משרתי MCP מחוברים. זה נותן ל-Roo יכולות נוספות. אם אין לך כוונה להשתמש בכלים נוספים אלה, כבה כדי לחסוך בעלויות token של API."
 	},
 	"enableServerCreation": {
-		"title": "Enable MCP Server Creation",
-		"description": "Enable this to have Roo help you build <1>new</1> custom MCP servers. <0>Learn about server creation</0>",
-		"hint": "Hint: To reduce API token costs, disable this setting when you are not actively asking Roo to create a new MCP server."
+		"title": "הפעל יצירת שרתי MCP",
+		"description": "הפעל כדי ש-Roo יעזור לך לבנות שרתי MCP מותאמים <1>חדשים</1>. <0>למד על יצירת שרתים</0>",
+		"hint": "טיפ: כדי לחסוך בעלויות token של API, השבת הגדרה זו כשאתה לא מבקש מ-Roo ליצור שרת MCP חדש."
 	},
-	"editGlobalMCP": "Edit Global MCP",
-	"editProjectMCP": "Edit Project MCP",
-	"refreshMCP": "Refresh MCP Servers",
-	"learnMoreEditingSettings": "Learn more about editing MCP settings files",
+	"editGlobalMCP": "ערוך MCP גלובלי",
+	"editProjectMCP": "ערוך MCP של פרויקט",
+	"refreshMCP": "רענן שרתי MCP",
+	"learnMoreEditingSettings": "למד עוד על עריכת קבצי הגדרות MCP",
 	"tool": {
-		"alwaysAllow": "Always allow",
-		"parameters": "Parameters",
-		"noDescription": "No description",
-		"togglePromptInclusion": "Toggle inclusion in prompt"
+		"alwaysAllow": "אפשר תמיד",
+		"parameters": "פרמטרים",
+		"noDescription": "אין תיאור",
+		"togglePromptInclusion": "החלף הכללה ב-prompt"
 	},
 	"tabs": {
-		"tools": "Tools",
-		"resources": "Resources",
-		"logs": "Logs"
+		"tools": "כלים",
+		"resources": "משאבים",
+		"logs": "לוגים"
 	},
 	"emptyState": {
-		"noTools": "No tools found",
-		"noResources": "No resources found",
-		"noLogs": "No logs yet"
+		"noTools": "לא נמצאו כלים",
+		"noResources": "לא נמצאו משאבים",
+		"noLogs": "אין לוגים עדיין"
 	},
 	"networkTimeout": {
-		"label": "Network Timeout",
-		"description": "Maximum time to wait for server responses",
+		"label": "זמן תפוגת רשת",
+		"description": "זמן מקסימלי להמתנה לתגובות שרת",
 		"options": {
-			"15seconds": "15 seconds",
-			"30seconds": "30 seconds",
-			"1minute": "1 minute",
-			"5minutes": "5 minutes",
-			"10minutes": "10 minutes",
-			"15minutes": "15 minutes",
-			"30minutes": "30 minutes",
-			"60minutes": "60 minutes"
+			"15seconds": "15 שניות",
+			"30seconds": "30 שניות",
+			"1minute": "דקה",
+			"5minutes": "5 דקות",
+			"10minutes": "10 דקות",
+			"15minutes": "15 דקות",
+			"30minutes": "30 דקות",
+			"60minutes": "60 דקות"
 		}
 	},
 	"deleteDialog": {
-		"title": "Delete MCP Server",
-		"description": "Are you sure you want to delete the MCP server \"{{serverName}}\"? This action cannot be undone.",
-		"cancel": "Cancel",
-		"delete": "Delete"
+		"title": "מחק שרת MCP",
+		"description": "האם אתה בטוח שברצונך למחוק את שרת MCP \"{{serverName}}\"? לא ניתן לבטל פעולה זו.",
+		"cancel": "ביטול",
+		"delete": "מחק"
 	},
 	"serverStatus": {
-		"retrying": "Retrying...",
-		"retryConnection": "Retry Connection"
+		"retrying": "מנסה שוב...",
+		"retryConnection": "נסה חיבור מחדש"
 	},
 	"execution": {
-		"running": "Running",
-		"completed": "Completed",
-		"error": "Error"
+		"running": "רץ",
+		"completed": "הושלם",
+		"error": "שגיאה"
 	}
 }

@@ -1,28 +1,28 @@
 {
 	"errors": {
-		"invalid_settings_format": "Invalid MCP settings JSON format. Please ensure your settings follow the correct JSON format.",
-		"invalid_settings_syntax": "Invalid MCP settings JSON format. Please check your settings file for syntax errors.",
-		"invalid_settings_validation": "Invalid MCP settings format: {{errorMessages}}",
-		"create_json": "Failed to create or open .roo/mcp.json: {{error}}",
-		"failed_update_project": "Failed to update project MCP servers",
-		"invalidJsonArgument": "Roo tried to use {{toolName}} with an invalid JSON argument. Retrying...",
-		"refresh_after_disable": "Failed to refresh MCP connections after disabling",
-		"refresh_after_enable": "Failed to refresh MCP connections after enabling",
-		"disconnect_servers_partial": "Failed to disconnect {{count}} MCP server(s). Check the output for details.",
-		"toolNotFound": "Tool '{{toolName}}' does not exist on server '{{serverName}}'. Available tools: {{availableTools}}",
-		"serverNotFound": "MCP server '{{serverName}}' is not configured. Available servers: {{availableServers}}",
-		"toolDisabled": "Tool '{{toolName}}' on server '{{serverName}}' is disabled. Available enabled tools: {{availableTools}}"
+		"invalid_settings_format": "פורמט JSON של הגדרות MCP לא תקין. ודא שההגדרות שלך עוקבות אחרי פורמט JSON תקני.",
+		"invalid_settings_syntax": "פורמט JSON של הגדרות MCP לא תקין. בדוק את קובץ ההגדרות לשגיאות תחביר.",
+		"invalid_settings_validation": "פורמט הגדרות MCP לא תקין: {{errorMessages}}",
+		"create_json": "יצירה או פתיחה של .roo/mcp.json נכשלה: {{error}}",
+		"failed_update_project": "עדכון שרתי MCP של הפרויקט נכשל",
+		"invalidJsonArgument": "Roo ניסה להשתמש ב-{{toolName}} עם ארגומנט JSON לא תקין. מנסה שוב...",
+		"refresh_after_disable": "רענון חיבורי MCP לאחר השבתה נכשל",
+		"refresh_after_enable": "רענון חיבורי MCP לאחר הפעלה נכשל",
+		"disconnect_servers_partial": "ניתוק {{count}} שרת(י) MCP נכשל. בדוק את הפלט לפרטים.",
+		"toolNotFound": "הכלי '{{toolName}}' לא קיים בשרת '{{serverName}}'. כלים זמינים: {{availableTools}}",
+		"serverNotFound": "שרת MCP '{{serverName}}' אינו מוגדר. שרתים זמינים: {{availableServers}}",
+		"toolDisabled": "הכלי '{{toolName}}' בשרת '{{serverName}}' מושבת. כלים מופעלים זמינים: {{availableTools}}"
 	},
 	"info": {
-		"server_restarting": "Restarting {{serverName}} MCP server...",
-		"server_connected": "{{serverName}} MCP server connected",
-		"server_deleted": "Deleted MCP server: {{serverName}}",
-		"server_not_found": "Server \"{{serverName}}\" not found in configuration",
-		"global_servers_active": "Active Global MCP Servers: {{mcpServers}}",
-		"project_servers_active": "Active Project MCP Servers: {{mcpServers}}",
-		"already_refreshing": "MCP servers are already refreshing.",
-		"refreshing_all": "Refreshing all MCP servers...",
-		"all_refreshed": "All MCP servers have been refreshed.",
-		"project_config_deleted": "Project MCP configuration file deleted. All project MCP servers have been disconnected."
+		"server_restarting": "מפעיל מחדש את שרת MCP {{serverName}}...",
+		"server_connected": "שרת MCP {{serverName}} מחובר",
+		"server_deleted": "שרת MCP נמחק: {{serverName}}",
+		"server_not_found": "השרת \"{{serverName}}\" לא נמצא בהגדרות",
+		"global_servers_active": "שרתי MCP גלובליים פעילים: {{mcpServers}}",
+		"project_servers_active": "שרתי MCP של הפרויקט פעילים: {{mcpServers}}",
+		"already_refreshing": "שרתי MCP כבר מתרעננים.",
+		"refreshing_all": "מרענן את כל שרתי MCP...",
+		"all_refreshed": "כל שרתי MCP רועננו.",
+		"project_config_deleted": "קובץ הגדרות MCP של הפרויקט נמחק. כל שרתי MCP של הפרויקט נותקו."
 	}
 }
