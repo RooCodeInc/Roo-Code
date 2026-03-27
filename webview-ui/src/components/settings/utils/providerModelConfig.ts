@@ -150,8 +150,10 @@ export const handleModelChangeSideEffects = <K extends keyof ProviderSettings>(
 		setApiConfigurationField("awsCustomArn" as K, "" as ProviderSettings[K])
 	}
 
-	// All providers: Clear reasoning effort when switching models to allow
-	// the new model's default to take effect. Different models within the
-	// same provider can have different reasoning effort defaults/options.
+	// All providers: Clear reasoning settings when switching models to allow
+	// the new model's defaults to take effect. Different models within the
+	// same provider can have different reasoning defaults/options.
 	setApiConfigurationField("reasoningEffort" as K, undefined as ProviderSettings[K])
+	setApiConfigurationField("modelMaxTokens" as K, undefined as ProviderSettings[K])
+	setApiConfigurationField("modelMaxThinkingTokens" as K, undefined as ProviderSettings[K])
 }
