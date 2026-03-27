@@ -82,6 +82,43 @@ function setupCallbackServerMock(code = "test-auth-code", state?: string) {
 describe("McpOAuthClientProvider", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
+		McpOAuthClientProvider.clearNonOAuthCache()
+	})
+
+	describe("static negative cache", () => {
+		it("isKnownNonOAuth returns false for unknown servers", () => {
+			expect(McpOAuthClientProvider.isKnownNonOAuth("https://unknown.com/mcp")).toBe(false)
+		})
+
+		it("markNonOAuth makes isKnownNonOAuth return true", () => {
+			McpOAuthClientProvider.markNonOAuth("https://example.com/mcp")
+			expect(McpOAuthClientProvider.isKnownNonOAuth("https://example.com/mcp")).toBe(true)
+		})
+
+		it("clearNonOAuthCache(url) clears a specific entry", () => {
+			McpOAuthClientProvider.markNonOAuth("https://a.com/mcp")
+			McpOAuthClientProvider.markNonOAuth("https://b.com/mcp")
+			McpOAuthClientProvider.clearNonOAuthCache("https://a.com/mcp")
+			expect(McpOAuthClientProvider.isKnownNonOAuth("https://a.com/mcp")).toBe(false)
+			expect(McpOAuthClientProvider.isKnownNonOAuth("https://b.com/mcp")).toBe(true)
+		})
+
+		it("clearNonOAuthCache() with no arg clears all entries", () => {
+			McpOAuthClientProvider.markNonOAuth("https://a.com/mcp")
+			McpOAuthClientProvider.markNonOAuth("https://b.com/mcp")
+			McpOAuthClientProvider.clearNonOAuthCache()
+			expect(McpOAuthClientProvider.isKnownNonOAuth("https://a.com/mcp")).toBe(false)
+			expect(McpOAuthClientProvider.isKnownNonOAuth("https://b.com/mcp")).toBe(false)
+		})
+
+		it("entries expire after the TTL", () => {
+			const realNow = Date.now()
+			McpOAuthClientProvider.markNonOAuth("https://example.com/mcp")
+			// Advance time past the 30-minute TTL
+			const spy = vi.spyOn(Date, "now").mockReturnValue(realNow + 31 * 60 * 1000)
+			expect(McpOAuthClientProvider.isKnownNonOAuth("https://example.com/mcp")).toBe(false)
+			spy.mockRestore()
+		})
 	})
 
 	describe("create", () => {
@@ -94,6 +131,36 @@ describe("McpOAuthClientProvider", () => {
 			expect(startCallbackServer).not.toHaveBeenCalled()
 			expect(provider.redirectUrl).toBe("http://localhost:0/callback")
 			await provider.close()
+		})
+
+		it("should skip discovery when skipDiscovery option is true", async () => {
+			const secretStorage = createMockSecretStorage()
+			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", secretStorage, undefined, {
+				skipDiscovery: true,
+			})
+
+			expect(discoverOAuthProtectedResourceMetadata).not.toHaveBeenCalled()
+			expect(provider.hasMetadata).toBe(false)
+		})
+
+		it("should have hasMetadata true when discovery succeeds", async () => {
+			const secretStorage = createMockSecretStorage()
+			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", secretStorage)
+
+			expect(discoverOAuthProtectedResourceMetadata).toHaveBeenCalled()
+			expect(provider.hasMetadata).toBe(true)
+		})
+
+		it("should cache server as non-OAuth when discovery fails", async () => {
+			// Use mockImplementationOnce to override just this call
+			;(discoverOAuthProtectedResourceMetadata as any).mockImplementationOnce(() => {
+				throw new Error("not found")
+			})
+			const secretStorage = createMockSecretStorage()
+			const provider = await McpOAuthClientProvider.create("https://no-oauth.example.com/mcp", secretStorage)
+
+			expect(provider.hasMetadata).toBe(false)
+			expect(McpOAuthClientProvider.isKnownNonOAuth("https://no-oauth.example.com/mcp")).toBe(true)
 		})
 	})
 

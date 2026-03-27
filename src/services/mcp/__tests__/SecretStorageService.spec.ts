@@ -89,6 +89,31 @@ describe("SecretStorageService", () => {
 		})
 	})
 
+	describe("hasOAuthData", () => {
+		it("should return false when no data stored", async () => {
+			expect(await service.hasOAuthData("https://example.com/mcp")).toBe(false)
+		})
+
+		it("should return true when data is stored", async () => {
+			const data: StoredMcpOAuthData = {
+				tokens: { access_token: "tok", token_type: "Bearer" },
+				expires_at: Date.now() + 3600_000,
+			}
+			await service.saveOAuthData("https://example.com/mcp", data)
+			expect(await service.hasOAuthData("https://example.com/mcp")).toBe(true)
+		})
+
+		it("should return false after data is deleted", async () => {
+			const data: StoredMcpOAuthData = {
+				tokens: { access_token: "tok", token_type: "Bearer" },
+				expires_at: Date.now() + 3600_000,
+			}
+			await service.saveOAuthData("https://example.com/mcp", data)
+			await service.deleteOAuthData("https://example.com/mcp")
+			expect(await service.hasOAuthData("https://example.com/mcp")).toBe(false)
+		})
+	})
+
 	describe("deleteOAuthData", () => {
 		it("should delete stored data", async () => {
 			const data: StoredMcpOAuthData = {

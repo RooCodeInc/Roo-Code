@@ -795,24 +795,32 @@ export class McpHub {
 					throw new Error("SecretStorageService not initialized — call setSecretStorage() before connecting")
 				}
 
-				// Create an OAuth provider for this server.
+				// Decide whether to perform OAuth discovery (RFC 9728 + RFC 8414)
+				// upfront or skip it to avoid a wasted network round-trip for
+				// non-OAuth servers.
 				//
-				// McpOAuthClientProvider.create() performs OAuth discovery (RFC 9728 +
-				// RFC 8414) once and starts the local callback server so the redirect
-				// URI port is stable before any connect attempt.
-				//
-				// If the server already has a stored token the SDK will use it
-				// transparently; the browser is only opened when a 401 forces a new
-				// authorization flow.
-				const authProvider = await McpOAuthClientProvider.create(configInjected.url, this.secretStorage, name)
+				// Three cases:
+				//  1. SecretStorage has OAuth data → known OAuth server → discover
+				//  2. In-memory negative cache says non-OAuth → skip discovery
+				//  3. Unknown server (first connection) → discover once, cache result
+				const hasOAuthData = await this.secretStorage.hasOAuthData(configInjected.url)
+				const knownNonOAuth = McpOAuthClientProvider.isKnownNonOAuth(configInjected.url)
+				const skipDiscovery = !hasOAuthData && knownNonOAuth
+
+				const authProvider = await McpOAuthClientProvider.create(configInjected.url, this.secretStorage, name, {
+					skipDiscovery,
+				})
 
 				// Pre-register the OAuth client so the SDK can skip its own
 				// registration step (broken for path-prefixed issuers — see
 				// utils/oauth.ts for upstream issue links).
-				try {
-					await authProvider.registerClientIfNeeded()
-				} catch {
-					// Registration may not be supported — the SDK will attempt its own.
+				// Skip when discovery was skipped — there's no metadata to register with.
+				if (!skipDiscovery) {
+					try {
+						await authProvider.registerClientIfNeeded()
+					} catch {
+						// Registration may not be supported — the SDK will attempt its own.
+					}
 				}
 
 				transport = new StreamableHTTPClientTransport(new URL(configInjected.url), {
@@ -959,10 +967,23 @@ export class McpHub {
 				await client.connect(transport)
 			} catch (connectError) {
 				if (connectError instanceof UnauthorizedError && streamableHttpAuthProvider && configInjected.url) {
-					// The server requires OAuth. Mark this connection as "connecting" and
-					// detach the toast + browser flow from the initialization path so that
+					// The server requires OAuth.
+					McpOAuthClientProvider.clearNonOAuthCache(configInjected.url)
+
+					// If discovery was skipped (provider has no metadata), we need to
+					// tear down and reconnect with full discovery now that we know
+					// this is an OAuth server. The reconnect will do discovery since
+					// the negative cache was cleared and no SecretStorage data exists yet.
+					if (!streamableHttpAuthProvider.hasMetadata) {
+						await streamableHttpAuthProvider.close()
+						await this.deleteConnection(name, source)
+						void this.connectToServer(name, config, source)
+						return
+					}
+
+					// Mark this connection as "connecting" and detach the toast +
+					// browser flow from the initialization path so that
 					// waitUntilReady() resolves immediately and the MCP panel can load.
-					const serverUrl = configInjected.url
 					connection.server.status = "connecting"
 
 					void this._initiateOAuthFlow(

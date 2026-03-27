@@ -45,6 +45,11 @@ export class SecretStorageService {
 		await this._storage.store(this._key(serverUrl), JSON.stringify(data))
 	}
 
+	async hasOAuthData(serverUrl: string): Promise<boolean> {
+		const raw = await this._storage.get(this._key(serverUrl))
+		return raw !== undefined
+	}
+
 	async deleteOAuthData(serverUrl: string): Promise<void> {
 		await this._storage.delete(this._key(serverUrl))
 	}

@@ -31,6 +31,35 @@ import { fetchOAuthAuthServerMetadata } from "./utils/oauth"
  *  6. `await authProvider.close()` when done (success or permanent failure)
  */
 export class McpOAuthClientProvider implements OAuthClientProvider {
+	// ── Static negative cache ────────────────────────────────────────────────
+	// Remembers servers that returned no OAuth metadata so we can skip the
+	// discovery probe on subsequent connection attempts (reconnect, restart).
+	private static _nonOAuthCache = new Map<string, number>() // serverUrl → timestamp
+	private static NON_OAUTH_TTL_MS = 30 * 60 * 1000 // 30 minutes
+
+	static isKnownNonOAuth(serverUrl: string): boolean {
+		const ts = McpOAuthClientProvider._nonOAuthCache.get(serverUrl)
+		if (ts === undefined) return false
+		if (Date.now() - ts > McpOAuthClientProvider.NON_OAUTH_TTL_MS) {
+			McpOAuthClientProvider._nonOAuthCache.delete(serverUrl)
+			return false
+		}
+		return true
+	}
+
+	static markNonOAuth(serverUrl: string): void {
+		McpOAuthClientProvider._nonOAuthCache.set(serverUrl, Date.now())
+	}
+
+	static clearNonOAuthCache(serverUrl?: string): void {
+		if (serverUrl) {
+			McpOAuthClientProvider._nonOAuthCache.delete(serverUrl)
+		} else {
+			McpOAuthClientProvider._nonOAuthCache.clear()
+		}
+	}
+
+	// ── Instance fields ──────────────────────────────────────────────────────
 	private _codeVerifier?: string
 	// Client info is kept in-memory only (not persisted) to avoid stale registrations
 	// when the redirect URI port changes between sessions.
@@ -71,14 +100,25 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 		serverUrl: string,
 		secretStorage: SecretStorageService,
 		serverName?: string,
+		options?: { skipDiscovery?: boolean },
 	): Promise<McpOAuthClientProvider> {
-		// Fetch auth server metadata once.  Reused for:
-		//  - selecting token_endpoint_auth_method / grant_types / scopes
-		//  - pre-registering the client (registration_endpoint)
-		//  - RFC 8707 resource indicator (injected into authorization URL)
-		const discovery = await fetchOAuthAuthServerMetadata(serverUrl)
-		const authServerMeta = discovery?.authServerMeta ?? null
-		const resourceIndicator = discovery?.resourceIndicator ?? null
+		let authServerMeta: Record<string, any> | null = null
+		let resourceIndicator: string | null = null
+
+		if (!options?.skipDiscovery) {
+			// Fetch auth server metadata once.  Reused for:
+			//  - selecting token_endpoint_auth_method / grant_types / scopes
+			//  - pre-registering the client (registration_endpoint)
+			//  - RFC 8707 resource indicator (injected into authorization URL)
+			const discovery = await fetchOAuthAuthServerMetadata(serverUrl)
+			authServerMeta = discovery?.authServerMeta ?? null
+			resourceIndicator = discovery?.resourceIndicator ?? null
+
+			// Cache the result so subsequent connections can skip the probe.
+			if (!authServerMeta) {
+				McpOAuthClientProvider.markNonOAuth(serverUrl)
+			}
+		}
 
 		// Extract auth-method preferences.
 		// Prefer "none" → first supported → "client_secret_post"
@@ -112,6 +152,11 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 	}
 
 	// ── OAuthClientProvider interface ────────────────────────────────────────
+
+	/** Whether this provider was created with OAuth metadata (discovery succeeded). */
+	get hasMetadata(): boolean {
+		return this._authServerMeta !== null
+	}
 
 	get redirectUrl(): string {
 		return `http://localhost:${this._port}/callback`
