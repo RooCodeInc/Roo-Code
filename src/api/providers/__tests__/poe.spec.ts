@@ -294,62 +294,6 @@ describe("PoeHandler", () => {
 			)
 		})
 
-		it("emits final reasoning text when the stream has no reasoning chunks", async () => {
-			const handler = new PoeHandler({
-				poeApiKey: "key",
-				apiModelId: "openai/o3",
-				enableReasoningEffort: true,
-				reasoningEffort: "high",
-			})
-
-			const fullStream = (async function* () {
-				yield { type: "text-delta", text: "Answer" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream,
-				reasoningText: Promise.resolve("Condensed reasoning"),
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
-			})
-
-			const chunks = []
-			for await (const chunk of handler.createMessage("system", [{ role: "user" as const, content: "reason" }])) {
-				chunks.push(chunk)
-			}
-
-			expect(chunks).toContainEqual({ type: "text", text: "Answer" })
-			expect(chunks).toContainEqual({ type: "reasoning", text: "Condensed reasoning" })
-		})
-
-		it("does not duplicate reasoning when the stream already contains reasoning chunks", async () => {
-			const handler = new PoeHandler({
-				poeApiKey: "key",
-				apiModelId: "openai/o3",
-				enableReasoningEffort: true,
-				reasoningEffort: "high",
-			})
-
-			const fullStream = (async function* () {
-				yield { type: "reasoning-delta", text: "Live reasoning" }
-				yield { type: "text-delta", text: "Answer" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream,
-				reasoningText: Promise.resolve("Condensed reasoning"),
-				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
-			})
-
-			const chunks = []
-			for await (const chunk of handler.createMessage("system", [{ role: "user" as const, content: "reason" }])) {
-				chunks.push(chunk)
-			}
-
-			expect(chunks.filter((chunk) => chunk.type === "reasoning")).toEqual([
-				{ type: "reasoning", text: "Live reasoning" },
-			])
-		})
-
 		it("does not pass providerOptions when reasoning is disabled", async () => {
 			const handler = new PoeHandler({
 				poeApiKey: "key",

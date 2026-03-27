@@ -109,20 +109,9 @@ export class PoeHandler extends BaseProvider implements SingleCompletionHandler 
 		}
 
 		try {
-			let sawReasoning = false
 			for await (const part of result.fullStream) {
 				for (const chunk of processAiSdkStreamPart(part)) {
-					if (chunk.type === "reasoning" && chunk.text.trim().length > 0) {
-						sawReasoning = true
-					}
 					yield chunk
-				}
-			}
-
-			if (!sawReasoning) {
-				const reasoningText = await result.reasoningText
-				if (reasoningText?.trim()) {
-					yield { type: "reasoning", text: reasoningText }
 				}
 			}
 
