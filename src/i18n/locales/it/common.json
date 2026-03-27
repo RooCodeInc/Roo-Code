@@ -257,6 +257,8 @@
 		"generating": "Generazione del messaggio di commit...",
 		"no_changes": "Nessuna modifica rilevata. Prepara o modifica i file prima di generare un messaggio di commit.",
 		"generation_failed": "Impossibile generare il messaggio di commit",
+		"no_git_extension": "Git extension is not available.",
+		"no_git_repo": "No git repository found.",
 		"use_current_profile": "Usa il profilo corrente",
 		"select_profile": "Seleziona un profilo API per la generazione del messaggio di commit"
 	}

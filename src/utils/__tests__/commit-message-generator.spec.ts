@@ -3,12 +3,34 @@ import * as singleCompletionHandlerModule from "../single-completion-handler"
 import type { ProviderSettings } from "@roo-code/types"
 
 vi.mock("../single-completion-handler")
-vi.mock("child_process")
+
+// Mock child_process.exec to simulate git commands
+const mockExecImpl = vi.fn()
+
+vi.mock("child_process", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("child_process")>()
+	return {
+		...actual,
+		exec: (...args: any[]) => mockExecImpl(...args),
+	}
+})
+
 vi.mock("util", async (importOriginal) => {
 	const actual = await importOriginal<typeof import("util")>()
 	return {
 		...actual,
-		promisify: vi.fn((fn: any) => fn),
+		promisify:
+			(fn: any) =>
+			(...args: any[]) =>
+				new Promise((resolve, reject) => {
+					fn(...args, (err: Error | null, result: any) => {
+						if (err) {
+							reject(err)
+						} else {
+							resolve(result)
+						}
+					})
+				}),
 	}
 })
 
@@ -57,6 +79,14 @@ describe("commit-message-generator", () => {
 			expect(result).toBe("feat: add feature")
 		})
 
+		it("strips language-tagged markdown code blocks from the result", async () => {
+			mockSingleCompletionHandler.mockResolvedValue("```text\nfix: resolve null check\n```")
+
+			const result = await generateCommitMessageFromDiff(mockApiConfig, "some diff")
+
+			expect(result).toBe("fix: resolve null check")
+		})
+
 		it("propagates errors from the completion handler", async () => {
 			mockSingleCompletionHandler.mockRejectedValue(new Error("API Error"))
 
@@ -66,28 +96,62 @@ describe("commit-message-generator", () => {
 
 	describe("getGitDiff", () => {
 		it("returns staged diff when available", async () => {
-			const { exec } = await import("child_process")
-			const mockExec = vi.mocked(exec) as any
-			mockExec.mockImplementation(
+			mockExecImpl.mockImplementation(
 				(
 					cmd: string,
-					_opts: any,
-					callback?: (err: Error | null, result: { stdout: string; stderr: string }) => void,
+					_opts: unknown,
+					callback: (err: Error | null, result: { stdout: string; stderr: string }) => void,
 				) => {
-					if (callback) {
-						if (cmd === "git diff --cached") {
-							callback(null, { stdout: "staged changes", stderr: "" })
-						} else {
-							callback(null, { stdout: "", stderr: "" })
-						}
+					if (cmd.includes("--cached")) {
+						callback(null, { stdout: "staged changes", stderr: "" })
+					} else {
+						callback(null, { stdout: "unstaged changes", stderr: "" })
 					}
-					return { stdout: cmd === "git diff --cached" ? "staged changes" : "", stderr: "" }
 				},
 			)
 
-			// Since we mock promisify, exec is already "promisified" via our mock
-			// The actual function uses execAsync which is promisify(exec)
-			// We need to test the logic differently since promisify is mocked
+			const result = await getGitDiff("/workspace")
+
+			expect(result).toBe("staged changes")
+			expect(mockExecImpl).toHaveBeenCalledWith(
+				"git diff --cached --no-color",
+				expect.objectContaining({ cwd: "/workspace" }),
+				expect.any(Function),
+			)
+		})
+
+		it("falls back to unstaged diff when nothing is staged", async () => {
+			mockExecImpl.mockImplementation(
+				(
+					cmd: string,
+					_opts: unknown,
+					callback: (err: Error | null, result: { stdout: string; stderr: string }) => void,
+				) => {
+					if (cmd.includes("--cached")) {
+						callback(null, { stdout: "", stderr: "" })
+					} else {
+						callback(null, { stdout: "unstaged changes", stderr: "" })
+					}
+				},
+			)
+
+			const result = await getGitDiff("/workspace")
+
+			expect(result).toBe("unstaged changes")
+		})
+
+		it("throws an error when git command fails", async () => {
+			mockExecImpl.mockImplementation(
+				(
+					_cmd: string,
+					_opts: unknown,
+					callback: (err: Error | null, result: { stdout: string; stderr: string }) => void,
+				) => {
+					callback(new Error("git not found"), { stdout: "", stderr: "" })
+				},
+			)
+
+			await expect(getGitDiff("/workspace")).rejects.toThrow("Failed to get git diff")
 		})
 	})
 })

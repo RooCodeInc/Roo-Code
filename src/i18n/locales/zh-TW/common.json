@@ -257,6 +257,8 @@
 		"generating": "正在產生提交訊息...",
 		"no_changes": "未偵測到變更。請在產生提交訊息之前暫存或修改檔案。",
 		"generation_failed": "產生提交訊息失敗",
+		"no_git_extension": "Git extension is not available.",
+		"no_git_repo": "No git repository found.",
 		"use_current_profile": "使用目前的設定檔",
 		"select_profile": "選擇用於產生提交訊息的 API 設定檔"
 	}

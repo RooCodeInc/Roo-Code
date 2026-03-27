@@ -257,6 +257,8 @@
 		"generating": "कमिट संदेश बनाया जा रहा है...",
 		"no_changes": "कोई बदलाव नहीं मिला। कमिट संदेश बनाने से पहले फ़ाइलें तैयार करें या बदलें।",
 		"generation_failed": "कमिट संदेश बनाने में विफल",
+		"no_git_extension": "Git extension is not available.",
+		"no_git_repo": "No git repository found.",
 		"use_current_profile": "वर्तमान प्रोफ़ाइल का उपयोग करें",
 		"select_profile": "कमिट संदेश बनाने के लिए एक API प्रोफ़ाइल चुनें"
 	}

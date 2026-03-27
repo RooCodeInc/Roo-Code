@@ -262,6 +262,8 @@
 		"generating": "正在生成提交信息...",
 		"no_changes": "未检测到更改。请在生成提交信息之前暂存或修改文件。",
 		"generation_failed": "生成提交信息失败",
+		"no_git_extension": "Git extension is not available.",
+		"no_git_repo": "No git repository found.",
 		"use_current_profile": "使用当前配置",
 		"select_profile": "选择用于生成提交信息的 API 配置"
 	}

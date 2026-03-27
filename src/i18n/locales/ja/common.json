@@ -257,6 +257,8 @@
 		"generating": "コミットメッセージを生成中...",
 		"no_changes": "変更が検出されませんでした。コミットメッセージを生成する前にファイルをステージするか変更してください。",
 		"generation_failed": "コミットメッセージの生成に失敗しました",
+		"no_git_extension": "Git extension is not available.",
+		"no_git_repo": "No git repository found.",
 		"use_current_profile": "現在のプロファイルを使用",
 		"select_profile": "コミットメッセージ生成用のAPIプロファイルを選択"
 	}

@@ -5,6 +5,7 @@ import { promisify } from "util"
 import type { ProviderSettings } from "@roo-code/types"
 
 import { singleCompletionHandler } from "./single-completion-handler"
+import { t } from "../i18n"
 
 const execAsync = promisify(exec)
 
@@ -30,7 +31,7 @@ Git diff:
 export async function getGitDiff(workspaceRoot: string): Promise<string> {
 	try {
 		// Try staged changes first
-		const { stdout: stagedDiff } = await execAsync("git diff --cached", {
+		const { stdout: stagedDiff } = await execAsync("git diff --cached --no-color", {
 			cwd: workspaceRoot,
 			maxBuffer: 1024 * 1024,
 		})
@@ -40,7 +41,7 @@ export async function getGitDiff(workspaceRoot: string): Promise<string> {
 		}
 
 		// Fall back to unstaged changes
-		const { stdout: unstagedDiff } = await execAsync("git diff", {
+		const { stdout: unstagedDiff } = await execAsync("git diff --no-color", {
 			cwd: workspaceRoot,
 			maxBuffer: 1024 * 1024,
 		})
@@ -64,7 +65,7 @@ export async function generateCommitMessageFromDiff(apiConfiguration: ProviderSe
 
 	// Clean up the result - remove any markdown formatting the model might add
 	return result
-		.replace(/^```[\s\S]*?\n/, "")
+		.replace(/^```[^\n]*\n/, "")
 		.replace(/\n```$/, "")
 		.trim()
 }
@@ -87,7 +88,7 @@ export async function setScmInputBoxMessage(message: string): Promise<boolean> {
 	const gitExtension = vscode.extensions.getExtension("vscode.git")
 
 	if (!gitExtension) {
-		vscode.window.showErrorMessage("Git extension is not available.")
+		vscode.window.showErrorMessage(t("common:commit.no_git_extension"))
 		return false
 	}
 
@@ -95,7 +96,7 @@ export async function setScmInputBoxMessage(message: string): Promise<boolean> {
 	const api = git.getAPI(1)
 
 	if (!api || api.repositories.length === 0) {
-		vscode.window.showErrorMessage("No git repository found.")
+		vscode.window.showErrorMessage(t("common:commit.no_git_repo"))
 		return false
 	}
 

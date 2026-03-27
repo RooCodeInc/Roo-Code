@@ -257,6 +257,8 @@
 		"generating": "커밋 메시지 생성 중...",
 		"no_changes": "변경 사항이 없습니다. 커밋 메시지를 생성하기 전에 파일을 스테이지하거나 수정하세요.",
 		"generation_failed": "커밋 메시지 생성에 실패했습니다",
+		"no_git_extension": "Git extension is not available.",
+		"no_git_repo": "No git repository found.",
 		"use_current_profile": "현재 프로필 사용",
 		"select_profile": "커밋 메시지 생성에 사용할 API 프로필을 선택하세요"
 	}

@@ -249,6 +249,8 @@
 		"generating": "Generating commit message...",
 		"no_changes": "No changes detected. Stage or modify files before generating a commit message.",
 		"generation_failed": "Failed to generate commit message",
+		"no_git_extension": "Git extension is not available.",
+		"no_git_repo": "No git repository found.",
 		"use_current_profile": "Use current profile",
 		"select_profile": "Select an API profile for commit message generation"
 	}
