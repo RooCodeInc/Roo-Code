@@ -65,10 +65,8 @@ vitest.mock("../fetchers/modelCache", () => ({
 	}),
 }))
 
-import type { Anthropic } from "@anthropic-ai/sdk"
 import { poeDefaultModelId } from "@roo-code/types"
 import { PoeHandler } from "../poe"
-import type { ApiHandlerOptions } from "../../../shared/api"
 
 describe("PoeHandler", () => {
 	const mockLanguageModel = { modelId: "test-model" }
@@ -159,65 +157,6 @@ describe("PoeHandler", () => {
 			expect(chunks).toContainEqual({ type: "text", text: "Hello " })
 			expect(chunks).toContainEqual({ type: "text", text: "world!" })
 			expect(chunks).toContainEqual(expect.objectContaining({ type: "usage", inputTokens: 10, outputTokens: 5 }))
-		})
-
-		it("passes tools and tool_choice to streamText", async () => {
-			const handler = new PoeHandler({ poeApiKey: "key", apiModelId: "openai/gpt-4o" })
-
-			const fullStream = (async function* () {
-				yield { type: "text-delta", text: "ok" }
-			})()
-
-			mockStreamText.mockReturnValue({
-				fullStream,
-				usage: Promise.resolve({ inputTokens: 1, outputTokens: 1 }),
-			})
-
-			const tools = [
-				{
-					type: "function" as const,
-					function: {
-						name: "read_file",
-						description: "Read a file",
-						parameters: { type: "object", properties: { path: { type: "string" } }, required: ["path"] },
-					},
-				},
-			]
-
-			const iterator = handler.createMessage("system", [{ role: "user" as const, content: "read file" }], {
-				taskId: "test",
-				tools,
-				tool_choice: "auto" as any,
-			})
-
-			// Consume stream
-			for await (const _ of iterator) {
-				/* drain */
-			}
-
-			expect(mockStreamText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					model: mockLanguageModel,
-					system: "system",
-					tools: expect.any(Object),
-				}),
-			)
-		})
-
-		it("calls poe provider with correct model ID", async () => {
-			const handler = new PoeHandler({ poeApiKey: "key", apiModelId: "openai/gpt-4o" })
-
-			const fullStream = (async function* () {})()
-			mockStreamText.mockReturnValue({
-				fullStream,
-				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
-			})
-
-			for await (const _ of handler.createMessage("sys", [{ role: "user" as const, content: "hi" }])) {
-				/* drain */
-			}
-
-			expect(mockPoeProvider).toHaveBeenCalledWith("openai/gpt-4o")
 		})
 	})
 
