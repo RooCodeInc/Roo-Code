@@ -710,8 +710,8 @@ importers:
   packages/types:
     dependencies:
       ai-sdk-provider-poe:
-        specifier: ^2.0.16
-        version: 2.0.16(ai@6.0.77(zod@3.25.76))(zod@3.25.76)
+        specifier: ^2.0.17
+        version: 2.0.17(ai@6.0.77(zod@3.25.76))(zod@3.25.76)
       zod:
         specifier: 3.25.76
         version: 3.25.76
@@ -822,8 +822,8 @@ importers:
         specifier: ^0.0.36
         version: 0.0.36
       ai-sdk-provider-poe:
-        specifier: ^2.0.16
-        version: 2.0.16(ai@6.0.77(zod@3.25.76))(zod@3.25.76)
+        specifier: ^2.0.17
+        version: 2.0.17(ai@6.0.77(zod@3.25.76))(zod@3.25.76)
       async-mutex:
         specifier: ^0.5.0
         version: 0.5.0
@@ -4928,8 +4928,8 @@ packages:
     resolution: {integrity: sha512-kja8j7PjmncONqaTsB8fQ+wE2mSU2DJ9D4XKoJ5PFWIdRMa6SLSN1ff4mOr4jCbfRSsxR4keIiySJU0N9T5hIQ==}
     engines: {node: '>= 8.0.0'}
 
-  ai-sdk-provider-poe@2.0.16:
-    resolution: {integrity: sha512-tE6qJRp7pzYN+KRFSYOMi+UWQTLaOxKzbITNQnAd+EJ8c9GV8L/jfY1D/EZp/mO93SKa3NNwVqTStaJTUBmOsw==}
+  ai-sdk-provider-poe@2.0.17:
+    resolution: {integrity: sha512-a+glxLPxgBT7mTBvdP0ML8lv5bpyJD1K8x8v+d0YS2iZ1tEkBUC9mY1uMZx62N88/pPVsD+WcMddiE2hfZuxLg==}
     peerDependencies:
       ai: '>=6.0.0'
 
@@ -15229,7 +15229,7 @@ snapshots:
     dependencies:
       humanize-ms: 1.2.1
 
-  ai-sdk-provider-poe@2.0.16(ai@6.0.77(zod@3.25.76))(zod@3.25.76):
+  ai-sdk-provider-poe@2.0.17(ai@6.0.77(zod@3.25.76))(zod@3.25.76):
     dependencies:
       '@ai-sdk/anthropic': 3.0.42(zod@3.25.76)
       '@ai-sdk/openai': 3.0.27(zod@3.25.76)

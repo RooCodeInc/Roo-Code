@@ -1,5 +1,6 @@
 import { useCallback, useState, useEffect, useRef } from "react"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { useQueryClient } from "@tanstack/react-query"
 
 import {
 	type ProviderSettings,
@@ -37,6 +38,7 @@ export const Poe = ({
 	simplifySettings,
 }: PoeProps) => {
 	const { t } = useAppTranslation()
+	const queryClient = useQueryClient()
 	const { routerModels } = useExtensionState()
 	const [refreshStatus, setRefreshStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
 	const [refreshError, setRefreshError] = useState<string | undefined>()
@@ -56,6 +58,9 @@ export const Poe = ({
 				if (refreshStatus === "loading") {
 					if (!poeErrorJustReceived.current) {
 						setRefreshStatus("success")
+						// Invalidate the react-query router models cache so
+						// validation in ApiOptions picks up the refreshed list.
+						queryClient.invalidateQueries({ queryKey: ["routerModels"] })
 					}
 				}
 			}
@@ -65,7 +70,7 @@ export const Poe = ({
 		return () => {
 			window.removeEventListener("message", handleMessage)
 		}
-	}, [refreshStatus])
+	}, [refreshStatus, queryClient])
 
 	const handleInputChange = useCallback(
 		<K extends keyof ProviderSettings, E>(
