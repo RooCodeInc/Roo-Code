@@ -3,7 +3,13 @@ import { createPoe, type PoeProvider, type PoeScopedProviderOptions } from "ai-s
 import { extractUsageMetrics, mapToolChoice } from "ai-sdk-provider-poe/code"
 import { streamText, generateText, type ToolSet } from "ai"
 
-import { poeDefaultModelId, poeDefaultModelInfo, type ReasoningEffortExtended, ApiProviderError } from "@roo-code/types"
+import {
+	poeDefaultModelId,
+	getPoeDefaultModelInfo,
+	type ModelInfo,
+	type ReasoningEffortExtended,
+	ApiProviderError,
+} from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { shouldUseReasoningBudget, shouldUseReasoningEffort, type ApiHandlerOptions } from "../../shared/api"
@@ -33,7 +39,7 @@ export class PoeHandler extends BaseProvider implements SingleCompletionHandler 
 	override getModel() {
 		const id = this.options.apiModelId ?? poeDefaultModelId
 		const cached = getModelsFromCache("poe")
-		const info = cached?.[id] ?? poeDefaultModelInfo
+		const info: ModelInfo = cached?.[id] ?? getPoeDefaultModelInfo()
 		return { id, info }
 	}
 

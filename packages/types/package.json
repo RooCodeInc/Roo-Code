@@ -23,6 +23,7 @@
 		"clean": "rimraf dist .turbo"
 	},
 	"dependencies": {
+		"ai-sdk-provider-poe": "^2.0.15",
 		"zod": "3.25.76"
 	},
 	"devDependencies": {

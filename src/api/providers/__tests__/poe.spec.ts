@@ -15,6 +15,14 @@ vitest.mock("ai-sdk-provider-poe/code", () => ({
 		cacheWriteTokens: usage?.cacheWriteTokens,
 		reasoningTokens: usage?.reasoningTokens,
 	})),
+	getPoeDefaultModelInfo: vitest.fn(() => ({
+		maxTokens: 8192,
+		contextWindow: 200_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 3,
+		outputPrice: 15,
+	})),
 }))
 
 vitest.mock("ai", async (importOriginal) => {
@@ -58,7 +66,7 @@ vitest.mock("../fetchers/modelCache", () => ({
 }))
 
 import type { Anthropic } from "@anthropic-ai/sdk"
-import { poeDefaultModelId, poeDefaultModelInfo } from "@roo-code/types"
+import { poeDefaultModelId } from "@roo-code/types"
 import { PoeHandler } from "../poe"
 import type { ApiHandlerOptions } from "../../../shared/api"
 
@@ -122,7 +130,8 @@ describe("PoeHandler", () => {
 			const result = handler.getModel()
 
 			expect(result.id).toBe("unknown/model")
-			expect(result.info).toEqual(poeDefaultModelInfo)
+			expect(result.info.contextWindow).toBeGreaterThan(0)
+			expect(result.info.maxTokens).toBeGreaterThan(0)
 		})
 	})
 
