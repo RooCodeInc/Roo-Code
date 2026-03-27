@@ -9,16 +9,16 @@
 		"type-mcp": "שרת MCP",
 		"type-other": "אחר",
 		"by-author": "מאת {{author}}",
-		"authors-profile": "פרופיל היוצר",
-		"remove-tag-filter": "הסר סינון תגית: {{tag}}",
+		"authors-profile": "פרופיל המחבר",
+		"remove-tag-filter": "הסר מסנן תגית: {{tag}}",
 		"filter-by-tag": "סנן לפי תגית: {{tag}}",
 		"component-details": "פרטי רכיב",
-		"view": "הצג",
+		"view": "צפה",
 		"source": "מקור"
 	},
 	"filters": {
 		"search": {
-			"placeholder": "חפש בחנות..."
+			"placeholder": "חפש ב-Marketplace..."
 		},
 		"type": {
 			"label": "סוג",
@@ -36,7 +36,7 @@
 			"clear": "נקה תגיות",
 			"placeholder": "חפש תגיות...",
 			"noResults": "לא נמצאו תגיות.",
-			"selected": "מציג פריטים עם אחת מהתגיות שנבחרו"
+			"selected": "מציג פריטים עם כל אחת מהתגיות שנבחרו"
 		},
 		"installed": {
 			"label": "סנן לפי סטטוס",
@@ -44,7 +44,7 @@
 			"installed": "מותקנים",
 			"notInstalled": "לא מותקנים"
 		},
-		"title": "חנות"
+		"title": "Marketplace"
 	},
 	"done": "סיום",
 	"tabs": {
@@ -54,8 +54,8 @@
 	},
 	"items": {
 		"empty": {
-			"noItems": "לא נמצאו פריטים בחנות.",
-			"emptyHint": "נסה לשנות את הסינונים או מונחי החיפוש"
+			"noItems": "לא נמצאו פריטים ב-Marketplace.",
+			"emptyHint": "נסה להתאים את המסננים או מונחי החיפוש"
 		}
 	},
 	"installation": {

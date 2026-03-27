@@ -1,16 +1,16 @@
 {
 	"errors": {
-		"name_length": "שם המיומנות חייב להיות בין 1 ל-{{maxLength}} תווים (התקבלו {{length}})",
-		"name_format": "שם המיומנות חייב להכיל רק אותיות קטנות באנגלית/מספרים/מקפים (ללא מקף בהתחלה/סוף, ללא מקפים רצופים)",
-		"description_length": "תיאור המיומנות חייב להיות בין 1 ל-1024 תווים (התקבלו {{length}})",
-		"no_workspace": "לא ניתן ליצור מיומנות פרויקט: לא נפתחה תיקיית עבודה",
-		"already_exists": "המיומנות \"{{name}}\" כבר קיימת ב-{{path}}",
-		"not_found": "המיומנות \"{{name}}\" לא נמצאה ב-{{source}}{{modeInfo}}",
-		"missing_create_fields": "חסרים שדות נדרשים: skillName, source או skillDescription",
+		"name_length": "שם הכישור חייב להיות בין 1 ל-{{maxLength}} תווים (התקבלו {{length}})",
+		"name_format": "שם הכישור חייב לכלול רק אותיות קטנות/מספרים/מקפים (ללא מקף בתחילה/בסוף, ללא מקפים רצופים)",
+		"description_length": "תיאור הכישור חייב להיות בין 1 ל-1024 תווים (התקבלו {{length}})",
+		"no_workspace": "לא ניתן ליצור כישור פרויקט: אין תיקיית עבודה פתוחה",
+		"already_exists": "הכישור \"{{name}}\" כבר קיים ב-{{path}}",
+		"not_found": "הכישור \"{{name}}\" לא נמצא ב-{{source}}{{modeInfo}}",
+		"missing_create_fields": "חסרים שדות נדרשים: skillName, source, או skillDescription",
 		"missing_move_fields": "חסרים שדות נדרשים: skillName או source",
 		"missing_update_modes_fields": "חסרים שדות נדרשים: skillName או source",
-		"manager_unavailable": "מנהל המיומנויות אינו זמין",
+		"manager_unavailable": "מנהל הכישורות אינו זמין",
 		"missing_delete_fields": "חסרים שדות נדרשים: skillName או source",
-		"skill_not_found": "המיומנות \"{{name}}\" לא נמצאה"
+		"skill_not_found": "הכישור \"{{name}}\" לא נמצא"
 	}
 }

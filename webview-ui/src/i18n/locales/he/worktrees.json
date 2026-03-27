@@ -1,11 +1,11 @@
 {
 	"title": "Worktrees",
 	"done": "סיום",
-	"description": "Git worktrees מצוינים לפיתוח עם סוכנים, כי הם מאפשרים לעבוד על כמה ענפים של מאגר במקביל, על ידי שמירתם בתיקיות שונות. כל worktree מקבל חלון VS Code משלו עם Roo Code.",
+	"description": "Git worktrees מצוינים לקידוד עם סוכנים, כי הם מאפשרים לך לעבוד על מספר ענפים של מאגר בו-זמנית, על ידי שמירתם בתיקיות שונות. כל worktree מקבל חלון VSCode משלו עם Roo Code.",
 
 	"notGitRepo": "סביבת עבודה זו אינה מאגר Git. פתח סביבת עבודה עם מאגר Git כדי להגדיר worktrees.",
-	"multiRootNotSupported": "Worktrees אינם נתמכים בסביבות עבודה מרובות שורשים. פתח תיקייה בודדת כדי להשתמש ב-worktrees.",
-	"subfolderNotSupported": "סביבת עבודה זו היא תת-תיקייה של מאגר Git. פתח את שורש המאגר כדי להשתמש ב-worktrees.",
+	"multiRootNotSupported": "Worktrees אינם נתמכים בסביבות עבודה מרובות שורשים. אנא פתח תיקייה בודדת כדי להשתמש ב-worktrees.",
+	"subfolderNotSupported": "סביבת עבודה זו היא תת-תיקייה של מאגר Git. אנא פתח את שורש המאגר כדי להשתמש ב-worktrees.",
 	"gitRoot": "שורש Git",
 
 	"includeFileExists": "נמצא קובץ .worktreeinclude. קבצים יועתקו ל-worktrees חדשים.",
@@ -34,7 +34,7 @@
 	"noBranchFound": "לא נמצא ענף",
 	"localBranches": "ענפים מקומיים",
 	"remoteBranches": "ענפים מרוחקים",
-	"worktreePath": "ב",
+	"worktreePath": "ב-",
 	"selectWorktreeLocation": "בחר מיקום Worktree",
 	"selectFolderForWorktree": "בחר תיקייה עבור worktree חדש",
 	"noIncludeFileWarning": "אין קובץ .worktreeinclude",
@@ -47,9 +47,9 @@
 
 	"deleteWorktree": "מחק Worktree",
 	"deleteWarning": "לא ניתן לבטל פעולה זו. היא תמחק:",
-	"deleteWarningBranch": "את הענף וכל שינוי שלא בוצע לו commit",
-	"deleteWarningFiles": "את כל הקבצים בתיקיית ה-worktree",
-	"deleteNoticeLarge": "אם זה מאגר גדול, הפעולה עלולה לקחת קצת זמן.",
+	"deleteWarningBranch": "הענף וכל שינויים שלא בוצע להם commit",
+	"deleteWarningFiles": "כל הקבצים בתיקיית ה-worktree",
+	"deleteNoticeLarge": "אם זהו מאגר גדול, הפעולה עשויה לקחת זמן מה.",
 	"forceDelete": "מחיקה בכוח",
 	"worktreeIsLocked": "ה-worktree נעול",
 	"deleting": "מוחק...",
@@ -62,8 +62,8 @@
 		"worktree": "Worktree",
 		"title": "Worktrees",
 		"tooltip": "עבור בין worktrees",
-		"description": "Git worktrees מאפשרים לעבוד על כמה ענפים במקביל. לחץ להחלפת סביבת עבודה.",
+		"description": "Git worktrees מאפשרים לך לעבוד על מספר ענפים בו-זמנית. לחץ למעבר בין סביבות עבודה.",
 		"settings": "נהל Worktrees",
-		"info": "Git worktrees מאפשרים לך כמה ספריות עבודה מחוברות לאותו מאגר."
+		"info": "Git worktrees מאפשרים לך להחזיק מספר תיקיות עבודה המחוברות לאותו מאגר."
 	}
 }

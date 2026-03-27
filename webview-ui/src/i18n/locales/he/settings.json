@@ -12,7 +12,7 @@
 	"header": {
 		"title": "הגדרות",
 		"saveButtonTooltip": "שמור שינויים",
-		"nothingChangedTooltip": "שום דבר לא השתנה",
+		"nothingChangedTooltip": "לא השתנה דבר",
 		"doneButtonTooltip": "בטל שינויים שלא נשמרו וחזור לתצוגת משימות"
 	},
 	"search": {
@@ -21,7 +21,7 @@
 	},
 	"unsavedChangesDialog": {
 		"title": "שינויים שלא נשמרו",
-		"description": "האם לבטל שינויים ולהמשיך?",
+		"description": "האם ברצונך לבטל שינויים ולהמשיך?",
 		"cancelButton": "ביטול",
 		"discardButton": "בטל שינויים"
 	},
@@ -30,15 +30,15 @@
 		"modes": "מצבים",
 		"mcp": "שרתי MCP",
 		"worktrees": "Worktrees",
-		"skills": "מיומנויות",
+		"skills": "כישורים",
 		"autoApprove": "אישור אוטומטי",
-		"checkpoints": "Checkpoints",
+		"checkpoints": "נקודות ביקורת",
 		"notifications": "התראות",
 		"contextManagement": "הקשר",
 		"terminal": "טרמינל",
 		"slashCommands": "פקודות Slash",
-		"prompts": "Prompts",
-		"ui": "ממשק",
+		"prompts": "הנחיות",
+		"ui": "ממשק משתמש",
 		"experimental": "ניסיוני",
 		"language": "שפה",
 		"about": "אודות Roo Code"
@@ -50,29 +50,29 @@
 		},
 		"featureRequest": {
 			"label": "יש לך רעיון?",
-			"link": "שתף אותנו"
+			"link": "שתף אותו איתנו"
 		},
 		"securityIssue": {
-			"label": "גילית פגיעות אבטחה?",
-			"link": "עקוב אחרי תהליך הגילוי שלנו"
+			"label": "גילית פגיעות?",
+			"link": "עקוב אחר תהליך הגילוי שלנו"
 		},
 		"contact": {
 			"label": "צריך לדבר איתנו? כתוב"
 		},
 		"community": "רוצה טיפים או סתם לבלות עם משתמשי Roo Code אחרים? הצטרף ל-<redditLink>reddit.com/r/RooCode</redditLink> או <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "יצירת קשר וקהילה",
-		"manageSettings": "ניהול הגדרות",
+		"manageSettings": "נהל הגדרות",
 		"debugMode": {
 			"label": "הפעל מצב דיבאג",
-			"description": "הפעל מצב דיבאג כדי להציג כפתורים נוספים בכותרת המשימה לצפייה בהיסטוריית שיחות API ובהודעות UI כ-JSON מפורמט בקבצים זמניים."
+			"description": "הפעל מצב דיבאג כדי להציג כפתורים נוספים בכותרת המשימה לצפייה בהיסטוריית שיחות API והודעות UI כקבצי JSON מעוצבים זמניים."
 		}
 	},
 	"slashCommands": {
-		"description": "פקודות slash הן קיצורי דרך לתהליכי עבודה ופעולות לשימוש חוזר לפי דרישה (כמו יצירת PR, הרצת סט משימות וכו'). <DocsLink>למד עוד</DocsLink>",
+		"description": "פקודות slash הן קיצורי דרך לזרימות עבודה ופעולות חוזרות לשימוש לפי דרישה (כמו יצירת PR, הרצת סט משימות וכו'). <DocsLink>למד עוד</DocsLink>",
 		"workspaceCommands": "פקודות סביבת עבודה",
 		"globalCommands": "פקודות גלובליות",
-		"noWorkspaceCommands": "אין עדיין פקודות בפרויקט זה.",
-		"noGlobalCommands": "אין עדיין פקודות גלובליות.",
+		"noWorkspaceCommands": "אין פקודות בפרויקט זה עדיין.",
+		"noGlobalCommands": "אין פקודות גלובליות עדיין.",
 		"addCommand": "הוסף פקודת Slash",
 		"editCommand": "ערוך פקודה",
 		"deleteCommand": "מחק פקודה",
@@ -86,7 +86,7 @@
 			"title": "צור פקודת Slash חדשה",
 			"nameLabel": "שם",
 			"namePlaceholder": "my-command-name",
-			"nameHint": "אותיות קטנות באנגלית, מספרים, מקפים וקווים תחתונים בלבד",
+			"nameHint": "אותיות קטנות, מספרים, מקפים וקווים תחתונים בלבד",
 			"sourceLabel": "מיקום",
 			"create": "צור",
 			"cancel": "ביטול"
@@ -97,48 +97,48 @@
 		},
 		"validation": {
 			"nameRequired": "שם נדרש",
-			"nameTooLong": "שם חייב להיות 64 תווים או פחות",
-			"nameInvalid": "שם חייב להכיל רק אותיות, מספרים, מקפים וקווים תחתונים"
+			"nameTooLong": "השם חייב להיות 64 תווים או פחות",
+			"nameInvalid": "השם חייב לכלול רק אותיות, מספרים, מקפים וקווים תחתונים"
 		},
-		"footer": "השתמש בפקודות slash לגישה מהירה ל-prompts ותהליכי עבודה נפוצים."
+		"footer": "השתמש בפקודות slash לגישה מהירה להנחיות וזרימות עבודה בשימוש תכוף."
 	},
 	"skills": {
-		"description": "מיומנויות מכילות הוראות ותהליכי עבודה הקשריים, שהסוכן יכול לטעון לפי דרישה. הן יכולות לכלול הוראות כלליות, תהליכי עבודה ספציפיים ואפילו סקריפטים להרצה לפי הצורך. <DocsLink>למד עוד</DocsLink>",
-		"workspaceSkills": "מיומנויות סביבת עבודה",
-		"globalSkills": "מיומנויות גלובליות",
-		"noWorkspaceSkills": "אין עדיין מיומנויות בפרויקט זה.",
-		"noGlobalSkills": "אין עדיין מיומנויות גלובליות.",
-		"addSkill": "הוסף מיומנות",
-		"editSkill": "ערוך מיומנות",
-		"deleteSkill": "מחק מיומנות",
-		"configureModes": "זמינות מצבים",
+		"description": "כישורים עוטפים הוראות והקשר של זרימות עבודה, אותם הסוכן יכול לטעון לפי דרישה. הם יכולים לכלול הוראות כלליות, זרימות עבודה ספציפיות ואפילו סקריפטים להרצה לפי הצורך. <DocsLink>למד עוד</DocsLink>",
+		"workspaceSkills": "כישורי סביבת עבודה",
+		"globalSkills": "כישורים גלובליים",
+		"noWorkspaceSkills": "אין כישורים בפרויקט זה עדיין.",
+		"noGlobalSkills": "אין כישורים גלובליים עדיין.",
+		"addSkill": "הוסף כישור",
+		"editSkill": "ערוך כישור",
+		"deleteSkill": "מחק כישור",
+		"configureModes": "זמינות במצבים",
 		"modeAny": "כל מצב",
 		"modeCount": "{{count}} מצבים",
 		"deleteDialog": {
-			"title": "מחק מיומנות",
-			"description": "האם אתה בטוח שברצונך למחוק את המיומנות \"{{name}}\"? לא ניתן לבטל פעולה זו.",
+			"title": "מחק כישור",
+			"description": "האם אתה בטוח שברצונך למחוק את הכישור \"{{name}}\"? לא ניתן לבטל פעולה זו.",
 			"confirm": "מחק",
 			"cancel": "ביטול"
 		},
 		"modeDialog": {
-			"title": "הגדר מצבי מיומנות",
-			"description": "בחר אילו מצבים יכולים להשתמש במיומנות זו",
-			"intro": "כדי לשמור על הקשר קל, אנחנו ממליצים להפוך מיומנויות לזמינות רק למצבים שצריכים אותן.",
+			"title": "הגדר מצבי כישור",
+			"description": "בחר אילו מצבים יכולים להשתמש בכישור זה",
+			"intro": "כדי לשמור על ההקשר שלך קל, אנו ממליצים להפוך כישורים לזמינים רק עבור המצבים שצריכים אותם.",
 			"anyMode": "כל מצב (זמין בכל מקום)",
 			"save": "שמור",
 			"cancel": "ביטול"
 		},
 		"createDialog": {
-			"title": "צור מיומנות חדשה",
+			"title": "צור כישור חדש",
 			"nameLabel": "שם",
-			"namePlaceholder": "my-skill-name (אותיות קטנות באנגלית, מספרים ומקפים בלבד)",
+			"namePlaceholder": "my-skill-name (אותיות קטנות, מספרים ומקפים בלבד)",
 			"descriptionLabel": "תיאור",
-			"descriptionPlaceholder": "תאר מתי להשתמש במיומנות זו ומה התוכן שלה...",
+			"descriptionPlaceholder": "תאר מתי יש להשתמש בכישור זה ומה הוא מכיל...",
 			"sourceLabel": "מיקום",
 			"modeLabel": "מצב (אופציונלי)",
 			"modePlaceholder": "כל מצב",
 			"modeAny": "כל מצב",
-			"modeHint": "הגבל מיומנות זו למצב ספציפי",
+			"modeHint": "הגבל כישור זה למצב ספציפי",
 			"create": "צור",
 			"cancel": "ביטול"
 		},
@@ -148,34 +148,34 @@
 		},
 		"validation": {
 			"nameRequired": "שם נדרש",
-			"nameTooLong": "שם חייב להיות 64 תווים או פחות",
-			"nameInvalid": "שם חייב להיות 1-64 אותיות קטנות באנגלית, מספרים או מקפים",
+			"nameTooLong": "השם חייב להיות 64 תווים או פחות",
+			"nameInvalid": "השם חייב להיות 1-64 אותיות קטנות, מספרים או מקפים",
 			"descriptionRequired": "תיאור נדרש",
-			"descriptionTooLong": "תיאור חייב להיות 1024 תווים או פחות"
+			"descriptionTooLong": "התיאור חייב להיות 1024 תווים או פחות"
 		},
-		"footer": "צור מיומנויות משלך עם מצב Skill Writer, זמין ב<MarketplaceLink>חנות המצבים</MarketplaceLink>."
+		"footer": "צור כישורים משלך עם מצב Skill Writer, זמין ב<MarketplaceLink>Marketplace מצבים</MarketplaceLink>."
 	},
 	"ui": {
 		"collapseThinking": {
 			"label": "כווץ הודעות חשיבה כברירת מחדל",
-			"description": "כשמופעל, בלוקי חשיבה יהיו מכווצים כברירת מחדל עד שתקיים איתם אינטראקציה"
+			"description": "כאשר מופעל, בלוקי חשיבה יהיו מכווצים כברירת מחדל עד שתתקשר איתם"
 		},
 		"requireCtrlEnterToSend": {
 			"label": "דרוש {{primaryMod}}+Enter לשליחת הודעות",
-			"description": "כשמופעל, צריך ללחוץ {{primaryMod}}+Enter לשליחת הודעות במקום רק Enter"
+			"description": "כאשר מופעל, עליך ללחוץ {{primaryMod}}+Enter לשליחת הודעות במקום רק Enter"
 		}
 	},
 	"prompts": {
-		"description": "הגדר prompts תמיכה שמשמשים לפעולות מהירות כמו שיפור prompts, הסבר קוד ותיקון בעיות. prompts אלו עוזרים ל-Roo לספק סיוע טוב יותר למשימות פיתוח נפוצות."
+		"description": "הגדר הנחיות תמיכה המשמשות לפעולות מהירות כמו שיפור הנחיות, הסבר קוד ותיקון בעיות. הנחיות אלו עוזרות ל-Roo לספק סיוע טוב יותר למשימות פיתוח נפוצות."
 	},
 	"codeIndex": {
-		"title": "אינדוקס קוד מקור",
-		"description": "הגדר הגדרות אינדוקס קוד מקור כדי לאפשר חיפוש סמנטי של הפרויקט. <0>למד עוד</0>",
-		"statusTitle": "סטטוס",
-		"enableLabel": "הפעל אינדוקס קוד מקור",
-		"enableDescription": "הפעל אינדוקס קוד לשיפור חיפוש והבנת הקשר",
+		"title": "אינדוקס בסיס קוד",
+		"description": "הגדר הגדרות אינדוקס בסיס קוד כדי לאפשר חיפוש סמנטי בפרויקט שלך. <0>למד עוד</0>",
+		"statusTitle": "מצב",
+		"enableLabel": "הפעל אינדוקס בסיס קוד",
+		"enableDescription": "הפעל אינדוקס קוד לשיפור החיפוש והבנת ההקשר",
 		"settingsTitle": "הגדרות אינדוקס",
-		"disabledMessage": "אינדוקס קוד מקור מושבת כרגע. הפעל אותו בהגדרות הגלובליות כדי להגדיר אפשרויות אינדוקס.",
+		"disabledMessage": "אינדוקס בסיס הקוד מושבת כרגע. הפעל אותו בהגדרות הגלובליות כדי להגדיר אפשרויות אינדוקס.",
 		"providerLabel": "ספק Embeddings",
 		"embedderProviderLabel": "ספק Embedder",
 		"selectProviderPlaceholder": "בחר ספק",
@@ -199,18 +199,18 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "מפתח API של OpenRouter",
 		"openRouterApiKeyPlaceholder": "הזן את מפתח ה-API של OpenRouter",
-		"openRouterProviderRoutingLabel": "ניתוב ספקי OpenRouter",
-		"openRouterProviderRoutingDescription": "OpenRouter מנתב בקשות לספקים הזמינים הטובים ביותר עבור מודל ה-embedding שלך. כברירת מחדל, בקשות מאוזנות עומסים בין הספקים המובילים למקסום זמינות. עם זאת, אפשר לבחור ספק ספציפי למודל זה.",
-		"openaiCompatibleProvider": "תואם OpenAI",
+		"openRouterProviderRoutingLabel": "ניתוב ספק OpenRouter",
+		"openRouterProviderRoutingDescription": "OpenRouter מנתב בקשות לספקים הזמינים הטובים ביותר עבור מודל ה-embedding שלך. כברירת מחדל, הבקשות מאוזנות בין הספקים המובילים למקסום זמינות. עם זאת, תוכל לבחור ספק ספציפי לשימוש עבור מודל זה.",
+		"openaiCompatibleProvider": "OpenAI Compatible",
 		"openAiKeyLabel": "מפתח API של OpenAI",
 		"openAiKeyPlaceholder": "הזן את מפתח ה-API של OpenAI",
 		"openAiCompatibleBaseUrlLabel": "כתובת URL בסיסית",
 		"openAiCompatibleApiKeyLabel": "מפתח API",
-		"openAiCompatibleApiKeyPlaceholder": "הזן את מפתח ה-API",
+		"openAiCompatibleApiKeyPlaceholder": "הזן את מפתח ה-API שלך",
 		"openAiCompatibleModelDimensionLabel": "מימד Embedding:",
 		"modelDimensionLabel": "מימד מודל",
 		"openAiCompatibleModelDimensionPlaceholder": "למשל, 1536",
-		"openAiCompatibleModelDimensionDescription": "מימד ה-embedding (גודל פלט) של המודל שלך. בדוק את תיעוד הספק לערך זה. ערכים נפוצים: 384, 768, 1536, 3072.",
+		"openAiCompatibleModelDimensionDescription": "מימד ה-embedding (גודל הפלט) עבור המודל שלך. בדוק את תיעוד הספק שלך לערך זה. ערכים נפוצים: 384, 768, 1536, 3072.",
 		"modelLabel": "מודל",
 		"modelPlaceholder": "הזן שם מודל",
 		"selectModel": "בחר מודל",
@@ -222,19 +222,19 @@
 		"qdrantApiKeyLabel": "מפתח API של Qdrant",
 		"qdrantApiKeyPlaceholder": "הזן את מפתח ה-API של Qdrant (אופציונלי)",
 		"setupConfigLabel": "הגדרה",
-		"advancedConfigLabel": "הגדרות מתקדמות",
+		"advancedConfigLabel": "תצורה מתקדמת",
 		"searchMinScoreLabel": "סף ציון חיפוש",
-		"searchMinScoreDescription": "ציון דמיון מינימלי (0.0-1.0) נדרש לתוצאות חיפוש. ערכים נמוכים מחזירים יותר תוצאות אך עשויים להיות פחות רלוונטיים. ערכים גבוהים מחזירים פחות תוצאות אך רלוונטיות יותר.",
+		"searchMinScoreDescription": "ציון דמיון מינימלי (0.0-1.0) הנדרש לתוצאות חיפוש. ערכים נמוכים מחזירים יותר תוצאות אך עשויים להיות פחות רלוונטיים. ערכים גבוהים מחזירים פחות תוצאות אך רלוונטיות יותר.",
 		"searchMinScoreResetTooltip": "אפס לערך ברירת מחדל (0.4)",
 		"searchMaxResultsLabel": "מקסימום תוצאות חיפוש",
-		"searchMaxResultsDescription": "מספר מקסימלי של תוצאות חיפוש להחזרה בשאילתות אינדקס קוד מקור. ערכים גבוהים מספקים יותר הקשר אך עשויים לכלול תוצאות פחות רלוונטיות.",
+		"searchMaxResultsDescription": "מספר מקסימלי של תוצאות חיפוש להחזיר בעת שאילתת אינדקס בסיס הקוד. ערכים גבוהים מספקים יותר הקשר אך עשויים לכלול תוצאות פחות רלוונטיות.",
 		"resetToDefault": "אפס לברירת מחדל",
 		"startIndexingButton": "התחל אינדוקס",
 		"clearIndexDataButton": "נקה נתוני אינדקס",
-		"unsavedSettingsMessage": "שמור את ההגדרות לפני התחלת תהליך האינדוקס.",
+		"unsavedSettingsMessage": "אנא שמור את ההגדרות שלך לפני התחלת תהליך האינדוקס.",
 		"clearDataDialog": {
 			"title": "האם אתה בטוח?",
-			"description": "לא ניתן לבטל פעולה זו. זה ימחק לצמיתות את נתוני אינדקס קוד המקור שלך.",
+			"description": "לא ניתן לבטל פעולה זו. פעולה זו תמחק לצמיתות את נתוני אינדקס בסיס הקוד שלך.",
 			"cancelButton": "ביטול",
 			"confirmButton": "נקה נתונים"
 		},
@@ -242,7 +242,7 @@
 		"openAiCompatibleBaseUrlPlaceholder": "https://api.example.com",
 		"modelDimensionPlaceholder": "1536",
 		"qdrantUrlPlaceholder": "http://localhost:6333",
-		"saveError": "שמירת הגדרות נכשלה",
+		"saveError": "שמירת ההגדרות נכשלה",
 		"modelDimensions": "({{dimension}} מימדים)",
 		"saveSuccess": "ההגדרות נשמרו בהצלחה",
 		"saving": "שומר...",
@@ -272,22 +272,22 @@
 			"openRouterApiKeyRequired": "מפתח API של OpenRouter נדרש",
 			"ollamaBaseUrlRequired": "כתובת URL בסיסית של Ollama נדרשת",
 			"baseUrlRequired": "כתובת URL בסיסית נדרשת",
-			"modelDimensionMinValue": "מימד מודל חייב להיות גדול מ-0"
+			"modelDimensionMinValue": "מימד המודל חייב להיות גדול מ-0"
 		},
 		"optional": "אופציונלי",
 		"stopIndexingButton": "עצור אינדוקס",
 		"stoppingButton": "עוצר...",
-		"workspaceToggleLabel": "הפעל אינדוקס עבור סביבת עבודה זו",
-		"workspaceDisabledMessage": "אינדוקס מוגדר אך אינו מופעל עבור סביבת עבודה זו.",
+		"workspaceToggleLabel": "הפעל אינדוקס לסביבת עבודה זו",
+		"workspaceDisabledMessage": "האינדוקס מוגדר אך אינו מופעל לסביבת עבודה זו.",
 		"autoEnableDefaultLabel": "הפעל אינדוקס אוטומטית עבור סביבות עבודה חדשות"
 	},
 	"autoApprove": {
-		"description": "הפעל פעולות אלו ללא בקשת הרשאה. הפעל רק עבור פעולות שאתה סומך עליהן לחלוטין ואם אתה מבין את סיכוני האבטחה.",
-		"toggleShortcut": "אפשר להגדיר קיצור מקלדת להגדרה זו <SettingsLink>בהעדפות הסביבה שלך</SettingsLink>.",
+		"description": "הרץ פעולות אלה ללא בקשת הרשאה. הפעל רק עבור פעולות שאתה סומך עליהן לחלוטין ואם אתה מבין את סיכוני האבטחה.",
+		"toggleShortcut": "תוכל להגדיר קיצור מקלדת להגדרה זו <SettingsLink>בהעדפות ה-IDE שלך</SettingsLink>.",
 		"enabled": "אישור אוטומטי מופעל",
 		"readOnly": {
 			"label": "קריאה",
-			"description": "כשמופעל, Roo יצפה אוטומטית בתוכן תיקיות ויקרא קבצים ללא צורך בלחיצה על כפתור אשר.",
+			"description": "כאשר מופעל, Roo יציג אוטומטית תכולת תיקיות ויקרא קבצים ללא צורך בלחיצה על כפתור האישור.",
 			"outsideWorkspace": {
 				"label": "כלול קבצים מחוץ לסביבת העבודה",
 				"description": "אפשר ל-Roo לקרוא קבצים מחוץ לסביבת העבודה הנוכחית ללא צורך באישור."
@@ -296,19 +296,19 @@
 		"write": {
 			"label": "כתיבה",
 			"description": "צור וערוך קבצים אוטומטית ללא צורך באישור",
-			"delayLabel": "השהיה אחרי כתיבות כדי לאפשר לאבחונים לזהות בעיות פוטנציאליות",
+			"delayLabel": "עיכוב לאחר כתיבות כדי לאפשר לאבחון לזהות בעיות פוטנציאליות",
 			"outsideWorkspace": {
 				"label": "כלול קבצים מחוץ לסביבת העבודה",
 				"description": "אפשר ל-Roo ליצור ולערוך קבצים מחוץ לסביבת העבודה הנוכחית ללא צורך באישור."
 			},
 			"protected": {
 				"label": "כלול קבצים מוגנים",
-				"description": "אפשר ל-Roo ליצור ולערוך קבצים מוגנים (כמו .rooignore וקבצי הגדרות .roo/) ללא צורך באישור."
+				"description": "אפשר ל-Roo ליצור ולערוך קבצים מוגנים (כמו .rooignore וקבצי תצורת .roo/) ללא צורך באישור."
 			}
 		},
 		"mcp": {
 			"label": "MCP",
-			"description": "הפעל אישור אוטומטי של כלי MCP בודדים בתצוגת שרתי MCP (דורש גם הגדרה זו וגם את תיבת הסימון \"אפשר תמיד\" של הכלי)"
+			"description": "הפעל אישור אוטומטי של כלי MCP בודדים בתצוגת שרתי MCP (דורש גם הגדרה זו וגם את תיבת הסימון \"אפשר תמיד\" של הכלי הבודד)"
 		},
 		"modeSwitch": {
 			"label": "מצב",
@@ -329,11 +329,11 @@
 			"allowedCommands": "פקודות הרצה אוטומטית מותרות",
 			"allowedCommandsDescription": "קידומות פקודות שניתן להריץ אוטומטית כאשר \"אשר תמיד פעולות הרצה\" מופעל. הוסף * כדי לאפשר את כל הפקודות (השתמש בזהירות).",
 			"deniedCommands": "פקודות חסומות",
-			"deniedCommandsDescription": "קידומות פקודות שיידחו אוטומטית ללא בקשת אישור. במקרה של התנגשויות עם פקודות מותרות, ההתאמה הארוכה ביותר של הקידומת מקבלת עדיפות. הוסף * כדי לחסום את כל הפקודות.",
+			"deniedCommandsDescription": "קידומות פקודות שיידחו אוטומטית ללא בקשת אישור. במקרה של התנגשויות עם פקודות מותרות, התאמת הקידומת הארוכה ביותר מקבלת עדיפות. הוסף * כדי לחסום את כל הפקודות.",
 			"commandPlaceholder": "הזן קידומת פקודה (למשל, 'git ')",
 			"deniedCommandPlaceholder": "הזן קידומת פקודה לחסימה (למשל, 'rm -rf')",
 			"addButton": "הוסף",
-			"autoDenied": "פקודות עם הקידומת `{{prefix}}` נאסרו על ידי המשתמש. אל תעקוף הגבלה זו על ידי הרצת פקודה אחרת."
+			"autoDenied": "פקודות עם הקידומת `{{prefix}}` נחסמו על ידי המשתמש. אין לעקוף הגבלה זו על ידי הרצת פקודה אחרת."
 		},
 		"apiRequestLimit": {
 			"title": "מקסימום ספירה",
@@ -347,24 +347,24 @@
 			"description": "בצע בקשות אוטומטית עד למגבלות אלו לפני בקשת אישור להמשיך."
 		},
 		"toggleAriaLabel": "החלף אישור אוטומטי",
-		"disabledAriaLabel": "אישור אוטומטי מושבת - בחר אפשרויות קודם",
-		"selectOptionsFirst": "בחר לפחות אפשרות אחת למטה כדי לאפשר אישור אוטומטי"
+		"disabledAriaLabel": "אישור אוטומטי מושבת - בחר אפשרויות תחילה",
+		"selectOptionsFirst": "בחר לפחות אפשרות אחת למטה כדי להפעיל אישור אוטומטי"
 	},
 	"providers": {
 		"providerDocumentation": "תיעוד {{provider}}",
-		"configProfile": "פרופיל הגדרות",
-		"description": "שמור הגדרות API שונות כדי לעבור במהירות בין ספקים והגדרות.",
+		"configProfile": "פרופיל תצורה",
+		"description": "שמור תצורות API שונות כדי לעבור במהירות בין ספקים והגדרות.",
 		"apiProvider": "ספק API",
 		"apiProviderDocs": "תיעוד ספק",
 		"model": "מודל",
-		"nameEmpty": "שם לא יכול להיות ריק",
+		"nameEmpty": "השם לא יכול להיות ריק",
 		"nameExists": "פרופיל עם שם זה כבר קיים",
 		"deleteProfile": "מחק פרופיל",
-		"invalidArnFormat": "פורמט ARN לא תקין. בדוק את הדוגמאות למעלה.",
+		"invalidArnFormat": "פורמט ARN לא תקין. אנא בדוק את הדוגמאות למעלה.",
 		"enterNewName": "הזן שם חדש",
 		"addProfile": "הוסף פרופיל",
 		"renameProfile": "שנה שם פרופיל",
-		"newProfile": "פרופיל הגדרות חדש",
+		"newProfile": "פרופיל תצורה חדש",
 		"enterProfileName": "הזן שם פרופיל",
 		"createProfile": "צור פרופיל",
 		"cannotDeleteOnlyProfile": "לא ניתן למחוק את הפרופיל היחיד",
@@ -372,10 +372,10 @@
 		"searchProviderPlaceholder": "חפש ספקים",
 		"noProviderMatchFound": "לא נמצאו ספקים",
 		"noMatchFound": "לא נמצאו פרופילים תואמים",
-		"retiredProviderMessage": "מצטערים, ספק זה כבר לא נתמך. ראינו מעט מאוד משתמשי Roo שהשתמשו בו בפועל ואנחנו צריכים לצמצם את שטח הקוד שלנו כדי להמשיך לספק מהר ולשרת את הקהילה שלנו בצורה טובה. זו הייתה החלטה ממש קשה אבל היא מאפשרת לנו להתמקד במה שהכי חשוב לך. זה מבאס, אנחנו יודעים.",
-		"vscodeLmDescription": " API של מודל שפה של VS Code מאפשר להריץ מודלים שמסופקים על ידי תוספי VS Code אחרים (כולל אך לא מוגבל ל-GitHub Copilot). הדרך הקלה ביותר להתחיל היא להתקין את תוספי Copilot ו-Copilot Chat מחנות VS Code.",
-		"awsCustomArnUse": "הזן ARN תקין של Amazon Bedrock עבור המודל שברצונך להשתמש בו. דוגמאות פורמט:",
-		"awsCustomArnDesc": "ודא שהאזור ב-ARN תואם לאזור AWS שנבחר למעלה.",
+		"retiredProviderMessage": "מצטערים, ספק זה אינו נתמך יותר. ראינו מעט מאוד משתמשי Roo שהשתמשו בו בפועל ואנחנו צריכים לצמצם את שטח הקוד שלנו כדי שנוכל להמשיך לשלוח מהר ולשרת את הקהילה שלנו היטב. זו הייתה החלטה קשה מאוד אבל היא מאפשרת לנו להתמקד במה שחשוב לך ביותר. זה מבאס, אנחנו יודעים.",
+		"vscodeLmDescription": " API של מודל שפה של VS Code מאפשר לך להריץ מודלים שסופקו על ידי תוספי VS Code אחרים (כולל אך לא מוגבל ל-GitHub Copilot). הדרך הקלה ביותר להתחיל היא להתקין את תוספי Copilot ו-Copilot Chat מ-VS Code Marketplace.",
+		"awsCustomArnUse": "הזן ARN תקין של Amazon Bedrock עבור המודל שברצונך להשתמש בו. דוגמאות לפורמט:",
+		"awsCustomArnDesc": "ודא שהאזור ב-ARN תואם לאזור ה-AWS שנבחר למעלה.",
 		"openRouterApiKey": "מפתח API של OpenRouter",
 		"getOpenRouterApiKey": "קבל מפתח API של OpenRouter",
 		"vercelAiGatewayApiKey": "מפתח API של Vercel AI Gateway",
@@ -397,9 +397,9 @@
 				"notAvailable": "לא זמין"
 			},
 			"duration": {
-				"daysHours": "{{days}}י {{hours}}ש",
-				"hoursMinutes": "{{hours}}ש {{minutes}}ד",
-				"minutes": "{{minutes}}ד"
+				"daysHours": "{{days}}ימ' {{hours}}ש'",
+				"hoursMinutes": "{{hours}}ש' {{minutes}}ד'",
+				"minutes": "{{minutes}}ד'"
 			},
 			"window": {
 				"usage": "שימוש",
@@ -412,35 +412,35 @@
 				"minutes": "מגבלת {{minutes}} דקות"
 			}
 		},
-		"useCustomBaseUrl": "השתמש בכתובת URL בסיסית מותאמת",
+		"useCustomBaseUrl": "השתמש בכתובת URL בסיסית מותאמת אישית",
 		"useReasoning": "הפעל חשיבה",
-		"useHostHeader": "השתמש בכותרת Host מותאמת",
-		"customHeaders": "כותרות מותאמות",
+		"useHostHeader": "השתמש בכותרת Host מותאמת אישית",
+		"customHeaders": "כותרות מותאמות אישית",
 		"headerName": "שם כותרת",
 		"headerValue": "ערך כותרת",
-		"noCustomHeaders": "לא הוגדרו כותרות מותאמות. לחץ על כפתור + כדי להוסיף אחת.",
+		"noCustomHeaders": "לא הוגדרו כותרות מותאמות אישית. לחץ על כפתור + להוספת אחת.",
 		"unboundApiKey": "מפתח API של Unbound",
 		"getUnboundApiKey": "קבל מפתח API של Unbound",
 		"requestyApiKey": "מפתח API של Requesty",
 		"refreshModels": {
 			"label": "רענן מודלים",
-			"hint": "פתח מחדש את ההגדרות כדי לראות את המודלים העדכניים.",
+			"hint": "אנא פתח מחדש את ההגדרות כדי לראות את המודלים העדכניים ביותר.",
 			"loading": "מרענן רשימת מודלים...",
 			"success": "רשימת המודלים רועננה בהצלחה!",
-			"error": "רענון רשימת מודלים נכשל. נסה שוב."
+			"error": "רענון רשימת המודלים נכשל. אנא נסה שוב."
 		},
 		"getRequestyApiKey": "צור מפתח API חדש של Requesty",
 		"getRequestyBaseUrl": "כתובת URL בסיסית",
-		"requestyUseCustomBaseUrl": "השתמש בכתובת URL בסיסית מותאמת",
+		"requestyUseCustomBaseUrl": "השתמש בכתובת URL בסיסית מותאמת אישית",
 		"anthropicApiKey": "מפתח API של Anthropic",
 		"getAnthropicApiKey": "קבל מפתח API של Anthropic",
 		"anthropicUseAuthToken": "העבר מפתח API של Anthropic ככותרת Authorization במקום X-Api-Key",
-		"anthropic1MContextBetaLabel": "הפעל חלון הקשר 1M (בטא)",
-		"anthropic1MContextBetaDescription": "מרחיב חלון הקשר ל-1 מיליון token עבור Claude Sonnet 4.x / Claude Opus 4.6",
-		"awsBedrock1MContextBetaLabel": "הפעל חלון הקשר 1M (בטא)",
-		"awsBedrock1MContextBetaDescription": "מרחיב חלון הקשר ל-1 מיליון token עבור Claude Sonnet 4.x / Claude Opus 4.6",
-		"vertex1MContextBetaLabel": "הפעל חלון הקשר 1M (בטא)",
-		"vertex1MContextBetaDescription": "מרחיב חלון הקשר ל-1 מיליון token עבור Claude Sonnet 4.x / Claude Opus 4.6",
+		"anthropic1MContextBetaLabel": "הפעל חלון הקשר של 1M (בטא)",
+		"anthropic1MContextBetaDescription": "מרחיב את חלון ההקשר ל-1 מיליון tokens עבור Claude Sonnet 4.x / Claude Opus 4.6",
+		"awsBedrock1MContextBetaLabel": "הפעל חלון הקשר של 1M (בטא)",
+		"awsBedrock1MContextBetaDescription": "מרחיב את חלון ההקשר ל-1 מיליון tokens עבור Claude Sonnet 4.x / Claude Opus 4.6",
+		"vertex1MContextBetaLabel": "הפעל חלון הקשר של 1M (בטא)",
+		"vertex1MContextBetaDescription": "מרחיב את חלון ההקשר ל-1 מיליון tokens עבור Claude Sonnet 4.x / Claude Opus 4.6",
 		"basetenApiKey": "מפתח API של Baseten",
 		"getBasetenApiKey": "קבל מפתח API של Baseten",
 		"fireworksApiKey": "מפתח API של Fireworks",
@@ -456,7 +456,7 @@
 		"zaiApiKey": "מפתח API של Z AI",
 		"getZaiApiKey": "קבל מפתח API של Z AI",
 		"zaiEntrypoint": "נקודת כניסה של Z AI",
-		"zaiEntrypointDescription": "בחר את נקודת הכניסה המתאימה ל-API לפי מיקומך. אם אתה בסין, בחר open.bigmodel.cn. אחרת, בחר api.z.ai.",
+		"zaiEntrypointDescription": "אנא בחר את נקודת הכניסה המתאימה ל-API בהתאם למיקום שלך. אם אתה בסין, בחר open.bigmodel.cn. אחרת, בחר api.z.ai.",
 		"geminiApiKey": "מפתח API של Gemini",
 		"getSambaNovaApiKey": "קבל מפתח API של SambaNova",
 		"sambaNovaApiKey": "מפתח API של SambaNova",
@@ -468,7 +468,7 @@
 		"mistralApiKey": "מפתח API של Mistral",
 		"getMistralApiKey": "קבל מפתח API של Mistral / Codestral",
 		"codestralBaseUrl": "כתובת URL בסיסית של Codestral (אופציונלי)",
-		"codestralBaseUrlDesc": "הגדר כתובת URL חלופית למודל Codestral.",
+		"codestralBaseUrlDesc": "הגדר כתובת URL חלופית עבור מודל Codestral.",
 		"xaiApiKey": "מפתח API של xAI",
 		"getXaiApiKey": "קבל מפתח API של xAI",
 		"litellmApiKey": "מפתח API של LiteLLM",
@@ -487,24 +487,24 @@
 		"awsServiceTierStandard": "רגיל",
 		"awsServiceTierStandardDesc": "ביצועים ועלות מאוזנים",
 		"awsServiceTierFlex": "Flex (הנחה של 50%)",
-		"awsServiceTierFlexDesc": "עלות נמוכה יותר, השהיה גבוהה יותר למשימות לא קריטיות",
+		"awsServiceTierFlexDesc": "עלות נמוכה יותר, זמן תגובה ארוך יותר למשימות לא קריטיות",
 		"awsServiceTierPriority": "עדיפות (תוספת של 75%)",
 		"awsServiceTierPriorityDesc": "ביצועים מהירים ביותר ליישומים קריטיים",
-		"awsServiceTierNote": "רמות שירות משפיעות על תמחור וביצועים. Flex מציע הנחה של 50% עם השהיה גבוהה יותר, עדיפות מציעה שיפור ביצועים של 25% עם תוספת של 75%.",
+		"awsServiceTierNote": "רמות שירות משפיעות על התמחור והביצועים. Flex מציע הנחה של 50% עם זמן תגובה ארוך יותר, עדיפות מציע ביצועים טובים ב-25% עם תוספת של 75%.",
 		"awsBedrockVpc": {
-			"useCustomVpcEndpoint": "השתמש בנקודת קצה VPC מותאמת",
+			"useCustomVpcEndpoint": "השתמש בנקודת קצה VPC מותאמת אישית",
 			"vpcEndpointUrlPlaceholder": "הזן כתובת URL של נקודת קצה VPC (אופציונלי)",
 			"examples": "דוגמאות:"
 		},
-		"enablePromptCaching": "הפעל prompt caching",
-		"enablePromptCachingTitle": "הפעל prompt caching לשיפור ביצועים והפחתת עלויות עבור מודלים נתמכים.",
-		"cacheUsageNote": "הערה: אם אתה לא רואה שימוש ב-cache, נסה לבחור מודל אחר ואז לבחור מחדש את המודל הרצוי.",
+		"enablePromptCaching": "הפעל מטמון הנחיות",
+		"enablePromptCachingTitle": "הפעל מטמון הנחיות לשיפור ביצועים והפחתת עלויות עבור מודלים נתמכים.",
+		"cacheUsageNote": "הערה: אם אינך רואה שימוש במטמון, נסה לבחור מודל אחר ואז לבחור מחדש את המודל הרצוי.",
 		"vscodeLmModel": "מודל שפה",
-		"vscodeLmWarning": "הערה: מודלים שנגישים דרך API של מודל שפה של VS Code עשויים להיות עטופים או מכווננים על ידי הספק, כך שההתנהגות עשויה להיות שונה משימוש באותו מודל ישירות מספק או נתב רגיל. כדי להשתמש במודל מתפריט מודל השפה, עבור קודם למודל זה ואז לחץ קבל בחלון Copilot Chat; אחרת ייתכן שתראה שגיאה כמו 400 \"The requested model is not supported\".",
+		"vscodeLmWarning": "הערה: מודלים שנגישים דרך VS Code Language Model API עשויים להיות עטופים או מכוונים על ידי הספק, כך שההתנהגות עשויה להיות שונה משימוש באותו מודל ישירות מספק או נתב רגיל. כדי להשתמש במודל מהתפריט הנפתח של מודל שפה, עבור תחילה למודל זה ואז לחץ על קבל בהנחיית Copilot Chat; אחרת ייתכן שתראה שגיאה כגון 400 \"The requested model is not supported\".",
 		"googleCloudSetup": {
-			"title": "כדי להשתמש ב-Google Cloud Vertex AI, צריך:",
+			"title": "כדי להשתמש ב-Google Cloud Vertex AI, עליך:",
 			"step1": "1. ליצור חשבון Google Cloud, להפעיל את Vertex AI API ולהפעיל את מודלי Claude הרצויים.",
-			"step2": "2. להתקין את Google Cloud CLI ולהגדיר אישורי ברירת מחדל.",
+			"step2": "2. להתקין את Google Cloud CLI ולהגדיר אישורי ברירת מחדל של יישום.",
 			"step3": "3. או ליצור חשבון שירות עם אישורים."
 		},
 		"googleCloudCredentials": "אישורי Google Cloud",
@@ -514,22 +514,22 @@
 		"lmStudio": {
 			"baseUrl": "כתובת URL בסיסית (אופציונלי)",
 			"modelId": "מזהה מודל",
-			"speculativeDecoding": "הפעל Speculative Decoding",
+			"speculativeDecoding": "הפעל פענוח ספקולטיבי",
 			"draftModelId": "מזהה מודל טיוטה",
-			"draftModelDesc": "מודל הטיוטה חייב להיות מאותה משפחת מודלים כדי ש-speculative decoding יעבוד נכון.",
+			"draftModelDesc": "מודל הטיוטה חייב להיות מאותה משפחת מודלים כדי שפענוח ספקולטיבי יעבוד כראוי.",
 			"selectDraftModel": "בחר מודל טיוטה",
-			"noModelsFound": "לא נמצאו מודלי טיוטה. ודא ש-LM Studio פועל עם מצב שרת מופעל.",
-			"description": "LM Studio מאפשר להריץ מודלים מקומית על המחשב שלך. להוראות התחלה, ראה את <a>מדריך ההתחלה המהירה</a> שלהם. תצטרך גם להפעיל את תכונת <b>השרת המקומי</b> של LM Studio כדי להשתמש בו עם תוסף זה. <span>הערה:</span> Roo Code משתמש ב-prompts מורכבים ועובד הכי טוב עם מודלי Claude. מודלים פחות חזקים עשויים לא לעבוד כמצופה."
+			"noModelsFound": "לא נמצאו מודלי טיוטה. אנא ודא ש-LM Studio פועל עם מצב שרת מופעל.",
+			"description": "LM Studio מאפשר לך להריץ מודלים מקומית על המחשב שלך. להוראות כיצד להתחיל, ראה את <a>מדריך ההתחלה המהירה</a> שלהם. תצטרך גם להפעיל את תכונת ה<b>שרת המקומי</b> של LM Studio כדי להשתמש בו עם תוסף זה. <span>הערה:</span> Roo Code משתמש בהנחיות מורכבות ועובד בצורה הטובה ביותר עם מודלי Claude. מודלים פחות מסוגלים עשויים שלא לעבוד כצפוי."
 		},
 		"ollama": {
 			"baseUrl": "כתובת URL בסיסית (אופציונלי)",
 			"modelId": "מזהה מודל",
 			"apiKey": "מפתח API של Ollama",
-			"apiKeyHelp": "מפתח API אופציונלי למופעי Ollama מאומתים או שירותי ענן. השאר ריק להתקנות מקומיות.",
+			"apiKeyHelp": "מפתח API אופציונלי למופעי Ollama מאומתים או שירותי ענן. השאר ריק עבור התקנות מקומיות.",
 			"numCtx": "גודל חלון הקשר (num_ctx)",
-			"numCtxHelp": "דרוס את גודל חלון ההקשר של המודל. השאר ריק לשימוש בהגדרת Modelfile של המודל. ערך מינימלי הוא 128.",
-			"description": "Ollama מאפשר להריץ מודלים מקומית על המחשב שלך. להוראות התחלה, ראה את מדריך ההתחלה המהירה שלהם.",
-			"warning": "הערה: Roo Code משתמש ב-prompts מורכבים ועובד הכי טוב עם מודלי Claude. מודלים פחות חזקים עשויים לא לעבוד כמצופה."
+			"numCtxHelp": "עקוף את גודל חלון ההקשר ברירת המחדל של המודל. השאר ריק לשימוש בתצורת ה-Modelfile של המודל. ערך מינימלי הוא 128.",
+			"description": "Ollama מאפשר לך להריץ מודלים מקומית על המחשב שלך. להוראות כיצד להתחיל, ראה את מדריך ההתחלה המהירה שלהם.",
+			"warning": "הערה: Roo Code משתמש בהנחיות מורכבות ועובד בצורה הטובה ביותר עם מודלי Claude. מודלים פחות מסוגלים עשויים שלא לעבוד כצפוי."
 		},
 		"roo": {
 			"authenticatedMessage": "מאומת בצורה מאובטחת דרך חשבון Roo Code Cloud שלך.",
@@ -537,204 +537,204 @@
 		},
 		"openRouter": {
 			"providerRouting": {
-				"title": "ניתוב ספקי OpenRouter",
-				"description": "OpenRouter מנתב בקשות לספקים הזמינים הטובים ביותר עבור המודל שלך. כברירת מחדל, בקשות מאוזנות עומסים בין הספקים המובילים למקסום זמינות. עם זאת, אפשר לבחור ספק ספציפי למודל זה.",
+				"title": "ניתוב ספק OpenRouter",
+				"description": "OpenRouter מנתב בקשות לספקים הזמינים הטובים ביותר עבור המודל שלך. כברירת מחדל, הבקשות מאוזנות בין הספקים המובילים למקסום זמינות. עם זאת, תוכל לבחור ספק ספציפי לשימוש עבור מודל זה.",
 				"learnMore": "למד עוד על ניתוב ספקים"
 			}
 		},
 		"customModel": {
-			"capabilities": "הגדר את היכולות והתמחור עבור המודל המותאם שלך התואם OpenAI. היזהר בציון יכולות המודל, כי הן יכולות להשפיע על אופן הפעולה של Roo Code.",
+			"capabilities": "הגדר את היכולות והתמחור עבור המודל המותאם אישית שלך התואם OpenAI. היזהר בעת ציון יכולות המודל, מכיוון שהן עשויות להשפיע על האופן שבו Roo Code פועל.",
 			"maxTokens": {
 				"label": "מקסימום Tokens פלט",
-				"description": "מספר מקסימלי של tokens שהמודל יכול ליצור בתגובה. (ציין -1 כדי לאפשר לשרת להגדיר את מקסימום ה-tokens.)"
+				"description": "מספר מקסימלי של tokens שהמודל יכול לייצר בתגובה. (ציין -1 כדי לאפשר לשרת להגדיר את המקסימום.)"
 			},
 			"contextWindow": {
 				"label": "גודל חלון הקשר",
-				"description": "סך הכל tokens (קלט + פלט) שהמודל יכול לעבד."
+				"description": "סך ה-tokens (קלט + פלט) שהמודל יכול לעבד."
 			},
 			"imageSupport": {
 				"label": "תמיכה בתמונות",
-				"description": "האם המודל מסוגל לעבד ולהבין תמונות?"
+				"description": "האם מודל זה מסוגל לעבד ולהבין תמונות?"
 			},
 			"computerUse": {
 				"label": "שימוש במחשב",
-				"description": "האם המודל מסוגל ליצור אינטראקציה עם דפדפן?"
+				"description": "האם מודל זה מסוגל לתקשר עם דפדפן?"
 			},
 			"promptCache": {
-				"label": "Prompt Caching",
-				"description": "האם המודל מסוגל לשמור prompts ב-cache?"
+				"label": "מטמון הנחיות",
+				"description": "האם מודל זה מסוגל לאחסן הנחיות במטמון?"
 			},
 			"pricing": {
 				"input": {
 					"label": "מחיר קלט",
-					"description": "עלות למיליון tokens בקלט/prompt. זה משפיע על עלות שליחת הקשר והוראות למודל."
+					"description": "עלות למיליון tokens בקלט/הנחיה. זה משפיע על עלות שליחת הקשר והוראות למודל."
 				},
 				"output": {
 					"label": "מחיר פלט",
-					"description": "עלות למיליון tokens בתגובת המודל. זה משפיע על עלות התוכן והשלמות שנוצרו."
+					"description": "עלות למיליון tokens בתגובת המודל. זה משפיע על עלות תוכן שנוצר והשלמות."
 				},
 				"cacheReads": {
-					"label": "מחיר קריאות cache",
-					"description": "עלות למיליון tokens לקריאה מ-cache. זה המחיר שנגבה כאשר תגובה שמורה ב-cache מאוחזרת."
+					"label": "מחיר קריאות מטמון",
+					"description": "עלות למיליון tokens לקריאה מהמטמון. זהו המחיר שנגבה כאשר מאוחזרת תגובה ממטמון."
 				},
 				"cacheWrites": {
-					"label": "מחיר כתיבות cache",
-					"description": "עלות למיליון tokens לכתיבה ל-cache. זה המחיר שנגבה כאשר prompt נשמר ב-cache בפעם הראשונה."
+					"label": "מחיר כתיבות מטמון",
+					"description": "עלות למיליון tokens לכתיבה למטמון. זהו המחיר שנגבה כאשר הנחיה נשמרת במטמון בפעם הראשונה."
 				}
 			},
 			"resetDefaults": "אפס לברירות מחדל"
 		},
 		"rateLimitSeconds": {
-			"label": "הגבלת קצב",
+			"label": "מגבלת קצב",
 			"description": "זמן מינימלי בין בקשות API."
 		},
 		"consecutiveMistakeLimit": {
 			"label": "מגבלת שגיאות וחזרות",
-			"description": "מספר שגיאות רצופות או פעולות חוזרות לפני הצגת דו-שיח 'ל-Roo יש קשיים'. הגדר ל-0 כדי להשבית מנגנון בטיחות זה (הוא לעולם לא יופעל).",
-			"unlimitedDescription": "ניסיונות חוזרים ללא הגבלה מופעלים (המשך אוטומטי). הדו-שיח לעולם לא יופיע.",
-			"warning": "⚠️ הגדרה ל-0 מאפשרת ניסיונות חוזרים ללא הגבלה שעשויים לצרוך שימוש API משמעותי"
+			"description": "מספר שגיאות רצופות או פעולות חוזרות לפני הצגת דיאלוג 'ל-Roo יש קשיים'. הגדר ל-0 כדי להשבית מנגנון בטיחות זה (לא יופעל לעולם).",
+			"unlimitedDescription": "ניסיונות חוזרים ללא הגבלה מופעלים (המשך אוטומטי). הדיאלוג לא יופיע לעולם.",
+			"warning": "⚠️ הגדרה ל-0 מאפשרת ניסיונות חוזרים ללא הגבלה שעלולים לצרוך שימוש משמעותי ב-API"
 		},
 		"reasoningEffort": {
 			"label": "רמת חשיבת מודל",
 			"none": "ללא",
-			"minimal": "מינימלית (מהירה ביותר)",
+			"minimal": "מינימלית (הכי מהיר)",
 			"low": "נמוכה",
 			"medium": "בינונית",
 			"high": "גבוהה",
 			"xhigh": "גבוהה במיוחד"
 		},
 		"verbosity": {
-			"label": "רמת פירוט פלט",
+			"label": "מילוליות פלט",
 			"high": "גבוהה",
 			"medium": "בינונית",
 			"low": "נמוכה",
-			"description": "שולט עד כמה מפורטות תגובות המודל. רמת פירוט נמוכה מייצרת תשובות תמציתיות, בעוד רמה גבוהה מספקת הסברים מעמיקים."
+			"description": "שולט עד כמה מפורטות תגובות המודל. מילוליות נמוכה מייצרת תשובות תמציתיות, בעוד מילוליות גבוהה מספקת הסברים יסודיים."
 		},
 		"setReasoningLevel": "הפעל רמת חשיבה",
 		"claudeCode": {
 			"pathLabel": "נתיב Claude Code",
-			"description": "נתיב אופציונלי ל-CLI של Claude Code. ברירת מחדל 'claude' אם לא מוגדר.",
+			"description": "נתיב אופציונלי ל-CLI של Claude Code. ברירת מחדל 'claude' אם לא הוגדר.",
 			"placeholder": "ברירת מחדל: claude",
 			"maxTokensLabel": "מקסימום Tokens פלט",
-			"maxTokensDescription": "מספר מקסימלי של tokens פלט לתגובות Claude Code. ברירת מחדל 8000."
+			"maxTokensDescription": "מספר מקסימלי של tokens פלט לתגובות Claude Code. ברירת מחדל היא 8000."
 		}
 	},
 	"checkpoints": {
 		"timeout": {
-			"label": "זמן תפוגת אתחול checkpoint (שניות)",
-			"description": "זמן מקסימלי להמתנה לאתחול שירות checkpoint. ברירת מחדל 15 שניות. טווח: 10-60 שניות."
+			"label": "זמן תפוגת אתחול נקודת ביקורת (שניות)",
+			"description": "זמן מקסימלי להמתנה לאתחול שירות נקודת הביקורת. ברירת מחדל 15 שניות. טווח: 10-60 שניות."
 		},
 		"enable": {
-			"label": "הפעל checkpoints אוטומטיים",
-			"description": "כשמופעל, Roo ייצור אוטומטית checkpoints במהלך ביצוע משימות, מה שמקל על סקירת שינויים או חזרה למצבים קודמים. <0>למד עוד</0>"
+			"label": "הפעל נקודות ביקורת אוטומטיות",
+			"description": "כאשר מופעל, Roo ייצור אוטומטית נקודות ביקורת במהלך הרצת משימות, מה שמקל על סקירת שינויים או חזרה למצבים קודמים. <0>למד עוד</0>"
 		}
 	},
 	"notifications": {
 		"sound": {
 			"label": "הפעל אפקטי קול",
-			"description": "כשמופעל, Roo ישמיע אפקטי קול עבור התראות ואירועים.",
-			"volumeLabel": "עוצמת קול"
+			"description": "כאשר מופעל, Roo ישמיע אפקטי קול עבור התראות ואירועים.",
+			"volumeLabel": "עוצמה"
 		},
 		"tts": {
-			"label": "הפעל המרת טקסט לדיבור",
-			"description": "כשמופעל, Roo יקריא בקול את תגובותיו באמצעות המרת טקסט לדיבור.",
+			"label": "הפעל הקראה",
+			"description": "כאשר מופעל, Roo יקריא את תגובותיו בקול באמצעות הקראה.",
 			"speedLabel": "מהירות"
 		}
 	},
 	"contextManagement": {
-		"description": "שלוט באיזה מידע נכלל בחלון ההקשר של ה-AI, מה שמשפיע על שימוש ב-token ואיכות התגובה",
+		"description": "שלוט במידע הנכלל בחלון ההקשר של ה-AI, משפיע על שימוש ב-tokens ואיכות התגובה",
 		"autoCondenseContextPercent": {
 			"label": "סף להפעלת עיבוי הקשר חכם",
 			"description": "כאשר חלון ההקשר מגיע לסף זה, Roo יעבה אותו אוטומטית."
 		},
 		"condensingApiConfiguration": {
-			"label": "הגדרת API לעיבוי הקשר",
-			"description": "בחר באיזו הגדרת API להשתמש לפעולות עיבוי הקשר. השאר ללא בחירה כדי להשתמש בהגדרה הפעילה הנוכחית.",
+			"label": "תצורת API לעיבוי הקשר",
+			"description": "בחר איזו תצורת API להשתמש לפעולות עיבוי הקשר. השאר ללא בחירה כדי להשתמש בתצורה הפעילה הנוכחית.",
 			"useCurrentConfig": "ברירת מחדל"
 		},
 		"customCondensingPrompt": {
-			"label": "Prompt מותאם לעיבוי הקשר",
-			"description": "התאם את ה-system prompt שמשמש לעיבוי הקשר. השאר ריק כדי להשתמש ב-prompt ברירת המחדל.",
-			"placeholder": "הזן את ה-prompt המותאם לעיבוי כאן...\n\nאפשר להשתמש באותו מבנה כמו ה-prompt ברירת המחדל:\n- שיחה קודמת\n- עבודה נוכחית\n- מושגים טכניים מרכזיים\n- קבצים וקוד רלוונטיים\n- פתרון בעיות\n- משימות ממתינות וצעדים הבאים",
+			"label": "הנחיית עיבוי הקשר מותאמת אישית",
+			"description": "התאם אישית את הנחיית המערכת המשמשת לעיבוי הקשר. השאר ריק לשימוש בהנחיית ברירת המחדל.",
+			"placeholder": "הזן את הנחיית העיבוי המותאמת אישית שלך כאן...\n\nתוכל להשתמש באותו מבנה כמו הנחיית ברירת המחדל:\n- שיחה קודמת\n- עבודה נוכחית\n- מושגים טכניים מרכזיים\n- קבצים וקוד רלוונטיים\n- פתרון בעיות\n- משימות ממתינות ושלבים הבאים",
 			"reset": "אפס לברירת מחדל",
-			"hint": "ריק = השתמש ב-prompt ברירת מחדל"
+			"hint": "ריק = השתמש בהנחיית ברירת מחדל"
 		},
 		"autoCondenseContext": {
 			"name": "הפעל אוטומטית עיבוי הקשר חכם",
-			"description": "כשמופעל, Roo יעבה את ההקשר אוטומטית כשהסף מושג. כשמושבת, עדיין ניתן להפעיל עיבוי הקשר ידנית."
+			"description": "כאשר מופעל, Roo יעבה אוטומטית את ההקשר כאשר מגיעים לסף. כאשר מושבת, עדיין תוכל להפעיל ידנית עיבוי הקשר."
 		},
 		"openTabs": {
 			"label": "מגבלת הקשר לשוניות פתוחות",
-			"description": "מספר מקסימלי של לשוניות פתוחות ב-VSCode לכלול בהקשר. ערכים גבוהים מספקים יותר הקשר אך מגדילים שימוש ב-token."
+			"description": "מספר מקסימלי של לשוניות פתוחות ב-VSCode לכלול בהקשר. ערכים גבוהים מספקים יותר הקשר אך מגדילים שימוש ב-tokens."
 		},
 		"workspaceFiles": {
 			"label": "מגבלת הקשר קבצי סביבת עבודה",
-			"description": "מספר מקסימלי של קבצים לכלול בפרטי ספריית העבודה הנוכחית. ערכים גבוהים מספקים יותר הקשר אך מגדילים שימוש ב-token."
+			"description": "מספר מקסימלי של קבצים לכלול בפרטי תיקיית העבודה הנוכחית. ערכים גבוהים מספקים יותר הקשר אך מגדילים שימוש ב-tokens."
 		},
 		"rooignore": {
-			"label": "הצג קבצים שב-.rooignore ברשימות וחיפושים",
-			"description": "כשמופעל, קבצים שתואמים לדפוסים ב-.rooignore יוצגו ברשימות עם סמל מנעול. כשמושבת, קבצים אלו יהיו מוסתרים לחלוטין מרשימות קבצים וחיפושים."
+			"label": "הצג קבצים ב-.rooignore ברשימות ובחיפושים",
+			"description": "כאשר מופעל, קבצים התואמים דפוסים ב-.rooignore יוצגו ברשימות עם סמל מנעול. כאשר מושבת, קבצים אלה יוסתרו לחלוטין מרשימות קבצים וחיפושים."
 		},
 		"maxConcurrentFileReads": {
-			"label": "מגבלת קריאות קבצים בו-זמנית",
-			"description": "מספר מקסימלי של קבצים שכלי 'read_file' יכול לעבד בו-זמנית. ערכים גבוהים עשויים להאיץ קריאת קבצים קטנים רבים אך מגדילים שימוש בזיכרון."
+			"label": "מגבלת קריאות קבצים בו-זמניות",
+			"description": "מספר מקסימלי של קבצים שכלי 'read_file' יכול לעבד בו-זמנית. ערכים גבוהים עשויים להאיץ קריאת קבצים קטנים מרובים אך מגדילים שימוש בזיכרון."
 		},
 		"maxReadFile": {
-			"label": "סף קיצור אוטומטי לקריאת קובץ",
-			"description": "Roo קורא מספר שורות זה כשהמודל משמיט ערכי התחלה/סוף. אם מספר זה קטן מסך הקובץ, Roo מייצר אינדקס מספרי שורות של הגדרות קוד. מקרים מיוחדים: -1 מורה ל-Roo לקרוא את כל הקובץ (ללא אינדוקס), ו-0 מורה לו לקרוא אפס שורות ומספק אינדקסי שורות בלבד להקשר מינימלי. ערכים נמוכים ממזערים שימוש ראשוני בהקשר ומאפשרים קריאות טווח שורות מדויקות בהמשך. בקשות מפורשות של התחלה/סוף אינן מוגבלות על ידי הגדרה זו.",
+			"label": "סף חיתוך אוטומטי בקריאת קובץ",
+			"description": "Roo קורא מספר שורות זה כאשר המודל משמיט ערכי התחלה/סוף. אם מספר זה קטן מסך שורות הקובץ, Roo יוצר אינדקס מספרי שורות של הגדרות קוד. מקרים מיוחדים: -1 מורה ל-Roo לקרוא את הקובץ כולו (ללא אינדוקס), ו-0 מורה לו לקרוא אפס שורות ולספק אינדקסים בלבד להקשר מינימלי. ערכים נמוכים ממזערים שימוש ראשוני בהקשר, מאפשרים קריאות טווח שורות מדויקות בהמשך. בקשות התחלה/סוף מפורשות אינן מוגבלות על ידי הגדרה זו.",
 			"lines": "שורות",
-			"always_full_read": "קרא תמיד את כל הקובץ"
+			"always_full_read": "תמיד קרא קובץ שלם"
 		},
 		"maxImageFileSize": {
-			"label": "גודל מקסימלי של קובץ תמונה",
+			"label": "גודל מקסימלי לקובץ תמונה",
 			"mb": "MB",
-			"description": "גודל מקסימלי (ב-MB) עבור קבצי תמונה שניתן לעבד על ידי כלי קריאת קבצים."
+			"description": "גודל מקסימלי (ב-MB) לקבצי תמונה שניתן לעבד על ידי כלי קריאת הקובץ."
 		},
 		"maxTotalImageSize": {
-			"label": "גודל מקסימלי כולל של תמונות",
+			"label": "גודל מקסימלי כולל לתמונות",
 			"mb": "MB",
-			"description": "מגבלת גודל מצטבר מקסימלית (ב-MB) לכל התמונות שעובדו בפעולת read_file אחת. בקריאת תמונות מרובות, גודל כל תמונה מתווסף לסך. אם הכללת תמונה נוספת תחרוג ממגבלה זו, היא תדולג."
+			"description": "מגבלת גודל מצטבר מקסימלית (ב-MB) לכל התמונות המעובדות בפעולת read_file יחידה. בעת קריאת מספר תמונות, גודל כל תמונה מתווסף לסכום. אם הכללת תמונה נוספת תחרוג ממגבלה זו, היא תדולג."
 		},
 		"diagnostics": {
 			"includeMessages": {
-				"label": "כלול אבחונים בהקשר אוטומטית",
-				"description": "כשמופעל, הודעות אבחון (שגיאות) מקבצים שנערכו ייכללו אוטומטית בהקשר. תמיד ניתן לכלול ידנית את כל אבחוני סביבת העבודה באמצעות @problems."
+				"label": "כלול אוטומטית אבחונים בהקשר",
+				"description": "כאשר מופעל, הודעות אבחון (שגיאות) מקבצים שנערכו ייכללו אוטומטית בהקשר. תוכל תמיד לכלול ידנית את כל אבחוני סביבת העבודה באמצעות @problems."
 			},
 			"maxMessages": {
 				"label": "מקסימום הודעות אבחון",
-				"description": "מגביל את מספר הודעות האבחון (שגיאות, אזהרות) הנכללות בהקשר. כשמוגדר, רק מספר אבחונים זה יוצג, עם עדיפות לשגיאות על פני אזהרות. הגדר ל-0 לאבחונים ללא הגבלה.",
+				"description": "מגביל את מספר הודעות האבחון (שגיאות, אזהרות) הנכללות בהקשר. כאשר מוגדר, רק כמות זו של אבחונים תוצג, עם עדיפות לשגיאות על פני אזהרות. הגדר ל-0 לאבחונים ללא הגבלה.",
 				"resetTooltip": "אפס לערך ברירת מחדל (50)",
 				"unlimitedLabel": "ללא הגבלה"
 			},
 			"delayAfterWrite": {
-				"label": "השהיה אחרי כתיבות כדי לאפשר לאבחונים לזהות בעיות פוטנציאליות",
-				"description": "זמן המתנה אחרי כתיבת קבצים לפני המשך, מאפשר לכלי אבחון לעבד שינויים ולזהות בעיות."
+				"label": "עיכוב לאחר כתיבות כדי לאפשר לאבחון לזהות בעיות פוטנציאליות",
+				"description": "זמן המתנה לאחר כתיבת קבצים לפני המשך, מאפשר לכלי אבחון לעבד שינויים ולזהות בעיות."
 			}
 		},
 		"condensingThreshold": {
 			"label": "סף הפעלת עיבוי",
 			"selectProfile": "הגדר סף עבור פרופיל",
 			"defaultProfile": "ברירת מחדל גלובלית (כל הפרופילים)",
-			"defaultDescription": "כשההקשר מגיע לאחוז זה, הוא יעובה אוטומטית עבור כל הפרופילים אלא אם יש להם הגדרות מותאמות",
-			"profileDescription": "סף מותאם לפרופיל זה בלבד (דורס את ברירת המחדל הגלובלית)",
-			"inheritDescription": "פרופיל זה יורש את סף ברירת המחדל הגלובלית ({{threshold}}%)",
+			"defaultDescription": "כאשר ההקשר מגיע לאחוז זה, הוא יעובה אוטומטית עבור כל הפרופילים אלא אם יש להם הגדרות מותאמות אישית",
+			"profileDescription": "סף מותאם אישית לפרופיל זה בלבד (עוקף ברירת מחדל גלובלית)",
+			"inheritDescription": "פרופיל זה יורש את סף ברירת המחדל הגלובלי ({{threshold}}%)",
 			"usesGlobal": "(משתמש בגלובלי {{threshold}}%)"
 		},
 		"includeCurrentTime": {
 			"label": "כלול זמן נוכחי בהקשר",
-			"description": "כשמופעל, הזמן הנוכחי ומידע אזור הזמן ייכללו ב-system prompt. השבת אם מודלים מפסיקים עבודה בגלל חששות זמן."
+			"description": "כאשר מופעל, הזמן הנוכחי ומידע אזור הזמן ייכללו בהנחיית המערכת. השבת זאת אם מודלים מפסיקים לעבוד בגלל דאגות זמן."
 		},
 		"includeCurrentCost": {
 			"label": "כלול עלות נוכחית בהקשר",
-			"description": "כשמופעל, עלות השימוש הנוכחית ב-API תיכלל ב-system prompt. השבת אם מודלים מפסיקים עבודה בגלל חששות עלות."
+			"description": "כאשר מופעל, עלות השימוש הנוכחית ב-API תיכלל בהנחיית המערכת. השבת זאת אם מודלים מפסיקים לעבוד בגלל דאגות עלות."
 		},
 		"maxGitStatusFiles": {
-			"label": "מקסימום קבצי git status",
-			"description": "מספר מקסימלי של ערכי קבצים לכלול בהקשר git status. הגדר ל-0 כדי להשבית. מידע ענף מוצג תמיד כשהערך > 0."
+			"label": "מקסימום קבצי סטטוס Git",
+			"description": "מספר מקסימלי של רשומות קבצים לכלול בהקשר סטטוס Git. הגדר ל-0 להשבתה. מידע ענף מוצג תמיד כאשר > 0."
 		},
 		"enableSubfolderRules": {
 			"label": "הפעל כללי תת-תיקיות",
-			"description": "גלה וטען רקורסיבית קבצי .roo/rules ו-AGENTS.md מתת-ספריות. שימושי ל-monorepos עם כללים לכל חבילה."
+			"description": "גלה וטען רקורסיבית קבצי .roo/rules ו-AGENTS.md מתת-תיקיות. שימושי למאגרים מונו עם כללים לכל חבילה."
 		}
 	},
 	"terminal": {
@@ -744,19 +744,19 @@
 		},
 		"advanced": {
 			"label": "הגדרות טרמינל: מתקדם",
-			"description": "הגדרות אלו חלות רק כש-'השתמש בטרמינל מוטבע' מושבת. הן משפיעות על הטרמינל של VS Code בלבד ועשויות לדרוש הפעלה מחדש של הסביבה."
+			"description": "הגדרות אלו חלות רק כאשר 'השתמש בטרמינל מוטבע' מושבת. הן משפיעות על טרמינל VS Code בלבד ועשויות לדרוש הפעלה מחדש של ה-IDE."
 		},
 		"outputLineLimit": {
-			"label": "מגבלת פלט טרמינל",
-			"description": "שומר את השורות הראשונות והאחרונות ומשמיט את האמצע כדי להישאר במגבלה. הנמך כדי לחסוך tokens; העלה כדי לתת ל-Roo יותר פרטים מהאמצע. Roo רואה placeholder היכן שתוכן דולג.<0>למד עוד</0>"
+			"label": "מגבלת שורות פלט טרמינל",
+			"description": "שומר את השורות הראשונות והאחרונות ומשמיט את האמצע כדי להישאר מתחת למגבלה. הנמך כדי לחסוך tokens; העלה כדי לתת ל-Roo יותר פירוט באמצע. Roo רואה מציין מקום היכן שתוכן דולג.<0>למד עוד</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "מגבלת תווי טרמינל",
-			"description": "דורס את מגבלת השורות כדי למנוע בעיות זיכרון על ידי אכיפת תקרה קשיחה על גודל הפלט. אם חורג, שומר את ההתחלה והסוף ומציג placeholder ל-Roo היכן שתוכן דולג. <0>למד עוד</0>"
+			"description": "עוקף את מגבלת השורות כדי למנוע בעיות זיכרון על ידי אכיפת מגבלה קשיחה על גודל הפלט. אם חורגים, שומר את ההתחלה והסוף ומציג מציין מקום ל-Roo היכן שתוכן דולג. <0>למד עוד</0>"
 		},
 		"outputPreviewSize": {
 			"label": "גודל תצוגה מקדימה של פלט פקודה",
-			"description": "שולט כמה פלט פקודה Roo רואה ישירות. פלט מלא תמיד נשמר ונגיש בעת הצורך.",
+			"description": "שולט בכמה פלט פקודה Roo רואה ישירות. הפלט המלא תמיד נשמר ונגיש בעת הצורך.",
 			"options": {
 				"small": "קטן (5KB)",
 				"medium": "בינוני (10KB)",
@@ -764,28 +764,28 @@
 			}
 		},
 		"shellIntegrationTimeout": {
-			"label": "זמן תפוגת אינטגרציית shell בטרמינל",
-			"description": "כמה זמן להמתין לאינטגרציית shell של VS Code לפני הרצת פקודות. העלה אם ה-shell שלך מתחיל לאט או שאתה רואה שגיאות 'Shell Integration Unavailable'. <0>למד עוד</0>"
+			"label": "זמן תפוגת אינטגרציית shell של טרמינל",
+			"description": "כמה זמן להמתין לאינטגרציית shell של VS Code לפני הרצת פקודות. העלה אם ה-shell שלך מתחיל לאט או אם אתה רואה שגיאות 'Shell Integration Unavailable'. <0>למד עוד</0>"
 		},
 		"shellIntegrationDisabled": {
 			"label": "השתמש בטרמינל מוטבע (מומלץ)",
-			"description": "הרץ פקודות בטרמינל המוטבע (צ'אט) כדי לעקוף פרופילי shell/אינטגרציה להרצות מהירות ואמינות יותר. כשמושבת Roo משתמש בטרמינל VS Code עם פרופיל ה-shell, prompts והתוספים שלך. <0>למד עוד</0>"
+			"description": "הרץ פקודות בטרמינל המוטבע (צ'אט) כדי לעקוף פרופילי shell/אינטגרציה להרצות מהירות ואמינות יותר. כאשר מושבת, Roo משתמש בטרמינל VS Code עם פרופיל ה-shell, הנחיות ותוספים שלך. <0>למד עוד</0>"
 		},
 		"commandDelay": {
-			"label": "השהיית פקודת טרמינל",
-			"description": "מוסיף השהיה קצרה אחרי כל פקודה כדי שהטרמינל של VS Code יוכל לסיים את הפלט (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). השתמש רק אם אתה רואה פלט זנב חסר; אחרת השאר על 0. <0>למד עוד</0>"
+			"label": "עיכוב פקודת טרמינל",
+			"description": "מוסיף השהייה קצרה לאחר כל פקודה כדי שטרמינל VS Code יוכל לרוקן את כל הפלט (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). השתמש רק אם אתה רואה פלט סוף חסר; אחרת השאר על 0. <0>למד עוד</0>"
 		},
 		"powershellCounter": {
-			"label": "הפעל עוקף מונה PowerShell",
-			"description": "הפעל כשפלט PowerShell חסר או כפול; זה מוסיף מונה זעיר לכל פקודה כדי לייצב פלט. השאר כבוי אם הפלט כבר נראה תקין. <0>למד עוד</0>"
+			"label": "הפעל מונה PowerShell לפתרון בעיות",
+			"description": "הפעל כאשר פלט PowerShell חסר או כפול; הוא מוסיף מונה זעיר לכל פקודה כדי לייצב פלט. השאר כבוי אם הפלט נראה תקין. <0>למד עוד</0>"
 		},
 		"zshClearEolMark": {
 			"label": "נקה סימן סוף שורה ZSH",
-			"description": "הפעל כשאתה רואה % תועים בסוף שורות או שהניתוח נראה שגוי; זה משמיט את סימן סוף השורה (%) של Zsh. <0>למד עוד</0>"
+			"description": "הפעל כאשר אתה רואה % תועה בסוף שורות או שפענוח נראה שגוי; זה משמיט את סימן סוף השורה (%) של Zsh. <0>למד עוד</0>"
 		},
 		"zshOhMy": {
 			"label": "הפעל אינטגרציית Oh My Zsh",
-			"description": "הפעל כשערכת הנושא/תוספים של Oh My Zsh שלך מצפים לאינטגרציית shell; זה מגדיר ITERM_SHELL_INTEGRATION_INSTALLED=Yes. כבה כדי להימנע מהגדרת משתנה זה. <0>למד עוד</0>"
+			"description": "הפעל כאשר ערכת הנושא/תוספי Oh My Zsh שלך מצפים לאינטגרציית shell; זה מגדיר ITERM_SHELL_INTEGRATION_INSTALLED=Yes. כבה כדי להימנע מהגדרת משתנה זה. <0>למד עוד</0>"
 		},
 		"zshP10k": {
 			"label": "הפעל אינטגרציית Powerlevel10k",
@@ -793,7 +793,7 @@
 		},
 		"zdotdir": {
 			"label": "הפעל טיפול ב-ZDOTDIR",
-			"description": "הפעל כאשר אינטגרציית shell של zsh נכשלת או מתנגשת עם ה-dotfiles שלך. <0>למד עוד</0>"
+			"description": "הפעל כאשר אינטגרציית shell של zsh נכשלת או מתנגשת עם קבצי הנקודה שלך. <0>למד עוד</0>"
 		},
 		"inheritEnv": {
 			"label": "ירש משתני סביבה",
@@ -806,136 +806,136 @@
 	"advanced": {
 		"diff": {
 			"label": "הפעל עריכה דרך diffs",
-			"description": "כשמופעל, Roo יוכל לערוך קבצים מהר יותר וידחה אוטומטית כתיבות קובץ מלא שנקטעו",
+			"description": "כאשר מופעל, Roo יוכל לערוך קבצים מהר יותר וידחה אוטומטית כתיבות קובץ מלא חתוכות",
 			"strategy": {
 				"label": "אסטרטגיית diff",
 				"options": {
-					"standard": "רגיל (בלוק בודד)",
-					"multiBlock": "ניסיוני: diff רב-בלוקי",
-					"unified": "ניסיוני: diff מאוחד"
+					"standard": "רגיל (בלוק יחיד)",
+					"multiBlock": "ניסיוני: Diff רב-בלוקי",
+					"unified": "ניסיוני: Diff מאוחד"
 				},
 				"descriptions": {
-					"standard": "אסטרטגיית diff רגילה מחילה שינויים על בלוק קוד בודד בכל פעם.",
-					"unified": "אסטרטגיית diff מאוחד נוקטת מספר גישות להחלת diffs ובוחרת את הגישה הטובה ביותר.",
-					"multiBlock": "אסטרטגיית diff רב-בלוקי מאפשרת עדכון מספר בלוקי קוד בקובץ בבקשה אחת."
+					"standard": "אסטרטגיית diff רגילה מחילה שינויים על בלוק קוד יחיד בכל פעם.",
+					"unified": "אסטרטגיית diff מאוחדת לוקחת מספר גישות להחלת diffs ובוחרת את הגישה הטובה ביותר.",
+					"multiBlock": "אסטרטגיית diff רב-בלוקית מאפשרת עדכון מספר בלוקי קוד בקובץ בבקשה אחת."
 				}
 			}
 		},
 		"todoList": {
 			"label": "הפעל כלי רשימת משימות",
-			"description": "כשמופעל, Roo יכול ליצור ולנהל רשימות משימות למעקב אחר התקדמות. זה עוזר לארגן משימות מורכבות לצעדים ניתנים לניהול."
+			"description": "כאשר מופעל, Roo יכול ליצור ולנהל רשימות משימות למעקב אחר התקדמות. זה עוזר לארגן משימות מורכבות לשלבים ניתנים לניהול."
 		}
 	},
 	"experimental": {
 		"DIFF_STRATEGY_UNIFIED": {
-			"name": "השתמש באסטרטגיית diff מאוחד ניסיונית",
-			"description": "הפעל את אסטרטגיית ה-diff המאוחד הניסיונית. אסטרטגיה זו עשויה להפחית את מספר הניסיונות החוזרים שנגרמים משגיאות מודל אך עשויה לגרום להתנהגות בלתי צפויה או עריכות שגויות. הפעל רק אם אתה מבין את הסיכונים ומוכן לבדוק בקפידה את כל השינויים."
+			"name": "השתמש באסטרטגיית diff מאוחדת ניסיונית",
+			"description": "הפעל את אסטרטגיית ה-diff המאוחדת הניסיונית. אסטרטגיה זו עשויה להפחית את מספר הניסיונות החוזרים הנגרמים משגיאות מודל אך עלולה לגרום להתנהגות בלתי צפויה או עריכות שגויות. הפעל רק אם אתה מבין את הסיכונים ומוכן לסקור בקפידה את כל השינויים."
 		},
 		"INSERT_BLOCK": {
-			"name": "השתמש בכלי הכנסת תוכן ניסיוני",
-			"description": "הפעל את כלי הכנסת התוכן הניסיוני, המאפשר ל-Roo להכניס תוכן במספרי שורה ספציפיים ללא צורך ביצירת diff."
+			"name": "השתמש בכלי הוספת תוכן ניסיוני",
+			"description": "הפעל את כלי הוספת התוכן הניסיוני, המאפשר ל-Roo להוסיף תוכן בשורות מסוימות ללא צורך ביצירת diff."
 		},
 		"CONCURRENT_FILE_READS": {
-			"name": "הפעל קריאות קבצים בו-זמנית",
-			"description": "כשמופעל, Roo יכול לקרוא מספר קבצים בבקשה אחת. כשמושבת, Roo חייב לקרוא קבצים אחד בכל פעם. השבתה יכולה לעזור כשעובדים עם מודלים פחות חזקים או כשרוצים יותר שליטה על גישה לקבצים."
+			"name": "הפעל קריאות קבצים בו-זמניות",
+			"description": "כאשר מופעל, Roo יכול לקרוא מספר קבצים בבקשה יחידה. כאשר מושבת, Roo חייב לקרוא קבצים אחד אחד. השבתה זו יכולה לעזור בעבודה עם מודלים פחות מסוגלים או כשרוצים יותר שליטה על גישה לקבצים."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "השתמש בכלי diff רב-בלוקי ניסיוני",
-			"description": "כשמופעל, Roo ישתמש בכלי diff רב-בלוקי. זה ינסה לעדכן מספר בלוקי קוד בקובץ בבקשה אחת."
+			"description": "כאשר מופעל, Roo ישתמש בכלי diff רב-בלוקי. זה ינסה לעדכן מספר בלוקי קוד בקובץ בבקשה אחת."
 		},
 		"MARKETPLACE": {
-			"name": "הפעל חנות",
-			"description": "כשמופעל, ניתן להתקין MCPs ומצבים מותאמים מהחנות."
+			"name": "הפעל Marketplace",
+			"description": "כאשר מופעל, תוכל להתקין MCPs ומצבים מותאמים אישית מה-Marketplace."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "עריכה ברקע",
-			"description": "מנע הפרעת מיקוד עורך כשמופעל. עריכות קבצים מתבצעות ברקע ללא פתיחת תצוגות diff או גניבת מיקוד. אפשר להמשיך לעבוד ללא הפרעה בזמן ש-Roo מבצע שינויים. קבצים יכולים להיפתח ללא מיקוד כדי ללכוד אבחונים או להישאר סגורים לחלוטין."
+			"description": "מנע הפרעת מיקוד עורך כאשר מופעל. עריכות קבצים מתרחשות ברקע ללא פתיחת תצוגות diff או גניבת מיקוד. תוכל להמשיך לעבוד ללא הפרעה בזמן ש-Roo מבצע שינויים. ניתן לפתוח קבצים ללא מיקוד כדי ללכוד אבחונים או להשאירם סגורים לחלוטין."
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "השתמש במנתח הודעות חדש",
-			"description": "הפעל את מנתח ההודעות הניסיוני ב-streaming שמספק שיפורי ביצועים משמעותיים לתגובות ארוכות של עוזר על ידי עיבוד הודעות ביעילות רבה יותר."
+			"description": "הפעל את מנתח ההודעות הניסיוני בזרם שמספק שיפורי ביצועים משמעותיים עבור תגובות עוזר ארוכות על ידי עיבוד הודעות יעיל יותר."
 		},
 		"NEW_TASK_REQUIRE_TODOS": {
 			"name": "דרוש רשימת 'todos' למשימות חדשות",
-			"description": "כשמופעל, כלי new_task ידרוש פרמטר todos. זה מבטיח שכל משימות חדשות מתחילות עם רשימת מטרות ברורה. כשמושבת (ברירת מחדל), פרמטר todos נשאר אופציונלי לתאימות לאחור."
+			"description": "כאשר מופעל, כלי new_task ידרוש מתן פרמטר todos. זה מבטיח שכל המשימות החדשות מתחילות עם רשימה ברורה של מטרות. כאשר מושבת (ברירת מחדל), פרמטר ה-todos נשאר אופציונלי לתאימות לאחור."
 		},
 		"IMAGE_GENERATION": {
 			"name": "הפעל יצירת תמונות AI",
-			"description": "כשמופעל, Roo יכול ליצור תמונות מ-prompts טקסט באמצעות מודלי יצירת תמונות.",
+			"description": "כאשר מופעל, Roo יכול ליצור תמונות מהנחיות טקסט באמצעות מודלים ליצירת תמונות.",
 			"providerLabel": "ספק",
-			"providerDescription": "בחר באיזה ספק להשתמש ליצירת תמונות.",
+			"providerDescription": "בחר איזה ספק להשתמש ליצירת תמונות.",
 			"openRouterApiKeyLabel": "מפתח API של OpenRouter",
 			"openRouterApiKeyPlaceholder": "הזן את מפתח ה-API של OpenRouter",
-			"getApiKeyText": "קבל את מפתח ה-API שלך מ",
+			"getApiKeyText": "קבל את מפתח ה-API שלך מ-",
 			"modelSelectionLabel": "מודל יצירת תמונות",
 			"modelSelectionDescription": "בחר את המודל לשימוש ליצירת תמונות",
-			"warningMissingKey": "⚠️ נדרש מפתח API של OpenRouter ליצירת תמונות OpenRouter. הגדר אותו למעלה.",
+			"warningMissingKey": "⚠️ מפתח API של OpenRouter נדרש ליצירת תמונות OpenRouter. אנא הגדר אותו למעלה.",
 			"successConfigured": "✓ יצירת תמונות מוגדרת ומוכנה לשימוש"
 		},
 		"RUN_SLASH_COMMAND": {
-			"name": "הפעל פקודות slash שמופעלות על ידי המודל",
-			"description": "כשמופעל, Roo יכול להריץ את פקודות ה-slash שלך כדי לבצע תהליכי עבודה."
+			"name": "הפעל פקודות slash שמופעלות על ידי מודל",
+			"description": "כאשר מופעל, Roo יכול להריץ את פקודות ה-slash שלך להפעלת זרימות עבודה."
 		},
 		"CUSTOM_TOOLS": {
-			"name": "הפעל כלים מותאמים",
-			"description": "כשמופעל, Roo יכול לטעון ולהשתמש בכלי TypeScript/JavaScript מותאמים מתיקיית .roo/tools של הפרויקט או ~/.roo/tools לכלים גלובליים. הערה: כלים אלו יאושרו אוטומטית.",
-			"toolsHeader": "כלים מותאמים זמינים",
-			"noTools": "לא נטענו כלים מותאמים. הוסף קבצי .ts או .js לתיקיית .roo/tools של הפרויקט או ~/.roo/tools לכלים גלובליים.",
+			"name": "הפעל כלים מותאמים אישית",
+			"description": "כאשר מופעל, Roo יכול לטעון ולהשתמש בכלי TypeScript/JavaScript מותאמים אישית מתיקיית .roo/tools של הפרויקט שלך או ~/.roo/tools לכלים גלובליים. הערה: כלים אלה יאושרו אוטומטית.",
+			"toolsHeader": "כלים מותאמים אישית זמינים",
+			"noTools": "לא נטענו כלים מותאמים אישית. הוסף קבצי .ts או .js לתיקיית .roo/tools של הפרויקט שלך או ~/.roo/tools לכלים גלובליים.",
 			"refreshButton": "רענן",
 			"refreshing": "מרענן...",
 			"refreshSuccess": "הכלים רועננו בהצלחה",
-			"refreshError": "רענון כלים נכשל",
+			"refreshError": "רענון הכלים נכשל",
 			"toolParameters": "פרמטרים"
 		}
 	},
 	"promptCaching": {
-		"label": "השבת prompt caching",
-		"description": "כשמסומן, Roo לא ישתמש ב-prompt caching למודל זה."
+		"label": "השבת מטמון הנחיות",
+		"description": "כאשר מסומן, Roo לא ישתמש במטמון הנחיות עבור מודל זה."
 	},
 	"temperature": {
-		"useCustom": "השתמש בטמפרטורה מותאמת",
+		"useCustom": "השתמש בטמפרטורה מותאמת אישית",
 		"description": "שולט ברנדומליות בתגובות המודל.",
-		"rangeDescription": "ערכים גבוהים מייצרים פלט אקראי יותר, ערכים נמוכים מייצרים פלט דטרמיניסטי יותר."
+		"rangeDescription": "ערכים גבוהים הופכים את הפלט לרנדומלי יותר, ערכים נמוכים הופכים אותו לדטרמיניסטי יותר."
 	},
 	"modelInfo": {
 		"supportsImages": "תומך בתמונות",
 		"noImages": "לא תומך בתמונות",
-		"supportsPromptCache": "תומך ב-prompt caching",
-		"noPromptCache": "לא תומך ב-prompt caching",
+		"supportsPromptCache": "תומך במטמון הנחיות",
+		"noPromptCache": "לא תומך במטמון הנחיות",
 		"contextWindow": "חלון הקשר:",
 		"maxOutput": "מקסימום פלט",
 		"inputPrice": "מחיר קלט",
 		"outputPrice": "מחיר פלט",
-		"cacheReadsPrice": "מחיר קריאות cache",
-		"cacheWritesPrice": "מחיר כתיבות cache",
-		"enableStreaming": "הפעל streaming",
+		"cacheReadsPrice": "מחיר קריאות מטמון",
+		"cacheWritesPrice": "מחיר כתיבות מטמון",
+		"enableStreaming": "הפעל הזרמה",
 		"enableR1Format": "הפעל פרמטרי מודל R1",
-		"enableR1FormatTips": "חובה להפעיל בעת שימוש במודלי R1 כמו QWQ כדי למנוע שגיאות 400",
+		"enableR1FormatTips": "חייב להיות מופעל בעת שימוש במודלי R1 כמו QWQ כדי למנוע שגיאות 400",
 		"useAzure": "השתמש ב-Azure",
 		"azureApiVersion": "הגדר גרסת Azure API",
 		"gemini": {
-			"freeRequests": "* חינם עד {{count}} בקשות לדקה. לאחר מכן, החיוב תלוי בגודל ה-prompt.",
+			"freeRequests": "* חינם עד {{count}} בקשות לדקה. לאחר מכן, החיוב תלוי בגודל ההנחיה.",
 			"pricingDetails": "למידע נוסף, ראה פרטי תמחור.",
-			"billingEstimate": "* החיוב הוא הערכה - העלות המדויקת תלויה בגודל ה-prompt."
+			"billingEstimate": "* החיוב הוא הערכה - העלות המדויקת תלויה בגודל ההנחיה."
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "התוסף מביא אוטומטית את רשימת המודלים העדכנית הזמינה ב-<serviceLink>{{serviceName}}</serviceLink>. אם אינך בטוח איזה מודל לבחור, Roo Code עובד הכי טוב עם <defaultModelLink>{{defaultModelId}}</defaultModelLink>. אפשר גם לנסות לחפש \"free\" לאפשרויות חינמיות הזמינות כרגע.",
+		"automaticFetch": "התוסף מביא אוטומטית את הרשימה העדכנית ביותר של מודלים זמינים ב-<serviceLink>{{serviceName}}</serviceLink>. אם אינך בטוח איזה מודל לבחור, Roo Code עובד הכי טוב עם <defaultModelLink>{{defaultModelId}}</defaultModelLink>. תוכל גם לנסות לחפש \"free\" לאפשרויות ללא עלות הזמינות כרגע.",
 		"label": "מודל",
 		"searchPlaceholder": "חפש",
 		"noMatchFound": "לא נמצאה התאמה",
-		"useCustomModel": "השתמש במותאם: {{modelId}}",
-		"simplifiedExplanation": "אפשר לשנות הגדרות מודל מפורטות מאוחר יותר."
+		"useCustomModel": "השתמש במותאם אישית: {{modelId}}",
+		"simplifiedExplanation": "תוכל להתאים הגדרות מודל מפורטות מאוחר יותר."
 	},
 	"footer": {
 		"telemetry": {
-			"label": "אפשר דיווח אנונימי על שגיאות ושימוש",
-			"description": "עזור לשפר את Roo Code על ידי שליחת נתוני שימוש ודוחות שגיאות אנונימיים. טלמטריה זו לא אוספת קוד, prompts או מידע אישי. ראה את <privacyLink>מדיניות הפרטיות</privacyLink> שלנו לפרטים נוספים."
+			"label": "אפשר דיווח אנונימי של שגיאות ושימוש",
+			"description": "עזור לשפר את Roo Code על ידי שליחת נתוני שימוש ודוחות שגיאה אנונימיים. טלמטריה זו אינה אוספת קוד, הנחיות או מידע אישי. ראה את <privacyLink>מדיניות הפרטיות</privacyLink> שלנו לפרטים נוספים."
 		},
 		"settings": {
-			"import": "ייבא",
-			"export": "ייצא",
-			"reset": "אפס"
+			"import": "ייבוא",
+			"export": "ייצוא",
+			"reset": "איפוס"
 		}
 	},
 	"thinkingBudget": {
@@ -945,16 +945,16 @@
 	"validation": {
 		"apiKey": "עליך לספק מפתח API תקין.",
 		"awsRegion": "עליך לבחור אזור לשימוש עם Amazon Bedrock.",
-		"googleCloud": "עליך לספק מזהה פרויקט ואזור תקינים של Google Cloud.",
+		"googleCloud": "עליך לספק מזהה פרויקט ואזור Google Cloud תקינים.",
 		"modelId": "עליך לספק מזהה מודל תקין.",
 		"modelSelector": "עליך לספק בורר מודל תקין.",
 		"openAi": "עליך לספק כתובת URL בסיסית, מפתח API ומזהה מודל תקינים.",
 		"arn": {
-			"invalidFormat": "פורמט ARN לא תקין. בדוק את דרישות הפורמט.",
-			"regionMismatch": "אזהרה: האזור ב-ARN ({{arnRegion}}) אינו תואם לאזור שנבחר ({{region}}). זה עשוי לגרום לבעיות גישה. הספק ישתמש באזור מה-ARN."
+			"invalidFormat": "פורמט ARN לא תקין. אנא בדוק את דרישות הפורמט.",
+			"regionMismatch": "אזהרה: האזור ב-ARN שלך ({{arnRegion}}) אינו תואם לאזור שנבחר ({{region}}). זה עלול לגרום לבעיות גישה. הספק ישתמש באזור מה-ARN."
 		},
-		"modelAvailability": "מזהה המודל ({{modelId}}) שסיפקת אינו זמין. בחר מודל אחר.",
-		"modelDeprecated": "מודל זה כבר לא זמין. בחר מודל אחר.",
+		"modelAvailability": "מזהה המודל ({{modelId}}) שסיפקת אינו זמין. אנא בחר מודל אחר.",
+		"modelDeprecated": "מודל זה אינו זמין יותר. אנא בחר מודל אחר.",
 		"providerNotAllowed": "הספק '{{provider}}' אינו מותר על ידי הארגון שלך",
 		"modelNotAllowed": "המודל '{{model}}' אינו מותר עבור הספק '{{provider}}' על ידי הארגון שלך",
 		"profileInvalid": "פרופיל זה מכיל ספק או מודל שאינם מותרים על ידי הארגון שלך",
@@ -965,8 +965,8 @@
 		"profileName": "הזן שם פרופיל",
 		"accessKey": "הזן מפתח גישה...",
 		"secretKey": "הזן מפתח סודי...",
-		"sessionToken": "הזן Session Token...",
-		"credentialsJson": "הזן Credentials JSON...",
+		"sessionToken": "הזן Token סשן...",
+		"credentialsJson": "הזן JSON אישורים...",
 		"keyFilePath": "הזן נתיב קובץ מפתח...",
 		"projectId": "הזן מזהה פרויקט...",
 		"customArn": "הזן ARN (למשל arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
@@ -990,26 +990,26 @@
 		"geminiUrl": "ברירת מחדל: https://generativelanguage.googleapis.com"
 	},
 	"labels": {
-		"customArn": "ARN מותאם",
-		"useCustomArn": "השתמש ב-ARN מותאם..."
+		"customArn": "ARN מותאם אישית",
+		"useCustomArn": "השתמש ב-ARN מותאם אישית..."
 	},
 	"includeMaxOutputTokens": "כלול מקסימום tokens פלט",
-	"includeMaxOutputTokensDescription": "שלח פרמטר מקסימום tokens פלט בבקשות API. ספקים מסוימים עשויים לא לתמוך בזה.",
+	"includeMaxOutputTokensDescription": "שלח פרמטר מקסימום tokens פלט בבקשות API. ספקים מסוימים עשויים שלא לתמוך בזה.",
 	"limitMaxTokensDescription": "הגבל את מספר ה-tokens המקסימלי בתגובה",
 	"maxOutputTokensLabel": "מקסימום tokens פלט",
 	"maxTokensGenerateDescription": "מקסימום tokens ליצירה בתגובה",
 	"serviceTier": {
 		"label": "רמת שירות",
-		"tooltip": "לעיבוד מהיר יותר של בקשות API, נסה את רמת השירות בעדיפות. למחירים נמוכים יותר עם השהיה גבוהה יותר, נסה את רמת השירות flex.",
+		"tooltip": "לעיבוד מהיר יותר של בקשות API, נסה את רמת שירות העיבוד בעדיפות. למחירים נמוכים יותר עם זמן תגובה ארוך יותר, נסה את רמת שירות העיבוד Flex.",
 		"standard": "רגיל",
 		"flex": "Flex",
 		"priority": "עדיפות",
-		"pricingTableTitle": "תמחור לפי רמת שירות (מחיר ל-1M tokens)",
+		"pricingTableTitle": "תמחור לפי רמת שירות (מחיר למיליון tokens)",
 		"columns": {
 			"tier": "רמה",
 			"input": "קלט",
 			"output": "פלט",
-			"cacheReads": "קריאות cache"
+			"cacheReads": "קריאות מטמון"
 		}
 	}
 }

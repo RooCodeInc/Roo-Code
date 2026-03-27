@@ -1,5 +1,5 @@
 {
-	"title": "חנות Roo",
+	"title": "Roo Marketplace",
 	"tabs": {
 		"installed": "מותקנים",
 		"settings": "הגדרות",
@@ -9,7 +9,7 @@
 	"refresh": "רענן",
 	"filters": {
 		"search": {
-			"placeholder": "חפש פריטים בחנות...",
+			"placeholder": "חפש פריטים ב-Marketplace...",
 			"placeholderMcp": "חפש MCPs...",
 			"placeholderMode": "חפש מצבים..."
 		},
@@ -28,22 +28,22 @@
 		"sort": {
 			"label": "מיין לפי:",
 			"name": "שם",
-			"author": "יוצר",
+			"author": "מחבר",
 			"lastUpdated": "עודכן לאחרונה"
 		},
 		"tags": {
 			"label": "סנן לפי תגיות:",
 			"clear": "נקה תגיות",
-			"placeholder": "הקלד כדי לחפש ולבחור תגיות...",
+			"placeholder": "הקלד לחיפוש ובחירת תגיות...",
 			"noResults": "לא נמצאו תגיות תואמות",
-			"selected": "מציג פריטים עם אחת מהתגיות שנבחרו",
-			"clickToFilter": "לחץ על תגיות כדי לסנן פריטים"
+			"selected": "מציג פריטים עם כל אחת מהתגיות שנבחרו",
+			"clickToFilter": "לחץ על תגיות לסינון פריטים"
 		},
-		"none": "אין"
+		"none": "ללא"
 	},
 	"sections": {
 		"organizationMcps": "MCPs של {{organization}}",
-		"marketplace": "חנות"
+		"marketplace": "Marketplace"
 	},
 	"type-group": {
 		"modes": "מצבים",
@@ -51,19 +51,19 @@
 	},
 	"items": {
 		"empty": {
-			"noItems": "לא נמצאו פריטים בחנות",
-			"withFilters": "נסה לשנות את הסינונים",
-			"noSources": "נסה להוסיף מקור בלשונית מקורות",
-			"adjustFilters": "נסה לשנות את הסינונים או מונחי החיפוש",
-			"clearAllFilters": "נקה את כל הסינונים"
+			"noItems": "לא נמצאו פריטים ב-Marketplace",
+			"withFilters": "נסה להתאים את המסננים",
+			"noSources": "נסה להוסיף מקור בלשונית המקורות",
+			"adjustFilters": "נסה להתאים את המסננים או מונחי החיפוש",
+			"clearAllFilters": "נקה את כל המסננים"
 		},
-		"count": "נמצאו {{count}} פריטים",
+		"count": "{{count}} פריטים נמצאו",
 		"components": "{{count}} רכיבים",
-		"matched": "{{count}} התאמות",
+		"matched": "{{count}} תואמים",
 		"refresh": {
 			"button": "רענן",
 			"refreshing": "מרענן...",
-			"mayTakeMoment": "זה עשוי לקחת רגע."
+			"mayTakeMoment": "פעולה זו עשויה לקחת רגע."
 		},
 		"card": {
 			"by": "מאת {{author}}",
@@ -74,15 +74,15 @@
 			"remove": "הסר",
 			"removeProject": "הסר",
 			"removeGlobal": "הסר (גלובלי)",
-			"viewSource": "הצג",
-			"viewOnSource": "הצג ב-{{source}}",
-			"noWorkspaceTooltip": "פתח סביבת עבודה כדי להתקין פריטים מהחנות",
+			"viewSource": "צפה",
+			"viewOnSource": "צפה ב-{{source}}",
+			"noWorkspaceTooltip": "פתח סביבת עבודה כדי להתקין פריטי Marketplace",
 			"installed": "מותקן",
 			"removeProjectTooltip": "הסר מהפרויקט הנוכחי",
-			"removeGlobalTooltip": "הסר מהגדרות גלובליות",
+			"removeGlobalTooltip": "הסר מהתצורה הגלובלית",
 			"actionsMenuLabel": "פעולות נוספות"
 		},
-		"removeFailed": "הסרת פריט נכשלה: {{error}}",
+		"removeFailed": "הסרת הפריט נכשלה: {{error}}",
 		"unknownError": "אירעה שגיאה לא ידועה"
 	},
 	"install": {
@@ -93,29 +93,29 @@
 		"project": "פרויקט (סביבת עבודה נוכחית)",
 		"global": "גלובלי (כל סביבות העבודה)",
 		"method": "שיטת התקנה",
-		"prerequisites": "דרישות מוקדמות",
-		"configuration": "הגדרות",
+		"prerequisites": "דרישות מקדימות",
+		"configuration": "תצורה",
 		"configurationDescription": "הגדר את הפרמטרים הנדרשים עבור שרת MCP זה",
 		"button": "התקן",
 		"successTitle": "{{name}} הותקן",
 		"successDescription": "ההתקנה הושלמה בהצלחה",
 		"installed": "הותקן בהצלחה!",
-		"whatNextMcp": "עכשיו אפשר להגדיר ולהשתמש בשרת MCP זה. לחץ על סמל MCP בסרגל הצד כדי להחליף לשוניות.",
-		"whatNextMode": "עכשיו אפשר להשתמש במצב זה. לחץ על סמל המצבים בסרגל הצד כדי להחליף לשוניות.",
+		"whatNextMcp": "כעת תוכל להגדיר ולהשתמש בשרת MCP זה. לחץ על סמל ה-MCP בסרגל הצד כדי לעבור ללשונית.",
+		"whatNextMode": "כעת תוכל להשתמש במצב זה. לחץ על סמל המצבים בסרגל הצד כדי לעבור ללשונית.",
 		"done": "סיום",
 		"goToMcp": "עבור ללשונית MCP",
 		"goToModes": "עבור להגדרות מצבים",
-		"moreInfoMcp": "הצג תיעוד MCP של {{name}}",
-		"validationRequired": "ספק ערך עבור {{paramName}}"
+		"moreInfoMcp": "צפה בתיעוד MCP {{name}}",
+		"validationRequired": "אנא ספק ערך עבור {{paramName}}"
 	},
 	"sources": {
-		"title": "הגדר מקורות חנות",
-		"description": "הוסף מאגרי Git שמכילים פריטי חנות. מאגרים אלה ייטענו בעת עיון בחנות.",
+		"title": "הגדר מקורות Marketplace",
+		"description": "הוסף מאגרי Git שמכילים פריטי Marketplace. מאגרים אלה ייאספו בעת גלישה ב-Marketplace.",
 		"add": {
 			"title": "הוסף מקור חדש",
 			"urlPlaceholder": "כתובת URL של מאגר Git (למשל, https://github.com/username/repo)",
 			"urlFormats": "פורמטים נתמכים: HTTPS (https://github.com/username/repo), SSH (git@github.com:username/repo.git), או פרוטוקול Git (git://github.com/username/repo.git)",
-			"namePlaceholder": "שם תצוגה (עד 20 תווים)",
+			"namePlaceholder": "שם תצוגה (מקסימום 20 תווים)",
 			"button": "הוסף מקור"
 		},
 		"current": {
@@ -125,14 +125,14 @@
 			"remove": "הסר מקור"
 		},
 		"errors": {
-			"emptyUrl": "URL לא יכול להיות ריק",
+			"emptyUrl": "ה-URL לא יכול להיות ריק",
 			"invalidUrl": "פורמט URL לא תקין",
-			"nonVisibleChars": "URL מכיל תווים לא נראים מלבד רווחים",
-			"invalidGitUrl": "URL חייב להיות כתובת מאגר Git תקינה (למשל, https://github.com/username/repo)",
-			"duplicateUrl": "URL זה כבר ברשימה (התאמה ללא תלות ברישיות ורווחים)",
-			"nameTooLong": "שם חייב להיות 20 תווים או פחות",
-			"nonVisibleCharsName": "שם מכיל תווים לא נראים מלבד רווחים",
-			"duplicateName": "שם זה כבר בשימוש (התאמה ללא תלות ברישיות ורווחים)",
+			"nonVisibleChars": "ה-URL מכיל תווים לא נראים מלבד רווחים",
+			"invalidGitUrl": "ה-URL חייב להיות כתובת מאגר Git תקינה (למשל, https://github.com/username/repo)",
+			"duplicateUrl": "כתובת URL זו כבר ברשימה (התאמה שאינה רגישה לאותיות ורווחים)",
+			"nameTooLong": "השם חייב להיות 20 תווים או פחות",
+			"nonVisibleCharsName": "השם מכיל תווים לא נראים מלבד רווחים",
+			"duplicateName": "שם זה כבר בשימוש (התאמה שאינה רגישה לאותיות ורווחים)",
 			"emojiName": "תווי אמוג'י עלולים לגרום לבעיות תצוגה",
 			"maxSources": "מותר מקסימום {{max}} מקורות"
 		}
@@ -145,12 +145,12 @@
 		},
 		"mcp": {
 			"title": "הסר שרת MCP",
-			"message": "האם אתה בטוח שברצונך להסיר את שרת MCP \"{{mcpName}}\"?"
+			"message": "האם אתה בטוח שברצונך להסיר את שרת ה-MCP \"{{mcpName}}\"?"
 		},
 		"cancel": "ביטול",
 		"confirm": "הסר"
 	},
 	"footer": {
-		"issueText": "מצאת בעיה עם פריט בחנות או יש לך הצעות לפריטים חדשים? <0>פתח issue ב-GitHub</0> כדי להודיע לנו!"
+		"issueText": "מצאת בעיה עם פריט Marketplace או יש לך הצעות לפריטים חדשים? <0>פתח Issue ב-GitHub</0> כדי ליידע אותנו!"
 	}
 }

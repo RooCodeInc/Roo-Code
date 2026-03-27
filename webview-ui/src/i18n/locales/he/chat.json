@@ -4,35 +4,35 @@
 		"title": "משימה",
 		"expand": "הרחב משימה",
 		"collapse": "כווץ משימה",
-		"seeMore": "הצג עוד",
-		"seeLess": "הצג פחות",
+		"seeMore": "ראה עוד",
+		"seeLess": "ראה פחות",
 		"tokens": "Tokens",
 		"cache": "Cache",
 		"apiCost": "עלות API",
 		"size": "גודל",
-		"condenseContext": "עבה הקשר בצורה חכמה",
+		"condenseContext": "עיבוי הקשר חכם",
 		"contextWindow": "אורך הקשר",
 		"closeAndStart": "סגור משימה והתחל חדשה",
-		"export": "ייצא היסטוריית משימה",
+		"export": "ייצוא היסטוריית משימה",
 		"share": "שתף משימה",
 		"delete": "מחק משימה (Shift + לחיצה לדילוג על אישור)",
-		"shareWithOrganization": "שתף עם ארגון",
+		"shareWithOrganization": "שתף עם הארגון",
 		"shareWithOrganizationDescription": "רק חברי הארגון שלך יכולים לגשת",
 		"sharePublicly": "שתף באופן ציבורי",
 		"sharePubliclyDescription": "כל מי שיש לו את הקישור יכול לגשת",
-		"connectToCloud": "התחבר ל-Cloud",
+		"connectToCloud": "התחבר לענן",
 		"connectToCloudDescription": "התחבר ל-Roo Code Cloud כדי לשתף משימות",
-		"sharingDisabledByOrganization": "שיתוף מושבת על ידי הארגון",
+		"sharingDisabledByOrganization": "שיתוף הושבת על ידי הארגון",
 		"shareSuccessOrganization": "קישור ארגוני הועתק ללוח",
 		"shareSuccessPublic": "קישור ציבורי הועתק ללוח",
 		"openApiHistory": "פתח היסטוריית API",
 		"openUiHistory": "פתח היסטוריית UI",
-		"backToParentTask": "משימת הורה"
+		"backToParentTask": "משימת אב"
 	},
 	"unpin": "בטל הצמדה",
 	"pin": "הצמד",
 	"fileChangesInConversation": {
-		"header": "{{count}} קבצים שונו בשיחה זו"
+		"header": "{{count}} קבצים השתנו בשיחה זו"
 	},
 	"retry": {
 		"title": "נסה שוב",
@@ -51,12 +51,12 @@
 		"tooltip": "שמור את שינויי ההודעה"
 	},
 	"tokenProgress": {
-		"availableSpace": "מרחב זמין: {{amount}} tokens",
+		"availableSpace": "מקום פנוי: {{amount}} tokens",
 		"tokensUsed": "Tokens בשימוש: {{used}} מתוך {{total}}",
 		"reservedForResponse": "שמור לתגובת המודל: {{amount}} tokens",
 		"tokensUsedLabel": "Tokens בשימוש",
 		"reservedForResponseLabel": "שמור לתגובה",
-		"availableSpaceLabel": "מרחב זמין"
+		"availableSpaceLabel": "מקום פנוי"
 	},
 	"reject": {
 		"title": "דחה",
@@ -100,8 +100,8 @@
 		"tooltip": "המשך למרות אזהרות"
 	},
 	"killCommand": {
-		"title": "עצור פקודה",
-		"tooltip": "עצור את הפקודה הנוכחית"
+		"title": "הפסק פקודה",
+		"tooltip": "הפסק את הפקודה הנוכחית"
 	},
 	"resumeTask": {
 		"title": "המשך",
@@ -129,32 +129,32 @@
 	"onboarding": "מה תרצה לעשות?",
 	"rooTips": {
 		"customizableModes": {
-			"title": "מצבים ניתנים להתאמה שלא סוטים מהמסלול",
-			"description": "פרסונות מתמחות שנשארות על המשימה ומספקות."
+			"title": "מצבים ניתנים להתאמה אישית שלא סוטים מהמטרה",
+			"description": "פרסונות מתמחות שנשארות על המשימה ומספקות תוצאות."
 		},
 		"modelAgnostic": {
-			"title": "הבא את המודל שלך, ללא עמלה או נעילה",
-			"description": "השתמש במפתח הספק שלך או אפילו הרץ מודלים מקומיים — Roo לא גובה על זה"
+			"title": "הבא את המודל שלך, ללא תוספת מחיר או נעילה",
+			"description": "השתמש במפתח הספק שלך או אפילו הרץ הסקה מקומית — Roo לא גובה על זה"
 		}
 	},
 	"selectMode": "בחר מצב לאינטראקציה",
-	"selectApiConfig": "בחר הגדרת API",
-	"lockApiConfigAcrossModes": "נעל הגדרת API בכל המצבים בסביבת עבודה זו",
-	"unlockApiConfigAcrossModes": "הגדרת API נעולה בכל המצבים בסביבת עבודה זו (לחץ לביטול נעילה)",
-	"enhancePrompt": "שפר prompt עם הקשר נוסף",
+	"selectApiConfig": "בחר תצורת API",
+	"lockApiConfigAcrossModes": "נעל תצורת API בכל המצבים בסביבת עבודה זו",
+	"unlockApiConfigAcrossModes": "תצורת API נעולה בכל המצבים בסביבת עבודה זו (לחץ לביטול נעילה)",
+	"enhancePrompt": "שפר הנחיה עם הקשר נוסף",
 	"modeSelector": {
 		"title": "מצבים",
-		"marketplace": "חנות מצבים",
+		"marketplace": "Marketplace מצבים",
 		"settings": "הגדרות מצבים",
-		"description": "פרסונות מתמחות שמתאימות את ההתנהגות של Roo.",
+		"description": "פרסונות מתמחות שמתאימות את התנהגות Roo.",
 		"searchPlaceholder": "חפש מצבים...",
 		"noResults": "לא נמצאו תוצאות"
 	},
-	"enhancePromptDescription": "כפתור 'שפר Prompt' עוזר לשפר את ה-prompt שלך על ידי הוספת הקשר, הבהרה או ניסוח מחדש. נסה להקליד prompt כאן וללחוץ על הכפתור שוב כדי לראות איך זה עובד.",
+	"enhancePromptDescription": "כפתור 'שפר הנחיה' עוזר לשפר את ההנחיה שלך על ידי מתן הקשר נוסף, הבהרה או ניסוח מחדש. נסה להקליד הנחיה כאן וללחוץ שוב על הכפתור כדי לראות איך זה עובד.",
 	"addImages": "הוסף תמונות להודעה",
 	"sendMessage": "שלח הודעה",
 	"pressToSend": "לחץ {{keyCombination}} לשליחה",
-	"stopTts": "עצור המרת טקסט לדיבור",
+	"stopTts": "עצור הקראה",
 	"typeMessage": "הקלד הודעה...",
 	"typeTask": "הקלד את המשימה שלך כאן...",
 	"addContext": "@ להוספת הקשר, / לפקודות",
@@ -171,38 +171,38 @@
 		"failed": "בקשת API נכשלה",
 		"streaming": "בקשת API...",
 		"cancelled": "בקשת API בוטלה",
-		"streamingFailed": "streaming של API נכשל",
-		"rateLimitWait": "הגבלת קצב",
+		"streamingFailed": "הזרמת API נכשלה",
+		"rateLimitWait": "מגבלת בקשות",
 		"errorTitle": "שגיאת ספק {{code}}",
 		"errorMessage": {
 			"400": "הספק לא הצליח לעבד את הבקשה כפי שנשלחה. עצור את המשימה ונסה גישה אחרת.",
-			"401": "לא ניתן לאמת מול הספק. בדוק את הגדרות מפתח ה-API שלך.",
+			"401": "לא ניתן לבצע אימות מול הספק. אנא בדוק את תצורת מפתח ה-API שלך.",
 			"402": "נראה שנגמרו לך הכספים/קרדיטים בחשבון. עבור לספק שלך והוסף עוד כדי להמשיך.",
 			"403": "לא מורשה. מפתח ה-API שלך תקין, אך הספק סירב להשלים בקשה זו.",
-			"429": "יותר מדי בקשות. הספק מגביל את הקצב שלך. המתן קצת לפני קריאת ה-API הבאה.",
+			"429": "יותר מדי בקשות. הספק מגביל את קצב הבקשות שלך. אנא המתן מעט לפני קריאת ה-API הבאה.",
 			"500": "שגיאת שרת ספק. משהו לא בסדר בצד הספק, אין בעיה עם הבקשה שלך.",
 			"docs": "תיעוד",
 			"goToSettings": "הגדרות",
 			"connection": "שגיאת חיבור. ודא שיש לך חיבור אינטרנט תקין.",
-			"unknown": "שגיאת API לא ידועה. פנה לתמיכת Roo Code.",
-			"claudeCodeNotAuthenticated": "צריך להתחבר כדי להשתמש ב-Claude Code. עבור להגדרות ולחץ \"התחבר ל-Claude Code\" כדי לאמת."
+			"unknown": "שגיאת API לא ידועה. אנא פנה לתמיכת Roo Code.",
+			"claudeCodeNotAuthenticated": "עליך להתחבר כדי להשתמש ב-Claude Code. עבור להגדרות ולחץ על \"התחבר ל-Claude Code\" לאימות."
 		}
 	},
 	"checkpoint": {
-		"regular": "Checkpoint",
-		"initializingWarning": "עדיין מאתחל checkpoint... אם זה לוקח יותר מדי זמן, אפשר להשבית checkpoints ב<settingsLink>הגדרות</settingsLink> ולהפעיל מחדש את המשימה.",
+		"regular": "נקודת ביקורת",
+		"initializingWarning": "עדיין מאתחל נקודת ביקורת... אם זה לוקח יותר מדי זמן, תוכל להשבית נקודות ביקורת ב<settingsLink>הגדרות</settingsLink> ולהפעיל מחדש את המשימה.",
 		"menu": {
-			"viewDiff": "הצג שינויים",
-			"viewDiffFromInit": "הצג את כל השינויים",
-			"viewDiffWithCurrent": "הצג שינויים מאז checkpoint זה",
-			"restore": "שחזר Checkpoint",
+			"viewDiff": "צפה בהבדלים",
+			"viewDiffFromInit": "צפה בכל השינויים",
+			"viewDiffWithCurrent": "צפה בשינויים מאז נקודת ביקורת זו",
+			"restore": "שחזר נקודת ביקורת",
 			"restoreFiles": "שחזר קבצים",
-			"restoreFilesDescription": "משחזר את קבצי הפרויקט לתמונת מצב שנלקחה בנקודה זו.",
+			"restoreFilesDescription": "משחזר את קבצי הפרויקט שלך לתצלום שנלקח בנקודה זו.",
 			"restoreFilesAndTask": "שחזר קבצים ומשימה",
 			"confirm": "אשר",
 			"cancel": "ביטול",
 			"cannotUndo": "לא ניתן לבטל פעולה זו.",
-			"restoreFilesAndTaskDescription": "משחזר את קבצי הפרויקט לתמונת מצב שנלקחה בנקודה זו ומוחק את כל ההודעות שאחרי נקודה זו.",
+			"restoreFilesAndTaskDescription": "משחזר את קבצי הפרויקט שלך לתצלום שנלקח בנקודה זו ומוחק את כל ההודעות לאחר נקודה זו.",
 			"more": "אפשרויות נוספות"
 		},
 		"current": "נוכחי"
@@ -212,38 +212,38 @@
 		"condensation": {
 			"title": "ההקשר עובה",
 			"inProgress": "מעבה הקשר...",
-			"errorHeader": "עיבוי הקשר נכשל"
+			"errorHeader": "עיבוי ההקשר נכשל"
 		},
 		"truncation": {
-			"title": "ההקשר קוצר",
-			"inProgress": "מקצר הקשר...",
-			"messagesRemoved": "הודעה {{count}} הוסרה",
+			"title": "ההקשר נחתך",
+			"inProgress": "חותך הקשר...",
+			"messagesRemoved": "הודעה אחת הוסרה",
 			"messagesRemoved_other": "{{count}} הודעות הוסרו",
-			"description": "הודעות ישנות הוסרו מהשיחה כדי להישאר בגבולות חלון ההקשר. זו גישה מהירה אך שומרת פחות על ההקשר בהשוואה לעיבוי."
+			"description": "הודעות ישנות יותר הוסרו מהשיחה כדי להישאר בגבולות חלון ההקשר. זוהי גישה מהירה אך פחות שומרת הקשר בהשוואה לעיבוי."
 		}
 	},
 	"skill": {
-		"wantsToLoad": "Roo רוצה לטעון מיומנות",
-		"didLoad": "Roo טען מיומנות"
+		"wantsToLoad": "Roo רוצה לטעון כישור",
+		"didLoad": "Roo טען כישור"
 	},
 	"fileOperations": {
 		"wantsToRead": "Roo רוצה לקרוא קובץ זה",
 		"wantsToReadMultiple": "Roo רוצה לקרוא מספר קבצים",
-		"wantsToReadAndXMore": "Roo רוצה לקרוא קובץ זה ועוד {{count}}",
+		"wantsToReadAndXMore": "Roo רוצה לקרוא קובץ זה ועוד {{count}} נוספים",
 		"wantsToReadOutsideWorkspace": "Roo רוצה לקרוא קובץ זה מחוץ לסביבת העבודה",
 		"didRead": "Roo קרא קובץ זה",
 		"wantsToEdit": "Roo רוצה לערוך קובץ זה",
 		"wantsToEditOutsideWorkspace": "Roo רוצה לערוך קובץ זה מחוץ לסביבת העבודה",
-		"wantsToEditProtected": "Roo רוצה לערוך קובץ הגדרות מוגן",
+		"wantsToEditProtected": "Roo רוצה לערוך קובץ תצורה מוגן",
 		"wantsToApplyBatchChanges": "Roo רוצה להחיל שינויים על מספר קבצים",
 		"wantsToGenerateImage": "Roo רוצה ליצור תמונה",
 		"wantsToGenerateImageOutsideWorkspace": "Roo רוצה ליצור תמונה מחוץ לסביבת העבודה",
 		"wantsToGenerateImageProtected": "Roo רוצה ליצור תמונה במיקום מוגן",
 		"didGenerateImage": "Roo יצר תמונה",
 		"wantsToCreate": "Roo רוצה ליצור קובץ חדש",
-		"wantsToInsert": "Roo רוצה להכניס תוכן לקובץ זה",
-		"wantsToInsertWithLineNumber": "Roo רוצה להכניס תוכן לקובץ זה בשורה {{lineNumber}}",
-		"wantsToInsertAtEnd": "Roo רוצה להוסיף תוכן לסוף קובץ זה"
+		"wantsToInsert": "Roo רוצה להוסיף תוכן לקובץ זה",
+		"wantsToInsertWithLineNumber": "Roo רוצה להוסיף תוכן לקובץ זה בשורה {{lineNumber}}",
+		"wantsToInsertAtEnd": "Roo רוצה להוסיף תוכן בסוף קובץ זה"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo רוצה לצפות בקבצים ברמה העליונה בתיקייה זו",
@@ -261,11 +261,11 @@
 		"didSearchOutsideWorkspace": "Roo חיפש בתיקייה זו (מחוץ לסביבת העבודה) את <code>{{regex}}</code>"
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo רוצה לחפש בקוד המקור את <code>{{query}}</code>",
-		"wantsToSearchWithPath": "Roo רוצה לחפש בקוד המקור את <code>{{query}}</code> ב-<code>{{path}}</code>",
+		"wantsToSearch": "Roo רוצה לחפש בבסיס הקוד את <code>{{query}}</code>",
+		"wantsToSearchWithPath": "Roo רוצה לחפש בבסיס הקוד את <code>{{query}}</code> ב-<code>{{path}}</code>",
 		"didSearch_one": "נמצאה תוצאה אחת",
 		"didSearch_other": "נמצאו {{count}} תוצאות",
-		"resultTooltip": "ציון דמיון: {{score}} (לחץ לפתיחת קובץ)"
+		"resultTooltip": "ציון דמיון: {{score}} (לחץ לפתיחת הקובץ)"
 	},
 	"commandOutput": "פלט פקודה",
 	"commandExecution": {
@@ -274,15 +274,15 @@
 		"pid": "PID: {{pid}}",
 		"exitStatus": "יצא עם סטטוס {{exitCode}}",
 		"manageCommands": "פקודות מאושרות אוטומטית",
-		"addToAllowed": "הוסף לרשימת המותרים",
-		"removeFromAllowed": "הסר מרשימת המותרים",
-		"addToDenied": "הוסף לרשימת החסומים",
-		"removeFromDenied": "הסר מרשימת החסומים",
-		"abortCommand": "בטל ביצוע פקודה",
+		"addToAllowed": "הוסף לרשימה המותרת",
+		"removeFromAllowed": "הסר מהרשימה המותרת",
+		"addToDenied": "הוסף לרשימה החסומה",
+		"removeFromDenied": "הסר מהרשימה החסומה",
+		"abortCommand": "בטל הרצת פקודה",
 		"expandOutput": "הרחב פלט",
 		"collapseOutput": "כווץ פלט",
-		"expandManagement": "הרחב אזור ניהול פקודות",
-		"collapseManagement": "כווץ אזור ניהול פקודות"
+		"expandManagement": "הרחב מדור ניהול פקודות",
+		"collapseManagement": "כווץ מדור ניהול פקודות"
 	},
 	"response": "תגובה",
 	"arguments": "ארגומנטים",
@@ -304,12 +304,12 @@
 	},
 	"subtasks": {
 		"wantsToCreate": "Roo רוצה ליצור תת-משימה חדשה במצב {{mode}}",
-		"wantsToFinish": "Roo רוצה לסמן זאת כהושלמה",
+		"wantsToFinish": "Roo רוצה לסמן משימה זו כהושלמה",
 		"newTaskContent": "הוראות תת-משימה",
 		"resultContent": "תת-משימה הושלמה",
-		"defaultResult": "המשך למשימה הבאה.",
-		"completionInstructions": "אפשר לבדוק את התוצאות ולהציע תיקונים או צעדים הבאים. אם הכל נראה טוב, אשר כדי להחזיר את התוצאה למשימת ההורה.",
-		"goToSubtask": "הצג משימה"
+		"defaultResult": "אנא המשך למשימה הבאה.",
+		"completionInstructions": "תוכל לסקור את התוצאות ולהציע תיקונים או שלבים הבאים. אם הכל נראה טוב, אשר כדי להחזיר את התוצאה למשימת האב.",
+		"goToSubtask": "צפה במשימה"
 	},
 	"questions": {
 		"hasQuestion": "ל-Roo יש שאלה"
@@ -318,10 +318,10 @@
 	"error": "שגיאה",
 	"modelResponseIncomplete": "תגובת המודל לא שלמה",
 	"modelResponseErrors": {
-		"noToolsUsed": "המודל לא השתמש בכלים בתגובה. זה קורה בדרך כלל כשהמודל מספק רק טקסט/חשיבה בלי להפעיל את הכלים הנדרשים להשלמת המשימה.",
-		"noToolsUsedDetails": "המודל סיפק טקסט/חשיבה אך לא הפעיל אף אחד מהכלים הנדרשים. זה בדרך כלל מעיד על כך שהמודל הבין לא נכון את המשימה או שהוא מתקשה לקבוע באיזה כלי להשתמש. המודל קיבל אוטומטית prompt לנסות שוב עם שימוש נכון בכלים.",
-		"noAssistantMessages": "המודל לא סיפק תוכן תגובה. ייתכן שזה מעיד על בעיה עם ה-API או הפלט של המודל.",
-		"noAssistantMessagesDetails": "מודל השפה החזיר תגובה ריקה ללא טקסט או קריאות כלים. זה יכול לקרות בגלל בעיות API, הגבלת קצב, או בעיות ספציפיות למודל. המודל קיבל אוטומטית prompt לנסות שוב."
+		"noToolsUsed": "המודל לא השתמש בכלים בתגובתו. זה קורה בדרך כלל כאשר המודל מספק רק טקסט/חשיבה מבלי לקרוא לכלים הנדרשים להשלמת המשימה.",
+		"noToolsUsedDetails": "המודל סיפק טקסט/חשיבה אך לא קרא לאף כלי נדרש. זה בדרך כלל מצביע על כך שהמודל הבין לא נכון את המשימה או מתקשה לקבוע באיזה כלי להשתמש. המודל הונחה אוטומטית לנסות שוב עם שימוש נכון בכלים.",
+		"noAssistantMessages": "המודל לא סיפק תוכן תגובה. ייתכן שזה מצביע על בעיה ב-API או בפלט המודל.",
+		"noAssistantMessagesDetails": "מודל השפה החזיר תגובה ריקה ללא טקסט או קריאות כלים. זה יכול לקרות בגלל בעיות API, מגבלת בקשות, או בעיות ספציפיות למודל. המודל הונחה אוטומטית לנסות שוב."
 	},
 	"errorDetails": {
 		"link": "פרטים",
@@ -329,62 +329,62 @@
 		"copyToClipboard": "העתק מידע שגיאה בסיסי",
 		"copied": "הועתק!",
 		"diagnostics": "קבל מידע שגיאה מפורט",
-		"proxyProvider": "נראה שאתה משתמש בספק מבוסס proxy. ודא שאתה בודק את הלוגים שלו וש-הוא לא משכתב את הבקשות של Roo."
+		"proxyProvider": "נראה שאתה משתמש בספק מבוסס proxy. ודא שאתה בודק את הלוגים שלו ושהוא לא משכתב את הבקשות של Roo."
 	},
 	"diffError": {
 		"title": "העריכה לא הצליחה"
 	},
 	"troubleMessage": "ל-Roo יש קשיים...",
 	"powershell": {
-		"issues": "נראה שיש לך בעיות עם Windows PowerShell, ראה את זה"
+		"issues": "נראה שיש לך בעיות עם Windows PowerShell, אנא ראה את זה"
 	},
 	"autoApprove": {
 		"tooltipManage": "נהל הגדרות אישור אוטומטי",
 		"tooltipStatus": "אישור אוטומטי מופעל עבור: {{toggles}}",
-		"title": "אשר אוטומטית",
+		"title": "אישור אוטומטי",
 		"all": "הכל",
 		"none": "כלום",
-		"description": "הפעל פעולות אלו ללא בקשת הרשאה. הפעל רק עבור פעולות שאתה סומך עליהן לחלוטין.",
-		"selectOptionsFirst": "בחר לפחות אפשרות אחת למטה כדי לאפשר אישור אוטומטי",
+		"description": "הרץ פעולות אלה ללא בקשת הרשאה. הפעל רק עבור פעולות שאתה סומך עליהן לחלוטין.",
+		"selectOptionsFirst": "בחר לפחות אפשרות אחת למטה כדי להפעיל אישור אוטומטי",
 		"toggleAriaLabel": "החלף אישור אוטומטי",
-		"disabledAriaLabel": "אישור אוטומטי מושבת - בחר אפשרויות קודם",
+		"disabledAriaLabel": "אישור אוטומטי מושבת - בחר אפשרויות תחילה",
 		"triggerLabelOff": "אישור אוטומטי כבוי",
 		"triggerLabelOffShort": "כבוי",
-		"triggerLabel_zero": "0 אישורים אוטומטיים",
-		"triggerLabel_one": "1 אושר אוטומטית",
-		"triggerLabel_other": "{{count}} אושרו אוטומטית",
+		"triggerLabel_zero": "0 אישור אוטומטי",
+		"triggerLabel_one": "1 מאושר אוטומטית",
+		"triggerLabel_other": "{{count}} מאושרים אוטומטית",
 		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
 		"title": "Roo Code {{version}} שוחרר",
-		"support": "תמכו ב-Roo Code בכוכב ב-<githubLink>GitHub</githubLink>.",
+		"support": "אנא תמכו ב-Roo Code על ידי סימון כוכב ב-<githubLink>GitHub</githubLink>.",
 		"stealthModel": {
-			"feature": "<bold>מודל stealth חינמי לזמן מוגבל</bold> - Code Supernova: שודרג עכשיו עם <bold>חלון הקשר של 1M token</bold>! מודל קידוד סוכני רב-תכליתי שתומך בקלט תמונות, נגיש דרך Roo Code Cloud.",
-			"note": "(הערה: prompts ותגובות נרשמים על ידי יוצר המודל ומשמשים לשיפור המודל)",
+			"feature": "<bold>מודל stealth חינמי לזמן מוגבל</bold> - Code Supernova: עכשיו משודרג עם <bold>חלון הקשר של 1M tokens</bold>! מודל קידוד רב-תכליתי שתומך בקלט תמונות, נגיש דרך Roo Code Cloud.",
+			"note": "(הערה: הנחיות והשלמות נרשמות על ידי יוצר המודל ומשמשות לשיפור המודל)",
 			"connectButton": "התחבר ל-Roo Code Cloud",
 			"selectModel": "בחר <code>roo/code-supernova</code> מספק Roo Code Cloud בהגדרות כדי להתחיל.",
 			"goToSettingsButton": "עבור להגדרות"
 		},
 		"release": {
 			"heading": "מה חדש:",
-			"gpt54": "תמיכה ב-OpenAI GPT-5.4: הוספנו OpenAI GPT-5.4 ו-GPT-5.3 Chat Latest כדי שתוכל להשתמש במודלי הצ'אט החדשים ביותר של OpenAI ב-Roo Code.",
-			"slashSkills": "Slash Command Skills: מיומנויות יכולות כעת להיחשף כפקודות slash עם ביצוע fallback לתהליכי עבודה מהירים יותר."
+			"gpt54": "תמיכה ב-OpenAI GPT-5.4: נוספו OpenAI GPT-5.4 ו-GPT-5.3 Chat Latest כך שתוכלו להשתמש במודלי הצ'אט החדשים ביותר של OpenAI ב-Roo Code.",
+			"slashSkills": "כישורי Slash Command: כישורים יכולים עכשיו להיחשף כפקודות slash עם הפעלת גיבוי לזרימות עבודה מהירות יותר."
 		},
 		"cloudAgents": {
 			"heading": "חדש בענן:",
-			"specialized": "מציגים את <bold>Explainer</bold>, <bold>Planner</bold> ו-<bold>Coder</bold> - שלושה סוכני ענן מתמחים לשיפור תהליכי העבודה שלך.",
-			"description": "הסוכנים עובדים יחד בענן וניתן להפעיל אותם מהאינטרנט או דרך Slack.",
+			"specialized": "מציגים את <bold>Explainer</bold>, <bold>Planner</bold> ו-<bold>Coder</bold> - שלושה סוכני ענן מתמחים לשיפור זרימות העבודה שלכם.",
+			"description": "הסוכנים עובדים יחד בענן וניתן להפעילם מהאינטרנט או דרך Slack.",
 			"tryButton": "נסה סוכני ענן"
 		},
-		"careers": "וגם, <careersLink>אנחנו מגייסים!</careersLink>"
+		"careers": "כמו כן, <careersLink>אנחנו מגייסים!</careersLink>"
 	},
 	"reasoning": {
 		"thinking": "חושב",
-		"seconds": "{{count}}ש"
+		"seconds": "{{count}} שניות"
 	},
 	"followUpSuggest": {
 		"copyToInput": "העתק לקלט (כמו shift + לחיצה)",
-		"timerPrefix": "אישור אוטומטי מופעל. בוחר בעוד {{seconds}}ש…"
+		"timerPrefix": "אישור אוטומטי מופעל. בוחר בעוד {{seconds}} שניות…"
 	},
 	"costs": {
 		"totalWithSubtasks": "עלות כוללת (כולל תת-משימות): ${{cost}}",
@@ -400,32 +400,32 @@
 	},
 	"profileViolationWarning": "הפרופיל הנוכחי אינו תואם להגדרות הארגון שלך",
 	"shellIntegration": {
-		"title": "אזהרת ביצוע פקודה",
-		"description": "הפקודה שלך מתבצעת ללא אינטגרציית shell של VSCode terminal. כדי להסתיר אזהרה זו אפשר להשבית אינטגרציית shell בסעיף <strong>טרמינל</strong> ב<settingsLink>הגדרות Roo Code</settingsLink> או לפתור בעיות אינטגרציית טרמינל VSCode באמצעות הקישור למטה.",
+		"title": "אזהרת הרצת פקודה",
+		"description": "הפקודה שלך מורצת ללא אינטגרציית shell של VSCode. כדי להסתיר אזהרה זו תוכל להשבית את אינטגרציית ה-shell במדור <strong>טרמינל</strong> ב<settingsLink>הגדרות Roo Code</settingsLink> או לפתור בעיות באינטגרציית טרמינל VSCode באמצעות הקישור למטה.",
 		"troubleshooting": "לחץ כאן לתיעוד אינטגרציית shell."
 	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
-			"title": "הגעת למגבלת בקשות מאושרות אוטומטית",
-			"description": "Roo הגיע למגבלת האישור האוטומטי של {{count}} בקשת/ות API. האם לאפס את הספירה ולהמשיך עם המשימה?",
+			"title": "הגעה למגבלת בקשות מאושרות אוטומטית",
+			"description": "Roo הגיע למגבלת אישור אוטומטי של {{count}} בקשת/ות API. האם ברצונך לאפס את הספירה ולהמשיך במשימה?",
 			"button": "אפס והמשך"
 		},
 		"autoApprovedCostLimitReached": {
-			"title": "הגעת למגבלת עלות מאושרת אוטומטית",
-			"description": "Roo הגיע למגבלת העלות המאושרת אוטומטית של ${{count}}. האם לאפס את העלות ולהמשיך עם המשימה?",
+			"title": "הגעה למגבלת עלות מאושרת אוטומטית",
+			"description": "Roo הגיע למגבלת העלות המאושרת אוטומטית של ${{count}}. האם ברצונך לאפס את העלות ולהמשיך במשימה?",
 			"button": "אפס והמשך"
 		}
 	},
 	"indexingStatus": {
-		"ready": "האינדקס מוכן",
+		"ready": "אינדקס מוכן",
 		"indexing": "מאנדקס {{percentage}}%",
 		"indexed": "מאונדקס",
 		"error": "שגיאת אינדקס",
-		"status": "סטטוס אינדקס",
+		"status": "מצב אינדקס",
 		"stopping": "עוצר אינדוקס..."
 	},
 	"versionIndicator": {
-		"ariaLabel": "גרסה {{version}} - לחץ לצפייה בהערות שחרור"
+		"ariaLabel": "גרסה {{version}} - לחץ לצפייה בהערות השחרור"
 	},
 	"command": {
 		"triggerDescription": "הפעל את הפקודה {{name}}"
@@ -433,7 +433,7 @@
 	"slashCommands": {
 		"tooltip": "נהל פקודות slash",
 		"title": "פקודות Slash",
-		"description": "השתמש בפקודות slash מובנות או צור מותאמות אישית לגישה מהירה ל-prompts ותהליכי עבודה נפוצים. <DocsLink>תיעוד</DocsLink>",
+		"description": "השתמש בפקודות slash מובנות או צור מותאמות אישית לגישה מהירה להנחיות וזרימות עבודה בשימוש תכוף. <DocsLink>תיעוד</DocsLink>",
 		"manageCommands": "נהל פקודות slash בהגדרות",
 		"builtInCommands": "פקודות מובנות",
 		"globalCommands": "פקודות גלובליות",
@@ -473,19 +473,19 @@
 	},
 	"tooManyTools": {
 		"title": "יותר מדי כלים מופעלים",
-		"toolsPart_one": "כלי {{count}}",
+		"toolsPart_one": "כלי אחד",
 		"toolsPart_other": "{{count}} כלים",
-		"serversPart_one": "שרת MCP {{count}}",
+		"serversPart_one": "שרת MCP אחד",
 		"serversPart_other": "{{count}} שרתי MCP",
-		"messageTemplate": "יש לך {{tools}} מופעלים דרך {{servers}}. מספר כה גבוה עלול לבלבל את המודל ולגרום לשגיאות. נסה לשמור מתחת ל-{{threshold}}.",
+		"messageTemplate": "יש לך {{tools}} מופעלים דרך {{servers}}. מספר כה גבוה עלול לבלבל את המודל ולהוביל לשגיאות. נסה להישאר מתחת ל-{{threshold}}.",
 		"openMcpSettings": "פתח הגדרות MCP"
 	},
 	"readCommandOutput": {
 		"title": "Roo קרא פלט פקודה"
 	},
 	"retiredProvider": {
-		"title": "ספק כבר לא נתמך",
-		"message": "מצטערים, ספק זה כבר לא נתמך. ראינו מעט מאוד משתמשי Roo שהשתמשו בו בפועל ואנחנו צריכים לצמצם את שטח הקוד שלנו כדי להמשיך לספק מהר ולשרת את הקהילה שלנו בצורה טובה. זו הייתה החלטה ממש קשה אבל היא מאפשרת לנו להתמקד במה שהכי חשוב לך. זה מבאס, אנחנו יודעים.",
+		"title": "ספק שכבר אינו נתמך",
+		"message": "מצטערים, ספק זה אינו נתמך יותר. ראינו מעט מאוד משתמשי Roo שהשתמשו בו בפועל ואנחנו צריכים לצמצם את שטח הקוד שלנו כדי שנוכל להמשיך לשלוח מהר ולשרת את הקהילה שלנו היטב. זו הייתה החלטה קשה מאוד אבל היא מאפשרת לנו להתמקד במה שחשוב לך ביותר. זה מבאס, אנחנו יודעים.",
 		"openSettings": "פתח הגדרות"
 	}
 }

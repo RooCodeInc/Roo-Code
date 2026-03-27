@@ -1,15 +1,15 @@
 {
 	"errors": {
-		"invalid_settings_format": "פורמט JSON של הגדרות MCP לא תקין. ודא שההגדרות שלך עוקבות אחרי פורמט JSON תקני.",
-		"invalid_settings_syntax": "פורמט JSON של הגדרות MCP לא תקין. בדוק את קובץ ההגדרות לשגיאות תחביר.",
+		"invalid_settings_format": "פורמט JSON של הגדרות MCP לא תקין. אנא ודא שההגדרות עוקבות אחר פורמט ה-JSON הנכון.",
+		"invalid_settings_syntax": "פורמט JSON של הגדרות MCP לא תקין. אנא בדוק את קובץ ההגדרות שלך לשגיאות תחביר.",
 		"invalid_settings_validation": "פורמט הגדרות MCP לא תקין: {{errorMessages}}",
 		"create_json": "יצירה או פתיחה של .roo/mcp.json נכשלה: {{error}}",
 		"failed_update_project": "עדכון שרתי MCP של הפרויקט נכשל",
 		"invalidJsonArgument": "Roo ניסה להשתמש ב-{{toolName}} עם ארגומנט JSON לא תקין. מנסה שוב...",
 		"refresh_after_disable": "רענון חיבורי MCP לאחר השבתה נכשל",
 		"refresh_after_enable": "רענון חיבורי MCP לאחר הפעלה נכשל",
-		"disconnect_servers_partial": "ניתוק {{count}} שרת(י) MCP נכשל. בדוק את הפלט לפרטים.",
-		"toolNotFound": "הכלי '{{toolName}}' לא קיים בשרת '{{serverName}}'. כלים זמינים: {{availableTools}}",
+		"disconnect_servers_partial": "ניתוק {{count}} שרת/י MCP נכשל. בדוק את הפלט לפרטים.",
+		"toolNotFound": "הכלי '{{toolName}}' אינו קיים בשרת '{{serverName}}'. כלים זמינים: {{availableTools}}",
 		"serverNotFound": "שרת MCP '{{serverName}}' אינו מוגדר. שרתים זמינים: {{availableServers}}",
 		"toolDisabled": "הכלי '{{toolName}}' בשרת '{{serverName}}' מושבת. כלים מופעלים זמינים: {{availableTools}}"
 	},
@@ -17,12 +17,12 @@
 		"server_restarting": "מפעיל מחדש את שרת MCP {{serverName}}...",
 		"server_connected": "שרת MCP {{serverName}} מחובר",
 		"server_deleted": "שרת MCP נמחק: {{serverName}}",
-		"server_not_found": "השרת \"{{serverName}}\" לא נמצא בהגדרות",
+		"server_not_found": "השרת \"{{serverName}}\" לא נמצא בתצורה",
 		"global_servers_active": "שרתי MCP גלובליים פעילים: {{mcpServers}}",
 		"project_servers_active": "שרתי MCP של הפרויקט פעילים: {{mcpServers}}",
 		"already_refreshing": "שרתי MCP כבר מתרעננים.",
-		"refreshing_all": "מרענן את כל שרתי MCP...",
-		"all_refreshed": "כל שרתי MCP רועננו.",
-		"project_config_deleted": "קובץ הגדרות MCP של הפרויקט נמחק. כל שרתי MCP של הפרויקט נותקו."
+		"refreshing_all": "מרענן את כל שרתי ה-MCP...",
+		"all_refreshed": "כל שרתי ה-MCP רועננו.",
+		"project_config_deleted": "קובץ תצורת MCP של הפרויקט נמחק. כל שרתי MCP של הפרויקט נותקו."
 	}
 }
