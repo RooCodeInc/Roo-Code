@@ -10,6 +10,7 @@ export const LANGUAGES: Record<Language, string> = {
 	en: "English",
 	es: "Español",
 	fr: "Français",
+	he: "עברית",
 	hi: "हिन्दी",
 	id: "Bahasa Indonesia",
 	it: "Italiano",
