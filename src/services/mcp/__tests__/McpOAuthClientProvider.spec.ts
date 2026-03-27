@@ -702,15 +702,22 @@ describe("McpOAuthClientProvider", () => {
 	})
 
 	describe("registerClientIfNeeded", () => {
-		it("should reuse cached client_id from previous registration", async () => {
+		it("should reuse cached client_info from previous registration", async () => {
 			setupCallbackServerMock()
 			const secretStorage = createMockSecretStorage()
 
-			// Pre-populate storage with cached data
+			// Pre-populate storage with cached data including full client_info
 			await secretStorage.saveOAuthData("https://example.com/mcp", {
 				tokens: { access_token: "cached-token", token_type: "Bearer" },
 				expires_at: Date.now() + 3600000,
-				client_id: "cached-client-id",
+				client_info: {
+					client_id: "cached-client-id",
+					client_name: "Test Client",
+					redirect_uris: ["http://localhost:9999/callback"],
+					grant_types: ["authorization_code", "refresh_token"],
+					response_types: ["code"],
+					token_endpoint_auth_method: "none",
+				},
 			})
 
 			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", secretStorage)
@@ -720,7 +727,7 @@ describe("McpOAuthClientProvider", () => {
 			await provider.close()
 		})
 
-		it("should reuse cached client_id even when callback server port has changed", async () => {
+		it("should reuse cached client_info even when callback server port has changed", async () => {
 			setupCallbackServerMock()
 			const secretStorage = createMockSecretStorage()
 
@@ -730,7 +737,14 @@ describe("McpOAuthClientProvider", () => {
 			await secretStorage.saveOAuthData("https://example.com/mcp", {
 				tokens: { access_token: "cached-token", token_type: "Bearer" },
 				expires_at: Date.now() + 3600000,
-				client_id: "cached-client-id",
+				client_info: {
+					client_id: "cached-client-id",
+					client_name: "Test Client",
+					redirect_uris: ["http://localhost:9999/callback"],
+					grant_types: ["authorization_code", "refresh_token"],
+					response_types: ["code"],
+					token_endpoint_auth_method: "none",
+				},
 			})
 
 			const provider = await McpOAuthClientProvider.create("https://example.com/mcp", secretStorage)

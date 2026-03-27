@@ -227,14 +227,12 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 
 		// Check if we have a cached client_id from previous registration
 		const cachedData = await this._secretStorage.getOAuthData(this._serverUrl)
-		if (cachedData?.client_id) {
+		if (cachedData?.client_info) {
+			// Use the full DCR response, override redirect_uris with the
+			// current port (which may have changed between sessions).
 			this._clientInfo = {
-				client_id: cachedData.client_id,
+				...cachedData.client_info,
 				redirect_uris: [this.redirectUrl],
-				client_name: this._clientName,
-				grant_types: this._grantTypes,
-				response_types: ["code"],
-				token_endpoint_auth_method: this._tokenEndpointAuthMethod,
 			}
 			return
 		}
@@ -280,7 +278,7 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 			// auth server bound the refresh token to.  `this._clientInfo.client_id`
 			// may differ if a fresh DCR was performed (e.g. after stale token
 			// cleanup removed the cached data).
-			const clientIdForRefresh = data.client_id ?? this._clientInfo?.client_id
+			const clientIdForRefresh = data.client_info?.client_id ?? this._clientInfo?.client_id
 
 			this._refreshPromise = this.refreshAccessToken(data.tokens.refresh_token, clientIdForRefresh).finally(
 				() => {
@@ -303,10 +301,14 @@ export class McpOAuthClientProvider implements OAuthClientProvider {
 
 	async saveTokens(tokens: OAuthTokens, clientIdOverride?: string): Promise<void> {
 		const expires_at = tokens.expires_in ? Date.now() + tokens.expires_in * 1000 : Date.now() + 3600 * 1000 // default 1 hour when server omits expires_in
+		const clientInfo =
+			clientIdOverride && this._clientInfo
+				? { ...this._clientInfo, client_id: clientIdOverride }
+				: this._clientInfo
 		await this._secretStorage.saveOAuthData(this._serverUrl, {
 			tokens,
 			expires_at,
-			client_id: clientIdOverride ?? this._clientInfo?.client_id,
+			...(clientInfo ? { client_info: clientInfo } : {}),
 		})
 	}
 

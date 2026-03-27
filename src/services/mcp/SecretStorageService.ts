@@ -1,12 +1,17 @@
 import * as vscode from "vscode"
-import type { OAuthTokens } from "@modelcontextprotocol/sdk/shared/auth.js"
+import type { OAuthClientInformationFull, OAuthTokens } from "@modelcontextprotocol/sdk/shared/auth.js"
 
 export interface StoredMcpOAuthData {
 	tokens: OAuthTokens
 	/** Unix ms timestamp after which the access token should be considered expired. */
 	expires_at: number
-	/** The client_id used to obtain these tokens (for token reuse without re-registration). */
-	client_id?: string
+	/**
+	 * Full DCR response from the auth server, persisted so that fields like
+	 * client_secret, grant_types, and token_endpoint_auth_method survive restarts.
+	 * Note: redirect_uris within this object may be stale (port changes between
+	 * sessions); callers must override redirect_uris with the current value.
+	 */
+	client_info?: OAuthClientInformationFull
 }
 
 /**

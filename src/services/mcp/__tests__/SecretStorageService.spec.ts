@@ -160,6 +160,31 @@ describe("SecretStorageService", () => {
 		})
 	})
 
+	describe("client_info round-trip", () => {
+		it("should persist and retrieve full client_info", async () => {
+			const data: StoredMcpOAuthData = {
+				tokens: { access_token: "tok", token_type: "Bearer" },
+				expires_at: Date.now() + 3600_000,
+				client_info: {
+					client_id: "cid-123",
+					client_secret: "secret-456",
+					client_name: "Test Client",
+					redirect_uris: ["http://localhost:12345/callback"],
+					grant_types: ["authorization_code", "refresh_token"],
+					response_types: ["code"],
+					token_endpoint_auth_method: "client_secret_post",
+				},
+			}
+			await service.saveOAuthData("https://example.com/mcp", data)
+
+			const result = await service.getOAuthData("https://example.com/mcp")
+			expect(result).toEqual(data)
+			expect(result?.client_info?.client_id).toBe("cid-123")
+			expect(result?.client_info?.client_secret).toBe("secret-456")
+			expect(result?.client_info?.token_endpoint_auth_method).toBe("client_secret_post")
+		})
+	})
+
 	describe("key isolation", () => {
 		it("should isolate data by host", async () => {
 			const data1: StoredMcpOAuthData = {
