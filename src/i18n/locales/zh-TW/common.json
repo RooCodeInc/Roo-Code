@@ -251,5 +251,13 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"commit": {
+		"no_workspace": "未找到工作區資料夾。請開啟一個資料夾以產生提交訊息。",
+		"generating": "正在產生提交訊息...",
+		"no_changes": "未偵測到變更。請在產生提交訊息之前暫存或修改檔案。",
+		"generation_failed": "產生提交訊息失敗",
+		"use_current_profile": "使用目前的設定檔",
+		"select_profile": "選擇用於產生提交訊息的 API 設定檔"
 	}
 }

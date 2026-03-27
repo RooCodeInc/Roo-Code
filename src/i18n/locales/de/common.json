@@ -246,5 +246,13 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"commit": {
+		"no_workspace": "Kein Arbeitsbereichsordner gefunden. Öffne einen Ordner, um eine Commit-Nachricht zu generieren.",
+		"generating": "Commit-Nachricht wird generiert...",
+		"no_changes": "Keine Änderungen erkannt. Bereite Dateien vor oder ändere sie, bevor du eine Commit-Nachricht generierst.",
+		"generation_failed": "Commit-Nachricht konnte nicht generiert werden",
+		"use_current_profile": "Aktuelles Profil verwenden",
+		"select_profile": "Wähle ein API-Profil für die Commit-Nachricht-Generierung"
 	}
 }

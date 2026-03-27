@@ -251,5 +251,13 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"commit": {
+		"no_workspace": "Nenhuma pasta de trabalho encontrada. Abra uma pasta para gerar uma mensagem de commit.",
+		"generating": "Gerando mensagem de commit...",
+		"no_changes": "Nenhuma alteração detectada. Prepare ou modifique arquivos antes de gerar uma mensagem de commit.",
+		"generation_failed": "Falha ao gerar mensagem de commit",
+		"use_current_profile": "Usar perfil atual",
+		"select_profile": "Selecione um perfil de API para a geração de mensagens de commit"
 	}
 }

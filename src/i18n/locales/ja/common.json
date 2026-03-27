@@ -251,5 +251,13 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"commit": {
+		"no_workspace": "ワークスペースフォルダーが見つかりません。コミットメッセージを生成するにはフォルダーを開いてください。",
+		"generating": "コミットメッセージを生成中...",
+		"no_changes": "変更が検出されませんでした。コミットメッセージを生成する前にファイルをステージするか変更してください。",
+		"generation_failed": "コミットメッセージの生成に失敗しました",
+		"use_current_profile": "現在のプロファイルを使用",
+		"select_profile": "コミットメッセージ生成用のAPIプロファイルを選択"
 	}
 }

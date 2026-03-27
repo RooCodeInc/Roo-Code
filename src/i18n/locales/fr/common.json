@@ -251,5 +251,13 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"commit": {
+		"no_workspace": "Aucun dossier de travail trouvé. Ouvre un dossier pour générer un message de commit.",
+		"generating": "Génération du message de commit...",
+		"no_changes": "Aucun changement détecté. Prépare ou modifie des fichiers avant de générer un message de commit.",
+		"generation_failed": "Échec de la génération du message de commit",
+		"use_current_profile": "Utiliser le profil actuel",
+		"select_profile": "Sélectionne un profil d'API pour la génération de messages de commit"
 	}
 }

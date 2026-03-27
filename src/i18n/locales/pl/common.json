@@ -251,5 +251,13 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"commit": {
+		"no_workspace": "Nie znaleziono folderu roboczego. Otwórz folder, aby wygenerować wiadomość commita.",
+		"generating": "Generowanie wiadomości commita...",
+		"no_changes": "Nie wykryto zmian. Przygotuj lub zmodyfikuj pliki przed wygenerowaniem wiadomości commita.",
+		"generation_failed": "Nie udało się wygenerować wiadomości commita",
+		"use_current_profile": "Użyj bieżącego profilu",
+		"select_profile": "Wybierz profil API do generowania wiadomości commita"
 	}
 }

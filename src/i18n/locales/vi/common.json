@@ -258,5 +258,13 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"commit": {
+		"no_workspace": "Không tìm thấy thư mục làm việc. Mở một thư mục để tạo thông điệp commit.",
+		"generating": "Đang tạo thông điệp commit...",
+		"no_changes": "Không phát hiện thay đổi nào. Hãy chuẩn bị hoặc chỉnh sửa tệp trước khi tạo thông điệp commit.",
+		"generation_failed": "Không thể tạo thông điệp commit",
+		"use_current_profile": "Sử dụng hồ sơ hiện tại",
+		"select_profile": "Chọn một hồ sơ API để tạo thông điệp commit"
 	}
 }
