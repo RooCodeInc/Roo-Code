@@ -598,9 +598,13 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				setShowContextMenu(showMenu)
 
 				if (showMenu) {
-					if (newValue.startsWith("/") && !newValue.includes(" ")) {
-						// Handle slash command - request fresh commands
-						const query = newValue
+					// Extract current line based on cursor position
+					const lineStart = newValue.lastIndexOf("\n", newCursorPosition - 1) + 1
+					const currentLineBefore = newValue.slice(lineStart, newCursorPosition)
+
+					if (currentLineBefore.startsWith("/") && !currentLineBefore.includes(" ")) {
+						// Handle slash command on current line - request fresh commands
+						const query = currentLineBefore
 						setSearchQuery(query)
 						// Set to first selectable item (skip section headers)
 						setSelectedMenuIndex(1) // Section header is at 0, first command is at 1
