@@ -174,9 +174,8 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 			const currentCount = (task.consecutiveMistakeCountForEditFile.get(relPath) || 0) + 1
 			task.consecutiveMistakeCountForEditFile.set(relPath, currentCount)
 
-			if (currentCount >= 2) {
-				await task.say("diff_error", formattedError)
-			}
+			// Always show diff_error on every failure so the user gets immediate visual feedback.
+			await task.say("diff_error", formattedError)
 		}
 
 		try {

@@ -88,7 +88,7 @@ ${markdownFormattingSection()}
 
 ${getSharedToolUseSection()}${toolsCatalog}
 
-	${getToolUseGuidelinesSection()}
+	${getToolUseGuidelinesSection(experiments)}
 
 ${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined)}
 

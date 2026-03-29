@@ -886,6 +886,10 @@
 			"refreshSuccess": "Tools refreshed successfully",
 			"refreshError": "Failed to refresh tools",
 			"toolParameters": "Parameters"
+		},
+		"RE_ANCHOR_BEFORE_EDIT": {
+			"name": "Re-anchor before file edits",
+			"description": "When enabled, the system prompt instructs the model to always re-read a file before editing it. This reduces hallucination-based edit failures by ensuring the model works with up-to-date file contents. Uses more tokens but significantly improves edit reliability."
 		}
 	},
 	"promptCaching": {

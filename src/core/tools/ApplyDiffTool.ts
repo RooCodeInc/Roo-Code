@@ -5,6 +5,7 @@ import { type ClineSayTool, DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { getReadablePath } from "../../utils/path"
+import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { fileExistsAtPath } from "../../utils/fs"
@@ -24,6 +25,9 @@ interface ApplyDiffParams {
 export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 	readonly name = "apply_diff" as const
 
+	private didSendPartialToolAsk = false
+	private partialToolAskRelPath: string | undefined
+
 	async execute(params: ApplyDiffParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { askApproval, handleError, pushToolResult } = callbacks
 		let { path: relPath, diff: diffContent } = params
@@ -32,10 +36,31 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 			diffContent = unescapeHtmlEntities(diffContent)
 		}
 
+		// Finalize any outstanding partial tool ask so the UI spinner doesn't get stuck.
+		const finalizePartialToolAskIfNeeded = async (currentRelPath?: string): Promise<void> => {
+			if (!this.didSendPartialToolAsk) {
+				return
+			}
+
+			if (this.partialToolAskRelPath && currentRelPath && this.partialToolAskRelPath !== currentRelPath) {
+				return
+			}
+
+			const sharedMessageProps: ClineSayTool = {
+				tool: "appliedDiff",
+				path: getReadablePath(task.cwd, currentRelPath ?? relPath ?? ""),
+				diff: diffContent,
+			}
+
+			// Finalize the existing partial tool ask row so the UI doesn't get stuck in a spinner state.
+			await task.ask("tool", JSON.stringify(sharedMessageProps), false).catch(() => {})
+		}
+
 		try {
 			if (!relPath) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("apply_diff")
+				await finalizePartialToolAskIfNeeded()
 				pushToolResult(await task.sayAndCreateMissingParamError("apply_diff", "path"))
 				return
 			}
@@ -43,6 +68,7 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 			if (!diffContent) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("apply_diff")
+				await finalizePartialToolAskIfNeeded()
 				pushToolResult(await task.sayAndCreateMissingParamError("apply_diff", "diff"))
 				return
 			}
@@ -50,6 +76,7 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 			const accessAllowed = task.rooIgnoreController?.validateAccess(relPath)
 
 			if (!accessAllowed) {
+				await finalizePartialToolAskIfNeeded(relPath)
 				await task.say("rooignore_error", relPath)
 				pushToolResult(formatResponse.rooIgnoreError(relPath))
 				return
@@ -61,6 +88,7 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 			if (!fileExists) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("apply_diff")
+				await finalizePartialToolAskIfNeeded(relPath)
 				const formattedError = `File does not exist at path: ${absolutePath}\n\n<error_details>\nThe specified file could not be found. Please verify the file path and try again.\n</error_details>`
 				await task.say("error", formattedError)
 				task.didToolFailInCurrentTurn = true
@@ -107,11 +135,14 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 					}${errorDetails ? `\n\nDetails:\n${errorDetails}` : ""}\n</error_details>`
 				}
 
-				if (currentCount >= 2) {
-					await task.say("diff_error", formattedError)
-				}
+				// Always finalize any pending partial ask to stop the spinner.
+				await finalizePartialToolAskIfNeeded(relPath)
+
+				// Always show diff_error on every failure so the user gets immediate visual feedback.
+				await task.say("diff_error", formattedError)
 
 				task.recordToolError("apply_diff", formattedError)
+				task.didToolFailInCurrentTurn = true
 
 				pushToolResult(formattedError)
 				return
@@ -261,11 +292,15 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 
 			return
 		} catch (error) {
+			await finalizePartialToolAskIfNeeded(relPath)
 			await handleError("applying diff", error as Error)
 			await task.diffViewProvider.reset()
-			this.resetPartialState()
 			task.processQueuedMessages()
 			return
+		} finally {
+			this.didSendPartialToolAsk = false
+			this.partialToolAskRelPath = undefined
+			this.resetPartialState()
 		}
 	}
 
@@ -277,6 +312,9 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 		if (!this.hasPathStabilized(relPath)) {
 			return
 		}
+
+		this.didSendPartialToolAsk = true
+		this.partialToolAskRelPath = relPath
 
 		const sharedMessageProps: ClineSayTool = {
 			tool: "appliedDiff",
