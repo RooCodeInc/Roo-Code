@@ -632,7 +632,7 @@ describe("OpenAiHandler", () => {
 					],
 					stream: true,
 					stream_options: { include_usage: true },
-					temperature: 0,
+					temperature: undefined,
 					tools: undefined,
 					tool_choice: undefined,
 					parallel_tool_calls: true,

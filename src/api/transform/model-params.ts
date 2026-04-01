@@ -33,7 +33,7 @@ type GetModelParamsOptions<T extends Format> = {
 	modelId: string
 	model: ModelInfo
 	settings: ProviderSettings
-	defaultTemperature: number
+	defaultTemperature: number | undefined
 }
 
 type BaseModelParams = {
