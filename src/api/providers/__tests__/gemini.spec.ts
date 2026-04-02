@@ -257,6 +257,229 @@ describe("GeminiHandler", () => {
 		})
 	})
 
+	describe("empty response handling", () => {
+		const mockMessages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: "Hello",
+			},
+		]
+
+		const systemPrompt = "You are a helpful assistant"
+
+		it("should throw a descriptive error when finishReason is SAFETY and no content was produced", async () => {
+			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						candidates: [
+							{
+								finishReason: "SAFETY",
+								content: { parts: [] },
+							},
+						],
+					}
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 0 } }
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+
+			await expect(async () => {
+				for await (const _chunk of stream) {
+					// collect
+				}
+			}).rejects.toThrow(
+				t("common:errors.gemini.generate_stream", {
+					error: "Gemini response blocked: finishReason=SAFETY. The model did not produce any content. This may be caused by safety filters, content policy, or recitation checks.",
+				}),
+			)
+		})
+
+		it("should throw a descriptive error when finishReason is RECITATION and no content was produced", async () => {
+			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						candidates: [
+							{
+								finishReason: "RECITATION",
+								content: { parts: [] },
+							},
+						],
+					}
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 0 } }
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+
+			await expect(async () => {
+				for await (const _chunk of stream) {
+					// collect
+				}
+			}).rejects.toThrow(
+				t("common:errors.gemini.generate_stream", {
+					error: "Gemini response blocked: finishReason=RECITATION. The model did not produce any content. This may be caused by safety filters, content policy, or recitation checks.",
+				}),
+			)
+		})
+
+		it("should throw a descriptive error when finishReason is PROHIBITED_CONTENT", async () => {
+			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						candidates: [
+							{
+								finishReason: "PROHIBITED_CONTENT",
+								content: { parts: [] },
+							},
+						],
+					}
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 0 } }
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+
+			await expect(async () => {
+				for await (const _chunk of stream) {
+					// collect
+				}
+			}).rejects.toThrow(
+				t("common:errors.gemini.generate_stream", {
+					error: "Gemini response blocked: finishReason=PROHIBITED_CONTENT. The model did not produce any content. This may be caused by safety filters, content policy, or recitation checks.",
+				}),
+			)
+		})
+
+		it("should NOT throw when finishReason is STOP even without content", async () => {
+			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						candidates: [
+							{
+								finishReason: "STOP",
+								content: { parts: [] },
+							},
+						],
+					}
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 0 } }
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should not throw; just yield usage
+			expect(chunks.some((c) => c.type === "usage")).toBe(true)
+		})
+
+		it("should NOT throw when finishReason is SAFETY but content was produced", async () => {
+			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						candidates: [
+							{
+								content: { parts: [{ text: "Some content" }] },
+							},
+						],
+					}
+					yield {
+						candidates: [
+							{
+								finishReason: "SAFETY",
+								content: { parts: [] },
+							},
+						],
+					}
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should not throw because content was produced
+			expect(chunks.some((c) => c.type === "text")).toBe(true)
+		})
+
+		it("should yield a placeholder text when only reasoning content is produced (no actionable content)", async () => {
+			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						candidates: [
+							{
+								finishReason: "STOP",
+								content: {
+									parts: [{ thought: true, text: "Let me think about this..." }],
+								},
+							},
+						],
+					}
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should have reasoning chunk, a placeholder text chunk, and usage
+			expect(chunks.some((c) => c.type === "reasoning")).toBe(true)
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks.length).toBe(1)
+			expect(textChunks[0].text).toContain("reasoning but no actionable response")
+		})
+
+		it("should NOT yield a placeholder when reasoning AND text content are produced", async () => {
+			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						candidates: [
+							{
+								content: {
+									parts: [{ thought: true, text: "Let me think..." }, { text: "Here is my answer" }],
+								},
+							},
+						],
+					}
+					yield {
+						candidates: [
+							{
+								finishReason: "STOP",
+								content: { parts: [] },
+							},
+						],
+					}
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should have reasoning and real text, but NOT the placeholder
+			expect(chunks.some((c) => c.type === "reasoning")).toBe(true)
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks.length).toBe(1)
+			expect(textChunks[0].text).toBe("Here is my answer")
+		})
+	})
+
 	describe("error telemetry", () => {
 		const mockMessages: Anthropic.Messages.MessageParam[] = [
 			{

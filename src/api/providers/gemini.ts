@@ -305,6 +305,30 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				this.lastResponseId = finalResponse.responseId
 			}
 
+			// When the Gemini API returns a non-STOP finishReason (e.g. SAFETY,
+			// RECITATION, MAX_TOKENS, PROHIBITED_CONTENT) and no usable content
+			// was produced, surface a descriptive error instead of silently
+			// yielding nothing and falling into the generic "no assistant
+			// messages" error path downstream.
+			if (!hasContent && finishReason && finishReason !== "STOP" && finishReason !== "MAX_TOKENS") {
+				throw new Error(
+					`Gemini response blocked: finishReason=${finishReason}. The model did not produce any content. This may be caused by safety filters, content policy, or recitation checks.`,
+				)
+			}
+
+			// When a thinking/reasoning model (e.g. gemini-3.1-pro-preview)
+			// returns only reasoning content without any actionable text or
+			// tool calls, yield a minimal text chunk so that the downstream
+			// "no assistant messages" check in Task.ts is not triggered. This
+			// gives the retry logic a chance to re-prompt the model instead of
+			// treating it as a hard failure.
+			if (!hasContent && hasReasoning) {
+				yield {
+					type: "text",
+					text: "[The model produced reasoning but no actionable response. Retrying...]",
+				}
+			}
+
 			if (pendingGroundingMetadata) {
 				const sources = this.extractGroundingSources(pendingGroundingMetadata)
 				if (sources.length > 0) {
