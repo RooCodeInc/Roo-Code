@@ -40,6 +40,25 @@ import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+import { isMcpToolAllowedForMode } from "../../utils/mcp-filter"
+import type { ModeConfig } from "@roo-code/types"
+
+/**
+ * Step 5b: Check whether an MCP tool call is allowed for a given mode.
+ *
+ * This is a thin wrapper around isMcpToolAllowedForMode that makes the
+ * intent explicit and is easily testable in isolation. Called from the
+ * mcp_tool_use case in presentAssistantMessage with cline.taskMode
+ * (the mode frozen at task start), NOT the current UI mode.
+ */
+export function shouldAllowMcpToolUse(
+	serverName: string,
+	toolName: string,
+	modeSlug: string,
+	customModes?: ModeConfig[],
+): boolean {
+	return isMcpToolAllowedForMode(serverName, toolName, modeSlug, customModes)
+}
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -247,6 +266,26 @@ export async function presentAssistantMessage(cline: Task) {
 				const originalName = mcpHub.findServerNameBySanitizedName(mcpBlock.serverName)
 				if (originalName) {
 					resolvedServerName = originalName
+				}
+			}
+
+			// Step 5b: MCP tool filtering using frozen task mode
+			if (!mcpBlock.partial) {
+				const taskCustomModes = await cline.providerRef.deref()?.customModesManager.getCustomModes()
+				// FLAG-E: getCustomModes() uses a 10-second TTL cache, no disk I/O on each call
+				if (!shouldAllowMcpToolUse(resolvedServerName, mcpBlock.toolName, cline.taskMode, taskCustomModes)) {
+					const errorMsg =
+						"MCP tool " +
+						resolvedServerName +
+						"/" +
+						mcpBlock.toolName +
+						" is not allowed in the current mode (" +
+						cline.taskMode +
+						")."
+					await cline.say("error", errorMsg)
+					pushToolResult(formatResponse.toolError(errorMsg))
+					cline.didRejectTool = true
+					break
 				}
 			}
 
@@ -594,9 +633,12 @@ export async function presentAssistantMessage(cline: Task) {
 							{} as Record<string, boolean>,
 						) ?? {}
 
+					// ISSUE-17: Use cline.taskMode (frozen at task start) instead of state.mode (live UI mode).
+					// This ensures permissions are locked to the mode active when the task started.
+					// ISSUE-20: No ?? defaultModeSlug fallback needed — cline.taskMode throws if uninitialized.
 					validateToolUse(
 						block.name as ToolName,
-						mode ?? defaultModeSlug,
+						cline.taskMode,
 						customModes ?? [],
 						toolRequirements,
 						block.params,

@@ -24,6 +24,8 @@ import {
 } from "@roo/modes"
 import { TOOL_GROUPS } from "@roo/tools"
 
+import { syncCacheFromGroups, removeGroupWithCache, addGroupWithCache } from "./groupOptionsCache"
+
 import { vscode } from "@src/utils/vscode"
 import { buildDocLink } from "@src/utils/docLinks"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
@@ -116,6 +118,9 @@ const ModesView = () => {
 	const [isRenamingMode, setIsRenamingMode] = useState(false)
 	const [renameInputValue, setRenameInputValue] = useState("")
 	const renameInputRef = useRef<any>(null)
+
+	// Cache for group tuple options so toggling off/on preserves MCP filter config
+	const groupOptionsCache = useRef<Map<string, object>>(new Map())
 
 	// Optimistic rename map so search reflects new names immediately
 	const [localRenames, setLocalRenames] = useState<Record<string, string>>({})
@@ -462,6 +467,15 @@ const ModesView = () => {
 		setIsCreateModeDialogOpen(true)
 	}, [generateSlug, isNameOrSlugTaken])
 
+	// Sync group options cache whenever custom modes change so that
+	// externally-loaded tuple options (e.g. mcpServers config) are preserved
+	// when a user toggles a group off and back on.
+	useEffect(() => {
+		for (const cm of customModes || []) {
+			syncCacheFromGroups(groupOptionsCache.current, cm.groups || [])
+		}
+	}, [customModes])
+
 	// Handler for group checkbox changes
 	const handleGroupChange = useCallback(
 		(group: ToolGroup, isCustomMode: boolean, customMode: ModeConfig | undefined) =>
@@ -472,9 +486,9 @@ const ModesView = () => {
 				const oldGroups = customMode?.groups || []
 				let newGroups: GroupEntry[]
 				if (checked) {
-					newGroups = [...oldGroups, group]
+					newGroups = addGroupWithCache(groupOptionsCache.current, oldGroups, group)
 				} else {
-					newGroups = oldGroups.filter((g) => getGroupName(g) !== group)
+					newGroups = removeGroupWithCache(groupOptionsCache.current, oldGroups, group)
 				}
 				if (customMode) {
 					const source = customMode.source || "global"

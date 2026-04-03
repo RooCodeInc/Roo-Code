@@ -3,6 +3,7 @@ import type { ClineAskUseMcpServer } from "@roo-code/types"
 import type { ToolUse } from "../../shared/tools"
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
+import { isMcpServerAllowedForMode } from "../../utils/mcp-filter"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -30,6 +31,21 @@ export class AccessMcpResourceTool extends BaseTool<"access_mcp_resource"> {
 				task.consecutiveMistakeCount++
 				task.recordToolError("access_mcp_resource")
 				pushToolResult(await task.sayAndCreateMissingParamError("access_mcp_resource", "uri"))
+				return
+			}
+
+			// Defense-in-depth: check MCP server filtering for the current mode.
+			// FLAG-E: 10-second TTL cache, no disk I/O per call
+			const customModes = await task.providerRef.deref()?.customModesManager?.getCustomModes()
+			if (!isMcpServerAllowedForMode(server_name, task.taskMode, customModes)) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("access_mcp_resource")
+				await task.say("error", 'MCP server "' + server_name + '" is not allowed in ' + task.taskMode + " mode")
+				pushToolResult(
+					formatResponse.toolError(
+						'MCP server "' + server_name + '" is not allowed in ' + task.taskMode + " mode",
+					),
+				)
 				return
 			}
 

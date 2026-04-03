@@ -272,7 +272,8 @@ describe("useMcpToolTool", () => {
 			}
 
 			// Ensure server/tool validation passes so we actually reach askApproval.
-			mockProviderRef.deref.mockReturnValueOnce({
+			const mockProvider = {
+				customModesManager: { getCustomModes: vi.fn().mockResolvedValue([]) },
 				getMcpHub: () => ({
 					getAllServers: vi
 						.fn()
@@ -282,7 +283,8 @@ describe("useMcpToolTool", () => {
 					callTool: vi.fn(),
 				}),
 				postMessageToWebview: vi.fn(),
-			})
+			}
+			mockProviderRef.deref.mockReturnValue(mockProvider)
 
 			mockAskApproval.mockResolvedValue(false)
 
@@ -315,7 +317,8 @@ describe("useMcpToolTool", () => {
 			}
 
 			// Ensure validation passes so askApproval is reached and throws
-			mockProviderRef.deref.mockReturnValueOnce({
+			const mockProvider = {
+				customModesManager: { getCustomModes: vi.fn().mockResolvedValue([]) },
 				getMcpHub: () => ({
 					getAllServers: vi
 						.fn()
@@ -325,7 +328,8 @@ describe("useMcpToolTool", () => {
 					callTool: vi.fn(),
 				}),
 				postMessageToWebview: vi.fn(),
-			})
+			}
+			mockProviderRef.deref.mockReturnValue(mockProvider)
 
 			const error = new Error("Unexpected error")
 			mockAskApproval.mockRejectedValue(error)

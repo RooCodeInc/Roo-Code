@@ -5,6 +5,7 @@ import { formatResponse } from "../prompts/responses"
 import { t } from "../../i18n"
 import type { ToolUse } from "../../shared/tools"
 import { toolNamesMatch } from "../../utils/mcp-name"
+import { isMcpServerAllowedForMode, isMcpToolAllowedForMode } from "../../utils/mcp-filter"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -37,6 +38,47 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			}
 
 			const { serverName, toolName, parsedArguments } = validation
+
+			// Defense-in-depth: check MCP server/tool filtering for the current mode.
+			// FLAG-E: 10-second TTL cache, no disk I/O per call
+			const customModes = await task.providerRef.deref()?.customModesManager?.getCustomModes()
+			if (!isMcpServerAllowedForMode(serverName, task.taskMode, customModes)) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("use_mcp_tool")
+				await task.say("error", 'MCP server "' + serverName + '" is not allowed in ' + task.taskMode + " mode")
+				pushToolResult(
+					formatResponse.toolError(
+						'MCP server "' + serverName + '" is not allowed in ' + task.taskMode + " mode",
+					),
+				)
+				return
+			}
+			if (!isMcpToolAllowedForMode(serverName, toolName, task.taskMode, customModes)) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("use_mcp_tool")
+				await task.say(
+					"error",
+					'MCP tool "' +
+						toolName +
+						'" on server "' +
+						serverName +
+						'" is not allowed in ' +
+						task.taskMode +
+						" mode",
+				)
+				pushToolResult(
+					formatResponse.toolError(
+						'MCP tool "' +
+							toolName +
+							'" on server "' +
+							serverName +
+							'" is not allowed in ' +
+							task.taskMode +
+							" mode",
+					),
+				)
+				return
+			}
 
 			// Validate that the tool exists on the server
 			const toolValidation = await this.validateToolExists(task, serverName, toolName, pushToolResult)
