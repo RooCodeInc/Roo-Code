@@ -515,6 +515,107 @@ describe("ChatView - Notification Sound with Queued Messages", () => {
 	})
 })
 
+describe("ChatView - Followup Notification Sound", () => {
+	beforeEach(() => vi.clearAllMocks())
+
+	it("plays notification sound when a non-partial followup ask is received", async () => {
+		renderChatView()
+
+		// First hydrate state with initial task
+		mockPostMessage({
+			soundEnabled: true,
+			messageQueue: [],
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 2000,
+					text: "Initial task",
+				},
+			],
+		})
+
+		// Clear any initial calls
+		mockPlayFunction.mockClear()
+
+		// Add a followup ask message
+		mockPostMessage({
+			soundEnabled: true,
+			messageQueue: [],
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 2000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "followup",
+					ts: Date.now(),
+					text: "Could you clarify which file you want me to edit?",
+					partial: false,
+				},
+			],
+		})
+
+		// Wait for sound to be played
+		await waitFor(() => {
+			expect(mockPlayFunction).toHaveBeenCalled()
+		})
+	})
+
+	it("does not play notification sound when followup ask is partial", async () => {
+		renderChatView()
+
+		// First hydrate state with initial task
+		mockPostMessage({
+			soundEnabled: true,
+			messageQueue: [],
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 2000,
+					text: "Initial task",
+				},
+			],
+		})
+
+		// Clear any initial calls
+		mockPlayFunction.mockClear()
+
+		// Add a partial followup ask message
+		mockPostMessage({
+			soundEnabled: true,
+			messageQueue: [],
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 2000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "followup",
+					ts: Date.now(),
+					text: "Could you clarify...",
+					partial: true,
+				},
+			],
+		})
+
+		// Wait a bit to ensure the effect would have run
+		await waitFor(
+			() => {
+				expect(mockPlayFunction).not.toHaveBeenCalled()
+			},
+			{ timeout: 1000 },
+		)
+	})
+})
+
 describe("ChatView - Sound Debounce", () => {
 	beforeEach(() => vi.clearAllMocks())
 
