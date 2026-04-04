@@ -4,7 +4,6 @@
 			"command": "node",
 			"args": ["/Users/m.dusmikeev/Documents/Work/cool/md-roo-roo/md-todo-mcp/build/index.js"],
 			"type": "interactiveApp",
-			"uiType": "todo-widget",
 			"requiresUserInteraction": true,
 			"autoApproveExcluded": true,
 			"allowedContext": ["agents"],
@@ -24,7 +23,7 @@
 			"args": ["/Users/m.dusmikeev/Documents/Work/auto/md-gitlab-mcp/build/index.js"],
 			"env": {
 				"GITLAB_PERSONAL_ACCESS_TOKEN": "YOUR_GITLAB_TOKEN_HERE",
-				"GITLAB_API_URL": "https://gitlab.autodoc.dev/api/v4"
+				"GITLAB_API_URL": "https://gitlab.any.dev/api/v4"
 			},
 			"disabled": false,
 			"isGloballyVisible": false

@@ -4,7 +4,6 @@
 			"command": "node",
 			"args": ["/Users/m.dusmikeev/Documents/Work/cool/md-roo-roo/md-todo-mcp/build/index.js"],
 			"type": "interactiveApp",
-			"uiType": "todo-widget",
 			"requiresUserInteraction": true,
 			"autoApproveExcluded": true,
 			"allowedContext": ["agents"],

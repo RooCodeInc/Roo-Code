@@ -147,7 +147,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const { isDragging, dragHandlers } = useChatDragAndDrop({
 		inputValue,
 		setInputValue,
-		cwd,
+		cwd: cwd ?? "",
 	})
 
 	const inputValueRef = useRef(inputValue)

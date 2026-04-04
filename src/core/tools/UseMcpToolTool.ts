@@ -5,6 +5,7 @@ import { formatResponse } from "../prompts/responses"
 import { t } from "../../i18n"
 import type { ToolUse } from "../../shared/tools"
 import { toolNamesMatch } from "../../utils/mcp-name"
+import { requiresUserInteraction } from "../../services/mcp/McpMigration"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -60,7 +61,26 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			} satisfies ClineAskUseMcpServer)
 
 			const executionId = task.lastMessageTs?.toString() ?? Date.now().toString()
-			const didApprove = await askApproval("use_mcp_server", completeMessage)
+
+			// Check if this is an interactive app that requires special handling
+			const mcpHub = task.providerRef.deref()?.getMcpHub()
+			let isInteractiveApp = false
+
+			if (mcpHub) {
+				const server = mcpHub.getServers().find((s) => s.name === serverName)
+				if (server && server.config) {
+					try {
+						const serverConfig = JSON.parse(server.config)
+						isInteractiveApp = requiresUserInteraction(serverConfig)
+					} catch (e) {
+						// Ignore parsing errors
+					}
+				}
+			}
+
+			// For interactive apps, use a special ask type that pauses task execution
+			const askType = isInteractiveApp ? "interactive_app" : "use_mcp_server"
+			const didApprove = await askApproval(askType, completeMessage)
 
 			if (!didApprove) {
 				return
@@ -314,19 +334,32 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 		let images: string[] = []
 
 		if (toolResult) {
-			const { text: outputText, images: extractedImages } = this.processToolContent(toolResult)
-			images = extractedImages
+			if (toolResult._meta?.ui) {
+				// Interactive App: Elicitation handling
+				// Pause execution, send the UI metadata to the webview, and wait for user response
+				const { response, text } = await task.ask("interactive_app", JSON.stringify(toolResult._meta.ui))
 
-			if (outputText || images.length > 0) {
-				await this.sendExecutionStatus(task, {
-					executionId,
-					status: "output",
-					response: outputText || (images.length > 0 ? `[${images.length} image(s)]` : ""),
-				})
+				if (response !== "yesButtonClicked") {
+					toolResultPretty = "User cancelled the interactive app."
+					toolResult.isError = true
+				} else {
+					toolResultPretty = text || "Interactive app completed successfully."
+				}
+			} else {
+				const { text: outputText, images: extractedImages } = this.processToolContent(toolResult)
+				images = extractedImages
 
-				toolResultPretty =
-					(toolResult.isError ? "Error:\n" : "") +
-					(outputText || (images.length > 0 ? `[${images.length} image(s) received]` : ""))
+				if (outputText || images.length > 0) {
+					await this.sendExecutionStatus(task, {
+						executionId,
+						status: "output",
+						response: outputText || (images.length > 0 ? `[${images.length} image(s)]` : ""),
+					})
+
+					toolResultPretty =
+						(toolResult.isError ? "Error:\n" : "") +
+						(outputText || (images.length > 0 ? `[${images.length} image(s) received]` : ""))
+				}
 			}
 
 			// Send completion status

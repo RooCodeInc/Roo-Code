@@ -377,6 +377,7 @@ const qwenCodeSchema = apiModelIdProviderModelSchema.extend({
 const jabberwockSchema = apiModelIdProviderModelSchema.extend({
 	// Can use cloud authentication or provide an API key (cli).
 	jabberwockCloudApiKey: z.string().optional(),
+	jabberwockApiKey: z.string().optional(),
 })
 
 const vercelAiGatewaySchema = baseProviderSettingsSchema.extend({

@@ -89,6 +89,10 @@ export async function checkAutoApproval({
 		}
 	}
 
+	if (ask === "interactive_app") {
+		return { decision: "ask" }
+	}
+
 	if (ask === "use_mcp_server") {
 		if (!text) {
 			return { decision: "ask" }

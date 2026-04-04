@@ -22,8 +22,8 @@ export function migrateMcpSettings(rawSettings: unknown): McpSettings {
 			const configObj = config as Record<string, unknown>
 			migratedServers[key] = {
 				...configObj,
-				// Legacy servers become globally visible by default to preserve behavior
-				isGloballyVisible: configObj.isGloballyVisible ?? true,
+				// Legacy servers maintain their original visibility settings
+				isGloballyVisible: configObj.isGloballyVisible,
 				type: configObj.type ?? "tool",
 				allowedContext: Array.isArray(configObj.allowedContext) ? configObj.allowedContext : [],
 				// Ensure arrays are properly initialized
@@ -84,11 +84,16 @@ export function requiresUserInteraction(serverConfig: any): boolean {
  * Based on the per-agent MCP isolation strategy
  */
 export function isServerVisibleToAgent(serverName: string, serverConfig: any, agentMcpList: string[] = []): boolean {
-	// Globally visible servers are always available
+	// Disabled servers are never visible
+	if (serverConfig?.disabled) {
+		return false
+	}
+
+	// Globally visible servers are always available to all agents
 	if (serverConfig?.isGloballyVisible !== false) {
 		return true
 	}
 
-	// Check if this server is explicitly allowed for the agent
+	// For non-global servers, check if this server is explicitly allowed for the agent
 	return agentMcpList.includes(serverName)
 }

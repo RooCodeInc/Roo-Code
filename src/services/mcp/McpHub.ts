@@ -227,8 +227,8 @@ export class McpHub {
 		}
 
 		// Validate type if provided
-		if (config.type && !["stdio", "sse", "streamable-http"].includes(config.type)) {
-			throw new Error(typeErrorMessage)
+		if (config.type && !["stdio", "sse", "streamable-http", "interactiveApp", "tool"].includes(config.type)) {
+			throw new Error("Server type must be 'stdio', 'sse', 'streamable-http', 'interactiveApp', or 'tool'")
 		}
 
 		// Check for type/field mismatch
@@ -444,7 +444,7 @@ export class McpHub {
 		await this.updateServerConnections({}, "project", false)
 	}
 
-	getServers(): McpServer[] {
+	getServers(agentMcpList?: string[]): McpServer[] {
 		// Only return enabled servers, deduplicating by name with project servers taking priority
 		const enabledConnections = this.connections.filter((conn) => !conn.server.disabled)
 
@@ -461,7 +461,22 @@ export class McpHub {
 			// If existing is project and current is global, keep existing (project wins)
 		}
 
-		return Array.from(serversByName.values())
+		const allServers = Array.from(serversByName.values())
+
+		// If no agent-specific filtering requested, return all servers
+		if (!agentMcpList) {
+			return allServers
+		}
+
+		// Filter servers based on agent's MCP list
+		return allServers.filter((server) => {
+			let serverConfig: any = {}
+			try {
+				serverConfig = JSON.parse(server.config)
+			} catch (e) {}
+
+			return this.isServerVisibleToAgent(server.name, serverConfig, agentMcpList)
+		})
 	}
 
 	getAllServers(): McpServer[] {
@@ -1985,5 +2000,24 @@ export class McpHub {
 		}
 
 		this.disposables.forEach((d) => d.dispose())
+	}
+
+	/**
+	 * Helper to check if a server should be visible to a specific agent
+	 * Based on the per-agent MCP isolation strategy
+	 */
+	private isServerVisibleToAgent(serverName: string, serverConfig: any, agentMcpList: string[] = []): boolean {
+		// Disabled servers are never visible
+		if (serverConfig?.disabled) {
+			return false
+		}
+
+		// Globally visible servers are always available to all agents
+		if (serverConfig?.isGloballyVisible === true) {
+			return true
+		}
+
+		// For non-global servers, check if this server is explicitly allowed for the agent
+		return agentMcpList.includes(serverName)
 	}
 }

@@ -1,6 +1,5 @@
 import { McpHub } from "../../../services/mcp/McpHub"
 import { getModeBySlug, defaultModeSlug } from "../../../shared/modes"
-import { isServerVisibleToAgent } from "../../../services/mcp/McpMigration"
 import type { ModeConfig } from "@jabberwock/types"
 
 export function getCapabilitiesSection(
@@ -14,13 +13,7 @@ export function getCapabilitiesSection(
 		const modeSlug = mode ?? defaultModeSlug
 		const modeConfig = getModeBySlug(modeSlug, customModes)
 		const mcpList = modeConfig?.mcpList ?? []
-		const visibleServers = mcpHub.getServers().filter((server) => {
-			let serverConfig: any = {}
-			try {
-				serverConfig = JSON.parse(server.config)
-			} catch (e) {}
-			return isServerVisibleToAgent(server.name, serverConfig, mcpList)
-		})
+		const visibleServers = mcpHub.getServers(mcpList)
 
 		if (visibleServers.length > 0) {
 			mcpServersList = "\n\nAvailable MCP servers:\n" + visibleServers.map((s) => `- ${s.name}`).join("\n")

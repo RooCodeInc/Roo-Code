@@ -110,7 +110,7 @@ function getPreviousTodos(messages: ClineMessage[], currentMessageTs: number): a
 	return []
 }
 
-import { McpAppRenderer } from "../../features/mcp-apps/McpAppRenderer"
+import { McpIframeRenderer } from "../../features/mcp-apps/McpIframeRenderer"
 
 interface ChatRowProps {
 	message: ClineMessage
@@ -1628,29 +1628,6 @@ export const ChatRowContent = ({
 
 					const server = mcpServers.find((server) => server.name === useMcpServer.serverName)
 
-					// Jabberwock: Check if interactive App
-					let isInteractiveApp = false
-					if (server && server.config) {
-						try {
-							const config = JSON.parse(server.config)
-							isInteractiveApp = config.type === "interactiveApp"
-						} catch {
-							// ignore
-						}
-					}
-
-					if (isInteractiveApp && server && isLast) {
-						return (
-							<>
-								<div style={headerStyle}>
-									{icon}
-									{title}
-								</div>
-								<McpAppRenderer useMcpServer={useMcpServer} server={server} messageTs={message.ts} />
-							</>
-						)
-					}
-
 					return (
 						<>
 							<div style={headerStyle}>
@@ -1691,6 +1668,47 @@ export const ChatRowContent = ({
 							</div>
 						</>
 					)
+				case "interactive_app": {
+					const uiMeta = safeJsonParse<any>(message.text, {})
+					if (!uiMeta || !uiMeta.resourceUri) {
+						return <div className="p-4 text-vscode-errorForeground">Invalid interactive app metadata</div>
+					}
+
+					// We can pass the currently available agents from the customModes as context
+					const allowedContextData = {
+						agents: getAllModes(customModes)
+							.map((m) => m.name)
+							.filter(Boolean),
+					}
+
+					return (
+						<>
+							<div style={headerStyle}>
+								{icon}
+								{title || "Interactive App"}
+							</div>
+							<div className="mt-2">
+								<McpIframeRenderer
+									resourceUri={uiMeta.resourceUri}
+									allowedContextData={allowedContextData}
+									onAccept={(data) => {
+										vscode.postMessage({
+											type: "askResponse",
+											askResponse: "yesButtonClicked",
+											text: JSON.stringify(data),
+										})
+									}}
+									onCancel={() => {
+										vscode.postMessage({
+											type: "askResponse",
+											askResponse: "noButtonClicked",
+										})
+									}}
+								/>
+							</div>
+						</>
+					)
+				}
 				case "completion_result":
 					if (message.text) {
 						return (
