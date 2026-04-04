@@ -2,10 +2,10 @@
  * Document-related interfaces for VSCode API
  */
 
-import type { Range } from "../classes/Range.js"
-import type { Position } from "../classes/Position.js"
-import type { Uri } from "../classes/Uri.js"
-import type { Thenable, Disposable } from "../types.js"
+import type { Range } from "../classes/Range.ts"
+import type { Position } from "../classes/Position.ts"
+import type { Uri } from "../classes/Uri.ts"
+import type { Thenable, Disposable } from "../types.ts"
 
 /**
  * Represents a text document in VSCode

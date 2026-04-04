@@ -1,4 +1,4 @@
-import { ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
+import { ANTHROPIC_DEFAULT_MAX_TOKENS } from "@jabberwock/types"
 
 /**
  * Result of token distribution calculation

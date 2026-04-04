@@ -8,7 +8,7 @@ import OpenAI from "openai"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
 import { streamText, generateText, LanguageModel, ToolSet } from "ai"
 
-import type { ModelInfo } from "@roo-code/types"
+import type { ModelInfo } from "@jabberwock/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 

@@ -2,18 +2,18 @@
  * CommandsAPI class for VSCode API
  */
 
-import { logs } from "../utils/logger.js"
-import { Uri } from "../classes/Uri.js"
-import { Position } from "../classes/Position.js"
-import { Range } from "../classes/Range.js"
-import { Selection } from "../classes/Selection.js"
-import { ViewColumn, EndOfLine } from "../types.js"
-import type { Thenable } from "../types.js"
-import type { TextEditor, TextEditorEdit } from "../interfaces/editor.js"
-import type { TextDocument } from "../interfaces/document.js"
-import type { Disposable } from "../interfaces/workspace.js"
-import type { WorkspaceAPI } from "./WorkspaceAPI.js"
-import type { WindowAPI } from "./WindowAPI.js"
+import { logs } from "../utils/logger.ts"
+import { Uri } from "../classes/Uri.ts"
+import { Position } from "../classes/Position.ts"
+import { Range } from "../classes/Range.ts"
+import { Selection } from "../classes/Selection.ts"
+import { ViewColumn, EndOfLine } from "../types.ts"
+import type { Thenable } from "../types.ts"
+import type { TextEditor, TextEditorEdit } from "../interfaces/editor.ts"
+import type { TextDocument } from "../interfaces/document.ts"
+import type { Disposable } from "../interfaces/workspace.ts"
+import type { WorkspaceAPI } from "./WorkspaceAPI.ts"
+import type { WindowAPI } from "./WindowAPI.ts"
 
 /**
  * Commands API mock for CLI mode

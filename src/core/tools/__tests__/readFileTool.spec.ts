@@ -85,7 +85,7 @@ vi.mock("../../prompts/responses", () => ({
 		),
 		rooIgnoreError: vi.fn(
 			(filePath: string) =>
-				`Access to ${filePath} is blocked by the .rooignore file settings. You must try to continue in the task without using this file, or ask the user to update the .rooignore file.`,
+				`Access to ${filePath} is blocked by the .jabberwockignore file settings. You must try to continue in the task without using this file, or ask the user to update the .jabberwockignore file.`,
 		),
 		toolResult: vi.fn((text: string, images?: string[]) => {
 			if (images && images.length > 0) {
@@ -151,7 +151,7 @@ function createMockTask(options: MockTaskOptions = {}) {
 		say: vi.fn().mockResolvedValue(undefined),
 		sayAndCreateMissingParamError: vi.fn().mockResolvedValue("Missing required parameter: path"),
 		recordToolError: vi.fn(),
-		rooIgnoreController: {
+		jabberwockIgnoreController: {
 			validateAccess: vi.fn().mockReturnValue(rooIgnoreAllowed),
 		},
 		fileContextTracker: {
@@ -287,8 +287,10 @@ describe("ReadFileTool", () => {
 			await readFileTool.execute({ path: "secret.env" }, mockTask as any, callbacks)
 
 			expect(mockTask.say).toHaveBeenCalledWith("rooignore_error", "secret.env")
-			expect(formatResponse.rooIgnoreError).toHaveBeenCalledWith("secret.env")
-			expect(callbacks.pushToolResult).toHaveBeenCalledWith(expect.stringContaining("blocked by the .rooignore"))
+			expect(formatResponse.jabberwockIgnoreError).toHaveBeenCalledWith("secret.env")
+			expect(callbacks.pushToolResult).toHaveBeenCalledWith(
+				expect.stringContaining("blocked by the .jabberwockignore"),
+			)
 		})
 	})
 

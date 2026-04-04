@@ -1,9 +1,9 @@
 import { memo } from "react"
 import { Text, Box } from "ink"
 
-import type { TokenUsage } from "@roo-code/types"
+import type { TokenUsage } from "@jabberwock/types"
 
-import { ASCII_ROO } from "@/types/constants.js"
+import { ASCII_JABBERWOCK } from "@/types/constants.js"
 
 import { ExtensionHostOptions } from "@/agent/index.js"
 import { useTerminalSize } from "../hooks/TerminalSizeContext.js"
@@ -32,7 +32,7 @@ function Header({
 	const { columns } = useTerminalSize()
 
 	const homeDir = process.env.HOME || process.env.USERPROFILE || ""
-	const title = `Roo Code CLI v${version}`
+	const title = `Jabberwock CLI v${version}`
 	const remainingDashes = Math.max(0, columns - `── ${title} `.length)
 
 	return (
@@ -43,7 +43,7 @@ function Header({
 			<Box width={columns}>
 				<Box flexDirection="row">
 					<Box marginY={1}>
-						<Text color="magenta">{ASCII_ROO}</Text>
+						<Text color="magenta">{ASCII_JABBERWOCK}</Text>
 					</Box>
 					<Box flexDirection="column" marginLeft={1} marginTop={1}>
 						{user && <Text color={theme.dimText}>Welcome back, {user.name}</Text>}

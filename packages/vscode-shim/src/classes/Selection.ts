@@ -1,6 +1,6 @@
-import { Range } from "./Range.js"
-import { Position } from "./Position.js"
-import type { ISelection, IPosition } from "../types.js"
+import { Range } from "./Range.ts"
+import { Position } from "./Position.ts"
+import type { ISelection, IPosition } from "../types.ts"
 
 /**
  * Represents a text selection in an editor

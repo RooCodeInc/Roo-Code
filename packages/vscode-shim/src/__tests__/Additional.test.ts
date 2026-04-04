@@ -10,10 +10,10 @@ import {
 	LanguageModelToolCallPart,
 	LanguageModelToolResultPart,
 	FileSystemError,
-} from "../classes/Additional.js"
-import { Uri } from "../classes/Uri.js"
-import { Range } from "../classes/Range.js"
-import { Position } from "../classes/Position.js"
+} from "../classes/Additional.ts"
+import { Uri } from "../classes/Uri.ts"
+import { Range } from "../classes/Range.ts"
+import { Position } from "../classes/Position.ts"
 
 describe("Location", () => {
 	it("should create location with URI and Range", () => {

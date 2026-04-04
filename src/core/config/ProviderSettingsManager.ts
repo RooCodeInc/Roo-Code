@@ -13,8 +13,8 @@ import {
 	type ProviderName,
 	isProviderName,
 	isRetiredProvider,
-} from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
+} from "@jabberwock/types"
+import { TelemetryService } from "@jabberwock/telemetry"
 
 import { Mode, modes } from "../../shared/modes"
 import { buildApiHandler } from "../../api"
@@ -25,8 +25,8 @@ type ModelMigrations = {
 }
 
 const MODEL_MIGRATIONS: ModelMigrations = {
-	roo: {
-		"roo/code-supernova": "roo/code-supernova-1-million",
+	jabberwock: {
+		"jabberwock/code-supernova": "jabberwock/code-supernova-1-million",
 	},
 } as const satisfies ModelMigrations
 

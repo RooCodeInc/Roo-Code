@@ -1,5 +1,5 @@
 {
-	"greeting": "Willkommen bei Roo Code",
+	"greeting": "Willkommen bei Jabberwock",
 	"task": {
 		"title": "Aufgabe",
 		"expand": "Aufgabe erweitern",
@@ -21,7 +21,7 @@
 		"sharePublicly": "Öffentlich teilen",
 		"sharePubliclyDescription": "Jeder mit dem Link kann zugreifen",
 		"connectToCloud": "Mit Cloud verbinden",
-		"connectToCloudDescription": "Melde dich bei Roo Code Cloud an, um Aufgaben zu teilen",
+		"connectToCloudDescription": "Melde dich bei Jabberwock Cloud an, um Aufgaben zu teilen",
 		"sharingDisabledByOrganization": "Freigabe von der Organisation deaktiviert",
 		"shareSuccessOrganization": "Organisationslink in die Zwischenablage kopiert",
 		"shareSuccessPublic": "Öffentlicher Link in die Zwischenablage kopiert",
@@ -97,10 +97,10 @@
 	},
 	"enqueueMessage": "Nachricht zur Warteschlange hinzufügen (wird nach Abschluss der aktuellen Aufgabe gesendet)",
 	"scrollToBottom": "Zum Chat-Ende scrollen",
-	"about": "Roo Code ist ein ganzes KI-Entwicklerteam in deinem Editor.",
+	"about": "Jabberwock ist ein ganzes KI-Entwicklerteam in deinem Editor.",
 	"docs": "Schau in unsere <DocsLink>Dokumentation</DocsLink>, um mehr zu erfahren.",
 	"onboarding": "Deine Aufgabenliste in diesem Arbeitsbereich ist leer.",
-	"rooTips": {
+	"jabberwockTips": {
 		"customizableModes": {
 			"title": "Anpassbare Modi",
 			"description": "Spezialisierte Personas, die bei der Sache bleiben und liefern."
@@ -143,7 +143,7 @@
 	"diffError": {
 		"title": "Bearbeitung fehlgeschlagen"
 	},
-	"troubleMessage": "Roo hat Probleme...",
+	"troubleMessage": "Jabberwock hat Probleme...",
 	"apiRequest": {
 		"title": "API-Anfrage",
 		"failed": "API-Anfrage fehlgeschlagen",
@@ -161,7 +161,7 @@
 			"500": "Fehler auf dem Server des Anbieters. Es stimmt etwas mit der Anbieterseite nicht, mit deiner Anfrage stimmt alles.",
 			"docs": "Dokumentation",
 			"goToSettings": "Einstellungen",
-			"unknown": "Unbekannter API-Fehler. Bitte kontaktiere den Roo Code Support.",
+			"unknown": "Unbekannter API-Fehler. Bitte kontaktiere den Jabberwock Support.",
 			"connection": "Verbindungsfehler. Stelle sicher, dass du eine funktionierende Internetverbindung hast.",
 			"claudeCodeNotAuthenticated": "Du musst dich anmelden, um Claude Code zu verwenden. Gehe zu den Einstellungen und klicke auf \"Bei Claude Code anmelden\", um dich zu authentifizieren."
 		}
@@ -186,43 +186,43 @@
 		"current": "Aktuell"
 	},
 	"instructions": {
-		"wantsToFetch": "Roo möchte detaillierte Anweisungen abrufen, um bei der aktuellen Aufgabe zu helfen"
+		"wantsToFetch": "Jabberwock möchte detaillierte Anweisungen abrufen, um bei der aktuellen Aufgabe zu helfen"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo möchte diese Datei lesen",
-		"wantsToReadAndXMore": "Roo möchte diese Datei und {{count}} weitere lesen",
-		"wantsToReadOutsideWorkspace": "Roo möchte diese Datei außerhalb des Arbeitsbereichs lesen",
-		"didRead": "Roo hat diese Datei gelesen",
-		"wantsToEdit": "Roo möchte diese Datei bearbeiten",
-		"wantsToEditOutsideWorkspace": "Roo möchte diese Datei außerhalb des Arbeitsbereichs bearbeiten",
-		"wantsToEditProtected": "Roo möchte eine geschützte Konfigurationsdatei bearbeiten",
-		"wantsToCreate": "Roo möchte eine neue Datei erstellen",
-		"wantsToSearchReplace": "Roo möchte in dieser Datei suchen und ersetzen",
-		"didSearchReplace": "Roo hat Suchen und Ersetzen in dieser Datei durchgeführt",
-		"wantsToInsert": "Roo möchte Inhalte in diese Datei einfügen",
-		"wantsToInsertWithLineNumber": "Roo möchte Inhalte in diese Datei in Zeile {{lineNumber}} einfügen",
-		"wantsToInsertAtEnd": "Roo möchte Inhalte am Ende dieser Datei anhängen",
-		"wantsToReadMultiple": "Roo möchte mehrere Dateien lesen",
-		"wantsToApplyBatchChanges": "Roo möchte Änderungen an mehreren Dateien vornehmen",
-		"wantsToGenerateImage": "Roo möchte ein Bild generieren",
-		"wantsToGenerateImageOutsideWorkspace": "Roo möchte ein Bild außerhalb des Arbeitsbereichs generieren",
-		"wantsToGenerateImageProtected": "Roo möchte ein Bild an einem geschützten Ort generieren",
-		"didGenerateImage": "Roo hat ein Bild generiert"
+		"wantsToRead": "Jabberwock möchte diese Datei lesen",
+		"wantsToReadAndXMore": "Jabberwock möchte diese Datei und {{count}} weitere lesen",
+		"wantsToReadOutsideWorkspace": "Jabberwock möchte diese Datei außerhalb des Arbeitsbereichs lesen",
+		"didRead": "Jabberwock hat diese Datei gelesen",
+		"wantsToEdit": "Jabberwock möchte diese Datei bearbeiten",
+		"wantsToEditOutsideWorkspace": "Jabberwock möchte diese Datei außerhalb des Arbeitsbereichs bearbeiten",
+		"wantsToEditProtected": "Jabberwock möchte eine geschützte Konfigurationsdatei bearbeiten",
+		"wantsToCreate": "Jabberwock möchte eine neue Datei erstellen",
+		"wantsToSearchReplace": "Jabberwock möchte in dieser Datei suchen und ersetzen",
+		"didSearchReplace": "Jabberwock hat Suchen und Ersetzen in dieser Datei durchgeführt",
+		"wantsToInsert": "Jabberwock möchte Inhalte in diese Datei einfügen",
+		"wantsToInsertWithLineNumber": "Jabberwock möchte Inhalte in diese Datei in Zeile {{lineNumber}} einfügen",
+		"wantsToInsertAtEnd": "Jabberwock möchte Inhalte am Ende dieser Datei anhängen",
+		"wantsToReadMultiple": "Jabberwock möchte mehrere Dateien lesen",
+		"wantsToApplyBatchChanges": "Jabberwock möchte Änderungen an mehreren Dateien vornehmen",
+		"wantsToGenerateImage": "Jabberwock möchte ein Bild generieren",
+		"wantsToGenerateImageOutsideWorkspace": "Jabberwock möchte ein Bild außerhalb des Arbeitsbereichs generieren",
+		"wantsToGenerateImageProtected": "Jabberwock möchte ein Bild an einem geschützten Ort generieren",
+		"didGenerateImage": "Jabberwock hat ein Bild generiert"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo möchte die Dateien auf oberster Ebene in diesem Verzeichnis anzeigen",
-		"didViewTopLevel": "Roo hat die Dateien auf oberster Ebene in diesem Verzeichnis angezeigt",
-		"wantsToViewRecursive": "Roo möchte rekursiv alle Dateien in diesem Verzeichnis anzeigen",
-		"didViewRecursive": "Roo hat rekursiv alle Dateien in diesem Verzeichnis angezeigt",
-		"wantsToSearch": "Roo möchte dieses Verzeichnis nach <code>{{regex}}</code> durchsuchen",
-		"didSearch": "Roo hat dieses Verzeichnis nach <code>{{regex}}</code> durchsucht",
-		"wantsToSearchOutsideWorkspace": "Roo möchte dieses Verzeichnis (außerhalb des Arbeitsbereichs) nach <code>{{regex}}</code> durchsuchen",
-		"didSearchOutsideWorkspace": "Roo hat dieses Verzeichnis (außerhalb des Arbeitsbereichs) nach <code>{{regex}}</code> durchsucht",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo möchte die Dateien auf oberster Ebene in diesem Verzeichnis (außerhalb des Arbeitsbereichs) anzeigen",
-		"didViewTopLevelOutsideWorkspace": "Roo hat die Dateien auf oberster Ebene in diesem Verzeichnis (außerhalb des Arbeitsbereichs) angezeigt",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo möchte rekursiv alle Dateien in diesem Verzeichnis (außerhalb des Arbeitsbereichs) anzeigen",
-		"didViewRecursiveOutsideWorkspace": "Roo hat rekursiv alle Dateien in diesem Verzeichnis (außerhalb des Arbeitsbereichs) angezeigt",
-		"wantsToViewMultipleDirectories": "Roo möchte mehrere Verzeichnisse anzeigen"
+		"wantsToViewTopLevel": "Jabberwock möchte die Dateien auf oberster Ebene in diesem Verzeichnis anzeigen",
+		"didViewTopLevel": "Jabberwock hat die Dateien auf oberster Ebene in diesem Verzeichnis angezeigt",
+		"wantsToViewRecursive": "Jabberwock möchte rekursiv alle Dateien in diesem Verzeichnis anzeigen",
+		"didViewRecursive": "Jabberwock hat rekursiv alle Dateien in diesem Verzeichnis angezeigt",
+		"wantsToSearch": "Jabberwock möchte dieses Verzeichnis nach <code>{{regex}}</code> durchsuchen",
+		"didSearch": "Jabberwock hat dieses Verzeichnis nach <code>{{regex}}</code> durchsucht",
+		"wantsToSearchOutsideWorkspace": "Jabberwock möchte dieses Verzeichnis (außerhalb des Arbeitsbereichs) nach <code>{{regex}}</code> durchsuchen",
+		"didSearchOutsideWorkspace": "Jabberwock hat dieses Verzeichnis (außerhalb des Arbeitsbereichs) nach <code>{{regex}}</code> durchsucht",
+		"wantsToViewTopLevelOutsideWorkspace": "Jabberwock möchte die Dateien auf oberster Ebene in diesem Verzeichnis (außerhalb des Arbeitsbereichs) anzeigen",
+		"didViewTopLevelOutsideWorkspace": "Jabberwock hat die Dateien auf oberster Ebene in diesem Verzeichnis (außerhalb des Arbeitsbereichs) angezeigt",
+		"wantsToViewRecursiveOutsideWorkspace": "Jabberwock möchte rekursiv alle Dateien in diesem Verzeichnis (außerhalb des Arbeitsbereichs) anzeigen",
+		"didViewRecursiveOutsideWorkspace": "Jabberwock hat rekursiv alle Dateien in diesem Verzeichnis (außerhalb des Arbeitsbereichs) angezeigt",
+		"wantsToViewMultipleDirectories": "Jabberwock möchte mehrere Verzeichnisse anzeigen"
 	},
 	"commandOutput": "Befehlsausgabe",
 	"commandExecution": {
@@ -244,24 +244,24 @@
 	"response": "Antwort",
 	"arguments": "Argumente",
 	"text": {
-		"rooSaid": "Roo hat gesagt"
+		"jabberwockSaid": "Jabberwock hat gesagt"
 	},
 	"feedback": {
 		"youSaid": "Du hast gesagt"
 	},
 	"mcp": {
-		"wantsToUseTool": "Roo möchte ein Tool auf dem {{serverName}} MCP-Server verwenden",
-		"wantsToAccessResource": "Roo möchte auf eine Ressource auf dem {{serverName}} MCP-Server zugreifen"
+		"wantsToUseTool": "Jabberwock möchte ein Tool auf dem {{serverName}} MCP-Server verwenden",
+		"wantsToAccessResource": "Jabberwock möchte auf eine Ressource auf dem {{serverName}} MCP-Server zugreifen"
 	},
 	"modes": {
-		"wantsToSwitch": "Roo möchte zum <code>{{mode}}</code>-Modus wechseln",
-		"wantsToSwitchWithReason": "Roo möchte zum <code>{{mode}}</code>-Modus wechseln, weil: {{reason}}",
-		"didSwitch": "Roo hat zum <code>{{mode}}</code>-Modus gewechselt",
-		"didSwitchWithReason": "Roo hat zum <code>{{mode}}</code>-Modus gewechselt, weil: {{reason}}"
+		"wantsToSwitch": "Jabberwock möchte zum <code>{{mode}}</code>-Modus wechseln",
+		"wantsToSwitchWithReason": "Jabberwock möchte zum <code>{{mode}}</code>-Modus wechseln, weil: {{reason}}",
+		"didSwitch": "Jabberwock hat zum <code>{{mode}}</code>-Modus gewechselt",
+		"didSwitchWithReason": "Jabberwock hat zum <code>{{mode}}</code>-Modus gewechselt, weil: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo möchte eine neue Teilaufgabe im <code>{{mode}}</code>-Modus erstellen",
-		"wantsToFinish": "Roo möchte diese Teilaufgabe abschließen",
+		"wantsToCreate": "Jabberwock möchte eine neue Teilaufgabe im <code>{{mode}}</code>-Modus erstellen",
+		"wantsToFinish": "Jabberwock möchte diese Teilaufgabe abschließen",
 		"newTaskContent": "Teilaufgabenanweisungen",
 		"completionContent": "Teilaufgabe abgeschlossen",
 		"resultContent": "Teilaufgabenergebnisse",
@@ -270,7 +270,7 @@
 		"goToSubtask": "Aufgabe anzeigen"
 	},
 	"questions": {
-		"hasQuestion": "Roo hat eine Frage"
+		"hasQuestion": "Jabberwock hat eine Frage"
 	},
 	"taskCompleted": "Aufgabe abgeschlossen",
 	"modelResponseIncomplete": "Modellantwort unvollständig",
@@ -329,30 +329,30 @@
 		}
 	},
 	"skill": {
-		"wantsToLoad": "Roo möchte eine Fähigkeit laden",
-		"didLoad": "Roo hat eine Fähigkeit geladen"
+		"wantsToLoad": "Jabberwock möchte eine Fähigkeit laden",
+		"didLoad": "Jabberwock hat eine Fähigkeit geladen"
 	},
 	"followUpSuggest": {
 		"copyToInput": "In Eingabefeld kopieren (oder Shift + Klick)",
 		"timerPrefix": "Automatische Genehmigung aktiviert. Wähle in {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} veröffentlicht",
-		"support": "Bitte unterstütze Roo Code, indem du uns auf <githubLink>GitHub</githubLink> einen Stern gibst.",
+		"title": "Jabberwock {{version}} veröffentlicht",
+		"support": "Bitte unterstütze Jabberwock, indem du uns auf <githubLink>GitHub</githubLink> einen Stern gibst.",
 		"stealthModel": {
-			"feature": "<bold>Zeitlich begrenztes KOSTENLOSES Stealth-Modell</bold> - Code Supernova: Jetzt mit einem <bold>1M Token Kontextfenster</bold> erweitert! Ein vielseitiges agentisches Coding-Modell, das Bildeingaben unterstützt und über Roo Code Cloud zugänglich ist.",
+			"feature": "<bold>Zeitlich begrenztes KOSTENLOSES Stealth-Modell</bold> - Code Supernova: Jetzt mit einem <bold>1M Token Kontextfenster</bold> erweitert! Ein vielseitiges agentisches Coding-Modell, das Bildeingaben unterstützt und über Jabberwock Cloud zugänglich ist.",
 			"note": "(Hinweis: Prompts und Vervollständigungen werden vom Modellersteller protokolliert und zur Verbesserung des Modells verwendet)",
-			"connectButton": "Mit Roo Code Cloud verbinden",
-			"selectModel": "Wähle <code>roo/code-supernova</code> vom Roo Code Cloud-Provider in den Einstellungen aus, um zu beginnen.",
+			"connectButton": "Mit Jabberwock Cloud verbinden",
+			"selectModel": "Wähle <code>jabberwock/code-supernova</code> vom Jabberwock Cloud-Provider in den Einstellungen aus, um zu beginnen.",
 			"goToSettingsButton": "Zu den Einstellungen"
 		},
 		"release": {
 			"heading": "Was ist neu:",
-			"gpt54": "OpenAI GPT-5.4-Unterstützung: OpenAI GPT-5.4 und GPT-5.3 Chat Latest wurden hinzugefügt, damit du die neuesten OpenAI-Chatmodelle in Roo Code nutzen kannst.",
+			"gpt54": "OpenAI GPT-5.4-Unterstützung: OpenAI GPT-5.4 und GPT-5.3 Chat Latest wurden hinzugefügt, damit du die neuesten OpenAI-Chatmodelle in Jabberwock nutzen kannst.",
 			"slashSkills": "Slash-Command-Skills: Skills können jetzt als Slash-Commands mit Fallback-Ausführung verfügbar gemacht werden, damit Workflows schneller ablaufen.",
 			"geminiPro": "Gemini 3.1 Pro Unterstützung: Gemini 3.1 Pro wurde als Modell hinzugefügt und als Standard-Gemini-Modell für bessere Leistung festgelegt.",
 			"cliNdjson": "CLI NDJSON-Protokoll: Neues NDJSON-stdin-Protokoll, List-Unterbefehle und modularisierter Run-Befehl für flexiblere CLI-Workflows.",
-			"cliRelease": "CLI v0.1.0: Das Roo Code CLI erreicht seine erste offizielle Veröffentlichung mit einer stabilen Befehlsoberfläche."
+			"cliRelease": "CLI v0.1.0: Das Jabberwock CLI erreicht seine erste offizielle Veröffentlichung mit einer stabilen Befehlsoberfläche."
 		},
 		"cloudAgents": {
 			"heading": "Neu in der Cloud:",
@@ -377,24 +377,24 @@
 	"profileViolationWarning": "Das aktuelle Profil ist nicht kompatibel mit den Einstellungen deiner Organisation",
 	"shellIntegration": {
 		"title": "Befehlsausführungswarnung",
-		"description": "Dein Befehl wird ohne VSCode Terminal-Shell-Integration ausgeführt. Um diese Warnung zu unterdrücken, kannst du die Shell-Integration im Abschnitt <strong>Terminal</strong> der <settingsLink>Roo Code Einstellungen</settingsLink> deaktivieren oder die VSCode Terminal-Integration mit dem Link unten beheben.",
+		"description": "Dein Befehl wird ohne VSCode Terminal-Shell-Integration ausgeführt. Um diese Warnung zu unterdrücken, kannst du die Shell-Integration im Abschnitt <strong>Terminal</strong> der <settingsLink>Jabberwock Einstellungen</settingsLink> deaktivieren oder die VSCode Terminal-Integration mit dem Link unten beheben.",
 		"troubleshooting": "Klicke hier für die Shell-Integrationsdokumentation."
 	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "Limit für automatisch genehmigte Anfragen erreicht",
-			"description": "Roo hat das automatisch genehmigte Limit von {{count}} API-Anfrage(n) erreicht. Möchtest du den Zähler zurücksetzen und mit der Aufgabe fortfahren?",
+			"description": "Jabberwock hat das automatisch genehmigte Limit von {{count}} API-Anfrage(n) erreicht. Möchtest du den Zähler zurücksetzen und mit der Aufgabe fortfahren?",
 			"button": "Zurücksetzen und fortfahren"
 		},
 		"autoApprovedCostLimitReached": {
-			"description": "Roo hat das automatisch genehmigte Kostenlimit von ${{count}} erreicht. Möchten Sie die Kosten zurücksetzen und mit der Aufgabe fortfahren?",
+			"description": "Jabberwock hat das automatisch genehmigte Kostenlimit von ${{count}} erreicht. Möchten Sie die Kosten zurücksetzen und mit der Aufgabe fortfahren?",
 			"title": "Kostengrenze für automatische Genehmigung erreicht",
 			"button": "Zurücksetzen und Fortfahren"
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo möchte den Codebase nach <code>{{query}}</code> durchsuchen",
-		"wantsToSearchWithPath": "Roo möchte den Codebase nach <code>{{query}}</code> in <code>{{path}}</code> durchsuchen",
+		"wantsToSearch": "Jabberwock möchte den Codebase nach <code>{{query}}</code> durchsuchen",
+		"wantsToSearchWithPath": "Jabberwock möchte den Codebase nach <code>{{query}}</code> in <code>{{path}}</code> durchsuchen",
 		"didSearch_one": "1 Ergebnis gefunden",
 		"didSearch_other": "{{count}} Ergebnisse gefunden",
 		"resultTooltip": "Ähnlichkeitswert: {{score}} (klicken zum Öffnen der Datei)"
@@ -434,8 +434,8 @@
 	"versionIndicator": {
 		"ariaLabel": "Version {{version}} - Klicken Sie, um die Versionshinweise anzuzeigen"
 	},
-	"rooCloudCTA": {
-		"title": "Roo Code Cloud entwickelt sich weiter!",
+	"jabberwockCloudCTA": {
+		"title": "Jabberwock Cloud entwickelt sich weiter!",
 		"description": "Führe Remote-Agenten in der Cloud aus, greife von überall auf deine Aufgaben zu, arbeite mit anderen zusammen und vieles mehr.",
 		"joinWaitlist": "Melde dich an, um die neuesten Updates zu erhalten."
 	},
@@ -476,8 +476,8 @@
 		"clickToEdit": "Klicken zum Bearbeiten der Nachricht"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo möchte einen Slash-Befehl ausführen",
-		"didRun": "Roo hat einen Slash-Befehl ausgeführt"
+		"wantsToRun": "Jabberwock möchte einen Slash-Befehl ausführen",
+		"didRun": "Jabberwock hat einen Slash-Befehl ausgeführt"
 	},
 	"todo": {
 		"partial": "{{completed}} von {{total}} To-Dos erledigt",
@@ -496,11 +496,11 @@
 		"openMcpSettings": "MCP-Einstellungen öffnen"
 	},
 	"readCommandOutput": {
-		"title": "Roo las Befehlsausgabe"
+		"title": "Jabberwock las Befehlsausgabe"
 	},
 	"retiredProvider": {
 		"title": "Anbieter wird nicht mehr unterstützt",
-		"message": "Leider wird dieser Anbieter nicht mehr unterstützt. Wir haben festgestellt, dass nur sehr wenige Roo-Nutzer ihn tatsächlich verwendet haben, und wir müssen den Umfang unserer Codebasis reduzieren, damit wir weiterhin schnell liefern und unserer Community in diesem Bereich gut dienen können. Es war eine wirklich schwere Entscheidung, aber sie ermöglicht uns, uns auf das zu konzentrieren, was dir am wichtigsten ist. Es ist ärgerlich, das wissen wir.",
+		"message": "Leider wird dieser Anbieter nicht mehr unterstützt. Wir haben festgestellt, dass nur sehr wenige Jabberwock-Nutzer ihn tatsächlich verwendet haben, und wir müssen den Umfang unserer Codebasis reduzieren, damit wir weiterhin schnell liefern und unserer Community in diesem Bereich gut dienen können. Es war eine wirklich schwere Entscheidung, aber sie ermöglicht uns, uns auf das zu konzentrieren, was dir am wichtigsten ist. Es ist ärgerlich, das wissen wir.",
 		"openSettings": "Einstellungen öffnen"
 	}
 }

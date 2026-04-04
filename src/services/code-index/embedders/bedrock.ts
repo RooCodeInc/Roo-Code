@@ -11,8 +11,8 @@ import { getDefaultModelId } from "../../../shared/embeddingModels"
 import { Package } from "../../../shared/package"
 import { t } from "../../../i18n"
 import { withValidationErrorHandling, formatEmbeddingError, HttpError } from "../shared/validation-helpers"
-import { TelemetryEventName } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
+import { TelemetryEventName } from "@jabberwock/types"
+import { TelemetryService } from "@jabberwock/telemetry"
 
 /**
  * Amazon Bedrock implementation of the embedder interface with batching and rate limiting
@@ -41,7 +41,7 @@ export class BedrockEmbedder implements IEmbedder {
 		const credentials = this.profile ? fromIni({ profile: this.profile }) : fromNodeProviderChain()
 
 		this.bedrockClient = new BedrockRuntimeClient({
-			userAgentAppId: `RooCode#${Package.version}`,
+			userAgentAppId: `Jabberwock#${Package.version}`,
 			region: this.region,
 			credentials,
 		})

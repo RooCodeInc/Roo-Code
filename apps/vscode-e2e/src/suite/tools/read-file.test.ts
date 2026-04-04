@@ -4,12 +4,12 @@ import * as path from "path"
 import * as os from "os"
 import * as vscode from "vscode"
 
-import { RooCodeEventName, type ClineMessage } from "@roo-code/types"
+import { JabberwockEventName, type ClineMessage } from "@jabberwock/types"
 
 import { waitFor, sleep } from "../utils"
 import { setDefaultSuiteTimeout } from "../test-utils"
 
-suite.skip("Roo Code read_file Tool", function () {
+suite.skip("Jabberwock read_file Tool", function () {
 	setDefaultSuiteTimeout(this)
 
 	let tempDir: string
@@ -24,7 +24,7 @@ suite.skip("Roo Code read_file Tool", function () {
 
 	// Create a temporary directory and test files
 	suiteSetup(async () => {
-		tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "roo-test-read-"))
+		tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "jabberwock-test-read-"))
 
 		// Create test files in VSCode workspace directory
 		const workspaceDir = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || tempDir
@@ -180,7 +180,7 @@ suite.skip("Roo Code read_file Tool", function () {
 				console.log("AI response:", message.text?.substring(0, 200))
 			}
 		}
-		api.on(RooCodeEventName.Message, messageHandler)
+		api.on(JabberwockEventName.Message, messageHandler)
 
 		// Listen for task events
 		const taskStartedHandler = (id: string) => {
@@ -189,7 +189,7 @@ suite.skip("Roo Code read_file Tool", function () {
 				console.log("Task started:", id)
 			}
 		}
-		api.on(RooCodeEventName.TaskStarted, taskStartedHandler)
+		api.on(JabberwockEventName.TaskStarted, taskStartedHandler)
 
 		const taskCompletedHandler = (id: string) => {
 			if (id === taskId) {
@@ -197,7 +197,7 @@ suite.skip("Roo Code read_file Tool", function () {
 				console.log("Task completed:", id)
 			}
 		}
-		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+		api.on(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 
 		let taskId: string
 		try {
@@ -259,9 +259,9 @@ suite.skip("Roo Code read_file Tool", function () {
 			console.log("Test passed! File read successfully with correct content")
 		} finally {
 			// Clean up
-			api.off(RooCodeEventName.Message, messageHandler)
-			api.off(RooCodeEventName.TaskStarted, taskStartedHandler)
-			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+			api.off(JabberwockEventName.Message, messageHandler)
+			api.off(JabberwockEventName.TaskStarted, taskStartedHandler)
+			api.off(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
@@ -314,7 +314,7 @@ suite.skip("Roo Code read_file Tool", function () {
 				console.log("AI response:", message.text?.substring(0, 200))
 			}
 		}
-		api.on(RooCodeEventName.Message, messageHandler)
+		api.on(JabberwockEventName.Message, messageHandler)
 
 		// Listen for task completion
 		const taskCompletedHandler = (id: string) => {
@@ -322,7 +322,7 @@ suite.skip("Roo Code read_file Tool", function () {
 				taskCompleted = true
 			}
 		}
-		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+		api.on(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 
 		let taskId: string
 		try {
@@ -371,8 +371,8 @@ suite.skip("Roo Code read_file Tool", function () {
 			console.log("Test passed! Multiline file read successfully with correct content")
 		} finally {
 			// Clean up
-			api.off(RooCodeEventName.Message, messageHandler)
-			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+			api.off(JabberwockEventName.Message, messageHandler)
+			api.off(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
@@ -425,7 +425,7 @@ suite.skip("Roo Code read_file Tool", function () {
 				console.log("AI response:", message.text?.substring(0, 200))
 			}
 		}
-		api.on(RooCodeEventName.Message, messageHandler)
+		api.on(JabberwockEventName.Message, messageHandler)
 
 		// Listen for task completion
 		const taskCompletedHandler = (id: string) => {
@@ -433,7 +433,7 @@ suite.skip("Roo Code read_file Tool", function () {
 				taskCompleted = true
 			}
 		}
-		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+		api.on(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 
 		let taskId: string
 		try {
@@ -483,8 +483,8 @@ suite.skip("Roo Code read_file Tool", function () {
 			console.log("Test passed! File read with line range successfully")
 		} finally {
 			// Clean up
-			api.off(RooCodeEventName.Message, messageHandler)
-			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+			api.off(JabberwockEventName.Message, messageHandler)
+			api.off(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
@@ -511,7 +511,7 @@ suite.skip("Roo Code read_file Tool", function () {
 				}
 			}
 		}
-		api.on(RooCodeEventName.Message, messageHandler)
+		api.on(JabberwockEventName.Message, messageHandler)
 
 		// Listen for task completion
 		const taskCompletedHandler = (id: string) => {
@@ -519,7 +519,7 @@ suite.skip("Roo Code read_file Tool", function () {
 				taskCompleted = true
 			}
 		}
-		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+		api.on(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 
 		let taskId: string
 		try {
@@ -555,8 +555,8 @@ suite.skip("Roo Code read_file Tool", function () {
 			console.log("Test passed! Non-existent file handled correctly")
 		} finally {
 			// Clean up
-			api.off(RooCodeEventName.Message, messageHandler)
-			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+			api.off(JabberwockEventName.Message, messageHandler)
+			api.off(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
@@ -584,7 +584,7 @@ suite.skip("Roo Code read_file Tool", function () {
 				console.log("AI response:", message.text?.substring(0, 200))
 			}
 		}
-		api.on(RooCodeEventName.Message, messageHandler)
+		api.on(JabberwockEventName.Message, messageHandler)
 
 		// Listen for task completion
 		const taskCompletedHandler = (id: string) => {
@@ -592,7 +592,7 @@ suite.skip("Roo Code read_file Tool", function () {
 				taskCompleted = true
 			}
 		}
-		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+		api.on(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 
 		let taskId: string
 		try {
@@ -626,8 +626,8 @@ suite.skip("Roo Code read_file Tool", function () {
 			console.log("Test passed! XML file read successfully")
 		} finally {
 			// Clean up
-			api.off(RooCodeEventName.Message, messageHandler)
-			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+			api.off(JabberwockEventName.Message, messageHandler)
+			api.off(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
@@ -650,7 +650,7 @@ suite.skip("Roo Code read_file Tool", function () {
 				}
 			}
 		}
-		api.on(RooCodeEventName.Message, messageHandler)
+		api.on(JabberwockEventName.Message, messageHandler)
 
 		// Listen for task completion
 		const taskCompletedHandler = (id: string) => {
@@ -658,7 +658,7 @@ suite.skip("Roo Code read_file Tool", function () {
 				taskCompleted = true
 			}
 		}
-		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+		api.on(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 
 		let taskId: string
 		try {
@@ -699,8 +699,8 @@ Assume both files exist and you can read them directly. Read each file and tell 
 			console.log("Test passed! Multiple files read successfully")
 		} finally {
 			// Clean up
-			api.off(RooCodeEventName.Message, messageHandler)
-			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+			api.off(JabberwockEventName.Message, messageHandler)
+			api.off(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
@@ -728,7 +728,7 @@ Assume both files exist and you can read them directly. Read each file and tell 
 				console.log("AI response:", message.text?.substring(0, 200))
 			}
 		}
-		api.on(RooCodeEventName.Message, messageHandler)
+		api.on(JabberwockEventName.Message, messageHandler)
 
 		// Listen for task completion
 		const taskCompletedHandler = (id: string) => {
@@ -736,7 +736,7 @@ Assume both files exist and you can read them directly. Read each file and tell 
 				taskCompleted = true
 			}
 		}
-		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+		api.on(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 
 		let taskId: string
 		try {
@@ -770,8 +770,8 @@ Assume both files exist and you can read them directly. Read each file and tell 
 			console.log("Test passed! Large file read efficiently")
 		} finally {
 			// Clean up
-			api.off(RooCodeEventName.Message, messageHandler)
-			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+			api.off(JabberwockEventName.Message, messageHandler)
+			api.off(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 })

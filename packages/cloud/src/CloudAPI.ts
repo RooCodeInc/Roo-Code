@@ -1,10 +1,10 @@
 import { z } from "zod"
 
-import { type AuthService, type ShareVisibility, type ShareResponse, shareResponseSchema } from "@roo-code/types"
+import { type AuthService, type ShareVisibility, type ShareResponse, shareResponseSchema } from "@jabberwock/types"
 
-import { getRooCodeApiUrl } from "./config.js"
-import { getUserAgent } from "./utils.js"
-import { AuthenticationError, CloudAPIError, NetworkError, TaskNotFoundError } from "./errors.js"
+import { getJabberwockApiUrl } from "./config.ts"
+import { getUserAgent } from "./utils.ts"
+import { AuthenticationError, CloudAPIError, NetworkError, TaskNotFoundError } from "./errors.ts"
 
 interface CloudAPIRequestOptions extends Omit<RequestInit, "headers"> {
 	timeout?: number
@@ -19,7 +19,7 @@ export class CloudAPI {
 	constructor(authService: AuthService, log?: (...args: unknown[]) => void) {
 		this.authService = authService
 		this.log = log || console.log
-		this.baseUrl = getRooCodeApiUrl()
+		this.baseUrl = getJabberwockApiUrl()
 	}
 
 	private async request<T>(

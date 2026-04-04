@@ -1,4 +1,4 @@
-import type { CustomModePrompts } from "@roo-code/types"
+import type { CustomModePrompts } from "@jabberwock/types"
 
 import { getPromptComponent } from "../system"
 

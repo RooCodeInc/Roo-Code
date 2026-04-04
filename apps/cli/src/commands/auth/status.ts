@@ -23,7 +23,7 @@ export async function status(options: StatusOptions = {}): Promise<StatusResult>
 	if (!token) {
 		console.log("✗ Not authenticated")
 		console.log("")
-		console.log("Run: roo auth login")
+		console.log("Run: jabberwock auth login")
 		return { authenticated: false }
 	}
 
@@ -37,7 +37,7 @@ export async function status(options: StatusOptions = {}): Promise<StatusResult>
 	if (expired) {
 		console.log("✗ Authentication token expired")
 		console.log("")
-		console.log("Run: roo auth login")
+		console.log("Run: jabberwock auth login")
 
 		return {
 			authenticated: false,
@@ -47,7 +47,7 @@ export async function status(options: StatusOptions = {}): Promise<StatusResult>
 	}
 
 	if (expiringSoon) {
-		console.log("⚠ Expires soon; refresh with `roo auth login`")
+		console.log("⚠ Expires soon; refresh with `jabberwock auth login`")
 	} else {
 		console.log("✓ Authenticated")
 	}

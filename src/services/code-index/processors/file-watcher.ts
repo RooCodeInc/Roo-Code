@@ -7,7 +7,7 @@ import {
 	INITIAL_RETRY_DELAY_MS,
 } from "../constants"
 import { createHash } from "crypto"
-import { RooIgnoreController } from "../../../core/ignore/RooIgnoreController"
+import { JabberwockIgnoreController } from "../../../core/ignore/JabberwockIgnoreController"
 import { v5 as uuidv5 } from "uuid"
 import { Ignore } from "ignore"
 import { scannerExtensions } from "../shared/supported-extensions"
@@ -23,8 +23,8 @@ import { codeParser } from "./parser"
 import { CacheManager } from "../cache-manager"
 import { generateNormalizedAbsolutePath, generateRelativeFilePath } from "../shared/get-relative-path"
 import { isPathInIgnoredDirectory } from "../../glob/ignore-utils"
-import { TelemetryService } from "@roo-code/telemetry"
-import { TelemetryEventName } from "@roo-code/types"
+import { TelemetryService } from "@jabberwock/telemetry"
+import { TelemetryEventName } from "@jabberwock/types"
 import { sanitizeErrorMessage } from "../shared/validation-helpers"
 import { Package } from "../../../shared/package"
 
@@ -34,7 +34,7 @@ import { Package } from "../../../shared/package"
 export class FileWatcher implements IFileWatcher {
 	private ignoreInstance?: Ignore
 	private fileWatcher?: vscode.FileSystemWatcher
-	private ignoreController: RooIgnoreController
+	private ignoreController: JabberwockIgnoreController
 	private accumulatedEvents: Map<string, { uri: vscode.Uri; type: "create" | "change" | "delete" }> = new Map()
 	private batchProcessDebounceTimer?: NodeJS.Timeout
 	private readonly BATCH_DEBOUNCE_DELAY_MS = 500
@@ -79,10 +79,10 @@ export class FileWatcher implements IFileWatcher {
 		private embedder?: IEmbedder,
 		private vectorStore?: IVectorStore,
 		ignoreInstance?: Ignore,
-		ignoreController?: RooIgnoreController,
+		ignoreController?: JabberwockIgnoreController,
 		batchSegmentThreshold?: number,
 	) {
-		this.ignoreController = ignoreController || new RooIgnoreController(workspacePath)
+		this.ignoreController = ignoreController || new JabberwockIgnoreController(workspacePath)
 		if (ignoreInstance) {
 			this.ignoreInstance = ignoreInstance
 		}
@@ -529,7 +529,7 @@ export class FileWatcher implements IFileWatcher {
 				return {
 					path: filePath,
 					status: "skipped" as const,
-					reason: "File is ignored by .rooignore or .gitignore",
+					reason: "File is ignored by .jabberwockignore or .gitignore",
 				}
 			}
 

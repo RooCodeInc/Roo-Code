@@ -2,7 +2,7 @@
 
 import type { Mock } from "vitest"
 
-import { RefreshTimer } from "../RefreshTimer.js"
+import { RefreshTimer } from "../RefreshTimer.ts"
 
 vi.useFakeTimers()
 

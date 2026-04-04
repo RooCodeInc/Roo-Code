@@ -8,8 +8,8 @@
 		"noMatchFound": "未找到任何模式",
 		"editModesConfig": "模式设置",
 		"editGlobalModes": "修改全局模式",
-		"editProjectModes": "编辑项目模式 (.roomodes)",
-		"createModeHelpText": "模式是Roo的专属角色，用于定制其行为。<0>了解如何使用模式</0>或<1>自定义模式。</1>",
+		"editProjectModes": "编辑项目模式 (.jabberwockmodes)",
+		"createModeHelpText": "模式是Jabberwock的专属角色，用于定制其行为。<0>了解如何使用模式</0>或<1>自定义模式。</1>",
 		"selectMode": "搜索模式"
 	},
 	"apiConfiguration": {
@@ -49,7 +49,7 @@
 		"title": "模式专属规则（可选）",
 		"resetToDefault": "重置为默认值",
 		"description": "{{modeName}}模式的专属规则",
-		"loadFromFile": "{{mode}}模式的特定自定义指令也可以从工作区中的<span>.roo/rules-{{slug}}/</span>文件夹或全局<0>.roo/rules-{{slug}}/</0>加载（.roorules-{{slug}}和.clinerules-{{slug}}已弃用，即将停止工作）。"
+		"loadFromFile": "{{mode}}模式的特定自定义指令也可以从工作区中的<span>.jabberwock/rules-{{slug}}/</span>文件夹或全局<0>.jabberwock/rules-{{slug}}/</0>加载（.jabberwockrules-{{slug}}和.clinerules-{{slug}}已弃用，即将停止工作）。"
 	},
 	"exportMode": {
 		"title": "导出模式",
@@ -63,17 +63,17 @@
 		"importing": "导入中...",
 		"global": {
 			"label": "全局",
-			"description": "适用于所有项目。如果导出的模式包含规则文件，则将在全局 .roo/rules-{slug}/ 文件夹中重新创建这些文件。"
+			"description": "适用于所有项目。如果导出的模式包含规则文件，则将在全局 .jabberwock/rules-{slug}/ 文件夹中重新创建这些文件。"
 		},
 		"project": {
 			"label": "项目级",
-			"description": "仅在此工作区可用。如果导出的模式包含规则文件，则将在 .roo/rules-{slug}/ 文件夹中重新创建这些文件。"
+			"description": "仅在此工作区可用。如果导出的模式包含规则文件，则将在 .jabberwock/rules-{slug}/ 文件夹中重新创建这些文件。"
 		}
 	},
 	"globalCustomInstructions": {
 		"title": "所有模式的自定义指令",
 		"description": "这些指令适用于所有模式。它们提供了一套基础行为，可以通过下面的模式特定指令进行增强。<0>了解更多</0>",
-		"loadFromFile": "指令也可以从工作区中的<span>.roo/rules/</span>文件夹或全局<0>.roo/rules/</0>加载（.roorules和.clinerules已弃用，即将停止工作）。"
+		"loadFromFile": "指令也可以从工作区中的<span>.jabberwock/rules/</span>文件夹或全局<0>.jabberwock/rules/</0>加载（.jabberwockrules和.clinerules已弃用，即将停止工作）。"
 	},
 	"systemPrompt": {
 		"preview": "预览系统提示词",
@@ -161,7 +161,7 @@
 				"description": "全局可用"
 			},
 			"project": {
-				"label": "项目特定 (.roomodes)",
+				"label": "项目特定 (.jabberwockmodes)",
 				"description": "仅当前项目有效"
 			}
 		},

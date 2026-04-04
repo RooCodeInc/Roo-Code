@@ -6,7 +6,7 @@
  * The ExtensionHost implementation (e.g., in apps/cli) must satisfy this contract.
  */
 
-import type { WebviewViewProvider } from "./webview.js"
+import type { WebviewViewProvider } from "./webview.ts"
 
 /**
  * Core event map for ExtensionHost communication.

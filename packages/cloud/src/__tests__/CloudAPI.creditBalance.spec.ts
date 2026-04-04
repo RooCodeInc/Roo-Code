@@ -1,15 +1,15 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest"
-import { CloudAPI } from "../CloudAPI.js"
-import { AuthenticationError, CloudAPIError } from "../errors.js"
-import type { AuthService } from "@roo-code/types"
+import { CloudAPI } from "../CloudAPI.ts"
+import { AuthenticationError, CloudAPIError } from "../errors.ts"
+import type { AuthService } from "@jabberwock/types"
 
 // Mock the config module
-vi.mock("../config.js", () => ({
-	getRooCodeApiUrl: () => "https://api.test.com",
+vi.mock("../config.ts", () => ({
+	getJabberwockApiUrl: () => "https://api.test.com",
 }))
 
 // Mock the utils module
-vi.mock("../utils.js", () => ({
+vi.mock("../utils.ts", () => ({
 	getUserAgent: () => "test-user-agent",
 }))
 

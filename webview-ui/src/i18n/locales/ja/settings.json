@@ -40,7 +40,7 @@
 		"ui": "UI",
 		"experimental": "実験的",
 		"language": "言語",
-		"about": "Roo Codeについて",
+		"about": "Jabberwockについて",
 		"skills": "Skills"
 	},
 	"about": {
@@ -59,7 +59,7 @@
 		"contact": {
 			"label": "お問い合わせが必要ですか？メールを送信"
 		},
-		"community": "ヒントが欲しいですか、または他のRoo Codeユーザーと交流したいですか？<redditLink>reddit.com/r/RooCode</redditLink>または<discordLink>discord.gg/roocode</discordLink>に参加してください",
+		"community": "ヒントが欲しいですか、または他のJabberwockユーザーと交流したいですか？<redditLink>reddit.com/r/Jabberwock</redditLink>または<discordLink>discord.gg/jabberwock</discordLink>に参加してください",
 		"contactAndCommunity": "お問い合わせとコミュニティ",
 		"manageSettings": "設定を管理",
 		"debugMode": {
@@ -103,7 +103,7 @@
 		"footer": "スラッシュコマンドを使用して、頻繁に使用するプロンプトとワークフローにすばやくアクセスします。"
 	},
 	"prompts": {
-		"description": "プロンプトの強化、コードの説明、問題の修正などの迅速なアクションに使用されるサポートプロンプトを設定します。これらのプロンプトは、Rooが一般的な開発タスクでより良いサポートを提供するのに役立ちます。"
+		"description": "プロンプトの強化、コードの説明、問題の修正などの迅速なアクションに使用されるサポートプロンプトを設定します。これらのプロンプトは、Jabberwockが一般的な開発タスクでより良いサポートを提供するのに役立ちます。"
 	},
 	"codeIndex": {
 		"title": "コードベースのインデックス作成",
@@ -220,16 +220,16 @@
 	},
 	"autoApprove": {
 		"toggleShortcut": "<SettingsLink>IDEの環境設定</SettingsLink>で、この設定のグローバルショートカットを設定できます。",
-		"description": "Rooが承認なしで自動的に操作を実行できるようにします。AIを完全に信頼し、関連するセキュリティリスクを理解している場合にのみ、これらの設定を有効にしてください。",
+		"description": "Jabberwockが承認なしで自動的に操作を実行できるようにします。AIを完全に信頼し、関連するセキュリティリスクを理解している場合にのみ、これらの設定を有効にしてください。",
 		"enabled": "自動承認が有効",
 		"toggleAriaLabel": "自動承認の切り替え",
 		"disabledAriaLabel": "自動承認が無効です - 最初にオプションを選択してください",
 		"readOnly": {
 			"label": "読み取り",
-			"description": "有効にすると、Rooは承認ボタンをクリックすることなく、自動的にディレクトリの内容を表示してファイルを読み取ります。",
+			"description": "有効にすると、Jabberwockは承認ボタンをクリックすることなく、自動的にディレクトリの内容を表示してファイルを読み取ります。",
 			"outsideWorkspace": {
 				"label": "ワークスペース外のファイルを含める",
-				"description": "Rooが承認なしで現在のワークスペース外のファイルを読み取ることを許可します。"
+				"description": "Jabberwockが承認なしで現在のワークスペース外のファイルを読み取ることを許可します。"
 			}
 		},
 		"write": {
@@ -238,11 +238,11 @@
 			"delayLabel": "診断が潜在的な問題を検出できるよう、書き込み後に遅延を設ける",
 			"outsideWorkspace": {
 				"label": "ワークスペース外のファイルを含める",
-				"description": "Rooが承認なしで現在のワークスペース外のファイルを作成・編集することを許可します。"
+				"description": "Jabberwockが承認なしで現在のワークスペース外のファイルを作成・編集することを許可します。"
 			},
 			"protected": {
 				"label": "保護されたファイルを含める",
-				"description": "Rooが保護されたファイル（.rooignoreや.roo/設定ファイルなど）を承認なしで作成・編集することを許可します。"
+				"description": "Jabberwockが保護されたファイル（.jabberwockignoreや.jabberwock/設定ファイルなど）を承認なしで作成・編集することを許可します。"
 			}
 		},
 		"mcp": {
@@ -309,7 +309,7 @@
 		"searchProviderPlaceholder": "プロバイダーを検索",
 		"noProviderMatchFound": "プロバイダーが見つかりません",
 		"noMatchFound": "一致するプロファイルが見つかりません",
-		"retiredProviderMessage": "申し訳ございませんが、このプロバイダーはサポートを終了しました。実際に利用しているRooユーザーが非常に少なく、コードベースの範囲を縮小して、迅速な開発とコミュニティへの貢献を続ける必要がありました。本当に難しい決断でしたが、あなたにとって最も重要なことに集中するためです。残念ですが、ご理解ください。",
+		"retiredProviderMessage": "申し訳ございませんが、このプロバイダーはサポートを終了しました。実際に利用しているJabberwockユーザーが非常に少なく、コードベースの範囲を縮小して、迅速な開発とコミュニティへの貢献を続ける必要がありました。本当に難しい決断でしたが、あなたにとって最も重要なことに集中するためです。残念ですが、ご理解ください。",
 		"vscodeLmDescription": "VS Code言語モデルAPIを使用すると、他のVS Code拡張機能（GitHub Copilotなど）が提供するモデルを実行できます。最も簡単な方法は、VS Code MarketplaceからCopilotおよびCopilot Chat拡張機能をインストールすることです。",
 		"awsCustomArnUse": "使用したいモデルの有効なAmazon Bedrock ARNを入力してください。形式の例:",
 		"awsCustomArnDesc": "ARN内のリージョンが上で選択したAWSリージョンと一致していることを確認してください。",
@@ -456,7 +456,7 @@
 			"draftModelDesc": "推論デコーディングが正しく機能するには、ドラフトモデルは同じモデルファミリーから選択する必要があります。",
 			"selectDraftModel": "ドラフトモデルを選択",
 			"noModelsFound": "ドラフトモデルが見つかりません。LM Studioがサーバーモードで実行されていることを確認してください。",
-			"description": "LM Studioを使用すると、ローカルコンピューターでモデルを実行できます。始め方については、<a>クイックスタートガイド</a>をご覧ください。また、この拡張機能で使用するには、LM Studioの<b>ローカルサーバー</b>機能を起動する必要があります。<span>注意：</span>Roo Codeは複雑なプロンプトを使用し、Claudeモデルで最適に動作します。能力の低いモデルは期待通りに動作しない場合があります。"
+			"description": "LM Studioを使用すると、ローカルコンピューターでモデルを実行できます。始め方については、<a>クイックスタートガイド</a>をご覧ください。また、この拡張機能で使用するには、LM Studioの<b>ローカルサーバー</b>機能を起動する必要があります。<span>注意：</span>Jabberwockは複雑なプロンプトを使用し、Claudeモデルで最適に動作します。能力の低いモデルは期待通りに動作しない場合があります。"
 		},
 		"ollama": {
 			"baseUrl": "ベースURL（オプション）",
@@ -466,11 +466,11 @@
 			"numCtx": "コンテキストウィンドウサイズ (num_ctx)",
 			"numCtxHelp": "モデルのデフォルトのコンテキストウィンドウサイズを上書きします。モデルのModelfile構成を使用するには、空のままにします。最小値は128です。",
 			"description": "Ollamaを使用すると、ローカルコンピューターでモデルを実行できます。始め方については、クイックスタートガイドをご覧ください。",
-			"warning": "注意：Roo Codeは複雑なプロンプトを使用し、Claudeモデルで最適に動作します。能力の低いモデルは期待通りに動作しない場合があります。"
+			"warning": "注意：Jabberwockは複雑なプロンプトを使用し、Claudeモデルで最適に動作します。能力の低いモデルは期待通りに動作しない場合があります。"
 		},
-		"roo": {
-			"authenticatedMessage": "Roo Code Cloudアカウントを通じて安全に認証されています。",
-			"connectButton": "Roo Code Cloudに接続"
+		"jabberwock": {
+			"authenticatedMessage": "Jabberwock Cloudアカウントを通じて安全に認証されています。",
+			"connectButton": "Jabberwock Cloudに接続"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -480,7 +480,7 @@
 			}
 		},
 		"customModel": {
-			"capabilities": "カスタムOpenAI互換モデルの機能と価格を設定します。モデルの機能はRoo Codeのパフォーマンスに影響を与える可能性があるため、慎重に指定してください。",
+			"capabilities": "カスタムOpenAI互換モデルの機能と価格を設定します。モデルの機能はJabberwockのパフォーマンスに影響を与える可能性があるため、慎重に指定してください。",
 			"maxTokens": {
 				"label": "最大出力トークン",
 				"description": "モデルが生成できる応答の最大トークン数。（サーバーが最大トークンを設定できるようにするには-1を指定します。）"
@@ -527,7 +527,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "エラーと繰り返しの制限",
-			"description": "「Rooが問題を抱えています」ダイアログを表示するまでの連続エラーまたは繰り返しアクションの数。この安全機構を無効にするには0に設定します（トリガーされません）。",
+			"description": "「Jabberwockが問題を抱えています」ダイアログを表示するまでの連続エラーまたは繰り返しアクションの数。この安全機構を無効にするには0に設定します（トリガーされません）。",
 			"unlimitedDescription": "無制限のリトライが有効です（自動進行）。ダイアログは表示されません。",
 			"warning": "⚠️ 0に設定すると無制限のリトライが可能になり、API使用量が大幅に増加する可能性があります"
 		},
@@ -563,18 +563,18 @@
 		},
 		"enable": {
 			"label": "自動チェックポイントを有効化",
-			"description": "有効にすると、Rooはタスク実行中に自動的にチェックポイントを作成し、変更の確認や以前の状態への復帰を容易にします。 <0>詳細情報</0>"
+			"description": "有効にすると、Jabberwockはタスク実行中に自動的にチェックポイントを作成し、変更の確認や以前の状態への復帰を容易にします。 <0>詳細情報</0>"
 		}
 	},
 	"notifications": {
 		"sound": {
 			"label": "サウンドエフェクトを有効化",
-			"description": "有効にすると、Rooは通知やイベントのためにサウンドエフェクトを再生します。",
+			"description": "有効にすると、Jabberwockは通知やイベントのためにサウンドエフェクトを再生します。",
 			"volumeLabel": "音量"
 		},
 		"tts": {
 			"label": "音声合成を有効化",
-			"description": "有効にすると、Rooは音声合成を使用して応答を音声で読み上げます。",
+			"description": "有効にすると、Jabberwockは音声合成を使用して応答を音声で読み上げます。",
 			"speedLabel": "速度"
 		}
 	},
@@ -582,7 +582,7 @@
 		"description": "AIのコンテキストウィンドウに含まれる情報を制御し、token使用量とレスポンスの品質に影響します",
 		"autoCondenseContextPercent": {
 			"label": "インテリジェントなコンテキスト圧縮をトリガーするしきい値",
-			"description": "コンテキストウィンドウがこのしきい値に達すると、Rooは自動的に圧縮します。"
+			"description": "コンテキストウィンドウがこのしきい値に達すると、Jabberwockは自動的に圧縮します。"
 		},
 		"condensingApiConfiguration": {
 			"label": "コンテキスト圧縮用のAPI設定",
@@ -598,7 +598,7 @@
 		},
 		"autoCondenseContext": {
 			"name": "インテリジェントなコンテキスト圧縮を自動的にトリガーする",
-			"description": "有効にすると、Rooは閾値に達したときに自動的にコンテキストを圧縮します。無効にすると、手動でコンテキスト圧縮をトリガーできます。"
+			"description": "有効にすると、Jabberwockは閾値に達したときに自動的にコンテキストを圧縮します。無効にすると、手動でコンテキスト圧縮をトリガーできます。"
 		},
 		"openTabs": {
 			"label": "オープンタブコンテキスト制限",
@@ -609,12 +609,12 @@
 			"description": "現在の作業ディレクトリの詳細に含めるファイルの最大数。高い値はより多くのコンテキストを提供しますが、token使用量が増加します。"
 		},
 		"rooignore": {
-			"label": "リストと検索で.rooignoreファイルを表示",
-			"description": "有効にすると、.rooignoreのパターンに一致するファイルがロックシンボル付きでリストに表示されます。無効にすると、これらのファイルはファイルリストや検索から完全に非表示になります。"
+			"label": "リストと検索で.jabberwockignoreファイルを表示",
+			"description": "有効にすると、.jabberwockignoreのパターンに一致するファイルがロックシンボル付きでリストに表示されます。無効にすると、これらのファイルはファイルリストや検索から完全に非表示になります。"
 		},
 		"maxReadFile": {
 			"label": "ファイル読み込み自動切り詰めしきい値",
-			"description": "モデルが開始/終了の値を指定しない場合、Rooはこの行数を読み込みます。この数がファイルの総行数より少ない場合、Rooはコード定義の行番号インデックスを生成します。特殊なケース：-1はRooにファイル全体を読み込むよう指示し（インデックス作成なし）、0は行を読み込まず最小限のコンテキストのために行インデックスのみを提供するよう指示します。低い値は初期コンテキスト使用量を最小限に抑え、後続の正確な行範囲の読み込みを可能にします。明示的な開始/終了の要求はこの設定による制限を受けません。",
+			"description": "モデルが開始/終了の値を指定しない場合、Jabberwockはこの行数を読み込みます。この数がファイルの総行数より少ない場合、Jabberwockはコード定義の行番号インデックスを生成します。特殊なケース：-1はJabberwockにファイル全体を読み込むよう指示し（インデックス作成なし）、0は行を読み込まず最小限のコンテキストのために行インデックスのみを提供するよう指示します。低い値は初期コンテキスト使用量を最小限に抑え、後続の正確な行範囲の読み込みを可能にします。明示的な開始/終了の要求はこの設定による制限を受けません。",
 			"lines": "行",
 			"always_full_read": "常にファイル全体を読み込む"
 		},
@@ -671,7 +671,7 @@
 		},
 		"enableSubfolderRules": {
 			"label": "サブフォルダルールを有効化",
-			"description": "サブディレクトリから.roo/rulesとAGENTS.mdファイルを再帰的に検出してロードします。パッケージごとのルールを持つモノレポに便利です。"
+			"description": "サブディレクトリから.jabberwock/rulesとAGENTS.mdファイルを再帰的に検出してロードします。パッケージごとのルールを持つモノレポに便利です。"
 		}
 	},
 	"terminal": {
@@ -685,15 +685,15 @@
 		},
 		"outputLineLimit": {
 			"label": "ターミナル出力制限",
-			"description": "制限内に収めるため最初と最後の行を保持し、中間を削除します。トークンを節約するには下げる；Rooに中間の詳細を与えるには上げる。Rooはコンテンツがスキップされた箇所にプレースホルダーを表示します。<0>詳細情報</0>"
+			"description": "制限内に収めるため最初と最後の行を保持し、中間を削除します。トークンを節約するには下げる；Jabberwockに中間の詳細を与えるには上げる。Jabberwockはコンテンツがスキップされた箇所にプレースホルダーを表示します。<0>詳細情報</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "ターミナル文字制限",
-			"description": "出力サイズにハードキャップを適用してメモリ問題を防ぐため、行制限を上書きします。超過した場合、最初と最後を保持し、コンテンツがスキップされた箇所にRooにプレースホルダーを表示します。<0>詳細情報</0>"
+			"description": "出力サイズにハードキャップを適用してメモリ問題を防ぐため、行制限を上書きします。超過した場合、最初と最後を保持し、コンテンツがスキップされた箇所にJabberwockにプレースホルダーを表示します。<0>詳細情報</0>"
 		},
 		"outputPreviewSize": {
 			"label": "コマンド出力プレビューサイズ",
-			"description": "Rooが直接確認できるコマンド出力の量を制御します。完全な出力は常に保存され、必要に応じてアクセス可能です。",
+			"description": "Jabberwockが直接確認できるコマンド出力の量を制御します。完全な出力は常に保存され、必要に応じてアクセス可能です。",
 			"options": {
 				"small": "小 (5KB)",
 				"medium": "中 (10KB)",
@@ -706,7 +706,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "インラインターミナルを使用（推奨）",
-			"description": "より高速で信頼性の高い実行のため、シェルプロファイル/統合をバイパスしてインラインターミナル（チャット）でコマンドを実行します。無効にすると、Roo はシェルプロファイル、プロンプト、プラグインと共に VS Code ターミナルを使用します。<0>詳細情報</0>"
+			"description": "より高速で信頼性の高い実行のため、シェルプロファイル/統合をバイパスしてインラインターミナル（チャット）でコマンドを実行します。無効にすると、Jabberwock はシェルプロファイル、プロンプト、プラグインと共に VS Code ターミナルを使用します。<0>詳細情報</0>"
 		},
 		"commandDelay": {
 			"label": "ターミナルコマンド遅延",
@@ -743,7 +743,7 @@
 	"advanced": {
 		"diff": {
 			"label": "diff経由の編集を有効化",
-			"description": "有効にすると、Rooはファイルをより迅速に編集でき、切り詰められた全ファイル書き込みを自動的に拒否します。",
+			"description": "有効にすると、Jabberwockはファイルをより迅速に編集でき、切り詰められた全ファイル書き込みを自動的に拒否します。",
 			"strategy": {
 				"label": "Diff戦略",
 				"options": {
@@ -760,7 +760,7 @@
 		},
 		"todoList": {
 			"label": "ToDoリストツールを有効にする",
-			"description": "有効にすると、Rooはタスクの進捗を追跡するためのToDoリストを作成・管理できます。これにより、複雑なタスクを管理しやすいステップに整理できます。"
+			"description": "有効にすると、Jabberwockはタスクの進捗を追跡するためのToDoリストを作成・管理できます。これにより、複雑なタスクを管理しやすいステップに整理できます。"
 		}
 	},
 	"experimental": {
@@ -770,15 +770,15 @@
 		},
 		"INSERT_BLOCK": {
 			"name": "実験的なコンテンツ挿入ツールを使用する",
-			"description": "実験的なコンテンツ挿入ツールを有効にし、Rooがdiffを作成せずに特定の行番号にコンテンツを挿入できるようにします。"
+			"description": "実験的なコンテンツ挿入ツールを有効にし、Jabberwockがdiffを作成せずに特定の行番号にコンテンツを挿入できるようにします。"
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "実験的なマルチブロックdiffツールを使用する",
-			"description": "有効にすると、Rooはマルチブロックdiffツールを使用します。これにより、1つのリクエストでファイル内の複数のコードブロックを更新しようとします。"
+			"description": "有効にすると、Jabberwockはマルチブロックdiffツールを使用します。これにより、1つのリクエストでファイル内の複数のコードブロックを更新しようとします。"
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "並行ファイル読み取りを有効にする",
-			"description": "有効にすると、Rooは1回のリクエストで複数のファイル を読み取ることができます。無効にすると、Rooはファイルを1つずつ読み取る必要があります。能力の低いモデルで作業する場合や、ファイルアクセスをより細かく制御したい場合は、無効にすると役立ちます。"
+			"description": "有効にすると、Jabberwockは1回のリクエストで複数のファイル を読み取ることができます。無効にすると、Jabberwockはファイルを1つずつ読み取る必要があります。能力の低いモデルで作業する場合や、ファイルアクセスをより細かく制御したい場合は、無効にすると役立ちます。"
 		},
 		"MARKETPLACE": {
 			"name": "Marketplaceを有効にする",
@@ -786,7 +786,7 @@
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "バックグラウンド編集",
-			"description": "有効にすると、エディターのフォーカス中断を防ぎます。ファイル編集は差分ビューを開いたりフォーカスを奪ったりすることなく、バックグラウンドで行われます。Rooが変更を行っている間も中断されることなく作業を続けることができます。ファイルは診断をキャプチャするためにフォーカスなしで開くか、完全に閉じたままにできます。"
+			"description": "有効にすると、エディターのフォーカス中断を防ぎます。ファイル編集は差分ビューを開いたりフォーカスを奪ったりすることなく、バックグラウンドで行われます。Jabberwockが変更を行っている間も中断されることなく作業を続けることができます。ファイルは診断をキャプチャするためにフォーカスなしで開くか、完全に閉じたままにできます。"
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "新しいメッセージパーサーを使う",
@@ -800,7 +800,7 @@
 			"providerLabel": "プロバイダー",
 			"providerDescription": "画像生成に使用するプロバイダーを選択",
 			"name": "AI画像生成を有効にする",
-			"description": "有効にすると、RooはOpenRouterの画像生成モデルを使用してテキストプロンプトから画像を生成できます。OpenRouter APIキーの設定が必要です。",
+			"description": "有効にすると、JabberwockはOpenRouterの画像生成モデルを使用してテキストプロンプトから画像を生成できます。OpenRouter APIキーの設定が必要です。",
 			"openRouterApiKeyLabel": "OpenRouter APIキー",
 			"openRouterApiKeyPlaceholder": "OpenRouter APIキーを入力してください",
 			"getApiKeyText": "APIキーを取得する場所",
@@ -811,13 +811,13 @@
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "モデル開始スラッシュコマンドを有効にする",
-			"description": "有効にすると、Rooがワークフローを実行するためにあなたのスラッシュコマンドを実行できます。"
+			"description": "有効にすると、Jabberwockがワークフローを実行するためにあなたのスラッシュコマンドを実行できます。"
 		},
 		"CUSTOM_TOOLS": {
 			"name": "カスタムツールを有効化",
-			"description": "有効にすると、Rooはプロジェクトの.roo/toolsディレクトリまたはグローバルツール用の~/.roo/toolsからカスタムTypeScript/JavaScriptツールを読み込んで使用できます。注意：これらのツールは自動的に承認されます。",
+			"description": "有効にすると、Jabberwockはプロジェクトの.jabberwock/toolsディレクトリまたはグローバルツール用の~/.jabberwock/toolsからカスタムTypeScript/JavaScriptツールを読み込んで使用できます。注意：これらのツールは自動的に承認されます。",
 			"toolsHeader": "利用可能なカスタムツール",
-			"noTools": "カスタムツールが読み込まれていません。プロジェクトの.roo/toolsディレクトリまたはグローバルツール用の~/.roo/toolsに.tsまたは.jsファイルを追加してください。",
+			"noTools": "カスタムツールが読み込まれていません。プロジェクトの.jabberwock/toolsディレクトリまたはグローバルツール用の~/.jabberwock/toolsに.tsまたは.jsファイルを追加してください。",
 			"refreshButton": "更新",
 			"refreshing": "更新中...",
 			"refreshSuccess": "ツールが正常に更新されました",
@@ -827,7 +827,7 @@
 	},
 	"promptCaching": {
 		"label": "プロンプトキャッシュを無効化",
-		"description": "チェックすると、Rooはこのモデルに対してプロンプトキャッシュを使用しません。"
+		"description": "チェックすると、Jabberwockはこのモデルに対してプロンプトキャッシュを使用しません。"
 	},
 	"temperature": {
 		"useCustom": "カスタム温度を使用",
@@ -857,7 +857,7 @@
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "拡張機能は<serviceLink>{{serviceName}}</serviceLink>で利用可能な最新のモデルリストを自動的に取得します。どのモデルを選ぶべきか迷っている場合、Roo Codeは<defaultModelLink>{{defaultModelId}}</defaultModelLink>で最適に動作します。また、「free」で検索すると、現在利用可能な無料オプションを見つけることができます。",
+		"automaticFetch": "拡張機能は<serviceLink>{{serviceName}}</serviceLink>で利用可能な最新のモデルリストを自動的に取得します。どのモデルを選ぶべきか迷っている場合、Jabberwockは<defaultModelLink>{{defaultModelId}}</defaultModelLink>で最適に動作します。また、「free」で検索すると、現在利用可能な無料オプションを見つけることができます。",
 		"label": "モデル",
 		"searchPlaceholder": "検索",
 		"noMatchFound": "一致するものが見つかりません",
@@ -867,7 +867,7 @@
 	"footer": {
 		"telemetry": {
 			"label": "匿名のエラーと使用状況レポートを許可",
-			"description": "匿名の使用データとエラーレポートを送信してRoo Codeの改善にご協力ください。このテレメトリはコード、プロンプト、個人情報を収集しません。詳細については<privacyLink>プライバシーポリシー</privacyLink>をご覧ください。"
+			"description": "匿名の使用データとエラーレポートを送信してJabberwockの改善にご協力ください。このテレメトリはコード、プロンプト、個人情報を収集しません。詳細については<privacyLink>プライバシーポリシー</privacyLink>をご覧ください。"
 		},
 		"settings": {
 			"import": "インポート",

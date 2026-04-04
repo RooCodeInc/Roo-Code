@@ -1,6 +1,6 @@
 import * as path from "path"
 
-import { type ClineSayTool } from "@roo-code/types"
+import { type ClineSayTool } from "@jabberwock/types"
 
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
@@ -38,15 +38,15 @@ export class ListFilesTool extends BaseTool<"list_files"> {
 			const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
 
 			const [files, didHitLimit] = await listFiles(absolutePath, recursive || false, 200)
-			const { showRooIgnoredFiles = false } = (await task.providerRef.deref()?.getState()) ?? {}
+			const { showJabberwockIgnoredFiles = false } = (await task.providerRef.deref()?.getState()) ?? {}
 
 			const result = formatResponse.formatFilesList(
 				absolutePath,
 				files,
 				didHitLimit,
-				task.rooIgnoreController,
-				showRooIgnoredFiles,
-				task.rooProtectedController,
+				task.jabberwockIgnoreController,
+				showJabberwockIgnoredFiles,
+				task.jabberwockProtectedController,
 			)
 
 			const sharedMessageProps: ClineSayTool = {

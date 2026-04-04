@@ -15,7 +15,7 @@ import {
 	type GlobalState,
 	type ProviderName,
 	type ProviderSettings,
-	type RooCodeSettings,
+	type JabberwockSettings,
 	type ProviderSettingsEntry,
 	type StaticAppProperties,
 	type DynamicAppProperties,
@@ -37,7 +37,7 @@ import {
 	type ExtensionMessage,
 	type ExtensionState,
 	type MarketplaceInstalledMetadata,
-	RooCodeEventName,
+	JabberwockEventName,
 	requestyDefaultModelId,
 	openRouterDefaultModelId,
 	DEFAULT_WRITE_DELAY_MS,
@@ -46,10 +46,10 @@ import {
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 	getModelId,
 	isRetiredProvider,
-} from "@roo-code/types"
+} from "@jabberwock/types"
 import { aggregateTaskCostsRecursive, type AggregatedCosts } from "./aggregateTaskCosts"
-import { TelemetryService } from "@roo-code/telemetry"
-import { CloudService, getRooCodeApiUrl } from "@roo-code/cloud"
+import { TelemetryService } from "@jabberwock/telemetry"
+import { CloudService, getJabberwockApiUrl } from "@jabberwock/cloud"
 
 import { Package } from "../../shared/package"
 import { findLast } from "../../shared/array"
@@ -96,7 +96,7 @@ import { CustomModesManager } from "../config/CustomModesManager"
 import { Task } from "../task/Task"
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
-import type { ClineMessage, TodoItem } from "@roo-code/types"
+import type { ClineMessage, TodoItem } from "@jabberwock/types"
 import { readApiMessages, saveApiMessages, saveTaskMessages, TaskHistoryStore } from "../task-persistence"
 import { readTaskMessages } from "../task-persistence/taskMessages"
 import { getNonce } from "./getNonce"
@@ -236,14 +236,14 @@ export class ClineProvider
 		// Forward <most> task events to the provider.
 		// We do something fairly similar for the IPC-based API.
 		this.taskCreationCallback = (instance: Task) => {
-			this.emit(RooCodeEventName.TaskCreated, instance)
+			this.emit(JabberwockEventName.TaskCreated, instance)
 
 			// Create named listener functions so we can remove them later.
-			const onTaskStarted = () => this.emit(RooCodeEventName.TaskStarted, instance.taskId)
+			const onTaskStarted = () => this.emit(JabberwockEventName.TaskStarted, instance.taskId)
 			const onTaskCompleted = (taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage) =>
-				this.emit(RooCodeEventName.TaskCompleted, taskId, tokenUsage, toolUsage)
+				this.emit(JabberwockEventName.TaskCompleted, taskId, tokenUsage, toolUsage)
 			const onTaskAborted = async () => {
-				this.emit(RooCodeEventName.TaskAborted, instance.taskId)
+				this.emit(JabberwockEventName.TaskAborted, instance.taskId)
 
 				try {
 					// Only rehydrate on genuine streaming failures.
@@ -271,55 +271,55 @@ export class ClineProvider
 					)
 				}
 			}
-			const onTaskFocused = () => this.emit(RooCodeEventName.TaskFocused, instance.taskId)
-			const onTaskUnfocused = () => this.emit(RooCodeEventName.TaskUnfocused, instance.taskId)
-			const onTaskActive = (taskId: string) => this.emit(RooCodeEventName.TaskActive, taskId)
-			const onTaskInteractive = (taskId: string) => this.emit(RooCodeEventName.TaskInteractive, taskId)
-			const onTaskResumable = (taskId: string) => this.emit(RooCodeEventName.TaskResumable, taskId)
-			const onTaskIdle = (taskId: string) => this.emit(RooCodeEventName.TaskIdle, taskId)
-			const onTaskPaused = (taskId: string) => this.emit(RooCodeEventName.TaskPaused, taskId)
-			const onTaskUnpaused = (taskId: string) => this.emit(RooCodeEventName.TaskUnpaused, taskId)
-			const onTaskSpawned = (taskId: string) => this.emit(RooCodeEventName.TaskSpawned, taskId)
-			const onTaskUserMessage = (taskId: string) => this.emit(RooCodeEventName.TaskUserMessage, taskId)
+			const onTaskFocused = () => this.emit(JabberwockEventName.TaskFocused, instance.taskId)
+			const onTaskUnfocused = () => this.emit(JabberwockEventName.TaskUnfocused, instance.taskId)
+			const onTaskActive = (taskId: string) => this.emit(JabberwockEventName.TaskActive, taskId)
+			const onTaskInteractive = (taskId: string) => this.emit(JabberwockEventName.TaskInteractive, taskId)
+			const onTaskResumable = (taskId: string) => this.emit(JabberwockEventName.TaskResumable, taskId)
+			const onTaskIdle = (taskId: string) => this.emit(JabberwockEventName.TaskIdle, taskId)
+			const onTaskPaused = (taskId: string) => this.emit(JabberwockEventName.TaskPaused, taskId)
+			const onTaskUnpaused = (taskId: string) => this.emit(JabberwockEventName.TaskUnpaused, taskId)
+			const onTaskSpawned = (taskId: string) => this.emit(JabberwockEventName.TaskSpawned, taskId)
+			const onTaskUserMessage = (taskId: string) => this.emit(JabberwockEventName.TaskUserMessage, taskId)
 			const onTaskTokenUsageUpdated = (taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage) =>
-				this.emit(RooCodeEventName.TaskTokenUsageUpdated, taskId, tokenUsage, toolUsage)
+				this.emit(JabberwockEventName.TaskTokenUsageUpdated, taskId, tokenUsage, toolUsage)
 
 			// Attach the listeners.
-			instance.on(RooCodeEventName.TaskStarted, onTaskStarted)
-			instance.on(RooCodeEventName.TaskCompleted, onTaskCompleted)
-			instance.on(RooCodeEventName.TaskAborted, onTaskAborted)
-			instance.on(RooCodeEventName.TaskFocused, onTaskFocused)
-			instance.on(RooCodeEventName.TaskUnfocused, onTaskUnfocused)
-			instance.on(RooCodeEventName.TaskActive, onTaskActive)
-			instance.on(RooCodeEventName.TaskInteractive, onTaskInteractive)
-			instance.on(RooCodeEventName.TaskResumable, onTaskResumable)
-			instance.on(RooCodeEventName.TaskIdle, onTaskIdle)
-			instance.on(RooCodeEventName.TaskPaused, onTaskPaused)
-			instance.on(RooCodeEventName.TaskUnpaused, onTaskUnpaused)
-			instance.on(RooCodeEventName.TaskSpawned, onTaskSpawned)
-			instance.on(RooCodeEventName.TaskUserMessage, onTaskUserMessage)
-			instance.on(RooCodeEventName.TaskTokenUsageUpdated, onTaskTokenUsageUpdated)
+			instance.on(JabberwockEventName.TaskStarted, onTaskStarted)
+			instance.on(JabberwockEventName.TaskCompleted, onTaskCompleted)
+			instance.on(JabberwockEventName.TaskAborted, onTaskAborted)
+			instance.on(JabberwockEventName.TaskFocused, onTaskFocused)
+			instance.on(JabberwockEventName.TaskUnfocused, onTaskUnfocused)
+			instance.on(JabberwockEventName.TaskActive, onTaskActive)
+			instance.on(JabberwockEventName.TaskInteractive, onTaskInteractive)
+			instance.on(JabberwockEventName.TaskResumable, onTaskResumable)
+			instance.on(JabberwockEventName.TaskIdle, onTaskIdle)
+			instance.on(JabberwockEventName.TaskPaused, onTaskPaused)
+			instance.on(JabberwockEventName.TaskUnpaused, onTaskUnpaused)
+			instance.on(JabberwockEventName.TaskSpawned, onTaskSpawned)
+			instance.on(JabberwockEventName.TaskUserMessage, onTaskUserMessage)
+			instance.on(JabberwockEventName.TaskTokenUsageUpdated, onTaskTokenUsageUpdated)
 
 			// Store the cleanup functions for later removal.
 			this.taskEventListeners.set(instance, [
-				() => instance.off(RooCodeEventName.TaskStarted, onTaskStarted),
-				() => instance.off(RooCodeEventName.TaskCompleted, onTaskCompleted),
-				() => instance.off(RooCodeEventName.TaskAborted, onTaskAborted),
-				() => instance.off(RooCodeEventName.TaskFocused, onTaskFocused),
-				() => instance.off(RooCodeEventName.TaskUnfocused, onTaskUnfocused),
-				() => instance.off(RooCodeEventName.TaskActive, onTaskActive),
-				() => instance.off(RooCodeEventName.TaskInteractive, onTaskInteractive),
-				() => instance.off(RooCodeEventName.TaskResumable, onTaskResumable),
-				() => instance.off(RooCodeEventName.TaskIdle, onTaskIdle),
-				() => instance.off(RooCodeEventName.TaskUserMessage, onTaskUserMessage),
-				() => instance.off(RooCodeEventName.TaskPaused, onTaskPaused),
-				() => instance.off(RooCodeEventName.TaskUnpaused, onTaskUnpaused),
-				() => instance.off(RooCodeEventName.TaskSpawned, onTaskSpawned),
-				() => instance.off(RooCodeEventName.TaskTokenUsageUpdated, onTaskTokenUsageUpdated),
+				() => instance.off(JabberwockEventName.TaskStarted, onTaskStarted),
+				() => instance.off(JabberwockEventName.TaskCompleted, onTaskCompleted),
+				() => instance.off(JabberwockEventName.TaskAborted, onTaskAborted),
+				() => instance.off(JabberwockEventName.TaskFocused, onTaskFocused),
+				() => instance.off(JabberwockEventName.TaskUnfocused, onTaskUnfocused),
+				() => instance.off(JabberwockEventName.TaskActive, onTaskActive),
+				() => instance.off(JabberwockEventName.TaskInteractive, onTaskInteractive),
+				() => instance.off(JabberwockEventName.TaskResumable, onTaskResumable),
+				() => instance.off(JabberwockEventName.TaskIdle, onTaskIdle),
+				() => instance.off(JabberwockEventName.TaskUserMessage, onTaskUserMessage),
+				() => instance.off(JabberwockEventName.TaskPaused, onTaskPaused),
+				() => instance.off(JabberwockEventName.TaskUnpaused, onTaskUnpaused),
+				() => instance.off(JabberwockEventName.TaskSpawned, onTaskSpawned),
+				() => instance.off(JabberwockEventName.TaskTokenUsageUpdated, onTaskTokenUsageUpdated),
 			])
 		}
 
-		// Initialize Roo Code Cloud profile sync.
+		// Initialize Jabberwock Cloud profile sync.
 		if (CloudService.hasInstance()) {
 			this.initializeCloudProfileSync().catch((error) => {
 				this.log(`Failed to initialize cloud profile sync: ${error}`)
@@ -472,7 +472,7 @@ export class ClineProvider
 		// Add this cline instance into the stack that represents the order of
 		// all the called tasks.
 		this.clineStack.push(task)
-		task.emit(RooCodeEventName.TaskFocused)
+		task.emit(JabberwockEventName.TaskFocused)
 
 		// Perform special setup provider specific tasks.
 		await this.performPreparationTasks(task)
@@ -519,7 +519,7 @@ export class ClineProvider
 			const childTaskId = task.taskId
 			const parentTaskId = task.parentTaskId
 
-			task.emit(RooCodeEventName.TaskUnfocused)
+			task.emit(JabberwockEventName.TaskUnfocused)
 
 			try {
 				// Abort the running task and set isAbandoned to true so
@@ -963,7 +963,7 @@ export class ClineProvider
 		historyItem: HistoryItem & { rootTask?: Task; parentTask?: Task },
 		options?: { startTask?: boolean },
 	) {
-		const isCliRuntime = process.env.ROO_CLI_RUNTIME === "1"
+		const isCliRuntime = process.env.JABBERWOCK_CLI_RUNTIME === "1"
 		// CLI injects runtime provider settings from command flags/env at startup.
 		// Restoring provider profiles from task history can overwrite those
 		// runtime settings with stale/incomplete persisted profiles.
@@ -1118,7 +1118,7 @@ export class ClineProvider
 
 			// Replace the task in the stack
 			this.clineStack[stackIndex] = task
-			task.emit(RooCodeEventName.TaskFocused)
+			task.emit(JabberwockEventName.TaskFocused)
 
 			// Perform preparation tasks and set up event listeners
 			await this.performPreparationTasks(task)
@@ -1283,7 +1283,7 @@ export class ClineProvider
 						window.AUDIO_BASE_URI = "${audioUri}"
 						window.MATERIAL_ICONS_BASE_URI = "${materialIconsUri}"
 					</script>
-					<title>Roo Code</title>
+					<title>Jabberwock</title>
 				</head>
 				<body>
 					<div id="root"></div>
@@ -1354,7 +1354,7 @@ export class ClineProvider
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
             <meta name="theme-color" content="#000000">
-            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${webview.cspSource} data:; style-src ${webview.cspSource} 'unsafe-inline'; img-src ${webview.cspSource} https://storage.googleapis.com https://img.clerk.com data:; media-src ${webview.cspSource}; script-src ${webview.cspSource} 'wasm-unsafe-eval' 'nonce-${nonce}' https://ph.roocode.com 'strict-dynamic'; connect-src ${webview.cspSource} ${openRouterDomain} https://api.requesty.ai https://ph.roocode.com;">
+            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${webview.cspSource} data:; style-src ${webview.cspSource} 'unsafe-inline'; img-src ${webview.cspSource} https://storage.googleapis.com https://img.clerk.com data:; media-src ${webview.cspSource}; script-src ${webview.cspSource} 'wasm-unsafe-eval' 'nonce-${nonce}' https://ph.jabberwock.com 'strict-dynamic'; connect-src ${webview.cspSource} ${openRouterDomain} https://api.requesty.ai https://ph.jabberwock.com;">
             <link rel="stylesheet" type="text/css" href="${stylesUri}">
 			<link href="${codiconsUri}" rel="stylesheet" />
 			<script nonce="${nonce}">
@@ -1362,7 +1362,7 @@ export class ClineProvider
 				window.AUDIO_BASE_URI = "${audioUri}"
 				window.MATERIAL_ICONS_BASE_URI = "${materialIconsUri}"
 			</script>
-            <title>Roo Code</title>
+            <title>Jabberwock</title>
           </head>
           <body>
             <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -1396,7 +1396,7 @@ export class ClineProvider
 
 		if (task) {
 			TelemetryService.instance.captureModeSwitch(task.taskId, newMode)
-			task.emit(RooCodeEventName.TaskModeSwitched, task.taskId, newMode)
+			task.emit(JabberwockEventName.TaskModeSwitched, task.taskId, newMode)
 
 			try {
 				// Update the task history with the new mode first.
@@ -1424,7 +1424,7 @@ export class ClineProvider
 
 		await this.updateGlobalState("mode", newMode)
 
-		this.emit(RooCodeEventName.ModeChanged, newMode)
+		this.emit(JabberwockEventName.ModeChanged, newMode)
 
 		// If workspace lock is on, keep the current API config — don't load mode-specific config
 		const lockApiConfigAcrossModes = this.context.workspaceState.get("lockApiConfigAcrossModes", false)
@@ -1670,7 +1670,7 @@ export class ClineProvider
 		await this.postStateToWebview()
 
 		if (providerSettings.apiProvider) {
-			this.emit(RooCodeEventName.ProviderProfileChanged, { name, provider: providerSettings.apiProvider })
+			this.emit(JabberwockEventName.ProviderProfileChanged, { name, provider: providerSettings.apiProvider })
 		}
 	}
 
@@ -1686,21 +1686,21 @@ export class ClineProvider
 		// Get platform-specific application data directory
 		let mcpServersDir: string
 		if (process.platform === "win32") {
-			// Windows: %APPDATA%\Roo-Code\MCP
-			mcpServersDir = path.join(os.homedir(), "AppData", "Roaming", "Roo-Code", "MCP")
+			// Windows: %APPDATA%\Jabberwock\MCP
+			mcpServersDir = path.join(os.homedir(), "AppData", "Roaming", "Jabberwock", "MCP")
 		} else if (process.platform === "darwin") {
 			// macOS: ~/Documents/Cline/MCP
 			mcpServersDir = path.join(os.homedir(), "Documents", "Cline", "MCP")
 		} else {
 			// Linux: ~/.local/share/Cline/MCP
-			mcpServersDir = path.join(os.homedir(), ".local", "share", "Roo-Code", "MCP")
+			mcpServersDir = path.join(os.homedir(), ".local", "share", "Jabberwock", "MCP")
 		}
 
 		try {
 			await fs.mkdir(mcpServersDir, { recursive: true })
 		} catch (error) {
 			// Fallback to a relative path if directory creation fails
-			return path.join(os.homedir(), ".roo-code", "mcp")
+			return path.join(os.homedir(), ".jabberwock", "mcp")
 		}
 		return mcpServersDir
 	}
@@ -2177,7 +2177,7 @@ export class ClineProvider
 			maxWorkspaceFiles,
 			disabledTools,
 			telemetrySetting,
-			showRooIgnoredFiles,
+			showJabberwockIgnoredFiles,
 			enableSubfolderRules,
 			language,
 			maxImageFileSize,
@@ -2301,7 +2301,7 @@ export class ClineProvider
 			telemetrySetting,
 			telemetryKey,
 			machineId,
-			showRooIgnoredFiles: showRooIgnoredFiles ?? false,
+			showJabberwockIgnoredFiles: showJabberwockIgnoredFiles ?? false,
 			enableSubfolderRules: enableSubfolderRules ?? false,
 			language: language ?? formatLanguage(vscode.env.language),
 			renderContext: this.renderContext,
@@ -2313,7 +2313,7 @@ export class ClineProvider
 			enterBehavior: enterBehavior ?? "send",
 			cloudUserInfo,
 			cloudIsAuthenticated: cloudIsAuthenticated ?? false,
-			cloudAuthSkipModel: this.context.globalState.get<boolean>("roo-auth-skip-model") ?? false,
+			cloudAuthSkipModel: this.context.globalState.get<boolean>("jabberwock-auth-skip-model") ?? false,
 			cloudOrganizations,
 			sharingEnabled: sharingEnabled ?? false,
 			publicSharingEnabled: publicSharingEnabled ?? false,
@@ -2339,7 +2339,7 @@ export class ClineProvider
 			// undefined means no MDM policy, true means compliant, false means non-compliant
 			mdmCompliant: this.mdmService?.requiresCloudAuth() ? this.checkMdmCompliance() : undefined,
 			profileThresholds: profileThresholds ?? {},
-			cloudApiUrl: getRooCodeApiUrl(),
+			cloudApiUrl: getJabberwockApiUrl(),
 			hasOpenedModeSelector: this.getGlobalState("hasOpenedModeSelector") ?? false,
 			lockApiConfigAcrossModes: lockApiConfigAcrossModes ?? false,
 			alwaysAllowFollowupQuestions: alwaysAllowFollowupQuestions ?? false,
@@ -2527,7 +2527,7 @@ export class ClineProvider
 			maxWorkspaceFiles: stateValues.maxWorkspaceFiles ?? 200,
 			disabledTools: stateValues.disabledTools,
 			telemetrySetting: stateValues.telemetrySetting || "unset",
-			showRooIgnoredFiles: stateValues.showRooIgnoredFiles ?? false,
+			showJabberwockIgnoredFiles: stateValues.showJabberwockIgnoredFiles ?? false,
 			enableSubfolderRules: stateValues.enableSubfolderRules ?? false,
 			maxImageFileSize: stateValues.maxImageFileSize ?? 5,
 			maxTotalImageSize: stateValues.maxTotalImageSize ?? 20,
@@ -2673,11 +2673,11 @@ export class ClineProvider
 		return this.contextProxy.getValue(key)
 	}
 
-	public async setValue<K extends keyof RooCodeSettings>(key: K, value: RooCodeSettings[K]) {
+	public async setValue<K extends keyof JabberwockSettings>(key: K, value: JabberwockSettings[K]) {
 		await this.contextProxy.setValue(key, value)
 	}
 
-	public getValue<K extends keyof RooCodeSettings>(key: K) {
+	public getValue<K extends keyof JabberwockSettings>(key: K) {
 		return this.contextProxy.getValue(key)
 	}
 
@@ -2685,7 +2685,7 @@ export class ClineProvider
 		return this.contextProxy.getValues()
 	}
 
-	public async setValues(values: RooCodeSettings) {
+	public async setValues(values: JabberwockSettings) {
 		await this.contextProxy.setValues(values)
 	}
 
@@ -2892,7 +2892,7 @@ export class ClineProvider
 		images?: string[],
 		parentTask?: Task,
 		options: CreateTaskOptions = {},
-		configuration: RooCodeSettings = {},
+		configuration: JabberwockSettings = {},
 	): Promise<Task> {
 		if (configuration) {
 			await this.setValues(configuration)
@@ -2925,7 +2925,7 @@ export class ClineProvider
 
 			// Register custom modes so the CustomModesManager knows about them.
 			// setValues writes to global state, but the manager overwrites that
-			// when it merges .roomodes + global settings on refresh.  Persisting
+			// when it merges .jabberwockmodes + global settings on refresh.  Persisting
 			// via updateCustomMode ensures modes survive the merge cycle.
 			if (configuration.customModes?.length) {
 				for (const mode of configuration.customModes) {
@@ -3228,6 +3228,51 @@ export class ClineProvider
 	 * - Emit TaskDelegated (task-level; API forwards to provider/bridge)
 	 * - Create child as sole active and switch mode to child's mode
 	 */
+	/**
+	 * Starts a child task in the background for parallel execution (Jabberwock Async Orchestration).
+	 * Returns the child task instance immediately without waiting for it to complete.
+	 */
+	public async startBackgroundTask(params: {
+		parentTaskId: string
+		message: string
+		initialTodos: TodoItem[]
+		mode: string
+	}): Promise<Task> {
+		const { parentTaskId, message, initialTodos, mode } = params
+
+		const parent = this.getCurrentTask()
+		if (!parent || parent.taskId !== parentTaskId) {
+			throw new Error("[startBackgroundTask] Parent mismatch or no current task")
+		}
+
+		// Flush parent tool results
+		await parent.flushPendingToolResultsToHistory()
+
+		const { apiConfiguration, enableCheckpoints, checkpointTimeout, experiments } = await this.getState()
+
+		const childTask = new Task({
+			provider: this,
+			apiConfiguration,
+			enableCheckpoints,
+			checkpointTimeout,
+			consecutiveMistakeLimit: apiConfiguration.consecutiveMistakeLimit,
+			task: message,
+			images: [],
+			experiments,
+			rootTask: parent.rootTask ?? parent,
+			parentTask: parent,
+			taskNumber: parent.taskNumber + 1000, // arbitrary offset for hidden task
+			onCreated: this.taskCreationCallback,
+			initialTodos,
+			startTask: false,
+		})
+
+		// Do NOT add to clineStack. We just let it run.
+		childTask.start()
+
+		return childTask
+	}
+
 	public async delegateParentAndOpenChild(params: {
 		parentTaskId: string
 		message: string
@@ -3352,7 +3397,7 @@ export class ClineProvider
 
 		// 7) Emit TaskDelegated (provider-level)
 		try {
-			this.emit(RooCodeEventName.TaskDelegated, parentTaskId, child.taskId)
+			this.emit(JabberwockEventName.TaskDelegated, parentTaskId, child.taskId)
 		} catch {
 			// non-fatal
 		}
@@ -3525,7 +3570,7 @@ export class ClineProvider
 
 		// 6) Emit TaskDelegationCompleted (provider-level)
 		try {
-			this.emit(RooCodeEventName.TaskDelegationCompleted, parentTaskId, childTaskId, completionResultSummary)
+			this.emit(JabberwockEventName.TaskDelegationCompleted, parentTaskId, childTaskId, completionResultSummary)
 		} catch {
 			// non-fatal
 		}
@@ -3553,7 +3598,7 @@ export class ClineProvider
 
 		// 9) Emit TaskDelegationResumed (provider-level)
 		try {
-			this.emit(RooCodeEventName.TaskDelegationResumed, parentTaskId, childTaskId)
+			this.emit(JabberwockEventName.TaskDelegationResumed, parentTaskId, childTaskId)
 		} catch {
 			// non-fatal
 		}

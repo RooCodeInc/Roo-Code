@@ -9,7 +9,7 @@ const { getTestConfigDir } = vi.hoisted(() => {
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	const path = require("path")
 	const testRunId = Date.now().toString()
-	const testConfigDir = path.join(os.tmpdir(), `roo-cli-settings-test-${testRunId}`)
+	const testConfigDir = path.join(os.tmpdir(), `jabberwock-cli-settings-test-${testRunId}`)
 	return { getTestConfigDir: () => testConfigDir }
 })
 
@@ -51,7 +51,7 @@ describe("Settings Storage", () => {
 
 		it("should load saved settings", async () => {
 			const settingsData = {
-				onboardingProviderChoice: OnboardingProviderChoice.Roo,
+				onboardingProviderChoice: OnboardingProviderChoice.Jabberwock,
 				mode: "architect",
 				provider: "anthropic" as const,
 				model: "claude-sonnet-4-20250514",
@@ -138,7 +138,7 @@ describe("Settings Storage", () => {
 
 	describe("resetOnboarding", () => {
 		it("should reset onboarding provider choice", async () => {
-			await saveSettings({ onboardingProviderChoice: OnboardingProviderChoice.Roo })
+			await saveSettings({ onboardingProviderChoice: OnboardingProviderChoice.Jabberwock })
 
 			await resetOnboarding()
 

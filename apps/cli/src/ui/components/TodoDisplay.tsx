@@ -1,7 +1,7 @@
 import { memo } from "react"
 import { Box, Text } from "ink"
 
-import type { TodoItem } from "@roo-code/types"
+import type { TodoItem } from "@jabberwock/types"
 
 import * as theme from "../theme.js"
 import ProgressBar from "./ProgressBar.js"

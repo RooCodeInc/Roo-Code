@@ -1,4 +1,4 @@
-import type { ModelInfo } from "../model.js"
+import type { ModelInfo } from "../model.ts"
 
 // https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude
 export type VertexModelId = keyof typeof vertexModels

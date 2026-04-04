@@ -1,4 +1,4 @@
-import { CancellationTokenSource } from "../classes/CancellationToken.js"
+import { CancellationTokenSource } from "../classes/CancellationToken.ts"
 
 describe("CancellationToken", () => {
 	describe("initial state", () => {

@@ -33,10 +33,10 @@ describe("generateImageTool", () => {
 			recordToolUsage: vi.fn(),
 			sayAndCreateMissingParamError: vi.fn().mockResolvedValue("Missing parameter error"),
 			say: vi.fn(),
-			rooIgnoreController: {
+			jabberwockIgnoreController: {
 				validateAccess: vi.fn().mockReturnValue(true),
 			},
-			rooProtectedController: {
+			jabberwockProtectedController: {
 				isWriteProtected: vi.fn().mockReturnValue(false),
 			},
 			providerRef: {

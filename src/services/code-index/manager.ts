@@ -8,13 +8,14 @@ import { CodeIndexServiceFactory } from "./service-factory"
 import { CodeIndexSearchService } from "./search-service"
 import { CodeIndexOrchestrator } from "./orchestrator"
 import { CacheManager } from "./cache-manager"
-import { RooIgnoreController } from "../../core/ignore/RooIgnoreController"
+import { JabberwockIgnoreController } from "../../core/ignore/JabberwockIgnoreController"
 import fs from "fs/promises"
 import ignore from "ignore"
 import path from "path"
+import { fileExistsAtPath } from "../../utils/fs"
 import { t } from "../../i18n"
-import { TelemetryService } from "@roo-code/telemetry"
-import { TelemetryEventName } from "@roo-code/types"
+import { TelemetryService } from "@jabberwock/telemetry"
+import { TelemetryEventName } from "@jabberwock/types"
 
 export class CodeIndexManager {
 	// --- Singleton Implementation ---
@@ -373,9 +374,11 @@ export class CodeIndexManager {
 		// Create .gitignore instance
 		const ignorePath = path.join(workspacePath, ".gitignore")
 		try {
-			const content = await fs.readFile(ignorePath, "utf8")
-			ignoreInstance.add(content)
-			ignoreInstance.add(".gitignore")
+			if (await fileExistsAtPath(ignorePath)) {
+				const content = await fs.readFile(ignorePath, "utf8")
+				ignoreInstance.add(content)
+				ignoreInstance.add(".gitignore")
+			}
 		} catch (error) {
 			// Should never happen: reading file failed even though it exists
 			console.error("Unexpected error loading .gitignore:", error)
@@ -386,16 +389,16 @@ export class CodeIndexManager {
 			})
 		}
 
-		// Create RooIgnoreController instance
-		const rooIgnoreController = new RooIgnoreController(workspacePath)
-		await rooIgnoreController.initialize()
+		// Create JabberwockIgnoreController instance
+		const jabberwockIgnoreController = new JabberwockIgnoreController(workspacePath)
+		await jabberwockIgnoreController.initialize()
 
 		// (Re)Create shared service instances
 		const { embedder, vectorStore, scanner, fileWatcher } = this._serviceFactory.createServices(
 			this.context,
 			this._cacheManager!,
 			ignoreInstance,
-			rooIgnoreController,
+			jabberwockIgnoreController,
 		)
 
 		// Validate embedder configuration before proceeding

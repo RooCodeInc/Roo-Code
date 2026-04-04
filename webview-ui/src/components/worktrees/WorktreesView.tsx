@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 
-import type { Worktree, WorktreeListResponse, WorktreeIncludeStatus } from "@roo-code/types"
+import type { Worktree, WorktreeListResponse, WorktreeIncludeStatus } from "@jabberwock/types"
 
 import { Badge, Button, StandardTooltip, ToggleSwitch } from "@/components/ui"
 import { useExtensionState } from "@/context/ExtensionStateContext"

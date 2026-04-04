@@ -134,7 +134,7 @@ export function isNonBlockingAsk(ask: ClineAsk): ask is NonBlockingAsk {
  * - `mcp_server_response`: Response received from MCP server
  * - `subtask_result`: Result of a completed subtask
  * - `checkpoint_saved`: Indicates a checkpoint has been saved
- * - `rooignore_error`: Error related to .rooignore file processing
+ * - `rooignore_error`: Error related to .jabberwockignore file processing
  * - `diff_error`: Error occurred while applying a diff/patch
  * - `condense_context`: Context condensation/summarization has started
  * - `condense_context_error`: Error occurred during context condensation
@@ -258,6 +258,7 @@ export const clineMessageSchema = z.object({
 	conversationHistoryIndex: z.number().optional(),
 	checkpoint: z.record(z.string(), z.unknown()).optional(),
 	progressStatus: toolProgressStatusSchema.optional(),
+	mode: z.string().optional(),
 	/**
 	 * Data for successful context condensation.
 	 * Present when `say: "condense_context"` and `partial: false`.

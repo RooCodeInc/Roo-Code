@@ -12,7 +12,7 @@ import {
 import * as ProgressPrimitive from "@radix-ui/react-progress"
 import { AlertTriangle } from "lucide-react"
 
-import { type IndexingStatus, type EmbedderProvider, CODEBASE_INDEX_DEFAULTS } from "@roo-code/types"
+import { type IndexingStatus, type EmbedderProvider, CODEBASE_INDEX_DEFAULTS } from "@jabberwock/types"
 
 import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
@@ -40,7 +40,7 @@ import {
 	StandardTooltip,
 	Button,
 } from "@src/components/ui"
-import { useRooPortal } from "@src/components/ui/hooks/useRooPortal"
+import { useJabberwockPortal } from "@src/components/ui/hooks/useJabberwockPortal"
 import { useEscapeKey } from "@src/hooks/useEscapeKey"
 import {
 	useOpenRouterModelProviders,
@@ -594,7 +594,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		},
 	)
 
-	const portalContainer = useRooPortal("roo-portal")
+	const portalContainer = useJabberwockPortal("jabberwock-portal")
 
 	return (
 		<>

@@ -1,6 +1,6 @@
-import { Position } from "./Position.js"
-import { Range } from "./Range.js"
-import type { IRange, IPosition } from "../types.js"
+import { Position } from "./Position.ts"
+import { Range } from "./Range.ts"
+import type { IRange, IPosition } from "../types.ts"
 
 /**
  * Represents a text edit operation

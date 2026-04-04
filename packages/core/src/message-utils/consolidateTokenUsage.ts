@@ -1,4 +1,4 @@
-import type { TokenUsage, ToolUsage, ToolName, ClineMessage } from "@roo-code/types"
+import type { TokenUsage, ToolUsage, ToolName, ClineMessage } from "@jabberwock/types"
 
 export type ParsedApiReqStartedTextType = {
 	tokensIn: number

@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk"
 import crypto from "crypto"
 
-import { TelemetryService } from "@roo-code/telemetry"
+import { TelemetryService } from "@jabberwock/telemetry"
 
 import { t } from "../../i18n"
 import { ApiHandler, ApiHandlerCreateMessageMetadata } from "../../api"
@@ -9,7 +9,7 @@ import { ApiMessage } from "../task-persistence/apiMessages"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
-import { RooIgnoreController } from "../ignore/RooIgnoreController"
+import { JabberwockIgnoreController } from "../ignore/JabberwockIgnoreController"
 import { generateFoldedFileContext } from "./foldedFileContext"
 
 export type { FoldedFileContextResult, FoldedFileContextOptions } from "./foldedFileContext"
@@ -230,9 +230,9 @@ export type SummarizeConversationOptions = {
 	customCondensingPrompt?: string
 	metadata?: ApiHandlerCreateMessageMetadata
 	environmentDetails?: string
-	filesReadByRoo?: string[]
+	filesReadByJabberwock?: string[]
 	cwd?: string
-	rooIgnoreController?: RooIgnoreController
+	jabberwockIgnoreController?: JabberwockIgnoreController
 }
 
 /**
@@ -263,9 +263,9 @@ export async function summarizeConversation(options: SummarizeConversationOption
 		customCondensingPrompt,
 		metadata,
 		environmentDetails,
-		filesReadByRoo,
+		filesReadByJabberwock,
 		cwd,
-		rooIgnoreController,
+		jabberwockIgnoreController,
 	} = options
 	TelemetryService.instance.captureContextCondensed(
 		taskId,
@@ -416,11 +416,11 @@ ${commandBlocks}
 
 	// Generate and add folded file context (smart code folding) if file paths are provided
 	// Each file gets its own <system-reminder> block as a separate content block
-	if (filesReadByRoo && filesReadByRoo.length > 0 && cwd) {
+	if (filesReadByJabberwock && filesReadByJabberwock.length > 0 && cwd) {
 		try {
-			const foldedResult = await generateFoldedFileContext(filesReadByRoo, {
+			const foldedResult = await generateFoldedFileContext(filesReadByJabberwock, {
 				cwd,
-				rooIgnoreController,
+				jabberwockIgnoreController,
 			})
 			if (foldedResult.sections.length > 0) {
 				for (const section of foldedResult.sections) {

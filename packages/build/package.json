@@ -1,6 +1,6 @@
 {
-	"name": "@roo-code/build",
-	"description": "ESBuild utilities for Roo Code.",
+	"name": "@jabberwock/build",
+	"description": "ESBuild utilities for Jabberwock.",
 	"private": true,
 	"type": "module",
 	"main": "./dist/index.js",
@@ -16,8 +16,8 @@
 		"zod": "^3.25.61"
 	},
 	"devDependencies": {
-		"@roo-code/config-eslint": "workspace:^",
-		"@roo-code/config-typescript": "workspace:^",
+		"@jabberwock/config-eslint": "workspace:^",
+		"@jabberwock/config-typescript": "workspace:^",
 		"@types/node": "20.x",
 		"vitest": "^3.2.3"
 	}

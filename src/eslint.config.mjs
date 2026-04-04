@@ -1,4 +1,4 @@
-import { config } from "@roo-code/config-eslint/base"
+import { config } from "@jabberwock/config-eslint/base"
 
 /** @type {import("eslint").Linter.Config} */
 export default [

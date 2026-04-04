@@ -1,4 +1,4 @@
-import { ClineMessage } from "@roo-code/types"
+import { ClineMessage } from "@jabberwock/types"
 
 export function getLatestTodo(clineMessages: ClineMessage[]) {
 	const todos = clineMessages

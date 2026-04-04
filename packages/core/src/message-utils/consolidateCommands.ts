@@ -1,6 +1,6 @@
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage } from "@jabberwock/types"
 
-import { safeJsonParse } from "./safeJsonParse.js"
+import { safeJsonParse } from "./safeJsonParse.ts"
 
 export const COMMAND_OUTPUT_STRING = "Output:"
 

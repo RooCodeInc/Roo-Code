@@ -1,6 +1,6 @@
 import posthog from "posthog-js"
 
-import type { TelemetrySetting } from "@roo-code/types"
+import type { TelemetrySetting } from "@jabberwock/types"
 
 class TelemetryClient {
 	private static instance: TelemetryClient
@@ -13,7 +13,7 @@ class TelemetryClient {
 			TelemetryClient.telemetryEnabled = true
 
 			posthog.init(apiKey, {
-				api_host: "https://ph.roocode.com",
+				api_host: "https://ph.jabberwock.com",
 				ui_host: "https://us.posthog.com",
 				persistence: "localStorage",
 				loaded: () => posthog.identify(distinctId),

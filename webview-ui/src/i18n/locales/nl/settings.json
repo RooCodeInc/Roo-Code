@@ -40,7 +40,7 @@
 		"ui": "UI",
 		"experimental": "Experimenteel",
 		"language": "Taal",
-		"about": "Over Roo Code",
+		"about": "Over Jabberwock",
 		"skills": "Skills"
 	},
 	"about": {
@@ -59,7 +59,7 @@
 		"contact": {
 			"label": "Moet je met ons praten? Schrijf"
 		},
-		"community": "Wil je tips of gewoon even hangen met andere Roo Code-gebruikers? Sluit je aan bij <redditLink>reddit.com/r/RooCode</redditLink> of <discordLink>discord.gg/roocode</discordLink>",
+		"community": "Wil je tips of gewoon even hangen met andere Jabberwock-gebruikers? Sluit je aan bij <redditLink>reddit.com/r/Jabberwock</redditLink> of <discordLink>discord.gg/jabberwock</discordLink>",
 		"contactAndCommunity": "Contact & Gemeenschap",
 		"manageSettings": "Instellingen Beheren",
 		"debugMode": {
@@ -103,7 +103,7 @@
 		"footer": "Gebruik slash-commando's voor snelle toegang tot veelgebruikte prompts en workflows."
 	},
 	"prompts": {
-		"description": "Configureer ondersteuningsprompts die worden gebruikt voor snelle acties zoals het verbeteren van prompts, het uitleggen van code en het oplossen van problemen. Deze prompts helpen Roo om betere ondersteuning te bieden voor veelvoorkomende ontwikkelingstaken."
+		"description": "Configureer ondersteuningsprompts die worden gebruikt voor snelle acties zoals het verbeteren van prompts, het uitleggen van code en het oplossen van problemen. Deze prompts helpen Jabberwock om betere ondersteuning te bieden voor veelvoorkomende ontwikkelingstaken."
 	},
 	"codeIndex": {
 		"title": "Codebase indexering",
@@ -220,16 +220,16 @@
 	},
 	"autoApprove": {
 		"toggleShortcut": "U kunt een globale sneltoets voor deze instelling configureren <SettingsLink>in de voorkeuren van uw IDE</SettingsLink>.",
-		"description": "Sta Roo toe om automatisch handelingen uit te voeren zonder goedkeuring. Schakel deze instellingen alleen in als je de AI volledig vertrouwt en de bijbehorende beveiligingsrisico's begrijpt.",
+		"description": "Sta Jabberwock toe om automatisch handelingen uit te voeren zonder goedkeuring. Schakel deze instellingen alleen in als je de AI volledig vertrouwt en de bijbehorende beveiligingsrisico's begrijpt.",
 		"enabled": "Auto-goedkeuren ingeschakeld",
 		"toggleAriaLabel": "Automatisch goedkeuren in-/uitschakelen",
 		"disabledAriaLabel": "Automatisch goedkeuren uitgeschakeld - selecteer eerst opties",
 		"readOnly": {
 			"label": "Lezen",
-			"description": "Indien ingeschakeld, bekijkt Roo automatisch de inhoud van mappen en leest bestanden zonder dat je op de Goedkeuren-knop hoeft te klikken.",
+			"description": "Indien ingeschakeld, bekijkt Jabberwock automatisch de inhoud van mappen en leest bestanden zonder dat je op de Goedkeuren-knop hoeft te klikken.",
 			"outsideWorkspace": {
 				"label": "Inclusief bestanden buiten werkruimte",
-				"description": "Sta Roo toe om bestanden buiten de huidige werkruimte te lezen zonder goedkeuring."
+				"description": "Sta Jabberwock toe om bestanden buiten de huidige werkruimte te lezen zonder goedkeuring."
 			}
 		},
 		"write": {
@@ -238,11 +238,11 @@
 			"delayLabel": "Vertraging na schrijven om diagnostiek de kans te geven mogelijke problemen te detecteren",
 			"outsideWorkspace": {
 				"label": "Inclusief bestanden buiten werkruimte",
-				"description": "Sta Roo toe om bestanden buiten de huidige werkruimte aan te maken en te bewerken zonder goedkeuring."
+				"description": "Sta Jabberwock toe om bestanden buiten de huidige werkruimte aan te maken en te bewerken zonder goedkeuring."
 			},
 			"protected": {
 				"label": "Inclusief beschermde bestanden",
-				"description": "Sta Roo toe om beschermde bestanden (zoals .rooignore en .roo/ configuratiebestanden) aan te maken en te bewerken zonder goedkeuring."
+				"description": "Sta Jabberwock toe om beschermde bestanden (zoals .jabberwockignore en .jabberwock/ configuratiebestanden) aan te maken en te bewerken zonder goedkeuring."
 			}
 		},
 		"mcp": {
@@ -309,7 +309,7 @@
 		"searchProviderPlaceholder": "Zoek providers",
 		"noProviderMatchFound": "Geen providers gevonden",
 		"noMatchFound": "Geen overeenkomende profielen gevonden",
-		"retiredProviderMessage": "Sorry, deze provider wordt niet meer ondersteund. We zagen dat heel weinig Roo-gebruikers het daadwerkelijk gebruikten en we moeten de omvang van onze codebase verkleinen zodat we snel kunnen blijven leveren en onze community goed kunnen blijven bedienen. Het was een heel moeilijke beslissing, maar het stelt ons in staat om ons te richten op wat het belangrijkst voor je is. Het is vervelend, dat weten we.",
+		"retiredProviderMessage": "Sorry, deze provider wordt niet meer ondersteund. We zagen dat heel weinig Jabberwock-gebruikers het daadwerkelijk gebruikten en we moeten de omvang van onze codebase verkleinen zodat we snel kunnen blijven leveren en onze community goed kunnen blijven bedienen. Het was een heel moeilijke beslissing, maar het stelt ons in staat om ons te richten op wat het belangrijkst voor je is. Het is vervelend, dat weten we.",
 		"vscodeLmDescription": "De VS Code Language Model API stelt je in staat modellen te draaien die door andere VS Code-extensies worden geleverd (waaronder GitHub Copilot). De eenvoudigste manier om te beginnen is door de Copilot- en Copilot Chat-extensies te installeren vanuit de VS Code Marketplace.",
 		"awsCustomArnUse": "Voer een geldige Amazon Bedrock ARN in voor het model dat je wilt gebruiken. Voorbeeldformaten:",
 		"awsCustomArnDesc": "Zorg ervoor dat de regio in de ARN overeenkomt met je geselecteerde AWS-regio hierboven.",
@@ -456,7 +456,7 @@
 			"draftModelDesc": "Draft-model moet uit dezelfde modelfamilie komen voor correcte speculatieve decodering.",
 			"selectDraftModel": "Selecteer draft-model",
 			"noModelsFound": "Geen draft-modellen gevonden. Zorg dat LM Studio draait met Server Mode ingeschakeld.",
-			"description": "LM Studio laat je modellen lokaal op je computer draaien. Zie hun <a>quickstart-gids</a> voor instructies. Je moet ook de <b>lokale server</b>-functie van LM Studio starten om het met deze extensie te gebruiken. <span>Let op:</span> Roo Code gebruikt complexe prompts en werkt het beste met Claude-modellen. Minder krachtige modellen werken mogelijk niet zoals verwacht."
+			"description": "LM Studio laat je modellen lokaal op je computer draaien. Zie hun <a>quickstart-gids</a> voor instructies. Je moet ook de <b>lokale server</b>-functie van LM Studio starten om het met deze extensie te gebruiken. <span>Let op:</span> Jabberwock gebruikt complexe prompts en werkt het beste met Claude-modellen. Minder krachtige modellen werken mogelijk niet zoals verwacht."
 		},
 		"ollama": {
 			"baseUrl": "Basis-URL (optioneel)",
@@ -466,11 +466,11 @@
 			"numCtx": "Contextvenstergrootte (num_ctx)",
 			"numCtxHelp": "Overschrijft de standaard contextvenstergrootte van het model. Laat leeg om de Modelfile-configuratie van het model te gebruiken. De minimumwaarde is 128.",
 			"description": "Ollama laat je modellen lokaal op je computer draaien. Zie hun quickstart-gids voor instructies.",
-			"warning": "Let op: Roo Code gebruikt complexe prompts en werkt het beste met Claude-modellen. Minder krachtige modellen werken mogelijk niet zoals verwacht."
+			"warning": "Let op: Jabberwock gebruikt complexe prompts en werkt het beste met Claude-modellen. Minder krachtige modellen werken mogelijk niet zoals verwacht."
 		},
-		"roo": {
-			"authenticatedMessage": "Veilig geauthenticeerd via je Roo Code Cloud-account.",
-			"connectButton": "Verbinden met Roo Code Cloud"
+		"jabberwock": {
+			"authenticatedMessage": "Veilig geauthenticeerd via je Jabberwock Cloud-account.",
+			"connectButton": "Verbinden met Jabberwock Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -480,7 +480,7 @@
 			}
 		},
 		"customModel": {
-			"capabilities": "Stel de mogelijkheden en prijzen in voor je aangepaste OpenAI-compatibele model. Wees voorzichtig met het opgeven van de modelmogelijkheden, want deze kunnen de prestaties van Roo Code beïnvloeden.",
+			"capabilities": "Stel de mogelijkheden en prijzen in voor je aangepaste OpenAI-compatibele model. Wees voorzichtig met het opgeven van de modelmogelijkheden, want deze kunnen de prestaties van Jabberwock beïnvloeden.",
 			"maxTokens": {
 				"label": "Maximaal aantal outputtokens",
 				"description": "Maximaal aantal tokens dat het model in een antwoord kan genereren. (Geef -1 op om de server het maximum te laten bepalen.)"
@@ -527,7 +527,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Fout- & Herhalingslimiet",
-			"description": "Aantal opeenvolgende fouten of herhaalde acties voordat het dialoogvenster 'Roo ondervindt problemen' wordt weergegeven. Zet op 0 om dit veiligheidsmechanisme uit te schakelen (wordt nooit geactiveerd).",
+			"description": "Aantal opeenvolgende fouten of herhaalde acties voordat het dialoogvenster 'Jabberwock ondervindt problemen' wordt weergegeven. Zet op 0 om dit veiligheidsmechanisme uit te schakelen (wordt nooit geactiveerd).",
 			"unlimitedDescription": "Onbeperkt aantal nieuwe pogingen ingeschakeld (automatisch doorgaan). Het dialoogvenster zal nooit verschijnen.",
 			"warning": "⚠️ Instellen op 0 staat onbeperkte nieuwe pogingen toe, wat aanzienlijk API-gebruik kan verbruiken"
 		},
@@ -563,18 +563,18 @@
 		},
 		"enable": {
 			"label": "Automatische checkpoints inschakelen",
-			"description": "Indien ingeschakeld, maakt Roo automatisch checkpoints tijdens het uitvoeren van taken, zodat je eenvoudig wijzigingen kunt bekijken of terugzetten. <0>Meer informatie</0>"
+			"description": "Indien ingeschakeld, maakt Jabberwock automatisch checkpoints tijdens het uitvoeren van taken, zodat je eenvoudig wijzigingen kunt bekijken of terugzetten. <0>Meer informatie</0>"
 		}
 	},
 	"notifications": {
 		"sound": {
 			"label": "Geluidseffecten inschakelen",
-			"description": "Indien ingeschakeld, speelt Roo geluidseffecten af voor meldingen en gebeurtenissen.",
+			"description": "Indien ingeschakeld, speelt Jabberwock geluidseffecten af voor meldingen en gebeurtenissen.",
 			"volumeLabel": "Volume"
 		},
 		"tts": {
 			"label": "Tekst-naar-spraak inschakelen",
-			"description": "Indien ingeschakeld, leest Roo zijn antwoorden hardop voor via tekst-naar-spraak.",
+			"description": "Indien ingeschakeld, leest Jabberwock zijn antwoorden hardop voor via tekst-naar-spraak.",
 			"speedLabel": "Snelheid"
 		}
 	},
@@ -582,7 +582,7 @@
 		"description": "Bepaal welke informatie wordt opgenomen in het contextvenster van de AI, wat invloed heeft op tokengebruik en antwoordkwaliteit",
 		"autoCondenseContextPercent": {
 			"label": "Drempelwaarde om intelligente contextcompressie te activeren",
-			"description": "Wanneer het contextvenster deze drempelwaarde bereikt, zal Roo het automatisch comprimeren."
+			"description": "Wanneer het contextvenster deze drempelwaarde bereikt, zal Jabberwock het automatisch comprimeren."
 		},
 		"condensingApiConfiguration": {
 			"label": "API-configuratie voor contextcondensatie",
@@ -598,7 +598,7 @@
 		},
 		"autoCondenseContext": {
 			"name": "Automatisch intelligente contextcompressie activeren",
-			"description": "Wanneer ingeschakeld, zal Roo automatisch de context comprimeren wanneer de drempel wordt bereikt. Wanneer uitgeschakeld, kun je nog steeds handmatig contextcompressie activeren."
+			"description": "Wanneer ingeschakeld, zal Jabberwock automatisch de context comprimeren wanneer de drempel wordt bereikt. Wanneer uitgeschakeld, kun je nog steeds handmatig contextcompressie activeren."
 		},
 		"openTabs": {
 			"label": "Limiet geopende tabbladen in context",
@@ -609,12 +609,12 @@
 			"description": "Maximaal aantal bestanden dat wordt opgenomen in details van de huidige werkmap. Hogere waarden geven meer context maar verhogen het tokengebruik."
 		},
 		"rooignore": {
-			"label": ".rooignore-bestanden tonen in lijsten en zoekopdrachten",
-			"description": "Indien ingeschakeld, worden bestanden die overeenkomen met patronen in .rooignore getoond in lijsten met een slotje. Indien uitgeschakeld, worden deze bestanden volledig verborgen in lijsten en zoekopdrachten."
+			"label": ".jabberwockignore-bestanden tonen in lijsten en zoekopdrachten",
+			"description": "Indien ingeschakeld, worden bestanden die overeenkomen met patronen in .jabberwockignore getoond in lijsten met een slotje. Indien uitgeschakeld, worden deze bestanden volledig verborgen in lijsten en zoekopdrachten."
 		},
 		"maxReadFile": {
 			"label": "Automatisch afkappen bij bestandslezen",
-			"description": "Roo leest dit aantal regels wanneer het model geen begin/eindwaarden opgeeft. Als dit aantal lager is dan het totaal, genereert Roo een index van codelijnen. Speciale gevallen: -1 laat Roo het hele bestand lezen (zonder indexering), 0 leest geen regels en geeft alleen een minimale index. Lagere waarden minimaliseren het initiële contextgebruik en maken precieze vervolg-leesopdrachten mogelijk. Expliciete begin/eind-aanvragen worden niet door deze instelling beperkt.",
+			"description": "Jabberwock leest dit aantal regels wanneer het model geen begin/eindwaarden opgeeft. Als dit aantal lager is dan het totaal, genereert Jabberwock een index van codelijnen. Speciale gevallen: -1 laat Jabberwock het hele bestand lezen (zonder indexering), 0 leest geen regels en geeft alleen een minimale index. Lagere waarden minimaliseren het initiële contextgebruik en maken precieze vervolg-leesopdrachten mogelijk. Expliciete begin/eind-aanvragen worden niet door deze instelling beperkt.",
 			"lines": "regels",
 			"always_full_read": "Altijd volledig bestand lezen"
 		},
@@ -671,7 +671,7 @@
 		},
 		"enableSubfolderRules": {
 			"label": "Submap-regels inschakelen",
-			"description": "Recursief .roo/rules en AGENTS.md-bestanden uit submappen ontdekken en laden. Handig voor monorepo's met regels per pakket."
+			"description": "Recursief .jabberwock/rules en AGENTS.md-bestanden uit submappen ontdekken en laden. Handig voor monorepo's met regels per pakket."
 		}
 	},
 	"terminal": {
@@ -685,15 +685,15 @@
 		},
 		"outputLineLimit": {
 			"label": "Terminaluitvoerlimiet",
-			"description": "Behoudt eerste en laatste regels en verwijdert middelste om onder de limiet te blijven. Verlaag om tokens te besparen; verhoog om Roo meer tussendetails te geven. Roo ziet een placeholder waar inhoud wordt overgeslagen.<0>Meer informatie</0>"
+			"description": "Behoudt eerste en laatste regels en verwijdert middelste om onder de limiet te blijven. Verlaag om tokens te besparen; verhoog om Jabberwock meer tussendetails te geven. Jabberwock ziet een placeholder waar inhoud wordt overgeslagen.<0>Meer informatie</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "Terminal-tekenlimiet",
-			"description": "Overschrijft de regellimiet om geheugenproblemen te voorkomen door een harde limiet op uitvoergrootte af te dwingen. Bij overschrijding behoudt het begin en einde en toont een placeholder aan Roo waar inhoud wordt overgeslagen. <0>Meer informatie</0>"
+			"description": "Overschrijft de regellimiet om geheugenproblemen te voorkomen door een harde limiet op uitvoergrootte af te dwingen. Bij overschrijding behoudt het begin en einde en toont een placeholder aan Jabberwock waar inhoud wordt overgeslagen. <0>Meer informatie</0>"
 		},
 		"outputPreviewSize": {
 			"label": "Grootte opdrachtuitvoer voorvertoning",
-			"description": "Bepaalt hoeveel opdrachtuitvoer Roo direct ziet. Volledige uitvoer wordt altijd opgeslagen en is toegankelijk wanneer nodig.",
+			"description": "Bepaalt hoeveel opdrachtuitvoer Jabberwock direct ziet. Volledige uitvoer wordt altijd opgeslagen en is toegankelijk wanneer nodig.",
 			"options": {
 				"small": "Klein (5KB)",
 				"medium": "Gemiddeld (10KB)",
@@ -706,7 +706,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "Inline Terminal gebruiken (aanbevolen)",
-			"description": "Voer commando's uit in de Inline Terminal (chat) om shell-profielen/integratie te omzeilen voor snellere, betrouwbaardere runs. Wanneer uitgeschakeld gebruikt Roo de VS Code-terminal met je shell-profiel, prompts en plugins. <0>Meer informatie</0>"
+			"description": "Voer commando's uit in de Inline Terminal (chat) om shell-profielen/integratie te omzeilen voor snellere, betrouwbaardere runs. Wanneer uitgeschakeld gebruikt Jabberwock de VS Code-terminal met je shell-profiel, prompts en plugins. <0>Meer informatie</0>"
 		},
 		"commandDelay": {
 			"label": "Terminal-commandovertraging",
@@ -743,7 +743,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Bewerken via diffs inschakelen",
-			"description": "Indien ingeschakeld kan Roo sneller bestanden bewerken en worden afgekorte volledige-bestandswijzigingen automatisch geweigerd",
+			"description": "Indien ingeschakeld kan Jabberwock sneller bestanden bewerken en worden afgekorte volledige-bestandswijzigingen automatisch geweigerd",
 			"strategy": {
 				"label": "Diff-strategie",
 				"options": {
@@ -760,7 +760,7 @@
 		},
 		"todoList": {
 			"label": "Takenlijst-tool inschakelen",
-			"description": "Wanneer ingeschakeld, kan Roo takenlijsten maken en beheren om de voortgang van taken bij te houden. Dit helpt complexe taken te organiseren in beheersbare stappen."
+			"description": "Wanneer ingeschakeld, kan Jabberwock takenlijsten maken en beheren om de voortgang van taken bij te houden. Dit helpt complexe taken te organiseren in beheersbare stappen."
 		}
 	},
 	"experimental": {
@@ -770,15 +770,15 @@
 		},
 		"INSERT_BLOCK": {
 			"name": "Experimentele inhoud-invoeg-tool gebruiken",
-			"description": "Schakel de experimentele inhoud-invoeg-tool in, waarmee Roo inhoud op specifieke regelnummers kan invoegen zonder een diff te maken."
+			"description": "Schakel de experimentele inhoud-invoeg-tool in, waarmee Jabberwock inhoud op specifieke regelnummers kan invoegen zonder een diff te maken."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Experimentele multi-block diff-tool gebruiken",
-			"description": "Indien ingeschakeld, gebruikt Roo de multi-block diff-tool. Hiermee wordt geprobeerd meerdere codeblokken in het bestand in één verzoek bij te werken."
+			"description": "Indien ingeschakeld, gebruikt Jabberwock de multi-block diff-tool. Hiermee wordt geprobeerd meerdere codeblokken in het bestand in één verzoek bij te werken."
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "Gelijktijdig lezen van bestanden inschakelen",
-			"description": "Wanneer ingeschakeld, kan Roo meerdere bestanden in één verzoek lezen. Wanneer uitgeschakeld, moet Roo bestanden één voor één lezen. Uitschakelen kan helpen bij het werken met minder capabele modellen of wanneer u meer controle over bestandstoegang wilt."
+			"description": "Wanneer ingeschakeld, kan Jabberwock meerdere bestanden in één verzoek lezen. Wanneer uitgeschakeld, moet Jabberwock bestanden één voor één lezen. Uitschakelen kan helpen bij het werken met minder capabele modellen of wanneer u meer controle over bestandstoegang wilt."
 		},
 		"MARKETPLACE": {
 			"name": "Marketplace inschakelen",
@@ -786,7 +786,7 @@
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Achtergrondbewerking",
-			"description": "Voorkomt editor focus verstoring wanneer ingeschakeld. Bestandsbewerkingen gebeuren op de achtergrond zonder diff-weergaven te openen of focus te stelen. Je kunt ononderbroken doorwerken terwijl Roo wijzigingen aanbrengt. Bestanden kunnen zonder focus worden geopend om diagnostiek vast te leggen of volledig gesloten blijven."
+			"description": "Voorkomt editor focus verstoring wanneer ingeschakeld. Bestandsbewerkingen gebeuren op de achtergrond zonder diff-weergaven te openen of focus te stelen. Je kunt ononderbroken doorwerken terwijl Jabberwock wijzigingen aanbrengt. Bestanden kunnen zonder focus worden geopend om diagnostiek vast te leggen of volledig gesloten blijven."
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "Nieuwe berichtparser gebruiken",
@@ -800,7 +800,7 @@
 			"providerLabel": "Provider",
 			"providerDescription": "Selecteer de provider voor het genereren van afbeeldingen.",
 			"name": "AI-afbeeldingsgeneratie inschakelen",
-			"description": "Wanneer ingeschakeld, kan Roo afbeeldingen genereren van tekstprompts met behulp van OpenRouter's afbeeldingsgeneratiemodellen. Vereist een geconfigureerde OpenRouter API-sleutel.",
+			"description": "Wanneer ingeschakeld, kan Jabberwock afbeeldingen genereren van tekstprompts met behulp van OpenRouter's afbeeldingsgeneratiemodellen. Vereist een geconfigureerde OpenRouter API-sleutel.",
 			"openRouterApiKeyLabel": "OpenRouter API-sleutel",
 			"openRouterApiKeyPlaceholder": "Voer je OpenRouter API-sleutel in",
 			"getApiKeyText": "Haal je API-sleutel op van",
@@ -811,13 +811,13 @@
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Model-geïnitieerde slash-commando's inschakelen",
-			"description": "Wanneer ingeschakeld, kan Roo je slash-commando's uitvoeren om workflows uit te voeren."
+			"description": "Wanneer ingeschakeld, kan Jabberwock je slash-commando's uitvoeren om workflows uit te voeren."
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Aangepaste tools inschakelen",
-			"description": "Indien ingeschakeld kan Roo aangepaste TypeScript/JavaScript-tools laden en gebruiken uit de map .roo/tools van je project of ~/.roo/tools voor globale tools. Opmerking: deze tools worden automatisch goedgekeurd.",
+			"description": "Indien ingeschakeld kan Jabberwock aangepaste TypeScript/JavaScript-tools laden en gebruiken uit de map .jabberwock/tools van je project of ~/.jabberwock/tools voor globale tools. Opmerking: deze tools worden automatisch goedgekeurd.",
 			"toolsHeader": "Beschikbare aangepaste tools",
-			"noTools": "Geen aangepaste tools geladen. Voeg .ts- of .js-bestanden toe aan de map .roo/tools van je project of ~/.roo/tools voor globale tools.",
+			"noTools": "Geen aangepaste tools geladen. Voeg .ts- of .js-bestanden toe aan de map .jabberwock/tools van je project of ~/.jabberwock/tools voor globale tools.",
 			"refreshButton": "Vernieuwen",
 			"refreshing": "Vernieuwen...",
 			"refreshSuccess": "Tools succesvol vernieuwd",
@@ -827,7 +827,7 @@
 	},
 	"promptCaching": {
 		"label": "Prompt caching inschakelen",
-		"description": "Indien ingeschakeld, gebruikt Roo dit model met prompt caching om kosten te verlagen."
+		"description": "Indien ingeschakeld, gebruikt Jabberwock dit model met prompt caching om kosten te verlagen."
 	},
 	"temperature": {
 		"useCustom": "Aangepaste temperatuur gebruiken",
@@ -857,7 +857,7 @@
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "De extensie haalt automatisch de nieuwste lijst met modellen op van <serviceLink>{{serviceName}}</serviceLink>. Weet je niet welk model je moet kiezen? Roo Code werkt het beste met <defaultModelLink>{{defaultModelId}}</defaultModelLink>. Je kunt ook zoeken op 'free' voor gratis opties die nu beschikbaar zijn.",
+		"automaticFetch": "De extensie haalt automatisch de nieuwste lijst met modellen op van <serviceLink>{{serviceName}}</serviceLink>. Weet je niet welk model je moet kiezen? Jabberwock werkt het beste met <defaultModelLink>{{defaultModelId}}</defaultModelLink>. Je kunt ook zoeken op 'free' voor gratis opties die nu beschikbaar zijn.",
 		"label": "Model",
 		"searchPlaceholder": "Zoeken",
 		"noMatchFound": "Geen overeenkomsten gevonden",
@@ -867,7 +867,7 @@
 	"footer": {
 		"telemetry": {
 			"label": "Anonieme fout- en gebruiksrapportage toestaan",
-			"description": "Help Roo Code te verbeteren door anonieme gebruiksgegevens en foutmeldingen te versturen. Deze telemetrie verzamelt geen code, prompts of persoonlijke informatie. Zie ons <privacyLink>privacybeleid</privacyLink> voor meer details."
+			"description": "Help Jabberwock te verbeteren door anonieme gebruiksgegevens en foutmeldingen te versturen. Deze telemetrie verzamelt geen code, prompts of persoonlijke informatie. Zie ons <privacyLink>privacybeleid</privacyLink> voor meer details."
 		},
 		"settings": {
 			"import": "Importeren",

@@ -2,14 +2,14 @@
 
 import * as vscode from "vscode"
 
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage } from "@jabberwock/types"
 
-import { TaskNotFoundError } from "../errors.js"
-import { CloudService } from "../CloudService.js"
-import { WebAuthService } from "../WebAuthService.js"
-import { CloudSettingsService } from "../CloudSettingsService.js"
-import { CloudShareService } from "../CloudShareService.js"
-import { CloudTelemetryClient as TelemetryClient } from "../TelemetryClient.js"
+import { TaskNotFoundError } from "../errors.ts"
+import { CloudService } from "../CloudService.ts"
+import { WebAuthService } from "../WebAuthService.ts"
+import { CloudSettingsService } from "../CloudSettingsService.ts"
+import { CloudShareService } from "../CloudShareService.ts"
+import { CloudTelemetryClient as TelemetryClient } from "../TelemetryClient.ts"
 
 vi.mock("vscode", () => ({
 	ExtensionContext: vi.fn(),

@@ -1,6 +1,6 @@
 import type { ZodType, z } from "zod/v4"
 
-import { TaskLike } from "./task.js"
+import { TaskLike } from "./task.ts"
 
 // Re-export from Zod for convenience.
 
@@ -82,7 +82,7 @@ export interface TypedCustomToolDefinition<T extends CustomToolParametersSchema>
  *
  * @example
  * ```ts
- * import { parametersSchema as z, defineCustomTool } from "@roo-code/types"
+ * import { parametersSchema as z, defineCustomTool } from "@jabberwock/types"
  *
  * export default defineCustomTool({
  *   name: "add_numbers",

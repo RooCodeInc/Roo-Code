@@ -15,17 +15,17 @@ import type {
 	UserSettingsConfig,
 	UserSettingsData,
 	UserFeatures,
-} from "@roo-code/types"
+} from "@jabberwock/types"
 
-import { TaskNotFoundError } from "./errors.js"
-import { WebAuthService } from "./WebAuthService.js"
-import { StaticTokenAuthService } from "./StaticTokenAuthService.js"
-import { CloudSettingsService } from "./CloudSettingsService.js"
-import { StaticSettingsService } from "./StaticSettingsService.js"
-import { CloudTelemetryClient as TelemetryClient } from "./TelemetryClient.js"
-import { CloudShareService } from "./CloudShareService.js"
-import { CloudAPI } from "./CloudAPI.js"
-import { RetryQueue } from "./retry-queue/index.js"
+import { TaskNotFoundError } from "./errors.ts"
+import { WebAuthService } from "./WebAuthService.ts"
+import { StaticTokenAuthService } from "./StaticTokenAuthService.ts"
+import { CloudSettingsService } from "./CloudSettingsService.ts"
+import { StaticSettingsService } from "./StaticSettingsService.ts"
+import { CloudTelemetryClient as TelemetryClient } from "./TelemetryClient.ts"
+import { CloudShareService } from "./CloudShareService.ts"
+import { CloudAPI } from "./CloudAPI.ts"
+import { RetryQueue } from "./retry-queue/index.ts"
 
 type AuthStateChangedPayload = CloudServiceEvents["auth-state-changed"][0]
 type AuthUserInfoPayload = CloudServiceEvents["user-info"][0]
@@ -117,9 +117,9 @@ export class CloudService extends EventEmitter<CloudServiceEvents> implements Di
 
 		try {
 			// For testing you can create a token with:
-			// `pnpm --filter @roo-code-cloud/roomote-cli development auth job-token --job-id 1 --user-id user_2xmBhejNeDTwanM8CgIOnMgVxzC --org-id org_2wbhchVXZMQl8OS1yt0mrDazCpW`
+			// `pnpm --filter @jabberwock-cloud/roomote-cli development auth job-token --job-id 1 --user-id user_2xmBhejNeDTwanM8CgIOnMgVxzC --org-id org_2wbhchVXZMQl8OS1yt0mrDazCpW`
 			// The token will last for 1 hour.
-			const cloudToken = process.env.ROO_CODE_CLOUD_TOKEN
+			const cloudToken = process.env.JABBERWOCK_CODE_CLOUD_TOKEN
 
 			if (cloudToken && cloudToken.length > 0) {
 				this._authService = new StaticTokenAuthService(this.context, cloudToken, this.log)
@@ -133,7 +133,7 @@ export class CloudService extends EventEmitter<CloudServiceEvents> implements Di
 			await this._authService.initialize()
 
 			// Check for static settings environment variable.
-			const staticOrgSettings = process.env.ROO_CODE_CLOUD_ORG_SETTINGS
+			const staticOrgSettings = process.env.JABBERWOCK_CODE_CLOUD_ORG_SETTINGS
 
 			if (staticOrgSettings && staticOrgSettings.length > 0) {
 				this._settingsService = new StaticSettingsService(staticOrgSettings, this.log)

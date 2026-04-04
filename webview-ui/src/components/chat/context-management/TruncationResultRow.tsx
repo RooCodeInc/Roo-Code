@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { FoldVertical } from "lucide-react"
 
-import type { ContextTruncation } from "@roo-code/types"
+import type { ContextTruncation } from "@jabberwock/types"
 
 interface TruncationResultRowProps {
 	data: ContextTruncation

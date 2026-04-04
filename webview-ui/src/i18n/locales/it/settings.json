@@ -40,7 +40,7 @@
 		"ui": "UI",
 		"experimental": "Sperimentale",
 		"language": "Lingua",
-		"about": "Informazioni su Roo Code",
+		"about": "Informazioni su Jabberwock",
 		"skills": "Skills"
 	},
 	"about": {
@@ -59,7 +59,7 @@
 		"contact": {
 			"label": "Hai bisogno di parlarci? Scrivi"
 		},
-		"community": "Vuoi consigli o semplicemente uscire con altri utenti di Roo Code? Unisciti a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
+		"community": "Vuoi consigli o semplicemente uscire con altri utenti di Jabberwock? Unisciti a <redditLink>reddit.com/r/Jabberwock</redditLink> o <discordLink>discord.gg/jabberwock</discordLink>",
 		"contactAndCommunity": "Contatti e Comunità",
 		"manageSettings": "Gestisci Impostazioni",
 		"debugMode": {
@@ -103,7 +103,7 @@
 		"footer": "Usa i comandi slash per accedere rapidamente ai prompt e ai flussi di lavoro utilizzati di frequente."
 	},
 	"prompts": {
-		"description": "Configura i prompt di supporto utilizzati per azioni rapide come il miglioramento dei prompt, la spiegazione del codice e la risoluzione dei problemi. Questi prompt aiutano Roo a fornire una migliore assistenza per le attività di sviluppo comuni."
+		"description": "Configura i prompt di supporto utilizzati per azioni rapide come il miglioramento dei prompt, la spiegazione del codice e la risoluzione dei problemi. Questi prompt aiutano Jabberwock a fornire una migliore assistenza per le attività di sviluppo comuni."
 	},
 	"codeIndex": {
 		"title": "Indicizzazione del codice",
@@ -220,16 +220,16 @@
 	},
 	"autoApprove": {
 		"toggleShortcut": "Puoi configurare una scorciatoia globale per questa impostazione <SettingsLink>nelle preferenze del tuo IDE</SettingsLink>.",
-		"description": "Permetti a Roo di eseguire automaticamente operazioni senza richiedere approvazione. Abilita queste impostazioni solo se ti fidi completamente dell'IA e comprendi i rischi di sicurezza associati.",
+		"description": "Permetti a Jabberwock di eseguire automaticamente operazioni senza richiedere approvazione. Abilita queste impostazioni solo se ti fidi completamente dell'IA e comprendi i rischi di sicurezza associati.",
 		"enabled": "Auto-approvazione abilitata",
 		"toggleAriaLabel": "Attiva/disattiva approvazione automatica",
 		"disabledAriaLabel": "Approvazione automatica disabilitata - seleziona prima le opzioni",
 		"readOnly": {
 			"label": "Leggi",
-			"description": "Quando abilitato, Roo visualizzerà automaticamente i contenuti della directory e leggerà i file senza richiedere di cliccare sul pulsante Approva.",
+			"description": "Quando abilitato, Jabberwock visualizzerà automaticamente i contenuti della directory e leggerà i file senza richiedere di cliccare sul pulsante Approva.",
 			"outsideWorkspace": {
 				"label": "Includi file al di fuori dell'area di lavoro",
-				"description": "Permetti a Roo di leggere file al di fuori dell'area di lavoro attuale senza richiedere approvazione."
+				"description": "Permetti a Jabberwock di leggere file al di fuori dell'area di lavoro attuale senza richiedere approvazione."
 			}
 		},
 		"write": {
@@ -238,11 +238,11 @@
 			"delayLabel": "Ritardo dopo le scritture per consentire alla diagnostica di rilevare potenziali problemi",
 			"outsideWorkspace": {
 				"label": "Includi file al di fuori dell'area di lavoro",
-				"description": "Permetti a Roo di creare e modificare file al di fuori dell'area di lavoro attuale senza richiedere approvazione."
+				"description": "Permetti a Jabberwock di creare e modificare file al di fuori dell'area di lavoro attuale senza richiedere approvazione."
 			},
 			"protected": {
 				"label": "Includi file protetti",
-				"description": "Permetti a Roo di creare e modificare file protetti (come .rooignore e file di configurazione .roo/) senza richiedere approvazione."
+				"description": "Permetti a Jabberwock di creare e modificare file protetti (come .jabberwockignore e file di configurazione .jabberwock/) senza richiedere approvazione."
 			}
 		},
 		"mcp": {
@@ -309,7 +309,7 @@
 		"noMatchFound": "Nessun profilo corrispondente trovato",
 		"searchProviderPlaceholder": "Cerca fornitori",
 		"noProviderMatchFound": "Nessun fornitore trovato",
-		"retiredProviderMessage": "Ci dispiace, questo provider non è più supportato. Abbiamo visto che pochissimi utenti di Roo lo utilizzavano effettivamente e dobbiamo ridurre la portata del nostro codice per continuare a procedere velocemente e servire bene la nostra community. È stata una decisione davvero difficile, ma ci permette di concentrarci su ciò che conta di più per te. Lo sappiamo, è una seccatura.",
+		"retiredProviderMessage": "Ci dispiace, questo provider non è più supportato. Abbiamo visto che pochissimi utenti di Jabberwock lo utilizzavano effettivamente e dobbiamo ridurre la portata del nostro codice per continuare a procedere velocemente e servire bene la nostra community. È stata una decisione davvero difficile, ma ci permette di concentrarci su ciò che conta di più per te. Lo sappiamo, è una seccatura.",
 		"vscodeLmDescription": "L'API del Modello di Linguaggio di VS Code consente di eseguire modelli forniti da altre estensioni di VS Code (incluso, ma non limitato a, GitHub Copilot). Il modo più semplice per iniziare è installare le estensioni Copilot e Copilot Chat dal VS Code Marketplace.",
 		"awsCustomArnUse": "Inserisci un ARN Amazon Bedrock valido per il modello che desideri utilizzare. Esempi di formato:",
 		"awsCustomArnDesc": "Assicurati che la regione nell'ARN corrisponda alla regione AWS selezionata sopra.",
@@ -456,7 +456,7 @@
 			"draftModelDesc": "Per un corretto funzionamento della decodifica speculativa, il modello bozza deve provenire dalla stessa famiglia di modelli.",
 			"selectDraftModel": "Seleziona modello bozza",
 			"noModelsFound": "Nessun modello bozza trovato. Assicurati che LM Studio sia in esecuzione con la modalità server abilitata.",
-			"description": "LM Studio ti permette di eseguire modelli localmente sul tuo computer. Per iniziare, consulta la loro <a>guida rapida</a>. Dovrai anche avviare la funzionalità <b>server locale</b> di LM Studio per utilizzarlo con questa estensione. <span>Nota:</span> Roo Code utilizza prompt complessi e funziona meglio con i modelli Claude. I modelli con capacità inferiori potrebbero non funzionare come previsto."
+			"description": "LM Studio ti permette di eseguire modelli localmente sul tuo computer. Per iniziare, consulta la loro <a>guida rapida</a>. Dovrai anche avviare la funzionalità <b>server locale</b> di LM Studio per utilizzarlo con questa estensione. <span>Nota:</span> Jabberwock utilizza prompt complessi e funziona meglio con i modelli Claude. I modelli con capacità inferiori potrebbero non funzionare come previsto."
 		},
 		"ollama": {
 			"baseUrl": "URL base (opzionale)",
@@ -466,11 +466,11 @@
 			"numCtx": "Dimensione della finestra di contesto (num_ctx)",
 			"numCtxHelp": "Sovrascrive la dimensione predefinita della finestra di contesto del modello. Lasciare vuoto per utilizzare la configurazione del Modelfile del modello. Il valore minimo è 128.",
 			"description": "Ollama ti permette di eseguire modelli localmente sul tuo computer. Per iniziare, consulta la guida rapida.",
-			"warning": "Nota: Roo Code utiliza prompt complessi e funziona meglio con i modelli Claude. I modelli con capacità inferiori potrebbero non funzionare come previsto."
+			"warning": "Nota: Jabberwock utiliza prompt complessi e funziona meglio con i modelli Claude. I modelli con capacità inferiori potrebbero non funzionare come previsto."
 		},
-		"roo": {
-			"authenticatedMessage": "Autenticato in modo sicuro tramite il tuo account Roo Code Cloud.",
-			"connectButton": "Connetti a Roo Code Cloud"
+		"jabberwock": {
+			"authenticatedMessage": "Autenticato in modo sicuro tramite il tuo account Jabberwock Cloud.",
+			"connectButton": "Connetti a Jabberwock Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -480,7 +480,7 @@
 			}
 		},
 		"customModel": {
-			"capabilities": "Configura le capacità e i prezzi del tuo modello personalizzato compatibile con OpenAI. Fai attenzione quando specifichi le capacità del modello, poiché possono influenzare le prestazioni di Roo Code.",
+			"capabilities": "Configura le capacità e i prezzi del tuo modello personalizzato compatibile con OpenAI. Fai attenzione quando specifichi le capacità del modello, poiché possono influenzare le prestazioni di Jabberwock.",
 			"maxTokens": {
 				"label": "Token di output massimi",
 				"description": "Numero massimo di token che il modello può generare in una risposta. (Specifica -1 per lasciare che il server imposti il massimo token.)"
@@ -527,7 +527,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Limite di errori e ripetizioni",
-			"description": "Numero di errori consecutivi o azioni ripetute prima di mostrare la finestra di dialogo 'Roo sta riscontrando problemi'. Imposta a 0 per disabilitare questo meccanismo di sicurezza (non si attiverà mai).",
+			"description": "Numero di errori consecutivi o azioni ripetute prima di mostrare la finestra di dialogo 'Jabberwock sta riscontrando problemi'. Imposta a 0 per disabilitare questo meccanismo di sicurezza (non si attiverà mai).",
 			"unlimitedDescription": "Tentativi illimitati abilitati (procedi automaticamente). La finestra di dialogo non verrà mai visualizzata.",
 			"warning": "⚠️ L'impostazione a 0 consente tentativi illimitati che possono consumare un notevole utilizzo dell'API"
 		},
@@ -563,18 +563,18 @@
 		},
 		"enable": {
 			"label": "Abilita punti di controllo automatici",
-			"description": "Quando abilitato, Roo creerà automaticamente punti di controllo durante l'esecuzione dei compiti, facilitando la revisione delle modifiche o il ritorno a stati precedenti. <0>Scopri di più</0>"
+			"description": "Quando abilitato, Jabberwock creerà automaticamente punti di controllo durante l'esecuzione dei compiti, facilitando la revisione delle modifiche o il ritorno a stati precedenti. <0>Scopri di più</0>"
 		}
 	},
 	"notifications": {
 		"sound": {
 			"label": "Abilita effetti sonori",
-			"description": "Quando abilitato, Roo riprodurrà effetti sonori per notifiche ed eventi.",
+			"description": "Quando abilitato, Jabberwock riprodurrà effetti sonori per notifiche ed eventi.",
 			"volumeLabel": "Volume"
 		},
 		"tts": {
 			"label": "Abilita sintesi vocale",
-			"description": "Quando abilitato, Roo leggerà ad alta voce le sue risposte utilizzando la sintesi vocale.",
+			"description": "Quando abilitato, Jabberwock leggerà ad alta voce le sue risposte utilizzando la sintesi vocale.",
 			"speedLabel": "Velocità"
 		}
 	},
@@ -582,7 +582,7 @@
 		"description": "Controlla quali informazioni sono incluse nella finestra di contesto dell'IA, influenzando l'utilizzo di token e la qualità delle risposte",
 		"autoCondenseContextPercent": {
 			"label": "Soglia per attivare la condensazione intelligente del contesto",
-			"description": "Quando la finestra di contesto raggiunge questa soglia, Roo la condenserà automaticamente."
+			"description": "Quando la finestra di contesto raggiunge questa soglia, Jabberwock la condenserà automaticamente."
 		},
 		"condensingApiConfiguration": {
 			"label": "Configurazione API per la condensazione del contesto",
@@ -598,7 +598,7 @@
 		},
 		"autoCondenseContext": {
 			"name": "Attiva automaticamente la condensazione intelligente del contesto",
-			"description": "Quando abilitato, Roo condenserà automaticamente il contesto quando viene raggiunta la soglia. Quando disabilitato, puoi ancora attivare manualmente la condensazione del contesto."
+			"description": "Quando abilitato, Jabberwock condenserà automaticamente il contesto quando viene raggiunta la soglia. Quando disabilitato, puoi ancora attivare manualmente la condensazione del contesto."
 		},
 		"openTabs": {
 			"label": "Limite contesto schede aperte",
@@ -609,12 +609,12 @@
 			"description": "Numero massimo di file da includere nei dettagli della directory di lavoro corrente. Valori più alti forniscono più contesto ma aumentano l'utilizzo di token."
 		},
 		"rooignore": {
-			"label": "Mostra file .rooignore negli elenchi e nelle ricerche",
-			"description": "Quando abilitato, i file che corrispondono ai pattern in .rooignore verranno mostrati negli elenchi con un simbolo di blocco. Quando disabilitato, questi file saranno completamente nascosti dagli elenchi di file e dalle ricerche."
+			"label": "Mostra file .jabberwockignore negli elenchi e nelle ricerche",
+			"description": "Quando abilitato, i file che corrispondono ai pattern in .jabberwockignore verranno mostrati negli elenchi con un simbolo di blocco. Quando disabilitato, questi file saranno completamente nascosti dagli elenchi di file e dalle ricerche."
 		},
 		"maxReadFile": {
 			"label": "Soglia di auto-troncamento lettura file",
-			"description": "Roo legge questo numero di righe quando il modello omette i valori di inizio/fine. Se questo numero è inferiore al totale del file, Roo genera un indice dei numeri di riga delle definizioni di codice. Casi speciali: -1 indica a Roo di leggere l'intero file (senza indicizzazione), e 0 indica di non leggere righe e fornire solo indici di riga per un contesto minimo. Valori più bassi minimizzano l'utilizzo iniziale del contesto, permettendo successive letture precise di intervalli di righe. Le richieste con inizio/fine espliciti non sono limitate da questa impostazione.",
+			"description": "Jabberwock legge questo numero di righe quando il modello omette i valori di inizio/fine. Se questo numero è inferiore al totale del file, Jabberwock genera un indice dei numeri di riga delle definizioni di codice. Casi speciali: -1 indica a Jabberwock di leggere l'intero file (senza indicizzazione), e 0 indica di non leggere righe e fornire solo indici di riga per un contesto minimo. Valori più bassi minimizzano l'utilizzo iniziale del contesto, permettendo successive letture precise di intervalli di righe. Le richieste con inizio/fine espliciti non sono limitate da questa impostazione.",
 			"lines": "righe",
 			"always_full_read": "Leggi sempre l'intero file"
 		},
@@ -671,7 +671,7 @@
 		},
 		"enableSubfolderRules": {
 			"label": "Abilita regole sottocartelle",
-			"description": "Scopri e carica ricorsivamente i file .roo/rules e AGENTS.md dalle sottodirectory. Utile per i monorepo con regole per pacchetto."
+			"description": "Scopri e carica ricorsivamente i file .jabberwock/rules e AGENTS.md dalle sottodirectory. Utile per i monorepo con regole per pacchetto."
 		}
 	},
 	"terminal": {
@@ -685,15 +685,15 @@
 		},
 		"outputLineLimit": {
 			"label": "Limite output terminale",
-			"description": "Mantiene le prime e ultime righe e scarta quelle centrali per rimanere sotto il limite. Abbassa per risparmiare token; alza per dare a Roo più dettagli centrali. Roo vede un segnaposto dove il contenuto viene saltato.<0>Scopri di più</0>"
+			"description": "Mantiene le prime e ultime righe e scarta quelle centrali per rimanere sotto il limite. Abbassa per risparmiare token; alza per dare a Jabberwock più dettagli centrali. Jabberwock vede un segnaposto dove il contenuto viene saltato.<0>Scopri di più</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "Limite caratteri terminale",
-			"description": "Sovrascrive il limite di righe per prevenire problemi di memoria imponendo un limite rigido alla dimensione di output. Se superato, mantiene l'inizio e la fine e mostra un segnaposto a Roo dove il contenuto viene saltato. <0>Scopri di più</0>"
+			"description": "Sovrascrive il limite di righe per prevenire problemi di memoria imponendo un limite rigido alla dimensione di output. Se superato, mantiene l'inizio e la fine e mostra un segnaposto a Jabberwock dove il contenuto viene saltato. <0>Scopri di più</0>"
 		},
 		"outputPreviewSize": {
 			"label": "Dimensione anteprima output comandi",
-			"description": "Controlla quanto output dei comandi Roo vede direttamente. L'output completo viene sempre salvato ed è accessibile quando necessario.",
+			"description": "Controlla quanto output dei comandi Jabberwock vede direttamente. L'output completo viene sempre salvato ed è accessibile quando necessario.",
 			"options": {
 				"small": "Piccola (5KB)",
 				"medium": "Media (10KB)",
@@ -706,7 +706,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "Usa terminale in linea (consigliato)",
-			"description": "Esegui comandi nel terminale in linea (chat) per bypassare profili/integrazione shell per esecuzioni più veloci e affidabili. Quando disabilitato, Roo usa il terminale VS Code con il tuo profilo shell, prompt e plugin. <0>Scopri di più</0>"
+			"description": "Esegui comandi nel terminale in linea (chat) per bypassare profili/integrazione shell per esecuzioni più veloci e affidabili. Quando disabilitato, Jabberwock usa il terminale VS Code con il tuo profilo shell, prompt e plugin. <0>Scopri di più</0>"
 		},
 		"commandDelay": {
 			"label": "Ritardo comando terminale",
@@ -743,7 +743,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Abilita modifica tramite diff",
-			"description": "Quando abilitato, Roo sarà in grado di modificare i file più velocemente e rifiuterà automaticamente scritture di file completi troncati",
+			"description": "Quando abilitato, Jabberwock sarà in grado di modificare i file più velocemente e rifiuterà automaticamente scritture di file completi troncati",
 			"strategy": {
 				"label": "Strategia diff",
 				"options": {
@@ -760,7 +760,7 @@
 		},
 		"todoList": {
 			"label": "Abilita strumento lista di cose da fare",
-			"description": "Quando abilitato, Roo può creare e gestire liste di cose da fare per tracciare il progresso delle attività. Questo aiuta a organizzare attività complesse in passaggi gestibili."
+			"description": "Quando abilitato, Jabberwock può creare e gestire liste di cose da fare per tracciare il progresso delle attività. Questo aiuta a organizzare attività complesse in passaggi gestibili."
 		}
 	},
 	"experimental": {
@@ -770,15 +770,15 @@
 		},
 		"INSERT_BLOCK": {
 			"name": "Usa strumento di inserimento contenuti sperimentale",
-			"description": "Abilita lo strumento di inserimento contenuti sperimentale, consentendo a Roo di inserire contenuti a numeri di riga specifici senza dover creare un diff."
+			"description": "Abilita lo strumento di inserimento contenuti sperimentale, consentendo a Jabberwock di inserire contenuti a numeri di riga specifici senza dover creare un diff."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Usa strumento diff multi-blocco sperimentale",
-			"description": "Quando abilitato, Roo utilizzerà lo strumento diff multi-blocco. Questo tenterà di aggiornare più blocchi di codice nel file in una singola richiesta."
+			"description": "Quando abilitato, Jabberwock utilizzerà lo strumento diff multi-blocco. Questo tenterà di aggiornare più blocchi di codice nel file in una singola richiesta."
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "Abilita lettura simultanea dei file",
-			"description": "Quando abilitato, Roo può leggere più file in una singola richiesta. Quando disabilitato, Roo deve leggere i file uno alla volta. Disabilitarlo può aiutare quando si lavora con modelli meno capaci o quando si desidera maggiore controllo sull'accesso ai file."
+			"description": "Quando abilitato, Jabberwock può leggere più file in una singola richiesta. Quando disabilitato, Jabberwock deve leggere i file uno alla volta. Disabilitarlo può aiutare quando si lavora con modelli meno capaci o quando si desidera maggiore controllo sull'accesso ai file."
 		},
 		"MARKETPLACE": {
 			"name": "Abilita Marketplace",
@@ -786,7 +786,7 @@
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Modifica in background",
-			"description": "Previene l'interruzione del focus dell'editor quando abilitato. Le modifiche ai file avvengono in background senza aprire viste di differenze o rubare il focus. Puoi continuare a lavorare senza interruzioni mentre Roo effettua modifiche. I file possono essere aperti senza focus per catturare diagnostiche o rimanere completamente chiusi."
+			"description": "Previene l'interruzione del focus dell'editor quando abilitato. Le modifiche ai file avvengono in background senza aprire viste di differenze o rubare il focus. Puoi continuare a lavorare senza interruzioni mentre Jabberwock effettua modifiche. I file possono essere aperti senza focus per catturare diagnostiche o rimanere completamente chiusi."
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "Usa il nuovo parser dei messaggi",
@@ -800,7 +800,7 @@
 			"providerLabel": "Provider",
 			"providerDescription": "Seleziona il provider per la generazione di immagini.",
 			"name": "Abilita generazione immagini AI",
-			"description": "Quando abilitato, Roo può generare immagini da prompt di testo utilizzando i modelli di generazione immagini di OpenRouter. Richiede una chiave API OpenRouter configurata.",
+			"description": "Quando abilitato, Jabberwock può generare immagini da prompt di testo utilizzando i modelli di generazione immagini di OpenRouter. Richiede una chiave API OpenRouter configurata.",
 			"openRouterApiKeyLabel": "Chiave API OpenRouter",
 			"openRouterApiKeyPlaceholder": "Inserisci la tua chiave API OpenRouter",
 			"getApiKeyText": "Ottieni la tua chiave API da",
@@ -811,13 +811,13 @@
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Abilita comandi slash avviati dal modello",
-			"description": "Quando abilitato, Roo può eseguire i tuoi comandi slash per eseguire flussi di lavoro."
+			"description": "Quando abilitato, Jabberwock può eseguire i tuoi comandi slash per eseguire flussi di lavoro."
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Abilita strumenti personalizzati",
-			"description": "Quando abilitato, Roo può caricare e utilizzare strumenti TypeScript/JavaScript personalizzati dalla directory .roo/tools del tuo progetto o ~/.roo/tools per strumenti globali. Nota: questi strumenti saranno automaticamente approvati.",
+			"description": "Quando abilitato, Jabberwock può caricare e utilizzare strumenti TypeScript/JavaScript personalizzati dalla directory .jabberwock/tools del tuo progetto o ~/.jabberwock/tools per strumenti globali. Nota: questi strumenti saranno automaticamente approvati.",
 			"toolsHeader": "Strumenti personalizzati disponibili",
-			"noTools": "Nessuno strumento personalizzato caricato. Aggiungi file .ts o .js alla directory .roo/tools del tuo progetto o ~/.roo/tools per strumenti globali.",
+			"noTools": "Nessuno strumento personalizzato caricato. Aggiungi file .ts o .js alla directory .jabberwock/tools del tuo progetto o ~/.jabberwock/tools per strumenti globali.",
 			"refreshButton": "Aggiorna",
 			"refreshing": "Aggiornamento...",
 			"refreshSuccess": "Strumenti aggiornati con successo",
@@ -827,7 +827,7 @@
 	},
 	"promptCaching": {
 		"label": "Disattiva la cache dei prompt",
-		"description": "Quando selezionato, Roo non utilizzerà la cache dei prompt per questo modello."
+		"description": "Quando selezionato, Jabberwock non utilizzerà la cache dei prompt per questo modello."
 	},
 	"temperature": {
 		"useCustom": "Usa temperatura personalizzata",
@@ -857,7 +857,7 @@
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "L'estensione recupera automaticamente l'elenco più recente dei modelli disponibili su <serviceLink>{{serviceName}}</serviceLink>. Se non sei sicuro di quale modello scegliere, Roo Code funziona meglio con <defaultModelLink>{{defaultModelId}}</defaultModelLink>. Puoi anche cercare \"free\" per opzioni gratuite attualmente disponibili.",
+		"automaticFetch": "L'estensione recupera automaticamente l'elenco più recente dei modelli disponibili su <serviceLink>{{serviceName}}</serviceLink>. Se non sei sicuro di quale modello scegliere, Jabberwock funziona meglio con <defaultModelLink>{{defaultModelId}}</defaultModelLink>. Puoi anche cercare \"free\" per opzioni gratuite attualmente disponibili.",
 		"label": "Modello",
 		"searchPlaceholder": "Cerca",
 		"noMatchFound": "Nessuna corrispondenza trovata",
@@ -867,7 +867,7 @@
 	"footer": {
 		"telemetry": {
 			"label": "Consenti segnalazioni anonime di errori e utilizzo",
-			"description": "Aiuta a migliorare Roo Code inviando dati di utilizzo anonimi e segnalazioni di errori. Questa telemetria non raccoglie codice, prompt o informazioni personali. Consulta la nostra <privacyLink>informativa sulla privacy</privacyLink> per maggiori dettagli."
+			"description": "Aiuta a migliorare Jabberwock inviando dati di utilizzo anonimi e segnalazioni di errori. Questa telemetria non raccoglie codice, prompt o informazioni personali. Consulta la nostra <privacyLink>informativa sulla privacy</privacyLink> per maggiori dettagli."
 		},
 		"settings": {
 			"import": "Importa",

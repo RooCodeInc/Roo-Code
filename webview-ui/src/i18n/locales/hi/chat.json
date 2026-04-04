@@ -1,5 +1,5 @@
 {
-	"greeting": "Roo Code में आपका स्वागत है",
+	"greeting": "Jabberwock में आपका स्वागत है",
 	"task": {
 		"title": "कार्य",
 		"expand": "कार्य विस्तृत करें",
@@ -21,7 +21,7 @@
 		"sharePublicly": "सार्वजनिक रूप से साझा करें",
 		"sharePubliclyDescription": "लिंक वाला कोई भी व्यक्ति पहुंच सकता है",
 		"connectToCloud": "Cloud से कनेक्ट करें",
-		"connectToCloudDescription": "कार्य साझा करने के लिए Roo Code Cloud में साइन इन करें",
+		"connectToCloudDescription": "कार्य साझा करने के लिए Jabberwock Cloud में साइन इन करें",
 		"sharingDisabledByOrganization": "संगठन द्वारा साझाकरण अक्षम किया गया",
 		"shareSuccessOrganization": "संगठन लिंक क्लिपबोर्ड में कॉपी किया गया",
 		"shareSuccessPublic": "सार्वजनिक लिंक क्लिपबोर्ड में कॉपी किया गया",
@@ -97,10 +97,10 @@
 	},
 	"enqueueMessage": "संदेश को कतार में जोड़ें (वर्तमान कार्य पूरा होने के बाद भेजा जाएगा)",
 	"scrollToBottom": "चैट के निचले हिस्से तक स्क्रॉल करें",
-	"about": "Roo Code आपके संपादक में एक पूरी AI देव टीम है।",
+	"about": "Jabberwock आपके संपादक में एक पूरी AI देव टीम है।",
 	"docs": "और जानने के लिए हमारे <DocsLink>दस्तावेज़</DocsLink> देखें।",
 	"onboarding": "इस कार्यक्षेत्र में आपकी कार्य सूची खाली है।",
-	"rooTips": {
+	"jabberwockTips": {
 		"customizableModes": {
 			"title": "अनुकूलन योग्य मोड",
 			"description": "विशेष व्यक्ति जो कार्य पर बने रहते हैं और वितरित करते हैं।"
@@ -129,7 +129,7 @@
 		"title": "मोड्स",
 		"marketplace": "मोड मार्केटप्लेस",
 		"settings": "मोड सेटिंग्स",
-		"description": "विशेष व्यक्तित्व जो Roo के व्यवहार को अनुकूलित करते हैं।",
+		"description": "विशेष व्यक्तित्व जो Jabberwock के व्यवहार को अनुकूलित करते हैं।",
 		"searchPlaceholder": "मोड खोजें...",
 		"noResults": "कोई परिणाम नहीं मिला"
 	},
@@ -143,7 +143,7 @@
 	"diffError": {
 		"title": "संपादन असफल"
 	},
-	"troubleMessage": "Roo को समस्या हो रही है...",
+	"troubleMessage": "Jabberwock को समस्या हो रही है...",
 	"apiRequest": {
 		"title": "API अनुरोध",
 		"failed": "API अनुरोध विफल हुआ",
@@ -161,7 +161,7 @@
 			"500": "प्रदाता सर्वर त्रुटि। प्रदाता की ओर से कुछ गलत है, आपके अनुरोध में कुछ गलत नहीं है।",
 			"docs": "डॉक्स",
 			"goToSettings": "सेटिंग्स",
-			"unknown": "अज्ञात API त्रुटि। कृपया Roo Code सहायता से संपर्क करें।",
+			"unknown": "अज्ञात API त्रुटि। कृपया Jabberwock सहायता से संपर्क करें।",
 			"connection": "कनेक्शन त्रुटि। सुनिश्चित करें कि आपके पास कार्यशील इंटरनेट कनेक्शन है।",
 			"claudeCodeNotAuthenticated": "Claude Code का उपयोग करने के लिए आपको साइन इन करना होगा। सेटिंग्स में जाएं और प्रमाणित करने के लिए \"Claude Code में साइन इन करें\" पर क्लिक करें।"
 		}
@@ -186,43 +186,43 @@
 		"current": "वर्तमान"
 	},
 	"instructions": {
-		"wantsToFetch": "Roo को वर्तमान कार्य में सहायता के लिए विस्तृत निर्देश प्राप्त करना है"
+		"wantsToFetch": "Jabberwock को वर्तमान कार्य में सहायता के लिए विस्तृत निर्देश प्राप्त करना है"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo इस फ़ाइल को पढ़ना चाहता है",
-		"wantsToReadOutsideWorkspace": "Roo कार्यक्षेत्र के बाहर इस फ़ाइल को पढ़ना चाहता है",
-		"didRead": "Roo ने इस फ़ाइल को पढ़ा",
-		"wantsToEdit": "Roo इस फ़ाइल को संपादित करना चाहता है",
-		"wantsToEditOutsideWorkspace": "Roo कार्यक्षेत्र के बाहर इस फ़ाइल को संपादित करना चाहता है",
-		"wantsToEditProtected": "Roo एक सुरक्षित कॉन्फ़िगरेशन फ़ाइल को संपादित करना चाहता है",
-		"wantsToCreate": "Roo एक नई फ़ाइल बनाना चाहता है",
-		"wantsToSearchReplace": "Roo इस फ़ाइल में खोज और प्रतिस्थापन करना चाहता है",
-		"didSearchReplace": "Roo ने इस फ़ाइल में खोज और प्रतिस्थापन किया",
-		"wantsToInsert": "Roo इस फ़ाइल में सामग्री डालना चाहता है",
-		"wantsToInsertWithLineNumber": "Roo इस फ़ाइल की {{lineNumber}} लाइन पर सामग्री डालना चाहता है",
-		"wantsToInsertAtEnd": "Roo इस फ़ाइल के अंत में सामग्री जोड़ना चाहता है",
+		"wantsToRead": "Jabberwock इस फ़ाइल को पढ़ना चाहता है",
+		"wantsToReadOutsideWorkspace": "Jabberwock कार्यक्षेत्र के बाहर इस फ़ाइल को पढ़ना चाहता है",
+		"didRead": "Jabberwock ने इस फ़ाइल को पढ़ा",
+		"wantsToEdit": "Jabberwock इस फ़ाइल को संपादित करना चाहता है",
+		"wantsToEditOutsideWorkspace": "Jabberwock कार्यक्षेत्र के बाहर इस फ़ाइल को संपादित करना चाहता है",
+		"wantsToEditProtected": "Jabberwock एक सुरक्षित कॉन्फ़िगरेशन फ़ाइल को संपादित करना चाहता है",
+		"wantsToCreate": "Jabberwock एक नई फ़ाइल बनाना चाहता है",
+		"wantsToSearchReplace": "Jabberwock इस फ़ाइल में खोज और प्रतिस्थापन करना चाहता है",
+		"didSearchReplace": "Jabberwock ने इस फ़ाइल में खोज और प्रतिस्थापन किया",
+		"wantsToInsert": "Jabberwock इस फ़ाइल में सामग्री डालना चाहता है",
+		"wantsToInsertWithLineNumber": "Jabberwock इस फ़ाइल की {{lineNumber}} लाइन पर सामग्री डालना चाहता है",
+		"wantsToInsertAtEnd": "Jabberwock इस फ़ाइल के अंत में सामग्री जोड़ना चाहता है",
 		"wantsToReadAndXMore": "रू इस फ़ाइल को और {{count}} अन्य को पढ़ना चाहता है",
-		"wantsToReadMultiple": "Roo कई फ़ाइलें पढ़ना चाहता है",
-		"wantsToApplyBatchChanges": "Roo कई फ़ाइलों में परिवर्तन लागू करना चाहता है",
-		"wantsToGenerateImage": "Roo एक छवि बनाना चाहता है",
-		"wantsToGenerateImageOutsideWorkspace": "Roo कार्यक्षेत्र के बाहर एक छवि बनाना चाहता है",
-		"wantsToGenerateImageProtected": "Roo एक संरक्षित स्थान पर छवि बनाना चाहता है",
-		"didGenerateImage": "Roo ने एक छवि बनाई"
+		"wantsToReadMultiple": "Jabberwock कई फ़ाइलें पढ़ना चाहता है",
+		"wantsToApplyBatchChanges": "Jabberwock कई फ़ाइलों में परिवर्तन लागू करना चाहता है",
+		"wantsToGenerateImage": "Jabberwock एक छवि बनाना चाहता है",
+		"wantsToGenerateImageOutsideWorkspace": "Jabberwock कार्यक्षेत्र के बाहर एक छवि बनाना चाहता है",
+		"wantsToGenerateImageProtected": "Jabberwock एक संरक्षित स्थान पर छवि बनाना चाहता है",
+		"didGenerateImage": "Jabberwock ने एक छवि बनाई"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo इस निर्देशिका में शीर्ष स्तर की फ़ाइलें देखना चाहता है",
-		"didViewTopLevel": "Roo ने इस निर्देशिका में शीर्ष स्तर की फ़ाइलें देखीं",
-		"wantsToViewRecursive": "Roo इस निर्देशिका में सभी फ़ाइलों को पुनरावर्ती रूप से देखना चाहता है",
-		"didViewRecursive": "Roo ने इस निर्देशिका में सभी फ़ाइलों को पुनरावर्ती रूप से देखा",
-		"wantsToSearch": "Roo इस निर्देशिका में <code>{{regex}}</code> के लिए खोज करना चाहता है",
-		"didSearch": "Roo ने इस निर्देशिका में <code>{{regex}}</code> के लिए खोज की",
-		"wantsToSearchOutsideWorkspace": "Roo इस निर्देशिका (कार्यक्षेत्र के बाहर) में <code>{{regex}}</code> के लिए खोज करना चाहता है",
-		"didSearchOutsideWorkspace": "Roo ने इस निर्देशिका (कार्यक्षेत्र के बाहर) में <code>{{regex}}</code> के लिए खोज की",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo इस निर्देशिका (कार्यक्षेत्र के बाहर) में शीर्ष स्तर की फ़ाइलें देखना चाहता है",
-		"didViewTopLevelOutsideWorkspace": "Roo ने इस निर्देशिका (कार्यक्षेत्र के बाहर) में शीर्ष स्तर की फ़ाइलें देखीं",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo इस निर्देशिका (कार्यक्षेत्र के बाहर) में सभी फ़ाइलों को पुनरावर्ती रूप से देखना चाहता है",
-		"didViewRecursiveOutsideWorkspace": "Roo ने इस निर्देशिका (कार्यक्षेत्र के बाहर) में सभी फ़ाइलों को पुनरावर्ती रूप से देखा",
-		"wantsToViewMultipleDirectories": "Roo कई डायरेक्ट्रीज़ देखना चाहता है"
+		"wantsToViewTopLevel": "Jabberwock इस निर्देशिका में शीर्ष स्तर की फ़ाइलें देखना चाहता है",
+		"didViewTopLevel": "Jabberwock ने इस निर्देशिका में शीर्ष स्तर की फ़ाइलें देखीं",
+		"wantsToViewRecursive": "Jabberwock इस निर्देशिका में सभी फ़ाइलों को पुनरावर्ती रूप से देखना चाहता है",
+		"didViewRecursive": "Jabberwock ने इस निर्देशिका में सभी फ़ाइलों को पुनरावर्ती रूप से देखा",
+		"wantsToSearch": "Jabberwock इस निर्देशिका में <code>{{regex}}</code> के लिए खोज करना चाहता है",
+		"didSearch": "Jabberwock ने इस निर्देशिका में <code>{{regex}}</code> के लिए खोज की",
+		"wantsToSearchOutsideWorkspace": "Jabberwock इस निर्देशिका (कार्यक्षेत्र के बाहर) में <code>{{regex}}</code> के लिए खोज करना चाहता है",
+		"didSearchOutsideWorkspace": "Jabberwock ने इस निर्देशिका (कार्यक्षेत्र के बाहर) में <code>{{regex}}</code> के लिए खोज की",
+		"wantsToViewTopLevelOutsideWorkspace": "Jabberwock इस निर्देशिका (कार्यक्षेत्र के बाहर) में शीर्ष स्तर की फ़ाइलें देखना चाहता है",
+		"didViewTopLevelOutsideWorkspace": "Jabberwock ने इस निर्देशिका (कार्यक्षेत्र के बाहर) में शीर्ष स्तर की फ़ाइलें देखीं",
+		"wantsToViewRecursiveOutsideWorkspace": "Jabberwock इस निर्देशिका (कार्यक्षेत्र के बाहर) में सभी फ़ाइलों को पुनरावर्ती रूप से देखना चाहता है",
+		"didViewRecursiveOutsideWorkspace": "Jabberwock ने इस निर्देशिका (कार्यक्षेत्र के बाहर) में सभी फ़ाइलों को पुनरावर्ती रूप से देखा",
+		"wantsToViewMultipleDirectories": "Jabberwock कई डायरेक्ट्रीज़ देखना चाहता है"
 	},
 	"commandOutput": "कमांड आउटपुट",
 	"commandExecution": {
@@ -244,24 +244,24 @@
 	"response": "प्रतिक्रिया",
 	"arguments": "आर्ग्युमेंट्स",
 	"text": {
-		"rooSaid": "रू ने कहा"
+		"jabberwockSaid": "रू ने कहा"
 	},
 	"feedback": {
 		"youSaid": "आपने कहा"
 	},
 	"mcp": {
-		"wantsToUseTool": "Roo {{serverName}} MCP सर्वर पर एक टूल का उपयोग करना चाहता है",
-		"wantsToAccessResource": "Roo {{serverName}} MCP सर्वर पर एक संसाधन का उपयोग करना चाहता है"
+		"wantsToUseTool": "Jabberwock {{serverName}} MCP सर्वर पर एक टूल का उपयोग करना चाहता है",
+		"wantsToAccessResource": "Jabberwock {{serverName}} MCP सर्वर पर एक संसाधन का उपयोग करना चाहता है"
 	},
 	"modes": {
-		"wantsToSwitch": "Roo <code>{{mode}}</code> मोड में स्विच करना चाहता है",
-		"wantsToSwitchWithReason": "Roo <code>{{mode}}</code> मोड में स्विच करना चाहता है क्योंकि: {{reason}}",
-		"didSwitch": "Roo <code>{{mode}}</code> मोड में स्विच कर गया",
-		"didSwitchWithReason": "Roo <code>{{mode}}</code> मोड में स्विच कर गया क्योंकि: {{reason}}"
+		"wantsToSwitch": "Jabberwock <code>{{mode}}</code> मोड में स्विच करना चाहता है",
+		"wantsToSwitchWithReason": "Jabberwock <code>{{mode}}</code> मोड में स्विच करना चाहता है क्योंकि: {{reason}}",
+		"didSwitch": "Jabberwock <code>{{mode}}</code> मोड में स्विच कर गया",
+		"didSwitchWithReason": "Jabberwock <code>{{mode}}</code> मोड में स्विच कर गया क्योंकि: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo <code>{{mode}}</code> मोड में एक नया उपकार्य बनाना चाहता है",
-		"wantsToFinish": "Roo इस उपकार्य को समाप्त करना चाहता है",
+		"wantsToCreate": "Jabberwock <code>{{mode}}</code> मोड में एक नया उपकार्य बनाना चाहता है",
+		"wantsToFinish": "Jabberwock इस उपकार्य को समाप्त करना चाहता है",
 		"newTaskContent": "उपकार्य निर्देश",
 		"completionContent": "उपकार्य पूर्ण",
 		"resultContent": "उपकार्य परिणाम",
@@ -270,7 +270,7 @@
 		"goToSubtask": "कार्य देखें"
 	},
 	"questions": {
-		"hasQuestion": "Roo का एक प्रश्न है"
+		"hasQuestion": "Jabberwock का एक प्रश्न है"
 	},
 	"taskCompleted": "कार्य पूरा हुआ",
 	"modelResponseIncomplete": "मॉडल प्रतिक्रिया अपूर्ण",
@@ -286,7 +286,7 @@
 		"copyToClipboard": "क्लिपबोर्ड पर कॉपी करें",
 		"copied": "कॉपी किया गया!",
 		"diagnostics": "विस्तृत त्रुटि जानकारी प्राप्त करें",
-		"proxyProvider": "ऐसा लगता है कि आप एक प्रॉक्सी-आधारित प्रदाता का उपयोग कर रहे हैं। इसके लॉग की जांच करना सुनिश्चित करें और सुनिश्चित करें कि यह Roo के अनुरोधों को नहीं फिर से लिख रहा है।"
+		"proxyProvider": "ऐसा लगता है कि आप एक प्रॉक्सी-आधारित प्रदाता का उपयोग कर रहे हैं। इसके लॉग की जांच करना सुनिश्चित करें और सुनिश्चित करें कि यह Jabberwock के अनुरोधों को नहीं फिर से लिख रहा है।"
 	},
 	"powershell": {
 		"issues": "ऐसा लगता है कि आपको Windows PowerShell के साथ समस्याएँ हो रही हैं, कृपया इसे देखें"
@@ -329,30 +329,30 @@
 		}
 	},
 	"skill": {
-		"wantsToLoad": "Roo एक कौशल लोड करना चाहता है",
-		"didLoad": "Roo ने एक कौशल लोड किया"
+		"wantsToLoad": "Jabberwock एक कौशल लोड करना चाहता है",
+		"didLoad": "Jabberwock ने एक कौशल लोड किया"
 	},
 	"followUpSuggest": {
 		"copyToInput": "इनपुट में कॉपी करें (या Shift + क्लिक)",
 		"timerPrefix": "ऑटो-अनुमोदन सक्षम है। {{seconds}}s में चयन किया जा रहा है…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} रिलीज़ हुआ",
-		"support": "कृपया <githubLink>GitHub</githubLink> पर हमें स्टार देकर Roo Code का समर्थन करें।",
+		"title": "Jabberwock {{version}} रिलीज़ हुआ",
+		"support": "कृपया <githubLink>GitHub</githubLink> पर हमें स्टार देकर Jabberwock का समर्थन करें।",
 		"stealthModel": {
-			"feature": "<bold>सीमित समय के लिए मुफ़्त स्टेल्थ मॉडल</bold> - Code Supernova: अब <bold>1M Token संदर्भ विंडो</bold> के साथ अपग्रेड हुआ! एक बहुमुखी एजेंटिक कोडिंग मॉडल जो छवि इनपुट का समर्थन करता है, Roo Code Cloud के माध्यम से उपलब्ध।",
+			"feature": "<bold>सीमित समय के लिए मुफ़्त स्टेल्थ मॉडल</bold> - Code Supernova: अब <bold>1M Token संदर्भ विंडो</bold> के साथ अपग्रेड हुआ! एक बहुमुखी एजेंटिक कोडिंग मॉडल जो छवि इनपुट का समर्थन करता है, Jabberwock Cloud के माध्यम से उपलब्ध।",
 			"note": "(नोट: प्रॉम्प्ट्स और कम्प्लीशन्स मॉडल निर्माता द्वारा लॉग किए जाते हैं और मॉडल को बेहतर बनाने के लिए उपयोग किए जाते हैं)",
-			"connectButton": "Roo Code Cloud से कनेक्ट करें",
-			"selectModel": "आरंभ करने के लिए सेटिंग्स में Roo Code Cloud प्रोवाइडर से <code>roo/code-supernova</code> चुनें।",
+			"connectButton": "Jabberwock Cloud से कनेक्ट करें",
+			"selectModel": "आरंभ करने के लिए सेटिंग्स में Jabberwock Cloud प्रोवाइडर से <code>jabberwock/code-supernova</code> चुनें।",
 			"goToSettingsButton": "सेटिंग्स पर जाएं"
 		},
 		"release": {
 			"heading": "नया क्या है:",
-			"gpt54": "OpenAI GPT-5.4 सपोर्ट: OpenAI GPT-5.4 और GPT-5.3 Chat Latest जोड़े गए हैं, ताकि आप Roo Code में OpenAI के सबसे नए chat models इस्तेमाल कर सकें।",
+			"gpt54": "OpenAI GPT-5.4 सपोर्ट: OpenAI GPT-5.4 और GPT-5.3 Chat Latest जोड़े गए हैं, ताकि आप Jabberwock में OpenAI के सबसे नए chat models इस्तेमाल कर सकें।",
 			"slashSkills": "Slash command skills: अब skills को slash commands के रूप में fallback execution के साथ expose किया जा सकता है, जिससे workflows तेज़ हो जाते हैं।",
 			"geminiPro": "Gemini 3.1 Pro सपोर्ट: Gemini 3.1 Pro मॉडल का सपोर्ट जोड़ा गया और बेहतर प्रदर्शन के लिए इसे डिफ़ॉल्ट Gemini मॉडल के रूप में सेट किया गया।",
 			"cliNdjson": "CLI NDJSON प्रोटोकॉल: नया NDJSON stdin प्रोटोकॉल, list सबकमांड, और अधिक लचीले CLI वर्कफ़्लो के लिए मॉड्यूलर run कमांड।",
-			"cliRelease": "CLI v0.1.0: Roo Code CLI एक स्थिर कमांड इंटरफ़ेस के साथ अपनी पहली आधिकारिक रिलीज़ तक पहुँचा।"
+			"cliRelease": "CLI v0.1.0: Jabberwock CLI एक स्थिर कमांड इंटरफ़ेस के साथ अपनी पहली आधिकारिक रिलीज़ तक पहुँचा।"
 		},
 		"cloudAgents": {
 			"heading": "क्लाउड में नया:",
@@ -377,24 +377,24 @@
 	"profileViolationWarning": "वर्तमान प्रोफ़ाइल आपके संगठन की सेटिंग्स के साथ संगत नहीं है",
 	"shellIntegration": {
 		"title": "कमांड निष्पादन चेतावनी",
-		"description": "आपका कमांड VSCode टर्मिनल शेल इंटीग्रेशन के बिना निष्पादित हो रहा है। इस चेतावनी को दबाने के लिए आप <settingsLink>Roo Code सेटिंग्स</settingsLink> के <strong>Terminal</strong> अनुभाग में शेल इंटीग्रेशन को अक्षम कर सकते हैं या नीचे दिए गए लिंक का उपयोग करके VSCode टर्मिनल इंटीग्रेशन की समस्या का समाधान कर सकते हैं।",
+		"description": "आपका कमांड VSCode टर्मिनल शेल इंटीग्रेशन के बिना निष्पादित हो रहा है। इस चेतावनी को दबाने के लिए आप <settingsLink>Jabberwock सेटिंग्स</settingsLink> के <strong>Terminal</strong> अनुभाग में शेल इंटीग्रेशन को अक्षम कर सकते हैं या नीचे दिए गए लिंक का उपयोग करके VSCode टर्मिनल इंटीग्रेशन की समस्या का समाधान कर सकते हैं।",
 		"troubleshooting": "शेल इंटीग्रेशन दस्तावेज़ के लिए यहां क्लिक करें।"
 	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "स्वत:-स्वीकृत अनुरोध सीमा पहुंची",
-			"description": "Roo {{count}} API अनुरोध(धों) की स्वत:-स्वीकृत सीमा तक पहुंच गया है। क्या आप गणना को रीसेट करके कार्य जारी रखना चाहते हैं?",
+			"description": "Jabberwock {{count}} API अनुरोध(धों) की स्वत:-स्वीकृत सीमा तक पहुंच गया है। क्या आप गणना को रीसेट करके कार्य जारी रखना चाहते हैं?",
 			"button": "रीसेट करें और जारी रखें"
 		},
 		"autoApprovedCostLimitReached": {
 			"title": "स्वत:-अनुमोदित लागत सीमा पहुँच गई",
 			"button": "रीसेट करें और जारी रखें",
-			"description": "Roo ने स्वचालित-स्वीकृत लागत सीमा ${{count}} तक पहुंच गई है। क्या आप लागत को रीसेट करके कार्य जारी रखना चाहेंगे?"
+			"description": "Jabberwock ने स्वचालित-स्वीकृत लागत सीमा ${{count}} तक पहुंच गई है। क्या आप लागत को रीसेट करके कार्य जारी रखना चाहेंगे?"
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo कोडबेस में <code>{{query}}</code> खोजना चाहता है",
-		"wantsToSearchWithPath": "Roo <code>{{path}}</code> में कोडबेस में <code>{{query}}</code> खोजना चाहता है",
+		"wantsToSearch": "Jabberwock कोडबेस में <code>{{query}}</code> खोजना चाहता है",
+		"wantsToSearchWithPath": "Jabberwock <code>{{path}}</code> में कोडबेस में <code>{{query}}</code> खोजना चाहता है",
 		"didSearch_one": "1 परिणाम मिला",
 		"didSearch_other": "{{count}} परिणाम मिले",
 		"resultTooltip": "समानता स्कोर: {{score}} (फ़ाइल खोलने के लिए क्लिक करें)"
@@ -434,8 +434,8 @@
 	"versionIndicator": {
 		"ariaLabel": "संस्करण {{version}} - रिलीज़ नोट्स देखने के लिए क्लिक करें"
 	},
-	"rooCloudCTA": {
-		"title": "Roo Code Cloud विकसित हो रहा है!",
+	"jabberwockCloudCTA": {
+		"title": "Jabberwock Cloud विकसित हो रहा है!",
 		"description": "क्लाउड में रिमोट एजेंट चलाएं, कहीं से भी अपने कार्यों तक पहुंचें, दूसरों के साथ सहयोग करें, और बहुत कुछ।",
 		"joinWaitlist": "नवीनतम अपडेट प्राप्त करने के लिए साइन अप करें।"
 	},
@@ -476,8 +476,8 @@
 		"clickToEdit": "संदेश संपादित करने के लिए क्लिक करें"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo एक स्लैश कमांड चलाना चाहता है",
-		"didRun": "Roo ने एक स्लैश कमांड चलाया"
+		"wantsToRun": "Jabberwock एक स्लैश कमांड चलाना चाहता है",
+		"didRun": "Jabberwock ने एक स्लैश कमांड चलाया"
 	},
 	"todo": {
 		"partial": "{{total}} में से {{completed}} टू-डू हो गए",
@@ -496,11 +496,11 @@
 		"openMcpSettings": "MCP सेटिंग्स खोलें"
 	},
 	"readCommandOutput": {
-		"title": "Roo read command output"
+		"title": "Jabberwock read command output"
 	},
 	"retiredProvider": {
 		"title": "प्रदाता अब समर्थित नहीं है",
-		"message": "क्षमा करें, यह प्रदाता अब समर्थित नहीं है। हमने देखा कि बहुत कम Roo उपयोगकर्ता वास्तव में इसका उपयोग कर रहे थे और हमें अपने कोडबेस का दायरा कम करने की आवश्यकता है ताकि हम तेज़ी से काम करना और अपने समुदाय की अच्छी सेवा करना जारी रख सकें। यह वाकई एक कठिन निर्णय था, लेकिन इससे हम उस पर ध्यान केंद्रित कर सकते हैं जो तुम्हारे लिए सबसे ज़्यादा मायने रखता है। हम जानते हैं, यह बुरा लगता है।",
+		"message": "क्षमा करें, यह प्रदाता अब समर्थित नहीं है। हमने देखा कि बहुत कम Jabberwock उपयोगकर्ता वास्तव में इसका उपयोग कर रहे थे और हमें अपने कोडबेस का दायरा कम करने की आवश्यकता है ताकि हम तेज़ी से काम करना और अपने समुदाय की अच्छी सेवा करना जारी रख सकें। यह वाकई एक कठिन निर्णय था, लेकिन इससे हम उस पर ध्यान केंद्रित कर सकते हैं जो तुम्हारे लिए सबसे ज़्यादा मायने रखता है। हम जानते हैं, यह बुरा लगता है।",
 		"openSettings": "सेटिंग्स खोलें"
 	}
 }

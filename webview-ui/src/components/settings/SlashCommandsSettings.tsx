@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react"
 import { Plus, Globe, Folder, Edit, Trash2 } from "lucide-react"
 import { Trans } from "react-i18next"
 
-import type { Command } from "@roo-code/types"
+import type { Command } from "@jabberwock/types"
 
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"

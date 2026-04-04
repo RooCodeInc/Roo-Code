@@ -1,4 +1,4 @@
-import { CommandsAPI } from "../api/CommandsAPI.js"
+import { CommandsAPI } from "../api/CommandsAPI.ts"
 
 describe("CommandsAPI", () => {
 	let commands: CommandsAPI

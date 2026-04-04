@@ -1,6 +1,6 @@
 import type { ExtensionContext } from "vscode"
-import { RetryQueue } from "../RetryQueue.js"
-import type { QueuedRequest } from "../types.js"
+import { RetryQueue } from "../RetryQueue.ts"
+import type { QueuedRequest } from "../types.ts"
 
 // Mock ExtensionContext
 const createMockContext = (): ExtensionContext => {
@@ -61,7 +61,7 @@ describe("RetryQueue", () => {
 			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
 
 			expect(mockContext.workspaceState.update).toHaveBeenCalledWith(
-				"roo.retryQueue",
+				"jabberwock.retryQueue",
 				expect.arrayContaining([
 					expect.objectContaining({
 						url: "https://api.example.com/test",
@@ -84,7 +84,7 @@ describe("RetryQueue", () => {
 			]
 
 			// Set up mock to return persisted data
-			const storage = new Map([["roo.retryQueue", persistedRequests]])
+			const storage = new Map([["jabberwock.retryQueue", persistedRequests]])
 			mockContext = {
 				workspaceState: {
 					get: vi.fn((key: string) => storage.get(key)),
@@ -96,7 +96,7 @@ describe("RetryQueue", () => {
 
 			const stats = retryQueue.getStats()
 			expect(stats.totalQueued).toBe(1)
-			expect(mockContext.workspaceState.get).toHaveBeenCalledWith("roo.retryQueue")
+			expect(mockContext.workspaceState.get).toHaveBeenCalledWith("jabberwock.retryQueue")
 		})
 	})
 

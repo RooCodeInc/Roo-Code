@@ -2,9 +2,9 @@
 
 // npx vitest run src/__tests__/TelemetryClient.test.ts
 
-import { type TelemetryPropertiesProvider, TelemetryEventName } from "@roo-code/types"
+import { type TelemetryPropertiesProvider, TelemetryEventName } from "@jabberwock/types"
 
-import { CloudTelemetryClient as TelemetryClient } from "../TelemetryClient.js"
+import { CloudTelemetryClient as TelemetryClient } from "../TelemetryClient.ts"
 
 const mockFetch = vi.fn()
 global.fetch = mockFetch as any
@@ -272,7 +272,7 @@ describe("TelemetryClient", () => {
 			const client = new TelemetryClient(mockAuthService, mockSettingsService)
 
 			const providerProperties = {
-				appName: "roo-code",
+				appName: "jabberwock",
 				appVersion: "1.0.0",
 				vscodeVersion: "1.60.0",
 				platform: "darwin",
@@ -305,7 +305,7 @@ describe("TelemetryClient", () => {
 			})
 
 			expect(mockFetch).toHaveBeenCalledWith(
-				"https://app.roocode.com/api/events",
+				"https://app.jabberwock.com/api/events",
 				expect.objectContaining({
 					method: "POST",
 					body: JSON.stringify(mockValidatedData),
@@ -317,7 +317,7 @@ describe("TelemetryClient", () => {
 			mockSettingsService.isTaskSyncEnabled.mockReturnValue(true)
 
 			const eventProperties = {
-				appName: "roo-code",
+				appName: "jabberwock",
 				appVersion: "1.0.0",
 				vscodeVersion: "1.60.0",
 				platform: "darwin",
@@ -347,7 +347,7 @@ describe("TelemetryClient", () => {
 
 			expect(mockSettingsService.isTaskSyncEnabled).toHaveBeenCalled()
 			expect(mockFetch).toHaveBeenCalledWith(
-				"https://app.roocode.com/api/events",
+				"https://app.jabberwock.com/api/events",
 				expect.objectContaining({
 					method: "POST",
 					body: JSON.stringify(mockValidatedData),
@@ -426,7 +426,7 @@ describe("TelemetryClient", () => {
 			const client = new TelemetryClient(mockAuthService, mockSettingsService)
 
 			const providerProperties = {
-				appName: "roo-code",
+				appName: "jabberwock",
 				appVersion: "1.0.0",
 				vscodeVersion: "1.60.0",
 				platform: "darwin",
@@ -459,7 +459,7 @@ describe("TelemetryClient", () => {
 			await client.backfillMessages(messages, "test-task-id")
 
 			expect(mockFetch).toHaveBeenCalledWith(
-				"https://app.roocode.com/api/events/backfill",
+				"https://app.jabberwock.com/api/events/backfill",
 				expect.objectContaining({
 					method: "POST",
 					headers: {
@@ -514,7 +514,7 @@ describe("TelemetryClient", () => {
 			await client.backfillMessages(messages, "test-task-id")
 
 			expect(mockFetch).toHaveBeenCalledWith(
-				"https://app.roocode.com/api/events/backfill",
+				"https://app.jabberwock.com/api/events/backfill",
 				expect.objectContaining({
 					method: "POST",
 					headers: {
@@ -561,7 +561,7 @@ describe("TelemetryClient", () => {
 			await client.backfillMessages(messages, "test-task-id")
 
 			expect(mockFetch).toHaveBeenCalledWith(
-				"https://app.roocode.com/api/events/backfill",
+				"https://app.jabberwock.com/api/events/backfill",
 				expect.objectContaining({
 					method: "POST",
 					headers: {
@@ -647,7 +647,7 @@ describe("TelemetryClient", () => {
 			await client.backfillMessages([], "test-task-id")
 
 			expect(mockFetch).toHaveBeenCalledWith(
-				"https://app.roocode.com/api/events/backfill",
+				"https://app.jabberwock.com/api/events/backfill",
 				expect.objectContaining({
 					method: "POST",
 					headers: {

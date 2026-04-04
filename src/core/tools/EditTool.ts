@@ -1,7 +1,7 @@
 import fs from "fs/promises"
 import path from "path"
 
-import { type ClineSayTool, DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
+import { type ClineSayTool, DEFAULT_WRITE_DELAY_MS } from "@jabberwock/types"
 
 import { getReadablePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
@@ -64,16 +64,16 @@ export class EditTool extends BaseTool<"edit"> {
 				return
 			}
 
-			const accessAllowed = task.rooIgnoreController?.validateAccess(relPath)
+			const accessAllowed = task.jabberwockIgnoreController?.validateAccess(relPath)
 
 			if (!accessAllowed) {
 				await task.say("rooignore_error", relPath)
-				pushToolResult(formatResponse.rooIgnoreError(relPath))
+				pushToolResult(formatResponse.jabberwockIgnoreError(relPath))
 				return
 			}
 
 			// Check if file is write-protected
-			const isWriteProtected = task.rooProtectedController?.isWriteProtected(relPath) || false
+			const isWriteProtected = task.jabberwockProtectedController?.isWriteProtected(relPath) || false
 
 			const absolutePath = path.resolve(task.cwd, relPath)
 

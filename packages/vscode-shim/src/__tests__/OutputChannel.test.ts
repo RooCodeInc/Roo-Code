@@ -1,5 +1,5 @@
-import { OutputChannel } from "../classes/OutputChannel.js"
-import { setLogger } from "../utils/logger.js"
+import { OutputChannel } from "../classes/OutputChannel.ts"
+import { setLogger } from "../utils/logger.ts"
 
 describe("OutputChannel", () => {
 	let mockLogger: {

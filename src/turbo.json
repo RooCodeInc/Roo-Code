@@ -3,7 +3,7 @@
 	"extends": ["//"],
 	"tasks": {
 		"bundle": {
-			"dependsOn": ["^build", "@roo-code/vscode-webview#build"],
+			"dependsOn": ["^build", "@jabberwock/vscode-webview#build"],
 			"outputs": ["dist/**"]
 		},
 		"vsix": {
@@ -12,7 +12,7 @@
 			"outputs": ["../bin/**"]
 		},
 		"watch:bundle": {
-			"dependsOn": ["@roo-code/build#build", "@roo-code/types#build"],
+			"dependsOn": ["@jabberwock/build#build", "@jabberwock/types#build"],
 			"cache": false
 		}
 	}

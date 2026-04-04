@@ -8,7 +8,7 @@ import { getModelDimension, getDefaultModelId } from "../../../../shared/embeddi
 vi.mock("openai")
 
 // Mock TelemetryService
-vi.mock("@roo-code/telemetry", () => ({
+vi.mock("@jabberwock/telemetry", () => ({
 	TelemetryService: {
 		instance: {
 			captureEvent: vi.fn(),
@@ -90,8 +90,8 @@ describe("OpenRouterEmbedder", () => {
 				baseURL: "https://openrouter.ai/api/v1",
 				apiKey: mockApiKey,
 				defaultHeaders: {
-					"HTTP-Referer": "https://github.com/RooCodeInc/Roo-Code",
-					"X-Title": "Roo Code",
+					"HTTP-Referer": "https://github.com/JabberwockInc/Jabberwock",
+					"X-Title": "Jabberwock",
 				},
 			})
 		})

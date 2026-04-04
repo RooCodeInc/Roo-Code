@@ -2,7 +2,7 @@
 
 import { ExtensionContext } from "vscode"
 
-import type { ProviderSettings } from "@roo-code/types"
+import type { ProviderSettings } from "@jabberwock/types"
 
 import { ProviderSettingsManager, ProviderProfiles, SyncCloudProfilesResult } from "../ProviderSettingsManager"
 
@@ -232,24 +232,24 @@ describe("ProviderSettingsManager", () => {
 						default: {
 							config: {},
 							id: "default",
-							apiProvider: "roo",
-							apiModelId: "roo/code-supernova", // Old model ID
+							apiProvider: "jabberwock",
+							apiModelId: "jabberwock/code-supernova", // Old model ID
 						},
 						test: {
-							apiProvider: "roo",
-							apiModelId: "roo/code-supernova", // Old model ID
+							apiProvider: "jabberwock",
+							apiModelId: "jabberwock/code-supernova", // Old model ID
 						},
 						existing: {
-							apiProvider: "roo",
-							apiModelId: "roo/code-supernova-1-million", // Already migrated
+							apiProvider: "jabberwock",
+							apiModelId: "jabberwock/code-supernova-1-million", // Already migrated
 						},
 						otherProvider: {
 							apiProvider: "anthropic",
-							apiModelId: "roo/code-supernova", // Should not be migrated (different provider)
+							apiModelId: "jabberwock/code-supernova", // Should not be migrated (different provider)
 						},
 						noProvider: {
 							id: "no-provider",
-							apiModelId: "roo/code-supernova", // Should not be migrated (no provider)
+							apiModelId: "jabberwock/code-supernova", // Should not be migrated (no provider)
 						},
 					},
 					migrations: {
@@ -267,14 +267,14 @@ describe("ProviderSettingsManager", () => {
 			const calls = mockSecrets.store.mock.calls
 			const storedConfig = JSON.parse(calls[calls.length - 1][1])
 
-			// Roo provider configs should be migrated
-			expect(storedConfig.apiConfigs.default.apiModelId).toEqual("roo/code-supernova-1-million")
-			expect(storedConfig.apiConfigs.test.apiModelId).toEqual("roo/code-supernova-1-million")
-			expect(storedConfig.apiConfigs.existing.apiModelId).toEqual("roo/code-supernova-1-million")
+			// Jabberwock provider configs should be migrated
+			expect(storedConfig.apiConfigs.default.apiModelId).toEqual("jabberwock/code-supernova-1-million")
+			expect(storedConfig.apiConfigs.test.apiModelId).toEqual("jabberwock/code-supernova-1-million")
+			expect(storedConfig.apiConfigs.existing.apiModelId).toEqual("jabberwock/code-supernova-1-million")
 
-			// Non-roo provider configs should not be migrated
-			expect(storedConfig.apiConfigs.otherProvider.apiModelId).toEqual("roo/code-supernova")
-			expect(storedConfig.apiConfigs.noProvider.apiModelId).toEqual("roo/code-supernova")
+			// Non-jabberwock provider configs should not be migrated
+			expect(storedConfig.apiConfigs.otherProvider.apiModelId).toEqual("jabberwock/code-supernova")
+			expect(storedConfig.apiConfigs.noProvider.apiModelId).toEqual("jabberwock/code-supernova")
 		})
 
 		it("should apply model migrations every time, not just once", async () => {
@@ -284,8 +284,8 @@ describe("ProviderSettingsManager", () => {
 					currentApiConfigName: "default",
 					apiConfigs: {
 						default: {
-							apiProvider: "roo",
-							apiModelId: "roo/code-supernova",
+							apiProvider: "jabberwock",
+							apiModelId: "jabberwock/code-supernova",
 							id: "default",
 						},
 					},
@@ -303,7 +303,7 @@ describe("ProviderSettingsManager", () => {
 			// Verify migration happened
 			let calls = mockSecrets.store.mock.calls
 			let storedConfig = JSON.parse(calls[calls.length - 1][1])
-			expect(storedConfig.apiConfigs.default.apiModelId).toEqual("roo/code-supernova-1-million")
+			expect(storedConfig.apiConfigs.default.apiModelId).toEqual("jabberwock/code-supernova-1-million")
 
 			// Create a new instance to simulate another load
 			const newManager = new ProviderSettingsManager(mockContext)
@@ -314,8 +314,8 @@ describe("ProviderSettingsManager", () => {
 					currentApiConfigName: "default",
 					apiConfigs: {
 						default: {
-							apiProvider: "roo",
-							apiModelId: "roo/code-supernova", // Old model again
+							apiProvider: "jabberwock",
+							apiModelId: "jabberwock/code-supernova", // Old model again
 							id: "default",
 						},
 					},
@@ -333,7 +333,7 @@ describe("ProviderSettingsManager", () => {
 			// Verify migration happened again
 			calls = mockSecrets.store.mock.calls
 			storedConfig = JSON.parse(calls[calls.length - 1][1])
-			expect(storedConfig.apiConfigs.default.apiModelId).toEqual("roo/code-supernova-1-million")
+			expect(storedConfig.apiConfigs.default.apiModelId).toEqual("jabberwock/code-supernova-1-million")
 		})
 
 		it("should throw error if secrets storage fails", async () => {

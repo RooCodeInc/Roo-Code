@@ -1,7 +1,7 @@
 import { parseJSON } from "partial-json"
 
-import { type ToolName, toolNames, type FileEntry } from "@roo-code/types"
-import { customToolRegistry } from "@roo-code/core"
+import { type ToolName, toolNames, type FileEntry } from "@jabberwock/types"
+import { customToolRegistry } from "@jabberwock/core"
 
 import {
 	type ToolUse,

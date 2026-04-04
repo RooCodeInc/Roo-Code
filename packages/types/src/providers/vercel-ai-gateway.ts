@@ -1,4 +1,4 @@
-import type { ModelInfo } from "../model.js"
+import type { ModelInfo } from "../model.ts"
 
 // https://ai-gateway.vercel.sh/v1/
 export const vercelAiGatewayDefaultModelId = "anthropic/claude-sonnet-4"

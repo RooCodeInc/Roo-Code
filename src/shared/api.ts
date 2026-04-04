@@ -6,7 +6,7 @@ import {
 	ANTHROPIC_DEFAULT_MAX_TOKENS,
 	isDynamicProvider,
 	isLocalProvider,
-} from "@roo-code/types"
+} from "@jabberwock/types"
 
 // ApiHandlerOptions
 // Extend ProviderSettings (minus apiProvider) with handler-specific toggles.
@@ -176,7 +176,7 @@ const dynamicProviderExtras = {
 	unbound: {} as { apiKey?: string },
 	ollama: {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
 	lmstudio: {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
-	roo: {} as { apiKey?: string; baseUrl?: string },
+	jabberwock: {} as { apiKey?: string; baseUrl?: string },
 } as const satisfies Record<RouterName, object>
 
 // Build the dynamic options union from the map, intersected with CommonFetchParams

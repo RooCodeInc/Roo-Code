@@ -15,7 +15,7 @@ async function main() {
 		const extensionTestsPath = path.resolve(__dirname, "./suite/index")
 
 		// Create a temporary workspace folder for tests
-		const testWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), "roo-test-workspace-"))
+		const testWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), "jabberwock-test-workspace-"))
 
 		// Get test filter from command line arguments or environment variable
 		// Usage examples:

@@ -2,9 +2,9 @@
  * TabGroupsAPI class for VSCode API
  */
 
-import { EventEmitter } from "../classes/EventEmitter.js"
-import type { Uri } from "../classes/Uri.js"
-import type { Disposable } from "../interfaces/workspace.js"
+import { EventEmitter } from "../classes/EventEmitter.ts"
+import type { Uri } from "../classes/Uri.ts"
+import type { Disposable } from "../interfaces/workspace.ts"
 
 /**
  * Tab interface representing an open tab

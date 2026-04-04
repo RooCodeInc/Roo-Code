@@ -1,6 +1,8 @@
 {
 	"$schema": "https://json.schemastore.org/tsconfig",
 	"compilerOptions": {
+		"allowImportingTsExtensions": true,
+		"noEmit": true,
 		"declaration": true,
 		"declarationMap": true,
 		"esModuleInterop": true,

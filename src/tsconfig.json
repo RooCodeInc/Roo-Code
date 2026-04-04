@@ -1,5 +1,7 @@
 {
 	"compilerOptions": {
+		"allowImportingTsExtensions": true,
+		"noEmit": true,
 		"types": ["vitest/globals"],
 		"esModuleInterop": true,
 		"experimentalDecorators": true,

@@ -13,11 +13,15 @@ import path from "path"
 import { createHash } from "crypto"
 import os from "os"
 
-import type { CustomToolDefinition, SerializedCustomToolDefinition, CustomToolParametersSchema } from "@roo-code/types"
+import type {
+	CustomToolDefinition,
+	SerializedCustomToolDefinition,
+	CustomToolParametersSchema,
+} from "@jabberwock/types"
 
-import type { StoredCustomTool, LoadResult } from "./types.js"
-import { serializeCustomTool } from "./serialize.js"
-import { runEsbuild, NODE_BUILTIN_MODULES, COMMONJS_REQUIRE_BANNER } from "./esbuild-runner.js"
+import type { StoredCustomTool, LoadResult } from "./types.ts"
+import { serializeCustomTool } from "./serialize.ts"
+import { runEsbuild, NODE_BUILTIN_MODULES, COMMONJS_REQUIRE_BANNER } from "./esbuild-runner.ts"
 
 export interface RegistryOptions {
 	/** Directory for caching compiled TypeScript files. */
@@ -58,7 +62,7 @@ export class CustomToolRegistry {
 				return result
 			}
 
-			const files = fs.readdirSync(toolDir).filter((f) => f.endsWith(".ts") || f.endsWith(".js"))
+			const files = fs.readdirSync(toolDir).filter((f) => f.endsWith(".ts") || f.endsWith(".ts"))
 
 			for (const file of files) {
 				const filePath = path.join(toolDir, file)
@@ -275,7 +279,7 @@ export class CustomToolRegistry {
 		const absolutePath = path.resolve(filePath)
 		const ext = path.extname(absolutePath)
 
-		if (ext === ".js" || ext === ".mjs") {
+		if (ext === ".ts" || ext === ".mjs") {
 			return import(`file://${absolutePath}`)
 		}
 

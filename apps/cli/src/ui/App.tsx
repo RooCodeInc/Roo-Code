@@ -486,7 +486,7 @@ function AppInner({ createExtensionHost, ...extensionHostOptions }: TUIAppProps)
 			<Box flexDirection="column" flexShrink={0}>
 				{pendingAsk?.type === "followup" ? (
 					<Box flexDirection="column">
-						<Text color={theme.rooHeader}>{pendingAsk.content}</Text>
+						<Text color={theme.jabberwockHeader}>{pendingAsk.content}</Text>
 						{pendingAsk.suggestions && pendingAsk.suggestions.length > 0 && !showCustomInput ? (
 							<Box flexDirection="column" marginTop={1}>
 								<HorizontalLine active={true} />
@@ -562,7 +562,7 @@ function AppInner({ createExtensionHost, ...extensionHostOptions }: TUIAppProps)
 					</Box>
 				) : showApprovalPrompt ? (
 					<Box flexDirection="column">
-						<Text color={theme.rooHeader}>{pendingAsk?.content}</Text>
+						<Text color={theme.jabberwockHeader}>{pendingAsk?.content}</Text>
 						<Text color={theme.dimText}>
 							Press <Text color={theme.successColor}>Y</Text> to approve,{" "}
 							<Text color={theme.errorColor}>N</Text> to reject

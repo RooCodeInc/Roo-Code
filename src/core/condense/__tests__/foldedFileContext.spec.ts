@@ -2,8 +2,8 @@
 
 import * as path from "path"
 import { Anthropic } from "@anthropic-ai/sdk"
-import type { ModelInfo } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
+import type { ModelInfo } from "@jabberwock/types"
+import { TelemetryService } from "@jabberwock/telemetry"
 import { BaseProvider } from "../../../api/providers/base-provider"
 
 // Mock the tree-sitter module
@@ -295,7 +295,7 @@ describe("foldedFileContext", () => {
 				characterCount: mockFoldedSections.join("\n").length,
 			})
 
-			const filesReadByRoo = ["src/user.ts", "src/api.ts"]
+			const filesReadByJabberwock = ["src/user.ts", "src/api.ts"]
 			const cwd = "/test/project"
 
 			const result = await summarizeConversation({
@@ -304,14 +304,14 @@ describe("foldedFileContext", () => {
 				systemPrompt: "System prompt",
 				taskId,
 				isAutomaticTrigger: false,
-				filesReadByRoo,
+				filesReadByJabberwock,
 				cwd,
 			})
 
 			// Verify generateFoldedFileContext was called with the right arguments
-			expect(mockedGenerateFoldedFileContext).toHaveBeenCalledWith(filesReadByRoo, {
+			expect(mockedGenerateFoldedFileContext).toHaveBeenCalledWith(filesReadByJabberwock, {
 				cwd,
-				rooIgnoreController: undefined,
+				jabberwockIgnoreController: undefined,
 			})
 
 			// Verify the summary was created
@@ -344,7 +344,7 @@ describe("foldedFileContext", () => {
 			expect(apiFileBlock.text).toContain("fetchData")
 		})
 
-		it("should not include file context section when filesReadByRoo is empty", async () => {
+		it("should not include file context section when filesReadByJabberwock is empty", async () => {
 			const { summarizeConversation } = await import("../index")
 
 			const mockApiHandler = new MockApiHandler()
@@ -369,11 +369,11 @@ describe("foldedFileContext", () => {
 				systemPrompt: "System prompt",
 				taskId,
 				isAutomaticTrigger: false,
-				filesReadByRoo: [],
+				filesReadByJabberwock: [],
 				cwd: "/test/project",
 			})
 
-			// generateFoldedFileContext should NOT be called when filesReadByRoo is empty
+			// generateFoldedFileContext should NOT be called when filesReadByJabberwock is empty
 			expect(mockedGenerateFoldedFileContext).not.toHaveBeenCalled()
 
 			// Find the summary message

@@ -1,6 +1,6 @@
 {
-	"name": "@roo-code/ipc",
-	"description": "IPC server and client for remote Roo Code access.",
+	"name": "@jabberwock/ipc",
+	"description": "IPC server and client for remote Jabberwock access.",
 	"version": "0.0.0",
 	"type": "module",
 	"exports": "./src/index.ts",
@@ -10,12 +10,12 @@
 		"clean": "rimraf .turbo"
 	},
 	"dependencies": {
-		"@roo-code/types": "workspace:^",
+		"@jabberwock/types": "workspace:^",
 		"node-ipc": "^12.0.0"
 	},
 	"devDependencies": {
-		"@roo-code/config-eslint": "workspace:^",
-		"@roo-code/config-typescript": "workspace:^",
+		"@jabberwock/config-eslint": "workspace:^",
+		"@jabberwock/config-typescript": "workspace:^",
 		"@types/node": "20.x",
 		"@types/node-ipc": "^9.2.3",
 		"vitest": "^3.2.3"

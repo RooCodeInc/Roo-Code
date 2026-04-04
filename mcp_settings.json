@@ -1,0 +1,33 @@
+{
+	"mcpServers": {
+		"md_todo_mcp": {
+			"command": "node",
+			"args": ["/Users/m.dusmikeev/Documents/Work/cool/md-roo-roo/md-todo-mcp/build/index.js"],
+			"type": "interactiveApp",
+			"uiType": "todo-widget",
+			"requiresUserInteraction": true,
+			"autoApproveExcluded": true,
+			"allowedContext": ["agents"],
+			"isGloballyVisible": true
+		},
+		"core_memory_mcp": {
+			"command": "npx",
+			"args": ["-y", "@modelcontextprotocol/server-memory"],
+			"isGloballyVisible": true
+		},
+		"fs_mcp": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"@modelcontextprotocol/server-filesystem",
+				"/Users/m.dusmikeev/Documents/Work/cool/md-roo-roo/Jabberwock"
+			],
+			"isGloballyVisible": false
+		},
+		"postgres_mcp": {
+			"command": "npx",
+			"args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/jabberwock"],
+			"isGloballyVisible": false
+		}
+	}
+}

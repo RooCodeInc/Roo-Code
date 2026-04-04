@@ -1,5 +1,5 @@
-import { Range } from "../classes/Range.js"
-import { Position } from "../classes/Position.js"
+import { Range } from "../classes/Range.ts"
+import { Position } from "../classes/Position.ts"
 
 describe("Range", () => {
 	describe("constructor", () => {

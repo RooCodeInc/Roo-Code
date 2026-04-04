@@ -1,4 +1,4 @@
-import type { ToolName } from "@roo-code/types"
+import type { ToolName } from "@jabberwock/types"
 
 import { Task } from "../task/Task"
 import type { ToolUse, HandleError, PushToolResult, AskApproval, NativeToolArgs } from "../../shared/tools"

@@ -2,7 +2,7 @@
  * TextEditorDecorationType class for VSCode API
  */
 
-import type { Disposable } from "../interfaces/workspace.js"
+import type { Disposable } from "../interfaces/workspace.ts"
 
 /**
  * Text editor decoration type mock for CLI mode

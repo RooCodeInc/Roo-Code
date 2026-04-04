@@ -5,7 +5,7 @@ import * as fs from "fs/promises"
 import * as yaml from "yaml"
 import * as vscode from "vscode"
 import * as os from "os"
-import type { MarketplaceItem } from "@roo-code/types"
+import type { MarketplaceItem } from "@jabberwock/types"
 import type { CustomModesManager } from "../../../core/config/CustomModesManager"
 import * as path from "path"
 import { fileExistsAtPath } from "../../../utils/fs"
@@ -80,7 +80,7 @@ describe("SimpleInstaller", () => {
 
 			const result = await installer.installItem(mockModeItem, { target: "project" })
 
-			expect(result.filePath).toBe(path.join("/test/workspace", ".roomodes"))
+			expect(result.filePath).toBe(path.join("/test/workspace", ".jabberwockmodes"))
 			expect(mockCustomModesManager.importModeWithRules).toHaveBeenCalled()
 
 			// Verify the import was called with correct YAML structure
@@ -133,7 +133,7 @@ describe("SimpleInstaller", () => {
 
 			const result = await installerWithoutManager.installItem(mockModeItem, { target: "project" })
 
-			expect(result.filePath).toBe(path.join("/test/workspace", ".roomodes"))
+			expect(result.filePath).toBe(path.join("/test/workspace", ".jabberwockmodes"))
 			expect(mockFs.writeFile).toHaveBeenCalled()
 		})
 	})
@@ -159,7 +159,7 @@ describe("SimpleInstaller", () => {
 
 			const result = await installer.installItem(mockMcpItem, { target: "project" })
 
-			expect(result.filePath).toBe(path.join("/test/workspace", ".roo", "mcp.json"))
+			expect(result.filePath).toBe(path.join("/test/workspace", ".jabberwock", "mcp.json"))
 			expect(mockFs.writeFile).toHaveBeenCalled()
 
 			// Verify the written content contains the new server
@@ -174,7 +174,7 @@ describe("SimpleInstaller", () => {
 			mockFs.readFile.mockResolvedValueOnce(invalidJson)
 
 			await expect(installer.installItem(mockMcpItem, { target: "project" })).rejects.toThrow(
-				"Cannot install MCP server: The .roo/mcp.json file contains invalid JSON",
+				"Cannot install MCP server: The .jabberwock/mcp.json file contains invalid JSON",
 			)
 
 			// Should NOT write to file

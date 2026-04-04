@@ -80,13 +80,13 @@ vi.mock("vscode", () => ({
 	RelativePattern: vi.fn(),
 }))
 
-// Global roo directory - computed once
-const GLOBAL_ROO_DIR = p(HOME_DIR, ".roo")
+// Global jabberwock directory - computed once
+const GLOBAL_JABBERWOCK_DIR = p(HOME_DIR, ".jabberwock")
 const GLOBAL_AGENTS_DIR = p(HOME_DIR, ".agents")
 
-// Mock roo-config
-vi.mock("../../roo-config", () => ({
-	getGlobalRooDirectory: () => GLOBAL_ROO_DIR,
+// Mock jabberwock-config
+vi.mock("../../jabberwock-config", () => ({
+	getGlobalRooDirectory: () => GLOBAL_JABBERWOCK_DIR,
 	getGlobalAgentsDirectory: () => GLOBAL_AGENTS_DIR,
 	getProjectAgentsDirectoryForCwd: (cwd: string) => p(cwd, ".agents"),
 	directoryExists: mockDirectoryExists,
@@ -117,10 +117,10 @@ describe("SkillsManager", () => {
 	let mockProvider: Partial<ClineProvider>
 
 	// Pre-computed paths for tests
-	const globalSkillsDir = p(GLOBAL_ROO_DIR, "skills")
-	const globalSkillsCodeDir = p(GLOBAL_ROO_DIR, "skills-code")
-	const globalSkillsArchitectDir = p(GLOBAL_ROO_DIR, "skills-architect")
-	const projectRooDir = p(PROJECT_DIR, ".roo")
+	const globalSkillsDir = p(GLOBAL_JABBERWOCK_DIR, "skills")
+	const globalSkillsCodeDir = p(GLOBAL_JABBERWOCK_DIR, "skills-code")
+	const globalSkillsArchitectDir = p(GLOBAL_JABBERWOCK_DIR, "skills-architect")
+	const projectRooDir = p(PROJECT_DIR, ".jabberwock")
 	const projectSkillsDir = p(projectRooDir, "skills")
 	// .agents directory paths
 	const globalAgentsSkillsDir = p(GLOBAL_AGENTS_DIR, "skills")
@@ -510,7 +510,7 @@ description: ${longDescription}
 			const sharedSkillDir = p(SHARED_DIR, "shared-skill")
 			const sharedSkillMd = p(sharedSkillDir, "SKILL.md")
 
-			// Simulate .roo/skills being a symlink to /shared/skills
+			// Simulate .jabberwock/skills being a symlink to /shared/skills
 			mockDirectoryExists.mockImplementation(async (dir: string) => {
 				return dir === globalSkillsDir
 			})
@@ -567,7 +567,7 @@ Instructions here...`
 			const myAliasDir = p(globalSkillsDir, "my-alias")
 			const myAliasMd = p(myAliasDir, "SKILL.md")
 
-			// Simulate .roo/skills/my-alias being a symlink to /external/actual-skill
+			// Simulate .jabberwock/skills/my-alias being a symlink to /external/actual-skill
 			mockDirectoryExists.mockImplementation(async (dir: string) => {
 				return dir === globalSkillsDir
 			})
@@ -717,7 +717,7 @@ Instructions here...`
 			expect(skills[0].source).toBe("project")
 		})
 
-		it("should prioritize .roo skills over .agents skills with same name", async () => {
+		it("should prioritize .jabberwock skills over .agents skills with same name", async () => {
 			const agentSkillDir = p(globalAgentsSkillsDir, "common-skill")
 			const agentSkillMd = p(agentSkillDir, "SKILL.md")
 			const rooSkillDir = p(globalSkillsDir, "common-skill")
@@ -759,10 +759,10 @@ description: Agent version (should be overridden)
 				if (file === rooSkillMd) {
 					return `---
 name: common-skill
-description: Roo version (should take priority)
+description: Jabberwock version (should take priority)
 ---
 
-# Roo Common Skill`
+# Jabberwock Common Skill`
 				}
 				throw new Error("File not found")
 			})
@@ -772,8 +772,8 @@ description: Roo version (should take priority)
 			const skills = skillsManager.getSkillsForMode("code")
 			const commonSkill = skills.find((s) => s.name === "common-skill")
 			expect(commonSkill).toBeDefined()
-			// .roo should override .agents
-			expect(commonSkill?.description).toBe("Roo version (should take priority)")
+			// .jabberwock should override .agents
+			expect(commonSkill?.description).toBe("Jabberwock version (should take priority)")
 		})
 
 		it("should discover mode-specific skills from .agents directory", async () => {
@@ -1203,13 +1203,13 @@ Instructions`)
 
 			const createdPath = await skillsManager.createSkill("new-skill", "global", "A new skill description")
 
-			expect(createdPath).toBe(p(GLOBAL_ROO_DIR, "skills", "new-skill", "SKILL.md"))
-			expect(mockMkdir).toHaveBeenCalledWith(p(GLOBAL_ROO_DIR, "skills", "new-skill"), { recursive: true })
+			expect(createdPath).toBe(p(GLOBAL_JABBERWOCK_DIR, "skills", "new-skill", "SKILL.md"))
+			expect(mockMkdir).toHaveBeenCalledWith(p(GLOBAL_JABBERWOCK_DIR, "skills", "new-skill"), { recursive: true })
 			expect(mockWriteFile).toHaveBeenCalled()
 
 			// Verify the content written
 			const writeCall = mockWriteFile.mock.calls[0]
-			expect(writeCall[0]).toBe(p(GLOBAL_ROO_DIR, "skills", "new-skill", "SKILL.md"))
+			expect(writeCall[0]).toBe(p(GLOBAL_JABBERWOCK_DIR, "skills", "new-skill", "SKILL.md"))
 			expect(writeCall[1]).toContain("name: new-skill")
 			expect(writeCall[1]).toContain("description: A new skill description")
 		})
@@ -1225,7 +1225,7 @@ Instructions`)
 			const createdPath = await skillsManager.createSkill("code-skill", "global", "A code skill", ["code"])
 
 			// Skills are always created in the generic skills directory now; mode info is in frontmatter
-			expect(createdPath).toBe(p(GLOBAL_ROO_DIR, "skills", "code-skill", "SKILL.md"))
+			expect(createdPath).toBe(p(GLOBAL_JABBERWOCK_DIR, "skills", "code-skill", "SKILL.md"))
 
 			// Verify frontmatter contains modeSlugs
 			const writeCall = mockWriteFile.mock.calls[0]
@@ -1243,7 +1243,7 @@ Instructions`)
 
 			const createdPath = await skillsManager.createSkill("project-skill", "project", "A project skill")
 
-			expect(createdPath).toBe(p(PROJECT_DIR, ".roo", "skills", "project-skill", "SKILL.md"))
+			expect(createdPath).toBe(p(PROJECT_DIR, ".jabberwock", "skills", "project-skill", "SKILL.md"))
 		})
 
 		it("should throw error for invalid skill name", async () => {
@@ -1363,8 +1363,8 @@ Instructions`)
 		it("should move a skill from generic to mode-specific directory", async () => {
 			const sourceDir = p(globalSkillsDir, "test-skill")
 			const testSkillMd = p(sourceDir, "SKILL.md")
-			const destDir = p(GLOBAL_ROO_DIR, "skills-code", "test-skill")
-			const destSkillsDir = p(GLOBAL_ROO_DIR, "skills-code")
+			const destDir = p(GLOBAL_JABBERWOCK_DIR, "skills-code", "test-skill")
+			const destSkillsDir = p(GLOBAL_JABBERWOCK_DIR, "skills-code")
 
 			// Setup: skill exists in generic skills directory
 			mockDirectoryExists.mockImplementation(async (dir: string) => {
@@ -1417,11 +1417,11 @@ Instructions`)
 		})
 
 		it("should move a skill from one mode to another", async () => {
-			const sourceSkillsDir = p(GLOBAL_ROO_DIR, "skills-code")
+			const sourceSkillsDir = p(GLOBAL_JABBERWOCK_DIR, "skills-code")
 			const sourceDir = p(sourceSkillsDir, "test-skill")
 			const testSkillMd = p(sourceDir, "SKILL.md")
-			const destDir = p(GLOBAL_ROO_DIR, "skills-architect", "test-skill")
-			const destSkillsDir = p(GLOBAL_ROO_DIR, "skills-architect")
+			const destDir = p(GLOBAL_JABBERWOCK_DIR, "skills-architect", "test-skill")
+			const destSkillsDir = p(GLOBAL_JABBERWOCK_DIR, "skills-architect")
 
 			// Setup: skill exists in code mode directory
 			mockDirectoryExists.mockImplementation(async (dir: string) => {
@@ -1474,7 +1474,7 @@ Instructions`)
 		})
 
 		it("should move a skill from mode-specific to generic directory", async () => {
-			const sourceSkillsDir = p(GLOBAL_ROO_DIR, "skills-code")
+			const sourceSkillsDir = p(GLOBAL_JABBERWOCK_DIR, "skills-code")
 			const sourceDir = p(sourceSkillsDir, "test-skill")
 			const testSkillMd = p(sourceDir, "SKILL.md")
 			const destDir = p(globalSkillsDir, "test-skill")
@@ -1585,7 +1585,7 @@ Instructions`)
 		it("should throw error if skill already exists at destination", async () => {
 			const sourceDir = p(globalSkillsDir, "test-skill")
 			const testSkillMd = p(sourceDir, "SKILL.md")
-			const destDir = p(GLOBAL_ROO_DIR, "skills-code", "test-skill")
+			const destDir = p(GLOBAL_JABBERWOCK_DIR, "skills-code", "test-skill")
 			const destSkillMd = p(destDir, "SKILL.md")
 
 			// Setup: skill exists in both locations
@@ -1630,11 +1630,11 @@ Instructions`)
 		})
 
 		it("should clean up empty source skills directory after moving", async () => {
-			const sourceSkillsDir = p(GLOBAL_ROO_DIR, "skills-code")
+			const sourceSkillsDir = p(GLOBAL_JABBERWOCK_DIR, "skills-code")
 			const sourceDir = p(sourceSkillsDir, "test-skill")
 			const testSkillMd = p(sourceDir, "SKILL.md")
-			const destDir = p(GLOBAL_ROO_DIR, "skills-architect", "test-skill")
-			const destSkillsDir = p(GLOBAL_ROO_DIR, "skills-architect")
+			const destDir = p(GLOBAL_JABBERWOCK_DIR, "skills-architect", "test-skill")
+			const destSkillsDir = p(GLOBAL_JABBERWOCK_DIR, "skills-architect")
 
 			// Setup: skill exists in code mode directory
 			mockDirectoryExists.mockImplementation(async (dir: string) => {
@@ -1693,11 +1693,11 @@ Instructions`)
 		})
 
 		it("should not clean up source skills directory if it still has other skills", async () => {
-			const sourceSkillsDir = p(GLOBAL_ROO_DIR, "skills-code")
+			const sourceSkillsDir = p(GLOBAL_JABBERWOCK_DIR, "skills-code")
 			const sourceDir = p(sourceSkillsDir, "test-skill")
 			const testSkillMd = p(sourceDir, "SKILL.md")
-			const destDir = p(GLOBAL_ROO_DIR, "skills-architect", "test-skill")
-			const destSkillsDir = p(GLOBAL_ROO_DIR, "skills-architect")
+			const destDir = p(GLOBAL_JABBERWOCK_DIR, "skills-architect", "test-skill")
+			const destSkillsDir = p(GLOBAL_JABBERWOCK_DIR, "skills-architect")
 
 			// Setup: skill exists in code mode directory along with another skill
 			mockDirectoryExists.mockImplementation(async (dir: string) => {

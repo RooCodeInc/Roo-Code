@@ -1,5 +1,5 @@
-import { Selection } from "../classes/Selection.js"
-import { Position } from "../classes/Position.js"
+import { Selection } from "../classes/Selection.ts"
+import { Position } from "../classes/Position.ts"
 
 describe("Selection", () => {
 	describe("constructor with Position objects", () => {

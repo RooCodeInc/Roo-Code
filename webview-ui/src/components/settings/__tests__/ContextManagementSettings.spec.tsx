@@ -91,7 +91,7 @@ describe("ContextManagementSettings", () => {
 		listApiConfigMeta: [],
 		maxOpenTabsContext: 20,
 		maxWorkspaceFiles: 200,
-		showRooIgnoredFiles: false,
+		showJabberwockIgnoredFiles: false,
 		profileThresholds: {},
 		includeDiagnosticMessages: true,
 		maxDiagnosticMessages: 50,
@@ -418,7 +418,7 @@ describe("ContextManagementSettings", () => {
 	it("handles undefined optional props gracefully", () => {
 		const propsWithUndefined = {
 			...defaultProps,
-			showRooIgnoredFiles: undefined,
+			showJabberwockIgnoredFiles: undefined,
 		}
 
 		expect(() => {
@@ -450,12 +450,12 @@ describe("ContextManagementSettings", () => {
 			// Check that labels are present
 			expect(screen.getByText("settings:contextManagement.openTabs.label")).toBeInTheDocument()
 			expect(screen.getByText("settings:contextManagement.workspaceFiles.label")).toBeInTheDocument()
-			expect(screen.getByText("settings:contextManagement.rooignore.label")).toBeInTheDocument()
+			expect(screen.getByText("settings:contextManagement.jabberwockignore.label")).toBeInTheDocument()
 
 			// Check that descriptions are present
 			expect(screen.getByText("settings:contextManagement.openTabs.description")).toBeInTheDocument()
 			expect(screen.getByText("settings:contextManagement.workspaceFiles.description")).toBeInTheDocument()
-			expect(screen.getByText("settings:contextManagement.rooignore.description")).toBeInTheDocument()
+			expect(screen.getByText("settings:contextManagement.jabberwockignore.description")).toBeInTheDocument()
 		})
 
 		it("has proper test ids for all interactive elements", () => {
@@ -476,7 +476,7 @@ describe("ContextManagementSettings", () => {
 			expect(screen.getByText("settings:contextManagement.description")).toBeInTheDocument()
 			expect(screen.getByText("settings:contextManagement.openTabs.label")).toBeInTheDocument()
 			expect(screen.getByText("settings:contextManagement.workspaceFiles.label")).toBeInTheDocument()
-			expect(screen.getByText("settings:contextManagement.rooignore.label")).toBeInTheDocument()
+			expect(screen.getByText("settings:contextManagement.jabberwockignore.label")).toBeInTheDocument()
 		})
 	})
 })

@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Jabberwock",
 		"description": "Tim pengembang AI lengkap di editor kamu."
 	},
 	"number_format": {
@@ -111,8 +111,8 @@
 			"thinking_complete_safety": "(Berpikir selesai, tetapi output diblokir karena pengaturan keamanan.)",
 			"thinking_complete_recitation": "(Berpikir selesai, tetapi output diblokir karena pemeriksaan resitasi.)"
 		},
-		"roo": {
-			"authenticationRequired": "Penyedia Roo memerlukan autentikasi cloud. Silakan masuk ke Roo Code Cloud."
+		"jabberwock": {
+			"authenticationRequired": "Penyedia Jabberwock memerlukan autentikasi cloud. Silakan masuk ke Jabberwock Cloud."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "Kunci API mengandung karakter tidak valid.",
@@ -145,7 +145,7 @@
 	"warnings": {
 		"no_terminal_content": "Tidak ada konten terminal yang dipilih",
 		"missing_task_files": "File tugas ini hilang. Apakah kamu ingin menghapusnya dari daftar tugas?",
-		"auto_import_failed": "Gagal mengimpor pengaturan RooCode secara otomatis: {{error}}"
+		"auto_import_failed": "Gagal mengimpor pengaturan Jabberwock secara otomatis: {{error}}"
 	},
 	"info": {
 		"no_changes": "Tidak ada perubahan ditemukan.",
@@ -154,7 +154,7 @@
 		"custom_storage_path_set": "Path penyimpanan kustom diatur: {{path}}",
 		"default_storage_path": "Kembali menggunakan path penyimpanan default",
 		"settings_imported": "Pengaturan berhasil diimpor.",
-		"auto_import_success": "Pengaturan RooCode berhasil diimpor secara otomatis dari {{filename}}",
+		"auto_import_success": "Pengaturan Jabberwock berhasil diimpor secara otomatis dari {{filename}}",
 		"share_link_copied": "Link bagikan disalin ke clipboard",
 		"image_copied_to_clipboard": "Data URI gambar disalin ke clipboard",
 		"image_saved": "Gambar disimpan ke {{path}}",
@@ -187,12 +187,12 @@
 	},
 	"storage": {
 		"prompt_custom_path": "Masukkan path penyimpanan riwayat percakapan kustom, biarkan kosong untuk menggunakan lokasi default",
-		"path_placeholder": "D:\\RooCodeStorage",
-		"enter_absolute_path": "Silakan masukkan path absolut (misalnya D:\\RooCodeStorage atau /home/user/storage)",
+		"path_placeholder": "D:\\JabberwockStorage",
+		"enter_absolute_path": "Silakan masukkan path absolut (misalnya D:\\JabberwockStorage atau /home/user/storage)",
 		"enter_valid_path": "Silakan masukkan path yang valid"
 	},
 	"input": {
-		"task_prompt": "Apa yang harus Roo lakukan?",
+		"task_prompt": "Apa yang harus Jabberwock lakukan?",
 		"task_placeholder": "Ketik tugas kamu di sini"
 	},
 	"settings": {
@@ -200,8 +200,8 @@
 	},
 	"customModes": {
 		"errors": {
-			"yamlParseError": "YAML tidak valid dalam file .roomodes pada baris {{line}}. Silakan periksa:\n• Indentasi yang benar (gunakan spasi, bukan tab)\n• Tanda kutip dan kurung yang cocok\n• Sintaks YAML yang valid",
-			"schemaValidationError": "Format mode kustom tidak valid dalam .roomodes:\n{{issues}}",
+			"yamlParseError": "YAML tidak valid dalam file .jabberwockmodes pada baris {{line}}. Silakan periksa:\n• Indentasi yang benar (gunakan spasi, bukan tab)\n• Tanda kutip dan kurung yang cocok\n• Sintaks YAML yang valid",
+			"schemaValidationError": "Format mode kustom tidak valid dalam .jabberwockmodes:\n{{issues}}",
 			"invalidFormat": "Format mode kustom tidak valid. Pastikan pengaturan kamu mengikuti format YAML yang benar.",
 			"updateFailed": "Gagal memperbarui mode kustom: {{error}}",
 			"deleteFailed": "Gagal menghapus mode kustom: {{error}}",
@@ -222,8 +222,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "Organisasi kamu memerlukan autentikasi Roo Code Cloud. Silakan masuk untuk melanjutkan.",
-			"organization_mismatch": "Kamu harus diautentikasi dengan akun Roo Code Cloud organisasi kamu.",
+			"cloud_auth_required": "Organisasi kamu memerlukan autentikasi Jabberwock Cloud. Silakan masuk untuk melanjutkan.",
+			"organization_mismatch": "Kamu harus diautentikasi dengan akun Jabberwock Cloud organisasi kamu.",
 			"manual_url_empty": "Silakan masukkan URL callback yang valid",
 			"manual_url_no_query": "URL callback tidak valid: parameter query hilang",
 			"manual_url_missing_params": "URL callback tidak valid: parameter yang diperlukan hilang (code dan state)",
@@ -250,6 +250,6 @@
 	},
 	"docsLink": {
 		"label": "Docs",
-		"url": "https://docs.roocode.com"
+		"url": "https://docs.jabberwock.com"
 	}
 }

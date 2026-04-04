@@ -110,7 +110,7 @@ describe("CodeActionProvider", () => {
 			const actions = provider.provideCodeActions(mockDocument, mockRange, mockContext)
 
 			expect(actions).toEqual([])
-			expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith("roo-cline")
+			expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith("jabberwock")
 			expect(mockGet).toHaveBeenCalledWith("enableCodeActions", true)
 		})
 

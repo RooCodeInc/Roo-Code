@@ -115,10 +115,10 @@ describe("searchReplaceTool", () => {
 				}),
 			}),
 		}
-		mockCline.rooIgnoreController = {
+		mockCline.jabberwockIgnoreController = {
 			validateAccess: vi.fn().mockReturnValue(true),
 		}
-		mockCline.rooProtectedController = {
+		mockCline.jabberwockProtectedController = {
 			isWriteProtected: vi.fn().mockReturnValue(false),
 		}
 		mockCline.diffViewProvider = {
@@ -173,7 +173,7 @@ describe("searchReplaceTool", () => {
 
 		mockedFileExistsAtPath.mockResolvedValue(fileExists)
 		mockedFsReadFile.mockResolvedValue(fileContent)
-		mockCline.rooIgnoreController.validateAccess.mockReturnValue(accessAllowed)
+		mockCline.jabberwockIgnoreController.validateAccess.mockReturnValue(accessAllowed)
 
 		const nativeArgs: Record<string, unknown> = {
 			file_path: testFilePath,

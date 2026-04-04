@@ -1,4 +1,4 @@
-import type { ProviderName, ModelInfo, OrganizationAllowList } from "@roo-code/types"
+import type { ProviderName, ModelInfo, OrganizationAllowList } from "@jabberwock/types"
 
 export const filterProviders = (
 	providers: Array<{ value: string; label: string }>,

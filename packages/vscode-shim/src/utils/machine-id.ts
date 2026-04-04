@@ -7,7 +7,7 @@ import * as fs from "fs"
 import * as path from "path"
 import * as crypto from "crypto"
 import * as os from "os"
-import { ensureDirectoryExists } from "./paths.js"
+import { ensureDirectoryExists } from "./paths.ts"
 
 /**
  * Get or create a unique machine ID

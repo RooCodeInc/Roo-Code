@@ -1,7 +1,7 @@
 import { pgTable, text, timestamp, integer, real, boolean, jsonb, uniqueIndex } from "drizzle-orm/pg-core"
 import { relations } from "drizzle-orm"
 
-import type { RooCodeSettings, ToolName, ToolUsage } from "@roo-code/types"
+import type { JabberwockSettings, ToolName, ToolUsage } from "@jabberwock/types"
 
 import type { ExerciseLanguage } from "../exercises/index"
 
@@ -26,7 +26,7 @@ export const runs = pgTable("runs", {
 	outputPrice: real(),
 	cacheWritesPrice: real(),
 	cacheReadsPrice: real(),
-	settings: jsonb().$type<RooCodeSettings>(),
+	settings: jsonb().$type<JabberwockSettings>(),
 	jobToken: text(),
 	pid: integer(),
 	socketPath: text("socket_path").notNull(),

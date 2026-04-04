@@ -8,9 +8,9 @@ import {
 	type ClineAskUseMcpServer,
 	type McpExecutionStatus,
 	mcpExecutionStatusSchema,
-} from "@roo-code/types"
+} from "@jabberwock/types"
 
-import { safeJsonParse } from "@roo/core"
+import { safeJsonParse } from "@shared/core"
 
 import { cn } from "@src/lib/utils"
 import { Button } from "@src/components/ui"

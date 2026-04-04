@@ -7,6 +7,42 @@ import { z } from "zod"
 export const MAX_MCP_TOOLS_THRESHOLD = 60
 
 /**
+ * Jabberwock MCP Server Types
+ */
+
+export const mcpServerTypeSchema = z.enum(["tool", "interactiveApp"])
+export type McpServerType = z.infer<typeof mcpServerTypeSchema>
+
+/**
+ * Extended MCP Server Configuration Schema for Jabberwock
+ */
+export const mcpServerConfigSchema = z.object({
+	command: z.string(),
+	args: z.array(z.string()).optional(),
+	env: z.record(z.string()).optional(),
+	type: mcpServerTypeSchema.optional(),
+	uiType: z.string().optional(),
+	requiresUserInteraction: z.boolean().optional(),
+	autoApproveExcluded: z.boolean().optional(),
+	allowedContext: z.array(z.string()).optional(),
+	isGloballyVisible: z.boolean().optional().default(true),
+	alwaysAllow: z.array(z.string()).optional(),
+	disabled: z.boolean().optional(),
+	disabledTools: z.array(z.string()).optional(),
+})
+
+export type McpServerConfig = z.infer<typeof mcpServerConfigSchema>
+
+/**
+ * MCP Settings Schema for Jabberwock
+ */
+export const mcpSettingsSchema = z.object({
+	mcpServers: z.record(mcpServerConfigSchema),
+})
+
+export type McpSettings = z.infer<typeof mcpSettingsSchema>
+
+/**
  * McpServerUse
  */
 

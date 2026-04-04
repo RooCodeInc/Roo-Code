@@ -1,4 +1,4 @@
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage } from "@jabberwock/types"
 import { fileChangesFromMessages } from "../components/chat/utils/fileChangesFromMessages"
 
 function msg(overrides: Partial<ClineMessage> & { text: string }): ClineMessage {

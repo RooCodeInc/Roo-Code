@@ -28,7 +28,7 @@ const main = async () => {
 					} else if (runId !== -1) {
 						await runEvals(runId)
 					} else if (taskId !== -1) {
-						await processTask({ taskId, jobToken: process.env.ROO_CODE_CLOUD_TOKEN || null })
+						await processTask({ taskId, jobToken: process.env.JABBERWOCK_CODE_CLOUD_TOKEN || null })
 					} else {
 						throw new Error("Either runId or taskId must be provided.")
 					}
@@ -46,7 +46,7 @@ const main = async () => {
 
 if (!fs.existsSync(EVALS_REPO_PATH)) {
 	console.error(
-		`Exercises do not exist at ${EVALS_REPO_PATH}. Please run "git clone https://github.com/RooCodeInc/Roo-Code-Evals.git evals".`,
+		`Exercises do not exist at ${EVALS_REPO_PATH}. Please run "git clone https://github.com/JabberwockInc/Jabberwock-Evals.git evals".`,
 	)
 
 	process.exit(1)

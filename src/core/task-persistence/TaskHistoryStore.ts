@@ -2,7 +2,7 @@ import * as fs from "fs/promises"
 import * as fsSync from "fs"
 import * as path from "path"
 
-import type { HistoryItem } from "@roo-code/types"
+import type { HistoryItem } from "@jabberwock/types"
 
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import { safeWriteJson } from "../../utils/safeWriteJson"

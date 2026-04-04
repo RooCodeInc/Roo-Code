@@ -2,9 +2,9 @@
  * Terminal-related interfaces for VSCode API
  */
 
-import type { Uri } from "../classes/Uri.js"
-import type { ThemeIcon } from "../classes/Additional.js"
-import type { Thenable } from "../types.js"
+import type { Uri } from "../classes/Uri.ts"
+import type { ThemeIcon } from "../classes/Additional.ts"
+import type { Thenable } from "../types.ts"
 
 /**
  * Represents a terminal in VSCode

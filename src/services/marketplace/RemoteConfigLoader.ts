@@ -7,8 +7,8 @@ import {
 	type MarketplaceItemType,
 	modeMarketplaceItemSchema,
 	mcpMarketplaceItemSchema,
-} from "@roo-code/types"
-import { getRooCodeApiUrl } from "@roo-code/cloud"
+} from "@jabberwock/types"
+import { getJabberwockApiUrl } from "@jabberwock/cloud"
 
 const modeMarketplaceResponse = z.object({
 	items: z.array(modeMarketplaceItemSchema),
@@ -24,7 +24,7 @@ export class RemoteConfigLoader {
 	private cacheDuration = 5 * 60 * 1000 // 5 minutes
 
 	constructor() {
-		this.apiBaseUrl = getRooCodeApiUrl()
+		this.apiBaseUrl = getJabberwockApiUrl()
 	}
 
 	async loadAllItems(hideMarketplaceMcps = false): Promise<MarketplaceItem[]> {

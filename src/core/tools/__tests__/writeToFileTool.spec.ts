@@ -74,8 +74,8 @@ vi.mock("vscode", () => ({
 	},
 }))
 
-vi.mock("../../ignore/RooIgnoreController", () => ({
-	RooIgnoreController: class {
+vi.mock("../../ignore/JabberwockIgnoreController", () => ({
+	JabberwockIgnoreController: class {
 		initialize() {
 			return Promise.resolve()
 		}
@@ -132,7 +132,7 @@ describe("writeToFileTool", () => {
 				}),
 			}),
 		}
-		mockCline.rooIgnoreController = {
+		mockCline.jabberwockIgnoreController = {
 			validateAccess: vi.fn().mockReturnValue(true),
 		}
 		mockCline.diffViewProvider = {
@@ -204,7 +204,7 @@ describe("writeToFileTool", () => {
 		const accessAllowed = options.accessAllowed ?? true
 
 		mockedFileExistsAtPath.mockResolvedValue(fileExists)
-		mockCline.rooIgnoreController.validateAccess.mockReturnValue(accessAllowed)
+		mockCline.jabberwockIgnoreController.validateAccess.mockReturnValue(accessAllowed)
 
 		// Create a tool use object
 		const toolUse: ToolUse = {
@@ -236,10 +236,10 @@ describe("writeToFileTool", () => {
 	}
 
 	describe("access control", () => {
-		it("validates and allows access when rooIgnoreController permits", async () => {
+		it("validates and allows access when jabberwockIgnoreController permits", async () => {
 			await executeWriteFileTool({}, { accessAllowed: true })
 
-			expect(mockCline.rooIgnoreController.validateAccess).toHaveBeenCalledWith(testFilePath)
+			expect(mockCline.jabberwockIgnoreController.validateAccess).toHaveBeenCalledWith(testFilePath)
 			expect(mockCline.diffViewProvider.open).toHaveBeenCalledWith(testFilePath)
 		})
 	})

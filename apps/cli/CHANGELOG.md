@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the `@roo-code/cli` package will be documented in this file.
+All notable changes to the `@jabberwock-code/cli` package will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -151,19 +151,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Cancel Recovery**: Wait for resumable state after cancel before processing follow-up messages to prevent race conditions in stdin-stream.
 - **Custom Tool Schema**: Provide valid empty JSON Schema for custom tools without parameters to fix strict-mode API validation.
-- **Path Handling**: Skip paths outside cwd in RooProtectedController to avoid RangeError.
+- **Path Handling**: Skip paths outside cwd in JabberwockProtectedController to avoid RangeError.
 - **Retry Handling**: Silently handle abort during exponential backoff retry countdown.
 - Fixed spelling/grammar and casing inconsistencies.
 
 ### Added
 
-- **Telemetry Control**: Added `ROO_CODE_DISABLE_TELEMETRY=1` environment variable to disable cloud telemetry.
+- **Telemetry Control**: Added `JABBERWOCK_CODE_DISABLE_TELEMETRY=1` environment variable to disable cloud telemetry.
 
 ## [0.1.1] - 2026-02-24
 
 ### Added
 
-- **Roo Model Warmup**: When configured with the Roo provider, the CLI now proactively fetches and warms the model list during activation so that model information is available before the first prompt is sent. The warmup has a 10s timeout and failures are logged only in debug mode.
+- **Jabberwock Model Warmup**: When configured with the Jabberwock provider, the CLI now proactively fetches and warms the model list during activation so that model information is available before the first prompt is sent. The warmup has a 10s timeout and failures are logged only in debug mode.
 - **Unbound Provider**: Added Unbound as an available provider option.
 
 ## [0.1.0] - 2026-02-19
@@ -227,14 +227,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Linux Support**: The CLI now supports Linux platforms in addition to macOS
-- **Roo Provider API Key Support**: Allow `--api-key` flag and `ROO_API_KEY` environment variable for the roo provider instead of requiring cloud auth token
+- **Jabberwock Provider API Key Support**: Allow `--api-key` flag and `JABBERWOCK_API_KEY` environment variable for the jabberwock provider instead of requiring cloud auth token
 - **Exit on Error**: New `--exit-on-error` flag to exit immediately on API request errors instead of retrying, useful for CI/CD pipelines
 
 ### Changed
 
 - **Improved Dev Experience**: Dev scripts now use `tsx` for running directly from source without building first
 - **Path Resolution Fixes**: Fixed path resolution in [`version.ts`](src/lib/utils/version.ts), [`extension.ts`](src/lib/utils/extension.ts), and [`extension-host.ts`](src/agent/extension-host.ts) to work from both source and bundled locations
-- **Debug Logging**: Debug log file (`~/.roo/cli-debug.log`) is now disabled by default unless `--debug` flag is passed
+- **Debug Logging**: Debug log file (`~/.jabberwock/cli-debug.log`) is now disabled by default unless `--debug` flag is passed
 - Updated README with complete environment variable table and dev workflow documentation
 
 ### Fixed
@@ -273,12 +273,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Skip onboarding flow when a provider is explicitly specified via `--provider` flag or saved in settings
 - Unified permission flags: Combined approval-skipping flags into a single option for Claude Code-like CLI compatibility
-- Improved Roo Code Router authentication flow and error messaging
+- Improved Jabberwock Router authentication flow and error messaging
 
 ### Fixed
 
 - Removed unnecessary timeout that could cause issues with long-running tasks
-- Fixed authentication token validation for Roo Code Router provider
+- Fixed authentication token validation for Jabberwock Router provider
 
 ## [0.0.45] - 2026-01-08
 
@@ -375,7 +375,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Support for Kitty keyboard protocol (CSI u encoding) for better terminal compatibility
     - Built-in sequences for `Ctrl+C` (exit) and `Ctrl+M` (mode cycling)
 
-- **Local Tarball Installation**: The install script now supports installing from a local tarball via the `ROO_LOCAL_TARBALL` environment variable, useful for offline installation or testing pre-release builds.
+- **Local Tarball Installation**: The install script now supports installing from a local tarball via the `JABBERWOCK_LOCAL_TARBALL` environment variable, useful for offline installation or testing pre-release builds.
 
 ### Changed
 

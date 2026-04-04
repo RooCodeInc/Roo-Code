@@ -2,11 +2,11 @@ import path from "path"
 
 import type OpenAI from "openai"
 
-import type { ProviderSettings, ModeConfig, ModelInfo } from "@roo-code/types"
-import { customToolRegistry, formatNative } from "@roo-code/core"
+import type { ProviderSettings, ModeConfig, ModelInfo } from "@jabberwock/types"
+import { customToolRegistry, formatNative } from "@jabberwock/core"
 
 import type { ClineProvider } from "../webview/ClineProvider"
-import { getRooDirectoriesForCwd } from "../../services/roo-config/index.js"
+import { getRooDirectoriesForCwd } from "../../services/jabberwock-config/index.js"
 
 import { getNativeTools, getMcpServerTools } from "../prompts/tools/native-tools"
 import {
@@ -125,7 +125,7 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 	)
 
 	// Filter MCP tools based on mode restrictions.
-	const mcpTools = getMcpServerTools(mcpHub)
+	const mcpTools = getMcpServerTools(mcpHub, mode, customModes)
 	const filteredMcpTools = filterMcpToolsForMode(mcpTools, mode, customModes, experiments)
 
 	// Add custom tools if they are available and the experiment is enabled.

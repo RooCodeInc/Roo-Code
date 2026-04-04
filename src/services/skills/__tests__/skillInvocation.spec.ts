@@ -6,7 +6,7 @@ describe("skillInvocation", () => {
 	const mockSkillContent: SkillContent = {
 		name: "test-skill",
 		description: "A test skill",
-		path: "/mock/.roo/skills/test-skill/SKILL.md",
+		path: "/mock/.jabberwock/skills/test-skill/SKILL.md",
 		source: "project",
 		instructions: "Do the thing",
 	}

@@ -1,11 +1,11 @@
 import * as assert from "assert"
 
-import { RooCodeEventName, type ClineMessage } from "@roo-code/types"
+import { JabberwockEventName, type ClineMessage } from "@jabberwock/types"
 
 import { waitUntilCompleted } from "./utils"
 import { setDefaultSuiteTimeout } from "./test-utils"
 
-suite("Roo Code Task", function () {
+suite("Jabberwock Task", function () {
 	setDefaultSuiteTimeout(this)
 
 	test("Should handle prompt and response correctly", async () => {
@@ -13,7 +13,7 @@ suite("Roo Code Task", function () {
 
 		const messages: ClineMessage[] = []
 
-		api.on(RooCodeEventName.Message, ({ message }) => {
+		api.on(JabberwockEventName.Message, ({ message }) => {
 			if (message.type === "say" && message.partial === false) {
 				messages.push(message)
 			}
@@ -28,9 +28,10 @@ suite("Roo Code Task", function () {
 
 		assert.ok(
 			!!messages.find(
-				({ say, text }) => (say === "completion_result" || say === "text") && text?.includes("My name is Roo"),
+				({ say, text }) =>
+					(say === "completion_result" || say === "text") && text?.includes("My name is Jabberwock"),
 			),
-			`Completion should include "My name is Roo"`,
+			`Completion should include "My name is Jabberwock"`,
 		)
 	})
 })

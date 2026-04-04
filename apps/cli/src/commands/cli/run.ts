@@ -5,7 +5,7 @@ import { fileURLToPath } from "url"
 import { createElement } from "react"
 import pWaitFor from "p-wait-for"
 
-import { setLogger } from "@roo-code/vscode-shim"
+import { setLogger } from "@jabberwock/vscode-shim"
 
 import {
 	FlagOptions,
@@ -36,7 +36,7 @@ import { isExpectedControlFlowError } from "./cancellation.js"
 import { runStdinStreamMode } from "./stdin-stream.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const ROO_MODEL_WARMUP_TIMEOUT_MS = 10_000
+const JABBERWOCK_MODEL_WARMUP_TIMEOUT_MS = 10_000
 const SIGNAL_ONLY_EXIT_KEEPALIVE_MS = 60_000
 const STREAM_RESUME_WAIT_TIMEOUT_MS = 2_000
 
@@ -81,7 +81,7 @@ async function warmRooModels(host: ExtensionHost): Promise<void> {
 
 			const values = isRecord(message.values) ? message.values : undefined
 
-			if (values?.provider !== "roo") {
+			if (values?.provider !== "jabberwock") {
 				return
 			}
 
@@ -89,7 +89,7 @@ async function warmRooModels(host: ExtensionHost): Promise<void> {
 				const errorMessage =
 					typeof message.error === "string" && message.error.length > 0
 						? message.error
-						: "failed to refresh Roo models"
+						: "failed to refresh Jabberwock models"
 
 				finish(() => reject(new Error(errorMessage)))
 				return
@@ -99,8 +99,12 @@ async function warmRooModels(host: ExtensionHost): Promise<void> {
 		}
 
 		const timeoutId = setTimeout(() => {
-			finish(() => reject(new Error(`timed out waiting for Roo models after ${ROO_MODEL_WARMUP_TIMEOUT_MS}ms`)))
-		}, ROO_MODEL_WARMUP_TIMEOUT_MS)
+			finish(() =>
+				reject(
+					new Error(`timed out waiting for Jabberwock models after ${JABBERWOCK_MODEL_WARMUP_TIMEOUT_MS}ms`),
+				),
+			)
+		}, JABBERWOCK_MODEL_WARMUP_TIMEOUT_MS)
 
 		host.on("extensionWebviewMessage", onMessage)
 		host.sendToExtension({ type: "requestRooModels" })
@@ -163,7 +167,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 
 	if (isResumeRequested && prompt) {
 		console.error("[CLI] Error: cannot use prompt or --prompt-file with --session-id/--continue")
-		console.error("[CLI] Usage: roo [--session-id <session-id> | --continue] [options]")
+		console.error("[CLI] Usage: jabberwock [--session-id <session-id> | --continue] [options]")
 		process.exit(1)
 	}
 
@@ -181,7 +185,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 	const effectiveModel = flagOptions.model || settings.model || DEFAULT_FLAGS.model
 	const effectiveReasoningEffort =
 		flagOptions.reasoningEffort || settings.reasoningEffort || DEFAULT_FLAGS.reasoningEffort
-	const effectiveProvider = flagOptions.provider ?? settings.provider ?? (rooToken ? "roo" : "openrouter")
+	const effectiveProvider = flagOptions.provider ?? settings.provider ?? (rooToken ? "jabberwock" : "openrouter")
 	const effectiveWorkspacePath = flagOptions.workspace ? path.resolve(flagOptions.workspace) : process.cwd()
 	const legacyRequireApprovalFromSettings =
 		settings.requireApproval ??
@@ -229,7 +233,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		terminalShell,
 	}
 
-	// Roo Code Cloud Authentication
+	// Jabberwock Cloud Authentication
 
 	if (isOnboardingEnabled) {
 		let { onboardingProviderChoice } = settings
@@ -240,12 +244,12 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			rooToken = token ?? null
 		}
 
-		if (onboardingProviderChoice === OnboardingProviderChoice.Roo) {
-			extensionHostOptions.provider = "roo"
+		if (onboardingProviderChoice === OnboardingProviderChoice.Jabberwock) {
+			extensionHostOptions.provider = "jabberwock"
 		}
 	}
 
-	if (extensionHostOptions.provider === "roo") {
+	if (extensionHostOptions.provider === "jabberwock") {
 		if (rooToken) {
 			try {
 				const client = createClient({ url: SDK_BASE_URL, authToken: rooToken })
@@ -261,15 +265,15 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 				// If an explicit API key was provided via flag or env var, fall through
 				// to the general API key resolution below instead of exiting.
 				if (!flagOptions.apiKey && !getApiKeyFromEnv(extensionHostOptions.provider)) {
-					console.error("[CLI] Your Roo Code Router token is not valid.")
-					console.error("[CLI] Please run: roo auth login")
-					console.error("[CLI] Or use --api-key or set ROO_API_KEY to provide your own API key.")
+					console.error("[CLI] Your Jabberwock Router token is not valid.")
+					console.error("[CLI] Please run: jabberwock auth login")
+					console.error("[CLI] Or use --api-key or set JABBERWOCK_API_KEY to provide your own API key.")
 					process.exit(1)
 				}
 			}
 		}
 		// If no rooToken, fall through to the general API key resolution below
-		// which will check flagOptions.apiKey and ROO_API_KEY env var.
+		// which will check flagOptions.apiKey and JABBERWOCK_API_KEY env var.
 	}
 
 	// Validations
@@ -287,9 +291,9 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		extensionHostOptions.apiKey || flagOptions.apiKey || getApiKeyFromEnv(extensionHostOptions.provider)
 
 	if (!extensionHostOptions.apiKey) {
-		if (extensionHostOptions.provider === "roo") {
-			console.error("[CLI] Error: Authentication with Roo Code Cloud failed or was cancelled.")
-			console.error("[CLI] Please run: roo auth login")
+		if (extensionHostOptions.provider === "jabberwock") {
+			console.error("[CLI] Error: Authentication with Jabberwock Cloud failed or was cancelled.")
+			console.error("[CLI] Please run: jabberwock auth login")
 			console.error("[CLI] Or use --api-key to provide your own API key.")
 		} else {
 			console.error(
@@ -328,39 +332,41 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 	// Output format only works with --print mode
 	if (outputFormat !== "text" && !flagOptions.print && isTuiSupported) {
 		console.error("[CLI] Error: --output-format requires --print mode")
-		console.error("[CLI] Usage: roo --print --output-format json")
+		console.error("[CLI] Usage: jabberwock --print --output-format json")
 		process.exit(1)
 	}
 
 	if (flagOptions.stdinPromptStream && !flagOptions.print) {
 		console.error("[CLI] Error: --stdin-prompt-stream requires --print mode")
-		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
+		console.error("[CLI] Usage: jabberwock --print --output-format stream-json --stdin-prompt-stream [options]")
 		process.exit(1)
 	}
 
 	if (flagOptions.signalOnlyExit && !flagOptions.stdinPromptStream) {
 		console.error("[CLI] Error: --signal-only-exit requires --stdin-prompt-stream")
-		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream --signal-only-exit")
+		console.error(
+			"[CLI] Usage: jabberwock --print --output-format stream-json --stdin-prompt-stream --signal-only-exit",
+		)
 		process.exit(1)
 	}
 
 	if (flagOptions.stdinPromptStream && outputFormat !== "stream-json") {
 		console.error("[CLI] Error: --stdin-prompt-stream requires --output-format=stream-json")
-		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
+		console.error("[CLI] Usage: jabberwock --print --output-format stream-json --stdin-prompt-stream [options]")
 		process.exit(1)
 	}
 
 	if (flagOptions.stdinPromptStream && process.stdin.isTTY) {
 		console.error("[CLI] Error: --stdin-prompt-stream requires piped stdin")
 		console.error(
-			'[CLI] Example: printf \'{"command":"start","requestId":"1","prompt":"1+1=?"}\\n\' | roo --print --output-format stream-json --stdin-prompt-stream [options]',
+			'[CLI] Example: printf \'{"command":"start","requestId":"1","prompt":"1+1=?"}\\n\' | jabberwock --print --output-format stream-json --stdin-prompt-stream [options]',
 		)
 		process.exit(1)
 	}
 
 	if (flagOptions.stdinPromptStream && prompt) {
 		console.error("[CLI] Error: cannot use positional prompt or --prompt-file with --stdin-prompt-stream")
-		console.error("[CLI] Usage: roo --print --output-format stream-json --stdin-prompt-stream [options]")
+		console.error("[CLI] Usage: jabberwock --print --output-format stream-json --stdin-prompt-stream [options]")
 		process.exit(1)
 	}
 
@@ -388,13 +394,13 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		if (!prompt && !useStdinPromptStream && !isResumeRequested) {
 			if (flagOptions.print) {
 				console.error("[CLI] Error: no prompt provided")
-				console.error("[CLI] Usage: roo --print [options] <prompt>")
+				console.error("[CLI] Usage: jabberwock --print [options] <prompt>")
 				console.error(
-					"[CLI] For stdin control mode: roo --print --output-format stream-json --stdin-prompt-stream [options]",
+					"[CLI] For stdin control mode: jabberwock --print --output-format stream-json --stdin-prompt-stream [options]",
 				)
 			} else {
 				console.error("[CLI] Error: prompt is required in non-interactive mode")
-				console.error("[CLI] Usage: roo <prompt> [options]")
+				console.error("[CLI] Usage: jabberwock <prompt> [options]")
 				console.error("[CLI] Run without -p for interactive mode")
 			}
 
@@ -606,13 +612,13 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 
 		try {
 			await host.activate()
-			if (extensionHostOptions.provider === "roo") {
+			if (extensionHostOptions.provider === "jabberwock") {
 				try {
 					await warmRooModels(host)
 				} catch (warmupError) {
 					if (flagOptions.debug) {
 						const message = warmupError instanceof Error ? warmupError.message : String(warmupError)
-						console.error(`[CLI] Warning: Roo model warmup failed: ${message}`)
+						console.error(`[CLI] Warning: Jabberwock model warmup failed: ${message}`)
 					}
 				}
 			}

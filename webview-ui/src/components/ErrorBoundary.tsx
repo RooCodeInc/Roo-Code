@@ -71,7 +71,7 @@ class ErrorBoundary extends Component<ErrorProps, ErrorState> {
 				</h2>
 				<p className="mb-4">
 					{t("errorBoundary.reportText")}{" "}
-					<a href="https://github.com/RooCodeInc/Roo-Code/issues" target="_blank" rel="noreferrer">
+					<a href="https://github.com/JabberwockInc/Jabberwock/issues" target="_blank" rel="noreferrer">
 						{t("errorBoundary.githubText")}
 					</a>
 				</p>

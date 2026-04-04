@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { rooCodeSettingsSchema } from "@roo-code/types"
+import { jabberwockSettingsSchema } from "@jabberwock/types"
 
 /**
  * ExecutionMethod
@@ -31,7 +31,7 @@ export const createRunSchema = z
 		description: z.string().optional(),
 		suite: z.enum(["full", "partial"]),
 		exercises: z.array(z.string()).optional(),
-		settings: rooCodeSettingsSchema.optional(),
+		settings: jabberwockSettingsSchema.optional(),
 		concurrency: z.number().int().min(CONCURRENCY_MIN).max(CONCURRENCY_MAX),
 		timeout: z.number().int().min(TIMEOUT_MIN).max(TIMEOUT_MAX),
 		iterations: z.number().int().min(ITERATIONS_MIN).max(ITERATIONS_MAX),

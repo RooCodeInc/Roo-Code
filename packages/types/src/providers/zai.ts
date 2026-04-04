@@ -1,5 +1,5 @@
-import type { ModelInfo } from "../model.js"
-import { ZaiApiLine } from "../provider-settings.js"
+import type { ModelInfo } from "../model.ts"
+import { ZaiApiLine } from "../provider-settings.ts"
 
 // Z AI
 // https://docs.z.ai/guides/llm/glm-4-32b-0414-128k

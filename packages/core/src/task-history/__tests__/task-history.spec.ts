@@ -2,7 +2,7 @@ import * as fs from "fs/promises"
 import * as os from "os"
 import * as path from "path"
 
-import { readTaskSessionsFromStoragePath } from "../index.js"
+import { readTaskSessionsFromStoragePath } from "../index.ts"
 
 describe("readTaskSessionsFromStoragePath", () => {
 	let tempDir: string

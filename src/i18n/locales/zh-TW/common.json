@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Jabberwock",
 		"description": "您編輯器中的完整 AI 開發團隊。"
 	},
 	"number_format": {
@@ -110,8 +110,8 @@
 			"thinking_complete_safety": "（思考完成，但由於安全設定輸出被阻止。）",
 			"thinking_complete_recitation": "（思考完成，但由於引用檢查輸出被阻止。）"
 		},
-		"roo": {
-			"authenticationRequired": "Roo 提供者需要雲端認證。請登入 Roo Code Cloud。"
+		"jabberwock": {
+			"authenticationRequired": "Jabberwock 提供者需要雲端認證。請登入 Jabberwock Cloud。"
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API 金鑰包含無效字元。",
@@ -145,7 +145,7 @@
 	"warnings": {
 		"no_terminal_content": "沒有選擇終端機內容",
 		"missing_task_files": "此工作的檔案遺失。您想從工作列表中刪除它嗎？",
-		"auto_import_failed": "自動匯入 RooCode 設定失敗：{{error}}"
+		"auto_import_failed": "自動匯入 Jabberwock 設定失敗：{{error}}"
 	},
 	"info": {
 		"no_changes": "沒有找到更改。",
@@ -154,7 +154,7 @@
 		"custom_storage_path_set": "自訂儲存路徑已設定：{{path}}",
 		"default_storage_path": "已恢復使用預設儲存路徑",
 		"settings_imported": "設定已成功匯入。",
-		"auto_import_success": "已自動匯入 RooCode 設定：{{filename}}",
+		"auto_import_success": "已自動匯入 Jabberwock 設定：{{filename}}",
 		"share_link_copied": "分享連結已複製到剪貼簿",
 		"image_copied_to_clipboard": "圖片資料 URI 已複製到剪貼簿",
 		"image_saved": "圖片已儲存至 {{path}}",
@@ -187,12 +187,12 @@
 	},
 	"storage": {
 		"prompt_custom_path": "輸入自訂會話歷史儲存路徑，留空以使用預設位置",
-		"path_placeholder": "D:\\RooCodeStorage",
-		"enter_absolute_path": "請輸入絕對路徑（例如 D:\\RooCodeStorage 或 /home/user/storage）",
+		"path_placeholder": "D:\\JabberwockStorage",
+		"enter_absolute_path": "請輸入絕對路徑（例如 D:\\JabberwockStorage 或 /home/user/storage）",
 		"enter_valid_path": "請輸入有效的路徑"
 	},
 	"input": {
-		"task_prompt": "讓 Roo 做什麼？",
+		"task_prompt": "讓 Jabberwock 做什麼？",
 		"task_placeholder": "在這裡輸入工作"
 	},
 	"settings": {
@@ -200,8 +200,8 @@
 	},
 	"customModes": {
 		"errors": {
-			"yamlParseError": ".roomodes 檔案第 {{line}} 行 YAML 格式無效。請檢查：\n• 正確的縮排（使用空格，不要使用定位字元）\n• 匹配的引號和括號\n• 有效的 YAML 語法",
-			"schemaValidationError": ".roomodes 中自訂模式格式無效：\n{{issues}}",
+			"yamlParseError": ".jabberwockmodes 檔案第 {{line}} 行 YAML 格式無效。請檢查：\n• 正確的縮排（使用空格，不要使用定位字元）\n• 匹配的引號和括號\n• 有效的 YAML 語法",
+			"schemaValidationError": ".jabberwockmodes 中自訂模式格式無效：\n{{issues}}",
 			"invalidFormat": "自訂模式格式無效。請確保你的設定遵循正確的 YAML 格式。",
 			"updateFailed": "更新自訂模式失敗：{{error}}",
 			"deleteFailed": "刪除自訂模式失敗：{{error}}",
@@ -222,8 +222,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "您的組織需要 Roo Code Cloud 身份驗證。請登入以繼續。",
-			"organization_mismatch": "您必須使用組織的 Roo Code Cloud 帳戶進行身份驗證。",
+			"cloud_auth_required": "您的組織需要 Jabberwock Cloud 身份驗證。請登入以繼續。",
+			"organization_mismatch": "您必須使用組織的 Jabberwock Cloud 帳戶進行身份驗證。",
 			"manual_url_empty": "請輸入有效的回呼 URL",
 			"manual_url_no_query": "無效的回呼 URL：缺少查詢參數",
 			"manual_url_missing_params": "無效的回呼 URL：缺少必要參數（code 和 state）",
@@ -250,6 +250,6 @@
 	},
 	"docsLink": {
 		"label": "Docs",
-		"url": "https://docs.roocode.com"
+		"url": "https://docs.jabberwock.com"
 	}
 }

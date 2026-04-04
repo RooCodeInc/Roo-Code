@@ -1,7 +1,7 @@
-import { TextEdit, WorkspaceEdit } from "../classes/TextEdit.js"
-import { Position } from "../classes/Position.js"
-import { Range } from "../classes/Range.js"
-import { Uri } from "../classes/Uri.js"
+import { TextEdit, WorkspaceEdit } from "../classes/TextEdit.ts"
+import { Position } from "../classes/Position.ts"
+import { Range } from "../classes/Range.ts"
+import { Uri } from "../classes/Uri.ts"
 
 describe("TextEdit", () => {
 	describe("constructor", () => {

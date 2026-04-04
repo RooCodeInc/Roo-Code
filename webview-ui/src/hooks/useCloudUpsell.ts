@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react"
-import { TelemetryEventName } from "@roo-code/types"
+import { TelemetryEventName } from "@jabberwock/types"
 import { vscode } from "@/utils/vscode"
 import { telemetryClient } from "@/utils/TelemetryClient"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -54,7 +54,7 @@ export const useCloudUpsell = (options: UseCloudUpsellOptions = {}) => {
 		setShouldOpenOnAuth(true)
 
 		// Send message to VS Code to initiate sign in
-		vscode.postMessage({ type: "rooCloudSignIn" })
+		vscode.postMessage({ type: "jabberwockCloudSignIn" })
 
 		// Close the upsell dialog
 		closeUpsell()

@@ -1,6 +1,6 @@
 import { execa } from "execa"
 
-import { type TaskEvent, RooCodeEventName } from "@roo-code/types"
+import { type TaskEvent, JabberwockEventName } from "@jabberwock/types"
 
 import { findRun, findTask, updateTask } from "../db/index"
 
@@ -56,7 +56,7 @@ export const processTask = async ({
 		await updateTask(task.id, { passed })
 
 		await publish({
-			eventName: passed ? RooCodeEventName.EvalPass : RooCodeEventName.EvalFail,
+			eventName: passed ? JabberwockEventName.EvalPass : JabberwockEventName.EvalFail,
 			taskId: task.id,
 		})
 	} finally {
@@ -84,7 +84,7 @@ export const processTaskInContainer = async ({
 	]
 
 	if (jobToken) {
-		baseArgs.push(`-e ROO_CODE_CLOUD_TOKEN=${jobToken}`)
+		baseArgs.push(`-e JABBERWOCK_CODE_CLOUD_TOKEN=${jobToken}`)
 	}
 
 	// Pass API keys to the container so the CLI can authenticate
@@ -103,7 +103,7 @@ export const processTaskInContainer = async ({
 		}
 	}
 
-	const command = `pnpm --filter @roo-code/evals cli --taskId ${taskId}`
+	const command = `pnpm --filter @jabberwock/evals cli --taskId ${taskId}`
 	logger.info(command)
 
 	for (let attempt = 0; attempt <= maxRetries; attempt++) {

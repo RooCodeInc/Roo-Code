@@ -2,7 +2,7 @@ import fs from "fs/promises"
 import os from "os"
 import path from "path"
 
-const CONFIG_DIR = path.join(os.homedir(), ".roo")
+const CONFIG_DIR = path.join(os.homedir(), ".jabberwock")
 
 export function getConfigDir(): string {
 	return CONFIG_DIR

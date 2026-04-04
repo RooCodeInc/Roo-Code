@@ -7,46 +7,46 @@
 		"openrouter": {
 			"description": "Ujednolicony interfejs dla LLM"
 		},
-		"roo": {
+		"jabberwock": {
 			"description": "Najlepsze bezpłatne modele dla początkujących",
-			"incentive": "Wypróbuj Roo bezpłatnie"
+			"incentive": "Wypróbuj Jabberwock bezpłatnie"
 		}
 	},
 	"landing": {
-		"greeting": "Witaj w Roo Code!",
-		"introduction": "Dzięki szerokiej gamie wbudowanych i rozszerzalnych Trybów, Roo Code pozwala planować, projektować architekturę, kodować, debugować i zwiększać produktywność jak nigdy dotąd.",
-		"accountMention": "Aby rozpocząć, utwórz konto Roo Code Cloud. Otrzymaj potężne modele, kontrolę internetową, analizę, wsparcie i wiele więcej.",
-		"getStarted": "Utwórz konto Roo",
+		"greeting": "Witaj w Jabberwock!",
+		"introduction": "Dzięki szerokiej gamie wbudowanych i rozszerzalnych Trybów, Jabberwock pozwala planować, projektować architekturę, kodować, debugować i zwiększać produktywność jak nigdy dotąd.",
+		"accountMention": "Aby rozpocząć, utwórz konto Jabberwock Cloud. Otrzymaj potężne modele, kontrolę internetową, analizę, wsparcie i wiele więcej.",
+		"getStarted": "Utwórz konto Jabberwock",
 		"noAccount": "lub używaj bez konta"
 	},
 	"providerSignup": {
 		"heading": "Wybierz swojego dostawcę",
-		"chooseProvider": "Roo potrzebuje dostawcy LLM, aby działać. Wybierz jeden, aby zacząć, możesz dodać więcej później.",
-		"rooCloudProvider": "Dostawca Roo Code Cloud",
-		"rooCloudDescription": "Najłatwiejszy sposób na rozpoczęcie to skorzystanie z Dostawcy Roo Code Cloud: starannie wybrany mix bezpłatnych i płatnych modeli w niskiej cenie.",
+		"chooseProvider": "Jabberwock potrzebuje dostawcy LLM, aby działać. Wybierz jeden, aby zacząć, możesz dodać więcej później.",
+		"jabberwockCloudProvider": "Dostawca Jabberwock Cloud",
+		"jabberwockCloudDescription": "Najłatwiejszy sposób na rozpoczęcie to skorzystanie z Dostawcy Jabberwock Cloud: starannie wybrany mix bezpłatnych i płatnych modeli w niskiej cenie.",
 		"learnMore": "Dowiedz się więcej",
 		"useAnotherProvider": "Dostawca trzeciej strony",
 		"useAnotherProviderDescription": "Wprowadź klucz API i zacznij.",
 		"noApiKeys": "Nie chcesz radzić sobie z kluczami API i oddzielnymi kontami?",
-		"backToRoo": "Wybierz Dostawcę Roo Code Cloud.",
+		"backToJabberwock": "Wybierz Dostawcę Jabberwock Cloud.",
 		"goBack": "Wróć",
 		"finish": "Zakończ"
 	},
 	"waitingForCloud": {
-		"heading": "Logowanie do Roo Code Cloud...",
-		"description": "Zaprowadzimy Cię do przeglądarki, aby zarejestrować się w Roo Code Cloud. Następnie wrócimy tutaj, aby ukończyć.",
+		"heading": "Logowanie do Jabberwock Cloud...",
+		"description": "Zaprowadzimy Cię do przeglądarki, aby zarejestrować się w Jabberwock Cloud. Następnie wrócimy tutaj, aby ukończyć.",
 		"noPrompt": "Jeśli nie zostaniesz poproszony o otwarcie adresu URL, <clickHere>kliknij tutaj</clickHere>.",
 		"havingTrouble": "Jeśli ukończyłeś rejestrację, ale masz problemy, <clickHere>kliknij tutaj</clickHere>.",
 		"pasteUrl": "Wklej adres URL wywołania zwrotnego z przeglądarki:",
 		"docsLink": "Nie działa? <DocsLink>Sprawdź dokumentację</DocsLink>.",
-		"invalidURL": "To nie wygląda na prawidłowy adres URL wywołania zwrotnego. Skopiuj to, co Roo Code Cloud wyświetla w przeglądarce.",
+		"invalidURL": "To nie wygląda na prawidłowy adres URL wywołania zwrotnego. Skopiuj to, co Jabberwock Cloud wyświetla w przeglądarce.",
 		"goBack": "Wróć"
 	},
 	"startRouter": "Rekomendujemy użycie routera LLM:",
 	"startCustom": "Lub możesz przynieść swój własny klucz API:",
 	"telemetry": {
-		"helpImprove": "Pomóż ulepszyć Roo Code",
-		"helpImproveMessage": "Roo Code zbiera dane o błędach i użytkowaniu, aby pomóc nam naprawiać błędy i ulepszać rozszerzenie. Ta telemetria nie zbiera kodu, podpowiedzi ani danych osobowych. Możesz je wyłączyć w <settingsLink>ustawieniach</settingsLink>."
+		"helpImprove": "Pomóż ulepszyć Jabberwock",
+		"helpImproveMessage": "Jabberwock zbiera dane o błędach i użytkowaniu, aby pomóc nam naprawiać błędy i ulepszać rozszerzenie. Ta telemetria nie zbiera kodu, podpowiedzi ani danych osobowych. Możesz je wyłączyć w <settingsLink>ustawieniach</settingsLink>."
 	},
 	"importSettings": "Importuj ustawienia"
 }

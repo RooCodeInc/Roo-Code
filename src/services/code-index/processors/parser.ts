@@ -7,8 +7,8 @@ import { parseMarkdown } from "../../tree-sitter/markdownParser"
 import { ICodeParser, CodeBlock } from "../interfaces"
 import { scannerExtensions, shouldUseFallbackChunking } from "../shared/supported-extensions"
 import { MAX_BLOCK_CHARS, MIN_BLOCK_CHARS, MIN_CHUNK_REMAINDER_CHARS, MAX_CHARS_TOLERANCE_FACTOR } from "../constants"
-import { TelemetryService } from "@roo-code/telemetry"
-import { TelemetryEventName } from "@roo-code/types"
+import { TelemetryService } from "@jabberwock/telemetry"
+import { TelemetryEventName } from "@jabberwock/types"
 import { sanitizeErrorMessage } from "../shared/validation-helpers"
 
 /**

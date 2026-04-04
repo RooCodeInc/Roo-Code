@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-// pnpm --filter @roo-code/telemetry test src/__tests__/PostHogTelemetryClient.test.ts
+// pnpm --filter @jabberwock/telemetry test src/__tests__/PostHogTelemetryClient.test.ts
 
 import * as vscode from "vscode"
 import { PostHog } from "posthog-node"
 
-import { type TelemetryPropertiesProvider, TelemetryEventName, ApiProviderError } from "@roo-code/types"
+import { type TelemetryPropertiesProvider, TelemetryEventName, ApiProviderError } from "@jabberwock/types"
 
 import { PostHogTelemetryClient } from "../PostHogTelemetryClient"
 

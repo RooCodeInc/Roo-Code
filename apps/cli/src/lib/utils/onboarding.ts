@@ -16,12 +16,12 @@ export async function runOnboarding(): Promise<OnboardingResult> {
 
 			console.log("")
 
-			if (choice === OnboardingProviderChoice.Roo) {
+			if (choice === OnboardingProviderChoice.Jabberwock) {
 				const result = await login()
 				await saveSettings({ onboardingProviderChoice: choice })
 
 				resolve({
-					choice: OnboardingProviderChoice.Roo,
+					choice: OnboardingProviderChoice.Jabberwock,
 					token: result.success ? result.token : undefined,
 					skipped: false,
 				})

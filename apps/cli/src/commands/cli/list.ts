@@ -4,9 +4,9 @@ import { fileURLToPath } from "url"
 
 import pWaitFor from "p-wait-for"
 
-import type { TaskSessionEntry } from "@roo-code/core/cli"
-import type { Command, ModelRecord, WebviewMessage } from "@roo-code/types"
-import { getProviderDefaultModelId } from "@roo-code/types"
+import type { TaskSessionEntry } from "@jabberwock/core/cli"
+import type { Command, ModelRecord, WebviewMessage } from "@jabberwock/types"
+import { getProviderDefaultModelId } from "@jabberwock/types"
 
 import { ExtensionHost, type ExtensionHostOptions } from "@/agent/index.js"
 import { readWorkspaceTaskSessions } from "@/lib/task-history/index.js"
@@ -106,14 +106,14 @@ function outputSessionsText(sessions: SessionLike[]): void {
 async function createListHost(options: BaseListOptions, hostOptions: ListHostOptions): Promise<ExtensionHost> {
 	const workspacePath = resolveWorkspacePath(options.workspace)
 	const extensionPath = resolveExtensionPath(options.extension)
-	const apiKey = options.apiKey || (await loadToken()) || getApiKeyFromEnv("roo")
+	const apiKey = options.apiKey || (await loadToken()) || getApiKeyFromEnv("jabberwock")
 
 	const extensionHostOptions: ExtensionHostOptions = {
 		mode: "code",
 		reasoningEffort: undefined,
 		user: null,
-		provider: "roo",
-		model: getProviderDefaultModelId("roo"),
+		provider: "jabberwock",
+		model: getProviderDefaultModelId("jabberwock"),
 		apiKey,
 		workspacePath,
 		extensionPath,
@@ -222,7 +222,7 @@ function requestRooModels(host: ExtensionHost): Promise<ModelRecord> {
 		}
 
 		const values = isRecord(message.values) ? message.values : undefined
-		if (values?.provider !== "roo") {
+		if (values?.provider !== "jabberwock") {
 			return undefined
 		}
 
@@ -230,7 +230,7 @@ function requestRooModels(host: ExtensionHost): Promise<ModelRecord> {
 			const errorMessage =
 				typeof message.error === "string" && message.error.length > 0
 					? message.error
-					: "Failed to fetch Roo models"
+					: "Failed to fetch Jabberwock models"
 			throw new Error(errorMessage)
 		}
 

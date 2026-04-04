@@ -4,7 +4,7 @@ import {
 	TelemetryClient,
 	TelemetryPropertiesProvider,
 	TelemetryEventSubscription,
-} from "@roo-code/types"
+} from "@jabberwock/types"
 
 export abstract class BaseTelemetryClient implements TelemetryClient {
 	protected providerRef: WeakRef<TelemetryPropertiesProvider> | null = null

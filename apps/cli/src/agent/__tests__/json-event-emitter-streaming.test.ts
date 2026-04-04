@@ -1,4 +1,4 @@
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage } from "@jabberwock/types"
 import { Writable } from "stream"
 
 import { JsonEventEmitter } from "../json-event-emitter.js"

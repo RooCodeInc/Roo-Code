@@ -4,7 +4,7 @@ describe("normalizeCreateRunForSubmit", () => {
 	it("uses selectedExercises for partial suite", () => {
 		const result = normalizeCreateRunForSubmit(
 			{
-				model: "roo/model-a",
+				model: "jabberwock/model-a",
 				description: "",
 				suite: "partial",
 				exercises: [],
@@ -25,7 +25,7 @@ describe("normalizeCreateRunForSubmit", () => {
 	it("dedupes selectedExercises for partial suite", () => {
 		const result = normalizeCreateRunForSubmit(
 			{
-				model: "roo/model-a",
+				model: "jabberwock/model-a",
 				description: "",
 				suite: "partial",
 				exercises: [],
@@ -45,7 +45,7 @@ describe("normalizeCreateRunForSubmit", () => {
 	it("clears exercises for full suite", () => {
 		const result = normalizeCreateRunForSubmit(
 			{
-				model: "roo/model-a",
+				model: "jabberwock/model-a",
 				description: "",
 				suite: "full",
 				exercises: ["js/foo"],

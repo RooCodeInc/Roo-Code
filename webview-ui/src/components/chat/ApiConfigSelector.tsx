@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from "react"
 import { Fzf } from "fzf"
 
 import { cn } from "@/lib/utils"
-import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
+import { useJabberwockPortal } from "@/components/ui/hooks/useJabberwockPortal"
 import { Popover, PopoverContent, PopoverTrigger, StandardTooltip } from "@/components/ui"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { vscode } from "@/utils/vscode"
@@ -40,7 +40,7 @@ export const ApiConfigSelector = ({
 	const { t } = useAppTranslation()
 	const [open, setOpen] = useState(false)
 	const [searchValue, setSearchValue] = useState("")
-	const portalContainer = useRooPortal("roo-portal")
+	const portalContainer = useJabberwockPortal("jabberwock-portal")
 
 	// Create searchable items for fuzzy search.
 	const searchableItems = useMemo(

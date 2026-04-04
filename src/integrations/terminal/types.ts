@@ -8,27 +8,27 @@ export interface RooTerminal {
 	busy: boolean
 	running: boolean
 	taskId?: string
-	process?: RooTerminalProcess
+	process?: JabberwockTerminalProcess
 	getCurrentWorkingDirectory(): string
 	isClosed: () => boolean
-	runCommand: (command: string, callbacks: RooTerminalCallbacks) => RooTerminalProcessResultPromise
+	runCommand: (command: string, callbacks: RooTerminalCallbacks) => JabberwockTerminalProcessResultPromise
 	setActiveStream(stream: AsyncIterable<string> | undefined, pid?: number): void
 	shellExecutionComplete(exitDetails: ExitCodeDetails): void
-	getProcessesWithOutput(): RooTerminalProcess[]
+	getProcessesWithOutput(): JabberwockTerminalProcess[]
 	getUnretrievedOutput(): string
 	getLastCommand(): string
 	cleanCompletedProcessQueue(): void
 }
 
 export interface RooTerminalCallbacks {
-	onLine: (line: string, process: RooTerminalProcess) => void
-	onCompleted: (output: string | undefined, process: RooTerminalProcess) => void | Promise<void>
-	onShellExecutionStarted: (pid: number | undefined, process: RooTerminalProcess) => void
-	onShellExecutionComplete: (details: ExitCodeDetails, process: RooTerminalProcess) => void
-	onNoShellIntegration?: (message: string, process: RooTerminalProcess) => void
+	onLine: (line: string, process: JabberwockTerminalProcess) => void
+	onCompleted: (output: string | undefined, process: JabberwockTerminalProcess) => void | Promise<void>
+	onShellExecutionStarted: (pid: number | undefined, process: JabberwockTerminalProcess) => void
+	onShellExecutionComplete: (details: ExitCodeDetails, process: JabberwockTerminalProcess) => void
+	onNoShellIntegration?: (message: string, process: JabberwockTerminalProcess) => void
 }
 
-export interface RooTerminalProcess extends EventEmitter<RooTerminalProcessEvents> {
+export interface JabberwockTerminalProcess extends EventEmitter<JabberwockTerminalProcessEvents> {
 	command: string
 	isHot: boolean
 	run: (command: string) => Promise<void>
@@ -39,9 +39,9 @@ export interface RooTerminalProcess extends EventEmitter<RooTerminalProcessEvent
 	trimRetrievedOutput: () => void
 }
 
-export type RooTerminalProcessResultPromise = RooTerminalProcess & Promise<void>
+export type JabberwockTerminalProcessResultPromise = JabberwockTerminalProcess & Promise<void>
 
-export interface RooTerminalProcessEvents {
+export interface JabberwockTerminalProcessEvents {
 	line: [line: string]
 	continue: []
 	completed: [output?: string]

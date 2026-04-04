@@ -10,7 +10,7 @@ vi.mock("@src/utils/vscode", () => ({
 	},
 }))
 
-vi.mock("@roo/package", () => ({
+vi.mock("@shared/package", () => ({
 	Package: {
 		version: "3.51.0",
 	},
@@ -34,13 +34,13 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 			const translations: Record<string, string> = {
 				"chat:announcement.release.heading": "What's New:",
 				"chat:announcement.release.gpt54":
-					"OpenAI GPT-5.4 Support: Added OpenAI GPT-5.4 and GPT-5.3 Chat Latest so you can use the newest OpenAI chat models in Roo Code.",
+					"OpenAI GPT-5.4 Support: Added OpenAI GPT-5.4 and GPT-5.3 Chat Latest so you can use the newest OpenAI chat models in Jabberwock.",
 				"chat:announcement.release.slashSkills":
 					"Slash Command Skills: Skills can now be exposed as slash commands with fallback execution for faster workflows.",
 			}
 
 			if (key === "chat:announcement.title") {
-				return `Roo Code ${options?.version ?? ""} Released`
+				return `Jabberwock ${options?.version ?? ""} Released`
 			}
 
 			return translations[key] ?? key
@@ -52,10 +52,10 @@ describe("Announcement", () => {
 	it("renders the v3.51.0 announcement title and highlights", () => {
 		render(<Announcement hideAnnouncement={vi.fn()} />)
 
-		expect(screen.getByText("Roo Code 3.51.0 Released")).toBeInTheDocument()
+		expect(screen.getByText("Jabberwock 3.51.0 Released")).toBeInTheDocument()
 		expect(
 			screen.getByText(
-				"OpenAI GPT-5.4 Support: Added OpenAI GPT-5.4 and GPT-5.3 Chat Latest so you can use the newest OpenAI chat models in Roo Code.",
+				"OpenAI GPT-5.4 Support: Added OpenAI GPT-5.4 and GPT-5.3 Chat Latest so you can use the newest OpenAI chat models in Jabberwock.",
 			),
 		).toBeInTheDocument()
 		expect(

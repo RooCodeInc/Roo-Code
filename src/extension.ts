@@ -17,10 +17,10 @@ if (fs.existsSync(envPath)) {
 	}
 }
 
-import type { CloudUserInfo, AuthState } from "@roo-code/types"
-import { CloudService } from "@roo-code/cloud"
-import { TelemetryService, PostHogTelemetryClient } from "@roo-code/telemetry"
-import { customToolRegistry } from "@roo-code/core"
+import type { CloudUserInfo, AuthState } from "@jabberwock/types"
+import { CloudService } from "@jabberwock/cloud"
+import { TelemetryService, PostHogTelemetryClient } from "@jabberwock/telemetry"
+import { customToolRegistry } from "@jabberwock/core"
 
 import "./utils/path" // Necessary to have access to String.prototype.toPosix.
 import { createOutputChannelLogger, createDualLogger } from "./utils/outputChannelLogger"
@@ -67,7 +67,7 @@ let settingsUpdatedHandler: (() => void) | undefined
 let userInfoHandler: ((data: { userInfo: CloudUserInfo }) => Promise<void>) | undefined
 
 /**
- * Check if we should auto-open the Roo Code sidebar after switching to a worktree.
+ * Check if we should auto-open the Jabberwock sidebar after switching to a worktree.
  * This is called during extension activation to handle the worktree auto-open flow.
  */
 async function checkWorktreeAutoOpen(
@@ -95,12 +95,12 @@ async function checkWorktreeAutoOpen(
 			// Clear the state first to prevent re-triggering
 			await context.globalState.update("worktreeAutoOpenPath", undefined)
 
-			outputChannel.appendLine(`[Worktree] Auto-opening Roo Code sidebar for worktree: ${worktreeAutoOpenPath}`)
+			outputChannel.appendLine(`[Worktree] Auto-opening Jabberwock sidebar for worktree: ${worktreeAutoOpenPath}`)
 
-			// Open the Roo Code sidebar with a slight delay to ensure UI is ready
+			// Open the Jabberwock sidebar with a slight delay to ensure UI is ready
 			setTimeout(async () => {
 				try {
-					await vscode.commands.executeCommand("roo-cline.plusButtonClicked")
+					await vscode.commands.executeCommand("jabberwock.plusButtonClicked")
 				} catch (error) {
 					outputChannel.appendLine(
 						`[Worktree] Error auto-opening sidebar: ${error instanceof Error ? error.message : String(error)}`,
@@ -191,16 +191,16 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	}
 
-	// Initialize the provider *before* the Roo Code Cloud service.
+	// Initialize the provider *before* the Jabberwock Cloud service.
 	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, mdmService)
 
-	// Initialize Roo Code Cloud service.
+	// Initialize Jabberwock Cloud service.
 	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebviewWithoutClineMessages()
 
 	authStateChangedHandler = async (data: { state: AuthState; previousState: AuthState }) => {
 		postStateListener()
 
-		// Handle Roo models cache based on auth state (ROO-202)
+		// Handle Jabberwock models cache based on auth state (JABBERWOCK-202)
 		const handleRooModelsCache = async () => {
 			try {
 				if (data.state === "active-session") {
@@ -209,17 +209,17 @@ export async function activate(context: vscode.ExtensionContext) {
 						? CloudService.instance.authService?.getSessionToken()
 						: undefined
 					await refreshModels({
-						provider: "roo",
-						baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+						provider: "jabberwock",
+						baseUrl: process.env.JABBERWOCK_CODE_PROVIDER_URL ?? "https://api.jabberwock.com/proxy",
 						apiKey: sessionToken,
 					})
 				} else {
 					// Flush without refresh on logout
-					await flushModels({ provider: "roo" }, false)
+					await flushModels({ provider: "jabberwock" }, false)
 				}
 			} catch (error) {
 				cloudLogger(
-					`[authStateChangedHandler] Failed to handle Roo models cache: ${error instanceof Error ? error.message : String(error)}`,
+					`[authStateChangedHandler] Failed to handle Jabberwock models cache: ${error instanceof Error ? error.message : String(error)}`,
 				)
 			}
 		}
@@ -230,7 +230,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			// Apply stored provider model to API configuration if present
 			if (data.state === "active-session") {
 				try {
-					const storedModel = context.globalState.get<string>("roo-provider-model")
+					const storedModel = context.globalState.get<string>("jabberwock-provider-model")
 					if (storedModel) {
 						cloudLogger(`[authStateChangedHandler] Applying stored provider model: ${storedModel}`)
 						// Get the current API configuration name
@@ -238,11 +238,11 @@ export async function activate(context: vscode.ExtensionContext) {
 							provider.contextProxy.getGlobalState("currentApiConfigName") || "default"
 						// Update it with the stored model using upsertProviderProfile
 						await provider.upsertProviderProfile(currentConfigName, {
-							apiProvider: "roo",
+							apiProvider: "jabberwock",
 							apiModelId: storedModel,
 						})
 						// Clear the stored model after applying
-						await context.globalState.update("roo-provider-model", undefined)
+						await context.globalState.update("jabberwock-provider-model", undefined)
 						cloudLogger(`[authStateChangedHandler] Applied and cleared stored provider model`)
 					}
 				} catch (error) {
@@ -355,11 +355,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	registerCodeActions(context)
 	registerTerminalActions(context)
 
-	// Allows other extensions to activate once Roo is ready.
+	// Allows other extensions to activate once Jabberwock is ready.
 	vscode.commands.executeCommand(`${Package.name}.activationCompleted`)
 
-	// Implements the `RooCodeAPI` interface.
-	const socketPath = process.env.ROO_CODE_IPC_SOCKET_PATH
+	// Implements the `JabberwockAPI` interface.
+	const socketPath = process.env.JABBERWOCK_CODE_IPC_SOCKET_PATH
 	const enableLogging = typeof socketPath === "string"
 
 	// Watch the core files and automatically reload the extension host.
@@ -368,7 +368,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			{ path: context.extensionPath, pattern: "**/*.ts" },
 			{ path: path.join(context.extensionPath, "../packages/types"), pattern: "**/*.ts" },
 			{ path: path.join(context.extensionPath, "../packages/telemetry"), pattern: "**/*.ts" },
-			{ path: path.join(context.extensionPath, "node_modules/@roo-code/cloud"), pattern: "**/*" },
+			{ path: path.join(context.extensionPath, "node_modules/@jabberwock/cloud"), pattern: "**/*" },
 		]
 
 		console.log(

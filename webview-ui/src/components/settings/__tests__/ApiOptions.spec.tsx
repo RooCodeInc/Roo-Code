@@ -3,8 +3,8 @@
 import { render, screen, fireEvent } from "@/utils/test-utils"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
-import { type ModelInfo, type ProviderSettings, openAiModelInfoSaneDefaults } from "@roo-code/types"
-import { openAiCodexDefaultModelId } from "@roo-code/types"
+import { type ModelInfo, type ProviderSettings, openAiModelInfoSaneDefaults } from "@jabberwock/types"
+import { openAiCodexDefaultModelId } from "@jabberwock/types"
 
 import * as ExtensionStateContext from "@src/context/ExtensionStateContext"
 const { ExtensionStateContextProvider } = ExtensionStateContext
@@ -213,16 +213,16 @@ vi.mock("../providers/LiteLLM", () => ({
 	),
 }))
 
-// Mock Roo provider for tests
-vi.mock("../providers/Roo", () => ({
-	Roo: ({ cloudIsAuthenticated }: any) => (
-		<div data-testid="roo-provider">{cloudIsAuthenticated ? "Authenticated" : "Not Authenticated"}</div>
+// Mock Jabberwock provider for tests
+vi.mock("../providers/Jabberwock", () => ({
+	Jabberwock: ({ cloudIsAuthenticated }: any) => (
+		<div data-testid="jabberwock-provider">{cloudIsAuthenticated ? "Authenticated" : "Not Authenticated"}</div>
 	),
 }))
 
-// Mock RooBalanceDisplay for tests
-vi.mock("../providers/RooBalanceDisplay", () => ({
-	RooBalanceDisplay: () => <div data-testid="roo-balance-display">Balance: $10.00</div>,
+// Mock JabberwockBalanceDisplay for tests
+vi.mock("../providers/JabberwockBalanceDisplay", () => ({
+	JabberwockBalanceDisplay: () => <div data-testid="jabberwock-balance-display">Balance: $10.00</div>,
 }))
 
 vi.mock("@src/components/ui/hooks/useSelectedModel", () => ({
@@ -569,7 +569,7 @@ describe("ApiOptions", () => {
 		})
 	})
 
-	describe("Roo provider tests", () => {
+	describe("Jabberwock provider tests", () => {
 		it("shows balance display when authenticated", () => {
 			// Mock useExtensionState to return authenticated state
 			const useExtensionStateMock = vi.spyOn(ExtensionStateContext, "useExtensionState")
@@ -580,11 +580,11 @@ describe("ApiOptions", () => {
 
 			renderApiOptions({
 				apiConfiguration: {
-					apiProvider: "roo",
+					apiProvider: "jabberwock",
 				},
 			})
 
-			expect(screen.getByTestId("roo-balance-display")).toBeInTheDocument()
+			expect(screen.getByTestId("jabberwock-balance-display")).toBeInTheDocument()
 		})
 
 		it("does not show balance display when not authenticated", () => {
@@ -597,14 +597,14 @@ describe("ApiOptions", () => {
 
 			renderApiOptions({
 				apiConfiguration: {
-					apiProvider: "roo",
+					apiProvider: "jabberwock",
 				},
 			})
 
-			expect(screen.queryByTestId("roo-balance-display")).not.toBeInTheDocument()
+			expect(screen.queryByTestId("jabberwock-balance-display")).not.toBeInTheDocument()
 		})
 
-		it("pins roo provider to the top when not on welcome screen", () => {
+		it("pins jabberwock provider to the top when not on welcome screen", () => {
 			// Mock useExtensionState to ensure no filtering
 			const useExtensionStateMock = vi.spyOn(ExtensionStateContext, "useExtensionState")
 			useExtensionStateMock.mockReturnValue({
@@ -624,18 +624,18 @@ describe("ApiOptions", () => {
 			// Filter out the placeholder option (empty value)
 			const providerOptions = options.filter((opt) => opt.value !== "")
 
-			// Find the roo option
-			const rooOption = providerOptions.find((opt) => opt.value === "roo")
+			// Find the jabberwock option
+			const rooOption = providerOptions.find((opt) => opt.value === "jabberwock")
 
-			// If roo is available, verify it's pinned to the top
+			// If jabberwock is available, verify it's pinned to the top
 			if (rooOption) {
-				expect(providerOptions[0].value).toBe("roo")
+				expect(providerOptions[0].value).toBe("jabberwock")
 			}
 
 			useExtensionStateMock.mockRestore()
 		})
 
-		it("filters out roo provider on welcome screen", () => {
+		it("filters out jabberwock provider on welcome screen", () => {
 			// Mock useExtensionState to ensure no filtering
 			const useExtensionStateMock = vi.spyOn(ExtensionStateContext, "useExtensionState")
 			useExtensionStateMock.mockReturnValue({
@@ -655,8 +655,8 @@ describe("ApiOptions", () => {
 			// Filter out the placeholder option (empty value)
 			const providerOptions = options.filter((opt) => opt.value !== "")
 
-			// Check that roo is NOT in the list when on welcome screen
-			const rooOption = providerOptions.find((opt) => opt.value === "roo")
+			// Check that jabberwock is NOT in the list when on welcome screen
+			const rooOption = providerOptions.find((opt) => opt.value === "jabberwock")
 			expect(rooOption).toBeUndefined()
 
 			useExtensionStateMock.mockRestore()

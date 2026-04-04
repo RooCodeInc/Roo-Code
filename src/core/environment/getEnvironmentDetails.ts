@@ -5,7 +5,7 @@ import * as vscode from "vscode"
 import pWaitFor from "p-wait-for"
 import delay from "delay"
 
-import type { ExperimentId } from "@roo-code/types"
+import type { ExperimentId } from "@jabberwock/types"
 
 import { formatLanguage } from "../../shared/language"
 import { defaultModeSlug, getFullModeDetails } from "../../shared/modes"
@@ -35,9 +35,9 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		.map((absolutePath) => path.relative(cline.cwd, absolutePath))
 		.slice(0, maxWorkspaceFiles)
 
-	// Filter paths through rooIgnoreController
-	const allowedVisibleFiles = cline.rooIgnoreController
-		? cline.rooIgnoreController.filterPaths(visibleFilePaths)
+	// Filter paths through jabberwockIgnoreController
+	const allowedVisibleFiles = cline.jabberwockIgnoreController
+		? cline.jabberwockIgnoreController.filterPaths(visibleFilePaths)
 		: visibleFilePaths.map((p) => p.toPosix()).join("\n")
 
 	if (allowedVisibleFiles) {
@@ -55,9 +55,9 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		.map((absolutePath) => path.relative(cline.cwd, absolutePath).toPosix())
 		.slice(0, maxTabs)
 
-	// Filter paths through rooIgnoreController
-	const allowedOpenTabs = cline.rooIgnoreController
-		? cline.rooIgnoreController.filterPaths(openTabPaths)
+	// Filter paths through jabberwockIgnoreController
+	const allowedOpenTabs = cline.jabberwockIgnoreController
+		? cline.jabberwockIgnoreController.filterPaths(openTabPaths)
 		: openTabPaths.map((p) => p.toPosix()).join("\n")
 
 	if (allowedOpenTabs) {
@@ -242,14 +242,14 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 				details += "(Workspace files context disabled. Use list_files to explore if needed.)"
 			} else {
 				const [files, didHitLimit] = await listFiles(cline.cwd, true, maxFiles)
-				const { showRooIgnoredFiles = false } = state ?? {}
+				const { showJabberwockIgnoredFiles = false } = state ?? {}
 
 				const result = formatResponse.formatFilesList(
 					cline.cwd,
 					files,
 					didHitLimit,
-					cline.rooIgnoreController,
-					showRooIgnoredFiles,
+					cline.jabberwockIgnoreController,
+					showJabberwockIgnoredFiles,
 				)
 
 				details += result

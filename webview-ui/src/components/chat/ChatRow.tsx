@@ -11,14 +11,15 @@ import type {
 	ClineApiReqInfo,
 	ClineAskUseMcpServer,
 	ClineSayTool,
-} from "@roo-code/types"
+} from "@jabberwock/types"
 
-import { Mode } from "@roo/modes"
+import { Mode } from "@shared/modes"
 
-import { COMMAND_OUTPUT_STRING } from "@roo/combineCommandSequences"
-import { safeJsonParse } from "@roo/core"
+import { COMMAND_OUTPUT_STRING } from "@shared/combineCommandSequences"
+import { safeJsonParse } from "@shared/core"
 
 import { useExtensionState } from "@src/context/ExtensionStateContext"
+import { getAllModes } from "@shared/modes"
 import { findMatchingResourceOrTemplate } from "@src/utils/mcp"
 import { vscode } from "@src/utils/vscode"
 import { formatPathTooltip } from "@src/utils/formatPathTooltip"
@@ -109,6 +110,8 @@ function getPreviousTodos(messages: ClineMessage[], currentMessageTs: number): a
 	return []
 }
 
+import { McpAppRenderer } from "../../features/mcp-apps/McpAppRenderer"
+
 interface ChatRowProps {
 	message: ClineMessage
 	lastModifiedMessage?: ClineMessage
@@ -180,8 +183,23 @@ export const ChatRowContent = ({
 }: ChatRowContentProps) => {
 	const { t, i18n } = useTranslation()
 
-	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode, apiConfiguration, clineMessages, currentTaskItem } =
-		useExtensionState()
+	const {
+		customModes,
+		mcpServers,
+		alwaysAllowMcp,
+		currentCheckpoint,
+		mode,
+		apiConfiguration,
+		clineMessages,
+		currentTaskItem,
+	} = useExtensionState()
+
+	const modeName = useMemo(() => {
+		if (!message.mode) return undefined
+		const allModes = getAllModes(customModes)
+		const mode = allModes.find((m) => m.slug === message.mode)
+		return mode?.name
+	}, [message.mode, customModes])
 	const { info: model } = useSelectedModel(apiConfiguration)
 	const [isEditing, setIsEditing] = useState(false)
 	const [editedContent, setEditedContent] = useState("")
@@ -1116,7 +1134,7 @@ export const ChatRowContent = ({
 								// Non-HTTP-status-code error message - store full text as errorDetails
 								body = t("chat:apiRequest.errorMessage.unknown")
 								docsURL =
-									"mailto:support@roocode.com?subject=Unknown API Error&body=[Please include full error details]"
+									"mailto:support@jabberwock.com?subject=Unknown API Error&body=[Please include full error details]"
 							}
 						}
 
@@ -1183,7 +1201,11 @@ export const ChatRowContent = ({
 						<div className="group">
 							<div style={headerStyle}>
 								<MessageCircle className="w-4 shrink-0" aria-label="Speech bubble icon" />
-								<span style={{ fontWeight: "bold" }}>{t("chat:text.rooSaid")}</span>
+								<span style={{ fontWeight: "bold" }}>
+									{modeName
+										? t("chat:text.jabberwockSaid").replace("Jabberwock", modeName)
+										: t("chat:text.jabberwockSaid")}
+								</span>
 								<div style={{ flexGrow: 1 }} />
 								<OpenMarkdownPreviewButton markdown={message.text} />
 							</div>
@@ -1605,6 +1627,29 @@ export const ChatRowContent = ({
 					}
 
 					const server = mcpServers.find((server) => server.name === useMcpServer.serverName)
+
+					// Jabberwock: Check if interactive App
+					let isInteractiveApp = false
+					if (server && server.config) {
+						try {
+							const config = JSON.parse(server.config)
+							isInteractiveApp = config.type === "interactiveApp"
+						} catch {
+							// ignore
+						}
+					}
+
+					if (isInteractiveApp && server && isLast) {
+						return (
+							<>
+								<div style={headerStyle}>
+									{icon}
+									{title}
+								</div>
+								<McpAppRenderer useMcpServer={useMcpServer} server={server} messageTs={message.ts} />
+							</>
+						)
+					}
 
 					return (
 						<>

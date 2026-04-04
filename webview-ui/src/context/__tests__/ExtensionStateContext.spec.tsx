@@ -6,23 +6,25 @@ import {
 	type ExtensionState,
 	type ClineMessage,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
-} from "@roo-code/types"
+} from "@jabberwock/types"
 
 import { ExtensionStateContextProvider, useExtensionState, mergeExtensionState } from "../ExtensionStateContext"
 
 const TestComponent = () => {
-	const { allowedCommands, setAllowedCommands, soundEnabled, showRooIgnoredFiles, setShowRooIgnoredFiles } =
+	const { allowedCommands, setAllowedCommands, soundEnabled, showJabberwockIgnoredFiles, setShowRooIgnoredFiles } =
 		useExtensionState()
 
 	return (
 		<div>
 			<div data-testid="allowed-commands">{JSON.stringify(allowedCommands)}</div>
 			<div data-testid="sound-enabled">{JSON.stringify(soundEnabled)}</div>
-			<div data-testid="show-rooignored-files">{JSON.stringify(showRooIgnoredFiles)}</div>
+			<div data-testid="show-rooignored-files">{JSON.stringify(showJabberwockIgnoredFiles)}</div>
 			<button data-testid="update-button" onClick={() => setAllowedCommands(["npm install", "git status"])}>
 				Update Commands
 			</button>
-			<button data-testid="toggle-rooignore-button" onClick={() => setShowRooIgnoredFiles(!showRooIgnoredFiles)}>
+			<button
+				data-testid="toggle-rooignore-button"
+				onClick={() => setShowRooIgnoredFiles(!showJabberwockIgnoredFiles)}>
 				Update Commands
 			</button>
 		</div>
@@ -68,7 +70,7 @@ describe("ExtensionStateContext", () => {
 		expect(JSON.parse(screen.getByTestId("sound-enabled").textContent!)).toBe(false)
 	})
 
-	it("initializes with showRooIgnoredFiles set to true", () => {
+	it("initializes with showJabberwockIgnoredFiles set to true", () => {
 		render(
 			<ExtensionStateContextProvider>
 				<TestComponent />
@@ -78,7 +80,7 @@ describe("ExtensionStateContext", () => {
 		expect(JSON.parse(screen.getByTestId("show-rooignored-files").textContent!)).toBe(true)
 	})
 
-	it("updates showRooIgnoredFiles through setShowRooIgnoredFiles", () => {
+	it("updates showJabberwockIgnoredFiles through setShowRooIgnoredFiles", () => {
 		render(
 			<ExtensionStateContextProvider>
 				<TestComponent />
@@ -200,7 +202,7 @@ describe("mergeExtensionState", () => {
 			maxWorkspaceFiles: 100,
 			apiConfiguration: { providerId: "openrouter" } as ProviderSettings,
 			telemetrySetting: "unset",
-			showRooIgnoredFiles: true,
+			showJabberwockIgnoredFiles: true,
 			enableSubfolderRules: false,
 			renderContext: "sidebar",
 			cloudUserInfo: null,
@@ -269,7 +271,7 @@ describe("mergeExtensionState", () => {
 			maxWorkspaceFiles: 100,
 			apiConfiguration: {},
 			telemetrySetting: "unset",
-			showRooIgnoredFiles: true,
+			showJabberwockIgnoredFiles: true,
 			enableSubfolderRules: false,
 			renderContext: "sidebar",
 			cloudUserInfo: null,

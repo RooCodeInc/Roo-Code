@@ -2,8 +2,8 @@ import * as fs from "fs"
 import * as path from "path"
 import { tmpdir } from "os"
 
-import { FileSystemAPI } from "../api/FileSystemAPI.js"
-import { Uri } from "../classes/Uri.js"
+import { FileSystemAPI } from "../api/FileSystemAPI.ts"
+import { Uri } from "../classes/Uri.ts"
 
 describe("FileSystemAPI", () => {
 	let tempDir: string

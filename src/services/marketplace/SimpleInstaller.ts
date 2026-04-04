@@ -2,7 +2,12 @@ import * as vscode from "vscode"
 import * as path from "path"
 import * as fs from "fs/promises"
 import * as yaml from "yaml"
-import type { MarketplaceItem, MarketplaceItemType, InstallMarketplaceItemOptions, McpParameter } from "@roo-code/types"
+import type {
+	MarketplaceItem,
+	MarketplaceItemType,
+	InstallMarketplaceItemOptions,
+	McpParameter,
+} from "@jabberwock/types"
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import { ensureSettingsDirectoryExists } from "../../utils/globalContext"
 import type { CustomModesManager } from "../../core/config/CustomModesManager"
@@ -102,7 +107,7 @@ export class SimpleInstaller {
 				existingData = { customModes: [] }
 			} else if (error.name === "YAMLParseError" || error.message?.includes("YAML")) {
 				// YAML parsing error - don't overwrite the file!
-				const fileName = target === "project" ? ".roomodes" : "custom-modes.yaml"
+				const fileName = target === "project" ? ".jabberwockmodes" : "custom-modes.yaml"
 				throw new Error(
 					`Cannot install mode: The ${fileName} file contains invalid YAML. ` +
 						`Please fix the syntax errors in the file before installing new modes.`,
@@ -237,7 +242,7 @@ export class SimpleInstaller {
 				existingData = { mcpServers: {} }
 			} else if (error instanceof SyntaxError) {
 				// JSON parsing error - don't overwrite the file!
-				const fileName = target === "project" ? ".roo/mcp.json" : "mcp-settings.json"
+				const fileName = target === "project" ? ".jabberwock/mcp.json" : "mcp-settings.json"
 				throw new Error(
 					`Cannot install MCP server: The ${fileName} file contains invalid JSON. ` +
 						`Please fix the syntax errors in the file before installing new servers.`,
@@ -362,7 +367,7 @@ export class SimpleInstaller {
 			if (!workspaceFolder) {
 				throw new Error("No workspace folder found")
 			}
-			return path.join(workspaceFolder.uri.fsPath, ".roomodes")
+			return path.join(workspaceFolder.uri.fsPath, ".jabberwockmodes")
 		} else {
 			const globalSettingsPath = await ensureSettingsDirectoryExists(this.context)
 			return path.join(globalSettingsPath, GlobalFileNames.customModes)
@@ -375,7 +380,7 @@ export class SimpleInstaller {
 			if (!workspaceFolder) {
 				throw new Error("No workspace folder found")
 			}
-			return path.join(workspaceFolder.uri.fsPath, ".roo", "mcp.json")
+			return path.join(workspaceFolder.uri.fsPath, ".jabberwock", "mcp.json")
 		} else {
 			const globalSettingsPath = await ensureSettingsDirectoryExists(this.context)
 			return path.join(globalSettingsPath, GlobalFileNames.mcpSettings)

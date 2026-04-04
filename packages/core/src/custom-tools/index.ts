@@ -1,3 +1,3 @@
-export * from "./custom-tool-registry.js"
-export * from "./serialize.js"
-export * from "./format-native.js"
+export * from "./custom-tool-registry.ts"
+export * from "./serialize.ts"
+export * from "./format-native.ts"

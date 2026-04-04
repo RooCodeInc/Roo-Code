@@ -4,7 +4,7 @@ import * as vscode from "vscode"
 import { ClineProvider } from "../ClineProvider"
 import { Task } from "../../task/Task"
 import { ContextProxy } from "../../config/ContextProxy"
-import type { ProviderSettings, HistoryItem } from "@roo-code/types"
+import type { ProviderSettings, HistoryItem } from "@jabberwock/types"
 
 // Mock dependencies
 vi.mock("vscode", () => {
@@ -61,7 +61,7 @@ vi.mock("../../../utils/path", () => ({
 }))
 
 // Mock TelemetryService
-vi.mock("@roo-code/telemetry", () => ({
+vi.mock("@jabberwock/telemetry", () => ({
 	TelemetryService: {
 		instance: {
 			setProvider: vi.fn(),
@@ -71,14 +71,14 @@ vi.mock("@roo-code/telemetry", () => ({
 }))
 
 // Mock CloudService
-vi.mock("@roo-code/cloud", () => ({
+vi.mock("@jabberwock/cloud", () => ({
 	CloudService: {
 		hasInstance: vi.fn().mockReturnValue(false),
 		instance: {
 			isAuthenticated: vi.fn().mockReturnValue(false),
 		},
 	},
-	getRooCodeApiUrl: vi.fn().mockReturnValue("https://api.roo-code.com"),
+	getJabberwockApiUrl: vi.fn().mockReturnValue("https://api.jabberwock.com"),
 }))
 
 vi.mock("../../../shared/embeddingModels", () => ({

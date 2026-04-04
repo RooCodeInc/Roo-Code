@@ -5,7 +5,7 @@ import {
 	type TelemetryPropertiesProvider,
 	TelemetryEventName,
 	type TelemetrySetting,
-} from "@roo-code/types"
+} from "@jabberwock/types"
 
 /**
  * TelemetryService wrapper class that defers initialization.

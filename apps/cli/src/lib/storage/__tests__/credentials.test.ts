@@ -9,7 +9,7 @@ const { getTestConfigDir } = vi.hoisted(() => {
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	const path = require("path")
 	const testRunId = Date.now().toString()
-	const testConfigDir = path.join(os.tmpdir(), `roo-cli-test-${testRunId}`)
+	const testConfigDir = path.join(os.tmpdir(), `jabberwock-cli-test-${testRunId}`)
 	return { getTestConfigDir: () => testConfigDir }
 })
 

@@ -12,7 +12,7 @@ import { promisify } from "util"
 
 import ignore, { type Ignore } from "ignore"
 
-import type { WorktreeIncludeStatus } from "./types.js"
+import type { WorktreeIncludeStatus } from "./types.ts"
 
 /**
  * Progress info for copy tracking.

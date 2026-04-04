@@ -1,9 +1,9 @@
 import { z } from "zod"
 
-import { rooCodeSettingsSchema } from "./global-settings.js"
+import { jabberwockSettingsSchema } from "./global-settings.ts"
 
 /**
- * Roo CLI stdin commands
+ * Jabberwock CLI stdin commands
  */
 
 export const rooCliCommandNames = ["start", "message", "cancel", "ping", "shutdown"] as const
@@ -29,7 +29,7 @@ export const rooCliStartCommandSchema = rooCliCommandBaseSchema.extend({
 	prompt: z.string(),
 	taskId: rooCliSessionIdSchema.optional(),
 	images: z.array(z.string()).optional(),
-	configuration: rooCodeSettingsSchema.optional(),
+	configuration: jabberwockSettingsSchema.optional(),
 })
 
 export type RooCliStartCommand = z.infer<typeof rooCliStartCommandSchema>
@@ -71,7 +71,7 @@ export const rooCliInputCommandSchema = z.discriminatedUnion("command", [
 export type RooCliInputCommand = z.infer<typeof rooCliInputCommandSchema>
 
 /**
- * Roo CLI stream-json output
+ * Jabberwock CLI stream-json output
  */
 
 export const rooCliOutputFormats = ["text", "json", "stream-json"] as const

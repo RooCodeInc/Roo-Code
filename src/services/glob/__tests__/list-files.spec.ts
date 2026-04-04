@@ -314,11 +314,11 @@ describe("hidden directory exclusion", () => {
 	})
 
 	it("should allow explicit targeting of hidden directories", async () => {
-		// Mock filesystem structure for explicit .roo-memory targeting
+		// Mock filesystem structure for explicit .jabberwock-memory targeting
 		const mockReaddir = vi.fn()
 		vi.mocked(fs.promises).readdir = mockReaddir
 
-		// Mock .roo-memory directory contents
+		// Mock .jabberwock-memory directory contents
 		mockReaddir.mockResolvedValueOnce([
 			{ name: "tasks", isDirectory: () => true, isSymbolicLink: () => false },
 			{ name: "context", isDirectory: () => true, isSymbolicLink: () => false },
@@ -346,15 +346,17 @@ describe("hidden directory exclusion", () => {
 		}
 		mockSpawn.mockReturnValue(mockProcess as any)
 
-		// Call listFiles explicitly targeting .roo-memory directory
-		const [result] = await listFiles("/test/.roo-memory", true, 100)
+		// Call listFiles explicitly targeting .jabberwock-memory directory
+		const [result] = await listFiles("/test/.jabberwock-memory", true, 100)
 
 		// When explicitly targeting a hidden directory, its subdirectories should be included
 		const directories = result.filter((item) => item.endsWith("/"))
 
-		const hasTasksDir = directories.some((dir) => dir.includes(".roo-memory/tasks/") || dir.includes("tasks/"))
+		const hasTasksDir = directories.some(
+			(dir) => dir.includes(".jabberwock-memory/tasks/") || dir.includes("tasks/"),
+		)
 		const hasContextDir = directories.some(
-			(dir) => dir.includes(".roo-memory/context/") || dir.includes("context/"),
+			(dir) => dir.includes(".jabberwock-memory/context/") || dir.includes("context/"),
 		)
 
 		expect(hasTasksDir).toBe(true)
@@ -362,14 +364,14 @@ describe("hidden directory exclusion", () => {
 	})
 
 	it("should include top-level files when recursively listing a hidden directory that's also in DIRS_TO_IGNORE", async () => {
-		// This test specifically addresses the bug where files at the root level of .roo/temp
+		// This test specifically addresses the bug where files at the root level of .jabberwock/temp
 		// were being excluded when using recursive listing
 		const mockSpawn = vi.mocked(childProcess.spawn)
 		const mockProcess = {
 			stdout: {
 				on: vi.fn((event, callback) => {
 					if (event === "data") {
-						// Simulate files that should be found in .roo/temp
+						// Simulate files that should be found in .jabberwock/temp
 						// Note: ripgrep returns relative paths
 						setTimeout(() => {
 							callback("teste1.md\n")
@@ -391,13 +393,13 @@ describe("hidden directory exclusion", () => {
 
 		mockSpawn.mockReturnValue(mockProcess as any)
 
-		// Mock directory listing for .roo/temp
+		// Mock directory listing for .jabberwock/temp
 		const mockReaddir = vi.fn()
 		vi.mocked(fs.promises).readdir = mockReaddir
 		mockReaddir.mockResolvedValueOnce([{ name: "22", isDirectory: () => true, isSymbolicLink: () => false }])
 
-		// Call listFiles targeting .roo/temp (which is both hidden and in DIRS_TO_IGNORE)
-		const [files] = await listFiles("/test/.roo/temp", true, 100)
+		// Call listFiles targeting .jabberwock/temp (which is both hidden and in DIRS_TO_IGNORE)
+		const [files] = await listFiles("/test/.jabberwock/temp", true, 100)
 
 		// Verify ripgrep was called with correct arguments
 		const [rgPath, args] = mockSpawn.mock.calls[0]

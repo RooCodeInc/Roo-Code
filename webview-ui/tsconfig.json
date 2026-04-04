@@ -1,5 +1,6 @@
 {
 	"compilerOptions": {
+		"allowImportingTsExtensions": true,
 		"types": ["vitest/globals"],
 		"target": "ES2022",
 		"lib": ["dom", "dom.iterable", "esnext"],
@@ -22,7 +23,7 @@
 		"paths": {
 			"@/*": ["./src/*"],
 			"@src/*": ["./src/*"],
-			"@roo/*": ["../src/shared/*"]
+			"@shared/*": ["../src/shared/*"]
 		}
 	},
 	"include": ["src", "../src/shared", "vitest.setup.ts"]

@@ -3,8 +3,8 @@ import { createHash } from "crypto"
 import { ICacheManager } from "./interfaces/cache"
 import debounce from "lodash.debounce"
 import { safeWriteJson } from "../../utils/safeWriteJson"
-import { TelemetryService } from "@roo-code/telemetry"
-import { TelemetryEventName } from "@roo-code/types"
+import { TelemetryService } from "@jabberwock/telemetry"
+import { TelemetryEventName } from "@jabberwock/types"
 
 /**
  * Manages the cache for code indexing
@@ -25,7 +25,7 @@ export class CacheManager implements ICacheManager {
 	) {
 		this.cachePath = vscode.Uri.joinPath(
 			context.globalStorageUri,
-			`roo-index-cache-${createHash("sha256").update(workspacePath).digest("hex")}.json`,
+			`jabberwock-index-cache-${createHash("sha256").update(workspacePath).digest("hex")}.json`,
 		)
 		this._debouncedSaveCache = debounce(async () => {
 			await this._performSave()

@@ -8,8 +8,8 @@
 		"noMatchFound": "モードが見つかりません",
 		"editModesConfig": "モード設定を編集",
 		"editGlobalModes": "グローバルモードを編集",
-		"editProjectModes": "プロジェクトモードを編集 (.roomodes)",
-		"createModeHelpText": "モードはRooの振る舞いを調整する専門的なペルソナです。<0>モードの使用について学ぶ</0>か、<1>モードのカスタマイズについて学ぶ</1>。",
+		"editProjectModes": "プロジェクトモードを編集 (.jabberwockmodes)",
+		"createModeHelpText": "モードはJabberwockの振る舞いを調整する専門的なペルソナです。<0>モードの使用について学ぶ</0>か、<1>モードのカスタマイズについて学ぶ</1>。",
 		"selectMode": "モードを検索"
 	},
 	"apiConfiguration": {
@@ -33,7 +33,7 @@
 	"roleDefinition": {
 		"title": "役割の定義",
 		"resetToDefault": "デフォルトにリセット",
-		"description": "このモードのRooの専門知識と個性を定義します。この説明は、Rooが自身をどのように表現し、タスクにどのように取り組むかを形作ります。"
+		"description": "このモードのJabberwockの専門知識と個性を定義します。この説明は、Jabberwockが自身をどのように表現し、タスクにどのように取り組むかを形作ります。"
 	},
 	"description": {
 		"title": "短い説明（人間向け）",
@@ -49,7 +49,7 @@
 		"title": "モード固有のカスタム指示（オプション）",
 		"resetToDefault": "デフォルトにリセット",
 		"description": "{{modeName}}モードに特化した行動ガイドラインを追加します。",
-		"loadFromFile": "{{mode}}モード固有のカスタム指示は、ワークスペースの<span>.roo/rules-{{slug}}/</span>フォルダまたはグローバル<0>.roo/rules-{{slug}}/</0>からも読み込むことができます（.roorules-{{slug}}と.clinerules-{{slug}}は非推奨で、まもなく動作しなくなります）。"
+		"loadFromFile": "{{mode}}モード固有のカスタム指示は、ワークスペースの<span>.jabberwock/rules-{{slug}}/</span>フォルダまたはグローバル<0>.jabberwock/rules-{{slug}}/</0>からも読み込むことができます（.jabberwockrules-{{slug}}と.clinerules-{{slug}}は非推奨で、まもなく動作しなくなります）。"
 	},
 	"exportMode": {
 		"title": "モードをエクスポート",
@@ -67,13 +67,13 @@
 		},
 		"project": {
 			"label": "プロジェクトレベル",
-			"description": "このワークスペースでのみ利用可能です。エクスポートされたモードにルールファイルが含まれていた場合、それらは.roo/rules-{slug}/フォルダに再作成されます。"
+			"description": "このワークスペースでのみ利用可能です。エクスポートされたモードにルールファイルが含まれていた場合、それらは.jabberwock/rules-{slug}/フォルダに再作成されます。"
 		}
 	},
 	"globalCustomInstructions": {
 		"title": "すべてのモードのカスタム指示",
 		"description": "これらの指示はすべてのモードに適用されます。モード固有の指示で強化できる基本的な動作セットを提供します。<0>詳細はこちら</0>",
-		"loadFromFile": "指示は、ワークスペースの<span>.roo/rules/</span>フォルダまたはグローバル<0>.roo/rules/</0>からも読み込むことができます（.roorulesと.clinerulesは非推奨で、まもなく動作しなくなります）。"
+		"loadFromFile": "指示は、ワークスペースの<span>.jabberwock/rules/</span>フォルダまたはグローバル<0>.jabberwock/rules/</0>からも読み込むことができます（.jabberwockrulesと.clinerulesは非推奨で、まもなく動作しなくなります）。"
 	},
 	"systemPrompt": {
 		"preview": "システムプロンプトのプレビュー",
@@ -102,7 +102,7 @@
 		"types": {
 			"ENHANCE": {
 				"label": "プロンプトを強化",
-				"description": "プロンプト強化を使用して、入力に合わせたカスタマイズされた提案や改善を得ることができます。これにより、Rooがあなたの意図を理解し、最適な回答を提供できます。チャットの✨アイコンから利用できます。"
+				"description": "プロンプト強化を使用して、入力に合わせたカスタマイズされた提案や改善を得ることができます。これにより、Jabberwockがあなたの意図を理解し、最適な回答を提供できます。チャットの✨アイコンから利用できます。"
 			},
 			"CONDENSE": {
 				"label": "コンテキスト圧縮",
@@ -161,13 +161,13 @@
 				"description": "すべてのワークスペースで利用可能"
 			},
 			"project": {
-				"label": "プロジェクト固有 (.roomodes)",
+				"label": "プロジェクト固有 (.jabberwockmodes)",
 				"description": "このワークスペースでのみ使用可能、グローバルよりも優先"
 			}
 		},
 		"roleDefinition": {
 			"label": "役割の定義",
-			"description": "このモードのRooの専門知識と個性を定義します。"
+			"description": "このモードのJabberwockの専門知識と個性を定義します。"
 		},
 		"whenToUse": {
 			"label": "使用タイミング（オプション）",

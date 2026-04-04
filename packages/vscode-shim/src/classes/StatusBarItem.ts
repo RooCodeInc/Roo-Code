@@ -2,8 +2,8 @@
  * StatusBarItem class for VSCode API
  */
 
-import { StatusBarAlignment } from "../types.js"
-import type { Disposable } from "../interfaces/workspace.js"
+import { StatusBarAlignment } from "../types.ts"
+import type { Disposable } from "../interfaces/workspace.ts"
 
 /**
  * Status bar item mock for CLI mode

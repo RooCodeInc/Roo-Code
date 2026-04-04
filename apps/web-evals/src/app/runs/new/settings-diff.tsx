@@ -1,14 +1,14 @@
-import { type Keys, type RooCodeSettings, GLOBAL_SETTINGS_KEYS, PROVIDER_SETTINGS_KEYS } from "@roo-code/types"
+import { type Keys, type JabberwockSettings, GLOBAL_SETTINGS_KEYS, PROVIDER_SETTINGS_KEYS } from "@jabberwock/types"
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui"
 
-export const ROO_CODE_SETTINGS_KEYS = [
+export const JABBERWOCK_CODE_SETTINGS_KEYS = [
 	...new Set([...GLOBAL_SETTINGS_KEYS, ...PROVIDER_SETTINGS_KEYS]),
-] as Keys<RooCodeSettings>[]
+] as Keys<JabberwockSettings>[]
 
 type SettingsDiffProps = {
-	defaultSettings: RooCodeSettings
-	customSettings: RooCodeSettings
+	defaultSettings: JabberwockSettings
+	customSettings: JabberwockSettings
 }
 
 export function SettingsDiff({
@@ -29,7 +29,7 @@ export function SettingsDiff({
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{ROO_CODE_SETTINGS_KEYS.map((key) => {
+					{JABBERWOCK_CODE_SETTINGS_KEYS.map((key) => {
 						const defaultValue = JSON.stringify(defaults[key as keyof typeof defaults], null, 2)
 						const customValue = JSON.stringify(custom[key as keyof typeof custom], null, 2)
 

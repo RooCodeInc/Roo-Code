@@ -1,4 +1,4 @@
-import type { Command } from "@roo-code/types"
+import type { Command } from "@jabberwock/types"
 
 import { getContextMenuOptions, ContextMenuOptionType } from "../utils/context-mentions"
 

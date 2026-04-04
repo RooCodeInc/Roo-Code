@@ -2,8 +2,8 @@
  * OutputChannel class for VSCode API
  */
 
-import { logs } from "../utils/logger.js"
-import type { Disposable } from "../interfaces/workspace.js"
+import { logs } from "../utils/logger.ts"
+import type { Disposable } from "../interfaces/workspace.ts"
 
 /**
  * Output channel mock for CLI mode

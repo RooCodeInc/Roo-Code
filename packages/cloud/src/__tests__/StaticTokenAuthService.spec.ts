@@ -1,6 +1,6 @@
 import type { ExtensionContext } from "vscode"
 
-import { StaticTokenAuthService } from "../StaticTokenAuthService.js"
+import { StaticTokenAuthService } from "../StaticTokenAuthService.ts"
 
 vi.mock("vscode", () => ({
 	window: {

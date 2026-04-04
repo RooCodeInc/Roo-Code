@@ -7,12 +7,12 @@ import { resetNerdFontCache } from "../Icon.js"
 describe("ChatHistoryItem", () => {
 	beforeEach(() => {
 		// Use fallback icons in tests so they render as visible characters
-		process.env.ROOCODE_NERD_FONT = "0"
+		process.env.JABBERWOCKCODE_NERD_FONT = "0"
 		resetNerdFontCache()
 	})
 
 	afterEach(() => {
-		delete process.env.ROOCODE_NERD_FONT
+		delete process.env.JABBERWOCKCODE_NERD_FONT
 		resetNerdFontCache()
 	})
 
@@ -190,7 +190,7 @@ describe("ChatHistoryItem", () => {
 			const { lastFrame } = render(<ChatHistoryItem message={message} />)
 			const output = lastFrame()
 
-			expect(output).toContain("Roo said:")
+			expect(output).toContain("Jabberwock said:")
 			expect(output).toContain("Hi there")
 		})
 
@@ -204,7 +204,7 @@ describe("ChatHistoryItem", () => {
 			const { lastFrame } = render(<ChatHistoryItem message={message} />)
 			const output = lastFrame()
 
-			expect(output).toContain("Roo is thinking:")
+			expect(output).toContain("Jabberwock is thinking:")
 			expect(output).toContain("Let me think...")
 		})
 

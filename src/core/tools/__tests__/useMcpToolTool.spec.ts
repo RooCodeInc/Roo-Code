@@ -29,7 +29,7 @@ vi.mock("../../prompts/responses", () => ({
 vi.mock("../../../i18n", () => ({
 	t: vi.fn((key: string, params?: any) => {
 		if (key === "mcp:errors.invalidJsonArgument" && params?.toolName) {
-			return `Roo tried to use ${params.toolName} with an invalid JSON argument. Retrying...`
+			return `Jabberwock tried to use ${params.toolName} with an invalid JSON argument. Retrying...`
 		}
 		if (key === "mcp:errors.toolNotFound" && params) {
 			return `Tool '${params.toolName}' does not exist on server '${params.serverName}'. Available tools: ${params.availableTools}`

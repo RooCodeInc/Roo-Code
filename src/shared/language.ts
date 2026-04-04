@@ -1,4 +1,4 @@
-import { type Language, isLanguage } from "@roo-code/types"
+import { type Language, isLanguage } from "@jabberwock/types"
 
 /**
  * Language name mapping from ISO codes to full language names.

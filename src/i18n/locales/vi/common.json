@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Jabberwock",
 		"description": "Toàn bộ đội ngũ phát triển AI trong trình soạn thảo của bạn."
 	},
 	"number_format": {
@@ -111,8 +111,8 @@
 			"thinking_complete_safety": "(Đã suy nghĩ xong nhưng kết quả bị chặn do cài đặt an toàn.)",
 			"thinking_complete_recitation": "(Đã suy nghĩ xong nhưng kết quả bị chặn do kiểm tra trích dẫn.)"
 		},
-		"roo": {
-			"authenticationRequired": "Nhà cung cấp Roo yêu cầu xác thực đám mây. Vui lòng đăng nhập vào Roo Code Cloud."
+		"jabberwock": {
+			"authenticationRequired": "Nhà cung cấp Jabberwock yêu cầu xác thực đám mây. Vui lòng đăng nhập vào Jabberwock Cloud."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "Khóa API chứa ký tự không hợp lệ.",
@@ -145,7 +145,7 @@
 	"warnings": {
 		"no_terminal_content": "Không có nội dung terminal được chọn",
 		"missing_task_files": "Các tệp của nhiệm vụ này bị thiếu. Bạn có muốn xóa nó khỏi danh sách nhiệm vụ không?",
-		"auto_import_failed": "Không thể tự động nhập cài đặt RooCode: {{error}}"
+		"auto_import_failed": "Không thể tự động nhập cài đặt Jabberwock: {{error}}"
 	},
 	"info": {
 		"no_changes": "Không tìm thấy thay đổi nào.",
@@ -154,7 +154,7 @@
 		"custom_storage_path_set": "Đã thiết lập đường dẫn lưu trữ tùy chỉnh: {{path}}",
 		"default_storage_path": "Đã quay lại sử dụng đường dẫn lưu trữ mặc định",
 		"settings_imported": "Cài đặt đã được nhập thành công.",
-		"auto_import_success": "Cài đặt RooCode đã được tự động nhập từ {{filename}}",
+		"auto_import_success": "Cài đặt Jabberwock đã được tự động nhập từ {{filename}}",
 		"share_link_copied": "Liên kết chia sẻ đã được sao chép vào clipboard",
 		"image_copied_to_clipboard": "URI dữ liệu hình ảnh đã được sao chép vào clipboard",
 		"image_saved": "Hình ảnh đã được lưu vào {{path}}",
@@ -187,12 +187,12 @@
 	},
 	"storage": {
 		"prompt_custom_path": "Nhập đường dẫn lưu trữ tùy chỉnh cho lịch sử hội thoại, để trống để sử dụng vị trí mặc định",
-		"path_placeholder": "D:\\RooCodeStorage",
-		"enter_absolute_path": "Vui lòng nhập đường dẫn tuyệt đối (ví dụ: D:\\RooCodeStorage hoặc /home/user/storage)",
+		"path_placeholder": "D:\\JabberwockStorage",
+		"enter_absolute_path": "Vui lòng nhập đường dẫn tuyệt đối (ví dụ: D:\\JabberwockStorage hoặc /home/user/storage)",
 		"enter_valid_path": "Vui lòng nhập đường dẫn hợp lệ"
 	},
 	"input": {
-		"task_prompt": "Bạn muốn Roo làm gì?",
+		"task_prompt": "Bạn muốn Jabberwock làm gì?",
 		"task_placeholder": "Nhập nhiệm vụ của bạn ở đây"
 	},
 	"settings": {
@@ -200,8 +200,8 @@
 	},
 	"customModes": {
 		"errors": {
-			"yamlParseError": "YAML không hợp lệ trong tệp .roomodes tại dòng {{line}}. Vui lòng kiểm tra:\n• Thụt lề đúng (dùng dấu cách, không dùng tab)\n• Dấu ngoặc kép và ngoặc đơn khớp nhau\n• Cú pháp YAML hợp lệ",
-			"schemaValidationError": "Định dạng chế độ tùy chỉnh không hợp lệ trong .roomodes:\n{{issues}}",
+			"yamlParseError": "YAML không hợp lệ trong tệp .jabberwockmodes tại dòng {{line}}. Vui lòng kiểm tra:\n• Thụt lề đúng (dùng dấu cách, không dùng tab)\n• Dấu ngoặc kép và ngoặc đơn khớp nhau\n• Cú pháp YAML hợp lệ",
+			"schemaValidationError": "Định dạng chế độ tùy chỉnh không hợp lệ trong .jabberwockmodes:\n{{issues}}",
 			"invalidFormat": "Định dạng chế độ tùy chỉnh không hợp lệ. Vui lòng đảm bảo cài đặt của bạn tuân theo định dạng YAML đúng.",
 			"updateFailed": "Cập nhật chế độ tùy chỉnh thất bại: {{error}}",
 			"deleteFailed": "Xóa chế độ tùy chỉnh thất bại: {{error}}",
@@ -222,8 +222,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "Tổ chức của bạn yêu cầu xác thực Roo Code Cloud. Vui lòng đăng nhập để tiếp tục.",
-			"organization_mismatch": "Bạn phải được xác thực bằng tài khoản Roo Code Cloud của tổ chức.",
+			"cloud_auth_required": "Tổ chức của bạn yêu cầu xác thực Jabberwock Cloud. Vui lòng đăng nhập để tiếp tục.",
+			"organization_mismatch": "Bạn phải được xác thực bằng tài khoản Jabberwock Cloud của tổ chức.",
 			"manual_url_empty": "Vui lòng nhập URL callback hợp lệ",
 			"manual_url_no_query": "URL callback không hợp lệ: thiếu tham số truy vấn",
 			"manual_url_missing_params": "URL callback không hợp lệ: thiếu tham số bắt buộc (code và state)",
@@ -257,6 +257,6 @@
 	},
 	"docsLink": {
 		"label": "Docs",
-		"url": "https://docs.roocode.com"
+		"url": "https://docs.jabberwock.com"
 	}
 }

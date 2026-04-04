@@ -1,4 +1,4 @@
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage } from "@jabberwock/types"
 
 import { detectAgentState } from "../agent-state.js"
 import { taskCompleted } from "../events.js"

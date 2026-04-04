@@ -1,4 +1,4 @@
-import { Uri } from "../classes/Uri.js"
+import { Uri } from "../classes/Uri.ts"
 
 describe("Uri", () => {
 	describe("file()", () => {

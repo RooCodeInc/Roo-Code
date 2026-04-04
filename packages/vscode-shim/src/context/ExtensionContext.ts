@@ -1,9 +1,9 @@
 import * as path from "path"
 import * as fs from "fs"
-import { Uri } from "../classes/Uri.js"
-import { FileMemento } from "../storage/Memento.js"
-import { FileSecretStorage } from "../storage/SecretStorage.js"
-import { hashWorkspacePath, ensureDirectoryExists } from "../utils/paths.js"
+import { Uri } from "../classes/Uri.ts"
+import { FileMemento } from "../storage/Memento.ts"
+import { FileSecretStorage } from "../storage/SecretStorage.ts"
+import { hashWorkspacePath, ensureDirectoryExists } from "../utils/paths.ts"
 import type {
 	ExtensionContext,
 	Extension,
@@ -12,7 +12,7 @@ import type {
 	SecretStorage,
 	ExtensionMode,
 	ExtensionKind,
-} from "../types.js"
+} from "../types.ts"
 
 /**
  * Options for creating an ExtensionContext

@@ -10,8 +10,8 @@ vi.mock("react-i18next", () => ({
 	useTranslation: () => ({
 		t: (key: string) => {
 			const translations: Record<string, string> = {
-				"chat:slashCommand.wantsToRun": "Roo wants to run slash command:",
-				"chat:slashCommand.didRun": "Roo ran slash command:",
+				"chat:slashCommand.wantsToRun": "Jabberwock wants to run slash command:",
+				"chat:slashCommand.didRun": "Jabberwock ran slash command:",
 			}
 			return translations[key] || key
 		},
@@ -76,7 +76,7 @@ describe("ChatRow - runSlashCommand tool", () => {
 
 		const { getByText } = renderChatRowWithProviders(message)
 
-		expect(getByText("Roo wants to run slash command:")).toBeInTheDocument()
+		expect(getByText("Jabberwock wants to run slash command:")).toBeInTheDocument()
 		expect(getByText("/init")).toBeInTheDocument()
 	})
 
@@ -97,7 +97,7 @@ describe("ChatRow - runSlashCommand tool", () => {
 
 		const { getByText } = renderChatRowWithProviders(message, true) // Pass true to expand
 
-		expect(getByText("Roo wants to run slash command:")).toBeInTheDocument()
+		expect(getByText("Jabberwock wants to run slash command:")).toBeInTheDocument()
 		expect(getByText("/test")).toBeInTheDocument()
 		expect(getByText("Arguments:")).toBeInTheDocument()
 		expect(getByText("focus on unit tests")).toBeInTheDocument()
@@ -120,7 +120,7 @@ describe("ChatRow - runSlashCommand tool", () => {
 
 		const { getByText } = renderChatRowWithProviders(message)
 
-		expect(getByText("Roo ran slash command:")).toBeInTheDocument()
+		expect(getByText("Jabberwock ran slash command:")).toBeInTheDocument()
 		expect(getByText("/deploy")).toBeInTheDocument()
 		expect(getByText("global")).toBeInTheDocument()
 	})

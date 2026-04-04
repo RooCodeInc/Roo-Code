@@ -1,10 +1,10 @@
-// pnpm --filter roo-cline test core/task-persistence/__tests__/TaskHistoryStore.spec.ts
+// pnpm --filter jabberwock test core/task-persistence/__tests__/TaskHistoryStore.spec.ts
 
 import * as fs from "fs/promises"
 import * as path from "path"
 import * as os from "os"
 
-import type { HistoryItem } from "@roo-code/types"
+import type { HistoryItem } from "@jabberwock/types"
 
 import { TaskHistoryStore } from "../TaskHistoryStore"
 import { GlobalFileNames } from "../../../shared/globalFileNames"

@@ -1,17 +1,17 @@
 import * as vscode from "vscode"
 
-import { CodeActionName, CodeActionId } from "@roo-code/types"
+import { CodeActionName, CodeActionId } from "@jabberwock/types"
 import { Package } from "../shared/package"
 
 import { getCodeActionCommand } from "../utils/commands"
 import { EditorUtils } from "../integrations/editor/EditorUtils"
 
 export const TITLES: Record<CodeActionName, string> = {
-	EXPLAIN: "Explain with Roo Code",
-	FIX: "Fix with Roo Code",
-	IMPROVE: "Improve with Roo Code",
-	ADD_TO_CONTEXT: "Add to Roo Code",
-	NEW_TASK: "New Roo Code Task",
+	EXPLAIN: "Explain with Jabberwock",
+	FIX: "Fix with Jabberwock",
+	IMPROVE: "Improve with Jabberwock",
+	ADD_TO_CONTEXT: "Add to Jabberwock",
+	NEW_TASK: "New Jabberwock Task",
 } as const
 
 export class CodeActionProvider implements vscode.CodeActionProvider {

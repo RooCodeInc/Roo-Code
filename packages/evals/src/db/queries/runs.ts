@@ -1,6 +1,6 @@
 import { desc, eq, inArray, sql, sum } from "drizzle-orm"
 
-import type { ToolUsage } from "@roo-code/types"
+import type { ToolUsage } from "@jabberwock/types"
 
 import { RecordNotFoundError, RecordNotCreatedError } from "./errors"
 import type { InsertRun, UpdateRun } from "../schema"

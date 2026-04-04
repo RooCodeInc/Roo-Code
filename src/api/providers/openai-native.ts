@@ -15,8 +15,8 @@ import {
 	type ReasoningEffortExtended,
 	type ServiceTier,
 	ApiProviderError,
-} from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
+} from "@jabberwock/types"
+import { TelemetryService } from "@jabberwock/telemetry"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
@@ -95,12 +95,12 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		}
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
 		// Include originator, session_id, and User-Agent headers for API tracking and debugging
-		const userAgent = `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`
+		const userAgent = `jabberwock/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`
 		this.client = new OpenAI({
 			baseURL: this.options.openAiNativeBaseUrl || undefined,
 			apiKey,
 			defaultHeaders: {
-				originator: "roo-code",
+				originator: "jabberwock",
 				session_id: this.sessionId,
 				"User-Agent": userAgent,
 			},
@@ -305,7 +305,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		}
 
 		// Build a request body for the OpenAI Responses API.
-		// Ensure we explicitly pass max_output_tokens based on Roo's reserved model response calculation
+		// Ensure we explicitly pass max_output_tokens based on Jabberwock's reserved model response calculation
 		// so requests do not default to very large limits (e.g., 120k).
 		interface ResponsesRequestBody {
 			model: string
@@ -364,7 +364,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				temperature: this.options.modelTemperature ?? OPENAI_NATIVE_DEFAULT_TEMPERATURE,
 			}),
 			// Explicitly include the calculated max output tokens.
-			// Use the per-request reserved output computed by Roo (params.maxTokens from getModelParams).
+			// Use the per-request reserved output computed by Jabberwock (params.maxTokens from getModelParams).
 			...(model.maxTokens ? { max_output_tokens: model.maxTokens } : {}),
 			// Include tier when selected and supported by the model, or when explicitly "default"
 			...(requestedTier &&
@@ -415,9 +415,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		// Build per-request headers using taskId when available, falling back to sessionId
 		const taskId = metadata?.taskId
-		const userAgent = `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`
+		const userAgent = `jabberwock/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`
 		const requestHeaders: Record<string, string> = {
-			originator: "roo-code",
+			originator: "jabberwock",
 			session_id: taskId || this.sessionId,
 			"User-Agent": userAgent,
 		}
@@ -563,7 +563,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		// Build per-request headers using taskId when available, falling back to sessionId
 		const taskId = metadata?.taskId
-		const userAgent = `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`
+		const userAgent = `jabberwock/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`
 
 		try {
 			const response = await fetch(url, {
@@ -571,7 +571,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				headers: {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${apiKey}`,
-					originator: "roo-code",
+					originator: "jabberwock",
 					session_id: taskId || this.sessionId,
 					"User-Agent": userAgent,
 				},

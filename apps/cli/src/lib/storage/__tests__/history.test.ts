@@ -25,7 +25,7 @@ describe("historyStorage", () => {
 	describe("getHistoryFilePath", () => {
 		it("should return the correct path to cli-history.json", () => {
 			const result = getHistoryFilePath()
-			expect(result).toBe(path.join("/home/testuser", ".roo", "cli-history.json"))
+			expect(result).toBe(path.join("/home/testuser", ".jabberwock", "cli-history.json"))
 		})
 	})
 
@@ -96,7 +96,7 @@ describe("historyStorage", () => {
 
 			await saveHistory(["command1", "command2"])
 
-			expect(fs.mkdir).toHaveBeenCalledWith(path.join("/home/testuser", ".roo"), { recursive: true })
+			expect(fs.mkdir).toHaveBeenCalledWith(path.join("/home/testuser", ".jabberwock"), { recursive: true })
 			expect(fs.writeFile).toHaveBeenCalled()
 
 			// Verify the content written

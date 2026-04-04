@@ -58,7 +58,7 @@ export async function loadHistory(): Promise<string[]> {
 
 /**
  * Save history entries to file
- * Creates the .roo directory if needed
+ * Creates the .jabberwock directory if needed
  * Trims to MAX_HISTORY_ENTRIES
  */
 export async function saveHistory(entries: string[]): Promise<void> {

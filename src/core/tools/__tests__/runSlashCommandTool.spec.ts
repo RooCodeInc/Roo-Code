@@ -99,7 +99,7 @@ describe("runSlashCommandTool", () => {
 		const getSkillContent = vi.fn().mockResolvedValue({
 			name: "skill-only",
 			description: "Skill-generated command",
-			path: "/mock/.roo/skills/skill-only/SKILL.md",
+			path: "/mock/.jabberwock/skills/skill-only/SKILL.md",
 			source: "project" as const,
 			instructions: "Use skill workflow",
 		})
@@ -160,14 +160,14 @@ Use skill workflow`,
 			name: "setup",
 			content: "Command content",
 			source: "project" as const,
-			filePath: ".roo/commands/setup.md",
+			filePath: ".jabberwock/commands/setup.md",
 			description: "Real command",
 		}
 
 		const getSkillContent = vi.fn().mockResolvedValue({
 			name: "setup",
 			description: "Setup skill",
-			path: "/mock/.roo/skills/setup/SKILL.md",
+			path: "/mock/.jabberwock/skills/setup/SKILL.md",
 			source: "project" as const,
 			instructions: "Skill should not run",
 		})
@@ -289,7 +289,7 @@ Initialize project content here`,
 			name: "test",
 			content: "Run tests with specific focus",
 			source: "project" as const,
-			filePath: ".roo/commands/test.md",
+			filePath: ".jabberwock/commands/test.md",
 			description: "Run project tests",
 			argumentHint: "test type or focus area",
 		}
@@ -326,7 +326,7 @@ Run tests with specific focus`,
 			name: "deploy",
 			content: "Deploy application to production",
 			source: "global" as const,
-			filePath: "~/.roo/commands/deploy.md",
+			filePath: "~/.jabberwock/commands/deploy.md",
 		}
 
 		vi.mocked(getCommand).mockResolvedValue(mockCommand)
@@ -452,7 +452,7 @@ Deploy application to production`,
 			name: "debug-app",
 			content: "Start debugging the application",
 			source: "project" as const,
-			filePath: ".roo/commands/debug-app.md",
+			filePath: ".jabberwock/commands/debug-app.md",
 			description: "Debug the application",
 			mode: "debug",
 		}
@@ -500,7 +500,7 @@ Start debugging the application`,
 			name: "test",
 			content: "Run tests",
 			source: "project" as const,
-			filePath: ".roo/commands/test.md",
+			filePath: ".jabberwock/commands/test.md",
 			description: "Run project tests",
 		}
 
@@ -536,7 +536,7 @@ Start debugging the application`,
 			name: "debug-app",
 			content: "Start debugging",
 			source: "project" as const,
-			filePath: ".roo/commands/debug-app.md",
+			filePath: ".jabberwock/commands/debug-app.md",
 			description: "Debug the application",
 			mode: "debug",
 		}

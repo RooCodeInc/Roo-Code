@@ -3,4 +3,4 @@
  * in browser environments like `webview-ui`.
  */
 
-export * from "./message-utils/index.js"
+export * from "./message-utils/index.ts"

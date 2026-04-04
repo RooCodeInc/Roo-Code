@@ -2,7 +2,7 @@ import * as fs from "fs"
 import * as path from "path"
 import { tmpdir } from "os"
 
-import { machineIdSync } from "../utils/machine-id.js"
+import { machineIdSync } from "../utils/machine-id.ts"
 
 describe("machineIdSync", () => {
 	let originalHome: string | undefined

@@ -1,4 +1,4 @@
-import type { Command } from "@roo-code/types"
+import type { Command } from "@jabberwock/types"
 
 import { render, screen, fireEvent } from "@/utils/test-utils"
 

@@ -1,4 +1,4 @@
-import type { ModelInfo } from "../model.js"
+import type { ModelInfo } from "../model.ts"
 
 export type QwenCodeModelId = "qwen3-coder-plus" | "qwen3-coder-flash"
 

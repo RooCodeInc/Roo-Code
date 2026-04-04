@@ -26,7 +26,7 @@ import type {
 	McpServer,
 	McpTool,
 	McpToolCallResponse,
-} from "@roo-code/types"
+} from "@jabberwock/types"
 
 import { t } from "../../i18n"
 
@@ -64,13 +64,15 @@ export enum DisableReason {
 }
 
 // Base configuration schema for common settings
-const BaseConfigSchema = z.object({
-	disabled: z.boolean().optional(),
-	timeout: z.number().min(1).max(3600).optional().default(60),
-	alwaysAllow: z.array(z.string()).default([]),
-	watchPaths: z.array(z.string()).optional(), // paths to watch for changes and restart server
-	disabledTools: z.array(z.string()).default([]),
-})
+const BaseConfigSchema = z
+	.object({
+		disabled: z.boolean().optional(),
+		timeout: z.number().min(1).max(3600).optional().default(60),
+		alwaysAllow: z.array(z.string()).default([]),
+		watchPaths: z.array(z.string()).optional(), // paths to watch for changes and restart server
+		disabledTools: z.array(z.string()).default([]),
+	})
+	.passthrough()
 
 // Custom error messages for better user feedback
 const typeErrorMessage = "Server type must be 'stdio', 'sse', or 'streamable-http'"
@@ -90,7 +92,7 @@ const createServerTypeSchema = () => {
 	return z.union([
 		// Stdio config (has command field)
 		BaseConfigSchema.extend({
-			type: z.enum(["stdio"]).optional(),
+			type: z.string().optional(),
 			command: z.string().min(1, "Command cannot be empty"),
 			args: z.array(z.string()).optional(),
 			cwd: z.string().default(() => vscode.workspace.workspaceFolders?.at(0)?.uri.fsPath ?? process.cwd()),
@@ -98,44 +100,36 @@ const createServerTypeSchema = () => {
 			// Ensure no SSE fields are present
 			url: z.undefined().optional(),
 			headers: z.undefined().optional(),
-		})
-			.transform((data) => ({
-				...data,
-				type: "stdio" as const,
-			}))
-			.refine((data) => data.type === undefined || data.type === "stdio", { message: typeErrorMessage }),
+		}).transform((data) => ({
+			...data,
+			mcpTransport: "stdio" as const,
+		})),
 		// SSE config (has url field)
 		BaseConfigSchema.extend({
-			type: z.enum(["sse"]).optional(),
+			type: z.string().optional(),
 			url: z.string().url("URL must be a valid URL format"),
 			headers: z.record(z.string()).optional(),
 			// Ensure no stdio fields are present
 			command: z.undefined().optional(),
 			args: z.undefined().optional(),
 			env: z.undefined().optional(),
-		})
-			.transform((data) => ({
-				...data,
-				type: "sse" as const,
-			}))
-			.refine((data) => data.type === undefined || data.type === "sse", { message: typeErrorMessage }),
+		}).transform((data) => ({
+			...data,
+			mcpTransport: "sse" as const,
+		})),
 		// StreamableHTTP config (has url field)
 		BaseConfigSchema.extend({
-			type: z.enum(["streamable-http"]).optional(),
+			type: z.string().optional(),
 			url: z.string().url("URL must be a valid URL format"),
 			headers: z.record(z.string()).optional(),
 			// Ensure no stdio fields are present
 			command: z.undefined().optional(),
 			args: z.undefined().optional(),
 			env: z.undefined().optional(),
-		})
-			.transform((data) => ({
-				...data,
-				type: "streamable-http" as const,
-			}))
-			.refine((data) => data.type === undefined || data.type === "streamable-http", {
-				message: typeErrorMessage,
-			}),
+		}).transform((data) => ({
+			...data,
+			mcpTransport: "streamable-http" as const,
+		})),
 	])
 }
 
@@ -238,13 +232,13 @@ export class McpHub {
 		}
 
 		// Check for type/field mismatch
-		if (config.type === "stdio" && !hasStdioFields) {
+		if (config.mcpTransport === "stdio" && !hasStdioFields) {
 			throw new Error(stdioFieldsErrorMessage)
 		}
-		if (config.type === "sse" && !hasUrlFields) {
+		if (config.mcpTransport === "sse" && !hasUrlFields) {
 			throw new Error(sseFieldsErrorMessage)
 		}
-		if (config.type === "streamable-http" && !hasUrlFields) {
+		if (config.mcpTransport === "streamable-http" && !hasUrlFields) {
 			throw new Error(streamableHttpFieldsErrorMessage)
 		}
 
@@ -376,7 +370,7 @@ export class McpHub {
 		}
 
 		const workspaceFolder = this.providerRef.deref()?.cwd ?? getWorkspacePath()
-		const projectMcpPattern = new vscode.RelativePattern(workspaceFolder, ".roo/mcp.json")
+		const projectMcpPattern = new vscode.RelativePattern(workspaceFolder, ".jabberwock/mcp.json")
 
 		// Create a file system watcher for the project MCP file pattern
 		this.projectMcpWatcher = vscode.workspace.createFileSystemWatcher(projectMcpPattern)
@@ -593,7 +587,7 @@ export class McpHub {
 	// Get project-level MCP configuration path
 	private async getProjectMcpPath(): Promise<string | null> {
 		const workspacePath = this.providerRef.deref()?.cwd ?? getWorkspacePath()
-		const projectMcpDir = path.join(workspacePath, ".roo")
+		const projectMcpDir = path.join(workspacePath, ".jabberwock")
 		const projectMcpPath = path.join(projectMcpDir, "mcp.json")
 
 		try {
@@ -687,7 +681,7 @@ export class McpHub {
 		try {
 			const client = new Client(
 				{
-					name: "Roo Code",
+					name: "Jabberwock",
 					version: this.providerRef.deref()?.context.extension?.packageJSON?.version ?? "1.0.0",
 				},
 				{
@@ -703,7 +697,7 @@ export class McpHub {
 				workspaceFolder: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "",
 			})) as typeof config
 
-			if (configInjected.type === "stdio") {
+			if (configInjected.mcpTransport === "stdio") {
 				// On Windows, wrap commands with cmd.exe to handle non-exe executables like npx.ps1
 				// This is necessary for node version managers (fnm, nvm-windows, volta) that implement
 				// commands as PowerShell scripts rather than executables.
@@ -778,7 +772,7 @@ export class McpHub {
 				} else {
 					console.error(`No stderr stream for ${name}`)
 				}
-			} else if (configInjected.type === "streamable-http") {
+			} else if (configInjected.mcpTransport === "streamable-http") {
 				// Streamable HTTP connection
 				transport = new StreamableHTTPClientTransport(new URL(configInjected.url), {
 					requestInit: {
@@ -804,7 +798,7 @@ export class McpHub {
 					}
 					await this.notifyWebviewOfServerChanges()
 				}
-			} else if (configInjected.type === "sse") {
+			} else if (configInjected.mcpTransport === "sse") {
 				// SSE connection
 				const sseOptions = {
 					requestInit: {
@@ -853,7 +847,7 @@ export class McpHub {
 			}
 
 			// Only override transport.start for stdio transports that have already been started
-			if (configInjected.type === "stdio") {
+			if (configInjected.mcpTransport === "stdio") {
 				transport.start = async () => {}
 			}
 
@@ -1188,7 +1182,7 @@ export class McpHub {
 		const watchers = this.fileWatchers.get(name) || []
 
 		// Only stdio type has args
-		if (config.type === "stdio") {
+		if (config.mcpTransport === "stdio") {
 			// Setup watchers for custom watchPaths if defined
 			if (config.watchPaths && config.watchPaths.length > 0) {
 				const watchPathsWatcher = chokidar.watch(config.watchPaths, {

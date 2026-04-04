@@ -6,7 +6,7 @@ import { Trans } from "react-i18next"
 import { buildDocLink } from "@src/utils/docLinks"
 import { useEvent, useMount } from "react-use"
 
-import { type ExtensionMessage, type TerminalOutputPreviewSize } from "@roo-code/types"
+import { type ExtensionMessage, type TerminalOutputPreviewSize } from "@jabberwock/types"
 
 import { cn } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Slider } from "@/components/ui"

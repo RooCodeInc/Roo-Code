@@ -1,16 +1,16 @@
 import * as assert from "assert"
 
-import { RooCodeEventName, type ClineMessage } from "@roo-code/types"
+import { JabberwockEventName, type ClineMessage } from "@jabberwock/types"
 
 import { sleep, waitFor, waitUntilCompleted } from "./utils"
 
-suite.skip("Roo Code Subtasks", () => {
+suite.skip("Jabberwock Subtasks", () => {
 	test("Should handle subtask cancellation and resumption correctly", async () => {
 		const api = globalThis.api
 
 		const messages: Record<string, ClineMessage[]> = {}
 
-		api.on(RooCodeEventName.Message, ({ taskId, message }) => {
+		api.on(JabberwockEventName.Message, ({ taskId, message }) => {
 			if (message.type === "say" && message.partial === false) {
 				messages[taskId] = messages[taskId] || []
 				messages[taskId].push(message)
@@ -37,7 +37,7 @@ suite.skip("Roo Code Subtasks", () => {
 		let spawnedTaskId: string | undefined = undefined
 
 		// Wait for the subtask to be spawned and then cancel it.
-		api.on(RooCodeEventName.TaskSpawned, (_, childTaskId) => (spawnedTaskId = childTaskId))
+		api.on(JabberwockEventName.TaskSpawned, (_, childTaskId) => (spawnedTaskId = childTaskId))
 		await waitFor(() => !!spawnedTaskId)
 		await sleep(1_000) // Give the task a chance to start and populate the history.
 		await api.cancelCurrentTask()

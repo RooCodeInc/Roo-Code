@@ -1,7 +1,7 @@
 import * as vscode from "vscode"
 import pWaitFor from "p-wait-for"
 
-import type { RooTerminalCallbacks, RooTerminalProcessResultPromise } from "./types"
+import type { RooTerminalCallbacks, JabberwockTerminalProcessResultPromise } from "./types"
 import { BaseTerminal } from "./BaseTerminal"
 import { TerminalProcess } from "./TerminalProcess"
 import { ShellIntegrationManager } from "./ShellIntegrationManager"
@@ -17,7 +17,7 @@ export class Terminal extends BaseTerminal {
 
 		const env = Terminal.getEnv()
 		const iconPath = new vscode.ThemeIcon("rocket")
-		this.terminal = terminal ?? vscode.window.createTerminal({ cwd, name: "Roo Code", iconPath, env })
+		this.terminal = terminal ?? vscode.window.createTerminal({ cwd, name: "Jabberwock", iconPath, env })
 
 		if (Terminal.getTerminalZdotdir()) {
 			ShellIntegrationManager.terminalTmpDirs.set(id, env.ZDOTDIR)
@@ -40,7 +40,10 @@ export class Terminal extends BaseTerminal {
 		return this.terminal.exitStatus !== undefined
 	}
 
-	public override runCommand(command: string, callbacks: RooTerminalCallbacks): RooTerminalProcessResultPromise {
+	public override runCommand(
+		command: string,
+		callbacks: RooTerminalCallbacks,
+	): JabberwockTerminalProcessResultPromise {
 		// We set busy before the command is running because the terminal may be
 		// waiting on terminal integration, and we must prevent another instance
 		// from selecting the terminal for use during that time.
@@ -152,7 +155,7 @@ export class Terminal extends BaseTerminal {
 
 	public static getEnv(): Record<string, string> {
 		const env: Record<string, string> = {
-			ROO_ACTIVE: "true",
+			JABBERWOCK_ACTIVE: "true",
 			PAGER: process.platform === "win32" ? "" : "cat",
 
 			// VTE must be disabled because it prevents the prompt command from executing

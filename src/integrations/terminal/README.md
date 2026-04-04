@@ -60,7 +60,7 @@ Additional resources:
 - The original Cline PR has quite a bit of information:
     - https://github.com/cline/cline/pull/1089
 
-Contact me if you have any questions: - GitHub: KJ7LNW - Discord: kj7lnw - [roo-cline at z.ewheeler.org]
+Contact me if you have any questions: - GitHub: KJ7LNW - Discord: kj7lnw - [jabberwock at z.ewheeler.org]
 
 Cheers,
 -Eric, KJ7LNW

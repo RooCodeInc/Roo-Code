@@ -2,7 +2,7 @@ import fs from "fs"
 import os from "os"
 import path from "path"
 
-import { getEsbuildScriptPath, runEsbuild, NODE_BUILTIN_MODULES, COMMONJS_REQUIRE_BANNER } from "../esbuild-runner.js"
+import { getEsbuildScriptPath, runEsbuild, NODE_BUILTIN_MODULES, COMMONJS_REQUIRE_BANNER } from "../esbuild-runner.ts"
 
 describe("getEsbuildScriptPath", () => {
 	it("should find esbuild-wasm script in node_modules in development", () => {
@@ -130,7 +130,7 @@ describe("runEsbuild", () => {
 		fs.writeFileSync(
 			mainFile,
 			`
-				import { PI } from "./lib.js"
+				import { PI } from "./lib.ts"
 				export const circumference = (r: number) => 2 * PI * r
 			`,
 		)

@@ -9,7 +9,7 @@ import { exec, execFile } from "child_process"
 import * as path from "path"
 import { promisify } from "util"
 
-import type { BranchInfo, CreateWorktreeOptions, Worktree, WorktreeResult } from "./types.js"
+import type { BranchInfo, CreateWorktreeOptions, Worktree, WorktreeResult } from "./types.ts"
 
 const execAsync = promisify(exec)
 const execFileAsync = promisify(execFile)
