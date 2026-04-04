@@ -652,6 +652,12 @@ export const webviewMessageHandler = async (
 			}
 			break
 
+		case "elicitationResponse":
+			if (message.values) {
+				provider.getCurrentTask()?.resolveElicitation(message.values)
+			}
+			break
+
 		case "updateSettings":
 			if (message.updatedSettings) {
 				for (const [key, value] of Object.entries(message.updatedSettings)) {

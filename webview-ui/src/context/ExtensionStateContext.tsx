@@ -37,6 +37,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	showWelcome: boolean
 	theme: any
 	mcpServers: McpServer[]
+	interactiveAppUri?: string
+	setInteractiveAppUri: (uri?: string) => void
 	currentCheckpoint?: string
 	currentTaskTodos?: TodoItem[] // Initial todos for the current task
 	filePaths: string[]
@@ -272,6 +274,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	const [openedTabs, setOpenedTabs] = useState<Array<{ label: string; isActive: boolean; path?: string }>>([])
 	const [commands, setCommands] = useState<Command[]>([])
 	const [mcpServers, setMcpServers] = useState<McpServer[]>([])
+	const [interactiveAppUri, setInteractiveAppUri] = useState<string | undefined>()
 	const [currentCheckpoint, setCurrentCheckpoint] = useState<string>()
 	const [extensionRouterModels, setExtensionRouterModels] = useState<RouterModels | undefined>(undefined)
 	const [marketplaceItems, setMarketplaceItems] = useState<any[]>([])
@@ -306,6 +309,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		(event: MessageEvent) => {
 			const message: ExtensionMessage = event.data
 			switch (message.type) {
+				case "showInteractiveApp": {
+					setInteractiveAppUri(message.uri)
+					break
+				}
 				case "state": {
 					const newState = message.state ?? {}
 					setState((prevState) => mergeExtensionState(prevState, newState))
@@ -492,6 +499,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		showWelcome,
 		theme,
 		mcpServers,
+		interactiveAppUri,
+		setInteractiveAppUri,
 		currentCheckpoint,
 		filePaths,
 		openedTabs,

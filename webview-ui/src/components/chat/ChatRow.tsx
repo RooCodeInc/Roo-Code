@@ -1690,18 +1690,12 @@ export const ChatRowContent = ({
 							<div className="mt-2">
 								<McpIframeRenderer
 									resourceUri={uiMeta.resourceUri}
-									allowedContextData={allowedContextData}
-									onAccept={(data) => {
+									agentsList={JSON.stringify(allowedContextData.agents)}
+									onResolve={(data: any) => {
 										vscode.postMessage({
 											type: "askResponse",
 											askResponse: "yesButtonClicked",
 											text: JSON.stringify(data),
-										})
-									}}
-									onCancel={() => {
-										vscode.postMessage({
-											type: "askResponse",
-											askResponse: "noButtonClicked",
 										})
 									}}
 								/>

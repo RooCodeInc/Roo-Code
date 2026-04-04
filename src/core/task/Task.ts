@@ -1943,6 +1943,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				return { enabledToolCount: 0, enabledServerCount: 0 }
 			}
 
+			// Set up listeners for elicitation UI
+			this.setupMcpHubListeners(mcpHub)
+
 			const servers = mcpHub.getServers()
 			return countEnabledMcpTools(servers)
 		} catch (error) {
@@ -1972,6 +1975,42 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		if (task || images) {
 			this.startTask(task ?? undefined, images ?? undefined)
+		}
+	}
+
+	// UI Elicitation Support
+	private pendingElicitationResolve?: (data: Record<string, unknown>) => void
+
+	private setupMcpHubListeners(mcpHub: McpHub) {
+		// Only attach listener if it's not already attached to avoid duplicates
+		if (mcpHub.listenerCount("interactiveUiRequested") === 0) {
+			mcpHub.on(
+				"interactiveUiRequested",
+				async (args: { uri: string; resolve: (data: any) => void; reject: (err: any) => void }) => {
+					const { uri, resolve, reject } = args
+					// Pause LLM execution and show interactive UI in Webview
+					console.log("[Jabberwock] Handling interactiveUiRequested for URI:", uri)
+
+					// Keep track of the resolve function so we can call it when user finishes
+					this.pendingElicitationResolve = resolve
+
+					// Send message to Webview to render the Iframe
+					await this.providerRef.deref()?.postMessageToWebview({
+						type: "showInteractiveApp",
+						uri: uri,
+					})
+				},
+			)
+		}
+	}
+
+	/**
+	 * Resolves a pending interactive UI request with the provided data
+	 */
+	public resolveElicitation(data: Record<string, unknown>) {
+		if (this.pendingElicitationResolve) {
+			this.pendingElicitationResolve(data)
+			this.pendingElicitationResolve = undefined
 		}
 	}
 
@@ -3800,6 +3839,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			if (!mcpHub) {
 				throw new Error("Failed to get MCP hub from server manager")
 			}
+
+			// Set up listeners for elicitation UI
+			this.setupMcpHubListeners(mcpHub)
 
 			// Wait for MCP servers to be connected before generating system prompt
 			await pWaitFor(() => !mcpHub!.isConnecting, { timeout: 10_000 }).catch(() => {

@@ -93,6 +93,7 @@ export interface ExtensionMessage {
 		| "modes"
 		| "taskWithAggregatedCosts"
 		| "openAiCodexRateLimits"
+		| "showInteractiveApp"
 		// Worktree response types
 		| "worktreeList"
 		| "worktreeResult"
@@ -129,6 +130,7 @@ export interface ExtensionMessage {
 	 */
 	state?: Partial<ExtensionState>
 	images?: string[]
+	uri?: string
 	filePaths?: string[]
 	openedTabs?: Array<{
 		label: string
@@ -547,6 +549,7 @@ export interface WebviewMessage {
 		| "queueMessage"
 		| "removeQueuedMessage"
 		| "editQueuedMessage"
+		| "elicitationResponse"
 		| "dismissUpsell"
 		| "getDismissedUpsells"
 		| "openMarkdownPreview"
@@ -588,6 +591,7 @@ export interface WebviewMessage {
 	disabled?: boolean
 	context?: string
 	dataUri?: string
+	uri?: string
 	askResponse?: ClineAskResponse
 	apiConfiguration?: ProviderSettings
 	images?: string[]

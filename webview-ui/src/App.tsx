@@ -23,6 +23,7 @@ import { CloudView } from "./components/cloud/CloudView"
 import { useAddNonInteractiveClickListener } from "./components/ui/hooks/useNonInteractiveClick"
 import { TooltipProvider } from "./components/ui/tooltip"
 import { STANDARD_TOOLTIP_DELAY } from "./components/ui/standard-tooltip"
+import { McpIframeRenderer } from "./features/mcp-apps/McpIframeRenderer"
 
 type Tab = "settings" | "history" | "chat" | "marketplace" | "cloud"
 
@@ -66,6 +67,8 @@ const App = () => {
 		cloudOrganizations,
 		renderContext,
 		mdmCompliant,
+		interactiveAppUri,
+		setInteractiveAppUri,
 	} = useExtensionState()
 
 	// Create a persistent state manager
@@ -247,10 +250,34 @@ const App = () => {
 			)}
 			<ChatView
 				ref={chatViewRef}
-				isHidden={tab !== "chat"}
+				isHidden={tab !== "chat" || !!interactiveAppUri}
 				showAnnouncement={showAnnouncement}
 				hideAnnouncement={() => setShowAnnouncement(false)}
 			/>
+			{interactiveAppUri && (
+				<div
+					style={{
+						padding: "20px",
+						display: "flex",
+						flexDirection: "column",
+						height: "100%",
+						width: "100%",
+						position: "absolute",
+						top: 0,
+						left: 0,
+						zIndex: 100,
+						backgroundColor: "var(--vscode-editor-background)",
+					}}>
+					<McpIframeRenderer
+						resourceUri={interactiveAppUri}
+						agentsList={JSON.stringify([])}
+						onResolve={(data) => {
+							vscode.postMessage({ type: "elicitationResponse", values: data })
+							setInteractiveAppUri(undefined)
+						}}
+					/>
+				</div>
+			)}
 			{deleteMessageDialogState.hasCheckpoint ? (
 				<MemoizedCheckpointRestoreDialog
 					open={deleteMessageDialogState.isOpen}
