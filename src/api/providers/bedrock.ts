@@ -291,7 +291,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		// Define a mapping for model ID patterns and their configurations
 		const modelConfigMap: Record<string, Partial<ModelInfo>> = {
 			"claude-4": {
-				maxTokens: 8192,
+				maxTokens: 64_000,
 				contextWindow: 200_000,
 				supportsImages: true,
 				supportsPromptCache: true,
@@ -309,7 +309,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				supportsPromptCache: true,
 			},
 			"claude-4-opus": {
-				maxTokens: 4096,
+				maxTokens: 64_000,
 				contextWindow: 200_000,
 				supportsImages: true,
 				supportsPromptCache: true,
