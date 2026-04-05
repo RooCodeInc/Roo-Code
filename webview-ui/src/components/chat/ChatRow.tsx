@@ -1693,9 +1693,8 @@ export const ChatRowContent = ({
 									agentsList={JSON.stringify(allowedContextData.agents)}
 									onResolve={(data: any) => {
 										vscode.postMessage({
-											type: "askResponse",
-											askResponse: "yesButtonClicked",
-											text: JSON.stringify(data),
+											type: "elicitationResponse",
+											values: data,
 										})
 									}}
 								/>
