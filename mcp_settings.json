@@ -1,31 +1,61 @@
 {
 	"mcpServers": {
-		"md_todo_mcp": {
+		"memory-bank": {
+			"command": "npx",
+			"args": ["-y", "@roo/memory-bank-mcp@latest"],
+			"env": {
+				"MEMORY_ROOT": "./.roo/memory"
+			},
+			"disabled": true
+		},
+		"fetch": {
+			"command": "uvx",
+			"args": ["mcp-server-fetch"],
+			"disabled": false,
+			"alwaysAllow": ["fetch"]
+		},
+		"playwright": {
+			"command": "npx",
+			"args": ["-y", "@nguyenvanduocit/playwright-mcp-server"],
+			"disabled": true,
+			"alwaysAllow": [
+				"browser_click",
+				"browser_fill",
+				"browser_select",
+				"browser_hover",
+				"browser_evaluate",
+				"browser_get_html",
+				"browser_wait_for_selector",
+				"browser_navigate",
+				"browser_screenshot",
+				"browser_close",
+				"browser_set_viewport",
+				"browser_file_upload",
+				"browser_drag"
+			]
+		},
+		"redis": {
+			"command": "npx",
+			"args": ["-y", "@modelcontextprotocol/server-redis"],
+			"env": {
+				"REDIS_URL": "redis://127.0.0.1:6379"
+			},
+			"disabled": true
+		},
+		"docker": {
+			"command": "docker",
+			"args": ["mcp", "gateway", "run"],
+			"disabled": false,
+			"alwaysAllow": ["mcp-find", "mcp-exec"],
+			"disabledTools": ["code-mode", "mcp-config-set"]
+		},
+		"md-todo-mcp": {
 			"command": "node",
 			"args": ["/Users/m.dusmikeev/Documents/Work/cool/md-roo-roo/md-todo-mcp/build/index.js"],
 			"type": "interactiveApp",
 			"requiresUserInteraction": true,
 			"autoApproveExcluded": true,
 			"allowedContext": ["agents"],
-			"isGloballyVisible": true
-		},
-		"core_memory_mcp": {
-			"command": "npx",
-			"args": ["-y", "@modelcontextprotocol/server-memory"],
-			"isGloballyVisible": true
-		},
-		"fs_mcp": {
-			"command": "npx",
-			"args": [
-				"-y",
-				"@modelcontextprotocol/server-filesystem",
-				"/Users/m.dusmikeev/Documents/Work/cool/md-roo-roo/Jabberwock"
-			],
-			"isGloballyVisible": false
-		},
-		"postgres_mcp": {
-			"command": "npx",
-			"args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/jabberwock"],
 			"isGloballyVisible": false
 		}
 	}

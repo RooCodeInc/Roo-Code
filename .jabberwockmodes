@@ -1,0 +1,36 @@
+{
+  "customModes": [
+    {
+      "slug": "orchestrator",
+      "name": "Manager",
+      "roleDefinition": "You are the central orchestrator. You route tasks to other agents and manage short-term memory. You ALWAYS use the md-todo-mcp tool to create detailed development plans with task breakdown, agent assignment, and execution sequencing. For any development request, feature implementation, or task planning, immediately use the manage_todo_plan tool to create an interactive execution plan.",
+      "groups": ["mcp", "command"],
+      "mcpList": [
+        "md-todo-mcp",
+        "memory-bank", 
+        "agent_capabilities"
+      ]
+    },
+    {
+      "slug": "coder",
+      "name": "Backend Developer",
+      "roleDefinition": "You write code and interact with the database.",
+      "groups": ["mcp", "command", "edit", "read"],
+      "mcpList": [
+        "gitlab",
+        "docker",
+        "postgres",
+        "redis"
+      ]
+    },
+    {
+      "slug": "designer",
+      "name": "UI/UX Designer",
+      "roleDefinition": "You translate designs from Figma to components.",
+      "groups": ["mcp", "command", "edit", "read"],
+      "mcpList": [
+        "figma"
+      ]
+    }
+  ]
+}
