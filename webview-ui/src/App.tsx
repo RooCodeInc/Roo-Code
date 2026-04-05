@@ -24,6 +24,7 @@ import { useAddNonInteractiveClickListener } from "./components/ui/hooks/useNonI
 import { TooltipProvider } from "./components/ui/tooltip"
 import { STANDARD_TOOLTIP_DELAY } from "./components/ui/standard-tooltip"
 import { McpIframeRenderer } from "./features/mcp-apps/McpIframeRenderer"
+import { getAllModes } from "@shared/modes"
 
 type Tab = "settings" | "history" | "chat" | "marketplace" | "cloud"
 
@@ -69,6 +70,7 @@ const App = () => {
 		mdmCompliant,
 		interactiveAppUri,
 		setInteractiveAppUri,
+		customModes,
 	} = useExtensionState()
 
 	// Create a persistent state manager
@@ -270,7 +272,11 @@ const App = () => {
 					}}>
 					<McpIframeRenderer
 						resourceUri={interactiveAppUri}
-						agentsList={JSON.stringify([])}
+						agentsList={JSON.stringify(
+							getAllModes(customModes)
+								.map((m) => ({ slug: m.slug, name: m.name }))
+								.filter(Boolean),
+						)}
 						onResolve={(data) => {
 							vscode.postMessage({ type: "elicitationResponse", values: data })
 							setInteractiveAppUri(undefined)

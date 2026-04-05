@@ -3858,11 +3858,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			customModes,
 			customModePrompts,
 			customInstructions,
+			systemPromptTemplates,
 			experiments,
 			language,
 			apiConfiguration,
 			enableSubfolderRules,
 		} = state ?? {}
+
+		// DEBUG: Log what mode and custom modes are resolved for system prompt building
+		const resolvedModeConfig = customModes?.find((m: any) => m.slug === (mode ?? defaultModeSlug))
 
 		return await (async () => {
 			const provider = this.providerRef.deref()
@@ -3899,6 +3903,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				undefined, // todoList
 				this.api.getModel().id,
 				provider.getSkillsManager(),
+				systemPromptTemplates,
 			)
 		})()
 	}
@@ -4340,17 +4345,61 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			mode: mode,
 			taskId: this.taskId,
 			suppressPreviousResponseId: this.skipPrevResponseIdOnce,
-			// Include tools whenever they are present.
 			...(shouldIncludeTools
 				? {
 						tools: allTools,
 						tool_choice: "auto",
 						parallelToolCalls: true,
-						// When mode restricts tools, provide allowedFunctionNames so providers
-						// like Gemini can see all tools in history but only call allowed ones
 						...(allowedFunctionNames ? { allowedFunctionNames } : {}),
 					}
 				: {}),
+		}
+
+		// Log the final tools being sent to the API
+		const mcpToolNames = allTools
+			.map((t) => (t as import("openai").default.Chat.ChatCompletionFunctionTool).function.name)
+			.filter((name) => name.startsWith("mcp_") || name.startsWith("mcp--"))
+		const nativeToolNames = allTools
+			.map((t) => (t as import("openai").default.Chat.ChatCompletionFunctionTool).function.name)
+			.filter((name) => !name.startsWith("mcp_") && !name.startsWith("mcp--"))
+
+		const cleanConversationHistoryForLogs = JSON.parse(JSON.stringify(cleanConversationHistory))
+		if (cleanConversationHistoryForLogs.length > 0) {
+			for (const msg of cleanConversationHistoryForLogs) {
+				if (Array.isArray(msg.content)) {
+					for (const block of msg.content) {
+						if (block.type === "text" && typeof block.text === "string") {
+							// Filter out <environment_details> block for cleaner logs
+							block.text = block.text.replace(
+								/<environment_details>[\s\S]*?<\/environment_details>/g,
+								"<environment_details>\n... [Omitted for logs] ...\n</environment_details>",
+							)
+						}
+					}
+				} else if (typeof msg.content === "string") {
+					msg.content = msg.content.replace(
+						/<environment_details>[\s\S]*?<\/environment_details>/g,
+						"<environment_details>\n... [Omitted for logs] ...\n</environment_details>",
+					)
+				}
+			}
+		}
+
+		console.log("\n\n=======================================================\n")
+		console.log(`[DEBUG: PROMPT] Final SYSTEM prompt sent to agent:\n\n${systemPrompt}`)
+		console.log("\n=======================================================\n")
+		console.log(
+			`[DEBUG: PROMPT] Final USER/ASSISTANT messages sent to agent:\n\n${JSON.stringify(cleanConversationHistoryForLogs, null, 2)}`,
+		)
+		console.log("\n=======================================================\n")
+		console.log(`[DEBUG: PROMPT] native tools (${nativeToolNames.length}): ${nativeToolNames.join(", ")}`)
+		console.log(`[DEBUG: PROMPT] MCP tools (${mcpToolNames.length}): ${mcpToolNames.join(", ")}`)
+		console.log(`[DEBUG: PROMPT] Tools JSON schema sent to agent:\n${JSON.stringify(allTools, null, 2)}`)
+
+		if (allowedFunctionNames) {
+			console.log(
+				`[DEBUG: PROMPT] allowedFunctionNames (${allowedFunctionNames.length}): ${allowedFunctionNames.join(", ")}`,
+			)
 		}
 
 		// Create an AbortController to allow cancelling the request mid-stream

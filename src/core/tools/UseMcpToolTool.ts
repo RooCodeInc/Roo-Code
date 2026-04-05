@@ -5,7 +5,6 @@ import { formatResponse } from "../prompts/responses"
 import { t } from "../../i18n"
 import type { ToolUse } from "../../shared/tools"
 import { toolNamesMatch } from "../../utils/mcp-name"
-import { requiresUserInteraction } from "../../services/mcp/McpMigration"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -62,25 +61,9 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 
 			const executionId = task.lastMessageTs?.toString() ?? Date.now().toString()
 
-			// Check if this is an interactive app that requires special handling
-			const mcpHub = task.providerRef.deref()?.getMcpHub()
-			let isInteractiveApp = false
-
-			if (mcpHub) {
-				const server = mcpHub.getServers().find((s) => s.name === serverName)
-				if (server && server.config) {
-					try {
-						const serverConfig = JSON.parse(server.config)
-						isInteractiveApp = requiresUserInteraction(serverConfig)
-					} catch (e) {
-						// Ignore parsing errors
-					}
-				}
-			}
-
-			// For interactive apps, use a special ask type that pauses task execution
-			const askType = isInteractiveApp ? "interactive_app" : "use_mcp_server"
-			const didApprove = await askApproval(askType, completeMessage)
+			// Approval always uses standard MCP approval flow
+			// Interactive app UI rendering happens in executeToolAndProcessResult when tool returns _meta.ui
+			const didApprove = await askApproval("use_mcp_server", completeMessage)
 
 			if (!didApprove) {
 				return
@@ -337,13 +320,132 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			if (toolResult._meta?.ui) {
 				// Interactive App: Elicitation handling
 				// Pause execution, send the UI metadata to the webview, and wait for user response
-				const { response, text } = await task.ask("interactive_app", JSON.stringify(toolResult._meta.ui))
+				const uiMeta = {
+					...toolResult._meta.ui,
+					input: parsedArguments,
+				}
+				const { response, text } = await task.ask("interactive_app", JSON.stringify(uiMeta))
 
 				if (response !== "yesButtonClicked") {
 					toolResultPretty = "User cancelled the interactive app."
 					toolResult.isError = true
+					toolResult.content = [{ type: "text", text: toolResultPretty }]
 				} else {
 					toolResultPretty = text || "Interactive app completed successfully."
+					toolResult.content = [{ type: "text", text: toolResultPretty }]
+
+					// Full history rewrite for `manage_todo_plan`: erase all evidence of the original plan
+					// so the agent only sees the user-approved tasks and nothing else.
+					if (serverName === "md-todo-mcp" && toolName === "manage_todo_plan" && typeof text === "string") {
+						try {
+							const newPlan = JSON.parse(text)
+							const approvedTasks = newPlan.initialTasks || newPlan.tasks || []
+							const history = task.apiConversationHistory
+
+							console.log(
+								`[DEBUG: TodoRewrite] Starting full history rewrite. Current history length: ${history.length}`,
+							)
+							console.log(
+								`[DEBUG: TodoRewrite] Approved tasks (${approvedTasks.length}):`,
+								JSON.stringify(
+									approvedTasks.map(
+										(t: { title: string; assignedTo: string }) => `${t.assignedTo}: ${t.title}`,
+									),
+								),
+							)
+
+							// Step 1: Extract environment_details from the first user message (workspace context)
+							let environmentDetailsBlock: { type: "text"; text: string } | undefined
+							const firstUserMsg = history.find((m) => m.role === "user")
+							if (firstUserMsg && Array.isArray(firstUserMsg.content)) {
+								const envBlock = firstUserMsg.content.find(
+									(b: { type: string; text?: string }) =>
+										b.type === "text" &&
+										typeof b.text === "string" &&
+										b.text.includes("<environment_details>"),
+								)
+								if (envBlock) {
+									environmentDetailsBlock = {
+										type: "text",
+										text: (envBlock as { text: string }).text,
+									}
+								}
+							}
+
+							// Step 2: Find the assistant message with the manage_todo_plan tool call
+							let toolUseId = "ollama-tool-0"
+							for (let i = history.length - 1; i >= 0; i--) {
+								const msg = history[i]
+								if (msg.role === "assistant" && Array.isArray(msg.content)) {
+									const toolUseBlock = msg.content.find(
+										(b: { type: string; name?: string }) =>
+											b.type === "tool_use" && b.name === "mcp--md-todo-mcp--manage_todo_plan",
+									)
+									if (toolUseBlock && (toolUseBlock as { id?: string }).id) {
+										toolUseId = (toolUseBlock as { id: string }).id
+										break
+									}
+								}
+							}
+
+							// Step 3: Synthesize a user message that ONLY describes the approved tasks
+							const taskDescriptions = approvedTasks
+								.map(
+									(t: { assignedTo: string; title: string; description: string }) =>
+										`- [${t.assignedTo}] ${t.title}: ${t.description}`,
+								)
+								.join("\n")
+							const synthesizedUserText = `<user_message>\nExecute the following task plan:\n${taskDescriptions}\n</user_message>`
+
+							// Step 4: Build clean 2-message history (user + assistant tool_use only)
+							const userMsg = {
+								role: "user" as const,
+								content: [
+									{ type: "text" as const, text: synthesizedUserText },
+									...(environmentDetailsBlock ? [environmentDetailsBlock] : []),
+								],
+								ts: firstUserMsg ? (firstUserMsg as { ts?: number }).ts || Date.now() : Date.now(),
+							}
+
+							const assistantMsg = {
+								role: "assistant" as const,
+								content: [
+									{
+										type: "tool_use" as const,
+										id: toolUseId,
+										name: "mcp--md-todo-mcp--manage_todo_plan",
+										input: { initialTasks: approvedTasks },
+									},
+								],
+								ts: Date.now(),
+							}
+							// The tool_result will be added by the normal pushToolResult flow after this method returns
+							const cleanHistory = [userMsg, assistantMsg]
+							console.log(
+								`[DEBUG: TodoRewrite] Truncated history from ${history.length} to ${cleanHistory.length} messages`,
+							)
+							console.log(`[DEBUG: TodoRewrite] Synthesized user message: "${synthesizedUserText}"`)
+
+							await task.overwriteApiConversationHistory(cleanHistory as typeof history)
+
+							// Step 5: Also rewrite the pending userMessageContent to match
+							const pendingResult = task.userMessageContent.find(
+								(b) =>
+									b.type === "tool_result" &&
+									(b as { tool_use_id?: string }).tool_use_id === toolUseId,
+							)
+							if (pendingResult) {
+								;(pendingResult as { content: string }).content = JSON.stringify(newPlan)
+								console.log("[DEBUG: TodoRewrite] Updated pending tool_result in userMessageContent")
+							}
+
+							console.log(
+								"[DEBUG: TodoRewrite] History rewrite complete. Agent will only see approved tasks.",
+							)
+						} catch (e) {
+							console.error("[DEBUG: TodoRewrite] Failed to rewrite history", e)
+						}
+					}
 				}
 			} else {
 				const { text: outputText, images: extractedImages } = this.processToolContent(toolResult)

@@ -2,11 +2,12 @@
 	"mcpServers": {
 		"memory-bank": {
 			"command": "npx",
-			"args": ["-y", "@roo/memory-bank-mcp@latest"],
+			"args": ["-y", "@aakarsh-sasi/memory-bank-mcp@latest"],
 			"env": {
-				"MEMORY_ROOT": "./.roo/memory"
+				"MEMORY_ROOT": "./.jabber/memory"
 			},
-			"disabled": true
+			"disabled": false,
+			"alwaysAllow": []
 		},
 		"fetch": {
 			"command": "uvx",
@@ -16,8 +17,8 @@
 		},
 		"playwright": {
 			"command": "npx",
-			"args": ["-y", "@nguyenvanduocit/playwright-mcp-server"],
-			"disabled": true,
+			"args": ["-y", "@playwright/mcp@latest"],
+			"disabled": false,
 			"alwaysAllow": [
 				"browser_click",
 				"browser_fill",
@@ -40,7 +41,8 @@
 			"env": {
 				"REDIS_URL": "redis://127.0.0.1:6379"
 			},
-			"disabled": true
+			"disabled": false,
+			"alwaysAllow": []
 		},
 		"docker": {
 			"command": "docker",
@@ -51,12 +53,12 @@
 		},
 		"md-todo-mcp": {
 			"command": "node",
-			"args": ["/Users/m.dusmikeev/Documents/Work/cool/md-roo-roo/md-todo-mcp/build/index.js"],
-			"type": "interactiveApp",
-			"requiresUserInteraction": true,
-			"autoApproveExcluded": true,
-			"allowedContext": ["agents"],
-			"isGloballyVisible": false
+			"args": ["/Users/mikita_dusmikeev/Documents/Work/jabberwock/Jabberwock/md-todo-mcp/build/index.js"],
+			"alwaysAllow": ["manage_todo_plan"],
+			"isGloballyVisible": false,
+			"env": {
+				"HTTP_PORT": "3002"
+			}
 		}
 	}
 }

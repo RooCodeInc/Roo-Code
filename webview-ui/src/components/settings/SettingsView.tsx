@@ -75,6 +75,7 @@ import { LanguageSettings } from "./LanguageSettings"
 import { About } from "./About"
 import { Section } from "./Section"
 import PromptsSettings from "./PromptsSettings"
+import { SystemPromptsSettings } from "./SystemPromptsSettings"
 import { SlashCommandsSettings } from "./SlashCommandsSettings"
 import { SkillsSettings } from "./SkillsSettings"
 import { UISettings } from "./UISettings"
@@ -877,14 +878,19 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 						{/* Prompts Section */}
 						{renderTab === "prompts" && (
-							<PromptsSettings
-								customSupportPrompts={customSupportPrompts || {}}
-								setCustomSupportPrompts={setCustomSupportPromptsField}
-								includeTaskHistoryInEnhance={includeTaskHistoryInEnhance}
-								setIncludeTaskHistoryInEnhance={(value) =>
-									setCachedStateField("includeTaskHistoryInEnhance", value)
-								}
-							/>
+							<>
+								<PromptsSettings
+									customSupportPrompts={customSupportPrompts || {}}
+									setCustomSupportPrompts={setCustomSupportPromptsField}
+									includeTaskHistoryInEnhance={includeTaskHistoryInEnhance}
+									setIncludeTaskHistoryInEnhance={(value) =>
+										setCachedStateField("includeTaskHistoryInEnhance", value)
+									}
+								/>
+								<div className="mt-8">
+									<SystemPromptsSettings />
+								</div>
+							</>
 						)}
 
 						{/* UI Section */}

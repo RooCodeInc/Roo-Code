@@ -14,6 +14,7 @@ import type {
 } from "@jabberwock/types"
 
 import { Mode } from "@shared/modes"
+import { getModeBySlug } from "@shared/modes"
 
 import { COMMAND_OUTPUT_STRING } from "@shared/combineCommandSequences"
 import { safeJsonParse } from "@shared/core"
@@ -181,7 +182,7 @@ export const ChatRowContent = ({
 	isFollowUpAnswered,
 	isFollowUpAutoApprovalPaused,
 }: ChatRowContentProps) => {
-	const { t, i18n } = useTranslation()
+	const { t: originalT, i18n } = useTranslation()
 
 	const {
 		customModes,
@@ -205,6 +206,17 @@ export const ChatRowContent = ({
 	const [editedContent, setEditedContent] = useState("")
 	const [editMode, setEditMode] = useState<Mode>(mode || "code")
 	const [editImages, setEditImages] = useState<string[]>([])
+
+	const t = useCallback(
+		(key: string, options?: any) => {
+			let result: any = originalT(key as any, options)
+			if (typeof result === "string" && modeName && result.includes("Jabberwock")) {
+				result = result.replace(/Jabberwock/g, modeName)
+			}
+			return result
+		},
+		[originalT, modeName],
+	) as any
 
 	// Handle message events for image selection during edit mode
 	useEffect(() => {
@@ -319,8 +331,18 @@ export const ChatRowContent = ({
 					),
 					<span style={{ color: normalColor, fontWeight: "bold" }}>
 						{mcpServerUse.type === "use_mcp_tool"
-							? t("chat:mcp.wantsToUseTool", { serverName: mcpServerUse.serverName })
-							: t("chat:mcp.wantsToAccessResource", { serverName: mcpServerUse.serverName })}
+							? t("chat:mcp.wantsToUseTool", {
+									serverName: mcpServerUse.serverName,
+									agentName:
+										getAllModes(customModes).find((m) => m.slug === message.mode)?.name ||
+										"Jabberwock",
+								})
+							: t("chat:mcp.wantsToAccessResource", {
+									serverName: mcpServerUse.serverName,
+									agentName:
+										getAllModes(customModes).find((m) => m.slug === message.mode)?.name ||
+										"Jabberwock",
+								})}
 					</span>,
 				]
 			case "completion_result":
@@ -402,6 +424,7 @@ export const ChatRowContent = ({
 		apiRequestFailedMessage,
 		t,
 		isLast,
+		customModes,
 	])
 
 	const headerStyle: React.CSSProperties = {
@@ -552,12 +575,14 @@ export const ChatRowContent = ({
 						<span style={{ fontWeight: "bold" }}>
 							{tool.path ? (
 								<Trans
+									t={t}
 									i18nKey="chat:codebaseSearch.wantsToSearchWithPath"
 									components={{ code: <code></code> }}
 									values={{ query: tool.query, path: tool.path }}
 								/>
 							) : (
 								<Trans
+									t={t}
 									i18nKey="chat:codebaseSearch.wantsToSearch"
 									components={{ code: <code></code> }}
 									values={{ query: tool.query }}
@@ -771,6 +796,7 @@ export const ChatRowContent = ({
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask" ? (
 									<Trans
+										t={t}
 										i18nKey={
 											tool.isOutsideWorkspace
 												? "chat:directoryOperations.wantsToSearchOutsideWorkspace"
@@ -781,6 +807,7 @@ export const ChatRowContent = ({
 									/>
 								) : (
 									<Trans
+										t={t}
 										i18nKey={
 											tool.isOutsideWorkspace
 												? "chat:directoryOperations.didSearchOutsideWorkspace"
@@ -804,6 +831,9 @@ export const ChatRowContent = ({
 					</>
 				)
 			case "switchMode":
+				const targetMode = getModeBySlug(tool.mode || "", customModes)
+				const targetModeName = targetMode?.name || tool.mode || ""
+
 				return (
 					<>
 						<div style={headerStyle}>
@@ -812,32 +842,46 @@ export const ChatRowContent = ({
 								{message.type === "ask" ? (
 									<>
 										{tool.reason ? (
-											<Trans
-												i18nKey="chat:modes.wantsToSwitchWithReason"
-												components={{ code: <code className="font-medium">{tool.mode}</code> }}
-												values={{ mode: tool.mode, reason: tool.reason }}
+											<span
+												dangerouslySetInnerHTML={{
+													__html: t("chat:modes.wantsToSwitchWithReason", {
+														mode: `<code class="font-medium">${targetModeName}</code>`,
+														reason: tool.reason,
+														interpolation: { escapeValue: false },
+													}),
+												}}
 											/>
 										) : (
-											<Trans
-												i18nKey="chat:modes.wantsToSwitch"
-												components={{ code: <code className="font-medium">{tool.mode}</code> }}
-												values={{ mode: tool.mode }}
+											<span
+												dangerouslySetInnerHTML={{
+													__html: t("chat:modes.wantsToSwitch", {
+														mode: `<code class="font-medium">${targetModeName}</code>`,
+														interpolation: { escapeValue: false },
+													}),
+												}}
 											/>
 										)}
 									</>
 								) : (
 									<>
 										{tool.reason ? (
-											<Trans
-												i18nKey="chat:modes.didSwitchWithReason"
-												components={{ code: <code className="font-medium">{tool.mode}</code> }}
-												values={{ mode: tool.mode, reason: tool.reason }}
+											<span
+												dangerouslySetInnerHTML={{
+													__html: t("chat:modes.didSwitchWithReason", {
+														mode: `<code class="font-medium">${targetModeName}</code>`,
+														reason: tool.reason,
+														interpolation: { escapeValue: false },
+													}),
+												}}
 											/>
 										) : (
-											<Trans
-												i18nKey="chat:modes.didSwitch"
-												components={{ code: <code className="font-medium">{tool.mode}</code> }}
-												values={{ mode: tool.mode }}
+											<span
+												dangerouslySetInnerHTML={{
+													__html: t("chat:modes.didSwitch", {
+														mode: `<code class="font-medium">${targetModeName}</code>`,
+														interpolation: { escapeValue: false },
+													}),
+												}}
 											/>
 										)}
 									</>
@@ -876,10 +920,13 @@ export const ChatRowContent = ({
 						<div style={headerStyle}>
 							<Split className="size-4" />
 							<span style={{ fontWeight: "bold" }}>
-								<Trans
-									i18nKey="chat:subtasks.wantsToCreate"
-									components={{ code: <code>{tool.mode}</code> }}
-									values={{ mode: tool.mode }}
+								<span
+									dangerouslySetInnerHTML={{
+										__html: t("chat:subtasks.wantsToCreate", {
+											mode: `<code class="font-medium">${getModeBySlug(tool.mode || "", customModes)?.name || tool.mode || ""}</code>`,
+											interpolation: { escapeValue: false },
+										}),
+									}}
 								/>
 							</span>
 						</div>
@@ -1674,10 +1721,9 @@ export const ChatRowContent = ({
 						return <div className="p-4 text-vscode-errorForeground">Invalid interactive app metadata</div>
 					}
 
-					// We can pass the currently available agents from the customModes as context
 					const allowedContextData = {
 						agents: getAllModes(customModes)
-							.map((m) => m.name)
+							.map((m) => ({ slug: m.slug, name: m.name }))
 							.filter(Boolean),
 					}
 
@@ -1691,10 +1737,19 @@ export const ChatRowContent = ({
 								<McpIframeRenderer
 									resourceUri={uiMeta.resourceUri}
 									agentsList={JSON.stringify(allowedContextData.agents)}
+									inputData={uiMeta.input ? JSON.stringify(uiMeta.input) : undefined}
 									onResolve={(data: any) => {
 										vscode.postMessage({
-											type: "elicitationResponse",
-											values: data,
+											type: "askResponse",
+											askResponse: "yesButtonClicked",
+											text: JSON.stringify(data),
+										})
+									}}
+									onCancel={() => {
+										vscode.postMessage({
+											type: "askResponse",
+											askResponse: "messageResponse",
+											text: "Cancel",
 										})
 									}}
 								/>

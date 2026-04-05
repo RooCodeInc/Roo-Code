@@ -2048,18 +2048,21 @@ export class McpHub extends EventEmitter {
 	 * Helper to check if a server should be visible to a specific agent
 	 * Based on the per-agent MCP isolation strategy
 	 */
-	private isServerVisibleToAgent(serverName: string, serverConfig: any, agentMcpList: string[] = []): boolean {
-		// Disabled servers are never visible
+	private isServerVisibleToAgent(serverName: string, serverConfig: any, agentMcpList?: string[]): boolean {
 		if (serverConfig?.disabled) {
 			return false
 		}
 
-		// Globally visible servers are always available to all agents
+		if (!agentMcpList) {
+			const visible = serverConfig?.isGloballyVisible !== false
+			return visible
+		}
+
 		if (serverConfig?.isGloballyVisible === true) {
 			return true
 		}
 
-		// For non-global servers, check if this server is explicitly allowed for the agent
-		return agentMcpList.includes(serverName)
+		const inList = agentMcpList.includes(serverName)
+		return inList
 	}
 }

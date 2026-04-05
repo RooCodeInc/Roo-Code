@@ -83,17 +83,24 @@ export function requiresUserInteraction(serverConfig: any): boolean {
  * Helper to check if a server should be visible to a specific agent
  * Based on the per-agent MCP isolation strategy
  */
-export function isServerVisibleToAgent(serverName: string, serverConfig: any, agentMcpList: string[] = []): boolean {
-	// Disabled servers are never visible
+export function isServerVisibleToAgent(serverName: string, serverConfig: any, agentMcpList?: string[]): boolean {
 	if (serverConfig?.disabled) {
 		return false
 	}
 
-	// Globally visible servers are always available to all agents
-	if (serverConfig?.isGloballyVisible !== false) {
+	// If the mode doesn't define an mcpList restrictor at all,
+	// it gets access to everything UNLESS the server is explicitly hidden.
+	if (!agentMcpList) {
+		const visible = serverConfig?.isGloballyVisible !== false
+		return visible
+	}
+
+	// If the mode DOES define an mcpList, it acts as a strict allowlist:
+	// Only explicitly global servers + servers in the list are allowed.
+	if (serverConfig?.isGloballyVisible === true) {
 		return true
 	}
 
-	// For non-global servers, check if this server is explicitly allowed for the agent
-	return agentMcpList.includes(serverName)
+	const inList = agentMcpList.includes(serverName)
+	return inList
 }

@@ -290,6 +290,7 @@ export type ExtensionState = Pick<
 	| "modeApiConfigs"
 	| "customModePrompts"
 	| "customSupportPrompts"
+	| "systemPromptTemplates"
 	| "enhancementApiConfigId"
 	| "customCondensingPrompt"
 	| "codebaseIndexConfig"
@@ -565,6 +566,7 @@ export interface WebviewMessage {
 		| "requestModes"
 		| "switchMode"
 		| "debugSetting"
+		| "updateSystemPromptTemplate"
 		// Worktree messages
 		| "listWorktrees"
 		| "createWorktree"
@@ -609,6 +611,8 @@ export interface WebviewMessage {
 	mode?: string
 	promptMode?: string | "enhance"
 	customPrompt?: PromptComponent
+	systemPromptTemplate?: string
+	systemPromptTemplateKey?: string
 	dataUrls?: string[]
 	/** Generic payload for webview messages that use `values` */
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any

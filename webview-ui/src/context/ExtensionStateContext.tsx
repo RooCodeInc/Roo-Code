@@ -104,6 +104,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setMode: (value: Mode) => void
 	setCustomModePrompts: (value: CustomModePrompts) => void
 	setCustomSupportPrompts: (value: CustomSupportPrompts) => void
+	systemPromptTemplates?: Record<string, string>
+	setSystemPromptTemplates: (value: Record<string, string>) => void
 	enhancementApiConfigId?: string
 	setEnhancementApiConfigId: (value: string) => void
 	setExperimentEnabled: (id: ExperimentId, enabled: boolean) => void
@@ -561,6 +563,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setMode: (value: Mode) => setState((prevState) => ({ ...prevState, mode: value })),
 		setCustomModePrompts: (value) => setState((prevState) => ({ ...prevState, customModePrompts: value })),
 		setCustomSupportPrompts: (value) => setState((prevState) => ({ ...prevState, customSupportPrompts: value })),
+		setSystemPromptTemplates: (value) => setState((prevState) => ({ ...prevState, systemPromptTemplates: value })),
 		setEnhancementApiConfigId: (value) =>
 			setState((prevState) => ({ ...prevState, enhancementApiConfigId: value })),
 		setAutoApprovalEnabled: (value) => setState((prevState) => ({ ...prevState, autoApprovalEnabled: value })),

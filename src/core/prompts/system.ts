@@ -55,6 +55,7 @@ async function generatePrompt(
 	todoList?: TodoItem[],
 	modelId?: string,
 	skillsManager?: SkillsManager,
+	systemPromptTemplates?: Record<string, string>,
 ): Promise<string> {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -64,14 +65,12 @@ async function generatePrompt(
 	const modeConfig = getModeBySlug(mode, customModeConfigs) || modes.find((m) => m.slug === mode) || modes[0]
 	const { roleDefinition, baseInstructions } = getModeSelection(mode, promptComponent, customModeConfigs)
 
-	// Check if MCP functionality should be included
 	const hasMcpGroup = modeConfig.groups.some((groupEntry) => getGroupName(groupEntry) === "mcp")
 	const hasMcpServers = mcpHub && mcpHub.getServers().length > 0
 	const shouldIncludeMcp = hasMcpGroup && hasMcpServers
 
 	const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
 
-	// Tool calling is native-only.
 	const effectiveProtocol = "native"
 
 	const [modesSection, skillsSection] = await Promise.all([
@@ -79,26 +78,38 @@ async function generatePrompt(
 		getSkillsSection(skillsManager, mode as string),
 	])
 
-	// Tools catalog is not included in the system prompt.
 	const toolsCatalog = ""
+
+	// Process templates if provided
+	const tpl = systemPromptTemplates || {}
+
+	const formatTemplate = (template: string, defaultContent: string) => {
+		if (!template) return defaultContent
+		// In the future, we can add variable replacement here like:
+		// return template.replace(/\{\{cwd\}\}/g, cwd)
+		return template
+	}
 
 	const basePrompt = `${roleDefinition}
 
-${markdownFormattingSection()}
+${formatTemplate(tpl.markdownRules, markdownFormattingSection())}
 
-${getSharedToolUseSection()}${toolsCatalog}
+${formatTemplate(
+	tpl.toolUse,
+	`${getSharedToolUseSection()}${toolsCatalog}
 
-	${getToolUseGuidelinesSection()}
+	${getToolUseGuidelinesSection()}`,
+)}
 
-${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined, mode, customModeConfigs)}
+${formatTemplate(tpl.capabilities, getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined, mode, customModeConfigs))}
 
-${modesSection}
+${formatTemplate(tpl.modes, modesSection)}
 ${skillsSection ? `\n${skillsSection}` : ""}
-${getRulesSection(cwd, settings)}
+${formatTemplate(tpl.rules, getRulesSection(cwd, settings))}
 
-${getSystemInfoSection(cwd)}
+${formatTemplate(tpl.systemInfo, getSystemInfoSection(cwd))}
 
-${getObjectiveSection()}
+${formatTemplate(tpl.objective, getObjectiveSection())}
 
 ${await addCustomInstructions(baseInstructions, globalCustomInstructions || "", cwd, mode, {
 	language: language ?? formatLanguage(vscode.env.language),
@@ -126,6 +137,7 @@ export const SYSTEM_PROMPT = async (
 	todoList?: TodoItem[],
 	modelId?: string,
 	skillsManager?: SkillsManager,
+	systemPromptTemplates?: Record<string, string>,
 ): Promise<string> => {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -154,5 +166,6 @@ export const SYSTEM_PROMPT = async (
 		todoList,
 		modelId,
 		skillsManager,
+		systemPromptTemplates,
 	)
 }

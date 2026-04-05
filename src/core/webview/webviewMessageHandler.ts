@@ -1596,6 +1596,27 @@ export const webviewMessageHandler = async (
 				}
 			}
 			break
+		case "updateSystemPromptTemplate":
+			if (message.systemPromptTemplateKey !== undefined) {
+				const existingTemplates = getGlobalState("systemPromptTemplates") ?? {}
+				const updatedTemplates = { ...existingTemplates }
+
+				if (message.systemPromptTemplate === undefined || message.systemPromptTemplate === "") {
+					delete updatedTemplates[message.systemPromptTemplateKey]
+				} else {
+					updatedTemplates[message.systemPromptTemplateKey] = message.systemPromptTemplate
+				}
+
+				await updateGlobalState("systemPromptTemplates", updatedTemplates)
+				const currentState = await provider.getStateToPostToWebview()
+				const stateWithTemplates = {
+					...currentState,
+					systemPromptTemplates: updatedTemplates,
+					hasOpenedModeSelector: currentState.hasOpenedModeSelector ?? false,
+				}
+				provider.postMessageToWebview({ type: "state", state: stateWithTemplates })
+			}
+			break
 		case "deleteMessage": {
 			if (!provider.getCurrentTask()) {
 				await vscode.window.showErrorMessage(t("common:errors.message.no_active_task_to_delete"))

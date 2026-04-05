@@ -546,6 +546,16 @@ export async function presentAssistantMessage(cline: Task) {
 				if (error instanceof AskIgnoredError) {
 					return
 				}
+
+				// If task was aborted, silence the error to prevent cascading crashes during mode switch or delegation
+				if (
+					cline.abort ||
+					cline.currentRequestAbortController?.signal.aborted ||
+					error.message?.includes("aborted")
+				) {
+					return
+				}
+
 				const errorString = `Error ${action}: ${JSON.stringify(serializeError(error))}`
 
 				await cline.say(
