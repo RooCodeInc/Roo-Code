@@ -11,6 +11,8 @@ import {
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	litellmDefaultModelInfo,
 	openAiModelInfoSaneDefaults,
+	minimaxDefaultModelId,
+	minimaxModels,
 } from "@roo-code/types"
 
 import { useSelectedModel } from "../useSelectedModel"
@@ -723,6 +725,53 @@ describe("useSelectedModel", () => {
 			expect(result.current.provider).toBe("openai")
 			expect(result.current.id).toBe("custom-model-no-tools")
 			expect(result.current.info).toEqual(customModelInfo)
+		})
+	})
+
+	describe("minimax provider", () => {
+		beforeEach(() => {
+			mockUseRouterModels.mockReturnValue({
+				data: {
+					openrouter: {},
+					requesty: {},
+					litellm: {},
+				},
+				isLoading: false,
+				isError: false,
+			} as any)
+
+			mockUseOpenRouterModelProviders.mockReturnValue({
+				data: {},
+				isLoading: false,
+				isError: false,
+			} as any)
+		})
+
+		it("should return default minimax model when no custom model is specified", () => {
+			const apiConfiguration: ProviderSettings = {
+				apiProvider: "minimax",
+			}
+
+			const wrapper = createWrapper()
+			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
+
+			expect(result.current.provider).toBe("minimax")
+			expect(result.current.id).toBe(minimaxDefaultModelId)
+			expect(result.current.info).toEqual(minimaxModels[minimaxDefaultModelId])
+		})
+
+		it("should use custom model ID and info when model exists in minimaxModels", () => {
+			const apiConfiguration: ProviderSettings = {
+				apiProvider: "minimax",
+				apiModelId: "MiniMax-M2.7",
+			}
+
+			const wrapper = createWrapper()
+			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
+
+			expect(result.current.provider).toBe("minimax")
+			expect(result.current.id).toBe("MiniMax-M2.7")
+			expect(result.current.info).toEqual(minimaxModels["MiniMax-M2.7"])
 		})
 	})
 })
