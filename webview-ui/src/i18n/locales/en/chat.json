@@ -293,8 +293,8 @@
 		"youSaid": "You said"
 	},
 	"mcp": {
-		"wantsToUseTool": "Jabberwock wants to use a tool on the {{serverName}} MCP server",
-		"wantsToAccessResource": "Jabberwock wants to access a resource on the {{serverName}} MCP server"
+		"wantsToUseTool": "{{agentName}} wants to use a tool on the {{serverName}} MCP server",
+		"wantsToAccessResource": "{{agentName}} wants to access a resource on the {{serverName}} MCP server"
 	},
 	"modes": {
 		"wantsToSwitch": "Jabberwock wants to switch to {{mode}} mode",

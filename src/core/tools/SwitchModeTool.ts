@@ -48,6 +48,11 @@ export class SwitchModeTool extends BaseTool<"switch_mode"> {
 				return
 			}
 
+			// DEBUG: Log switch_mode request
+			console.log(
+				`[DEBUG:SwitchModeTool] taskId=${task.taskId} currentMode="${currentMode}" → switch to "${mode_slug}" reason="${reason}"`,
+			)
+
 			const completeMessage = JSON.stringify({ tool: "switchMode", mode: mode_slug, reason })
 			const didApprove = await askApproval("tool", completeMessage)
 

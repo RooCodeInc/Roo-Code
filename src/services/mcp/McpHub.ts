@@ -18,6 +18,7 @@ import chokidar, { FSWatcher } from "chokidar"
 import delay from "delay"
 import deepEqual from "fast-deep-equal"
 import { z } from "zod"
+import { EventEmitter } from "events"
 
 import type {
 	McpResource,
@@ -141,8 +142,8 @@ const McpSettingsSchema = z.object({
 	mcpServers: z.record(ServerConfigSchema),
 })
 
-export class McpHub {
-	private providerRef: WeakRef<ClineProvider>
+export class McpHub extends EventEmitter {
+	providerRef: WeakRef<ClineProvider>
 	private disposables: vscode.Disposable[] = []
 	private settingsWatcher?: vscode.FileSystemWatcher
 	private fileWatchers: Map<string, FSWatcher[]> = new Map()
@@ -158,6 +159,7 @@ export class McpHub {
 	private initializationPromise: Promise<void>
 
 	constructor(provider: ClineProvider) {
+		super()
 		this.providerRef = new WeakRef(provider)
 		this.watchMcpSettingsFile()
 		this.watchProjectMcpFile().catch(console.error)
@@ -700,9 +702,49 @@ export class McpHub {
 					version: this.providerRef.deref()?.context.extension?.packageJSON?.version ?? "1.0.0",
 				},
 				{
-					capabilities: {},
+					capabilities: {
+						prompts: {},
+						resources: {},
+						tools: {},
+						elicitation: {}, // Explicitly declare support for interactive UI
+					},
 				},
 			)
+
+			// Listen for elicitation/create requests (Interactive UI from MCP server)
+			const ElicitationRequestSchema = z.object({
+				method: z.literal("elicitation/create"),
+				params: z
+					.object({
+						_meta: z
+							.object({
+								ui: z
+									.object({
+										resourceUri: z.string(),
+									})
+									.optional(),
+							})
+							.optional(),
+					})
+					.passthrough()
+					.optional(),
+			})
+
+			client.setRequestHandler(ElicitationRequestSchema as any, async (request: any) => {
+				return new Promise((resolve, reject) => {
+					console.log("[Jabberwock] Elicitation requested:", request.params?._meta?.ui?.resourceUri)
+					const resourceUri = request.params?._meta?.ui?.resourceUri
+					if (resourceUri) {
+						this.emit("interactiveUiRequested", {
+							uri: resourceUri,
+							resolve,
+							reject,
+						})
+					} else {
+						reject(new Error("No UI resource URI provided"))
+					}
+				})
+			})
 
 			let transport: StdioClientTransport | SSEClientTransport | StreamableHTTPClientTransport
 
@@ -2006,18 +2048,21 @@ export class McpHub {
 	 * Helper to check if a server should be visible to a specific agent
 	 * Based on the per-agent MCP isolation strategy
 	 */
-	private isServerVisibleToAgent(serverName: string, serverConfig: any, agentMcpList: string[] = []): boolean {
-		// Disabled servers are never visible
+	private isServerVisibleToAgent(serverName: string, serverConfig: any, agentMcpList?: string[]): boolean {
 		if (serverConfig?.disabled) {
 			return false
 		}
 
-		// Globally visible servers are always available to all agents
+		if (!agentMcpList) {
+			const visible = serverConfig?.isGloballyVisible !== false
+			return visible
+		}
+
 		if (serverConfig?.isGloballyVisible === true) {
 			return true
 		}
 
-		// For non-global servers, check if this server is explicitly allowed for the agent
-		return agentMcpList.includes(serverName)
+		const inList = agentMcpList.includes(serverName)
+		return inList
 	}
 }

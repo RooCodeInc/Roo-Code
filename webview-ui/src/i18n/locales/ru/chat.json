@@ -246,8 +246,8 @@
 		"youSaid": "Вы сказали"
 	},
 	"mcp": {
-		"wantsToUseTool": "Jabberwock хочет использовать инструмент на сервере MCP {{serverName}}",
-		"wantsToAccessResource": "Jabberwock хочет получить доступ к ресурсу на сервере MCP {{serverName}}"
+		"wantsToUseTool": "{{agentName}} хочет использовать инструмент на сервере MCP {{serverName}}",
+		"wantsToAccessResource": "{{agentName}} хочет получить доступ к ресурсу на сервере MCP {{serverName}}"
 	},
 	"modes": {
 		"wantsToSwitch": "Jabberwock хочет переключиться в режим {{mode}}",

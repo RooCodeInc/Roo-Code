@@ -27,40 +27,36 @@ export function getMcpServerTools(
 
 	const modeSlug = mode ?? defaultModeSlug
 	const modeConfig = getModeBySlug(modeSlug, customModes)
-	const mcpList = modeConfig?.mcpList ?? []
+	const mcpList = modeConfig?.mcpList
 
-	const servers = mcpHub.getServers()
+	const servers = mcpHub.getServers(mcpList)
 	const tools: OpenAI.Chat.ChatCompletionTool[] = []
-	// Track seen tool names to prevent duplicates (e.g., when same server exists in both global and project configs)
 	const seenToolNames = new Set<string>()
 
 	for (const server of servers) {
-		// Jabberwock: Context Isolation (Per-Agent MCP)
 		let serverConfig: any = {}
 		try {
 			serverConfig = JSON.parse(server.config)
 		} catch (e) {
-			// ignore parsing error
+			console.warn(`[getMcpServerTools] ⚠ Failed to parse config for "${server.name}"`)
 		}
 
-		if (!isServerVisibleToAgent(server.name, serverConfig, mcpList)) {
+		const visible = isServerVisibleToAgent(server.name, serverConfig, mcpList)
+		if (!visible) {
 			continue
 		}
 
 		if (!server.tools) {
 			continue
 		}
+
 		for (const tool of server.tools) {
-			// Filter tools where tool.enabledForPrompt is not explicitly false
 			if (tool.enabledForPrompt === false) {
 				continue
 			}
 
-			// Build sanitized tool name for API compliance
-			// The name is sanitized to conform to API requirements (e.g., Gemini's function name restrictions)
 			const toolName = buildMcpToolName(server.name, tool.name)
 
-			// Skip duplicate tool names - first occurrence wins (project servers come before global servers)
 			if (seenToolNames.has(toolName)) {
 				continue
 			}
@@ -68,12 +64,10 @@ export function getMcpServerTools(
 
 			const originalSchema = tool.inputSchema as Record<string, unknown> | undefined
 
-			// Normalize schema for JSON Schema 2020-12 compliance (type arrays → anyOf)
 			let parameters: JsonSchema
 			if (originalSchema) {
 				parameters = normalizeToolSchema(originalSchema) as JsonSchema
 			} else {
-				// No schema provided - create a minimal valid schema
 				parameters = { type: "object", additionalProperties: false } as JsonSchema
 			}
 

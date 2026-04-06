@@ -68,14 +68,20 @@ export function initializeSourceMaps(): void {
 					script.src.replace(/\.js$/, ".sourcemap"),
 				]
 
-				// Preload all possible source map locations
-				for (const mapUrl of possibleMapUrls) {
-					const link = document.createElement("link")
-					link.rel = "preload"
-					link.as = "fetch"
-					link.href = mapUrl
-					link.crossOrigin = "anonymous"
-					document.head.appendChild(link)
+				// Preload all possible source map locations ONLY in true production environments
+				// and only if explicitly enabled, to avoid console warnings about unused preloads
+				const shouldPreload =
+					process.env.NODE_ENV === "production" && (window as any).__ENABLE_SOURCEMAP_PRELOAD__
+
+				if (shouldPreload) {
+					for (const mapUrl of possibleMapUrls) {
+						const link = document.createElement("link")
+						link.rel = "preload"
+						link.as = "fetch"
+						link.href = mapUrl
+						link.crossOrigin = "anonymous"
+						document.head.appendChild(link)
+					}
 				}
 
 				// Also check for inline sourceMappingURL comments

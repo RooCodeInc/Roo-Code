@@ -1,65 +1,91 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 
 interface Props {
-	resourceUri: string // URL from md-todo-mcp server
-	allowedContextData: any // Context data based on allowedContext configuration
-	onAccept: (data: any) => void
-	onCancel: () => void
+	resourceUri: string
+	agentsList: string
+	inputData?: string
+	onResolve: (data: Record<string, unknown>) => void
+	onCancel?: () => void
 }
 
-export const McpIframeRenderer: React.FC<Props> = ({ resourceUri, allowedContextData, onAccept, onCancel }) => {
+export const McpIframeRenderer: React.FC<Props> = ({ resourceUri, agentsList, inputData, onResolve, onCancel }) => {
 	const iframeRef = useRef<HTMLIFrameElement>(null)
+	const [isLoaded, setIsLoaded] = useState(false)
 
 	useEffect(() => {
-		const handleMessage = (event: MessageEvent) => {
-			// Communication with iframe using MCP UI standard
-			if (event.data?.type === "mcp-action") {
-				if (event.data.action === "accept") {
-					onAccept(event.data.content)
-				} else if (event.data.action === "cancel") {
-					onCancel()
+		const handleMessage = (e: MessageEvent) => {
+			if (e.data?.type === "mcp-context-request") {
+				// The iframe is ready and requesting its context
+				setIsLoaded(true)
+				iframeRef.current?.contentWindow?.postMessage(
+					{
+						type: "mcp-context",
+						data: {
+							agents: agentsList,
+							input: inputData,
+						},
+					},
+					"*",
+				)
+			} else if (e.data?.type === "mcp-action") {
+				if (e.data?.action === "accept") {
+					onResolve(e.data.content)
+				} else if (e.data?.action === "cancel") {
+					if (onCancel) {
+						onCancel()
+					}
 				}
 			}
 		}
-
 		window.addEventListener("message", handleMessage)
 
-		// Send allowed context data to iframe after loading
-		const sendContextData = () => {
-			if (iframeRef.current?.contentWindow) {
-				iframeRef.current.contentWindow.postMessage(
+		if (iframeRef.current) {
+			// Fallback: still send on load in case the app doesn't send a request
+			iframeRef.current.onload = () => {
+				setIsLoaded(true)
+				iframeRef.current?.contentWindow?.postMessage(
 					{
 						type: "mcp-context",
-						data: allowedContextData,
+						data: {
+							agents: agentsList,
+							input: inputData,
+						},
 					},
 					"*",
 				)
 			}
 		}
 
-		// Add load event listener to iframe
-		const iframe = iframeRef.current
-		if (iframe) {
-			iframe.addEventListener("load", sendContextData)
-		}
-
-		return () => {
-			window.removeEventListener("message", handleMessage)
-			if (iframe) {
-				iframe.removeEventListener("load", sendContextData)
-			}
-		}
-	}, [resourceUri, allowedContextData, onAccept, onCancel])
+		return () => window.removeEventListener("message", handleMessage)
+	}, [agentsList, inputData, onResolve, onCancel])
 
 	return (
-		<div className="flex flex-col w-full h-[500px] bg-vscode-editor-background border border-vscode-border rounded-xs p-2">
-			<div className="font-bold mb-2 pb-2 border-b border-vscode-border">Interactive MCP App</div>
+		<div style={{ position: "relative", width: "100%", minHeight: "400px" }}>
+			{!isLoaded && (
+				<div
+					style={{
+						position: "absolute",
+						inset: 0,
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "center",
+						color: "var(--vscode-descriptionForeground)",
+						fontSize: "13px",
+					}}>
+					Loading interactive app...
+				</div>
+			)}
 			<iframe
 				ref={iframeRef}
 				src={resourceUri}
-				sandbox="allow-scripts allow-same-origin allow-forms"
-				className="w-full h-full border-none rounded-md"
-				title="Interactive MCP App"
+				sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"
+				style={{
+					width: "100%",
+					height: "500px",
+					border: "none",
+					borderRadius: "8px",
+					backgroundColor: "var(--vscode-editor-background)",
+				}}
 			/>
 		</div>
 	)

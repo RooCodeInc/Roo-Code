@@ -105,6 +105,13 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				is_async,
 			})
 
+			// DEBUG: Log new_task delegation details
+			console.log(
+				`[DEBUG:NewTaskTool] parent taskId=${task.taskId} → new_task mode="${mode}" (${targetMode.name}) is_async=${is_async ?? false}`,
+			)
+			console.log(`[DEBUG:NewTaskTool] message (first 500 chars): ${message.substring(0, 500)}`)
+			console.log(`[DEBUG:NewTaskTool] todos (${todoItems.length}):`, JSON.stringify(todoItems))
+
 			const didApprove = await askApproval("tool", toolMessage)
 
 			if (!didApprove) {

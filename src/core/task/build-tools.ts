@@ -142,7 +142,11 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 	}
 
 	// Combine filtered tools (for backward compatibility and for allowedFunctionNames)
-	const filteredTools = [...filteredNativeTools, ...filteredMcpTools, ...nativeCustomTools]
+	const filteredTools = [
+		...filteredNativeTools,
+		...filteredMcpTools,
+		...nativeCustomTools,
+	] as import("openai").default.Chat.ChatCompletionTool[]
 
 	// If includeAllToolsWithRestrictions is true, return ALL tools but provide
 	// allowed names based on mode filtering

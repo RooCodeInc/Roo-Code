@@ -276,11 +276,6 @@ export function filterNativeToolsForMode(
 		allowedToolNames.delete("codebase_search")
 	}
 
-	// Conditionally exclude update_todo_list if disabled in settings
-	if (settings?.todoListEnabled === false) {
-		allowedToolNames.delete("update_todo_list")
-	}
-
 	// Conditionally exclude generate_image if experiment is not enabled
 	if (!experiments?.imageGeneration) {
 		allowedToolNames.delete("generate_image")
@@ -370,9 +365,7 @@ export function isToolAllowedInMode(
 				codeIndexManager.isInitialized
 			)
 		}
-		if (toolName === "update_todo_list") {
-			return settings?.todoListEnabled !== false
-		}
+
 		if (toolName === "generate_image") {
 			return experiments?.imageGeneration === true
 		}
@@ -442,7 +435,6 @@ export function filterMcpToolsForMode(
 ): OpenAI.Chat.ChatCompletionTool[] {
 	const modeSlug = mode ?? defaultModeSlug
 
-	// MCP tools are always in the mcp group, check if use_mcp_tool is allowed
 	const isMcpAllowed = isToolAllowedForMode(
 		"use_mcp_tool",
 		modeSlug,

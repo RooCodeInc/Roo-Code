@@ -40,16 +40,12 @@ export async function getCheckpointService(task: Task, { interval = 250 }: { int
 	const checkpointTimeoutMs = task.checkpointTimeout * 1000
 
 	const log = (message: string) => {
-		console.log(message)
-
 		try {
 			provider?.log(message)
 		} catch (err) {
 			// NO-OP
 		}
 	}
-
-	console.log("[Task#getCheckpointService] initializing checkpoints service")
 
 	try {
 		const workspaceDir = task.cwd || getWorkspacePath()
@@ -158,7 +154,7 @@ async function checkGitInstallation(
 
 		// Git is installed, proceed with initialization
 		service.on("initialize", () => {
-			log("[Task#getCheckpointService] service initialized")
+			// log("[Task#getCheckpointService] service initialized")
 			task.checkpointServiceInitializing = false
 		})
 
@@ -192,8 +188,6 @@ async function checkGitInstallation(
 				task.enableCheckpoints = false
 			}
 		})
-
-		log("[Task#getCheckpointService] initializing shadow git")
 
 		try {
 			await service.initShadowGit()

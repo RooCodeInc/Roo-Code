@@ -12,7 +12,9 @@ export function getCapabilitiesSection(
 	if (mcpHub) {
 		const modeSlug = mode ?? defaultModeSlug
 		const modeConfig = getModeBySlug(modeSlug, customModes)
-		const mcpList = modeConfig?.mcpList ?? []
+		const modeName = modeConfig?.name ?? modeSlug
+		const mcpList = modeConfig?.mcpList
+		const allServers = mcpHub.getServers()
 		const visibleServers = mcpHub.getServers(mcpList)
 
 		if (visibleServers.length > 0) {

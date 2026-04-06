@@ -93,6 +93,7 @@ export interface ExtensionMessage {
 		| "modes"
 		| "taskWithAggregatedCosts"
 		| "openAiCodexRateLimits"
+		| "showInteractiveApp"
 		// Worktree response types
 		| "worktreeList"
 		| "worktreeResult"
@@ -129,6 +130,7 @@ export interface ExtensionMessage {
 	 */
 	state?: Partial<ExtensionState>
 	images?: string[]
+	uri?: string
 	filePaths?: string[]
 	openedTabs?: Array<{
 		label: string
@@ -288,6 +290,7 @@ export type ExtensionState = Pick<
 	| "modeApiConfigs"
 	| "customModePrompts"
 	| "customSupportPrompts"
+	| "systemPromptTemplates"
 	| "enhancementApiConfigId"
 	| "customCondensingPrompt"
 	| "codebaseIndexConfig"
@@ -547,6 +550,7 @@ export interface WebviewMessage {
 		| "queueMessage"
 		| "removeQueuedMessage"
 		| "editQueuedMessage"
+		| "elicitationResponse"
 		| "dismissUpsell"
 		| "getDismissedUpsells"
 		| "openMarkdownPreview"
@@ -562,6 +566,7 @@ export interface WebviewMessage {
 		| "requestModes"
 		| "switchMode"
 		| "debugSetting"
+		| "updateSystemPromptTemplate"
 		// Worktree messages
 		| "listWorktrees"
 		| "createWorktree"
@@ -588,6 +593,7 @@ export interface WebviewMessage {
 	disabled?: boolean
 	context?: string
 	dataUri?: string
+	uri?: string
 	askResponse?: ClineAskResponse
 	apiConfiguration?: ProviderSettings
 	images?: string[]
@@ -605,6 +611,8 @@ export interface WebviewMessage {
 	mode?: string
 	promptMode?: string | "enhance"
 	customPrompt?: PromptComponent
+	systemPromptTemplate?: string
+	systemPromptTemplateKey?: string
 	dataUrls?: string[]
 	/** Generic payload for webview messages that use `values` */
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any

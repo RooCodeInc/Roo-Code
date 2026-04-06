@@ -96,7 +96,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		cloudIsAuthenticated,
 		messageQueue = [],
 		showWorktreesInHomeScreen,
-		mcpServers,
 		cwd,
 	} = useExtensionState()
 
@@ -386,31 +385,16 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						case "use_mcp_server":
 							setSendingDisabled(isPartial)
 							setClineAsk("use_mcp_server")
-
-							// Jabberwock: Check if it's an interactive app. If so, hide default buttons.
-							let isInteractiveApp = false
-							try {
-								const mcpServerUse = JSON.parse(lastMessage.text || "{}")
-								if (mcpServerUse.serverName) {
-									const server = mcpServers?.find((s) => s.name === mcpServerUse.serverName)
-									if (server && server.config) {
-										const config = JSON.parse(server.config)
-										isInteractiveApp = config.type === "interactiveApp"
-									}
-								}
-							} catch {
-								// ignore
-							}
-
-							if (isInteractiveApp) {
-								setEnableButtons(false)
-								setPrimaryButtonText(undefined)
-								setSecondaryButtonText(undefined)
-							} else {
-								setEnableButtons(!isPartial)
-								setPrimaryButtonText(t("chat:approve.title"))
-								setSecondaryButtonText(t("chat:reject.title"))
-							}
+							setEnableButtons(!isPartial)
+							setPrimaryButtonText(t("chat:approve.title"))
+							setSecondaryButtonText(t("chat:reject.title"))
+							break
+						case "interactive_app":
+							setSendingDisabled(isPartial)
+							setClineAsk("interactive_app")
+							setEnableButtons(false)
+							setPrimaryButtonText(undefined)
+							setSecondaryButtonText(undefined)
 							break
 						case "completion_result":
 							// Extension waiting for feedback, but we can just present a new task button.
@@ -566,7 +550,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		const isLastAsk = !!modifiedMessages.at(-1)?.ask
 
 		const isToolCurrentlyAsking =
-			isLastAsk && clineAsk !== undefined && enableButtons && primaryButtonText !== undefined
+			isLastAsk &&
+			clineAsk !== undefined &&
+			((enableButtons && primaryButtonText !== undefined) || clineAsk === "interactive_app")
 
 		if (isToolCurrentlyAsking) {
 			return false
