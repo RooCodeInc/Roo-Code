@@ -77,10 +77,9 @@ export const fireworksModels = {
 		maxTokens: 16384,
 		contextWindow: 262144,
 		supportsImages: true,
-		supportsPromptCache: true,
+		supportsPromptCache: false,
 		inputPrice: 0,
 		outputPrice: 0,
-		cacheReadsPrice: 0,
 		description:
 			"Kimi K2.5 Turbo router - same configuration as kimi-k2p5 but with improved performance through Fireworks routing (FirePass - https://docs.fireworks.ai/firepass).",
 	},
