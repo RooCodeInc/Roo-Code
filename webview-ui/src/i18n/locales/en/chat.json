@@ -389,7 +389,9 @@
 	"costs": {
 		"totalWithSubtasks": "Total Cost (including subtasks): ${{cost}}",
 		"total": "Total Cost: ${{cost}}",
-		"includesSubtasks": "Includes subtask costs"
+		"includesSubtasks": "Includes subtask costs",
+		"orchestrationLabel": "Orchestration",
+		"orchestrationTotal": "Full orchestration cost (all tasks): ${{cost}}"
 	},
 	"codeblock": {
 		"tooltips": {
