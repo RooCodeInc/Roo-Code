@@ -109,6 +109,45 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 		})
 	}
 
+	/**
+	 * Flatten array content in messages to simple string format.
+	 *
+	 * LiteLLM's auto_router feature passes user content to embedding models for semantic routing.
+	 * However, embedding models expect plain strings, not arrays of content blocks.
+	 * When Roo Code sends messages with array content like:
+	 *   {"role": "user", "content": [{"type": "text", "text": "..."}]}
+	 *
+	 * The auto_router fails because it passes this array directly to embeddings.
+	 * This method flattens such content to simple strings:
+	 *   {"role": "user", "content": "..."}
+	 *
+	 * This is enabled by default via litellmFlattenContent option.
+	 * Users who need multimodal content (images) can disable this.
+	 */
+	private flattenMessageContent(
+		messages: OpenAI.Chat.ChatCompletionMessageParam[],
+	): OpenAI.Chat.ChatCompletionMessageParam[] {
+		return messages.map((msg) => {
+			// Only flatten user and system messages with array content
+			if ((msg.role === "user" || msg.role === "system") && Array.isArray(msg.content)) {
+				// Check if all content blocks are text type
+				const allText = msg.content.every(
+					(part) => typeof part === "object" && "type" in part && part.type === "text",
+				)
+
+				// Only flatten if all content is text (no images)
+				if (allText) {
+					const textParts = msg.content.map((part) => (part as { type: "text"; text: string }).text)
+					return {
+						...msg,
+						content: textParts.join("\n\n"),
+					}
+				}
+			}
+			return msg
+		})
+	}
+
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
@@ -116,9 +155,15 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 	): ApiStream {
 		const { id: modelId, info } = await this.fetchModel()
 
-		const openAiMessages = convertToOpenAiMessages(messages, {
+		let openAiMessages = convertToOpenAiMessages(messages, {
 			normalizeToolCallId: sanitizeOpenAiCallId,
 		})
+
+		// Flatten array content to string for compatibility with LiteLLM's auto_router
+		// This is enabled by default (when litellmFlattenContent is undefined or true)
+		if (this.options.litellmFlattenContent !== false) {
+			openAiMessages = this.flattenMessageContent(openAiMessages)
+		}
 
 		// Prepare messages with cache control if enabled and supported
 		let systemMessage: OpenAI.Chat.ChatCompletionMessageParam
