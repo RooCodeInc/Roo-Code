@@ -165,13 +165,17 @@ describe("GeminiHandler", () => {
 			expect(modelInfo.info).toBeDefined()
 		})
 
-		it("should return default model if invalid model specified", () => {
+		it("should preserve custom model ID and use default model info for unknown models", () => {
 			const invalidHandler = new GeminiHandler({
-				apiModelId: "invalid-model",
+				apiModelId: "gemini-custom-model",
 				geminiApiKey: "test-key",
 			})
 			const modelInfo = invalidHandler.getModel()
-			expect(modelInfo.id).toBe(geminiDefaultModelId) // Default model
+			expect(modelInfo.id).toBe("gemini-custom-model")
+			expect(modelInfo.info).toBeDefined()
+			// Should fall back to default model's info
+			const defaultHandler = new GeminiHandler({ geminiApiKey: "test-key" })
+			expect(modelInfo.info.contextWindow).toBe(defaultHandler.getModel().info.contextWindow)
 		})
 
 		it("should exclude apply_diff and include edit in tool preferences", () => {

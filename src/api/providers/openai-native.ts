@@ -1433,12 +1433,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	// Removed isResponsesApiModel method as ALL models now use the Responses API
 
 	override getModel() {
-		const modelId = this.options.apiModelId
+		const id = this.options.apiModelId ?? openAiNativeDefaultModelId
 
-		let id =
-			modelId && modelId in openAiNativeModels ? (modelId as OpenAiNativeModelId) : openAiNativeDefaultModelId
-
-		const info: ModelInfo = openAiNativeModels[id]
+		const info: ModelInfo =
+			openAiNativeModels[id as OpenAiNativeModelId] || openAiNativeModels[openAiNativeDefaultModelId]
 
 		const params = getModelParams({
 			format: "openai",

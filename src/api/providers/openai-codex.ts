@@ -1115,11 +1115,10 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 	}
 
 	override getModel() {
-		const modelId = this.options.apiModelId
+		const id = this.options.apiModelId ?? openAiCodexDefaultModelId
 
-		let id = modelId && modelId in openAiCodexModels ? (modelId as OpenAiCodexModelId) : openAiCodexDefaultModelId
-
-		const info: ModelInfo = openAiCodexModels[id]
+		const info: ModelInfo =
+			openAiCodexModels[id as OpenAiCodexModelId] || openAiCodexModels[openAiCodexDefaultModelId]
 
 		const params = getModelParams({
 			format: "openai",

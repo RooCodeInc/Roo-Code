@@ -138,6 +138,18 @@ describe("VertexHandler", () => {
 			expect(modelInfo.info.contextWindow).toBe(1048576)
 		})
 
+		it("should preserve custom model ID and use default model info for unknown models", () => {
+			const customHandler = new VertexHandler({
+				apiModelId: "gemini-custom-vertex-model",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			})
+			const modelInfo = customHandler.getModel()
+			expect(modelInfo.id).toBe("gemini-custom-vertex-model")
+			expect(modelInfo.info).toBeDefined()
+			expect(modelInfo.info.contextWindow).toBeDefined()
+		})
+
 		it("should exclude apply_diff and include edit in tool preferences", () => {
 			const testHandler = new VertexHandler({
 				apiModelId: "gemini-2.0-flash-001",
