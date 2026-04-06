@@ -5,7 +5,7 @@ import type { ModelInfo } from "../model.js"
 // https://platform.minimax.io/docs/guides/pricing-paygo
 // https://platform.minimax.io/docs/guides/pricing-tokenplan
 export type MinimaxModelId = keyof typeof minimaxModels
-export const minimaxDefaultModelId: MinimaxModelId = "MiniMax-M2.5"
+export const minimaxDefaultModelId: MinimaxModelId = "MiniMax-M2.7"
 
 export const minimaxModels = {
 	"MiniMax-M2.5": {
