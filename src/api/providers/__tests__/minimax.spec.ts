@@ -191,10 +191,10 @@ describe("MiniMaxHandler", () => {
 			expect(model.info).toEqual(minimaxModels[minimaxDefaultModelId])
 		})
 
-		it("should default to MiniMax-M2.5 model", () => {
+		it("should default to MiniMax-M2.7 model", () => {
 			const handlerDefault = new MiniMaxHandler({ minimaxApiKey: "test-minimax-api-key" })
 			const model = handlerDefault.getModel()
-			expect(model.id).toBe("MiniMax-M2.5")
+			expect(model.id).toBe("MiniMax-M2.7")
 		})
 	})
 
