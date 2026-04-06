@@ -14,6 +14,10 @@ interface OllamaChatOptions {
 	num_ctx?: number
 }
 
+// Default timeout for Ollama requests (5 minutes to accommodate slow model loading)
+// Ollama models can take 30-60+ seconds to load into memory on first use
+const DEFAULT_OLLAMA_TIMEOUT_MS = 300_000 // 5 minutes
+
 function convertToOllamaMessages(anthropicMessages: Anthropic.Messages.MessageParam[]): Message[] {
 	const ollamaMessages: Message[] = []
 
@@ -158,9 +162,11 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 	private ensureClient(): Ollama {
 		if (!this.client) {
 			try {
+				const baseUrl = this.options.ollamaBaseUrl || "http://localhost:11434"
+				console.log(`[Ollama] Creating client for host: ${baseUrl}`)
+
 				const clientOptions: OllamaOptions = {
-					host: this.options.ollamaBaseUrl || "http://localhost:11434",
-					// Note: The ollama npm package handles timeouts internally
+					host: baseUrl,
 				}
 
 				// Add API key if provided (for Ollama cloud or authenticated instances)
@@ -172,6 +178,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 				this.client = new Ollama(clientOptions)
 			} catch (error: any) {
+				console.error(`[Ollama] Error creating client: ${error.message}`)
 				throw new Error(`Error creating Ollama client: ${error.message}`)
 			}
 		}
@@ -205,8 +212,29 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		const baseUrl = this.options.ollamaBaseUrl || "http://localhost:11434"
+		const requestStartTime = Date.now()
+
+		console.log(`[Ollama] createMessage: Starting request at ${new Date().toISOString()}`)
+
 		const client = this.ensureClient()
-		const { id: modelId } = await this.fetchModel()
+
+		console.log(`[Ollama] createMessage: Fetching model info...`)
+		const { id: modelId, info: modelInfo } = await this.fetchModel()
+		console.log(
+			`[Ollama] createMessage: Model '${modelId}' fetched in ${Date.now() - requestStartTime}ms, ` +
+				`found in cache: ${!!this.models[modelId]}`,
+		)
+
+		// Warn if model wasn't found in the tool-capable models list
+		if (!this.models[modelId]) {
+			console.warn(
+				`[Ollama] Warning: Model '${modelId}' was not found in the list of tool-capable models. ` +
+					`This may indicate the model does not support native tool calling, or your Ollama version ` +
+					`does not report capabilities. Check with: ollama show ${modelId}`,
+			)
+		}
+
 		const useR1Format = modelId.toLowerCase().includes("deepseek-r1")
 
 		const ollamaMessages: Message[] = [
@@ -234,14 +262,24 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 				chatOptions.num_ctx = this.options.ollamaNumCtx
 			}
 
+			const toolsToSend = this.convertToolsToOllama(metadata?.tools)
+			console.log(
+				`[Ollama] createMessage: Sending chat request to ${baseUrl}/api/chat with model '${modelId}', ` +
+					`${ollamaMessages.length} messages, ${toolsToSend?.length ?? 0} tools`,
+			)
+
+			const chatStartTime = Date.now()
+
 			// Create the actual API request promise
 			const stream = await client.chat({
 				model: modelId,
 				messages: ollamaMessages,
 				stream: true,
 				options: chatOptions,
-				tools: this.convertToolsToOllama(metadata?.tools),
+				tools: toolsToSend,
 			})
+
+			console.log(`[Ollama] createMessage: Stream started after ${Date.now() - chatStartTime}ms`)
 
 			let totalInputTokens = 0
 			let totalOutputTokens = 0
