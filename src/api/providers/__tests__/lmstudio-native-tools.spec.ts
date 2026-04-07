@@ -82,9 +82,10 @@ describe("LmStudioHandler Native Tools", () => {
 					]),
 				}),
 			)
-			// parallel_tool_calls should be true by default when not explicitly set
+			// parallel_tool_calls should NOT be included by default for compatibility with
+			// models that don't support it (e.g., GLM4.5)
 			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs).toHaveProperty("parallel_tool_calls", true)
+			expect(callArgs).not.toHaveProperty("parallel_tool_calls")
 		})
 
 		it("should include tool_choice when provided", async () => {
@@ -128,8 +129,9 @@ describe("LmStudioHandler Native Tools", () => {
 			// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
 			expect(callArgs).toHaveProperty("tools")
 			expect(callArgs).toHaveProperty("tool_choice")
-			// parallel_tool_calls should be true by default when not explicitly set
-			expect(callArgs).toHaveProperty("parallel_tool_calls", true)
+			// parallel_tool_calls should NOT be included by default for compatibility with
+			// models that don't support it (e.g., GLM4.5)
+			expect(callArgs).not.toHaveProperty("parallel_tool_calls")
 		})
 
 		it("should yield tool_call_partial chunks during streaming", async () => {
@@ -283,7 +285,7 @@ describe("LmStudioHandler Native Tools", () => {
 			expect(endChunks[0].id).toBe("call_lmstudio_test")
 		})
 
-		it("should work with parallel tool calls disabled (sends false)", async () => {
+		it("should work with parallel tool calls disabled (omits parameter)", async () => {
 			mockCreate.mockImplementationOnce(() => ({
 				[Symbol.asyncIterator]: async function* () {
 					yield {
@@ -299,9 +301,10 @@ describe("LmStudioHandler Native Tools", () => {
 			})
 			await stream.next()
 
-			// When parallelToolCalls is false, the parameter should be sent as false
+			// When parallelToolCalls is false, the parameter should NOT be included
+			// to maintain compatibility with models that don't support it
 			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs).toHaveProperty("parallel_tool_calls", false)
+			expect(callArgs).not.toHaveProperty("parallel_tool_calls")
 		})
 
 		it("should handle reasoning content alongside tool calls", async () => {
