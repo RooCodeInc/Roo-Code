@@ -14,6 +14,7 @@ import { BaseProvider } from "./base-provider"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 import { getApiRequestTimeout } from "./utils/timeout-config"
+import { getGlmModelOptions } from "./utils/glm-model-detection"
 
 type BaseOpenAiCompatibleProviderOptions<ModelName extends string> = ApiHandlerOptions & {
 	providerName: string
@@ -75,6 +76,9 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 	) {
 		const { id: model, info } = this.getModel()
 
+		// Check if this is a GLM model and get recommended options
+		const glmOptions = getGlmModelOptions(model)
+
 		// Centralized cap: clamp to 20% of the context window (unless provider-specific exceptions apply)
 		const max_tokens =
 			getModelMaxOutputTokens({
@@ -86,16 +90,24 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 
 		const temperature = this.options.modelTemperature ?? info.defaultTemperature ?? this.defaultTemperature
 
+		// For GLM models, disable parallel_tool_calls as they may not support it
+		const parallelToolCalls = glmOptions?.disableParallelToolCalls ? false : (metadata?.parallelToolCalls ?? true)
+
 		const params: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model,
 			max_tokens,
 			temperature,
-			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
+			messages: [
+				{ role: "system", content: systemPrompt },
+				...convertToOpenAiMessages(messages, {
+					mergeToolResultText: glmOptions?.mergeToolResultText ?? false,
+				}),
+			],
 			stream: true,
 			stream_options: { include_usage: true },
 			tools: this.convertToolsForOpenAI(metadata?.tools),
 			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+			parallel_tool_calls: parallelToolCalls,
 		}
 
 		// Add thinking parameter if reasoning is enabled and model supports it
