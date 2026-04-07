@@ -20,6 +20,10 @@ import searchFiles from "./search_files"
 import switchMode from "./switch_mode"
 import updateTodoList from "./update_todo_list"
 import writeToFile from "./write_to_file"
+import goToDefinition from "./go_to_definition"
+import findReferences from "./find_references"
+import workspaceSymbols from "./workspace_symbols"
+import documentSymbols from "./document_symbols"
 
 export { getMcpServerTools } from "./mcp_server"
 export { convertOpenAIToolToAnthropic, convertOpenAIToolsToAnthropic } from "./converters"
@@ -68,6 +72,10 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 		switchMode,
 		updateTodoList,
 		writeToFile,
+		goToDefinition,
+		findReferences,
+		workspaceSymbols,
+		documentSymbols,
 	] satisfies OpenAI.Chat.ChatCompletionTool[]
 }
 
