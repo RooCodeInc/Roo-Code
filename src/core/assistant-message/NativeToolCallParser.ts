@@ -628,9 +628,9 @@ export class NativeToolCallParser {
 				break
 
 			case "new_task":
-				if (partialArgs.mode !== undefined || partialArgs.message !== undefined) {
+				if (partialArgs.mode_slug !== undefined || partialArgs.message !== undefined) {
 					nativeArgs = {
-						mode: partialArgs.mode,
+						mode_slug: partialArgs.mode_slug,
 						message: partialArgs.message,
 						todos: partialArgs.todos,
 					}
@@ -977,9 +977,9 @@ export class NativeToolCallParser {
 					break
 
 				case "new_task":
-					if (args.mode !== undefined && args.message !== undefined) {
+					if (args.mode_slug !== undefined && args.message !== undefined) {
 						nativeArgs = {
-							mode: args.mode,
+							mode_slug: args.mode_slug,
 							message: args.message,
 							todos: args.todos,
 						} as NativeArgsFor<TName>
