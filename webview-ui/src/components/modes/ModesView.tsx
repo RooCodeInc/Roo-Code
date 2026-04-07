@@ -10,7 +10,7 @@ import {
 import { Trans } from "react-i18next"
 import { ChevronDown, X, Upload, Download } from "lucide-react"
 
-import { ModeConfig, GroupEntry, PromptComponent, ToolGroup, modeConfigSchema } from "@roo-code/types"
+import { ModeConfig, GroupEntry, McpGroupOptions, PromptComponent, ToolGroup, modeConfigSchema } from "@roo-code/types"
 
 import {
 	Mode,
@@ -25,6 +25,7 @@ import {
 import { TOOL_GROUPS } from "@roo/tools"
 
 import { syncCacheFromGroups, removeGroupWithCache, addGroupWithCache } from "./groupOptionsCache"
+import { McpFilterConfig } from "./McpFilterConfig"
 
 import { vscode } from "@src/utils/vscode"
 import { buildDocLink } from "@src/utils/docLinks"
@@ -65,6 +66,28 @@ function getGroupName(group: GroupEntry): ToolGroup {
 	return Array.isArray(group) ? group[0] : group
 }
 
+// Extract MCP options from a groups array
+function getMcpOptionsFromGroups(groups: GroupEntry[]): McpGroupOptions | undefined {
+	for (var i = 0; i < groups.length; i++) {
+		var entry = groups[i]
+		if (Array.isArray(entry) && entry[0] === "mcp" && entry[1]) {
+			return entry[1] as McpGroupOptions
+		}
+	}
+	return undefined
+}
+
+// Update MCP options in a groups array
+function updateMcpOptionsInGroups(groups: GroupEntry[], options: McpGroupOptions | undefined): GroupEntry[] {
+	return groups.map(function (entry) {
+		var name = typeof entry === "string" ? entry : entry[0]
+		if (name === "mcp") {
+			return options ? (["mcp", options] as GroupEntry) : "mcp"
+		}
+		return entry
+	})
+}
+
 const ModesView = () => {
 	const { t } = useAppTranslation()
 
@@ -76,6 +99,7 @@ const ModesView = () => {
 		customInstructions,
 		setCustomInstructions,
 		customModes,
+		mcpServers,
 	} = useExtensionState()
 
 	// Use a local state to track the visually active mode
@@ -1140,40 +1164,75 @@ const ModesView = () => {
 							</div>
 						)}
 						{isToolsEditMode && findModeBySlug(visualMode, customModes) ? (
-							<div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2">
-								{availableGroups.map((group) => {
-									const currentMode = getCurrentMode()
-									const isCustomMode = findModeBySlug(visualMode, customModes)
-									const customMode = isCustomMode
-									const isGroupEnabled = isCustomMode
-										? customMode?.groups?.some((g) => getGroupName(g) === group)
-										: currentMode?.groups?.some((g) => getGroupName(g) === group)
+							<>
+								<div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2">
+									{availableGroups.map((group) => {
+										const currentMode = getCurrentMode()
+										const isCustomMode = findModeBySlug(visualMode, customModes)
+										const customMode = isCustomMode
+										const isGroupEnabled = isCustomMode
+											? customMode?.groups?.some((g) => getGroupName(g) === group)
+											: currentMode?.groups?.some((g) => getGroupName(g) === group)
 
+										return (
+											<VSCodeCheckbox
+												key={group}
+												checked={isGroupEnabled}
+												onChange={handleGroupChange(group, Boolean(isCustomMode), customMode)}
+												disabled={!isCustomMode}>
+												{t(`prompts:tools.toolNames.${group}`)}
+												{group === "edit" && (
+													<div className="text-xs text-vscode-descriptionForeground mt-0.5">
+														{t("prompts:tools.allowedFiles")}{" "}
+														{(() => {
+															const currentMode = getCurrentMode()
+															const editGroup = currentMode?.groups?.find(
+																(g) =>
+																	Array.isArray(g) &&
+																	g[0] === "edit" &&
+																	g[1]?.fileRegex,
+															)
+															if (!Array.isArray(editGroup)) return t("prompts:allFiles")
+															return (
+																editGroup[1].description ||
+																`/${editGroup[1].fileRegex}/`
+															)
+														})()}
+													</div>
+												)}
+											</VSCodeCheckbox>
+										)
+									})}
+								</div>
+								{(() => {
+									const customMode = findModeBySlug(visualMode, customModes)
+									const isMcpEnabled = customMode?.groups?.some((g) => getGroupName(g) === "mcp")
+									if (!isMcpEnabled || !customMode) return null
+									const mcpOptions = getMcpOptionsFromGroups(customMode.groups || [])
 									return (
-										<VSCodeCheckbox
-											key={group}
-											checked={isGroupEnabled}
-											onChange={handleGroupChange(group, Boolean(isCustomMode), customMode)}
-											disabled={!isCustomMode}>
-											{t(`prompts:tools.toolNames.${group}`)}
-											{group === "edit" && (
-												<div className="text-xs text-vscode-descriptionForeground mt-0.5">
-													{t("prompts:tools.allowedFiles")}{" "}
-													{(() => {
-														const currentMode = getCurrentMode()
-														const editGroup = currentMode?.groups?.find(
-															(g) =>
-																Array.isArray(g) && g[0] === "edit" && g[1]?.fileRegex,
-														)
-														if (!Array.isArray(editGroup)) return t("prompts:allFiles")
-														return editGroup[1].description || `/${editGroup[1].fileRegex}/`
-													})()}
-												</div>
-											)}
-										</VSCodeCheckbox>
+										<McpFilterConfig
+											mcpServers={mcpServers || []}
+											mcpGroupOptions={mcpOptions}
+											onOptionsChange={(options) => {
+												const oldGroups = customMode.groups || []
+												const newGroups = updateMcpOptionsInGroups(oldGroups, options)
+												// Also update the cache so toggle off/on preserves config
+												if (options) {
+													groupOptionsCache.current.set("mcp", options)
+												} else {
+													groupOptionsCache.current.delete("mcp")
+												}
+												updateCustomMode(customMode.slug, {
+													...customMode,
+													groups: newGroups,
+													source: customMode.source || "global",
+												})
+											}}
+											isEditing={true}
+										/>
 									)
-								})}
-							</div>
+								})()}
+							</>
 						) : (
 							<div className="text-sm text-vscode-foreground mb-2 leading-relaxed">
 								{(() => {
@@ -1190,12 +1249,27 @@ const ModesView = () => {
 											const groupName = getGroupName(group)
 											const displayName = t(`prompts:tools.toolNames.${groupName}`)
 											if (Array.isArray(group) && group[1]?.fileRegex) {
-												const description = group[1].description || `/${group[1].fileRegex}/`
-												return `${displayName} (${description})`
+												const description =
+													group[1].description || "/" + group[1].fileRegex + "/"
+												return displayName + " (" + description + ")"
 											}
 											return displayName
 										})
 										.join(", ")
+								})()}
+								{(() => {
+									const currentMode = getCurrentMode()
+									const mcpOptions = getMcpOptionsFromGroups(currentMode?.groups || [])
+									const isMcpEnabled = currentMode?.groups?.some((g) => getGroupName(g) === "mcp")
+									if (!isMcpEnabled) return null
+									return (
+										<McpFilterConfig
+											mcpServers={mcpServers || []}
+											mcpGroupOptions={mcpOptions}
+											onOptionsChange={() => {}}
+											isEditing={false}
+										/>
+									)
 								})()}
 							</div>
 						)}
