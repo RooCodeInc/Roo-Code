@@ -1645,6 +1645,42 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
+	/**
+	 * Builds a dedicated API handler for context condensing if a condensing API config is set.
+	 * Falls back to the task's main API handler if no dedicated config is configured.
+	 */
+	private async buildCondensingApiHandler(): Promise<ApiHandler> {
+		const provider = this.providerRef.deref()
+		if (!provider) {
+			return this.api
+		}
+
+		const state = await provider.getState()
+		const { condensingApiConfigId, listApiConfigMeta } = state ?? {}
+
+		if (
+			condensingApiConfigId &&
+			listApiConfigMeta?.find(({ id }: { id: string }) => id === condensingApiConfigId)
+		) {
+			try {
+				const { name: _, ...providerSettings } = await provider.providerSettingsManager.getProfile({
+					id: condensingApiConfigId,
+				})
+
+				if (providerSettings.apiProvider) {
+					return buildApiHandler(providerSettings)
+				}
+			} catch (error) {
+				console.warn(
+					`[Task#${this.taskId}] Failed to build condensing API handler, falling back to task handler:`,
+					error,
+				)
+			}
+		}
+
+		return this.api
+	}
+
 	public async condenseContext(): Promise<void> {
 		// CRITICAL: Flush any pending tool results before condensing
 		// to ensure tool_use/tool_result pairs are complete in history
@@ -1658,6 +1694,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const { mode, apiConfiguration } = state ?? {}
 
 		const { contextTokens: prevContextTokens } = this.getTokenUsage()
+
+		// Build a dedicated API handler for condensing if configured
+		const condensingApiHandler = await this.buildCondensingApiHandler()
 
 		// Build tools for condensing metadata (same tools used for normal API calls)
 		const provider = this.providerRef.deref()
@@ -1705,7 +1744,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			condenseId,
 		} = await summarizeConversation({
 			messages: this.apiConversationHistory,
-			apiHandler: this.api,
+			apiHandler: condensingApiHandler,
 			systemPrompt,
 			taskId: this.taskId,
 			isAutomaticTrigger: false,
@@ -3887,13 +3926,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Generate environment details to include in the condensed summary
 			const environmentDetails = await getEnvironmentDetails(this, true)
 
+			// Build a dedicated API handler for condensing if configured
+			const condensingApiHandler = await this.buildCondensingApiHandler()
+
 			// Force aggressive truncation by keeping only 75% of the conversation history
 			const truncateResult = await manageContext({
 				messages: this.apiConversationHistory,
 				totalTokens: contextTokens || 0,
 				maxTokens,
 				contextWindow,
-				apiHandler: this.api,
+				apiHandler: condensingApiHandler,
 				autoCondenseContext: true,
 				autoCondenseContextPercent: FORCED_CONTEXT_REDUCTION_PERCENT,
 				systemPrompt: await this.getSystemPrompt(),
@@ -4112,12 +4154,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					: undefined
 
 			try {
+				// Build a dedicated API handler for condensing if configured
+				const condensingApiHandler = await this.buildCondensingApiHandler()
+
 				const truncateResult = await manageContext({
 					messages: this.apiConversationHistory,
 					totalTokens: contextTokens,
 					maxTokens,
 					contextWindow,
-					apiHandler: this.api,
+					apiHandler: condensingApiHandler,
 					autoCondenseContext,
 					autoCondenseContextPercent,
 					systemPrompt,
