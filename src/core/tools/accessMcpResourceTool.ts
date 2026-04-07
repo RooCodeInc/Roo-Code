@@ -3,7 +3,7 @@ import type { ClineAskUseMcpServer } from "@roo-code/types"
 import type { ToolUse } from "../../shared/tools"
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
-import { isMcpServerAllowedForMode } from "../../utils/mcp-filter"
+import { isMcpServerAllowedForMode, isCustomModeWithoutConfig } from "../../utils/mcp-filter"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -37,6 +37,15 @@ export class AccessMcpResourceTool extends BaseTool<"access_mcp_resource"> {
 			// Defense-in-depth: check MCP server filtering for the current mode.
 			// FLAG-E: 10-second TTL cache, no disk I/O per call
 			const customModes = await task.providerRef.deref()?.customModesManager?.getCustomModes()
+			// ISSUE-15: deny-by-default when custom mode config is unavailable
+			if (isCustomModeWithoutConfig(task.taskMode, customModes)) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("access_mcp_resource")
+				const msg = 'MCP denied: custom mode "' + task.taskMode + '" config is unavailable'
+				await task.say("error", msg)
+				pushToolResult(formatResponse.toolError(msg))
+				return
+			}
 			if (!isMcpServerAllowedForMode(server_name, task.taskMode, customModes)) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("access_mcp_resource")

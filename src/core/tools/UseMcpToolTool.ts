@@ -5,7 +5,7 @@ import { formatResponse } from "../prompts/responses"
 import { t } from "../../i18n"
 import type { ToolUse } from "../../shared/tools"
 import { toolNamesMatch } from "../../utils/mcp-name"
-import { isMcpServerAllowedForMode, isMcpToolAllowedForMode } from "../../utils/mcp-filter"
+import { isMcpServerAllowedForMode, isMcpToolAllowedForMode, isCustomModeWithoutConfig } from "../../utils/mcp-filter"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -42,6 +42,15 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			// Defense-in-depth: check MCP server/tool filtering for the current mode.
 			// FLAG-E: 10-second TTL cache, no disk I/O per call
 			const customModes = await task.providerRef.deref()?.customModesManager?.getCustomModes()
+			// ISSUE-15: deny-by-default when custom mode config is unavailable
+			if (isCustomModeWithoutConfig(task.taskMode, customModes)) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("use_mcp_tool")
+				const msg = 'MCP denied: custom mode "' + task.taskMode + '" config is unavailable'
+				await task.say("error", msg)
+				pushToolResult(formatResponse.toolError(msg))
+				return
+			}
 			if (!isMcpServerAllowedForMode(serverName, task.taskMode, customModes)) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("use_mcp_tool")

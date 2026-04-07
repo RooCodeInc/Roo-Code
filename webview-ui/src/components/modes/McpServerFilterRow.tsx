@@ -86,7 +86,7 @@ export function McpServerFilterRow({
 		function () {
 			if (isDisabled) {
 				// Re-enable: remove disabled flag, keep other filter settings
-				var updated: McpServerFilter | undefined = filter ? { ...filter, disabled: undefined } : undefined
+				let updated: McpServerFilter | undefined = filter ? { ...filter, disabled: undefined } : undefined
 				// Clean up empty object
 				if (updated && !updated.allowedTools && !updated.disabledTools && !updated.disabled) {
 					updated = undefined
@@ -94,14 +94,14 @@ export function McpServerFilterRow({
 				onFilterChange(serverName, updated)
 			} else {
 				// Disable the server
-				var newFilter: McpServerFilter = filter ? { ...filter, disabled: true } : { disabled: true }
+				const newFilter: McpServerFilter = filter ? { ...filter, disabled: true } : { disabled: true }
 				onFilterChange(serverName, newFilter)
 			}
 		},
 		[isDisabled, filter, serverName, onFilterChange],
 	)
 
-	var handleToggleExpand = useCallback(
+	const handleToggleExpand = useCallback(
 		function () {
 			if (!isDisabled) {
 				setIsExpanded(function (prev) {
@@ -112,17 +112,17 @@ export function McpServerFilterRow({
 		[isDisabled],
 	)
 
-	var handleFilterModeChange = useCallback(
+	const handleFilterModeChange = useCallback(
 		function (newMode: FilterMode) {
 			if (newMode === "allowAll") {
-				var cleaned: McpServerFilter | undefined = filter ? { disabled: filter.disabled } : undefined
+				let cleaned: McpServerFilter | undefined = filter ? { disabled: filter.disabled } : undefined
 				if (cleaned && !cleaned.disabled) {
 					cleaned = undefined
 				}
 				onFilterChange(serverName, cleaned)
 			} else if (newMode === "allowlist") {
 				// Start allowlist with all tools included
-				var allNames = availableTools.map(function (t) {
+				const allNames = availableTools.map(function (t) {
 					return t.name
 				})
 				onFilterChange(serverName, {
@@ -142,13 +142,13 @@ export function McpServerFilterRow({
 		[filter, serverName, availableTools, onFilterChange],
 	)
 
-	var handleToggleTool = useCallback(
+	const handleToggleTool = useCallback(
 		function (toolName: string) {
-			var currentlyEnabled = isToolEnabled(toolName, filter)
+			const currentlyEnabled = isToolEnabled(toolName, filter)
 
 			if (filterMode === "allowlist") {
-				var currentAllowed = filter?.allowedTools || []
-				var newAllowed = currentlyEnabled
+				const currentAllowed = filter?.allowedTools || []
+				const newAllowed = currentlyEnabled
 					? currentAllowed.filter(function (n) {
 							return n !== toolName
 						})
@@ -158,8 +158,8 @@ export function McpServerFilterRow({
 					allowedTools: newAllowed,
 				})
 			} else if (filterMode === "blocklist") {
-				var currentDisabled = filter?.disabledTools || []
-				var newDisabled = currentlyEnabled
+				const currentDisabled = filter?.disabledTools || []
+				const newDisabled = currentlyEnabled
 					? currentDisabled.concat([toolName])
 					: currentDisabled.filter(function (n) {
 							return n !== toolName
@@ -271,7 +271,7 @@ export function McpServerFilterRow({
 					{filterMode !== "allowAll" && availableTools.length > 0 && (
 						<div className="flex flex-col gap-1">
 							{availableTools.map(function (tool) {
-								var enabled = isToolEnabled(tool.name, filter)
+								const enabled = isToolEnabled(tool.name, filter)
 								return (
 									<div
 										key={tool.name}

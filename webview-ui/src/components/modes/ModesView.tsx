@@ -68,8 +68,8 @@ function getGroupName(group: GroupEntry): ToolGroup {
 
 // Extract MCP options from a groups array
 function getMcpOptionsFromGroups(groups: GroupEntry[]): McpGroupOptions | undefined {
-	for (var i = 0; i < groups.length; i++) {
-		var entry = groups[i]
+	for (let i = 0; i < groups.length; i++) {
+		const entry = groups[i]
 		if (Array.isArray(entry) && entry[0] === "mcp" && entry[1]) {
 			return entry[1] as McpGroupOptions
 		}
@@ -80,7 +80,7 @@ function getMcpOptionsFromGroups(groups: GroupEntry[]): McpGroupOptions | undefi
 // Update MCP options in a groups array
 function updateMcpOptionsInGroups(groups: GroupEntry[], options: McpGroupOptions | undefined): GroupEntry[] {
 	return groups.map(function (entry) {
-		var name = typeof entry === "string" ? entry : entry[0]
+		const name = typeof entry === "string" ? entry : entry[0]
 		if (name === "mcp") {
 			return options ? (["mcp", options] as GroupEntry) : "mcp"
 		}
@@ -100,6 +100,7 @@ const ModesView = () => {
 		setCustomInstructions,
 		customModes,
 		mcpServers,
+		mcpServersLoaded,
 	} = useExtensionState()
 
 	// Use a local state to track the visually active mode
@@ -496,7 +497,7 @@ const ModesView = () => {
 	// when a user toggles a group off and back on.
 	useEffect(() => {
 		for (const cm of customModes || []) {
-			syncCacheFromGroups(groupOptionsCache.current, cm.groups || [])
+			syncCacheFromGroups(groupOptionsCache.current, cm.groups || [], cm.slug)
 		}
 	}, [customModes])
 
@@ -507,22 +508,21 @@ const ModesView = () => {
 				if (!isCustomMode) return // Prevent changes to built-in modes
 				const target = (e as CustomEvent)?.detail?.target || (e.target as HTMLInputElement)
 				const checked = target.checked
-				const oldGroups = customMode?.groups || []
+				if (!customMode) return
+				const oldGroups = customMode.groups || []
 				let newGroups: GroupEntry[]
 				if (checked) {
-					newGroups = addGroupWithCache(groupOptionsCache.current, oldGroups, group)
+					newGroups = addGroupWithCache(groupOptionsCache.current, oldGroups, group, customMode.slug)
 				} else {
-					newGroups = removeGroupWithCache(groupOptionsCache.current, oldGroups, group)
+					newGroups = removeGroupWithCache(groupOptionsCache.current, oldGroups, group, customMode.slug)
 				}
-				if (customMode) {
-					const source = customMode.source || "global"
+				const source = customMode.source || "global"
 
-					updateCustomMode(customMode.slug, {
-						...customMode,
-						groups: newGroups,
-						source,
-					})
-				}
+				updateCustomMode(customMode.slug, {
+					...customMode,
+					groups: newGroups,
+					source,
+				})
 			},
 		[updateCustomMode],
 	)
@@ -1212,15 +1212,19 @@ const ModesView = () => {
 									return (
 										<McpFilterConfig
 											mcpServers={mcpServers || []}
+											isLoading={!mcpServersLoaded}
 											mcpGroupOptions={mcpOptions}
 											onOptionsChange={(options) => {
 												const oldGroups = customMode.groups || []
 												const newGroups = updateMcpOptionsInGroups(oldGroups, options)
 												// Also update the cache so toggle off/on preserves config
 												if (options) {
-													groupOptionsCache.current.set("mcp", options)
+													groupOptionsCache.current.set(
+														customMode.slug + ":" + "mcp",
+														options,
+													)
 												} else {
-													groupOptionsCache.current.delete("mcp")
+													groupOptionsCache.current.delete(customMode.slug + ":" + "mcp")
 												}
 												updateCustomMode(customMode.slug, {
 													...customMode,
@@ -1265,6 +1269,7 @@ const ModesView = () => {
 									return (
 										<McpFilterConfig
 											mcpServers={mcpServers || []}
+											isLoading={!mcpServersLoaded}
 											mcpGroupOptions={mcpOptions}
 											onOptionsChange={() => {}}
 											isEditing={false}

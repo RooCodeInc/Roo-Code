@@ -10,6 +10,7 @@ export interface McpFilterConfigProps {
 	mcpGroupOptions: McpGroupOptions | undefined
 	onOptionsChange: (options: McpGroupOptions | undefined) => void
 	isEditing: boolean
+	isLoading?: boolean
 }
 
 function getDefaultPolicy(options: McpGroupOptions | undefined): "allow" | "deny" {
@@ -43,11 +44,11 @@ function buildCleanOptions(
 	policy: "allow" | "deny",
 	servers: Record<string, McpServerFilter> | undefined,
 ): McpGroupOptions | undefined {
-	var hasServers = servers && Object.keys(servers).length > 0
+	const hasServers = servers && Object.keys(servers).length > 0
 	if (policy === "allow" && !hasServers) {
 		return undefined
 	}
-	var result: McpGroupOptions = {}
+	const result: McpGroupOptions = {}
 	if (policy !== "allow") {
 		result.mcpDefaultPolicy = policy
 	}
@@ -57,24 +58,30 @@ function buildCleanOptions(
 	return result
 }
 
-export function McpFilterConfig({ mcpServers, mcpGroupOptions, onOptionsChange, isEditing }: McpFilterConfigProps) {
-	var policy = getDefaultPolicy(mcpGroupOptions)
-	var serverCount = mcpServers.length
+export function McpFilterConfig({
+	mcpServers,
+	mcpGroupOptions,
+	onOptionsChange,
+	isEditing,
+	isLoading,
+}: McpFilterConfigProps) {
+	const policy = getDefaultPolicy(mcpGroupOptions)
+	const serverCount = mcpServers.length
 
-	var handlePolicyChange = useCallback(
+	const handlePolicyChange = useCallback(
 		function (newPolicy: string) {
-			var typedPolicy = newPolicy as "allow" | "deny"
-			var currentServers = mcpGroupOptions?.mcpServers
-			var updated = buildCleanOptions(typedPolicy, currentServers)
+			const typedPolicy = newPolicy as "allow" | "deny"
+			const currentServers = mcpGroupOptions?.mcpServers
+			const updated = buildCleanOptions(typedPolicy, currentServers)
 			onOptionsChange(updated)
 		},
 		[mcpGroupOptions, onOptionsChange],
 	)
 
-	var handleServerFilterChange = useCallback(
+	const handleServerFilterChange = useCallback(
 		function (serverName: string, filter: McpServerFilter | undefined) {
-			var currentServers = mcpGroupOptions?.mcpServers || {}
-			var updatedServers: Record<string, McpServerFilter>
+			const currentServers = mcpGroupOptions?.mcpServers || {}
+			let updatedServers: Record<string, McpServerFilter>
 
 			if (filter) {
 				updatedServers = { ...currentServers, [serverName]: filter }
@@ -83,8 +90,8 @@ export function McpFilterConfig({ mcpServers, mcpGroupOptions, onOptionsChange, 
 				delete updatedServers[serverName]
 			}
 
-			var currentPolicy = getDefaultPolicy(mcpGroupOptions)
-			var updated = buildCleanOptions(currentPolicy, updatedServers)
+			const currentPolicy = getDefaultPolicy(mcpGroupOptions)
+			const updated = buildCleanOptions(currentPolicy, updatedServers)
 			onOptionsChange(updated)
 		},
 		[mcpGroupOptions, onOptionsChange],
@@ -92,6 +99,16 @@ export function McpFilterConfig({ mcpServers, mcpGroupOptions, onOptionsChange, 
 
 	// Read-only mode
 	if (!isEditing) {
+		if (isLoading && serverCount === 0) {
+			return (
+				<div
+					className="flex items-center gap-2 py-2 ml-5 text-xs text-vscode-descriptionForeground"
+					data-testid="mcp-loading-spinner">
+					<span className="codicon codicon-loading codicon-modifier-spin" />
+					<span>Loading MCP servers...</span>
+				</div>
+			)
+		}
 		return (
 			<div
 				data-testid="mcp-filter-config-readonly"
@@ -137,14 +154,23 @@ export function McpFilterConfig({ mcpServers, mcpGroupOptions, onOptionsChange, 
 					</span>
 				</div>
 
-				{serverCount === 0 ? (
+				{isLoading && serverCount === 0 && (
+					<div
+						className="flex items-center gap-2 py-2 text-xs text-vscode-descriptionForeground"
+						data-testid="mcp-loading-spinner">
+						<span className="codicon codicon-loading codicon-modifier-spin" />
+						<span>Loading MCP servers...</span>
+					</div>
+				)}
+				{!isLoading && serverCount === 0 && (
 					<div className="text-xs text-vscode-descriptionForeground italic py-2">
 						No MCP servers connected
 					</div>
-				) : (
+				)}
+				{serverCount > 0 && (
 					<div className="space-y-1">
 						{mcpServers.map(function (server) {
-							var tools = (server.tools || []).map(function (t) {
+							const tools = (server.tools || []).map(function (t) {
 								return { name: t.name, description: t.description }
 							})
 							return (

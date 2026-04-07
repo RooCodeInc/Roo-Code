@@ -4,6 +4,13 @@ import { useMcpToolTool } from "../UseMcpToolTool"
 import { Task } from "../../task/Task"
 import { ToolUse } from "../../../shared/tools"
 
+// Mock mcp-filter to bypass SE-1 deny-by-default guards
+vi.mock("../../../utils/mcp-filter", () => ({
+	isMcpServerAllowedForMode: vi.fn().mockReturnValue(true),
+	isMcpToolAllowedForMode: vi.fn().mockReturnValue(true),
+	isCustomModeWithoutConfig: vi.fn().mockReturnValue(false),
+}))
+
 // Mock dependencies
 vi.mock("../../prompts/responses", () => ({
 	formatResponse: {

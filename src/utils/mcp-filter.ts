@@ -52,6 +52,20 @@ function findMode(modeSlug: string, customModes?: ModeConfig[]): ModeConfig | un
 	return DEFAULT_MODES.find((m) => m.slug === modeSlug)
 }
 
+/**
+ * Returns true when a mode slug refers to a custom mode whose config
+ * cannot be resolved. Built-in modes always return false because they
+ * are in DEFAULT_MODES. This is the deny-by-default guard for ISSUE-15.
+ */
+export function isCustomModeWithoutConfig(modeSlug: string, customModes?: ModeConfig[]): boolean {
+	const mode = findMode(modeSlug, customModes)
+	if (mode) {
+		return false
+	}
+	// Mode not found — check if it is a built-in mode
+	return !DEFAULT_MODES.some((m) => m.slug === modeSlug)
+}
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------

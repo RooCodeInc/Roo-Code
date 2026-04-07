@@ -46,14 +46,14 @@ vi.mock("@/components/ui/toggle-switch", function () {
 	}
 })
 
-var mockTools = [
+const mockTools = [
 	{ name: "tool-a", description: "First tool" },
 	{ name: "tool-b", description: "Second tool" },
 	{ name: "tool-c" },
 ]
 
 function renderRow(overrides: Partial<McpServerFilterRowProps> = {}) {
-	var defaultProps: McpServerFilterRowProps = {
+	const defaultProps: McpServerFilterRowProps = {
 		serverName: "test-server",
 		serverStatus: "connected",
 		availableTools: mockTools,
@@ -108,48 +108,48 @@ describe("McpServerFilterRow", function () {
 		})
 
 		it("shows green dot when connected", function () {
-			var { container } = renderRow({ serverStatus: "connected" })
+			const { container } = renderRow({ serverStatus: "connected" })
 			expect(container.querySelector(".bg-vscode-charts-green")).toBeInTheDocument()
 		})
 
 		it("shows yellow dot when connecting", function () {
-			var { container } = renderRow({ serverStatus: "connecting" })
+			const { container } = renderRow({ serverStatus: "connecting" })
 			expect(container.querySelector(".bg-vscode-charts-yellow")).toBeInTheDocument()
 		})
 
 		it("shows gray dot when disconnected", function () {
-			var { container } = renderRow({ serverStatus: "disconnected" })
+			const { container } = renderRow({ serverStatus: "disconnected" })
 			expect(container.querySelector(".bg-vscode-descriptionForeground")).toBeInTheDocument()
 		})
 
 		it("toggle checked when server enabled", function () {
 			renderRow({ filter: undefined })
-			var toggle = screen.getByRole("switch", { name: "Toggle test-server server" })
+			const toggle = screen.getByRole("switch", { name: "Toggle test-server server" })
 			expect(toggle).toHaveAttribute("aria-checked", "true")
 		})
 
 		it("toggle unchecked when server disabled", function () {
 			renderRow({ filter: { disabled: true } })
-			var toggle = screen.getByRole("switch", { name: "Toggle test-server server" })
+			const toggle = screen.getByRole("switch", { name: "Toggle test-server server" })
 			expect(toggle).toHaveAttribute("aria-checked", "false")
 		})
 	})
 
 	describe("toggle server", function () {
 		it("disables server on toggle when enabled", function () {
-			var { onFilterChange } = renderRow({ filter: undefined })
+			const { onFilterChange } = renderRow({ filter: undefined })
 			fireEvent.click(screen.getByRole("switch", { name: "Toggle test-server server" }))
 			expect(onFilterChange).toHaveBeenCalledWith("test-server", { disabled: true })
 		})
 
 		it("enables server on toggle when disabled", function () {
-			var { onFilterChange } = renderRow({ filter: { disabled: true } })
+			const { onFilterChange } = renderRow({ filter: { disabled: true } })
 			fireEvent.click(screen.getByRole("switch", { name: "Toggle test-server server" }))
 			expect(onFilterChange).toHaveBeenCalledWith("test-server", undefined)
 		})
 
 		it("preserves allowedTools when re-enabling", function () {
-			var { onFilterChange } = renderRow({
+			const { onFilterChange } = renderRow({
 				filter: { disabled: true, allowedTools: ["tool-a"] },
 			})
 			fireEvent.click(screen.getByRole("switch", { name: "Toggle test-server server" }))
@@ -174,14 +174,14 @@ describe("McpServerFilterRow", function () {
 
 		it("does not expand when server is disabled", function () {
 			renderRow({ filter: { disabled: true } })
-			var row = screen.getByTestId("mcp-server-filter-row-test-server")
+			const row = screen.getByTestId("mcp-server-filter-row-test-server")
 			expect(row.querySelector(".codicon-chevron-right")).not.toBeInTheDocument()
 		})
 	})
 
 	describe("filter mode selector", function () {
 		function expandRow(overrides: Partial<McpServerFilterRowProps> = {}) {
-			var result = renderRow(overrides)
+			const result = renderRow(overrides)
 			fireEvent.click(screen.getByTestId("mcp-server-header-test-server"))
 			return result
 		}
@@ -192,7 +192,7 @@ describe("McpServerFilterRow", function () {
 		})
 
 		it("switches to allowlist mode", function () {
-			var { onFilterChange } = expandRow()
+			const { onFilterChange } = expandRow()
 			fireEvent.click(screen.getByTestId("mcp-filter-mode-btn-allowlist"))
 			expect(onFilterChange).toHaveBeenCalledWith("test-server", {
 				allowedTools: ["tool-a", "tool-b", "tool-c"],
@@ -201,7 +201,7 @@ describe("McpServerFilterRow", function () {
 		})
 
 		it("switches to blocklist mode", function () {
-			var { onFilterChange } = expandRow()
+			const { onFilterChange } = expandRow()
 			fireEvent.click(screen.getByTestId("mcp-filter-mode-btn-blocklist"))
 			expect(onFilterChange).toHaveBeenCalledWith("test-server", {
 				disabledTools: [],
@@ -210,7 +210,7 @@ describe("McpServerFilterRow", function () {
 		})
 
 		it("switches back to allow all mode", function () {
-			var { onFilterChange } = expandRow({ filter: { allowedTools: ["tool-a"] } })
+			const { onFilterChange } = expandRow({ filter: { allowedTools: ["tool-a"] } })
 			fireEvent.click(screen.getByTestId("mcp-filter-mode-btn-allowAll"))
 			expect(onFilterChange).toHaveBeenCalledWith("test-server", undefined)
 		})
@@ -226,14 +226,14 @@ describe("McpServerFilterRow", function () {
 		})
 
 		it("removes tool from allowlist when unchecked", function () {
-			var { onFilterChange } = renderRow({ filter: { allowedTools: ["tool-a", "tool-b"] } })
+			const { onFilterChange } = renderRow({ filter: { allowedTools: ["tool-a", "tool-b"] } })
 			fireEvent.click(screen.getByTestId("mcp-server-header-test-server"))
 			fireEvent.click(screen.getByRole("checkbox", { name: "Disable tool tool-a" }))
 			expect(onFilterChange).toHaveBeenCalledWith("test-server", { allowedTools: ["tool-b"] })
 		})
 
 		it("adds tool to allowlist when checked", function () {
-			var { onFilterChange } = renderRow({ filter: { allowedTools: ["tool-a"] } })
+			const { onFilterChange } = renderRow({ filter: { allowedTools: ["tool-a"] } })
 			fireEvent.click(screen.getByTestId("mcp-server-header-test-server"))
 			fireEvent.click(screen.getByRole("checkbox", { name: "Enable tool tool-b" }))
 			expect(onFilterChange).toHaveBeenCalledWith("test-server", {
@@ -244,14 +244,14 @@ describe("McpServerFilterRow", function () {
 
 	describe("tool checkboxes in blocklist mode", function () {
 		it("adds tool to disabledTools when unchecked", function () {
-			var { onFilterChange } = renderRow({ filter: { disabledTools: [] } })
+			const { onFilterChange } = renderRow({ filter: { disabledTools: [] } })
 			fireEvent.click(screen.getByTestId("mcp-server-header-test-server"))
 			fireEvent.click(screen.getByRole("checkbox", { name: "Disable tool tool-a" }))
 			expect(onFilterChange).toHaveBeenCalledWith("test-server", { disabledTools: ["tool-a"] })
 		})
 
 		it("removes tool from disabledTools when re-checked", function () {
-			var { onFilterChange } = renderRow({ filter: { disabledTools: ["tool-b"] } })
+			const { onFilterChange } = renderRow({ filter: { disabledTools: ["tool-b"] } })
 			fireEvent.click(screen.getByTestId("mcp-server-header-test-server"))
 			fireEvent.click(screen.getByRole("checkbox", { name: "Enable tool tool-b" }))
 			expect(onFilterChange).toHaveBeenCalledWith("test-server", { disabledTools: [] })
@@ -268,7 +268,7 @@ describe("McpServerFilterRow", function () {
 		it("does not render description span when not present", function () {
 			renderRow({ filter: { disabledTools: [] } })
 			fireEvent.click(screen.getByTestId("mcp-server-header-test-server"))
-			var toolC = screen.getByTestId("mcp-tool-filter-tool-c")
+			const toolC = screen.getByTestId("mcp-tool-filter-tool-c")
 			expect(toolC.querySelectorAll("span").length).toBe(1)
 		})
 	})

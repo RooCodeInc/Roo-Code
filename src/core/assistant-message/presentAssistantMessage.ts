@@ -40,7 +40,7 @@ import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
-import { isMcpToolAllowedForMode } from "../../utils/mcp-filter"
+import { isMcpToolAllowedForMode, isCustomModeWithoutConfig } from "../../utils/mcp-filter"
 import type { ModeConfig } from "@roo-code/types"
 
 /**
@@ -252,11 +252,6 @@ export async function presentAssistantMessage(cline: Task) {
 				pushToolResult(formatResponse.toolError(errorString))
 			}
 
-			if (!mcpBlock.partial) {
-				cline.recordToolUsage("use_mcp_tool") // Record as use_mcp_tool for analytics
-				TelemetryService.instance.captureToolUsage(cline.taskId, "use_mcp_tool")
-			}
-
 			// Resolve sanitized server name back to original server name
 			// The serverName from parsing is sanitized (e.g., "my_server" from "my server")
 			// We need the original name to find the actual MCP connection
@@ -272,6 +267,17 @@ export async function presentAssistantMessage(cline: Task) {
 			// Step 5b: MCP tool filtering using frozen task mode
 			if (!mcpBlock.partial) {
 				const taskCustomModes = await cline.providerRef.deref()?.customModesManager.getCustomModes()
+				// ISSUE-15: deny-by-default when custom mode config is unavailable
+				if (isCustomModeWithoutConfig(cline.taskMode, taskCustomModes)) {
+					const errorMsg =
+						'MCP tool denied: custom mode "' +
+						cline.taskMode +
+						'" config is unavailable. Denying all MCP access.'
+					await cline.say("error", errorMsg)
+					pushToolResult(formatResponse.toolError(errorMsg))
+					cline.didRejectTool = true
+					break
+				}
 				// FLAG-E: getCustomModes() uses a 10-second TTL cache, no disk I/O on each call
 				if (!shouldAllowMcpToolUse(resolvedServerName, mcpBlock.toolName, cline.taskMode, taskCustomModes)) {
 					const errorMsg =
@@ -287,6 +293,12 @@ export async function presentAssistantMessage(cline: Task) {
 					cline.didRejectTool = true
 					break
 				}
+			}
+
+			// Record usage AFTER filter check so rejected tools are not counted (FLAG-1)
+			if (!mcpBlock.partial) {
+				cline.recordToolUsage("use_mcp_tool")
+				TelemetryService.instance.captureToolUsage(cline.taskId, "use_mcp_tool")
 			}
 
 			// Execute the MCP tool using the same handler as use_mcp_tool

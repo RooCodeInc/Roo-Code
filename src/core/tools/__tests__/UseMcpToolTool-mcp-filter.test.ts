@@ -7,6 +7,7 @@ import { Task } from "../../task/Task"
 vi.mock("../../../utils/mcp-filter", () => ({
 	isMcpServerAllowedForMode: vi.fn().mockReturnValue(true),
 	isMcpToolAllowedForMode: vi.fn().mockReturnValue(true),
+	isCustomModeWithoutConfig: vi.fn().mockReturnValue(false),
 }))
 
 import { isMcpServerAllowedForMode, isMcpToolAllowedForMode } from "../../../utils/mcp-filter"

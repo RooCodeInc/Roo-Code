@@ -29,23 +29,23 @@ describe("groupOptionsCache", () => {
 	describe("removeGroupWithCache — caching tuple options", () => {
 		it("caches options when removing a group with tuple entry", () => {
 			const cache = new Map<string, object>()
-			const result = removeGroupWithCache(cache, groupsWithMcpTuple, "mcp")
+			const result = removeGroupWithCache(cache, groupsWithMcpTuple, "mcp", "test-mode")
 
 			// The mcp group should be removed
 			expect(result).toEqual([readGroup, editGroup])
 
-			// The cache should contain the mcp options
-			expect(cache.get("mcp")).toEqual(mcpOptions)
+			// The cache should contain the mcp options under mode-scoped key
+			expect(cache.get("test-mode:mcp")).toEqual(mcpOptions)
 		})
 
 		it("does not cache anything for a plain string group", () => {
 			const cache = new Map<string, object>()
-			const result = removeGroupWithCache(cache, groupsPlainOnly, "mcp")
+			const result = removeGroupWithCache(cache, groupsPlainOnly, "mcp", "test-mode")
 
 			expect(result).toEqual([readGroup, editGroup])
 
 			// Cache should NOT have an entry for mcp
-			expect(cache.has("mcp")).toBe(false)
+			expect(cache.has("test-mode:mcp")).toBe(false)
 		})
 	})
 
@@ -54,10 +54,10 @@ describe("groupOptionsCache", () => {
 			const cache = new Map<string, object>()
 
 			// First remove to populate cache
-			const afterRemove = removeGroupWithCache(cache, groupsWithMcpTuple, "mcp")
+			const afterRemove = removeGroupWithCache(cache, groupsWithMcpTuple, "mcp", "test-mode")
 
 			// Now re-add
-			const afterAdd = addGroupWithCache(cache, afterRemove, "mcp")
+			const afterAdd = addGroupWithCache(cache, afterRemove, "mcp", "test-mode")
 
 			// Should restore as tuple with cached options
 			const mcpEntry = afterAdd.find((g) => (Array.isArray(g) ? g[0] === "mcp" : g === "mcp"))
@@ -69,10 +69,10 @@ describe("groupOptionsCache", () => {
 			const cache = new Map<string, object>()
 
 			// Remove plain 'mcp' — nothing to cache
-			const afterRemove = removeGroupWithCache(cache, groupsPlainOnly, "mcp")
+			const afterRemove = removeGroupWithCache(cache, groupsPlainOnly, "mcp", "test-mode")
 
 			// Re-add — should be plain string since no cache
-			const afterAdd = addGroupWithCache(cache, afterRemove, "mcp")
+			const afterAdd = addGroupWithCache(cache, afterRemove, "mcp", "test-mode")
 
 			const mcpEntry = afterAdd.find((g) => (Array.isArray(g) ? g[0] === "mcp" : g === "mcp"))
 			expect(mcpEntry).toBe("mcp")
@@ -83,17 +83,17 @@ describe("groupOptionsCache", () => {
 		it("populates cache from groups containing tuples", () => {
 			const cache = new Map<string, object>()
 
-			syncCacheFromGroups(cache, groupsWithMcpTuple)
+			syncCacheFromGroups(cache, groupsWithMcpTuple, "test-mode")
 
-			expect(cache.get("mcp")).toEqual(mcpOptions)
+			expect(cache.get("test-mode:mcp")).toEqual(mcpOptions)
 		})
 
 		it("does not populate cache from plain string groups", () => {
 			const cache = new Map<string, object>()
 
-			syncCacheFromGroups(cache, groupsPlainOnly)
+			syncCacheFromGroups(cache, groupsPlainOnly, "test-mode")
 
-			expect(cache.has("mcp")).toBe(false)
+			expect(cache.has("test-mode:mcp")).toBe(false)
 		})
 
 		it("updates cache when called with new tuple data", () => {
@@ -107,12 +107,12 @@ describe("groupOptionsCache", () => {
 			const updatedTuple: GroupEntry = ["mcp", updatedOptions]
 
 			// First sync with original data
-			syncCacheFromGroups(cache, groupsWithMcpTuple)
-			expect(cache.get("mcp")).toEqual(mcpOptions)
+			syncCacheFromGroups(cache, groupsWithMcpTuple, "test-mode")
+			expect(cache.get("test-mode:mcp")).toEqual(mcpOptions)
 
 			// Sync again with updated data
-			syncCacheFromGroups(cache, [readGroup, editGroup, updatedTuple])
-			expect(cache.get("mcp")).toEqual(updatedOptions)
+			syncCacheFromGroups(cache, [readGroup, editGroup, updatedTuple], "test-mode")
+			expect(cache.get("test-mode:mcp")).toEqual(updatedOptions)
 		})
 	})
 
@@ -121,16 +121,16 @@ describe("groupOptionsCache", () => {
 			const cache = new Map<string, object>()
 
 			// Sync cache from initial state (simulates useEffect)
-			syncCacheFromGroups(cache, groupsWithMcpTuple)
+			syncCacheFromGroups(cache, groupsWithMcpTuple, "test-mode")
 
 			// Toggle off (uncheck)
-			const afterUncheck = removeGroupWithCache(cache, groupsWithMcpTuple, "mcp")
+			const afterUncheck = removeGroupWithCache(cache, groupsWithMcpTuple, "mcp", "test-mode")
 
 			// Verify mcp is removed
 			expect(afterUncheck.some((g) => (Array.isArray(g) ? g[0] === "mcp" : g === "mcp"))).toBe(false)
 
 			// Toggle on (re-check)
-			const afterRecheck = addGroupWithCache(cache, afterUncheck, "mcp")
+			const afterRecheck = addGroupWithCache(cache, afterUncheck, "mcp", "test-mode")
 
 			// Verify mcp is restored with full config
 			const restored = afterRecheck.find((g) => (Array.isArray(g) ? g[0] === "mcp" : g === "mcp"))

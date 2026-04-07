@@ -12,22 +12,28 @@ import { syncCacheFromGroups, removeGroupWithCache, addGroupWithCache } from "./
  * back on — without the cache, the MCP filter config (mcpServers,
  * mcpDefaultPolicy) would be discarded on uncheck.
  */
-export function useGroupOptionsCache(groups: GroupEntry[]) {
+export function useGroupOptionsCache(groups: GroupEntry[], modeSlug: string) {
 	const groupOptionsCache = useRef<Map<string, object>>(new Map())
 
 	// Sync cache with external state: if external state has tuple
 	// entries, update the cache so that toggles preserve them.
 	useEffect(() => {
-		syncCacheFromGroups(groupOptionsCache.current, groups)
-	}, [groups])
+		syncCacheFromGroups(groupOptionsCache.current, groups, modeSlug)
+	}, [groups, modeSlug])
 
-	const removeGroup = useCallback((currentGroups: GroupEntry[], groupName: string): GroupEntry[] => {
-		return removeGroupWithCache(groupOptionsCache.current, currentGroups, groupName)
-	}, [])
+	const removeGroup = useCallback(
+		(currentGroups: GroupEntry[], groupName: string): GroupEntry[] => {
+			return removeGroupWithCache(groupOptionsCache.current, currentGroups, groupName, modeSlug)
+		},
+		[modeSlug],
+	)
 
-	const addGroup = useCallback((currentGroups: GroupEntry[], groupName: ToolGroup): GroupEntry[] => {
-		return addGroupWithCache(groupOptionsCache.current, currentGroups, groupName)
-	}, [])
+	const addGroup = useCallback(
+		(currentGroups: GroupEntry[], groupName: ToolGroup): GroupEntry[] => {
+			return addGroupWithCache(groupOptionsCache.current, currentGroups, groupName, modeSlug)
+		},
+		[modeSlug],
+	)
 
 	return { removeGroup, addGroup, cache: groupOptionsCache }
 }
