@@ -56,11 +56,8 @@
 			"label": "Kwetsbaarheid ontdekt?",
 			"link": "Volg ons openbaarmakingsproces"
 		},
-		"contact": {
-			"label": "Moet je met ons praten? Schrijf"
-		},
 		"community": "Wil je tips of gewoon even hangen met andere Roo Code-gebruikers? Sluit je aan bij <redditLink>reddit.com/r/RooCode</redditLink> of <discordLink>discord.gg/roocode</discordLink>",
-		"contactAndCommunity": "Contact & Gemeenschap",
+		"communityHeader": "Gemeenschap",
 		"manageSettings": "Instellingen Beheren",
 		"debugMode": {
 			"label": "Debugmodus inschakelen",
