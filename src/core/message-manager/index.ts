@@ -1,6 +1,6 @@
 import * as path from "path"
 import { Task } from "../task/Task"
-import { ClineMessage } from "@roo-code/types"
+import { ClineMessage } from "@jabberwock/types"
 import { ApiMessage } from "../task-persistence/apiMessages"
 import { cleanupAfterTruncation } from "../condense"
 import { OutputInterceptor } from "../../integrations/terminal/OutputInterceptor"

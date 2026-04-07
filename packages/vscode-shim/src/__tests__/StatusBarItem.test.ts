@@ -1,5 +1,5 @@
-import { StatusBarItem } from "../classes/StatusBarItem.js"
-import { StatusBarAlignment } from "../types.js"
+import { StatusBarItem } from "../classes/StatusBarItem.ts"
+import { StatusBarAlignment } from "../types.ts"
 
 describe("StatusBarItem", () => {
 	describe("constructor", () => {

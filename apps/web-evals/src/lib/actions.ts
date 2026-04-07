@@ -1,6 +1,6 @@
 "use server"
 
-import { client, getProductionClient, copyRun } from "@roo-code/evals"
+import { client, getProductionClient, copyRun } from "@jabberwock/evals"
 
 export async function copyRunToProduction(runId: number) {
 	try {

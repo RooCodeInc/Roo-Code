@@ -1,4 +1,4 @@
-// pnpm --filter @roo-code/types test src/__tests__/telemetry.test.ts
+// pnpm --filter @jabberwock/types test src/__tests__/telemetry.test.ts
 
 import {
 	getErrorStatusCode,
@@ -12,7 +12,7 @@ import {
 	ConsecutiveMistakeError,
 	isConsecutiveMistakeError,
 	extractConsecutiveMistakeErrorProperties,
-} from "../telemetry.js"
+} from "../telemetry.ts"
 
 describe("telemetry error utilities", () => {
 	describe("getErrorStatusCode", () => {

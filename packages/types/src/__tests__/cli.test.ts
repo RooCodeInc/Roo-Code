@@ -3,7 +3,7 @@ import {
 	rooCliFinalOutputSchema,
 	rooCliInputCommandSchema,
 	rooCliStreamEventSchema,
-} from "../cli.js"
+} from "../cli.ts"
 
 describe("CLI types", () => {
 	describe("rooCliInputCommandSchema", () => {

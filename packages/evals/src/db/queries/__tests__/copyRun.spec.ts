@@ -20,7 +20,7 @@ describe("copyRun", () => {
 	beforeEach(async () => {
 		const run = await createRun({
 			model: "gpt-4.1-mini",
-			socketPath: "/tmp/roo.sock",
+			socketPath: "/tmp/jabberwock.sock",
 			description: "Test run for copying",
 			concurrency: 4,
 			timeout: 5,

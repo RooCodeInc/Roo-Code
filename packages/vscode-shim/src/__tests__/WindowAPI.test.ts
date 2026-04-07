@@ -1,6 +1,6 @@
-import { WindowAPI } from "../api/WindowAPI.js"
-import { Uri } from "../classes/Uri.js"
-import { StatusBarAlignment } from "../types.js"
+import { WindowAPI } from "../api/WindowAPI.ts"
+import { Uri } from "../classes/Uri.ts"
+import { StatusBarAlignment } from "../types.ts"
 
 describe("WindowAPI", () => {
 	let windowAPI: WindowAPI

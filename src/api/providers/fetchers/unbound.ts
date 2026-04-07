@@ -1,6 +1,6 @@
 import axios from "axios"
 
-import type { ModelInfo } from "@roo-code/types"
+import type { ModelInfo } from "@jabberwock/types"
 
 import { parseApiPrice } from "../../../shared/cost"
 

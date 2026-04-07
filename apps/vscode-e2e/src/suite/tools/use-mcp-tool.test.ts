@@ -4,12 +4,12 @@ import * as path from "path"
 import * as os from "os"
 import * as vscode from "vscode"
 
-import { RooCodeEventName, type ClineMessage } from "@roo-code/types"
+import { JabberwockEventName, type ClineMessage } from "@jabberwock/types"
 
 import { waitFor, sleep } from "../utils"
 import { setDefaultSuiteTimeout } from "../test-utils"
 
-suite.skip("Roo Code use_mcp_tool Tool", function () {
+suite.skip("Jabberwock use_mcp_tool Tool", function () {
 	setDefaultSuiteTimeout(this)
 
 	let tempDir: string
@@ -21,7 +21,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 
 	// Create a temporary directory and test files
 	suiteSetup(async () => {
-		tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "roo-test-mcp-"))
+		tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "jabberwock-test-mcp-"))
 
 		// Create test files in VSCode workspace directory
 		const workspaceDir = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || tempDir
@@ -30,15 +30,15 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 		testFiles = {
 			simple: path.join(workspaceDir, `mcp-test-${Date.now()}.txt`),
 			testData: path.join(workspaceDir, `mcp-data-${Date.now()}.json`),
-			mcpConfig: path.join(workspaceDir, ".roo", "mcp.json"),
+			mcpConfig: path.join(workspaceDir, ".jabberwock", "mcp.json"),
 		}
 
 		// Create initial test files
 		await fs.writeFile(testFiles.simple, "Initial content for MCP test")
 		await fs.writeFile(testFiles.testData, JSON.stringify({ test: "data", value: 42 }, null, 2))
 
-		// Create .roo directory and MCP configuration file
-		const rooDir = path.join(workspaceDir, ".roo")
+		// Create .jabberwock directory and MCP configuration file
+		const rooDir = path.join(workspaceDir, ".jabberwock")
 		await fs.mkdir(rooDir, { recursive: true })
 
 		const mcpConfig = {
@@ -74,9 +74,9 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			}
 		}
 
-		// Clean up .roo directory
+		// Clean up .jabberwock directory
 		const workspaceDir = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || tempDir
-		const rooDir = path.join(workspaceDir, ".roo")
+		const rooDir = path.join(workspaceDir, ".jabberwock")
 		try {
 			await fs.rm(rooDir, { recursive: true, force: true })
 		} catch {
@@ -167,7 +167,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				console.error("Error:", message.text)
 			}
 		}
-		api.on(RooCodeEventName.Message, messageHandler)
+		api.on(JabberwockEventName.Message, messageHandler)
 
 		// Listen for task events
 		const taskStartedHandler = (id: string) => {
@@ -176,7 +176,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				console.log("Task started:", id)
 			}
 		}
-		api.on(RooCodeEventName.TaskStarted, taskStartedHandler)
+		api.on(JabberwockEventName.TaskStarted, taskStartedHandler)
 
 		const taskCompletedHandler = (id: string) => {
 			if (id === taskId) {
@@ -184,8 +184,8 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				console.log("Task completed:", id)
 			}
 		}
-		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
-		await sleep(2000) // Wait for Roo Code to fully initialize
+		api.on(JabberwockEventName.TaskCompleted, taskCompletedHandler)
+		await sleep(2000) // Wait for Jabberwock to fully initialize
 
 		// Trigger MCP server detection by opening and modifying the file
 		console.log("Triggering MCP server detection by modifying the config file...")
@@ -194,7 +194,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			const document = await vscode.workspace.openTextDocument(mcpConfigUri)
 			const editor = await vscode.window.showTextDocument(document)
 
-			// Make a small modification to trigger the save event, without this Roo Code won't load the MCP server
+			// Make a small modification to trigger the save event, without this Jabberwock won't load the MCP server
 			const edit = new vscode.WorkspaceEdit()
 			const currentContent = document.getText()
 			const modifiedContent = currentContent.replace(
@@ -284,9 +284,9 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			console.log("Test passed! MCP read_file tool used successfully and task completed")
 		} finally {
 			// Clean up
-			api.off(RooCodeEventName.Message, messageHandler)
-			api.off(RooCodeEventName.TaskStarted, taskStartedHandler)
-			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+			api.off(JabberwockEventName.Message, messageHandler)
+			api.off(JabberwockEventName.TaskStarted, taskStartedHandler)
+			api.off(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
@@ -344,7 +344,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				console.error("Error:", message.text)
 			}
 		}
-		api.on(RooCodeEventName.Message, messageHandler)
+		api.on(JabberwockEventName.Message, messageHandler)
 
 		// Listen for task completion
 		const taskCompletedHandler = (id: string) => {
@@ -352,7 +352,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				_taskCompleted = true
 			}
 		}
-		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+		api.on(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 
 		let taskId: string
 		try {
@@ -413,8 +413,8 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			console.log("Test passed! MCP write_file tool used successfully and task completed")
 		} finally {
 			// Clean up
-			api.off(RooCodeEventName.Message, messageHandler)
-			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+			api.off(JabberwockEventName.Message, messageHandler)
+			api.off(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
@@ -472,7 +472,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				console.error("Error:", message.text)
 			}
 		}
-		api.on(RooCodeEventName.Message, messageHandler)
+		api.on(JabberwockEventName.Message, messageHandler)
 
 		// Listen for task completion
 		const taskCompletedHandler = (id: string) => {
@@ -480,7 +480,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				_taskCompleted = true
 			}
 		}
-		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+		api.on(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 
 		let taskId: string
 		try {
@@ -515,12 +515,12 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				responseText.includes("mcp-test-") || responseText.includes(path.basename(testFiles.simple))
 			const hasDataFile =
 				responseText.includes("mcp-data-") || responseText.includes(path.basename(testFiles.testData))
-			const hasRooDir = responseText.includes(".roo")
+			const hasRooDir = responseText.includes(".jabberwock")
 
-			// At least one of our test files or the .roo directory should be present
+			// At least one of our test files or the .jabberwock directory should be present
 			assert.ok(
 				hasTestFile || hasDataFile || hasRooDir,
-				`MCP server response should contain our test files or .roo directory. Expected to find: '${path.basename(testFiles.simple)}', '${path.basename(testFiles.testData)}', or '.roo'. Got: ${responseText.substring(0, 200)}...`,
+				`MCP server response should contain our test files or .jabberwock directory. Expected to find: '${path.basename(testFiles.simple)}', '${path.basename(testFiles.testData)}', or '.jabberwock'. Got: ${responseText.substring(0, 200)}...`,
 			)
 
 			// Check for typical directory listing indicators
@@ -552,8 +552,8 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			console.log("Test passed! MCP list_directory tool used successfully and task completed")
 		} finally {
 			// Clean up
-			api.off(RooCodeEventName.Message, messageHandler)
-			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+			api.off(JabberwockEventName.Message, messageHandler)
+			api.off(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
@@ -611,7 +611,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				console.error("Error:", message.text)
 			}
 		}
-		api.on(RooCodeEventName.Message, messageHandler)
+		api.on(JabberwockEventName.Message, messageHandler)
 
 		// Listen for task completion
 		const taskCompletedHandler = (id: string) => {
@@ -619,7 +619,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				_taskCompleted = true
 			}
 		}
-		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+		api.on(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 
 		let taskId: string
 		try {
@@ -661,7 +661,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			const hasTestFiles =
 				responseText.includes("mcp-test-") ||
 				responseText.includes("mcp-data-") ||
-				responseText.includes(".roo") ||
+				responseText.includes(".jabberwock") ||
 				responseText.includes(".txt") ||
 				responseText.includes(".json") ||
 				responseText.length > 10 // At least some content indicating directory structure
@@ -691,8 +691,8 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			console.log("Test passed! MCP directory_tree tool used successfully and task completed")
 		} finally {
 			// Clean up
-			api.off(RooCodeEventName.Message, messageHandler)
-			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+			api.off(JabberwockEventName.Message, messageHandler)
+			api.off(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
@@ -730,7 +730,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				console.log("Attempt completion called:", message.text?.substring(0, 200))
 			}
 		}
-		api.on(RooCodeEventName.Message, messageHandler)
+		api.on(JabberwockEventName.Message, messageHandler)
 
 		// Listen for task completion
 		const taskCompletedHandler = (id: string) => {
@@ -738,7 +738,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				_taskCompleted = true
 			}
 		}
-		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+		api.on(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 
 		let taskId: string
 		try {
@@ -762,8 +762,8 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			console.log("Test passed! MCP error handling verified and task completed")
 		} finally {
 			// Clean up
-			api.off(RooCodeEventName.Message, messageHandler)
-			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+			api.off(JabberwockEventName.Message, messageHandler)
+			api.off(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
@@ -832,7 +832,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				console.error("Error:", message.text)
 			}
 		}
-		api.on(RooCodeEventName.Message, messageHandler)
+		api.on(JabberwockEventName.Message, messageHandler)
 
 		// Listen for task completion
 		const taskCompletedHandler = (id: string) => {
@@ -840,7 +840,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				_taskCompleted = true
 			}
 		}
-		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+		api.on(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 
 		let taskId: string
 		try {
@@ -921,8 +921,8 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			console.log("Test passed! MCP message format validation successful and task completed")
 		} finally {
 			// Clean up
-			api.off(RooCodeEventName.Message, messageHandler)
-			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
+			api.off(JabberwockEventName.Message, messageHandler)
+			api.off(JabberwockEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 })

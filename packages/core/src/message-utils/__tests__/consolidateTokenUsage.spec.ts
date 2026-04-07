@@ -1,8 +1,8 @@
 // npx vitest run packages/core/src/message-utils/__tests__/consolidateTokenUsage.spec.ts
 
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage } from "@jabberwock/types"
 
-import { consolidateTokenUsage, hasTokenUsageChanged, hasToolUsageChanged } from "../consolidateTokenUsage.js"
+import { consolidateTokenUsage, hasTokenUsageChanged, hasToolUsageChanged } from "../consolidateTokenUsage.ts"
 
 describe("consolidateTokenUsage", () => {
 	// Helper function to create a basic api_req_started message

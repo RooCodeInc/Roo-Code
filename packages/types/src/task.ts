@@ -1,11 +1,11 @@
 import { z } from "zod"
 
-import { RooCodeEventName } from "./events.js"
-import type { RooCodeSettings } from "./global-settings.js"
-import type { ClineMessage, QueuedMessage, TokenUsage } from "./message.js"
-import type { ToolUsage, ToolName } from "./tool.js"
-import type { StaticAppProperties, GitProperties, TelemetryProperties } from "./telemetry.js"
-import type { TodoItem } from "./todo.js"
+import { JabberwockEventName } from "./events.ts"
+import type { JabberwockSettings } from "./global-settings.ts"
+import type { ClineMessage, QueuedMessage, TokenUsage } from "./message.ts"
+import type { ToolUsage, ToolName } from "./tool.ts"
+import type { StaticAppProperties, GitProperties, TelemetryProperties } from "./telemetry.ts"
+import type { TodoItem } from "./todo.ts"
 
 /**
  * TaskProviderLike
@@ -20,7 +20,7 @@ export interface TaskProviderLike {
 		images?: string[],
 		parentTask?: TaskLike,
 		options?: CreateTaskOptions,
-		configuration?: RooCodeSettings,
+		configuration?: JabberwockSettings,
 	): Promise<TaskLike>
 	cancelTask(): Promise<void>
 	clearTask(): Promise<void>
@@ -58,30 +58,30 @@ export interface TaskProviderLike {
 }
 
 export type TaskProviderEvents = {
-	[RooCodeEventName.TaskCreated]: [task: TaskLike]
-	[RooCodeEventName.TaskStarted]: [taskId: string]
-	[RooCodeEventName.TaskCompleted]: [taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage]
-	[RooCodeEventName.TaskAborted]: [taskId: string]
-	[RooCodeEventName.TaskFocused]: [taskId: string]
-	[RooCodeEventName.TaskUnfocused]: [taskId: string]
-	[RooCodeEventName.TaskActive]: [taskId: string]
-	[RooCodeEventName.TaskInteractive]: [taskId: string]
-	[RooCodeEventName.TaskResumable]: [taskId: string]
-	[RooCodeEventName.TaskIdle]: [taskId: string]
+	[JabberwockEventName.TaskCreated]: [task: TaskLike]
+	[JabberwockEventName.TaskStarted]: [taskId: string]
+	[JabberwockEventName.TaskCompleted]: [taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage]
+	[JabberwockEventName.TaskAborted]: [taskId: string]
+	[JabberwockEventName.TaskFocused]: [taskId: string]
+	[JabberwockEventName.TaskUnfocused]: [taskId: string]
+	[JabberwockEventName.TaskActive]: [taskId: string]
+	[JabberwockEventName.TaskInteractive]: [taskId: string]
+	[JabberwockEventName.TaskResumable]: [taskId: string]
+	[JabberwockEventName.TaskIdle]: [taskId: string]
 
-	[RooCodeEventName.TaskPaused]: [taskId: string]
-	[RooCodeEventName.TaskUnpaused]: [taskId: string]
-	[RooCodeEventName.TaskSpawned]: [taskId: string]
-	[RooCodeEventName.TaskDelegated]: [parentTaskId: string, childTaskId: string]
-	[RooCodeEventName.TaskDelegationCompleted]: [parentTaskId: string, childTaskId: string, summary: string]
-	[RooCodeEventName.TaskDelegationResumed]: [parentTaskId: string, childTaskId: string]
+	[JabberwockEventName.TaskPaused]: [taskId: string]
+	[JabberwockEventName.TaskUnpaused]: [taskId: string]
+	[JabberwockEventName.TaskSpawned]: [taskId: string]
+	[JabberwockEventName.TaskDelegated]: [parentTaskId: string, childTaskId: string]
+	[JabberwockEventName.TaskDelegationCompleted]: [parentTaskId: string, childTaskId: string, summary: string]
+	[JabberwockEventName.TaskDelegationResumed]: [parentTaskId: string, childTaskId: string]
 
-	[RooCodeEventName.TaskUserMessage]: [taskId: string]
+	[JabberwockEventName.TaskUserMessage]: [taskId: string]
 
-	[RooCodeEventName.TaskTokenUsageUpdated]: [taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage]
+	[JabberwockEventName.TaskTokenUsageUpdated]: [taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage]
 
-	[RooCodeEventName.ModeChanged]: [mode: string]
-	[RooCodeEventName.ProviderProfileChanged]: [config: { name: string; provider?: string }]
+	[JabberwockEventName.ModeChanged]: [mode: string]
+	[JabberwockEventName.ProviderProfileChanged]: [config: { name: string; provider?: string }]
 }
 
 /**
@@ -138,29 +138,29 @@ export interface TaskLike {
 
 export type TaskEvents = {
 	// Task Lifecycle
-	[RooCodeEventName.TaskStarted]: []
-	[RooCodeEventName.TaskCompleted]: [taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage]
-	[RooCodeEventName.TaskAborted]: []
-	[RooCodeEventName.TaskFocused]: []
-	[RooCodeEventName.TaskUnfocused]: []
-	[RooCodeEventName.TaskActive]: [taskId: string]
-	[RooCodeEventName.TaskInteractive]: [taskId: string]
-	[RooCodeEventName.TaskResumable]: [taskId: string]
-	[RooCodeEventName.TaskIdle]: [taskId: string]
+	[JabberwockEventName.TaskStarted]: []
+	[JabberwockEventName.TaskCompleted]: [taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage]
+	[JabberwockEventName.TaskAborted]: []
+	[JabberwockEventName.TaskFocused]: []
+	[JabberwockEventName.TaskUnfocused]: []
+	[JabberwockEventName.TaskActive]: [taskId: string]
+	[JabberwockEventName.TaskInteractive]: [taskId: string]
+	[JabberwockEventName.TaskResumable]: [taskId: string]
+	[JabberwockEventName.TaskIdle]: [taskId: string]
 
 	// Subtask Lifecycle
-	[RooCodeEventName.TaskPaused]: [taskId: string]
-	[RooCodeEventName.TaskUnpaused]: [taskId: string]
-	[RooCodeEventName.TaskSpawned]: [taskId: string]
+	[JabberwockEventName.TaskPaused]: [taskId: string]
+	[JabberwockEventName.TaskUnpaused]: [taskId: string]
+	[JabberwockEventName.TaskSpawned]: [taskId: string]
 
 	// Task Execution
-	[RooCodeEventName.Message]: [{ action: "created" | "updated"; message: ClineMessage }]
-	[RooCodeEventName.TaskModeSwitched]: [taskId: string, mode: string]
-	[RooCodeEventName.TaskAskResponded]: []
-	[RooCodeEventName.TaskUserMessage]: [taskId: string]
-	[RooCodeEventName.QueuedMessagesUpdated]: [taskId: string, messages: QueuedMessage[]]
+	[JabberwockEventName.Message]: [{ action: "created" | "updated"; message: ClineMessage }]
+	[JabberwockEventName.TaskModeSwitched]: [taskId: string, mode: string]
+	[JabberwockEventName.TaskAskResponded]: []
+	[JabberwockEventName.TaskUserMessage]: [taskId: string]
+	[JabberwockEventName.QueuedMessagesUpdated]: [taskId: string, messages: QueuedMessage[]]
 
 	// Task Analytics
-	[RooCodeEventName.TaskToolFailed]: [taskId: string, tool: ToolName, error: string]
-	[RooCodeEventName.TaskTokenUsageUpdated]: [taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage]
+	[JabberwockEventName.TaskToolFailed]: [taskId: string, tool: ToolName, error: string]
+	[JabberwockEventName.TaskTokenUsageUpdated]: [taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage]
 }

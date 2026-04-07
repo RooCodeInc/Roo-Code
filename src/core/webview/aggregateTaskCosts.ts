@@ -1,4 +1,4 @@
-import type { HistoryItem } from "@roo-code/types"
+import type { HistoryItem } from "@jabberwock/types"
 
 export interface AggregatedCosts {
 	ownCost: number // This task's own API costs

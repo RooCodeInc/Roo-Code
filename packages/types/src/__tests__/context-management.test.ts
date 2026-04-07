@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { CONTEXT_MANAGEMENT_EVENTS, isContextManagementEvent } from "../context-management.js"
+import { CONTEXT_MANAGEMENT_EVENTS, isContextManagementEvent } from "../context-management.ts"
 
 describe("context-management", () => {
 	describe("CONTEXT_MANAGEMENT_EVENTS", () => {

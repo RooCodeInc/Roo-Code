@@ -17,8 +17,8 @@ describe("Command Mentions", () => {
 			text,
 			"/test/cwd", // cwd
 			undefined, // fileContextTracker
-			undefined, // rooIgnoreController
-			false, // showRooIgnoredFiles
+			undefined, // jabberwockIgnoreController
+			false, // showJabberwockIgnoredFiles
 			true, // includeDiagnosticMessages
 			50, // maxDiagnosticMessages
 		)
@@ -31,7 +31,7 @@ describe("Command Mentions", () => {
 				name: "setup",
 				content: commandContent,
 				source: "project",
-				filePath: "/project/.roo/commands/setup.md",
+				filePath: "/project/.jabberwock/commands/setup.md",
 			})
 
 			const input = "/setup Please help me set up the project"
@@ -53,25 +53,25 @@ describe("Command Mentions", () => {
 					name: "setup",
 					content: setupContent,
 					source: "project",
-					filePath: "/project/.roo/commands/setup.md",
+					filePath: "/project/.jabberwock/commands/setup.md",
 				})
 				.mockResolvedValueOnce({
 					name: "deploy",
 					content: deployContent,
 					source: "project",
-					filePath: "/project/.roo/commands/deploy.md",
+					filePath: "/project/.jabberwock/commands/deploy.md",
 				})
 				.mockResolvedValueOnce({
 					name: "setup",
 					content: setupContent,
 					source: "project",
-					filePath: "/project/.roo/commands/setup.md",
+					filePath: "/project/.jabberwock/commands/setup.md",
 				})
 				.mockResolvedValueOnce({
 					name: "deploy",
 					content: deployContent,
 					source: "project",
-					filePath: "/project/.roo/commands/deploy.md",
+					filePath: "/project/.jabberwock/commands/deploy.md",
 				})
 
 			// Both commands should be recognized
@@ -109,7 +109,7 @@ describe("Command Mentions", () => {
 				getSkillContent: vi.fn().mockResolvedValue({
 					name: "skill-only",
 					description: "Skill-generated command",
-					path: "/mock/.roo/skills/skill-only/SKILL.md",
+					path: "/mock/.jabberwock/skills/skill-only/SKILL.md",
 					source: "project" as const,
 					instructions: "Use skill workflow",
 				}),
@@ -142,14 +142,14 @@ describe("Command Mentions", () => {
 				name: "setup",
 				content: "# Command wins",
 				source: "project",
-				filePath: "/project/.roo/commands/setup.md",
+				filePath: "/project/.jabberwock/commands/setup.md",
 			})
 
 			const skillsManager = {
 				getSkillContent: vi.fn().mockResolvedValue({
 					name: "setup",
 					description: "Setup skill",
-					path: "/mock/.roo/skills/setup/SKILL.md",
+					path: "/mock/.jabberwock/skills/setup/SKILL.md",
 					source: "project" as const,
 					instructions: "Skill should not be used",
 				}),
@@ -191,7 +191,7 @@ describe("Command Mentions", () => {
 				name: "error-command",
 				content: "# Error command",
 				source: "project",
-				filePath: "/project/.roo/commands/error-command.md",
+				filePath: "/project/.jabberwock/commands/error-command.md",
 			})
 
 			const input = "/error-command test"
@@ -207,7 +207,7 @@ describe("Command Mentions", () => {
 				name: "setup-dev",
 				content: "# Dev setup",
 				source: "project",
-				filePath: "/project/.roo/commands/setup-dev.md",
+				filePath: "/project/.jabberwock/commands/setup-dev.md",
 			})
 
 			const input = "/setup-dev for the project"
@@ -238,7 +238,7 @@ npm install
 				name: "complex",
 				content: commandContent,
 				source: "project",
-				filePath: "/project/.roo/commands/complex.md",
+				filePath: "/project/.jabberwock/commands/complex.md",
 			})
 
 			const input = "/complex command"
@@ -258,7 +258,7 @@ npm install
 				name: "empty",
 				content: "",
 				source: "project",
-				filePath: "/project/.roo/commands/empty.md",
+				filePath: "/project/.jabberwock/commands/empty.md",
 			})
 
 			const input = "/empty command"
@@ -341,7 +341,7 @@ npm install
 				name: "setup",
 				content: "# Setup instructions",
 				source: "project",
-				filePath: "/project/.roo/commands/setup.md",
+				filePath: "/project/.jabberwock/commands/setup.md",
 			})
 
 			const input = "/setup the project"
@@ -365,13 +365,13 @@ npm install
 					name: "setup",
 					content: "# Setup instructions",
 					source: "project",
-					filePath: "/project/.roo/commands/setup.md",
+					filePath: "/project/.jabberwock/commands/setup.md",
 				})
 				.mockResolvedValueOnce({
 					name: "deploy",
 					content: "# Deploy instructions",
 					source: "project",
-					filePath: "/project/.roo/commands/deploy.md",
+					filePath: "/project/.jabberwock/commands/deploy.md",
 				})
 
 			const input = "/setup the project\nThen /deploy later"
@@ -386,7 +386,7 @@ npm install
 				name: "build",
 				content: "# Build instructions",
 				source: "project",
-				filePath: "/project/.roo/commands/build.md",
+				filePath: "/project/.jabberwock/commands/build.md",
 			})
 
 			// At the beginning - should match

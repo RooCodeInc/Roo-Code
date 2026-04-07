@@ -7,7 +7,7 @@ import {
 	VSCodeTextField,
 } from "@vscode/webview-ui-toolkit/react"
 
-import type { ProviderSettings } from "@roo-code/types"
+import type { ProviderSettings } from "@jabberwock/types"
 
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { validateApiConfiguration } from "@src/utils/validate"
@@ -18,12 +18,12 @@ import { Button } from "@src/components/ui"
 import ApiOptions from "../settings/ApiOptions"
 import { Tab, TabContent } from "../common/Tab"
 
-import RooHero from "./RooHero"
+import JabberwockHero from "./JabberwockHero"
 import { Trans } from "react-i18next"
 import { ArrowLeft, ArrowRight, BadgeInfo, Brain, TriangleAlert } from "lucide-react"
 import { buildDocLink } from "@/utils/docLinks"
 
-type ProviderOption = "roo" | "custom"
+type ProviderOption = "jabberwock" | "custom"
 type AuthOrigin = "landing" | "providerSelection"
 
 const WelcomeViewProvider = () => {
@@ -47,7 +47,7 @@ const WelcomeViewProvider = () => {
 
 	// When auth completes during the provider signup flow, either:
 	// 1. If user skipped model selection (cloudAuthSkipModel=true), navigate to provider selection with "custom" selected
-	// 2. Otherwise, save the Roo config and navigate to chat
+	// 2. Otherwise, save the Jabberwock config and navigate to chat
 	useEffect(() => {
 		if (cloudIsAuthenticated && authInProgress) {
 			if (cloudAuthSkipModel) {
@@ -60,7 +60,7 @@ const WelcomeViewProvider = () => {
 			} else {
 				// Auth completed from provider signup flow - save the config now
 				const rooConfig: ProviderSettings = {
-					apiProvider: "roo",
+					apiProvider: "jabberwock",
 				}
 				vscode.postMessage({
 					type: "upsertApiConfiguration",
@@ -91,18 +91,18 @@ const WelcomeViewProvider = () => {
 	)
 
 	const handleGetStarted = useCallback(() => {
-		// Landing screen - always trigger auth with Roo
+		// Landing screen - always trigger auth with Jabberwock
 		if (selectedProvider === null) {
 			setAuthOrigin("landing")
-			vscode.postMessage({ type: "rooCloudSignIn", useProviderSignup: true })
+			vscode.postMessage({ type: "jabberwockCloudSignIn", useProviderSignup: true })
 			setAuthInProgress(true)
 		}
 		// Provider Selection screen
-		else if (selectedProvider === "roo") {
+		else if (selectedProvider === "jabberwock") {
 			if (cloudIsAuthenticated) {
 				// Already authenticated - save config and finish
 				const rooConfig: ProviderSettings = {
-					apiProvider: "roo",
+					apiProvider: "jabberwock",
 				}
 				vscode.postMessage({
 					type: "upsertApiConfiguration",
@@ -112,7 +112,7 @@ const WelcomeViewProvider = () => {
 			} else {
 				// Need to authenticate
 				setAuthOrigin("providerSelection")
-				vscode.postMessage({ type: "rooCloudSignIn", useProviderSignup: true })
+				vscode.postMessage({ type: "jabberwockCloudSignIn", useProviderSignup: true })
 				setAuthInProgress(true)
 			}
 		} else {
@@ -130,8 +130,8 @@ const WelcomeViewProvider = () => {
 	}, [selectedProvider, cloudIsAuthenticated, apiConfiguration, currentApiConfigName])
 
 	const handleNoAccount = useCallback(() => {
-		// Navigate to Provider Selection, defaulting to Roo option
-		setSelectedProvider("roo")
+		// Navigate to Provider Selection, defaulting to Jabberwock option
+		setSelectedProvider("jabberwock")
 	}, [])
 
 	const handleBackToLanding = useCallback(() => {
@@ -164,7 +164,7 @@ const WelcomeViewProvider = () => {
 		setTimeout(() => {
 			if (url.trim() && url.includes("://") && url.includes("/auth/clerk/callback")) {
 				setManualErrorMessage(false)
-				vscode.postMessage({ type: "rooCloudManualUrl", text: url.trim() })
+				vscode.postMessage({ type: "jabberwockCloudManualUrl", text: url.trim() })
 			}
 		}, 100)
 	}
@@ -173,14 +173,14 @@ const WelcomeViewProvider = () => {
 		const url = manualUrl.trim()
 		if (url && url.includes("://") && url.includes("/auth/clerk/callback")) {
 			setManualErrorMessage(false)
-			vscode.postMessage({ type: "rooCloudManualUrl", text: url })
+			vscode.postMessage({ type: "jabberwockCloudManualUrl", text: url })
 		} else {
 			setManualErrorMessage(true)
 		}
 	}, [manualUrl])
 
 	const handleOpenSignupUrl = () => {
-		vscode.postMessage({ type: "rooCloudSignIn", useProviderSignup: false })
+		vscode.postMessage({ type: "jabberwockCloudSignIn", useProviderSignup: false })
 	}
 
 	// Render the waiting for cloud state
@@ -239,7 +239,7 @@ const WelcomeViewProvider = () => {
 												ref={manualUrlInputRef as any}
 												value={manualUrl}
 												onKeyUp={handleManualUrlChange}
-												placeholder="vscode://RooVeterinaryInc.roo-cline/auth/clerk/callback?state=..."
+												placeholder="vscode://RooVeterinaryInc.jabberwock/auth/clerk/callback?state=..."
 												className="flex-1"
 											/>
 											<Button
@@ -255,7 +255,7 @@ const WelcomeViewProvider = () => {
 												components={{
 													DocsLink: (
 														<a
-															href={buildDocLink("roo-code-cloud/login", "setup")}
+															href={buildDocLink("jabberwock-cloud/login", "setup")}
 															target="_blank"
 															rel="noopener noreferrer"
 															className="text-vscode-textLink-foreground hover:underline">
@@ -292,7 +292,7 @@ const WelcomeViewProvider = () => {
 		return (
 			<Tab>
 				<TabContent className="relative flex flex-col gap-4 p-6 justify-center">
-					<RooHero />
+					<JabberwockHero />
 					<h2 className="mt-0 mb-0 text-xl">{t("welcome:landing.greeting")}</h2>
 
 					<div className="space-y-4 leading-normal">
@@ -325,7 +325,7 @@ const WelcomeViewProvider = () => {
 		)
 	}
 
-	// Provider Selection screen - shown when selectedProvider is "roo" or "custom"
+	// Provider Selection screen - shown when selectedProvider is "jabberwock" or "custom"
 	return (
 		<Tab>
 			<TabContent className="flex flex-col gap-4 p-6 justify-center">
@@ -344,16 +344,16 @@ const WelcomeViewProvider = () => {
 								(e.target as HTMLInputElement)) as HTMLInputElement
 							setSelectedProvider(target.value as ProviderOption)
 						}}>
-						{/* Roo Code Router Option */}
-						<VSCodeRadio value="roo" className="flex items-start gap-2">
+						{/* Jabberwock Router Option */}
+						<VSCodeRadio value="jabberwock" className="flex items-start gap-2">
 							<div className="flex-1 space-y-1 cursor-pointer">
 								<p className="text-lg font-semibold block -mt-1">
-									{t("welcome:providerSignup.rooCloudProvider")}
+									{t("welcome:providerSignup.jabberwockCloudProvider")}
 								</p>
 								<p className="text-base text-vscode-descriptionForeground mt-0">
-									{t("welcome:providerSignup.rooCloudDescription")}{" "}
+									{t("welcome:providerSignup.jabberwockCloudDescription")}{" "}
 									<VSCodeLink
-										href="https://roocode.com/provider/pricing?utm_source=extension&utm_medium=welcome-screen&utm_campaign=provider-signup&utm_content=learn-more"
+										href="https://jabberwock.com/provider/pricing?utm_source=extension&utm_medium=welcome-screen&utm_campaign=provider-signup&utm_content=learn-more"
 										className="cursor-pointer">
 										{t("welcome:providerSignup.learnMore")}
 									</VSCodeLink>

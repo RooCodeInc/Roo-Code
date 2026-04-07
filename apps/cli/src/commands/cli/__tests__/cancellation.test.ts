@@ -7,7 +7,7 @@ import {
 
 describe("isCancellationLikeError", () => {
 	it("returns true for aborted error messages", () => {
-		expect(isCancellationLikeError(new Error("[RooCode#say] task 123 aborted"))).toBe(true)
+		expect(isCancellationLikeError(new Error("[Jabberwock#say] task 123 aborted"))).toBe(true)
 		expect(isCancellationLikeError("AbortError: operation aborted")).toBe(true)
 	})
 

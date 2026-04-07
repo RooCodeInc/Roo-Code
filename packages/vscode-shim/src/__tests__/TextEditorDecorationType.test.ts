@@ -1,4 +1,4 @@
-import { TextEditorDecorationType } from "../classes/TextEditorDecorationType.js"
+import { TextEditorDecorationType } from "../classes/TextEditorDecorationType.ts"
 
 describe("TextEditorDecorationType", () => {
 	describe("constructor", () => {

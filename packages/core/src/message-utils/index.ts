@@ -3,10 +3,10 @@ export {
 	consolidateTokenUsage,
 	hasTokenUsageChanged,
 	hasToolUsageChanged,
-} from "./consolidateTokenUsage.js"
+} from "./consolidateTokenUsage.ts"
 
-export { consolidateApiRequests } from "./consolidateApiRequests.js"
+export { consolidateApiRequests } from "./consolidateApiRequests.ts"
 
-export { consolidateCommands, COMMAND_OUTPUT_STRING } from "./consolidateCommands.js"
+export { consolidateCommands, COMMAND_OUTPUT_STRING } from "./consolidateCommands.ts"
 
-export { safeJsonParse } from "./safeJsonParse.js"
+export { safeJsonParse } from "./safeJsonParse.ts"

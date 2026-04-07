@@ -8,8 +8,8 @@
 		"noMatchFound": "모드를 찾을 수 없습니다",
 		"editModesConfig": "모드 구성 편집",
 		"editGlobalModes": "전역 모드 편집",
-		"editProjectModes": "프로젝트 모드 편집 (.roomodes)",
-		"createModeHelpText": "모드는 Roo의 행동을 맞춤화하는 특화된 페르소나입니다. <0>모드 사용에 대해 알아보기</0> 또는 <1>모드 사용자 정의하기.</1>",
+		"editProjectModes": "프로젝트 모드 편집 (.jabberwockmodes)",
+		"createModeHelpText": "모드는 Jabberwock의 행동을 맞춤화하는 특화된 페르소나입니다. <0>모드 사용에 대해 알아보기</0> 또는 <1>모드 사용자 정의하기.</1>",
 		"selectMode": "모드 검색"
 	},
 	"apiConfiguration": {
@@ -33,7 +33,7 @@
 	"roleDefinition": {
 		"title": "역할 정의",
 		"resetToDefault": "기본값으로 재설정",
-		"description": "이 모드에 대한 Roo의 전문성과 성격을 정의하세요. 이 설명은 Roo가 자신을 어떻게 표현하고 작업에 접근하는지 형성합니다."
+		"description": "이 모드에 대한 Jabberwock의 전문성과 성격을 정의하세요. 이 설명은 Jabberwock가 자신을 어떻게 표현하고 작업에 접근하는지 형성합니다."
 	},
 	"description": {
 		"title": "짧은 설명 (사람용)",
@@ -49,7 +49,7 @@
 		"title": "모드별 사용자 지정 지침 (선택 사항)",
 		"resetToDefault": "기본값으로 재설정",
 		"description": "{{modeName}} 모드에 대한 특정 행동 지침을 추가하세요.",
-		"loadFromFile": "{{mode}} 모드에 특정한 사용자 지정 지침은 작업 공간의 <span>.roo/rules-{{slug}}/</span> 폴더 또는 전역 <0>.roo/rules-{{slug}}/</0>에서도 로드할 수 있습니다 (.roorules-{{slug}} 및 .clinerules-{{slug}}는 더 이상 사용되지 않으며 곧 작동을 중지합니다)."
+		"loadFromFile": "{{mode}} 모드에 특정한 사용자 지정 지침은 작업 공간의 <span>.jabberwock/rules-{{slug}}/</span> 폴더 또는 전역 <0>.jabberwock/rules-{{slug}}/</0>에서도 로드할 수 있습니다 (.jabberwockrules-{{slug}} 및 .clinerules-{{slug}}는 더 이상 사용되지 않으며 곧 작동을 중지합니다)."
 	},
 	"exportMode": {
 		"title": "모드 내보내기",
@@ -67,13 +67,13 @@
 		},
 		"project": {
 			"label": "프로젝트 수준",
-			"description": "이 작업 공간에서만 사용할 수 있습니다. 내보낸 모드에 규칙 파일이 포함된 경우 .roo/rules-{slug}/ 폴더에 다시 생성됩니다."
+			"description": "이 작업 공간에서만 사용할 수 있습니다. 내보낸 모드에 규칙 파일이 포함된 경우 .jabberwock/rules-{slug}/ 폴더에 다시 생성됩니다."
 		}
 	},
 	"globalCustomInstructions": {
 		"title": "모든 모드에 대한 사용자 지정 지침",
 		"description": "이 지침은 모든 모드에 적용됩니다. 아래의 모드별 지침으로 향상될 수 있는 기본 동작 세트를 제공합니다. <0>더 알아보기</0>",
-		"loadFromFile": "지침은 작업 공간의 <span>.roo/rules/</span> 폴더 또는 전역 <0>.roo/rules/</0>에서도 로드할 수 있습니다 (.roorules 및 .clinerules는 더 이상 사용되지 않으며 곧 작동을 중지합니다)."
+		"loadFromFile": "지침은 작업 공간의 <span>.jabberwock/rules/</span> 폴더 또는 전역 <0>.jabberwock/rules/</0>에서도 로드할 수 있습니다 (.jabberwockrules 및 .clinerules는 더 이상 사용되지 않으며 곧 작동을 중지합니다)."
 	},
 	"systemPrompt": {
 		"preview": "시스템 프롬프트 미리보기",
@@ -102,7 +102,7 @@
 		"types": {
 			"ENHANCE": {
 				"label": "프롬프트 향상",
-				"description": "입력에 맞춤화된 제안이나 개선을 얻기 위해 프롬프트 향상을 사용하세요. 이를 통해 Roo가 의도를 이해하고 최상의 응답을 제공할 수 있습니다. 채팅에서 ✨ 아이콘을 통해 이용 가능합니다."
+				"description": "입력에 맞춤화된 제안이나 개선을 얻기 위해 프롬프트 향상을 사용하세요. 이를 통해 Jabberwock가 의도를 이해하고 최상의 응답을 제공할 수 있습니다. 채팅에서 ✨ 아이콘을 통해 이용 가능합니다."
 			},
 			"CONDENSE": {
 				"label": "컨텍스트 압축",
@@ -161,13 +161,13 @@
 				"description": "모든 작업 공간에서 사용 가능"
 			},
 			"project": {
-				"label": "프로젝트별 (.roomodes)",
+				"label": "프로젝트별 (.jabberwockmodes)",
 				"description": "이 작업 공간에서만 사용 가능, 전역보다 우선"
 			}
 		},
 		"roleDefinition": {
 			"label": "역할 정의",
-			"description": "이 모드에 대한 Roo의 전문성과 성격을 정의하세요."
+			"description": "이 모드에 대한 Jabberwock의 전문성과 성격을 정의하세요."
 		},
 		"whenToUse": {
 			"label": "사용 시기 (선택 사항)",

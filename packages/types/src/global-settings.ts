@@ -1,20 +1,20 @@
 import { z } from "zod"
 
-import { type Keys } from "./type-fu.js"
+import { type Keys } from "./type-fu.ts"
 import {
 	type ProviderSettings,
 	PROVIDER_SETTINGS_KEYS,
 	providerSettingsEntrySchema,
 	providerSettingsSchema,
-} from "./provider-settings.js"
-import { historyItemSchema } from "./history.js"
-import { codebaseIndexModelsSchema, codebaseIndexConfigSchema } from "./codebase-index.js"
-import { experimentsSchema } from "./experiment.js"
-import { telemetrySettingsSchema } from "./telemetry.js"
-import { modeConfigSchema } from "./mode.js"
-import { customModePromptsSchema, customSupportPromptsSchema } from "./mode.js"
-import { toolNamesSchema } from "./tool.js"
-import { languagesSchema } from "./vscode.js"
+} from "./provider-settings.ts"
+import { historyItemSchema } from "./history.ts"
+import { codebaseIndexModelsSchema, codebaseIndexConfigSchema } from "./codebase-index.ts"
+import { experimentsSchema } from "./experiment.ts"
+import { telemetrySettingsSchema } from "./telemetry.ts"
+import { modeConfigSchema } from "./mode.ts"
+import { customModePromptsSchema, customSupportPromptsSchema } from "./mode.ts"
+import { toolNamesSchema } from "./tool.ts"
+import { languagesSchema } from "./vscode.ts"
 
 /**
  * Default delay in milliseconds after writes to allow diagnostics to detect potential problems.
@@ -89,7 +89,7 @@ export const globalSettingsSchema = z.object({
 	dismissedUpsells: z.array(z.string()).optional(),
 
 	// Image generation settings (experimental) - flattened for simplicity
-	imageGenerationProvider: z.enum(["openrouter", "roo"]).optional(),
+	imageGenerationProvider: z.enum(["openrouter", "jabberwock"]).optional(),
 	openRouterImageApiKey: z.string().optional(),
 	openRouterImageGenerationSelectedModel: z.string().optional(),
 
@@ -162,7 +162,7 @@ export const globalSettingsSchema = z.object({
 
 	maxOpenTabsContext: z.number().optional(),
 	maxWorkspaceFiles: z.number().optional(),
-	showRooIgnoredFiles: z.boolean().optional(),
+	showJabberwockIgnoredFiles: z.boolean().optional(),
 	enableSubfolderRules: z.boolean().optional(),
 	maxImageFileSize: z.number().optional(),
 	maxTotalImageSize: z.number().optional(),
@@ -197,6 +197,7 @@ export const globalSettingsSchema = z.object({
 	customModes: z.array(modeConfigSchema).optional(),
 	customModePrompts: customModePromptsSchema.optional(),
 	customSupportPrompts: customSupportPromptsSchema.optional(),
+	systemPromptTemplates: z.record(z.string(), z.string()).optional(),
 	enhancementApiConfigId: z.string().optional(),
 	includeTaskHistoryInEnhance: z.boolean().optional(),
 	historyPreviewCollapsed: z.boolean().optional(),
@@ -218,7 +219,7 @@ export const globalSettingsSchema = z.object({
 
 	/**
 	 * Path to worktree to auto-open after switching workspaces.
-	 * Used by the worktree feature to open the Roo Code sidebar in a new window.
+	 * Used by the worktree feature to open the Jabberwock sidebar in a new window.
 	 */
 	worktreeAutoOpenPath: z.string().optional(),
 	/**
@@ -239,12 +240,12 @@ export type GlobalSettings = z.infer<typeof globalSettingsSchema>
 export const GLOBAL_SETTINGS_KEYS = globalSettingsSchema.keyof().options
 
 /**
- * RooCodeSettings
+ * JabberwockSettings
  */
 
-export const rooCodeSettingsSchema = providerSettingsSchema.merge(globalSettingsSchema)
+export const jabberwockSettingsSchema = providerSettingsSchema.merge(globalSettingsSchema)
 
-export type RooCodeSettings = GlobalSettings & ProviderSettings
+export type JabberwockSettings = GlobalSettings & ProviderSettings
 
 /**
  * SecretState
@@ -296,28 +297,28 @@ export type SecretState = Pick<ProviderSettings, Extract<ProviderSecretKey, keyo
 	[K in GlobalSecretKey]?: string
 }
 
-export const isSecretStateKey = (key: string): key is Keys<SecretState> =>
+export const isSecretStateKey = (key: string): key is Extract<Keys<SecretState>, string> =>
 	SECRET_STATE_KEYS.includes(key as ProviderSecretKey) || GLOBAL_SECRET_KEYS.includes(key as GlobalSecretKey)
 
 /**
  * GlobalState
  */
 
-export type GlobalState = Omit<RooCodeSettings, Keys<SecretState>>
+export type GlobalState = Omit<JabberwockSettings, Keys<SecretState>>
 
 export const GLOBAL_STATE_KEYS = [...GLOBAL_SETTINGS_KEYS, ...PROVIDER_SETTINGS_KEYS].filter(
-	(key: Keys<RooCodeSettings>) => !isSecretStateKey(key),
+	(key: Keys<JabberwockSettings>) => !isSecretStateKey(key as string),
 ) as Keys<GlobalState>[]
 
-export const isGlobalStateKey = (key: string): key is Keys<GlobalState> =>
-	GLOBAL_STATE_KEYS.includes(key as Keys<GlobalState>)
+export const isGlobalStateKey = (key: string): key is Extract<Keys<GlobalState>, string> =>
+	GLOBAL_STATE_KEYS.includes(key as Extract<Keys<GlobalState>, string>)
 
 /**
  * Evals
  */
 
 // Default settings when running evals (unless overridden).
-export const EVALS_SETTINGS: RooCodeSettings = {
+export const EVALS_SETTINGS: JabberwockSettings = {
 	apiProvider: "openrouter",
 
 	lastShownAnnouncementId: "jul-09-2025-3-23-0",
@@ -365,7 +366,7 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	maxOpenTabsContext: 20,
 	maxWorkspaceFiles: 200,
 	maxGitStatusFiles: 20,
-	showRooIgnoredFiles: true,
+	showJabberwockIgnoredFiles: true,
 
 	includeDiagnosticMessages: true,
 	maxDiagnosticMessages: 50,

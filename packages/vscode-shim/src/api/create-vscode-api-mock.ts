@@ -2,16 +2,16 @@
  * Main factory function for creating VSCode API mock
  */
 
-import { machineIdSync } from "../utils/machine-id.js"
-import { logs } from "../utils/logger.js"
+import { machineIdSync } from "../utils/machine-id.ts"
+import { logs } from "../utils/logger.ts"
 
 // Import classes
-import { Uri } from "../classes/Uri.js"
-import { Position } from "../classes/Position.js"
-import { Range } from "../classes/Range.js"
-import { Selection } from "../classes/Selection.js"
-import { EventEmitter } from "../classes/EventEmitter.js"
-import { TextEdit, WorkspaceEdit } from "../classes/TextEdit.js"
+import { Uri } from "../classes/Uri.ts"
+import { Position } from "../classes/Position.ts"
+import { Range } from "../classes/Range.ts"
+import { Selection } from "../classes/Selection.ts"
+import { EventEmitter } from "../classes/EventEmitter.ts"
+import { TextEdit, WorkspaceEdit } from "../classes/TextEdit.ts"
 import {
 	Location,
 	Diagnostic,
@@ -24,15 +24,15 @@ import {
 	LanguageModelToolCallPart,
 	LanguageModelToolResultPart,
 	FileSystemError,
-} from "../classes/Additional.js"
-import { CancellationTokenSource } from "../classes/CancellationToken.js"
-import { StatusBarItem } from "../classes/StatusBarItem.js"
-import { ExtensionContextImpl } from "../context/ExtensionContext.js"
+} from "../classes/Additional.ts"
+import { CancellationTokenSource } from "../classes/CancellationToken.ts"
+import { StatusBarItem } from "../classes/StatusBarItem.ts"
+import { ExtensionContextImpl } from "../context/ExtensionContext.ts"
 
 // Import APIs
-import { WorkspaceAPI } from "./WorkspaceAPI.js"
-import { WindowAPI } from "./WindowAPI.js"
-import { CommandsAPI } from "./CommandsAPI.js"
+import { WorkspaceAPI } from "./WorkspaceAPI.ts"
+import { WindowAPI } from "./WindowAPI.ts"
+import { CommandsAPI } from "./CommandsAPI.ts"
 
 // Import types and enums
 import {
@@ -48,13 +48,13 @@ import {
 	FileType,
 	DecorationRangeBehavior,
 	OverviewRulerLane,
-} from "../types.js"
+} from "../types.ts"
 
 // Import interfaces
-import type { CancellationToken } from "../interfaces/document.js"
-import type { Disposable, DiagnosticCollection, IdentityInfo } from "../interfaces/workspace.js"
-import type { RelativePattern } from "../interfaces/document.js"
-import type { UriHandler } from "../interfaces/webview.js"
+import type { CancellationToken } from "../interfaces/document.ts"
+import type { Disposable, DiagnosticCollection, IdentityInfo } from "../interfaces/workspace.ts"
+import type { RelativePattern } from "../interfaces/document.ts"
+import type { UriHandler } from "../interfaces/webview.ts"
 
 // Package version constant
 const Package = { version: "1.0.0" }
@@ -280,7 +280,7 @@ export function createVSCodeAPIMock(
 			all: [],
 			getExtension: (extensionId: string) => {
 				// Mock the extension object with extensionUri for theme loading
-				if (extensionId === "RooVeterinaryInc.roo-cline") {
+				if (extensionId === "RooVeterinaryInc.jabberwock") {
 					return {
 						id: extensionId,
 						extensionUri: context.extensionUri,

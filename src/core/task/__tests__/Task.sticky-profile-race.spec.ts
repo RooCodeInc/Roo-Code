@@ -2,11 +2,11 @@
 
 import * as vscode from "vscode"
 
-import type { ProviderSettings } from "@roo-code/types"
+import type { ProviderSettings } from "@jabberwock/types"
 import { Task } from "../Task"
 import { ClineProvider } from "../../webview/ClineProvider"
 
-vi.mock("@roo-code/telemetry", () => ({
+vi.mock("@jabberwock/telemetry", () => ({
 	TelemetryService: {
 		hasInstance: vi.fn().mockReturnValue(true),
 		createInstance: vi.fn(),
@@ -88,7 +88,7 @@ vi.mock("../../environment/getEnvironmentDetails", () => ({
 	getEnvironmentDetails: vi.fn().mockResolvedValue(""),
 }))
 
-vi.mock("../../ignore/RooIgnoreController")
+vi.mock("../../ignore/JabberwockIgnoreController")
 
 vi.mock("p-wait-for", () => ({
 	default: vi.fn().mockImplementation(async () => Promise.resolve()),

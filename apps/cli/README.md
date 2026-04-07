@@ -1,19 +1,19 @@
-# @roo-code/cli
+# @jabberwock-code/cli
 
-Command Line Interface for Roo Code - Run the Roo Code agent from the terminal without VSCode.
+Command Line Interface for Jabberwock - Run the Jabberwock agent from the terminal without VSCode.
 
 ## Overview
 
-This CLI uses the `@roo-code/vscode-shim` package to provide a VSCode API compatibility layer, allowing the main Roo Code extension to run in a Node.js environment.
+This CLI uses the `@jabberwock-code/vscode-shim` package to provide a VSCode API compatibility layer, allowing the main Jabberwock extension to run in a Node.js environment.
 
 ## Installation
 
 ### Quick Install (Recommended)
 
-Install the Roo Code CLI with a single command:
+Install the Jabberwock CLI with a single command:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/JabberwockInc/Jabberwock/main/apps/cli/install.sh | sh
 ```
 
 **Requirements:**
@@ -24,13 +24,13 @@ curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/i
 **Custom installation directory:**
 
 ```bash
-ROO_INSTALL_DIR=/opt/roo-code ROO_BIN_DIR=/usr/local/bin curl -fsSL ... | sh
+JABBERWOCK_INSTALL_DIR=/opt/jabberwock-code JABBERWOCK_BIN_DIR=/usr/local/bin curl -fsSL ... | sh
 ```
 
 **Install a specific version:**
 
 ```bash
-ROO_VERSION=0.1.0 curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/install.sh | sh
+JABBERWOCK_VERSION=0.1.0 curl -fsSL https://raw.githubusercontent.com/JabberwockInc/Jabberwock/main/apps/cli/install.sh | sh
 ```
 
 ### Updating
@@ -38,19 +38,19 @@ ROO_VERSION=0.1.0 curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Co
 Re-run the install script to update to the latest version:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/JabberwockInc/Jabberwock/main/apps/cli/install.sh | sh
 ```
 
 Or run:
 
 ```bash
-roo upgrade
+jabberwock upgrade
 ```
 
 ### Uninstalling
 
 ```bash
-rm -rf ~/.roo/cli ~/.local/bin/roo
+rm -rf ~/.jabberwock/cli ~/.local/bin/jabberwock
 ```
 
 ### Development Installation
@@ -62,10 +62,10 @@ For contributing or development:
 pnpm install
 
 # Build the main extension first.
-pnpm --filter roo-cline bundle
+pnpm --filter jabberwock bundle
 
 # Build the CLI.
-pnpm --filter @roo-code/cli build
+pnpm --filter @jabberwock-code/cli build
 ```
 
 ## Usage
@@ -77,13 +77,13 @@ By default, the CLI auto-approves actions and runs in interactive TUI mode:
 ```bash
 export OPENROUTER_API_KEY=sk-or-v1-...
 
-roo "What is this project?" -w ~/Documents/my-project
+jabberwock "What is this project?" -w ~/Documents/my-project
 ```
 
 You can also run without a prompt and enter it interactively in TUI mode:
 
 ```bash
-roo -w ~/Documents/my-project
+jabberwock -w ~/Documents/my-project
 ```
 
 In interactive mode:
@@ -98,7 +98,7 @@ In interactive mode:
 If you want manual approval prompts, enable approval-required mode:
 
 ```bash
-roo "Refactor the utils.ts file" --require-approval -w ~/Documents/my-project
+jabberwock "Refactor the utils.ts file" --require-approval -w ~/Documents/my-project
 ```
 
 In approval-required mode:
@@ -112,10 +112,10 @@ Use `--print` for non-interactive execution and machine-readable output:
 
 ```bash
 # Prompt is required
-roo --print "Summarize this repository"
+jabberwock --print "Summarize this repository"
 
 # Create a new task with a specific session ID (UUID)
-roo --print --create-with-session-id 018f7fc8-7c96-7f7c-98aa-2ec4ff7f6d87 "Summarize this repository"
+jabberwock --print --create-with-session-id 018f7fc8-7c96-7f7c-98aa-2ec4ff7f6d87 "Summarize this repository"
 ```
 
 ### Stdin Stream Mode (`--stdin-prompt-stream`)
@@ -124,32 +124,32 @@ For programmatic control (one process, multiple prompts), use `--stdin-prompt-st
 Send NDJSON commands via stdin:
 
 ```bash
-printf '{"command":"start","requestId":"1","prompt":"1+1=?"}\n' | roo --print --stdin-prompt-stream --output-format stream-json
+printf '{"command":"start","requestId":"1","prompt":"1+1=?"}\n' | jabberwock --print --stdin-prompt-stream --output-format stream-json
 
 # Optional: provide taskId per start command
-printf '{"command":"start","requestId":"1","taskId":"018f7fc8-7c96-7f7c-98aa-2ec4ff7f6d87","prompt":"1+1=?"}\n' | roo --print --stdin-prompt-stream --output-format stream-json
+printf '{"command":"start","requestId":"1","taskId":"018f7fc8-7c96-7f7c-98aa-2ec4ff7f6d87","prompt":"1+1=?"}\n' | jabberwock --print --stdin-prompt-stream --output-format stream-json
 ```
 
-### Roo Code Cloud Authentication
+### Jabberwock Cloud Authentication
 
-To use Roo Code Cloud features (like the provider proxy), you need to authenticate:
+To use Jabberwock Cloud features (like the provider proxy), you need to authenticate:
 
 ```bash
-# Log in to Roo Code Cloud (opens browser)
-roo auth login
+# Log in to Jabberwock Cloud (opens browser)
+jabberwock auth login
 
 # Check authentication status
-roo auth status
+jabberwock auth status
 
 # Log out
-roo auth logout
+jabberwock auth logout
 ```
 
 The `auth login` command:
 
-1. Opens your browser to authenticate with Roo Code Cloud
+1. Opens your browser to authenticate with Jabberwock Cloud
 2. Receives a secure token via localhost callback
-3. Stores the token in `~/.config/roo/credentials.json`
+3. Stores the token in `~/.config/jabberwock/credentials.json`
 
 Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when your token expires.
 
@@ -157,7 +157,7 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 
 ```
 ┌──────┐         ┌─────────┐         ┌───────────────┐
-│  CLI │         │ Browser │         │ Roo Code Cloud│
+│  CLI │         │ Browser │         │ Jabberwock Cloud│
 └──┬───┘         └────┬────┘         └───────┬───────┘
    │                  │                      │
    │ Open auth URL    │                      │
@@ -176,35 +176,35 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 
 ## Options
 
-| Option                                  | Description                                                                             | Default                                  |
-| --------------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------- |
-| `[prompt]`                              | Your prompt (positional argument, optional)                                             | None                                     |
-| `--prompt-file <path>`                  | Read prompt from a file instead of command line argument                                | None                                     |
-| `--create-with-session-id <session-id>` | Create a new task using the provided session ID (UUID)                                  | None                                     |
-| `-w, --workspace <path>`                | Workspace path to operate in                                                            | Current directory                        |
-| `-p, --print`                           | Print response and exit (non-interactive mode)                                          | `false`                                  |
-| `--stdin-prompt-stream`                 | Read NDJSON control commands from stdin (requires `--print`)                            | `false`                                  |
-| `-e, --extension <path>`                | Path to the extension bundle directory                                                  | Auto-detected                            |
-| `-d, --debug`                           | Enable debug output (includes detailed debug information, prompts, paths, etc)          | `false`                                  |
-| `-a, --require-approval`                | Require manual approval before actions execute                                          | `false`                                  |
-| `-k, --api-key <key>`                   | API key for the LLM provider                                                            | From env var                             |
-| `--provider <provider>`                 | API provider (roo, anthropic, openai, openrouter, etc.)                                 | `openrouter` (or `roo` if authenticated) |
-| `-m, --model <model>`                   | Model to use                                                                            | `anthropic/claude-opus-4.6`              |
-| `--mode <mode>`                         | Mode to start in (code, architect, ask, debug, etc.)                                    | `code`                                   |
-| `--terminal-shell <path>`               | Absolute shell path for inline terminal command execution                               | Auto-detected shell                      |
-| `-r, --reasoning-effort <effort>`       | Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh) | `medium`                                 |
-| `--consecutive-mistake-limit <n>`       | Consecutive error/repetition limit before guidance prompt (`0` disables the limit)      | `10`                                     |
-| `--ephemeral`                           | Run without persisting state (uses temporary storage)                                   | `false`                                  |
-| `--oneshot`                             | Exit upon task completion                                                               | `false`                                  |
-| `--output-format <format>`              | Output format with `--print`: `text`, `json`, or `stream-json`                          | `text`                                   |
+| Option                                  | Description                                                                             | Default                                         |
+| --------------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `[prompt]`                              | Your prompt (positional argument, optional)                                             | None                                            |
+| `--prompt-file <path>`                  | Read prompt from a file instead of command line argument                                | None                                            |
+| `--create-with-session-id <session-id>` | Create a new task using the provided session ID (UUID)                                  | None                                            |
+| `-w, --workspace <path>`                | Workspace path to operate in                                                            | Current directory                               |
+| `-p, --print`                           | Print response and exit (non-interactive mode)                                          | `false`                                         |
+| `--stdin-prompt-stream`                 | Read NDJSON control commands from stdin (requires `--print`)                            | `false`                                         |
+| `-e, --extension <path>`                | Path to the extension bundle directory                                                  | Auto-detected                                   |
+| `-d, --debug`                           | Enable debug output (includes detailed debug information, prompts, paths, etc)          | `false`                                         |
+| `-a, --require-approval`                | Require manual approval before actions execute                                          | `false`                                         |
+| `-k, --api-key <key>`                   | API key for the LLM provider                                                            | From env var                                    |
+| `--provider <provider>`                 | API provider (jabberwock, anthropic, openai, openrouter, etc.)                          | `openrouter` (or `jabberwock` if authenticated) |
+| `-m, --model <model>`                   | Model to use                                                                            | `anthropic/claude-opus-4.6`                     |
+| `--mode <mode>`                         | Mode to start in (code, architect, ask, debug, etc.)                                    | `code`                                          |
+| `--terminal-shell <path>`               | Absolute shell path for inline terminal command execution                               | Auto-detected shell                             |
+| `-r, --reasoning-effort <effort>`       | Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh) | `medium`                                        |
+| `--consecutive-mistake-limit <n>`       | Consecutive error/repetition limit before guidance prompt (`0` disables the limit)      | `10`                                            |
+| `--ephemeral`                           | Run without persisting state (uses temporary storage)                                   | `false`                                         |
+| `--oneshot`                             | Exit upon task completion                                                               | `false`                                         |
+| `--output-format <format>`              | Output format with `--print`: `text`, `json`, or `stream-json`                          | `text`                                          |
 
 ## Auth Commands
 
-| Command           | Description                        |
-| ----------------- | ---------------------------------- |
-| `roo auth login`  | Authenticate with Roo Code Cloud   |
-| `roo auth logout` | Clear stored authentication token  |
-| `roo auth status` | Show current authentication status |
+| Command                  | Description                        |
+| ------------------------ | ---------------------------------- |
+| `jabberwock auth login`  | Authenticate with Jabberwock Cloud |
+| `jabberwock auth logout` | Clear stored authentication token  |
+| `jabberwock auth status` | Show current authentication status |
 
 ## Environment Variables
 
@@ -212,7 +212,7 @@ The CLI will look for API keys in environment variables if not provided via `--a
 
 | Provider          | Environment Variable        |
 | ----------------- | --------------------------- |
-| roo               | `ROO_API_KEY`               |
+| jabberwock        | `JABBERWOCK_API_KEY`        |
 | anthropic         | `ANTHROPIC_API_KEY`         |
 | openai-native     | `OPENAI_API_KEY`            |
 | openrouter        | `OPENROUTER_API_KEY`        |
@@ -221,9 +221,9 @@ The CLI will look for API keys in environment variables if not provided via `--a
 
 **Authentication Environment Variables:**
 
-| Variable          | Description                                                          |
-| ----------------- | -------------------------------------------------------------------- |
-| `ROO_WEB_APP_URL` | Override the Roo Code Cloud URL (default: `https://app.roocode.com`) |
+| Variable                 | Description                                                               |
+| ------------------------ | ------------------------------------------------------------------------- |
+| `JABBERWOCK_WEB_APP_URL` | Override the Jabberwock Cloud URL (default: `https://app.jabberwock.com`) |
 
 ## Architecture
 
@@ -255,7 +255,7 @@ The CLI will look for API keys in environment variables if not provided via `--a
 
 2. **ExtensionHost** (`extension-host.ts`):
 
-    - Creates a VSCode API mock using `@roo-code/vscode-shim`
+    - Creates a VSCode API mock using `@jabberwock-code/vscode-shim`
     - Intercepts `require('vscode')` to return the mock
     - Loads and activates the extension bundle
     - Manages bidirectional message flow
@@ -268,7 +268,7 @@ The CLI will look for API keys in environment variables if not provided via `--a
 
 ```bash
 # Run directly from source (no build required)
-pnpm dev --provider roo --api-key $ROO_API_KEY --print "Hello"
+pnpm dev --provider jabberwock --api-key $JABBERWOCK_API_KEY --print "Hello"
 
 # Run tests
 pnpm test
@@ -280,10 +280,10 @@ pnpm check-types
 pnpm lint
 ```
 
-By default the `start` script points `ROO_CODE_PROVIDER_URL` at `http://localhost:8080/proxy` for local development. To point at the production API instead, override the environment variable:
+By default the `start` script points `JABBERWOCK_CODE_PROVIDER_URL` at `http://localhost:8080/proxy` for local development. To point at the production API instead, override the environment variable:
 
 ```bash
-ROO_CODE_PROVIDER_URL=https://api.roocode.com/proxy pnpm dev --provider roo --api-key $ROO_API_KEY --print "Hello"
+JABBERWOCK_CODE_PROVIDER_URL=https://api.jabberwock.com/proxy pnpm dev --provider jabberwock --api-key $JABBERWOCK_API_KEY --print "Hello"
 ```
 
 ## Releasing

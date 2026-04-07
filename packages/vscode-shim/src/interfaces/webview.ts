@@ -2,9 +2,9 @@
  * Webview-related interfaces for VSCode API
  */
 
-import type { Uri } from "../classes/Uri.js"
-import type { Thenable, Disposable } from "../types.js"
-import type { CancellationToken } from "./document.js"
+import type { Uri } from "../classes/Uri.ts"
+import type { Thenable, Disposable } from "../types.ts"
+import type { CancellationToken } from "./document.ts"
 
 /**
  * Webview view provider interface

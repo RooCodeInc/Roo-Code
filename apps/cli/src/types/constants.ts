@@ -1,4 +1,4 @@
-import { reasoningEffortsExtended } from "@roo-code/types"
+import { reasoningEffortsExtended } from "@jabberwock/types"
 
 export const DEFAULT_FLAGS = {
 	mode: "code",
@@ -15,13 +15,13 @@ export const REASONING_EFFORTS = [...reasoningEffortsExtended, "unspecified", "d
  */
 export const FOLLOWUP_TIMEOUT_SECONDS = 60
 
-export const ASCII_ROO = `  _,'   ___
+export const ASCII_JABBERWOCK = `  _,'   ___
  <__\\__/   \\
     \\_  /  _\\
       \\,\\ / \\\\
         //   \\\\
       ,/'     \`\\_,`
 
-export const AUTH_BASE_URL = process.env.ROO_AUTH_BASE_URL ?? "https://app.roocode.com"
+export const AUTH_BASE_URL = process.env.JABBERWOCK_AUTH_BASE_URL ?? "https://app.jabberwock.com"
 
-export const SDK_BASE_URL = process.env.ROO_SDK_BASE_URL ?? "https://cloud-api.roocode.com"
+export const SDK_BASE_URL = process.env.JABBERWOCK_SDK_BASE_URL ?? "https://cloud-api.jabberwock.com"

@@ -1,10 +1,10 @@
 import { serializeError } from "serialize-error"
 import { Anthropic } from "@anthropic-ai/sdk"
 
-import type { ToolName, ClineAsk, ToolProgressStatus } from "@roo-code/types"
-import { ConsecutiveMistakeError, TelemetryEventName } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
-import { customToolRegistry } from "@roo-code/core"
+import type { ToolName, ClineAsk, ToolProgressStatus } from "@jabberwock/types"
+import { ConsecutiveMistakeError, TelemetryEventName } from "@jabberwock/types"
+import { TelemetryService } from "@jabberwock/telemetry"
+import { customToolRegistry } from "@jabberwock/core"
 
 import { t } from "../../i18n"
 
@@ -29,6 +29,7 @@ import { accessMcpResourceTool } from "../tools/accessMcpResourceTool"
 import { askFollowupQuestionTool } from "../tools/AskFollowupQuestionTool"
 import { switchModeTool } from "../tools/SwitchModeTool"
 import { attemptCompletionTool, AttemptCompletionCallbacks } from "../tools/AttemptCompletionTool"
+import { awaitBatchCompletionTool } from "../tools/AwaitBatchCompletionTool"
 import { newTaskTool } from "../tools/NewTaskTool"
 import { updateTodoListTool } from "../tools/UpdateTodoListTool"
 import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
@@ -361,6 +362,8 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.server_name}']`
 					case "ask_followup_question":
 						return `[${block.name} for '${block.params.question}']`
+					case "await_batch_completion":
+						return `[${block.name}]`
 					case "attempt_completion":
 						return `[${block.name}]`
 					case "switch_mode":
@@ -543,6 +546,16 @@ export async function presentAssistantMessage(cline: Task) {
 				if (error instanceof AskIgnoredError) {
 					return
 				}
+
+				// If task was aborted, silence the error to prevent cascading crashes during mode switch or delegation
+				if (
+					cline.abort ||
+					cline.currentRequestAbortController?.signal.aborted ||
+					error.message?.includes("aborted")
+				) {
+					return
+				}
+
 				const errorString = `Error ${action}: ${JSON.stringify(serializeError(error))}`
 
 				await cline.say(
@@ -798,6 +811,13 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "switch_mode":
 					await switchModeTool.handle(cline, block as ToolUse<"switch_mode">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "await_batch_completion":
+					await awaitBatchCompletionTool.handle(cline, block as ToolUse<"await_batch_completion">, {
 						askApproval,
 						handleError,
 						pushToolResult,

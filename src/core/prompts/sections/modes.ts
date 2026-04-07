@@ -1,6 +1,6 @@
 import * as vscode from "vscode"
 
-import type { ModeConfig } from "@roo-code/types"
+import type { ModeConfig } from "@jabberwock/types"
 
 import { getAllModesWithPrompts } from "../../../shared/modes"
 import { ensureSettingsDirectoryExists } from "../../../utils/globalContext"
@@ -17,6 +17,7 @@ export async function getModesSection(context: vscode.ExtensionContext): Promise
 MODES
 
 - These are the currently available modes:
+- When creating tasks or delegating work to other agents, you MUST assign tasks ONLY to the following available agents:
 ${allModes
 	.map((mode: ModeConfig) => {
 		let description: string
@@ -27,7 +28,7 @@ ${allModes
 			// Fallback to the first sentence of roleDefinition if whenToUse is not available
 			description = mode.roleDefinition.split(".")[0]
 		}
-		return `  * "${mode.name}" mode (${mode.slug}) - ${description}`
+		return `  * "${mode.name}" mode (slug: ${mode.slug}) - ${description}`
 	})
 	.join("\n")}`
 

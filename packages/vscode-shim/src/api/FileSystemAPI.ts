@@ -4,10 +4,10 @@
 
 import * as fs from "fs"
 import * as path from "path"
-import { Uri } from "../classes/Uri.js"
-import { FileSystemError } from "../classes/Additional.js"
-import { ensureDirectoryExists } from "../utils/paths.js"
-import type { FileStat } from "../types.js"
+import { Uri } from "../classes/Uri.ts"
+import { FileSystemError } from "../classes/Additional.ts"
+import { ensureDirectoryExists } from "../utils/paths.ts"
+import type { FileStat } from "../types.ts"
 
 /**
  * File system API mock for CLI mode

@@ -8,12 +8,12 @@
 // ============================================================================
 // Classes from ./classes/
 // ============================================================================
-export { Position } from "./classes/Position.js"
-export { Range } from "./classes/Range.js"
-export { Selection } from "./classes/Selection.js"
-export { Uri } from "./classes/Uri.js"
-export { EventEmitter } from "./classes/EventEmitter.js"
-export { TextEdit, WorkspaceEdit } from "./classes/TextEdit.js"
+export { Position } from "./classes/Position.ts"
+export { Range } from "./classes/Range.ts"
+export { Selection } from "./classes/Selection.ts"
+export { Uri } from "./classes/Uri.ts"
+export { EventEmitter } from "./classes/EventEmitter.ts"
+export { TextEdit, WorkspaceEdit } from "./classes/TextEdit.ts"
 export {
 	Location,
 	Diagnostic,
@@ -26,33 +26,33 @@ export {
 	LanguageModelToolCallPart,
 	LanguageModelToolResultPart,
 	FileSystemError,
-} from "./classes/Additional.js"
-export { CancellationTokenSource, type CancellationToken } from "./classes/CancellationToken.js"
-export { OutputChannel } from "./classes/OutputChannel.js"
-export { StatusBarItem } from "./classes/StatusBarItem.js"
-export { TextEditorDecorationType } from "./classes/TextEditorDecorationType.js"
+} from "./classes/Additional.ts"
+export { CancellationTokenSource, type CancellationToken } from "./classes/CancellationToken.ts"
+export { OutputChannel } from "./classes/OutputChannel.ts"
+export { StatusBarItem } from "./classes/StatusBarItem.ts"
+export { TextEditorDecorationType } from "./classes/TextEditorDecorationType.ts"
 
 // ============================================================================
 // Context
 // ============================================================================
-export { ExtensionContextImpl as ExtensionContext } from "./context/ExtensionContext.js"
+export { ExtensionContextImpl as ExtensionContext } from "./context/ExtensionContext.ts"
 
 // ============================================================================
 // API Classes from ./api/
 // ============================================================================
-export { FileSystemAPI } from "./api/FileSystemAPI.js"
+export { FileSystemAPI } from "./api/FileSystemAPI.ts"
 export {
 	MockWorkspaceConfiguration,
 	setRuntimeConfig,
 	setRuntimeConfigValues,
 	clearRuntimeConfig,
 	getRuntimeConfig,
-} from "./api/WorkspaceConfiguration.js"
-export { WorkspaceAPI } from "./api/WorkspaceAPI.js"
-export { TabGroupsAPI, type Tab, type TabInputText, type TabGroup } from "./api/TabGroupsAPI.js"
-export { WindowAPI } from "./api/WindowAPI.js"
-export { CommandsAPI } from "./api/CommandsAPI.js"
-export { createVSCodeAPIMock } from "./api/create-vscode-api-mock.js"
+} from "./api/WorkspaceConfiguration.ts"
+export { WorkspaceAPI } from "./api/WorkspaceAPI.ts"
+export { TabGroupsAPI, type Tab, type TabInputText, type TabGroup } from "./api/TabGroupsAPI.ts"
+export { WindowAPI } from "./api/WindowAPI.ts"
+export { CommandsAPI } from "./api/CommandsAPI.ts"
+export { createVSCodeAPIMock } from "./api/create-vscode-api-mock.ts"
 
 // ============================================================================
 // Enums from ./types.ts
@@ -71,12 +71,12 @@ export {
 	FileType,
 	DecorationRangeBehavior,
 	OverviewRulerLane,
-} from "./types.js"
+} from "./types.ts"
 
 // ============================================================================
 // Types from ./types.ts
 // ============================================================================
-export type { Thenable, Memento, FileStat, TextEditorOptions, ConfigurationInspect } from "./types.js"
+export type { Thenable, Memento, FileStat, TextEditorOptions, ConfigurationInspect } from "./types.ts"
 
 // ============================================================================
 // Interfaces from ./interfaces/
@@ -94,7 +94,7 @@ export type {
 	TextDocumentContentProvider,
 	FileSystemWatcher,
 	RelativePattern,
-} from "./interfaces/document.js"
+} from "./interfaces/document.ts"
 
 // Editor interfaces
 export type {
@@ -103,7 +103,7 @@ export type {
 	TextEditorSelectionChangeEvent,
 	TextDocumentShowOptions,
 	DecorationRenderOptions,
-} from "./interfaces/editor.js"
+} from "./interfaces/editor.ts"
 
 // Terminal interfaces
 export type {
@@ -114,7 +114,7 @@ export type {
 	TerminalDimensionsChangeEvent,
 	TerminalDimensions,
 	TerminalDataWriteEvent,
-} from "./interfaces/terminal.js"
+} from "./interfaces/terminal.ts"
 
 // Webview interfaces
 export type {
@@ -127,10 +127,10 @@ export type {
 	WebviewViewResolveContext,
 	WebviewViewProviderOptions,
 	UriHandler,
-} from "./interfaces/webview.js"
+} from "./interfaces/webview.ts"
 
 // Extension host interface
-export type { IExtensionHost, ExtensionHostEventMap, ExtensionHostEventName } from "./interfaces/extension-host.js"
+export type { IExtensionHost, ExtensionHostEventMap, ExtensionHostEventName } from "./interfaces/extension-host.ts"
 
 // Workspace interfaces
 export type {
@@ -141,7 +141,7 @@ export type {
 	Disposable,
 	DiagnosticCollection,
 	IdentityInfo,
-} from "./interfaces/workspace.js"
+} from "./interfaces/workspace.ts"
 
 // ============================================================================
 // Secret Storage interface (backwards compatibility)
@@ -153,4 +153,4 @@ export interface SecretStorage {
 }
 
 // Import Thenable for SecretStorage interface
-import type { Thenable } from "./types.js"
+import type { Thenable } from "./types.ts"

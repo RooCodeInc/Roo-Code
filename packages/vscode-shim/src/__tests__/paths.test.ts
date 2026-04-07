@@ -2,7 +2,7 @@ import * as fs from "fs"
 import * as path from "path"
 import { tmpdir } from "os"
 
-import { VSCodeMockPaths } from "../utils/paths.js"
+import { VSCodeMockPaths } from "../utils/paths.ts"
 
 describe("VSCodeMockPaths", () => {
 	let originalHome: string | undefined

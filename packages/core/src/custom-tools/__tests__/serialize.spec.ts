@@ -1,14 +1,14 @@
-// pnpm --filter @roo-code/core test src/custom-tools/__tests__/serialize.spec.ts
+// pnpm --filter @jabberwock/core test src/custom-tools/__tests__/serialize.spec.ts
 
-import { parametersSchema as z, defineCustomTool } from "@roo-code/types"
+import { parametersSchema as z, defineCustomTool } from "@jabberwock/types"
 
-import { serializeCustomTool, serializeCustomTools } from "../serialize.js"
+import { serializeCustomTool, serializeCustomTools } from "../serialize.ts"
 
-import simpleTool from "./fixtures/simple.js"
-import cachedTool from "./fixtures/cached.js"
-import legacyTool from "./fixtures/legacy.js"
-import { toolA, toolB } from "./fixtures/multi.js"
-import { validTool as mixedValidTool } from "./fixtures/mixed.js"
+import simpleTool from "./fixtures/simple.ts"
+import cachedTool from "./fixtures/cached.ts"
+import legacyTool from "./fixtures/legacy.ts"
+import { toolA, toolB } from "./fixtures/multi.ts"
+import { validTool as mixedValidTool } from "./fixtures/mixed.ts"
 
 const fixtureTools = {
 	simple: simpleTool,

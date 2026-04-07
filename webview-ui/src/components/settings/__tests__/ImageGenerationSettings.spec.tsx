@@ -90,9 +90,9 @@ describe("ImageGenerationSettings", () => {
 			).toBeInTheDocument()
 		})
 
-		it("should not render API key field when provider is roo", () => {
+		it("should not render API key field when provider is jabberwock", () => {
 			const { queryByPlaceholderText } = render(
-				<ImageGenerationSettings {...defaultProps} enabled={true} imageGenerationProvider="roo" />,
+				<ImageGenerationSettings {...defaultProps} enabled={true} imageGenerationProvider="jabberwock" />,
 			)
 
 			expect(

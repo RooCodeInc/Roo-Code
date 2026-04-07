@@ -2,13 +2,13 @@ import EventEmitter from "events"
 
 import { z } from "zod"
 
-import { RooCodeEventName } from "./events.js"
-import { TaskStatus, taskMetadataSchema } from "./task.js"
-import { globalSettingsSchema } from "./global-settings.js"
-import { providerSettingsWithIdSchema } from "./provider-settings.js"
-import { mcpMarketplaceItemSchema } from "./marketplace.js"
-import { clineMessageSchema, queuedMessageSchema, tokenUsageSchema } from "./message.js"
-import { staticAppPropertiesSchema, gitPropertiesSchema } from "./telemetry.js"
+import { JabberwockEventName } from "./events.ts"
+import { TaskStatus, taskMetadataSchema } from "./task.ts"
+import { globalSettingsSchema } from "./global-settings.ts"
+import { providerSettingsWithIdSchema } from "./provider-settings.ts"
+import { mcpMarketplaceItemSchema } from "./marketplace.ts"
+import { clineMessageSchema, queuedMessageSchema, tokenUsageSchema } from "./message.ts"
+import { staticAppPropertiesSchema, gitPropertiesSchema } from "./telemetry.ts"
 
 /**
  * JWTPayload
@@ -95,7 +95,7 @@ export const organizationDefaultSettingsSchema = globalSettingsSchema
 		enableCheckpoints: true,
 		maxOpenTabsContext: true,
 		maxWorkspaceFiles: true,
-		showRooIgnoredFiles: true,
+		showJabberwockIgnoredFiles: true,
 		terminalCommandDelay: true,
 		terminalShellIntegrationDisabled: true,
 		terminalShellIntegrationTimeout: true,
@@ -429,9 +429,9 @@ export type ExtensionInstance = z.infer<typeof extensionInstanceSchema>
  */
 
 export enum TaskBridgeEventName {
-	Message = RooCodeEventName.Message,
-	TaskModeSwitched = RooCodeEventName.TaskModeSwitched,
-	TaskInteractive = RooCodeEventName.TaskInteractive,
+	Message = JabberwockEventName.Message,
+	TaskModeSwitched = JabberwockEventName.TaskModeSwitched,
+	TaskInteractive = JabberwockEventName.TaskInteractive,
 }
 
 export const taskBridgeEventSchema = z.discriminatedUnion("type", [

@@ -16,7 +16,7 @@
 	"bugs": {
 		"url": "https://github.com/RooCodeInc/Roo-Code/issues"
 	},
-	"homepage": "https://roocode.com",
+	"homepage": "https://jabberwock.com",
 	"keywords": ["roo", "roo-code", "ai"],
 	"files": ["dist"]
 }

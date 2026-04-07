@@ -7,7 +7,7 @@ import {
 	OrganizationSettings,
 	organizationSettingsSchema,
 	ORGANIZATION_ALLOW_ALL,
-} from "@roo-code/types"
+} from "@jabberwock/types"
 
 export class StaticSettingsService implements SettingsService {
 	private settings: OrganizationSettings

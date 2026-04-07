@@ -1,0 +1,116 @@
+{
+	"mcpServers": {
+		"md_todo_mcp": {
+			"command": "node",
+			"args": ["/Users/m.dusmikeev/Documents/Work/cool/md-roo-roo/md-todo-mcp/build/index.js"],
+			"type": "interactiveApp",
+			"requiresUserInteraction": true,
+			"autoApproveExcluded": true,
+			"allowedContext": ["agents"],
+			"isGloballyVisible": true
+		},
+		"github": {
+			"command": "npx",
+			"args": ["-y", "@modelcontextprotocol/server-github"],
+			"env": {
+				"GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_TOKEN_HERE"
+			},
+			"disabled": true,
+			"isGloballyVisible": false
+		},
+		"gitlab": {
+			"command": "node",
+			"args": ["/Users/m.dusmikeev/Documents/Work/auto/md-gitlab-mcp/build/index.js"],
+			"env": {
+				"GITLAB_PERSONAL_ACCESS_TOKEN": "YOUR_GITLAB_TOKEN_HERE",
+				"GITLAB_API_URL": "https://gitlab.any.dev/api/v4"
+			},
+			"disabled": false,
+			"isGloballyVisible": false
+		},
+		"memory-bank": {
+			"command": "npx",
+			"args": ["-y", "@roo/memory-bank-mcp@latest"],
+			"env": {
+				"MEMORY_ROOT": "./.roo/memory"
+			},
+			"disabled": true,
+			"isGloballyVisible": true
+		},
+		"fetch": {
+			"command": "uvx",
+			"args": ["mcp-server-fetch"],
+			"disabled": false,
+			"isGloballyVisible": true
+		},
+		"puppeteer": {
+			"command": "npx",
+			"args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+			"disabled": true,
+			"isGloballyVisible": false
+		},
+		"playwright": {
+			"command": "npx",
+			"args": ["-y", "@nguyenvanduocit/playwright-mcp-server"],
+			"disabled": true,
+			"isGloballyVisible": false
+		},
+		"redis": {
+			"command": "npx",
+			"args": ["-y", "@modelcontextprotocol/server-redis"],
+			"env": {
+				"REDIS_URL": "redis://127.0.0.1:6379"
+			},
+			"disabled": true,
+			"isGloballyVisible": false
+		},
+		"postgres": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"@modelcontextprotocol/server-postgres",
+				"postgresql://username:password@localhost:5432/your_db"
+			],
+			"disabled": true,
+			"isGloballyVisible": false
+		},
+		"mysql": {
+			"command": "npx",
+			"args": ["-y", "@benborla29/mcp-server-mysql"],
+			"env": {
+				"MYSQL_HOST": "127.0.0.1",
+				"MYSQL_PORT": "33306",
+				"MYSQL_USER": "root",
+				"MYSQL_PASS": "secret",
+				"MYSQL_DB": "apro",
+				"ALLOW_INSERT_OPERATION": "true",
+				"ALLOW_UPDATE_OPERATION": "true",
+				"ALLOW_DELETE_OPERATION": "true"
+			},
+			"disabled": true,
+			"isGloballyVisible": false
+		},
+		"docker": {
+			"command": "docker",
+			"args": ["mcp", "gateway", "run"],
+			"disabled": false,
+			"isGloballyVisible": false
+		},
+		"figma": {
+			"command": "npx",
+			"args": ["-y", "@kazuph/figma", "mcp"],
+			"env": {
+				"FIGMA_API_KEY": "YOUR_FIGMA_TOKEN_HERE"
+			},
+			"disabled": false,
+			"isGloballyVisible": false
+		},
+		"agent_capabilities": {
+			"command": "npx",
+			"args": ["-y", "tsx", "/Users/m.dusmikeev/Documents/Work/auto/md-mcp-proxy/src/proxy.ts"],
+			"env": {},
+			"disabled": false,
+			"isGloballyVisible": true
+		}
+	}
+}

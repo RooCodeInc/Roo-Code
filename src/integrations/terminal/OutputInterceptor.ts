@@ -1,7 +1,7 @@
 import * as fs from "fs"
 import * as path from "path"
 
-import { TerminalOutputPreviewSize, TERMINAL_PREVIEW_BYTES, PersistedCommandOutput } from "@roo-code/types"
+import { TerminalOutputPreviewSize, TERMINAL_PREVIEW_BYTES, PersistedCommandOutput } from "@jabberwock/types"
 
 /**
  * Configuration options for creating an OutputInterceptor instance.

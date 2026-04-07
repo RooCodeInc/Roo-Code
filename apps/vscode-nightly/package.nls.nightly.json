@@ -1,7 +1,7 @@
 {
-	"extension.displayName": "Roo Code Nightly",
-	"views.contextMenu.label": "Roo Code Nightly",
-	"views.terminalMenu.label": "Roo Code Nightly",
-	"views.activitybar.title": "Roo Code Nightly",
-	"configuration.title": "Roo Code Nightly"
+	"extension.displayName": "Jabberwock Nightly",
+	"views.contextMenu.label": "Jabberwock Nightly",
+	"views.terminalMenu.label": "Jabberwock Nightly",
+	"views.activitybar.title": "Jabberwock Nightly",
+	"configuration.title": "Jabberwock Nightly"
 }

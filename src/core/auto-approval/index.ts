@@ -5,7 +5,7 @@ import {
 	type FollowUpData,
 	type ExtensionState,
 	isNonBlockingAsk,
-} from "@roo-code/types"
+} from "@jabberwock/types"
 
 import { ClineAskResponse } from "../../shared/WebviewMessage"
 
@@ -87,6 +87,10 @@ export async function checkAutoApproval({
 		} else {
 			return { decision: "ask" }
 		}
+	}
+
+	if (ask === "interactive_app") {
+		return { decision: "ask" }
 	}
 
 	if (ask === "use_mcp_server") {

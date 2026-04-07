@@ -1,14 +1,14 @@
 import { z } from "zod"
 
-import { clineMessageSchema, queuedMessageSchema, tokenUsageSchema } from "./message.js"
-import { modelInfoSchema } from "./model.js"
-import { toolNamesSchema, toolUsageSchema } from "./tool.js"
+import { clineMessageSchema, queuedMessageSchema, tokenUsageSchema } from "./message.ts"
+import { modelInfoSchema } from "./model.ts"
+import { toolNamesSchema, toolUsageSchema } from "./tool.ts"
 
 /**
- * RooCodeEventName
+ * JabberwockEventName
  */
 
-export enum RooCodeEventName {
+export enum JabberwockEventName {
 	// Task Provider Lifecycle
 	TaskCreated = "taskCreated",
 
@@ -57,14 +57,14 @@ export enum RooCodeEventName {
 }
 
 /**
- * RooCodeEvents
+ * JabberwockEvents
  */
 
-export const rooCodeEventsSchema = z.object({
-	[RooCodeEventName.TaskCreated]: z.tuple([z.string()]),
+export const jabberwockEventsSchema = z.object({
+	[JabberwockEventName.TaskCreated]: z.tuple([z.string()]),
 
-	[RooCodeEventName.TaskStarted]: z.tuple([z.string()]),
-	[RooCodeEventName.TaskCompleted]: z.tuple([
+	[JabberwockEventName.TaskStarted]: z.tuple([z.string()]),
+	[JabberwockEventName.TaskCompleted]: z.tuple([
 		z.string(),
 		tokenUsageSchema,
 		toolUsageSchema,
@@ -72,50 +72,50 @@ export const rooCodeEventsSchema = z.object({
 			isSubtask: z.boolean(),
 		}),
 	]),
-	[RooCodeEventName.TaskAborted]: z.tuple([z.string()]),
-	[RooCodeEventName.TaskFocused]: z.tuple([z.string()]),
-	[RooCodeEventName.TaskUnfocused]: z.tuple([z.string()]),
-	[RooCodeEventName.TaskActive]: z.tuple([z.string()]),
-	[RooCodeEventName.TaskInteractive]: z.tuple([z.string()]),
-	[RooCodeEventName.TaskResumable]: z.tuple([z.string()]),
-	[RooCodeEventName.TaskIdle]: z.tuple([z.string()]),
+	[JabberwockEventName.TaskAborted]: z.tuple([z.string()]),
+	[JabberwockEventName.TaskFocused]: z.tuple([z.string()]),
+	[JabberwockEventName.TaskUnfocused]: z.tuple([z.string()]),
+	[JabberwockEventName.TaskActive]: z.tuple([z.string()]),
+	[JabberwockEventName.TaskInteractive]: z.tuple([z.string()]),
+	[JabberwockEventName.TaskResumable]: z.tuple([z.string()]),
+	[JabberwockEventName.TaskIdle]: z.tuple([z.string()]),
 
-	[RooCodeEventName.TaskPaused]: z.tuple([z.string()]),
-	[RooCodeEventName.TaskUnpaused]: z.tuple([z.string()]),
-	[RooCodeEventName.TaskSpawned]: z.tuple([z.string(), z.string()]),
-	[RooCodeEventName.TaskDelegated]: z.tuple([
+	[JabberwockEventName.TaskPaused]: z.tuple([z.string()]),
+	[JabberwockEventName.TaskUnpaused]: z.tuple([z.string()]),
+	[JabberwockEventName.TaskSpawned]: z.tuple([z.string(), z.string()]),
+	[JabberwockEventName.TaskDelegated]: z.tuple([
 		z.string(), // parentTaskId
 		z.string(), // childTaskId
 	]),
-	[RooCodeEventName.TaskDelegationCompleted]: z.tuple([
+	[JabberwockEventName.TaskDelegationCompleted]: z.tuple([
 		z.string(), // parentTaskId
 		z.string(), // childTaskId
 		z.string(), // completionResultSummary
 	]),
-	[RooCodeEventName.TaskDelegationResumed]: z.tuple([
+	[JabberwockEventName.TaskDelegationResumed]: z.tuple([
 		z.string(), // parentTaskId
 		z.string(), // childTaskId
 	]),
 
-	[RooCodeEventName.Message]: z.tuple([
+	[JabberwockEventName.Message]: z.tuple([
 		z.object({
 			taskId: z.string(),
 			action: z.union([z.literal("created"), z.literal("updated")]),
 			message: clineMessageSchema,
 		}),
 	]),
-	[RooCodeEventName.TaskModeSwitched]: z.tuple([z.string(), z.string()]),
-	[RooCodeEventName.TaskAskResponded]: z.tuple([z.string()]),
-	[RooCodeEventName.TaskUserMessage]: z.tuple([z.string()]),
-	[RooCodeEventName.QueuedMessagesUpdated]: z.tuple([z.string(), z.array(queuedMessageSchema)]),
+	[JabberwockEventName.TaskModeSwitched]: z.tuple([z.string(), z.string()]),
+	[JabberwockEventName.TaskAskResponded]: z.tuple([z.string()]),
+	[JabberwockEventName.TaskUserMessage]: z.tuple([z.string()]),
+	[JabberwockEventName.QueuedMessagesUpdated]: z.tuple([z.string(), z.array(queuedMessageSchema)]),
 
-	[RooCodeEventName.TaskToolFailed]: z.tuple([z.string(), toolNamesSchema, z.string()]),
-	[RooCodeEventName.TaskTokenUsageUpdated]: z.tuple([z.string(), tokenUsageSchema, toolUsageSchema]),
+	[JabberwockEventName.TaskToolFailed]: z.tuple([z.string(), toolNamesSchema, z.string()]),
+	[JabberwockEventName.TaskTokenUsageUpdated]: z.tuple([z.string(), tokenUsageSchema, toolUsageSchema]),
 
-	[RooCodeEventName.ModeChanged]: z.tuple([z.string()]),
-	[RooCodeEventName.ProviderProfileChanged]: z.tuple([z.object({ name: z.string(), provider: z.string() })]),
+	[JabberwockEventName.ModeChanged]: z.tuple([z.string()]),
+	[JabberwockEventName.ProviderProfileChanged]: z.tuple([z.object({ name: z.string(), provider: z.string() })]),
 
-	[RooCodeEventName.CommandsResponse]: z.tuple([
+	[JabberwockEventName.CommandsResponse]: z.tuple([
 		z.array(
 			z.object({
 				name: z.string(),
@@ -126,11 +126,11 @@ export const rooCodeEventsSchema = z.object({
 			}),
 		),
 	]),
-	[RooCodeEventName.ModesResponse]: z.tuple([z.array(z.object({ slug: z.string(), name: z.string() }))]),
-	[RooCodeEventName.ModelsResponse]: z.tuple([z.record(z.string(), modelInfoSchema)]),
+	[JabberwockEventName.ModesResponse]: z.tuple([z.array(z.object({ slug: z.string(), name: z.string() }))]),
+	[JabberwockEventName.ModelsResponse]: z.tuple([z.record(z.string(), modelInfoSchema)]),
 })
 
-export type RooCodeEvents = z.infer<typeof rooCodeEventsSchema>
+export type JabberwockEvents = z.infer<typeof jabberwockEventsSchema>
 
 /**
  * TaskEvent
@@ -139,149 +139,149 @@ export type RooCodeEvents = z.infer<typeof rooCodeEventsSchema>
 export const taskEventSchema = z.discriminatedUnion("eventName", [
 	// Task Provider Lifecycle
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskCreated),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskCreated],
+		eventName: z.literal(JabberwockEventName.TaskCreated),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskCreated],
 		taskId: z.number().optional(),
 	}),
 
 	// Task Lifecycle
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskStarted),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskStarted],
+		eventName: z.literal(JabberwockEventName.TaskStarted),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskStarted],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskCompleted),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskCompleted],
+		eventName: z.literal(JabberwockEventName.TaskCompleted),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskCompleted],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskAborted),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskAborted],
+		eventName: z.literal(JabberwockEventName.TaskAborted),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskAborted],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskFocused),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskFocused],
+		eventName: z.literal(JabberwockEventName.TaskFocused),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskFocused],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskUnfocused),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskUnfocused],
+		eventName: z.literal(JabberwockEventName.TaskUnfocused),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskUnfocused],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskActive),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskActive],
+		eventName: z.literal(JabberwockEventName.TaskActive),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskActive],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskInteractive),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskInteractive],
+		eventName: z.literal(JabberwockEventName.TaskInteractive),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskInteractive],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskResumable),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskResumable],
+		eventName: z.literal(JabberwockEventName.TaskResumable),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskResumable],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskIdle),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskIdle],
+		eventName: z.literal(JabberwockEventName.TaskIdle),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskIdle],
 		taskId: z.number().optional(),
 	}),
 
 	// Subtask Lifecycle
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskPaused),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskPaused],
+		eventName: z.literal(JabberwockEventName.TaskPaused),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskPaused],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskUnpaused),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskUnpaused],
+		eventName: z.literal(JabberwockEventName.TaskUnpaused),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskUnpaused],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskSpawned),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskSpawned],
+		eventName: z.literal(JabberwockEventName.TaskSpawned),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskSpawned],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskDelegated),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskDelegated],
+		eventName: z.literal(JabberwockEventName.TaskDelegated),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskDelegated],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskDelegationCompleted),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskDelegationCompleted],
+		eventName: z.literal(JabberwockEventName.TaskDelegationCompleted),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskDelegationCompleted],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskDelegationResumed),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskDelegationResumed],
+		eventName: z.literal(JabberwockEventName.TaskDelegationResumed),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskDelegationResumed],
 		taskId: z.number().optional(),
 	}),
 
 	// Task Execution
 	z.object({
-		eventName: z.literal(RooCodeEventName.Message),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.Message],
+		eventName: z.literal(JabberwockEventName.Message),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.Message],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskModeSwitched),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskModeSwitched],
+		eventName: z.literal(JabberwockEventName.TaskModeSwitched),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskModeSwitched],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskAskResponded),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskAskResponded],
+		eventName: z.literal(JabberwockEventName.TaskAskResponded),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskAskResponded],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.QueuedMessagesUpdated),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.QueuedMessagesUpdated],
+		eventName: z.literal(JabberwockEventName.QueuedMessagesUpdated),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.QueuedMessagesUpdated],
 		taskId: z.number().optional(),
 	}),
 
 	// Task Analytics
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskToolFailed),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskToolFailed],
+		eventName: z.literal(JabberwockEventName.TaskToolFailed),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskToolFailed],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.TaskTokenUsageUpdated),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskTokenUsageUpdated],
+		eventName: z.literal(JabberwockEventName.TaskTokenUsageUpdated),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.TaskTokenUsageUpdated],
 		taskId: z.number().optional(),
 	}),
 
 	// Query Responses
 	z.object({
-		eventName: z.literal(RooCodeEventName.CommandsResponse),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.CommandsResponse],
+		eventName: z.literal(JabberwockEventName.CommandsResponse),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.CommandsResponse],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.ModesResponse),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.ModesResponse],
+		eventName: z.literal(JabberwockEventName.ModesResponse),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.ModesResponse],
 		taskId: z.number().optional(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.ModelsResponse),
-		payload: rooCodeEventsSchema.shape[RooCodeEventName.ModelsResponse],
+		eventName: z.literal(JabberwockEventName.ModelsResponse),
+		payload: jabberwockEventsSchema.shape[JabberwockEventName.ModelsResponse],
 		taskId: z.number().optional(),
 	}),
 
 	// Evals
 	z.object({
-		eventName: z.literal(RooCodeEventName.EvalPass),
+		eventName: z.literal(JabberwockEventName.EvalPass),
 		payload: z.undefined(),
 		taskId: z.number(),
 	}),
 	z.object({
-		eventName: z.literal(RooCodeEventName.EvalFail),
+		eventName: z.literal(JabberwockEventName.EvalFail),
 		payload: z.undefined(),
 		taskId: z.number(),
 	}),

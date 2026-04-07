@@ -6,8 +6,8 @@
 		"imageTooLarge": "File gambar terlalu besar ({{size}} MB). Ukuran maksimum yang diizinkan adalah {{max}} MB.",
 		"imageWithSize": "File gambar ({{size}} KB)"
 	},
-	"toolRepetitionLimitReached": "Roo tampaknya terjebak dalam loop, mencoba aksi yang sama ({{toolName}}) berulang kali. Ini mungkin menunjukkan masalah dengan strategi saat ini. Pertimbangkan untuk mengubah frasa tugas, memberikan instruksi yang lebih spesifik, atau mengarahkannya ke pendekatan yang berbeda.",
-	"unknownToolError": "Roo mencoba menggunakan alat yang tidak dikenal: \"{{toolName}}\". Mencoba lagi...",
+	"toolRepetitionLimitReached": "Jabberwock tampaknya terjebak dalam loop, mencoba aksi yang sama ({{toolName}}) berulang kali. Ini mungkin menunjukkan masalah dengan strategi saat ini. Pertimbangkan untuk mengubah frasa tugas, memberikan instruksi yang lebih spesifik, atau mengarahkannya ke pendekatan yang berbeda.",
+	"unknownToolError": "Jabberwock mencoba menggunakan alat yang tidak dikenal: \"{{toolName}}\". Mencoba lagi...",
 	"codebaseSearch": {
 		"approval": "Mencari '{{query}}' di codebase..."
 	},
@@ -27,8 +27,8 @@
 		"invalidImageData": "Data gambar tidak valid dalam respons",
 		"invalidImageFormat": "Format gambar tidak valid diterima",
 		"unknownError": "Terjadi kesalahan yang tidak diketahui",
-		"roo": {
-			"authRequired": "Autentikasi Roo Code Cloud diperlukan untuk menghasilkan gambar. Silakan masuk ke Roo Code Cloud."
+		"jabberwock": {
+			"authRequired": "Autentikasi Jabberwock Cloud diperlukan untuk menghasilkan gambar. Silakan masuk ke Jabberwock Cloud."
 		}
 	}
 }

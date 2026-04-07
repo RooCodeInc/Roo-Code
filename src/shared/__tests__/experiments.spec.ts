@@ -1,6 +1,6 @@
 // npx vitest run src/shared/__tests__/experiments.spec.ts
 
-import type { ExperimentId } from "@roo-code/types"
+import type { ExperimentId } from "@jabberwock/types"
 
 import { EXPERIMENT_IDS, experimentConfigsMap, experiments as Experiments } from "../experiments"
 

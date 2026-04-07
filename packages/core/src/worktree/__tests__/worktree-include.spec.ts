@@ -4,7 +4,7 @@ import * as os from "os"
 import { execFile } from "child_process"
 import { promisify } from "util"
 
-import { WorktreeIncludeService } from "../worktree-include.js"
+import { WorktreeIncludeService } from "../worktree-include.ts"
 
 const execFileAsync = promisify(execFile)
 
@@ -208,7 +208,7 @@ describe("WorktreeIncludeService", () => {
 			await fs.mkdir(path.join(sourceDir, "dist"), { recursive: true })
 			await fs.writeFile(path.join(sourceDir, ".env"), "SECRET=123")
 			await fs.writeFile(path.join(sourceDir, "node_modules", "test.txt"), "test")
-			await fs.writeFile(path.join(sourceDir, "dist", "main.js"), "console.log('dist')")
+			await fs.writeFile(path.join(sourceDir, "dist", "main.ts"), "console.log('dist')")
 
 			const result = await service.copyWorktreeIncludeFiles(sourceDir, targetDir)
 

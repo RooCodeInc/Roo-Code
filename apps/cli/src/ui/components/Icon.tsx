@@ -68,9 +68,9 @@ function containsSurrogatePair(str: string): boolean {
 /**
  * Detect if Nerd Font icons are likely supported.
  *
- * Users can override this with the ROOCODE_NERD_FONT environment variable:
- * - ROOCODE_NERD_FONT=0 to force ASCII fallbacks (if icons don't render correctly)
- * - ROOCODE_NERD_FONT=1 to force Nerd Font icons
+ * Users can override this with the JABBERWOCKCODE_NERD_FONT environment variable:
+ * - JABBERWOCKCODE_NERD_FONT=0 to force ASCII fallbacks (if icons don't render correctly)
+ * - JABBERWOCKCODE_NERD_FONT=1 to force Nerd Font icons
  *
  * Defaults to true because:
  * 1. Nerd Fonts are common in developer terminal setups
@@ -79,12 +79,12 @@ function containsSurrogatePair(str: string): boolean {
  */
 function detectNerdFontSupport(): boolean {
 	// Allow explicit override via environment variable
-	const envOverride = process.env.ROOCODE_NERD_FONT
+	const envOverride = process.env.JABBERWOCKCODE_NERD_FONT
 	if (envOverride === "0" || envOverride === "false") return false
 	if (envOverride === "1" || envOverride === "true") return true
 
 	// Default to Nerd Font icons - they're common in developer setups
-	// and users can set ROOCODE_NERD_FONT=0 if needed
+	// and users can set JABBERWOCKCODE_NERD_FONT=0 if needed
 	return true
 }
 

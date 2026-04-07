@@ -1,7 +1,7 @@
-import type { SettingsService, ShareResponse, ShareVisibility } from "@roo-code/types"
+import type { SettingsService, ShareResponse, ShareVisibility } from "@jabberwock/types"
 
-import { importVscode } from "./importVscode.js"
-import type { CloudAPI } from "./CloudAPI.js"
+import { importVscode } from "./importVscode.ts"
+import type { CloudAPI } from "./CloudAPI.ts"
 
 export class CloudShareService {
 	private cloudAPI: CloudAPI

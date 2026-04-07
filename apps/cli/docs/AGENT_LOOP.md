@@ -1,6 +1,6 @@
 # CLI Agent Loop
 
-This document explains how the Roo Code CLI detects and tracks the agent loop state.
+This document explains how the Jabberwock CLI detects and tracks the agent loop state.
 
 ## Overview
 
@@ -191,7 +191,7 @@ The **single source of truth** for agent state, including the current mode. It:
 ```typescript
 const client = new ExtensionClient({
 	sendMessage: (msg) => extensionHost.sendToExtension(msg),
-	debug: true, // Writes to ~/.roo/cli-debug.log
+	debug: true, // Writes to ~/.jabberwock/cli-debug.log
 })
 
 // Query state at any time
@@ -299,10 +299,10 @@ client.sendMessage({
 
 ## Type Guards
 
-The CLI uses type guards from `@roo-code/types` for categorization:
+The CLI uses type guards from `@jabberwock-code/types` for categorization:
 
 ```typescript
-import { isIdleAsk, isInteractiveAsk, isResumableAsk, isNonBlockingAsk } from "@roo-code/types"
+import { isIdleAsk, isInteractiveAsk, isResumableAsk, isNonBlockingAsk } from "@jabberwock-code/types"
 
 const ask = message.ask
 if (isInteractiveAsk(ask)) {
@@ -318,16 +318,16 @@ if (isInteractiveAsk(ask)) {
 
 ## Debug Logging
 
-Enable with `-d` flag. Logs go to `~/.roo/cli-debug.log`:
+Enable with `-d` flag. Logs go to `~/.jabberwock/cli-debug.log`:
 
 ```bash
-roo -d -P "Build something" --no-tui
+jabberwock -d -P "Build something" --no-tui
 ```
 
 View logs:
 
 ```bash
-tail -f ~/.roo/cli-debug.log
+tail -f ~/.jabberwock/cli-debug.log
 ```
 
 Example output:

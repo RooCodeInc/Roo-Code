@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { ChevronDown, ChevronRight, FileDiff } from "lucide-react"
 import { createTwoFilesPatch } from "diff"
 
-import type { ClineMessage, ExtensionMessage } from "@roo-code/types"
+import type { ClineMessage, ExtensionMessage } from "@jabberwock/types"
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui"
 import { cn } from "@/lib/utils"

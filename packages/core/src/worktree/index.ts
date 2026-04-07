@@ -6,8 +6,8 @@
  */
 
 // Types
-export * from "./types.js"
+export * from "./types.ts"
 
 // Services
-export { WorktreeService, worktreeService } from "./worktree-service.js"
-export { WorktreeIncludeService, worktreeIncludeService, type CopyProgressCallback } from "./worktree-include.js"
+export { WorktreeService, worktreeService } from "./worktree-service.ts"
+export { WorktreeIncludeService, worktreeIncludeService, type CopyProgressCallback } from "./worktree-include.ts"

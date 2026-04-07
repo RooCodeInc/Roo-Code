@@ -5,13 +5,13 @@ import {
 	type AuthService,
 	type SettingsService,
 	TelemetryEventName,
-	rooCodeTelemetryEventSchema,
+	jabberwockTelemetryEventSchema,
 	TelemetryPropertiesProvider,
 	TelemetryEventSubscription,
-} from "@roo-code/types"
+} from "@jabberwock/types"
 
-import { getRooCodeApiUrl } from "./config.js"
-import type { RetryQueue } from "./retry-queue/index.js"
+import { getJabberwockApiUrl } from "./config.ts"
+import type { RetryQueue } from "./retry-queue/index.ts"
 
 abstract class BaseTelemetryClient implements TelemetryClient {
 	protected providerRef: WeakRef<TelemetryPropertiesProvider> | null = null
@@ -111,7 +111,7 @@ export class CloudTelemetryClient extends BaseTelemetryClient {
 			return
 		}
 
-		const url = `${getRooCodeApiUrl()}/api/${path}`
+		const url = `${getJabberwockApiUrl()}/api/${path}`
 		const fetchOptions: RequestInit = {
 			...options,
 			headers: {
@@ -172,7 +172,7 @@ export class CloudTelemetryClient extends BaseTelemetryClient {
 			console.info(`[TelemetryClient#capture] ${JSON.stringify(payload)}`)
 		}
 
-		const result = rooCodeTelemetryEventSchema.safeParse(payload)
+		const result = jabberwockTelemetryEventSchema.safeParse(payload)
 
 		if (!result.success) {
 			console.error(
@@ -235,7 +235,7 @@ export class CloudTelemetryClient extends BaseTelemetryClient {
 				)
 			}
 
-			const url = `${getRooCodeApiUrl()}/api/events/backfill`
+			const url = `${getJabberwockApiUrl()}/api/events/backfill`
 			const fetchOptions: RequestInit = {
 				method: "POST",
 				headers: {
@@ -264,7 +264,7 @@ export class CloudTelemetryClient extends BaseTelemetryClient {
 	public override updateTelemetryState(_didUserOptIn: boolean) {}
 
 	public override isTelemetryEnabled(): boolean {
-		if (process.env.ROO_CODE_DISABLE_TELEMETRY === "1") {
+		if (process.env.JABBERWOCK_CODE_DISABLE_TELEMETRY === "1") {
 			return false
 		}
 

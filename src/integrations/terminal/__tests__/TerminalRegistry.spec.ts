@@ -18,7 +18,7 @@ describe("TerminalRegistry", () => {
 			(...args: any[]) =>
 				({
 					exitStatus: undefined,
-					name: "Roo Code",
+					name: "Jabberwock",
 					processId: Promise.resolve(123),
 					creationOptions: {},
 					state: {
@@ -42,11 +42,11 @@ describe("TerminalRegistry", () => {
 
 			expect(mockCreateTerminal).toHaveBeenCalledWith({
 				cwd: "/test/path",
-				name: "Roo Code",
+				name: "Jabberwock",
 				iconPath: expect.any(Object),
 				env: {
 					PAGER,
-					ROO_ACTIVE: "true",
+					JABBERWOCK_ACTIVE: "true",
 					VTE_VERSION: "0",
 					PROMPT_EOL_MARK: "",
 				},
@@ -63,11 +63,11 @@ describe("TerminalRegistry", () => {
 
 				expect(mockCreateTerminal).toHaveBeenCalledWith({
 					cwd: "/test/path",
-					name: "Roo Code",
+					name: "Jabberwock",
 					iconPath: expect.any(Object),
 					env: {
 						PAGER,
-						ROO_ACTIVE: "true",
+						JABBERWOCK_ACTIVE: "true",
 						PROMPT_COMMAND: "sleep 0.05",
 						VTE_VERSION: "0",
 						PROMPT_EOL_MARK: "",
@@ -86,11 +86,11 @@ describe("TerminalRegistry", () => {
 
 				expect(mockCreateTerminal).toHaveBeenCalledWith({
 					cwd: "/test/path",
-					name: "Roo Code",
+					name: "Jabberwock",
 					iconPath: expect.any(Object),
 					env: {
 						PAGER,
-						ROO_ACTIVE: "true",
+						JABBERWOCK_ACTIVE: "true",
 						VTE_VERSION: "0",
 						PROMPT_EOL_MARK: "",
 						ITERM_SHELL_INTEGRATION_INSTALLED: "Yes",
@@ -108,11 +108,11 @@ describe("TerminalRegistry", () => {
 
 				expect(mockCreateTerminal).toHaveBeenCalledWith({
 					cwd: "/test/path",
-					name: "Roo Code",
+					name: "Jabberwock",
 					iconPath: expect.any(Object),
 					env: {
 						PAGER,
-						ROO_ACTIVE: "true",
+						JABBERWOCK_ACTIVE: "true",
 						VTE_VERSION: "0",
 						PROMPT_EOL_MARK: "",
 						POWERLEVEL9K_TERM_SHELL_INTEGRATION: "true",

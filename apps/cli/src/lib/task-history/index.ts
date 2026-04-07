@@ -1,7 +1,7 @@
 import os from "os"
 import path from "path"
 
-import { readTaskSessionsFromStoragePath, type TaskSessionEntry } from "@roo-code/core/cli"
+import { readTaskSessionsFromStoragePath, type TaskSessionEntry } from "@jabberwock/core/cli"
 
 import { arePathsEqual } from "@/lib/utils/path.js"
 

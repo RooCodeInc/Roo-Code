@@ -1,10 +1,15 @@
 import type OpenAI from "openai"
 
-import type { McpServer, McpTool } from "@roo-code/types"
+import type { McpServer, McpTool } from "@jabberwock/types"
 
 import type { McpHub } from "../../../../../services/mcp/McpHub"
 
 import { getMcpServerTools } from "../mcp_server"
+
+// Mock the McpMigration so it doesn't block tools in tests
+vi.mock("../../../../../services/mcp/McpMigration", () => ({
+	isServerVisibleToAgent: vi.fn().mockReturnValue(true),
+}))
 
 // Helper type to access function tools
 type FunctionTool = OpenAI.Chat.ChatCompletionTool & { type: "function" }

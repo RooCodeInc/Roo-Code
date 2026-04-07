@@ -12,7 +12,7 @@ import {
 	type OrganizationSettings,
 	type UserSettingsConfig,
 	type WorkspaceTaskVisibility,
-} from "../cloud.js"
+} from "../cloud.ts"
 
 describe("organizationFeaturesSchema", () => {
 	it("should validate empty object", () => {

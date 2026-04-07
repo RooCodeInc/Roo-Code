@@ -1,7 +1,7 @@
 import * as vscode from "vscode"
 
-import { RooCodeEventName, type HistoryItem } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
+import { JabberwockEventName, type HistoryItem } from "@jabberwock/types"
+import { TelemetryService } from "@jabberwock/telemetry"
 
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
@@ -75,6 +75,9 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 				pushToolResult(await task.sayAndCreateMissingParamError("attempt_completion", "result"))
 				return
 			}
+
+			task.completionResultSummary = result // Jabberwock: store result for await_batch_completion
+			task.isCompleted = true // Jabberwock: mark as completed
 
 			task.consecutiveMistakeCount = 0
 
@@ -202,7 +205,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 		task.emitFinalTokenUsageUpdate()
 
 		TelemetryService.instance.captureTaskCompleted(task.taskId)
-		task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
+		task.emit(JabberwockEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
 	}
 }
 

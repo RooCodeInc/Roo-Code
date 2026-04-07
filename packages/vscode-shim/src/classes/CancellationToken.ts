@@ -2,8 +2,8 @@
  * CancellationToken and CancellationTokenSource for VSCode API
  */
 
-import { EventEmitter } from "./EventEmitter.js"
-import type { Disposable } from "../interfaces/workspace.js"
+import { EventEmitter } from "./EventEmitter.ts"
+import type { Disposable } from "../interfaces/workspace.ts"
 
 /**
  * Cancellation token interface

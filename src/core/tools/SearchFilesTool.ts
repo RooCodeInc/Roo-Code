@@ -1,6 +1,6 @@
 import path from "path"
 
-import { type ClineSayTool } from "@roo-code/types"
+import { type ClineSayTool } from "@jabberwock/types"
 
 import { Task } from "../task/Task"
 import { getReadablePath } from "../../utils/path"
@@ -56,7 +56,13 @@ export class SearchFilesTool extends BaseTool<"search_files"> {
 		}
 
 		try {
-			const results = await regexSearchFiles(task.cwd, absolutePath, regex, filePattern, task.rooIgnoreController)
+			const results = await regexSearchFiles(
+				task.cwd,
+				absolutePath,
+				regex,
+				filePattern,
+				task.jabberwockIgnoreController,
+			)
 
 			const completeMessage = JSON.stringify({ ...sharedMessageProps, content: results } satisfies ClineSayTool)
 			const didApprove = await askApproval("tool", completeMessage)

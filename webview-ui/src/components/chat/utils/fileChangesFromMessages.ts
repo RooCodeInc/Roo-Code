@@ -1,5 +1,5 @@
-import type { ClineMessage, ClineSayTool } from "@roo-code/types"
-import { safeJsonParse } from "@roo/core"
+import type { ClineMessage, ClineSayTool } from "@jabberwock/types"
+import { safeJsonParse } from "@shared/core"
 
 /** File-edit tool names from ClineSayTool["tool"] (packages/types). */
 const FILE_EDIT_TOOLS = new Set<string>(["editedExistingFile", "appliedDiff", "newFileCreated"])
@@ -38,7 +38,7 @@ export function fileChangesFromMessages(messages: ClineMessage[] | undefined): F
 		if (tool.batchDiffs && Array.isArray(tool.batchDiffs)) {
 			for (const file of tool.batchDiffs) {
 				if (!file.path) continue
-				const content = file.content ?? file.diffs?.map((d) => d.content).join("\n") ?? ""
+				const content = file.content ?? file.diffs?.map((d: any) => d.content).join("\n") ?? ""
 				if (content) {
 					entries.push({
 						path: file.path,

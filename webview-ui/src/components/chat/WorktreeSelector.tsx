@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useEffect, useMemo } from "react"
 import { GitBranch, Check, ChevronDown, Plus } from "lucide-react"
 
-import type { Worktree, WorktreeListResponse } from "@roo-code/types"
+import type { Worktree, WorktreeListResponse } from "@jabberwock/types"
 
 import { cn } from "@/lib/utils"
-import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
+import { useJabberwockPortal } from "@/components/ui/hooks/useJabberwockPortal"
 import { Popover, PopoverContent, PopoverTrigger, StandardTooltip, Button } from "@/components/ui"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { vscode } from "@/utils/vscode"
@@ -22,7 +22,7 @@ export const WorktreeSelector = ({ disabled = false }: WorktreeSelectorProps) =>
 	const [worktrees, setWorktrees] = useState<Worktree[]>([])
 	const [isGitRepo, setIsGitRepo] = useState(true)
 	const [showCreateModal, setShowCreateModal] = useState(false)
-	const portalContainer = useRooPortal("roo-portal")
+	const portalContainer = useJabberwockPortal("jabberwock-portal")
 
 	// Find current worktree
 	const currentWorktree = useMemo(() => worktrees.find((w) => w.isCurrent), [worktrees])

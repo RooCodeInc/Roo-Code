@@ -1,6 +1,6 @@
 import type { OpenAI } from "openai"
 
-import type { SerializedCustomToolDefinition } from "@roo-code/types"
+import type { SerializedCustomToolDefinition } from "@jabberwock/types"
 
 export function formatNative(tool: SerializedCustomToolDefinition): OpenAI.Chat.ChatCompletionFunctionTool {
 	// Create a shallow copy to avoid mutating the input object

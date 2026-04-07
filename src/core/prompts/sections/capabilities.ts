@@ -1,6 +1,27 @@
 import { McpHub } from "../../../services/mcp/McpHub"
+import { getModeBySlug, defaultModeSlug } from "../../../shared/modes"
+import type { ModeConfig } from "@jabberwock/types"
 
-export function getCapabilitiesSection(cwd: string, mcpHub?: McpHub): string {
+export function getCapabilitiesSection(
+	cwd: string,
+	mcpHub?: McpHub,
+	mode?: string,
+	customModes?: ModeConfig[],
+): string {
+	let mcpServersList = ""
+	if (mcpHub) {
+		const modeSlug = mode ?? defaultModeSlug
+		const modeConfig = getModeBySlug(modeSlug, customModes)
+		const modeName = modeConfig?.name ?? modeSlug
+		const mcpList = modeConfig?.mcpList
+		const allServers = mcpHub.getServers()
+		const visibleServers = mcpHub.getServers(mcpList)
+
+		if (visibleServers.length > 0) {
+			mcpServersList = "\n\nAvailable MCP servers:\n" + visibleServers.map((s) => `- ${s.name}`).join("\n")
+		}
+	}
+
 	return `====
 
 CAPABILITIES
@@ -10,7 +31,7 @@ CAPABILITIES
 - You can use the execute_command tool to run commands on the user's computer whenever you feel it can help accomplish the user's task. When you need to execute a CLI command, you must provide a clear explanation of what the command does. Prefer to execute complex CLI commands over creating executable scripts, since they are more flexible and easier to run. Interactive and long-running commands are allowed, since the commands are run in the user's VSCode terminal. The user may keep commands running in the background and you will be kept updated on their status along the way. Each command you execute is run in a new terminal instance.${
 		mcpHub
 			? `
-- You have access to MCP servers that may provide additional tools and resources. Each server may provide different capabilities that you can use to accomplish tasks more effectively.
+- You have access to MCP servers that may provide additional tools and resources. Each server may provide different capabilities that you can use to accomplish tasks more effectively.${mcpServersList}
 `
 			: ""
 	}`

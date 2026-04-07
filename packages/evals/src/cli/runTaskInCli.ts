@@ -4,8 +4,8 @@ import * as os from "node:os"
 import pWaitFor from "p-wait-for"
 import { execa } from "execa"
 
-import { type ToolUsage, TaskCommandName, RooCodeEventName, IpcMessageType } from "@roo-code/types"
-import { IpcClient } from "@roo-code/ipc"
+import { type ToolUsage, TaskCommandName, JabberwockEventName, IpcMessageType } from "@jabberwock/types"
+import { IpcClient } from "@jabberwock/ipc"
 
 import { updateTask, createTaskMetrics, updateTaskMetrics, createToolError } from "../db/index"
 import { EVALS_REPO_PATH } from "../exercises/index"
@@ -14,7 +14,7 @@ import { type RunTaskOptions } from "./types"
 import { mergeToolUsage, waitForSubprocessWithTimeout } from "./utils"
 
 /**
- * Run a task using the Roo Code CLI (headless mode).
+ * Run a task using the Jabberwock CLI (headless mode).
  * Uses the same IPC protocol as VSCode since the CLI loads the same extension bundle.
  */
 export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: RunTaskOptions) => {
@@ -25,11 +25,11 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 
 	const env: Record<string, string> = {
 		...(process.env as Record<string, string>),
-		ROO_CODE_IPC_SOCKET_PATH: ipcSocketPath,
+		JABBERWOCK_CODE_IPC_SOCKET_PATH: ipcSocketPath,
 	}
 
 	if (jobToken) {
-		env.ROO_CODE_CLOUD_TOKEN = jobToken
+		env.JABBERWOCK_CODE_CLOUD_TOKEN = jobToken
 	}
 
 	const controller = new AbortController()
@@ -37,7 +37,7 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 
 	const cliArgs = [
 		"--filter",
-		"@roo-code/cli",
+		"@jabberwock/cli",
 		"start",
 		"--prompt-file",
 		promptSourcePath,
@@ -167,13 +167,13 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 	let taskAbortedAt: number | undefined
 	let taskTimedOut: boolean = false
 	const taskMetricsId = taskMetrics.id // Already set, no need to wait for TaskStarted.
-	let rooTaskId: string | undefined
+	let jabberwockTaskId: string | undefined
 	let isClientDisconnected = false
 	const accumulatedToolUsage: ToolUsage = {}
 
 	// For CLI mode, we don't need verbose IPC message logging since we're logging stdout instead.
 	// We only track what's needed for metrics and task state management.
-	const ignoreEventsForBroadcast = [RooCodeEventName.Message]
+	const ignoreEventsForBroadcast = [JabberwockEventName.Message]
 	let isApiUnstable = false
 
 	client.on(IpcMessageType.TaskEvent, async (taskEvent) => {
@@ -181,7 +181,7 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 
 		// Track API instability for retry logic.
 		if (
-			eventName === RooCodeEventName.Message &&
+			eventName === JabberwockEventName.Message &&
 			payload[0].message.say &&
 			["api_req_retry_delayed", "api_req_retried"].includes(payload[0].message.say)
 		) {
@@ -195,19 +195,22 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 
 		// Handle task lifecycle events.
 		// For CLI mode, we already created taskMetrics before connecting to IPC,
-		// but we still want to capture the rooTaskId from TaskStarted if we receive it.
-		if (eventName === RooCodeEventName.TaskStarted) {
+		// but we still want to capture the jabberwockTaskId from TaskStarted if we receive it.
+		if (eventName === JabberwockEventName.TaskStarted) {
 			taskStartedAt = Date.now()
-			rooTaskId = payload[0]
-			logger.info(`received TaskStarted event, rooTaskId: ${rooTaskId}`)
+			jabberwockTaskId = payload[0]
+			logger.info(`received TaskStarted event, jabberwockTaskId: ${jabberwockTaskId}`)
 		}
 
-		if (eventName === RooCodeEventName.TaskToolFailed) {
+		if (eventName === JabberwockEventName.TaskToolFailed) {
 			const [_taskId, toolName, error] = payload
 			await createToolError({ taskId: task.id, toolName, error })
 		}
 
-		if (eventName === RooCodeEventName.TaskTokenUsageUpdated || eventName === RooCodeEventName.TaskCompleted) {
+		if (
+			eventName === JabberwockEventName.TaskTokenUsageUpdated ||
+			eventName === JabberwockEventName.TaskCompleted
+		) {
 			// In CLI mode, taskMetricsId is always set before we register event handlers.
 			const duration = Date.now() - taskStartedAt
 
@@ -229,11 +232,11 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 			})
 		}
 
-		if (eventName === RooCodeEventName.TaskAborted) {
+		if (eventName === JabberwockEventName.TaskAborted) {
 			taskAbortedAt = Date.now()
 		}
 
-		if (eventName === RooCodeEventName.TaskCompleted) {
+		if (eventName === JabberwockEventName.TaskCompleted) {
 			taskFinishedAt = Date.now()
 		}
 	})
@@ -261,7 +264,7 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 		taskTimedOut = true
 		logger.error("time limit reached")
 
-		if (rooTaskId && !isClientDisconnected) {
+		if (jabberwockTaskId && !isClientDisconnected) {
 			logger.info("cancelling task")
 			client.sendCommand({ commandName: TaskCommandName.CancelTask })
 			await new Promise((resolve) => setTimeout(resolve, 5_000))
@@ -286,7 +289,7 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 	logger.info("setting task finished at")
 	await updateTask(task.id, { finishedAt: new Date() })
 
-	if (rooTaskId && !isClientDisconnected) {
+	if (jabberwockTaskId && !isClientDisconnected) {
 		logger.info("closing task")
 		client.sendCommand({ commandName: TaskCommandName.CloseTask })
 		await new Promise((resolve) => setTimeout(resolve, 2_000))

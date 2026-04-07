@@ -11,7 +11,7 @@ import {
 	internationalZAiModels,
 	mainlandZAiModels,
 	ZAI_DEFAULT_TEMPERATURE,
-} from "@roo-code/types"
+} from "@jabberwock/types"
 
 import { ZAiHandler } from "../zai"
 

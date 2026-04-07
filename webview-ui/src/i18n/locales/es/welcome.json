@@ -7,46 +7,46 @@
 		"openrouter": {
 			"description": "Una interfaz unificada para LLMs"
 		},
-		"roo": {
+		"jabberwock": {
 			"description": "Los mejores modelos gratuitos para empezar",
-			"incentive": "Prueba Roo gratis"
+			"incentive": "Prueba Jabberwock gratis"
 		}
 	},
 	"landing": {
-		"greeting": "¡Bienvenido a Roo Code!",
-		"introduction": "Con una variedad de Modos integrados y extensibles, Roo Code te permite planificar, arquitectar, codificar, depurar y aumentar tu productividad como nunca antes.",
-		"accountMention": "Para comenzar, crea tu cuenta de Roo Code Cloud. Obtén modelos potentes, control web, análisis, soporte y más.",
-		"getStarted": "Crear cuenta de Roo",
+		"greeting": "¡Bienvenido a Jabberwock!",
+		"introduction": "Con una variedad de Modos integrados y extensibles, Jabberwock te permite planificar, arquitectar, codificar, depurar y aumentar tu productividad como nunca antes.",
+		"accountMention": "Para comenzar, crea tu cuenta de Jabberwock Cloud. Obtén modelos potentes, control web, análisis, soporte y más.",
+		"getStarted": "Crear cuenta de Jabberwock",
 		"noAccount": "o usar sin cuenta"
 	},
 	"providerSignup": {
 		"heading": "Elige tu proveedor",
-		"chooseProvider": "Roo necesita un proveedor de LLM para funcionar. Elige uno para comenzar, puedes añadir más después.",
-		"rooCloudProvider": "Proveedor de Roo Code Cloud",
-		"rooCloudDescription": "La forma más sencilla de comenzar es con el Proveedor Roo Code Cloud: una mezcla seleccionada de modelos gratuitos y de pago a bajo costo.",
+		"chooseProvider": "Jabberwock necesita un proveedor de LLM para funcionar. Elige uno para comenzar, puedes añadir más después.",
+		"jabberwockCloudProvider": "Proveedor de Jabberwock Cloud",
+		"jabberwockCloudDescription": "La forma más sencilla de comenzar es con el Proveedor Jabberwock Cloud: una mezcla seleccionada de modelos gratuitos y de pago a bajo costo.",
 		"learnMore": "Más información",
 		"useAnotherProvider": "Proveedor de terceros",
 		"useAnotherProviderDescription": "Introduce una clave API y comienza.",
 		"noApiKeys": "¿No quieres lidiar con claves API y cuentas separadas?",
-		"backToRoo": "Ve con el Proveedor de Roo Code Cloud.",
+		"backToJabberwock": "Ve con el Proveedor de Jabberwock Cloud.",
 		"goBack": "Atrás",
 		"finish": "Finalizar"
 	},
 	"waitingForCloud": {
-		"heading": "Iniciando sesión en Roo Code Cloud...",
-		"description": "Te llevaremos a tu navegador para que te registres en Roo Code Cloud. Luego te traeremos aquí para terminar.",
+		"heading": "Iniciando sesión en Jabberwock Cloud...",
+		"description": "Te llevaremos a tu navegador para que te registres en Jabberwock Cloud. Luego te traeremos aquí para terminar.",
 		"noPrompt": "Si no se te pide que abras una URL, <clickHere>haz clic aquí</clickHere>.",
 		"havingTrouble": "Si completaste el registro pero tienes problemas, <clickHere>haz clic aquí</clickHere>.",
 		"pasteUrl": "Pega la URL de respuesta de tu navegador:",
 		"docsLink": "¿No funciona? <DocsLink>Consulta la documentación</DocsLink>.",
-		"invalidURL": "Eso no parece ser una URL de respuesta válida. Por favor copia lo que Roo Code Cloud está mostrando en tu navegador.",
+		"invalidURL": "Eso no parece ser una URL de respuesta válida. Por favor copia lo que Jabberwock Cloud está mostrando en tu navegador.",
 		"goBack": "Atrás"
 	},
 	"startRouter": "Recomendamos usar un router LLM:",
 	"startCustom": "O puedes traer tu propia clave API:",
 	"telemetry": {
-		"helpImprove": "Ayuda a mejorar Roo Code",
-		"helpImproveMessage": "Roo Code recopila datos de errores y uso para ayudarnos a corregir errores y mejorar la extensión. Esta telemetría no recopila código, prompts o información personal. Puedes desactivar esto en la <settingsLink>configuración</settingsLink>."
+		"helpImprove": "Ayuda a mejorar Jabberwock",
+		"helpImproveMessage": "Jabberwock recopila datos de errores y uso para ayudarnos a corregir errores y mejorar la extensión. Esta telemetría no recopila código, prompts o información personal. Puedes desactivar esto en la <settingsLink>configuración</settingsLink>."
 	},
 	"importSettings": "Importar configuración"
 }

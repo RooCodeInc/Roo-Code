@@ -2,7 +2,7 @@ import { safeWriteJson } from "../../utils/safeWriteJson"
 import * as path from "path"
 import * as os from "os"
 import * as fs from "fs/promises"
-import { getRooDirectoriesForCwd } from "../../services/roo-config/index.js"
+import { getRooDirectoriesForCwd } from "../../services/jabberwock-config/index.js"
 import pWaitFor from "p-wait-for"
 import * as vscode from "vscode"
 
@@ -17,14 +17,14 @@ import {
 	type WebviewMessage,
 	type EditQueuedMessagePayload,
 	TelemetryEventName,
-	RooCodeSettings,
+	JabberwockSettings,
 	ExperimentId,
 	checkoutDiffPayloadSchema,
 	checkoutRestorePayloadSchema,
-} from "@roo-code/types"
-import { customToolRegistry } from "@roo-code/core"
-import { CloudService } from "@roo-code/cloud"
-import { TelemetryService } from "@roo-code/telemetry"
+} from "@jabberwock/types"
+import { customToolRegistry } from "@jabberwock/core"
+import { CloudService } from "@jabberwock/cloud"
+import { TelemetryService } from "@jabberwock/telemetry"
 
 import { type ApiMessage } from "../task-persistence/apiMessages"
 import { saveTaskMessages } from "../task-persistence"
@@ -62,7 +62,7 @@ import { getOpenAiModels } from "../../api/providers/openai"
 import { getVsCodeLmModels } from "../../api/providers/vscode-lm"
 import { openMention } from "../mentions"
 import { resolveImageMentions } from "../mentions/resolveImageMentions"
-import { RooIgnoreController } from "../ignore/RooIgnoreController"
+import { JabberwockIgnoreController } from "../ignore/JabberwockIgnoreController"
 import { getWorkspacePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { Mode, defaultModeSlug } from "../../shared/modes"
@@ -182,7 +182,7 @@ export const webviewMessageHandler = async (
 			text,
 			images,
 			cwd: getCurrentCwd(),
-			rooIgnoreController: currentTask?.rooIgnoreController,
+			jabberwockIgnoreController: currentTask?.jabberwockIgnoreController,
 			maxImageFileSize: state.maxImageFileSize,
 			maxTotalImageSize: state.maxTotalImageSize,
 		})
@@ -652,6 +652,12 @@ export const webviewMessageHandler = async (
 			}
 			break
 
+		case "elicitationResponse":
+			if (message.values) {
+				provider.getCurrentTask()?.resolveElicitation(message.values)
+			}
+			break
+
 		case "updateSettings":
 			if (message.updatedSettings) {
 				for (const [key, value] of Object.entries(message.updatedSettings)) {
@@ -742,7 +748,7 @@ export const webviewMessageHandler = async (
 						}
 					}
 
-					await provider.contextProxy.setValue(key as keyof RooCodeSettings, newValue)
+					await provider.contextProxy.setValue(key as keyof JabberwockSettings, newValue)
 				}
 
 				await provider.postStateToWebview()
@@ -954,7 +960,7 @@ export const webviewMessageHandler = async (
 						unbound: {},
 						ollama: {},
 						lmstudio: {},
-						roo: {},
+						jabberwock: {},
 					}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
@@ -990,10 +996,10 @@ export const webviewMessageHandler = async (
 				},
 				{ key: "vercel-ai-gateway", options: { provider: "vercel-ai-gateway" } },
 				{
-					key: "roo",
+					key: "jabberwock",
 					options: {
-						provider: "roo",
-						baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+						provider: "jabberwock",
+						baseUrl: process.env.JABBERWOCK_CODE_PROVIDER_URL ?? "https://api.jabberwock.com/proxy",
 						apiKey: CloudService.hasInstance()
 							? CloudService.instance.authService?.getSessionToken()
 							: undefined,
@@ -1114,11 +1120,11 @@ export const webviewMessageHandler = async (
 			break
 		}
 		case "requestRooModels": {
-			// Specific handler for Roo models only - flushes cache to ensure fresh auth token is used
+			// Specific handler for Jabberwock models only - flushes cache to ensure fresh auth token is used
 			try {
 				const rooOptions = {
-					provider: "roo" as const,
-					baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+					provider: "jabberwock" as const,
+					baseUrl: process.env.JABBERWOCK_CODE_PROVIDER_URL ?? "https://api.jabberwock.com/proxy",
 					apiKey: CloudService.hasInstance()
 						? CloudService.instance.authService?.getSessionToken()
 						: undefined,
@@ -1132,7 +1138,7 @@ export const webviewMessageHandler = async (
 				provider.postMessageToWebview({
 					type: "singleRouterModelFetchResponse",
 					success: true,
-					values: { provider: "roo", models: rooModels },
+					values: { provider: "jabberwock", models: rooModels },
 				})
 			} catch (error) {
 				// Send error response
@@ -1141,13 +1147,13 @@ export const webviewMessageHandler = async (
 					type: "singleRouterModelFetchResponse",
 					success: false,
 					error: errorMessage,
-					values: { provider: "roo" },
+					values: { provider: "jabberwock" },
 				})
 			}
 			break
 		}
 		case "requestRooCreditBalance": {
-			// Fetch Roo credit balance using CloudAPI
+			// Fetch Jabberwock credit balance using CloudAPI
 			const requestId = message.requestId
 			try {
 				if (!CloudService.hasInstance() || !CloudService.instance.cloudAPI) {
@@ -1350,7 +1356,7 @@ export const webviewMessageHandler = async (
 			break
 		}
 		case "openKeyboardShortcuts": {
-			// Open VSCode keyboard shortcuts settings and optionally filter to show the Roo Code commands
+			// Open VSCode keyboard shortcuts settings and optionally filter to show the Jabberwock commands
 			const searchQuery = message.text || ""
 			if (searchQuery) {
 				// Open with a search query pre-filled
@@ -1377,7 +1383,7 @@ export const webviewMessageHandler = async (
 			}
 
 			const workspaceFolder = getCurrentCwd()
-			const rooDir = path.join(workspaceFolder, ".roo")
+			const rooDir = path.join(workspaceFolder, ".jabberwock")
 			const mcpPath = path.join(rooDir, "mcp.json")
 
 			try {
@@ -1590,6 +1596,27 @@ export const webviewMessageHandler = async (
 				}
 			}
 			break
+		case "updateSystemPromptTemplate":
+			if (message.systemPromptTemplateKey !== undefined) {
+				const existingTemplates = getGlobalState("systemPromptTemplates") ?? {}
+				const updatedTemplates = { ...existingTemplates }
+
+				if (message.systemPromptTemplate === undefined || message.systemPromptTemplate === "") {
+					delete updatedTemplates[message.systemPromptTemplateKey]
+				} else {
+					updatedTemplates[message.systemPromptTemplateKey] = message.systemPromptTemplate
+				}
+
+				await updateGlobalState("systemPromptTemplates", updatedTemplates)
+				const currentState = await provider.getStateToPostToWebview()
+				const stateWithTemplates = {
+					...currentState,
+					systemPromptTemplates: updatedTemplates,
+					hasOpenedModeSelector: currentState.hasOpenedModeSelector ?? false,
+				}
+				provider.postMessageToWebview({ type: "state", state: stateWithTemplates })
+			}
+			break
 		case "deleteMessage": {
 			if (!provider.getCurrentTask()) {
 				await vscode.window.showErrorMessage(t("common:errors.message.no_active_task_to_delete"))
@@ -1768,26 +1795,26 @@ export const webviewMessageHandler = async (
 					20, // Use default limit, as filtering is now done in the backend
 				)
 
-				// Get the RooIgnoreController from the current task, or create a new one
+				// Get the JabberwockIgnoreController from the current task, or create a new one
 				const currentTask = provider.getCurrentTask()
-				let rooIgnoreController = currentTask?.rooIgnoreController
-				let tempController: RooIgnoreController | undefined
+				let jabberwockIgnoreController = currentTask?.jabberwockIgnoreController
+				let tempController: JabberwockIgnoreController | undefined
 
 				// If no current task or no controller, create a temporary one
-				if (!rooIgnoreController) {
-					tempController = new RooIgnoreController(workspacePath)
+				if (!jabberwockIgnoreController) {
+					tempController = new JabberwockIgnoreController(workspacePath)
 					await tempController.initialize()
-					rooIgnoreController = tempController
+					jabberwockIgnoreController = tempController
 				}
 
 				try {
-					// Get showRooIgnoredFiles setting from state
-					const { showRooIgnoredFiles = false } = (await provider.getState()) ?? {}
+					// Get showJabberwockIgnoredFiles setting from state
+					const { showJabberwockIgnoredFiles = false } = (await provider.getState()) ?? {}
 
-					// Filter results using RooIgnoreController if showRooIgnoredFiles is false
+					// Filter results using JabberwockIgnoreController if showJabberwockIgnoredFiles is false
 					let filteredResults = results
-					if (!showRooIgnoredFiles && rooIgnoreController) {
-						const allowedPaths = rooIgnoreController.filterPaths(results.map((r) => r.path))
+					if (!showJabberwockIgnoredFiles && jabberwockIgnoreController) {
+						const allowedPaths = jabberwockIgnoreController.filterPaths(results.map((r) => r.path))
 						filteredResults = results.filter((r) => allowedPaths.includes(r.path))
 					}
 
@@ -2066,14 +2093,14 @@ export const webviewMessageHandler = async (
 				if (scope === "project") {
 					const workspacePath = getWorkspacePath()
 					if (workspacePath) {
-						rulesFolderPath = path.join(workspacePath, ".roo", `rules-${message.slug}`)
+						rulesFolderPath = path.join(workspacePath, ".jabberwock", `rules-${message.slug}`)
 					} else {
-						rulesFolderPath = path.join(".roo", `rules-${message.slug}`)
+						rulesFolderPath = path.join(".jabberwock", `rules-${message.slug}`)
 					}
 				} else {
 					// Global scope - use OS home directory
 					const homeDir = os.homedir()
-					rulesFolderPath = path.join(homeDir, ".roo", `rules-${message.slug}`)
+					rulesFolderPath = path.join(homeDir, ".jabberwock", `rules-${message.slug}`)
 				}
 
 				// Check if the rules folder exists
@@ -2334,7 +2361,7 @@ export const webviewMessageHandler = async (
 			provider.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
 			break
 		}
-		case "rooCloudSignIn": {
+		case "jabberwockCloudSignIn": {
 			try {
 				TelemetryService.instance.captureEvent(TelemetryEventName.AUTHENTICATION_INITIATED)
 				// Use provider signup flow if useProviderSignup is explicitly true
@@ -2357,7 +2384,7 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
-		case "rooCloudSignOut": {
+		case "jabberwockCloudSignOut": {
 			try {
 				await CloudService.instance.logout()
 				await provider.postStateToWebview()
@@ -2408,7 +2435,7 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
-		case "rooCloudManualUrl": {
+		case "jabberwockCloudManualUrl": {
 			try {
 				if (!message.text) {
 					vscode.window.showErrorMessage(t("common:errors.manual_url_empty"))
@@ -2452,7 +2479,7 @@ export const webviewMessageHandler = async (
 		}
 		case "clearCloudAuthSkipModel": {
 			// Clear the flag that indicates auth completed without model selection
-			await provider.context.globalState.update("roo-auth-skip-model", undefined)
+			await provider.context.globalState.update("jabberwock-auth-skip-model", undefined)
 			await provider.postStateToWebview()
 			break
 		}
@@ -3095,7 +3122,7 @@ export const webviewMessageHandler = async (
 				// Determine the commands directory based on source
 				let commandsDir: string
 				if (source === "global") {
-					const globalConfigDir = path.join(os.homedir(), ".roo")
+					const globalConfigDir = path.join(os.homedir(), ".jabberwock")
 					commandsDir = path.join(globalConfigDir, "commands")
 				} else {
 					if (!vscode.workspace.workspaceFolders?.length) {
@@ -3108,7 +3135,7 @@ export const webviewMessageHandler = async (
 						vscode.window.showErrorMessage(t("common:errors.no_workspace_for_project_command"))
 						break
 					}
-					commandsDir = path.join(workspaceRoot, ".roo", "commands")
+					commandsDir = path.join(workspaceRoot, ".jabberwock", "commands")
 				}
 
 				// Ensure the commands directory exists
@@ -3281,7 +3308,7 @@ export const webviewMessageHandler = async (
 				try {
 					const tmpDir = os.tmpdir()
 					const timestamp = Date.now()
-					const tempFileName = `roo-preview-${timestamp}.md`
+					const tempFileName = `jabberwock-preview-${timestamp}.md`
 					const tempFilePath = path.join(tmpDir, tempFileName)
 
 					await fs.writeFile(tempFilePath, message.text, "utf8")
@@ -3369,7 +3396,7 @@ export const webviewMessageHandler = async (
 				// Create a temporary file
 				const tmpDir = os.tmpdir()
 				const timestamp = Date.now()
-				const tempFileName = `roo-debug-${message.type === "openDebugApiHistory" ? "api" : "ui"}-${currentTask.taskId.slice(0, 8)}-${timestamp}.json`
+				const tempFileName = `jabberwock-debug-${message.type === "openDebugApiHistory" ? "api" : "ui"}-${currentTask.taskId.slice(0, 8)}-${timestamp}.json`
 				const tempFilePath = path.join(tmpDir, tempFileName)
 
 				await fs.writeFile(tempFilePath, prettifiedContent, "utf8")

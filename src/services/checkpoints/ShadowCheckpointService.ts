@@ -52,13 +52,6 @@ function createSanitizedGit(baseDir: string): SimpleGit {
 		}
 	}
 
-	// Log which git env vars were removed (helps with debugging Dev Container issues)
-	if (removedVars.length > 0) {
-		console.log(
-			`[createSanitizedGit] Removed git environment variables for checkpoint isolation: ${removedVars.join(", ")}`,
-		)
-	}
-
 	const options: Partial<SimpleGitOptions> = {
 		baseDir,
 		config: [],
@@ -70,8 +63,6 @@ function createSanitizedGit(baseDir: string): SimpleGit {
 	// Use the .env() method to set the complete sanitized environment
 	// This replaces the inherited environment with our sanitized version
 	git.env(sanitizedEnv)
-
-	console.log(`[createSanitizedGit] Created git instance for baseDir: ${baseDir}`)
 
 	return git
 }
@@ -147,8 +138,7 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 
 		await fs.mkdir(this.checkpointsDir, { recursive: true })
 		const git = createSanitizedGit(this.checkpointsDir)
-		const gitVersion = await git.version()
-		this.log(`[${this.constructor.name}#create] git = ${gitVersion}`)
+		// this.log(`[${this.constructor.name}#create] git = ${gitVersion}`)
 
 		let created = false
 		const startTime = Date.now()
@@ -172,11 +162,10 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 			await this.writeExcludeFile()
 			this.baseHash = await git.revparse(["HEAD"])
 		} else {
-			this.log(`[${this.constructor.name}#initShadowGit] creating shadow git repo at ${this.checkpointsDir}`)
 			await git.init({ "--template": "" })
 			await git.addConfig("core.worktree", this.workspaceDir) // Sets the working tree to the current workspace.
 			await git.addConfig("commit.gpgSign", "false") // Disable commit signing for shadow repo.
-			await git.addConfig("user.name", "Roo Code")
+			await git.addConfig("user.name", "Jabberwock")
 			await git.addConfig("user.email", "noreply@example.com")
 			await this.writeExcludeFile()
 			await this.stageAll(git)
@@ -186,10 +175,9 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 		}
 
 		const duration = Date.now() - startTime
-
-		this.log(
-			`[${this.constructor.name}#initShadowGit] initialized shadow repo with base commit ${this.baseHash} in ${duration}ms`,
-		)
+		// this.log(
+		// 	`[${this.constructor.name}#initShadowGit] initialized shadow repo with base commit ${this.baseHash} in ${duration}ms`,
+		// )
 
 		this.git = git
 
@@ -457,7 +445,7 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 		workspaceDir: string
 	}) {
 		const workspaceRepoDir = this.workspaceRepoDir({ globalStorageDir, workspaceDir })
-		const branchName = `roo-${taskId}`
+		const branchName = `jabberwock-${taskId}`
 		const git = createSanitizedGit(workspaceRepoDir)
 		const success = await this.deleteBranch(git, branchName)
 

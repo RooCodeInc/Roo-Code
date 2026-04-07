@@ -1,11 +1,11 @@
-// pnpm --filter @roo-code/core test src/custom-tools/__tests__/custom-tool-registry.spec.ts
+// pnpm --filter @jabberwock/core test src/custom-tools/__tests__/custom-tool-registry.spec.ts
 
 import path from "path"
 import { fileURLToPath } from "url"
 
-import { type CustomToolDefinition, parametersSchema as z } from "@roo-code/types"
+import { type CustomToolDefinition, parametersSchema as z } from "@jabberwock/types"
 
-import { CustomToolRegistry } from "../custom-tool-registry.js"
+import { CustomToolRegistry } from "../custom-tool-registry.ts"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

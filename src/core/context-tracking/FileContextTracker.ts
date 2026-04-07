@@ -10,16 +10,16 @@ import type { FileMetadataEntry, RecordSource, TaskMetadata } from "./FileContex
 import { ClineProvider } from "../webview/ClineProvider"
 
 // This class is responsible for tracking file operations that may result in stale context.
-// If a user modifies a file outside of Roo, the context may become stale and need to be updated.
-// We do not want Roo to reload the context every time a file is modified, so we use this class merely
-// to inform Roo that the change has occurred, and tell Roo to reload the file before making
-// any changes to it. This fixes an issue with diff editing, where Roo was unable to complete a diff edit.
+// If a user modifies a file outside of Jabberwock, the context may become stale and need to be updated.
+// We do not want Jabberwock to reload the context every time a file is modified, so we use this class merely
+// to inform Jabberwock that the change has occurred, and tell Jabberwock to reload the file before making
+// any changes to it. This fixes an issue with diff editing, where Jabberwock was unable to complete a diff edit.
 
 // FileContextTracker
 //
 // This class is responsible for tracking file operations.
-// If the full contents of a file are passed to Roo via a tool, mention, or edit, the file is marked as active.
-// If a file is modified outside of Roo, we detect and track this change to prevent stale context.
+// If the full contents of a file are passed to Jabberwock via a tool, mention, or edit, the file is marked as active.
+// If a file is modified outside of Jabberwock, we detect and track this change to prevent stale context.
 export class FileContextTracker {
 	readonly taskId: string
 	private providerRef: WeakRef<ClineProvider>
@@ -65,9 +65,9 @@ export class FileContextTracker {
 		// Track file changes
 		watcher.onDidChange(() => {
 			if (this.recentlyEditedByRoo.has(filePath)) {
-				this.recentlyEditedByRoo.delete(filePath) // This was an edit by Roo, no need to inform Roo
+				this.recentlyEditedByRoo.delete(filePath) // This was an edit by Jabberwock, no need to inform Jabberwock
 			} else {
-				this.recentlyModifiedFiles.add(filePath) // This was a user edit, we will inform Roo
+				this.recentlyModifiedFiles.add(filePath) // This was a user edit, we will inform Jabberwock
 				this.trackFileContext(filePath, "user_edited") // Update the task metadata with file tracking
 			}
 		})
@@ -77,7 +77,7 @@ export class FileContextTracker {
 	}
 
 	// Tracks a file operation in metadata and sets up a watcher for the file
-	// This is the main entry point for FileContextTracker and is called when a file is passed to Roo via a tool, mention, or edit.
+	// This is the main entry point for FileContextTracker and is called when a file is passed to Jabberwock via a tool, mention, or edit.
 	async trackFileContext(filePath: string, operation: RecordSource) {
 		try {
 			const cwd = this.getCwd()
@@ -165,8 +165,8 @@ export class FileContextTracker {
 				path: filePath,
 				record_state: "active",
 				record_source: source,
-				roo_read_date: getLatestDateForField(filePath, "roo_read_date"),
-				roo_edit_date: getLatestDateForField(filePath, "roo_edit_date"),
+				jabberwock_read_date: getLatestDateForField(filePath, "jabberwock_read_date"),
+				jabberwock_edit_date: getLatestDateForField(filePath, "jabberwock_edit_date"),
 				user_edit_date: getLatestDateForField(filePath, "user_edit_date"),
 			}
 
@@ -177,18 +177,18 @@ export class FileContextTracker {
 					this.recentlyModifiedFiles.add(filePath)
 					break
 
-				// roo_edited: Roo has edited the file
+				// roo_edited: Jabberwock has edited the file
 				case "roo_edited":
-					newEntry.roo_read_date = now
-					newEntry.roo_edit_date = now
+					newEntry.jabberwock_read_date = now
+					newEntry.jabberwock_edit_date = now
 					this.checkpointPossibleFiles.add(filePath)
 					this.markFileAsEditedByRoo(filePath)
 					break
 
-				// read_tool/file_mentioned: Roo has read the file via a tool or file mention
+				// read_tool/file_mentioned: Jabberwock has read the file via a tool or file mention
 				case "read_tool":
 				case "file_mentioned":
-					newEntry.roo_read_date = now
+					newEntry.jabberwock_read_date = now
 					break
 			}
 
@@ -207,7 +207,7 @@ export class FileContextTracker {
 	}
 
 	/**
-	 * Gets a list of unique file paths that Roo has read during this task.
+	 * Gets a list of unique file paths that Jabberwock has read during this task.
 	 * Files are sorted by most recently read first, so if there's a character
 	 * budget during folded context generation, the most relevant (recent) files
 	 * are prioritized.
@@ -215,30 +215,30 @@ export class FileContextTracker {
 	 * @param sinceTimestamp - Optional timestamp to filter files read after this time
 	 * @returns Array of unique file paths that have been read, most recent first
 	 */
-	async getFilesReadByRoo(sinceTimestamp?: number): Promise<string[]> {
+	async getFilesReadByJabberwock(sinceTimestamp?: number): Promise<string[]> {
 		try {
 			const metadata = await this.getTaskMetadata(this.taskId)
 
 			const readEntries = metadata.files_in_context.filter((entry) => {
-				// Only include files that were read by Roo (not user edits)
+				// Only include files that were read by Jabberwock (not user edits)
 				const isReadByRoo = entry.record_source === "read_tool" || entry.record_source === "file_mentioned"
 				if (!isReadByRoo) {
 					return false
 				}
 
 				// If sinceTimestamp is provided, only include files read after that time
-				if (sinceTimestamp && entry.roo_read_date) {
-					return entry.roo_read_date >= sinceTimestamp
+				if (sinceTimestamp && entry.jabberwock_read_date) {
+					return entry.jabberwock_read_date >= sinceTimestamp
 				}
 
 				return true
 			})
 
-			// Sort by roo_read_date descending (most recent first)
+			// Sort by jabberwock_read_date descending (most recent first)
 			// Entries without a date go to the end
 			readEntries.sort((a, b) => {
-				const dateA = a.roo_read_date ?? 0
-				const dateB = b.roo_read_date ?? 0
+				const dateA = a.jabberwock_read_date ?? 0
+				const dateB = b.jabberwock_read_date ?? 0
 				return dateB - dateA
 			})
 
@@ -254,7 +254,7 @@ export class FileContextTracker {
 
 			return uniquePaths
 		} catch (error) {
-			console.error("Failed to get files read by Roo:", error)
+			console.error("Failed to get files read by Jabberwock:", error)
 			return []
 		}
 	}
@@ -265,7 +265,7 @@ export class FileContextTracker {
 		return files
 	}
 
-	// Marks a file as edited by Roo to prevent false positives in file watchers
+	// Marks a file as edited by Jabberwock to prevent false positives in file watchers
 	markFileAsEditedByRoo(filePath: string): void {
 		this.recentlyEditedByRoo.add(filePath)
 	}

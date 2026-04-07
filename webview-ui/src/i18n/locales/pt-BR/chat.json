@@ -1,5 +1,5 @@
 {
-	"greeting": "Bem-vindo ao Roo Code",
+	"greeting": "Bem-vindo ao Jabberwock",
 	"task": {
 		"title": "Tarefa",
 		"expand": "Expandir tarefa",
@@ -21,7 +21,7 @@
 		"sharePublicly": "Compartilhar publicamente",
 		"sharePubliclyDescription": "Qualquer pessoa com o link pode acessar",
 		"connectToCloud": "Conectar ao Cloud",
-		"connectToCloudDescription": "Entre no Roo Code Cloud para compartilhar tarefas",
+		"connectToCloudDescription": "Entre no Jabberwock Cloud para compartilhar tarefas",
 		"sharingDisabledByOrganization": "Compartilhamento desabilitado pela organização",
 		"shareSuccessOrganization": "Link da organização copiado para a área de transferência",
 		"shareSuccessPublic": "Link público copiado para a área de transferência",
@@ -97,10 +97,10 @@
 	},
 	"enqueueMessage": "Adicionar mensagem à fila (será enviada após a conclusão da tarefa atual)",
 	"scrollToBottom": "Rolar para o final do chat",
-	"about": "Roo Code é uma equipe inteira de desenvolvimento de IA em seu editor.",
+	"about": "Jabberwock é uma equipe inteira de desenvolvimento de IA em seu editor.",
 	"docs": "Confira nossa <DocsLink>documentação</DocsLink> para saber mais.",
 	"onboarding": "Sua lista de tarefas neste espaço de trabalho está vazia.",
-	"rooTips": {
+	"jabberwockTips": {
 		"customizableModes": {
 			"title": "Modos personalizáveis",
 			"description": "Personas especializadas que mantêm o foco na tarefa e entregam resultados."
@@ -129,7 +129,7 @@
 		"title": "Modos",
 		"marketplace": "Marketplace de Modos",
 		"settings": "Configurações de Modos",
-		"description": "Personas especializadas que adaptam o comportamento do Roo.",
+		"description": "Personas especializadas que adaptam o comportamento do Jabberwock.",
 		"searchPlaceholder": "Pesquisar modos...",
 		"noResults": "Nenhum resultado encontrado"
 	},
@@ -143,7 +143,7 @@
 	"diffError": {
 		"title": "Edição mal-sucedida"
 	},
-	"troubleMessage": "Roo está tendo problemas...",
+	"troubleMessage": "Jabberwock está tendo problemas...",
 	"apiRequest": {
 		"title": "Requisição API",
 		"failed": "Requisição API falhou",
@@ -161,7 +161,7 @@
 			"500": "Erro do servidor do provedor. Algo está errado do lado do provedor, não há nada de errado com sua solicitação.",
 			"docs": "Documentação",
 			"goToSettings": "Configurações",
-			"unknown": "Erro de API desconhecido. Por favor, entre em contato com o suporte do Roo Code.",
+			"unknown": "Erro de API desconhecido. Por favor, entre em contato com o suporte do Jabberwock.",
 			"connection": "Erro de conexão. Certifique-se de que você tem uma conexão de internet funcionando.",
 			"claudeCodeNotAuthenticated": "Você precisa fazer login para usar o Claude Code. Vá para Configurações e clique em \"Entrar no Claude Code\" para autenticar."
 		}
@@ -186,43 +186,43 @@
 		"current": "Atual"
 	},
 	"instructions": {
-		"wantsToFetch": "Roo quer buscar instruções detalhadas para ajudar com a tarefa atual"
+		"wantsToFetch": "Jabberwock quer buscar instruções detalhadas para ajudar com a tarefa atual"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo quer ler este arquivo",
-		"wantsToReadOutsideWorkspace": "Roo quer ler este arquivo fora do espaço de trabalho",
-		"didRead": "Roo leu este arquivo",
-		"wantsToEdit": "Roo quer editar este arquivo",
-		"wantsToEditOutsideWorkspace": "Roo quer editar este arquivo fora do espaço de trabalho",
-		"wantsToEditProtected": "Roo quer editar um arquivo de configuração protegido",
-		"wantsToCreate": "Roo quer criar um novo arquivo",
-		"wantsToSearchReplace": "Roo quer realizar busca e substituição neste arquivo",
-		"didSearchReplace": "Roo realizou busca e substituição neste arquivo",
-		"wantsToInsert": "Roo quer inserir conteúdo neste arquivo",
-		"wantsToInsertWithLineNumber": "Roo quer inserir conteúdo neste arquivo na linha {{lineNumber}}",
-		"wantsToInsertAtEnd": "Roo quer adicionar conteúdo ao final deste arquivo",
-		"wantsToReadAndXMore": "Roo quer ler este arquivo e mais {{count}}",
-		"wantsToReadMultiple": "Roo deseja ler múltiplos arquivos",
-		"wantsToApplyBatchChanges": "Roo quer aplicar alterações a múltiplos arquivos",
-		"wantsToGenerateImage": "Roo quer gerar uma imagem",
-		"wantsToGenerateImageOutsideWorkspace": "Roo quer gerar uma imagem fora do espaço de trabalho",
-		"wantsToGenerateImageProtected": "Roo quer gerar uma imagem em um local protegido",
-		"didGenerateImage": "Roo gerou uma imagem"
+		"wantsToRead": "Jabberwock quer ler este arquivo",
+		"wantsToReadOutsideWorkspace": "Jabberwock quer ler este arquivo fora do espaço de trabalho",
+		"didRead": "Jabberwock leu este arquivo",
+		"wantsToEdit": "Jabberwock quer editar este arquivo",
+		"wantsToEditOutsideWorkspace": "Jabberwock quer editar este arquivo fora do espaço de trabalho",
+		"wantsToEditProtected": "Jabberwock quer editar um arquivo de configuração protegido",
+		"wantsToCreate": "Jabberwock quer criar um novo arquivo",
+		"wantsToSearchReplace": "Jabberwock quer realizar busca e substituição neste arquivo",
+		"didSearchReplace": "Jabberwock realizou busca e substituição neste arquivo",
+		"wantsToInsert": "Jabberwock quer inserir conteúdo neste arquivo",
+		"wantsToInsertWithLineNumber": "Jabberwock quer inserir conteúdo neste arquivo na linha {{lineNumber}}",
+		"wantsToInsertAtEnd": "Jabberwock quer adicionar conteúdo ao final deste arquivo",
+		"wantsToReadAndXMore": "Jabberwock quer ler este arquivo e mais {{count}}",
+		"wantsToReadMultiple": "Jabberwock deseja ler múltiplos arquivos",
+		"wantsToApplyBatchChanges": "Jabberwock quer aplicar alterações a múltiplos arquivos",
+		"wantsToGenerateImage": "Jabberwock quer gerar uma imagem",
+		"wantsToGenerateImageOutsideWorkspace": "Jabberwock quer gerar uma imagem fora do espaço de trabalho",
+		"wantsToGenerateImageProtected": "Jabberwock quer gerar uma imagem em um local protegido",
+		"didGenerateImage": "Jabberwock gerou uma imagem"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo quer visualizar os arquivos de nível superior neste diretório",
-		"didViewTopLevel": "Roo visualizou os arquivos de nível superior neste diretório",
-		"wantsToViewRecursive": "Roo quer visualizar recursivamente todos os arquivos neste diretório",
-		"didViewRecursive": "Roo visualizou recursivamente todos os arquivos neste diretório",
-		"wantsToSearch": "Roo quer pesquisar neste diretório por <code>{{regex}}</code>",
-		"didSearch": "Roo pesquisou neste diretório por <code>{{regex}}</code>",
-		"wantsToSearchOutsideWorkspace": "Roo quer pesquisar neste diretório (fora do espaço de trabalho) por <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "Roo pesquisou neste diretório (fora do espaço de trabalho) por <code>{{regex}}</code>",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo quer visualizar os arquivos de nível superior neste diretório (fora do espaço de trabalho)",
-		"didViewTopLevelOutsideWorkspace": "Roo visualizou os arquivos de nível superior neste diretório (fora do espaço de trabalho)",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo quer visualizar recursivamente todos os arquivos neste diretório (fora do espaço de trabalho)",
-		"didViewRecursiveOutsideWorkspace": "Roo visualizou recursivamente todos os arquivos neste diretório (fora do espaço de trabalho)",
-		"wantsToViewMultipleDirectories": "Roo quer visualizar vários diretórios"
+		"wantsToViewTopLevel": "Jabberwock quer visualizar os arquivos de nível superior neste diretório",
+		"didViewTopLevel": "Jabberwock visualizou os arquivos de nível superior neste diretório",
+		"wantsToViewRecursive": "Jabberwock quer visualizar recursivamente todos os arquivos neste diretório",
+		"didViewRecursive": "Jabberwock visualizou recursivamente todos os arquivos neste diretório",
+		"wantsToSearch": "Jabberwock quer pesquisar neste diretório por <code>{{regex}}</code>",
+		"didSearch": "Jabberwock pesquisou neste diretório por <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "Jabberwock quer pesquisar neste diretório (fora do espaço de trabalho) por <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "Jabberwock pesquisou neste diretório (fora do espaço de trabalho) por <code>{{regex}}</code>",
+		"wantsToViewTopLevelOutsideWorkspace": "Jabberwock quer visualizar os arquivos de nível superior neste diretório (fora do espaço de trabalho)",
+		"didViewTopLevelOutsideWorkspace": "Jabberwock visualizou os arquivos de nível superior neste diretório (fora do espaço de trabalho)",
+		"wantsToViewRecursiveOutsideWorkspace": "Jabberwock quer visualizar recursivamente todos os arquivos neste diretório (fora do espaço de trabalho)",
+		"didViewRecursiveOutsideWorkspace": "Jabberwock visualizou recursivamente todos os arquivos neste diretório (fora do espaço de trabalho)",
+		"wantsToViewMultipleDirectories": "Jabberwock quer visualizar vários diretórios"
 	},
 	"commandOutput": "Saída do comando",
 	"commandExecution": {
@@ -244,24 +244,24 @@
 	"response": "Resposta",
 	"arguments": "Argumentos",
 	"text": {
-		"rooSaid": "Roo disse"
+		"jabberwockSaid": "Jabberwock disse"
 	},
 	"feedback": {
 		"youSaid": "Você disse"
 	},
 	"mcp": {
-		"wantsToUseTool": "Roo quer usar uma ferramenta no servidor MCP {{serverName}}",
-		"wantsToAccessResource": "Roo quer acessar um recurso no servidor MCP {{serverName}}"
+		"wantsToUseTool": "Jabberwock quer usar uma ferramenta no servidor MCP {{serverName}}",
+		"wantsToAccessResource": "Jabberwock quer acessar um recurso no servidor MCP {{serverName}}"
 	},
 	"modes": {
-		"wantsToSwitch": "Roo quer mudar para o modo <code>{{mode}}</code>",
-		"wantsToSwitchWithReason": "Roo quer mudar para o modo <code>{{mode}}</code> porque: {{reason}}",
-		"didSwitch": "Roo mudou para o modo <code>{{mode}}</code>",
-		"didSwitchWithReason": "Roo mudou para o modo <code>{{mode}}</code> porque: {{reason}}"
+		"wantsToSwitch": "Jabberwock quer mudar para o modo <code>{{mode}}</code>",
+		"wantsToSwitchWithReason": "Jabberwock quer mudar para o modo <code>{{mode}}</code> porque: {{reason}}",
+		"didSwitch": "Jabberwock mudou para o modo <code>{{mode}}</code>",
+		"didSwitchWithReason": "Jabberwock mudou para o modo <code>{{mode}}</code> porque: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo quer criar uma nova subtarefa no modo <code>{{mode}}</code>",
-		"wantsToFinish": "Roo quer finalizar esta subtarefa",
+		"wantsToCreate": "Jabberwock quer criar uma nova subtarefa no modo <code>{{mode}}</code>",
+		"wantsToFinish": "Jabberwock quer finalizar esta subtarefa",
 		"newTaskContent": "Instruções da subtarefa",
 		"completionContent": "Subtarefa concluída",
 		"resultContent": "Resultados da subtarefa",
@@ -270,7 +270,7 @@
 		"goToSubtask": "Ver tarefa"
 	},
 	"questions": {
-		"hasQuestion": "Roo tem uma pergunta"
+		"hasQuestion": "Jabberwock tem uma pergunta"
 	},
 	"taskCompleted": "Tarefa concluída",
 	"modelResponseIncomplete": "Resposta do modelo incompleta",
@@ -286,7 +286,7 @@
 		"copyToClipboard": "Copiar para área de transferência",
 		"copied": "Copiado!",
 		"diagnostics": "Obter informações detalhadas do erro",
-		"proxyProvider": "Parece que você está usando um provedor baseado em proxy. Certifique-se de verificar seus registros e garantir que não está reescrevendo as solicitações do Roo."
+		"proxyProvider": "Parece que você está usando um provedor baseado em proxy. Certifique-se de verificar seus registros e garantir que não está reescrevendo as solicitações do Jabberwock."
 	},
 	"powershell": {
 		"issues": "Parece que você está tendo problemas com o Windows PowerShell, por favor veja este"
@@ -329,30 +329,30 @@
 		}
 	},
 	"skill": {
-		"wantsToLoad": "Roo quer carregar uma habilidade",
-		"didLoad": "Roo carregou uma habilidade"
+		"wantsToLoad": "Jabberwock quer carregar uma habilidade",
+		"didLoad": "Jabberwock carregou uma habilidade"
 	},
 	"followUpSuggest": {
 		"copyToInput": "Copiar para entrada (ou Shift + clique)",
 		"timerPrefix": "Aprovação automática ativada. Selecionando em {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} Lançado",
-		"support": "Apoie o Roo Code nos dando uma estrela no <githubLink>GitHub</githubLink>.",
+		"title": "Jabberwock {{version}} Lançado",
+		"support": "Apoie o Jabberwock nos dando uma estrela no <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
-			"feature": "<bold>Modelo stealth GRATUITO por tempo limitado</bold> - Code Supernova: Agora atualizado com uma <bold>janela de contexto de 1M tokens</bold>! Um modelo de codificação agêntica versátil que suporta entradas de imagem, acessível através do Roo Code Cloud.",
+			"feature": "<bold>Modelo stealth GRATUITO por tempo limitado</bold> - Code Supernova: Agora atualizado com uma <bold>janela de contexto de 1M tokens</bold>! Um modelo de codificação agêntica versátil que suporta entradas de imagem, acessível através do Jabberwock Cloud.",
 			"note": "(Nota: prompts e completações são registrados pelo criador do modelo e usados para melhorá-lo)",
-			"connectButton": "Conectar ao Roo Code Cloud",
-			"selectModel": "Selecione <code>roo/code-supernova</code> do provedor Roo Code Cloud em Configurações para começar.",
+			"connectButton": "Conectar ao Jabberwock Cloud",
+			"selectModel": "Selecione <code>jabberwock/code-supernova</code> do provedor Jabberwock Cloud em Configurações para começar.",
 			"goToSettingsButton": "Ir para Configurações"
 		},
 		"release": {
 			"heading": "Novidades:",
-			"gpt54": "Suporte ao OpenAI GPT-5.4: adicionamos OpenAI GPT-5.4 e GPT-5.3 Chat Latest para você usar os modelos de chat mais novos da OpenAI no Roo Code.",
+			"gpt54": "Suporte ao OpenAI GPT-5.4: adicionamos OpenAI GPT-5.4 e GPT-5.3 Chat Latest para você usar os modelos de chat mais novos da OpenAI no Jabberwock.",
 			"slashSkills": "Skills como comandos slash: agora as skills podem ser expostas como comandos slash com execução de fallback para acionar workflows reutilizáveis mais rápido.",
 			"geminiPro": "Suporte ao Gemini 3.1 Pro: Adicionado suporte ao modelo Gemini 3.1 Pro e definido como modelo Gemini padrão para melhor desempenho.",
 			"cliNdjson": "Protocolo NDJSON do CLI: Novo protocolo NDJSON via stdin, subcomandos de listagem e comando de execução modularizado para fluxos de trabalho CLI mais flexíveis.",
-			"cliRelease": "CLI v0.1.0: O CLI do Roo Code alcança sua primeira versão oficial com uma interface de comandos estável."
+			"cliRelease": "CLI v0.1.0: O CLI do Jabberwock alcança sua primeira versão oficial com uma interface de comandos estável."
 		},
 		"cloudAgents": {
 			"heading": "Novidades na Nuvem:",
@@ -377,24 +377,24 @@
 	"profileViolationWarning": "O perfil atual não é compatível com as configurações da sua organização",
 	"shellIntegration": {
 		"title": "Aviso de execução de comando",
-		"description": "Seu comando está sendo executado sem a integração de shell do terminal VSCode. Para suprimir este aviso, você pode desativar a integração de shell na seção <strong>Terminal</strong> das <settingsLink>configurações do Roo Code</settingsLink> ou solucionar problemas de integração do terminal VSCode usando o link abaixo.",
+		"description": "Seu comando está sendo executado sem a integração de shell do terminal VSCode. Para suprimir este aviso, você pode desativar a integração de shell na seção <strong>Terminal</strong> das <settingsLink>configurações do Jabberwock</settingsLink> ou solucionar problemas de integração do terminal VSCode usando o link abaixo.",
 		"troubleshooting": "Clique aqui para a documentação de integração de shell."
 	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "Limite de Solicitações Auto-aprovadas Atingido",
-			"description": "Roo atingiu o limite auto-aprovado de {{count}} solicitação(ões) de API. Deseja redefinir a contagem e prosseguir com a tarefa?",
+			"description": "Jabberwock atingiu o limite auto-aprovado de {{count}} solicitação(ões) de API. Deseja redefinir a contagem e prosseguir com a tarefa?",
 			"button": "Redefinir e Continuar"
 		},
 		"autoApprovedCostLimitReached": {
 			"title": "Limite de Custo com Aprovação Automática Atingido",
-			"description": "Roo atingiu o limite de custo com aprovação automática de US${{count}}. Você gostaria de redefinir o custo e prosseguir com a tarefa?",
+			"description": "Jabberwock atingiu o limite de custo com aprovação automática de US${{count}}. Você gostaria de redefinir o custo e prosseguir com a tarefa?",
 			"button": "Redefinir e Continuar"
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo quer pesquisar na base de código por <code>{{query}}</code>",
-		"wantsToSearchWithPath": "Roo quer pesquisar na base de código por <code>{{query}}</code> em <code>{{path}}</code>",
+		"wantsToSearch": "Jabberwock quer pesquisar na base de código por <code>{{query}}</code>",
+		"wantsToSearchWithPath": "Jabberwock quer pesquisar na base de código por <code>{{query}}</code> em <code>{{path}}</code>",
 		"didSearch_one": "Encontrado 1 resultado",
 		"didSearch_other": "Encontrados {{count}} resultados",
 		"resultTooltip": "Pontuação de similaridade: {{score}} (clique para abrir o arquivo)"
@@ -434,8 +434,8 @@
 	"versionIndicator": {
 		"ariaLabel": "Versão {{version}} - Clique para ver as notas de lançamento"
 	},
-	"rooCloudCTA": {
-		"title": "Roo Code Cloud está evoluindo!",
+	"jabberwockCloudCTA": {
+		"title": "Jabberwock Cloud está evoluindo!",
 		"description": "Execute agentes remotos na nuvem, acesse suas tarefas de qualquer lugar, colabore com outros e muito mais.",
 		"joinWaitlist": "Cadastre-se para receber as últimas atualizações."
 	},
@@ -476,8 +476,8 @@
 		"clickToEdit": "Clique para editar a mensagem"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo quer executar um comando slash",
-		"didRun": "Roo executou um comando slash"
+		"wantsToRun": "Jabberwock quer executar um comando slash",
+		"didRun": "Jabberwock executou um comando slash"
 	},
 	"todo": {
 		"partial": "{{completed}} de {{total}} tarefas concluídas",
@@ -496,11 +496,11 @@
 		"openMcpSettings": "Abrir Configurações MCP"
 	},
 	"readCommandOutput": {
-		"title": "Roo read command output"
+		"title": "Jabberwock read command output"
 	},
 	"retiredProvider": {
 		"title": "Provedor não é mais suportado",
-		"message": "Desculpe, este provedor não é mais suportado. Percebemos que muito poucos usuários do Roo realmente o utilizavam e precisamos reduzir o escopo do nosso código para continuar entregando rápido e servindo bem nossa comunidade. Foi uma decisão muito difícil, mas nos permite focar no que mais importa para você. Sabemos que é chato.",
+		"message": "Desculpe, este provedor não é mais suportado. Percebemos que muito poucos usuários do Jabberwock realmente o utilizavam e precisamos reduzir o escopo do nosso código para continuar entregando rápido e servindo bem nossa comunidade. Foi uma decisão muito difícil, mas nos permite focar no que mais importa para você. Sabemos que é chato.",
 		"openSettings": "Abrir configurações"
 	}
 }

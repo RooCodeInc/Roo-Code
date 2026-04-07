@@ -6,8 +6,8 @@
 		"imageTooLarge": "Image file is too large ({{size}} MB). The maximum allowed size is {{max}} MB.",
 		"imageWithSize": "Image file ({{size}} KB)"
 	},
-	"toolRepetitionLimitReached": "Roo appears to be stuck in a loop, attempting the same action ({{toolName}}) repeatedly. This might indicate a problem with its current strategy. Consider rephrasing the task, providing more specific instructions, or guiding it towards a different approach.",
-	"unknownToolError": "Roo tried to use an unknown tool: \"{{toolName}}\". Retrying...",
+	"toolRepetitionLimitReached": "Jabberwock appears to be stuck in a loop, attempting the same action ({{toolName}}) repeatedly. This might indicate a problem with its current strategy. Consider rephrasing the task, providing more specific instructions, or guiding it towards a different approach.",
+	"unknownToolError": "Jabberwock tried to use an unknown tool: \"{{toolName}}\". Retrying...",
 	"codebaseSearch": {
 		"approval": "Searching for '{{query}}' in codebase..."
 	},
@@ -24,8 +24,8 @@
 		"invalidImageData": "Invalid image data in response",
 		"invalidImageFormat": "Invalid image format received",
 		"unknownError": "Unknown error occurred",
-		"roo": {
-			"authRequired": "Roo Code Cloud authentication is required for image generation. Please sign in to Roo Code Cloud."
+		"jabberwock": {
+			"authRequired": "Jabberwock Cloud authentication is required for image generation. Please sign in to Jabberwock Cloud."
 		}
 	}
 }

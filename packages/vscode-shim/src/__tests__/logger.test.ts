@@ -1,4 +1,4 @@
-import { logs, setLogger, type Logger } from "../utils/logger.js"
+import { logs, setLogger, type Logger } from "../utils/logger.ts"
 
 describe("Logger", () => {
 	let originalEnv: string | undefined

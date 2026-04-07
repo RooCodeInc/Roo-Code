@@ -1,4 +1,4 @@
-import { EventEmitter } from "../classes/EventEmitter.js"
+import { EventEmitter } from "../classes/EventEmitter.ts"
 
 describe("EventEmitter", () => {
 	describe("event subscription", () => {

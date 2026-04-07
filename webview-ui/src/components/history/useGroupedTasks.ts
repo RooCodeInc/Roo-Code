@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react"
-import type { HistoryItem } from "@roo-code/types"
+import type { HistoryItem } from "@jabberwock/types"
 import type { DisplayHistoryItem, SubtaskTreeNode, TaskGroup, GroupedTasksResult } from "./types"
 
 /**

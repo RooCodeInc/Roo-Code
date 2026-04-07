@@ -1,8 +1,8 @@
 // npx vitest run packages/core/src/message-utils/__tests__/consolidateApiRequests.spec.ts
 
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage } from "@jabberwock/types"
 
-import { consolidateApiRequests } from "../consolidateApiRequests.js"
+import { consolidateApiRequests } from "../consolidateApiRequests.ts"
 
 describe("consolidateApiRequests", () => {
 	// Helper function to create a basic api_req_started message

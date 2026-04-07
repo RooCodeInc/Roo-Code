@@ -1,7 +1,7 @@
 import axios from "axios"
 import { LLM, LLMInfo, LLMInstanceInfo, LMStudioClient } from "@lmstudio/sdk"
 
-import { type ModelInfo, lMStudioDefaultModelInfo } from "@roo-code/types"
+import { type ModelInfo, lMStudioDefaultModelInfo } from "@jabberwock/types"
 
 import { flushModels, getModels } from "./modelCache"
 

@@ -1,4 +1,4 @@
-import { RooCodeEventName, TodoItem } from "@roo-code/types"
+import { JabberwockEventName, TodoItem } from "@jabberwock/types"
 
 import { AttemptCompletionToolUse } from "../../../shared/tools"
 
@@ -14,7 +14,7 @@ vi.mock("../../prompts/responses", () => ({
 const { mockCaptureTaskCompleted } = vi.hoisted(() => ({
 	mockCaptureTaskCompleted: vi.fn(),
 }))
-vi.mock("@roo-code/telemetry", () => ({
+vi.mock("@jabberwock/telemetry", () => ({
 	TelemetryService: {
 		instance: {
 			captureTaskCompleted: mockCaptureTaskCompleted,
@@ -34,7 +34,7 @@ vi.mock("vscode", () => ({
 // Mock Package module
 vi.mock("../../../shared/package", () => ({
 	Package: {
-		name: "roo-cline",
+		name: "jabberwock",
 	},
 }))
 
@@ -508,7 +508,7 @@ describe("attemptCompletionTool", () => {
 				expect(mockHandleError).not.toHaveBeenCalled()
 				expect(mockCaptureTaskCompleted).toHaveBeenCalledWith("task_1")
 				expect(mockTask.emit).toHaveBeenCalledWith(
-					RooCodeEventName.TaskCompleted,
+					JabberwockEventName.TaskCompleted,
 					"task_1",
 					expect.anything(),
 					expect.anything(),
@@ -543,7 +543,7 @@ describe("attemptCompletionTool", () => {
 				expect(mockHandleError).not.toHaveBeenCalled()
 				expect(mockCaptureTaskCompleted).not.toHaveBeenCalled()
 				expect(mockTask.emit).not.toHaveBeenCalledWith(
-					RooCodeEventName.TaskCompleted,
+					JabberwockEventName.TaskCompleted,
 					expect.anything(),
 					expect.anything(),
 					expect.anything(),

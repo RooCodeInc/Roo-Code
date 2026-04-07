@@ -32,7 +32,7 @@ import {
 	vercelAiGatewayDefaultModelId,
 	minimaxDefaultModelId,
 	unboundDefaultModelId,
-} from "@roo-code/types"
+} from "@jabberwock/types"
 
 import {
 	getProviderServiceConfig,
@@ -82,7 +82,7 @@ import {
 	OpenRouter,
 	QwenCode,
 	Requesty,
-	Roo,
+	Jabberwock,
 	SambaNova,
 	Unbound,
 	Vertex,
@@ -100,12 +100,11 @@ import { ModelPicker } from "./ModelPicker"
 import { ApiErrorMessage } from "./ApiErrorMessage"
 import { ThinkingBudget } from "./ThinkingBudget"
 import { Verbosity } from "./Verbosity"
-import { TodoListSettingsControl } from "./TodoListSettingsControl"
 import { TemperatureControl } from "./TemperatureControl"
 import { RateLimitSecondsControl } from "./RateLimitSecondsControl"
 import { ConsecutiveMistakeLimitControl } from "./ConsecutiveMistakeLimitControl"
 import { BedrockCustomArn } from "./providers/BedrockCustomArn"
-import { RooBalanceDisplay } from "./providers/RooBalanceDisplay"
+import { JabberwockBalanceDisplay } from "./providers/JabberwockBalanceDisplay"
 import { buildDocLink } from "@src/utils/docLinks"
 import { BookOpenText } from "lucide-react"
 
@@ -238,7 +237,7 @@ const ApiOptions = ({
 				vscode.postMessage({ type: "requestLmStudioModels" })
 			} else if (selectedProvider === "vscode-lm") {
 				vscode.postMessage({ type: "requestVsCodeLmModels" })
-			} else if (selectedProvider === "litellm" || selectedProvider === "roo") {
+			} else if (selectedProvider === "litellm" || selectedProvider === "jabberwock") {
 				vscode.postMessage({ type: "requestRouterModels" })
 			}
 		},
@@ -356,7 +355,7 @@ const ApiOptions = ({
 							: internationalZAiDefaultModelId,
 				},
 				fireworks: { field: "apiModelId", default: fireworksDefaultModelId },
-				roo: { field: "apiModelId", default: rooDefaultModelId },
+				jabberwock: { field: "apiModelId", default: rooDefaultModelId },
 				"vercel-ai-gateway": { field: "vercelAiGatewayModelId", default: vercelAiGatewayDefaultModelId },
 				openai: { field: "openAiModelId" },
 				ollama: { field: "ollamaModelId" },
@@ -434,16 +433,16 @@ const ApiOptions = ({
 			label,
 		}))
 
-		// Pin "roo" to the top if not on welcome screen
+		// Pin "jabberwock" to the top if not on welcome screen
 		if (!fromWelcomeView) {
-			const rooIndex = options.findIndex((opt) => opt.value === "roo")
+			const rooIndex = options.findIndex((opt) => opt.value === "jabberwock")
 			if (rooIndex > 0) {
 				const [rooOption] = options.splice(rooIndex, 1)
 				options.unshift(rooOption)
 			}
 		} else {
-			// Filter out roo from the welcome view
-			const filteredOptions = options.filter((opt) => opt.value !== "roo")
+			// Filter out jabberwock from the welcome view
+			const filteredOptions = options.filter((opt) => opt.value !== "jabberwock")
 			options.length = 0
 			options.push(...filteredOptions)
 
@@ -462,8 +461,8 @@ const ApiOptions = ({
 			<div className="flex flex-col gap-1 relative">
 				<div className="flex justify-between items-center">
 					<label className="block font-medium">{t("settings:providers.apiProvider")}</label>
-					{selectedProvider === "roo" && cloudIsAuthenticated ? (
-						<RooBalanceDisplay />
+					{selectedProvider === "jabberwock" && cloudIsAuthenticated ? (
+						<JabberwockBalanceDisplay />
 					) : (
 						docs && (
 							<VSCodeLink href={docs.url} target="_blank" className="flex gap-2">
@@ -703,8 +702,8 @@ const ApiOptions = ({
 						/>
 					)}
 
-					{selectedProvider === "roo" && (
-						<Roo
+					{selectedProvider === "jabberwock" && (
+						<Jabberwock
 							apiConfiguration={apiConfiguration}
 							setApiConfigurationField={setApiConfigurationField}
 							routerModels={routerModels}
@@ -776,10 +775,6 @@ const ApiOptions = ({
 								<span className="font-medium">{t("settings:advancedSettings.title")}</span>
 							</CollapsibleTrigger>
 							<CollapsibleContent className="space-y-3">
-								<TodoListSettingsControl
-									todoListEnabled={apiConfiguration.todoListEnabled}
-									onChange={(field, value) => setApiConfigurationField(field, value)}
-								/>
 								{selectedModelInfo?.supportsTemperature !== false && (
 									<TemperatureControl
 										value={apiConfiguration.modelTemperature}

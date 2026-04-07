@@ -11,8 +11,8 @@ describe("BatchListFilesPermission", () => {
 			path: "apps/cli",
 		},
 		{
-			key: "apps/web-roo-code",
-			path: "apps/web-roo-code",
+			key: "apps/web-jabberwock",
+			path: "apps/web-jabberwock",
 		},
 		{
 			key: "packages/core",
@@ -32,7 +32,7 @@ describe("BatchListFilesPermission", () => {
 		)
 
 		expect(screen.getByText("apps/cli")).toBeInTheDocument()
-		expect(screen.getByText("apps/web-roo-code")).toBeInTheDocument()
+		expect(screen.getByText("apps/web-jabberwock")).toBeInTheDocument()
 		expect(screen.getByText("packages/core")).toBeInTheDocument()
 	})
 

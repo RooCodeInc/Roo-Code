@@ -1,5 +1,5 @@
-import { TabGroupsAPI, type Tab, type TabGroup } from "../api/TabGroupsAPI.js"
-import { Uri } from "../classes/Uri.js"
+import { TabGroupsAPI, type Tab, type TabGroup } from "../api/TabGroupsAPI.ts"
+import { Uri } from "../classes/Uri.ts"
 
 describe("TabGroupsAPI", () => {
 	let tabGroups: TabGroupsAPI

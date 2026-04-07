@@ -1,4 +1,4 @@
-import { Position } from "../classes/Position.js"
+import { Position } from "../classes/Position.ts"
 
 describe("Position", () => {
 	describe("constructor", () => {

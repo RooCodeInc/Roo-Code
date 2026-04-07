@@ -1,29 +1,33 @@
 // npx vitest run __tests__/delegation-events.spec.ts
 
-import { RooCodeEventName, rooCodeEventsSchema, taskEventSchema } from "@roo-code/types"
+import { JabberwockEventName, jabberwockEventsSchema, taskEventSchema } from "@jabberwock/types"
 
 describe("delegation event schemas", () => {
-	test("rooCodeEventsSchema validates tuples", () => {
-		expect(() => (rooCodeEventsSchema.shape as any)[RooCodeEventName.TaskDelegated].parse(["p", "c"])).not.toThrow()
+	test("jabberwockEventsSchema validates tuples", () => {
 		expect(() =>
-			(rooCodeEventsSchema.shape as any)[RooCodeEventName.TaskDelegationCompleted].parse(["p", "c", "s"]),
+			(jabberwockEventsSchema.shape as any)[JabberwockEventName.TaskDelegated].parse(["p", "c"]),
 		).not.toThrow()
 		expect(() =>
-			(rooCodeEventsSchema.shape as any)[RooCodeEventName.TaskDelegationResumed].parse(["p", "c"]),
+			(jabberwockEventsSchema.shape as any)[JabberwockEventName.TaskDelegationCompleted].parse(["p", "c", "s"]),
+		).not.toThrow()
+		expect(() =>
+			(jabberwockEventsSchema.shape as any)[JabberwockEventName.TaskDelegationResumed].parse(["p", "c"]),
 		).not.toThrow()
 
 		// invalid shapes
-		expect(() => (rooCodeEventsSchema.shape as any)[RooCodeEventName.TaskDelegated].parse(["p"])).toThrow()
+		expect(() => (jabberwockEventsSchema.shape as any)[JabberwockEventName.TaskDelegated].parse(["p"])).toThrow()
 		expect(() =>
-			(rooCodeEventsSchema.shape as any)[RooCodeEventName.TaskDelegationCompleted].parse(["p", "c"]),
+			(jabberwockEventsSchema.shape as any)[JabberwockEventName.TaskDelegationCompleted].parse(["p", "c"]),
 		).toThrow()
-		expect(() => (rooCodeEventsSchema.shape as any)[RooCodeEventName.TaskDelegationResumed].parse(["p"])).toThrow()
+		expect(() =>
+			(jabberwockEventsSchema.shape as any)[JabberwockEventName.TaskDelegationResumed].parse(["p"]),
+		).toThrow()
 	})
 
 	test("taskEventSchema discriminated union includes delegation events", () => {
 		expect(() =>
 			taskEventSchema.parse({
-				eventName: RooCodeEventName.TaskDelegated,
+				eventName: JabberwockEventName.TaskDelegated,
 				payload: ["p", "c"],
 				taskId: 1,
 			}),
@@ -31,7 +35,7 @@ describe("delegation event schemas", () => {
 
 		expect(() =>
 			taskEventSchema.parse({
-				eventName: RooCodeEventName.TaskDelegationCompleted,
+				eventName: JabberwockEventName.TaskDelegationCompleted,
 				payload: ["p", "c", "s"],
 				taskId: 1,
 			}),
@@ -39,7 +43,7 @@ describe("delegation event schemas", () => {
 
 		expect(() =>
 			taskEventSchema.parse({
-				eventName: RooCodeEventName.TaskDelegationResumed,
+				eventName: JabberwockEventName.TaskDelegationResumed,
 				payload: ["p", "c"],
 				taskId: 1,
 			}),

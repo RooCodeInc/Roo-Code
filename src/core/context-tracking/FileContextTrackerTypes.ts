@@ -11,8 +11,8 @@ export const fileMetadataEntrySchema = z.object({
 	path: z.string(),
 	record_state: z.enum(["active", "stale"]),
 	record_source: recordSourceSchema,
-	roo_read_date: z.number().nullable(),
-	roo_edit_date: z.number().nullable(),
+	jabberwock_read_date: z.number().nullable(),
+	jabberwock_edit_date: z.number().nullable(),
 	user_edit_date: z.number().nullable().optional(),
 })
 

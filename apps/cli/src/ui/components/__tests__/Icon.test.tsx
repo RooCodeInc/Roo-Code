@@ -7,12 +7,12 @@ describe("Icon", () => {
 		// Reset cache before each test
 		resetNerdFontCache()
 		// Clear environment variables
-		delete process.env.ROOCODE_NERD_FONT
+		delete process.env.JABBERWOCKCODE_NERD_FONT
 	})
 
 	afterEach(() => {
 		resetNerdFontCache()
-		delete process.env.ROOCODE_NERD_FONT
+		delete process.env.JABBERWOCKCODE_NERD_FONT
 	})
 
 	describe("rendering", () => {
@@ -50,48 +50,48 @@ describe("Icon", () => {
 	})
 
 	describe("Nerd Font detection", () => {
-		it("should respect ROOCODE_NERD_FONT=1 environment variable", () => {
-			process.env.ROOCODE_NERD_FONT = "1"
+		it("should respect JABBERWOCKCODE_NERD_FONT=1 environment variable", () => {
+			process.env.JABBERWOCKCODE_NERD_FONT = "1"
 			resetNerdFontCache()
 			expect(isNerdFontSupported()).toBe(true)
 		})
 
-		it("should respect ROOCODE_NERD_FONT=true environment variable", () => {
-			process.env.ROOCODE_NERD_FONT = "true"
+		it("should respect JABBERWOCKCODE_NERD_FONT=true environment variable", () => {
+			process.env.JABBERWOCKCODE_NERD_FONT = "true"
 			resetNerdFontCache()
 			expect(isNerdFontSupported()).toBe(true)
 		})
 
-		it("should respect ROOCODE_NERD_FONT=0 environment variable", () => {
-			process.env.ROOCODE_NERD_FONT = "0"
+		it("should respect JABBERWOCKCODE_NERD_FONT=0 environment variable", () => {
+			process.env.JABBERWOCKCODE_NERD_FONT = "0"
 			resetNerdFontCache()
 			expect(isNerdFontSupported()).toBe(false)
 		})
 
-		it("should respect ROOCODE_NERD_FONT=false environment variable", () => {
-			process.env.ROOCODE_NERD_FONT = "false"
+		it("should respect JABBERWOCKCODE_NERD_FONT=false environment variable", () => {
+			process.env.JABBERWOCKCODE_NERD_FONT = "false"
 			resetNerdFontCache()
 			expect(isNerdFontSupported()).toBe(false)
 		})
 
 		it("should cache detection result", () => {
-			process.env.ROOCODE_NERD_FONT = "1"
+			process.env.JABBERWOCKCODE_NERD_FONT = "1"
 			resetNerdFontCache()
 			const first = isNerdFontSupported()
 			// Change env var - should still use cached value
-			process.env.ROOCODE_NERD_FONT = "0"
+			process.env.JABBERWOCKCODE_NERD_FONT = "0"
 			const second = isNerdFontSupported()
 			expect(first).toBe(true)
 			expect(second).toBe(true) // Still true because cached
 		})
 
 		it("should reset cache when resetNerdFontCache is called", () => {
-			process.env.ROOCODE_NERD_FONT = "1"
+			process.env.JABBERWOCKCODE_NERD_FONT = "1"
 			resetNerdFontCache()
 			expect(isNerdFontSupported()).toBe(true)
 
 			// Reset and change
-			process.env.ROOCODE_NERD_FONT = "0"
+			process.env.JABBERWOCKCODE_NERD_FONT = "0"
 			resetNerdFontCache()
 			expect(isNerdFontSupported()).toBe(false)
 		})
@@ -99,7 +99,7 @@ describe("Icon", () => {
 
 	describe("useNerdFont prop override", () => {
 		it("should force Nerd Font when useNerdFont=true", () => {
-			process.env.ROOCODE_NERD_FONT = "0"
+			process.env.JABBERWOCKCODE_NERD_FONT = "0"
 			resetNerdFontCache()
 
 			const { lastFrame } = render(<Icon name="folder" useNerdFont={true} />)
@@ -110,7 +110,7 @@ describe("Icon", () => {
 		})
 
 		it("should force fallback when useNerdFont=false", () => {
-			process.env.ROOCODE_NERD_FONT = "1"
+			process.env.JABBERWOCKCODE_NERD_FONT = "1"
 			resetNerdFontCache()
 
 			const { lastFrame } = render(<Icon name="folder" useNerdFont={false} />)
@@ -122,7 +122,7 @@ describe("Icon", () => {
 
 	describe("getIconChar", () => {
 		it("should return fallback character when Nerd Font disabled", () => {
-			process.env.ROOCODE_NERD_FONT = "0"
+			process.env.JABBERWOCKCODE_NERD_FONT = "0"
 			resetNerdFontCache()
 
 			expect(getIconChar("folder")).toBe("▼")
@@ -132,7 +132,7 @@ describe("Icon", () => {
 		})
 
 		it("should return Nerd Font character when enabled", () => {
-			process.env.ROOCODE_NERD_FONT = "1"
+			process.env.JABBERWOCKCODE_NERD_FONT = "1"
 			resetNerdFontCache()
 
 			// Nerd Font icons are single characters (length 1)
@@ -141,13 +141,13 @@ describe("Icon", () => {
 		})
 
 		it("should respect useNerdFont override", () => {
-			process.env.ROOCODE_NERD_FONT = "1"
+			process.env.JABBERWOCKCODE_NERD_FONT = "1"
 			resetNerdFontCache()
 
 			// Force fallback
 			expect(getIconChar("folder", false)).toBe("▼")
 
-			process.env.ROOCODE_NERD_FONT = "0"
+			process.env.JABBERWOCKCODE_NERD_FONT = "0"
 			resetNerdFontCache()
 
 			// Force Nerd Font

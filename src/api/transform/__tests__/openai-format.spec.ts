@@ -234,7 +234,7 @@ describe("convertToOpenAiMessages", () => {
 		// This test ensures that assistant messages with only tool_use blocks (no text)
 		// have content set to "" instead of undefined. Gemini (via OpenRouter) requires
 		// every message to have at least one "parts" field, which fails if content is undefined.
-		// See: ROO-425
+		// See: JABBERWOCK-425
 		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "assistant",
@@ -665,8 +665,8 @@ describe("convertToOpenAiMessages", () => {
 		})
 
 		it("should pass through all reasoning_details without extracting to top-level reasoning", () => {
-			// This simulates the stored format after receiving from xAI/Roo API
-			// The provider (roo.ts) now consolidates all reasoning into reasoning_details
+			// This simulates the stored format after receiving from xAI/Jabberwock API
+			// The provider (jabberwock.ts) now consolidates all reasoning into reasoning_details
 			const anthropicMessages = [
 				{
 					role: "assistant" as const,

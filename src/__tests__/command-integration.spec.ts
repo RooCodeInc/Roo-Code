@@ -5,7 +5,7 @@ import { getCommands, getCommand, getCommandNames } from "../services/command/co
 describe("Command Integration Tests", () => {
 	const testWorkspaceDir = path.join(__dirname, "../../")
 
-	it("should discover command files in .roo/commands/", async () => {
+	it("should discover command files in .jabberwock/commands/", async () => {
 		const commands = await getCommands(testWorkspaceDir)
 
 		// Should be able to discover commands (may be empty in test environment)

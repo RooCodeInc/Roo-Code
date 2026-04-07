@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from "react"
 import { useEvent } from "react-use"
 import { LanguageModelChatSelector } from "vscode"
 
-import type { ProviderSettings, ExtensionMessage, ModelInfo } from "@roo-code/types"
+import type { ProviderSettings, ExtensionMessage, ModelInfo } from "@jabberwock/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 

@@ -2,14 +2,21 @@
  * Agent Loop State Detection
  *
  * This module provides the core logic for detecting the current state of the
- * Roo Code agent loop. The state is determined by analyzing the clineMessages
+ * Jabberwock agent loop. The state is determined by analyzing the clineMessages
  * array, specifically the last message's type and properties.
  *
  * Key insight: The agent loop stops whenever a message with `type: "ask"` arrives,
  * and the specific `ask` value determines what kind of response the agent is waiting for.
  */
 
-import { ClineMessage, ClineAsk, isIdleAsk, isResumableAsk, isInteractiveAsk, isNonBlockingAsk } from "@roo-code/types"
+import {
+	ClineMessage,
+	ClineAsk,
+	isIdleAsk,
+	isResumableAsk,
+	isInteractiveAsk,
+	isNonBlockingAsk,
+} from "@jabberwock/types"
 
 // =============================================================================
 // Agent Loop State Enum

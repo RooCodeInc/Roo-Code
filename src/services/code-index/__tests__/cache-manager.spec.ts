@@ -30,7 +30,7 @@ vitest.mock("vscode", () => ({
 vitest.mock("lodash.debounce", () => ({ default: vitest.fn((fn) => fn) }))
 
 // Mock TelemetryService
-vitest.mock("@roo-code/telemetry", () => ({
+vitest.mock("@jabberwock/telemetry", () => ({
 	TelemetryService: {
 		instance: {
 			captureEvent: vitest.fn(),
@@ -68,7 +68,7 @@ describe("CacheManager", () => {
 
 			expect(vscode.Uri.joinPath).toHaveBeenCalledWith(
 				mockContext.globalStorageUri,
-				`roo-index-cache-${expectedHash}.json`,
+				`jabberwock-index-cache-${expectedHash}.json`,
 			)
 		})
 

@@ -2,12 +2,12 @@ import * as fs from "fs"
 import * as path from "path"
 import { tmpdir } from "os"
 
-import { WorkspaceAPI } from "../api/WorkspaceAPI.js"
-import { Uri } from "../classes/Uri.js"
-import { Range } from "../classes/Range.js"
-import { Position } from "../classes/Position.js"
-import { WorkspaceEdit } from "../classes/TextEdit.js"
-import { ExtensionContextImpl } from "../context/ExtensionContext.js"
+import { WorkspaceAPI } from "../api/WorkspaceAPI.ts"
+import { Uri } from "../classes/Uri.ts"
+import { Range } from "../classes/Range.ts"
+import { Position } from "../classes/Position.ts"
+import { WorkspaceEdit } from "../classes/TextEdit.ts"
+import { ExtensionContextImpl } from "../context/ExtensionContext.ts"
 
 describe("WorkspaceAPI", () => {
 	let tempDir: string

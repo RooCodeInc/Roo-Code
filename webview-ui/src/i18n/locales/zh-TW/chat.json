@@ -1,5 +1,5 @@
 {
-	"greeting": "歡迎使用 Roo Code！",
+	"greeting": "歡迎使用 Jabberwock！",
 	"task": {
 		"title": "工作",
 		"expand": "展開工作",
@@ -21,7 +21,7 @@
 		"sharePublicly": "公開分享",
 		"sharePubliclyDescription": "任何擁有連結的人都可存取",
 		"connectToCloud": "連線至雲端",
-		"connectToCloudDescription": "登入 Roo Code Cloud 以分享工作",
+		"connectToCloudDescription": "登入 Jabberwock Cloud 以分享工作",
 		"sharingDisabledByOrganization": "組織已停用分享功能",
 		"shareSuccessOrganization": "組織連結已複製到剪貼簿",
 		"shareSuccessPublic": "公開連結已複製到剪貼簿",
@@ -124,17 +124,17 @@
 		"placeholder": "編輯訊息..."
 	},
 	"scrollToBottom": "捲動至對話底部",
-	"about": "Roo 是編輯器中的完整 AI 開發團隊。",
+	"about": "Jabberwock 是編輯器中的完整 AI 開發團隊。",
 	"docs": "請參閱 <DocsLink>說明文件</DocsLink> 開始使用。",
 	"onboarding": "想要做什麼呢？",
-	"rooTips": {
+	"jabberwockTips": {
 		"customizableModes": {
 			"title": "可自訂模式，專注任務不偏離",
 			"description": "專注於任務並交付成果的專業角色。"
 		},
 		"modelAgnostic": {
 			"title": "自備模型，無加價無鎖定",
-			"description": "使用自己的供應商金鑰，甚至可執行本機推論 - Roo 不額外收費"
+			"description": "使用自己的供應商金鑰，甚至可執行本機推論 - Jabberwock 不額外收費"
 		}
 	},
 	"selectMode": "選擇互動模式",
@@ -146,7 +146,7 @@
 		"title": "模式",
 		"marketplace": "模式市集",
 		"settings": "模式設定",
-		"description": "專門量身打造 Roo 行為的角色。",
+		"description": "專門量身打造 Jabberwock 行為的角色。",
 		"searchPlaceholder": "搜尋模式...",
 		"noResults": "找不到結果"
 	},
@@ -184,7 +184,7 @@
 			"docs": "說明文件",
 			"goToSettings": "設定",
 			"connection": "連線錯誤。請確保您有可用的網際網路連線。",
-			"unknown": "未知 API 錯誤。請聯絡 Roo Code 技術支援。",
+			"unknown": "未知 API 錯誤。請聯絡 Jabberwock 技術支援。",
 			"claudeCodeNotAuthenticated": "您需要登入才能使用 Claude Code。前往設定並點選「登入 Claude Code」以進行驗證。"
 		}
 	},
@@ -223,49 +223,49 @@
 		}
 	},
 	"skill": {
-		"wantsToLoad": "Roo 想要載入技能",
-		"didLoad": "Roo 載入了技能"
+		"wantsToLoad": "Jabberwock 想要載入技能",
+		"didLoad": "Jabberwock 載入了技能"
 	},
 	"instructions": {
-		"wantsToFetch": "Roo 想要取得詳細指示以協助目前工作"
+		"wantsToFetch": "Jabberwock 想要取得詳細指示以協助目前工作"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo 想要讀取此檔案",
-		"wantsToReadMultiple": "Roo 想要讀取多個檔案",
-		"wantsToReadAndXMore": "Roo 想要讀取此檔案以及另外 {{count}} 個檔案",
-		"wantsToReadOutsideWorkspace": "Roo 想要讀取此工作區外的檔案",
-		"didRead": "Roo 已讀取此檔案",
-		"wantsToEdit": "Roo 想要編輯此檔案",
-		"wantsToEditOutsideWorkspace": "Roo 想要編輯此工作區外的檔案",
-		"wantsToEditProtected": "Roo 想要編輯受保護的設定檔案",
-		"wantsToApplyBatchChanges": "Roo 想要對多個檔案套用變更",
-		"wantsToGenerateImage": "Roo 想要產生圖片",
-		"wantsToGenerateImageOutsideWorkspace": "Roo 想要在工作區外產生圖片",
-		"wantsToGenerateImageProtected": "Roo 想要在受保護位置產生圖片",
-		"didGenerateImage": "Roo 已產生圖片",
-		"wantsToCreate": "Roo 想要建立新檔案",
-		"wantsToInsert": "Roo 想要在此檔案中插入內容",
-		"wantsToInsertWithLineNumber": "Roo 想要在此檔案第 {{lineNumber}} 行插入內容",
-		"wantsToInsertAtEnd": "Roo 想要在此檔案尾端新增內容"
+		"wantsToRead": "Jabberwock 想要讀取此檔案",
+		"wantsToReadMultiple": "Jabberwock 想要讀取多個檔案",
+		"wantsToReadAndXMore": "Jabberwock 想要讀取此檔案以及另外 {{count}} 個檔案",
+		"wantsToReadOutsideWorkspace": "Jabberwock 想要讀取此工作區外的檔案",
+		"didRead": "Jabberwock 已讀取此檔案",
+		"wantsToEdit": "Jabberwock 想要編輯此檔案",
+		"wantsToEditOutsideWorkspace": "Jabberwock 想要編輯此工作區外的檔案",
+		"wantsToEditProtected": "Jabberwock 想要編輯受保護的設定檔案",
+		"wantsToApplyBatchChanges": "Jabberwock 想要對多個檔案套用變更",
+		"wantsToGenerateImage": "Jabberwock 想要產生圖片",
+		"wantsToGenerateImageOutsideWorkspace": "Jabberwock 想要在工作區外產生圖片",
+		"wantsToGenerateImageProtected": "Jabberwock 想要在受保護位置產生圖片",
+		"didGenerateImage": "Jabberwock 已產生圖片",
+		"wantsToCreate": "Jabberwock 想要建立新檔案",
+		"wantsToInsert": "Jabberwock 想要在此檔案中插入內容",
+		"wantsToInsertWithLineNumber": "Jabberwock 想要在此檔案第 {{lineNumber}} 行插入內容",
+		"wantsToInsertAtEnd": "Jabberwock 想要在此檔案尾端新增內容"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo 想要檢視此目錄中最上層的檔案",
-		"didViewTopLevel": "Roo 已檢視此目錄中最上層的檔案",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo 想要檢視此目錄（工作區外）中最上層的檔案",
-		"didViewTopLevelOutsideWorkspace": "Roo 已檢視此目錄（工作區外）中最上層的檔案",
-		"wantsToViewRecursive": "Roo 想要遞迴檢視此目錄中的所有檔案",
-		"didViewRecursive": "Roo 已遞迴檢視此目錄中的所有檔案",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo 想要遞迴檢視此目錄（工作區外）中的所有檔案",
-		"didViewRecursiveOutsideWorkspace": "Roo 已遞迴檢視此目錄（工作區外）中的所有檔案",
-		"wantsToSearch": "Roo 想要在此目錄中搜尋 <code>{{regex}}</code>",
-		"didSearch": "Roo 已在此目錄中搜尋 <code>{{regex}}</code>",
-		"wantsToSearchOutsideWorkspace": "Roo 想要在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "Roo 已在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
-		"wantsToViewMultipleDirectories": "Roo 想要查看多個目錄"
+		"wantsToViewTopLevel": "Jabberwock 想要檢視此目錄中最上層的檔案",
+		"didViewTopLevel": "Jabberwock 已檢視此目錄中最上層的檔案",
+		"wantsToViewTopLevelOutsideWorkspace": "Jabberwock 想要檢視此目錄（工作區外）中最上層的檔案",
+		"didViewTopLevelOutsideWorkspace": "Jabberwock 已檢視此目錄（工作區外）中最上層的檔案",
+		"wantsToViewRecursive": "Jabberwock 想要遞迴檢視此目錄中的所有檔案",
+		"didViewRecursive": "Jabberwock 已遞迴檢視此目錄中的所有檔案",
+		"wantsToViewRecursiveOutsideWorkspace": "Jabberwock 想要遞迴檢視此目錄（工作區外）中的所有檔案",
+		"didViewRecursiveOutsideWorkspace": "Jabberwock 已遞迴檢視此目錄（工作區外）中的所有檔案",
+		"wantsToSearch": "Jabberwock 想要在此目錄中搜尋 <code>{{regex}}</code>",
+		"didSearch": "Jabberwock 已在此目錄中搜尋 <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "Jabberwock 想要在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "Jabberwock 已在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
+		"wantsToViewMultipleDirectories": "Jabberwock 想要查看多個目錄"
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo 想要在程式碼庫中搜尋 <code>{{query}}</code>",
-		"wantsToSearchWithPath": "Roo 想要在 <code>{{path}}</code> 中搜尋程式碼庫 <code>{{query}}</code>",
+		"wantsToSearch": "Jabberwock 想要在程式碼庫中搜尋 <code>{{query}}</code>",
+		"wantsToSearchWithPath": "Jabberwock 想要在 <code>{{path}}</code> 中搜尋程式碼庫 <code>{{query}}</code>",
 		"didSearch_one": "找到 1 個結果",
 		"didSearch_other": "找到 {{count}} 個結果",
 		"resultTooltip": "相似度評分：{{score}}（點選以開啟檔案）"
@@ -290,24 +290,24 @@
 	"response": "回應",
 	"arguments": "參數",
 	"text": {
-		"rooSaid": "Roo 說"
+		"jabberwockSaid": "Jabberwock 說"
 	},
 	"feedback": {
 		"youSaid": "您說"
 	},
 	"mcp": {
-		"wantsToUseTool": "Roo 想要在 {{serverName}} MCP 伺服器上使用工具",
-		"wantsToAccessResource": "Roo 想要存取 {{serverName}} MCP 伺服器上的資源"
+		"wantsToUseTool": "Jabberwock 想要在 {{serverName}} MCP 伺服器上使用工具",
+		"wantsToAccessResource": "Jabberwock 想要存取 {{serverName}} MCP 伺服器上的資源"
 	},
 	"modes": {
-		"wantsToSwitch": "Roo 想要切換至 {{mode}} 模式",
-		"wantsToSwitchWithReason": "Roo 想要切換至 {{mode}} 模式，原因：{{reason}}",
-		"didSwitch": "Roo 已切換至 {{mode}} 模式",
-		"didSwitchWithReason": "Roo 已切換至 {{mode}} 模式，原因：{{reason}}"
+		"wantsToSwitch": "Jabberwock 想要切換至 {{mode}} 模式",
+		"wantsToSwitchWithReason": "Jabberwock 想要切換至 {{mode}} 模式，原因：{{reason}}",
+		"didSwitch": "Jabberwock 已切換至 {{mode}} 模式",
+		"didSwitchWithReason": "Jabberwock 已切換至 {{mode}} 模式，原因：{{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo 想要在 {{mode}} 模式下建立新的子任務",
-		"wantsToFinish": "Roo 想要完成此子任務",
+		"wantsToCreate": "Jabberwock 想要在 {{mode}} 模式下建立新的子任務",
+		"wantsToFinish": "Jabberwock 想要完成此子任務",
 		"newTaskContent": "子任務指示",
 		"resultContent": "子任務結果",
 		"defaultResult": "請繼續下一個工作。",
@@ -315,7 +315,7 @@
 		"goToSubtask": "查看工作"
 	},
 	"questions": {
-		"hasQuestion": "Roo 有一個問題"
+		"hasQuestion": "Jabberwock 有一個問題"
 	},
 	"taskCompleted": "工作完成",
 	"error": "錯誤",
@@ -332,12 +332,12 @@
 		"copyToClipboard": "複製基本錯誤資訊",
 		"copied": "已複製！",
 		"diagnostics": "取得詳細錯誤資訊",
-		"proxyProvider": "似乎正在使用代理型供應商。請檢查記錄，並確保不會重寫 Roo 的請求。"
+		"proxyProvider": "似乎正在使用代理型供應商。請檢查記錄，並確保不會重寫 Jabberwock 的請求。"
 	},
 	"diffError": {
 		"title": "編輯失敗"
 	},
-	"troubleMessage": "Roo 遇到問題...",
+	"troubleMessage": "Jabberwock 遇到問題...",
 	"powershell": {
 		"issues": "似乎遇到 Windows PowerShell 問題，請參閱此說明文件"
 	},
@@ -359,22 +359,22 @@
 		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} 已發布",
-		"support": "請在 <githubLink>GitHub</githubLink> 上給 Roo Code 星星支持我們。",
+		"title": "Jabberwock {{version}} 已發布",
+		"support": "請在 <githubLink>GitHub</githubLink> 上給 Jabberwock 星星支持我們。",
 		"stealthModel": {
-			"feature": "<bold>限時免費隱形模型</bold> - Code Supernova：現已升級為 <bold>1M Token 上下文視窗</bold>！一個支援影像輸入的多功能代理程式設計模型，透過 Roo Code Cloud 提供。",
+			"feature": "<bold>限時免費隱形模型</bold> - Code Supernova：現已升級為 <bold>1M Token 上下文視窗</bold>！一個支援影像輸入的多功能代理程式設計模型，透過 Jabberwock Cloud 提供。",
 			"note": "（注意：提示詞和回應會被模型建立者記錄並用於改進模型）",
-			"connectButton": "連線到 Roo Code Cloud",
-			"selectModel": "在設定中從 Roo Code Cloud 供應商選擇 <code>roo/code-supernova</code> 開始使用。",
+			"connectButton": "連線到 Jabberwock Cloud",
+			"selectModel": "在設定中從 Jabberwock Cloud 供應商選擇 <code>jabberwock/code-supernova</code> 開始使用。",
 			"goToSettingsButton": "前往設定"
 		},
 		"release": {
 			"heading": "新增功能：",
-			"gpt54": "OpenAI GPT-5.4 支援：已新增 OpenAI GPT-5.4 和 GPT-5.3 Chat Latest，讓你可以在 Roo Code 中使用 OpenAI 最新的聊天模型。",
+			"gpt54": "OpenAI GPT-5.4 支援：已新增 OpenAI GPT-5.4 和 GPT-5.3 Chat Latest，讓你可以在 Jabberwock 中使用 OpenAI 最新的聊天模型。",
 			"slashSkills": "Slash 指令技能：現在 skills 可以作為 slash 指令公開，並支援 fallback execution，讓工作流程觸發更快。",
 			"geminiPro": "Gemini 3.1 Pro 支援：新增 Gemini 3.1 Pro 模型支援，並設為預設 Gemini 模型以提升效能。",
 			"cliNdjson": "CLI NDJSON 協定：新增 NDJSON stdin 協定、list 子指令，以及模組化的 run 指令，提供更彈性的 CLI 工作流程。",
-			"cliRelease": "CLI v0.1.0：Roo Code CLI 以穩定的指令介面達成首個正式版本。"
+			"cliRelease": "CLI v0.1.0：Jabberwock CLI 以穩定的指令介面達成首個正式版本。"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",
@@ -407,18 +407,18 @@
 	"profileViolationWarning": "目前設定檔與您的組織設定不相容",
 	"shellIntegration": {
 		"title": "命令執行警告",
-		"description": "命令正在沒有 VS Code 終端機 Shell 整合的情況下執行。若要隱藏此警告，可在 <settingsLink>Roo Code 設定</settingsLink> 的 <strong>終端機</strong> 區塊中停用 Shell 整合，或使用下方連結排解 VS Code 終端機整合問題。",
+		"description": "命令正在沒有 VS Code 終端機 Shell 整合的情況下執行。若要隱藏此警告，可在 <settingsLink>Jabberwock 設定</settingsLink> 的 <strong>終端機</strong> 區塊中停用 Shell 整合，或使用下方連結排解 VS Code 終端機整合問題。",
 		"troubleshooting": "點選此處查看 Shell 整合說明文件。"
 	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "已達自動核准請求上限",
-			"description": "Roo 已達到 {{count}} 次 API 請求的自動核准上限。您想重設計數並繼續工作嗎？",
+			"description": "Jabberwock 已達到 {{count}} 次 API 請求的自動核准上限。您想重設計數並繼續工作嗎？",
 			"button": "重設並繼續"
 		},
 		"autoApprovedCostLimitReached": {
 			"title": "已達自動核准費用上限",
-			"description": "Roo 已達到 ${{count}} 的自動核准費用上限。您想重設費用並繼續工作嗎？",
+			"description": "Jabberwock 已達到 ${{count}} 的自動核准費用上限。您想重設費用並繼續工作嗎？",
 			"button": "重設並繼續"
 		}
 	},
@@ -457,8 +457,8 @@
 		}
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo 想要執行斜線指令",
-		"didRun": "Roo 執行了斜線指令"
+		"wantsToRun": "Jabberwock 想要執行斜線指令",
+		"didRun": "Jabberwock 執行了斜線指令"
 	},
 	"queuedMessages": {
 		"title": "佇列中的訊息",
@@ -487,11 +487,11 @@
 		"openMcpSettings": "開啟 MCP 設定"
 	},
 	"readCommandOutput": {
-		"title": "Roo read command output"
+		"title": "Jabberwock read command output"
 	},
 	"retiredProvider": {
 		"title": "供應商不再受支援",
-		"message": "抱歉，此供應商已不再受支援。我們發現實際使用它的 Roo 使用者非常少，我們需要縮減程式碼庫的範圍，以便繼續快速交付並更好地服務社群。這是一個非常艱難的決定，但它能讓我們專注於對你最重要的事情。我們知道這很遺憾。",
+		"message": "抱歉，此供應商已不再受支援。我們發現實際使用它的 Jabberwock 使用者非常少，我們需要縮減程式碼庫的範圍，以便繼續快速交付並更好地服務社群。這是一個非常艱難的決定，但它能讓我們專注於對你最重要的事情。我們知道這很遺憾。",
 		"openSettings": "開啟設定"
 	}
 }

@@ -31,7 +31,7 @@ import {
 	isDynamicProvider,
 	isRetiredProvider,
 	getProviderDefaultModelId,
-} from "@roo-code/types"
+} from "@jabberwock/types"
 
 import { useRouterModels } from "./useRouterModels"
 import { useOpenRouterModelProviders } from "./useOpenRouterModelProviders"
@@ -312,9 +312,9 @@ function getSelectedModel({
 			const info = fireworksModels[id as keyof typeof fireworksModels]
 			return { id, info }
 		}
-		case "roo": {
-			const id = getValidatedModelId(apiConfiguration.apiModelId, routerModels.roo, defaultModelId)
-			const info = routerModels.roo?.[id]
+		case "jabberwock": {
+			const id = getValidatedModelId(apiConfiguration.apiModelId, routerModels.jabberwock, defaultModelId)
+			const info = routerModels.jabberwock?.[id]
 			return { id, info }
 		}
 		case "qwen-code": {

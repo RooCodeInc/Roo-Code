@@ -1,8 +1,8 @@
 import * as fs from "fs"
 import * as path from "path"
-import { EventEmitter } from "../classes/EventEmitter.js"
-import { ensureDirectoryExists } from "../utils/paths.js"
-import type { SecretStorage, SecretStorageChangeEvent } from "../types.js"
+import { EventEmitter } from "../classes/EventEmitter.ts"
+import { ensureDirectoryExists } from "../utils/paths.ts"
+import type { SecretStorage, SecretStorageChangeEvent } from "../types.ts"
 
 /**
  * File-based implementation of VSCode's SecretStorage interface

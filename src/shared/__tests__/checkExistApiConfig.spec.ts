@@ -1,6 +1,6 @@
 // npx vitest run src/shared/__tests__/checkExistApiConfig.spec.ts
 
-import type { ProviderSettings } from "@roo-code/types"
+import type { ProviderSettings } from "@jabberwock/types"
 
 import { checkExistKey } from "../checkExistApiConfig"
 
@@ -80,9 +80,9 @@ describe("checkExistKey", () => {
 		expect(checkExistKey(config)).toBe(true)
 	})
 
-	it("should return true for roo provider without API key", () => {
+	it("should return true for jabberwock provider without API key", () => {
 		const config: ProviderSettings = {
-			apiProvider: "roo",
+			apiProvider: "jabberwock",
 		}
 		expect(checkExistKey(config)).toBe(true)
 	})

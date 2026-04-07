@@ -1,6 +1,6 @@
 import { EventEmitter } from "events"
 import type { ExtensionContext } from "vscode"
-import type { QueuedRequest, QueueStats, RetryQueueConfig, RetryQueueEvents } from "./types.js"
+import type { QueuedRequest, QueueStats, RetryQueueConfig, RetryQueueEvents } from "./types.ts"
 
 type AuthHeaderProvider = () => Record<string, string> | undefined
 
@@ -11,7 +11,7 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 	private log: (...args: unknown[]) => void
 	private isProcessing = false
 	private retryTimer?: NodeJS.Timeout
-	private readonly STORAGE_KEY = "roo.retryQueue"
+	private readonly STORAGE_KEY = "jabberwock.retryQueue"
 	private authHeaderProvider?: AuthHeaderProvider
 	private queuePausedUntil?: number // Timestamp when the queue can resume processing
 	private isPaused = false // Manual pause state (e.g., for auth state changes)

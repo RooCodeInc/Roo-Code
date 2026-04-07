@@ -1,6 +1,6 @@
-// pnpm --filter @roo-code/types test src/__tests__/message.test.ts
+// pnpm --filter @jabberwock/types test src/__tests__/message.test.ts
 
-import { clineAsks, isIdleAsk, isInteractiveAsk, isResumableAsk, isNonBlockingAsk } from "../message.js"
+import { clineAsks, isIdleAsk, isInteractiveAsk, isResumableAsk, isNonBlockingAsk } from "../message.ts"
 
 describe("ask messages", () => {
 	test("all ask messages are classified", () => {

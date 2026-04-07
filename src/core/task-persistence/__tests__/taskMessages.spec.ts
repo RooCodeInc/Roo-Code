@@ -19,7 +19,7 @@ let tmpBaseDir: string
 beforeEach(async () => {
 	hoisted.safeWriteJsonMock.mockClear()
 	// Create a unique, writable temp directory to act as globalStoragePath
-	tmpBaseDir = await fs.mkdtemp(path.join(os.tmpdir(), "roo-test-"))
+	tmpBaseDir = await fs.mkdtemp(path.join(os.tmpdir(), "jabberwock-test-"))
 })
 
 describe("taskMessages.saveTaskMessages", () => {

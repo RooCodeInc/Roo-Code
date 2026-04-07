@@ -1,14 +1,14 @@
 import type { ExtensionContext } from "vscode"
 
-import type { OrganizationSettings, AuthService } from "@roo-code/types"
+import type { OrganizationSettings, AuthService } from "@jabberwock/types"
 
-import { CloudSettingsService } from "../CloudSettingsService.js"
-import { RefreshTimer } from "../RefreshTimer.js"
+import { CloudSettingsService } from "../CloudSettingsService.ts"
+import { RefreshTimer } from "../RefreshTimer.ts"
 
 vi.mock("../RefreshTimer")
 
 vi.mock("../config", () => ({
-	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.roocode.com"),
+	getJabberwockApiUrl: vi.fn().mockReturnValue("https://app.jabberwock.com"),
 }))
 
 global.fetch = vi.fn()
@@ -380,7 +380,7 @@ describe("CloudSettingsService", () => {
 
 			expect(result).toBe(true)
 
-			expect(fetch).toHaveBeenCalledWith("https://app.roocode.com/api/extension-settings", {
+			expect(fetch).toHaveBeenCalledWith("https://app.jabberwock.com/api/extension-settings", {
 				headers: {
 					Authorization: "Bearer valid-token",
 				},

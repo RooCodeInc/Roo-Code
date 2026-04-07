@@ -12,7 +12,7 @@ export default defineConfig({
 		js: "#!/usr/bin/env node",
 	},
 	// Bundle workspace packages that export TypeScript
-	noExternal: ["@roo-code/core", "@roo-code/core/cli", "@roo-code/types", "@roo-code/vscode-shim"],
+	noExternal: ["@jabberwock/core", "@jabberwock/core/cli", "@jabberwock/types", "@jabberwock/vscode-shim"],
 	external: [
 		// Keep native modules external
 		"@anthropic-ai/sdk",

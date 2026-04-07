@@ -191,9 +191,9 @@ function ChatHistoryItem({ message }: ChatHistoryItemProps) {
 			return (
 				<Box flexDirection="column" paddingX={1}>
 					<Text bold color="yellow">
-						Roo said:
+						Jabberwock said:
 					</Text>
-					<Text color={theme.rooText}>
+					<Text color={theme.jabberwockText}>
 						{content}
 						<Newline />
 					</Text>
@@ -203,7 +203,7 @@ function ChatHistoryItem({ message }: ChatHistoryItemProps) {
 			return (
 				<Box flexDirection="column" paddingX={1}>
 					<Text bold color={theme.thinkingHeader} dimColor>
-						Roo is thinking:
+						Jabberwock is thinking:
 					</Text>
 					<Text color={theme.thinkingText} dimColor>
 						{content}

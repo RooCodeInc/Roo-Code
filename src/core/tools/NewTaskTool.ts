@@ -1,6 +1,6 @@
 import * as vscode from "vscode"
 
-import { TodoItem } from "@roo-code/types"
+import { TodoItem } from "@jabberwock/types"
 
 import { Task } from "../task/Task"
 import { getModeBySlug } from "../../shared/modes"
@@ -15,13 +15,14 @@ interface NewTaskParams {
 	mode: string
 	message: string
 	todos?: string
+	is_async?: boolean // Jabberwock: async orchestration
 }
 
 export class NewTaskTool extends BaseTool<"new_task"> {
 	readonly name = "new_task" as const
 
 	async execute(params: NewTaskParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { mode, message, todos } = params
+		const { mode, message, todos, is_async } = params
 		const { askApproval, handleError, pushToolResult } = callbacks
 
 		try {
@@ -101,11 +102,34 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				mode: targetMode.name,
 				content: message,
 				todos: todoItems,
+				is_async,
 			})
+
+			// DEBUG: Log new_task delegation details
+			console.log(
+				`[DEBUG:NewTaskTool] parent taskId=${task.taskId} → new_task mode="${mode}" (${targetMode.name}) is_async=${is_async ?? false}`,
+			)
+			console.log(`[DEBUG:NewTaskTool] message (first 500 chars): ${message.substring(0, 500)}`)
+			console.log(`[DEBUG:NewTaskTool] todos (${todoItems.length}):`, JSON.stringify(todoItems))
 
 			const didApprove = await askApproval("tool", toolMessage)
 
 			if (!didApprove) {
+				return
+			}
+
+			if (is_async) {
+				// Jabberwock: Async Orchestration
+				// Start task in background and return ACK immediately
+				const child = await (provider as any).startBackgroundTask({
+					parentTaskId: task.taskId,
+					message: unescapedMessage,
+					initialTodos: todoItems,
+					mode,
+				})
+				pushToolResult(
+					`Started async background task ${child.taskId}. You can await its completion later using await_batch_completion.`,
+				)
 				return
 			}
 
@@ -130,12 +154,14 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 		const mode: string | undefined = block.params.mode
 		const message: string | undefined = block.params.message
 		const todos: string | undefined = block.params.todos
+		const is_async: boolean | undefined = block.params.is_async === "true" // Jabberwock
 
 		const partialMessage = JSON.stringify({
 			tool: "newTask",
 			mode: mode ?? "",
 			content: message ?? "",
 			todos: todos,
+			is_async,
 		})
 
 		await task.ask("tool", partialMessage, block.partial).catch(() => {})

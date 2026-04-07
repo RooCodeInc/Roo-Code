@@ -10,7 +10,7 @@
  * Run with: RUN_CLI_INTEGRATION_TESTS=true OPENROUTER_API_KEY=sk-or-v1-... pnpm test
  */
 
-// pnpm --filter @roo-code/cli test src/__tests__/index.test.ts
+// pnpm --filter @jabberwock/cli test src/__tests__/index.test.ts
 
 import path from "path"
 import fs from "fs"
@@ -53,7 +53,7 @@ function buildCliIfNeeded(): void {
 
 function buildExtensionIfNeeded(): void {
 	if (!isExtensionBuilt()) {
-		execSync("pnpm --filter roo-cline bundle", { cwd: findMonorepoRoot(), stdio: "inherit" })
+		execSync("pnpm --filter jabberwock bundle", { cwd: findMonorepoRoot(), stdio: "inherit" })
 		console.log("Extension build complete.")
 	}
 }

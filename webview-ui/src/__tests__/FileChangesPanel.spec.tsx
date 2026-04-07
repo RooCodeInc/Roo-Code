@@ -1,6 +1,6 @@
 import React from "react"
 import { fireEvent, render, screen } from "@/utils/test-utils"
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage } from "@jabberwock/types"
 import { TranslationProvider } from "@/i18n/__mocks__/TranslationContext"
 import FileChangesPanel from "../components/chat/FileChangesPanel"
 

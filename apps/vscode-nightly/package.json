@@ -1,6 +1,6 @@
 {
-	"name": "@roo-code/vscode-nightly",
-	"description": "Nightly build for the Roo Code VSCode extension.",
+	"name": "@jabberwock/vscode-nightly",
+	"description": "Nightly build for the Jabberwock VSCode extension.",
 	"private": true,
 	"packageManager": "pnpm@10.8.1",
 	"scripts": {
@@ -9,6 +9,6 @@
 		"clean": "rimraf build .turbo"
 	},
 	"devDependencies": {
-		"@roo-code/build": "workspace:^"
+		"@jabberwock/build": "workspace:^"
 	}
 }

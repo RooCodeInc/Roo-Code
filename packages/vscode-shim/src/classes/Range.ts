@@ -1,5 +1,5 @@
-import { Position } from "./Position.js"
-import type { IRange, IPosition } from "../types.js"
+import { Position } from "./Position.ts"
+import type { IRange, IPosition } from "../types.ts"
 
 /**
  * Represents a range in a text document

@@ -18,7 +18,7 @@ vi.mock("@/i18n/TranslationContext", () => {
 	}
 })
 
-vi.mock("@roo/package", () => ({
+vi.mock("@shared/package", () => ({
 	Package: {
 		version: "1.0.0",
 		sha: "abc12345",
@@ -90,7 +90,7 @@ describe("About", () => {
 			</TranslationProvider>,
 		)
 		expect(screen.getByText("settings:about.contact.label")).toBeInTheDocument()
-		expect(screen.getByText("support@roocode.com")).toBeInTheDocument()
+		expect(screen.getByText("support@jabberwock.com")).toBeInTheDocument()
 	})
 
 	it("renders export, import, and reset buttons", () => {

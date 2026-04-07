@@ -1,7 +1,7 @@
 import * as fs from "fs"
 import * as path from "path"
-import { ensureDirectoryExists } from "../utils/paths.js"
-import type { Memento } from "../types.js"
+import { ensureDirectoryExists } from "../utils/paths.ts"
+import type { Memento } from "../types.ts"
 
 /**
  * File-based implementation of VSCode's Memento interface

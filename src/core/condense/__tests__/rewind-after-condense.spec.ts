@@ -2,14 +2,14 @@
 
 /**
  * Regression tests for the issue: "Rewind after Condense is broken"
- * https://github.com/RooCodeInc/Roo-Code/issues/8295
+ * https://github.com/JabberwockInc/Jabberwock/issues/8295
  *
  * These tests verify that when a user rewinds (deletes/truncates) their conversation
  * after a condense operation, the orphaned condensed messages are properly reactivated
  * so they can be sent to the API again.
  */
 
-import { TelemetryService } from "@roo-code/telemetry"
+import { TelemetryService } from "@jabberwock/telemetry"
 
 import { getEffectiveApiHistory, cleanupAfterTruncation } from "../index"
 import { ApiMessage } from "../../task-persistence/apiMessages"

@@ -1,7 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { type ModelInfo, type ModelRecord, unboundDefaultModelId, unboundDefaultModelInfo } from "@roo-code/types"
+import { type ModelInfo, type ModelRecord, unboundDefaultModelId, unboundDefaultModelInfo } from "@jabberwock/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 import { calculateApiCostOpenAI } from "../../shared/cost"
@@ -60,7 +60,7 @@ export class UnboundHandler extends BaseProvider implements SingleCompletionHand
 			apiKey: apiKey,
 			defaultHeaders: {
 				...DEFAULT_HEADERS,
-				"X-Unbound-Metadata": JSON.stringify({ labels: [{ key: "app", value: "roo-code" }] }),
+				"X-Unbound-Metadata": JSON.stringify({ labels: [{ key: "app", value: "jabberwock" }] }),
 			},
 		})
 	}
@@ -142,7 +142,7 @@ export class UnboundHandler extends BaseProvider implements SingleCompletionHand
 			...(thinking && { thinking }),
 			stream: true,
 			stream_options: { include_usage: true },
-			unbound_metadata: { originApp: "roo-code", taskId: metadata?.taskId, mode: metadata?.mode },
+			unbound_metadata: { originApp: "jabberwock", taskId: metadata?.taskId, mode: metadata?.mode },
 			tools: this.convertToolsForOpenAI(metadata?.tools),
 			tool_choice: metadata?.tool_choice,
 		}

@@ -2,28 +2,28 @@
  * WindowAPI class for VSCode API
  */
 
-import { logs } from "../utils/logger.js"
-import { Uri } from "../classes/Uri.js"
-import { Position } from "../classes/Position.js"
-import { Range } from "../classes/Range.js"
-import { Selection } from "../classes/Selection.js"
-import { EventEmitter } from "../classes/EventEmitter.js"
-import { ThemeIcon } from "../classes/Additional.js"
-import { OutputChannel } from "../classes/OutputChannel.js"
-import { StatusBarItem } from "../classes/StatusBarItem.js"
-import { TextEditorDecorationType } from "../classes/TextEditorDecorationType.js"
-import { TabGroupsAPI } from "./TabGroupsAPI.js"
-import { StatusBarAlignment, ViewColumn } from "../types.js"
-import type { WorkspaceAPI } from "./WorkspaceAPI.js"
-import type { Thenable } from "../types.js"
+import { logs } from "../utils/logger.ts"
+import { Uri } from "../classes/Uri.ts"
+import { Position } from "../classes/Position.ts"
+import { Range } from "../classes/Range.ts"
+import { Selection } from "../classes/Selection.ts"
+import { EventEmitter } from "../classes/EventEmitter.ts"
+import { ThemeIcon } from "../classes/Additional.ts"
+import { OutputChannel } from "../classes/OutputChannel.ts"
+import { StatusBarItem } from "../classes/StatusBarItem.ts"
+import { TextEditorDecorationType } from "../classes/TextEditorDecorationType.ts"
+import { TabGroupsAPI } from "./TabGroupsAPI.ts"
+import { StatusBarAlignment, ViewColumn } from "../types.ts"
+import type { WorkspaceAPI } from "./WorkspaceAPI.ts"
+import type { Thenable } from "../types.ts"
 import type {
 	TextEditor,
 	TextEditorSelectionChangeEvent,
 	TextDocumentShowOptions,
 	DecorationRenderOptions,
-} from "../interfaces/editor.js"
-import type { TextDocument } from "../interfaces/document.js"
-import type { Terminal, TerminalDimensionsChangeEvent, TerminalDataWriteEvent } from "../interfaces/terminal.js"
+} from "../interfaces/editor.ts"
+import type { TextDocument } from "../interfaces/document.ts"
+import type { Terminal, TerminalDimensionsChangeEvent, TerminalDataWriteEvent } from "../interfaces/terminal.ts"
 import type {
 	WebviewViewProvider,
 	WebviewView,
@@ -31,9 +31,9 @@ import type {
 	ViewBadge,
 	WebviewViewProviderOptions,
 	UriHandler,
-} from "../interfaces/webview.js"
-import type { QuickPickOptions, InputBoxOptions, OpenDialogOptions, Disposable } from "../interfaces/workspace.js"
-import type { CancellationToken } from "../interfaces/document.js"
+} from "../interfaces/webview.ts"
+import type { QuickPickOptions, InputBoxOptions, OpenDialogOptions, Disposable } from "../interfaces/workspace.ts"
+import type { CancellationToken } from "../interfaces/document.ts"
 
 /**
  * Window API mock for CLI mode

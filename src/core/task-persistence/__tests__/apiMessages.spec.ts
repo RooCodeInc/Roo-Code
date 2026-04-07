@@ -9,7 +9,7 @@ import { readApiMessages } from "../apiMessages"
 let tmpBaseDir: string
 
 beforeEach(async () => {
-	tmpBaseDir = await fs.mkdtemp(path.join(os.tmpdir(), "roo-test-api-"))
+	tmpBaseDir = await fs.mkdtemp(path.join(os.tmpdir(), "jabberwock-test-api-"))
 })
 
 describe("apiMessages.readApiMessages", () => {

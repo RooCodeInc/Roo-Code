@@ -3,13 +3,13 @@
  */
 
 import * as path from "path"
-import { logs } from "../utils/logger.js"
-import { VSCodeMockPaths, ensureDirectoryExists } from "../utils/paths.js"
-import { FileMemento } from "../storage/Memento.js"
-import { ConfigurationTarget } from "../types.js"
-import type { ConfigurationInspect } from "../types.js"
-import type { WorkspaceConfiguration } from "../interfaces/workspace.js"
-import type { ExtensionContextImpl } from "../context/ExtensionContext.js"
+import { logs } from "../utils/logger.ts"
+import { VSCodeMockPaths, ensureDirectoryExists } from "../utils/paths.ts"
+import { FileMemento } from "../storage/Memento.ts"
+import { ConfigurationTarget } from "../types.ts"
+import type { ConfigurationInspect } from "../types.ts"
+import type { WorkspaceConfiguration } from "../interfaces/workspace.ts"
+import type { ExtensionContextImpl } from "../context/ExtensionContext.ts"
 
 /**
  * In-memory runtime configuration store shared across all MockWorkspaceConfiguration instances.
@@ -20,7 +20,7 @@ const runtimeConfig: Map<string, unknown> = new Map()
 
 /**
  * Set a runtime configuration value.
- * @param section The configuration section (e.g., "roo-cline")
+ * @param section The configuration section (e.g., "jabberwock")
  * @param key The configuration key (e.g., "commandExecutionTimeout")
  * @param value The value to set
  */
@@ -32,7 +32,7 @@ export function setRuntimeConfig(section: string, key: string, value: unknown): 
 
 /**
  * Set multiple runtime configuration values at once.
- * @param section The configuration section (e.g., "roo-cline")
+ * @param section The configuration section (e.g., "jabberwock")
  * @param values Object containing key-value pairs to set
  */
 export function setRuntimeConfigValues(section: string, values: Record<string, unknown>): void {
@@ -53,7 +53,7 @@ export function clearRuntimeConfig(): void {
 
 /**
  * Get a runtime configuration value.
- * @param fullKey The full configuration key (e.g., "roo-cline.commandExecutionTimeout")
+ * @param fullKey The full configuration key (e.g., "jabberwock.commandExecutionTimeout")
  * @returns The value or undefined if not set
  */
 export function getRuntimeConfig(fullKey: string): unknown {

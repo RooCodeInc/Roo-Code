@@ -14,7 +14,7 @@
  * - `done` flag instead of partial:false
  */
 
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage } from "@jabberwock/types"
 
 import type { JsonEvent, JsonEventCost, JsonEventQueueItem, JsonFinalOutput } from "@/types/json-events.js"
 
@@ -131,7 +131,7 @@ export class JsonEventEmitter {
 		this.stdout = options.stdout ?? process.stdout
 		this.requestIdProvider = options.requestIdProvider ?? (() => undefined)
 		this.schemaVersion = options.schemaVersion ?? 1
-		this.protocol = options.protocol ?? "roo-cli-stream"
+		this.protocol = options.protocol ?? "jabberwock-cli-stream"
 		this.capabilities = options.capabilities ?? [
 			"stdin:start",
 			"stdin:message",

@@ -1,6 +1,6 @@
 import { render } from "ink-testing-library"
 
-import type { TodoItem } from "@roo-code/types"
+import type { TodoItem } from "@jabberwock/types"
 
 import TodoChangeDisplay from "../TodoChangeDisplay.js"
 

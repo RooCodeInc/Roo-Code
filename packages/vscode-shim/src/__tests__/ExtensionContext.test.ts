@@ -1,4 +1,4 @@
-import { ExtensionContextImpl } from "../context/ExtensionContext.js"
+import { ExtensionContextImpl } from "../context/ExtensionContext.ts"
 import * as fs from "fs"
 import * as path from "path"
 import { tmpdir } from "os"

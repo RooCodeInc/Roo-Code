@@ -1,5 +1,5 @@
 {
-	"name": "@roo-code/config-eslint",
+	"name": "@jabberwock/config-eslint",
 	"private": true,
 	"type": "module",
 	"exports": {

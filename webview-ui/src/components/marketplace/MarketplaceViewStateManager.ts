@@ -1,9 +1,9 @@
 /**
  * MarketplaceViewStateManager
  *
- * This class manages the state for the marketplace view in the Roo Code extensions interface.
+ * This class manages the state for the marketplace view in the Jabberwock extensions interface.
  *
- * IMPORTANT: Fixed issue where the marketplace feature was causing the Roo Code extensions interface
+ * IMPORTANT: Fixed issue where the marketplace feature was causing the Jabberwock extensions interface
  * to switch to the browse tab and redraw it every 30 seconds. The fix prevents unnecessary tab switching
  * and redraws by:
  * 1. Only updating the UI when necessary
@@ -11,7 +11,7 @@
  * 3. Using minimal state updates to avoid resetting scroll position
  */
 
-import { MarketplaceItem, MarketplaceInstalledMetadata } from "@roo-code/types"
+import { MarketplaceItem, MarketplaceInstalledMetadata } from "@jabberwock/types"
 
 import { vscode } from "../../utils/vscode"
 import { WebviewMessage } from "../../../../src/shared/WebviewMessage"

@@ -9,8 +9,8 @@ import fs from "fs"
  */
 export function getDefaultExtensionPath(dirname: string): string {
 	// Check for environment variable first (set by install script)
-	if (process.env.ROO_EXTENSION_PATH) {
-		const envPath = process.env.ROO_EXTENSION_PATH
+	if (process.env.JABBERWOCK_EXTENSION_PATH) {
+		const envPath = process.env.JABBERWOCK_EXTENSION_PATH
 
 		if (fs.existsSync(path.join(envPath, "extension.js"))) {
 			return envPath

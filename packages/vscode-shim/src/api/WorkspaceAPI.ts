@@ -4,15 +4,15 @@
 
 import * as fs from "fs"
 import * as path from "path"
-import { logs } from "../utils/logger.js"
-import { Uri } from "../classes/Uri.js"
-import { Position } from "../classes/Position.js"
-import { Range } from "../classes/Range.js"
-import { EventEmitter } from "../classes/EventEmitter.js"
-import { WorkspaceEdit } from "../classes/TextEdit.js"
-import { FileSystemAPI } from "./FileSystemAPI.js"
-import { MockWorkspaceConfiguration } from "./WorkspaceConfiguration.js"
-import type { ExtensionContextImpl } from "../context/ExtensionContext.js"
+import { logs } from "../utils/logger.ts"
+import { Uri } from "../classes/Uri.ts"
+import { Position } from "../classes/Position.ts"
+import { Range } from "../classes/Range.ts"
+import { EventEmitter } from "../classes/EventEmitter.ts"
+import { WorkspaceEdit } from "../classes/TextEdit.ts"
+import { FileSystemAPI } from "./FileSystemAPI.ts"
+import { MockWorkspaceConfiguration } from "./WorkspaceConfiguration.ts"
+import type { ExtensionContextImpl } from "../context/ExtensionContext.ts"
 import type {
 	TextDocument,
 	TextLine,
@@ -23,9 +23,9 @@ import type {
 	TextDocumentContentProvider,
 	FileSystemWatcher,
 	RelativePattern,
-} from "../interfaces/document.js"
-import type { Disposable, WorkspaceConfiguration } from "../interfaces/workspace.js"
-import type { Thenable } from "../types.js"
+} from "../interfaces/document.ts"
+import type { Disposable, WorkspaceConfiguration } from "../interfaces/workspace.ts"
+import type { Thenable } from "../types.ts"
 
 /**
  * Workspace API mock for CLI mode

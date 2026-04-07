@@ -6,8 +6,8 @@
 		"imageTooLarge": "Plik obrazu jest zbyt duży ({{size}} MB). Maksymalny dozwolony rozmiar to {{max}} MB.",
 		"imageWithSize": "Plik obrazu ({{size}} KB)"
 	},
-	"toolRepetitionLimitReached": "Wygląda na to, że Roo utknął w pętli, wielokrotnie próbując wykonać tę samą akcję ({{toolName}}). Może to wskazywać na problem z jego obecną strategią. Rozważ przeformułowanie zadania, podanie bardziej szczegółowych instrukcji lub nakierowanie go na inne podejście.",
-	"unknownToolError": "Roo próbował użyć nieznanego narzędzia: \"{{toolName}}\". Ponowna próba...",
+	"toolRepetitionLimitReached": "Wygląda na to, że Jabberwock utknął w pętli, wielokrotnie próbując wykonać tę samą akcję ({{toolName}}). Może to wskazywać na problem z jego obecną strategią. Rozważ przeformułowanie zadania, podanie bardziej szczegółowych instrukcji lub nakierowanie go na inne podejście.",
+	"unknownToolError": "Jabberwock próbował użyć nieznanego narzędzia: \"{{toolName}}\". Ponowna próba...",
 	"codebaseSearch": {
 		"approval": "Wyszukiwanie '{{query}}' w bazie kodu..."
 	},
@@ -24,8 +24,8 @@
 		"invalidImageData": "Nieprawidłowe dane obrazu w odpowiedzi",
 		"invalidImageFormat": "Otrzymano nieprawidłowy format obrazu",
 		"unknownError": "Wystąpił nieznany błąd",
-		"roo": {
-			"authRequired": "Uwierzytelnienie Roo Code Cloud jest wymagane do generowania obrazów. Zaloguj się do Roo Code Cloud."
+		"jabberwock": {
+			"authRequired": "Uwierzytelnienie Jabberwock Cloud jest wymagane do generowania obrazów. Zaloguj się do Jabberwock Cloud."
 		}
 	}
 }

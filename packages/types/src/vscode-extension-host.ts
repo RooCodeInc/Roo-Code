@@ -1,27 +1,27 @@
 import { z } from "zod"
 
-import type { GlobalSettings, RooCodeSettings } from "./global-settings.js"
-import type { ProviderSettings, ProviderSettingsEntry } from "./provider-settings.js"
-import type { HistoryItem } from "./history.js"
-import type { ModeConfig, PromptComponent } from "./mode.js"
-import type { TelemetrySetting } from "./telemetry.js"
-import type { Experiments } from "./experiment.js"
-import type { ClineMessage, QueuedMessage } from "./message.js"
+import type { GlobalSettings, JabberwockSettings } from "./global-settings.ts"
+import type { ProviderSettings, ProviderSettingsEntry } from "./provider-settings.ts"
+import type { HistoryItem } from "./history.ts"
+import type { ModeConfig, PromptComponent } from "./mode.ts"
+import type { TelemetrySetting } from "./telemetry.ts"
+import type { Experiments } from "./experiment.ts"
+import type { ClineMessage, QueuedMessage } from "./message.ts"
 import {
 	type MarketplaceItem,
 	type MarketplaceInstalledMetadata,
 	type InstallMarketplaceItemOptions,
 	marketplaceItemSchema,
-} from "./marketplace.js"
-import type { TodoItem } from "./todo.js"
-import type { CloudUserInfo, CloudOrganizationMembership, OrganizationAllowList, ShareVisibility } from "./cloud.js"
-import type { SerializedCustomToolDefinition } from "./custom-tool.js"
-import type { GitCommit } from "./git.js"
-import type { McpServer } from "./mcp.js"
-import type { ModelRecord, RouterModels } from "./model.js"
-import type { OpenAiCodexRateLimitInfo } from "./providers/openai-codex-rate-limits.js"
-import type { SkillMetadata } from "./skills.js"
-import type { WorktreeIncludeStatus } from "./worktree.js"
+} from "./marketplace.ts"
+import type { TodoItem } from "./todo.ts"
+import type { CloudUserInfo, CloudOrganizationMembership, OrganizationAllowList, ShareVisibility } from "./cloud.ts"
+import type { SerializedCustomToolDefinition } from "./custom-tool.ts"
+import type { GitCommit } from "./git.ts"
+import type { McpServer } from "./mcp.ts"
+import type { ModelRecord, RouterModels } from "./model.ts"
+import type { OpenAiCodexRateLimitInfo } from "./providers/openai-codex-rate-limits.ts"
+import type { SkillMetadata } from "./skills.ts"
+import type { WorktreeIncludeStatus } from "./worktree.ts"
 
 /**
  * ExtensionMessage
@@ -93,6 +93,7 @@ export interface ExtensionMessage {
 		| "modes"
 		| "taskWithAggregatedCosts"
 		| "openAiCodexRateLimits"
+		| "showInteractiveApp"
 		// Worktree response types
 		| "worktreeList"
 		| "worktreeResult"
@@ -129,6 +130,7 @@ export interface ExtensionMessage {
 	 */
 	state?: Partial<ExtensionState>
 	images?: string[]
+	uri?: string
 	filePaths?: string[]
 	openedTabs?: Array<{
 		label: string
@@ -288,6 +290,7 @@ export type ExtensionState = Pick<
 	| "modeApiConfigs"
 	| "customModePrompts"
 	| "customSupportPrompts"
+	| "systemPromptTemplates"
 	| "enhancementApiConfigId"
 	| "customCondensingPrompt"
 	| "codebaseIndexConfig"
@@ -325,7 +328,7 @@ export type ExtensionState = Pick<
 	checkpointTimeout: number // Timeout for checkpoint initialization in seconds (default: 15)
 	maxOpenTabsContext: number // Maximum number of VSCode open tabs to include in context (0-500)
 	maxWorkspaceFiles: number // Maximum number of files to include in current working directory details (0-500)
-	showRooIgnoredFiles: boolean // Whether to show .rooignore'd files in listings
+	showJabberwockIgnoredFiles: boolean // Whether to show .jabberwockignore'd files in listings
 	enableSubfolderRules: boolean // Whether to load rules from subdirectories
 	maxReadFileLine?: number // Maximum line limit for read_file tool (-1 for default)
 	maxImageFileSize: number // Maximum size of image files to process in MB
@@ -501,10 +504,10 @@ export interface WebviewMessage {
 		| "lockApiConfigAcrossModes"
 		| "clearCloudAuthSkipModel"
 		| "cloudButtonClicked"
-		| "rooCloudSignIn"
+		| "jabberwockCloudSignIn"
 		| "cloudLandingPageSignIn"
-		| "rooCloudSignOut"
-		| "rooCloudManualUrl"
+		| "jabberwockCloudSignOut"
+		| "jabberwockCloudManualUrl"
 		| "openAiCodexSignIn"
 		| "openAiCodexSignOut"
 		| "switchOrganization"
@@ -547,6 +550,7 @@ export interface WebviewMessage {
 		| "queueMessage"
 		| "removeQueuedMessage"
 		| "editQueuedMessage"
+		| "elicitationResponse"
 		| "dismissUpsell"
 		| "getDismissedUpsells"
 		| "openMarkdownPreview"
@@ -562,6 +566,7 @@ export interface WebviewMessage {
 		| "requestModes"
 		| "switchMode"
 		| "debugSetting"
+		| "updateSystemPromptTemplate"
 		// Worktree messages
 		| "listWorktrees"
 		| "createWorktree"
@@ -588,6 +593,7 @@ export interface WebviewMessage {
 	disabled?: boolean
 	context?: string
 	dataUri?: string
+	uri?: string
 	askResponse?: ClineAskResponse
 	apiConfiguration?: ProviderSettings
 	images?: string[]
@@ -605,6 +611,8 @@ export interface WebviewMessage {
 	mode?: string
 	promptMode?: string | "enhance"
 	customPrompt?: PromptComponent
+	systemPromptTemplate?: string
+	systemPromptTemplateKey?: string
 	dataUrls?: string[]
 	/** Generic payload for webview messages that use `values` */
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -646,7 +654,7 @@ export interface WebviewMessage {
 	upsellId?: string // For dismissUpsell
 	list?: string[] // For dismissedUpsells response
 	organizationId?: string | null // For organization switching
-	useProviderSignup?: boolean // For rooCloudSignIn to use provider signup flow
+	useProviderSignup?: boolean // For jabberwockCloudSignIn to use provider signup flow
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean
@@ -679,9 +687,9 @@ export interface WebviewMessage {
 		codebaseIndexVercelAiGatewayApiKey?: string
 		codebaseIndexOpenRouterApiKey?: string
 	}
-	updatedSettings?: RooCodeSettings
+	updatedSettings?: JabberwockSettings
 	/** Task configuration applied via `createTask()` when starting a cloud task. */
-	taskConfiguration?: RooCodeSettings
+	taskConfiguration?: JabberwockSettings
 	// Worktree properties
 	worktreePath?: string
 	worktreeBranch?: string

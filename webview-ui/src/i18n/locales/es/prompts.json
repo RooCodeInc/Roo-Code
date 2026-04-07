@@ -8,8 +8,8 @@
 		"noMatchFound": "No se encontraron modos",
 		"editModesConfig": "Editar configuración de modos",
 		"editGlobalModes": "Editar modos globales",
-		"editProjectModes": "Editar modos del proyecto (.roomodes)",
-		"createModeHelpText": "Los modos son personas especializadas que adaptan el comportamiento de Roo. <0>Aprende sobre el uso de modos</0> o <1>Personalización de modos.</1>",
+		"editProjectModes": "Editar modos del proyecto (.jabberwockmodes)",
+		"createModeHelpText": "Los modos son personas especializadas que adaptan el comportamiento de Jabberwock. <0>Aprende sobre el uso de modos</0> o <1>Personalización de modos.</1>",
 		"selectMode": "Buscar modos"
 	},
 	"apiConfiguration": {
@@ -33,7 +33,7 @@
 	"roleDefinition": {
 		"title": "Definición de rol",
 		"resetToDefault": "Restablecer a valores predeterminados",
-		"description": "Define la experiencia y personalidad de Roo para este modo. Esta descripción determina cómo Roo se presenta y aborda las tareas."
+		"description": "Define la experiencia y personalidad de Jabberwock para este modo. Esta descripción determina cómo Jabberwock se presenta y aborda las tareas."
 	},
 	"description": {
 		"title": "Descripción breve (para humanos)",
@@ -49,7 +49,7 @@
 		"title": "Instrucciones personalizadas para el modo (opcional)",
 		"resetToDefault": "Restablecer a valores predeterminados",
 		"description": "Agrega directrices de comportamiento específicas para el modo {{modeName}}.",
-		"loadFromFile": "Las instrucciones personalizadas para el modo {{mode}} también se pueden cargar desde la carpeta <span>.roo/rules-{{slug}}/</span> en tu espacio de trabajo o desde el global <0>.roo/rules-{{slug}}/</0> (.roorules-{{slug}} y .clinerules-{{slug}} están obsoletos y dejarán de funcionar pronto)."
+		"loadFromFile": "Las instrucciones personalizadas para el modo {{mode}} también se pueden cargar desde la carpeta <span>.jabberwock/rules-{{slug}}/</span> en tu espacio de trabajo o desde el global <0>.jabberwock/rules-{{slug}}/</0> (.jabberwockrules-{{slug}} y .clinerules-{{slug}} están obsoletos y dejarán de funcionar pronto)."
 	},
 	"exportMode": {
 		"title": "Exportar modo",
@@ -63,17 +63,17 @@
 		"importing": "Importando...",
 		"global": {
 			"label": "Nivel global",
-			"description": "Disponible en todos los proyectos. Si el modo exportado contenía archivos de reglas, se volverán a crear en la carpeta global .roo/rules-{slug}/."
+			"description": "Disponible en todos los proyectos. Si el modo exportado contenía archivos de reglas, se volverán a crear en la carpeta global .jabberwock/rules-{slug}/."
 		},
 		"project": {
 			"label": "Nivel de proyecto",
-			"description": "Solo disponible en este espacio de trabajo. Si el modo exportado contenía archivos de reglas, se volverán a crear en la carpeta .roo/rules-{slug}/."
+			"description": "Solo disponible en este espacio de trabajo. Si el modo exportado contenía archivos de reglas, se volverán a crear en la carpeta .jabberwock/rules-{slug}/."
 		}
 	},
 	"globalCustomInstructions": {
 		"title": "Instrucciones personalizadas para todos los modos",
 		"description": "Estas instrucciones se aplican a todos los modos. Proporcionan un conjunto base de comportamientos que pueden ser mejorados por instrucciones específicas de cada modo a continuación. <0>Más información</0>",
-		"loadFromFile": "Las instrucciones también se pueden cargar desde la carpeta <span>.roo/rules/</span> en tu espacio de trabajo o desde el global <0>.roo/rules/</0> (.roorules y .clinerules están obsoletos y dejarán de funcionar pronto)."
+		"loadFromFile": "Las instrucciones también se pueden cargar desde la carpeta <span>.jabberwock/rules/</span> en tu espacio de trabajo o desde el global <0>.jabberwock/rules/</0> (.jabberwockrules y .clinerules están obsoletos y dejarán de funcionar pronto)."
 	},
 	"systemPrompt": {
 		"preview": "Vista previa de la solicitud del sistema",
@@ -102,7 +102,7 @@
 		"types": {
 			"ENHANCE": {
 				"label": "Mejorar solicitud",
-				"description": "Utiliza la mejora de solicitudes para obtener sugerencias o mejoras personalizadas para tus entradas. Esto asegura que Roo entienda tu intención y proporcione las mejores respuestas posibles. Disponible a través del icono ✨ en el chat."
+				"description": "Utiliza la mejora de solicitudes para obtener sugerencias o mejoras personalizadas para tus entradas. Esto asegura que Jabberwock entienda tu intención y proporcione las mejores respuestas posibles. Disponible a través del icono ✨ en el chat."
 			},
 			"CONDENSE": {
 				"label": "Condensación de contexto",
@@ -161,13 +161,13 @@
 				"description": "Disponible en todos los espacios de trabajo"
 			},
 			"project": {
-				"label": "Específico del proyecto (.roomodes)",
+				"label": "Específico del proyecto (.jabberwockmodes)",
 				"description": "Solo disponible en este espacio de trabajo, tiene prioridad sobre el global"
 			}
 		},
 		"roleDefinition": {
 			"label": "Definición de rol",
-			"description": "Define la experiencia y personalidad de Roo para este modo."
+			"description": "Define la experiencia y personalidad de Jabberwock para este modo."
 		},
 		"whenToUse": {
 			"label": "Cuándo usar (opcional)",

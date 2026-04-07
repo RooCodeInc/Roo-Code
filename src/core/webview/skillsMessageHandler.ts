@@ -1,6 +1,6 @@
 import * as vscode from "vscode"
 
-import type { SkillMetadata, WebviewMessage } from "@roo-code/types"
+import type { SkillMetadata, WebviewMessage } from "@jabberwock/types"
 
 import type { ClineProvider } from "./ClineProvider"
 import { openFile } from "../../integrations/misc/open-file"

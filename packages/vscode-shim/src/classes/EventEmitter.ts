@@ -1,4 +1,4 @@
-import type { Disposable, Event } from "../types.js"
+import type { Disposable, Event } from "../types.ts"
 
 /**
  * VSCode-compatible EventEmitter implementation

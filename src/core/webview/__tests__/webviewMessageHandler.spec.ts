@@ -37,7 +37,7 @@ vi.mock("../diagnosticsHandler", () => ({
 	generateErrorDiagnostics: vi.fn().mockResolvedValue({ success: true, filePath: "/tmp/diagnostics.json" }),
 }))
 
-import type { ModelRecord } from "@roo-code/types"
+import type { ModelRecord } from "@jabberwock/types"
 
 import { webviewMessageHandler } from "../webviewMessageHandler"
 import type { ClineProvider } from "../ClineProvider"
@@ -148,7 +148,7 @@ import * as fsUtils from "../../../utils/fs"
 import { getWorkspacePath } from "../../../utils/path"
 import { ensureSettingsDirectoryExists } from "../../../utils/globalContext"
 import { generateErrorDiagnostics } from "../diagnosticsHandler"
-import type { ModeConfig } from "@roo-code/types"
+import type { ModeConfig } from "@jabberwock/types"
 
 vi.mock("../../../utils/fs")
 vi.mock("../../../utils/path")
@@ -218,7 +218,7 @@ describe("webviewMessageHandler - image mentions", () => {
 		const mockHandleWebviewAskResponse = vi.fn()
 		vi.mocked(mockClineProvider.getCurrentTask).mockReturnValue({
 			cwd: "/mock/workspace",
-			rooIgnoreController: undefined,
+			jabberwockIgnoreController: undefined,
 			handleWebviewAskResponse: mockHandleWebviewAskResponse,
 		} as any)
 
@@ -324,7 +324,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "vercel-ai-gateway" })
 		expect(mockGetModels).toHaveBeenCalledWith(
 			expect.objectContaining({
-				provider: "roo",
+				provider: "jabberwock",
 				baseUrl: expect.any(String),
 			}),
 		)
@@ -342,7 +342,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				requesty: mockModels,
 				unbound: mockModels,
 				litellm: mockModels,
-				roo: mockModels,
+				jabberwock: mockModels,
 				ollama: {},
 				lmstudio: {},
 				"vercel-ai-gateway": mockModels,
@@ -426,7 +426,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				openrouter: mockModels,
 				requesty: mockModels,
 				unbound: mockModels,
-				roo: mockModels,
+				jabberwock: mockModels,
 				litellm: {},
 				ollama: {},
 				lmstudio: {},
@@ -452,7 +452,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockRejectedValueOnce(new Error("Requesty API error")) // requesty
 			.mockResolvedValueOnce(mockModels) // unbound
 			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway
-			.mockResolvedValueOnce(mockModels) // roo
+			.mockResolvedValueOnce(mockModels) // jabberwock
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
 		await webviewMessageHandler(mockClineProvider, {
@@ -481,7 +481,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				openrouter: mockModels,
 				requesty: {},
 				unbound: mockModels,
-				roo: mockModels,
+				jabberwock: mockModels,
 				litellm: {},
 				ollama: {},
 				lmstudio: {},
@@ -498,7 +498,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockRejectedValueOnce(new Error("Requesty API error")) // requesty
 			.mockRejectedValueOnce(new Error("Unbound error")) // unbound
 			.mockRejectedValueOnce(new Error("Vercel AI Gateway error")) // vercel-ai-gateway
-			.mockRejectedValueOnce(new Error("Roo API error")) // roo
+			.mockRejectedValueOnce(new Error("Jabberwock API error")) // jabberwock
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
 		await webviewMessageHandler(mockClineProvider, {
@@ -537,8 +537,8 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 			type: "singleRouterModelFetchResponse",
 			success: false,
-			error: "Roo API error",
-			values: { provider: "roo" },
+			error: "Jabberwock API error",
+			values: { provider: "jabberwock" },
 		})
 
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
@@ -612,12 +612,12 @@ describe("webviewMessageHandler - deleteCustomMode", () => {
 		vi.clearAllMocks()
 		vi.mocked(getWorkspacePath).mockReturnValue("/mock/workspace")
 		vi.mocked(vscode.window.showErrorMessage).mockResolvedValue(undefined)
-		vi.mocked(ensureSettingsDirectoryExists).mockResolvedValue("/mock/global/storage/.roo")
+		vi.mocked(ensureSettingsDirectoryExists).mockResolvedValue("/mock/global/storage/.jabberwock")
 	})
 
 	it("should delete a project mode and its rules folder", async () => {
 		const slug = "test-project-mode"
-		const rulesFolderPath = path.join("/mock/workspace", ".roo", `rules-${slug}`)
+		const rulesFolderPath = path.join("/mock/workspace", ".jabberwock", `rules-${slug}`)
 
 		vi.mocked(mockClineProvider.customModesManager.getCustomModes).mockResolvedValue([
 			{
@@ -642,7 +642,7 @@ describe("webviewMessageHandler - deleteCustomMode", () => {
 	it("should delete a global mode and its rules folder", async () => {
 		const slug = "test-global-mode"
 		const homeDir = os.homedir()
-		const rulesFolderPath = path.join(homeDir, ".roo", `rules-${slug}`)
+		const rulesFolderPath = path.join(homeDir, ".jabberwock", `rules-${slug}`)
 
 		vi.mocked(mockClineProvider.customModesManager.getCustomModes).mockResolvedValue([
 			{
@@ -688,7 +688,7 @@ describe("webviewMessageHandler - deleteCustomMode", () => {
 
 	it("should handle errors when deleting rules folder", async () => {
 		const slug = "test-mode-error"
-		const rulesFolderPath = path.join("/mock/workspace", ".roo", `rules-${slug}`)
+		const rulesFolderPath = path.join("/mock/workspace", ".jabberwock", `rules-${slug}`)
 		const error = new Error("Permission denied")
 
 		vi.mocked(mockClineProvider.customModesManager.getCustomModes).mockResolvedValue([
@@ -847,21 +847,21 @@ describe("webviewMessageHandler - requestCommands", () => {
 			{
 				name: "skill-slug-entry",
 				description: "Primary skill slug",
-				path: "/mock/.roo/skills/skill-slug-entry/SKILL.md",
+				path: "/mock/.jabberwock/skills/skill-slug-entry/SKILL.md",
 				source: "project",
 				modeSlugs: ["code"],
 			},
 			{
 				name: "skill-slug-entry",
 				description: "Duplicate skill slug",
-				path: "/mock/.roo/skills/duplicate-skill/SKILL.md",
+				path: "/mock/.jabberwock/skills/duplicate-skill/SKILL.md",
 				source: "global",
 				modeSlugs: ["code"],
 			},
 			{
 				name: "another-skill-slug",
 				description: "Another skill-generated command",
-				path: "/mock/.roo/skills/another-skill-slug/SKILL.md",
+				path: "/mock/.jabberwock/skills/another-skill-slug/SKILL.md",
 				source: "global",
 				modeSlugs: ["code"],
 			},
@@ -884,13 +884,13 @@ describe("webviewMessageHandler - requestCommands", () => {
 				{
 					name: "skill-slug-entry",
 					source: "project",
-					filePath: "/mock/.roo/skills/skill-slug-entry/SKILL.md",
+					filePath: "/mock/.jabberwock/skills/skill-slug-entry/SKILL.md",
 					description: "Primary skill slug",
 				},
 				{
 					name: "another-skill-slug",
 					source: "global",
-					filePath: "/mock/.roo/skills/another-skill-slug/SKILL.md",
+					filePath: "/mock/.jabberwock/skills/another-skill-slug/SKILL.md",
 					description: "Another skill-generated command",
 				},
 			]),
@@ -905,7 +905,7 @@ describe("webviewMessageHandler - requestCommands", () => {
 				name: "deploy",
 				content: "existing command",
 				source: "project",
-				filePath: "/mock/workspace/.roo/commands/deploy.md",
+				filePath: "/mock/workspace/.jabberwock/commands/deploy.md",
 				description: "Deploy command",
 				argumentHint: "staging | production",
 			},
@@ -921,14 +921,14 @@ describe("webviewMessageHandler - requestCommands", () => {
 			{
 				name: "deploy",
 				description: "Deploy skill",
-				path: "/mock/.roo/skills/deploy/SKILL.md",
+				path: "/mock/.jabberwock/skills/deploy/SKILL.md",
 				source: "global",
 				modeSlugs: ["code"],
 			},
 			{
 				name: "skill-only",
 				description: "Skill-generated command",
-				path: "/mock/.roo/skills/skill-only/SKILL.md",
+				path: "/mock/.jabberwock/skills/skill-only/SKILL.md",
 				source: "project",
 				modeSlugs: ["code"],
 			},
@@ -948,14 +948,14 @@ describe("webviewMessageHandler - requestCommands", () => {
 				{
 					name: "deploy",
 					source: "project",
-					filePath: "/mock/workspace/.roo/commands/deploy.md",
+					filePath: "/mock/workspace/.jabberwock/commands/deploy.md",
 					description: "Deploy command",
 					argumentHint: "staging | production",
 				},
 				{
 					name: "skill-only",
 					source: "project",
-					filePath: "/mock/.roo/skills/skill-only/SKILL.md",
+					filePath: "/mock/.jabberwock/skills/skill-only/SKILL.md",
 					description: "Skill-generated command",
 				},
 			]),

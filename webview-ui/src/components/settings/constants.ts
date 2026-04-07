@@ -17,7 +17,7 @@ import {
 	fireworksModels,
 	minimaxModels,
 	basetenModels,
-} from "@roo-code/types"
+} from "@jabberwock/types"
 
 export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, ModelInfo>>> = {
 	anthropic: anthropicModels,
@@ -60,7 +60,7 @@ export const PROVIDERS = [
 	{ value: "sambanova", label: "SambaNova", proxy: false },
 	{ value: "zai", label: "Z.ai", proxy: false },
 	{ value: "fireworks", label: "Fireworks AI", proxy: false },
-	{ value: "roo", label: "Roo Code Router", proxy: false },
+	{ value: "jabberwock", label: "Jabberwock Router", proxy: false },
 	{ value: "vercel-ai-gateway", label: "Vercel AI Gateway", proxy: false },
 	{ value: "minimax", label: "MiniMax", proxy: false },
 	{ value: "baseten", label: "Baseten", proxy: false },

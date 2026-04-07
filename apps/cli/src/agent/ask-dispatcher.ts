@@ -23,8 +23,8 @@ import {
 	isInteractiveAsk,
 	isResumableAsk,
 	isNonBlockingAsk,
-} from "@roo-code/types"
-import { debugLog } from "@roo-code/core/cli"
+} from "@jabberwock/types"
+import { debugLog } from "@jabberwock/core/cli"
 
 import { FOLLOWUP_TIMEOUT_SECONDS } from "@/types/index.js"
 
@@ -400,7 +400,7 @@ export class AskDispatcher {
 			this.outputManager.output(`\n[Tool Request] ${toolName} [PROTECTED CONFIGURATION FILE]`)
 			this.outputManager.output(`⚠️  WARNING: This tool wants to modify a protected configuration file.`)
 			this.outputManager.output(
-				`    Protected files include .rooignore, .roo/*, and other sensitive config files.`,
+				`    Protected files include .jabberwockignore, .jabberwock/*, and other sensitive config files.`,
 			)
 		} else {
 			this.outputManager.output(`\n[Tool Request] ${toolName}`)

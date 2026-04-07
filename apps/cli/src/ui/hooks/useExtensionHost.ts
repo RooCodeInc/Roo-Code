@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback, useMemo } from "react"
 import { useApp } from "ink"
 import { randomUUID } from "crypto"
 import pWaitFor from "p-wait-for"
-import type { ExtensionMessage, HistoryItem, WebviewMessage } from "@roo-code/types"
+import type { ExtensionMessage, HistoryItem, WebviewMessage } from "@jabberwock/types"
 
 import { ExtensionHostInterface, ExtensionHostOptions } from "@/agent/index.js"
 import { arePathsEqual } from "@/lib/utils/path.js"

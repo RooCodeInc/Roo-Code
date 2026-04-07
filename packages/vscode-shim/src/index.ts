@@ -1,5 +1,5 @@
 /**
- * @roo-code/vscode-shim
+ * @jabberwock/vscode-shim
  *
  * A production-ready VSCode API mock for running VSCode extensions in Node.js CLI applications.
  * This package provides a complete implementation of the VSCode Extension API, allowing you to
@@ -83,22 +83,22 @@ export {
 	type IExtensionHost,
 	type ExtensionHostEventMap,
 	type ExtensionHostEventName,
-} from "./vscode.js"
+} from "./vscode.ts"
 
 // Export utilities
-export { logs, setLogger, type Logger } from "./utils/logger.js"
-export { VSCodeMockPaths } from "./utils/paths.js"
-export { machineIdSync } from "./utils/machine-id.js"
+export { logs, setLogger, type Logger } from "./utils/logger.ts"
+export { VSCodeMockPaths } from "./utils/paths.ts"
+export { machineIdSync } from "./utils/machine-id.ts"
 
 // Re-export as createVSCodeAPI for simpler API
-export { createVSCodeAPIMock as createVSCodeAPI } from "./vscode.js"
+export { createVSCodeAPIMock as createVSCodeAPI } from "./vscode.ts"
 
 /**
  * Quick start function to create a complete VSCode API mock
  *
  * @example
  * ```typescript
- * import { createVSCodeAPI } from '@roo-code/vscode-shim'
+ * import { createVSCodeAPI } from '@jabberwock/vscode-shim'
  *
  * const vscode = createVSCodeAPI({
  *   extensionPath: '/path/to/extension',

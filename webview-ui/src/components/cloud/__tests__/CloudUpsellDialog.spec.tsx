@@ -7,8 +7,8 @@ vi.mock("react-i18next", () => ({
 	useTranslation: () => ({
 		t: (key: string) => {
 			const translations: Record<string, string> = {
-				"cloud:cloudBenefitsTitle": "Try Roo Code Cloud",
-				"cloud:cloudBenefitProvider": "Access free and paid models that work great with Roo",
+				"cloud:cloudBenefitsTitle": "Try Jabberwock Cloud",
+				"cloud:cloudBenefitProvider": "Access free and paid models that work great with Jabberwock",
 				"cloud:cloudBenefitCloudAgents": "Give tasks to autonomous Cloud agents",
 				"cloud:cloudBenefitTriggers": "Get code reviews on GitHub, start tasks from Slack and more",
 				"cloud:cloudBenefitWalkaway": "Follow and control tasks from anywhere (including your phone)",
@@ -32,8 +32,8 @@ describe("CloudUpsellDialog", () => {
 	it("renders dialog when open", () => {
 		render(<CloudUpsellDialog open={true} onOpenChange={mockOnOpenChange} onConnect={mockOnConnect} />)
 
-		expect(screen.getByText("Try Roo Code Cloud")).toBeInTheDocument()
-		expect(screen.getByText("Access free and paid models that work great with Roo")).toBeInTheDocument()
+		expect(screen.getByText("Try Jabberwock Cloud")).toBeInTheDocument()
+		expect(screen.getByText("Access free and paid models that work great with Jabberwock")).toBeInTheDocument()
 		expect(screen.getByText("Give tasks to autonomous Cloud agents")).toBeInTheDocument()
 		expect(screen.getByText("Get code reviews on GitHub, start tasks from Slack and more")).toBeInTheDocument()
 		expect(screen.getByText("Follow and control tasks from anywhere (including your phone)")).toBeInTheDocument()
@@ -47,7 +47,7 @@ describe("CloudUpsellDialog", () => {
 	it("does not render dialog when closed", () => {
 		render(<CloudUpsellDialog open={false} onOpenChange={mockOnOpenChange} onConnect={mockOnConnect} />)
 
-		expect(screen.queryByText("Try Roo Code Cloud")).not.toBeInTheDocument()
+		expect(screen.queryByText("Try Jabberwock Cloud")).not.toBeInTheDocument()
 	})
 
 	it("calls onConnect when connect button is clicked", () => {

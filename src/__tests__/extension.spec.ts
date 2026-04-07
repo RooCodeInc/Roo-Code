@@ -1,7 +1,7 @@
 // npx vitest run __tests__/extension.spec.ts
 
 import type * as vscode from "vscode"
-import type { AuthState } from "@roo-code/types"
+import type { AuthState } from "@jabberwock/types"
 
 vi.mock("vscode", () => ({
 	window: {
@@ -61,7 +61,7 @@ const mockCloudServiceInstance = {
 	},
 }
 
-vi.mock("@roo-code/cloud", () => ({
+vi.mock("@jabberwock/cloud", () => ({
 	CloudService: {
 		createInstance: vi.fn(),
 		hasInstance: vi.fn().mockReturnValue(true),
@@ -69,10 +69,10 @@ vi.mock("@roo-code/cloud", () => ({
 			return mockCloudServiceInstance
 		},
 	},
-	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.roocode.com"),
+	getJabberwockApiUrl: vi.fn().mockReturnValue("https://app.jabberwock.com"),
 }))
 
-vi.mock("@roo-code/telemetry", () => ({
+vi.mock("@jabberwock/telemetry", () => ({
 	TelemetryService: {
 		createInstance: vi.fn().mockReturnValue({
 			register: vi.fn(),
@@ -196,7 +196,7 @@ vi.mock("../core/webview/ClineProvider", async () => {
 			{
 				// Static method used by extension.ts
 				getVisibleInstance: vi.fn().mockReturnValue(mockInstance),
-				sideBarId: "roo-cline-sidebar",
+				sideBarId: "jabberwock-sidebar",
 			},
 		),
 	}
@@ -262,7 +262,7 @@ describe("extension.ts", () => {
 		expect(dotenvx.config).toHaveBeenCalledTimes(1)
 	})
 
-	describe("Roo model cache refresh on auth state change (ROO-202)", () => {
+	describe("Jabberwock model cache refresh on auth state change (JABBERWOCK-202)", () => {
 		beforeEach(() => {
 			vi.resetModules()
 			mockRefreshModels.mockClear()
@@ -273,7 +273,7 @@ describe("extension.ts", () => {
 				getSessionToken: vi.fn().mockReturnValue("test-session-token"),
 			}
 
-			const { CloudService } = await import("@roo-code/cloud")
+			const { CloudService } = await import("@jabberwock/cloud")
 
 			vi.mocked(CloudService.createInstance).mockImplementation(async (_context, _logger, handlers) => {
 				if (handlers?.["auth-state-changed"]) {
@@ -305,7 +305,7 @@ describe("extension.ts", () => {
 
 			// Verify refreshModels was called with correct parameters including session token
 			expect(mockRefreshModels).toHaveBeenCalledWith({
-				provider: "roo",
+				provider: "jabberwock",
 				baseUrl: expect.any(String),
 				apiKey: "test-session-token",
 			})
@@ -313,7 +313,7 @@ describe("extension.ts", () => {
 
 		test("flushModels is called when auth state changes to logged-out", async () => {
 			const { flushModels } = await import("../api/providers/fetchers/modelCache")
-			const { CloudService } = await import("@roo-code/cloud")
+			const { CloudService } = await import("@jabberwock/cloud")
 
 			vi.mocked(CloudService.createInstance).mockImplementation(async (_context, _logger, handlers) => {
 				if (handlers?.["auth-state-changed"]) {
@@ -341,7 +341,7 @@ describe("extension.ts", () => {
 			})
 
 			// Verify flushModels was called to clear the cache on logout
-			expect(flushModels).toHaveBeenCalledWith({ provider: "roo" }, false)
+			expect(flushModels).toHaveBeenCalledWith({ provider: "jabberwock" }, false)
 		})
 	})
 })

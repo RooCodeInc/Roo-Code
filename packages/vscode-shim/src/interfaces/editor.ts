@@ -2,11 +2,11 @@
  * Editor-related interfaces for VSCode API
  */
 
-import type { Range } from "../classes/Range.js"
-import type { Position } from "../classes/Position.js"
-import type { Selection } from "../classes/Selection.js"
-import type { Uri } from "../classes/Uri.js"
-import type { ThemeColor } from "../classes/Additional.js"
+import type { Range } from "../classes/Range.ts"
+import type { Position } from "../classes/Position.ts"
+import type { Selection } from "../classes/Selection.ts"
+import type { Uri } from "../classes/Uri.ts"
+import type { ThemeColor } from "../classes/Additional.ts"
 import type {
 	Thenable,
 	ViewColumn,
@@ -15,9 +15,9 @@ import type {
 	DecorationRangeBehavior,
 	OverviewRulerLane,
 	TextEditorOptions,
-} from "../types.js"
-import type { TextDocument } from "./document.js"
-import type { Disposable } from "../types.js"
+} from "../types.ts"
+import type { TextDocument } from "./document.ts"
+import type { Disposable } from "../types.ts"
 
 /**
  * Represents a text editor in VSCode

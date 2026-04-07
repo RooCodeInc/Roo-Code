@@ -1,4 +1,4 @@
-import { parametersSchema, defineCustomTool } from "@roo-code/types"
+import { parametersSchema, defineCustomTool } from "@jabberwock/types"
 
 // This is a valid tool.
 export const validTool = defineCustomTool({

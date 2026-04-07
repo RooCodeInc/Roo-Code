@@ -2,7 +2,7 @@ import fs from "fs/promises"
 import * as path from "path"
 import { Dirent } from "fs"
 import matter from "gray-matter"
-import { getGlobalRooDirectory, getProjectRooDirectoryForCwd } from "../roo-config"
+import { getGlobalRooDirectory, getProjectRooDirectoryForCwd } from "../jabberwock-config"
 import { getBuiltInCommands, getBuiltInCommand } from "./built-in-commands"
 
 /**

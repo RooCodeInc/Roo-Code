@@ -1,5 +1,5 @@
-import type { ModelInfo } from "@roo-code/types"
-import type { ServiceTier } from "@roo-code/types"
+import type { ModelInfo } from "@jabberwock/types"
+import type { ServiceTier } from "@jabberwock/types"
 
 export interface ApiCostResult {
 	totalInputTokens: number

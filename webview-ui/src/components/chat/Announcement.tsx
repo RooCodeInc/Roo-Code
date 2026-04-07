@@ -3,7 +3,7 @@ import { Trans } from "react-i18next"
 import { SiDiscord, SiReddit, SiX } from "react-icons/si"
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 
-import { Package } from "@roo/package"
+import { Package } from "@shared/package"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { vscode } from "@src/utils/vscode"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@src/components/ui"
@@ -54,7 +54,7 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 							<SocialLink
 								icon={<SiX className="w-4 h-4" aria-hidden />}
 								label="X"
-								href="https://x.com/roocode"
+								href="https://x.com/jabberwock"
 							/>
 							<SocialLink
 								icon={<SiDiscord className="w-4 h-4" aria-hidden />}
@@ -64,7 +64,7 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 							<SocialLink
 								icon={<SiReddit className="w-4 h-4" aria-hidden />}
 								label="Reddit"
-								href="https://www.reddit.com/r/RooCode/"
+								href="https://www.reddit.com/r/Jabberwock/"
 							/>
 						</div>
 					</div>
@@ -103,10 +103,10 @@ const SocialLink = ({ icon, label, href }: { icon: ReactNode; label: string; hre
 
 const GitHubLink = ({ children }: { children?: ReactNode }) => (
 	<VSCodeLink
-		href="https://github.com/RooCodeInc/Roo-Code"
+		href="https://github.com/JabberwockInc/Jabberwock"
 		onClick={(e) => {
 			e.preventDefault()
-			vscode.postMessage({ type: "openExternal", url: "https://github.com/RooCodeInc/Roo-Code" })
+			vscode.postMessage({ type: "openExternal", url: "https://github.com/JabberwockInc/Jabberwock" })
 		}}>
 		{children}
 	</VSCodeLink>
@@ -114,10 +114,10 @@ const GitHubLink = ({ children }: { children?: ReactNode }) => (
 
 const CareersLink = ({ children }: { children?: ReactNode }) => (
 	<VSCodeLink
-		href="https://careers.roocode.com"
+		href="https://careers.jabberwock.com"
 		onClick={(e) => {
 			e.preventDefault()
-			vscode.postMessage({ type: "openExternal", url: "https://careers.roocode.com" })
+			vscode.postMessage({ type: "openExternal", url: "https://careers.jabberwock.com" })
 		}}>
 		{children}
 	</VSCodeLink>

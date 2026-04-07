@@ -35,6 +35,7 @@ export const clineAsks = [
 	"resume_completed_task",
 	"mistake_limit_reached",
 	"use_mcp_server",
+	"interactive_app",
 	"auto_approval_max_req_reached",
 ] as const
 
@@ -81,7 +82,13 @@ export function isResumableAsk(ask: ClineAsk): ask is ResumableAsk {
  * Asks that put the task into an "user interaction required" state.
  */
 
-export const interactiveAsks = ["followup", "command", "tool", "use_mcp_server"] as const satisfies readonly ClineAsk[]
+export const interactiveAsks = [
+	"followup",
+	"command",
+	"tool",
+	"use_mcp_server",
+	"interactive_app",
+] as const satisfies readonly ClineAsk[]
 
 export type InteractiveAsk = (typeof interactiveAsks)[number]
 
@@ -134,7 +141,7 @@ export function isNonBlockingAsk(ask: ClineAsk): ask is NonBlockingAsk {
  * - `mcp_server_response`: Response received from MCP server
  * - `subtask_result`: Result of a completed subtask
  * - `checkpoint_saved`: Indicates a checkpoint has been saved
- * - `rooignore_error`: Error related to .rooignore file processing
+ * - `rooignore_error`: Error related to .jabberwockignore file processing
  * - `diff_error`: Error occurred while applying a diff/patch
  * - `condense_context`: Context condensation/summarization has started
  * - `condense_context_error`: Error occurred during context condensation
@@ -258,6 +265,7 @@ export const clineMessageSchema = z.object({
 	conversationHistoryIndex: z.number().optional(),
 	checkpoint: z.record(z.string(), z.unknown()).optional(),
 	progressStatus: toolProgressStatusSchema.optional(),
+	mode: z.string().optional(),
 	/**
 	 * Data for successful context condensation.
 	 * Present when `say: "condense_context"` and `partial: false`.

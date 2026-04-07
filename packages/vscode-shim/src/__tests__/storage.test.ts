@@ -2,8 +2,8 @@ import * as fs from "fs"
 import * as path from "path"
 import { tmpdir } from "os"
 
-import { FileMemento } from "../storage/Memento.js"
-import { FileSecretStorage } from "../storage/SecretStorage.js"
+import { FileMemento } from "../storage/Memento.ts"
+import { FileSecretStorage } from "../storage/SecretStorage.ts"
 
 describe("FileMemento", () => {
 	let tempDir: string

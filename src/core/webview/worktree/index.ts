@@ -18,5 +18,5 @@ export {
 	handleCheckoutBranch,
 } from "./handlers"
 
-// Re-export types from @roo-code/types for convenience
-export type { WorktreeListResponse, WorktreeDefaultsResponse } from "@roo-code/types"
+// Re-export types from @jabberwock/types for convenience
+export type { WorktreeListResponse, WorktreeDefaultsResponse } from "@jabberwock/types"

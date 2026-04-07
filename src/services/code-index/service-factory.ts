@@ -1,16 +1,16 @@
 import * as vscode from "vscode"
 import { Ignore } from "ignore"
 
-import type { EmbedderProvider } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
-import { TelemetryEventName } from "@roo-code/types"
+import type { EmbedderProvider } from "@jabberwock/types"
+import { TelemetryService } from "@jabberwock/telemetry"
+import { TelemetryEventName } from "@jabberwock/types"
 
 import { t } from "../../i18n"
 
 import { getDefaultModelId, getModelDimension } from "../../shared/embeddingModels"
 import { Package } from "../../shared/package"
 
-import { RooIgnoreController } from "../../core/ignore/RooIgnoreController"
+import { JabberwockIgnoreController } from "../../core/ignore/JabberwockIgnoreController"
 
 import { OpenAiEmbedder } from "./embedders/openai"
 import { CodeIndexOllamaEmbedder } from "./embedders/ollama"
@@ -204,7 +204,7 @@ export class CodeIndexServiceFactory {
 		vectorStore: IVectorStore,
 		cacheManager: CacheManager,
 		ignoreInstance: Ignore,
-		rooIgnoreController?: RooIgnoreController,
+		jabberwockIgnoreController?: JabberwockIgnoreController,
 	): IFileWatcher {
 		// Get the configurable batch size from VSCode settings
 		let batchSize: number
@@ -223,7 +223,7 @@ export class CodeIndexServiceFactory {
 			embedder,
 			vectorStore,
 			ignoreInstance,
-			rooIgnoreController,
+			jabberwockIgnoreController,
 			batchSize,
 		)
 	}
@@ -236,7 +236,7 @@ export class CodeIndexServiceFactory {
 		context: vscode.ExtensionContext,
 		cacheManager: CacheManager,
 		ignoreInstance: Ignore,
-		rooIgnoreController?: RooIgnoreController,
+		jabberwockIgnoreController?: JabberwockIgnoreController,
 	): {
 		embedder: IEmbedder
 		vectorStore: IVectorStore
@@ -258,7 +258,7 @@ export class CodeIndexServiceFactory {
 			vectorStore,
 			cacheManager,
 			ignoreInstance,
-			rooIgnoreController,
+			jabberwockIgnoreController,
 		)
 
 		return {
