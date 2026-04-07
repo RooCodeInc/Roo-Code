@@ -15,7 +15,6 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { handleOpenAIError } from "./utils/openai-error-handler"
-import { isMcpTool } from "../../utils/mcp-name"
 
 const XAI_DEFAULT_TEMPERATURE = 0
 
@@ -56,11 +55,12 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 
 	/**
 	 * Convert tools from OpenAI Chat Completions format to Responses API format.
-	 * Chat Completions: { type: "function", function: { name, description, parameters } }
-	 * Responses API: { type: "function", name, description, parameters }
+	 * Chat Completions: { type: "function", function: { name, description, parameters, strict } }
+	 * Responses API: { type: "function", name, description, parameters, strict }
 	 *
-	 * Uses base provider's convertToolSchemaForOpenAI() for schema hardening
-	 * (additionalProperties: false, ensureAllRequired) and handles MCP tools.
+	 * Uses base provider's convertToolsForOpenAI() for schema hardening
+	 * (additionalProperties: false, ensureAllRequired) and MCP tool handling,
+	 * then restructures to the flat Responses API tool shape.
 	 */
 	private mapResponseTools(tools?: any[]): any[] | undefined {
 		const converted = this.convertToolsForOpenAI(tools)
@@ -69,18 +69,13 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 		}
 		return converted
 			.filter((tool) => tool?.type === "function")
-			.map((tool) => {
-				const isMcp = isMcpTool(tool.function.name)
-				return {
-					type: "function",
-					name: tool.function.name,
-					description: tool.function.description,
-					parameters: isMcp
-						? tool.function.parameters
-						: this.convertToolSchemaForOpenAI(tool.function.parameters),
-					strict: !isMcp,
-				}
-			})
+			.map((tool) => ({
+				type: "function",
+				name: tool.function.name,
+				description: tool.function.description,
+				parameters: tool.function.parameters,
+				strict: tool.function.strict,
+			}))
 	}
 
 	override async *createMessage(
@@ -126,10 +121,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 
 		let stream: AsyncIterable<any>
 		try {
-			stream = (await this.client.responses.create({
-				...requestBody,
-				stream: true,
-			} as any)) as unknown as AsyncIterable<any>
+			stream = (await this.client.responses.create(requestBody as any)) as unknown as AsyncIterable<any>
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
 			const apiError = new ApiProviderError(errorMessage, this.providerName, model.id, "createMessage")

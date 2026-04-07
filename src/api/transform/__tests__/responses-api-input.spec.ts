@@ -73,6 +73,35 @@ describe("convertToResponsesApiInput", () => {
 			])
 		})
 
+		it("should convert URL image blocks to input_image", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{
+							type: "image",
+							source: { type: "url", url: "https://example.com/image.png" } as any,
+						},
+					],
+				},
+			]
+
+			const result = convertToResponsesApiInput(messages)
+
+			expect(result).toEqual([
+				{
+					role: "user",
+					content: [
+						{
+							type: "input_image",
+							detail: "auto",
+							image_url: "https://example.com/image.png",
+						},
+					],
+				},
+			])
+		})
+
 		it("should convert tool_result to function_call_output", () => {
 			const messages: Anthropic.Messages.MessageParam[] = [
 				{

@@ -72,13 +72,20 @@ export function convertToResponsesApiInput(messages: Anthropic.Messages.MessageP
 					case "text":
 						contentParts.push({ type: "input_text", text: part.text })
 						break
-					case "image":
+					case "image": {
+						// Support both base64 and URL image sources
+						const source = part.source as any
+						const imageUrl =
+							source.type === "url" && source.url
+								? source.url
+								: `data:${part.source.media_type};base64,${part.source.data}`
 						contentParts.push({
 							type: "input_image",
 							detail: "auto",
-							image_url: `data:${part.source.media_type};base64,${part.source.data}`,
+							image_url: imageUrl,
 						})
 						break
+					}
 					case "tool_result": {
 						// Flush any pending user content before the tool result
 						if (contentParts.length > 0) {
