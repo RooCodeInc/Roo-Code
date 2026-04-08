@@ -147,8 +147,11 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 	// If includeAllToolsWithRestrictions is true, return ALL tools but provide
 	// allowed names based on mode filtering
 	if (includeAllToolsWithRestrictions) {
-		// Combine ALL tools (unfiltered native + all MCP + custom)
-		const allTools = [...nativeTools, ...mcpTools, ...nativeCustomTools]
+		// ISSUE-19: Native tools remain unfiltered in Gemini's tool list.
+		// Gemini uses allowedFunctionNames to restrict callable tools at the API level.
+		// MCP tools are filtered here for consistency with the prompt-level filter,
+		// since they are dynamically generated and not covered by allowedFunctionNames.
+		const allTools = [...nativeTools, ...filteredMcpTools, ...nativeCustomTools]
 
 		// Extract names of tools that are allowed based on mode filtering.
 		// Resolve any alias names to canonical names to ensure consistency with allTools

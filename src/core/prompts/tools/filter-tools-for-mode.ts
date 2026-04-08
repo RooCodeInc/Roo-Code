@@ -6,6 +6,8 @@ import { defaultModeSlug } from "../../../shared/modes"
 import type { CodeIndexManager } from "../../../services/code-index/manager"
 import type { McpHub } from "../../../services/mcp/McpHub"
 import { isToolAllowedForMode } from "../../../core/tools/validateToolUse"
+import { parseMcpToolName } from "../../../utils/mcp-name"
+import { isMcpToolAllowedForMode } from "../../../utils/mcp-filter"
 
 /**
  * Reverse lookup map - maps alias name to canonical tool name.
@@ -452,5 +454,20 @@ export function filterMcpToolsForMode(
 		experiments ?? {},
 	)
 
-	return isMcpAllowed ? mcpTools : []
+	if (!isMcpAllowed) {
+		return []
+	}
+
+	// Apply per-server / per-tool MCP filtering
+	return mcpTools.filter((tool) => {
+		if (!("function" in tool) || !tool.function) {
+			return true
+		}
+		const parsed = parseMcpToolName(tool.function.name)
+		if (!parsed) {
+			// Not an MCP tool name — pass through unchanged
+			return true
+		}
+		return isMcpToolAllowedForMode(parsed.serverName, parsed.toolName, modeSlug, customModes)
+	})
 }

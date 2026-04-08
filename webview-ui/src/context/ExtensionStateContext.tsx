@@ -37,6 +37,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	showWelcome: boolean
 	theme: any
 	mcpServers: McpServer[]
+	mcpServersLoaded: boolean
 	currentCheckpoint?: string
 	currentTaskTodos?: TodoItem[] // Initial todos for the current task
 	filePaths: string[]
@@ -272,6 +273,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	const [openedTabs, setOpenedTabs] = useState<Array<{ label: string; isActive: boolean; path?: string }>>([])
 	const [commands, setCommands] = useState<Command[]>([])
 	const [mcpServers, setMcpServers] = useState<McpServer[]>([])
+	const [mcpServersLoaded, setMcpServersLoaded] = useState(false)
 	const [currentCheckpoint, setCurrentCheckpoint] = useState<string>()
 	const [extensionRouterModels, setExtensionRouterModels] = useState<RouterModels | undefined>(undefined)
 	const [marketplaceItems, setMarketplaceItems] = useState<any[]>([])
@@ -400,6 +402,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 				}
 				case "mcpServers": {
 					setMcpServers(message.mcpServers ?? [])
+					setMcpServersLoaded(true)
 					break
 				}
 				case "currentCheckpointUpdated": {
@@ -492,6 +495,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		showWelcome,
 		theme,
 		mcpServers,
+		mcpServersLoaded,
 		currentCheckpoint,
 		filePaths,
 		openedTabs,

@@ -3,6 +3,26 @@ import { z } from "zod"
 import { deprecatedToolGroups, toolGroupsSchema } from "./tool.js"
 
 /**
+ * MCP Server Filter
+ */
+
+export const mcpServerFilterSchema = z.object({
+	disabled: z.boolean().optional(),
+	allowedTools: z.array(z.string()).optional(),
+	disabledTools: z.array(z.string()).optional(),
+})
+
+export type McpServerFilter = z.infer<typeof mcpServerFilterSchema>
+
+/**
+ * MCP Default Policy
+ */
+
+export const mcpDefaultPolicySchema = z.enum(["allow", "deny"])
+
+export type McpDefaultPolicy = z.infer<typeof mcpDefaultPolicySchema>
+
+/**
  * GroupOptions
  */
 
@@ -31,10 +51,30 @@ export const groupOptionsSchema = z.object({
 export type GroupOptions = z.infer<typeof groupOptionsSchema>
 
 /**
+ * MCP Group Options - extends GroupOptions with MCP-specific fields
+ */
+
+export const mcpGroupOptionsSchema = groupOptionsSchema.extend({
+	mcpServers: z.record(z.string(), mcpServerFilterSchema).optional(),
+	mcpDefaultPolicy: mcpDefaultPolicySchema.optional(),
+})
+
+export type McpGroupOptions = z.infer<typeof mcpGroupOptionsSchema>
+
+/**
+ * Non-MCP tool groups for use in tuple entries with standard options.
+ */
+const nonMcpToolGroupSchema = toolGroupsSchema.exclude(["mcp"])
+
+/**
  * GroupEntry
  */
 
-export const groupEntrySchema = z.union([toolGroupsSchema, z.tuple([toolGroupsSchema, groupOptionsSchema])])
+export const groupEntrySchema = z.union([
+	toolGroupsSchema,
+	z.tuple([nonMcpToolGroupSchema, groupOptionsSchema]),
+	z.tuple([z.literal("mcp"), mcpGroupOptionsSchema]),
+])
 
 export type GroupEntry = z.infer<typeof groupEntrySchema>
 
@@ -54,6 +94,23 @@ function isDeprecatedGroupEntry(entry: unknown): boolean {
 		return deprecatedToolGroups.includes(entry[0])
 	}
 	return false
+}
+
+/**
+ * Checks if a raw group entry tuple contains MCP-specific options.
+ */
+function hasMcpOptions(entry: unknown): boolean {
+	if (!Array.isArray(entry) || entry.length < 2) {
+		return false
+	}
+
+	const opts = entry[1]
+
+	if (typeof opts !== "object" || opts === null) {
+		return false
+	}
+
+	return "mcpServers" in opts || "mcpDefaultPolicy" in opts
 }
 
 /**
@@ -83,15 +140,40 @@ const rawGroupEntryArraySchema = z.array(groupEntrySchema).refine(
  * tool groups (e.g., "browser") before validation, ensuring backward compatibility
  * with older user configs.
  *
+ * Also validates that MCP-specific options (mcpServers, mcpDefaultPolicy)
+ * only appear on the "mcp" group via superRefine on raw input.
+ *
  * The type assertion to `z.ZodType<GroupEntry[], z.ZodTypeDef, GroupEntry[]>` is
  * required because `z.preprocess` erases the input type to `unknown`, which
  * propagates through `modeConfigSchema → rooCodeSettingsSchema → createRunSchema`
  * and breaks `zodResolver` generic inference in downstream consumers (e.g., web-evals).
  */
-export const groupEntryArraySchema = z.preprocess((val) => {
-	if (!Array.isArray(val)) return val
-	return val.filter((entry) => !isDeprecatedGroupEntry(entry))
-}, rawGroupEntryArraySchema) as z.ZodType<GroupEntry[], z.ZodTypeDef, GroupEntry[]>
+export const groupEntryArraySchema = z.preprocess(
+	(val) => {
+		if (!Array.isArray(val)) return val
+		return val.filter((entry) => !isDeprecatedGroupEntry(entry))
+	},
+	z
+		.array(z.any())
+		.superRefine((entries, ctx) => {
+			for (let i = 0; i < entries.length; i++) {
+				const entry = entries[i]
+
+				if (hasMcpOptions(entry)) {
+					const groupName = Array.isArray(entry) ? entry[0] : entry
+
+					if (groupName !== "mcp") {
+						ctx.addIssue({
+							code: z.ZodIssueCode.custom,
+							message: 'mcpServers and mcpDefaultPolicy are only allowed on the "mcp" group',
+							path: [i],
+						})
+					}
+				}
+			}
+		})
+		.pipe(rawGroupEntryArraySchema),
+) as z.ZodType<GroupEntry[], z.ZodTypeDef, GroupEntry[]>
 
 export const modeConfigSchema = z.object({
 	slug: z.string().regex(/^[a-zA-Z0-9-]+$/, "Slug must contain only letters numbers and dashes"),

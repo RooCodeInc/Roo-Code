@@ -5,6 +5,8 @@ import { customToolRegistry } from "@roo-code/core"
 import { type Mode, FileRestrictionError, getModeBySlug, getGroupName } from "../../shared/modes"
 import { EXPERIMENT_IDS } from "../../shared/experiments"
 import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS, TOOL_ALIASES } from "../../shared/tools"
+import { isMcpServerAllowedForMode, isMcpToolAllowedForMode } from "../../utils/mcp-filter"
+import { isMcpTool, parseMcpToolName } from "../../utils/mcp-name"
 
 /**
  * Checks if a tool name is a valid, known tool.
@@ -21,8 +23,8 @@ export function isValidToolName(toolName: string, experiments?: Record<string, b
 		return true
 	}
 
-	// Check if it's a dynamic MCP tool (mcp_serverName_toolName format).
-	if (toolName.startsWith("mcp_")) {
+	// Check if it's a dynamic MCP tool (mcp--server--tool or mcp_server_tool format).
+	if (toolName.startsWith("mcp_") || isMcpTool(toolName)) {
 		return true
 	}
 
@@ -42,8 +44,39 @@ export function validateToolUse(
 	// This catches completely invalid tool names like "edit_file" that don't exist
 	if (!isValidToolName(toolName, experiments)) {
 		throw new Error(
-			`Unknown tool "${toolName}". This tool does not exist. Please use one of the available tools: ${validToolNames.join(", ")}.`,
+			'Unknown tool "' +
+				toolName +
+				'". This tool does not exist. Please use one of the available tools: ' +
+				validToolNames.join(", ") +
+				".",
 		)
+	}
+
+	// Server-level guard for use_mcp_tool / access_mcp_resource.
+	// These carry the target server_name (and optionally tool_name) in toolParams
+	// and need filtering BEFORE the regular group-membership check.
+	if (toolName === "use_mcp_tool" || toolName === "access_mcp_resource") {
+		const serverName = toolParams?.server_name as string | undefined
+		if (serverName) {
+			if (!isMcpServerAllowedForMode(serverName, mode, customModes)) {
+				throw new Error('MCP server "' + serverName + '" is not allowed in ' + mode + " mode")
+			}
+			// ISSUE-21: Also check tool-level for use_mcp_tool when tool_name available
+			if (toolName === "use_mcp_tool") {
+				const mcpToolName = toolParams?.tool_name as string | undefined
+				if (mcpToolName && !isMcpToolAllowedForMode(serverName, mcpToolName, mode, customModes)) {
+					throw new Error(
+						'MCP tool "' +
+							mcpToolName +
+							'" on server "' +
+							serverName +
+							'" is not allowed in ' +
+							mode +
+							" mode",
+					)
+				}
+			}
+		}
 	}
 
 	// Then check if the tool is allowed for the current mode
@@ -156,9 +189,9 @@ export function isToolAllowedForMode(
 		return true
 	}
 
-	// Check if this is a dynamic MCP tool (mcp_serverName_toolName)
+	// Check if this is a dynamic MCP tool (mcp--server--tool or mcp_server_tool)
 	// These should be allowed if the mcp group is allowed for the mode
-	const isDynamicMcpTool = tool.startsWith("mcp_")
+	const isDynamicMcpTool = tool.startsWith("mcp_") || isMcpTool(tool)
 
 	if (experiments && Object.values(EXPERIMENT_IDS).includes(tool as ExperimentId)) {
 		if (!experiments[tool]) {
@@ -181,8 +214,21 @@ export function isToolAllowedForMode(
 
 		// Check if this is a dynamic MCP tool and the mcp group is allowed
 		if (isDynamicMcpTool && groupName === "mcp") {
-			// Dynamic MCP tools are allowed if the mcp group is in the mode's groups
-			return true
+			const parsed = parseMcpToolName(tool)
+			if (parsed) {
+				if (!isMcpToolAllowedForMode(parsed.serverName, parsed.toolName, modeSlug, customModes)) {
+					throw new Error(
+						'MCP tool "' +
+							parsed.toolName +
+							'" on server "' +
+							parsed.serverName +
+							'" is not allowed in ' +
+							modeSlug +
+							" mode",
+					)
+				}
+			}
+			return true // allowed
 		}
 
 		// Check if the tool is in the group's regular tools

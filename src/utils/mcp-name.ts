@@ -18,14 +18,19 @@ export const MCP_TOOL_SEPARATOR = "--"
 export const MCP_TOOL_PREFIX = "mcp"
 
 /**
- * Normalize a string for comparison by treating hyphens and underscores as equivalent.
- * This is used to match tool names when models convert hyphens to underscores.
+ * Normalize a string for comparison by lowercasing and treating hyphens,
+ * spaces, and underscores as equivalent.
+ * This is used to match tool/server names when models convert hyphens to
+ * underscores or when config names use different separators.
+ *
+ * NOTE (FLAG-D): Dots and colons are NOT stripped. Server names like
+ * "my.server:v2" will only match if the config uses the same pattern.
  *
  * @param name - The name to normalize
- * @returns The normalized name with all hyphens converted to underscores
+ * @returns The normalized name lowercased with hyphens/spaces converted to underscores
  */
 export function normalizeForComparison(name: string): string {
-	return name.replace(/-/g, "_")
+	return name.toLowerCase().replace(/[-\s]/g, "_")
 }
 
 /**

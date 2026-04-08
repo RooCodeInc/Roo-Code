@@ -4,6 +4,13 @@ import { useMcpToolTool } from "../UseMcpToolTool"
 import { Task } from "../../task/Task"
 import { ToolUse } from "../../../shared/tools"
 
+// Mock mcp-filter to bypass SE-1 deny-by-default guards
+vi.mock("../../../utils/mcp-filter", () => ({
+	isMcpServerAllowedForMode: vi.fn().mockReturnValue(true),
+	isMcpToolAllowedForMode: vi.fn().mockReturnValue(true),
+	isCustomModeWithoutConfig: vi.fn().mockReturnValue(false),
+}))
+
 // Mock dependencies
 vi.mock("../../prompts/responses", () => ({
 	formatResponse: {
@@ -272,7 +279,8 @@ describe("useMcpToolTool", () => {
 			}
 
 			// Ensure server/tool validation passes so we actually reach askApproval.
-			mockProviderRef.deref.mockReturnValueOnce({
+			const mockProvider = {
+				customModesManager: { getCustomModes: vi.fn().mockResolvedValue([]) },
 				getMcpHub: () => ({
 					getAllServers: vi
 						.fn()
@@ -282,7 +290,8 @@ describe("useMcpToolTool", () => {
 					callTool: vi.fn(),
 				}),
 				postMessageToWebview: vi.fn(),
-			})
+			}
+			mockProviderRef.deref.mockReturnValue(mockProvider)
 
 			mockAskApproval.mockResolvedValue(false)
 
@@ -315,7 +324,8 @@ describe("useMcpToolTool", () => {
 			}
 
 			// Ensure validation passes so askApproval is reached and throws
-			mockProviderRef.deref.mockReturnValueOnce({
+			const mockProvider = {
+				customModesManager: { getCustomModes: vi.fn().mockResolvedValue([]) },
 				getMcpHub: () => ({
 					getAllServers: vi
 						.fn()
@@ -325,7 +335,8 @@ describe("useMcpToolTool", () => {
 					callTool: vi.fn(),
 				}),
 				postMessageToWebview: vi.fn(),
-			})
+			}
+			mockProviderRef.deref.mockReturnValue(mockProvider)
 
 			const error = new Error("Unexpected error")
 			mockAskApproval.mockRejectedValue(error)

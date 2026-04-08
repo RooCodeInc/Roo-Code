@@ -40,6 +40,25 @@ import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+import { isMcpToolAllowedForMode, isCustomModeWithoutConfig } from "../../utils/mcp-filter"
+import type { ModeConfig } from "@roo-code/types"
+
+/**
+ * Step 5b: Check whether an MCP tool call is allowed for a given mode.
+ *
+ * This is a thin wrapper around isMcpToolAllowedForMode that makes the
+ * intent explicit and is easily testable in isolation. Called from the
+ * mcp_tool_use case in presentAssistantMessage with cline.taskMode
+ * (the mode frozen at task start), NOT the current UI mode.
+ */
+export function shouldAllowMcpToolUse(
+	serverName: string,
+	toolName: string,
+	modeSlug: string,
+	customModes?: ModeConfig[],
+): boolean {
+	return isMcpToolAllowedForMode(serverName, toolName, modeSlug, customModes)
+}
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -233,11 +252,6 @@ export async function presentAssistantMessage(cline: Task) {
 				pushToolResult(formatResponse.toolError(errorString))
 			}
 
-			if (!mcpBlock.partial) {
-				cline.recordToolUsage("use_mcp_tool") // Record as use_mcp_tool for analytics
-				TelemetryService.instance.captureToolUsage(cline.taskId, "use_mcp_tool")
-			}
-
 			// Resolve sanitized server name back to original server name
 			// The serverName from parsing is sanitized (e.g., "my_server" from "my server")
 			// We need the original name to find the actual MCP connection
@@ -248,6 +262,43 @@ export async function presentAssistantMessage(cline: Task) {
 				if (originalName) {
 					resolvedServerName = originalName
 				}
+			}
+
+			// Step 5b: MCP tool filtering using frozen task mode
+			if (!mcpBlock.partial) {
+				const taskCustomModes = await cline.providerRef.deref()?.customModesManager.getCustomModes()
+				// ISSUE-15: deny-by-default when custom mode config is unavailable
+				if (isCustomModeWithoutConfig(cline.taskMode, taskCustomModes)) {
+					const errorMsg =
+						'MCP tool denied: custom mode "' +
+						cline.taskMode +
+						'" config is unavailable. Denying all MCP access.'
+					await cline.say("error", errorMsg)
+					pushToolResult(formatResponse.toolError(errorMsg))
+					cline.didRejectTool = true
+					break
+				}
+				// FLAG-E: getCustomModes() uses a 10-second TTL cache, no disk I/O on each call
+				if (!shouldAllowMcpToolUse(resolvedServerName, mcpBlock.toolName, cline.taskMode, taskCustomModes)) {
+					const errorMsg =
+						"MCP tool " +
+						resolvedServerName +
+						"/" +
+						mcpBlock.toolName +
+						" is not allowed in the current mode (" +
+						cline.taskMode +
+						")."
+					await cline.say("error", errorMsg)
+					pushToolResult(formatResponse.toolError(errorMsg))
+					cline.didRejectTool = true
+					break
+				}
+			}
+
+			// Record usage AFTER filter check so rejected tools are not counted (FLAG-1)
+			if (!mcpBlock.partial) {
+				cline.recordToolUsage("use_mcp_tool")
+				TelemetryService.instance.captureToolUsage(cline.taskId, "use_mcp_tool")
 			}
 
 			// Execute the MCP tool using the same handler as use_mcp_tool
@@ -594,9 +645,12 @@ export async function presentAssistantMessage(cline: Task) {
 							{} as Record<string, boolean>,
 						) ?? {}
 
+					// ISSUE-17: Use cline.taskMode (frozen at task start) instead of state.mode (live UI mode).
+					// This ensures permissions are locked to the mode active when the task started.
+					// ISSUE-20: No ?? defaultModeSlug fallback needed — cline.taskMode throws if uninitialized.
 					validateToolUse(
 						block.name as ToolName,
-						mode ?? defaultModeSlug,
+						cline.taskMode,
 						customModes ?? [],
 						toolRequirements,
 						block.params,
