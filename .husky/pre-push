@@ -1,3 +1,4 @@
+#!/usr/bin/env sh
 branch="$(git rev-parse --abbrev-ref HEAD)"
 
 if [ "$branch" = "main" ]; then
@@ -5,29 +6,19 @@ if [ "$branch" = "main" ]; then
   exit 1
 fi
 
-# Detect if running on Windows and use pnpm.cmd, otherwise use pnpm.
-if [ "$OS" = "Windows_NT" ]; then
-  pnpm_cmd="pnpm.cmd"
-else
-  if command -v pnpm >/dev/null 2>&1; then
-    pnpm_cmd="pnpm"
-  else
-    pnpm_cmd="npx pnpm"
-  fi
-fi
-
-$pnpm_cmd run check-types
+# Git Bash on Windows automatically resolves pnpm to pnpm.cmd
+pnpm run check-types
 
 # Use dotenvx to securely load .env.local and run commands that depend on it
 if [ -f ".env.local" ]; then
   # Check if RUN_TESTS_ON_PUSH is set to true and run tests with dotenvx
   if npx dotenvx get RUN_TESTS_ON_PUSH -f .env.local 2>/dev/null | grep -q "^true$"; then
-    npx dotenvx run -f .env.local -- $pnpm_cmd run test
+    npx dotenvx run -f .env.local -- pnpm run test
   fi
 else
   # Fallback: run tests if RUN_TESTS_ON_PUSH is set in regular environment
   if [ "$RUN_TESTS_ON_PUSH" = "true" ]; then
-    $pnpm_cmd run test
+    pnpm run test
   fi
 fi
 
