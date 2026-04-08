@@ -196,6 +196,16 @@ describe("MiniMaxHandler", () => {
 			const model = handlerDefault.getModel()
 			expect(model.id).toBe("MiniMax-M2.7")
 		})
+
+		it("should pass through unknown model ID and fall back to default model info", () => {
+			const handlerCustom = new MiniMaxHandler({
+				minimaxApiKey: "test-minimax-api-key",
+				apiModelId: "some-future-minimax-model",
+			})
+			const model = handlerCustom.getModel()
+			expect(model.id).toBe("some-future-minimax-model")
+			expect(model.info).toEqual(minimaxModels[minimaxDefaultModelId])
+		})
 	})
 
 	describe("API Methods", () => {

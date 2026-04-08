@@ -773,5 +773,19 @@ describe("useSelectedModel", () => {
 			expect(result.current.id).toBe("MiniMax-M2.7")
 			expect(result.current.info).toEqual(minimaxModels["MiniMax-M2.7"])
 		})
+
+		it("should fall back to default model info for unknown model IDs", () => {
+			const apiConfiguration: ProviderSettings = {
+				apiProvider: "minimax",
+				apiModelId: "some-future-minimax-model",
+			}
+
+			const wrapper = createWrapper()
+			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
+
+			expect(result.current.provider).toBe("minimax")
+			expect(result.current.id).toBe("some-future-minimax-model")
+			expect(result.current.info).toEqual(minimaxModels[minimaxDefaultModelId])
+		})
 	})
 })
