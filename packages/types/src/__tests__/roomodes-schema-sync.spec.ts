@@ -2,11 +2,8 @@ import { describe, it, expect } from "vitest"
 import * as fs from "fs"
 import * as path from "path"
 import { fileURLToPath } from "url"
-import { zodToJsonSchema } from "zod-to-json-schema"
-import { z } from "zod"
 
-import { toolGroups, deprecatedToolGroups } from "../tool.js"
-import { groupOptionsSchema, modeConfigSchema } from "../mode.js"
+import { generateRoomodesJsonSchema } from "../roomodes-schema.js"
 
 /**
  * This test verifies that the checked-in schemas/roomodes.json matches what
@@ -22,32 +19,7 @@ describe("roomodes schema sync", () => {
 		const schemaPath = path.resolve(__dirname, "../../../../schemas/roomodes.json")
 		const checkedIn = JSON.parse(fs.readFileSync(schemaPath, "utf-8"))
 
-		// Reproduce the same generation logic as scripts/generate-roomodes-schema.ts
-		const allToolGroups = [...toolGroups, ...deprecatedToolGroups] as [string, ...string[]]
-		const allToolGroupsSchema = z.enum(allToolGroups)
-		const groupEntrySchema = z.union([allToolGroupsSchema, z.tuple([allToolGroupsSchema, groupOptionsSchema])])
-		const ruleFileSchema = z.object({
-			relativePath: z.string(),
-			content: z.string().optional(),
-		})
-		const exportedModeConfigSchema = modeConfigSchema.omit({ groups: true }).extend({
-			groups: z.array(groupEntrySchema),
-			rulesFiles: z.array(ruleFileSchema).optional(),
-		})
-		const roomodesSchema = z
-			.object({
-				customModes: z.array(exportedModeConfigSchema),
-			})
-			.strict()
-
-		const generated = zodToJsonSchema(roomodesSchema, {
-			$refStrategy: "none",
-			target: "jsonSchema7",
-		}) as Record<string, unknown>
-
-		generated["$id"] = "https://github.com/RooCodeInc/Roo-Code/blob/main/schemas/roomodes.json"
-		generated["title"] = "Roo Code Custom Modes"
-		generated["description"] = "Schema for .roomodes configuration files used by Roo Code to define custom modes."
+		const generated = generateRoomodesJsonSchema()
 
 		expect(checkedIn).toEqual(generated)
 	})

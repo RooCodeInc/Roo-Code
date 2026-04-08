@@ -32,6 +32,7 @@
 		"@types/node": "^24.1.0",
 		"globals": "^16.3.0",
 		"tsup": "^8.4.0",
+		"ajv": "^8.18.0",
 		"vitest": "^3.2.3",
 		"zod-to-json-schema": "^3.25.1"
 	}

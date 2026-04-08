@@ -722,6 +722,9 @@ importers:
       '@types/node':
         specifier: ^24.1.0
         version: 24.2.1
+      ajv:
+        specifier: ^8.18.0
+        version: 8.18.0
       globals:
         specifier: ^16.3.0
         version: 16.3.0
@@ -1104,9 +1107,6 @@ importers:
       ai:
         specifier: ^6.0.75
         version: 6.0.77(zod@3.25.76)
-      ajv:
-        specifier: ^8.18.0
-        version: 8.18.0
       esbuild-wasm:
         specifier: ^0.25.0
         version: 0.25.12
