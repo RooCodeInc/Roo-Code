@@ -1293,6 +1293,33 @@ const ModesView = () => {
 					</div>
 				</div>
 
+				{/* Disable default rules toggle - only for custom modes */}
+				{findModeBySlug(visualMode, customModes) && (
+					<div className="mb-2">
+						<VSCodeCheckbox
+							checked={findModeBySlug(visualMode, customModes)?.disableDefaultRules ?? false}
+							onChange={(e: Event | React.FormEvent<HTMLElement>) => {
+								const target = e.target as HTMLInputElement
+								const customMode = findModeBySlug(visualMode, customModes)
+								if (customMode) {
+									updateCustomMode(visualMode, {
+										...customMode,
+										disableDefaultRules: target.checked,
+										source: customMode.source || "global",
+									})
+								}
+							}}
+							data-testid="disable-default-rules-checkbox">
+							<span className="font-medium">{t("prompts:disableDefaultRules.label")}</span>
+						</VSCodeCheckbox>
+						<div className="text-xs text-vscode-descriptionForeground mt-1 ml-6">
+							{t("prompts:disableDefaultRules.description", {
+								slug: getCurrentMode()?.slug || "mode",
+							})}
+						</div>
+					</div>
+				)}
+
 				<div className="pb-4 border-b border-vscode-input-border">
 					<div className="flex gap-2 mb-4">
 						<Button

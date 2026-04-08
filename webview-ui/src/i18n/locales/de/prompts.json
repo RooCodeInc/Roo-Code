@@ -51,6 +51,10 @@
 		"description": "Fügen Sie verhaltensspezifische Richtlinien für den Modus {{modeName}} hinzu.",
 		"loadFromFile": "Benutzerdefinierte Anweisungen für den Modus {{mode}} können auch aus dem Ordner <span>.roo/rules-{{slug}}/</span> in deinem Arbeitsbereich oder aus dem globalen <0>.roo/rules-{{slug}}/</0> geladen werden (.roorules-{{slug}} und .clinerules-{{slug}} sind veraltet und werden bald nicht mehr funktionieren)."
 	},
+	"disableDefaultRules": {
+		"label": "Standardregeln deaktivieren",
+		"description": "Wenn aktiviert, werden nur modusspezifische Regeln (.roo/rules-{{slug}}/) geladen. Standardregeln (.roo/rules/, AGENTS.md, .roorules) werden übersprungen."
+	},
 	"exportMode": {
 		"title": "Modus exportieren",
 		"description": "Exportiert diesen Modus in eine YAML-Datei mit allen enthaltenen Regeln zum einfachen Teilen mit anderen.",
