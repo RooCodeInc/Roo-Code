@@ -13,10 +13,11 @@
 
 > 你的 AI 驱动开发团队，就在你的编辑器里
 
-## v3.51.0 新增内容
+## v3.52.0 新增内容
 
-- 已添加对 OpenAI GPT-5.4 和 GPT-5.3 Chat Latest 的支持，让你可以在 Roo Code 中使用 OpenAI 最新的聊天模型。
-- 现在可以将 skills 公开为 slash 命令，并支持 fallback execution，让可复用工作流触发得更快。
+- 已将 Poe 添加为 AI 提供商，让你可以在 Roo Code 中直接访问 Poe 模型。
+- 已改进 xAI 提供商，完成了向 Responses API 的迁移，加入了可复用的转换工具，并更新了 Grok-4.20 默认设置。
+- 已修复 MiniMax 模型列表和上下文窗口处理方式，让配置更加可靠。
 
 <details>
   <summary>🌐 可用语言</summary>
@@ -40,7 +41,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 

@@ -13,10 +13,11 @@
 
 > Đội ngũ dev dùng AI của bạn, ngay trong trình chỉnh sửa
 
-## Điểm mới trong v3.51.0
+## Điểm mới trong v3.52.0
 
-- Đã thêm hỗ trợ cho OpenAI GPT-5.4 và GPT-5.3 Chat Latest để bạn có thể dùng các mô hình chat OpenAI mới nhất trong Roo Code.
-- Skills giờ có thể được cung cấp dưới dạng lệnh slash kèm thực thi dự phòng để kích hoạt các quy trình tái sử dụng nhanh hơn.
+- Đã thêm Poe làm nhà cung cấp AI để bạn có thể truy cập trực tiếp các model Poe trong Roo Code.
+- Đã cải thiện nhà cung cấp xAI với quá trình chuyển sang Responses API, các tiện ích chuyển đổi có thể tái sử dụng và các giá trị mặc định Grok-4.20 đã được cập nhật.
+- Đã sửa danh sách model MiniMax và cách xử lý context window để thiết lập đáng tin cậy hơn.
 
 <details>
   <summary>🌐 Các ngôn ngữ có sẵn</summary>
@@ -40,7 +41,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 

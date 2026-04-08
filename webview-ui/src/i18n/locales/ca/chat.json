@@ -348,8 +348,8 @@
 		},
 		"release": {
 			"heading": "Què hi ha de nou:",
-			"gpt54": "Compatibilitat amb OpenAI GPT-5.4: Hem afegit OpenAI GPT-5.4 i GPT-5.3 Chat Latest perquè puguis fer servir els models de xat més nous d’OpenAI a Roo Code.",
-			"slashSkills": "Skills com a ordres slash: Ara les skills es poden exposar com a ordres slash amb execució de reserva per accelerar els fluxos de treball.",
+			"gpt54": "Proveïdor Poe: S'ha afegit Poe com a proveïdor d’IA perquè puguis accedir directament als models de Poe a Roo Code.",
+			"slashSkills": "Millores a xAI i MiniMax: S'ha migrat el proveïdor xAI a la Responses API, s'hi han afegit utilitats de transformació reutilitzables, s'han actualitzat els valors per defecte de Grok-4.20 i s'han corregit els llistats de models de MiniMax i la gestió de la finestra de context per oferir una configuració més fiable.",
 			"geminiPro": "Suport per Gemini 3.1 Pro: S'ha afegit el suport per al model Gemini 3.1 Pro i s'ha establert com a model Gemini per defecte per a un millor rendiment.",
 			"cliNdjson": "Protocol NDJSON del CLI: Nou protocol NDJSON via stdin, subcomandes de llistat i comanda d'execució modularitzada per a fluxos de treball CLI més flexibles.",
 			"cliRelease": "CLI v0.1.0: El CLI de Roo Code arriba a la seva primera versió oficial amb una interfície de comandes estable."

@@ -13,10 +13,11 @@
 
 > Tu equipo de desarrollo con IA, directamente en tu editor
 
-## Novedades de la v3.51.0
+## Novedades de la v3.52.0
 
-- Se añadió compatibilidad con OpenAI GPT-5.4 y GPT-5.3 Chat Latest para que puedas usar los modelos de chat más recientes de OpenAI en Roo Code.
-- Las skills ahora pueden exponerse como comandos slash con ejecución de respaldo para activar más rápido los flujos de trabajo reutilizables.
+- Se añadió Poe como proveedor de IA para que puedas acceder directamente a los modelos de Poe en Roo Code.
+- Se mejoró el proveedor xAI con una migración a la Responses API, utilidades de transformación reutilizables y valores predeterminados actualizados de Grok-4.20.
+- Se corrigieron los listados de modelos de MiniMax y el manejo de la ventana de contexto para una configuración más fiable.
 
 <details>
   <summary>🌐 Idiomas disponibles</summary>
@@ -40,7 +41,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 

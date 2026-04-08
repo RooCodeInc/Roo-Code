@@ -13,10 +13,11 @@
 
 > तुम्हारी AI-संचालित डेवलपमेंट टीम, सीधे तुम्हारे एडिटर में
 
-## v3.51.0 में नया क्या है
+## v3.52.0 में नया क्या है
 
-- OpenAI GPT-5.4 और GPT-5.3 Chat Latest के लिए सपोर्ट जोड़ा गया है, ताकि आप Roo Code में OpenAI के सबसे नए chat models इस्तेमाल कर सकें।
-- अब skills को slash commands के रूप में fallback execution के साथ expose किया जा सकता है, जिससे reusable workflows को तेज़ी से trigger किया जा सके।
+- Poe को AI provider के रूप में जोड़ा गया है, ताकि आप Roo Code में सीधे Poe models तक पहुँच सकें।
+- xAI provider को Responses API migration, reusable transform utilities, और updated Grok-4.20 defaults के साथ बेहतर बनाया गया है।
+- ज़्यादा भरोसेमंद setup के लिए MiniMax model listings और context window handling को ठीक किया गया है।
 
 <details>
   <summary>🌐 उपलब्ध भाषाएँ</summary>
@@ -40,7 +41,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 

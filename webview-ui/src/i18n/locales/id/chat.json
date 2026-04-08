@@ -377,8 +377,8 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"gpt54": "Dukungan OpenAI GPT-5.4: OpenAI GPT-5.4 dan GPT-5.3 Chat Latest kini ditambahkan agar kamu bisa memakai model chat OpenAI terbaru di Roo Code.",
-			"slashSkills": "Skill sebagai slash command: Skill sekarang bisa diekspos sebagai slash command dengan eksekusi fallback supaya workflow bisa berjalan lebih cepat.",
+			"gpt54": "Provider Poe: Poe ditambahkan sebagai provider AI agar kamu bisa langsung mengakses model Poe di Roo Code.",
+			"slashSkills": "Peningkatan xAI dan MiniMax: Provider xAI dimigrasikan ke Responses API, utilitas transformasi yang bisa dipakai ulang ditambahkan, default Grok-4.20 diperbarui, dan daftar model MiniMax serta penanganan context window diperbaiki agar setup lebih andal.",
 			"geminiPro": "Dukungan Gemini 3.1 Pro: Dukungan model Gemini 3.1 Pro telah ditambahkan dan ditetapkan sebagai model Gemini default untuk performa yang lebih baik.",
 			"cliNdjson": "Protokol NDJSON CLI: Protokol NDJSON stdin baru, subperintah list, dan perintah run yang dimodularisasi untuk alur kerja CLI yang lebih fleksibel.",
 			"cliRelease": "CLI v0.1.0: CLI Roo Code mencapai rilis resmi pertamanya dengan antarmuka perintah yang stabil."
