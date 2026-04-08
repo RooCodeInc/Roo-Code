@@ -20,7 +20,9 @@
 		"alwaysAllow": "Immer erlauben",
 		"parameters": "Parameter",
 		"noDescription": "Keine Beschreibung",
-		"togglePromptInclusion": "Einbeziehung in Prompt umschalten"
+		"togglePromptInclusion": "Einbeziehung in Prompt umschalten",
+		"expand": "Beschreibung ausklappen",
+		"collapse": "Beschreibung einklappen"
 	},
 	"tabs": {
 		"tools": "Tools",

@@ -20,7 +20,9 @@
 		"alwaysAllow": "हमेशा अनुमति दें",
 		"parameters": "पैरामीटर",
 		"noDescription": "कोई विवरण नहीं",
-		"togglePromptInclusion": "प्रॉम्प्ट में शामिल करना टॉगल करें"
+		"togglePromptInclusion": "प्रॉम्प्ट में शामिल करना टॉगल करें",
+		"expand": "विवरण विस्तारित करें",
+		"collapse": "विवरण संक्षिप्त करें"
 	},
 	"tabs": {
 		"tools": "टूल्स",

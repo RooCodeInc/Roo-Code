@@ -20,7 +20,9 @@
 		"alwaysAllow": "Her zaman izin ver",
 		"parameters": "Parametreler",
 		"noDescription": "Açıklama yok",
-		"togglePromptInclusion": "Komut isteminde dahil etmeyi aç/kapat"
+		"togglePromptInclusion": "Komut isteminde dahil etmeyi aç/kapat",
+		"expand": "Açıklamayı genişlet",
+		"collapse": "Açıklamayı daralt"
 	},
 	"tabs": {
 		"tools": "Araçlar",
