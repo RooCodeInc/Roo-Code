@@ -69,6 +69,12 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 			this.client = new OpenAI({
 				apiKey: "dummy-key-will-be-replaced",
 				baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+				defaultHeaders: {
+					"User-Agent": `QwenCode/1.0.0 (${os.platform()}; ${os.arch()})`,
+					"X-DashScope-CacheControl": "enable",
+					"X-DashScope-UserAgent": `QwenCode/1.0.0 (${os.platform()}; ${os.arch()})`,
+					"X-DashScope-AuthType": "qwen-oauth",
+				},
 			})
 		}
 		return this.client
