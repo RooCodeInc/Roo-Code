@@ -801,8 +801,8 @@ importers:
         specifier: 1.12.0
         version: 1.12.0
       '@qdrant/js-client-rest':
-        specifier: ^1.14.0
-        version: 1.14.0(typescript@5.8.3)
+        specifier: ^1.17.0
+        version: 1.17.0(typescript@5.8.3)
       '@roo-code/cloud':
         specifier: workspace:^
         version: link:../packages/cloud
@@ -3060,9 +3060,9 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@qdrant/js-client-rest@1.14.0':
-    resolution: {integrity: sha512-2sM2g17FSkN2sNCSeAfqxHRr+SPEVnUQLXBjVv/whm4YQ4JjZ53Jiy1iShk95G+xBf3hKBhJdj8itRnor03IYw==}
-    engines: {node: '>=18.0.0', pnpm: '>=8'}
+  '@qdrant/js-client-rest@1.17.0':
+    resolution: {integrity: sha512-aZFQeirWVqWAa1a8vJ957LMzcXkFHGbsoRhzc8AkGfg6V0jtK8PlG8/eyyc2xhYsR961FDDx1Tx6nyE0K7lS+A==}
+    engines: {node: '>=18.17.0', pnpm: '>=8'}
     peerDependencies:
       typescript: '>=4.7'
 
@@ -3897,9 +3897,6 @@ packages:
 
   '@sec-ant/readable-stream@0.4.1':
     resolution: {integrity: sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg==}
-
-  '@sevinf/maybe@0.5.0':
-    resolution: {integrity: sha512-ARhyoYDnY1LES3vYI0fiG6e9esWfTNcXcO6+MPJJXcnyMV3bim4lnFt45VXouV7y82F4x3YH8nOQ6VztuvUiWg==}
 
   '@shikijs/core@3.4.1':
     resolution: {integrity: sha512-GCqSd3KXRTKX1sViP7fIyyyf6do2QVg+fTd4IT00ucYCVSKiSN8HbFbfyjGsoZePNKWcQqXe4U4rrz2IVldG5A==}
@@ -13152,10 +13149,9 @@ snapshots:
       - bare-buffer
       - supports-color
 
-  '@qdrant/js-client-rest@1.14.0(typescript@5.8.3)':
+  '@qdrant/js-client-rest@1.17.0(typescript@5.8.3)':
     dependencies:
       '@qdrant/openapi-typescript-fetch': 1.2.6
-      '@sevinf/maybe': 0.5.0
       typescript: 5.8.3
       undici: 6.21.3
 
@@ -13968,8 +13964,6 @@ snapshots:
       zod: 3.25.76
 
   '@sec-ant/readable-stream@0.4.1': {}
-
-  '@sevinf/maybe@0.5.0': {}
 
   '@shikijs/core@3.4.1':
     dependencies:

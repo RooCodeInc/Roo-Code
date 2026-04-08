@@ -61,6 +61,7 @@ export class QdrantVectorStore implements IVectorStore {
 				port: port,
 				prefix: urlObj.pathname === "/" ? undefined : urlObj.pathname.replace(/\/+$/, ""),
 				apiKey,
+				checkCompatibility: false,
 				headers: {
 					"User-Agent": "Roo-Code",
 				},
@@ -71,6 +72,7 @@ export class QdrantVectorStore implements IVectorStore {
 			this.client = new QdrantClient({
 				url: parsedUrl,
 				apiKey,
+				checkCompatibility: false,
 				headers: {
 					"User-Agent": "Roo-Code",
 				},

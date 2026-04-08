@@ -78,6 +78,7 @@ describe("QdrantVectorStore", () => {
 			https: false,
 			port: 6333,
 			apiKey: mockApiKey,
+			checkCompatibility: false,
 			headers: {
 				"User-Agent": "Roo-Code",
 			},
@@ -97,6 +98,7 @@ describe("QdrantVectorStore", () => {
 			https: false,
 			port: 6333,
 			apiKey: undefined,
+			checkCompatibility: false,
 			headers: {
 				"User-Agent": "Roo-Code",
 			},
@@ -111,6 +113,7 @@ describe("QdrantVectorStore", () => {
 			https: false,
 			port: 6333,
 			apiKey: undefined,
+			checkCompatibility: false,
 			headers: {
 				"User-Agent": "Roo-Code",
 			},
@@ -131,6 +134,7 @@ describe("QdrantVectorStore", () => {
 					port: 443,
 					prefix: undefined, // No prefix for root path
 					apiKey: undefined,
+					checkCompatibility: false,
 					headers: {
 						"User-Agent": "Roo-Code",
 					},
@@ -146,6 +150,7 @@ describe("QdrantVectorStore", () => {
 					port: 9000,
 					prefix: undefined, // No prefix for root path
 					apiKey: undefined,
+					checkCompatibility: false,
 					headers: {
 						"User-Agent": "Roo-Code",
 					},
@@ -165,6 +170,7 @@ describe("QdrantVectorStore", () => {
 					port: 443,
 					prefix: "/api/v1", // Should have prefix
 					apiKey: undefined,
+					checkCompatibility: false,
 					headers: {
 						"User-Agent": "Roo-Code",
 					},
@@ -182,6 +188,7 @@ describe("QdrantVectorStore", () => {
 					port: 80,
 					prefix: undefined, // No prefix for root path
 					apiKey: undefined,
+					checkCompatibility: false,
 					headers: {
 						"User-Agent": "Roo-Code",
 					},
@@ -197,6 +204,7 @@ describe("QdrantVectorStore", () => {
 					port: 8080,
 					prefix: undefined, // No prefix for root path
 					apiKey: undefined,
+					checkCompatibility: false,
 					headers: {
 						"User-Agent": "Roo-Code",
 					},
@@ -216,6 +224,7 @@ describe("QdrantVectorStore", () => {
 					port: 80,
 					prefix: "/api/v1", // Should have prefix
 					apiKey: undefined,
+					checkCompatibility: false,
 					headers: {
 						"User-Agent": "Roo-Code",
 					},
@@ -232,6 +241,7 @@ describe("QdrantVectorStore", () => {
 					https: false,
 					port: 80,
 					apiKey: undefined,
+					checkCompatibility: false,
 					headers: {
 						"User-Agent": "Roo-Code",
 					},
@@ -246,6 +256,7 @@ describe("QdrantVectorStore", () => {
 					https: false,
 					port: 6333,
 					apiKey: undefined,
+					checkCompatibility: false,
 					headers: {
 						"User-Agent": "Roo-Code",
 					},
@@ -260,6 +271,7 @@ describe("QdrantVectorStore", () => {
 					https: false,
 					port: 9000,
 					apiKey: undefined,
+					checkCompatibility: false,
 					headers: {
 						"User-Agent": "Roo-Code",
 					},
@@ -276,6 +288,7 @@ describe("QdrantVectorStore", () => {
 					https: false,
 					port: 80,
 					apiKey: undefined,
+					checkCompatibility: false,
 					headers: {
 						"User-Agent": "Roo-Code",
 					},
@@ -290,6 +303,7 @@ describe("QdrantVectorStore", () => {
 					https: false,
 					port: 6333,
 					apiKey: undefined,
+					checkCompatibility: false,
 					headers: {
 						"User-Agent": "Roo-Code",
 					},
@@ -306,6 +320,7 @@ describe("QdrantVectorStore", () => {
 					https: false,
 					port: 6333,
 					apiKey: undefined,
+					checkCompatibility: false,
 					headers: {
 						"User-Agent": "Roo-Code",
 					},
@@ -320,6 +335,7 @@ describe("QdrantVectorStore", () => {
 					https: false,
 					port: 6333,
 					apiKey: undefined,
+					checkCompatibility: false,
 					headers: {
 						"User-Agent": "Roo-Code",
 					},
@@ -334,6 +350,7 @@ describe("QdrantVectorStore", () => {
 					https: false,
 					port: 6333,
 					apiKey: undefined,
+					checkCompatibility: false,
 					headers: {
 						"User-Agent": "Roo-Code",
 					},
@@ -350,6 +367,7 @@ describe("QdrantVectorStore", () => {
 					https: false,
 					port: 80,
 					apiKey: undefined,
+					checkCompatibility: false,
 					headers: {
 						"User-Agent": "Roo-Code",
 					},
@@ -372,6 +390,7 @@ describe("QdrantVectorStore", () => {
 				port: 6333,
 				prefix: "/some/path",
 				apiKey: undefined,
+				checkCompatibility: false,
 				headers: {
 					"User-Agent": "Roo-Code",
 				},
@@ -391,6 +410,7 @@ describe("QdrantVectorStore", () => {
 				port: 6333,
 				prefix: undefined,
 				apiKey: undefined,
+				checkCompatibility: false,
 				headers: {
 					"User-Agent": "Roo-Code",
 				},
@@ -410,6 +430,7 @@ describe("QdrantVectorStore", () => {
 				port: 443,
 				prefix: "/api",
 				apiKey: undefined,
+				checkCompatibility: false,
 				headers: {
 					"User-Agent": "Roo-Code",
 				},
@@ -429,6 +450,7 @@ describe("QdrantVectorStore", () => {
 				port: 6333,
 				prefix: "/api", // Trailing slash should be removed
 				apiKey: undefined,
+				checkCompatibility: false,
 				headers: {
 					"User-Agent": "Roo-Code",
 				},
@@ -448,6 +470,7 @@ describe("QdrantVectorStore", () => {
 				port: 6333,
 				prefix: "/api", // All trailing slashes should be removed
 				apiKey: undefined,
+				checkCompatibility: false,
 				headers: {
 					"User-Agent": "Roo-Code",
 				},
@@ -467,6 +490,7 @@ describe("QdrantVectorStore", () => {
 				port: 6333,
 				prefix: "/api/v1/qdrant",
 				apiKey: undefined,
+				checkCompatibility: false,
 				headers: {
 					"User-Agent": "Roo-Code",
 				},
@@ -483,6 +507,7 @@ describe("QdrantVectorStore", () => {
 				port: 443,
 				prefix: "/ollama/api/v1", // Trailing slash removed, query/fragment ignored
 				apiKey: undefined,
+				checkCompatibility: false,
 				headers: {
 					"User-Agent": "Roo-Code",
 				},
@@ -502,6 +527,7 @@ describe("QdrantVectorStore", () => {
 				port: 6333,
 				prefix: "/api/path", // Query params and fragment should be ignored
 				apiKey: undefined,
+				checkCompatibility: false,
 				headers: {
 					"User-Agent": "Roo-Code",
 				},
