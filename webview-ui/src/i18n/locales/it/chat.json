@@ -228,6 +228,7 @@
 	"commandExecution": {
 		"abort": "Interrompi",
 		"running": "In esecuzione",
+		"executed": "Eseguito",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "Uscito con stato {{exitCode}}",
 		"manageCommands": "Comandi approvati automaticamente",
