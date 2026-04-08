@@ -1057,6 +1057,39 @@ describe("ChatTextArea", () => {
 			expect(apiConfigDropdown).toHaveAttribute("disabled")
 		})
 
+		it("should display model ID alongside config name when modelId is available", () => {
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				taskHistory: [],
+				cwd: "/test/workspace",
+				currentApiConfigName: "my-config",
+				listApiConfigMeta: [
+					{ id: "cfg1", name: "my-config", apiProvider: "anthropic", modelId: "claude-sonnet-4-20250514" },
+				],
+			})
+
+			render(<ChatTextArea {...defaultProps} />)
+			const apiConfigDropdown = getApiConfigDropdown()
+			expect(apiConfigDropdown).toHaveTextContent("my-config · claude-sonnet-4-20250514")
+		})
+
+		it("should display only config name when modelId is not available", () => {
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				taskHistory: [],
+				cwd: "/test/workspace",
+				currentApiConfigName: "my-config",
+				listApiConfigMeta: [{ id: "cfg1", name: "my-config" }],
+			})
+
+			render(<ChatTextArea {...defaultProps} />)
+			const apiConfigDropdown = getApiConfigDropdown()
+			expect(apiConfigDropdown).toHaveTextContent("my-config")
+			expect(apiConfigDropdown).not.toHaveTextContent("·")
+		})
+
 		describe("enter key behavior", () => {
 			it("should send on Enter and allow newline on Shift+Enter in default mode", () => {
 				const onSend = vi.fn()
