@@ -28,6 +28,7 @@ export class DiffViewProvider {
 	originalContent: string | undefined
 	private createdDirs: string[] = []
 	private documentWasOpen = false
+	private documentWasPinned = false
 	private relPath?: string
 	private newContent?: string
 	private activeDiffEditor?: vscode.TextEditor
@@ -84,6 +85,7 @@ export class DiffViewProvider {
 		// If the file was already open, close it (must happen after showing the
 		// diff view since if it's the only tab the column will close).
 		this.documentWasOpen = false
+		this.documentWasPinned = false
 
 		// Close the tab if it's open (it's already saved above).
 		const tabs = vscode.window.tabGroups.all
@@ -97,6 +99,9 @@ export class DiffViewProvider {
 			)
 
 		for (const tab of tabs) {
+			if (tab.isPinned) {
+				this.documentWasPinned = true
+			}
 			if (!tab.isDirty) {
 				try {
 					await vscode.window.tabGroups.close(tab)
@@ -214,6 +219,12 @@ export class DiffViewProvider {
 		}
 
 		await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), { preview: false, preserveFocus: true })
+
+		// Restore pinned state if the tab was pinned before editing.
+		if (this.documentWasPinned) {
+			await vscode.commands.executeCommand("workbench.action.pinEditor")
+		}
+
 		await this.closeAllDiffViews()
 
 		// Getting diagnostics before and after the file edit is a better approach than
@@ -405,6 +416,11 @@ export class DiffViewProvider {
 					preview: false,
 					preserveFocus: true,
 				})
+
+				// Restore pinned state if the tab was pinned before editing.
+				if (this.documentWasPinned) {
+					await vscode.commands.executeCommand("workbench.action.pinEditor")
+				}
 			}
 
 			await this.closeAllDiffViews()
@@ -623,6 +639,7 @@ export class DiffViewProvider {
 		this.originalContent = undefined
 		this.createdDirs = []
 		this.documentWasOpen = false
+		this.documentWasPinned = false
 		this.activeDiffEditor = undefined
 		this.fadedOverlayController = undefined
 		this.activeLineController = undefined
