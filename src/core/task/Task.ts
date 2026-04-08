@@ -869,6 +869,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			getThoughtSignature?: () => string | undefined
 			getSummary?: () => any[] | undefined
 			getReasoningDetails?: () => any[] | undefined
+			getServerSideToolParts?: () => Array<{ type: string; data: Record<string, unknown> }> | undefined
 		}
 
 		if (message.role === "assistant") {
@@ -980,6 +981,29 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					messageWithTs.content = [...messageWithTs.content, thoughtSignatureBlock]
 				} else if (!messageWithTs.content) {
 					messageWithTs.content = [thoughtSignatureBlock]
+				}
+			}
+
+			// For Gemini 3 models, persist server-side tool parts (executableCode,
+			// codeExecutionResult, etc.) so they can be round-tripped in subsequent turns.
+			// This enables "tool context circulation" where the model maintains context
+			// from previous server-side built-in tool invocations.
+			const serverSideToolParts = handler.getServerSideToolParts?.()
+			if (serverSideToolParts && serverSideToolParts.length > 0) {
+				const serverSideBlocks = serverSideToolParts.map((part) => ({
+					type: part.type,
+					data: part.data,
+				}))
+
+				if (typeof messageWithTs.content === "string") {
+					messageWithTs.content = [
+						{ type: "text", text: messageWithTs.content } satisfies Anthropic.Messages.TextBlockParam,
+						...serverSideBlocks,
+					]
+				} else if (Array.isArray(messageWithTs.content)) {
+					messageWithTs.content = [...messageWithTs.content, ...serverSideBlocks]
+				} else if (!messageWithTs.content) {
+					messageWithTs.content = serverSideBlocks
 				}
 			}
 

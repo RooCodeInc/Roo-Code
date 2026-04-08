@@ -484,4 +484,97 @@ describe("convertAnthropicMessageToGemini", () => {
 			},
 		])
 	})
+
+	describe("server-side tool parts (Gemini 3 tool context circulation)", () => {
+		it("should convert executableCode content blocks back to Gemini parts", () => {
+			const anthropicMessage: Anthropic.Messages.MessageParam = {
+				role: "assistant",
+				content: [
+					{ type: "text", text: "Let me run some code" },
+					{
+						type: "executableCode",
+						data: { code: 'print("hello")', language: "python" },
+					},
+				] as any,
+			}
+
+			const result = convertAnthropicMessageToGemini(anthropicMessage)
+
+			expect(result).toEqual([
+				{
+					role: "model",
+					parts: [
+						{ text: "Let me run some code" },
+						{ executableCode: { code: 'print("hello")', language: "python" } },
+					],
+				},
+			])
+		})
+
+		it("should convert codeExecutionResult content blocks back to Gemini parts", () => {
+			const anthropicMessage: Anthropic.Messages.MessageParam = {
+				role: "assistant",
+				content: [
+					{
+						type: "codeExecutionResult",
+						data: { output: "hello", outcome: "OUTCOME_OK" },
+					},
+				] as any,
+			}
+
+			const result = convertAnthropicMessageToGemini(anthropicMessage)
+
+			expect(result).toEqual([
+				{
+					role: "model",
+					parts: [{ codeExecutionResult: { output: "hello", outcome: "OUTCOME_OK" } }],
+				},
+			])
+		})
+
+		it("should handle mixed function calls and server-side tool parts", () => {
+			const toolIdToName = new Map([["tool-1", "read_file"]])
+
+			const anthropicMessage: Anthropic.Messages.MessageParam = {
+				role: "assistant",
+				content: [
+					{
+						type: "executableCode",
+						data: { code: "result = search('api docs')", language: "python" },
+					},
+					{
+						type: "codeExecutionResult",
+						data: { output: "Found 3 results", outcome: "OUTCOME_OK" },
+					},
+					{
+						type: "tool_use",
+						id: "tool-1",
+						name: "read_file",
+						input: { path: "README.md" },
+					},
+				] as any,
+			}
+
+			const result = convertAnthropicMessageToGemini(anthropicMessage, {
+				includeThoughtSignatures: false,
+				toolIdToName,
+			})
+
+			expect(result).toEqual([
+				{
+					role: "model",
+					parts: [
+						{ executableCode: { code: "result = search('api docs')", language: "python" } },
+						{ codeExecutionResult: { output: "Found 3 results", outcome: "OUTCOME_OK" } },
+						{
+							functionCall: {
+								name: "read_file",
+								args: { path: "README.md" },
+							},
+						},
+					],
+				},
+			])
+		})
+	})
 })
