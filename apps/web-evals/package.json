@@ -1,6 +1,6 @@
 {
 	"name": "@roo-code/web-evals",
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
 		"lint": "eslint src --ext=ts,tsx --max-warnings=0",
