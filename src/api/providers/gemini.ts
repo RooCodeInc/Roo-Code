@@ -348,8 +348,8 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 	override getModel() {
 		const modelId = this.options.apiModelId
-		let id = modelId && modelId in geminiModels ? (modelId as GeminiModelId) : geminiDefaultModelId
-		let info: ModelInfo = geminiModels[id]
+		let id = modelId ?? geminiDefaultModelId
+		let info: ModelInfo = geminiModels[id as GeminiModelId] ?? geminiModels[geminiDefaultModelId]
 
 		const params = getModelParams({
 			format: "gemini",

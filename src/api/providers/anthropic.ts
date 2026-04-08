@@ -334,8 +334,8 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 	getModel() {
 		const modelId = this.options.apiModelId
-		let id = modelId && modelId in anthropicModels ? (modelId as AnthropicModelId) : anthropicDefaultModelId
-		let info: ModelInfo = anthropicModels[id]
+		let id = modelId ?? anthropicDefaultModelId
+		let info: ModelInfo = anthropicModels[id as AnthropicModelId] ?? anthropicModels[anthropicDefaultModelId]
 
 		// If 1M context beta is enabled for supported models, update the model info
 		if (
