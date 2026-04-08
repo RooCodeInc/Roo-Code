@@ -1,0 +1,9 @@
+{
+	"$schema": "https://turbo.build/schema.json",
+	"extends": ["//"],
+	"tasks": {
+		"build": {
+			"dependsOn": ["@roo-code/types#build", "@roo-code/core#build", "@roo-code/vscode-shim#build"]
+		}
+	}
+}

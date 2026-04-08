@@ -31,12 +31,12 @@ export class NvidiaHandler extends BaseOpenAiCompatibleProvider<NvidiaModelId> {
 	 * - Uses `chat_template_kwargs: { enable_thinking: true }` for reasoning
 	 * - Unlike OpenAI's `thinking: { type: "enabled" }` or DeepSeek's approach
 	 */
-	protected override async createStream(
+	protected override createStream(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 		requestOptions?: OpenAI.RequestOptions,
-	): Promise<AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>> {
+	) {
 		const { id: model, info } = this.getModel()
 
 		// Get max tokens using centralized logic

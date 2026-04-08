@@ -4,6 +4,7 @@ import type { ModelInfo } from "../model.js"
 // Reference: https://build.nvidia.com/explore/discover/models
 export type NvidiaModelId =
 	| "deepseek-ai/deepseek-r1"
+	| "google/gemma-4-31b-it"
 	| "meta/llama-3.1-405b-instruct"
 	| "meta/llama-3.3-70b-instruct"
 	| "z-ai/glm5"
@@ -26,6 +27,18 @@ export const nvidiaModels = {
 		description:
 			"DeepSeek R1 reasoning model via NVIDIA NIM API. Supports chain-of-thought reasoning with enable_thinking parameter.",
 	},
+	// Google Gemma 4 - reasoning model with enable_thinking support
+	"google/gemma-4-31b-it": {
+		maxTokens: 16384,
+		contextWindow: 128000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		supportsReasoningBinary: true,
+		inputPrice: 0.0,
+		outputPrice: 0.0,
+		description:
+			"Google Gemma 4 31B reasoning model via NVIDIA NIM API. Supports chain-of-thought reasoning with enable_thinking parameter.",
+	},
 	// Llama models - no reasoning support, included for completeness
 	"meta/llama-3.1-405b-instruct": {
 		maxTokens: 8192,
@@ -47,13 +60,13 @@ export const nvidiaModels = {
 	},
 	// GLM5 - Z.AI reasoning model with enable_thinking support
 	"z-ai/glm5": {
-		maxTokens: 65576,
-		contextWindow: 200000,
+		maxTokens: 32768,
+		contextWindow: 204800,
 		supportsImages: false,
 		supportsPromptCache: false,
 		supportsReasoningBinary: true,
-		inputPrice: 0.0,
-		outputPrice: 0.0,
+		inputPrice: 1.0,
+		outputPrice: 3.2,
 		description: "Z.AI GLM5 reasoning model via NVIDIA NIM API. Supports chain-of-thought reasoning.",
 	},
 	// Qwen 3.5 models - reasoning models with enable_thinking support

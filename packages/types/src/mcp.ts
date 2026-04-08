@@ -99,22 +99,35 @@ export type McpResourceResponse = {
 	}>
 }
 
+// Annotations for content items in tool call responses
+export type McpContentAnnotations = {
+	audience?: Array<"user" | "assistant">
+	priority?: number
+	lastModified?: string
+}
+
 export type McpToolCallResponse = {
 	_meta?: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 	content: Array<
 		| {
 				type: "text"
 				text: string
+				annotations?: McpContentAnnotations
+				_meta?: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 		  }
 		| {
 				type: "image"
 				data: string
 				mimeType: string
+				annotations?: McpContentAnnotations
+				_meta?: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 		  }
 		| {
 				type: "audio"
 				data: string
 				mimeType: string
+				annotations?: McpContentAnnotations
+				_meta?: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 		  }
 		| {
 				type: "resource"
@@ -124,6 +137,25 @@ export type McpToolCallResponse = {
 					text?: string
 					blob?: string
 				}
+				annotations?: McpContentAnnotations
+				_meta?: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
+		  }
+		| {
+				type: "resource_link"
+				uri: string
+				name: string
+				description?: string
+				mimeType?: string
+				size?: number
+				annotations?: McpContentAnnotations
+				_meta?: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
+				icons?: Array<{
+					src: string
+					mimeType?: string
+					sizes?: string[]
+					theme?: "light" | "dark"
+				}>
+				title?: string
 		  }
 	>
 	isError?: boolean
