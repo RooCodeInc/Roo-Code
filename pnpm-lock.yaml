@@ -350,8 +350,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/evals
       '@roo-code/types':
-        specifier: ^1.108.0
-        version: 1.108.0
+        specifier: workspace:^
+        version: link:../../packages/types
       '@tanstack/react-query':
         specifier: ^5.90.20
         version: 5.90.20(react@18.3.1)
@@ -3891,9 +3891,6 @@ packages:
     resolution: {integrity: sha512-bwspbWB04XJpeElvsp+DCylKfF4trJDa2Y9Go8O6A7YLX2LIKGcNK/CYImJN6ZP4DcuOHB4Utl3iCbnR62DudA==}
     cpu: [x64]
     os: [win32]
-
-  '@roo-code/types@1.108.0':
-    resolution: {integrity: sha512-0Of0DOuU125i1VTI2OTdL0j47xA+JrQr6KyYinYS+CPwUsszUJt2PeWyy/AZYI1w23FYrcCvh8FqycDuwXocSA==}
 
   '@sec-ant/readable-stream@0.4.1':
     resolution: {integrity: sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg==}
@@ -13962,10 +13959,6 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.40.2':
     optional: true
-
-  '@roo-code/types@1.108.0':
-    dependencies:
-      zod: 3.25.76
 
   '@sec-ant/readable-stream@0.4.1': {}
 
