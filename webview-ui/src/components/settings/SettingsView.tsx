@@ -207,17 +207,18 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
 
-	useEffect(() => {
-		// Update only when currentApiConfigName is changed.
-		// Expected to be triggered by loadApiConfiguration/upsertApiConfiguration.
-		if (prevApiConfigName.current === currentApiConfigName) {
-			return
-		}
-
+	// Synchronous state update during render when profile changes.
+	// This follows the React pattern for "adjusting state when a prop changes"
+	// and ensures cachedState is updated BEFORE child components (like ApiOptions)
+	// render, so they receive the correct apiConfiguration immediately.
+	// Using useEffect here would cause a timing issue: the key-based remount of
+	// ApiOptions would occur before cachedState is updated, initializing local
+	// state from the stale (old profile) config.
+	if (prevApiConfigName.current !== currentApiConfigName) {
 		setCachedState((prevCachedState) => ({ ...prevCachedState, ...extensionState }))
 		prevApiConfigName.current = currentApiConfigName
 		setChangeDetected(false)
-	}, [currentApiConfigName, extensionState])
+	}
 
 	// Bust the cache when settings are imported.
 	useEffect(() => {
@@ -767,6 +768,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 										}
 									/>
 									<ApiOptions
+										key={currentApiConfigName}
 										uriScheme={uriScheme}
 										apiConfiguration={apiConfiguration}
 										setApiConfigurationField={setApiConfigurationField}
