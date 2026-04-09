@@ -90,6 +90,25 @@ export class NativeToolCallParser {
 	}
 
 	/**
+	 * Coerce content to a string for write_to_file tool.
+	 * Some models (e.g., GLM 4.7 via OpenAI Compatible API) incorrectly pass content
+	 * as a JSON object instead of a string. This handles that case gracefully.
+	 */
+	private static coerceContentToString(value: unknown, toolName: string): string {
+		if (typeof value === "string") {
+			return value
+		}
+
+		// Value is not a string - convert it and log a warning
+		console.warn(
+			`[NativeToolCallParser] Model sent non-string content for '${toolName}' tool. ` +
+				`Expected string, received ${typeof value}. Converting to JSON string. ` +
+				`This may indicate the model is not following the tool schema correctly.`,
+		)
+		return JSON.stringify(value, null, 2)
+	}
+
+	/**
 	 * Process a raw tool call chunk from the API stream.
 	 * Handles tracking, buffering, and emits start/delta/end events.
 	 *
@@ -465,10 +484,13 @@ export class NativeToolCallParser {
 				break
 
 			case "write_to_file":
-				if (partialArgs.path || partialArgs.content) {
+				if (partialArgs.path || partialArgs.content !== undefined) {
 					nativeArgs = {
 						path: partialArgs.path,
-						content: partialArgs.content,
+						content:
+							partialArgs.content !== undefined
+								? this.coerceContentToString(partialArgs.content, "write_to_file")
+								: undefined,
 					}
 				}
 				break
@@ -906,7 +928,7 @@ export class NativeToolCallParser {
 					if (args.path !== undefined && args.content !== undefined) {
 						nativeArgs = {
 							path: args.path,
-							content: args.content,
+							content: this.coerceContentToString(args.content, "write_to_file"),
 						} as NativeArgsFor<TName>
 					}
 					break
