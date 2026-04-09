@@ -115,6 +115,12 @@ export class IpcClient extends EventEmitter<IpcClientEvents> {
 		})
 	}
 
+	public cancelCommand() {
+		this.sendCommand({
+			commandName: TaskCommandName.CancelCommand,
+		})
+	}
+
 	public sendMessage(message: IpcMessage) {
 		ipc.of[this._id]?.emit("message", message)
 	}
