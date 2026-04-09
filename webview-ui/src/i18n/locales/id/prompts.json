@@ -14,7 +14,10 @@
 	},
 	"apiConfiguration": {
 		"title": "Konfigurasi API",
-		"select": "Pilih konfigurasi API mana yang akan digunakan untuk mode ini"
+		"select": "Pilih konfigurasi API mana yang akan digunakan untuk mode ini",
+		"scope": "Cakupan",
+		"global": "Global",
+		"workspace": "Ruang Kerja"
 	},
 	"tools": {
 		"title": "Tools yang Tersedia",
