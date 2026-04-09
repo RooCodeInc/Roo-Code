@@ -1,0 +1,283 @@
+# =============================================================================
+# Project Chimera — CI/CD Pipeline
+# =============================================================================
+
+name: Project Chimera CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deployment environment"
+        required: true
+        default: "development"
+
+env:
+  PYTHON_VERSION: "3.12"
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: chimera-factory
+
+jobs:
+  # Quality Check Job
+  quality-check:
+    name: Quality Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv pip install --no-cache -r pyproject.toml
+
+      - name: Install dev dependencies
+        run: uv pip install --no-cache pytest-cov ruff
+
+      - name: Lint with ruff
+        run: ruff check src/ tests/ skills/ --output-format=github
+
+      - name: Check code formatting
+        run: ruff format --check src/ tests/ skills/
+
+      - name: Run spec check
+        run: make spec-check || true
+
+      - name: Report lint results
+        if: always()
+        run: |
+          echo "Lint complete"
+
+  # Test Job (Local)
+  test-local:
+    name: Test (Local)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    needs: quality-check
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv pip install --no-cache -r pyproject.toml
+
+      - name: Install test dependencies
+        run: uv pip install --no-cache pytest
+
+      - name: Run tests
+        run: python -m pytest tests/ -v --tb=short
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-local
+          path: reports/
+          retention-days: 7
+
+  # Test Job (Docker)
+  test-docker:
+    name: Test (Docker)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    needs: quality-check
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          load: true
+          tags: ${{ env.IMAGE_NAME }}:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run tests in Docker
+        run: docker run --rm ${{ env.IMAGE_NAME }}:test
+
+  # Security Scan
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    needs: test-local
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run dependency audit
+        run: |
+          uv pip install pip-audit
+          pip-audit --requirement pyproject.toml || true
+
+      - name: Check for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          base: main
+          head: HEAD
+          extra_args: --no-verification
+
+  # Spec Compliance Check
+  spec-compliance:
+    name: Spec Compliance
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    needs: test-local
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check spec files exist
+        run: |
+          echo "Checking specs..."
+          ls -la specs/
+
+          REQUIRED_SPECS=(
+            "specs/_meta.md"
+            "specs/functional.md"
+            "specs/technical.md"
+            "specs/openclaw_integration.md"
+          )
+
+          for spec in "${REQUIRED_SPECS[@]}"; do
+            if [ -f "$spec" ]; then
+              echo "✓ $spec exists"
+            else
+              echo "✗ $spec missing"
+              exit 1
+            fi
+          done
+
+      - name: Verify technical.md has API contracts
+        run: |
+          if grep -q "API Contract" specs/technical.md; then
+            echo "✓ API contracts found in technical.md"
+          else
+            echo "✗ API contracts missing from technical.md"
+            exit 1
+          fi
+
+      - name: Verify database schema exists
+        run: |
+          if grep -q "Entity Relationship Diagram" specs/technical.md || grep -q "erDiagram" specs/technical.md; then
+            echo "✓ Database schema found in technical.md"
+          else
+            echo "✗ Database schema missing from technical.md"
+            exit 1
+          fi
+
+  # Build Docker Image (on main branch)
+  build-docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [test-local, test-docker, security-scan, spec-compliance]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha
+            type=ref,event=branch
+            type=raw,value=latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Notification (on failure)
+  notify-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    if: failure()
+    needs: [quality-check, test-local, test-docker]
+
+    steps:
+      - name: Send failure notification
+        run: |
+          echo "::warning title=CI/CD Pipeline Failed::"
+          echo "The Project Chimera CI/CD pipeline has failed."
+          echo "Please check the workflow logs for details."
