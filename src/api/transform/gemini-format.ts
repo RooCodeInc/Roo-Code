@@ -180,6 +180,17 @@ export function convertAnthropicContentToGemini(
 	return parts
 }
 
+/**
+ * Convert an Anthropic message to Gemini Content objects.
+ *
+ * For model (assistant) messages, Gemini requires that parts WITH thoughtSignature
+ * and parts WITHOUT are NOT mixed in the same Content. When a message contains
+ * both (e.g. text without signature + functionCall with signature), we split them
+ * into separate Content objects: unsigned first, signed second.
+ *
+ * Reference: https://ai.google.dev/gemini-api/docs/thought-signatures
+ * "Don't merge one part with a signature with another part without a signature"
+ */
 export function convertAnthropicMessageToGemini(
 	message: Anthropic.Messages.MessageParam,
 	options?: { includeThoughtSignatures?: boolean; toolIdToName?: Map<string, string> },
@@ -190,10 +201,23 @@ export function convertAnthropicMessageToGemini(
 		return []
 	}
 
-	return [
-		{
-			role: message.role === "assistant" ? "model" : "user",
-			parts,
-		},
-	]
+	const role = message.role === "assistant" ? "model" : "user"
+
+	// Only split model messages — user messages don't have thoughtSignature concerns
+	if (role === "model" && parts.length > 1) {
+		const signed = parts.filter((p) => "thoughtSignature" in p && (p as PartWithThoughtSignature).thoughtSignature)
+		const unsigned = parts.filter(
+			(p) => !("thoughtSignature" in p && (p as PartWithThoughtSignature).thoughtSignature),
+		)
+
+		if (signed.length > 0 && unsigned.length > 0) {
+			// Split: unsigned parts first (text), then signed parts (functionCall/thinking)
+			return [
+				{ role, parts: unsigned },
+				{ role, parts: signed },
+			]
+		}
+	}
+
+	return [{ role, parts }]
 }
