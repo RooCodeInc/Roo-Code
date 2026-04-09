@@ -169,7 +169,7 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "mar-2026-v3.51.0-gpt-54-slash-skills" // v3.51.0 OpenAI GPT-5.4 support and slash command skills
+	public readonly latestAnnouncementId = "apr-2026-v3.52.0-poe-xai-minimax" // v3.52.0 Poe provider, xAI improvements, and MiniMax fixes
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 

@@ -349,8 +349,8 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"gpt54": "OpenAI GPT-5.4 支持：已添加 OpenAI GPT-5.4 和 GPT-5.3 Chat Latest，让你可以在 Roo Code 中使用 OpenAI 最新的聊天模型。",
-			"slashSkills": "Slash 命令技能：现在 skills 可以作为 slash 命令公开，并支持 fallback execution，让工作流触发更快。",
+			"gpt54": "Poe 提供商：已将 Poe 添加为 AI 提供商，让你可以在 Roo Code 中直接访问 Poe 模型。",
+			"slashSkills": "xAI 和 MiniMax 改进：已将 xAI 提供商迁移到 Responses API，加入了可复用的转换工具，更新了 Grok-4.20 默认设置，并修复了 MiniMax 模型列表和上下文窗口处理方式，让配置更加可靠。",
 			"geminiPro": "Gemini 3.1 Pro 支持：添加了 Gemini 3.1 Pro 模型支持，并将其设为默认 Gemini 模型以提升性能。",
 			"cliNdjson": "CLI NDJSON 协议：新增 NDJSON stdin 协议、list 子命令，以及模块化的 run 命令，提供更灵活的 CLI 工作流。",
 			"cliRelease": "CLI v0.1.0：Roo Code CLI 以稳定的命令接口达成首个正式版本。"

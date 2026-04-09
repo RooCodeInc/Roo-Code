@@ -1,7 +1,7 @@
 {
 	"name": "@roo-code/ipc",
 	"description": "IPC server and client for remote Roo Code access.",
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"type": "module",
 	"exports": "./src/index.ts",
 	"scripts": {

@@ -1,6 +1,6 @@
 {
 	"name": "@roo-code/types",
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"type": "module",
 	"main": "./dist/index.cjs",
 	"exports": {
@@ -20,9 +20,11 @@
 		"build": "tsup",
 		"build:watch": "tsup --watch --outDir npm/dist --onSuccess 'echo ✅ Types rebuilt to npm/dist'",
 		"npm:publish": "node scripts/publish-npm.cjs",
-		"clean": "rimraf dist .turbo"
+		"clean": "rimraf dist .turbo",
+		"generate:schema": "tsx scripts/generate-roomodes-schema.ts"
 	},
 	"dependencies": {
+		"ai-sdk-provider-poe": "2.0.18",
 		"zod": "3.25.76"
 	},
 	"devDependencies": {
@@ -31,6 +33,8 @@
 		"@types/node": "^24.1.0",
 		"globals": "^16.3.0",
 		"tsup": "^8.4.0",
-		"vitest": "^3.2.3"
+		"ajv": "^8.18.0",
+		"vitest": "^3.2.3",
+		"zod-to-json-schema": "^3.25.1"
 	}
 }

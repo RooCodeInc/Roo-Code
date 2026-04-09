@@ -13,10 +13,11 @@
 
 > AI로 강화된 너의 개발 팀, 네 에디터 안에
 
-## v3.51.0의 새로운 기능
+## v3.52.0의 새로운 기능
 
-- OpenAI GPT-5.4와 GPT-5.3 Chat Latest 지원을 추가해 Roo Code에서 최신 OpenAI 채팅 모델을 사용할 수 있어요.
-- 이제 스킬을 슬래시 명령어로 노출하고 fallback 실행도 지원해 재사용 가능한 워크플로를 더 빠르게 트리거할 수 있어요.
+- Poe를 AI 제공업체로 추가해 Roo Code에서 Poe 모델에 직접 접근할 수 있게 했어요.
+- Responses API 마이그레이션, 재사용 가능한 변환 유틸리티, 업데이트된 Grok-4.20 기본값으로 xAI 제공업체를 개선했어요.
+- 더 안정적인 설정을 위해 MiniMax 모델 목록과 컨텍스트 윈도우 처리를 수정했어요.
 
 <details>
   <summary>🌐 사용 가능한 언어</summary>
@@ -40,7 +41,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 

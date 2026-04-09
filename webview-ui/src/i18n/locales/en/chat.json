@@ -367,8 +367,8 @@
 		},
 		"release": {
 			"heading": "What's New:",
-			"gpt54": "OpenAI GPT-5.4 Support: Added OpenAI GPT-5.4 and GPT-5.3 Chat Latest so you can use the newest OpenAI chat models in Roo Code.",
-			"slashSkills": "Slash Command Skills: Skills can now be exposed as slash commands with fallback execution for faster workflows."
+			"gpt54": "Poe Provider: Added Poe as an AI provider so you can access Poe models directly in Roo Code.",
+			"slashSkills": "xAI and MiniMax Improvements: Migrated the xAI provider to the Responses API, added Grok-4.20 defaults, and fixed MiniMax model listings and context window handling for a more reliable setup."
 		},
 		"cloudAgents": {
 			"heading": "New in the Cloud:",

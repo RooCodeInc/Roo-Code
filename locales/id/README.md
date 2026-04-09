@@ -13,10 +13,11 @@
 
 > Tim dev bertenaga AI-mu, langsung di editor kamu
 
-## Yang Baru di v3.51.0
+## Yang Baru di v3.52.0
 
-- Menambahkan dukungan untuk OpenAI GPT-5.4 dan GPT-5.3 Chat Latest agar kamu bisa memakai model chat OpenAI terbaru di Roo Code.
-- Skill kini bisa diekspos sebagai slash command dengan eksekusi fallback supaya workflow yang bisa dipakai ulang lebih cepat dijalankan.
+- Menambahkan Poe sebagai provider AI agar kamu bisa langsung mengakses model Poe di Roo Code.
+- Meningkatkan provider xAI dengan migrasi ke Responses API, utilitas transformasi yang bisa dipakai ulang, dan default Grok-4.20 yang diperbarui.
+- Memperbaiki daftar model MiniMax dan penanganan context window agar penyiapannya lebih andal.
 
 <details>
   <summary>🌐 Bahasa yang tersedia</summary>
@@ -40,7 +41,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 

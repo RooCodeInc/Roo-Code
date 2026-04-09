@@ -12,7 +12,7 @@ vi.mock("@src/utils/vscode", () => ({
 
 vi.mock("@roo/package", () => ({
 	Package: {
-		version: "3.51.0",
+		version: "3.52.0",
 	},
 }))
 
@@ -34,9 +34,9 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 			const translations: Record<string, string> = {
 				"chat:announcement.release.heading": "What's New:",
 				"chat:announcement.release.gpt54":
-					"OpenAI GPT-5.4 Support: Added OpenAI GPT-5.4 and GPT-5.3 Chat Latest so you can use the newest OpenAI chat models in Roo Code.",
+					"Poe Provider: Added Poe as an AI provider so you can access Poe models directly in Roo Code.",
 				"chat:announcement.release.slashSkills":
-					"Slash Command Skills: Skills can now be exposed as slash commands with fallback execution for faster workflows.",
+					"xAI and MiniMax Improvements: Migrated the xAI provider to the Responses API, added Grok-4.20 defaults, and fixed MiniMax model listings and context window handling for a more reliable setup.",
 			}
 
 			if (key === "chat:announcement.title") {
@@ -49,18 +49,18 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 }))
 
 describe("Announcement", () => {
-	it("renders the v3.51.0 announcement title and highlights", () => {
+	it("renders the v3.52.0 announcement title and highlights", () => {
 		render(<Announcement hideAnnouncement={vi.fn()} />)
 
-		expect(screen.getByText("Roo Code 3.51.0 Released")).toBeInTheDocument()
+		expect(screen.getByText("Roo Code 3.52.0 Released")).toBeInTheDocument()
 		expect(
 			screen.getByText(
-				"OpenAI GPT-5.4 Support: Added OpenAI GPT-5.4 and GPT-5.3 Chat Latest so you can use the newest OpenAI chat models in Roo Code.",
+				"Poe Provider: Added Poe as an AI provider so you can access Poe models directly in Roo Code.",
 			),
 		).toBeInTheDocument()
 		expect(
 			screen.getByText(
-				"Slash Command Skills: Skills can now be exposed as slash commands with fallback execution for faster workflows.",
+				"xAI and MiniMax Improvements: Migrated the xAI provider to the Responses API, added Grok-4.20 defaults, and fixed MiniMax model listings and context window handling for a more reliable setup.",
 			),
 		).toBeInTheDocument()
 	})

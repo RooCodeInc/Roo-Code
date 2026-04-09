@@ -317,6 +317,11 @@ function getSelectedModel({
 			const info = routerModels.roo?.[id]
 			return { id, info }
 		}
+		case "poe": {
+			const id = apiConfiguration.apiModelId ?? defaultModelId
+			const info = routerModels.poe?.[id]
+			return { id, info }
+		}
 		case "qwen-code": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const info = qwenCodeModels[id as keyof typeof qwenCodeModels]
