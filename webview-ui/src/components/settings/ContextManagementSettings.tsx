@@ -35,6 +35,8 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	enableSubfolderRules?: boolean
 	maxImageFileSize?: number
 	maxTotalImageSize?: number
+	maxImageDimension?: number
+	imageDownscaleQuality?: number
 	profileThresholds?: Record<string, number>
 	includeDiagnosticMessages?: boolean
 	maxDiagnosticMessages?: number
@@ -53,6 +55,8 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "enableSubfolderRules"
 		| "maxImageFileSize"
 		| "maxTotalImageSize"
+		| "maxImageDimension"
+		| "imageDownscaleQuality"
 		| "profileThresholds"
 		| "includeDiagnosticMessages"
 		| "maxDiagnosticMessages"
@@ -74,6 +78,8 @@ export const ContextManagementSettings = ({
 	setCachedStateField,
 	maxImageFileSize,
 	maxTotalImageSize,
+	maxImageDimension,
+	imageDownscaleQuality,
 	profileThresholds = {},
 	includeDiagnosticMessages,
 	maxDiagnosticMessages,
@@ -307,6 +313,66 @@ export const ContextManagementSettings = ({
 						{t("settings:contextManagement.maxTotalImageSize.description")}
 					</div>
 				</SearchableSetting>
+
+				<SearchableSetting
+					settingId="context-max-image-dimension"
+					section="contextManagement"
+					label={t("settings:contextManagement.maxImageDimension.label")}>
+					<div className="flex flex-col gap-2">
+						<span className="font-medium">{t("settings:contextManagement.maxImageDimension.label")}</span>
+						<div className="flex items-center gap-4">
+							<Input
+								type="number"
+								pattern="[0-9]*"
+								className="w-24 bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border px-2 py-1 rounded text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+								value={maxImageDimension ?? 0}
+								min={0}
+								max={8192}
+								step={256}
+								onChange={(e) => {
+									const newValue = parseInt(e.target.value, 10)
+									if (!isNaN(newValue) && newValue >= 0 && newValue <= 8192) {
+										setCachedStateField("maxImageDimension", newValue)
+									}
+								}}
+								onClick={(e) => e.currentTarget.select()}
+								data-testid="max-image-dimension-input"
+							/>
+							<span>
+								{(maxImageDimension ?? 0) === 0
+									? t("settings:contextManagement.maxImageDimension.disabled")
+									: t("settings:contextManagement.maxImageDimension.px")}
+							</span>
+						</div>
+					</div>
+					<div className="text-vscode-descriptionForeground text-sm mt-2">
+						{t("settings:contextManagement.maxImageDimension.description")}
+					</div>
+				</SearchableSetting>
+
+				{(maxImageDimension ?? 0) > 0 && (
+					<SearchableSetting
+						settingId="context-image-downscale-quality"
+						section="contextManagement"
+						label={t("settings:contextManagement.imageDownscaleQuality.label")}>
+						<span className="block font-medium mb-1">
+							{t("settings:contextManagement.imageDownscaleQuality.label")}
+						</span>
+						<div className="flex items-center gap-2">
+							<Slider
+								min={1}
+								max={100}
+								step={1}
+								value={[imageDownscaleQuality ?? 85]}
+								onValueChange={([value]) => setCachedStateField("imageDownscaleQuality", value)}
+							/>
+							<span className="w-10">{imageDownscaleQuality ?? 85}</span>
+						</div>
+						<div className="text-vscode-descriptionForeground text-sm mt-1">
+							{t("settings:contextManagement.imageDownscaleQuality.description")}
+						</div>
+					</SearchableSetting>
+				)}
 
 				<SearchableSetting
 					settingId="context-include-diagnostic-messages"

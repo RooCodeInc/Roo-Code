@@ -660,6 +660,16 @@
 			"mb": "MB",
 			"description": "Limite máximo de tamanho cumulativo (em MB) para todas as imagens processadas em uma única operação read_file. Ao ler várias imagens, o tamanho de cada imagem é adicionado ao total. Se incluir outra imagem exceder esse limite, ela será ignorada."
 		},
+		"maxImageDimension": {
+			"label": "Dimensão máxima de redução de imagem",
+			"px": "px",
+			"description": "Largura ou altura máxima (em pixels) para imagens antes de enviar ao LLM. Imagens que excedem essa dimensão são reduzidas proporcionalmente, preservando a proporção. Defina como 0 para desativar a redução.",
+			"disabled": "Desativado"
+		},
+		"imageDownscaleQuality": {
+			"label": "Qualidade de redução de imagem",
+			"description": "Qualidade de codificação JPEG/WebP (1-100) usada ao recodificar imagens reduzidas. Valores mais altos preservam mais detalhes, mas produzem arquivos maiores. Aplica-se apenas quando a redução de imagem está ativada."
+		},
 		"includeCurrentTime": {
 			"label": "Incluir hora atual no contexto",
 			"description": "Quando ativado, a hora atual e as informações de fuso horário serão incluídas no prompt do sistema. Desative se os modelos pararem de funcionar por problemas de tempo."

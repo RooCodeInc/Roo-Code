@@ -185,6 +185,8 @@ export const webviewMessageHandler = async (
 			rooIgnoreController: currentTask?.rooIgnoreController,
 			maxImageFileSize: state.maxImageFileSize,
 			maxTotalImageSize: state.maxTotalImageSize,
+			maxImageDimension: state.maxImageDimension,
+			imageDownscaleQuality: state.imageDownscaleQuality,
 		})
 		return resolved
 	}
@@ -766,8 +768,12 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("lastShownAnnouncementId", provider.latestAnnouncementId)
 			await provider.postStateToWebview()
 			break
-		case "selectImages":
-			const images = await selectImages()
+		case "selectImages": {
+			const selectState = await provider.getState()
+			const images = await selectImages({
+				maxDimension: selectState.maxImageDimension,
+				quality: selectState.imageDownscaleQuality,
+			})
 			await provider.postMessageToWebview({
 				type: "selectedImages",
 				images,
@@ -775,6 +781,7 @@ export const webviewMessageHandler = async (
 				messageTs: message.messageTs,
 			})
 			break
+		}
 		case "exportCurrentTask":
 			const currentTaskId = provider.getCurrentTask()?.taskId
 			if (currentTaskId) {

@@ -635,6 +635,16 @@
 			"mb": "MB",
 			"description": "Limite de taille cumulée maximale (en MB) pour toutes les images traitées dans une seule opération read_file. Lors de la lecture de plusieurs images, la taille de chaque image est ajoutée au total. Si l'inclusion d'une autre image dépasserait cette limite, elle sera ignorée."
 		},
+		"maxImageDimension": {
+			"label": "Dimension maximale de réduction d'image",
+			"px": "px",
+			"description": "Largeur ou hauteur maximale (en pixels) pour les images avant envoi au LLM. Les images dépassant cette dimension sont réduites proportionnellement, en préservant le rapport d'aspect. Mettre à 0 pour désactiver la réduction.",
+			"disabled": "Désactivé"
+		},
+		"imageDownscaleQuality": {
+			"label": "Qualité de réduction d'image",
+			"description": "Qualité d'encodage JPEG/WebP (1-100) utilisée lors du réencodage des images réduites. Des valeurs plus élevées préservent plus de détails mais produisent des fichiers plus volumineux. S'applique uniquement lorsque la réduction d'image est activée."
+		},
 		"diagnostics": {
 			"includeMessages": {
 				"label": "Inclure automatiquement les diagnostics dans le contexte",
