@@ -16,11 +16,26 @@ import { ApiStream } from "../transform/stream"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
-const QWEN_OAUTH_BASE_URL = "https://chat.qwen.ai"
-const QWEN_OAUTH_TOKEN_ENDPOINT = `${QWEN_OAUTH_BASE_URL}/api/v1/oauth2/token`
 const QWEN_OAUTH_CLIENT_ID = "f0304373b74a44d2b584a3fb70ca9e56"
 const QWEN_DIR = ".qwen"
 const QWEN_CREDENTIAL_FILENAME = "oauth_creds.json"
+
+// Mapping of known portal/resource_url domains to their corresponding API configurations.
+// The Qwen Code CLI sets resource_url to a portal domain (e.g. "portal.qwen.ai"),
+// which must be mapped to the correct Dashscope API base URL and OAuth token endpoint.
+const QWEN_PORTAL_CONFIG: Record<string, { apiBaseUrl: string; oauthBaseUrl: string }> = {
+	"portal.qwen.ai": {
+		apiBaseUrl: "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+		oauthBaseUrl: "https://portal.qwen.ai",
+	},
+	"chat.qwen.ai": {
+		apiBaseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+		oauthBaseUrl: "https://chat.qwen.ai",
+	},
+}
+
+const DEFAULT_API_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+const DEFAULT_OAUTH_BASE_URL = "https://chat.qwen.ai"
 
 interface QwenOAuthCredentials {
 	access_token: string
@@ -122,7 +137,8 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 			client_id: QWEN_OAUTH_CLIENT_ID,
 		}
 
-		const response = await fetch(QWEN_OAUTH_TOKEN_ENDPOINT, {
+		const tokenEndpoint = this.getOAuthTokenEndpoint(credentials)
+		const response = await fetch(tokenEndpoint, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/x-www-form-urlencoded",
@@ -184,12 +200,48 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 		client.baseURL = this.getBaseUrl(this.credentials)
 	}
 
+	/**
+	 * Resolve the resource_url from credentials to the correct Dashscope API base URL.
+	 * The Qwen Code CLI (v0.14.2+) sets resource_url to a portal domain like "portal.qwen.ai"
+	 * which is NOT an API endpoint. We map known portal domains to their corresponding
+	 * Dashscope API URLs. If resource_url is already a dashscope URL, we use it directly.
+	 */
 	private getBaseUrl(creds: QwenOAuthCredentials): string {
-		let baseUrl = creds.resource_url || "https://dashscope.aliyuncs.com/compatible-mode/v1"
+		const resourceUrl = creds.resource_url
+		if (!resourceUrl) {
+			return DEFAULT_API_BASE_URL
+		}
+
+		// Strip protocol for portal config lookup
+		const domain = resourceUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "")
+		const portalConfig = QWEN_PORTAL_CONFIG[domain]
+		if (portalConfig) {
+			return portalConfig.apiBaseUrl
+		}
+
+		// If it's already a full dashscope-style URL, normalize and use it
+		let baseUrl = resourceUrl
 		if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
 			baseUrl = `https://${baseUrl}`
 		}
-		return baseUrl.endsWith("/v1") ? baseUrl : `${baseUrl}/v1`
+		return baseUrl.endsWith("/v1") ? baseUrl : `${baseUrl}/compatible-mode/v1`
+	}
+
+	/**
+	 * Resolve the OAuth token endpoint based on the resource_url from credentials.
+	 * International users (portal.qwen.ai) need a different token endpoint than
+	 * Chinese users (chat.qwen.ai).
+	 */
+	private getOAuthTokenEndpoint(creds: QwenOAuthCredentials | null): string {
+		const resourceUrl = creds?.resource_url
+		if (!resourceUrl) {
+			return `${DEFAULT_OAUTH_BASE_URL}/api/v1/oauth2/token`
+		}
+
+		const domain = resourceUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "")
+		const portalConfig = QWEN_PORTAL_CONFIG[domain]
+		const oauthBase = portalConfig?.oauthBaseUrl || DEFAULT_OAUTH_BASE_URL
+		return `${oauthBase}/api/v1/oauth2/token`
 	}
 
 	private async callApiWithRetry<T>(apiCall: () => Promise<T>): Promise<T> {
