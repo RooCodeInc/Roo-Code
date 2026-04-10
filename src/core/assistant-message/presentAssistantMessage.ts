@@ -287,9 +287,11 @@ export async function presentAssistantMessage(cline: Task) {
 				// Have to do this for partial and complete since sending
 				// content in thinking tags to markdown renderer will
 				// automatically be removed.
-				// Strip any streamed <thinking> tags from text output.
+				// Strip any streamed <thinking> or <thought> tags from text output.
 				content = content.replace(/<thinking>\s?/g, "")
 				content = content.replace(/\s?<\/thinking>/g, "")
+				content = content.replace(/<thought>\s?/g, "")
+				content = content.replace(/\s?<\/thought>/g, "")
 			}
 
 			await cline.say("text", content, undefined, block.partial)
