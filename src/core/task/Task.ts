@@ -137,6 +137,7 @@ const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
 const FORCED_CONTEXT_REDUCTION_PERCENT = 75 // Keep 75% of context (remove 25%) on context window errors
 const MAX_CONTEXT_WINDOW_RETRIES = 3 // Maximum retries for context window errors
+const MAX_STREAM_RETRIES = 5 // Maximum retries for first-chunk and mid-stream errors
 
 export interface TaskOptions extends CreateTaskOptions {
 	provider: ClineProvider
@@ -2646,6 +2647,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Add environment details as its own text block, separate from tool
 			// results.
 			let finalUserContent = [...contentWithoutEnvDetails, { type: "text" as const, text: environmentDetails }]
+
+			// When retrying after an error, prepend a context recovery hint to help the model
+			// re-orient to the current task. This prevents weaker models from latching onto
+			// earlier completed tasks instead of the user's most recent request.
+			const currentRetryAttempt = currentItem.retryAttempt ?? 0
+			if (currentRetryAttempt > 0) {
+				const recoveryHint: Anthropic.Messages.TextBlockParam = {
+					type: "text" as const,
+					text: "[CONTEXT RECOVERY NOTE: The previous API request failed due to a provider error and was automatically retried. Please focus on the user's most recent request below and continue from where you left off. Do not repeat or re-announce previously completed tasks.]",
+				}
+				finalUserContent = [recoveryHint, ...finalUserContent]
+			}
+
 			// Only add user message to conversation history if:
 			// 1. This is the first attempt (retryAttempt === 0), AND
 			// 2. The original userContent was not empty (empty signals delegation resume where
@@ -2658,6 +2672,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			if (shouldAddUserMessage) {
 				await this.addToApiConversationHistory({ role: "user", content: finalUserContent })
 				TelemetryService.instance.captureConversationMessage(this.taskId, "user")
+			}
+
+			// On retry, update the existing last user message in API history with the
+			// recovery hint and refreshed environment details.
+			if (currentRetryAttempt > 0 && !isEmptyUserContent) {
+				const lastIdx = this.apiConversationHistory.length - 1
+				if (lastIdx >= 0 && this.apiConversationHistory[lastIdx].role === "user") {
+					this.apiConversationHistory[lastIdx] = { role: "user", content: finalUserContent }
+				}
 			}
 
 			// Since we sent off a placeholder api_req_started message to update the
@@ -3264,14 +3287,37 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						} else {
 							// Stream failed - log the error and retry with the same content
 							// The existing rate limiting will prevent rapid retries
+							const currentRetry = currentItem.retryAttempt ?? 0
 							console.error(
-								`[Task#${this.taskId}.${this.instanceId}] Stream failed, will retry: ${streamingFailedMessage}`,
+								`[Task#${this.taskId}.${this.instanceId}] Stream failed (attempt ${currentRetry + 1}/${MAX_STREAM_RETRIES}), will retry: ${streamingFailedMessage}`,
 							)
+
+							// Check if we've exceeded the maximum number of stream retries
+							if (currentRetry >= MAX_STREAM_RETRIES) {
+								console.error(
+									`[Task#${this.taskId}.${this.instanceId}] Max mid-stream retries (${MAX_STREAM_RETRIES}) exceeded, presenting error to user`,
+								)
+								const { response } = await this.ask(
+									"api_req_failed",
+									`Mid-stream error after ${MAX_STREAM_RETRIES} retries: ${streamingFailedMessage}`,
+								)
+								if (response !== "yesButtonClicked") {
+									break
+								}
+								await this.say("api_req_retried")
+								// User clicked retry - reset retry count and continue
+								stack.push({
+									userContent: currentUserContent,
+									includeFileDetails: false,
+									retryAttempt: 0,
+								})
+								continue
+							}
 
 							// Apply exponential backoff similar to first-chunk errors when auto-resubmit is enabled
 							const stateForBackoff = await this.providerRef.deref()?.getState()
 							if (stateForBackoff?.autoApprovalEnabled) {
-								await this.backoffAndAnnounce(currentItem.retryAttempt ?? 0, error)
+								await this.backoffAndAnnounce(currentRetry, error)
 
 								// Check if task was aborted during the backoff
 								if (this.abort) {
@@ -3289,7 +3335,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							stack.push({
 								userContent: currentUserContent,
 								includeFileDetails: false,
-								retryAttempt: (currentItem.retryAttempt ?? 0) + 1,
+								retryAttempt: currentRetry + 1,
 							})
 
 							// Continue to retry the request
@@ -4327,6 +4373,24 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// note that this api_req_failed ask is unique in that we only present this option if the api hasn't streamed any content yet (ie it fails on the first chunk due), as it would allow them to hit a retry button. However if the api failed mid-stream, it could be in any arbitrary state where some tools may have executed, so that error is handled differently and requires cancelling the task entirely.
 			if (autoApprovalEnabled) {
+				// Check if we've exceeded the maximum number of stream retries
+				if (retryAttempt >= MAX_STREAM_RETRIES) {
+					console.error(
+						`[Task#${this.taskId}.${this.instanceId}] Max first-chunk retries (${MAX_STREAM_RETRIES}) exceeded, presenting error to user`,
+					)
+					const { response } = await this.ask(
+						"api_req_failed",
+						error.message ?? JSON.stringify(serializeError(error), null, 2),
+					)
+					if (response !== "yesButtonClicked") {
+						throw new Error("API request failed")
+					}
+					await this.say("api_req_retried")
+					// User clicked retry - reset retry count
+					yield* this.attemptApiRequest(0)
+					return
+				}
+
 				// Apply shared exponential backoff and countdown UX
 				await this.backoffAndAnnounce(retryAttempt, error)
 
