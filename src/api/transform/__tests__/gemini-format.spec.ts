@@ -107,7 +107,7 @@ describe("convertAnthropicMessageToGemini", () => {
 		expect(() => convertAnthropicMessageToGemini(anthropicMessage)).toThrow("Unsupported image source type")
 	})
 
-	it("should convert a message with tool use", () => {
+	it("should convert a message with tool use (no thought signature in history)", () => {
 		const anthropicMessage: Anthropic.Messages.MessageParam = {
 			role: "assistant",
 			content: [
@@ -133,7 +133,40 @@ describe("convertAnthropicMessageToGemini", () => {
 							name: "calculator",
 							args: { operation: "add", numbers: [2, 3] },
 						},
-						thoughtSignature: "skip_thought_signature_validator",
+					},
+				],
+			},
+		])
+	})
+
+	it("should attach thoughtSignature to functionCall when a real signature exists", () => {
+		const anthropicMessage: Anthropic.Messages.MessageParam = {
+			role: "assistant",
+			content: [
+				{ type: "thoughtSignature", thoughtSignature: "real-sig-abc" } as any,
+				{ type: "text", text: "Let me calculate that for you." },
+				{
+					type: "tool_use",
+					id: "calc-123",
+					name: "calculator",
+					input: { operation: "add", numbers: [2, 3] },
+				},
+			],
+		}
+
+		const result = convertAnthropicMessageToGemini(anthropicMessage)
+
+		expect(result).toEqual([
+			{
+				role: "model",
+				parts: [
+					{ text: "Let me calculate that for you." },
+					{
+						functionCall: {
+							name: "calculator",
+							args: { operation: "add", numbers: [2, 3] },
+						},
+						thoughtSignature: "real-sig-abc",
 					},
 				],
 			},
