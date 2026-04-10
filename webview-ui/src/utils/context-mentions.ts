@@ -32,9 +32,16 @@ export function insertMention(
 ): { newValue: string; mentionIndex: number } {
 	// Handle slash command selection (only when explicitly selecting a slash command)
 	if (isSlashCommand) {
+		const beforeCursor = text.slice(0, position)
+		const afterCursor = text.slice(position)
+		// Find the start of the current line
+		const currentLineStart = beforeCursor.lastIndexOf("\n") + 1
+		const beforeLine = text.slice(0, currentLineStart)
+		// Replace slash command token on the current line (from line start to cursor)
+		const newValue = beforeLine + value + afterCursor
 		return {
-			newValue: value,
-			mentionIndex: 0,
+			newValue,
+			mentionIndex: currentLineStart,
 		}
 	}
 
@@ -367,8 +374,10 @@ export function getContextMenuOptions(
 export function shouldShowContextMenu(text: string, position: number): boolean {
 	const beforeCursor = text.slice(0, position)
 
-	// Check if we're in a slash command context (at the beginning and no space yet)
-	if (text.startsWith("/") && !text.includes(" ") && position <= text.length) {
+	// Check if we're in a slash command context on the current line
+	const currentLineStart = beforeCursor.lastIndexOf("\n") + 1
+	const currentLineBefore = beforeCursor.slice(currentLineStart)
+	if (currentLineBefore.startsWith("/") && !currentLineBefore.includes(" ")) {
 		return true
 	}
 

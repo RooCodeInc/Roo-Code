@@ -52,7 +52,7 @@ describe("insertMention", () => {
 
 	it("should handle slash command replacement", () => {
 		const result = insertMention("/mode some", 5, "code", true) // Simulating mode selection
-		expect(result.newValue).toBe("code") // Should replace the whole text
+		expect(result.newValue).toBe("code some") // Should replace slash token on current line, preserve rest
 		expect(result.mentionIndex).toBe(0)
 	})
 
@@ -106,16 +106,32 @@ describe("insertMention", () => {
 
 	// --- Tests for isSlashCommand parameter ---
 	describe("isSlashCommand parameter", () => {
-		it("should replace entire text when isSlashCommand is true", () => {
+		it("should replace slash token on current line when isSlashCommand is true", () => {
 			const result = insertMention("/cod", 4, "code", true)
 			expect(result.newValue).toBe("code")
 			expect(result.mentionIndex).toBe(0)
 		})
 
-		it("should replace entire text even when @ mentions exist and isSlashCommand is true", () => {
+		it("should replace slash token but preserve text after cursor when isSlashCommand is true", () => {
 			const result = insertMention("/code @some/file.ts", 5, "debug", true)
-			expect(result.newValue).toBe("debug")
+			expect(result.newValue).toBe("debug @some/file.ts")
 			expect(result.mentionIndex).toBe(0)
+		})
+
+		it("should replace only current line slash token in multiline text", () => {
+			const text = "/code\n/deb"
+			const position = 10 // cursor at end of "/deb"
+			const result = insertMention(text, position, "debug", true)
+			expect(result.newValue).toBe("/code\ndebug")
+			expect(result.mentionIndex).toBe(6) // start of second line
+		})
+
+		it("should preserve other lines when inserting slash command on second line", () => {
+			const text = "/code\nsome text here\n/arc"
+			const position = 25 // cursor at end of "/arc"
+			const result = insertMention(text, position, "architect", true)
+			expect(result.newValue).toBe("/code\nsome text here\narchitect")
+			expect(result.mentionIndex).toBe(21) // start of third line
 		})
 
 		it("should insert @ mention correctly after slash command when isSlashCommand is false", () => {
@@ -584,5 +600,30 @@ describe("shouldShowContextMenu", () => {
 	it("should return false if an unescaped space exists after @", () => {
 		// This case means the regex wouldn't match anyway, but confirms context menu logic
 		expect(shouldShowContextMenu("@/path/with space", 13)).toBe(false) // Cursor after unescaped space
+	})
+
+	// --- Multiline slash command tests ---
+	it("should return true for slash command on second line", () => {
+		const text = "/code\n/deb"
+		const position = 10 // cursor at end of "/deb"
+		expect(shouldShowContextMenu(text, position)).toBe(true)
+	})
+
+	it("should return true for slash command on third line", () => {
+		const text = "/code\nsome text\n/arc"
+		const position = 19 // cursor at end of "/arc"
+		expect(shouldShowContextMenu(text, position)).toBe(true)
+	})
+
+	it("should return false for non-slash text on second line without @", () => {
+		const text = "/code\nhello"
+		const position = 11 // cursor at end of "hello"
+		expect(shouldShowContextMenu(text, position)).toBe(false)
+	})
+
+	it("should return false for slash command with space on second line", () => {
+		const text = "/code\n/debug something"
+		const position = 13 // cursor after space in "/debug "
+		expect(shouldShowContextMenu(text, position)).toBe(false)
 	})
 })
