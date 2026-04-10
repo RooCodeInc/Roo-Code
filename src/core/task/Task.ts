@@ -2967,6 +2967,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 											const existingToolUse = this.assistantMessageContent[toolUseIndex]
 											if (existingToolUse && existingToolUse.type === "tool_use") {
 												existingToolUse.partial = false
+												// Clear stale nativeArgs from partial parsing so the safety check
+												// in presentAssistantMessage (!block.nativeArgs) properly catches
+												// this as an invalid tool call. Without this, incomplete partial
+												// nativeArgs (e.g., path set but content undefined) would bypass
+												// the check and cause tools to execute with missing parameters.
+												existingToolUse.nativeArgs = undefined
 												// Ensure it has the ID for native protocol
 												;(existingToolUse as any).id = event.id
 											}
@@ -3350,11 +3356,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							presentAssistantMessage(this)
 						} else if (toolUseIndex !== undefined) {
 							// finalizeStreamingToolCall returned null (malformed JSON or missing args)
-							// We still need to mark the tool as non-partial so it gets executed
-							// The tool's validation will catch any missing required parameters
+							// We still need to mark the tool as non-partial so it gets presented.
+							// The presentAssistantMessage safety check will catch missing nativeArgs.
 							const existingToolUse = this.assistantMessageContent[toolUseIndex]
 							if (existingToolUse && existingToolUse.type === "tool_use") {
 								existingToolUse.partial = false
+								// Clear stale nativeArgs from partial parsing so the safety check
+								// in presentAssistantMessage (!block.nativeArgs) properly catches
+								// this as an invalid tool call. Without this, incomplete partial
+								// nativeArgs (e.g., path set but content undefined) would bypass
+								// the check and cause tools to execute with missing parameters.
+								existingToolUse.nativeArgs = undefined
 								// Ensure it has the ID for native protocol
 								;(existingToolUse as any).id = event.id
 							}

@@ -465,7 +465,7 @@ export class NativeToolCallParser {
 				break
 
 			case "write_to_file":
-				if (partialArgs.path || partialArgs.content) {
+				if (partialArgs.path !== undefined && partialArgs.content !== undefined) {
 					nativeArgs = {
 						path: partialArgs.path,
 						content: partialArgs.content,
