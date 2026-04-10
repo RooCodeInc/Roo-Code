@@ -12,6 +12,13 @@ describe("anthropic-filter", () => {
 			expect(VALID_ANTHROPIC_BLOCK_TYPES.has("thinking")).toBe(true)
 			expect(VALID_ANTHROPIC_BLOCK_TYPES.has("redacted_thinking")).toBe(true)
 			expect(VALID_ANTHROPIC_BLOCK_TYPES.has("document")).toBe(true)
+			expect(VALID_ANTHROPIC_BLOCK_TYPES.has("server_tool_use")).toBe(true)
+			expect(VALID_ANTHROPIC_BLOCK_TYPES.has("advisor_tool_result")).toBe(true)
+		})
+
+		it("should contain server_tool_use and advisor_tool_result", () => {
+			expect(VALID_ANTHROPIC_BLOCK_TYPES.has("server_tool_use")).toBe(true)
+			expect(VALID_ANTHROPIC_BLOCK_TYPES.has("advisor_tool_result")).toBe(true)
 		})
 
 		it("should not contain internal or provider-specific types", () => {
@@ -139,6 +146,60 @@ describe("anthropic-filter", () => {
 
 			expect(result).toHaveLength(1)
 			expect(result[0].content).toEqual([{ type: "text", text: "Valid text" }])
+		})
+
+		it("should preserve server_tool_use blocks in assistant turns", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Hello" },
+				{
+					role: "assistant",
+					content: [
+						{ type: "server_tool_use" as any, id: "srvtoolu_abc123", name: "advisor", input: {} },
+						{ type: "text", text: "Response" },
+					],
+				},
+			]
+			const result = filterNonAnthropicBlocks(messages)
+			expect(result).toHaveLength(2)
+			expect(result[1].content).toHaveLength(2)
+			expect((result[1].content as any[])[0].type).toBe("server_tool_use")
+		})
+
+		it("should preserve advisor_tool_result blocks in assistant turns", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Hello" },
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "advisor_tool_result" as any,
+							tool_use_id: "srvtoolu_abc123",
+							content: "Advisor says hi",
+						},
+						{ type: "text", text: "Response" },
+					],
+				},
+			]
+			const result = filterNonAnthropicBlocks(messages)
+			expect(result).toHaveLength(2)
+			expect(result[1].content).toHaveLength(2)
+			expect((result[1].content as any[])[0].type).toBe("advisor_tool_result")
+		})
+
+		it("should preserve both server_tool_use and advisor_tool_result block types alongside text blocks", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "server_tool_use" as any, id: "srvtoolu_abc123", name: "advisor", input: {} },
+						{ type: "advisor_tool_result" as any, tool_use_id: "srvtoolu_abc123", content: "ok" },
+						{ type: "text", text: "Final answer" },
+					],
+				},
+			]
+			const result = filterNonAnthropicBlocks(messages)
+			expect(result).toHaveLength(1)
+			expect(result[0].content).toHaveLength(3)
 		})
 	})
 })
