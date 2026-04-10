@@ -209,6 +209,141 @@ describe("AnthropicHandler", () => {
 			const requestOptions = mockCreate.mock.calls[mockCreate.mock.calls.length - 1]?.[1]
 			expect(requestOptions?.headers?.["anthropic-beta"]).toContain("context-1m-2025-08-07")
 		})
+
+		describe("advisor tool feature", () => {
+			const systemPrompt = "You are a helpful assistant."
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [{ type: "text" as const, text: "Hello" }],
+				},
+			]
+
+			it("should include advisor tool beta header when advisor tool is enabled", async () => {
+				const advisorHandler = new AnthropicHandler({
+					apiKey: "test-api-key",
+					apiModelId: "claude-sonnet-4-6",
+					anthropicAdvisorEnabled: true,
+				})
+
+				const stream = advisorHandler.createMessage(systemPrompt, messages)
+
+				for await (const _chunk of stream) {
+					// Consume stream
+				}
+
+				const requestOptions = mockCreate.mock.calls[mockCreate.mock.calls.length - 1]?.[1]
+				expect(requestOptions?.headers?.["anthropic-beta"]).toContain("advisor-tool-2026-03-01")
+			})
+
+			it("should inject advisor tool definition when advisor tool is enabled", async () => {
+				const advisorHandler = new AnthropicHandler({
+					apiKey: "test-api-key",
+					apiModelId: "claude-sonnet-4-6",
+					anthropicAdvisorEnabled: true,
+				})
+
+				const stream = advisorHandler.createMessage(systemPrompt, messages)
+
+				for await (const _chunk of stream) {
+					// Consume stream
+				}
+
+				const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1]?.[0]
+				expect(callArgs?.tools).toBeDefined()
+				expect(callArgs?.tools).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							type: "advisor_20260301",
+							name: "advisor",
+							model: "claude-opus-4-6",
+						}),
+					]),
+				)
+			})
+
+			it("should include max_uses in advisor tool definition when configured", async () => {
+				const customMaxUses = 5
+				const advisorHandler = new AnthropicHandler({
+					apiKey: "test-api-key",
+					apiModelId: "claude-sonnet-4-6",
+					anthropicAdvisorEnabled: true,
+					anthropicAdvisorMaxUses: customMaxUses,
+				})
+
+				const stream = advisorHandler.createMessage(systemPrompt, messages)
+
+				for await (const _chunk of stream) {
+					// Consume stream
+				}
+
+				const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1]?.[0]
+				const advisorTool = callArgs?.tools?.find((tool: any) => tool.type === "advisor_20260301")
+				expect(advisorTool).toBeDefined()
+				expect(advisorTool?.max_uses).toBe(customMaxUses)
+			})
+
+			it("should use custom advisor model when configured", async () => {
+				const customModel = "claude-opus-4-5-20251101"
+				const advisorHandler = new AnthropicHandler({
+					apiKey: "test-api-key",
+					apiModelId: "claude-sonnet-4-6",
+					anthropicAdvisorEnabled: true,
+					anthropicAdvisorModel: customModel,
+				})
+
+				const stream = advisorHandler.createMessage(systemPrompt, messages)
+
+				for await (const _chunk of stream) {
+					// Consume stream
+				}
+
+				const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1]?.[0]
+				const advisorTool = callArgs?.tools?.find((tool: any) => tool.type === "advisor_20260301")
+				expect(advisorTool).toBeDefined()
+				expect(advisorTool?.model).toBe(customModel)
+			})
+
+			it("should not include advisor tool when advisor tool is disabled", async () => {
+				const stream = handler.createMessage(systemPrompt, messages)
+
+				for await (const _chunk of stream) {
+					// Consume stream
+				}
+
+				const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1]?.[0]
+				const advisorTool = callArgs?.tools?.find((tool: any) => tool.type === "advisor_20260301")
+				expect(advisorTool).toBeUndefined()
+
+				// Also verify beta header is not present
+				const requestOptions = mockCreate.mock.calls[mockCreate.mock.calls.length - 1]?.[1]
+				const betaHeader = requestOptions?.headers?.["anthropic-beta"]
+				if (betaHeader && typeof betaHeader === "string") {
+					expect(betaHeader).not.toContain("advisor-tool-2026-03-01")
+				}
+			})
+
+			it("should use default advisor model and max_uses when not configured", async () => {
+				const advisorHandler = new AnthropicHandler({
+					apiKey: "test-api-key",
+					apiModelId: "claude-sonnet-4-6",
+					anthropicAdvisorEnabled: true,
+					// No anthropicAdvisorModel or anthropicAdvisorMaxUses provided
+				})
+
+				const stream = advisorHandler.createMessage(systemPrompt, messages)
+
+				for await (const _chunk of stream) {
+					// Consume stream
+				}
+
+				const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1]?.[0]
+				const advisorTool = callArgs?.tools?.find((tool: any) => tool.type === "advisor_20260301")
+				expect(advisorTool).toBeDefined()
+				expect(advisorTool?.model).toBe("claude-opus-4-6") // default
+				expect(advisorTool?.max_uses).toBe(3) // default
+			})
+		})
 	})
 
 	describe("completePrompt", () => {

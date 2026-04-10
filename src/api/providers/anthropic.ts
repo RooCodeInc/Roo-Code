@@ -75,8 +75,30 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			betas.push("context-1m-2025-08-07")
 		}
 
+		// Add advisor tool beta flag if enabled
+		if (this.options.anthropicAdvisorEnabled) {
+			betas.push("advisor-tool-2026-03-01")
+		}
+
+		let tools = convertOpenAIToolsToAnthropic(metadata?.tools ?? [])
+
+		// Add advisor tool if enabled
+		if (this.options.anthropicAdvisorEnabled) {
+			const advisorModel = this.options.anthropicAdvisorModel ?? "claude-opus-4-6"
+			const maxUses = this.options.anthropicAdvisorMaxUses ?? 3
+			const advisorToolDef: { type: string; name: string; model: string; max_uses?: number } = {
+				type: "advisor_20260301",
+				name: "advisor",
+				model: advisorModel,
+			}
+			if (maxUses >= 1) {
+				advisorToolDef.max_uses = maxUses
+			}
+			tools.push(advisorToolDef as unknown as Anthropic.Tool)
+		}
+
 		const nativeToolParams = {
-			tools: convertOpenAIToolsToAnthropic(metadata?.tools ?? []),
+			tools,
 			tool_choice: convertOpenAIToolChoiceToAnthropic(metadata?.tool_choice, metadata?.parallelToolCalls),
 		}
 
