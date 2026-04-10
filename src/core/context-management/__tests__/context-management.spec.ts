@@ -343,7 +343,10 @@ describe("Context Management", () => {
 			expect(result.messagesRemoved).toBe(2) // With 4 messages after first, 0.5 fraction = 2 to remove
 			expect(result.summary).toBe("")
 			expect(result.cost).toBe(0)
-			expect(result.prevContextTokens).toBe(totalTokens)
+			// prevContextTokens is now locally counted (same method as newContextTokensAfterTruncation)
+			// to ensure consistent before/after display (#11990)
+			expect(result.prevContextTokens).toBeGreaterThan(0)
+			expect(result.prevContextTokens).toBeGreaterThanOrEqual(result.newContextTokensAfterTruncation ?? 0)
 			// Should have all original messages + truncation marker (non-destructive)
 			expect(result.messages.length).toBe(6) // 5 original + 1 marker
 		})
@@ -505,7 +508,11 @@ describe("Context Management", () => {
 			expect(resultWithLarge.messages).not.toEqual(messagesWithLargeContent) // Should truncate
 			expect(resultWithLarge.summary).toBe("")
 			expect(resultWithLarge.cost).toBe(0)
-			expect(resultWithLarge.prevContextTokens).toBe(baseTokensForLarge + largeContentTokens)
+			// prevContextTokens is locally counted in truncation path for consistent display (#11990)
+			expect(resultWithLarge.prevContextTokens).toBeGreaterThan(0)
+			expect(resultWithLarge.prevContextTokens).toBeGreaterThanOrEqual(
+				resultWithLarge.newContextTokensAfterTruncation ?? 0,
+			)
 
 			// Test case 3: Very large content that will definitely exceed threshold
 			const veryLargeContent = [{ type: "text" as const, text: "X".repeat(1000) }]
@@ -533,7 +540,11 @@ describe("Context Management", () => {
 			expect(resultWithVeryLarge.messages).not.toEqual(messagesWithVeryLargeContent) // Should truncate
 			expect(resultWithVeryLarge.summary).toBe("")
 			expect(resultWithVeryLarge.cost).toBe(0)
-			expect(resultWithVeryLarge.prevContextTokens).toBe(baseTokensForVeryLarge + veryLargeContentTokens)
+			// prevContextTokens is locally counted in truncation path for consistent display (#11990)
+			expect(resultWithVeryLarge.prevContextTokens).toBeGreaterThan(0)
+			expect(resultWithVeryLarge.prevContextTokens).toBeGreaterThanOrEqual(
+				resultWithVeryLarge.newContextTokensAfterTruncation ?? 0,
+			)
 		})
 
 		it("should truncate if tokens are within TOKEN_BUFFER_PERCENTAGE of the threshold", async () => {
@@ -566,7 +577,9 @@ describe("Context Management", () => {
 			expect(result.messagesRemoved).toBe(2) // With 4 messages after first, 0.5 fraction = 2 to remove
 			expect(result.summary).toBe("")
 			expect(result.cost).toBe(0)
-			expect(result.prevContextTokens).toBe(totalTokens)
+			// prevContextTokens is locally counted in truncation path for consistent display (#11990)
+			expect(result.prevContextTokens).toBeGreaterThan(0)
+			expect(result.prevContextTokens).toBeGreaterThanOrEqual(result.newContextTokensAfterTruncation ?? 0)
 			// Should have all original messages + truncation marker (non-destructive)
 			expect(result.messages.length).toBe(6) // 5 original + 1 marker
 		})
@@ -682,7 +695,9 @@ describe("Context Management", () => {
 			expect(result.truncationId).toBeDefined()
 			expect(result.messagesRemoved).toBe(2)
 			expect(result.summary).toBe("")
-			expect(result.prevContextTokens).toBe(totalTokens)
+			// prevContextTokens is locally counted in truncation path for consistent display (#11990)
+			expect(result.prevContextTokens).toBeGreaterThan(0)
+			expect(result.prevContextTokens).toBeGreaterThanOrEqual(result.newContextTokensAfterTruncation ?? 0)
 			// Should have all original messages + truncation marker
 			expect(result.messages.length).toBe(6) // 5 original + 1 marker
 			// The cost might be different than expected, so we don't check it
@@ -733,7 +748,9 @@ describe("Context Management", () => {
 			expect(result.messagesRemoved).toBe(2)
 			expect(result.summary).toBe("")
 			expect(result.cost).toBe(0)
-			expect(result.prevContextTokens).toBe(totalTokens)
+			// prevContextTokens is locally counted in truncation path for consistent display (#11990)
+			expect(result.prevContextTokens).toBeGreaterThan(0)
+			expect(result.prevContextTokens).toBeGreaterThanOrEqual(result.newContextTokensAfterTruncation ?? 0)
 			// Should have all original messages + truncation marker
 			expect(result.messages.length).toBe(6) // 5 original + 1 marker
 
@@ -1336,7 +1353,9 @@ describe("Context Management", () => {
 			expect(result2.messagesRemoved).toBe(2)
 			expect(result2.summary).toBe("")
 			expect(result2.cost).toBe(0)
-			expect(result2.prevContextTokens).toBe(50001)
+			// prevContextTokens is locally counted in truncation path for consistent display (#11990)
+			expect(result2.prevContextTokens).toBeGreaterThan(0)
+			expect(result2.prevContextTokens).toBeGreaterThanOrEqual(result2.newContextTokensAfterTruncation ?? 0)
 		})
 
 		it("should use ANTHROPIC_DEFAULT_MAX_TOKENS as buffer when maxTokens is undefined", async () => {
@@ -1391,7 +1410,9 @@ describe("Context Management", () => {
 			expect(result2.truncationId).toBeDefined()
 			expect(result2.summary).toBe("")
 			expect(result2.cost).toBe(0)
-			expect(result2.prevContextTokens).toBe(81809)
+			// prevContextTokens is locally counted in truncation path for consistent display (#11990)
+			expect(result2.prevContextTokens).toBeGreaterThan(0)
+			expect(result2.prevContextTokens).toBeGreaterThanOrEqual(result2.newContextTokensAfterTruncation ?? 0)
 		})
 
 		it("should handle small context windows appropriately", async () => {

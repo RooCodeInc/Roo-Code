@@ -332,6 +332,26 @@ export async function manageContext({
 
 	// Fall back to sliding window truncation if needed
 	if (prevContextTokens > allowedTokens) {
+		// Calculate "before" token count using local estimation so it's consistent
+		// with the "after" count. Using API-reported values for "before" and local
+		// estimation for "after" can produce inconsistent results where "after" appears
+		// larger than "before" (see #11990).
+		const visibleMessagesBeforeTruncation = messages.filter(
+			(msg) => !msg.truncationParent && !msg.isTruncationMarker,
+		)
+
+		const systemPromptTokens = await estimateTokenCount([{ type: "text", text: systemPrompt }], apiHandler)
+
+		let localPrevContextTokens = systemPromptTokens
+		for (const msg of visibleMessagesBeforeTruncation) {
+			const content = msg.content
+			if (Array.isArray(content)) {
+				localPrevContextTokens += await estimateTokenCount(content, apiHandler)
+			} else if (typeof content === "string") {
+				localPrevContextTokens += await estimateTokenCount([{ type: "text", text: content }], apiHandler)
+			}
+		}
+
 		const truncationResult = truncateConversation(messages, 0.5, taskId)
 
 		// Calculate new context tokens after truncation by counting non-truncated messages
@@ -341,11 +361,7 @@ export async function manageContext({
 		)
 
 		// Include system prompt tokens so this value matches what we send to the API.
-		// Note: `prevContextTokens` is computed locally here (totalTokens + lastMessageTokens).
-		let newContextTokensAfterTruncation = await estimateTokenCount(
-			[{ type: "text", text: systemPrompt }],
-			apiHandler,
-		)
+		let newContextTokensAfterTruncation = systemPromptTokens
 
 		for (const msg of effectiveMessages) {
 			const content = msg.content
@@ -361,7 +377,7 @@ export async function manageContext({
 
 		return {
 			messages: truncationResult.messages,
-			prevContextTokens,
+			prevContextTokens: localPrevContextTokens,
 			summary: "",
 			cost,
 			error,
