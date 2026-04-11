@@ -535,6 +535,13 @@ export const webviewMessageHandler = async (
 	}
 
 	switch (message.type) {
+		case "clearDiagnostics":
+			{
+				const { diagnosticsManager } = await import("../diagnostics/DiagnosticsManager")
+				diagnosticsManager.clear()
+				await provider.postDiagnosticsToWebview()
+			}
+			break
 		case "webviewDidLaunch":
 			// Load custom modes first
 			const customModes = await provider.customModesManager.getCustomModes()

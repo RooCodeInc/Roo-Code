@@ -1,0 +1,24 @@
+{
+	"actions": {
+		"environmentDetails": "Analyzing surroundings & collecting environment details...",
+		"apiRequest": "Calling API ({{model}})...",
+		"executingTool": "Executing tool: {{tool}}...",
+		"contextCondense": "Condensing context to fit model window...",
+		"processingResponse": "Processing assistant response..."
+	},
+	"tabs": {
+		"logs": "Logs",
+		"speed": "Speed",
+		"resources": "Resources"
+	},
+	"resources": {
+		"cpu": "CPU",
+		"memory": "Memory",
+		"heap": "Heap"
+	},
+	"speed": {
+		"action": "Action",
+		"duration": "Duration",
+		"status": "Status"
+	}
+}

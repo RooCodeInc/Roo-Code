@@ -41,6 +41,7 @@ import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+import { diagnosticsManager } from "../diagnostics/DiagnosticsManager"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -686,6 +687,48 @@ export async function presentAssistantMessage(cline: Task) {
 					)
 					break
 				}
+			}
+
+			// Phase 4: Dynamic Tool Delegation
+			// Orchestrator cannot mutate code directly; it must delegate to a Coder branch.
+			const mutatingTools = [
+				"write_to_file",
+				"apply_diff",
+				"edit",
+				"search_and_replace",
+				"search_replace",
+				"edit_file",
+				"apply_patch",
+				"execute_command",
+				"generate_image",
+			]
+			if (mode === "orchestrator" && mutatingTools.includes(block.name)) {
+				const provider = cline.providerRef.deref()
+				if (provider) {
+					const message = `I am delegating the execution of the '${block.name}' tool to you.
+Params: ${JSON.stringify(block.params, null, 2)}
+Please execute this tool and confirm once done.`
+
+					// Inform the orchestrator that we're delegating
+					pushToolResult(
+						`[Auto-Delegation] Intercepted '${block.name}' call. Spawning a 'Coder' sub-agent branch to perform this action.`,
+					)
+
+					// Trigger delegation to a new coder branch
+					// We use type-casting workarounds to comply with "No Explicit Types" policy
+					const delegateFunc = (provider as any).delegateParentAndOpenChild
+					if (typeof delegateFunc === "function") {
+						void delegateFunc.call(provider, {
+							parentTaskId: cline.taskId,
+							message,
+							mode: "coder",
+						})
+					}
+					break
+				}
+			}
+			if (!block.partial && block.name) {
+				diagnosticsManager.setCurrentAction(t("diagnostics:actions.executingTool", { tool: block.name }))
 			}
 
 			switch (block.name) {

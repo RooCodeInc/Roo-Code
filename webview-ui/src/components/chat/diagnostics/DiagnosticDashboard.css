@@ -1,0 +1,234 @@
+.diagnostic-dashboard {
+	background: rgba(30, 30, 35, 0.7);
+	backdrop-filter: blur(12px);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 12px;
+	margin: 8px 12px;
+	overflow: hidden;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	display: flex;
+	flex-direction: column;
+	max-height: 300px;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.diagnostic-dashboard.collapsed {
+	max-height: 48px;
+}
+
+.diagnostic-dashboard-header {
+	padding: 8px 12px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background: rgba(255, 255, 255, 0.03);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+	cursor: pointer;
+}
+
+.diagnostic-dashboard-title {
+	font-size: 13px;
+	font-weight: 600;
+	color: rgba(255, 255, 255, 0.8);
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.diagnostic-tab-container {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	padding: 8px;
+}
+
+.diagnostic-tabs {
+	display: flex;
+	gap: 4px;
+	margin-bottom: 8px;
+}
+
+.diagnostic-tab-content {
+	flex: 1;
+	overflow-y: auto;
+	font-family: var(--vscode-editor-font-family, monospace);
+}
+
+/* Resource Bars */
+.resource-usage-item {
+	margin-bottom: 12px;
+}
+
+.resource-label {
+	display: flex;
+	justify-content: space-between;
+	font-size: 11px;
+	margin-bottom: 4px;
+	color: rgba(255, 255, 255, 0.6);
+}
+
+.resource-bar-bg {
+	height: 6px;
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 3px;
+	overflow: hidden;
+}
+
+.resource-bar-fill {
+	height: 100%;
+	border-radius: 3px;
+	transition: width 0.5s ease-out;
+	background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.resource-bar-fill.warning {
+	background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+}
+
+/* Logs */
+.diagnostic-log-item {
+	display: flex;
+	gap: 12px;
+	font-size: 11px;
+	padding: 2px 4px;
+	border-radius: 4px;
+}
+
+.diagnostic-log-item:hover {
+	background: rgba(255, 255, 255, 0.05);
+}
+
+.diagnostic-log-time {
+	color: rgba(255, 255, 255, 0.3);
+	flex-shrink: 0;
+}
+
+.diagnostic-log-message {
+	color: rgba(255, 255, 255, 0.8);
+	word-break: break-all;
+}
+
+/* Speed Table */
+.speed-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.speed-table th {
+	text-align: left;
+	font-size: 11px;
+	color: rgba(255, 255, 255, 0.4);
+	padding: 4px;
+}
+
+.speed-table td {
+	font-size: 11px;
+	padding: 6px 4px;
+	border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.duration-tag {
+	padding: 2px 6px;
+	border-radius: 4px;
+	background: rgba(255, 255, 255, 0.1);
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.status-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	display: inline-block;
+	margin-right: 6px;
+}
+
+.status-success {
+	background: #4ec9b0;
+}
+.status-failure {
+	background: #f44747;
+}
+.status-pending {
+	background: #ce9178;
+}
+
+.action-badge {
+	font-size: 10px;
+	padding: 1px 4px;
+	background: rgba(79, 172, 254, 0.2);
+	color: #4facfe;
+	border-radius: 4px;
+	margin-left: 8px;
+	max-width: 150px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.diagnostic-tab-btn {
+	background: none;
+	border: none;
+	color: rgba(255, 255, 255, 0.4);
+	font-size: 11px;
+	padding: 4px 8px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	border-radius: 4px;
+	transition: all 0.2s;
+}
+
+.diagnostic-tab-btn:hover {
+	background: rgba(255, 255, 255, 0.05);
+	color: rgba(255, 255, 255, 0.6);
+}
+
+.diagnostic-tab-btn.active {
+	background: rgba(79, 172, 254, 0.15);
+	color: #4facfe;
+}
+
+.resource-sub-label {
+	font-size: 9px;
+	color: rgba(255, 255, 255, 0.3);
+	margin-top: 4px;
+}
+
+.empty-state {
+	text-align: center;
+	padding: 20px;
+	color: rgba(255, 255, 255, 0.2);
+	font-size: 12px;
+}
+
+.diagnostic-header-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.icon-button {
+	background: none;
+	border: none;
+	color: rgba(255, 255, 255, 0.4);
+	padding: 4px;
+	cursor: pointer;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s;
+}
+
+.icon-button:hover {
+	background: rgba(255, 255, 255, 0.1);
+	color: rgba(255, 255, 255, 0.8);
+}
+
+.logs-view {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}

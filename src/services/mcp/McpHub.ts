@@ -1804,12 +1804,31 @@ export class McpHub extends EventEmitter {
 			timeout = 60 * 1000
 		}
 
+		let activeTaskId = ""
+		let agentRole = ""
+		const targetProvider = this.providerRef?.deref()
+		if (targetProvider) {
+			if (targetProvider.chatStore && targetProvider.chatStore.activeNodeId) {
+				activeTaskId = targetProvider.chatStore.activeNodeId.id
+			}
+			if (targetProvider.getState) {
+				const state = await Reflect.apply(targetProvider.getState, targetProvider, [])
+				agentRole = state?.mode || ""
+			}
+		}
+		const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || ""
+
 		return await connection.client.request(
 			{
 				method: "tools/call",
 				params: {
 					name: toolName,
 					arguments: toolArguments,
+					_meta: {
+						activeTaskId,
+						agentRole,
+						workspacePath,
+					},
 				},
 			},
 			CallToolResultSchema,

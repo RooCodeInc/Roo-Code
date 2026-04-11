@@ -132,6 +132,7 @@ import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
 import { MessageManager } from "../message-manager"
 import { validateAndFixToolResultIds } from "./validateToolResultIds"
 import { mergeConsecutiveApiMessages } from "./mergeConsecutiveApiMessages"
+import { diagnosticsManager } from "../diagnostics/DiagnosticsManager"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -571,6 +572,24 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		)
 
 		onCreated?.(this)
+
+		// Phase 4: Initialize TaskNode in ChatStore
+		const providerInstance = this.providerRef.deref()
+		if (providerInstance && providerInstance.chatStore) {
+			const store = providerInstance.chatStore
+			if (!store.nodes.has(this.taskId)) {
+				store.createBranch(this.parentTaskId || "", this.metadata.task || "New Task", this.taskId)
+				// Set initial mode for the node
+				const node = store.nodes.get(this.taskId)
+				if (node) {
+					void this.getTaskMode().then((m) => {
+						node.setMode(m)
+					})
+				}
+			}
+			// Always switch context to the current task's node when it becomes active
+			store.switchContext(this.taskId)
+		}
 
 		if (startTask) {
 			this._started = true
@@ -1027,6 +1046,21 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const validatedMessage = validateAndFixToolResultIds(messageToAdd, historyForValidation)
 			const messageWithTs = { ...validatedMessage, ts: Date.now() }
 			this.apiConversationHistory.push(messageWithTs)
+		}
+
+		// Phase 4: Push to ChatStore
+		const providerInstance = this.providerRef.deref()
+		if (providerInstance && providerInstance.chatStore) {
+			const node = providerInstance.chatStore.nodes.get(this.taskId)
+			if (node) {
+				const lastMsg = this.apiConversationHistory[this.apiConversationHistory.length - 1]
+				node.addMessage({
+					id: lastMsg.id || crypto.randomUUID(),
+					role: lastMsg.role,
+					content: lastMsg,
+					ts: lastMsg.ts || Date.now(),
+				})
+			}
 		}
 
 		await this.saveApiConversationHistory()
@@ -2706,6 +2740,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 			}
 
+			diagnosticsManager.setCurrentAction(t("diagnostics:actions.environmentDetails"))
 			const environmentDetails = await getEnvironmentDetails(this, currentIncludeFileDetails)
 
 			// Remove any existing environment_details blocks before adding fresh ones.
@@ -2870,6 +2905,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Yields only if the first chunk is successful, otherwise will
 				// allow the user to retry the request (most likely due to rate
 				// limit error, which gets thrown on the first chunk).
+				diagnosticsManager.setCurrentAction(t("diagnostics:actions.apiRequest", { model: cachedModelId }))
+				diagnosticsManager.log(`[API] Starting request to ${cachedModelId}`)
+				this.providerRef.deref()?.postDiagnosticsToWebviewThrottled()
+
+				const apiStartTime = Date.now()
 				const stream = this.attemptApiRequest(currentItem.retryAttempt ?? 0, { skipProviderRateLimit: true })
 				let assistantMessage = ""
 				let reasoningMessage = ""
@@ -3148,6 +3188,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							break
 						}
 					}
+					diagnosticsManager.recordMetric(
+						"API Request (" + cachedModelId + ")",
+						Date.now() - apiStartTime,
+						"success",
+					)
 
 					// Create a copy of current token values to avoid race conditions
 					const currentTokens = {
@@ -4278,10 +4323,31 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 		}
 
-		// Get the effective API history by filtering out condensed messages
-		// This allows non-destructive condensing where messages are tagged but not deleted,
-		// enabling accurate rewind operations while still sending condensed history to the API.
-		const effectiveHistory = getEffectiveApiHistory(this.apiConversationHistory)
+		// Phase 4: Filter history based on Tree structure
+		let baseHistory = this.apiConversationHistory
+		const providerInstance = this.providerRef.deref()
+		if (providerInstance && providerInstance.chatStore) {
+			const store = providerInstance.chatStore
+			const history = []
+			let currentNodeId: string | undefined = this.taskId
+
+			while (currentNodeId) {
+				const node = store.nodes.get(currentNodeId)
+				if (!node) break
+
+				// Pull messages from the node (stored as ApiMessage in 'content' field)
+				const nodeMessages = node.messages.map((m) => m.content as ApiMessage)
+				history.unshift(...nodeMessages)
+
+				currentNodeId = node.parentId
+			}
+
+			if (history.length > 0) {
+				baseHistory = history
+			}
+		}
+
+		const effectiveHistory = getEffectiveApiHistory(baseHistory)
 		const messagesSinceLastSummary = getMessagesSinceLastSummary(effectiveHistory)
 		// For API only: merge consecutive user messages (excludes summary messages per
 		// mergeConsecutiveApiMessages implementation) without mutating stored history.

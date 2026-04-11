@@ -47,6 +47,7 @@ import { QueuedMessages } from "./QueuedMessages"
 import { WorktreeSelector } from "./WorktreeSelector"
 import FileChangesPanel from "./FileChangesPanel"
 import DismissibleUpsell from "../common/DismissibleUpsell"
+import DiagnosticDashboard from "./diagnostics/DiagnosticDashboard"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { useScrollLifecycle } from "@src/hooks/useScrollLifecycle"
 import { Cloud } from "lucide-react"
@@ -97,6 +98,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		messageQueue = [],
 		showWorktreesInHomeScreen,
 		cwd,
+		diagnostics,
+		devtoolEnabled,
 	} = useExtensionState()
 
 	// Show a WarningRow when the user sends a message with a retired provider.
@@ -1566,6 +1569,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			)}
 			{task ? (
 				<>
+					<DiagnosticDashboard
+						diagnostics={diagnostics}
+						isStreaming={isStreaming}
+						devtoolEnabled={devtoolEnabled}
+					/>
 					<TaskHeader
 						task={task}
 						tokensIn={apiMetrics.totalTokensIn}

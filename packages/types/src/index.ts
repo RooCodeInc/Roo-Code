@@ -33,3 +33,4 @@ export * from "./vscode.ts"
 export * from "./worktree.ts"
 
 export * from "./providers/index.ts"
+export * from "./diagnostics.ts"

@@ -22,6 +22,7 @@ import type { ModelRecord, RouterModels } from "./model.ts"
 import type { OpenAiCodexRateLimitInfo } from "./providers/openai-codex-rate-limits.ts"
 import type { SkillMetadata } from "./skills.ts"
 import type { WorktreeIncludeStatus } from "./worktree.ts"
+import type { DiagnosticSnapshot } from "./diagnostics.ts"
 
 /**
  * ExtensionMessage
@@ -385,6 +386,8 @@ export type ExtensionState = Pick<
 	 * (captured during async getStateToPostToWebview) from overwriting newer messages.
 	 */
 	clineMessagesSeq?: number
+	diagnostics?: DiagnosticSnapshot
+	devtoolEnabled: boolean
 }
 
 export interface Command {
@@ -579,6 +582,7 @@ export interface WebviewMessage {
 		| "createWorktreeInclude"
 		| "checkoutBranch"
 		| "browseForWorktreePath"
+		| "clearDiagnostics"
 		// Skills messages
 		| "requestSkills"
 		| "createSkill"

@@ -429,6 +429,11 @@
 					"default": false,
 					"description": "%settings.debugProxy.tlsInsecure.description%",
 					"markdownDescription": "%settings.debugProxy.tlsInsecure.description%"
+				},
+				"jabberwock.devtool": {
+					"type": "boolean",
+					"default": false,
+					"description": "Enable the diagnostic dashboard (DevTool) in the chat view."
 				}
 			}
 		}

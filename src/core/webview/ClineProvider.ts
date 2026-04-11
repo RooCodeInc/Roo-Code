@@ -8,6 +8,7 @@ import delay from "delay"
 import axios from "axios"
 import pWaitFor from "p-wait-for"
 import * as vscode from "vscode"
+import debounce from "lodash.debounce"
 
 import {
 	type TaskProviderLike,
@@ -94,6 +95,9 @@ import { ContextProxy } from "../config/ContextProxy"
 import { ProviderSettingsManager } from "../config/ProviderSettingsManager"
 import { CustomModesManager } from "../config/CustomModesManager"
 import { Task } from "../task/Task"
+import { ChatStore } from "../state/ChatTreeStore"
+import { onSnapshot, applySnapshot } from "mobx-state-tree"
+import { diagnosticsManager } from "../diagnostics/DiagnosticsManager"
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import type { ClineMessage, TodoItem } from "@jabberwock/types"
@@ -173,6 +177,8 @@ export class ClineProvider
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 
+	public chatStore = ChatStore.create({ nodes: {} })
+
 	constructor(
 		readonly context: vscode.ExtensionContext,
 		private readonly outputChannel: vscode.OutputChannel,
@@ -182,6 +188,19 @@ export class ClineProvider
 	) {
 		super()
 		this.currentWorkspacePath = getWorkspacePath()
+
+		const savedChatTree = this.context.workspaceState.get("jabberwock_chat_tree")
+		if (savedChatTree) {
+			try {
+				applySnapshot(this.chatStore, savedChatTree)
+			} catch (e) {
+				console.error("Failed to restore chat tree snapshot", e)
+			}
+		}
+
+		onSnapshot(this.chatStore, (snapshot) => {
+			this.context.workspaceState.update("jabberwock_chat_tree", snapshot)
+		})
 
 		ClineProvider.activeInstances.add(this)
 
@@ -947,6 +966,9 @@ export class ClineProvider
 			if (e && e.affectsConfiguration("workbench.colorTheme")) {
 				// Sends latest theme name to webview
 				await this.postMessageToWebview({ type: "theme", text: JSON.stringify(await getTheme()) })
+			}
+			if (e && e.affectsConfiguration(`${Package.name}.devtool`)) {
+				await this.postStateToWebview()
 			}
 		})
 		this.webviewDisposables.push(configDisposable)
@@ -1980,6 +2002,17 @@ export class ClineProvider
 		}
 	}
 
+	async postDiagnosticsToWebview() {
+		this.postMessageToWebview({
+			type: "state",
+			state: await this.getStateToPostToWebview(),
+		})
+	}
+
+	postDiagnosticsToWebviewThrottled = debounce(() => {
+		void this.postDiagnosticsToWebview()
+	}, 1000)
+
 	/**
 	 * Like postStateToWebview but intentionally omits taskHistory.
 	 *
@@ -2364,6 +2397,8 @@ export class ClineProvider
 				}
 			})(),
 			debug: vscode.workspace.getConfiguration(Package.name).get<boolean>("debug", false),
+			devtoolEnabled: vscode.workspace.getConfiguration(Package.name).get<boolean>("devtool", false),
+			diagnostics: diagnosticsManager.getSnapshot(),
 		}
 	}
 
@@ -2575,6 +2610,7 @@ export class ClineProvider
 			imageGenerationProvider: stateValues.imageGenerationProvider,
 			openRouterImageApiKey: stateValues.openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel: stateValues.openRouterImageGenerationSelectedModel,
+			devtoolEnabled: vscode.workspace.getConfiguration(Package.name).get<boolean>("devtool", false),
 		}
 	}
 
@@ -2729,6 +2765,7 @@ export class ClineProvider
 	public log(message: string) {
 		this.outputChannel.appendLine(message)
 		console.log(message)
+		diagnosticsManager.log(message, message.toLowerCase().includes("error") ? "error" : "info")
 	}
 
 	// getters

@@ -179,6 +179,7 @@ export const globalSettingsSchema = z.object({
 	execaShellPath: z.string().optional(),
 
 	diagnosticsEnabled: z.boolean().optional(),
+	devtool: z.boolean().optional(),
 
 	rateLimitSeconds: z.number().optional(),
 	experiments: experimentsSchema.optional(),

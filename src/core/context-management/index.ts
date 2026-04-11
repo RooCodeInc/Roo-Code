@@ -8,6 +8,8 @@ import { MAX_CONDENSE_THRESHOLD, MIN_CONDENSE_THRESHOLD, summarizeConversation, 
 import { ApiMessage } from "../task-persistence/apiMessages"
 import { ANTHROPIC_DEFAULT_MAX_TOKENS } from "@jabberwock/types"
 import { JabberwockIgnoreController } from "../ignore/JabberwockIgnoreController"
+import { diagnosticsManager } from "../diagnostics/DiagnosticsManager"
+import { t } from "../../i18n"
 
 /**
  * Context Management
@@ -306,6 +308,8 @@ export async function manageContext({
 	if (autoCondenseContext) {
 		const contextPercent = (100 * prevContextTokens) / contextWindow
 		if (contextPercent >= effectiveThreshold || prevContextTokens > allowedTokens) {
+			diagnosticsManager.setCurrentAction(t("diagnostics:actions.contextCondense"))
+			const condenseStartTime = Date.now()
 			// Attempt to intelligently condense the context
 			const result = await summarizeConversation({
 				messages,
@@ -325,6 +329,7 @@ export async function manageContext({
 				errorDetails = result.errorDetails
 				cost = result.cost
 			} else {
+				diagnosticsManager.recordMetric("Context Condensation", Date.now() - condenseStartTime, "success")
 				return { ...result, prevContextTokens }
 			}
 		}
