@@ -272,8 +272,9 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 				case "message_stop":
 					// No usage data, just an indicator that the message is done.
 					break
-				case "content_block_start":
-					switch (chunk.content_block.type) {
+				case "content_block_start": {
+					const contentBlock = chunk.content_block as any
+					switch (contentBlock.type) {
 						case "thinking":
 							// We may receive multiple text blocks, in which
 							// case just insert a line break between them.
@@ -281,7 +282,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 								yield { type: "reasoning", text: "\n" }
 							}
 
-							yield { type: "reasoning", text: chunk.content_block.thinking }
+							yield { type: "reasoning", text: contentBlock.thinking }
 							break
 						case "text":
 							// We may receive multiple text blocks, in which
@@ -290,21 +291,67 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 								yield { type: "text", text: "\n" }
 							}
 
-							yield { type: "text", text: chunk.content_block.text }
+							yield { type: "text", text: contentBlock.text }
 							break
 						case "tool_use": {
 							// Emit initial tool call partial with id and name
 							yield {
 								type: "tool_call_partial",
 								index: chunk.index,
-								id: chunk.content_block.id,
-								name: chunk.content_block.name,
+								id: contentBlock.id,
+								name: contentBlock.name,
 								arguments: undefined,
+							}
+							break
+						}
+						case "server_tool_use": {
+							const { id, name, input } = contentBlock
+							yield {
+								type: "advisor_tool_use",
+								id,
+								name,
+								input: typeof input === "object" ? JSON.stringify(input) : String(input ?? "{}"),
+							}
+							break
+						}
+						case "advisor_tool_result": {
+							const block = contentBlock as {
+								type: "advisor_tool_result"
+								tool_use_id: string
+								content:
+									| string
+									| { type: string; text?: string }
+									| Array<{ type: string; text?: string }>
+									| undefined
+							}
+							const rawContent = block.content
+							let text: string
+							if (typeof rawContent === "string") {
+								text = rawContent
+							} else if (Array.isArray(rawContent)) {
+								text = rawContent
+									.filter((b) => b.type === "text")
+									.map((b) => b.text ?? "")
+									.join("\n")
+							} else if (rawContent && typeof rawContent === "object" && "text" in rawContent) {
+								// advisor_result shape: { type: "advisor_result", text: "..." }
+								text = (rawContent as { text?: string }).text ?? ""
+							} else {
+								text = ""
+							}
+							yield {
+								type: "advisor_tool_result",
+								tool_use_id: block.tool_use_id,
+								content: text,
+								// Pass through the verbatim content object so it can be
+								// round-tripped on subsequent turns as the Anthropic API requires.
+								rawContent: rawContent,
 							}
 							break
 						}
 					}
 					break
+				}
 				case "content_block_delta":
 					switch (chunk.delta.type) {
 						case "thinking_delta":

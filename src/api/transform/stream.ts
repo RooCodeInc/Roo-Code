@@ -11,6 +11,8 @@ export type ApiStreamChunk =
 	| ApiStreamToolCallDeltaChunk
 	| ApiStreamToolCallEndChunk
 	| ApiStreamToolCallPartialChunk
+	| ApiStreamAdvisorToolUseChunk
+	| ApiStreamAdvisorToolResultChunk
 	| ApiStreamError
 
 export interface ApiStreamError {
@@ -105,6 +107,22 @@ export interface ApiStreamToolCallPartialChunk {
 	id?: string
 	name?: string
 	arguments?: string
+}
+
+export interface ApiStreamAdvisorToolUseChunk {
+	type: "advisor_tool_use"
+	id: string
+	name: string
+	input: string // JSON-serialized
+}
+
+export interface ApiStreamAdvisorToolResultChunk {
+	type: "advisor_tool_result"
+	tool_use_id: string
+	/** Extracted text for display purposes */
+	content: string
+	/** Verbatim original content object from the API, for round-tripping on subsequent turns */
+	rawContent: unknown
 }
 
 export interface GroundingSource {

@@ -842,6 +842,12 @@ export interface ClineSayTool {
 	skill?: string
 }
 
+export interface ClineAskUseAdvisorTool {
+	toolUseId: string
+	name: string
+	input: string // JSON-serialized input
+}
+
 export interface ClineAskUseMcpServer {
 	serverName: string
 	type: "use_mcp_tool" | "access_mcp_resource"

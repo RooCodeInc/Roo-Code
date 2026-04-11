@@ -98,6 +98,10 @@
 	"enqueueMessage": "将消息加入队列（当前任务完成后发送）",
 	"scrollToBottom": "滚动到聊天底部",
 	"about": "Roo Code 是您编辑器中的整个 AI 开发团队。",
+	"advisor": {
+		"isConsulting": "正在咨询顾问...",
+		"resultLabel": "顾问回复"
+	},
 	"docs": "查看我们的 <DocsLink>文档</DocsLink> 了解更多信息。",
 	"onboarding": "此工作区中的任务列表为空。",
 	"rooTips": {

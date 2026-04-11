@@ -98,6 +98,10 @@
 	"enqueueMessage": "Aggiungi il messaggio alla coda (sarà inviato dopo che l'attività corrente sarà terminata)",
 	"scrollToBottom": "Scorri fino alla fine della chat",
 	"about": "Roo Code è un intero team di sviluppo AI nel tuo editor.",
+	"advisor": {
+		"isConsulting": "Consultazione del consulente...",
+		"resultLabel": "Risposta del consulente"
+	},
 	"docs": "Consulta la nostra <DocsLink>documentazione</DocsLink> per saperne di più.",
 	"onboarding": "La tua lista di attività in questo spazio di lavoro è vuota.",
 	"rooTips": {

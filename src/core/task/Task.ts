@@ -35,6 +35,7 @@ import {
 	type ModelInfo,
 	type ClineApiReqCancelReason,
 	type ClineApiReqInfo,
+	type ClineAskUseAdvisorTool,
 	RooCodeEventName,
 	TelemetryEventName,
 	TaskStatus,
@@ -2792,6 +2793,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				let assistantMessage = ""
 				let reasoningMessage = ""
 				let pendingGroundingSources: GroundingSource[] = []
+				let hasAdvisorEvents = false
+				// Accumulate advisor blocks in arrival order so they can be saved to API history.
+				// Anthropic requires the full assistant content (including server_tool_use /
+				// advisor_tool_result blocks) to be round-tripped on subsequent turns.
+				const pendingAdvisorBlocks: Array<{
+					type: "server_tool_use" | "advisor_tool_result"
+					id?: string
+					name?: string
+					input?: Record<string, unknown>
+					tool_use_id?: string
+					content?: unknown
+				}> = []
 				this.isStreaming = true
 
 				try {
@@ -3012,6 +3025,37 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								// Present the tool call to user - presentAssistantMessage will execute
 								// tools sequentially and accumulate all results in userMessageContent
 								presentAssistantMessage(this)
+								break
+							}
+							case "advisor_tool_use": {
+								hasAdvisorEvents = true
+								pendingAdvisorBlocks.push({
+									type: "server_tool_use",
+									id: chunk.id,
+									name: chunk.name,
+									input:
+										typeof chunk.input === "string" ? {} : (chunk.input as Record<string, unknown>),
+								})
+								const payload: ClineAskUseAdvisorTool = {
+									toolUseId: chunk.id,
+									name: chunk.name,
+									input: chunk.input,
+								}
+								await this.say("use_advisor_tool", JSON.stringify(payload))
+								break
+							}
+							case "advisor_tool_result": {
+								hasAdvisorEvents = true
+								pendingAdvisorBlocks.push({
+									type: "advisor_tool_result",
+									tool_use_id: chunk.tool_use_id,
+									// Use rawContent (the verbatim original object from the API) for
+									// round-tripping to Anthropic. The API requires content to be the
+									// original discriminated union object (e.g. { type: "advisor_result", text: "..." })
+									// not a plain string. chunk.content is the extracted text for display only.
+									content: chunk.rawContent,
+								})
+								await this.say("advisor_tool_result", chunk.content)
 								break
 							}
 							case "text": {
@@ -3410,14 +3454,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// the assistant message is already in history. Otherwise, tool_result blocks would appear
 				// BEFORE their corresponding tool_use blocks, causing API errors.
 
-				// Check if we have any content to process (text or tool uses)
+				// Check if we have any content to process (text, tool uses, or advisor interactions)
 				const hasTextContent = assistantMessage.length > 0
 
 				const hasToolUses = this.assistantMessageContent.some(
 					(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
 				)
 
-				if (hasTextContent || hasToolUses) {
+				if (hasTextContent || hasToolUses || hasAdvisorEvents) {
 					// Reset counter when we get a successful response with content
 					this.consecutiveNoAssistantMessagesCount = 0
 					// Display grounding sources to the user if they exist
@@ -3503,6 +3547,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								})
 							}
 						}
+					}
+
+					// Append advisor blocks (server_tool_use / advisor_tool_result) that arrived during
+					// this stream. The Anthropic API requires these to be round-tripped verbatim on
+					// subsequent turns; omitting them causes a 400 invalid_request_error.
+					for (const advisorBlock of pendingAdvisorBlocks) {
+						assistantContent.push(advisorBlock as unknown as Anthropic.ToolUseBlockParam)
 					}
 
 					// Enforce new_task isolation: if new_task is called alongside other tools,

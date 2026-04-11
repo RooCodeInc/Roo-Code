@@ -98,6 +98,10 @@
 	"enqueueMessage": "Nachricht zur Warteschlange hinzufügen (wird nach Abschluss der aktuellen Aufgabe gesendet)",
 	"scrollToBottom": "Zum Chat-Ende scrollen",
 	"about": "Roo Code ist ein ganzes KI-Entwicklerteam in deinem Editor.",
+	"advisor": {
+		"isConsulting": "Berater wird konsultiert...",
+		"resultLabel": "Berater-Antwort"
+	},
 	"docs": "Schau in unsere <DocsLink>Dokumentation</DocsLink>, um mehr zu erfahren.",
 	"onboarding": "Deine Aufgabenliste in diesem Arbeitsbereich ist leer.",
 	"rooTips": {

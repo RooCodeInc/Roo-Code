@@ -922,5 +922,151 @@ describe("AnthropicHandler", () => {
 				arguments: '"London"}',
 			})
 		})
+
+		it("should emit advisor_tool_use chunk with id from server_tool_use block", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				async *[Symbol.asyncIterator]() {
+					yield {
+						type: "message_start",
+						message: { usage: { input_tokens: 100, output_tokens: 50 } },
+					}
+					yield {
+						type: "content_block_start",
+						index: 0,
+						content_block: {
+							type: "server_tool_use",
+							id: "srvtoolu_abc123",
+							name: "advisor",
+							input: {},
+						},
+					}
+				},
+			}))
+
+			const stream = handler.createMessage("system", [{ role: "user", content: "Hello" }], {
+				taskId: "test-task",
+			})
+
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const advisorUseChunk = chunks.find((c) => c.type === "advisor_tool_use")
+			expect(advisorUseChunk).toBeDefined()
+			expect(advisorUseChunk.id).toBe("srvtoolu_abc123")
+			expect(advisorUseChunk.name).toBe("advisor")
+		})
+
+		it("should emit advisor_tool_result chunk with tool_use_id and text content", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				async *[Symbol.asyncIterator]() {
+					yield {
+						type: "message_start",
+						message: { usage: { input_tokens: 100, output_tokens: 50 } },
+					}
+					yield {
+						type: "content_block_start",
+						index: 1,
+						content_block: {
+							type: "advisor_tool_result",
+							tool_use_id: "srvtoolu_abc123",
+							content: { type: "advisor_result", text: "Use channel-based coordination." },
+						},
+					}
+				},
+			}))
+
+			const stream = handler.createMessage("system", [{ role: "user", content: "Hello" }], {
+				taskId: "test-task",
+			})
+
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const resultChunk = chunks.find((c) => c.type === "advisor_tool_result")
+			expect(resultChunk).toBeDefined()
+			expect(resultChunk.tool_use_id).toBe("srvtoolu_abc123")
+			expect(resultChunk.content).toBe("Use channel-based coordination.")
+			// rawContent must carry the verbatim object for round-tripping to the API
+			expect(resultChunk.rawContent).toEqual({ type: "advisor_result", text: "Use channel-based coordination." })
+		})
+
+		it("should extract text from advisor_result object content shape", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				async *[Symbol.asyncIterator]() {
+					yield {
+						type: "message_start",
+						message: { usage: { input_tokens: 100, output_tokens: 50 } },
+					}
+					yield {
+						type: "content_block_start",
+						index: 0,
+						content_block: {
+							type: "advisor_tool_result",
+							tool_use_id: "srvtoolu_xyz",
+							content: { type: "advisor_result", text: "Plan: do X then Y." },
+						},
+					}
+				},
+			}))
+
+			const stream = handler.createMessage("system", [{ role: "user", content: "Plan?" }], {
+				taskId: "test-task",
+			})
+
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const resultChunk = chunks.find((c) => c.type === "advisor_tool_result")
+			expect(resultChunk).toBeDefined()
+			expect(resultChunk.content).toBe("Plan: do X then Y.")
+			// rawContent must be the verbatim object, not just the extracted text
+			expect(resultChunk.rawContent).toEqual({ type: "advisor_result", text: "Plan: do X then Y." })
+		})
+
+		it("should emit empty string for encrypted advisor_redacted_result content", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				async *[Symbol.asyncIterator]() {
+					yield {
+						type: "message_start",
+						message: { usage: { input_tokens: 100, output_tokens: 50 } },
+					}
+					yield {
+						type: "content_block_start",
+						index: 0,
+						content_block: {
+							type: "advisor_tool_result",
+							tool_use_id: "srvtoolu_redacted",
+							content: { type: "advisor_redacted_result", encrypted_content: "opaque-blob" },
+						},
+					}
+				},
+			}))
+
+			const stream = handler.createMessage("system", [{ role: "user", content: "Plan?" }], {
+				taskId: "test-task",
+			})
+
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const resultChunk = chunks.find((c) => c.type === "advisor_tool_result")
+			expect(resultChunk).toBeDefined()
+			expect(resultChunk.tool_use_id).toBe("srvtoolu_redacted")
+			// Encrypted content has no text field — content should be empty string
+			expect(resultChunk.content).toBe("")
+			// rawContent must carry the verbatim encrypted object for round-tripping
+			expect(resultChunk.rawContent).toEqual({
+				type: "advisor_redacted_result",
+				encrypted_content: "opaque-blob",
+			})
+		})
 	})
 })
