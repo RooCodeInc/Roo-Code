@@ -34,6 +34,7 @@ import {
 	VercelAiGatewayHandler,
 	MiniMaxHandler,
 	BasetenHandler,
+	KymaHandler,
 } from "./providers"
 import { NativeOllamaHandler } from "./providers/native-ollama"
 
@@ -177,6 +178,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new MiniMaxHandler(options)
 		case "baseten":
 			return new BasetenHandler(options)
+		case "kyma":
+			return new KymaHandler(options)
 		case "poe":
 			return new PoeHandler(options)
 		default:

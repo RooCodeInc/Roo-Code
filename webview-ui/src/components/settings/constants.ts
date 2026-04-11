@@ -17,6 +17,7 @@ import {
 	fireworksModels,
 	minimaxModels,
 	basetenModels,
+	kymaModels,
 } from "@roo-code/types"
 
 export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, ModelInfo>>> = {
@@ -32,6 +33,7 @@ export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, Mod
 	vertex: vertexModels,
 	xai: xaiModels,
 	sambanova: sambaNovaModels,
+	kyma: kymaModels,
 	zai: internationalZAiModels,
 	fireworks: fireworksModels,
 	minimax: minimaxModels,
@@ -58,6 +60,7 @@ export const PROVIDERS = [
 	{ value: "xai", label: "xAI (Grok)", proxy: false },
 	{ value: "litellm", label: "LiteLLM", proxy: true },
 	{ value: "sambanova", label: "SambaNova", proxy: false },
+	{ value: "kyma", label: "Kyma API", proxy: false },
 	{ value: "zai", label: "Z.ai", proxy: false },
 	{ value: "fireworks", label: "Fireworks AI", proxy: false },
 	{ value: "roo", label: "Roo Code Router", proxy: false },

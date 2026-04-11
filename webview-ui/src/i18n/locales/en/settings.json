@@ -463,6 +463,8 @@
 		"geminiApiKey": "Gemini API Key",
 		"getSambaNovaApiKey": "Get SambaNova API Key",
 		"sambaNovaApiKey": "SambaNova API Key",
+		"getKymaApiKey": "Get Kyma API Key",
+		"kymaApiKey": "Kyma API Key",
 		"getGeminiApiKey": "Get Gemini API Key",
 		"openAiApiKey": "OpenAI API Key",
 		"apiKey": "API Key",
