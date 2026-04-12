@@ -1455,7 +1455,19 @@ export class ClineProvider
 				const hasActualSettings = !!fullProfile.apiProvider
 
 				if (hasActualSettings) {
-					await this.activateProviderProfile({ name: profile.name })
+					try {
+						await this.activateProviderProfile({ name: profile.name })
+					} catch (error) {
+						// If profile activation fails (e.g. corrupted profile data,
+						// proxy provider configuration issues), log the error but
+						// allow the mode switch to complete gracefully. The task will
+						// continue with the current API configuration.
+						this.log(
+							`Failed to activate provider profile "${profile.name}" during mode switch to "${newMode}": ${
+								error instanceof Error ? error.message : String(error)
+							}`,
+						)
+					}
 				} else {
 					// The task will continue with the current/default configuration.
 				}
