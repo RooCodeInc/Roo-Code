@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useEvent } from "react-use"
 import DynamicTextArea from "react-textarea-autosize"
-import { VolumeX, Image, WandSparkles, SendHorizontal, X, ListEnd, Square } from "lucide-react"
+import { VolumeX, Image, WandSparkles, SendHorizontal, X, ListEnd, Square, Activity } from "lucide-react"
 
 import type { ExtensionMessage } from "@jabberwock/types"
 
@@ -99,6 +99,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			cloudUserInfo,
 			enterBehavior,
 			lockApiConfigAcrossModes,
+			devtoolEnabled,
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
@@ -1051,6 +1052,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								}}
 							/>
 							<DynamicTextArea
+								data-agent-action="chat-input"
 								ref={(el) => {
 									if (typeof ref === "function") {
 										ref(el)
@@ -1229,6 +1231,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 												: t("chat:pressToSend", { keyCombination: sendKeyCombination })
 									}>
 									<button
+										data-agent-action={isStreaming ? "cancel-task" : "send-message"}
 										aria-label={
 											isEditMode
 												? t("chat:pressToSend", { keyCombination: sendKeyCombination })
@@ -1299,6 +1302,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				<div className="flex items-center gap-2">
 					<div className="flex items-center gap-2 min-w-0 overflow-clip flex-1">
 						<ModeSelector
+							data-agent-action="mode-select"
 							value={mode}
 							title={t("chat:selectMode")}
 							onChange={handleModeChange}
@@ -1327,6 +1331,24 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							"flex flex-shrink-0 items-center gap-0.5 h-5 leading-none",
 							!isEditMode && cloudUserInfo ? "" : "pr-2",
 						)}>
+						<StandardTooltip content="Toggle DevTools">
+							<button
+								aria-label="Toggle DevTools"
+								onClick={() => vscode.postMessage({ type: "devtoolStatus", text: "toggle" })}
+								className={cn(
+									"relative inline-flex items-center justify-center",
+									"bg-transparent border-none p-1.5",
+									"rounded-md min-w-[28px] min-h-[28px]",
+									"transition-all duration-150",
+									"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+									"cursor-pointer",
+									devtoolEnabled
+										? "text-[#ffaa00] hover:bg-[rgba(255,170,0,0.1)] active:bg-[rgba(255,170,0,0.2)]"
+										: "text-vscode-foreground opacity-60 hover:opacity-100 hover:bg-[rgba(255,255,255,0.05)] active:bg-[rgba(255,255,255,0.1)]",
+								)}>
+								<Activity className="w-4 h-4" />
+							</button>
+						</StandardTooltip>
 						{isTtsPlaying && (
 							<StandardTooltip content={t("chat:stopTts")}>
 								<button

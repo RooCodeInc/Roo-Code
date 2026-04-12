@@ -41,7 +41,7 @@ import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
-import { diagnosticsManager } from "../diagnostics/DiagnosticsManager"
+import { diagnosticsManager } from "../devtools/DiagnosticsManager"
 
 /**
  * Processes and presents assistant message content to the user interface.

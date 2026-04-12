@@ -468,6 +468,15 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					})
 					break
 				}
+				case "diagnostics": {
+					if (message.diagnostics) {
+						setState((prevState) => ({
+							...prevState,
+							diagnostics: message.diagnostics,
+						}))
+					}
+					break
+				}
 			}
 		},
 		[setListApiConfigMeta],
@@ -624,6 +633,18 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setShowWorktreesInHomeScreen: (value) =>
 			setState((prevState) => ({ ...prevState, showWorktreesInHomeScreen: value })),
 	}
+
+	// DevTools: expose state accessor on window for agent inspection
+	useEffect(() => {
+		if (state.devtoolEnabled) {
+			;(window as unknown as Record<string, unknown>).__JABBERWOCK_GET_STATE__ = () => ({ ...state })
+		} else {
+			delete (window as unknown as Record<string, unknown>).__JABBERWOCK_GET_STATE__
+		}
+		return () => {
+			delete (window as unknown as Record<string, unknown>).__JABBERWOCK_GET_STATE__
+		}
+	}, [state, state.devtoolEnabled])
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>
 }

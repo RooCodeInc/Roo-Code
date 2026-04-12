@@ -535,11 +535,30 @@ export const webviewMessageHandler = async (
 	}
 
 	switch (message.type) {
+		case "devtoolStatus":
+			{
+				const config = vscode.workspace.getConfiguration(Package.name)
+				const current = config.get<boolean>("devtool", false)
+				await config.update("devtool", !current, vscode.ConfigurationTarget.Global)
+			}
+			break
 		case "clearDiagnostics":
 			{
-				const { diagnosticsManager } = await import("../diagnostics/DiagnosticsManager")
+				const { diagnosticsManager } = await import("../devtools/DiagnosticsManager")
 				diagnosticsManager.clear()
 				await provider.postDiagnosticsToWebview()
+			}
+			break
+		case "webviewLog":
+			{
+				const { diagnosticsManager } = await import("../devtools/DiagnosticsManager")
+				diagnosticsManager.log(message.text || "")
+			}
+			break
+		case "mstPatch":
+			{
+				const { diagnosticsManager } = await import("../devtools/DiagnosticsManager")
+				diagnosticsManager.log(`[MST_PATCH] ${message.text || ""}`, "debug")
 			}
 			break
 		case "webviewDidLaunch":

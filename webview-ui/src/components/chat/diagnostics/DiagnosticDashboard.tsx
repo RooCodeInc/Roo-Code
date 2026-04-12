@@ -3,16 +3,16 @@ import { useTranslation } from "react-i18next"
 import { Activity, ChevronDown, ChevronUp, Cpu, Database, Terminal, Zap, Share, Trash2 } from "lucide-react"
 import { DiagnosticSnapshot } from "@jabberwock/types"
 import { vscode } from "../../../utils/vscode"
+import { useExtensionState } from "../../../context/ExtensionStateContext"
 import "./DiagnosticDashboard.css"
 
 interface DiagnosticDashboardProps {
 	diagnostics?: DiagnosticSnapshot
 	isStreaming?: boolean
-	devtoolEnabled?: boolean
 }
-
-const DiagnosticDashboard = ({ diagnostics, isStreaming, devtoolEnabled }: DiagnosticDashboardProps) => {
+const DiagnosticDashboard = ({ diagnostics, isStreaming }: DiagnosticDashboardProps) => {
 	const { t } = useTranslation()
+	const { devtoolEnabled } = useExtensionState()
 	const [isCollapsed, setIsCollapsed] = useState(false)
 	const [activeTab, setActiveTab] = useState<"logs" | "speed" | "resources">("logs")
 

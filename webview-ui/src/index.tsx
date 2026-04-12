@@ -1,6 +1,11 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 
+import { initWebviewConsoleBridge } from "./features/devtools/utils/webviewConsoleBridge"
+
+// Must be called before any other code to capture all console output
+initWebviewConsoleBridge()
+
 import "./index.css"
 import App from "./App"
 import "../node_modules/@vscode/codicons/dist/codicon.css"

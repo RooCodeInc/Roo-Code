@@ -8,7 +8,7 @@ import { MAX_CONDENSE_THRESHOLD, MIN_CONDENSE_THRESHOLD, summarizeConversation, 
 import { ApiMessage } from "../task-persistence/apiMessages"
 import { ANTHROPIC_DEFAULT_MAX_TOKENS } from "@jabberwock/types"
 import { JabberwockIgnoreController } from "../ignore/JabberwockIgnoreController"
-import { diagnosticsManager } from "../diagnostics/DiagnosticsManager"
+import { diagnosticsManager } from "../devtools/DiagnosticsManager"
 import { t } from "../../i18n"
 
 /**

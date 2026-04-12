@@ -6,6 +6,8 @@ import {
 	ResourceSnapshot,
 } from "@jabberwock/types"
 import os from "os"
+import fs from "fs"
+import path from "path"
 
 /**
  * Manages diagnostic collection for task execution.
@@ -24,8 +26,20 @@ export class DiagnosticsManager {
 	private resourceInterval?: NodeJS.Timeout
 	private lastCpuUsage?: { user: number; system: number; time: number }
 
+	private logFilePath?: string
+	private logBuffer: string[] = []
+	private flushTimeout?: NodeJS.Timeout
+	private readonly FLUSH_INTERVAL_MS = 500
+
 	constructor() {
 		this.startResourceMonitoring()
+	}
+
+	public setLogFilePath(filePath: string) {
+		this.logFilePath = filePath
+		// Ensure directory exists
+		const dir = path.dirname(filePath)
+		fs.mkdirSync(dir, { recursive: true })
 	}
 
 	/**
@@ -45,6 +59,34 @@ export class DiagnosticsManager {
 		if (level === "info" || level === "warn" || level === "error") {
 			this.currentAction = message
 		}
+
+		this.appendToFile(message, level)
+	}
+
+	private appendToFile(message: string, level: DiagnosticLevel) {
+		if (!this.logFilePath) return
+
+		const timestamp = new Date().toISOString()
+		this.logBuffer.push(`[${timestamp}][${level.toUpperCase()}] ${message}`)
+
+		// Debounced flush to avoid excessive disk I/O
+		if (!this.flushTimeout) {
+			this.flushTimeout = setTimeout(() => this.flushBuffer(), this.FLUSH_INTERVAL_MS)
+		}
+	}
+
+	private flushBuffer() {
+		this.flushTimeout = undefined
+		if (!this.logFilePath || this.logBuffer.length === 0) return
+
+		const content = this.logBuffer.join("\n") + "\n"
+		this.logBuffer = []
+
+		fs.appendFile(this.logFilePath, content, (err) => {
+			if (err) {
+				console.error("[DiagnosticsManager] Failed to write log file:", err.message)
+			}
+		})
 	}
 
 	/**
@@ -138,6 +180,10 @@ export class DiagnosticsManager {
 		if (this.resourceInterval) {
 			clearInterval(this.resourceInterval)
 		}
+		if (this.flushTimeout) {
+			clearTimeout(this.flushTimeout)
+		}
+		this.flushBuffer()
 	}
 }
 

@@ -97,7 +97,7 @@ import { CustomModesManager } from "../config/CustomModesManager"
 import { Task } from "../task/Task"
 import { ChatStore } from "../state/ChatTreeStore"
 import { onSnapshot, applySnapshot } from "mobx-state-tree"
-import { diagnosticsManager } from "../diagnostics/DiagnosticsManager"
+import { diagnosticsManager } from "../devtools/DiagnosticsManager"
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import type { ClineMessage, TodoItem } from "@jabberwock/types"
@@ -155,6 +155,7 @@ export class ClineProvider
 
 	private recentTasksCache?: string[]
 	public readonly taskHistoryStore: TaskHistoryStore
+	private devtoolEnabled = false
 	private taskHistoryStoreInitialized = false
 	private globalStateWriteThroughTimer: ReturnType<typeof setTimeout> | null = null
 	private static readonly GLOBAL_STATE_WRITE_THROUGH_DEBOUNCE_MS = 5000 // 5 seconds
@@ -218,6 +219,23 @@ export class ClineProvider
 		this.initializeTaskHistoryStore().catch((error) => {
 			this.log(`Failed to initialize TaskHistoryStore: ${error}`)
 		})
+
+		// Initialize diagnostic log file so agents can read it from disk
+		import("../devtools/DiagnosticsManager").then(({ diagnosticsManager }) => {
+			const logPath = path.join(this.contextProxy.globalStorageUri.fsPath, "jabberwock.diagnostics.log")
+			diagnosticsManager.setLogFilePath(logPath)
+		})
+
+		this.devtoolEnabled = vscode.workspace.getConfiguration(Package.name).get<boolean>("devtool") ?? false
+		if (this.devtoolEnabled) {
+			import("../devtools/JabberwockMcpServer").then(({ startJabberwockMcpServer }) => {
+				startJabberwockMcpServer(this)
+					.then(() => {
+						this.postStateToWebview()
+					})
+					.catch(this.log.bind(this))
+			})
+		}
 
 		// Start configuration loading (which might trigger indexing) in the background.
 		// Don't await, allowing activation to continue immediately.
@@ -968,6 +986,20 @@ export class ClineProvider
 				await this.postMessageToWebview({ type: "theme", text: JSON.stringify(await getTheme()) })
 			}
 			if (e && e.affectsConfiguration(`${Package.name}.devtool`)) {
+				this.devtoolEnabled = vscode.workspace.getConfiguration(Package.name).get<boolean>("devtool") ?? false
+				const { startJabberwockMcpServer, stopJabberwockMcpServer } = await import(
+					"../devtools/JabberwockMcpServer"
+				)
+				if (this.devtoolEnabled) {
+					startJabberwockMcpServer(this)
+						.then(() => {
+							this.postStateToWebview()
+						})
+						.catch(this.log.bind(this))
+				} else {
+					stopJabberwockMcpServer()
+					this.postStateToWebview()
+				}
 				await this.postStateToWebview()
 			}
 		})
@@ -2310,6 +2342,7 @@ export class ClineProvider
 			writeDelayMs: writeDelayMs ?? DEFAULT_WRITE_DELAY_MS,
 			terminalShellIntegrationTimeout: terminalShellIntegrationTimeout ?? Terminal.defaultShellIntegrationTimeout,
 			terminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,
+			devtoolEnabled: this.devtoolEnabled,
 			terminalCommandDelay: terminalCommandDelay ?? 0,
 			terminalPowershellCounter: terminalPowershellCounter ?? false,
 			terminalZshClearEolMark: terminalZshClearEolMark ?? true,
@@ -2397,7 +2430,6 @@ export class ClineProvider
 				}
 			})(),
 			debug: vscode.workspace.getConfiguration(Package.name).get<boolean>("debug", false),
-			devtoolEnabled: vscode.workspace.getConfiguration(Package.name).get<boolean>("devtool", false),
 			diagnostics: diagnosticsManager.getSnapshot(),
 		}
 	}

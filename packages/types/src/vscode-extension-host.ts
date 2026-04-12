@@ -106,9 +106,11 @@ export interface ExtensionMessage {
 		| "folderSelected"
 		| "skills"
 		| "fileContent"
+		| "diagnostics"
 	text?: string
 	/** For fileContent: { path, content, error? } */
 	fileContent?: { path: string; content: string | null; error?: string }
+	diagnostics?: any // eslint-disable-line @typescript-eslint/no-explicit-any
 	payload?: any // eslint-disable-line @typescript-eslint/no-explicit-any
 	checkpointWarning?: {
 		type: "WAIT_TIMEOUT" | "INIT_TIMEOUT"
@@ -583,6 +585,10 @@ export interface WebviewMessage {
 		| "checkoutBranch"
 		| "browseForWorktreePath"
 		| "clearDiagnostics"
+		| "devtoolStatus"
+		// DevTools messages
+		| "webviewLog"
+		| "mstPatch"
 		// Skills messages
 		| "requestSkills"
 		| "createSkill"

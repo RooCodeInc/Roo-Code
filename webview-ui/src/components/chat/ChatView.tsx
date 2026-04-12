@@ -50,7 +50,7 @@ import DismissibleUpsell from "../common/DismissibleUpsell"
 import DiagnosticDashboard from "./diagnostics/DiagnosticDashboard"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { useScrollLifecycle } from "@src/hooks/useScrollLifecycle"
-import { Cloud } from "lucide-react"
+import { Cloud, Activity } from "lucide-react"
 
 import { useChatDragAndDrop } from "../../features/context-drag-drop/useChatDragAndDrop"
 import { ChatDropZoneOverlay } from "../../features/context-drag-drop/ChatDropZoneOverlay"
@@ -1569,11 +1569,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			)}
 			{task ? (
 				<>
-					<DiagnosticDashboard
-						diagnostics={diagnostics}
-						isStreaming={isStreaming}
-						devtoolEnabled={devtoolEnabled}
-					/>
+					<DiagnosticDashboard diagnostics={diagnostics} isStreaming={isStreaming} />
 					<TaskHeader
 						task={task}
 						tokensIn={apiMetrics.totalTokensIn}
@@ -1617,10 +1613,23 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			) : (
 				<div className="flex flex-col h-full justify-center p-6 min-h-0 overflow-y-auto gap-4 relative">
 					<div className="flex flex-col items-start gap-2 justify-center h-full min-[400px]:px-6">
-						<VersionIndicator
-							onClick={() => setShowAnnouncementModal(true)}
-							className="absolute top-2 right-3 z-10"
-						/>
+						<div className="absolute top-2 right-3 z-10 flex gap-2 items-center">
+							{/* Always show DevTools button so user can toggle it */}
+							<button
+								onClick={() => {
+									vscode.postMessage({ type: "devtoolStatus", text: "toggle" })
+								}}
+								className={`flex items-center gap-1 px-2 py-1 rounded-md transition-colors cursor-pointer border-none font-sans text-[11px] font-semibold ${
+									devtoolEnabled
+										? "bg-vscode-button-hoverBackground text-[#ffaa00]"
+										: "bg-vscode-badge-background text-vscode-badge-foreground opacity-70 hover:opacity-100"
+								}`}
+								title="Toggle DevTools">
+								<Activity size={12} />
+								DevTools
+							</button>
+							<VersionIndicator onClick={() => setShowAnnouncementModal(true)} />
+						</div>
 						<div className="flex flex-col gap-4 w-full">
 							<JabberwockHero />
 							{/* Show JabberwockTips when authenticated or when user is new */}
@@ -1706,6 +1715,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 																				: undefined
 											}>
 											<Button
+												data-agent-action="continue-task"
 												variant="primary"
 												disabled={!enableButtons}
 												className={secondaryButtonText ? "flex-1 mr-[6px]" : "flex-[2] mr-0"}
@@ -1728,6 +1738,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 																: undefined
 											}>
 											<Button
+												data-agent-action="reject-task"
 												variant="secondary"
 												disabled={!enableButtons}
 												className="flex-1 ml-[6px]"
