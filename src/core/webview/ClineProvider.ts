@@ -96,7 +96,7 @@ import { ProviderSettingsManager } from "../config/ProviderSettingsManager"
 import { CustomModesManager } from "../config/CustomModesManager"
 import { Task } from "../task/Task"
 import { ChatStore } from "../state/ChatTreeStore"
-import { onSnapshot, applySnapshot } from "mobx-state-tree"
+import { onSnapshot, onPatch, applySnapshot } from "mobx-state-tree"
 import { diagnosticsManager } from "../devtools/DiagnosticsManager"
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
@@ -201,6 +201,11 @@ export class ClineProvider
 
 		onSnapshot(this.chatStore, (snapshot) => {
 			this.context.workspaceState.update("jabberwock_chat_tree", snapshot)
+		})
+
+		// Feed incremental MST changes into DiagnosticsManager for real-time tracking
+		onPatch(this.chatStore, (patch) => {
+			diagnosticsManager.recordMstPatch(patch)
 		})
 
 		ClineProvider.activeInstances.add(this)

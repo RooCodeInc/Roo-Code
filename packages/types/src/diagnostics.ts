@@ -37,11 +37,22 @@ export interface ResourceSnapshot {
 }
 
 /**
+ * A single MST (MobX-State-Tree) incremental patch
+ */
+export interface MstPatch {
+	timestamp: number
+	op: "add" | "remove" | "replace"
+	path: string
+	value?: unknown
+}
+
+/**
  * Full state snapshot for the diagnostics dashboard
  */
 export interface DiagnosticSnapshot {
 	logs: DiagnosticLog[]
 	metrics: PerformanceMetric[]
 	resources: ResourceSnapshot[]
+	mstPatches: MstPatch[]
 	currentAction?: string
 }

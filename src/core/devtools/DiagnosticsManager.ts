@@ -4,6 +4,7 @@ import {
 	DiagnosticLevel,
 	PerformanceMetric,
 	ResourceSnapshot,
+	MstPatch,
 } from "@jabberwock/types"
 import os from "os"
 import fs from "fs"
@@ -17,11 +18,13 @@ export class DiagnosticsManager {
 	private logs: DiagnosticLog[] = []
 	private metrics: PerformanceMetric[] = []
 	private resources: ResourceSnapshot[] = []
+	private mstPatches: MstPatch[] = []
 	private currentAction?: string
 
 	private readonly MAX_LOGS = 100
 	private readonly MAX_METRICS = 50
 	private readonly MAX_RESOURCES = 100
+	private readonly MAX_MST_PATCHES = 200
 
 	private resourceInterval?: NodeJS.Timeout
 	private lastCpuUsage?: { user: number; system: number; time: number }
@@ -117,11 +120,27 @@ export class DiagnosticsManager {
 	/**
 	 * Get a snapshot of current diagnostics
 	 */
+	public recordMstPatch(patch: { op: string; path: string; value?: unknown }) {
+		this.mstPatches.push({
+			timestamp: Date.now(),
+			op: patch.op as MstPatch["op"],
+			path: patch.path,
+			value: patch.value,
+		})
+
+		if (this.mstPatches.length > this.MAX_MST_PATCHES) {
+			this.mstPatches.shift()
+		}
+
+		this.appendToFile(`MST ${patch.op} ${patch.path}`, "debug")
+	}
+
 	public getSnapshot(): DiagnosticSnapshot {
 		return {
 			logs: [...this.logs].reverse(),
 			metrics: [...this.metrics].reverse(),
 			resources: [...this.resources],
+			mstPatches: [...this.mstPatches],
 			currentAction: this.currentAction,
 		}
 	}
@@ -172,6 +191,7 @@ export class DiagnosticsManager {
 		this.logs = []
 		this.metrics = []
 		this.resources = []
+		this.mstPatches = []
 		this.currentAction = undefined
 		this.log("Diagnostics cleared", "info")
 	}

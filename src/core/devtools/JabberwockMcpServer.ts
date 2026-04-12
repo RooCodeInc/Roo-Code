@@ -182,6 +182,63 @@ export async function startJabberwockMcpServer(provider: ClineProvider): Promise
 		},
 	)
 
+	// Tool 6: Get MST (MobX-State-Tree) state snapshot
+	mcpServer.tool(
+		"get_mst_state",
+		{
+			nodeId: z.string().optional().describe("Optional: specific node ID to inspect. Omit for full tree."),
+		},
+		async ({ nodeId }) => {
+			try {
+				const { getSnapshot } = await import("mobx-state-tree")
+				const snapshot = getSnapshot(provider.chatStore)
+
+				if (nodeId) {
+					const nodes = snapshot.nodes as Record<string, unknown>
+					const node = nodes[nodeId]
+					if (!node) {
+						return {
+							content: [{ type: "text", text: `Node '${nodeId}' not found in ChatStore.` }],
+							isError: true,
+						}
+					}
+					return { content: [{ type: "text", text: JSON.stringify(node, null, 2) }] }
+				}
+
+				return { content: [{ type: "text", text: JSON.stringify(snapshot, null, 2) }] }
+			} catch (error) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: `Error reading MST state: ${error instanceof Error ? error.message : String(error)}`,
+						},
+					],
+					isError: true,
+				}
+			}
+		},
+	)
+
+	// Tool 7: Get full diagnostics snapshot (logs, metrics, resources, MST patches)
+	mcpServer.tool("get_diagnostics_snapshot", {}, async () => {
+		try {
+			const { diagnosticsManager } = await import("./DiagnosticsManager")
+			const snapshot = diagnosticsManager.getSnapshot()
+			return { content: [{ type: "text", text: JSON.stringify(snapshot, null, 2) }] }
+		} catch (error) {
+			return {
+				content: [
+					{
+						type: "text",
+						text: `Error reading diagnostics: ${error instanceof Error ? error.message : String(error)}`,
+					},
+				],
+				isError: true,
+			}
+		}
+	})
+
 	return new Promise((resolve, reject) => {
 		serverInstance = http.createServer((req, res) => {
 			const parsedUrl = new URL(req.url || "", `http://${req.headers.host || "localhost"}`)
