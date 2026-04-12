@@ -312,6 +312,7 @@ export type ExtensionState = Pick<
 	| "requestDelaySeconds"
 	| "showWorktreesInHomeScreen"
 	| "disabledTools"
+	| "locatorTarget"
 > & {
 	lockApiConfigAcrossModes?: boolean
 	version: string
@@ -586,6 +587,7 @@ export interface WebviewMessage {
 		| "browseForWorktreePath"
 		| "clearDiagnostics"
 		| "devtoolStatus"
+		| "LOCATOR_OPEN_FILE"
 		// DevTools messages
 		| "webviewLog"
 		| "mstPatch"
@@ -596,6 +598,7 @@ export interface WebviewMessage {
 		| "moveSkill"
 		| "updateSkillModes"
 		| "openSkillFile"
+		| "locatorTarget"
 	text?: string
 	taskId?: string
 	editedMessageContent?: string
@@ -708,6 +711,7 @@ export interface WebviewMessage {
 	worktreeForce?: boolean
 	worktreeNewWindow?: boolean
 	worktreeIncludeContent?: string
+	locatorPayload?: { filePath: string; line: number; column: number }
 }
 
 export interface RequestOpenAiCodexRateLimitsMessage {

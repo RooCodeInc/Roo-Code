@@ -6,6 +6,7 @@ describe("UISettings", () => {
 	const defaultProps = {
 		reasoningBlockCollapsed: false,
 		enterBehavior: "send" as const,
+		locatorTarget: "vscode" as const,
 		setCachedStateField: vi.fn(),
 	}
 

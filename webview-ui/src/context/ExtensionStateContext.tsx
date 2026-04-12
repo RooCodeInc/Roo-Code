@@ -147,6 +147,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setIncludeCurrentCost: (value: boolean) => void
 	showWorktreesInHomeScreen: boolean
 	setShowWorktreesInHomeScreen: (value: boolean) => void
+	locatorTarget?: string
+	setLocatorTarget: (value: string) => void
 	skills?: SkillMetadata[]
 }
 
@@ -250,6 +252,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		autoCondenseContext: true,
 		autoCondenseContextPercent: 100,
 		profileThresholds: {},
+		locatorTarget: "code",
 		codebaseIndexConfig: {
 			codebaseIndexEnabled: true,
 			codebaseIndexQdrantUrl: "http://localhost:6333",
@@ -340,6 +343,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					// Update includeCurrentCost if present in state message
 					if ((newState as any).includeCurrentCost !== undefined) {
 						setIncludeCurrentCost((newState as any).includeCurrentCost)
+					}
+					// Update locatorTarget if present in state message
+					if ((newState as any).locatorTarget !== undefined) {
+						setState((prev) => ({ ...prev, locatorTarget: (newState as any).locatorTarget }))
 					}
 					// Handle marketplace data if present in state message
 					if (newState.marketplaceItems !== undefined) {
@@ -630,8 +637,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setIncludeCurrentCost,
 		skills,
 		showWorktreesInHomeScreen: state.showWorktreesInHomeScreen ?? true,
-		setShowWorktreesInHomeScreen: (value) =>
+		setShowWorktreesInHomeScreen: (value: boolean) =>
 			setState((prevState) => ({ ...prevState, showWorktreesInHomeScreen: value })),
+		locatorTarget: state.locatorTarget ?? "code",
+		setLocatorTarget: (value) => setState((prevState) => ({ ...prevState, locatorTarget: value })),
 	}
 
 	// DevTools: expose state accessor on window for agent inspection

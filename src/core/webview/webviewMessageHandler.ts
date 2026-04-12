@@ -561,6 +561,35 @@ export const webviewMessageHandler = async (
 				diagnosticsManager.log(`[MST_PATCH] ${message.text || ""}`, "debug")
 			}
 			break
+		case "LOCATOR_OPEN_FILE":
+			if (message.locatorPayload) {
+				const { filePath, line, column } = message.locatorPayload
+				const globalSettings = provider.contextProxy.getValues()
+				const locatorPrefix =
+					globalSettings.locatorTarget && globalSettings.locatorTarget.trim() !== ""
+						? globalSettings.locatorTarget
+						: "code"
+
+				console.log(
+					`[LOCATOR] Editor open requested for ${filePath} at ${line}:${column} using prefix ${locatorPrefix}`,
+				)
+				try {
+					const targetLine = isNaN(line) ? 1 : line
+					const targetColumn = isNaN(column) ? 1 : column
+
+					// Construct Custom URI (e.g. code://file/path/to/file:line:col)
+					const uriString = `${locatorPrefix}://file${filePath}:${targetLine}:${targetColumn}`
+					const uri = vscode.Uri.parse(uriString)
+
+					await vscode.env.openExternal(uri)
+				} catch (error) {
+					console.error("LocatorJS Bridge Error:", error)
+					vscode.window.showErrorMessage(
+						`LocatorJS: Failed to open file using protocol ${locatorPrefix}: ${error}`,
+					)
+				}
+			}
+			break
 		case "webviewDidLaunch":
 			// Load custom modes first
 			const customModes = await provider.customModesManager.getCustomModes()
@@ -1527,6 +1556,14 @@ export const webviewMessageHandler = async (
 
 			break
 		}
+
+		case "locatorTarget":
+			if (message.text) {
+				const target = message.text as string
+				await provider.contextProxy.setValue("locatorTarget", target)
+				await provider.postStateToWebview()
+			}
+			break
 
 		case "ttsEnabled":
 			const ttsEnabled = message.bool ?? true

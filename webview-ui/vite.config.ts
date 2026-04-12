@@ -84,7 +84,17 @@ export default defineConfig(({ mode }) => {
 	const plugins: PluginOption[] = [
 		react({
 			babel: {
-				plugins: [["babel-plugin-react-compiler", { target: "18" }]],
+				plugins: [
+					[
+						resolve(__dirname, "node_modules/@locator/babel-jsx/dist"),
+						{
+							absolutePath: true,
+							projectRoot: resolve(__dirname, ".."),
+							dataAttribute: "path",
+						},
+					],
+					["babel-plugin-react-compiler", { target: "18" }],
+				],
 			},
 		}),
 		tailwindcss(),

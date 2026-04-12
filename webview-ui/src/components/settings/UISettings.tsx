@@ -8,16 +8,19 @@ import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
 import { SearchableSetting } from "./SearchableSetting"
 import { ExtensionStateContextType } from "@/context/ExtensionStateContext"
+import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
 interface UISettingsProps extends HTMLAttributes<HTMLDivElement> {
 	reasoningBlockCollapsed: boolean
 	enterBehavior: "send" | "newline"
+	locatorTarget: string
 	setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType>
 }
 
 export const UISettings = ({
 	reasoningBlockCollapsed,
 	enterBehavior,
+	locatorTarget,
 	setCachedStateField,
 	...props
 }: UISettingsProps) => {
@@ -45,6 +48,16 @@ export const UISettings = ({
 		// Track telemetry event
 		telemetryClient.capture("ui_settings_enter_behavior_changed", {
 			behavior: newBehavior,
+		})
+	}
+
+	const handleLocatorTargetChange = (e: any) => {
+		const value = e.target.value
+		setCachedStateField("locatorTarget", value)
+
+		// Track telemetry event
+		telemetryClient.capture("ui_settings_locator_target_changed", {
+			target: value,
 		})
 	}
 
@@ -88,6 +101,21 @@ export const UISettings = ({
 							</VSCodeCheckbox>
 							<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
 								{t("settings:ui.requireCtrlEnterToSend.description", { primaryMod })}
+							</div>
+						</div>
+					</SearchableSetting>
+
+					{/* Diagnostic Link Target Setting */}
+					<SearchableSetting settingId="ui-locator-target" section="ui" label={"Locator Prefix"}>
+						<div className="flex flex-col gap-1">
+							<span className="font-medium mb-1">Locator Prefix</span>
+							<VSCodeTextField
+								value={locatorTarget ?? "code"}
+								onInput={handleLocatorTargetChange}
+								placeholder="code"
+							/>
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
+								{t("settings:ui.diagnosticLinkTarget.description")}
 							</div>
 						</div>
 					</SearchableSetting>

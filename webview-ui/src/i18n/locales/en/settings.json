@@ -163,6 +163,14 @@
 		"requireCtrlEnterToSend": {
 			"label": "Require {{primaryMod}}+Enter to send messages",
 			"description": "When enabled, you must press {{primaryMod}}+Enter to send messages instead of just Enter"
+		},
+		"diagnosticLinkTarget": {
+			"label": "Diagnostic Link Target",
+			"description": "Choose where to open the source code when clicking on a component in the webview.",
+			"options": {
+				"vscode": "VS Code Editor",
+				"antigravity": "Antigravity Assistant"
+			}
 		}
 	},
 	"prompts": {
