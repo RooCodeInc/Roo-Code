@@ -359,8 +359,7 @@
 			"specialized": "Apresentando <bold>Explainer</bold>, <bold>Planner</bold> e <bold>Coder</bold> - três agentes em nuvem especializados para aprimorar seus fluxos de trabalho.",
 			"description": "Os agentes trabalham juntos na nuvem e podem ser acionados a partir da web ou por meio do Slack.",
 			"tryButton": "Experimentar Agentes em Nuvem"
-		},
-		"careers": "Além disso, <careersLink>estamos contratando!</careersLink>"
+		}
 	},
 	"costs": {
 		"totalWithSubtasks": "Custo Total (incluindo subtarefas): ${{cost}}",

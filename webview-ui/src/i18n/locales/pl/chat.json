@@ -359,8 +359,7 @@
 			"specialized": "Przedstawiamy <bold>Explainer</bold>, <bold>Planner</bold> i <bold>Coder</bold> - trzech wyspecjalizowanych agentów chmurowych, aby ulepszyć Twoje przepływy pracy.",
 			"description": "Agenci pracują razem w chmurze i mogą być uruchamiani z sieci lub przez Slack.",
 			"tryButton": "Wypróbuj agentów chmurowych"
-		},
-		"careers": "Dodatkowo, <careersLink>zatrudniamy!</careersLink>"
+		}
 	},
 	"costs": {
 		"totalWithSubtasks": "Całkowity koszt (w tym podzadania): ${{cost}}",

@@ -359,8 +359,7 @@
 			"specialized": "<bold>Explainer</bold>, <bold>Planner</bold>, और <bold>Coder</bold> की शुरुआत - तीन विशेष क्लाउड एजेंट आपके वर्कफ़्लो को बेहतर बनाने के लिए।",
 			"description": "एजेंट क्लाउड में एक साथ काम करते हैं और web या Slack के माध्यम से ट्रिगर किए जा सकते हैं।",
 			"tryButton": "क्लाउड एजेंट आज़माएं"
-		},
-		"careers": "साथ ही, <careersLink>हम भर्ती कर रहे हैं!</careersLink>"
+		}
 	},
 	"costs": {
 		"totalWithSubtasks": "कुल लागत (उप-कार्यों सहित): ${{cost}}",

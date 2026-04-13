@@ -360,8 +360,7 @@
 			"specialized": "Giới thiệu <bold>Explainer</bold>, <bold>Planner</bold> và <bold>Coder</bold> - ba agent đám mây chuyên biệt để nâng cao quy trình làm việc của bạn.",
 			"description": "Các agent làm việc cùng nhau trên đám mây và có thể được kích hoạt từ web hoặc qua Slack.",
 			"tryButton": "Dùng thử Agents trên Cloud"
-		},
-		"careers": "Ngoài ra, <careersLink>chúng tôi đang tuyển dụng!</careersLink>"
+		}
 	},
 	"costs": {
 		"totalWithSubtasks": "Tổng chi phí (bao gồm các tác vụ phụ): ${{cost}}",

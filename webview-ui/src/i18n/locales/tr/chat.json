@@ -360,8 +360,7 @@
 			"specialized": "<bold>Explainer</bold>, <bold>Planner</bold> ve <bold>Coder</bold> tanıtımı - iş akışlarını geliştirmek için üç özel bulut ajanı.",
 			"description": "Ajanlar bulutta birlikte çalışır ve web'den veya Slack üzerinden tetiklenebilir.",
 			"tryButton": "Bulut Ajanlarını Dene"
-		},
-		"careers": "Ayrıca, <careersLink>işe alım yapıyoruz!</careersLink>"
+		}
 	},
 	"costs": {
 		"totalWithSubtasks": "Toplam Maliyet (alt görevler dahil): ${{cost}}",

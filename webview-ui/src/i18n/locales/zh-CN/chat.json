@@ -360,8 +360,7 @@
 			"specialized": "推出 <bold>Explainer</bold>、<bold>Planner</bold> 和 <bold>Coder</bold> - 三个专业云代理来增强你的工作流程。",
 			"description": "代理在云端协同工作，可从网页或通过 Slack 触发。",
 			"tryButton": "试用云代理"
-		},
-		"careers": "此外，<careersLink>我们正在招聘！</careersLink>"
+		}
 	},
 	"costs": {
 		"totalWithSubtasks": "总成本（包括子任务）: ${{cost}}",

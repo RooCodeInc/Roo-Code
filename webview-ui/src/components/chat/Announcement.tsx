@@ -73,15 +73,6 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 						<Trans i18nKey="chat:announcement.support" components={{ githubLink: <GitHubLink /> }} />
 					</div>
 
-					{/* Careers Section */}
-					<div className="mt-2 text-sm text-center">
-						<Trans
-							i18nKey="chat:announcement.careers"
-							components={{
-								careersLink: <CareersLink />,
-							}}
-						/>
-					</div>
 				</div>
 			</DialogContent>
 		</Dialog>
@@ -107,17 +98,6 @@ const GitHubLink = ({ children }: { children?: ReactNode }) => (
 		onClick={(e) => {
 			e.preventDefault()
 			vscode.postMessage({ type: "openExternal", url: "https://github.com/RooCodeInc/Roo-Code" })
-		}}>
-		{children}
-	</VSCodeLink>
-)
-
-const CareersLink = ({ children }: { children?: ReactNode }) => (
-	<VSCodeLink
-		href="https://careers.roocode.com"
-		onClick={(e) => {
-			e.preventDefault()
-			vscode.postMessage({ type: "openExternal", url: "https://careers.roocode.com" })
 		}}>
 		{children}
 	</VSCodeLink>

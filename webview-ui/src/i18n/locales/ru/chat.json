@@ -333,8 +333,7 @@
 			"specialized": "Представляем <bold>Explainer</bold>, <bold>Planner</bold> и <bold>Coder</bold> - трёх специализированных облачных агентов для улучшения ваших рабочих процессов.",
 			"description": "Агенты работают вместе в облаке и могут быть запущены из веб-интерфейса или через Slack.",
 			"tryButton": "Попробовать облачных агентов"
-		},
-		"careers": "Кроме того, <careersLink>мы нанимаем!</careersLink>"
+		}
 	},
 	"reasoning": {
 		"thinking": "Обдумывание",

@@ -359,8 +359,7 @@
 			"specialized": "Presentazione di <bold>Explainer</bold>, <bold>Planner</bold> e <bold>Coder</bold> - tre agenti cloud specializzati per migliorare i tuoi flussi di lavoro.",
 			"description": "Gli agenti lavorano insieme nel cloud e possono essere attivati dal web o tramite Slack.",
 			"tryButton": "Prova gli Agenti Cloud"
-		},
-		"careers": "Inoltre, <careersLink>stiamo assumendo!</careersLink>"
+		}
 	},
 	"costs": {
 		"totalWithSubtasks": "Costo totale (sottoattività incluse): ${{cost}}",

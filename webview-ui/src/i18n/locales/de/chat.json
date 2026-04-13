@@ -359,8 +359,7 @@
 			"specialized": "Wir stellen <bold>Explainer</bold>, <bold>Planner</bold> und <bold>Coder</bold> vor - drei spezialisierte Cloud-Agenten zur Verbesserung deiner Workflows.",
 			"description": "Die Agenten arbeiten zusammen in der Cloud und können vom Web oder über Slack ausgelöst werden.",
 			"tryButton": "Probiere Cloud-Agenten aus"
-		},
-		"careers": "Außerdem, <careersLink>wir stellen ein!</careersLink>"
+		}
 	},
 	"costs": {
 		"totalWithSubtasks": "Gesamtkosten (inkl. Unteraufgaben): ${{cost}}",

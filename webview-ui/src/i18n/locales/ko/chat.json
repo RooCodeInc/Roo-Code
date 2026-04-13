@@ -359,8 +359,7 @@
 			"specialized": "<bold>Explainer</bold>, <bold>Planner</bold>, <bold>Coder</bold> 세 가지 전문 클라우드 에이전트를 소개합니다. 워크플로우를 향상시킵니다.",
 			"description": "에이전트는 클라우드에서 함께 작동하며 웹 또는 Slack을 통해 트리거할 수 있습니다.",
 			"tryButton": "클라우드 에이전트 사용해보기"
-		},
-		"careers": "그리고, <careersLink>채용 중입니다!</careersLink>"
+		}
 	},
 	"costs": {
 		"totalWithSubtasks": "총 비용 (하위 작업 포함): ${{cost}}",

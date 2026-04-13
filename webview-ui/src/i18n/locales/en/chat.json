@@ -375,8 +375,7 @@
 			"specialized": "Introducing <bold>Explainer</bold>, <bold>Planner</bold>, and <bold>Coder</bold> - three specialized cloud agents to enhance your workflows.",
 			"description": "The agents work together in the cloud and can be triggered from the web or through Slack.",
 			"tryButton": "Try Cloud Agents"
-		},
-		"careers": "Also, <careersLink>we're hiring!</careersLink>"
+		}
 	},
 	"reasoning": {
 		"thinking": "Thinking",

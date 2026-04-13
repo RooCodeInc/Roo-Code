@@ -332,8 +332,7 @@
 			"specialized": "Introductie van <bold>Explainer</bold>, <bold>Planner</bold> en <bold>Coder</bold> - drie gespecialiseerde cloud-agents om je workflows te verbeteren.",
 			"description": "De agents werken samen in de cloud en kunnen worden geactiveerd vanaf het web of via Slack.",
 			"tryButton": "Probeer Cloud-agents"
-		},
-		"careers": "Ook, <careersLink>we nemen aan!</careersLink>"
+		}
 	},
 	"reasoning": {
 		"thinking": "Denkt na",

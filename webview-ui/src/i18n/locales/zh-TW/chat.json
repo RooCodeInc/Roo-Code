@@ -381,8 +381,7 @@
 			"specialized": "推出 <bold>Explainer</bold>、<bold>Planner</bold> 和 <bold>Coder</bold>，三個專業雲端代理用來強化工作流程。",
 			"description": "代理在雲端協同工作，可從網頁或透過 Slack 觸發。",
 			"tryButton": "試用雲端代理"
-		},
-		"careers": "此外，<careersLink>我們正在招募！</careersLink>"
+		}
 	},
 	"reasoning": {
 		"thinking": "思考中",

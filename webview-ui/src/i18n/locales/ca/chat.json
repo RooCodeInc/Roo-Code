@@ -359,8 +359,7 @@
 			"specialized": "Presentem <bold>Explainer</bold>, <bold>Planner</bold> i <bold>Coder</bold> - tres agents al núvol especialitzats per millorar els teus fluxos de treball.",
 			"description": "Els agents treballen junts al núvol i es poden activar des del web o mitjançant Slack.",
 			"tryButton": "Prova els Agents al Núvol"
-		},
-		"careers": "A més, <careersLink>estem contractant!</careersLink>"
+		}
 	},
 	"costs": {
 		"totalWithSubtasks": "Cost total (subtasques incloses): ${{cost}}",
