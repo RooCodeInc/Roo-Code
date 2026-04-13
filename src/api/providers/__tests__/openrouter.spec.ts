@@ -525,6 +525,65 @@ describe("OpenRouterHandler", () => {
 			expect(endChunks).toHaveLength(1)
 			expect(endChunks[0].id).toBe("call_openrouter_test")
 		})
+
+		it("always includes require_parameters for tools in provider config", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "test" } }],
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const generator = handler.createMessage("test system", [{ role: "user", content: "test" }])
+			await generator.next()
+
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.provider).toBeDefined()
+			expect(callArgs.provider.require_parameters).toEqual(["tools", "tool_choice"])
+			// Should NOT have routing fields when no specific provider
+			expect(callArgs.provider.order).toBeUndefined()
+			expect(callArgs.provider.only).toBeUndefined()
+		})
+
+		it("merges require_parameters with specific provider routing config", async () => {
+			const handler = new OpenRouterHandler({
+				...mockOptions,
+				openRouterSpecificProvider: "anthropic",
+			})
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "test" } }],
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const generator = handler.createMessage("test system", [{ role: "user", content: "test" }])
+			await generator.next()
+
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.provider).toBeDefined()
+			expect(callArgs.provider.require_parameters).toEqual(["tools", "tool_choice"])
+			expect(callArgs.provider.order).toEqual(["anthropic"])
+			expect(callArgs.provider.only).toEqual(["anthropic"])
+			expect(callArgs.provider.allow_fallbacks).toBe(false)
+		})
 	})
 
 	describe("completePrompt", () => {
