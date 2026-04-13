@@ -332,14 +332,33 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 		const client = this.ensureClient()
 		const model = this.getModel()
 
-		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
+		// Disable thinking mode for simple completions (e.g. prompt enhancement).
+		// qwen3-coder models are thinking models that put reasoning in a separate
+		// `reasoning_content` field, which can leave `content` empty when thinking
+		// is enabled. Explicitly disabling it ensures content is populated.
+		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming & {
+			enable_thinking?: boolean
+		} = {
 			model: model.id,
 			messages: [{ role: "user", content: prompt }],
 			max_completion_tokens: model.info.maxTokens,
+			enable_thinking: false,
 		}
 
-		const response = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))
+		const response = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions as any))
 
-		return response.choices[0]?.message.content || ""
+		const message = response.choices[0]?.message
+		let content = message?.content || ""
+
+		// Fallback: if content is empty, check for reasoning_content (in case
+		// the API still returned thinking content despite enable_thinking: false).
+		if (!content && message && "reasoning_content" in message) {
+			content = (message as any).reasoning_content || ""
+		}
+
+		// Strip any inline <think>...</think> blocks that may be present.
+		content = content.replace(/<think>[\s\S]*?<\/think>/g, "").trim()
+
+		return content
 	}
 }
