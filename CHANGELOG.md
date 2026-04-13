@@ -1,5 +1,12 @@
 # Roo Code Changelog
 
+## 3.52.1
+
+### Patch Changes
+
+- Add correct JSON schema for `.roomodes` configuration files (#11790 by @algorhythm85, PR #11791 by @app/roomote-v0)
+- Remove the hiring announcement from the VS Code extension UI (PR #12108 by @app/roomote-v0)
+
 ## 3.52.0
 
 ### Minor Changes
