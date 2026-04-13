@@ -137,6 +137,7 @@ const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
 const FORCED_CONTEXT_REDUCTION_PERCENT = 75 // Keep 75% of context (remove 25%) on context window errors
 const MAX_CONTEXT_WINDOW_RETRIES = 3 // Maximum retries for context window errors
+const MAX_STREAM_RETRIES = 5 // Maximum retries for mid-stream and first-chunk errors before giving up
 
 export interface TaskOptions extends CreateTaskOptions {
 	provider: ClineProvider
@@ -3264,9 +3265,36 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						} else {
 							// Stream failed - log the error and retry with the same content
 							// The existing rate limiting will prevent rapid retries
+							const nextRetryAttempt = (currentItem.retryAttempt ?? 0) + 1
 							console.error(
-								`[Task#${this.taskId}.${this.instanceId}] Stream failed, will retry: ${streamingFailedMessage}`,
+								`[Task#${this.taskId}.${this.instanceId}] Stream failed (attempt ${nextRetryAttempt}/${MAX_STREAM_RETRIES}), will retry: ${streamingFailedMessage}`,
 							)
+
+							// Check if we've exceeded the maximum retry limit for stream errors
+							if (nextRetryAttempt >= MAX_STREAM_RETRIES) {
+								console.error(
+									`[Task#${this.taskId}.${this.instanceId}] Max stream retries (${MAX_STREAM_RETRIES}) reached. Presenting error to user.`,
+								)
+								const { response } = await this.ask(
+									"api_req_failed",
+									streamingFailedMessage ??
+										"Maximum retry attempts reached after repeated streaming failures.",
+								)
+
+								if (response !== "yesButtonClicked") {
+									break
+								}
+
+								await this.say("api_req_retried")
+
+								// User clicked retry - reset the retry counter and continue
+								stack.push({
+									userContent: currentUserContent,
+									includeFileDetails: false,
+									retryAttempt: 0,
+								})
+								continue
+							}
 
 							// Apply exponential backoff similar to first-chunk errors when auto-resubmit is enabled
 							const stateForBackoff = await this.providerRef.deref()?.getState()
@@ -3285,11 +3313,22 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								}
 							}
 
-							// Push the same content back onto the stack to retry, incrementing the retry attempt counter
+							// Build retry content with a context recovery hint to help the model
+							// re-orient after the error. This prevents weaker models from losing
+							// track of the current task after an error retry (see #12087).
+							const retryUserContent = [
+								{
+									type: "text" as const,
+									text: "[IMPORTANT: The previous API request was interrupted by a provider error and is being retried. Please continue working on the user's most recent request. Do not repeat or re-announce previously completed work.]",
+								},
+								...currentUserContent,
+							]
+
+							// Push the content back onto the stack to retry, incrementing the retry attempt counter
 							stack.push({
-								userContent: currentUserContent,
+								userContent: retryUserContent,
 								includeFileDetails: false,
-								retryAttempt: (currentItem.retryAttempt ?? 0) + 1,
+								retryAttempt: nextRetryAttempt,
 							})
 
 							// Continue to retry the request
@@ -4327,24 +4366,35 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// note that this api_req_failed ask is unique in that we only present this option if the api hasn't streamed any content yet (ie it fails on the first chunk due), as it would allow them to hit a retry button. However if the api failed mid-stream, it could be in any arbitrary state where some tools may have executed, so that error is handled differently and requires cancelling the task entirely.
 			if (autoApprovalEnabled) {
-				// Apply shared exponential backoff and countdown UX
-				await this.backoffAndAnnounce(retryAttempt, error)
-
-				// CRITICAL: Check if task was aborted during the backoff countdown
-				// This prevents infinite loops when users cancel during auto-retry
-				// Without this check, the recursive call below would continue even after abort
-				if (this.abort) {
-					throw new Error(
-						`[Task#attemptApiRequest] task ${this.taskId}.${this.instanceId} aborted during retry`,
+				// Check if we've exceeded the maximum retry limit for first-chunk errors
+				if (retryAttempt + 1 >= MAX_STREAM_RETRIES) {
+					console.error(
+						`[Task#${this.taskId}.${this.instanceId}] Max first-chunk retries (${MAX_STREAM_RETRIES}) reached. Falling through to manual retry.`,
 					)
+					// Fall through to the manual retry path below (the else branch)
+				} else {
+					// Apply shared exponential backoff and countdown UX
+					await this.backoffAndAnnounce(retryAttempt, error)
+
+					// CRITICAL: Check if task was aborted during the backoff countdown
+					// This prevents infinite loops when users cancel during auto-retry
+					// Without this check, the recursive call below would continue even after abort
+					if (this.abort) {
+						throw new Error(
+							`[Task#attemptApiRequest] task ${this.taskId}.${this.instanceId} aborted during retry`,
+						)
+					}
+
+					// Delegate generator output from the recursive call with
+					// incremented retry count.
+					yield* this.attemptApiRequest(retryAttempt + 1)
+
+					return
 				}
+			}
 
-				// Delegate generator output from the recursive call with
-				// incremented retry count.
-				yield* this.attemptApiRequest(retryAttempt + 1)
-
-				return
-			} else {
+			// Either autoApprovalEnabled is false, or max retries exceeded - show manual retry prompt
+			{
 				const { response } = await this.ask(
 					"api_req_failed",
 					error.message ?? JSON.stringify(serializeError(error), null, 2),
