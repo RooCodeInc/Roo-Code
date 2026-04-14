@@ -35,6 +35,7 @@ const mockQdrantClientInstance = {
 	createCollection: vitest.fn(),
 	deleteCollection: vitest.fn(),
 	createPayloadIndex: vitest.fn(),
+	updateCollectionAliases: vitest.fn(),
 	upsert: vitest.fn(),
 	query: vitest.fn(),
 	delete: vitest.fn(),
@@ -977,6 +978,88 @@ describe("QdrantVectorStore", () => {
 			expect(caughtError.cause).toBe(deleteError)
 			;(console.error as any).mockRestore()
 			;(console.warn as any).mockRestore()
+		})
+	})
+
+	describe("workspace alias creation", () => {
+		it("should create a workspace alias during initialization", async () => {
+			mockQdrantClientInstance.getCollection.mockRejectedValue({
+				response: { status: 404 },
+				message: "Not found",
+			})
+			mockQdrantClientInstance.createCollection.mockResolvedValue(true as any)
+			mockQdrantClientInstance.createPayloadIndex.mockResolvedValue({} as any)
+			mockQdrantClientInstance.updateCollectionAliases.mockResolvedValue(true as any)
+			vitest.spyOn(console, "log").mockImplementation(() => {})
+
+			await vectorStore.initialize()
+
+			expect(mockQdrantClientInstance.updateCollectionAliases).toHaveBeenCalledTimes(1)
+			expect(mockQdrantClientInstance.updateCollectionAliases).toHaveBeenCalledWith({
+				actions: [
+					{
+						create_alias: {
+							collection_name: expectedCollectionName,
+							alias_name: "workspace",
+						},
+					},
+				],
+			})
+			;(console.log as any).mockRestore()
+		})
+
+		it("should not fail initialization if alias creation fails", async () => {
+			mockQdrantClientInstance.getCollection.mockRejectedValue({
+				response: { status: 404 },
+				message: "Not found",
+			})
+			mockQdrantClientInstance.createCollection.mockResolvedValue(true as any)
+			mockQdrantClientInstance.createPayloadIndex.mockResolvedValue({} as any)
+			mockQdrantClientInstance.updateCollectionAliases.mockRejectedValue(new Error("Alias creation failed"))
+			vitest.spyOn(console, "warn").mockImplementation(() => {})
+
+			const result = await vectorStore.initialize()
+
+			// Should still succeed even if alias creation fails
+			expect(result).toBe(true)
+			expect(mockQdrantClientInstance.updateCollectionAliases).toHaveBeenCalledTimes(1)
+			expect(console.warn).toHaveBeenCalledWith(
+				expect.stringContaining("Could not create workspace alias"),
+				expect.any(String),
+			)
+			;(console.warn as any).mockRestore()
+		})
+
+		it("should sanitize workspace name for alias", async () => {
+			// Create a vector store with a workspace path that has special characters
+			const specialPathStore = new QdrantVectorStore(
+				"/test/My Project (v2)",
+				mockQdrantUrl,
+				mockVectorSize,
+				mockApiKey,
+			)
+			mockQdrantClientInstance.getCollection.mockRejectedValue({
+				response: { status: 404 },
+				message: "Not found",
+			})
+			mockQdrantClientInstance.createCollection.mockResolvedValue(true as any)
+			mockQdrantClientInstance.createPayloadIndex.mockResolvedValue({} as any)
+			mockQdrantClientInstance.updateCollectionAliases.mockResolvedValue(true as any)
+			vitest.spyOn(console, "log").mockImplementation(() => {})
+
+			await specialPathStore.initialize()
+
+			expect(mockQdrantClientInstance.updateCollectionAliases).toHaveBeenCalledWith({
+				actions: [
+					{
+						create_alias: {
+							collection_name: expect.any(String),
+							alias_name: "my-project--v2-",
+						},
+					},
+				],
+			})
+			;(console.log as any).mockRestore()
 		})
 	})
 
