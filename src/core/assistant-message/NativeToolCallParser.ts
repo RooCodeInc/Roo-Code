@@ -449,7 +449,7 @@ export class NativeToolCallParser {
 				break
 
 			case "attempt_completion":
-				if (partialArgs.result) {
+				if (partialArgs.result !== undefined) {
 					nativeArgs = { result: partialArgs.result }
 				}
 				break
@@ -778,7 +778,7 @@ export class NativeToolCallParser {
 					break
 
 				case "attempt_completion":
-					if (args.result) {
+					if (args.result !== undefined) {
 						nativeArgs = { result: args.result } as NativeArgsFor<TName>
 					}
 					break
