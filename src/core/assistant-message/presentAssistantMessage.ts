@@ -34,6 +34,7 @@ import { updateTodoListTool } from "../tools/UpdateTodoListTool"
 import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
 import { skillTool } from "../tools/SkillTool"
 import { generateImageTool } from "../tools/GenerateImageTool"
+import { delegateToAgentTool } from "../tools/DelegateToAgentTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
@@ -784,6 +785,13 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "access_mcp_resource":
 					await accessMcpResourceTool.handle(cline, block as ToolUse<"access_mcp_resource">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "delegate_to_agent":
+					await delegateToAgentTool.handle(cline, block as ToolUse<"delegate_to_agent">, {
 						askApproval,
 						handleError,
 						pushToolResult,
