@@ -135,6 +135,36 @@ export const internationalZAiModels = {
 		description:
 			"GLM-5 is Zhipu's next-generation model with a 202k context window and built-in thinking capabilities. It delivers state-of-the-art reasoning, coding, and agentic performance.",
 	},
+	"glm-5-turbo": {
+		maxTokens: 16_384,
+		contextWindow: 202_752,
+		supportsImages: false,
+		supportsPromptCache: true,
+		supportsReasoningEffort: ["disable", "medium"],
+		reasoningEffort: "medium",
+		preserveReasoning: true,
+		inputPrice: 0.07,
+		outputPrice: 0.4,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.01,
+		description:
+			"GLM-5-Turbo is a high-speed variant of GLM-5 with exceptional performance and cost-effectiveness for high-throughput applications.",
+	},
+	"glm-5.1": {
+		maxTokens: 16_384,
+		contextWindow: 202_752,
+		supportsImages: false,
+		supportsPromptCache: true,
+		supportsReasoningEffort: ["disable", "medium"],
+		reasoningEffort: "medium",
+		preserveReasoning: true,
+		inputPrice: 0.6,
+		outputPrice: 2.2,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.11,
+		description:
+			"GLM-5.1 is an enhanced version of GLM-5 with improved reasoning and coding capabilities, maintaining the 202k context window.",
+	},
 	"glm-4.7-flash": {
 		maxTokens: 16_384,
 		contextWindow: 200_000,
@@ -310,6 +340,36 @@ export const mainlandZAiModels = {
 		cacheReadsPrice: 0.057,
 		description:
 			"GLM-5 is Zhipu's next-generation model with a 202k context window and built-in thinking capabilities. It delivers state-of-the-art reasoning, coding, and agentic performance.",
+	},
+	"glm-5-turbo": {
+		maxTokens: 16_384,
+		contextWindow: 202_752,
+		supportsImages: false,
+		supportsPromptCache: true,
+		supportsReasoningEffort: ["disable", "medium"],
+		reasoningEffort: "medium",
+		preserveReasoning: true,
+		inputPrice: 0.035,
+		outputPrice: 0.2,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.005,
+		description:
+			"GLM-5-Turbo is a high-speed variant of GLM-5 with exceptional performance and cost-effectiveness for high-throughput applications.",
+	},
+	"glm-5.1": {
+		maxTokens: 16_384,
+		contextWindow: 202_752,
+		supportsImages: false,
+		supportsPromptCache: true,
+		supportsReasoningEffort: ["disable", "medium"],
+		reasoningEffort: "medium",
+		preserveReasoning: true,
+		inputPrice: 0.29,
+		outputPrice: 1.14,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.057,
+		description:
+			"GLM-5.1 is an enhanced version of GLM-5 with improved reasoning and coding capabilities, maintaining the 202k context window.",
 	},
 	"glm-4.7-flash": {
 		maxTokens: 16_384,
