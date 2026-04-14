@@ -225,16 +225,19 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 
 		const convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
 
+		// DashScope's OpenAI-compatible API does not support several OpenAI-specific
+		// parameters. Using them causes a 400 Bad Request error. Specifically:
+		// - max_completion_tokens -> use max_tokens instead
+		// - parallel_tool_calls -> not supported
+		// - stream_options -> not supported
 		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model: model.id,
 			temperature: 0,
 			messages: convertedMessages,
 			stream: true,
-			stream_options: { include_usage: true },
-			max_completion_tokens: model.info.maxTokens,
+			max_tokens: model.info.maxTokens,
 			tools: this.convertToolsForOpenAI(metadata?.tools),
 			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
 		}
 
 		const stream = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))
@@ -327,6 +330,28 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 		return { id, info }
 	}
 
+	/**
+	 * Override to skip strict mode for DashScope compatibility.
+	 * DashScope's OpenAI-compatible API does not support OpenAI's strict mode
+	 * on tool definitions (strict: true, additionalProperties: false enforcement).
+	 * Sending these causes a 400 Bad Request error.
+	 */
+	protected override convertToolsForOpenAI(tools: any[] | undefined): any[] | undefined {
+		if (!tools) {
+			return undefined
+		}
+
+		return tools
+			.filter((tool) => tool.type === "function")
+			.map((tool) => ({
+				...tool,
+				function: {
+					...tool.function,
+					// Do not set strict: true - DashScope does not support it
+				},
+			}))
+	}
+
 	async completePrompt(prompt: string): Promise<string> {
 		await this.ensureAuthenticated()
 		const client = this.ensureClient()
@@ -335,7 +360,7 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 			model: model.id,
 			messages: [{ role: "user", content: prompt }],
-			max_completion_tokens: model.info.maxTokens,
+			max_tokens: model.info.maxTokens,
 		}
 
 		const response = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))

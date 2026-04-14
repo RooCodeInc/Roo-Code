@@ -89,19 +89,19 @@ describe("QwenCodeHandler Native Tools", () => {
 			})
 			await stream.next()
 
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tools: expect.arrayContaining([
-						expect.objectContaining({
-							type: "function",
-							function: expect.objectContaining({
-								name: "test_tool",
-							}),
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.tools).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						type: "function",
+						function: expect.objectContaining({
+							name: "test_tool",
 						}),
-					]),
-					parallel_tool_calls: true,
-				}),
+					}),
+				]),
 			)
+			// DashScope does not support parallel_tool_calls
+			expect(callArgs).not.toHaveProperty("parallel_tool_calls")
 		})
 
 		it("should include tool_choice when provided", async () => {
@@ -145,7 +145,8 @@ describe("QwenCodeHandler Native Tools", () => {
 			const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
 			expect(callArgs).toHaveProperty("tools")
 			expect(callArgs).toHaveProperty("tool_choice")
-			expect(callArgs).toHaveProperty("parallel_tool_calls", true)
+			// DashScope does not support parallel_tool_calls
+			expect(callArgs).not.toHaveProperty("parallel_tool_calls")
 		})
 
 		it("should yield tool_call_partial chunks during streaming", async () => {
@@ -215,7 +216,7 @@ describe("QwenCodeHandler Native Tools", () => {
 			})
 		})
 
-		it("should set parallel_tool_calls based on metadata", async () => {
+		it("should not include parallel_tool_calls even when metadata provides it (DashScope unsupported)", async () => {
 			mockCreate.mockImplementationOnce(() => ({
 				[Symbol.asyncIterator]: async function* () {
 					yield {
@@ -231,11 +232,9 @@ describe("QwenCodeHandler Native Tools", () => {
 			})
 			await stream.next()
 
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					parallel_tool_calls: true,
-				}),
-			)
+			const callArgs = mockCreate.mock.calls[0][0]
+			// DashScope does not support parallel_tool_calls - should never be sent
+			expect(callArgs).not.toHaveProperty("parallel_tool_calls")
 		})
 
 		it("should yield tool_call_end events when finish_reason is tool_calls", async () => {
@@ -368,6 +367,100 @@ describe("QwenCodeHandler Native Tools", () => {
 			expect(reasoningChunks[0].text).toBe("Thinking about this...")
 			expect(partialChunks).toHaveLength(1)
 			expect(endChunks).toHaveLength(1)
+		})
+	})
+
+	describe("DashScope API Compatibility", () => {
+		it("should use max_tokens instead of max_completion_tokens", async () => {
+			mockCreate.mockImplementationOnce(() => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [{ delta: { content: "Test response" } }],
+					}
+				},
+			}))
+
+			const stream = handler.createMessage("test prompt", [], {
+				taskId: "test-task-id",
+			})
+			await stream.next()
+
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs).toHaveProperty("max_tokens")
+			expect(callArgs).not.toHaveProperty("max_completion_tokens")
+		})
+
+		it("should not include stream_options", async () => {
+			mockCreate.mockImplementationOnce(() => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [{ delta: { content: "Test response" } }],
+					}
+				},
+			}))
+
+			const stream = handler.createMessage("test prompt", [], {
+				taskId: "test-task-id",
+			})
+			await stream.next()
+
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs).not.toHaveProperty("stream_options")
+		})
+
+		it("should not include parallel_tool_calls", async () => {
+			mockCreate.mockImplementationOnce(() => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [{ delta: { content: "Test response" } }],
+					}
+				},
+			}))
+
+			const stream = handler.createMessage("test prompt", [], {
+				taskId: "test-task-id",
+				tools: testTools,
+			})
+			await stream.next()
+
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs).not.toHaveProperty("parallel_tool_calls")
+		})
+
+		it("should not set strict: true on tool definitions", async () => {
+			mockCreate.mockImplementationOnce(() => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [{ delta: { content: "Test response" } }],
+					}
+				},
+			}))
+
+			const stream = handler.createMessage("test prompt", [], {
+				taskId: "test-task-id",
+				tools: testTools,
+			})
+			await stream.next()
+
+			const callArgs = mockCreate.mock.calls[0][0]
+			const tools = callArgs.tools
+			expect(tools).toBeDefined()
+			for (const tool of tools) {
+				// DashScope does not support strict mode
+				expect(tool.function).not.toHaveProperty("strict")
+			}
+		})
+
+		it("should use max_tokens in completePrompt", async () => {
+			mockCreate.mockImplementationOnce(() => ({
+				choices: [{ message: { content: "response" } }],
+			}))
+
+			await handler.completePrompt("test prompt")
+
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs).toHaveProperty("max_tokens")
+			expect(callArgs).not.toHaveProperty("max_completion_tokens")
 		})
 	})
 })
