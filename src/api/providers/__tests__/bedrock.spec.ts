@@ -1327,4 +1327,99 @@ describe("AwsBedrockHandler", () => {
 			expect(hasCachePoint).toBe(false)
 		})
 	})
+
+	describe("prompt caching with custom ARN", () => {
+		beforeEach(() => {
+			mockConverseStreamCommand.mockReset()
+		})
+
+		// System prompt must exceed minTokensPerCachePoint (1024) for cache points to be placed
+		const longSystemPrompt = "You are a helpful assistant. ".repeat(200)
+		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+		it("should enable prompt caching for custom ARN with recognized Claude model ID", async () => {
+			// Custom ARN containing a Claude model ID that matches the guess pattern
+			const customArnHandler = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test-access-key",
+				awsSecretKey: "test-secret-key",
+				awsRegion: "us-east-1",
+				awsCustomArn: "arn:aws:bedrock:us-east-1:123456789012:inference-profile/claude-3-5-sonnet-custom",
+			})
+
+			const generator = customArnHandler.createMessage(longSystemPrompt, messages)
+			await generator.next()
+
+			expect(mockConverseStreamCommand).toHaveBeenCalled()
+			const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
+
+			// System content should include a cachePoint since prompt caching should work
+			const systemBlocks = commandArg.system
+			const hasCachePoint = systemBlocks?.some((block: any) => block.cachePoint !== undefined)
+			expect(hasCachePoint).toBe(true)
+		})
+
+		it("should enable prompt caching for custom ARN with unrecognized model ID when user opts in", async () => {
+			// Custom ARN with an opaque model ID that doesn't match any pattern
+			const customArnHandler = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test-access-key",
+				awsSecretKey: "test-secret-key",
+				awsRegion: "us-east-1",
+				awsUsePromptCache: true,
+				awsCustomArn: "arn:aws:bedrock:us-east-1:123456789012:provisioned-model/my-custom-model-xyz",
+			})
+
+			const generator = customArnHandler.createMessage(longSystemPrompt, messages)
+			await generator.next()
+
+			expect(mockConverseStreamCommand).toHaveBeenCalled()
+			const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
+
+			// System content should include a cachePoint since user explicitly enabled caching
+			const systemBlocks = commandArg.system
+			const hasCachePoint = systemBlocks?.some((block: any) => block.cachePoint !== undefined)
+			expect(hasCachePoint).toBe(true)
+		})
+
+		it("should disable prompt caching for custom ARN when user explicitly disables it", async () => {
+			const customArnHandler = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test-access-key",
+				awsSecretKey: "test-secret-key",
+				awsRegion: "us-east-1",
+				awsUsePromptCache: false,
+				awsCustomArn: "arn:aws:bedrock:us-east-1:123456789012:inference-profile/claude-3-5-sonnet-custom",
+			})
+
+			const generator = customArnHandler.createMessage(longSystemPrompt, messages)
+			await generator.next()
+
+			expect(mockConverseStreamCommand).toHaveBeenCalled()
+			const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
+
+			// System content should NOT include cachePoint since user explicitly disabled caching
+			const systemBlocks = commandArg.system
+			const hasCachePoint = systemBlocks?.some((block: any) => block.cachePoint !== undefined)
+			expect(hasCachePoint).toBe(false)
+		})
+
+		it("should include cachableFields in guessModelInfoFromId for Claude patterns", () => {
+			// Test with a custom ARN that has a Claude model ID in it
+			const customArnHandler = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test-access-key",
+				awsSecretKey: "test-secret-key",
+				awsRegion: "us-east-1",
+				awsCustomArn: "arn:aws:bedrock:us-east-1:123456789012:inference-profile/claude-3-5-sonnet-custom",
+			})
+
+			const modelConfig = customArnHandler.getModel()
+			expect(modelConfig.info.supportsPromptCache).toBe(true)
+			expect((modelConfig.info as any).cachableFields).toBeDefined()
+			expect((modelConfig.info as any).cachableFields).toContain("system")
+			expect((modelConfig.info as any).cachableFields).toContain("messages")
+			expect((modelConfig.info as any).cachableFields).toContain("tools")
+		})
+	})
 })
