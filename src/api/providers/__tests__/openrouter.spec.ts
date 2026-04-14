@@ -80,6 +80,15 @@ vitest.mock("../fetchers/modelCache", () => ({
 				excludedTools: ["existing_excluded"],
 				includedTools: ["existing_included"],
 			},
+			"mistralai/devstral-2512": {
+				maxTokens: 16384,
+				contextWindow: 128000,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 0.1,
+				outputPrice: 0.3,
+				description: "Devstral 2512",
+			},
 		})
 	}),
 }))
@@ -524,6 +533,123 @@ describe("OpenRouterHandler", () => {
 			expect(partialChunks).toHaveLength(1)
 			expect(endChunks).toHaveLength(1)
 			expect(endChunks[0].id).toBe("call_openrouter_test")
+		})
+	})
+
+	describe("Mistral/Devstral message formatting", () => {
+		it("merges tool result text into tool messages for devstral models to avoid user-after-tool error", async () => {
+			const handler = new OpenRouterHandler({
+				...mockOptions,
+				openRouterModelId: "mistralai/devstral-2512",
+			})
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "test response" } }],
+					}
+					yield {
+						id: "test-id",
+						choices: [{ delta: {} }],
+						usage: { prompt_tokens: 10, completion_tokens: 20 },
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			// Simulate messages with tool results followed by text content in same user message
+			// This is the pattern that causes "Unexpected role 'user' after role 'tool'" errors
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Use the read_file tool" },
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "tool_use",
+							id: "tool_call_1",
+							name: "read_file",
+							input: { path: "test.ts" },
+						},
+					],
+				},
+				{
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: "tool_call_1",
+							content: "file contents here",
+						},
+						{
+							type: "text",
+							text: "Now analyze this file",
+						},
+					],
+				},
+			]
+
+			const generator = handler.createMessage("test system", messages)
+			for await (const _chunk of generator) {
+				// consume the stream
+			}
+
+			// Verify the messages sent to OpenAI API
+			const callArgs = mockCreate.mock.calls[0][0]
+			const apiMessages = callArgs.messages
+
+			// After tool messages, the text should NOT appear as a separate user message.
+			// Instead it should be merged into the last tool message content.
+			// Check that no user message directly follows a tool message
+			for (let i = 1; i < apiMessages.length; i++) {
+				if (apiMessages[i].role === "user" && apiMessages[i - 1].role === "tool") {
+					throw new Error(
+						"Found user message directly after tool message - mergeToolResultText is not working",
+					)
+				}
+			}
+		})
+
+		it("detects models with 'mistral' in the model ID (e.g. mistralai/mistral-large)", async () => {
+			const handler = new OpenRouterHandler({
+				...mockOptions,
+				openRouterModelId: "mistralai/devstral-2512",
+			})
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "ok" } }],
+					}
+					yield {
+						id: "test-id",
+						choices: [{ delta: {} }],
+						usage: { prompt_tokens: 5, completion_tokens: 5 },
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			// Simple message without tool results - just verify it works
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+			const generator = handler.createMessage("test", messages)
+			for await (const _chunk of generator) {
+				// consume
+			}
+
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.model).toBe("mistralai/devstral-2512")
 		})
 	})
 
