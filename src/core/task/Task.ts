@@ -1673,6 +1673,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				apiConfiguration,
 				disabledTools: state?.disabledTools,
 				modelInfo,
+				maxReadFileLine: state?.maxReadFileLine,
 				includeAllToolsWithRestrictions: false,
 			})
 			allTools = toolsResult.tools
@@ -3865,6 +3866,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				apiConfiguration,
 				disabledTools: state?.disabledTools,
 				modelInfo,
+				maxReadFileLine: state?.maxReadFileLine,
 				includeAllToolsWithRestrictions: false,
 			})
 			allTools = toolsResult.tools
@@ -4079,6 +4081,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						apiConfiguration,
 						disabledTools: state?.disabledTools,
 						modelInfo,
+						maxReadFileLine: state?.maxReadFileLine,
 						includeAllToolsWithRestrictions: false,
 					})
 					contextMgmtTools = toolsResult.tools
@@ -4243,6 +4246,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				apiConfiguration,
 				disabledTools: state?.disabledTools,
 				modelInfo,
+				maxReadFileLine: state?.maxReadFileLine,
 				includeAllToolsWithRestrictions: supportsAllowedFunctionNames,
 			})
 			allTools = toolsResult.tools
