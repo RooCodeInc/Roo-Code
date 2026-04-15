@@ -1,4 +1,4 @@
-import { sanitizeErrorMessage } from "../validation-helpers"
+import { sanitizeErrorMessage, getErrorMessageForStatus } from "../validation-helpers"
 
 describe("sanitizeErrorMessage", () => {
 	it("should sanitize Unix-style file paths", () => {
@@ -88,5 +88,52 @@ describe("sanitizeErrorMessage", () => {
 		const input = "Copy from /src/file1.js to /dest/file2.js failed"
 		const expected = "Copy from [REDACTED_PATH] to [REDACTED_PATH] failed"
 		expect(sanitizeErrorMessage(input)).toBe(expected)
+	})
+})
+
+describe("getErrorMessageForStatus", () => {
+	it("should return authenticationFailed for 401", () => {
+		expect(getErrorMessageForStatus(401, "openai")).toBe("validation.authenticationFailed")
+	})
+
+	it("should return authenticationFailed for 403", () => {
+		expect(getErrorMessageForStatus(403, "openai")).toBe("validation.authenticationFailed")
+	})
+
+	it("should return modelNotAvailable for 404 with openai embedder", () => {
+		expect(getErrorMessageForStatus(404, "openai")).toBe("validation.modelNotAvailable")
+	})
+
+	it("should return invalidEndpoint for 404 with non-openai embedder", () => {
+		expect(getErrorMessageForStatus(404, "ollama")).toBe("validation.invalidEndpoint")
+	})
+
+	it("should return rateLimitExceeded for 429", () => {
+		expect(getErrorMessageForStatus(429, "openai")).toBe("validation.rateLimitExceeded")
+	})
+
+	it("should return badGateway for 502", () => {
+		expect(getErrorMessageForStatus(502, "openai")).toBe("validation.badGateway")
+	})
+
+	it("should return serviceUnavailable for 503", () => {
+		expect(getErrorMessageForStatus(503, "openai")).toBe("validation.serviceUnavailable")
+	})
+
+	it("should return gatewayTimeout for 504", () => {
+		expect(getErrorMessageForStatus(504, "openai")).toBe("validation.gatewayTimeout")
+	})
+
+	it("should return serverError for other 5xx errors", () => {
+		expect(getErrorMessageForStatus(500, "openai")).toBe("validation.serverError")
+		expect(getErrorMessageForStatus(501, "openai")).toBe("validation.serverError")
+		expect(getErrorMessageForStatus(505, "openai")).toBe("validation.serverError")
+		expect(getErrorMessageForStatus(599, "openai")).toBe("validation.serverError")
+	})
+
+	it("should return undefined for unknown status", () => {
+		expect(getErrorMessageForStatus(undefined, "openai")).toBeUndefined()
+		expect(getErrorMessageForStatus(200, "openai")).toBeUndefined()
+		expect(getErrorMessageForStatus(301, "openai")).toBeUndefined()
 	})
 })

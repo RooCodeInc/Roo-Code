@@ -98,6 +98,8 @@ describe("OpenAICompatibleEmbedder", () => {
 			expect(MockedOpenAI).toHaveBeenCalledWith({
 				baseURL: testBaseUrl,
 				apiKey: testApiKey,
+				timeout: 60000,
+				maxRetries: 0,
 			})
 			expect(embedder).toBeDefined()
 		})
@@ -108,6 +110,8 @@ describe("OpenAICompatibleEmbedder", () => {
 			expect(MockedOpenAI).toHaveBeenCalledWith({
 				baseURL: testBaseUrl,
 				apiKey: testApiKey,
+				timeout: 60000,
+				maxRetries: 0,
 			})
 			expect(embedder).toBeDefined()
 		})
@@ -405,6 +409,7 @@ describe("OpenAICompatibleEmbedder", () => {
 			})
 
 			afterEach(() => {
+				vitest.clearAllTimers()
 				vitest.useRealTimers()
 			})
 
@@ -441,7 +446,7 @@ describe("OpenAICompatibleEmbedder", () => {
 				const result = await resultPromise
 
 				expect(mockEmbeddingsCreate).toHaveBeenCalledTimes(3)
-				expect(console.warn).toHaveBeenCalledWith(expect.stringContaining("Rate limit hit, retrying in"))
+				expect(console.warn).toHaveBeenCalledWith("embeddings:serverErrorRetry")
 				expect(result).toEqual({
 					embeddings: [[0.25, 0.5, 0.75]],
 					usage: { promptTokens: 10, totalTokens: 15 },
@@ -463,18 +468,35 @@ describe("OpenAICompatibleEmbedder", () => {
 				expect(console.warn).not.toHaveBeenCalledWith(expect.stringContaining("Rate limit hit"))
 			})
 
-			it("should throw error immediately on non-retryable errors", async () => {
+			it("should retry on 5xx server errors", async () => {
 				const testTexts = ["Hello world"]
 				const serverError = new Error("Internal server error")
 				;(serverError as any).status = 500
 
-				mockEmbeddingsCreate.mockRejectedValue(serverError)
+				// Setup 3 rejections for 3 attempts (MAX_RETRIES = 3)
+				mockEmbeddingsCreate
+					.mockRejectedValueOnce(serverError)
+					.mockRejectedValueOnce(serverError)
+					.mockRejectedValueOnce(serverError)
 
-				await expect(embedder.createEmbeddings(testTexts)).rejects.toThrow(
+				const resultPromise = embedder.createEmbeddings(testTexts)
+
+				// Register the rejection handler BEFORE advancing timers
+				// This prevents unhandledRejection because the error handler is attached
+				// before the promise actually rejects during timer advancement
+				const resultExpectThrow = expect(resultPromise).rejects.toThrow(
 					"Failed to create embeddings after 3 attempts: HTTP 500 - Internal server error",
 				)
 
-				expect(mockEmbeddingsCreate).toHaveBeenCalledTimes(1)
+				// Run all timers - this triggers the retries and rejections
+				// The rejection handler is already registered, so no unhandledRejection
+				await vitest.runAllTimersAsync()
+
+				// Wait for the assertion to complete
+				await resultExpectThrow
+
+				// Verify all 3 attempts were made (retry для 5xx)
+				expect(mockEmbeddingsCreate).toHaveBeenCalledTimes(3)
 			})
 		})
 
@@ -857,7 +879,7 @@ describe("OpenAICompatibleEmbedder", () => {
 
 					expect(global.fetch).toHaveBeenCalledTimes(3)
 					// Check that rate limit warnings were logged
-					expect(console.warn).toHaveBeenCalledWith(expect.stringContaining("Rate limit hit"))
+					expect(console.warn).toHaveBeenCalledWith("embeddings:serverErrorRetry")
 					expectEmbeddingValues(result.embeddings[0], [0.1, 0.2, 0.3])
 					vitest.useRealTimers()
 				})
@@ -886,6 +908,137 @@ describe("OpenAICompatibleEmbedder", () => {
 						"Failed to create embeddings after 3 attempts",
 					)
 				})
+			})
+		})
+
+		describe("timeout handling", () => {
+			it("should pass timeout and maxRetries to OpenAI SDK constructor", () => {
+				new OpenAICompatibleEmbedder(testBaseUrl, testApiKey, testModelId)
+
+				expect(MockedOpenAI).toHaveBeenCalledWith({
+					baseURL: testBaseUrl,
+					apiKey: testApiKey,
+					timeout: 60000,
+					maxRetries: 0,
+				})
+			})
+
+			it("should handle AbortError as 504 Gateway Timeout in direct fetch", async () => {
+				const azureUrl =
+					"https://myresource.openai.azure.com/openai/deployments/mymodel/embeddings?api-version=2024-02-01"
+				const embedder = new OpenAICompatibleEmbedder(azureUrl, testApiKey, testModelId)
+
+				// Mock fetch to simulate timeout (AbortError)
+				const abortError = new DOMException("The operation was aborted", "AbortError")
+				;(global.fetch as MockedFunction<typeof fetch>).mockRejectedValue(abortError)
+
+				await expect(embedder.createEmbeddings(["test"])).rejects.toThrow(
+					"Failed to create embeddings after 3 attempts",
+				)
+			})
+		})
+
+		describe("5xx retry handling", () => {
+			beforeEach(() => {
+				vitest.useFakeTimers()
+			})
+
+			afterEach(() => {
+				vitest.useRealTimers()
+			})
+
+			it("should retry on 502 Bad Gateway", async () => {
+				const azureUrl =
+					"https://myresource.openai.azure.com/openai/deployments/mymodel/embeddings?api-version=2024-02-01"
+				const embedder = new OpenAICompatibleEmbedder(azureUrl, testApiKey, testModelId)
+
+				const base64String = Buffer.from(new Float32Array([0.1, 0.2, 0.3]).buffer).toString("base64")
+
+				;(global.fetch as MockedFunction<typeof fetch>)
+					.mockResolvedValueOnce({ ok: false, status: 502, text: async () => "Bad Gateway" } as any)
+					.mockResolvedValueOnce({ ok: false, status: 502, text: async () => "Bad Gateway" } as any)
+					.mockResolvedValueOnce({
+						ok: true,
+						status: 200,
+						json: async () => ({
+							data: [{ embedding: base64String }],
+							usage: { prompt_tokens: 10, total_tokens: 15 },
+						}),
+					} as any)
+
+				const resultPromise = embedder.createEmbeddings(["test"])
+
+				// Advance timers for retry delays (500ms, 1000ms)
+				await vitest.advanceTimersByTimeAsync(500)
+				await vitest.advanceTimersByTimeAsync(1000)
+
+				const result = await resultPromise
+
+				expect(global.fetch).toHaveBeenCalledTimes(3)
+				expect(console.warn).toHaveBeenCalledWith("embeddings:serverErrorRetry")
+				expect(result.embeddings).toHaveLength(1)
+			})
+
+			it("should retry on 503 Service Unavailable", async () => {
+				const azureUrl =
+					"https://myresource.openai.azure.com/openai/deployments/mymodel/embeddings?api-version=2024-02-01"
+				const embedder = new OpenAICompatibleEmbedder(azureUrl, testApiKey, testModelId)
+
+				const base64String = Buffer.from(new Float32Array([0.1, 0.2, 0.3]).buffer).toString("base64")
+
+				;(global.fetch as MockedFunction<typeof fetch>)
+					.mockResolvedValueOnce({ ok: false, status: 503, text: async () => "Service Unavailable" } as any)
+					.mockResolvedValueOnce({ ok: false, status: 503, text: async () => "Service Unavailable" } as any)
+					.mockResolvedValueOnce({
+						ok: true,
+						status: 200,
+						json: async () => ({
+							data: [{ embedding: base64String }],
+							usage: { prompt_tokens: 10, total_tokens: 15 },
+						}),
+					} as any)
+
+				const resultPromise = embedder.createEmbeddings(["test"])
+
+				await vitest.advanceTimersByTimeAsync(500)
+				await vitest.advanceTimersByTimeAsync(1000)
+
+				const result = await resultPromise
+
+				expect(global.fetch).toHaveBeenCalledTimes(3)
+				expect(console.warn).toHaveBeenCalledWith("embeddings:serverErrorRetry")
+				expect(result.embeddings).toHaveLength(1)
+			})
+
+			it("should retry on 504 Gateway Timeout", async () => {
+				const azureUrl =
+					"https://myresource.openai.azure.com/openai/deployments/mymodel/embeddings?api-version=2024-02-01"
+				const embedder = new OpenAICompatibleEmbedder(azureUrl, testApiKey, testModelId)
+
+				const base64String = Buffer.from(new Float32Array([0.1, 0.2, 0.3]).buffer).toString("base64")
+
+				;(global.fetch as MockedFunction<typeof fetch>)
+					.mockResolvedValueOnce({ ok: false, status: 504, text: async () => "Gateway Timeout" } as any)
+					.mockResolvedValueOnce({ ok: false, status: 504, text: async () => "Gateway Timeout" } as any)
+					.mockResolvedValueOnce({
+						ok: true,
+						status: 200,
+						json: async () => ({
+							data: [{ embedding: base64String }],
+							usage: { prompt_tokens: 10, total_tokens: 15 },
+						}),
+					} as any)
+
+				const resultPromise = embedder.createEmbeddings(["test"])
+
+				await vitest.advanceTimersByTimeAsync(500)
+				await vitest.advanceTimersByTimeAsync(1000)
+
+				const result = await resultPromise
+
+				expect(global.fetch).toHaveBeenCalledTimes(3)
+				expect(console.warn).toHaveBeenCalledWith("embeddings:serverErrorRetry")
+				expect(result.embeddings).toHaveLength(1)
 			})
 		})
 	})
@@ -1066,7 +1219,7 @@ describe("OpenAICompatibleEmbedder", () => {
 			const result = await embedder.validateConfiguration()
 
 			expect(result.valid).toBe(false)
-			expect(result.error).toBe("embeddings:validation.serviceUnavailable")
+			expect(result.error).toBe("embeddings:validation.rateLimitExceeded")
 		})
 
 		it("should fail validation with generic error", async () => {
@@ -1079,7 +1232,7 @@ describe("OpenAICompatibleEmbedder", () => {
 			const result = await embedder.validateConfiguration()
 
 			expect(result.valid).toBe(false)
-			expect(result.error).toBe("embeddings:validation.configurationError")
+			expect(result.error).toBe("embeddings:validation.serverError")
 		})
 	})
 })

@@ -14,6 +14,10 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { Mutex } from "async-mutex"
 import { handleOpenAIError } from "../../../api/providers/utils/openai-error-handler"
 
+// Timeout constants for OpenAI Compatible API requests
+const OPENAI_COMPATIBLE_EMBEDDING_TIMEOUT_MS = 60000 // 60 секунд для embedding запросов
+const OPENAI_COMPATIBLE_VALIDATION_TIMEOUT_MS = 30000 // 30 секунд для валидации
+
 interface EmbeddingItem {
 	embedding: string | number[]
 	[key: string]: any
@@ -73,6 +77,8 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 			this.embeddingsClient = new OpenAI({
 				baseURL: baseUrl,
 				apiKey: apiKey,
+				timeout: OPENAI_COMPATIBLE_EMBEDDING_TIMEOUT_MS, // 60 секунд таймаут
+				maxRetries: 0, // Отключаем встроенный retry SDK — используем нашу собственную логику в _embedBatchWithRetries()
 			})
 		} catch (error) {
 			// Use the error handler to transform ByteString conversion errors
@@ -204,45 +210,65 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 		batchTexts: string[],
 		model: string,
 	): Promise<OpenAIEmbeddingResponse> {
-		const response = await fetch(url, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				// Azure OpenAI uses 'api-key' header, while OpenAI uses 'Authorization'
-				// We'll try 'api-key' first for Azure compatibility
-				"api-key": this.apiKey,
-				Authorization: `Bearer ${this.apiKey}`,
-			},
-			body: JSON.stringify({
-				input: batchTexts,
-				model: model,
-				encoding_format: "base64",
-			}),
-		})
-
-		if (!response || !response.ok) {
-			const status = response?.status || 0
-			let errorText = "No response"
-			try {
-				if (response && typeof response.text === "function") {
-					errorText = await response.text()
-				} else if (response) {
-					errorText = `Error ${status}`
-				}
-			} catch {
-				// Ignore text parsing errors
-				errorText = `Error ${status}`
-			}
-			const error = new Error(`HTTP ${status}: ${errorText}`) as HttpError
-			error.status = status || response?.status || 0
-			throw error
-		}
+		const controller = new AbortController()
+		const timeoutId = setTimeout(() => controller.abort(), OPENAI_COMPATIBLE_EMBEDDING_TIMEOUT_MS)
 
 		try {
-			return await response.json()
-		} catch (e) {
-			const error = new Error(`Failed to parse response JSON`) as HttpError
-			error.status = response.status
+			const response = await fetch(url, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					// Azure OpenAI uses 'api-key' header, while OpenAI uses 'Authorization'
+					// We'll try 'api-key' first for Azure compatibility
+					"api-key": this.apiKey,
+					Authorization: `Bearer ${this.apiKey}`,
+				},
+				body: JSON.stringify({
+					input: batchTexts,
+					model: model,
+					encoding_format: "base64",
+				}),
+				signal: controller.signal,
+			})
+			clearTimeout(timeoutId)
+
+			if (!response || !response.ok) {
+				const status = response?.status || 0
+				let errorText = "No response"
+				try {
+					if (response && typeof response.text === "function") {
+						errorText = await response.text()
+					} else if (response) {
+						errorText = `Error ${status}`
+					}
+				} catch {
+					// Ignore text parsing errors
+					errorText = `Error ${status}`
+				}
+				const error = new Error(`HTTP ${status}: ${errorText}`) as HttpError
+				error.status = status || response?.status || 0
+				throw error
+			}
+
+			try {
+				return await response.json()
+			} catch (e) {
+				const error = new Error(`Failed to parse response JSON`) as HttpError
+				error.status = response.status
+				throw error
+			}
+		} catch (error) {
+			clearTimeout(timeoutId)
+
+			// Handle AbortError (timeout) — преобразуем в HTTP 504
+			if (error instanceof Error && error.name === "AbortError") {
+				const timeoutError = new Error(
+					`Request timed out after ${OPENAI_COMPATIBLE_EMBEDDING_TIMEOUT_MS / 1000} seconds`,
+				) as HttpError
+				timeoutError.status = 504 // Gateway Timeout
+				throw timeoutError
+			}
+
 			throw error
 		}
 	}
@@ -321,28 +347,35 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 
 				const hasMoreAttempts = attempts < MAX_RETRIES - 1
 
-				// Check if it's a rate limit error
 				const httpError = error as HttpError
-				if (httpError?.status === 429) {
-					// Update global rate limit state
+
+				// Определяем тип ошибки
+				const errorStatus = httpError?.status
+				const isRetryableServerError =
+					typeof errorStatus === "number" && errorStatus >= 500 && errorStatus < 600
+				const isRateLimitError = errorStatus === 429
+
+				// Обновляем global rate limit state только для 429
+				if (isRateLimitError) {
 					await this.updateGlobalRateLimitState(httpError)
+				}
 
-					if (hasMoreAttempts) {
-						// Calculate delay based on global rate limit state
-						const baseDelay = INITIAL_DELAY_MS * Math.pow(2, attempts)
-						const globalDelay = await this.getGlobalRateLimitDelay()
-						const delayMs = Math.max(baseDelay, globalDelay)
+				// Ретраим для 429 И 5xx ошибок
+				if ((isRateLimitError || isRetryableServerError) && hasMoreAttempts) {
+					const baseDelay = INITIAL_DELAY_MS * Math.pow(2, attempts)
+					const globalDelay = await this.getGlobalRateLimitDelay()
+					const delayMs = Math.max(baseDelay, globalDelay)
 
-						console.warn(
-							t("embeddings:rateLimitRetry", {
-								delayMs,
-								attempt: attempts + 1,
-								maxRetries: MAX_RETRIES,
-							}),
-						)
-						await new Promise((resolve) => setTimeout(resolve, delayMs))
-						continue
-					}
+					console.warn(
+						t("embeddings:serverErrorRetry", {
+							status: httpError?.status,
+							delayMs,
+							attempt: attempts + 1,
+							maxRetries: MAX_RETRIES,
+						}),
+					)
+					await new Promise((resolve) => setTimeout(resolve, delayMs))
+					continue
 				}
 
 				// Log the error for debugging

@@ -514,7 +514,7 @@ describe("OpenAiEmbedder", () => {
 			const result = await embedder.validateConfiguration()
 
 			expect(result.valid).toBe(false)
-			expect(result.error).toBe("embeddings:validation.serviceUnavailable")
+			expect(result.error).toBe("embeddings:validation.rateLimitExceeded")
 		})
 
 		it("should fail validation with connection error", async () => {
@@ -535,7 +535,7 @@ describe("OpenAiEmbedder", () => {
 			const result = await embedder.validateConfiguration()
 
 			expect(result.valid).toBe(false)
-			expect(result.error).toBe("embeddings:validation.configurationError")
+			expect(result.error).toBe("embeddings:validation.serverError")
 		})
 	})
 })
