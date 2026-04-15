@@ -11,7 +11,21 @@ type ReasoningContentBlock = {
 	text: string
 }
 
-type ExtendedContentBlockParam = Anthropic.ContentBlockParam | ThoughtSignatureContentBlock | ReasoningContentBlock
+/**
+ * Represents a server-side tool part stored in conversation history.
+ * These are produced by Gemini 3 built-in tools (Google Search, Code Execution,
+ * URL Context) and must be round-tripped back to the model for context circulation.
+ */
+type ServerSideToolContentBlock = {
+	type: "serverSideToolCall" | "serverSideToolResponse" | "executableCode" | "codeExecutionResult"
+	data: Record<string, unknown>
+}
+
+type ExtendedContentBlockParam =
+	| Anthropic.ContentBlockParam
+	| ThoughtSignatureContentBlock
+	| ReasoningContentBlock
+	| ServerSideToolContentBlock
 type ExtendedAnthropicContent = string | ExtendedContentBlockParam[]
 
 // Extension type to safely add thoughtSignature to Part
@@ -21,6 +35,15 @@ type PartWithThoughtSignature = Part & {
 
 function isThoughtSignatureContentBlock(block: ExtendedContentBlockParam): block is ThoughtSignatureContentBlock {
 	return block.type === "thoughtSignature"
+}
+
+function isServerSideToolContentBlock(block: ExtendedContentBlockParam): block is ServerSideToolContentBlock {
+	return (
+		block.type === "serverSideToolCall" ||
+		block.type === "serverSideToolResponse" ||
+		block.type === "executableCode" ||
+		block.type === "codeExecutionResult"
+	)
 }
 
 export function convertAnthropicContentToGemini(
@@ -58,6 +81,23 @@ export function convertAnthropicContentToGemini(
 			// We process thought signatures globally and attach them to the relevant parts
 			// or create a placeholder part if no other content exists.
 			return []
+		}
+
+		// Handle server-side tool parts (Gemini 3 built-in tool context circulation).
+		// These parts are stored in conversation history and must be passed back to the
+		// model as-is so it can maintain context from previous server-side tool invocations.
+		if (isServerSideToolContentBlock(block)) {
+			const data = block.data
+			switch (block.type) {
+				case "executableCode":
+					return { executableCode: data } as Part
+				case "codeExecutionResult":
+					return { codeExecutionResult: data } as Part
+				default:
+					// For generic server-side tool call/response parts, pass through the raw data.
+					// The SDK Part type may not have explicit fields for these, so we cast.
+					return data as unknown as Part
+			}
 		}
 
 		switch (block.type) {
