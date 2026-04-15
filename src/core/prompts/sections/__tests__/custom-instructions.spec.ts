@@ -242,6 +242,12 @@ describe("loadRuleFiles", () => {
 		readdirMock.mockResolvedValueOnce([
 			{ name: "rule1.txt", isFile: () => true, isSymbolicLink: () => false, parentPath: "/fake/path/.roo/rules" },
 			{ name: ".DS_Store", isFile: () => true, isSymbolicLink: () => false, parentPath: "/fake/path/.roo/rules" },
+			{
+				name: "desktop.ini",
+				isFile: () => true,
+				isSymbolicLink: () => false,
+				parentPath: "/fake/path/.roo/rules",
+			},
 			{ name: "Thumbs.db", isFile: () => true, isSymbolicLink: () => false, parentPath: "/fake/path/.roo/rules" },
 			{ name: "rule2.md", isFile: () => true, isSymbolicLink: () => false, parentPath: "/fake/path/.roo/rules" },
 			{ name: "cache.log", isFile: () => true, isSymbolicLink: () => false, parentPath: "/fake/path/.roo/rules" },
@@ -283,6 +289,9 @@ describe("loadRuleFiles", () => {
 			if (normalizedPath === "/fake/path/.roo/rules/.DS_Store") {
 				return Promise.resolve("DS_STORE_BINARY_CONTENT")
 			}
+			if (normalizedPath === "/fake/path/.roo/rules/desktop.ini") {
+				return Promise.resolve("DESKTOP_INI_CONTENT")
+			}
 			if (normalizedPath === "/fake/path/.roo/rules/Thumbs.db") {
 				return Promise.resolve("THUMBS_DB_CONTENT")
 			}
@@ -310,6 +319,7 @@ describe("loadRuleFiles", () => {
 
 		// Should NOT contain cache file content - they should be filtered out
 		expect(result).not.toContain("DS_STORE_BINARY_CONTENT")
+		expect(result).not.toContain("DESKTOP_INI_CONTENT")
 		expect(result).not.toContain("THUMBS_DB_CONTENT")
 		expect(result).not.toContain("BACKUP_CONTENT")
 		expect(result).not.toContain("LOG_CONTENT")
@@ -319,6 +329,7 @@ describe("loadRuleFiles", () => {
 		// Verify cache files are not read at all
 		const expectedCacheFiles = [
 			"/fake/path/.roo/rules/.DS_Store",
+			"/fake/path/.roo/rules/desktop.ini",
 			"/fake/path/.roo/rules/Thumbs.db",
 			"/fake/path/.roo/rules/backup.bak",
 			"/fake/path/.roo/rules/cache.log",
