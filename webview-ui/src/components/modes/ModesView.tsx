@@ -49,6 +49,7 @@ import {
 	StandardTooltip,
 } from "@src/components/ui"
 import { DeleteModeDialog } from "@src/components/modes/DeleteModeDialog"
+import PersonalityTraitsPanel from "@src/components/modes/PersonalityTraitsPanel"
 import { useEscapeKey } from "@src/hooks/useEscapeKey"
 
 // Get all available groups that should show in prompts view
@@ -74,6 +75,7 @@ const ModesView = () => {
 		customInstructions,
 		setCustomInstructions,
 		customModes,
+		personalityTraitEnhancerPrompt,
 	} = useExtensionState()
 
 	// Use a local state to track the visually active mode
@@ -1292,6 +1294,13 @@ const ModesView = () => {
 						/>
 					</div>
 				</div>
+
+				{/* Personality Traits Section */}
+				<PersonalityTraitsPanel
+					currentMode={getCurrentMode()}
+					onUpdateMode={updateCustomMode}
+					personalityTraitEnhancerPrompt={personalityTraitEnhancerPrompt}
+				/>
 
 				<div className="pb-4 border-b border-vscode-input-border">
 					<div className="flex gap-2 mb-4">
