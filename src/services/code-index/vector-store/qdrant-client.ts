@@ -194,6 +194,10 @@ export class QdrantVectorStore implements IVectorStore {
 
 			// Create payload indexes
 			await this._createPayloadIndexes()
+
+			// Create a human-readable alias for the collection using the workspace folder name
+			await this._createWorkspaceAlias()
+
 			return created
 		} catch (error: any) {
 			const errorMessage = error?.message || error
@@ -328,6 +332,41 @@ export class QdrantVectorStore implements IVectorStore {
 					)
 				}
 			}
+		}
+	}
+
+	/**
+	 * Creates a human-readable Qdrant alias for the collection using the workspace folder name.
+	 * This allows external tools to discover and query the collection without reverse-engineering
+	 * the hashed naming scheme. Non-fatal: failures are logged but do not block initialization.
+	 */
+	private async _createWorkspaceAlias(): Promise<void> {
+		try {
+			const workspaceName = path.basename(this.workspacePath)
+			if (!workspaceName) {
+				return
+			}
+
+			// Sanitize the alias name: only allow alphanumeric, hyphens, underscores
+			const aliasName = workspaceName.replace(/[^a-zA-Z0-9_-]/g, "-").toLowerCase()
+			if (!aliasName) {
+				return
+			}
+
+			await this.client.updateCollectionAliases({
+				actions: [
+					{
+						create_alias: {
+							collection_name: this.collectionName,
+							alias_name: aliasName,
+						},
+					},
+				],
+			})
+			console.log(`[QdrantVectorStore] Created alias "${aliasName}" for collection "${this.collectionName}"`)
+		} catch (aliasError: any) {
+			// Non-fatal - log warning but don't fail initialization
+			console.warn(`[QdrantVectorStore] Could not create workspace alias:`, aliasError?.message || aliasError)
 		}
 	}
 

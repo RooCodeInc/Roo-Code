@@ -108,6 +108,7 @@ describe("FileWatcher", () => {
 			getHash: vi.fn(),
 			updateHash: vi.fn(),
 			deleteHash: vi.fn(),
+			getAllHashes: vi.fn().mockReturnValue({}),
 		}
 
 		mockEmbedder = {
@@ -274,6 +275,75 @@ describe("FileWatcher", () => {
 			expect(processedFiles).not.toContain("src/.hidden/components/Button.tsx")
 			expect(processedFiles).not.toContain(".hidden/src/components/Button.tsx")
 			expect(processedFiles).not.toContain("src/components/.hidden/Button.tsx")
+		})
+	})
+
+	describe("directory deletion handling", () => {
+		it("should queue all cached child files for deletion when a directory is deleted", async () => {
+			// Setup cache with files that are children of a directory
+			const directoryPath = "/mock/workspace/src/components"
+			mockCacheManager.getAllHashes.mockReturnValue({
+				[`${directoryPath}/Button.tsx`]: "hash1",
+				[`${directoryPath}/Modal.tsx`]: "hash2",
+				[`${directoryPath}/utils/helpers.ts`]: "hash3",
+				["/mock/workspace/src/index.ts"]: "hash4",
+			})
+
+			await fileWatcher.initialize()
+
+			// Trigger directory deletion event
+			await mockOnDidDelete({ fsPath: directoryPath })
+
+			// Wait for batch processing
+			await new Promise((resolve) => setTimeout(resolve, 600))
+
+			// Verify that deletePointsByMultipleFilePaths was called with all child paths
+			expect(mockVectorStore.deletePointsByMultipleFilePaths).toHaveBeenCalled()
+			const deletedPaths = mockVectorStore.deletePointsByMultipleFilePaths.mock.calls[0][0]
+			expect(deletedPaths).toContain(`${directoryPath}/Button.tsx`)
+			expect(deletedPaths).toContain(`${directoryPath}/Modal.tsx`)
+			expect(deletedPaths).toContain(`${directoryPath}/utils/helpers.ts`)
+			// Should NOT include files outside the deleted directory
+			expect(deletedPaths).not.toContain("/mock/workspace/src/index.ts")
+		})
+
+		it("should handle single file deletion normally when no cached children exist", async () => {
+			const filePath = "/mock/workspace/src/index.ts"
+			mockCacheManager.getAllHashes.mockReturnValue({
+				[filePath]: "hash1",
+				["/mock/workspace/src/other.ts"]: "hash2",
+			})
+
+			await fileWatcher.initialize()
+
+			// Trigger single file deletion
+			await mockOnDidDelete({ fsPath: filePath })
+
+			// Wait for batch processing
+			await new Promise((resolve) => setTimeout(resolve, 600))
+
+			// Should process deletion for just the one file
+			expect(mockVectorStore.deletePointsByMultipleFilePaths).toHaveBeenCalled()
+			const deletedPaths = mockVectorStore.deletePointsByMultipleFilePaths.mock.calls[0][0]
+			expect(deletedPaths).toContain(filePath)
+			expect(deletedPaths).not.toContain("/mock/workspace/src/other.ts")
+		})
+
+		it("should handle deletion of path not in cache", async () => {
+			mockCacheManager.getAllHashes.mockReturnValue({
+				["/mock/workspace/src/other.ts"]: "hash1",
+			})
+
+			await fileWatcher.initialize()
+
+			// Trigger deletion of a file not in cache
+			await mockOnDidDelete({ fsPath: "/mock/workspace/src/nonexistent.ts" })
+
+			// Wait for batch processing
+			await new Promise((resolve) => setTimeout(resolve, 600))
+
+			// Should still attempt deletion (the vector store will handle the no-op)
+			expect(mockVectorStore.deletePointsByMultipleFilePaths).toHaveBeenCalled()
 		})
 	})
 

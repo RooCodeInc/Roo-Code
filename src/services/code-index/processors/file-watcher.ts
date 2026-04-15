@@ -1,3 +1,4 @@
+import * as path from "path"
 import * as vscode from "vscode"
 import {
 	QDRANT_CODE_BLOCK_NAMESPACE,
@@ -152,11 +153,35 @@ export class FileWatcher implements IFileWatcher {
 	}
 
 	/**
-	 * Handles file deletion events
-	 * @param uri URI of the deleted file
+	 * Handles file deletion events.
+	 * When a directory is deleted, VSCode's FileSystemWatcher may not fire
+	 * individual delete events for each file inside it. This method detects
+	 * directory deletions by checking the cache for any files whose paths
+	 * start with the deleted path prefix, and queues them all for deletion.
+	 * @param uri URI of the deleted file or directory
 	 */
 	private async handleFileDeleted(uri: vscode.Uri): Promise<void> {
-		this.accumulatedEvents.set(uri.fsPath, { uri, type: "delete" })
+		const deletedPath = uri.fsPath
+
+		// Check if any cached files have this as a prefix (directory deletion)
+		const allHashes = this.cacheManager.getAllHashes()
+		const childPaths = Object.keys(allHashes).filter(
+			(cachedPath) => cachedPath.startsWith(deletedPath + path.sep) || cachedPath === deletedPath,
+		)
+
+		if (childPaths.length > 1) {
+			// Directory was deleted - queue all child files for deletion
+			for (const childPath of childPaths) {
+				this.accumulatedEvents.set(childPath, {
+					uri: vscode.Uri.file(childPath),
+					type: "delete",
+				})
+			}
+		} else {
+			// Single file deletion (or a file matching exactly)
+			this.accumulatedEvents.set(deletedPath, { uri, type: "delete" })
+		}
+
 		this.scheduleBatchProcessing()
 	}
 
