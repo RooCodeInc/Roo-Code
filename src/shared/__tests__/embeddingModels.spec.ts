@@ -2,6 +2,9 @@ import { describe, it, expect } from "vitest"
 import {
 	getModelDimension,
 	getModelScoreThreshold,
+	getModelQueryPrefix,
+	getModelDocumentPrefix,
+	getModelPrefixForPurpose,
 	getDefaultModelId,
 	EMBEDDING_MODEL_PROFILES,
 } from "../embeddingModels"
@@ -90,6 +93,77 @@ describe("embeddingModels", () => {
 		it("should return codestral-embed-2505 for mistral provider", () => {
 			const defaultModel = getDefaultModelId("mistral")
 			expect(defaultModel).toBe("codestral-embed-2505")
+		})
+	})
+
+	describe("getModelQueryPrefix", () => {
+		it("should return queryPrefix for nomic-embed-code on ollama", () => {
+			const prefix = getModelQueryPrefix("ollama", "nomic-embed-code")
+			expect(prefix).toBe("Represent this query for searching relevant code: ")
+		})
+
+		it("should return queryPrefix for nomic-embed-code on openai-compatible", () => {
+			const prefix = getModelQueryPrefix("openai-compatible", "nomic-embed-code")
+			expect(prefix).toBe("Represent this query for searching relevant code: ")
+		})
+
+		it("should return undefined for models without queryPrefix", () => {
+			const prefix = getModelQueryPrefix("openai", "text-embedding-3-small")
+			expect(prefix).toBeUndefined()
+		})
+
+		it("should return undefined for unknown model", () => {
+			const prefix = getModelQueryPrefix("ollama", "unknown-model")
+			expect(prefix).toBeUndefined()
+		})
+
+		it("should return undefined for unknown provider", () => {
+			const prefix = getModelQueryPrefix("unknown-provider" as any, "some-model")
+			expect(prefix).toBeUndefined()
+		})
+	})
+
+	describe("getModelDocumentPrefix", () => {
+		it("should return undefined for nomic-embed-code on ollama (no prefix for indexing)", () => {
+			const prefix = getModelDocumentPrefix("ollama", "nomic-embed-code")
+			expect(prefix).toBeUndefined()
+		})
+
+		it("should return undefined for nomic-embed-code on openai-compatible (no prefix for indexing)", () => {
+			const prefix = getModelDocumentPrefix("openai-compatible", "nomic-embed-code")
+			expect(prefix).toBeUndefined()
+		})
+
+		it("should return undefined for models without documentPrefix", () => {
+			const prefix = getModelDocumentPrefix("openai", "text-embedding-3-small")
+			expect(prefix).toBeUndefined()
+		})
+
+		it("should return undefined for unknown provider", () => {
+			const prefix = getModelDocumentPrefix("unknown-provider" as any, "some-model")
+			expect(prefix).toBeUndefined()
+		})
+	})
+
+	describe("getModelPrefixForPurpose", () => {
+		it("should return queryPrefix when purpose is 'query'", () => {
+			const prefix = getModelPrefixForPurpose("ollama", "nomic-embed-code", "query")
+			expect(prefix).toBe("Represent this query for searching relevant code: ")
+		})
+
+		it("should return documentPrefix (undefined) when purpose is 'index'", () => {
+			const prefix = getModelPrefixForPurpose("ollama", "nomic-embed-code", "index")
+			expect(prefix).toBeUndefined()
+		})
+
+		it("should fall back to queryPrefix when purpose is undefined (backward compatibility)", () => {
+			const prefix = getModelPrefixForPurpose("ollama", "nomic-embed-code", undefined)
+			expect(prefix).toBe("Represent this query for searching relevant code: ")
+		})
+
+		it("should return undefined for models without any prefix regardless of purpose", () => {
+			expect(getModelPrefixForPurpose("openai", "text-embedding-3-small", "query")).toBeUndefined()
+			expect(getModelPrefixForPurpose("openai", "text-embedding-3-small", "index")).toBeUndefined()
 		})
 	})
 })
