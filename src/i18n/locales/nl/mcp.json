@@ -24,5 +24,18 @@
 		"refreshing_all": "Alle MCP-servers worden vernieuwd...",
 		"all_refreshed": "Alle MCP-servers zijn vernieuwd.",
 		"project_config_deleted": "Project MCP-configuratiebestand verwijderd. Alle project MCP-servers zijn losgekoppeld."
+	},
+	"oauth": {
+		"callback": {
+			"title": "OAuth Callback - Roo Code",
+			"success": "Succes!",
+			"failed": "Mislukt",
+			"auth_failed": "Authenticatie mislukt. Controleer de MCP-serverlogs.",
+			"auth_success": "MCP-server succesvol geauthenticeerd. Je kunt dit browsertabblad nu sluiten.",
+			"server_connection_complete": "De serververbinding is voltooid.",
+			"tab_closing_in": "Dit tabblad wordt gesloten over <span id=\"count\">{{count}}</span>s...",
+			"safe_to_close": "Als het tabblad niet is gesloten, kun je het handmatig sluiten.",
+			"invalid_state": "Fout: Ongeldige state-parameter"
+		}
 	}
 }

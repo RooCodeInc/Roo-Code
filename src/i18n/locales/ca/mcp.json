@@ -24,5 +24,18 @@
 		"refreshing_all": "Actualitzant tots els servidors MCP...",
 		"all_refreshed": "Tots els servidors MCP han estat actualitzats.",
 		"project_config_deleted": "Fitxer de configuració MCP del projecte eliminat. Tots els servidors MCP del projecte han estat desconnectats."
+	},
+	"oauth": {
+		"callback": {
+			"title": "OAuth Callback - Roo Code",
+			"success": "Success!",
+			"failed": "Failed",
+			"auth_failed": "Authentication failed. Please check the MCP server logs.",
+			"auth_success": "MCP server authenticated successfully. You can now close this browser tab.",
+			"server_connection_complete": "The server connection is complete.",
+			"tab_closing_in": "This tab will attempt to close in <span id=\"count\">{{count}}</span>s...",
+			"safe_to_close": "If the tab did not close, you can safely close it manually.",
+			"invalid_state": "Error: Invalid state parameter"
+		}
 	}
 }

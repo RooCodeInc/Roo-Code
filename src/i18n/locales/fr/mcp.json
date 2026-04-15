@@ -24,5 +24,18 @@
 		"refreshing_all": "Rafraîchissement de tous les serveurs MCP...",
 		"all_refreshed": "Tous les serveurs MCP ont été rafraîchis.",
 		"project_config_deleted": "Fichier de configuration MCP du projet supprimé. Tous les serveurs MCP du projet ont été déconnectés."
+	},
+	"oauth": {
+		"callback": {
+			"title": "Rappel OAuth - Roo Code",
+			"success": "Succès !",
+			"failed": "Échec",
+			"auth_failed": "L'authentification a échoué. Veuillez vérifier les journaux du serveur MCP.",
+			"auth_success": "Le serveur MCP a été authentifié avec succès. Vous pouvez maintenant fermer cet onglet de navigateur.",
+			"server_connection_complete": "La connexion au serveur est terminée.",
+			"tab_closing_in": "Cet onglet tentera de se fermer dans <span id=\"count\">{{count}}</span>s...",
+			"safe_to_close": "Si l'onglet ne s'est pas fermé, vous pouvez le fermer manuellement en toute sécurité.",
+			"invalid_state": "Erreur : Paramètre d'état invalide"
+		}
 	}
 }

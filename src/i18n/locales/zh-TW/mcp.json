@@ -24,5 +24,18 @@
 		"refreshing_all": "正在重新整理所有 MCP 伺服器...",
 		"all_refreshed": "所有 MCP 伺服器已重新整理。",
 		"project_config_deleted": "專案MCP設定檔案已刪除。所有專案MCP伺服器已斷開連接。"
+	},
+	"oauth": {
+		"callback": {
+			"title": "OAuth 回呼 - Roo Code",
+			"success": "成功！",
+			"failed": "失敗",
+			"auth_failed": "身分驗證失敗。請檢查 MCP 伺服器日誌。",
+			"auth_success": "MCP 伺服器身分驗證成功。您現在可以關閉此瀏覽器分頁。",
+			"server_connection_complete": "伺服器連接已完成。",
+			"tab_closing_in": "此分頁將在 <span id=\"count\">{{count}}</span> 秒後嘗試關閉...",
+			"safe_to_close": "如果分頁沒有關閉，您可以安全地手動關閉它。",
+			"invalid_state": "錯誤：無效的狀態參數"
+		}
 	}
 }

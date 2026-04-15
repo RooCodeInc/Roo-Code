@@ -24,5 +24,18 @@
 		"refreshing_all": "Actualizando todos los servidores MCP...",
 		"all_refreshed": "Todos los servidores MCP han sido actualizados.",
 		"project_config_deleted": "Archivo de configuración MCP del proyecto eliminado. Todos los servidores MCP del proyecto han sido desconectados."
+	},
+	"oauth": {
+		"callback": {
+			"title": "OAuth Callback - Roo Code",
+			"success": "¡Éxito!",
+			"failed": "Fallido",
+			"auth_failed": "La autenticación falló. Por favor, comprueba los registros del servidor MCP.",
+			"auth_success": "Servidor MCP autenticado con éxito. Ya puedes cerrar esta pestaña del navegador.",
+			"server_connection_complete": "La conexión con el servidor se ha completado.",
+			"tab_closing_in": "Esta pestaña intentará cerrarse en <span id=\"count\">{{count}}</span>s...",
+			"safe_to_close": "Si la pestaña no se cerró, puedes cerrarla manualmente de forma segura.",
+			"invalid_state": "Error: Parámetro de estado no válido"
+		}
 	}
 }
