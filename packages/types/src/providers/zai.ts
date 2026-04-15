@@ -5,6 +5,7 @@ import { ZaiApiLine } from "../provider-settings.js"
 // https://docs.z.ai/guides/llm/glm-4-32b-0414-128k
 // https://docs.z.ai/guides/llm/glm-4.5
 // https://docs.z.ai/guides/llm/glm-4.6
+// https://docs.z.ai/guides/llm/glm-5.1
 // https://docs.z.ai/guides/overview/pricing
 // https://bigmodel.cn/pricing
 
@@ -134,6 +135,21 @@ export const internationalZAiModels = {
 		cacheReadsPrice: 0.11,
 		description:
 			"GLM-5 is Zhipu's next-generation model with a 202k context window and built-in thinking capabilities. It delivers state-of-the-art reasoning, coding, and agentic performance.",
+	},
+	"glm-5.1": {
+		maxTokens: 131_072,
+		contextWindow: 200_000,
+		supportsImages: false,
+		supportsPromptCache: true,
+		supportsReasoningEffort: ["disable", "medium"],
+		reasoningEffort: "medium",
+		preserveReasoning: true,
+		inputPrice: 1.4,
+		outputPrice: 4.4,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.26,
+		description:
+			"GLM-5.1 is Zhipu's most capable model with a 200k context window, 128k max output, and built-in thinking capabilities. It delivers top-tier reasoning, coding, and agentic performance.",
 	},
 	"glm-4.7-flash": {
 		maxTokens: 16_384,
@@ -310,6 +326,21 @@ export const mainlandZAiModels = {
 		cacheReadsPrice: 0.057,
 		description:
 			"GLM-5 is Zhipu's next-generation model with a 202k context window and built-in thinking capabilities. It delivers state-of-the-art reasoning, coding, and agentic performance.",
+	},
+	"glm-5.1": {
+		maxTokens: 131_072,
+		contextWindow: 204_800,
+		supportsImages: false,
+		supportsPromptCache: true,
+		supportsReasoningEffort: ["disable", "medium"],
+		reasoningEffort: "medium",
+		preserveReasoning: true,
+		inputPrice: 0.68,
+		outputPrice: 2.28,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.13,
+		description:
+			"GLM-5.1 is Zhipu's most capable model with a 200k context window, 128k max output, and built-in thinking capabilities. It delivers top-tier reasoning, coding, and agentic performance.",
 	},
 	"glm-4.7-flash": {
 		maxTokens: 16_384,
