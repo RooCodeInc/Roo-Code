@@ -599,8 +599,8 @@ importers:
         specifier: ^0.13.0
         version: 0.13.0
       drizzle-orm:
-        specifier: ^0.44.1
-        version: 0.44.1(@libsql/client@0.15.8)(@opentelemetry/api@1.9.0)(better-sqlite3@11.10.0)(gel@2.1.0)(postgres@3.4.7)
+        specifier: ^0.45.0
+        version: 0.45.2(@libsql/client@0.15.8)(@opentelemetry/api@1.9.0)(better-sqlite3@11.10.0)(gel@2.1.0)(postgres@3.4.7)
       execa:
         specifier: ^9.6.0
         version: 9.6.0
@@ -4899,6 +4899,7 @@ packages:
   '@xmldom/xmldom@0.8.10':
     resolution: {integrity: sha512-2WALfTl4xo2SkGCYRt6rDTFfk9R1czmBvUQy12gK2KuRKIpWEhcbbzy8EZXtz/jkRqHX8bFEc6FC1HjX4TUWYw==}
     engines: {node: '>=10.0.0'}
+    deprecated: this version has critical issues, please update to the latest version
 
   '@xobotyi/scrollbar-width@1.9.5':
     resolution: {integrity: sha512-N8tkAACJx2ww8vFMneJmaAgmjAG1tnVBZJRLRcx061tmsLRZHSEZSLuGWnwPtunsSLvSqXQ2wfp7Mgqg1I+2dQ==}
@@ -6109,8 +6110,8 @@ packages:
     resolution: {integrity: sha512-tCPWVZWZqWVx2XUsVpJRnH9Mx0ClVOf5YUHerZ5so1OKSlqww4zy1R5ksEdGRcO3tM3zj0PYN6V48TbQCL1RfA==}
     hasBin: true
 
-  drizzle-orm@0.44.1:
-    resolution: {integrity: sha512-prIWOlwJbiYInvcJxE+IMiJCtMiFVrSUJCwx6AXSJvGOdLu35qZ46QncTZDgloiLNCG0XxTC8agQElSmsl++TA==}
+  drizzle-orm@0.45.2:
+    resolution: {integrity: sha512-kY0BSaTNYWnoDMVoyY8uxmyHjpJW1geOmBMdSSicKo9CIIWkSxMIj2rkeSR51b8KAPB7m+qysjuHme5nKP+E5Q==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
@@ -16483,7 +16484,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.44.1(@libsql/client@0.15.8)(@opentelemetry/api@1.9.0)(better-sqlite3@11.10.0)(gel@2.1.0)(postgres@3.4.7):
+  drizzle-orm@0.45.2(@libsql/client@0.15.8)(@opentelemetry/api@1.9.0)(better-sqlite3@11.10.0)(gel@2.1.0)(postgres@3.4.7):
     optionalDependencies:
       '@libsql/client': 0.15.8
       '@opentelemetry/api': 1.9.0
