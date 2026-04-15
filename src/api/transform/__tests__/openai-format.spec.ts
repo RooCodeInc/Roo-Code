@@ -1125,6 +1125,85 @@ describe("consolidateReasoningDetails", () => {
 		expect(result).toHaveLength(1)
 		expect(result[0].summary).toBe("Summary part 1Summary part 2")
 	})
+
+	// Regression tests for https://github.com/RooCodeInc/Roo-Code/issues/11629
+
+	it("should preserve reasoning.text type when grouped with reasoning.encrypted at same index", () => {
+		// This is the exact scenario from the bug report: Gemini returns both
+		// reasoning.text and reasoning.encrypted at index 0. The text entry
+		// must keep its original type and not be overwritten by the encrypted type.
+		const details: ReasoningDetail[] = [
+			{
+				type: "reasoning.text",
+				text: "**Initiating the Analysis**...",
+				id: "rs_text_1",
+				format: "google-gemini-v1",
+				index: 0,
+			},
+			{
+				type: "reasoning.encrypted",
+				data: "EtwECtkEAb4+9vu...",
+				id: "rs_enc_1",
+				format: "google-gemini-v1",
+				index: 0,
+			},
+		]
+
+		const result = consolidateReasoningDetails(details)
+
+		// Should have two entries: one text, one encrypted
+		expect(result).toHaveLength(2)
+
+		const textEntry = result.find((r) => r.text)
+		const encryptedEntry = result.find((r) => r.data)
+
+		// Text entry must retain type "reasoning.text", NOT "reasoning.encrypted"
+		expect(textEntry?.type).toBe("reasoning.text")
+		expect(textEntry?.text).toBe("**Initiating the Analysis**...")
+
+		// Encrypted entry should keep its correct type
+		expect(encryptedEntry?.type).toBe("reasoning.encrypted")
+		expect(encryptedEntry?.data).toBe("EtwECtkEAb4+9vu...")
+	})
+
+	it("should preserve mislabeled text entries (type=reasoning.encrypted with text but no data)", () => {
+		// If a text entry was previously stored with the wrong type (reasoning.encrypted)
+		// but has a text field and no data field, it should NOT be dropped as corrupted.
+		const details: ReasoningDetail[] = [
+			{
+				type: "reasoning.encrypted",
+				text: "Some reasoning text",
+				// No data field - previously this was dropped as "corrupted"
+				id: "rs_mislabeled",
+				format: "google-gemini-v1",
+				index: 0,
+			},
+		]
+
+		const result = consolidateReasoningDetails(details)
+
+		// Should preserve the entry and fix its type to reasoning.text
+		expect(result).toHaveLength(1)
+		expect(result[0].text).toBe("Some reasoning text")
+		expect(result[0].type).toBe("reasoning.text")
+	})
+
+	it("should still drop truly corrupted encrypted blocks (no data AND no text)", () => {
+		const details: ReasoningDetail[] = [
+			{
+				type: "reasoning.encrypted",
+				// No data, no text - truly corrupted
+				id: "rs_corrupted",
+				format: "google-gemini-v1",
+				index: 0,
+			},
+		]
+
+		const result = consolidateReasoningDetails(details)
+
+		// Truly corrupted block should still be dropped
+		expect(result).toHaveLength(0)
+	})
 })
 
 describe("sanitizeGeminiMessages", () => {
@@ -1301,5 +1380,74 @@ describe("sanitizeGeminiMessages", () => {
 		const result = sanitizeGeminiMessages(messages, "google/gemini-3-flash-preview")
 
 		expect(result).toEqual(messages)
+	})
+
+	// Regression test for https://github.com/RooCodeInc/Roo-Code/issues/11629
+	it("should preserve tool_calls when reasoning_details contain mislabeled text entries", () => {
+		// This reproduces the exact bug: reasoning_details has a text entry mislabeled
+		// as "reasoning.encrypted" (no data field) and a real encrypted entry.
+		// Previously, the mislabeled text entry was dropped as "corrupted", and if
+		// the encrypted entry's ID didn't match the tool call, all tool_calls were dropped.
+		const messages = [
+			{
+				role: "assistant",
+				content: "",
+				tool_calls: [
+					{
+						id: "tool_attempt_completion_BI9Id6PH8KtbhYBnuB4I",
+						type: "function",
+						function: {
+							name: "attempt_completion",
+							arguments: '{"result":"Test received successfully."}',
+						},
+					},
+				],
+				reasoning_details: [
+					{
+						// Mislabeled: type says encrypted but has text, no data
+						type: "reasoning.encrypted",
+						text: "**Acknowledging the Input**\nI see this as a test message...",
+						id: "tool_attempt_completion_BI9Id6PH8KtbhYBnuB4I",
+						format: "google-gemini-v1",
+						index: 0,
+					},
+					{
+						type: "reasoning.encrypted",
+						data: "EtwECtkEAb4+9vuFAKED...",
+						id: "tool_attempt_completion_BI9Id6PH8KtbhYBnuB4I",
+						format: "google-gemini-v1",
+						index: 0,
+					},
+				],
+			},
+			{
+				role: "tool",
+				tool_call_id: "tool_attempt_completion_BI9Id6PH8KtbhYBnuB4I",
+				content: "The user is satisfied with the result.",
+			},
+		] as any
+
+		const result = sanitizeGeminiMessages(messages, "google/gemini-3.1-pro-preview")
+
+		// Assistant message should preserve tool_calls
+		expect(result).toHaveLength(2)
+		const assistantMsg = result[0] as any
+		expect(assistantMsg.tool_calls).toBeDefined()
+		expect(assistantMsg.tool_calls).toHaveLength(1)
+		expect(assistantMsg.tool_calls[0].id).toBe("tool_attempt_completion_BI9Id6PH8KtbhYBnuB4I")
+
+		// reasoning_details should have both entries (text with corrected type + encrypted)
+		expect(assistantMsg.reasoning_details).toBeDefined()
+		expect(assistantMsg.reasoning_details.length).toBeGreaterThanOrEqual(1)
+
+		// The text entry should have its type corrected to reasoning.text
+		const textDetail = assistantMsg.reasoning_details.find((d: any) => d.text)
+		if (textDetail) {
+			expect(textDetail.type).toBe("reasoning.text")
+		}
+
+		// Tool result message should be preserved
+		expect(result[1].role).toBe("tool")
+		expect((result[1] as any).tool_call_id).toBe("tool_attempt_completion_BI9Id6PH8KtbhYBnuB4I")
 	})
 })
