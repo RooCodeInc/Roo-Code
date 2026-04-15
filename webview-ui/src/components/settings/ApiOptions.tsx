@@ -33,6 +33,7 @@ import {
 	vercelAiGatewayDefaultModelId,
 	minimaxDefaultModelId,
 	unboundDefaultModelId,
+	veniceDefaultModelId,
 } from "@roo-code/types"
 
 import {
@@ -87,6 +88,7 @@ import {
 	Roo,
 	SambaNova,
 	Unbound,
+	Venice,
 	Vertex,
 	VSCodeLM,
 	XAI,
@@ -352,6 +354,7 @@ const ApiOptions = ({
 				bedrock: { field: "apiModelId", default: bedrockDefaultModelId },
 				vertex: { field: "apiModelId", default: vertexDefaultModelId },
 				sambanova: { field: "apiModelId", default: sambaNovaDefaultModelId },
+				venice: { field: "apiModelId", default: veniceDefaultModelId },
 				zai: {
 					field: "apiModelId",
 					default:
@@ -681,6 +684,13 @@ const ApiOptions = ({
 
 					{selectedProvider === "sambanova" && (
 						<SambaNova
+							apiConfiguration={apiConfiguration}
+							setApiConfigurationField={setApiConfigurationField}
+						/>
+					)}
+
+					{selectedProvider === "venice" && (
+						<Venice
 							apiConfiguration={apiConfiguration}
 							setApiConfigurationField={setApiConfigurationField}
 						/>

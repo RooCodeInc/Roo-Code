@@ -62,6 +62,7 @@ export class ProfileValidator {
 			case "deepseek":
 			case "xai":
 			case "sambanova":
+			case "venice":
 			case "fireworks":
 				return profile.apiModelId
 			case "litellm":

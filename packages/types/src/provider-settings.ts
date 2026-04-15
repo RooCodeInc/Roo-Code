@@ -20,6 +20,7 @@ import {
 	xaiModels,
 	internationalZAiModels,
 	minimaxModels,
+	veniceModels,
 } from "./providers/index.js"
 
 /**
@@ -126,6 +127,7 @@ export const providerNames = [
 	"roo",
 	"sambanova",
 	"vertex",
+	"venice",
 	"xai",
 	"zai",
 ] as const
@@ -372,6 +374,10 @@ const zaiSchema = apiModelIdProviderModelSchema.extend({
 	zaiApiLine: zaiApiLineSchema.optional(),
 })
 
+const veniceSchema = apiModelIdProviderModelSchema.extend({
+	veniceApiKey: z.string().optional(),
+})
+
 const fireworksSchema = apiModelIdProviderModelSchema.extend({
 	fireworksApiKey: z.string().optional(),
 })
@@ -427,6 +433,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	fireworksSchema.merge(z.object({ apiProvider: z.literal("fireworks") })),
 	qwenCodeSchema.merge(z.object({ apiProvider: z.literal("qwen-code") })),
 	rooSchema.merge(z.object({ apiProvider: z.literal("roo") })),
+	veniceSchema.merge(z.object({ apiProvider: z.literal("venice") })),
 	vercelAiGatewaySchema.merge(z.object({ apiProvider: z.literal("vercel-ai-gateway") })),
 	defaultSchema,
 ])
@@ -461,6 +468,7 @@ export const providerSettingsSchema = z.object({
 	...fireworksSchema.shape,
 	...qwenCodeSchema.shape,
 	...rooSchema.shape,
+	...veniceSchema.shape,
 	...vercelAiGatewaySchema.shape,
 	...codebaseIndexProviderSchema.shape,
 })
@@ -529,6 +537,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	"qwen-code": "apiModelId",
 	requesty: "requestyModelId",
 	unbound: "unboundModelId",
+	venice: "apiModelId",
 	xai: "apiModelId",
 	baseten: "apiModelId",
 	litellm: "litellmModelId",
@@ -643,6 +652,7 @@ export const MODELS_BY_PROVIDER: Record<
 		label: "VS Code LM API",
 		models: Object.keys(vscodeLlmModels),
 	},
+	venice: { id: "venice", label: "Venice AI", models: Object.keys(veniceModels) },
 	xai: { id: "xai", label: "xAI (Grok)", models: Object.keys(xaiModels) },
 	zai: { id: "zai", label: "Z.ai", models: Object.keys(internationalZAiModels) },
 	baseten: { id: "baseten", label: "Baseten", models: Object.keys(basetenModels) },

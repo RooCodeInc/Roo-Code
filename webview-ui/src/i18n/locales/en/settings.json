@@ -463,6 +463,8 @@
 		"geminiApiKey": "Gemini API Key",
 		"getSambaNovaApiKey": "Get SambaNova API Key",
 		"sambaNovaApiKey": "SambaNova API Key",
+		"veniceApiKey": "Venice AI API Key",
+		"getVeniceApiKey": "Get Venice AI API Key",
 		"getGeminiApiKey": "Get Gemini API Key",
 		"openAiApiKey": "OpenAI API Key",
 		"apiKey": "API Key",
