@@ -1,0 +1,65 @@
+{
+	"title": "שרתי MCP",
+	"done": "סיום",
+	"marketplace": "MCP Marketplace",
+	"description": "<0>Model Context Protocol</0> מאפשר תקשורת עם שרתי MCP מקומיים שמספקים כלים ומשאבים נוספים להרחבת יכולות Roo. תוכל להשתמש ב<1>שרתים של הקהילה</1> או לבקש מ-Roo ליצור כלים חדשים ספציפיים לזרימת העבודה שלך (למשל, \"הוסף כלי שמביא את תיעוד npm העדכני\").",
+	"instructions": "הוראות",
+	"enableToggle": {
+		"title": "הפעל שרתי MCP",
+		"description": "הפעל זאת כדי לאפשר ל-Roo להשתמש בכלים משרתי MCP מחוברים. זה נותן ל-Roo יכולות נוספות. אם אינך מתכנן להשתמש בכלים הנוספים האלה, כבה כדי לעזור להפחית עלויות token של API."
+	},
+	"enableServerCreation": {
+		"title": "הפעל יצירת שרת MCP",
+		"description": "הפעל זאת כדי ש-Roo יעזור לך לבנות שרתי MCP מותאמים אישית <1>חדשים</1>. <0>למד על יצירת שרתים</0>",
+		"hint": "טיפ: כדי להפחית עלויות token של API, השבת הגדרה זו כאשר אינך מבקש באופן פעיל מ-Roo ליצור שרת MCP חדש."
+	},
+	"editGlobalMCP": "ערוך MCP גלובלי",
+	"editProjectMCP": "ערוך MCP פרויקט",
+	"refreshMCP": "רענן שרתי MCP",
+	"learnMoreEditingSettings": "למד עוד על עריכת קבצי הגדרות MCP",
+	"tool": {
+		"alwaysAllow": "אפשר תמיד",
+		"parameters": "פרמטרים",
+		"noDescription": "אין תיאור",
+		"togglePromptInclusion": "החלף הכללה בהנחיה"
+	},
+	"tabs": {
+		"tools": "כלים",
+		"resources": "משאבים",
+		"logs": "לוגים"
+	},
+	"emptyState": {
+		"noTools": "לא נמצאו כלים",
+		"noResources": "לא נמצאו משאבים",
+		"noLogs": "אין לוגים עדיין"
+	},
+	"networkTimeout": {
+		"label": "זמן תפוגת רשת",
+		"description": "זמן מקסימלי להמתנה לתגובות שרת",
+		"options": {
+			"15seconds": "15 שניות",
+			"30seconds": "30 שניות",
+			"1minute": "דקה אחת",
+			"5minutes": "5 דקות",
+			"10minutes": "10 דקות",
+			"15minutes": "15 דקות",
+			"30minutes": "30 דקות",
+			"60minutes": "60 דקות"
+		}
+	},
+	"deleteDialog": {
+		"title": "מחק שרת MCP",
+		"description": "האם אתה בטוח שברצונך למחוק את שרת ה-MCP \"{{serverName}}\"? לא ניתן לבטל פעולה זו.",
+		"cancel": "ביטול",
+		"delete": "מחק"
+	},
+	"serverStatus": {
+		"retrying": "מנסה שוב...",
+		"retryConnection": "נסה חיבור מחדש"
+	},
+	"execution": {
+		"running": "רץ",
+		"completed": "הושלם",
+		"error": "שגיאה"
+	}
+}

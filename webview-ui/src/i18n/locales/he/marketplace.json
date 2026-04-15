@@ -1,0 +1,156 @@
+{
+	"title": "Roo Marketplace",
+	"tabs": {
+		"installed": "מותקנים",
+		"settings": "הגדרות",
+		"browse": "עיון"
+	},
+	"done": "סיום",
+	"refresh": "רענן",
+	"filters": {
+		"search": {
+			"placeholder": "חפש פריטים ב-Marketplace...",
+			"placeholderMcp": "חפש MCPs...",
+			"placeholderMode": "חפש מצבים..."
+		},
+		"installed": {
+			"label": "סנן לפי סטטוס",
+			"all": "כל הפריטים",
+			"installed": "מותקנים",
+			"notInstalled": "לא מותקנים"
+		},
+		"type": {
+			"label": "סנן לפי סוג:",
+			"all": "כל הסוגים",
+			"mode": "מצב",
+			"mcpServer": "שרת MCP"
+		},
+		"sort": {
+			"label": "מיין לפי:",
+			"name": "שם",
+			"author": "מחבר",
+			"lastUpdated": "עודכן לאחרונה"
+		},
+		"tags": {
+			"label": "סנן לפי תגיות:",
+			"clear": "נקה תגיות",
+			"placeholder": "הקלד לחיפוש ובחירת תגיות...",
+			"noResults": "לא נמצאו תגיות תואמות",
+			"selected": "מציג פריטים עם כל אחת מהתגיות שנבחרו",
+			"clickToFilter": "לחץ על תגיות לסינון פריטים"
+		},
+		"none": "ללא"
+	},
+	"sections": {
+		"organizationMcps": "MCPs של {{organization}}",
+		"marketplace": "Marketplace"
+	},
+	"type-group": {
+		"modes": "מצבים",
+		"mcps": "שרתי MCP"
+	},
+	"items": {
+		"empty": {
+			"noItems": "לא נמצאו פריטים ב-Marketplace",
+			"withFilters": "נסה להתאים את המסננים",
+			"noSources": "נסה להוסיף מקור בלשונית המקורות",
+			"adjustFilters": "נסה להתאים את המסננים או מונחי החיפוש",
+			"clearAllFilters": "נקה את כל המסננים"
+		},
+		"count": "{{count}} פריטים נמצאו",
+		"components": "{{count}} רכיבים",
+		"matched": "{{count}} תואמים",
+		"refresh": {
+			"button": "רענן",
+			"refreshing": "מרענן...",
+			"mayTakeMoment": "פעולה זו עשויה לקחת רגע."
+		},
+		"card": {
+			"by": "מאת {{author}}",
+			"from": "מ-{{source}}",
+			"install": "התקן",
+			"installProject": "התקן",
+			"installGlobal": "התקן (גלובלי)",
+			"remove": "הסר",
+			"removeProject": "הסר",
+			"removeGlobal": "הסר (גלובלי)",
+			"viewSource": "צפה",
+			"viewOnSource": "צפה ב-{{source}}",
+			"noWorkspaceTooltip": "פתח סביבת עבודה כדי להתקין פריטי Marketplace",
+			"installed": "מותקן",
+			"removeProjectTooltip": "הסר מהפרויקט הנוכחי",
+			"removeGlobalTooltip": "הסר מהתצורה הגלובלית",
+			"actionsMenuLabel": "פעולות נוספות"
+		},
+		"removeFailed": "הסרת הפריט נכשלה: {{error}}",
+		"unknownError": "אירעה שגיאה לא ידועה"
+	},
+	"install": {
+		"title": "התקן {{name}}",
+		"titleMode": "התקן מצב {{name}}",
+		"titleMcp": "התקן MCP {{name}}",
+		"scope": "היקף התקנה",
+		"project": "פרויקט (סביבת עבודה נוכחית)",
+		"global": "גלובלי (כל סביבות העבודה)",
+		"method": "שיטת התקנה",
+		"prerequisites": "דרישות מקדימות",
+		"configuration": "תצורה",
+		"configurationDescription": "הגדר את הפרמטרים הנדרשים עבור שרת MCP זה",
+		"button": "התקן",
+		"successTitle": "{{name}} הותקן",
+		"successDescription": "ההתקנה הושלמה בהצלחה",
+		"installed": "הותקן בהצלחה!",
+		"whatNextMcp": "כעת תוכל להגדיר ולהשתמש בשרת MCP זה. לחץ על סמל ה-MCP בסרגל הצד כדי לעבור ללשונית.",
+		"whatNextMode": "כעת תוכל להשתמש במצב זה. לחץ על סמל המצבים בסרגל הצד כדי לעבור ללשונית.",
+		"done": "סיום",
+		"goToMcp": "עבור ללשונית MCP",
+		"goToModes": "עבור להגדרות מצבים",
+		"moreInfoMcp": "צפה בתיעוד MCP {{name}}",
+		"validationRequired": "אנא ספק ערך עבור {{paramName}}"
+	},
+	"sources": {
+		"title": "הגדר מקורות Marketplace",
+		"description": "הוסף מאגרי Git שמכילים פריטי Marketplace. מאגרים אלה ייאספו בעת גלישה ב-Marketplace.",
+		"add": {
+			"title": "הוסף מקור חדש",
+			"urlPlaceholder": "כתובת URL של מאגר Git (למשל, https://github.com/username/repo)",
+			"urlFormats": "פורמטים נתמכים: HTTPS (https://github.com/username/repo), SSH (git@github.com:username/repo.git), או פרוטוקול Git (git://github.com/username/repo.git)",
+			"namePlaceholder": "שם תצוגה (מקסימום 20 תווים)",
+			"button": "הוסף מקור"
+		},
+		"current": {
+			"title": "מקורות נוכחיים",
+			"empty": "לא הוגדרו מקורות. הוסף מקור כדי להתחיל.",
+			"refresh": "רענן מקור זה",
+			"remove": "הסר מקור"
+		},
+		"errors": {
+			"emptyUrl": "ה-URL לא יכול להיות ריק",
+			"invalidUrl": "פורמט URL לא תקין",
+			"nonVisibleChars": "ה-URL מכיל תווים לא נראים מלבד רווחים",
+			"invalidGitUrl": "ה-URL חייב להיות כתובת מאגר Git תקינה (למשל, https://github.com/username/repo)",
+			"duplicateUrl": "כתובת URL זו כבר ברשימה (התאמה שאינה רגישה לאותיות ורווחים)",
+			"nameTooLong": "השם חייב להיות 20 תווים או פחות",
+			"nonVisibleCharsName": "השם מכיל תווים לא נראים מלבד רווחים",
+			"duplicateName": "שם זה כבר בשימוש (התאמה שאינה רגישה לאותיות ורווחים)",
+			"emojiName": "תווי אמוג'י עלולים לגרום לבעיות תצוגה",
+			"maxSources": "מותר מקסימום {{max}} מקורות"
+		}
+	},
+	"removeConfirm": {
+		"mode": {
+			"title": "הסר מצב",
+			"message": "האם אתה בטוח שברצונך להסיר את המצב \"{{modeName}}\"?",
+			"rulesWarning": "פעולה זו תסיר גם קבצי כללים משויכים למצב זה."
+		},
+		"mcp": {
+			"title": "הסר שרת MCP",
+			"message": "האם אתה בטוח שברצונך להסיר את שרת ה-MCP \"{{mcpName}}\"?"
+		},
+		"cancel": "ביטול",
+		"confirm": "הסר"
+	},
+	"footer": {
+		"issueText": "מצאת בעיה עם פריט Marketplace או יש לך הצעות לפריטים חדשים? <0>פתח Issue ב-GitHub</0> כדי ליידע אותנו!"
+	}
+}
