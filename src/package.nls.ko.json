@@ -15,6 +15,7 @@
 	"command.terminal.explainCommand.title": "이 명령어 설명",
 	"command.acceptInput.title": "입력/제안 수락",
 	"command.toggleAutoApprove.title": "자동 승인 전환",
+	"command.generateCommitMessage.title": "커밋 메시지 생성",
 	"views.activitybar.title": "Roo Code",
 	"views.contextMenu.label": "Roo Code",
 	"views.terminalMenu.label": "Roo Code",

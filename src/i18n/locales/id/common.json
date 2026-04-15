@@ -251,5 +251,15 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"commit": {
+		"no_workspace": "Folder workspace tidak ditemukan. Buka folder untuk membuat pesan commit.",
+		"generating": "Membuat pesan commit...",
+		"no_changes": "Tidak ada perubahan terdeteksi. Siapkan atau ubah file sebelum membuat pesan commit.",
+		"generation_failed": "Gagal membuat pesan commit",
+		"no_git_extension": "Git extension is not available.",
+		"no_git_repo": "No git repository found.",
+		"use_current_profile": "Gunakan profil saat ini",
+		"select_profile": "Pilih profil API untuk pembuatan pesan commit"
 	}
 }

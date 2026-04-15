@@ -15,6 +15,7 @@
 	"command.terminal.explainCommand.title": "Giải Thích Lệnh Này",
 	"command.acceptInput.title": "Chấp Nhận Đầu Vào/Gợi Ý",
 	"command.toggleAutoApprove.title": "Bật/Tắt Tự Động Phê Duyệt",
+	"command.generateCommitMessage.title": "Tạo Thông Điệp Commit",
 	"views.activitybar.title": "Roo Code",
 	"views.contextMenu.label": "Roo Code",
 	"views.terminalMenu.label": "Roo Code",
