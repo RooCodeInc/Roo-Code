@@ -343,6 +343,39 @@ describe("AnthropicHandler", () => {
 			expect(model.info.inputPrice).toBe(6.0)
 			expect(model.info.outputPrice).toBe(22.5)
 		})
+
+		it("should pass through custom/unknown model IDs instead of falling back to default", () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "qwen/qwen3.6-plus",
+			})
+			const model = handler.getModel()
+			expect(model.id).toBe("qwen/qwen3.6-plus")
+			// Should use default model info as fallback for unknown models
+			expect(model.info).toBeDefined()
+			expect(model.info.contextWindow).toBeDefined()
+		})
+
+		it("should use default model ID when no model ID is provided at all", () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: undefined,
+			})
+			const model = handler.getModel()
+			expect(model.id).toBeDefined()
+			// Should fall back to anthropicDefaultModelId, not an empty string
+			expect(model.id).not.toBe("")
+		})
+
+		it("should preserve custom model ID when using custom base URL", () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				anthropicBaseUrl: "http://localhost:3000/api",
+				apiModelId: "my-custom-model",
+			})
+			const model = handler.getModel()
+			expect(model.id).toBe("my-custom-model")
+		})
 	})
 
 	describe("reasoning block filtering", () => {
