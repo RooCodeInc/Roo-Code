@@ -17,6 +17,7 @@ import { getUserAgent } from "./utils.js"
 import { importVscode } from "./importVscode.js"
 import { InvalidClientTokenError } from "./errors.js"
 import { RefreshTimer } from "./RefreshTimer.js"
+import { LocalAuthServer } from "./LocalAuthServer.js"
 
 const AUTH_STATE_KEY = "clerk-auth-state"
 
@@ -97,6 +98,7 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 	private sessionToken: string | null = null
 	private userInfo: CloudUserInfo | null = null
 	private isFirstRefreshAttempt: boolean = false
+	private localAuthServer: LocalAuthServer | null = null
 
 	constructor(context: ExtensionContext, log?: (...args: unknown[]) => void) {
 		super()
@@ -251,6 +253,12 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 	 * This method initiates the authentication flow by generating a state parameter
 	 * and opening the browser to the authorization URL.
 	 *
+	 * It starts a local HTTP server on 127.0.0.1 as the auth_redirect target.
+	 * This avoids reliance on the vscode:// URI scheme, which doesn't work on
+	 * many Linux desktop environments (e.g., xfce4, some Wayland compositors).
+	 * The vscode:// URI handler is still registered as a parallel mechanism --
+	 * whichever fires first (local server or URI handler) completes the auth.
+	 *
 	 * @param landingPageSlug Optional slug of a specific landing page (e.g., "supernova", "special-offer", etc.)
 	 * @param useProviderSignup If true, uses provider signup flow (/extension/provider-sign-up). If false, uses standard sign-in (/extension/sign-in). Defaults to false.
 	 */
@@ -265,12 +273,32 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 			// Generate a cryptographically random state parameter.
 			const state = crypto.randomBytes(16).toString("hex")
 			await this.context.globalState.update(AUTH_STATE_KEY, state)
-			const packageJSON = this.context.extension?.packageJSON
-			const publisher = packageJSON?.publisher ?? "RooVeterinaryInc"
-			const name = packageJSON?.name ?? "roo-cline"
+
+			// Start a local HTTP server to receive the OAuth callback.
+			// This is more reliable than the vscode:// URI scheme on Linux.
+			this.stopLocalAuthServer()
+			const localServer = new LocalAuthServer()
+			this.localAuthServer = localServer
+
+			let authRedirect: string
+
+			try {
+				const port = await localServer.start()
+				authRedirect = localServer.getRedirectUrl()
+				this.log(`[auth] Local auth server started on port ${port}`)
+			} catch (serverError) {
+				// If the local server fails to start, fall back to the vscode:// URI scheme
+				this.log(`[auth] Failed to start local auth server, falling back to URI scheme: ${serverError}`)
+				this.localAuthServer = null
+				const packageJSON = this.context.extension?.packageJSON
+				const publisher = packageJSON?.publisher ?? "RooVeterinaryInc"
+				const name = packageJSON?.name ?? "roo-cline"
+				authRedirect = `${vscode.env.uriScheme}://${publisher}.${name}`
+			}
+
 			const params = new URLSearchParams({
 				state,
-				auth_redirect: `${vscode.env.uriScheme}://${publisher}.${name}`,
+				auth_redirect: authRedirect,
 			})
 
 			// Use landing page URL if slug is provided, otherwise use provider sign-up or sign-in URL based on parameter
@@ -281,10 +309,52 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 					: `${getRooCodeApiUrl()}/extension/sign-in?${params.toString()}`
 
 			await vscode.env.openExternal(vscode.Uri.parse(url))
+
+			// If we have a local server, start listening for the callback asynchronously.
+			// The callback will be handled by handleCallback() just like the URI handler path.
+			if (this.localAuthServer) {
+				localServer
+					.waitForCallback()
+					.then(async (result) => {
+						this.log("[auth] Received callback via local auth server")
+						await this.handleCallback(
+							result.code,
+							result.state,
+							result.organizationId,
+							result.providerModel,
+						)
+					})
+					.catch((err) => {
+						// Only log if it's not a cancellation (server was stopped because URI handler fired)
+						if (this.localAuthServer === localServer) {
+							this.log(`[auth] Local auth server callback error: ${err}`)
+						}
+					})
+					.finally(() => {
+						if (this.localAuthServer === localServer) {
+							this.localAuthServer = null
+						}
+					})
+			}
 		} catch (error) {
+			this.stopLocalAuthServer()
 			const context = landingPageSlug ? ` (landing page: ${landingPageSlug})` : ""
 			this.log(`[auth] Error initiating Roo Code Cloud auth${context}: ${error}`)
 			throw new Error(`Failed to initiate Roo Code Cloud authentication${context}: ${error}`)
+		}
+	}
+
+	/**
+	 * Stop the local auth server if it's running.
+	 *
+	 * This is called when the vscode:// URI handler fires first (so we don't
+	 * process the same auth callback twice), or during cleanup.
+	 */
+	public stopLocalAuthServer(): void {
+		if (this.localAuthServer) {
+			this.log("[auth] Stopping local auth server")
+			this.localAuthServer.stop()
+			this.localAuthServer = null
 		}
 	}
 
@@ -305,6 +375,10 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 		organizationId?: string | null,
 		providerModel?: string | null,
 	): Promise<void> {
+		// Stop the local auth server since we're handling the callback
+		// (either from URI handler or from the local server itself).
+		this.stopLocalAuthServer()
+
 		if (!code || !state) {
 			const vscode = await importVscode()
 
