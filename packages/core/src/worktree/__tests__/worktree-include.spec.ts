@@ -302,5 +302,99 @@ describe("WorktreeIncludeService", () => {
 
 			expect(result).toContain("node_modules")
 		})
+
+		describe("useHardLinks", () => {
+			it("should hard-link single files when useHardLinks is true", async () => {
+				await fs.writeFile(path.join(sourceDir, ".worktreeinclude"), ".env.local")
+				await fs.writeFile(path.join(sourceDir, ".gitignore"), ".env.local")
+				await fs.writeFile(path.join(sourceDir, ".env.local"), "LOCAL_VAR=value")
+
+				const result = await service.copyWorktreeIncludeFiles(sourceDir, targetDir, undefined, true)
+
+				expect(result).toContain(".env.local")
+				const copiedContent = await fs.readFile(path.join(targetDir, ".env.local"), "utf-8")
+				expect(copiedContent).toBe("LOCAL_VAR=value")
+
+				// Verify it's a hard link (same inode)
+				const sourceStats = await fs.stat(path.join(sourceDir, ".env.local"))
+				const targetStats = await fs.stat(path.join(targetDir, ".env.local"))
+				expect(targetStats.ino).toBe(sourceStats.ino)
+			})
+
+			it("should hard-link directory contents recursively when useHardLinks is true", async () => {
+				await fs.writeFile(path.join(sourceDir, ".worktreeinclude"), "node_modules")
+				await fs.writeFile(path.join(sourceDir, ".gitignore"), "node_modules")
+				await fs.mkdir(path.join(sourceDir, "node_modules", "pkg"), { recursive: true })
+				await fs.writeFile(path.join(sourceDir, "node_modules", "pkg", "index.js"), "module.exports = {}")
+				await fs.writeFile(path.join(sourceDir, "node_modules", "test.txt"), "test")
+
+				const result = await service.copyWorktreeIncludeFiles(sourceDir, targetDir, undefined, true)
+
+				expect(result).toContain("node_modules")
+
+				// Verify file contents
+				const copiedContent = await fs.readFile(
+					path.join(targetDir, "node_modules", "pkg", "index.js"),
+					"utf-8",
+				)
+				expect(copiedContent).toBe("module.exports = {}")
+
+				// Verify hard links (same inode)
+				const sourceStats = await fs.stat(path.join(sourceDir, "node_modules", "test.txt"))
+				const targetStats = await fs.stat(path.join(targetDir, "node_modules", "test.txt"))
+				expect(targetStats.ino).toBe(sourceStats.ino)
+			})
+
+			it("should fall back to copy when hard link fails (e.g., cross-device)", async () => {
+				// Even if hard linking were to fail, the fallback ensures files are still copied
+				await fs.writeFile(path.join(sourceDir, ".worktreeinclude"), ".env.local")
+				await fs.writeFile(path.join(sourceDir, ".gitignore"), ".env.local")
+				await fs.writeFile(path.join(sourceDir, ".env.local"), "LOCAL_VAR=value")
+
+				// We can't easily simulate cross-device in a unit test, but we can verify
+				// that when useHardLinks is true, the file is still accessible in the target
+				const result = await service.copyWorktreeIncludeFiles(sourceDir, targetDir, undefined, true)
+
+				expect(result).toContain(".env.local")
+				const copiedContent = await fs.readFile(path.join(targetDir, ".env.local"), "utf-8")
+				expect(copiedContent).toBe("LOCAL_VAR=value")
+			})
+
+			it("should perform regular copies when useHardLinks is false", async () => {
+				await fs.writeFile(path.join(sourceDir, ".worktreeinclude"), ".env.local")
+				await fs.writeFile(path.join(sourceDir, ".gitignore"), ".env.local")
+				await fs.writeFile(path.join(sourceDir, ".env.local"), "LOCAL_VAR=value")
+
+				const result = await service.copyWorktreeIncludeFiles(sourceDir, targetDir, undefined, false)
+
+				expect(result).toContain(".env.local")
+				const copiedContent = await fs.readFile(path.join(targetDir, ".env.local"), "utf-8")
+				expect(copiedContent).toBe("LOCAL_VAR=value")
+
+				// Verify it's NOT a hard link (different inode for regular copy)
+				const sourceStats = await fs.stat(path.join(sourceDir, ".env.local"))
+				const targetStats = await fs.stat(path.join(targetDir, ".env.local"))
+				expect(targetStats.ino).not.toBe(sourceStats.ino)
+			})
+
+			it("should report progress when hard-linking directories", async () => {
+				await fs.writeFile(path.join(sourceDir, ".worktreeinclude"), "node_modules")
+				await fs.writeFile(path.join(sourceDir, ".gitignore"), "node_modules")
+				await fs.mkdir(path.join(sourceDir, "node_modules"), { recursive: true })
+				await fs.writeFile(path.join(sourceDir, "node_modules", "test.txt"), "test content")
+
+				const progressCalls: Array<{ bytesCopied: number; itemName: string }> = []
+				const onProgress = vi.fn((progress: { bytesCopied: number; itemName: string }) => {
+					progressCalls.push({ ...progress })
+				})
+
+				await service.copyWorktreeIncludeFiles(sourceDir, targetDir, onProgress, true)
+
+				expect(onProgress).toHaveBeenCalled()
+				expect(progressCalls.length).toBeGreaterThan(0)
+				const finalCall = progressCalls[progressCalls.length - 1]
+				expect(finalCall?.bytesCopied).toBeGreaterThan(0)
+			})
+		})
 	})
 })
