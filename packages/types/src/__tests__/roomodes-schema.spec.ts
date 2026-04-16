@@ -28,6 +28,10 @@ describe("roomodes JSON schema", () => {
 		expect(validate).toBeDefined()
 	})
 
+	it("should advertise a JSON-serving canonical $id", () => {
+		expect(schema["$id"]).toBe("https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/schemas/roomodes.json")
+	})
+
 	it("should accept a minimal valid .roomodes config", () => {
 		const config = {
 			customModes: [
