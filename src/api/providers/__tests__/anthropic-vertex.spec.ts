@@ -914,6 +914,21 @@ describe("VertexHandler", () => {
 			expect(model.betas).toContain("context-1m-2025-08-07")
 		})
 
+		it("should enable 1M context for Claude Opus 4.7 when beta flag is set", () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: "claude-opus-4-7",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+				vertex1MContext: true,
+			})
+
+			const model = handler.getModel()
+			expect(model.info.contextWindow).toBe(1_000_000)
+			expect(model.info.inputPrice).toBe(10.0)
+			expect(model.info.outputPrice).toBe(37.5)
+			expect(model.betas).toContain("context-1m-2025-08-07")
+		})
+
 		it("should not enable 1M context when flag is disabled", () => {
 			const handler = new AnthropicVertexHandler({
 				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[0],
