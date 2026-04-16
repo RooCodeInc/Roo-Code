@@ -97,6 +97,7 @@
 	},
 	"enqueueMessage": "Mesajı kuyruğa ekle (mevcut görev tamamlandıktan sonra gönderilecek)",
 	"scrollToBottom": "Sohbetin altına kaydır",
+	"scrollToLatestCheckpoint": "Önceki checkpoint'e kaydır",
 	"about": "Roo Code, düzenleyicinizdeki bütün bir yapay zeka geliştirme ekibidir.",
 	"docs": "Daha fazla bilgi için <DocsLink>belgelerimize</DocsLink> göz atın.",
 	"onboarding": "Bu çalışma alanındaki görev listeniz boş.",

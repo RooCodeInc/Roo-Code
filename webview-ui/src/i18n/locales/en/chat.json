@@ -124,6 +124,7 @@
 		"placeholder": "Edit your message..."
 	},
 	"scrollToBottom": "Scroll to bottom of chat",
+	"scrollToLatestCheckpoint": "Scroll to previous checkpoint",
 	"about": "Roo is a whole AI dev team in your editor",
 	"docs": "Check our <DocsLink>docs</DocsLink> to get started",
 	"onboarding": "What would you like to do?",

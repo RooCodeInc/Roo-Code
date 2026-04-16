@@ -185,4 +185,21 @@ describe("CheckpointSaved popover visibility", () => {
 			expect(getMenu().className).toContain("hidden")
 		})
 	})
+
+	it("renders jump-to-previous-checkpoint control and triggers callback", async () => {
+		const onJumpToPreviousCheckpoint = vi.fn()
+		const { getByTestId, container } = render(
+			<CheckpointSaved {...baseProps} onJumpToPreviousCheckpoint={onJumpToPreviousCheckpoint} />,
+		)
+
+		const getParentDiv = () =>
+			container.querySelector("[class*='flex items-center justify-between']") as HTMLElement
+
+		fireEvent.mouseEnter(getParentDiv())
+
+		const jumpButton = await waitFor(() => getByTestId("jump-previous-checkpoint-btn"))
+		await userEvent.click(jumpButton)
+
+		expect(onJumpToPreviousCheckpoint).toHaveBeenCalledTimes(1)
+	})
 })

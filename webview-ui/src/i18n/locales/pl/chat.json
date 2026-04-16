@@ -97,6 +97,7 @@
 	},
 	"enqueueMessage": "Dodaj wiadomość do kolejki (zostanie wysłana po zakończeniu bieżącego zadania)",
 	"scrollToBottom": "Przewiń do dołu czatu",
+	"scrollToLatestCheckpoint": "Przewiń do poprzedniego punktu kontrolnego",
 	"about": "Roo Code to cały zespół deweloperów AI w Twoim edytorze.",
 	"docs": "Sprawdź naszą <DocsLink>dokumentację</DocsLink>, aby dowiedzieć się więcej.",
 	"onboarding": "Twoja lista zadań w tym obszarze roboczym jest pusta.",

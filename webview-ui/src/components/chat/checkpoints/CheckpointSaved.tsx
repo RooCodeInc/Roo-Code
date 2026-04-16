@@ -11,9 +11,15 @@ type CheckpointSavedProps = {
 	commitHash: string
 	currentHash?: string
 	checkpoint?: Record<string, unknown>
+	onJumpToPreviousCheckpoint?: () => void
 }
 
-export const CheckpointSaved = ({ checkpoint, currentHash, ...props }: CheckpointSavedProps) => {
+export const CheckpointSaved = ({
+	checkpoint,
+	currentHash,
+	onJumpToPreviousCheckpoint,
+	...props
+}: CheckpointSavedProps) => {
 	const { t } = useTranslation()
 	const isCurrent = currentHash === props.commitHash
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false)
@@ -100,6 +106,7 @@ export const CheckpointSaved = ({ checkpoint, currentHash, ...props }: Checkpoin
 					commitHash={props.commitHash}
 					checkpoint={metadata}
 					onOpenChange={handlePopoverOpenChange}
+					onJumpToPreviousCheckpoint={onJumpToPreviousCheckpoint}
 				/>
 			</div>
 		</div>

@@ -43,6 +43,11 @@ interface MockVirtuosoProps {
 
 interface VirtuosoHarnessState {
 	scrollCalls: number
+	scrollToIndexArgs: Array<{
+		index: number | "LAST"
+		align?: "end" | "start" | "center"
+		behavior?: "auto" | "smooth"
+	}>
 	atBottomAfterCalls: number
 	signalDelayMs: number
 	emitFalseOnDataChange: boolean
@@ -54,6 +59,7 @@ interface VirtuosoHarnessState {
 
 const harness = vi.hoisted<VirtuosoHarnessState>(() => ({
 	scrollCalls: 0,
+	scrollToIndexArgs: [],
 	atBottomAfterCalls: Number.POSITIVE_INFINITY,
 	signalDelayMs: 20,
 	emitFalseOnDataChange: true,
@@ -152,8 +158,9 @@ vi.mock("react-virtuoso", () => {
 		}
 
 		useImperativeHandle(ref, () => ({
-			scrollToIndex: () => {
+			scrollToIndex: (options) => {
 				harness.scrollCalls += 1
+				harness.scrollToIndexArgs.push(options)
 				const reachedBottom = harness.scrollCalls >= harness.atBottomAfterCalls
 				const timeoutId = window.setTimeout(() => {
 					atBottomRef.current?.(reachedBottom)
@@ -215,6 +222,23 @@ const buildMessages = (baseTs: number): ClineMessage[] => [
 	{ type: "say", say: "text", ts: baseTs + 2, text: "row-2" },
 ]
 
+const buildMessagesWithCheckpoint = (baseTs: number): ClineMessage[] => [
+	{ type: "say", say: "text", ts: baseTs, text: "task" },
+	{ type: "say", say: "text", ts: baseTs + 1, text: "row-1" },
+	{ type: "say", say: "checkpoint_saved", ts: baseTs + 2, text: "checkpoint-1" },
+	{ type: "say", say: "text", ts: baseTs + 3, text: "row-2" },
+]
+
+const buildMessagesWithMultipleCheckpoints = (baseTs: number): ClineMessage[] => [
+	{ type: "say", say: "text", ts: baseTs, text: "task" },
+	{ type: "say", say: "checkpoint_saved", ts: baseTs + 1, text: "checkpoint-1" },
+	{ type: "say", say: "text", ts: baseTs + 2, text: "row-2" },
+	{ type: "say", say: "checkpoint_saved", ts: baseTs + 3, text: "checkpoint-2" },
+	{ type: "say", say: "text", ts: baseTs + 4, text: "row-4" },
+	{ type: "say", say: "checkpoint_saved", ts: baseTs + 5, text: "checkpoint-3" },
+	{ type: "say", say: "text", ts: baseTs + 6, text: "row-6" },
+]
+
 const resolveFollowOutput = (isAtBottom: boolean): "auto" | false => {
 	const followOutput = harness.followOutput
 	if (typeof followOutput === "function") {
@@ -254,19 +278,19 @@ const renderView = () =>
 		</ExtensionStateContextProvider>,
 	)
 
-const hydrate = async (atBottomAfterCalls: number) => {
+const hydrate = async (atBottomAfterCalls: number, clineMessages = buildMessages(Date.now() - 3_000)) => {
 	harness.atBottomAfterCalls = atBottomAfterCalls
 	renderView()
 	await act(async () => {
 		await Promise.resolve()
 	})
 	await act(async () => {
-		postState(buildMessages(Date.now() - 3_000))
+		postState(clineMessages)
 	})
 	await waitFor(() => {
 		const list = document.querySelector("[data-testid='virtuoso-item-list']")
 		expect(list).toBeTruthy()
-		expect(list?.getAttribute("data-count")).toBe("2")
+		expect(list?.getAttribute("data-count")).toBe(String(Math.max(0, clineMessages.length - 1)))
 	})
 }
 
@@ -317,9 +341,19 @@ const getScrollToBottomButton = (): HTMLButtonElement => {
 	return button
 }
 
+const getScrollToCheckpointButton = (): HTMLButtonElement => {
+	const button = document.querySelector("button[aria-label='chat:scrollToLatestCheckpoint']")
+	if (!(button instanceof HTMLButtonElement)) {
+		throw new Error("Expected scroll-to-checkpoint button")
+	}
+
+	return button
+}
+
 describe("ChatView scroll behavior regression coverage", () => {
 	beforeEach(() => {
 		harness.scrollCalls = 0
+		harness.scrollToIndexArgs = []
 		harness.atBottomAfterCalls = Number.POSITIVE_INFINITY
 		harness.signalDelayMs = 20
 		harness.emitFalseOnDataChange = true
@@ -502,5 +536,72 @@ describe("ChatView scroll behavior regression coverage", () => {
 			timeout: 1_200,
 		})
 		await waitFor(() => expect(document.querySelector(".codicon-chevron-down")).toBeNull(), { timeout: 1_200 })
+	})
+
+	it("shows jump-to-checkpoint button and scrolls to latest checkpoint", async () => {
+		await hydrate(2, buildMessagesWithCheckpoint(Date.now() - 3_000))
+		await waitForCalls(2)
+		await waitForCallsSettled()
+
+		await act(async () => {
+			fireEvent.keyDown(window, { key: "PageUp" })
+		})
+
+		await waitFor(() => expect(document.querySelector(".codicon-chevron-down")).toBeTruthy(), {
+			timeout: 1_200,
+		})
+
+		const checkpointButton = document.querySelector("button[aria-label='chat:scrollToLatestCheckpoint']")
+		expect(checkpointButton).toBeInstanceOf(HTMLButtonElement)
+
+		const callsBeforeClick = harness.scrollCalls
+
+		await act(async () => {
+			;(checkpointButton as HTMLButtonElement).click()
+		})
+
+		expect(harness.scrollCalls).toBe(callsBeforeClick + 1)
+		expect(harness.scrollToIndexArgs.at(-1)).toMatchObject({
+			index: 1,
+			align: "center",
+			behavior: "smooth",
+		})
+	})
+
+	it("repeated checkpoint clicks step backward through previous checkpoints", async () => {
+		await hydrate(2, buildMessagesWithMultipleCheckpoints(Date.now() - 3_000))
+		await waitForCalls(2)
+		await waitForCallsSettled()
+
+		await act(async () => {
+			fireEvent.keyDown(window, { key: "PageUp" })
+		})
+
+		await waitFor(() => expect(document.querySelector(".codicon-chevron-down")).toBeTruthy(), {
+			timeout: 1_200,
+		})
+
+		const checkpointButton = getScrollToCheckpointButton()
+
+		await act(async () => {
+			;(checkpointButton as HTMLButtonElement).click()
+		})
+		expect(harness.scrollToIndexArgs.at(-1)).toMatchObject({ index: 4, align: "center", behavior: "smooth" })
+
+		await act(async () => {
+			;(checkpointButton as HTMLButtonElement).click()
+		})
+		expect(harness.scrollToIndexArgs.at(-1)).toMatchObject({ index: 2, align: "center", behavior: "smooth" })
+
+		await act(async () => {
+			;(checkpointButton as HTMLButtonElement).click()
+		})
+		expect(harness.scrollToIndexArgs.at(-1)).toMatchObject({ index: 0, align: "center", behavior: "smooth" })
+
+		// Once at the oldest checkpoint, additional clicks keep targeting it.
+		await act(async () => {
+			;(checkpointButton as HTMLButtonElement).click()
+		})
+		expect(harness.scrollToIndexArgs.at(-1)).toMatchObject({ index: 0, align: "center", behavior: "smooth" })
 	})
 })
