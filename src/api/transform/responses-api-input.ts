@@ -53,14 +53,11 @@ export function convertToResponsesApiInput(messages: Anthropic.Messages.MessageP
 						})
 						break
 					case "thinking":
-						// Include reasoning if it has content
-						if ((part as any).thinking && (part as any).thinking.trim().length > 0) {
-							input.push({
-								type: "message",
-								role: "assistant",
-								content: [{ type: "output_text", text: `[Thinking] ${(part as any).thinking}` }],
-							})
-						}
+						// Anthropic thinking blocks represent hidden reasoning. The
+						// Responses API input format does not have a compatible hidden
+						// reasoning representation for these persisted blocks, so replaying
+						// them as normal assistant-visible text changes conversation
+						// semantics. Skip them instead of flattening them into output_text.
 						break
 				}
 			}
