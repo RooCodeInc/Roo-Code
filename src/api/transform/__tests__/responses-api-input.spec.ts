@@ -280,6 +280,28 @@ describe("convertToResponsesApiInput", () => {
 				}),
 			)
 		})
+
+		it("should not replay Anthropic thinking blocks as assistant-visible text", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "thinking", thinking: "SECRET_CHAIN_OF_THOUGHT", signature: "sig-1" } as any,
+						{ type: "text", text: "visible answer" },
+					],
+				},
+			]
+
+			const result = convertToResponsesApiInput(messages)
+
+			expect(result).toEqual([
+				{
+					type: "message",
+					role: "assistant",
+					content: [{ type: "output_text", text: "visible answer" }],
+				},
+			])
+		})
 	})
 
 	describe("multi-turn conversations", () => {
