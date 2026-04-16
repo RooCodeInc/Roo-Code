@@ -5,6 +5,7 @@ import type { ModelInfo, ProviderSettings, ReasoningEffortWithMinimal } from "@r
 import {
 	getOpenRouterReasoning,
 	getAnthropicReasoning,
+	getAnthropicOutputConfig,
 	getOpenAiReasoning,
 	getRooReasoning,
 	getGeminiReasoning,
@@ -457,6 +458,176 @@ describe("reasoning.ts", () => {
 			const result = getAnthropicReasoning(options)
 
 			expect(result).toBeUndefined()
+		})
+
+		it("should return adaptive thinking params when useAdaptiveThinking is true and model supports it", () => {
+			const modelWithAdaptive: ModelInfo = {
+				...baseModel,
+				supportsAdaptiveThinking: true,
+			}
+
+			const settingsWithAdaptive: ProviderSettings = {
+				useAdaptiveThinking: true,
+			}
+
+			const options = {
+				...baseOptions,
+				model: modelWithAdaptive,
+				settings: settingsWithAdaptive,
+			}
+
+			const result = getAnthropicReasoning(options)
+
+			expect(result).toEqual({ type: "adaptive" })
+		})
+
+		it("should return {type: 'adaptive'} regardless of effort (effort goes in output_config)", () => {
+			const modelWithAdaptive: ModelInfo = {
+				...baseModel,
+				supportsAdaptiveThinking: true,
+			}
+
+			const settingsWithEffort: ProviderSettings = {
+				useAdaptiveThinking: true,
+				adaptiveThinkingEffort: "high",
+			}
+
+			const options = {
+				...baseOptions,
+				model: modelWithAdaptive,
+				settings: settingsWithEffort,
+			}
+
+			const result = getAnthropicReasoning(options)
+
+			// output_config is a SEPARATE top-level param; thinking only contains {type: "adaptive"}
+			expect(result).toEqual({ type: "adaptive" })
+		})
+
+		it("should not return adaptive thinking when model does not support it", () => {
+			const settingsWithAdaptive: ProviderSettings = {
+				useAdaptiveThinking: true,
+			}
+
+			const options = {
+				...baseOptions,
+				settings: settingsWithAdaptive,
+			}
+
+			const result = getAnthropicReasoning(options)
+
+			// Falls through to manual mode, but base model has no reasoning budget support
+			expect(result).toBeUndefined()
+		})
+
+		it("should not return adaptive thinking when useAdaptiveThinking is false", () => {
+			const modelWithAdaptive: ModelInfo = {
+				...baseModel,
+				supportsAdaptiveThinking: true,
+			}
+
+			const settingsWithDisabled: ProviderSettings = {
+				useAdaptiveThinking: false,
+			}
+
+			const options = {
+				...baseOptions,
+				model: modelWithAdaptive,
+				settings: settingsWithDisabled,
+			}
+
+			const result = getAnthropicReasoning(options)
+
+			// Falls through to manual mode, but base model has no reasoning budget support
+			expect(result).toBeUndefined()
+		})
+
+		it("should prioritize adaptive thinking over manual budget when both settings present", () => {
+			const modelWithBoth: ModelInfo = {
+				...baseModel,
+				supportsAdaptiveThinking: true,
+				supportsReasoningBudget: true,
+			}
+
+			const settingsWithBoth: ProviderSettings = {
+				useAdaptiveThinking: true,
+				enableReasoningEffort: true,
+				adaptiveThinkingEffort: "medium",
+			}
+
+			const options = {
+				...baseOptions,
+				model: modelWithBoth,
+				settings: settingsWithBoth,
+			}
+
+			const result = getAnthropicReasoning(options)
+
+			// output_config is separate; thinking only contains {type: "adaptive"}
+			expect(result).toEqual({ type: "adaptive" })
+		})
+	})
+
+	describe("getAnthropicOutputConfig", () => {
+		it("should return undefined when adaptive thinking is not enabled", () => {
+			const result = getAnthropicOutputConfig({ model: baseModel, settings: {} })
+			expect(result).toBeUndefined()
+		})
+
+		it("should return undefined when model does not support adaptive thinking", () => {
+			const settings: ProviderSettings = { useAdaptiveThinking: true, adaptiveThinkingEffort: "high" }
+			const result = getAnthropicOutputConfig({ model: baseModel, settings })
+			expect(result).toBeUndefined()
+		})
+
+		it("should return undefined when no effort is specified", () => {
+			const modelWithAdaptive: ModelInfo = { ...baseModel, supportsAdaptiveThinking: true }
+			const settings: ProviderSettings = { useAdaptiveThinking: true }
+			const result = getAnthropicOutputConfig({ model: modelWithAdaptive, settings })
+			expect(result).toBeUndefined()
+		})
+
+		it("should return effort when adaptiveThinkingEffort is set", () => {
+			const modelWithAdaptive: ModelInfo = { ...baseModel, supportsAdaptiveThinking: true }
+			const settings: ProviderSettings = { useAdaptiveThinking: true, adaptiveThinkingEffort: "high" }
+			const result = getAnthropicOutputConfig({ model: modelWithAdaptive, settings })
+			expect(result).toEqual({ effort: "high" })
+		})
+
+		it("should fallback to high when max is set but model does not support it", () => {
+			const modelNoMax: ModelInfo = {
+				...baseModel,
+				supportsAdaptiveThinking: true,
+				supportsAdaptiveThinkingMaxEffort: false,
+			}
+			const settings: ProviderSettings = { useAdaptiveThinking: true, adaptiveThinkingEffort: "max" }
+			const result = getAnthropicOutputConfig({ model: modelNoMax, settings })
+			expect(result).toEqual({ effort: "high" })
+		})
+
+		it("should return max effort when model supports it", () => {
+			const modelWithMax: ModelInfo = {
+				...baseModel,
+				supportsAdaptiveThinking: true,
+				supportsAdaptiveThinkingMaxEffort: true,
+			}
+			const settings: ProviderSettings = { useAdaptiveThinking: true, adaptiveThinkingEffort: "max" }
+			const result = getAnthropicOutputConfig({ model: modelWithMax, settings })
+			expect(result).toEqual({ effort: "max" })
+		})
+
+		it("should return low effort", () => {
+			const modelWithAdaptive: ModelInfo = { ...baseModel, supportsAdaptiveThinking: true }
+			const settings: ProviderSettings = { useAdaptiveThinking: true, adaptiveThinkingEffort: "low" }
+			const result = getAnthropicOutputConfig({ model: modelWithAdaptive, settings })
+			expect(result).toEqual({ effort: "low" })
+		})
+
+		it("should return medium effort", () => {
+			const modelWithAdaptive: ModelInfo = { ...baseModel, supportsAdaptiveThinking: true }
+			const settings: ProviderSettings = { useAdaptiveThinking: true, adaptiveThinkingEffort: "medium" }
+			const result = getAnthropicOutputConfig({ model: modelWithAdaptive, settings })
+			expect(result).toEqual({ effort: "medium" })
 		})
 	})
 

@@ -59,6 +59,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			maxTokens,
 			temperature,
 			reasoning: thinking,
+			outputConfig,
 		} = this.getModel()
 
 		// Filter out non-Anthropic blocks (reasoning, thoughtSignature, etc.) before sending to the API
@@ -119,6 +120,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 							max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
 							temperature,
 							thinking,
+							...(outputConfig ? { output_config: outputConfig } : {}),
 							// Setting cache breakpoint for system prompt so new tasks can reuse it.
 							system: [{ text: systemPrompt, type: "text", cache_control: cacheControl }],
 							messages: sanitizedMessages.map((message, index) => {

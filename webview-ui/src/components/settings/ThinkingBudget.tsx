@@ -179,6 +179,24 @@ export const ThinkingBudget = ({ apiConfiguration, setApiConfigurationField, mod
 		)
 	}
 
+	const isAdaptiveThinkingSupported = !!modelInfo && (modelInfo as any).supportsAdaptiveThinking
+	const isMaxEffortSupported = !!modelInfo && (modelInfo as any).supportsAdaptiveThinkingMaxEffort
+	const useAdaptiveThinking = apiConfiguration.useAdaptiveThinking ?? false
+	const adaptiveThinkingEffort = (apiConfiguration.adaptiveThinkingEffort ?? "high") as
+		| "low"
+		| "medium"
+		| "high"
+		| "max"
+
+	const adaptiveEffortOptions: Array<{ value: "low" | "medium" | "high" | "max"; labelKey: string }> = [
+		{ value: "low", labelKey: "settings:thinkingBudget.adaptiveEffort.low" },
+		{ value: "medium", labelKey: "settings:thinkingBudget.adaptiveEffort.medium" },
+		{ value: "high", labelKey: "settings:thinkingBudget.adaptiveEffort.high" },
+		...(isMaxEffortSupported
+			? [{ value: "max" as const, labelKey: "settings:thinkingBudget.adaptiveEffort.max" }]
+			: []),
+	]
+
 	return isReasoningBudgetSupported && !!modelInfo.maxTokens ? (
 		<>
 			{!isReasoningBudgetRequired && (
@@ -194,6 +212,43 @@ export const ThinkingBudget = ({ apiConfiguration, setApiConfigurationField, mod
 			)}
 			{(isReasoningBudgetRequired || enableReasoningEffort) && (
 				<>
+					{isAdaptiveThinkingSupported && (
+						<div className="flex flex-col gap-1">
+							<Checkbox
+								checked={useAdaptiveThinking}
+								onChange={(checked: boolean) => {
+									setApiConfigurationField("useAdaptiveThinking", checked === true)
+									if (!checked) {
+										setApiConfigurationField("adaptiveThinkingEffort", undefined as any)
+									}
+								}}>
+								{t("settings:thinkingBudget.useAdaptiveThinking")}
+							</Checkbox>
+							{useAdaptiveThinking && (
+								<div className="ml-5 flex flex-col gap-1">
+									<div className="text-sm text-vscode-descriptionForeground">
+										{t("settings:thinkingBudget.adaptiveThinkingDescription")}
+									</div>
+									<Select
+										value={adaptiveThinkingEffort}
+										onValueChange={(value: "low" | "medium" | "high" | "max") =>
+											setApiConfigurationField("adaptiveThinkingEffort", value)
+										}>
+										<SelectTrigger className="w-full">
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
+											{adaptiveEffortOptions.map(({ value, labelKey }) => (
+												<SelectItem key={value} value={value}>
+													{t(labelKey)}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</div>
+							)}
+						</div>
+					)}
 					<div className="flex flex-col gap-1">
 						<div className="font-medium">{t("settings:thinkingBudget.maxTokens")}</div>
 						<div className="flex items-center gap-1">
@@ -211,19 +266,23 @@ export const ThinkingBudget = ({ apiConfiguration, setApiConfigurationField, mod
 							<div className="w-12 text-sm text-center">{customMaxOutputTokens}</div>
 						</div>
 					</div>
-					<div className="flex flex-col gap-1">
-						<div className="font-medium">{t("settings:thinkingBudget.maxThinkingTokens")}</div>
-						<div className="flex items-center gap-1" data-testid="reasoning-budget">
-							<Slider
-								min={minThinkingTokens}
-								max={modelMaxThinkingTokens}
-								step={minThinkingTokens === 128 ? 128 : 1024}
-								value={[customMaxThinkingTokens]}
-								onValueChange={([value]) => setApiConfigurationField("modelMaxThinkingTokens", value)}
-							/>
-							<div className="w-12 text-sm text-center">{customMaxThinkingTokens}</div>
+					{!useAdaptiveThinking && (
+						<div className="flex flex-col gap-1">
+							<div className="font-medium">{t("settings:thinkingBudget.maxThinkingTokens")}</div>
+							<div className="flex items-center gap-1" data-testid="reasoning-budget">
+								<Slider
+									min={minThinkingTokens}
+									max={modelMaxThinkingTokens}
+									step={minThinkingTokens === 128 ? 128 : 1024}
+									value={[customMaxThinkingTokens]}
+									onValueChange={([value]) =>
+										setApiConfigurationField("modelMaxThinkingTokens", value)
+									}
+								/>
+								<div className="w-12 text-sm text-center">{customMaxThinkingTokens}</div>
+							</div>
 						</div>
-					</div>
+					)}
 				</>
 			)}
 		</>
