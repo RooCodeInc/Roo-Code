@@ -165,13 +165,25 @@ describe("GeminiHandler", () => {
 			expect(modelInfo.info).toBeDefined()
 		})
 
-		it("should return default model if invalid model specified", () => {
-			const invalidHandler = new GeminiHandler({
-				apiModelId: "invalid-model",
+		it("should pass through custom model names not in the predefined list", () => {
+			const customHandler = new GeminiHandler({
+				apiModelId: "gemini-3.1-flash-lite-preview",
 				geminiApiKey: "test-key",
 			})
-			const modelInfo = invalidHandler.getModel()
-			expect(modelInfo.id).toBe(geminiDefaultModelId) // Default model
+			const modelInfo = customHandler.getModel()
+			expect(modelInfo.id).toBe("gemini-3.1-flash-lite-preview")
+			expect(modelInfo.info).toBeDefined()
+			expect(modelInfo.info.maxTokens).toBe(8192)
+			expect(modelInfo.info.supportsImages).toBe(true)
+		})
+
+		it("should return default model when no model ID is specified", () => {
+			const noModelHandler = new GeminiHandler({
+				apiModelId: undefined as any,
+				geminiApiKey: "test-key",
+			})
+			const modelInfo = noModelHandler.getModel()
+			expect(modelInfo.id).toBe(geminiDefaultModelId)
 		})
 
 		it("should exclude apply_diff and include edit in tool preferences", () => {
