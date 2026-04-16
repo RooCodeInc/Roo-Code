@@ -89,6 +89,7 @@ describe("OpenRouter API", () => {
 							input_modalities: ["text", "image"],
 							output_modalities: ["text"],
 						},
+						supported_parameters: ["tools", "max_tokens", "temperature", "reasoning"],
 						endpoints: [
 							{
 								provider_name: "Google Vertex",
@@ -196,6 +197,7 @@ describe("OpenRouter API", () => {
 							input_modalities: ["text", "image"],
 							output_modalities: ["text"],
 						},
+						supported_parameters: ["tools", "max_tokens", "temperature", "reasoning"],
 						endpoints: [
 							{
 								provider_name: "Anthropic",
@@ -260,6 +262,132 @@ describe("OpenRouter API", () => {
 				supportsReasoningEffort: true,
 				supportedParameters: ["max_tokens", "temperature", "reasoning"],
 			})
+
+			getSpy.mockRestore()
+		})
+	})
+
+	describe("getOpenRouterModels - tool support filtering", () => {
+		it("filters out models without tool support in supported_parameters", async () => {
+			const mockResponse = {
+				data: {
+					data: [
+						{
+							id: "test/with-tools",
+							name: "Model With Tools",
+							context_length: 128000,
+							architecture: {
+								input_modalities: ["text"],
+								output_modalities: ["text"],
+							},
+							top_provider: { max_completion_tokens: 8192 },
+							supported_parameters: ["tools", "max_tokens", "temperature"],
+						},
+						{
+							id: "test/without-tools",
+							name: "Model Without Tools",
+							context_length: 128000,
+							architecture: {
+								input_modalities: ["text"],
+								output_modalities: ["text"],
+							},
+							top_provider: { max_completion_tokens: 8192 },
+							supported_parameters: ["max_tokens", "temperature"],
+						},
+						{
+							id: "test/no-params",
+							name: "Model With No Params",
+							context_length: 128000,
+							architecture: {
+								input_modalities: ["text"],
+								output_modalities: ["text"],
+							},
+							top_provider: { max_completion_tokens: 8192 },
+						},
+					],
+				},
+			}
+
+			const axios = await import("axios")
+			const getSpy = vi.spyOn(axios.default, "get").mockResolvedValue(mockResponse)
+
+			const models = await getOpenRouterModels()
+
+			// Only the model with tools support should be included
+			expect(models["test/with-tools"]).toBeDefined()
+			expect(models["test/without-tools"]).toBeUndefined()
+			expect(models["test/no-params"]).toBeUndefined()
+
+			getSpy.mockRestore()
+		})
+	})
+
+	describe("getOpenRouterModelEndpoints - tool support filtering", () => {
+		it("returns empty when model does not support tools", async () => {
+			const mockEndpointsResponse = {
+				data: {
+					data: {
+						id: "test/no-tools-model",
+						name: "No Tools Model",
+						architecture: {
+							input_modalities: ["text"],
+							output_modalities: ["text"],
+						},
+						supported_parameters: ["max_tokens", "temperature"],
+						endpoints: [
+							{
+								provider_name: "Provider A",
+								name: "No Tools Model",
+								context_length: 128000,
+								max_completion_tokens: 8192,
+								pricing: { prompt: "0.000003", completion: "0.000015" },
+							},
+						],
+					},
+				},
+			}
+
+			const axios = await import("axios")
+			const getSpy = vi.spyOn(axios.default, "get").mockResolvedValue(mockEndpointsResponse)
+
+			const endpoints = await getOpenRouterModelEndpoints("test/no-tools-model")
+
+			expect(Object.keys(endpoints).length).toBe(0)
+
+			getSpy.mockRestore()
+		})
+
+		it("returns endpoints when model supports tools", async () => {
+			const mockEndpointsResponse = {
+				data: {
+					data: {
+						id: "test/tools-model",
+						name: "Tools Model",
+						architecture: {
+							input_modalities: ["text"],
+							output_modalities: ["text"],
+						},
+						supported_parameters: ["tools", "max_tokens", "temperature"],
+						endpoints: [
+							{
+								provider_name: "Provider A",
+								name: "Tools Model",
+								context_length: 128000,
+								max_completion_tokens: 8192,
+								pricing: { prompt: "0.000003", completion: "0.000015" },
+							},
+						],
+					},
+				},
+			}
+
+			const axios = await import("axios")
+			const getSpy = vi.spyOn(axios.default, "get").mockResolvedValue(mockEndpointsResponse)
+
+			const endpoints = await getOpenRouterModelEndpoints("test/tools-model")
+
+			expect(Object.keys(endpoints).length).toBe(1)
+			expect(endpoints["Provider A"]).toBeDefined()
 
 			getSpy.mockRestore()
 		})
