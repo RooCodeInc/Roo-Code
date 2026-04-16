@@ -5,6 +5,7 @@ import type { SupportedProvider } from "@/types/index.js"
 const envVarMap: Record<SupportedProvider, string> = {
 	anthropic: "ANTHROPIC_API_KEY",
 	"openai-native": "OPENAI_API_KEY",
+	openai: "OPENAI_API_KEY",
 	gemini: "GOOGLE_API_KEY",
 	openrouter: "OPENROUTER_API_KEY",
 	"vercel-ai-gateway": "VERCEL_AI_GATEWAY_API_KEY",
@@ -24,6 +25,7 @@ export function getProviderSettings(
 	provider: SupportedProvider,
 	apiKey: string | undefined,
 	model: string | undefined,
+	baseUrl: string | undefined,
 ): RooCodeSettings {
 	const config: RooCodeSettings = { apiProvider: provider }
 
@@ -32,17 +34,25 @@ export function getProviderSettings(
 			if (apiKey) config.apiKey = apiKey
 			if (model) config.apiModelId = model
 			break
+		case "openai":
+			if (apiKey) config.openAiApiKey = apiKey
+			if (model) config.openAiModelId = model
+			if (baseUrl) config.openAiBaseUrl = baseUrl
+			break
 		case "openai-native":
 			if (apiKey) config.openAiNativeApiKey = apiKey
 			if (model) config.apiModelId = model
+			if (baseUrl) config.openAiNativeBaseUrl = baseUrl
 			break
 		case "gemini":
 			if (apiKey) config.geminiApiKey = apiKey
 			if (model) config.apiModelId = model
+			if (baseUrl) config.googleGeminiBaseUrl = baseUrl
 			break
 		case "openrouter":
 			if (apiKey) config.openRouterApiKey = apiKey
 			if (model) config.openRouterModelId = model
+			if (baseUrl) config.openRouterBaseUrl = baseUrl
 			break
 		case "vercel-ai-gateway":
 			if (apiKey) config.vercelAiGatewayApiKey = apiKey
@@ -55,6 +65,7 @@ export function getProviderSettings(
 		default:
 			if (apiKey) config.apiKey = apiKey
 			if (model) config.apiModelId = model
+			if (baseUrl) config.openAiBaseUrl = baseUrl
 	}
 
 	return config
