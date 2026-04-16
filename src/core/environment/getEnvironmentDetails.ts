@@ -229,11 +229,16 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 	if (includeFileDetails) {
 		details += `\n\n# Current Workspace Directory (${cline.cwd.toPosix()}) Files\n`
 		const isDesktop = arePathsEqual(cline.cwd, path.join(os.homedir(), "Desktop"))
+		const isHomeDir = arePathsEqual(cline.cwd, os.homedir())
 
 		if (isDesktop) {
 			// Don't want to immediately access desktop since it would show
 			// permission popup.
 			details += "(Desktop files not shown automatically. Use list_files to explore if needed.)"
+		} else if (isHomeDir) {
+			// Home directory can contain a huge number of files; skip automatic
+			// listing but allow explicit list_files tool calls to work.
+			details += "(Home directory files not shown automatically. Use list_files to explore if needed.)"
 		} else {
 			const maxFiles = maxWorkspaceFiles ?? 200
 
