@@ -97,6 +97,7 @@
 	},
 	"enqueueMessage": "Adicionar mensagem à fila (será enviada após a conclusão da tarefa atual)",
 	"scrollToBottom": "Rolar para o final do chat",
+	"scrollToLatestCheckpoint": "Rolar para o checkpoint anterior",
 	"about": "Roo Code é uma equipe inteira de desenvolvimento de IA em seu editor.",
 	"docs": "Confira nossa <DocsLink>documentação</DocsLink> para saber mais.",
 	"onboarding": "Sua lista de tarefas neste espaço de trabalho está vazia.",

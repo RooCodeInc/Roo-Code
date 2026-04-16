@@ -97,6 +97,7 @@
 	},
 	"enqueueMessage": "Thêm tin nhắn vào hàng đợi (sẽ gửi sau khi nhiệm vụ hiện tại hoàn tất)",
 	"scrollToBottom": "Cuộn xuống cuối cuộc trò chuyện",
+	"scrollToLatestCheckpoint": "Cuộn đến checkpoint trước đó",
 	"about": "Roo Code là một đội ngũ phát triển AI đầy đủ trong trình chỉnh sửa của bạn.",
 	"docs": "Kiểm tra <DocsLink>tài liệu</DocsLink> của chúng tôi để tìm hiểu thêm.",
 	"onboarding": "Danh sách nhiệm vụ của bạn trong không gian làm việc này đang trống.",

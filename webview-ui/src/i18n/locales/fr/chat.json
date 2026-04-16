@@ -97,6 +97,7 @@
 	},
 	"enqueueMessage": "Ajouter le message à la file d'attente (sera envoyé après la fin de la tâche en cours)",
 	"scrollToBottom": "Défiler jusqu'au bas du chat",
+	"scrollToLatestCheckpoint": "Défiler jusqu'au checkpoint précédent",
 	"about": "Roo Code est une équipe complète de développeurs IA dans votre éditeur.",
 	"docs": "Consultez notre <DocsLink>documentation</DocsLink> pour en savoir plus.",
 	"onboarding": "Votre liste de tâches dans cet espace de travail est vide.",
