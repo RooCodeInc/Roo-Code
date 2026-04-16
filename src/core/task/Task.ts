@@ -304,6 +304,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	diffViewProvider: DiffViewProvider
 	diffStrategy?: DiffStrategy
 	didEditFile: boolean = false
+	/** Relative paths (POSIX) of files written in this task, for read_lints "edited only" scope. */
+	editedFilePaths: Set<string> = new Set()
 
 	// LLM Messages & Chat Messages
 	apiConversationHistory: ApiMessage[] = []
@@ -1874,6 +1876,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			} without value for required parameter '${paramName}'. Retrying...`,
 		)
 		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName))
+	}
+
+	/**
+	 * Record that a file was edited in this task (for read_lints "edited only" scope).
+	 * Call this after successfully saving a file via DiffViewProvider.
+	 */
+	recordEditedFile(relPath: string): void {
+		const normalized = path.relative(this.cwd, path.resolve(this.cwd, relPath)).toPosix()
+		this.editedFilePaths.add(normalized)
 	}
 
 	// Lifecycle

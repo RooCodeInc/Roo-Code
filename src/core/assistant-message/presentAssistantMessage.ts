@@ -37,6 +37,7 @@ import { generateImageTool } from "../tools/GenerateImageTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
+import { readLintsTool } from "../tools/ReadLintsTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
@@ -355,6 +356,8 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name}]`
 					case "list_files":
 						return `[${block.name} for '${block.params.path}']`
+					case "read_lints":
+						return block.params.paths ? `[${block.name} for paths]` : `[${block.name}]`
 					case "use_mcp_tool":
 						return `[${block.name} for '${block.params.server_name}']`
 					case "access_mcp_resource":
@@ -742,6 +745,13 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "list_files":
 					await listFilesTool.handle(cline, block as ToolUse<"list_files">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "read_lints":
+					await readLintsTool.handle(cline, block as ToolUse<"read_lints">, {
 						askApproval,
 						handleError,
 						pushToolResult,
