@@ -561,6 +561,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			}
 		}
 
+		// Check if any subagent is currently running (has a spinning progress indicator).
+		// The parent task's API call is already finished, but we still want the stop button.
+		if (modifiedMessages.some((m) => m.progressStatus?.spin === true)) {
+			return true
+		}
+
 		return false
 	}, [modifiedMessages, clineAsk, enableButtons, primaryButtonText])
 
