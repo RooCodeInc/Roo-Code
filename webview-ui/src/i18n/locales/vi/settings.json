@@ -884,6 +884,7 @@
 	},
 	"validation": {
 		"apiKey": "Bạn phải cung cấp khóa API hợp lệ.",
+		"baseUrl": "Bạn phải cung cấp URL cơ sở hợp lệ.",
 		"awsRegion": "Bạn phải chọn một vùng để sử dụng Amazon Bedrock.",
 		"googleCloud": "Bạn phải cung cấp ID dự án và vùng Google Cloud hợp lệ.",
 		"modelId": "Bạn phải cung cấp ID mô hình hợp lệ.",

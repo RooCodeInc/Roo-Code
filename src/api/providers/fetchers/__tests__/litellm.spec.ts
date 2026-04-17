@@ -697,4 +697,44 @@ describe("getLiteLLMModels", () => {
 			description: "model-with-only-max-output-tokens via LiteLLM proxy",
 		})
 	})
+
+	it("sends request without Authorization header when apiKey is undefined", async () => {
+		const mockResponse = {
+			data: {
+				data: [],
+			},
+		}
+
+		mockedAxios.get.mockResolvedValue(mockResponse)
+
+		await getLiteLLMModels(undefined, "http://localhost:4000")
+
+		expect(mockedAxios.get).toHaveBeenCalledWith("http://localhost:4000/v1/model/info", {
+			headers: {
+				"Content-Type": "application/json",
+				...DEFAULT_HEADERS,
+			},
+			timeout: 5000,
+		})
+	})
+
+	it("sends request without Authorization header when apiKey is empty string", async () => {
+		const mockResponse = {
+			data: {
+				data: [],
+			},
+		}
+
+		mockedAxios.get.mockResolvedValue(mockResponse)
+
+		await getLiteLLMModels("", "http://localhost:4000")
+
+		expect(mockedAxios.get).toHaveBeenCalledWith("http://localhost:4000/v1/model/info", {
+			headers: {
+				"Content-Type": "application/json",
+				...DEFAULT_HEADERS,
+			},
+			timeout: 5000,
+		})
+	})
 })

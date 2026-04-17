@@ -947,6 +947,7 @@
 	},
 	"validation": {
 		"apiKey": "You must provide a valid API key.",
+		"baseUrl": "You must provide a valid base URL.",
 		"awsRegion": "You must choose a region to use with Amazon Bedrock.",
 		"googleCloud": "You must provide a valid Google Cloud Project ID and Region.",
 		"modelId": "You must provide a valid model ID.",

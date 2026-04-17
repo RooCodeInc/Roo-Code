@@ -884,6 +884,7 @@
 	},
 	"validation": {
 		"apiKey": "Geçerli bir API anahtarı sağlamalısınız.",
+		"baseUrl": "Geçerli bir temel URL sağlamalısınız.",
 		"awsRegion": "Amazon Bedrock kullanmak için bir bölge seçmelisiniz.",
 		"googleCloud": "Geçerli bir Google Cloud proje kimliği ve bölge sağlamalısınız.",
 		"modelId": "Geçerli bir model kimliği sağlamalısınız.",

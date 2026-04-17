@@ -884,6 +884,7 @@
 	},
 	"validation": {
 		"apiKey": "Heu de proporcionar una clau API vàlida.",
+		"baseUrl": "Heu de proporcionar una URL base vàlida.",
 		"awsRegion": "Heu de triar una regió per utilitzar Amazon Bedrock.",
 		"googleCloud": "Heu de proporcionar un ID de projecte i regió de Google Cloud vàlids.",
 		"modelId": "Heu de proporcionar un ID de model vàlid.",

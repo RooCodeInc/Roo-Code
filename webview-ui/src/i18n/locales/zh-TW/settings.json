@@ -894,6 +894,7 @@
 	},
 	"validation": {
 		"apiKey": "請提供有效的 API 金鑰。",
+		"baseUrl": "請提供有效的基礎 URL。",
 		"awsRegion": "請選擇要用於 Amazon Bedrock 的區域。",
 		"googleCloud": "請提供有效的 Google Cloud 專案 ID 和區域。",
 		"modelId": "請提供有效的模型 ID。",

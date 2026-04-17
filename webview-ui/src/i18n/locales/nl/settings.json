@@ -884,6 +884,7 @@
 	},
 	"validation": {
 		"apiKey": "Je moet een geldige API-sleutel opgeven.",
+		"baseUrl": "Je moet een geldige basis-URL opgeven.",
 		"awsRegion": "Je moet een regio kiezen om Amazon Bedrock te gebruiken.",
 		"googleCloud": "Je moet een geldig Google Cloud Project-ID en regio opgeven.",
 		"modelId": "Je moet een geldig model-ID opgeven.",
