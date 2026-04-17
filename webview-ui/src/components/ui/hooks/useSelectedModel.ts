@@ -19,6 +19,7 @@ import {
 	vscodeLlmDefaultModelId,
 	openAiCodexModels,
 	sambaNovaModels,
+	kymaModels,
 	internationalZAiModels,
 	mainlandZAiModels,
 	fireworksModels,
@@ -305,6 +306,11 @@ function getSelectedModel({
 		case "sambanova": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const info = sambaNovaModels[id as keyof typeof sambaNovaModels]
+			return { id, info }
+		}
+		case "kyma": {
+			const id = apiConfiguration.apiModelId ?? defaultModelId
+			const info = kymaModels[id as keyof typeof kymaModels]
 			return { id, info }
 		}
 		case "fireworks": {

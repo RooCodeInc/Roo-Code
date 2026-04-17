@@ -26,6 +26,7 @@ import {
 	bedrockDefaultModelId,
 	vertexDefaultModelId,
 	sambaNovaDefaultModelId,
+	kymaDefaultModelId,
 	internationalZAiDefaultModelId,
 	mainlandZAiDefaultModelId,
 	fireworksDefaultModelId,
@@ -94,6 +95,7 @@ import {
 	Fireworks,
 	VercelAiGateway,
 	MiniMax,
+	Kyma,
 } from "./providers"
 
 import { MODELS_BY_PROVIDER, PROVIDERS } from "./constants"
@@ -352,6 +354,7 @@ const ApiOptions = ({
 				bedrock: { field: "apiModelId", default: bedrockDefaultModelId },
 				vertex: { field: "apiModelId", default: vertexDefaultModelId },
 				sambanova: { field: "apiModelId", default: sambaNovaDefaultModelId },
+				kyma: { field: "apiModelId", default: kymaDefaultModelId },
 				zai: {
 					field: "apiModelId",
 					default:
@@ -684,6 +687,10 @@ const ApiOptions = ({
 							apiConfiguration={apiConfiguration}
 							setApiConfigurationField={setApiConfigurationField}
 						/>
+					)}
+
+					{selectedProvider === "kyma" && (
+						<Kyma apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 					)}
 
 					{selectedProvider === "zai" && (
