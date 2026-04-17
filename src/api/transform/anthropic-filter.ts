@@ -13,6 +13,8 @@ export const VALID_ANTHROPIC_BLOCK_TYPES = new Set([
 	"thinking",
 	"redacted_thinking",
 	"document",
+	"server_tool_use",
+	"advisor_tool_result",
 ])
 
 /**

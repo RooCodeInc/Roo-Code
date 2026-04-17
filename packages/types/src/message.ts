@@ -170,6 +170,8 @@ export const clineSays = [
 	"user_edit_todos",
 	"too_many_tools_warning",
 	"tool",
+	"use_advisor_tool",
+	"advisor_tool_result",
 ] as const
 
 export const clineSaySchema = z.enum(clineSays)

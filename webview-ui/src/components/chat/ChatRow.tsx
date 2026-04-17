@@ -263,6 +263,8 @@ export const ChatRowContent = ({
 
 	const isMcpServerResponding = isLast && lastModifiedMessage?.say === "mcp_server_request_started"
 
+	const isAdvisorResponding = isLast && message.say === "use_advisor_tool"
+
 	const type = message.type === "ask" ? message.ask : message.say
 
 	const normalColor = "var(--vscode-foreground)"
@@ -1038,6 +1040,29 @@ export const ChatRowContent = ({
 									<ArrowRight className="size-3" />
 								</button>
 							)}
+						</div>
+					)
+				case "use_advisor_tool":
+					return (
+						<div style={headerStyle}>
+							{isAdvisorResponding ? (
+								<ProgressIndicator />
+							) : (
+								<span className="codicon codicon-mortar-board" />
+							)}
+							<span style={{ fontWeight: "bold" }}>{t("chat:advisor.isConsulting")}</span>
+						</div>
+					)
+				case "advisor_tool_result":
+					return (
+						<div className="group">
+							<div style={headerStyle}>
+								<span className="codicon codicon-mortar-board" />
+								<span style={{ fontWeight: "bold" }}>{t("chat:advisor.resultLabel")}</span>
+							</div>
+							<div className="w-full bg-vscode-editor-background border border-vscode-border rounded-xs p-2 mt-2">
+								<Markdown markdown={message.text} partial={message.partial} />
+							</div>
 						</div>
 					)
 				case "reasoning":

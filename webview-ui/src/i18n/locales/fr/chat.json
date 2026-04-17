@@ -98,6 +98,10 @@
 	"enqueueMessage": "Ajouter le message à la file d'attente (sera envoyé après la fin de la tâche en cours)",
 	"scrollToBottom": "Défiler jusqu'au bas du chat",
 	"about": "Roo Code est une équipe complète de développeurs IA dans votre éditeur.",
+	"advisor": {
+		"isConsulting": "Consultation du conseiller...",
+		"resultLabel": "Réponse du conseiller"
+	},
 	"docs": "Consultez notre <DocsLink>documentation</DocsLink> pour en savoir plus.",
 	"onboarding": "Votre liste de tâches dans cet espace de travail est vide.",
 	"rooTips": {

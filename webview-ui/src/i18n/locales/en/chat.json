@@ -125,6 +125,10 @@
 	},
 	"scrollToBottom": "Scroll to bottom of chat",
 	"about": "Roo is a whole AI dev team in your editor",
+	"advisor": {
+		"isConsulting": "Consulting advisor...",
+		"resultLabel": "Advisor response"
+	},
 	"docs": "Check our <DocsLink>docs</DocsLink> to get started",
 	"onboarding": "What would you like to do?",
 	"rooTips": {

@@ -209,6 +209,141 @@ describe("AnthropicHandler", () => {
 			const requestOptions = mockCreate.mock.calls[mockCreate.mock.calls.length - 1]?.[1]
 			expect(requestOptions?.headers?.["anthropic-beta"]).toContain("context-1m-2025-08-07")
 		})
+
+		describe("advisor tool feature", () => {
+			const systemPrompt = "You are a helpful assistant."
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [{ type: "text" as const, text: "Hello" }],
+				},
+			]
+
+			it("should include advisor tool beta header when advisor tool is enabled", async () => {
+				const advisorHandler = new AnthropicHandler({
+					apiKey: "test-api-key",
+					apiModelId: "claude-sonnet-4-6",
+					anthropicAdvisorEnabled: true,
+				})
+
+				const stream = advisorHandler.createMessage(systemPrompt, messages)
+
+				for await (const _chunk of stream) {
+					// Consume stream
+				}
+
+				const requestOptions = mockCreate.mock.calls[mockCreate.mock.calls.length - 1]?.[1]
+				expect(requestOptions?.headers?.["anthropic-beta"]).toContain("advisor-tool-2026-03-01")
+			})
+
+			it("should inject advisor tool definition when advisor tool is enabled", async () => {
+				const advisorHandler = new AnthropicHandler({
+					apiKey: "test-api-key",
+					apiModelId: "claude-sonnet-4-6",
+					anthropicAdvisorEnabled: true,
+				})
+
+				const stream = advisorHandler.createMessage(systemPrompt, messages)
+
+				for await (const _chunk of stream) {
+					// Consume stream
+				}
+
+				const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1]?.[0]
+				expect(callArgs?.tools).toBeDefined()
+				expect(callArgs?.tools).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							type: "advisor_20260301",
+							name: "advisor",
+							model: "claude-opus-4-6",
+						}),
+					]),
+				)
+			})
+
+			it("should include max_uses in advisor tool definition when configured", async () => {
+				const customMaxUses = 5
+				const advisorHandler = new AnthropicHandler({
+					apiKey: "test-api-key",
+					apiModelId: "claude-sonnet-4-6",
+					anthropicAdvisorEnabled: true,
+					anthropicAdvisorMaxUses: customMaxUses,
+				})
+
+				const stream = advisorHandler.createMessage(systemPrompt, messages)
+
+				for await (const _chunk of stream) {
+					// Consume stream
+				}
+
+				const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1]?.[0]
+				const advisorTool = callArgs?.tools?.find((tool: any) => tool.type === "advisor_20260301")
+				expect(advisorTool).toBeDefined()
+				expect(advisorTool?.max_uses).toBe(customMaxUses)
+			})
+
+			it("should use custom advisor model when configured", async () => {
+				const customModel = "claude-opus-4-5-20251101"
+				const advisorHandler = new AnthropicHandler({
+					apiKey: "test-api-key",
+					apiModelId: "claude-sonnet-4-6",
+					anthropicAdvisorEnabled: true,
+					anthropicAdvisorModel: customModel,
+				})
+
+				const stream = advisorHandler.createMessage(systemPrompt, messages)
+
+				for await (const _chunk of stream) {
+					// Consume stream
+				}
+
+				const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1]?.[0]
+				const advisorTool = callArgs?.tools?.find((tool: any) => tool.type === "advisor_20260301")
+				expect(advisorTool).toBeDefined()
+				expect(advisorTool?.model).toBe(customModel)
+			})
+
+			it("should not include advisor tool when advisor tool is disabled", async () => {
+				const stream = handler.createMessage(systemPrompt, messages)
+
+				for await (const _chunk of stream) {
+					// Consume stream
+				}
+
+				const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1]?.[0]
+				const advisorTool = callArgs?.tools?.find((tool: any) => tool.type === "advisor_20260301")
+				expect(advisorTool).toBeUndefined()
+
+				// Also verify beta header is not present
+				const requestOptions = mockCreate.mock.calls[mockCreate.mock.calls.length - 1]?.[1]
+				const betaHeader = requestOptions?.headers?.["anthropic-beta"]
+				if (betaHeader && typeof betaHeader === "string") {
+					expect(betaHeader).not.toContain("advisor-tool-2026-03-01")
+				}
+			})
+
+			it("should use default advisor model and max_uses when not configured", async () => {
+				const advisorHandler = new AnthropicHandler({
+					apiKey: "test-api-key",
+					apiModelId: "claude-sonnet-4-6",
+					anthropicAdvisorEnabled: true,
+					// No anthropicAdvisorModel or anthropicAdvisorMaxUses provided
+				})
+
+				const stream = advisorHandler.createMessage(systemPrompt, messages)
+
+				for await (const _chunk of stream) {
+					// Consume stream
+				}
+
+				const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1]?.[0]
+				const advisorTool = callArgs?.tools?.find((tool: any) => tool.type === "advisor_20260301")
+				expect(advisorTool).toBeDefined()
+				expect(advisorTool?.model).toBe("claude-opus-4-6") // default
+				expect(advisorTool?.max_uses).toBe(3) // default
+			})
+		})
 	})
 
 	describe("completePrompt", () => {
@@ -785,6 +920,152 @@ describe("AnthropicHandler", () => {
 				id: undefined,
 				name: undefined,
 				arguments: '"London"}',
+			})
+		})
+
+		it("should emit advisor_tool_use chunk with id from server_tool_use block", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				async *[Symbol.asyncIterator]() {
+					yield {
+						type: "message_start",
+						message: { usage: { input_tokens: 100, output_tokens: 50 } },
+					}
+					yield {
+						type: "content_block_start",
+						index: 0,
+						content_block: {
+							type: "server_tool_use",
+							id: "srvtoolu_abc123",
+							name: "advisor",
+							input: {},
+						},
+					}
+				},
+			}))
+
+			const stream = handler.createMessage("system", [{ role: "user", content: "Hello" }], {
+				taskId: "test-task",
+			})
+
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const advisorUseChunk = chunks.find((c) => c.type === "advisor_tool_use")
+			expect(advisorUseChunk).toBeDefined()
+			expect(advisorUseChunk.id).toBe("srvtoolu_abc123")
+			expect(advisorUseChunk.name).toBe("advisor")
+		})
+
+		it("should emit advisor_tool_result chunk with tool_use_id and text content", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				async *[Symbol.asyncIterator]() {
+					yield {
+						type: "message_start",
+						message: { usage: { input_tokens: 100, output_tokens: 50 } },
+					}
+					yield {
+						type: "content_block_start",
+						index: 1,
+						content_block: {
+							type: "advisor_tool_result",
+							tool_use_id: "srvtoolu_abc123",
+							content: { type: "advisor_result", text: "Use channel-based coordination." },
+						},
+					}
+				},
+			}))
+
+			const stream = handler.createMessage("system", [{ role: "user", content: "Hello" }], {
+				taskId: "test-task",
+			})
+
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const resultChunk = chunks.find((c) => c.type === "advisor_tool_result")
+			expect(resultChunk).toBeDefined()
+			expect(resultChunk.tool_use_id).toBe("srvtoolu_abc123")
+			expect(resultChunk.content).toBe("Use channel-based coordination.")
+			// rawContent must carry the verbatim object for round-tripping to the API
+			expect(resultChunk.rawContent).toEqual({ type: "advisor_result", text: "Use channel-based coordination." })
+		})
+
+		it("should extract text from advisor_result object content shape", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				async *[Symbol.asyncIterator]() {
+					yield {
+						type: "message_start",
+						message: { usage: { input_tokens: 100, output_tokens: 50 } },
+					}
+					yield {
+						type: "content_block_start",
+						index: 0,
+						content_block: {
+							type: "advisor_tool_result",
+							tool_use_id: "srvtoolu_xyz",
+							content: { type: "advisor_result", text: "Plan: do X then Y." },
+						},
+					}
+				},
+			}))
+
+			const stream = handler.createMessage("system", [{ role: "user", content: "Plan?" }], {
+				taskId: "test-task",
+			})
+
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const resultChunk = chunks.find((c) => c.type === "advisor_tool_result")
+			expect(resultChunk).toBeDefined()
+			expect(resultChunk.content).toBe("Plan: do X then Y.")
+			// rawContent must be the verbatim object, not just the extracted text
+			expect(resultChunk.rawContent).toEqual({ type: "advisor_result", text: "Plan: do X then Y." })
+		})
+
+		it("should emit empty string for encrypted advisor_redacted_result content", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				async *[Symbol.asyncIterator]() {
+					yield {
+						type: "message_start",
+						message: { usage: { input_tokens: 100, output_tokens: 50 } },
+					}
+					yield {
+						type: "content_block_start",
+						index: 0,
+						content_block: {
+							type: "advisor_tool_result",
+							tool_use_id: "srvtoolu_redacted",
+							content: { type: "advisor_redacted_result", encrypted_content: "opaque-blob" },
+						},
+					}
+				},
+			}))
+
+			const stream = handler.createMessage("system", [{ role: "user", content: "Plan?" }], {
+				taskId: "test-task",
+			})
+
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const resultChunk = chunks.find((c) => c.type === "advisor_tool_result")
+			expect(resultChunk).toBeDefined()
+			expect(resultChunk.tool_use_id).toBe("srvtoolu_redacted")
+			// Encrypted content has no text field — content should be empty string
+			expect(resultChunk.content).toBe("")
+			// rawContent must carry the verbatim encrypted object for round-tripping
+			expect(resultChunk.rawContent).toEqual({
+				type: "advisor_redacted_result",
+				encrypted_content: "opaque-blob",
 			})
 		})
 	})
