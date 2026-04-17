@@ -497,6 +497,74 @@ describe("OpenAiHandler", () => {
 			const callArgs = mockCreate.mock.calls[0][0]
 			expect(callArgs.max_completion_tokens).toBe(4096)
 		})
+
+		it("should omit temperature when modelTemperature is not set (streaming)", async () => {
+			// When no custom temperature is configured, temperature should not be sent
+			// so that OpenAI-compatible APIs (e.g. Kimi) can use their own defaults
+			const handlerNoTemp = new OpenAiHandler({
+				...mockOptions,
+				// modelTemperature is not set (undefined)
+			})
+			const stream = handlerNoTemp.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+			}
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs).not.toHaveProperty("temperature")
+		})
+
+		it("should include temperature when modelTemperature is explicitly set (streaming)", async () => {
+			const handlerWithTemp = new OpenAiHandler({
+				...mockOptions,
+				modelTemperature: 0.6,
+			})
+			const stream = handlerWithTemp.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+			}
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.temperature).toBe(0.6)
+		})
+
+		it("should include temperature 0 when modelTemperature is explicitly set to 0 (streaming)", async () => {
+			const handlerWithZeroTemp = new OpenAiHandler({
+				...mockOptions,
+				modelTemperature: 0,
+			})
+			const stream = handlerWithZeroTemp.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+			}
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.temperature).toBe(0)
+		})
+
+		it("should omit temperature when modelTemperature is not set (non-streaming)", async () => {
+			const handlerNoTemp = new OpenAiHandler({
+				...mockOptions,
+				openAiStreamingEnabled: false,
+			})
+			const stream = handlerNoTemp.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+			}
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs).not.toHaveProperty("temperature")
+		})
+
+		it("should include temperature when modelTemperature is explicitly set (non-streaming)", async () => {
+			const handlerWithTemp = new OpenAiHandler({
+				...mockOptions,
+				openAiStreamingEnabled: false,
+				modelTemperature: 0.6,
+			})
+			const stream = handlerWithTemp.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+			}
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.temperature).toBe(0.6)
+		})
 	})
 
 	describe("error handling", () => {
@@ -632,7 +700,6 @@ describe("OpenAiHandler", () => {
 					],
 					stream: true,
 					stream_options: { include_usage: true },
-					temperature: 0,
 					tools: undefined,
 					tool_choice: undefined,
 					parallel_tool_calls: true,
