@@ -28,9 +28,10 @@ const mockResolve = (dirPath: string): string => {
  * @param dirPath - Directory path to list files from
  * @param recursive - Whether to list files recursively
  * @param limit - Maximum number of files to return
+ * @param _respectGitIgnore - Whether to respect .gitignore (ignored in mock)
  * @returns Promise resolving to [file paths, limit reached flag]
  */
-export const listFiles = vi.fn((dirPath: string, _recursive: boolean, limit: number) => {
+export const listFiles = vi.fn((dirPath: string, _recursive: boolean, limit: number, _respectGitIgnore?: boolean) => {
 	// Early return for limit of 0 - matches the actual implementation
 	if (limit === 0) {
 		return Promise.resolve([[], false])

@@ -41,6 +41,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 		private readonly cacheManager: CacheManager,
 		private readonly ignoreInstance: Ignore,
 		batchSegmentThreshold?: number,
+		private readonly respectGitIgnore: boolean = true,
 	) {
 		// Get the configurable batch size from VSCode settings, fallback to default
 		// If not provided in constructor, try to get from VSCode settings
@@ -77,8 +78,13 @@ export class DirectoryScanner implements IDirectoryScanner {
 		// Capture workspace context at scan start
 		const scanWorkspace = getWorkspacePathForContext(directoryPath)
 
-		// Get all files recursively (handles .gitignore automatically)
-		const [allPaths, _] = await listFiles(directoryPath, true, MAX_LIST_FILES_LIMIT_CODE_INDEX)
+		// Get all files recursively (handles .gitignore based on respectGitIgnore setting)
+		const [allPaths, _] = await listFiles(
+			directoryPath,
+			true,
+			MAX_LIST_FILES_LIMIT_CODE_INDEX,
+			this.respectGitIgnore,
+		)
 
 		// Filter out directories (marked with trailing '/')
 		const filePaths = allPaths.filter((p) => !p.endsWith("/"))
