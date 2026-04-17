@@ -84,7 +84,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const { info: modelInfo, reasoning } = this.getModel()
+		const { info: modelInfo, reasoning, temperature } = this.getModel()
 		const modelUrl = this.options.openAiBaseUrl ?? ""
 		const modelId = this.options.openAiModelId ?? ""
 		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
@@ -154,7 +154,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 				model: modelId,
-				temperature: this.options.modelTemperature ?? (deepseekReasoner ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
+				temperature,
 				messages: convertedMessages,
 				stream: true as const,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
@@ -223,6 +223,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		} else {
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: modelId,
+				temperature,
 				messages: deepseekReasoner
 					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
 					: [systemMessage, ...convertToOpenAiMessages(messages)],
@@ -282,12 +283,14 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	override getModel() {
 		const id = this.options.openAiModelId ?? ""
 		const info: ModelInfo = this.options.openAiCustomModelInfo ?? openAiModelInfoSaneDefaults
+		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
+		const isDeepSeekReasoner = id.includes("deepseek-reasoner") || enabledR1Format
 		const params = getModelParams({
 			format: "openai",
 			modelId: id,
 			model: info,
 			settings: this.options,
-			defaultTemperature: 0,
+			defaultTemperature: isDeepSeekReasoner ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0,
 		})
 		return { id, info, ...params }
 	}
@@ -300,6 +303,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: model.id,
+				temperature: model.temperature,
 				messages: [{ role: "user", content: prompt }],
 			}
 
