@@ -88,6 +88,28 @@ describe("MarkdownBlock", () => {
 		expect(screen.getByText("Step three")).toBeInTheDocument()
 	})
 
+	it("should render tables inside a scrollable wrapper", async () => {
+		const markdown = `| Column A | Column B | Column C |
+| --- | --- | --- |
+| Data 1 | Data 2 | Data 3 |`
+
+		const { container } = render(<MarkdownBlock markdown={markdown} />)
+
+		await screen.findByText("Column A")
+
+		// Table should be wrapped in a .table-wrapper div for horizontal scrolling
+		const wrapper = container.querySelector(".table-wrapper")
+		expect(wrapper).toBeInTheDocument()
+
+		const table = wrapper?.querySelector("table")
+		expect(table).toBeInTheDocument()
+
+		// Verify table content renders correctly
+		expect(screen.getByText("Column B")).toBeInTheDocument()
+		expect(screen.getByText("Data 1")).toBeInTheDocument()
+		expect(screen.getByText("Data 3")).toBeInTheDocument()
+	})
+
 	it("should render nested lists with proper hierarchy", async () => {
 		const markdown = `Complex list:
 1. First level ordered
