@@ -701,19 +701,20 @@ describe("AwsBedrockHandler", () => {
 			expect(model.info.contextWindow).toBe(1_000_000)
 		})
 
-		it("should apply 1M tier pricing when awsBedrock1MContext is true for Claude Sonnet 4.6", () => {
+		it("should have native 1M context window for Claude Sonnet 4.6 without needing beta flag", () => {
 			const handler = new AwsBedrockHandler({
 				apiModelId: "anthropic.claude-sonnet-4-6",
 				awsAccessKey: "test",
 				awsSecretKey: "test",
 				awsRegion: "us-east-1",
-				awsBedrock1MContext: true,
 			})
 
 			const model = handler.getModel()
+			// Claude Sonnet 4.6 has native 1M context window, no beta flag needed
 			expect(model.info.contextWindow).toBe(1_000_000)
-			expect(model.info.inputPrice).toBe(6.0)
-			expect(model.info.outputPrice).toBe(22.5)
+			// Base pricing (not tier pricing) since 1M is native
+			expect(model.info.inputPrice).toBe(3.0)
+			expect(model.info.outputPrice).toBe(15.0)
 		})
 
 		it("should use default context window when awsBedrock1MContext is false for Claude Sonnet 4", () => {
