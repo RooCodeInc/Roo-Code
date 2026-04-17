@@ -16,6 +16,8 @@ import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { convertNewFileToUnifiedDiff, computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 import type { ToolUse } from "../../shared/tools"
 
+import { gitAiBeforeEdit, gitAiAfterEdit } from "../../services/git-ai"
+
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
 interface WriteToFileParams {
@@ -25,6 +27,12 @@ interface WriteToFileParams {
 
 export class WriteToFileTool extends BaseTool<"write_to_file"> {
 	readonly name = "write_to_file" as const
+	private didGitAiBeforeEdit = false
+
+	override resetPartialState(): void {
+		super.resetPartialState()
+		this.didGitAiBeforeEdit = false
+	}
 
 	async execute(params: WriteToFileParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { pushToolResult, handleError, askApproval } = callbacks
@@ -133,8 +141,14 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 					return
 				}
 
+				await gitAiBeforeEdit(task.cwd, [relPath])
 				await task.diffViewProvider.saveDirectly(relPath, newContent, false, diagnosticsEnabled, writeDelayMs)
+				await gitAiAfterEdit(task.cwd, task, [relPath])
 			} else {
+				if (!this.didGitAiBeforeEdit) {
+					await gitAiBeforeEdit(task.cwd, [relPath])
+				}
+
 				if (!task.diffViewProvider.isEditing) {
 					const partialMessage = JSON.stringify(sharedMessageProps)
 					await task.ask("tool", partialMessage, true).catch(() => {})
@@ -167,6 +181,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 				}
 
 				await task.diffViewProvider.saveChanges(diagnosticsEnabled, writeDelayMs)
+				await gitAiAfterEdit(task.cwd, task, [relPath])
 			}
 
 			if (relPath) {
@@ -246,6 +261,10 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 		if (newContent) {
 			if (!task.diffViewProvider.isEditing) {
+				if (!this.didGitAiBeforeEdit) {
+					await gitAiBeforeEdit(task.cwd, [relPath!])
+					this.didGitAiBeforeEdit = true
+				}
 				await task.diffViewProvider.open(relPath!)
 			}
 
