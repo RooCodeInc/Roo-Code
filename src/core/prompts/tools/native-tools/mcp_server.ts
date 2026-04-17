@@ -9,14 +9,22 @@ import { normalizeToolSchema, type JsonSchema } from "../../../../utils/json-sch
  * global and project configs, project servers take priority (handled by McpHub.getServers()).
  *
  * @param mcpHub The McpHub instance containing connected servers.
+ * @param allowedMcpServers Optional allowlist of server names. When provided, only servers
+ *   whose name is in the list will have their tools included. When omitted, all servers are included.
  * @returns An array of OpenAI.Chat.ChatCompletionTool definitions.
  */
-export function getMcpServerTools(mcpHub?: McpHub): OpenAI.Chat.ChatCompletionTool[] {
+export function getMcpServerTools(mcpHub?: McpHub, allowedMcpServers?: string[]): OpenAI.Chat.ChatCompletionTool[] {
 	if (!mcpHub) {
 		return []
 	}
 
-	const servers = mcpHub.getServers()
+	let servers = mcpHub.getServers()
+
+	// If an allowlist is provided and non-empty, filter to only allowed servers
+	if (allowedMcpServers && allowedMcpServers.length > 0) {
+		const allowedSet = new Set(allowedMcpServers)
+		servers = servers.filter((server) => allowedSet.has(server.name))
+	}
 	const tools: OpenAI.Chat.ChatCompletionTool[] = []
 	// Track seen tool names to prevent duplicates (e.g., when same server exists in both global and project configs)
 	const seenToolNames = new Set<string>()

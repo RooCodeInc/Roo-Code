@@ -102,6 +102,12 @@ export const modeConfigSchema = z.object({
 	customInstructions: z.string().optional(),
 	groups: groupEntryArraySchema,
 	source: z.enum(["global", "project"]).optional(),
+	/**
+	 * Optional allowlist of MCP server names for this mode.
+	 * When defined, only the listed MCP servers' tools are injected for the mode.
+	 * When omitted or empty, all enabled MCP servers are included (default behavior).
+	 */
+	allowedMcpServers: z.array(z.string()).optional(),
 })
 
 export type ModeConfig = z.infer<typeof modeConfigSchema>
