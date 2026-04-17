@@ -73,31 +73,37 @@
 			{
 				"command": "roo-cline.plusButtonClicked",
 				"title": "%command.newTask.title%",
+				"category": "%configuration.title%",
 				"icon": "$(edit)"
 			},
 			{
 				"command": "roo-cline.historyButtonClicked",
 				"title": "%command.history.title%",
+				"category": "%configuration.title%",
 				"icon": "$(history)"
 			},
 			{
 				"command": "roo-cline.marketplaceButtonClicked",
 				"title": "%command.marketplace.title%",
+				"category": "%configuration.title%",
 				"icon": "$(extensions)"
 			},
 			{
 				"command": "roo-cline.popoutButtonClicked",
 				"title": "%command.openInEditor.title%",
+				"category": "%configuration.title%",
 				"icon": "$(link-external)"
 			},
 			{
 				"command": "roo-cline.cloudButtonClicked",
 				"title": "%command.cloud.title%",
+				"category": "%configuration.title%",
 				"icon": "$(cloud)"
 			},
 			{
 				"command": "roo-cline.settingsButtonClicked",
 				"title": "%command.settings.title%",
+				"category": "%configuration.title%",
 				"icon": "$(settings-gear)"
 			},
 			{
