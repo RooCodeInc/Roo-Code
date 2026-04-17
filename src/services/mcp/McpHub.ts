@@ -70,6 +70,12 @@ const BaseConfigSchema = z.object({
 	alwaysAllow: z.array(z.string()).default([]),
 	watchPaths: z.array(z.string()).optional(), // paths to watch for changes and restart server
 	disabledTools: z.array(z.string()).default([]),
+	/**
+	 * Allowlist of tool names. When non-empty, ONLY these tools will be enabled
+	 * (enabledForPrompt=true). All other tools on the server are disabled.
+	 * Takes precedence over disabledTools.
+	 */
+	onlyAllow: z.array(z.string()).optional(),
 })
 
 // Custom error messages for better user feedback
@@ -993,6 +999,7 @@ export class McpHub {
 			let configPath: string
 			let alwaysAllowConfig: string[] = []
 			let disabledToolsList: string[] = []
+			let onlyAllowList: string[] | undefined = undefined
 
 			// Read from the appropriate config file based on the actual source
 			try {
@@ -1014,6 +1021,8 @@ export class McpHub {
 				if (serverConfigData) {
 					alwaysAllowConfig = serverConfigData.mcpServers?.[serverName]?.alwaysAllow || []
 					disabledToolsList = serverConfigData.mcpServers?.[serverName]?.disabledTools || []
+					// onlyAllow is undefined when not set (distinct from empty array)
+					onlyAllowList = serverConfigData.mcpServers?.[serverName]?.onlyAllow
 				}
 			} catch (error) {
 				console.error(`Failed to read tool configuration for ${serverName}:`, error)
@@ -1023,11 +1032,18 @@ export class McpHub {
 			// Check if wildcard "*" is in the alwaysAllow config
 			const hasWildcard = alwaysAllowConfig.includes("*")
 
-			// Mark tools as always allowed and enabled for prompt based on settings
+			// Determine if onlyAllow mode is active (list is defined and non-empty)
+			const hasOnlyAllow = Array.isArray(onlyAllowList) && onlyAllowList.length > 0
+
+			// Mark tools as always allowed and enabled for prompt based on settings.
+			// onlyAllow takes precedence over disabledTools: when onlyAllow is active,
+			// a tool is enabled only if its name is in the onlyAllow list.
 			const tools = (response?.tools || []).map((tool) => ({
 				...tool,
 				alwaysAllow: hasWildcard || alwaysAllowConfig.includes(tool.name),
-				enabledForPrompt: !disabledToolsList.includes(tool.name),
+				enabledForPrompt: hasOnlyAllow
+					? onlyAllowList!.includes(tool.name)
+					: !disabledToolsList.includes(tool.name),
 			}))
 
 			return tools
@@ -1769,19 +1785,19 @@ export class McpHub {
 	}
 
 	/**
-	 * Helper method to update a specific tool list (alwaysAllow or disabledTools)
+	 * Helper method to update a specific tool list (alwaysAllow, disabledTools, or onlyAllow)
 	 * in the appropriate settings file.
 	 * @param serverName The name of the server to update
 	 * @param source Whether to update the global or project config
 	 * @param toolName The name of the tool to add or remove
-	 * @param listName The name of the list to modify ("alwaysAllow" or "disabledTools")
+	 * @param listName The name of the list to modify ("alwaysAllow", "disabledTools", or "onlyAllow")
 	 * @param addTool Whether to add (true) or remove (false) the tool from the list
 	 */
 	private async updateServerToolList(
 		serverName: string,
 		source: "global" | "project",
 		toolName: string,
-		listName: "alwaysAllow" | "disabledTools",
+		listName: "alwaysAllow" | "disabledTools" | "onlyAllow",
 		addTool: boolean,
 	): Promise<void> {
 		// Find the connection with matching name and source
@@ -1883,10 +1899,36 @@ export class McpHub {
 		isEnabled: boolean,
 	): Promise<void> {
 		try {
-			// When isEnabled is true, we want to remove the tool from the disabledTools list.
-			// When isEnabled is false, we want to add the tool to the disabledTools list.
-			const addToolToDisabledList = !isEnabled
-			await this.updateServerToolList(serverName, source, toolName, "disabledTools", addToolToDisabledList)
+			// Determine the correct config path based on the source
+			let configPath: string
+			if (source === "project") {
+				const projectMcpPath = await this.getProjectMcpPath()
+				if (!projectMcpPath) {
+					throw new Error("Project MCP configuration file not found")
+				}
+				configPath = projectMcpPath
+			} else {
+				configPath = await this.getMcpSettingsFilePath()
+			}
+
+			// Read config to check if onlyAllow exists
+			const content = await fs.readFile(configPath, "utf-8")
+			const config = JSON.parse(content)
+			const onlyAllowList = config.mcpServers?.[serverName]?.onlyAllow
+
+			// Determine which list to modify based on onlyAllow presence
+			const hasOnlyAllow = Array.isArray(onlyAllowList) && onlyAllowList.length > 0
+
+			if (hasOnlyAllow) {
+				// When onlyAllow is active, toggle membership in onlyAllow list:
+				// isEnabled true = add to onlyAllow, isEnabled false = remove from onlyAllow
+				await this.updateServerToolList(serverName, source, toolName, "onlyAllow", isEnabled)
+			} else {
+				// Fall back to disabledTools behavior:
+				// isEnabled true = remove from disabledTools, isEnabled false = add to disabledTools
+				const addToolToDisabledList = !isEnabled
+				await this.updateServerToolList(serverName, source, toolName, "disabledTools", addToolToDisabledList)
+			}
 		} catch (error) {
 			this.showErrorMessage(`Failed to update settings for tool ${toolName}`, error)
 			throw error // Re-throw to ensure the error is properly handled

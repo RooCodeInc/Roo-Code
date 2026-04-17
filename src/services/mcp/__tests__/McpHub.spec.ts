@@ -1051,6 +1051,187 @@ describe("McpHub", () => {
 			expect(tools[0].alwaysAllow).toBe(true) // allowed-tool
 			expect(tools[1].alwaysAllow).toBe(false) // not-allowed-tool
 		})
+
+		it("should enable only tools listed in onlyAllow and disable all others", async () => {
+			const mockConfig = {
+				mcpServers: {
+					"test-server": {
+						type: "stdio",
+						command: "node",
+						args: ["test.js"],
+						onlyAllow: ["tool1", "tool3"],
+					},
+				},
+			}
+
+			vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockConfig))
+
+			const mockConnection: ConnectedMcpConnection = {
+				type: "connected",
+				server: {
+					name: "test-server",
+					type: "stdio",
+					command: "node",
+					args: ["test.js"],
+					source: "global",
+				} as any,
+				client: {
+					request: vi.fn().mockResolvedValue({
+						tools: [
+							{ name: "tool1", description: "Tool 1" },
+							{ name: "tool2", description: "Tool 2" },
+							{ name: "tool3", description: "Tool 3" },
+							{ name: "tool4", description: "Tool 4" },
+						],
+					}),
+				} as any,
+				transport: {} as any,
+			}
+			mcpHub.connections = [mockConnection]
+
+			const tools = await mcpHub["fetchToolsList"]("test-server", "global")
+
+			expect(tools.length).toBe(4)
+			expect(tools[0].enabledForPrompt).toBe(true) // tool1 – in onlyAllow
+			expect(tools[1].enabledForPrompt).toBe(false) // tool2 – not in onlyAllow
+			expect(tools[2].enabledForPrompt).toBe(true) // tool3 – in onlyAllow
+			expect(tools[3].enabledForPrompt).toBe(false) // tool4 – not in onlyAllow
+		})
+
+		it("should take precedence over disabledTools when onlyAllow is set", async () => {
+			const mockConfig = {
+				mcpServers: {
+					"test-server": {
+						type: "stdio",
+						command: "node",
+						args: ["test.js"],
+						onlyAllow: ["tool1"],
+						disabledTools: ["tool1"], // onlyAllow should win
+					},
+				},
+			}
+
+			vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockConfig))
+
+			const mockConnection: ConnectedMcpConnection = {
+				type: "connected",
+				server: {
+					name: "test-server",
+					type: "stdio",
+					command: "node",
+					args: ["test.js"],
+					source: "global",
+				} as any,
+				client: {
+					request: vi.fn().mockResolvedValue({
+						tools: [
+							{ name: "tool1", description: "Tool 1" },
+							{ name: "tool2", description: "Tool 2" },
+						],
+					}),
+				} as any,
+				transport: {} as any,
+			}
+			mcpHub.connections = [mockConnection]
+
+			const tools = await mcpHub["fetchToolsList"]("test-server", "global")
+
+			expect(tools.length).toBe(2)
+			// onlyAllow wins: tool1 is enabled even though it's also in disabledTools
+			expect(tools[0].enabledForPrompt).toBe(true)
+			// tool2 is not in onlyAllow so it's disabled
+			expect(tools[1].enabledForPrompt).toBe(false)
+		})
+
+		it("should fall back to disabledTools behaviour when onlyAllow is absent", async () => {
+			const mockConfig = {
+				mcpServers: {
+					"test-server": {
+						type: "stdio",
+						command: "node",
+						args: ["test.js"],
+						disabledTools: ["tool2"],
+					},
+				},
+			}
+
+			vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockConfig))
+
+			const mockConnection: ConnectedMcpConnection = {
+				type: "connected",
+				server: {
+					name: "test-server",
+					type: "stdio",
+					command: "node",
+					args: ["test.js"],
+					source: "global",
+				} as any,
+				client: {
+					request: vi.fn().mockResolvedValue({
+						tools: [
+							{ name: "tool1", description: "Tool 1" },
+							{ name: "tool2", description: "Tool 2" },
+							{ name: "tool3", description: "Tool 3" },
+						],
+					}),
+				} as any,
+				transport: {} as any,
+			}
+			mcpHub.connections = [mockConnection]
+
+			const tools = await mcpHub["fetchToolsList"]("test-server", "global")
+
+			expect(tools.length).toBe(3)
+			expect(tools[0].enabledForPrompt).toBe(true) // tool1 – not disabled
+			expect(tools[1].enabledForPrompt).toBe(false) // tool2 – in disabledTools
+			expect(tools[2].enabledForPrompt).toBe(true) // tool3 – not disabled
+		})
+
+		it("should treat an empty onlyAllow array as if onlyAllow is not set", async () => {
+			const mockConfig = {
+				mcpServers: {
+					"test-server": {
+						type: "stdio",
+						command: "node",
+						args: ["test.js"],
+						onlyAllow: [], // empty – should NOT disable all tools
+						disabledTools: ["tool2"],
+					},
+				},
+			}
+
+			vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockConfig))
+
+			const mockConnection: ConnectedMcpConnection = {
+				type: "connected",
+				server: {
+					name: "test-server",
+					type: "stdio",
+					command: "node",
+					args: ["test.js"],
+					source: "global",
+				} as any,
+				client: {
+					request: vi.fn().mockResolvedValue({
+						tools: [
+							{ name: "tool1", description: "Tool 1" },
+							{ name: "tool2", description: "Tool 2" },
+							{ name: "tool3", description: "Tool 3" },
+						],
+					}),
+				} as any,
+				transport: {} as any,
+			}
+			mcpHub.connections = [mockConnection]
+
+			const tools = await mcpHub["fetchToolsList"]("test-server", "global")
+
+			// Falls back to disabledTools behaviour since onlyAllow is empty
+			expect(tools.length).toBe(3)
+			expect(tools[0].enabledForPrompt).toBe(true) // tool1
+			expect(tools[1].enabledForPrompt).toBe(false) // tool2 – in disabledTools
+			expect(tools[2].enabledForPrompt).toBe(true) // tool3
+		})
 	})
 
 	describe("toggleToolEnabledForPrompt", () => {
@@ -1193,6 +1374,89 @@ describe("McpHub", () => {
 			const writtenConfig = JSON.parse(callToUse[1])
 			expect(writtenConfig.mcpServers["test-server"].disabledTools).toBeDefined()
 			expect(writtenConfig.mcpServers["test-server"].disabledTools).toContain("new-tool")
+		})
+
+		it("should use disabledTools behavior when onlyAllow is absent or empty", async () => {
+			// When onlyAllow is not present, toggleToolEnabledForPrompt should modify disabledTools
+			const mockConfig = {
+				mcpServers: {
+					"test-server": {
+						type: "stdio",
+						command: "node",
+						args: ["test.js"],
+						disabledTools: [],
+					},
+				},
+			}
+
+			// Set up mock connection
+			const mockConnection: ConnectedMcpConnection = {
+				type: "connected",
+				server: {
+					name: "test-server",
+					config: "test-server-config",
+					status: "connected",
+					source: "global",
+				},
+				client: {} as any,
+				transport: {} as any,
+			}
+			mcpHub.connections = [mockConnection]
+
+			// Mock reading config multiple times
+			;(fs.readFile as Mock).mockResolvedValue(JSON.stringify(mockConfig))
+
+			await mcpHub.toggleToolEnabledForPrompt("test-server", "global", "tool1", false)
+
+			const writeCalls = (fs.writeFile as Mock).mock.calls
+			const callToUse = writeCalls[writeCalls.length - 1]
+			const writtenConfig = JSON.parse(callToUse[1])
+
+			// Without onlyAllow, should modify disabledTools
+			expect(writtenConfig.mcpServers["test-server"].disabledTools).toContain("tool1")
+		})
+
+		it("should modify onlyAllow list when onlyAllow is active", async () => {
+			// When onlyAllow is present, toggleToolEnabledForPrompt should modify onlyAllow
+			const mockConfig = {
+				mcpServers: {
+					"test-server": {
+						type: "stdio",
+						command: "node",
+						args: ["test.js"],
+						onlyAllow: ["toolA", "toolB"],
+					},
+				},
+			}
+
+			// Set up mock connection
+			const mockConnection: ConnectedMcpConnection = {
+				type: "connected",
+				server: {
+					name: "test-server",
+					config: "test-server-config",
+					status: "connected",
+					source: "global",
+				},
+				client: {} as any,
+				transport: {} as any,
+			}
+			mcpHub.connections = [mockConnection]
+
+			// Mock reading config multiple times
+			;(fs.readFile as Mock).mockResolvedValue(JSON.stringify(mockConfig))
+
+			// Enable toolC (add to onlyAllow)
+			await mcpHub.toggleToolEnabledForPrompt("test-server", "global", "toolC", true)
+
+			const writeCalls = (fs.writeFile as Mock).mock.calls
+			const callToUse = writeCalls[writeCalls.length - 1]
+			const writtenConfig = JSON.parse(callToUse[1])
+
+			// When onlyAllow is active, should modify onlyAllow not disabledTools
+			expect(writtenConfig.mcpServers["test-server"].onlyAllow).toContain("toolC")
+			expect(writtenConfig.mcpServers["test-server"].onlyAllow).toContain("toolA")
+			expect(writtenConfig.mcpServers["test-server"].onlyAllow).toContain("toolB")
 		})
 	})
 
