@@ -154,7 +154,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 				model: modelId,
-				temperature: this.options.modelTemperature ?? (deepseekReasoner ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
+				// Only include temperature when explicitly configured or for deepseek reasoner models.
+				// Omitting it lets OpenAI-compatible APIs (e.g. Kimi) use their own model-specific defaults.
+				...(this.options.modelTemperature != null
+					? { temperature: this.options.modelTemperature }
+					: deepseekReasoner
+						? { temperature: DEEP_SEEK_DEFAULT_TEMPERATURE }
+						: {}),
 				messages: convertedMessages,
 				stream: true as const,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
@@ -223,6 +229,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		} else {
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: modelId,
+				// Only include temperature when explicitly configured or for deepseek reasoner models.
+				// Omitting it lets OpenAI-compatible APIs (e.g. Kimi) use their own model-specific defaults.
+				...(this.options.modelTemperature != null
+					? { temperature: this.options.modelTemperature }
+					: deepseekReasoner
+						? { temperature: DEEP_SEEK_DEFAULT_TEMPERATURE }
+						: {}),
 				messages: deepseekReasoner
 					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
 					: [systemMessage, ...convertToOpenAiMessages(messages)],
