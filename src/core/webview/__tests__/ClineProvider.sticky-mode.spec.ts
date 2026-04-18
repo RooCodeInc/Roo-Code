@@ -1044,6 +1044,64 @@ describe("ClineProvider - Sticky Mode", () => {
 
 			consoleErrorSpy.mockRestore()
 		})
+
+		it("should complete mode switch gracefully when activateProviderProfile fails", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+
+			const mockTask = {
+				taskId: "test-task-id",
+				_taskMode: "code",
+				emit: vi.fn(),
+				saveClineMessages: vi.fn(),
+				clineMessages: [],
+				apiConversationHistory: [],
+				updateApiConfiguration: vi.fn(),
+			}
+
+			await provider.addClineToStack(mockTask as any)
+
+			// Mock getGlobalState to return task history
+			vi.spyOn(provider as any, "getGlobalState").mockReturnValue([
+				{
+					id: mockTask.taskId,
+					ts: Date.now(),
+					task: "Test task",
+					number: 1,
+					tokensIn: 0,
+					tokensOut: 0,
+					cacheWrites: 0,
+					cacheReads: 0,
+					totalCost: 0,
+				},
+			])
+
+			// Mock updateTaskHistory to succeed
+			vi.spyOn(provider, "updateTaskHistory").mockImplementation(() => Promise.resolve([]))
+
+			// Mock providerSettingsManager to return a saved config for the target mode
+			const mockConfigId = "test-config-id"
+			vi.spyOn(provider.providerSettingsManager, "getModeConfigId").mockResolvedValue(mockConfigId)
+			vi.spyOn(provider.providerSettingsManager, "listConfig").mockResolvedValue([
+				{ id: mockConfigId, name: "test-profile" },
+			])
+			vi.spyOn(provider.providerSettingsManager, "getProfile").mockResolvedValue({
+				id: mockConfigId,
+				name: "test-profile",
+				apiProvider: "openai" as any,
+			})
+
+			// Mock activateProviderProfile to throw (simulating a proxy provider configuration issue)
+			vi.spyOn(provider, "activateProviderProfile").mockRejectedValue(
+				new Error("Failed to activate profile: connection error"),
+			)
+
+			// The mode switch should complete without throwing
+			await expect(provider.handleModeSwitch("architect")).resolves.not.toThrow()
+
+			// The mode should still be updated despite profile activation failure
+			expect(mockTask._taskMode).toBe("architect")
+			expect(vi.mocked(mockContext.globalState.update)).toHaveBeenCalledWith("mode", "architect")
+		})
 	})
 
 	describe("Multiple tasks switching modes simultaneously", () => {
