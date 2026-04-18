@@ -15,6 +15,11 @@ export const NORMALIZATION_MAPS = {
 		"\u2014": "-", // Em dash
 		"\u2013": "-", // En dash
 		"\u00A0": " ", // Non-breaking space
+		"\u00B7": "-", // Middle dot
+		"\u2192": "->", // Right arrow
+		"\u2190": "<-", // Left arrow
+		"\u2194": "<->", // Left-right arrow
+		"\uFE0F": "", // Variation selector (strip it)
 	},
 }
 
