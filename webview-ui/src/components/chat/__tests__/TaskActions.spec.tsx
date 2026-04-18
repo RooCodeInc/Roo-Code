@@ -51,6 +51,7 @@ vi.mock("react-i18next", () => ({
 				"chat:task.sharingDisabledByOrganization": "Sharing disabled by organization",
 				"chat:task.openApiHistory": "Open API History",
 				"chat:task.openUiHistory": "Open UI History",
+				"chat:task.viewDiff": "View all changes since task started",
 				"cloud:cloudBenefitsTitle": "Connect to Roo Code Cloud",
 				"cloud:cloudBenefitHistory": "Access your task history from anywhere",
 				"cloud:cloudBenefitSharing": "Share tasks with your team",
@@ -522,6 +523,77 @@ describe("TaskActions", () => {
 
 			expect(mockPostMessage).toHaveBeenCalledWith({
 				type: "openDebugUiHistory",
+			})
+		})
+	})
+
+	describe("View Diff Button", () => {
+		it("renders view diff button when checkpoints are enabled and checkpoint exists", () => {
+			mockUseExtensionState.mockReturnValue({
+				sharingEnabled: true,
+				cloudIsAuthenticated: true,
+				cloudUserInfo: { organizationName: "Test Organization" },
+				enableCheckpoints: true,
+				clineMessages: [{ say: "checkpoint_saved", text: "abc123", ts: 1000 }],
+			} as any)
+
+			render(<TaskActions item={mockItem} buttonsDisabled={false} />)
+
+			const viewDiffButton = screen.getByLabelText("View all changes since task started")
+			expect(viewDiffButton).toBeInTheDocument()
+		})
+
+		it("does not render view diff button when checkpoints are disabled", () => {
+			mockUseExtensionState.mockReturnValue({
+				sharingEnabled: true,
+				cloudIsAuthenticated: true,
+				cloudUserInfo: { organizationName: "Test Organization" },
+				enableCheckpoints: false,
+				clineMessages: [{ say: "checkpoint_saved", text: "abc123", ts: 1000 }],
+			} as any)
+
+			render(<TaskActions item={mockItem} buttonsDisabled={false} />)
+
+			const viewDiffButton = screen.queryByLabelText("View all changes since task started")
+			expect(viewDiffButton).toBeNull()
+		})
+
+		it("does not render view diff button when no checkpoints exist", () => {
+			mockUseExtensionState.mockReturnValue({
+				sharingEnabled: true,
+				cloudIsAuthenticated: true,
+				cloudUserInfo: { organizationName: "Test Organization" },
+				enableCheckpoints: true,
+				clineMessages: [],
+			} as any)
+
+			render(<TaskActions item={mockItem} buttonsDisabled={false} />)
+
+			const viewDiffButton = screen.queryByLabelText("View all changes since task started")
+			expect(viewDiffButton).toBeNull()
+		})
+
+		it("sends checkpointDiff message with full mode when view diff button is clicked", () => {
+			mockUseExtensionState.mockReturnValue({
+				sharingEnabled: true,
+				cloudIsAuthenticated: true,
+				cloudUserInfo: { organizationName: "Test Organization" },
+				enableCheckpoints: true,
+				clineMessages: [
+					{ say: "checkpoint_saved", text: "first-hash", ts: 1000 },
+					{ say: "text", text: "some message", ts: 2000 },
+					{ say: "checkpoint_saved", text: "last-hash", ts: 3000 },
+				],
+			} as any)
+
+			render(<TaskActions item={mockItem} buttonsDisabled={false} />)
+
+			const viewDiffButton = screen.getByLabelText("View all changes since task started")
+			fireEvent.click(viewDiffButton)
+
+			expect(mockPostMessage).toHaveBeenCalledWith({
+				type: "checkpointDiff",
+				payload: { commitHash: "last-hash", mode: "full" },
 			})
 		})
 	})
