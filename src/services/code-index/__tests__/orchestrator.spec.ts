@@ -130,9 +130,9 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 		expect(lastCall[0]).toBe("Error")
 	})
 
-	it("should call clearCollection() and clear cache when an error occurs after initialize() succeeds (indexing started)", async () => {
-		// Arrange: initialize succeeds; fail soon after to enter error path with indexingStarted=true
-		vectorStore.initialize.mockResolvedValue(false) // existing collection
+	it("should preserve existing data when an error occurs on an existing collection (collectionCreated=false)", async () => {
+		// Arrange: initialize succeeds with existing collection; fail soon after
+		vectorStore.initialize.mockResolvedValue(false) // existing collection, NOT newly created
 		vectorStore.hasIndexedData.mockResolvedValue(false) // force full scan path
 		vectorStore.markIndexingIncomplete.mockRejectedValue(new Error("mark incomplete failure"))
 
@@ -149,9 +149,40 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 		// Act
 		await orchestrator.startIndexing()
 
-		// Assert: cleanup gated behind indexingStarted should have happened
+		// Assert: should NOT clear existing collection data on error (preserves user's index)
+		expect(vectorStore.clearCollection).not.toHaveBeenCalled()
+		// Should flush (persist) cache rather than clearing it
+		expect(cacheManager.flush).toHaveBeenCalledTimes(1)
+		expect(cacheManager.clearCacheFile).not.toHaveBeenCalled()
+
+		// Error state should be set
+		expect(stateManager.setSystemState).toHaveBeenCalled()
+		const lastCall = stateManager.setSystemState.mock.calls[stateManager.setSystemState.mock.calls.length - 1]
+		expect(lastCall[0]).toBe("Error")
+	})
+
+	it("should clear collection and cache when an error occurs on a newly created collection (collectionCreated=true)", async () => {
+		// Arrange: initialize creates a new collection; fail soon after
+		vectorStore.initialize.mockResolvedValue(true) // newly created collection
+		vectorStore.hasIndexedData.mockResolvedValue(false) // new collection has no data
+		vectorStore.markIndexingIncomplete.mockRejectedValue(new Error("mark incomplete failure"))
+
+		const orchestrator = new CodeIndexOrchestrator(
+			configManager,
+			stateManager,
+			workspacePath,
+			cacheManager,
+			vectorStore,
+			scanner,
+			fileWatcher,
+		)
+
+		// Act
+		await orchestrator.startIndexing()
+
+		// Assert: should clear data since the collection was just created (no pre-existing data to preserve)
 		expect(vectorStore.clearCollection).toHaveBeenCalledTimes(1)
-		expect(cacheManager.clearCacheFile).toHaveBeenCalledTimes(1)
+		expect(cacheManager.clearCacheFile).toHaveBeenCalledTimes(2) // once in try block (collectionCreated), once in catch
 
 		// Error state should be set
 		expect(stateManager.setSystemState).toHaveBeenCalled()

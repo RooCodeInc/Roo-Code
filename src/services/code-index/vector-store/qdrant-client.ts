@@ -127,18 +127,56 @@ export class QdrantVectorStore implements IVectorStore {
 		}
 	}
 
+	/**
+	 * Checks if an error from the Qdrant client indicates a "not found" (404) response.
+	 * Qdrant client errors may have a `response.status` property or a `status` property.
+	 */
+	private isNotFoundError(error: unknown): boolean {
+		if (error && typeof error === "object") {
+			const err = error as Record<string, any>
+			// Check for response.status (common Qdrant client error shape)
+			if (err.response?.status === 404) {
+				return true
+			}
+			// Check for top-level status property
+			if (err.status === 404) {
+				return true
+			}
+			// Check for error message patterns indicating not found
+			if (err.message && typeof err.message === "string") {
+				const msg = err.message.toLowerCase()
+				if (msg.includes("not found") || msg.includes("doesn't exist") || msg.includes("does not exist")) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+
+	/**
+	 * Retrieves collection info from Qdrant.
+	 * Returns null ONLY when the collection does not exist (404).
+	 * Throws for other errors (connection failures, timeouts, etc.) so callers
+	 * can distinguish "collection missing" from "Qdrant unreachable".
+	 */
 	private async getCollectionInfo(): Promise<Schemas["CollectionInfo"] | null> {
 		try {
 			const collectionInfo = await this.client.getCollection(this.collectionName)
 			return collectionInfo
 		} catch (error: unknown) {
-			if (error instanceof Error) {
-				console.warn(
-					`[QdrantVectorStore] Warning during getCollectionInfo for "${this.collectionName}". Collection may not exist or another error occurred:`,
-					error.message,
+			if (this.isNotFoundError(error)) {
+				console.log(
+					`[QdrantVectorStore] Collection "${this.collectionName}" not found (404). Will create a new one.`,
 				)
+				return null
 			}
-			return null
+			// For non-404 errors (connection failures, timeouts, etc.), propagate the error
+			// so callers don't mistakenly assume the collection doesn't exist.
+			const message = error instanceof Error ? error.message : String(error)
+			console.error(
+				`[QdrantVectorStore] Error retrieving collection "${this.collectionName}" (not a 404): ${message}`,
+			)
+			throw error
 		}
 	}
 
@@ -572,8 +610,8 @@ export class QdrantVectorStore implements IVectorStore {
 	}
 
 	/**
-	 * Checks if the collection exists
-	 * @returns Promise resolving to boolean indicating if the collection exists
+	 * Checks if the collection exists.
+	 * Returns false for 404 (not found). Throws for connection/other errors.
 	 */
 	async collectionExists(): Promise<boolean> {
 		const collectionInfo = await this.getCollectionInfo()
@@ -581,43 +619,42 @@ export class QdrantVectorStore implements IVectorStore {
 	}
 
 	/**
-	 * Checks if the collection exists and has indexed points
-	 * @returns Promise resolving to boolean indicating if the collection exists and has points
+	 * Checks if the collection exists and has indexed points.
+	 * Returns false when the collection doesn't exist (404).
+	 * Throws for connection errors so callers can distinguish
+	 * "no data" from "can't reach Qdrant".
 	 */
 	async hasIndexedData(): Promise<boolean> {
-		try {
-			const collectionInfo = await this.getCollectionInfo()
-			if (!collectionInfo) {
-				return false
-			}
-			// Check if the collection has any points indexed
-			const pointsCount = collectionInfo.points_count ?? 0
-			if (pointsCount === 0) {
-				return false
-			}
-
-			// Check if the indexing completion marker exists
-			// Use a deterministic UUID generated from a constant string
-			const metadataId = uuidv5("__indexing_metadata__", QDRANT_CODE_BLOCK_NAMESPACE)
-			const metadataPoints = await this.client.retrieve(this.collectionName, {
-				ids: [metadataId],
-			})
-
-			// If marker exists, use it to determine completion status
-			if (metadataPoints.length > 0) {
-				return metadataPoints[0].payload?.indexing_complete === true
-			}
-
-			// Backward compatibility: No marker exists (old index or pre-marker version)
-			// Fall back to old logic - assume complete if collection has points
-			console.log(
-				"[QdrantVectorStore] No indexing metadata marker found. Using backward compatibility mode (checking points_count > 0).",
-			)
-			return pointsCount > 0
-		} catch (error) {
-			console.warn("[QdrantVectorStore] Failed to check if collection has data:", error)
+		// getCollectionInfo() now throws on non-404 errors, so connection
+		// failures will propagate to the caller instead of returning false.
+		const collectionInfo = await this.getCollectionInfo()
+		if (!collectionInfo) {
 			return false
 		}
+		// Check if the collection has any points indexed
+		const pointsCount = collectionInfo.points_count ?? 0
+		if (pointsCount === 0) {
+			return false
+		}
+
+		// Check if the indexing completion marker exists
+		// Use a deterministic UUID generated from a constant string
+		const metadataId = uuidv5("__indexing_metadata__", QDRANT_CODE_BLOCK_NAMESPACE)
+		const metadataPoints = await this.client.retrieve(this.collectionName, {
+			ids: [metadataId],
+		})
+
+		// If marker exists, use it to determine completion status
+		if (metadataPoints.length > 0) {
+			return metadataPoints[0].payload?.indexing_complete === true
+		}
+
+		// Backward compatibility: No marker exists (old index or pre-marker version)
+		// Fall back to old logic - assume complete if collection has points
+		console.log(
+			"[QdrantVectorStore] No indexing metadata marker found. Using backward compatibility mode (checking points_count > 0).",
+		)
+		return pointsCount > 0
 	}
 
 	/**
