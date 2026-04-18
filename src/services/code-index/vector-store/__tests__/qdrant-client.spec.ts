@@ -647,23 +647,21 @@ describe("QdrantVectorStore", () => {
 			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(6)
 			;(console.warn as any).mockRestore() // Restore console.warn
 		})
-		it("should log warning for non-404 errors but still create collection", async () => {
+		it("should throw on non-404 errors instead of creating a new collection", async () => {
 			const genericError = new Error("Generic Qdrant Error")
 			mockQdrantClientInstance.getCollection.mockRejectedValue(genericError)
-			vitest.spyOn(console, "warn").mockImplementation(() => {}) // Suppress console.warn
+			vitest.spyOn(console, "error").mockImplementation(() => {}) // Suppress console.error
 
-			const result = await vectorStore.initialize()
-
-			expect(result).toBe(true) // Collection was created
-			expect(mockQdrantClientInstance.getCollection).toHaveBeenCalledTimes(1)
-			expect(mockQdrantClientInstance.createCollection).toHaveBeenCalledTimes(1)
-			expect(mockQdrantClientInstance.deleteCollection).not.toHaveBeenCalled()
-			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(6)
-			expect(console.warn).toHaveBeenCalledWith(
-				expect.stringContaining(`Warning during getCollectionInfo for "${expectedCollectionName}"`),
-				genericError.message,
+			// Non-404 errors should propagate up as a connection failure, NOT create a new collection
+			await expect(vectorStore.initialize()).rejects.toThrow(
+				/Failed to connect to Qdrant vector database|vectorStore\.qdrantConnectionFailed/,
 			)
-			;(console.warn as any).mockRestore()
+
+			expect(mockQdrantClientInstance.getCollection).toHaveBeenCalledTimes(1)
+			// Should NOT have tried to create a collection - the error is a connectivity issue, not a missing collection
+			expect(mockQdrantClientInstance.createCollection).not.toHaveBeenCalled()
+			expect(mockQdrantClientInstance.deleteCollection).not.toHaveBeenCalled()
+			;(console.error as any).mockRestore()
 		})
 		it("should re-throw error from createCollection when no collection initially exists", async () => {
 			mockQdrantClientInstance.getCollection.mockRejectedValue({
@@ -1007,20 +1005,16 @@ describe("QdrantVectorStore", () => {
 		expect(mockQdrantClientInstance.getCollection).toHaveBeenCalledWith(expectedCollectionName)
 	})
 
-	it("should return false and log warning for non-404 errors", async () => {
+	it("should throw for non-404 errors instead of returning false", async () => {
 		const genericError = new Error("Network error")
 		mockQdrantClientInstance.getCollection.mockRejectedValue(genericError)
-		vitest.spyOn(console, "warn").mockImplementation(() => {})
+		vitest.spyOn(console, "error").mockImplementation(() => {})
 
-		const result = await vectorStore.collectionExists()
+		// Non-404 errors should propagate so callers know Qdrant is unreachable
+		await expect(vectorStore.collectionExists()).rejects.toThrow("Network error")
 
-		expect(result).toBe(false)
 		expect(mockQdrantClientInstance.getCollection).toHaveBeenCalledTimes(1)
-		expect(console.warn).toHaveBeenCalledWith(
-			expect.stringContaining(`Warning during getCollectionInfo for "${expectedCollectionName}"`),
-			genericError.message,
-		)
-		;(console.warn as any).mockRestore()
+		;(console.error as any).mockRestore()
 	})
 	describe("deleteCollection", () => {
 		it("should delete collection when it exists", async () => {
