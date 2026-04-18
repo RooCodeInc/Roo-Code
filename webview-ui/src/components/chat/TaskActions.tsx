@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { HistoryItem } from "@roo-code/types"
@@ -9,7 +9,15 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 
 import { DeleteTaskDialog } from "../history/DeleteTaskDialog"
 import { ShareButton } from "./ShareButton"
-import { CopyIcon, CheckIcon, DownloadIcon, Trash2Icon, FileJsonIcon, MessageSquareCodeIcon } from "lucide-react"
+import {
+	CopyIcon,
+	CheckIcon,
+	DownloadIcon,
+	Trash2Icon,
+	FileJsonIcon,
+	MessageSquareCodeIcon,
+	DiffIcon,
+} from "lucide-react"
 import { LucideIconButton } from "./LucideIconButton"
 
 interface TaskActionsProps {
@@ -21,7 +29,26 @@ export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 	const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null)
 	const { t } = useTranslation()
 	const { copyWithFeedback, showCopyFeedback } = useCopyToClipboard()
-	const { debug } = useExtensionState()
+	const { debug, enableCheckpoints, clineMessages } = useExtensionState()
+
+	const firstCheckpointHash = useMemo(() => {
+		const msg = (clineMessages ?? []).find((m) => m.say === "checkpoint_saved")
+		return msg?.text
+	}, [clineMessages])
+
+	const lastCheckpointHash = useMemo(() => {
+		const checkpointMessages = (clineMessages ?? []).filter((m) => m.say === "checkpoint_saved")
+		return checkpointMessages.length > 0 ? checkpointMessages[checkpointMessages.length - 1].text : undefined
+	}, [clineMessages])
+
+	const onViewFullDiff = useCallback(() => {
+		if (lastCheckpointHash) {
+			vscode.postMessage({
+				type: "checkpointDiff",
+				payload: { commitHash: lastCheckpointHash, mode: "full" },
+			})
+		}
+	}, [lastCheckpointHash])
 
 	return (
 		<div className="flex flex-row items-center -ml-0.5 mt-1 gap-1">
@@ -30,6 +57,10 @@ export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 				title={t("chat:task.export")}
 				onClick={() => vscode.postMessage({ type: "exportCurrentTask" })}
 			/>
+
+			{enableCheckpoints && firstCheckpointHash && (
+				<LucideIconButton icon={DiffIcon} title={t("chat:task.viewDiff")} onClick={onViewFullDiff} />
+			)}
 
 			{item?.task && (
 				<LucideIconButton
