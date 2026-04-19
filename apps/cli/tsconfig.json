@@ -5,9 +5,8 @@
 		"outDir": "dist",
 		"jsx": "react-jsx",
 		"jsxImportSource": "react",
-		"baseUrl": ".",
 		"paths": {
-			"@/*": ["src/*"]
+			"@/*": ["./src/*"]
 		}
 	},
 	"include": ["src", "*.config.ts"],
