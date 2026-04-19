@@ -1196,16 +1196,29 @@ export class ClineProvider
 		let localPort = "5173"
 
 		try {
-			const fs = require("fs")
-			const path = require("path")
-			const portFilePath = path.resolve(__dirname, "../../.vite-port")
+			const portFileCandidates = [
+				path.resolve(__dirname, "../../.vite-port"),
+				path.resolve(__dirname, "../../../.vite-port"),
+				path.resolve(__dirname, "../../../../.vite-port"),
+			]
 
-			if (fs.existsSync(portFilePath)) {
-				localPort = fs.readFileSync(portFilePath, "utf8").trim()
-				console.log(`[ClineProvider:Vite] Using Vite server port from ${portFilePath}: ${localPort}`)
+			let resolvedPortFilePath: string | undefined
+			for (const candidatePath of portFileCandidates) {
+				try {
+					await fs.access(candidatePath)
+					resolvedPortFilePath = candidatePath
+					break
+				} catch {
+					// Try next location.
+				}
+			}
+
+			if (resolvedPortFilePath) {
+				localPort = (await fs.readFile(resolvedPortFilePath, "utf8")).trim()
+				console.log(`[ClineProvider:Vite] Using Vite server port from ${resolvedPortFilePath}: ${localPort}`)
 			} else {
 				console.log(
-					`[ClineProvider:Vite] Port file not found at ${portFilePath}, using default port: ${localPort}`,
+					`[ClineProvider:Vite] Port file not found in known locations, using default port: ${localPort}`,
 				)
 			}
 		} catch (err) {
