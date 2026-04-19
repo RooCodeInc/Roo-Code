@@ -125,8 +125,17 @@ export type McpToolCallResponse = {
 					blob?: string
 				}
 		  }
+		| {
+				type: "resource_link"
+				uri: string
+				name: string
+				title?: string
+				description?: string
+				mimeType?: string
+		  }
 	>
 	isError?: boolean
+	structuredContent?: { [key: string]: unknown }
 }
 
 export type McpErrorEntry = {

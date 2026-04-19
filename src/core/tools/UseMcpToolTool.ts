@@ -282,6 +282,21 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 					}
 					return ""
 				}
+				if (item.type === "resource_link") {
+					return JSON.stringify(
+						{
+							uri: item.uri,
+							name: item.name,
+							description: item.description,
+							mimeType: item.mimeType,
+						},
+						null,
+						2,
+					)
+				}
+				if (item.type === "audio") {
+					return `[Audio content: ${item.mimeType || "unknown format"}]`
+				}
 				return ""
 			})
 			.filter(Boolean)
