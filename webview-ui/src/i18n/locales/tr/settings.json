@@ -960,6 +960,10 @@
 		"requireCtrlEnterToSend": {
 			"label": "Mesaj göndermek için {{primaryMod}}+Enter gerekli",
 			"description": "Etkinleştirildiğinde, sadece Enter yerine mesaj göndermek için {{primaryMod}}+Enter'a basmalısınız"
+		},
+		"autoExpandDiffs": {
+			"label": "Auto-expand diffs in chat messages",
+			"description": "When enabled, file edit diffs will be automatically expanded instead of collapsed behind the filename"
 		}
 	},
 	"skills": {

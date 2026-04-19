@@ -960,6 +960,10 @@
 		"requireCtrlEnterToSend": {
 			"label": "Richiedi {{primaryMod}}+Invio per inviare messaggi",
 			"description": "Quando abilitato, devi premere {{primaryMod}}+Invio per inviare messaggi invece di solo Invio"
+		},
+		"autoExpandDiffs": {
+			"label": "Auto-expand diffs in chat messages",
+			"description": "When enabled, file edit diffs will be automatically expanded instead of collapsed behind the filename"
 		}
 	},
 	"skills": {

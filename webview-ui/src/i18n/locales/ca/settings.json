@@ -960,6 +960,10 @@
 		"requireCtrlEnterToSend": {
 			"label": "Requereix {{primaryMod}}+Intro per enviar missatges",
 			"description": "Quan estigui activat, has de prémer {{primaryMod}}+Intro per enviar missatges en lloc de només Intro"
+		},
+		"autoExpandDiffs": {
+			"label": "Auto-expand diffs in chat messages",
+			"description": "When enabled, file edit diffs will be automatically expanded instead of collapsed behind the filename"
 		}
 	},
 	"skills": {

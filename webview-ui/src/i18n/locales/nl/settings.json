@@ -960,6 +960,10 @@
 		"requireCtrlEnterToSend": {
 			"label": "Vereist {{primaryMod}}+Enter om berichten te versturen",
 			"description": "Wanneer ingeschakeld, moet je {{primaryMod}}+Enter indrukken om berichten te versturen in plaats van alleen Enter"
+		},
+		"autoExpandDiffs": {
+			"label": "Auto-expand diffs in chat messages",
+			"description": "When enabled, file edit diffs will be automatically expanded instead of collapsed behind the filename"
 		}
 	},
 	"skills": {

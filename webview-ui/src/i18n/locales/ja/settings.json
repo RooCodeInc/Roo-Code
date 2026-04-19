@@ -960,6 +960,10 @@
 		"requireCtrlEnterToSend": {
 			"label": "メッセージを送信するには{{primaryMod}}+Enterが必要",
 			"description": "有効にすると、Enterだけでなく{{primaryMod}}+Enterを押してメッセージを送信する必要があります"
+		},
+		"autoExpandDiffs": {
+			"label": "Auto-expand diffs in chat messages",
+			"description": "When enabled, file edit diffs will be automatically expanded instead of collapsed behind the filename"
 		}
 	},
 	"skills": {

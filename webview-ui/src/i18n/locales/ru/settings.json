@@ -960,6 +960,10 @@
 		"requireCtrlEnterToSend": {
 			"label": "Требовать {{primaryMod}}+Enter для отправки сообщений",
 			"description": "Если включено, необходимо нажать {{primaryMod}}+Enter для отправки сообщений вместо простого Enter"
+		},
+		"autoExpandDiffs": {
+			"label": "Auto-expand diffs in chat messages",
+			"description": "When enabled, file edit diffs will be automatically expanded instead of collapsed behind the filename"
 		}
 	},
 	"skills": {
