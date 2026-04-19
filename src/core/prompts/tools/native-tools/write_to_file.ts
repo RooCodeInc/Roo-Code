@@ -32,8 +32,24 @@ export default {
 					type: "string",
 					description: CONTENT_PARAMETER_DESCRIPTION,
 				},
+				intent_id: {
+					type: "string",
+					description:
+						"The active intent ID that authorizes this write operation (from select_active_intent). Required for trace traceability.",
+				},
+				mutation_class: {
+					type: "string",
+					enum: ["AST_REFACTOR", "INTENT_EVOLUTION"],
+					description:
+						"Classification of the mutation: AST_REFACTOR for syntax-only changes within the same intent, INTENT_EVOLUTION for new features or expanded scope.",
+				},
+				read_hash: {
+					type: "string",
+					description:
+						"SHA-256 hash of the file content you read (from read_file operation). Used for optimistic locking to detect concurrent modifications. Omit for new files.",
+				},
 			},
-			required: ["path", "content"],
+			required: ["path", "content", "intent_id", "mutation_class"],
 			additionalProperties: false,
 		},
 	},

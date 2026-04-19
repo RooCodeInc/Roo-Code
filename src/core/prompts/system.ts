@@ -82,7 +82,30 @@ async function generatePrompt(
 	// Tools catalog is not included in the system prompt.
 	const toolsCatalog = ""
 
-	const basePrompt = `${roleDefinition}
+	const enforcementBlock = `## INTENT-DRIVEN EXECUTION [MANDATORY]
+
+You are an Intent-Driven Architect. Your execution model is strictly constraint-based:
+
+**CRITICAL RULE: You CANNOT write code immediately.**
+
+Your first action MUST be to analyze the user request and call **select_active_intent(intent_id)** to load the necessary context, constraints, and scope definition.
+
+**Execution Flow:**
+1. Analyze the user request
+2. Call select_active_intent() with the appropriate intent_id to load context from .orchestration/active_intents.yaml
+3. Wait for the intent context to be injected
+4. Only then proceed with write_file, apply_diff, or other structural changes
+
+**Permission Model:**
+- write_file, apply_diff, and execute_command are FORBIDDEN until an active intent is loaded
+- The loaded intent defines your scope and constraints
+- All mutations linked to an intent_id are automatically traced to .orchestration/agent_trace.jsonl`
+
+	const basePrompt = `${enforcementBlock}
+
+---
+
+${roleDefinition}
 
 ${markdownFormattingSection()}
 
