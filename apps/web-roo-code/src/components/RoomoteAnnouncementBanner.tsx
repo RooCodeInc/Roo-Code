@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { ArrowRight } from "lucide-react"
 
 export function RoomoteAnnouncementBanner() {
@@ -19,7 +20,14 @@ export function RoomoteAnnouncementBanner() {
 					target="_blank"
 					rel="noopener noreferrer"
 					className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-black text-white px-6 py-2.5 text-sm sm:text-base font-bold hover:bg-gray-900 transition-colors duration-200">
-					Check out Roomote
+					Check out
+					<Image
+						src="/logos/roomote-logo.png"
+						alt="Roomote"
+						width={100}
+						height={37}
+						className="h-5 sm:h-6 w-auto invert"
+					/>
 					<ArrowRight className="size-4 sm:size-5 transition-transform duration-200 group-hover:translate-x-0.5" />
 				</a>
 			</div>
