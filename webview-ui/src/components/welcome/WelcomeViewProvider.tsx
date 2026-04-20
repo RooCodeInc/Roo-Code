@@ -34,6 +34,8 @@ const WelcomeViewProvider = () => {
 		uriScheme,
 		cloudIsAuthenticated,
 		cloudAuthSkipModel,
+		openAiCodexIsAuthenticated,
+		claudeCodeIsAuthenticated,
 	} = useExtensionState()
 	const { t } = useAppTranslation()
 	const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined)
@@ -72,6 +74,48 @@ const WelcomeViewProvider = () => {
 			}
 		}
 	}, [cloudIsAuthenticated, authInProgress, currentApiConfigName, cloudAuthSkipModel])
+
+	// When OAuth completes for openai-codex or claude-code while on the custom provider screen,
+	// automatically save the configuration so the welcome screen dismisses.
+	// This is needed because postStateToWebview() after OAuth completion can overwrite the local
+	// apiConfiguration, losing the apiProvider selection before the user clicks "Finish".
+	useEffect(() => {
+		if (
+			selectedProvider === "custom" &&
+			apiConfiguration?.apiProvider === "openai-codex" &&
+			openAiCodexIsAuthenticated
+		) {
+			// Save the openai-codex configuration
+			const config: ProviderSettings = {
+				...apiConfiguration,
+				apiProvider: "openai-codex",
+			}
+			vscode.postMessage({
+				type: "upsertApiConfiguration",
+				text: currentApiConfigName,
+				apiConfiguration: config,
+			})
+		}
+	}, [selectedProvider, apiConfiguration, openAiCodexIsAuthenticated, currentApiConfigName])
+
+	useEffect(() => {
+		if (
+			selectedProvider === "custom" &&
+			apiConfiguration?.apiProvider === "claude-code" &&
+			claudeCodeIsAuthenticated
+		) {
+			// Save the claude-code configuration
+			const config: ProviderSettings = {
+				...apiConfiguration,
+				apiProvider: "claude-code",
+			}
+			vscode.postMessage({
+				type: "upsertApiConfiguration",
+				text: currentApiConfigName,
+				apiConfiguration: config,
+			})
+		}
+	}, [selectedProvider, apiConfiguration, claudeCodeIsAuthenticated, currentApiConfigName])
 
 	// Focus the manual URL input when it becomes visible
 	useEffect(() => {
