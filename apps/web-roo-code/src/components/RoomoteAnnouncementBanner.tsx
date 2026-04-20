@@ -11,7 +11,7 @@ export function RoomoteAnnouncementBanner() {
 						New
 					</span>
 					<p className="text-base sm:text-lg md:text-xl font-extrabold tracking-tight">
-						Introducing Roomote — the always-on engineer for your entire team
+						The Roo Code team is about to launch something new.
 					</p>
 				</div>
 				<a
@@ -19,7 +19,7 @@ export function RoomoteAnnouncementBanner() {
 					target="_blank"
 					rel="noopener noreferrer"
 					className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-black text-white px-6 py-2.5 text-sm sm:text-base font-bold hover:bg-gray-900 transition-colors duration-200">
-					Learn more
+					Check out Roomote
 					<ArrowRight className="size-4 sm:size-5 transition-transform duration-200 group-hover:translate-x-0.5" />
 				</a>
 			</div>
