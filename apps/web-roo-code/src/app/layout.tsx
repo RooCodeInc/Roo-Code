@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
 import { CookieConsentWrapper } from "@/components/CookieConsentWrapper"
+import { RoomoteAnnouncementBanner } from "@/components/RoomoteAnnouncementBanner"
 
 import { Providers } from "@/components/providers"
 
@@ -97,16 +98,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				/>
 			</head>
 			<body className={inter.className}>
-				<div className="bg-black text-white text-center py-4 px-4 text-sm">
-					The Roo Code team is about to launch something new.{" "}
-					<a
-						href="https://roomote.dev"
-						target="_blank"
-						rel="noopener noreferrer"
-						className="inline-block ml-2 rounded-full bg-white text-black px-4 py-1 text-sm font-medium hover:bg-gray-200 transition-colors">
-						Check out Roomote
-					</a>
-				</div>
+				<RoomoteAnnouncementBanner />
 				<div itemScope itemType="https://schema.org/WebSite">
 					<link itemProp="url" href={SEO.url} />
 					<meta itemProp="name" content={SEO.name} />

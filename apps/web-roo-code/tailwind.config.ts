@@ -106,6 +106,7 @@ const config: Config = {
 				"fade-in": "fade-in 0.5s ease-out",
 				"fade-out": "fade-out 0.5s ease-out",
 				"pulse-glow": "pulse-glow 3s infinite",
+				"banner-shimmer": "banner-shimmer 3s ease-in-out infinite",
 			},
 			screens: {
 				xs: "420px",
