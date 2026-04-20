@@ -93,6 +93,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		cloudIsAuthenticated,
 		messageQueue = [],
 		showWorktreesInHomeScreen,
+		autoExpandDiffs,
 	} = useExtensionState()
 
 	// Show a WarningRow when the user sends a message with a retired provider.
@@ -1260,6 +1261,49 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 		return result
 	}, [isCondensing, visibleMessages])
+
+	// Auto-expand diff tool messages when the autoExpandDiffs setting is enabled.
+	// This watches for new messages that contain file-edit diffs and marks them as expanded
+	// so users don't need to click on each collapsed diff block to review changes.
+	const DIFF_TOOL_NAMES = useMemo(
+		() =>
+			new Set([
+				"editedExistingFile",
+				"appliedDiff",
+				"newFileCreated",
+				"insertContent",
+				"searchAndReplace",
+				"search_and_replace",
+			]),
+		[],
+	)
+
+	useEffect(() => {
+		if (!autoExpandDiffs) return
+
+		const newExpansions: Record<number, boolean> = {}
+
+		for (const msg of groupedMessages) {
+			// Skip messages already tracked in expandedRows
+			if (expandedRows[msg.ts] !== undefined) continue
+
+			if (msg.type === "ask" && msg.ask === "tool") {
+				try {
+					const tool = JSON.parse(msg.text || "{}")
+					// Handle both single diff tools and batch diff messages
+					if (DIFF_TOOL_NAMES.has(tool.tool) || tool.tool === "batchDiffApproval") {
+						newExpansions[msg.ts] = true
+					}
+				} catch {
+					// ignore parse errors
+				}
+			}
+		}
+
+		if (Object.keys(newExpansions).length > 0) {
+			setExpandedRows((prev) => ({ ...prev, ...newExpansions }))
+		}
+	}, [autoExpandDiffs, groupedMessages, expandedRows, DIFF_TOOL_NAMES])
 
 	// Scroll lifecycle is managed by a dedicated hook to keep ChatView focused
 	// on message handling and UI orchestration.

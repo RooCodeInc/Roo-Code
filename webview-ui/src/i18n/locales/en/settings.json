@@ -160,6 +160,10 @@
 			"label": "Collapse Thinking messages by default",
 			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
 		},
+		"autoExpandDiffs": {
+			"label": "Auto-expand diffs in chat messages",
+			"description": "When enabled, file edit diffs will be automatically expanded instead of collapsed behind the filename"
+		},
 		"requireCtrlEnterToSend": {
 			"label": "Require {{primaryMod}}+Enter to send messages",
 			"description": "When enabled, you must press {{primaryMod}}+Enter to send messages instead of just Enter"

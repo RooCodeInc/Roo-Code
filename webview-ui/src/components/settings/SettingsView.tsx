@@ -199,6 +199,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		openRouterImageApiKey,
 		openRouterImageGenerationSelectedModel,
 		reasoningBlockCollapsed,
+		autoExpandDiffs,
 		enterBehavior,
 		includeCurrentTime,
 		includeCurrentCost,
@@ -412,6 +413,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					followupAutoApproveTimeoutMs,
 					includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
 					reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
+					autoExpandDiffs: autoExpandDiffs ?? false,
 					enterBehavior: enterBehavior ?? "send",
 					includeCurrentTime: includeCurrentTime ?? true,
 					includeCurrentCost: includeCurrentCost ?? true,
@@ -891,6 +893,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						{renderTab === "ui" && (
 							<UISettings
 								reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
+								autoExpandDiffs={autoExpandDiffs ?? false}
 								enterBehavior={enterBehavior ?? "send"}
 								setCachedStateField={setCachedStateField}
 							/>
