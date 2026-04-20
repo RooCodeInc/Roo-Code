@@ -15,7 +15,6 @@ import { ogImageUrl } from "@/lib/og"
 import { BlogIndexAnalytics } from "@/components/blog/BlogAnalytics"
 import { BlogPostList } from "@/components/blog/BlogPostList"
 import { BlogPagination } from "@/components/blog/BlogPagination"
-import { BlogPostCTA } from "@/components/blog/BlogPostCTA"
 
 // Force dynamic rendering for request-time publish gating
 export const dynamic = "force-dynamic"
@@ -164,9 +163,6 @@ export default async function BlogPaginatedPage({ params }: PageProps) {
 					<BlogPostList posts={posts} />
 
 					<BlogPagination currentPage={currentPage} totalPages={totalPages} />
-
-					{/* Cloud CTA - shown after pagination */}
-					<BlogPostCTA />
 				</div>
 			</div>
 		</>

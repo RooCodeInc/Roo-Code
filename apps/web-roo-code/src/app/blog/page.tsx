@@ -18,7 +18,7 @@ import { ogImageUrl } from "@/lib/og"
 import { BlogIndexAnalytics } from "@/components/blog/BlogAnalytics"
 import { BlogPostList } from "@/components/blog/BlogPostList"
 import { BlogPagination } from "@/components/blog/BlogPagination"
-import { BlogPostCTA } from "@/components/blog/BlogPostCTA"
+
 import { BlogViewToggle } from "@/components/blog/BlogViewToggle"
 
 // Force dynamic rendering for request-time publish gating
@@ -171,9 +171,6 @@ export default async function BlogIndexPage({ searchParams }: Props) {
 					{showPagination && (
 						<BlogPagination currentPage={currentPage} totalPages={totalPages} useQueryParams />
 					)}
-
-					{/* Cloud CTA - shown after posts */}
-					<BlogPostCTA />
 				</div>
 			</div>
 		</>

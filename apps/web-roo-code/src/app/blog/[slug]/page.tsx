@@ -27,7 +27,6 @@ import { ogImageUrl } from "@/lib/og"
 import { BlogPostAnalytics } from "@/components/blog/BlogAnalytics"
 import { BlogContent } from "@/components/blog/BlogContent"
 import { BlogFAQ, type FAQItem } from "@/components/blog/BlogFAQ"
-import { BlogPostCTA } from "@/components/blog/BlogPostCTA"
 
 // Force dynamic rendering for request-time publish gating
 export const dynamic = "force-dynamic"
@@ -291,10 +290,6 @@ export default async function BlogPostPage({ params }: Props) {
 
 						{/* FAQ Section rendered as accordion */}
 						{hasFAQ && <BlogFAQ items={faqItems} />}
-
-						{/* Product CTA Module - Inspired by Vercel's blog design
-						    Default variant prioritizes Roo Code Cloud sign-up */}
-						<BlogPostCTA />
 					</div>
 
 					{/* Previous/Next Post Navigation */}
