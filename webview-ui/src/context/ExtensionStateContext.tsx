@@ -124,6 +124,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	togglePinnedApiConfig: (configName: string) => void
 	setHistoryPreviewCollapsed: (value: boolean) => void
 	setReasoningBlockCollapsed: (value: boolean) => void
+	autoExpandDiffs?: boolean
+	setAutoExpandDiffs: (value: boolean) => void
 	enterBehavior?: "send" | "newline"
 	setEnterBehavior: (value: "send" | "newline") => void
 	autoCondenseContext: boolean
@@ -235,6 +237,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		terminalZdotdir: false, // Default ZDOTDIR handling setting
 		historyPreviewCollapsed: false, // Initialize the new state (default to expanded)
 		reasoningBlockCollapsed: true, // Default to collapsed
+		autoExpandDiffs: false, // Default to collapsed (current behavior)
 		enterBehavior: "send", // Default: Enter sends, Shift+Enter creates newline
 		cloudUserInfo: null,
 		cloudIsAuthenticated: false,
@@ -584,6 +587,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 			setState((prevState) => ({ ...prevState, historyPreviewCollapsed: value })),
 		setReasoningBlockCollapsed: (value) =>
 			setState((prevState) => ({ ...prevState, reasoningBlockCollapsed: value })),
+		autoExpandDiffs: state.autoExpandDiffs ?? false,
+		setAutoExpandDiffs: (value) => setState((prevState) => ({ ...prevState, autoExpandDiffs: value })),
 		enterBehavior: state.enterBehavior ?? "send",
 		setEnterBehavior: (value) => setState((prevState) => ({ ...prevState, enterBehavior: value })),
 		setHasOpenedModeSelector: (value) => setState((prevState) => ({ ...prevState, hasOpenedModeSelector: value })),

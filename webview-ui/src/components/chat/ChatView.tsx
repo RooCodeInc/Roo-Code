@@ -63,6 +63,37 @@ export interface ChatViewRef {
 
 export const MAX_IMAGES_PER_MESSAGE = 20 // This is the Anthropic limit.
 
+/** Tool names that produce file diffs in the chat UI. */
+const DIFF_TOOL_NAMES = new Set([
+	"editedExistingFile",
+	"appliedDiff",
+	"newFileCreated",
+	"searchAndReplace",
+	"search_and_replace",
+	"search_replace",
+	"edit",
+	"edit_file",
+	"apply_patch",
+	"apply_diff",
+	"insertContent",
+])
+
+/**
+ * Returns true when a message represents a diff-tool invocation that should
+ * be auto-expanded when the `autoExpandDiffs` setting is enabled.
+ */
+function isDiffToolMessage(message: ClineMessage): boolean {
+	if (message.ask !== "tool") {
+		return false
+	}
+	try {
+		const tool = JSON.parse(message.text || "{}") as ClineSayTool
+		return DIFF_TOOL_NAMES.has(tool.tool as string)
+	} catch {
+		return false
+	}
+}
+
 const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
 
 const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewProps> = (
@@ -93,6 +124,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		cloudIsAuthenticated,
 		messageQueue = [],
 		showWorktreesInHomeScreen,
+		autoExpandDiffs,
 	} = useExtensionState()
 
 	// Show a WarningRow when the user sends a message with a retired provider.
@@ -1403,7 +1435,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				<ChatRow
 					key={messageOrGroup.ts}
 					message={messageOrGroup}
-					isExpanded={expandedRows[messageOrGroup.ts] || false}
+					isExpanded={
+						expandedRows[messageOrGroup.ts] !== undefined
+							? expandedRows[messageOrGroup.ts]
+							: autoExpandDiffs
+								? isDiffToolMessage(messageOrGroup)
+								: false
+					}
 					onToggleExpand={toggleRowExpansion} // This was already stabilized
 					lastModifiedMessage={modifiedMessages.at(-1)} // Original direct access
 					isLast={index === groupedMessages.length - 1} // Original direct access
@@ -1447,6 +1485,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			isFollowUpAutoApprovalPaused,
 			enableButtons,
 			primaryButtonText,
+			autoExpandDiffs,
 		],
 	)
 
