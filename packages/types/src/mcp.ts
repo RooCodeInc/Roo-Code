@@ -106,16 +106,34 @@ export type McpToolCallResponse = {
 		| {
 				type: "text"
 				text: string
+				annotations?: {
+					audience?: ("assistant" | "user")[]
+					priority?: number
+					lastModified?: string
+				}
+				_meta?: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 		  }
 		| {
 				type: "image"
 				data: string
 				mimeType: string
+				annotations?: {
+					audience?: ("assistant" | "user")[]
+					priority?: number
+					lastModified?: string
+				}
+				_meta?: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 		  }
 		| {
 				type: "audio"
 				data: string
 				mimeType: string
+				annotations?: {
+					audience?: ("assistant" | "user")[]
+					priority?: number
+					lastModified?: string
+				}
+				_meta?: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 		  }
 		| {
 				type: "resource"
@@ -125,6 +143,26 @@ export type McpToolCallResponse = {
 					text?: string
 					blob?: string
 				}
+				annotations?: {
+					audience?: ("assistant" | "user")[]
+					priority?: number
+					lastModified?: string
+				}
+				_meta?: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
+		  }
+		| {
+				type: "resource_link"
+				uri: string
+				name: string
+				description?: string
+				mimeType?: string
+				size?: number
+				annotations?: {
+					audience?: ("assistant" | "user")[]
+					priority?: number
+					lastModified?: string
+				}
+				_meta?: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 		  }
 	>
 	isError?: boolean
