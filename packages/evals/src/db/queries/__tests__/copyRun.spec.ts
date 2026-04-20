@@ -19,7 +19,7 @@ describe("copyRun", () => {
 
 	beforeEach(async () => {
 		const run = await createRun({
-			model: "gpt-4.1-mini",
+			model: "gpt-5-mini",
 			socketPath: "/tmp/roo.sock",
 			description: "Test run for copying",
 			concurrency: 4,
@@ -179,7 +179,7 @@ describe("copyRun", () => {
 		})
 
 		expect(copiedRun).toBeDefined()
-		expect(copiedRun!.model).toBe("gpt-4.1-mini")
+		expect(copiedRun!.model).toBe("gpt-5-mini")
 		expect(copiedRun!.description).toBe("Test run for copying")
 		expect(copiedRun!.concurrency).toBe(4)
 		expect(copiedRun!.passed).toBe(2)
