@@ -54,7 +54,10 @@
 	},
 	"serverStatus": {
 		"retrying": "重试中...",
-		"retryConnection": "重试连接"
+		"retryConnection": "重试连接",
+		"signIn": "登录",
+		"authenticating": "认证中...",
+		"authRequired": "需要认证"
 	},
 	"refreshMCP": "刷新 MCP 服务器",
 	"execution": {

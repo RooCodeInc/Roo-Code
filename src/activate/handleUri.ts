@@ -43,6 +43,17 @@ export const handleUri = async (uri: vscode.Uri) => {
 			)
 			break
 		}
+		case "/mcp-auth/callback": {
+			const code = query.get("code")
+			const state = query.get("state")
+			if (code && state) {
+				const mcpHub = visibleProvider.getMcpHub()
+				if (mcpHub) {
+					mcpHub.handleOAuthCallback(code, state)
+				}
+			}
+			break
+		}
 		default:
 			break
 	}

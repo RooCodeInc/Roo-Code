@@ -54,7 +54,10 @@
 	},
 	"serverStatus": {
 		"retrying": "फिर से कोशिश कर रहा है...",
-		"retryConnection": "कनेक्शन फिर से आज़माएँ"
+		"retryConnection": "कनेक्शन फिर से आज़माएँ",
+		"signIn": "साइन इन",
+		"authenticating": "प्रमाणीकरण हो रहा है...",
+		"authRequired": "प्रमाणीकरण आवश्यक"
 	},
 	"refreshMCP": "एमसीपी सर्वर रीफ्रेश करें",
 	"execution": {

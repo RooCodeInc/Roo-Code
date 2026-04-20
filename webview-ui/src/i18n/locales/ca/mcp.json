@@ -54,7 +54,10 @@
 	},
 	"serverStatus": {
 		"retrying": "Tornant a intentar...",
-		"retryConnection": "Torna a intentar la connexió"
+		"retryConnection": "Torna a intentar la connexió",
+		"signIn": "Inicia sessió",
+		"authenticating": "Autenticant...",
+		"authRequired": "Autenticació necessària"
 	},
 	"refreshMCP": "Actualitza els servidors MCP",
 	"execution": {

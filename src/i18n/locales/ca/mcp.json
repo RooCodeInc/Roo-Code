@@ -23,6 +23,8 @@
 		"already_refreshing": "Els servidors MCP ja s'estan actualitzant.",
 		"refreshing_all": "Actualitzant tots els servidors MCP...",
 		"all_refreshed": "Tots els servidors MCP han estat actualitzats.",
-		"project_config_deleted": "Fitxer de configuració MCP del projecte eliminat. Tots els servidors MCP del projecte han estat desconnectats."
+		"project_config_deleted": "Fitxer de configuració MCP del projecte eliminat. Tots els servidors MCP del projecte han estat desconnectats.",
+		"server_requires_auth": "{{serverName}} requereix autenticació. Completeu el flux d'inici de sessió al vostre navegador.",
+		"server_auth_failed": "L'autenticació de {{serverName}} ha fallat: {{reason}}"
 	}
 }

@@ -54,7 +54,10 @@
 	},
 	"serverStatus": {
 		"retrying": "再試行中...",
-		"retryConnection": "再接続"
+		"retryConnection": "再接続",
+		"signIn": "サインイン",
+		"authenticating": "認証中...",
+		"authRequired": "認証が必要です"
 	},
 	"refreshMCP": "MCPサーバーを更新",
 	"execution": {

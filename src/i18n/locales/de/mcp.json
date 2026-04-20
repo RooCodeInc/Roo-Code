@@ -23,6 +23,8 @@
 		"already_refreshing": "MCP-Server werden bereits aktualisiert.",
 		"refreshing_all": "Alle MCP-Server werden aktualisiert...",
 		"all_refreshed": "Alle MCP-Server wurden aktualisiert.",
-		"project_config_deleted": "Projekt-MCP-Konfigurationsdatei gelöscht. Alle Projekt-MCP-Server wurden getrennt."
+		"project_config_deleted": "Projekt-MCP-Konfigurationsdatei gelöscht. Alle Projekt-MCP-Server wurden getrennt.",
+		"server_requires_auth": "{{serverName}} erfordert Authentifizierung. Bitte schließe den Anmeldeprozess in deinem Browser ab.",
+		"server_auth_failed": "Authentifizierung von {{serverName}} fehlgeschlagen: {{reason}}"
 	}
 }

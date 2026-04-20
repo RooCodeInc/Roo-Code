@@ -54,7 +54,10 @@
 	},
 	"serverStatus": {
 		"retrying": "Opnieuw proberen...",
-		"retryConnection": "Verbinding opnieuw proberen"
+		"retryConnection": "Verbinding opnieuw proberen",
+		"signIn": "Inloggen",
+		"authenticating": "Verifiëren...",
+		"authRequired": "Verificatie vereist"
 	},
 	"refreshMCP": "MCP-servers vernieuwen",
 	"execution": {

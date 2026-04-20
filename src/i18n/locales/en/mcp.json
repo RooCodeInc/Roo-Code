@@ -23,6 +23,8 @@
 		"already_refreshing": "MCP servers are already refreshing.",
 		"refreshing_all": "Refreshing all MCP servers...",
 		"all_refreshed": "All MCP servers have been refreshed.",
-		"project_config_deleted": "Project MCP configuration file deleted. All project MCP servers have been disconnected."
+		"project_config_deleted": "Project MCP configuration file deleted. All project MCP servers have been disconnected.",
+		"server_requires_auth": "{{serverName}} requires authentication. Please complete the sign-in flow in your browser.",
+		"server_auth_failed": "{{serverName}} authentication failed: {{reason}}"
 	}
 }

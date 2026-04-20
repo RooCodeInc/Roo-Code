@@ -54,7 +54,10 @@
 	},
 	"serverStatus": {
 		"retrying": "Tekrar deneniyor...",
-		"retryConnection": "Bağlantıyı tekrar dene"
+		"retryConnection": "Bağlantıyı tekrar dene",
+		"signIn": "Giriş yap",
+		"authenticating": "Doğrulanıyor...",
+		"authRequired": "Doğrulama gerekli"
 	},
 	"refreshMCP": "MCP Sunucularını Yenile",
 	"execution": {

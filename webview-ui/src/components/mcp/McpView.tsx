@@ -203,6 +203,11 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 			return "var(--vscode-descriptionForeground)"
 		}
 
+		// Auth-related status takes precedence
+		if (server.authStatus === "unauthenticated") {
+			return "var(--vscode-editorWarning-foreground)"
+		}
+
 		switch (server.status) {
 			case "connected":
 				return "var(--vscode-testing-iconPassed)"
@@ -282,6 +287,19 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 							{server.source}
 						</span>
 					)}
+					{server.authStatus === "unauthenticated" && (
+						<span
+							style={{
+								marginLeft: "8px",
+								padding: "1px 6px",
+								fontSize: "11px",
+								borderRadius: "4px",
+								background: "var(--vscode-editorWarning-foreground)",
+								color: "var(--vscode-editorWarning-background, #fff)",
+							}}>
+							{t("mcp:serverStatus.authRequired")}
+						</span>
+					)}
 				</span>
 				<div
 					style={{ display: "flex", alignItems: "center", marginRight: "8px" }}
@@ -302,15 +320,22 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 						<span className="codicon codicon-refresh" style={{ fontSize: "14px" }}></span>
 					</Button>
 				</div>
-				<div
-					style={{
-						width: "8px",
-						height: "8px",
-						borderRadius: "50%",
-						background: getStatusColor(),
-						marginLeft: "8px",
-					}}
-				/>
+				{server.authStatus === "awaiting_auth" ? (
+					<span
+						className="codicon codicon-loading codicon-modifier-spin"
+						style={{ fontSize: "12px", marginLeft: "8px" }}
+					/>
+				) : (
+					<div
+						style={{
+							width: "8px",
+							height: "8px",
+							borderRadius: "50%",
+							background: getStatusColor(),
+							marginLeft: "8px",
+						}}
+					/>
+				)}
 				<div style={{ marginLeft: "8px" }}>
 					<ToggleSwitch
 						checked={!server.disabled}
@@ -511,9 +536,13 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 								onClick={handleRestart}
 								disabled={server.status === "connecting"}
 								style={{ width: "calc(100% - 20px)", margin: "0 10px 10px 10px" }}>
-								{server.status === "connecting"
-									? t("mcp:serverStatus.retrying")
-									: t("mcp:serverStatus.retryConnection")}
+								{server.authStatus === "awaiting_auth"
+									? t("mcp:serverStatus.authenticating")
+									: server.authStatus === "unauthenticated"
+										? t("mcp:serverStatus.signIn")
+										: server.status === "connecting"
+											? t("mcp:serverStatus.retrying")
+											: t("mcp:serverStatus.retryConnection")}
 							</Button>
 						</div>
 					)}

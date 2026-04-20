@@ -54,7 +54,10 @@
 	},
 	"serverStatus": {
 		"retrying": "Nouvelle tentative...",
-		"retryConnection": "Réessayer la connexion"
+		"retryConnection": "Réessayer la connexion",
+		"signIn": "Se connecter",
+		"authenticating": "Authentification...",
+		"authRequired": "Authentification requise"
 	},
 	"refreshMCP": "Rafraîchir les serveurs MCP",
 	"execution": {

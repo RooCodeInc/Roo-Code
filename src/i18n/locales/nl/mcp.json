@@ -23,6 +23,8 @@
 		"already_refreshing": "MCP-servers worden al vernieuwd.",
 		"refreshing_all": "Alle MCP-servers worden vernieuwd...",
 		"all_refreshed": "Alle MCP-servers zijn vernieuwd.",
-		"project_config_deleted": "Project MCP-configuratiebestand verwijderd. Alle project MCP-servers zijn losgekoppeld."
+		"project_config_deleted": "Project MCP-configuratiebestand verwijderd. Alle project MCP-servers zijn losgekoppeld.",
+		"server_requires_auth": "{{serverName}} vereist authenticatie. Voltooi het inlogproces in je browser.",
+		"server_auth_failed": "Authenticatie van {{serverName}} mislukt: {{reason}}"
 	}
 }

@@ -23,6 +23,8 @@
 		"already_refreshing": "Serwery MCP są już odświeżane.",
 		"refreshing_all": "Odświeżanie wszystkich serwerów MCP...",
 		"all_refreshed": "Wszystkie serwery MCP zostały odświeżone.",
-		"project_config_deleted": "Plik konfiguracyjny MCP projektu został usunięty. Wszystkie serwery MCP projektu zostały odłączone."
+		"project_config_deleted": "Plik konfiguracyjny MCP projektu został usunięty. Wszystkie serwery MCP projektu zostały odłączone.",
+		"server_requires_auth": "{{serverName}} wymaga uwierzytelnienia. Ukończ proces logowania w przeglądarce.",
+		"server_auth_failed": "Uwierzytelnienie {{serverName}} nie powiodło się: {{reason}}"
 	}
 }

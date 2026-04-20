@@ -55,6 +55,7 @@ export type McpServer = {
 	name: string
 	config: string
 	status: "connected" | "connecting" | "disconnected"
+	authStatus?: "unauthenticated" | "awaiting_auth" | "authenticated"
 	error?: string
 	errorHistory?: McpErrorEntry[]
 	tools?: McpTool[]

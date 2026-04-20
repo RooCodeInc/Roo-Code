@@ -23,6 +23,8 @@
 		"already_refreshing": "Các máy chủ MCP đã đang làm mới.",
 		"refreshing_all": "Đang làm mới tất cả các máy chủ MCP...",
 		"all_refreshed": "Tất cả các máy chủ MCP đã được làm mới.",
-		"project_config_deleted": "Tệp cấu hình MCP của dự án đã bị xóa. Tất cả các máy chủ MCP của dự án đã bị ngắt kết nối."
+		"project_config_deleted": "Tệp cấu hình MCP của dự án đã bị xóa. Tất cả các máy chủ MCP của dự án đã bị ngắt kết nối.",
+		"server_requires_auth": "{{serverName}} yêu cầu xác thực. Vui lòng hoàn tất quy trình đăng nhập trong trình duyệt của bạn.",
+		"server_auth_failed": "Xác thực {{serverName}} thất bại: {{reason}}"
 	}
 }

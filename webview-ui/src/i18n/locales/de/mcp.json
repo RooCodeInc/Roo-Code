@@ -54,7 +54,10 @@
 	},
 	"serverStatus": {
 		"retrying": "Wiederhole...",
-		"retryConnection": "Verbindung wiederholen"
+		"retryConnection": "Verbindung wiederholen",
+		"signIn": "Anmelden",
+		"authenticating": "Authentifizierung...",
+		"authRequired": "Authentifizierung erforderlich"
 	},
 	"refreshMCP": "MCP-Server aktualisieren",
 	"execution": {

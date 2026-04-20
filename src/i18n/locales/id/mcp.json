@@ -23,6 +23,8 @@
 		"already_refreshing": "Server MCP sudah sedang di-refresh.",
 		"refreshing_all": "Me-refresh semua server MCP...",
 		"all_refreshed": "Semua server MCP telah di-refresh.",
-		"project_config_deleted": "File konfigurasi MCP proyek dihapus. Semua server MCP proyek telah diputus koneksinya."
+		"project_config_deleted": "File konfigurasi MCP proyek dihapus. Semua server MCP proyek telah diputus koneksinya.",
+		"server_requires_auth": "{{serverName}} memerlukan autentikasi. Silakan selesaikan alur masuk di browser kamu.",
+		"server_auth_failed": "Autentikasi {{serverName}} gagal: {{reason}}"
 	}
 }

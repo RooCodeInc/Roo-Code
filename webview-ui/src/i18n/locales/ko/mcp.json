@@ -54,7 +54,10 @@
 	},
 	"serverStatus": {
 		"retrying": "다시 시도 중...",
-		"retryConnection": "연결 다시 시도"
+		"retryConnection": "연결 다시 시도",
+		"signIn": "로그인",
+		"authenticating": "인증 중...",
+		"authRequired": "인증 필요"
 	},
 	"refreshMCP": "MCP 서버 새로 고침",
 	"execution": {

@@ -6,6 +6,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { StdioClientTransport, getDefaultEnvironment } from "@modelcontextprotocol/sdk/client/stdio.js"
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js"
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js"
+import { UnauthorizedError } from "@modelcontextprotocol/sdk/client/auth.js"
 import ReconnectingEventSource from "reconnecting-eventsource"
 import {
 	CallToolResultSchema,
@@ -39,6 +40,8 @@ import { arePathsEqual, getWorkspacePath } from "../../utils/path"
 import { injectVariables } from "../../utils/config"
 import { safeWriteJson } from "../../utils/safeWriteJson"
 import { sanitizeMcpName, toolNamesMatch } from "../../utils/mcp-name"
+
+import { McpOAuthProvider } from "./McpOAuthProvider"
 
 // Discriminated union for connection states
 export type ConnectedMcpConnection = {
@@ -703,6 +706,15 @@ export class McpHub {
 				workspaceFolder: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "",
 			})) as typeof config
 
+			// Create OAuth provider for HTTP-based transports
+			let authProvider: McpOAuthProvider | undefined
+			if (configInjected.type !== "stdio") {
+				const provider = this.providerRef.deref()
+				if (provider) {
+					authProvider = new McpOAuthProvider(name, provider.context)
+				}
+			}
+
 			if (configInjected.type === "stdio") {
 				// On Windows, wrap commands with cmd.exe to handle non-exe executables like npx.ps1
 				// This is necessary for node version managers (fnm, nvm-windows, volta) that implement
@@ -784,6 +796,7 @@ export class McpHub {
 					requestInit: {
 						headers: configInjected.headers,
 					},
+					authProvider,
 				})
 
 				// Set up Streamable HTTP specific error handling
@@ -806,28 +819,39 @@ export class McpHub {
 				}
 			} else if (configInjected.type === "sse") {
 				// SSE connection
-				const sseOptions = {
-					requestInit: {
-						headers: configInjected.headers,
-					},
+				if (authProvider) {
+					// OAuth handles Authorization; avoid eventSourceInit which would
+					// prevent automatic Authorization header attachment per SDK docs
+					transport = new SSEClientTransport(new URL(configInjected.url), {
+						requestInit: {
+							headers: configInjected.headers,
+						},
+						authProvider,
+					})
+				} else {
+					// Legacy path: manual headers + ReconnectingEventSource
+					const sseOptions = {
+						requestInit: {
+							headers: configInjected.headers,
+						},
+					}
+					const reconnectingEventSourceOptions = {
+						max_retry_time: 5000, // Maximum retry time in milliseconds
+						withCredentials: configInjected.headers?.["Authorization"] ? true : false, // Enable credentials if Authorization header exists
+						fetch: (url: string | URL, init: RequestInit) => {
+							const headers = new Headers({ ...(init?.headers || {}), ...(configInjected.headers || {}) })
+							return fetch(url, {
+								...init,
+								headers,
+							})
+						},
+					}
+					global.EventSource = ReconnectingEventSource
+					transport = new SSEClientTransport(new URL(configInjected.url), {
+						...sseOptions,
+						eventSourceInit: reconnectingEventSourceOptions,
+					})
 				}
-				// Configure ReconnectingEventSource options
-				const reconnectingEventSourceOptions = {
-					max_retry_time: 5000, // Maximum retry time in milliseconds
-					withCredentials: configInjected.headers?.["Authorization"] ? true : false, // Enable credentials if Authorization header exists
-					fetch: (url: string | URL, init: RequestInit) => {
-						const headers = new Headers({ ...(init?.headers || {}), ...(configInjected.headers || {}) })
-						return fetch(url, {
-							...init,
-							headers,
-						})
-					},
-				}
-				global.EventSource = ReconnectingEventSource
-				transport = new SSEClientTransport(new URL(configInjected.url), {
-					...sseOptions,
-					eventSourceInit: reconnectingEventSourceOptions,
-				})
 
 				// Set up SSE specific error handling
 				transport.onerror = async (error) => {
@@ -875,8 +899,69 @@ export class McpHub {
 			this.connections.push(connection)
 
 			// Connect (this will automatically start the transport)
-			await client.connect(transport)
+			try {
+				await client.connect(transport)
+			} catch (connectError) {
+				// Handle OAuth UnauthorizedError — the SDK has initiated the auth flow
+				// and opened the browser. We need to wait for the callback and retry.
+				if (connectError instanceof UnauthorizedError && authProvider) {
+					const connection = this.findConnection(name, source)
+					if (connection) {
+						connection.server.status = "connecting"
+						connection.server.authStatus = "awaiting_auth"
+						await this.notifyWebviewOfServerChanges()
+					}
+
+					vscode.window.showInformationMessage(t("mcp:info.server_requires_auth", { serverName: name }))
+
+					// Fire-and-forget: wait for callback, then complete connection
+					authProvider
+						.waitForAuthCode()
+						.then(async (authCode) => {
+							await (transport as StreamableHTTPClientTransport | SSEClientTransport).finishAuth(authCode)
+							await client.connect(transport)
+							if (connection) {
+								connection.server.status = "connected"
+								connection.server.authStatus = "authenticated"
+								connection.server.error = ""
+								connection.server.instructions = client.getInstructions()
+								connection.server.tools = await this.fetchToolsList(name, source)
+								connection.server.resources = await this.fetchResourcesList(name, source)
+								connection.server.resourceTemplates = await this.fetchResourceTemplatesList(
+									name,
+									source,
+								)
+							}
+							await this.notifyWebviewOfServerChanges()
+							vscode.window.showInformationMessage(t("mcp:info.server_connected", { serverName: name }))
+						})
+						.catch(async (authError) => {
+							if (connection) {
+								connection.server.status = "disconnected"
+								connection.server.authStatus = "unauthenticated"
+								this.appendErrorMessage(
+									connection,
+									authError instanceof Error ? authError.message : `${authError}`,
+								)
+							}
+							await this.notifyWebviewOfServerChanges()
+							vscode.window.showErrorMessage(
+								t("mcp:info.server_auth_failed", {
+									serverName: name,
+									reason: authError instanceof Error ? authError.message : `${authError}`,
+								}),
+							)
+						})
+
+					return // Don't throw — auth is in progress
+				}
+
+				// Re-throw non-OAuth errors to be caught by the outer catch
+				throw connectError
+			}
+
 			connection.server.status = "connected"
+			connection.server.authStatus = authProvider ? "authenticated" : undefined
 			connection.server.error = ""
 			connection.server.instructions = client.getInstructions()
 
@@ -975,6 +1060,15 @@ export class McpHub {
 		}
 
 		return null
+	}
+
+	/**
+	 * Handles an OAuth callback from the VS Code URI handler.
+	 * This is a fallback for auth servers that redirect via vscode:// URIs
+	 * instead of the localhost callback server.
+	 */
+	handleOAuthCallback(code: string, state: string): boolean {
+		return McpOAuthProvider.resolveFromUriCallback(state, code)
 	}
 
 	private async fetchToolsList(serverName: string, source?: "global" | "project"): Promise<McpTool[]> {

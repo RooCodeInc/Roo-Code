@@ -54,7 +54,10 @@
 	},
 	"serverStatus": {
 		"retrying": "Повторная попытка...",
-		"retryConnection": "Повторить подключение"
+		"retryConnection": "Повторить подключение",
+		"signIn": "Войти",
+		"authenticating": "Аутентификация...",
+		"authRequired": "Требуется аутентификация"
 	},
 	"refreshMCP": "Обновить MCP серверы",
 	"execution": {

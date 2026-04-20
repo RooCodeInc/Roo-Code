@@ -23,6 +23,8 @@
 		"already_refreshing": "MCP 서버가 이미 새로 고쳐지고 있습니다.",
 		"refreshing_all": "모든 MCP 서버를 새로 고치는 중...",
 		"all_refreshed": "모든 MCP 서버가 새로 고쳐졌습니다.",
-		"project_config_deleted": "프로젝트 MCP 구성 파일이 삭제되었습니다. 모든 프로젝트 MCP 서버가 연결 해제되었습니다."
+		"project_config_deleted": "프로젝트 MCP 구성 파일이 삭제되었습니다. 모든 프로젝트 MCP 서버가 연결 해제되었습니다.",
+		"server_requires_auth": "{{serverName}}에 인증이 필요합니다. 브라우저에서 로그인 흐름을 완료해 주세요.",
+		"server_auth_failed": "{{serverName}} 인증 실패: {{reason}}"
 	}
 }

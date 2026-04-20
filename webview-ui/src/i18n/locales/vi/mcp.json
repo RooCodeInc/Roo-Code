@@ -54,7 +54,10 @@
 	},
 	"serverStatus": {
 		"retrying": "Đang thử lại...",
-		"retryConnection": "Thử kết nối lại"
+		"retryConnection": "Thử kết nối lại",
+		"signIn": "Đăng nhập",
+		"authenticating": "Đang xác thực...",
+		"authRequired": "Cần xác thực"
 	},
 	"refreshMCP": "Làm mới Máy chủ MCP",
 	"execution": {

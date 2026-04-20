@@ -23,6 +23,8 @@
 		"already_refreshing": "MCP серверы уже обновляются.",
 		"refreshing_all": "Обновление всех MCP серверов...",
 		"all_refreshed": "Все MCP серверы обновлены.",
-		"project_config_deleted": "Файл конфигурации MCP проекта удален. Все MCP серверы проекта отключены."
+		"project_config_deleted": "Файл конфигурации MCP проекта удален. Все MCP серверы проекта отключены.",
+		"server_requires_auth": "{{serverName}} требует аутентификации. Завершите процесс входа в браузере.",
+		"server_auth_failed": "Ошибка аутентификации {{serverName}}: {{reason}}"
 	}
 }

@@ -55,7 +55,10 @@
 	},
 	"serverStatus": {
 		"retrying": "Mencoba lagi...",
-		"retryConnection": "Coba Koneksi Lagi"
+		"retryConnection": "Coba Koneksi Lagi",
+		"signIn": "Masuk",
+		"authenticating": "Mengautentikasi...",
+		"authRequired": "Autentikasi diperlukan"
 	},
 	"execution": {
 		"running": "Berjalan",

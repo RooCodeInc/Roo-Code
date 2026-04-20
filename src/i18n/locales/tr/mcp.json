@@ -23,6 +23,8 @@
 		"already_refreshing": "MCP sunucuları zaten yenileniyor.",
 		"refreshing_all": "Tüm MCP sunucuları yenileniyor...",
 		"all_refreshed": "Tüm MCP sunucuları yenilendi.",
-		"project_config_deleted": "Proje MCP yapılandırma dosyası silindi. Tüm proje MCP sunucuları bağlantısı kesildi."
+		"project_config_deleted": "Proje MCP yapılandırma dosyası silindi. Tüm proje MCP sunucuları bağlantısı kesildi.",
+		"server_requires_auth": "{{serverName}} kimlik doğrulaması gerektiriyor. Tarayıcında oturum açma akışını tamamla.",
+		"server_auth_failed": "{{serverName}} kimlik doğrulaması başarısız: {{reason}}"
 	}
 }

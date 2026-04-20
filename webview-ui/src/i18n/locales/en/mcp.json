@@ -55,7 +55,10 @@
 	},
 	"serverStatus": {
 		"retrying": "Retrying...",
-		"retryConnection": "Retry Connection"
+		"retryConnection": "Retry Connection",
+		"signIn": "Sign In",
+		"authenticating": "Authenticating...",
+		"authRequired": "Auth Required"
 	},
 	"execution": {
 		"running": "Running",

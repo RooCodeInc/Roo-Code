@@ -54,7 +54,10 @@
 	},
 	"serverStatus": {
 		"retrying": "Ponawianie...",
-		"retryConnection": "Ponów połączenie"
+		"retryConnection": "Ponów połączenie",
+		"signIn": "Zaloguj się",
+		"authenticating": "Uwierzytelnianie...",
+		"authRequired": "Wymagane uwierzytelnienie"
 	},
 	"refreshMCP": "Odśwież serwery MCP",
 	"execution": {

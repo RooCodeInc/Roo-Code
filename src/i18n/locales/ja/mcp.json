@@ -23,6 +23,8 @@
 		"already_refreshing": "MCPサーバーはすでに更新中です。",
 		"refreshing_all": "すべてのMCPサーバーを更新しています...",
 		"all_refreshed": "すべてのMCPサーバーが更新されました。",
-		"project_config_deleted": "プロジェクトMCP設定ファイルが削除されました。すべてのプロジェクトMCPサーバーが切断されました。"
+		"project_config_deleted": "プロジェクトMCP設定ファイルが削除されました。すべてのプロジェクトMCPサーバーが切断されました。",
+		"server_requires_auth": "{{serverName}}は認証が必要です。ブラウザでサインインフローを完了してください。",
+		"server_auth_failed": "{{serverName}}の認証に失敗しました: {{reason}}"
 	}
 }

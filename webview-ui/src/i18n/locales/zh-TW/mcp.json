@@ -55,7 +55,10 @@
 	},
 	"serverStatus": {
 		"retrying": "重試中...",
-		"retryConnection": "重試連線"
+		"retryConnection": "重試連線",
+		"signIn": "登入",
+		"authenticating": "驗證中...",
+		"authRequired": "需要驗證"
 	},
 	"execution": {
 		"running": "執行中",
