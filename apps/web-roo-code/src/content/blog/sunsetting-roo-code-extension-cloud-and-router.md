@@ -16,7 +16,7 @@ As you may have heard, we're sunsetting the Roo Code suite of tools on May 15th.
 
 To our community: thank you. Your trust, contributions, and feedback helped us drive innovation in this space and pushed us past 3m extension downloads. We don't take that lightly.
 
-That said, we don't believe IDEs are the future of coding. To keep pushing the future forward, we needed to make this difficult decision.
+That said, we don't believe IDEs are the future of coding. To keep pushing the future forward, we needed to make this difficult decision. You can read more about the reasoning behind it [here](https://example.com/TODO).
 
 ## What this means for you
 
