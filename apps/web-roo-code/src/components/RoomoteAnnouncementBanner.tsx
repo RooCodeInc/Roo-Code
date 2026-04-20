@@ -1,20 +1,21 @@
 "use client"
 
 import Image from "next/image"
+import { DM_Sans } from "next/font/google"
 import { ArrowRight } from "lucide-react"
+
+const dmSans = DM_Sans({
+	subsets: ["latin"],
+	weight: ["500", "700", "800"],
+})
 
 export function RoomoteAnnouncementBanner() {
 	return (
-		<div className="relative overflow-hidden bg-[#d8f14b] text-black">
-			<div className="relative flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 px-6 py-5 sm:py-6">
-				<div className="flex items-center gap-3">
-					<span className="inline-flex items-center rounded-full bg-black text-[#d8f14b] px-3.5 py-1 text-xs font-extrabold uppercase tracking-widest">
-						New
-					</span>
-					<p className="text-base sm:text-lg md:text-xl font-extrabold tracking-tight">
-						The Roo Code team is about to launch something new.
-					</p>
-				</div>
+		<div className={`relative overflow-hidden bg-[#d8f14b] text-black ${dmSans.className}`}>
+			<div className="relative flex flex-col items-center justify-center gap-3 px-6 py-5 sm:py-6">
+				<p className="text-base sm:text-lg md:text-xl font-extrabold tracking-tight">
+					The Roo Code team just launched something new.
+				</p>
 				<a
 					href="https://roomote.dev"
 					target="_blank"
