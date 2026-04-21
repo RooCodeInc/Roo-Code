@@ -41,7 +41,10 @@ describe("resolveImageMentions", () => {
 		})
 
 		expect(mockValidateImage).toHaveBeenCalled()
-		expect(mockReadImageAsDataUrl).toHaveBeenCalledWith(path.resolve("/workspace", "assets/cat.png"))
+		expect(mockReadImageAsDataUrl).toHaveBeenCalledWith(path.resolve("/workspace", "assets/cat.png"), {
+			maxDimension: undefined,
+			quality: undefined,
+		})
 		expect(result.text).toBe("Please look at @/assets/cat.png")
 		expect(result.images).toEqual([dataUrl])
 	})

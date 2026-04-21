@@ -23,6 +23,10 @@ export interface ResolveImageMentionsOptions {
 	maxImageFileSize?: number
 	/** Maximum total size of all images in MB. Defaults to 20MB. */
 	maxTotalImageSize?: number
+	/** Maximum dimension (width or height) in pixels for downscaling. 0 = disabled. */
+	maxImageDimension?: number
+	/** JPEG/WebP quality (1-100) for re-encoding resized images. */
+	imageDownscaleQuality?: number
 }
 
 export interface ResolveImageMentionsResult {
@@ -65,6 +69,8 @@ export async function resolveImageMentions({
 	supportsImages = true,
 	maxImageFileSize = DEFAULT_MAX_IMAGE_FILE_SIZE_MB,
 	maxTotalImageSize = DEFAULT_MAX_TOTAL_IMAGE_SIZE_MB,
+	maxImageDimension,
+	imageDownscaleQuality,
 }: ResolveImageMentionsOptions): Promise<ResolveImageMentionsResult> {
 	const existingImages = Array.isArray(images) ? images : []
 	if (existingImages.length >= MAX_IMAGES_PER_MESSAGE) {
@@ -127,7 +133,10 @@ export async function resolveImageMentions({
 				continue
 			}
 
-			const { dataUrl } = await readImageAsDataUrlWithBuffer(absPath)
+			const { dataUrl } = await readImageAsDataUrlWithBuffer(absPath, {
+				maxDimension: maxImageDimension,
+				quality: imageDownscaleQuality,
+			})
 			newImages.push(dataUrl)
 
 			// Track memory usage

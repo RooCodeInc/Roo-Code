@@ -539,6 +539,8 @@ describe("ClineProvider", () => {
 			renderContext: "sidebar",
 			maxImageFileSize: 5,
 			maxTotalImageSize: 20,
+			maxImageDimension: 0,
+			imageDownscaleQuality: 85,
 			cloudUserInfo: null,
 			organizationAllowList: ORGANIZATION_ALLOW_ALL,
 			autoCondenseContext: true,

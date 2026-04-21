@@ -171,6 +171,8 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			const {
 				maxImageFileSize = DEFAULT_MAX_IMAGE_FILE_SIZE_MB,
 				maxTotalImageSize = DEFAULT_MAX_TOTAL_IMAGE_SIZE_MB,
+				maxImageDimension,
+				imageDownscaleQuality,
 			} = state ?? {}
 
 			for (const fileResult of fileResults) {
@@ -207,6 +209,8 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 							maxTotalImageSize,
 							imageMemoryTracker,
 							updateFileResult,
+							maxImageDimension,
+							imageDownscaleQuality,
 						)
 						continue
 					}
@@ -341,6 +345,8 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 		maxTotalImageSize: number,
 		imageMemoryTracker: ImageMemoryTracker,
 		updateFileResult: (path: string, updates: Partial<FileResult>) => void,
+		maxImageDimension?: number,
+		imageDownscaleQuality?: number,
 	): Promise<void> {
 		const fileExtension = path.extname(relPath).toLowerCase()
 		const supportedBinaryFormats = getSupportedBinaryFormats()
@@ -364,7 +370,10 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					return
 				}
 
-				const imageResult = await processImageFile(fullPath)
+				const imageResult = await processImageFile(fullPath, {
+					maxDimension: maxImageDimension,
+					quality: imageDownscaleQuality,
+				})
 				imageMemoryTracker.addMemoryUsage(imageResult.sizeInMB)
 				await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
 
@@ -744,6 +753,8 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						const {
 							maxImageFileSize = DEFAULT_MAX_IMAGE_FILE_SIZE_MB,
 							maxTotalImageSize = DEFAULT_MAX_TOTAL_IMAGE_SIZE_MB,
+							maxImageDimension,
+							imageDownscaleQuality,
 						} = state ?? {}
 						const validation = await validateImageForProcessing(
 							fullPath,
@@ -756,7 +767,10 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 							results.push(`File: ${relPath}\nNotice: ${validation.notice ?? "Image validation failed"}`)
 							continue
 						}
-						const imageResult = await processImageFile(fullPath)
+						const imageResult = await processImageFile(fullPath, {
+							maxDimension: maxImageDimension,
+							quality: imageDownscaleQuality,
+						})
 						if (imageResult) {
 							results.push(`File: ${relPath}\n[Image file - content processed for vision model]`)
 						}

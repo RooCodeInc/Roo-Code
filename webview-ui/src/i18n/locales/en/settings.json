@@ -698,6 +698,16 @@
 			"mb": "MB",
 			"description": "Maximum cumulative size limit (in MB) for all images processed in a single read_file operation. When reading multiple images, each image's size is added to the total. If including another image would exceed this limit, it will be skipped."
 		},
+		"maxImageDimension": {
+			"label": "Image downscale max dimension",
+			"px": "px",
+			"description": "Maximum width or height (in pixels) for images before sending to the LLM. Images exceeding this dimension are proportionally downscaled, preserving aspect ratio. Set to 0 to disable downscaling.",
+			"disabled": "Disabled"
+		},
+		"imageDownscaleQuality": {
+			"label": "Image downscale quality",
+			"description": "JPEG/WebP encoding quality (1-100) used when re-encoding downscaled images. Higher values preserve more detail but produce larger files. Only applies when image downscaling is enabled."
+		},
 		"diagnostics": {
 			"includeMessages": {
 				"label": "Automatically include diagnostics in context",
