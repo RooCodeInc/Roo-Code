@@ -347,13 +347,16 @@
 			"selectModel": "Selecciona <code>roo/code-supernova</code> del proveïdor Roo Code Cloud a Configuració per començar.",
 			"goToSettingsButton": "Anar a Configuració"
 		},
+		"handoff": {
+			"heading": "El plugin Roo Code no desapareix.",
+			"description": "Potser has vist l'anunci recent que Roo Code ha arribat a 3 milions d'instal·lacions i que l'equip original es bolca completament amb Roomote. Sabem que aquesta notícia ha estat dura per a molts de vosaltres. Aquest plugin ens importa molt, tant a nosaltres com a tu, i t'escoltem. La bona notícia: <bold>un equip de la comunitat ha donat un pas endavant per portar Roo Code cap endavant</bold>, i estem treballant amb ells en un relleu oficial perquè el plugin en què confies continuï rebent manteniment i millores.",
+			"readMore": "Llegir l'anunci original de Matt Rubens"
+		},
 		"release": {
 			"heading": "Què hi ha de nou:",
-			"gpt54": "Proveïdor Poe: S'ha afegit Poe com a proveïdor d’IA perquè puguis accedir directament als models de Poe a Roo Code.",
-			"slashSkills": "Millores a xAI i MiniMax: S'ha migrat el proveïdor xAI a la Responses API, s'hi han afegit utilitats de transformació reutilitzables, s'han actualitzat els valors per defecte de Grok-4.20 i s'han corregit els llistats de models de MiniMax i la gestió de la finestra de context per oferir una configuració més fiable.",
-			"geminiPro": "Suport per Gemini 3.1 Pro: S'ha afegit el suport per al model Gemini 3.1 Pro i s'ha establert com a model Gemini per defecte per a un millor rendiment.",
-			"cliNdjson": "Protocol NDJSON del CLI: Nou protocol NDJSON via stdin, subcomandes de llistat i comanda d'execució modularitzada per a fluxos de treball CLI més flexibles.",
-			"cliRelease": "CLI v0.1.0: El CLI de Roo Code arriba a la seva primera versió oficial amb una interfície de comandes estable."
+			"gpt55": "GPT-5.5 via OpenAI Codex: S'ha afegit suport per a GPT-5.5 al proveïdor OpenAI Codex perquè puguis utilitzar el model més recent directament des de Roo Code.",
+			"claudeOpus47": "Claude Opus 4.7 a Vertex AI: S'ha afegit Claude Opus 4.7 al proveïdor Vertex AI, el nou model de raonament emblemàtic d'Anthropic.",
+			"checkpointNav": "Navegació per Checkpoints Anteriors: S'han afegit controls al xat per tornar enrere pels checkpoints previs, amb suport complet d'i18n."
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",

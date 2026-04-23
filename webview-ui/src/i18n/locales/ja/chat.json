@@ -347,13 +347,16 @@
 			"selectModel": "設定で Roo Code Cloud プロバイダーから <code>roo/code-supernova</code> を選択して開始してください。",
 			"goToSettingsButton": "設定に移動"
 		},
+		"handoff": {
+			"heading": "Roo Code プラグインはなくなりません。",
+			"description": "Roo Code のインストール数が300万に達し、元のチームが Roomote に全力で取り組むという先日のお知らせをご覧になったかもしれません。この知らせが多くの方にとって辛いものだったことは承知しています。このプラグインは私たちにとっても、あなたにとっても大切な存在であり、皆さんの声はしっかり届いています。良いお知らせです：<bold>コミュニティチームが Roo Code を受け継いで前進させることを引き受けてくれました</bold>。頼りにしているこのプラグインが引き続きメンテナンスと改善を受けられるよう、私たちは彼らと公式な引き継ぎを進めています。",
+			"readMore": "Matt Rubens による最初のお知らせを読む"
+		},
 		"release": {
 			"heading": "新機能:",
-			"gpt54": "Poe プロバイダー: Poe を AI プロバイダーとして追加し、Roo Code から Poe のモデルに直接アクセスできるようにしました。",
-			"slashSkills": "xAI と MiniMax の改善: xAI プロバイダーを Responses API へ移行し、再利用可能な変換ユーティリティを追加し、Grok-4.20 のデフォルト設定を更新し、MiniMax のモデル一覧とコンテキストウィンドウの扱いを修正して、より信頼性の高いセットアップにしました。",
-			"geminiPro": "Gemini 3.1 Pro サポート: Gemini 3.1 Pro モデルのサポートを追加し、パフォーマンス向上のためデフォルトの Gemini モデルに設定しました。",
-			"cliNdjson": "CLI NDJSON プロトコル: 新しい NDJSON stdin プロトコル、list サブコマンド、より柔軟な CLI ワークフローのためのモジュール化された run コマンド。",
-			"cliRelease": "CLI v0.1.0: Roo Code CLI が安定したコマンドインターフェースで初の正式リリースに到達しました。"
+			"gpt55": "OpenAI Codex 経由の GPT-5.5: OpenAI Codex プロバイダーで GPT-5.5 のサポートを追加しました。Roo Code から最新モデルを直接利用できます。",
+			"claudeOpus47": "Vertex AI 上の Claude Opus 4.7: Anthropic の最新フラッグシップ推論モデルとして、Vertex AI プロバイダーに Claude Opus 4.7 を追加しました。",
+			"checkpointNav": "以前のチェックポイントへのナビゲーション: チャットから以前のチェックポイントへ戻るためのコントロールを追加しました。i18n にも完全対応しています。"
 		},
 		"cloudAgents": {
 			"heading": "クラウドの新機能:",

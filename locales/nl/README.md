@@ -13,11 +13,19 @@
 
 > Jouw AI-aangedreven dev-team, rechtstreeks in je editor
 
-## Nieuw in v3.52.0
+## Nieuw in v3.53.0
 
-- Poe toegevoegd als AI-provider, zodat je in Roo Code direct toegang hebt tot Poe-modellen.
-- De xAI-provider verbeterd met een migratie naar de Responses API, herbruikbare transformatiehulpmiddelen en bijgewerkte Grok-4.20-standaardinstellingen.
-- MiniMax-modellijsten en de afhandeling van het contextvenster gerepareerd voor een betrouwbaardere configuratie.
+> ### De Roo Code-plugin gaat niet weg.
+>
+> Je hebt misschien de [recente aankondiging](https://x.com/mattrubens/status/2046636598859559114) gezien dat Roo Code 3 miljoen installaties heeft bereikt en het oorspronkelijke team zich volledig richt op Roomote. We weten dat dat nieuws voor velen van jullie moeilijk was. Deze plugin betekent veel voor ons en voor jou, en we horen je.
+>
+> Het goede nieuws: **een community-team heeft zich aangemeld om Roo Code voort te zetten**, en we werken samen aan een officiële overdracht, zodat de plugin waar je op vertrouwt onderhouden en verbeterd blijft worden.
+
+**Wat is er nieuw in deze versie:**
+
+- GPT-5.5-ondersteuning toegevoegd via de OpenAI Codex-provider.
+- Claude Opus 4.7-ondersteuning op Vertex AI toegevoegd.
+- Bediening toegevoegd in de chat om terug te navigeren naar eerdere checkpoints, zodat je makkelijker kunt teruggaan door vorige checkpoints.
 
 <details>
   <summary>🌐 Beschikbare talen</summary>
@@ -41,7 +49,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-    </details>
+      </details>
 
 ---
 

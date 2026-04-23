@@ -348,13 +348,16 @@
 			"selectModel": "Başlamak için Ayarlar'da Roo Code Cloud sağlayıcısından <code>roo/code-supernova</code>'yı seçin.",
 			"goToSettingsButton": "Ayarlar'a Git"
 		},
+		"handoff": {
+			"heading": "Roo Code eklentisi bir yere gitmiyor.",
+			"description": "Roo Code'un 3 milyon kuruluma ulaştığı ve orijinal ekibin tüm enerjisini Roomote'a verdiği son duyuruyu görmüş olabilirsin. Bu haberin birçoğunuz için zor olduğunu biliyoruz. Bu eklenti bizim ve senin için çok şey ifade ediyor ve seni duyuyoruz. İyi haber: <bold>bir topluluk ekibi Roo Code'u ileriye taşımak için öne çıktı</bold> ve güvendiğin eklentinin bakımı ve geliştirilmesinin sürmesi için onlarla resmi bir devir çalışması yürütüyoruz.",
+			"readMore": "Matt Rubens'in orijinal duyurusunu oku"
+		},
 		"release": {
 			"heading": "Yenilikler:",
-			"gpt54": "Poe Sağlayıcısı: Poe, Roo Code içinde Poe modellerine doğrudan erişebilmen için bir AI sağlayıcısı olarak eklendi.",
-			"slashSkills": "xAI ve MiniMax İyileştirmeleri: xAI sağlayıcısı Responses API'ye taşındı, yeniden kullanılabilir dönüştürme yardımcıları eklendi, Grok-4.20 varsayılanları güncellendi ve daha güvenilir bir kurulum için MiniMax model listeleriyle context window işleme düzeltildi.",
-			"geminiPro": "Gemini 3.1 Pro Desteği: Gemini 3.1 Pro model desteği eklendi ve daha iyi performans için varsayılan Gemini modeli olarak ayarlandı.",
-			"cliNdjson": "CLI NDJSON Protokolü: Yeni NDJSON stdin protokolü, list alt komutları ve daha esnek CLI iş akışları için modüler run komutu.",
-			"cliRelease": "CLI v0.1.0: Roo Code CLI, kararlı bir komut arayüzüyle ilk resmi sürümüne ulaştı."
+			"gpt55": "OpenAI Codex üzerinden GPT-5.5: En son modeli doğrudan Roo Code'dan kullanabilmen için OpenAI Codex sağlayıcısına GPT-5.5 desteği eklendi.",
+			"claudeOpus47": "Vertex AI'da Claude Opus 4.7: Anthropic'in en yeni amiral gemisi akıl yürütme modeli olan Claude Opus 4.7 Vertex AI sağlayıcısına eklendi.",
+			"checkpointNav": "Önceki Checkpoint Navigasyonu: Sohbetten önceki checkpoint'lere geri atlayabilmen için kontroller eklendi ve tam i18n desteği sunuluyor."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",

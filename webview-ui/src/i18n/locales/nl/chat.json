@@ -320,13 +320,16 @@
 			"selectModel": "Selecteer <code>roo/code-supernova</code> van de Roo Code Cloud provider in Instellingen om te beginnen.",
 			"goToSettingsButton": "Ga naar Instellingen"
 		},
+		"handoff": {
+			"heading": "De Roo Code-plugin gaat niet weg.",
+			"description": "Je hebt misschien de recente aankondiging gezien dat Roo Code 3 miljoen installaties heeft bereikt en het oorspronkelijke team zich volledig richt op Roomote. We weten dat dat nieuws voor velen van jullie moeilijk was. Deze plugin betekent veel voor ons en voor jou, en we horen je. Het goede nieuws: <bold>een community-team heeft zich aangemeld om Roo Code voort te zetten</bold>, en we werken samen aan een officiële overdracht, zodat de plugin waar je op vertrouwt onderhouden en verbeterd blijft worden.",
+			"readMore": "Lees de originele aankondiging van Matt Rubens"
+		},
 		"release": {
 			"heading": "Wat is er nieuw:",
-			"gpt54": "Poe-provider: Poe toegevoegd als AI-provider, zodat je in Roo Code direct toegang hebt tot Poe-modellen.",
-			"slashSkills": "xAI- en MiniMax-verbeteringen: De xAI-provider gemigreerd naar de Responses API, herbruikbare transformatiehulpmiddelen toegevoegd, Grok-4.20-standaardinstellingen bijgewerkt en MiniMax-modellijsten plus de afhandeling van het contextvenster gerepareerd voor een betrouwbaardere configuratie.",
-			"geminiPro": "Gemini 3.1 Pro ondersteuning: Ondersteuning voor het Gemini 3.1 Pro model is toegevoegd en ingesteld als standaard Gemini-model voor betere prestaties.",
-			"cliNdjson": "CLI NDJSON-protocol: Nieuw NDJSON stdin-protocol, list-subopdrachten en gemodulariseerd run-commando voor flexibelere CLI-workflows.",
-			"cliRelease": "CLI v0.1.0: De Roo Code CLI bereikt zijn eerste officiële release met een stabiele opdrachtinterface."
+			"gpt55": "GPT-5.5 via OpenAI Codex: GPT-5.5-ondersteuning toegevoegd in de OpenAI Codex-provider, zodat je het nieuwste model direct vanuit Roo Code kunt gebruiken.",
+			"claudeOpus47": "Claude Opus 4.7 op Vertex AI: Claude Opus 4.7 toegevoegd aan de Vertex AI-provider voor Anthropic's nieuwste vlaggenschip-reasoningmodel.",
+			"checkpointNav": "Navigatie naar vorige checkpoints: Bediening toegevoegd in de chat om terug te springen door eerdere checkpoints, met volledige i18n-ondersteuning."
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",

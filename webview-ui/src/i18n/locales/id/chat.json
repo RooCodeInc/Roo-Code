@@ -376,13 +376,16 @@
 			"selectModel": "Pilih <code>roo/code-supernova</code> dari penyedia Roo Code Cloud di Pengaturan untuk memulai.",
 			"goToSettingsButton": "Pergi ke Pengaturan"
 		},
+		"handoff": {
+			"heading": "Plugin Roo Code tidak akan hilang.",
+			"description": "Kamu mungkin sudah melihat pengumuman baru-baru ini bahwa Roo Code mencapai 3 juta instalasi dan tim aslinya sepenuhnya fokus ke Roomote. Kami tahu berita itu berat bagi banyak dari kalian. Plugin ini sangat berarti bagi kami dan bagi kamu, dan kami mendengarmu. Kabar baiknya: <bold>sebuah tim komunitas telah maju untuk melanjutkan Roo Code</bold>, dan kami sedang bekerja sama dengan mereka untuk serah terima resmi agar plugin yang kamu andalkan tetap dirawat dan ditingkatkan.",
+			"readMore": "Baca pengumuman asli dari Matt Rubens"
+		},
 		"release": {
 			"heading": "Yang Baru:",
-			"gpt54": "Provider Poe: Poe ditambahkan sebagai provider AI agar kamu bisa langsung mengakses model Poe di Roo Code.",
-			"slashSkills": "Peningkatan xAI dan MiniMax: Provider xAI dimigrasikan ke Responses API, utilitas transformasi yang bisa dipakai ulang ditambahkan, default Grok-4.20 diperbarui, dan daftar model MiniMax serta penanganan context window diperbaiki agar setup lebih andal.",
-			"geminiPro": "Dukungan Gemini 3.1 Pro: Dukungan model Gemini 3.1 Pro telah ditambahkan dan ditetapkan sebagai model Gemini default untuk performa yang lebih baik.",
-			"cliNdjson": "Protokol NDJSON CLI: Protokol NDJSON stdin baru, subperintah list, dan perintah run yang dimodularisasi untuk alur kerja CLI yang lebih fleksibel.",
-			"cliRelease": "CLI v0.1.0: CLI Roo Code mencapai rilis resmi pertamanya dengan antarmuka perintah yang stabil."
+			"gpt55": "GPT-5.5 via OpenAI Codex: Dukungan GPT-5.5 ditambahkan di provider OpenAI Codex agar kamu bisa menggunakan model terbaru langsung dari Roo Code.",
+			"claudeOpus47": "Claude Opus 4.7 di Vertex AI: Claude Opus 4.7 ditambahkan ke provider Vertex AI untuk model reasoning andalan terbaru dari Anthropic.",
+			"checkpointNav": "Navigasi Checkpoint Sebelumnya: Menambahkan kontrol di chat untuk melompat kembali ke checkpoint sebelumnya, dengan dukungan i18n penuh."
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",

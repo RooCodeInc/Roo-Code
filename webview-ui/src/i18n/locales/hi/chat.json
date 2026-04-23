@@ -347,13 +347,16 @@
 			"selectModel": "आरंभ करने के लिए सेटिंग्स में Roo Code Cloud प्रोवाइडर से <code>roo/code-supernova</code> चुनें।",
 			"goToSettingsButton": "सेटिंग्स पर जाएं"
 		},
+		"handoff": {
+			"heading": "Roo Code plugin कहीं नहीं जा रहा है।",
+			"description": "आपने शायद हाल ही की घोषणा देखी होगी कि Roo Code ने 30 लाख installs पार कर लिए हैं और मूल टीम पूरी तरह Roomote पर focus कर रही है। हम जानते हैं कि यह खबर आप में से कई के लिए कठिन थी। यह plugin हमारे और आपके लिए बहुत मायने रखता है, और हम आपकी बात सुन रहे हैं। अच्छी खबर: <bold>एक community team ने Roo Code को आगे ले जाने की ज़िम्मेदारी ली है</bold>, और हम उनके साथ एक आधिकारिक handoff पर काम कर रहे हैं ताकि जिस plugin पर आप भरोसा करते हैं, उसका maintenance और improvement जारी रहे।",
+			"readMore": "Matt Rubens की मूल घोषणा पढ़ें"
+		},
 		"release": {
 			"heading": "नया क्या है:",
-			"gpt54": "Poe provider: Poe को AI provider के रूप में जोड़ा गया है, ताकि आप Roo Code में सीधे Poe models तक पहुँच सकें।",
-			"slashSkills": "xAI और MiniMax में सुधार: xAI provider को Responses API पर migrate किया गया है, reusable transform utilities जोड़ी गई हैं, Grok-4.20 defaults अपडेट किए गए हैं, और ज़्यादा भरोसेमंद setup के लिए MiniMax model listings व context window handling को ठीक किया गया है।",
-			"geminiPro": "Gemini 3.1 Pro सपोर्ट: Gemini 3.1 Pro मॉडल का सपोर्ट जोड़ा गया और बेहतर प्रदर्शन के लिए इसे डिफ़ॉल्ट Gemini मॉडल के रूप में सेट किया गया।",
-			"cliNdjson": "CLI NDJSON प्रोटोकॉल: नया NDJSON stdin प्रोटोकॉल, list सबकमांड, और अधिक लचीले CLI वर्कफ़्लो के लिए मॉड्यूलर run कमांड।",
-			"cliRelease": "CLI v0.1.0: Roo Code CLI एक स्थिर कमांड इंटरफ़ेस के साथ अपनी पहली आधिकारिक रिलीज़ तक पहुँचा।"
+			"gpt55": "OpenAI Codex के माध्यम से GPT-5.5: OpenAI Codex provider में GPT-5.5 सपोर्ट जोड़ा गया, ताकि आप नवीनतम मॉडल का उपयोग सीधे Roo Code से कर सकें।",
+			"claudeOpus47": "Vertex AI पर Claude Opus 4.7: Anthropic के नवीनतम flagship reasoning मॉडल के लिए Vertex AI provider में Claude Opus 4.7 जोड़ा गया।",
+			"checkpointNav": "पिछले Checkpoint की Navigation: चैट में controls जोड़े गए ताकि आप पिछले checkpoints पर वापस जा सकें, पूर्ण i18n सपोर्ट के साथ।"
 		},
 		"cloudAgents": {
 			"heading": "क्लाउड में नया:",

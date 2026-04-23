@@ -347,13 +347,16 @@
 			"selectModel": "설정에서 Roo Code Cloud 제공업체의 <code>roo/code-supernova</code>를 선택하여 시작하세요.",
 			"goToSettingsButton": "설정으로 이동"
 		},
+		"handoff": {
+			"heading": "Roo Code 플러그인은 사라지지 않아요.",
+			"description": "Roo Code가 300만 설치를 돌파했고, 원래 팀이 Roomote에 전념하기로 했다는 최근 발표를 보셨을 거예요. 많은 분들께 이 소식이 힘들게 다가왔다는 걸 알고 있어요. 이 플러그인은 저희와 여러분 모두에게 큰 의미가 있고, 여러분의 목소리를 듣고 있어요. 좋은 소식이 있어요: <bold>커뮤니티 팀이 Roo Code를 계속 이어가기로 나섰어요</bold>. 여러분이 의지하는 이 플러그인이 계속 유지 관리되고 개선될 수 있도록, 저희는 그들과 공식적인 인수인계를 진행하고 있어요.",
+			"readMore": "Matt Rubens의 원본 발표 읽기"
+		},
 		"release": {
 			"heading": "새로운 기능:",
-			"gpt54": "Poe 제공업체: Poe를 AI 제공업체로 추가해 Roo Code에서 Poe 모델에 직접 접근할 수 있게 했어요.",
-			"slashSkills": "xAI 및 MiniMax 개선: xAI 제공업체를 Responses API로 마이그레이션하고, 재사용 가능한 변환 유틸리티를 추가하고, Grok-4.20 기본값을 업데이트하고, MiniMax 모델 목록과 컨텍스트 윈도우 처리를 수정해 더 안정적인 설정을 제공해요.",
-			"geminiPro": "Gemini 3.1 Pro 지원: Gemini 3.1 Pro 모델 지원이 추가되었으며, 향상된 성능을 위해 기본 Gemini 모델로 설정되었습니다.",
-			"cliNdjson": "CLI NDJSON 프로토콜: 새로운 NDJSON stdin 프로토콜, list 하위 명령어, 더 유연한 CLI 워크플로를 위한 모듈화된 run 명령어.",
-			"cliRelease": "CLI v0.1.0: Roo Code CLI가 안정적인 명령어 인터페이스로 첫 공식 릴리스에 도달했습니다."
+			"gpt55": "OpenAI Codex를 통한 GPT-5.5: OpenAI Codex 제공업체에 GPT-5.5 지원을 추가해, Roo Code에서 바로 최신 모델을 사용할 수 있어요.",
+			"claudeOpus47": "Vertex AI에서 Claude Opus 4.7: Anthropic의 최신 플래그십 추론 모델인 Claude Opus 4.7을 Vertex AI 제공업체에 추가했어요.",
+			"checkpointNav": "이전 체크포인트 탐색: 이전 체크포인트로 돌아갈 수 있는 컨트롤을 채팅에 추가했고, i18n을 완벽하게 지원해요."
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",

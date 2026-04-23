@@ -348,13 +348,16 @@
 			"selectModel": "Chọn <code>roo/code-supernova</code> từ nhà cung cấp Roo Code Cloud trong Cài đặt để bắt đầu.",
 			"goToSettingsButton": "Đi tới Cài đặt"
 		},
+		"handoff": {
+			"heading": "Plugin Roo Code sẽ không biến mất.",
+			"description": "Bạn có thể đã thấy thông báo gần đây rằng Roo Code đã đạt 3 triệu lượt cài đặt và đội ngũ ban đầu đang dồn toàn lực cho Roomote. Chúng tôi biết rằng tin này thật khó khăn với nhiều bạn. Plugin này có ý nghĩa rất lớn với chúng tôi và với bạn, và chúng tôi lắng nghe bạn. Tin tốt: <bold>một đội ngũ từ cộng đồng đã đứng ra tiếp tục đưa Roo Code đi tiếp</bold>, và chúng tôi đang làm việc với họ về việc bàn giao chính thức để plugin mà bạn đang tin cậy tiếp tục được bảo trì và cải thiện.",
+			"readMore": "Đọc thông báo gốc từ Matt Rubens"
+		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"gpt54": "Nhà cung cấp Poe: Đã thêm Poe làm nhà cung cấp AI để bạn có thể truy cập trực tiếp các model Poe trong Roo Code.",
-			"slashSkills": "Cải tiến xAI và MiniMax: Đã chuyển nhà cung cấp xAI sang Responses API, thêm các tiện ích chuyển đổi có thể tái sử dụng, cập nhật các giá trị mặc định của Grok-4.20 và sửa danh sách model MiniMax cùng cách xử lý context window để thiết lập đáng tin cậy hơn.",
-			"geminiPro": "Hỗ trợ Gemini 3.1 Pro: Đã thêm hỗ trợ model Gemini 3.1 Pro và đặt làm model Gemini mặc định để cải thiện hiệu suất.",
-			"cliNdjson": "Giao thức NDJSON CLI: Giao thức NDJSON stdin mới, lệnh con list, và lệnh run được module hóa cho quy trình CLI linh hoạt hơn.",
-			"cliRelease": "CLI v0.1.0: CLI Roo Code đạt bản phát hành chính thức đầu tiên với giao diện lệnh ổn định."
+			"gpt55": "GPT-5.5 qua OpenAI Codex: Đã thêm hỗ trợ GPT-5.5 trong nhà cung cấp OpenAI Codex để bạn có thể sử dụng model mới nhất trực tiếp từ Roo Code.",
+			"claudeOpus47": "Claude Opus 4.7 trên Vertex AI: Đã thêm Claude Opus 4.7 vào nhà cung cấp Vertex AI - model reasoning flagship mới nhất của Anthropic.",
+			"checkpointNav": "Điều hướng Checkpoint trước đó: Đã thêm các điều khiển trong chat để quay lại các checkpoint trước, với hỗ trợ i18n đầy đủ."
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

@@ -369,13 +369,16 @@
 			"selectModel": "在設定中從 Roo Code Cloud 供應商選擇 <code>roo/code-supernova</code> 開始使用。",
 			"goToSettingsButton": "前往設定"
 		},
+		"handoff": {
+			"heading": "Roo Code 外掛不會消失。",
+			"description": "你可能已經看到最近的公告：Roo Code 已突破 300 萬次安裝，原團隊將全心投入 Roomote。我們知道這個消息讓許多人感到難受。這個外掛對我們和你都意義重大，你的心聲我們聽到了。好消息是：<bold>一支社群團隊已挺身而出，繼續推進 Roo Code</bold>，我們正與他們協作進行正式交接，讓你所仰賴的外掛持續受到維護與改進。",
+			"readMore": "閱讀 Matt Rubens 的原始公告"
+		},
 		"release": {
 			"heading": "新增功能：",
-			"gpt54": "Poe 供應商：已將 Poe 新增為 AI 供應商，讓你可以在 Roo Code 中直接存取 Poe 模型。",
-			"slashSkills": "xAI 與 MiniMax 改進：已將 xAI 供應商遷移至 Responses API，加入可重複使用的轉換工具，更新了 Grok-4.20 預設值，並修正 MiniMax 模型清單和上下文視窗處理方式，讓設定更加可靠。",
-			"geminiPro": "Gemini 3.1 Pro 支援：新增 Gemini 3.1 Pro 模型支援，並設為預設 Gemini 模型以提升效能。",
-			"cliNdjson": "CLI NDJSON 協定：新增 NDJSON stdin 協定、list 子指令，以及模組化的 run 指令，提供更彈性的 CLI 工作流程。",
-			"cliRelease": "CLI v0.1.0：Roo Code CLI 以穩定的指令介面達成首個正式版本。"
+			"gpt55": "透過 OpenAI Codex 支援 GPT-5.5：已在 OpenAI Codex 供應商中新增 GPT-5.5 支援，讓你可以直接在 Roo Code 中使用最新模型。",
+			"claudeOpus47": "Vertex AI 上的 Claude Opus 4.7：已將 Anthropic 最新旗艦推理模型 Claude Opus 4.7 新增至 Vertex AI 供應商。",
+			"checkpointNav": "前一個存檔點導覽：在聊天中新增控制項，可回到此前的存檔點，並提供完整的 i18n 支援。"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",

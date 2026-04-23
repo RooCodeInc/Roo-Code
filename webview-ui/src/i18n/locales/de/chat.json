@@ -347,13 +347,16 @@
 			"selectModel": "Wähle <code>roo/code-supernova</code> vom Roo Code Cloud-Provider in den Einstellungen aus, um zu beginnen.",
 			"goToSettingsButton": "Zu den Einstellungen"
 		},
+		"handoff": {
+			"heading": "Das Roo Code-Plugin verschwindet nicht.",
+			"description": "Du hast vielleicht die neuliche Ankündigung gesehen, dass Roo Code 3 Millionen Installationen erreicht hat und das ursprüngliche Team sich voll auf Roomote konzentriert. Wir wissen, dass diese Nachricht für viele von euch schwer war. Dieses Plugin bedeutet uns und dir sehr viel, und wir hören dich. Die gute Nachricht: <bold>ein Community-Team hat sich bereit erklärt, Roo Code weiterzuführen</bold>, und wir arbeiten mit ihnen an einer offiziellen Übergabe, damit das Plugin, auf das du dich verlässt, weiterhin gepflegt und verbessert wird.",
+			"readMore": "Die ursprüngliche Ankündigung von Matt Rubens lesen"
+		},
 		"release": {
 			"heading": "Was ist neu:",
-			"gpt54": "Poe-Anbieter: Poe als KI-Anbieter hinzugefügt, damit du direkt in Roo Code auf Poe-Modelle zugreifen kannst.",
-			"slashSkills": "xAI- und MiniMax-Verbesserungen: Den xAI-Anbieter auf die Responses API migriert, wiederverwendbare Transformations-Utilities hinzugefügt, Grok-4.20-Standards aktualisiert und MiniMax-Modelllisten sowie die Handhabung des Kontextfensters für eine zuverlässigere Einrichtung korrigiert.",
-			"geminiPro": "Gemini 3.1 Pro Unterstützung: Gemini 3.1 Pro wurde als Modell hinzugefügt und als Standard-Gemini-Modell für bessere Leistung festgelegt.",
-			"cliNdjson": "CLI NDJSON-Protokoll: Neues NDJSON-stdin-Protokoll, List-Unterbefehle und modularisierter Run-Befehl für flexiblere CLI-Workflows.",
-			"cliRelease": "CLI v0.1.0: Das Roo Code CLI erreicht seine erste offizielle Veröffentlichung mit einer stabilen Befehlsoberfläche."
+			"gpt55": "GPT-5.5 via OpenAI Codex: GPT-5.5-Unterstützung im OpenAI Codex-Provider hinzugefügt, damit du das neueste Modell direkt aus Roo Code heraus nutzen kannst.",
+			"claudeOpus47": "Claude Opus 4.7 auf Vertex AI: Claude Opus 4.7 zum Vertex AI-Provider hinzugefügt – Anthropics neuestes Flaggschiff-Reasoning-Modell.",
+			"checkpointNav": "Navigation zu vorherigen Checkpoints: Neue Steuerelemente im Chat, um durch frühere Checkpoints zurückzuspringen, mit vollständiger i18n-Unterstützung."
 		},
 		"cloudAgents": {
 			"heading": "Neu in der Cloud:",

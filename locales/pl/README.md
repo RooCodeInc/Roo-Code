@@ -13,11 +13,19 @@
 
 > Twój zespół deweloperski zasilany AI — prosto w edytorze
 
-## Nowości w v3.52.0
+## Nowości w v3.53.0
 
-- Dodano Poe jako dostawcę AI, żebyś mógł bezpośrednio uzyskać dostęp do modeli Poe w Roo Code.
-- Ulepszono dostawcę xAI dzięki migracji do Responses API, narzędziom transformacji wielokrotnego użytku i zaktualizowanym domyślnym ustawieniom Grok-4.20.
-- Naprawiono listy modeli MiniMax i obsługę okna kontekstu, żeby konfiguracja była bardziej niezawodna.
+> ### Wtyczka Roo Code nie znika.
+>
+> Być może widziałeś [niedawne ogłoszenie](https://x.com/mattrubens/status/2046636598859559114), że Roo Code osiągnął 3 miliony instalacji, a oryginalny zespół całkowicie skupia się na Roomote. Wiemy, że ta wiadomość była trudna dla wielu z was. Ta wtyczka wiele dla nas i dla ciebie znaczy, i słyszymy was.
+>
+> Dobra wiadomość: **zespół społeczności zgłosił się, żeby poprowadzić Roo Code dalej**, i pracujemy z nimi nad oficjalnym przekazaniem, żeby wtyczka, na której polegasz, była nadal utrzymywana i ulepszana.
+
+**Nowości w tej wersji:**
+
+- Dodano obsługę GPT-5.5 przez dostawcę OpenAI Codex.
+- Dodano obsługę Claude Opus 4.7 w Vertex AI.
+- Dodano w czacie kontrolki nawigacji do poprzednich checkpointów, żebyś mógł łatwiej cofać się do wcześniejszych checkpointów.
 
 <details>
   <summary>🌐 Dostępne języki</summary>
@@ -41,7 +49,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-    </details>
+      </details>
 
 ---
 
