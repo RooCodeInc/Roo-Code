@@ -12,7 +12,7 @@ vi.mock("@src/utils/vscode", () => ({
 
 vi.mock("@roo/package", () => ({
 	Package: {
-		version: "3.52.0",
+		version: "3.53.0",
 	},
 }))
 
@@ -33,10 +33,13 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 		t: (key: string, options?: { version?: string }) => {
 			const translations: Record<string, string> = {
 				"chat:announcement.release.heading": "What's New:",
-				"chat:announcement.release.gpt54":
-					"Poe Provider: Added Poe as an AI provider so you can access Poe models directly in Roo Code.",
-				"chat:announcement.release.slashSkills":
-					"xAI and MiniMax Improvements: Migrated the xAI provider to the Responses API, added Grok-4.20 defaults, and fixed MiniMax model listings and context window handling for a more reliable setup.",
+				"chat:announcement.release.gpt55":
+					"GPT-5.5 via OpenAI Codex: Added GPT-5.5 support in the OpenAI Codex provider so you can use the latest model straight from Roo Code.",
+				"chat:announcement.release.claudeOpus47":
+					"Claude Opus 4.7 on Vertex AI: Added Claude Opus 4.7 to the Vertex AI provider for Anthropic's newest flagship reasoning model.",
+				"chat:announcement.release.checkpointNav":
+					"Previous Checkpoint Navigation: Added controls in chat to jump back through prior checkpoints, with full i18n support.",
+				"chat:announcement.handoff.heading": "The Roo Code plugin is not going away.",
 			}
 
 			if (key === "chat:announcement.title") {
@@ -49,25 +52,30 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 }))
 
 describe("Announcement", () => {
-	it("renders the v3.52.0 announcement title and highlights", () => {
+	it("renders the v3.53.0 announcement title and highlights", () => {
 		render(<Announcement hideAnnouncement={vi.fn()} />)
 
-		expect(screen.getByText("Roo Code 3.52.0 Released")).toBeInTheDocument()
+		expect(screen.getByText("Roo Code 3.53.0 Released")).toBeInTheDocument()
 		expect(
 			screen.getByText(
-				"Poe Provider: Added Poe as an AI provider so you can access Poe models directly in Roo Code.",
+				"GPT-5.5 via OpenAI Codex: Added GPT-5.5 support in the OpenAI Codex provider so you can use the latest model straight from Roo Code.",
 			),
 		).toBeInTheDocument()
 		expect(
 			screen.getByText(
-				"xAI and MiniMax Improvements: Migrated the xAI provider to the Responses API, added Grok-4.20 defaults, and fixed MiniMax model listings and context window handling for a more reliable setup.",
+				"Claude Opus 4.7 on Vertex AI: Added Claude Opus 4.7 to the Vertex AI provider for Anthropic's newest flagship reasoning model.",
+			),
+		).toBeInTheDocument()
+		expect(
+			screen.getByText(
+				"Previous Checkpoint Navigation: Added controls in chat to jump back through prior checkpoints, with full i18n support.",
 			),
 		).toBeInTheDocument()
 	})
 
-	it("renders exactly two release highlight bullets", () => {
+	it("renders exactly three release highlight bullets", () => {
 		render(<Announcement hideAnnouncement={vi.fn()} />)
 
-		expect(screen.getAllByRole("listitem")).toHaveLength(2)
+		expect(screen.getAllByRole("listitem")).toHaveLength(3)
 	})
 })
