@@ -64,6 +64,7 @@
 		"installError": "Не удалось установить \"{{itemName}}\": {{errorMessage}}",
 		"removing": "Удаление элемента: \"{{itemName}}\"",
 		"removeSuccess": "\"{{itemName}}\" успешно удален",
-		"removeError": "Не удалось удалить \"{{itemName}}\": {{errorMessage}}"
+		"removeError": "Не удалось удалить \"{{itemName}}\": {{errorMessage}}",
+		"notInstalledForTarget": "Режим не найден"
 	}
 }
