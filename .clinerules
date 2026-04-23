@@ -1,0 +1,12 @@
+# 2026 DETERMINISTIC PROTOCOL
+
+## RULE 1: THE HANDSHAKE
+Before you perform ANY coding task, you MUST initialize your session by calling:
+selectActiveIntent(intentId: 'INT-002')
+- You must strictly follow the <owned_scope> provided in the XML response.
+- Do NOT touch files outside that scope.
+
+## RULE 2: THE GOLDEN THREAD (LOGGING)
+Every time you create, modify, or delete a file, you MUST immediately run the following hook to log the hash to the ledger:
+python .orchestration/hooks/tmd.py '<INTENT_ID>' '<FILE_PATH>' '<NEW_CONTENT>'
+- This is mandatory for traceability.

@@ -291,11 +291,7 @@ export default function PricingPage() {
 								<li>To pay for Cloud Agents running time (${PRICE_CREDITS}/hour)</li>
 								<li>
 									To pay for AI model inference costs (
-									<a
-										href="/provider"
-										target="_blank"
-										rel="noopener noreferrer"
-										className="underline">
+									<a href="/provider" target="_blank" rel="noopener noreferrer" className="underline">
 										varies by model
 									</a>
 									)

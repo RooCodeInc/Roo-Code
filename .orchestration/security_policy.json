@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "command_classification": {
+    "safe": ["read_file", "list_files", "search_files"],
+    "destructive": ["write_to_file", "delete_file", "execute_command"]
+  },
+  "error_protocol": {
+    "type": "JSON_TOOL_ERROR",
+    "template": "Scope Violation: {intent_id} is not authorized to edit {file}. Request scope expansion."
+  }
+}
