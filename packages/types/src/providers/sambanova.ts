@@ -7,6 +7,7 @@ export type SambaNovaModelId =
 	| "DeepSeek-R1"
 	| "DeepSeek-V3-0324"
 	| "DeepSeek-V3.1"
+	| "DeepSeek-V4-Pro"
 	| "Llama-4-Maverick-17B-128E-Instruct"
 	| "Qwen3-32B"
 	| "gpt-oss-120b"
@@ -59,6 +60,28 @@ export const sambaNovaModels = {
 		inputPrice: 3.0,
 		outputPrice: 4.5,
 		description: "DeepSeek V3.1 model with 32K context window.",
+	},
+	"DeepSeek-V4-Pro": {
+		maxTokens: 384_000,
+		contextWindow: 1_000_000,
+		supportsImages: false,
+		supportsPromptCache: true,
+		inputPrice: 12,
+		outputPrice: 24,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 1,
+		description: "DeepSeek V4 Pro",
+	},
+	"deepseek-ai/DeepSeek-V4-Flash": {
+		maxTokens: 384_000,
+		contextWindow: 1_000_000,
+		supportsImages: false,
+		supportsPromptCache: true,
+		inputPrice: 0.2,
+		outputPrice: 1,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 1,
+		description: "DeepSeek V4 Flash",
 	},
 	"Llama-4-Maverick-17B-128E-Instruct": {
 		maxTokens: 8192,

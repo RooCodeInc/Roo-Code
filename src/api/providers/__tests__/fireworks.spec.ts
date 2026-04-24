@@ -245,6 +245,52 @@ describe("FireworksHandler", () => {
 		)
 	})
 
+	it("should return DeepSeek V4 Pro model with correct configuration", () => {
+		const testModelId: FireworksModelId = "accounts/fireworks/models/deepseek-v4-pro"
+		const handlerWithModel = new FireworksHandler({
+			apiModelId: testModelId,
+			fireworksApiKey: "test-fireworks-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 384_000,
+				contextWindow: 1_000_000,
+				supportsImages: false,
+				supportsPromptCache: true,
+				inputPrice: 12,
+				outputPrice: 24,
+				cacheWritesPrice: 0,
+				cacheReadsPrice: 1,
+				description: expect.stringContaining("DeepSeek V4 Pro"),
+			}),
+		)
+	})
+
+	it("should return DeepSeek V4 Flash model with correct configuration", () => {
+		const testModelId: FireworksModelId = "accounts/fireworks/models/deepseek-v4-flash"
+		const handlerWithModel = new FireworksHandler({
+			apiModelId: testModelId,
+			fireworksApiKey: "test-fireworks-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 384_000,
+				contextWindow: 1_000_000,
+				supportsImages: false,
+				supportsPromptCache: true,
+				inputPrice: 0.2,
+				outputPrice: 1,
+				cacheWritesPrice: 0,
+				cacheReadsPrice: 1,
+				description: expect.stringContaining("DeepSeek V4 Flash"),
+			}),
+		)
+	})
+
 	it("should return GLM-4.5 model with correct configuration", () => {
 		const testModelId: FireworksModelId = "accounts/fireworks/models/glm-4p5"
 		const handlerWithModel = new FireworksHandler({
