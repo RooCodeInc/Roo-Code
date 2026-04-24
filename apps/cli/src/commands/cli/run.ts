@@ -219,6 +219,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		user: null,
 		provider: effectiveProvider,
 		model: effectiveModel,
+		baseUrl: flagOptions.baseUrl,
 		workspacePath: effectiveWorkspacePath,
 		extensionPath: path.resolve(flagOptions.extension || getDefaultExtensionPath(__dirname)),
 		nonInteractive: !effectiveRequireApproval,
