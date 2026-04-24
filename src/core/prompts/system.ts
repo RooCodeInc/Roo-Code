@@ -23,6 +23,8 @@ import {
 	addCustomInstructions,
 	markdownFormattingSection,
 	getSkillsSection,
+	intentProtocolSection,
+	intentIndexSection,
 } from "./sections"
 
 // Helper function to get prompt component, filtering out empty objects
@@ -91,6 +93,8 @@ ${getSharedToolUseSection()}${toolsCatalog}
 	${getToolUseGuidelinesSection()}
 
 ${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined)}
+
+${intentProtocolSection()}
 
 ${modesSection}
 ${skillsSection ? `\n${skillsSection}` : ""}

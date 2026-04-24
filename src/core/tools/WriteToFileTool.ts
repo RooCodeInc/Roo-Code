@@ -21,6 +21,8 @@ import { BaseTool, ToolCallbacks } from "./BaseTool"
 interface WriteToFileParams {
 	path: string
 	content: string
+	intent_id: string
+	mutation_class: "AST_REFACTOR" | "INTENT_EVOLUTION"
 }
 
 export class WriteToFileTool extends BaseTool<"write_to_file"> {
