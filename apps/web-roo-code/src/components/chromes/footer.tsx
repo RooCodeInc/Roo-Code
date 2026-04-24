@@ -88,24 +88,6 @@ export function Footer() {
 											Changelog
 										</a>
 									</li>
-									<li>
-										<a
-											href={EXTERNAL_LINKS.TESTIMONIALS}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
-											Testimonials
-										</a>
-									</li>
-									<li>
-										<a
-											href={EXTERNAL_LINKS.SECURITY}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
-											Security Center
-										</a>
-									</li>
 								</ul>
 							</div>
 							<div className="mt-10 md:mt-0">
@@ -125,15 +107,6 @@ export function Footer() {
 											rel="noopener noreferrer"
 											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
 											Evals
-										</a>
-									</li>
-									<li>
-										<a
-											href={EXTERNAL_LINKS.FAQ}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
-											FAQ
 										</a>
 									</li>
 									<li>
@@ -184,15 +157,6 @@ export function Footer() {
 											href="mailto:support@roocode.com"
 											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
 											Contact
-										</a>
-									</li>
-									<li>
-										<a
-											href={EXTERNAL_LINKS.CAREERS}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
-											Careers
 										</a>
 									</li>
 									<li>

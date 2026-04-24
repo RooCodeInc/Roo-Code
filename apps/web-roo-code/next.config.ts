@@ -28,6 +28,11 @@ const nextConfig: NextConfig = {
 				permanent: false,
 			},
 			{
+				source: "/extension",
+				destination: "/",
+				permanent: true,
+			},
+			{
 				source: "/provider/pricing",
 				destination: "/",
 				permanent: true,

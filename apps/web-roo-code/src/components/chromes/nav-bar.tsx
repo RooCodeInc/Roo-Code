@@ -13,14 +13,12 @@ import { EXTERNAL_LINKS } from "@/lib/constants"
 import { useLogoSrc } from "@/lib/hooks/use-logo-src"
 import { ScrollButton } from "@/components/ui"
 import ThemeToggle from "@/components/chromes/theme-toggle"
-import { Puzzle, X } from "lucide-react"
+import { X } from "lucide-react"
 import {
 	NavigationMenu,
-	NavigationMenuContent,
 	NavigationMenuItem,
 	NavigationMenuLink,
 	NavigationMenuList,
-	NavigationMenuTrigger,
 	navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 import { cn } from "@/lib/utils"
@@ -46,83 +44,38 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 				{/* Desktop Navigation */}
 				<NavigationMenu className="grow ml-6 hidden text-sm md:flex">
 					<NavigationMenuList>
-						{/* Product Dropdown */}
-						<NavigationMenuItem>
-							<NavigationMenuTrigger className="bg-transparent font-light">Product</NavigationMenuTrigger>
-							<NavigationMenuContent>
-								<ul className="grid min-w-[260px] gap-1 p-2">
-									<li>
-										<NavigationMenuLink asChild>
-											<Link
-												href="/extension"
-												className="flex items-center select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-												<Puzzle className="size-3 mr-2" />
-												Roo Code VS Code Extension
-											</Link>
-										</NavigationMenuLink>
-									</li>
-								</ul>
-							</NavigationMenuContent>
-						</NavigationMenuItem>
-
-						{/* Resources Dropdown */}
-						<NavigationMenuItem>
-							<NavigationMenuTrigger className="bg-transparent font-light">
-								Resources
-							</NavigationMenuTrigger>
-							<NavigationMenuContent>
-								<ul className="grid min-w-[260px] gap-1 p-2">
-									<li>
-										<NavigationMenuLink asChild>
-											<Link
-												href="/blog"
-												className="block select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-												Blog
-											</Link>
-										</NavigationMenuLink>
-									</li>
-									<li>
-										<NavigationMenuLink asChild>
-											<Link
-												href="/evals"
-												className="block select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-												Evals
-											</Link>
-										</NavigationMenuLink>
-									</li>
-									<li>
-										<NavigationMenuLink asChild>
-											<a
-												href={EXTERNAL_LINKS.DISCORD}
-												target="_blank"
-												rel="noopener noreferrer"
-												className="block select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-												Discord
-											</a>
-										</NavigationMenuLink>
-									</li>
-									<li>
-										<NavigationMenuLink asChild>
-											<a
-												href={EXTERNAL_LINKS.SECURITY}
-												target="_blank"
-												rel="noopener noreferrer"
-												className="block select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-												Trust Center
-											</a>
-										</NavigationMenuLink>
-									</li>
-								</ul>
-							</NavigationMenuContent>
-						</NavigationMenuItem>
-
-						{/* Docs Link */}
 						<NavigationMenuItem>
 							<NavigationMenuLink
 								asChild
 								className={cn(navigationMenuTriggerStyle(), "bg-transparent font-light")}>
 								<a href={EXTERNAL_LINKS.DOCUMENTATION} target="_blank">
 									Docs
+								</a>
+							</NavigationMenuLink>
+						</NavigationMenuItem>
+
+						<NavigationMenuItem>
+							<NavigationMenuLink
+								asChild
+								className={cn(navigationMenuTriggerStyle(), "bg-transparent font-light")}>
+								<Link href="/blog">Blog</Link>
+							</NavigationMenuLink>
+						</NavigationMenuItem>
+
+						<NavigationMenuItem>
+							<NavigationMenuLink
+								asChild
+								className={cn(navigationMenuTriggerStyle(), "bg-transparent font-light")}>
+								<Link href="/evals">Evals</Link>
+							</NavigationMenuLink>
+						</NavigationMenuItem>
+
+						<NavigationMenuItem>
+							<NavigationMenuLink
+								asChild
+								className={cn(navigationMenuTriggerStyle(), "bg-transparent font-light")}>
+								<a href={EXTERNAL_LINKS.DISCORD} target="_blank" rel="noopener noreferrer">
+									Discord
 								</a>
 							</NavigationMenuLink>
 						</NavigationMenuItem>
@@ -179,63 +132,37 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 						<a
 							href={EXTERNAL_LINKS.DOCUMENTATION}
 							target="_blank"
-							className="block w-full p-5 text-left text-foreground active:opacity-50"
+							className="block w-full p-5 py-4 text-left text-foreground active:opacity-50"
 							onClick={() => setIsMenuOpen(false)}>
 							Docs
 						</a>
-						{/* Product Section */}
-						<div className="mt-4 w-full">
-							<div className="px-5 pb-2 pt-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-								Product
-							</div>
-							<Link
-								href="/extension"
-								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
-								onClick={() => setIsMenuOpen(false)}>
-								Roo Code VS Code Extension
-							</Link>
-						</div>
 
-						{/* Resources Section */}
-						<div className="mt-4 w-full">
-							<div className="px-5 pb-2 pt-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-								Resources
-							</div>
-							<Link
-								href="/blog"
-								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
-								onClick={() => setIsMenuOpen(false)}>
-								Blog
-							</Link>
-							<ScrollButton
-								targetId="faq"
-								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
-								onClick={() => setIsMenuOpen(false)}>
-								FAQ
-							</ScrollButton>
-							<Link
-								href="/evals"
-								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
-								onClick={() => setIsMenuOpen(false)}>
-								Evals
-							</Link>
-							<a
-								href={EXTERNAL_LINKS.DISCORD}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
-								onClick={() => setIsMenuOpen(false)}>
-								Discord
-							</a>
-							<a
-								href={EXTERNAL_LINKS.SECURITY}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
-								onClick={() => setIsMenuOpen(false)}>
-								Security Center
-							</a>
-						</div>
+						<Link
+							href="/blog"
+							className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
+							onClick={() => setIsMenuOpen(false)}>
+							Blog
+						</Link>
+						<ScrollButton
+							targetId="faq"
+							className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
+							onClick={() => setIsMenuOpen(false)}>
+							FAQ
+						</ScrollButton>
+						<Link
+							href="/evals"
+							className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
+							onClick={() => setIsMenuOpen(false)}>
+							Evals
+						</Link>
+						<a
+							href={EXTERNAL_LINKS.DISCORD}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
+							onClick={() => setIsMenuOpen(false)}>
+							Discord
+						</a>
 					</div>
 
 					{/* Bottom section with Cloud Login and stats */}
