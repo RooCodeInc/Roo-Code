@@ -53,6 +53,14 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 	}
 
 	async execute(params: ApplyPatchParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+		console.log("%c🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡", "color: orange; font-size: 16px")
+		console.log("%c🟡 TOOL EXECUTED: " + this.name, "color: orange; font-size: 16px; font-weight: bold")
+		console.log("%c🟡 File operation in progress", "color: orange; font-size: 16px")
+		console.log("%c🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡", "color: orange; font-size: 16px")
+		try {
+			const tracePath = path.join(task.cwd, ".roo-tool-trace.log")
+			await fs.appendFile(tracePath, `[${new Date().toISOString()}] TOOL EXECUTED: ${this.name}\n`, "utf8")
+		} catch {}
 		const { patch } = params
 		const { askApproval, handleError, pushToolResult } = callbacks
 
