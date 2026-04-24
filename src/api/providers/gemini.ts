@@ -29,6 +29,27 @@ import { getModelParams } from "../transform/model-params"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseProvider } from "./base-provider"
 
+/**
+ * Represents a server-side tool part returned by Gemini 3 when built-in tools
+ * (Google Search, Code Execution, URL Context) are combined with custom
+ * function declarations. These parts must be preserved and round-tripped in
+ * conversation history for the model to maintain context.
+ */
+export type ServerSideToolPart = {
+	type: "serverSideToolCall" | "serverSideToolResponse" | "executableCode" | "codeExecutionResult"
+	/** Raw part data from the Gemini API response, preserved for round-tripping. */
+	data: Record<string, unknown>
+}
+
+/**
+ * Returns true if the model ID corresponds to a Gemini 3+ model that supports
+ * combining server-side built-in tools (Google Search, URL Context, Code
+ * Execution) with client-side function declarations in a single generation.
+ */
+function isGemini3Model(modelId: string): boolean {
+	return /^gemini-3/.test(modelId)
+}
+
 type GeminiHandlerOptions = ApiHandlerOptions & {
 	isVertex?: boolean
 }
@@ -39,6 +60,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 	private client: GoogleGenAI
 	private lastThoughtSignature?: string
 	private lastResponseId?: string
+	private lastServerSideToolParts?: ServerSideToolPart[]
 	private readonly providerName = "Gemini"
 
 	constructor({ isVertex, ...options }: GeminiHandlerOptions) {
@@ -80,6 +102,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		// Reset per-request metadata that we persist into apiConversationHistory.
 		this.lastThoughtSignature = undefined
 		this.lastResponseId = undefined
+		this.lastServerSideToolParts = undefined
 
 		// For hybrid/budget reasoning models (e.g. Gemini 2.5 Pro), respect user-configured
 		// modelMaxTokens so the ThinkingBudget slider can control the cap. For effort-only or
@@ -129,18 +152,30 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			.flat()
 
 		// Tools are always present (minimum ALWAYS_AVAILABLE_TOOLS).
-		// Google built-in tools (Grounding, URL Context) are mutually exclusive
-		// with function declarations in the Gemini API, so we always use
-		// function declarations when tools are provided.
-		const tools: GenerateContentConfig["tools"] = [
-			{
-				functionDeclarations: (metadata?.tools ?? []).map((tool) => ({
-					name: (tool as any).function.name,
-					description: (tool as any).function.description,
-					parametersJsonSchema: (tool as any).function.parameters,
-				})),
-			},
-		]
+		// For pre-Gemini 3 models, Google built-in tools (Grounding, URL Context)
+		// are mutually exclusive with function declarations.
+		// For Gemini 3+, we can combine them, enabling "tool context circulation"
+		// where the model can use both server-side built-in tools and client-side
+		// function declarations in a single generation.
+		const isGemini3 = isGemini3Model(model)
+
+		const functionDeclarationsTool = {
+			functionDeclarations: (metadata?.tools ?? []).map((tool) => ({
+				name: (tool as any).function.name,
+				description: (tool as any).function.description,
+				parametersJsonSchema: (tool as any).function.parameters,
+			})),
+		}
+
+		const tools: GenerateContentConfig["tools"] = isGemini3
+			? [
+					functionDeclarationsTool,
+					// Enable Google Search as a built-in tool alongside custom function declarations.
+					// The model can invoke this server-side, and the results will be circulated back
+					// as context for subsequent turns.
+					{ googleSearch: {} },
+				]
+			: [functionDeclarationsTool]
 
 		// Determine temperature respecting model capabilities and defaults:
 		// - If supportsTemperature is explicitly false, ignore user overrides
@@ -235,6 +270,8 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 							text?: string
 							thoughtSignature?: string
 							functionCall?: { name: string; args: Record<string, unknown> }
+							executableCode?: { code: string; language?: string }
+							codeExecutionResult?: { output: string; outcome?: string }
 						}>) {
 							// Capture thought signatures so they can be persisted into API history.
 							const thoughtSignature = part.thoughtSignature
@@ -277,6 +314,37 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 								}
 
 								toolCallCounter++
+							} else if (part.executableCode) {
+								// Server-side code execution part (Gemini 3 built-in tool).
+								// Surface the code to the user as informational text and
+								// store the raw part for round-tripping in conversation history.
+								hasContent = true
+								const lang = part.executableCode.language ?? "python"
+								yield {
+									type: "text",
+									text: `\n\`\`\`${lang}\n${part.executableCode.code}\n\`\`\`\n`,
+								}
+								if (!this.lastServerSideToolParts) {
+									this.lastServerSideToolParts = []
+								}
+								this.lastServerSideToolParts.push({
+									type: "executableCode",
+									data: part.executableCode as unknown as Record<string, unknown>,
+								})
+							} else if (part.codeExecutionResult) {
+								// Server-side code execution result (Gemini 3 built-in tool).
+								hasContent = true
+								yield {
+									type: "text",
+									text: `\n**Code Execution Result:**\n\`\`\`\n${part.codeExecutionResult.output}\n\`\`\`\n`,
+								}
+								if (!this.lastServerSideToolParts) {
+									this.lastServerSideToolParts = []
+								}
+								this.lastServerSideToolParts.push({
+									type: "codeExecutionResult",
+									data: part.codeExecutionResult as unknown as Record<string, unknown>,
+								})
 							} else {
 								// This is regular content
 								if (part.text) {
@@ -461,6 +529,10 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 	public getResponseId(): string | undefined {
 		return this.lastResponseId
+	}
+
+	public getServerSideToolParts(): ServerSideToolPart[] | undefined {
+		return this.lastServerSideToolParts
 	}
 
 	public calculateCost({

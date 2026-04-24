@@ -257,6 +257,206 @@ describe("GeminiHandler", () => {
 		})
 	})
 
+	describe("Gemini 3 tool context circulation", () => {
+		const systemPrompt = "You are a helpful assistant"
+		const mockMessages: Anthropic.Messages.MessageParam[] = [
+			{ role: "user", content: "Search the web for the latest API docs" },
+		]
+
+		it("should include googleSearch tool for Gemini 3 models", async () => {
+			const gemini3Handler = new GeminiHandler({
+				apiKey: "test-key",
+				apiModelId: "gemini-3-pro-preview",
+				geminiApiKey: "test-key",
+			})
+
+			const mockGenerateContentStream = vitest.fn().mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield { text: "Hello" }
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
+			})
+
+			gemini3Handler["client"] = {
+				models: {
+					generateContentStream: mockGenerateContentStream,
+					generateContent: vitest.fn(),
+				},
+			} as any
+
+			const stream = gemini3Handler.createMessage(systemPrompt, mockMessages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockGenerateContentStream.mock.calls[0][0]
+			const tools = callArgs.config.tools
+			expect(tools).toHaveLength(2)
+			expect(tools[0]).toHaveProperty("functionDeclarations")
+			expect(tools[1]).toEqual({ googleSearch: {} })
+		})
+
+		it("should NOT include googleSearch tool for pre-Gemini 3 models", async () => {
+			// The default handler uses geminiDefaultModelId which is gemini-3.1-pro-preview
+			// Let's create one with a 2.5 model
+			const gemini25Handler = new GeminiHandler({
+				apiKey: "test-key",
+				apiModelId: "gemini-2.5-pro",
+				geminiApiKey: "test-key",
+			})
+
+			const mockGenerateContentStream = vitest.fn().mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield { text: "Hello" }
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
+			})
+
+			gemini25Handler["client"] = {
+				models: {
+					generateContentStream: mockGenerateContentStream,
+					generateContent: vitest.fn(),
+				},
+			} as any
+
+			const stream = gemini25Handler.createMessage(systemPrompt, mockMessages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockGenerateContentStream.mock.calls[0][0]
+			const tools = callArgs.config.tools
+			expect(tools).toHaveLength(1)
+			expect(tools[0]).toHaveProperty("functionDeclarations")
+		})
+
+		it("should handle executableCode parts in streaming response", async () => {
+			const gemini3Handler = new GeminiHandler({
+				apiKey: "test-key",
+				apiModelId: "gemini-3-pro-preview",
+				geminiApiKey: "test-key",
+			})
+
+			const mockGenerateContentStream = vitest.fn().mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						candidates: [
+							{
+								content: {
+									parts: [
+										{
+											executableCode: {
+												code: 'print("hello")',
+												language: "python",
+											},
+										},
+									],
+								},
+							},
+						],
+					}
+					yield {
+						candidates: [
+							{
+								content: {
+									parts: [
+										{
+											codeExecutionResult: {
+												output: "hello",
+												outcome: "OUTCOME_OK",
+											},
+										},
+									],
+								},
+							},
+						],
+					}
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
+			})
+
+			gemini3Handler["client"] = {
+				models: {
+					generateContentStream: mockGenerateContentStream,
+					generateContent: vitest.fn(),
+				},
+			} as any
+
+			const stream = gemini3Handler.createMessage(systemPrompt, mockMessages)
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should yield text chunks for executableCode and codeExecutionResult
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks.length).toBe(2)
+			expect(textChunks[0].text).toContain('print("hello")')
+			expect(textChunks[1].text).toContain("hello")
+
+			// Should store server-side tool parts for history round-tripping
+			const storedParts = gemini3Handler.getServerSideToolParts()
+			expect(storedParts).toHaveLength(2)
+			expect(storedParts![0].type).toBe("executableCode")
+			expect(storedParts![0].data).toEqual({ code: 'print("hello")', language: "python" })
+			expect(storedParts![1].type).toBe("codeExecutionResult")
+			expect(storedParts![1].data).toEqual({ output: "hello", outcome: "OUTCOME_OK" })
+		})
+
+		it("should reset server-side tool parts between requests", async () => {
+			const gemini3Handler = new GeminiHandler({
+				apiKey: "test-key",
+				apiModelId: "gemini-3-pro-preview",
+				geminiApiKey: "test-key",
+			})
+
+			const mockGenerateContentStream = vitest.fn()
+
+			gemini3Handler["client"] = {
+				models: {
+					generateContentStream: mockGenerateContentStream,
+					generateContent: vitest.fn(),
+				},
+			} as any
+
+			// First request: has server-side tool parts
+			mockGenerateContentStream.mockResolvedValueOnce({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						candidates: [
+							{
+								content: {
+									parts: [{ executableCode: { code: "x = 1", language: "python" } }],
+								},
+							},
+						],
+					}
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
+			})
+
+			let stream = gemini3Handler.createMessage(systemPrompt, mockMessages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+			expect(gemini3Handler.getServerSideToolParts()).toHaveLength(1)
+
+			// Second request: no server-side tool parts
+			mockGenerateContentStream.mockResolvedValueOnce({
+				[Symbol.asyncIterator]: async function* () {
+					yield { text: "plain text" }
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
+			})
+
+			stream = gemini3Handler.createMessage(systemPrompt, mockMessages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+			expect(gemini3Handler.getServerSideToolParts()).toBeUndefined()
+		})
+	})
+
 	describe("error telemetry", () => {
 		const mockMessages: Anthropic.Messages.MessageParam[] = [
 			{
