@@ -14,7 +14,10 @@
 	},
 	"apiConfiguration": {
 		"title": "API配置",
-		"select": "选择要用于此模式的API配置"
+		"select": "选择要用于此模式的API配置",
+		"scope": "范围",
+		"global": "全局",
+		"workspace": "工作区"
 	},
 	"tools": {
 		"title": "可用功能",

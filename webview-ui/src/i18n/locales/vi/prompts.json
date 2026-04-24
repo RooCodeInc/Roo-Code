@@ -14,7 +14,10 @@
 	},
 	"apiConfiguration": {
 		"title": "Cấu hình API",
-		"select": "Chọn cấu hình API nào để sử dụng cho chế độ này"
+		"select": "Chọn cấu hình API nào để sử dụng cho chế độ này",
+		"scope": "Phạm vi",
+		"global": "Toàn cục",
+		"workspace": "Không gian làm việc"
 	},
 	"tools": {
 		"title": "Công cụ có sẵn",

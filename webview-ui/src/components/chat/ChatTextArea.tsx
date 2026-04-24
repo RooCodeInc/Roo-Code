@@ -99,6 +99,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			cloudUserInfo,
 			enterBehavior,
 			lockApiConfigAcrossModes,
+			currentConfigScope,
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
@@ -937,9 +938,29 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		)
 
 		// Helper function to handle API config change
-		const handleApiConfigChange = useCallback((value: string) => {
-			vscode.postMessage({ type: "loadApiConfigurationById", text: value })
-		}, [])
+		const handleApiConfigChange = useCallback(
+			(value: string) => {
+				const scope = currentConfigScope === "workspace" ? "workspace" : "global"
+				vscode.postMessage({ type: "loadApiConfigurationById", text: value, scope })
+			},
+			[currentConfigScope],
+		)
+
+		// Handle scope change for API configuration
+		const handleApiConfigScopeChange = useCallback(
+			(scope: "global" | "workspace") => {
+				// When user changes scope, re-apply the current config with the new scope
+				if (currentConfigId) {
+					vscode.postMessage({ type: "loadApiConfigurationById", text: currentConfigId, scope })
+				}
+			},
+			[currentConfigId],
+		)
+
+		// Check if we're in a workspace context
+		const hasWorkspace = useMemo(() => {
+			return !!(cwd && cwd.length > 0)
+		}, [cwd])
 
 		const handleToggleLockApiConfig = useCallback(() => {
 			const newValue = !lockApiConfigAcrossModes
@@ -1319,6 +1340,9 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							togglePinnedApiConfig={togglePinnedApiConfig}
 							lockApiConfigAcrossModes={!!lockApiConfigAcrossModes}
 							onToggleLockApiConfig={handleToggleLockApiConfig}
+							isWorkspaceScoped={currentConfigScope === "workspace"}
+							onScopeChange={handleApiConfigScopeChange}
+							hasWorkspace={hasWorkspace}
 						/>
 						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
 					</div>
