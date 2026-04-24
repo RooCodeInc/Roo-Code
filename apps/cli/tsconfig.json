@@ -1,7 +1,7 @@
 {
 	"extends": "@roo-code/config-typescript/base.json",
 	"compilerOptions": {
-		"types": ["vitest/globals"],
+		"types": ["node", "vitest/globals"],
 		"outDir": "dist",
 		"jsx": "react-jsx",
 		"jsxImportSource": "react",
