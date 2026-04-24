@@ -5,6 +5,7 @@ import type { SupportedProvider } from "@/types/index.js"
 const envVarMap: Record<SupportedProvider, string> = {
 	anthropic: "ANTHROPIC_API_KEY",
 	"openai-native": "OPENAI_API_KEY",
+	"openai-codex": "", // No API key - uses OAuth
 	gemini: "GOOGLE_API_KEY",
 	openrouter: "OPENROUTER_API_KEY",
 	"vercel-ai-gateway": "VERCEL_AI_GATEWAY_API_KEY",
@@ -34,6 +35,11 @@ export function getProviderSettings(
 			break
 		case "openai-native":
 			if (apiKey) config.openAiNativeApiKey = apiKey
+			if (model) config.apiModelId = model
+			break
+		case "openai-codex":
+			// OpenAI Codex uses OAuth, not API keys.
+			// The OpenAiCodexHandler gets its token from openAiCodexOAuthManager.
 			if (model) config.apiModelId = model
 			break
 		case "gemini":

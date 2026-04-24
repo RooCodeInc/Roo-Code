@@ -7,6 +7,9 @@ import {
 	login,
 	logout,
 	status,
+	openaiCodexLogin,
+	openaiCodexLogout,
+	openaiCodexStatus,
 	listCommands,
 	listModes,
 	listModels,
@@ -136,7 +139,7 @@ program
 		await runUpgradeAction(() => upgrade())
 	})
 
-const authCommand = program.command("auth").description("Manage authentication for Roo Code Cloud")
+const authCommand = program.command("auth").description("Manage authentication")
 
 authCommand
 	.command("login")
@@ -162,6 +165,33 @@ authCommand
 	.option("-v, --verbose", "Enable verbose output", false)
 	.action(async (options: { verbose: boolean }) => {
 		const result = await status({ verbose: options.verbose })
+		process.exit(result.authenticated ? 0 : 1)
+	})
+
+authCommand
+	.command("login-openai")
+	.description("Authenticate with OpenAI (ChatGPT Plus/Pro subscription via OAuth)")
+	.option("-v, --verbose", "Enable verbose output", false)
+	.action(async (options: { verbose: boolean }) => {
+		const result = await openaiCodexLogin({ verbose: options.verbose })
+		process.exit(result.success ? 0 : 1)
+	})
+
+authCommand
+	.command("logout-openai")
+	.description("Log out from OpenAI Codex")
+	.option("-v, --verbose", "Enable verbose output", false)
+	.action(async (options: { verbose: boolean }) => {
+		const result = await openaiCodexLogout({ verbose: options.verbose })
+		process.exit(result.success ? 0 : 1)
+	})
+
+authCommand
+	.command("status-openai")
+	.description("Show OpenAI Codex authentication status")
+	.option("-v, --verbose", "Enable verbose output", false)
+	.action(async (options: { verbose: boolean }) => {
+		const result = await openaiCodexStatus({ verbose: options.verbose })
 		process.exit(result.authenticated ? 0 : 1)
 	})
 

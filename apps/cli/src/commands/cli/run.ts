@@ -22,6 +22,7 @@ import { JsonEventEmitter } from "@/agent/json-event-emitter.js"
 
 import { createClient } from "@/lib/sdk/index.js"
 import { loadToken, loadSettings } from "@/lib/storage/index.js"
+import { hasOpenAiCodexCredentials } from "@/lib/storage/openai-codex-credentials.js"
 import { readWorkspaceTaskSessions, resolveWorkspaceResumeSessionId } from "@/lib/task-history/index.js"
 import { isRecord } from "@/lib/utils/guards.js"
 import { getEnvVarName, getApiKeyFromEnv } from "@/lib/utils/provider.js"
@@ -270,6 +271,20 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		}
 		// If no rooToken, fall through to the general API key resolution below
 		// which will check flagOptions.apiKey and ROO_API_KEY env var.
+	}
+
+	// OpenAI Codex OAuth Authentication
+	if (extensionHostOptions.provider === "openai-codex") {
+		const hasCodexCreds = await hasOpenAiCodexCredentials()
+		if (!hasCodexCreds) {
+			console.error("[CLI] Error: Not authenticated with OpenAI Codex.")
+			console.error("[CLI] Please run: roo auth login-openai")
+			process.exit(1)
+		}
+		// OpenAI Codex uses OAuth tokens managed by the extension's openAiCodexOAuthManager.
+		// Credentials are stored in the vscode-shim secret storage and loaded automatically.
+		// Set a placeholder so the API key check below doesn't fail.
+		extensionHostOptions.apiKey = "openai-codex-oauth"
 	}
 
 	// Validations
