@@ -1,0 +1,21 @@
+active_intents:
+  - id: INT-001
+    name: INT-001 — Login & Authentication
+    status: IN_PROGRESS
+    owned_scope:
+      - src/api/login.ts
+      - src/api/**
+    constraints:
+      - Must follow REST API conventions
+      - Must include proper error handling
+      - Must use secure password hashing (bcrypt or similar)
+      - Must validate input using Zod schemas
+    acceptance_criteria:
+      - Login endpoint properly validates credentials
+      - Registration endpoint creates users securely
+      - Error handling is consistent across all endpoints
+      - Code follows project architecture and coding standards
+    created_at: 2026-02-18T12:00:00.000Z
+    updated_at: 2026-02-18T12:00:00.000Z
+    spec_hash: ""
+    spec_file: ""

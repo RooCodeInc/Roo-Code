@@ -1,0 +1,491 @@
+<mode_management_workflow>
+  <overview>
+    This workflow guides you through creating new custom modes or editing existing ones
+    for the Roo Code Software, ensuring comprehensive understanding and cohesive implementation.
+  </overview>
+
+  <mode_scope>
+    <workspace_modes>
+      <location>.roomodes in the workspace root directory</location>
+      <notes>
+        Workspace modes are the default target for project-specific modes and for overrides.
+      </notes>
+    </workspace_modes>
+
+    <global_modes>
+      <location>VS Code globalStorage custom modes settings file (location is environment-specific; open it via the product UI)</location>
+      <notes>
+        Global modes are used system-wide and are created automatically on Roo Code startup.
+      </notes>
+    </global_modes>
+
+    <precedence>
+      <rule>
+        If the same slug exists in both global modes and workspace modes, the workspace (.roomodes) entry wins.
+      </rule>
+    </precedence>
+
+    <schema>
+      <rule>
+        Both files use the same YAML schema: a top-level <code>customModes:</code> list of mode objects.
+      </rule>
+      <format_notes>
+        <note>
+          Mode definitions are YAML objects within <code>customModes:</code>. Use YAML block scalars (e.g., <code>&gt;-</code>) for multi-line text fields when helpful.
+        </note>
+        <note>
+          If you must embed explicit newlines in a quoted string, use <code>\n</code> for newlines and <code>\n\n</code> for blank lines.
+        </note>
+        <note>
+          <code>groups</code> is required and is a YAML array. It may be empty when a mode should not have access to optional permissions.
+        </note>
+        <note>
+          Each <code>groups</code> entry may be:
+          - a simple string (unrestricted permission group), or
+          - a structured entry that restricts the permission to a subset of files (e.g., <code>fileRegex</code> + <code>description</code> for edit restrictions).
+        </note>
+      </format_notes>
+      <required_fields>
+        <field>slug</field>
+        <field>name</field>
+        <field>roleDefinition</field>
+        <field>groups</field>
+      </required_fields>
+      <recommended_fields>
+        <field>description</field>
+        <field>whenToUse</field>
+      </recommended_fields>
+      <optional_fields>
+        <field>customInstructions</field>
+      </optional_fields>
+      <example>
+        <comment>Canonical YAML skeleton (illustrative; keep instructions/tooling details in .roo/rules-[slug]/)</comment>
+        <code>
+customModes:
+  - slug: example-mode
+    name: Example Mode
+    description: Short five-word summary
+    roleDefinition: &gt;-
+      You are Roo Code, a [specialist type] who...
+
+      Key areas:
+      - Area one
+      - Area two
+    whenToUse: &gt;-
+      Use this mode when...
+    groups:
+      - read
+      - - edit
+        - fileRegex: \\.(md|mdx)$
+          description: Documentation files only
+    customInstructions: &gt;-
+      Optional brief glue text.
+        </code>
+      </example>
+    </schema>
+  </mode_scope>
+
+  <initial_determination>
+    <step number="1">
+      <title>Determine User Intent</title>
+      <description>
+        Identify whether the user wants to create a new mode or edit an existing one
+      </description>
+      <detection_patterns>
+        <pattern type="edit_existing">
+          <indicators>
+            <indicator>User mentions a specific mode by name or slug</indicator>
+            <indicator>User references a mode directory path (e.g., .roo/rules-[mode-slug])</indicator>
+            <indicator>User asks to modify, update, enhance, or fix an existing mode</indicator>
+            <indicator>User says "edit this mode" or "change this mode"</indicator>
+          </indicators>
+        </pattern>
+        <pattern type="create_new">
+          <indicators>
+            <indicator>User asks to create a new mode</indicator>
+            <indicator>User describes a new responsibility not covered by existing modes</indicator>
+            <indicator>User says "make a mode for" or "create a mode that"</indicator>
+          </indicators>
+        </pattern>
+      </detection_patterns>
+      <clarification_question>
+        <ask_user_question>
+          <question>I want to make sure I understand correctly. Are you looking to create a brand new mode or modify an existing one?</question>
+          <follow_up>
+            <suggest>Create a new mode for a specific purpose</suggest>
+            <suggest>Edit an existing mode to add new responsibilities</suggest>
+            <suggest>Fix issues in an existing mode</suggest>
+            <suggest>Enhance an existing mode with better workflows</suggest>
+          </follow_up>
+        </ask_user_question>
+      </clarification_question>
+    </step>
+
+    <step number="2a">
+      <title>Resolve Mode Source (Workspace vs Global)</title>
+      <description>
+        When the user asks about a specific mode by name/slug (including phrases like "global mode"), resolve where that mode is defined
+        before doing broad repository searches.
+      </description>
+      <resolution_order>
+        <step>
+          Check the workspace override first by reading <file>.roomodes</file>.
+        </step>
+        <step>
+          If not present (or the user explicitly requests global scope), inspect the global custom modes settings file.
+          Note: its exact path is determined by the extension at runtime (do not hardcode a machine-specific path).
+        </step>
+        <step>
+          If the mode is workspace-scoped, read its instruction directory <file>.roo/rules-[mode-slug]/</file>.
+        </step>
+      </resolution_order>
+      <early_stop>
+        If the mode entry is found in either <file>.roomodes</file> or the global file, proceed directly to analysis/edits without additional discovery.
+      </early_stop>
+    </step>
+  </initial_determination>
+
+  <workflow_branches>
+    <branch name="create_new_mode">
+      <step number="3.1">
+        <title>Gather Requirements for New Mode</title>
+        <description>
+          Understand what the user wants the new mode to accomplish
+        </description>
+        <actions>
+          <action>Ask about the mode's primary purpose and use cases</action>
+          <action>Identify what types of tasks the mode should handle</action>
+          <action>Determine what repository access and permissions the mode needs</action>
+          <action>Clarify any special behaviors or restrictions</action>
+        </actions>
+        <example>
+          <ask_user_question>
+            <question>What is the primary purpose of this new mode? What types of tasks should it handle?</question>
+            <follow_up>
+              <suggest>A mode for writing and maintaining documentation</suggest>
+              <suggest>A mode for database schema design and migrations</suggest>
+              <suggest>A mode for API endpoint development and testing</suggest>
+              <suggest>A mode for performance optimization and profiling</suggest>
+            </follow_up>
+          </ask_user_question>
+        </example>
+      </step>
+
+      <step number="3.2">
+        <title>Design Mode Configuration</title>
+        <description>
+          Create the mode definition with all required fields
+        </description>
+
+        <scope_selection>
+          <rule>Default to workspace-scoped modes unless the user explicitly requests a global mode.</rule>
+          <global_mode_trigger>
+            User asks for a mode to be available across all workspaces, or explicitly mentions the global modes file.
+          </global_mode_trigger>
+          <workspace_mode_trigger>
+            User asks for a mode for this repo/project only, or wants to commit/share the mode with the repository.
+          </workspace_mode_trigger>
+        </scope_selection>
+        <required_fields>
+          <field name="slug">
+            <description>Unique identifier (lowercase, hyphens allowed)</description>
+            <best_practice>Keep it short and descriptive (e.g., "api-dev", "docs-writer")</best_practice>
+          </field>
+          <field name="name">
+            <description>Display name with optional emoji</description>
+            <best_practice>Use an emoji that represents the mode's purpose</best_practice>
+          </field>
+          <field name="roleDefinition">
+            <description>Detailed description of the mode's role and expertise</description>
+            <best_practice>
+              Start with "You are Roo Code, a [specialist type]..."
+              List specific areas of expertise
+              Mention key technologies or methodologies
+            </best_practice>
+          </field>
+          <field name="groups">
+            <description>Permission groups the mode can access</description>
+            <note>
+              The concrete group names and any nesting structure are runtime-defined and may evolve.
+              Treat these as conceptual categories and map them to the closest available equivalents.
+            </note>
+            <options>
+              <option name="read">File reading and searching</option>
+              <option name="edit">File editing (can be restricted by regex)</option>
+              <option name="command">Command execution</option>
+              <option name="browser">Browser interaction</option>
+              <option name="mcp">MCP servers</option>
+            </options>
+          </field>
+        </required_fields>
+        <recommended_fields>
+          <field name="description">
+            <description>Short human-readable summary (aim ~5 words)</description>
+            <best_practice>Keep it scannable and concrete</best_practice>
+          </field>
+          <field name="whenToUse">
+            <description>Clear description for the Orchestrator</description>
+            <best_practice>Explain specific scenarios and task types</best_practice>
+          </field>
+        </recommended_fields>
+        <important_note>
+          Prefer keeping substantial mode guidance in XML files within <code>.roo/rules-[mode-slug]/</code>.
+          The underlying mode system supports <code>customInstructions</code>, but large instruction blocks there are easier to duplicate/drift.
+          Use <code>customInstructions</code> only for brief "glue" text when needed.
+
+          Note: the underlying mode system supports a <code>customInstructions</code> field,
+          but this repository intentionally keeps detailed instructions in
+          <code>.roo/rules-[mode-slug]/</code> XML files to avoid duplication and drift.
+        </important_note>
+      </step>
+
+      <step number="3.3">
+        <title>Implement File Restrictions</title>
+        <description>
+          Configure appropriate file access permissions
+        </description>
+        <example>
+          <comment>Restrict edit access to specific file types</comment>
+          <code>
+groups:
+  - read
+  - - edit
+    - fileRegex: \.(md|txt|rst)$
+      description: Documentation files only
+  - command
+          </code>
+        </example>
+        <guidelines>
+          <guideline>Use regex patterns to limit file editing scope</guideline>
+          <guideline>Provide clear descriptions for restrictions</guideline>
+          <guideline>Consider the principle of least privilege</guideline>
+        </guidelines>
+      </step>
+
+      <step number="3.4">
+        <title>Create XML Instruction Files</title>
+        <description>
+          Design structured instruction files in .roo/rules-[mode-slug]/
+        </description>
+        <file_structure>
+          <file name="1_workflow.xml">Main workflow and step-by-step processes</file>
+          <file name="2_best_practices.xml">Guidelines and conventions</file>
+          <file name="3_common_patterns.xml">Reusable code patterns and examples</file>
+          <file name="4_decision_guidance.xml">Decision criteria and guardrails</file>
+          <file name="5_examples.xml">Complete workflow examples</file>
+        </file_structure>
+        <xml_best_practices>
+          <practice>Use semantic tag names that describe content</practice>
+          <practice>Nest tags hierarchically for better organization</practice>
+          <practice>Include code examples in CDATA sections when needed</practice>
+          <practice>Add comments to explain complex sections</practice>
+        </xml_best_practices>
+      </step>
+    </branch>
+
+    <branch name="edit_existing_mode">
+      <step number="4.1">
+        <title>Immerse in Existing Mode</title>
+        <description>
+          Fully understand the existing mode before making any changes
+        </description>
+        <actions>
+          <action>Locate and read the mode configuration in .roomodes</action>
+          <action>When global scope is relevant, locate and read the global custom modes settings file and compare slugs for precedence</action>
+          <action>Read all XML instruction files in .roo/rules-[mode-slug]/</action>
+          <action>Analyze the mode's current scope, permissions, and limitations</action>
+          <action>Understand the mode's role in the broader ecosystem</action>
+        </actions>
+        <questions_to_ask>
+          <ask_user_question>
+            <question>What specific aspects of the mode would you like to change or enhance?</question>
+            <follow_up>
+              <suggest>Adjust permissions or restrictions</suggest>
+              <suggest>Fix issues with current workflows or instructions</suggest>
+              <suggest>Improve the mode's roleDefinition or whenToUse description</suggest>
+              <suggest>Enhance XML instructions for better clarity</suggest>
+            </follow_up>
+          </ask_user_question>
+        </questions_to_ask>
+      </step>
+
+      <step number="4.2">
+        <title>Analyze Change Impact</title>
+        <description>
+          Understand how proposed changes will affect the mode
+        </description>
+        <analysis_areas>
+          <area>Compatibility with existing workflows</area>
+          <area>Impact on file permissions and capability access</area>
+          <area>Consistency with mode's core purpose</area>
+          <area>Integration with other modes</area>
+        </analysis_areas>
+        <review_cleanup_checklist>
+          <item>Role and scope: roleDefinition matches actual scope and permissions; remove scope creep</item>
+          <item>Orchestrator routing: whenToUse/whenNotToUse are explicit and distinct from other modes</item>
+          <item>Permissions: groups and fileRegex follow least-privilege and match instructions</item>
+          <item>Instructions hygiene: no contradictions or duplicates across XML files</item>
+          <item>Naming consistency: tag names and terminology are consistent</item>
+          <item>Deprecated content: remove legacy fields (e.g., customInstructions in .roomodes)</item>
+          <item>Boundaries: clear handoffs to other modes; no overlapping responsibilities</item>
+        </review_cleanup_checklist>
+        <duplication_and_contradiction_scan>
+          <approach>Search for repeated guidance and conflicting directives across files</approach>
+        </duplication_and_contradiction_scan>
+        <validation_questions>
+          <ask_user_question>
+            <question>I've analyzed the existing mode. Here's what I understand about your requested changes. Is this correct?</question>
+            <follow_up>
+              <suggest>Yes, that's exactly what I want to change</suggest>
+              <suggest>Mostly correct, but let me clarify some details</suggest>
+              <suggest>No, I meant something different</suggest>
+              <suggest>I'd like to add additional changes</suggest>
+            </follow_up>
+          </ask_user_question>
+        </validation_questions>
+      </step>
+
+      <step number="4.3">
+        <title>Plan Modifications</title>
+        <description>
+          Create a detailed plan for modifying the mode
+        </description>
+        <planning_steps>
+          <step>Identify which files need to be modified</step>
+          <step>Determine if new XML instruction files are needed</step>
+          <step>Check for potential conflicts or contradictions</step>
+          <step>Plan the order of changes for minimal disruption</step>
+        </planning_steps>
+        <refactor_strategy>
+          <normalize>
+            <rule>Consolidate overlapping instructions into a single source of truth</rule>
+            <rule>Align with XML best practices (semantic tags, hierarchical nesting)</rule>
+            <rule>Standardize whenToUse/whenNotToUse language and boundaries</rule>
+            <rule>Centralize preamble rules and autonomy calibration</rule>
+          </normalize>
+          <permissions>
+            <rule>Tighten fileRegex to least-privilege; add clear descriptions</rule>
+            <rule>Ensure instructions match configured permissions</rule>
+          </permissions>
+          <structure>
+            <rule>Split overly long files; ensure 6_error_handling and 7_communication are present or updated</rule>
+          </structure>
+          <examples_and_tests>
+            <rule>Update 5_examples.xml to reflect new workflows and refactors</rule>
+            <rule>Include before/after diffs where helpful</rule>
+          </examples_and_tests>
+        </refactor_strategy>
+        <artifacts_to_update>
+          <item>.roomodes: roleDefinition and whenToUse</item>
+          <item>.roo/rules-[slug]/ XML instruction files</item>
+          <item>Examples and quick_reference sections</item>
+        </artifacts_to_update>
+      </step>
+
+      <step number="4.4">
+        <title>Silent Self-Reflection Rubric</title>
+        <description>Privately evaluate the planned changes against a 5–7 category rubric before implementation</description>
+        <rubric>
+          <category>Cohesion across files</category>
+          <category>Permissions and file restrictions (least privilege)</category>
+          <category>Orchestrator fit (whenToUse/whenNotToUse clarity)</category>
+          <category>XML structure and naming consistency</category>
+          <category>Mode boundaries and handoff points</category>
+          <category>Examples and testability</category>
+        </rubric>
+        <instruction>Iterate on the plan until it passes the rubric; do not expose the rubric to the user</instruction>
+      </step>
+
+      <step number="4.5">
+        <title>Implement Changes</title>
+        <description>
+          Apply the planned modifications to the mode
+        </description>
+        <implementation_order>
+          <change>Update .roomodes configuration if needed</change>
+          <change>Modify existing XML instruction files</change>
+          <change>Create new XML instruction files if required</change>
+          <change>Update examples and documentation</change>
+        </implementation_order>
+        <cleanup_tasks>
+          <task>Remove duplicate or contradictory instruction blocks across XML files</task>
+          <task>Delete or migrate deprecated fields (e.g., customInstructions in .roomodes)</task>
+          <task>Tighten fileRegex patterns and add clear descriptions</task>
+          <task>Normalize tag names, terminology, and structure</task>
+          <task>Ensure whenToUse/whenNotToUse and handoff rules are explicit</task>
+        </cleanup_tasks>
+        <verification_steps>
+          <step>Validate file restriction patterns against the intended file sets</step>
+          <step>Confirm permissions match instruction expectations</step>
+          <step>Re-run validation (section 5) and testing (section 6)</step>
+          <step>Scan the repository for legacy references and remove/modernize as needed</step>
+        </verification_steps>
+      </step>
+    </branch>
+  </workflow_branches>
+
+  <validation_and_cohesion>
+    <step number="5">
+      <title>Validate Cohesion and Consistency</title>
+      <description>
+        Ensure all changes are cohesive and don't contradict each other
+      </description>
+      <validation_checks>
+        <check type="configuration">
+          <item>Mode slug follows naming conventions</item>
+          <item>File restrictions align with mode purpose (least privilege)</item>
+          <item>Permissions are appropriate</item>
+          <item>whenToUse clearly differentiates from other modes</item>
+        </check>
+        <check type="instructions">
+          <item>All XML files follow consistent structure</item>
+          <item>No contradicting instructions between files; contradiction hierarchy and resolutions documented</item>
+          <item>Examples align with stated workflows</item>
+          <item>Instructions match granted permissions and file restrictions</item>
+        </check>
+        <check type="integration">
+          <item>Mode integrates well with Orchestrator</item>
+          <item>Clear boundaries with other modes</item>
+          <item>Handoff points are well-defined</item>
+        </check>
+      </validation_checks>
+      <cohesion_questions>
+        <ask_user_question>
+          <question>I've completed the validation checks. Would you like me to review any specific aspect in more detail?</question>
+          <follow_up>
+            <suggest>Review the file permission patterns</suggest>
+            <suggest>Check for workflow contradictions</suggest>
+            <suggest>Verify integration with other modes</suggest>
+            <suggest>Everything looks good, proceed to testing</suggest>
+          </follow_up>
+        </ask_user_question>
+      </cohesion_questions>
+    </step>
+
+    <step number="6">
+      <title>Test and Refine</title>
+      <description>
+        Verify the mode works as intended
+      </description>
+      <checklist>
+        <item>Mode appears in the mode list</item>
+        <item>File restrictions work correctly</item>
+        <item>Instructions are clear and actionable</item>
+        <item>Mode integrates well with Orchestrator</item>
+        <item>All examples are accurate and helpful</item>
+        <item>Changes don't break existing functionality (for edits)</item>
+        <item>New behavior works as expected</item>
+      </checklist>
+    </step>
+  </validation_and_cohesion>
+
+  <quick_reference>
+    <action>Create mode in .roomodes for project-specific modes</action>
+    <action>Create mode in the global custom modes settings file for system-wide modes (path is environment-specific)</action>
+    <action>Verify the .roo folder structure contains expected rule directories and XML files</action>
+    <action>Validate file regex patterns against the intended file sets (avoid overbroad matches)</action>
+    <action>Find existing mode implementations and patterns to reuse</action>
+    <action>Read all XML files in a mode directory to understand its structure</action>
+    <action>Always validate changes for cohesion and consistency</action>
+  </quick_reference>
+</mode_management_workflow>

@@ -24,4 +24,7 @@ else
 fi
 
 $npx_cmd lint-staged
-$pnpm_cmd lint
+
+# Skip full repo lint on pre-commit (lint-staged already linted staged files)
+# Full linting happens in CI for comprehensive coverage
+echo "Pre-commit checks complete. Full lint runs in CI."
