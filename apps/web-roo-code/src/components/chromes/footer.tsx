@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ChevronDown } from "lucide-react"
-import { useTheme } from "next-themes"
 
 import { EXTERNAL_LINKS, INTERNAL_LINKS } from "@/lib/constants"
 import { useLogoSrc } from "@/lib/hooks/use-logo-src"
@@ -14,7 +13,6 @@ export function Footer() {
 	const [privacyDropdownOpen, setPrivacyDropdownOpen] = useState(false)
 	const dropdownRef = useRef<HTMLDivElement>(null)
 	const logoSrc = useLogoSrc()
-	const { resolvedTheme } = useTheme()
 
 	// Close dropdown when clicking outside
 	useEffect(() => {
@@ -41,21 +39,6 @@ export function Footer() {
 						<p className="max-w-md text-sm leading-6 text-muted-foreground md:pr-16 lg:pr-32">
 							Empowering developers to build better software faster with AI-powered tools and insights.
 						</p>
-
-						{/* Made with Roo Code */}
-						<a
-							href="https://roocode.com"
-							target="_blank"
-							rel="noopener noreferrer"
-							className="inline-flex items-center space-x-2 group">
-							<Image
-								src={resolvedTheme === "light" ? "/RooCode-Badge-blk.svg" : "/RooCode-Badge-white.svg"}
-								alt="Made with Roo Code"
-								width={120}
-								height={40}
-								className="h-8 w-auto opacity-70 transition-opacity group-hover:opacity-100"
-							/>
-						</a>
 					</div>
 
 					<div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
@@ -256,33 +239,6 @@ export function Footer() {
 											rel="noopener noreferrer"
 											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
 											X / Twitter
-										</a>
-									</li>
-									<li>
-										<a
-											href={EXTERNAL_LINKS.LINKEDIN}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
-											LinkedIn
-										</a>
-									</li>
-									<li>
-										<a
-											href={EXTERNAL_LINKS.BLUESKY}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
-											Bluesky
-										</a>
-									</li>
-									<li>
-										<a
-											href={EXTERNAL_LINKS.TIKTOK}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
-											TikTok
 										</a>
 									</li>
 									<li>
