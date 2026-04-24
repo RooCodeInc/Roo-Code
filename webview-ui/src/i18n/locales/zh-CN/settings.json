@@ -877,7 +877,15 @@
 	},
 	"thinkingBudget": {
 		"maxTokens": "最大Token数",
-		"maxThinkingTokens": "最大思考Token数"
+		"maxThinkingTokens": "最大思考Token数",
+		"useAdaptiveThinking": "使用自适应思考",
+		"adaptiveThinkingDescription": "让Claude根据请求复杂性动态决定何时以及思考多少。",
+		"adaptiveEffort": {
+			"low": "低",
+			"medium": "中",
+			"high": "高（默认）",
+			"max": "最大（仅Opus 4.6）"
+		}
 	},
 	"validation": {
 		"apiKey": "您必须提供有效的 API 密钥。",

@@ -877,7 +877,15 @@
 	},
 	"thinkingBudget": {
 		"maxTokens": "Максимум токенов",
-		"maxThinkingTokens": "Максимум токенов на размышления"
+		"maxThinkingTokens": "Максимум токенов на размышления",
+		"useAdaptiveThinking": "Использовать адаптивное мышление",
+		"adaptiveThinkingDescription": "Позвольте Claude динамически определять, когда и сколько думать в зависимости от сложности запроса.",
+		"adaptiveEffort": {
+			"low": "Низкий",
+			"medium": "Средний",
+			"high": "Высокий (по умолчанию)",
+			"max": "Максимальный (только Opus 4.6)"
+		}
 	},
 	"validation": {
 		"apiKey": "Вы должны указать действительный API-ключ.",

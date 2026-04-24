@@ -877,7 +877,15 @@
 	},
 	"thinkingBudget": {
 		"maxTokens": "अधिकतम tokens",
-		"maxThinkingTokens": "अधिकतम thinking tokens"
+		"maxThinkingTokens": "अधिकतम thinking tokens",
+		"useAdaptiveThinking": "अनुकूली सोच का उपयोग करें",
+		"adaptiveThinkingDescription": "Claude को अनुरोध की जटिलता के आधार पर गतिशील रूप से यह निर्धारित करने दें कि कब और कितना सोचना है।",
+		"adaptiveEffort": {
+			"low": "कम",
+			"medium": "मध्यम",
+			"high": "उच्च (डिफ़ॉल्ट)",
+			"max": "अधिकतम (केवल Opus 4.6)"
+		}
 	},
 	"validation": {
 		"apiKey": "आपको एक मान्य API कुंजी प्रदान करनी होगी।",

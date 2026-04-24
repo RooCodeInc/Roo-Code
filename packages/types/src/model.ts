@@ -82,6 +82,10 @@ export const modelInfoSchema = z.object({
 	// Capability flag to indicate whether the model supports an output verbosity parameter
 	supportsVerbosity: z.boolean().optional(),
 	supportsReasoningBudget: z.boolean().optional(),
+	// Capability flag to indicate whether the model supports adaptive thinking (Claude Sonnet 4.6 / Opus 4.6+)
+	supportsAdaptiveThinking: z.boolean().optional(),
+	// Capability flag to indicate whether the model supports "max" effort in adaptive thinking (Opus 4.6 only)
+	supportsAdaptiveThinkingMaxEffort: z.boolean().optional(),
 	// Capability flag to indicate whether the model supports simple on/off binary reasoning
 	supportsReasoningBinary: z.boolean().optional(),
 	// Capability flag to indicate whether the model supports temperature parameter

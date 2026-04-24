@@ -17,6 +17,7 @@ export const anthropicModels = {
 		cacheWritesPrice: 3.75, // $3.75 per million tokens
 		cacheReadsPrice: 0.3, // $0.30 per million tokens
 		supportsReasoningBudget: true,
+		supportsAdaptiveThinking: true,
 		// Tiered pricing for extended context (requires beta flag 'context-1m-2025-08-07')
 		tiers: [
 			{
@@ -80,6 +81,8 @@ export const anthropicModels = {
 		cacheWritesPrice: 6.25, // $6.25 per million tokens
 		cacheReadsPrice: 0.5, // $0.50 per million tokens
 		supportsReasoningBudget: true,
+		supportsAdaptiveThinking: true,
+		supportsAdaptiveThinkingMaxEffort: true, // "max" effort is only available for Opus 4.6
 		// Tiered pricing for extended context (requires beta flag)
 		tiers: [
 			{

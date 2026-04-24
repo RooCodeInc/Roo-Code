@@ -877,7 +877,15 @@
 	},
 	"thinkingBudget": {
 		"maxTokens": "Token Maksimum",
-		"maxThinkingTokens": "Token Thinking Maksimum"
+		"maxThinkingTokens": "Token Thinking Maksimum",
+		"useAdaptiveThinking": "Gunakan Pemikiran Adaptif",
+		"adaptiveThinkingDescription": "Biarkan Claude menentukan secara dinamis kapan dan seberapa banyak berpikir berdasarkan kompleksitas permintaan.",
+		"adaptiveEffort": {
+			"low": "Rendah",
+			"medium": "Sedang",
+			"high": "Tinggi (Default)",
+			"max": "Maksimum (Hanya Opus 4.6)"
+		}
 	},
 	"validation": {
 		"apiKey": "Kamu harus menyediakan API key yang valid.",
