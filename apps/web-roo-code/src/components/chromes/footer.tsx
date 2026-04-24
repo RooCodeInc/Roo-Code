@@ -97,18 +97,6 @@ export function Footer() {
 															className="rounded-md px-3 py-2 transition-colors hover:bg-accent/50 hover:text-foreground">
 															Cloud
 														</Link>
-														<Link
-															href="/reviewer"
-															onClick={() => setCloudDropdownOpen(false)}
-															className="rounded-md px-3 py-2 transition-colors hover:bg-accent/50 hover:text-foreground">
-															PR Reviewer
-														</Link>
-														<Link
-															href="/pr-fixer"
-															onClick={() => setCloudDropdownOpen(false)}
-															className="rounded-md px-3 py-2 transition-colors hover:bg-accent/50 hover:text-foreground">
-															PR Fixer
-														</Link>
 													</div>
 												</div>
 											)}
@@ -140,13 +128,6 @@ export function Footer() {
 											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
 											Testimonials
 										</a>
-									</li>
-									<li>
-										<Link
-											href="/enterprise"
-											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
-											Enterprise
-										</Link>
 									</li>
 									<li>
 										<a

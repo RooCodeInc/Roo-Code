@@ -54,14 +54,12 @@ export default async function Home() {
 
 						<div className="flex flex-col items-center gap-2">
 							<Button size="xl" className="w-full">
-								<a
-									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_HOME}
-									className="flex items-center justify-center">
-									Try Cloud for Free
+								<a href="/cloud" className="flex items-center justify-center">
+									Explore Roo Code Cloud
 									<ArrowRight className="ml-2 size-5" />
 								</a>
 							</Button>
-							<span className="text-xs text-muted-foreground">No credit card needed</span>
+							<span className="text-xs text-muted-foreground">See how cloud workflows operate</span>
 						</div>
 					</div>
 

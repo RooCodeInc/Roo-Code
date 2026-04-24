@@ -98,7 +98,7 @@ module.exports = {
     if (path === '/') {
       priority = 1.0;
       changefreq = 'yearly';
-    } else if (path === '/enterprise' || path === '/evals') {
+    } else if (path === '/evals') {
       priority = 0.8;
       changefreq = 'monthly';
     } else if (path === '/privacy' || path === '/terms') {

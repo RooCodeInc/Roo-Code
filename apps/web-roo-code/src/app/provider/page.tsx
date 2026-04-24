@@ -38,10 +38,15 @@ const faqs = [
 		question: "How much does the Roo Code Cloud service cost?",
 		answer: (
 			<>
-				Our{" "}
-				<Link href="/pricing" className="underline hover:no-underline">
-					service pricing is here.
+				See the{" "}
+				<Link href="/cloud" className="underline hover:no-underline">
+					Cloud plan
+				</Link>{" "}
+				and{" "}
+				<Link href="/cloud/team" className="underline hover:no-underline">
+					Team plan
 				</Link>
+				.
 			</>
 		),
 	},

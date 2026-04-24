@@ -1,5 +1,4 @@
 import {
-	ArrowRight,
 	Users,
 	Settings,
 	BarChart3,
@@ -163,22 +162,9 @@ export default function CloudTeamPage() {
 							analytics and more. No per-seat costs, no API key juggling.
 						</p>
 						<div className="flex flex-col sm:flex-row gap-4 justify-center">
-							<Button
-								size="xl"
-								className="bg-violet-600 hover:bg-violet-700 text-white transition-all duration-300 shadow-lg hover:shadow-violet-500/25"
-								asChild>
-								<a
-									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP + "?redirect_url=/checkout/team"}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center justify-center">
-									Start 14-Day Free Trial
-									<ArrowRight className="ml-2 size-5" />
-								</a>
-							</Button>
 							<Button variant="outline" size="xl" className="backdrop-blur-sm" asChild>
-								<a href="/pricing" className="flex items-center justify-center">
-									View Pricing
+								<a href="/provider" className="flex items-center justify-center">
+									View Router Pricing
 								</a>
 							</Button>
 						</div>
@@ -267,22 +253,9 @@ export default function CloudTeamPage() {
 							Ready to scale your team&apos;s development?
 						</h2>
 						<p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground">
-							Start your free 14-day trial today. Got questions? Get in touch.
+							Questions about getting started? Get in touch.
 						</p>
 						<div className="flex flex-col justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
-							<Button
-								size="lg"
-								className="bg-foreground text-background hover:bg-foreground/90 transition-all duration-300"
-								asChild>
-								<a
-									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP + "?redirect_url=/checkout/team"}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center justify-center">
-									Start Free Trial
-									<ArrowRight className="ml-2 h-4 w-4" />
-								</a>
-							</Button>
 							<Button variant="outline" size="lg" className="backdrop-blur-sm" asChild>
 								<a href={EXTERNAL_LINKS.SUPPORT} className="flex items-center justify-center">
 									Contact Support

@@ -21,12 +21,8 @@ export function CTASection() {
 					</Button>
 
 					<Button variant="outline" size="lg" className="w-full sm:w-auto h-12 px-8 text-base">
-						<a
-							href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="flex items-center gap-2">
-							Try Cloud for Free
+						<a href="/cloud" className="flex items-center gap-2">
+							Explore Cloud
 							<ArrowRight className="h-4 w-4" />
 						</a>
 					</Button>

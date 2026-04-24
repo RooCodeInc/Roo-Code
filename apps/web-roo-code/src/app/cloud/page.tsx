@@ -20,7 +20,6 @@ import { Button } from "@/components/ui"
 import { AnimatedBackground, UseExamplesSection } from "@/components/homepage"
 import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
-import { EXTERNAL_LINKS } from "@/lib/constants"
 // Workaround for next/image choking on these for some reason
 import screenshotDark from "../../../public/heroes/cloud-screen.png"
 
@@ -155,22 +154,9 @@ export default function CloudPage() {
 							from the web, Slack, Linear, and more.
 						</p>
 						<div className="flex flex-col sm:flex-row gap-4 justify-center">
-							<Button
-								size="xl"
-								className="bg-violet-600 hover:bg-violet-700 text-white transition-all duration-300 shadow-lg hover:shadow-violet-500/25"
-								asChild>
-								<a
-									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center justify-center">
-									Try Cloud for Free
-									<ArrowRight className="ml-2 size-5" />
-								</a>
-							</Button>
 							<Button variant="outline" size="xl" className="backdrop-blur-sm" asChild>
-								<a href="/pricing" className="flex items-center justify-center">
-									View Pricing
+								<a href="/cloud/team" className="flex items-center justify-center">
+									View Team Plan
 								</a>
 							</Button>
 						</div>
@@ -272,18 +258,16 @@ export default function CloudPage() {
 						<h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl">
 							Try a completely new way of working.
 						</h2>
-						<p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground">Start for free today.</p>
+						<p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground">
+							Explore cloud options for individuals and teams.
+						</p>
 						<div className="flex flex-col justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
 							<Button
 								size="lg"
 								className="bg-foreground text-background hover:bg-foreground/90 transition-all duration-300"
 								asChild>
-								<a
-									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center justify-center">
-									Sign up now
+								<a href="/cloud/team" className="flex items-center justify-center">
+									View Team Plan
 									<ArrowRight className="ml-2 h-4 w-4" />
 								</a>
 							</Button>

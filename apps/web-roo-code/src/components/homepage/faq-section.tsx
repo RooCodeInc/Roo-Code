@@ -108,8 +108,8 @@ const faqs: FAQItem[] = [
 				Absolutely. Roo Code uses efficient strategies (like partial-file analysis, summarization, or
 				user-specified context) to handle large codebases. Enterprises especially appreciate the on-prem or
 				self-hosted model option for compliance and security needs.{" "}
-				<Link href="/enterprise" className="text-primary underline-offset-4 hover:underline">
-					Learn more about Roo Code for enterprise.
+				<Link href="/cloud/team" className="text-primary underline-offset-4 hover:underline">
+					Learn more about Roo Code Cloud Team.
 				</Link>
 			</>
 		),
@@ -122,13 +122,9 @@ const faqs: FAQItem[] = [
 				provider. All file changes and commands go through permission gating, so nothing runs without your
 				approval. And because Roo Code is fully open-source, it&apos;s auditable—you can review exactly how it
 				works before deploying it.{" "}
-				<a
-					href="https://roocode.com/enterprise"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="text-primary underline-offset-4 hover:underline">
-					Learn more about Roo Code for enterprise.
-				</a>
+				<Link href="/cloud/team" className="text-primary underline-offset-4 hover:underline">
+					Learn more about Roo Code Cloud Team.
+				</Link>
 			</>
 		),
 	},

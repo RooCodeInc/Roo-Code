@@ -32,6 +32,41 @@ const nextConfig: NextConfig = {
 				destination: "/provider",
 				permanent: true,
 			},
+			{
+				source: "/pricing",
+				destination: "/cloud",
+				permanent: true,
+			},
+			{
+				source: "/enterprise",
+				destination: "/cloud/team",
+				permanent: true,
+			},
+			{
+				source: "/slack",
+				destination: "/cloud",
+				permanent: true,
+			},
+			{
+				source: "/linear",
+				destination: "/cloud",
+				permanent: true,
+			},
+			{
+				source: "/reviewer",
+				destination: "/cloud",
+				permanent: true,
+			},
+			{
+				source: "/pr-fixer",
+				destination: "/cloud",
+				permanent: true,
+			},
+			{
+				source: "/github",
+				destination: "/cloud",
+				permanent: true,
+			},
 		]
 	},
 }
