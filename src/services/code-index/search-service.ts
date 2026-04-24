@@ -41,8 +41,8 @@ export class CodeIndexSearchService {
 		}
 
 		try {
-			// Generate embedding for query
-			const embeddingResponse = await this.embedder.createEmbeddings([query])
+			// Generate embedding for query (purpose: "query" for search queries)
+			const embeddingResponse = await this.embedder.createEmbeddings([query], undefined, "query")
 			const vector = embeddingResponse?.embeddings[0]
 			if (!vector) {
 				throw new Error("Failed to generate embedding for query.")

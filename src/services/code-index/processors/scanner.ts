@@ -442,8 +442,8 @@ export class DirectoryScanner implements IDirectoryScanner {
 				}
 				// --- End Deletion Step ---
 
-				// Create embeddings for batch
-				const { embeddings } = await this.embedder.createEmbeddings(batchTexts)
+				// Create embeddings for batch (purpose: "index" for document indexing)
+				const { embeddings } = await this.embedder.createEmbeddings(batchTexts, undefined, "index")
 
 				// Prepare points for Qdrant
 				const points = batchBlocks.map((block, index) => {

@@ -1,3 +1,4 @@
+import type { EmbeddingPurpose } from "@roo-code/types"
 import { BedrockRuntimeClient, InvokeModelCommand, InvokeModelCommandInput } from "@aws-sdk/client-bedrock-runtime"
 import { fromIni, fromNodeProviderChain } from "@aws-sdk/credential-providers"
 import { IEmbedder, EmbeddingResponse, EmbedderInfo } from "../interfaces"
@@ -55,7 +56,7 @@ export class BedrockEmbedder implements IEmbedder {
 	 * @param model Optional model identifier
 	 * @returns Promise resolving to embedding response
 	 */
-	async createEmbeddings(texts: string[], model?: string): Promise<EmbeddingResponse> {
+	async createEmbeddings(texts: string[], model?: string, _purpose?: EmbeddingPurpose): Promise<EmbeddingResponse> {
 		const modelToUse = model || this.defaultModelId
 
 		const allEmbeddings: number[][] = []

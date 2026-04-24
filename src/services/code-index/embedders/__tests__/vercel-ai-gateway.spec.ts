@@ -95,6 +95,7 @@ describe("VercelAiGatewayEmbedder", () => {
 			expect(mockOpenAICompatibleEmbedder.createEmbeddings).toHaveBeenCalledWith(
 				texts,
 				"openai/text-embedding-3-large",
+				undefined,
 			)
 			expect(result).toBe(expectedResponse)
 		})
@@ -110,7 +111,7 @@ describe("VercelAiGatewayEmbedder", () => {
 			const result = await embedder.createEmbeddings(texts, customModel)
 
 			// Assert
-			expect(mockOpenAICompatibleEmbedder.createEmbeddings).toHaveBeenCalledWith(texts, customModel)
+			expect(mockOpenAICompatibleEmbedder.createEmbeddings).toHaveBeenCalledWith(texts, customModel, undefined)
 			expect(result).toBe(expectedResponse)
 		})
 
@@ -125,6 +126,7 @@ describe("VercelAiGatewayEmbedder", () => {
 			expect(mockOpenAICompatibleEmbedder.createEmbeddings).toHaveBeenCalledWith(
 				texts,
 				"openai/text-embedding-3-large",
+				undefined,
 			)
 		})
 	})

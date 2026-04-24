@@ -121,7 +121,7 @@ describe("GeminiEmbedder", () => {
 				const result = await embedder.createEmbeddings(texts)
 
 				// Assert
-				expect(mockCreateEmbeddings).toHaveBeenCalledWith(texts, "gemini-embedding-001")
+				expect(mockCreateEmbeddings).toHaveBeenCalledWith(texts, "gemini-embedding-001", undefined)
 				expect(result).toEqual(mockResponse)
 			})
 
@@ -141,7 +141,7 @@ describe("GeminiEmbedder", () => {
 				const result = await embedder.createEmbeddings(texts, "gemini-embedding-001")
 
 				// Assert
-				expect(mockCreateEmbeddings).toHaveBeenCalledWith(texts, "gemini-embedding-001")
+				expect(mockCreateEmbeddings).toHaveBeenCalledWith(texts, "gemini-embedding-001", undefined)
 				expect(result).toEqual(mockResponse)
 			})
 

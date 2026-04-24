@@ -1,6 +1,7 @@
+import type { EmbeddingPurpose } from "@roo-code/types"
 import { ApiHandlerOptions } from "../../../shared/api"
 import { EmbedderInfo, EmbeddingResponse, IEmbedder } from "../interfaces"
-import { getModelQueryPrefix } from "../../../shared/embeddingModels"
+import { getModelPrefixForPurpose } from "../../../shared/embeddingModels"
 import { MAX_ITEM_TOKENS } from "../constants"
 import { t } from "../../../i18n"
 import { withValidationErrorHandling, sanitizeErrorMessage } from "../shared/validation-helpers"
@@ -35,12 +36,12 @@ export class CodeIndexOllamaEmbedder implements IEmbedder {
 	 * @param model - Optional model ID to override the default.
 	 * @returns A promise that resolves to an EmbeddingResponse containing the embeddings and usage data.
 	 */
-	async createEmbeddings(texts: string[], model?: string): Promise<EmbeddingResponse> {
+	async createEmbeddings(texts: string[], model?: string, purpose?: EmbeddingPurpose): Promise<EmbeddingResponse> {
 		const modelToUse = model || this.defaultModelId
 		const url = `${this.baseUrl}/api/embed` // Endpoint as specified
 
-		// Apply model-specific query prefix if required
-		const queryPrefix = getModelQueryPrefix("ollama", modelToUse)
+		// Apply model-specific prefix based on purpose (query vs index)
+		const queryPrefix = getModelPrefixForPurpose("ollama", modelToUse, purpose)
 		const processedTexts = queryPrefix
 			? texts.map((text, index) => {
 					// Prevent double-prefixing
