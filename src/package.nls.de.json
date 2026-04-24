@@ -15,6 +15,7 @@
 	"command.terminal.explainCommand.title": "Diesen Befehl Erklären",
 	"command.acceptInput.title": "Eingabe/Vorschlag Akzeptieren",
 	"command.toggleAutoApprove.title": "Auto-Genehmigung Umschalten",
+	"command.generateCommitMessage.title": "Commit-Nachricht Generieren",
 	"views.activitybar.title": "Roo Code",
 	"views.contextMenu.label": "Roo Code",
 	"views.terminalMenu.label": "Roo Code",

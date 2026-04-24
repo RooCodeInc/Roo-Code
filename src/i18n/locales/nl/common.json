@@ -251,5 +251,15 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"commit": {
+		"no_workspace": "Geen werkruimtemap gevonden. Open een map om een commitbericht te genereren.",
+		"generating": "Commitbericht genereren...",
+		"no_changes": "Geen wijzigingen gedetecteerd. Stage of wijzig bestanden voordat je een commitbericht genereert.",
+		"generation_failed": "Kan commitbericht niet genereren",
+		"no_git_extension": "Git extension is not available.",
+		"no_git_repo": "No git repository found.",
+		"use_current_profile": "Huidig profiel gebruiken",
+		"select_profile": "Selecteer een API-profiel voor het genereren van commitberichten"
 	}
 }

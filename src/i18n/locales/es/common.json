@@ -246,5 +246,15 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"commit": {
+		"no_workspace": "No se encontró carpeta de trabajo. Abre una carpeta para generar un mensaje de commit.",
+		"generating": "Generando mensaje de commit...",
+		"no_changes": "No se detectaron cambios. Prepara o modifica archivos antes de generar un mensaje de commit.",
+		"generation_failed": "Error al generar el mensaje de commit",
+		"no_git_extension": "Git extension is not available.",
+		"no_git_repo": "No git repository found.",
+		"use_current_profile": "Usar perfil actual",
+		"select_profile": "Selecciona un perfil de API para la generación de mensajes de commit"
 	}
 }

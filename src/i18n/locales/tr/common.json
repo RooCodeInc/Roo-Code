@@ -251,5 +251,15 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"commit": {
+		"no_workspace": "Çalışma alanı klasörü bulunamadı. Commit mesajı oluşturmak için bir klasör aç.",
+		"generating": "Commit mesajı oluşturuluyor...",
+		"no_changes": "Değişiklik algılanmadı. Commit mesajı oluşturmadan önce dosyaları hazırla veya değiştir.",
+		"generation_failed": "Commit mesajı oluşturulamadı",
+		"no_git_extension": "Git extension is not available.",
+		"no_git_repo": "No git repository found.",
+		"use_current_profile": "Mevcut profili kullan",
+		"select_profile": "Commit mesajı oluşturma için bir API profili seç"
 	}
 }

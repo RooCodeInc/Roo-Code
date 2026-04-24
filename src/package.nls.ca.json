@@ -15,6 +15,7 @@
 	"command.terminal.explainCommand.title": "Explicar Aquesta Ordre",
 	"command.acceptInput.title": "Acceptar Entrada/Suggeriment",
 	"command.toggleAutoApprove.title": "Alternar Auto-Aprovació",
+	"command.generateCommitMessage.title": "Generar Missatge de Commit",
 	"views.activitybar.title": "Roo Code",
 	"views.contextMenu.label": "Roo Code",
 	"views.terminalMenu.label": "Roo Code",

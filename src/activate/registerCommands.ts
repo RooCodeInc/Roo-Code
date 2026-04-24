@@ -14,6 +14,12 @@ import { CodeIndexManager } from "../services/code-index/manager"
 import { importSettingsWithFeedback } from "../core/config/importExport"
 import { MdmService } from "../services/mdm/MdmService"
 import { t } from "../i18n"
+import {
+	getGitDiff,
+	generateCommitMessageFromDiff,
+	getWorkspaceRoot,
+	setScmInputBoxMessage,
+} from "../utils/commit-message-generator"
 
 /**
  * Helper to get the visible ClineProvider instance or log if not found.
@@ -194,6 +200,82 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 			type: "action",
 			action: "toggleAutoApprove",
 		})
+	},
+	generateCommitMessage: async () => {
+		const workspaceRoot = getWorkspaceRoot()
+
+		if (!workspaceRoot) {
+			vscode.window.showErrorMessage(t("common:commit.no_workspace"))
+			return
+		}
+
+		const visibleProvider = getVisibleProviderOrLog(outputChannel)
+
+		if (!visibleProvider) {
+			return
+		}
+
+		// Let the user optionally pick a different API profile
+		const listApiConfigMeta = await visibleProvider.providerSettingsManager.listConfig()
+		let apiConfiguration = visibleProvider.contextProxy.getProviderSettings()
+
+		if (listApiConfigMeta.length > 1) {
+			const items = [
+				{ label: t("common:commit.use_current_profile"), id: undefined },
+				...listApiConfigMeta.map((config) => ({
+					label: config.name ?? config.id,
+					id: config.id,
+				})),
+			]
+
+			const selected = await vscode.window.showQuickPick(items, {
+				placeHolder: t("common:commit.select_profile"),
+			})
+
+			if (!selected) {
+				return // User cancelled
+			}
+
+			if (selected.id) {
+				const { name: _, ...providerSettings } = await visibleProvider.providerSettingsManager.getProfile({
+					id: selected.id,
+				})
+
+				if (providerSettings.apiProvider) {
+					apiConfiguration = providerSettings
+				}
+			}
+		}
+
+		await vscode.window.withProgress(
+			{
+				location: vscode.ProgressLocation.Notification,
+				title: t("common:commit.generating"),
+				cancellable: false,
+			},
+			async () => {
+				try {
+					const diff = await getGitDiff(workspaceRoot)
+
+					if (!diff.trim()) {
+						vscode.window.showInformationMessage(t("common:commit.no_changes"))
+						return
+					}
+
+					const commitMessage = await generateCommitMessageFromDiff(apiConfiguration, diff)
+					const success = await setScmInputBoxMessage(commitMessage)
+
+					if (success) {
+						// Focus the SCM view to show the generated message
+						await vscode.commands.executeCommand("workbench.view.scm")
+					}
+				} catch (error) {
+					vscode.window.showErrorMessage(
+						`${t("common:commit.generation_failed")}: ${error instanceof Error ? error.message : String(error)}`,
+					)
+				}
+			},
+		)
 	},
 })
 
