@@ -17,6 +17,7 @@ import {
 	fireworksModels,
 	minimaxModels,
 	basetenModels,
+	veniceModels,
 } from "@roo-code/types"
 
 export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, ModelInfo>>> = {
@@ -36,6 +37,7 @@ export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, Mod
 	fireworks: fireworksModels,
 	minimax: minimaxModels,
 	baseten: basetenModels,
+	venice: veniceModels,
 }
 
 export const PROVIDERS = [
@@ -65,5 +67,6 @@ export const PROVIDERS = [
 	{ value: "minimax", label: "MiniMax", proxy: false },
 	{ value: "baseten", label: "Baseten", proxy: false },
 	{ value: "unbound", label: "Unbound", proxy: false },
+	{ value: "venice", label: "Venice AI", proxy: false },
 	{ value: "poe", label: "Poe", proxy: false },
 ].sort((a, b) => a.label.localeCompare(b.label))

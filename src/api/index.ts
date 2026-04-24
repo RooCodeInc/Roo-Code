@@ -23,6 +23,7 @@ import {
 	VsCodeLmHandler,
 	RequestyHandler,
 	UnboundHandler,
+	VeniceHandler,
 	FakeAIHandler,
 	XAIHandler,
 	LiteLLMHandler,
@@ -177,6 +178,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new MiniMaxHandler(options)
 		case "baseten":
 			return new BasetenHandler(options)
+		case "venice":
+			return new VeniceHandler(options)
 		case "poe":
 			return new PoeHandler(options)
 		default:

@@ -19,6 +19,7 @@ import {
 	vscodeLlmDefaultModelId,
 	openAiCodexModels,
 	sambaNovaModels,
+	veniceModels,
 	internationalZAiModels,
 	mainlandZAiModels,
 	fireworksModels,
@@ -330,6 +331,11 @@ function getSelectedModel({
 		case "openai-codex": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const info = openAiCodexModels[id as keyof typeof openAiCodexModels]
+			return { id, info }
+		}
+		case "venice": {
+			const id = apiConfiguration.apiModelId ?? defaultModelId
+			const info = veniceModels[id as keyof typeof veniceModels]
 			return { id, info }
 		}
 		case "vercel-ai-gateway": {
