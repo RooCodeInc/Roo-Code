@@ -261,44 +261,46 @@ describe("WebAuthService", () => {
 			)
 		})
 
-		it("should use package.json values for redirect URI with default sign-in endpoint", async () => {
+		it("should use localhost auth redirect with default sign-in endpoint", async () => {
 			const mockOpenExternal = vi.fn()
 			const vscode = await import("vscode")
 			vi.mocked(vscode.env.openExternal).mockImplementation(mockOpenExternal)
 
 			await authService.login()
 
-			const expectedUrl =
-				"https://api.test.com/extension/sign-in?state=746573742d72616e646f6d2d6279746573&auth_redirect=vscode%3A%2F%2FRooVeterinaryInc.roo-cline"
 			expect(mockOpenExternal).toHaveBeenCalledWith(
 				expect.objectContaining({
 					toString: expect.any(Function),
 				}),
 			)
 
-			// Verify the actual URL
+			// Verify the URL uses the local auth server redirect (http://127.0.0.1:PORT)
 			const calledUri = mockOpenExternal.mock.calls[0]?.[0]
-			expect(calledUri.toString()).toBe(expectedUrl)
+			const url = calledUri.toString()
+			expect(url).toMatch(
+				/^https:\/\/api\.test\.com\/extension\/sign-in\?state=746573742d72616e646f6d2d6279746573&auth_redirect=http%3A%2F%2F127\.0\.0\.1%3A\d+$/,
+			)
 		})
 
-		it("should use provider signup URL when useProviderSignup is true", async () => {
+		it("should use provider signup URL with localhost auth redirect when useProviderSignup is true", async () => {
 			const mockOpenExternal = vi.fn()
 			const vscode = await import("vscode")
 			vi.mocked(vscode.env.openExternal).mockImplementation(mockOpenExternal)
 
 			await authService.login(undefined, true)
 
-			const expectedUrl =
-				"https://api.test.com/extension/provider-sign-up?state=746573742d72616e646f6d2d6279746573&auth_redirect=vscode%3A%2F%2FRooVeterinaryInc.roo-cline"
 			expect(mockOpenExternal).toHaveBeenCalledWith(
 				expect.objectContaining({
 					toString: expect.any(Function),
 				}),
 			)
 
-			// Verify the actual URL
+			// Verify the URL uses the local auth server redirect (http://127.0.0.1:PORT)
 			const calledUri = mockOpenExternal.mock.calls[0]?.[0]
-			expect(calledUri.toString()).toBe(expectedUrl)
+			const url = calledUri.toString()
+			expect(url).toMatch(
+				/^https:\/\/api\.test\.com\/extension\/provider-sign-up\?state=746573742d72616e646f6d2d6279746573&auth_redirect=http%3A%2F%2F127\.0\.0\.1%3A\d+$/,
+			)
 		})
 
 		it("should handle errors during login", async () => {
