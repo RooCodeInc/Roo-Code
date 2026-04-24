@@ -1,0 +1,12 @@
+active_intents:
+  - id: "INT-001"
+    name: "Build Todo App"
+    status: "IN_PROGRESS"
+    owned_scope:
+      - "src/**"
+    constraints:
+      - "Use TypeScript"
+      - "Keep components simple"
+    acceptance_criteria:
+      - "Add todo functionality works"
+      - "Delete todo functionality works"

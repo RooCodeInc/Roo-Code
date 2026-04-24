@@ -17,6 +17,7 @@ import { convertNewFileToUnifiedDiff, computeDiffStats, sanitizeUnifiedDiff } fr
 import type { ToolUse } from "../../shared/tools"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
+import { contentHash } from "../../hooks/content-hash"
 
 interface WriteToFileParams {
 	path: string
@@ -65,6 +66,21 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		} else {
 			fileExists = await fileExistsAtPath(absolutePath)
 			task.diffViewProvider.editType = fileExists ? "modify" : "create"
+		}
+
+		// Optimistic locking: if we have a read-hash for this file, ensure disk hasn't changed (parallel agent or human edit)
+		if (fileExists) {
+			const expectedHash = task.getFileReadHash(relPath)
+			if (expectedHash !== undefined) {
+				const currentContent = await fs.readFile(absolutePath, "utf-8")
+				const currentHash = contentHash(currentContent)
+				if (currentHash !== expectedHash) {
+					const staleError = `Stale File: The file "${relPath}" was modified since you read it (by another agent or the user). Your write is blocked to avoid overwriting those changes. Re-read the file with read_file and then apply your edits.`
+					pushToolResult(formatResponse.toolError(staleError))
+					await task.diffViewProvider.reset()
+					return
+				}
+			}
 		}
 
 		// Create parent directories early for new files to prevent ENOENT errors
@@ -178,6 +194,15 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			const message = await task.diffViewProvider.pushToolWriteResult(task, task.cwd, !fileExists)
 
 			pushToolResult(message)
+
+			const mutationClass = (params as Record<string, unknown>).mutation_class as string | undefined
+			const intentId = (params as Record<string, unknown>).intent_id as string | undefined
+			await callbacks.onWriteToFileSuccess?.({
+				path: relPath,
+				content: newContent,
+				intent_id: intentId,
+				mutation_class: mutationClass,
+			})
 
 			await task.diffViewProvider.reset()
 			this.resetPartialState()

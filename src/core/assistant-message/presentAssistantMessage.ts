@@ -34,12 +34,14 @@ import { updateTodoListTool } from "../tools/UpdateTodoListTool"
 import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
 import { skillTool } from "../tools/SkillTool"
 import { generateImageTool } from "../tools/GenerateImageTool"
+import { appendLessonLearnedTool } from "../tools/AppendLessonLearnedTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+import { HookMiddleware, PreHook } from "../../hooks"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -383,6 +385,8 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.skill}'${block.params.args ? ` with args: ${block.params.args}` : ""}]`
 					case "generate_image":
 						return `[${block.name} for '${block.params.path}']`
+					case "append_lesson_learned":
+						return `[${block.name}]`
 					default:
 						return `[${block.name}]`
 				}
@@ -603,6 +607,17 @@ export async function presentAssistantMessage(cline: Task) {
 						stateExperiments,
 						includedTools,
 					)
+
+					// Hook Engine: Pre-Hook validation for intent enforcement and guardrails
+					const preHookResult = await hookMiddleware.preToolUse(block.name, block.params)
+					if (preHookResult.blocked) {
+						pushToolResult(preHookResult.error || "Tool blocked by pre-hook")
+						break
+					}
+					if (preHookResult.injectResult) {
+						pushToolResult(preHookResult.injectResult)
+						break
+					}
 				} catch (error) {
 					cline.consecutiveMistakeCount++
 					// For validation errors (unknown tool, tool not allowed for mode), we need to:
@@ -675,15 +690,48 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			// Hook Engine: Post-Hook for write_to_file appends to agent_trace.jsonl
+			const preHook = new PreHook({
+				cwd: cline.cwd,
+				getActiveIntentId: () => cline.getActiveIntentId(),
+				setActiveIntentId: (id) => cline.setActiveIntentId(id),
+				requireIntentForDestructiveOnly: true,
+			})
+			const hookMiddleware = new HookMiddleware({
+				preHook,
+				getActiveIntentId: () => cline.getActiveIntentId(),
+				getCwd: () => cline.cwd,
+				getReqId: () => cline.taskId,
+				getSessionLogId: () => undefined,
+				getModelId: () => cline.api.getModel()?.id,
+				getVcsRevisionId: () => undefined,
+			})
+
 			switch (block.name) {
-				case "write_to_file":
+				case "select_active_intent":
+					// Handled entirely by pre-hook (injectResult pushed above)
+					break
+				case "write_to_file": {
 					await checkpointSaveAndMark(cline)
 					await writeToFileTool.handle(cline, block as ToolUse<"write_to_file">, {
 						askApproval,
 						handleError,
 						pushToolResult,
+						onWriteToFileSuccess: async (p) => {
+							await hookMiddleware.postToolUse(
+								"write_to_file",
+								{
+									path: p.path,
+									content: p.content,
+									intent_id: p.intent_id,
+									mutation_class: p.mutation_class,
+								},
+								{},
+							)
+						},
 					})
 					break
+				}
 				case "update_todo_list":
 					await updateTodoListTool.handle(cline, block as ToolUse<"update_todo_list">, {
 						askApproval,
@@ -836,6 +884,13 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "skill":
 					await skillTool.handle(cline, block as ToolUse<"skill">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "append_lesson_learned":
+					await appendLessonLearnedTool.handle(cline, block as ToolUse<"append_lesson_learned">, {
 						askApproval,
 						handleError,
 						pushToolResult,

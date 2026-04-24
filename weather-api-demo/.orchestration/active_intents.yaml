@@ -1,0 +1,11 @@
+active_intents:
+  - id: "INT-001"
+    name: "Build Weather API"
+    status: "IN_PROGRESS"
+    owned_scope:
+      - "src/api/**"
+    constraints:
+      - "Use REST conventions"
+      - "Return JSON"
+    acceptance_criteria:
+      - "GET /weather returns 200"

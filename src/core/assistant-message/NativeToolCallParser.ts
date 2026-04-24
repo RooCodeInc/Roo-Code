@@ -469,6 +469,12 @@ export class NativeToolCallParser {
 					nativeArgs = {
 						path: partialArgs.path,
 						content: partialArgs.content,
+						intent_id: partialArgs.intent_id,
+						mutation_class: partialArgs.mutation_class as
+							| "AST_REFACTOR"
+							| "INTENT_EVOLUTION"
+							| "NEW_FILE"
+							| undefined,
 					}
 				}
 				break
@@ -524,6 +530,15 @@ export class NativeToolCallParser {
 					nativeArgs = {
 						skill: partialArgs.skill,
 						args: partialArgs.args,
+					}
+				}
+				break
+
+			case "append_lesson_learned":
+				if (partialArgs.lesson !== undefined || partialArgs.file_path !== undefined) {
+					nativeArgs = {
+						lesson: partialArgs.lesson,
+						file_path: partialArgs.file_path,
 					}
 				}
 				break
@@ -907,6 +922,21 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							path: args.path,
 							content: args.content,
+							intent_id: args.intent_id,
+							mutation_class: args.mutation_class as
+								| "AST_REFACTOR"
+								| "INTENT_EVOLUTION"
+								| "NEW_FILE"
+								| undefined,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "append_lesson_learned":
+					if (args.lesson !== undefined) {
+						nativeArgs = {
+							lesson: args.lesson,
+							file_path: args.file_path,
 						} as NativeArgsFor<TName>
 					}
 					break
