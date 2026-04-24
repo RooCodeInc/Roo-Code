@@ -27,6 +27,7 @@
 		"shareSuccessPublic": "Public link copied to clipboard",
 		"openApiHistory": "Open API History",
 		"openUiHistory": "Open UI History",
+		"viewDiff": "View all changes since task started",
 		"backToParentTask": "Parent task"
 	},
 	"unpin": "Unpin",
