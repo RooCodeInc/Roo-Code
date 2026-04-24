@@ -129,9 +129,12 @@ export class CodeIndexOrchestrator {
 		// Track whether we successfully connected to Qdrant and started indexing
 		// This helps us decide whether to preserve cache on error
 		let indexingStarted = false
+		// Track whether a new collection was created (vs reusing existing one)
+		// This helps us decide whether to clear data on error
+		let collectionCreated = false
 
 		try {
-			const collectionCreated = await this.vectorStore.initialize()
+			collectionCreated = await this.vectorStore.initialize()
 
 			// Successfully connected to Qdrant
 			indexingStarted = true
@@ -316,27 +319,38 @@ export class CodeIndexOrchestrator {
 				stack: error instanceof Error ? error.stack : undefined,
 				location: "startIndexing",
 			})
-			if (indexingStarted) {
-				try {
-					await this.vectorStore.clearCollection()
-				} catch (cleanupError) {
-					console.error("[CodeIndexOrchestrator] Failed to clean up after error:", cleanupError)
-					TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-						error: cleanupError instanceof Error ? cleanupError.message : String(cleanupError),
-						stack: cleanupError instanceof Error ? cleanupError.stack : undefined,
-						location: "startIndexing.cleanup",
-					})
-				}
-			}
 
-			// Only clear cache if indexing had started (Qdrant connection succeeded)
-			// If we never connected to Qdrant, preserve cache for incremental scan when it comes back
+			// Determine if this is a connection error (never reached Qdrant) vs a mid-indexing failure.
+			// Only wipe collection + cache when indexing actually started AND data was written,
+			// since clearing on transient errors destroys a perfectly valid existing index.
 			if (indexingStarted) {
-				// Indexing started but failed mid-way - clear cache to avoid cache-Qdrant mismatch
-				await this.cacheManager.clearCacheFile()
-				console.log(
-					"[CodeIndexOrchestrator] Indexing failed after starting. Clearing cache to avoid inconsistency.",
-				)
+				// Indexing started — but only clear data if a new collection was just created
+				// (meaning there's no pre-existing data to preserve). If we were doing an
+				// incremental scan on an existing collection, preserve the data so the user
+				// doesn't lose their entire index due to a transient embedding API error.
+				if (collectionCreated) {
+					try {
+						await this.vectorStore.clearCollection()
+					} catch (cleanupError) {
+						console.error("[CodeIndexOrchestrator] Failed to clean up after error:", cleanupError)
+						TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
+							error: cleanupError instanceof Error ? cleanupError.message : String(cleanupError),
+							stack: cleanupError instanceof Error ? cleanupError.stack : undefined,
+							location: "startIndexing.cleanup",
+						})
+					}
+					await this.cacheManager.clearCacheFile()
+					console.log(
+						"[CodeIndexOrchestrator] Indexing failed on a newly created collection. Clearing cache to avoid inconsistency.",
+					)
+				} else {
+					// Pre-existing collection — flush (persist) the cache rather than clearing it
+					// so the next startup can resume incrementally from where we left off.
+					await this.cacheManager.flush()
+					console.log(
+						"[CodeIndexOrchestrator] Indexing failed on existing collection. Preserving existing data and cache for recovery.",
+					)
+				}
 			} else {
 				// Never connected to Qdrant - preserve cache for future incremental scan
 				console.log(
