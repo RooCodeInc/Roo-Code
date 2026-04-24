@@ -23,6 +23,25 @@ export class TerminalRegistry {
 	private static disposables: vscode.Disposable[] = []
 	private static isInitialized = false
 
+	public static readonly DEFAULT_MAX_TERMINAL_POOL_SIZE = 5
+	private static maxTerminalPoolSize: number = TerminalRegistry.DEFAULT_MAX_TERMINAL_POOL_SIZE
+
+	/**
+	 * Sets the maximum terminal pool size.
+	 * @param size The maximum number of terminals to keep in the pool (1-20)
+	 */
+	public static setMaxTerminalPoolSize(size: number): void {
+		this.maxTerminalPoolSize = Math.max(1, Math.min(20, size))
+	}
+
+	/**
+	 * Gets the maximum terminal pool size.
+	 * @returns The maximum number of terminals allowed in the pool
+	 */
+	public static getMaxTerminalPoolSize(): number {
+		return this.maxTerminalPoolSize
+	}
+
 	public static initialize() {
 		if (this.isInitialized) {
 			throw new Error("TerminalRegistry.initialize() should only be called once")
@@ -128,6 +147,9 @@ export class TerminalRegistry {
 	}
 
 	public static createTerminal(cwd: string, provider: RooTerminalProvider): RooTerminal {
+		// Enforce pool size limit before creating a new terminal.
+		this.enforcePoolSizeLimit()
+
 		let newTerminal
 
 		if (provider === "vscode") {
@@ -277,16 +299,29 @@ export class TerminalRegistry {
 	}
 
 	/**
-	 * Releases all terminals associated with a task.
+	 * Releases all terminals associated with a task. Idle terminals that
+	 * are not busy and have no unretrieved output are disposed (closed).
+	 * Busy terminals are simply unassigned from the task.
 	 *
 	 * @param taskId The task ID
 	 */
 	public static releaseTerminalsForTask(taskId: string): void {
+		const terminalsToDispose: RooTerminal[] = []
+
 		this.terminals.forEach((terminal) => {
 			if (terminal.taskId === taskId) {
 				terminal.taskId = undefined
+
+				// Dispose idle terminals that have no pending output.
+				if (!terminal.busy && !terminal.running && !terminal.process?.hasUnretrievedOutput()) {
+					terminalsToDispose.push(terminal)
+				}
 			}
 		})
+
+		for (const terminal of terminalsToDispose) {
+			this.disposeTerminal(terminal)
+		}
 	}
 
 	private static getAllTerminals(): RooTerminal[] {
@@ -324,5 +359,48 @@ export class TerminalRegistry {
 	private static removeTerminal(id: number) {
 		ShellIntegrationManager.zshCleanupTmpDir(id)
 		this.terminals = this.terminals.filter((t) => t.id !== id)
+	}
+
+	/**
+	 * Enforces the terminal pool size limit by disposing the oldest idle
+	 * terminals when the pool is at or above the maximum size.
+	 */
+	private static enforcePoolSizeLimit(): void {
+		const allTerminals = this.getAllTerminals()
+
+		if (allTerminals.length < this.maxTerminalPoolSize) {
+			return
+		}
+
+		// Find idle terminals (not busy, not running, no task assigned).
+		const idleTerminals = allTerminals.filter(
+			(t) => !t.busy && !t.running && !t.taskId && !t.process?.hasUnretrievedOutput(),
+		)
+
+		// Dispose oldest idle terminals until we're under the limit.
+		// Terminals are ordered by creation (oldest first).
+		let toRemove = allTerminals.length - this.maxTerminalPoolSize + 1 // +1 to make room for the new one
+
+		for (const terminal of idleTerminals) {
+			if (toRemove <= 0) {
+				break
+			}
+
+			this.disposeTerminal(terminal)
+			toRemove--
+		}
+	}
+
+	/**
+	 * Disposes a terminal by closing the underlying VSCode terminal
+	 * and removing it from the registry.
+	 */
+	private static disposeTerminal(terminal: RooTerminal): void {
+		// For VSCode terminals, dispose the underlying terminal.
+		if (terminal instanceof Terminal) {
+			terminal.terminal.dispose()
+		}
+
+		this.removeTerminal(terminal.id)
 	}
 }

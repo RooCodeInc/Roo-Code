@@ -754,6 +754,10 @@
 			"label": "Terminal character limit",
 			"description": "Overrides the line limit to prevent memory issues by enforcing a hard cap on output size. If exceeded, keeps the beginning and end and shows a placeholder to Roo where content is skipped. <0>Learn more</0>"
 		},
+		"maxPoolSize": {
+			"label": "Maximum terminal pool size",
+			"description": "Maximum number of terminals Roo Code can keep open at the same time. When this limit is reached, the oldest idle terminal is closed before creating a new one. Lower values help keep your workspace tidy; higher values avoid repeatedly opening new terminals."
+		},
 		"outputPreviewSize": {
 			"label": "Command output preview size",
 			"description": "Controls how much command output Roo sees directly. Full output is always saved and accessible when needed.",

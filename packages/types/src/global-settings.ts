@@ -176,6 +176,7 @@ export const globalSettingsSchema = z.object({
 	terminalZshOhMy: z.boolean().optional(),
 	terminalZshP10k: z.boolean().optional(),
 	terminalZdotdir: z.boolean().optional(),
+	maxTerminalPoolSize: z.number().int().min(1).max(20).optional(),
 	execaShellPath: z.string().optional(),
 
 	diagnosticsEnabled: z.boolean().optional(),
@@ -356,6 +357,7 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	terminalZshP10k: false,
 	terminalZdotdir: true,
 	terminalShellIntegrationDisabled: true,
+	maxTerminalPoolSize: 5,
 
 	diagnosticsEnabled: true,
 

@@ -282,6 +282,7 @@ export type ExtensionState = Pick<
 	| "terminalZshOhMy"
 	| "terminalZshP10k"
 	| "terminalZdotdir"
+	| "maxTerminalPoolSize"
 	| "execaShellPath"
 	| "diagnosticsEnabled"
 	| "language"

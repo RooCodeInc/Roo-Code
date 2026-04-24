@@ -49,6 +49,7 @@ import { CodeIndexManager } from "../../services/code-index/manager"
 import { checkExistKey } from "../../shared/checkExistApiConfig"
 import { experimentDefault } from "../../shared/experiments"
 import { Terminal } from "../../integrations/terminal/Terminal"
+import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { openFile } from "../../integrations/misc/open-file"
 import { openImage, saveImage } from "../../integrations/misc/image-handler"
 import { selectImages } from "../../integrations/misc/process-images"
@@ -717,6 +718,10 @@ export const webviewMessageHandler = async (
 					} else if (key === "terminalZdotdir") {
 						if (value !== undefined) {
 							Terminal.setTerminalZdotdir(value as boolean)
+						}
+					} else if (key === "maxTerminalPoolSize") {
+						if (value !== undefined) {
+							TerminalRegistry.setMaxTerminalPoolSize(value as number)
 						}
 					} else if (key === "execaShellPath") {
 						Terminal.setExecaShellPath(value as string | undefined)

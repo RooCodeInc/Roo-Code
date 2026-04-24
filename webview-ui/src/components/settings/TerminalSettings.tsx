@@ -26,6 +26,7 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	terminalZshOhMy?: boolean
 	terminalZshP10k?: boolean
 	terminalZdotdir?: boolean
+	maxTerminalPoolSize?: number
 	setCachedStateField: SetCachedStateField<
 		| "terminalOutputPreviewSize"
 		| "terminalShellIntegrationTimeout"
@@ -36,6 +37,7 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "terminalZshOhMy"
 		| "terminalZshP10k"
 		| "terminalZdotdir"
+		| "maxTerminalPoolSize"
 	>
 }
 
@@ -49,6 +51,7 @@ export const TerminalSettings = ({
 	terminalZshOhMy,
 	terminalZshP10k,
 	terminalZdotdir,
+	maxTerminalPoolSize,
 	setCachedStateField,
 	className,
 	...props
@@ -122,6 +125,28 @@ export const TerminalSettings = ({
 							</Select>
 							<div className="text-vscode-descriptionForeground text-sm mt-1">
 								{t("settings:terminal.outputPreviewSize.description")}
+							</div>
+						</SearchableSetting>
+
+						<SearchableSetting
+							settingId="terminal-max-pool-size"
+							section="terminal"
+							label={t("settings:terminal.maxPoolSize.label")}>
+							<label className="block font-medium mb-1">{t("settings:terminal.maxPoolSize.label")}</label>
+							<div className="flex items-center gap-2">
+								<Slider
+									min={1}
+									max={20}
+									step={1}
+									value={[maxTerminalPoolSize ?? 5]}
+									onValueChange={([value]) =>
+										setCachedStateField("maxTerminalPoolSize", Math.min(20, Math.max(1, value)))
+									}
+								/>
+								<span className="w-10">{maxTerminalPoolSize ?? 5}</span>
+							</div>
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
+								{t("settings:terminal.maxPoolSize.description")}
 							</div>
 						</SearchableSetting>
 					</div>

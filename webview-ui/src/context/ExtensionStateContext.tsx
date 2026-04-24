@@ -92,6 +92,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setWriteDelayMs: (value: number) => void
 	terminalOutputPreviewSize?: "small" | "medium" | "large"
 	setTerminalOutputPreviewSize: (value: "small" | "medium" | "large") => void
+	maxTerminalPoolSize?: number
+	setMaxTerminalPoolSize: (value: number) => void
 	mcpEnabled: boolean
 	setMcpEnabled: (value: boolean) => void
 	taskSyncEnabled: boolean
@@ -207,6 +209,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		language: "en", // Default language code
 		writeDelayMs: 1000,
 		terminalShellIntegrationTimeout: 4000,
+		maxTerminalPoolSize: 5,
 		mcpEnabled: true,
 		taskSyncEnabled: false,
 		currentApiConfigName: "default",
@@ -545,6 +548,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setTerminalShellIntegrationDisabled: (value) =>
 			setState((prevState) => ({ ...prevState, terminalShellIntegrationDisabled: value })),
 		setTerminalZdotdir: (value) => setState((prevState) => ({ ...prevState, terminalZdotdir: value })),
+		setMaxTerminalPoolSize: (value) => setState((prevState) => ({ ...prevState, maxTerminalPoolSize: value })),
 		setMcpEnabled: (value) => setState((prevState) => ({ ...prevState, mcpEnabled: value })),
 		setTaskSyncEnabled: (value) => setState((prevState) => ({ ...prevState, taskSyncEnabled: value }) as any),
 		setCurrentApiConfigName: (value) => setState((prevState) => ({ ...prevState, currentApiConfigName: value })),

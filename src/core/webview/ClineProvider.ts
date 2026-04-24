@@ -63,6 +63,7 @@ import { EMBEDDING_MODEL_PROFILES } from "../../shared/embeddingModels"
 import { ProfileValidator } from "../../shared/ProfileValidator"
 
 import { Terminal } from "../../integrations/terminal/Terminal"
+import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { downloadTask, getTaskFileName } from "../../integrations/misc/export-markdown"
 import { resolveDefaultSaveUri, saveLastExportPath } from "../../utils/export"
 import { getTheme } from "../../integrations/theme/getTheme"
@@ -852,6 +853,7 @@ export class ClineProvider
 				terminalZshP10k = false,
 				terminalPowershellCounter = false,
 				terminalZdotdir = false,
+				maxTerminalPoolSize = TerminalRegistry.DEFAULT_MAX_TERMINAL_POOL_SIZE,
 				ttsEnabled,
 				ttsSpeed,
 			}) => {
@@ -863,6 +865,7 @@ export class ClineProvider
 				Terminal.setTerminalZshP10k(terminalZshP10k)
 				Terminal.setPowershellCounter(terminalPowershellCounter)
 				Terminal.setTerminalZdotdir(terminalZdotdir)
+				TerminalRegistry.setMaxTerminalPoolSize(maxTerminalPoolSize)
 				setTtsEnabled(ttsEnabled ?? false)
 				setTtsSpeed(ttsSpeed ?? 1)
 			},
@@ -2162,6 +2165,7 @@ export class ClineProvider
 			terminalZshOhMy,
 			terminalZshP10k,
 			terminalZdotdir,
+			maxTerminalPoolSize,
 			mcpEnabled,
 			currentApiConfigName,
 			listApiConfigMeta,
@@ -2282,6 +2286,7 @@ export class ClineProvider
 			terminalZshOhMy: terminalZshOhMy ?? false,
 			terminalZshP10k: terminalZshP10k ?? false,
 			terminalZdotdir: terminalZdotdir ?? false,
+			maxTerminalPoolSize: maxTerminalPoolSize ?? TerminalRegistry.DEFAULT_MAX_TERMINAL_POOL_SIZE,
 			mcpEnabled: mcpEnabled ?? true,
 			currentApiConfigName: currentApiConfigName ?? "default",
 			listApiConfigMeta: listApiConfigMeta ?? [],
@@ -2509,6 +2514,7 @@ export class ClineProvider
 			terminalZshOhMy: stateValues.terminalZshOhMy ?? false,
 			terminalZshP10k: stateValues.terminalZshP10k ?? false,
 			terminalZdotdir: stateValues.terminalZdotdir ?? false,
+			maxTerminalPoolSize: stateValues.maxTerminalPoolSize ?? TerminalRegistry.DEFAULT_MAX_TERMINAL_POOL_SIZE,
 			mode: stateValues.mode ?? defaultModeSlug,
 			language: stateValues.language ?? formatLanguage(vscode.env.language),
 			mcpEnabled: stateValues.mcpEnabled ?? true,
