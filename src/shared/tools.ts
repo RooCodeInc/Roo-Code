@@ -1,6 +1,13 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 
-import type { ClineAsk, ToolProgressStatus, ToolGroup, ToolName, GenerateImageParams } from "@roo-code/types"
+import type {
+	ClineAsk,
+	ToolProgressStatus,
+	ToolGroup,
+	ToolName,
+	GenerateImageParams,
+	ClineAskDelegateToAgent,
+} from "@roo-code/types"
 
 export type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
 
@@ -52,6 +59,7 @@ export const toolParamNames = [
 	"size",
 	"query",
 	"args",
+	"agent_name", // delegate_to_agent parameter
 	"skill", // skill tool parameter
 	"start_line",
 	"end_line",
@@ -115,6 +123,7 @@ export type NativeToolArgs = {
 	switch_mode: { mode_slug: string; reason: string }
 	update_todo_list: { todos: string }
 	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
+	delegate_to_agent: { agent_name: string; message: string }
 	write_to_file: { path: string; content: string }
 	// Add more tools as they are migrated to native protocol
 }
@@ -290,6 +299,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	skill: "load skill",
 	generate_image: "generate images",
 	custom_tool: "use custom tools",
+	delegate_to_agent: "delegate to A2A agent",
 } as const
 
 // Define available tool groups.
@@ -306,6 +316,9 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 	},
 	mcp: {
 		tools: ["use_mcp_tool", "access_mcp_resource"],
+	},
+	a2a: {
+		tools: ["delegate_to_agent"],
 	},
 	modes: {
 		tools: ["switch_mode", "new_task"],

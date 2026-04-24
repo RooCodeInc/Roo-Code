@@ -70,6 +70,7 @@ import WorkspaceTracker from "../../integrations/workspace/WorkspaceTracker"
 
 import { McpHub } from "../../services/mcp/McpHub"
 import { McpServerManager } from "../../services/mcp/McpServerManager"
+import { A2aHub } from "../../services/a2a/A2aHub"
 import { MarketplaceManager } from "../../services/marketplace"
 import { ShadowCheckpointService } from "../../services/checkpoints/ShadowCheckpointService"
 import { CodeIndexManager } from "../../services/code-index/manager"
@@ -141,6 +142,7 @@ export class ClineProvider
 	private codeIndexManager?: CodeIndexManager
 	private _workspaceTracker?: WorkspaceTracker // workSpaceTracker read-only for access outside this class
 	protected mcpHub?: McpHub // Change from private to protected
+	protected a2aHub?: A2aHub
 	protected skillsManager?: SkillsManager
 	private marketplaceManager: MarketplaceManager
 	private mdmService?: MdmService
@@ -223,6 +225,18 @@ export class ClineProvider
 			})
 			.catch((error) => {
 				this.log(`Failed to initialize MCP Hub: ${error}`)
+			})
+
+		// Initialize A2A Hub for agent-to-agent communication
+		const a2aHub = new A2aHub(this)
+		a2aHub
+			.initialize()
+			.then(() => {
+				this.a2aHub = a2aHub
+				this.a2aHub.registerClient()
+			})
+			.catch((error) => {
+				this.log(`Failed to initialize A2A Hub: ${error}`)
 			})
 
 		// Initialize Skills Manager for skill discovery
@@ -707,6 +721,8 @@ export class ClineProvider
 		this._workspaceTracker = undefined
 		await this.mcpHub?.unregisterClient()
 		this.mcpHub = undefined
+		await this.a2aHub?.unregisterClient()
+		this.a2aHub = undefined
 		await this.skillsManager?.dispose()
 		this.skillsManager = undefined
 		this.marketplaceManager?.cleanup()
@@ -2745,6 +2761,10 @@ export class ClineProvider
 
 	public getMcpHub(): McpHub | undefined {
 		return this.mcpHub
+	}
+
+	public getA2aHub(): A2aHub | undefined {
+		return this.a2aHub
 	}
 
 	public getSkillsManager(): SkillsManager | undefined {

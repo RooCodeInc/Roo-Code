@@ -1,6 +1,7 @@
 import { McpHub } from "../../../services/mcp/McpHub"
+import { A2aHub } from "../../../services/a2a/A2aHub"
 
-export function getCapabilitiesSection(cwd: string, mcpHub?: McpHub): string {
+export function getCapabilitiesSection(cwd: string, mcpHub?: McpHub, a2aHub?: A2aHub): string {
 	return `====
 
 CAPABILITIES
@@ -11,6 +12,18 @@ CAPABILITIES
 		mcpHub
 			? `
 - You have access to MCP servers that may provide additional tools and resources. Each server may provide different capabilities that you can use to accomplish tasks more effectively.
+`
+			: ""
+	}${
+		a2aHub && a2aHub.getAgents().length > 0
+			? `
+- You have access to A2A (Agent-to-Agent) agents that you can delegate tasks to. These are external agents that can handle specialized work. Use the delegate_to_agent tool to send tasks to them. Available agents: ${a2aHub
+					.getAgents()
+					.map((a) => {
+						const desc = a.agentCard?.description ?? ""
+						return `"${a.name}"${desc ? ` (${desc})` : ""}`
+					})
+					.join(", ")}
 `
 			: ""
 	}`
