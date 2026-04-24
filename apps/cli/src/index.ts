@@ -142,8 +142,9 @@ authCommand
 	.command("login")
 	.description("Authenticate with Roo Code Cloud")
 	.option("-v, --verbose", "Enable verbose output", false)
-	.action(async (options: { verbose: boolean }) => {
-		const result = await login({ verbose: options.verbose })
+	.option("--device-code", "Use device code flow for authentication (useful for remote/headless servers)", false)
+	.action(async (options: { verbose: boolean; deviceCode: boolean }) => {
+		const result = await login({ verbose: options.verbose, useDeviceCode: options.deviceCode })
 		process.exit(result.success ? 0 : 1)
 	})
 
