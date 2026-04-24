@@ -38,10 +38,10 @@ export const deepSeekModels = {
 		supportsImages: false,
 		supportsPromptCache: true,
 		preserveReasoning: true,
-		inputPrice: 12,
-		outputPrice: 24,
-		cacheWritesPrice: 0,
-		cacheReadsPrice: 1,
+		inputPrice: 1.74, // $1.74 per million tokens (cache miss)
+		outputPrice: 3.48, // $3.48 per million tokens
+		cacheWritesPrice: 1.74, // $1.74 per million tokens (cache miss)
+		cacheReadsPrice: 0.145, // $0.145 per million tokens (cache hit)
 		description: `DeepSeek V4 Pro`,
 	},
 	"deepseek-v4-flash": {
@@ -50,10 +50,10 @@ export const deepSeekModels = {
 		supportsImages: false,
 		supportsPromptCache: true,
 		preserveReasoning: true,
-		inputPrice: 0.2,
-		outputPrice: 1,
-		cacheWritesPrice: 0,
-		cacheReadsPrice: 1,
+		inputPrice: 0.14, // $0.14 per million tokens (cache miss)
+		outputPrice: 0.28, // $0.28 per million tokens
+		cacheWritesPrice: 0.14, // $0.14 per million tokens (cache miss)
+		cacheReadsPrice: 0.028, // $0.028 per million tokens (cache hit)
 		description: `DeepSeek V4 Flash`,
 	},
 } as const satisfies Record<string, ModelInfo>
