@@ -2,7 +2,7 @@ import * as vscode from "vscode"
 import { ContextProxy } from "../../core/config/ContextProxy"
 import { VectorStoreSearchResult } from "./interfaces"
 import { IndexingState } from "./interfaces/manager"
-import { CodeIndexConfigManager } from "./config-manager"
+import { CodeIndexConfigManager, WorkspaceConfigResolver } from "./config-manager"
 import { CodeIndexStateManager } from "./state-manager"
 import { CodeIndexServiceFactory } from "./service-factory"
 import { CodeIndexSearchService } from "./search-service"
@@ -120,6 +120,103 @@ export class CodeIndexManager {
 		await this.context.globalState.update("codeIndexAutoEnableDefault", enabled)
 	}
 
+	// --- Per-Workspace Config ---
+
+	/**
+	 * Returns the workspaceState key for the per-workspace config toggle.
+	 */
+	private _useWorkspaceConfigKey(): string {
+		return "codeIndexUseWorkspaceConfig:" + this._folderUri.toString(true)
+	}
+
+	/**
+	 * Returns the workspaceState key for the per-workspace config object.
+	 */
+	private _workspaceConfigKey(): string {
+		return "codeIndexWorkspaceConfig:" + this._folderUri.toString(true)
+	}
+
+	/**
+	 * Returns the workspaceState key for the per-workspace secrets.
+	 */
+	private _workspaceSecretsKey(): string {
+		return "codeIndexWorkspaceSecrets:" + this._folderUri.toString(true)
+	}
+
+	/**
+	 * Whether this workspace uses workspace-specific config instead of global.
+	 */
+	public get useWorkspaceConfig(): boolean {
+		return this.context.workspaceState.get<boolean>(this._useWorkspaceConfigKey(), false)
+	}
+
+	/**
+	 * Toggle workspace-specific config for this workspace folder.
+	 */
+	public async setUseWorkspaceConfig(enabled: boolean): Promise<void> {
+		await this.context.workspaceState.update(this._useWorkspaceConfigKey(), enabled)
+	}
+
+	/**
+	 * Gets the workspace-specific config object, if any.
+	 */
+	public getWorkspaceConfig(): Record<string, any> | undefined {
+		return this.context.workspaceState.get<Record<string, any>>(this._workspaceConfigKey())
+	}
+
+	/**
+	 * Saves workspace-specific config.
+	 */
+	public async saveWorkspaceConfig(config: Record<string, any>): Promise<void> {
+		await this.context.workspaceState.update(this._workspaceConfigKey(), config)
+	}
+
+	/**
+	 * Gets workspace-specific secrets.
+	 */
+	public getWorkspaceSecrets(): Record<string, string> {
+		return this.context.workspaceState.get<Record<string, string>>(this._workspaceSecretsKey(), {})
+	}
+
+	/**
+	 * Saves workspace-specific secrets.
+	 */
+	public async saveWorkspaceSecrets(secrets: Record<string, string>): Promise<void> {
+		await this.context.workspaceState.update(this._workspaceSecretsKey(), secrets)
+	}
+
+	/**
+	 * Returns the effective config for this workspace (workspace-specific or global).
+	 * Used to populate the webview state with the correct config values.
+	 */
+	public getEffectiveConfig(): Record<string, any> | undefined {
+		if (this.useWorkspaceConfig) {
+			return this.getWorkspaceConfig()
+		}
+		return undefined // caller should fall back to global config
+	}
+
+	/**
+	 * Creates a WorkspaceConfigResolver for this manager instance.
+	 * The resolver lazily loads workspace config when called.
+	 */
+	private _createWorkspaceConfigResolver(): WorkspaceConfigResolver | undefined {
+		// Only create a resolver if workspace config is enabled
+		if (!this.useWorkspaceConfig) {
+			return undefined
+		}
+		return () => {
+			const config = this.getWorkspaceConfig()
+			if (!config) {
+				return undefined
+			}
+			return {
+				config,
+				secrets: this.getWorkspaceSecrets(),
+			}
+		}
+	}
+
 	public get onProgressUpdate() {
 		return this._stateManager.onProgressUpdate
 	}
@@ -163,7 +260,7 @@ export class CodeIndexManager {
 	public async initialize(contextProxy: ContextProxy): Promise<{ requiresRestart: boolean }> {
 		// 1. ConfigManager Initialization and Configuration Loading
 		if (!this._configManager) {
-			this._configManager = new CodeIndexConfigManager(contextProxy)
+			this._configManager = new CodeIndexConfigManager(contextProxy, this._createWorkspaceConfigResolver())
 		}
 		// Load configuration once to get current state and restart requirements
 		const { requiresRestart } = await this._configManager.loadConfiguration()
@@ -331,6 +428,7 @@ export class CodeIndexManager {
 			workspacePath: this.workspacePath,
 			workspaceEnabled: this.isWorkspaceEnabled,
 			autoEnableDefault: this.autoEnableDefault,
+			useWorkspaceConfig: this.useWorkspaceConfig,
 		}
 	}
 

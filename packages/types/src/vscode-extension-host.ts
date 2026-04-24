@@ -536,6 +536,7 @@ export interface WebviewMessage {
 		| "checkRulesDirectory"
 		| "checkRulesDirectoryResult"
 		| "saveCodeIndexSettingsAtomic"
+		| "setUseWorkspaceConfig"
 		| "requestCodeIndexSecretStatus"
 		| "requestCommands"
 		| "openCommandFile"
@@ -648,6 +649,8 @@ export interface WebviewMessage {
 	organizationId?: string | null // For organization switching
 	useProviderSignup?: boolean // For rooCloudSignIn to use provider signup flow
 	codeIndexSettings?: {
+		// Whether to save as workspace-specific config
+		useWorkspaceConfig?: boolean
 		// Global state settings
 		codebaseIndexEnabled: boolean
 		codebaseIndexQdrantUrl: string
@@ -750,6 +753,7 @@ export interface IndexingStatus {
 	workspacePath?: string
 	workspaceEnabled?: boolean
 	autoEnableDefault?: boolean
+	useWorkspaceConfig?: boolean
 }
 
 export interface IndexingStatusUpdateMessage {

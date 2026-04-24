@@ -2321,20 +2321,25 @@ export class ClineProvider
 			organizationSettingsVersion,
 			customCondensingPrompt,
 			codebaseIndexModels: codebaseIndexModels ?? EMBEDDING_MODEL_PROFILES,
-			codebaseIndexConfig: {
-				codebaseIndexEnabled: codebaseIndexConfig?.codebaseIndexEnabled ?? false,
-				codebaseIndexQdrantUrl: codebaseIndexConfig?.codebaseIndexQdrantUrl ?? "http://localhost:6333",
-				codebaseIndexEmbedderProvider: codebaseIndexConfig?.codebaseIndexEmbedderProvider ?? "openai",
-				codebaseIndexEmbedderBaseUrl: codebaseIndexConfig?.codebaseIndexEmbedderBaseUrl ?? "",
-				codebaseIndexEmbedderModelId: codebaseIndexConfig?.codebaseIndexEmbedderModelId ?? "",
-				codebaseIndexEmbedderModelDimension: codebaseIndexConfig?.codebaseIndexEmbedderModelDimension ?? 1536,
-				codebaseIndexOpenAiCompatibleBaseUrl: codebaseIndexConfig?.codebaseIndexOpenAiCompatibleBaseUrl,
-				codebaseIndexSearchMaxResults: codebaseIndexConfig?.codebaseIndexSearchMaxResults,
-				codebaseIndexSearchMinScore: codebaseIndexConfig?.codebaseIndexSearchMinScore,
-				codebaseIndexBedrockRegion: codebaseIndexConfig?.codebaseIndexBedrockRegion,
-				codebaseIndexBedrockProfile: codebaseIndexConfig?.codebaseIndexBedrockProfile,
-				codebaseIndexOpenRouterSpecificProvider: codebaseIndexConfig?.codebaseIndexOpenRouterSpecificProvider,
-			},
+			codebaseIndexConfig: (() => {
+				// Use workspace-specific config if the current workspace has it enabled
+				const currentManager = this.getCurrentWorkspaceCodeIndexManager()
+				const effectiveConfig = currentManager?.getEffectiveConfig() ?? codebaseIndexConfig
+				return {
+					codebaseIndexEnabled: effectiveConfig?.codebaseIndexEnabled ?? false,
+					codebaseIndexQdrantUrl: effectiveConfig?.codebaseIndexQdrantUrl ?? "http://localhost:6333",
+					codebaseIndexEmbedderProvider: effectiveConfig?.codebaseIndexEmbedderProvider ?? "openai",
+					codebaseIndexEmbedderBaseUrl: effectiveConfig?.codebaseIndexEmbedderBaseUrl ?? "",
+					codebaseIndexEmbedderModelId: effectiveConfig?.codebaseIndexEmbedderModelId ?? "",
+					codebaseIndexEmbedderModelDimension: effectiveConfig?.codebaseIndexEmbedderModelDimension ?? 1536,
+					codebaseIndexOpenAiCompatibleBaseUrl: effectiveConfig?.codebaseIndexOpenAiCompatibleBaseUrl,
+					codebaseIndexSearchMaxResults: effectiveConfig?.codebaseIndexSearchMaxResults,
+					codebaseIndexSearchMinScore: effectiveConfig?.codebaseIndexSearchMinScore,
+					codebaseIndexBedrockRegion: effectiveConfig?.codebaseIndexBedrockRegion,
+					codebaseIndexBedrockProfile: effectiveConfig?.codebaseIndexBedrockProfile,
+					codebaseIndexOpenRouterSpecificProvider: effectiveConfig?.codebaseIndexOpenRouterSpecificProvider,
+				}
+			})(),
 			// Only set mdmCompliant if there's an actual MDM policy
 			// undefined means no MDM policy, true means compliant, false means non-compliant
 			mdmCompliant: this.mdmService?.requiresCloudAuth() ? this.checkMdmCompliance() : undefined,
@@ -2542,25 +2547,25 @@ export class ClineProvider
 			organizationSettingsVersion,
 			customCondensingPrompt: stateValues.customCondensingPrompt,
 			codebaseIndexModels: stateValues.codebaseIndexModels ?? EMBEDDING_MODEL_PROFILES,
-			codebaseIndexConfig: {
-				codebaseIndexEnabled: stateValues.codebaseIndexConfig?.codebaseIndexEnabled ?? false,
-				codebaseIndexQdrantUrl:
-					stateValues.codebaseIndexConfig?.codebaseIndexQdrantUrl ?? "http://localhost:6333",
-				codebaseIndexEmbedderProvider:
-					stateValues.codebaseIndexConfig?.codebaseIndexEmbedderProvider ?? "openai",
-				codebaseIndexEmbedderBaseUrl: stateValues.codebaseIndexConfig?.codebaseIndexEmbedderBaseUrl ?? "",
-				codebaseIndexEmbedderModelId: stateValues.codebaseIndexConfig?.codebaseIndexEmbedderModelId ?? "",
-				codebaseIndexEmbedderModelDimension:
-					stateValues.codebaseIndexConfig?.codebaseIndexEmbedderModelDimension,
-				codebaseIndexOpenAiCompatibleBaseUrl:
-					stateValues.codebaseIndexConfig?.codebaseIndexOpenAiCompatibleBaseUrl,
-				codebaseIndexSearchMaxResults: stateValues.codebaseIndexConfig?.codebaseIndexSearchMaxResults,
-				codebaseIndexSearchMinScore: stateValues.codebaseIndexConfig?.codebaseIndexSearchMinScore,
-				codebaseIndexBedrockRegion: stateValues.codebaseIndexConfig?.codebaseIndexBedrockRegion,
-				codebaseIndexBedrockProfile: stateValues.codebaseIndexConfig?.codebaseIndexBedrockProfile,
-				codebaseIndexOpenRouterSpecificProvider:
-					stateValues.codebaseIndexConfig?.codebaseIndexOpenRouterSpecificProvider,
-			},
+			codebaseIndexConfig: (() => {
+				// Use workspace-specific config if the current workspace has it enabled
+				const wsManager = this.getCurrentWorkspaceCodeIndexManager()
+				const effectiveCfg = wsManager?.getEffectiveConfig() ?? stateValues.codebaseIndexConfig
+				return {
+					codebaseIndexEnabled: effectiveCfg?.codebaseIndexEnabled ?? false,
+					codebaseIndexQdrantUrl: effectiveCfg?.codebaseIndexQdrantUrl ?? "http://localhost:6333",
+					codebaseIndexEmbedderProvider: effectiveCfg?.codebaseIndexEmbedderProvider ?? "openai",
+					codebaseIndexEmbedderBaseUrl: effectiveCfg?.codebaseIndexEmbedderBaseUrl ?? "",
+					codebaseIndexEmbedderModelId: effectiveCfg?.codebaseIndexEmbedderModelId ?? "",
+					codebaseIndexEmbedderModelDimension: effectiveCfg?.codebaseIndexEmbedderModelDimension,
+					codebaseIndexOpenAiCompatibleBaseUrl: effectiveCfg?.codebaseIndexOpenAiCompatibleBaseUrl,
+					codebaseIndexSearchMaxResults: effectiveCfg?.codebaseIndexSearchMaxResults,
+					codebaseIndexSearchMinScore: effectiveCfg?.codebaseIndexSearchMinScore,
+					codebaseIndexBedrockRegion: effectiveCfg?.codebaseIndexBedrockRegion,
+					codebaseIndexBedrockProfile: effectiveCfg?.codebaseIndexBedrockProfile,
+					codebaseIndexOpenRouterSpecificProvider: effectiveCfg?.codebaseIndexOpenRouterSpecificProvider,
+				}
+			})(),
 			profileThresholds: stateValues.profileThresholds ?? {},
 			lockApiConfigAcrossModes: this.context.workspaceState.get("lockApiConfigAcrossModes", false),
 			includeDiagnosticMessages: stateValues.includeDiagnosticMessages ?? true,

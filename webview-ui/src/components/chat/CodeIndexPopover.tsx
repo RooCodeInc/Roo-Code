@@ -556,6 +556,9 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		// Always include codebaseIndexEnabled to ensure it's persisted
 		settingsToSave.codebaseIndexEnabled = currentSettings.codebaseIndexEnabled
 
+		// Include workspace config flag so the backend knows where to save
+		settingsToSave.useWorkspaceConfig = indexingStatus.useWorkspaceConfig ?? false
+
 		// Save settings to backend
 		vscode.postMessage({
 			type: "saveCodeIndexSettingsAtomic",
@@ -1615,7 +1618,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 
 						{/* Workspace Toggle */}
 						{currentSettings.codebaseIndexEnabled && (
-							<div className="flex items-center gap-2 pt-1 pb-2">
+							<div className="flex items-center gap-2 pt-1 pb-1">
 								<input
 									type="checkbox"
 									id="workspace-indexing-toggle"
@@ -1633,6 +1636,34 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 									className="text-xs text-vscode-foreground cursor-pointer">
 									{t("settings:codeIndex.workspaceToggleLabel")}
 								</label>
+							</div>
+						)}
+
+						{/* Use Workspace-Specific Settings Toggle */}
+						{currentSettings.codebaseIndexEnabled && (
+							<div className="flex items-center gap-2 pt-1 pb-2">
+								<input
+									type="checkbox"
+									id="use-workspace-config-toggle"
+									checked={indexingStatus.useWorkspaceConfig ?? false}
+									onChange={(e) =>
+										vscode.postMessage({
+											type: "setUseWorkspaceConfig",
+											bool: e.target.checked,
+										})
+									}
+									className="accent-vscode-focusBorder"
+								/>
+								<label
+									htmlFor="use-workspace-config-toggle"
+									className="text-xs text-vscode-foreground cursor-pointer">
+									{t("settings:codeIndex.useWorkspaceConfigLabel")}
+								</label>
+								{indexingStatus.useWorkspaceConfig && (
+									<span className="text-xs text-vscode-descriptionForeground italic">
+										{t("settings:codeIndex.workspaceConfigActive")}
+									</span>
+								)}
 							</div>
 						)}
 
