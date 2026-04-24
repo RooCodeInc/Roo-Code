@@ -86,8 +86,12 @@ export function OptionOverviewSection() {
 						</div>
 
 						<Button size="lg" variant="default" className="bg-violet-600 hover:bg-violet-600/80">
-							<a href="/cloud" className="flex items-center justify-center">
-								View Cloud
+							<a
+								href={EXTERNAL_LINKS.DOCUMENTATION}
+								target="_blank"
+								rel="noreferrer"
+								className="flex items-center justify-center">
+								Read Docs
 								<ArrowRight className="ml-2" />
 							</a>
 						</Button>

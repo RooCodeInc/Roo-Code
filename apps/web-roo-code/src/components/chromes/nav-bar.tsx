@@ -13,7 +13,7 @@ import { EXTERNAL_LINKS } from "@/lib/constants"
 import { useLogoSrc } from "@/lib/hooks/use-logo-src"
 import { ScrollButton } from "@/components/ui"
 import ThemeToggle from "@/components/chromes/theme-toggle"
-import { Brain, Cloud, Puzzle, X } from "lucide-react"
+import { Puzzle, X } from "lucide-react"
 import {
 	NavigationMenu,
 	NavigationMenuContent,
@@ -58,26 +58,6 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 												className="flex items-center select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
 												<Puzzle className="size-3 mr-2" />
 												Roo Code VS Code Extension
-											</Link>
-										</NavigationMenuLink>
-									</li>
-									<li>
-										<NavigationMenuLink asChild>
-											<Link
-												href="/cloud"
-												className="flex items-center select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-												<Cloud className="size-3 mr-2" />
-												Roo Code Cloud
-											</Link>
-										</NavigationMenuLink>
-									</li>
-									<li>
-										<NavigationMenuLink asChild>
-											<Link
-												href="/provider"
-												className="flex items-center select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-												<Brain className="size-3 mr-2" />
-												Roo Code Router
 											</Link>
 										</NavigationMenuLink>
 									</li>
@@ -213,18 +193,6 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
 								onClick={() => setIsMenuOpen(false)}>
 								Roo Code VS Code Extension
-							</Link>
-							<Link
-								href="/cloud"
-								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
-								onClick={() => setIsMenuOpen(false)}>
-								Roo Code Cloud
-							</Link>
-							<Link
-								href="/provider"
-								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
-								onClick={() => setIsMenuOpen(false)}>
-								Roo Code Router
 							</Link>
 						</div>
 

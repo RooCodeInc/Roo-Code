@@ -21,8 +21,8 @@ export function CTASection() {
 					</Button>
 
 					<Button variant="outline" size="lg" className="w-full sm:w-auto h-12 px-8 text-base">
-						<a href="/cloud" className="flex items-center gap-2">
-							Explore Cloud
+						<a href="/extension" className="flex items-center gap-2">
+							Explore Extension
 							<ArrowRight className="h-4 w-4" />
 						</a>
 					</Button>

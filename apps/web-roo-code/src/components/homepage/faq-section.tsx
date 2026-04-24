@@ -4,7 +4,6 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
-import Link from "next/link"
 
 interface FAQItem {
 	question: string
@@ -108,9 +107,13 @@ const faqs: FAQItem[] = [
 				Absolutely. Roo Code uses efficient strategies (like partial-file analysis, summarization, or
 				user-specified context) to handle large codebases. Enterprises especially appreciate the on-prem or
 				self-hosted model option for compliance and security needs.{" "}
-				<Link href="/cloud/team" className="text-primary underline-offset-4 hover:underline">
-					Learn more about Roo Code Cloud Team.
-				</Link>
+				<a
+					href="https://docs.roocode.com"
+					target="_blank"
+					rel="noopener noreferrer"
+					className="text-primary underline-offset-4 hover:underline">
+					Learn more in our docs.
+				</a>
 			</>
 		),
 	},
@@ -122,9 +125,13 @@ const faqs: FAQItem[] = [
 				provider. All file changes and commands go through permission gating, so nothing runs without your
 				approval. And because Roo Code is fully open-source, it&apos;s auditable—you can review exactly how it
 				works before deploying it.{" "}
-				<Link href="/cloud/team" className="text-primary underline-offset-4 hover:underline">
-					Learn more about Roo Code Cloud Team.
-				</Link>
+				<a
+					href="https://docs.roocode.com"
+					target="_blank"
+					rel="noopener noreferrer"
+					className="text-primary underline-offset-4 hover:underline">
+					Learn more in our docs.
+				</a>
 			</>
 		),
 	},

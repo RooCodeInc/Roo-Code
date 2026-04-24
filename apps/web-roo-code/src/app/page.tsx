@@ -54,12 +54,12 @@ export default async function Home() {
 
 						<div className="flex flex-col items-center gap-2">
 							<Button size="xl" className="w-full">
-								<a href="/cloud" className="flex items-center justify-center">
-									Explore Roo Code Cloud
+								<a href="/extension" className="flex items-center justify-center">
+									Explore Extension Features
 									<ArrowRight className="ml-2 size-5" />
 								</a>
 							</Button>
-							<span className="text-xs text-muted-foreground">See how cloud workflows operate</span>
+							<span className="text-xs text-muted-foreground">See what Roo can do in your editor</span>
 						</div>
 					</div>
 
