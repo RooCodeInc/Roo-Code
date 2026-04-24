@@ -187,10 +187,11 @@ export class OpenAiEmbedder extends OpenAiNativeHandler implements IEmbedder {
 	}
 
 	/**
-	 * Validates the OpenAI embedder configuration by attempting a minimal embedding request
-	 * @returns Promise resolving to validation result with success status and optional error message
+	 * Validates the OpenAI embedder configuration by attempting a minimal embedding request.
+	 * Also detects the actual embedding dimension from a test embedding.
+	 * @returns Promise resolving to validation result with success status, optional error message, and detected dimension
 	 */
-	async validateConfiguration(): Promise<{ valid: boolean; error?: string }> {
+	async validateConfiguration(): Promise<{ valid: boolean; error?: string; detectedDimension?: number }> {
 		return withValidationErrorHandling(async () => {
 			try {
 				// Test with a minimal embedding request
@@ -207,7 +208,10 @@ export class OpenAiEmbedder extends OpenAiNativeHandler implements IEmbedder {
 					}
 				}
 
-				return { valid: true }
+				// Get the dimension from the first embedding
+				const detectedDimension = response.data[0]?.embedding?.length
+
+				return { valid: true, detectedDimension }
 			} catch (error) {
 				// Capture telemetry for validation errors
 				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {

@@ -13,9 +13,10 @@ export interface IEmbedder {
 
 	/**
 	 * Validates the embedder configuration by testing connectivity and credentials.
-	 * @returns Promise resolving to validation result with success status and optional error message
+	 * Also detects the actual embedding dimension from a test embedding.
+	 * @returns Promise resolving to validation result with success status, optional error message, and detected dimension
 	 */
-	validateConfiguration(): Promise<{ valid: boolean; error?: string }>
+	validateConfiguration(): Promise<{ valid: boolean; error?: string; detectedDimension?: number }>
 
 	get embedderInfo(): EmbedderInfo
 }

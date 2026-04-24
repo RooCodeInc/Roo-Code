@@ -138,10 +138,11 @@ export class CodeIndexOllamaEmbedder implements IEmbedder {
 	}
 
 	/**
-	 * Validates the Ollama embedder configuration by checking service availability and model existence
-	 * @returns Promise resolving to validation result with success status and optional error message
+	 * Validates the Ollama embedder configuration by checking service availability and model existence.
+	 * Also detects the actual embedding dimension from a test embedding.
+	 * @returns Promise resolving to validation result with success status, optional error message, and detected dimension
 	 */
-	async validateConfiguration(): Promise<{ valid: boolean; error?: string }> {
+	async validateConfiguration(): Promise<{ valid: boolean; error?: string; detectedDimension?: number }> {
 		return withValidationErrorHandling(
 			async () => {
 				// First check if Ollama service is running by trying to list models
@@ -228,7 +229,19 @@ export class CodeIndexOllamaEmbedder implements IEmbedder {
 					}
 				}
 
-				return { valid: true }
+				// Parse the test response to get the embedding dimension
+				const testData = await testResponse.json()
+				const embeddings = testData.embeddings
+				let detectedDimension: number | undefined
+
+				if (embeddings && Array.isArray(embeddings) && embeddings.length > 0) {
+					const firstEmbedding = embeddings[0]
+					if (Array.isArray(firstEmbedding)) {
+						detectedDimension = firstEmbedding.length
+					}
+				}
+
+				return { valid: true, detectedDimension }
 			},
 			"ollama",
 			{
