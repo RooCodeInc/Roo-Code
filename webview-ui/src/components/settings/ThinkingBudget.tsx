@@ -91,7 +91,7 @@ export const ThinkingBudget = ({ apiConfiguration, setApiConfigurationField, mod
 	// 1. requiredReasoningEffort is not true, AND
 	// 2. supportsReasoningEffort is boolean true (not an explicit array)
 	// When the model provides an explicit array, respect those exact values.
-	type ReasoningEffortOption = ReasoningEffortWithMinimal | "none" | "disable"
+	type ReasoningEffortOption = ReasoningEffortWithMinimal | "none" | "disable" | "max"
 	const shouldAutoAddDisable =
 		!modelInfo?.requiredReasoningEffort && supports === true && !baseAvailableOptions.includes("disable" as any)
 	const availableOptions: ReadonlyArray<ReasoningEffortOption> = shouldAutoAddDisable
@@ -240,9 +240,9 @@ export const ThinkingBudget = ({ apiConfiguration, setApiConfigurationField, mod
 						setApiConfigurationField("enableReasoningEffort", false)
 						setApiConfigurationField("reasoningEffort", "disable")
 					} else {
-						// "none", "minimal", "low", "medium", "high" all enable reasoning
+						// "none", "minimal", "low", "medium", "high", "max" all enable reasoning
 						setApiConfigurationField("enableReasoningEffort", true)
-						setApiConfigurationField("reasoningEffort", value as ReasoningEffortWithMinimal)
+						setApiConfigurationField("reasoningEffort", value as any)
 					}
 				}}>
 				<SelectTrigger className="w-full">
