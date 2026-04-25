@@ -2352,7 +2352,7 @@ export class ClineProvider
 			maxGitStatusFiles: maxGitStatusFiles ?? 0,
 			taskSyncEnabled,
 			imageGenerationProvider,
-			openRouterImageApiKey,
+			openRouterImageApiKeyConfigured: !!openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
 			openAiCodexIsAuthenticated: await (async () => {
 				try {
@@ -2376,7 +2376,7 @@ export class ClineProvider
 		Omit<
 			ExtensionState,
 			"clineMessages" | "renderContext" | "hasOpenedModeSelector" | "version" | "shouldShowAnnouncement"
-		>
+		> & { openRouterImageApiKey?: string }
 	> {
 		const stateValues = this.contextProxy.getValues()
 		const customModes = await this.customModesManager.getCustomModes()
@@ -2572,6 +2572,7 @@ export class ClineProvider
 			taskSyncEnabled,
 			imageGenerationProvider: stateValues.imageGenerationProvider,
 			openRouterImageApiKey: stateValues.openRouterImageApiKey,
+			openRouterImageApiKeyConfigured: !!stateValues.openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel: stateValues.openRouterImageGenerationSelectedModel,
 		}
 	}

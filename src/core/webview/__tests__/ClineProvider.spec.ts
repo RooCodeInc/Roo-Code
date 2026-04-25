@@ -549,7 +549,7 @@ describe("ClineProvider", () => {
 			profileThresholds: {},
 			hasOpenedModeSelector: false,
 			diagnosticsEnabled: true,
-			openRouterImageApiKey: undefined,
+			openRouterImageApiKeyConfigured: false,
 			openRouterImageGenerationSelectedModel: undefined,
 			taskSyncEnabled: false,
 			checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
@@ -562,6 +562,27 @@ describe("ClineProvider", () => {
 		await provider.postMessageToWebview(message)
 
 		expect(mockPostMessage).toHaveBeenCalledWith(message)
+	})
+
+	describe("getStateToPostToWebview secrets redaction", () => {
+		test("omits raw openRouterImageApiKey from broadcast payload when key is set", async () => {
+			// Use contextProxy.setValue rather than mocking secrets.get because ContextProxy only
+			// reads secrets.get during initialize() (which ran during provider construction). Any
+			// mock changes after construction are too late — they never reach secretCache.
+			await provider.contextProxy.setValue("openRouterImageApiKey", "sk-or-v1-supersecret")
+
+			const state = await provider.getStateToPostToWebview()
+
+			expect("openRouterImageApiKey" in state).toBe(false)
+			expect(state.openRouterImageApiKeyConfigured).toBe(true)
+		})
+
+		test("sets openRouterImageApiKeyConfigured to false when no key is stored", async () => {
+			const state = await provider.getStateToPostToWebview()
+
+			expect("openRouterImageApiKey" in state).toBe(false)
+			expect(state.openRouterImageApiKeyConfigured).toBe(false)
+		})
 	})
 
 	test("postMessageToWebview does not throw when webview is disposed", async () => {
