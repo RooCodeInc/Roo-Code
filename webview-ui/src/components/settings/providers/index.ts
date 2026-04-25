@@ -1,3 +1,4 @@
+export { Abliteration } from "./Abliteration"
 export { Anthropic } from "./Anthropic"
 export { Bedrock } from "./Bedrock"
 export { DeepSeek } from "./DeepSeek"

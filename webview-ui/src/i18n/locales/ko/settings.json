@@ -377,6 +377,8 @@
 		"poeBaseUrl": "Poe 기본 URL",
 		"fireworksApiKey": "Fireworks API 키",
 		"getFireworksApiKey": "Fireworks API 키 받기",
+		"abliterationApiKey": "abliteration.ai API Key",
+		"getAbliterationApiKey": "Get abliteration.ai API Key",
 		"deepSeekApiKey": "DeepSeek API 키",
 		"getDeepSeekApiKey": "DeepSeek API 키 받기",
 		"moonshotApiKey": "Moonshot API 키",

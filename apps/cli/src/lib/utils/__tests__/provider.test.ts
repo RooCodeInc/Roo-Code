@@ -17,6 +17,11 @@ describe("getApiKeyFromEnv", () => {
 		expect(getApiKeyFromEnv("anthropic")).toBe("test-anthropic-key")
 	})
 
+	it("should return API key from environment variable for abliteration.ai", () => {
+		process.env.ABLIT_KEY = "test-abliteration-key"
+		expect(getApiKeyFromEnv("abliteration")).toBe("test-abliteration-key")
+	})
+
 	it("should return API key from environment variable for openrouter", () => {
 		process.env.OPENROUTER_API_KEY = "test-openrouter-key"
 		expect(getApiKeyFromEnv("openrouter")).toBe("test-openrouter-key")

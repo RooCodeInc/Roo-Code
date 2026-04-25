@@ -9,6 +9,7 @@ import {
 	type ProviderSettings,
 	isRetiredProvider,
 	DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
+	abliterationDefaultModelId,
 	openRouterDefaultModelId,
 	poeDefaultModelId,
 	requestyDefaultModelId,
@@ -92,6 +93,7 @@ import {
 	Fireworks,
 	VercelAiGateway,
 	MiniMax,
+	Abliteration,
 } from "./providers"
 
 import { MODELS_BY_PROVIDER, PROVIDERS } from "./constants"
@@ -358,6 +360,7 @@ const ApiOptions = ({
 				},
 				fireworks: { field: "apiModelId", default: fireworksDefaultModelId },
 				poe: { field: "apiModelId", default: poeDefaultModelId },
+				abliteration: { field: "apiModelId", default: abliterationDefaultModelId },
 				"vercel-ai-gateway": { field: "vercelAiGatewayModelId", default: vercelAiGatewayDefaultModelId },
 				openai: { field: "openAiModelId" },
 				ollama: { field: "ollamaModelId" },
@@ -527,6 +530,13 @@ const ApiOptions = ({
 							apiConfiguration={apiConfiguration}
 							setApiConfigurationField={setApiConfigurationField}
 							simplifySettings={fromWelcomeView}
+						/>
+					)}
+
+					{selectedProvider === "abliteration" && (
+						<Abliteration
+							apiConfiguration={apiConfiguration}
+							setApiConfigurationField={setApiConfigurationField}
 						/>
 					)}
 

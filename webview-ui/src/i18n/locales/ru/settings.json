@@ -377,6 +377,8 @@
 		"poeBaseUrl": "Базовый URL Poe",
 		"fireworksApiKey": "Fireworks API-ключ",
 		"getFireworksApiKey": "Получить Fireworks API-ключ",
+		"abliterationApiKey": "abliteration.ai API Key",
+		"getAbliterationApiKey": "Get abliteration.ai API Key",
 		"deepSeekApiKey": "DeepSeek API-ключ",
 		"getDeepSeekApiKey": "Получить DeepSeek API-ключ",
 		"moonshotApiKey": "Moonshot API-ключ",

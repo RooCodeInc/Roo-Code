@@ -377,6 +377,8 @@
 		"poeBaseUrl": "URL cơ sở Poe",
 		"fireworksApiKey": "Khóa API Fireworks",
 		"getFireworksApiKey": "Lấy khóa API Fireworks",
+		"abliterationApiKey": "abliteration.ai API Key",
+		"getAbliterationApiKey": "Get abliteration.ai API Key",
 		"deepSeekApiKey": "Khóa API DeepSeek",
 		"getDeepSeekApiKey": "Lấy khóa API DeepSeek",
 		"moonshotApiKey": "Khóa API Moonshot",

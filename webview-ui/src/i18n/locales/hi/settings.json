@@ -377,6 +377,8 @@
 		"poeBaseUrl": "Poe बेस URL",
 		"fireworksApiKey": "Fireworks API कुंजी",
 		"getFireworksApiKey": "Fireworks API कुंजी प्राप्त करें",
+		"abliterationApiKey": "abliteration.ai API Key",
+		"getAbliterationApiKey": "Get abliteration.ai API Key",
 		"deepSeekApiKey": "DeepSeek API कुंजी",
 		"getDeepSeekApiKey": "DeepSeek API कुंजी प्राप्त करें",
 		"moonshotApiKey": "Moonshot API कुंजी",
