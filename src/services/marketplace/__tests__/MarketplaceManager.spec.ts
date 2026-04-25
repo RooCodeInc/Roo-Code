@@ -16,9 +16,6 @@ vi.mock("@roo-code/cloud", () => ({
 	},
 }))
 
-// Mock axios
-vi.mock("axios")
-
 // Mock TelemetryService
 vi.mock("../../../../packages/telemetry/src/TelemetryService", () => ({
 	TelemetryService: {
