@@ -258,6 +258,7 @@ describe("ClineProvider - Lock API Config Across Modes", () => {
 					delete secrets[key]
 					return Promise.resolve()
 				}),
+				onDidChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
 			},
 			workspaceState: {
 				get: vi.fn().mockImplementation((key: string, defaultValue?: unknown) => {
