@@ -130,6 +130,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const [isDiscardDialogShow, setDiscardDialogShow] = useState(false)
 	const [isChangeDetected, setChangeDetected] = useState(false)
 	const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined)
+	const [pendingImageApiKey, setPendingImageApiKey] = useState<string | null>(null)
 	const [activeTab, setActiveTab] = useState<SectionName>(
 		targetSection && sectionNames.includes(targetSection as SectionName)
 			? (targetSection as SectionName)
@@ -196,7 +197,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		maxDiagnosticMessages,
 		includeTaskHistoryInEnhance,
 		imageGenerationProvider,
-		openRouterImageApiKey,
+		openRouterImageApiKeyConfigured,
 		openRouterImageGenerationSelectedModel,
 		reasoningBlockCollapsed,
 		enterBehavior,
@@ -323,13 +324,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	}, [])
 
 	const setOpenRouterImageApiKey = useCallback((apiKey: string) => {
-		setCachedState((prevState) => {
-			if (prevState.openRouterImageApiKey !== apiKey) {
-				setChangeDetected(true)
-			}
-
-			return { ...prevState, openRouterImageApiKey: apiKey }
-		})
+		setPendingImageApiKey(apiKey)
+		setChangeDetected(true)
 	}, [])
 
 	const setImageGenerationSelectedModel = useCallback((model: string) => {
@@ -418,7 +414,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					maxGitStatusFiles: maxGitStatusFiles ?? 0,
 					profileThresholds,
 					imageGenerationProvider,
-					openRouterImageApiKey,
+					...(pendingImageApiKey !== null ? { openRouterImageApiKey: pendingImageApiKey || undefined } : {}),
 					openRouterImageGenerationSelectedModel,
 					experiments,
 					customSupportPrompts,
@@ -431,6 +427,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			vscode.postMessage({ type: "telemetrySetting", text: telemetrySetting })
 			vscode.postMessage({ type: "debugSetting", bool: cachedState.debug })
 
+			setPendingImageApiKey(null)
 			setChangeDetected(false)
 		}
 	}
@@ -454,6 +451,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			if (confirm) {
 				// Discard changes: Reset state and flag
 				setCachedState(extensionState) // Revert to original state
+				setPendingImageApiKey(null)
 				setChangeDetected(false) // Reset change flag
 				confirmDialogHandler.current?.() // Execute the pending action (e.g., tab switch)
 			}
@@ -904,7 +902,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								apiConfiguration={apiConfiguration}
 								setApiConfigurationField={setApiConfigurationField}
 								imageGenerationProvider={imageGenerationProvider}
-								openRouterImageApiKey={openRouterImageApiKey as string | undefined}
+								openRouterImageApiKeyConfigured={openRouterImageApiKeyConfigured ?? false}
 								openRouterImageGenerationSelectedModel={
 									openRouterImageGenerationSelectedModel as string | undefined
 								}

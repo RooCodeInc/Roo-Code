@@ -803,6 +803,7 @@
 			"description": "Wanneer ingeschakeld, kan Roo afbeeldingen genereren van tekstprompts met behulp van OpenRouter's afbeeldingsgeneratiemodellen. Vereist een geconfigureerde OpenRouter API-sleutel.",
 			"openRouterApiKeyLabel": "OpenRouter API-sleutel",
 			"openRouterApiKeyPlaceholder": "Voer je OpenRouter API-sleutel in",
+			"openRouterApiKeyConfiguredPlaceholder": "API-sleutel geconfigureerd — typ om te vervangen",
 			"getApiKeyText": "Haal je API-sleutel op van",
 			"modelSelectionLabel": "Afbeeldingsgeneratiemodel",
 			"modelSelectionDescription": "Selecteer het model voor afbeeldingsgeneratie",

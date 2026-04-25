@@ -5,7 +5,12 @@ import React from "react"
 
 import SettingsView from "../SettingsView"
 
-// Mock vscode API
+// Mock the vscode utility module (acquireVsCodeApi is only available inside the VS Code webview)
+vi.mock("@src/utils/vscode", () => ({
+	vscode: { postMessage: vi.fn(), getState: vi.fn(), setState: vi.fn() },
+}))
+
+// Legacy global mock retained for other test setups that may rely on it
 const mockPostMessage = vi.fn()
 const mockVscode = {
 	postMessage: mockPostMessage,
@@ -242,6 +247,8 @@ vi.mock("../SettingsSearch", () => ({
 
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import ApiOptions from "../ApiOptions"
+import { ExperimentalSettings } from "../ExperimentalSettings"
+import { vscode } from "@src/utils/vscode"
 
 describe("SettingsView - Unsaved Changes Detection", () => {
 	let queryClient: QueryClient
@@ -304,7 +311,7 @@ describe("SettingsView - Unsaved Changes Detection", () => {
 		includeDiagnosticMessages: false,
 		maxDiagnosticMessages: 50,
 		includeTaskHistoryInEnhance: true,
-		openRouterImageApiKey: undefined,
+		openRouterImageApiKeyConfigured: false,
 		openRouterImageGenerationSelectedModel: undefined,
 		reasoningBlockCollapsed: true,
 	}
@@ -316,6 +323,8 @@ describe("SettingsView - Unsaved Changes Detection", () => {
 			// Don't do anything with props, just render a div
 			return <div data-testid="api-options">ApiOptions</div>
 		})
+		// Reset ExperimentalSettings to silent default
+		vi.mocked(ExperimentalSettings).mockImplementation(() => <div>ExperimentalSettings</div>)
 		queryClient = new QueryClient({
 			defaultOptions: {
 				queries: { retry: false },
@@ -602,5 +611,97 @@ describe("SettingsView - Unsaved Changes Detection", () => {
 
 		// No dialog should appear
 		expect(screen.queryByText("settings:unsavedChangesDialog.title")).not.toBeInTheDocument()
+	})
+
+	describe("pending image API key", () => {
+		const renderWithApiKeyTrigger = () => {
+			vi.mocked(ExperimentalSettings).mockImplementation(({ setOpenRouterImageApiKey }: any) => (
+				<div>
+					<button data-testid="set-api-key" onClick={() => setOpenRouterImageApiKey?.("sk-or-new-key")}>
+						Set Key
+					</button>
+					<button data-testid="clear-api-key" onClick={() => setOpenRouterImageApiKey?.("")}>
+						Clear Key
+					</button>
+				</div>
+			))
+			// Render with the experimental tab active so ExperimentalSettings is mounted
+			return render(
+				<QueryClientProvider client={queryClient}>
+					<SettingsView onDone={vi.fn()} targetSection="experimental" />
+				</QueryClientProvider>,
+			)
+		}
+
+		it("typing a new key marks settings as changed and includes key in save payload", async () => {
+			renderWithApiKeyTrigger()
+
+			await waitFor(() => expect(screen.getByTestId("save-button")).toBeInTheDocument())
+
+			fireEvent.click(screen.getByTestId("set-api-key"))
+
+			// Save button should now be enabled
+			await waitFor(() => {
+				expect((screen.getByTestId("save-button") as HTMLButtonElement).disabled).toBe(false)
+			})
+
+			fireEvent.click(screen.getByTestId("save-button"))
+
+			await waitFor(() => {
+				const calls = vi.mocked(vscode.postMessage).mock.calls
+				const updateCall = (calls.find(([msg]: any) => msg?.type === "updateSettings") as any)?.[0]
+				expect(updateCall).toBeDefined()
+				expect(updateCall.updatedSettings.openRouterImageApiKey).toBe("sk-or-new-key")
+			})
+		})
+
+		it("clearing the key sends undefined (triggers deletion) rather than empty string", async () => {
+			renderWithApiKeyTrigger()
+
+			await waitFor(() => expect(screen.getByTestId("save-button")).toBeInTheDocument())
+
+			fireEvent.click(screen.getByTestId("clear-api-key"))
+
+			await waitFor(() => {
+				expect((screen.getByTestId("save-button") as HTMLButtonElement).disabled).toBe(false)
+			})
+
+			fireEvent.click(screen.getByTestId("save-button"))
+
+			await waitFor(() => {
+				const calls = vi.mocked(vscode.postMessage).mock.calls
+				const updateCall = (calls.find(([msg]: any) => msg?.type === "updateSettings") as any)?.[0]
+				expect(updateCall).toBeDefined()
+				// Empty string should become undefined so the host deletes the secret
+				expect(updateCall.updatedSettings.openRouterImageApiKey).toBeUndefined()
+			})
+		})
+
+		it("discarding changes resets pending key so save button returns to disabled", async () => {
+			renderWithApiKeyTrigger()
+
+			await waitFor(() => expect(screen.getByTestId("save-button")).toBeInTheDocument())
+
+			fireEvent.click(screen.getByTestId("set-api-key"))
+
+			await waitFor(() => {
+				expect((screen.getByTestId("save-button") as HTMLButtonElement).disabled).toBe(false)
+			})
+
+			// Click Done to trigger the unsaved-changes dialog
+			fireEvent.click(screen.getByText("settings:common.done"))
+
+			await waitFor(() => {
+				expect(screen.getByText("settings:unsavedChangesDialog.title")).toBeInTheDocument()
+			})
+
+			// Confirm discard
+			fireEvent.click(screen.getByText("settings:unsavedChangesDialog.discardButton"))
+
+			// Save button should be disabled again (pending key cleared)
+			await waitFor(() => {
+				expect((screen.getByTestId("save-button") as HTMLButtonElement).disabled).toBe(true)
+			})
+		})
 	})
 })

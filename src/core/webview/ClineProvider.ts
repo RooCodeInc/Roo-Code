@@ -951,6 +951,16 @@ export class ClineProvider
 		})
 		this.webviewDisposables.push(configDisposable)
 
+		// Re-broadcast state when a secret changes in another window or is updated by the OS keyring,
+		// so openRouterImageApiKeyConfigured stays accurate across all open windows.
+		const secretsDisposable = this.context.secrets.onDidChange(async ({ key }) => {
+			if (key === "openRouterImageApiKey") {
+				await this.contextProxy.refreshSecrets()
+				await this.postStateToWebview()
+			}
+		})
+		this.webviewDisposables.push(secretsDisposable)
+
 		// If the extension is starting a new session, clear previous task state.
 		// But don't clear if there's already an active task (e.g., resumed via IPC/bridge).
 		const currentTask = this.getCurrentTask()
@@ -2352,7 +2362,7 @@ export class ClineProvider
 			maxGitStatusFiles: maxGitStatusFiles ?? 0,
 			taskSyncEnabled,
 			imageGenerationProvider,
-			openRouterImageApiKey,
+			openRouterImageApiKeyConfigured: !!openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
 			openAiCodexIsAuthenticated: await (async () => {
 				try {
@@ -2376,7 +2386,7 @@ export class ClineProvider
 		Omit<
 			ExtensionState,
 			"clineMessages" | "renderContext" | "hasOpenedModeSelector" | "version" | "shouldShowAnnouncement"
-		>
+		> & { openRouterImageApiKey?: string }
 	> {
 		const stateValues = this.contextProxy.getValues()
 		const customModes = await this.customModesManager.getCustomModes()
@@ -2572,6 +2582,7 @@ export class ClineProvider
 			taskSyncEnabled,
 			imageGenerationProvider: stateValues.imageGenerationProvider,
 			openRouterImageApiKey: stateValues.openRouterImageApiKey,
+			openRouterImageApiKeyConfigured: !!stateValues.openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel: stateValues.openRouterImageGenerationSelectedModel,
 		}
 	}

@@ -803,6 +803,7 @@
 			"description": "जब सक्षम किया जाता है, तो Roo OpenRouter के छवि निर्माण मॉडल का उपयोग करके टेक्स्ट प्रॉम्प्ट से छवियां उत्पन्न कर सकता है। एक कॉन्फ़िगर किए गए OpenRouter API कुंजी की आवश्यकता होती है।",
 			"openRouterApiKeyLabel": "OpenRouter API कुंजी",
 			"openRouterApiKeyPlaceholder": "अपनी OpenRouter API कुंजी दर्ज करें",
+			"openRouterApiKeyConfiguredPlaceholder": "API कुंजी कॉन्फ़िगर की गई — बदलने के लिए टाइप करें",
 			"getApiKeyText": "अपनी API कुंजी प्राप्त करें",
 			"modelSelectionLabel": "छवि निर्माण मॉडल",
 			"modelSelectionDescription": "छवि निर्माण के लिए उपयोग करने वाला मॉडल चुनें",

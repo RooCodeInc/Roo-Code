@@ -112,6 +112,7 @@ describe("ClineProvider flicker-free cancel", () => {
 				get: vi.fn().mockResolvedValue(undefined),
 				store: vi.fn().mockResolvedValue(undefined),
 				delete: vi.fn().mockResolvedValue(undefined),
+				onDidChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
 			},
 			workspaceState: {
 				get: vi.fn().mockReturnValue(undefined),

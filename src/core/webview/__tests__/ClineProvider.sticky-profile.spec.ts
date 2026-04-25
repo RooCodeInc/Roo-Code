@@ -241,6 +241,7 @@ describe("ClineProvider - Sticky Provider Profile", () => {
 					delete secrets[key]
 					return Promise.resolve()
 				}),
+				onDidChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
 			},
 			workspaceState: {
 				get: vi.fn().mockReturnValue(undefined),

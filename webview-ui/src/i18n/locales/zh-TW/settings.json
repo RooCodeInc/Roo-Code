@@ -813,6 +813,7 @@
 			"providerDescription": "選擇用於影像生成的供應商。",
 			"openRouterApiKeyLabel": "OpenRouter API 金鑰",
 			"openRouterApiKeyPlaceholder": "輸入您的 OpenRouter API 金鑰",
+			"openRouterApiKeyConfiguredPlaceholder": "API 金鑰已設定 — 輸入以取代",
 			"getApiKeyText": "取得 API 金鑰請前往",
 			"modelSelectionLabel": "影像生成模型",
 			"modelSelectionDescription": "選擇用於影像生成的模型",

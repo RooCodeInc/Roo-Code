@@ -803,6 +803,7 @@
 			"providerDescription": "Wähle den Anbieter für die Bildgenerierung.",
 			"openRouterApiKeyLabel": "OpenRouter API-Schlüssel",
 			"openRouterApiKeyPlaceholder": "Gib deinen OpenRouter API-Schlüssel ein",
+			"openRouterApiKeyConfiguredPlaceholder": "API-Schlüssel konfiguriert — tippe zum Ersetzen",
 			"getApiKeyText": "Hol dir deinen API-Schlüssel von",
 			"modelSelectionLabel": "Bildgenerierungsmodell",
 			"modelSelectionDescription": "Wähle das Modell für die Bildgenerierung aus",

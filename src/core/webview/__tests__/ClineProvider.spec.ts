@@ -372,6 +372,7 @@ describe("ClineProvider", () => {
 				get: vi.fn().mockImplementation((key: string) => secrets[key]),
 				store: vi.fn().mockImplementation((key: string, value: string | undefined) => (secrets[key] = value)),
 				delete: vi.fn().mockImplementation((key: string) => delete secrets[key]),
+				onDidChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
 			},
 			workspaceState: {
 				get: vi.fn().mockReturnValue(undefined),
@@ -549,7 +550,7 @@ describe("ClineProvider", () => {
 			profileThresholds: {},
 			hasOpenedModeSelector: false,
 			diagnosticsEnabled: true,
-			openRouterImageApiKey: undefined,
+			openRouterImageApiKeyConfigured: false,
 			openRouterImageGenerationSelectedModel: undefined,
 			taskSyncEnabled: false,
 			checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
@@ -562,6 +563,75 @@ describe("ClineProvider", () => {
 		await provider.postMessageToWebview(message)
 
 		expect(mockPostMessage).toHaveBeenCalledWith(message)
+	})
+
+	describe("getStateToPostToWebview secrets redaction", () => {
+		test("omits raw openRouterImageApiKey from broadcast payload when key is set", async () => {
+			// Use contextProxy.setValue rather than mocking secrets.get because ContextProxy only
+			// reads secrets.get during initialize() (which ran during provider construction). Any
+			// mock changes after construction are too late — they never reach secretCache.
+			await provider.contextProxy.setValue("openRouterImageApiKey", "sk-or-v1-supersecret")
+
+			const state = await provider.getStateToPostToWebview()
+
+			expect("openRouterImageApiKey" in state).toBe(false)
+			expect(state.openRouterImageApiKeyConfigured).toBe(true)
+		})
+
+		test("sets openRouterImageApiKeyConfigured to false when no key is stored", async () => {
+			const state = await provider.getStateToPostToWebview()
+
+			expect("openRouterImageApiKey" in state).toBe(false)
+			expect(state.openRouterImageApiKeyConfigured).toBe(false)
+		})
+	})
+
+	describe("secrets.onDidChange integration", () => {
+		test("rebroadcasts state when openRouterImageApiKey changes in another window", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+
+			// Capture the onDidChange callback registered by resolveWebviewView
+			const onDidChangeMock = mockContext.secrets.onDidChange as ReturnType<typeof vi.fn>
+			expect(onDidChangeMock).toHaveBeenCalled()
+			const secretsChangeHandler = onDidChangeMock.mock.calls[0][0] as (event: { key: string }) => Promise<void>
+
+			// Simulate the OS keyring updating the key in another VS Code window
+			await provider.contextProxy.setValue("openRouterImageApiKey", "sk-or-v1-newkey")
+			mockPostMessage.mockClear()
+
+			await secretsChangeHandler({ key: "openRouterImageApiKey" })
+
+			// postStateToWebview must have fired so the webview gets the updated configured flag
+			expect(mockPostMessage).toHaveBeenCalled()
+			const stateMessage = mockPostMessage.mock.calls.find(([msg]: [any]) => msg?.type === "state")
+			expect(stateMessage).toBeDefined()
+			expect(stateMessage![0].state.openRouterImageApiKeyConfigured).toBe(true)
+			expect("openRouterImageApiKey" in stateMessage![0].state).toBe(false)
+		})
+
+		test("does not rebroadcast state for unrelated secret key changes", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+
+			const onDidChangeMock = mockContext.secrets.onDidChange as ReturnType<typeof vi.fn>
+			const secretsChangeHandler = onDidChangeMock.mock.calls[0][0] as (event: { key: string }) => Promise<void>
+
+			mockPostMessage.mockClear()
+
+			await secretsChangeHandler({ key: "someOtherSecret" })
+
+			expect(mockPostMessage).not.toHaveBeenCalled()
+		})
+
+		test("disposes the secrets listener when the webview is disposed", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+
+			const onDidChangeMock = mockContext.secrets.onDidChange as ReturnType<typeof vi.fn>
+			const disposable = onDidChangeMock.mock.results[0].value as { dispose: ReturnType<typeof vi.fn> }
+
+			await provider.dispose()
+
+			expect(disposable.dispose).toHaveBeenCalled()
+		})
 	})
 
 	test("postMessageToWebview does not throw when webview is disposed", async () => {
@@ -2014,6 +2084,7 @@ describe("Project MCP Settings", () => {
 				get: vi.fn(),
 				store: vi.fn(),
 				delete: vi.fn(),
+				onDidChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
 			},
 			workspaceState: {
 				get: vi.fn().mockReturnValue(undefined),
@@ -2155,7 +2226,12 @@ describe.skip("ContextProxy integration", () => {
 				update: vi.fn().mockResolvedValue(undefined),
 				keys: vi.fn().mockReturnValue([]),
 			},
-			secrets: { get: vi.fn(), store: vi.fn(), delete: vi.fn() },
+			secrets: {
+				get: vi.fn(),
+				store: vi.fn(),
+				delete: vi.fn(),
+				onDidChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+			},
 			extensionUri: {} as vscode.Uri,
 			globalStorageUri: { fsPath: "/test/path" },
 			extension: { packageJSON: { version: "1.0.0" } },
@@ -2225,7 +2301,12 @@ describe("getTelemetryProperties", () => {
 				update: vi.fn().mockResolvedValue(undefined),
 				keys: vi.fn().mockReturnValue([]),
 			},
-			secrets: { get: vi.fn(), store: vi.fn(), delete: vi.fn() },
+			secrets: {
+				get: vi.fn(),
+				store: vi.fn(),
+				delete: vi.fn(),
+				onDidChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+			},
 			extensionUri: {} as vscode.Uri,
 			globalStorageUri: { fsPath: "/test/path" },
 			extension: { packageJSON: { version: "1.0.0" } },
@@ -2386,6 +2467,7 @@ describe("ClineProvider - Router Models", () => {
 				get: vi.fn().mockImplementation((key: string) => secrets[key]),
 				store: vi.fn().mockImplementation((key: string, value: string | undefined) => (secrets[key] = value)),
 				delete: vi.fn().mockImplementation((key: string) => delete secrets[key]),
+				onDidChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
 			},
 			workspaceState: {
 				get: vi.fn().mockReturnValue(undefined),
@@ -2706,6 +2788,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				get: vi.fn().mockImplementation((key: string) => secrets[key]),
 				store: vi.fn().mockImplementation((key: string, value: string | undefined) => (secrets[key] = value)),
 				delete: vi.fn().mockImplementation((key: string) => delete secrets[key]),
+				onDidChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
 			},
 			workspaceState: {
 				get: vi.fn().mockReturnValue(undefined),
