@@ -803,6 +803,7 @@
 			"description": "Etkinleştirildiğinde, Roo OpenRouter'ın görüntü üretim modellerini kullanarak metin istemlerinden görüntüler üretebilir. Yapılandırılmış bir OpenRouter API anahtarı gerektirir.",
 			"openRouterApiKeyLabel": "OpenRouter API Anahtarı",
 			"openRouterApiKeyPlaceholder": "OpenRouter API anahtarınızı girin",
+			"openRouterApiKeyConfiguredPlaceholder": "API anahtarı yapılandırıldı — değiştirmek için yazın",
 			"getApiKeyText": "API anahtarınızı alın",
 			"modelSelectionLabel": "Görüntü Üretim Modeli",
 			"modelSelectionDescription": "Görüntü üretimi için kullanılacak modeli seçin",

@@ -803,6 +803,7 @@
 			"description": "有効にすると、RooはOpenRouterの画像生成モデルを使用してテキストプロンプトから画像を生成できます。OpenRouter APIキーの設定が必要です。",
 			"openRouterApiKeyLabel": "OpenRouter APIキー",
 			"openRouterApiKeyPlaceholder": "OpenRouter APIキーを入力してください",
+			"openRouterApiKeyConfiguredPlaceholder": "APIキー設定済み — 変更するには入力してください",
 			"getApiKeyText": "APIキーを取得する場所",
 			"modelSelectionLabel": "画像生成モデル",
 			"modelSelectionDescription": "画像生成に使用するモデルを選択",

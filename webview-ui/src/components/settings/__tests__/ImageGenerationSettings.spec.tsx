@@ -19,7 +19,7 @@ describe("ImageGenerationSettings", () => {
 		enabled: false,
 		onChange: mockOnChange,
 		imageGenerationProvider: undefined,
-		openRouterImageApiKey: undefined,
+		openRouterImageApiKeyConfigured: false,
 		openRouterImageGenerationSelectedModel: undefined,
 		setImageGenerationProvider: mockSetImageGenerationProvider,
 		setOpenRouterImageApiKey: mockSetOpenRouterImageApiKey,
@@ -44,7 +44,7 @@ describe("ImageGenerationSettings", () => {
 			render(
 				<ImageGenerationSettings
 					{...defaultProps}
-					openRouterImageApiKey="existing-key"
+					openRouterImageApiKeyConfigured={true}
 					openRouterImageGenerationSelectedModel="google/gemini-2.5-flash-image"
 				/>,
 			)
@@ -87,6 +87,21 @@ describe("ImageGenerationSettings", () => {
 
 			expect(
 				getByPlaceholderText("settings:experimental.IMAGE_GENERATION.openRouterApiKeyPlaceholder"),
+			).toBeInTheDocument()
+		})
+
+		it("should show configured placeholder when openRouterImageApiKeyConfigured is true", () => {
+			const { getByPlaceholderText } = render(
+				<ImageGenerationSettings
+					{...defaultProps}
+					enabled={true}
+					imageGenerationProvider="openrouter"
+					openRouterImageApiKeyConfigured={true}
+				/>,
+			)
+
+			expect(
+				getByPlaceholderText("settings:experimental.IMAGE_GENERATION.openRouterApiKeyConfiguredPlaceholder"),
 			).toBeInTheDocument()
 		})
 
