@@ -803,6 +803,7 @@
 			"providerDescription": "Pilih penyedia untuk menghasilkan gambar.",
 			"openRouterApiKeyLabel": "Kunci API OpenRouter",
 			"openRouterApiKeyPlaceholder": "Masukkan kunci API OpenRouter Anda",
+			"openRouterApiKeyConfiguredPlaceholder": "Kunci API telah dikonfigurasi — ketik untuk mengganti",
 			"getApiKeyText": "Dapatkan kunci API Anda dari",
 			"modelSelectionLabel": "Model Pembuatan Gambar",
 			"modelSelectionDescription": "Pilih model untuk pembuatan gambar",

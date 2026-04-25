@@ -803,6 +803,7 @@
 			"description": "Khi được bật, Roo có thể tạo hình ảnh từ lời nhắc văn bản bằng các mô hình tạo hình ảnh của OpenRouter. Yêu cầu khóa API OpenRouter được cấu hình.",
 			"openRouterApiKeyLabel": "Khóa API OpenRouter",
 			"openRouterApiKeyPlaceholder": "Nhập khóa API OpenRouter của bạn",
+			"openRouterApiKeyConfiguredPlaceholder": "Khóa API đã được cấu hình — nhập để thay thế",
 			"getApiKeyText": "Lấy khóa API của bạn từ",
 			"modelSelectionLabel": "Mô hình tạo hình ảnh",
 			"modelSelectionDescription": "Chọn mô hình để sử dụng cho việc tạo hình ảnh",

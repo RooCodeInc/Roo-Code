@@ -803,6 +803,7 @@
 			"description": "启用后，Roo 可以使用 OpenRouter 的图像生成模型从文本提示生成图像。需要配置 OpenRouter API 密钥。",
 			"openRouterApiKeyLabel": "OpenRouter API 密钥",
 			"openRouterApiKeyPlaceholder": "输入您的 OpenRouter API 密钥",
+			"openRouterApiKeyConfiguredPlaceholder": "API 密钥已配置 — 输入以替换",
 			"getApiKeyText": "获取您的 API 密钥",
 			"modelSelectionLabel": "图像生成模型",
 			"modelSelectionDescription": "选择用于图像生成的模型",

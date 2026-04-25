@@ -803,6 +803,7 @@
 			"description": "Quando habilitado, Roo pode gerar imagens a partir de prompts de texto usando os modelos de geração de imagens do OpenRouter. Requer uma chave de API do OpenRouter configurada.",
 			"openRouterApiKeyLabel": "Chave de API do OpenRouter",
 			"openRouterApiKeyPlaceholder": "Digite sua chave de API do OpenRouter",
+			"openRouterApiKeyConfiguredPlaceholder": "Chave de API configurada — digite para substituir",
 			"getApiKeyText": "Obtenha sua chave de API de",
 			"modelSelectionLabel": "Modelo de Geração de Imagens",
 			"modelSelectionDescription": "Selecione o modelo para geração de imagens",
