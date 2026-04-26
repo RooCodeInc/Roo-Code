@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react"
 import { Plus, Globe, Folder, Edit, Trash2, Settings, AlertTriangle, ChevronDown, ChevronRight } from "lucide-react"
 import { Trans } from "react-i18next"
 
-import type { SkillMetadata, SkillLoadWarning } from "@roo-code/types"
+import type { SkillMetadata } from "@roo-code/types"
 
 import { getAllModes } from "@roo/modes"
 

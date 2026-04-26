@@ -1010,6 +1010,9 @@
 			"descriptionRequired": "Описание обязательно",
 			"descriptionTooLong": "Описание должно быть не более 1024 символов"
 		},
-		"footer": "Создавайте собственные навыки с режимом Skill Writer, доступным в <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
+		"footer": "Создавайте собственные навыки с режимом Skill Writer, доступным в <MarketplaceLink>Modes Marketplace</MarketplaceLink>.",
+		"loadWarnings": {
+			"title": "{{count}} skill(s) failed to load"
+		}
 	}
 }

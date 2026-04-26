@@ -47,6 +47,7 @@ describe("skillsMessageHandler", () => {
 	const mockLog = vi.fn()
 	const mockPostMessageToWebview = vi.fn()
 	const mockGetSkillsMetadata = vi.fn()
+	const mockGetLoadWarnings = vi.fn().mockReturnValue([])
 	const mockCreateSkill = vi.fn()
 	const mockDeleteSkill = vi.fn()
 	const mockMoveSkill = vi.fn()
@@ -57,6 +58,7 @@ describe("skillsMessageHandler", () => {
 		const skillsManager = hasSkillsManager
 			? {
 					getSkillsMetadata: mockGetSkillsMetadata,
+					getLoadWarnings: mockGetLoadWarnings,
 					createSkill: mockCreateSkill,
 					deleteSkill: mockDeleteSkill,
 					moveSkill: mockMoveSkill,
@@ -100,7 +102,7 @@ describe("skillsMessageHandler", () => {
 			const result = await handleRequestSkills(provider)
 
 			expect(result).toEqual(mockSkills)
-			expect(mockPostMessageToWebview).toHaveBeenCalledWith({ type: "skills", skills: mockSkills })
+			expect(mockPostMessageToWebview).toHaveBeenCalledWith({ type: "skills", skills: mockSkills, skillLoadWarnings: [] })
 		})
 
 		it("returns empty skills when skills manager is not available", async () => {

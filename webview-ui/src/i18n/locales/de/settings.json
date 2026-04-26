@@ -1010,6 +1010,9 @@
 			"descriptionRequired": "Beschreibung ist erforderlich",
 			"descriptionTooLong": "Beschreibung muss 1024 Zeichen oder weniger sein"
 		},
-		"footer": "Erstelle deine eigenen Skills mit dem Skill Writer Modus, verfügbar im <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
+		"footer": "Erstelle deine eigenen Skills mit dem Skill Writer Modus, verfügbar im <MarketplaceLink>Modes Marketplace</MarketplaceLink>.",
+		"loadWarnings": {
+			"title": "{{count}} skill(s) failed to load"
+		}
 	}
 }

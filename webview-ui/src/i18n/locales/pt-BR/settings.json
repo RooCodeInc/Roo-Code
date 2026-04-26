@@ -1010,6 +1010,9 @@
 			"descriptionRequired": "A descrição é obrigatória",
 			"descriptionTooLong": "A descrição deve ter no máximo 1024 caracteres"
 		},
-		"footer": "Crie suas próprias skills com o modo Skill Writer, disponível em <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
+		"footer": "Crie suas próprias skills com o modo Skill Writer, disponível em <MarketplaceLink>Modes Marketplace</MarketplaceLink>.",
+		"loadWarnings": {
+			"title": "{{count}} skill(s) failed to load"
+		}
 	}
 }

@@ -1010,6 +1010,9 @@
 			"descriptionRequired": "Deskripsi diperlukan",
 			"descriptionTooLong": "Deskripsi harus 1024 karakter atau kurang"
 		},
-		"footer": "Buat skills Anda sendiri dengan mode Skill Writer, tersedia di <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
+		"footer": "Buat skills Anda sendiri dengan mode Skill Writer, tersedia di <MarketplaceLink>Modes Marketplace</MarketplaceLink>.",
+		"loadWarnings": {
+			"title": "{{count}} skill(s) failed to load"
+		}
 	}
 }
