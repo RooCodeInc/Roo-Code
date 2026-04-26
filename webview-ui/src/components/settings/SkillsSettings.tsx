@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react"
-import { Plus, Globe, Folder, Edit, Trash2, Settings } from "lucide-react"
+import { Plus, Globe, Folder, Edit, Trash2, Settings, AlertTriangle, ChevronDown, ChevronRight } from "lucide-react"
 import { Trans } from "react-i18next"
 
 import type { SkillMetadata } from "@roo-code/types"
@@ -35,12 +35,14 @@ import { CreateSkillDialog } from "./CreateSkillDialog"
 
 export const SkillsSettings: React.FC = () => {
 	const { t } = useAppTranslation()
-	const { cwd, skills: rawSkills, customModes } = useExtensionState()
+	const { cwd, skills: rawSkills, skillLoadWarnings: rawWarnings, customModes } = useExtensionState()
 	const skills = useMemo(() => rawSkills ?? [], [rawSkills])
+	const skillLoadWarnings = useMemo(() => rawWarnings ?? [], [rawWarnings])
 
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 	const [skillToDelete, setSkillToDelete] = useState<SkillMetadata | null>(null)
 	const [createDialogOpen, setCreateDialogOpen] = useState(false)
+	const [warningsExpanded, setWarningsExpanded] = useState(false)
 
 	// Mode selection modal state
 	const [modeDialogOpen, setModeDialogOpen] = useState(false)
@@ -244,6 +246,36 @@ export const SkillsSettings: React.FC = () => {
 			{/* Scrollable List Area */}
 			<div className="flex-1 overflow-y-auto px-4 py-2 min-h-0">
 				<div className="flex flex-col gap-1">
+					{/* Load Warnings Section */}
+					{skillLoadWarnings.length > 0 && (
+						<div className="mx-2 mb-2 rounded-lg border border-vscode-inputValidation-warningBorder bg-vscode-inputValidation-warningBackground">
+							<button
+								className="flex items-center gap-2 w-full px-3 py-2 text-left text-sm font-medium text-vscode-inputValidation-warningForeground hover:opacity-80"
+								onClick={() => setWarningsExpanded(!warningsExpanded)}>
+								{warningsExpanded ? (
+									<ChevronDown className="size-4 shrink-0" />
+								) : (
+									<ChevronRight className="size-4 shrink-0" />
+								)}
+								<AlertTriangle className="size-4 shrink-0" />
+								<span>
+									{t("settings:skills.loadWarnings.title", { count: skillLoadWarnings.length })}
+								</span>
+							</button>
+							{warningsExpanded && (
+								<div className="px-3 pb-3 flex flex-col gap-1.5">
+									{skillLoadWarnings.map((warning, index) => (
+										<div key={index} className="text-xs text-vscode-descriptionForeground pl-6">
+											<span className="font-medium">{warning.skillName}</span>
+											<span className="opacity-70"> ({warning.source})</span>
+											<span>: {warning.reason}</span>
+										</div>
+									))}
+								</div>
+							)}
+						</div>
+					)}
+
 					{/* Project Skills Section - Only show if in a workspace */}
 					{hasWorkspace && (
 						<>

@@ -12,14 +12,16 @@ import {
 	validateSkillName as validateSkillNameShared,
 	SkillNameValidationError,
 	SKILL_NAME_MAX_LENGTH,
+	SkillLoadWarning,
 } from "@roo-code/types"
 import { t } from "../../i18n"
 
 // Re-export for convenience
-export type { SkillMetadata, SkillContent }
+export type { SkillMetadata, SkillContent, SkillLoadWarning }
 
 export class SkillsManager {
 	private skills: Map<string, SkillMetadata> = new Map()
+	private loadWarnings: SkillLoadWarning[] = []
 	private providerRef: WeakRef<ClineProvider>
 	private disposables: vscode.Disposable[] = []
 	private isDisposed = false
@@ -42,6 +44,7 @@ export class SkillsManager {
 	 */
 	async discoverSkills(): Promise<void> {
 		this.skills.clear()
+		this.loadWarnings = []
 		const skillsDirs = await this.getSkillsDirectories()
 
 		for (const { dir, source, mode } of skillsDirs) {
@@ -98,6 +101,8 @@ export class SkillsManager {
 		const skillMdPath = path.join(skillDir, "SKILL.md")
 		if (!(await fileExists(skillMdPath))) return
 
+		const effectiveSkillName = skillName || path.basename(skillDir)
+
 		try {
 			const fileContent = await fs.readFile(skillMdPath, "utf-8")
 
@@ -106,19 +111,24 @@ export class SkillsManager {
 
 			// Validate required fields (only name and description for now)
 			if (!frontmatter.name || typeof frontmatter.name !== "string") {
-				console.error(`Skill at ${skillDir} is missing required 'name' field`)
+				const reason = `Missing required 'name' field in frontmatter`
+				console.error(`Skill at ${skillDir}: ${reason}`)
+				this.loadWarnings.push({ skillName: effectiveSkillName, path: skillDir, source, reason })
 				return
 			}
 			if (!frontmatter.description || typeof frontmatter.description !== "string") {
-				console.error(`Skill at ${skillDir} is missing required 'description' field`)
+				const reason = `Missing required 'description' field in frontmatter`
+				console.error(`Skill at ${skillDir}: ${reason}`)
+				this.loadWarnings.push({ skillName: effectiveSkillName, path: skillDir, source, reason })
 				return
 			}
 
 			// Validate that frontmatter name matches the skill name (directory name or symlink name)
 			// Per the Agent Skills spec: "name field must match the parent directory name"
-			const effectiveSkillName = skillName || path.basename(skillDir)
 			if (frontmatter.name !== effectiveSkillName) {
-				console.error(`Skill name "${frontmatter.name}" doesn't match directory "${effectiveSkillName}"`)
+				const reason = `Frontmatter name "${frontmatter.name}" doesn't match directory name "${effectiveSkillName}"`
+				console.error(`Skill at ${skillDir}: ${reason}`)
+				this.loadWarnings.push({ skillName: effectiveSkillName, path: skillDir, source, reason })
 				return
 			}
 
@@ -126,7 +136,9 @@ export class SkillsManager {
 			const nameValidation = validateSkillNameShared(effectiveSkillName)
 			if (!nameValidation.valid) {
 				const errorMessage = this.getSkillNameErrorMessage(effectiveSkillName, nameValidation.error!)
-				console.error(`Skill name "${effectiveSkillName}" is invalid: ${errorMessage}`)
+				const reason = `Invalid skill name: ${errorMessage}`
+				console.error(`Skill "${effectiveSkillName}": ${reason}`)
+				this.loadWarnings.push({ skillName: effectiveSkillName, path: skillDir, source, reason })
 				return
 			}
 
@@ -135,9 +147,9 @@ export class SkillsManager {
 			// - non-empty (after trimming)
 			const description = frontmatter.description.trim()
 			if (description.length < 1 || description.length > 1024) {
-				console.error(
-					`Skill "${effectiveSkillName}" has an invalid description length: must be 1-1024 characters (got ${description.length})`,
-				)
+				const reason = `Invalid description length: must be 1-1024 characters (got ${description.length})`
+				console.error(`Skill "${effectiveSkillName}": ${reason}`)
+				this.loadWarnings.push({ skillName: effectiveSkillName, path: skillDir, source, reason })
 				return
 			}
 
@@ -171,7 +183,9 @@ export class SkillsManager {
 				modeSlugs, // New: array of mode slugs, undefined = any mode
 			})
 		} catch (error) {
-			console.error(`Failed to load skill at ${skillDir}:`, error)
+			const reason = `Failed to load skill: ${error instanceof Error ? error.message : String(error)}`
+			console.error(`Skill at ${skillDir}: ${reason}`)
+			this.loadWarnings.push({ skillName: effectiveSkillName, path: skillDir, source, reason })
 		}
 	}
 
@@ -256,6 +270,14 @@ export class SkillsManager {
 	 */
 	getAllSkills(): SkillMetadata[] {
 		return Array.from(this.skills.values())
+	}
+
+	/**
+	 * Get warnings collected during the last skill discovery.
+	 * Returns skills that failed to load with their specific error reasons.
+	 */
+	getLoadWarnings(): SkillLoadWarning[] {
+		return [...this.loadWarnings]
 	}
 
 	async getSkillContent(name: string, currentMode?: string): Promise<SkillContent | null> {
@@ -715,5 +737,6 @@ Add your skill instructions here.
 		this.disposables.forEach((d) => d.dispose())
 		this.disposables = []
 		this.skills.clear()
+		this.loadWarnings = []
 	}
 }

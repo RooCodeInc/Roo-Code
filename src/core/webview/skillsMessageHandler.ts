@@ -1,6 +1,6 @@
 import * as vscode from "vscode"
 
-import type { SkillMetadata, WebviewMessage } from "@roo-code/types"
+import type { SkillMetadata, SkillLoadWarning, WebviewMessage } from "@roo-code/types"
 
 import type { ClineProvider } from "./ClineProvider"
 import { openFile } from "../../integrations/misc/open-file"
@@ -16,7 +16,8 @@ export async function handleRequestSkills(provider: ClineProvider): Promise<Skil
 		const skillsManager = provider.getSkillsManager()
 		if (skillsManager) {
 			const skills = skillsManager.getSkillsMetadata()
-			await provider.postMessageToWebview({ type: "skills", skills })
+			const skillLoadWarnings = skillsManager.getLoadWarnings()
+			await provider.postMessageToWebview({ type: "skills", skills, skillLoadWarnings })
 			return skills
 		} else {
 			await provider.postMessageToWebview({ type: "skills", skills: [] })

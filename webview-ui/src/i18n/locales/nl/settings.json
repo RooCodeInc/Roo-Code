@@ -1010,6 +1010,9 @@
 			"descriptionRequired": "Beschrijving is verplicht",
 			"descriptionTooLong": "Beschrijving moet maximaal 1024 tekens zijn"
 		},
-		"footer": "Maak je eigen skills met de Skill Writer modus, beschikbaar in de <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
+		"footer": "Maak je eigen skills met de Skill Writer modus, beschikbaar in de <MarketplaceLink>Modes Marketplace</MarketplaceLink>.",
+		"loadWarnings": {
+			"title": "{{count}} skill(s) failed to load"
+		}
 	}
 }

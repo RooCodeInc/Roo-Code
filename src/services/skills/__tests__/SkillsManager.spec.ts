@@ -1756,4 +1756,265 @@ Instructions`)
 			expect(mockRmdir).not.toHaveBeenCalled()
 		})
 	})
+
+	describe("getLoadWarnings", () => {
+		it("should collect warnings for skills with missing name field", async () => {
+			const invalidSkillDir = p(globalSkillsDir, "no-name-skill")
+			const invalidSkillMd = p(invalidSkillDir, "SKILL.md")
+
+			mockDirectoryExists.mockImplementation(async (dir: string) => dir === globalSkillsDir)
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+			mockReaddir.mockImplementation(async (dir: string) => {
+				if (dir === globalSkillsDir) return ["no-name-skill"]
+				return []
+			})
+			mockStat.mockImplementation(async (pathArg: string) => {
+				if (pathArg === invalidSkillDir) return { isDirectory: () => true }
+				throw new Error("Not found")
+			})
+			mockFileExists.mockImplementation(async (file: string) => file === invalidSkillMd)
+			mockReadFile.mockImplementation(async (file: string) => {
+				if (file === invalidSkillMd) {
+					return `---
+description: A skill without a name
+---
+
+# No Name Skill`
+				}
+				throw new Error("File not found")
+			})
+
+			await skillsManager.discoverSkills()
+
+			const warnings = skillsManager.getLoadWarnings()
+			expect(warnings).toHaveLength(1)
+			expect(warnings[0].skillName).toBe("no-name-skill")
+			expect(warnings[0].source).toBe("global")
+			expect(warnings[0].reason).toContain("name")
+		})
+
+		it("should collect warnings for skills with mismatched name", async () => {
+			const mismatchedDir = p(globalSkillsDir, "my-skill")
+			const mismatchedMd = p(mismatchedDir, "SKILL.md")
+
+			mockDirectoryExists.mockImplementation(async (dir: string) => dir === globalSkillsDir)
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+			mockReaddir.mockImplementation(async (dir: string) => {
+				if (dir === globalSkillsDir) return ["my-skill"]
+				return []
+			})
+			mockStat.mockImplementation(async (pathArg: string) => {
+				if (pathArg === mismatchedDir) return { isDirectory: () => true }
+				throw new Error("Not found")
+			})
+			mockFileExists.mockImplementation(async (file: string) => file === mismatchedMd)
+			mockReadFile.mockImplementation(async (file: string) => {
+				if (file === mismatchedMd) {
+					return `---
+name: different-name
+description: Name doesn't match directory
+---
+
+# Mismatched`
+				}
+				throw new Error("File not found")
+			})
+
+			await skillsManager.discoverSkills()
+
+			const warnings = skillsManager.getLoadWarnings()
+			expect(warnings).toHaveLength(1)
+			expect(warnings[0].skillName).toBe("my-skill")
+			expect(warnings[0].reason).toContain("doesn't match")
+		})
+
+		it("should collect warnings for skills with invalid name format", async () => {
+			const invalidDir = p(globalSkillsDir, "PDF-processing")
+			const invalidMd = p(invalidDir, "SKILL.md")
+
+			mockDirectoryExists.mockImplementation(async (dir: string) => dir === globalSkillsDir)
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+			mockReaddir.mockImplementation(async (dir: string) => {
+				if (dir === globalSkillsDir) return ["PDF-processing"]
+				return []
+			})
+			mockStat.mockImplementation(async (pathArg: string) => {
+				if (pathArg === invalidDir) return { isDirectory: () => true }
+				throw new Error("Not found")
+			})
+			mockFileExists.mockImplementation(async (file: string) => file === invalidMd)
+			mockReadFile.mockImplementation(async (file: string) => {
+				if (file === invalidMd) {
+					return `---
+name: PDF-processing
+description: Invalid name format
+---
+
+# Invalid Name`
+				}
+				throw new Error("File not found")
+			})
+
+			await skillsManager.discoverSkills()
+
+			const warnings = skillsManager.getLoadWarnings()
+			expect(warnings).toHaveLength(1)
+			expect(warnings[0].skillName).toBe("PDF-processing")
+			expect(warnings[0].reason).toContain("Invalid skill name")
+		})
+
+		it("should collect warnings for skills with invalid description length", async () => {
+			const invalidDir = p(globalSkillsDir, "bad-desc")
+			const invalidMd = p(invalidDir, "SKILL.md")
+			const longDescription = "A".repeat(1025)
+
+			mockDirectoryExists.mockImplementation(async (dir: string) => dir === globalSkillsDir)
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+			mockReaddir.mockImplementation(async (dir: string) => {
+				if (dir === globalSkillsDir) return ["bad-desc"]
+				return []
+			})
+			mockStat.mockImplementation(async (pathArg: string) => {
+				if (pathArg === invalidDir) return { isDirectory: () => true }
+				throw new Error("Not found")
+			})
+			mockFileExists.mockImplementation(async (file: string) => file === invalidMd)
+			mockReadFile.mockImplementation(async (file: string) => {
+				if (file === invalidMd) {
+					return `---
+name: bad-desc
+description: ${longDescription}
+---
+
+# Bad Description`
+				}
+				throw new Error("File not found")
+			})
+
+			await skillsManager.discoverSkills()
+
+			const warnings = skillsManager.getLoadWarnings()
+			expect(warnings).toHaveLength(1)
+			expect(warnings[0].skillName).toBe("bad-desc")
+			expect(warnings[0].reason).toContain("description length")
+		})
+
+		it("should return empty warnings when all skills load successfully", async () => {
+			const validDir = p(globalSkillsDir, "valid-skill")
+			const validMd = p(validDir, "SKILL.md")
+
+			mockDirectoryExists.mockImplementation(async (dir: string) => dir === globalSkillsDir)
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+			mockReaddir.mockImplementation(async (dir: string) => {
+				if (dir === globalSkillsDir) return ["valid-skill"]
+				return []
+			})
+			mockStat.mockImplementation(async (pathArg: string) => {
+				if (pathArg === validDir) return { isDirectory: () => true }
+				throw new Error("Not found")
+			})
+			mockFileExists.mockImplementation(async (file: string) => file === validMd)
+			mockReadFile.mockImplementation(async (file: string) => {
+				if (file === validMd) {
+					return `---
+name: valid-skill
+description: A valid skill
+---
+
+# Valid Skill`
+				}
+				throw new Error("File not found")
+			})
+
+			await skillsManager.discoverSkills()
+
+			const warnings = skillsManager.getLoadWarnings()
+			expect(warnings).toHaveLength(0)
+		})
+
+		it("should clear warnings on rediscovery", async () => {
+			const invalidDir = p(globalSkillsDir, "bad-skill")
+			const invalidMd = p(invalidDir, "SKILL.md")
+
+			mockDirectoryExists.mockImplementation(async (dir: string) => dir === globalSkillsDir)
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+			mockReaddir.mockImplementation(async (dir: string) => {
+				if (dir === globalSkillsDir) return ["bad-skill"]
+				return []
+			})
+			mockStat.mockImplementation(async (pathArg: string) => {
+				if (pathArg === invalidDir) return { isDirectory: () => true }
+				throw new Error("Not found")
+			})
+			mockFileExists.mockImplementation(async (file: string) => file === invalidMd)
+			mockReadFile.mockImplementation(async (file: string) => {
+				if (file === invalidMd) {
+					return `---
+description: Missing name field
+---
+
+# Bad Skill`
+				}
+				throw new Error("File not found")
+			})
+
+			await skillsManager.discoverSkills()
+			expect(skillsManager.getLoadWarnings()).toHaveLength(1)
+
+			// Rediscover with no skills directory
+			mockDirectoryExists.mockImplementation(async () => false)
+			await skillsManager.discoverSkills()
+			expect(skillsManager.getLoadWarnings()).toHaveLength(0)
+		})
+
+		it("should collect warnings for both valid and invalid skills simultaneously", async () => {
+			const validDir = p(globalSkillsDir, "good-skill")
+			const validMd = p(validDir, "SKILL.md")
+			const invalidDir = p(globalSkillsDir, "bad-skill")
+			const invalidMd = p(invalidDir, "SKILL.md")
+
+			mockDirectoryExists.mockImplementation(async (dir: string) => dir === globalSkillsDir)
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+			mockReaddir.mockImplementation(async (dir: string) => {
+				if (dir === globalSkillsDir) return ["good-skill", "bad-skill"]
+				return []
+			})
+			mockStat.mockImplementation(async (pathArg: string) => {
+				if (pathArg === validDir || pathArg === invalidDir) return { isDirectory: () => true }
+				throw new Error("Not found")
+			})
+			mockFileExists.mockImplementation(async (file: string) => file === validMd || file === invalidMd)
+			mockReadFile.mockImplementation(async (file: string) => {
+				if (file === validMd) {
+					return `---
+name: good-skill
+description: A valid skill
+---
+
+# Good Skill`
+				}
+				if (file === invalidMd) {
+					return `---
+description: Missing name field
+---
+
+# Bad Skill`
+				}
+				throw new Error("File not found")
+			})
+
+			await skillsManager.discoverSkills()
+
+			// Valid skill should be loaded
+			const skills = skillsManager.getAllSkills()
+			expect(skills).toHaveLength(1)
+			expect(skills[0].name).toBe("good-skill")
+
+			// Invalid skill should produce a warning
+			const warnings = skillsManager.getLoadWarnings()
+			expect(warnings).toHaveLength(1)
+			expect(warnings[0].skillName).toBe("bad-skill")
+			expect(warnings[0].reason).toContain("name")
+		})
+	})
 })
