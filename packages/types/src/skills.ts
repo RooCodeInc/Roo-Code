@@ -21,6 +21,22 @@ export interface SkillMetadata {
 }
 
 /**
+ * Warning emitted when a skill fails to load during discovery.
+ * Collected by SkillsManager and surfaced to the UI so users know
+ * which skills were skipped and why.
+ */
+export interface SkillLoadWarning {
+	/** Directory name of the skill that failed to load */
+	skillName: string
+	/** Absolute path to the skill directory */
+	path: string
+	/** Whether this was a global or project skill */
+	source: "global" | "project"
+	/** Human-readable reason the skill was skipped */
+	reason: string
+}
+
+/**
  * Skill name validation constants per agentskills.io specification:
  * https://agentskills.io/specification
  *
