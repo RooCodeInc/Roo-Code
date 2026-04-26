@@ -4498,8 +4498,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				const [first, ...rest] = contentArray
 
 				// Check if this message has reasoning_details (OpenRouter format for Gemini 3, etc.)
-				const msgWithDetails = msg
-				if (msgWithDetails.reasoning_details && Array.isArray(msgWithDetails.reasoning_details)) {
+				const msgWithDetails = msg as any
+				if (
+					(msgWithDetails.reasoning_details && Array.isArray(msgWithDetails.reasoning_details)) ||
+					msgWithDetails.reasoning_content
+				) {
 					// Build the assistant message with reasoning_details
 					let assistantContent: Anthropic.Messages.MessageParam["content"]
 
@@ -4515,7 +4518,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					cleanConversationHistory.push({
 						role: "assistant",
 						content: assistantContent,
-						reasoning_details: msgWithDetails.reasoning_details,
+						...(msgWithDetails.reasoning_details && {
+							reasoning_details: msgWithDetails.reasoning_details,
+						}),
+						...(msgWithDetails.reasoning_content && {
+							reasoning_content: msgWithDetails.reasoning_content,
+						}),
 					} as any)
 
 					continue

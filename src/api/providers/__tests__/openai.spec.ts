@@ -1139,6 +1139,79 @@ describe("OpenAiHandler", () => {
 			)
 		})
 	})
+
+	describe("DeepSeek V4 / R1 Compatibility", () => {
+		it("should inject extra_body and reasoning_effort for DeepSeek R1 format", async () => {
+			const r1Options: ApiHandlerOptions = {
+				...mockOptions,
+				openAiR1FormatEnabled: true,
+				openAiModelId: "deepseek-reasoner",
+				openAiBaseUrl: "https://api.deepseek.com/v1",
+				openAiCustomModelInfo: {
+					contextWindow: 64_000,
+					supportsReasoningEffort: true,
+					reasoningEffort: "xhigh",
+					supportsPromptCache: false,
+				},
+			}
+			const r1Handler = new OpenAiHandler(r1Options)
+			const stream = r1Handler.createMessage("system", [{ role: "user", content: "test" }])
+
+			for await (const _ of stream) {
+			}
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					reasoning_effort: "max", // xhigh -> max for deepseek
+					extra_body: {
+						thinking: { type: "enabled" },
+					},
+					temperature: undefined, // disabled for thinking mode
+				}),
+				expect.any(Object),
+			)
+
+			// T005 Verify preserveReasoning is enabled
+			const model = r1Handler.getModel()
+			expect(model.info.preserveReasoning).toBe(true)
+		})
+
+		it("should NOT inject R1 parameters for standard models even if model ID contains deepseek but R1 format is disabled", async () => {
+			const standardOptions: ApiHandlerOptions = {
+				...mockOptions,
+				openAiR1FormatEnabled: false,
+				openAiModelId: "deepseek-chat", // standard model
+			}
+			const standardHandler = new OpenAiHandler(standardOptions)
+			const stream = standardHandler.createMessage("system", [{ role: "user", content: "test" }])
+
+			for await (const _ of stream) {
+			}
+
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs).not.toHaveProperty("extra_body")
+			expect(callArgs.temperature).toBeDefined()
+		})
+
+		it("should use standard OpenAI protocol when R1 format is disabled", async () => {
+			const standardOptions: ApiHandlerOptions = {
+				...mockOptions,
+				openAiR1FormatEnabled: false,
+				openAiModelId: "gpt-4o",
+			}
+			const standardHandler = new OpenAiHandler(standardOptions)
+			const stream = standardHandler.createMessage("system", [{ role: "user", content: "test" }])
+
+			for await (const _ of stream) {
+			}
+
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs).not.toHaveProperty("extra_body")
+			expect(callArgs).not.toHaveProperty("reasoning_effort")
+			// Standard model should have temperature 0 by default
+			expect(callArgs.temperature).toBe(0)
+		})
+	})
 })
 
 describe("getOpenAiModels", () => {

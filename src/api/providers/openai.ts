@@ -105,7 +105,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			let convertedMessages
 
 			if (deepseekReasoner) {
-				convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
+				convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages], {
+					mergeToolResultText: true,
+				})
 			} else {
 				if (modelInfo.supportsPromptCache) {
 					systemMessage = {
@@ -152,13 +154,32 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			const isGrokXAI = this._isGrokXAI(this.options.openAiBaseUrl)
 
-			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
+			const isDeepSeekV4 =
+				deepseekReasoner &&
+				(this.options.openAiBaseUrl?.includes("deepseek.com") || modelId.includes("deepseek"))
+
+			const requestOptions: any = {
 				model: modelId,
-				temperature: this.options.modelTemperature ?? (deepseekReasoner ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
+				temperature: deepseekReasoner
+					? undefined
+					: (this.options.modelTemperature ?? (deepseekReasoner ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0)),
 				messages: convertedMessages,
 				stream: true as const,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 				...(reasoning && reasoning),
+				...(deepseekReasoner && {
+					reasoning_effort: isDeepSeekV4
+						? modelInfo.reasoningEffort === "xhigh"
+							? "max"
+							: "high"
+						: (modelInfo.reasoningEffort as any),
+					extra_body: {
+						thinking: { type: "enabled" },
+					},
+					top_p: undefined,
+					presence_penalty: undefined,
+					frequency_penalty: undefined,
+				}),
 				tools: this.convertToolsForOpenAI(metadata?.tools),
 				tool_choice: metadata?.tool_choice,
 				parallel_tool_calls: metadata?.parallelToolCalls ?? true,
@@ -169,10 +190,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			let stream
 			try {
-				stream = await this.client.chat.completions.create(
+				stream = (await this.client.chat.completions.create(
 					requestOptions,
 					isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
-				)
+				)) as any
 			} catch (error) {
 				throw handleOpenAIError(error, this.providerName)
 			}
@@ -221,15 +242,35 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				yield this.processUsageMetrics(lastUsage, modelInfo)
 			}
 		} else {
-			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
+			const isDeepSeekV4 =
+				deepseekReasoner &&
+				(this.options.openAiBaseUrl?.includes("deepseek.com") || modelId.includes("deepseek"))
+
+			const requestOptions: any = {
 				model: modelId,
 				messages: deepseekReasoner
-					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
+					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages], {
+							mergeToolResultText: true,
+						})
 					: [systemMessage, ...convertToOpenAiMessages(messages)],
 				// Tools are always present (minimum ALWAYS_AVAILABLE_TOOLS)
 				tools: this.convertToolsForOpenAI(metadata?.tools),
 				tool_choice: metadata?.tool_choice,
 				parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+				...(deepseekReasoner && {
+					reasoning_effort: isDeepSeekV4
+						? modelInfo.reasoningEffort === "xhigh"
+							? "max"
+							: "high"
+						: (modelInfo.reasoningEffort as any),
+					extra_body: {
+						thinking: { type: "enabled" },
+					},
+					temperature: undefined,
+					top_p: undefined,
+					presence_penalty: undefined,
+					frequency_penalty: undefined,
+				}),
 			}
 
 			// Add max_tokens if needed
@@ -237,10 +278,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			let response
 			try {
-				response = await this.client.chat.completions.create(
+				response = (await this.client.chat.completions.create(
 					requestOptions,
 					this._isAzureAiInference(modelUrl) ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
-				)
+				)) as any
 			} catch (error) {
 				throw handleOpenAIError(error, this.providerName)
 			}
@@ -289,7 +330,18 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			settings: this.options,
 			defaultTemperature: 0,
 		})
-		return { id, info, ...params }
+
+		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
+		const deepseekReasoner = id.includes("deepseek-reasoner") || enabledR1Format
+
+		return {
+			id,
+			info: {
+				...info,
+				...(deepseekReasoner && { preserveReasoning: true }),
+			},
+			...params,
+		}
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
