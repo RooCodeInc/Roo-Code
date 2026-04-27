@@ -12,9 +12,9 @@ const dmSans = DM_Sans({
 export function RoomoteAnnouncementBanner() {
 	return (
 		<div className={`relative overflow-hidden bg-[#d8f14b] text-black ${dmSans.className}`}>
-			<div className="relative flex flex-col items-center justify-center gap-3 px-6 py-5 sm:py-6">
+			<div className="relative flex flex-col md:flex-row items-center justify-center gap-3 px-6 py-8 md:py-10 border-b-2 border-black">
 				<p className="text-base sm:text-lg md:text-xl font-extrabold tracking-tight">
-					The Roo Code team just launched something new.
+					The Roo Code team has something new.
 				</p>
 				<a
 					href="https://roomote.dev"

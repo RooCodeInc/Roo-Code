@@ -28,8 +28,63 @@ const nextConfig: NextConfig = {
 				permanent: false,
 			},
 			{
+				source: "/extension",
+				destination: "/",
+				permanent: true,
+			},
+			{
 				source: "/provider/pricing",
-				destination: "/provider",
+				destination: "/",
+				permanent: true,
+			},
+			{
+				source: "/pricing",
+				destination: "/",
+				permanent: true,
+			},
+			{
+				source: "/provider",
+				destination: "/",
+				permanent: true,
+			},
+			{
+				source: "/cloud",
+				destination: "/",
+				permanent: true,
+			},
+			{
+				source: "/cloud/team",
+				destination: "/",
+				permanent: true,
+			},
+			{
+				source: "/enterprise",
+				destination: "/",
+				permanent: true,
+			},
+			{
+				source: "/slack",
+				destination: "/",
+				permanent: true,
+			},
+			{
+				source: "/linear",
+				destination: "/",
+				permanent: true,
+			},
+			{
+				source: "/reviewer",
+				destination: "/",
+				permanent: true,
+			},
+			{
+				source: "/pr-fixer",
+				destination: "/",
+				permanent: true,
+			},
+			{
+				source: "/github",
+				destination: "/",
 				permanent: true,
 			},
 		]
