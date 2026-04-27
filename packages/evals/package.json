@@ -31,7 +31,7 @@
 		"@roo-code/ipc": "workspace:^",
 		"@roo-code/types": "workspace:^",
 		"cmd-ts": "^0.13.0",
-		"drizzle-orm": "^0.44.1",
+		"drizzle-orm": "^0.45.0",
 		"execa": "^9.6.0",
 		"node-ipc": "^12.0.0",
 		"p-map": "^7.0.3",
