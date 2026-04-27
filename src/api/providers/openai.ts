@@ -155,8 +155,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			const isGrokXAI = this._isGrokXAI(this.options.openAiBaseUrl)
 
 			const isDeepSeekV4 =
-				deepseekReasoner &&
-				(this.options.openAiBaseUrl?.includes("deepseek.com") || modelId.includes("deepseek"))
+				deepseekReasoner && (this._isDeepSeek(this.options.openAiBaseUrl) || modelId.includes("deepseek"))
 
 			const requestOptions: any = {
 				model: modelId,
@@ -243,8 +242,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 		} else {
 			const isDeepSeekV4 =
-				deepseekReasoner &&
-				(this.options.openAiBaseUrl?.includes("deepseek.com") || modelId.includes("deepseek"))
+				deepseekReasoner && (this._isDeepSeek(this.options.openAiBaseUrl) || modelId.includes("deepseek"))
 
 			const requestOptions: any = {
 				model: modelId,
@@ -559,6 +557,11 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	private _isGrokXAI(baseUrl?: string): boolean {
 		const urlHost = this._getUrlHost(baseUrl)
 		return urlHost.includes("x.ai")
+	}
+
+	private _isDeepSeek(baseUrl?: string): boolean {
+		const urlHost = this._getUrlHost(baseUrl)
+		return urlHost === "deepseek.com" || urlHost.endsWith(".deepseek.com")
 	}
 
 	protected _isAzureAiInference(baseUrl?: string): boolean {
