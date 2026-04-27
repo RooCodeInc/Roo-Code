@@ -317,6 +317,9 @@ export function convertToOpenAiMessages(
 				if (mapped) {
 					;(baseMessage as any).reasoning_details = mapped
 				}
+				if (messageWithDetails.reasoning_content !== undefined) {
+					;(baseMessage as any).reasoning_content = messageWithDetails.reasoning_content
+				}
 			}
 
 			openAiMessages.push(baseMessage)
@@ -492,6 +495,11 @@ export function convertToOpenAiMessages(
 				const mapped = mapReasoningDetails(messageWithDetails.reasoning_details)
 				if (mapped) {
 					baseMessage.reasoning_details = mapped
+				}
+
+				// Pass through reasoning_content for DeepSeek V4/R1 thinking mode
+				if (messageWithDetails.reasoning_content !== undefined) {
+					;(baseMessage as any).reasoning_content = messageWithDetails.reasoning_content
 				}
 
 				// Add tool_calls after reasoning_details

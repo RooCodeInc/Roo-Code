@@ -4469,6 +4469,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		const cleanConversationHistory: (Anthropic.Messages.MessageParam | ReasoningItemForRequest)[] = []
 
+		// Check if the current model requires reasoning to be preserved (e.g., DeepSeek V4/R1).
+		// When preserveReasoning is true, ALL assistant messages must include reasoning_content
+		// to satisfy the API protocol. Messages from other models (e.g., Gemini) that lack
+		// reasoning_content need to be backfilled with an empty string.
+		const shouldPreserveForApi = this.api.getModel().info.preserveReasoning === true
+
 		for (const msg of messages) {
 			// Standalone reasoning: send encrypted, skip plain text
 			if (msg.type === "reasoning") {
@@ -4595,10 +4601,22 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// Default path for regular messages (no embedded reasoning)
 			if (msg.role) {
-				cleanConversationHistory.push({
+				const baseMessage: any = {
 					role: msg.role,
 					content: msg.content as Anthropic.Messages.ContentBlockParam[] | string,
-				})
+				}
+
+				// DeepSeek thinking mode requires ALL assistant messages to have reasoning_content.
+				// If a message from another model (e.g., Gemini) lacks it, add an empty placeholder
+				// to prevent 400 errors when switching back to DeepSeek mid-conversation.
+				if (msg.role === "assistant" && shouldPreserveForApi) {
+					// Use a space instead of an empty string. Some proxies/gateways or
+					// internal SDK logic may silently strip empty string fields, causing
+					// DeepSeek to reject the request with 400.
+					baseMessage.reasoning_content = " "
+				}
+
+				cleanConversationHistory.push(baseMessage)
 			}
 		}
 
