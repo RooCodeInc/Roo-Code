@@ -25,6 +25,16 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { getApiRequestTimeout } from "./utils/timeout-config"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 
+// Custom interface for OpenAI params to support DeepSeek's thinking mode and other non-standard features
+type OpenAiChatCompletionParams = (
+	| OpenAI.Chat.ChatCompletionCreateParamsStreaming
+	| OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming
+) & {
+	extra_body?: {
+		thinking?: { type: "enabled" | "disabled" }
+	}
+}
+
 // TODO: Rename this to OpenAICompatibleHandler. Also, I think the
 // `OpenAINativeHandler` can subclass from this, since it's obviously
 // compatible with the OpenAI API. We can also rename it to `OpenAIHandler`.
@@ -157,7 +167,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			const isDeepSeekV4 =
 				deepseekReasoner && (this._isDeepSeek(this.options.openAiBaseUrl) || modelId.includes("deepseek"))
 
-			const requestOptions: any = {
+			const requestOptions: OpenAiChatCompletionParams = {
 				model: modelId,
 				temperature: deepseekReasoner
 					? undefined
@@ -167,11 +177,11 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 				...(reasoning && reasoning),
 				...(deepseekReasoner && {
-					reasoning_effort: isDeepSeekV4
+					reasoning_effort: (isDeepSeekV4
 						? modelInfo.reasoningEffort === "xhigh"
 							? "max"
 							: "high"
-						: (modelInfo.reasoningEffort as any),
+						: modelInfo.reasoningEffort) as OpenAI.Chat.Completions.ChatCompletionCreateParams["reasoning_effort"],
 					extra_body: {
 						thinking: { type: "enabled" },
 					},
@@ -187,12 +197,12 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			// Add max_tokens if needed
 			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 
-			let stream
+			let stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>
 			try {
 				stream = (await this.client.chat.completions.create(
-					requestOptions,
+					requestOptions as OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming,
 					isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
-				)) as any
+				)) as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>
 			} catch (error) {
 				throw handleOpenAIError(error, this.providerName)
 			}
@@ -244,7 +254,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			const isDeepSeekV4 =
 				deepseekReasoner && (this._isDeepSeek(this.options.openAiBaseUrl) || modelId.includes("deepseek"))
 
-			const requestOptions: any = {
+			const requestOptions: OpenAiChatCompletionParams = {
 				model: modelId,
 				messages: deepseekReasoner
 					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages], {
@@ -256,11 +266,11 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				tool_choice: metadata?.tool_choice,
 				parallel_tool_calls: metadata?.parallelToolCalls ?? true,
 				...(deepseekReasoner && {
-					reasoning_effort: isDeepSeekV4
+					reasoning_effort: (isDeepSeekV4
 						? modelInfo.reasoningEffort === "xhigh"
 							? "max"
 							: "high"
-						: (modelInfo.reasoningEffort as any),
+						: modelInfo.reasoningEffort) as OpenAI.Chat.Completions.ChatCompletionCreateParams["reasoning_effort"],
 					extra_body: {
 						thinking: { type: "enabled" },
 					},
@@ -274,12 +284,12 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			// Add max_tokens if needed
 			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 
-			let response
+			let response: OpenAI.Chat.Completions.ChatCompletion
 			try {
 				response = (await this.client.chat.completions.create(
-					requestOptions,
+					requestOptions as OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming,
 					this._isAzureAiInference(modelUrl) ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
-				)) as any
+				)) as OpenAI.Chat.Completions.ChatCompletion
 			} catch (error) {
 				throw handleOpenAIError(error, this.providerName)
 			}
