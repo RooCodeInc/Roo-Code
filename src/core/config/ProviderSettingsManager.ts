@@ -368,6 +368,19 @@ export class ProviderSettingsManager {
 					typeof config.apiProvider === "string" && isRetiredProvider(config.apiProvider)
 						? providerSettingsWithIdSchema.passthrough().parse(config)
 						: discriminatedProviderSettingsWithIdSchema.parse(config)
+
+				// Preserve existing secret values when the webview sends back the
+				// "__ROO_REDACTED__" sentinel (secrets are redacted in the webview state
+				// to prevent API key exposure).
+				const existingConfig = providerProfiles.apiConfigs[name]
+				if (existingConfig) {
+					for (const key of Object.keys(filteredConfig)) {
+						if (isSecretStateKey(key) && (filteredConfig as any)[key] === "__ROO_REDACTED__") {
+							;(filteredConfig as any)[key] = (existingConfig as any)[key]
+						}
+					}
+				}
+
 				providerProfiles.apiConfigs[name] = { ...filteredConfig, id }
 				await this.store(providerProfiles)
 				return id
