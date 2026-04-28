@@ -93,14 +93,14 @@ vitest.mock("../../providers/fetchers/modelCache", () => ({
 	getModelsFromCache: vitest.fn((provider: string) => {
 		if (provider === "roo") {
 			return {
-				"xai/grok-code-fast-1": {
-					maxTokens: 16_384,
-					contextWindow: 262_144,
-					supportsImages: false,
-					supportsReasoningEffort: true, // Enable reasoning for tests
+				"anthropic/claude-sonnet-4.5": {
+					maxTokens: 8_192,
+					contextWindow: 200_000,
+					supportsImages: true,
+					supportsReasoningEffort: true,
 					supportsPromptCache: true,
-					inputPrice: 0,
-					outputPrice: 0,
+					inputPrice: 3,
+					outputPrice: 15,
 				},
 				"minimax/minimax-m2:free": {
 					maxTokens: 32_768,
@@ -141,7 +141,7 @@ describe("RooHandler", () => {
 
 	beforeEach(() => {
 		mockOptions = {
-			apiModelId: "xai/grok-code-fast-1",
+			apiModelId: "anthropic/claude-sonnet-4.5",
 		}
 		// Set up CloudService mocks for successful authentication
 		mockHasInstanceFn.mockReturnValue(true)
@@ -410,7 +410,7 @@ describe("RooHandler", () => {
 
 		it("should handle any model ID since models are loaded dynamically", () => {
 			// Test with various model IDs - they should all work since models are loaded dynamically
-			const testModelIds = ["xai/grok-code-fast-1", "roo/sonic", "deepseek/deepseek-chat-v3.1"]
+			const testModelIds = ["anthropic/claude-sonnet-4.5", "roo/sonic", "deepseek/deepseek-chat-v3.1"]
 
 			for (const modelId of testModelIds) {
 				const handlerWithModel = new RooHandler({ apiModelId: modelId })
