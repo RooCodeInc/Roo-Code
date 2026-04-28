@@ -1204,4 +1204,80 @@ function sum(a, b) {
 			expect(result.error).toContain(":start_line:5    <-- Invalid location")
 		})
 	})
+
+	// Regression for https://github.com/RooCodeInc/Roo-Code/issues/12210.
+	describe("malformed `-------` separator detection", () => {
+		let strategy: MultiSearchReplaceDiffStrategy
+
+		beforeEach(() => {
+			strategy = new MultiSearchReplaceDiffStrategy(1.0, 5)
+		})
+
+		it("returns a 'malformed separator' error when LLM omits the newline after -------", async () => {
+			const originalContent =
+				"import { useTranslate } from '../../i18n/I18nContext';\n" +
+				"\n" +
+				"type MouseMode = 'draw' | 'erase';\n"
+			const diffContent =
+				"<<<<<<< SEARCH\n" +
+				":start_line:1\n" +
+				"-------import { useTranslate } from '../../i18n/I18nContext';\n" +
+				"\n" +
+				"type MouseMode\n" +
+				"=======\n" +
+				"import { useTranslate } from '../../i18n/I18nContext';\n" +
+				"import { MaskEditorProvider, useMaskEditor } from './MaskEditorContext';\n" +
+				"\n" +
+				"type MouseMode\n" +
+				">>>>>>> REPLACE"
+
+			const result = await strategy.applyDiff(originalContent, diffContent)
+			expect(result.success).toBe(false)
+			if (!result.success) {
+				const parts = result.failParts ?? []
+				const errors = parts
+					.filter((part) => part.success === false)
+					.map((part) => ("error" in part ? (part.error ?? "") : ""))
+					.concat("error" in result ? (result.error ?? "") : "")
+					.join(" ")
+				expect(errors).toContain("Malformed separator")
+				expect(errors).toContain("must be on its own line")
+				expect(errors).not.toContain("63%")
+				expect(errors).not.toContain("similar")
+			}
+		})
+
+		it("does not flag a well-formed -------\\n separator", async () => {
+			const originalContent = "function hello() {\n    console.log('hello')\n}\n"
+			const diffContent =
+				"<<<<<<< SEARCH\n" +
+				":start_line:1\n" +
+				"-------\n" +
+				"function hello() {\n" +
+				"=======\n" +
+				"function helloWorld() {\n" +
+				">>>>>>> REPLACE"
+
+			const result = await strategy.applyDiff(originalContent, diffContent)
+			expect(result.success).toBe(true)
+			if (result.success) {
+				expect(result.content).toBe("function helloWorld() {\n    console.log('hello')\n}\n")
+			}
+		})
+
+		it("does not flag a search line that legitimately contains many dashes", async () => {
+			const originalContent = "/* ---------- header ---------- */\nconst x = 1;\n"
+			const diffContent =
+				"<<<<<<< SEARCH\n" +
+				":start_line:1\n" +
+				"-------\n" +
+				"/* ---------- header ---------- */\n" +
+				"=======\n" +
+				"/* === header === */\n" +
+				">>>>>>> REPLACE"
+
+			const result = await strategy.applyDiff(originalContent, diffContent)
+			expect(result.success).toBe(true)
+		})
+	})
 })

@@ -8,6 +8,45 @@ import { normalizeString } from "../../../utils/text-normalization"
 
 const BUFFER_LINES = 40 // Number of extra context lines to show before and after matches
 
+/**
+ * Detect a malformed `-------` separator in the SEARCH section content.
+ *
+ * If the LLM forgets the newline after the separator, the run-on line
+ * (e.g. `-------import { ... }`) ends up as the first line of the
+ * captured search content. The outer regex doesn't reject this — it
+ * just falls through, and the file-content match fails with a
+ * confusing "63% similar" error. By detecting the malformed prefix
+ * here we can return an actionable error instead.
+ *
+ * Returns the offending line when malformed, or `null` otherwise.
+ *
+ * Regression test for https://github.com/RooCodeInc/Roo-Code/issues/12210.
+ */
+function detectMalformedSeparator(searchContent: string): string | null {
+	if (!searchContent) {
+		return null
+	}
+	const firstLine = searchContent.split(/\r?\n/, 1)[0] ?? ""
+	const trimmed = firstLine.trim()
+	// Must start with at least seven dashes (the separator) AND have
+	// non-dash, non-whitespace content immediately after them on the
+	// same line. A bare `-------` (separator on its own line that
+	// happened to land in the search content for unrelated reasons) is
+	// not flagged.
+	const match = trimmed.match(/^-{7,}(.+)$/)
+	if (!match) {
+		return null
+	}
+	const tail = match[1].trim()
+	// Allow lines that start with a literal `-` continuation (e.g.
+	// markdown bullets that begin with extra dashes) — they wouldn't
+	// look like the separator-then-code shape that confuses callers.
+	if (tail === "" || /^-+$/.test(tail)) {
+		return null
+	}
+	return firstLine
+}
+
 function getSimilarity(original: string, search: string): number {
 	// Empty searches are no longer supported
 	if (search === "") {
@@ -320,6 +359,31 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 			// First unescape any escaped markers in the content
 			searchContent = this.unescapeMarkers(searchContent)
 			replaceContent = this.unescapeMarkers(replaceContent)
+
+			// Detect the specific malformation flagged in #12210: an
+			// unescaped `-------` separator that lacks the trailing
+			// newline (e.g. `-------import { ... }`). The outer regex
+			// makes the separator group optional, so the search content
+			// silently absorbs the run-on line and matching fails with
+			// a confusing "63% similar" error. Surface the actual root
+			// cause so the model can self-correct.
+			const malformedSeparator = detectMalformedSeparator(searchContent)
+			if (malformedSeparator) {
+				diffResults.push({
+					success: false,
+					error:
+						`Malformed separator in SEARCH section\n\n` +
+						`Debug Info:\n` +
+						`- The "-------" separator that follows :start_line:/:end_line: must be on its own line, followed by a newline before the search content begins.\n` +
+						`- Got: ${JSON.stringify(malformedSeparator)}\n` +
+						`- Expected:\n` +
+						`    :start_line:7\n` +
+						`    -------\n` +
+						`    <search content here>\n` +
+						`- Tip: insert a newline immediately after "-------". Do not put the first line of search content on the same line as the separator.`,
+				})
+				continue
+			}
 
 			// Strip line numbers from search and replace content if every line starts with a line number
 			const hasAllLineNumbers =
