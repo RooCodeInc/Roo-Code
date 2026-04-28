@@ -77,6 +77,17 @@ export function normalizeString(str: string, options: NormalizeOptions = DEFAULT
 }
 
 /**
+ * Escapes potential XML/HTML-like tags to prevent indirect prompt injection
+ * via tool outputs (command output, file contents, etc.).
+ *
+ * @param content The untrusted content to sanitize
+ * @returns The sanitized content with tag-like sequences escaped
+ */
+export function sanitizeForPromptInjection(content: string): string {
+	return content.replace(/<(\/?[a-zA-Z!?])/g, "\\<$1")
+}
+
+/**
  * Unescapes common HTML entities in a string
  *
  * @param text The string containing HTML entities to unescape

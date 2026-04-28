@@ -21,6 +21,7 @@ import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { getReadablePath } from "../../utils/path"
 import { extractTextFromFile, addLineNumbers, getSupportedBinaryFormats } from "../../integrations/misc/extract-text"
+import { sanitizeForPromptInjection } from "../../utils/text-normalization"
 import { readWithIndentation, readWithSlice } from "../../integrations/misc/indentation-reader"
 import { DEFAULT_LINE_LIMIT } from "../prompts/tools/native-tools/read_file"
 import type { ToolUse, PushToolResult } from "../../shared/tools"
@@ -221,7 +222,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
 
 					updateFileResult(relPath, {
-						nativeContent: `File: ${relPath}\n${result}`,
+						nativeContent: `File: ${relPath}\n${sanitizeForPromptInjection(result)}`,
 					})
 				} catch (error) {
 					const errorMsg = error instanceof Error ? error.message : String(error)
@@ -397,7 +398,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				updateFileResult(relPath, {
 					nativeContent:
 						lineCount > 0
-							? `File: ${relPath}\nLines 1-${lineCount}:\n${numberedContent}`
+							? `File: ${relPath}\nLines 1-${lineCount}:\n${sanitizeForPromptInjection(numberedContent)}`
 							: `File: ${relPath}\nNote: File is empty`,
 				})
 				return
@@ -794,7 +795,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					}
 				}
 
-				results.push(`File: ${relPath}\n${content}`)
+				results.push(`File: ${relPath}\n${sanitizeForPromptInjection(content)}`)
 
 				// Track file in context
 				await task.fileContextTracker.trackFileContext(relPath, "read_tool")

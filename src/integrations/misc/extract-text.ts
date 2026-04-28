@@ -7,6 +7,7 @@ import { isBinaryFile } from "isbinaryfile"
 import { extractTextFromXLSX } from "./extract-text-from-xlsx"
 import { readWithSlice } from "./indentation-reader"
 import { DEFAULT_LINE_LIMIT } from "../../core/prompts/tools/native-tools/read_file"
+import { sanitizeForPromptInjection } from "../../utils/text-normalization"
 
 async function extractTextFromPDF(filePath: string): Promise<string> {
 	const dataBuffer = await fs.readFile(filePath)
@@ -91,7 +92,7 @@ export async function extractTextFromFileWithMetadata(
 	const extractor = SUPPORTED_BINARY_FORMATS[fileExtension as keyof typeof SUPPORTED_BINARY_FORMATS]
 	if (extractor) {
 		// For binary formats, extract and count lines
-		const content = await extractor(filePath)
+		const content = sanitizeForPromptInjection(await extractor(filePath))
 		const lines = content.split("\n")
 		return {
 			content,
@@ -130,7 +131,7 @@ export async function extractTextFromFileWithMetadata(
  */
 export async function extractTextFromFile(filePath: string): Promise<string> {
 	const result = await extractTextFromFileWithMetadata(filePath)
-	return result.content
+	return sanitizeForPromptInjection(result.content)
 }
 
 export function addLineNumbers(content: string, startLine: number = 1): string {
