@@ -63,6 +63,7 @@ export class ProfileValidator {
 			case "xai":
 			case "sambanova":
 			case "fireworks":
+			case "perplexity":
 				return profile.apiModelId
 			case "litellm":
 				return profile.litellmModelId

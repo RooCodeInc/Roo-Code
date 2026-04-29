@@ -13,6 +13,7 @@ import {
 	moonshotModels,
 	openAiCodexModels,
 	openAiNativeModels,
+	perplexityModels,
 	qwenCodeModels,
 	sambaNovaModels,
 	vertexModels,
@@ -114,6 +115,7 @@ export const providerNames = [
 	"minimax",
 	"openai-codex",
 	"openai-native",
+	"perplexity",
 	"qwen-code",
 	"sambanova",
 	"vertex",
@@ -368,6 +370,10 @@ const fireworksSchema = apiModelIdProviderModelSchema.extend({
 	fireworksApiKey: z.string().optional(),
 })
 
+const perplexitySchema = apiModelIdProviderModelSchema.extend({
+	perplexityApiKey: z.string().optional(),
+})
+
 const qwenCodeSchema = apiModelIdProviderModelSchema.extend({
 	qwenCodeOauthPath: z.string().optional(),
 })
@@ -412,6 +418,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	sambaNovaSchema.merge(z.object({ apiProvider: z.literal("sambanova") })),
 	zaiSchema.merge(z.object({ apiProvider: z.literal("zai") })),
 	fireworksSchema.merge(z.object({ apiProvider: z.literal("fireworks") })),
+	perplexitySchema.merge(z.object({ apiProvider: z.literal("perplexity") })),
 	qwenCodeSchema.merge(z.object({ apiProvider: z.literal("qwen-code") })),
 	vercelAiGatewaySchema.merge(z.object({ apiProvider: z.literal("vercel-ai-gateway") })),
 	defaultSchema,
@@ -445,6 +452,7 @@ export const providerSettingsSchema = z.object({
 	...sambaNovaSchema.shape,
 	...zaiSchema.shape,
 	...fireworksSchema.shape,
+	...perplexitySchema.shape,
 	...qwenCodeSchema.shape,
 	...vercelAiGatewaySchema.shape,
 	...codebaseIndexProviderSchema.shape,
@@ -520,6 +528,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	sambanova: "apiModelId",
 	zai: "apiModelId",
 	fireworks: "apiModelId",
+	perplexity: "apiModelId",
 	"vercel-ai-gateway": "vercelAiGatewayModelId",
 }
 
@@ -574,6 +583,11 @@ export const MODELS_BY_PROVIDER: Record<
 		id: "fireworks",
 		label: "Fireworks",
 		models: Object.keys(fireworksModels),
+	},
+	perplexity: {
+		id: "perplexity",
+		label: "Perplexity",
+		models: Object.keys(perplexityModels),
 	},
 	gemini: {
 		id: "gemini",

@@ -17,6 +17,7 @@ import {
 	fireworksModels,
 	minimaxModels,
 	basetenModels,
+	perplexityModels,
 } from "@roo-code/types"
 
 export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, ModelInfo>>> = {
@@ -36,6 +37,7 @@ export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, Mod
 	fireworks: fireworksModels,
 	minimax: minimaxModels,
 	baseten: basetenModels,
+	perplexity: perplexityModels,
 }
 
 export const PROVIDERS = [
@@ -60,6 +62,7 @@ export const PROVIDERS = [
 	{ value: "sambanova", label: "SambaNova", proxy: false },
 	{ value: "zai", label: "Z.ai", proxy: false },
 	{ value: "fireworks", label: "Fireworks AI", proxy: false },
+	{ value: "perplexity", label: "Perplexity", proxy: false },
 	{ value: "vercel-ai-gateway", label: "Vercel AI Gateway", proxy: false },
 	{ value: "minimax", label: "MiniMax", proxy: false },
 	{ value: "baseten", label: "Baseten", proxy: false },

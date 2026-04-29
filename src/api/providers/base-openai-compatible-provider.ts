@@ -84,12 +84,12 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 				format: "openai",
 			}) ?? undefined
 
-		const temperature = this.options.modelTemperature ?? info.defaultTemperature ?? this.defaultTemperature
+		const temperature = this.getTemperature(model, info)
 
 		const params: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model,
 			max_tokens,
-			temperature,
+			...(temperature !== undefined ? { temperature } : {}),
 			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 			stream: true,
 			stream_options: { include_usage: true },
@@ -141,12 +141,6 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			const delta = chunk.choices?.[0]?.delta
 			const finishReason = chunk.choices?.[0]?.finish_reason
 
-			if (delta?.content) {
-				for (const processedChunk of matcher.update(delta.content)) {
-					yield processedChunk
-				}
-			}
-
 			if (delta) {
 				for (const key of ["reasoning_content", "reasoning"] as const) {
 					if (key in delta) {
@@ -156,6 +150,12 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 						}
 						break
 					}
+				}
+			}
+
+			if (delta?.content) {
+				for (const processedChunk of matcher.update(delta.content)) {
+					yield processedChunk
 				}
 			}
 
@@ -217,6 +217,10 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			cacheReadTokens: cacheReadTokens || undefined,
 			totalCost,
 		}
+	}
+
+	protected getTemperature(_model: ModelName, info: ModelInfo): number | undefined {
+		return this.options.modelTemperature ?? info.defaultTemperature ?? this.defaultTemperature
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
