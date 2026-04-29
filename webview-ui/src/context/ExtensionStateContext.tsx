@@ -192,6 +192,7 @@ export const mergeExtensionState = (prevState: ExtensionState, newState: Partial
 export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [state, setState] = useState<ExtensionState>({
 		apiConfiguration: {},
+		currentModelId: undefined,
 		version: "",
 		clineMessages: [],
 		taskHistory: [],

@@ -1,9 +1,20 @@
 import React, { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useEvent } from "react-use"
 import DynamicTextArea from "react-textarea-autosize"
-import { VolumeX, Image, WandSparkles, SendHorizontal, X, ListEnd, Square } from "lucide-react"
+import { VolumeX, Image, WandSparkles, SendHorizontal, X, ListEnd, Square, Check, ChevronsUpDown } from "lucide-react"
 
-import type { ExtensionMessage } from "@roo-code/types"
+import {
+	isDynamicProvider,
+	isRetiredProvider,
+	modelIdKeysByProvider,
+	openAiModelInfoSaneDefaults,
+	type ExtensionMessage,
+	type ModelIdKey,
+	type ModelRecord,
+	type OrganizationAllowList,
+	type ProviderName,
+	type ProviderSettings,
+} from "@roo-code/types"
 
 import { mentionRegex, mentionRegexGlobal, commandRegexGlobal, unescapeSpaces } from "@roo/context-mentions"
 import { WebviewMessage } from "@roo/WebviewMessage"
@@ -22,9 +33,25 @@ import {
 } from "@src/utils/context-mentions"
 import { cn } from "@src/lib/utils"
 import { convertToMentionPath } from "@src/utils/path-mentions"
-import { StandardTooltip } from "@src/components/ui"
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	StandardTooltip,
+} from "@src/components/ui"
+import { useRouterModels } from "@src/components/ui/hooks/useRouterModels"
+import { useLmStudioModels } from "@src/components/ui/hooks/useLmStudioModels"
+import { useOllamaModels } from "@src/components/ui/hooks/useOllamaModels"
 
 import Thumbnails from "../common/Thumbnails"
+import { MODELS_BY_PROVIDER as STATIC_MODELS_BY_PROVIDER } from "../settings/constants"
+import { filterModels } from "../settings/utils/organizationFilters"
 import { ModeSelector } from "./ModeSelector"
 import { ApiConfigSelector } from "./ApiConfigSelector"
 import { AutoApproveDropdown } from "./AutoApproveDropdown"
@@ -33,6 +60,243 @@ import ContextMenu from "./ContextMenu"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
 import { usePromptHistory } from "./hooks/usePromptHistory"
 import { CloudAccountSwitcher } from "../cloud/CloudAccountSwitcher"
+
+const QUICK_MODEL_ID_KEYS: Partial<Record<ProviderName, ModelIdKey>> = {
+	openai: "openAiModelId",
+	openrouter: "openRouterModelId",
+	requesty: "requestyModelId",
+	unbound: "unboundModelId",
+	litellm: "litellmModelId",
+	"vercel-ai-gateway": "vercelAiGatewayModelId",
+	ollama: "ollamaModelId",
+	lmstudio: "lmStudioModelId",
+	"openai-native": "apiModelId",
+}
+
+interface CurrentModelSelectorProps {
+	apiConfiguration?: ProviderSettings
+	currentApiConfigName?: string
+	currentModelId?: string
+	currentModelDisplayName?: string
+	disabled?: boolean
+	organizationAllowList?: OrganizationAllowList
+	setApiConfiguration: (config: ProviderSettings) => void
+}
+
+const CurrentModelSelector = ({
+	apiConfiguration,
+	currentApiConfigName,
+	currentModelId,
+	currentModelDisplayName,
+	disabled,
+	organizationAllowList,
+	setApiConfiguration,
+}: CurrentModelSelectorProps) => {
+	const { t } = useAppTranslation()
+	const [open, setOpen] = useState(false)
+	const [searchValue, setSearchValue] = useState("")
+	const [openAiModels, setOpenAiModels] = useState<ModelRecord | null>(null)
+
+	const provider = apiConfiguration?.apiProvider
+	const activeProvider: ProviderName | undefined =
+		provider && !isRetiredProvider(provider) ? (provider as ProviderName) : undefined
+	const dynamicProvider = activeProvider && isDynamicProvider(activeProvider) ? activeProvider : undefined
+
+	const routerModels = useRouterModels({ provider: dynamicProvider, enabled: !!dynamicProvider })
+	const lmStudioModels = useLmStudioModels(
+		activeProvider === "lmstudio" ? apiConfiguration?.lmStudioModelId : undefined,
+	)
+	const ollamaModels = useOllamaModels(activeProvider === "ollama" ? apiConfiguration?.ollamaModelId : undefined)
+
+	const onMessage = useCallback((event: MessageEvent) => {
+		const message: ExtensionMessage = event.data
+
+		if (message.type === "openAiModels") {
+			setOpenAiModels(
+				Object.fromEntries(
+					(message.openAiModels ?? []).map((modelId) => [modelId, openAiModelInfoSaneDefaults]),
+				),
+			)
+		}
+	}, [])
+
+	useEvent("message", onMessage)
+
+	useEffect(() => {
+		if (open && activeProvider === "openai") {
+			vscode.postMessage({
+				type: "requestOpenAiModels",
+				values: {
+					baseUrl: apiConfiguration?.openAiBaseUrl,
+					apiKey: apiConfiguration?.openAiApiKey,
+					customHeaders: apiConfiguration?.openAiHeaders ?? {},
+				},
+			})
+		}
+	}, [
+		activeProvider,
+		apiConfiguration?.openAiApiKey,
+		apiConfiguration?.openAiBaseUrl,
+		apiConfiguration?.openAiHeaders,
+		open,
+	])
+
+	const models = useMemo<ModelRecord | null>(() => {
+		if (!activeProvider) {
+			return null
+		}
+
+		if (activeProvider === "openai") {
+			return openAiModels
+		}
+
+		if (activeProvider === "lmstudio") {
+			return lmStudioModels.data ?? null
+		}
+
+		if (activeProvider === "ollama") {
+			return ollamaModels.data ?? null
+		}
+
+		if (dynamicProvider) {
+			return routerModels.data?.[dynamicProvider] ?? null
+		}
+
+		return STATIC_MODELS_BY_PROVIDER[activeProvider] ?? null
+	}, [activeProvider, dynamicProvider, lmStudioModels.data, ollamaModels.data, openAiModels, routerModels.data])
+
+	const modelIds = useMemo(() => {
+		const filteredModels = filterModels(models, activeProvider, organizationAllowList)
+
+		return Object.entries(filteredModels ?? {})
+			.filter(([modelId, modelInfo]) => modelId === currentModelId || !modelInfo.deprecated)
+			.map(([modelId]) => modelId)
+			.sort((a, b) => a.localeCompare(b))
+	}, [activeProvider, currentModelId, models, organizationAllowList])
+
+	const modelIdKey = useMemo<ModelIdKey | undefined>(() => {
+		if (!activeProvider) {
+			return undefined
+		}
+
+		return (
+			QUICK_MODEL_ID_KEYS[activeProvider] ??
+			modelIdKeysByProvider[activeProvider as keyof typeof modelIdKeysByProvider]
+		)
+	}, [activeProvider])
+
+	const handleModelSelect = useCallback(
+		(modelId: string) => {
+			if (!apiConfiguration || !currentApiConfigName || !modelIdKey) {
+				return
+			}
+
+			const updatedConfiguration = {
+				...apiConfiguration,
+				[modelIdKey]: modelId,
+			} as ProviderSettings
+
+			setOpen(false)
+			setSearchValue("")
+			setApiConfiguration(updatedConfiguration)
+			vscode.postMessage({
+				type: "upsertApiConfiguration",
+				text: currentApiConfigName,
+				apiConfiguration: updatedConfiguration,
+			})
+		},
+		[apiConfiguration, currentApiConfigName, modelIdKey, setApiConfiguration],
+	)
+
+	if (!currentModelDisplayName || !currentModelId) {
+		return null
+	}
+
+	const isLoading =
+		(activeProvider === "openai" && openAiModels === null) ||
+		(!!dynamicProvider && routerModels.isLoading) ||
+		(activeProvider === "lmstudio" && lmStudioModels.isLoading) ||
+		(activeProvider === "ollama" && ollamaModels.isLoading)
+
+	const canSelectModel = !disabled && !!modelIdKey && (modelIds.length > 0 || activeProvider === "openai")
+
+	return (
+		<Popover open={open} onOpenChange={setOpen}>
+			<PopoverTrigger asChild>
+				<button
+					type="button"
+					disabled={!canSelectModel}
+					aria-label={t("settings:modelPicker.label")}
+					className={cn(
+						"flex h-5 max-w-[180px] min-w-0 flex-shrink items-center gap-1 rounded-sm border border-vscode-input-border/60 px-1.5 text-vscode-descriptionForeground",
+						"bg-transparent text-xs leading-none",
+						canSelectModel &&
+							"cursor-pointer hover:bg-[rgba(255,255,255,0.03)] hover:text-vscode-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+						!canSelectModel && "cursor-default opacity-80",
+					)}
+					title={currentModelId}
+					data-testid="current-model-indicator">
+					<span className="truncate">{currentModelDisplayName}</span>
+					{canSelectModel ? <ChevronsUpDown className="size-3 flex-shrink-0 opacity-70" /> : null}
+				</button>
+			</PopoverTrigger>
+			<PopoverContent align="start" sideOffset={4} className="w-[280px] p-0">
+				<Command>
+					<CommandInput
+						value={searchValue}
+						onValueChange={setSearchValue}
+						placeholder={t("settings:modelPicker.searchPlaceholder")}
+						className="h-8"
+					/>
+					<CommandList className="max-h-[260px]">
+						<CommandEmpty>
+							<div className="py-2 px-1 text-sm">
+								{isLoading ? "Loading..." : t("settings:modelPicker.noMatchFound")}
+							</div>
+						</CommandEmpty>
+						<CommandGroup>
+							{modelIds.map((modelId) => (
+								<CommandItem
+									key={modelId}
+									value={modelId}
+									onSelect={handleModelSelect}
+									data-testid={`quick-model-option-${modelId}`}>
+									<span className="truncate" title={modelId}>
+										{formatModelDisplayName(modelId)}
+									</span>
+									<Check
+										className={cn(
+											"size-4 p-0.5 ml-auto flex-shrink-0",
+											modelId === currentModelId ? "opacity-100" : "opacity-0",
+										)}
+									/>
+								</CommandItem>
+							))}
+						</CommandGroup>
+					</CommandList>
+				</Command>
+			</PopoverContent>
+		</Popover>
+	)
+}
+
+const formatModelDisplayName = (modelId: string) => {
+	return modelId
+		.split(/[-_\s]+/)
+		.filter(Boolean)
+		.map((part) => {
+			if (part.toLowerCase() === "deepseek") {
+				return "DeepSeek"
+			}
+
+			if (/^v\d+$/i.test(part)) {
+				return part.toUpperCase()
+			}
+
+			return part.charAt(0).toUpperCase() + part.slice(1)
+		})
+		.join(" ")
+}
 
 interface ChatTextAreaProps {
 	inputValue: string
@@ -99,6 +363,10 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			cloudUserInfo,
 			enterBehavior,
 			lockApiConfigAcrossModes,
+			apiConfiguration,
+			currentModelId,
+			organizationAllowList,
+			setApiConfiguration,
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
@@ -109,6 +377,14 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				displayName: currentApiConfigName || "", // Use the name directly for display.
 			}
 		}, [listApiConfigMeta, currentApiConfigName])
+
+		const currentModelDisplayName = useMemo(() => {
+			if (!currentModelId) {
+				return undefined
+			}
+
+			return formatModelDisplayName(currentModelId)
+		}, [currentModelId])
 
 		const [gitCommits, setGitCommits] = useState<any[]>([])
 		const [showDropdown, setShowDropdown] = useState(false)
@@ -1319,6 +1595,15 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							togglePinnedApiConfig={togglePinnedApiConfig}
 							lockApiConfigAcrossModes={!!lockApiConfigAcrossModes}
 							onToggleLockApiConfig={handleToggleLockApiConfig}
+						/>
+						<CurrentModelSelector
+							apiConfiguration={apiConfiguration}
+							currentApiConfigName={currentApiConfigName}
+							currentModelId={currentModelId}
+							currentModelDisplayName={currentModelDisplayName}
+							disabled={selectApiConfigDisabled}
+							organizationAllowList={organizationAllowList}
+							setApiConfiguration={setApiConfiguration}
 						/>
 						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
 					</div>

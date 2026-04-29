@@ -2129,6 +2129,7 @@ export class ClineProvider
 
 		const {
 			apiConfiguration,
+			currentModelId,
 			lastShownAnnouncementId,
 			customInstructions,
 			alwaysAllowReadOnly,
@@ -2242,6 +2243,7 @@ export class ClineProvider
 		return {
 			version: this.context.extension?.packageJSON?.version ?? "",
 			apiConfiguration,
+			currentModelId,
 			customInstructions,
 			alwaysAllowReadOnly: alwaysAllowReadOnly ?? false,
 			alwaysAllowReadOnlyOutsideWorkspace: alwaysAllowReadOnlyOutsideWorkspace ?? false,
@@ -2395,6 +2397,8 @@ export class ClineProvider
 			providerSettings.apiProvider = apiProvider
 		}
 
+		const currentModelId = getModelId(providerSettings)
+
 		let organizationAllowList = ORGANIZATION_ALLOW_ALL
 
 		try {
@@ -2471,6 +2475,7 @@ export class ClineProvider
 		// Return the same structure as before.
 		return {
 			apiConfiguration: providerSettings,
+			currentModelId,
 			lastShownAnnouncementId: stateValues.lastShownAnnouncementId,
 			customInstructions: stateValues.customInstructions,
 			apiModelId: stateValues.apiModelId,
