@@ -886,6 +886,10 @@
 			"refreshSuccess": "Tools refreshed successfully",
 			"refreshError": "Failed to refresh tools",
 			"toolParameters": "Parameters"
+		},
+		"WORKSPACE_PROFILE_OVERRIDES": {
+			"name": "Project-specific profile usage",
+			"description": "When enabled, you can pin provider profiles to specific modes on a per-workspace basis. Workspace overrides take priority over global mode-to-profile mappings."
 		}
 	},
 	"promptCaching": {

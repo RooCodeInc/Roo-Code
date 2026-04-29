@@ -308,6 +308,7 @@ export type ExtensionState = Pick<
 	| "disabledTools"
 > & {
 	lockApiConfigAcrossModes?: boolean
+	workspaceModeApiConfigs?: Record<string, string>
 	version: string
 	clineMessages: ClineMessage[]
 	currentTaskId?: string
@@ -499,6 +500,8 @@ export interface WebviewMessage {
 		| "toggleApiConfigPin"
 		| "hasOpenedModeSelector"
 		| "lockApiConfigAcrossModes"
+		| "setWorkspaceModeApiConfig"
+		| "clearWorkspaceModeApiConfig"
 		| "clearCloudAuthSkipModel"
 		| "cloudButtonClicked"
 		| "rooCloudSignIn"

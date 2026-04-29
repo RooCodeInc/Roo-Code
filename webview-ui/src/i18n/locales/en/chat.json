@@ -142,6 +142,9 @@
 	"selectApiConfig": "Select API configuration",
 	"lockApiConfigAcrossModes": "Lock API configuration across all modes in this workspace",
 	"unlockApiConfigAcrossModes": "API configuration is locked across all modes in this workspace (click to unlock)",
+	"setWorkspaceProfile": "Pin this profile to the current mode for this workspace",
+	"clearWorkspaceProfile": "This profile is pinned to the current mode for this workspace (click to unpin)",
+	"reassignWorkspaceProfile": "This mode is already pinned to a different profile in this workspace (click to reassign)",
 	"enhancePrompt": "Enhance prompt with additional context",
 	"modeSelector": {
 		"title": "Modes",

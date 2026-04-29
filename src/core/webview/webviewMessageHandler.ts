@@ -47,7 +47,7 @@ import { MessageEnhancer } from "./messageEnhancer"
 
 import { CodeIndexManager } from "../../services/code-index/manager"
 import { checkExistKey } from "../../shared/checkExistApiConfig"
-import { experimentDefault } from "../../shared/experiments"
+import { experimentDefault, experiments as experimentsUtil, EXPERIMENT_IDS } from "../../shared/experiments"
 import { Terminal } from "../../integrations/terminal/Terminal"
 import { openFile } from "../../integrations/misc/open-file"
 import { openImage, saveImage } from "../../integrations/misc/image-handler"
@@ -1646,6 +1646,47 @@ export const webviewMessageHandler = async (
 			const enabled = message.bool ?? false
 			await provider.context.workspaceState.update("lockApiConfigAcrossModes", enabled)
 
+			await provider.postStateToWebview()
+			break
+		}
+
+		case "setWorkspaceModeApiConfig": {
+			// Set a workspace-level mode-to-profile override.
+			// message.mode contains the mode slug, message.text contains the profile config ID.
+			// Only proceed if the workspace profile overrides experiment is enabled.
+			const { experiments: expState } = await provider.getState()
+			const wsOverridesEnabled = experimentsUtil.isEnabled(
+				expState ?? experimentDefault,
+				EXPERIMENT_IDS.WORKSPACE_PROFILE_OVERRIDES,
+			)
+			if (!wsOverridesEnabled) {
+				break
+			}
+
+			const modeSlug = message.mode
+			const configId = message.text
+
+			if (modeSlug) {
+				const workspaceModeApiConfigs = provider.context.workspaceState.get<Record<string, string>>(
+					"workspaceModeApiConfigs",
+					{},
+				)
+
+				if (configId) {
+					workspaceModeApiConfigs[modeSlug] = configId
+				} else {
+					delete workspaceModeApiConfigs[modeSlug]
+				}
+
+				await provider.context.workspaceState.update("workspaceModeApiConfigs", workspaceModeApiConfigs)
+				await provider.postStateToWebview()
+			}
+			break
+		}
+
+		case "clearWorkspaceModeApiConfig": {
+			// Clear all workspace-level mode-to-profile overrides.
+			await provider.context.workspaceState.update("workspaceModeApiConfigs", {})
 			await provider.postStateToWebview()
 			break
 		}

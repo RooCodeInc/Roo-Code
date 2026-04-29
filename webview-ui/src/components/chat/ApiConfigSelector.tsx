@@ -22,6 +22,9 @@ interface ApiConfigSelectorProps {
 	togglePinnedApiConfig: (id: string) => void
 	lockApiConfigAcrossModes: boolean
 	onToggleLockApiConfig: () => void
+	currentMode?: string
+	workspaceModeApiConfigs?: Record<string, string>
+	enableWorkspaceOverrides?: boolean
 }
 
 export const ApiConfigSelector = ({
@@ -36,6 +39,9 @@ export const ApiConfigSelector = ({
 	togglePinnedApiConfig,
 	lockApiConfigAcrossModes,
 	onToggleLockApiConfig,
+	currentMode,
+	workspaceModeApiConfigs,
+	enableWorkspaceOverrides,
 }: ApiConfigSelectorProps) => {
 	const { t } = useAppTranslation()
 	const [open, setOpen] = useState(false)
@@ -242,6 +248,52 @@ export const ApiConfigSelector = ({
 								className={lockApiConfigAcrossModes ? "text-vscode-focusBorder" : "opacity-60"}
 								onClick={onToggleLockApiConfig}
 							/>
+							{currentMode &&
+								enableWorkspaceOverrides &&
+								(() => {
+									const pinnedConfigId = workspaceModeApiConfigs?.[currentMode]
+									const isPinnedToThis = pinnedConfigId === value
+									const isPinnedToOther = !!pinnedConfigId && pinnedConfigId !== value
+									return (
+										<IconButton
+											iconClass={
+												isPinnedToThis
+													? "codicon-root-folder-opened"
+													: isPinnedToOther
+														? "codicon-warning"
+														: "codicon-root-folder"
+											}
+											title={
+												isPinnedToThis
+													? t("chat:clearWorkspaceProfile")
+													: isPinnedToOther
+														? t("chat:reassignWorkspaceProfile")
+														: t("chat:setWorkspaceProfile")
+											}
+											className={
+												isPinnedToThis
+													? "text-vscode-focusBorder"
+													: isPinnedToOther
+														? "text-vscode-editorWarning-foreground opacity-80"
+														: "opacity-60"
+											}
+											onClick={() => {
+												if (isPinnedToThis) {
+													vscode.postMessage({
+														type: "setWorkspaceModeApiConfig",
+														mode: currentMode,
+													})
+												} else {
+													vscode.postMessage({
+														type: "setWorkspaceModeApiConfig",
+														mode: currentMode,
+														text: value,
+													})
+												}
+											}}
+										/>
+									)
+								})()}
 						</div>
 
 						{/* Info icon and title on the right with matching spacing */}
