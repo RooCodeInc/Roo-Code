@@ -1650,6 +1650,26 @@ export const webviewMessageHandler = async (
 			break
 		}
 
+		case "setDefaultModesForProfile": {
+			const { profileId, modeSlug, assign } = (message.values ?? {}) as {
+				profileId?: string
+				modeSlug?: string
+				assign?: boolean
+			}
+			if (profileId && modeSlug) {
+				if (assign) {
+					await provider.providerSettingsManager.setModeConfig(modeSlug, profileId)
+				} else {
+					await provider.providerSettingsManager.unsetModeConfig(modeSlug)
+				}
+				// Sync modeApiConfigs to global state so the webview picks up the change
+				const updatedModeApiConfigs = await provider.providerSettingsManager.getAllModeConfigs()
+				await updateGlobalState("modeApiConfigs", updatedModeApiConfigs)
+				await provider.postStateToWebview()
+			}
+			break
+		}
+
 		case "toggleApiConfigPin":
 			if (message.text) {
 				const currentPinned = getGlobalState("pinnedApiConfigs") ?? {}

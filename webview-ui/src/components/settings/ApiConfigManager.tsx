@@ -1,10 +1,12 @@
-import { memo, useEffect, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import { AlertTriangle } from "lucide-react"
+import { AlertTriangle, ChevronDown } from "lucide-react"
 
-import type { ProviderSettingsEntry, OrganizationAllowList } from "@roo-code/types"
+import type { ProviderSettingsEntry, OrganizationAllowList, ModeConfig } from "@roo-code/types"
 
+import { getAllModes } from "@roo/modes"
 import { useAppTranslation } from "@/i18n/TranslationContext"
+import { vscode } from "@src/utils/vscode"
 import {
 	type SearchableSelectOption,
 	Button,
@@ -14,12 +16,18 @@ import {
 	DialogTitle,
 	StandardTooltip,
 	SearchableSelect,
+	DropdownMenu,
+	DropdownMenuTrigger,
+	DropdownMenuContent,
+	DropdownMenuCheckboxItem,
 } from "@/components/ui"
 
 interface ApiConfigManagerProps {
 	currentApiConfigName?: string
 	listApiConfigMeta?: ProviderSettingsEntry[]
 	organizationAllowList?: OrganizationAllowList
+	modeApiConfigs?: Record<string, string>
+	customModes?: ModeConfig[]
 	onSelectConfig: (configName: string) => void
 	onDeleteConfig: (configName: string) => void
 	onRenameConfig: (oldName: string, newName: string) => void
@@ -30,6 +38,8 @@ const ApiConfigManager = ({
 	currentApiConfigName = "",
 	listApiConfigMeta = [],
 	organizationAllowList,
+	modeApiConfigs = {},
+	customModes = [],
 	onSelectConfig,
 	onDeleteConfig,
 	onRenameConfig,
@@ -180,6 +190,48 @@ const ApiConfigManager = ({
 
 	const isOnlyProfile = listApiConfigMeta?.length === 1
 
+	// Get the current profile's ID from listApiConfigMeta
+	const currentProfileId = useMemo(() => {
+		const entry = listApiConfigMeta?.find((c) => c.name === currentApiConfigName)
+		return entry?.id
+	}, [listApiConfigMeta, currentApiConfigName])
+
+	// Get all available modes (built-in + custom)
+	const allModes = useMemo(() => getAllModes(customModes), [customModes])
+
+	// Find which modes are assigned to the current profile
+	const assignedModes = useMemo(() => {
+		if (!currentProfileId || !modeApiConfigs) return []
+		return allModes.filter((mode) => modeApiConfigs[mode.slug] === currentProfileId).map((mode) => mode.slug)
+	}, [currentProfileId, modeApiConfigs, allModes])
+
+	// Build display text for assigned modes
+	const assignedModesDisplayText = useMemo(() => {
+		if (assignedModes.length === 0) return t("settings:providers.noModesAssigned")
+		return assignedModes
+			.map((slug) => {
+				const mode = allModes.find((m) => m.slug === slug)
+				return mode?.name ?? slug
+			})
+			.join(", ")
+	}, [assignedModes, allModes, t])
+
+	const handleToggleMode = useCallback(
+		(modeSlug: string) => {
+			if (!currentProfileId) return
+			const isCurrentlyAssigned = assignedModes.includes(modeSlug)
+			vscode.postMessage({
+				type: "setDefaultModesForProfile",
+				values: {
+					profileId: currentProfileId,
+					modeSlug,
+					assign: !isCurrentlyAssigned,
+				},
+			})
+		},
+		[currentProfileId, assignedModes],
+	)
+
 	return (
 		<div className="flex flex-col gap-1">
 			<label className="block font-medium mb-1">{t("settings:providers.configProfile")}</label>
@@ -296,6 +348,39 @@ const ApiConfigManager = ({
 						{t("settings:providers.description")}
 					</div>
 				</>
+			)}
+
+			{/* Default for modes dropdown */}
+			{!isRenaming && currentProfileId && (
+				<div className="mt-3">
+					<label className="block font-medium mb-1">{t("settings:providers.defaultForModes")}</label>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button
+								variant="secondary"
+								className="w-full justify-between text-left font-normal"
+								data-testid="default-modes-trigger">
+								<span className="truncate">{assignedModesDisplayText}</span>
+								<ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+							{allModes.map((mode) => (
+								<DropdownMenuCheckboxItem
+									key={mode.slug}
+									checked={assignedModes.includes(mode.slug)}
+									onCheckedChange={() => handleToggleMode(mode.slug)}
+									onSelect={(e) => e.preventDefault()}
+									data-testid={`mode-checkbox-${mode.slug}`}>
+									{mode.name}
+								</DropdownMenuCheckboxItem>
+							))}
+						</DropdownMenuContent>
+					</DropdownMenu>
+					<div className="text-vscode-descriptionForeground text-sm mt-1">
+						{t("settings:providers.defaultForModesDescription")}
+					</div>
+				</div>
 			)}
 
 			<Dialog

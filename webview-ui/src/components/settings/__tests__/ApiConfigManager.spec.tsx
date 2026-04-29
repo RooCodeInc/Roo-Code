@@ -104,6 +104,14 @@ vitest.mock("@/components/ui", () => ({
 			))}
 		</select>
 	),
+	DropdownMenu: ({ children }: any) => <div data-testid="dropdown-menu">{children}</div>,
+	DropdownMenuTrigger: ({ children }: any) => <div data-testid="dropdown-trigger">{children}</div>,
+	DropdownMenuContent: ({ children }: any) => <div data-testid="dropdown-content">{children}</div>,
+	DropdownMenuCheckboxItem: ({ children, checked, onCheckedChange, "data-testid": dataTestId }: any) => (
+		<div data-testid={dataTestId} data-checked={checked} onClick={() => onCheckedChange?.(!checked)}>
+			{children}
+		</div>
+	),
 }))
 
 describe("ApiConfigManager", () => {

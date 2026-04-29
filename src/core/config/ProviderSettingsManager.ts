@@ -495,6 +495,38 @@ export class ProviderSettingsManager {
 	}
 
 	/**
+	 * Remove the API config assignment for a specific mode.
+	 * When no assignment exists, the system falls back to the current active profile.
+	 */
+	public async unsetModeConfig(mode: Mode) {
+		try {
+			return await this.lock(async () => {
+				const providerProfiles = await this.load()
+				if (providerProfiles.modeApiConfigs) {
+					delete providerProfiles.modeApiConfigs[mode]
+					await this.store(providerProfiles)
+				}
+			})
+		} catch (error) {
+			throw new Error(`Failed to unset mode config: ${error}`)
+		}
+	}
+
+	/**
+	 * Get the full mode-to-config mapping.
+	 */
+	public async getAllModeConfigs(): Promise<Record<string, string>> {
+		try {
+			return await this.lock(async () => {
+				const { modeApiConfigs } = await this.load()
+				return modeApiConfigs ?? {}
+			})
+		} catch (error) {
+			throw new Error(`Failed to get all mode configs: ${error}`)
+		}
+	}
+
+	/**
 	 * Get the API config ID for a specific mode.
 	 */
 	public async getModeConfigId(mode: Mode) {

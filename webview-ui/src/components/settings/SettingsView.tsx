@@ -125,7 +125,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const { t } = useAppTranslation()
 
 	const extensionState = useExtensionState()
-	const { currentApiConfigName, listApiConfigMeta, uriScheme, settingsImportedAt } = extensionState
+	const { currentApiConfigName, listApiConfigMeta, uriScheme, settingsImportedAt, modeApiConfigs, customModes } =
+		extensionState
 
 	const [isDiscardDialogShow, setDiscardDialogShow] = useState(false)
 	const [isChangeDetected, setChangeDetected] = useState(false)
@@ -742,6 +743,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 									<ApiConfigManager
 										currentApiConfigName={currentApiConfigName}
 										listApiConfigMeta={listApiConfigMeta}
+										modeApiConfigs={modeApiConfigs}
+										customModes={customModes}
 										onSelectConfig={(configName: string) =>
 											checkUnsaveChanges(() =>
 												vscode.postMessage({ type: "loadApiConfiguration", text: configName }),

@@ -1397,4 +1397,83 @@ describe("ProviderSettingsManager", () => {
 			expect(result.activeProfileId).toBe("local-id")
 		})
 	})
+
+	describe("unsetModeConfig", () => {
+		it("should remove a mode from modeApiConfigs", async () => {
+			const existingConfig: ProviderProfiles = {
+				currentApiConfigName: "default",
+				apiConfigs: {
+					default: { id: "default-id" },
+				},
+				modeApiConfigs: {
+					code: "default-id",
+					architect: "default-id",
+					ask: "default-id",
+				},
+			}
+
+			mockSecrets.get.mockResolvedValue(JSON.stringify(existingConfig))
+
+			await providerSettingsManager.unsetModeConfig("architect")
+
+			const storedData = JSON.parse(mockSecrets.store.mock.calls[0][1])
+			expect(storedData.modeApiConfigs).not.toHaveProperty("architect")
+			expect(storedData.modeApiConfigs.code).toBe("default-id")
+			expect(storedData.modeApiConfigs.ask).toBe("default-id")
+		})
+
+		it("should be a no-op when modeApiConfigs is undefined", async () => {
+			const existingConfig: ProviderProfiles = {
+				currentApiConfigName: "default",
+				apiConfigs: {
+					default: { id: "default-id" },
+				},
+			}
+
+			mockSecrets.get.mockResolvedValue(JSON.stringify(existingConfig))
+
+			await providerSettingsManager.unsetModeConfig("code")
+
+			// Should not throw and should not store anything since nothing changed
+			expect(mockSecrets.store).not.toHaveBeenCalled()
+		})
+	})
+
+	describe("getAllModeConfigs", () => {
+		it("should return all mode-to-config mappings", async () => {
+			const existingConfig: ProviderProfiles = {
+				currentApiConfigName: "default",
+				apiConfigs: {
+					default: { id: "default-id" },
+					custom: { id: "custom-id", apiProvider: "anthropic" },
+				},
+				modeApiConfigs: {
+					code: "default-id",
+					architect: "custom-id",
+				},
+			}
+
+			mockSecrets.get.mockResolvedValue(JSON.stringify(existingConfig))
+
+			const result = await providerSettingsManager.getAllModeConfigs()
+			expect(result).toEqual({
+				code: "default-id",
+				architect: "custom-id",
+			})
+		})
+
+		it("should return empty object when modeApiConfigs is undefined", async () => {
+			const existingConfig: ProviderProfiles = {
+				currentApiConfigName: "default",
+				apiConfigs: {
+					default: { id: "default-id" },
+				},
+			}
+
+			mockSecrets.get.mockResolvedValue(JSON.stringify(existingConfig))
+
+			const result = await providerSettingsManager.getAllModeConfigs()
+			expect(result).toEqual({})
+		})
+	})
 })

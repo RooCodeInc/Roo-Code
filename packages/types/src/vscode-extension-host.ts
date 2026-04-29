@@ -561,6 +561,7 @@ export interface WebviewMessage {
 		| "refreshCustomTools"
 		| "requestModes"
 		| "switchMode"
+		| "setDefaultModesForProfile"
 		| "debugSetting"
 		// Worktree messages
 		| "listWorktrees"
