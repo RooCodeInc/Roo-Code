@@ -175,14 +175,6 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 							</NavigationMenuLink>
 						</NavigationMenuItem>
 
-						{/* Pricing Link */}
-						<NavigationMenuItem>
-							<NavigationMenuLink
-								asChild
-								className={cn(navigationMenuTriggerStyle(), "bg-transparent font-light")}>
-								<Link href="/pricing">Pricing</Link>
-							</NavigationMenuLink>
-						</NavigationMenuItem>
 					</NavigationMenuList>
 				</NavigationMenu>
 
@@ -247,13 +239,6 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 							onClick={() => setIsMenuOpen(false)}>
 							Docs
 						</a>
-						<Link
-							href="/pricing"
-							className="block w-full p-5 text-left text-foreground active:opacity-50"
-							onClick={() => setIsMenuOpen(false)}>
-							Pricing
-						</Link>
-
 						{/* Product Section */}
 						<div className="mt-4 w-full">
 							<div className="px-5 pb-2 pt-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">

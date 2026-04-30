@@ -168,11 +168,6 @@ export default function CloudPage() {
 									<ArrowRight className="ml-2 size-5" />
 								</a>
 							</Button>
-							<Button variant="outline" size="xl" className="backdrop-blur-sm" asChild>
-								<a href="/pricing" className="flex items-center justify-center">
-									View Pricing
-								</a>
-							</Button>
 						</div>
 					</div>
 

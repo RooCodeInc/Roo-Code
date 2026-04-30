@@ -1,8 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { ModelCard } from "./pricing/components/model-card"
-import { Model, ModelWithTotalPrice, ModelsResponse, SortOption } from "@/lib/types/models"
+import { Model, ModelsResponse, SortOption } from "@/lib/types/models"
 import Link from "next/link"
 import { ChevronDown, CircleX, Cloud, Loader, LoaderCircle, Puzzle, Search } from "lucide-react"
 
@@ -34,32 +33,10 @@ const faqs = [
 		question: "How is my data treated?",
 		answer: "The Roo Code Router doesn't keep any of your data, the service only aims to make it easier to use Roo Code. Each model vendor has their own privacy policy though, and usually free models use your data for training, so keep that in mind.",
 	},
-	{
-		question: "How much does the Roo Code Cloud service cost?",
-		answer: (
-			<>
-				Our{" "}
-				<Link href="/pricing" className="underline hover:no-underline">
-					service pricing is here.
-				</Link>
-			</>
-		),
-	},
 ]
 
-function calculateTotalPrice(model: Model): number {
-	return parseFloat(model.pricing.input) + parseFloat(model.pricing.output)
-}
-
-function enrichModelWithTotalPrice(model: Model): ModelWithTotalPrice {
-	return {
-		...model,
-		totalPrice: calculateTotalPrice(model),
-	}
-}
-
 export default function ProviderPage() {
-	const [models, setModels] = useState<ModelWithTotalPrice[]>([])
+	const [models, setModels] = useState<Model[]>([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 	const [searchQuery, setSearchQuery] = useState("")
@@ -75,8 +52,7 @@ export default function ProviderPage() {
 					throw new Error(`Failed to fetch models: ${response.statusText}`)
 				}
 				const data: ModelsResponse = await response.json()
-				const enrichedModels = data.data.map(enrichModelWithTotalPrice)
-				setModels(enrichedModels)
+				setModels(data.data)
 			} catch (err) {
 				setError(err instanceof Error ? err.message : "An error occurred while fetching models")
 			} finally {
@@ -108,12 +84,6 @@ export default function ProviderPage() {
 		switch (sortOption) {
 			case "alphabetical":
 				sorted.sort((a, b) => a.name.localeCompare(b.name))
-				break
-			case "price-asc":
-				sorted.sort((a, b) => a.totalPrice - b.totalPrice)
-				break
-			case "price-desc":
-				sorted.sort((a, b) => b.totalPrice - a.totalPrice)
 				break
 			case "context-window-asc":
 				sorted.sort((a, b) => a.context_window - b.context_window)
@@ -188,8 +158,6 @@ export default function ProviderPage() {
 										onChange={(e) => setSortOption(e.target.value as SortOption)}
 										className="rounded-full cursor-pointer border border-input bg-background hover:bg-muted pl-4 w-full md:w-auto pr-9 py-2.5 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 relative appearance-none">
 										<option value="alphabetical">Alphabetical</option>
-										<option value="price-asc">Price: Low to High</option>
-										<option value="price-desc">Price: High to Low</option>
 										<option value="context-window-asc">Context Window: Small to Large</option>
 										<option value="context-window-desc">Context Window: Large to Small</option>
 									</select>
@@ -230,13 +198,6 @@ export default function ProviderPage() {
 							</div>
 						)}
 
-						{!loading && !error && filteredAndSortedModels.length > 0 && (
-							<div className="grid gap-4 pt-8 md:grid-cols-2 lg:grid-cols-3">
-								{filteredAndSortedModels.map((model) => (
-									<ModelCard key={model.id} model={model} />
-								))}
-							</div>
-						)}
 					</div>
 				</div>
 			</section>
