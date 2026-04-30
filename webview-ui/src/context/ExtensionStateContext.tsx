@@ -262,7 +262,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		openRouterImageGenerationSelectedModel: "",
 		includeCurrentTime: true,
 		includeCurrentCost: true,
-		lockApiConfigAcrossModes: false,
+		lockApiConfigAcrossModes: true,
 	})
 
 	const [didHydrateState, setDidHydrateState] = useState(false)

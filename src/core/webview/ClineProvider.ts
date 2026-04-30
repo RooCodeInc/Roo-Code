@@ -431,11 +431,15 @@ export class ClineProvider
 				await this.updateGlobalState("listApiConfigMeta", await this.providerSettingsManager.listConfig())
 
 				if (result.activeProfileChanged && result.activeProfileId) {
-					// Reload full settings for new active profile.
-					const profile = await this.providerSettingsManager.getProfile({
-						id: result.activeProfileId,
-					})
-					await this.activateProviderProfile({ name: profile.name })
+					// Only switch the active profile if the user hasn't locked it across modes.
+					const lockApiConfig = this.context.workspaceState.get("lockApiConfigAcrossModes", true)
+					if (!lockApiConfig) {
+						// Reload full settings for new active profile.
+						const profile = await this.providerSettingsManager.getProfile({
+							id: result.activeProfileId,
+						})
+						await this.activateProviderProfile({ name: profile.name })
+					}
 				}
 
 				await this.postStateToWebviewWithoutClineMessages()
@@ -996,7 +1000,7 @@ export class ClineProvider
 			// Load the saved API config for the restored mode if it exists.
 			// Skip mode-based profile activation if historyItem.apiConfigName exists,
 			// since the task's specific provider profile will override it anyway.
-			const lockApiConfigAcrossModes = this.context.workspaceState.get("lockApiConfigAcrossModes", false)
+			const lockApiConfigAcrossModes = this.context.workspaceState.get("lockApiConfigAcrossModes", true)
 
 			if (!historyItem.apiConfigName && !lockApiConfigAcrossModes && !skipProfileRestoreFromHistory) {
 				const savedConfigId = await this.providerSettingsManager.getModeConfigId(historyItem.mode)
@@ -1427,7 +1431,7 @@ export class ClineProvider
 		this.emit(RooCodeEventName.ModeChanged, newMode)
 
 		// If workspace lock is on, keep the current API config — don't load mode-specific config
-		const lockApiConfigAcrossModes = this.context.workspaceState.get("lockApiConfigAcrossModes", false)
+		const lockApiConfigAcrossModes = this.context.workspaceState.get("lockApiConfigAcrossModes", true)
 		if (lockApiConfigAcrossModes) {
 			await this.postStateToWebview()
 			return
@@ -2341,7 +2345,7 @@ export class ClineProvider
 			profileThresholds: profileThresholds ?? {},
 			cloudApiUrl: getRooCodeApiUrl(),
 			hasOpenedModeSelector: this.getGlobalState("hasOpenedModeSelector") ?? false,
-			lockApiConfigAcrossModes: lockApiConfigAcrossModes ?? false,
+			lockApiConfigAcrossModes: lockApiConfigAcrossModes ?? true,
 			alwaysAllowFollowupQuestions: alwaysAllowFollowupQuestions ?? false,
 			followupAutoApproveTimeoutMs: followupAutoApproveTimeoutMs ?? 60000,
 			includeDiagnosticMessages: includeDiagnosticMessages ?? true,
@@ -2562,7 +2566,7 @@ export class ClineProvider
 					stateValues.codebaseIndexConfig?.codebaseIndexOpenRouterSpecificProvider,
 			},
 			profileThresholds: stateValues.profileThresholds ?? {},
-			lockApiConfigAcrossModes: this.context.workspaceState.get("lockApiConfigAcrossModes", false),
+			lockApiConfigAcrossModes: this.context.workspaceState.get("lockApiConfigAcrossModes", true),
 			includeDiagnosticMessages: stateValues.includeDiagnosticMessages ?? true,
 			maxDiagnosticMessages: stateValues.maxDiagnosticMessages ?? 50,
 			includeTaskHistoryInEnhance: stateValues.includeTaskHistoryInEnhance ?? true,

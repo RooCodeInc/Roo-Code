@@ -1451,6 +1451,8 @@ describe("ClineProvider", () => {
 		beforeEach(async () => {
 			// Set up webview for each test
 			await provider.resolveWebviewView(mockWebviewView)
+			// Unlock API config across modes so mode-specific configs are loaded
+			await mockContext.workspaceState.update("lockApiConfigAcrossModes", false)
 		})
 
 		it("loads saved API config when switching modes", async () => {
