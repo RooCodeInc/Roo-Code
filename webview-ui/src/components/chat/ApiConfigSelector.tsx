@@ -232,16 +232,39 @@ export const ApiConfigSelector = ({
 								onClick={handleEditClick}
 								tooltip={false}
 							/>
-							<IconButton
-								iconClass={lockApiConfigAcrossModes ? "codicon-lock" : "codicon-unlock"}
-								title={
+							<StandardTooltip
+								content={
 									lockApiConfigAcrossModes
 										? t("chat:unlockApiConfigAcrossModes")
 										: t("chat:lockApiConfigAcrossModes")
-								}
-								className={lockApiConfigAcrossModes ? "text-vscode-focusBorder" : "opacity-60"}
-								onClick={onToggleLockApiConfig}
-							/>
+								}>
+								<Button
+									aria-label={
+										lockApiConfigAcrossModes
+											? t("chat:unlockApiConfigAcrossModes")
+											: t("chat:lockApiConfigAcrossModes")
+									}
+									className={cn(
+										"inline-flex items-center gap-1 px-1.5 py-1 h-7 rounded-md text-xs",
+										"bg-transparent border-none cursor-pointer",
+										"transition-all duration-150",
+										"hover:bg-[rgba(255,255,255,0.06)]",
+										"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+										lockApiConfigAcrossModes
+											? "text-vscode-focusBorder opacity-100"
+											: "text-vscode-descriptionForeground opacity-90 hover:opacity-100",
+									)}
+									onClick={onToggleLockApiConfig}>
+									<span
+										className={cn(
+											"codicon",
+											lockApiConfigAcrossModes ? "codicon-lock" : "codicon-unlock",
+										)}
+										style={{ fontSize: 14 }}
+									/>
+									<span>{lockApiConfigAcrossModes ? t("chat:locked") : t("chat:unlocked")}</span>
+								</Button>
+							</StandardTooltip>
 						</div>
 
 						{/* Info icon and title on the right with matching spacing */}
