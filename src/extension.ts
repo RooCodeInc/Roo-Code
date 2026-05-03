@@ -36,6 +36,7 @@ import { openAiCodexOAuthManager } from "./integrations/openai-codex/oauth"
 import { McpServerManager } from "./services/mcp/McpServerManager"
 import { CodeIndexManager } from "./services/code-index/manager"
 import { MdmService } from "./services/mdm/MdmService"
+import { FimService } from "./services/fim"
 import { migrateSettings } from "./utils/migrateSettings"
 import { autoImportSettings } from "./utils/autoImportSettings"
 import { API } from "./extension/api"
@@ -167,6 +168,28 @@ export async function activate(context: vscode.ExtensionContext) {
 	}
 
 	const contextProxy = await ContextProxy.getInstance(context)
+
+	// Initialize FIM (Fill-in-the-Middle) inline completion service.
+	const fimService = new FimService(outputChannel)
+	context.subscriptions.push(fimService)
+
+	// Initialize FIM with current settings
+	const initFimSettings = async () => {
+		const globalSettings = contextProxy.getGlobalSettings()
+		const fimApiKey = await context.secrets.get("fimApiKey")
+		fimService.updateSettings(globalSettings, fimApiKey)
+	}
+
+	void initFimSettings()
+
+	// Listen for secret storage changes to update FIM API key
+	context.secrets.onDidChange(async (e: vscode.SecretStorageChangeEvent) => {
+		if (e.key === "fimApiKey") {
+			const globalSettings = contextProxy.getGlobalSettings()
+			const fimApiKey = await context.secrets.get("fimApiKey")
+			fimService.updateSettings(globalSettings, fimApiKey)
+		}
+	})
 
 	// Initialize code index managers for all workspace folders.
 	const codeIndexManagers: CodeIndexManager[] = []

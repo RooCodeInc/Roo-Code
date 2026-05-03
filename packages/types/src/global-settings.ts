@@ -232,6 +232,18 @@ export const globalSettingsSchema = z.object({
 	 * Tools in this list will be excluded from prompt generation and rejected at execution time.
 	 */
 	disabledTools: z.array(toolNamesSchema).optional(),
+
+	/**
+	 * FIM (Fill-in-the-Middle) inline code completion settings.
+	 * These are configured separately from the chat model to allow using
+	 * a cheap/fast FIM-specialized model (e.g., DeepSeek Coder, Codestral).
+	 */
+	fimEnabled: z.boolean().optional(),
+	fimProvider: z.enum(["openai-compatible", "deepseek", "mistral", "ollama"]).optional(),
+	fimModelId: z.string().optional(),
+	fimBaseUrl: z.string().optional(),
+	fimDebounceMs: z.number().min(0).optional(),
+	fimMaxTokens: z.number().min(1).optional(),
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>
@@ -285,6 +297,7 @@ export const SECRET_STATE_KEYS = [
 // Global secrets that are part of GlobalSettings (not ProviderSettings)
 export const GLOBAL_SECRET_KEYS = [
 	"openRouterImageApiKey", // For image generation
+	"fimApiKey", // For FIM inline code completion
 ] as const
 
 // Type for the actual secret storage keys

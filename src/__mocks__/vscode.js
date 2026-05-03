@@ -96,6 +96,7 @@ export const languages = {
 		clear: () => {},
 		dispose: () => {},
 	}),
+	registerInlineCompletionItemProvider: () => mockDisposable,
 }
 
 export const extensions = {
@@ -152,6 +153,19 @@ export const CodeActionKind = {
 
 export const EventEmitter = mockEventEmitter
 
+export const InlineCompletionTriggerKind = {
+	Invoke: 0,
+	Automatic: 1,
+}
+
+export const InlineCompletionItem = class {
+	constructor(insertText, range, command) {
+		this.insertText = insertText
+		this.range = range
+		this.command = command
+	}
+}
+
 export default {
 	workspace,
 	window,
@@ -171,4 +185,6 @@ export default {
 	EventEmitter,
 	CodeAction,
 	CodeActionKind,
+	InlineCompletionTriggerKind,
+	InlineCompletionItem,
 }
