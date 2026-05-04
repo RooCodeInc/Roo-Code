@@ -469,8 +469,7 @@
 			"warning": "Not: Roo Code karmaşık istemler kullanır ve Claude modelleriyle en iyi şekilde çalışır. Daha az yetenekli modeller beklendiği gibi çalışmayabilir."
 		},
 		"roo": {
-			"authenticatedMessage": "Roo Code Cloud hesabın üzerinden güvenli bir şekilde kimlik doğrulandı.",
-			"connectButton": "Roo Code Cloud'a Bağlan"
+			"authenticatedMessage": "Roo Code Cloud hesabın üzerinden güvenli bir şekilde kimlik doğrulandı."
 		},
 		"openRouter": {
 			"providerRouting": {

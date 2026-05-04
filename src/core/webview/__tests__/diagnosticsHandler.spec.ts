@@ -85,7 +85,7 @@ describe("generateErrorDiagnostics", () => {
 		// taskId.slice(0, 8) = "test-tas" from "test-task-id"
 		expect(String(writtenPath)).toContain("roo-diagnostics-test-tas")
 		expect(String(writtenContent)).toContain(
-			"// Please share this file with Roo Code Support (support@roocode.com) to diagnose the issue faster",
+			"// If you open a GitHub issue, you can attach this file to help diagnose the issue faster.",
 		)
 		expect(String(writtenContent)).toContain('"error":')
 		expect(String(writtenContent)).toContain('"history":')

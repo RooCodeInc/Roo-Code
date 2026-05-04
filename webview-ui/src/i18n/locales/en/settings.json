@@ -532,8 +532,7 @@
 			"warning": "Note: Roo Code uses complex prompts and works best with Claude models. Less capable models may not work as expected."
 		},
 		"roo": {
-			"authenticatedMessage": "Securely authenticated through your Roo Code Cloud account.",
-			"connectButton": "Connect to Roo Code Cloud"
+			"authenticatedMessage": "Securely authenticated through your Roo Code Cloud account."
 		},
 		"openRouter": {
 			"providerRouting": {

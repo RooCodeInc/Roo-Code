@@ -137,9 +137,11 @@ export function Footer() {
 								<ul className="mt-6 space-y-4">
 									<li>
 										<a
-											href="mailto:support@roocode.com"
+											href={EXTERNAL_LINKS.ISSUES}
+											target="_blank"
+											rel="noopener noreferrer"
 											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
-											Contact
+											Report an Issue
 										</a>
 									</li>
 									<li>

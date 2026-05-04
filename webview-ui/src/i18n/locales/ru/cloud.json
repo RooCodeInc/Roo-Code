@@ -24,10 +24,5 @@
 	"personalAccount": "Личный аккаунт",
 	"switchAccount": "Переключить аккаунт Roo Code Cloud",
 	"createTeamAccount": "Создать командный аккаунт",
-	"cloudUrlPillLabel": "URL Roo Code Cloud",
-	"upsell": {
-		"autoApprovePowerUser": "Предоставить Roo немного независимости? Управляйте им из любого места с помощью Roo Code Cloud. <learnMoreLink>Узнать больше</learnMoreLink>.",
-		"longRunningTask": "Это может занять некоторое время. Продолжайте из любого места с помощью Облака.",
-		"taskList": "Нравится Roo? Посмотрите Roo Code Cloud: отслеживайте и контролируйте свои задачи из любого места, запускайте автономных облачных агентов, получайте статистику использования и многое другое. <learnMoreLink>Узнать больше</learnMoreLink>."
-	}
+	"cloudUrlPillLabel": "URL Roo Code Cloud"
 }

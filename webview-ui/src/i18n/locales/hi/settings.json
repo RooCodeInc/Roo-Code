@@ -469,8 +469,7 @@
 			"warning": "नोट: Roo Code जटिल प्रॉम्प्ट्स का उपयोग करता है और Claude मॉडल के साथ सबसे अच्छा काम करता है। कम क्षमता वाले मॉडल अपेक्षित रूप से काम नहीं कर सकते हैं।"
 		},
 		"roo": {
-			"authenticatedMessage": "आपके Roo Code Cloud खाते के माध्यम से सुरक्षित रूप से प्रमाणित।",
-			"connectButton": "Roo Code Cloud से कनेक्ट करें"
+			"authenticatedMessage": "आपके Roo Code Cloud खाते के माध्यम से सुरक्षित रूप से प्रमाणित।"
 		},
 		"openRouter": {
 			"providerRouting": {

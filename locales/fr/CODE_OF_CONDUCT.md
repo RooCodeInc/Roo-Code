@@ -68,7 +68,7 @@ La représentation d'un projet peut être définie et clarifiée davantage par l
 ## Application
 
 Les cas de comportement abusif, harcelant ou autrement inacceptable peuvent être
-signalés en contactant l'équipe du projet à support@roocode.com. Toutes les plaintes
+signalés en contactant l'équipe du projet à https://github.com/RooCodeInc/Roo-Code/security/advisories/new. Toutes les plaintes
 seront examinées et étudiées et donneront lieu à une réponse qui
 est jugée nécessaire et appropriée aux circonstances. L'équipe du projet est
 obligée de maintenir la confidentialité concernant la personne qui signale un incident.

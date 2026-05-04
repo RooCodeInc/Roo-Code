@@ -93,6 +93,10 @@ const App = () => {
 
 	const switchTab = useCallback(
 		(newTab: Tab) => {
+			if (newTab === "cloud" && !cloudIsAuthenticated && mdmCompliant !== false) {
+				return
+			}
+
 			// Only check MDM compliance if mdmCompliant is explicitly false (meaning there's an MDM policy and user is non-compliant)
 			// If mdmCompliant is undefined or true, allow tab switching
 			if (mdmCompliant === false && newTab !== "cloud") {
@@ -110,7 +114,7 @@ const App = () => {
 				setTab(newTab)
 			}
 		},
-		[mdmCompliant],
+		[cloudIsAuthenticated, mdmCompliant],
 	)
 
 	const [currentSection, setCurrentSection] = useState<string | undefined>(undefined)
@@ -178,6 +182,12 @@ const App = () => {
 	}, [shouldShowAnnouncement, tab])
 
 	useEffect(() => {
+		if (tab === "cloud" && !cloudIsAuthenticated && mdmCompliant !== false) {
+			setTab("chat")
+		}
+	}, [cloudIsAuthenticated, mdmCompliant, tab])
+
+	useEffect(() => {
 		if (didHydrateState) {
 			telemetryClient.updateTelemetryState(telemetrySetting, telemetryKey, machineId)
 		}
@@ -237,7 +247,7 @@ const App = () => {
 					targetTab={currentMarketplaceTab as "mcp" | "mode" | undefined}
 				/>
 			)}
-			{tab === "cloud" && (
+			{tab === "cloud" && (cloudIsAuthenticated || mdmCompliant === false) && (
 				<CloudView
 					userInfo={cloudUserInfo}
 					isAuthenticated={cloudIsAuthenticated}

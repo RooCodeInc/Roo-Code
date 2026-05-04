@@ -479,8 +479,7 @@
 			"warning": "注意：Roo Code 使用複雜提示詞，與 Claude 模型搭配最佳。功能較弱的模型可能無法正常運作。"
 		},
 		"roo": {
-			"authenticatedMessage": "已透過 Roo Code Cloud 帳戶安全認證。",
-			"connectButton": "連線到 Roo Code Cloud"
+			"authenticatedMessage": "已透過 Roo Code Cloud 帳戶安全認證。"
 		},
 		"openRouter": {
 			"providerRouting": {

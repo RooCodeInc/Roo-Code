@@ -226,7 +226,7 @@
 				{
 					"command": "roo-cline.cloudButtonClicked",
 					"group": "navigation@3",
-					"when": "view == roo-cline.SidebarProvider"
+					"when": "view == roo-cline.SidebarProvider && roo-cline.cloudIsAuthenticated"
 				},
 				{
 					"command": "roo-cline.marketplaceButtonClicked",
@@ -258,7 +258,7 @@
 				{
 					"command": "roo-cline.cloudButtonClicked",
 					"group": "navigation@3",
-					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
+					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider && roo-cline.cloudIsAuthenticated"
 				},
 				{
 					"command": "roo-cline.marketplaceButtonClicked",

@@ -68,7 +68,7 @@ definida e esclarecida posteriormente pelos mantenedores do projeto.
 ## Aplicação
 
 Instâncias de comportamento abusivo, de assédio ou de outra forma inaceitável podem ser
-relatadas entrando em contato com a equipe do projeto em support@roocode.com. Todas as reclamações
+relatadas entrando em contato com a equipe do projeto em https://github.com/RooCodeInc/Roo-Code/security/advisories/new. Todas as reclamações
 serão revisadas e investigadas e resultarão em uma resposta que
 é considerada necessária e apropriada às circunstâncias. A equipe do projeto é
 obrigada a manter confidencialidade em relação ao relator de um incidente.

@@ -64,7 +64,7 @@ tanımlanabilir ve netleştirilebilir.
 ## Uygulama
 
 Taciz edici veya başka türlü kabul edilemez davranış örnekleri,
-support@roocode.com adresinden proje ekibiyle iletişime geçilerek bildirilebilir. Tüm şikayetler
+https://github.com/RooCodeInc/Roo-Code/security/advisories/new adresinden proje ekibiyle iletişime geçilerek bildirilebilir. Tüm şikayetler
 incelenecek ve araştırılacak ve koşullara
 göre gerekli ve uygun görülen bir yanıtla sonuçlanacaktır. Proje ekibi,
 bir olayı bildiren kişiye ilişkin gizliliği korumakla yükümlüdür.

@@ -469,8 +469,7 @@
 			"warning": "Catatan: Roo Code menggunakan prompt kompleks dan bekerja terbaik dengan model Claude. Model yang kurang mampu mungkin tidak bekerja seperti yang diharapkan."
 		},
 		"roo": {
-			"authenticatedMessage": "Terautentikasi dengan aman melalui akun Roo Code Cloud Anda.",
-			"connectButton": "Hubungkan ke Roo Code Cloud"
+			"authenticatedMessage": "Terautentikasi dengan aman melalui akun Roo Code Cloud Anda."
 		},
 		"openRouter": {
 			"providerRouting": {

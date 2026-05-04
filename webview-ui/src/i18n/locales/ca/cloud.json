@@ -24,10 +24,5 @@
 	"startOver": "Torna a començar",
 	"personalAccount": "Compte Personal",
 	"createTeamAccount": "Crear Compte d'Equip",
-	"switchAccount": "Canviar Compte de Roo Code Cloud",
-	"upsell": {
-		"autoApprovePowerUser": "Donant-li una mica d'independència a Roo? Controla'l des de qualsevol lloc amb Roo Code Cloud. <learnMoreLink>Més informació</learnMoreLink>.",
-		"longRunningTask": "Això pot trigar una estona. Continua des de qualsevol lloc amb Cloud.",
-		"taskList": "T'agrada Roo? Fes una ullada a Roo Code Cloud: segueix i controla les teves tasques des de qualsevol lloc, executa agents autònoms al núvol, obtén estadístiques d'ús i més. <learnMoreLink>Aprèn-ne més</learnMoreLink>."
-	}
+	"switchAccount": "Canviar Compte de Roo Code Cloud"
 }

@@ -98,13 +98,6 @@ vi.mock("../Announcement", () => ({
 	},
 }))
 
-// Mock DismissibleUpsell component
-vi.mock("@/components/common/DismissibleUpsell", () => ({
-	default: function MockDismissibleUpsell({ children }: { children: React.ReactNode }) {
-		return <div data-testid="dismissible-upsell">{children}</div>
-	},
-}))
-
 // Mock QueuedMessages component
 vi.mock("../QueuedMessages", () => ({
 	QueuedMessages: function MockQueuedMessages({
@@ -670,10 +663,10 @@ describe("ChatView - Version Indicator Tests", () => {
 	})
 })
 
-describe("ChatView - DismissibleUpsell Display Tests", () => {
+describe("ChatView - Cloud upsell display tests", () => {
 	beforeEach(() => vi.clearAllMocks())
 
-	it("does not show DismissibleUpsell when user is authenticated to Cloud", () => {
+	it("does not show Cloud upsell when user is authenticated to Cloud", () => {
 		const { queryByTestId } = renderChatView()
 
 		// Hydrate state with user authenticated to cloud
@@ -688,11 +681,11 @@ describe("ChatView - DismissibleUpsell Display Tests", () => {
 			clineMessages: [], // No active task
 		})
 
-		// Should not show DismissibleUpsell when authenticated
+		// Should not show Cloud upsell when authenticated
 		expect(queryByTestId("dismissible-upsell")).not.toBeInTheDocument()
 	})
 
-	it("does not show DismissibleUpsell when user has only run 3 tasks in their history", () => {
+	it("does not show Cloud upsell when user has only run 3 tasks in their history", () => {
 		const { queryByTestId } = renderChatView()
 
 		// Hydrate state with user not authenticated but only 3 tasks
@@ -706,12 +699,12 @@ describe("ChatView - DismissibleUpsell Display Tests", () => {
 			clineMessages: [], // No active task
 		})
 
-		// Should not show DismissibleUpsell with less than 4 tasks
+		// Should not show Cloud upsell with less than 4 tasks
 		expect(queryByTestId("dismissible-upsell")).not.toBeInTheDocument()
 	})
 
-	it("shows DismissibleUpsell when user is not authenticated and has run 6 or more tasks", async () => {
-		const { getByTestId } = renderChatView()
+	it("does not show Cloud upsell when user is not authenticated and has run 6 or more tasks", async () => {
+		const { queryByTestId } = renderChatView()
 
 		// Hydrate state with user not authenticated and 4 tasks
 		mockPostMessage({
@@ -728,13 +721,13 @@ describe("ChatView - DismissibleUpsell Display Tests", () => {
 			clineMessages: [], // No active task
 		})
 
-		// Wait for component to render and show DismissibleUpsell
+		// The Cloud upsell CTA has been removed from the home screen.
 		await waitFor(() => {
-			expect(getByTestId("dismissible-upsell")).toBeInTheDocument()
+			expect(queryByTestId("dismissible-upsell")).not.toBeInTheDocument()
 		})
 	})
 
-	it("does not show DismissibleUpsell when there is an active task (regardless of auth status)", async () => {
+	it("does not show Cloud upsell when there is an active task (regardless of auth status)", async () => {
 		const { queryByTestId } = renderChatView()
 
 		// Hydrate state with active task
@@ -758,7 +751,7 @@ describe("ChatView - DismissibleUpsell Display Tests", () => {
 
 		// Wait for component to render with active task
 		await waitFor(() => {
-			// Should not show DismissibleUpsell during active task
+			// Should not show Cloud upsell during active task
 			expect(queryByTestId("dismissible-upsell")).not.toBeInTheDocument()
 			// Should not show RooTips either since the entire welcome screen is hidden during active tasks
 			expect(queryByTestId("roo-tips")).not.toBeInTheDocument()
@@ -767,7 +760,7 @@ describe("ChatView - DismissibleUpsell Display Tests", () => {
 		})
 	})
 
-	it("shows RooTips when user is authenticated (instead of DismissibleUpsell)", () => {
+	it("shows RooTips when user is authenticated", () => {
 		const { queryByTestId, getByTestId } = renderChatView()
 
 		// Hydrate state with user authenticated to cloud
@@ -782,12 +775,12 @@ describe("ChatView - DismissibleUpsell Display Tests", () => {
 			clineMessages: [], // No active task
 		})
 
-		// Should not show DismissibleUpsell but should show RooTips
+		// Should not show Cloud upsell but should show RooTips
 		expect(queryByTestId("dismissible-upsell")).not.toBeInTheDocument()
 		expect(getByTestId("roo-tips")).toBeInTheDocument()
 	})
 
-	it("shows RooTips when user has fewer than 6 tasks (instead of DismissibleUpsell)", () => {
+	it("shows RooTips when user has fewer than 6 tasks", () => {
 		const { queryByTestId, getByTestId } = renderChatView()
 
 		// Hydrate state with user not authenticated but fewer than 4 tasks
@@ -801,7 +794,7 @@ describe("ChatView - DismissibleUpsell Display Tests", () => {
 			clineMessages: [], // No active task
 		})
 
-		// Should not show DismissibleUpsell but should show RooTips
+		// Should not show Cloud upsell but should show RooTips
 		expect(queryByTestId("dismissible-upsell")).not.toBeInTheDocument()
 		expect(getByTestId("roo-tips")).toBeInTheDocument()
 	})

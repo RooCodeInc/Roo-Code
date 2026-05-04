@@ -24,10 +24,5 @@
 	"personalAccount": "Akun Pribadi",
 	"switchAccount": "Ganti Akun Roo Code Cloud",
 	"createTeamAccount": "Buat Akun Tim",
-	"cloudUrlPillLabel": "URL Roo Code Cloud",
-	"upsell": {
-		"autoApprovePowerUser": "Memberi Roo sedikit kebebasan? Kendalikan dari mana saja dengan Roo Code Cloud. <learnMoreLink>Pelajari lebih lanjut</learnMoreLink>.",
-		"longRunningTask": "Ini mungkin akan memakan waktu cukup lama. Lanjutkan dari mana saja dengan Cloud.",
-		"taskList": "Menikmati Roo? Coba Roo Code Cloud: ikuti dan kendalikan tugas Anda dari mana saja, jalankan agen Cloud otonom, dapatkan statistik penggunaan, dan lainnya. <learnMoreLink>Pelajari lebih lanjut</learnMoreLink>."
-	}
+	"cloudUrlPillLabel": "URL Roo Code Cloud"
 }

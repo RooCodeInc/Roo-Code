@@ -24,10 +24,5 @@
 	"personalAccount": "個人アカウント",
 	"switchAccount": "Roo Code Cloud アカウントを切り替え",
 	"createTeamAccount": "チームアカウントを作成",
-	"cloudUrlPillLabel": "Roo Code Cloud URL",
-	"upsell": {
-		"autoApprovePowerUser": "Rooに少し独立性を与えませんか？Roo Code Cloudでどこからでもコントロールできます。<learnMoreLink>詳細</learnMoreLink>。",
-		"longRunningTask": "これには時間がかかるかもしれません。Cloudを使えばどこからでも続けられます。",
-		"taskList": "Rooを楽しんでいますか？Roo Code Cloudをチェックしてください：どこからでもタスクを追跡および制御し、自律型クラウドエージェントを実行し、使用状況の統計を取得します。<learnMoreLink>詳細</learnMoreLink>。"
-	}
+	"cloudUrlPillLabel": "Roo Code Cloud URL"
 }

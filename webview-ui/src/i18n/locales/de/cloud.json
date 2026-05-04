@@ -24,10 +24,5 @@
 	"personalAccount": "Persönliches Konto",
 	"switchAccount": "Roo Code Cloud Konto wechseln",
 	"createTeamAccount": "Team-Konto erstellen",
-	"cloudUrlPillLabel": "Roo Code Cloud URL",
-	"upsell": {
-		"autoApprovePowerUser": "Roo etwas Unabhängigkeit geben? Kontrolliere es von überall mit Roo Code Cloud. <learnMoreLink>Mehr erfahren</learnMoreLink>.",
-		"longRunningTask": "Das könnte eine Weile dauern. Mit Cloud von überall weitermachen.",
-		"taskList": "Gefällt dir Roo? Schau dir Roo Code Cloud an: Verfolge und steuere deine Aufgaben von überall, führe autonome Cloud-Agenten aus, erhalte Nutzungsstatistiken und mehr. <learnMoreLink>Erfahre mehr</learnMoreLink>."
-	}
+	"cloudUrlPillLabel": "Roo Code Cloud URL"
 }

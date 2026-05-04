@@ -31,7 +31,7 @@ We take reasonable measures to secure your data, but no system is 100% secure. I
 
 ### **Contact Us**
 
-For any privacy-related questions, reach out to us at support@roocode.com.
+For privacy-related security concerns, use GitHub Security Advisories at https://github.com/RooCodeInc/Roo-Code/security/advisories/new. For other privacy-related questions, open a GitHub Discussion at https://github.com/RooCodeInc/Roo-Code/discussions.
 
 ---
 

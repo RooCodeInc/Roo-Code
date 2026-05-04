@@ -24,10 +24,5 @@
 	"personalAccount": "व्यक्तिगत खाता",
 	"switchAccount": "Roo Code Cloud खाता बदलें",
 	"createTeamAccount": "टीम खाता बनाएं",
-	"cloudUrlPillLabel": "Roo Code Cloud URL",
-	"upsell": {
-		"autoApprovePowerUser": "रू को थोड़ी स्वतंत्रता दे रहे हैं? रू कोड क्लाउड के साथ इसे कहीं से भी नियंत्रित करें। <learnMoreLink>और जानें</learnMoreLink>।",
-		"longRunningTask": "इसमें थोड़ा समय लग सकता है। क्लाउड के साथ कहीं से भी जारी रखें।",
-		"taskList": "रू का आनंद ले रहे हैं? रू कोड क्लाउड देखें: कहीं से भी अपने कार्यों का पालन और नियंत्रण करें, स्वायत्त क्लाउड एजेंट चलाएं, उपयोग के आंकड़े प्राप्त करें और बहुत कुछ। <learnMoreLink>और जानें</learnMoreLink>।"
-	}
+	"cloudUrlPillLabel": "Roo Code Cloud URL"
 }

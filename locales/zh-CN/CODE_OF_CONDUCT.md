@@ -63,7 +63,7 @@
 
 ## 执行
 
-可能通过联系项目团队（support@roocode.com）
+可能通过联系项目团队（https://github.com/RooCodeInc/Roo-Code/security/advisories/new）
 来报告辱骂、骚扰或其他不可接受的行为的情况。所有
 投诉将被审查和调查，并将导致被认为
 必要且适合情况的回应。项目团队有

@@ -68,7 +68,7 @@ ulteriormente definita e chiarita dai manutentori del progetto.
 ## Applicazione
 
 Casi di comportamento abusivo, molesto o altrimenti inaccettabile possono essere
-segnalati contattando il team del progetto all'indirizzo support@roocode.com. Tutti i reclami
+segnalati contattando il team del progetto all'indirizzo https://github.com/RooCodeInc/Roo-Code/security/advisories/new. Tutti i reclami
 saranno esaminati e indagati e risulteranno in una risposta che
 è ritenuta necessaria e appropriata alle circostanze. Il team del progetto è
 obbligato a mantenere la riservatezza nei confronti di chi segnala un incidente.

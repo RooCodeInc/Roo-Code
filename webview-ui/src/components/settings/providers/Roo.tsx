@@ -6,8 +6,6 @@ import {
 } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
-import { vscode } from "@src/utils/vscode"
-import { Button } from "@src/components/ui"
 
 import { ModelPicker } from "../ModelPicker"
 
@@ -34,20 +32,11 @@ export const Roo = ({
 
 	return (
 		<>
-			{cloudIsAuthenticated ? (
+			{cloudIsAuthenticated && (
 				<div className="flex justify-between items-center mb-2">
 					<div className="text-sm text-vscode-descriptionForeground">
 						{t("settings:providers.roo.authenticatedMessage")}
 					</div>
-				</div>
-			) : (
-				<div className="flex flex-col gap-2">
-					<Button
-						variant="primary"
-						onClick={() => vscode.postMessage({ type: "rooCloudSignIn" })}
-						className="w-fit">
-						{t("settings:providers.roo.connectButton")}
-					</Button>
 				</div>
 			)}
 			<ModelPicker

@@ -47,7 +47,7 @@ Kode Etik ini berlaku baik di dalam ruang proyek maupun di ruang publik ketika s
 
 ## Penegakan
 
-Contoh perilaku kasar, melecehkan, atau perilaku lain yang tidak dapat diterima dapat dilaporkan dengan menghubungi tim proyek di support@roocode.com. Semua keluhan akan ditinjau dan diselidiki dan akan menghasilkan respons yang dianggap perlu dan sesuai dengan keadaan. Tim proyek wajib menjaga kerahasiaan sehubungan dengan pelapor insiden. Detail lebih lanjut tentang kebijakan penegakan spesifik dapat diposting secara terpisah.
+Contoh perilaku kasar, melecehkan, atau perilaku lain yang tidak dapat diterima dapat dilaporkan dengan menghubungi tim proyek di https://github.com/RooCodeInc/Roo-Code/security/advisories/new. Semua keluhan akan ditinjau dan diselidiki dan akan menghasilkan respons yang dianggap perlu dan sesuai dengan keadaan. Tim proyek wajib menjaga kerahasiaan sehubungan dengan pelapor insiden. Detail lebih lanjut tentang kebijakan penegakan spesifik dapat diposting secara terpisah.
 
 Maintainer proyek yang tidak mengikuti atau menegakkan Kode Etik dengan itikad baik dapat menghadapi dampak sementara atau permanen sebagaimana ditentukan oleh anggota lain dari kepemimpinan proyek.
 

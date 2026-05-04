@@ -67,7 +67,7 @@ von den Projektbetreuern weiter definiert und geklärt werden.
 ## Durchsetzung
 
 Fälle von missbräuchlichem, belästigendem oder anderweitig inakzeptablem Verhalten können
-dem Projektteam unter support@roocode.com gemeldet werden. Alle
+dem Projektteam unter https://github.com/RooCodeInc/Roo-Code/security/advisories/new gemeldet werden. Alle
 Beschwerden werden überprüft und untersucht und führen zu einer Reaktion, die
 als notwendig und angemessen für die Umstände erachtet wird. Das Projektteam ist
 verpflichtet, die Vertraulichkeit in Bezug auf den Melder eines Vorfalls zu wahren.

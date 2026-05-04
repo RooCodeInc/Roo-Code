@@ -469,8 +469,7 @@
 			"warning": "Примечание: Roo Code использует сложные подсказки и лучше всего работает с моделями Claude. Менее мощные модели могут работать некорректно."
 		},
 		"roo": {
-			"authenticatedMessage": "Безопасно аутентифицирован через твой аккаунт Roo Code Cloud.",
-			"connectButton": "Подключиться к Roo Code Cloud"
+			"authenticatedMessage": "Безопасно аутентифицирован через твой аккаунт Roo Code Cloud."
 		},
 		"openRouter": {
 			"providerRouting": {

@@ -290,4 +290,36 @@ describe("App", () => {
 		expect(chatView.getAttribute("data-hidden")).toBe("false")
 		expect(screen.queryByTestId("marketplace-view")).not.toBeInTheDocument()
 	})
+
+	it("ignores cloud navigation when unauthenticated", async () => {
+		render(<AppWithProviders />)
+
+		act(() => {
+			triggerMessage("cloudButtonClicked")
+		})
+
+		expect(screen.queryByTestId("cloud-view")).not.toBeInTheDocument()
+		expect(screen.getByTestId("chat-view").getAttribute("data-hidden")).toBe("false")
+	})
+
+	it("switches to cloud view when authenticated", async () => {
+		mockUseExtensionState.mockReturnValue({
+			didHydrateState: true,
+			showWelcome: false,
+			shouldShowAnnouncement: false,
+			experiments: {},
+			language: "en",
+			telemetrySetting: "enabled",
+			cloudIsAuthenticated: true,
+		})
+
+		render(<AppWithProviders />)
+
+		act(() => {
+			triggerMessage("cloudButtonClicked")
+		})
+
+		expect(await screen.findByTestId("cloud-view")).toBeInTheDocument()
+		expect(screen.getByTestId("chat-view").getAttribute("data-hidden")).toBe("true")
+	})
 })

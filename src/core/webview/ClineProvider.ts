@@ -1968,6 +1968,11 @@ export class ClineProvider
 
 	async postStateToWebview() {
 		const state = await this.getStateToPostToWebview()
+		await vscode.commands.executeCommand(
+			"setContext",
+			"roo-cline.cloudIsAuthenticated",
+			state.cloudIsAuthenticated === true,
+		)
 		this.clineMessagesSeq++
 		state.clineMessagesSeq = this.clineMessagesSeq
 		this.postMessageToWebview({ type: "state", state })
@@ -1989,6 +1994,11 @@ export class ClineProvider
 	 */
 	async postStateToWebviewWithoutTaskHistory(): Promise<void> {
 		const state = await this.getStateToPostToWebview()
+		await vscode.commands.executeCommand(
+			"setContext",
+			"roo-cline.cloudIsAuthenticated",
+			state.cloudIsAuthenticated === true,
+		)
 		this.clineMessagesSeq++
 		state.clineMessagesSeq = this.clineMessagesSeq
 		const { taskHistory: _omit, ...rest } = state
@@ -2013,6 +2023,11 @@ export class ClineProvider
 	 */
 	async postStateToWebviewWithoutClineMessages(): Promise<void> {
 		const state = await this.getStateToPostToWebview()
+		await vscode.commands.executeCommand(
+			"setContext",
+			"roo-cline.cloudIsAuthenticated",
+			state.cloudIsAuthenticated === true,
+		)
 		const { clineMessages: _omitMessages, taskHistory: _omitHistory, ...rest } = state
 		this.postMessageToWebview({ type: "state", state: rest })
 

@@ -30,7 +30,7 @@ export const EXTERNAL_LINKS = {
 	CLOUD_APP_SIGNUP_HOME: "https://app.roocode.com/sign-up?redirect_url=/cloud-agents/setup",
 	CLOUD_APP_SIGNUP_PRO: "https://app.roocode.com/sign-up?redirect_url=/cloud-agents/setup",
 	CLOUD_APP_TEAM_TRIAL: "https://app.roocode.com/checkout/team",
-	SUPPORT: "mailto:support@roocode.com",
+	SUPPORT: "https://github.com/RooCodeInc/Roo-Code/issues/new/choose",
 }
 
 export const INTERNAL_LINKS = {

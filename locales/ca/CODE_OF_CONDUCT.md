@@ -68,7 +68,7 @@ definida i clarificada addicionalment pels mantenidors del projecte.
 ## Aplicació
 
 Els casos de comportament abusiu, assetjador o altrament inacceptable poden ser
-reportats contactant amb l'equip del projecte a support@roocode.com. Totes les queixes
+reportats contactant amb l'equip del projecte a https://github.com/RooCodeInc/Roo-Code/security/advisories/new. Totes les queixes
 seran revisades i investigades i resultaran en una resposta que
 es consideri necessària i adequada a les circumstàncies. L'equip del projecte està
 obligat a mantenir la confidencialitat respecte al reportador d'un incident.
