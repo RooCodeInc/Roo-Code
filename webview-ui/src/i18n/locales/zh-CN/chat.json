@@ -339,7 +339,7 @@
 		"timerPrefix": "自动批准已启用。{{seconds}}秒后选择中…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} 已发布",
+		"title": "Roo Code {{version}}：迁移到 Zoo Code",
 		"support": "请在 <githubLink>GitHub</githubLink> 上为我们点星支持 Roo Code。",
 		"stealthModel": {
 			"feature": "<bold>限时免费隐形模型</bold> - Code Supernova：现已升级为 <bold>1M Token 上下文窗口</bold>！一个支持图像输入的多功能代理编程模型，通过 Roo Code Cloud 提供。",
@@ -349,9 +349,9 @@
 			"goToSettingsButton": "前往设置"
 		},
 		"handoff": {
-			"heading": "Roo Code 插件不会消失。",
-			"description": "你可能已经看到最近的公告：Roo Code 已突破 300 万次安装，原团队正全力投入 Roomote。我们知道这个消息让许多人感到难受。这个插件对我们和你都意义重大，你的心声我们听到了。好消息是：<bold>一支社区团队已挺身而出，继续推进 Roo Code</bold>，我们正与他们协作进行正式交接，让你所依赖的插件继续得到维护和改进。",
-			"readMore": "阅读 Matt Rubens 的原始公告"
+			"heading": "Roo 以 Zoo Code 的形式回来了。",
+			"description": "这次 Roo Code 的最后更新会帮助你把本地配置迁移到由社区维护的新 Zoo Code 扩展。Roo 会保留安装足够久，以便为 Zoo 准备 handoff bundle。",
+			"readMore": "阅读 Zoo 公告"
 		},
 		"release": {
 			"heading": "新增功能：",
@@ -364,6 +364,16 @@
 			"specialized": "推出 <bold>Explainer</bold>、<bold>Planner</bold> 和 <bold>Coder</bold> - 三个专业云代理来增强你的工作流程。",
 			"description": "代理在云端协同工作，可从网页或通过 Slack 触发。",
 			"tryButton": "试用云代理"
+		},
+		"zooMigration": {
+			"heading": "准备 Zoo 迁移",
+			"description": "从 Roo 的本地存储创建 handoff bundle。Roo 会保留原始数据，并且在包含 API key 之前先征求你的同意。",
+			"prepareButton": "准备迁移",
+			"installButton": "安装 Zoo",
+			"detailsHeading": "这会执行：",
+			"copiesData": "将你的 Roo 设置和任务历史复制到 Zoo 迁移文件夹。",
+			"keepsOriginals": "保持现有 Roo 文件夹不变，方便你先验证 handoff。",
+			"apiKeysOptIn": "只有在你明确选择包含时，才会加入 provider profile 和 API key。"
 		}
 	},
 	"costs": {

@@ -338,7 +338,7 @@
 		"timerPrefix": "Automatyczne zatwierdzanie włączone. Zaznaczanie za {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} wydany",
+		"title": "Roo Code {{version}}: przejdź na Zoo Code",
 		"support": "Wesprzyj Roo Code, dając nam gwiazdkę na <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Darmowy model stealth na ograniczony czas</bold> - Code Supernova: Teraz ulepszony z <bold>oknem kontekstu 1M tokenów</bold>! Wszechstronny model kodowania agentowego, który obsługuje wprowadzanie obrazów, dostępny przez Roo Code Cloud.",
@@ -348,9 +348,9 @@
 			"goToSettingsButton": "Przejdź do Ustawień"
 		},
 		"handoff": {
-			"heading": "Wtyczka Roo Code nie znika.",
-			"description": "Być może widziałeś niedawne ogłoszenie, że Roo Code osiągnął 3 miliony instalacji, a oryginalny zespół całkowicie skupia się na Roomote. Wiemy, że ta wiadomość była trudna dla wielu z was. Ta wtyczka wiele dla nas i dla ciebie znaczy, i słyszymy was. Dobra wiadomość: <bold>zespół społeczności zgłosił się, żeby poprowadzić Roo Code dalej</bold>, i pracujemy z nimi nad oficjalnym przekazaniem, żeby wtyczka, na której polegasz, była nadal utrzymywana i ulepszana.",
-			"readMore": "Przeczytaj oryginalne ogłoszenie Matta Rubensa"
+			"heading": "Roo wraca jako Zoo Code.",
+			"description": "Ta ostatnia aktualizacja Roo Code pomaga przenieść lokalną konfigurację do nowego rozszerzenia Zoo Code utrzymywanego przez społeczność. Roo pozostaje zainstalowane wystarczająco długo, aby przygotować pakiet przekazania dla Zoo.",
+			"readMore": "Przeczytaj ogłoszenie Zoo"
 		},
 		"release": {
 			"heading": "Co nowego:",
@@ -363,6 +363,16 @@
 			"specialized": "Przedstawiamy <bold>Explainer</bold>, <bold>Planner</bold> i <bold>Coder</bold> - trzech wyspecjalizowanych agentów chmurowych, aby ulepszyć Twoje przepływy pracy.",
 			"description": "Agenci pracują razem w chmurze i mogą być uruchamiani z sieci lub przez Slack.",
 			"tryButton": "Wypróbuj agentów chmurowych"
+		},
+		"zooMigration": {
+			"heading": "Przygotuj migrację do Zoo",
+			"description": "Utwórz pakiet przekazania z lokalnego magazynu Roo. Roo zostawia oryginalne dane na miejscu i pyta przed dołączeniem kluczy API.",
+			"prepareButton": "Przygotuj migrację",
+			"installButton": "Zainstaluj Zoo",
+			"detailsHeading": "Co to robi:",
+			"copiesData": "Kopiuje ustawienia Roo i historię zadań do folderu migracji Zoo.",
+			"keepsOriginals": "Pozostawia istniejące foldery Roo bez zmian, aby można było najpierw sprawdzić przekazanie.",
+			"apiKeysOptIn": "Dołącza profile dostawców i klucze API tylko wtedy, gdy wyraźnie wybierzesz ich dołączenie."
 		}
 	},
 	"costs": {

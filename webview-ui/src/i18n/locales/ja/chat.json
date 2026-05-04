@@ -338,7 +338,7 @@
 		"timerPrefix": "自動承認が有効です。{{seconds}}秒後に選択中…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} リリース",
+		"title": "Roo Code {{version}}: Zoo Code へ移行",
 		"support": "<githubLink>GitHub</githubLink>でスターを付けてRoo Codeを応援してください。",
 		"stealthModel": {
 			"feature": "<bold>期間限定無料ステルスモデル</bold> - Code Supernova：<bold>1Mトークンコンテキストウィンドウ</bold>にアップグレード！画像入力をサポートする多目的エージェントコーディングモデル、Roo Code Cloud 経由で利用可能。",
@@ -348,9 +348,9 @@
 			"goToSettingsButton": "設定に移動"
 		},
 		"handoff": {
-			"heading": "Roo Code プラグインはなくなりません。",
-			"description": "Roo Code のインストール数が300万に達し、元のチームが Roomote に全力で取り組むという先日のお知らせをご覧になったかもしれません。この知らせが多くの方にとって辛いものだったことは承知しています。このプラグインは私たちにとっても、あなたにとっても大切な存在であり、皆さんの声はしっかり届いています。良いお知らせです：<bold>コミュニティチームが Roo Code を受け継いで前進させることを引き受けてくれました</bold>。頼りにしているこのプラグインが引き続きメンテナンスと改善を受けられるよう、私たちは彼らと公式な引き継ぎを進めています。",
-			"readMore": "Matt Rubens による最初のお知らせを読む"
+			"heading": "Roo は Zoo Code として戻ってきました。",
+			"description": "この最後の Roo Code アップデートは、ローカル設定をコミュニティがメンテナンスする新しい Zoo Code 拡張機能へ移すためのものです。Roo は Zoo 向けのハンドオフバンドルを準備できるよう、しばらくインストールされたままになります。",
+			"readMore": "Zoo の発表を読む"
 		},
 		"release": {
 			"heading": "新機能:",
@@ -363,6 +363,16 @@
 			"specialized": "<bold>Explainer</bold>、<bold>Planner</bold>、<bold>Coder</bold> の 3 つの専門クラウドエージェントを紹介します。ワークフローを強化します。",
 			"description": "エージェントはクラウドで連携して動作し、Web または Slack からトリガーできます。",
 			"tryButton": "クラウドエージェントを試す"
+		},
+		"zooMigration": {
+			"heading": "Zoo への移行を準備",
+			"description": "Roo のローカルストレージからハンドオフバンドルを作成します。Roo は元データをそのまま残し、API キーを含める前に確認します。",
+			"prepareButton": "移行を準備",
+			"installButton": "Zoo をインストール",
+			"detailsHeading": "実行されること:",
+			"copiesData": "Roo の設定とタスク履歴を Zoo 移行フォルダーにコピーします。",
+			"keepsOriginals": "既存の Roo フォルダーは変更せず、先にハンドオフ内容を確認できます。",
+			"apiKeysOptIn": "プロバイダープロファイルと API キーは、明示的に選択した場合にのみ含めます。"
 		}
 	},
 	"costs": {

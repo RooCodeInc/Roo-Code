@@ -1,7 +1,7 @@
 import { memo, type ReactNode, useState } from "react"
 import { Trans } from "react-i18next"
 import { SiDiscord, SiReddit, SiX } from "react-icons/si"
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 
 import { Package } from "@roo/package"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
@@ -40,7 +40,7 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 					<DialogTitle>{t("chat:announcement.title", { version: Package.version })}</DialogTitle>
 				</DialogHeader>
 				<div>
-					{/* Community Handoff Notice */}
+					{/* Zoo Handoff Notice */}
 					<div className="mb-4 p-3 rounded border border-vscode-textLink-foreground/40 bg-vscode-textLink-foreground/5">
 						<p className="font-semibold mb-1.5 text-vscode-textLink-foreground">
 							{t("chat:announcement.handoff.heading")}
@@ -48,26 +48,39 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 						<p className="text-sm mb-2">
 							<Trans i18nKey="chat:announcement.handoff.description" components={{ bold: <strong /> }} />
 						</p>
-						<VSCodeLink
-							href="https://x.com/mattrubens/status/2046636598859559114"
-							onClick={(e) => {
-								e.preventDefault()
-								vscode.postMessage({
-									type: "openExternal",
-									url: "https://x.com/mattrubens/status/2046636598859559114",
-								})
-							}}>
+						<VSCodeLink href="https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/">
 							{t("chat:announcement.handoff.readMore")}
 						</VSCodeLink>
 					</div>
 
-					{/* Regular Release Highlights */}
+					{/* Zoo Migration */}
+					<div className="mb-4 p-3 rounded border border-vscode-button-background/40 bg-vscode-button-background/5">
+						<p className="font-semibold mb-1.5">{t("chat:announcement.zooMigration.heading")}</p>
+						<p className="text-sm mb-3">{t("chat:announcement.zooMigration.description")}</p>
+						<div className="flex flex-wrap gap-2">
+							<VSCodeButton
+								onClick={() => {
+									vscode.postMessage({ type: "prepareZooMigration" })
+								}}>
+								{t("chat:announcement.zooMigration.prepareButton")}
+							</VSCodeButton>
+							<VSCodeButton
+								appearance="secondary"
+								onClick={() => {
+									vscode.postMessage({ type: "installZooExtension" })
+								}}>
+								{t("chat:announcement.zooMigration.installButton")}
+							</VSCodeButton>
+						</div>
+					</div>
+
+					{/* Migration Details */}
 					<div className="mb-4">
-						<p className="mb-3">{t("chat:announcement.release.heading")}</p>
+						<p className="mb-3">{t("chat:announcement.zooMigration.detailsHeading")}</p>
 						<ul className="list-disc list-inside text-sm space-y-1.5">
-							<li>{t("chat:announcement.release.gpt55")}</li>
-							<li>{t("chat:announcement.release.claudeOpus47")}</li>
-							<li>{t("chat:announcement.release.checkpointNav")}</li>
+							<li>{t("chat:announcement.zooMigration.copiesData")}</li>
+							<li>{t("chat:announcement.zooMigration.keepsOriginals")}</li>
+							<li>{t("chat:announcement.zooMigration.apiKeysOptIn")}</li>
 						</ul>
 					</div>
 

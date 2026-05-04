@@ -338,7 +338,7 @@
 		"timerPrefix": "Approvazione automatica abilitata. Selezione tra {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "Rilasciato Roo Code {{version}}",
+		"title": "Roo Code {{version}}: passa a Zoo Code",
 		"support": "Sostieni Roo Code lasciandoci una stella su <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Modello stealth GRATUITO per tempo limitato</bold> - Code Supernova: Ora potenziato con una <bold>finestra di contesto da 1M token</bold>! Un modello di codificazione agentiva versatile che supporta input di immagini, accessibile tramite Roo Code Cloud.",
@@ -348,9 +348,9 @@
 			"goToSettingsButton": "Vai alle Impostazioni"
 		},
 		"handoff": {
-			"heading": "Il plugin Roo Code non sta per sparire.",
-			"description": "Potresti aver visto l'annuncio recente: Roo Code ha raggiunto 3 milioni di installazioni e il team originale si sta concentrando completamente su Roomote. Sappiamo che questa notizia è stata dura per molti di voi. Questo plugin significa tanto per noi e per te, e ti ascoltiamo. La buona notizia: <bold>un team della community si è fatto avanti per portare avanti Roo Code</bold>, e stiamo lavorando con loro a un passaggio di consegne ufficiale, così il plugin su cui conti continuerà a essere mantenuto e migliorato.",
-			"readMore": "Leggi l'annuncio originale di Matt Rubens"
+			"heading": "Roo torna come Zoo Code.",
+			"description": "Questo ultimo aggiornamento di Roo Code ti aiuta a spostare la configurazione locale nella nuova estensione Zoo Code mantenuta dalla community. Roo resta installato il tempo necessario per preparare un pacchetto di handoff per Zoo.",
+			"readMore": "Leggi l’annuncio di Zoo"
 		},
 		"release": {
 			"heading": "Novità:",
@@ -363,6 +363,16 @@
 			"specialized": "Presentazione di <bold>Explainer</bold>, <bold>Planner</bold> e <bold>Coder</bold> - tre agenti cloud specializzati per migliorare i tuoi flussi di lavoro.",
 			"description": "Gli agenti lavorano insieme nel cloud e possono essere attivati dal web o tramite Slack.",
 			"tryButton": "Prova gli Agenti Cloud"
+		},
+		"zooMigration": {
+			"heading": "Prepara la migrazione a Zoo",
+			"description": "Crea un pacchetto di handoff dallo storage locale di Roo. Roo lascia i dati originali al loro posto e chiede conferma prima di includere le chiavi API.",
+			"prepareButton": "Prepara migrazione",
+			"installButton": "Installa Zoo",
+			"detailsHeading": "Cosa fa:",
+			"copiesData": "Copia le impostazioni di Roo e la cronologia delle attività in una cartella di migrazione Zoo.",
+			"keepsOriginals": "Lascia intatte le cartelle Roo esistenti così puoi verificare prima l’handoff.",
+			"apiKeysOptIn": "Include profili provider e chiavi API solo se scegli esplicitamente di includerli."
 		}
 	},
 	"costs": {

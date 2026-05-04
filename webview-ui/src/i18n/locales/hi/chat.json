@@ -338,7 +338,7 @@
 		"timerPrefix": "ऑटो-अनुमोदन सक्षम है। {{seconds}}s में चयन किया जा रहा है…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} रिलीज़ हुआ",
+		"title": "Roo Code {{version}}: Zoo Code पर जाएँ",
 		"support": "कृपया <githubLink>GitHub</githubLink> पर हमें स्टार देकर Roo Code का समर्थन करें।",
 		"stealthModel": {
 			"feature": "<bold>सीमित समय के लिए मुफ़्त स्टेल्थ मॉडल</bold> - Code Supernova: अब <bold>1M Token संदर्भ विंडो</bold> के साथ अपग्रेड हुआ! एक बहुमुखी एजेंटिक कोडिंग मॉडल जो छवि इनपुट का समर्थन करता है, Roo Code Cloud के माध्यम से उपलब्ध।",
@@ -348,9 +348,9 @@
 			"goToSettingsButton": "सेटिंग्स पर जाएं"
 		},
 		"handoff": {
-			"heading": "Roo Code plugin कहीं नहीं जा रहा है।",
-			"description": "आपने शायद हाल ही की घोषणा देखी होगी कि Roo Code ने 30 लाख installs पार कर लिए हैं और मूल टीम पूरी तरह Roomote पर focus कर रही है। हम जानते हैं कि यह खबर आप में से कई के लिए कठिन थी। यह plugin हमारे और आपके लिए बहुत मायने रखता है, और हम आपकी बात सुन रहे हैं। अच्छी खबर: <bold>एक community team ने Roo Code को आगे ले जाने की ज़िम्मेदारी ली है</bold>, और हम उनके साथ एक आधिकारिक handoff पर काम कर रहे हैं ताकि जिस plugin पर आप भरोसा करते हैं, उसका maintenance और improvement जारी रहे।",
-			"readMore": "Matt Rubens की मूल घोषणा पढ़ें"
+			"heading": "Roo अब Zoo Code के रूप में वापस है।",
+			"description": "यह अंतिम Roo Code अपडेट आपके स्थानीय सेटअप को समुदाय द्वारा मेंटेन किए जा रहे नए Zoo Code एक्सटेंशन में ले जाने में मदद करता है। Roo इतना समय इंस्टॉल रहेगा कि Zoo के लिए handoff bundle तैयार कर सके।",
+			"readMore": "Zoo घोषणा पढ़ें"
 		},
 		"release": {
 			"heading": "नया क्या है:",
@@ -363,6 +363,16 @@
 			"specialized": "<bold>Explainer</bold>, <bold>Planner</bold>, और <bold>Coder</bold> की शुरुआत - तीन विशेष क्लाउड एजेंट आपके वर्कफ़्लो को बेहतर बनाने के लिए।",
 			"description": "एजेंट क्लाउड में एक साथ काम करते हैं और web या Slack के माध्यम से ट्रिगर किए जा सकते हैं।",
 			"tryButton": "क्लाउड एजेंट आज़माएं"
+		},
+		"zooMigration": {
+			"heading": "अपना Zoo migration तैयार करें",
+			"description": "Roo के local storage से handoff bundle बनाएँ। Roo आपका मूल डेटा वहीं रखता है और API keys शामिल करने से पहले पूछता है।",
+			"prepareButton": "Migration तैयार करें",
+			"installButton": "Zoo इंस्टॉल करें",
+			"detailsHeading": "यह क्या करता है:",
+			"copiesData": "आपकी Roo settings और task history को Zoo migration folder में कॉपी करता है।",
+			"keepsOriginals": "आपके मौजूदा Roo folders को बिना बदले छोड़ता है ताकि आप पहले handoff जाँच सकें।",
+			"apiKeysOptIn": "Provider profiles और API keys तभी शामिल करता है जब आप साफ़ तौर पर उन्हें शामिल करना चुनते हैं।"
 		}
 	},
 	"costs": {

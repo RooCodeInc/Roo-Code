@@ -339,7 +339,7 @@
 		"timerPrefix": "Phê duyệt tự động được bật. Chọn trong {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} Đã phát hành",
+		"title": "Roo Code {{version}}: chuyển sang Zoo Code",
 		"support": "Hãy ủng hộ Roo Code bằng cách gắn sao cho chúng tôi trên <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Mô hình stealth MIỄN PHÍ có thời hạn</bold> - Code Supernova: Hiện đã được nâng cấp với <bold>cửa sổ ngữ cảnh 1M token</bold>! Một mô hình lập trình agentic đa năng hỗ trợ đầu vào hình ảnh, có sẵn qua Roo Code Cloud.",
@@ -349,9 +349,9 @@
 			"goToSettingsButton": "Đi tới Cài đặt"
 		},
 		"handoff": {
-			"heading": "Plugin Roo Code sẽ không biến mất.",
-			"description": "Bạn có thể đã thấy thông báo gần đây rằng Roo Code đã đạt 3 triệu lượt cài đặt và đội ngũ ban đầu đang dồn toàn lực cho Roomote. Chúng tôi biết rằng tin này thật khó khăn với nhiều bạn. Plugin này có ý nghĩa rất lớn với chúng tôi và với bạn, và chúng tôi lắng nghe bạn. Tin tốt: <bold>một đội ngũ từ cộng đồng đã đứng ra tiếp tục đưa Roo Code đi tiếp</bold>, và chúng tôi đang làm việc với họ về việc bàn giao chính thức để plugin mà bạn đang tin cậy tiếp tục được bảo trì và cải thiện.",
-			"readMore": "Đọc thông báo gốc từ Matt Rubens"
+			"heading": "Roo trở lại với tên Zoo Code.",
+			"description": "Bản cập nhật Roo Code cuối cùng này giúp bạn chuyển thiết lập cục bộ sang extension Zoo Code mới do cộng đồng duy trì. Roo vẫn được cài đủ lâu để chuẩn bị gói handoff cho Zoo.",
+			"readMore": "Đọc thông báo về Zoo"
 		},
 		"release": {
 			"heading": "Tính năng mới:",
@@ -364,6 +364,16 @@
 			"specialized": "Giới thiệu <bold>Explainer</bold>, <bold>Planner</bold> và <bold>Coder</bold> - ba agent đám mây chuyên biệt để nâng cao quy trình làm việc của bạn.",
 			"description": "Các agent làm việc cùng nhau trên đám mây và có thể được kích hoạt từ web hoặc qua Slack.",
 			"tryButton": "Dùng thử Agents trên Cloud"
+		},
+		"zooMigration": {
+			"heading": "Chuẩn bị migration sang Zoo",
+			"description": "Tạo gói handoff từ bộ nhớ cục bộ của Roo. Roo giữ nguyên dữ liệu gốc và hỏi trước khi bao gồm API key.",
+			"prepareButton": "Chuẩn bị migration",
+			"installButton": "Cài Zoo",
+			"detailsHeading": "Việc này sẽ:",
+			"copiesData": "Sao chép cài đặt Roo và lịch sử tác vụ vào thư mục migration của Zoo.",
+			"keepsOriginals": "Giữ nguyên các thư mục Roo hiện có để bạn kiểm tra handoff trước.",
+			"apiKeysOptIn": "Chỉ bao gồm provider profile và API key nếu bạn chủ động chọn đưa chúng vào."
 		}
 	},
 	"costs": {

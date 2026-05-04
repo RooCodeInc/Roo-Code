@@ -311,7 +311,7 @@
 		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} uitgebracht",
+		"title": "Roo Code {{version}}: stap over naar Zoo Code",
 		"support": "Steun Roo Code door ons een ster te geven op <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Beperkt tijd GRATIS stealth model</bold> - Code Supernova: Nu geüpgraded met een <bold>1M token contextvenster</bold>! Een veelzijdig agentisch codeermodel dat beeldinvoer ondersteunt, beschikbaar via Roo Code Cloud.",
@@ -321,9 +321,9 @@
 			"goToSettingsButton": "Ga naar Instellingen"
 		},
 		"handoff": {
-			"heading": "De Roo Code-plugin gaat niet weg.",
-			"description": "Je hebt misschien de recente aankondiging gezien dat Roo Code 3 miljoen installaties heeft bereikt en het oorspronkelijke team zich volledig richt op Roomote. We weten dat dat nieuws voor velen van jullie moeilijk was. Deze plugin betekent veel voor ons en voor jou, en we horen je. Het goede nieuws: <bold>een community-team heeft zich aangemeld om Roo Code voort te zetten</bold>, en we werken samen aan een officiële overdracht, zodat de plugin waar je op vertrouwt onderhouden en verbeterd blijft worden.",
-			"readMore": "Lees de originele aankondiging van Matt Rubens"
+			"heading": "Roo is terug als Zoo Code.",
+			"description": "Deze laatste Roo Code-update helpt je je lokale setup te verplaatsen naar de nieuwe Zoo Code-extensie die door de community wordt onderhouden. Roo blijft lang genoeg geïnstalleerd om een overdrachtspakket voor Zoo klaar te zetten.",
+			"readMore": "Lees de Zoo-aankondiging"
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
@@ -336,6 +336,16 @@
 			"specialized": "Introductie van <bold>Explainer</bold>, <bold>Planner</bold> en <bold>Coder</bold> - drie gespecialiseerde cloud-agents om je workflows te verbeteren.",
 			"description": "De agents werken samen in de cloud en kunnen worden geactiveerd vanaf het web of via Slack.",
 			"tryButton": "Probeer Cloud-agents"
+		},
+		"zooMigration": {
+			"heading": "Bereid je Zoo-migratie voor",
+			"description": "Maak een overdrachtspakket vanuit Roo’s lokale opslag. Roo laat je oorspronkelijke data staan en vraagt toestemming voordat API-sleutels worden meegenomen.",
+			"prepareButton": "Migratie voorbereiden",
+			"installButton": "Zoo installeren",
+			"detailsHeading": "Wat dit doet:",
+			"copiesData": "Kopieert je Roo-instellingen en taakgeschiedenis naar een Zoo-migratiemap.",
+			"keepsOriginals": "Laat je bestaande Roo-mappen ongemoeid zodat je de overdracht eerst kunt controleren.",
+			"apiKeysOptIn": "Neemt providerprofielen en API-sleutels alleen mee als je daar expliciet voor kiest."
 		}
 	},
 	"reasoning": {

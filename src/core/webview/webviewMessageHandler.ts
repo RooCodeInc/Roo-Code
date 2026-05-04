@@ -54,6 +54,10 @@ import { openImage, saveImage } from "../../integrations/misc/image-handler"
 import { selectImages } from "../../integrations/misc/process-images"
 import { getTheme } from "../../integrations/theme/getTheme"
 import { searchWorkspaceFiles } from "../../services/search/file-search"
+import {
+	installOrShowZooExtension,
+	promptAndCreateZooMigrationHandoff,
+} from "../../services/zoo-migration/ZooMigration"
 import { fileExistsAtPath } from "../../utils/fs"
 import { playTts, setTtsEnabled, setTtsSpeed, stopTts } from "../../utils/tts"
 import { searchCommits } from "../../utils/git"
@@ -765,6 +769,22 @@ export const webviewMessageHandler = async (
 		case "didShowAnnouncement":
 			await updateGlobalState("lastShownAnnouncementId", provider.latestAnnouncementId)
 			await provider.postStateToWebview()
+			break
+		case "prepareZooMigration":
+			try {
+				await promptAndCreateZooMigrationHandoff({
+					context: provider.context,
+					contextProxy: provider.contextProxy,
+					providerSettingsManager: provider.providerSettingsManager,
+				})
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error)
+				provider.log(`[Zoo Migration] Failed to prepare migration handoff from announcement: ${message}`)
+				await vscode.window.showErrorMessage(t("common:zooMigration.handoffFailed", { error: message }))
+			}
+			break
+		case "installZooExtension":
+			await installOrShowZooExtension()
 			break
 		case "selectImages":
 			const images = await selectImages()

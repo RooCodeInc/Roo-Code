@@ -357,7 +357,7 @@
 		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} Released",
+		"title": "Roo Code {{version}}: Move to Zoo Code",
 		"support": "Please support Roo Code by starring us on <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Limited-time FREE stealth model</bold> - Code Supernova: Now upgraded with a <bold>1M token context window</bold>! A versatile agentic coding model that supports image inputs, accessible through Roo Code Cloud.",
@@ -367,9 +367,9 @@
 			"goToSettingsButton": "Go to Settings"
 		},
 		"handoff": {
-			"heading": "The Roo Code plugin is not going away.",
-			"description": "You may have seen the recent announcement that Roo Code hit 3 million installs and the original team is going all-in on Roomote. We know that news was hard for a lot of you. This plugin means a lot to us and to you, and we hear you. The good news: <bold>a community team has stepped up to carry Roo Code forward</bold>, and we're working with them on an official handoff so the plugin you rely on keeps getting maintained and improved.",
-			"readMore": "Read the original announcement from Matt Rubens"
+			"heading": "Roo is back as Zoo Code.",
+			"description": "This final Roo Code update helps you move your local setup to the new Zoo Code extension maintained by the community. Roo stays installed long enough to prepare a handoff bundle for Zoo.",
+			"readMore": "Read the Zoo announcement"
 		},
 		"release": {
 			"heading": "What's New:",
@@ -382,6 +382,16 @@
 			"specialized": "Introducing <bold>Explainer</bold>, <bold>Planner</bold>, and <bold>Coder</bold> - three specialized cloud agents to enhance your workflows.",
 			"description": "The agents work together in the cloud and can be triggered from the web or through Slack.",
 			"tryButton": "Try Cloud Agents"
+		},
+		"zooMigration": {
+			"heading": "Prepare your Zoo migration",
+			"description": "Create a handoff bundle from Roo's local storage. Roo keeps your original data in place and asks before including API keys.",
+			"prepareButton": "Prepare Migration",
+			"installButton": "Install Zoo",
+			"detailsHeading": "What this does:",
+			"copiesData": "Copies your Roo settings and task history into a Zoo migration folder.",
+			"keepsOriginals": "Leaves your existing Roo folders untouched so you can verify the handoff first.",
+			"apiKeysOptIn": "Includes provider profiles and API keys only if you explicitly choose to include them."
 		}
 	},
 	"reasoning": {

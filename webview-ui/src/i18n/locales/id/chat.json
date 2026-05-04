@@ -367,7 +367,7 @@
 		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} Dirilis",
+		"title": "Roo Code {{version}}: pindah ke Zoo Code",
 		"support": "Dukung Roo Code dengan memberi kami bintang di <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Model stealth GRATIS waktu terbatas</bold> - Code Supernova: Sekarang diupgrade dengan <bold>jendela konteks 1M token</bold>! Model coding agentik serbaguna yang mendukung input gambar, tersedia melalui Roo Code Cloud.",
@@ -377,9 +377,9 @@
 			"goToSettingsButton": "Pergi ke Pengaturan"
 		},
 		"handoff": {
-			"heading": "Plugin Roo Code tidak akan hilang.",
-			"description": "Kamu mungkin sudah melihat pengumuman baru-baru ini bahwa Roo Code mencapai 3 juta instalasi dan tim aslinya sepenuhnya fokus ke Roomote. Kami tahu berita itu berat bagi banyak dari kalian. Plugin ini sangat berarti bagi kami dan bagi kamu, dan kami mendengarmu. Kabar baiknya: <bold>sebuah tim komunitas telah maju untuk melanjutkan Roo Code</bold>, dan kami sedang bekerja sama dengan mereka untuk serah terima resmi agar plugin yang kamu andalkan tetap dirawat dan ditingkatkan.",
-			"readMore": "Baca pengumuman asli dari Matt Rubens"
+			"heading": "Roo kembali sebagai Zoo Code.",
+			"description": "Update terakhir Roo Code ini membantumu memindahkan setup lokal ke ekstensi Zoo Code baru yang dikelola komunitas. Roo tetap terpasang cukup lama untuk menyiapkan paket handoff bagi Zoo.",
+			"readMore": "Baca pengumuman Zoo"
 		},
 		"release": {
 			"heading": "Yang Baru:",
@@ -392,6 +392,16 @@
 			"specialized": "Memperkenalkan <bold>Explainer</bold>, <bold>Planner</bold>, dan <bold>Coder</bold> - tiga agen cloud khusus untuk meningkatkan alur kerja Anda.",
 			"description": "Agen bekerja bersama di cloud dan dapat dipicu dari web atau melalui Slack.",
 			"tryButton": "Coba Agen Cloud"
+		},
+		"zooMigration": {
+			"heading": "Siapkan migrasi Zoo kamu",
+			"description": "Buat paket handoff dari penyimpanan lokal Roo. Roo mempertahankan data asli di tempatnya dan meminta izin sebelum menyertakan API key.",
+			"prepareButton": "Siapkan Migrasi",
+			"installButton": "Instal Zoo",
+			"detailsHeading": "Yang dilakukan:",
+			"copiesData": "Menyalin pengaturan Roo dan riwayat tugas ke folder migrasi Zoo.",
+			"keepsOriginals": "Membiarkan folder Roo yang ada tetap utuh agar kamu bisa memeriksa handoff terlebih dulu.",
+			"apiKeysOptIn": "Menyertakan profil provider dan API key hanya jika kamu secara eksplisit memilih untuk menyertakannya."
 		}
 	},
 	"reasoning": {

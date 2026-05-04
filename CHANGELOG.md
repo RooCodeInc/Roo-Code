@@ -1,5 +1,11 @@
 # Roo Code Changelog
 
+## 3.53.1
+
+### Patch Changes
+
+- Add the Zoo Code migration handoff flow, including a VS Code command, activation notification, and release announcement actions to prepare Roo data for import into Zoo Code.
+
 ## 3.53.0
 
 ### Minor Changes

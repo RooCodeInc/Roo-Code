@@ -2,6 +2,8 @@ import React from "react"
 
 import { render, screen } from "@/utils/test-utils"
 
+import { vscode } from "@src/utils/vscode"
+
 import Announcement from "../Announcement"
 
 vi.mock("@src/utils/vscode", () => ({
@@ -12,11 +14,16 @@ vi.mock("@src/utils/vscode", () => ({
 
 vi.mock("@roo/package", () => ({
 	Package: {
-		version: "3.53.0",
+		version: "3.53.1",
 	},
 }))
 
 vi.mock("@vscode/webview-ui-toolkit/react", () => ({
+	VSCodeButton: ({ children, onClick, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+		<button onClick={onClick} {...props}>
+			{children}
+		</button>
+	),
 	VSCodeLink: ({ children, href, onClick, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
 		<a href={href} onClick={onClick} {...props}>
 			{children}
@@ -32,18 +39,24 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 	useAppTranslation: () => ({
 		t: (key: string, options?: { version?: string }) => {
 			const translations: Record<string, string> = {
-				"chat:announcement.release.heading": "What's New:",
-				"chat:announcement.release.gpt55":
-					"GPT-5.5 via OpenAI Codex: Added GPT-5.5 support in the OpenAI Codex provider so you can use the latest model straight from Roo Code.",
-				"chat:announcement.release.claudeOpus47":
-					"Claude Opus 4.7 on Vertex AI: Added Claude Opus 4.7 to the Vertex AI provider for Anthropic's newest flagship reasoning model.",
-				"chat:announcement.release.checkpointNav":
-					"Previous Checkpoint Navigation: Added controls in chat to jump back through prior checkpoints, with full i18n support.",
-				"chat:announcement.handoff.heading": "The Roo Code plugin is not going away.",
+				"chat:announcement.handoff.heading": "Roo is back as Zoo Code.",
+				"chat:announcement.handoff.readMore": "Read the Zoo announcement",
+				"chat:announcement.zooMigration.heading": "Prepare your Zoo migration",
+				"chat:announcement.zooMigration.description":
+					"Create a handoff bundle from Roo's local storage. Roo keeps your original data in place and asks before including API keys.",
+				"chat:announcement.zooMigration.prepareButton": "Prepare Migration",
+				"chat:announcement.zooMigration.installButton": "Install Zoo",
+				"chat:announcement.zooMigration.detailsHeading": "What this does:",
+				"chat:announcement.zooMigration.copiesData":
+					"Copies your Roo settings and task history into a Zoo migration folder.",
+				"chat:announcement.zooMigration.keepsOriginals":
+					"Leaves your existing Roo folders untouched so you can verify the handoff first.",
+				"chat:announcement.zooMigration.apiKeysOptIn":
+					"Includes provider profiles and API keys only if you explicitly choose to include them.",
 			}
 
 			if (key === "chat:announcement.title") {
-				return `Roo Code ${options?.version ?? ""} Released`
+				return `Roo Code ${options?.version ?? ""}: Move to Zoo Code`
 			}
 
 			return translations[key] ?? key
@@ -52,23 +65,15 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 }))
 
 describe("Announcement", () => {
-	it("renders the v3.53.0 announcement title and highlights", () => {
+	it("renders the v3.53.1 Zoo migration announcement", () => {
 		render(<Announcement hideAnnouncement={vi.fn()} />)
 
-		expect(screen.getByText("Roo Code 3.53.0 Released")).toBeInTheDocument()
+		expect(screen.getByText("Roo Code 3.53.1: Move to Zoo Code")).toBeInTheDocument()
+		expect(screen.getByText("Roo is back as Zoo Code.")).toBeInTheDocument()
+		expect(screen.getByText("Prepare your Zoo migration")).toBeInTheDocument()
 		expect(
 			screen.getByText(
-				"GPT-5.5 via OpenAI Codex: Added GPT-5.5 support in the OpenAI Codex provider so you can use the latest model straight from Roo Code.",
-			),
-		).toBeInTheDocument()
-		expect(
-			screen.getByText(
-				"Claude Opus 4.7 on Vertex AI: Added Claude Opus 4.7 to the Vertex AI provider for Anthropic's newest flagship reasoning model.",
-			),
-		).toBeInTheDocument()
-		expect(
-			screen.getByText(
-				"Previous Checkpoint Navigation: Added controls in chat to jump back through prior checkpoints, with full i18n support.",
+				"Create a handoff bundle from Roo's local storage. Roo keeps your original data in place and asks before including API keys.",
 			),
 		).toBeInTheDocument()
 	})
@@ -77,5 +82,15 @@ describe("Announcement", () => {
 		render(<Announcement hideAnnouncement={vi.fn()} />)
 
 		expect(screen.getAllByRole("listitem")).toHaveLength(3)
+	})
+
+	it("posts Zoo migration actions from the announcement", () => {
+		render(<Announcement hideAnnouncement={vi.fn()} />)
+
+		screen.getByRole("button", { name: "Prepare Migration" }).click()
+		expect(vscode.postMessage).toHaveBeenCalledWith({ type: "prepareZooMigration" })
+
+		screen.getByRole("button", { name: "Install Zoo" }).click()
+		expect(vscode.postMessage).toHaveBeenCalledWith({ type: "installZooExtension" })
 	})
 })

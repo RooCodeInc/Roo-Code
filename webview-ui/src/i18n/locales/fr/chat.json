@@ -338,7 +338,7 @@
 		"timerPrefix": "Approbation automatique activée. Sélection dans {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} est sortie",
+		"title": "Roo Code {{version}} : passer à Zoo Code",
 		"support": "Soutiens Roo Code en nous donnant une étoile sur <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Modèle stealth GRATUIT pour une durée limitée</bold> - Code Supernova : Maintenant amélioré avec une <bold>fenêtre de contexte de 1M tokens</bold> ! Un modèle de codage agentique polyvalent qui prend en charge les entrées d'images, accessible via Roo Code Cloud.",
@@ -348,9 +348,9 @@
 			"goToSettingsButton": "Aller aux Paramètres"
 		},
 		"handoff": {
-			"heading": "L'extension Roo Code ne va pas disparaître.",
-			"description": "Tu as peut-être vu l'annonce récente : Roo Code a franchi les 3 millions d'installations et l'équipe d'origine se consacre désormais entièrement à Roomote. On sait que cette nouvelle a été difficile pour beaucoup d'entre vous. Cette extension compte énormément pour nous comme pour toi, et on t'entend. La bonne nouvelle : <bold>une équipe de la communauté a décidé de prendre le relais pour faire avancer Roo Code</bold>, et on travaille avec eux sur une transmission officielle pour que l'extension sur laquelle tu comptes continue d'être maintenue et améliorée.",
-			"readMore": "Lire l'annonce originale de Matt Rubens"
+			"heading": "Roo revient sous le nom Zoo Code.",
+			"description": "Cette dernière mise à jour de Roo Code t’aide à déplacer ta configuration locale vers la nouvelle extension Zoo Code maintenue par la communauté. Roo reste installé assez longtemps pour préparer un paquet de transfert pour Zoo.",
+			"readMore": "Lire l’annonce de Zoo"
 		},
 		"release": {
 			"heading": "Quoi de neuf :",
@@ -363,6 +363,16 @@
 			"specialized": "Présentation d'<bold>Explainer</bold>, <bold>Planner</bold> et <bold>Coder</bold> - trois agents cloud spécialisés pour améliorer tes workflows.",
 			"description": "Les agents travaillent ensemble dans le cloud et peuvent être déclenchés depuis le web ou via Slack.",
 			"tryButton": "Essayer les Agents Cloud"
+		},
+		"zooMigration": {
+			"heading": "Prépare ta migration vers Zoo",
+			"description": "Crée un paquet de transfert depuis le stockage local de Roo. Roo laisse tes données d’origine en place et te demande confirmation avant d’inclure les clés API.",
+			"prepareButton": "Préparer la migration",
+			"installButton": "Installer Zoo",
+			"detailsHeading": "Ce que cela fait :",
+			"copiesData": "Copie tes paramètres Roo et ton historique de tâches dans un dossier de migration Zoo.",
+			"keepsOriginals": "Laisse tes dossiers Roo existants intacts pour que tu puisses vérifier le transfert d’abord.",
+			"apiKeysOptIn": "Inclut les profils de fournisseurs et les clés API uniquement si tu choisis explicitement de les inclure."
 		}
 	},
 	"costs": {

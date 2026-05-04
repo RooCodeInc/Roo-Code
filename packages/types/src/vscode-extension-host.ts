@@ -427,6 +427,8 @@ export interface WebviewMessage {
 		| "terminalOperation"
 		| "clearTask"
 		| "didShowAnnouncement"
+		| "prepareZooMigration"
+		| "installZooExtension"
 		| "selectImages"
 		| "exportCurrentTask"
 		| "shareCurrentTask"
