@@ -39,6 +39,7 @@ import { MdmService } from "./services/mdm/MdmService"
 import { migrateSettings } from "./utils/migrateSettings"
 import { autoImportSettings } from "./utils/autoImportSettings"
 import { API } from "./extension/api"
+import { showZooMigrationNotice } from "./services/zoo-migration/ZooMigration"
 
 import {
 	handleUri,
@@ -316,6 +317,12 @@ export async function activate(context: vscode.ExtensionContext) {
 	}
 
 	registerCommands({ context, outputChannel, provider })
+
+	void showZooMigrationNotice(context, { outputChannel }).catch((error) => {
+		outputChannel.appendLine(
+			`[Zoo Migration] Failed to show migration notice: ${error instanceof Error ? error.message : String(error)}`,
+		)
+	})
 
 	/**
 	 * We use the text document content provider API to show the left side for diff

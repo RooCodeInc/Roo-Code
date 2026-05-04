@@ -19,6 +19,22 @@
 		"delete_config_profile": "Apakah kamu yakin ingin menghapus profil konfigurasi ini?",
 		"delete_custom_mode_with_rules": "Anda yakin ingin menghapus mode {scope} ini?\n\nIni juga akan menghapus folder aturan terkait di:\n{rulesFolderPath}"
 	},
+	"zooMigration": {
+		"actions": {
+			"installZoo": "Instal Zoo",
+			"prepareMigration": "Siapkan Migrasi",
+			"learnMore": "Pelajari Selengkapnya",
+			"later": "Nanti",
+			"includeApiKeys": "Sertakan kunci API",
+			"skipApiKeys": "Lewati kunci API",
+			"cancel": "Batal"
+		},
+		"notice": "Roo Code sedang beralih ke Zoo Code. Kamu bisa menyiapkan handoff migrasi berbasis salinan untuk Zoo tanpa menghapus data Roo-mu.",
+		"zooNotPublished": "Zoo Code belum diterbitkan dengan id ekstensi Marketplace yang terkonfirmasi. Tampilan Extensions telah dibuka dengan pencarian Zoo Code.",
+		"preparePrompt": "Siapkan handoff migrasi Zoo Code lokal? Menyertakan kunci API akan menulis secret penyedia ke file lokal agar Zoo bisa mengimpornya, lalu menghapus handoff setelah impor.",
+		"handoffPrepared": "Handoff migrasi Zoo Code disiapkan di {{path}}. Instal Zoo Code dan impor dari handoff ini.",
+		"handoffFailed": "Gagal menyiapkan handoff migrasi Zoo Code: {{error}}"
+	},
 	"errors": {
 		"invalid_data_uri": "Format data URI tidak valid",
 		"error_copying_image": "Error menyalin gambar: {{errorMessage}}",

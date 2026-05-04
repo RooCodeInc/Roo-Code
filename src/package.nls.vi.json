@@ -10,6 +10,7 @@
 	"command.focusInput.title": "Tập Trung vào Trường Nhập",
 	"command.setCustomStoragePath.title": "Đặt Đường Dẫn Lưu Trữ Tùy Chỉnh",
 	"command.importSettings.title": "Nhập Cài Đặt",
+	"command.prepareZooMigration.title": "Chuẩn bị Di chuyển sang Zoo Code",
 	"command.terminal.addToContext.title": "Thêm Nội Dung Terminal vào Ngữ Cảnh",
 	"command.terminal.fixCommand.title": "Sửa Lệnh Này",
 	"command.terminal.explainCommand.title": "Giải Thích Lệnh Này",

@@ -19,6 +19,22 @@
 		"delete_config_profile": "क्या आप वाकई इस कॉन्फ़िगरेशन प्रोफ़ाइल को हटाना चाहते हैं?",
 		"delete_custom_mode_with_rules": "क्या आप वाकई इस {scope} मोड को हटाना चाहते हैं?\n\nयह संबंधित नियम फ़ोल्डर को भी यहाँ हटा देगा:\n{rulesFolderPath}"
 	},
+	"zooMigration": {
+		"actions": {
+			"installZoo": "Zoo इंस्टॉल करें",
+			"prepareMigration": "माइग्रेशन तैयार करें",
+			"learnMore": "और जानें",
+			"later": "बाद में",
+			"includeApiKeys": "API कुंजियां शामिल करें",
+			"skipApiKeys": "API कुंजियां छोड़ें",
+			"cancel": "रद्द करें"
+		},
+		"notice": "Roo Code, Zoo Code में बदल रहा है। आप Roo डेटा हटाए बिना Zoo के लिए कॉपी-आधारित माइग्रेशन हैंडऑफ तैयार कर सकते हैं।",
+		"zooNotPublished": "Zoo Code अभी तक पुष्टि किए गए Marketplace एक्सटेंशन id के तहत प्रकाशित नहीं है। Extensions दृश्य Zoo Code खोज के साथ खोल दिया गया है।",
+		"preparePrompt": "स्थानीय Zoo Code माइग्रेशन हैंडऑफ तैयार करें? API कुंजियां शामिल करने से प्रदाता secrets एक स्थानीय फ़ाइल में लिखे जाएंगे ताकि Zoo उन्हें आयात कर सके और फिर आयात के बाद हैंडऑफ हटा सके।",
+		"handoffPrepared": "Zoo Code माइग्रेशन हैंडऑफ {{path}} पर तैयार है। Zoo Code इंस्टॉल करें और इस हैंडऑफ से आयात करें।",
+		"handoffFailed": "Zoo Code माइग्रेशन हैंडऑफ तैयार करने में विफल: {{error}}"
+	},
 	"errors": {
 		"invalid_data_uri": "अमान्य डेटा URI फॉर्मेट",
 		"error_copying_image": "छवि कॉपी करने में त्रुटि: {{errorMessage}}",

@@ -19,6 +19,22 @@
 		"delete_config_profile": "この設定プロファイルを削除してもよろしいですか？",
 		"delete_custom_mode_with_rules": "この{scope}モードを削除してもよろしいですか？\n\nこれにより、関連するルールフォルダも次の場所で削除されます:\n{rulesFolderPath}"
 	},
+	"zooMigration": {
+		"actions": {
+			"installZoo": "Zoo をインストール",
+			"prepareMigration": "移行を準備",
+			"learnMore": "詳しく見る",
+			"later": "後で",
+			"includeApiKeys": "API キーを含める",
+			"skipApiKeys": "API キーをスキップ",
+			"cancel": "キャンセル"
+		},
+		"notice": "Roo Code は Zoo Code へ移行しています。Roo のデータを削除せずに、Zoo 用のコピー方式の移行ハンドオフを準備できます。",
+		"zooNotPublished": "Zoo Code は、確認済みの Marketplace 拡張機能 id ではまだ公開されていません。拡張機能ビューで Zoo Code の検索を開きました。",
+		"preparePrompt": "ローカルの Zoo Code 移行ハンドオフを準備しますか？API キーを含めると、Zoo がインポートできるようにプロバイダーの secret がローカルファイルに書き込まれ、インポート後にハンドオフを削除できます。",
+		"handoffPrepared": "Zoo Code 移行ハンドオフを {{path}} に準備しました。Zoo Code をインストールして、このハンドオフからインポートしてください。",
+		"handoffFailed": "Zoo Code 移行ハンドオフの準備に失敗しました: {{error}}"
+	},
 	"errors": {
 		"invalid_data_uri": "データURIフォーマットが無効です",
 		"error_copying_image": "画像のコピー中にエラーが発生しました：{{errorMessage}}",

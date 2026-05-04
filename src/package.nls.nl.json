@@ -20,6 +20,7 @@
 	"command.focusInput.title": "Focus op Invoerveld",
 	"command.setCustomStoragePath.title": "Aangepast Opslagpad Instellen",
 	"command.importSettings.title": "Instellingen Importeren",
+	"command.prepareZooMigration.title": "Zoo Code-migratie Voorbereiden",
 	"command.terminal.addToContext.title": "Terminalinhoud aan Context Toevoegen",
 	"command.terminal.fixCommand.title": "Repareer Dit Commando",
 	"command.terminal.explainCommand.title": "Leg Dit Commando Uit",

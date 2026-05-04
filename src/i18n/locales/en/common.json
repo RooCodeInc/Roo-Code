@@ -19,6 +19,22 @@
 		"delete_config_profile": "Are you sure you want to delete this configuration profile?",
 		"delete_custom_mode_with_rules": "Are you sure you want to delete this {scope} mode?\n\nThis will also delete the associated rules folder at:\n{rulesFolderPath}"
 	},
+	"zooMigration": {
+		"actions": {
+			"installZoo": "Install Zoo",
+			"prepareMigration": "Prepare Migration",
+			"learnMore": "Learn More",
+			"later": "Later",
+			"includeApiKeys": "Include API keys",
+			"skipApiKeys": "Skip API keys",
+			"cancel": "Cancel"
+		},
+		"notice": "Roo Code is transitioning to Zoo Code. You can prepare a copy-based migration handoff for Zoo without deleting your Roo data.",
+		"zooNotPublished": "Zoo Code is not published under a confirmed Marketplace extension id yet. The Extensions view has been opened with a Zoo Code search.",
+		"preparePrompt": "Prepare a local Zoo Code migration handoff? Including API keys writes provider secrets to a local file so Zoo can import them, then delete the handoff after import.",
+		"handoffPrepared": "Zoo Code migration handoff prepared at {{path}}. Install Zoo Code and import from this handoff.",
+		"handoffFailed": "Failed to prepare Zoo Code migration handoff: {{error}}"
+	},
 	"errors": {
 		"invalid_data_uri": "Invalid data URI format",
 		"error_copying_image": "Error copying image: {{errorMessage}}",

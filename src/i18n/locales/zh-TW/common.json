@@ -19,6 +19,22 @@
 		"delete_config_profile": "您確定要刪除此設定檔案嗎？",
 		"delete_custom_mode_with_rules": "您確定要刪除此 {scope} 模式嗎？\n\n這也將刪除位於以下位置的關聯規則資料夾：\n{rulesFolderPath}"
 	},
+	"zooMigration": {
+		"actions": {
+			"installZoo": "安裝 Zoo",
+			"prepareMigration": "準備遷移",
+			"learnMore": "瞭解更多",
+			"later": "稍後",
+			"includeApiKeys": "包含 API 金鑰",
+			"skipApiKeys": "略過 API 金鑰",
+			"cancel": "取消"
+		},
+		"notice": "Roo Code 正在遷移到 Zoo Code。你可以為 Zoo 準備以複製為基礎的遷移交接包，而不會刪除你的 Roo 資料。",
+		"zooNotPublished": "Zoo Code 尚未以確認的 Marketplace 擴充功能 id 發布。已開啟擴充功能檢視並搜尋 Zoo Code。",
+		"preparePrompt": "要準備本機 Zoo Code 遷移交接包嗎？包含 API 金鑰會將供應商 secrets 寫入本機檔案，讓 Zoo 匯入，然後在匯入後刪除交接包。",
+		"handoffPrepared": "Zoo Code 遷移交接包已準備在 {{path}}。請安裝 Zoo Code 並從此交接包匯入。",
+		"handoffFailed": "無法準備 Zoo Code 遷移交接包：{{error}}"
+	},
 	"errors": {
 		"invalid_data_uri": "資料 URI 格式無效",
 		"error_copying_image": "複製圖片時發生錯誤：{{errorMessage}}",

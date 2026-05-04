@@ -42,6 +42,7 @@ export const commandIds = [
 
 	"setCustomStoragePath",
 	"importSettings",
+	"prepareZooMigration",
 
 	"focusInput",
 	"acceptInput",

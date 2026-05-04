@@ -19,6 +19,22 @@
 		"delete_config_profile": "Bạn có chắc chắn muốn xóa hồ sơ cấu hình này không?",
 		"delete_custom_mode_with_rules": "Bạn có chắc chắn muốn xóa chế độ {scope} này không?\n\nThao tác này cũng sẽ xóa thư mục quy tắc liên quan tại:\n{rulesFolderPath}"
 	},
+	"zooMigration": {
+		"actions": {
+			"installZoo": "Cài đặt Zoo",
+			"prepareMigration": "Chuẩn bị Di chuyển",
+			"learnMore": "Tìm hiểu Thêm",
+			"later": "Để sau",
+			"includeApiKeys": "Bao gồm khóa API",
+			"skipApiKeys": "Bỏ qua khóa API",
+			"cancel": "Hủy"
+		},
+		"notice": "Roo Code đang chuyển sang Zoo Code. Bạn có thể chuẩn bị handoff di chuyển dạng sao chép cho Zoo mà không xóa dữ liệu Roo của mình.",
+		"zooNotPublished": "Zoo Code chưa được phát hành với id tiện ích Marketplace đã xác nhận. Khung Extensions đã được mở với tìm kiếm Zoo Code.",
+		"preparePrompt": "Chuẩn bị handoff di chuyển Zoo Code cục bộ? Bao gồm khóa API sẽ ghi secrets của nhà cung cấp vào một tệp cục bộ để Zoo có thể nhập chúng, rồi xóa handoff sau khi nhập.",
+		"handoffPrepared": "Handoff di chuyển Zoo Code đã được chuẩn bị tại {{path}}. Cài đặt Zoo Code và nhập từ handoff này.",
+		"handoffFailed": "Không thể chuẩn bị handoff di chuyển Zoo Code: {{error}}"
+	},
 	"errors": {
 		"invalid_data_uri": "Định dạng URI dữ liệu không hợp lệ",
 		"error_copying_image": "Lỗi khi sao chép hình ảnh: {{errorMessage}}",

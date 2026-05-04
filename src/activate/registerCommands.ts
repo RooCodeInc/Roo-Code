@@ -13,6 +13,7 @@ import { handleNewTask } from "./handleTask"
 import { CodeIndexManager } from "../services/code-index/manager"
 import { importSettingsWithFeedback } from "../core/config/importExport"
 import { MdmService } from "../services/mdm/MdmService"
+import { createZooMigrationHandoff, promptAndCreateZooMigrationHandoff } from "../services/zoo-migration/ZooMigration"
 import { t } from "../i18n"
 
 /**
@@ -154,6 +155,30 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 			},
 			filePath,
 		)
+	},
+	prepareZooMigration: async (options?: { skipPrompt?: boolean; includeSecrets?: boolean }) => {
+		try {
+			const migrationOptions = {
+				context,
+				contextProxy: provider.contextProxy,
+				providerSettingsManager: provider.providerSettingsManager,
+				outputChannel,
+			}
+
+			if (options?.skipPrompt) {
+				return await createZooMigrationHandoff({
+					...migrationOptions,
+					includeSecrets: options.includeSecrets ?? false,
+				})
+			}
+
+			return await promptAndCreateZooMigrationHandoff(migrationOptions)
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error)
+			outputChannel.appendLine(`[Zoo Migration] Failed to prepare migration handoff: ${message}`)
+			await vscode.window.showErrorMessage(t("common:zooMigration.handoffFailed", { error: message }))
+			return undefined
+		}
 	},
 	focusInput: async () => {
 		try {

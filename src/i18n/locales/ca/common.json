@@ -23,6 +23,22 @@
 		"delete_config_profile": "Estàs segur que vols eliminar aquest perfil de configuració?",
 		"delete_custom_mode_with_rules": "Esteu segur que voleu suprimir aquest mode {scope}?\n\nAixò també suprimirà la carpeta de regles associada a:\n{rulesFolderPath}"
 	},
+	"zooMigration": {
+		"actions": {
+			"installZoo": "Instal·la Zoo",
+			"prepareMigration": "Prepara la migració",
+			"learnMore": "Més informació",
+			"later": "Més tard",
+			"includeApiKeys": "Inclou les claus d'API",
+			"skipApiKeys": "Omet les claus d'API",
+			"cancel": "Cancel·la"
+		},
+		"notice": "Roo Code està passant a Zoo Code. Pots preparar un paquet de migració basat en còpia per a Zoo sense eliminar les teves dades de Roo.",
+		"zooNotPublished": "Zoo Code encara no s'ha publicat amb un id d'extensió confirmat al Marketplace. S'ha obert la vista d'extensions amb una cerca de Zoo Code.",
+		"preparePrompt": "Vols preparar un paquet de migració local de Zoo Code? Si inclous les claus d'API, els secrets del proveïdor s'escriuran en un fitxer local perquè Zoo els pugui importar i després eliminar el paquet.",
+		"handoffPrepared": "Paquet de migració de Zoo Code preparat a {{path}}. Instal·la Zoo Code i importa des d'aquest paquet.",
+		"handoffFailed": "No s'ha pogut preparar el paquet de migració de Zoo Code: {{error}}"
+	},
 	"errors": {
 		"invalid_data_uri": "Format d'URI de dades no vàlid",
 		"error_copying_image": "Error copiant la imatge: {{errorMessage}}",

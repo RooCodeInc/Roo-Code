@@ -19,6 +19,22 @@
 		"delete_config_profile": "Вы уверены, что хотите удалить этот профиль конфигурации?",
 		"delete_custom_mode_with_rules": "Вы уверены, что хотите удалить этот режим {scope}?\n\nЭто также приведет к удалению соответствующей папки правил по адресу:\n{rulesFolderPath}"
 	},
+	"zooMigration": {
+		"actions": {
+			"installZoo": "Установить Zoo",
+			"prepareMigration": "Подготовить миграцию",
+			"learnMore": "Подробнее",
+			"later": "Позже",
+			"includeApiKeys": "Включить API-ключи",
+			"skipApiKeys": "Пропустить API-ключи",
+			"cancel": "Отмена"
+		},
+		"notice": "Roo Code переходит на Zoo Code. Вы можете подготовить копируемый пакет миграции для Zoo, не удаляя данные Roo.",
+		"zooNotPublished": "Zoo Code еще не опубликован с подтвержденным id расширения Marketplace. Открыт раздел расширений с поиском Zoo Code.",
+		"preparePrompt": "Подготовить локальный пакет миграции Zoo Code? Если включить API-ключи, secrets провайдеров будут записаны в локальный файл, чтобы Zoo мог импортировать их, а затем удалить пакет после импорта.",
+		"handoffPrepared": "Пакет миграции Zoo Code подготовлен в {{path}}. Установите Zoo Code и импортируйте данные из этого пакета.",
+		"handoffFailed": "Не удалось подготовить пакет миграции Zoo Code: {{error}}"
+	},
 	"errors": {
 		"invalid_data_uri": "Неверный формат URI данных",
 		"error_copying_image": "Ошибка копирования изображения: {{errorMessage}}",

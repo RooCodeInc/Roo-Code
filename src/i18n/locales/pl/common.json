@@ -19,6 +19,22 @@
 		"delete_config_profile": "Czy na pewno chcesz usunąć ten profil konfiguracyjny?",
 		"delete_custom_mode_with_rules": "Czy na pewno chcesz usunąć ten tryb {scope}?\n\nSpowoduje to również usunięcie powiązanego folderu reguł pod adresem:\n{rulesFolderPath}"
 	},
+	"zooMigration": {
+		"actions": {
+			"installZoo": "Zainstaluj Zoo",
+			"prepareMigration": "Przygotuj Migrację",
+			"learnMore": "Dowiedz się Więcej",
+			"later": "Później",
+			"includeApiKeys": "Dołącz klucze API",
+			"skipApiKeys": "Pomiń klucze API",
+			"cancel": "Anuluj"
+		},
+		"notice": "Roo Code przechodzi na Zoo Code. Możesz przygotować dla Zoo migrację przez kopię bez usuwania danych Roo.",
+		"zooNotPublished": "Zoo Code nie jest jeszcze opublikowany pod potwierdzonym id rozszerzenia Marketplace. Widok Rozszerzenia został otwarty z wyszukiwaniem Zoo Code.",
+		"preparePrompt": "Przygotować lokalną migrację Zoo Code? Dołączenie kluczy API zapisze secrets dostawców do lokalnego pliku, aby Zoo mogło je zaimportować, a następnie usunąć plik po imporcie.",
+		"handoffPrepared": "Migracja Zoo Code została przygotowana w {{path}}. Zainstaluj Zoo Code i zaimportuj dane z tego pliku.",
+		"handoffFailed": "Nie udało się przygotować migracji Zoo Code: {{error}}"
+	},
 	"errors": {
 		"invalid_data_uri": "Nieprawidłowy format URI danych",
 		"error_copying_image": "Błąd kopiowania obrazu: {{errorMessage}}",

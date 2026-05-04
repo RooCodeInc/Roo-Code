@@ -150,6 +150,68 @@ const mockFs = {
 		throw error
 	}),
 
+	rm: vi.fn().mockImplementation(async (targetPath: string, options?: { recursive?: boolean; force?: boolean }) => {
+		if (mockFiles.has(targetPath)) {
+			mockFiles.delete(targetPath)
+			return Promise.resolve()
+		}
+
+		if (mockDirectories.has(targetPath)) {
+			for (const filePath of Array.from(mockFiles.keys())) {
+				if (filePath.startsWith(`${targetPath}/`)) {
+					mockFiles.delete(filePath)
+				}
+			}
+			for (const dirPath of Array.from(mockDirectories.values()) as string[]) {
+				if (dirPath === targetPath || dirPath.startsWith(`${targetPath}/`)) {
+					mockDirectories.delete(dirPath)
+				}
+			}
+			return Promise.resolve()
+		}
+
+		if (options?.force) {
+			return Promise.resolve()
+		}
+
+		const error = new Error(`ENOENT: no such file or directory, rm '${targetPath}'`)
+		;(error as any).code = "ENOENT"
+		throw error
+	}),
+
+	cp: vi.fn().mockImplementation(async (sourcePath: string, destinationPath: string) => {
+		if (mockFiles.has(sourcePath)) {
+			const parentDir = destinationPath.split("/").slice(0, -1).join("/")
+			ensureDirectoryExists(parentDir)
+			mockFiles.set(destinationPath, mockFiles.get(sourcePath))
+			return Promise.resolve()
+		}
+
+		if (mockDirectories.has(sourcePath)) {
+			ensureDirectoryExists(destinationPath)
+			for (const dirPath of Array.from(mockDirectories.values()) as string[]) {
+				if (dirPath.startsWith(`${sourcePath}/`)) {
+					ensureDirectoryExists(destinationPath + dirPath.slice(sourcePath.length))
+				}
+			}
+			for (const [filePath, content] of Array.from(mockFiles.entries())) {
+				if (filePath.startsWith(`${sourcePath}/`)) {
+					const copiedPath = destinationPath + filePath.slice(sourcePath.length)
+					const parentDir = copiedPath.split("/").slice(0, -1).join("/")
+					ensureDirectoryExists(parentDir)
+					mockFiles.set(copiedPath, content)
+				}
+			}
+			return Promise.resolve()
+		}
+
+		const error = new Error(`ENOENT: no such file or directory, cp '${sourcePath}'`)
+		;(error as any).code = "ENOENT"
+		throw error
+	}),
+
+	chmod: vi.fn().mockResolvedValue(undefined),
+
 	constants: require("fs").constants,
 
 	// Expose mock data for test assertions

@@ -19,6 +19,22 @@
 		"delete_config_profile": "이 구성 프로필을 삭제하시겠습니까?",
 		"delete_custom_mode_with_rules": "이 {scope} 모드를 삭제하시겠습니까?\n\n이렇게 하면 연결된 규칙 폴더도 다음 위치에서 삭제됩니다:\n{rulesFolderPath}"
 	},
+	"zooMigration": {
+		"actions": {
+			"installZoo": "Zoo 설치",
+			"prepareMigration": "마이그레이션 준비",
+			"learnMore": "자세히 보기",
+			"later": "나중에",
+			"includeApiKeys": "API 키 포함",
+			"skipApiKeys": "API 키 건너뛰기",
+			"cancel": "취소"
+		},
+		"notice": "Roo Code가 Zoo Code로 전환됩니다. Roo 데이터를 삭제하지 않고 Zoo용 복사 기반 마이그레이션 핸드오프를 준비할 수 있습니다.",
+		"zooNotPublished": "Zoo Code는 아직 확인된 Marketplace 확장 id로 게시되지 않았습니다. Extensions 보기에서 Zoo Code 검색을 열었습니다.",
+		"preparePrompt": "로컬 Zoo Code 마이그레이션 핸드오프를 준비할까요? API 키를 포함하면 Zoo가 가져올 수 있도록 공급자 secrets가 로컬 파일에 기록되고, 가져온 후 핸드오프를 삭제할 수 있습니다.",
+		"handoffPrepared": "Zoo Code 마이그레이션 핸드오프가 {{path}}에 준비되었습니다. Zoo Code를 설치하고 이 핸드오프에서 가져오세요.",
+		"handoffFailed": "Zoo Code 마이그레이션 핸드오프 준비 실패: {{error}}"
+	},
 	"errors": {
 		"invalid_data_uri": "잘못된 데이터 URI 형식",
 		"error_copying_image": "이미지 복사 중 오류 발생: {{errorMessage}}",
