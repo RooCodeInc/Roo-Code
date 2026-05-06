@@ -26,6 +26,7 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	terminalZshOhMy?: boolean
 	terminalZshP10k?: boolean
 	terminalZdotdir?: boolean
+	terminalAutoShow?: boolean
 	setCachedStateField: SetCachedStateField<
 		| "terminalOutputPreviewSize"
 		| "terminalShellIntegrationTimeout"
@@ -36,6 +37,7 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "terminalZshOhMy"
 		| "terminalZshP10k"
 		| "terminalZdotdir"
+		| "terminalAutoShow"
 	>
 }
 
@@ -49,6 +51,7 @@ export const TerminalSettings = ({
 	terminalZshOhMy,
 	terminalZshP10k,
 	terminalZdotdir,
+	terminalAutoShow,
 	setCachedStateField,
 	className,
 	...props
@@ -122,6 +125,21 @@ export const TerminalSettings = ({
 							</Select>
 							<div className="text-vscode-descriptionForeground text-sm mt-1">
 								{t("settings:terminal.outputPreviewSize.description")}
+							</div>
+						</SearchableSetting>
+
+						<SearchableSetting
+							settingId="terminal-auto-show"
+							section="terminal"
+							label={t("settings:terminal.autoShow.label")}>
+							<VSCodeCheckbox
+								checked={terminalAutoShow ?? false}
+								onChange={(e: any) => setCachedStateField("terminalAutoShow", e.target.checked)}
+								data-testid="terminal-auto-show-checkbox">
+								<span className="font-medium">{t("settings:terminal.autoShow.label")}</span>
+							</VSCodeCheckbox>
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
+								{t("settings:terminal.autoShow.description")}
 							</div>
 						</SearchableSetting>
 					</div>

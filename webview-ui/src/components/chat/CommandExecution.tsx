@@ -35,6 +35,7 @@ interface CommandExecutionProps {
 export const CommandExecution = ({ executionId, text, icon, title }: CommandExecutionProps) => {
 	const {
 		terminalShellIntegrationDisabled = false,
+		terminalAutoShow = false,
 		allowedCommands = [],
 		deniedCommands = [],
 		setAllowedCommands,
@@ -44,8 +45,10 @@ export const CommandExecution = ({ executionId, text, icon, title }: CommandExec
 	const { command, output: parsedOutput } = useMemo(() => parseCommandAndOutput(text), [text])
 
 	// If we aren't opening the VSCode terminal for this command then we default
-	// to expanding the command execution output.
-	const [isExpanded, setIsExpanded] = useState(terminalShellIntegrationDisabled)
+	// to expanding the command execution output. When terminalAutoShow is
+	// enabled, also auto-expand output regardless of terminal mode so users
+	// can always see what is happening.
+	const [isExpanded, setIsExpanded] = useState(terminalShellIntegrationDisabled || terminalAutoShow)
 	const [streamingOutput, setStreamingOutput] = useState("")
 	const [status, setStatus] = useState<CommandExecutionStatus | null>(null)
 

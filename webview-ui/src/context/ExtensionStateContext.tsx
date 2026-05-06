@@ -82,6 +82,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setTerminalShellIntegrationTimeout: (value: number) => void
 	terminalShellIntegrationDisabled?: boolean
 	setTerminalShellIntegrationDisabled: (value: boolean) => void
+	terminalAutoShow?: boolean
+	setTerminalAutoShow: (value: boolean) => void
 	terminalZdotdir?: boolean
 	setTerminalZdotdir: (value: boolean) => void
 	setTtsEnabled: (value: boolean) => void
@@ -544,6 +546,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 			setState((prevState) => ({ ...prevState, terminalShellIntegrationTimeout: value })),
 		setTerminalShellIntegrationDisabled: (value) =>
 			setState((prevState) => ({ ...prevState, terminalShellIntegrationDisabled: value })),
+		setTerminalAutoShow: (value) => setState((prevState) => ({ ...prevState, terminalAutoShow: value })),
 		setTerminalZdotdir: (value) => setState((prevState) => ({ ...prevState, terminalZdotdir: value })),
 		setMcpEnabled: (value) => setState((prevState) => ({ ...prevState, mcpEnabled: value })),
 		setTaskSyncEnabled: (value) => setState((prevState) => ({ ...prevState, taskSyncEnabled: value }) as any),

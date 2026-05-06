@@ -754,6 +754,10 @@
 			"label": "Terminal character limit",
 			"description": "Overrides the line limit to prevent memory issues by enforcing a hard cap on output size. If exceeded, keeps the beginning and end and shows a placeholder to Roo where content is skipped. <0>Learn more</0>"
 		},
+		"autoShow": {
+			"label": "Auto-show terminal on command execution",
+			"description": "Automatically reveal the terminal panel when Roo runs a command. When using the VS Code terminal (shell integration enabled), the terminal panel is shown. When using the Inline Terminal, command output in chat is auto-expanded instead."
+		},
 		"outputPreviewSize": {
 			"label": "Command output preview size",
 			"description": "Controls how much command output Roo sees directly. Full output is always saved and accessible when needed.",
