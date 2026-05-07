@@ -7,12 +7,15 @@ import remarkMath from "remark-math"
 import remarkGfm from "remark-gfm"
 
 import { vscode } from "@src/utils/vscode"
+import { isRenderedDiagramCodeBlock } from "@src/utils/chatSearchText"
+import { HighlightedText, applySearchHighlightsToHast } from "@src/utils/searchHighlight"
 
 import CodeBlock from "./CodeBlock"
 import MermaidBlock from "./MermaidBlock"
 
 interface MarkdownBlockProps {
 	markdown?: string
+	searchQuery?: string
 }
 
 const StyledMarkdown = styled.div`
@@ -203,7 +206,7 @@ const StyledMarkdown = styled.div`
 	}
 `
 
-const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
+const MarkdownBlock = memo(({ markdown, searchQuery }: MarkdownBlockProps) => {
 	const components = useMemo(
 		() => ({
 			table: ({ children, ...props }: any) => {
@@ -271,8 +274,8 @@ const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
 					codeString = codeChildren.filter((child) => typeof child === "string").join("")
 				}
 
-				// Handle mermaid diagrams
-				if (className.includes("language-mermaid")) {
+				// Mermaid-like graph/flowchart blocks render as diagrams, so their raw text is not searchable.
+				if (isRenderedDiagramCodeBlock(className, codeString)) {
 					return (
 						<div style={{ margin: "1em 0" }}>
 							<MermaidBlock code={codeString} />
@@ -287,21 +290,27 @@ const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
 				// Wrap CodeBlock in a div to ensure proper separation
 				return (
 					<div style={{ margin: "1em 0" }}>
-						<CodeBlock source={codeString} language={language} />
+						<CodeBlock source={codeString} language={language} searchQuery={searchQuery} />
 					</div>
 				)
 			},
 			code: ({ children, className, ...props }: any) => {
 				// This handles inline code
+				const text = Array.isArray(children) ? children.join("") : String(children ?? "")
+
 				return (
 					<code className={className} {...props}>
-						{children}
+						<HighlightedText text={text} query={searchQuery} />
 					</code>
 				)
 			},
 		}),
-		[],
+		[searchQuery],
 	)
+
+	const searchHighlightPlugin = useMemo(() => {
+		return () => (tree: any) => applySearchHighlightsToHast(tree, searchQuery, { skipPre: true })
+	}, [searchQuery])
 
 	return (
 		<StyledMarkdown>
@@ -321,7 +330,7 @@ const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
 						}
 					},
 				]}
-				rehypePlugins={[rehypeKatex as any]}
+				rehypePlugins={[rehypeKatex as any, searchHighlightPlugin]}
 				components={components}>
 				{markdown || ""}
 			</ReactMarkdown>

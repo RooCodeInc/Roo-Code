@@ -183,6 +183,21 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 
 		visibleProvider.postMessageToWebview({ type: "acceptInput" })
 	},
+	searchChat: async () => {
+		const visibleProvider = getVisibleProviderOrLog(outputChannel)
+
+		if (!visibleProvider) {
+			return
+		}
+
+		try {
+			await focusPanel(tabPanel, sidebarPanel)
+		} catch (error) {
+			outputChannel.appendLine(`Error focusing panel for chat search: ${error}`)
+		}
+
+		visibleProvider.postMessageToWebview({ type: "action", action: "openSearch" })
+	},
 	toggleAutoApprove: async () => {
 		const visibleProvider = getVisibleProviderOrLog(outputChannel)
 

@@ -24,6 +24,7 @@
 	"command.terminal.fixCommand.title": "Fix This Command",
 	"command.terminal.explainCommand.title": "Explain This Command",
 	"command.acceptInput.title": "Accept Input/Suggestion",
+	"command.searchChat.title": "Search Chat",
 	"command.toggleAutoApprove.title": "Toggle Auto-Approve",
 	"configuration.title": "Roo Code",
 	"commands.allowedCommands.description": "Commands that can be auto-executed when 'Always approve execute operations' is enabled",

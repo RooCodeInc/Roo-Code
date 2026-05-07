@@ -8,6 +8,7 @@ import { Fragment, jsx, jsxs } from "react/jsx-runtime"
 import { ChevronDown, ChevronUp, Copy, Check } from "lucide-react"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { StandardTooltip } from "@/components/ui"
+import { HighlightedText, applySearchHighlightsToHast } from "@src/utils/searchHighlight"
 
 export const CODE_BLOCK_BG_COLOR = "var(--vscode-editor-background, --vscode-sideBar-background, rgb(30 30 30))"
 export const WRAPPER_ALPHA = "cc" // 80% opacity
@@ -37,6 +38,7 @@ interface CodeBlockProps {
 	initialWordWrap?: boolean
 	collapsedHeight?: number
 	initialWindowShade?: boolean
+	searchQuery?: string
 }
 
 const CodeBlockButton = styled.button`
@@ -174,6 +176,7 @@ const CodeBlock = memo(
 		initialWordWrap = true,
 		initialWindowShade = true,
 		collapsedHeight,
+		searchQuery,
 	}: CodeBlockProps) => {
 		// Use word wrap from props, default to true
 		const wordWrap = initialWordWrap
@@ -199,7 +202,9 @@ const CodeBlock = memo(
 			// Create a safe fallback using React elements instead of HTML string
 			const fallback = (
 				<pre style={{ padding: 0, margin: 0 }}>
-					<code className={`hljs language-${currentLanguage || "txt"}`}>{source || ""}</code>
+					<code className={`hljs language-${currentLanguage || "txt"}`}>
+						<HighlightedText text={source || ""} query={searchQuery} />
+					</code>
 				</pre>
 			)
 
@@ -237,6 +242,8 @@ const CodeBlock = memo(
 					] as ShikiTransformer[],
 				})
 				if (!isMountedRef.current) return
+
+				applySearchHighlightsToHast(hast, searchQuery, { skipPre: false })
 
 				// Convert HAST to React elements using hast-util-to-jsx-runtime
 				// This approach eliminates XSS vulnerabilities by avoiding dangerouslySetInnerHTML
@@ -283,7 +290,7 @@ const CodeBlock = memo(
 					collapseTimeout2Ref.current = null
 				}
 			}
-		}, [source, currentLanguage, collapsedHeight])
+		}, [source, currentLanguage, collapsedHeight, searchQuery])
 
 		// Check if content height exceeds collapsed height whenever content changes
 		useEffect(() => {

@@ -166,6 +166,12 @@
 				"category": "%configuration.title%"
 			},
 			{
+				"command": "roo-cline.searchChat",
+				"title": "%command.searchChat.title%",
+				"category": "%configuration.title%",
+				"icon": "$(search)"
+			},
+			{
 				"command": "roo-cline.toggleAutoApprove",
 				"title": "%command.toggleAutoApprove.title%",
 				"category": "%configuration.title%"
@@ -229,8 +235,13 @@
 					"when": "view == roo-cline.SidebarProvider"
 				},
 				{
-					"command": "roo-cline.marketplaceButtonClicked",
+					"command": "roo-cline.searchChat",
 					"group": "navigation@4",
+					"when": "view == roo-cline.SidebarProvider"
+				},
+				{
+					"command": "roo-cline.marketplaceButtonClicked",
+					"group": "navigation@5",
 					"when": "view == roo-cline.SidebarProvider"
 				},
 				{
@@ -261,8 +272,13 @@
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				},
 				{
-					"command": "roo-cline.marketplaceButtonClicked",
+					"command": "roo-cline.searchChat",
 					"group": "navigation@4",
+					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
+				},
+				{
+					"command": "roo-cline.marketplaceButtonClicked",
+					"group": "navigation@5",
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				},
 				{
