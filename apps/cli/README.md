@@ -21,6 +21,10 @@ curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/i
 - Node.js 20 or higher
 - macOS Apple Silicon (M1/M2/M3/M4) or Linux x64
 
+On Windows, use the Roo Code VS Code extension as the runtime. See
+[Windows VS Code Bootstrap](docs/WINDOWS_VSCODE_BOOTSTRAP.md) for a repeatable
+workspace launch pattern that keeps provider setup, auth, and approvals in Roo.
+
 **Custom installation directory:**
 
 ```bash
