@@ -62,7 +62,7 @@ For contributing or development:
 pnpm install
 
 # Build the main extension first.
-pnpm --filter roo-cline bundle
+pnpm --filter ./src bundle
 
 # Build the CLI.
 pnpm --filter @roo-code/cli build
