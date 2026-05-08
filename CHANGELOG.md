@@ -1,4 +1,22 @@
-# Roo Code Changelog
+# Zoo Code Changelog
+
+All notable changes to Zoo Code will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and Zoo Code uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [3.54.0] - 2026-05-08
+
+### Added
+
+- Publish Zoo Code under the `ZooCodeOrganization.zoo-code` Marketplace identity, continuing from upstream Roo Code `3.53.0`.
+- Add stable publishing workflows for the VS Code Marketplace and Open VSX Registry.
+- Add a VS Code Marketplace pre-release workflow.
+
+---
+
+# Archived Roo Code Changelog
+
+The entries below are preserved from the upstream Roo Code project history before the Zoo Code marketplace handoff.
 
 ## 3.53.0
 
