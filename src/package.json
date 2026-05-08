@@ -1,9 +1,9 @@
 {
-	"name": "roo-cline",
+	"name": "zoo-code",
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
-	"publisher": "RooVeterinaryInc",
-	"version": "3.53.0",
+	"publisher": "ZooCodeOrganization",
+	"version": "3.54.0",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -14,13 +14,13 @@
 		"node": "20.19.2"
 	},
 	"author": {
-		"name": "Roo Code"
+		"name": "Zoo Code"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/RooCodeInc/Roo-Code"
+		"url": "https://github.com/Zoo-Code-Org/Zoo-Code"
 	},
-	"homepage": "https://roocode.com",
+	"homepage": "https://github.com/Zoo-Code-Org/Zoo-Code",
 	"categories": [
 		"AI",
 		"Chat",
@@ -42,8 +42,8 @@
 		"sonnet",
 		"ai",
 		"llama",
-		"roo code",
-		"roocode"
+		"zoo code",
+		"zoocode"
 	],
 	"activationEvents": [
 		"onLanguage",
@@ -427,7 +427,7 @@
 		"bundle": "node esbuild.mjs",
 		"vscode:prepublish": "pnpm bundle --production",
 		"vsix": "mkdirp ../bin && vsce package --no-dependencies --out ../bin",
-		"publish:marketplace": "vsce publish --no-dependencies && ovsx publish --no-dependencies",
+		"publish:marketplace": "pnpm vsix && npx @vscode/vsce publish --packagePath ../bin/zoo-code-$npm_package_version.vsix && pnpm exec ovsx publish ../bin/zoo-code-$npm_package_version.vsix --skip-duplicate",
 		"watch:bundle": "pnpm bundle --watch",
 		"watch:tsc": "cd .. && tsc --noEmit --watch --project src/tsconfig.json",
 		"clean": "rimraf README.md CHANGELOG.md LICENSE dist logs mock .turbo"

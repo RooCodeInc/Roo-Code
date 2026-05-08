@@ -53,7 +53,7 @@ function buildCliIfNeeded(): void {
 
 function buildExtensionIfNeeded(): void {
 	if (!isExtensionBuilt()) {
-		execSync("pnpm --filter roo-cline bundle", { cwd: findMonorepoRoot(), stdio: "inherit" })
+		execSync("pnpm --filter ./src bundle", { cwd: findMonorepoRoot(), stdio: "inherit" })
 		console.log("Extension build complete.")
 	}
 }
