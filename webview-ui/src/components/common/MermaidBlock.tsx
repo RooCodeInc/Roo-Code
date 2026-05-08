@@ -89,7 +89,7 @@ interface MermaidBlockProps {
 
 export default function MermaidBlock({ code }: MermaidBlockProps) {
 	const containerRef = useRef<HTMLDivElement>(null)
-	const [isLoading, setIsLoading] = useState(false)
+	const [isLoading, setIsLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 	const [isErrorExpanded, setIsErrorExpanded] = useState(false)
 	const { showCopyFeedback, copyWithFeedback } = useCopyToClipboard()
@@ -315,7 +315,7 @@ interface SvgContainerProps {
 
 const SvgContainer = styled.div<SvgContainerProps>`
 	opacity: ${(props) => (props.$isLoading ? 0.3 : 1)};
-	min-height: 20px;
+	min-height: ${(props) => (props.$isLoading ? "180px" : "20px")};
 	transition: opacity 0.2s ease;
 	cursor: pointer;
 	display: flex;

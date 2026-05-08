@@ -24,6 +24,7 @@
 	"command.terminal.fixCommand.title": "Repareer Dit Commando",
 	"command.terminal.explainCommand.title": "Leg Dit Commando Uit",
 	"command.acceptInput.title": "Invoer/Suggestie Accepteren",
+	"command.searchChat.title": "Chat doorzoeken",
 	"command.toggleAutoApprove.title": "Auto-Goedkeuring Schakelen",
 	"configuration.title": "Roo Code",
 	"commands.allowedCommands.description": "Commando's die automatisch kunnen worden uitgevoerd wanneer 'Altijd goedkeuren uitvoerbewerkingen' is ingeschakeld",

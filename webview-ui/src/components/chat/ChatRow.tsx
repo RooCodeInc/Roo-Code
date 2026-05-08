@@ -167,28 +167,22 @@ const ChatRow = memo(
 				return
 			}
 
-			const updateActiveHighlight = (reason: string) => {
+			if (!chatSearchQuery) {
+				return
+			}
+
+			const updateActiveHighlight = () => {
 				const matches = Array.from(row.querySelectorAll<HTMLElement>("[data-chat-search-match='true']"))
 
 				for (const match of matches) {
 					match.classList.remove("chat-search-match-active")
 				}
 
-				if (!chatSearchQuery || typeof activeChatSearchMatchIndex !== "number") {
+				if (typeof activeChatSearchMatchIndex !== "number") {
 					return
 				}
 
 				const activeMatch = matches[activeChatSearchMatchIndex]
-
-				console.debug("[chat-search]", {
-					event: "row-active-highlight",
-					reason,
-					messageTs: message.ts,
-					activeChatSearchMatchIndex,
-					matchCount: matches.length,
-					found: !!activeMatch,
-					text: activeMatch?.textContent,
-				})
 
 				if (!activeMatch) {
 					return
@@ -197,26 +191,26 @@ const ChatRow = memo(
 				activeMatch.classList.add("chat-search-match-active")
 			}
 
-			updateActiveHighlight("effect")
+			updateActiveHighlight()
 
-			if (!chatSearchQuery || typeof activeChatSearchMatchIndex !== "number") {
+			if (typeof activeChatSearchMatchIndex !== "number") {
 				return
 			}
 
 			let animationFrame: number | undefined
 
-			const scheduleUpdate = (reason: string) => {
+			const scheduleUpdate = () => {
 				if (animationFrame !== undefined) {
 					cancelAnimationFrame(animationFrame)
 				}
 
 				animationFrame = requestAnimationFrame(() => {
 					animationFrame = undefined
-					updateActiveHighlight(reason)
+					updateActiveHighlight()
 				})
 			}
 
-			const mutationObserver = new MutationObserver(() => scheduleUpdate("mutation"))
+			const mutationObserver = new MutationObserver(() => scheduleUpdate())
 			mutationObserver.observe(row, { childList: true, characterData: true, subtree: true })
 
 			return () => {

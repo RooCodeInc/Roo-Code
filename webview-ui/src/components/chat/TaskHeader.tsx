@@ -108,25 +108,21 @@ const TaskHeader = ({
 			return
 		}
 
+		if (!chatSearchQuery) {
+			return
+		}
+
 		const matches = Array.from(header.querySelectorAll<HTMLElement>("[data-chat-search-match='true']"))
 
 		for (const match of matches) {
 			match.classList.remove("chat-search-match-active")
 		}
 
-		if (!chatSearchQuery || typeof activeChatSearchMatchIndex !== "number") {
+		if (typeof activeChatSearchMatchIndex !== "number") {
 			return
 		}
 
 		const activeMatch = matches[activeChatSearchMatchIndex]
-
-		console.debug("[chat-search]", {
-			event: "task-header-active-highlight",
-			activeChatSearchMatchIndex,
-			matchCount: matches.length,
-			found: !!activeMatch,
-			text: activeMatch?.textContent,
-		})
 
 		if (activeMatch) {
 			activeMatch.classList.add("chat-search-match-active")

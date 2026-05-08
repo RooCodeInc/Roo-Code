@@ -13,6 +13,11 @@ const getFirstNonEmptyLine = (text: string) =>
 		.map((line) => line.trim())
 		.find(Boolean) ?? ""
 
+const EXCLUDED_TOOL_SEARCH_TEXT = new Set(["readFile", "read_file"])
+const MARKDOWN_REFERENCE_DEFINITION_RE = /^[ \t]{0,3}\[[^\]\n]+\]:[^\n]*(?:\n[ \t]+[^\n]*)*/gm
+const MARKDOWN_INLINE_LINK_RE = /(!?)\[([^\]\n]*)\]\([^)\n]+\)/g
+const MARKDOWN_REFERENCE_LINK_RE = /(!?)\[([^\]\n]+)\]\[[^\]\n]*\]/g
+
 export const normalizeSearchQuery = (query: string) => query.trim().toLocaleLowerCase()
 
 export const isRenderedDiagramCodeBlock = (languageOrInfo: string | undefined, code: string) => {
@@ -38,10 +43,29 @@ export const stripRenderedDiagramBlocks = (markdown: string) => {
 	)
 }
 
+export const stripMarkdownReferences = (markdown: string) => {
+	if (!markdown) {
+		return ""
+	}
+
+	return markdown
+		.replace(MARKDOWN_REFERENCE_DEFINITION_RE, "")
+		.replace(MARKDOWN_INLINE_LINK_RE, (_match, imageMarker: string, label: string) =>
+			imageMarker ? "" : label.replace(/`([^`]+)`/g, "$1"),
+		)
+		.replace(MARKDOWN_REFERENCE_LINK_RE, (_match, imageMarker: string, label: string) =>
+			imageMarker ? "" : label.replace(/`([^`]+)`/g, "$1"),
+		)
+}
+
 const collectToolSearchText = (text: string) => {
 	try {
 		const tool = JSON.parse(text)
 		const parts: string[] = []
+
+		if (typeof tool.tool === "string" && EXCLUDED_TOOL_SEARCH_TEXT.has(tool.tool)) {
+			return ""
+		}
 
 		for (const key of [
 			"tool",
@@ -78,10 +102,14 @@ export const getChatSearchText = (message: Pick<ClineMessage, "type" | "ask" | "
 		return ""
 	}
 
+	if (message.type === "say" && message.say === "reasoning") {
+		return ""
+	}
+
 	const rawText =
 		message.type === "ask" && message.ask === "tool" ? collectToolSearchText(message.text) : message.text
 
-	return stripRenderedDiagramBlocks(rawText)
+	return stripMarkdownReferences(stripRenderedDiagramBlocks(rawText))
 }
 
 export const countSearchMatches = (text: string, query: string) => {

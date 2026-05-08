@@ -24,6 +24,7 @@
 	"command.terminal.fixCommand.title": "このコマンドを修正",
 	"command.terminal.explainCommand.title": "このコマンドを説明",
 	"command.acceptInput.title": "入力/提案を承認",
+	"command.searchChat.title": "チャットを検索",
 	"command.toggleAutoApprove.title": "自動承認を切替",
 	"configuration.title": "Roo Code",
 	"commands.allowedCommands.description": "'常に実行操作を承認する'が有効な場合に自動実行できるコマンド",

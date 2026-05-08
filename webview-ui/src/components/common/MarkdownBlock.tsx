@@ -294,7 +294,7 @@ const MarkdownBlock = memo(({ markdown, searchQuery }: MarkdownBlockProps) => {
 					</div>
 				)
 			},
-			code: ({ children, className, ...props }: any) => {
+			code: ({ children, className, node: _node, ...props }: any) => {
 				// This handles inline code
 				const text = Array.isArray(children) ? children.join("") : String(children ?? "")
 
