@@ -99,7 +99,13 @@ describe("TelemetryClient", () => {
 			telemetryClient.capture("test_event", { property: "value" })
 
 			// Assert
-			expect(posthog.capture).toHaveBeenCalledWith("test_event", { property: "value" })
+			expect(posthog.capture).toHaveBeenCalledWith(
+				"test_event",
+				expect.objectContaining({
+					property: "value",
+					releaseChannel: "stable",
+				}),
+			)
 		})
 
 		it("doesn't capture events when telemetry is disabled", () => {

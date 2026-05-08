@@ -83,6 +83,7 @@ export enum TelemetryEventName {
 export const staticAppPropertiesSchema = z.object({
 	appName: z.string(),
 	appVersion: z.string(),
+	releaseChannel: z.string(),
 	vscodeVersion: z.string(),
 	platform: z.string(),
 	editorName: z.string(),

@@ -37,7 +37,12 @@ class TelemetryClient {
 	public capture(eventName: string, properties?: Record<string, any>) {
 		if (TelemetryClient.telemetryEnabled) {
 			try {
-				posthog.capture(eventName, properties)
+				posthog.capture(eventName, {
+					appName: process.env.PKG_NAME,
+					appVersion: process.env.PKG_VERSION,
+					releaseChannel: process.env.PKG_RELEASE_CHANNEL || "stable",
+					...properties,
+				})
 			} catch (_error) {
 				// Silently fail if there's an error capturing an event.
 			}

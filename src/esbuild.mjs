@@ -46,6 +46,10 @@ async function main() {
 		format: "cjs",
 		sourcesContent: false,
 		platform: "node",
+		define: {
+			"process.env.PKG_RELEASE_CHANNEL": JSON.stringify(process.env.PKG_RELEASE_CHANNEL || "stable"),
+			"process.env.POSTHOG_API_KEY": JSON.stringify(process.env.POSTHOG_API_KEY || ""),
+		},
 	}
 
 	const srcDir = __dirname

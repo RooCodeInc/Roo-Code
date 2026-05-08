@@ -3027,6 +3027,7 @@ export class ClineProvider
 			this._appProperties = {
 				appName: packageJSON?.name ?? Package.name,
 				appVersion: packageJSON?.version ?? Package.version,
+				releaseChannel: Package.releaseChannel,
 				vscodeVersion: vscode.version,
 				platform: process.platform,
 				editorName: vscode.env.appName,
