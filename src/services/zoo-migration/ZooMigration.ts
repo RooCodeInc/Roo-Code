@@ -17,7 +17,7 @@ const HANDOFF_FILE_NAME = "handoff-v1.json"
 
 const ZOO_REPOSITORY_URL = "https://github.com/Zoo-Code-Org/Zoo-Code"
 const ZOO_ANNOUNCEMENT_URL = "https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/"
-const ZOO_EXTENSION_ID = process.env.ZOO_CODE_EXTENSION_ID
+const ZOO_EXTENSION_ID = "ZooCodeOrganization.zoo-code"
 
 const CONFIGURATION_KEYS = [
 	"allowedCommands",
@@ -66,7 +66,7 @@ export type ZooMigrationHandoff = {
 	zoo: {
 		repositoryUrl: string
 		announcementUrl: string
-		extensionId?: string
+		extensionId: string
 	}
 	containsSecrets: boolean
 	globalSettings?: GlobalSettings
@@ -200,13 +200,12 @@ export async function showZooMigrationNotice(
 }
 
 export async function installOrShowZooExtension(): Promise<void> {
-	if (ZOO_EXTENSION_ID) {
+	try {
 		await vscode.commands.executeCommand("workbench.extensions.installExtension", ZOO_EXTENSION_ID)
-		return
+	} catch {
+		await vscode.commands.executeCommand("workbench.extensions.search", ZOO_EXTENSION_ID)
+		await vscode.window.showInformationMessage(t("common:zooMigration.installUnavailable"))
 	}
-
-	await vscode.commands.executeCommand("workbench.extensions.search", "Zoo Code")
-	await vscode.window.showInformationMessage(t("common:zooMigration.zooNotPublished"))
 }
 
 export async function promptAndCreateZooMigrationHandoff(options: {

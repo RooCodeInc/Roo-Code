@@ -3,7 +3,8 @@ import * as os from "os"
 import * as path from "path"
 import * as vscode from "vscode"
 
-import { createZooMigrationHandoff, showZooMigrationNotice } from "../ZooMigration"
+import packageJson from "../../../package.json"
+import { createZooMigrationHandoff, installOrShowZooExtension, showZooMigrationNotice } from "../ZooMigration"
 
 describe("createZooMigrationHandoff", () => {
 	let tmpDir: string
@@ -48,6 +49,8 @@ describe("createZooMigrationHandoff", () => {
 		expect(handoffJson.containsSecrets).toBe(false)
 		expect(handoffJson.providerProfiles).toBeUndefined()
 		expect(handoffJson.globalSettings).toEqual({ mode: "code" })
+		expect(handoffJson.zoo.extensionId).toBe("ZooCodeOrganization.zoo-code")
+		expect(Object.keys(handoffJson.vscodeConfiguration).sort()).toEqual(getContributedRooConfigurationKeys())
 		expect(handoffJson.copiedData).toEqual({
 			settings: "data/settings",
 			tasks: "data/tasks",
@@ -197,6 +200,41 @@ describe("showZooMigrationNotice", () => {
 	})
 })
 
+describe("installOrShowZooExtension", () => {
+	afterEach(() => {
+		vi.restoreAllMocks()
+	})
+
+	it("installs the published Zoo Code marketplace extension", async () => {
+		const executeCommand = vi.spyOn(vscode.commands, "executeCommand").mockResolvedValue(undefined)
+
+		await installOrShowZooExtension()
+
+		expect(executeCommand).toHaveBeenCalledWith(
+			"workbench.extensions.installExtension",
+			"ZooCodeOrganization.zoo-code",
+		)
+	})
+
+	it("falls back to extension search when the configured gallery cannot install Zoo Code yet", async () => {
+		const executeCommand = vi
+			.spyOn(vscode.commands, "executeCommand")
+			.mockRejectedValueOnce(new Error("Extension not found"))
+			.mockResolvedValueOnce(undefined)
+		const showInformationMessage = vi.spyOn(vscode.window, "showInformationMessage").mockResolvedValue(undefined)
+
+		await installOrShowZooExtension()
+
+		expect(executeCommand).toHaveBeenNthCalledWith(
+			1,
+			"workbench.extensions.installExtension",
+			"ZooCodeOrganization.zoo-code",
+		)
+		expect(executeCommand).toHaveBeenNthCalledWith(2, "workbench.extensions.search", "ZooCodeOrganization.zoo-code")
+		expect(showInformationMessage).toHaveBeenCalled()
+	})
+})
+
 function makeContext(globalStoragePath: string): vscode.ExtensionContext {
 	return {
 		globalStorageUri: vscode.Uri.file(globalStoragePath),
@@ -205,4 +243,10 @@ function makeContext(globalStoragePath: string): vscode.ExtensionContext {
 			update: vi.fn().mockResolvedValue(undefined),
 		},
 	} as any
+}
+
+function getContributedRooConfigurationKeys(): string[] {
+	return Object.keys((packageJson as any).contributes.configuration.properties)
+		.map((key) => key.replace(/^roo-cline\./, ""))
+		.sort()
 }

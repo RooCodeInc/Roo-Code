@@ -30,7 +30,7 @@
 			"cancel": "Cancel"
 		},
 		"notice": "Roo Code is transitioning to Zoo Code. You can prepare a copy-based migration handoff for Zoo without deleting your Roo data.",
-		"zooNotPublished": "Zoo Code is not published under a confirmed Marketplace extension id yet. The Extensions view has been opened with a Zoo Code search.",
+		"installUnavailable": "Zoo Code is available as ZooCodeOrganization.zoo-code. Automatic install did not complete, so the Extensions view has been opened so you can install it from your configured extension gallery.",
 		"preparePrompt": "Prepare a local Zoo Code migration handoff? Including API keys writes provider secrets to a local file so Zoo can import them, then delete the handoff after import.",
 		"handoffPrepared": "Zoo Code migration handoff prepared at {{path}}. Install Zoo Code and import from this handoff.",
 		"handoffFailed": "Failed to prepare Zoo Code migration handoff: {{error}}"

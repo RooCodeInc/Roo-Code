@@ -30,7 +30,7 @@
 			"cancel": "キャンセル"
 		},
 		"notice": "Roo Code は Zoo Code へ移行しています。Roo のデータを削除せずに、Zoo 用のコピー方式の移行ハンドオフを準備できます。",
-		"zooNotPublished": "Zoo Code は、確認済みの Marketplace 拡張機能 id ではまだ公開されていません。拡張機能ビューで Zoo Code の検索を開きました。",
+		"installUnavailable": "Zoo Code は ZooCodeOrganization.zoo-code として利用できます。自動インストールが完了しなかったため、設定済みの拡張機能ギャラリーからインストールできるように Extensions ビューを開きました。",
 		"preparePrompt": "ローカルの Zoo Code 移行ハンドオフを準備しますか？API キーを含めると、Zoo がインポートできるようにプロバイダーの secret がローカルファイルに書き込まれ、インポート後にハンドオフを削除できます。",
 		"handoffPrepared": "Zoo Code 移行ハンドオフを {{path}} に準備しました。Zoo Code をインストールして、このハンドオフからインポートしてください。",
 		"handoffFailed": "Zoo Code 移行ハンドオフの準備に失敗しました: {{error}}"

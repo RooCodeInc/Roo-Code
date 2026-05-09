@@ -30,7 +30,7 @@
 			"cancel": "Cancelar"
 		},
 		"notice": "Roo Code está pasando a Zoo Code. Puedes preparar una entrega de migración basada en copia para Zoo sin eliminar tus datos de Roo.",
-		"zooNotPublished": "Zoo Code aún no está publicado con un id de extensión confirmado en Marketplace. Se abrió la vista de Extensiones con una búsqueda de Zoo Code.",
+		"installUnavailable": "Zoo Code está disponible como ZooCodeOrganization.zoo-code. La instalación automática no se completó, así que se abrió la vista de Extensiones para que puedas instalarlo desde tu galería de extensiones configurada.",
 		"preparePrompt": "¿Preparar una entrega local de migración a Zoo Code? Si incluyes claves de API, los secrets del proveedor se escribirán en un archivo local para que Zoo pueda importarlos y luego eliminar la entrega.",
 		"handoffPrepared": "Entrega de migración a Zoo Code preparada en {{path}}. Instala Zoo Code e importa desde esta entrega.",
 		"handoffFailed": "No se pudo preparar la entrega de migración a Zoo Code: {{error}}"

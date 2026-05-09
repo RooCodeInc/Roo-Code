@@ -34,7 +34,7 @@
 			"cancel": "Cancel·la"
 		},
 		"notice": "Roo Code està passant a Zoo Code. Pots preparar un paquet de migració basat en còpia per a Zoo sense eliminar les teves dades de Roo.",
-		"zooNotPublished": "Zoo Code encara no s'ha publicat amb un id d'extensió confirmat al Marketplace. S'ha obert la vista d'extensions amb una cerca de Zoo Code.",
+		"installUnavailable": "Zoo Code està disponible com a ZooCodeOrganization.zoo-code. La instal·lació automàtica no s'ha completat, així que s'ha obert la vista Extensions perquè el puguis instal·lar des de la galeria d'extensions configurada.",
 		"preparePrompt": "Vols preparar un paquet de migració local de Zoo Code? Si inclous les claus d'API, els secrets del proveïdor s'escriuran en un fitxer local perquè Zoo els pugui importar i després eliminar el paquet.",
 		"handoffPrepared": "Paquet de migració de Zoo Code preparat a {{path}}. Instal·la Zoo Code i importa des d'aquest paquet.",
 		"handoffFailed": "No s'ha pogut preparar el paquet de migració de Zoo Code: {{error}}"

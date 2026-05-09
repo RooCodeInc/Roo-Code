@@ -30,7 +30,7 @@
 			"cancel": "Annuleren"
 		},
 		"notice": "Roo Code stapt over naar Zoo Code. Je kunt een kopie-gebaseerde migratiehandoff voor Zoo voorbereiden zonder je Roo-gegevens te verwijderen.",
-		"zooNotPublished": "Zoo Code is nog niet gepubliceerd onder een bevestigde Marketplace-extensie-id. De extensieweergave is geopend met een zoekopdracht naar Zoo Code.",
+		"installUnavailable": "Zoo Code is beschikbaar als ZooCodeOrganization.zoo-code. De automatische installatie is niet voltooid, daarom is de Extensions-weergave geopend zodat je het vanuit je geconfigureerde extensiegalerie kunt installeren.",
 		"preparePrompt": "Een lokale Zoo Code-migratiehandoff voorbereiden? Als je API-sleutels opneemt, worden provider-secrets naar een lokaal bestand geschreven zodat Zoo ze kan importeren en de handoff daarna kan verwijderen.",
 		"handoffPrepared": "Zoo Code-migratiehandoff voorbereid op {{path}}. Installeer Zoo Code en importeer vanuit deze handoff.",
 		"handoffFailed": "Kan Zoo Code-migratiehandoff niet voorbereiden: {{error}}"

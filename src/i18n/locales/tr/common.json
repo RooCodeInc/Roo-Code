@@ -30,7 +30,7 @@
 			"cancel": "İptal"
 		},
 		"notice": "Roo Code, Zoo Code'a geçiyor. Roo verilerini silmeden Zoo için kopya tabanlı bir geçiş handoff'u hazırlayabilirsin.",
-		"zooNotPublished": "Zoo Code henüz doğrulanmış bir Marketplace eklenti id'siyle yayınlanmadı. Eklentiler görünümü Zoo Code aramasıyla açıldı.",
+		"installUnavailable": "Zoo Code, ZooCodeOrganization.zoo-code olarak mevcut. Otomatik yükleme tamamlanmadı, bu yüzden yapılandırılmış eklenti galerinden yükleyebilmen için Extensions görünümü açıldı.",
 		"preparePrompt": "Yerel bir Zoo Code geçiş handoff'u hazırlansın mı? API anahtarlarını dahil etmek, sağlayıcı secrets değerlerini Zoo'nun içe aktarabilmesi ve içe aktarma sonrası handoff'u silebilmesi için yerel bir dosyaya yazar.",
 		"handoffPrepared": "Zoo Code geçiş handoff'u {{path}} konumunda hazırlandı. Zoo Code'u yükle ve bu handoff'tan içe aktar.",
 		"handoffFailed": "Zoo Code geçiş handoff'u hazırlanamadı: {{error}}"

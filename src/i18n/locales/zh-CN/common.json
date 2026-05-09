@@ -30,7 +30,7 @@
 			"cancel": "取消"
 		},
 		"notice": "Roo Code 正在迁移到 Zoo Code。你可以为 Zoo 准备基于复制的迁移交接包，而不会删除你的 Roo 数据。",
-		"zooNotPublished": "Zoo Code 尚未以确认的 Marketplace 扩展 id 发布。已打开扩展视图并搜索 Zoo Code。",
+		"installUnavailable": "Zoo Code 已以 ZooCodeOrganization.zoo-code 提供。自动安装未完成，因此已打开 Extensions 视图，你可以从已配置的扩展图库中安装它。",
 		"preparePrompt": "要准备本地 Zoo Code 迁移交接包吗？包含 API 密钥会将提供商 secrets 写入本地文件，以便 Zoo 导入，并在导入后删除该交接包。",
 		"handoffPrepared": "Zoo Code 迁移交接包已准备在 {{path}}。请安装 Zoo Code 并从此交接包导入。",
 		"handoffFailed": "无法准备 Zoo Code 迁移交接包：{{error}}"

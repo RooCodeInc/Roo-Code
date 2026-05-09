@@ -30,7 +30,7 @@
 			"cancel": "Annulla"
 		},
 		"notice": "Roo Code sta passando a Zoo Code. Puoi preparare un handoff di migrazione basato su copia per Zoo senza eliminare i tuoi dati Roo.",
-		"zooNotPublished": "Zoo Code non è ancora pubblicato con un id estensione Marketplace confermato. La vista Estensioni è stata aperta con una ricerca di Zoo Code.",
+		"installUnavailable": "Zoo Code è disponibile come ZooCodeOrganization.zoo-code. L'installazione automatica non è stata completata, quindi la vista Estensioni è stata aperta per permetterti di installarlo dalla galleria estensioni configurata.",
 		"preparePrompt": "Preparare un handoff locale di migrazione Zoo Code? Includere le chiavi API scrive i secret dei provider in un file locale, così Zoo può importarli e poi eliminare l'handoff dopo l'importazione.",
 		"handoffPrepared": "Handoff di migrazione Zoo Code preparato in {{path}}. Installa Zoo Code e importa da questo handoff.",
 		"handoffFailed": "Impossibile preparare l'handoff di migrazione Zoo Code: {{error}}"

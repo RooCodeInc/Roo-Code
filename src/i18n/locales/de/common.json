@@ -30,7 +30,7 @@
 			"cancel": "Abbrechen"
 		},
 		"notice": "Roo Code wechselt zu Zoo Code. Du kannst eine kopierbasierte Migrationsübergabe für Zoo vorbereiten, ohne deine Roo-Daten zu löschen.",
-		"zooNotPublished": "Zoo Code ist noch nicht unter einer bestätigten Marketplace-Erweiterungs-ID veröffentlicht. Die Erweiterungsansicht wurde mit einer Suche nach Zoo Code geöffnet.",
+		"installUnavailable": "Zoo Code ist als ZooCodeOrganization.zoo-code verfügbar. Die automatische Installation wurde nicht abgeschlossen, deshalb wurde die Erweiterungsansicht geöffnet, damit du es aus deiner konfigurierten Erweiterungsgalerie installieren kannst.",
 		"preparePrompt": "Lokale Zoo Code-Migrationsübergabe vorbereiten? Wenn du API-Schlüssel einschließt, werden Provider-Secrets in eine lokale Datei geschrieben, damit Zoo sie importieren und die Übergabe danach löschen kann.",
 		"handoffPrepared": "Zoo Code-Migrationsübergabe unter {{path}} vorbereitet. Installiere Zoo Code und importiere aus dieser Übergabe.",
 		"handoffFailed": "Zoo Code-Migrationsübergabe konnte nicht vorbereitet werden: {{error}}"

@@ -30,7 +30,7 @@
 			"cancel": "Anuluj"
 		},
 		"notice": "Roo Code przechodzi na Zoo Code. Możesz przygotować dla Zoo migrację przez kopię bez usuwania danych Roo.",
-		"zooNotPublished": "Zoo Code nie jest jeszcze opublikowany pod potwierdzonym id rozszerzenia Marketplace. Widok Rozszerzenia został otwarty z wyszukiwaniem Zoo Code.",
+		"installUnavailable": "Zoo Code jest dostępny jako ZooCodeOrganization.zoo-code. Automatyczna instalacja nie została ukończona, więc otwarto widok Extensions, aby można było zainstalować go ze skonfigurowanej galerii rozszerzeń.",
 		"preparePrompt": "Przygotować lokalną migrację Zoo Code? Dołączenie kluczy API zapisze secrets dostawców do lokalnego pliku, aby Zoo mogło je zaimportować, a następnie usunąć plik po imporcie.",
 		"handoffPrepared": "Migracja Zoo Code została przygotowana w {{path}}. Zainstaluj Zoo Code i zaimportuj dane z tego pliku.",
 		"handoffFailed": "Nie udało się przygotować migracji Zoo Code: {{error}}"
