@@ -255,5 +255,15 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"rooImport": {
+		"notice": "Roo Code の移行ハンドオフが見つかりました。Roo の設定とチャット履歴を今すぐ Zoo Code にインポートしますか？",
+		"pickHandoffFile": "Roo Code ハンドオフファイルを選択 (handoff-v1.json)",
+		"importSuccess": "Roo のインポートが完了しました — {{tasks}} 件のタスクをコピーしました。履歴を確認するにはウィンドウをリロードしてください。",
+		"importFailed": "Roo のインポートに失敗しました: {{error}}",
+		"actions": {
+			"importNow": "今すぐインポート",
+			"later": "後で"
+		}
 	}
 }

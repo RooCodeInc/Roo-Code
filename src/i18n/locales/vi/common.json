@@ -262,5 +262,15 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"rooImport": {
+		"notice": "Đã tìm thấy gói di chuyển Roo Code. Bạn có muốn nhập cài đặt và lịch sử trò chuyện Roo vào Zoo Code ngay bây giờ không?",
+		"pickHandoffFile": "Chọn file handoff của Roo Code (handoff-v1.json)",
+		"importSuccess": "Nhập Roo hoàn tất — đã sao chép {{tasks}} tác vụ. Tải lại cửa sổ để xem lịch sử của bạn.",
+		"importFailed": "Nhập Roo thất bại: {{error}}",
+		"actions": {
+			"importNow": "Nhập ngay",
+			"later": "Để sau"
+		}
 	}
 }

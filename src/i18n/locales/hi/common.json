@@ -255,5 +255,15 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"rooImport": {
+		"notice": "Roo Code माइग्रेशन हैंडऑफ मिला। क्या आप अभी अपनी Roo सेटिंग्स और चैट इतिहास Zoo Code में आयात करना चाहते हैं?",
+		"pickHandoffFile": "Roo Code हैंडऑफ फ़ाइल चुनें (handoff-v1.json)",
+		"importSuccess": "Roo आयात पूरा — {{tasks}} कार्य कॉपी किए गए। इतिहास देखने के लिए विंडो रीलोड करें।",
+		"importFailed": "Roo आयात विफल: {{error}}",
+		"actions": {
+			"importNow": "अभी आयात करें",
+			"later": "बाद में"
+		}
 	}
 }

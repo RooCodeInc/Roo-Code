@@ -255,5 +255,15 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"rooImport": {
+		"notice": "Bir Roo Code geçiş paketi bulundu. Roo ayarlarını ve sohbet geçmişini şimdi Zoo Code'a aktarmak ister misiniz?",
+		"pickHandoffFile": "Roo Code handoff dosyasını seçin (handoff-v1.json)",
+		"importSuccess": "Roo içe aktarımı tamamlandı — {{tasks}} görev kopyalandı. Geçmişi görmek için pencereyi yeniden yükleyin.",
+		"importFailed": "Roo içe aktarımı başarısız: {{error}}",
+		"actions": {
+			"importNow": "Şimdi İçe Aktar",
+			"later": "Sonra"
+		}
 	}
 }

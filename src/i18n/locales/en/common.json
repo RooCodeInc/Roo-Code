@@ -14,6 +14,16 @@
 		"one": "One item",
 		"other": "{{count}} items"
 	},
+	"rooImport": {
+		"notice": "A Roo Code migration handoff was found. Import your Roo settings and chat history into Zoo Code now?",
+		"pickHandoffFile": "Select Roo Code handoff file (handoff-v1.json)",
+		"importSuccess": "Roo import complete — {{tasks}} task(s) copied. Reload the window to see your history.",
+		"importFailed": "Roo import failed: {{error}}",
+		"actions": {
+			"importNow": "Import Now",
+			"later": "Later"
+		}
+	},
 	"confirmation": {
 		"reset_state": "Are you sure you want to reset all state and secret storage in the extension? This cannot be undone.",
 		"delete_config_profile": "Are you sure you want to delete this configuration profile?",

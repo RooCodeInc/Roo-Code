@@ -255,5 +255,15 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"rooImport": {
+		"notice": "S'ha trobat un paquet de migració de Roo Code. Vols importar ara la configuració i l'historial de xats de Roo a Zoo Code?",
+		"pickHandoffFile": "Selecciona el fitxer de migració de Roo Code (handoff-v1.json)",
+		"importSuccess": "Importació de Roo completada: {{tasks}} tasca(es) copiades. Recarrega la finestra per veure l'historial.",
+		"importFailed": "La importació de Roo ha fallat: {{error}}",
+		"actions": {
+			"importNow": "Importa ara",
+			"later": "Més tard"
+		}
 	}
 }

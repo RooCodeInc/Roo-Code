@@ -255,5 +255,15 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"rooImport": {
+		"notice": "Обнаружен пакет миграции Roo Code. Хотите импортировать настройки и историю чатов Roo в Zoo Code прямо сейчас?",
+		"pickHandoffFile": "Выберите файл передачи Roo Code (handoff-v1.json)",
+		"importSuccess": "Импорт Roo завершён — скопировано задач: {{tasks}}. Перезагрузите окно, чтобы увидеть историю.",
+		"importFailed": "Ошибка импорта Roo: {{error}}",
+		"actions": {
+			"importNow": "Импортировать сейчас",
+			"later": "Позже"
+		}
 	}
 }

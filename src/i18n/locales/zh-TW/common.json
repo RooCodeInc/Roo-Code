@@ -255,5 +255,15 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"rooImport": {
+		"notice": "發現 Roo Code 遷移交接包。是否立即將 Roo 設定和聊天記錄匯入 Zoo Code？",
+		"pickHandoffFile": "選擇 Roo Code 交接檔案 (handoff-v1.json)",
+		"importSuccess": "Roo 匯入完成 — 已複製 {{tasks}} 個任務。重新載入視窗以查看歷史記錄。",
+		"importFailed": "Roo 匯入失敗：{{error}}",
+		"actions": {
+			"importNow": "立即匯入",
+			"later": "稍後"
+		}
 	}
 }

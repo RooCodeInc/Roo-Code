@@ -255,5 +255,15 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"rooImport": {
+		"notice": "Paket migrasi Roo Code ditemukan. Apakah kamu ingin mengimpor pengaturan dan riwayat obrolan Roo ke Zoo Code sekarang?",
+		"pickHandoffFile": "Pilih file handoff Roo Code (handoff-v1.json)",
+		"importSuccess": "Impor Roo selesai — {{tasks}} tugas disalin. Muat ulang jendela untuk melihat riwayatmu.",
+		"importFailed": "Impor Roo gagal: {{error}}",
+		"actions": {
+			"importNow": "Impor Sekarang",
+			"later": "Nanti"
+		}
 	}
 }
