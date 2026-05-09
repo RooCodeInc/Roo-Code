@@ -38,6 +38,7 @@ import { CodeIndexManager } from "./services/code-index/manager"
 import { MdmService } from "./services/mdm/MdmService"
 import { migrateSettings } from "./utils/migrateSettings"
 import { autoImportSettings } from "./utils/autoImportSettings"
+import { showRooHandoffNotice } from "./services/roo-import/RooImport"
 import { API } from "./extension/api"
 
 import {
@@ -251,6 +252,18 @@ export async function activate(context: vscode.ExtensionContext) {
 	}
 
 	registerCommands({ context, outputChannel, provider })
+
+	void showRooHandoffNotice(context, {
+		context,
+		providerSettingsManager: provider.providerSettingsManager,
+		contextProxy: provider.contextProxy,
+		customModesManager: provider.customModesManager,
+		outputChannel,
+	}).catch((error) => {
+		outputChannel.appendLine(
+			`[Roo Import] Failed to check for handoff: ${error instanceof Error ? error.message : String(error)}`,
+		)
+	})
 
 	/**
 	 * We use the text document content provider API to show the left side for diff

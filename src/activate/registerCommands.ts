@@ -13,6 +13,7 @@ import { handleNewTask } from "./handleTask"
 import { CodeIndexManager } from "../services/code-index/manager"
 import { importSettingsWithFeedback } from "../core/config/importExport"
 import { MdmService } from "../services/mdm/MdmService"
+import { promptAndImportRooHandoff, importRooHandoffFromPath } from "../services/roo-import/RooImport"
 import { t } from "../i18n"
 
 /**
@@ -143,6 +144,36 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 			},
 			filePath,
 		)
+	},
+	importRooHandoff: async (handoffPath?: string) => {
+		const visibleProvider = await ClineProvider.getInstance()
+		if (!visibleProvider) {
+			return undefined
+		}
+
+		const importOptions = {
+			context,
+			providerSettingsManager: visibleProvider.providerSettingsManager,
+			contextProxy: visibleProvider.contextProxy,
+			customModesManager: visibleProvider.customModesManager,
+			outputChannel,
+		}
+
+		try {
+			const result = handoffPath
+				? await importRooHandoffFromPath(handoffPath, importOptions)
+				: await promptAndImportRooHandoff(importOptions)
+
+			if (result) {
+				await visibleProvider.postStateToWebview()
+			}
+
+			return result
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error)
+			outputChannel.appendLine(`[Roo Import] Failed: ${message}`)
+			return undefined
+		}
 	},
 	focusInput: async () => {
 		try {

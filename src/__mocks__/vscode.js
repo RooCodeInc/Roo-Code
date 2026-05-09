@@ -42,6 +42,8 @@ export const workspace = {
 	onDidChangeWorkspaceFolders: () => mockDisposable,
 	getConfiguration: () => ({
 		get: (key, defaultValue) => defaultValue,
+		inspect: () => ({ globalValue: undefined }),
+		update: () => Promise.resolve(),
 	}),
 	createFileSystemWatcher: () => ({
 		onDidCreate: () => mockDisposable,
@@ -150,6 +152,12 @@ export const CodeActionKind = {
 	RefactorRewrite: { value: "refactor.rewrite" },
 }
 
+export const ConfigurationTarget = {
+	Global: 1,
+	Workspace: 2,
+	WorkspaceFolder: 3,
+}
+
 export const EventEmitter = mockEventEmitter
 
 export default {
@@ -171,4 +179,5 @@ export default {
 	EventEmitter,
 	CodeAction,
 	CodeActionKind,
+	ConfigurationTarget,
 }

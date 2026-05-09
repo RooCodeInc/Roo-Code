@@ -41,6 +41,7 @@ export const commandIds = [
 
 	"setCustomStoragePath",
 	"importSettings",
+	"importRooHandoff",
 
 	"focusInput",
 	"acceptInput",
