@@ -202,10 +202,13 @@ export async function showZooMigrationNotice(
 export async function installOrShowZooExtension(): Promise<void> {
 	try {
 		await vscode.commands.executeCommand("workbench.extensions.installExtension", ZOO_EXTENSION_ID)
-	} catch {
-		await vscode.commands.executeCommand("workbench.extensions.search", ZOO_EXTENSION_ID)
-		await vscode.window.showInformationMessage(t("common:zooMigration.installUnavailable"))
-	}
+		if (vscode.extensions.getExtension(ZOO_EXTENSION_ID)) {
+			return
+		}
+	} catch {}
+
+	await vscode.commands.executeCommand("workbench.extensions.search", ZOO_EXTENSION_ID)
+	await vscode.window.showInformationMessage(t("common:zooMigration.installUnavailable"))
 }
 
 export async function promptAndCreateZooMigrationHandoff(options: {

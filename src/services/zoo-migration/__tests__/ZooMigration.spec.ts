@@ -207,6 +207,7 @@ describe("installOrShowZooExtension", () => {
 
 	it("installs the published Zoo Code marketplace extension", async () => {
 		const executeCommand = vi.spyOn(vscode.commands, "executeCommand").mockResolvedValue(undefined)
+		vi.spyOn(vscode.extensions, "getExtension").mockReturnValue({} as any)
 
 		await installOrShowZooExtension()
 
@@ -214,6 +215,7 @@ describe("installOrShowZooExtension", () => {
 			"workbench.extensions.installExtension",
 			"ZooCodeOrganization.zoo-code",
 		)
+		expect(executeCommand).toHaveBeenCalledTimes(1)
 	})
 
 	it("falls back to extension search when the configured gallery cannot install Zoo Code yet", async () => {
@@ -230,6 +232,23 @@ describe("installOrShowZooExtension", () => {
 			"workbench.extensions.installExtension",
 			"ZooCodeOrganization.zoo-code",
 		)
+		expect(executeCommand).toHaveBeenNthCalledWith(2, "workbench.extensions.search", "ZooCodeOrganization.zoo-code")
+		expect(showInformationMessage).toHaveBeenCalled()
+	})
+
+	it("falls back to extension search when install resolves without installing Zoo Code", async () => {
+		const executeCommand = vi.spyOn(vscode.commands, "executeCommand").mockResolvedValue(undefined)
+		vi.spyOn(vscode.extensions, "getExtension").mockReturnValue(undefined)
+		const showInformationMessage = vi.spyOn(vscode.window, "showInformationMessage").mockResolvedValue(undefined)
+
+		await installOrShowZooExtension()
+
+		expect(executeCommand).toHaveBeenNthCalledWith(
+			1,
+			"workbench.extensions.installExtension",
+			"ZooCodeOrganization.zoo-code",
+		)
+		expect(vscode.extensions.getExtension).toHaveBeenCalledWith("ZooCodeOrganization.zoo-code")
 		expect(executeCommand).toHaveBeenNthCalledWith(2, "workbench.extensions.search", "ZooCodeOrganization.zoo-code")
 		expect(showInformationMessage).toHaveBeenCalled()
 	})
