@@ -561,4 +561,8 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 		await this.sidebarProvider.activateProviderProfile({ name })
 		return this.getActiveProfile()
 	}
+
+	public get storagePath(): string {
+		return this.context.globalStorageUri.fsPath
+	}
 }

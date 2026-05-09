@@ -139,6 +139,11 @@ export interface RooCodeAPI extends EventEmitter<RooCodeAPIEvents> {
 	 * @throws Error if the profile does not exist
 	 */
 	setActiveProfile(name: string): Promise<string | undefined>
+	/**
+	 * Returns the extension's global storage path (context.globalStorageUri.fsPath).
+	 * Useful for tests that need to verify files written to or read from extension storage.
+	 */
+	get storagePath(): string
 }
 
 export interface RooCodeIpcServer extends EventEmitter<IpcServerEvents> {

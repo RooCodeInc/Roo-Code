@@ -10,5 +10,7 @@
 	},
 	// Turn off tsc task auto detection since we have the necessary tasks as npm scripts
 	"typescript.tsc.autoDetect": "off",
+	// Use the workspace TypeScript version so editor diagnostics match `pnpm check-types`
+	"typescript.tsdk": "node_modules/typescript/lib",
 	"vitest.disableWorkspaceWarning": true
 }
