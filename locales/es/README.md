@@ -13,15 +13,15 @@
 
 > Tu equipo de desarrollo con IA, directamente en tu editor
 
-## Actualización final de Roo Code: pasa a Zoo Code
+## Actualización final de Roo Code: opción de traspaso comunitaria
 
-> ### Roo vuelve como Zoo Code.
+> ### Roo Code está llegando a su fin.
 >
-> Esta actualización final de Roo Code te ayuda a mover tu configuración local a la nueva extensión Zoo Code mantenida por la comunidad.
+> Esta actualización final de Roo Code añade un traspaso basado en copia para quienes quieran probar Zoo Code, una extensión separada mantenida por la comunidad.
 >
-> Para migrar, instala **Zoo Code** desde tu galería de extensiones como `ZooCodeOrganization.zoo-code` y luego ejecuta **Roo Code: Prepare Zoo Migration** desde la paleta de comandos. Roo crea un paquete de traspaso basado en copia en su almacenamiento global con tu configuración e historial de tareas, sin tocar tus datos originales de Roo. Los perfiles de proveedor y las claves de API solo se incluyen si eliges incluirlos explícitamente.
+> Para probarlo, instala **Zoo Code** desde tu galería de extensiones como `ZooCodeOrganization.zoo-code` y luego ejecuta **Roo Code: Prepare Zoo Code Handoff** desde la paleta de comandos. Roo crea un paquete local de traspaso en su almacenamiento global con tu configuración e historial de tareas, sin tocar tus datos originales de Roo. Los perfiles de proveedor y las claves de API solo se incluyen si eliges incluirlos explícitamente.
 
-Lee el anuncio de la comunidad: [Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
+Lee el [anuncio de la comunidad de Zoo Code](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
 
 <details>
   <summary>🌐 Idiomas disponibles</summary>
@@ -45,7 +45,7 @@ Lee el anuncio de la comunidad: [Roo is back as Zoo](https://www.reddit.com/r/Ro
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 

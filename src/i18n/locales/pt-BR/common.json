@@ -26,18 +26,18 @@
 	"zooMigration": {
 		"actions": {
 			"installZoo": "Instalar Zoo",
-			"prepareMigration": "Preparar Migração",
+			"prepareMigration": "Preparar Handoff",
 			"learnMore": "Saiba Mais",
 			"later": "Mais Tarde",
 			"includeApiKeys": "Incluir chaves de API",
 			"skipApiKeys": "Ignorar chaves de API",
 			"cancel": "Cancelar"
 		},
-		"notice": "Roo Code está migrando para Zoo Code. Você pode preparar uma entrega de migração baseada em cópia para o Zoo sem excluir seus dados do Roo.",
+		"notice": "O Roo Code está sendo encerrado. Você pode preparar um handoff baseado em cópia para o Zoo Code sem excluir seus dados do Roo.",
 		"installUnavailable": "Zoo Code está disponível como ZooCodeOrganization.zoo-code. A instalação automática não foi concluída, então a visualização Extensões foi aberta para que você possa instalá-lo pela galeria de extensões configurada.",
-		"preparePrompt": "Preparar uma entrega local de migração para o Zoo Code? Incluir chaves de API grava os secrets dos provedores em um arquivo local para que o Zoo possa importá-los e depois excluir a entrega após a importação.",
-		"handoffPrepared": "Entrega de migração do Zoo Code preparada em {{path}}. Instale o Zoo Code e importe a partir desta entrega.",
-		"handoffFailed": "Falha ao preparar a entrega de migração do Zoo Code: {{error}}"
+		"preparePrompt": "Preparar um handoff local para o Zoo Code? Incluir chaves de API grava os secrets dos provedores em um arquivo local para que o Zoo Code possa importá-los e depois excluir o handoff após a importação.",
+		"handoffPrepared": "Handoff do Zoo Code preparado em {{path}}. Instale o Zoo Code e importe a partir deste handoff.",
+		"handoffFailed": "Falha ao preparar o handoff do Zoo Code: {{error}}"
 	},
 	"errors": {
 		"invalid_data_uri": "Formato de URI de dados inválido",

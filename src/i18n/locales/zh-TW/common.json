@@ -22,18 +22,18 @@
 	"zooMigration": {
 		"actions": {
 			"installZoo": "安裝 Zoo",
-			"prepareMigration": "準備遷移",
+			"prepareMigration": "準備交接包",
 			"learnMore": "瞭解更多",
 			"later": "稍後",
 			"includeApiKeys": "包含 API 金鑰",
 			"skipApiKeys": "略過 API 金鑰",
 			"cancel": "取消"
 		},
-		"notice": "Roo Code 正在遷移到 Zoo Code。你可以為 Zoo 準備以複製為基礎的遷移交接包，而不會刪除你的 Roo 資料。",
+		"notice": "Roo Code 即將停止維護。你可以為 Zoo Code 準備以複製為基礎的交接包，而不會刪除你的 Roo 資料。",
 		"installUnavailable": "Zoo Code 已以 ZooCodeOrganization.zoo-code 提供。自動安裝未完成，因此已開啟 Extensions 檢視，你可以從已設定的擴充功能圖庫安裝它。",
-		"preparePrompt": "要準備本機 Zoo Code 遷移交接包嗎？包含 API 金鑰會將供應商 secrets 寫入本機檔案，讓 Zoo 匯入，然後在匯入後刪除交接包。",
-		"handoffPrepared": "Zoo Code 遷移交接包已準備在 {{path}}。請安裝 Zoo Code 並從此交接包匯入。",
-		"handoffFailed": "無法準備 Zoo Code 遷移交接包：{{error}}"
+		"preparePrompt": "要為 Zoo Code 準備本機交接包嗎？包含 API 金鑰會將供應商 secrets 寫入本機檔案，讓 Zoo Code 匯入，然後在匯入後刪除交接包。",
+		"handoffPrepared": "Zoo Code 交接包已準備在 {{path}}。請安裝 Zoo Code 並從此交接包匯入。",
+		"handoffFailed": "無法準備 Zoo Code 交接包：{{error}}"
 	},
 	"errors": {
 		"invalid_data_uri": "資料 URI 格式無效",

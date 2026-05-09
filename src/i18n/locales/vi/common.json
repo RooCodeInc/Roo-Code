@@ -22,18 +22,18 @@
 	"zooMigration": {
 		"actions": {
 			"installZoo": "Cài đặt Zoo",
-			"prepareMigration": "Chuẩn bị Di chuyển",
+			"prepareMigration": "Chuẩn bị Handoff",
 			"learnMore": "Tìm hiểu Thêm",
 			"later": "Để sau",
 			"includeApiKeys": "Bao gồm khóa API",
 			"skipApiKeys": "Bỏ qua khóa API",
 			"cancel": "Hủy"
 		},
-		"notice": "Roo Code đang chuyển sang Zoo Code. Bạn có thể chuẩn bị handoff di chuyển dạng sao chép cho Zoo mà không xóa dữ liệu Roo của mình.",
+		"notice": "Roo Code đang kết thúc. Bạn có thể chuẩn bị handoff dạng sao chép cho Zoo Code mà không xóa dữ liệu Roo của mình.",
 		"installUnavailable": "Zoo Code có sẵn dưới tên ZooCodeOrganization.zoo-code. Quá trình cài đặt tự động chưa hoàn tất, nên khung Extensions đã được mở để bạn có thể cài đặt từ thư viện tiện ích đã cấu hình.",
-		"preparePrompt": "Chuẩn bị handoff di chuyển Zoo Code cục bộ? Bao gồm khóa API sẽ ghi secrets của nhà cung cấp vào một tệp cục bộ để Zoo có thể nhập chúng, rồi xóa handoff sau khi nhập.",
-		"handoffPrepared": "Handoff di chuyển Zoo Code đã được chuẩn bị tại {{path}}. Cài đặt Zoo Code và nhập từ handoff này.",
-		"handoffFailed": "Không thể chuẩn bị handoff di chuyển Zoo Code: {{error}}"
+		"preparePrompt": "Chuẩn bị handoff cục bộ cho Zoo Code? Bao gồm khóa API sẽ ghi secrets của nhà cung cấp vào một tệp cục bộ để Zoo Code có thể nhập chúng, rồi xóa handoff sau khi nhập.",
+		"handoffPrepared": "Handoff Zoo Code đã được chuẩn bị tại {{path}}. Cài đặt Zoo Code và nhập từ handoff này.",
+		"handoffFailed": "Không thể chuẩn bị handoff Zoo Code: {{error}}"
 	},
 	"errors": {
 		"invalid_data_uri": "Định dạng URI dữ liệu không hợp lệ",

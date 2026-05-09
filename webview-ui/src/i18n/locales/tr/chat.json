@@ -339,7 +339,7 @@
 		"timerPrefix": "Otomatik onay etkinleştirildi. {{seconds}}s içinde seçim yapılıyor…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}}: Zoo Code’a geç",
+		"title": "Roo Code {{version}}: topluluk handoff seçeneği",
 		"support": "<githubLink>GitHub</githubLink>'da yıldız vererek Roo Code'u destekle.",
 		"stealthModel": {
 			"feature": "<bold>Sınırlı süre ÜCRETSİZ gizli model</bold> - Code Supernova: Artık <bold>1M token bağlam penceresi</bold> ile yükseltildi! Görüntü girişlerini destekleyen çok amaçlı acentik kodlama modeli, Roo Code Cloud üzerinden kullanılabilir.",
@@ -349,9 +349,9 @@
 			"goToSettingsButton": "Ayarlar'a Git"
 		},
 		"handoff": {
-			"heading": "Roo, Zoo Code olarak geri döndü.",
-			"description": "Bu son Roo Code güncellemesi, yerel kurulumunu topluluk tarafından sürdürülen yeni Zoo Code uzantısına taşıman için yardımcı olur. Roo, Zoo için bir handoff paketi hazırlayacak kadar kurulu kalır.",
-			"readMore": "Zoo duyurusunu oku"
+			"heading": "Roo Code sona eriyor.",
+			"description": "Bu son Roo Code güncellemesi, Zoo Code'u denemek isteyen kullanıcılar için kopya tabanlı bir handoff ekler; Zoo Code, topluluk tarafından sürdürülen ayrı bir eklentidir.",
+			"readMore": "Zoo Code duyurusunu oku"
 		},
 		"release": {
 			"heading": "Yenilikler:",
@@ -366,12 +366,12 @@
 			"tryButton": "Bulut Ajanlarını Dene"
 		},
 		"zooMigration": {
-			"heading": "Zoo migration hazırlığını yap",
-			"description": "Roo’nun local storage alanından bir handoff paketi oluştur. Roo özgün verilerini yerinde bırakır ve API key eklemeden önce sorar.",
-			"prepareButton": "Migration hazırla",
+			"heading": "Zoo Code handoff'u hazırla",
+			"description": "Roo'nun depolamasından yerel bir handoff paketi oluştur. Roo orijinal verilerini yerinde tutar ve API anahtarlarını dahil etmeden önce sorar.",
+			"prepareButton": "Handoff'u Hazırla",
 			"installButton": "Zoo yükle",
 			"detailsHeading": "Bu ne yapar:",
-			"copiesData": "Roo ayarlarını ve görev geçmişini bir Zoo migration klasörüne kopyalar.",
+			"copiesData": "Roo ayarlarını ve görev geçmişini bir Zoo handoff klasörüne kopyalar.",
 			"keepsOriginals": "Handoff’u önce doğrulayabilmen için mevcut Roo klasörlerini olduğu gibi bırakır.",
 			"apiKeysOptIn": "Provider profillerini ve API key’leri yalnızca açıkça dahil etmeyi seçersen ekler."
 		}

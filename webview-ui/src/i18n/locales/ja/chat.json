@@ -338,7 +338,7 @@
 		"timerPrefix": "自動承認が有効です。{{seconds}}秒後に選択中…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}}: Zoo Code へ移行",
+		"title": "Roo Code {{version}}: コミュニティハンドオフオプション",
 		"support": "<githubLink>GitHub</githubLink>でスターを付けてRoo Codeを応援してください。",
 		"stealthModel": {
 			"feature": "<bold>期間限定無料ステルスモデル</bold> - Code Supernova：<bold>1Mトークンコンテキストウィンドウ</bold>にアップグレード！画像入力をサポートする多目的エージェントコーディングモデル、Roo Code Cloud 経由で利用可能。",
@@ -348,9 +348,9 @@
 			"goToSettingsButton": "設定に移動"
 		},
 		"handoff": {
-			"heading": "Roo は Zoo Code として戻ってきました。",
-			"description": "この最後の Roo Code アップデートは、ローカル設定をコミュニティがメンテナンスする新しい Zoo Code 拡張機能へ移すためのものです。Roo は Zoo 向けのハンドオフバンドルを準備できるよう、しばらくインストールされたままになります。",
-			"readMore": "Zoo の発表を読む"
+			"heading": "Roo Code は終了に向かっています。",
+			"description": "この最後の Roo Code アップデートでは、Zoo Code を試したいユーザー向けにコピー方式のハンドオフを追加します。Zoo Code はコミュニティが保守する別個の拡張機能です。",
+			"readMore": "Zoo Code のお知らせを読む"
 		},
 		"release": {
 			"heading": "新機能:",
@@ -365,12 +365,12 @@
 			"tryButton": "クラウドエージェントを試す"
 		},
 		"zooMigration": {
-			"heading": "Zoo への移行を準備",
-			"description": "Roo のローカルストレージからハンドオフバンドルを作成します。Roo は元データをそのまま残し、API キーを含める前に確認します。",
-			"prepareButton": "移行を準備",
+			"heading": "Zoo Code ハンドオフを準備",
+			"description": "Roo のストレージからローカルハンドオフバンドルを作成します。Roo は元のデータをそのまま残し、API キーを含める前に確認します。",
+			"prepareButton": "ハンドオフを準備",
 			"installButton": "Zoo をインストール",
 			"detailsHeading": "実行されること:",
-			"copiesData": "Roo の設定とタスク履歴を Zoo 移行フォルダーにコピーします。",
+			"copiesData": "Roo の設定とタスク履歴を Zoo ハンドオフフォルダーにコピーします。",
 			"keepsOriginals": "既存の Roo フォルダーは変更せず、先にハンドオフ内容を確認できます。",
 			"apiKeysOptIn": "プロバイダープロファイルと API キーは、明示的に選択した場合にのみ含めます。"
 		}

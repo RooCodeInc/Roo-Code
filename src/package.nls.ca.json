@@ -10,7 +10,7 @@
 	"command.focusInput.title": "Enfocar Camp d'Entrada",
 	"command.setCustomStoragePath.title": "Establir Ruta d'Emmagatzematge Personalitzada",
 	"command.importSettings.title": "Importar Configuració",
-	"command.prepareZooMigration.title": "Prepara la migració a Zoo Code",
+	"command.prepareZooMigration.title": "Prepara el traspàs a Zoo Code",
 	"command.terminal.addToContext.title": "Afegir Contingut del Terminal al Context",
 	"command.terminal.fixCommand.title": "Corregir Aquesta Ordre",
 	"command.terminal.explainCommand.title": "Explicar Aquesta Ordre",

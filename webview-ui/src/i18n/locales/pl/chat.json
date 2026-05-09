@@ -338,7 +338,7 @@
 		"timerPrefix": "Automatyczne zatwierdzanie włączone. Zaznaczanie za {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}}: przejdź na Zoo Code",
+		"title": "Roo Code {{version}}: opcja handoff społecznościowego",
 		"support": "Wesprzyj Roo Code, dając nam gwiazdkę na <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Darmowy model stealth na ograniczony czas</bold> - Code Supernova: Teraz ulepszony z <bold>oknem kontekstu 1M tokenów</bold>! Wszechstronny model kodowania agentowego, który obsługuje wprowadzanie obrazów, dostępny przez Roo Code Cloud.",
@@ -348,9 +348,9 @@
 			"goToSettingsButton": "Przejdź do Ustawień"
 		},
 		"handoff": {
-			"heading": "Roo wraca jako Zoo Code.",
-			"description": "Ta ostatnia aktualizacja Roo Code pomaga przenieść lokalną konfigurację do nowego rozszerzenia Zoo Code utrzymywanego przez społeczność. Roo pozostaje zainstalowane wystarczająco długo, aby przygotować pakiet przekazania dla Zoo.",
-			"readMore": "Przeczytaj ogłoszenie Zoo"
+			"heading": "Roo Code jest wygaszany.",
+			"description": "Ta ostatnia aktualizacja Roo Code dodaje handoff oparty na kopii dla użytkowników, którzy chcą wypróbować Zoo Code, osobne rozszerzenie utrzymywane przez społeczność.",
+			"readMore": "Przeczytaj ogłoszenie Zoo Code"
 		},
 		"release": {
 			"heading": "Co nowego:",
@@ -365,12 +365,12 @@
 			"tryButton": "Wypróbuj agentów chmurowych"
 		},
 		"zooMigration": {
-			"heading": "Przygotuj migrację do Zoo",
-			"description": "Utwórz pakiet przekazania z lokalnego magazynu Roo. Roo zostawia oryginalne dane na miejscu i pyta przed dołączeniem kluczy API.",
-			"prepareButton": "Przygotuj migrację",
+			"heading": "Przygotuj handoff dla Zoo Code",
+			"description": "Utwórz lokalny pakiet handoff z magazynu Roo. Roo pozostawia oryginalne dane na miejscu i pyta przed dołączeniem kluczy API.",
+			"prepareButton": "Przygotuj Handoff",
 			"installButton": "Zainstaluj Zoo",
 			"detailsHeading": "Co to robi:",
-			"copiesData": "Kopiuje ustawienia Roo i historię zadań do folderu migracji Zoo.",
+			"copiesData": "Kopiuje ustawienia Roo i historię zadań do folderu handoff Zoo.",
 			"keepsOriginals": "Pozostawia istniejące foldery Roo bez zmian, aby można było najpierw sprawdzić przekazanie.",
 			"apiKeysOptIn": "Dołącza profile dostawców i klucze API tylko wtedy, gdy wyraźnie wybierzesz ich dołączenie."
 		}

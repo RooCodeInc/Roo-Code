@@ -22,18 +22,18 @@
 	"zooMigration": {
 		"actions": {
 			"installZoo": "Zoo をインストール",
-			"prepareMigration": "移行を準備",
+			"prepareMigration": "ハンドオフを準備",
 			"learnMore": "詳しく見る",
 			"later": "後で",
 			"includeApiKeys": "API キーを含める",
 			"skipApiKeys": "API キーをスキップ",
 			"cancel": "キャンセル"
 		},
-		"notice": "Roo Code は Zoo Code へ移行しています。Roo のデータを削除せずに、Zoo 用のコピー方式の移行ハンドオフを準備できます。",
+		"notice": "Roo Code は終了に向かっています。Roo のデータを削除せずに、Zoo Code 用のコピー方式のハンドオフを準備できます。",
 		"installUnavailable": "Zoo Code は ZooCodeOrganization.zoo-code として利用できます。自動インストールが完了しなかったため、設定済みの拡張機能ギャラリーからインストールできるように Extensions ビューを開きました。",
-		"preparePrompt": "ローカルの Zoo Code 移行ハンドオフを準備しますか？API キーを含めると、Zoo がインポートできるようにプロバイダーの secret がローカルファイルに書き込まれ、インポート後にハンドオフを削除できます。",
-		"handoffPrepared": "Zoo Code 移行ハンドオフを {{path}} に準備しました。Zoo Code をインストールして、このハンドオフからインポートしてください。",
-		"handoffFailed": "Zoo Code 移行ハンドオフの準備に失敗しました: {{error}}"
+		"preparePrompt": "Zoo Code 用のローカルハンドオフを準備しますか？API キーを含めると、Zoo Code がインポートできるようにプロバイダーの secret がローカルファイルに書き込まれ、インポート後にハンドオフを削除できます。",
+		"handoffPrepared": "Zoo Code ハンドオフを {{path}} に準備しました。Zoo Code をインストールして、このハンドオフからインポートしてください。",
+		"handoffFailed": "Zoo Code ハンドオフの準備に失敗しました: {{error}}"
 	},
 	"errors": {
 		"invalid_data_uri": "データURIフォーマットが無効です",

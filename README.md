@@ -13,15 +13,15 @@
 
 > Your AI-Powered Dev Team, Right in Your Editor
 
-## Final Roo Code Update: Move to Zoo Code
+## Final Roo Code Update: Community handoff option
 
-> ### Roo is back as Zoo Code.
+> ### Roo Code is winding down.
 >
-> This final Roo Code update helps you move your local setup to the new community-maintained Zoo Code extension.
+> This final Roo Code update adds a copy-based handoff for users who want to try Zoo Code, a separate community-maintained extension.
 >
-> To migrate, install **Zoo Code** from your extension gallery as `ZooCodeOrganization.zoo-code`, then run **Roo Code: Prepare Zoo Migration** from the command palette. Roo creates a copy-based handoff bundle under its global storage with your settings and task history while leaving your original Roo data untouched. Provider profiles and API keys are included only if you explicitly choose to include them.
+> To try it, install **Zoo Code** from your extension gallery as `ZooCodeOrganization.zoo-code`, then run **Roo Code: Prepare Zoo Code Handoff** from the command palette. Roo creates a local handoff bundle under its global storage with your settings and task history while leaving your original Roo data untouched. Provider profiles and API keys are included only if you explicitly choose to include them.
 
-Read the community announcement: [Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
+Read the [Zoo Code community announcement](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
 
 <details>
   <summary>🌐 Available languages</summary>
@@ -45,7 +45,7 @@ Read the community announcement: [Roo is back as Zoo](https://www.reddit.com/r/R
 - [简体中文](locales/zh-CN/README.md)
 - [繁體中文](locales/zh-TW/README.md)
 - ...
-      </details>
+  </details>
 
 ---
 

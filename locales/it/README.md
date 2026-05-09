@@ -13,15 +13,15 @@
 
 > Il tuo team di sviluppo con IA, direttamente nel tuo editor
 
-## Ultimo aggiornamento di Roo Code: passa a Zoo Code
+## Ultimo aggiornamento di Roo Code: opzione handoff della community
 
-> ### Roo torna come Zoo Code.
+> ### Roo Code sta terminando.
 >
-> Questo ultimo aggiornamento di Roo Code ti aiuta a spostare la configurazione locale nella nuova estensione Zoo Code mantenuta dalla community.
+> Questo ultimo aggiornamento di Roo Code aggiunge un handoff basato su copia per gli utenti che vogliono provare Zoo Code, un'estensione separata mantenuta dalla community.
 >
-> Per migrare, installa **Zoo Code** dalla tua galleria estensioni come `ZooCodeOrganization.zoo-code`, poi esegui **Roo Code: Prepare Zoo Migration** dalla palette dei comandi. Roo crea nel suo storage globale un bundle di handoff basato su copia con le tue impostazioni e la cronologia dei task, senza modificare i dati Roo originali. I profili provider e le chiavi API vengono inclusi solo se scegli esplicitamente di includerli.
+> Per provarla, installa **Zoo Code** dalla tua galleria estensioni come `ZooCodeOrganization.zoo-code`, poi esegui **Roo Code: Prepare Zoo Code Handoff** dalla palette dei comandi. Roo crea nel suo storage globale un bundle locale di handoff con le tue impostazioni e la cronologia dei task, senza modificare i dati Roo originali. I profili provider e le chiavi API vengono inclusi solo se scegli esplicitamente di includerli.
 
-Leggi l'annuncio della community: [Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
+Leggi l'[annuncio della community di Zoo Code](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
 
 <details>
   <summary>🌐 Lingue disponibili</summary>
@@ -45,7 +45,7 @@ Leggi l'annuncio della community: [Roo is back as Zoo](https://www.reddit.com/r/
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 

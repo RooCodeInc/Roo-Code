@@ -338,7 +338,7 @@
 		"timerPrefix": "Automatische Genehmigung aktiviert. Wähle in {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}}: Zu Zoo Code wechseln",
+		"title": "Roo Code {{version}}: Community-Übergabeoption",
 		"support": "Bitte unterstütze Roo Code, indem du uns auf <githubLink>GitHub</githubLink> einen Stern gibst.",
 		"stealthModel": {
 			"feature": "<bold>Zeitlich begrenztes KOSTENLOSES Stealth-Modell</bold> - Code Supernova: Jetzt mit einem <bold>1M Token Kontextfenster</bold> erweitert! Ein vielseitiges agentisches Coding-Modell, das Bildeingaben unterstützt und über Roo Code Cloud zugänglich ist.",
@@ -348,9 +348,9 @@
 			"goToSettingsButton": "Zu den Einstellungen"
 		},
 		"handoff": {
-			"heading": "Roo ist als Zoo Code zurück.",
-			"description": "Dieses letzte Roo Code-Update hilft dir, deine lokale Einrichtung zur neuen, von der Community gepflegten Zoo Code-Erweiterung zu verschieben. Roo bleibt lange genug installiert, um ein Übergabepaket für Zoo vorzubereiten.",
-			"readMore": "Zoo-Ankündigung lesen"
+			"heading": "Roo Code läuft aus.",
+			"description": "Dieses letzte Roo Code-Update fügt eine kopiebasierte Übergabe für Nutzer hinzu, die Zoo Code ausprobieren möchten, eine separate, von der Community gepflegte Erweiterung.",
+			"readMore": "Zoo Code-Ankündigung lesen"
 		},
 		"release": {
 			"heading": "Was ist neu:",
@@ -365,12 +365,12 @@
 			"tryButton": "Probiere Cloud-Agenten aus"
 		},
 		"zooMigration": {
-			"heading": "Bereite deine Zoo-Migration vor",
-			"description": "Erstelle ein Übergabepaket aus Roos lokalem Speicher. Roo lässt deine Originaldaten an Ort und Stelle und fragt nach, bevor API-Schlüssel eingeschlossen werden.",
-			"prepareButton": "Migration vorbereiten",
+			"heading": "Zoo Code-Übergabe vorbereiten",
+			"description": "Erstelle ein lokales Übergabepaket aus Roos Speicher. Roo lässt deine ursprünglichen Daten unverändert und fragt nach, bevor API-Schlüssel eingeschlossen werden.",
+			"prepareButton": "Übergabe Vorbereiten",
 			"installButton": "Zoo installieren",
 			"detailsHeading": "Was dabei passiert:",
-			"copiesData": "Kopiert deine Roo-Einstellungen und deinen Aufgabenverlauf in einen Zoo-Migrationsordner.",
+			"copiesData": "Kopiert deine Roo-Einstellungen und deinen Aufgabenverlauf in einen Zoo-Übergabeordner.",
 			"keepsOriginals": "Lässt deine vorhandenen Roo-Ordner unverändert, damit du die Übergabe zuerst prüfen kannst.",
 			"apiKeysOptIn": "Schließt Anbieterprofile und API-Schlüssel nur ein, wenn du dich ausdrücklich dafür entscheidest."
 		}

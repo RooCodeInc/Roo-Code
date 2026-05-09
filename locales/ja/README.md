@@ -13,15 +13,15 @@
 
 > あなたのエディタの中に、AIで強化された開発チームを
 
-## Roo Code 最終アップデート: Zoo Code へ移行
+## Roo Code 最終アップデート: コミュニティハンドオフオプション
 
-> ### Roo は Zoo Code として戻ってきました。
+> ### Roo Code は終了に向かっています。
 >
-> この Roo Code の最終アップデートは、ローカル環境をコミュニティがメンテナンスする新しい Zoo Code 拡張機能へ移行するためのものです。
+> この最後の Roo Code アップデートでは、Zoo Code を試したいユーザー向けにコピー方式のハンドオフを追加します。Zoo Code はコミュニティが保守する別個の拡張機能です。
 >
-> 移行するには、拡張機能ギャラリーから **Zoo Code** を `ZooCodeOrganization.zoo-code` としてインストールし、コマンドパレットから **Roo Code: Prepare Zoo Migration** を実行してください。Roo はグローバルストレージ内に、設定とタスク履歴を含むコピー方式のハンドオフバンドルを作成します。元の Roo データは変更されません。プロバイダープロファイルと API キーは、明示的に含めることを選択した場合にのみ含まれます。
+> 試すには、拡張機能ギャラリーから **Zoo Code** を `ZooCodeOrganization.zoo-code` としてインストールし、コマンドパレットから **Roo Code: Prepare Zoo Code Handoff** を実行してください。Roo はグローバルストレージ内に、設定とタスク履歴を含むローカルハンドオフバンドルを作成します。元の Roo データは変更されません。プロバイダープロファイルと API キーは、明示的に含めることを選択した場合にのみ含まれます。
 
-コミュニティのお知らせを読む: [Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
+[Zoo Code コミュニティのお知らせ](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)を読む
 
 <details>
   <summary>🌐 利用可能な言語</summary>
@@ -45,7 +45,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 

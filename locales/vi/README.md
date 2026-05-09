@@ -13,15 +13,15 @@
 
 > Đội ngũ dev dùng AI của bạn, ngay trong trình chỉnh sửa
 
-## Bản cập nhật cuối của Roo Code: chuyển sang Zoo Code
+## Bản cập nhật cuối của Roo Code: tùy chọn handoff từ cộng đồng
 
-> ### Roo trở lại dưới tên Zoo Code.
+> ### Roo Code đang kết thúc.
 >
-> Bản cập nhật cuối này của Roo Code giúp bạn chuyển thiết lập cục bộ sang tiện ích Zoo Code mới do cộng đồng duy trì.
+> Bản cập nhật cuối này của Roo Code thêm một handoff dạng sao chép cho những người muốn thử Zoo Code, một tiện ích riêng do cộng đồng duy trì.
 >
-> Để di chuyển, hãy cài đặt **Zoo Code** từ thư viện tiện ích của bạn với mã `ZooCodeOrganization.zoo-code`, rồi chạy **Roo Code: Prepare Zoo Migration** từ command palette. Roo tạo một handoff bundle dạng sao chép trong global storage của Roo, bao gồm cài đặt và lịch sử tác vụ của bạn, đồng thời giữ nguyên dữ liệu Roo gốc. Hồ sơ nhà cung cấp và khóa API chỉ được bao gồm nếu bạn chủ động chọn đưa chúng vào.
+> Để thử, hãy cài đặt **Zoo Code** từ thư viện tiện ích của bạn với mã `ZooCodeOrganization.zoo-code`, rồi chạy **Roo Code: Prepare Zoo Code Handoff** từ command palette. Roo tạo một handoff bundle cục bộ trong global storage của Roo, bao gồm cài đặt và lịch sử tác vụ của bạn, đồng thời giữ nguyên dữ liệu Roo gốc. Hồ sơ nhà cung cấp và khóa API chỉ được bao gồm nếu bạn chủ động chọn đưa chúng vào.
 
-Đọc thông báo từ cộng đồng: [Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
+Đọc [thông báo từ cộng đồng Zoo Code](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
 
 <details>
   <summary>🌐 Các ngôn ngữ có sẵn</summary>
@@ -45,7 +45,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 

@@ -10,7 +10,7 @@
 	"command.focusInput.title": "Fokus na Pole Wprowadzania",
 	"command.setCustomStoragePath.title": "Ustaw Niestandardową Ścieżkę Przechowywania",
 	"command.importSettings.title": "Importuj Ustawienia",
-	"command.prepareZooMigration.title": "Przygotuj Migrację do Zoo Code",
+	"command.prepareZooMigration.title": "Przygotuj Handoff do Zoo Code",
 	"command.terminal.addToContext.title": "Dodaj Zawartość Terminala do Kontekstu",
 	"command.terminal.fixCommand.title": "Napraw tę Komendę",
 	"command.terminal.explainCommand.title": "Wyjaśnij tę Komendę",

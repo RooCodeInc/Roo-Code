@@ -338,7 +338,7 @@
 		"timerPrefix": "Approvazione automatica abilitata. Selezione tra {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}}: passa a Zoo Code",
+		"title": "Roo Code {{version}}: opzione handoff della community",
 		"support": "Sostieni Roo Code lasciandoci una stella su <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Modello stealth GRATUITO per tempo limitato</bold> - Code Supernova: Ora potenziato con una <bold>finestra di contesto da 1M token</bold>! Un modello di codificazione agentiva versatile che supporta input di immagini, accessibile tramite Roo Code Cloud.",
@@ -348,9 +348,9 @@
 			"goToSettingsButton": "Vai alle Impostazioni"
 		},
 		"handoff": {
-			"heading": "Roo torna come Zoo Code.",
-			"description": "Questo ultimo aggiornamento di Roo Code ti aiuta a spostare la configurazione locale nella nuova estensione Zoo Code mantenuta dalla community. Roo resta installato il tempo necessario per preparare un pacchetto di handoff per Zoo.",
-			"readMore": "Leggi l’annuncio di Zoo"
+			"heading": "Roo Code sta terminando.",
+			"description": "Questo ultimo aggiornamento di Roo Code aggiunge un handoff basato su copia per gli utenti che vogliono provare Zoo Code, un'estensione separata mantenuta dalla community.",
+			"readMore": "Leggi l'annuncio di Zoo Code"
 		},
 		"release": {
 			"heading": "Novità:",
@@ -365,12 +365,12 @@
 			"tryButton": "Prova gli Agenti Cloud"
 		},
 		"zooMigration": {
-			"heading": "Prepara la migrazione a Zoo",
-			"description": "Crea un pacchetto di handoff dallo storage locale di Roo. Roo lascia i dati originali al loro posto e chiede conferma prima di includere le chiavi API.",
-			"prepareButton": "Prepara migrazione",
+			"heading": "Prepara un handoff per Zoo Code",
+			"description": "Crea un bundle locale di handoff dallo storage di Roo. Roo lascia i dati originali al loro posto e chiede conferma prima di includere le chiavi API.",
+			"prepareButton": "Prepara Handoff",
 			"installButton": "Installa Zoo",
 			"detailsHeading": "Cosa fa:",
-			"copiesData": "Copia le impostazioni di Roo e la cronologia delle attività in una cartella di migrazione Zoo.",
+			"copiesData": "Copia le impostazioni di Roo e la cronologia dei task in una cartella handoff Zoo.",
 			"keepsOriginals": "Lascia intatte le cartelle Roo esistenti così puoi verificare prima l’handoff.",
 			"apiKeysOptIn": "Include profili provider e chiavi API solo se scegli esplicitamente di includerli."
 		}

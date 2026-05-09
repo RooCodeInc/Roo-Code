@@ -22,18 +22,18 @@
 	"zooMigration": {
 		"actions": {
 			"installZoo": "Instal Zoo",
-			"prepareMigration": "Siapkan Migrasi",
+			"prepareMigration": "Siapkan Handoff",
 			"learnMore": "Pelajari Selengkapnya",
 			"later": "Nanti",
 			"includeApiKeys": "Sertakan kunci API",
 			"skipApiKeys": "Lewati kunci API",
 			"cancel": "Batal"
 		},
-		"notice": "Roo Code sedang beralih ke Zoo Code. Kamu bisa menyiapkan handoff migrasi berbasis salinan untuk Zoo tanpa menghapus data Roo-mu.",
+		"notice": "Roo Code sedang berakhir. Kamu bisa menyiapkan handoff berbasis salinan untuk Zoo Code tanpa menghapus data Roo-mu.",
 		"installUnavailable": "Zoo Code tersedia sebagai ZooCodeOrganization.zoo-code. Instal otomatis tidak selesai, jadi tampilan Extensions telah dibuka agar kamu bisa menginstalnya dari galeri ekstensi yang dikonfigurasi.",
-		"preparePrompt": "Siapkan handoff migrasi Zoo Code lokal? Menyertakan kunci API akan menulis secret penyedia ke file lokal agar Zoo bisa mengimpornya, lalu menghapus handoff setelah impor.",
-		"handoffPrepared": "Handoff migrasi Zoo Code disiapkan di {{path}}. Instal Zoo Code dan impor dari handoff ini.",
-		"handoffFailed": "Gagal menyiapkan handoff migrasi Zoo Code: {{error}}"
+		"preparePrompt": "Siapkan handoff lokal untuk Zoo Code? Menyertakan kunci API akan menulis secret penyedia ke file lokal agar Zoo Code bisa mengimpornya, lalu menghapus handoff setelah impor.",
+		"handoffPrepared": "Handoff Zoo Code disiapkan di {{path}}. Instal Zoo Code dan impor dari handoff ini.",
+		"handoffFailed": "Gagal menyiapkan handoff Zoo Code: {{error}}"
 	},
 	"errors": {
 		"invalid_data_uri": "Format data URI tidak valid",

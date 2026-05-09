@@ -22,18 +22,18 @@
 	"zooMigration": {
 		"actions": {
 			"installZoo": "Zoo 설치",
-			"prepareMigration": "마이그레이션 준비",
+			"prepareMigration": "핸드오프 준비",
 			"learnMore": "자세히 보기",
 			"later": "나중에",
 			"includeApiKeys": "API 키 포함",
 			"skipApiKeys": "API 키 건너뛰기",
 			"cancel": "취소"
 		},
-		"notice": "Roo Code가 Zoo Code로 전환됩니다. Roo 데이터를 삭제하지 않고 Zoo용 복사 기반 마이그레이션 핸드오프를 준비할 수 있습니다.",
+		"notice": "Roo Code는 종료 단계에 들어갑니다. Roo 데이터를 삭제하지 않고 Zoo Code용 복사 기반 핸드오프를 준비할 수 있습니다.",
 		"installUnavailable": "Zoo Code는 ZooCodeOrganization.zoo-code로 제공됩니다. 자동 설치가 완료되지 않아, 구성된 확장 갤러리에서 설치할 수 있도록 Extensions 보기를 열었습니다.",
-		"preparePrompt": "로컬 Zoo Code 마이그레이션 핸드오프를 준비할까요? API 키를 포함하면 Zoo가 가져올 수 있도록 공급자 secrets가 로컬 파일에 기록되고, 가져온 후 핸드오프를 삭제할 수 있습니다.",
-		"handoffPrepared": "Zoo Code 마이그레이션 핸드오프가 {{path}}에 준비되었습니다. Zoo Code를 설치하고 이 핸드오프에서 가져오세요.",
-		"handoffFailed": "Zoo Code 마이그레이션 핸드오프 준비 실패: {{error}}"
+		"preparePrompt": "Zoo Code용 로컬 핸드오프를 준비할까요? API 키를 포함하면 Zoo Code가 가져올 수 있도록 공급자 secrets가 로컬 파일에 기록되고, 가져온 후 핸드오프를 삭제할 수 있습니다.",
+		"handoffPrepared": "Zoo Code 핸드오프가 {{path}}에 준비되었습니다. Zoo Code를 설치하고 이 핸드오프에서 가져오세요.",
+		"handoffFailed": "Zoo Code 핸드오프 준비 실패: {{error}}"
 	},
 	"errors": {
 		"invalid_data_uri": "잘못된 데이터 URI 형식",

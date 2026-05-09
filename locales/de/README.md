@@ -13,15 +13,15 @@
 
 > Dein KI-gestütztes Dev-Team – direkt in deinem Editor
 
-## Letztes Roo Code-Update: Wechsel zu Zoo Code
+## Letztes Roo Code-Update: Community-Übergabeoption
 
-> ### Roo ist als Zoo Code zurück.
+> ### Roo Code läuft aus.
 >
-> Dieses letzte Roo Code-Update hilft dir, deine lokale Einrichtung zur neuen, von der Community gepflegten Zoo Code-Erweiterung zu übertragen.
+> Dieses letzte Roo Code-Update fügt eine kopiebasierte Übergabe für Nutzer hinzu, die Zoo Code ausprobieren möchten, eine separate, von der Community gepflegte Erweiterung.
 >
-> Installiere für die Migration **Zoo Code** aus deiner Erweiterungsgalerie als `ZooCodeOrganization.zoo-code` und führe dann **Roo Code: Prepare Zoo Migration** über die Befehlspalette aus. Roo erstellt in seinem globalen Speicher ein kopiebasiertes Übergabepaket mit deinen Einstellungen und deinem Aufgabenverlauf, ohne deine ursprünglichen Roo-Daten zu verändern. Provider-Profile und API-Schlüssel werden nur eingeschlossen, wenn du das ausdrücklich auswählst.
+> Um es auszuprobieren, installiere **Zoo Code** aus deiner Erweiterungsgalerie als `ZooCodeOrganization.zoo-code` und führe dann **Roo Code: Prepare Zoo Code Handoff** über die Befehlspalette aus. Roo erstellt in seinem globalen Speicher ein lokales Übergabepaket mit deinen Einstellungen und deinem Aufgabenverlauf, ohne deine ursprünglichen Roo-Daten zu verändern. Provider-Profile und API-Schlüssel werden nur eingeschlossen, wenn du das ausdrücklich auswählst.
 
-Lies die Community-Ankündigung: [Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
+Lies die [Zoo Code-Community-Ankündigung](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
 
 <details>
   <summary>🌐 Verfügbare Sprachen</summary>
@@ -45,7 +45,7 @@ Lies die Community-Ankündigung: [Roo is back as Zoo](https://www.reddit.com/r/R
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 

@@ -13,15 +13,15 @@
 
 > तुम्हारी AI-संचालित डेवलपमेंट टीम, सीधे तुम्हारे एडिटर में
 
-## Roo Code का अंतिम अपडेट: Zoo Code पर जाएँ
+## Roo Code का अंतिम अपडेट: community handoff option
 
-> ### Roo, Zoo Code के रूप में वापस आ गया है।
+> ### Roo Code अब समाप्ति की ओर है।
 >
-> Roo Code का यह अंतिम अपडेट आपकी स्थानीय सेटअप को समुदाय द्वारा maintained नई Zoo Code extension में ले जाने में मदद करता है।
+> यह अंतिम Roo Code अपडेट उन उपयोगकर्ताओं के लिए copy-based handoff जोड़ता है जो Zoo Code आज़माना चाहते हैं, जो community-maintained अलग extension है.
 >
-> माइग्रेट करने के लिए, अपनी extension gallery से **Zoo Code** को `ZooCodeOrganization.zoo-code` के रूप में इंस्टॉल करें, फिर command palette से **Roo Code: Prepare Zoo Migration** चलाएँ। Roo अपने global storage में आपकी settings और task history के साथ copy-based handoff bundle बनाता है, जबकि आपका मूल Roo data untouched रहता है। Provider profiles और API keys तभी शामिल होते हैं जब आप स्पष्ट रूप से उन्हें शामिल करना चुनते हैं।
+> इसे आज़माने के लिए, अपनी extension gallery से **Zoo Code** को `ZooCodeOrganization.zoo-code` के रूप में इंस्टॉल करें, फिर command palette से **Roo Code: Prepare Zoo Code Handoff** चलाएँ। Roo अपने global storage में आपकी settings और task history के साथ local handoff bundle बनाता है, जबकि आपका मूल Roo data untouched रहता है। Provider profiles और API keys तभी शामिल होते हैं जब आप स्पष्ट रूप से उन्हें शामिल करना चुनते हैं।
 
-समुदाय की घोषणा पढ़ें: [Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
+[Zoo Code community की घोषणा](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/) पढ़ें
 
 <details>
   <summary>🌐 उपलब्ध भाषाएँ</summary>
@@ -45,7 +45,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 

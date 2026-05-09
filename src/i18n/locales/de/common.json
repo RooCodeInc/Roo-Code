@@ -22,18 +22,18 @@
 	"zooMigration": {
 		"actions": {
 			"installZoo": "Zoo Installieren",
-			"prepareMigration": "Migration Vorbereiten",
+			"prepareMigration": "Übergabe Vorbereiten",
 			"learnMore": "Mehr Erfahren",
 			"later": "Später",
 			"includeApiKeys": "API-Schlüssel Einschließen",
 			"skipApiKeys": "API-Schlüssel Überspringen",
 			"cancel": "Abbrechen"
 		},
-		"notice": "Roo Code wechselt zu Zoo Code. Du kannst eine kopierbasierte Migrationsübergabe für Zoo vorbereiten, ohne deine Roo-Daten zu löschen.",
+		"notice": "Roo Code läuft aus. Du kannst eine kopiebasierte Übergabe für Zoo Code vorbereiten, ohne deine Roo-Daten zu löschen.",
 		"installUnavailable": "Zoo Code ist als ZooCodeOrganization.zoo-code verfügbar. Die automatische Installation wurde nicht abgeschlossen, deshalb wurde die Erweiterungsansicht geöffnet, damit du es aus deiner konfigurierten Erweiterungsgalerie installieren kannst.",
-		"preparePrompt": "Lokale Zoo Code-Migrationsübergabe vorbereiten? Wenn du API-Schlüssel einschließt, werden Provider-Secrets in eine lokale Datei geschrieben, damit Zoo sie importieren und die Übergabe danach löschen kann.",
-		"handoffPrepared": "Zoo Code-Migrationsübergabe unter {{path}} vorbereitet. Installiere Zoo Code und importiere aus dieser Übergabe.",
-		"handoffFailed": "Zoo Code-Migrationsübergabe konnte nicht vorbereitet werden: {{error}}"
+		"preparePrompt": "Lokale Übergabe für Zoo Code vorbereiten? Wenn du API-Schlüssel einschließt, werden Provider-Secrets in eine lokale Datei geschrieben, damit Zoo Code sie importieren und die Übergabe danach löschen kann.",
+		"handoffPrepared": "Zoo Code-Übergabe unter {{path}} vorbereitet. Installiere Zoo Code und importiere aus dieser Übergabe.",
+		"handoffFailed": "Zoo Code-Übergabe konnte nicht vorbereitet werden: {{error}}"
 	},
 	"errors": {
 		"invalid_data_uri": "Ungültiges Daten-URI-Format",

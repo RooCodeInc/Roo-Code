@@ -339,7 +339,7 @@
 		"timerPrefix": "Phê duyệt tự động được bật. Chọn trong {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}}: chuyển sang Zoo Code",
+		"title": "Roo Code {{version}}: tùy chọn handoff từ cộng đồng",
 		"support": "Hãy ủng hộ Roo Code bằng cách gắn sao cho chúng tôi trên <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Mô hình stealth MIỄN PHÍ có thời hạn</bold> - Code Supernova: Hiện đã được nâng cấp với <bold>cửa sổ ngữ cảnh 1M token</bold>! Một mô hình lập trình agentic đa năng hỗ trợ đầu vào hình ảnh, có sẵn qua Roo Code Cloud.",
@@ -349,9 +349,9 @@
 			"goToSettingsButton": "Đi tới Cài đặt"
 		},
 		"handoff": {
-			"heading": "Roo trở lại với tên Zoo Code.",
-			"description": "Bản cập nhật Roo Code cuối cùng này giúp bạn chuyển thiết lập cục bộ sang extension Zoo Code mới do cộng đồng duy trì. Roo vẫn được cài đủ lâu để chuẩn bị gói handoff cho Zoo.",
-			"readMore": "Đọc thông báo về Zoo"
+			"heading": "Roo Code đang kết thúc.",
+			"description": "Bản cập nhật cuối này của Roo Code thêm một handoff dạng sao chép cho những người muốn thử Zoo Code, một tiện ích riêng do cộng đồng duy trì.",
+			"readMore": "Đọc thông báo về Zoo Code"
 		},
 		"release": {
 			"heading": "Tính năng mới:",
@@ -366,12 +366,12 @@
 			"tryButton": "Dùng thử Agents trên Cloud"
 		},
 		"zooMigration": {
-			"heading": "Chuẩn bị migration sang Zoo",
-			"description": "Tạo gói handoff từ bộ nhớ cục bộ của Roo. Roo giữ nguyên dữ liệu gốc và hỏi trước khi bao gồm API key.",
-			"prepareButton": "Chuẩn bị migration",
+			"heading": "Chuẩn bị handoff Zoo Code",
+			"description": "Tạo một handoff bundle cục bộ từ storage của Roo. Roo giữ nguyên dữ liệu gốc của bạn và hỏi trước khi bao gồm khóa API.",
+			"prepareButton": "Chuẩn bị Handoff",
 			"installButton": "Cài Zoo",
 			"detailsHeading": "Việc này sẽ:",
-			"copiesData": "Sao chép cài đặt Roo và lịch sử tác vụ vào thư mục migration của Zoo.",
+			"copiesData": "Sao chép cài đặt Roo và lịch sử tác vụ vào thư mục handoff của Zoo.",
 			"keepsOriginals": "Giữ nguyên các thư mục Roo hiện có để bạn kiểm tra handoff trước.",
 			"apiKeysOptIn": "Chỉ bao gồm provider profile và API key nếu bạn chủ động chọn đưa chúng vào."
 		}

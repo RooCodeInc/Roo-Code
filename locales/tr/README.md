@@ -13,15 +13,15 @@
 
 > AI destekli dev ekibin, doğrudan editörünün içinde
 
-## Son Roo Code Güncellemesi: Zoo Code'a geç
+## Son Roo Code Güncellemesi: topluluk handoff seçeneği
 
-> ### Roo, Zoo Code olarak geri döndü.
+> ### Roo Code sona eriyor.
 >
-> Bu son Roo Code güncellemesi, yerel kurulumunu topluluk tarafından sürdürülen yeni Zoo Code eklentisine taşımanı sağlar.
+> Bu son Roo Code güncellemesi, Zoo Code'u denemek isteyen kullanıcılar için kopya tabanlı bir handoff ekler; Zoo Code, topluluk tarafından sürdürülen ayrı bir eklentidir.
 >
-> Geçiş yapmak için **Zoo Code**'u eklenti galerinden `ZooCodeOrganization.zoo-code` olarak yükle, ardından komut paletinden **Roo Code: Prepare Zoo Migration** komutunu çalıştır. Roo, global depolamasında ayarların ve görev geçmişinle kopya tabanlı bir handoff paketi oluşturur; orijinal Roo verilerine dokunmaz. Sağlayıcı profilleri ve API anahtarları yalnızca açıkça dahil etmeyi seçersen dahil edilir.
+> Denemek için **Zoo Code**'u eklenti galerinden `ZooCodeOrganization.zoo-code` olarak yükle, ardından komut paletinden **Roo Code: Prepare Zoo Code Handoff** komutunu çalıştır. Roo, global depolamasında ayarların ve görev geçmişinle yerel bir handoff paketi oluşturur; orijinal Roo verilerine dokunmaz. Sağlayıcı profilleri ve API anahtarları yalnızca açıkça dahil etmeyi seçersen dahil edilir.
 
-Topluluk duyurusunu oku: [Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
+[Zoo Code topluluk duyurusunu](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/) oku
 
 <details>
   <summary>🌐 Mevcut diller</summary>
@@ -45,7 +45,7 @@ Topluluk duyurusunu oku: [Roo is back as Zoo](https://www.reddit.com/r/RooCode/c
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 

@@ -10,7 +10,7 @@
 	"command.focusInput.title": "Focus sur le Champ de Saisie",
 	"command.setCustomStoragePath.title": "Définir le Chemin de Stockage Personnalisé",
 	"command.importSettings.title": "Importer les Paramètres",
-	"command.prepareZooMigration.title": "Préparer la Migration vers Zoo Code",
+	"command.prepareZooMigration.title": "Préparer le Transfert vers Zoo Code",
 	"command.terminal.addToContext.title": "Ajouter le Contenu du Terminal au Contexte",
 	"command.terminal.fixCommand.title": "Corriger cette Commande",
 	"command.terminal.explainCommand.title": "Expliquer cette Commande",

@@ -22,18 +22,18 @@
 	"zooMigration": {
 		"actions": {
 			"installZoo": "Установить Zoo",
-			"prepareMigration": "Подготовить миграцию",
+			"prepareMigration": "Подготовить Handoff",
 			"learnMore": "Подробнее",
 			"later": "Позже",
 			"includeApiKeys": "Включить API-ключи",
 			"skipApiKeys": "Пропустить API-ключи",
 			"cancel": "Отмена"
 		},
-		"notice": "Roo Code переходит на Zoo Code. Вы можете подготовить копируемый пакет миграции для Zoo, не удаляя данные Roo.",
+		"notice": "Roo Code завершает работу. Вы можете подготовить копируемый handoff для Zoo Code, не удаляя данные Roo.",
 		"installUnavailable": "Zoo Code доступен как ZooCodeOrganization.zoo-code. Автоматическая установка не завершилась, поэтому открыт раздел Extensions, чтобы вы могли установить его из настроенной галереи расширений.",
-		"preparePrompt": "Подготовить локальный пакет миграции Zoo Code? Если включить API-ключи, secrets провайдеров будут записаны в локальный файл, чтобы Zoo мог импортировать их, а затем удалить пакет после импорта.",
-		"handoffPrepared": "Пакет миграции Zoo Code подготовлен в {{path}}. Установите Zoo Code и импортируйте данные из этого пакета.",
-		"handoffFailed": "Не удалось подготовить пакет миграции Zoo Code: {{error}}"
+		"preparePrompt": "Подготовить локальный handoff для Zoo Code? Если включить API-ключи, secrets провайдеров будут записаны в локальный файл, чтобы Zoo Code мог импортировать их, а затем удалить handoff после импорта.",
+		"handoffPrepared": "Handoff Zoo Code подготовлен в {{path}}. Установите Zoo Code и импортируйте данные из этого handoff.",
+		"handoffFailed": "Не удалось подготовить handoff Zoo Code: {{error}}"
 	},
 	"errors": {
 		"invalid_data_uri": "Неверный формат URI данных",

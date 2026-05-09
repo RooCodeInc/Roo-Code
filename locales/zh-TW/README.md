@@ -13,15 +13,15 @@
 
 > 您的 AI 驅動開發團隊，就在您的編輯器中
 
-## Roo Code 最終更新：遷移到 Zoo Code
+## Roo Code 最終更新：社群交接選項
 
-> ### Roo 以 Zoo Code 的形式回來了。
+> ### Roo Code 即將停止維護。
 >
-> 這次 Roo Code 的最終更新會協助你把本機設定遷移到由社群維護的新 Zoo Code 擴充功能。
+> 這次最後的 Roo Code 更新為想要嘗試 Zoo Code 的使用者加入了以複製為基礎的交接；Zoo Code 是由社群維護的獨立擴充功能。
 >
-> 若要遷移，請從你的擴充功能圖庫安裝 **Zoo Code**，擴充功能 ID 為 `ZooCodeOrganization.zoo-code`，然後從命令選擇區執行 **Roo Code: Prepare Zoo Migration**。Roo 會在其全域儲存空間中建立以複製為基礎的交接包，包含你的設定和任務歷史，同時保留原始 Roo 資料不變。只有在你明確選擇包含時，才會包含供應商設定檔和 API 金鑰。
+> 若要試用，請從你的擴充功能圖庫安裝 **Zoo Code**，擴充功能 ID 為 `ZooCodeOrganization.zoo-code`，然後從命令選擇區執行 **Roo Code: Prepare Zoo Code Handoff**。Roo 會在其全域儲存空間中建立本機交接包，包含你的設定和任務歷史，同時保留原始 Roo 資料不變。只有在你明確選擇包含時，才會包含供應商設定檔和 API 金鑰。
 
-閱讀社群公告：[Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
+閱讀 [Zoo Code 社群公告](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
 
 <details>
   <summary>🌐 支援語言</summary>
@@ -45,7 +45,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+  </details>
 
 ---
 

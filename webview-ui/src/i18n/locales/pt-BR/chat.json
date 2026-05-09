@@ -338,7 +338,7 @@
 		"timerPrefix": "Aprovação automática ativada. Selecionando em {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}}: migre para o Zoo Code",
+		"title": "Roo Code {{version}}: opção de handoff da comunidade",
 		"support": "Apoie o Roo Code nos dando uma estrela no <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Modelo stealth GRATUITO por tempo limitado</bold> - Code Supernova: Agora atualizado com uma <bold>janela de contexto de 1M tokens</bold>! Um modelo de codificação agêntica versátil que suporta entradas de imagem, acessível através do Roo Code Cloud.",
@@ -348,9 +348,9 @@
 			"goToSettingsButton": "Ir para Configurações"
 		},
 		"handoff": {
-			"heading": "O Roo voltou como Zoo Code.",
-			"description": "Esta última atualização do Roo Code ajuda você a mover sua configuração local para a nova extensão Zoo Code mantida pela comunidade. O Roo continua instalado tempo suficiente para preparar um pacote de transferência para o Zoo.",
-			"readMore": "Ler o anúncio do Zoo"
+			"heading": "O Roo Code está sendo encerrado.",
+			"description": "Esta atualização final do Roo Code adiciona um handoff baseado em cópia para usuários que quiserem experimentar o Zoo Code, uma extensão separada mantida pela comunidade.",
+			"readMore": "Ler o anúncio do Zoo Code"
 		},
 		"release": {
 			"heading": "Novidades:",
@@ -365,12 +365,12 @@
 			"tryButton": "Experimentar Agentes em Nuvem"
 		},
 		"zooMigration": {
-			"heading": "Prepare sua migração para o Zoo",
-			"description": "Crie um pacote de transferência a partir do armazenamento local do Roo. O Roo mantém seus dados originais no lugar e pergunta antes de incluir chaves de API.",
-			"prepareButton": "Preparar migração",
+			"heading": "Preparar um handoff para o Zoo Code",
+			"description": "Crie um pacote local de handoff a partir do armazenamento do Roo. O Roo mantém seus dados originais no lugar e pergunta antes de incluir chaves de API.",
+			"prepareButton": "Preparar Handoff",
 			"installButton": "Instalar Zoo",
 			"detailsHeading": "O que isso faz:",
-			"copiesData": "Copia suas configurações do Roo e o histórico de tarefas para uma pasta de migração do Zoo.",
+			"copiesData": "Copia suas configurações do Roo e o histórico de tarefas para uma pasta de handoff do Zoo.",
 			"keepsOriginals": "Mantém suas pastas atuais do Roo intactas para você verificar a transferência primeiro.",
 			"apiKeysOptIn": "Inclui perfis de provedores e chaves de API somente se você escolher explicitamente incluí-los."
 		}

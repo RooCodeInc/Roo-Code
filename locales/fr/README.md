@@ -13,15 +13,15 @@
 
 > Ton équipe de dev propulsée par l'IA, directement dans ton éditeur
 
-## Dernière mise à jour de Roo Code : passer à Zoo Code
+## Dernière mise à jour de Roo Code : option de transfert communautaire
 
-> ### Roo revient sous le nom Zoo Code.
+> ### Roo Code arrive à son terme.
 >
-> Cette dernière mise à jour de Roo Code t'aide à déplacer ta configuration locale vers la nouvelle extension Zoo Code maintenue par la communauté.
+> Cette dernière mise à jour de Roo Code ajoute un transfert basé sur une copie pour les utilisateurs qui veulent essayer Zoo Code, une extension distincte maintenue par la communauté.
 >
-> Pour migrer, installe **Zoo Code** depuis ta galerie d'extensions sous l'id `ZooCodeOrganization.zoo-code`, puis lance **Roo Code: Prepare Zoo Migration** depuis la palette de commandes. Roo crée dans son stockage global un paquet de transfert basé sur une copie avec tes paramètres et ton historique de tâches, sans modifier tes données Roo d'origine. Les profils de fournisseurs et les clés API ne sont inclus que si tu choisis explicitement de les inclure.
+> Pour l'essayer, installe **Zoo Code** depuis ta galerie d'extensions sous l'id `ZooCodeOrganization.zoo-code`, puis lance **Roo Code: Prepare Zoo Code Handoff** depuis la palette de commandes. Roo crée dans son stockage global un paquet de transfert local avec tes paramètres et ton historique de tâches, sans modifier tes données Roo d'origine. Les profils de fournisseurs et les clés API ne sont inclus que si tu choisis explicitement de les inclure.
 
-Lis l'annonce de la communauté : [Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
+Lis l'[annonce de la communauté Zoo Code](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
 
 <details>
   <summary>🌐 Langues disponibles</summary>
@@ -45,7 +45,7 @@ Lis l'annonce de la communauté : [Roo is back as Zoo](https://www.reddit.com/r/
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 

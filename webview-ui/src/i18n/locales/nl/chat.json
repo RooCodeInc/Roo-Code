@@ -311,7 +311,7 @@
 		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}}: stap over naar Zoo Code",
+		"title": "Roo Code {{version}}: community-handoffoptie",
 		"support": "Steun Roo Code door ons een ster te geven op <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Beperkt tijd GRATIS stealth model</bold> - Code Supernova: Nu geüpgraded met een <bold>1M token contextvenster</bold>! Een veelzijdig agentisch codeermodel dat beeldinvoer ondersteunt, beschikbaar via Roo Code Cloud.",
@@ -321,9 +321,9 @@
 			"goToSettingsButton": "Ga naar Instellingen"
 		},
 		"handoff": {
-			"heading": "Roo is terug als Zoo Code.",
-			"description": "Deze laatste Roo Code-update helpt je je lokale setup te verplaatsen naar de nieuwe Zoo Code-extensie die door de community wordt onderhouden. Roo blijft lang genoeg geïnstalleerd om een overdrachtspakket voor Zoo klaar te zetten.",
-			"readMore": "Lees de Zoo-aankondiging"
+			"heading": "Roo Code loopt af.",
+			"description": "Deze laatste Roo Code-update voegt een kopie-gebaseerde handoff toe voor gebruikers die Zoo Code willen proberen, een afzonderlijke extensie die door de community wordt onderhouden.",
+			"readMore": "Lees de Zoo Code-aankondiging"
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
@@ -338,12 +338,12 @@
 			"tryButton": "Probeer Cloud-agents"
 		},
 		"zooMigration": {
-			"heading": "Bereid je Zoo-migratie voor",
-			"description": "Maak een overdrachtspakket vanuit Roo’s lokale opslag. Roo laat je oorspronkelijke data staan en vraagt toestemming voordat API-sleutels worden meegenomen.",
-			"prepareButton": "Migratie voorbereiden",
+			"heading": "Bereid een Zoo Code-handoff voor",
+			"description": "Maak een lokale handoff-bundel vanuit Roo's opslag. Roo laat je oorspronkelijke gegevens staan en vraagt toestemming voordat API-sleutels worden opgenomen.",
+			"prepareButton": "Handoff Voorbereiden",
 			"installButton": "Zoo installeren",
 			"detailsHeading": "Wat dit doet:",
-			"copiesData": "Kopieert je Roo-instellingen en taakgeschiedenis naar een Zoo-migratiemap.",
+			"copiesData": "Kopieert je Roo-instellingen en taakgeschiedenis naar een Zoo-handoffmap.",
 			"keepsOriginals": "Laat je bestaande Roo-mappen ongemoeid zodat je de overdracht eerst kunt controleren.",
 			"apiKeysOptIn": "Neemt providerprofielen en API-sleutels alleen mee als je daar expliciet voor kiest."
 		}

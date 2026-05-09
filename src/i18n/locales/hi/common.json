@@ -22,18 +22,18 @@
 	"zooMigration": {
 		"actions": {
 			"installZoo": "Zoo इंस्टॉल करें",
-			"prepareMigration": "माइग्रेशन तैयार करें",
+			"prepareMigration": "Handoff तैयार करें",
 			"learnMore": "और जानें",
 			"later": "बाद में",
 			"includeApiKeys": "API कुंजियां शामिल करें",
 			"skipApiKeys": "API कुंजियां छोड़ें",
 			"cancel": "रद्द करें"
 		},
-		"notice": "Roo Code, Zoo Code में बदल रहा है। आप Roo डेटा हटाए बिना Zoo के लिए कॉपी-आधारित माइग्रेशन हैंडऑफ तैयार कर सकते हैं।",
+		"notice": "Roo Code अब समाप्ति की ओर है। आप Roo डेटा हटाए बिना Zoo Code के लिए copy-based handoff तैयार कर सकते हैं।",
 		"installUnavailable": "Zoo Code, ZooCodeOrganization.zoo-code के रूप में उपलब्ध है। स्वचालित इंस्टॉल पूरा नहीं हुआ, इसलिए Extensions दृश्य खोला गया है ताकि आप इसे अपनी कॉन्फ़िगर की गई एक्सटेंशन गैलरी से इंस्टॉल कर सकें।",
-		"preparePrompt": "स्थानीय Zoo Code माइग्रेशन हैंडऑफ तैयार करें? API कुंजियां शामिल करने से प्रदाता secrets एक स्थानीय फ़ाइल में लिखे जाएंगे ताकि Zoo उन्हें आयात कर सके और फिर आयात के बाद हैंडऑफ हटा सके।",
-		"handoffPrepared": "Zoo Code माइग्रेशन हैंडऑफ {{path}} पर तैयार है। Zoo Code इंस्टॉल करें और इस हैंडऑफ से आयात करें।",
-		"handoffFailed": "Zoo Code माइग्रेशन हैंडऑफ तैयार करने में विफल: {{error}}"
+		"preparePrompt": "Zoo Code के लिए local handoff तैयार करें? API कुंजियां शामिल करने से प्रदाता secrets एक स्थानीय फ़ाइल में लिखे जाएंगे ताकि Zoo Code उन्हें आयात कर सके और फिर आयात के बाद handoff हटा सके।",
+		"handoffPrepared": "Zoo Code handoff {{path}} पर तैयार है। Zoo Code इंस्टॉल करें और इस handoff से आयात करें।",
+		"handoffFailed": "Zoo Code handoff तैयार करने में विफल: {{error}}"
 	},
 	"errors": {
 		"invalid_data_uri": "अमान्य डेटा URI फॉर्मेट",

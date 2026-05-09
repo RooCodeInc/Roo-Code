@@ -338,7 +338,7 @@
 		"timerPrefix": "자동 승인 활성화됨. {{seconds}}초 후 선택 중…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}}: Zoo Code로 이동",
+		"title": "Roo Code {{version}}: 커뮤니티 핸드오프 옵션",
 		"support": "<githubLink>GitHub</githubLink>에서 별표를 눌러 Roo Code를 응원해 주세요.",
 		"stealthModel": {
 			"feature": "<bold>기간 한정 무료 스텔스 모델</bold> - Code Supernova: 이제 <bold>1M 토큰 컨텍스트 윈도우</bold>로 업그레이드되었습니다! 이미지 입력을 지원하는 다목적 에이전틱 코딩 모델, Roo Code Cloud를 통해 이용 가능.",
@@ -348,9 +348,9 @@
 			"goToSettingsButton": "설정으로 이동"
 		},
 		"handoff": {
-			"heading": "Roo가 Zoo Code로 돌아왔습니다.",
-			"description": "이번 마지막 Roo Code 업데이트는 로컬 설정을 커뮤니티가 유지 관리하는 새 Zoo Code 확장으로 옮길 수 있게 도와줍니다. Roo는 Zoo용 handoff bundle을 준비할 수 있도록 충분한 기간 동안 설치된 상태로 남습니다.",
-			"readMore": "Zoo 공지 읽기"
+			"heading": "Roo Code는 종료 단계에 들어갑니다.",
+			"description": "이번 Roo Code 마지막 업데이트는 Zoo Code를 사용해 보고 싶은 사용자를 위해 복사 기반 핸드오프를 추가합니다. Zoo Code는 커뮤니티가 유지 관리하는 별도 확장입니다.",
+			"readMore": "Zoo Code 발표 읽기"
 		},
 		"release": {
 			"heading": "새로운 기능:",
@@ -365,12 +365,12 @@
 			"tryButton": "클라우드 에이전트 사용해보기"
 		},
 		"zooMigration": {
-			"heading": "Zoo migration 준비",
-			"description": "Roo의 local storage에서 handoff bundle을 만듭니다. Roo는 원본 데이터를 그대로 두고 API key를 포함하기 전에 확인합니다.",
-			"prepareButton": "Migration 준비",
+			"heading": "Zoo Code 핸드오프 준비",
+			"description": "Roo 저장소에서 로컬 핸드오프 번들을 만듭니다. Roo는 기존 데이터를 그대로 두고 API 키를 포함하기 전에 확인합니다.",
+			"prepareButton": "핸드오프 준비",
 			"installButton": "Zoo 설치",
 			"detailsHeading": "수행되는 작업:",
-			"copiesData": "Roo 설정과 작업 기록을 Zoo migration folder로 복사합니다.",
+			"copiesData": "Roo 설정과 작업 기록을 Zoo 핸드오프 폴더로 복사합니다.",
 			"keepsOriginals": "기존 Roo 폴더는 그대로 두어 먼저 handoff를 확인할 수 있습니다.",
 			"apiKeysOptIn": "Provider profile과 API key는 명시적으로 포함을 선택한 경우에만 포함합니다."
 		}

@@ -39,16 +39,16 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 	useAppTranslation: () => ({
 		t: (key: string, options?: { version?: string }) => {
 			const translations: Record<string, string> = {
-				"chat:announcement.handoff.heading": "Roo is back as Zoo Code.",
-				"chat:announcement.handoff.readMore": "Read the Zoo announcement",
-				"chat:announcement.zooMigration.heading": "Prepare your Zoo migration",
+				"chat:announcement.handoff.heading": "Roo Code is winding down.",
+				"chat:announcement.handoff.readMore": "Read the Zoo Code announcement",
+				"chat:announcement.zooMigration.heading": "Prepare a Zoo Code handoff",
 				"chat:announcement.zooMigration.description":
-					"Create a handoff bundle from Roo's local storage. Roo keeps your original data in place and asks before including API keys.",
-				"chat:announcement.zooMigration.prepareButton": "Prepare Migration",
+					"Create a local handoff bundle from Roo's storage. Roo keeps your original data in place and asks before including API keys.",
+				"chat:announcement.zooMigration.prepareButton": "Prepare Handoff",
 				"chat:announcement.zooMigration.installButton": "Install Zoo",
 				"chat:announcement.zooMigration.detailsHeading": "What this does:",
 				"chat:announcement.zooMigration.copiesData":
-					"Copies your Roo settings and task history into a Zoo migration folder.",
+					"Copies your Roo settings and task history into a Zoo handoff folder.",
 				"chat:announcement.zooMigration.keepsOriginals":
 					"Leaves your existing Roo folders untouched so you can verify the handoff first.",
 				"chat:announcement.zooMigration.apiKeysOptIn":
@@ -56,7 +56,7 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 			}
 
 			if (key === "chat:announcement.title") {
-				return `Roo Code ${options?.version ?? ""}: Move to Zoo Code`
+				return `Roo Code ${options?.version ?? ""}: Community handoff option`
 			}
 
 			return translations[key] ?? key
@@ -68,12 +68,12 @@ describe("Announcement", () => {
 	it("renders the v3.53.1 Zoo migration announcement", () => {
 		render(<Announcement hideAnnouncement={vi.fn()} />)
 
-		expect(screen.getByText("Roo Code 3.53.1: Move to Zoo Code")).toBeInTheDocument()
-		expect(screen.getByText("Roo is back as Zoo Code.")).toBeInTheDocument()
-		expect(screen.getByText("Prepare your Zoo migration")).toBeInTheDocument()
+		expect(screen.getByText("Roo Code 3.53.1: Community handoff option")).toBeInTheDocument()
+		expect(screen.getByText("Roo Code is winding down.")).toBeInTheDocument()
+		expect(screen.getByText("Prepare a Zoo Code handoff")).toBeInTheDocument()
 		expect(
 			screen.getByText(
-				"Create a handoff bundle from Roo's local storage. Roo keeps your original data in place and asks before including API keys.",
+				"Create a local handoff bundle from Roo's storage. Roo keeps your original data in place and asks before including API keys.",
 			),
 		).toBeInTheDocument()
 	})
@@ -87,7 +87,7 @@ describe("Announcement", () => {
 	it("posts Zoo migration actions from the announcement", () => {
 		render(<Announcement hideAnnouncement={vi.fn()} />)
 
-		screen.getByRole("button", { name: "Prepare Migration" }).click()
+		screen.getByRole("button", { name: "Prepare Handoff" }).click()
 		expect(vscode.postMessage).toHaveBeenCalledWith({ type: "prepareZooMigration" })
 
 		screen.getByRole("button", { name: "Install Zoo" }).click()

@@ -367,7 +367,7 @@
 		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}}: pindah ke Zoo Code",
+		"title": "Roo Code {{version}}: opsi handoff komunitas",
 		"support": "Dukung Roo Code dengan memberi kami bintang di <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Model stealth GRATIS waktu terbatas</bold> - Code Supernova: Sekarang diupgrade dengan <bold>jendela konteks 1M token</bold>! Model coding agentik serbaguna yang mendukung input gambar, tersedia melalui Roo Code Cloud.",
@@ -377,9 +377,9 @@
 			"goToSettingsButton": "Pergi ke Pengaturan"
 		},
 		"handoff": {
-			"heading": "Roo kembali sebagai Zoo Code.",
-			"description": "Update terakhir Roo Code ini membantumu memindahkan setup lokal ke ekstensi Zoo Code baru yang dikelola komunitas. Roo tetap terpasang cukup lama untuk menyiapkan paket handoff bagi Zoo.",
-			"readMore": "Baca pengumuman Zoo"
+			"heading": "Roo Code sedang berakhir.",
+			"description": "Pembaruan final Roo Code ini menambahkan handoff berbasis salinan bagi pengguna yang ingin mencoba Zoo Code, ekstensi terpisah yang dikelola komunitas.",
+			"readMore": "Baca pengumuman Zoo Code"
 		},
 		"release": {
 			"heading": "Yang Baru:",
@@ -394,12 +394,12 @@
 			"tryButton": "Coba Agen Cloud"
 		},
 		"zooMigration": {
-			"heading": "Siapkan migrasi Zoo kamu",
-			"description": "Buat paket handoff dari penyimpanan lokal Roo. Roo mempertahankan data asli di tempatnya dan meminta izin sebelum menyertakan API key.",
-			"prepareButton": "Siapkan Migrasi",
+			"heading": "Siapkan handoff Zoo Code",
+			"description": "Buat handoff bundle lokal dari storage Roo. Roo membiarkan data aslimu tetap di tempat dan bertanya sebelum menyertakan kunci API.",
+			"prepareButton": "Siapkan Handoff",
 			"installButton": "Instal Zoo",
 			"detailsHeading": "Yang dilakukan:",
-			"copiesData": "Menyalin pengaturan Roo dan riwayat tugas ke folder migrasi Zoo.",
+			"copiesData": "Menyalin pengaturan Roo dan riwayat tugas ke folder handoff Zoo.",
 			"keepsOriginals": "Membiarkan folder Roo yang ada tetap utuh agar kamu bisa memeriksa handoff terlebih dulu.",
 			"apiKeysOptIn": "Menyertakan profil provider dan API key hanya jika kamu secara eksplisit memilih untuk menyertakannya."
 		}

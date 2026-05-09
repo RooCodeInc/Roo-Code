@@ -338,7 +338,7 @@
 		"timerPrefix": "ऑटो-अनुमोदन सक्षम है। {{seconds}}s में चयन किया जा रहा है…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}}: Zoo Code पर जाएँ",
+		"title": "Roo Code {{version}}: community handoff option",
 		"support": "कृपया <githubLink>GitHub</githubLink> पर हमें स्टार देकर Roo Code का समर्थन करें।",
 		"stealthModel": {
 			"feature": "<bold>सीमित समय के लिए मुफ़्त स्टेल्थ मॉडल</bold> - Code Supernova: अब <bold>1M Token संदर्भ विंडो</bold> के साथ अपग्रेड हुआ! एक बहुमुखी एजेंटिक कोडिंग मॉडल जो छवि इनपुट का समर्थन करता है, Roo Code Cloud के माध्यम से उपलब्ध।",
@@ -348,9 +348,9 @@
 			"goToSettingsButton": "सेटिंग्स पर जाएं"
 		},
 		"handoff": {
-			"heading": "Roo अब Zoo Code के रूप में वापस है।",
-			"description": "यह अंतिम Roo Code अपडेट आपके स्थानीय सेटअप को समुदाय द्वारा मेंटेन किए जा रहे नए Zoo Code एक्सटेंशन में ले जाने में मदद करता है। Roo इतना समय इंस्टॉल रहेगा कि Zoo के लिए handoff bundle तैयार कर सके।",
-			"readMore": "Zoo घोषणा पढ़ें"
+			"heading": "Roo Code अब समाप्ति की ओर है।",
+			"description": "यह अंतिम Roo Code अपडेट उन उपयोगकर्ताओं के लिए copy-based handoff जोड़ता है जो Zoo Code आज़माना चाहते हैं, जो community-maintained अलग extension है.",
+			"readMore": "Zoo Code घोषणा पढ़ें"
 		},
 		"release": {
 			"heading": "नया क्या है:",
@@ -365,12 +365,12 @@
 			"tryButton": "क्लाउड एजेंट आज़माएं"
 		},
 		"zooMigration": {
-			"heading": "अपना Zoo migration तैयार करें",
-			"description": "Roo के local storage से handoff bundle बनाएँ। Roo आपका मूल डेटा वहीं रखता है और API keys शामिल करने से पहले पूछता है।",
-			"prepareButton": "Migration तैयार करें",
+			"heading": "Zoo Code handoff तैयार करें",
+			"description": "Roo के storage से local handoff bundle बनाएँ। Roo आपका मूल data वहीं रखता है और API keys शामिल करने से पहले पूछता है।",
+			"prepareButton": "Handoff तैयार करें",
 			"installButton": "Zoo इंस्टॉल करें",
 			"detailsHeading": "यह क्या करता है:",
-			"copiesData": "आपकी Roo settings और task history को Zoo migration folder में कॉपी करता है।",
+			"copiesData": "आपकी Roo settings और task history को Zoo handoff folder में कॉपी करता है।",
 			"keepsOriginals": "आपके मौजूदा Roo folders को बिना बदले छोड़ता है ताकि आप पहले handoff जाँच सकें।",
 			"apiKeysOptIn": "Provider profiles और API keys तभी शामिल करता है जब आप साफ़ तौर पर उन्हें शामिल करना चुनते हैं।"
 		}

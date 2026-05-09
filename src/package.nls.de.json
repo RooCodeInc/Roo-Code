@@ -10,7 +10,7 @@
 	"command.focusInput.title": "Eingabefeld Fokussieren",
 	"command.setCustomStoragePath.title": "Benutzerdefinierten Speicherpfad Festlegen",
 	"command.importSettings.title": "Einstellungen Importieren",
-	"command.prepareZooMigration.title": "Zoo Code-Migration Vorbereiten",
+	"command.prepareZooMigration.title": "Zoo Code-Übergabe Vorbereiten",
 	"command.terminal.addToContext.title": "Terminal-Inhalt zum Kontext Hinzufügen",
 	"command.terminal.fixCommand.title": "Diesen Befehl Reparieren",
 	"command.terminal.explainCommand.title": "Diesen Befehl Erklären",

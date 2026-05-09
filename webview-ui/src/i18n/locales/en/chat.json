@@ -357,7 +357,7 @@
 		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}}: Move to Zoo Code",
+		"title": "Roo Code {{version}}: Community handoff option",
 		"support": "Please support Roo Code by starring us on <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Limited-time FREE stealth model</bold> - Code Supernova: Now upgraded with a <bold>1M token context window</bold>! A versatile agentic coding model that supports image inputs, accessible through Roo Code Cloud.",
@@ -367,9 +367,9 @@
 			"goToSettingsButton": "Go to Settings"
 		},
 		"handoff": {
-			"heading": "Roo is back as Zoo Code.",
-			"description": "This final Roo Code update helps you move your local setup to the new Zoo Code extension maintained by the community. Roo stays installed long enough to prepare a handoff bundle for Zoo.",
-			"readMore": "Read the Zoo announcement"
+			"heading": "Roo Code is winding down.",
+			"description": "This final Roo Code update adds a copy-based handoff for users who want to try Zoo Code, a separate community-maintained extension.",
+			"readMore": "Read the Zoo Code announcement"
 		},
 		"release": {
 			"heading": "What's New:",
@@ -384,12 +384,12 @@
 			"tryButton": "Try Cloud Agents"
 		},
 		"zooMigration": {
-			"heading": "Prepare your Zoo migration",
-			"description": "Create a handoff bundle from Roo's local storage. Roo keeps your original data in place and asks before including API keys.",
-			"prepareButton": "Prepare Migration",
+			"heading": "Prepare a Zoo Code handoff",
+			"description": "Create a local handoff bundle from Roo's storage. Roo keeps your original data in place and asks before including API keys.",
+			"prepareButton": "Prepare Handoff",
 			"installButton": "Install Zoo",
 			"detailsHeading": "What this does:",
-			"copiesData": "Copies your Roo settings and task history into a Zoo migration folder.",
+			"copiesData": "Copies your Roo settings and task history into a Zoo handoff folder.",
 			"keepsOriginals": "Leaves your existing Roo folders untouched so you can verify the handoff first.",
 			"apiKeysOptIn": "Includes provider profiles and API keys only if you explicitly choose to include them."
 		}

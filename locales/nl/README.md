@@ -13,15 +13,15 @@
 
 > Jouw AI-aangedreven dev-team, rechtstreeks in je editor
 
-## Laatste Roo Code-update: overstappen naar Zoo Code
+## Laatste Roo Code-update: community-handoffoptie
 
-> ### Roo is terug als Zoo Code.
+> ### Roo Code loopt af.
 >
-> Deze laatste Roo Code-update helpt je om je lokale setup naar de nieuwe, door de community onderhouden Zoo Code-extensie te verplaatsen.
+> Deze laatste Roo Code-update voegt een kopie-gebaseerde handoff toe voor gebruikers die Zoo Code willen proberen, een afzonderlijke extensie die door de community wordt onderhouden.
 >
-> Installeer voor de migratie **Zoo Code** vanuit je extensiegalerie als `ZooCodeOrganization.zoo-code` en voer daarna **Roo Code: Prepare Zoo Migration** uit via het opdrachtenpalet. Roo maakt in zijn globale opslag een kopie-gebaseerde handoff-bundel met je instellingen en taakgeschiedenis, terwijl je oorspronkelijke Roo-gegevens ongemoeid blijven. Providerprofielen en API-sleutels worden alleen opgenomen als je daar expliciet voor kiest.
+> Installeer om het te proberen **Zoo Code** vanuit je extensiegalerie als `ZooCodeOrganization.zoo-code` en voer daarna **Roo Code: Prepare Zoo Code Handoff** uit via het opdrachtenpalet. Roo maakt in zijn globale opslag een lokale handoff-bundel met je instellingen en taakgeschiedenis, terwijl je oorspronkelijke Roo-gegevens ongemoeid blijven. Providerprofielen en API-sleutels worden alleen opgenomen als je daar expliciet voor kiest.
 
-Lees de community-aankondiging: [Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
+Lees de [Zoo Code-community-aankondiging](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
 
 <details>
   <summary>🌐 Beschikbare talen</summary>
@@ -45,7 +45,7 @@ Lees de community-aankondiging: [Roo is back as Zoo](https://www.reddit.com/r/Ro
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 

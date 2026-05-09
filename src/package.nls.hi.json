@@ -10,7 +10,7 @@
 	"command.focusInput.title": "इनपुट फ़ील्ड पर फोकस करें",
 	"command.setCustomStoragePath.title": "कस्टम स्टोरेज पाथ सेट करें",
 	"command.importSettings.title": "सेटिंग्स इम्पोर्ट करें",
-	"command.prepareZooMigration.title": "Zoo Code माइग्रेशन तैयार करें",
+	"command.prepareZooMigration.title": "Zoo Code Handoff तैयार करें",
 	"command.terminal.addToContext.title": "टर्मिनल सामग्री को संदर्भ में जोड़ें",
 	"command.terminal.fixCommand.title": "यह कमांड ठीक करें",
 	"command.terminal.explainCommand.title": "यह कमांड समझाएं",

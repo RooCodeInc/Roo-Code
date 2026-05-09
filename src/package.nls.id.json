@@ -20,7 +20,7 @@
 	"command.focusInput.title": "Fokus ke Field Input",
 	"command.setCustomStoragePath.title": "Atur Path Penyimpanan Kustom",
 	"command.importSettings.title": "Impor Pengaturan",
-	"command.prepareZooMigration.title": "Siapkan Migrasi Zoo Code",
+	"command.prepareZooMigration.title": "Siapkan Handoff Zoo Code",
 	"command.terminal.addToContext.title": "Tambahkan Konten Terminal ke Konteks",
 	"command.terminal.fixCommand.title": "Perbaiki Perintah Ini",
 	"command.terminal.explainCommand.title": "Jelaskan Perintah Ini",

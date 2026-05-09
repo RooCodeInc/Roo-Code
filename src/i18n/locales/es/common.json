@@ -22,18 +22,18 @@
 	"zooMigration": {
 		"actions": {
 			"installZoo": "Instalar Zoo",
-			"prepareMigration": "Preparar Migración",
+			"prepareMigration": "Preparar Traspaso",
 			"learnMore": "Más Información",
 			"later": "Más Tarde",
 			"includeApiKeys": "Incluir claves de API",
 			"skipApiKeys": "Omitir claves de API",
 			"cancel": "Cancelar"
 		},
-		"notice": "Roo Code está pasando a Zoo Code. Puedes preparar una entrega de migración basada en copia para Zoo sin eliminar tus datos de Roo.",
+		"notice": "Roo Code está llegando a su fin. Puedes preparar un traspaso basado en copia para Zoo Code sin eliminar tus datos de Roo.",
 		"installUnavailable": "Zoo Code está disponible como ZooCodeOrganization.zoo-code. La instalación automática no se completó, así que se abrió la vista de Extensiones para que puedas instalarlo desde tu galería de extensiones configurada.",
-		"preparePrompt": "¿Preparar una entrega local de migración a Zoo Code? Si incluyes claves de API, los secrets del proveedor se escribirán en un archivo local para que Zoo pueda importarlos y luego eliminar la entrega.",
-		"handoffPrepared": "Entrega de migración a Zoo Code preparada en {{path}}. Instala Zoo Code e importa desde esta entrega.",
-		"handoffFailed": "No se pudo preparar la entrega de migración a Zoo Code: {{error}}"
+		"preparePrompt": "¿Preparar un traspaso local para Zoo Code? Si incluyes claves de API, los secrets del proveedor se escribirán en un archivo local para que Zoo Code pueda importarlos y luego eliminar el traspaso.",
+		"handoffPrepared": "Traspaso de Zoo Code preparado en {{path}}. Instala Zoo Code e importa desde este traspaso.",
+		"handoffFailed": "No se pudo preparar el traspaso de Zoo Code: {{error}}"
 	},
 	"errors": {
 		"invalid_data_uri": "Formato de URI de datos no válido",

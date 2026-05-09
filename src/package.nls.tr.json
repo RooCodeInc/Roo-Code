@@ -10,7 +10,7 @@
 	"command.focusInput.title": "Giriş Alanına Odaklan",
 	"command.setCustomStoragePath.title": "Özel Depolama Yolunu Ayarla",
 	"command.importSettings.title": "Ayarları İçe Aktar",
-	"command.prepareZooMigration.title": "Zoo Code Geçişini Hazırla",
+	"command.prepareZooMigration.title": "Zoo Code Handoff'unu Hazırla",
 	"command.terminal.addToContext.title": "Terminal İçeriğini Bağlama Ekle",
 	"command.terminal.fixCommand.title": "Bu Komutu Düzelt",
 	"command.terminal.explainCommand.title": "Bu Komutu Açıkla",

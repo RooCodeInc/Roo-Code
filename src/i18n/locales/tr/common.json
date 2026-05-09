@@ -22,18 +22,18 @@
 	"zooMigration": {
 		"actions": {
 			"installZoo": "Zoo'yu Yükle",
-			"prepareMigration": "Geçişi Hazırla",
+			"prepareMigration": "Handoff'u Hazırla",
 			"learnMore": "Daha Fazla Bilgi",
 			"later": "Daha Sonra",
 			"includeApiKeys": "API anahtarlarını dahil et",
 			"skipApiKeys": "API anahtarlarını atla",
 			"cancel": "İptal"
 		},
-		"notice": "Roo Code, Zoo Code'a geçiyor. Roo verilerini silmeden Zoo için kopya tabanlı bir geçiş handoff'u hazırlayabilirsin.",
+		"notice": "Roo Code sona eriyor. Roo verilerini silmeden Zoo Code için kopya tabanlı bir handoff hazırlayabilirsin.",
 		"installUnavailable": "Zoo Code, ZooCodeOrganization.zoo-code olarak mevcut. Otomatik yükleme tamamlanmadı, bu yüzden yapılandırılmış eklenti galerinden yükleyebilmen için Extensions görünümü açıldı.",
-		"preparePrompt": "Yerel bir Zoo Code geçiş handoff'u hazırlansın mı? API anahtarlarını dahil etmek, sağlayıcı secrets değerlerini Zoo'nun içe aktarabilmesi ve içe aktarma sonrası handoff'u silebilmesi için yerel bir dosyaya yazar.",
-		"handoffPrepared": "Zoo Code geçiş handoff'u {{path}} konumunda hazırlandı. Zoo Code'u yükle ve bu handoff'tan içe aktar.",
-		"handoffFailed": "Zoo Code geçiş handoff'u hazırlanamadı: {{error}}"
+		"preparePrompt": "Zoo Code için yerel bir handoff hazırlansın mı? API anahtarlarını dahil etmek, sağlayıcı secrets değerlerini Zoo Code'un içe aktarabilmesi ve içe aktarma sonrası handoff'u silebilmesi için yerel bir dosyaya yazar.",
+		"handoffPrepared": "Zoo Code handoff'u {{path}} konumunda hazırlandı. Zoo Code'u yükle ve bu handoff'tan içe aktar.",
+		"handoffFailed": "Zoo Code handoff'u hazırlanamadı: {{error}}"
 	},
 	"errors": {
 		"invalid_data_uri": "Geçersiz veri URI formatı",

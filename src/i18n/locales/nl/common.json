@@ -22,18 +22,18 @@
 	"zooMigration": {
 		"actions": {
 			"installZoo": "Zoo Installeren",
-			"prepareMigration": "Migratie Voorbereiden",
+			"prepareMigration": "Handoff Voorbereiden",
 			"learnMore": "Meer Informatie",
 			"later": "Later",
 			"includeApiKeys": "API-sleutels Opnemen",
 			"skipApiKeys": "API-sleutels Overslaan",
 			"cancel": "Annuleren"
 		},
-		"notice": "Roo Code stapt over naar Zoo Code. Je kunt een kopie-gebaseerde migratiehandoff voor Zoo voorbereiden zonder je Roo-gegevens te verwijderen.",
+		"notice": "Roo Code loopt af. Je kunt een kopie-gebaseerde handoff voor Zoo Code voorbereiden zonder je Roo-gegevens te verwijderen.",
 		"installUnavailable": "Zoo Code is beschikbaar als ZooCodeOrganization.zoo-code. De automatische installatie is niet voltooid, daarom is de Extensions-weergave geopend zodat je het vanuit je geconfigureerde extensiegalerie kunt installeren.",
-		"preparePrompt": "Een lokale Zoo Code-migratiehandoff voorbereiden? Als je API-sleutels opneemt, worden provider-secrets naar een lokaal bestand geschreven zodat Zoo ze kan importeren en de handoff daarna kan verwijderen.",
-		"handoffPrepared": "Zoo Code-migratiehandoff voorbereid op {{path}}. Installeer Zoo Code en importeer vanuit deze handoff.",
-		"handoffFailed": "Kan Zoo Code-migratiehandoff niet voorbereiden: {{error}}"
+		"preparePrompt": "Een lokale handoff voor Zoo Code voorbereiden? Als je API-sleutels opneemt, worden provider-secrets naar een lokaal bestand geschreven zodat Zoo Code ze kan importeren en de handoff daarna kan verwijderen.",
+		"handoffPrepared": "Zoo Code-handoff voorbereid op {{path}}. Installeer Zoo Code en importeer vanuit deze handoff.",
+		"handoffFailed": "Kan Zoo Code-handoff niet voorbereiden: {{error}}"
 	},
 	"errors": {
 		"invalid_data_uri": "Ongeldig data-URI-formaat",

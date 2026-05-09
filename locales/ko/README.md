@@ -13,15 +13,15 @@
 
 > AI로 강화된 너의 개발 팀, 네 에디터 안에
 
-## Roo Code 마지막 업데이트: Zoo Code로 이동
+## Roo Code 마지막 업데이트: 커뮤니티 핸드오프 옵션
 
-> ### Roo가 Zoo Code로 돌아왔어요.
+> ### Roo Code는 종료 단계에 들어갑니다.
 >
-> 이번 Roo Code 마지막 업데이트는 로컬 설정을 커뮤니티가 유지 관리하는 새 Zoo Code 확장으로 옮길 수 있게 도와줘요.
+> 이번 Roo Code 마지막 업데이트는 Zoo Code를 사용해 보고 싶은 사용자를 위해 복사 기반 핸드오프를 추가합니다. Zoo Code는 커뮤니티가 유지 관리하는 별도 확장입니다.
 >
-> 마이그레이션하려면 확장 갤러리에서 **Zoo Code**를 `ZooCodeOrganization.zoo-code`로 설치한 다음, 명령 팔레트에서 **Roo Code: Prepare Zoo Migration**을 실행하세요. Roo는 전역 저장소에 설정과 작업 기록이 담긴 복사 기반 핸드오프 번들을 만들고, 기존 Roo 데이터는 그대로 둡니다. 제공자 프로필과 API 키는 명시적으로 포함하기로 선택한 경우에만 포함됩니다.
+> 사용해 보려면 확장 갤러리에서 **Zoo Code**를 `ZooCodeOrganization.zoo-code`로 설치한 다음, 명령 팔레트에서 **Roo Code: Prepare Zoo Code Handoff**를 실행하세요. Roo는 전역 저장소에 설정과 작업 기록이 담긴 로컬 핸드오프 번들을 만들고, 기존 Roo 데이터는 그대로 둡니다. 제공자 프로필과 API 키는 명시적으로 포함하기로 선택한 경우에만 포함됩니다.
 
-커뮤니티 발표 읽기: [Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
+[Zoo Code 커뮤니티 발표](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/) 읽기
 
 <details>
   <summary>🌐 사용 가능한 언어</summary>
@@ -45,7 +45,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 

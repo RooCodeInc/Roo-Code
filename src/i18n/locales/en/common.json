@@ -22,18 +22,18 @@
 	"zooMigration": {
 		"actions": {
 			"installZoo": "Install Zoo",
-			"prepareMigration": "Prepare Migration",
+			"prepareMigration": "Prepare Handoff",
 			"learnMore": "Learn More",
 			"later": "Later",
 			"includeApiKeys": "Include API keys",
 			"skipApiKeys": "Skip API keys",
 			"cancel": "Cancel"
 		},
-		"notice": "Roo Code is transitioning to Zoo Code. You can prepare a copy-based migration handoff for Zoo without deleting your Roo data.",
+		"notice": "Roo Code is winding down. You can prepare a copy-based handoff for Zoo Code without deleting your Roo data.",
 		"installUnavailable": "Zoo Code is available as ZooCodeOrganization.zoo-code. Automatic install did not complete, so the Extensions view has been opened so you can install it from your configured extension gallery.",
-		"preparePrompt": "Prepare a local Zoo Code migration handoff? Including API keys writes provider secrets to a local file so Zoo can import them, then delete the handoff after import.",
-		"handoffPrepared": "Zoo Code migration handoff prepared at {{path}}. Install Zoo Code and import from this handoff.",
-		"handoffFailed": "Failed to prepare Zoo Code migration handoff: {{error}}"
+		"preparePrompt": "Prepare a local handoff for Zoo Code? Including API keys writes provider secrets to a local file so Zoo Code can import them, then delete the handoff after import.",
+		"handoffPrepared": "Zoo Code handoff prepared at {{path}}. Install Zoo Code and import from this handoff.",
+		"handoffFailed": "Failed to prepare Zoo Code handoff: {{error}}"
 	},
 	"errors": {
 		"invalid_data_uri": "Invalid data URI format",

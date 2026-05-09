@@ -13,15 +13,15 @@
 
 > Tim dev bertenaga AI-mu, langsung di editor kamu
 
-## Pembaruan Terakhir Roo Code: Pindah ke Zoo Code
+## Pembaruan Terakhir Roo Code: opsi handoff komunitas
 
-> ### Roo kembali sebagai Zoo Code.
+> ### Roo Code sedang berakhir.
 >
-> Pembaruan terakhir Roo Code ini membantumu memindahkan setup lokal ke ekstensi Zoo Code baru yang dikelola komunitas.
+> Pembaruan terakhir Roo Code ini tidak mengganti nama Roo Code. Pembaruan ini menambahkan handoff berbasis salinan untuk pengguna yang ingin mencoba Zoo Code, ekstensi independen yang dikelola komunitas.
 >
-> Untuk migrasi, instal **Zoo Code** dari galeri ekstensi kamu sebagai `ZooCodeOrganization.zoo-code`, lalu jalankan **Roo Code: Prepare Zoo Migration** dari command palette. Roo membuat handoff bundle berbasis salinan di global storage miliknya berisi pengaturan dan riwayat tugasmu, tanpa mengubah data Roo asli. Profil penyedia dan kunci API hanya disertakan jika kamu secara eksplisit memilih untuk menyertakannya.
+> Untuk mencobanya, instal **Zoo Code** dari galeri ekstensi kamu sebagai `ZooCodeOrganization.zoo-code`, lalu jalankan **Roo Code: Prepare Zoo Code Handoff** dari command palette. Roo membuat handoff bundle lokal di global storage miliknya berisi pengaturan dan riwayat tugasmu, tanpa mengubah data Roo asli. Profil penyedia dan kunci API hanya disertakan jika kamu secara eksplisit memilih untuk menyertakannya.
 
-Baca pengumuman komunitas: [Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
+Baca [pengumuman komunitas Zoo Code](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
 
 <details>
   <summary>🌐 Bahasa yang tersedia</summary>
@@ -45,7 +45,7 @@ Baca pengumuman komunitas: [Roo is back as Zoo](https://www.reddit.com/r/RooCode
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 

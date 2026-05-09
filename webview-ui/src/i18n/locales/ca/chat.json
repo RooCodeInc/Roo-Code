@@ -338,7 +338,7 @@
 		"timerPrefix": "Aprovació automàtica habilitada. Seleccionant en {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}}: passa a Zoo Code",
+		"title": "Roo Code {{version}}: opció de traspàs comunitària",
 		"support": "Si us plau, dona suport a Roo Code fent una estrella al nostre <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Model stealth GRATUÏT per temps limitat</bold> - Code Supernova: Ara actualitzat amb una <bold>finestra de context d'1M tokens</bold>! Un model de codificació agèntica versàtil que suporta entrades d'imatges, disponible a través de Roo Code Cloud.",
@@ -348,9 +348,9 @@
 			"goToSettingsButton": "Anar a Configuració"
 		},
 		"handoff": {
-			"heading": "Roo torna com a Zoo Code.",
-			"description": "Aquesta darrera actualització de Roo Code t’ajuda a moure la configuració local a la nova extensió Zoo Code mantinguda per la comunitat. Roo continua instal·lat prou temps per preparar un paquet de traspàs per a Zoo.",
-			"readMore": "Llegeix l’anunci de Zoo"
+			"heading": "Roo Code està arribant al final.",
+			"description": "Aquesta darrera actualització de Roo Code afegeix un traspàs basat en còpia per als usuaris que vulguin provar Zoo Code, una extensió separada mantinguda per la comunitat.",
+			"readMore": "Llegeix l'anunci de Zoo Code"
 		},
 		"release": {
 			"heading": "Què hi ha de nou:",
@@ -365,12 +365,12 @@
 			"tryButton": "Prova els Agents al Núvol"
 		},
 		"zooMigration": {
-			"heading": "Prepara la migració a Zoo",
-			"description": "Crea un paquet de traspàs des de l’emmagatzematge local de Roo. Roo manté les dades originals al seu lloc i et demana permís abans d’incloure claus d’API.",
-			"prepareButton": "Prepara la migració",
+			"heading": "Prepara un traspàs per a Zoo Code",
+			"description": "Crea un paquet local de traspàs des de l'emmagatzematge de Roo. Roo manté les dades originals al seu lloc i pregunta abans d'incloure claus d'API.",
+			"prepareButton": "Prepara el traspàs",
 			"installButton": "Instal·la Zoo",
 			"detailsHeading": "Què fa això:",
-			"copiesData": "Copia la configuració de Roo i l’historial de tasques a una carpeta de migració de Zoo.",
+			"copiesData": "Copia la configuració de Roo i l'historial de tasques a una carpeta de traspàs de Zoo.",
 			"keepsOriginals": "Deixa intactes les carpetes existents de Roo perquè puguis verificar primer el traspàs.",
 			"apiKeysOptIn": "Inclou perfils de proveïdor i claus d’API només si tries explícitament incloure’ls."
 		}

@@ -360,7 +360,7 @@
 		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}}：移轉到 Zoo Code",
+		"title": "Roo Code {{version}}：社群交接選項",
 		"support": "請在 <githubLink>GitHub</githubLink> 上給 Roo Code 星星支持我們。",
 		"stealthModel": {
 			"feature": "<bold>限時免費隱形模型</bold> - Code Supernova：現已升級為 <bold>1M Token 上下文視窗</bold>！一個支援影像輸入的多功能代理程式設計模型，透過 Roo Code Cloud 提供。",
@@ -370,9 +370,9 @@
 			"goToSettingsButton": "前往設定"
 		},
 		"handoff": {
-			"heading": "Roo 以 Zoo Code 的形式回來了。",
-			"description": "這次 Roo Code 的最後更新會協助你把本機設定移轉到由社群維護的新 Zoo Code 擴充功能。Roo 會保留安裝足夠久，以便為 Zoo 準備 handoff bundle。",
-			"readMore": "閱讀 Zoo 公告"
+			"heading": "Roo Code 即將停止維護。",
+			"description": "這次最後的 Roo Code 更新為想要嘗試 Zoo Code 的使用者加入了以複製為基礎的交接；Zoo Code 是由社群維護的獨立擴充功能。",
+			"readMore": "閱讀 Zoo Code 公告"
 		},
 		"release": {
 			"heading": "新增功能：",
@@ -387,12 +387,12 @@
 			"tryButton": "試用雲端代理"
 		},
 		"zooMigration": {
-			"heading": "準備 Zoo 移轉",
-			"description": "從 Roo 的本機儲存建立 handoff bundle。Roo 會保留原始資料，並在包含 API key 前先詢問你。",
-			"prepareButton": "準備移轉",
+			"heading": "準備 Zoo Code 交接包",
+			"description": "從 Roo 的儲存空間建立本機交接包。Roo 會保留你的原始資料，並在包含 API 金鑰前詢問你。",
+			"prepareButton": "準備交接包",
 			"installButton": "安裝 Zoo",
 			"detailsHeading": "這會執行：",
-			"copiesData": "將你的 Roo 設定和任務歷史複製到 Zoo 移轉資料夾。",
+			"copiesData": "將你的 Roo 設定和任務歷史複製到 Zoo 交接資料夾中。",
 			"keepsOriginals": "保持現有 Roo 資料夾不變，讓你可以先驗證 handoff。",
 			"apiKeysOptIn": "只有在你明確選擇包含時，才會加入 provider profile 和 API key。"
 		}
