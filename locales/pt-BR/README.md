@@ -13,19 +13,15 @@
 
 > Seu time de desenvolvimento com IA, direto no seu editor
 
-## Novidades na v3.53.0
+## Atualização final do Roo Code: migre para o Zoo Code
 
-> ### O plugin Roo Code não vai acabar.
+> ### Roo voltou como Zoo Code.
 >
-> Você pode ter visto o [anúncio recente](https://x.com/mattrubens/status/2046636598859559114) de que o Roo Code atingiu 3 milhões de instalações e a equipe original está se dedicando totalmente ao Roomote. Sabemos que essa notícia foi difícil para muitos de vocês. Esse plugin significa muito para nós e para você, e ouvimos o que você tem a dizer.
+> Esta atualização final do Roo Code ajuda você a mover sua configuração local para a nova extensão Zoo Code mantida pela comunidade.
 >
-> A boa notícia: **um time da comunidade assumiu a tarefa de levar o Roo Code adiante**, e estamos trabalhando com eles em uma transição oficial para que o plugin em que você confia continue recebendo manutenção e melhorias.
+> Para migrar, instale **Zoo Code** pela sua galeria de extensões como `ZooCodeOrganization.zoo-code` e depois execute **Roo Code: Prepare Zoo Migration** pela paleta de comandos. O Roo cria um pacote de handoff baseado em cópia no armazenamento global dele com suas configurações e histórico de tarefas, sem alterar seus dados originais do Roo. Perfis de provedores e chaves de API só são incluídos se você escolher explicitamente incluí-los.
 
-**Novidades nesta versão:**
-
-- Adicionado suporte ao GPT-5.5 através do provedor OpenAI Codex.
-- Adicionado suporte ao Claude Opus 4.7 no Vertex AI.
-- Adicionados controles de navegação por checkpoints anteriores no chat para você voltar por checkpoints anteriores com mais facilidade.
+Leia o anúncio da comunidade: [Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
 
 <details>
   <summary>🌐 Idiomas disponíveis</summary>
@@ -49,7 +45,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+  </details>
 
 ---
 

@@ -13,19 +13,15 @@
 
 > AI destekli dev ekibin, doğrudan editörünün içinde
 
-## v3.53.0'daki Yenilikler
+## Son Roo Code Güncellemesi: Zoo Code'a geç
 
-> ### Roo Code eklentisi bir yere gitmiyor.
+> ### Roo, Zoo Code olarak geri döndü.
 >
-> Roo Code'un 3 milyon kuruluma ulaştığı ve orijinal ekibin tüm enerjisini Roomote'a verdiği [son duyuruyu](https://x.com/mattrubens/status/2046636598859559114) görmüş olabilirsin. Bu haberin birçoğunuz için zor olduğunu biliyoruz. Bu eklenti bizim ve senin için çok şey ifade ediyor ve seni duyuyoruz.
+> Bu son Roo Code güncellemesi, yerel kurulumunu topluluk tarafından sürdürülen yeni Zoo Code eklentisine taşımanı sağlar.
 >
-> İyi haber: **bir topluluk ekibi Roo Code'u ileriye taşımak için öne çıktı**, ve güvendiğin eklentinin bakımı ve geliştirilmesinin sürmesi için onlarla resmi bir devir çalışması yürütüyoruz.
+> Geçiş yapmak için **Zoo Code**'u eklenti galerinden `ZooCodeOrganization.zoo-code` olarak yükle, ardından komut paletinden **Roo Code: Prepare Zoo Migration** komutunu çalıştır. Roo, global depolamasında ayarların ve görev geçmişinle kopya tabanlı bir handoff paketi oluşturur; orijinal Roo verilerine dokunmaz. Sağlayıcı profilleri ve API anahtarları yalnızca açıkça dahil etmeyi seçersen dahil edilir.
 
-**Bu sürümdeki yenilikler:**
-
-- OpenAI Codex sağlayıcısı üzerinden GPT-5.5 desteği eklendi.
-- Vertex AI'da Claude Opus 4.7 desteği eklendi.
-- Önceki checkpoint'ler arasında daha kolay geri adım atabilmen için sohbete önceki checkpoint navigasyon kontrolleri eklendi.
+Topluluk duyurusunu oku: [Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
 
 <details>
   <summary>🌐 Mevcut diller</summary>
@@ -49,7 +45,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+  </details>
 
 ---
 

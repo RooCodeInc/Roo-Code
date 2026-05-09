@@ -13,19 +13,15 @@
 
 > Ton équipe de dev propulsée par l'IA, directement dans ton éditeur
 
-## Nouveautés de la v3.53.0
+## Dernière mise à jour de Roo Code : passer à Zoo Code
 
-> ### L'extension Roo Code ne va pas disparaître.
+> ### Roo revient sous le nom Zoo Code.
 >
-> Tu as peut-être vu l'[annonce récente](https://x.com/mattrubens/status/2046636598859559114) : Roo Code a franchi les 3 millions d'installations et l'équipe d'origine se consacre désormais entièrement à Roomote. On sait que cette nouvelle a été difficile pour beaucoup d'entre vous. Cette extension compte énormément pour nous comme pour toi, et on t'entend.
+> Cette dernière mise à jour de Roo Code t'aide à déplacer ta configuration locale vers la nouvelle extension Zoo Code maintenue par la communauté.
 >
-> La bonne nouvelle : **une équipe de la communauté a décidé de prendre le relais pour faire avancer Roo Code**, et on travaille avec eux sur une transmission officielle pour que l'extension sur laquelle tu comptes continue d'être maintenue et améliorée.
+> Pour migrer, installe **Zoo Code** depuis ta galerie d'extensions sous l'id `ZooCodeOrganization.zoo-code`, puis lance **Roo Code: Prepare Zoo Migration** depuis la palette de commandes. Roo crée dans son stockage global un paquet de transfert basé sur une copie avec tes paramètres et ton historique de tâches, sans modifier tes données Roo d'origine. Les profils de fournisseurs et les clés API ne sont inclus que si tu choisis explicitement de les inclure.
 
-**Nouveautés de cette version :**
-
-- Ajout du support de GPT-5.5 via le fournisseur OpenAI Codex.
-- Ajout du support de Claude Opus 4.7 sur Vertex AI.
-- Ajout de contrôles de navigation vers les checkpoints précédents dans le chat pour que tu puisses revenir en arrière plus facilement à travers les checkpoints antérieurs.
+Lis l'annonce de la communauté : [Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
 
 <details>
   <summary>🌐 Langues disponibles</summary>
@@ -49,7 +45,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+  </details>
 
 ---
 

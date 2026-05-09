@@ -13,19 +13,15 @@
 
 > AI로 강화된 너의 개발 팀, 네 에디터 안에
 
-## v3.53.0의 새로운 기능
+## Roo Code 마지막 업데이트: Zoo Code로 이동
 
-> ### Roo Code 플러그인은 사라지지 않아요.
+> ### Roo가 Zoo Code로 돌아왔어요.
 >
-> Roo Code가 300만 설치를 돌파했고, 원래 팀이 Roomote에 전념하기로 했다는 [최근 발표](https://x.com/mattrubens/status/2046636598859559114)를 보셨을 거예요. 많은 분들께 이 소식이 힘들게 다가왔다는 걸 알고 있어요. 이 플러그인은 저희와 여러분 모두에게 큰 의미가 있고, 여러분의 목소리를 듣고 있어요.
+> 이번 Roo Code 마지막 업데이트는 로컬 설정을 커뮤니티가 유지 관리하는 새 Zoo Code 확장으로 옮길 수 있게 도와줘요.
 >
-> 좋은 소식이 있어요: **커뮤니티 팀이 Roo Code를 계속 이어가기로 나섰어요**. 여러분이 의지하는 이 플러그인이 계속 유지 관리되고 개선될 수 있도록, 저희는 그들과 공식적인 인수인계를 진행하고 있어요.
+> 마이그레이션하려면 확장 갤러리에서 **Zoo Code**를 `ZooCodeOrganization.zoo-code`로 설치한 다음, 명령 팔레트에서 **Roo Code: Prepare Zoo Migration**을 실행하세요. Roo는 전역 저장소에 설정과 작업 기록이 담긴 복사 기반 핸드오프 번들을 만들고, 기존 Roo 데이터는 그대로 둡니다. 제공자 프로필과 API 키는 명시적으로 포함하기로 선택한 경우에만 포함됩니다.
 
-**이번 릴리스의 새로운 기능:**
-
-- OpenAI Codex 제공업체를 통해 GPT-5.5 지원을 추가했어요.
-- Vertex AI에서 Claude Opus 4.7 지원을 추가했어요.
-- 이전 체크포인트로 더 쉽게 돌아갈 수 있도록 채팅에 이전 체크포인트 탐색 컨트롤을 추가했어요.
+커뮤니티 발표 읽기: [Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
 
 <details>
   <summary>🌐 사용 가능한 언어</summary>
@@ -49,7 +45,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+  </details>
 
 ---
 

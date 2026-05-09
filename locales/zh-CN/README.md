@@ -13,19 +13,15 @@
 
 > 你的 AI 驱动开发团队，就在你的编辑器里
 
-## v3.53.0 新增内容
+## Roo Code 最终更新：迁移到 Zoo Code
 
-> ### Roo Code 插件不会消失。
+> ### Roo 以 Zoo Code 的形式回来了。
 >
-> 你可能已经看到[最近的公告](https://x.com/mattrubens/status/2046636598859559114)：Roo Code 已突破 300 万次安装，原团队正全力投入 Roomote。我们知道这个消息让许多人感到难受。这个插件对我们和你都意义重大，你的心声我们听到了。
+> 这次 Roo Code 的最终更新会帮助你把本地设置迁移到由社区维护的新 Zoo Code 扩展。
 >
-> 好消息是：**一支社区团队已挺身而出，继续推进 Roo Code**，我们正与他们协作进行正式交接，让你所依赖的插件继续得到维护和改进。
+> 要迁移，请从你的扩展图库安装 **Zoo Code**，扩展 ID 为 `ZooCodeOrganization.zoo-code`，然后从命令面板运行 **Roo Code: Prepare Zoo Migration**。Roo 会在其全局存储中创建一个基于复制的交接包，包含你的设置和任务历史，同时保留原始 Roo 数据不变。只有在你明确选择包含时，才会包含提供商配置文件和 API 密钥。
 
-**本次发布的新增内容：**
-
-- 通过 OpenAI Codex 提供商新增对 GPT-5.5 的支持。
-- 在 Vertex AI 上新增对 Claude Opus 4.7 的支持。
-- 在聊天中新增了上一存档点导航控件，让你可以更轻松地回退到此前的存档点。
+阅读社区公告：[Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
 
 <details>
   <summary>🌐 可用语言</summary>
@@ -49,7 +45,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+  </details>
 
 ---
 

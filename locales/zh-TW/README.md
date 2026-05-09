@@ -13,19 +13,15 @@
 
 > 您的 AI 驅動開發團隊，就在您的編輯器中
 
-## v3.53.0 新功能
+## Roo Code 最終更新：遷移到 Zoo Code
 
-> ### Roo Code 外掛不會消失。
+> ### Roo 以 Zoo Code 的形式回來了。
 >
-> 你可能已經看到[最近的公告](https://x.com/mattrubens/status/2046636598859559114)：Roo Code 已突破 300 萬次安裝，原團隊將全心投入 Roomote。我們知道這個消息讓許多人感到難受。這個外掛對我們和你都意義重大，你的心聲我們聽到了。
+> 這次 Roo Code 的最終更新會協助你把本機設定遷移到由社群維護的新 Zoo Code 擴充功能。
 >
-> 好消息是：**一支社群團隊已挺身而出，繼續推進 Roo Code**，我們正與他們協作進行正式交接，讓你所仰賴的外掛持續受到維護與改進。
+> 若要遷移，請從你的擴充功能圖庫安裝 **Zoo Code**，擴充功能 ID 為 `ZooCodeOrganization.zoo-code`，然後從命令選擇區執行 **Roo Code: Prepare Zoo Migration**。Roo 會在其全域儲存空間中建立以複製為基礎的交接包，包含你的設定和任務歷史，同時保留原始 Roo 資料不變。只有在你明確選擇包含時，才會包含供應商設定檔和 API 金鑰。
 
-**此版本新增內容：**
-
-- 透過 OpenAI Codex 供應商新增對 GPT-5.5 的支援。
-- 在 Vertex AI 上新增對 Claude Opus 4.7 的支援。
-- 在聊天中新增了前一個存檔點導覽控制項，讓你可以更輕鬆地回到此前的存檔點。
+閱讀社群公告：[Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
 
 <details>
   <summary>🌐 支援語言</summary>
@@ -49,7 +45,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-    </details>
+      </details>
 
 ---
 

@@ -13,19 +13,15 @@
 
 > Dein KI-gestütztes Dev-Team – direkt in deinem Editor
 
-## Neu in v3.53.0
+## Letztes Roo Code-Update: Wechsel zu Zoo Code
 
-> ### Das Roo Code-Plugin verschwindet nicht.
+> ### Roo ist als Zoo Code zurück.
 >
-> Du hast vielleicht die [neuliche Ankündigung](https://x.com/mattrubens/status/2046636598859559114) gesehen, dass Roo Code 3 Millionen Installationen erreicht hat und das ursprüngliche Team sich voll auf Roomote konzentriert. Wir wissen, dass diese Nachricht für viele von euch schwer war. Dieses Plugin bedeutet uns und dir sehr viel, und wir hören dich.
+> Dieses letzte Roo Code-Update hilft dir, deine lokale Einrichtung zur neuen, von der Community gepflegten Zoo Code-Erweiterung zu übertragen.
 >
-> Die gute Nachricht: **ein Community-Team hat sich bereit erklärt, Roo Code weiterzuführen**, und wir arbeiten mit ihnen an einer offiziellen Übergabe, damit das Plugin, auf das du dich verlässt, weiterhin gepflegt und verbessert wird.
+> Installiere für die Migration **Zoo Code** aus deiner Erweiterungsgalerie als `ZooCodeOrganization.zoo-code` und führe dann **Roo Code: Prepare Zoo Migration** über die Befehlspalette aus. Roo erstellt in seinem globalen Speicher ein kopiebasiertes Übergabepaket mit deinen Einstellungen und deinem Aufgabenverlauf, ohne deine ursprünglichen Roo-Daten zu verändern. Provider-Profile und API-Schlüssel werden nur eingeschlossen, wenn du das ausdrücklich auswählst.
 
-**Neu in dieser Version:**
-
-- GPT-5.5-Unterstützung über den OpenAI Codex-Provider hinzugefügt.
-- Claude Opus 4.7-Unterstützung auf Vertex AI hinzugefügt.
-- Steuerelemente zur Navigation zu vorherigen Checkpoints im Chat hinzugefügt, damit du leichter durch frühere Checkpoints zurückspringen kannst.
+Lies die Community-Ankündigung: [Roo is back as Zoo](https://www.reddit.com/r/RooCode/comments/1syufn1/roo_is_back_as_zoo/)
 
 <details>
   <summary>🌐 Verfügbare Sprachen</summary>
@@ -49,7 +45,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+  </details>
 
 ---
 
