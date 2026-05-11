@@ -6,6 +6,15 @@ import type { Mode } from "@roo/modes"
 
 import { ModeSelector } from "../ModeSelector"
 
+const mockSetHasOpenedModeSelector = vi.hoisted(() => vi.fn())
+
+vi.mock("@/context/ExtensionStateContext", () => ({
+	useExtensionState: () => ({
+		hasOpenedModeSelector: false,
+		setHasOpenedModeSelector: mockSetHasOpenedModeSelector,
+	}),
+}))
+
 // Create a variable to control what getAllModes returns.
 let mockModes: ModeConfig[] = []
 

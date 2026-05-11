@@ -35,6 +35,7 @@ export const ShareButton = ({ item, disabled = false }: ShareButtonProps) => {
 	// Use enhanced cloud upsell hook with auto-open on auth success
 	const {
 		isOpen: connectModalOpen,
+		openUpsell,
 		closeUpsell,
 		handleConnect,
 		isAuthenticated: cloudIsAuthenticated,
@@ -94,7 +95,11 @@ export const ShareButton = ({ item, disabled = false }: ShareButtonProps) => {
 		setShareDropdownOpen(false)
 	}
 
-	const handleShareButtonClick = () => {}
+	const handleShareButtonClick = () => {
+		if (!cloudIsAuthenticated) {
+			openUpsell()
+		}
+	}
 
 	// Determine share button state
 	const getShareButtonState = () => {

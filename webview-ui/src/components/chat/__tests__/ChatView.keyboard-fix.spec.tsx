@@ -10,8 +10,16 @@ import { vscode } from "@src/utils/vscode"
 import ChatView, { ChatViewProps } from "../ChatView"
 
 // Mock vscode API
+vi.mock("@src/utils/vscode", () => ({
+	vscode: {
+		postMessage: vi.fn(),
+	},
+}))
 
 // Mock use-sound hook
+vi.mock("use-sound", () => ({
+	default: vi.fn(() => [vi.fn()]),
+}))
 
 // Mock components
 

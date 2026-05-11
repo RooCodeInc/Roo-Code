@@ -2,17 +2,30 @@ import { useTranslation } from "react-i18next"
 
 import { render, screen, fireEvent, waitFor } from "@/utils/test-utils"
 import { vscode } from "@/utils/vscode"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 
 import { ShareButton } from "../ShareButton"
 
 // Mock the vscode utility
+vi.mock("@/utils/vscode", () => ({
+	vscode: {
+		postMessage: vi.fn(),
+	},
+}))
 
 // Mock react-i18next
+vi.mock("react-i18next", () => ({
+	useTranslation: vi.fn(),
+}))
 
 // Mock the extension state context
+vi.mock("@/context/ExtensionStateContext", () => ({
+	useExtensionState: vi.fn(),
+}))
 
 const mockUseTranslation = vi.mocked(useTranslation)
 const mockVscode = vi.mocked(vscode)
+const mockUseExtensionState = vi.mocked(useExtensionState)
 
 describe("ShareButton", () => {
 	const mockT = vi.fn((key: string) => key)
@@ -28,6 +41,15 @@ describe("ShareButton", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks()
+
+		mockUseExtensionState.mockReturnValue({
+			cloudIsAuthenticated: true,
+			sharingEnabled: true,
+			publicSharingEnabled: true,
+			cloudUserInfo: {
+				organizationName: "Test Organization",
+			},
+		} as any)
 
 		mockUseTranslation.mockReturnValue({
 			t: mockT,
