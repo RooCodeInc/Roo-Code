@@ -5,6 +5,7 @@ import * as vscode from "vscode"
 
 import { getTaskDirectoryPath } from "../../utils/storage"
 import { fileExistsAtPath } from "../../utils/fs"
+import { redactDiagnosticsData } from "../../utils/redact"
 
 export interface ErrorDiagnosticsValues {
 	timestamp?: string
@@ -63,11 +64,16 @@ export async function generateErrorDiagnostics(params: GenerateDiagnosticsParams
 			history,
 		}
 
+		// Redact sensitive information (API keys, tokens, secrets) from the
+		// diagnostics payload before writing it to a file users may share.
+		const redactedDiagnostics = redactDiagnosticsData(diagnostics)
+
 		// Prepend human-readable guidance comments before the JSON payload
 		const headerComment =
 			"// Please share this file with Roo Code Support (support@roocode.com) to diagnose the issue faster\n" +
-			"// Just make sure you're OK sharing the contents of the conversation below.\n\n"
-		const jsonContent = JSON.stringify(diagnostics, null, 2)
+			"// Sensitive data (API keys, tokens, secrets) has been automatically redacted.\n" +
+			"// However, please review the contents below before sharing to ensure no private information remains.\n\n"
+		const jsonContent = JSON.stringify(redactedDiagnostics, null, 2)
 		const fullContent = headerComment + jsonContent
 
 		// Create a temporary diagnostics file

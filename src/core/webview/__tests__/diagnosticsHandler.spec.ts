@@ -48,6 +48,12 @@ import * as vscode from "vscode"
 import * as fs from "fs/promises"
 import * as fsUtils from "../../../utils/fs"
 import { generateErrorDiagnostics } from "../diagnosticsHandler"
+import { redactDiagnosticsData } from "../../../utils/redact"
+
+// Mock the redact module
+vi.mock("../../../utils/redact", () => ({
+	redactDiagnosticsData: vi.fn((data) => data),
+}))
 
 describe("generateErrorDiagnostics", () => {
 	const mockLog = vi.fn()
@@ -85,7 +91,7 @@ describe("generateErrorDiagnostics", () => {
 		// taskId.slice(0, 8) = "test-tas" from "test-task-id"
 		expect(String(writtenPath)).toContain("roo-diagnostics-test-tas")
 		expect(String(writtenContent)).toContain(
-			"// Please share this file with Roo Code Support (support@roocode.com) to diagnose the issue faster",
+			"// Sensitive data (API keys, tokens, secrets) has been automatically redacted.",
 		)
 		expect(String(writtenContent)).toContain('"error":')
 		expect(String(writtenContent)).toContain('"history":')
@@ -168,6 +174,36 @@ describe("generateErrorDiagnostics", () => {
 		// Verify empty history in output
 		const [, writtenContent] = vi.mocked(fs.writeFile).mock.calls[0]
 		expect(String(writtenContent)).toContain('"history": []')
+	})
+
+	it("calls redactDiagnosticsData before writing the file", async () => {
+		vi.mocked(fsUtils.fileExistsAtPath).mockResolvedValue(true as any)
+		vi.mocked(fs.readFile).mockResolvedValue('[{"role": "user", "content": "test"}]' as any)
+
+		await generateErrorDiagnostics({
+			taskId: "test-task-id",
+			globalStoragePath: "/mock/global/storage",
+			values: {
+				timestamp: "2025-01-01T00:00:00.000Z",
+				version: "1.0.0",
+				provider: "test",
+				model: "test",
+				details: "error",
+			},
+			log: mockLog,
+		})
+
+		// Verify redactDiagnosticsData was called with the diagnostics object
+		expect(redactDiagnosticsData).toHaveBeenCalledTimes(1)
+		expect(redactDiagnosticsData).toHaveBeenCalledWith(
+			expect.objectContaining({
+				error: expect.objectContaining({
+					version: "1.0.0",
+					provider: "test",
+				}),
+				history: expect.any(Array),
+			}),
+		)
 	})
 
 	it("returns error result when file write fails", async () => {
