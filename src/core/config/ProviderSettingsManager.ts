@@ -14,7 +14,6 @@ import {
 	isProviderName,
 	isRetiredProvider,
 } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
 
 import { Mode, modes } from "../../shared/modes"
 import { buildApiHandler } from "../../api"
@@ -623,13 +622,6 @@ export class ProviderSettingsManager {
 				),
 			}
 		} catch (error) {
-			if (error instanceof ZodError) {
-				TelemetryService.instance.captureSchemaValidationError({
-					schemaName: "ProviderProfiles",
-					error,
-				})
-			}
-
 			throw new Error(`Failed to read provider profiles from secrets: ${error}`)
 		}
 	}

@@ -33,18 +33,6 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 }))
 
 // Mock vscode utilities
-vi.mock("@src/utils/vscode", () => ({
-	vscode: {
-		postMessage: vi.fn(),
-	},
-}))
-
-// Mock telemetry client
-vi.mock("@src/utils/TelemetryClient", () => ({
-	telemetryClient: {
-		capture: vi.fn(),
-	},
-}))
 
 // Mock the extension state context
 const mockExtensionState = {

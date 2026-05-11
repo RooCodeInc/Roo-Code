@@ -6,7 +6,6 @@ import * as path from "path"
 import * as vscode from "vscode"
 
 import type { ProviderName } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
 
 import { importSettings, importSettingsFromFile, importSettingsWithFeedback, exportSettings } from "../importExport"
 import { ProviderSettingsManager } from "../ProviderSettingsManager"
@@ -102,10 +101,6 @@ describe("importExport", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks()
-
-		if (!TelemetryService.hasInstance()) {
-			TelemetryService.createInstance([])
-		}
 
 		mockProviderSettingsManager = {
 			export: vi.fn(),

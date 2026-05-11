@@ -44,9 +44,5 @@
 	},
 	"startRouter": "Recomendamos usar um roteador LLM:",
 	"startCustom": "Ou você pode trazer sua própria chave API:",
-	"telemetry": {
-		"helpImprove": "Ajude a melhorar o Roo Code",
-		"helpImproveMessage": "Roo Code coleta dados de erro e uso para nos ajudar a corrigir bugs e melhorar a extensão. Esta telemetria não coleta código, prompts ou informações pessoais. Você pode desabilitar isso nas <settingsLink>configurações</settingsLink>."
-	},
 	"importSettings": "Importar configurações"
 }

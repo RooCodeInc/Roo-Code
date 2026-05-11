@@ -4,7 +4,6 @@ import { RooCodeEventName } from "./events.js"
 import type { RooCodeSettings } from "./global-settings.js"
 import type { ClineMessage, QueuedMessage, TokenUsage } from "./message.js"
 import type { ToolUsage, ToolName } from "./tool.js"
-import type { StaticAppProperties, GitProperties, TelemetryProperties } from "./telemetry.js"
 import type { TodoItem } from "./todo.js"
 
 /**
@@ -36,10 +35,6 @@ export interface TaskProviderLike {
 	getProviderProfile(): Promise<string>
 	setProviderProfile(providerProfile: string): Promise<void>
 
-	// Telemetry
-	readonly appProperties: StaticAppProperties
-	readonly gitProperties: GitProperties | undefined
-	getTelemetryProperties(): Promise<TelemetryProperties>
 	readonly cwd: string
 
 	// Event Emitter

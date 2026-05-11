@@ -90,7 +90,7 @@ export default function CookiePolicy() {
 									</td>
 								</tr>
 								<tr className="bg-muted/25">
-									<td className="border border-border px-4 py-3 font-medium">PostHog</td>
+									<td className="border border-border px-4 py-3 font-medium">Analytics</td>
 									<td className="border border-border px-4 py-3">
 										Product analytics and feature usage tracking
 									</td>
@@ -128,15 +128,6 @@ export default function CookiePolicy() {
 					</p>
 					<p>
 						<a
-							href="https://posthog.com/privacy"
-							target="_blank"
-							rel="noopener noreferrer"
-							className="text-primary hover:underline">
-							PostHog Privacy Policy
-						</a>
-					</p>
-					<p>
-						<a
 							href="https://legal.hubspot.com/privacy-policy"
 							target="_blank"
 							rel="noopener noreferrer"
@@ -155,10 +146,10 @@ export default function CookiePolicy() {
 
 					<h2 className="mt-12 text-2xl font-bold">Analytics cookies</h2>
 					<p>
-						We use PostHog and HubSpot analytics cookies to understand how visitors interact with our
-						website. This helps us improve our services, user experience, and marketing efforts. Analytics
-						cookies are placed only if you give consent through our cookie banner. The lawful basis for
-						processing these cookies is your consent, which you can withdraw at any time.
+						We use HubSpot analytics cookies to understand how visitors interact with our website. This
+						helps us improve our services, user experience, and marketing efforts. Analytics cookies are
+						placed only if you give consent through our cookie banner. The lawful basis for processing these
+						cookies is your consent, which you can withdraw at any time.
 					</p>
 
 					<h2 className="mt-12 text-2xl font-bold">Third-party services</h2>

@@ -137,7 +137,7 @@ export default function SubProcessors() {
 									</td>
 								</tr>
 								<tr>
-									<td className="border border-border px-4 py-3 font-medium">PostHog</td>
+									<td className="border border-border px-4 py-3 font-medium">Analytics</td>
 									<td className="border border-border px-4 py-3">Data Services</td>
 									<td className="border border-border px-4 py-3">United States</td>
 									<td className="border border-border px-4 py-3">Product analytics</td>

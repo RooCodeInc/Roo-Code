@@ -5,17 +5,6 @@ import { OpenRouterEmbedder, OPENROUTER_DEFAULT_PROVIDER_NAME } from "../openrou
 import { getModelDimension, getDefaultModelId } from "../../../../shared/embeddingModels"
 
 // Mock the OpenAI SDK
-vi.mock("openai")
-
-// Mock TelemetryService
-vi.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		instance: {
-			captureEvent: vi.fn(),
-		},
-	},
-	TelemetryEventName: {},
-}))
 
 // Mock i18n
 vi.mock("../../../../i18n", () => ({

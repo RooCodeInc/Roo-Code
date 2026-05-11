@@ -2,10 +2,9 @@ import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Share2Icon } from "lucide-react"
 
-import { type HistoryItem, type ShareVisibility, TelemetryEventName } from "@roo-code/types"
+import { type HistoryItem, type ShareVisibility } from "@roo-code/types"
 
 import { vscode } from "@/utils/vscode"
-import { telemetryClient } from "@/utils/TelemetryClient"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useCloudUpsell } from "@/hooks/useCloudUpsell"
 import { CloudUpsellDialog } from "@/components/cloud/CloudUpsellDialog"
@@ -36,7 +35,6 @@ export const ShareButton = ({ item, disabled = false }: ShareButtonProps) => {
 	// Use enhanced cloud upsell hook with auto-open on auth success
 	const {
 		isOpen: connectModalOpen,
-		openUpsell,
 		closeUpsell,
 		handleConnect,
 		isAuthenticated: cloudIsAuthenticated,
@@ -83,13 +81,6 @@ export const ShareButton = ({ item, disabled = false }: ShareButtonProps) => {
 		// Clear any previous success state
 		setShareSuccess(null)
 
-		// Send telemetry for share action
-		if (visibility === "organization") {
-			telemetryClient.capture(TelemetryEventName.SHARE_ORGANIZATION_CLICKED)
-		} else {
-			telemetryClient.capture(TelemetryEventName.SHARE_PUBLIC_CLICKED)
-		}
-
 		vscode.postMessage({
 			type: "shareCurrentTask",
 			visibility,
@@ -103,19 +94,7 @@ export const ShareButton = ({ item, disabled = false }: ShareButtonProps) => {
 		setShareDropdownOpen(false)
 	}
 
-	const handleShareButtonClick = () => {
-		// Send telemetry for share button click
-		telemetryClient.capture(TelemetryEventName.SHARE_BUTTON_CLICKED)
-
-		if (!cloudIsAuthenticated) {
-			// Show modal for unauthenticated users
-			openUpsell()
-			telemetryClient.capture(TelemetryEventName.SHARE_CONNECT_TO_CLOUD_CLICKED)
-		} else {
-			// Show popover for authenticated users
-			setShareDropdownOpen(true)
-		}
-	}
+	const handleShareButtonClick = () => {}
 
 	// Determine share button state
 	const getShareButtonState = () => {

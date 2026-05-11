@@ -1,7 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react"
-import { TelemetryEventName } from "@roo-code/types"
 import { vscode } from "@/utils/vscode"
-import { telemetryClient } from "@/utils/TelemetryClient"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 
 interface UseCloudUpsellOptions {
@@ -14,30 +12,8 @@ export const useCloudUpsell = (options: UseCloudUpsellOptions = {}) => {
 	const [isOpen, setIsOpen] = useState(false)
 	const [shouldOpenOnAuth, setShouldOpenOnAuth] = useState(false)
 	const { cloudIsAuthenticated, sharingEnabled, publicSharingEnabled } = useExtensionState()
-	const wasUnauthenticatedRef = useRef(false)
+	const wasUnauthenticatedRef = useRef(!cloudIsAuthenticated)
 	const initiatedAuthRef = useRef(false)
-
-	// Track authentication state changes
-	useEffect(() => {
-		if (!cloudIsAuthenticated || !sharingEnabled) {
-			wasUnauthenticatedRef.current = true
-		} else if (wasUnauthenticatedRef.current && cloudIsAuthenticated && sharingEnabled) {
-			// User just authenticated
-			if (initiatedAuthRef.current) {
-				// Auth was initiated from this hook
-				telemetryClient.capture(TelemetryEventName.ACCOUNT_CONNECT_SUCCESS)
-				setIsOpen(false) // Close the upsell dialog
-
-				if (autoOpenOnAuth && shouldOpenOnAuth) {
-					onAuthSuccess?.()
-					setShouldOpenOnAuth(false)
-				}
-
-				initiatedAuthRef.current = false // Reset the flag
-			}
-			wasUnauthenticatedRef.current = false
-		}
-	}, [cloudIsAuthenticated, sharingEnabled, onAuthSuccess, autoOpenOnAuth, shouldOpenOnAuth])
 
 	const openUpsell = useCallback(() => {
 		setIsOpen(true)
@@ -59,6 +35,26 @@ export const useCloudUpsell = (options: UseCloudUpsellOptions = {}) => {
 		// Close the upsell dialog
 		closeUpsell()
 	}, [closeUpsell])
+
+	useEffect(() => {
+		if (!cloudIsAuthenticated) {
+			wasUnauthenticatedRef.current = true
+			return
+		}
+
+		const completedRequestedAuth = initiatedAuthRef.current && wasUnauthenticatedRef.current && shouldOpenOnAuth
+
+		if (completedRequestedAuth) {
+			if (autoOpenOnAuth) {
+				setIsOpen(true)
+			}
+			onAuthSuccess?.()
+			setShouldOpenOnAuth(false)
+			initiatedAuthRef.current = false
+		}
+
+		wasUnauthenticatedRef.current = false
+	}, [autoOpenOnAuth, cloudIsAuthenticated, onAuthSuccess, shouldOpenOnAuth])
 
 	return {
 		isOpen,

@@ -1,15 +1,5 @@
 // npx vitest api/providers/__tests__/xai.spec.ts
 
-// Mock TelemetryService - must come before other imports
-const mockCaptureException = vitest.hoisted(() => vitest.fn())
-vitest.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		instance: {
-			captureException: mockCaptureException,
-		},
-	},
-}))
-
 const mockResponsesCreate = vitest.fn()
 
 vitest.mock("openai", () => {
@@ -53,7 +43,6 @@ describe("XAIHandler", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 		mockResponsesCreate.mockClear()
-		mockCaptureException.mockClear()
 		handler = new XAIHandler({})
 	})
 

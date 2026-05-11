@@ -1,14 +1,5 @@
 import { CodeParser } from "../parser"
 
-// Mock TelemetryService
-vi.mock("../../../../../packages/telemetry/src/TelemetryService", () => ({
-	TelemetryService: {
-		instance: {
-			captureEvent: vi.fn(),
-		},
-	},
-}))
-
 import { shouldUseFallbackChunking } from "../../shared/supported-extensions"
 
 describe("CodeParser - VB.NET and Fallback Extensions Support", () => {

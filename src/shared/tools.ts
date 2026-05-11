@@ -141,7 +141,7 @@ export interface ToolUse<TName extends ToolName = ToolName> {
 	nativeArgs?: TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
 	/**
 	 * Flag indicating whether the tool call used a legacy/deprecated format.
-	 * Used for telemetry tracking to monitor migration from old formats.
+	 * Used to monitor migration from old formats.
 	 */
 	usedLegacyFormat?: boolean
 }

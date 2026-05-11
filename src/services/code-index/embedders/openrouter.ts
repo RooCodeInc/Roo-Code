@@ -9,8 +9,6 @@ import {
 import { getDefaultModelId, getModelQueryPrefix } from "../../../shared/embeddingModels"
 import { t } from "../../../i18n"
 import { withValidationErrorHandling, HttpError, formatEmbeddingError } from "../shared/validation-helpers"
-import { TelemetryEventName } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
 import { Mutex } from "async-mutex"
 import { handleOpenAIError } from "../../../api/providers/utils/openai-error-handler"
 
@@ -240,14 +238,6 @@ export class OpenRouterEmbedder implements IEmbedder {
 					},
 				}
 			} catch (error) {
-				// Capture telemetry before error is reformatted
-				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-					error: error instanceof Error ? error.message : String(error),
-					stack: error instanceof Error ? error.stack : undefined,
-					location: "OpenRouterEmbedder:_embedBatchWithRetries",
-					attempt: attempts + 1,
-				})
-
 				const hasMoreAttempts = attempts < MAX_RETRIES - 1
 
 				// Check if it's a rate limit error
@@ -291,49 +281,39 @@ export class OpenRouterEmbedder implements IEmbedder {
 	 */
 	async validateConfiguration(): Promise<{ valid: boolean; error?: string }> {
 		return withValidationErrorHandling(async () => {
-			try {
-				// Test with a minimal embedding request
-				const testTexts = ["test"]
-				const modelToUse = this.defaultModelId
+			// Test with a minimal embedding request
+			const testTexts = ["test"]
+			const modelToUse = this.defaultModelId
 
-				// Build the request parameters
-				const requestParams: any = {
-					input: testTexts,
-					model: modelToUse,
-					encoding_format: "base64",
-				}
-
-				// Add provider routing if a specific provider is set
-				if (this.specificProvider) {
-					requestParams.provider = {
-						order: [this.specificProvider],
-						only: [this.specificProvider],
-						allow_fallbacks: false,
-					}
-				}
-
-				const response = (await this.embeddingsClient.embeddings.create(
-					requestParams,
-				)) as OpenRouterEmbeddingResponse
-
-				// Check if we got a valid response
-				if (!response?.data || response.data.length === 0) {
-					return {
-						valid: false,
-						error: "embeddings:validation.invalidResponse",
-					}
-				}
-
-				return { valid: true }
-			} catch (error) {
-				// Capture telemetry for validation errors
-				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-					error: error instanceof Error ? error.message : String(error),
-					stack: error instanceof Error ? error.stack : undefined,
-					location: "OpenRouterEmbedder:validateConfiguration",
-				})
-				throw error
+			// Build the request parameters
+			const requestParams: any = {
+				input: testTexts,
+				model: modelToUse,
+				encoding_format: "base64",
 			}
+
+			// Add provider routing if a specific provider is set
+			if (this.specificProvider) {
+				requestParams.provider = {
+					order: [this.specificProvider],
+					only: [this.specificProvider],
+					allow_fallbacks: false,
+				}
+			}
+
+			const response = (await this.embeddingsClient.embeddings.create(
+				requestParams,
+			)) as OpenRouterEmbeddingResponse
+
+			// Check if we got a valid response
+			if (!response?.data || response.data.length === 0) {
+				return {
+					valid: false,
+					error: "embeddings:validation.invalidResponse",
+				}
+			}
+
+			return { valid: true }
 		}, "openrouter")
 	}
 

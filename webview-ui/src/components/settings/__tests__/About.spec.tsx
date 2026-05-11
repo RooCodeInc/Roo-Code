@@ -26,11 +26,6 @@ vi.mock("@roo/package", () => ({
 }))
 
 describe("About", () => {
-	const defaultProps = {
-		telemetrySetting: "enabled" as const,
-		setTelemetrySetting: vi.fn(),
-	}
-
 	beforeEach(() => {
 		vi.clearAllMocks()
 	})
@@ -38,7 +33,7 @@ describe("About", () => {
 	it("renders the About section header", () => {
 		render(
 			<TranslationProvider>
-				<About {...defaultProps} />
+				<About />
 			</TranslationProvider>,
 		)
 		expect(screen.getByText("settings:sections.about")).toBeInTheDocument()
@@ -47,7 +42,7 @@ describe("About", () => {
 	it("displays version information", () => {
 		render(
 			<TranslationProvider>
-				<About {...defaultProps} />
+				<About />
 			</TranslationProvider>,
 		)
 		expect(screen.getByText(/Version: 1\.0\.0/)).toBeInTheDocument()
@@ -56,7 +51,7 @@ describe("About", () => {
 	it("renders the bug report section with label and link text", () => {
 		render(
 			<TranslationProvider>
-				<About {...defaultProps} />
+				<About />
 			</TranslationProvider>,
 		)
 		expect(screen.getByText("settings:about.bugReport.label")).toBeInTheDocument()
@@ -66,7 +61,7 @@ describe("About", () => {
 	it("renders the feature request section with label and link text", () => {
 		render(
 			<TranslationProvider>
-				<About {...defaultProps} />
+				<About />
 			</TranslationProvider>,
 		)
 		expect(screen.getByText("settings:about.featureRequest.label")).toBeInTheDocument()
@@ -76,7 +71,7 @@ describe("About", () => {
 	it("renders the security issue section with label and link text", () => {
 		render(
 			<TranslationProvider>
-				<About {...defaultProps} />
+				<About />
 			</TranslationProvider>,
 		)
 		expect(screen.getByText("settings:about.securityIssue.label")).toBeInTheDocument()
@@ -86,7 +81,7 @@ describe("About", () => {
 	it("renders export, import, and reset buttons", () => {
 		render(
 			<TranslationProvider>
-				<About {...defaultProps} />
+				<About />
 			</TranslationProvider>,
 		)
 		expect(screen.getByText("settings:footer.settings.export")).toBeInTheDocument()

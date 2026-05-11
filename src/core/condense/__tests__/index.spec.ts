@@ -3,7 +3,6 @@
 import type { Mock } from "vitest"
 
 import { Anthropic } from "@anthropic-ai/sdk"
-import { TelemetryService } from "@roo-code/telemetry"
 
 import { ApiHandler } from "../../../api"
 import { ApiMessage } from "../../task-persistence/apiMessages"
@@ -23,14 +22,6 @@ import {
 
 vi.mock("../../../api/transform/image-cleaning", () => ({
 	maybeRemoveImageBlocks: vi.fn((messages: ApiMessage[], _apiHandler: ApiHandler) => [...messages]),
-}))
-
-vi.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		instance: {
-			captureContextCondensed: vi.fn(),
-		},
-	},
 }))
 
 const taskId = "test-task-id"
@@ -1150,9 +1141,6 @@ describe("summarizeConversation with custom settings", () => {
 		// Reset mocks
 		vi.clearAllMocks()
 
-		// Reset telemetry mock
-		;(TelemetryService.instance.captureContextCondensed as Mock).mockClear()
-
 		// Setup mock API handler
 		mockMainApiHandler = {
 			createMessage: vi.fn().mockImplementation(() => {
@@ -1242,48 +1230,6 @@ describe("summarizeConversation with custom settings", () => {
 			"You are a helpful AI assistant tasked with summarizing conversations.",
 		)
 		expect(createMessageCalls[0][0]).toContain("CRITICAL: This is a summarization-only request")
-	})
-
-	/**
-	 * Test that telemetry is called for custom prompt usage
-	 */
-	it("should capture telemetry when using custom prompt", async () => {
-		await summarizeConversation({
-			messages: sampleMessages,
-			apiHandler: mockMainApiHandler,
-			systemPrompt: defaultSystemPrompt,
-			taskId: localTaskId,
-			isAutomaticTrigger: false,
-			customCondensingPrompt: "Custom prompt",
-		})
-
-		// Verify telemetry was called with custom prompt flag
-		expect(TelemetryService.instance.captureContextCondensed).toHaveBeenCalledWith(
-			localTaskId,
-			false,
-			true, // usedCustomPrompt
-		)
-	})
-
-	/**
-	 * Test that telemetry is called with isAutomaticTrigger flag
-	 */
-	it("should capture telemetry with isAutomaticTrigger flag", async () => {
-		await summarizeConversation({
-			messages: sampleMessages,
-			apiHandler: mockMainApiHandler,
-			systemPrompt: defaultSystemPrompt,
-			taskId: localTaskId,
-			isAutomaticTrigger: true,
-			customCondensingPrompt: "Custom prompt",
-		})
-
-		// Verify telemetry was called with isAutomaticTrigger flag
-		expect(TelemetryService.instance.captureContextCondensed).toHaveBeenCalledWith(
-			localTaskId,
-			true, // isAutomaticTrigger
-			true, // usedCustomPrompt
-		)
 	})
 })
 

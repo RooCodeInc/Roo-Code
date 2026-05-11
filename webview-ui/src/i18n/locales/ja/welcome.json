@@ -44,9 +44,5 @@
 	},
 	"startRouter": "LLMルーターの使用をお勧めします:",
 	"startCustom": "または、独自のAPIキーを持ってくることもできます:",
-	"telemetry": {
-		"helpImprove": "Roo Codeの改善にご協力ください",
-		"helpImproveMessage": "Roo Codeは、バグを修正し、拡張機能を改善するために、エラーおよび使用データを収集します。このテレメトリはコード、プロンプト、または個人情報を収集しません。これは<settingsLink>設定</settingsLink>で無効にできます。"
-	},
 	"importSettings": "設定のインポート"
 }

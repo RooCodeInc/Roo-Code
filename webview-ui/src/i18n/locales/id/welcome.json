@@ -44,9 +44,5 @@
 	},
 	"startRouter": "Kami merekomendasikan menggunakan router LLM:",
 	"startCustom": "Atau Anda dapat membawa kunci API Anda sendiri:",
-	"telemetry": {
-		"helpImprove": "Bantu Tingkatkan Roo Code",
-		"helpImproveMessage": "Roo Code mengumpulkan data kesalahan dan penggunaan untuk membantu kami memperbaiki bug dan meningkatkan ekstensi. Telemetri ini tidak mengumpulkan kode, prompt, atau informasi pribadi. Anda dapat menonaktifkannya di <settingsLink>pengaturan</settingsLink>."
-	},
 	"importSettings": "Impor Pengaturan"
 }

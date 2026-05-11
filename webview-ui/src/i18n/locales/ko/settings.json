@@ -865,10 +865,6 @@
 		"simplifiedExplanation": "나중에 자세한 모델 설정을 조정할 수 있습니다."
 	},
 	"footer": {
-		"telemetry": {
-			"label": "익명 오류 및 사용 보고 허용",
-			"description": "익명 사용 데이터 및 오류 보고서를 전송하여 Roo Code 개선에 도움을 주세요. 이 텔레메트리는 코드, 프롬프트 또는 개인 정보를 수집하지 않습니다. 자세한 내용은 <privacyLink>개인정보 보호정책</privacyLink>을 참조하세요."
-		},
 		"settings": {
 			"import": "가져오기",
 			"export": "내보내기",

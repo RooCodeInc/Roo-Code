@@ -34,4 +34,3 @@ export {
 export { BlogFrontmatterSchema, type ValidatedFrontmatter } from "./validation"
 
 // Analytics
-export { trackBlogIndexView, trackBlogPostView, trackSubstackClick } from "./analytics"

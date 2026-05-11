@@ -865,10 +865,6 @@
 		"simplifiedExplanation": "Du kannst detaillierte Modelleinstellungen später anpassen."
 	},
 	"footer": {
-		"telemetry": {
-			"label": "Anonyme Fehler- und Nutzungsberichte zulassen",
-			"description": "Hilf mit, Roo Code zu verbessern, indem du anonyme Nutzungsdaten und Fehlerberichte sendest. Diese Telemetrie sammelt keine Code-, Prompt- oder persönliche Informationen. Weitere Einzelheiten findest du in unserer <privacyLink>Datenschutzrichtlinie</privacyLink>."
-		},
 		"settings": {
 			"import": "Importieren",
 			"export": "Exportieren",

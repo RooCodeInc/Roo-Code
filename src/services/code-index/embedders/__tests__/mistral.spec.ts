@@ -4,16 +4,6 @@ import { MistralEmbedder } from "../mistral"
 import { OpenAICompatibleEmbedder } from "../openai-compatible"
 
 // Mock the OpenAICompatibleEmbedder
-vitest.mock("../openai-compatible")
-
-// Mock TelemetryService
-vitest.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		instance: {
-			captureEvent: vitest.fn(),
-		},
-	},
-}))
 
 const MockedOpenAICompatibleEmbedder = OpenAICompatibleEmbedder as MockedClass<typeof OpenAICompatibleEmbedder>
 

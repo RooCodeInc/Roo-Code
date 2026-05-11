@@ -51,29 +51,6 @@ vi.mock("vscode", () => ({
 }))
 
 // Mock other dependencies
-vi.mock("../../services/mcp/McpServerManager", () => ({
-	McpServerManager: {
-		getInstance: vi.fn().mockResolvedValue(null),
-	},
-}))
-
-vi.mock("../../integrations/terminal/TerminalRegistry", () => ({
-	TerminalRegistry: {
-		releaseTerminalsForTask: vi.fn(),
-	},
-}))
-
-vi.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		instance: {
-			captureTaskCreated: vi.fn(),
-			captureTaskRestarted: vi.fn(),
-			captureConversationMessage: vi.fn(),
-			captureLlmCompletion: vi.fn(),
-			captureConsecutiveMistakeError: vi.fn(),
-		},
-	},
-}))
 
 vi.mock("@roo-code/cloud", () => ({
 	CloudService: {

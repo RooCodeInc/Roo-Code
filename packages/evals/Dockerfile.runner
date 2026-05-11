@@ -115,7 +115,6 @@ RUN mkdir -p \
   packages/core \
   packages/evals \
   packages/ipc \
-  packages/telemetry \
   packages/types \
   packages/cloud \
   packages/vscode-shim \
@@ -133,7 +132,6 @@ COPY ./packages/config-typescript/package.json ./packages/config-typescript/
 COPY ./packages/core/package.json              ./packages/core/
 COPY ./packages/evals/package.json             ./packages/evals/
 COPY ./packages/ipc/package.json               ./packages/ipc/
-COPY ./packages/telemetry/package.json         ./packages/telemetry/
 COPY ./packages/types/package.json             ./packages/types/
 COPY ./packages/cloud/package.json             ./packages/cloud/
 COPY ./packages/vscode-shim/package.json       ./packages/vscode-shim/

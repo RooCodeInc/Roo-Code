@@ -44,9 +44,5 @@
 	},
 	"startRouter": "Rekomendujemy użycie routera LLM:",
 	"startCustom": "Lub możesz przynieść swój własny klucz API:",
-	"telemetry": {
-		"helpImprove": "Pomóż ulepszyć Roo Code",
-		"helpImproveMessage": "Roo Code zbiera dane o błędach i użytkowaniu, aby pomóc nam naprawiać błędy i ulepszać rozszerzenie. Ta telemetria nie zbiera kodu, podpowiedzi ani danych osobowych. Możesz je wyłączyć w <settingsLink>ustawieniach</settingsLink>."
-	},
 	"importSettings": "Importuj ustawienia"
 }

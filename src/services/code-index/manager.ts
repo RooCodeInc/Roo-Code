@@ -13,8 +13,6 @@ import fs from "fs/promises"
 import ignore from "ignore"
 import path from "path"
 import { t } from "../../i18n"
-import { TelemetryService } from "@roo-code/telemetry"
-import { TelemetryEventName } from "@roo-code/types"
 
 export class CodeIndexManager {
 	// --- Singleton Implementation ---
@@ -379,11 +377,6 @@ export class CodeIndexManager {
 		} catch (error) {
 			// Should never happen: reading file failed even though it exists
 			console.error("Unexpected error loading .gitignore:", error)
-			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
-				location: "_recreateServices",
-			})
 		}
 
 		// Create RooIgnoreController instance
@@ -435,42 +428,5 @@ export class CodeIndexManager {
 	 * to ensure the CodeIndexConfigManager picks up the new configuration.
 	 * If the configuration changes require a restart, the service will be restarted.
 	 */
-	public async handleSettingsChange(): Promise<void> {
-		if (this._configManager) {
-			const { requiresRestart } = await this._configManager.loadConfiguration()
-
-			const isFeatureEnabled = this.isFeatureEnabled
-			const isFeatureConfigured = this.isFeatureConfigured
-
-			// If feature is disabled, stop the service (including any active scan)
-			if (!isFeatureEnabled) {
-				this.stopIndexing()
-				this._stateManager.setSystemState("Standby", "Code indexing is disabled")
-				return
-			}
-
-			if (requiresRestart && isFeatureEnabled && isFeatureConfigured) {
-				try {
-					// Ensure cacheManager is initialized before recreating services
-					if (!this._cacheManager) {
-						this._cacheManager = new CacheManager(this.context, this.workspacePath)
-						await this._cacheManager.initialize()
-					}
-
-					// Recreate services with new configuration
-					await this._recreateServices()
-				} catch (error) {
-					// Error state already set in _recreateServices
-					console.error("Failed to recreate services:", error)
-					TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-						error: error instanceof Error ? error.message : String(error),
-						stack: error instanceof Error ? error.stack : undefined,
-						location: "handleSettingsChange",
-					})
-					// Re-throw the error so the caller knows validation failed
-					throw error
-				}
-			}
-		}
-	}
+	public async handleSettingsChange(): Promise<void> {}
 }

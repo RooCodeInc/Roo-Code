@@ -1,14 +1,5 @@
 // Mocks must come first, before imports
 
-// Mock TelemetryService
-vi.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		instance: {
-			captureEvent: vi.fn(),
-		},
-	},
-}))
-
 // Mock NodeCache to allow controlling cache behavior
 vi.mock("node-cache", () => {
 	const mockGet = vi.fn().mockReturnValue(undefined)

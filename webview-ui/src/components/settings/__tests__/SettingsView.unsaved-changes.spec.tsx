@@ -280,7 +280,6 @@ describe("SettingsView - Unsaved Changes Detection", () => {
 		ttsEnabled: false,
 		ttsSpeed: 1.0,
 		soundVolume: 0.5,
-		telemetrySetting: "unset",
 		terminalOutputLineLimit: 500,
 		terminalOutputCharacterLimit: 50000,
 		terminalShellIntegrationTimeout: 3000,

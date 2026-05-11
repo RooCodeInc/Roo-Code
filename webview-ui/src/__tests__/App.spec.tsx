@@ -5,25 +5,7 @@ import { render, screen, act, cleanup } from "@/utils/test-utils"
 
 import AppWithProviders from "../App"
 
-vi.mock("@src/utils/vscode", () => ({
-	vscode: {
-		postMessage: vi.fn(),
-	},
-}))
-
 // Mock the ErrorBoundary component
-vi.mock("@src/components/ErrorBoundary", () => ({
-	__esModule: true,
-	default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}))
-
-// Mock the telemetry client
-vi.mock("@src/utils/TelemetryClient", () => ({
-	telemetryClient: {
-		capture: vi.fn(),
-		updateTelemetryState: vi.fn(),
-	},
-}))
 
 vi.mock("@src/components/chat/ChatView", () => ({
 	__esModule: true,
@@ -168,7 +150,6 @@ describe("App", () => {
 			shouldShowAnnouncement: false,
 			experiments: {},
 			language: "en",
-			telemetrySetting: "enabled",
 		})
 	})
 

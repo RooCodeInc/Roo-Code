@@ -3,23 +3,9 @@ import { RooCodeEventName, TodoItem } from "@roo-code/types"
 import { AttemptCompletionToolUse } from "../../../shared/tools"
 
 // Mock the formatResponse module before importing the tool
-vi.mock("../../prompts/responses", () => ({
-	formatResponse: {
-		toolError: vi.fn((msg: string) => `Error: ${msg}`),
-		toolResult: vi.fn((msg: string) => `Result: ${msg}`),
-		toolDenied: vi.fn(() => "Denied"),
-	},
-}))
 
 const { mockCaptureTaskCompleted } = vi.hoisted(() => ({
 	mockCaptureTaskCompleted: vi.fn(),
-}))
-vi.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		instance: {
-			captureTaskCompleted: mockCaptureTaskCompleted,
-		},
-	},
 }))
 
 // Mock vscode module

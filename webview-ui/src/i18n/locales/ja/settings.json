@@ -865,10 +865,6 @@
 		"simplifiedExplanation": "詳細なモデル設定は後で調整できます。"
 	},
 	"footer": {
-		"telemetry": {
-			"label": "匿名のエラーと使用状況レポートを許可",
-			"description": "匿名の使用データとエラーレポートを送信してRoo Codeの改善にご協力ください。このテレメトリはコード、プロンプト、個人情報を収集しません。詳細については<privacyLink>プライバシーポリシー</privacyLink>をご覧ください。"
-		},
 		"settings": {
 			"import": "インポート",
 			"export": "エクスポート",

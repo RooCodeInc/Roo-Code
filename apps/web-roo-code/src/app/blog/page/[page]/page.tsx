@@ -12,7 +12,6 @@ import Script from "next/script"
 import { getPaginatedBlogPosts, getAllBlogPosts, POSTS_PER_PAGE } from "@/lib/blog"
 import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
-import { BlogIndexAnalytics } from "@/components/blog/BlogAnalytics"
 import { BlogPostList } from "@/components/blog/BlogPostList"
 import { BlogPagination } from "@/components/blog/BlogPagination"
 
@@ -148,8 +147,6 @@ export default async function BlogPaginatedPage({ params }: PageProps) {
 				type="application/ld+json"
 				dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
 			/>
-
-			<BlogIndexAnalytics />
 
 			<div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
 				<div className="mx-auto max-w-4xl">

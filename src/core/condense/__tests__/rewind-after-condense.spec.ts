@@ -9,17 +9,11 @@
  * so they can be sent to the API again.
  */
 
-import { TelemetryService } from "@roo-code/telemetry"
-
 import { getEffectiveApiHistory, cleanupAfterTruncation } from "../index"
 import { ApiMessage } from "../../task-persistence/apiMessages"
 
 describe("Rewind After Condense - Issue #8295", () => {
-	beforeEach(() => {
-		if (!TelemetryService.hasInstance()) {
-			TelemetryService.createInstance([])
-		}
-	})
+	beforeEach(() => {})
 
 	describe("getEffectiveApiHistory", () => {
 		it("should return summary and messages after summary (fresh start model)", () => {

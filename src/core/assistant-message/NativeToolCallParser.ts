@@ -391,7 +391,7 @@ export class NativeToolCallParser {
 		// Build partial nativeArgs based on what we have so far
 		let nativeArgs: any = undefined
 
-		// Track if legacy format was used (for telemetry)
+		// Track whether legacy format was used
 		let usedLegacyFormat = false
 
 		switch (name) {
@@ -654,7 +654,7 @@ export class NativeToolCallParser {
 			result.originalName = originalName
 		}
 
-		// Track legacy format usage for telemetry
+		// Track legacy format usage
 		if (usedLegacyFormat) {
 			result.usedLegacyFormat = true
 		}
@@ -722,7 +722,7 @@ export class NativeToolCallParser {
 			// nativeArgs object. If validation fails, we treat the tool call as invalid and fail fast.
 			let nativeArgs: NativeArgsFor<TName> | undefined = undefined
 
-			// Track if legacy format was used (for telemetry)
+			// Track whether legacy format was used
 			let usedLegacyFormat = false
 
 			switch (resolvedName) {
@@ -1017,7 +1017,7 @@ export class NativeToolCallParser {
 				result.originalName = toolCall.name
 			}
 
-			// Track legacy format usage for telemetry
+			// Track legacy format usage
 			if (usedLegacyFormat) {
 				result.usedLegacyFormat = true
 			}

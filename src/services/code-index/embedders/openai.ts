@@ -11,8 +11,6 @@ import {
 import { getModelQueryPrefix } from "../../../shared/embeddingModels"
 import { t } from "../../../i18n"
 import { withValidationErrorHandling, formatEmbeddingError, HttpError } from "../shared/validation-helpers"
-import { TelemetryEventName } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
 import { handleOpenAIError } from "../../../api/providers/utils/openai-error-handler"
 
 /**
@@ -167,14 +165,6 @@ export class OpenAiEmbedder extends OpenAiNativeHandler implements IEmbedder {
 					continue
 				}
 
-				// Capture telemetry before reformatting the error
-				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-					error: error instanceof Error ? error.message : String(error),
-					stack: error instanceof Error ? error.stack : undefined,
-					location: "OpenAiEmbedder:_embedBatchWithRetries",
-					attempt: attempts + 1,
-				})
-
 				// Log the error for debugging
 				console.error(`OpenAI embedder error (attempt ${attempts + 1}/${MAX_RETRIES}):`, error)
 
@@ -192,31 +182,21 @@ export class OpenAiEmbedder extends OpenAiNativeHandler implements IEmbedder {
 	 */
 	async validateConfiguration(): Promise<{ valid: boolean; error?: string }> {
 		return withValidationErrorHandling(async () => {
-			try {
-				// Test with a minimal embedding request
-				const response = await this.embeddingsClient.embeddings.create({
-					input: ["test"],
-					model: this.defaultModelId,
-				})
+			// Test with a minimal embedding request
+			const response = await this.embeddingsClient.embeddings.create({
+				input: ["test"],
+				model: this.defaultModelId,
+			})
 
-				// Check if we got a valid response
-				if (!response.data || response.data.length === 0) {
-					return {
-						valid: false,
-						error: t("embeddings:openai.invalidResponseFormat"),
-					}
+			// Check if we got a valid response
+			if (!response.data || response.data.length === 0) {
+				return {
+					valid: false,
+					error: t("embeddings:openai.invalidResponseFormat"),
 				}
-
-				return { valid: true }
-			} catch (error) {
-				// Capture telemetry for validation errors
-				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-					error: error instanceof Error ? error.message : String(error),
-					stack: error instanceof Error ? error.stack : undefined,
-					location: "OpenAiEmbedder:validateConfiguration",
-				})
-				throw error
 			}
+
+			return { valid: true }
 		}, "openai")
 	}
 

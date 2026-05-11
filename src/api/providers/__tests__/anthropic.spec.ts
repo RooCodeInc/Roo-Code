@@ -3,15 +3,6 @@
 import { AnthropicHandler } from "../anthropic"
 import { ApiHandlerOptions } from "../../../shared/api"
 
-// Mock TelemetryService
-vitest.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		instance: {
-			captureException: vitest.fn(),
-		},
-	},
-}))
-
 const mockCreate = vitest.fn()
 
 vitest.mock("@anthropic-ai/sdk", () => {

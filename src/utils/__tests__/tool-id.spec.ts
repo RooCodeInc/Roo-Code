@@ -49,7 +49,7 @@ describe("sanitizeToolUseId", () => {
 		})
 
 		it("should sanitize Gemini/OpenRouter function call IDs with dots and colons", () => {
-			// This is the exact pattern seen in PostHog errors where tool_result IDs
+			// This is the exact pattern seen in reported API errors where tool_result IDs
 			// didn't match tool_use IDs due to missing sanitization
 			expect(sanitizeToolUseId("functions.read_file:0")).toBe("functions_read_file_0")
 			expect(sanitizeToolUseId("functions.write_to_file:1")).toBe("functions_write_to_file_1")
@@ -68,7 +68,7 @@ describe("sanitizeToolUseId", () => {
 		})
 
 		it("should sanitize IDs with special characters from server names", () => {
-			expect(sanitizeToolUseId("call_mcp--posthog--query-run")).toBe("call_mcp--posthog--query-run")
+			expect(sanitizeToolUseId("call_mcp--analytics--query-run")).toBe("call_mcp--analytics--query-run")
 		})
 
 		it("should preserve valid native tool call IDs", () => {
@@ -127,7 +127,7 @@ describe("truncateOpenAiCallId", () => {
 
 		it("should handle the exact reported issue length (69 chars)", () => {
 			// The original error mentioned 69 characters
-			const id69Chars = "toolu_mcp--posthog--query_run_" + "a".repeat(39) // total 69 chars
+			const id69Chars = "toolu_mcp--analytics--query_run_" + "a".repeat(39) // total 69 chars
 			expect(id69Chars.length).toBe(69)
 			const result = truncateOpenAiCallId(id69Chars)
 			expect(result.length).toBe(64)
@@ -167,7 +167,7 @@ describe("sanitizeOpenAiCallId", () => {
 
 	it("should handle real-world MCP tool IDs", () => {
 		// Real MCP tool ID that might exceed 64 chars
-		const mcpToolId = "call_mcp--posthog--dashboard_create_12345678-1234-1234-1234-123456789012"
+		const mcpToolId = "call_mcp--analytics--dashboard_create_12345678-1234-1234-1234-123456789012"
 		const result = sanitizeOpenAiCallId(mcpToolId)
 		expect(result.length).toBeLessThanOrEqual(64)
 		expect(result).toMatch(/^[a-zA-Z0-9_-]+$/)

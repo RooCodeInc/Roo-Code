@@ -59,51 +59,12 @@ vi.mock("vscode", () => {
 })
 
 // Mock only the essential dependencies
-vi.mock("../../../utils/path", () => {
-	const testPath = require("path")
-	const testWorkspacePath = testPath.join(testPath.sep, "test", "workspace")
-	return {
-		getWorkspacePath: vi.fn(() => testWorkspacePath),
-	}
-})
 
 // Mock fs/promises for RooIgnoreController
-vi.mock("fs/promises", () => ({
-	default: {
-		readFile: vi.fn().mockRejectedValue(new Error("File not found")), // Simulate no .gitignore/.rooignore
-	},
-}))
 
 // Mock file utils for RooIgnoreController
-vi.mock("../../../utils/fs", () => ({
-	fileExistsAtPath: vi.fn().mockResolvedValue(false), // Simulate no .rooignore file
-}))
 
 // Mock ignore module
-vi.mock("ignore", () => ({
-	default: vi.fn().mockReturnValue({
-		add: vi.fn(),
-		ignores: vi.fn().mockReturnValue(false),
-	}),
-}))
-
-vi.mock("../state-manager", () => ({
-	CodeIndexStateManager: vi.fn().mockImplementation(() => ({
-		onProgressUpdate: vi.fn(),
-		getCurrentStatus: vi.fn(),
-		dispose: vi.fn(),
-		setSystemState: vi.fn(),
-	})),
-}))
-
-// Mock TelemetryService
-vi.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		instance: {
-			captureEvent: vi.fn(),
-		},
-	},
-}))
 
 vi.mock("../service-factory")
 const MockedCodeIndexServiceFactory = CodeIndexServiceFactory as MockedClass<typeof CodeIndexServiceFactory>

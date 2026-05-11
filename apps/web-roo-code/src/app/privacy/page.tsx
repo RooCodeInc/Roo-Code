@@ -143,9 +143,9 @@ export default function Privacy() {
 								<tr className="bg-muted/25">
 									<td className="border border-border px-4 py-2 font-medium">Usage Data</td>
 									<td className="border border-border px-4 py-2">
-										Feature clicks, error logs, performance metrics (captured via PostHog)
+										Feature clicks, error logs, performance metrics
 									</td>
-									<td className="border border-border px-4 py-2">Services automatically (PostHog)</td>
+									<td className="border border-border px-4 py-2">Services automatically</td>
 								</tr>
 								<tr>
 									<td className="border border-border px-4 py-2 font-medium">Payment Data</td>
@@ -241,9 +241,7 @@ export default function Privacy() {
 								</tr>
 								<tr className="bg-muted/25">
 									<td className="border border-border px-4 py-2 font-medium">Usage & Telemetry</td>
-									<td className="border border-border px-4 py-2">
-										PostHog (self‑hosted analytics platform)
-									</td>
+									<td className="border border-border px-4 py-2">None</td>
 									<td className="border border-border px-4 py-2">Ad networks or data brokers</td>
 								</tr>
 								<tr>

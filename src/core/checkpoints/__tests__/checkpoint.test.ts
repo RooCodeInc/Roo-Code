@@ -6,31 +6,8 @@ import { MessageManager } from "../../message-manager"
 import * as vscode from "vscode"
 
 // Mock vscode
-vi.mock("vscode", () => ({
-	window: {
-		showErrorMessage: vi.fn(),
-		createTextEditorDecorationType: vi.fn(() => ({})),
-		showInformationMessage: vi.fn(),
-	},
-	Uri: {
-		file: vi.fn((path: string) => ({ fsPath: path })),
-		parse: vi.fn((uri: string) => ({ with: vi.fn(() => ({})) })),
-	},
-	commands: {
-		executeCommand: vi.fn(),
-	},
-}))
 
 // Mock other dependencies
-vi.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		instance: {
-			captureCheckpointCreated: vi.fn(),
-			captureCheckpointRestored: vi.fn(),
-			captureCheckpointDiffed: vi.fn(),
-		},
-	},
-}))
 
 vi.mock("../../../utils/path", () => ({
 	getWorkspacePath: vi.fn(() => "/test/workspace"),

@@ -36,7 +36,6 @@ import {
 	type ClineApiReqCancelReason,
 	type ClineApiReqInfo,
 	RooCodeEventName,
-	TelemetryEventName,
 	TaskStatus,
 	TodoItem,
 	getApiProtocol,
@@ -50,12 +49,9 @@ import {
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 	MAX_CHECKPOINT_TIMEOUT_SECONDS,
 	MIN_CHECKPOINT_TIMEOUT_SECONDS,
-	ConsecutiveMistakeError,
 	MAX_MCP_TOOLS_THRESHOLD,
 	countEnabledMcpTools,
 } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
-import { CloudService } from "@roo-code/cloud"
 
 // api
 import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "../../api"
@@ -409,8 +405,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private debouncedEmitTokenUsage: ReturnType<typeof debounce>
 
 	// Cloud Sync Tracking
-	private cloudSyncedMessageTimestamps: Set<number> = new Set()
-
 	// Initial status for the task's history item (set at creation time to avoid race conditions)
 	private readonly initialStatus?: "active" | "delegated" | "completed"
 
@@ -498,24 +492,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.taskNumber = taskNumber
 		this.initialStatus = initialStatus
 
-		// Store the task's mode and API config name when it's created.
-		// For history items, use the stored values; for new tasks, we'll set them
-		// after getting state.
-		if (historyItem) {
-			this._taskMode = historyItem.mode || defaultModeSlug
-			this._taskApiConfigName = historyItem.apiConfigName
-			this.taskModeReady = Promise.resolve()
-			this.taskApiConfigReady = Promise.resolve()
-			TelemetryService.instance.captureTaskRestarted(this.taskId)
-		} else {
-			// For new tasks, don't set the mode/apiConfigName yet - wait for async initialization.
-			this._taskMode = undefined
-			this._taskApiConfigName = undefined
-			this.taskModeReady = this.initializeTaskMode(provider)
-			this.taskApiConfigReady = this.initializeTaskApiConfigName(provider)
-			TelemetryService.instance.captureTaskCreated(this.taskId)
-		}
-
 		this.assistantMessageParser = undefined
 
 		this.messageQueueService = new MessageQueueService()
@@ -562,6 +538,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.TOKEN_USAGE_EMIT_INTERVAL_MS,
 			{ leading: true, trailing: true, maxWait: this.TOKEN_USAGE_EMIT_INTERVAL_MS },
 		)
+
+		if (historyItem) {
+			this._taskMode = historyItem.mode || defaultModeSlug
+			this._taskApiConfigName = historyItem.apiConfigName
+			this.taskModeReady = Promise.resolve()
+			this.taskApiConfigReady = Promise.resolve()
+		} else {
+			this._taskMode = undefined
+			this._taskApiConfigName = undefined
+			this.taskModeReady = this.initializeTaskMode(provider)
+			this.taskApiConfigReady = this.initializeTaskApiConfigName(provider)
+		}
 
 		onCreated?.(this)
 
@@ -1161,51 +1149,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		await provider?.postStateToWebviewWithoutTaskHistory()
 		this.emit(RooCodeEventName.Message, { action: "created", message })
 		await this.saveClineMessages()
-
-		const shouldCaptureMessage = message.partial !== true && CloudService.isEnabled()
-
-		if (shouldCaptureMessage) {
-			CloudService.instance.captureEvent({
-				event: TelemetryEventName.TASK_MESSAGE,
-				properties: { taskId: this.taskId, message },
-			})
-			// Track that this message has been synced to cloud
-			this.cloudSyncedMessageTimestamps.add(message.ts)
-		}
 	}
 
 	public async overwriteClineMessages(newMessages: ClineMessage[]) {
 		this.clineMessages = newMessages
 		restoreTodoListForTask(this)
 		await this.saveClineMessages()
-
-		// When overwriting messages (e.g., during task resume), repopulate the cloud sync tracking Set
-		// with timestamps from all non-partial messages to prevent re-syncing previously synced messages
-		this.cloudSyncedMessageTimestamps.clear()
-		for (const msg of newMessages) {
-			if (msg.partial !== true) {
-				this.cloudSyncedMessageTimestamps.add(msg.ts)
-			}
-		}
 	}
 
 	private async updateClineMessage(message: ClineMessage) {
 		const provider = this.providerRef.deref()
 		await provider?.postMessageToWebview({ type: "messageUpdated", clineMessage: message })
 		this.emit(RooCodeEventName.Message, { action: "updated", message })
-
-		// Check if we should sync to cloud and haven't already synced this message
-		const shouldCaptureMessage = message.partial !== true && CloudService.isEnabled()
-		const hasNotBeenSynced = !this.cloudSyncedMessageTimestamps.has(message.ts)
-
-		if (shouldCaptureMessage && hasNotBeenSynced) {
-			CloudService.instance.captureEvent({
-				event: TelemetryEventName.TASK_MESSAGE,
-				properties: { taskId: this.taskId, message },
-			})
-			// Track that this message has been synced to cloud
-			this.cloudSyncedMessageTimestamps.add(message.ts)
-		}
 	}
 
 	private async saveClineMessages(): Promise<boolean> {
@@ -2525,42 +2480,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				throw new Error(`[RooCode#recursivelyMakeRooRequests] task ${this.taskId}.${this.instanceId} aborted`)
 			}
 
-			if (this.consecutiveMistakeLimit > 0 && this.consecutiveMistakeCount >= this.consecutiveMistakeLimit) {
-				// Track consecutive mistake errors in telemetry via event and PostHog exception tracking.
-				// The reason is "no_tools_used" because this limit is reached via initiateTaskLoop
-				// which increments consecutiveMistakeCount when the model doesn't use any tools.
-				TelemetryService.instance.captureConsecutiveMistakeError(this.taskId)
-				TelemetryService.instance.captureException(
-					new ConsecutiveMistakeError(
-						`Task reached consecutive mistake limit (${this.consecutiveMistakeLimit})`,
-						this.taskId,
-						this.consecutiveMistakeCount,
-						this.consecutiveMistakeLimit,
-						"no_tools_used",
-						this.apiConfiguration.apiProvider,
-						getModelId(this.apiConfiguration),
-					),
-				)
-
-				const { response, text, images } = await this.ask(
-					"mistake_limit_reached",
-					t("common:errors.mistake_limit_guidance"),
-				)
-
-				if (response === "messageResponse") {
-					currentUserContent.push(
-						...[
-							{ type: "text" as const, text: formatResponse.tooManyMistakes(text) },
-							...formatResponse.imageBlocks(images),
-						],
-					)
-
-					await this.say("user_feedback", text, images)
-				}
-
-				this.consecutiveMistakeCount = 0
-			}
-
 			// Getting verbose details is an expensive operation, it uses ripgrep to
 			// top-down build file structure of project which for large projects can
 			// take a few seconds. For the best UX we show a placeholder api_req_started
@@ -2655,10 +2574,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const isEmptyUserContent = currentUserContent.length === 0
 			const shouldAddUserMessage =
 				((currentItem.retryAttempt ?? 0) === 0 && !isEmptyUserContent) || currentItem.userMessageWasRemoved
-			if (shouldAddUserMessage) {
-				await this.addToApiConversationHistory({ role: "user", content: finalUserContent })
-				TelemetryService.instance.captureConversationMessage(this.taskId, "user")
-			}
 
 			// Since we sent off a placeholder api_req_started message to update the
 			// webview while waiting to actually start the API request (to load
@@ -3088,7 +3003,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						let bgCacheReadTokens = currentTokens.cacheRead
 						let bgTotalCost = currentTokens.total
 
-						// Helper function to capture telemetry and update messages
+						// Helper function to update messages
 						const captureUsageData = async (
 							tokens: {
 								input: number
@@ -3098,65 +3013,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								total?: number
 							},
 							messageIndex: number = apiReqIndex,
-						) => {
-							if (
-								tokens.input > 0 ||
-								tokens.output > 0 ||
-								tokens.cacheWrite > 0 ||
-								tokens.cacheRead > 0
-							) {
-								// Update the shared variables atomically
-								inputTokens = tokens.input
-								outputTokens = tokens.output
-								cacheWriteTokens = tokens.cacheWrite
-								cacheReadTokens = tokens.cacheRead
-								totalCost = tokens.total
-
-								// Update the API request message with the latest usage data
-								updateApiReqMsg()
-								await this.saveClineMessages()
-
-								// Update the specific message in the webview
-								const apiReqMessage = this.clineMessages[messageIndex]
-								if (apiReqMessage) {
-									await this.updateClineMessage(apiReqMessage)
-								}
-
-								// Capture telemetry with provider-aware cost calculation
-								const modelId = getModelId(this.apiConfiguration)
-								const apiProvider = this.apiConfiguration.apiProvider
-								const apiProtocol = getApiProtocol(
-									apiProvider && !isRetiredProvider(apiProvider) ? apiProvider : undefined,
-									modelId,
-								)
-
-								// Use the appropriate cost function based on the API protocol
-								const costResult =
-									apiProtocol === "anthropic"
-										? calculateApiCostAnthropic(
-												streamModelInfo,
-												tokens.input,
-												tokens.output,
-												tokens.cacheWrite,
-												tokens.cacheRead,
-											)
-										: calculateApiCostOpenAI(
-												streamModelInfo,
-												tokens.input,
-												tokens.output,
-												tokens.cacheWrite,
-												tokens.cacheRead,
-											)
-
-								TelemetryService.instance.captureLlmCompletion(this.taskId, {
-									inputTokens: costResult.totalInputTokens,
-									outputTokens: costResult.totalOutputTokens,
-									cacheWriteTokens: tokens.cacheWrite,
-									cacheReadTokens: tokens.cacheRead,
-									cost: tokens.total ?? costResult.totalCost,
-								})
-							}
-						}
+						) => {}
 
 						try {
 							// Continue processing the original stream from where the main loop left off
@@ -3416,144 +3273,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				const hasToolUses = this.assistantMessageContent.some(
 					(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
 				)
-
-				if (hasTextContent || hasToolUses) {
-					// Reset counter when we get a successful response with content
-					this.consecutiveNoAssistantMessagesCount = 0
-					// Display grounding sources to the user if they exist
-					if (pendingGroundingSources.length > 0) {
-						const citationLinks = pendingGroundingSources.map((source, i) => `[${i + 1}](${source.url})`)
-						const sourcesText = `${t("common:gemini.sources")} ${citationLinks.join(", ")}`
-
-						await this.say("text", sourcesText, undefined, false, undefined, undefined, {
-							isNonInteractive: true,
-						})
-					}
-
-					// Build the assistant message content array
-					const assistantContent: Array<Anthropic.TextBlockParam | Anthropic.ToolUseBlockParam> = []
-
-					// Add text content if present
-					if (assistantMessage) {
-						assistantContent.push({
-							type: "text" as const,
-							text: assistantMessage,
-						})
-					}
-
-					// Add tool_use blocks with their IDs for native protocol
-					// This handles both regular ToolUse and McpToolUse types
-					// IMPORTANT: Track seen IDs to prevent duplicates in the API request.
-					// Duplicate tool_use IDs cause Anthropic API 400 errors:
-					// "tool_use ids must be unique"
-					const seenToolUseIds = new Set<string>()
-					const toolUseBlocks = this.assistantMessageContent.filter(
-						(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
-					)
-					for (const block of toolUseBlocks) {
-						if (block.type === "mcp_tool_use") {
-							// McpToolUse already has the original tool name (e.g., "mcp_serverName_toolName")
-							// The arguments are the raw tool arguments (matching the simplified schema)
-							const mcpBlock = block as import("../../shared/tools").McpToolUse
-							if (mcpBlock.id) {
-								const sanitizedId = sanitizeToolUseId(mcpBlock.id)
-								// Pre-flight deduplication: Skip if we've already added this ID
-								if (seenToolUseIds.has(sanitizedId)) {
-									console.warn(
-										`[Task#${this.taskId}] Pre-flight deduplication: Skipping duplicate MCP tool_use ID: ${sanitizedId} (tool: ${mcpBlock.name})`,
-									)
-									continue
-								}
-								seenToolUseIds.add(sanitizedId)
-								assistantContent.push({
-									type: "tool_use" as const,
-									id: sanitizedId,
-									name: mcpBlock.name, // Original dynamic name
-									input: mcpBlock.arguments, // Direct tool arguments
-								})
-							}
-						} else {
-							// Regular ToolUse
-							const toolUse = block as import("../../shared/tools").ToolUse
-							const toolCallId = toolUse.id
-							if (toolCallId) {
-								const sanitizedId = sanitizeToolUseId(toolCallId)
-								// Pre-flight deduplication: Skip if we've already added this ID
-								if (seenToolUseIds.has(sanitizedId)) {
-									console.warn(
-										`[Task#${this.taskId}] Pre-flight deduplication: Skipping duplicate tool_use ID: ${sanitizedId} (tool: ${toolUse.name})`,
-									)
-									continue
-								}
-								seenToolUseIds.add(sanitizedId)
-								// nativeArgs is already in the correct API format for all tools
-								const input = toolUse.nativeArgs || toolUse.params
-
-								// Use originalName (alias) if present for API history consistency.
-								// When tool aliases are used (e.g., "edit_file" -> "search_and_replace" -> "edit" (current canonical name)),
-								// we want the alias name in the conversation history to match what the model
-								// was told the tool was named, preventing confusion in multi-turn conversations.
-								const toolNameForHistory = toolUse.originalName ?? toolUse.name
-
-								assistantContent.push({
-									type: "tool_use" as const,
-									id: sanitizedId,
-									name: toolNameForHistory,
-									input,
-								})
-							}
-						}
-					}
-
-					// Enforce new_task isolation: if new_task is called alongside other tools,
-					// truncate any tools that come after it and inject error tool_results.
-					// This prevents orphaned tools when delegation disposes the parent task.
-					const newTaskIndex = assistantContent.findIndex(
-						(block) => block.type === "tool_use" && block.name === "new_task",
-					)
-
-					if (newTaskIndex !== -1 && newTaskIndex < assistantContent.length - 1) {
-						// new_task found but not last - truncate subsequent tools
-						const truncatedTools = assistantContent.slice(newTaskIndex + 1)
-						assistantContent.length = newTaskIndex + 1 // Truncate API history array
-
-						// ALSO truncate the execution array (assistantMessageContent) to prevent
-						// tools after new_task from being executed by presentAssistantMessage().
-						// Find new_task index in assistantMessageContent (may differ from assistantContent
-						// due to text blocks being structured differently).
-						const executionNewTaskIndex = this.assistantMessageContent.findIndex(
-							(block) => block.type === "tool_use" && block.name === "new_task",
-						)
-						if (executionNewTaskIndex !== -1) {
-							this.assistantMessageContent.length = executionNewTaskIndex + 1
-						}
-
-						// Pre-inject error tool_results for truncated tools
-						for (const tool of truncatedTools) {
-							if (tool.type === "tool_use" && (tool as Anthropic.ToolUseBlockParam).id) {
-								this.pushToolResultToUserContent({
-									type: "tool_result",
-									tool_use_id: (tool as Anthropic.ToolUseBlockParam).id,
-									content:
-										"This tool was not executed because new_task was called in the same message turn. The new_task tool must be the last tool in a message.",
-									is_error: true,
-								})
-							}
-						}
-					}
-
-					// Save assistant message BEFORE executing tools
-					// This is critical for new_task: when it triggers delegation, flushPendingToolResultsToHistory()
-					// will save the user message with tool_results. The assistant message must already be in history
-					// so that tool_result blocks appear AFTER their corresponding tool_use blocks.
-					await this.addToApiConversationHistory(
-						{ role: "assistant", content: assistantContent },
-						reasoningMessage || undefined,
-					)
-					this.assistantMessageSavedToHistory = true
-
-					TelemetryService.instance.captureConversationMessage(this.taskId, "assistant")
-				}
 
 				// Present any partial blocks that were just completed.
 				// Tool calls are typically presented during streaming via tool_call_partial events,

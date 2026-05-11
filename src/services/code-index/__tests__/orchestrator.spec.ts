@@ -2,40 +2,6 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 import { CodeIndexOrchestrator } from "../orchestrator"
 
 // Mock vscode workspace so startIndexing passes workspace check
-vi.mock("vscode", () => {
-	const path = require("path")
-	const testWorkspacePath = path.join(path.sep, "test", "workspace")
-	return {
-		window: {
-			activeTextEditor: null,
-		},
-		workspace: {
-			workspaceFolders: [
-				{
-					uri: { fsPath: testWorkspacePath },
-					name: "test",
-					index: 0,
-				},
-			],
-			createFileSystemWatcher: vi.fn().mockReturnValue({
-				onDidCreate: vi.fn().mockReturnValue({ dispose: vi.fn() }),
-				onDidChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
-				onDidDelete: vi.fn().mockReturnValue({ dispose: vi.fn() }),
-				dispose: vi.fn(),
-			}),
-		},
-		RelativePattern: vi.fn().mockImplementation((base: string, pattern: string) => ({ base, pattern })),
-	}
-})
-
-// Mock TelemetryService
-vi.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		instance: {
-			captureEvent: vi.fn(),
-		},
-	},
-}))
 
 // Mock i18n translator used in orchestrator messages
 vi.mock("../../i18n", () => ({

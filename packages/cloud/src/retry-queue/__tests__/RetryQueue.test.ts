@@ -35,11 +35,11 @@ describe("RetryQueue", () => {
 			const url = "https://api.example.com/test"
 			const options = { method: "POST", body: JSON.stringify({ test: "data" }) }
 
-			await retryQueue.enqueue(url, options, "telemetry")
+			await retryQueue.enqueue(url, options, "event")
 
 			const stats = retryQueue.getStats()
 			expect(stats.totalQueued).toBe(1)
-			expect(stats.byType["telemetry"]).toBe(1)
+			expect(stats.byType["event"]).toBe(1)
 		})
 
 		it("should enforce max queue size with FIFO eviction", async () => {
@@ -48,7 +48,7 @@ describe("RetryQueue", () => {
 
 			// Add 4 requests
 			for (let i = 1; i <= 4; i++) {
-				await retryQueue.enqueue(`https://api.example.com/test${i}`, { method: "POST" }, "telemetry")
+				await retryQueue.enqueue(`https://api.example.com/test${i}`, { method: "POST" }, "event")
 			}
 
 			const stats = retryQueue.getStats()
@@ -58,14 +58,14 @@ describe("RetryQueue", () => {
 
 	describe("persistence", () => {
 		it("should persist queue to workspace state", async () => {
-			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "event")
 
 			expect(mockContext.workspaceState.update).toHaveBeenCalledWith(
 				"roo.retryQueue",
 				expect.arrayContaining([
 					expect.objectContaining({
 						url: "https://api.example.com/test",
-						type: "telemetry",
+						type: "event",
 					}),
 				]),
 			)
@@ -79,7 +79,7 @@ describe("RetryQueue", () => {
 					options: { method: "POST" },
 					timestamp: Date.now(),
 					retryCount: 0,
-					type: "telemetry",
+					type: "event",
 				},
 			]
 
@@ -102,7 +102,7 @@ describe("RetryQueue", () => {
 
 	describe("clear", () => {
 		it("should clear all queued requests", async () => {
-			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "event")
 			await retryQueue.enqueue("https://api.example.com/test2", { method: "POST" }, "api-call")
 
 			let stats = retryQueue.getStats()
@@ -119,14 +119,14 @@ describe("RetryQueue", () => {
 		it("should return correct statistics", async () => {
 			const now = Date.now()
 
-			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "event")
 			await retryQueue.enqueue("https://api.example.com/test2", { method: "POST" }, "api-call")
-			await retryQueue.enqueue("https://api.example.com/test3", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test3", { method: "POST" }, "event")
 
 			const stats = retryQueue.getStats()
 
 			expect(stats.totalQueued).toBe(3)
-			expect(stats.byType["telemetry"]).toBe(2)
+			expect(stats.byType["event"]).toBe(2)
 			expect(stats.byType["api-call"]).toBe(1)
 			expect(stats.oldestRequest).toBeDefined()
 			expect(stats.newestRequest).toBeDefined()
@@ -140,12 +140,12 @@ describe("RetryQueue", () => {
 			const listener = vi.fn()
 			retryQueue.on("request-queued", listener)
 
-			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "event")
 
 			expect(listener).toHaveBeenCalledWith(
 				expect.objectContaining({
 					url: "https://api.example.com/test",
-					type: "telemetry",
+					type: "event",
 				}),
 			)
 		})
@@ -175,7 +175,7 @@ describe("RetryQueue", () => {
 			const fetchMock = vi.fn().mockResolvedValue({ ok: true })
 			global.fetch = fetchMock
 
-			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "event")
 
 			// Pause the queue
 			retryQueue.pause()
@@ -209,8 +209,8 @@ describe("RetryQueue", () => {
 
 		it("should clear queue when user changes", async () => {
 			// Add some requests
-			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "telemetry")
-			await retryQueue.enqueue("https://api.example.com/test2", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "event")
+			await retryQueue.enqueue("https://api.example.com/test2", { method: "POST" }, "event")
 
 			let stats = retryQueue.getStats()
 			expect(stats.totalQueued).toBe(2)
@@ -237,8 +237,8 @@ describe("RetryQueue", () => {
 			retryQueue.setCurrentUserId("user_123")
 
 			// Add some requests
-			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "telemetry")
-			await retryQueue.enqueue("https://api.example.com/test2", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "event")
+			await retryQueue.enqueue("https://api.example.com/test2", { method: "POST" }, "event")
 
 			let stats = retryQueue.getStats()
 			expect(stats.totalQueued).toBe(2)
@@ -253,8 +253,8 @@ describe("RetryQueue", () => {
 
 		it("should not clear on first login (no previous user)", async () => {
 			// Add some requests before any user is set
-			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "telemetry")
-			await retryQueue.enqueue("https://api.example.com/test2", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "event")
+			await retryQueue.enqueue("https://api.example.com/test2", { method: "POST" }, "event")
 
 			let stats = retryQueue.getStats()
 			expect(stats.totalQueued).toBe(2)
@@ -273,7 +273,7 @@ describe("RetryQueue", () => {
 
 			// First user logs in
 			retryQueue.clearIfUserChanged("user_123")
-			await retryQueue.enqueue("https://api.example.com/user1-req", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/user1-req", { method: "POST" }, "event")
 
 			// User logs out
 			const clearedOnLogout = retryQueue.clearIfUserChanged(undefined)
@@ -281,13 +281,13 @@ describe("RetryQueue", () => {
 			expect(clearListener).toHaveBeenCalledTimes(1)
 
 			// Different user logs in
-			await retryQueue.enqueue("https://api.example.com/user2-req", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/user2-req", { method: "POST" }, "event")
 			const clearedOnNewUser = retryQueue.clearIfUserChanged("user_456")
 			expect(clearedOnNewUser).toBe(true)
 			expect(clearListener).toHaveBeenCalledTimes(2)
 
 			// Same user logs back in
-			await retryQueue.enqueue("https://api.example.com/user2-req2", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/user2-req2", { method: "POST" }, "event")
 			const notCleared = retryQueue.clearIfUserChanged("user_456")
 			expect(notCleared).toBe(false)
 			expect(clearListener).toHaveBeenCalledTimes(2) // Still 2, not cleared
@@ -315,9 +315,9 @@ describe("RetryQueue", () => {
 			retryQueue.on("request-retry-success", successListener)
 
 			// Add multiple requests
-			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "telemetry")
-			await retryQueue.enqueue("https://api.example.com/test2", { method: "POST" }, "telemetry")
-			await retryQueue.enqueue("https://api.example.com/test3", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "event")
+			await retryQueue.enqueue("https://api.example.com/test2", { method: "POST" }, "event")
+			await retryQueue.enqueue("https://api.example.com/test3", { method: "POST" }, "event")
 
 			// Mock successful responses
 			fetchMock.mockResolvedValue({ ok: true })
@@ -342,7 +342,7 @@ describe("RetryQueue", () => {
 			const failListener = vi.fn()
 			retryQueue.on("request-retry-failed", failListener)
 
-			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "event")
 
 			// Mock failed response
 			fetchMock.mockRejectedValue(new Error("Network error"))
@@ -371,7 +371,7 @@ describe("RetryQueue", () => {
 			const maxRetriesListener = vi.fn()
 			retryQueue.on("request-max-retries-exceeded", maxRetriesListener)
 
-			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "event")
 
 			// Mock failed responses
 			fetchMock.mockRejectedValue(new Error("Network error"))
@@ -400,7 +400,7 @@ describe("RetryQueue", () => {
 
 		it("should not process if already processing", async () => {
 			// Add a request
-			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "event")
 
 			// Mock a slow response
 			fetchMock.mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve({ ok: true }), 100)))
@@ -439,7 +439,7 @@ describe("RetryQueue", () => {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 				},
-				"telemetry",
+				"event",
 			)
 
 			fetchMock.mockResolvedValue({ ok: true })
@@ -465,7 +465,7 @@ describe("RetryQueue", () => {
 			// Create queue with custom timeout (short timeout for testing)
 			retryQueue = new RetryQueue(mockContext, { requestTimeout: 100 })
 
-			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "event")
 
 			// Mock fetch to reject with abort error
 			const abortError = new Error("The operation was aborted")
@@ -496,7 +496,7 @@ describe("RetryQueue", () => {
 			retryQueue.on("request-retry-failed", failListener)
 			retryQueue.on("request-retry-success", successListener)
 
-			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "event")
 
 			// First attempt: 500 error
 			fetchMock.mockResolvedValueOnce({ ok: false, status: 500, statusText: "Internal Server Error" })
@@ -529,9 +529,9 @@ describe("RetryQueue", () => {
 
 		it("should pause entire queue on 429 rate limiting with Retry-After header", async () => {
 			// Add multiple requests to test queue-wide pause
-			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "telemetry")
-			await retryQueue.enqueue("https://api.example.com/test2", { method: "POST" }, "telemetry")
-			await retryQueue.enqueue("https://api.example.com/test3", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "event")
+			await retryQueue.enqueue("https://api.example.com/test2", { method: "POST" }, "event")
+			await retryQueue.enqueue("https://api.example.com/test3", { method: "POST" }, "event")
 
 			// Mock 429 response with Retry-After header (in seconds) for the first request
 			const retryAfterResponse = {
@@ -567,8 +567,8 @@ describe("RetryQueue", () => {
 
 		it("should process all requests after rate limit period expires", async () => {
 			// Add multiple requests
-			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "telemetry")
-			await retryQueue.enqueue("https://api.example.com/test2", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "event")
+			await retryQueue.enqueue("https://api.example.com/test2", { method: "POST" }, "event")
 
 			// Mock 429 response with very short Retry-After (for testing)
 			const retryAfterResponse = {
@@ -608,7 +608,7 @@ describe("RetryQueue", () => {
 			const successListener = vi.fn()
 			retryQueue.on("request-retry-success", successListener)
 
-			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "event")
 
 			// Mock 401 error
 			fetchMock.mockResolvedValueOnce({ ok: false, status: 401, statusText: "Unauthorized" })
@@ -621,7 +621,7 @@ describe("RetryQueue", () => {
 			expect(stats.totalQueued).toBe(0)
 
 			// Test 403 as well
-			await retryQueue.enqueue("https://api.example.com/test2", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test2", { method: "POST" }, "event")
 			fetchMock.mockResolvedValueOnce({ ok: false, status: 403, statusText: "Forbidden" })
 
 			await retryQueue.retryAll()
@@ -644,11 +644,7 @@ describe("RetryQueue", () => {
 			]
 
 			for (const error of clientErrors) {
-				await retryQueue.enqueue(
-					`https://api.example.com/test-${error.status}`,
-					{ method: "POST" },
-					"telemetry",
-				)
+				await retryQueue.enqueue(`https://api.example.com/test-${error.status}`, { method: "POST" }, "event")
 				fetchMock.mockResolvedValueOnce({ ok: false, ...error })
 			}
 
@@ -662,7 +658,7 @@ describe("RetryQueue", () => {
 
 		it("should prevent concurrent processing", async () => {
 			// Add a single request
-			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "event")
 
 			// Mock slow response
 			let resolveFirst: () => void

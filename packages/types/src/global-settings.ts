@@ -10,7 +10,6 @@ import {
 import { historyItemSchema } from "./history.js"
 import { codebaseIndexModelsSchema, codebaseIndexConfigSchema } from "./codebase-index.js"
 import { experimentsSchema } from "./experiment.js"
-import { telemetrySettingsSchema } from "./telemetry.js"
 import { modeConfigSchema } from "./mode.js"
 import { customModePromptsSchema, customSupportPromptsSchema } from "./mode.js"
 import { toolNamesSchema } from "./tool.js"
@@ -187,8 +186,6 @@ export const globalSettingsSchema = z.object({
 	codebaseIndexConfig: codebaseIndexConfigSchema.optional(),
 
 	language: languagesSchema.optional(),
-
-	telemetrySetting: telemetrySettingsSchema.optional(),
 
 	mcpEnabled: z.boolean().optional(),
 
@@ -371,8 +368,6 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	maxDiagnosticMessages: 50,
 
 	language: "en",
-	telemetrySetting: "enabled",
-
 	mcpEnabled: false,
 
 	mode: "code", // "architect",

@@ -928,10 +928,6 @@
 		"simplifiedExplanation": "You can adjust detailed model settings later."
 	},
 	"footer": {
-		"telemetry": {
-			"label": "Allow anonymous error and usage reporting",
-			"description": "Help improve Roo Code by sending anonymous usage data and error reports. This telemetry does not collect code, prompts or personal information. See our <privacyLink>privacy policy</privacyLink> for more details."
-		},
 		"settings": {
 			"import": "Import",
 			"export": "Export",

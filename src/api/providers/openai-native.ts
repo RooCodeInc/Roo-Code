@@ -14,9 +14,7 @@ import {
 	type VerbosityLevel,
 	type ReasoningEffortExtended,
 	type ServiceTier,
-	ApiProviderError,
 } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
@@ -644,8 +642,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		} catch (error) {
 			const model = this.getModel()
 			const errorMessage = error instanceof Error ? error.message : String(error)
-			const apiError = new ApiProviderError(errorMessage, this.providerName, model.id, "createMessage")
-			TelemetryService.instance.captureException(apiError)
 
 			if (error instanceof Error) {
 				// Re-throw with the original error message if it's already formatted
@@ -1126,8 +1122,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			// This can happen in certain edge cases and shouldn't break the flow
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
-			const apiError = new ApiProviderError(errorMessage, this.providerName, model.id, "createMessage")
-			TelemetryService.instance.captureException(apiError)
 
 			if (error instanceof Error) {
 				throw new Error(`Error processing response stream: ${error.message}`)
@@ -1571,8 +1565,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		} catch (error) {
 			const errorModel = this.getModel()
 			const errorMessage = error instanceof Error ? error.message : String(error)
-			const apiError = new ApiProviderError(errorMessage, this.providerName, errorModel.id, "completePrompt")
-			TelemetryService.instance.captureException(apiError)
 
 			if (error instanceof Error) {
 				throw new Error(`OpenAI Native completion error: ${error.message}`)

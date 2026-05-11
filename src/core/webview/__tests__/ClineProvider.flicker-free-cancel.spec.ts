@@ -42,34 +42,6 @@ vi.mock("vscode", () => {
 	}
 })
 
-vi.mock("../../task/Task")
-vi.mock("../../config/ContextProxy")
-vi.mock("../../../services/mcp/McpServerManager", () => ({
-	McpServerManager: {
-		getInstance: vi.fn().mockResolvedValue({
-			registerClient: vi.fn(),
-		}),
-		unregisterProvider: vi.fn(),
-	},
-}))
-vi.mock("../../../services/marketplace")
-vi.mock("../../../integrations/workspace/WorkspaceTracker")
-vi.mock("../../config/ProviderSettingsManager")
-vi.mock("../../config/CustomModesManager")
-vi.mock("../../../utils/path", () => ({
-	getWorkspacePath: vi.fn().mockReturnValue("/test/workspace"),
-}))
-
-// Mock TelemetryService
-vi.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		instance: {
-			setProvider: vi.fn(),
-			captureTaskCreated: vi.fn(),
-		},
-	},
-}))
-
 // Mock CloudService
 vi.mock("@roo-code/cloud", () => ({
 	CloudService: {

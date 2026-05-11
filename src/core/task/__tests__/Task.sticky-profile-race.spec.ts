@@ -6,25 +6,6 @@ import type { ProviderSettings } from "@roo-code/types"
 import { Task } from "../Task"
 import { ClineProvider } from "../../webview/ClineProvider"
 
-vi.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		hasInstance: vi.fn().mockReturnValue(true),
-		createInstance: vi.fn(),
-		get instance() {
-			return {
-				captureTaskCreated: vi.fn(),
-				captureTaskRestarted: vi.fn(),
-				captureModeSwitch: vi.fn(),
-				captureConversationMessage: vi.fn(),
-				captureLlmCompletion: vi.fn(),
-				captureConsecutiveMistakeError: vi.fn(),
-				captureCodeActionUsed: vi.fn(),
-				setProvider: vi.fn(),
-			}
-		},
-	},
-}))
-
 vi.mock("vscode", () => {
 	const mockDisposable = { dispose: vi.fn() }
 	const mockEventEmitter = { event: vi.fn(), fire: vi.fn() }

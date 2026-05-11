@@ -6,36 +6,10 @@ import { vscode } from "@/utils/vscode"
 import { ShareButton } from "../ShareButton"
 
 // Mock the vscode utility
-vi.mock("@/utils/vscode", () => ({
-	vscode: {
-		postMessage: vi.fn(),
-	},
-}))
 
 // Mock react-i18next
-vi.mock("react-i18next")
 
 // Mock the extension state context
-vi.mock("@/context/ExtensionStateContext", () => ({
-	ExtensionStateContextProvider: ({ children }: { children: React.ReactNode }) => children,
-	useExtensionState: () => ({
-		sharingEnabled: true,
-		publicSharingEnabled: true,
-		cloudIsAuthenticated: true,
-		cloudUserInfo: {
-			id: "test-user",
-			email: "test@example.com",
-			organizationName: "Test Organization",
-		},
-	}),
-}))
-
-// Mock telemetry client
-vi.mock("@/utils/TelemetryClient", () => ({
-	telemetryClient: {
-		capture: vi.fn(),
-	},
-}))
 
 const mockUseTranslation = vi.mocked(useTranslation)
 const mockVscode = vi.mocked(vscode)

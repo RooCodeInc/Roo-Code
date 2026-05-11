@@ -24,7 +24,6 @@ import {
 } from "@/lib/blog"
 import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
-import { BlogPostAnalytics } from "@/components/blog/BlogAnalytics"
 import { BlogContent } from "@/components/blog/BlogContent"
 import { BlogFAQ, type FAQItem } from "@/components/blog/BlogFAQ"
 
@@ -240,8 +239,6 @@ export default async function BlogPostPage({ params }: Props) {
 					dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
 				/>
 			)}
-
-			<BlogPostAnalytics post={post} />
 
 			<article className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
 				<div className="mx-auto max-w-4xl">

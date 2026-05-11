@@ -23,8 +23,6 @@ import { codeParser } from "./parser"
 import { CacheManager } from "../cache-manager"
 import { generateNormalizedAbsolutePath, generateRelativeFilePath } from "../shared/get-relative-path"
 import { isPathInIgnoredDirectory } from "../../glob/ignore-utils"
-import { TelemetryService } from "@roo-code/telemetry"
-import { TelemetryEventName } from "@roo-code/types"
 import { sanitizeErrorMessage } from "../shared/validation-helpers"
 import { Package } from "../../../shared/package"
 
@@ -207,46 +205,6 @@ export class FileWatcher implements IFileWatcher {
 			}
 		}
 
-		if (allPathsToClearFromDB.size > 0 && this.vectorStore) {
-			try {
-				await this.vectorStore.deletePointsByMultipleFilePaths(Array.from(allPathsToClearFromDB))
-
-				for (const path of pathsToExplicitlyDelete) {
-					this.cacheManager.deleteHash(path)
-					batchResults.push({ path, status: "success" })
-					processedCountInBatch++
-					this._onBatchProgressUpdate.fire({
-						processedInBatch: processedCountInBatch,
-						totalInBatch: totalFilesInBatch,
-						currentFile: path,
-					})
-				}
-			} catch (error: any) {
-				const errorStatus = error?.status || error?.response?.status || error?.statusCode
-				const errorMessage = error instanceof Error ? error.message : String(error)
-
-				// Log telemetry for deletion error
-				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-					error: sanitizeErrorMessage(errorMessage),
-					location: "deletePointsByMultipleFilePaths",
-					errorType: "deletion_error",
-					errorStatus: errorStatus,
-				})
-
-				// Mark all paths as error
-				overallBatchError = error as Error
-				for (const path of pathsToExplicitlyDelete) {
-					batchResults.push({ path, status: "error", error: error as Error })
-					processedCountInBatch++
-					this._onBatchProgressUpdate.fire({
-						processedInBatch: processedCountInBatch,
-						totalInBatch: totalFilesInBatch,
-						currentFile: path,
-					})
-				}
-			}
-		}
-
 		return { overallBatchError, clearedPaths: allPathsToClearFromDB, processedCount: processedCountInBatch }
 	}
 
@@ -356,65 +314,6 @@ export class FileWatcher implements IFileWatcher {
 		batchResults: FileProcessingResult[],
 		overallBatchError?: Error,
 	): Promise<Error | undefined> {
-		if (pointsForBatchUpsert.length > 0 && this.vectorStore && !overallBatchError) {
-			try {
-				for (let i = 0; i < pointsForBatchUpsert.length; i += this.batchSegmentThreshold) {
-					const batch = pointsForBatchUpsert.slice(i, i + this.batchSegmentThreshold)
-					let retryCount = 0
-					let upsertError: Error | undefined
-
-					while (retryCount < MAX_BATCH_RETRIES) {
-						try {
-							await this.vectorStore.upsertPoints(batch)
-							break
-						} catch (error) {
-							upsertError = error as Error
-							retryCount++
-							if (retryCount === MAX_BATCH_RETRIES) {
-								// Log telemetry for upsert failure
-								TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-									error: sanitizeErrorMessage(upsertError.message),
-									location: "upsertPoints",
-									errorType: "upsert_retry_exhausted",
-									retryCount: MAX_BATCH_RETRIES,
-								})
-								throw new Error(
-									`Failed to upsert batch after ${MAX_BATCH_RETRIES} retries: ${upsertError.message}`,
-								)
-							}
-							await new Promise((resolve) =>
-								setTimeout(resolve, INITIAL_RETRY_DELAY_MS * Math.pow(2, retryCount - 1)),
-							)
-						}
-					}
-				}
-
-				for (const { path, newHash } of successfullyProcessedForUpsert) {
-					if (newHash) {
-						this.cacheManager.updateHash(path, newHash)
-					}
-					batchResults.push({ path, status: "success" })
-				}
-			} catch (error) {
-				const err = error as Error
-				overallBatchError = overallBatchError || err
-				// Log telemetry for batch upsert error
-				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-					error: sanitizeErrorMessage(err.message),
-					location: "executeBatchUpsertOperations",
-					errorType: "batch_upsert_error",
-					affectedFiles: successfullyProcessedForUpsert.length,
-				})
-				for (const { path } of successfullyProcessedForUpsert) {
-					batchResults.push({ path, status: "error", error: err })
-				}
-			}
-		} else if (overallBatchError && pointsForBatchUpsert.length > 0) {
-			for (const { path } of successfullyProcessedForUpsert) {
-				batchResults.push({ path, status: "error", error: overallBatchError })
-			}
-		}
-
 		return overallBatchError
 	}
 

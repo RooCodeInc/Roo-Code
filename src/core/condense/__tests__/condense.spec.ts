@@ -2,7 +2,6 @@
 
 import { Anthropic } from "@anthropic-ai/sdk"
 import type { ModelInfo } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
 
 import { BaseProvider } from "../../../api/providers/base-provider"
 import { ApiMessage } from "../../task-persistence/apiMessages"
@@ -57,11 +56,7 @@ const mockApiHandler = new MockApiHandler()
 const taskId = "test-task-id"
 
 describe("Condense", () => {
-	beforeEach(() => {
-		if (!TelemetryService.hasInstance()) {
-			TelemetryService.createInstance([])
-		}
-	})
+	beforeEach(() => {})
 
 	describe("extractCommandBlocks", () => {
 		it("should extract command blocks from string content", () => {

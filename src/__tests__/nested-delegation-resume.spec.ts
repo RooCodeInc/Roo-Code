@@ -4,18 +4,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { RooCodeEventName } from "@roo-code/types"
 
 // Mock safe-stable-stringify to avoid runtime error
-vi.mock("safe-stable-stringify", () => ({
-	default: (obj: any) => JSON.stringify(obj),
-}))
-
-// Mock TelemetryService
-vi.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		instance: {
-			captureTaskCompleted: vi.fn(),
-		},
-	},
-}))
 
 // vscode mock for Task/Provider imports
 vi.mock("vscode", () => {

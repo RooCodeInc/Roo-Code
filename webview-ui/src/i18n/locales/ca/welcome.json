@@ -44,9 +44,5 @@
 	},
 	"startRouter": "Recomanem utilitzar un encaminador LLM:",
 	"startCustom": "O pots portar la teva pròpia clau API:",
-	"telemetry": {
-		"helpImprove": "Ajuda a millorar Roo Code",
-		"helpImproveMessage": "Roo Code recopila dades d'errors i ús per ajudar-nos a corregir errors i millorar l'extensió. Aquesta telemetria no recopila codi, indicacions o informació personal. Pots desactivar-la a <settingsLink>configuració</settingsLink>."
-	},
 	"importSettings": "Importa la configuració"
 }

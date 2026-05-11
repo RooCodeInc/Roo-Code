@@ -80,53 +80,10 @@ vi.mock("@/components/common/DismissibleUpsell", () => ({
 }))
 
 // Mock QueuedMessages component
-vi.mock("../QueuedMessages", () => ({
-	QueuedMessages: function MockQueuedMessages({
-		queue = [],
-		onRemove,
-	}: {
-		queue?: Array<{ id: string; text: string; images?: string[] }>
-		onRemove?: (index: number) => void
-		onUpdate?: (index: number, newText: string) => void
-	}) {
-		if (!queue || queue.length === 0) {
-			return null
-		}
-		return (
-			<div data-testid="queued-messages">
-				{queue.map((msg, index) => (
-					<div key={msg.id}>
-						<span>{msg.text}</span>
-						<button aria-label="Remove message" onClick={() => onRemove?.(index)}>
-							Remove
-						</button>
-					</div>
-				))}
-			</div>
-		)
-	},
-}))
 
 // Mock RooTips component
-vi.mock("@src/components/welcome/RooTips", () => ({
-	default: function MockRooTips() {
-		return <div data-testid="roo-tips">Tips content</div>
-	},
-}))
 
 // Mock RooHero component
-vi.mock("@src/components/welcome/RooHero", () => ({
-	default: function MockRooHero() {
-		return <div data-testid="roo-hero">Hero content</div>
-	},
-}))
-
-// Mock TelemetryBanner component
-vi.mock("../common/TelemetryBanner", () => ({
-	default: function MockTelemetryBanner() {
-		return null
-	},
-}))
 
 // Mock i18n
 vi.mock("react-i18next", () => ({
@@ -237,7 +194,6 @@ const mockPostMessage = (state: Partial<ExtensionState>) => {
 				allowedCommands: [],
 				alwaysAllowExecute: false,
 				cloudIsAuthenticated: false,
-				telemetrySetting: "enabled",
 				...state,
 			},
 		},

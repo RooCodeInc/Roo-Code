@@ -875,10 +875,6 @@
 		"simplifiedExplanation": "你可以稍後調整詳細的模型設定。"
 	},
 	"footer": {
-		"telemetry": {
-			"label": "允許匿名錯誤與使用情況回報",
-			"description": "透過發送匿名使用資料和錯誤回報來協助改善 Roo Code。此遙測不會收集程式碼、提示詞或個人資訊。查看我們的 <privacyLink>隱私權政策</privacyLink> 以了解更多資訊。"
-		},
 		"settings": {
 			"import": "匯入",
 			"export": "匯出",

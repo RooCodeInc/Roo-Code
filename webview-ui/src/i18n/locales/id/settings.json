@@ -865,10 +865,6 @@
 		"simplifiedExplanation": "Anda dapat menyesuaikan pengaturan model terperinci nanti."
 	},
 	"footer": {
-		"telemetry": {
-			"label": "Izinkan pelaporan error dan penggunaan anonim",
-			"description": "Bantu tingkatkan Roo Code dengan mengirimkan data penggunaan anonim dan laporan error. Telemetri ini tidak mengumpulkan kode, prompt, atau informasi pribadi. Lihat <privacyLink>kebijakan privasi</privacyLink> kami untuk detail lebih lanjut. Anda dapat menonaktifkannya kapan saja."
-		},
 		"settings": {
 			"import": "Impor",
 			"export": "Ekspor",

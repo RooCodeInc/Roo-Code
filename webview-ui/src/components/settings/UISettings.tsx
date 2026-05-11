@@ -1,7 +1,6 @@
 import { HTMLAttributes, useMemo } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
-import { telemetryClient } from "@/utils/TelemetryClient"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
@@ -31,21 +30,11 @@ export const UISettings = ({
 
 	const handleReasoningBlockCollapsedChange = (value: boolean) => {
 		setCachedStateField("reasoningBlockCollapsed", value)
-
-		// Track telemetry event
-		telemetryClient.capture("ui_settings_collapse_thinking_changed", {
-			enabled: value,
-		})
 	}
 
 	const handleEnterBehaviorChange = (requireCtrlEnter: boolean) => {
 		const newBehavior = requireCtrlEnter ? "newline" : "send"
 		setCachedStateField("enterBehavior", newBehavior)
-
-		// Track telemetry event
-		telemetryClient.capture("ui_settings_enter_behavior_changed", {
-			behavior: newBehavior,
-		})
 	}
 
 	return (

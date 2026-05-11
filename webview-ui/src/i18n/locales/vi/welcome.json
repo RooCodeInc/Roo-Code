@@ -44,9 +44,5 @@
 	},
 	"startRouter": "Chúng tôi khuyên bạn nên sử dụng bộ định tuyến LLM:",
 	"startCustom": "Hoặc bạn có thể mang theo khóa API của riêng mình:",
-	"telemetry": {
-		"helpImprove": "Giúp cải thiện Roo Code",
-		"helpImproveMessage": "Roo Code thu thập dữ liệu lỗi và sử dụng để giúp chúng tôi sửa lỗi và cải thiện tiện ích mở rộng. Dữ liệu từ xa này không thu thập mã, lời nhắc hoặc thông tin cá nhân. Bạn có thể vô hiệu hóa nó trong <settingsLink>cài đặt</settingsLink>."
-	},
 	"importSettings": "Nhập Cài đặt"
 }

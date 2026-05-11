@@ -2,8 +2,6 @@ import { OpenAICompatibleEmbedder } from "./openai-compatible"
 import { IEmbedder, EmbeddingResponse, EmbedderInfo } from "../interfaces/embedder"
 import { GEMINI_MAX_ITEM_TOKENS } from "../constants"
 import { t } from "../../../i18n"
-import { TelemetryEventName } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
 
 /**
  * Gemini embedder implementation that wraps the OpenAI Compatible embedder
@@ -69,18 +67,9 @@ export class GeminiEmbedder implements IEmbedder {
 	 * @returns Promise resolving to embedding response
 	 */
 	async createEmbeddings(texts: string[], model?: string): Promise<EmbeddingResponse> {
-		try {
-			// Use the provided model or fall back to the instance's model
-			const modelToUse = model || this.modelId
-			return await this.openAICompatibleEmbedder.createEmbeddings(texts, modelToUse)
-		} catch (error) {
-			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
-				location: "GeminiEmbedder:createEmbeddings",
-			})
-			throw error
-		}
+		// Use the provided model or fall back to the instance's model
+		const modelToUse = model || this.modelId
+		return this.openAICompatibleEmbedder.createEmbeddings(texts, modelToUse)
 	}
 
 	/**
@@ -88,18 +77,9 @@ export class GeminiEmbedder implements IEmbedder {
 	 * @returns Promise resolving to validation result with success status and optional error message
 	 */
 	async validateConfiguration(): Promise<{ valid: boolean; error?: string }> {
-		try {
-			// Delegate validation to the OpenAI-compatible embedder
-			// The error messages will be specific to Gemini since we're using Gemini's base URL
-			return await this.openAICompatibleEmbedder.validateConfiguration()
-		} catch (error) {
-			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
-				location: "GeminiEmbedder:validateConfiguration",
-			})
-			throw error
-		}
+		// Delegate validation to the OpenAI-compatible embedder
+		// The error messages will be specific to Gemini since we're using Gemini's base URL
+		return this.openAICompatibleEmbedder.validateConfiguration()
 	}
 
 	/**

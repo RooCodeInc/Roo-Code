@@ -2,8 +2,6 @@ import * as vscode from "vscode"
 import { Ignore } from "ignore"
 
 import type { EmbedderProvider } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
-import { TelemetryEventName } from "@roo-code/types"
 
 import { t } from "../../i18n"
 
@@ -119,13 +117,6 @@ export class CodeIndexServiceFactory {
 		try {
 			return await embedder.validateConfiguration()
 		} catch (error) {
-			// Capture telemetry for the error
-			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
-				location: "validateEmbedder",
-			})
-
 			// If validation throws an exception, preserve the original error message
 			return {
 				valid: false,

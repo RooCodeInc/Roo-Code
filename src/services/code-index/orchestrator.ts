@@ -5,8 +5,6 @@ import { CodeIndexStateManager, IndexingState } from "./state-manager"
 import { IFileWatcher, IVectorStore, BatchProcessingSummary } from "./interfaces"
 import { DirectoryScanner } from "./processors"
 import { CacheManager } from "./cache-manager"
-import { TelemetryService } from "@roo-code/telemetry"
-import { TelemetryEventName } from "@roo-code/types"
 import { t } from "../../i18n"
 
 /**
@@ -79,11 +77,6 @@ export class CodeIndexOrchestrator {
 			]
 		} catch (error) {
 			console.error("[CodeIndexOrchestrator] Failed to start file watcher:", error)
-			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
-				location: "_startWatcher",
-			})
 			throw error
 		}
 	}
@@ -311,23 +304,6 @@ export class CodeIndexOrchestrator {
 			}
 
 			console.error("[CodeIndexOrchestrator] Error during indexing:", error)
-			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
-				location: "startIndexing",
-			})
-			if (indexingStarted) {
-				try {
-					await this.vectorStore.clearCollection()
-				} catch (cleanupError) {
-					console.error("[CodeIndexOrchestrator] Failed to clean up after error:", cleanupError)
-					TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-						error: cleanupError instanceof Error ? cleanupError.message : String(cleanupError),
-						stack: cleanupError instanceof Error ? cleanupError.stack : undefined,
-						location: "startIndexing.cleanup",
-					})
-				}
-			}
 
 			// Only clear cache if indexing had started (Qdrant connection succeeded)
 			// If we never connected to Qdrant, preserve cache for incremental scan when it comes back
@@ -401,11 +377,6 @@ export class CodeIndexOrchestrator {
 				}
 			} catch (error: any) {
 				console.error("[CodeIndexOrchestrator] Failed to clear vector collection:", error)
-				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-					error: error instanceof Error ? error.message : String(error),
-					stack: error instanceof Error ? error.stack : undefined,
-					location: "clearIndexData",
-				})
 				this.stateManager.setSystemState("Error", `Failed to clear vector collection: ${error.message}`)
 			}
 

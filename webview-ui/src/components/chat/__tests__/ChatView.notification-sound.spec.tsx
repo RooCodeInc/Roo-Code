@@ -126,13 +126,6 @@ vi.mock("@src/components/welcome/RooHero", () => ({
 	},
 }))
 
-// Mock TelemetryBanner component
-vi.mock("../common/TelemetryBanner", () => ({
-	default: function MockTelemetryBanner() {
-		return null // Don't render anything to avoid interference
-	},
-}))
-
 // Mock i18n
 vi.mock("react-i18next", () => ({
 	useTranslation: () => ({
@@ -249,7 +242,6 @@ const mockPostMessage = (state: Partial<ExtensionState>) => {
 				taskHistory: [],
 				shouldShowAnnouncement: false,
 				cloudIsAuthenticated: false,
-				telemetrySetting: "enabled",
 				messageQueue: [],
 				...state,
 			},

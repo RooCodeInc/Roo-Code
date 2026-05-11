@@ -41,7 +41,7 @@ export async function getGitRepositoryInfo(workspaceRoot: string): Promise<GitRe
 
 			if (urlMatch && urlMatch[1]) {
 				const url = urlMatch[1].trim()
-				// Sanitize the URL and convert to HTTPS format for telemetry
+				// Sanitize the URL and convert to HTTPS format
 				gitInfo.repositoryUrl = convertGitUrlToHttps(sanitizeGitUrl(url))
 				const repositoryName = extractRepositoryName(url)
 				if (repositoryName) {

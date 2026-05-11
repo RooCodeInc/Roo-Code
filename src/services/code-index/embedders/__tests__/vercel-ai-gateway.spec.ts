@@ -4,18 +4,6 @@ import { VercelAiGatewayEmbedder } from "../vercel-ai-gateway"
 import { OpenAICompatibleEmbedder } from "../openai-compatible"
 
 // Mock the OpenAICompatibleEmbedder
-vi.mock("../openai-compatible", () => ({
-	OpenAICompatibleEmbedder: vi.fn(),
-}))
-
-// Mock the TelemetryService
-vi.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		instance: {
-			captureEvent: vi.fn(),
-		},
-	},
-}))
 
 const MockedOpenAICompatibleEmbedder = vi.mocked(OpenAICompatibleEmbedder)
 
