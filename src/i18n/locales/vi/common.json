@@ -220,21 +220,6 @@
 			"rulesCleanupFailed": "Đã xóa chế độ thành công, nhưng không thể xóa thư mục quy tắc tại {{rulesFolderPath}}. Bạn có thể cần xóa thủ công."
 		}
 	},
-	"mdm": {
-		"errors": {
-			"cloud_auth_required": "Tổ chức của bạn yêu cầu xác thực Roo Code Cloud. Vui lòng đăng nhập để tiếp tục.",
-			"organization_mismatch": "Bạn phải được xác thực bằng tài khoản Roo Code Cloud của tổ chức.",
-			"manual_url_empty": "Vui lòng nhập URL callback hợp lệ",
-			"manual_url_no_query": "URL callback không hợp lệ: thiếu tham số truy vấn",
-			"manual_url_missing_params": "URL callback không hợp lệ: thiếu tham số bắt buộc (code và state)",
-			"manual_url_auth_failed": "Xác thực URL thủ công thất bại",
-			"manual_url_auth_error": "Xác thực thất bại",
-			"verification_failed": "Không thể xác minh xác thực tổ chức."
-		},
-		"info": {
-			"organization_requires_auth": "Tổ chức của bạn yêu cầu xác thực."
-		}
-	},
 	"prompts": {
 		"deleteMode": {
 			"title": "Xóa chế độ tùy chỉnh",
