@@ -42,7 +42,14 @@ vi.mock("vscode", () => ({
 	},
 }))
 
+vi.mock("@dotenvx/dotenvx", () => ({
+	config: vi.fn(),
+}))
+
 // Mock fs so the extension module can safely check for optional .env.
+vi.mock("fs", () => ({
+	existsSync: vi.fn().mockReturnValue(false),
+}))
 
 const mockCloudServiceInstance = {
 	off: vi.fn(),
@@ -53,6 +60,17 @@ const mockCloudServiceInstance = {
 		getSessionToken: vi.fn().mockReturnValue("test-session-token"),
 	},
 }
+
+vi.mock("@roo-code/cloud", () => ({
+	CloudService: {
+		createInstance: vi.fn(),
+		hasInstance: vi.fn().mockReturnValue(true),
+		get instance() {
+			return mockCloudServiceInstance
+		},
+	},
+	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.roocode.com"),
+}))
 
 vi.mock("../utils/outputChannelLogger", () => ({
 	createOutputChannelLogger: vi.fn().mockReturnValue(vi.fn()),

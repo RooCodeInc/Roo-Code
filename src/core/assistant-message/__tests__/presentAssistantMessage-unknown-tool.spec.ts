@@ -4,6 +4,11 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 import { presentAssistantMessage } from "../presentAssistantMessage"
 
 // Mock dependencies
+vi.mock("../../task/Task")
+vi.mock("../../tools/validateToolUse", () => ({
+	validateToolUse: vi.fn(),
+	isValidToolName: vi.fn(() => false),
+}))
 
 describe("presentAssistantMessage - Unknown Tool Handling", () => {
 	let mockTask: any

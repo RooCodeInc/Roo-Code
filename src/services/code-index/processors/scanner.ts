@@ -325,6 +325,38 @@ export class DirectoryScanner implements IDirectoryScanner {
 		// Handle deleted files
 		const oldHashes = this.cacheManager.getAllHashes()
 		for (const cachedFilePath of Object.keys(oldHashes)) {
+			if (!processedFiles.has(cachedFilePath)) {
+				// File was deleted or is no longer supported/indexed
+				if (this.qdrantClient) {
+					try {
+						await this.qdrantClient.deletePointsByFilePath(cachedFilePath)
+						await this.cacheManager.deleteHash(cachedFilePath)
+					} catch (error: any) {
+						const errorMessage = error instanceof Error ? error.message : String(error)
+
+						console.error(
+							`[DirectoryScanner] Failed to delete points for ${cachedFilePath} in workspace ${scanWorkspace}:`,
+							error,
+						)
+
+						if (onError) {
+							onError(
+								error instanceof Error
+									? new Error(
+											`${error.message} (Workspace: ${scanWorkspace}, File: ${cachedFilePath})`,
+										)
+									: new Error(
+											t("embeddings:scanner.unknownErrorDeletingPoints", {
+												filePath: cachedFilePath,
+											}) + ` (Workspace: ${scanWorkspace})`,
+										),
+							)
+						}
+						// Log error and continue processing instead of re-throwing
+						console.error(`Failed to delete points for removed file: ${cachedFilePath}`, errorMessage)
+					}
+				}
+			}
 		}
 
 		return {
@@ -361,6 +393,24 @@ export class DirectoryScanner implements IDirectoryScanner {
 							.map((info) => info.filePath),
 					),
 				]
+				if (uniqueFilePaths.length > 0) {
+					try {
+						await this.qdrantClient.deletePointsByMultipleFilePaths(uniqueFilePaths)
+					} catch (deleteError: any) {
+						const errorMessage = deleteError instanceof Error ? deleteError.message : String(deleteError)
+
+						console.error(
+							`[DirectoryScanner] Failed to delete points for ${uniqueFilePaths.length} files before upsert in workspace ${scanWorkspace}:`,
+							deleteError,
+						)
+
+						// Re-throw with workspace context
+						throw new Error(
+							`Failed to delete points for ${uniqueFilePaths.length} files. Workspace: ${scanWorkspace}. ${errorMessage}`,
+							{ cause: deleteError },
+						)
+					}
+				}
 				// --- End Deletion Step ---
 
 				// Create embeddings for batch

@@ -99,6 +99,33 @@ export class CodeParser implements ICodeParser {
 			return this._performFallbackChunking(filePath, content, fileHash, seenSegmentHashes)
 		}
 
+		// Check if we already have the parser loaded
+		if (!this.loadedParsers[ext]) {
+			const pendingLoad = this.pendingLoads.get(ext)
+			if (pendingLoad) {
+				try {
+					await pendingLoad
+				} catch (error) {
+					console.error(`Error in pending parser load for ${filePath}:`, error)
+					return []
+				}
+			} else {
+				const loadPromise = loadRequiredLanguageParsers([filePath])
+				this.pendingLoads.set(ext, loadPromise)
+				try {
+					const newParsers = await loadPromise
+					if (newParsers) {
+						this.loadedParsers = { ...this.loadedParsers, ...newParsers }
+					}
+				} catch (error) {
+					console.error(`Error loading language parser for ${filePath}:`, error)
+					return []
+				} finally {
+					this.pendingLoads.delete(ext)
+				}
+			}
+		}
+
 		const language = this.loadedParsers[ext]
 		if (!language) {
 			console.warn(`No parser available for file extension: ${ext}`)

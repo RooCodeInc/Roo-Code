@@ -2480,6 +2480,26 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				throw new Error(`[RooCode#recursivelyMakeRooRequests] task ${this.taskId}.${this.instanceId} aborted`)
 			}
 
+			if (this.consecutiveMistakeLimit > 0 && this.consecutiveMistakeCount >= this.consecutiveMistakeLimit) {
+				const { response, text, images } = await this.ask(
+					"mistake_limit_reached",
+					t("common:errors.mistake_limit_guidance"),
+				)
+
+				if (response === "messageResponse") {
+					currentUserContent.push(
+						...[
+							{ type: "text" as const, text: formatResponse.tooManyMistakes(text) },
+							...formatResponse.imageBlocks(images),
+						],
+					)
+
+					await this.say("user_feedback", text, images)
+				}
+
+				this.consecutiveMistakeCount = 0
+			}
+
 			// Getting verbose details is an expensive operation, it uses ripgrep to
 			// top-down build file structure of project which for large projects can
 			// take a few seconds. For the best UX we show a placeholder api_req_started
@@ -2574,6 +2594,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const isEmptyUserContent = currentUserContent.length === 0
 			const shouldAddUserMessage =
 				((currentItem.retryAttempt ?? 0) === 0 && !isEmptyUserContent) || currentItem.userMessageWasRemoved
+			if (shouldAddUserMessage) {
+				await this.addToApiConversationHistory({ role: "user", content: finalUserContent })
+			}
 
 			// Since we sent off a placeholder api_req_started message to update the
 			// webview while waiting to actually start the API request (to load
@@ -3013,7 +3036,28 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								total?: number
 							},
 							messageIndex: number = apiReqIndex,
-						) => {}
+						) => {
+							if (
+								tokens.input > 0 ||
+								tokens.output > 0 ||
+								tokens.cacheWrite > 0 ||
+								tokens.cacheRead > 0
+							) {
+								inputTokens = tokens.input
+								outputTokens = tokens.output
+								cacheWriteTokens = tokens.cacheWrite
+								cacheReadTokens = tokens.cacheRead
+								totalCost = tokens.total
+
+								updateApiReqMsg()
+								await this.saveClineMessages()
+
+								const apiReqMessage = this.clineMessages[messageIndex]
+								if (apiReqMessage) {
+									await this.updateClineMessage(apiReqMessage)
+								}
+							}
+						}
 
 						try {
 							// Continue processing the original stream from where the main loop left off
@@ -3273,6 +3317,132 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				const hasToolUses = this.assistantMessageContent.some(
 					(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
 				)
+
+				if (hasTextContent || hasToolUses) {
+					// Reset counter when we get a successful response with content
+					this.consecutiveNoAssistantMessagesCount = 0
+					// Display grounding sources to the user if they exist
+					if (pendingGroundingSources.length > 0) {
+						const citationLinks = pendingGroundingSources.map((source, i) => `[${i + 1}](${source.url})`)
+						const sourcesText = `${t("common:gemini.sources")} ${citationLinks.join(", ")}`
+
+						await this.say("text", sourcesText, undefined, false, undefined, undefined, {
+							isNonInteractive: true,
+						})
+					}
+
+					// Build the assistant message content array
+					const assistantContent: Array<Anthropic.TextBlockParam | Anthropic.ToolUseBlockParam> = []
+
+					// Add text content if present
+					if (assistantMessage) {
+						assistantContent.push({
+							type: "text" as const,
+							text: assistantMessage,
+						})
+					}
+
+					// Add tool_use blocks with their IDs for native protocol
+					// This handles both regular ToolUse and McpToolUse types
+					// IMPORTANT: Track seen IDs to prevent duplicates in the API request.
+					// Duplicate tool_use IDs cause Anthropic API 400 errors:
+					// "tool_use ids must be unique"
+					const seenToolUseIds = new Set<string>()
+					const toolUseBlocks = this.assistantMessageContent.filter(
+						(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
+					)
+					for (const block of toolUseBlocks) {
+						if (block.type === "mcp_tool_use") {
+							// McpToolUse already has the original tool name (e.g., "mcp_serverName_toolName")
+							// The arguments are the raw tool arguments (matching the simplified schema)
+							const mcpBlock = block as import("../../shared/tools").McpToolUse
+							if (mcpBlock.id) {
+								const sanitizedId = sanitizeToolUseId(mcpBlock.id)
+								// Pre-flight deduplication: Skip if we've already added this ID
+								if (seenToolUseIds.has(sanitizedId)) {
+									console.warn(
+										`[Task#${this.taskId}] Pre-flight deduplication: Skipping duplicate MCP tool_use ID: ${sanitizedId} (tool: ${mcpBlock.name})`,
+									)
+									continue
+								}
+								seenToolUseIds.add(sanitizedId)
+								assistantContent.push({
+									type: "tool_use" as const,
+									id: sanitizedId,
+									name: mcpBlock.name,
+									input: mcpBlock.arguments,
+								})
+							}
+						} else {
+							// Regular ToolUse
+							const toolUse = block as import("../../shared/tools").ToolUse
+							const toolCallId = toolUse.id
+							if (toolCallId) {
+								const sanitizedId = sanitizeToolUseId(toolCallId)
+								// Pre-flight deduplication: Skip if we've already added this ID
+								if (seenToolUseIds.has(sanitizedId)) {
+									console.warn(
+										`[Task#${this.taskId}] Pre-flight deduplication: Skipping duplicate tool_use ID: ${sanitizedId} (tool: ${toolUse.name})`,
+									)
+									continue
+								}
+								seenToolUseIds.add(sanitizedId)
+								const input = toolUse.nativeArgs || toolUse.params
+
+								// Use originalName (alias) if present for API history consistency.
+								// When tool aliases are used (e.g., "edit_file" -> "search_and_replace" -> "edit" (current canonical name)),
+								// we want the alias name in the conversation history to match what the model
+								// was told the tool was named, preventing confusion in multi-turn conversations.
+								const toolNameForHistory = toolUse.originalName ?? toolUse.name
+
+								assistantContent.push({
+									type: "tool_use" as const,
+									id: sanitizedId,
+									name: toolNameForHistory,
+									input,
+								})
+							}
+						}
+					}
+
+					// Enforce new_task isolation: if new_task is called alongside other tools,
+					// truncate any tools that come after it and inject error tool_results.
+					// This prevents orphaned tools when delegation disposes the parent task.
+					const newTaskIndex = assistantContent.findIndex(
+						(block) => block.type === "tool_use" && block.name === "new_task",
+					)
+
+					if (newTaskIndex !== -1 && newTaskIndex < assistantContent.length - 1) {
+						const truncatedTools = assistantContent.slice(newTaskIndex + 1)
+						assistantContent.length = newTaskIndex + 1
+
+						const executionNewTaskIndex = this.assistantMessageContent.findIndex(
+							(block) => block.type === "tool_use" && block.name === "new_task",
+						)
+						if (executionNewTaskIndex !== -1) {
+							this.assistantMessageContent.length = executionNewTaskIndex + 1
+						}
+
+						for (const tool of truncatedTools) {
+							if (tool.type === "tool_use" && (tool as Anthropic.ToolUseBlockParam).id) {
+								this.pushToolResultToUserContent({
+									type: "tool_result",
+									tool_use_id: (tool as Anthropic.ToolUseBlockParam).id,
+									content:
+										"This tool was not executed because new_task was called in the same message turn. The new_task tool must be the last tool in a message.",
+									is_error: true,
+								})
+							}
+						}
+					}
+
+					// Save assistant message BEFORE executing tools.
+					await this.addToApiConversationHistory(
+						{ role: "assistant", content: assistantContent },
+						reasoningMessage || undefined,
+					)
+					this.assistantMessageSavedToHistory = true
+				}
 
 				// Present any partial blocks that were just completed.
 				// Tool calls are typically presented during streaming via tool_call_partial events,

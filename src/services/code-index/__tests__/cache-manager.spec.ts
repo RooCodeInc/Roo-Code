@@ -5,13 +5,29 @@ import debounce from "lodash.debounce"
 import { CacheManager } from "../cache-manager"
 
 // Mock safeWriteJson utility
+vitest.mock("../../../utils/safeWriteJson", () => ({
+	safeWriteJson: vitest.fn().mockResolvedValue(undefined),
+}))
 
 // Import the mocked version
 import { safeWriteJson } from "../../../utils/safeWriteJson"
 
 // Mock vscode
+vitest.mock("vscode", () => ({
+	Uri: {
+		joinPath: vitest.fn(),
+	},
+	workspace: {
+		fs: {
+			readFile: vitest.fn(),
+			writeFile: vitest.fn(),
+			delete: vitest.fn(),
+		},
+	},
+}))
 
 // Mock debounce to execute immediately
+vitest.mock("lodash.debounce", () => ({ default: vitest.fn((fn) => fn) }))
 
 describe("CacheManager", () => {
 	let mockContext: vscode.ExtensionContext

@@ -6,6 +6,20 @@ import { MessageManager } from "../../message-manager"
 import * as vscode from "vscode"
 
 // Mock vscode
+vi.mock("vscode", () => ({
+	window: {
+		showErrorMessage: vi.fn(),
+		createTextEditorDecorationType: vi.fn(() => ({})),
+		showInformationMessage: vi.fn(),
+	},
+	Uri: {
+		file: vi.fn((path: string) => ({ fsPath: path })),
+		parse: vi.fn((uri: string) => ({ with: vi.fn(() => ({})) })),
+	},
+	commands: {
+		executeCommand: vi.fn(),
+	},
+}))
 
 // Mock other dependencies
 

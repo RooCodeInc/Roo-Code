@@ -224,6 +224,27 @@ export class CodeIndexOllamaEmbedder implements IEmbedder {
 			"ollama",
 			{
 				beforeStandardHandling: (error: any) => {
+					// Handle Ollama-specific connection errors.
+					if (
+						error?.message?.includes("fetch failed") ||
+						error?.code === "ECONNREFUSED" ||
+						error?.message?.includes("ECONNREFUSED")
+					) {
+						return {
+							valid: false,
+							error: t("embeddings:ollama.serviceNotRunning", { baseUrl: this.baseUrl }),
+						}
+					} else if (error?.code === "ENOTFOUND" || error?.message?.includes("ENOTFOUND")) {
+						return {
+							valid: false,
+							error: t("embeddings:ollama.hostNotFound", { baseUrl: this.baseUrl }),
+						}
+					} else if (error?.name === "AbortError") {
+						return {
+							valid: false,
+							error: t("embeddings:validation.connectionFailed"),
+						}
+					}
 					// Let standard handling take over
 					return undefined
 				},

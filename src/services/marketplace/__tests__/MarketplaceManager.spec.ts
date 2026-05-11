@@ -5,8 +5,19 @@ import type { MarketplaceItem } from "@roo-code/types"
 import { MarketplaceManager } from "../MarketplaceManager"
 
 // Mock CloudService
+vi.mock("@roo-code/cloud", () => ({
+	getRooCodeApiUrl: () => "https://test.api.com",
+	CloudService: {
+		hasInstance: vi.fn(),
+		instance: {
+			isAuthenticated: vi.fn(),
+			getOrganizationSettings: vi.fn(),
+		},
+	},
+}))
 
 // Mock axios
+vi.mock("axios")
 
 // Mock vscode first
 vi.mock("vscode", () => ({

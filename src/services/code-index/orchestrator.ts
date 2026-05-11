@@ -304,6 +304,13 @@ export class CodeIndexOrchestrator {
 			}
 
 			console.error("[CodeIndexOrchestrator] Error during indexing:", error)
+			if (indexingStarted) {
+				try {
+					await this.vectorStore.clearCollection()
+				} catch (cleanupError) {
+					console.error("[CodeIndexOrchestrator] Failed to clean up after error:", cleanupError)
+				}
+			}
 
 			// Only clear cache if indexing had started (Qdrant connection succeeded)
 			// If we never connected to Qdrant, preserve cache for incremental scan when it comes back

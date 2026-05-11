@@ -4,6 +4,22 @@ import { Task } from "../Task"
 import { ClineProvider } from "../../webview/ClineProvider"
 
 // Mock dependencies
+vi.mock("../../webview/ClineProvider")
+vi.mock("../../../integrations/terminal/TerminalRegistry", () => ({
+	TerminalRegistry: {
+		releaseTerminalsForTask: vi.fn(),
+	},
+}))
+vi.mock("../../ignore/RooIgnoreController")
+vi.mock("../../protect/RooProtectedController")
+vi.mock("../../context-tracking/FileContextTracker")
+vi.mock("../../../integrations/editor/DiffViewProvider")
+vi.mock("../../tools/ToolRepetitionDetector")
+vi.mock("../../../api", () => ({
+	buildApiHandler: vi.fn(() => ({
+		getModel: () => ({ info: {}, id: "test-model" }),
+	})),
+}))
 
 describe("Task dispose method", () => {
 	let mockProvider: any

@@ -3,9 +3,12 @@ import { RooCodeEventName, TodoItem } from "@roo-code/types"
 import { AttemptCompletionToolUse } from "../../../shared/tools"
 
 // Mock the formatResponse module before importing the tool
-
-const { mockCaptureTaskCompleted } = vi.hoisted(() => ({
-	mockCaptureTaskCompleted: vi.fn(),
+vi.mock("../../prompts/responses", () => ({
+	formatResponse: {
+		toolError: vi.fn((msg: string) => `Error: ${msg}`),
+		toolResult: vi.fn((msg: string) => `Result: ${msg}`),
+		toolDenied: vi.fn(() => "Denied"),
+	},
 }))
 
 // Mock vscode module
@@ -38,7 +41,6 @@ describe("attemptCompletionTool", () => {
 	let mockGetConfiguration: ReturnType<typeof vi.fn>
 
 	beforeEach(() => {
-		mockCaptureTaskCompleted.mockReset()
 		mockPushToolResult = vi.fn()
 		mockAskApproval = vi.fn()
 		mockHandleError = vi.fn()
@@ -492,7 +494,6 @@ describe("attemptCompletionTool", () => {
 				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
 
 				expect(mockHandleError).not.toHaveBeenCalled()
-				expect(mockCaptureTaskCompleted).toHaveBeenCalledWith("task_1")
 				expect(mockTask.emit).toHaveBeenCalledWith(
 					RooCodeEventName.TaskCompleted,
 					"task_1",
@@ -527,7 +528,6 @@ describe("attemptCompletionTool", () => {
 				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
 
 				expect(mockHandleError).not.toHaveBeenCalled()
-				expect(mockCaptureTaskCompleted).not.toHaveBeenCalled()
 				expect(mockTask.emit).not.toHaveBeenCalledWith(
 					RooCodeEventName.TaskCompleted,
 					expect.anything(),

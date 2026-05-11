@@ -127,7 +127,7 @@ describe("truncateOpenAiCallId", () => {
 
 		it("should handle the exact reported issue length (69 chars)", () => {
 			// The original error mentioned 69 characters
-			const id69Chars = "toolu_mcp--analytics--query_run_" + "a".repeat(39) // total 69 chars
+			const id69Chars = "toolu_mcp--analytics--query_run_" + "a".repeat(37) // total 69 chars
 			expect(id69Chars.length).toBe(69)
 			const result = truncateOpenAiCallId(id69Chars)
 			expect(result.length).toBe(64)

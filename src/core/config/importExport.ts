@@ -185,6 +185,12 @@ export async function importSettingsFromPath(
 	} catch (e) {
 		let error = "Unknown error"
 
+		if (e instanceof ZodError) {
+			error = e.issues.map((issue) => `[${issue.path.join(".")}]: ${issue.message}`).join("\n")
+		} else if (e instanceof Error) {
+			error = e.message
+		}
+
 		return { success: false, error }
 	}
 }

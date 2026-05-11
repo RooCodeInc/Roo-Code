@@ -231,6 +231,10 @@ export async function presentAssistantMessage(cline: Task) {
 				pushToolResult(formatResponse.toolError(errorString))
 			}
 
+			if (!mcpBlock.partial) {
+				cline.recordToolUsage("use_mcp_tool")
+			}
+
 			// Resolve sanitized server name back to original server name
 			// The serverName from parsing is sanitized (e.g., "my_server" from "my server")
 			// We need the original name to find the actual MCP connection
@@ -546,6 +550,13 @@ export async function presentAssistantMessage(cline: Task) {
 				pushToolResult(formatResponse.toolError(errorString))
 			}
 
+			if (!block.partial) {
+				// Check if this is a custom tool - if so, record as "custom_tool" (like MCP tools)
+				const isCustomTool = stateExperiments?.customTools && customToolRegistry.has(block.name)
+				const recordName = isCustomTool ? "custom_tool" : block.name
+				cline.recordToolUsage(recordName)
+			}
+
 			// Validate tool use before execution - ONLY for complete (non-partial) blocks.
 			// Validating partial blocks would cause validation errors to be thrown repeatedly
 			// during streaming, pushing multiple tool_results for the same tool_use_id and
@@ -595,6 +606,44 @@ export async function presentAssistantMessage(cline: Task) {
 						is_error: true,
 					})
 
+					break
+				}
+			}
+
+			// Check for identical consecutive tool calls.
+			if (!block.partial) {
+				// Use the detector to check for repetition, passing the ToolUse
+				// block directly.
+				const repetitionCheck = cline.toolRepetitionDetector.check(block)
+
+				// If execution is not allowed, notify user and break.
+				if (!repetitionCheck.allowExecution && repetitionCheck.askUser) {
+					// Handle repetition similar to mistake_limit_reached pattern.
+					const { response, text, images } = await cline.ask(
+						repetitionCheck.askUser.messageKey as ClineAsk,
+						repetitionCheck.askUser.messageDetail.replace("{toolName}", block.name),
+					)
+
+					if (response === "messageResponse") {
+						// Add user feedback to userContent.
+						cline.userMessageContent.push(
+							{
+								type: "text" as const,
+								text: `Tool repetition limit reached. User feedback: ${text}`,
+							},
+							...formatResponse.imageBlocks(images),
+						)
+
+						// Add user feedback to chat.
+						await cline.say("user_feedback", text, images)
+					}
+
+					// Return tool result message about the repetition
+					pushToolResult(
+						formatResponse.toolError(
+							`Tool call repetition limit reached for ${block.name}. Please try a different approach.`,
+						),
+					)
 					break
 				}
 			}

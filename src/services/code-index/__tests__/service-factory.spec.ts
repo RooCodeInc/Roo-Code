@@ -7,8 +7,17 @@ import { GeminiEmbedder } from "../embedders/gemini"
 import { QdrantVectorStore } from "../vector-store/qdrant-client"
 
 // Mock the embedders and vector store
+vitest.mock("../embedders/openai")
+vitest.mock("../embedders/ollama")
+vitest.mock("../embedders/openai-compatible")
+vitest.mock("../embedders/gemini")
+vitest.mock("../vector-store/qdrant-client")
 
 // Mock the embedding models module
+vitest.mock("../../../shared/embeddingModels", () => ({
+	getDefaultModelId: vitest.fn(),
+	getModelDimension: vitest.fn(),
+}))
 
 const MockedOpenAiEmbedder = OpenAiEmbedder as MockedClass<typeof OpenAiEmbedder>
 const MockedCodeIndexOllamaEmbedder = CodeIndexOllamaEmbedder as MockedClass<typeof CodeIndexOllamaEmbedder>

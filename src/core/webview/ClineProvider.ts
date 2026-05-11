@@ -1370,6 +1370,32 @@ export class ClineProvider
 	public async handleModeSwitch(newMode: Mode) {
 		const task = this.getCurrentTask()
 
+		if (task) {
+			task.emit(RooCodeEventName.TaskModeSwitched, task.taskId, newMode)
+
+			try {
+				// Update the task history with the new mode first.
+				const taskHistoryItem =
+					this.taskHistoryStore.get(task.taskId) ??
+					(this.getGlobalState("taskHistory") ?? []).find((item) => item.id === task.taskId)
+
+				if (taskHistoryItem) {
+					await this.updateTaskHistory({ ...taskHistoryItem, mode: newMode })
+				}
+
+				// Only update the task's mode after successful persistence.
+				;(task as any)._taskMode = newMode
+			} catch (error) {
+				// If persistence fails, log the error but don't update the in-memory state.
+				this.log(
+					`Failed to persist mode switch for task ${task.taskId}: ${error instanceof Error ? error.message : String(error)}`,
+				)
+
+				// This ensures the in-memory state remains consistent with persisted state.
+				throw error
+			}
+		}
+
 		await this.updateGlobalState("mode", newMode)
 
 		this.emit(RooCodeEventName.ModeChanged, newMode)
