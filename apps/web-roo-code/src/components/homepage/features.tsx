@@ -26,7 +26,7 @@ export const features: Feature[] = [
 		icon: Users2,
 		title: "Specialized modes",
 		description:
-			"Planning, Architecture, Debugging and beyond: Roo's modes stay on-task and deliver. They even know when to hand off work to other modes. Create your own or download from the marketplace.",
+			"Planning, Architecture, Debugging and beyond: Roo's modes stay on-task and deliver. They even know when to hand off work to other modes. Create your own modes for your workflow.",
 	},
 	{
 		icon: ReplaceAll,

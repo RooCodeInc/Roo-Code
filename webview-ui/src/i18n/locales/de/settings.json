@@ -780,10 +780,6 @@
 			"name": "Experimentelles Multi-Block-Diff-Tool verwenden",
 			"description": "Wenn aktiviert, wird Roo das Multi-Block-Diff-Tool verwenden. Dies wird versuchen, mehrere Codeblöcke in der Datei in einer Anfrage zu aktualisieren."
 		},
-		"MARKETPLACE": {
-			"name": "Marktplatz aktivieren",
-			"description": "Wenn aktiviert, können Sie MCPs und benutzerdefinierte Modi aus dem Marketplace installieren."
-		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Hintergrundbearbeitung",
 			"description": "Verhindert Editor-Fokus-Störungen wenn aktiviert. Dateibearbeitungen erfolgen im Hintergrund ohne Öffnung von Diff-Ansichten oder Fokus-Diebstahl. Du kannst ungestört weiterarbeiten, während Roo Änderungen vornimmt. Dateien können ohne Fokus geöffnet werden, um Diagnosen zu erfassen oder vollständig geschlossen bleiben."
@@ -1005,7 +1001,6 @@
 			"nameInvalid": "Name muss 1-64 Kleinbuchstaben, Zahlen oder Bindestriche sein",
 			"descriptionRequired": "Beschreibung ist erforderlich",
 			"descriptionTooLong": "Beschreibung muss 1024 Zeichen oder weniger sein"
-		},
-		"footer": "Erstelle deine eigenen Skills mit dem Skill Writer Modus, verfügbar im <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
+		}
 	}
 }

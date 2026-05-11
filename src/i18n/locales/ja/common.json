@@ -215,11 +215,6 @@
 			"global": "グローバル"
 		}
 	},
-	"marketplace": {
-		"mode": {
-			"rulesCleanupFailed": "モードは正常に削除されましたが、{{rulesFolderPath}} にあるルールフォルダの削除に失敗しました。手動で削除する必要がある場合があります。"
-		}
-	},
 	"prompts": {
 		"deleteMode": {
 			"title": "カスタムモードの削除",

@@ -780,10 +780,6 @@
 			"name": "Włącz jednoczesne odczytywanie plików",
 			"description": "Po włączeniu Roo może odczytać wiele plików w jednym żądaniu. Po wyłączeniu Roo musi odczytywać pliki pojedynczo. Wyłączenie może pomóc podczas pracy z mniej wydajnymi modelami lub gdy chcesz mieć większą kontrolę nad dostępem do plików."
 		},
-		"MARKETPLACE": {
-			"name": "Włącz Marketplace",
-			"description": "Gdy włączone, możesz instalować MCP i niestandardowe tryby z Marketplace."
-		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Edycja w tle",
 			"description": "Zapobiega zakłócaniu fokusa edytora gdy włączone. Edycje plików odbywają się w tle bez otwierania widoków różnic lub kradzieży fokusa. Możesz kontynuować pracę bez przeszkód podczas gdy Roo wprowadza zmiany. Pliki mogą być otwierane bez fokusa aby przechwycić diagnostykę lub pozostać całkowicie zamknięte."
@@ -1005,7 +1001,6 @@
 			"nameInvalid": "Nazwa musi zawierać 1-64 małe litery, cyfry lub myślniki",
 			"descriptionRequired": "Opis jest wymagany",
 			"descriptionTooLong": "Opis musi mieć maksymalnie 1024 znaki"
-		},
-		"footer": "Twórz własne umiejętności za pomocą trybu Skill Writer, dostępnego w <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
+		}
 	}
 }

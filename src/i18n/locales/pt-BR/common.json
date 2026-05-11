@@ -215,11 +215,6 @@
 			"global": "global"
 		}
 	},
-	"marketplace": {
-		"mode": {
-			"rulesCleanupFailed": "O modo foi removido com sucesso, mas falhou ao excluir a pasta de regras em {{rulesFolderPath}}. Você pode precisar excluí-la manualmente."
-		}
-	},
 	"prompts": {
 		"deleteMode": {
 			"title": "Excluir Modo Personalizado",

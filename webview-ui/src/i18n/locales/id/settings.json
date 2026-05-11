@@ -780,10 +780,6 @@
 			"name": "Gunakan tool multi block diff eksperimental",
 			"description": "Ketika diaktifkan, Roo akan menggunakan tool multi block diff. Ini akan mencoba memperbarui beberapa blok kode dalam file dalam satu permintaan."
 		},
-		"MARKETPLACE": {
-			"name": "Aktifkan Marketplace",
-			"description": "Ketika diaktifkan, kamu dapat menginstal MCP dan mode kustom dari Marketplace."
-		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Pengeditan Latar Belakang",
 			"description": "Ketika diaktifkan, mencegah gangguan fokus editor. Pengeditan file terjadi di latar belakang tanpa membuka tampilan diff atau mencuri fokus. Anda dapat terus bekerja tanpa gangguan saat Roo melakukan perubahan. File mungkin dibuka tanpa fokus untuk menangkap diagnostik atau tetap tertutup sepenuhnya."
@@ -1005,7 +1001,6 @@
 			"nameInvalid": "Nama harus 1-64 huruf kecil, angka, atau tanda hubung",
 			"descriptionRequired": "Deskripsi diperlukan",
 			"descriptionTooLong": "Deskripsi harus 1024 karakter atau kurang"
-		},
-		"footer": "Buat skills Anda sendiri dengan mode Skill Writer, tersedia di <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
+		}
 	}
 }

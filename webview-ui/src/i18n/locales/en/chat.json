@@ -145,7 +145,6 @@
 	"enhancePrompt": "Enhance prompt with additional context",
 	"modeSelector": {
 		"title": "Modes",
-		"marketplace": "Mode Marketplace",
 		"settings": "Mode Settings",
 		"description": "Specialized personas that tailor Roo's behavior.",
 		"searchPlaceholder": "Search modes...",

@@ -128,7 +128,6 @@
 	"enhancePromptDescription": "'프롬프트 향상' 버튼은 추가 컨텍스트, 명확화 또는 재구성을 제공하여 요청을 개선합니다. 여기에 요청을 입력한 다음 버튼을 다시 클릭하여 작동 방식을 확인해보세요.",
 	"modeSelector": {
 		"title": "모드",
-		"marketplace": "모드 마켓플레이스",
 		"settings": "모드 설정",
 		"description": "Roo의 행동을 맞춤화하는 전문화된 페르소나.",
 		"searchPlaceholder": "모드 검색...",

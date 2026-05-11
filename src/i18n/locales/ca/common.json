@@ -215,11 +215,6 @@
 			"global": "global"
 		}
 	},
-	"marketplace": {
-		"mode": {
-			"rulesCleanupFailed": "El mode s'ha eliminat correctament, però no s'ha pogut eliminar la carpeta de regles a {{rulesFolderPath}}. És possible que l'hagis d'eliminar manualment."
-		}
-	},
 	"prompts": {
 		"deleteMode": {
 			"title": "Suprimeix el mode personalitzat",

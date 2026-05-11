@@ -220,11 +220,6 @@
 			"global": "全局"
 		}
 	},
-	"marketplace": {
-		"mode": {
-			"rulesCleanupFailed": "模式已成功移除，但无法删除位于 {{rulesFolderPath}} 的规则文件夹。您可能需要手动删除。"
-		}
-	},
 	"prompts": {
 		"deleteMode": {
 			"title": "删除自定义模式",

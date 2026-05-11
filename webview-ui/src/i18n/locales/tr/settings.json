@@ -780,10 +780,6 @@
 			"name": "Eşzamanlı dosya okumayı etkinleştir",
 			"description": "Etkinleştirildiğinde, Roo tek bir istekte birden fazla dosya okuyabilir. Devre dışı bırakıldığında, Roo dosyaları birer birer okumalıdır. Daha az yetenekli modellerle çalışırken veya dosya erişimi üzerinde daha fazla kontrol istediğinizde devre dışı bırakmak yardımcı olabilir."
 		},
-		"MARKETPLACE": {
-			"name": "Marketplace'i Etkinleştir",
-			"description": "Etkinleştirildiğinde, Marketplace'ten MCP'leri ve özel modları yükleyebilirsiniz."
-		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Arka plan düzenleme",
 			"description": "Etkinleştirildiğinde editör odak kesintisini önler. Dosya düzenlemeleri diff görünümlerini açmadan veya odağı çalmadan arka planda gerçekleşir. Roo değişiklikler yaparken kesintisiz çalışmaya devam edebilirsiniz. Dosyalar tanılamayı yakalamak için odaksız açılabilir veya tamamen kapalı kalabilir."
@@ -1005,7 +1001,6 @@
 			"nameInvalid": "Ad 1-64 küçük harf, rakam veya kısa çizgi olmalıdır",
 			"descriptionRequired": "Açıklama gereklidir",
 			"descriptionTooLong": "Açıklama en fazla 1024 karakter olmalıdır"
-		},
-		"footer": "Skill Writer modu ile kendi becerilerinizi oluşturun. <MarketplaceLink>Modes Marketplace</MarketplaceLink>'de mevcut."
+		}
 	}
 }

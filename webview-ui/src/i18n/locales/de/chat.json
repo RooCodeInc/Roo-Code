@@ -128,7 +128,6 @@
 	"enhancePromptDescription": "Die Schaltfläche 'Prompt verbessern' hilft, deine Anfrage durch zusätzlichen Kontext, Klarstellungen oder Umformulierungen zu verbessern. Versuche, hier eine Anfrage einzugeben und klicke erneut auf die Schaltfläche, um zu sehen, wie es funktioniert.",
 	"modeSelector": {
 		"title": "Modi",
-		"marketplace": "Modus-Marketplace",
 		"settings": "Modus-Einstellungen",
 		"description": "Spezialisierte Personas, die Roos Verhalten anpassen.",
 		"searchPlaceholder": "Modi suchen...",

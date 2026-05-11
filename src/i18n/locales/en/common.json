@@ -212,11 +212,6 @@
 			"global": "global"
 		}
 	},
-	"marketplace": {
-		"mode": {
-			"rulesCleanupFailed": "Mode removed successfully, but failed to delete rules folder at {{rulesFolderPath}}. You may need to delete it manually."
-		}
-	},
 	"prompts": {
 		"deleteMode": {
 			"title": "Delete Custom Mode",

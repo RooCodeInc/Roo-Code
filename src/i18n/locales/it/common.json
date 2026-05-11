@@ -215,11 +215,6 @@
 			"global": "globale"
 		}
 	},
-	"marketplace": {
-		"mode": {
-			"rulesCleanupFailed": "La modalità è stata rimossa con successo, ma non è stato possibile eliminare la cartella delle regole in {{rulesFolderPath}}. Potrebbe essere necessario eliminarla manualmente."
-		}
-	},
 	"prompts": {
 		"deleteMode": {
 			"title": "Elimina Modalità Personalizzata",

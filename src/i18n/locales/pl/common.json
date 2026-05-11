@@ -215,11 +215,6 @@
 			"global": "globalny"
 		}
 	},
-	"marketplace": {
-		"mode": {
-			"rulesCleanupFailed": "Tryb został pomyślnie usunięty, ale nie udało się usunąć folderu reguł w {{rulesFolderPath}}. Może być konieczne ręczne usunięcie."
-		}
-	},
 	"prompts": {
 		"deleteMode": {
 			"title": "Usuń tryb niestandardowy",

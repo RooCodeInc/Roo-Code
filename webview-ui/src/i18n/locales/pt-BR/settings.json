@@ -780,10 +780,6 @@
 			"name": "Habilitar leitura simultânea de arquivos",
 			"description": "Quando habilitado, o Roo pode ler vários arquivos em uma única solicitação. Quando desabilitado, o Roo deve ler arquivos um de cada vez. Desabilitar pode ajudar ao trabalhar com modelos menos capazes ou quando você deseja mais controle sobre o acesso aos arquivos."
 		},
-		"MARKETPLACE": {
-			"name": "Ativar Marketplace",
-			"description": "Quando ativado, você pode instalar MCPs e modos personalizados do Marketplace."
-		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Edição em segundo plano",
 			"description": "Previne a interrupção do foco do editor quando habilitado. As edições de arquivos acontecem em segundo plano sem abrir visualizações de diferenças ou roubar o foco. Você pode continuar trabalhando sem interrupções enquanto o Roo faz alterações. Os arquivos podem ser abertos sem foco para capturar diagnósticos ou permanecer completamente fechados."
@@ -1005,7 +1001,6 @@
 			"nameInvalid": "O nome deve ter 1-64 letras minúsculas, números ou hífens",
 			"descriptionRequired": "A descrição é obrigatória",
 			"descriptionTooLong": "A descrição deve ter no máximo 1024 caracteres"
-		},
-		"footer": "Crie suas próprias skills com o modo Skill Writer, disponível em <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
+		}
 	}
 }

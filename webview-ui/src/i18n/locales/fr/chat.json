@@ -128,7 +128,6 @@
 	"enhancePromptDescription": "Le bouton 'Améliorer la requête' aide à améliorer votre demande en fournissant un contexte supplémentaire, des clarifications ou des reformulations. Essayez de taper une demande ici et cliquez à nouveau sur le bouton pour voir comment cela fonctionne.",
 	"modeSelector": {
 		"title": "Modes",
-		"marketplace": "Marketplace de Modes",
 		"settings": "Paramètres des Modes",
 		"description": "Personas spécialisés qui adaptent le comportement de Roo.",
 		"searchPlaceholder": "Rechercher des modes...",

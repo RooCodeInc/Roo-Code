@@ -6,7 +6,6 @@ import { RooCodeEventName } from "./events.js"
 import { TaskStatus, taskMetadataSchema } from "./task.js"
 import { globalSettingsSchema } from "./global-settings.js"
 import { providerSettingsWithIdSchema } from "./provider-settings.js"
-import { mcpMarketplaceItemSchema } from "./marketplace.js"
 import { clineMessageSchema, queuedMessageSchema, tokenUsageSchema } from "./message.js"
 
 const extensionAppPropertiesSchema = z.object({
@@ -170,9 +169,6 @@ export const organizationSettingsSchema = z.object({
 	defaultSettings: organizationDefaultSettingsSchema,
 	allowList: organizationAllowListSchema,
 	features: organizationFeaturesSchema.optional(),
-	hiddenMcps: z.array(z.string()).optional(),
-	hideMarketplaceMcps: z.boolean().optional(),
-	mcps: z.array(mcpMarketplaceItemSchema).optional(),
 	providerProfiles: z.record(z.string(), providerSettingsWithIdSchema).optional(),
 })
 

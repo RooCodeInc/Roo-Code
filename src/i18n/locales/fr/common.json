@@ -215,11 +215,6 @@
 			"global": "global"
 		}
 	},
-	"marketplace": {
-		"mode": {
-			"rulesCleanupFailed": "Le mode a été supprimé avec succès, mais la suppression du dossier de règles à l'adresse {{rulesFolderPath}} a échoué. Vous devrez peut-être le supprimer manuellement."
-		}
-	},
 	"prompts": {
 		"deleteMode": {
 			"title": "Supprimer le mode personnalisé",

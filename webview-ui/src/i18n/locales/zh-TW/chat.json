@@ -145,7 +145,6 @@
 	"enhancePrompt": "使用額外內容強化提示詞",
 	"modeSelector": {
 		"title": "模式",
-		"marketplace": "模式市集",
 		"settings": "模式設定",
 		"description": "專門量身打造 Roo 行為的角色。",
 		"searchPlaceholder": "搜尋模式...",

@@ -215,11 +215,6 @@
 			"global": "글로벌"
 		}
 	},
-	"marketplace": {
-		"mode": {
-			"rulesCleanupFailed": "모드가 성공적으로 제거되었지만 {{rulesFolderPath}}의 규칙 폴더를 삭제하지 못했습니다. 수동으로 삭제해야 할 수도 있습니다."
-		}
-	},
 	"prompts": {
 		"deleteMode": {
 			"title": "사용자 정의 모드 삭제",

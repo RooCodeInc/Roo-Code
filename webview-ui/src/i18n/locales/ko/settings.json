@@ -780,10 +780,6 @@
 			"name": "동시 파일 읽기 활성화",
 			"description": "활성화하면 Roo가 한 번의 요청으로 여러 파일 을 읽을 수 있습니다. 비활성화하면 Roo는 파일을 하나씩 읽어야 합니다. 성능이 낮은 모델로 작업하거나 파일 액세스를 더 제어하려는 경우 비활성화하면 도움이 될 수 있습니다."
 		},
-		"MARKETPLACE": {
-			"name": "Marketplace 활성화",
-			"description": "활성화하면 Marketplace에서 MCP와 사용자 정의 모드를 설치할 수 있습니다."
-		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "백그라운드 편집",
 			"description": "활성화하면 편집기 포커스 방해를 방지합니다. 파일 편집이 diff 뷰를 열거나 포커스를 빼앗지 않고 백그라운드에서 수행됩니다. Roo가 변경사항을 적용하는 동안 방해받지 않고 계속 작업할 수 있습니다. 파일은 진단을 캡처하기 위해 포커스 없이 열거나 완전히 닫힌 상태로 유지할 수 있습니다."
@@ -1005,7 +1001,6 @@
 			"nameInvalid": "이름은 1-64자의 소문자, 숫자 또는 하이픈이어야 합니다",
 			"descriptionRequired": "설명은 필수입니다",
 			"descriptionTooLong": "설명은 1024자 이하여야 합니다"
-		},
-		"footer": "스킬 작성자 모드로 자신만의 스킬을 만들 수 있습니다. <MarketplaceLink>모드 마켓플레이스</MarketplaceLink>에서 사용 가능합니다."
+		}
 	}
 }

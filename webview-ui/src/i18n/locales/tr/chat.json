@@ -128,7 +128,6 @@
 	"enhancePromptDescription": "'İstemi geliştir' düğmesi, ek bağlam, açıklama veya yeniden ifade sağlayarak isteğinizi iyileştirmeye yardımcı olur. Buraya bir istek yazıp düğmeye tekrar tıklayarak nasıl çalıştığını görebilirsiniz.",
 	"modeSelector": {
 		"title": "Modlar",
-		"marketplace": "Mod Pazaryeri",
 		"settings": "Mod Ayarları",
 		"description": "Roo'nun davranışını özelleştiren uzmanlaşmış kişilikler.",
 		"searchPlaceholder": "Modları ara...",

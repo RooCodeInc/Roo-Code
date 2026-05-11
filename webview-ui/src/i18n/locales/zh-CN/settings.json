@@ -780,10 +780,6 @@
 			"name": "启用并发文件读取",
 			"description": "启用后，Roo 可以在单个请求中读取多个文件。禁用后，Roo 必须逐个读取文件。在使用能力较弱的模型或希望对文件访问有更多控制时，禁用此功能可能会有所帮助。"
 		},
-		"MARKETPLACE": {
-			"name": "启用 Marketplace",
-			"description": "启用后，你可以从 Marketplace 安装 MCP 和自定义模式。"
-		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "后台编辑",
 			"description": "启用后防止编辑器焦点干扰。文件编辑在后台进行，不会打开差异视图或抢夺焦点。你可以在 Roo 进行更改时继续不受干扰地工作。文件可以在不获取焦点的情况下打开以捕获诊断信息，或保持完全关闭状态。"
@@ -1005,7 +1001,6 @@
 			"nameInvalid": "名称必须为1-64个小写字母、数字或连字符",
 			"descriptionRequired": "描述为必填项",
 			"descriptionTooLong": "描述不得超过1024个字符"
-		},
-		"footer": "使用技能编写器模式创建您自己的技能，可在 <MarketplaceLink>模式市集</MarketplaceLink> 中获得。"
+		}
 	}
 }

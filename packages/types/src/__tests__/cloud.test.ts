@@ -94,9 +94,6 @@ describe("organizationSettingsSchema with features", () => {
 				},
 			},
 			features: {},
-			hiddenMcps: ["test-mcp"],
-			hideMarketplaceMcps: true,
-			mcps: [],
 			providerProfiles: {},
 		}
 		const result = organizationSettingsSchema.safeParse(input)

@@ -215,11 +215,6 @@
 			"global": "全域"
 		}
 	},
-	"marketplace": {
-		"mode": {
-			"rulesCleanupFailed": "模式已成功移除，但無法刪除位於 {{rulesFolderPath}} 的規則資料夾。您可能需要手動刪除。"
-		}
-	},
 	"prompts": {
 		"deleteMode": {
 			"title": "刪除自訂模式",
