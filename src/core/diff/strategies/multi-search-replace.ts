@@ -13,7 +13,7 @@ const BUFFER_LINES = 40 // Number of extra context lines to show before and afte
  *
  * If the LLM forgets the newline after the separator, the run-on line
  * (e.g. `-------import { ... }`) ends up as the first line of the
- * captured search content. The outer regex doesn't reject this — it
+ * captured search content. The outer regex doesn't reject this, it
  * just falls through, and the file-content match fails with a
  * confusing "63% similar" error. By detecting the malformed prefix
  * here we can return an actionable error instead.
@@ -39,7 +39,7 @@ function detectMalformedSeparator(searchContent: string): string | null {
 	}
 	const tail = match[1].trim()
 	// Allow lines that start with a literal `-` continuation (e.g.
-	// markdown bullets that begin with extra dashes) — they wouldn't
+	// markdown bullets that begin with extra dashes), they wouldn't
 	// look like the separator-then-code shape that confuses callers.
 	if (tail === "" || /^-+$/.test(tail)) {
 		return null
@@ -302,7 +302,7 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 			  Ensures the first marker starts at the beginning of the file or right after a newline.
 
 			2. (?<!\\)<<<<<<< SEARCH\s*\n  
-			  Matches the line "<<<<<<< SEARCH" (ignoring any trailing spaces) – the negative lookbehind makes sure it isn't escaped.
+			  Matches the line "<<<<<<< SEARCH" (ignoring any trailing spaces), the negative lookbehind makes sure it isn't escaped.
 
 			3. ((?:\:start_line:\s*(\d+)\s*\n))?  
 			  Optionally matches a ":start_line:" line. The outer capturing group is group 1 and the inner (\d+) is group 2.
