@@ -5,6 +5,20 @@ import { BedrockEmbedder } from "../bedrock"
 import { MAX_ITEM_TOKENS, INITIAL_RETRY_DELAY_MS } from "../../constants"
 
 // Mock the AWS SDK
+vitest.mock("@aws-sdk/client-bedrock-runtime", () => {
+	return {
+		BedrockRuntimeClient: vitest.fn().mockImplementation(() => ({
+			send: vitest.fn(),
+		})),
+		InvokeModelCommand: vitest.fn().mockImplementation((input) => ({
+			input,
+		})),
+	}
+})
+vitest.mock("@aws-sdk/credential-providers", () => ({
+	fromEnv: vitest.fn().mockReturnValue(Promise.resolve({})),
+	fromIni: vitest.fn().mockReturnValue(Promise.resolve({})),
+}))
 
 // Mock i18n
 vitest.mock("../../../../i18n", () => ({

@@ -4,6 +4,7 @@ import { OpenAICompatibleEmbedder } from "../openai-compatible"
 import { MAX_ITEM_TOKENS, INITIAL_RETRY_DELAY_MS } from "../../constants"
 
 // Mock the OpenAI SDK
+vitest.mock("openai")
 
 // Mock global fetch
 global.fetch = vitest.fn()

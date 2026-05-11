@@ -4,6 +4,9 @@ import { VercelAiGatewayEmbedder } from "../vercel-ai-gateway"
 import { OpenAICompatibleEmbedder } from "../openai-compatible"
 
 // Mock the OpenAICompatibleEmbedder
+vi.mock("../openai-compatible", () => ({
+	OpenAICompatibleEmbedder: vi.fn(),
+}))
 
 const MockedOpenAICompatibleEmbedder = vi.mocked(OpenAICompatibleEmbedder)
 

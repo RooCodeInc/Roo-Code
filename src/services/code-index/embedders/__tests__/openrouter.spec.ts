@@ -5,6 +5,7 @@ import { OpenRouterEmbedder, OPENROUTER_DEFAULT_PROVIDER_NAME } from "../openrou
 import { getModelDimension, getDefaultModelId } from "../../../../shared/embeddingModels"
 
 // Mock the OpenAI SDK
+vi.mock("openai")
 
 // Mock i18n
 vi.mock("../../../../i18n", () => ({

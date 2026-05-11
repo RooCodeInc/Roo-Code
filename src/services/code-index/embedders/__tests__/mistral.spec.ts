@@ -4,6 +4,7 @@ import { MistralEmbedder } from "../mistral"
 import { OpenAICompatibleEmbedder } from "../openai-compatible"
 
 // Mock the OpenAICompatibleEmbedder
+vitest.mock("../openai-compatible")
 
 const MockedOpenAICompatibleEmbedder = OpenAICompatibleEmbedder as MockedClass<typeof OpenAICompatibleEmbedder>
 

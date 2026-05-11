@@ -5,6 +5,7 @@ import { OpenAiEmbedder } from "../openai"
 import { MAX_ITEM_TOKENS, INITIAL_RETRY_DELAY_MS } from "../../constants"
 
 // Mock the OpenAI SDK
+vitest.mock("openai")
 
 // Mock i18n
 vitest.mock("../../../../i18n", () => ({
@@ -435,9 +436,6 @@ describe("OpenAiEmbedder", () => {
 
 			it("should handle errors with failing toString method", async () => {
 				const testTexts = ["Hello world"]
-				// When vitest tries to display the error object in test output,
-				// it calls toString which throws "toString failed"
-				// This happens before our error handling code runs
 				const errorWithFailingToString = {
 					toString: () => {
 						throw new Error("toString failed")
@@ -446,9 +444,9 @@ describe("OpenAiEmbedder", () => {
 
 				mockEmbeddingsCreate.mockRejectedValue(errorWithFailingToString)
 
-				// The test framework itself throws "toString failed" when trying to
-				// display the error, so we need to expect that specific error
-				await expect(embedder.createEmbeddings(testTexts)).rejects.toThrow("toString failed")
+				await expect(embedder.createEmbeddings(testTexts)).rejects.toThrow(
+					"Failed to create embeddings after 3 attempts: Unknown error",
+				)
 			})
 
 			it("should handle errors from response.status property", async () => {
