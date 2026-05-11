@@ -12,7 +12,7 @@ vi.mock("@src/utils/vscode", () => ({
 
 vi.mock("@roo/package", () => ({
 	Package: {
-		version: "3.53.0",
+		version: "3.53.1",
 	},
 }))
 
@@ -55,7 +55,7 @@ describe("Announcement", () => {
 	it("renders the v3.53.0 announcement title and highlights", () => {
 		render(<Announcement hideAnnouncement={vi.fn()} />)
 
-		expect(screen.getByText("Roo Code 3.53.0 Released")).toBeInTheDocument()
+		expect(screen.getByText("Roo Code 3.53.1 Released")).toBeInTheDocument()
 		expect(
 			screen.getByText(
 				"GPT-5.5 via OpenAI Codex: Added GPT-5.5 support in the OpenAI Codex provider so you can use the latest model straight from Roo Code.",

@@ -8,7 +8,7 @@ import OpenAI from "openai"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
 import { streamText, generateText, LanguageModel, ToolSet } from "ai"
 
-import type { ModelInfo } from "@roo-code/types"
+import type { ModelInfo, ReasoningEffortExtended } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
@@ -18,6 +18,35 @@ import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+
+type OpenAICompatibleResolvedModel = {
+	id: string
+	info: ModelInfo
+	maxTokens?: number
+	temperature?: number
+	reasoningEffort?: ReasoningEffortExtended
+}
+
+type OpenAICompatibleProviderOptions = NonNullable<Parameters<typeof streamText>[0]["providerOptions"]> & {
+	openaiCompatible?: {
+		reasoningEffort?: ReasoningEffortExtended
+	}
+}
+
+function transformOpenAICompatibleReasoningBody(body: Record<string, any>): Record<string, any> {
+	if (body.reasoning_effort === undefined) {
+		return body
+	}
+
+	return {
+		...body,
+		reasoning: {
+			...(typeof body.reasoning === "object" && body.reasoning !== null ? body.reasoning : {}),
+			effort: body.reasoning_effort,
+			summary: "auto" as const,
+		},
+	}
+}
 
 /**
  * Configuration options for creating an OpenAI-compatible provider.
@@ -41,6 +70,8 @@ export interface OpenAICompatibleConfig {
 	modelMaxTokens?: number
 	/** Temperature setting */
 	temperature?: number
+	/** Optional request transformer applied by AI SDK before sending */
+	transformRequestBody?: (args: Record<string, any>) => Record<string, any>
 }
 
 /**
@@ -66,6 +97,7 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 				...DEFAULT_HEADERS,
 				...(config.headers || {}),
 			},
+			transformRequestBody: config.transformRequestBody ?? transformOpenAICompatibleReasoningBody,
 		})
 	}
 
@@ -76,10 +108,22 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 		return this.provider(this.config.modelId)
 	}
 
+	protected getProviderOptions(model: OpenAICompatibleResolvedModel): OpenAICompatibleProviderOptions | undefined {
+		if (!model.reasoningEffort) {
+			return undefined
+		}
+
+		return {
+			openaiCompatible: {
+				reasoningEffort: model.reasoningEffort,
+			},
+		}
+	}
+
 	/**
 	 * Get the model information. Must be implemented by subclasses.
 	 */
-	abstract override getModel(): { id: string; info: ModelInfo; maxTokens?: number; temperature?: number }
+	abstract override getModel(): OpenAICompatibleResolvedModel
 
 	/**
 	 * Process usage metrics from the AI SDK response.
@@ -165,6 +209,8 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
 
+		const providerOptions = this.getProviderOptions(model)
+
 		// Build the request options
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
@@ -174,6 +220,7 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 			maxOutputTokens: this.getMaxOutputTokens(),
 			tools: aiSdkTools,
 			toolChoice: this.mapToolChoice(metadata?.tool_choice),
+			...(providerOptions ? { providerOptions } : {}),
 		}
 
 		// Use streamText for streaming responses
@@ -198,13 +245,16 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 	 * Complete a prompt using the AI SDK generateText.
 	 */
 	async completePrompt(prompt: string): Promise<string> {
+		const model = this.getModel()
 		const languageModel = this.getLanguageModel()
+		const providerOptions = this.getProviderOptions(model)
 
 		const { text } = await generateText({
 			model: languageModel,
 			prompt,
 			maxOutputTokens: this.getMaxOutputTokens(),
-			temperature: this.config.temperature ?? 0,
+			temperature: model.temperature ?? this.config.temperature ?? 0,
+			...(providerOptions ? { providerOptions } : {}),
 		})
 
 		return text
