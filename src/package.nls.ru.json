@@ -24,6 +24,7 @@
 	"command.terminal.fixCommand.title": "Исправить эту команду",
 	"command.terminal.explainCommand.title": "Объяснить эту команду",
 	"command.acceptInput.title": "Принять ввод/предложение",
+	"command.searchChat.title": "Поиск в чате",
 	"command.toggleAutoApprove.title": "Переключить Авто-Подтверждение",
 	"configuration.title": "Roo Code",
 	"commands.allowedCommands.description": "Команды, которые могут быть автоматически выполнены, когда включена опция 'Всегда подтверждать операции выполнения'",

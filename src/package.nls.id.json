@@ -24,6 +24,7 @@
 	"command.terminal.fixCommand.title": "Perbaiki Perintah Ini",
 	"command.terminal.explainCommand.title": "Jelaskan Perintah Ini",
 	"command.acceptInput.title": "Terima Input/Saran",
+	"command.searchChat.title": "Cari Chat",
 	"command.toggleAutoApprove.title": "Alihkan Persetujuan Otomatis",
 	"configuration.title": "Roo Code",
 	"commands.allowedCommands.description": "Perintah yang dapat dijalankan secara otomatis ketika 'Selalu setujui operasi eksekusi' diaktifkan",

@@ -25,12 +25,18 @@ import { ProfileValidator } from "@roo/ProfileValidator"
 import { getLatestTodo } from "@roo/todo"
 
 import { vscode } from "@src/utils/vscode"
+import {
+	countSearchMatches,
+	getChatSearchText,
+	getSearchMatchSnippet,
+	normalizeSearchQuery,
+} from "@src/utils/chatSearchText"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useSelectedModel } from "@src/components/ui/hooks/useSelectedModel"
 import RooHero from "@src/components/welcome/RooHero"
 import RooTips from "@src/components/welcome/RooTips"
-import { StandardTooltip, Button } from "@src/components/ui"
+import { StandardTooltip, Button, Input } from "@src/components/ui"
 import { CloudUpsellDialog } from "@src/components/cloud/CloudUpsellDialog"
 
 import TelemetryBanner from "../common/TelemetryBanner"
@@ -49,7 +55,7 @@ import FileChangesPanel from "./FileChangesPanel"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { useScrollLifecycle } from "@src/hooks/useScrollLifecycle"
-import { Cloud } from "lucide-react"
+import { ChevronDown, ChevronUp, Cloud, Search, X } from "lucide-react"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -59,11 +65,50 @@ export interface ChatViewProps {
 
 export interface ChatViewRef {
 	acceptInput: () => void
+	openSearch: () => void
 }
 
 export const MAX_IMAGES_PER_MESSAGE = 20 // This is the Anthropic limit.
 
 const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
+
+type ChatSearchResult = {
+	key: string
+	messageTs: number
+	messageIndex: number
+	matchIndex: number
+	isTaskHeader?: boolean
+	snippet: string
+}
+
+const getChatSearchScroller = () => document.querySelector<HTMLElement>('[data-virtuoso-scroller="true"]')
+
+const getChatSearchScrollViewportRect = (element: HTMLElement) => {
+	const scroller = getChatSearchScroller()
+
+	if (scroller?.contains(element)) {
+		return scroller.getBoundingClientRect()
+	}
+
+	return {
+		top: 0,
+		left: 0,
+		right: window.innerWidth,
+		bottom: window.innerHeight,
+	}
+}
+
+const isElementInChatViewport = (element: HTMLElement) => {
+	const elementRect = element.getBoundingClientRect()
+	const viewportRect = getChatSearchScrollViewportRect(element)
+
+	return (
+		elementRect.top >= viewportRect.top &&
+		elementRect.bottom <= viewportRect.bottom &&
+		elementRect.left >= viewportRect.left &&
+		elementRect.right <= viewportRect.right
+	)
+}
 
 const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewProps> = (
 	{ isHidden, showAnnouncement, hideAnnouncement },
@@ -155,6 +200,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({})
 	const prevExpandedRowsRef = useRef<Record<number, boolean>>()
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
+	const [isChatSearchOpen, setIsChatSearchOpen] = useState(false)
+	const [chatSearchQuery, setChatSearchQuery] = useState("")
+	const [activeChatSearchResult, setActiveChatSearchResult] = useState(0)
+	const chatSearchBarRef = useRef<HTMLDivElement>(null)
+	const chatSearchInputRef = useRef<HTMLInputElement>(null)
 	const lastTtsRef = useRef<string>("")
 	const [wasStreaming, setWasStreaming] = useState<boolean>(false)
 	const [checkpointWarning, setCheckpointWarning] = useState<
@@ -1261,6 +1311,56 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		return result
 	}, [isCondensing, visibleMessages])
 
+	const normalizedChatSearchQuery = useMemo(() => normalizeSearchQuery(chatSearchQuery), [chatSearchQuery])
+	const activeChatSearchQuery = isChatSearchOpen ? normalizedChatSearchQuery : ""
+
+	const chatSearchResults = useMemo<ChatSearchResult[]>(() => {
+		if (!activeChatSearchQuery) {
+			return []
+		}
+
+		const results: ChatSearchResult[] = []
+		const appendMessageMatches = (message: ClineMessage, messageIndex: number, isTaskHeader = false) => {
+			const searchableText = getChatSearchText(message)
+			const matchCount = countSearchMatches(searchableText, activeChatSearchQuery)
+
+			for (let matchIndex = 0; matchIndex < matchCount; matchIndex++) {
+				results.push({
+					key: `${isTaskHeader ? "task" : "message"}:${message.ts}:${matchIndex}`,
+					messageTs: message.ts,
+					messageIndex,
+					matchIndex,
+					isTaskHeader,
+					snippet: getSearchMatchSnippet(searchableText, activeChatSearchQuery, matchIndex),
+				})
+			}
+		}
+
+		if (task) {
+			appendMessageMatches(task, -1, true)
+		}
+
+		groupedMessages.forEach((message, index) => appendMessageMatches(message, index))
+
+		return results
+	}, [activeChatSearchQuery, groupedMessages, task])
+
+	const activeChatSearchItem = chatSearchResults[activeChatSearchResult]
+
+	useEffect(() => {
+		setActiveChatSearchResult(0)
+	}, [activeChatSearchQuery])
+
+	useEffect(() => {
+		setActiveChatSearchResult((previous) => {
+			if (chatSearchResults.length === 0) {
+				return 0
+			}
+
+			return Math.min(previous, chatSearchResults.length - 1)
+		})
+	}, [chatSearchResults.length])
+
 	const checkpointIndices = useMemo(() => {
 		const indices: number[] = []
 		for (let i = 0; i < groupedMessages.length; i++) {
@@ -1434,6 +1534,143 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		})
 	}, [checkpointIndices, enterUserBrowsingHistory])
 
+	const openChatSearch = useCallback(() => {
+		setIsChatSearchOpen(true)
+		window.setTimeout(() => chatSearchInputRef.current?.focus(), 0)
+	}, [])
+
+	const closeChatSearch = useCallback(() => {
+		const searchBarHeight = chatSearchBarRef.current?.getBoundingClientRect().height ?? 0
+		const scroller = getChatSearchScroller()
+		const previousScrollTop = scroller?.scrollTop
+
+		setIsChatSearchOpen(false)
+		setChatSearchQuery("")
+		setActiveChatSearchResult(0)
+
+		if (scroller && previousScrollTop !== undefined && searchBarHeight > 0) {
+			window.requestAnimationFrame(() => {
+				const currentScroller = getChatSearchScroller() ?? scroller
+				currentScroller.scrollTop = Math.max(0, previousScrollTop - searchBarHeight)
+			})
+		}
+	}, [])
+
+	const navigateChatSearch = useCallback(
+		(direction: 1 | -1) => {
+			if (chatSearchResults.length === 0) {
+				return
+			}
+
+			enterUserBrowsingHistory("keyboard-nav-up")
+			setActiveChatSearchResult((previous) => {
+				return (previous + direction + chatSearchResults.length) % chatSearchResults.length
+			})
+		},
+		[chatSearchResults, enterUserBrowsingHistory],
+	)
+
+	useEffect(() => {
+		if (!activeChatSearchQuery || !activeChatSearchItem) {
+			return
+		}
+
+		const STABILITY_WINDOW_MS = 1_200
+		let animationFrame: number | undefined
+		let resizeObserver: ResizeObserver | undefined
+		let observedResizeElement: HTMLElement | undefined
+		let hasRequestedVirtualScroll = false
+
+		const getTargetContainer = () => {
+			if (activeChatSearchItem.isTaskHeader) {
+				return document.querySelector<HTMLElement>("[data-chat-search-task-header='true']")
+			}
+
+			return document.querySelector<HTMLElement>(`[data-chat-search-row-ts='${activeChatSearchItem.messageTs}']`)
+		}
+
+		const observeTargetResize = (element: HTMLElement | null | undefined) => {
+			if (!element || observedResizeElement === element) {
+				return
+			}
+
+			resizeObserver?.disconnect()
+			resizeObserver = new ResizeObserver(() => scheduleLocateTarget())
+			resizeObserver.observe(element)
+			observedResizeElement = element
+		}
+
+		const getTargetMatch = () => {
+			const container = getTargetContainer()
+			observeTargetResize(container)
+
+			return container?.querySelectorAll<HTMLElement>("[data-chat-search-match='true']")[
+				activeChatSearchItem.matchIndex
+			]
+		}
+
+		const locateTarget = () => {
+			const match = getTargetMatch()
+
+			if (match) {
+				const isVisible = isElementInChatViewport(match)
+
+				if (!isVisible) {
+					match.scrollIntoView({ block: "center", inline: "nearest", behavior: "auto" })
+				}
+
+				return true
+			}
+
+			if (
+				!activeChatSearchItem.isTaskHeader &&
+				activeChatSearchItem.messageIndex >= 0 &&
+				!hasRequestedVirtualScroll
+			) {
+				hasRequestedVirtualScroll = true
+				virtuosoRef.current?.scrollToIndex({
+					index: activeChatSearchItem.messageIndex,
+					align: "center",
+					behavior: "auto",
+				})
+			}
+
+			return false
+		}
+
+		const scheduleLocateTarget = () => {
+			if (animationFrame !== undefined) {
+				cancelAnimationFrame(animationFrame)
+			}
+
+			animationFrame = requestAnimationFrame(() => {
+				animationFrame = undefined
+				locateTarget()
+			})
+		}
+
+		const observerRoot = document.querySelector<HTMLElement>('[data-virtuoso-scroller="true"]') ?? document.body
+		const mutationObserver = new MutationObserver(() => scheduleLocateTarget())
+		mutationObserver.observe(observerRoot, { childList: true, subtree: true })
+		locateTarget()
+		scheduleLocateTarget()
+		const stabilityTimeout = setTimeout(() => {
+			mutationObserver?.disconnect()
+			resizeObserver?.disconnect()
+		}, STABILITY_WINDOW_MS)
+
+		return () => {
+			if (animationFrame !== undefined) {
+				cancelAnimationFrame(animationFrame)
+			}
+			if (stabilityTimeout !== undefined) {
+				clearTimeout(stabilityTimeout)
+			}
+			mutationObserver?.disconnect()
+			resizeObserver?.disconnect()
+		}
+	}, [activeChatSearchItem, activeChatSearchQuery, activeChatSearchResult, chatSearchResults.length])
+
 	const itemContent = useCallback(
 		(index: number, messageOrGroup: ClineMessage) => {
 			const hasCheckpoint = modifiedMessages.some((message) => message.say === "checkpoint_saved")
@@ -1471,6 +1708,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					}
 					hasCheckpoint={hasCheckpoint}
 					onJumpToPreviousCheckpoint={handleScrollToLatestCheckpoint}
+					chatSearchQuery={activeChatSearchQuery}
+					activeChatSearchMatchIndex={
+						activeChatSearchItem &&
+						!activeChatSearchItem.isTaskHeader &&
+						activeChatSearchItem.messageTs === messageOrGroup.ts
+							? activeChatSearchItem.matchIndex
+							: undefined
+					}
 				/>
 			)
 		},
@@ -1489,6 +1734,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			enableButtons,
 			primaryButtonText,
 			handleScrollToLatestCheckpoint,
+			activeChatSearchQuery,
+			activeChatSearchItem,
 		],
 	)
 
@@ -1514,6 +1761,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	// (PageUp, Home, ArrowUp) is handled by useScrollLifecycle.
 	const handleKeyDown = useCallback(
 		(event: KeyboardEvent) => {
+			if (event.key === "Escape" && isChatSearchOpen) {
+				closeChatSearch()
+				return
+			}
+
 			if ((event.metaKey || event.ctrlKey) && event.key === ".") {
 				event.preventDefault()
 				if (event.shiftKey) {
@@ -1523,7 +1775,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				}
 			}
 		},
-		[switchToNextMode, switchToPreviousMode],
+		[closeChatSearch, isChatSearchOpen, switchToNextMode, switchToPreviousMode],
 	)
 
 	useEffect(() => {
@@ -1535,6 +1787,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	}, [handleKeyDown])
 
 	useImperativeHandle(ref, () => ({
+		openSearch: openChatSearch,
 		acceptInput: () => {
 			const hasInput = inputValue.trim() || selectedImages.length > 0
 
@@ -1565,11 +1818,27 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	}
 
 	const areButtonsVisible = showScrollToBottom || primaryButtonText || secondaryButtonText
+	const chatSearchCountText = activeChatSearchQuery
+		? `${chatSearchResults.length === 0 ? 0 : activeChatSearchResult + 1}/${chatSearchResults.length}`
+		: "0/0"
 
 	return (
 		<div
 			data-testid="chat-view"
 			className={isHidden ? "hidden" : "fixed top-0 left-0 right-0 bottom-0 flex flex-col overflow-hidden"}>
+			<style>{`
+				.chat-search-match {
+					background: var(--vscode-editor-findMatchHighlightBackground, rgba(234, 190, 71, 0.35));
+					border-radius: 2px;
+					color: inherit;
+				}
+
+				.chat-search-match-active {
+					background: var(--vscode-editor-findMatchBackground, rgba(245, 213, 92, 0.75));
+					outline: 1px solid var(--vscode-focusBorder);
+					outline-offset: 1px;
+				}
+			`}</style>
 			{telemetrySetting === "unset" && <TelemetryBanner />}
 			{(showAnnouncement || showAnnouncementModal) && (
 				<Announcement
@@ -1617,7 +1886,61 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						buttonsDisabled={sendingDisabled}
 						handleCondenseContext={handleCondenseContext}
 						todos={latestTodos}
+						chatSearchQuery={activeChatSearchQuery}
+						activeChatSearchMatchIndex={
+							activeChatSearchItem?.isTaskHeader ? activeChatSearchItem.matchIndex : undefined
+						}
 					/>
+
+					{isChatSearchOpen && (
+						<div ref={chatSearchBarRef} className="px-3 py-2 flex items-center gap-2">
+							<Search className="size-4 shrink-0 text-vscode-descriptionForeground" />
+							<Input
+								ref={chatSearchInputRef}
+								value={chatSearchQuery}
+								onChange={(event) => setChatSearchQuery(event.target.value)}
+								onKeyDown={(event) => {
+									if (event.key === "Enter") {
+										event.preventDefault()
+										navigateChatSearch(event.shiftKey ? -1 : 1)
+									}
+
+									if (event.key === "Escape") {
+										event.preventDefault()
+										closeChatSearch()
+									}
+								}}
+								placeholder="Search chat"
+								className="h-7 rounded-md px-2 py-0 text-sm"
+							/>
+							<span className="min-w-[48px] text-center text-xs text-vscode-descriptionForeground">
+								{chatSearchCountText}
+							</span>
+							<StandardTooltip content="Previous match">
+								<Button
+									variant="ghost"
+									size="icon"
+									disabled={chatSearchResults.length === 0}
+									onClick={() => navigateChatSearch(-1)}>
+									<ChevronUp />
+								</Button>
+							</StandardTooltip>
+							<StandardTooltip content="Next match">
+								<Button
+									variant="ghost"
+									size="icon"
+									disabled={chatSearchResults.length === 0}
+									onClick={() => navigateChatSearch(1)}>
+									<ChevronDown />
+								</Button>
+							</StandardTooltip>
+							<StandardTooltip content="Close search">
+								<Button variant="ghost" size="icon" onClick={closeChatSearch}>
+									<X />
+								</Button>
+							</StandardTooltip>
+						</div>
+					)}
 
 					{checkpointWarning && (
 						<div className="px-3">

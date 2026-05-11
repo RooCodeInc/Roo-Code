@@ -125,6 +125,8 @@ interface ChatRowProps {
 	editable?: boolean
 	hasCheckpoint?: boolean
 	onJumpToPreviousCheckpoint?: () => void
+	chatSearchQuery?: string
+	activeChatSearchMatchIndex?: number
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -132,13 +134,14 @@ interface ChatRowContentProps extends Omit<ChatRowProps, "onHeightChange"> {}
 
 const ChatRow = memo(
 	(props: ChatRowProps) => {
-		const { isLast, onHeightChange, message } = props
+		const { isLast, onHeightChange, message, chatSearchQuery, activeChatSearchMatchIndex } = props
 		// Store the previous height to compare with the current height
 		// This allows us to detect changes without causing re-renders
 		const prevHeightRef = useRef(0)
+		const chatSearchRowRef = useRef<HTMLDivElement>(null)
 
 		const [chatrow, { height }] = useSize(
-			<div className="px-[15px] py-[10px] pr-[6px]">
+			<div ref={chatSearchRowRef} data-chat-search-row-ts={message.ts} className="px-[15px] py-[10px] pr-[6px]">
 				<ChatRowContent {...props} />
 			</div>,
 		)
@@ -156,6 +159,67 @@ const ChatRow = memo(
 				prevHeightRef.current = height
 			}
 		}, [height, isLast, onHeightChange, message])
+
+		useEffect(() => {
+			const row = chatSearchRowRef.current
+
+			if (!row) {
+				return
+			}
+
+			if (!chatSearchQuery) {
+				return
+			}
+
+			const updateActiveHighlight = () => {
+				const matches = Array.from(row.querySelectorAll<HTMLElement>("[data-chat-search-match='true']"))
+
+				for (const match of matches) {
+					match.classList.remove("chat-search-match-active")
+				}
+
+				if (typeof activeChatSearchMatchIndex !== "number") {
+					return
+				}
+
+				const activeMatch = matches[activeChatSearchMatchIndex]
+
+				if (!activeMatch) {
+					return
+				}
+
+				activeMatch.classList.add("chat-search-match-active")
+			}
+
+			updateActiveHighlight()
+
+			if (typeof activeChatSearchMatchIndex !== "number") {
+				return
+			}
+
+			let animationFrame: number | undefined
+
+			const scheduleUpdate = () => {
+				if (animationFrame !== undefined) {
+					cancelAnimationFrame(animationFrame)
+				}
+
+				animationFrame = requestAnimationFrame(() => {
+					animationFrame = undefined
+					updateActiveHighlight()
+				})
+			}
+
+			const mutationObserver = new MutationObserver(() => scheduleUpdate())
+			mutationObserver.observe(row, { childList: true, characterData: true, subtree: true })
+
+			return () => {
+				if (animationFrame !== undefined) {
+					cancelAnimationFrame(animationFrame)
+				}
+				mutationObserver.disconnect()
+			}
+		}, [activeChatSearchMatchIndex, chatSearchQuery, message.ts])
 
 		// we cannot return null as virtuoso does not support it, so we use a separate visibleMessages array to filter out messages that should not be rendered
 		return chatrow
@@ -179,6 +243,7 @@ export const ChatRowContent = ({
 	isFollowUpAnswered,
 	isFollowUpAutoApprovalPaused,
 	onJumpToPreviousCheckpoint,
+	chatSearchQuery,
 }: ChatRowContentProps) => {
 	const { t, i18n } = useTranslation()
 
@@ -868,7 +933,7 @@ export const ChatRowContent = ({
 							</span>
 						</div>
 						<div className="border-l border-muted-foreground/80 ml-2 pl-4 pb-1">
-							<MarkdownBlock markdown={tool.content} />
+							<MarkdownBlock markdown={tool.content} searchQuery={chatSearchQuery} />
 							<div>
 								{childTaskId && !isFollowedBySubtaskResult && (
 									<button
@@ -892,7 +957,10 @@ export const ChatRowContent = ({
 							<span style={{ fontWeight: "bold" }}>{t("chat:subtasks.wantsToFinish")}</span>
 						</div>
 						<div className="text-muted-foreground pl-6">
-							<MarkdownBlock markdown={t("chat:subtasks.completionInstructions")} />
+							<MarkdownBlock
+								markdown={t("chat:subtasks.completionInstructions")}
+								searchQuery={chatSearchQuery}
+							/>
 						</div>
 					</>
 				)
@@ -1029,7 +1097,7 @@ export const ChatRowContent = ({
 								<span style={{ fontWeight: "bold" }}>{t("chat:subtasks.resultContent")}</span>
 								<Check className="size-3" />
 							</div>
-							<MarkdownBlock markdown={message.text} />
+							<MarkdownBlock markdown={message.text} searchQuery={chatSearchQuery} />
 							{completedChildTaskId && (
 								<button
 									className="cursor-pointer flex gap-1 items-center mt-2 text-vscode-descriptionForeground hover:text-vscode-descriptionForeground hover:underline font-normal"
@@ -1190,7 +1258,11 @@ export const ChatRowContent = ({
 								<OpenMarkdownPreviewButton markdown={message.text} />
 							</div>
 							<div className="pl-6">
-								<Markdown markdown={message.text} partial={message.partial} />
+								<Markdown
+									markdown={message.text}
+									partial={message.partial}
+									searchQuery={chatSearchQuery}
+								/>
 								{message.images && message.images.length > 0 && (
 									<div style={{ marginTop: "10px" }}>
 										{message.images.map((image, index) => (
@@ -1246,7 +1318,7 @@ export const ChatRowContent = ({
 												}
 											}}
 											title={t("chat:queuedMessages.clickToEdit")}>
-											<Mention text={message.text} withShadow />
+											<Mention text={message.text} withShadow searchQuery={chatSearchQuery} />
 										</div>
 										<div className="flex gap-2 pr-1">
 											<div
@@ -1330,7 +1402,7 @@ export const ChatRowContent = ({
 								<OpenMarkdownPreviewButton markdown={message.text} />
 							</div>
 							<div className="border-l border-green-600/30 ml-2 pl-4 pb-1">
-								<Markdown markdown={message.text} />
+								<Markdown markdown={message.text} searchQuery={chatSearchQuery} />
 							</div>
 						</div>
 					)
@@ -1572,7 +1644,11 @@ export const ChatRowContent = ({
 								</div>
 							)}
 							<div style={{ paddingTop: 10 }}>
-								<Markdown markdown={message.text} partial={message.partial} />
+								<Markdown
+									markdown={message.text}
+									partial={message.partial}
+									searchQuery={chatSearchQuery}
+								/>
 							</div>
 						</>
 					)
@@ -1660,7 +1736,11 @@ export const ChatRowContent = ({
 									<OpenMarkdownPreviewButton markdown={message.text} />
 								</div>
 								<div style={{ color: "var(--vscode-charts-green)", paddingTop: 10 }}>
-									<Markdown markdown={message.text} partial={message.partial} />
+									<Markdown
+										markdown={message.text}
+										partial={message.partial}
+										searchQuery={chatSearchQuery}
+									/>
 								</div>
 							</div>
 						)
@@ -1679,6 +1759,7 @@ export const ChatRowContent = ({
 							<div className="flex flex-col gap-2 ml-6">
 								<Markdown
 									markdown={message.partial === true ? message?.text : followUpData?.question}
+									searchQuery={chatSearchQuery}
 								/>
 								<FollowUpSuggest
 									suggestions={followUpData?.suggest}

@@ -109,6 +109,12 @@ const App = () => {
 			const message: ExtensionMessage = e.data
 
 			if (message.type === "action" && message.action) {
+				if (message.action === "openSearch") {
+					switchTab("chat")
+					window.setTimeout(() => chatViewRef.current?.openSearch(), 0)
+					return
+				}
+
 				// Handle switchTab action with tab parameter
 				if (message.action === "switchTab" && message.tab) {
 					const targetTab = message.tab as Tab

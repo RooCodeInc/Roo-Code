@@ -41,6 +41,8 @@ export interface TaskHeaderProps {
 	buttonsDisabled: boolean
 	handleCondenseContext: (taskId: string) => void
 	todos?: any[]
+	chatSearchQuery?: string
+	activeChatSearchMatchIndex?: number
 }
 
 const TaskHeader = ({
@@ -58,6 +60,8 @@ const TaskHeader = ({
 	buttonsDisabled,
 	handleCondenseContext,
 	todos,
+	chatSearchQuery,
+	activeChatSearchMatchIndex,
 }: TaskHeaderProps) => {
 	const { t } = useTranslation()
 	const { apiConfiguration, currentTaskItem, clineMessages } = useExtensionState()
@@ -94,7 +98,36 @@ const TaskHeader = ({
 
 	const textContainerRef = useRef<HTMLDivElement>(null)
 	const textRef = useRef<HTMLDivElement>(null)
+	const taskHeaderRef = useRef<HTMLDivElement>(null)
 	const contextWindow = model?.contextWindow || 1
+
+	useEffect(() => {
+		const header = taskHeaderRef.current
+
+		if (!header) {
+			return
+		}
+
+		if (!chatSearchQuery) {
+			return
+		}
+
+		const matches = Array.from(header.querySelectorAll<HTMLElement>("[data-chat-search-match='true']"))
+
+		for (const match of matches) {
+			match.classList.remove("chat-search-match-active")
+		}
+
+		if (typeof activeChatSearchMatchIndex !== "number") {
+			return
+		}
+
+		const activeMatch = matches[activeChatSearchMatchIndex]
+
+		if (activeMatch) {
+			activeMatch.classList.add("chat-search-match-active")
+		}
+	}, [activeChatSearchMatchIndex, chatSearchQuery, isTaskExpanded, task.text])
 
 	// Calculate maxTokens (reserved for output) once for reuse in percentage and tooltip
 	const maxTokens = useMemo(
@@ -131,7 +164,7 @@ const TaskHeader = ({
 	}
 
 	return (
-		<div className="group pt-2 pb-0 px-3">
+		<div ref={taskHeaderRef} data-chat-search-task-header="true" className="group pt-2 pb-0 px-3">
 			{isSubtask && (
 				<div className="mb-2" onClick={(e) => e.stopPropagation()}>
 					<Button
@@ -194,7 +227,7 @@ const TaskHeader = ({
 							{isTaskExpanded && <span className="font-bold">{t("chat:task.title")}</span>}
 							{!isTaskExpanded && (
 								<div className="flex items-center gap-2 whitespace-nowrap overflow-hidden text-ellipsis">
-									<Mention text={task.text} />
+									<Mention text={task.text} searchQuery={chatSearchQuery} />
 								</div>
 							)}
 						</div>
@@ -332,7 +365,7 @@ const TaskHeader = ({
 									WebkitLineClamp: "unset",
 									WebkitBoxOrient: "vertical",
 								}}>
-								<Mention text={task.text} />
+								<Mention text={task.text} searchQuery={chatSearchQuery} />
 							</div>
 						</div>
 						{task.images && task.images.length > 0 && <Thumbnails images={task.images} />}

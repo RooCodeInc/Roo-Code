@@ -14,6 +14,7 @@
 	"command.terminal.fixCommand.title": "Diesen Befehl Reparieren",
 	"command.terminal.explainCommand.title": "Diesen Befehl Erklären",
 	"command.acceptInput.title": "Eingabe/Vorschlag Akzeptieren",
+	"command.searchChat.title": "Chat durchsuchen",
 	"command.toggleAutoApprove.title": "Auto-Genehmigung Umschalten",
 	"views.activitybar.title": "Roo Code",
 	"views.contextMenu.label": "Roo Code",

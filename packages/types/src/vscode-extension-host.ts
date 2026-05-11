@@ -120,6 +120,7 @@ export interface ExtensionMessage {
 		| "cloudButtonClicked"
 		| "didBecomeVisible"
 		| "focusInput"
+		| "openSearch"
 		| "switchTab"
 		| "toggleAutoApprove"
 	invoke?: "newChat" | "sendMessage" | "primaryButtonClick" | "secondaryButtonClick" | "setChatBoxMessage"

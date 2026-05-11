@@ -45,6 +45,7 @@ export const commandIds = [
 
 	"focusInput",
 	"acceptInput",
+	"searchChat",
 	"focusPanel",
 	"toggleAutoApprove",
 ] as const
