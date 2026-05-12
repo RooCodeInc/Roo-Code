@@ -1751,7 +1751,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				<div className="px-[15px] py-1">
 					<WarningRow
 						title={t("chat:retiredProvider.title")}
-						message={t("chat:retiredProvider.message")}
+						message={t(
+							apiConfiguration?.apiProvider === "roo"
+								? "chat:retiredProvider.rooMessage"
+								: "chat:retiredProvider.message",
+						)}
 						actionText={t("chat:retiredProvider.openSettings")}
 						onAction={() => vscode.postMessage({ type: "switchTab", tab: "settings" })}
 					/>

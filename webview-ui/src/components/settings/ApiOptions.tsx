@@ -476,7 +476,11 @@ const ApiOptions = ({
 				<div
 					className="rounded-md border border-vscode-panel-border px-3 py-2 text-sm text-vscode-descriptionForeground"
 					data-testid="retired-provider-message">
-					{t("settings:providers.retiredProviderMessage")}
+					{t(
+						apiConfiguration.apiProvider === "roo"
+							? "settings:providers.retiredRooProviderMessage"
+							: "settings:providers.retiredProviderMessage",
+					)}
 				</div>
 			) : (
 				<>

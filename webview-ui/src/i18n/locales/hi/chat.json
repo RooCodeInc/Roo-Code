@@ -477,7 +477,8 @@
 	},
 	"retiredProvider": {
 		"title": "प्रदाता अब समर्थित नहीं है",
-		"message": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle.",
-		"openSettings": "सेटिंग्स खोलें"
+		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
+		"openSettings": "सेटिंग्स खोलें",
+		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
 	}
 }

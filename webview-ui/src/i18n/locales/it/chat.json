@@ -477,7 +477,8 @@
 	},
 	"retiredProvider": {
 		"title": "Provider non più supportato",
-		"message": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle.",
-		"openSettings": "Apri impostazioni"
+		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
+		"openSettings": "Apri impostazioni",
+		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
 	}
 }

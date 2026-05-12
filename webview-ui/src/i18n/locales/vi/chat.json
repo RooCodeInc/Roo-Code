@@ -478,7 +478,8 @@
 	},
 	"retiredProvider": {
 		"title": "Nhà cung cấp không còn được hỗ trợ",
-		"message": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle.",
-		"openSettings": "Mở cài đặt"
+		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
+		"openSettings": "Mở cài đặt",
+		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
 	}
 }

@@ -582,6 +582,18 @@ describe("ApiOptions", () => {
 		expect(screen.queryByTestId("litellm-provider")).not.toBeInTheDocument()
 	})
 
+	it("renders Roo-specific retired provider message for Roo Code Router", () => {
+		renderApiOptions({
+			apiConfiguration: {
+				apiProvider: "roo" as any,
+			},
+		})
+
+		expect(screen.getByTestId("retired-provider-message")).toHaveTextContent(
+			"settings:providers.retiredRooProviderMessage",
+		)
+	})
+
 	it("does not reintroduce retired providers into active provider options", () => {
 		renderApiOptions({
 			apiConfiguration: {
