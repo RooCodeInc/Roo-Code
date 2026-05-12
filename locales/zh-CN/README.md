@@ -1,31 +1,10 @@
 <p align="center">
   <a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"><img src="https://img.shields.io/badge/VS_Code_Marketplace-007ACC?style=flat&logo=visualstudiocode&logoColor=white" alt="VS Code Marketplace"></a>
   <a href="https://x.com/roocode"><img src="https://img.shields.io/badge/roocode-000000?style=flat&logo=x&logoColor=white" alt="X"></a>
-  <a href="https://youtube.com/@roocodeyt?feature=shared"><img src="https://img.shields.io/badge/YouTube-FF0000?style=flat&logo=youtube&logoColor=white" alt="YouTube"></a>
-  <a href="https://discord.gg/roocode"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Join Discord"></a>
-  <a href="https://www.reddit.com/r/RooCode/"><img src="https://img.shields.io/badge/Join%20r%2FRooCode-FF4500?style=flat&logo=reddit&logoColor=white" alt="Join r/RooCode"></a>
 </p>
-<p align="center">
-  <em>快速获取帮助 → <a href="https://discord.gg/roocode">加入 Discord</a> • 偏好异步？→ <a href="https://www.reddit.com/r/RooCode/">加入 r/RooCode</a></em>
-</p>
-
 # Roo Code
 
 > 你的 AI 驱动开发团队，就在你的编辑器里
-
-## v3.53.0 新增内容
-
-> ### Roo Code 插件不会消失。
->
-> 你可能已经看到[最近的公告](https://x.com/mattrubens/status/2046636598859559114)：Roo Code 已突破 300 万次安装，原团队正全力投入 Roomote。我们知道这个消息让许多人感到难受。这个插件对我们和你都意义重大，你的心声我们听到了。
->
-> 好消息是：**一支社区团队已挺身而出，继续推进 Roo Code**，我们正与他们协作进行正式交接，让你所依赖的插件继续得到维护和改进。
-
-**本次发布的新增内容：**
-
-- 通过 OpenAI Codex 提供商新增对 GPT-5.5 的支持。
-- 在 Vertex AI 上新增对 Claude Opus 4.7 的支持。
-- 在聊天中新增了上一存档点导航控件，让你可以更轻松地回退到此前的存档点。
 
 <details>
   <summary>🌐 可用语言</summary>
@@ -75,96 +54,10 @@ Roo Code 适应您的工作方式，而不是相反：
 
 了解更多：[使用模式](https://docs.roocode.com/basic-usage/using-modes) • [自定义模式](https://docs.roocode.com/advanced-usage/custom-modes)
 
-## 教程和功能视频
-
-<div align="center">
-
-|                                                                                                                                                                     |                                                                                                                                                                    |                                                                                                                                                                  |
-| :-----------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>安装 Roo Code</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>配置个人资料</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>代码库索引</b> |
-|  <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>自定义模式</b>   |    <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>检查点</b>    | <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>上下文管理</b> |
-
-</div>
-<p align="center">
-<a href="https://docs.roocode.com/tutorial-videos">更多快速教程和功能视频...</a>
-</p>
-
 ## 资源
 
 - **[文档](https://docs.roocode.com):** 安装、配置和掌握 Roo Code 的官方指南。
-- **[YouTube 频道](https://youtube.com/@roocodeyt?feature=shared):** 观看教程和功能演示。
-- **[Discord 服务器](https://discord.gg/roocode):** 加入社区以获得实时帮助和讨论。
-- **[Reddit 社区](https://www.reddit.com/r/RooCode):** 分享您的经验，看看别人在构建什么。
 - **[GitHub 问题](https://github.com/RooCodeInc/Roo-Code/issues):** 报告错误并跟踪开发。
-- **[功能请求](https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop):** 有想法吗？与开发人员分享。
-
----
-
-## 本地设置与开发
-
-1. **克隆**仓库：
-
-```sh
-git clone https://github.com/RooCodeInc/Roo-Code.git
-```
-
-2. **安装依赖项**:
-
-```sh
-pnpm install
-```
-
-3. **运行扩展程序**:
-
-有几种方法可以运行 Roo Code 扩展程序：
-
-### 开发模式（F5）
-
-对于积极开发，请使用 VSCode 的内置调试功能：
-
-在 VSCode 中按 `F5`（或转到 **Run** → **Start Debugging**）。这将在运行 Roo Code 扩展程序的新 VSCode 窗口中打开。
-
-- 对 webview 的更改将立即显示。
-- 对核心扩展程序的更改也会自动热重载。
-
-### 自动化 VSIX 安装
-
-要将扩展程序构建为 VSIX 包并直接安装到 VSCode 中：
-
-```sh
-pnpm install:vsix [-y] [--editor=<command>]
-```
-
-此命令将：
-
-- 询问要使用的编辑器命令（code/cursor/code-insiders） - 默认为“code”
-- 卸载任何现有版本的扩展程序。
-- 构建最新的 VSIX 包。
-- 安装新构建的 VSIX。
-- 提示您重新启动 VS Code 以使更改生效。
-
-选项：
-
-- `-y`: 跳过所有确认提示并使用默认值
-- `--editor=<command>`: 指定编辑器命令（例如，`--editor=cursor` 或 `--editor=code-insiders`）
-
-### 手动 VSIX 安装
-
-如果您希望手动安装 VSIX 包：
-
-1.  首先，构建 VSIX 包：
-    ```sh
-    pnpm vsix
-    ```
-2.  将在 `bin/` 目录中生成一个 `.vsix` 文件（例如，`bin/roo-cline-<version>.vsix`）。
-3.  使用 VSCode CLI 手动安装
-    ```sh
-    code --install-extension bin/roo-cline-<version>.vsix
-    ```
-
----
-
-我们使用 [changesets](https://github.com/changesets/changesets) 进行版本控制和发布。有关发行说明，请查看我们的 `CHANGELOG.md`。
 
 ---
 
@@ -174,16 +67,6 @@ pnpm install:vsix [-y] [--editor=<command>]
 
 ---
 
-## 贡献
-
-我们欢迎社区贡献！请阅读我们的 [CONTRIBUTING.md](CONTRIBUTING.md) 开始。
-
----
-
 ## 许可证
 
 [Apache 2.0 © 2025 Roo Code, Inc.](../../LICENSE)
-
----
-
-**享受 Roo Code！** 无论您是让它保持短绳还是让它自主漫游，我们都迫不及待地想看看您会构建什么。如果您有问题或功能想法，请访问我们的 [Reddit 社区](https://www.reddit.com/r/RooCode/)或 [Discord](https://discord.gg/roocode)。编码愉快！

@@ -48,15 +48,11 @@
 			"label": "Bir hata mı buldunuz?",
 			"link": "GitHub'da bildirin"
 		},
-		"featureRequest": {
-			"label": "Bir fikriniz mi var?",
-			"link": "Bizimle paylaşın"
-		},
 		"securityIssue": {
 			"label": "Bir güvenlik açığı mı keşfettiniz?",
 			"link": "Açıklama sürecimizi takip edin"
 		},
-		"contactAndCommunity": "GitHub",
+		"contact": "GitHub",
 		"manageSettings": "Ayarları Yönet",
 		"debugMode": {
 			"label": "Debug modunu etkinleştir",

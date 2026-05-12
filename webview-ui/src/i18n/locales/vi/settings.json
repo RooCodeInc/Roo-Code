@@ -48,15 +48,11 @@
 			"label": "Tìm thấy lỗi?",
 			"link": "Báo cáo trên GitHub"
 		},
-		"featureRequest": {
-			"label": "Có ý tưởng?",
-			"link": "Chia sẻ với chúng tôi"
-		},
 		"securityIssue": {
 			"label": "Phát hiện lỗ hổng bảo mật?",
 			"link": "Làm theo quy trình công bố của chúng tôi"
 		},
-		"contactAndCommunity": "GitHub",
+		"contact": "GitHub",
 		"manageSettings": "Quản Lý Cài Đặt",
 		"debugMode": {
 			"label": "Bật chế độ debug",

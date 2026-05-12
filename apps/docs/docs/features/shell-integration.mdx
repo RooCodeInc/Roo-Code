@@ -13,25 +13,6 @@ import Codicon from '@site/src/components/Codicon';
 
 Terminal Shell Integration is a key feature that enables Roo Code to execute commands in your terminal and intelligently process their output. This bidirectional communication between the AI and your development environment unlocks powerful automation capabilities.
 
-<div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}>
-  <iframe
-    src="https://www.youtube.com/embed/rkWBHeG9A-4?rel=0&modestbranding=1"
-    style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-    }}
-    frameBorder="0"
-    allow="autoplay; encrypted-media"
-    allowFullScreen
-    title="Terminal Integration Tutorial"
-  ></iframe>
-</div>
-
-<br />
-
 ---
 
 ## What is Shell Integration?
@@ -331,7 +312,6 @@ For optimal shell integration with WSL, we recommend:
 
 ---
 
-
 #### Cygwin (bash, zsh)
 
 Cygwin provides a Unix-like environment on Windows systems. To configure Cygwin as your terminal in VS Code:
@@ -447,9 +427,6 @@ For fellow Windows users running Fish terminal within a Cygwin environment, here
 
 This setup works reliably on Windows systems using Cygwin, Fish, and the Starship prompt, and should assist users with similar configurations.
 
-
-
-
 #### Ctrl+C Behavior
 
 **Issue**: If text is already typed in the terminal when Roo tries to run a command, Roo will press Ctrl+C first to clear the line, which can interrupt running processes.
@@ -540,5 +517,3 @@ The [VS Code Terminal Integration Test Extension](https://github.com/KJ7LNW/vsce
   - What you’ll see: a chat notice that real-time streaming and exit‑code detection may be limited.
   - Fix: turn ON [Use Inline Terminal (recommended)](#use-inline-terminal-recommended) or follow the Troubleshooting steps above to restore VS Code shell integration.
   <img src="/img/v3.15.0/v3.15.0.png" alt="Command execution fallback notification example" width="600" />
-
-

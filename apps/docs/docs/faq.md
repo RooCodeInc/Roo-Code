@@ -172,11 +172,8 @@ Codebase Indexing requires an OpenAI API key for generating embeddings and a Qdr
 - Check your internet connection.
 - Check the status of your chosen API provider.
 - Try restarting VS Code.
-- If the problem persists, report the issue on [GitHub](https://github.com/RooCodeInc/Roo-Code/issues) or [Discord](https://discord.gg/roocode).
 
 ### I'm seeing an error message. What does it mean?
-
-The error message should provide some information about the problem. If you're unsure how to resolve it, seek help in [Discord](https://discord.gg/roocode).
 
 ### Roo Code made changes I didn't want. How do I undo them?
 
@@ -206,5 +203,3 @@ If Roo Code fails to write to `.md` files with errors like "Failed to open diff 
 - Restart VS Code after making these changes
 
 ### How do I report a bug or suggest a feature?
-
-Please report bugs or suggest features on the Roo Code [Issues page](https://github.com/RooCodeInc/Roo-Code/issues) and [Feature Requests page](https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop).

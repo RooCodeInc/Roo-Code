@@ -2,13 +2,10 @@ import { themes as prismThemes } from "prism-react-renderer"
 import type { Config } from "@docusaurus/types"
 import type * as Preset from "@docusaurus/preset-classic"
 import {
-	DISCORD_URL,
-	REDDIT_URL,
 	TWITTER_URL,
 	BLUESKY_URL,
 	GITHUB_MAIN_REPO_URL,
 	GITHUB_ISSUES_MAIN_URL,
-	GITHUB_FEATURES_URL,
 	VSCODE_MARKETPLACE_URL,
 	OPEN_VSX_URL,
 	EXTENSION_PRIVACY_URL,
@@ -395,16 +392,8 @@ const config: Config = {
 			},
 			links: [
 				{
-					title: "Community",
+					title: "Social",
 					items: [
-						{
-							label: "Discord",
-							href: DISCORD_URL,
-						},
-						{
-							label: "Reddit",
-							href: REDDIT_URL,
-						},
 						{
 							label: "Twitter",
 							href: TWITTER_URL,
@@ -425,10 +414,6 @@ const config: Config = {
 						{
 							label: "Issues",
 							href: GITHUB_ISSUES_MAIN_URL,
-						},
-						{
-							label: "Feature Requests",
-							href: GITHUB_FEATURES_URL,
 						},
 					],
 				},

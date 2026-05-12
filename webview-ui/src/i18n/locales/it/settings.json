@@ -48,15 +48,11 @@
 			"label": "Hai trovato un bug?",
 			"link": "Segnala su GitHub"
 		},
-		"featureRequest": {
-			"label": "Hai un'idea?",
-			"link": "Condividila con noi"
-		},
 		"securityIssue": {
 			"label": "Hai scoperto una vulnerabilità?",
 			"link": "Segui il nostro processo di divulgazione"
 		},
-		"contactAndCommunity": "GitHub",
+		"contact": "GitHub",
 		"manageSettings": "Gestisci Impostazioni",
 		"debugMode": {
 			"label": "Abilita modalità debug",

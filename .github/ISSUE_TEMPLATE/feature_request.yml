@@ -64,7 +64,7 @@ body:
     attributes:
       value: |
         ---
-        Optional (for contributors): You can stop here if you're just proposing the improvement.
+        Optional: You can stop here if you're just proposing the improvement.
 
   - type: textarea
     id: acceptance-criteria

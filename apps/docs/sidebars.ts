@@ -113,7 +113,6 @@ const sidebars: SidebarsConfig = {
 						"advanced-usage/context-poisoning",
 						"advanced-usage/large-projects",
 						"advanced-usage/local-models",
-						"advanced-usage/local-development-setup",
 						"advanced-usage/prompt-engineering",
 						"advanced-usage/prompt-structure",
 						"advanced-usage/rate-limits-costs",
@@ -121,11 +120,6 @@ const sidebars: SidebarsConfig = {
 					],
 				},
 			],
-		},
-		{
-			type: "doc",
-			label: "Tutorial Videos",
-			id: "tutorial-videos",
 		},
 		{
 			type: "category",
@@ -832,11 +826,6 @@ const sidebars: SidebarsConfig = {
 			type: "doc",
 			label: "FAQ",
 			id: "faq",
-		},
-		{
-			type: "link",
-			label: "Contributing (GitHub)",
-			href: "https://github.com/RooCodeInc/Roo-Code/blob/main/CONTRIBUTING.md",
 		},
 		{
 			type: "link",

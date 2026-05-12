@@ -101,24 +101,6 @@ export function Footer() {
 											Issues
 										</a>
 									</li>
-									<li>
-										<a
-											href={EXTERNAL_LINKS.FEATURE_REQUESTS}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
-											Feature Requests
-										</a>
-									</li>
-									<li>
-										<a
-											href={EXTERNAL_LINKS.OFFICE_HOURS_PODCAST}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
-											Office Hours Podcast
-										</a>
-									</li>
 								</ul>
 							</div>
 						</div>
@@ -207,38 +189,11 @@ export function Footer() {
 									</li>
 									<li>
 										<a
-											href={EXTERNAL_LINKS.DISCORD}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
-											Discord
-										</a>
-									</li>
-									<li>
-										<a
-											href={EXTERNAL_LINKS.REDDIT}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
-											Reddit
-										</a>
-									</li>
-									<li>
-										<a
 											href={EXTERNAL_LINKS.X}
 											target="_blank"
 											rel="noopener noreferrer"
 											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
 											X / Twitter
-										</a>
-									</li>
-									<li>
-										<a
-											href={EXTERNAL_LINKS.YOUTUBE}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
-											YouTube
 										</a>
 									</li>
 								</ul>

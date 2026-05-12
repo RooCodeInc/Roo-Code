@@ -48,15 +48,11 @@
 			"label": "Menemukan bug?",
 			"link": "Laporkan di GitHub"
 		},
-		"featureRequest": {
-			"label": "Punya ide?",
-			"link": "Bagikan dengan kami"
-		},
 		"securityIssue": {
 			"label": "Menemukan kerentanan?",
 			"link": "Ikuti proses pengungkapan kami"
 		},
-		"contactAndCommunity": "GitHub",
+		"contact": "GitHub",
 		"manageSettings": "Kelola Pengaturan",
 		"debugMode": {
 			"label": "Aktifkan mode debug",

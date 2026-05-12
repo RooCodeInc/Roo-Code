@@ -13,31 +13,12 @@ keywords:
 
 Roo Code allows you to create **custom modes** to tailor Roo's behavior to specific tasks or workflows. Custom modes can be either **global** (available across all projects) or **project-specific** (defined within a single project).
 
-<div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}>
-  <iframe
-    src="https://www.youtube.com/embed/iiAv1eKOaxk?rel=0&modestbranding=1"
-    style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-    }}
-    frameBorder="0"
-    allow="autoplay; encrypted-media"
-    allowFullScreen
-    title="Custom Modes Overview Video"
-  ></iframe>
-</div>
-
-<br />
-
 :::tip Sticky Models for Efficient Workflow
 Each mode—including custom ones—features **Sticky Models**. This means Roo Code automatically remembers and selects the last model you used with a particular mode. This lets you assign different preferred models to different tasks without constant reconfiguration, as Roo switches between models when you change modes.
 :::
 
-:::info Discover Community Modes
-Looking for ready-to-use custom modes? Visit the [Roo Code Marketplace](/features/marketplace) to browse and install community-contributed modes with a single click. The marketplace offers specialized modes for various tasks like React development, documentation writing, testing, and more—all created and shared by the Roo Code community.
+:::info Discover Modes
+Looking for ready-to-use custom modes? Visit the [Roo Code Marketplace](/features/marketplace) to browse and install modes with a single click. The marketplace offers specialized modes for various tasks like React development, documentation writing, testing, and more.
 :::
 
 ---
@@ -616,7 +597,6 @@ In the table below, the 'Pattern (Conceptual / YAML-like)' column shows patterns
 | `docs/.*\.md$`                   | `"docs/.*\\.md$"`               | `docs/guide.md`, `docs/api/reference.md`  | `guide.md`, `src/docs/notes.md`       |
 | `^(?!.*(test\|spec))\.(js\|ts)$`  | `"^(?!.*(test\|spec))\\.(js\|ts)$"` | `app.js`, `utils.ts`                      | `app.test.js`, `utils.spec.js`, `app.jsx` |
 
-
 **Key Regex Building Blocks:**
 *   `\.`: Matches a literal dot. (YAML: `\.`, JSON: `\\.`)
 *   `$`: Matches the end of the string.
@@ -660,4 +640,3 @@ In addition to mode-specific rules directories, there's also a generic `.roo/rul
 - **Mode not appearing:** After creating or importing a mode, you may need to reload the VS Code window for it to appear in the mode selector.
 - **Invalid regex patterns:** If your `fileRegex` pattern is invalid, you'll receive an error message. Test your patterns using online regex testers before applying them.
 - **Precedence confusion:** Remember that project modes completely override global modes with the same slug - no properties are merged.
-

@@ -55,8 +55,3 @@ For the complete, up-to-date model list with pricing, see [Requesty's model list
 * **Prompt Caching:** Some providers support prompt caching. [Search models with caching](https://app.requesty.ai/router/list).
 
 ---
-
-## Relevant resources
-
-- [Requesty Youtube channel](https://www.youtube.com/@requestyAI):
-- [Requesty Discord](https://requesty.ai/discord)

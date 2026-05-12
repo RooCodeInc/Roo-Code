@@ -1,31 +1,10 @@
 <p align="center">
   <a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"><img src="https://img.shields.io/badge/VS_Code_Marketplace-007ACC?style=flat&logo=visualstudiocode&logoColor=white" alt="VS Code Marketplace"></a>
   <a href="https://x.com/roocode"><img src="https://img.shields.io/badge/roocode-000000?style=flat&logo=x&logoColor=white" alt="X"></a>
-  <a href="https://youtube.com/@roocodeyt?feature=shared"><img src="https://img.shields.io/badge/YouTube-FF0000?style=flat&logo=youtube&logoColor=white" alt="YouTube"></a>
-  <a href="https://discord.gg/roocode"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Join Discord"></a>
-  <a href="https://www.reddit.com/r/RooCode/"><img src="https://img.shields.io/badge/Join%20r%2FRooCode-FF4500?style=flat&logo=reddit&logoColor=white" alt="Join r/RooCode"></a>
 </p>
-<p align="center">
-  <em>Ottieni aiuto velocemente → <a href="https://discord.gg/roocode">Unisciti a Discord</a> • Preferisci l'asincrono? → <a href="https://www.reddit.com/r/RooCode/">Unisciti a r/RooCode</a></em>
-</p>
-
 # Roo Code
 
 > Il tuo team di sviluppo con IA, direttamente nel tuo editor
-
-## Novità in v3.53.0
-
-> ### Il plugin Roo Code non sta per sparire.
->
-> Potresti aver visto l'[annuncio recente](https://x.com/mattrubens/status/2046636598859559114): Roo Code ha raggiunto 3 milioni di installazioni e il team originale si sta concentrando completamente su Roomote. Sappiamo che questa notizia è stata dura per molti di voi. Questo plugin significa tanto per noi e per te, e ti ascoltiamo.
->
-> La buona notizia: **un team della community si è fatto avanti per portare avanti Roo Code**, e stiamo lavorando con loro a un passaggio di consegne ufficiale, così il plugin su cui conti continuerà a essere mantenuto e migliorato.
-
-**Novità in questa versione:**
-
-- Aggiunto supporto a GPT-5.5 tramite il provider OpenAI Codex.
-- Aggiunto supporto a Claude Opus 4.7 su Vertex AI.
-- Aggiunti controlli di navigazione dei checkpoint precedenti nella chat così puoi tornare indietro più facilmente attraverso i checkpoint precedenti.
 
 <details>
   <summary>🌐 Lingue disponibili</summary>
@@ -75,96 +54,10 @@ Roo Code si adatta al tuo modo di lavorare, non il contrario:
 
 Scopri di più: [Usare le Modalità](https://docs.roocode.com/basic-usage/using-modes) • [Modalità personalizzate](https://docs.roocode.com/advanced-usage/custom-modes)
 
-## Tutorial e video sulle funzionalità
-
-<div align="center">
-
-|                                                                                                                                                                                 |                                                                                                                                                                                  |                                                                                                                                                                                     |
-| :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Installazione di Roo Code</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>Configurazione dei profili</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Indicizzazione della codebase</b> |
-|  <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>Modalità personalizzate</b>  |         <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Checkpoint</b>         |     <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>Gestione del Contesto</b>     |
-
-</div>
-<p align="center">
-<a href="https://docs.roocode.com/tutorial-videos">Altri video tutorial e funzionalità rapide...</a>
-</p>
-
 ## Risorse
 
 - **[Documentazione](https://docs.roocode.com):** La guida ufficiale per installare, configurare e padroneggiare Roo Code.
-- **[Canale YouTube](https://youtube.com/@roocodeyt?feature=shared):** Guarda i tutorial e le funzionalità in azione.
-- **[Server Discord](https://discord.gg/roocode):** Unisciti alla community per aiuto e discussioni in tempo reale.
-- **[Comunità Reddit](https://www.reddit.com/r/RooCode):** Condividi le tue esperienze e guarda cosa stanno costruendo gli altri.
 - **[Problemi GitHub](https://github.com/RooCodeInc/Roo-Code/issues):** Segnala bug e tieni traccia dello sviluppo.
-- **[Richieste di funzionalità](https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop):** Hai un'idea? Condividila con gli sviluppatori.
-
----
-
-## Configurazione e sviluppo locale
-
-1. **Clona** il repository:
-
-```sh
-git clone https://github.com/RooCodeInc/Roo-Code.git
-```
-
-2. **Installa le dipendenze**:
-
-```sh
-pnpm install
-```
-
-3. **Esegui l'estensione**:
-
-Ci sono diversi modi per eseguire l'estensione Roo Code:
-
-### Modalità di sviluppo (F5)
-
-Per lo sviluppo attivo, usa il debug integrato di VSCode:
-
-Premi `F5` (o vai su **Esegui** → **Avvia debug**) in VSCode. Si aprirà una nuova finestra di VSCode con l'estensione Roo Code in esecuzione.
-
-- Le modifiche alla webview appariranno immediatamente.
-- Anche le modifiche all'estensione principale verranno ricaricate automaticamente a caldo.
-
-### Installazione automatizzata di VSIX
-
-Per compilare e installare l'estensione come pacchetto VSIX direttamente in VSCode:
-
-```sh
-pnpm install:vsix [-y] [--editor=<command>]
-```
-
-Questo comando:
-
-- Chiederà quale comando dell'editor usare (code/cursor/code-insiders) - il default è 'code'
-- Disinstallerà qualsiasi versione esistente dell'estensione.
-- Compilerà l'ultimo pacchetto VSIX.
-- Installerà il VSIX appena compilato.
-- Ti chiederà di riavviare VS Code affinché le modifiche abbiano effetto.
-
-Opzioni:
-
-- `-y`: Salta tutte le richieste di conferma e usa i valori predefiniti
-- `--editor=<command>`: Specifica il comando dell'editor (ad es. `--editor=cursor` o `--editor=code-insiders`)
-
-### Installazione manuale di VSIX
-
-Se preferisci installare manualmente il pacchetto VSIX:
-
-1.  Per prima cosa, compila il pacchetto VSIX:
-    ```sh
-    pnpm vsix
-    ```
-2.  Un file `.vsix` verrà generato nella directory `bin/` (ad es. `bin/roo-cline-<version>.vsix`).
-3.  Installalo manualmente usando la CLI di VSCode:
-    ```sh
-    code --install-extension bin/roo-cline-<version>.vsix
-    ```
-
----
-
-Usiamo [changesets](https://github.com/changesets/changesets) per il versioning e la pubblicazione. Controlla il nostro `CHANGELOG.md` per le note di rilascio.
 
 ---
 
@@ -174,16 +67,6 @@ Usiamo [changesets](https://github.com/changesets/changesets) per il versioning 
 
 ---
 
-## Contribuire
-
-Adoriamo i contributi della community! Inizia leggendo il nostro [CONTRIBUTING.md](CONTRIBUTING.md).
-
----
-
 ## Licenza
 
 [Apache 2.0 © 2025 Roo Code, Inc.](../../LICENSE)
-
----
-
-**Buon divertimento con Roo Code!** Che tu lo tenga a guinzaglio corto o lo lasci libero di agire in autonomia, non vediamo l'ora di vedere cosa costruirai. Se hai domande o idee per nuove funzionalità, passa dalla nostra [comunità Reddit](https://www.reddit.com/r/RooCode/) o da [Discord](https://discord.gg/roocode). Buona programmazione!

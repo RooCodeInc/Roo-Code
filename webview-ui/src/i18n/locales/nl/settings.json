@@ -48,15 +48,11 @@
 			"label": "Bug gevonden?",
 			"link": "Rapporteer op GitHub"
 		},
-		"featureRequest": {
-			"label": "Heb je een idee?",
-			"link": "Deel het met ons"
-		},
 		"securityIssue": {
 			"label": "Kwetsbaarheid ontdekt?",
 			"link": "Volg ons openbaarmakingsproces"
 		},
-		"contactAndCommunity": "GitHub",
+		"contact": "GitHub",
 		"manageSettings": "Instellingen Beheren",
 		"debugMode": {
 			"label": "Debugmodus inschakelen",

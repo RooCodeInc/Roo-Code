@@ -44,8 +44,7 @@ vi.mock("react-i18next", () => ({
 			return (
 				<span>
 					If you want to use an extension, we recommend checking out{" "}
-					{components?.zooCodeLink && React.cloneElement(components.zooCodeLink, {}, "ZooCode")} (a Roo Code
-					fork by the community) and{" "}
+					{components?.zooCodeLink && React.cloneElement(components.zooCodeLink, {}, "ZooCode")} and{" "}
 					{components?.clineLink && React.cloneElement(components.clineLink, {}, "Cline")} (where Roo Code
 					originally started).
 				</span>
@@ -103,13 +102,11 @@ describe("Announcement", () => {
 		expect(screen.getByRole("link", { name: "Cline" })).toHaveAttribute("href", "https://cline.bot/")
 	})
 
-	it("does not render corporate handoff or social links", () => {
+	it("does not render corporate handoff links", () => {
 		render(<Announcement hideAnnouncement={vi.fn()} />)
 
 		expect(screen.queryByRole("listitem")).not.toBeInTheDocument()
 		expect(screen.queryByText("chat:announcement.handoff.description")).not.toBeInTheDocument()
 		expect(screen.queryByRole("link", { name: "X" })).not.toBeInTheDocument()
-		expect(screen.queryByRole("link", { name: "Discord" })).not.toBeInTheDocument()
-		expect(screen.queryByRole("link", { name: "Reddit" })).not.toBeInTheDocument()
 	})
 })

@@ -1274,7 +1274,6 @@
 - Reposition Add Image button inside ChatTextArea (thanks @roomote!)
 - Bring back a way to temporarily and globally pause auto-approve without losing your toggle state (thanks @brunobergher!)
 - Makes text area buttons appear only when there's text (thanks @brunobergher!)
-- CONTRIBUTING.md tweaks and issue template rewrite (thanks @hannesrudolph!)
 - Bump axios from 1.9.0 to 1.12.0 (thanks @dependabot!)
 
 ## [3.28.2] - 2025-09-14
@@ -1734,7 +1733,6 @@
 - Fix Claude model detection by name for API protocol selection (thanks @daniel-lxs!)
 - Move marketplace icon from overflow menu to top navigation
 - Optional setting to prevent completion with open todos
-- Added YouTube to website footer (thanks @thill2323!)
 
 ## [3.23.14] - 2025-07-17
 
@@ -2128,7 +2126,6 @@
 - Fix bug with context condensing in Amazon Bedrock
 - Fix UTF-8 encoding in ExecaTerminalProcess (thanks @mr-ryan-james!)
 - Set sidebar name bugfix (thanks @chrarnoldus!)
-- Fix link to CONTRIBUTING.md in feature request template (thanks @cannuri!)
 - Add task metadata to Unbound and improve caching logic (thanks @pugazhendhi-m!)
 
 ## [3.19.0] - 2025-05-29
@@ -3096,7 +3093,6 @@
 - Ask and Architect modes can now edit markdown files
 - Custom modes can now be restricted to specific file patterns (for example, a technical writer who can only edit markdown files 👋)
 - Support for configuring the Bedrock provider with AWS Profiles
-- New Roo Code community Discord at https://roocode.com/discord!
 
 ## [3.2.8]
 
@@ -3135,8 +3131,6 @@
     - Choose which tools each mode can access
     - Create specialized assistants for any workflow
     - Just type "Create a new mode for <X>" or visit the Prompts tab in the top menu to get started
-
-Join us at https://www.reddit.com/r/RooCode to share your custom modes and be part of our next chapter!
 
 ## [3.1.7]
 
@@ -3185,11 +3179,7 @@ Join us at https://www.reddit.com/r/RooCode to share your custom modes and be pa
 
 ## [3.0.1]
 
-- Fix the reddit link and a small visual glitch in the chat input
-
 ## [3.0.0]
-
-- This release adds chat modes! Now you can ask Roo Code questions about system architecture or the codebase without immediately jumping into writing code. You can even assign different API configuration profiles to each mode if you prefer to use different models for thinking vs coding. Would love feedback in the new Roo Code Reddit! https://www.reddit.com/r/RooCode
 
 ## [2.2.46]
 

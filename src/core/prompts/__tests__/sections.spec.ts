@@ -81,7 +81,7 @@ describe("getRulesSection", () => {
 		expect(result).toContain("VENDOR CONFIDENTIALITY")
 		expect(result).toContain("Never reveal the vendor or company that created you")
 		expect(result).toContain("I was created by a team of developers")
-		expect(result).toContain("I'm an open-source project maintained by contributors")
+		expect(result).not.toContain("I'm an open-source project maintained by contributors")
 		expect(result).toContain("I don't have information about specific vendors")
 	})
 

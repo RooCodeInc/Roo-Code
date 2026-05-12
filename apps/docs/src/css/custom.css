@@ -2401,54 +2401,6 @@ a.breadcrumbs__link:hover {
 }
 
 /* ============================================
-   CUSTOM TUTORIAL VIDEOS SIDEBAR STYLES
-   ============================================ */
-
-/* Move external link icons to the right for Tutorial Videos */
-.menu__list-item a[href^="https://www.youtube.com/watch"]
-{
-	display: flex !important;
-	justify-content: space-between !important;
-	align-items: center !important;
-	padding-right: 0.5rem !important;
-	width: 100% !important;
-}
-
-/* Ensure the link text takes up available space */
-.menu__list-item a[href^="https://www.youtube.com/watch"] .menu__link-text
-{
-	flex: 1 !important;
-	overflow: hidden !important;
-	text-overflow: ellipsis !important;
-	white-space: nowrap !important;
-	margin-right: 0.5rem !important;
-}
-
-/* Move the external link icon (svg) to the right */
-.menu__list-item a[href^="https://www.youtube.com/watch"] svg
-{
-	order: 2 !important;
-	margin-left: auto !important;
-	margin-right: 0 !important;
-	flex-shrink: 0 !important;
-	width: 13px !important;
-	height: 13px !important;
-	opacity: 0.6 !important;
-}
-
-/* Show icon more prominently on hover */
-.menu__list-item a[href^="https://www.youtube.com/watch"]:hover svg
-{
-	opacity: 1 !important;
-}
-
-/* Ensure consistent spacing for all tutorial video links */
-.menu__list-item:has(> a[href^="https://www.youtube.com/watch"])
-{
-	margin-bottom: 0 !important;
-}
-
-/* ============================================
    FIX: SEARCH INPUT TINY BUBBLE ON MOBILE
    ============================================ */
 

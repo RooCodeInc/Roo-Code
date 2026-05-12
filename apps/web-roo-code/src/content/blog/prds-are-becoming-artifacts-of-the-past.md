@@ -33,7 +33,7 @@ This is what Paige Bailey observed at Google: teams are abandoning the rigorous 
 
 > "Now things are moving so fast that even if you had a PRD that was perfect as of January, it would not be perfect as of February."
 >
-> Paige Bailey, [Office Hours S01E15](https://www.youtube.com/watch?v=sAFQIqmDFL4&t=2760)
+> Paige Bailey, Office Hours S01E15
 
 ## The shift: prototypes as specification
 
@@ -43,7 +43,7 @@ Instead of writing a spec and then building, teams build something small and ite
 
 > "For software, it's much more effective to get something out and keep iterating on it really really quickly."
 >
-> Paige Bailey, [Office Hours S01E15](https://www.youtube.com/watch?v=sAFQIqmDFL4&t=3003)
+> Paige Bailey, Office Hours S01E15
 
 This works because AI tooling has compressed the cost of producing working code. When you can generate a functional prototype in an afternoon, the economics of "plan first, build second" flip. The sunk cost of writing a detailed PRD becomes harder to justify when you could have shipped the first version instead.
 
@@ -89,7 +89,7 @@ The compounding effect: teams that treat prototypes as the specification ship mo
 
 > "I also feel like we don't have nearly as rigorous of a process around PRDs. PRDs kind of feel like an artifact of the past."
 >
-> Paige Bailey, [Office Hours S01E15](https://www.youtube.com/watch?v=sAFQIqmDFL4&t=2739)
+> Paige Bailey, Office Hours S01E15
 
 ## The decision
 

@@ -58,16 +58,6 @@ describe("About", () => {
 		expect(screen.getByText("settings:about.bugReport.link")).toBeInTheDocument()
 	})
 
-	it("renders the feature request section with label and link text", () => {
-		render(
-			<TranslationProvider>
-				<About />
-			</TranslationProvider>,
-		)
-		expect(screen.getByText("settings:about.featureRequest.label")).toBeInTheDocument()
-		expect(screen.getByText("settings:about.featureRequest.link")).toBeInTheDocument()
-	})
-
 	it("renders the security issue section with label and link text", () => {
 		render(
 			<TranslationProvider>
@@ -78,14 +68,14 @@ describe("About", () => {
 		expect(screen.getByText("settings:about.securityIssue.link")).toBeInTheDocument()
 	})
 
-	it("does not render social community copy", () => {
+	it("does not render feature request copy", () => {
 		render(
 			<TranslationProvider>
 				<About />
 			</TranslationProvider>,
 		)
 
-		expect(screen.queryByText("settings:about.community")).not.toBeInTheDocument()
+		expect(screen.queryByText("settings:about.featureRequest.label")).not.toBeInTheDocument()
 	})
 
 	it("renders export, import, and reset buttons", () => {

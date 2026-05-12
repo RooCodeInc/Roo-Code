@@ -37,7 +37,7 @@ Some of the teams building these agents grade them differently. They treat the a
 
 > "If you design your coding evals like you would a software engineer performance review, then you can measure their ability in the same ways as you can measure somebody who's coding."
 >
-> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE&t=1225)
+> Brian Fioca, Roo Cast S01E16
 
 The rubric he described:
 

@@ -31,7 +31,7 @@ At Roo Vet, the behavior changed. Product managers, support reps, and operations
 
 > "One nonobvious behavior change that came out of that I think is people don't wait around to be unblocked anymore. Non-engineers especially just ask our @roomote agent first."
 >
-> John Sterns, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk&t=290)
+> John Sterns, Roo Cast S01E11
 
 ## The shift: ask the agent first
 
@@ -43,7 +43,7 @@ The answers come from the codebase itself. Not tribal knowledge. Not someone's m
 
 > "I use @roomote every day to ask questions about the codebase. I think that is the most effective thing as a PM."
 >
-> Theo, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk&t=2288)
+> Theo, Roo Cast S01E11
 
 ## What the queries look like
 
@@ -59,7 +59,7 @@ With a codebase-connected agent, the answer comes back fast.
 
 > "You can ask it questions to better understand the logic that's been built into the product... it took me like 30 seconds to find that answer."
 >
-> Audrey, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk)
+> Audrey, Roo Cast S01E11
 
 ## The tradeoff
 

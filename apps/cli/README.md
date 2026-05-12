@@ -53,21 +53,6 @@ roo upgrade
 rm -rf ~/.roo/cli ~/.local/bin/roo
 ```
 
-### Development Installation
-
-For contributing or development:
-
-```bash
-# From the monorepo root.
-pnpm install
-
-# Build the main extension first.
-pnpm --filter roo-cline bundle
-
-# Build the CLI.
-pnpm --filter @roo-code/cli build
-```
-
 ## Usage
 
 ### Interactive Mode (Default)

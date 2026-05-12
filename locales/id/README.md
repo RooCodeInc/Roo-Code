@@ -1,31 +1,10 @@
 <p align="center">
   <a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"><img src="https://img.shields.io/badge/VS_Code_Marketplace-007ACC?style=flat&logo=visualstudiocode&logoColor=white" alt="VS Code Marketplace"></a>
   <a href="https://x.com/roocode"><img src="https://img.shields.io/badge/roocode-000000?style=flat&logo=x&logoColor=white" alt="X"></a>
-  <a href="https://youtube.com/@roocodeyt?feature=shared"><img src="https://img.shields.io/badge/YouTube-FF0000?style=flat&logo=youtube&logoColor=white" alt="YouTube"></a>
-  <a href="https://discord.gg/roocode"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Join Discord"></a>
-  <a href="https://www.reddit.com/r/RooCode/"><img src="https://img.shields.io/badge/Join%20r%2FRooCode-FF4500?style=flat&logo=reddit&logoColor=white" alt="Join r/RooCode"></a>
 </p>
-<p align="center">
-  <em>Dapatkan bantuan cepat → <a href="https://discord.gg/roocode">Gabung Discord</a> • Lebih suka asinkron? → <a href="https://www.reddit.com/r/RooCode/">Gabung r/RooCode</a></em>
-</p>
-
 # Roo Code
 
 > Tim dev bertenaga AI-mu, langsung di editor kamu
-
-## Yang Baru di v3.53.0
-
-> ### Plugin Roo Code tidak akan hilang.
->
-> Kamu mungkin sudah melihat [pengumuman baru-baru ini](https://x.com/mattrubens/status/2046636598859559114) bahwa Roo Code mencapai 3 juta instalasi dan tim aslinya sepenuhnya fokus ke Roomote. Kami tahu berita itu berat bagi banyak dari kalian. Plugin ini sangat berarti bagi kami dan bagi kamu, dan kami mendengarmu.
->
-> Kabar baiknya: **sebuah tim komunitas telah maju untuk melanjutkan Roo Code**, dan kami sedang bekerja sama dengan mereka untuk serah terima resmi agar plugin yang kamu andalkan tetap dirawat dan ditingkatkan.
-
-**Yang baru di rilis ini:**
-
-- Menambahkan dukungan GPT-5.5 melalui provider OpenAI Codex.
-- Menambahkan dukungan Claude Opus 4.7 di Vertex AI.
-- Menambahkan kontrol navigasi checkpoint sebelumnya di chat agar kamu bisa melangkah mundur melalui checkpoint sebelumnya dengan lebih mudah.
 
 <details>
   <summary>🌐 Bahasa yang tersedia</summary>
@@ -75,96 +54,10 @@ Roo Code beradaptasi dengan cara Anda bekerja, bukan sebaliknya:
 
 Pelajari lebih lanjut: [Menggunakan Mode](https://docs.roocode.com/basic-usage/using-modes) • [Mode Kustom](https://docs.roocode.com/advanced-usage/custom-modes)
 
-## Video Tutorial & Fitur
-
-<div align="center">
-
-|                                                                                                                                                                           |                                                                                                                                                                             |                                                                                                                                                                               |
-| :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Menginstal Roo Code</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>Mengonfigurasi Profil</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Pengindeksan Basis Kode</b> |
-|     <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>Mode Kustom</b>     |    <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Pos Pemeriksaan</b>    |    <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>Manajemen Konteks</b>    |
-
-</div>
-<p align="center">
-<a href="https://docs.roocode.com/tutorial-videos">Video tutorial dan fitur cepat lainnya...</a>
-</p>
-
 ## Sumber daya
 
 - **[Dokumentasi](https://docs.roocode.com):** Panduan resmi untuk menginstal, mengonfigurasi, dan menguasai Roo Code.
-- **[Saluran YouTube](https://youtube.com/@roocodeyt?feature=shared):** Tonton tutorial dan lihat fitur-fitur dalam aksi.
-- **[Server Discord](https://discord.gg/roocode):** Bergabunglah dengan komunitas untuk bantuan dan diskusi real-time.
-- **[Komunitas Reddit](https://www.reddit.com/r/RooCode):** Bagikan pengalaman Anda dan lihat apa yang sedang dibangun orang lain.
 - **[Masalah GitHub](https://github.com/RooCodeInc/Roo-Code/issues):** Laporkan bug dan lacak pengembangan.
-- **[Permintaan Fitur](https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop):** Punya ide? Bagikan dengan para pengembang.
-
----
-
-## Pengaturan & Pengembangan Lokal
-
-1. **Clone** repo:
-
-```sh
-git clone https://github.com/RooCodeInc/Roo-Code.git
-```
-
-2. **Instal dependensi**:
-
-```sh
-pnpm install
-```
-
-3. **Jalankan ekstensi**:
-
-Ada beberapa cara untuk menjalankan ekstensi Roo Code:
-
-### Mode Pengembangan (F5)
-
-Untuk pengembangan aktif, gunakan debugging bawaan VSCode:
-
-Tekan `F5` (atau buka **Run** → **Start Debugging**) di VSCode. Ini akan membuka jendela VSCode baru dengan ekstensi Roo Code berjalan.
-
-- Perubahan pada webview akan segera muncul.
-- Perubahan pada ekstensi inti juga akan di-hot reload secara otomatis.
-
-### Instalasi VSIX Otomatis
-
-Untuk membangun dan menginstal ekstensi sebagai paket VSIX langsung ke VSCode:
-
-```sh
-pnpm install:vsix [-y] [--editor=<command>]
-```
-
-Perintah ini akan:
-
-- Menanyakan perintah editor mana yang akan digunakan (code/cursor/code-insiders) - defaultnya adalah 'code'
-- Mencopot pemasangan versi ekstensi yang ada.
-- Membangun paket VSIX terbaru.
-- Menginstal VSIX yang baru dibangun.
-- Meminta Anda untuk me-restart VS Code agar perubahan dapat diterapkan.
-
-Pilihan:
-
-- `-y`: Lewati semua prompt konfirmasi dan gunakan default
-- `--editor=<command>`: Tentukan perintah editor (misalnya, `--editor=cursor` atau `--editor=code-insiders`)
-
-### Instalasi VSIX Manual
-
-Jika Anda lebih suka menginstal paket VSIX secara manual:
-
-1.  Pertama, bangun paket VSIX:
-    ```sh
-    pnpm vsix
-    ```
-2.  File `.vsix` akan dibuat di direktori `bin/` (misalnya, `bin/roo-cline-<version>.vsix`).
-3.  Instal secara manual menggunakan VSCode CLI:
-    ```sh
-    code --install-extension bin/roo-cline-<version>.vsix
-    ```
-
----
-
-Kami menggunakan [changesets](https://github.com/changesets/changesets) untuk pembuatan versi dan publikasi. Periksa `CHANGELOG.md` kami untuk catatan rilis.
 
 ---
 
@@ -174,16 +67,6 @@ Kami menggunakan [changesets](https://github.com/changesets/changesets) untuk pe
 
 ---
 
-## Berkontribusi
-
-Kami menyukai kontribusi komunitas! Mulailah dengan membaca [CONTRIBUTING.md](CONTRIBUTING.md) kami.
-
----
-
 ## Lisensi
 
 [Apache 2.0 © 2025 Roo Code, Inc.](../../LICENSE)
-
----
-
-**Selamat menikmati Roo Code!** Baik Anda mengendalikannya dengan ketat atau membiarkannya berkeliaran secara otonom, kami tidak sabar untuk melihat apa yang Anda bangun. Jika Anda memiliki pertanyaan atau ide fitur, kunjungi [komunitas Reddit](https://www.reddit.com/r/RooCode/) atau [Discord](https://discord.gg/roocode) kami. Selamat membuat kode!

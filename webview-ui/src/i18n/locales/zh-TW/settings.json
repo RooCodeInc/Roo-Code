@@ -48,15 +48,11 @@
 			"label": "發現錯誤？",
 			"link": "在 GitHub 回報"
 		},
-		"featureRequest": {
-			"label": "有想法？",
-			"link": "與我們分享"
-		},
 		"securityIssue": {
 			"label": "發現安全漏洞？",
 			"link": "遵循我們的揭露流程"
 		},
-		"contactAndCommunity": "GitHub",
+		"contact": "GitHub",
 		"manageSettings": "管理設定",
 		"debugMode": {
 			"label": "啟用偵錯模式",

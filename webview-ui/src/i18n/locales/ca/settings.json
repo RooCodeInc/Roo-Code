@@ -48,15 +48,11 @@
 			"label": "Has trobat un error?",
 			"link": "Informa'n a GitHub"
 		},
-		"featureRequest": {
-			"label": "Tens una idea?",
-			"link": "Comparteix-la amb nosaltres"
-		},
 		"securityIssue": {
 			"label": "Has descobert una vulnerabilitat?",
 			"link": "Segueix el nostre procés de divulgació"
 		},
-		"contactAndCommunity": "GitHub",
+		"contact": "GitHub",
 		"manageSettings": "Gestionar Configuració",
 		"debugMode": {
 			"label": "Activa el mode de depuració",

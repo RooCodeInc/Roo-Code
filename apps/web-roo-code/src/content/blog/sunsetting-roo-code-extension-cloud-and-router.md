@@ -14,7 +14,7 @@ featured: true
 
 As you may have heard, we're sunsetting the Roo Code suite of tools on May 15th. This includes the Roo Code VS Code Extension, Roo Code Cloud, and Roo Code Router.
 
-To our community: thank you. Your trust, contributions, and feedback helped us drive innovation in this space and pushed us past 3m extension downloads. We don't take that lightly.
+Thank you to everyone who used Roo Code and shared feedback. Your trust helped us drive innovation in this space and pushed us past 3m extension downloads. We don't take that lightly.
 
 That said, we don't believe IDEs are the future of coding. To keep pushing the future forward, we needed to make this difficult decision. You can read more about the reasoning behind it [here](https://x.com/mattrubens/status/2046636598859559114).
 

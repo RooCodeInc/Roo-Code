@@ -23,11 +23,6 @@ function ColumnLinkItem({ item }: { item: ColumnItemType }) {
 }
 
 function Column({ column }: { column: ColumnType }) {
-	// Skip Community section since social icons are now in the brand area
-	if (column.title === "Community") {
-		return null
-	}
-
 	return (
 		<div className={clsx(ThemeClassNames.layout.footer.column, "col footer__col", column.className)}>
 			<div className="footer__title">{column.title}</div>

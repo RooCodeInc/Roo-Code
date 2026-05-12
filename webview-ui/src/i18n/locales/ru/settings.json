@@ -48,15 +48,11 @@
 			"label": "Нашли ошибку?",
 			"link": "Сообщить на GitHub"
 		},
-		"featureRequest": {
-			"label": "Есть идея?",
-			"link": "Поделитесь с нами"
-		},
 		"securityIssue": {
 			"label": "Обнаружили уязвимость?",
 			"link": "Следуйте нашему процессу раскрытия"
 		},
-		"contactAndCommunity": "GitHub",
+		"contact": "GitHub",
 		"manageSettings": "Управление Настройками",
 		"debugMode": {
 			"label": "Включить режим отладки",

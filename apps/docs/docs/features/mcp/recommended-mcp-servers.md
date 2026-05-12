@@ -12,9 +12,9 @@ sidebar_label: Recommended MCP Servers
 
 # Recommended MCP Servers
 
-While Roo Code can connect to any Model Context Protocol (MCP) server that follows the specification, the community has already built several high-quality servers that work out-of-the-box. This page curates the servers we **actively recommend** and provides step-by-step setup instructions so you can get productive in minutes.
+While Roo Code can connect to any Model Context Protocol (MCP) server that follows the specification, several high-quality servers work out-of-the-box. This page curates the servers we **actively recommend** and provides step-by-step setup instructions so you can get productive in minutes.
 
-> We'll keep this list up-to-date. If you maintain a server you'd like us to consider, please open a pull-request.
+> We'll keep this list up-to-date.
 
 ---
 

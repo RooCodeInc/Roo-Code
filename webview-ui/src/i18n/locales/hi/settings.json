@@ -48,15 +48,11 @@
 			"label": "बग मिला?",
 			"link": "GitHub पर रिपोर्ट करें"
 		},
-		"featureRequest": {
-			"label": "कोई विचार है?",
-			"link": "हमारे साथ साझा करें"
-		},
 		"securityIssue": {
 			"label": "कोई कमजोरी खोजी?",
 			"link": "हमारी प्रकटीकरण प्रक्रिया का पालन करें"
 		},
-		"contactAndCommunity": "GitHub",
+		"contact": "GitHub",
 		"manageSettings": "सेटिंग्स प्रबंधित करें",
 		"debugMode": {
 			"label": "डिबग मोड सक्षम करें",

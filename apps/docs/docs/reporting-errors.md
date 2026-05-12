@@ -35,7 +35,7 @@ The Error Details modal offers two buttons, each serving different needs:
     - Provider and model being used
     - The specific error message
 
-    **Use when:** You want to quickly share the error in Discord or a brief support email.
+    **Use when:** You want to quickly share the error in a brief support email.
 
 2. **Get detailed error info** - Opens a full diagnostic report with:
 
@@ -55,7 +55,6 @@ The Error Details modal offers two buttons, each serving different needs:
 After copying error information:
 
 - **Email**: Send to [support@roocode.com](mailto:support@roocode.com)
-- **Discord**: Share in the [#support channel](https://discord.gg/roocode)
 - **GitHub Issues**: File at [github.com/RooCodeInc/Roo-Code/issues](https://github.com/RooCodeInc/Roo-Code/issues)
 
 Include a brief description of what you were trying to do when the error occurred. The exported diagnostics handle the technical details.

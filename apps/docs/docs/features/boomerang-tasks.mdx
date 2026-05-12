@@ -13,24 +13,6 @@ sidebar_label: 'Boomerang Tasks'
 
 Boomerang Tasks (also known as subtasks or task orchestration) allow you to break down complex projects into smaller, manageable pieces using the built-in **`🪃 Orchestrator` Mode (aka Boomerang Mode)**. Think of it like delegating parts of your work to specialized assistants. Each subtask runs in its own context, often using a different Roo Code mode tailored for that specific job (like [`💻 Code`](/basic-usage/using-modes#code-mode-default), [`🏗️ Architect`](/basic-usage/using-modes#architect-mode), or [`🪲 Debug`](/basic-usage/using-modes#debug-mode)). The Orchestrator mode manages this process.
 
-<div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}>
-  <iframe
-    src="https://www.youtube.com/embed/RX862U09fnE?rel=0&modestbranding=1"
-    style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-    }}
-    frameBorder="0"
-    allow="autoplay; encrypted-media"
-    allowFullScreen
-  ></iframe>
-</div>
-
-<br />
-
 :::info Orchestrator Mode is Built-In
 The `🪃 Orchestrator` mode (previously achieved via a custom "Boomerang Mode") is now a built-in mode specifically designed to orchestrate workflows by breaking down tasks and delegating them to other modes. You no longer need to create a custom mode for this functionality.
 
@@ -111,7 +93,6 @@ You can [customize the Orchestrator mode](/features/custom-modes) to add capabil
 :::warning
 Adding capabilities to the Orchestrator mode should be done thoughtfully. The limited default capabilities help maintain focus on orchestration rather than implementation details.
 :::
-
 
 [^1]: This context is passed via the `message` parameter of the [`new_task`](/advanced-usage/available-tools/new-task) tool when the Orchestrator mode delegates the task.
 [^2]: The mode for the subtask is specified via the `mode` parameter of the [`new_task`](/advanced-usage/available-tools/new-task) tool during initiation by the Orchestrator mode.

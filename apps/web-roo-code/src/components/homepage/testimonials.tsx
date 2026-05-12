@@ -47,7 +47,7 @@ export const testimonials: Testimonial[] = [
 		name: "Darien Hardin",
 		role: "Reviewer",
 		origin: "VS Code Marketplace",
-		quote: "By far the best coding tool I have used. Looking forward to where this goes in the future. Also, their Discord is an excellent resource with many knowledgeable users sharing their discoveries.",
+		quote: "By far the best coding tool I have used. Looking forward to where this goes in the future.",
 		stars: 5,
 	},
 	{
@@ -89,7 +89,7 @@ export const testimonials: Testimonial[] = [
 		name: "Edwin Jacques",
 		role: "Reviewer",
 		origin: "VS Code Marketplace",
-		quote: "The BEST. Super fast, no-nonsense, UI that makes sense, many API provider choices, responsive, helpful developer community.",
+		quote: "The BEST. Super fast, no-nonsense, UI that makes sense, many API provider choices, responsive, and helpful.",
 		stars: 5,
 	},
 	{

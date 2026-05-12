@@ -48,15 +48,11 @@
 			"label": "バグを見つけましたか？",
 			"link": "GitHubで報告"
 		},
-		"featureRequest": {
-			"label": "アイデアがありますか？",
-			"link": "共有してください"
-		},
 		"securityIssue": {
 			"label": "脆弱性を発見しましたか？",
 			"link": "開示プロセスに従ってください"
 		},
-		"contactAndCommunity": "GitHub",
+		"contact": "GitHub",
 		"manageSettings": "設定を管理",
 		"debugMode": {
 			"label": "デバッグモードを有効にする",

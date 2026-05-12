@@ -156,38 +156,6 @@ const faqs: FAQItem[] = [
 		),
 	},
 	{
-		question: "Can I contribute to Roo Code?",
-		answer: (
-			<>
-				Yes, please do! Roo Code is open-source on{" "}
-				<a
-					href="https://github.com/RooCodeInc/Roo-Code"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="text-primary underline-offset-4 hover:underline">
-					GitHub
-				</a>
-				. Submit issues, suggest features, or open a pull request. There&apos;s also an active community on{" "}
-				<a
-					href="https://discord.gg/roocode"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="text-primary underline-offset-4 hover:underline">
-					Discord
-				</a>{" "}
-				and{" "}
-				<a
-					href="https://reddit.com/r/RooCode"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="text-primary underline-offset-4 hover:underline">
-					Reddit
-				</a>{" "}
-				if you want to share feedback or help others.
-			</>
-		),
-	},
-	{
 		question: "Where can I learn more or get help?",
 		answer: (
 			<>
@@ -199,31 +167,7 @@ const faqs: FAQItem[] = [
 					className="text-primary underline-offset-4 hover:underline">
 					official documentation
 				</a>{" "}
-				for both a quick-start set up and advanced guides. You can also get community support on{" "}
-				<a
-					href="https://discord.gg/roocode"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="text-primary underline-offset-4 hover:underline">
-					Discord
-				</a>{" "}
-				and{" "}
-				<a
-					href="https://reddit.com/r/RooCode"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="text-primary underline-offset-4 hover:underline">
-					Reddit
-				</a>
-				. You can also check out our{" "}
-				<a
-					href="https://www.youtube.com/@RooCodeYT"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="text-primary underline-offset-4 hover:underline">
-					YouTube
-				</a>{" "}
-				tutorials and{" "}
+				for both a quick-start set up and advanced guides. You can also check out our{" "}
 				<a
 					href="https://blog.roocode.com"
 					target="_blank"
