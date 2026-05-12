@@ -15,6 +15,7 @@ import WelcomeView from "./components/welcome/WelcomeViewProvider"
 import { CheckpointRestoreDialog } from "./components/chat/CheckpointRestoreDialog"
 import { DeleteMessageDialog, EditMessageDialog } from "./components/chat/MessageModificationConfirmationDialog"
 import ErrorBoundary from "./components/ErrorBoundary"
+import LoadingView from "./components/LoadingView"
 import { CloudView } from "./components/cloud/CloudView"
 import { useAddNonInteractiveClickListener } from "./components/ui/hooks/useNonInteractiveClick"
 import { TooltipProvider } from "./components/ui/tooltip"
@@ -176,7 +177,7 @@ const App = () => {
 		}, [renderContext]),
 	)
 	if (!didHydrateState) {
-		return null
+		return <LoadingView />
 	}
 
 	// Do not conditionally load ChatView, it's expensive and there's state we

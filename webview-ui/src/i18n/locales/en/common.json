@@ -21,7 +21,10 @@
 	},
 	"ui": {
 		"search_placeholder": "Search...",
-		"no_results": "No results found"
+		"no_results": "No results found",
+		"initializing": "Initializing...",
+		"retry_connection": "Retry Connection",
+		"connection_failed": "Unable to connect to the extension host. Click the button below to retry."
 	},
 	"mermaid": {
 		"loading": "Generating mermaid diagram...",
