@@ -20,6 +20,10 @@
 			"entry": ["src/index.tsx"],
 			"project": ["src/**/*.{ts,tsx}", "../src/shared/*.ts"]
 		},
+		"apps/docs": {
+			"entry": ["src/clientModules/**/*.{ts,tsx}", "src/components/**/*.{ts,tsx}", "src/theme/**/*.{ts,tsx}"],
+			"project": ["src/**/*.{ts,tsx}"]
+		},
 		"packages/{build,evals,ipc,types}": {
 			"project": ["src/**/*.ts"]
 		}
