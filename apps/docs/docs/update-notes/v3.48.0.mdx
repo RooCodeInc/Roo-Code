@@ -1,0 +1,68 @@
+---
+description: Roo Code 3.48.0 adds API config locking, Claude Sonnet 4.6 support, and a recursive subtask history tree, while removing browser automation, nine low-usage providers, built-in skills, and file-based system prompt overrides.
+keywords:
+  - roo code 3.48.0
+  - api config lock
+  - claude sonnet 4.6
+  - subtask history tree
+  - browser removal
+  - provider removal
+---
+
+# Roo Code 3.48.0 Release Notes (2026-02-17)
+
+This release adds API configuration locking, Claude Sonnet 4.6 support across major providers, and a recursive subtask history tree, alongside significant removals of browser automation, nine low-usage providers, built-in skills, and file-based system prompt overrides.
+
+## Claude Sonnet 4.6 Support
+
+Claude Sonnet 4.6 (`claude-sonnet-4-6`) is now available across Anthropic, Amazon Bedrock, Google Vertex, OpenRouter, and Vercel AI Gateway with a 1M token context window and 64K max output tokens. (thanks PeterDaveHello!) ([#11509](https://github.com/RooCodeInc/Roo-Code/pull/11509))
+
+## API Config Lock
+
+A new lock icon in the API config selector lets you pin your active provider and model across all mode switches in the current workspace. When locked, switching modes no longer swaps out your API configuration — the same provider and model stay active regardless of which mode you switch to. Unlock at any time to restore normal per-mode config behavior. The lock state is stored per-workspace and never affects other projects. ([#11295](https://github.com/RooCodeInc/Roo-Code/pull/11295))
+
+## Recursive Subtask History Tree
+
+The History view now renders the complete nested subtask hierarchy as an expandable tree. Each level of nesting is indented independently and can be expanded or collapsed, making it easy to navigate deep orchestrator task chains and drill into any branch at arbitrary depth. Previously only flat or single-level subtask groupings were visible. ([#11299](https://github.com/RooCodeInc/Roo-Code/pull/11299))
+
+## QOL Improvements
+
+* **Batch Tool Calls in Chat**: Consecutive `list_files`, `read_file`, and file-edit operations now collapse into a single grouped block instead of stacking as separate identical headers. Batch "Save All" / "Deny All" buttons are included for file-edit groups, reducing chat clutter during multi-file tasks. ([#11245](https://github.com/RooCodeInc/Roo-Code/pull/11245))
+* **`edit` Tool**: The `search_and_replace` tool has been renamed to `edit` with a flatter parameter model (`file_path`, `old_string`, `new_string`, `replace_all`). One replacement per call with uniqueness enforced by default. `search_and_replace` is retained as a backward-compatible alias. ([#11296](https://github.com/RooCodeInc/Roo-Code/pull/11296))
+* **`disabledTools` Setting**: Administrators can globally disable specific native tools via the new `disabledTools` extension or organization setting. Disabled tools are stripped from API requests and blocked at execution time, targeting enterprise deployments that require restricted tool access. ([#11277](https://github.com/RooCodeInc/Roo-Code/pull/11277))
+* **Nine Providers Retired**: Cerebras, Chutes, DeepInfra, Doubao, Featherless, Groq, Hugging Face, IO Intelligence, and Unbound have been removed. Existing saved configurations will display a retirement message in Settings rather than a broken config form; your credentials are preserved until you explicitly delete them. ([#11297](https://github.com/RooCodeInc/Roo-Code/pull/11297))
+* **Browser Tool Removed**: The built-in Puppeteer-based `browser_action` tool has been removed along with all related settings, the browser session panel, and the `puppeteer-core` dependencies. Migrate to [Playwright MCP](https://github.com/microsoft/playwright-mcp) or another MCP-based browser tool. ([#11392](https://github.com/RooCodeInc/Roo-Code/pull/11392))
+* **Built-in Skills Removed**: The bundled `create-mcp-server` and `create-mode` skills and all built-in skills infrastructure have been removed. Skills now come exclusively from your global (`~/.roo/skills/`) and workspace (`.roo/skills/`) directories. All skills now have edit and delete buttons. Find community-contributed skills at [skills.sh](https://skills.sh). ([#11414](https://github.com/RooCodeInc/Roo-Code/pull/11414))
+* **File-Based System Prompt Override Removed**: The `.roo/system-prompt-{mode}` file override mechanism has been removed along with the in-chat warning banner and the "Advanced: Override System Prompt" disclosure in Mode settings. Migrate to custom instructions or mode-level prompt customization. ([#11387](https://github.com/RooCodeInc/Roo-Code/pull/11387))
+* **Linear Integration in Cloud UI**: The Roomote Control tile in the Cloud features grid has been replaced with a Linear Integration tile. ([#11280](https://github.com/RooCodeInc/Roo-Code/pull/11280))
+
+## Bug Fixes
+
+* **Orchestrator Delegation Reliability**: Fixes a series of race conditions and state-loss bugs in orchestrator-style multi-task workflows where parent tasks could lose their history, become unresumable, or retain stale "active" status after delegating to a subtask. (thanks SannidhyaSah, 0xMink!) ([#11281](https://github.com/RooCodeInc/Roo-Code/pull/11281), [#11331](https://github.com/RooCodeInc/Roo-Code/pull/11331), [#11335](https://github.com/RooCodeInc/Roo-Code/pull/11335), [#11302](https://github.com/RooCodeInc/Roo-Code/pull/11302))
+* **Chat History Loss During Navigation**: Fixes an issue where chat history messages visually disappeared when navigating to the Cloud or Settings pages during an active streaming task. (thanks SannidhyaSah!) ([#11372](https://github.com/RooCodeInc/Roo-Code/pull/11372))
+* **Condensation Summary Lost on Resume**: Fixes an issue where context condensation performed after task completion would be silently undone when resuming the task with a new message, causing escalating token costs on each subsequent request. (thanks SannidhyaSah!) ([#11488](https://github.com/RooCodeInc/Roo-Code/pull/11488))
+* **Remote VS Code Edit Crash**: Fixes an intermittent crash in WSL and SSH remote environments where "Tab close: Invalid tab not found!" errors in the diff view would abort entire edit operations. (thanks 0xMink!) ([#11363](https://github.com/RooCodeInc/Roo-Code/pull/11363))
+* **Windows Checkpoint Path Mismatch**: Fixes checkpoint failures on Windows ("Checkpoints can only be used in the original workspace") caused by path format differences between git's forward-slash paths and VS Code's backslash paths. (thanks 0xMink!) ([#11346](https://github.com/RooCodeInc/Roo-Code/pull/11346))
+* **Gemini Empty Stream Errors**: Fixes "No output generated" errors for Gemini models with restricted reasoning levels (such as `gemini-3-pro-preview`) caused by stale reasoning effort values being forwarded from other models. ([#11303](https://github.com/RooCodeInc/Roo-Code/pull/11303))
+* **Auto-Approval Countdown Not Cancelling**: Fixes an issue where toggling auto-approve off while a countdown timer was active would stop the visual countdown but continue executing the auto-submission in the background. (thanks SannidhyaSah!) ([#11439](https://github.com/RooCodeInc/Roo-Code/pull/11439))
+* **`ask_followup_question` Validation**: Fixes a crash when AI models omit the `follow_up` parameter in `ask_followup_question` calls, replacing a cryptic `TypeError` with an actionable retry prompt. (thanks rossdonald!) ([#11484](https://github.com/RooCodeInc/Roo-Code/pull/11484))
+* **Webview Crash on Panel Close**: Fixes unhandled promise rejection errors in the VS Code developer console when the Roo Code panel is closed or reloaded while a task is running. (thanks 0xMink!) ([#11313](https://github.com/RooCodeInc/Roo-Code/pull/11313))
+* **False "Unsaved Changes" Prompt**: Fixes an issue where switching modes or API configs and then opening Settings would incorrectly show an unsaved changes warning even when nothing had been edited. (thanks robertjmcintyre!) ([#11334](https://github.com/RooCodeInc/Roo-Code/pull/11334))
+* **Double Notification Sound**: Fixes notification sounds playing twice caused by React StrictMode's double-invocation behavior during development. ([#11283](https://github.com/RooCodeInc/Roo-Code/pull/11283))
+* **Scroll Anchoring Race Conditions**: Fixes scroll anchoring issues in the chat view, including bottom-anchor drift when starting new tasks, code-block jitter, and the sticky-follow mode breaking during streaming. ([#11385](https://github.com/RooCodeInc/Roo-Code/pull/11385))
+* **Pasted Images Cleared During Chat**: Fixes pasted images being removed from the chat input box while Roo is actively responding. ([#11375](https://github.com/RooCodeInc/Roo-Code/pull/11375))
+* **zsh Process-Substitution False Positives**: Fixes the shell command safety checker incorrectly flagging valid zsh process-substitution syntax in variable assignments. ([#11365](https://github.com/RooCodeInc/Roo-Code/pull/11365))
+* **Command Auto-Approval JS False Positives**: Fixes the command auto-approval safety check incorrectly matching inline JavaScript patterns in otherwise safe shell commands. ([#11382](https://github.com/RooCodeInc/Roo-Code/pull/11382))
+* **Task Resumption in API Module**: Fixes task resumption when using the API module. ([#11369](https://github.com/RooCodeInc/Roo-Code/pull/11369))
+* **Silent Temperature Override**: Fixes `defaultTemperature` being silently ignored when models returned `undefined` from `getModelParams`, which could cause unexpected temperature values for some providers. ([#11218](https://github.com/RooCodeInc/Roo-Code/pull/11218))
+
+## CLI Updates
+
+* **stdin Stream Mode**: The CLI now accepts input from stdin, enabling fully automated scripting workflows such as `echo "task" | roo`. ([#11476](https://github.com/RooCodeInc/Roo-Code/pull/11476))
+* **Auto-Approve by Default**: Auto-approval is now the default CLI behavior. Use the new `-a` / `--require-approval` flag to opt in to manual approval prompts. The legacy `--yes` and `--dangerously-skip-permissions` flags have been removed. ([#11424](https://github.com/RooCodeInc/Roo-Code/pull/11424))
+* **linux-arm64 Support**: A native `roo-cli-linux-arm64.tar.gz` binary now ships with each release for AWS Graviton, Raspberry Pi, and other ARM64 Linux environments. ([#11314](https://github.com/RooCodeInc/Roo-Code/pull/11314))
+* **Default Model Updated to Claude Opus 4.6**: The CLI default model has been updated from Claude Opus 4.5 to Claude Opus 4.6. ([#11273](https://github.com/RooCodeInc/Roo-Code/pull/11273))
+
+## Provider Updates
+
+* **GLM-5 for Z.ai**: GLM-5 is now available in the Z.ai provider with a ~200K token context window (202,752 tokens), 16,384 max output tokens, prompt caching, and thinking mode support with disable/medium reasoning effort. ([#11440](https://github.com/RooCodeInc/Roo-Code/pull/11440))

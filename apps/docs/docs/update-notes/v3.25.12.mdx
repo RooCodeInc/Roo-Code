@@ -1,0 +1,72 @@
+---
+description: Claude Sonnet 4 gets a massive 1 million token context window, configurable API timeouts for local providers, and minimal reasoning support for OpenRouter.
+keywords:
+  - roo code 3.25.12
+  - claude sonnet 4 1 million tokens
+  - api timeout configuration
+  - openrouter reasoning
+  - local providers
+---
+
+# Roo Code 3.25.12 Release Notes (2025-08-12)
+
+This release brings a massive context window upgrade for Claude Sonnet 4, configurable timeouts for local providers, and minimal reasoning support for OpenRouter.
+
+## Claude Sonnet 4: 1 Million Token Context Window
+
+We've upgraded our Claude Sonnet 4 integration to support [Anthropic's latest API update](https://www.anthropic.com/news/1m-context), increasing the context window from 200,000 tokens to 1 million tokens - a 5x increase ([#7005](https://github.com/RooCodeInc/Roo-Code/pull/7005)):
+
+- **Massive Context**: Work with entire codebases, extensive documentation, or multiple large files in a single conversation
+- **Tiered Pricing Support**: Automatically handles Anthropic's tiered pricing for extended context usage
+- **UI Integration**: Context window size now displays in the model info view with a toggle to enable the 1M context feature
+
+This significant upgrade enables you to tackle much larger projects and maintain context across extensive codebases without splitting conversations.
+
+> **📚 Documentation**: See [Anthropic Provider Guide](/providers/anthropic) for setup and usage instructions.
+
+## Configurable API Timeout for Local Providers
+
+Local AI providers running large models can now configure custom timeout settings to prevent premature disconnections ([#6531](https://github.com/RooCodeInc/Roo-Code/pull/6531)):
+
+- **Flexible Timeouts**: Set timeouts from 0 to 3600 seconds (default: 600 seconds)
+- **Provider Support**: Works with LM Studio, Ollama, and OpenAI-compatible providers
+
+Configure in your VSCode settings:
+```json
+{
+  "roo-cline.apiRequestTimeout": 1200  // 20 minutes for very large models
+}
+```
+
+## OpenRouter Minimal Reasoning Support
+
+OpenRouter now supports minimal reasoning effort for compatible models ([#6998](https://github.com/RooCodeInc/Roo-Code/pull/6998)):
+
+- **New Reasoning Level**: 'Minimal' option available for specific models
+- **UI Updates**: Thinking budget interface shows minimal option when applicable
+- **Optimized Performance**: Better control over reasoning intensity for different tasks
+
+This addition provides more granular control over model reasoning, allowing you to optimize for speed or depth based on your needs.
+
+## QOL Improvements
+
+* **GPT-5 Model Optimization**: GPT-5 models excluded from 20% context window output token cap for better performance ([#6963](https://github.com/RooCodeInc/Roo-Code/pull/6963))
+* **Task Management**: Added expand/collapse translations for better task organization ([#6962](https://github.com/RooCodeInc/Roo-Code/pull/6962))
+* **Localization**: Improved Traditional Chinese locale with better translations (thanks PeterDaveHello!) ([#6946](https://github.com/RooCodeInc/Roo-Code/pull/6946))
+
+## Bug Fixes
+
+* **File Indexing**: JSON files now properly respect .rooignore settings during indexing ([#6691](https://github.com/RooCodeInc/Roo-Code/pull/6691))
+* **Tool Usage**: Fixed tool repetition detector to allow first tool call when limit is 1 ([#6836](https://github.com/RooCodeInc/Roo-Code/pull/6836))
+* **Service Initialization**: Improved checkpoint service initialization handling (thanks NaccOll!) ([#6860](https://github.com/RooCodeInc/Roo-Code/pull/6860))
+* **Browser Compatibility**: Added --no-sandbox flag to browser launch options for better compatibility (thanks QuinsZouls!) ([#6686](https://github.com/RooCodeInc/Roo-Code/pull/6686))
+* **UI Display**: Fixed long model names truncation in model selector to prevent overflow ([#6985](https://github.com/RooCodeInc/Roo-Code/pull/6985))
+* **Error Handling**: Improved bridge config fetch error handling ([#6961](https://github.com/RooCodeInc/Roo-Code/pull/6961))
+
+## Provider Updates
+
+* **Amazon Bedrock**: Added OpenAI GPT-OSS models to the dropdown selection ([#6783](https://github.com/RooCodeInc/Roo-Code/pull/6783))
+* **Chutes Provider**: Added support for new Chutes provider models ([#6699](https://github.com/RooCodeInc/Roo-Code/pull/6699))
+* **Requesty Integration**: Added Requesty base URL support ([#6992](https://github.com/RooCodeInc/Roo-Code/pull/6992))
+* **Cloud Service**: Updated to versions 0.9.0 and 0.10.0 with improved stability ([#6964](https://github.com/RooCodeInc/Roo-Code/pull/6964), [#6968](https://github.com/RooCodeInc/Roo-Code/pull/6968))
+* **Bridge Service**: Switched to UnifiedBridgeService for better integration ([#6976](https://github.com/RooCodeInc/Roo-Code/pull/6976))

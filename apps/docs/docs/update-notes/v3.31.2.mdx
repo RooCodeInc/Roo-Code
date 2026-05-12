@@ -1,0 +1,27 @@
+---
+description: Stateless continuity via OpenAI Responses API, faster settings saves, and key fixes for API profiles, auto-approval, and Issue Fixer.
+keywords:
+  - roo code 3.31.2
+  - new features
+  - bug fixes
+---
+
+# Roo Code 3.31.2 Release Notes (2025-11-13)
+
+This patch improves stateless conversation continuity, speeds up settings updates, and fixes API profiles, Issue Fixer, and auto‑approval behavior.
+
+
+## QOL Improvements
+
+* Batched settings updates: saves apply faster with less UI flicker across Settings, Auto Approve, Command Execution, and MCP toggles ([#9165](https://github.com/RooCodeInc/Roo-Code/pull/9165))
+* README badges: switched to badgen.net so badges render reliably; Installs and Rating are visible at a glance ([#9200](https://github.com/RooCodeInc/Roo-Code/pull/9200))
+
+## Bug Fixes
+
+* API Profiles: apply updated headers, baseUrl, service tier, and reasoning budget even when provider/model stay the same ([#9210](https://github.com/RooCodeInc/Roo-Code/pull/9210))
+* Auto-approval: include MCP server state so tool auto-approval works as configured (thanks bozoweed!) ([#9199](https://github.com/RooCodeInc/Roo-Code/pull/9199))
+* Issue Fixer: migrated to GitHub REST + ProjectsV2 to resolve sync errors and restore reliable triage ([#9207](https://github.com/RooCodeInc/Roo-Code/pull/9207))
+
+## Provider Updates
+
+* Conversation continuity via encrypted reasoning items (OpenAI Responses API): preserves context locally while requests remain stateless for better privacy and reliability; removes previous_response_id complexity ([#9203](https://github.com/RooCodeInc/Roo-Code/pull/9203))

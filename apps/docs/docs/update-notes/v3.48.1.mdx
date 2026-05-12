@@ -1,0 +1,22 @@
+---
+description: Roo Code 3.48.1 fixes the Bedrock Claude Sonnet 4.6 model ID, MCP server initialization, and IPC queue handling.
+keywords:
+  - roo code 3.48.1
+  - bedrock claude sonnet 4.6
+  - mcp fix
+  - bug fixes
+---
+
+# Roo Code 3.48.1 Release Notes (2026-02-18)
+
+This release fixes the Bedrock Claude Sonnet 4.6 model ID, resolves MCP tools being unavailable on the first task turn, and patches IPC queue handling.
+
+## Bug Fixes
+
+* **MCP Tools Unavailable on First Turn**: Fixes an issue where MCP tools were missing from the system prompt on the very first API call when a task was started via IPC. The MCP server manager now awaits all server connections before returning the hub, so tools appear correctly from the start. ([#11518](https://github.com/RooCodeInc/Roo-Code/pull/11518))
+* **IPC Queue Message Deletion**: Fixes an issue where messages deleted from the Roo Code Cloud queue were still being processed by the extension internally. The IPC protocol now supports a true `DeleteQueuedMessage` command so deleted messages are fully dropped rather than silently re-processed on dequeue. ([#11464](https://github.com/RooCodeInc/Roo-Code/pull/11464))
+* **Package Metadata Version Regression**: Fixes an internal package metadata version that was incorrectly rolled back by a prior revert, which would have caused the next `@roo-code/types` npm publish to fail. ([#11588](https://github.com/RooCodeInc/Roo-Code/pull/11588))
+
+## Provider Updates
+
+* **Bedrock Claude Sonnet 4.6 Model ID**: Fixes an incorrect model ID for Claude Sonnet 4.6 on Amazon Bedrock (`anthropic.claude-sonnet-4-6-20260114-v1:0` → `anthropic.claude-sonnet-4-6`), including the 1M context and global inference variants that were also affected. (thanks PeterDaveHello!) ([#11569](https://github.com/RooCodeInc/Roo-Code/pull/11569))

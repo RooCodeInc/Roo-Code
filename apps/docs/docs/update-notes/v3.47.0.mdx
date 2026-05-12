@@ -1,0 +1,47 @@
+---
+description: Roo Code 3.47.0 adds Claude Opus 4.6 across all providers, GPT-5.3-Codex for the OpenAI Codex provider, multi-mode Skills targeting, AGENTS.local.md personal overrides, and CLI improvements.
+image: /img/v3.47.0/v3.47.0.png
+keywords:
+  - roo code 3.47.0
+  - new features
+  - bug fixes
+---
+
+# Roo Code 3.47.0 Release Notes (2026-02-05)
+
+This release adds GPT-5.3-Codex (without ads! lol) to the OpenAI Codex provider, Claude Opus 4.6 across all providers, multi-mode Skills targeting, and personal AGENTS.local.md override files.
+
+<img src="/img/v3.47.0/v3.47.0.png" alt="Roo Code v3.47.0 Release" width="600" />
+
+## GPT-5.3-Codex - With your ChatGPT Plus/Pro subscription!
+
+GPT-5.3-Codex is available right in Roo Code with your ChatGPT Plus or Pro subscription—no separate API billing. It posts new highs on SWE-Bench Pro (57%, across four programming languages) and Terminal-Bench 2.0 (77.3%, up from 64% for 5.2-Codex), while using fewer tokens than any prior model and running 25% faster.
+
+You get the same 400K context window and 128K max output as 5.2-Codex, but the jump in sustained, multi-step engineering work is noticeable. ([#11225](https://github.com/RooCodeInc/Roo-Code/pull/11225))
+
+## Claude Opus 4.6 - 1M CONTEXT IS HERE!!!
+
+Opus 4.6 is available in Roo Code across Anthropic, AWS Bedrock, Vertex AI, OpenRouter, Roo Code Router, and Vercel AI Gateway. This is the first Opus-class model with a 1M token context window (beta)—enough to feed an entire large codebase into a single conversation. And it actually *uses* all that context: on the MRCR v2 needle-in-a-haystack benchmark it scores 76%, versus just 18.5% for Sonnet 4.5, which means the "context rot" problem—where earlier models fell apart as conversations grew—is largely solved.
+
+Opus 4.6 also leads all frontier models on Terminal-Bench 2.0 (agentic coding), Humanity's Last Exam (multi-discipline reasoning), and GDPval-AA (knowledge work across finance and legal). It plans better, stays on task longer, and catches its own mistakes. (thanks PeterDaveHello!) ([#11224](https://github.com/RooCodeInc/Roo-Code/pull/11224))
+
+## QOL Improvements
+
+* **Multi-mode Skills targeting**: Skills can now target multiple modes at once using a `modeSlugs` frontmatter array, replacing the single `mode` field (which remains backward compatible). A new gear-icon modal in the Skills settings lets you pick which modes a skill applies to. The Slash Commands settings panel has also been redesigned for visual consistency. ([#11157](https://github.com/RooCodeInc/Roo-Code/pull/11157))
+* **AGENTS.local.md personal override files**: You can now create an `AGENTS.local.md` file alongside `AGENTS.md` for personal agent-rule overrides that stay out of version control. The local file's content is appended under a distinct "Agent Rules Local" header, and both `AGENTS.local.md` and `AGENT.local.md` are automatically added to `.gitignore`. ([#11183](https://github.com/RooCodeInc/Roo-Code/pull/11183))
+
+## Bug Fixes
+
+* **Reasoning content preserved during AI SDK message conversion**: Fixes an issue where reasoning/thinking content from models like DeepSeek `deepseek-reasoner` was dropped during message conversion, causing follow-up requests after tool calls to fail. Reasoning is now preserved as structured content through the conversion layer. ([#11217](https://github.com/RooCodeInc/Roo-Code/pull/11217))
+* **Environment details no longer break interleaved-thinking models**: Fixes an issue where `<environment_details>` was appended as a standalone trailing text block, causing message-shape mismatches for models that use interleaved thinking. Details are now merged into the last existing text or tool-result block. ([#11198](https://github.com/RooCodeInc/Roo-Code/pull/11198))
+
+## Provider Updates
+
+* **Gemini and Vertex providers migrated to AI SDK**: Both providers now use the shared Vercel AI SDK foundation, improving consistency for streaming, tool calling, and structured outputs across providers. Full feature parity is retained, including thinking support, grounding tools, cost calculation, and Vertex authentication. ([#11180](https://github.com/RooCodeInc/Roo-Code/pull/11180))
+* **Kimi K2.5 added to Fireworks**: Adds Moonshot AI's Kimi K2.5 model to the Fireworks provider with a 262K context window, 16K max output, image support, and prompt caching. ([#11177](https://github.com/RooCodeInc/Roo-Code/pull/11177))
+
+## Misc Improvements
+
+* **CLI dev experience and Roo provider API key support**: The CLI now supports a `--api-key` flag and `ROO_API_KEY` environment variable for Roo provider authentication, eliminating the need for `roo auth login` in CI/scripted workflows. Development uses `tsx` for direct source execution (no build step), and debug logging is gated behind `--debug`. ([#11203](https://github.com/RooCodeInc/Roo-Code/pull/11203))
+* **Roo Code CLI v0.0.50**: Adds Linux platform support, a `--exit-on-error` flag for immediate exit on API errors, and all the dev-experience improvements from the API key support PR. ([#11204](https://github.com/RooCodeInc/Roo-Code/pull/11204))
+* **CLI mode changes no longer overwrite provider settings**: Fixes a race condition where CLI-provided provider settings (`--provider`, `--api-key`) were overwritten during slash-command-triggered mode switches. The initialization sequence now writes CLI settings before sending the webview launch signal. ([#11205](https://github.com/RooCodeInc/Roo-Code/pull/11205))

@@ -1,0 +1,37 @@
+---
+description: Adds Moonshot kimi-k2-thinking and MiniMax-M2-Stable with prompt caching, smoother mode import flow, and multiple UI and reliability fixes.
+keywords:
+  - roo code 3.30.3
+  - new features
+  - bug fixes
+  - provider updates
+image: /img/v3.30.3/v3.30.3.png
+---
+
+# Roo Code 3.30.3 Release Notes (2025-11-07)
+
+This release adds support for Moonshot's newest model, kimi‑k2‑thinking, and includes several UI improvements and a few bug fixes.
+
+<img src="/img/v3.30.3/v3.30.3.png" alt="Roo Code v3.30.3 Release" width="600" />
+
+## New models and caching: Moonshot kimi‑k2‑thinking and MiniMax‑M2‑Stable
+
+kimi‑k2‑thinking: Moonshot's latest & best‑performing model. Plus MiniMax‑M2‑Stable with prompt caching to cut latency and cost on repeated prompts (thanks nokaka!) ([#9079](https://github.com/RooCodeInc/Roo-Code/pull/9079), [#9072](https://github.com/RooCodeInc/Roo-Code/pull/9072)).
+
+## UI and workflow improvements
+
+We’ve batched several UX updates to make everyday use smoother ([#9057](https://github.com/RooCodeInc/Roo-Code/pull/9057), [#8932](https://github.com/RooCodeInc/Roo-Code/pull/8932), [#8965](https://github.com/RooCodeInc/Roo-Code/pull/8965), [#9003](https://github.com/RooCodeInc/Roo-Code/pull/9003)):
+
+- Home screen: cleaner left‑aligned layout, clearer recent history (up to 4), tips auto‑dismiss after 6 tasks, improved spacing on large windows.
+- Diff view in chat: unified format with line numbers and inline added/removed counts for faster, more accurate reviews.
+- Settings clarity: setting Error & Repetition Limit to 0 explicitly disables that safety mechanism, avoiding unexpected auto‑stops.
+- Mode import flow: after importing a mode, Roo auto‑switches to it; if the mode data hasn’t loaded yet, Roo briefly falls back to Architect mode to avoid UI desync.
+
+Together these reduce clicks, improve readability, and make behavior more predictable.
+
+## Bug Fixes
+
+* Auto‑retry on empty assistant response to prevent task cancellations (reporter: Akillatech) ([#9083](https://github.com/RooCodeInc/Roo-Code/pull/9083))
+* Use “system” role for non‑streaming OpenAI‑compatible requests to prevent provider errors (reporter: whitfin) ([#8216](https://github.com/RooCodeInc/Roo-Code/pull/8216))
+* Prevent notification sound when messages are queued to auto‑continue ([#8540](https://github.com/RooCodeInc/Roo-Code/pull/8540))
+

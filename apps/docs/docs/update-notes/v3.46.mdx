@@ -1,0 +1,57 @@
+---
+description: Roo Code 3.46 adds parallel tool calling, overhauls file and terminal handling, improves Skills management, and includes patch updates for onboarding, reliability, and provider integrations.
+keywords:
+  - roo code 3.46
+  - new features
+  - bug fixes
+---
+
+# Roo Code 3.46 Release Notes (Combined)
+
+This is a combined view of the 3.46 release series, including 3.46.0, 3.46.1, and 3.46.2.
+
+## Parallel tool calling
+
+Roo can now run multiple tools in one response when the workflow benefits from it. This gives the model more freedom to batch independent steps (reads, searches, edits, etc.) instead of making a separate API call for each tool. This reduces back-and-forth turns on multi-step tasks where Roo needs several independent tool calls before it can propose or apply a change. ([#11031](https://github.com/RooCodeInc/Roo-Code/pull/11031), [#11046](https://github.com/RooCodeInc/Roo-Code/pull/11046))
+
+## Total read_file tool overhaul
+
+Roo now caps file reads by default (2000 lines) to avoid context overflows, and it can page through larger files as needed. When Roo needs context around a specific line (for example, a stack trace points at line 42), it can also request the *entire* containing function or class instead of an arbitrary “lines 40–60” slice. Under the hood, `read_file` now has two explicit modes: **slice** (`offset`/`limit`) for chunked reads, and **indentation** (anchored on a target line) for semantic extraction. (thanks pwilkin!) ([#10981](https://github.com/RooCodeInc/Roo-Code/pull/10981))
+
+## Terminal handling overhaul
+
+When a command produces a lot of output, Roo now caps how much of that output it includes in the model’s context. The omitted portion is saved as an artifact. Roo can then page through the full output or search it on demand, so large builds and test runs stay debuggable without stuffing the entire log into every request. ([#10944](https://github.com/RooCodeInc/Roo-Code/pull/10944), [#11056](https://github.com/RooCodeInc/Roo-Code/pull/11056))
+
+## Skills management in Settings
+
+You can now create, edit, and delete Skills from the Settings panel, with inline validation and delete confirmation. Editing a skill opens the `SKILL.md` file in VS Code. Skills are still stored as files on disk, but this makes routine maintenance faster—especially when you keep both **Global** skills and **Project** skills. (thanks SannidhyaSah!) ([#10844](https://github.com/RooCodeInc/Roo-Code/pull/10844))
+
+## Provider migration to AI SDK
+
+We’ve started migrating providers toward a shared Vercel AI SDK foundation, so streaming, tool calling, and structured outputs behave more consistently across providers. In this release, that migration includes shared AI SDK utilities plus provider moves for Moonshot/OpenAI-compatible, DeepSeek, Cerebras, Groq, and Fireworks, and it also improves how provider errors (like rate limits) surface. ([#11047](https://github.com/RooCodeInc/Roo-Code/pull/11047), [#11063](https://github.com/RooCodeInc/Roo-Code/pull/11063), [#11079](https://github.com/RooCodeInc/Roo-Code/pull/11079), [#11086](https://github.com/RooCodeInc/Roo-Code/pull/11086), [#11088](https://github.com/RooCodeInc/Roo-Code/pull/11088), [#11118](https://github.com/RooCodeInc/Roo-Code/pull/11118))
+
+## QOL Improvements
+
+* **Import settings during first-run setup**: You can import a settings file directly from the welcome screen on a fresh install, before configuring a provider. (thanks emeraldcheshire!) ([#10994](https://github.com/RooCodeInc/Roo-Code/pull/10994))
+* **Change a skill’s mode from the Skills UI**: You can set which mode a skill targets (including “Any mode”) using a dropdown, instead of moving files between mode folders manually. (thanks SannidhyaSah!) ([#11102](https://github.com/RooCodeInc/Roo-Code/pull/11102))
+
+## Bug Fixes
+
+* **More reliable tool-call history**: Fixes an issue where mismatched `tool_use`/`tool_result` IDs in conversation history could break tool execution with `ToolResultIdMismatchError`. ([#11131](https://github.com/RooCodeInc/Roo-Code/pull/11131))
+* **MCP tool results can include images**: Fixes an issue where MCP tools that return images (for example, Figma screenshots) could show up as “(No response)”. (thanks Sniper199999!) ([#10874](https://github.com/RooCodeInc/Roo-Code/pull/10874))
+* **More reliable condensing with Bedrock via LiteLLM**: Fixes an issue where conversation condensing could fail when the history contained tool-use/tool-result blocks. ([#10975](https://github.com/RooCodeInc/Roo-Code/pull/10975))
+* **Messages aren’t dropped during command execution**: Fixes an issue where messages sent while a command was still running could be lost; they’re now queued and delivered when the command finishes. ([#11140](https://github.com/RooCodeInc/Roo-Code/pull/11140))
+* **OpenRouter model list refresh respects your Base URL**: Fixes an issue where refreshing the OpenRouter model list ignored a configured Base URL and always called openrouter.ai. (thanks sebastianlang84!) ([#11154](https://github.com/RooCodeInc/Roo-Code/pull/11154))
+* **More reliable task cancellation and queued-message handling**: Fixes issues where canceling/closing tasks or updating queued messages could behave inconsistently between the VS Code extension and the CLI. ([#11162](https://github.com/RooCodeInc/Roo-Code/pull/11162))
+
+## Misc Improvements
+
+* **Cleaner GitHub issue templates**: Removes the “Feature Request” option from the issue template chooser so feature requests are directed to Discussions. ([#11141](https://github.com/RooCodeInc/Roo-Code/pull/11141))
+* **Quieter startup when no `.env` file is present**: Avoids noisy `[MISSING_ENV_FILE]` console output when the optional `.env` file isn’t used. ([#11116](https://github.com/RooCodeInc/Roo-Code/pull/11116))
+
+## Provider Updates
+
+* **Code indexing embedding model migration (Gemini)**: Keeps code indexing working by migrating requests from the deprecated `text-embedding-004` to `gemini-embedding-001`. ([#11038](https://github.com/RooCodeInc/Roo-Code/pull/11038))
+* **Mistral provider migration to AI SDK**: Improves consistency for streaming and tool handling while preserving Codestral support and custom base URLs. ([#11089](https://github.com/RooCodeInc/Roo-Code/pull/11089))
+* **SambaNova provider migration to AI SDK**: Improves streaming, tool-call handling, and usage reporting. ([#11153](https://github.com/RooCodeInc/Roo-Code/pull/11153))
+* **xAI provider migration to the dedicated AI SDK package**: Improves consistency for streaming, tool calls, and usage reporting when using Grok models. ([#11158](https://github.com/RooCodeInc/Roo-Code/pull/11158))

@@ -1,0 +1,16 @@
+---
+description: This release introduces free Gemini access via OAuth, fixes several bugs, and improves the overall user experience.
+---
+
+# Roo Code 3.22.4 Release Notes (2025-06-27)
+
+This patch release improves workflow efficiency and fixes critical bugs affecting task sharing and Claude Code provider reliability.
+
+## QOL Improvements
+
+* **Mode Switching**: Follow-up question suggestions can now switch modes directly, eliminating the need to manually change modes after selecting a suggestion ([#5200](https://github.com/RooCodeInc/Roo-Code/pull/5200))
+
+## Bug Fixes
+
+* **Task Sharing**: Fixed share button popover not opening when clicked - now works properly while maintaining tooltip functionality ([#5203](https://github.com/RooCodeInc/Roo-Code/pull/5203))
+* **Claude Code Reliability**: Fixed hanging and failures when working with large conversation histories on Linux and Code-Server environments by implementing stdin streaming instead of command-line arguments (thanks Fovty, edgan, flyguy7299!) ([#5186](https://github.com/RooCodeInc/Roo-Code/pull/5186))

@@ -1,0 +1,25 @@
+---
+description: Adds error details modal with on-demand display and fixes for MCP tools, TODO list display, and telemetry.
+keywords:
+  - roo code 3.36.4
+  - error details modal
+  - mcp tools fix
+  - bug fixes
+image: /img/v3.36.4/v3.36.4.png
+---
+
+# Roo Code 3.36.4 Release Notes (2025-12-10)
+
+This release adds an on-demand error details modal for improved debugging and fixes issues with MCP tool streaming, TODO list display order, and telemetry error filtering.
+
+<img src="/img/v3.36.4/v3.36.4.png" alt="Roo Code v3.36.4 Release" width="600" />
+
+## Error Details Modal
+
+Hover over error rows to reveal an info icon that opens a modal with full error details and a copy button ([#9985](https://github.com/RooCodeInc/Roo-Code/pull/9985)).
+
+## Bug Fixes
+
+* **MCP Tool Streaming**: Fixes an issue where MCP tools failed with "unknown tool" errors due to premature clearing of internal streaming data ([#9993](https://github.com/RooCodeInc/Roo-Code/pull/9993))
+* **TODO List Display Order**: The TODO list in the chat view now displays items in their correct execution order instead of being grouped by status ([#9991](https://github.com/RooCodeInc/Roo-Code/pull/9991))
+* **Telemetry Improvements**: Filters out 429 rate limit errors from API error telemetry for cleaner metrics and better error tracking ([#9987](https://github.com/RooCodeInc/Roo-Code/pull/9987))

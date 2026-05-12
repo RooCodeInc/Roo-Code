@@ -1,0 +1,28 @@
+---
+description: This release introduces free Gemini access via OAuth, fixes several bugs, and improves the overall user experience.
+---
+
+# Roo Code 3.22.1 Release Notes (2025-06-27)
+
+This release introduces free Gemini access via OAuth, fixes several bugs, and improves the overall user experience.
+
+## Gemini CLI Provider (Free Access)
+
+We've added a new Gemini CLI provider that enables free access to Google's Gemini models without requiring API keys ([#5137](https://github.com/RooCodeInc/Roo-Code/pull/5137)):
+
+- **OAuth Authentication**: Sign in with your Google account to access Gemini models at no cost
+- **Automatic Project Discovery**: Seamlessly connects to your Google Cloud projects
+- **Streaming Responses**: Real-time response streaming for better interactivity
+- **Complete Integration**: Full UI support with comprehensive setup guidance
+
+This gives you another powerful free option alongside local models and other free providers.
+
+## Bug Fixes
+
+* **MCP Server Display**: Fixed "undefined" text appearing in system prompts for HTTP SSE MCP servers like Figma MCP ([#5107](https://github.com/RooCodeInc/Roo-Code/pull/5107))
+* **Groq Model Limits**: Corrected maximum token limit for Qwen3-32B model from 131,072 to 40,960 tokens, preventing API errors (thanks KanTakahiro, Maxxoto!) ([#5138](https://github.com/RooCodeInc/Roo-Code/pull/5138))
+
+## QOL Improvements
+
+* **Consistent Tooltips**: Standardized tooltip delays to 300ms across the entire application for smooth, predictable behavior ([#5098](https://github.com/RooCodeInc/Roo-Code/pull/5098))
+* **Cost Transparency**: Improved OpenRouter BYOK cost calculation accuracy using official upstream costs and restored cached token count visibility ([#5145](https://github.com/RooCodeInc/Roo-Code/pull/5145))

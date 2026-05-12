@@ -1,0 +1,29 @@
+---
+description: Native Tool Calling for OpenAI-compatible providers, improved Gemini reasoning support, and various bug fixes.
+keywords:
+  - roo code 3.33.1
+  - openai compatible native tools
+  - gemini reasoning fixes
+  - native tool protocol
+image: /img/v3.33.1/v3.33.1.png
+---
+
+# Roo Code 3.33.1 Release Notes (2025-11-18)
+
+This release introduces native tool calling support for OpenAI-compatible providers, improves Gemini reasoning reliability, and fixes several native tool protocol issues.
+
+<img src="/img/v3.33.1/v3.33.1.png" alt="Roo Code v3.33.1 Release" width="600" />
+
+## Provider Updates
+
+- **Native Tool Calling for OpenAI-compatible Providers**: Enables native tool use with a wider range of models and providers that support the OpenAI format, offering more robust tool interactions in both streaming and non-streaming modes ([#9369](https://github.com/RooCodeInc/Roo-Code/pull/9369))
+
+## Bug Fixes
+
+- **Native Tool Protocol Race Condition**: Fixed a race condition where switching profiles or changing API configuration could cause tool results to be formatted incorrectly, leading to 400 errors ([#9363](https://github.com/RooCodeInc/Roo-Code/pull/9363))
+- **Native Tool Repetition Detection**: Fixed false positive "stuck in a loop" errors when using native tools repeatedly with different arguments ([#9377](https://github.com/RooCodeInc/Roo-Code/pull/9377))
+- **Strict Native Protocol Parsing**: Ensured no XML parsing occurs when the native protocol is active, preventing model confusion ([#9371](https://github.com/RooCodeInc/Roo-Code/pull/9371))
+- **Prompt Cleanliness**: Removed incompatible XML tool examples from the system prompt when native tool calling is enabled ([#9367](https://github.com/RooCodeInc/Roo-Code/pull/9367))
+- **Gemini Reasoning Config**: Fixed an issue where high/low reasoning effort configuration was not being applied correctly ([#9375](https://github.com/RooCodeInc/Roo-Code/pull/9375))
+- **Gemini Thought Validation**: Resolved integration errors with Gemini reasoning models by correctly handling thought signatures and token counting ([#9380](https://github.com/RooCodeInc/Roo-Code/pull/9380))
+- **Structured JSON Returns**: Updated tools to consistently return structured JSON when using the native protocol ([#9373](https://github.com/RooCodeInc/Roo-Code/pull/9373))

@@ -1,0 +1,22 @@
+---
+description: Roo Code 3.38.3 adds optional recursive rules loading for multi-folder setups and fixes several reliability issues.
+keywords:
+  - roo code 3.38.3
+  - rules
+  - agents.md
+  - bug fixes
+---
+
+# Roo Code 3.38.3 Release Notes (2026-01-03)
+
+This release adds an option to recursively load project rules in subfolders and fixes several reliability issues.
+
+## QOL Improvements
+
+* **Recursive subfolder rules loading (optional)**: Adds a Context setting that can automatically load additional `.roo/rules` and `AGENTS.md` files from subdirectories, making it easier to work in multi-repo/monorepo folders without manually switching roots ([#10446](https://github.com/RooCodeInc/Roo-Code/pull/10446))
+
+## Bug Fixes
+
+* Fixes an issue where Claude Code users could be forced to sign in again roughly daily, improving session reliability and reducing interruptions ([#10410](https://github.com/RooCodeInc/Roo-Code/pull/10410))
+* Fixes an issue where the in-chat text-to-speech (TTS) flow could crash if a message’s `text` value wasn’t a string, preventing the chat panel from breaking mid-task (thanks notglossy!) ([#10431](https://github.com/RooCodeInc/Roo-Code/pull/10431))
+* Fixes an issue where Roo’s native `read_file` tool schema didn’t advertise a maximum number of files per call, reducing failed tool calls in environments that enforce low limits ([#10449](https://github.com/RooCodeInc/Roo-Code/pull/10449))

@@ -1,0 +1,54 @@
+---
+description: Roo Code 3.38 adds Agent Skills and includes follow-up fixes for tool reliability, provider message formatting, and file reading.
+keywords:
+  - roo code 3.38
+  - new features
+  - bug fixes
+  - qol improvements
+image: /img/v3.38.0/v3.38.0.png
+---
+
+# Roo Code 3.38 Release Notes (Combined)
+
+Roo Code 3.38 adds Agent Skills and includes follow-up fixes for tool reliability, provider message formatting, and file reading.
+
+<img src="/img/v3.38.0/v3.38.0.png" alt="Roo Code v3.38 Release" width="600" />
+
+## Agent Skills
+
+Roo now supports Agent Skills, which are portable skill folders containing instructions, scripts, and resources that the agent can discover and load on demand. This lets you package repeatable workflows and domain knowledge once and reuse them across projects to make results more consistent and reliable. ([#10335](https://github.com/RooCodeInc/Roo-Code/pull/10335)):
+
+> **📚 Documentation**: See [Skills](/features/skills) for setup and usage.
+
+## QOL Improvements
+
+* Slash commands can declare a target mode in their front matter, so triggering a command can switch Roo to the right mode first ([#10344](https://github.com/RooCodeInc/Roo-Code/pull/10344)).
+* Removes the legacy “simple read file” tool path so file reading consistently uses the standard `read_file` tool ([#10254](https://github.com/RooCodeInc/Roo-Code/pull/10254)).
+* Agent Skills load more reliably across environments by aligning skill metadata validation and discovery with the Agent Skills specification ([#10409](https://github.com/RooCodeInc/Roo-Code/pull/10409)).
+* Adds an optional Context setting that can automatically load additional `.roo/rules` and `AGENTS.md` files from subdirectories, making it easier to work in multi-repo/monorepo folders without manually switching roots ([#10446](https://github.com/RooCodeInc/Roo-Code/pull/10446)).
+* Clarifies the navigation path for deleting a Roo Code Cloud account in the privacy policy, so you can find Security Settings faster ([#10367](https://github.com/RooCodeInc/Roo-Code/pull/10367)).
+* Improves internal analytics consistency by recording custom tools the same way as MCP tools, which helps tool usage and error tracking stay accurate ([#10364](https://github.com/RooCodeInc/Roo-Code/pull/10364)).
+
+## Bug Fixes
+
+* Fixes an issue where some Claude Sonnet 4.5 requests could fail with HTTP 400 errors after context condensing ([#10359](https://github.com/RooCodeInc/Roo-Code/pull/10359)).
+* Fixes an issue where manually condensing context while a tool is still running could trigger provider protocol errors, so tool runs and manual condenses can safely overlap ([#10379](https://github.com/RooCodeInc/Roo-Code/pull/10379)).
+* Reverts a change for OpenAI-compatible providers to avoid message-format regressions related to text appearing after tool results ([#10381](https://github.com/RooCodeInc/Roo-Code/pull/10381)).
+* Fixes an issue where Claude Code users could be forced to sign in again roughly daily, improving session reliability and reducing interruptions ([#10410](https://github.com/RooCodeInc/Roo-Code/pull/10410)).
+* Enforces the `maxConcurrentFileReads` limit for `read_file`, returning a clear error instead of silently ignoring the setting ([#10363](https://github.com/RooCodeInc/Roo-Code/pull/10363)).
+* Fixes an issue where the in-chat text-to-speech (TTS) flow could crash if a message’s `text` value wasn’t a string, preventing the chat panel from breaking mid-task (thanks notglossy!) ([#10431](https://github.com/RooCodeInc/Roo-Code/pull/10431)).
+* Improves the error shown when `read_file` is run on a directory by explicitly explaining the issue and suggesting `list_files` instead ([#10371](https://github.com/RooCodeInc/Roo-Code/pull/10371)).
+* Fixes an issue where Roo’s native `read_file` tool schema didn’t advertise a maximum number of files per call, reducing failed tool calls in environments that enforce low limits ([#10449](https://github.com/RooCodeInc/Roo-Code/pull/10449)).
+* Fixes an issue where the "open source" link on roocode.com could point to a non-existent GitHub organization, so it reliably opens the correct repository (thanks jishnuteegala!) ([#10377](https://github.com/RooCodeInc/Roo-Code/pull/10377)).
+* Fixes an issue where rate limiting looked like a provider error so a client-side rate limit now shows as a normal “rate limit wait” status row and completes cleanly ([#10389](https://github.com/RooCodeInc/Roo-Code/pull/10389)).
+* Fixes an issue where `write_to_file` could create files at an unintended truncated path, reducing accidental file placement and cleanup ([#10415](https://github.com/RooCodeInc/Roo-Code/pull/10415)).
+
+## Misc Improvements
+
+* Custom tools can import npm packages, and can load secrets from a same-folder `.env` file ([#10336](https://github.com/RooCodeInc/Roo-Code/pull/10336)).
+
+## Provider Updates
+
+* Removes the “OpenRouter Transforms” setting and stops sending the `transforms` parameter on OpenRouter requests ([#10341](https://github.com/RooCodeInc/Roo-Code/pull/10341)).
+* Removes the Human Relay provider so it no longer appears as a configurable option in Providers ([#10388](https://github.com/RooCodeInc/Roo-Code/pull/10388)).
+* Updates the Cerebras default max completion tokens to 16,384 to reduce premature rate-limit estimation issues (thanks sebastiand-cerebras!) ([#10387](https://github.com/RooCodeInc/Roo-Code/pull/10387)).

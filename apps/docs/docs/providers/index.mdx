@@ -1,0 +1,35 @@
+---
+title: Model Providers
+description: Compare model providers available for the Roo Code VS Code extension.
+keywords:
+  - model providers
+  - API providers
+  - Roo Code providers
+  - extension providers
+---
+
+import ProviderTable from '@site/src/components/ProviderTable';
+
+# Model Providers
+
+The Roo Code VS Code extension is a capable coding agent, but it depends on LLM providers for the inference needed to complete tasks.
+
+Other tools are intrinsically bound by design to a specific provider, forcing you to stick with them irrespective of how the landscape changes. Roo is **model-agnostic**, allowing you to choose the model that best fits your needs, according to your budget, skill profile, codebase, and more.
+
+Roo supports connecting to a wide range of model providers, giving you flexibility in how you access AI models.
+
+Learn how to set up your provider in [the Roo Code VS Code extension here](/getting-started/connecting-api-provider).
+
+## Provider Comparison
+
+Here's every provider currently documented for the extension. Click for detailed instructions.
+
+<ProviderTable />
+
+## Overwhelmed by choice?
+
+Yeah, it's a lot.
+
+- **Want access to many models?** Try [OpenRouter](/providers/openrouter) for a single API to 100+ models
+- **Want to optimize for specific models?** Use the first-party provider for each of them (Anthropic, OpenAI, etc)
+- **Looking for local/offline models?** Check out [Ollama](/providers/ollama) or [LM Studio](/providers/lmstudio)

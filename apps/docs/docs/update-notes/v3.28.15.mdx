@@ -1,0 +1,40 @@
+---
+description: Adds new Chutes models, finalized cloud reasoning messages, deprecates Grok 4 Fast, and includes fixes and a Vite security update.
+keywords:
+  - roo code 3.28.15
+  - new models
+  - bug fixes
+  - security update
+image: /img/v3.28.15/v3.28.15.png
+---
+
+# Roo Code 3.28.15 Release Notes (2025-10-03)
+
+This release adds new Chutes models, shows finalized reasoning in cloud tasks, deprecates Grok 4 Fast, and includes UI fixes and security updates.
+
+<img src="/img/v3.28.15/v3.28.15.png" alt="Roo Code v3.28.15 Release" width="600" />
+
+## QOL Improvements
+
+* Include reasoning messages in cloud task histories so you can review complete thinking after runs ([#8401](https://github.com/RooCodeInc/Roo-Code/pull/8401))
+* Add structured data to the homepage to improve SEO and discoverability ([#8427](https://github.com/RooCodeInc/Roo-Code/pull/8427))
+
+## Bug Fixes
+
+* “Reset and Continue” now truly resets cost tracking; subsequent requests only count new costs (thanks alecoot!) ([#6890](https://github.com/RooCodeInc/Roo-Code/pull/6890))
+* Prompts settings: Save button activates on first change and preserves empty strings (thanks beccare!) ([#8267](https://github.com/RooCodeInc/Roo-Code/pull/8267))
+* Remove overeager “unsaved changes” dialog in Settings when nothing changed ([#8410](https://github.com/RooCodeInc/Roo-Code/pull/8410))
+* Show the Send button when only images are attached ([#8423](https://github.com/RooCodeInc/Roo-Code/pull/8423))
+
+## Provider Updates
+
+* Chutes: Add new models for speed, longer context, and multimodal reasoning (DeepSeek V3.1 Terminus, V3.1 turbo, V3.2-Exp; GLM‑4.6‑FP8; Qwen3‑VL‑235B‑A22B‑Thinking) (thanks mohammad154!) ([#8467](https://github.com/RooCodeInc/Roo-Code/pull/8467))
+* Gemini: Remove unsupported free “2.5 Flash Image Preview”; paid path unaffected (thanks SannidhyaSah!) ([#8359](https://github.com/RooCodeInc/Roo-Code/pull/8359))
+* Bedrock: Treat Claude Sonnet 4 as 1M context to reduce truncation and mis-selection ([#8421](https://github.com/RooCodeInc/Roo-Code/pull/8421))
+* Roo Code Cloud: Deprecate “Grok 4 Fast”; show warning if selected and hide when not selected ([#8481](https://github.com/RooCodeInc/Roo-Code/pull/8481))
+
+## Misc Improvements
+
+* Add internal UsageStats schema and type to enable future dashboards and clearer usage insights ([#8441](https://github.com/RooCodeInc/Roo-Code/pull/8441))
+* Security: Update Vite dev server to 6.3.6 to address path traversal (GHSA-g4jq-h2w9-997c) (thanks app/renovate!) ([#7838](https://github.com/RooCodeInc/Roo-Code/pull/7838))
+* Dependency: Update glob to 11.0.3 for stability (thanks app/renovate!) ([#7767](https://github.com/RooCodeInc/Roo-Code/pull/7767))

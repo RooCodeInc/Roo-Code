@@ -1,0 +1,37 @@
+---
+description: Bug fixes for scrollbar jumping, multi-folder workspaces, provider settings, and various stability improvements.
+keywords:
+  - roo code 3.25.15
+  - scrollbar fix
+  - multi-folder workspace
+  - bug fixes
+---
+
+# Roo Code 3.25.15 Release Notes (2025-08-14)
+
+This release fixes scrollbar jumping in long conversations, improves multi-folder workspace support, and includes various stability and quality-of-life improvements.
+
+## QOL Improvements
+
+* **SEO Improvements**: Enhanced website discoverability with proper metadata and social media preview cards (thanks elianiva, abumalick!) ([#7096](https://github.com/RooCodeInc/Roo-Code/pull/7096))
+* **Sitemap Generation**: Implemented TypeScript-based sitemap generation for better search engine indexing (thanks abumalick!) ([#6206](https://github.com/RooCodeInc/Roo-Code/pull/6206))
+* **Account Button Localization**: The Account button now displays in your selected language across 18 supported languages (thanks zhangtony239!) ([#6978](https://github.com/RooCodeInc/Roo-Code/pull/6978))
+* **AGENT.md Support**: Now recognizes both AGENT.md and AGENTS.md files for agent rules configuration (thanks Brendan-Z!) ([#6913](https://github.com/RooCodeInc/Roo-Code/pull/6913))
+
+## Bug Fixes
+
+* **Scrollbar Jumping**: Fixed the frustrating scrollbar jumping issue in long conversations over 500 messages (thanks shlgug, adambrand!) ([#7064](https://github.com/RooCodeInc/Roo-Code/pull/7064))
+* **Multi-Folder Workspaces**: Fixed workspace path handling and "file not found" errors in multi-folder VS Code workspaces (thanks NaccOll!) ([#6903](https://github.com/RooCodeInc/Roo-Code/pull/6903), [#6902](https://github.com/RooCodeInc/Roo-Code/pull/6902))
+* **Task Execution Stability**: Improved stability during long-running tasks, helping with the "grey screen" issue (thanks catrielmuller, MuriloFP!) ([#7035](https://github.com/RooCodeInc/Roo-Code/pull/7035))
+* **Provider Settings Save Button**: The save button now properly enables when changing provider dropdowns and checkboxes ([#7113](https://github.com/RooCodeInc/Roo-Code/pull/7113))
+* **XML Entity Decoding**: Fixed apply_diff tool failures when processing files with special characters like "&" (thanks indiesewell!) ([#7108](https://github.com/RooCodeInc/Roo-Code/pull/7108))
+* **Settings Display**: Fixed Max Requests and Max Cost values not displaying in the settings UI (thanks chrarnoldus, possible055!) ([#6925](https://github.com/RooCodeInc/Roo-Code/pull/6925))
+* **Context Condensing Indicator**: Fixed the condensing indicator incorrectly persisting when switching tasks (thanks f14XuanLv!) ([#6922](https://github.com/RooCodeInc/Roo-Code/pull/6922))
+* **Sitemap /evals Page**: Added missing /evals page to sitemap generation ([#7102](https://github.com/RooCodeInc/Roo-Code/pull/7102))
+* **NPM Publishing**: Fixed the npm publishing script for the types package ([#7093](https://github.com/RooCodeInc/Roo-Code/pull/7093))
+
+## Provider Updates
+
+* **AWS Bedrock 1M Context**: Added checkbox to enable 1M token context window for Claude Sonnet 4 ([#7032](https://github.com/RooCodeInc/Roo-Code/pull/7032))
+* **GPT-4.5 Preview Removal**: Removed deprecated GPT-4.5 Preview model from OpenAI provider options (thanks PeterDaveHello!) ([#6948](https://github.com/RooCodeInc/Roo-Code/pull/6948))
+* **Task Metadata**: Improved compatibility with Roo Code Cloud services ([#7092](https://github.com/RooCodeInc/Roo-Code/pull/7092))

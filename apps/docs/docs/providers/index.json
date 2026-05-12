@@ -1,0 +1,114 @@
+{
+	"providers": [
+		{
+			"id": "providers/anthropic",
+			"title": "Anthropic",
+			"extension": true
+		},
+		{
+			"id": "providers/openai-chatgpt-plus-pro",
+			"title": "ChatGPT Plus/Pro",
+			"extension": true
+		},
+		{
+			"id": "providers/bedrock",
+			"title": "AWS Bedrock",
+			"extension": true
+		},
+		{
+			"id": "providers/deepseek",
+			"title": "DeepSeek",
+			"extension": true
+		},
+		{
+			"id": "providers/fireworks",
+			"title": "Fireworks AI",
+			"extension": true
+		},
+		{
+			"id": "providers/gemini",
+			"title": "Google Gemini",
+			"extension": true
+		},
+		{
+			"id": "providers/lmstudio",
+			"title": "LM Studio",
+			"extension": true
+		},
+		{
+			"id": "providers/litellm",
+			"title": "LiteLLM",
+			"extension": true
+		},
+		{
+			"id": "providers/mistral",
+			"title": "Mistral AI",
+			"extension": true
+		},
+		{
+			"id": "providers/moonshot",
+			"title": "Moonshot",
+			"extension": true
+		},
+		{
+			"id": "providers/ollama",
+			"title": "Ollama",
+			"extension": true
+		},
+		{
+			"id": "providers/openai",
+			"title": "OpenAI",
+			"extension": true
+		},
+		{
+			"id": "providers/openai-compatible",
+			"title": "OpenAI Compatible",
+			"extension": true
+		},
+		{
+			"id": "providers/openrouter",
+			"title": "OpenRouter",
+			"extension": true
+		},
+		{
+			"id": "providers/qwen-code",
+			"title": "Qwen Code CLI",
+			"extension": true
+		},
+		{
+			"id": "providers/requesty",
+			"title": "Requesty",
+			"extension": true
+		},
+		{
+			"id": "providers/sambanova",
+			"title": "SambaNova",
+			"extension": true
+		},
+		{
+			"id": "providers/vercel-ai-gateway",
+			"title": "Vercel AI Gateway",
+			"extension": true
+		},
+		{
+			"id": "providers/vertex",
+			"title": "GCP Vertex AI",
+			"extension": true
+		},
+		{
+			"id": "providers/vscode-lm",
+			"title": "VS Code Language Model API",
+			"extension": true
+		},
+		{
+			"id": "providers/xai",
+			"title": "xAI (Grok)",
+			"extension": true
+		},
+		{
+			"id": "providers/zai",
+			"title": "Z AI",
+			"extension": true
+		}
+	]
+}

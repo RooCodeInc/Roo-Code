@@ -1,0 +1,38 @@
+---
+description: Adds the run_slash_command tool for AI-driven slash command execution, fixes tool approval errors, and includes Kimi K2 Turbo model support.
+keywords:
+  - roo code 3.26.6
+  - run_slash_command tool
+  - kimi k2 turbo
+  - bug fixes
+image: /img/v3.26.6/v3.26.6.png
+---
+
+# Roo Code 3.26.6 Release Notes (2025-09-03)
+
+This release adds the ability for AI to execute slash commands programmatically, fixes tool approval issues, and includes support for the high-speed Kimi K2 Turbo model.
+
+<img src="/img/v3.26.6/v3.26.6.png" alt="Roo Code v3.26.6 Release" width="600" />
+## New run_slash_command Tool
+
+We've added a powerful new tool that allows the AI to execute slash commands as part of its workflow ([#7473](https://github.com/RooCodeInc/Roo-Code/pull/7473)):
+
+- **Automated Command Execution**: The AI can now run commands like `/init`, `/review`, and other slash commands automatically
+- **Seamless Integration**: Existing slash commands work directly within AI workflows without manual intervention
+- **Enhanced Automation**: Combine multiple slash commands to create complex automated sequences
+
+This opens up new possibilities for task automation, letting the AI leverage the full power of Roo Code's slash command ecosystem programmatically.
+
+> **📚 Documentation**: See the [run_slash_command tool documentation](/advanced-usage/available-tools/run-slash-command) for usage examples and integration patterns.
+
+## QOL Improvements
+
+* **Settings Scroll Position**: Settings tabs now remember their individual scroll positions when switching between them (thanks DC-Dancao!) ([#7587](https://github.com/RooCodeInc/Roo-Code/pull/7587))
+
+## Bug Fixes
+
+* **Tool Approval Fix**: Fixed an error that occurred when using insert_content and search_and_replace tools on write-protected files - these tools now handle file protection correctly ([#7649](https://github.com/RooCodeInc/Roo-Code/pull/7649))
+
+## Provider Updates
+
+* **Kimi K2 Turbo Model**: Added support for the high-speed Kimi K2 Turbo model with 60-100 tokens/sec processing and a 131K token context window (thanks wangxiaolong100!) ([#7593](https://github.com/RooCodeInc/Roo-Code/pull/7593))

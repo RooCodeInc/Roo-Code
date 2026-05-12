@@ -1,0 +1,43 @@
+---
+description: This release improves worktree workflows, adds MCP configuration flexibility, and fixes context condensing issues.
+keywords:
+  - roo code 3.44.0
+  - new features
+  - bug fixes
+image: /img/v3.44.0/v3.44.0.png
+---
+
+# Roo Code 3.44.0 Release Notes (2026-01-27)
+
+This release improves worktree workflows, adds MCP configuration flexibility, and fixes context condensing issues.
+
+<img src="/img/v3.44.0/v3.44.0.png" alt="Roo Code v3.44.0 Release" width="600" />
+
+## Worktrees
+
+Worktrees are easier to work with in chat. The Worktree selector is more prominent, creating a worktree takes fewer steps, and the Create Worktree flow is clearer (including a native folder picker), so it’s faster to spin up an isolated branch/workspace and switch between worktrees while you work. ([#10940](https://github.com/RooCodeInc/Roo-Code/pull/10940))
+
+> **📚 Documentation**: See [Worktrees](/features/worktrees) for detailed usage.
+
+## QOL Improvements
+
+* Makes subtasks easier to find and navigate by improving parent/child visibility across History and Chat (including clearer “back to parent” navigation), so you can move between related tasks faster. ([#10864](https://github.com/RooCodeInc/Roo-Code/pull/10864))
+* Lets you auto-approve all tools from a trusted MCP server by using `alwaysAllow: ["*"]`, so you don’t have to list each tool name individually. ([#10948](https://github.com/RooCodeInc/Roo-Code/pull/10948))
+* Reduces token overhead in prompts by removing a duplicate MCP server/tools section from internal instructions, leaving more room for your conversation context. ([#10895](https://github.com/RooCodeInc/Roo-Code/pull/10895))
+* Improves Traditional Chinese (zh-TW) UI text for better clarity and consistency. (thanks PeterDaveHello!) ([#10953](https://github.com/RooCodeInc/Roo-Code/pull/10953))
+
+## Bug Fixes
+
+* Fixes an issue where context condensing could accidentally pull in content that was already condensed earlier, which could reduce the effectiveness of long-conversation summaries. ([#10985](https://github.com/RooCodeInc/Roo-Code/pull/10985))
+* Fixes an issue where automatic context condensing could silently fail for VS Code LM API users when token counting returned 0 outside active requests, which could lead to unexpected context-limit errors. (thanks srulyt!) ([#10983](https://github.com/RooCodeInc/Roo-Code/pull/10983))
+* Fixes an issue where Roo didn’t record a successful truncation fallback when condensation failed, which could make Rewind restores unreliable after a condensing error. ([#10984](https://github.com/RooCodeInc/Roo-Code/pull/10984))
+* Fixes an issue where MCP tools with hyphens in their names could fail to resolve in native tool calling (for example when a provider/model rewrites `-` as `_`). (thanks hori-so!) ([#10775](https://github.com/RooCodeInc/Roo-Code/pull/10775))
+* Fixes an issue where tool calls could fail validation through AWS Bedrock when `toolUseId` exceeded Bedrock’s 64-character limit, improving reliability for longer tool-heavy sessions. ([#10902](https://github.com/RooCodeInc/Roo-Code/pull/10902))
+* Fixes an issue where Settings section headers could look transparent while scrolling, restoring an opaque background so the UI stays legible. ([#10951](https://github.com/RooCodeInc/Roo-Code/pull/10951))
+* Fixes a Fireworks provider type mismatch by removing unsupported model tool fields, keeping provider model metadata consistent and preventing breakage from schema changes. ([#10937](https://github.com/RooCodeInc/Roo-Code/pull/10937))
+* Fixes an issue where the `new_task` tool could miss creating a checkpoint before handing off, making task state more consistent and recoverable. ([#10982](https://github.com/RooCodeInc/Roo-Code/pull/10982))
+* Fixes an issue where leftover Power Steering experiment references could display raw translation keys in the UI. ([#10980](https://github.com/RooCodeInc/Roo-Code/pull/10980))
+
+## Provider Updates
+
+* Adds the latest Fireworks models to the Fireworks provider’s model list. (thanks ThanhNguyxn!) ([#10679](https://github.com/RooCodeInc/Roo-Code/pull/10679))

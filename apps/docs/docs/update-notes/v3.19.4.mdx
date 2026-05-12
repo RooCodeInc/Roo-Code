@@ -1,0 +1,53 @@
+---
+description: This patch release delivers critical memory leak fixes, new Gemini 2.5 Pro Preview 06-05 model support, improved infrastructure for evals, and several quality-of-life and workflow enhancements.
+---
+
+# Roo Code 3.19.4 Release Notes (2025-06-05)
+
+This patch release delivers critical memory leak fixes, new Gemini 2.5 Pro Preview 06-05 model support, improved infrastructure for evals, and several quality-of-life and workflow enhancements.
+
+---
+
+## Gemini 2.5 Pro Preview 06-05 Model Support
+We've added support for the newly released Gemini 2.5 Pro Preview 06-05 model, giving you access to the latest advancements from Google (thanks daniel-lxs and shariqriazz!). This model is available in the [Gemini](/providers/gemini), [Vertex](/providers/vertex), and [OpenRouter](/providers/openrouter) providers.
+
+---
+
+## Major Memory Leak Fixes
+We've resolved multiple memory leaks across the extension, resulting in improved stability and performance:
+- **ChatView**: Fixed leaks from unmanaged async operations and setTimeouts (thanks kiwina!)
+- **WorkspaceTracker**: FileSystemWatcher and other disposables are now properly cleaned up (thanks kiwina!)
+- **RooTips**: setTimeout is now cleared to prevent state updates on unmounted components (thanks kiwina!)
+- **RooIgnoreController**: FileSystemWatcher leak resolved by ensuring Task.dispose() is always called (thanks kiwina!)
+- **Clipboard**: useCopyToClipboard now clears setTimeout to avoid memory leaks (thanks kiwina!)
+- **ClineProvider**: Instance cleanup improved to prevent lingering resources (thanks xyOz-dev!)
+
+---
+
+## Bug Fixes
+
+*   **Mermaid Diagrams**: Fixed Content Security Policy (CSP) errors for Mermaid diagrams by implementing an enhanced bundling strategy (thanks KJ7LNW!)
+
+---
+
+## Provider Updates
+
+*   **Bedrock**: Improved model information detection for custom Bedrock ARNs, ensuring better compatibility (thanks adamhill!)
+
+---
+
+## QOL Improvements
+
+*   **Fix reading PDF, DOCX, and IPYNB files in [`read_file`](/advanced-usage/available-tools/read-file) tool**: Ensures reliable reading of these file types (thanks samhvw8!)
+
+---
+
+## Misc Improvements
+
+*   **OpenAI Compatible Embedder**: Added a new embedder for codebase indexing that is compatible with the OpenAI API, expanding options for local and custom embedding models (thanks SannidhyaSah!)
+*   **Enforce [`codebase_search`](/advanced-usage/available-tools/codebase-search) as primary tool**: Roo Code now always uses codebase_search as the first step for code understanding tasks, improving accuracy and consistency (thanks hannesrudolph!)
+*   **Improved Docker setup for evals**: Dockerfile and docker-compose updated for better isolation, real-time monitoring, and streamlined configuration
+*   **Move evals into pnpm workspace, switch from SQLite to Postgres**: Evals are now managed in a pnpm workspace and use PostgreSQL for improved scalability
+*   **Refactor [MCP](/features/mcp/overview) to use getDefaultEnvironment for stdio client transport**: Simplifies MCP client setup and improves maintainability (thanks samhvw8!)
+*   **Get rid of "partial" component in names referencing not necessarily partial messages**: Improves code clarity (thanks wkordalski!)
+*   **Improve feature request template**: Makes it easier to submit actionable feature requests (thanks elianiva!)

@@ -1,0 +1,107 @@
+---
+description: This release introduces custom slash commands, Gemini web tools, image support for read_file, message queueing, and many quality-of-life improvements.
+keywords:
+  - roo code 3.25.0
+  - custom slash commands
+  - gemini tools
+  - image support
+  - message queueing
+---
+
+# Roo Code 3.25.0 Release Notes (2025-07-29)
+
+This release brings powerful new capabilities to Roo Code, including custom slash commands for workflow automation, enhanced Gemini models with web access, comprehensive image support, and seamless message queueing for uninterrupted conversations.
+
+## Custom Slash Commands
+
+Create your own slash commands to automate repetitive workflows ([#6263](https://github.com/RooCodeInc/Roo-Code/pull/6263), [#6286](https://github.com/RooCodeInc/Roo-Code/pull/6286), [#6333](https://github.com/RooCodeInc/Roo-Code/pull/6333), [#6336](https://github.com/RooCodeInc/Roo-Code/pull/6336), [#6327](https://github.com/RooCodeInc/Roo-Code/pull/6327)):
+
+- **File-Based Commands**: Place markdown files in `.roo/commands/` to create custom commands instantly
+- **Management UI**: New interface for creating, editing, and deleting commands with built-in fuzzy search
+- **Argument Hints**: Commands display helpful hints about required arguments as you type
+- **Rich Descriptions**: Add metadata and descriptions to make commands self-documenting
+
+<img src="/img/slash-commands/slash-commands-4.png" alt="Slash commands menu showing available commands" width="600" />
+
+Turn complex workflows into simple commands like `/deploy` or `/review` for faster development.
+
+> **📚 Documentation**: See [Slash Commands Guide](/features/slash-commands) for detailed usage instructions.
+
+## Message Queueing
+
+Continue typing while Roo processes your requests with the new message queueing system ([#6167](https://github.com/RooCodeInc/Roo-Code/pull/6167)):
+
+- **Non-Blocking Input**: Type and send messages even while Roo is processing previous requests
+- **Sequential Processing**: Messages are queued and processed in the order they were sent
+- **Visual Feedback**: See queued messages clearly displayed in the interface
+- **Maintained Context**: Each message maintains proper context from the conversation
+
+Keeps your workflow smooth when you have multiple quick questions or corrections.
+
+> **📚 Documentation**: See [Message Queueing Guide](/features/message-queueing) for detailed information.
+
+## Image Support for read_file Tool
+
+The [`read_file`](/advanced-usage/available-tools/read-file) tool now supports reading and analyzing images (thanks samhvw8!) ([#5172](https://github.com/RooCodeInc/Roo-Code/pull/5172)):
+
+- **Multiple Formats**: Supports PNG, JPG, JPEG, GIF, WebP, SVG, BMP, ICO, and TIFF
+- **OCR Capabilities**: Extract text from screenshots and scanned documents
+- **Batch Processing**: Read multiple images from a folder with descriptions
+- **Simple Integration**: Works just like reading text files - no special configuration needed
+
+Useful for analyzing UI mockups, debugging screenshot errors, or extracting code from images.
+
+## Gemini Tools: URL Context and Google Search
+
+Gemini models can now access web content and perform Google searches for more accurate, up-to-date responses (thanks HahaBill!) ([#5959](https://github.com/RooCodeInc/Roo-Code/pull/5959)):
+
+- **URL Context**: Directly analyze web pages, documentation, and online resources
+- **Google Search Grounding**: Get fact-checked responses based on current search results
+- **User Control**: Enable or disable web features based on your privacy preferences
+- **Real-Time Information**: Access the latest documentation and best practices
+
+Perfect for researching new libraries, verifying solutions, or getting current API information.
+
+> **📚 Documentation**: See [Gemini Provider Guide](/providers/gemini) for setup and usage instructions.
+
+## Quality of Life Improvements
+
+Small changes that make a big difference in your daily workflow:
+
+* **Markdown Table Rendering**: Tables now display with proper formatting instead of raw markdown for better readability ([#6252](https://github.com/RooCodeInc/Roo-Code/pull/6252))
+  <img src="/img/v3.25.0/v3.25.0-2.png" alt="Markdown table rendering in Roo Code" width="600" />
+* **Mode Selector Popover Redesign**: Improved layout with search functionality when you have many modes installed ([#6140](https://github.com/RooCodeInc/Roo-Code/pull/6140))
+  <img src="/img/v3.25.0/v3.25.0.png" alt="Mode Selector Popover with Search" width="600" />
+* **API Selector Popover Redesign**: Updated to match the new mode selector design with improved layout ([#6148](https://github.com/RooCodeInc/Roo-Code/pull/6148))
+  <img src="/img/v3.25.0/v3.25.0-1.png" alt="API Configuration Selector Redesign" width="600" />
+* **Sticky Task Modes**: Tasks remember their last-used mode and restore it automatically ([#6177](https://github.com/RooCodeInc/Roo-Code/pull/6177))
+* **ESC Key Support**: Close popovers with ESC for better keyboard navigation ([#6175](https://github.com/RooCodeInc/Roo-Code/pull/6175))
+* **Improved Command Highlighting**: Only valid commands are highlighted in the input field ([#6336](https://github.com/RooCodeInc/Roo-Code/pull/6336))
+
+## Bug Fixes
+
+Critical fixes that improve stability and compatibility:
+
+* **Multi-file Edit Fix**: Fixed issue where Git diff views interfered with file operations (thanks hassoncs, szermatt!) ([#6350](https://github.com/RooCodeInc/Roo-Code/pull/6350))
+* **Non-QWERTY Keyboard Support**: Fixed keyboard shortcuts for Dvorak, AZERTY, and other layouts (thanks shlgug!) ([#6162](https://github.com/RooCodeInc/Roo-Code/pull/6162))
+* **Mode Export/Import**: Fixed custom mode export to handle slug changes correctly ([#6186](https://github.com/RooCodeInc/Roo-Code/pull/6186))
+* **Hidden Directory Support**: [`list_files`](/advanced-usage/available-tools/list-files) now properly shows contents of dot directories (thanks MuriloFP, avtc, zhang157686!) ([#5176](https://github.com/RooCodeInc/Roo-Code/pull/5176))
+* **Scrollbar Stability**: Fixed flickering scrollbar when streaming tables and code blocks ([#6266](https://github.com/RooCodeInc/Roo-Code/pull/6266))
+* **Settings Link Fix**: Restored working "View Settings" link in command permissions tooltip ([#6253](https://github.com/RooCodeInc/Roo-Code/pull/6253))
+* **@mention Parsing**: Fixed mentions to work in all input contexts including follow-up questions ([#6331](https://github.com/RooCodeInc/Roo-Code/pull/6331))
+* **Debug Button Removal**: Hidden test error boundary button in production builds (thanks bangjohn!) ([#6216](https://github.com/RooCodeInc/Roo-Code/pull/6216))
+* **Command Highlighting Fix**: Fixed inconsistent slash command highlighting behavior ([#6325](https://github.com/RooCodeInc/Roo-Code/pull/6325))
+* **Text Wrapping**: Fixed text overflow for long command patterns in permissions UI ([#6255](https://github.com/RooCodeInc/Roo-Code/pull/6255))
+* **Cross-Platform Mode Export**: Windows path separators now convert correctly for Unix systems ([#6308](https://github.com/RooCodeInc/Roo-Code/pull/6308))
+
+## Provider Updates
+
+* **Prompt Caching for LiteLLM**: Reduce API costs and improve response times with caching support for Claude 3.5 Sonnet and compatible models (thanks MuriloFP, steve-gore-snapdocs!) ([#6074](https://github.com/RooCodeInc/Roo-Code/pull/6074))
+
+## Misc. Improvements
+
+* **Background Editing (Experimental)**: Work uninterrupted while Roo edits files in the background—no more losing focus from automatic diff views ([#6214](https://github.com/RooCodeInc/Roo-Code/pull/6214)). Files change silently while you keep coding, with diagnostics and error checking still active. See [Background Editing](/features/experimental/background-editing) for details.
+* **Security Update**: Updated form-data dependency to address security vulnerability ([#6332](https://github.com/RooCodeInc/Roo-Code/pull/6332))
+* **Contributor Updates**: Refreshed contributor acknowledgments across all localizations ([#6302](https://github.com/RooCodeInc/Roo-Code/pull/6302))
+* **Release Engineering**: Converted release engineer role to slash command for easier releases ([#6333](https://github.com/RooCodeInc/Roo-Code/pull/6333))
+* **PR Reviewer Improvements**: Made PR reviewer mode generic for any GitHub repository ([#6357](https://github.com/RooCodeInc/Roo-Code/pull/6357), [#6328](https://github.com/RooCodeInc/Roo-Code/pull/6328), [#6324](https://github.com/RooCodeInc/Roo-Code/pull/6324))

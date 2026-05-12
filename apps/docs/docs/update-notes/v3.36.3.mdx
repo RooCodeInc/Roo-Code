@@ -1,0 +1,67 @@
+---
+description: Browser screenshots, xhigh reasoning effort, native tools default for OpenRouter, provider updates, and fixes
+keywords:
+  - roo code 3.36.3
+  - browser screenshots
+  - openrouter native tools
+  - deepseek v3.2
+image: /img/v3.36.3/v3.36.3.png
+---
+
+# Roo Code 3.36.3 Release Notes (2025-12-10)
+
+This release adds browser screenshot saving, xhigh reasoning effort support, native tools default for OpenRouter, plus provider updates and bug fixes.
+
+<img src="/img/v3.36.3/v3.36.3.png" alt="Roo Code v3.36.3 Release" width="600" />
+
+## Browser Screenshot Saving
+
+The browser tool now supports saving screenshots to a specified file path with a new `screenshot` action, enabling you to capture visual state during browser automation tasks. ([#9963](https://github.com/RooCodeInc/Roo-Code/pull/9963))
+
+## Extra-High Reasoning Effort
+
+Users of the gpt-5.1-codex-max model with the OpenAI provider can now select "Extra High" as a reasoning effort level, enabling maximum reasoning capability for complex tasks (thanks andrewginns!) ([#9900](https://github.com/RooCodeInc/Roo-Code/pull/9900))
+
+## OpenRouter Native Tools Default
+
+OpenRouter models that support native tools now automatically use native tool calling by default, improving tool calling reliability without manual configuration. ([#9878](https://github.com/RooCodeInc/Roo-Code/pull/9878))
+
+## QOL Improvements
+
+* **Unified Context-Management UX**: Real-time feedback for context operations with truncation notifications and condensation summaries ([#9795](https://github.com/RooCodeInc/Roo-Code/pull/9795))
+* **Better OpenAI Error Messages**: Enhanced error handler extracts detailed information from API errors for easier troubleshooting ([#9639](https://github.com/RooCodeInc/Roo-Code/pull/9639))
+* **Token Counting Optimization**: Removed separate API calls for token counting, improving performance ([#9884](https://github.com/RooCodeInc/Roo-Code/pull/9884))
+* **Tools Decoupled from System Prompt**: Tool-specific instructions are now self-contained in tool descriptions ([#9784](https://github.com/RooCodeInc/Roo-Code/pull/9784))
+
+## Bug Fixes
+
+* **Tool Protocol Selector**: Always show tool protocol selector for OpenAI-compatible providers (thanks bozoweed!) ([#9966](https://github.com/RooCodeInc/Roo-Code/pull/9966))
+* **apply_diff Filtering**: Properly exclude apply_diff from native tools when diff is disabled (thanks denis-kudelin!) ([#9920](https://github.com/RooCodeInc/Roo-Code/pull/9920))
+* **API Timeout Handling**: Fixed disabled API timeout (set to 0) causing immediate request failures (thanks dcbartlett!) ([#9960](https://github.com/RooCodeInc/Roo-Code/pull/9960))
+* **Reasoning Effort Dropdown**: Respect explicit supportsReasoningEffort array values and fix disable handling ([#9970](https://github.com/RooCodeInc/Roo-Code/pull/9970), [#9930](https://github.com/RooCodeInc/Roo-Code/pull/9930))
+* **Actual Error Messages**: Display actual API error messages instead of generic text on retry ([#9954](https://github.com/RooCodeInc/Roo-Code/pull/9954))
+* **Stream Hanging Fix**: Process finish_reason to emit tool_call_end events for OpenRouter, Roo, and xAI providers ([#9927](https://github.com/RooCodeInc/Roo-Code/pull/9927), [#9929](https://github.com/RooCodeInc/Roo-Code/pull/9929))
+* **tool_result ID Validation**: Validate and fix tool_result IDs before API requests to prevent Anthropic rejections ([#9952](https://github.com/RooCodeInc/Roo-Code/pull/9952))
+* **Suppressed Internal Error**: Fixed 'ask promise was ignored' error leaking to LLM conversations ([#9914](https://github.com/RooCodeInc/Roo-Code/pull/9914))
+* **Provider Sanitization**: Fixed infinite loop when using removed/invalid API providers ([#9869](https://github.com/RooCodeInc/Roo-Code/pull/9869))
+* **Context Icons Theme**: Context-management icons now use foreground color to match VSCode themes ([#9912](https://github.com/RooCodeInc/Roo-Code/pull/9912))
+* **Eval Runs Deletion**: Fixed foreign key constraint preventing eval run deletions ([#9909](https://github.com/RooCodeInc/Roo-Code/pull/9909))
+* **OpenAI-Compatible Timeout Reliability**: Added timeout handling to OpenAI-compatible providers to prevent indefinite hangs (thanks dcbartlett!) ([#9898](https://github.com/RooCodeInc/Roo-Code/pull/9898))
+
+## Provider Updates
+
+* **DeepSeek V3.2**: Updated to V3.2 with 50% price reduction, native tools enabled by default, and 8K max output ([#9962](https://github.com/RooCodeInc/Roo-Code/pull/9962))
+* **xAI Models Catalog**: Updated catalog with corrected context windows, image support for grok-3/grok-3-mini, and removed deprecated models ([#9872](https://github.com/RooCodeInc/Roo-Code/pull/9872))
+* **xAI Tool Preferences**: Configured xAI models to use search_replace for better file editing compatibility ([#9923](https://github.com/RooCodeInc/Roo-Code/pull/9923))
+* **DeepSeek V3.2 for Baseten**: Added DeepSeek V3.2 model support (thanks AlexKer!) ([#9861](https://github.com/RooCodeInc/Roo-Code/pull/9861))
+* **Baseten Model Tweaks**: Improved maxTokens limits and native tools support for stability ([#9866](https://github.com/RooCodeInc/Roo-Code/pull/9866))
+* **Bedrock Models**: Added Kimi, MiniMax, and Qwen model configurations (thanks jbearak!) ([#9905](https://github.com/RooCodeInc/Roo-Code/pull/9905))
+
+## Misc Improvements
+
+* **Announcement UI Updates**: Improved announcement visuals with updated social icons and GitHub stars CTA ([#9945](https://github.com/RooCodeInc/Roo-Code/pull/9945))
+* **Improved Error Logging**: Better error context for parseToolCall exceptions and cloud job errors ([#9857](https://github.com/RooCodeInc/Roo-Code/pull/9857), [#9924](https://github.com/RooCodeInc/Roo-Code/pull/9924))
+* **search_replace Native Tool**: New tool for single-replacement file operations with precise targeting via unique text matching ([#9918](https://github.com/RooCodeInc/Roo-Code/pull/9918))
+* **Versioned Settings Support**: Internal infrastructure for API-side versioning of model settings with minimum plugin version gating ([#9934](https://github.com/RooCodeInc/Roo-Code/pull/9934))
+* **OpenRouter Telemetry**: Added API error telemetry for better diagnostics ([#9953](https://github.com/RooCodeInc/Roo-Code/pull/9953))
+* **Evals Streaming Stats**: Tool usage stats now stream in real-time with token usage throttling ([#9926](https://github.com/RooCodeInc/Roo-Code/pull/9926))

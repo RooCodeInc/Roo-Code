@@ -1,0 +1,55 @@
+---
+description: Intelligent file reading, browser-use on image-capable models, dynamic Roo Code Cloud model loading, plus fixes and provider updates.
+keywords:
+  - roo code 3.29.0
+  - new features
+  - bug fixes
+image: /img/v3.29.0/v3.29.0.png
+---
+
+# Roo Code 3.29.0 Release Notes (2025-10-24)
+
+This release adds intelligent file reading, enables browser-use for all image-capable models, and adds dynamic Roo Code Cloud model loading — plus many fixes and model updates.
+
+<img src="/img/v3.29.0/v3.29.0.png" alt="Roo Code v3.29.0 Release" width="600" />
+
+## Introducing Roo Code's first Cloud Agent, the PR Reviewer
+
+It runs Roo in the cloud, giving extremely high quality code reviews instantly. We’ve been using it heavily to build Roo and now it's also available to the community.
+
+Learn more: https://roocode.com/reviewer
+
+## QOL Improvements
+
+* Intelligent file reading with token‑budget management and a 100KB preview for very large files (thanks daniel-lxs, liwilliam2021!) ([#8789](https://github.com/RooCodeInc/Roo-Code/pull/8789))
+* Browser‑use enabled for all image‑capable models (thanks app/roomote, hannesrudolph!) ([#8121](https://github.com/RooCodeInc/Roo-Code/pull/8121), issue #8116)
+* Reduce ui_messages.json bloat by removing GPT‑5 instructions/reasoning_summary ([#8756](https://github.com/RooCodeInc/Roo-Code/pull/8756))
+* Adjustable checkpoint initialization timeout and clearer warnings (thanks NaccOll!) ([#8019](https://github.com/RooCodeInc/Roo-Code/pull/8019), issue #7843)
+* Improve auto‑approve button responsiveness ([#8798](https://github.com/RooCodeInc/Roo-Code/pull/8798))
+* Retry API requests on stream failures instead of aborting the task ([#8794](https://github.com/RooCodeInc/Roo-Code/pull/8794))
+* Improve checkpoint menu translations ([#8796](https://github.com/RooCodeInc/Roo-Code/pull/8796))
+* Try a 5s status mutation timeout to reduce flaky status changes ([#8734](https://github.com/RooCodeInc/Roo-Code/pull/8734))
+
+## Bug Fixes
+
+* search_files now respects .gitignore (including nested) by default; override when needed ([#8804](https://github.com/RooCodeInc/Roo-Code/pull/8804), issue #7921)
+* apply_diff export preserves trailing newlines (fix stripLineNumbers) ([#8227](https://github.com/RooCodeInc/Roo-Code/pull/8227), issue #8020)
+* Export: exclude max tokens for models that don’t support it (thanks elianiva!) ([#8464](https://github.com/RooCodeInc/Roo-Code/pull/8464), issue #7944)
+* Checkpoints: always show restore options regardless of change detection ([#8758](https://github.com/RooCodeInc/Roo-Code/pull/8758))
+
+## Provider Updates
+
+* Roo Code Cloud: dynamic model loading in the Model Picker with 5‑minute caching, auth‑state refresh, and graceful fallback to static models on failure ([#8728](https://github.com/RooCodeInc/Roo-Code/pull/8728))
+* Chutes: add zai‑org/GLM‑4.6‑turbo (204.8K context; clear pricing) (thanks mohammad154!) ([#8502](https://github.com/RooCodeInc/Roo-Code/pull/8502))
+* OpenRouter: add Anthropic Claude Haiku 4.5 to prompt‑caching models ([#8764](https://github.com/RooCodeInc/Roo-Code/pull/8764))
+* Z.ai: expand model coverage with GLM‑4.5‑X, AirX, Flash ([#8745](https://github.com/RooCodeInc/Roo-Code/pull/8745))
+* Mistral: update “Medium” model name (thanks ThomsenDrake!) ([#8364](https://github.com/RooCodeInc/Roo-Code/pull/8364))
+
+
+## Misc Updates
+
+* Reviewer page copy clarifications for clearer expectations ([#8753](https://github.com/RooCodeInc/Roo-Code/pull/8753))
+* Dynamic OpenGraph images for clean link previews ([#8773](https://github.com/RooCodeInc/Roo-Code/pull/8773))
+* Remove a very verbose cloud‑agents error ([#8795](https://github.com/RooCodeInc/Roo-Code/pull/8795))
+* Update X/Twitter username from roo_code to roocode ([#8780](https://github.com/RooCodeInc/Roo-Code/pull/8780))
+* Update “Configuring Profiles” video link across localized READMEs ([#8189](https://github.com/RooCodeInc/Roo-Code/pull/8189))

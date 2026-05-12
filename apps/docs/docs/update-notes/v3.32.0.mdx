@@ -1,0 +1,32 @@
+---
+description: Roo Code 3.32.0 adds GPT-5.1 models, enables OpenAI Responses prompt caching, fixes the share button, and improves release-note traceability.
+keywords:
+  - roo code 3.32.0
+  - gpt-5.1
+  - openai prompt caching
+  - reasoning summaries
+  - bug fixes
+image: /img/v3.32.0/v3.32.0.png
+---
+
+# Roo Code 3.32.0 Release Notes (2025-11-14)
+
+This release adds GPT-5.1 models, enables OpenAI Responses prompt caching, fixes the share button, and improves release-note traceability.
+
+<img src="/img/v3.32.0/v3.32.0.png" alt="Roo Code v3.32.0 Release" width="600" />
+
+## Features & Improvements
+
+* **GPT-5.1 in Roo Code** ([#9252](https://github.com/RooCodeInc/Roo-Code/pull/9252), [#9258](https://github.com/RooCodeInc/Roo-Code/pull/9258), [#9261](https://github.com/RooCodeInc/Roo-Code/pull/9261), [#9259](https://github.com/RooCodeInc/Roo-Code/pull/9259)): Adds all new GPT-5.1 models to the OpenAI Native provider with extended 24‑hour prompt caching support, all new GPT-5.1 models and overall support for 51 throughout other supported providers.
+
+  - **Adaptive reasoning**: GPT-5.1 includes adaptive reasoning that adjusts effort based on task complexity for faster and more efficient results.
+  - **Better tone and instruction following**: GPT-5.1 provides improved tone control and stronger instruction following so outputs match your brand voice more naturally.
+  - **Stronger software engineering performance**: GPT-5.1 delivers more reliable software engineering performance with better code generation, stronger edge case handling, and improved logic planning.
+
+## Bug Fixes
+
+- **Share button works reliably again**: Fixes the Share button so you can open the share popover and send shared tasks and messages without failures ([#9253](https://github.com/RooCodeInc/Roo-Code/pull/9253)).
+
+### Misc
+
+- **Release notes are easier to audit**: The internal release guide now requires PR numbers in release notes so each documented change can be traced back to its source PR ([#9236](https://github.com/RooCodeInc/Roo-Code/pull/9236)).

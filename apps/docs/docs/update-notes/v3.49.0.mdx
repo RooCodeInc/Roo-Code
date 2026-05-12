@@ -1,0 +1,26 @@
+---
+description: Roo Code 3.49.0 adds a file changes panel per conversation, per-workspace codebase indexing control, and fixes chat scroll and multi-window history reliability.
+keywords:
+  - roo code 3.49.0
+  - file changes panel
+  - per-workspace indexing
+  - codebase indexing
+  - chat scroll fix
+---
+
+# Roo Code 3.49.0 Release Notes (2026-02-19)
+
+This release adds a file changes panel showing all edits made during a conversation, introduces per-workspace codebase indexing opt-in with a stop control, and fixes chat scroll and multi-window history reliability.
+
+## File Changes Panel
+
+A new collapsible **"X file(s) changed in this conversation"** panel now appears below the chat messages in the task view. Each file that was edited and approved during the task appears in the panel — expand any entry to see its full diff without scrolling back through the conversation. Multiple edits to the same file are grouped by path, and the panel hides itself automatically when no files were changed. (thanks saneroen!) ([#11494](https://github.com/RooCodeInc/Roo-Code/pull/11494))
+
+## Per-Workspace Indexing Control
+
+Codebase indexing no longer silently auto-starts every time a workspace folder is opened. You now get explicit per-workspace control: a new toggle in the Codebase Indexing settings lets you enable indexing for the current folder, and that preference is saved across IDE restarts. A **Stop Indexing** button lets you cancel an in-progress scan at any time without losing partial results. In multi-root workspaces, enabling indexing for one folder no longer triggers indexing of every other folder. A bug where disabling the global "Enable Codebase Indexing" toggle during an active scan left the pulsing indicator running has also been fixed — the scan now stops immediately. (thanks JamesRobert20, thomas-mindruptive!) ([#11456](https://github.com/RooCodeInc/Roo-Code/pull/11456))
+
+## Bug Fixes
+
+* **Chat Scroll on Reopen**: Fixes an issue where reopening an existing chat would not reliably scroll to the newest message, leaving users viewing older messages mid-conversation. Auto-scroll-to-bottom now consistently activates on chat open, the scroll-to-bottom button reliably re-anchors the view, and manually scrolling up to browse history properly pauses auto-follow without interference from nested scroll areas such as code blocks. ([#11483](https://github.com/RooCodeInc/Roo-Code/pull/11483))
+* **Multi-Window Task History Data Loss**: Fixes silent task history data loss when Roo Code runs in two or more VS Code windows at the same time. Each task's history is now stored in its own file with cross-process file locking, so concurrent multi-window writes no longer overwrite each other. Migration from the previous storage format is automatic and backward-compatible. ([#11490](https://github.com/RooCodeInc/Roo-Code/pull/11490))

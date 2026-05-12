@@ -1,0 +1,24 @@
+---
+description: This release streamlines Skills setup and onboarding, reduces startup noise, and improves tool-call reliability.
+keywords:
+  - roo code 3.46.1
+  - new features
+  - bug fixes
+---
+
+# Roo Code 3.46.1 Release Notes (2026-01-31)
+
+This release streamlines Skills setup and first-run onboarding, and improves tool-call reliability.
+
+## QOL Improvements
+
+* **Import settings during first-run setup**: You can import a settings file directly from the welcome screen on a fresh install, before configuring a provider. (thanks emeraldcheshire!) ([#10994](https://github.com/RooCodeInc/Roo-Code/pull/10994))
+* **Change a skill’s mode from the Skills UI**: You can set which mode a skill targets (including “Any mode”) using a dropdown, instead of moving files between mode folders manually. (thanks SannidhyaSah!) ([#11102](https://github.com/RooCodeInc/Roo-Code/pull/11102))
+
+## Bug Fixes
+
+* **More reliable tool-call history**: Fixes an issue where mismatched `tool_use`/`tool_result` IDs in conversation history could break tool execution with `ToolResultIdMismatchError`. ([#11131](https://github.com/RooCodeInc/Roo-Code/pull/11131))
+
+## Misc Improvements
+
+* **Quieter startup when no `.env` file is present**: Avoids noisy `[MISSING_ENV_FILE]` console output when the optional `.env` file isn’t used. ([#11116](https://github.com/RooCodeInc/Roo-Code/pull/11116))

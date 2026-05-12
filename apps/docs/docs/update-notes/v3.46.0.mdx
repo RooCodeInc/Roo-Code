@@ -1,0 +1,43 @@
+---
+description: This release adds parallel tool calling, overhauls file reading and terminal output handling, begins a shift toward the AI SDK, and adds a Settings UI for managing Skills.
+keywords:
+  - roo code 3.46.0
+  - new features
+  - bug fixes
+image: /img/v3.46.0/v3.46.0.png
+---
+
+# Roo Code 3.46.0 Release Notes (2026-01-30)
+
+This is a BIG UPDATE! This release adds parallel tool calling, overhauls how Roo reads files and handles terminal output, and begins a major refactor to use the AI SDK at Roo's core for much better reliability. Together, these changes shift how Roo manages context and executes multi-step workflows in a serious way! Oh, and we also added a UI to manage your skills!!
+
+<img src="/img/v3.46.0/v3.46.0.png" alt="Roo Code v3.46.0 Release" width="600" />
+
+## Parallel tool calling
+
+Roo can now run multiple tools in one response when the workflow benefits from it. This gives the model more freedom to batch independent steps (reads, searches, edits, etc.) instead of making a separate API call for each tool. This reduces back-and-forth turns on multi-step tasks where Roo needs several independent tool calls before it can propose or apply a change. ([#11031](https://github.com/RooCodeInc/Roo-Code/pull/11031), [#11046](https://github.com/RooCodeInc/Roo-Code/pull/11046))
+
+## Total read_file tool overhaul
+
+Roo now caps file reads by default (2000 lines) to avoid context overflows, and it can page through larger files as needed. When Roo needs context around a specific line (for example, a stack trace points at line 42), it can also request the *entire* containing function or class instead of an arbitrary “lines 40–60” slice. Under the hood, `read_file` now has two explicit modes: **slice** (`offset`/`limit`) for chunked reads, and **indentation** (anchored on a target line) for semantic extraction. (thanks pwilkin!) ([#10981](https://github.com/RooCodeInc/Roo-Code/pull/10981))
+
+## Terminal handling overhaul
+
+When a command produces a lot of output, Roo now caps how much of that output it includes in the model’s context. The omitted portion is saved as an artifact. Roo can then page through the full output or search it on demand, so large builds and test runs stay debuggable without stuffing the entire log into every request. ([#10944](https://github.com/RooCodeInc/Roo-Code/pull/10944), [#11056](https://github.com/RooCodeInc/Roo-Code/pull/11056))
+
+## Skills management in Settings
+
+You can now create, edit, and delete Skills from the Settings panel, with inline validation and delete confirmation. Editing a skill opens the `SKILL.md` file in VS Code. Skills are still stored as files on disk, but this makes routine maintenance faster—especially when you keep both **Global** skills and **Project** skills. (thanks SannidhyaSah!) ([#10844](https://github.com/RooCodeInc/Roo-Code/pull/10844))
+
+## Provider migration to AI SDK
+
+We’ve started migrating providers toward a shared Vercel AI SDK foundation, so streaming, tool calling, and structured outputs behave more consistently across providers. In this release, that migration includes shared AI SDK utilities plus provider moves for Moonshot/OpenAI-compatible, DeepSeek, Cerebras, Groq, and Fireworks, and it also improves how provider errors (like rate limits) surface. ([#11047](https://github.com/RooCodeInc/Roo-Code/pull/11047), [#11063](https://github.com/RooCodeInc/Roo-Code/pull/11063), [#11079](https://github.com/RooCodeInc/Roo-Code/pull/11079), [#11086](https://github.com/RooCodeInc/Roo-Code/pull/11086), [#11088](https://github.com/RooCodeInc/Roo-Code/pull/11088), [#11118](https://github.com/RooCodeInc/Roo-Code/pull/11118))
+
+## Boring stuff
+
+* The collapsed task header’s context percentage now reflects actual input usage (accounting for reserved output tokens), so it’s a more reliable indicator of how close you are to the context limit. ([#11034](https://github.com/RooCodeInc/Roo-Code/pull/11034), [#11054](https://github.com/RooCodeInc/Roo-Code/pull/11054))
+* Improves webview UI responsiveness by enabling React Compiler optimizations, reducing unnecessary re-renders without requiring manual memoization. (thanks In-line!) ([#9565](https://github.com/RooCodeInc/Roo-Code/pull/9565))
+* Adds `pnpm serve` / `pnpm serve:rebuild` commands to build and run the Roo Code extension in a web-based VS Code environment (via code-server), making it easier for maintainers and contributors to reproduce and validate web-specific behavior and ship fixes more reliably. ([#10964](https://github.com/RooCodeInc/Roo-Code/pull/10964))
+* Keeps the Roo Code web apps up to date with the latest Next.js release and related dependency/config updates, which helps reduce build and lint friction and improves compatibility/performance for the website and eval tooling. ([#11108](https://github.com/RooCodeInc/Roo-Code/pull/11108))
+* Improves the Roo Code website header navigation dropdowns by switching to the shadcn/Radix Navigation Menu component, giving smoother open/close animations, more reliable keyboard navigation, and more stable dropdown sizing during transitions. ([#11117](https://github.com/RooCodeInc/Roo-Code/pull/11117))
+* Replaces the legacy instruction-loading flow with a unified `skill` tool system, making it easier for Roo to load specialized instructions (like creating MCP servers or custom modes) on demand; also removes the old MCP “Enable MCP Server Creation” toggle. ([#11084](https://github.com/RooCodeInc/Roo-Code/pull/11084))

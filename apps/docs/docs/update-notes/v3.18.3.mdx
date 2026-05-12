@@ -1,0 +1,56 @@
+---
+description: This release introduces experimental codebase indexing with semantic search, enhanced AI reasoning capabilities, and several performance optimizations.
+---
+
+# Roo Code 3.18.3 Release Notes (2025-05-24)
+
+This release introduces experimental codebase indexing with semantic search, enhanced AI reasoning capabilities, and several performance optimizations.
+
+---
+
+## Codebase Indexing (Experimental)
+We've introduced a powerful new **experimental** [Codebase Indexing](/features/codebase-indexing) feature that enables semantic search across your entire project using AI embeddings. Remember, this is **disabled by default** and requires additional setup (enable in Settings (⚙️) > "Experimental").
+
+<img src="/img/codebase-indexing/codebase-indexing.png" alt="Codebase Indexing Settings" width="600" />
+
+Key capabilities:
+*   **Semantic Code Search**: Find relevant code using natural language queries instead of exact keyword matches
+*   **AI-Powered Understanding**: The new [`codebase_search`](/advanced-usage/available-tools/codebase-search) tool understands code meaning and relationships
+*   **Cross-Project Discovery**: Search your entire indexed codebase, not just open files
+*   **Flexible Setup**: Choose between OpenAI embeddings or local Ollama processing
+*   **Vector-Powered Search**: Advanced embedding technology with Qdrant vector database storage
+
+Transform how you navigate large codebases - ask "find authentication logic" and get meaningful results instead of hunting through files. (thanks daniel-lxs!)
+
+For setup instructions and detailed usage, see the main [Codebase Indexing documentation](/features/codebase-indexing).
+
+---
+
+## Provider Updates
+
+*   **Enhanced Reasoning**: Added reasoning support for Claude 4 and Gemini 2.5 Flash on [`OpenRouter`](/providers/openrouter), plus fixed o1-pro compatibility
+*   **Improved Defaults**: Changed default model from Sonnet 3.7 to Sonnet 4 for better performance
+*   **Prompt Caching**: Enabled prompt caching for Gemini 2.5 Flash Preview to reduce costs and improve response times (thanks shariqriazz!)
+*   **OpenRouter Settings**: Model settings now persist when selecting specific [`OpenRouter`](/providers/openrouter) providers
+*   **LiteLLM Refresh**: Added ability to refresh [`LiteLLM`](/providers/litellm) models list for up-to-date model availability
+
+---
+
+## QOL Improvements
+
+*   **Better Tool Selection**: Improved tool descriptions to guide AI in making better file editing decisions
+
+---
+
+## Bug Fixes
+
+*   **Context Tracking**: Fixed mark-as-read logic in the context tracker (thanks samhvw8!)
+*   **Model Cleanup**: Removed deprecated claude-3.7-sonnet models from vscode-lm (thanks shariqriazz!)
+*   **MCP Server Loading**: Fixed MCP Server error when running with npx and bunx (thanks devxpain!)
+
+---
+
+## Misc Improvements
+
+*   **Build Process**: Improved pnpm bootstrapping and added compile script (thanks KJ7LNW!)
+*   **Code Quality**: Simplified object assignment and modernized code patterns (thanks noritaka1166!)

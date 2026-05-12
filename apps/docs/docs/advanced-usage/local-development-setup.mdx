@@ -1,0 +1,62 @@
+---
+description: Learn how to set up Roo Code for local development, build from source, and contribute to the project. Complete developer setup guide.
+keywords:
+  - local development
+  - build from source
+  - Roo Code development
+  - contribute
+  - developer setup
+sidebar_label: Local Development Setup
+---
+
+## Local Setup & Development
+
+:::note Developer Information Only
+This section is for developers contributing to Roo Code or those who wish to build and run the extension from source.
+:::
+
+To set up Roo Code for local development:
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/RooCodeInc/Roo-Code.git
+    cd Roo-Code
+    ```
+
+2.  **Install dependencies:**
+    Roo Code uses `pnpm` for package management.
+    ```bash
+    pnpm install
+    ```
+
+3.  **Run the extension for development:**
+    You have two primary methods:
+
+    *   **Directly in VS Code (Recommended for active development):**
+        *   Open the cloned `Roo-Code` folder in VS Code.
+        *   Press `F5` (or select **Run** → **Start Debugging** from the menu). This opens a new VS Code window (Extension Development Host) with Roo Code running.
+        *   Changes to the webview code (under `webview-ui/`) will often update live.
+        *   Changes to the core extension code (under `src/`) typically require restarting the Extension Development Host window.
+
+    *   **Building and Installing a VSIX package:**
+        This method is useful for testing the packaged extension or distributing development builds.
+        1.  Build the VSIX file:
+            ```bash
+            pnpm vsix
+            ```
+            A `.vsix` file (e.g., `roo-cline-<version>.vsix`) will be created in the `bin/` directory.
+
+        2.  Install the VSIX in VS Code:
+            *   **Using the command line:**
+                ```bash
+                code --install-extension bin/roo-cline-<version>.vsix
+                ```
+                (Replace `<version>` with the actual version number in the filename).
+            *   **Using the VS Code interface:**
+                *   Open the Extensions view (`Ctrl+Shift+X` or `Cmd+Shift+X`).
+                *   Click the "..." (More Actions) menu in the Extensions view sidebar.
+                *   Select "Install from VSIX..."
+                *   Browse to and select the generated `.vsix` file from the `bin/` directory.
+
+                <img src="/img/installing/installing-2.png" alt="VS Code's Install from VSIX dialog" width="600" />
+                *Installing a development VSIX using VS Code's "Install from VSIX..." dialog.*

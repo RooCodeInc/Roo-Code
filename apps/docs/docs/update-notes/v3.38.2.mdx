@@ -1,0 +1,29 @@
+---
+description: This release improves Agent Skills compatibility, clarifies rate-limit status, and updates provider defaults.
+keywords:
+  - roo code 3.38.2
+  - new features
+  - bug fixes
+image: /img/v3.38.2/v3.38.2.png
+---
+
+# Roo Code 3.38.2 Release Notes (2025-12-31)
+
+This release improves Agent Skills compatibility, clarifies rate-limit status, and updates provider defaults.
+
+<img src="/img/v3.38.2/v3.38.2.png" alt="Roo Code v3.38.2 Release" width="600" />
+
+## QOL Improvements
+
+* **Agent Skills load more reliably across environments** by aligning skill metadata validation and discovery with the Agent Skills specification. ([#10409](https://github.com/RooCodeInc/Roo-Code/pull/10409))
+* **The recommended onboarding video is easier to find** by updating the “Tutorial & Feature Videos” README section to point to the newer Context Management tutorial (including localized READMEs) (thanks SannidhyaSah!). ([#10375](https://github.com/RooCodeInc/Roo-Code/pull/10375))
+
+## Bug Fixes
+
+* **Fixes an issue where rate limiting looked like a provider error** so a client-side rate limit now shows as a normal “rate limit wait” status row and completes cleanly. ([#10389](https://github.com/RooCodeInc/Roo-Code/pull/10389))
+* **Fixes an issue where `write_to_file` could create files at an unintended truncated path**, reducing accidental file placement and cleanup. ([#10415](https://github.com/RooCodeInc/Roo-Code/pull/10415))
+
+## Provider Updates
+
+* **Removes the Human Relay provider** so it no longer appears as a configurable option in Providers. ([#10388](https://github.com/RooCodeInc/Roo-Code/pull/10388))
+* **Updates the Cerebras default max completion tokens to 16,384** to reduce premature rate-limit estimation issues (thanks sebastiand-cerebras!). ([#10387](https://github.com/RooCodeInc/Roo-Code/pull/10387))

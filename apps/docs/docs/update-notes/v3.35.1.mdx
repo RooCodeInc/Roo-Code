@@ -1,0 +1,19 @@
+---
+description: Bug fix for parallel tool calls during task delegation and improved error logging.
+keywords:
+  - roo code 3.35.1
+  - bug fixes
+  - error logging
+---
+
+# Roo Code v3.35.1 Release Notes (2025-12-01)
+
+This patch release fixes an issue with parallel tool calls during task delegation and improves error diagnostics.
+
+## Bug Fixes
+
+* **Parallel Tool Call Fix**: Fixes 400 errors that occurred when using native tool protocol with parallel tool calls (e.g., `update_todo_list` + `new_task`). Pending tool results are now properly flushed before task delegation ([#9726](https://github.com/RooCodeInc/Roo-Code/pull/9726))
+
+## Misc Improvements
+
+* **Better IPC Error Logging**: Error logs now display detailed structured data instead of unhelpful `[object Object]` messages, making debugging extension issues easier ([#9727](https://github.com/RooCodeInc/Roo-Code/pull/9727))

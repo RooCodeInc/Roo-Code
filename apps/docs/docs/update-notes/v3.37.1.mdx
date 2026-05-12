@@ -1,0 +1,31 @@
+---
+description: Roo Code 3.37.1 refreshes the signup flow, improves OpenAI-compatible tool calling, and fixes several reliability issues.
+keywords:
+  - roo code 3.37.1
+  - signup
+  - openai compatible
+  - bug fixes
+image: /img/v3.37.1/v3.37.1.png
+---
+
+# Roo Code 3.37.1 Release Notes (2025-12-23)
+
+This release refreshes the signup flow, improves tool-calling reliability for OpenAI-compatible providers, and fixes several chat reliability issues.
+
+<img src="/img/v3.37.1/v3.37.1.png" alt="Roo Code v3.37.1 Release" width="600" />
+
+## QOL Improvements
+
+* Improves tool-calling reliability for Roo Code Cloud by preventing tool-result metadata (like `environment_details`) from interrupting tool call sequences ([#10301](https://github.com/RooCodeInc/Roo-Code/pull/10301))
+* Improves tool-calling reliability across OpenAI-compatible providers by merging trailing tool-result text into the last tool message, reducing cases where tool call sequences get interrupted ([#10299](https://github.com/RooCodeInc/Roo-Code/pull/10299))
+
+## Bug Fixes
+
+* Fixes an issue where Roo could show errors when a provider returned an empty assistant message by retrying once and only showing an error if the problem repeats ([#10297](https://github.com/RooCodeInc/Roo-Code/pull/10297))
+* Fixes an issue where OpenAI/OpenAI-compatible chats could fail to use native tools when custom model info didn’t explicitly set tool support, by sending native tool definitions by default ([#10314](https://github.com/RooCodeInc/Roo-Code/pull/10314))
+* Fixes an issue where Roo could send malformed `reasoning_details` data after transforming conversation history, preventing provider-side errors and improving compatibility with OpenAI Responses-style reasoning blocks ([#10313](https://github.com/RooCodeInc/Roo-Code/pull/10313))
+* Fixes an issue where “ask” flows could hang if your reply was queued instead of being delivered as an ask response, so conversations continue reliably ([#10315](https://github.com/RooCodeInc/Roo-Code/pull/10315))
+
+## Misc Improvements
+
+* **Provider-centric signup**: Makes Roo easier to get started with by defaulting the welcome/sign-up flow to the Roo provider (while keeping other providers available), so you can reach a working setup faster with fewer choices up front ([#10306](https://github.com/RooCodeInc/Roo-Code/pull/10306))

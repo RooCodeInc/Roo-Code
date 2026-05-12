@@ -1,0 +1,23 @@
+---
+description: Patch fixes for OpenAI native encrypted reasoning and Anthropic token normalization, plus terminology cleanup for context management.
+keywords:
+  - roo code 3.31.3
+  - new features
+  - bug fixes
+image: /img/v3.31.3/v3.31.3.png
+---
+
+# Roo Code 3.31.3 Release Notes (2025-11-13)
+
+This patch fixes OpenAI native encrypted reasoning handling, corrects Anthropic input token normalization, and cleans up context management terminology.
+
+<img src="/img/v3.31.3/v3.31.3.png" alt="Roo Code v3.31.3 Release" width="600" />
+
+## Bug Fixes
+
+* OpenAI native encrypted reasoning parameters: Restores usability of gpt-5-chat-latest by including encrypted reasoning only when a reasoning effort is set and enforcing medium-only verbosity to prevent invalid parameter errors (thanks politsin!) ([#9231](https://github.com/RooCodeInc/Roo-Code/pull/9231))
+* Roo Anthropic token normalization: Prevents double-counting cached tokens so usage metrics, cost estimates, and context calculations are accurate across providers ([#9224](https://github.com/RooCodeInc/Roo-Code/pull/9224))
+
+## Misc Improvements
+
+* Terminology cleanup for context handling: Rename "sliding window" to "context management" and unify the code path under a single entry point, manageContext, for clearer behavior and documentation alignment ([#9206](https://github.com/RooCodeInc/Roo-Code/pull/9206))

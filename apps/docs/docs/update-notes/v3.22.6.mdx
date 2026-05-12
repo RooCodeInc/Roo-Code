@@ -1,0 +1,50 @@
+---
+description: This release introduces free Gemini access via OAuth, fixes several bugs, and improves the overall user experience.
+---
+
+# Roo Code 3.22.6 Release Notes (2025-07-02)
+
+This patch release introduces auto-approval features, mode import/export capabilities, improved search controls, and various bug fixes for AWS Bedrock, API retry logic, and UI components.
+
+## New Features
+
+### Timer-Based Auto-Approval for Follow-Up Questions
+
+We've introduced timer-based auto-approval for follow-up questions to streamline your workflow. Roo Code can now proceed automatically after a configurable timeout, reducing manual intervention ([learn more](/features/auto-approving-actions#follow-up-questions)). (thanks liwilliam2021!) ([#5296](https://github.com/RooCodeInc/Roo-Code/pull/5296))
+
+### Import and Export Custom Modes
+
+You can now import and export custom modes, making it easier to share, back up, and synchronize your modes across different projects and installations ([learn more](/features/custom-modes#importexport-modes)). ([#5074](https://github.com/RooCodeInc/Roo-Code/pull/5074))
+
+### Enhanced Search and Indexing Controls
+
+- **Configurable Search Score Threshold**: A new slider in the settings allows you to fine-tune the sensitivity of semantic search, giving you more control over the relevance of your search results ([learn more](/features/codebase-indexing#advanced-configuration-fields)). ([#5041](https://github.com/RooCodeInc/Roo-Code/pull/5041))
+
+## Quality of Life Improvements
+
+* **Persistent Version Indicator**: The Roo Code version is now always visible on the chat screen, providing a convenient way to check your version and access release notes without having to navigate to the settings. ([#5128](https://github.com/RooCodeInc/Roo-Code/pull/5128))
+* **Automatic Configuration Import**: You can now automatically import your Roo Code configuration on startup by placing a config file at a specified path in your VSCode settings. This eliminates the need to manually import configurations through the GUI ([learn more](/features/settings-management#automatic-configuration-import)). (thanks takakoutso!) ([#4848](https://github.com/RooCodeInc/Roo-Code/pull/4848))
+* **Architect Mode Enhancements**: To encourage better project planning, Architect mode is now the default for new installations. The mode has also been improved to no longer provide time estimates, ensuring its plans are focused on actionable steps rather than potentially misleading timelines ([#5289](https://github.com/RooCodeInc/Roo-Code/pull/5289), [#5295](https://github.com/RooCodeInc/Roo-Code/pull/5295)).
+* **Mermaid Diagram Enhancements**: Mermaid diagrams now have a cleaner and more consistent appearance. Toolbar buttons are now clearly visible in light mode, and distracting error messages will no longer be rendered on invalid diagrams, providing a smoother experience when creating and viewing diagrams. (thanks chrarnoldus!) ([#5342](https://github.com/RooCodeInc/Roo-Code/pull/5342), [#5308](https://github.com/RooCodeInc/Roo-Code/pull/5308))
+* **Improved Model Behavior**: Models now provide more reliable and consistent responses. Previously, token usage information was unintentionally sent to the model, which could cause it to stop tasks or shorten its answers. This information is no longer sent, ensuring models complete tasks based on your requirements, not their perceived token limits (thanks SannidhyaSah!) ([#5312](https://github.com/RooCodeInc/Roo-Code/pull/5312))
+* **Enhanced File Protection**: The `.vscode` directory is now write-protected to prevent accidental changes to your editor configuration ([#5347](https://github.com/RooCodeInc/Roo-Code/pull/5347))
+* **Qdrant Configuration**: Improved the user experience when configuring a custom Qdrant server by preventing the URL field from auto-filling with the default value. (thanks SannidhyaSah!) ([#5217](https://github.com/RooCodeInc/Roo-Code/pull/5217))
+
+## Bug Fixes
+
+* **Inconsistent Cancellation Messages**: Fixed an issue where canceling a task would show a misleading "API Streaming Failed" error. Now, canceling at any stage of a task will correctly display the "API Request Cancelled" message ([#4904](https://github.com/RooCodeInc/Roo-Code/pull/4904))
+* **Invalid Bedrock Model Identifier**: Fixed an issue that caused "invalid model identifier" errors when using AWS Bedrock with cross-region inference. Users can now reliably connect to Bedrock models across different regions. (thanks KevinZhao, zenithfull!) ([#4973](https://github.com/RooCodeInc/Roo-Code/pull/4973))
+* **URL Loading Timeouts**: Fixed an issue where referencing URLs with @ could result in a "Navigation timeout" error, making it more reliable to reference content from slower websites. (thanks MuriloFP, mrw1986!) ([#5160](https://github.com/RooCodeInc/Roo-Code/pull/5160))
+* **Excessive API Retry Delays**: Fixed an issue where the auto-retry delay for failed API requests could become excessively long. The delay is now capped at 10 minutes, preventing tasks from getting stuck for extended periods. (thanks MuriloFP, piisawheel!) ([#5171](https://github.com/RooCodeInc/Roo-Code/pull/5171))
+* **Context Condensation Threshold**: Fixed a bug where the context condensation threshold was not being applied correctly for individual profiles. Context will now be condensed at the specified threshold for each profile, as expected. (thanks PaperBoardOfficial!) ([#5230](https://github.com/RooCodeInc/Roo-Code/pull/5230))
+* **`apply_diff` Tool Documentation**: Updated the documentation for the `apply_diff` tool to correctly reflect its ability to apply edits to multiple files in a single operation. (thanks KJ7LNW!) ([#5232](https://github.com/RooCodeInc/Roo-Code/pull/5232))
+* **Cache Files in System Prompt**: Fixed an issue where cache files (like `.DS_Store` on macOS) were being included in the system prompt when using custom mode rules. This improves prompt quality and reduces unwanted noise. (thanks MuriloFP, juliettefournier-econ!) ([#5283](https://github.com/RooCodeInc/Roo-Code/pull/5283))
+
+## Provider Updates
+
+* **AWS Bedrock**: Updated cross-region inference profile mapping for improved regional support (thanks KevinZhao!) ([#4973](https://github.com/RooCodeInc/Roo-Code/pull/4973))
+* **LiteLLM**: Added default headers and testing for litellm fetcher, enhancing compatibility (thanks andrewshu2000!) ([#5242](https://github.com/RooCodeInc/Roo-Code/pull/5242))
+
+## Misc Improvements
+
+* **Installation Experience**: Streamlined the process for developers to test local builds of the Roo Code extension. A new `pnpm install:vsix` command now automates uninstalling, building, and installing development versions, making it faster and easier to contribute (thanks devxpain!) ([#4284](https://github.com/RooCodeInc/Roo-Code/pull/4284))

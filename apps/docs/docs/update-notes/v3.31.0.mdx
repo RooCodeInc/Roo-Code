@@ -1,0 +1,39 @@
+---
+description: Focused UX, logging, and stability improvements for Roo Code tasks, providers, and context handling.
+keywords:
+  - roo code 3.31.0
+  - new features
+  - bug fixes
+  - stability
+  - roo code cloud
+image: /img/v3.31.0/v3.31.0.png
+---
+
+# Roo Code 3.31.0 Release Notes (2025-11-08)
+
+This release refines task and to-do workflows, improves Roo Code Cloud diagnostics, tightens OpenRouter routing, and delivers key stability fixes for long-running sessions.
+
+<img src="/img/v3.31.0/v3.31.0.png" alt="Roo Code v3.31.0 Release" width="600" />
+
+## Integrated task header and to-do list
+
+The task header and to-do list now work together so you can see progress at a glance without juggling extra UI:
+
+- Integrated to-dos directly into the task header so active work is always visible.
+- Show only relevant to-do changes in chat instead of noisy full-list updates.
+- Simplified header layout to reduce distractions while keeping key controls in reach.
+
+
+## QOL Improvements
+
+- **Less caffeinated welcome animation** ([#9104](https://github.com/RooCodeInc/Roo-Code/pull/9104)): Smooths the Roo hover animation to be less distracting during long sessions while keeping the interface responsive.
+
+## Bug Fixes
+
+- **Respect custom OpenRouter-compatible URLs everywhere** ([#8951](https://github.com/RooCodeInc/Roo-Code/pull/8951)): Ensures all OpenRouter-related operations (model lists, pricing, image generation, CSP checks) consistently use your configured custom base URL for better privacy, compliance, and predictable billing (thanks sstraus!).
+- **Prevent crashes from null streaming chunks** ([#9105](https://github.com/RooCodeInc/Roo-Code/pull/9105)): Handles provider responses with null choices arrays correctly, improving stability for long-running generations across MiniMax M2 Stable and other OpenAI-compatible endpoints. (Contributors: daniel-lxs)
+- **Stop unwanted context condensing on settings save** ([#9108](https://github.com/RooCodeInc/Roo-Code/pull/9108)): Saving settings no longer triggers early context condensing when your provider/model is unchanged, so active tasks retain history until thresholds are truly reached. (Contributors: daniel-lxs, hannesrudolph)
+
+## Misc Improvements
+
+- Improved Roo Code Cloud error logging to capture richer context (status codes, response bodies, and request details), making it easier to understand and resolve provider and configuration issues. ([#9098](https://github.com/RooCodeInc/Roo-Code/pull/9098))
