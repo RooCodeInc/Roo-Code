@@ -10,7 +10,7 @@
 		"postbuild": "next-sitemap --config next-sitemap.config.cjs",
 		"start": "next start",
 		"clean": "rimraf .next .turbo",
-		"test": "vitest run",
+		"test": "vitest run --passWithNoTests",
 		"test:watch": "vitest"
 	},
 	"dependencies": {
