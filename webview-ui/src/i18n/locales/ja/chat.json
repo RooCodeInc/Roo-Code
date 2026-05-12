@@ -477,7 +477,7 @@
 	},
 	"retiredProvider": {
 		"title": "プロバイダーのサポート終了",
-		"message": "申し訳ございませんが、このプロバイダーはサポートを終了しました。実際に利用しているRooユーザーが非常に少なく、コードベースの範囲を縮小して、迅速な開発とコミュニティへの貢献を続ける必要がありました。本当に難しい決断でしたが、あなたにとって最も重要なことに集中するためです。残念ですが、ご理解ください。",
+		"message": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle.",
 		"openSettings": "設定を開く"
 	}
 }

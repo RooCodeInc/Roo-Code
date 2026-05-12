@@ -477,7 +477,7 @@
 	},
 	"retiredProvider": {
 		"title": "Fournisseur plus pris en charge",
-		"message": "Désolé, ce fournisseur n'est plus pris en charge. Nous avons constaté que très peu d'utilisateurs de Roo l'utilisaient réellement et nous devons réduire la portée de notre code pour continuer à avancer rapidement et bien servir notre communauté. C'était une décision vraiment difficile, mais elle nous permet de nous concentrer sur ce qui compte le plus pour toi. C'est rageant, on le sait.",
+		"message": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle.",
 		"openSettings": "Ouvrir les paramètres"
 	}
 }

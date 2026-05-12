@@ -477,7 +477,7 @@
 	},
 	"retiredProvider": {
 		"title": "Provedor não é mais suportado",
-		"message": "Desculpe, este provedor não é mais suportado. Percebemos que muito poucos usuários do Roo realmente o utilizavam e precisamos reduzir o escopo do nosso código para continuar entregando rápido e servindo bem nossa comunidade. Foi uma decisão muito difícil, mas nos permite focar no que mais importa para você. Sabemos que é chato.",
+		"message": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle.",
 		"openSettings": "Abrir configurações"
 	}
 }

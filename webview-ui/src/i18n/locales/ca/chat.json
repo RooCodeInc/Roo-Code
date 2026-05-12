@@ -477,7 +477,7 @@
 	},
 	"retiredProvider": {
 		"title": "Proveïdor ja no compatible",
-		"message": "Ho sentim, aquest proveïdor ja no és compatible. Hem vist molt pocs usuaris de Roo que realment l'utilitzaven i necessitem reduir l'abast del nostre codi per poder seguir avançant ràpidament i servir bé la nostra comunitat en aquest espai. Va ser una decisió molt difícil, però ens permet centrar-nos en el que més t'importa. Ho sabem, és una llàstima.",
+		"message": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle.",
 		"openSettings": "Obrir configuració"
 	}
 }
