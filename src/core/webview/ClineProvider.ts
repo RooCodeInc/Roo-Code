@@ -84,6 +84,12 @@ import { ProviderSettingsManager } from "../config/ProviderSettingsManager"
 import { CustomModesManager } from "../config/CustomModesManager"
 import { Task } from "../task/Task"
 import { buildTaskContext } from "../task/TaskContextBuilder"
+import { BackgroundTaskRunner, BACKGROUND_TASK_ALLOWED_TOOLS } from "../task/BackgroundTaskRunner"
+import {
+	BackgroundTaskRunner,
+	BACKGROUND_TASK_ALLOWED_TOOLS,
+	BackgroundTaskRunnerCallbacks,
+} from "../task/BackgroundTaskRunner"
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import type { ClineMessage, TodoItem, SubtaskQueueItem, TaskPermissions, ContextHandoffSummary } from "@roo-code/types"
@@ -160,6 +166,8 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
+	/** The background task ID the webview is currently viewing (for Phase 6c progress streaming). */
+	public viewedBackgroundTaskId: string | null = null
 	public readonly latestAnnouncementId = "apr-2026-v3.53.0-community-handoff-gpt55-opus47" // v3.53.0 Community handoff, GPT-5.5, Claude Opus 4.7, checkpoint navigation
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager

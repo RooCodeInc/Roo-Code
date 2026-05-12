@@ -12,6 +12,8 @@ import ChatView, { ChatViewRef } from "./components/chat/ChatView"
 import HistoryView from "./components/history/HistoryView"
 import SettingsView, { SettingsViewRef } from "./components/settings/SettingsView"
 import WelcomeView from "./components/welcome/WelcomeViewProvider"
+import BackgroundTaskReplayView from "./components/chat/BackgroundTaskReplayView"
+import BackgroundTaskView from "./components/chat/BackgroundTaskView"
 import { CheckpointRestoreDialog } from "./components/chat/CheckpointRestoreDialog"
 import { DeleteMessageDialog, EditMessageDialog } from "./components/chat/MessageModificationConfirmationDialog"
 import ErrorBoundary from "./components/ErrorBoundary"
@@ -21,6 +23,7 @@ import { TooltipProvider } from "./components/ui/tooltip"
 import { STANDARD_TOOLTIP_DELAY } from "./components/ui/standard-tooltip"
 
 type Tab = "settings" | "history" | "chat" | "cloud"
+type Tab = "settings" | "history" | "chat" | "bgTaskReplay" | "bgTask"
 
 interface DeleteMessageDialogState {
 	isOpen: boolean
@@ -45,6 +48,7 @@ const tabsByMessageAction: Partial<Record<NonNullable<ExtensionMessage["action"]
 	settingsButtonClicked: "settings",
 	historyButtonClicked: "history",
 	cloudButtonClicked: "cloud",
+	backgroundTasksButtonClicked: "bgTask",
 }
 
 const App = () => {
@@ -61,6 +65,7 @@ const App = () => {
 
 	const [showAnnouncement, setShowAnnouncement] = useState(false)
 	const [tab, setTab] = useState<Tab>("chat")
+	const [replayTaskId, setReplayTaskId] = useState<string | null>(null)
 
 	const [deleteMessageDialogState, setDeleteMessageDialogState] = useState<DeleteMessageDialogState>({
 		isOpen: false,
@@ -99,6 +104,10 @@ const App = () => {
 				// Handle switchTab action with tab parameter
 				if (message.action === "switchTab" && message.tab) {
 					const targetTab = message.tab as Tab
+					// If switching to bgTaskReplay, extract taskId from values
+					if (targetTab === "bgTaskReplay" && message.values?.taskId) {
+						setReplayTaskId(message.values.taskId as string)
+					}
 					switchTab(targetTab)
 					// Extract targetSection from values if provided
 					const targetSection = message.values?.section as string | undefined
@@ -185,6 +194,16 @@ const App = () => {
 		<WelcomeView />
 	) : (
 		<>
+			{tab === "bgTaskReplay" && replayTaskId && (
+				<BackgroundTaskReplayView
+					taskId={replayTaskId}
+					onClose={() => {
+						setReplayTaskId(null)
+						switchTab("chat")
+					}}
+				/>
+			)}
+			{tab === "bgTask" && <BackgroundTaskView onClose={() => switchTab("chat")} />}
 			{tab === "history" && <HistoryView onDone={() => switchTab("chat")} />}
 			{tab === "settings" && (
 				<SettingsView ref={settingsRef} onDone={() => setTab("chat")} targetSection={currentSection} />

@@ -17,6 +17,18 @@ import type { SkillMetadata } from "./skills.js"
 import type { WorktreeIncludeStatus } from "./worktree.js"
 
 /**
+ * Incremental progress update for a background task (Phase 6c).
+ * MVP: tool name + status only. No full parameters or output payloads.
+ */
+export interface BackgroundTaskUpdate {
+	kind: "tool_call" | "tool_result" | "status_change" | "error"
+	timestamp: number
+	toolName?: string // e.g. "read_file", "execute_command"
+	status?: string // e.g. "started", "completed", "errored"
+	errorMessage?: string // Only for kind === "error"
+}
+
+/**
  * ExtensionMessage
  * Extension -> Webview | CLI
  */
@@ -94,6 +106,8 @@ export interface ExtensionMessage {
 		| "folderSelected"
 		| "skills"
 		| "fileContent"
+		| "backgroundTaskMessages"
+		| "backgroundTaskProgress"
 	text?: string
 	/** For fileContent: { path, content, error? } */
 	fileContent?: { path: string; content: string | null; error?: string }
@@ -107,6 +121,7 @@ export interface ExtensionMessage {
 		| "settingsButtonClicked"
 		| "historyButtonClicked"
 		| "cloudButtonClicked"
+		| "backgroundTasksButtonClicked"
 		| "didBecomeVisible"
 		| "focusInput"
 		| "switchTab"
@@ -166,6 +181,9 @@ export interface ExtensionMessage {
 	tools?: SerializedCustomToolDefinition[] // For customToolsResult
 	skills?: SkillMetadata[] // For skills response
 	modes?: { slug: string; name: string }[] // For modes response
+	backgroundTaskMessages?: ClineMessage[] // For backgroundTaskMessages: loaded messages for a background task replay
+	backgroundTaskId?: string // For backgroundTaskMessages: the task ID these messages belong to
+	backgroundTaskProgress?: BackgroundTaskUpdate // For backgroundTaskProgress: incremental update for a background task
 	aggregatedCosts?: {
 		// For taskWithAggregatedCosts response
 		totalCost: number
@@ -541,6 +559,10 @@ export interface WebviewMessage {
 		| "createWorktreeInclude"
 		| "checkoutBranch"
 		| "browseForWorktreePath"
+		// Background task messages
+		| "requestBackgroundTaskMessages"
+		| "subscribeToBackgroundTask"
+		| "unsubscribeFromBackgroundTask"
 		// Skills messages
 		| "requestSkills"
 		| "createSkill"
@@ -552,6 +574,7 @@ export interface WebviewMessage {
 	taskId?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "cloud"
+	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "bgTaskReplay" | "bgTask"
 	disabled?: boolean
 	context?: string
 	dataUri?: string

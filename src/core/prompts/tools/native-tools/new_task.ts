@@ -14,6 +14,7 @@ const TODOS_PARAMETER_DESCRIPTION = `Optional initial todo list written as a mar
 
 const TASK_QUEUE_PARAMETER_DESCRIPTION = `Optional JSON array of additional subtasks to execute sequentially after the first subtask completes. Each element is an object with "mode" (string) and "message" (string). Example: [{"mode":"code","message":"Implement feature X"},{"mode":"debug","message":"Test feature X"}]. When provided, the system automatically transitions between subtasks without returning to the parent, collecting all results. The parent receives aggregated results when the entire queue completes.`
 const PERMISSIONS_PARAMETER_DESCRIPTION = `Optional JSON object defining permission boundaries for the subtask. Allows the parent to restrict the subtask's access. Supports: filePatterns (array of regex patterns for allowed file paths), commandPatterns (array of regex patterns for allowed commands), allowedTools (array of tool names the subtask may use), deniedTools (array of tool names the subtask may NOT use). Example: {"filePatterns":["src/components/.*"],"commandPatterns":["npm test.*"],"deniedTools":["execute_command"]}`
+const BACKGROUND_PARAMETER_DESCRIPTION = `When set to "true", the task runs in the background concurrently with the current task. Background tasks are restricted to read-only tools only (read_file, list_files, search_files, codebase_search). Results are delivered asynchronously when the background task completes. Use for research, analysis, or documentation lookup while continuing other work.`
 
 export default {
 	type: "function",
@@ -43,6 +44,9 @@ export default {
 				permissions: {
 					type: ["string", "null"],
 					description: PERMISSIONS_PARAMETER_DESCRIPTION,
+				background: {
+					type: ["string", "null"],
+					description: BACKGROUND_PARAMETER_DESCRIPTION,
 				},
 			},
 			required: ["mode", "message", "todos"],

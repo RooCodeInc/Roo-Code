@@ -1,10 +1,7 @@
 import * as vscode from "vscode"
 
 import { TodoItem } from "@roo-code/types"
-<<<<<<< HEAD
 import type { SubtaskQueueItem } from "@roo-code/types"
-=======
->>>>>>> 6c51a5d52 (fix: three bugs in task permissions - parser, deniedTools exemption, pattern merging)
 import { type TaskPermissions, taskPermissionsSchema, toTaskPermissions } from "@roo-code/types"
 
 import { Task } from "../task/Task"
@@ -22,13 +19,17 @@ interface NewTaskParams {
 	todos?: string
 	task_queue?: string
 	permissions?: string
+	/** When true, the task runs in the background concurrently with the parent. Read-only tools only. */
+	background?: string
 }
 
 export class NewTaskTool extends BaseTool<"new_task"> {
 	readonly name = "new_task" as const
 
 	async execute(params: NewTaskParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { mode, message, todos, task_queue, permissions: permissionsJson } = params
+		const { mode, message, todos, task_queue, permissions: permissionsJson, background } = params
+		const { mode, message, todos, background } = params
+		const { mode, message, todos } = params
 		const { askApproval, handleError, pushToolResult } = callbacks
 
 		try {
@@ -172,6 +173,7 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				todos: todoItems,
 				taskQueue: queueItems.length > 0 ? queueItems : undefined,
 				...(parsedPermissions ? { permissions: parsedPermissions } : {}),
+				background: isBackground,
 			})
 
 			const didApprove = await askApproval("tool", toolMessage)

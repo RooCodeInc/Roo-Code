@@ -164,6 +164,11 @@
 				"command": "roo-cline.toggleAutoApprove",
 				"title": "%command.toggleAutoApprove.title%",
 				"category": "%configuration.title%"
+			},
+			{
+				"command": "roo-cline.backgroundTasksButtonClicked",
+				"title": "Background Tasks",
+				"icon": "$(server-process)"
 			}
 		],
 		"menus": {
@@ -229,8 +234,13 @@
 					"when": "view == roo-cline.SidebarProvider"
 				},
 				{
-					"command": "roo-cline.popoutButtonClicked",
+					"command": "roo-cline.backgroundTasksButtonClicked",
 					"group": "overflow@2",
+					"when": "view == roo-cline.SidebarProvider"
+				},
+				{
+					"command": "roo-cline.popoutButtonClicked",
+					"group": "overflow@3",
 					"when": "view == roo-cline.SidebarProvider"
 				}
 			],
@@ -256,8 +266,13 @@
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				},
 				{
-					"command": "roo-cline.popoutButtonClicked",
+					"command": "roo-cline.backgroundTasksButtonClicked",
 					"group": "overflow@2",
+					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
+				},
+				{
+					"command": "roo-cline.popoutButtonClicked",
+					"group": "overflow@3",
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				}
 			]

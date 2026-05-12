@@ -46,6 +46,7 @@ import { WorktreeSelector } from "./WorktreeSelector"
 import FileChangesPanel from "./FileChangesPanel"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
+import BackgroundTasksPanel from "./BackgroundTasksPanel"
 import { useScrollLifecycle } from "@src/hooks/useScrollLifecycle"
 import { Cloud } from "lucide-react"
 

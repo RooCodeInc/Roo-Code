@@ -486,6 +486,14 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 
 				hasToolResult = true
+
+				// Phase 6c: Emit background progress when a tool completes
+				cline.emitBackgroundProgress({
+					kind: "tool_result",
+					timestamp: Date.now(),
+					toolName: block.name,
+					status: "completed",
+				})
 			}
 
 			const askApproval = async (
@@ -546,6 +554,15 @@ export async function presentAssistantMessage(cline: Task) {
 					"error",
 					`Error ${action}:\n${error.message ?? JSON.stringify(serializeError(error), null, 2)}`,
 				)
+
+				// Phase 6c: Emit background progress on error
+				cline.emitBackgroundProgress({
+					kind: "error",
+					timestamp: Date.now(),
+					toolName: block.name,
+					status: "errored",
+					errorMessage: error.message,
+				})
 
 				pushToolResult(formatResponse.toolError(errorString))
 			}
@@ -647,6 +664,16 @@ export async function presentAssistantMessage(cline: Task) {
 					)
 					break
 				}
+			}
+
+			// Phase 6c: Emit background progress when a tool starts executing
+			if (!block.partial) {
+				cline.emitBackgroundProgress({
+					kind: "tool_call",
+					timestamp: Date.now(),
+					toolName: block.name,
+					status: "started",
+				})
 			}
 
 			switch (block.name) {

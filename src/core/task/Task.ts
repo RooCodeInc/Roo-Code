@@ -30,6 +30,7 @@ import {
 	type ClineSay,
 	type ClineAsk,
 	type ToolProgressStatus,
+	type BackgroundTaskUpdate,
 	type HistoryItem,
 	type CreateTaskOptions,
 	type ModelInfo,
@@ -166,6 +167,10 @@ export interface TaskOptions extends CreateTaskOptions {
 	 * If not provided, the task falls back to the existing provider.getState() behavior.
 	 */
 	taskContext?: TaskContext
+	/** When true, the task runs in the background: webview updates are suppressed and all tool uses are auto-approved. */
+	isBackgroundTask?: boolean
+	/** Callback invoked when a background task completes (via attempt_completion). */
+	onBackgroundComplete?: (taskId: string, result: string) => void
 }
 
 export class Task extends EventEmitter<TaskEvents> implements TaskLike {
@@ -455,6 +460,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		initialStatus,
 		taskContext,
 		taskPermissions,
+		isBackgroundTask = false,
+		onBackgroundComplete,
 	}: TaskOptions) {
 		super()
 
@@ -525,6 +532,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.taskNumber = taskNumber
 		this.initialStatus = initialStatus
 		this.taskContext = taskContext
+		this.isBackgroundTask = isBackgroundTask
+		this.onBackgroundComplete = onBackgroundComplete
 
 		this.assistantMessageParser = undefined
 
@@ -4579,6 +4588,68 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		if (error) {
 			this.emit(RooCodeEventName.TaskToolFailed, this.taskId, toolName, error)
+		}
+	}
+
+	// --- Phase 6c: Background task progress streaming ---
+
+	private backgroundProgressBuffer: BackgroundTaskUpdate[] = []
+	private backgroundProgressTimer: ReturnType<typeof setTimeout> | null = null
+	private static readonly BACKGROUND_PROGRESS_THROTTLE_MS = 500
+	private static readonly BACKGROUND_PROGRESS_MAX_BATCH = 5
+
+	/**
+	 * Emit a progress update for this task if it is a background task currently
+	 * being viewed by the user. Updates are batched in 500ms windows and capped
+	 * at 5 per batch.
+	 */
+	public emitBackgroundProgress(update: BackgroundTaskUpdate): void {
+		const provider = this.providerRef.deref()
+		if (!provider) return
+
+		// Only emit when this task is NOT the current (foreground) task
+		if (provider.getCurrentTask()?.taskId === this.taskId) return
+
+		// Only emit when the user is actively viewing this background task
+		if (provider.viewedBackgroundTaskId !== this.taskId) return
+
+		this.backgroundProgressBuffer.push(update)
+
+		// If no flush is pending, schedule one
+		if (!this.backgroundProgressTimer) {
+			this.backgroundProgressTimer = setTimeout(() => {
+				this.flushBackgroundProgress()
+			}, Task.BACKGROUND_PROGRESS_THROTTLE_MS)
+		}
+	}
+
+	private flushBackgroundProgress(): void {
+		this.backgroundProgressTimer = null
+		const provider = this.providerRef.deref()
+		if (!provider) {
+			this.backgroundProgressBuffer = []
+			return
+		}
+
+		// Take at most MAX_BATCH items, prioritizing by kind
+		const priorityOrder: Record<string, number> = {
+			status_change: 0,
+			error: 1,
+			tool_result: 2,
+			tool_call: 3,
+		}
+		const sorted = this.backgroundProgressBuffer.sort(
+			(a, b) => (priorityOrder[a.kind] ?? 4) - (priorityOrder[b.kind] ?? 4),
+		)
+		const batch = sorted.slice(0, Task.BACKGROUND_PROGRESS_MAX_BATCH)
+		this.backgroundProgressBuffer = []
+
+		for (const update of batch) {
+			provider.postMessageToWebview({
+				type: "backgroundTaskProgress",
+				backgroundTaskId: this.taskId,
+				backgroundTaskProgress: update,
+			})
 		}
 	}
 
