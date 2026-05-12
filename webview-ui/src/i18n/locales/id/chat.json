@@ -322,7 +322,12 @@
 		"filesModified": "File yang Diubah",
 		"filesRead": "File yang Dibaca",
 		"commandsExecuted": "Perintah yang Dijalankan",
-		"todoStats": "Tugas: {{completed}}/{{total}} selesai"
+		"todoStats": "Tugas: {{completed}}/{{total}} selesai",
+"permissionBoundaries": "Batasan Izin",
+		"permissionFilePatterns": "File yang diizinkan: {{patterns}}",
+		"permissionCommandPatterns": "Perintah yang diizinkan: {{patterns}}",
+		"permissionAllowedTools": "Alat yang diizinkan: {{tools}}",
+		"permissionDeniedTools": "Alat yang ditolak: {{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Roo punya pertanyaan"
@@ -514,5 +519,13 @@
 		"title": "Penyedia tidak lagi didukung",
 		"message": "Maaf, penyedia ini tidak lagi didukung. Kami melihat sangat sedikit pengguna Roo yang benar-benar menggunakannya dan kami perlu mengurangi cakupan kode kami agar bisa terus bergerak cepat dan melayani komunitas kami dengan baik. Ini adalah keputusan yang sangat sulit, tapi ini memungkinkan kami fokus pada apa yang paling penting bagimu. Memang menyebalkan, kami tahu.",
 		"openSettings": "Buka Pengaturan"
+	},
+	"contextHandoff": {
+		"title": "Ringkasan Serah Terima Konteks",
+		"mode": "Mode",
+		"filesModified": "File Dimodifikasi",
+		"filesRead": "File Dibaca",
+		"commandsExecuted": "Perintah Dieksekusi",
+		"apiRequests": "Permintaan API"
 	}
 }

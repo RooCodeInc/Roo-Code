@@ -271,7 +271,12 @@
 		"filesModified": "変更されたファイル",
 		"filesRead": "読み取ったファイル",
 		"commandsExecuted": "実行されたコマンド",
-		"todoStats": "タスク: {{completed}}/{{total}} 完了"
+		"todoStats": "タスク: {{completed}}/{{total}} 完了",
+"permissionBoundaries": "権限の境界",
+		"permissionFilePatterns": "許可されたファイル: {{patterns}}",
+		"permissionCommandPatterns": "許可されたコマンド: {{patterns}}",
+		"permissionAllowedTools": "許可されたツール: {{tools}}",
+		"permissionDeniedTools": "拒否されたツール: {{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Rooは質問があります"
@@ -508,5 +513,13 @@
 		"title": "プロバイダーのサポート終了",
 		"message": "申し訳ございませんが、このプロバイダーはサポートを終了しました。実際に利用しているRooユーザーが非常に少なく、コードベースの範囲を縮小して、迅速な開発とコミュニティへの貢献を続ける必要がありました。本当に難しい決断でしたが、あなたにとって最も重要なことに集中するためです。残念ですが、ご理解ください。",
 		"openSettings": "設定を開く"
+	},
+	"contextHandoff": {
+		"title": "コンテキスト引き継ぎサマリー",
+		"mode": "モード",
+		"filesModified": "変更されたファイル",
+		"filesRead": "読み取られたファイル",
+		"commandsExecuted": "実行されたコマンド",
+		"apiRequests": "APIリクエスト"
 	}
 }

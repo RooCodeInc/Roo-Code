@@ -869,6 +869,39 @@ export const ChatRowContent = ({
 						</div>
 						<div className="border-l border-muted-foreground/80 ml-2 pl-4 pb-1">
 							<MarkdownBlock markdown={tool.content} />
+							{tool.permissions && (
+								<div className="mt-2 p-2 rounded text-xs text-vscode-descriptionForeground bg-vscode-editor-background border border-vscode-editorGroup-border">
+									<div className="font-semibold mb-1">{t("chat:subtasks.permissionBoundaries")}</div>
+									{tool.permissions.filePatterns && (
+										<div>
+											{t("chat:subtasks.permissionFilePatterns", {
+												patterns: tool.permissions.filePatterns.join(", "),
+											})}
+										</div>
+									)}
+									{tool.permissions.commandPatterns && (
+										<div>
+											{t("chat:subtasks.permissionCommandPatterns", {
+												patterns: tool.permissions.commandPatterns.join(", "),
+											})}
+										</div>
+									)}
+									{tool.permissions.allowedTools && (
+										<div>
+											{t("chat:subtasks.permissionAllowedTools", {
+												tools: tool.permissions.allowedTools.join(", "),
+											})}
+										</div>
+									)}
+									{tool.permissions.deniedTools && (
+										<div>
+											{t("chat:subtasks.permissionDeniedTools", {
+												tools: tool.permissions.deniedTools.join(", "),
+											})}
+										</div>
+									)}
+								</div>
+							)}
 							<div>
 								{childTaskId && !isFollowedBySubtaskResult && (
 									<button
@@ -1027,6 +1060,8 @@ export const ChatRowContent = ({
 					// Try to parse structured summary (JSON). Falls back to plain text.
 					let structuredSummary: {
 						result?: string
+					// Try to parse structured context summary
+					let contextSummary: {
 						mode?: string
 						filesModified?: string[]
 						filesRead?: string[]
@@ -1041,6 +1076,23 @@ export const ChatRowContent = ({
 					} catch {
 						// Not JSON, use plain text rendering
 					}
+
+						toolUsageCounts?: Record<string, number>
+						apiRequestCount?: number
+						result?: string
+					} | null = null
+					try {
+						if (message.text) {
+							const parsed = JSON.parse(message.text)
+							if (parsed && typeof parsed === "object" && "result" in parsed) {
+								contextSummary = parsed
+							}
+						}
+					} catch {
+						// Not structured JSON - fall back to plain text display
+					}
+
+					const resultText = contextSummary?.result ?? message.text
 
 					return (
 						<div className="border-l border-muted-foreground/80 ml-2 pl-4 pt-2 pb-1 -mt-5">
@@ -1071,6 +1123,40 @@ export const ChatRowContent = ({
 													<li
 														key={i}
 														className="text-xs text-vscode-descriptionForeground pl-2">
+							<MarkdownBlock markdown={resultText} />
+
+							{/* Structured context handoff details */}
+							{contextSummary && (
+								<div className="mt-2 text-xs text-vscode-descriptionForeground border border-vscode-panel-border rounded p-2 space-y-1">
+									<div className="font-semibold text-vscode-foreground mb-1">
+										{t("chat:contextHandoff.title")}
+									</div>
+									{contextSummary.mode && (
+										<div>
+											<span className="opacity-70">{t("chat:contextHandoff.mode")}:</span>{" "}
+											{contextSummary.mode}
+										</div>
+									)}
+									{contextSummary.filesModified && contextSummary.filesModified.length > 0 && (
+										<div>
+											<span className="opacity-70">
+												{t("chat:contextHandoff.filesModified")}:
+											</span>
+											<ul className="list-disc ml-4 mt-0.5">
+												{contextSummary.filesModified.map((f: string, i: number) => (
+													<li key={i} className="font-mono text-[11px]">
+														{f}
+													</li>
+												))}
+											</ul>
+										</div>
+									)}
+									{contextSummary.filesRead && contextSummary.filesRead.length > 0 && (
+										<div>
+											<span className="opacity-70">{t("chat:contextHandoff.filesRead")}:</span>
+											<ul className="list-disc ml-4 mt-0.5">
+												{contextSummary.filesRead.map((f: string, i: number) => (
+													<li key={i} className="font-mono text-[11px]">
 														{f}
 													</li>
 												))}
@@ -1107,6 +1193,30 @@ export const ChatRowContent = ({
 								</div>
 							) : (
 								<MarkdownBlock markdown={message.text} />
+									{contextSummary.commandsExecuted && contextSummary.commandsExecuted.length > 0 && (
+										<div>
+											<span className="opacity-70">
+												{t("chat:contextHandoff.commandsExecuted")}:
+											</span>
+											<ul className="list-disc ml-4 mt-0.5">
+												{contextSummary.commandsExecuted.map((c: string, i: number) => (
+													<li key={i} className="font-mono text-[11px]">
+														{c}
+													</li>
+												))}
+											</ul>
+										</div>
+									)}
+									{contextSummary.apiRequestCount !== undefined &&
+										contextSummary.apiRequestCount > 0 && (
+											<div>
+												<span className="opacity-70">
+													{t("chat:contextHandoff.apiRequests")}:
+												</span>{" "}
+												{contextSummary.apiRequestCount}
+											</div>
+										)}
+								</div>
 							)}
 
 							{completedChildTaskId && (

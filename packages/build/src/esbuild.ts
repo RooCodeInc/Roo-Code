@@ -4,6 +4,42 @@ import { execSync } from "child_process"
 
 import { ViewsContainer, Views, Menus, Configuration, Keybindings, contributesSchema } from "./types.js"
 
+/**
+ * Copy a single file with retry logic to handle transient Windows file-locking
+ * errors (EBUSY, EPERM, EACCES) that occur when antivirus or indexing services
+ * hold brief locks on files during CI builds.
+ */
+function copyFileWithRetry(src: string, dst: string, maxRetries: number = 5): void {
+	for (let attempt = 1; attempt <= maxRetries; attempt++) {
+		try {
+			fs.copyFileSync(src, dst)
+			return
+		} catch (error) {
+			const isRetryable =
+				error instanceof Error &&
+				"code" in error &&
+				((error as NodeJS.ErrnoException).code === "EBUSY" ||
+					(error as NodeJS.ErrnoException).code === "EPERM" ||
+					(error as NodeJS.ErrnoException).code === "EACCES")
+
+			if (!isRetryable || attempt === maxRetries) {
+				throw error
+			}
+
+			const baseDelay = process.platform === "win32" ? 200 : 100
+			const delay = Math.min(baseDelay * Math.pow(2, attempt - 1), 2000)
+			console.warn(`[copyFileWithRetry] Attempt ${attempt} failed for ${src}, retrying in ${delay}ms...`)
+
+			// Synchronous sleep (same pattern as rmDir).
+			const start = Date.now()
+
+			while (Date.now() - start < delay) {
+				/* Busy wait */
+			}
+		}
+	}
+}
+
 function copyDir(srcDir: string, dstDir: string, count: number): number {
 	const entries = fs.readdirSync(srcDir, { withFileTypes: true })
 
@@ -16,7 +52,7 @@ function copyDir(srcDir: string, dstDir: string, count: number): number {
 			count = copyDir(srcPath, dstPath, count)
 		} else {
 			count = count + 1
-			fs.copyFileSync(srcPath, dstPath)
+			copyFileWithRetry(srcPath, dstPath)
 		}
 	}
 
@@ -98,7 +134,7 @@ export function copyPaths(copyPaths: [string, string, CopyPathOptions?][], srcDi
 				const count = copyDir(path.join(srcDir, srcRelPath), path.join(dstDir, dstRelPath), 0)
 				console.log(`[copyPaths] Copied ${count} files from ${srcRelPath} to ${dstRelPath}`)
 			} else {
-				fs.copyFileSync(path.join(srcDir, srcRelPath), path.join(dstDir, dstRelPath))
+				copyFileWithRetry(path.join(srcDir, srcRelPath), path.join(dstDir, dstRelPath))
 				console.log(`[copyPaths] Copied ${srcRelPath} to ${dstRelPath}`)
 			}
 		} catch (error) {

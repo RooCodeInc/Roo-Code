@@ -266,7 +266,12 @@
 		"filesModified": "Gewijzigde bestanden",
 		"filesRead": "Gelezen bestanden",
 		"commandsExecuted": "Uitgevoerde opdrachten",
-		"todoStats": "Taken: {{completed}}/{{total}} voltooid"
+		"todoStats": "Taken: {{completed}}/{{total}} voltooid",
+"permissionBoundaries": "Machtigingsgrenzen",
+		"permissionFilePatterns": "Toegestane bestanden: {{patterns}}",
+		"permissionCommandPatterns": "Toegestane opdrachten: {{patterns}}",
+		"permissionAllowedTools": "Toegestane tools: {{tools}}",
+		"permissionDeniedTools": "Geweigerde tools: {{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Roo heeft een vraag"
@@ -508,5 +513,13 @@
 		"title": "Provider wordt niet meer ondersteund",
 		"message": "Sorry, deze provider wordt niet meer ondersteund. We zagen dat heel weinig Roo-gebruikers het daadwerkelijk gebruikten en we moeten de omvang van onze codebase verkleinen zodat we snel kunnen blijven leveren en onze community goed kunnen blijven bedienen. Het was een heel moeilijke beslissing, maar het stelt ons in staat om ons te richten op wat het belangrijkst voor je is. Het is vervelend, dat weten we.",
 		"openSettings": "Instellingen openen"
+	},
+	"contextHandoff": {
+		"title": "Samenvatting contextoverdracht",
+		"mode": "Modus",
+		"filesModified": "Gewijzigde bestanden",
+		"filesRead": "Gelezen bestanden",
+		"commandsExecuted": "Uitgevoerde opdrachten",
+		"apiRequests": "API-verzoeken"
 	}
 }

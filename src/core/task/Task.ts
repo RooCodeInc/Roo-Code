@@ -39,6 +39,9 @@ import {
 	TaskStatus,
 	TodoItem,
 	getApiProtocol,
+	type TaskPermissions,
+	mergeTaskPermissions,
+	toTaskPermissions,
 	getModelId,
 	isRetiredProvider,
 	isIdleAsk,
@@ -51,6 +54,7 @@ import {
 	MIN_CHECKPOINT_TIMEOUT_SECONDS,
 	MAX_MCP_TOOLS_THRESHOLD,
 	countEnabledMcpTools,
+	type TaskContext,
 } from "@roo-code/types"
 
 // api
@@ -153,12 +157,22 @@ export interface TaskOptions extends CreateTaskOptions {
 	workspacePath?: string
 	/** Initial status for the task's history item (e.g., "active" for child tasks) */
 	initialStatus?: "active" | "delegated" | "completed"
+	/**
+	 * Optional isolated task context containing mode, API config, and permissions.
+	 * When provided, the task uses this context instead of reading from the provider.
+	 * This is the foundation for Phase 3a task isolation -- tasks that carry their
+	 * own context can eventually run concurrently without shared state conflicts.
+	 *
+	 * If not provided, the task falls back to the existing provider.getState() behavior.
+	 */
+	taskContext?: TaskContext
 }
 
 export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	readonly taskId: string
 	readonly rootTaskId?: string
 	readonly parentTaskId?: string
+	readonly taskPermissions?: TaskPermissions
 	childTaskId?: string
 	pendingNewTaskToolCallId?: string
 
@@ -171,6 +185,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	readonly parentTask: Task | undefined = undefined
 	readonly taskNumber: number
 	readonly workspacePath: string
+
+	/**
+	 * Isolated task context carrying mode, API config, and permission boundaries.
+	 * When set, the task uses this context instead of reading shared provider state.
+	 * This is the foundation for concurrent task execution in later phases.
+	 *
+	 * @see TaskContext in @roo-code/types
+	 */
+	readonly taskContext?: TaskContext
 
 	/**
 	 * The mode associated with this task. Persisted across sessions
@@ -430,6 +453,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		initialTodos,
 		workspacePath,
 		initialStatus,
+		taskContext,
+		taskPermissions,
 	}: TaskOptions) {
 		super()
 
@@ -455,6 +480,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.rootTaskId = historyItem ? historyItem.rootTaskId : rootTask?.taskId
 		this.parentTaskId = historyItem ? historyItem.parentTaskId : parentTask?.taskId
 		this.childTaskId = undefined
+
+		// Merge task permissions with parent (most-restrictive-wins).
+		// When restoring from history, use the persisted permissions as the base;
+		// when creating fresh, use the permissions passed via new_task tool.
+		const effectivePermissions = historyItem?.taskPermissions
+			? toTaskPermissions(historyItem.taskPermissions)
+			: taskPermissions
+		this.taskPermissions = mergeTaskPermissions(parentTask?.taskPermissions, effectivePermissions)
 
 		this.metadata = {
 			task: historyItem ? historyItem.task : task,
@@ -491,6 +524,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.parentTask = parentTask
 		this.taskNumber = taskNumber
 		this.initialStatus = initialStatus
+		this.taskContext = taskContext
 
 		this.assistantMessageParser = undefined
 
@@ -542,6 +576,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		if (historyItem) {
 			this._taskMode = historyItem.mode || defaultModeSlug
 			this._taskApiConfigName = historyItem.apiConfigName
+			this.taskModeReady = Promise.resolve()
+			this.taskApiConfigReady = Promise.resolve()
+		} else if (taskContext) {
+			// Phase 3a: Use isolated TaskContext instead of reading from provider state.
+			// This allows the task to carry its own mode and API config snapshot,
+			// independent of the provider's shared mutable state.
+			this._taskMode = taskContext.mode || defaultModeSlug
+			this._taskApiConfigName = taskContext.apiConfigName ?? "default"
 			this.taskModeReady = Promise.resolve()
 			this.taskApiConfigReady = Promise.resolve()
 		} else {
@@ -1175,6 +1217,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				await this.taskApiConfigReady
 			}
 
+			// Serialize only the input-level permission fields for persistence
+			// (exclude internal _*PatternLayers fields which are runtime-only)
+			const persistablePermissions = this.taskPermissions
+				? {
+						...(this.taskPermissions.filePatterns && { filePatterns: this.taskPermissions.filePatterns }),
+						...(this.taskPermissions.commandPatterns && {
+							commandPatterns: this.taskPermissions.commandPatterns,
+						}),
+						...(this.taskPermissions.allowedTools && { allowedTools: this.taskPermissions.allowedTools }),
+						...(this.taskPermissions.deniedTools && { deniedTools: this.taskPermissions.deniedTools }),
+					}
+				: undefined
+
 			const { historyItem, tokenUsage } = await taskMetadata({
 				taskId: this.taskId,
 				rootTaskId: this.rootTaskId,
@@ -1186,6 +1241,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				mode: this._taskMode || defaultModeSlug, // Use the task's own mode, not the current provider mode.
 				apiConfigName: this._taskApiConfigName, // Use the task's own provider profile, not the current provider profile.
 				initialStatus: this.initialStatus,
+				taskPermissions:
+					persistablePermissions && Object.keys(persistablePermissions).length > 0
+						? persistablePermissions
+						: undefined,
 			})
 
 			// Emit token/tool usage updates using debounced function

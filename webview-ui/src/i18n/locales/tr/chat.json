@@ -272,7 +272,12 @@
 		"filesModified": "Değiştirilen Dosyalar",
 		"filesRead": "Okunan Dosyalar",
 		"commandsExecuted": "Çalıştırılan Komutlar",
-		"todoStats": "Görevler: {{completed}}/{{total}} tamamlandı"
+		"todoStats": "Görevler: {{completed}}/{{total}} tamamlandı",
+"permissionBoundaries": "İzin Sınırları",
+		"permissionFilePatterns": "İzin verilen dosyalar: {{patterns}}",
+		"permissionCommandPatterns": "İzin verilen komutlar: {{patterns}}",
+		"permissionAllowedTools": "İzin verilen araçlar: {{tools}}",
+		"permissionDeniedTools": "Reddedilen araçlar: {{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Roo'nun bir sorusu var"
@@ -509,5 +514,13 @@
 		"title": "Sağlayıcı artık desteklenmiyor",
 		"message": "Üzgünüz, bu sağlayıcı artık desteklenmiyor. Çok az Roo kullanıcısının bunu gerçekten kullandığını gördük ve hızlı gelişmeye devam edip topluluğumuza iyi hizmet verebilmek için kod tabanımızın kapsamını daraltmamız gerekiyor. Gerçekten zor bir karardı ama senin için en önemli olana odaklanmamızı sağlıyor. Bunun can sıkıcı olduğunu biliyoruz.",
 		"openSettings": "Ayarları aç"
+	},
+	"contextHandoff": {
+		"title": "Bağlam Aktarımı Özeti",
+		"mode": "Mod",
+		"filesModified": "Değiştirilen Dosyalar",
+		"filesRead": "Okunan Dosyalar",
+		"commandsExecuted": "Yürütülen Komutlar",
+		"apiRequests": "API İstekleri"
 	}
 }

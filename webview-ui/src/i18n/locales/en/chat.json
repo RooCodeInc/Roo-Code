@@ -313,7 +313,20 @@
 		"filesModified": "Files Modified",
 		"filesRead": "Files Read",
 		"commandsExecuted": "Commands Executed",
-		"todoStats": "Todos: {{completed}}/{{total}} completed"
+		"todoStats": "Todos: {{completed}}/{{total}} completed",
+"permissionBoundaries": "Permission Boundaries",
+		"permissionFilePatterns": "Allowed files: {{patterns}}",
+		"permissionCommandPatterns": "Allowed commands: {{patterns}}",
+		"permissionAllowedTools": "Allowed tools: {{tools}}",
+		"permissionDeniedTools": "Denied tools: {{tools}}"
+	},
+	"contextHandoff": {
+		"title": "Context Handoff Summary",
+		"mode": "Mode",
+		"filesModified": "Files Modified",
+		"filesRead": "Files Read",
+		"commandsExecuted": "Commands Executed",
+		"apiRequests": "API Requests"
 	},
 	"questions": {
 		"hasQuestion": "Roo has a question"

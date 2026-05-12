@@ -633,6 +633,8 @@ export class NativeToolCallParser {
 						mode: partialArgs.mode,
 						message: partialArgs.message,
 						todos: partialArgs.todos,
+						task_queue: partialArgs.task_queue,
+						permissions: partialArgs.permissions,
 					}
 				}
 				break
@@ -982,6 +984,8 @@ export class NativeToolCallParser {
 							mode: args.mode,
 							message: args.message,
 							todos: args.todos,
+							task_queue: args.task_queue,
+							permissions: args.permissions,
 						} as NativeArgsFor<TName>
 					}
 					break

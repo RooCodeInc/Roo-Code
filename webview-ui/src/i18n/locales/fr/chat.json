@@ -271,7 +271,12 @@
 		"filesModified": "Fichiers modifiés",
 		"filesRead": "Fichiers lus",
 		"commandsExecuted": "Commandes exécutées",
-		"todoStats": "Tâches : {{completed}}/{{total}} terminées"
+		"todoStats": "Tâches : {{completed}}/{{total}} terminées",
+"permissionBoundaries": "Limites de permissions",
+		"permissionFilePatterns": "Fichiers autorisés : {{patterns}}",
+		"permissionCommandPatterns": "Commandes autorisées : {{patterns}}",
+		"permissionAllowedTools": "Outils autorisés : {{tools}}",
+		"permissionDeniedTools": "Outils refusés : {{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Roo a une question"
@@ -508,5 +513,13 @@
 		"title": "Fournisseur plus pris en charge",
 		"message": "Désolé, ce fournisseur n'est plus pris en charge. Nous avons constaté que très peu d'utilisateurs de Roo l'utilisaient réellement et nous devons réduire la portée de notre code pour continuer à avancer rapidement et bien servir notre communauté. C'était une décision vraiment difficile, mais elle nous permet de nous concentrer sur ce qui compte le plus pour toi. C'est rageant, on le sait.",
 		"openSettings": "Ouvrir les paramètres"
+	},
+	"contextHandoff": {
+		"title": "Résumé du transfert de contexte",
+		"mode": "Mode",
+		"filesModified": "Fichiers modifiés",
+		"filesRead": "Fichiers lus",
+		"commandsExecuted": "Commandes exécutées",
+		"apiRequests": "Requêtes API"
 	}
 }

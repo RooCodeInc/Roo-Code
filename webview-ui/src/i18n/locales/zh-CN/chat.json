@@ -272,7 +272,12 @@
 		"filesModified": "修改的文件",
 		"filesRead": "读取的文件",
 		"commandsExecuted": "执行的命令",
-		"todoStats": "待办事项：{{completed}}/{{total}} 已完成"
+		"todoStats": "待办事项：{{completed}}/{{total}} 已完成",
+"permissionBoundaries": "权限边界",
+		"permissionFilePatterns": "允许的文件：{{patterns}}",
+		"permissionCommandPatterns": "允许的命令：{{patterns}}",
+		"permissionAllowedTools": "允许的工具：{{tools}}",
+		"permissionDeniedTools": "拒绝的工具：{{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Roo有一个问题"
@@ -509,5 +514,13 @@
 		"title": "供应商不再受支持",
 		"message": "抱歉，此供应商已不再受支持。我们发现实际使用它的 Roo 用户非常少，我们需要缩减代码库的范围，以便继续快速交付并更好地服务社区。这是一个非常艰难的决定，但它能让我们专注于对你最重要的事情。我们知道这很遗憾。",
 		"openSettings": "打开设置"
+	},
+	"contextHandoff": {
+		"title": "上下文交接摘要",
+		"mode": "模式",
+		"filesModified": "已修改的文件",
+		"filesRead": "已读取的文件",
+		"commandsExecuted": "已执行的命令",
+		"apiRequests": "API 请求"
 	}
 }

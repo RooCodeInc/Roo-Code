@@ -271,7 +271,12 @@
 		"filesModified": "Arquivos modificados",
 		"filesRead": "Arquivos lidos",
 		"commandsExecuted": "Comandos executados",
-		"todoStats": "Tarefas: {{completed}}/{{total}} concluídas"
+		"todoStats": "Tarefas: {{completed}}/{{total}} concluídas",
+"permissionBoundaries": "Limites de permissão",
+		"permissionFilePatterns": "Arquivos permitidos: {{patterns}}",
+		"permissionCommandPatterns": "Comandos permitidos: {{patterns}}",
+		"permissionAllowedTools": "Ferramentas permitidas: {{tools}}",
+		"permissionDeniedTools": "Ferramentas negadas: {{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Roo tem uma pergunta"
@@ -508,5 +513,13 @@
 		"title": "Provedor não é mais suportado",
 		"message": "Desculpe, este provedor não é mais suportado. Percebemos que muito poucos usuários do Roo realmente o utilizavam e precisamos reduzir o escopo do nosso código para continuar entregando rápido e servindo bem nossa comunidade. Foi uma decisão muito difícil, mas nos permite focar no que mais importa para você. Sabemos que é chato.",
 		"openSettings": "Abrir configurações"
+	},
+	"contextHandoff": {
+		"title": "Resumo da transferência de contexto",
+		"mode": "Modo",
+		"filesModified": "Arquivos modificados",
+		"filesRead": "Arquivos lidos",
+		"commandsExecuted": "Comandos executados",
+		"apiRequests": "Requisições de API"
 	}
 }

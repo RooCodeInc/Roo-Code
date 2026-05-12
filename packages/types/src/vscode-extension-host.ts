@@ -795,6 +795,13 @@ export interface ClineSayTool {
 	description?: string
 	// Properties for skill tool
 	skill?: string
+	// Properties for newTask tool - permission boundaries set by parent
+	permissions?: {
+		filePatterns?: string[]
+		commandPatterns?: string[]
+		allowedTools?: string[]
+		deniedTools?: string[]
+	}
 }
 
 export interface ClineAskUseMcpServer {

@@ -47,6 +47,7 @@ describe("ClineProvider.delegateParentAndOpenChild()", () => {
 			getTaskWithId,
 			updateTaskHistory,
 			handleModeSwitch,
+			getState: vi.fn().mockResolvedValue({ mode: "code", currentApiConfigName: "default" }),
 			log: vi.fn(),
 		} as unknown as ClineProvider
 
@@ -68,6 +69,7 @@ describe("ClineProvider.delegateParentAndOpenChild()", () => {
 			initialTodos: [],
 			initialStatus: "active",
 			startTask: false,
+			taskContext: expect.objectContaining({ mode: "code" }),
 		})
 
 		// Metadata persistence - parent gets "delegated" status (child status is set at creation via initialStatus)
@@ -129,6 +131,7 @@ describe("ClineProvider.delegateParentAndOpenChild()", () => {
 			getTaskWithId,
 			updateTaskHistory,
 			handleModeSwitch,
+			getState: vi.fn().mockResolvedValue({ mode: "code", currentApiConfigName: "default" }),
 			log: vi.fn(),
 		} as unknown as ClineProvider
 

@@ -271,7 +271,12 @@
 		"filesModified": "Archivos modificados",
 		"filesRead": "Archivos leídos",
 		"commandsExecuted": "Comandos ejecutados",
-		"todoStats": "Tareas: {{completed}}/{{total}} completadas"
+		"todoStats": "Tareas: {{completed}}/{{total}} completadas",
+"permissionBoundaries": "Límites de permisos",
+		"permissionFilePatterns": "Archivos permitidos: {{patterns}}",
+		"permissionCommandPatterns": "Comandos permitidos: {{patterns}}",
+		"permissionAllowedTools": "Herramientas permitidas: {{tools}}",
+		"permissionDeniedTools": "Herramientas denegadas: {{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Roo tiene una pregunta"
@@ -508,5 +513,13 @@
 		"title": "Proveedor ya no compatible",
 		"message": "Lo sentimos, este proveedor ya no es compatible. Vimos que muy pocos usuarios de Roo lo usaban realmente y necesitamos reducir el alcance de nuestro código para poder seguir avanzando rápido y servir bien a nuestra comunidad en este espacio. Fue una decisión muy difícil, pero nos permite enfocarnos en lo que más te importa. Lo sabemos, es una lástima.",
 		"openSettings": "Abrir configuración"
+	},
+	"contextHandoff": {
+		"title": "Resumen del traspaso de contexto",
+		"mode": "Modo",
+		"filesModified": "Archivos modificados",
+		"filesRead": "Archivos leídos",
+		"commandsExecuted": "Comandos ejecutados",
+		"apiRequests": "Solicitudes de API"
 	}
 }

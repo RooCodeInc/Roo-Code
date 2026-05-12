@@ -271,7 +271,12 @@
 		"filesModified": "संशोधित फ़ाइलें",
 		"filesRead": "पढ़ी गई फ़ाइलें",
 		"commandsExecuted": "निष्पादित कमांड",
-		"todoStats": "कार्य: {{completed}}/{{total}} पूर्ण"
+		"todoStats": "कार्य: {{completed}}/{{total}} पूर्ण",
+"permissionBoundaries": "अनुमति सीमाएँ",
+		"permissionFilePatterns": "अनुमत फ़ाइलें: {{patterns}}",
+		"permissionCommandPatterns": "अनुमत कमांड: {{patterns}}",
+		"permissionAllowedTools": "अनुमत टूल: {{tools}}",
+		"permissionDeniedTools": "अस्वीकृत टूल: {{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Roo का एक प्रश्न है"
@@ -508,5 +513,13 @@
 		"title": "प्रदाता अब समर्थित नहीं है",
 		"message": "क्षमा करें, यह प्रदाता अब समर्थित नहीं है। हमने देखा कि बहुत कम Roo उपयोगकर्ता वास्तव में इसका उपयोग कर रहे थे और हमें अपने कोडबेस का दायरा कम करने की आवश्यकता है ताकि हम तेज़ी से काम करना और अपने समुदाय की अच्छी सेवा करना जारी रख सकें। यह वाकई एक कठिन निर्णय था, लेकिन इससे हम उस पर ध्यान केंद्रित कर सकते हैं जो तुम्हारे लिए सबसे ज़्यादा मायने रखता है। हम जानते हैं, यह बुरा लगता है।",
 		"openSettings": "सेटिंग्स खोलें"
+	},
+	"contextHandoff": {
+		"title": "कॉन्टेक्स्ट हैंडऑफ़ सारांश",
+		"mode": "मोड",
+		"filesModified": "संशोधित फ़ाइलें",
+		"filesRead": "पढ़ी गई फ़ाइलें",
+		"commandsExecuted": "निष्पादित कमांड",
+		"apiRequests": "API अनुरोध"
 	}
 }

@@ -1,5 +1,5 @@
-import type { ToolName, ModeConfig, ExperimentId, GroupOptions, GroupEntry } from "@roo-code/types"
-import { toolNames as validToolNames } from "@roo-code/types"
+import type { ToolName, ModeConfig, ExperimentId, GroupOptions, GroupEntry, TaskPermissions } from "@roo-code/types"
+import { toolNames as validToolNames, matchesAllPatternLayers } from "@roo-code/types"
 import { customToolRegistry } from "@roo-code/core"
 
 import { type Mode, FileRestrictionError, getModeBySlug, getGroupName } from "../../shared/modes"
@@ -37,6 +37,7 @@ export function validateToolUse(
 	toolParams?: Record<string, unknown>,
 	experiments?: Record<string, boolean>,
 	includedTools?: string[],
+	taskPermissions?: TaskPermissions,
 ): void {
 	// First, check if the tool name is actually a valid/known tool
 	// This catches completely invalid tool names like "edit_file" that don't exist
@@ -56,6 +57,7 @@ export function validateToolUse(
 			toolParams,
 			experiments,
 			includedTools,
+			taskPermissions,
 		)
 	) {
 		throw new Error(`Tool "${toolName}" is not allowed in ${mode} mode.`)
@@ -117,6 +119,19 @@ function doesFileMatchRegex(filePath: string, pattern: string): boolean {
 	}
 }
 
+/**
+ * Error thrown when a tool is denied by TaskPermissions.
+ */
+export class TaskPermissionError extends Error {
+	constructor(
+		public readonly toolName: string,
+		public readonly reason: string,
+	) {
+		super(`Tool "${toolName}" is not allowed: ${reason}`)
+		this.name = "TaskPermissionError"
+	}
+}
+
 export function isToolAllowedForMode(
 	tool: string,
 	modeSlug: string,
@@ -125,10 +140,78 @@ export function isToolAllowedForMode(
 	toolParams?: Record<string, any>, // All tool parameters
 	experiments?: Record<string, boolean>,
 	includedTools?: string[], // Opt-in tools explicitly included (e.g., from modelInfo)
+	taskPermissions?: TaskPermissions,
 ): boolean {
 	// Resolve alias to canonical name (e.g., "search_and_replace" → "edit")
 	const resolvedTool = TOOL_ALIASES[tool] ?? tool
 	const resolvedIncludedTools = includedTools?.map((t) => TOOL_ALIASES[t] ?? t)
+
+	// Check TaskPermissions first -- these are set by the parent task via new_task
+	if (taskPermissions) {
+		const isAlwaysAvailable = ALWAYS_AVAILABLE_TOOLS.includes(tool as any)
+
+		// Check deniedTools (but never deny always-available tools like attempt_completion)
+		if (
+			!isAlwaysAvailable &&
+			(taskPermissions.deniedTools?.includes(resolvedTool) || taskPermissions.deniedTools?.includes(tool))
+		) {
+			throw new TaskPermissionError(tool, "This tool is denied by the parent task's permission boundaries.")
+		}
+
+		// Check allowedTools (if set, only these tools are permitted)
+		if (taskPermissions.allowedTools) {
+			const isAllowed =
+				taskPermissions.allowedTools.includes(resolvedTool) ||
+				taskPermissions.allowedTools.includes(tool) ||
+				// Always allow certain critical tools regardless of allowlist
+				isAlwaysAvailable
+			if (!isAllowed) {
+				throw new TaskPermissionError(tool, "This tool is not in the parent task's allowed tools list.")
+			}
+		}
+
+		// Check filePatterns -- use layered enforcement when available (AND between
+		// layers, OR within each layer), fall back to flat filePatterns as a single layer.
+		const filePatternLayers =
+			taskPermissions._filePatternLayers ??
+			(taskPermissions.filePatterns?.length ? [taskPermissions.filePatterns] : undefined)
+
+		if (filePatternLayers && filePatternLayers.length > 0) {
+			const filePath = toolParams?.path || toolParams?.file_path
+			if (filePath && typeof filePath === "string") {
+				if (!matchesAllPatternLayers(filePath, filePatternLayers)) {
+					throw new TaskPermissionError(tool, `File "${filePath}" is outside the allowed file patterns.`)
+				}
+			}
+
+			// Check apply_patch file paths
+			if (tool === "apply_patch" && typeof toolParams?.patch === "string") {
+				const patchFilePaths = extractFilePathsFromPatch(toolParams.patch)
+				for (const patchFilePath of patchFilePaths) {
+					if (!matchesAllPatternLayers(patchFilePath, filePatternLayers)) {
+						throw new TaskPermissionError(
+							tool,
+							`File "${patchFilePath}" in patch is outside the allowed file patterns.`,
+						)
+					}
+				}
+			}
+		}
+
+		// Check commandPatterns -- same layered approach as filePatterns.
+		const commandPatternLayers =
+			taskPermissions._commandPatternLayers ??
+			(taskPermissions.commandPatterns?.length ? [taskPermissions.commandPatterns] : undefined)
+
+		if (commandPatternLayers && commandPatternLayers.length > 0 && resolvedTool === "execute_command") {
+			const command = toolParams?.command
+			if (command && typeof command === "string") {
+				if (!matchesAllPatternLayers(command, commandPatternLayers)) {
+					throw new TaskPermissionError(tool, `Command "${command}" is outside the allowed command patterns.`)
+				}
+			}
+		}
+	}
 
 	// Check tool requirements first — explicit disabling takes priority over everything,
 	// including ALWAYS_AVAILABLE_TOOLS. This ensures disabledTools works consistently
