@@ -149,7 +149,7 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "apr-2026-v3.53.0-community-handoff-gpt55-opus47" // v3.53.0 Community handoff, GPT-5.5, Claude Opus 4.7, checkpoint navigation
+	public readonly latestAnnouncementId = "may-2026-final-roo-code-release" // Final Roo Code release announcement.
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 

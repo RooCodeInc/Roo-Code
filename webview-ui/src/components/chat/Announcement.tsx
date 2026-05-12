@@ -36,33 +36,42 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 			}}>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>{t("chat:announcement.title", { version: Package.version })}</DialogTitle>
+					<DialogTitle>{t("chat:announcement.finalRelease.title", { version: Package.version })}</DialogTitle>
 				</DialogHeader>
-				<div>
-					<div className="mb-4">
-						<p className="mb-3">{t("chat:announcement.release.heading")}</p>
-						<ul className="list-disc list-inside text-sm space-y-1.5">
-							<li>{t("chat:announcement.release.gpt55")}</li>
-							<li>{t("chat:announcement.release.claudeOpus47")}</li>
-							<li>{t("chat:announcement.release.checkpointNav")}</li>
-						</ul>
-					</div>
-
-					<div className="mt-3 text-sm text-center text-vscode-descriptionForeground">
-						<Trans i18nKey="chat:announcement.support" components={{ githubLink: <GitHubLink /> }} />
-					</div>
+				<div className="text-sm leading-relaxed text-vscode-descriptionForeground">
+					<p className="mt-0">
+						<Trans
+							i18nKey="chat:announcement.finalRelease.intro"
+							components={{
+								announcementLink: (
+									<ExternalLink href="https://x.com/mattrubens/status/2046636598859559114" />
+								),
+							}}
+						/>
+					</p>
+					<p>{t("chat:announcement.finalRelease.continuity")}</p>
+					<p>
+						<Trans
+							i18nKey="chat:announcement.finalRelease.alternatives"
+							components={{
+								zooCodeLink: <ExternalLink href="https://github.com/Zoo-Code-Org/Zoo-Code/" />,
+								clineLink: <ExternalLink href="https://cline.bot/" />,
+							}}
+						/>
+					</p>
+					<p className="mb-0">{t("chat:announcement.finalRelease.signoff")}</p>
 				</div>
 			</DialogContent>
 		</Dialog>
 	)
 }
 
-const GitHubLink = ({ children }: { children?: ReactNode }) => (
+const ExternalLink = ({ children, href }: { children?: ReactNode; href: string }) => (
 	<VSCodeLink
-		href="https://github.com/RooCodeInc/Roo-Code"
+		href={href}
 		onClick={(e) => {
 			e.preventDefault()
-			vscode.postMessage({ type: "openExternal", url: "https://github.com/RooCodeInc/Roo-Code" })
+			vscode.postMessage({ type: "openExternal", url: href })
 		}}>
 		{children}
 	</VSCodeLink>
