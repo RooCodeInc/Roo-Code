@@ -9,12 +9,24 @@ describe("MultiSearchReplaceDiffStrategy", () => {
 		})
 
 		it("validates correct marker sequence", () => {
-			const diff = "<<<<<<< SEARCH\n" + "some content\n" + "=======\n" + "new content\n" + ">>>>>>> REPLACE"
+			const diff =
+				"<<<<<<< SEARCH\n" +
+				":start_line:1\n" +
+				"some content\n" +
+				"=======\n" +
+				"new content\n" +
+				">>>>>>> REPLACE"
 			expect(strategy["validateMarkerSequencing"](diff).success).toBe(true)
 		})
 
 		it("validates correct marker sequence with extra > in SEARCH", () => {
-			const diff = "<<<<<<< SEARCH>\n" + "some content\n" + "=======\n" + "new content\n" + ">>>>>>> REPLACE"
+			const diff =
+				"<<<<<<< SEARCH>\n" +
+				":start_line:1\n" +
+				"some content\n" +
+				"=======\n" +
+				"new content\n" +
+				">>>>>>> REPLACE"
 			expect(strategy["validateMarkerSequencing"](diff).success).toBe(true)
 		})
 
@@ -26,11 +38,13 @@ describe("MultiSearchReplaceDiffStrategy", () => {
 		it("validates mixed cases with and without extra > in the same diff", () => {
 			const diff =
 				"<<<<<<< SEARCH>\n" +
+				":start_line:1\n" +
 				"content1\n" +
 				"=======\n" +
 				"new1\n" +
 				">>>>>>> REPLACE\n\n" +
 				"<<<<<<< SEARCH\n" +
+				":start_line:2\n" +
 				"content2\n" +
 				"=======\n" +
 				"new2\n" +
@@ -39,7 +53,13 @@ describe("MultiSearchReplaceDiffStrategy", () => {
 		})
 
 		it("validates extra > with whitespace variations", () => {
-			const diff1 = "<<<<<<< SEARCH>  \n" + "some content\n" + "=======\n" + "new content\n" + ">>>>>>> REPLACE"
+			const diff1 =
+				"<<<<<<< SEARCH>  \n" +
+				":start_line:1\n" +
+				"some content\n" +
+				"=======\n" +
+				"new content\n" +
+				">>>>>>> REPLACE"
 			expect(strategy["validateMarkerSequencing"](diff1).success).toBe(true)
 
 			const diff2 = "<<<<<<< SEARCH  >\n" + "some content\n" + "=======\n" + "new content\n" + ">>>>>>> REPLACE"
@@ -61,11 +81,13 @@ describe("MultiSearchReplaceDiffStrategy", () => {
 		it("validates multiple correct marker sequences", () => {
 			const diff =
 				"<<<<<<< SEARCH\n" +
+				":start_line:1\n" +
 				"content1\n" +
 				"=======\n" +
 				"new1\n" +
 				">>>>>>> REPLACE\n\n" +
 				"<<<<<<< SEARCH\n" +
+				":start_line:2\n" +
 				"content2\n" +
 				"=======\n" +
 				"new2\n" +
@@ -101,7 +123,7 @@ describe("MultiSearchReplaceDiffStrategy", () => {
 		})
 
 		it("detects missing separator", () => {
-			const diff = "<<<<<<< SEARCH\n" + "content\n" + ">>>>>>> REPLACE"
+			const diff = "<<<<<<< SEARCH\n" + ":start_line:1\n" + "content\n" + ">>>>>>> REPLACE"
 			const result = strategy["validateMarkerSequencing"](diff)
 			expect(result.success).toBe(false)
 			expect(result.error).toContain("'>>>>>>> REPLACE' found in your diff content")
@@ -109,7 +131,8 @@ describe("MultiSearchReplaceDiffStrategy", () => {
 		})
 
 		it("detects two separators", () => {
-			const diff = "<<<<<<< SEARCH\n" + "content\n" + "=======\n" + "=======\n" + ">>>>>>> REPLACE"
+			const diff =
+				"<<<<<<< SEARCH\n" + ":start_line:1\n" + "content\n" + "=======\n" + "=======\n" + ">>>>>>> REPLACE"
 			const result = strategy["validateMarkerSequencing"](diff)
 			expect(result.success).toBe(false)
 			expect(result.error).toContain("'=======' found in your diff content")
@@ -125,10 +148,17 @@ describe("MultiSearchReplaceDiffStrategy", () => {
 		})
 
 		it("detects incomplete sequence", () => {
-			const diff = "<<<<<<< SEARCH\n" + "content\n" + "=======\n" + "new content"
+			const diff = "<<<<<<< SEARCH\n" + ":start_line:1\n" + "content\n" + "=======\n" + "new content"
 			const result = strategy["validateMarkerSequencing"](diff)
 			expect(result.success).toBe(false)
 			expect(result.error).toContain("Expected '>>>>>>> REPLACE' was not found")
+		})
+
+		it("rejects diff without :start_line:", () => {
+			const diff = "<<<<<<< SEARCH\n" + "some content\n" + "=======\n" + "new content\n" + ">>>>>>> REPLACE"
+			const result = strategy["validateMarkerSequencing"](diff)
+			expect(result.success).toBe(false)
+			expect(result.error).toContain("Expected: :start_line: <line_number>")
 		})
 
 		describe("exact matching", () => {
@@ -142,6 +172,8 @@ describe("MultiSearchReplaceDiffStrategy", () => {
 				const originalContent = 'function hello() {\n    console.log("hello")\n}\n'
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:1
+-------
 function hello() {
     console.log("hello")
 }
@@ -162,11 +194,15 @@ function hello() {
 				const originalContent = 'function hello() {\n    console.log("hello")\n}\n'
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:1
+-------
 function hello() {
 =======
 function helloWorld() {
 >>>>>>> REPLACE
 <<<<<<< SEARCH
+:start_line:2
+-------
     console.log("hello")
 =======
     console.log("hello world")
@@ -227,6 +263,8 @@ function helloWorld() {
 				const originalContent = "\nfunction example() {\n    return 42;\n}\n\n"
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:2
+-------
 function example() {
     return 42;
 }
@@ -247,6 +285,8 @@ function example() {
 				const originalContent = "    function test() {\n        return true;\n    }\n"
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:1
+-------
 function test() {
     return true;
 }
@@ -267,6 +307,8 @@ function test() {
 				const originalContent = "function test() {\n\treturn true;\n}\n"
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:1
+-------
 function test() {
 \treturn true;
 }
@@ -287,6 +329,8 @@ function test() {
 				const originalContent = "\tclass Example {\n\t    constructor() {\n\t\tthis.value = 0;\n\t    }\n\t}"
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:1
+-------
 \tclass Example {
 \t    constructor() {
 \t\tthis.value = 0;
@@ -313,6 +357,8 @@ function test() {
 				const originalContent = "\tfunction test() {\n\t\treturn true;\n\t}"
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:1
+-------
 function test() {
 \treturn true;
 }
@@ -334,6 +380,8 @@ function test() {
 				const originalContent = "\tfunction test() {\n\t\treturn true;\n\t}"
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:1
+-------
 \tfunction test() {
 \t\treturn true;
 \t}
@@ -358,6 +406,8 @@ function test() {
 				const originalContent = "function test() {\r\n    return true;\r\n}\r\n"
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:1
+-------
 function test() {
     return true;
 }
@@ -378,6 +428,8 @@ function test() {
 				const originalContent = 'function hello() {\n    console.log("hello")\n}\n'
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:1
+-------
 function hello() {
     console.log("wrong")
 }
@@ -404,6 +456,8 @@ function hello() {
 					"class Example {\n    constructor() {\n        this.value = 0\n    }\n\n    getValue() {\n        return this.value\n    }\n}\n"
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:6
+-------
     getValue() {
         return this.value
     }
@@ -428,6 +482,8 @@ function hello() {
 				const originalContent = "    indented\n        more indented\n    back\n"
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:1
+-------
     indented
         more indented
     back
@@ -448,6 +504,8 @@ function hello() {
 				const originalContent = "				onScroll={() => updateHighlights()}"
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:1
+-------
 				onScroll={() => updateHighlights()}
 =======
 				onScroll={() => updateHighlights()}
@@ -479,6 +537,8 @@ class Example {
 
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:1
+-------
     class Example {
         constructor() {
             this.value = 0;
@@ -530,6 +590,8 @@ class Example {
 }`.trim()
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:2
+-------
     constructor() {
         this.value = 0;
         if (true) {
@@ -570,6 +632,8 @@ class Example {
     return True`.trim()
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:2
+-------
     if condition:
         do_something()
         for item in items:
@@ -605,6 +669,8 @@ class Example {
 }`.trim()
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:2
+-------
     const x = 1;
     
     if (x) {
@@ -639,6 +705,8 @@ class Example {
 }`.trim()
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:2
+-------
     method() {
         if (true) {
             console.log("test");
@@ -684,6 +752,8 @@ class Example {
 }`.trim()
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:4
+-------
             this.init();
             this.setup();
 =======
@@ -715,6 +785,8 @@ class Example {
 }`.trim()
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:4
+-------
             this.init();
 =======
 this.init();
@@ -745,6 +817,8 @@ this.init();
 }`.trim()
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:4
+-------
             this.init();
             this.setup();
             this.validate();
@@ -793,6 +867,8 @@ function five() {
 
 				const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:9
+-------
     return "target";
 =======
     return "updated";
@@ -839,6 +915,8 @@ function five() {
 				"function getData() {\n    const results = fetchData();\n    return results.filter(Boolean);\n}\n"
 			const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:1
+-------
 function getData() {
     const result = fetchData();
     return results.filter(Boolean);
@@ -865,6 +943,8 @@ function getData() {
 			const originalContent = "function processUsers(data) {\n    return data.map(user => user.name);\n}\n"
 			const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:1
+-------
 function handleItems(items) {
     return items.map(item => item.username);
 }
@@ -882,6 +962,8 @@ function processData(data) {
 			const originalContent = "function sum(a, b) {\n    return a + b;\n}"
 			const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:1
+-------
 function   sum(a,   b)    {
     return    a + b;
 }
@@ -900,9 +982,11 @@ function sum(a, b) {
 
 		it("should match content with smart quotes", async () => {
 			const originalContent =
-				"**Enjoy Roo Code!** Whether you keep it on a short leash or let it roam autonomously, we can't wait to see what you build. If you have questions or feature ideas, drop by our [Reddit community](https://www.reddit.com/r/RooCode/) or [Discord](https://discord.gg/roocode). Happy coding!"
+				"**Enjoy Roo Code!** Whether you keep it on a short leash or let it roam autonomously, we can\u2019t wait to see what you build. If you have questions or feature ideas, drop by our [Reddit community](https://www.reddit.com/r/RooCode/) or [Discord](https://discord.gg/roocode). Happy coding!"
 			const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:1
+-------
 **Enjoy Roo Code!** Whether you keep it on a short leash or let it roam autonomously, we can't wait to see what you build. If you have questions or feature ideas, drop by our [Reddit community](https://www.reddit.com/r/RooCode/) or [Discord](https://discord.gg/roocode). Happy coding!
 =======
 **Enjoy Roo Code!** Whether you keep it on a short leash or let it roam autonomously, we can't wait to see what you build. If you have questions or feature ideas, drop by our [Reddit community](https://www.reddit.com/r/RooCode/) or [Discord](https://discord.gg/roocode). Happy coding!
@@ -923,6 +1007,8 @@ You're still here?
 			const originalContent = "function sum(a, b) {\n\n    return a + b;\n}"
 			const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:1
+-------
 function sum(a, b) {
 =======
 import { a } from "a";
@@ -952,6 +1038,8 @@ function sum(a, b) {
 }`
 			const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:3
+-------
     // Comment to remove
 =======
 >>>>>>> REPLACE`
@@ -978,6 +1066,8 @@ function sum(a, b) {
 }`
 			const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:3
+-------
         // Initialize
         this.value = 0;
         // Set defaults
@@ -1007,6 +1097,8 @@ function sum(a, b) {
 }`
 			const diffContent = `test.ts
 <<<<<<< SEARCH
+:start_line:3
+-------
         // Remove this
         console.log("test");
         // And this
@@ -1051,6 +1143,7 @@ function sum(a, b) {
 		it("should reject start_line marker in REPLACE section", () => {
 			const diff =
 				"<<<<<<< SEARCH\n" +
+				":start_line:1\n" +
 				"content to find\n" +
 				"=======\n" +
 				":start_line:5\n" +
@@ -1067,6 +1160,7 @@ function sum(a, b) {
 		it("should reject end_line marker in REPLACE section", () => {
 			const diff =
 				"<<<<<<< SEARCH\n" +
+				":start_line:1\n" +
 				"content to find\n" +
 				"=======\n" +
 				":end_line:10\n" +
@@ -1083,6 +1177,7 @@ function sum(a, b) {
 		it("should reject both line markers in REPLACE section", () => {
 			const diff =
 				"<<<<<<< SEARCH\n" +
+				":start_line:1\n" +
 				"content to find\n" +
 				"=======\n" +
 				":start_line:5\n" +
@@ -1103,6 +1198,7 @@ function sum(a, b) {
 				"replacement1\n" +
 				">>>>>>> REPLACE\n\n" +
 				"<<<<<<< SEARCH\n" +
+				":start_line:5\n" +
 				"content2\n" +
 				"=======\n" +
 				":start_line:5\n" +
@@ -1130,6 +1226,7 @@ function sum(a, b) {
 		it("should allow escaped line markers in REPLACE content", () => {
 			const diff =
 				"<<<<<<< SEARCH\n" +
+				":start_line:1\n" +
 				"content to find\n" +
 				"=======\n" +
 				"replacement content\n" +
@@ -1143,6 +1240,7 @@ function sum(a, b) {
 		it("should allow escaped end_line markers in REPLACE content", () => {
 			const diff =
 				"<<<<<<< SEARCH\n" +
+				":start_line:1\n" +
 				"content to find\n" +
 				"=======\n" +
 				"replacement content\n" +
@@ -1156,6 +1254,7 @@ function sum(a, b) {
 		it("should allow both escaped line markers in REPLACE content", () => {
 			const diff =
 				"<<<<<<< SEARCH\n" +
+				":start_line:1\n" +
 				"content to find\n" +
 				"=======\n" +
 				"replacement content\n" +
@@ -1170,6 +1269,7 @@ function sum(a, b) {
 		it("should reject line markers with whitespace in REPLACE section", () => {
 			const diff =
 				"<<<<<<< SEARCH\n" +
+				":start_line:1\n" +
 				"content to find\n" +
 				"=======\n" +
 				"  :start_line:5  \n" +
@@ -1183,6 +1283,7 @@ function sum(a, b) {
 		it("should reject line markers in middle of REPLACE content", () => {
 			const diff =
 				"<<<<<<< SEARCH\n" +
+				":start_line:1\n" +
 				"content to find\n" +
 				"=======\n" +
 				"some replacement\n" +
@@ -1196,7 +1297,13 @@ function sum(a, b) {
 
 		it("should provide helpful error message format", () => {
 			const diff =
-				"<<<<<<< SEARCH\n" + "content\n" + "=======\n" + ":start_line:5\n" + "replacement\n" + ">>>>>>> REPLACE"
+				"<<<<<<< SEARCH\n" +
+				":start_line:1\n" +
+				"content\n" +
+				"=======\n" +
+				":start_line:5\n" +
+				"replacement\n" +
+				">>>>>>> REPLACE"
 			const result = strategy["validateMarkerSequencing"](diff)
 			expect(result.success).toBe(false)
 			expect(result.error).toContain("CORRECT FORMAT:")

@@ -16,6 +16,8 @@ describe("MultiSearchReplaceDiffStrategy - trailing newline preservation", () =>
     }
 }`
 		const diffContent = `<<<<<<< SEARCH
+:start_line:1
+-------
 1 | class Example {
 2 |     constructor() {
 3 |         this.value = 0;
@@ -43,6 +45,8 @@ class Example {
 	it("should handle Windows line endings with trailing newlines and line numbers", async () => {
 		const originalContent = "function test() {\r\n    return true;\r\n}\r\n"
 		const diffContent = `<<<<<<< SEARCH
+:start_line:1
+-------
 1 | function test() {
 2 |     return true;
 3 | }
@@ -69,6 +73,8 @@ function two() {
     return 2;
 }`
 		const diffContent = `<<<<<<< SEARCH
+:start_line:1
+-------
 1 | function one() {
 2 |     return 1;
 3 | }
@@ -79,6 +85,8 @@ function one() {
 >>>>>>> REPLACE
 
 <<<<<<< SEARCH
+:start_line:5
+-------
 5 | function two() {
 6 |     return 2;
 7 | }
@@ -109,6 +117,8 @@ function two() {
                                                 + CollectionUtils.size(personIdentityInfoList));`
 
 		const diffContent = `<<<<<<< SEARCH
+:start_line:1
+-------
 1476 |                 List<ContactInfoItemResp> addressInfoList = new ArrayList<>(CollectionUtils.size(repairInfoList) > 10 ? 10
 1477 |                                 : CollectionUtils.size(repairInfoList) + CollectionUtils.size(homeAddressInfoList)
 1478 |                                                 + CollectionUtils.size(idNoAddressInfoList) + CollectionUtils.size(workAddressInfoList)
@@ -143,6 +153,8 @@ function two() {
 	it("should correctly strip line numbers even when last line has no trailing newline", async () => {
 		const originalContent = "line 1\nline 2\nline 3" // No trailing newline
 		const diffContent = `<<<<<<< SEARCH
+:start_line:1
+-------
 1 | line 1
 2 | line 2
 3 | line 3

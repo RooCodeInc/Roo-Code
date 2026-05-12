@@ -105,6 +105,7 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 			AFTER_SEPARATOR,
 		}
 		const state = { current: State.START, line: 0 }
+		let foundStartLine = false
 
 		// Pattern allows optional '>' after SEARCH to handle AI-generated diffs
 		// (e.g., Sonnet 4 sometimes adds an extra '>')
@@ -207,8 +208,10 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 							: reportMergeConflictError(SEP, SEARCH)
 					if (marker === REPLACE) return reportInvalidDiffError(REPLACE, SEARCH)
 					if (marker.startsWith(REPLACE_PREFIX)) return reportMergeConflictError(marker, SEARCH)
-					if (SEARCH_PATTERN.test(marker)) state.current = State.AFTER_SEARCH
-					else if (marker.startsWith(SEARCH_PREFIX)) return reportMergeConflictError(marker, SEARCH)
+					if (SEARCH_PATTERN.test(marker)) {
+						foundStartLine = false
+						state.current = State.AFTER_SEARCH
+					} else if (marker.startsWith(SEARCH_PREFIX)) return reportMergeConflictError(marker, SEARCH)
 					break
 
 				case State.AFTER_SEARCH:
@@ -216,7 +219,13 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 					if (marker.startsWith(SEARCH_PREFIX)) return reportMergeConflictError(marker, SEARCH)
 					if (marker === REPLACE) return reportInvalidDiffError(REPLACE, SEP)
 					if (marker.startsWith(REPLACE_PREFIX)) return reportMergeConflictError(marker, SEARCH)
-					if (marker === SEP) state.current = State.AFTER_SEPARATOR
+					if (/^:start_line:\s*\d+/.test(marker)) foundStartLine = true
+					if (marker === SEP) {
+						if (!foundStartLine) {
+							return reportInvalidDiffError(SEP, ":start_line: <line_number>")
+						}
+						state.current = State.AFTER_SEPARATOR
+					}
 					break
 
 				case State.AFTER_SEPARATOR:
@@ -265,23 +274,23 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 			2. (?<!\\)<<<<<<< SEARCH\s*\n  
 			  Matches the line "<<<<<<< SEARCH" (ignoring any trailing spaces) – the negative lookbehind makes sure it isn't escaped.
 
-			3. ((?:\:start_line:\s*(\d+)\s*\n))?  
-			  Optionally matches a ":start_line:" line. The outer capturing group is group 1 and the inner (\d+) is group 2.
+			3. \:start_line:\s*(\d+)\s*\n
+			  Matches the required ":start_line:" line. Group 1 is the line number.
 
 			4. ((?:\:end_line:\s*(\d+)\s*\n))?  
-			  Optionally matches a ":end_line:" line. Group 3 is the whole match and group 4 is the digits.
+			  Optionally matches a ":end_line:" line. Group 2 is the whole match and group 3 is the digits.
 
 			5. ((?<!\\)-------\s*\n)?  
-			  Optionally matches the "-------" marker line (group 5).
+			  Optionally matches the "-------" marker line (group 4).
 
 			6. ([\s\S]*?)(?:\n)?  
-			  Non‐greedy match for the "search content" (group 6) up to the next marker.
+			  Non‐greedy match for the "search content" (group 5) up to the next marker.
 
 			7. (?:(?<=\n)(?<!\\)=======\s*\n)  
 			  Matches the "=======" marker on its own line.
 
 			8. ([\s\S]*?)(?:\n)?  
-			  Non‐greedy match for the "replace content" (group 7).
+			  Non‐greedy match for the "replace content" (group 6).
 
 			9. (?:(?<=\n)(?<!\\)>>>>>>> REPLACE)(?=\n|$)  
 			  Matches the final ">>>>>>> REPLACE" marker on its own line (and requires a following newline or the end of file).
@@ -289,14 +298,14 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 
 		let matches = [
 			...diffContent.matchAll(
-				/(?:^|\n)(?<!\\)<<<<<<< SEARCH>?\s*\n((?:\:start_line:\s*(\d+)\s*\n))?((?:\:end_line:\s*(\d+)\s*\n))?((?<!\\)-------\s*\n)?([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)=======\s*\n)([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)>>>>>>> REPLACE)(?=\n|$)/g,
+				/(?:^|\n)(?<!\\)<<<<<<< SEARCH>?\s*\n\:start_line:\s*(\d+)\s*\n((?:\:end_line:\s*(\d+)\s*\n))?((?<!\\)-------\s*\n)?([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)=======\s*\n)([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)>>>>>>> REPLACE)(?=\n|$)/g,
 			),
 		]
 
 		if (matches.length === 0) {
 			return {
 				success: false,
-				error: `Invalid diff format - missing required sections\n\nDebug Info:\n- Expected Format: <<<<<<< SEARCH\\n:start_line: start line\\n-------\\n[search content]\\n=======\\n[replace content]\\n>>>>>>> REPLACE\n- Tip: Make sure to include start_line/SEARCH/=======/REPLACE sections with correct markers on new lines`,
+				error: `Invalid diff format - missing required sections\n\nDebug Info:\n- Expected Format: <<<<<<< SEARCH\\n:start_line: <line_number>\\n-------\\n[search content]\\n=======\\n[replace content]\\n>>>>>>> REPLACE\n- Tip: Make sure to include :start_line:, SEARCH, -------, SEARCH content, =======, REPLACE content, and REPLACE sections with correct markers on new lines`,
 			}
 		}
 		// Detect line ending from original content
@@ -307,9 +316,9 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 		let appliedCount = 0
 		const replacements = matches
 			.map((match) => ({
-				startLine: Number(match[2] ?? 0),
-				searchContent: match[6],
-				replaceContent: match[7],
+				startLine: Number(match[1]),
+				searchContent: match[5],
+				replaceContent: match[6],
 			}))
 			.sort((a, b) => a.startLine - b.startLine)
 

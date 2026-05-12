@@ -1831,6 +1831,35 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName))
 	}
 
+	async sayAndCreateMissingStartLineError(diffContent: string) {
+		await this.say(
+			"error",
+			"Roo tried to use apply_diff without value for required parameter ':start_line:' in diff. Retrying...",
+		)
+
+		const formattedError =
+			`<error_details>\n:start_line: is required in your diff content.\n\n` +
+			"The ':start_line:' directive specifies the exact line number in the original file where the search block starts.\n\n" +
+			"CORRECT FORMAT:\n\n" +
+			"<<<<<<< SEARCH\n" +
+			":start_line:42\n" +
+			"-------\n" +
+			"[exact content to find including whitespace]\n" +
+			"=======\n" +
+			"[new content to replace with]\n" +
+			">>>>>>> REPLACE\n" +
+			"\n" +
+			"Your diff content:\n" +
+			"```\n" +
+			diffContent.slice(0, 500) +
+			(diffContent.length > 500 ? "..." : "") +
+			"\n" +
+			"```\n" +
+			"\n</error_details>"
+
+		return formattedError
+	}
+
 	// Lifecycle
 	// Start / Resume / Abort / Dispose
 

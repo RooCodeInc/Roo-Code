@@ -54,6 +54,13 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 				return
 			}
 
+			if (!/:start_line:\s*\d+/.test(diffContent)) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("apply_diff")
+				pushToolResult(await task.sayAndCreateMissingStartLineError(diffContent))
+				return
+			}
+
 			const absolutePath = path.resolve(task.cwd, relPath)
 			const fileExists = await fileExistsAtPath(absolutePath)
 
