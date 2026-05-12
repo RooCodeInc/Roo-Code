@@ -178,7 +178,7 @@
 			"500": "Kesalahan server penyedia. Ada yang salah di sisi penyedia, tidak ada yang salah dengan permintaan Anda.",
 			"docs": "Dokumentasi",
 			"goToSettings": "Pengaturan",
-			"unknown": "Kesalahan API yang tidak diketahui. Harap hubungi dukungan Roo Code.",
+			"unknown": "Unknown API error. Please report this on GitHub.",
 			"connection": "Kesalahan koneksi. Pastikan Anda memiliki koneksi internet yang berfungsi.",
 			"claudeCodeNotAuthenticated": "Anda perlu masuk untuk menggunakan Claude Code. Buka Pengaturan dan klik \"Masuk ke Claude Code\" untuk mengautentikasi."
 		}
@@ -360,11 +360,6 @@
 	"announcement": {
 		"title": "Roo Code {{version}} Dirilis",
 		"support": "Dukung Roo Code dengan memberi kami bintang di <githubLink>GitHub</githubLink>.",
-		"handoff": {
-			"heading": "Plugin Roo Code tidak akan hilang.",
-			"description": "Kamu mungkin sudah melihat pengumuman baru-baru ini bahwa Roo Code mencapai 3 juta instalasi dan tim aslinya sepenuhnya fokus ke Roomote. Kami tahu berita itu berat bagi banyak dari kalian. Plugin ini sangat berarti bagi kami dan bagi kamu, dan kami mendengarmu. Kabar baiknya: <bold>sebuah tim komunitas telah maju untuk melanjutkan Roo Code</bold>, dan kami sedang bekerja sama dengan mereka untuk serah terima resmi agar plugin yang kamu andalkan tetap dirawat dan ditingkatkan.",
-			"readMore": "Baca pengumuman asli dari Matt Rubens"
-		},
 		"release": {
 			"heading": "Yang Baru:",
 			"gpt55": "GPT-5.5 via OpenAI Codex: Dukungan GPT-5.5 ditambahkan di provider OpenAI Codex agar kamu bisa menggunakan model terbaru langsung dari Roo Code.",

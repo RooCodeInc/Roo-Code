@@ -153,7 +153,7 @@
 			"500": "Sağlayıcı sunucu hatası. Sağlayıcı tarafında bir sorun var, isteğinizde sorun yok.",
 			"docs": "Belgeler",
 			"goToSettings": "Ayarlar",
-			"unknown": "Bilinmeyen API hatası. Lütfen Roo Code desteğiyle iletişime geç.",
+			"unknown": "Unknown API error. Please report this on GitHub.",
 			"connection": "Bağlantı hatası. Çalışan bir internet bağlantınız olduğundan emin olun.",
 			"claudeCodeNotAuthenticated": "Claude Code'u kullanmak için oturum açmanız gerekiyor. Ayarlar'a gidin ve kimlik doğrulaması yapmak için \"Claude Code'da Oturum Aç\" seçeneğine tıklayın."
 		}
@@ -332,11 +332,6 @@
 	"announcement": {
 		"title": "Roo Code {{version}} Yayınlandı",
 		"support": "<githubLink>GitHub</githubLink>'da yıldız vererek Roo Code'u destekle.",
-		"handoff": {
-			"heading": "Roo Code eklentisi bir yere gitmiyor.",
-			"description": "Roo Code'un 3 milyon kuruluma ulaştığı ve orijinal ekibin tüm enerjisini Roomote'a verdiği son duyuruyu görmüş olabilirsin. Bu haberin birçoğunuz için zor olduğunu biliyoruz. Bu eklenti bizim ve senin için çok şey ifade ediyor ve seni duyuyoruz. İyi haber: <bold>bir topluluk ekibi Roo Code'u ileriye taşımak için öne çıktı</bold> ve güvendiğin eklentinin bakımı ve geliştirilmesinin sürmesi için onlarla resmi bir devir çalışması yürütüyoruz.",
-			"readMore": "Matt Rubens'in orijinal duyurusunu oku"
-		},
 		"release": {
 			"heading": "Yenilikler:",
 			"gpt55": "OpenAI Codex üzerinden GPT-5.5: En son modeli doğrudan Roo Code'dan kullanabilmen için OpenAI Codex sağlayıcısına GPT-5.5 desteği eklendi.",

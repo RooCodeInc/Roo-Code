@@ -56,8 +56,7 @@
 			"label": "Hai scoperto una vulnerabilità?",
 			"link": "Segui il nostro processo di divulgazione"
 		},
-		"community": "Vuoi consigli o semplicemente uscire con altri utenti di Roo Code? Unisciti a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
-		"contactAndCommunity": "Contatti e Comunità",
+		"contactAndCommunity": "GitHub",
 		"manageSettings": "Gestisci Impostazioni",
 		"debugMode": {
 			"label": "Abilita modalità debug",

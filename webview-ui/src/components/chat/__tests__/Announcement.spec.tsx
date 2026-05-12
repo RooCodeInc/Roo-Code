@@ -39,7 +39,6 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 					"Claude Opus 4.7 on Vertex AI: Added Claude Opus 4.7 to the Vertex AI provider for Anthropic's newest flagship reasoning model.",
 				"chat:announcement.release.checkpointNav":
 					"Previous Checkpoint Navigation: Added controls in chat to jump back through prior checkpoints, with full i18n support.",
-				"chat:announcement.handoff.heading": "The Roo Code plugin is not going away.",
 			}
 
 			if (key === "chat:announcement.title") {
@@ -77,5 +76,14 @@ describe("Announcement", () => {
 		render(<Announcement hideAnnouncement={vi.fn()} />)
 
 		expect(screen.getAllByRole("listitem")).toHaveLength(3)
+	})
+
+	it("does not render corporate handoff or social links", () => {
+		render(<Announcement hideAnnouncement={vi.fn()} />)
+
+		expect(screen.queryByText("chat:announcement.handoff.description")).not.toBeInTheDocument()
+		expect(screen.queryByRole("link", { name: "X" })).not.toBeInTheDocument()
+		expect(screen.queryByRole("link", { name: "Discord" })).not.toBeInTheDocument()
+		expect(screen.queryByRole("link", { name: "Reddit" })).not.toBeInTheDocument()
 	})
 })

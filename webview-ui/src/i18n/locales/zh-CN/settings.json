@@ -56,8 +56,7 @@
 			"label": "发现安全漏洞？",
 			"link": "遵循我们的披露流程"
 		},
-		"community": "想要获取使用技巧或与其他 Roo Code 用户交流？加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
-		"contactAndCommunity": "联系与社区",
+		"contactAndCommunity": "GitHub",
 		"manageSettings": "管理设置",
 		"debugMode": {
 			"label": "启用调试模式",

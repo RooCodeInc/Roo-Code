@@ -56,8 +56,7 @@
 			"label": "Bir güvenlik açığı mı keşfettiniz?",
 			"link": "Açıklama sürecimizi takip edin"
 		},
-		"community": "İpuçları mı istiyorsunuz yoksa sadece diğer Roo Code kullanıcılarıyla takılmak mı istiyorsunuz? <redditLink>reddit.com/r/RooCode</redditLink> veya <discordLink>discord.gg/roocode</discordLink>'a katılın",
-		"contactAndCommunity": "İletişim ve Topluluk",
+		"contactAndCommunity": "GitHub",
 		"manageSettings": "Ayarları Yönet",
 		"debugMode": {
 			"label": "Debug modunu etkinleştir",

@@ -56,8 +56,7 @@
 			"label": "Обнаружили уязвимость?",
 			"link": "Следуйте нашему процессу раскрытия"
 		},
-		"community": "Хотите получить советы или просто пообщаться с другими пользователями Roo Code? Присоединяйтесь к <redditLink>reddit.com/r/RooCode</redditLink> или <discordLink>discord.gg/roocode</discordLink>",
-		"contactAndCommunity": "Контакты и Сообщество",
+		"contactAndCommunity": "GitHub",
 		"manageSettings": "Управление Настройками",
 		"debugMode": {
 			"label": "Включить режим отладки",

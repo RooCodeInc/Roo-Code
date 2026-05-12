@@ -153,7 +153,7 @@
 			"500": "प्रदाता सर्वर त्रुटि। प्रदाता की ओर से कुछ गलत है, आपके अनुरोध में कुछ गलत नहीं है।",
 			"docs": "डॉक्स",
 			"goToSettings": "सेटिंग्स",
-			"unknown": "अज्ञात API त्रुटि। कृपया Roo Code सहायता से संपर्क करें।",
+			"unknown": "Unknown API error. Please report this on GitHub.",
 			"connection": "कनेक्शन त्रुटि। सुनिश्चित करें कि आपके पास कार्यशील इंटरनेट कनेक्शन है।",
 			"claudeCodeNotAuthenticated": "Claude Code का उपयोग करने के लिए आपको साइन इन करना होगा। सेटिंग्स में जाएं और प्रमाणित करने के लिए \"Claude Code में साइन इन करें\" पर क्लिक करें।"
 		}
@@ -331,11 +331,6 @@
 	"announcement": {
 		"title": "Roo Code {{version}} रिलीज़ हुआ",
 		"support": "कृपया <githubLink>GitHub</githubLink> पर हमें स्टार देकर Roo Code का समर्थन करें।",
-		"handoff": {
-			"heading": "Roo Code plugin कहीं नहीं जा रहा है।",
-			"description": "आपने शायद हाल ही की घोषणा देखी होगी कि Roo Code ने 30 लाख installs पार कर लिए हैं और मूल टीम पूरी तरह Roomote पर focus कर रही है। हम जानते हैं कि यह खबर आप में से कई के लिए कठिन थी। यह plugin हमारे और आपके लिए बहुत मायने रखता है, और हम आपकी बात सुन रहे हैं। अच्छी खबर: <bold>एक community team ने Roo Code को आगे ले जाने की ज़िम्मेदारी ली है</bold>, और हम उनके साथ एक आधिकारिक handoff पर काम कर रहे हैं ताकि जिस plugin पर आप भरोसा करते हैं, उसका maintenance और improvement जारी रहे।",
-			"readMore": "Matt Rubens की मूल घोषणा पढ़ें"
-		},
 		"release": {
 			"heading": "नया क्या है:",
 			"gpt55": "OpenAI Codex के माध्यम से GPT-5.5: OpenAI Codex provider में GPT-5.5 सपोर्ट जोड़ा गया, ताकि आप नवीनतम मॉडल का उपयोग सीधे Roo Code से कर सकें।",

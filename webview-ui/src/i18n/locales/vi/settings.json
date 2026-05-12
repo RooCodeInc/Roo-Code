@@ -56,8 +56,7 @@
 			"label": "Phát hiện lỗ hổng bảo mật?",
 			"link": "Làm theo quy trình công bố của chúng tôi"
 		},
-		"community": "Muốn nhận mẹo hoặc chỉ muốn giao lưu với những người dùng Roo Code khác? Tham gia <redditLink>reddit.com/r/RooCode</redditLink> hoặc <discordLink>discord.gg/roocode</discordLink>",
-		"contactAndCommunity": "Liên Hệ & Cộng Đồng",
+		"contactAndCommunity": "GitHub",
 		"manageSettings": "Quản Lý Cài Đặt",
 		"debugMode": {
 			"label": "Bật chế độ debug",

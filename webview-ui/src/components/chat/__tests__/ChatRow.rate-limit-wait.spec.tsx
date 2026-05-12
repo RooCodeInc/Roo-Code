@@ -11,8 +11,15 @@ vi.mock("react-i18next", () => ({
 		t: (key: string) => {
 			const map: Record<string, string> = {
 				"chat:apiRequest.rateLimitWait": "Rate limiting",
+				"chat:apiRequest.failed": "API Request Failed",
+				"chat:apiRequest.errorTitle": "Provider Error",
+				"chat:apiRequest.errorMessage.unknown": "Unknown API error. Please report this on GitHub.",
+				"chat:apiRequest.errorMessage.docs": "Docs",
 			}
 			return map[key] ?? key
+		},
+		i18n: {
+			exists: () => false,
 		},
 	}),
 	Trans: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
@@ -74,5 +81,22 @@ describe("ChatRow - rate limit wait", () => {
 		expect(screen.queryByText("Rate limiting")).toBeNull()
 		// Nothing should be rendered
 		expect(container.firstChild).toBeNull()
+	})
+
+	it("links unknown API errors to GitHub issues", () => {
+		const message: any = {
+			type: "say",
+			say: "api_req_retry_delayed",
+			ts: Date.now(),
+			text: "599 Provider returned an unknown error",
+		}
+
+		renderChatRow(message)
+
+		expect(screen.getByText("Unknown API error. Please report this on GitHub.")).toBeInTheDocument()
+		expect(screen.getByRole("link", { name: /Docs/ })).toHaveAttribute(
+			"href",
+			"https://github.com/RooCodeInc/Roo-Code/issues/new?template=bug_report.yml",
+		)
 	})
 })

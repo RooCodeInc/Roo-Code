@@ -176,7 +176,7 @@
 			"docs": "說明文件",
 			"goToSettings": "設定",
 			"connection": "連線錯誤。請確保您有可用的網際網路連線。",
-			"unknown": "未知 API 錯誤。請聯絡 Roo Code 技術支援。",
+			"unknown": "Unknown API error. Please report this on GitHub.",
 			"claudeCodeNotAuthenticated": "您需要登入才能使用 Claude Code。前往設定並點選「登入 Claude Code」以進行驗證。"
 		}
 	},
@@ -353,11 +353,6 @@
 	"announcement": {
 		"title": "Roo Code {{version}} 已發布",
 		"support": "請在 <githubLink>GitHub</githubLink> 上給 Roo Code 星星支持我們。",
-		"handoff": {
-			"heading": "Roo Code 外掛不會消失。",
-			"description": "你可能已經看到最近的公告：Roo Code 已突破 300 萬次安裝，原團隊將全心投入 Roomote。我們知道這個消息讓許多人感到難受。這個外掛對我們和你都意義重大，你的心聲我們聽到了。好消息是：<bold>一支社群團隊已挺身而出，繼續推進 Roo Code</bold>，我們正與他們協作進行正式交接，讓你所仰賴的外掛持續受到維護與改進。",
-			"readMore": "閱讀 Matt Rubens 的原始公告"
-		},
 		"release": {
 			"heading": "新增功能：",
 			"gpt55": "透過 OpenAI Codex 支援 GPT-5.5：已在 OpenAI Codex 供應商中新增 GPT-5.5 支援，讓你可以直接在 Roo Code 中使用最新模型。",

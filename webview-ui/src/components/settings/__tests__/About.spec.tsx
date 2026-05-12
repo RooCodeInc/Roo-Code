@@ -78,6 +78,16 @@ describe("About", () => {
 		expect(screen.getByText("settings:about.securityIssue.link")).toBeInTheDocument()
 	})
 
+	it("does not render social community copy", () => {
+		render(
+			<TranslationProvider>
+				<About />
+			</TranslationProvider>,
+		)
+
+		expect(screen.queryByText("settings:about.community")).not.toBeInTheDocument()
+	})
+
 	it("renders export, import, and reset buttons", () => {
 		render(
 			<TranslationProvider>

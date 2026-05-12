@@ -153,7 +153,7 @@
 			"500": "Error del servidor del proveedor. Algo está mal en el lado del proveedor, no hay nada mal con tu solicitud.",
 			"docs": "Documentación",
 			"goToSettings": "Configuración",
-			"unknown": "Error API desconocido. Por favor contacta al soporte de Roo Code.",
+			"unknown": "Unknown API error. Please report this on GitHub.",
 			"connection": "Error de conexión. Asegúrate de tener una conexión a Internet funcional.",
 			"claudeCodeNotAuthenticated": "Debes iniciar sesión para usar Claude Code. Ve a Configuración y haz clic en \"Iniciar sesión en Claude Code\" para autenticarte."
 		}
@@ -331,11 +331,6 @@
 	"announcement": {
 		"title": "Roo Code {{version}} publicado",
 		"support": "Por favor, apoya a Roo Code dándonos una estrella en <githubLink>GitHub</githubLink>.",
-		"handoff": {
-			"heading": "El plugin de Roo Code no va a desaparecer.",
-			"description": "Puede que hayas visto el anuncio reciente de que Roo Code ha llegado a 3 millones de instalaciones y que el equipo original se está volcando por completo en Roomote. Sabemos que esa noticia fue dura para muchos de vosotros. Este plugin significa mucho para nosotros y para ti, y te escuchamos. La buena noticia: <bold>un equipo de la comunidad ha dado un paso adelante para seguir adelante con Roo Code</bold>, y estamos trabajando con ellos en un relevo oficial para que el plugin del que dependes siga recibiendo mantenimiento y mejoras.",
-			"readMore": "Leer el anuncio original de Matt Rubens"
-		},
 		"release": {
 			"heading": "Qué hay de nuevo:",
 			"gpt55": "GPT-5.5 vía OpenAI Codex: Se añadió soporte para GPT-5.5 en el proveedor OpenAI Codex para que puedas usar el modelo más reciente directamente desde Roo Code.",

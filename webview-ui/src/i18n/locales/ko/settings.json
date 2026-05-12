@@ -56,8 +56,7 @@
 			"label": "취약점을 발견하셨나요?",
 			"link": "공개 프로세스 따르기"
 		},
-		"community": "팁을 얻거나 다른 Roo Code 사용자들과 교류하고 싶으신가요? <redditLink>reddit.com/r/RooCode</redditLink> 또는 <discordLink>discord.gg/roocode</discordLink>에 참여하세요",
-		"contactAndCommunity": "문의 및 커뮤니티",
+		"contactAndCommunity": "GitHub",
 		"manageSettings": "설정 관리",
 		"debugMode": {
 			"label": "디버그 모드 활성화",
