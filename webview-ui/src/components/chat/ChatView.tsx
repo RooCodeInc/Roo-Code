@@ -44,6 +44,7 @@ import { CheckpointWarning } from "./CheckpointWarning"
 import { QueuedMessages } from "./QueuedMessages"
 import { WorktreeSelector } from "./WorktreeSelector"
 import FileChangesPanel from "./FileChangesPanel"
+import { TaskDashboard } from "./task-dashboard"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { useScrollLifecycle } from "@src/hooks/useScrollLifecycle"
@@ -1614,6 +1615,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						handleCondenseContext={handleCondenseContext}
 						todos={latestTodos}
 					/>
+
+					<TaskDashboard />
 
 					{checkpointWarning && (
 						<div className="px-3">
