@@ -118,7 +118,7 @@ const WelcomeViewProvider = () => {
 					<Trans i18nKey="welcome:providerSignup.chooseProvider" />
 				</p>
 
-				<div className="mb-8 border-l-2 border-vscode-panel-border pl-6 ml-[7px]">
+				<div className="mb-8">
 					<ApiOptions
 						fromWelcomeView
 						apiConfiguration={effectiveApiConfiguration}
