@@ -111,9 +111,6 @@
 			"thinking_complete_safety": "(Réflexion terminée, mais la sortie a été bloquée en raison des paramètres de sécurité.)",
 			"thinking_complete_recitation": "(Réflexion terminée, mais la sortie a été bloquée en raison de la vérification de récitation.)"
 		},
-		"roo": {
-			"authenticationRequired": "Le fournisseur Roo nécessite une authentification cloud. Veuillez vous connecter à Roo Code Cloud."
-		},
 		"api": {
 			"invalidKeyInvalidChars": "La clé API contient des caractères invalides.",
 			"apiRequestFailed": "La requête API a échoué ({{status}})"

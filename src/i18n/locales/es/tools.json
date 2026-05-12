@@ -23,9 +23,6 @@
 		"noImageGenerated": "No se generó ninguna imagen en la respuesta",
 		"invalidImageData": "Datos de imagen no válidos en la respuesta",
 		"invalidImageFormat": "Formato de imagen no válido recibido",
-		"unknownError": "Ocurrió un error desconocido",
-		"roo": {
-			"authRequired": "Se requiere autenticación de Roo Code Cloud para la generación de imágenes. Por favor, inicia sesión en Roo Code Cloud."
-		}
+		"unknownError": "Ocurrió un error desconocido"
 	}
 }

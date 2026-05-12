@@ -16,14 +16,6 @@
 		"delete": "Elimina attività (Shift + Clic per saltare la conferma)",
 		"condenseContext": "Condensa contesto in modo intelligente",
 		"share": "Condividi attività",
-		"shareWithOrganization": "Condividi con l'organizzazione",
-		"shareWithOrganizationDescription": "Solo i membri della tua organizzazione possono accedere",
-		"sharePublicly": "Condividi pubblicamente",
-		"sharePubliclyDescription": "Chiunque con il link può accedere",
-		"connectToCloud": "Connetti al Cloud",
-		"connectToCloudDescription": "Accedi a Roo Code Cloud per condividere attività",
-		"sharingDisabledByOrganization": "Condivisione disabilitata dall'organizzazione",
-		"shareSuccessOrganization": "Link organizzazione copiato negli appunti",
 		"shareSuccessPublic": "Link pubblico copiato negli appunti",
 		"openApiHistory": "Apri cronologia API",
 		"openUiHistory": "Apri cronologia UI",
@@ -339,13 +331,6 @@
 	"announcement": {
 		"title": "Rilasciato Roo Code {{version}}",
 		"support": "Sostieni Roo Code lasciandoci una stella su <githubLink>GitHub</githubLink>.",
-		"stealthModel": {
-			"feature": "<bold>Modello stealth GRATUITO per tempo limitato</bold> - Code Supernova: Ora potenziato con una <bold>finestra di contesto da 1M token</bold>! Un modello di codificazione agentiva versatile che supporta input di immagini, accessibile tramite Roo Code Cloud.",
-			"note": "(Nota: i prompt e le completazioni vengono registrati dal creatore del modello e utilizzati per migliorarlo)",
-			"connectButton": "Connetti a Roo Code Cloud",
-			"selectModel": "Seleziona <code>roo/code-supernova</code> dal provider Roo Code Cloud nelle Impostazioni per iniziare.",
-			"goToSettingsButton": "Vai alle Impostazioni"
-		},
 		"handoff": {
 			"heading": "Il plugin Roo Code non sta per sparire.",
 			"description": "Potresti aver visto l'annuncio recente: Roo Code ha raggiunto 3 milioni di installazioni e il team originale si sta concentrando completamente su Roomote. Sappiamo che questa notizia è stata dura per molti di voi. Questo plugin significa tanto per noi e per te, e ti ascoltiamo. La buona notizia: <bold>un team della community si è fatto avanti per portare avanti Roo Code</bold>, e stiamo lavorando con loro a un passaggio di consegne ufficiale, così il plugin su cui conti continuerà a essere mantenuto e migliorato.",
@@ -435,11 +420,6 @@
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versione {{version}} - Clicca per visualizzare le note di rilascio"
-	},
-	"rooCloudCTA": {
-		"title": "Roo Code Cloud si sta evolvendo!",
-		"description": "Esegui agenti remoti nel cloud, accedi alle tue attività da qualsiasi luogo, collabora con altri e molto altro.",
-		"joinWaitlist": "Registrati per ricevere gli ultimi aggiornamenti."
 	},
 	"editMessage": {
 		"placeholder": "Modifica il tuo messaggio..."

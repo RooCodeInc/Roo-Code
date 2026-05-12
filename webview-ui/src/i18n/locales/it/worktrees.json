@@ -2,27 +2,22 @@
 	"title": "Worktrees",
 	"done": "Fatto",
 	"description": "I worktree di Git ti permettono di lavorare su più branch contemporaneamente in directory separate. Ogni worktree ha la propria finestra di VS Code con Roo Code.",
-
 	"notGitRepo": "Questo workspace non è un repository Git. I worktree richiedono un repository Git per funzionare.",
 	"multiRootNotSupported": "I worktree non sono supportati nei workspace multi-root. Apri una singola cartella per usare i worktree.",
 	"subfolderNotSupported": "Questo workspace è una sottocartella di un repository Git. Apri la root del repository per usare i worktree.",
 	"gitRoot": "Root di Git",
-
 	"includeFileExists": "File .worktreeinclude trovato — i file verranno copiati nei nuovi worktree",
 	"noIncludeFile": "Nessun file .worktreeinclude trovato",
 	"createFromGitignore": "Crea da .gitignore",
-
 	"primary": "Primario",
 	"current": "Attuale",
 	"locked": "Bloccato",
 	"detachedHead": "HEAD staccata",
 	"noBranch": "Nessun branch",
-
 	"switchInThisWindow": "Passa a worktree",
 	"openInNewWindow": "Apri in una nuova finestra",
 	"delete": "Elimina",
 	"newWorktree": "Nuovo Worktree",
-
 	"createWorktree": "Crea Worktree",
 	"branchName": "Nome del branch",
 	"createNewBranch": "Crea nuovo branch",
@@ -44,7 +39,6 @@
 	"copyingFiles": "Copia dei file...",
 	"copyingProgress": "{{item}} — {{copied}} copiato",
 	"cancel": "Annulla",
-
 	"deleteWorktree": "Elimina Worktree",
 	"deleteWarning": "Questa azione non può essere annullata. Verrà eliminato quanto segue:",
 	"deleteWarningBranch": "Il branch e tutte le modifiche non committate",
@@ -53,11 +47,8 @@
 	"forceDelete": "Forza eliminazione",
 	"worktreeIsLocked": "il worktree è bloccato",
 	"deleting": "Eliminazione...",
-
 	"close": "Chiudi",
-
 	"showInHomeScreen": "Mostra worktrees nella schermata iniziale",
-
 	"selector": {
 		"worktree": "Worktree",
 		"title": "Worktrees",

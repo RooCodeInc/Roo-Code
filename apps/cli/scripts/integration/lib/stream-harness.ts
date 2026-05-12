@@ -69,7 +69,7 @@ export async function runStreamCase(options: RunStreamCaseOptions): Promise<void
 
 	const child = execa(
 		"pnpm",
-		["dev", "--print", "--stdin-prompt-stream", "--provider", "roo", "--output-format", "stream-json"],
+		["dev", "--print", "--stdin-prompt-stream", "--provider", "openrouter", "--output-format", "stream-json"],
 		{
 			cwd: cliRoot,
 			stdin: "pipe",

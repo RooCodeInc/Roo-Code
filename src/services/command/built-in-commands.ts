@@ -215,7 +215,6 @@ Please analyze this codebase and create an AGENTS.md file containing:
     # Project Coding Rules (Non-Obvious Only)
     - Always use safeWriteJson() from src/utils/ instead of JSON.stringify for file writes (prevents corruption)
     - API retry mechanism in src/api/providers/utils/ is mandatory (not optional as it appears)
-    - Database queries MUST use the query builder in packages/evals/src/db/queries/ (raw SQL will fail)
     - Provider interface in packages/types/src/ has undocumented required methods
     - Test files must be in same directory as source for vitest to work (not in separate test folder)
     \`\`\`
@@ -232,7 +231,6 @@ Please analyze this codebase and create an AGENTS.md file containing:
     - Webview dev tools accessed via Command Palette > "Developer: Open Webview Developer Tools" (not F12)
     - IPC messages fail silently if not wrapped in try/catch in packages/ipc/src/
     - Production builds require NODE_ENV=production or certain features break without error
-    - Database migrations must run from packages/evals/ directory, not root
     - Extension logs only visible in "Extension Host" output channel, not Debug Console
     \`\`\`
     

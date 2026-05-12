@@ -16,14 +16,6 @@
 		"export": "匯出工作記錄",
 		"share": "分享工作",
 		"delete": "刪除工作（按住 Shift 並點選可跳過確認）",
-		"shareWithOrganization": "與組織分享",
-		"shareWithOrganizationDescription": "僅組織成員可存取",
-		"sharePublicly": "公開分享",
-		"sharePubliclyDescription": "任何擁有連結的人都可存取",
-		"connectToCloud": "連線至雲端",
-		"connectToCloudDescription": "登入 Roo Code Cloud 以分享工作",
-		"sharingDisabledByOrganization": "組織已停用分享功能",
-		"shareSuccessOrganization": "組織連結已複製到剪貼簿",
 		"shareSuccessPublic": "公開連結已複製到剪貼簿",
 		"openApiHistory": "開啟 API 歷史紀錄",
 		"openUiHistory": "開啟 UI 歷史紀錄",
@@ -361,13 +353,6 @@
 	"announcement": {
 		"title": "Roo Code {{version}} 已發布",
 		"support": "請在 <githubLink>GitHub</githubLink> 上給 Roo Code 星星支持我們。",
-		"stealthModel": {
-			"feature": "<bold>限時免費隱形模型</bold> - Code Supernova：現已升級為 <bold>1M Token 上下文視窗</bold>！一個支援影像輸入的多功能代理程式設計模型，透過 Roo Code Cloud 提供。",
-			"note": "（注意：提示詞和回應會被模型建立者記錄並用於改進模型）",
-			"connectButton": "連線到 Roo Code Cloud",
-			"selectModel": "在設定中從 Roo Code Cloud 供應商選擇 <code>roo/code-supernova</code> 開始使用。",
-			"goToSettingsButton": "前往設定"
-		},
 		"handoff": {
 			"heading": "Roo Code 外掛不會消失。",
 			"description": "你可能已經看到最近的公告：Roo Code 已突破 300 萬次安裝，原團隊將全心投入 Roomote。我們知道這個消息讓許多人感到難受。這個外掛對我們和你都意義重大，你的心聲我們聽到了。好消息是：<bold>一支社群團隊已挺身而出，繼續推進 Roo Code</bold>，我們正與他們協作進行正式交接，讓你所仰賴的外掛持續受到維護與改進。",

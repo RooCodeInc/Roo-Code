@@ -52,12 +52,6 @@ vi.mock("vscode", () => ({
 
 // Mock other dependencies
 
-vi.mock("@roo-code/cloud", () => ({
-	CloudService: {
-		isEnabled: () => false,
-	},
-}))
-
 // Mock delay to prevent actual delays
 vi.mock("delay", () => ({
 	__esModule: true,

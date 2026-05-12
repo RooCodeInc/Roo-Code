@@ -176,7 +176,6 @@ const dynamicProviderExtras = {
 	unbound: {} as { apiKey?: string },
 	ollama: {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
 	lmstudio: {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
-	roo: {} as { apiKey?: string; baseUrl?: string },
 	poe: {} as { apiKey?: string; baseUrl?: string },
 } as const satisfies Record<RouterName, object>
 

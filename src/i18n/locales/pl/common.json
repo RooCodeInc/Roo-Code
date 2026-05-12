@@ -111,9 +111,6 @@
 			"thinking_complete_safety": "(Myślenie zakończone, ale dane wyjściowe zostały zablokowane przez ustawienia bezpieczeństwa.)",
 			"thinking_complete_recitation": "(Myślenie zakończone, ale dane wyjściowe zostały zablokowane przez kontrolę recytacji.)"
 		},
-		"roo": {
-			"authenticationRequired": "Dostawca Roo wymaga uwierzytelnienia w chmurze. Zaloguj się do Roo Code Cloud."
-		},
 		"api": {
 			"invalidKeyInvalidChars": "Klucz API zawiera nieprawidłowe znaki.",
 			"apiRequestFailed": "Żądanie API nie powiodło się ({{status}})"

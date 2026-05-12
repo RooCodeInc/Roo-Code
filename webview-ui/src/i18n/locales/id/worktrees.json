@@ -2,27 +2,22 @@
 	"title": "Worktrees",
 	"done": "Selesai",
 	"description": "Git worktrees memungkinkan kamu bekerja di beberapa branch sekaligus dalam direktori terpisah. Setiap worktree mendapatkan jendela VS Code sendiri dengan Roo Code.",
-
 	"notGitRepo": "Workspace ini bukan repository Git. Worktrees memerlukan repository Git untuk berfungsi.",
 	"multiRootNotSupported": "Worktrees tidak didukung di workspace multi-root. Buka satu folder untuk menggunakan worktrees.",
 	"subfolderNotSupported": "Workspace ini adalah subfolder dari repository Git. Buka root repository untuk menggunakan worktrees.",
 	"gitRoot": "Root Git",
-
 	"includeFileExists": "File .worktreeinclude ditemukan — file akan disalin ke worktrees baru",
 	"noIncludeFile": "File .worktreeinclude tidak ditemukan",
 	"createFromGitignore": "Buat dari .gitignore",
-
 	"primary": "Utama",
 	"current": "Saat ini",
 	"locked": "Terkunci",
 	"detachedHead": "Detached HEAD",
 	"noBranch": "Tidak ada branch",
-
 	"switchInThisWindow": "Beralih ke worktree",
 	"openInNewWindow": "Buka di jendela baru",
 	"delete": "Hapus",
 	"newWorktree": "Worktree Baru",
-
 	"createWorktree": "Buat Worktree",
 	"branchName": "Nama branch",
 	"createNewBranch": "Buat branch baru",
@@ -44,7 +39,6 @@
 	"copyingFiles": "Menyalin file...",
 	"copyingProgress": "{{item}} — {{copied}} disalin",
 	"cancel": "Batal",
-
 	"deleteWorktree": "Hapus Worktree",
 	"deleteWarning": "Tindakan ini tidak dapat dibatalkan. Yang berikut akan dihapus:",
 	"deleteWarningBranch": "Branch dan semua perubahan yang belum di-commit",
@@ -53,11 +47,8 @@
 	"forceDelete": "Paksa hapus",
 	"worktreeIsLocked": "worktree terkunci",
 	"deleting": "Menghapus...",
-
 	"close": "Tutup",
-
 	"showInHomeScreen": "Tampilkan worktrees di layar beranda",
-
 	"selector": {
 		"worktree": "Worktree",
 		"title": "Worktrees",

@@ -2,27 +2,22 @@
 	"title": "Worktrees",
 	"done": "हो गया",
 	"description": "Git worktrees आपको अलग-अलग डायरेक्टरी में एक साथ कई ब्रांच पर काम करने देते हैं। हर worktree को Roo Code के साथ अपनी अलग VS Code विंडो मिलती है।",
-
 	"notGitRepo": "यह workspace Git repository नहीं है। worktrees को काम करने के लिए Git repository चाहिए।",
 	"multiRootNotSupported": "Multi-root workspaces में worktrees समर्थित नहीं हैं। worktrees उपयोग करने के लिए एक ही फ़ोल्डर खोलें।",
 	"subfolderNotSupported": "यह workspace Git repository का subfolder है। worktrees उपयोग करने के लिए repository root खोलें।",
 	"gitRoot": "Git root",
-
 	"includeFileExists": ".worktreeinclude फ़ाइल मिली — नए worktrees में फ़ाइलें कॉपी की जाएँगी",
 	"noIncludeFile": ".worktreeinclude फ़ाइल नहीं मिली",
 	"createFromGitignore": ".gitignore से बनाएँ",
-
 	"primary": "मुख्य",
 	"current": "वर्तमान",
 	"locked": "लॉक्ड",
 	"detachedHead": "Detached HEAD",
 	"noBranch": "कोई ब्रांच नहीं",
-
 	"switchInThisWindow": "Worktree पर स्विच करें",
 	"openInNewWindow": "नई विंडो में खोलें",
 	"delete": "हटाएँ",
 	"newWorktree": "नया Worktree",
-
 	"createWorktree": "Worktree बनाएँ",
 	"branchName": "ब्रांच नाम",
 	"createNewBranch": "नई ब्रांच बनाएँ",
@@ -44,7 +39,6 @@
 	"copyingFiles": "फ़ाइलें कॉपी की जा रही हैं...",
 	"copyingProgress": "{{item}} — {{copied}} कॉपी किया गया",
 	"cancel": "रद्द करें",
-
 	"deleteWorktree": "Worktree हटाएँ",
 	"deleteWarning": "यह कार्रवाई वापस नहीं ली जा सकती। निम्नलिखित हटाया जाएगा:",
 	"deleteWarningBranch": "ब्रांच और सभी uncommitted बदलाव",
@@ -53,11 +47,8 @@
 	"forceDelete": "जबरन हटाएँ",
 	"worktreeIsLocked": "worktree लॉक्ड है",
 	"deleting": "हटाया जा रहा है...",
-
 	"close": "बंद करें",
-
 	"showInHomeScreen": "होम स्क्रीन में worktrees दिखाएँ",
-
 	"selector": {
 		"worktree": "Worktree",
 		"title": "Worktrees",

@@ -1,7 +1,5 @@
 import * as vscode from "vscode"
 
-import { CloudService } from "@roo-code/cloud"
-
 import { ClineProvider } from "../core/webview/ClineProvider"
 
 export const handleUri = async (uri: vscode.Uri) => {
@@ -27,20 +25,6 @@ export const handleUri = async (uri: vscode.Uri) => {
 			if (code) {
 				await visibleProvider.handleRequestyCallback(code, baseUrl)
 			}
-			break
-		}
-		case "/auth/clerk/callback": {
-			const code = query.get("code")
-			const state = query.get("state")
-			const organizationId = query.get("organizationId")
-			const providerModel = query.get("provider_model")
-
-			await CloudService.instance.handleAuthCallback(
-				code,
-				state,
-				organizationId === "null" ? null : organizationId,
-				providerModel,
-			)
 			break
 		}
 		default:

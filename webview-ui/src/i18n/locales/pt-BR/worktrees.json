@@ -2,27 +2,22 @@
 	"title": "Worktrees",
 	"done": "Concluído",
 	"description": "Os worktrees do Git permitem que você trabalhe em vários branches ao mesmo tempo em diretórios separados. Cada worktree tem sua própria janela do VS Code com o Roo Code.",
-
 	"notGitRepo": "Este workspace não é um repositório Git. Worktrees exigem um repositório Git para funcionar.",
 	"multiRootNotSupported": "Worktrees não são compatíveis com workspaces multi-root. Abra uma única pasta para usar worktrees.",
 	"subfolderNotSupported": "Este workspace é uma subpasta de um repositório Git. Abra a raiz do repositório para usar worktrees.",
 	"gitRoot": "Raiz do Git",
-
 	"includeFileExists": "Arquivo .worktreeinclude encontrado — os arquivos serão copiados para os novos worktrees",
 	"noIncludeFile": "Nenhum arquivo .worktreeinclude encontrado",
 	"createFromGitignore": "Criar a partir do .gitignore",
-
 	"primary": "Principal",
 	"current": "Atual",
 	"locked": "Bloqueado",
 	"detachedHead": "Detached HEAD",
 	"noBranch": "Sem branch",
-
 	"switchInThisWindow": "Mudar para worktree",
 	"openInNewWindow": "Abrir em uma nova janela",
 	"delete": "Excluir",
 	"newWorktree": "Novo Worktree",
-
 	"createWorktree": "Criar Worktree",
 	"branchName": "Nome do branch",
 	"createNewBranch": "Criar novo branch",
@@ -44,7 +39,6 @@
 	"copyingFiles": "Copiando arquivos...",
 	"copyingProgress": "{{item}} — {{copied}} copiado",
 	"cancel": "Cancelar",
-
 	"deleteWorktree": "Excluir Worktree",
 	"deleteWarning": "Esta ação não pode ser desfeita. O seguinte será excluído:",
 	"deleteWarningBranch": "O branch e todas as alterações não commitadas",
@@ -53,11 +47,8 @@
 	"forceDelete": "Forçar exclusão",
 	"worktreeIsLocked": "worktree está bloqueado",
 	"deleting": "Excluindo...",
-
 	"close": "Fechar",
-
 	"showInHomeScreen": "Mostrar worktrees na tela inicial",
-
 	"selector": {
 		"worktree": "Worktree",
 		"title": "Worktrees",

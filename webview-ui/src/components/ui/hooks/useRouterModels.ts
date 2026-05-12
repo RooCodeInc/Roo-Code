@@ -5,7 +5,7 @@ import { type RouterModels, type ExtensionMessage } from "@roo-code/types"
 import { vscode } from "@src/utils/vscode"
 
 type UseRouterModelsOptions = {
-	provider?: string // single provider filter (e.g. "roo")
+	provider?: string // single provider filter (e.g. "openrouter")
 	enabled?: boolean // gate fetching entirely
 }
 

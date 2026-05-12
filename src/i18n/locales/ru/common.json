@@ -111,9 +111,6 @@
 			"thinking_complete_safety": "(Размышление завершено, но вывод заблокирован настройками безопасности.)",
 			"thinking_complete_recitation": "(Размышление завершено, но вывод заблокирован проверкой цитирования.)"
 		},
-		"roo": {
-			"authenticationRequired": "Провайдер Roo требует облачной аутентификации. Войдите в Roo Code Cloud."
-		},
 		"api": {
 			"invalidKeyInvalidChars": "API-ключ содержит недопустимые символы.",
 			"apiRequestFailed": "Запрос API не удался ({{status}})"

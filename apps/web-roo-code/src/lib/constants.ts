@@ -20,7 +20,6 @@ export const EXTERNAL_LINKS = {
 	TUTORIALS: "https://docs.roocode.com/tutorial-videos",
 	MARKETPLACE: "https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline",
 	SECURITY: "https://trust.roocode.com",
-	EVALS: "https://roocode.com/evals",
 	BLOG_SUBSTACK: "https://blog.roocode.com",
 	OFFICE_HOURS_PODCAST: "https://www.youtube.com/@RooCodeYT/podcasts",
 	FAQ: "https://roocode.com/#faq",

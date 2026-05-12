@@ -16,14 +16,6 @@
 		"delete": "Taak verwijderen (Shift + Klik om bevestiging over te slaan)",
 		"condenseContext": "Context intelligent samenvatten",
 		"share": "Taak delen",
-		"shareWithOrganization": "Delen met organisatie",
-		"shareWithOrganizationDescription": "Alleen leden van je organisatie kunnen toegang krijgen",
-		"sharePublicly": "Openbaar delen",
-		"sharePubliclyDescription": "Iedereen met de link kan toegang krijgen",
-		"connectToCloud": "Verbind met Cloud",
-		"connectToCloudDescription": "Meld je aan bij Roo Code Cloud om taken te delen",
-		"sharingDisabledByOrganization": "Delen uitgeschakeld door organisatie",
-		"shareSuccessOrganization": "Organisatielink gekopieerd naar klembord",
 		"shareSuccessPublic": "Openbare link gekopieerd naar klembord",
 		"openApiHistory": "API-geschiedenis openen",
 		"openUiHistory": "UI-geschiedenis openen",
@@ -312,13 +304,6 @@
 	"announcement": {
 		"title": "Roo Code {{version}} uitgebracht",
 		"support": "Steun Roo Code door ons een ster te geven op <githubLink>GitHub</githubLink>.",
-		"stealthModel": {
-			"feature": "<bold>Beperkt tijd GRATIS stealth model</bold> - Code Supernova: Nu geüpgraded met een <bold>1M token contextvenster</bold>! Een veelzijdig agentisch codeermodel dat beeldinvoer ondersteunt, beschikbaar via Roo Code Cloud.",
-			"note": "(Opmerking: prompts en aanvullingen worden gelogd door de modelmaker en gebruikt om het model te verbeteren)",
-			"connectButton": "Verbinden met Roo Code Cloud",
-			"selectModel": "Selecteer <code>roo/code-supernova</code> van de Roo Code Cloud provider in Instellingen om te beginnen.",
-			"goToSettingsButton": "Ga naar Instellingen"
-		},
 		"handoff": {
 			"heading": "De Roo Code-plugin gaat niet weg.",
 			"description": "Je hebt misschien de recente aankondiging gezien dat Roo Code 3 miljoen installaties heeft bereikt en het oorspronkelijke team zich volledig richt op Roomote. We weten dat dat nieuws voor velen van jullie moeilijk was. Deze plugin betekent veel voor ons en voor jou, en we horen je. Het goede nieuws: <bold>een community-team heeft zich aangemeld om Roo Code voort te zetten</bold>, en we werken samen aan een officiële overdracht, zodat de plugin waar je op vertrouwt onderhouden en verbeterd blijft worden.",
@@ -435,11 +420,6 @@
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versie {{version}} - Klik om release notes te bekijken"
-	},
-	"rooCloudCTA": {
-		"title": "Roo Code Cloud evolueert!",
-		"description": "Voer externe agenten uit in de cloud, krijg overal toegang tot je taken, werk samen met anderen en nog veel meer.",
-		"joinWaitlist": "Meld je aan om de laatste updates te ontvangen."
 	},
 	"editMessage": {
 		"placeholder": "Bewerk je bericht..."

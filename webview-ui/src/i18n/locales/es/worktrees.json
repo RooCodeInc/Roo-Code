@@ -2,27 +2,22 @@
 	"title": "Worktrees",
 	"done": "Listo",
 	"description": "Los worktrees de Git te permiten trabajar en varias ramas a la vez en directorios separados. Cada worktree tiene su propia ventana de VS Code con Roo Code.",
-
 	"notGitRepo": "Este espacio de trabajo no es un repositorio Git. Los worktrees requieren un repositorio Git para funcionar.",
 	"multiRootNotSupported": "Los worktrees no son compatibles con espacios de trabajo de múltiples raíces. Abre una sola carpeta para usar worktrees.",
 	"subfolderNotSupported": "Este espacio de trabajo es una subcarpeta de un repositorio Git. Abre la raíz del repositorio para usar worktrees.",
 	"gitRoot": "Raíz de Git",
-
 	"includeFileExists": "Se encontró el archivo .worktreeinclude: se copiarán archivos a los worktrees nuevos",
 	"noIncludeFile": "No se encontró el archivo .worktreeinclude",
 	"createFromGitignore": "Crear a partir de .gitignore",
-
 	"primary": "Principal",
 	"current": "Actual",
 	"locked": "Bloqueado",
 	"detachedHead": "HEAD separado",
 	"noBranch": "Sin rama",
-
 	"switchInThisWindow": "Cambiar a worktree",
 	"openInNewWindow": "Abrir en una ventana nueva",
 	"delete": "Eliminar",
 	"newWorktree": "Nuevo Worktree",
-
 	"createWorktree": "Crear Worktree",
 	"branchName": "Nombre de la rama",
 	"createNewBranch": "Crear rama nueva",
@@ -44,7 +39,6 @@
 	"copyingFiles": "Copiando archivos...",
 	"copyingProgress": "{{item}} — {{copied}} copiado",
 	"cancel": "Cancelar",
-
 	"deleteWorktree": "Eliminar Worktree",
 	"deleteWarning": "Esta acción no se puede deshacer. Se eliminará lo siguiente:",
 	"deleteWarningBranch": "La rama y todos los cambios sin confirmar",
@@ -53,11 +47,8 @@
 	"forceDelete": "Forzar eliminación",
 	"worktreeIsLocked": "el worktree está bloqueado",
 	"deleting": "Eliminando...",
-
 	"close": "Cerrar",
-
 	"showInHomeScreen": "Mostrar worktrees en la pantalla de inicio",
-
 	"selector": {
 		"worktree": "Worktree",
 		"title": "Worktrees",

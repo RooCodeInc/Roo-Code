@@ -111,9 +111,6 @@
 			"thinking_complete_safety": "（思考完了、安全設定により出力ブロック）",
 			"thinking_complete_recitation": "（思考完了、引用チェックにより出力ブロック）"
 		},
-		"roo": {
-			"authenticationRequired": "Rooプロバイダーはクラウド認証が必要です。Roo Code Cloudにサインインしてください。"
-		},
 		"api": {
 			"invalidKeyInvalidChars": "APIキーに無効な文字が含まれています。",
 			"apiRequestFailed": "APIリクエストが失敗しました ({{status}})"

@@ -16,14 +16,6 @@
 		"delete": "タスクを削除（Shift + クリックで確認をスキップ）",
 		"condenseContext": "コンテキストをインテリジェントに圧縮",
 		"share": "タスクを共有",
-		"shareWithOrganization": "組織と共有",
-		"shareWithOrganizationDescription": "組織のメンバーのみがアクセスできます",
-		"sharePublicly": "公開で共有",
-		"sharePubliclyDescription": "リンクを持つ誰でもアクセスできます",
-		"connectToCloud": "クラウドに接続",
-		"connectToCloudDescription": "タスクを共有するためにRoo Code Cloudにサインイン",
-		"sharingDisabledByOrganization": "組織により共有が無効化されています",
-		"shareSuccessOrganization": "組織リンクをクリップボードにコピーしました",
 		"shareSuccessPublic": "公開リンクをクリップボードにコピーしました",
 		"openApiHistory": "API履歴を開く",
 		"openUiHistory": "UI履歴を開く",
@@ -339,13 +331,6 @@
 	"announcement": {
 		"title": "Roo Code {{version}} リリース",
 		"support": "<githubLink>GitHub</githubLink>でスターを付けてRoo Codeを応援してください。",
-		"stealthModel": {
-			"feature": "<bold>期間限定無料ステルスモデル</bold> - Code Supernova：<bold>1Mトークンコンテキストウィンドウ</bold>にアップグレード！画像入力をサポートする多目的エージェントコーディングモデル、Roo Code Cloud 経由で利用可能。",
-			"note": "(注意：プロンプトと補完はモデル作成者によってログに記録され、モデルの改善に使用されます)",
-			"connectButton": "Roo Code Cloud に接続",
-			"selectModel": "設定で Roo Code Cloud プロバイダーから <code>roo/code-supernova</code> を選択して開始してください。",
-			"goToSettingsButton": "設定に移動"
-		},
 		"handoff": {
 			"heading": "Roo Code プラグインはなくなりません。",
 			"description": "Roo Code のインストール数が300万に達し、元のチームが Roomote に全力で取り組むという先日のお知らせをご覧になったかもしれません。この知らせが多くの方にとって辛いものだったことは承知しています。このプラグインは私たちにとっても、あなたにとっても大切な存在であり、皆さんの声はしっかり届いています。良いお知らせです：<bold>コミュニティチームが Roo Code を受け継いで前進させることを引き受けてくれました</bold>。頼りにしているこのプラグインが引き続きメンテナンスと改善を受けられるよう、私たちは彼らと公式な引き継ぎを進めています。",
@@ -435,11 +420,6 @@
 	},
 	"versionIndicator": {
 		"ariaLabel": "バージョン {{version}} - クリックしてリリースノートを表示"
-	},
-	"rooCloudCTA": {
-		"title": "Roo Code Cloud が進化中！",
-		"description": "クラウドでリモートエージェントを実行し、どこからでもタスクにアクセスし、他の人と協力し、その他多くの機能を利用できます。",
-		"joinWaitlist": "最新のアップデートを受け取るためにサインアップしてください。"
 	},
 	"editMessage": {
 		"placeholder": "メッセージを編集..."

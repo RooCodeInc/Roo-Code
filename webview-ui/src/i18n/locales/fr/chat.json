@@ -16,14 +16,6 @@
 		"delete": "Supprimer la tâche (Shift + Clic pour ignorer la confirmation)",
 		"condenseContext": "Condenser intelligemment le contexte",
 		"share": "Partager la tâche",
-		"shareWithOrganization": "Partager avec l'organisation",
-		"shareWithOrganizationDescription": "Seuls les membres de ton organisation peuvent accéder",
-		"sharePublicly": "Partager publiquement",
-		"sharePubliclyDescription": "Toute personne avec le lien peut accéder",
-		"connectToCloud": "Se connecter au Cloud",
-		"connectToCloudDescription": "Connecte-toi à Roo Code Cloud pour partager des tâches",
-		"sharingDisabledByOrganization": "Partage désactivé par l'organisation",
-		"shareSuccessOrganization": "Lien d'organisation copié dans le presse-papiers",
 		"shareSuccessPublic": "Lien public copié dans le presse-papiers",
 		"openApiHistory": "Ouvrir l'historique de l'API",
 		"openUiHistory": "Ouvrir l'historique de l'UI",
@@ -339,13 +331,6 @@
 	"announcement": {
 		"title": "Roo Code {{version}} est sortie",
 		"support": "Soutiens Roo Code en nous donnant une étoile sur <githubLink>GitHub</githubLink>.",
-		"stealthModel": {
-			"feature": "<bold>Modèle stealth GRATUIT pour une durée limitée</bold> - Code Supernova : Maintenant amélioré avec une <bold>fenêtre de contexte de 1M tokens</bold> ! Un modèle de codage agentique polyvalent qui prend en charge les entrées d'images, accessible via Roo Code Cloud.",
-			"note": "(Note : les prompts et complétions sont enregistrés par le créateur du modèle et utilisés pour l'améliorer)",
-			"connectButton": "Se connecter à Roo Code Cloud",
-			"selectModel": "Sélectionnez <code>roo/code-supernova</code> du fournisseur Roo Code Cloud dans Paramètres pour commencer.",
-			"goToSettingsButton": "Aller aux Paramètres"
-		},
 		"handoff": {
 			"heading": "L'extension Roo Code ne va pas disparaître.",
 			"description": "Tu as peut-être vu l'annonce récente : Roo Code a franchi les 3 millions d'installations et l'équipe d'origine se consacre désormais entièrement à Roomote. On sait que cette nouvelle a été difficile pour beaucoup d'entre vous. Cette extension compte énormément pour nous comme pour toi, et on t'entend. La bonne nouvelle : <bold>une équipe de la communauté a décidé de prendre le relais pour faire avancer Roo Code</bold>, et on travaille avec eux sur une transmission officielle pour que l'extension sur laquelle tu comptes continue d'être maintenue et améliorée.",
@@ -435,11 +420,6 @@
 	},
 	"versionIndicator": {
 		"ariaLabel": "Version {{version}} - Cliquez pour voir les notes de version"
-	},
-	"rooCloudCTA": {
-		"title": "Roo Code Cloud évolue !",
-		"description": "Exécutez des agents distants dans le cloud, accédez à vos tâches de n'importe où, collaborez avec d'autres et bien plus encore.",
-		"joinWaitlist": "Inscrivez-vous pour recevoir les dernières mises à jour."
 	},
 	"editMessage": {
 		"placeholder": "Modifiez votre message..."

@@ -468,10 +468,6 @@
 			"description": "Ollamaを使用すると、ローカルコンピューターでモデルを実行できます。始め方については、クイックスタートガイドをご覧ください。",
 			"warning": "注意：Roo Codeは複雑なプロンプトを使用し、Claudeモデルで最適に動作します。能力の低いモデルは期待通りに動作しない場合があります。"
 		},
-		"roo": {
-			"authenticatedMessage": "Roo Code Cloudアカウントを通じて安全に認証されています。",
-			"connectButton": "Roo Code Cloudに接続"
-		},
 		"openRouter": {
 			"providerRouting": {
 				"title": "OpenRouterプロバイダールーティング",

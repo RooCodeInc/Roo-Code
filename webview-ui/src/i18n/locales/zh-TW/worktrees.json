@@ -2,27 +2,22 @@
 	"title": "Worktrees",
 	"done": "完成",
 	"description": "Git worktrees 讓您能在不同目錄中同時處理多個分支。每個 worktree 都會有一個搭配 Roo Code 的獨立 VS Code 視窗。",
-
 	"notGitRepo": "此工作區不是 Git 儲存庫。Worktree 功能需要 Git 儲存庫才能運作。",
 	"multiRootNotSupported": "多根工作區不支援 worktree。請開啟單一資料夾以使用 worktree。",
 	"subfolderNotSupported": "此工作區是 Git 儲存庫的子資料夾。請開啟儲存庫根目錄以使用 worktree。",
 	"gitRoot": "Git 根目錄",
-
 	"includeFileExists": "已找到 .worktreeinclude 檔案，檔案將複製到新的 worktree",
 	"noIncludeFile": "未找到 .worktreeinclude 檔案",
 	"createFromGitignore": "從 .gitignore 建立",
-
 	"primary": "主要",
 	"current": "目前",
 	"locked": "已鎖定",
 	"detachedHead": "分離的 HEAD",
 	"noBranch": "無分支",
-
 	"switchInThisWindow": "切換到 worktree",
 	"openInNewWindow": "在新視窗開啟",
 	"delete": "刪除",
 	"newWorktree": "新增 Worktree",
-
 	"createWorktree": "建立 Worktree",
 	"branchName": "分支名稱",
 	"createNewBranch": "建立新分支",
@@ -44,7 +39,6 @@
 	"copyingFiles": "正在複製檔案...",
 	"copyingProgress": "{{item}} — {{copied}} 已複製",
 	"cancel": "取消",
-
 	"deleteWorktree": "刪除 Worktree",
 	"deleteWarning": "此操作無法復原。將刪除以下內容：",
 	"deleteWarningBranch": "分支以及所有未提交的變更",
@@ -53,11 +47,8 @@
 	"forceDelete": "強制刪除",
 	"worktreeIsLocked": "worktree 已鎖定",
 	"deleting": "正在刪除...",
-
 	"close": "關閉",
-
 	"showInHomeScreen": "在主畫面顯示 worktree",
-
 	"selector": {
 		"worktree": "Worktree",
 		"title": "Worktrees",

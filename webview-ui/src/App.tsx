@@ -15,12 +15,11 @@ import WelcomeView from "./components/welcome/WelcomeViewProvider"
 import { CheckpointRestoreDialog } from "./components/chat/CheckpointRestoreDialog"
 import { DeleteMessageDialog, EditMessageDialog } from "./components/chat/MessageModificationConfirmationDialog"
 import ErrorBoundary from "./components/ErrorBoundary"
-import { CloudView } from "./components/cloud/CloudView"
 import { useAddNonInteractiveClickListener } from "./components/ui/hooks/useNonInteractiveClick"
 import { TooltipProvider } from "./components/ui/tooltip"
 import { STANDARD_TOOLTIP_DELAY } from "./components/ui/standard-tooltip"
 
-type Tab = "settings" | "history" | "chat" | "cloud"
+type Tab = "settings" | "history" | "chat"
 
 interface DeleteMessageDialogState {
 	isOpen: boolean
@@ -44,20 +43,10 @@ const tabsByMessageAction: Partial<Record<NonNullable<ExtensionMessage["action"]
 	chatButtonClicked: "chat",
 	settingsButtonClicked: "settings",
 	historyButtonClicked: "history",
-	cloudButtonClicked: "cloud",
 }
 
 const App = () => {
-	const {
-		didHydrateState,
-		showWelcome,
-		shouldShowAnnouncement,
-		cloudUserInfo,
-		cloudIsAuthenticated,
-		cloudApiUrl,
-		cloudOrganizations,
-		renderContext,
-	} = useExtensionState()
+	const { didHydrateState, showWelcome, shouldShowAnnouncement, renderContext } = useExtensionState()
 
 	const [showAnnouncement, setShowAnnouncement] = useState(false)
 	const [tab, setTab] = useState<Tab>("chat")
@@ -188,14 +177,6 @@ const App = () => {
 			{tab === "history" && <HistoryView onDone={() => switchTab("chat")} />}
 			{tab === "settings" && (
 				<SettingsView ref={settingsRef} onDone={() => setTab("chat")} targetSection={currentSection} />
-			)}
-			{tab === "cloud" && (
-				<CloudView
-					userInfo={cloudUserInfo}
-					isAuthenticated={cloudIsAuthenticated}
-					cloudApiUrl={cloudApiUrl}
-					organizations={cloudOrganizations}
-				/>
 			)}
 			<ChatView
 				ref={chatViewRef}

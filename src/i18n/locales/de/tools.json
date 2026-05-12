@@ -23,9 +23,6 @@
 		"noImageGenerated": "In der Antwort wurde kein Bild generiert",
 		"invalidImageData": "Ungültige Bilddaten in der Antwort",
 		"invalidImageFormat": "Ungültiges Bildformat erhalten",
-		"unknownError": "Unbekannter Fehler aufgetreten",
-		"roo": {
-			"authRequired": "Roo Code Cloud-Authentifizierung ist für die Bildgenerierung erforderlich. Bitte melde dich bei Roo Code Cloud an."
-		}
+		"unknownError": "Unbekannter Fehler aufgetreten"
 	}
 }

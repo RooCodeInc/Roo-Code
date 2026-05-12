@@ -85,15 +85,6 @@ export function Footer() {
 									</li>
 									<li>
 										<a
-											href={EXTERNAL_LINKS.EVALS}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
-											Evals
-										</a>
-									</li>
-									<li>
-										<a
 											href={EXTERNAL_LINKS.TUTORIALS}
 											target="_blank"
 											rel="noopener noreferrer"

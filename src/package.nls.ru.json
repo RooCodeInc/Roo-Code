@@ -8,7 +8,6 @@
 	"command.newTask.title": "Новая задача",
 	"command.history.title": "История задач",
 	"command.openInEditor.title": "Открыть в редакторе",
-	"command.cloud.title": "Cloud",
 	"command.settings.title": "Настройки",
 	"command.documentation.title": "Документация",
 	"command.openInNewTab.title": "Открыть в новой вкладке",

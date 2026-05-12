@@ -8,7 +8,6 @@ import {
 	type ExperimentId,
 	type TodoItem,
 	type OrganizationAllowList,
-	type CloudOrganizationMembership,
 	type ExtensionMessage,
 	type ExtensionState,
 	type SkillMetadata,
@@ -41,11 +40,6 @@ export interface ExtensionStateContextType extends ExtensionState {
 	openedTabs: Array<{ label: string; isActive: boolean; path?: string }>
 	commands: Command[]
 	organizationAllowList: OrganizationAllowList
-	organizationSettingsVersion: number
-	cloudIsAuthenticated: boolean
-	cloudOrganizations?: CloudOrganizationMembership[]
-	sharingEnabled: boolean
-	publicSharingEnabled: boolean
 	hasOpenedModeSelector: boolean // New property to track if user has opened mode selector
 	setHasOpenedModeSelector: (value: boolean) => void // Setter for the new property
 	alwaysAllowFollowupQuestions: boolean // New property for follow-up questions auto-approve
@@ -89,8 +83,6 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setTerminalOutputPreviewSize: (value: "small" | "medium" | "large") => void
 	mcpEnabled: boolean
 	setMcpEnabled: (value: boolean) => void
-	taskSyncEnabled: boolean
-	setTaskSyncEnabled: (value: boolean) => void
 	setCurrentApiConfigName: (value: string) => void
 	setListApiConfigMeta: (value: ProviderSettingsEntry[]) => void
 	mode: Mode
@@ -157,7 +149,7 @@ export const mergeExtensionState = (prevState: ExtensionState, newState: Partial
 	const rest = { ...prevRest, ...newRest }
 
 	// Protect clineMessages from stale state pushes using sequence numbering.
-	// Multiple async event sources (cloud auth, settings, task streaming) can trigger
+	// Multiple async event sources (settings, task streaming) can trigger
 	// concurrent state pushes. If a stale push arrives after a newer one, its clineMessages
 	// would overwrite the newer messages. The sequence number prevents this by only applying
 	// clineMessages when the incoming seq is strictly greater than the last applied seq.
@@ -201,7 +193,6 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		writeDelayMs: 1000,
 		terminalShellIntegrationTimeout: 4000,
 		mcpEnabled: true,
-		taskSyncEnabled: false,
 		currentApiConfigName: "default",
 		listApiConfigMeta: [],
 		mode: defaultModeSlug,
@@ -228,13 +219,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		historyPreviewCollapsed: false, // Initialize the new state (default to expanded)
 		reasoningBlockCollapsed: true, // Default to collapsed
 		enterBehavior: "send", // Default: Enter sends, Shift+Enter creates newline
-		cloudUserInfo: null,
-		cloudIsAuthenticated: false,
-		cloudOrganizations: [],
-		sharingEnabled: false,
-		publicSharingEnabled: false,
 		organizationAllowList: ORGANIZATION_ALLOW_ALL,
-		organizationSettingsVersion: -1,
 		autoCondenseContext: true,
 		autoCondenseContextPercent: 100,
 		profileThresholds: {},
@@ -270,7 +255,6 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	const [followupAutoApproveTimeoutMs, setFollowupAutoApproveTimeoutMs] = useState<number | undefined>(undefined) // Will be set from global settings
 	const [skills, setSkills] = useState<SkillMetadata[]>([])
 	const [includeTaskHistoryInEnhance, setIncludeTaskHistoryInEnhance] = useState(true)
-	const [prevCloudIsAuthenticated, setPrevCloudIsAuthenticated] = useState(false)
 	const [includeCurrentTime, setIncludeCurrentTime] = useState(true)
 	const [includeCurrentCost, setIncludeCurrentCost] = useState(true)
 
@@ -361,7 +345,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 							return { ...prevState, clineMessages: newClineMessages }
 						}
 						// Log a warning if messageUpdated arrives for a timestamp not in the
-						// frontend's clineMessages. With the seq guard and cloud event isolation
+						// frontend's clineMessages. With the sequence guard in place,
 						// (layers 1+2), this should not happen under normal conditions. If it
 						// does, it signals a state synchronization issue worth investigating.
 						console.warn(
@@ -445,17 +429,6 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		vscode.postMessage({ type: "webviewDidLaunch" })
 	}, [])
 
-	// Watch for authentication state changes and refresh Roo models
-	useEffect(() => {
-		const currentAuth = state.cloudIsAuthenticated ?? false
-		const currentProvider = state.apiConfiguration?.apiProvider
-		if (!prevCloudIsAuthenticated && currentAuth && currentProvider === "roo") {
-			// User just authenticated and Roo is the active provider - refresh Roo models
-			vscode.postMessage({ type: "requestRooModels" })
-		}
-		setPrevCloudIsAuthenticated(currentAuth)
-	}, [state.cloudIsAuthenticated, prevCloudIsAuthenticated, state.apiConfiguration?.apiProvider])
-
 	const contextValue: ExtensionStateContextType = {
 		...state,
 		reasoningBlockCollapsed: state.reasoningBlockCollapsed ?? true,
@@ -471,13 +444,9 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		ttsSpeed: state.ttsSpeed,
 		writeDelayMs: state.writeDelayMs,
 		routerModels: extensionRouterModels,
-		cloudIsAuthenticated: state.cloudIsAuthenticated ?? false,
-		cloudOrganizations: state.cloudOrganizations ?? [],
-		organizationSettingsVersion: state.organizationSettingsVersion ?? -1,
 		profileThresholds: state.profileThresholds ?? {},
 		alwaysAllowFollowupQuestions,
 		followupAutoApproveTimeoutMs,
-		taskSyncEnabled: state.taskSyncEnabled,
 		setExperimentEnabled: (id, enabled) =>
 			setState((prevState) => ({ ...prevState, experiments: { ...prevState.experiments, [id]: enabled } })),
 		setApiConfiguration,
@@ -515,7 +484,6 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 			setState((prevState) => ({ ...prevState, terminalShellIntegrationDisabled: value })),
 		setTerminalZdotdir: (value) => setState((prevState) => ({ ...prevState, terminalZdotdir: value })),
 		setMcpEnabled: (value) => setState((prevState) => ({ ...prevState, mcpEnabled: value })),
-		setTaskSyncEnabled: (value) => setState((prevState) => ({ ...prevState, taskSyncEnabled: value }) as any),
 		setCurrentApiConfigName: (value) => setState((prevState) => ({ ...prevState, currentApiConfigName: value })),
 		setListApiConfigMeta,
 		setMode: (value: Mode) => setState((prevState) => ({ ...prevState, mode: value })),

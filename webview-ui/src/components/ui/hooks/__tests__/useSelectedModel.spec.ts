@@ -13,6 +13,7 @@ import {
 	openAiModelInfoSaneDefaults,
 	minimaxDefaultModelId,
 	minimaxModels,
+	openRouterDefaultModelId,
 } from "@roo-code/types"
 
 import { useSelectedModel } from "../useSelectedModel"
@@ -320,7 +321,7 @@ describe("useSelectedModel", () => {
 	})
 
 	describe("loading and error states", () => {
-		it("should NOT set loading when router models are loading but provider is static (anthropic)", () => {
+		it("should set loading when router models are loading for the default OpenRouter provider", () => {
 			mockUseRouterModels.mockReturnValue({
 				data: undefined,
 				isLoading: true,
@@ -336,11 +337,10 @@ describe("useSelectedModel", () => {
 			const wrapper = createWrapper()
 			const { result } = renderHook(() => useSelectedModel(), { wrapper })
 
-			// With static provider default (anthropic), useSelectedModel gates router fetches, so loading should be false
-			expect(result.current.isLoading).toBe(false)
+			expect(result.current.isLoading).toBe(true)
 		})
 
-		it("should NOT set loading when openrouter provider metadata is loading but provider is static (anthropic)", () => {
+		it("should set loading when OpenRouter provider metadata is loading for the default provider", () => {
 			mockUseRouterModels.mockReturnValue({
 				data: { openrouter: {}, requesty: {}, litellm: {} },
 				isLoading: false,
@@ -356,11 +356,10 @@ describe("useSelectedModel", () => {
 			const wrapper = createWrapper()
 			const { result } = renderHook(() => useSelectedModel(), { wrapper })
 
-			// With static provider default (anthropic), openrouter providers are irrelevant, so loading should be false
-			expect(result.current.isLoading).toBe(false)
+			expect(result.current.isLoading).toBe(true)
 		})
 
-		it("should NOT set error when hooks error but provider is static (anthropic)", () => {
+		it("should set error when router models error for the default OpenRouter provider", () => {
 			mockUseRouterModels.mockReturnValue({
 				data: undefined,
 				isLoading: false,
@@ -376,13 +375,12 @@ describe("useSelectedModel", () => {
 			const wrapper = createWrapper()
 			const { result } = renderHook(() => useSelectedModel(), { wrapper })
 
-			// Error from gated routerModels should not bubble for static provider default
-			expect(result.current.isError).toBe(false)
+			expect(result.current.isError).toBe(true)
 		})
 	})
 
 	describe("default behavior", () => {
-		it("should return anthropic default when no configuration is provided", () => {
+		it("should return OpenRouter default when no configuration is provided", () => {
 			mockUseRouterModels.mockReturnValue({
 				data: undefined,
 				isLoading: false,
@@ -398,8 +396,8 @@ describe("useSelectedModel", () => {
 			const wrapper = createWrapper()
 			const { result } = renderHook(() => useSelectedModel(), { wrapper })
 
-			expect(result.current.provider).toBe("anthropic")
-			expect(result.current.id).toBe("claude-sonnet-4-5")
+			expect(result.current.provider).toBe("openrouter")
+			expect(result.current.id).toBe(openRouterDefaultModelId)
 			expect(result.current.info).toBeUndefined()
 		})
 	})

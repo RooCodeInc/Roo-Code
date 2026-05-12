@@ -50,10 +50,6 @@ export enum RooCodeEventName {
 	CommandsResponse = "commandsResponse",
 	ModesResponse = "modesResponse",
 	ModelsResponse = "modelsResponse",
-
-	// Evals
-	EvalPass = "evalPass",
-	EvalFail = "evalFail",
 }
 
 /**
@@ -272,18 +268,6 @@ export const taskEventSchema = z.discriminatedUnion("eventName", [
 		eventName: z.literal(RooCodeEventName.ModelsResponse),
 		payload: rooCodeEventsSchema.shape[RooCodeEventName.ModelsResponse],
 		taskId: z.number().optional(),
-	}),
-
-	// Evals
-	z.object({
-		eventName: z.literal(RooCodeEventName.EvalPass),
-		payload: z.undefined(),
-		taskId: z.number(),
-	}),
-	z.object({
-		eventName: z.literal(RooCodeEventName.EvalFail),
-		payload: z.undefined(),
-		taskId: z.number(),
 	}),
 ])
 

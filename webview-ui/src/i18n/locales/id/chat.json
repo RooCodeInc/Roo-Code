@@ -16,14 +16,6 @@
 		"export": "Ekspor riwayat tugas",
 		"share": "Bagikan tugas",
 		"delete": "Hapus Tugas (Shift + Klik untuk lewati konfirmasi)",
-		"shareWithOrganization": "Bagikan dengan organisasi",
-		"shareWithOrganizationDescription": "Hanya anggota organisasi Anda yang dapat mengakses",
-		"sharePublicly": "Bagikan secara publik",
-		"sharePubliclyDescription": "Siapa pun dengan tautan dapat mengakses",
-		"connectToCloud": "Hubungkan ke Cloud",
-		"connectToCloudDescription": "Masuk ke Roo Code Cloud untuk berbagi tugas",
-		"sharingDisabledByOrganization": "Berbagi dinonaktifkan oleh organisasi",
-		"shareSuccessOrganization": "Tautan organisasi disalin ke clipboard",
 		"shareSuccessPublic": "Tautan publik disalin ke clipboard",
 		"openApiHistory": "Buka Riwayat API",
 		"openUiHistory": "Buka Riwayat UI",
@@ -368,13 +360,6 @@
 	"announcement": {
 		"title": "Roo Code {{version}} Dirilis",
 		"support": "Dukung Roo Code dengan memberi kami bintang di <githubLink>GitHub</githubLink>.",
-		"stealthModel": {
-			"feature": "<bold>Model stealth GRATIS waktu terbatas</bold> - Code Supernova: Sekarang diupgrade dengan <bold>jendela konteks 1M token</bold>! Model coding agentik serbaguna yang mendukung input gambar, tersedia melalui Roo Code Cloud.",
-			"note": "(Catatan: prompt dan completion dicatat oleh pembuat model dan digunakan untuk meningkatkan model)",
-			"connectButton": "Hubungkan ke Roo Code Cloud",
-			"selectModel": "Pilih <code>roo/code-supernova</code> dari penyedia Roo Code Cloud di Pengaturan untuk memulai.",
-			"goToSettingsButton": "Pergi ke Pengaturan"
-		},
 		"handoff": {
 			"heading": "Plugin Roo Code tidak akan hilang.",
 			"description": "Kamu mungkin sudah melihat pengumuman baru-baru ini bahwa Roo Code mencapai 3 juta instalasi dan tim aslinya sepenuhnya fokus ke Roomote. Kami tahu berita itu berat bagi banyak dari kalian. Plugin ini sangat berarti bagi kami dan bagi kamu, dan kami mendengarmu. Kabar baiknya: <bold>sebuah tim komunitas telah maju untuk melanjutkan Roo Code</bold>, dan kami sedang bekerja sama dengan mereka untuk serah terima resmi agar plugin yang kamu andalkan tetap dirawat dan ditingkatkan.",
@@ -441,11 +426,6 @@
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versi {{version}} - Klik untuk melihat catatan rilis"
-	},
-	"rooCloudCTA": {
-		"title": "Roo Code Cloud sedang berkembang!",
-		"description": "Jalankan agen jarak jauh di cloud, akses tugas Anda dari mana saja, berkolaborasi dengan orang lain, dan banyak lagi.",
-		"joinWaitlist": "Daftar untuk mendapatkan pembaruan terbaru."
 	},
 	"editMessage": {
 		"placeholder": "Edit pesan Anda..."

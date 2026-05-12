@@ -111,9 +111,6 @@
 			"thinking_complete_safety": "(Thinking complete, but output was blocked due to safety settings.)",
 			"thinking_complete_recitation": "(Thinking complete, but output was blocked due to recitation check.)"
 		},
-		"roo": {
-			"authenticationRequired": "Roo provider requires cloud authentication. Please sign in to Roo Code Cloud."
-		},
 		"openAiCodex": {
 			"notAuthenticated": "Not authenticated with OpenAI Codex. Please sign in using the OpenAI Codex OAuth flow.",
 			"invalidRequest": "Invalid request to Codex API. Please check your input parameters.",

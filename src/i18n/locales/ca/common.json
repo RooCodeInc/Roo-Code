@@ -114,9 +114,6 @@
 			"thinking_complete_safety": "(Pensament completat, però la sortida s'ha bloquejat a causa de la configuració de seguretat.)",
 			"thinking_complete_recitation": "(Pensament completat, però la sortida s'ha bloquejat a causa de la comprovació de recitació.)"
 		},
-		"roo": {
-			"authenticationRequired": "El proveïdor Roo requereix autenticació al núvol. Si us plau, inicieu sessió a Roo Code Cloud."
-		},
 		"openAiCodex": {
 			"notAuthenticated": "No esteu autenticat amb OpenAI Codex. Si us plau, inicieu sessió mitjançant el flux OAuth d'OpenAI Codex.",
 			"invalidRequest": "Sol·licitud no vàlida a l'API de Codex. Si us plau, comproveu els paràmetres d'entrada.",

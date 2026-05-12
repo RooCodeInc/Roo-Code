@@ -19,9 +19,9 @@ import {
 	isSecretStateKey,
 	IpcOrigin,
 	IpcMessageType,
+	openRouterDefaultModelId,
 } from "@roo-code/types"
 import { IpcServer } from "@roo-code/ipc"
-import { CloudService } from "@roo-code/cloud"
 
 import { Package } from "../shared/package"
 import { ClineProvider } from "../core/webview/ClineProvider"
@@ -138,14 +138,12 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 					case TaskCommandName.GetModels:
 						try {
 							const models = await getModels({
-								provider: "roo" as const,
-								baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
-								apiKey: CloudService.hasInstance()
-									? CloudService.instance.authService?.getSessionToken()
-									: undefined,
+								provider: "openrouter",
 							})
 
-							sendResponse(RooCodeEventName.ModelsResponse, [models])
+							sendResponse(RooCodeEventName.ModelsResponse, [
+								models || { [openRouterDefaultModelId]: {} },
+							])
 						} catch (error) {
 							sendResponse(RooCodeEventName.ModelsResponse, [{}])
 						}

@@ -2,27 +2,22 @@
 	"title": "Worktrees",
 	"done": "完了",
 	"description": "Git worktrees を使うと、別々のディレクトリで複数のブランチを同時に作業できます。各 worktree には Roo Code 付きの VS Code ウィンドウが割り当てられます。",
-
 	"notGitRepo": "このワークスペースは Git リポジトリではありません。worktrees を使うには Git リポジトリが必要です。",
 	"multiRootNotSupported": "マルチルートのワークスペースでは worktrees はサポートされていません。worktrees を使うには単一のフォルダーを開いてください。",
 	"subfolderNotSupported": "このワークスペースは Git リポジトリのサブフォルダーです。worktrees を使うにはリポジトリのルートを開いてください。",
 	"gitRoot": "Git ルート",
-
 	"includeFileExists": ".worktreeinclude ファイルが見つかりました — ファイルは新しい worktrees にコピーされます",
 	"noIncludeFile": ".worktreeinclude ファイルが見つかりませんでした",
 	"createFromGitignore": ".gitignore から作成",
-
 	"primary": "プライマリ",
 	"current": "現在",
 	"locked": "ロック中",
 	"detachedHead": "Detached HEAD",
 	"noBranch": "ブランチなし",
-
 	"switchInThisWindow": "Worktree に切り替え",
 	"openInNewWindow": "新しいウィンドウで開く",
 	"delete": "削除",
 	"newWorktree": "新しい Worktree",
-
 	"createWorktree": "Worktree を作成",
 	"branchName": "ブランチ名",
 	"createNewBranch": "新しいブランチを作成",
@@ -44,7 +39,6 @@
 	"copyingFiles": "ファイルをコピー中...",
 	"copyingProgress": "{{item}} — {{copied}} コピー済み",
 	"cancel": "キャンセル",
-
 	"deleteWorktree": "Worktree を削除",
 	"deleteWarning": "この操作は元に戻せません。次のものが削除されます:",
 	"deleteWarningBranch": "ブランチと未コミットの変更すべて",
@@ -53,11 +47,8 @@
 	"forceDelete": "強制削除",
 	"worktreeIsLocked": "worktree がロックされています",
 	"deleting": "削除中...",
-
 	"close": "閉じる",
-
 	"showInHomeScreen": "ホーム画面に worktrees を表示",
-
 	"selector": {
 		"worktree": "Worktree",
 		"title": "Worktrees",

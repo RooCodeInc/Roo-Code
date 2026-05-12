@@ -179,7 +179,7 @@ describe("getModelsFromCache disk fallback", () => {
 
 		mockCache.get.mockReturnValue(memoryModels)
 
-		const result = getModelsFromCache("roo")
+		const result = getModelsFromCache("openrouter")
 
 		expect(result).toEqual(memoryModels)
 		// Disk should not be checked when memory cache hits
@@ -217,7 +217,7 @@ describe("getModelsFromCache disk fallback", () => {
 
 		const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
 
-		const result = getModelsFromCache("roo")
+		const result = getModelsFromCache("openrouter")
 
 		expect(result).toBeUndefined()
 		expect(consoleErrorSpy).toHaveBeenCalled()

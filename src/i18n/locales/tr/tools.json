@@ -23,9 +23,6 @@
 		"noImageGenerated": "Yanıtta görüntü oluşturulmadı",
 		"invalidImageData": "Yanıtta geçersiz görüntü verisi",
 		"invalidImageFormat": "Geçersiz görüntü formatı alındı",
-		"unknownError": "Bilinmeyen bir hata oluştu",
-		"roo": {
-			"authRequired": "Görüntü oluşturma için Roo Code Cloud kimlik doğrulaması gereklidir. Lütfen Roo Code Cloud'da oturum açın."
-		}
+		"unknownError": "Bilinmeyen bir hata oluştu"
 	}
 }

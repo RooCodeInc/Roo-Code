@@ -23,9 +23,6 @@
 		"noImageGenerated": "Er is geen afbeelding gegenereerd in het antwoord",
 		"invalidImageData": "Ongeldige afbeeldingsgegevens in het antwoord",
 		"invalidImageFormat": "Ongeldig afbeeldingsformaat ontvangen",
-		"unknownError": "Er is een onbekende fout opgetreden",
-		"roo": {
-			"authRequired": "Roo Code Cloud-authenticatie is vereist voor het genereren van afbeeldingen. Log in bij Roo Code Cloud."
-		}
+		"unknownError": "Er is een onbekende fout opgetreden"
 	}
 }

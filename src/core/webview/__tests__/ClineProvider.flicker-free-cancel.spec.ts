@@ -59,17 +59,6 @@ vi.mock("../../../utils/path", () => ({
 	getWorkspacePath: vi.fn().mockReturnValue("/test/workspace"),
 }))
 
-// Mock CloudService
-vi.mock("@roo-code/cloud", () => ({
-	CloudService: {
-		hasInstance: vi.fn().mockReturnValue(false),
-		instance: {
-			isAuthenticated: vi.fn().mockReturnValue(false),
-		},
-	},
-	getRooCodeApiUrl: vi.fn().mockReturnValue("https://api.roo-code.com"),
-}))
-
 vi.mock("../../../shared/embeddingModels", () => ({
 	EMBEDDING_MODEL_PROFILES: [],
 }))

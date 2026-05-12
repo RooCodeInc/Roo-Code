@@ -119,18 +119,6 @@ vi.mock("../../task/Task", () => ({
 	}),
 }))
 
-vi.mock("@roo-code/cloud", () => ({
-	CloudService: {
-		hasInstance: vi.fn().mockReturnValue(true),
-		get instance() {
-			return {
-				isAuthenticated: vi.fn().mockReturnValue(false),
-			}
-		},
-	},
-	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.roocode.com"),
-}))
-
 describe("ClineProvider - API Handler Rebuild Guard", () => {
 	let provider: ClineProvider
 	let mockContext: vscode.ExtensionContext

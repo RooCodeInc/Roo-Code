@@ -24,7 +24,7 @@ export class IpcClient extends EventEmitter<IpcClientEvents> {
 		super()
 
 		this._socketPath = socketPath
-		this._id = `roo-code-evals-${crypto.randomBytes(6).toString("hex")}`
+		this._id = `roo-code-ipc-${crypto.randomBytes(6).toString("hex")}`
 		this._log = log
 
 		ipc.config.silent = true

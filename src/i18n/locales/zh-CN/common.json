@@ -116,9 +116,6 @@
 			"thinking_complete_safety": "（思考完成，但由于安全设置输出被阻止。）",
 			"thinking_complete_recitation": "（思考完成，但由于引用检查输出被阻止。）"
 		},
-		"roo": {
-			"authenticationRequired": "Roo 提供商需要云认证。请登录 Roo Code Cloud。"
-		},
 		"api": {
 			"invalidKeyInvalidChars": "API 密钥包含无效字符.",
 			"apiRequestFailed": "API 请求失败 ({{status}})"

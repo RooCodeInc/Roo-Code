@@ -111,9 +111,6 @@
 			"thinking_complete_safety": "(Nadenken voltooid, maar uitvoer is geblokkeerd vanwege veiligheidsinstellingen.)",
 			"thinking_complete_recitation": "(Nadenken voltooid, maar uitvoer is geblokkeerd vanwege recitatiecontrole.)"
 		},
-		"roo": {
-			"authenticationRequired": "Roo provider vereist cloud authenticatie. Log in bij Roo Code Cloud."
-		},
 		"api": {
 			"invalidKeyInvalidChars": "API-sleutel bevat ongeldige karakters.",
 			"apiRequestFailed": "API-verzoek mislukt ({{status}})"

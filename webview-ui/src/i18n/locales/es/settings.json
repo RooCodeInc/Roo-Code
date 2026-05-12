@@ -468,10 +468,6 @@
 			"description": "Ollama le permite ejecutar modelos localmente en su computadora. Para obtener instrucciones sobre cómo comenzar, consulte la guía de inicio rápido.",
 			"warning": "Nota: Roo Code utiliza prompts complejos y funciona mejor con modelos Claude. Los modelos menos capaces pueden no funcionar como se espera."
 		},
-		"roo": {
-			"authenticatedMessage": "Autenticado de forma segura a través de tu cuenta de Roo Code Cloud.",
-			"connectButton": "Conectar a Roo Code Cloud"
-		},
 		"openRouter": {
 			"providerRouting": {
 				"title": "Enrutamiento de Proveedores de OpenRouter",

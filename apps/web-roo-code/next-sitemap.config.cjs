@@ -98,9 +98,6 @@ module.exports = {
     if (path === '/') {
       priority = 1.0;
       changefreq = 'yearly';
-    } else if (path === '/evals') {
-      priority = 0.8;
-      changefreq = 'monthly';
     } else if (path === '/privacy' || path === '/terms') {
       priority = 0.5;
       changefreq = 'yearly';
@@ -122,14 +119,6 @@ module.exports = {
   },
   additionalPaths: async (config) => {
     const result = [];
-    
-    // Add the /evals page since it's a dynamic route
-    result.push({
-      loc: '/evals',
-      changefreq: 'monthly',
-      priority: 0.8,
-      lastmod: new Date().toISOString(),
-    });
     
     // Add /blog index
     result.push({

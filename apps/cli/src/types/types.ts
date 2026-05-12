@@ -7,7 +7,6 @@ export const supportedProviders = [
 	"gemini",
 	"openrouter",
 	"vercel-ai-gateway",
-	"roo",
 ] as const satisfies ProviderName[]
 
 export type SupportedProvider = (typeof supportedProviders)[number]
@@ -44,7 +43,6 @@ export type FlagOptions = {
 }
 
 export enum OnboardingProviderChoice {
-	Roo = "roo",
 	Byok = "byok",
 }
 
