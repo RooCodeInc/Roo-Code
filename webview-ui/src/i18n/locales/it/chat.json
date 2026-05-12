@@ -331,6 +331,13 @@
 	"announcement": {
 		"title": "Rilasciato Roo Code {{version}}",
 		"support": "Sostieni Roo Code lasciandoci una stella su <githubLink>GitHub</githubLink>.",
+		"finalRelease": {
+			"title": "L'ultima release di Roo Code",
+			"intro": "Questa è l'ultima release di Roo Code. <announcementLink>Come abbiamo annunciato qualche settimana fa</announcementLink>, abbiamo deciso di spostare il nostro focus su <roomoteLink>Roomote</roomoteLink>, la nostra piattaforma di agenti cloud, che riteniamo essere il futuro dello sviluppo software. Grazie di cuore per il tuo supporto durante questo ultimo anno circa.",
+			"continuity": "Questa estensione dovrebbe continuare a funzionare indefinitamente, ma non riceverà correzioni di bug, nuove funzionalità o aggiornamenti dei modelli.",
+			"alternatives": "Se vuoi usare un'estensione, ti consigliamo di dare un'occhiata a <zooCodeLink>ZooCode</zooCodeLink> (un fork di Roo Code creato dalla community) e a <clineLink>Cline</clineLink> (da cui Roo Code è nato originariamente).",
+			"signoff": "Buon coding!"
+		},
 		"release": {
 			"heading": "Novità:",
 			"gpt55": "GPT-5.5 via OpenAI Codex: Aggiunto il supporto a GPT-5.5 nel provider OpenAI Codex così puoi usare il modello più recente direttamente da Roo Code.",

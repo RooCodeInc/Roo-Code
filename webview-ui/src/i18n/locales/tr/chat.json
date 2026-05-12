@@ -332,6 +332,13 @@
 	"announcement": {
 		"title": "Roo Code {{version}} Yayınlandı",
 		"support": "<githubLink>GitHub</githubLink>'da yıldız vererek Roo Code'u destekle.",
+		"finalRelease": {
+			"title": "Son Roo Code sürümü",
+			"intro": "Bu, Roo Code'un son sürümüdür. <announcementLink>Birkaç hafta önce duyurduğumuz gibi</announcementLink>, odağımızı yazılım geliştirmenin geleceği olduğuna inandığımız bulut ajan platformumuz <roomoteLink>Roomote</roomoteLink>'a kaydırmaya karar verdik. Geçtiğimiz yaklaşık bir yıl boyunca verdiğiniz destek için çok teşekkür ederiz.",
+			"continuity": "Bu eklenti süresiz olarak çalışmaya devam etmelidir, ancak hata düzeltmeleri, yeni özellikler veya model güncellemeleri almayacaktır.",
+			"alternatives": "Bir eklenti kullanmak istiyorsanız, topluluk tarafından geliştirilen bir Roo Code fork'u olan <zooCodeLink>ZooCode</zooCodeLink>'a ve Roo Code'un başlangıç noktası olan <clineLink>Cline</clineLink>'a göz atmanızı öneririz.",
+			"signoff": "Mutlu kodlamalar!"
+		},
 		"release": {
 			"heading": "Yenilikler:",
 			"gpt55": "OpenAI Codex üzerinden GPT-5.5: En son modeli doğrudan Roo Code'dan kullanabilmen için OpenAI Codex sağlayıcısına GPT-5.5 desteği eklendi.",

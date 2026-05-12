@@ -46,6 +46,7 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 								announcementLink: (
 									<ExternalLink href="https://x.com/mattrubens/status/2046636598859559114" />
 								),
+								roomoteLink: <ExternalLink href="https://roomote.dev/" />,
 							}}
 						/>
 					</p>

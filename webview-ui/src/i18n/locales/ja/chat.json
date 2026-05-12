@@ -331,6 +331,13 @@
 	"announcement": {
 		"title": "Roo Code {{version}} リリース",
 		"support": "<githubLink>GitHub</githubLink>でスターを付けてRoo Codeを応援してください。",
+		"finalRelease": {
+			"title": "Roo Code 最後のリリース",
+			"intro": "これは Roo Code の最後のリリースです。<announcementLink>数週間前にお知らせしたとおり</announcementLink>、私たちは今後、ソフトウェア開発の未来だと考えているクラウドエージェントプラットフォーム <roomoteLink>Roomote</roomoteLink> に注力することにしました。この約1年間のご支援、本当にありがとうございました。",
+			"continuity": "この拡張機能は今後も無期限に動作し続けるはずですが、バグ修正、新機能、モデル更新は提供されません。",
+			"alternatives": "拡張機能を使いたい場合は、コミュニティによる Roo Code のフォークである <zooCodeLink>ZooCode</zooCodeLink> と、Roo Code の出発点である <clineLink>Cline</clineLink> をぜひ確認してみてください。",
+			"signoff": "Happy coding!"
+		},
 		"release": {
 			"heading": "新機能:",
 			"gpt55": "OpenAI Codex 経由の GPT-5.5: OpenAI Codex プロバイダーで GPT-5.5 のサポートを追加しました。Roo Code から最新モデルを直接利用できます。",

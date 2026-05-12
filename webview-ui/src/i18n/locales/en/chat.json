@@ -352,7 +352,7 @@
 		"support": "Please support Roo Code by starring us on <githubLink>GitHub</githubLink>.",
 		"finalRelease": {
 			"title": "The last Roo Code release",
-			"intro": "This is the last Roo Code release. <announcementLink>As we announced a few weeks ago</announcementLink>, we've decided to shift our focus to Roomote, our cloud agent platform, which we believe to be the future of software development. Thank you so much for your support throughout the past year or so.",
+			"intro": "This is the last Roo Code release. <announcementLink>As we announced a few weeks ago</announcementLink>, we've decided to shift our focus to <roomoteLink>Roomote</roomoteLink>, our cloud agent platform, which we believe to be the future of software development. Thank you so much for your support throughout the past year or so.",
 			"continuity": "This extension should continue to work indefinitely, but it won't receive bug fixes, new features, or model updates.",
 			"alternatives": "If you want to use an extension, we recommend checking out <zooCodeLink>ZooCode</zooCodeLink> (a Roo Code fork by the community) and <clineLink>Cline</clineLink> (where Roo Code originally started).",
 			"signoff": "Happy coding!"

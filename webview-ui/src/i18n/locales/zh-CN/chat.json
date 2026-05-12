@@ -332,6 +332,13 @@
 	"announcement": {
 		"title": "Roo Code {{version}} 已发布",
 		"support": "请在 <githubLink>GitHub</githubLink> 上为我们点星支持 Roo Code。",
+		"finalRelease": {
+			"title": "Roo Code 的最后一个版本",
+			"intro": "这是 Roo Code 的最后一个版本。<announcementLink>正如我们几周前宣布的那样</announcementLink>，我们决定将重心转向 <roomoteLink>Roomote</roomoteLink>，这是我们的云端智能体平台，我们相信它代表着软件开发的未来。非常感谢你在过去一年左右时间里的支持。",
+			"continuity": "这个扩展应该会继续无限期工作，但不会再收到错误修复、新功能或模型更新。",
+			"alternatives": "如果你想继续使用扩展，我们建议看看 <zooCodeLink>ZooCode</zooCodeLink>（社区维护的 Roo Code fork）和 <clineLink>Cline</clineLink>（Roo Code 最初起源的项目）。",
+			"signoff": "编码愉快！"
+		},
 		"release": {
 			"heading": "新增功能：",
 			"gpt55": "通过 OpenAI Codex 支持 GPT-5.5：已在 OpenAI Codex 提供商中新增 GPT-5.5 支持，让你可以直接在 Roo Code 中使用最新模型。",

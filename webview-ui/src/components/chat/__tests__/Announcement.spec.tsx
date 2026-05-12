@@ -32,9 +32,10 @@ vi.mock("react-i18next", () => ({
 					This is the last Roo Code release.{" "}
 					{components?.announcementLink &&
 						React.cloneElement(components.announcementLink, {}, "As we announced a few weeks ago")}
-					, we{"'"}ve decided to shift our focus to Roomote, our cloud agent platform, which we believe to be
-					the future of software development. Thank you so much for your support throughout the past year or
-					so.
+					, we{"'"}ve decided to shift our focus to{" "}
+					{components?.roomoteLink && React.cloneElement(components.roomoteLink, {}, "Roomote")}, our cloud
+					agent platform, which we believe to be the future of software development. Thank you so much for
+					your support throughout the past year or so.
 				</span>
 			)
 		}

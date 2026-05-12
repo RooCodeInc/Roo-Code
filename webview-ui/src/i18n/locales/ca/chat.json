@@ -331,6 +331,13 @@
 	"announcement": {
 		"title": "Roo Code {{version}} Llançat",
 		"support": "Si us plau, dona suport a Roo Code fent una estrella al nostre <githubLink>GitHub</githubLink>.",
+		"finalRelease": {
+			"title": "L'última versió de Roo Code",
+			"intro": "Aquesta és l'última versió de Roo Code. <announcementLink>Com vam anunciar fa unes setmanes</announcementLink>, hem decidit centrar-nos en <roomoteLink>Roomote</roomoteLink>, la nostra plataforma d'agents al núvol, que creiem que és el futur del desenvolupament de programari. Moltes gràcies pel teu suport durant aquest darrer any aproximadament.",
+			"continuity": "Aquesta extensió hauria de continuar funcionant indefinidament, però no rebrà correccions d'errors, noves funcionalitats ni actualitzacions de models.",
+			"alternatives": "Si vols utilitzar una extensió, et recomanem donar un cop d'ull a <zooCodeLink>ZooCode</zooCodeLink> (un fork comunitari de Roo Code) i <clineLink>Cline</clineLink> (d'on va començar originalment Roo Code).",
+			"signoff": "Feliç programació!"
+		},
 		"release": {
 			"heading": "Què hi ha de nou:",
 			"gpt55": "GPT-5.5 via OpenAI Codex: S'ha afegit suport per a GPT-5.5 al proveïdor OpenAI Codex perquè puguis utilitzar el model més recent directament des de Roo Code.",

@@ -331,6 +331,13 @@
 	"announcement": {
 		"title": "Roo Code {{version}} 출시",
 		"support": "<githubLink>GitHub</githubLink>에서 별표를 눌러 Roo Code를 응원해 주세요.",
+		"finalRelease": {
+			"title": "Roo Code의 마지막 릴리스",
+			"intro": "이번이 Roo Code의 마지막 릴리스입니다. <announcementLink>몇 주 전에 발표했듯이</announcementLink>, 저희는 소프트웨어 개발의 미래라고 믿는 클라우드 에이전트 플랫폼 <roomoteLink>Roomote</roomoteLink>에 집중하기로 결정했습니다. 지난 1년여 동안 보내주신 지원에 진심으로 감사드립니다.",
+			"continuity": "이 확장 프로그램은 앞으로도 계속 작동해야 하지만, 버그 수정, 새 기능 또는 모델 업데이트는 제공되지 않습니다.",
+			"alternatives": "확장 프로그램을 계속 사용하고 싶다면 커뮤니티가 만든 Roo Code 포크인 <zooCodeLink>ZooCode</zooCodeLink>와 Roo Code가 처음 시작된 <clineLink>Cline</clineLink>을 확인해 보시길 권장합니다.",
+			"signoff": "Happy coding!"
+		},
 		"release": {
 			"heading": "새로운 기능:",
 			"gpt55": "OpenAI Codex를 통한 GPT-5.5: OpenAI Codex 제공업체에 GPT-5.5 지원을 추가해, Roo Code에서 바로 최신 모델을 사용할 수 있어요.",
