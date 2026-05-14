@@ -7,6 +7,7 @@ import { type ApiHandlerOptions, getModelMaxOutputTokens } from "../../shared/ap
 import { TagMatcher } from "../../utils/tag-matcher"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { convertToOpenAiMessages } from "../transform/openai-format"
+import { getModelParams } from "../transform/model-params"
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { DEFAULT_HEADERS } from "./constants"
@@ -73,7 +74,7 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 		metadata?: ApiHandlerCreateMessageMetadata,
 		requestOptions?: OpenAI.RequestOptions,
 	) {
-		const { id: model, info } = this.getModel()
+		const { id: model, info, reasoning } = this.getModel()
 
 		// Centralized cap: clamp to 20% of the context window (unless provider-specific exceptions apply)
 		const max_tokens =
@@ -98,8 +99,14 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
 		}
 
-		// Add thinking parameter if reasoning is enabled and model supports it
-		if (this.options.enableReasoningEffort && info.supportsReasoningBinary) {
+		// Add reasoning_effort from centralized model params (handled by getModelParams)
+		if (reasoning) {
+			Object.assign(params, reasoning)
+		}
+
+		// Fallback: Add binary thinking parameter when reasoning_effort not used but
+		// reasoning is still enabled and model supports simple on/off thinking
+		if (!reasoning && this.options.enableReasoningEffort && info.supportsReasoningBinary) {
 			;(params as any).thinking = { type: "enabled" }
 		}
 
@@ -220,15 +227,20 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
-		const { id: modelId, info: modelInfo } = this.getModel()
+		const { id: modelId, info: modelInfo, reasoning } = this.getModel()
 
 		const params: OpenAI.Chat.Completions.ChatCompletionCreateParams = {
 			model: modelId,
 			messages: [{ role: "user", content: prompt }],
 		}
 
-		// Add thinking parameter if reasoning is enabled and model supports it
-		if (this.options.enableReasoningEffort && modelInfo.supportsReasoningBinary) {
+		// Add reasoning_effort from centralized model params
+		if (reasoning) {
+			Object.assign(params, reasoning)
+		}
+
+		// Fallback: Add binary thinking parameter when reasoning_effort not used
+		if (!reasoning && this.options.enableReasoningEffort && modelInfo.supportsReasoningBinary) {
 			;(params as any).thinking = { type: "enabled" }
 		}
 
@@ -250,11 +262,23 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 	}
 
 	override getModel() {
-		const id =
+		const providerId =
 			this.options.apiModelId && this.options.apiModelId in this.providerModels
 				? (this.options.apiModelId as ModelName)
 				: this.defaultProviderModelId
 
-		return { id, info: this.providerModels[id] }
+		// Allow user to override model info via openAiCustomModelInfo (like OpenAiHandler),
+		// enabling support for custom/unknown models with reasoning effort capability
+		const info: ModelInfo = this.options.openAiCustomModelInfo ?? this.providerModels[providerId]
+
+		const params = getModelParams({
+			format: "openai",
+			modelId: providerId,
+			model: info,
+			settings: this.options,
+			defaultTemperature: this.defaultTemperature,
+		})
+
+		return { id: providerId as string, info, ...params }
 	}
 }
