@@ -103,6 +103,11 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 				return i18next.t("settings:validation.modelId")
 			}
 			break
+		case "atomic-chat":
+			if (!apiConfiguration.atomicChatModelId) {
+				return i18next.t("settings:validation.modelId")
+			}
+			break
 		case "vscode-lm":
 			if (!apiConfiguration.vsCodeLmModelSelector) {
 				return i18next.t("settings:validation.modelSelector")

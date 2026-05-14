@@ -68,6 +68,8 @@ export class ProfileValidator {
 				return profile.litellmModelId
 			case "lmstudio":
 				return profile.lmStudioModelId
+			case "atomic-chat":
+				return profile.atomicChatModelId
 			case "vscode-lm":
 				// We probably need something more flexible for this one, if we need to really support it here.
 				return profile.vsCodeLmModelSelector?.id

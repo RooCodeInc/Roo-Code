@@ -43,6 +43,7 @@ export const PROVIDER_SERVICE_CONFIG: Partial<Record<ProviderName, ProviderServi
 	baseten: { serviceName: "Baseten", serviceUrl: "https://baseten.co" },
 	ollama: { serviceName: "Ollama", serviceUrl: "https://ollama.ai" },
 	lmstudio: { serviceName: "LM Studio", serviceUrl: "https://lmstudio.ai/docs" },
+	"atomic-chat": { serviceName: "Atomic Chat", serviceUrl: "https://github.com/AtomicBot-ai/Atomic-Chat" },
 	"vscode-lm": {
 		serviceName: "VS Code LM",
 		serviceUrl: "https://code.visualstudio.com/api/extension-guides/language-model",
@@ -125,6 +126,7 @@ export const PROVIDERS_WITH_CUSTOM_MODEL_UI: ProviderName[] = [
 	"vercel-ai-gateway",
 	"ollama",
 	"lmstudio",
+	"atomic-chat",
 	"vscode-lm",
 ]
 

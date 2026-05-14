@@ -53,6 +53,7 @@ export const PROVIDERS = [
 	{ value: "vscode-lm", label: "VS Code LM API", proxy: false },
 	{ value: "mistral", label: "Mistral", proxy: false },
 	{ value: "lmstudio", label: "LM Studio", proxy: true },
+	{ value: "atomic-chat", label: "Atomic Chat", proxy: true },
 	{ value: "ollama", label: "Ollama", proxy: true },
 	{ value: "requesty", label: "Requesty", proxy: false },
 	{ value: "xai", label: "xAI (Grok)", proxy: false },
