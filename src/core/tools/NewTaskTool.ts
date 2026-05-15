@@ -12,7 +12,7 @@ import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
 
 interface NewTaskParams {
-	mode: string
+	mode_slug: string
 	message: string
 	todos?: string
 }
@@ -21,16 +21,16 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 	readonly name = "new_task" as const
 
 	async execute(params: NewTaskParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { mode, message, todos } = params
+		const { mode_slug, message, todos } = params
 		const { askApproval, handleError, pushToolResult } = callbacks
 
 		try {
 			// Validate required parameters.
-			if (!mode) {
+			if (!mode_slug) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("new_task")
 				task.didToolFailInCurrentTurn = true
-				pushToolResult(await task.sayAndCreateMissingParamError("new_task", "mode"))
+				pushToolResult(await task.sayAndCreateMissingParamError("new_task", "mode_slug"))
 				return
 			}
 
@@ -89,10 +89,10 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 			const unescapedMessage = message.replace(/\\\\@/g, "\\@")
 
 			// Verify the mode exists
-			const targetMode = getModeBySlug(mode, state?.customModes)
+			const targetMode = getModeBySlug(mode_slug, state?.customModes)
 
 			if (!targetMode) {
-				pushToolResult(formatResponse.toolError(`Invalid mode: ${mode}`))
+				pushToolResult(formatResponse.toolError(`Invalid mode: ${mode_slug}`))
 				return
 			}
 
@@ -114,7 +114,7 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				parentTaskId: task.taskId,
 				message: unescapedMessage,
 				initialTodos: todoItems,
-				mode,
+				mode: mode_slug,
 			})
 
 			// Reflect delegation in tool result (no pause/unpause, no wait)
@@ -127,7 +127,7 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"new_task">): Promise<void> {
-		const mode: string | undefined = block.params.mode
+		const mode: string | undefined = block.params.mode_slug
 		const message: string | undefined = block.params.message
 		const todos: string | undefined = block.params.todos
 
