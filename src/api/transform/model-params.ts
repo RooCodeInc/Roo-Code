@@ -153,9 +153,9 @@ export function getModelParams({
 			reasoning: getAnthropicReasoning({ model, reasoningBudget, reasoningEffort, settings }),
 		}
 	} else if (format === "openai") {
-		// Special case for o1 and o3-mini, which don't support temperature.
-		// TODO: Add a `supportsTemperature` field to the model info.
-		if (modelId.startsWith("o1") || modelId.startsWith("o3-mini")) {
+		// Omit temperature for models that don't support it (e.g. o1, o3-mini,
+		// claude-opus-4-7 proxied via OpenAI-compatible gateways).
+		if (model.supportsTemperature === false || modelId.startsWith("o1") || modelId.startsWith("o3-mini")) {
 			params.temperature = undefined
 		}
 
@@ -172,12 +172,8 @@ export function getModelParams({
 			reasoning: getGeminiReasoning({ model, reasoningBudget, reasoningEffort, settings }),
 		}
 	} else {
-		// Special case for o1-pro, which doesn't support temperature.
-		// Note that OpenRouter's `supported_parameters` field includes
-		// `temperature`, which is probably a bug.
-		// TODO: Add a `supportsTemperature` field to the model info and populate
-		// it appropriately in the OpenRouter fetcher.
-		if (modelId === "openai/o1-pro") {
+		// Omit temperature for models that don't support it.
+		if (model.supportsTemperature === false || modelId === "openai/o1-pro") {
 			params.temperature = undefined
 		}
 

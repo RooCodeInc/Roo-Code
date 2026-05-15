@@ -994,4 +994,82 @@ describe("getModelParams", () => {
 			expect(result.reasoningBudget).toBe(8192) // Default thinking tokens
 		})
 	})
+	describe("supportsTemperature", () => {
+		it("should set temperature to undefined for openai format when supportsTemperature is false", () => {
+			const model: ModelInfo = {
+				...baseModel,
+				supportsTemperature: false,
+			}
+
+			const result = getModelParams({
+				...openaiParams,
+				settings: { modelTemperature: 0.5 },
+				model,
+			})
+
+			expect(result.temperature).toBeUndefined()
+		})
+
+		it("should keep temperature for openai format when supportsTemperature is true", () => {
+			const model: ModelInfo = {
+				...baseModel,
+				supportsTemperature: true,
+			}
+
+			const result = getModelParams({
+				...openaiParams,
+				settings: { modelTemperature: 0.5 },
+				model,
+			})
+
+			expect(result.temperature).toBe(0.5)
+		})
+
+		it("should keep temperature for openai format when supportsTemperature is undefined", () => {
+			const result = getModelParams({
+				...openaiParams,
+				settings: { modelTemperature: 0.5 },
+				model: baseModel,
+			})
+
+			expect(result.temperature).toBe(0.5)
+		})
+
+		it("should set temperature to undefined for openrouter format when supportsTemperature is false", () => {
+			const model: ModelInfo = {
+				...baseModel,
+				supportsTemperature: false,
+			}
+
+			const result = getModelParams({
+				...openrouterParams,
+				settings: { modelTemperature: 0.5 },
+				model,
+			})
+
+			expect(result.temperature).toBeUndefined()
+		})
+
+		it("should still remove temperature for o1 model IDs in openai format", () => {
+			const result = getModelParams({
+				...openaiParams,
+				modelId: "o1-preview",
+				settings: {},
+				model: baseModel,
+			})
+
+			expect(result.temperature).toBeUndefined()
+		})
+
+		it("should still remove temperature for o3-mini model IDs in openai format", () => {
+			const result = getModelParams({
+				...openaiParams,
+				modelId: "o3-mini",
+				settings: {},
+				model: baseModel,
+			})
+
+			expect(result.temperature).toBeUndefined()
+		})
+	})
 })

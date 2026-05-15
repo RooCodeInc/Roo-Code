@@ -554,6 +554,10 @@
 				"label": "Prompt Caching",
 				"description": "Is this model capable of caching prompts?"
 			},
+			"temperatureSupport": {
+				"label": "Supports Temperature",
+				"description": "Does this model accept a temperature parameter? Uncheck for models like Claude Opus 4.7 that have deprecated temperature."
+			},
 			"pricing": {
 				"input": {
 					"label": "Input Price",
