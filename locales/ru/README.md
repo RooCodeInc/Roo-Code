@@ -28,7 +28,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+    </details>
 
 ---
 
@@ -52,11 +52,11 @@ Roo Code адаптируется к вашему стилю работы, а н
 - Режим Отладка: отслеживание проблем, добавление логов, изоляция первопричин
 - Пользовательские режимы: создавайте специализированные режимы для вашей команды или рабочего процесса
 
-Подробнее: [Использование режимов](https://docs.roocode.com/basic-usage/using-modes) • [Пользовательские режимы](https://docs.roocode.com/advanced-usage/custom-modes)
+Подробнее: [Использование режимов](https://roocodeinc.github.io/Roo-Code/basic-usage/using-modes) • [Пользовательские режимы](https://roocodeinc.github.io/Roo-Code/advanced-usage/custom-modes)
 
 ## Ресурсы
 
-- **[Документация](https://docs.roocode.com):** Официальное руководство по установке, настройке и освоению Roo Code.
+- **[Документация](https://roocodeinc.github.io/Roo-Code/):** Официальное руководство по установке, настройке и освоению Roo Code.
 - **[Проблемы на GitHub](https://github.com/RooCodeInc/Roo-Code/issues):** Сообщайте об ошибках и отслеживайте разработку.
 
 ---

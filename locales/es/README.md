@@ -28,7 +28,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+    </details>
 
 ---
 
@@ -52,11 +52,11 @@ Roo Code se adapta a tu forma de trabajar, no al revés:
 - Modo Depuración: rastrear problemas, agregar registros, aislar causas raíz
 - Modos Personalizados: crea modos especializados para tu equipo o flujo de trabajo
 
-Más info: [Usar Modos](https://docs.roocode.com/basic-usage/using-modes) • [Modos Personalizados](https://docs.roocode.com/advanced-usage/custom-modes)
+Más info: [Usar Modos](https://roocodeinc.github.io/Roo-Code/basic-usage/using-modes) • [Modos Personalizados](https://roocodeinc.github.io/Roo-Code/advanced-usage/custom-modes)
 
 ## Recursos
 
-- **[Documentación](https://docs.roocode.com):** La guía oficial para instalar, configurar y dominar Roo Code.
+- **[Documentación](https://roocodeinc.github.io/Roo-Code/):** La guía oficial para instalar, configurar y dominar Roo Code.
 - **[Incidencias de GitHub](https://github.com/RooCodeInc/Roo-Code/issues):** Reporta errores y sigue el desarrollo.
 
 ---

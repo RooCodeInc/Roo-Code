@@ -28,7 +28,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+    </details>
 
 ---
 
@@ -52,11 +52,11 @@
 - डीबग मोड: समस्याओं का पता लगाएं, लॉग जोड़ें, मूल कारणों को अलग करें
 - कस्टम मोड: अपनी टीम या वर्कफ़्लो के लिए विशेष मोड बनाएं
 
-और जानो: [मोड्स का इस्तेमाल](https://docs.roocode.com/basic-usage/using-modes) • [कस्टम मोड्स](https://docs.roocode.com/advanced-usage/custom-modes)
+और जानो: [मोड्स का इस्तेमाल](https://roocodeinc.github.io/Roo-Code/basic-usage/using-modes) • [कस्टम मोड्स](https://roocodeinc.github.io/Roo-Code/advanced-usage/custom-modes)
 
 ## संसाधन
 
-- **[दस्तावेज़ीकरण](https://docs.roocode.com):** Roo Code को स्थापित करने, कॉन्फ़िगर करने और उसमें महारत हासिल करने के लिए आधिकारिक गाइड।
+- **[दस्तावेज़ीकरण](https://roocodeinc.github.io/Roo-Code/):** Roo Code को स्थापित करने, कॉन्फ़िगर करने और उसमें महारत हासिल करने के लिए आधिकारिक गाइड।
 - **[गिटहब मुद्दे](https://github.com/RooCodeInc/Roo-Code/issues):** बग की रिपोर्ट करें और विकास को ट्रैक करें।
 
 ---

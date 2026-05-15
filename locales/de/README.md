@@ -28,7 +28,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+    </details>
 
 ---
 
@@ -52,11 +52,11 @@ Roo Code passt sich an deine Arbeitsweise an, nicht umgekehrt:
 - Debug-Modus: Probleme aufspüren, Protokolle hinzufügen, Ursachen isolieren
 - Benutzerdefinierte Modi: erstelle spezialisierte Modi für dein Team oder deinen Workflow
 
-Mehr erfahren: [Modi verwenden](https://docs.roocode.com/basic-usage/using-modes) • [Benutzerdefinierte Modi](https://docs.roocode.com/advanced-usage/custom-modes)
+Mehr erfahren: [Modi verwenden](https://roocodeinc.github.io/Roo-Code/basic-usage/using-modes) • [Benutzerdefinierte Modi](https://roocodeinc.github.io/Roo-Code/advanced-usage/custom-modes)
 
 ## Ressourcen
 
-- **[Dokumentation](https://docs.roocode.com):** Die offizielle Anleitung zur Installation, Konfiguration und Beherrschung von Roo Code.
+- **[Dokumentation](https://roocodeinc.github.io/Roo-Code/):** Die offizielle Anleitung zur Installation, Konfiguration und Beherrschung von Roo Code.
 - **[GitHub Issues](https://github.com/RooCodeInc/Roo-Code/issues):** Melde Fehler und verfolge die Entwicklung.
 
 ---

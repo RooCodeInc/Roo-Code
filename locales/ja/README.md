@@ -28,7 +28,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+    </details>
 
 ---
 
@@ -52,11 +52,11 @@ Roo Codeは、あなたの働き方に合わせるように適応します。
 - デバッグモード：問題の追跡、ログの追加、根本原因の特定
 - カスタムモード：チームやワークフローに特化したモードの構築
 
-詳しくは: [モードの使い方](https://docs.roocode.com/basic-usage/using-modes) • [カスタムモード](https://docs.roocode.com/advanced-usage/custom-modes)
+詳しくは: [モードの使い方](https://roocodeinc.github.io/Roo-Code/basic-usage/using-modes) • [カスタムモード](https://roocodeinc.github.io/Roo-Code/advanced-usage/custom-modes)
 
 ## リソース
 
-- **[ドキュメント](https://docs.roocode.com):** Roo Codeのインストール、設定、習熟のための公式ガイド。
+- **[ドキュメント](https://roocodeinc.github.io/Roo-Code/):** Roo Codeのインストール、設定、習熟のための公式ガイド。
 - **[GitHub Issues](https://github.com/RooCodeInc/Roo-Code/issues):** バグを報告し、開発を追跡します。
 
 ---

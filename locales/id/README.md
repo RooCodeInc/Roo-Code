@@ -28,7 +28,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-      </details>
+    </details>
 
 ---
 
@@ -52,11 +52,11 @@ Roo Code beradaptasi dengan cara Anda bekerja, bukan sebaliknya:
 - Mode Debug: melacak masalah, menambahkan log, mengisolasi akar penyebab
 - Mode Kustom: buat mode khusus untuk tim atau alur kerja Anda
 
-Pelajari lebih lanjut: [Menggunakan Mode](https://docs.roocode.com/basic-usage/using-modes) • [Mode Kustom](https://docs.roocode.com/advanced-usage/custom-modes)
+Pelajari lebih lanjut: [Menggunakan Mode](https://roocodeinc.github.io/Roo-Code/basic-usage/using-modes) • [Mode Kustom](https://roocodeinc.github.io/Roo-Code/advanced-usage/custom-modes)
 
 ## Sumber daya
 
-- **[Dokumentasi](https://docs.roocode.com):** Panduan resmi untuk menginstal, mengonfigurasi, dan menguasai Roo Code.
+- **[Dokumentasi](https://roocodeinc.github.io/Roo-Code/):** Panduan resmi untuk menginstal, mengonfigurasi, dan menguasai Roo Code.
 - **[Masalah GitHub](https://github.com/RooCodeInc/Roo-Code/issues):** Laporkan bug dan lacak pengembangan.
 
 ---

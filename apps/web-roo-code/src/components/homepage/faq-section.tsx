@@ -91,7 +91,7 @@ const faqs: FAQItem[] = [
 				(or GitHub). Add your AI keys (OpenAI, Anthropic, or other) in the extension settings. Open the Roo
 				panel (the rocket icon) in VS Code, and start typing commands in plain English!{" "}
 				<a
-					href="https://docs.roocode.com/tutorial-videos"
+					href="https://roocodeinc.github.io/Roo-Code/tutorial-videos"
 					target="_blank"
 					rel="noopener noreferrer"
 					className="text-primary underline-offset-4 hover:underline">
@@ -108,7 +108,7 @@ const faqs: FAQItem[] = [
 				user-specified context) to handle large codebases. Enterprises especially appreciate the on-prem or
 				self-hosted model option for compliance and security needs.{" "}
 				<a
-					href="https://docs.roocode.com"
+					href="https://roocodeinc.github.io/Roo-Code/"
 					target="_blank"
 					rel="noopener noreferrer"
 					className="text-primary underline-offset-4 hover:underline">
@@ -126,7 +126,7 @@ const faqs: FAQItem[] = [
 				approval. And because Roo Code is fully open-source, it&apos;s auditable—you can review exactly how it
 				works before deploying it.{" "}
 				<a
-					href="https://docs.roocode.com"
+					href="https://roocodeinc.github.io/Roo-Code/"
 					target="_blank"
 					rel="noopener noreferrer"
 					className="text-primary underline-offset-4 hover:underline">
@@ -161,7 +161,7 @@ const faqs: FAQItem[] = [
 			<>
 				Check out our{" "}
 				<a
-					href="https://docs.roocode.com"
+					href="https://roocodeinc.github.io/Roo-Code/"
 					target="_blank"
 					rel="noopener noreferrer"
 					className="text-primary underline-offset-4 hover:underline">
