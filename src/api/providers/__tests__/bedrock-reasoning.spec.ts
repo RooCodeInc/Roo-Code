@@ -282,6 +282,110 @@ describe("AwsBedrockHandler - Extended Thinking", () => {
 			expect(reasoningChunks[1].text).toBe(" about this problem.")
 		})
 
+		it("should use adaptive thinking for Opus 4.7 instead of enabled with budget_tokens", async () => {
+			handler = new AwsBedrockHandler({
+				apiProvider: "bedrock",
+				apiModelId: "anthropic.claude-opus-4-7",
+				awsRegion: "us-east-1",
+				enableReasoningEffort: true,
+				modelMaxTokens: 8192,
+				modelMaxThinkingTokens: 4096,
+			})
+
+			mockSend.mockResolvedValue({
+				stream: (async function* () {
+					yield { messageStart: { role: "assistant" } }
+					yield {
+						contentBlockStart: {
+							content_block: { type: "thinking", thinking: "Thinking adaptively..." },
+							contentBlockIndex: 0,
+						},
+					}
+					yield { metadata: { usage: { inputTokens: 100, outputTokens: 50 } } }
+				})(),
+			})
+
+			const messages = [{ role: "user" as const, content: "Test message" }]
+			const stream = handler.createMessage("System prompt", messages)
+
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Opus 4.7 must use thinking.type: "adaptive" with output_config.effort
+			expect(mockSend).toHaveBeenCalledTimes(1)
+			expect(capturedPayload).toBeDefined()
+			expect(capturedPayload.additionalModelRequestFields).toBeDefined()
+			expect(capturedPayload.additionalModelRequestFields.thinking).toEqual({
+				type: "adaptive",
+			})
+			expect(capturedPayload.additionalModelRequestFields.output_config).toEqual({
+				effort: "high",
+			})
+
+			// Must NOT have budget_tokens (causes 400 error on Opus 4.7)
+			expect(capturedPayload.additionalModelRequestFields.thinking).not.toHaveProperty("budget_tokens")
+		})
+
+		it("should exclude temperature from inferenceConfig for Opus 4.7 (supportsTemperature: false)", async () => {
+			handler = new AwsBedrockHandler({
+				apiProvider: "bedrock",
+				apiModelId: "anthropic.claude-opus-4-7",
+				awsRegion: "us-east-1",
+				modelTemperature: 0.7,
+			})
+
+			mockSend.mockResolvedValue({
+				stream: (async function* () {
+					yield { messageStart: { role: "assistant" } }
+					yield { metadata: { usage: { inputTokens: 100, outputTokens: 50 } } }
+				})(),
+			})
+
+			const messages = [{ role: "user" as const, content: "Test message" }]
+			const stream = handler.createMessage("System prompt", messages)
+
+			for await (const chunk of stream) {
+				// consume stream
+			}
+
+			expect(mockSend).toHaveBeenCalledTimes(1)
+			expect(capturedPayload).toBeDefined()
+			// Temperature must NOT be present for Opus 4.7
+			expect(capturedPayload.inferenceConfig).not.toHaveProperty("temperature")
+			// maxTokens should still be present
+			expect(capturedPayload.inferenceConfig).toHaveProperty("maxTokens")
+		})
+
+		it("should include temperature in inferenceConfig for models that support it", async () => {
+			handler = new AwsBedrockHandler({
+				apiProvider: "bedrock",
+				apiModelId: "anthropic.claude-sonnet-4-20250514-v1:0",
+				awsRegion: "us-east-1",
+				modelTemperature: 0.5,
+			})
+
+			mockSend.mockResolvedValue({
+				stream: (async function* () {
+					yield { messageStart: { role: "assistant" } }
+					yield { metadata: { usage: { inputTokens: 100, outputTokens: 50 } } }
+				})(),
+			})
+
+			const messages = [{ role: "user" as const, content: "Test message" }]
+			const stream = handler.createMessage("System prompt", messages)
+
+			for await (const chunk of stream) {
+				// consume stream
+			}
+
+			expect(mockSend).toHaveBeenCalledTimes(1)
+			expect(capturedPayload).toBeDefined()
+			// Temperature should be present for Sonnet 4
+			expect(capturedPayload.inferenceConfig).toHaveProperty("temperature", 0.5)
+		})
+
 		it("should support API key authentication", async () => {
 			handler = new AwsBedrockHandler({
 				apiProvider: "bedrock",
