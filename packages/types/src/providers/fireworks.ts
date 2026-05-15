@@ -13,6 +13,8 @@ export type FireworksModelId =
 	| "accounts/fireworks/models/deepseek-v3"
 	| "accounts/fireworks/models/deepseek-v3p1"
 	| "accounts/fireworks/models/deepseek-v3p2"
+	| "accounts/fireworks/models/deepseek-v4-pro"
+	| "accounts/fireworks/models/deepseek-v4-flash"
 	| "accounts/fireworks/models/glm-4p5"
 	| "accounts/fireworks/models/glm-4p5-air"
 	| "accounts/fireworks/models/glm-4p6"
@@ -199,6 +201,28 @@ export const fireworksModels = {
 		outputPrice: 1.68,
 		description:
 			"DeepSeek V3.2 is the latest iteration of the V3 model family with enhanced reasoning capabilities, improved code generation, and better instruction following.",
+	},
+	"accounts/fireworks/models/deepseek-v4-pro": {
+		maxTokens: 384_000,
+		contextWindow: 1_000_000,
+		supportsImages: false,
+		supportsPromptCache: true,
+		inputPrice: 1.74,
+		outputPrice: 3.48,
+		cacheWritesPrice: 1.74,
+		cacheReadsPrice: 0.145,
+		description: "DeepSeek V4 Pro",
+	},
+	"accounts/fireworks/models/deepseek-v4-flash": {
+		maxTokens: 384_000,
+		contextWindow: 1_000_000,
+		supportsImages: false,
+		supportsPromptCache: true,
+		inputPrice: 0.14,
+		outputPrice: 0.28,
+		cacheWritesPrice: 0.14,
+		cacheReadsPrice: 0.028,
+		description: "DeepSeek V4 Flash",
 	},
 	"accounts/fireworks/models/glm-4p7": {
 		maxTokens: 25344,

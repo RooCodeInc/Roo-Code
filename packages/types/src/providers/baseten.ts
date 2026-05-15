@@ -83,6 +83,28 @@ export const basetenModels = {
 		description:
 			"DeepSeek's hybrid reasoning model with efficient long context scaling with GPT-5 level performance",
 	},
+	"deepseek-ai/DeepSeek-V4-Pro": {
+		maxTokens: 384_000,
+		contextWindow: 1_000_000,
+		supportsImages: false,
+		supportsPromptCache: true,
+		inputPrice: 1.74,
+		outputPrice: 3.48,
+		cacheWritesPrice: 1.74,
+		cacheReadsPrice: 0.145,
+		description: "DeepSeek V4 Pro",
+	},
+	"deepseek-ai/DeepSeek-V4-Flash": {
+		maxTokens: 384_000,
+		contextWindow: 1_000_000,
+		supportsImages: false,
+		supportsPromptCache: true,
+		inputPrice: 0.14,
+		outputPrice: 0.28,
+		cacheWritesPrice: 0.14,
+		cacheReadsPrice: 0.028,
+		description: "DeepSeek V4 Flash",
+	},
 	"openai/gpt-oss-120b": {
 		maxTokens: 16_384,
 		contextWindow: 128_072,
