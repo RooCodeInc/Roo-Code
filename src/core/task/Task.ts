@@ -2730,6 +2730,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				let assistantMessage = ""
 				let reasoningMessage = ""
 				let pendingGroundingSources: GroundingSource[] = []
+				let streamChunkCount = 0
 				this.isStreaming = true
 
 				try {
@@ -2768,6 +2769,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							continue
 						}
 
+						streamChunkCount++
 						switch (chunk.type) {
 							case "reasoning": {
 								reasoningMessage += chunk.text
@@ -3521,6 +3523,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// or tool_use content blocks from API which we should assume is
 					// an error.
 
+					console.log(
+						`[Task#${this.taskId}.${this.instanceId}] Empty API response: streamChunks=${streamChunkCount}, hasReasoning=${reasoningMessage.length > 0}, contentBlocks=${this.assistantMessageContent.length}`,
+					)
 					// Increment consecutive no-assistant-messages counter
 					this.consecutiveNoAssistantMessagesCount++
 
@@ -3584,10 +3589,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							await this.say("api_req_retried")
 
 							// Push the same content back to retry
+							// Mark that user message was removed so it gets re-added on retry
 							stack.push({
 								userContent: currentUserContent,
 								includeFileDetails: false,
 								retryAttempt: (currentItem.retryAttempt ?? 0) + 1,
+								userMessageWasRemoved: true,
 							})
 
 							// Continue to retry the request
