@@ -41,11 +41,13 @@ export function convertAnthropicContentToGemini(
 
 	// Determine the signature to attach to function calls.
 	// If we're in a mode that expects signatures (includeThoughtSignatures is true):
-	// 1. Use the actual signature if we found one in the history/content.
-	// 2. Fallback to "skip_thought_signature_validator" if missing (e.g. cross-model history).
+	// - Use the actual signature if we found one in the history/content.
+	// - If no real signature exists, omit it (undefined) so the API accepts the request.
+	//   Gemini 3.1+ models reject the synthetic "skip_thought_signature_validator" bypass
+	//   that worked with earlier Gemini 3 models.
 	let functionCallSignature: string | undefined
 	if (includeThoughtSignatures) {
-		functionCallSignature = activeThoughtSignature || "skip_thought_signature_validator"
+		functionCallSignature = activeThoughtSignature
 	}
 
 	if (typeof content === "string") {
