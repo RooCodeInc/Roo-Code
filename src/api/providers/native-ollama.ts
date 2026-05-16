@@ -215,7 +215,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 		]
 
 		const matcher = new TagMatcher(
-			"think",
+			["think", "thought"],
 			(chunk) =>
 				({
 					type: chunk.matched ? "reasoning" : "text",

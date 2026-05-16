@@ -178,7 +178,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 
 			const matcher = new TagMatcher(
-				"think",
+				["think", "thought"],
 				(chunk) =>
 					({
 						type: chunk.matched ? "reasoning" : "text",

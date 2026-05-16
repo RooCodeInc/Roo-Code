@@ -118,7 +118,7 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 		const stream = await this.createStream(systemPrompt, messages, metadata)
 
 		const matcher = new TagMatcher(
-			"think",
+			["think", "thought"],
 			(chunk) =>
 				({
 					type: chunk.matched ? "reasoning" : "text",
