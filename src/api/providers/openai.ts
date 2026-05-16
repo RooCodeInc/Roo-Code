@@ -13,6 +13,8 @@ import {
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import { TagMatcher } from "../../utils/tag-matcher"
+import { sanitizeOpenAiCallId } from "../../utils/tool-id"
+import { isMcpTool } from "../../utils/mcp-name"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { convertToR1Format } from "../transform/r1-format"
@@ -90,6 +92,11 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
 		const isAzureAiInference = this._isAzureAiInference(modelUrl)
 		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
+
+		if (this._isCodexModel(modelId)) {
+			yield* this.handleCodexMessage(systemPrompt, messages, metadata)
+			return
+		}
 
 		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
 			yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages, metadata)
@@ -294,12 +301,19 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 	async completePrompt(prompt: string): Promise<string> {
 		try {
-			const isAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
 			const model = this.getModel()
+			const modelId = model.id
 			const modelInfo = model.info
 
+			// Codex models must use the Responses API
+			if (this._isCodexModel(modelId)) {
+				return this._completePromptWithResponsesApi(prompt, model)
+			}
+
+			const isAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
+
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
-				model: model.id,
+				model: modelId,
 				messages: [{ role: "user", content: prompt }],
 			}
 
@@ -324,6 +338,58 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			throw error
 		}
+	}
+
+	/**
+	 * Complete a prompt using the Responses API (for codex models).
+	 */
+	private async _completePromptWithResponsesApi(
+		prompt: string,
+		model: ReturnType<OpenAiHandler["getModel"]>,
+	): Promise<string> {
+		const requestBody: any = {
+			model: model.id,
+			input: [
+				{
+					role: "user",
+					content: [{ type: "input_text", text: prompt }],
+				},
+			],
+			stream: false,
+			store: false,
+		}
+
+		// Add max_output_tokens if needed
+		if (this.options.includeMaxTokens === true) {
+			requestBody.max_output_tokens = this.options.modelMaxTokens || model.info.maxTokens
+		}
+
+		let response
+		try {
+			response = await (this.client as any).responses.create(requestBody)
+		} catch (error) {
+			throw handleOpenAIError(error, this.providerName)
+		}
+
+		// Extract text from the Responses API response
+		if (response?.output && Array.isArray(response.output)) {
+			for (const outputItem of response.output) {
+				if (outputItem.type === "message" && outputItem.content) {
+					for (const content of outputItem.content) {
+						if (content.type === "output_text" && content.text) {
+							return content.text
+						}
+					}
+				}
+			}
+		}
+
+		// Fallback: check for direct text in response
+		if (response?.text) {
+			return response.text
+		}
+
+		return ""
 	}
 
 	private async *handleO3FamilyMessage(
@@ -494,6 +560,410 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 			activeToolCallIds.clear()
 		}
+	}
+
+	/**
+	 * Checks if the model is a codex model that requires the Responses API.
+	 * Azure-hosted GPT-5.x codex models (e.g., gpt-5.3-codex) do not support
+	 * the Chat Completions API and must use the Responses API instead.
+	 */
+	protected _isCodexModel(modelId: string): boolean {
+		return modelId.toLowerCase().includes("codex")
+	}
+
+	/**
+	 * Handles message creation for codex models using the OpenAI Responses API.
+	 * Codex models (e.g., gpt-5.3-codex on Azure) only support the Responses API,
+	 * not the Chat Completions API.
+	 */
+	private async *handleCodexMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		const model = this.getModel()
+
+		// Format conversation for the Responses API
+		const formattedInput = this._formatConversationForResponsesApi(messages)
+
+		// Build tools in Responses API format (flat structure, not nested under function)
+		const tools = this._convertToolsForResponsesApi(metadata?.tools)
+
+		// Build the request body
+		const requestBody: any = {
+			model: model.id,
+			input: formattedInput,
+			stream: true,
+			store: false,
+			instructions: systemPrompt,
+			...(tools && tools.length > 0 ? { tools } : {}),
+			...(metadata?.tool_choice ? { tool_choice: metadata.tool_choice } : {}),
+			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+		}
+
+		// Add temperature
+		if (model.info.supportsTemperature !== false) {
+			requestBody.temperature = this.options.modelTemperature ?? 0
+		}
+
+		// Add max_output_tokens if needed
+		if (this.options.includeMaxTokens === true) {
+			requestBody.max_output_tokens = this.options.modelMaxTokens || model.info.maxTokens
+		}
+
+		// State tracking for streaming
+		let pendingToolCallId: string | undefined
+		let pendingToolCallName: string | undefined
+		let sawTextOutput = false
+		const streamedToolCallIds = new Set<string>()
+
+		try {
+			const stream = (await (this.client as any).responses.create(requestBody)) as AsyncIterable<any>
+
+			for await (const event of stream) {
+				// Handle text deltas
+				if (event?.type === "response.text.delta" || event?.type === "response.output_text.delta") {
+					if (event?.delta) {
+						sawTextOutput = true
+						yield { type: "text", text: event.delta }
+					}
+					continue
+				}
+
+				// Handle done-only text for variants that skip delta events
+				if (event?.type === "response.text.done" || event?.type === "response.output_text.done") {
+					const doneText =
+						typeof event?.text === "string"
+							? event.text
+							: typeof event?.output_text === "string"
+								? event.output_text
+								: undefined
+					if (!sawTextOutput && doneText) {
+						sawTextOutput = true
+						yield { type: "text", text: doneText }
+					}
+					continue
+				}
+
+				// Handle content part events
+				if (event?.type === "response.content_part.added" || event?.type === "response.content_part.done") {
+					const part = event?.part
+					if (
+						!sawTextOutput &&
+						(part?.type === "text" || part?.type === "output_text") &&
+						typeof part?.text === "string" &&
+						part.text
+					) {
+						sawTextOutput = true
+						yield { type: "text", text: part.text }
+					}
+					continue
+				}
+
+				// Handle reasoning deltas
+				if (
+					event?.type === "response.reasoning.delta" ||
+					event?.type === "response.reasoning_text.delta" ||
+					event?.type === "response.reasoning_summary.delta" ||
+					event?.type === "response.reasoning_summary_text.delta"
+				) {
+					if (event?.delta) {
+						yield { type: "reasoning", text: event.delta }
+					}
+					continue
+				}
+
+				// Handle refusal deltas
+				if (event?.type === "response.refusal.delta") {
+					if (event?.delta) {
+						sawTextOutput = true
+						yield { type: "text", text: `[Refusal] ${event.delta}` }
+					}
+					continue
+				}
+
+				// Handle output item events (track tool identity)
+				if (event?.type === "response.output_item.added" || event?.type === "response.output_item.done") {
+					const item = event?.item
+					if (item) {
+						// Capture tool identity for subsequent argument deltas
+						if (item.type === "function_call" || item.type === "tool_call") {
+							const callId = item.call_id || item.tool_call_id || item.id
+							const name = item.name || item.function?.name
+							if (typeof callId === "string" && callId.length > 0) {
+								pendingToolCallId = callId
+								pendingToolCallName = typeof name === "string" ? name : undefined
+							}
+						}
+
+						if (event.type === "response.output_item.added") {
+							if ((item.type === "text" || item.type === "output_text") && item.text) {
+								sawTextOutput = true
+								yield { type: "text", text: item.text }
+							} else if (item.type === "message" && Array.isArray(item.content)) {
+								for (const content of item.content) {
+									if (
+										(content?.type === "text" || content?.type === "output_text") &&
+										content?.text
+									) {
+										sawTextOutput = true
+										yield { type: "text", text: content.text }
+									}
+								}
+							}
+						} else if (
+							event.type === "response.output_item.done" &&
+							(item.type === "function_call" || item.type === "tool_call")
+						) {
+							const callId = item.call_id || item.tool_call_id || item.id
+							const name = item.name || item.function?.name
+							const argsRaw = item.arguments || item.function?.arguments || item.input
+							const args =
+								typeof argsRaw === "string"
+									? argsRaw
+									: argsRaw && typeof argsRaw === "object"
+										? JSON.stringify(argsRaw)
+										: ""
+
+							if (
+								typeof callId === "string" &&
+								callId.length > 0 &&
+								typeof name === "string" &&
+								name.length > 0 &&
+								!streamedToolCallIds.has(callId)
+							) {
+								yield { type: "tool_call", id: callId, name, arguments: args }
+							}
+						} else if (!sawTextOutput) {
+							if ((item.type === "text" || item.type === "output_text") && item.text) {
+								sawTextOutput = true
+								yield { type: "text", text: item.text }
+							} else if (item.type === "message" && Array.isArray(item.content)) {
+								for (const content of item.content) {
+									if (
+										(content?.type === "text" || content?.type === "output_text") &&
+										content?.text
+									) {
+										sawTextOutput = true
+										yield { type: "text", text: content.text }
+									}
+								}
+							}
+						}
+					}
+					continue
+				}
+
+				// Handle tool/function call argument deltas
+				if (
+					event?.type === "response.tool_call_arguments.delta" ||
+					event?.type === "response.function_call_arguments.delta"
+				) {
+					const callId = event.call_id || event.tool_call_id || event.id || pendingToolCallId || undefined
+					const name = event.name || event.function_name || pendingToolCallName || undefined
+					const args = event.delta || event.arguments
+
+					if (
+						typeof name === "string" &&
+						name.length > 0 &&
+						typeof callId === "string" &&
+						callId.length > 0
+					) {
+						streamedToolCallIds.add(callId)
+						yield {
+							type: "tool_call_partial",
+							index: event.index ?? 0,
+							id: callId,
+							name,
+							arguments: args,
+						}
+					}
+					continue
+				}
+
+				// Handle tool/function call completion
+				if (
+					event?.type === "response.tool_call_arguments.done" ||
+					event?.type === "response.function_call_arguments.done"
+				) {
+					continue
+				}
+
+				// Handle completion events with usage
+				if (event?.type === "response.done" || event?.type === "response.completed") {
+					// Fallback text extraction from final payload
+					if (!sawTextOutput && Array.isArray(event?.response?.output)) {
+						for (const outputItem of event.response.output) {
+							if (
+								(outputItem?.type === "text" || outputItem?.type === "output_text") &&
+								outputItem?.text
+							) {
+								sawTextOutput = true
+								yield { type: "text", text: outputItem.text }
+								continue
+							}
+							if (outputItem?.type === "message" && Array.isArray(outputItem.content)) {
+								for (const content of outputItem.content) {
+									if (
+										(content?.type === "text" || content?.type === "output_text") &&
+										content?.text
+									) {
+										sawTextOutput = true
+										yield { type: "text", text: content.text }
+									}
+								}
+							}
+						}
+					}
+
+					// Extract usage
+					const usage = event?.response?.usage || event?.usage
+					if (usage) {
+						yield {
+							type: "usage",
+							inputTokens: usage.input_tokens ?? usage.prompt_tokens ?? 0,
+							outputTokens: usage.output_tokens ?? usage.completion_tokens ?? 0,
+							cacheWriteTokens: usage.cache_creation_input_tokens || undefined,
+							cacheReadTokens: usage.cache_read_input_tokens || undefined,
+						}
+					}
+					continue
+				}
+
+				// Handle error events
+				if (event?.type === "response.error" || event?.type === "error") {
+					if (event.error || event.message) {
+						throw new Error(
+							`Responses API error: ${event.error?.message || event.message || "Unknown error"}`,
+						)
+					}
+				}
+
+				// Handle failed event
+				if (event?.type === "response.failed") {
+					if (event.error || event.message) {
+						throw new Error(
+							`Response failed: ${event.error?.message || event.message || "Unknown failure"}`,
+						)
+					}
+				}
+
+				// Fallback for older formats
+				if (event?.choices?.[0]?.delta?.content) {
+					yield { type: "text", text: event.choices[0].delta.content }
+				}
+
+				if (event?.usage) {
+					yield {
+						type: "usage",
+						inputTokens: event.usage.input_tokens ?? event.usage.prompt_tokens ?? 0,
+						outputTokens: event.usage.output_tokens ?? event.usage.completion_tokens ?? 0,
+					}
+				}
+			}
+		} catch (error) {
+			throw handleOpenAIError(error, this.providerName)
+		}
+	}
+
+	/**
+	 * Formats an Anthropic message array into the Responses API input format.
+	 */
+	private _formatConversationForResponsesApi(messages: Anthropic.Messages.MessageParam[]): any[] {
+		const formattedInput: any[] = []
+
+		for (const message of messages) {
+			if (message.role === "user") {
+				const content: any[] = []
+				const toolResults: any[] = []
+
+				if (typeof message.content === "string") {
+					content.push({ type: "input_text", text: message.content })
+				} else if (Array.isArray(message.content)) {
+					for (const block of message.content) {
+						if (block.type === "text") {
+							content.push({ type: "input_text", text: block.text })
+						} else if (block.type === "image") {
+							const image = block as Anthropic.Messages.ImageBlockParam
+							const imageUrl = `data:${image.source.media_type};base64,${image.source.data}`
+							content.push({ type: "input_image", image_url: imageUrl })
+						} else if (block.type === "tool_result") {
+							const result =
+								typeof block.content === "string"
+									? block.content
+									: block.content?.map((c: any) => (c.type === "text" ? c.text : "")).join("") || ""
+							toolResults.push({
+								type: "function_call_output",
+								call_id: sanitizeOpenAiCallId(block.tool_use_id),
+								output: result,
+							})
+						}
+					}
+				}
+
+				if (content.length > 0) {
+					formattedInput.push({ role: "user", content })
+				}
+				if (toolResults.length > 0) {
+					formattedInput.push(...toolResults)
+				}
+			} else if (message.role === "assistant") {
+				const content: any[] = []
+				const toolCalls: any[] = []
+
+				if (typeof message.content === "string") {
+					content.push({ type: "output_text", text: message.content })
+				} else if (Array.isArray(message.content)) {
+					for (const block of message.content) {
+						if (block.type === "text") {
+							content.push({ type: "output_text", text: block.text })
+						} else if (block.type === "tool_use") {
+							toolCalls.push({
+								type: "function_call",
+								call_id: sanitizeOpenAiCallId(block.id),
+								name: block.name,
+								arguments: JSON.stringify(block.input),
+							})
+						}
+					}
+				}
+
+				if (content.length > 0) {
+					formattedInput.push({ role: "assistant", content })
+				}
+				if (toolCalls.length > 0) {
+					formattedInput.push(...toolCalls)
+				}
+			}
+		}
+
+		return formattedInput
+	}
+
+	/**
+	 * Converts tools from the Chat Completions format to the Responses API format.
+	 * The Responses API uses a flat structure: {type, name, description, parameters, strict}
+	 * instead of the nested {type, function: {name, description, parameters}} format.
+	 */
+	private _convertToolsForResponsesApi(tools: any[] | undefined): any[] | undefined {
+		if (!tools || tools.length === 0) {
+			return undefined
+		}
+
+		return tools
+			.filter((tool: any) => tool.type === "function")
+			.map((tool: any) => {
+				const isMcp = isMcpTool(tool.function.name)
+				return {
+					type: "function",
+					name: tool.function.name,
+					description: tool.function.description,
+					parameters: isMcp
+						? tool.function.parameters
+						: this.convertToolSchemaForOpenAI(tool.function.parameters),
+					strict: !isMcp,
+				}
+			})
 	}
 
 	protected _getUrlHost(baseUrl?: string): string {
